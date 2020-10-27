@@ -1,6 +1,7 @@
 from time import sleep
 from datetime import datetime
 from pyModbusTCP.client import ModbusClient
+import modbusconfig
 
 '''
     REG0: Leitura int
@@ -13,10 +14,17 @@ from pyModbusTCP.client import ModbusClient
     REG7: Leitura bin
 '''
 
-ip_slave = "172.21.15.13"
-porta_slave = 502
+slave_ip = modbusconfig.SLAVE_IP
+slave_porta = modbusconfig.SLAVE_PORT
+temporizador = modbusconfig.DEFAULT_REFRESH_RATE
+
 
 def escrever_no_log(linha):
+
+    '''
+    Esta função deve ser refeita.
+    '''
+
     linha = "'{}','".format(datetime.now().strftime("%H:%M:%S"))+linha+"'\n"
     print(linha)
     with open('log.csv', 'a+') as file:
@@ -24,8 +32,8 @@ def escrever_no_log(linha):
     return 0
 
 
-client = ModbusClient(host=ip_slave,
-                      port=porta_slave,
+client = ModbusClient(host=slave_ip,
+                      port=slave_porta,
                       auto_open=True,
                       auto_close=True,
                       timeout=5,
@@ -34,7 +42,7 @@ client = ModbusClient(host=ip_slave,
 #Inicio do código
 escrever_no_log("Iniciando")
 
-regs = [0]*8
+REGS = [0] * 8
 alarme = [False]*8
 alarme_flag = False
 alarme_flag_2 = False
@@ -45,40 +53,40 @@ contador_reg6 = 2
 while True:
 
     # Lê os registradores
-    regs = client.read_holding_registers(0, 8)
+    REGS = client.read_holding_registers(0, 8)
 
     # REG0-2 rand 0 - 1000, tem alarme de HIGH se >900
     for i in range(3):
-        if not alarme[i] and regs[i] > 900:
+        if not alarme[i] and REGS[i] > 900:
             escrever_no_log("REG{} mudou para HIGH (>900).".format(i))
             alarme[i] = True
-        if alarme[i] and regs[i] <= 900:
+        if alarme[i] and REGS[i] <= 900:
             escrever_no_log("REG{} normalizado.".format(i))
             alarme[i] = False
 
     # REG3 tem flags, alerta na flag 2 (2x0000000000000100)
-    if not alarme_flag and (regs[3] & 4):
+    if not alarme_flag and (REGS[3] & 4):
         escrever_no_log("Flag2 mudou para HIGH.")
         alarme_flag = True
-    if alarme_flag and not (regs[3] & 4):
+    if alarme_flag and not (REGS[3] & 4):
         escrever_no_log("Flag2 mudou para LOW.")
         alarme_flag = False
 
     # REG5 rand 0 - 1000, tem alarme de HIGH se >900
     i = 5
-    if not alarme[i] and regs[i] > 900:
+    if not alarme[i] and REGS[i] > 900:
         escrever_no_log("REG{} mudou para HIGH (>900).".format(i))
         alarme[i] = True
-    if alarme[i] and regs[i] <= 900:
+    if alarme[i] and REGS[i] <= 900:
         escrever_no_log("REG{} normalizado.".format(i))
         alarme[i] = False
 
     # REG7 tem flags, alerta na flag 0 + flag 6 (2x0000000001000001)
     # A Flag0 sempre vai estar em HIGH nesse reg
-    if not alarme_flag_2 and (regs[7] & 65):
+    if not alarme_flag_2 and (REGS[7] & 65):
         escrever_no_log("Flag6 mudou para HIGH.")
         alarme_flag_2 = True
-    if alarme_flag_2 and not (regs[7] & 65):
+    if alarme_flag_2 and not (REGS[7] & 65):
         escrever_no_log("Flag6 mudou para LOW.")
         alarme_flag_2 = False
 
