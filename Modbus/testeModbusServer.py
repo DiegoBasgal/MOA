@@ -3,6 +3,7 @@ from random import random, randint
 from time import sleep
 from pyModbusTCP.server import ModbusServer, DataBank
 import os
+import modbusconfig
 '''
     Simulador de CLP/Modbus
     REG0: Número aleatório entre 0 e 1000
@@ -14,23 +15,34 @@ import os
     REG6: Leitura bin 
     REG7: Leitura bin 
 '''
-
-ip = "172.21.15.13"
-porta = 502
-
 print("Iniciando Servidor/Slave Modbus ")
+
+ip = modbusconfig.SLAVE_IP
+porta = modbusconfig.SLAVE_PORT
+temporizador = modbusconfig.CLP_REFRESH_RATE
+
+REG = [0] * 8   # 8 registradores
 
 server = ModbusServer(host=ip, port=porta, no_block=True)
 try:
     server.start()
-    print("Servidor iniciado ({}:{})".format(ip, porta))
     while True:
+        # Limpa a interface de linha
         os.system('cls' if os.name == 'nt' else 'clear')
-        DataBank.set_words(0, [int(random()*1000), int(random()*1000), int(random()*1000)])
-        DataBank.set_words(3, [int(2**(randint(0, 15)))])
-        regs = DataBank.get_words(0, 8)
 
-        print("TIME {}\n"
+        # Escreve os valores rand de REG0 - REG2
+        DataBank.set_words(0, [int(random()*1000), int(random()*1000), int(random()*1000)])
+        # Escreve (apenas) uma flag aleatória
+        DataBank.set_words(3, [int(2**(randint(0, 15)))])
+
+        # Carrega os REGs, da memória, sem conectar.
+        REGS = DataBank.get_words(0, 8)
+
+        print("###########\n"
+              "#  PyCLP  #\n"
+              "###########\n\n"
+              "Servidor/Slave ModbusTCP em {}:{}\n\n"
+              "TIME {}\n\n"
               "REG0 {: >16} | CLP\n"
               "REG1 {: >16} | CLP\n"
               "REG2 {: >16} | CLP\n"
@@ -38,17 +50,19 @@ try:
               "REG4 {: >16} | MOA\n"
               "REG5 {: >16} | E3 \n"
               "REG6 {:016b} | MOA\n"
-              "REG7 {:016b} | E3 ".format(datetime.now(), *regs))
+              "REG7 {:016b} | E3 \n".format(ip, porta, datetime.now(), *regs))
 
-        # bit 15 do reg6 (MOA que controla)
-        if(regs[6] >= 2 ** 15):
+        # Verifica o bit 15 do reg6 (MOA que controla)
+        if REGS[6] & (2**15):
             print("MOA disparou o bit 15 do REG6!")
 
-        # bit 15 do reg7 (E3 que controla
-        if (regs[7] >= 2 ** 15):
+        # Verifica o bit 15 do reg7 (E3 que controla
+        if REGS[7] & (2**15):
             print("Elipse E3 disparou o bit 15 do REG7!")
 
-        sleep(0.1)
+        # Espera antes de atualizar o estado da "CLP"
+        sleep(temporizador)
 
 finally:
+    # Finaly para caso o servidor de problema aviar que fechou.
     print("Servidor fechado")
