@@ -21,7 +21,7 @@ ip = modbusconfig.SLAVE_IP
 porta = modbusconfig.SLAVE_PORT
 temporizador = modbusconfig.CLP_REFRESH_RATE
 
-REG = [0] * 8   # 8 registradores
+REG = [0] * 10  # 10 registradores
 
 server = ModbusServer(host=ip, port=porta, no_block=True)
 try:
@@ -36,7 +36,7 @@ try:
         DataBank.set_words(3, [int(2**(randint(0, 15)))])
 
         # Carrega os REGs, da memória, sem conectar.
-        REGS = DataBank.get_words(0, 8)
+        REGS = DataBank.get_words(0, 10)
 
         print("###########\n"
               "#  PyCLP  #\n"
@@ -50,7 +50,9 @@ try:
               "REG4 {: >16} | MOA\n"
               "REG5 {: >16} | E3 \n"
               "REG6 {:016b} | MOA\n"
-              "REG7 {:016b} | E3 \n".format(ip, porta, datetime.now(), *regs))
+              "REG7 {:016b} | E3 \n"
+              "REG8 {:016b} | HB MOA \n"
+              "REG9 {:016b} | HM E3 \n".format(ip, porta, datetime.now(), *REGS))
 
         # Verifica o bit 15 do reg6 (MOA que controla)
         if REGS[6] & (2**15):
@@ -59,6 +61,17 @@ try:
         # Verifica o bit 15 do reg7 (E3 que controla
         if REGS[7] & (2**15):
             print("Elipse E3 disparou o bit 15 do REG7!")
+
+        # Verifica o bit 0 do reg8 (HB MOA)
+        if REGS[8]:
+            print("MOA ONLINE")
+
+        # Verifica o bit 0 do reg9 (HB E3)
+        if REGS[9]:
+            print("E3 ONLINE")
+
+        # Reinicia o HB MOA e HB E3
+        DataBank.set_words(8, [0, 0])
 
         # Espera antes de atualizar o estado da "CLP"
         sleep(temporizador)

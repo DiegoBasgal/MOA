@@ -102,18 +102,21 @@ while True:
         # Escrita nos registradores
 
         # REG4 é escrito sequencialmente com 1000 a 1009
-        client.write_multiple_registers(4, [(contador_reg4+1000)])
+        client.write_single_register(4, (contador_reg4+1000))
         contador_reg4 += 1
-        if contador_reg4 > 9:
+        if contador_reg4 > 99:
             contador_reg4 = 0
 
         # REG6 é escrito sequencialemnte flags de 0 a 15 (2**15)
-        client.write_multiple_registers(6, [contador_reg6])
+        client.write_single_register(6, contador_reg6)
         contador_reg6 = contador_reg6 << 1
         if contador_reg6 >= 2**16:
             contador_reg6 = 2
 
-    sleep(0.5)
+        # REG8 é um HB
+        client.write_single_register(8, 1)
+
+    sleep(temporizador)
 
 
 
