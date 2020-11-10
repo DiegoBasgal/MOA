@@ -13,4 +13,4 @@ SELECT [E3TimeStamp]
       ,[comporta_pos_4]
       ,[comporta_aberta]
 FROM [CLP].[dbo].[amostragem_usina]
-ORDER BY E3TimeStamp DESC
+ORDER BY E3TimeStamp ASC
