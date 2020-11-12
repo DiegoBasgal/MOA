@@ -2,7 +2,7 @@ from datetime import datetime
 from time import sleep
 from pyModbusTCP.server import ModbusServer, DataBank
 import os
-import MCLPS.CLPconfig as CLPconfig
+import MCLPS.CLP_config as CLPconfig
 import MCLPS.connector_db as db
 
 '''
