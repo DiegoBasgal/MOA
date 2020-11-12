@@ -2,8 +2,8 @@ from datetime import datetime
 from time import sleep
 from pyModbusTCP.server import ModbusServer, DataBank
 import os
-import CLPconfig
-import connector_db as db
+import MCLPS.CLPconfig as CLPconfig
+import MCLPS.connector_db as db
 
 '''
     Simulador de CLP com comunicação Modbus
