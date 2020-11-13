@@ -10,8 +10,8 @@ import usina
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.DEBUG)
 file_handler_loggin = logging.FileHandler('log_q_afluente.log')
-# formatter = logging.Formatter('%(asctime)s : %(levelname)s : %(name)s : %(message)s')
-# file_handler_loggin.setFormatter(formatter)
+formatter = logging.Formatter('%(asctime)s : %(levelname)s : %(name)s : %(message)s')
+file_handler_loggin.setFormatter(formatter)
 logger.addHandler(file_handler_loggin)
 
 slave_ip = CLPconfig.SLAVE_IP
@@ -48,7 +48,6 @@ while True:
             pot_ug2 = REGS[3]/1000
             estado_comporta = REGS[6]
 
-            print(temporizador, nv_montante, pot_ug1, pot_ug2, estado_comporta)
             print(usina.q_afluente(temporizador, pot_ug1, pot_ug2, nv_montante,
                                    nv_montante_anterior, estado_comporta))
 
