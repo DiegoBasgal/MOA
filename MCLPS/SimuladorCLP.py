@@ -14,7 +14,7 @@ print("Iniciando Servidor/Slave Modbus ")
 
 ip = CLPconfig.SLAVE_IP
 porta = CLPconfig.SLAVE_PORT
-#temporizador = CLPconfig.CLP_REFRESH_RATE
+# temporizador = CLPconfig.CLP_REFRESH_RATE
 temporizador = 0
 
 REG = [0] * 7  # 16 registradores
@@ -41,7 +41,6 @@ try:
     server.start()
 
     a = 0
-    amostras = []
     amostras = db.get_amostras()
 
     while True:
@@ -53,9 +52,9 @@ try:
         # Arruma a escala
         amostras[a][1] = int((amostras[a][1] - 620) * 100)*10
         amostras[a][2] = int(amostras[a][2])
-        amostras[a][3] = (amostras[a][3])
+        amostras[a][3] = int(amostras[a][3])
         amostras[a][4] = int(amostras[a][4])
-        amostras[a][5] = (amostras[a][5])
+        amostras[a][5] = int(amostras[a][5])
         flags_comporta = 0
         if amostras[a][7] != 0:
             flags_comporta += 0x1
@@ -87,7 +86,7 @@ try:
               "REG3  {: >16} | potencia_ug2 (kW)\n"
               "REG4  {: >16} | energia_ug2 (RAW)\n"
               "REG5  {: >16} | comporta_value (RAW)\n"
-              "REG6  {:016b} | comporta_flags ([fechada][p1][...][p5][aberta])\n".format(ip, porta, datetime.now(), *REGS))
+              "REG6  {:016b} | comporta_flags ([fechada][p1]..[p5][aberta])\n".format(ip, porta, datetime.now(), *REGS))
 
         # Espera antes de atualizar o estado da "CLP"
         # Alterado para esperar o tempo nescessário para simular as amostras
