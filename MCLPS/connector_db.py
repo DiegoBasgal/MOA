@@ -47,3 +47,20 @@ def get_amostras():
         lista.append([elem for elem in row])
 
     return lista
+
+
+def get_amostras_afluente():
+
+    cursor = __conectardb()
+    cursor.execute("""
+    -- Sleciona os dados necessários para reproduzir o comportamento da usina no MCLPS
+    SELECT horario, vazao
+    FROM [CLP].[dbo].[amostragem_afluente]
+    ORDER BY horario ASC
+    """)
+
+    lista = []
+    for row in cursor:
+        lista.append([elem for elem in row])
+
+    return lista

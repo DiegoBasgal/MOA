@@ -1,0 +1,18 @@
+2020-11-20 10:43:12,305 [MainThread  ] [INFO ]  Simulador iniciado. Iniciando Threads
+2020-11-20 10:43:12,306 [Thread-1    ] [INFO ]  Thread comportamento_clp iniciada
+2020-11-20 10:43:12,306 [Thread-2    ] [INFO ]  Thread comportamento_reservatório iniciada
+2020-11-20 10:43:12,306 [Thread-1    ] [INFO ]  Iniciando Servidor/Slave Modbus 
+2020-11-20 10:43:12,306 [MainThread  ] [INFO ]  Finalizado
+2020-11-20 10:43:13,493 [Thread-2    ] [DEBUG]  Q_aflu =   -5.4m³/s |q_vert =    0.0m³/s |q_comp =    0.0m³/s |q_sani =    0.5m³/s |q_turb =    0.0m³/s | Volume = 9994.2m³ | Nv_montante 643.157m
+2020-11-20 10:43:14,603 [Thread-2    ] [DEBUG]  Q_aflu =    9.1m³/s |q_vert =    0.0m³/s |q_comp =    0.0m³/s |q_sani =    0.5m³/s |q_turb =    0.0m³/s | Volume = 10002.8m³ | Nv_montante 643.157m
+2020-11-20 10:43:15,718 [Thread-2    ] [DEBUG]  Q_aflu =    8.9m³/s |q_vert =    0.0m³/s |q_comp =    0.0m³/s |q_sani =    0.5m³/s |q_turb =    0.0m³/s | Volume = 10011.2m³ | Nv_montante 643.157m
+2020-11-20 10:43:16,829 [Thread-2    ] [DEBUG]  Q_aflu =    8.9m³/s |q_vert =    0.0m³/s |q_comp =    0.0m³/s |q_sani =    0.5m³/s |q_turb =    0.0m³/s | Volume = 10019.7m³ | Nv_montante 643.157m
+2020-11-20 10:43:17,941 [Thread-2    ] [DEBUG]  Q_aflu =   -5.4m³/s |q_vert =    0.0m³/s |q_comp =    0.0m³/s |q_sani =    0.5m³/s |q_turb =    0.0m³/s | Volume = 10013.8m³ | Nv_montante 643.157m
+2020-11-20 10:43:19,050 [Thread-2    ] [DEBUG]  Q_aflu =    8.9m³/s |q_vert =    0.0m³/s |q_comp =    0.0m³/s |q_sani =    0.5m³/s |q_turb =    0.0m³/s | Volume = 10022.3m³ | Nv_montante 643.157m
+2020-11-20 10:48:00,922 [Thread-2    ] [DEBUG]  Q_aflu =    8.9m³/s |q_vert =    0.0m³/s |q_comp =    0.0m³/s |q_sani =    0.5m³/s |q_turb =    0.0m³/s | Volume = 10030.7m³ | Nv_montante 643.158m
+2020-11-20 10:48:02,033 [Thread-2    ] [DEBUG]  Q_aflu =    8.9m³/s |q_vert =    0.0m³/s |q_comp =    0.0m³/s |q_sani =    0.5m³/s |q_turb =    0.0m³/s | Volume = 10039.2m³ | Nv_montante 643.158m
+2020-11-20 10:48:03,143 [Thread-2    ] [DEBUG]  Q_aflu =    9.0m³/s |q_vert =    0.0m³/s |q_comp =    0.0m³/s |q_sani =    0.5m³/s |q_turb =    0.0m³/s | Volume = 10047.7m³ | Nv_montante 643.158m
+2020-11-20 10:48:04,256 [Thread-2    ] [DEBUG]  Q_aflu =    9.1m³/s |q_vert =    0.0m³/s |q_comp =    0.0m³/s |q_sani =    0.5m³/s |q_turb =    0.0m³/s | Volume = 10056.2m³ | Nv_montante 643.158m
+2020-11-20 10:48:05,367 [Thread-2    ] [DEBUG]  Q_aflu =    8.9m³/s |q_vert =    0.0m³/s |q_comp =    0.0m³/s |q_sani =    0.5m³/s |q_turb =    0.0m³/s | Volume = 10064.7m³ | Nv_montante 643.158m
+2020-11-20 10:48:06,746 [Thread-2    ] [DEBUG]  Q_aflu =   -5.4m³/s |q_vert =    0.0m³/s |q_comp =    0.0m³/s |q_sani =    0.5m³/s |q_turb =    0.0m³/s | Volume = 10058.8m³ | Nv_montante 643.158m
+2020-11-20 10:48:07,858 [Thread-2    ] [DEBUG]  Q_aflu =    8.9m³/s |q_vert =    0.0m³/s |q_comp =    0.0m³/s |q_sani =    0.5m³/s |q_turb =    0.0m³/s | Volume = 10067.2m³ | Nv_montante 643.158m
