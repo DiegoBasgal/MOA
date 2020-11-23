@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 2020-11-20 10:43:12,305 [MainThread  ] [INFO ]  Simulador iniciado. Iniciando Threads
 2020-11-20 10:43:12,306 [Thread-1    ] [INFO ]  Thread comportamento_clp iniciada
 2020-11-20 10:43:12,306 [Thread-2    ] [INFO ]  Thread comportamento_reservat�rio iniciada
@@ -16,3 +17,43 @@
 2020-11-20 10:48:05,367 [Thread-2    ] [DEBUG]  Q_aflu =    8.9m�/s |q_vert =    0.0m�/s |q_comp =    0.0m�/s |q_sani =    0.5m�/s |q_turb =    0.0m�/s | Volume = 10064.7m� | Nv_montante 643.158m
 2020-11-20 10:48:06,746 [Thread-2    ] [DEBUG]  Q_aflu =   -5.4m�/s |q_vert =    0.0m�/s |q_comp =    0.0m�/s |q_sani =    0.5m�/s |q_turb =    0.0m�/s | Volume = 10058.8m� | Nv_montante 643.158m
 2020-11-20 10:48:07,858 [Thread-2    ] [DEBUG]  Q_aflu =    8.9m�/s |q_vert =    0.0m�/s |q_comp =    0.0m�/s |q_sani =    0.5m�/s |q_turb =    0.0m�/s | Volume = 10067.2m� | Nv_montante 643.158m
+=======
+2020-11-23 15:06:14,396 [MainThread  ] [INFO ]  Estabelecendo conexão com a CLP
+2020-11-23 15:06:19,402 [MainThread  ] [ERROR]  Erro na comunicação com a CLP, verifique a conexão.
+2020-11-23 15:06:24,407 [MainThread  ] [INFO ]  Estabelecendo conexão com a CLP
+2020-11-23 15:06:24,408 [MainThread  ] [INFO ]  Estabelecida conexão com a CLP
+2020-11-23 15:06:41,513 [MainThread  ] [INFO ]  O usuário interrompeu a aplicação via teclado (pressionado ctrl+c?).
+2020-11-23 15:06:41,514 [MainThread  ] [INFO ]  Estabelecendo conexão com a CLP
+2020-11-23 15:06:41,514 [MainThread  ] [INFO ]  Estabelecida conexão com a CLP
+2020-11-23 15:07:06,147 [MainThread  ] [INFO ]  Estabelecendo conexão com a CLP
+2020-11-23 15:07:06,150 [MainThread  ] [INFO ]  Estabelecida conexão com a CLP
+2020-11-23 15:07:06,849 [MainThread  ] [INFO ]  O usuário interrompeu a aplicação via teclado (pressionado ctrl+c?).
+2020-11-23 15:07:06,849 [MainThread  ] [INFO ]  Estabelecendo conexão com a CLP
+2020-11-23 15:07:06,851 [MainThread  ] [INFO ]  Estabelecida conexão com a CLP
+2020-11-23 15:07:18,093 [MainThread  ] [INFO ]  Estabelecendo conexão com a CLP
+2020-11-23 15:07:18,095 [MainThread  ] [INFO ]  Estabelecida conexão com a CLP
+2020-11-23 15:07:19,436 [MainThread  ] [INFO ]  O usuário interrompeu a aplicação via teclado (pressionado ctrl+c?).
+2020-11-23 15:07:32,179 [MainThread  ] [INFO ]  Estabelecendo conexão com a CLP
+2020-11-23 15:07:32,181 [MainThread  ] [INFO ]  Estabelecida conexão com a CLP
+2020-11-23 15:07:33,417 [MainThread  ] [INFO ]  O usuário interrompeu a aplicação via teclado (pressionado ctrl+c?).
+2020-11-23 15:07:33,417 [MainThread  ] [INFO ]  Estabelecendo conexão com a CLP
+2020-11-23 15:07:33,418 [MainThread  ] [INFO ]  Estabelecida conexão com a CLP
+2020-11-23 15:08:12,606 [MainThread  ] [INFO ]  Estabelecendo conexão com a CLP
+2020-11-23 15:08:12,608 [MainThread  ] [INFO ]  Estabelecida conexão com a CLP
+2020-11-23 15:08:13,514 [MainThread  ] [INFO ]  O usuário interrompeu a aplicação via teclado (pressionado ctrl+c?).
+2020-11-23 15:08:13,514 [MainThread  ] [INFO ]  Estabelecendo conexão com a CLP
+2020-11-23 15:08:13,516 [MainThread  ] [INFO ]  Estabelecida conexão com a CLP
+2020-11-23 15:08:51,189 [MainThread  ] [INFO ]  Estabelecendo conexão com a CLP
+2020-11-23 15:08:51,191 [MainThread  ] [INFO ]  Estabelecida conexão com a CLP
+2020-11-23 15:08:52,023 [MainThread  ] [INFO ]  O usuário interrompeu a aplicação via teclado (pressionado ctrl+c?).
+2020-11-23 15:08:57,028 [MainThread  ] [INFO ]  Estabelecendo conexão com a CLP
+2020-11-23 15:08:57,028 [MainThread  ] [INFO ]  Estabelecida conexão com a CLP
+2020-11-23 15:09:29,910 [MainThread  ] [INFO ]  Estabelecendo conexão com a CLP
+2020-11-23 15:09:29,912 [MainThread  ] [INFO ]  Estabelecida conexão com a CLP
+2020-11-23 15:09:31,363 [MainThread  ] [INFO ]  O usuário interrompeu a aplicação via teclado (pressionado ctrl+c?).
+2020-11-23 15:09:31,363 [MainThread  ] [INFO ]  Estabelecendo conexão com a CLP
+2020-11-23 15:09:31,363 [MainThread  ] [INFO ]  Estabelecida conexão com a CLP
+2020-11-23 15:09:56,741 [MainThread  ] [INFO ]  Estabelecendo conexão com a CLP
+2020-11-23 15:09:56,745 [MainThread  ] [INFO ]  Estabelecida conexão com a CLP
+2020-11-23 15:09:57,750 [MainThread  ] [INFO ]  O usuário interrompeu a aplicação via teclado (pressionado ctrl+c?).
+>>>>>>> Versão extremamente bácisa do MOA
