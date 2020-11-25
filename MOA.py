@@ -28,8 +28,8 @@ while nv_montante == 0:
         pass
 nv_montante_anterior = nv_montante
 nv_montante_recentes = [nv_montante]
-pot_ug1 = 0.0 # MW
-pot_ug2 = 0.0 # MW
+pot_ug1 = 0.0  # MW
+pot_ug2 = 0.0  # MW
 nv_montante_medio = 0
 q_afluente = 0
 pot_alvo = 0
@@ -38,7 +38,7 @@ logging.info('Executando o MOA')
 
 while True:
 
-    if abs(nv_montante - nv_montante_anterior) > 0.01 or nv_montante >= usina.USINA_NV_MAX or nv_montante <= usina.USINA_NV_MIN:
+    if abs(nv_montante - nv_montante_anterior) > 0.01 or not(usina.USINA_NV_MIN < nv_montante < usina.USINA_NV_MAX):
         nv_montante_anterior = nv_montante
         nv_montante_recentes.append(nv_montante)
         if len(nv_montante_recentes) > 30:
