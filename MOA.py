@@ -1,17 +1,14 @@
 from time import sleep
 from time import time_ns
-from datetime import datetime
-from pyModbusTCP.client import ModbusClient
-import MCLPS.CLP_config as CLPconfig
 import logging
 import usina
 
-## Inicializando o logging
+# Inicializando o logging
 logFormatter = logging.Formatter("%(asctime)s [%(threadName)-12.12s] [%(levelname)-5.5s]  %(message)s")
 rootLogger = logging.getLogger()
 rootLogger.setLevel(logging.DEBUG)
 # LOG to file
-fileHandler = logging.FileHandler("simulador_clp.log")
+fileHandler = logging.FileHandler("MOA.log")
 fileHandler.setFormatter(logFormatter)
 rootLogger.addHandler(fileHandler)
 # LOG to console
@@ -19,63 +16,54 @@ consoleHandler = logging.StreamHandler()
 consoleHandler.setFormatter(logFormatter)
 rootLogger.addHandler(consoleHandler)
 
-slave_ip = CLPconfig.SLAVE_IP
-slave_porta = CLPconfig.SLAVE_PORT
-temporizador = CLPconfig.CLP_REFRESH_RATE*2
-primeira_amostra = True
-nv_montante_anterior = 0
-
-client = ModbusClient(host=slave_ip,
-                      port=slave_porta,
-                      timeout=5,
-                      unit_id=1)
-
+logging.info('Inicializando o MOA')
 t0 = time_ns()
+nv_montante = 0
+while nv_montante == 0:
+    try:
+        nv_montante = usina.get_nv_montante()
+    except Exception as e:
+        nv_montante = 0
+        logging.warning("{}".format(e))
+        pass
+nv_montante_anterior = nv_montante
+nv_montante_recentes = [nv_montante]
+pot_ug1 = 0.0 # MW
+pot_ug2 = 0.0 # MW
+nv_montante_medio = 0
+q_afluente = 0
+pot_alvo = 0
+
+logging.info('Executando o MOA')
 
 while True:
-    logging.info('Estabelecendo conexão com a CLP')
-    client.open()
-    if client.is_open():
-        logging.info('Estabelecida conexão com a CLP')
-        try:
-            while client.is_open():
-                # Lê os registradores
-                REGS = client.read_holding_registers(0, 7)
 
-                nv_montante = usina.nv_montante_zero + REGS[0]/usina.nv_montante_escala
-                if primeira_amostra:
-                    primeira_amostra = False
-                else:
-                    nv_montante_anterior = nv_montante
-                    nv_montante = usina.nv_montante_zero + REGS[0]/usina.nv_montante_escala
+    if abs(nv_montante - nv_montante_anterior) > 0.01 or nv_montante >= usina.USINA_NV_MAX or nv_montante <= usina.USINA_NV_MIN:
+        nv_montante_anterior = nv_montante
+        nv_montante_recentes.append(nv_montante)
+        if len(nv_montante_recentes) > 30:
+            nv_montante_recentes = nv_montante_recentes[1:31]
+        nv_montante_medio = sum(nv_montante_recentes) / len(nv_montante_recentes)
 
-                if nv_montante <= 643.3:
-                    pot_ug1 = 0
-                    pot_ug2 = 0
+        # fecha o tempo entre ciclos e já começa a gravar novamente
+        delta_t = (time_ns() - t0) * (10 ** 9)
+        t0 = time_ns()
 
-                if nv_montante > 643.49:
-                    pot_ug1 = 2500
-                    pot_ug2 = 0
+        # controle da operação
+        pot_ug1 = usina.get_pot_ug1()
+        pot_ug2 = usina.get_pot_ug2()
+        estado_comporta = usina.get_pos_comporta()
 
-                estado_comporta = 0
-                client.write_single_register(1, pot_ug1)
-                client.write_single_register(3, pot_ug2)
-                client.write_single_register(5, estado_comporta)
-                client.write_single_register(6, estado_comporta)
+        q_afluente = usina.q_afluente(delta_t, 0, 0, nv_montante, nv_montante_anterior, estado_comporta)
+        q_turbinada_alvo = q_afluente
 
-                delta_t = (time_ns() - t0) * (10 ** 9)
-                t0 = time_ns()
+        pot_alvo = usina.determina_pot(q_turbinada_alvo, nv_montante_medio)
+        usina.distribuir_potencia(pot_alvo)
 
-                print(nv_montante, pot_ug1, pot_ug2, estado_comporta,
-                      usina.q_afluente(delta_t, pot_ug1/1000, pot_ug2/1000, nv_montante, nv_montante_anterior, estado_comporta))
+    logging.debug("nv_montante: {:03.2f} |"
+                  " q_afluente_medio: {:03.2f} |"
+                  " {:03.3f} pot_alvo |"
+                  " {:03.3f} pot_ug1 |"
+                  " {:03.3f} pot_ug2".format(nv_montante, q_afluente, pot_alvo, pot_ug1, pot_ug2))
 
-                sleep(0.1)
-        except KeyboardInterrupt:
-            logging.info('O usuário interrompeu a aplicação via teclado (pressionado ctrl+c?).')
-            break
-        finally:
-            client.close()
-    else:
-        logging.error("Erro na comunicação com a CLP, verifique a conexão.")
-        sleep(5)
-
+    sleep(0.1)

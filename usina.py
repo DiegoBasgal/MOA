@@ -1,10 +1,9 @@
 # Acerto de escala para os dados provenientes da clp
 from math import sqrt
 
-nv_montante_zero = 620      # 620m
-nv_montante_escala = 1000   # REG[0] retorna em mm
-
 # Constantes COV
+from pyModbusTCP.client import ModbusClient
+
 USINA_CAP_RESERVATORIO = 43000.0
 USINA_DEPLECAO = 0.5
 USINA_GF_MWm = 2.6
@@ -16,12 +15,16 @@ USINA_NV_MONTANTE_INICIAL = 0
 USINA_PERMANENCIA = 0.8540
 USINA_PESO_ESP_h20 = 988
 USINA_POTENCIA_NOMINAL = 5
+USINA_POTENCIA_MINIMA_UG = 1.0
+USINA_POTENCIA_NOMINAL_UG = 2.5
 USINA_QUEDA_BRUTA = 35.30
 USINA_QUEDA_LIQUIDA = 34.31
 USINA_VAZAO_NOMINAL_MAQ = 8.7
 USINA_VAZAO_SANITARIA_COTA = 641
 USINA_VAZAO_MAXIMA_TURBINAVEL = 17.4
 
+SLAVE_IP = "172.21.15.13"   # ip da máquina que vai rodar o slave
+SLAVE_PORT = 502            # porta do slave na máquina
 
 def q_turbinada(UG1, UG2):
 
@@ -137,4 +140,121 @@ def q_afluente(tempo, UG1, UG2, nv_mont, nv_mont_ant, pos_comporta):
     resultado += (aux * ((USINA_CAP_RESERVATORIO / (USINA_NV_MAX - USINA_NV_MIN)) / tempo))
 
     return resultado
+
+
+def determina_pot(afl, nv):
+
+    pot = -0.0032*(afl**4) + 0.0751*(afl**3) - 0.6542*(afl**2) + 2.8849*(afl) - 4.0841
+
+    if pot > USINA_POTENCIA_NOMINAL:
+        pot = USINA_POTENCIA_NOMINAL
+
+    if pot < 1:
+        pot = 0
+
+    if nv >= (USINA_NV_MAX+0.01):
+        pot = USINA_POTENCIA_NOMINAL
+
+    if nv < USINA_NV_MIN:
+        pot = 0
+
+    return pot
+
+
+def get_nv_montante():
+
+    nv_montante_zero = 620  # 620m
+    nv_montante_escala = 0.001  # REG[0] retorna em mm
+
+    client = ModbusClient(host=SLAVE_IP, port=SLAVE_PORT, timeout=5, unit_id=1)
+    client.open()
+    regs = client.read_holding_registers(0, 1)
+    client.close()
+
+    while regs != None:
+        nv_montante = (regs[0] * nv_montante_escala) + nv_montante_zero
+        nv_montante = round(nv_montante, 2)
+    else:
+        nv_montante = -1
+        raise Exception("Erro de comunicação com a CLP")
+
+    return nv_montante
+
+
+def get_pot_ug1():
+
+    client = ModbusClient(host=SLAVE_IP, port=SLAVE_PORT, timeout=5, unit_id=1)
+    client.open()
+    reg = client.read_holding_registers(1, 1)[0]
+    client.close()
+    reg = reg/1000
+
+    return reg
+
+
+def get_pot_ug2():
+
+    client = ModbusClient(host=SLAVE_IP, port=SLAVE_PORT, timeout=5, unit_id=1)
+    client.open()
+    reg = client.read_holding_registers(3, 1)[0]
+    client.close()
+    reg = reg/1000
+
+    return reg
+
+
+def get_pos_comporta():
+
+    # ToDo: Adcionar leitura das comportas
+
+    return 0
+
+
+def distribuir_potencia(pot_alvo):
+
+    # ToDo: Refinar
+    # dispara a ug1 e depois a ug2 verificando disponibilidade
+
+
+    client = ModbusClient(host=SLAVE_IP, port=SLAVE_PORT, timeout=5, unit_id=1)
+    client.open()
+
+    pot_anterior = (client.read_holding_registers(1, 1)[0] + client.read_holding_registers(3, 1)[0])/1000
+    if pot_anterior > pot_alvo:
+        pot_alvo = max(pot_alvo, pot_anterior*0.75)
+
+    if pot_alvo < USINA_POTENCIA_MINIMA_UG:
+        client.write_single_register(1, 0)
+        client.write_single_register(3, 0)
+
+    else:
+
+        ug1_disp = False
+        if not client.read_holding_registers(2, 1)[0]:
+            ug1_disp = True
+
+        ug2_disp = False
+        if not client.read_holding_registers(4, 1)[0]:
+            ug2_disp = True
+
+        pot_alvo = min(pot_alvo, USINA_POTENCIA_NOMINAL)
+
+        if ug1_disp and ug2_disp and pot_alvo > USINA_POTENCIA_MINIMA_UG*2:
+            client.write_single_register(1, int(pot_alvo * 500))
+            client.write_single_register(3, int(pot_alvo * 500))
+        elif ug1_disp:
+            pot_alvo = min(pot_alvo, USINA_POTENCIA_NOMINAL_UG)
+            client.write_single_register(1, int(pot_alvo*1000))
+            client.write_single_register(3, 0)
+        elif ug2_disp:
+            pot_alvo = min(pot_alvo, USINA_POTENCIA_NOMINAL_UG)
+            client.write_single_register(1, 0)
+            client.write_single_register(3, int(pot_alvo*1000))
+        else:
+            client.write_single_register(1, 0)
+            client.write_single_register(3, 0)
+
+    client.close()
+
+    return True
 
