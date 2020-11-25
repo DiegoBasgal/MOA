@@ -1,3 +1,5 @@
+from math import isnan
+
 import pandas as pd
 import MCLPS.connector_db as db
 import usina
@@ -36,15 +38,18 @@ for a in amostras:
         if a[12] != 0:
             flags_comporta += 0x32
 
-        lista.append([a[0], usina.q_afluente(temp, pot_ug1, pot_ug2, nv_montante, nv_montante_anterior, flags_comporta)])
+        afl = usina.q_afluente(temp, pot_ug1, pot_ug2, nv_montante, nv_montante_anterior, flags_comporta)
+        lista.append([a[0], afl])
 
 listaT = pd.DataFrame(lista).T.values.tolist()
 df = pd.DataFrame(listaT[:][1], index=listaT[:][0])
-
 # Resample by hour and calculate medians
 df = df.resample('1T').median()
+df = df.fillna(0)
 
 with open('INSERT_Qafluente.sql', 'w') as f:
     for key, value in df.iterrows():
         f.write("INSERT INTO [CLP].[dbo].[amostragem_afluente] VALUES ('{}.000', '{:.05f}');\n".format(key, value[0]))
+        # print("INSERT INTO [CLP].[dbo].[amostragem_afluente] VALUES ('{}.000', '{:.05f}');\n".format(key, value[0]))
+        # print(db.executar_q("INSERT INTO [CLP].[dbo].[amostragem_afluente] VALUES ('{}.000', '{:.05f}');\n".format(key, value[0])))
 

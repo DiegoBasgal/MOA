@@ -54,7 +54,7 @@ def get_amostras_afluente():
     cursor = __conectardb()
     cursor.execute("""
     -- Sleciona os dados necessários para reproduzir o comportamento da usina no MCLPS
-    SELECT horario, vazao
+    SELECT TOP(100000000) horario, vazao
     FROM [CLP].[dbo].[amostragem_afluente]
     ORDER BY horario ASC
     """)
@@ -64,3 +64,10 @@ def get_amostras_afluente():
         lista.append([elem for elem in row])
 
     return lista
+
+def executar_q(q):
+    cursor = __conectardb()
+    cursor.execute(q)
+    return cursor
+
+

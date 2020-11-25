@@ -30,6 +30,12 @@ def q_turbinada(UG1, UG2):
     Cálculo retirado da planilha de excel
     """
 
+    if UG1 > 100:
+        UG1 = UG1/1000
+
+    if UG2 > 100:
+        UG2 = UG2/1000
+
     resultado = 0
     if UG1 > 1.0:
         resultado += (4.50629 * (UG1 ** 10) - 76.41655 * (UG1 ** 9) + 573.2949 * (UG1 ** 8) - 2503.93565 * (
@@ -41,6 +47,10 @@ def q_turbinada(UG1, UG2):
                     UG2 ** 7) + 7045.30229 * (UG2 ** 6) - 13332.41115 * (UG2 ** 5) + 17168.57033 * (
                                   UG2 ** 4) - 14840.58664 * (UG2 ** 3) + 8233.58463 * (
                                   UG2 ** 2) - 2643.3025 * UG2 + 375.46773)
+    if resultado > 100:
+        msg = "Verifique as potências: UG1={}, UG2={}".format(UG1, UG2)
+        raise Exception(msg)
+
     return resultado
 
 

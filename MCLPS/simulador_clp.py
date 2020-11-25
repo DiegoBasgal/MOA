@@ -1,5 +1,6 @@
 # Import site é necessário para funcionar fora da IDE devido a necessidade de adicionar o diretório ao PATH
 import site
+
 site.addsitedir('..')
 
 from datetime import datetime
@@ -17,7 +18,7 @@ import usina
 '''
 
 # Constantes
-ESCALA_DE_TEMPO = 600
+ESCALA_DE_TEMPO = 60
 
 # Globais
 q_afluente = 0
@@ -32,43 +33,63 @@ comporta_p3 = False
 comporta_p4 = False
 comporta_aberta = False
 
+
 # +-------------------------------------------------------------------------------------------------------------------+
 # | Comportamento do reservatório                                                                                     |
 # +-------------------------------------------------------------------------------------------------------------------+
 def comportamento_reservatorio():
-
     logging.info("Thread comportamento_reservatório iniciada")
-
 
     global nv_montante
     tick = 0.1
     volume = 217000
+    q_afluente = 0
+    q_vert = 0
+    q_comp = 0
+    q_sani = 0
+    q_turb = 0
+    q_eflu = 0
+    q_liquida = 0
+    nv_montante = - 0.0000000002 * ((volume / 1000) ** 4) + 0.0000002 * ((volume / 1000) ** 3) - 0.0001 * (
+            (volume / 1000) ** 2) + 0.0331 * ((volume / 1000)) + 639.43
 
     amostras = db.get_amostras_afluente()
 
     while True:
-        for a in range(len(amostras)-1):
-            delta_t = (amostras[a + 1][0] - amostras[a][0]).total_seconds()/ESCALA_DE_TEMPO
+        segundos_passados = 0
+        for a in range(len(amostras) - 1):
+            segundos_passados += (amostras[a + 1][0] - amostras[a][0]).total_seconds()
+            delta_t = (amostras[a + 1][0] - amostras[a][0]).total_seconds() / ESCALA_DE_TEMPO
+            if delta_t < tick:
+                tick = delta_t/2
             while delta_t >= tick:
                 delta_t -= tick
                 q_afluente = amostras[a][1]
                 q_vert = usina.q_vertimento(nv_montante)
-                q_comp = usina.q_comporta(comporta_fechada, comporta_p1, comporta_p2, comporta_p3, comporta_p4, comporta_aberta, nv_montante)
+                q_comp = usina.q_comporta(comporta_fechada, comporta_p1, comporta_p2, comporta_p3, comporta_p4,
+                                          comporta_aberta, nv_montante)
                 q_sani = usina.q_sanitaria(nv_montante)
                 q_turb = usina.q_turbinada(pot_ug1, pot_ug2)
                 q_eflu = (q_vert + q_comp + q_sani + q_turb)
                 q_liquida = q_afluente - q_eflu
-                volume += q_liquida*tick*ESCALA_DE_TEMPO
-                nv_montante = - 0.0000000002*((volume/1000) ** 4) + 0.0000002*((volume/1000) ** 3) - 0.0001*((volume/1000) ** 2) + 0.0331*((volume/1000))  + 639.43
+                volume += q_liquida * tick * ESCALA_DE_TEMPO
+                if volume < 0:
+                    volume = 0
+                nv_montante = - 0.0000000002 * ((volume / 1000) ** 4) + 0.0000002 * ((volume / 1000) ** 3) - 0.0001 * (
+                            (volume / 1000) ** 2) + 0.0331 * ((volume / 1000)) + 639.43
                 sleep(tick)
                 # logging.debug(tick)
 
-
-            logging.debug("Aflu = {:4.1f}m³/s "
+            m = int(segundos_passados // 60)%60
+            h = int(segundos_passados // 3600)
+            logging.debug("t = {:4d}h{:02d}m "
+                          "TS: {}"
+                          "| Aflu = {:4.1f}m³/s "
                           "| Eflu = {:4.1f}m³/s "
                           "| Turb = {:4.1f}m³/s "
                           "| Volume = {:6.1f}m³ "
-                          "| Nv_mont + {:6.3f}m".format(q_afluente, q_eflu, q_turb, volume, nv_montante))
+                          "| Nv_mont + {:6.3f}m".format(h, m, amostras[a][0], q_afluente, q_eflu, q_turb, volume,
+                                                        nv_montante))
 
     logging.info("Thread comportamento_reservatório chegou ao final")
 
@@ -77,7 +98,6 @@ def comportamento_reservatorio():
 # | Comportamento do CLP                                                                                              |
 # +-------------------------------------------------------------------------------------------------------------------+
 def comportamento_clp():
-
     global q_afluente
     global nv_montante
     global pot_ug1
@@ -102,9 +122,9 @@ def comportamento_clp():
     
         REGS[0]:    nivel_montante  [620 + X mm]
         REGS[1]:    potencia_ug1    [X kw]
-        REGS[2]:    energia_ug1     [RAW]
+        REGS[2]:    FLAGS_ug1     [RAW]
         REGS[3]:    potencia_ug2    [X kw]
-        REGS[4]:    energia_ug2     [RAW]
+        REGS[4]:    FLAGS_ug2     [RAW]
         REGS[5]:    comporta_value  [RAW]
         REGS[6]:    comporta_flags  [0]:fechada
                                     [1]:pos1
@@ -127,18 +147,18 @@ def comportamento_clp():
             REGS = DataBank.get_words(0, 10)
 
             # Entradas da CLP
-            pot_ug1 =           int(REGS[1])/1000
-            pot_ug2 =           int(REGS[3])/1000
-            comporta_flags =    REGS[5]
-            comporta_fechada =  REGS[6] & 0b00000001
-            comporta_p1 =       REGS[6] & 0b00000010
-            comporta_p2 =       REGS[6] & 0b00000100
-            comporta_p3 =       REGS[6] & 0b00001000
-            comporta_p4 =       REGS[6] & 0b00010000
-            comporta_aberta =   REGS[6] & 0b00100000
+            pot_ug1 = int(REGS[1]) / 1000
+            pot_ug2 = int(REGS[3]) / 1000
+            comporta_flags = REGS[5]
+            comporta_fechada = REGS[6] & 0b00000001
+            comporta_p1 = REGS[6] & 0b00000010
+            comporta_p2 = REGS[6] & 0b00000100
+            comporta_p3 = REGS[6] & 0b00001000
+            comporta_p4 = REGS[6] & 0b00010000
+            comporta_aberta = REGS[6] & 0b00100000
 
             # Saidas da CLP
-            DataBank.set_words(0, [int((nv_montante - 620)*1000)])
+            DataBank.set_words(0, [int((nv_montante - 620) * 1000)])
 
             print("###########\n"
                   "#  PyCLP  #\n"
@@ -147,11 +167,12 @@ def comportamento_clp():
                   "TIME {}\n\n"
                   "REG0  {: >16} | nivel_montante (-620m + Xmm)\n"
                   "REG1  {: >16} | potencia_ug1 (kW)\n"
-                  "REG2  {: >16} | energia_ug1 (RAW)\n"
+                  "REG2  {:016b} | FLAGS_ug1 (BIN)\n"
                   "REG3  {: >16} | potencia_ug2 (kW)\n"
-                  "REG4  {: >16} | energia_ug2 (RAW)\n"
+                  "REG4  {:016b} | FLAGS_ug2 (BIN)\n"
                   "REG5  {: >16} | comporta_value (RAW)\n"
-                  "REG6  {:016b} | comporta_flags ([fechada][p1]..[p5][aberta])\n".format(ip, porta, datetime.now(), *REGS))
+                  "REG6  {:016b} | comporta_flags ([fechada][p1]..[p5][aberta])\n".format(ip, porta, datetime.now(),
+                                                                                          *REGS))
 
             sleep(temporizador)
     finally:
@@ -164,7 +185,6 @@ def comportamento_clp():
 # | MAIN                                                                                                              |
 # +-------------------------------------------------------------------------------------------------------------------+
 if __name__ == "__main__":
-
     # Inicializando o logging
     logFormatter = logging.Formatter("%(asctime)s [%(threadName)-12.12s] [%(levelname)-5.5s]  %(message)s")
     rootLogger = logging.getLogger()
