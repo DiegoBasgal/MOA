@@ -18,12 +18,12 @@ import usina
 '''
 
 # Constantes
-ESCALA_DE_TEMPO = 60
+ESCALA_DE_TEMPO = 600
 
 # Globais
 q_afluente = 0
 nv_montante = 0
-pot_ug1 = 0
+pot_ug1 = 1
 pot_ug2 = 0
 comporta_flags = 0
 comporta_fechada = True
@@ -40,9 +40,11 @@ comporta_aberta = False
 def comportamento_reservatorio():
     logging.info("Thread comportamento_reservatório iniciada")
 
+
     global nv_montante
+    global q_afluente
     tick = 0.1
-    volume = 217000
+    volume = 192300
     q_afluente = 0
     q_vert = 0
     q_comp = 0
@@ -50,10 +52,20 @@ def comportamento_reservatorio():
     q_turb = 0
     q_eflu = 0
     q_liquida = 0
+
+    nv_montante = 0
+    sleep(5)
+
     nv_montante = - 0.0000000002 * ((volume / 1000) ** 4) + 0.0000002 * ((volume / 1000) ** 3) - 0.0001 * (
             (volume / 1000) ** 2) + 0.0331 * ((volume / 1000)) + 639.43
 
+
+    nv_montante = round(nv_montante, 2)
+    sleep(5)
+
     amostras = db.get_amostras_afluente()
+
+    logging.debug("Tempo CLP; Afluente; Efluente; Turbinado; Nv_montante")
 
     while True:
         segundos_passados = 0
@@ -64,7 +76,10 @@ def comportamento_reservatorio():
                 tick = delta_t/2
             while delta_t >= tick:
                 delta_t -= tick
-                q_afluente = amostras[a][1]
+                #todo arrumar
+                #q_afluente = amostras[a][1]
+                q_afluente = 15
+
                 q_vert = usina.q_vertimento(nv_montante)
                 q_comp = usina.q_comporta(comporta_fechada, comporta_p1, comporta_p2, comporta_p3, comporta_p4,
                                           comporta_aberta, nv_montante)
@@ -77,19 +92,18 @@ def comportamento_reservatorio():
                     volume = 0
                 nv_montante = - 0.0000000002 * ((volume / 1000) ** 4) + 0.0000002 * ((volume / 1000) ** 3) - 0.0001 * (
                             (volume / 1000) ** 2) + 0.0331 * ((volume / 1000)) + 639.43
+                nv_montante = round(nv_montante, 2)
                 sleep(tick)
                 # logging.debug(tick)
 
             m = int(segundos_passados // 60)%60
             h = int(segundos_passados // 3600)
-            logging.debug("t = {:4d}h{:02d}m "
-                          "TS: {}"
-                          "| Aflu = {:4.1f}m³/s "
-                          "| Eflu = {:4.1f}m³/s "
-                          "| Turb = {:4.1f}m³/s "
-                          "| Volume = {:6.1f}m³ "
-                          "| Nv_mont + {:6.3f}m".format(h, m, amostras[a][0], q_afluente, q_eflu, q_turb, volume,
-                                                        nv_montante))
+            # para debug
+            fp = open('debug.out', 'w')
+            fp.write("{:f}\n{:f}\n{:f}\n{:f}\n".format(nv_montante, pot_ug1, pot_ug2, pot_ug1+pot_ug2))
+            fp.close()
+            # fim para debug
+            logging.debug(("{:>10};{:4.1f};{:4.1f};{:6.3f}".format(segundos_passados, q_afluente, q_eflu, q_turb,nv_montante)).replace(".",","))
 
     logging.info("Thread comportamento_reservatório chegou ao final")
 
@@ -159,6 +173,7 @@ def comportamento_clp():
 
             # Saidas da CLP
             DataBank.set_words(0, [int((nv_montante - 620) * 1000)])
+            DataBank.set_words(7, [int(q_afluente * 1000)])
 
             print("###########\n"
                   "#  PyCLP  #\n"
@@ -190,7 +205,7 @@ if __name__ == "__main__":
     rootLogger = logging.getLogger()
     rootLogger.setLevel(logging.DEBUG)
     # LOG to file
-    fileHandler = logging.FileHandler("simulador_clp.log")
+    fileHandler = logging.FileHandler("simulador_clp.log", mode='w+')
     fileHandler.setFormatter(logFormatter)
     rootLogger.addHandler(fileHandler)
     # LOG to console
