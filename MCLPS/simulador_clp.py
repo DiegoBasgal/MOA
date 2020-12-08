@@ -18,7 +18,7 @@ import usina
 '''
 
 # Constantes
-ESCALA_DE_TEMPO = 600
+ESCALA_DE_TEMPO = 10
 
 # Globais
 q_afluente = 0
@@ -38,74 +38,65 @@ comporta_aberta = False
 # | Comportamento do reservatório                                                                                     |
 # +-------------------------------------------------------------------------------------------------------------------+
 def comportamento_reservatorio():
-    logging.info("Thread comportamento_reservatório iniciada")
 
+    logging.info("Thread comportamento_reservatório iniciada")
 
     global nv_montante
     global q_afluente
-    tick = 0.1
     volume = 192300
-    q_afluente = 0
     q_vert = 0
     q_comp = 0
     q_sani = 0
     q_turb = 0
     q_eflu = 0
     q_liquida = 0
-
-    nv_montante = 0
-    sleep(5)
-
     nv_montante = - 0.0000000002 * ((volume / 1000) ** 4) + 0.0000002 * ((volume / 1000) ** 3) - 0.0001 * (
             (volume / 1000) ** 2) + 0.0331 * ((volume / 1000)) + 639.43
-
-
     nv_montante = round(nv_montante, 2)
-    sleep(5)
 
     amostras = db.get_amostras_afluente()
 
-    logging.debug("Tempo CLP; Afluente; Efluente; Turbinado; Nv_montante")
+    # Espera acalmar um pouco
+    sleep(1)
 
     while True:
-        segundos_passados = 0
-        for a in range(len(amostras) - 1):
-            segundos_passados += (amostras[a + 1][0] - amostras[a][0]).total_seconds()
-            delta_t = (amostras[a + 1][0] - amostras[a][0]).total_seconds() / ESCALA_DE_TEMPO
-            if delta_t < tick:
-                tick = delta_t/2
-            while delta_t >= tick:
-                delta_t -= tick
-                #todo arrumar
-                #q_afluente = amostras[a][1]
-                q_afluente = 15
 
-                q_vert = usina.q_vertimento(nv_montante)
-                q_comp = usina.q_comporta(comporta_fechada, comporta_p1, comporta_p2, comporta_p3, comporta_p4,
-                                          comporta_aberta, nv_montante)
-                q_sani = usina.q_sanitaria(nv_montante)
-                q_turb = usina.q_turbinada(pot_ug1, pot_ug2)
-                q_eflu = (q_vert + q_comp + q_sani + q_turb)
-                q_liquida = q_afluente - q_eflu
-                volume += q_liquida * tick * ESCALA_DE_TEMPO
-                if volume < 0:
-                    volume = 0
-                nv_montante = - 0.0000000002 * ((volume / 1000) ** 4) + 0.0000002 * ((volume / 1000) ** 3) - 0.0001 * (
-                            (volume / 1000) ** 2) + 0.0331 * ((volume / 1000)) + 639.43
-                nv_montante = round(nv_montante, 2)
-                sleep(tick)
-                # logging.debug(tick)
+        logging.info("Simuladndo a partir do inpicio da tabela de afluentes")
+        logging.debug("T simulação (s); Afluente; Efluente; Turbinado; Nv_montante")
+        t0 = datetime.now()
+        segundos_simulados = 0
+        a = 0
+        sleep(5)
+        while a in range(len(amostras) - 1):
+            segundos_reais = (datetime.now()-t0).total_seconds()
+            segundos_simulados = segundos_reais * ESCALA_DE_TEMPO
+            if (amostras[a][0] - amostras[0][0]).total_seconds() > segundos_simulados:
+                a += 1
 
-            m = int(segundos_passados // 60)%60
-            h = int(segundos_passados // 3600)
-            # para debug
-            fp = open('debug.out', 'w')
-            fp.write("{:f}\n{:f}\n{:f}\n{:f}\n".format(nv_montante, pot_ug1, pot_ug2, pot_ug1+pot_ug2))
+            # TODO usar q_afluente da tabela!
+            # q_afluente = amostras[a][1]
+            q_afluente = (DataBank.get_words(7, 1)[0]/1000)
+            q_vert = usina.q_vertimento(nv_montante)
+            q_comp = usina.q_comporta(comporta_fechada, comporta_p1, comporta_p2, comporta_p3, comporta_p4,
+                                      comporta_aberta, nv_montante)
+            q_sani = usina.q_sanitaria(nv_montante)
+            q_turb = usina.q_turbinada(pot_ug1, pot_ug2)
+            q_eflu = (q_vert + q_comp + q_sani + q_turb)
+            q_liquida = q_afluente - q_eflu
+            volume += q_liquida * ESCALA_DE_TEMPO
+            if volume < 0 : volume = 0
+            nv_montante = - 0.0000000002 * ((volume / 1000) ** 4) + 0.0000002 * ((volume / 1000) ** 3) - 0.0001 * ((volume / 1000) ** 2) + 0.0331 * (volume / 1000) + 639.43
+            nv_montante = round(nv_montante, 2)
+            sleep(0.1)
+
+            # para grafico de debbug
+            fp = open('debug.out', 'w+')
+            fp.write("{:15.0f} {:5.5f} {:5.5f} {:5.5f} {:5.5f}\n".format(segundos_simulados,  q_afluente, nv_montante, pot_ug1, pot_ug2))
             fp.close()
-            # fim para debug
-            logging.debug(("{:>10};{:4.1f};{:4.1f};{:6.3f}".format(segundos_passados, q_afluente, q_eflu, q_turb,nv_montante)).replace(".",","))
-
-    logging.info("Thread comportamento_reservatório chegou ao final")
+            logging.debug(("{:15.0f};{:5.5f};{:5.5f};{:5.5f};{:5.5f}\n".format(segundos_simulados,  q_afluente, nv_montante, pot_ug1, pot_ug2)).replace(".",","))
+            #segundos_reais = (datetime.now()-t0).total_seconds()
+            #print(segundos_simulados/segundos_reais)
+        logging.info("Final das amostras")
 
 
 # +-------------------------------------------------------------------------------------------------------------------+
@@ -170,6 +161,7 @@ def comportamento_clp():
             comporta_p3 = REGS[6] & 0b00001000
             comporta_p4 = REGS[6] & 0b00010000
             comporta_aberta = REGS[6] & 0b00100000
+            q_afluente = REGS[7]/1000
 
             # Saidas da CLP
             DataBank.set_words(0, [int((nv_montante - 620) * 1000)])
@@ -195,6 +187,10 @@ def comportamento_clp():
 
     logging.info("Thread comportamento_clp chegou ao final")
 
+
+def plotar_debug():
+    sleep(5)
+    from MCLPS import plotar_debbug
 
 # +-------------------------------------------------------------------------------------------------------------------+
 # | MAIN                                                                                                              |
@@ -224,5 +220,9 @@ if __name__ == "__main__":
     t_comportamento_reservatorio = threading.Thread(target=comportamento_reservatorio)
     t_comportamento_reservatorio.daemon = False
     t_comportamento_reservatorio.start()
+
+    t_plotar_debug = threading.Thread(target=plotar_debug)
+    t_plotar_debug.daemon = False
+    t_plotar_debug.start()
 
     logging.info("Final da Main")
