@@ -23,6 +23,16 @@ USINA_VAZAO_NOMINAL_MAQ = 8.7
 USINA_VAZAO_SANITARIA_COTA = 641
 USINA_VAZAO_MAXIMA_TURBINAVEL = 17.4
 
+NV_ALVO = (USINA_NV_MIN+USINA_NV_MAX)/2
+
+# Constantes de ganho
+# Kp = 0.1
+# Ki = 0.0
+# Kd = 0.05
+Kp = -2.21428571*3
+Ki = -0.00833333/5
+Kd = -0.416666
+
 SLAVE_IP = "172.21.15.13"   # ip da máquina que vai rodar o slave
 SLAVE_PORT = 502            # porta do slave na máquina
 
@@ -142,23 +152,35 @@ def q_afluente(tempo, UG1, UG2, nv_mont, nv_mont_ant, pos_comporta):
     return resultado
 
 
+def area_na_cota(nv):
+    area = 10000*(1.06*nv - 628.55)
+    return area
+
+
+def q_liquida(delta_t, nv_mont, nv_mont_ant):
+    nv_med = (nv_mont + nv_mont_ant)/2
+    q_liquida = (nv_mont - nv_mont_ant)*area_na_cota(nv_med)/delta_t
+    return q_liquida
+
+
 def determina_pot(afl, nv):
 
-    pot = -0.0032*(afl**4) + 0.0751*(afl**3) - 0.6542*(afl**2) + 2.8849*(afl) - 4.0841
+    if nv <= USINA_NV_MIN:
+        return 0
 
-    if pot > USINA_POTENCIA_NOMINAL:
-        pot = USINA_POTENCIA_NOMINAL
+    if nv >= USINA_NV_MAX:
+        return USINA_POTENCIA_NOMINAL
 
-    if pot < 1:
-        pot = 0
+    pot_alvo = -0.0032*(afl**4) + 0.0751*(afl**3) - 0.6542*(afl**2) + 2.8849*(afl) - 4.0841
 
-    if nv >= (USINA_NV_MAX+0.01):
-        pot = USINA_POTENCIA_NOMINAL
+    pot_alvo = max(USINA_POTENCIA_MINIMA_UG, pot_alvo)
+    pot_alvo = min(USINA_POTENCIA_NOMINAL, pot_alvo)
 
-    if nv < USINA_NV_MIN:
-        pot = 0
+    pot_agora = get_pot_ug1() + get_pot_ug2()
+    if pot_agora > 0:
+        pot_alvo = max(pot_alvo, USINA_POTENCIA_MINIMA_UG)
 
-    return pot
+    return pot_alvo
 
 
 def get_nv_montante():
@@ -171,14 +193,12 @@ def get_nv_montante():
     regs = client.read_holding_registers(0, 1)
     client.close()
 
-    while regs != None:
+    while type(regs) != type(None):
         nv_montante = (regs[0] * nv_montante_escala) + nv_montante_zero
-        nv_montante = round(nv_montante, 2)
+        nv_montante = round(nv_montante, 3)
+        return nv_montante
     else:
-        nv_montante = -1
         raise Exception("Erro de comunicação com a CLP")
-
-    return nv_montante
 
 
 def get_pot_ug1():
@@ -210,51 +230,114 @@ def get_pos_comporta():
     return 0
 
 
-def distribuir_potencia(pot_alvo):
+def set_pot_ug1(pot_alvo):
 
-    # ToDo: Refinar
-    # dispara a ug1 e depois a ug2 verificando disponibilidade
+    if pot_alvo != 0:
+        pot_alvo = max(USINA_POTENCIA_MINIMA_UG, pot_alvo)
+        pot_alvo = min(USINA_POTENCIA_NOMINAL_UG, pot_alvo)
+    client = ModbusClient(host=SLAVE_IP, port=SLAVE_PORT, timeout=5, unit_id=1)
+    client.open()
+    client.write_single_register(1, int(pot_alvo * 1000))
+    client.close()
 
+
+def set_pot_ug2(pot_alvo):
+
+    if pot_alvo != 0:
+        pot_alvo = max(USINA_POTENCIA_MINIMA_UG, pot_alvo)
+        pot_alvo = min(USINA_POTENCIA_NOMINAL_UG, pot_alvo)
+    client = ModbusClient(host=SLAVE_IP, port=SLAVE_PORT, timeout=5, unit_id=1)
+    client.open()
+    client.write_single_register(3, int(pot_alvo * 1000))
+    client.close()
+
+
+def get_disp_ug1():
 
     client = ModbusClient(host=SLAVE_IP, port=SLAVE_PORT, timeout=5, unit_id=1)
     client.open()
-
-    pot_anterior = (client.read_holding_registers(1, 1)[0] + client.read_holding_registers(3, 1)[0])/1000
-    if pot_anterior > pot_alvo:
-        pot_alvo = max(pot_alvo, pot_anterior*0.75)
-
-    if pot_alvo < USINA_POTENCIA_MINIMA_UG:
-        client.write_single_register(1, 0)
-        client.write_single_register(3, 0)
-
-    else:
-
-        ug1_disp = False
-        if not client.read_holding_registers(2, 1)[0]:
-            ug1_disp = True
-
-        ug2_disp = False
-        if not client.read_holding_registers(4, 1)[0]:
-            ug2_disp = True
-
-        pot_alvo = min(pot_alvo, USINA_POTENCIA_NOMINAL)
-
-        if ug1_disp and ug2_disp and pot_alvo > USINA_POTENCIA_MINIMA_UG*2:
-            client.write_single_register(1, int(pot_alvo * 500))
-            client.write_single_register(3, int(pot_alvo * 500))
-        elif ug1_disp:
-            pot_alvo = min(pot_alvo, USINA_POTENCIA_NOMINAL_UG)
-            client.write_single_register(1, int(pot_alvo*1000))
-            client.write_single_register(3, 0)
-        elif ug2_disp:
-            pot_alvo = min(pot_alvo, USINA_POTENCIA_NOMINAL_UG)
-            client.write_single_register(1, 0)
-            client.write_single_register(3, int(pot_alvo*1000))
-        else:
-            client.write_single_register(1, 0)
-            client.write_single_register(3, 0)
-
+    ug1_disp = False
+    if not client.read_holding_registers(2, 1)[0]:
+        ug1_disp = True
     client.close()
 
-    return True
+    return ug1_disp
 
+
+def get_disp_ug2():
+
+    client = ModbusClient(host=SLAVE_IP, port=SLAVE_PORT, timeout=5, unit_id=1)
+    client.open()
+    ug2_disp = False
+    if not client.read_holding_registers(4, 1)[0]:
+        ug2_disp = True
+    client.close()
+    return ug2_disp
+
+
+def distribuir_potencia(pot_alvo):
+
+    pot_disp = 0
+
+    ug1_disp = get_disp_ug1()
+    if ug1_disp:
+        pot_disp += 2.5
+
+    ug2_disp = get_disp_ug1()
+    if ug2_disp:
+        pot_disp += 2.5
+
+    if pot_disp == 0 or pot_alvo == 0:
+        set_pot_ug1(0)
+        set_pot_ug2(0)
+        return 0
+
+    pot_alvo = min(pot_alvo, pot_disp)
+
+    if pot_alvo <= USINA_POTENCIA_NOMINAL_UG:
+
+        if ug1_disp:
+            set_pot_ug1(pot_alvo)
+            set_pot_ug2(0)
+        elif ug2_disp:
+            set_pot_ug1(0)
+            set_pot_ug2(pot_alvo)
+
+    if pot_alvo > USINA_POTENCIA_NOMINAL_UG:
+
+        if ug1_disp and ug2_disp:
+            set_pot_ug1(pot_alvo/2)
+            set_pot_ug2(pot_alvo/2)
+        elif ug1_disp:
+            set_pot_ug1(USINA_POTENCIA_NOMINAL_UG)
+        elif ug2_disp:
+            set_pot_ug2(USINA_POTENCIA_NOMINAL_UG)
+
+    if not ug1_disp:
+        set_pot_ug1(0)
+
+    if not ug2_disp:
+        set_pot_ug2(0)
+
+
+def get_q_afluente_debbug():
+    client = ModbusClient(host=SLAVE_IP, port=SLAVE_PORT, timeout=5, unit_id=1)
+    client.open()
+    q = client.read_holding_registers(7, 1)[0]/1000
+    client.close()
+    return q
+
+
+def controle_proporcional(erro_nv):
+    return Kp * erro_nv
+
+
+def controle_integral(erro_nv, ganho_integral_anterior):
+    res = (Ki * erro_nv) + ganho_integral_anterior
+    res = min(res, 0.8)
+    res = max(res, -0.8)
+    return res
+
+
+def controle_derivativo(erro_nv, erro_nv_anterior):
+    return Kd * (erro_nv-erro_nv_anterior)
