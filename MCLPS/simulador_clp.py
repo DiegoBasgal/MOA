@@ -1,5 +1,6 @@
 # Import site é necessário para funcionar fora da IDE devido a necessidade de adicionar o diretório ao PATH
 import site
+from math import copysign
 
 site.addsitedir('..')
 
@@ -56,9 +57,6 @@ def comportamento_reservatorio():
 
     amostras = db.get_amostras_afluente()
 
-    # Espera acalmar um pouco
-    sleep(1)
-
     while True:
 
         logging.info("Simuladndo a partir do inpicio da tabela de afluentes")
@@ -66,7 +64,6 @@ def comportamento_reservatorio():
         t0 = datetime.now()
         segundos_simulados = 0
         a = 0
-        sleep(5)
         while a in range(len(amostras) - 1):
             segundos_reais = (datetime.now()-t0).total_seconds()
             segundos_simulados = segundos_reais * ESCALA_DE_TEMPO
@@ -86,7 +83,7 @@ def comportamento_reservatorio():
             volume += q_liquida * ESCALA_DE_TEMPO
             if volume < 0 : volume = 0
             nv_montante = - 0.0000000002 * ((volume / 1000) ** 4) + 0.0000002 * ((volume / 1000) ** 3) - 0.0001 * ((volume / 1000) ** 2) + 0.0331 * (volume / 1000) + 639.43
-            nv_montante = round(nv_montante, 2)
+            nv_montante = round(nv_montante, 3)
             sleep(0.1)
 
             # para grafico de debbug
@@ -152,8 +149,9 @@ def comportamento_clp():
             REGS = DataBank.get_words(0, 10)
 
             # Entradas da CLP
-            pot_ug1 = int(REGS[1]) / 1000
-            pot_ug2 = int(REGS[3]) / 1000
+            pot_ug1 = (pot_ug1*14 + (int(REGS[1])/1000))/15
+            pot_ug2 = (pot_ug2*14 + (int(REGS[3])/1000))/15
+
             comporta_flags = REGS[5]
             comporta_fechada = REGS[6] & 0b00000001
             comporta_p1 = REGS[6] & 0b00000010
@@ -210,6 +208,11 @@ if __name__ == "__main__":
     rootLogger.addHandler(consoleHandler)
 
     # Inicialização dos comportamentos
+    t_plotar_debug = threading.Thread(target=plotar_debug)
+    t_plotar_debug.daemon = False
+    t_plotar_debug.start()
+    sleep(5)
+
 
     logging.info("Simulador iniciado. Iniciando Threads")
 
@@ -220,9 +223,5 @@ if __name__ == "__main__":
     t_comportamento_reservatorio = threading.Thread(target=comportamento_reservatorio)
     t_comportamento_reservatorio.daemon = False
     t_comportamento_reservatorio.start()
-
-    t_plotar_debug = threading.Thread(target=plotar_debug)
-    t_plotar_debug.daemon = False
-    t_plotar_debug.start()
 
     logging.info("Final da Main")
