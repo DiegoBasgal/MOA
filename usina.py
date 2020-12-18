@@ -1,8 +1,11 @@
-# Acerto de escala para os dados provenientes da clp
+import logging
+from datetime import datetime
 from math import sqrt
+import socket
+from time import sleep
 
-# Constantes COV
 from pyModbusTCP.client import ModbusClient
+from pyModbusTCP.server import DataBank, ModbusServer
 
 USINA_CAP_RESERVATORIO = 43000.0
 USINA_DEPLECAO = 0.5
@@ -22,19 +25,22 @@ USINA_QUEDA_LIQUIDA = 34.31
 USINA_VAZAO_NOMINAL_MAQ = 8.7
 USINA_VAZAO_SANITARIA_COTA = 641
 USINA_VAZAO_MAXIMA_TURBINAVEL = 17.4
+USINA_MARGEM_POT_CRITICA = 0.5
 
-NV_ALVO = (USINA_NV_MIN+USINA_NV_MAX)/2
 
 # Constantes de ganho
 # Kp = 0.1
 # Ki = 0.0
 # Kd = 0.05
-Kp = -2.21428571*3
-Ki = -0.00833333/5
+Kp = -8.865212
+Ki = -0.003847
 Kd = -0.416666
 
-SLAVE_IP = "172.21.15.13"   # ip da máquina que vai rodar o slave
-SLAVE_PORT = 502            # porta do slave na máquina
+CLP_SLAVE_IP = "172.21.15.13"
+CLP_SLAVE_PORT = 502
+E3_SLAVE_IP = "172.21.15.13"
+E3_SLAVE_PORT = 503
+
 
 def q_turbinada(UG1, UG2):
 
@@ -188,39 +194,67 @@ def get_nv_montante():
     nv_montante_zero = 620  # 620m
     nv_montante_escala = 0.001  # REG[0] retorna em mm
 
-    client = ModbusClient(host=SLAVE_IP, port=SLAVE_PORT, timeout=5, unit_id=1)
-    client.open()
-    regs = client.read_holding_registers(0, 1)
-    client.close()
+    client = ModbusClient(host=CLP_SLAVE_IP, port=CLP_SLAVE_PORT, timeout=5, unit_id=1)
+    if client.open():
+        regs = client.read_holding_registers(0, 1)
+        client.close()
 
-    while type(regs) != type(None):
-        nv_montante = (regs[0] * nv_montante_escala) + nv_montante_zero
-        nv_montante = round(nv_montante, 3)
-        return nv_montante
+        if type(regs) != type(None):
+            nv_montante = (regs[0] * nv_montante_escala) + nv_montante_zero
+            nv_montante = round(nv_montante, 2)
+
+            return nv_montante
+
     else:
-        raise Exception("Erro de comunicação com a CLP")
+        raise Exception("Erro de comunicação em get_nv_montante, O modbus falhou (CLP).")
 
 
 def get_pot_ug1():
 
-    client = ModbusClient(host=SLAVE_IP, port=SLAVE_PORT, timeout=5, unit_id=1)
-    client.open()
-    reg = client.read_holding_registers(1, 1)[0]
-    client.close()
-    reg = reg/1000
-
-    return reg
+    client = ModbusClient(host=CLP_SLAVE_IP, port=CLP_SLAVE_PORT, timeout=5, unit_id=1)
+    if client.open():
+        reg = client.read_holding_registers(8, 1)[0]
+        client.close()
+        reg = reg/1000
+        return reg
+    else:
+        raise Exception("Erro de comunicação em get_pot_ug1, O modbus falhou (CLP).")
 
 
 def get_pot_ug2():
 
-    client = ModbusClient(host=SLAVE_IP, port=SLAVE_PORT, timeout=5, unit_id=1)
-    client.open()
-    reg = client.read_holding_registers(3, 1)[0]
-    client.close()
-    reg = reg/1000
+    client = ModbusClient(host=CLP_SLAVE_IP, port=CLP_SLAVE_PORT, timeout=5, unit_id=1)
+    if client.open():
+        reg = client.read_holding_registers(9, 1)[0]
+        client.close()
+        reg = reg/1000
+        return reg
+    else:
+        raise Exception("Erro de comunicação em get_pot_ug2, O modbus falhou (CLP).")
 
-    return reg
+
+def get_setpoint_ug1():
+
+    client = ModbusClient(host=CLP_SLAVE_IP, port=CLP_SLAVE_PORT, timeout=5, unit_id=1)
+    if client.open():
+        reg = client.read_holding_registers(1, 1)[0]
+        client.close()
+        reg = reg/1000
+        return reg
+    else:
+        raise Exception("Erro de comunicação em get_pot_ug1, O modbus falhou (CLP).")
+
+
+def get_setpoint_ug2():
+
+    client = ModbusClient(host=CLP_SLAVE_IP, port=CLP_SLAVE_PORT, timeout=5, unit_id=1)
+    if client.open():
+        reg = client.read_holding_registers(3, 1)[0]
+        client.close()
+        reg = reg/1000
+        return reg
+    else:
+        raise Exception("Erro de comunicação em get_pot_ug2, O modbus falhou (CLP).")
 
 
 def get_pos_comporta():
@@ -235,10 +269,12 @@ def set_pot_ug1(pot_alvo):
     if pot_alvo != 0:
         pot_alvo = max(USINA_POTENCIA_MINIMA_UG, pot_alvo)
         pot_alvo = min(USINA_POTENCIA_NOMINAL_UG, pot_alvo)
-    client = ModbusClient(host=SLAVE_IP, port=SLAVE_PORT, timeout=5, unit_id=1)
-    client.open()
-    client.write_single_register(1, int(pot_alvo * 1000))
-    client.close()
+    client = ModbusClient(host=CLP_SLAVE_IP, port=CLP_SLAVE_PORT, timeout=5, unit_id=1)
+    if client.open():
+        client.write_single_register(1, int(pot_alvo * 1000))
+        client.close()
+    else:
+        raise Exception("Erro de comunicação em set_pot_ug1, O modbus falhou (CLP).")
 
 
 def set_pot_ug2(pot_alvo):
@@ -246,72 +282,59 @@ def set_pot_ug2(pot_alvo):
     if pot_alvo != 0:
         pot_alvo = max(USINA_POTENCIA_MINIMA_UG, pot_alvo)
         pot_alvo = min(USINA_POTENCIA_NOMINAL_UG, pot_alvo)
-    client = ModbusClient(host=SLAVE_IP, port=SLAVE_PORT, timeout=5, unit_id=1)
-    client.open()
-    client.write_single_register(3, int(pot_alvo * 1000))
-    client.close()
+    client = ModbusClient(host=CLP_SLAVE_IP, port=CLP_SLAVE_PORT, timeout=5, unit_id=1)
+    if client.open():
+        client.write_single_register(3, int(pot_alvo * 1000))
+        client.close()
+    else:
+        raise Exception("Erro de comunicação em set_pot_ug2, O modbus falhou (CLP).")
 
 
 def get_disp_ug1():
 
-    client = ModbusClient(host=SLAVE_IP, port=SLAVE_PORT, timeout=5, unit_id=1)
-    client.open()
-    ug1_disp = False
-    if not client.read_holding_registers(2, 1)[0]:
-        ug1_disp = True
-    client.close()
-
-    return ug1_disp
-
+    client = ModbusClient(host=CLP_SLAVE_IP, port=CLP_SLAVE_PORT, timeout=5, unit_id=1)
+    if client.open():
+        ug1_disp = False
+        if not client.read_holding_registers(2, 1)[0]:
+            ug1_disp = True
+        client.close()
+        return ug1_disp
+    else:
+        raise Exception("Erro de comunicação em get_disp_ug1, O modbus falhou (CLP).")
 
 def get_disp_ug2():
 
-    client = ModbusClient(host=SLAVE_IP, port=SLAVE_PORT, timeout=5, unit_id=1)
-    client.open()
-    ug2_disp = False
-    if not client.read_holding_registers(4, 1)[0]:
-        ug2_disp = True
-    client.close()
-    return ug2_disp
+    client = ModbusClient(host=CLP_SLAVE_IP, port=CLP_SLAVE_PORT, timeout=5, unit_id=1)
+    if client.open():
+        ug2_disp = False
+        if not client.read_holding_registers(4, 1)[0]:
+            ug2_disp = True
+        client.close()
+        return ug2_disp
+    else:
+        raise Exception("Erro de comunicação em get_disp_ug2, O modbus falhou (CLP).")
 
 
-def distribuir_potencia(pot_alvo):
+def distribuir_potencia(pot_alvo, erro_nv):
+
+    ug1_sinc = True if get_pot_ug1() >= 1 else False
+    ug1_disp = get_disp_ug1()
+
+    ug2_sinc = True if get_pot_ug2() >= 1 else False
+    ug2_disp = get_disp_ug2()
 
     pot_disp = 0
-
-    ug1_disp = get_disp_ug1()
     if ug1_disp:
         pot_disp += 2.5
-
-    ug2_disp = get_disp_ug1()
     if ug2_disp:
         pot_disp += 2.5
 
-    if pot_disp == 0 or pot_alvo == 0:
+    pot_alvo = min(pot_alvo, pot_disp)
+
+    if pot_alvo < USINA_POTENCIA_MINIMA_UG:
         set_pot_ug1(0)
         set_pot_ug2(0)
         return 0
-
-    pot_alvo = min(pot_alvo, pot_disp)
-
-    if pot_alvo <= USINA_POTENCIA_NOMINAL_UG:
-
-        if ug1_disp:
-            set_pot_ug1(pot_alvo)
-            set_pot_ug2(0)
-        elif ug2_disp:
-            set_pot_ug1(0)
-            set_pot_ug2(pot_alvo)
-
-    if pot_alvo > USINA_POTENCIA_NOMINAL_UG:
-
-        if ug1_disp and ug2_disp:
-            set_pot_ug1(pot_alvo/2)
-            set_pot_ug2(pot_alvo/2)
-        elif ug1_disp:
-            set_pot_ug1(USINA_POTENCIA_NOMINAL_UG)
-        elif ug2_disp:
-            set_pot_ug2(USINA_POTENCIA_NOMINAL_UG)
 
     if not ug1_disp:
         set_pot_ug1(0)
@@ -319,14 +342,37 @@ def distribuir_potencia(pot_alvo):
     if not ug2_disp:
         set_pot_ug2(0)
 
+    if ug1_sinc and ug2_sinc:
+        if pot_alvo > ((2 * USINA_POTENCIA_MINIMA_UG) + USINA_MARGEM_POT_CRITICA):
+            set_pot_ug1(pot_alvo/2)
+            set_pot_ug2(pot_alvo/2)
+        else:
+            if ug1_disp:
+                set_pot_ug1(pot_alvo)
+                set_pot_ug2(0)
+            elif ug2_disp:
+                set_pot_ug1(0)
+                set_pot_ug2(pot_alvo)
+    else:
+        if (pot_alvo > (USINA_POTENCIA_NOMINAL_UG + USINA_MARGEM_POT_CRITICA)) and (abs(erro_nv) > 0.05):
+            set_pot_ug1(pot_alvo / 2)
+            set_pot_ug2(pot_alvo / 2)
+        else:
+            if ug1_disp:
+                set_pot_ug1(pot_alvo)
+                set_pot_ug2(0)
+            elif ug2_disp:
+                set_pot_ug1(0)
+                set_pot_ug2(pot_alvo)
 
 def get_q_afluente_debbug():
-    client = ModbusClient(host=SLAVE_IP, port=SLAVE_PORT, timeout=5, unit_id=1)
-    client.open()
-    q = client.read_holding_registers(7, 1)[0]/1000
-    client.close()
-    return q
-
+    client = ModbusClient(host=CLP_SLAVE_IP, port=CLP_SLAVE_PORT, timeout=5, unit_id=1)
+    if client.open():
+        q = client.read_holding_registers(7, 1)[0]/1000
+        client.close()
+        return q
+    else:
+        raise Exception("Erro de comunicação em get_q_afluente_debbug, O modbus falhou (CLP).")
 
 def controle_proporcional(erro_nv):
     return Kp * erro_nv
@@ -336,8 +382,66 @@ def controle_integral(erro_nv, ganho_integral_anterior):
     res = (Ki * erro_nv) + ganho_integral_anterior
     res = min(res, 0.8)
     res = max(res, -0.8)
+    res = max(res, -0.8)
     return res
 
 
 def controle_derivativo(erro_nv, erro_nv_anterior):
     return Kd * (erro_nv-erro_nv_anterior)
+
+
+def heartbeat():
+
+    agora = datetime.now()
+    ano = int(agora.year)
+    mes = int(agora.month)
+    dia = int(agora.day)
+    hor = int(agora.hour)
+    mnt = int(agora.minute)
+    seg = int(agora.second)
+    mil = int(agora.microsecond/1000)
+    DataBank.set_words(0, [ano, mes, dia, hor, mnt, seg, mil])
+
+def get_nv_alvo():
+    zero = 620  # 620m
+    escala = 0.001  # REG[0] retorna em mm
+    alvo = (DataBank.get_words(10)[0] * escala) + zero
+    alvo = round(alvo, 2)
+    if not USINA_NV_MIN < alvo < USINA_NV_MAX:
+        alvo = (USINA_NV_MIN + USINA_NV_MAX)/2
+    return alvo
+
+
+def get_nv_religamento():
+    zero = 620  # 620m
+    escala = 0.001  # REG[0] retorna em mm
+    alvo = (DataBank.get_words(11)[0] * escala) + zero
+    alvo = round(alvo, 2)
+    if not USINA_NV_MIN < alvo < USINA_NV_MAX:
+        alvo = (USINA_NV_MIN + USINA_NV_MAX)/2
+    return alvo
+
+
+def inicializar():
+
+    logging.info("Iniciando Servidor/Slave Modbus MOA")
+    s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+    try:
+        # doesn't even have to be reachable
+        s.connect(('10.255.255.255', 1))
+        local_ip = s.getsockname()[0]
+    except Exception:
+        local_ip = 'localhost'
+    finally:
+        s.close()
+    porta = 5002
+    server = ModbusServer(host=local_ip, port=porta, no_block=True)
+    while not server.is_run:
+        try:
+            server.start()
+            DataBank.set_words(0, [0] * 0x10000)
+            logging.info("Servidor/Slave Modbus MOA Iniciado com sucesso. Endereço: {:}:{:}".format(local_ip, porta))
+        except Exception as e:
+            logging.error("Erro ao iniciar Modbus MOA: '{:}'. Aguardando 5s e tentando novamente".format(e))
+            sleep(5)
+            continue
