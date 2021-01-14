@@ -29,12 +29,11 @@ USINA_MARGEM_POT_CRITICA = 0.5
 
 
 # Constantes de ganho
-# Kp = 0.1
-# Ki = 0.0
-# Kd = 0.05
-Kp = -8.865212
-Ki = -0.003847
-Kd = -0.416666
+Ku = -60
+Tu = 600
+Kp = Ku/3
+Ki = Kp/Tu
+Kd = Kp*Tu/13
 
 CLP_SLAVE_IP = "172.21.15.13"
 CLP_SLAVE_PORT = 502
@@ -374,15 +373,15 @@ def get_q_afluente_debbug():
     else:
         raise Exception("Erro de comunicação em get_q_afluente_debbug, O modbus falhou (CLP).")
 
+
 def controle_proporcional(erro_nv):
-    return Kp * erro_nv
+        return Kp * erro_nv
 
 
 def controle_integral(erro_nv, ganho_integral_anterior):
     res = (Ki * erro_nv) + ganho_integral_anterior
     res = min(res, 0.8)
-    res = max(res, -0.8)
-    res = max(res, -0.8)
+    res = max(res, 0)
     return res
 
 

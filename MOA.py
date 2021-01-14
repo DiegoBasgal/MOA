@@ -21,12 +21,12 @@ logging.info('Inicializando o MOA')
 
 usina.inicializar()
 
-ESCALA_DE_TEMPO = 10
+ESCALA_DE_TEMPO = 120
 
 t0 = time()
 t1 = time()
-n_movel = 30
-n_movel2 = 120
+n_movel = 6
+n_movel2 = n_movel*5
 nv_montante = 0
 nv_montante_anterior = 0
 pot_ug1 = 1.0  # MW
@@ -38,10 +38,10 @@ erro_nv_anterior = 0
 controle_p = 0
 controle_i = 0
 controle_d = 0
-Kii = 0.01/ESCALA_DE_TEMPO
+Kii = 0.05/ESCALA_DE_TEMPO
 
 saida_PID = 0
-saida_PID_int = 0.5
+saida_PID_int = 0.3
 logging.info('Executando o MOA')
 
 while True:
@@ -58,6 +58,9 @@ nv_recentes2 = [usina.get_nv_montante()]*n_movel
 nv_medio = sum(nv_recentes)/len(nv_recentes)
 nv_alvo = (usina.USINA_NV_MIN + usina.USINA_NV_MAX)/2
 logging.debug("Tempo simulado; Nível montante;Nível médio;Potência alvo;Leitura UG1;Leitura UG2; AfluenteSIMUL")
+
+print(usina.q_turbinada(1.5, 0))
+print(usina.q_sanitaria(nv_alvo))
 
 while True:
     try:
@@ -94,7 +97,9 @@ while True:
 
         # Se não estiver aguardando acompanhar/deplecionar reservatório
         if not aguardando_reservatorio:
+
             nv_alvo = usina.get_nv_alvo()
+
             erro_nv = nv_alvo - nv_medio
             erro_nv_anterior = nv_alvo - nv_montante_anterior
 
@@ -102,17 +107,26 @@ while True:
             controle_i = usina.controle_integral(erro_nv, controle_i)
             controle_d = usina.controle_derivativo(erro_nv, erro_nv_anterior)
 
+            if abs(erro_nv) <= 0.01:
+                controle_p = controle_p*0.5
+                controle_d = controle_d*0.01
+
             saida_PID = controle_p + controle_i + controle_d
+
 
             saida_PID_int = saida_PID*Kii + saida_PID_int
             saida_PID_int = min(saida_PID_int, 1)
             saida_PID_int = max(saida_PID_int, 0)
 
-            pot_alvo = round(usina.USINA_POTENCIA_NOMINAL * (saida_PID_int + saida_PID), 2)
+            pot_alvo = round(usina.USINA_POTENCIA_NOMINAL * saida_PID_int, 2)
             pot_alvo = max(pot_alvo, usina.USINA_POTENCIA_MINIMA_UG)
             pot_alvo = min(pot_alvo, usina.USINA_POTENCIA_NOMINAL)
 
+            if nv_medio >= usina.USINA_NV_MAX:
+                pot_alvo = usina.USINA_POTENCIA_NOMINAL
+
             logging.debug("Pot Alvo: {:2.3f} (PID: {:2.3f} {:2.3f}+{:2.3f}+{:2.3f}; Int: {:2.3f})".format(pot_alvo, saida_PID, controle_p, controle_i, controle_d, saida_PID_int))
+            print("Pot Alvo: {:2.3f} (PID: {:2.3f} P{:2.3f} + I{:2.3f} + D{:2.3f}; Int: {:2.3f})".format(pot_alvo, saida_PID, controle_p, controle_i, controle_d, saida_PID_int))
             usina.distribuir_potencia(pot_alvo, erro_nv)
         else:
             #logging.info("Aguardando reservatório.".format(nv_montante))
@@ -122,9 +136,9 @@ while True:
         q_debbug = usina.get_q_afluente_debbug()
         logging.debug(("{:03.4f};{:03.4f};{:03.4f};{:03.4f};{:03.4f};{:03.1f}"
                        .format(nv_montante, nv_medio, pot_alvo,pot_ug1, pot_ug2, q_debbug)).replace(".", ","))
-        print("T{:} Alvo:{:3.2f}m Montante:{:3.2f}m Alvo:{:1.3f}MW Pot:{:1.3f}MW SP1:{:1.3f}MW SP2:{:1.3f}MW"
-              .format(datetime.now(), nv_alvo, nv_montante, pot_alvo, pot_ug1+pot_ug2,
-                      usina.get_setpoint_ug1(), usina.get_setpoint_ug2()))
+        # print("T{:} Alvo:{:3.2f}m Montante:{:3.2f}m Alvo:{:1.3f}MW Pot:{:1.3f}MW SP1:{:1.3f}MW SP2:{:1.3f}MW"
+        #      .format(datetime.now(), nv_alvo, nv_montante, pot_alvo, pot_ug1+pot_ug2,
+        #              usina.get_setpoint_ug1(), usina.get_setpoint_ug2()))
         usina.heartbeat()
         sleep(1/ESCALA_DE_TEMPO)
 
