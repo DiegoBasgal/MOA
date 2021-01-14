@@ -7,6 +7,7 @@ from time import sleep
 from pyModbusTCP.client import ModbusClient
 from pyModbusTCP.server import DataBank, ModbusServer
 
+# CONST
 USINA_CAP_RESERVATORIO = 43000.0
 USINA_DEPLECAO = 0.5
 USINA_GF_MWm = 2.6
