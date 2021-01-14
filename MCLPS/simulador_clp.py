@@ -18,7 +18,7 @@ import usina
 '''
 
 # Constantes
-ESCALA_DE_TEMPO = 10
+ESCALA_DE_TEMPO = 120
 
 PLOTAR_GRAFICO_DEBBUG = True
 
@@ -82,7 +82,7 @@ class ComportamentoReal:
                 segundos_simulados_ant = segundos_simulados
                 segundos_simulados = segundos_reais * ESCALA_DE_TEMPO
                 delta_t_sim = segundos_simulados - segundos_simulados_ant
-                sleep(0.0001)  # tick
+                sleep(0.001)  # tick
 
                 if (amostras[a][0] - amostras[0][0]).total_seconds() < segundos_simulados:
                     a += 1
@@ -126,6 +126,7 @@ class ComportamentoReal:
 
                     # Acerta as Vazoes
                     q_aflu = amostras[a][1]
+                    #q_aflu = 5.8623152  # 1UG@1,5MW + SANI@1/2NVMAX
                     q_vert = usina.q_vertimento(self.nv_montante)
                     q_comp = usina.q_comporta(self.comp_fechada, self.comp_p1, self.comp_p2, self.comp_p3, self.comp_p4,
                                               self.comp_aberta, self.nv_montante)

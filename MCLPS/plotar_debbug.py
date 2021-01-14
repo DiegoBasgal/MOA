@@ -1,4 +1,5 @@
 from time import sleep
+from datetime import datetime
 import matplotlib.pyplot as plt
 
 fp = open('debug.out', 'w')
@@ -11,7 +12,7 @@ limite_t = 24
 
 fig, ax1 = plt.subplots()
 
-ax1.set_xlabel('Tempo decorrido na simulação')
+ax1.set_xlabel('Tempo decorrido na simulação (h)')
 ax1.set_ylabel('Nível montante (m)', color='blue')
 ax1.axis([0, limite_t, 642.95, 643.75])
 
@@ -60,7 +61,7 @@ while True:
             aux[a] = float(aux[a])
         t_sim.append(aux[0]/3600)
         q_aflu.append(aux[1])
-        nv_m.append(aux[2])
+        nv_m.append(round(aux[2], 3))
         pot1.append(aux[3])
         pot2.append(aux[4])
         pott.append(aux[3]+aux[4])
@@ -73,18 +74,28 @@ while True:
 
     linha1, = ax1.plot(t_sim, nv_m, label='Nível montante', color='blue')
     linha5, = ax3.plot(t_sim, q_aflu, label='Afluente', color='green')
+
+    linha4, = ax2.plot(t_sim, pott, label='Potência total', color='red', linestyle=":")
+
     linha2, = ax2.plot(t_sim, pot1, label='Potência UG1', color='orange', linestyle="--")
     linha3, = ax2.plot(t_sim, pot2, label='Potência UG2', color='yellow', linestyle="--")
-    linha4, = ax2.plot(t_sim, pott, label='Potência total', color='red', linestyle=":")
-    linha6, = ax2.plot(t_sim, setpoint, label='SetPoint', color='purple', linestyle=":")
+
+    #linha6, = ax2.plot(t_sim, setpoint, label='SetPoint', color='purple', linestyle=":")
     if primeira_vez:
-        plt.legend(handles=[linha1, linha5, linha2, linha3, linha4, linha6], loc='upper center', bbox_to_anchor=(0.5, -0.05), ncol=3)
+        #plt.legend(handles=[linha1, linha5, linha2, linha3, linha4, linha6], loc='upper center', bbox_to_anchor=(0.5, -0.05), ncol=3)
+        plt.legend(handles=[linha1, linha5, linha2, linha3, linha4], loc='upper center', bbox_to_anchor=(0.5, -0.075), ncol=5)
 
     # print(t_sim)
     # print("running...")
 
-    plt.pause(0.05)
+    plt.pause(0.5)
     primeira_vez = False
+    print("Plot Progress: {:3.3f}%".format(t_sim[-1]*100/limite_t))
+
+    if t_sim[-1] >= limite_t:
+        figtitle = "resultados/plot_{}_{}.png".format(int(t_sim[-1]), datetime.now().strftime("%d-%m-%Y_%H-%M-%S"))
+        plt.savefig(figtitle)
+        exit()
 
 plt.show()
 
