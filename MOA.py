@@ -31,7 +31,7 @@ usina.inicializar()
 
 # A escala de tempo é utilizada para acelerar as simulações do sistema
 # Utilizar 10x para testes sérios e 120x no máximo para testes simples
-ESCALA_DE_TEMPO = 1
+ESCALA_DE_TEMPO = 60
 
 
 ##############
@@ -103,11 +103,11 @@ while True:
         nv_montante = usina.get_nv_montante()
 
         nv_montante_recentes.append(nv_montante)
-        nv_montante_recentes = nv_montante_recentes[1:-1] if len(nv_montante_recentes) > n_movel_R else nv_montante_recentes
+        nv_montante_recentes = nv_montante_recentes[1:]
         nv_montante_recente = sum(nv_montante_recentes) / n_movel_R
 
         nv_montante_anteriores.append(nv_montante)
-        nv_montante_anteriores = nv_montante_anteriores[1:-1] if len(nv_montante_anteriores) > n_movel_L else nv_montante_anteriores
+        nv_montante_anteriores = nv_montante_anteriores[1:]
         nv_montante_anterior = sum(nv_montante_anteriores) / n_movel_L
 
 
@@ -145,7 +145,7 @@ while True:
                 pot_alvo = usina.USINA_POTENCIA_NOMINAL
 
             # Se não estiver vertendo
-            if nv_montante_recente < usina.USINA_NV_MAX:
+            else:
                 # Atualiza o alvo e o erro
                 nv_alvo = usina.get_nv_alvo()
                 erro_nv = nv_alvo - nv_montante_recente
@@ -171,7 +171,7 @@ while True:
                 pot_alvo = max(min(pot_alvo, usina.USINA_POTENCIA_NOMINAL), usina.USINA_POTENCIA_MINIMA_UG)
 
             # Distribui a potência para as UGs
-            # logging.debug("Pot Alvo: {:2.3f} (PID: {:2.3f} {:2.3f}+{:2.3f}+{:2.3f}; Int: {:2.3f})".format(pot_alvo, saida_PID, controle_p, controle_i, controle_d, saida_Ie))
+            logging.debug("Pot Alvo: {:2.3f} (PID: {:2.3f} {:2.3f}+{:2.3f}+{:2.3f}; Int: {:2.3f})".format(pot_alvo, saida_PID, controle_p, controle_i, controle_d, saida_Ie))
             usina.distribuir_potencia(pot_alvo, erro_nv)
 
         else:
