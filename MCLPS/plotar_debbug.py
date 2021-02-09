@@ -88,7 +88,7 @@ while True:
     # print(t_sim)
     # print("running...")
 
-    plt.pause(0.5)
+    plt.pause(0.6)
     primeira_vez = False
     print("Plot Progress: {:3.3f}%".format(t_sim[-1]*100/limite_t))
 

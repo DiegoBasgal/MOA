@@ -7,6 +7,7 @@ def __conectardb():
     """
 
     DB_SERVER = "DEV-SUPER-1\MSSQL_DEV"
+    DB_SERVER = "localhost\MSSQL_DEV"
     DB_DATABASE = 'CLP'
 
     #  Melhorar a segurança na conexao com o banco de dados.
@@ -51,19 +52,24 @@ def get_amostras():
 
 def get_amostras_afluente():
 
-    cursor = __conectardb()
-    cursor.execute("""
-    -- Sleciona os dados necessários para reproduzir o comportamento da usina no MCLPS
-    SELECT TOP(100000000) horario, vazao
-    FROM [CLP].[dbo].[amostragem_afluente]
-    ORDER BY horario ASC
-    """)
+    try:
+        cursor = __conectardb()
+        cursor.execute("""
+        -- Sleciona os dados necessários para reproduzir o comportamento da usina no MCLPS
+        SELECT TOP(100000000) horario, vazao
+        FROM [CLP].[dbo].[amostragem_afluente]
+        ORDER BY horario ASC
+        """)
 
-    lista = []
-    for row in cursor:
-        lista.append([elem for elem in row])
+        lista = []
+        for row in cursor:
+            lista.append([elem for elem in row])
 
-    return lista
+        return lista
+
+    except Exception as e:
+        raise e
+
 
 def executar_q(q):
     cursor = __conectardb()

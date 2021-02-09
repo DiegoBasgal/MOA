@@ -1,0 +1,5 @@
+2021-02-09 17:45:49,514 [MainThread  ] [INFO ]  Simulador iniciado. Iniciando Threads
+2021-02-09 17:45:49,576 [Thread-2    ] [INFO ]  Comportamento_reservatório rodando
+2021-02-09 17:45:49,577 [MainThread  ] [INFO ]  Iniciando Comportamento do clp
+2021-02-09 17:45:49,577 [MainThread  ] [INFO ]  Iniciando Servidor/Slave Modbus 
+2021-02-09 17:45:49,647 [Thread-2    ] [INFO ]  Simuladndo a partir do inicio da tabela de afluentes

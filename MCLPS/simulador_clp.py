@@ -1,6 +1,7 @@
 # Import site é necessário para funcionar fora da IDE devido a necessidade de adicionar o diretório ao PATH
 import math
 import site
+
 site.addsitedir('..')
 
 from datetime import datetime
@@ -11,21 +12,142 @@ import MCLPS.CLP_config as CLPconfig
 import MCLPS.connector_db as db
 import os
 import threading
-import usina
+
 
 '''
     Simulador de CLP com comunicação Modbus
 '''
 
 # Constantes
-ESCALA_DE_TEMPO = 120
+ESCALA_DE_TEMPO = 60
 
 PLOTAR_GRAFICO_DEBBUG = True
+
+USINA_CAP_RESERVATORIO = 43000.0
+USINA_NV_MAX = 643.5
+USINA_NV_MIN = 643.0
+USINA_VAZAO_SANITARIA_COTA = 641
 
 
 # +-------------------------------------------------------------------------------------------------------------------+
 # | Comportamento do reservatório                                                                                     |
 # +-------------------------------------------------------------------------------------------------------------------+
+def q_turbinada(UG1, UG2):
+
+    """
+    Retorna o valor da turbinada conforme conforme cálculo preestabelecido
+    Cálculo retirado da planilha de excel
+    """
+
+    if UG1 > 100:
+        UG1 = UG1/1000
+
+    if UG2 > 100:
+        UG2 = UG2/1000
+
+    resultado = 0
+    if UG1 >= 1.0:
+        resultado += (4.50629 * (UG1 ** 10) - 76.41655 * (UG1 ** 9) + 573.2949 * (UG1 ** 8) - 2503.93565 * (
+                    UG1 ** 7) + 7045.30229 * (UG1 ** 6) - 13332.41115 * (UG1 ** 5) + 17168.57033 * (
+                                  UG1 ** 4) - 14840.58664 * (UG1 ** 3) + 8233.58463 * (
+                                  UG1 ** 2) - 2643.3025 * UG1 + 375.46773)
+    if UG2 >= 1.0:
+        resultado += (4.50629 * (UG2 ** 10) - 76.41655 * (UG2 ** 9) + 573.2949 * (UG2 ** 8) - 2503.93565 * (
+                    UG2 ** 7) + 7045.30229 * (UG2 ** 6) - 13332.41115 * (UG2 ** 5) + 17168.57033 * (
+                                  UG2 ** 4) - 14840.58664 * (UG2 ** 3) + 8233.58463 * (
+                                  UG2 ** 2) - 2643.3025 * UG2 + 375.46773)
+    if resultado > 100:
+        msg = "Verifique as potências: UG1={}, UG2={}".format(UG1, UG2)
+        raise Exception(msg)
+
+    return resultado
+
+
+def q_vertimento(nv):
+
+    """
+    Retorna o valor do vertimento conforme cálculo preestabelecido
+    Cálculo retirado da planilha de excel
+    """
+
+    resultado = 0
+    if nv > USINA_NV_MAX:
+        resultado = 2.11 * (0.096006 * ((nv - 643.5) / 2.78) ** 3 - 0.270618 * ((nv - 643.5) / 2.78) ** 2 + 0.386699 * (
+                    (nv - 643.5) / 2.78) + 0.783742) * 46.5 * (nv - 643.5) ** 1.5
+    return resultado
+
+
+def q_comporta(fechado, pos1, pos2, pos3, pos4, aberto, montante):
+
+    resultado = 0
+    h = 0
+
+    if fechado != 0:
+        h = 0
+    if pos1 != 0:
+        h = 0.050
+    if pos2 != 0:
+        h = 0.100
+    if pos3 != 0:
+        h = 0.150
+    if pos4 != 0:
+        h = 1.500
+    if aberto != 0:
+        h = 3.000
+
+    if montante >= 636.5:
+        resultado = 3 * h * math.sqrt(19.62*(montante-636.5))
+    else:
+        resultado = 0
+
+    return resultado
+
+
+def q_sanitaria(nv):
+
+        temp = (nv-USINA_VAZAO_SANITARIA_COTA) if nv > USINA_VAZAO_SANITARIA_COTA else 0
+        return 0.07474 * math.sqrt(19.62*temp)      # vazao
+
+
+def q_afluente(tempo, UG1, UG2, nv_mont, nv_mont_ant, pos_comporta):
+
+    """
+    Retorna o valor do afluente conforme cálculo preestabelecido
+    Cálculo retirado da planilha de excel
+    """
+
+    if not isinstance(nv_mont_ant, float):
+        return -1
+
+    resultado = 0
+    aux = 0
+
+    resultado += q_turbinada(UG1, UG2)
+    resultado += q_vertimento(nv_mont)
+    resultado += q_sanitaria(nv_mont)
+    comp_fechada = pos_comporta & 0b1
+    comp_pos1 = pos_comporta & 0b10
+    comp_pos2 = pos_comporta & 0b100
+    comp_pos3 = pos_comporta & 0b1000
+    comp_pos4 = pos_comporta & 0b10000
+    comp_aberta = pos_comporta & 0b100000
+    resultado += q_comporta(comp_fechada, comp_pos1, comp_pos2, comp_pos3, comp_pos4, comp_aberta, nv_mont)
+
+    if nv_mont > USINA_NV_MAX:
+        aux += USINA_NV_MAX
+    else:
+        aux += nv_mont
+
+    if nv_mont_ant > USINA_NV_MAX:
+        aux -= USINA_NV_MAX
+    else:
+        aux -= nv_mont_ant
+
+    resultado += (aux * ((USINA_CAP_RESERVATORIO / (USINA_NV_MAX - USINA_NV_MIN)) / tempo))
+
+    return resultado
+
+
 class ComportamentoReal:
     
     setpoint_ug1 = 0
@@ -43,6 +165,9 @@ class ComportamentoReal:
     pot_ug2 = 0
     sinc_ug1 = 0
     sinc_ug2 = 0
+    tempo_ug1 = 0
+    tempo_ug2 = 0
+    flags_usina = 0
 
     def __init__(self):
 
@@ -54,6 +179,9 @@ class ComportamentoReal:
         self.setpoint_ug2 = 0
         self.sinc_ug1 = 0
         self.sinc_ug2 = 0
+        self.tempo_ug1 = 0
+        self.tempo_ug2 = 0
+        self.flags_usina = 0
 
     def atualiza_nv_montante(self):
         nv = - 0.0000000002 * ((self.volume / 1000) ** 4) + 0.0000002 * ((self.volume / 1000) ** 3) - 0.0001 * (
@@ -67,7 +195,6 @@ class ComportamentoReal:
         amostras = db.get_amostras_afluente()
 
         while True:
-
             logging.info("Simuladndo a partir do inicio da tabela de afluentes")
             logging.debug("T simulação (s); Afluente; Efluente; Turbinado; Nv_montante")
 
@@ -95,6 +222,11 @@ class ComportamentoReal:
                 else:
 
                     # Acerta as UGS
+                    if self.flags_usina > 1:
+                        self.setpoint_ug1 = 0
+                        self.setpoint_ug2 = 0
+                        print("ALERTOU NA CLP! {}".format(self.flags_usina))
+
 
                     #ug1
                     if self.setpoint_ug1 >= 1:
@@ -109,7 +241,9 @@ class ComportamentoReal:
                         self.sinc_ug1 = 0
                         self.pot_ug1 -= (0.625 / 60) * delta_t_sim
                         self.pot_ug1 = max(0, self.pot_ug1)
-           
+                    if self.sinc_ug1 > 0.5:
+                        self.tempo_ug1 += delta_t_sim
+
                     #ug2
                     if self.setpoint_ug2 >= 1:
                         self.sinc_ug2 += 0.2 * (delta_t_sim / 60)
@@ -123,15 +257,18 @@ class ComportamentoReal:
                         self.sinc_ug2 = 0
                         self.pot_ug2 -= (0.625 / 60) * delta_t_sim
                         self.pot_ug2 = max(0, self.pot_ug2)
+                    if self.sinc_ug2 > 0.5:
+                        self.tempo_ug2 += delta_t_sim
 
                     # Acerta as Vazoes
-                    q_aflu = amostras[a][1]
+                    #q_aflu = amostras[a][1]
                     #q_aflu = 5.8623152  # 1UG@1,5MW + SANI@1/2NVMAX
-                    q_vert = usina.q_vertimento(self.nv_montante)
-                    q_comp = usina.q_comporta(self.comp_fechada, self.comp_p1, self.comp_p2, self.comp_p3, self.comp_p4,
+                    q_aflu = 8
+                    q_vert = q_vertimento(self.nv_montante)
+                    q_comp = q_comporta(self.comp_fechada, self.comp_p1, self.comp_p2, self.comp_p3, self.comp_p4,
                                               self.comp_aberta, self.nv_montante)
-                    q_sani = usina.q_sanitaria(self.nv_montante)
-                    q_turb = usina.q_turbinada(self.pot_ug1, self.pot_ug2)
+                    q_sani = q_sanitaria(self.nv_montante)
+                    q_turb = q_turbinada(self.pot_ug1, self.pot_ug2)
                     q_eflu = q_vert + q_comp + q_sani + q_turb
                     q_liquida = q_aflu - q_eflu
 
@@ -202,7 +339,7 @@ if __name__ == "__main__":
     ip = CLPconfig.SLAVE_IP
     porta = CLPconfig.SLAVE_PORT
     temporizador = CLPconfig.CLP_REFRESH_RATE
-    REGS = [0] * 7  # 16 registradores
+    REGS = [0]*101  # registradores
     '''
         Detalhamento dos conteúdos dos registradores
 
@@ -220,6 +357,10 @@ if __name__ == "__main__":
                                     [5]:aberta)
         8 Pot REAL UG1
         9 Pot REAL UG2
+        10 tempo REAL UG1 em mins
+        11 tempo REAL UG2 em mins
+        
+        100 flags usina        
 
     '''
 
@@ -231,7 +372,7 @@ if __name__ == "__main__":
             os.system('cls' if os.name == 'nt' else 'clear')
             print("CLP rodando...")
             # Carrega os REGs, da memória, sem conectar.
-            REGS = DataBank.get_words(0, 10)
+            REGS = DataBank.get_words(0, 101)
 
             # Entradas da CLP
             comportamento_usina.setpoint_ug1 = (int(REGS[1])/1000)
@@ -243,11 +384,15 @@ if __name__ == "__main__":
             comportamento_usina.comp_p3 = REGS[6] & 0b00001000
             comportamento_usina.comp_p4 = REGS[6] & 0b00010000
             comportamento_usina.comp_aberta = REGS[6] & 0b00100000
+            comportamento_usina.flags_usina = int(REGS[100])
 
             # Saidas da CLP
             DataBank.set_words(0, [int((comportamento_usina.nv_montante - 620) * 100) * 10])
             DataBank.set_words(8, [int(comportamento_usina.pot_ug1 * 1000)])
             DataBank.set_words(9, [int(comportamento_usina.pot_ug2 * 1000)])
+            DataBank.set_words(10, [int(comportamento_usina.tempo_ug1 / 60)])
+            DataBank.set_words(11, [int(comportamento_usina.tempo_ug2 / 60)])
+            print(REGS[0:16],REGS[100])
             sleep(temporizador)
 
     except Exception as e:
