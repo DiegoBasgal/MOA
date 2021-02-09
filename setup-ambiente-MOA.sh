@@ -11,6 +11,9 @@ else
     sudo apt install python3
     sudo apt install python3-pip
     sudo pip3 install pyModbusTCP
+    sudo pip3 install wappdriver
+    sudo pip3 install django
+
     
     #Driver para o MSSQL
     #sudo apt  install curl
@@ -28,5 +31,6 @@ else
     #sudo pip3 install pandas
     #sudo pip3 install matplotlib
     #sudo pip3 install reportlab
+    
     
 fi

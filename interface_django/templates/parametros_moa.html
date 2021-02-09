@@ -1,0 +1,24 @@
+{% extends "base.html" %}
+
+{% block content %}
+<h1>Parametros MOA</h1>
+<p>Página de parametros usados pelo MOA.</p>
+{{ modo_autonomo_ativado }}
+<form method='post' action='/parametros_moa/'>
+    {% csrf_token %}
+    <p>Modo autonomo:</p>
+    <input type="radio" id="modo_autonomo_ativado" name="modo_autonomo_ativado" value="True"
+           {% if modo_autonomo_ativado == True %}
+           CHECKED
+           {% endif %}>
+    <label for="True">Ativado</label>
+    <input type="radio" id="modo_autonomo_ativado" name="modo_autonomo_ativado" value="False"
+           {% if modo_autonomo_ativado == False %}
+           CHECKED
+           {% endif %}>
+    <label for="False">Desativado</label>
+    <input type="submit" value="Salvar"/>
+</form>
+
+
+{% endblock content %}
