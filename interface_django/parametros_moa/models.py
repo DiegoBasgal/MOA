@@ -11,8 +11,7 @@ class ParametrosUsina(models.Model):
 
     modo_autonomo = models.IntegerField()
     status_moa = models.IntegerField()
-    emergencia_django_acionada = models.IntegerField()
-    emergencia_elipse_acionada = models.IntegerField()
+    emergencia_acionada = models.IntegerField()
     timestamp = models.DateTimeField()
     aguardando_reservatorio = models.IntegerField()
     clp_online = models.IntegerField()
@@ -43,9 +42,32 @@ class ParametrosUsina(models.Model):
     ug1_setpot = models.DecimalField(max_digits=30, decimal_places=15)
     ug1_sinc = models.IntegerField()
     ug1_tempo = models.IntegerField()
+    ug1_prioridade = models.IntegerField()
     ug2_disp = models.DecimalField(max_digits=30, decimal_places=15)
     ug2_pot = models.DecimalField(max_digits=30, decimal_places=15)
     ug2_setpot = models.DecimalField(max_digits=30, decimal_places=15)
     ug2_sinc = models.IntegerField()
     ug2_tempo = models.IntegerField()
+    ug2_prioridade = models.IntegerField()
     valor_ie_inicial = models.DecimalField(max_digits=30, decimal_places=15)
+    modo_de_escolha_das_ugs = models.IntegerField()
+    # modo 1 = hora depois prioridade
+    # modo 2 = prioridade depois hora
+
+class Comando(models.Model):
+    id = models.IntegerField(primary_key=True)
+    nome = models.CharField(max_length=255)
+    descricao = models.TextField()
+
+    """
+    AGENDAMENTO_RESET_PARMAETROS = 1
+    AGENDAMENTO_INDISPONIBILIZAR = 2
+    AGENDAMENTO_NORMALIZAR = 3
+
+    AGENDAMENTO_INDISPONIBILIZAR_UG_1 = 10
+    AGENDAMENTO_NORMALIZAR_UG_1 = 11
+
+    AGENDAMENTO_INDISPONIBILIZAR_UG_2 = 20
+    AGENDAMENTO_NORMALIZAR_UG_2 = 21
+    """
+

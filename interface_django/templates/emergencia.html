@@ -12,7 +12,7 @@
     <h3>MOA</h3>
     <p>Atualizado em  {{ timestamp }}</p>
     <p>Estado:  {{ descr }}</p>
-    <form method='post' action='emergencia'>
+    <form method='post' action='/parametros_moa/emergencia/'>
         {% csrf_token %}
         {% if estado > 0 %}
             <input type="hidden" id="codigo_emergencia" name="codigo_emergencia" value="0">

@@ -1,0 +1,39 @@
+{% extends "base.html" %}
+
+{% block content %}
+<h1>Agendamento #{{ ag.id }}</h1>
+<p>Visão detalhada.</p>
+
+<p>
+    <b>Data do agendamento:</b> {{ ag.data|date:"d/M/Y - H:i:s" }}
+    <br/>
+    <br/>
+    <b>Comando:</b> {{ ag.comando.id}} - {{ ag.comando.nome }}: {{ ag.comando.descricao }}
+    <br/>
+    <br/>
+    <b>Descrição ou observações:</b> {{ ag.observacao}} <br/>
+    <br/>
+    <b>Executado:</b> {% if ag.executado == 1 %} Sim {% else %} Não {% endif %} <br/>
+    <br/>
+    <form method='post' action='#'>
+        {% csrf_token %}
+        <input type="hidden" name="acao" value="remover">
+        <b>Remover agendamento:</b><input type="submit" value="Remover"/>
+    </form>
+
+</p>
+<br/>
+<br/>
+
+<b>Referência dos códigos dos comandos</b>
+<table style="text-align:center" border="solid 1px black">
+    <tr>
+       <th width="100px">Código</th>
+       <th width="500px">Comando</th>
+    </tr>
+    <tr><td>0</td><td>Voltar parâmetros padrões</td></tr>
+    <tr><td>1</td><td>Acionar emergncia</td></tr>
+</table>
+
+
+{% endblock content %}

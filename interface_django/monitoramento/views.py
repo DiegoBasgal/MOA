@@ -13,8 +13,7 @@ def monitoramento_view(request, *args, **kwargs):
 
     context = {
         'estado': "{}".format(usina.status_moa),
-        'em_django': "{}".format(usina.emergencia_django_acionada),
-        'em_elipse': "{}".format(usina.emergencia_elipse_acionada),
+        'em_acionada': "{}".format(usina.emergencia_acionada),
         'timestamp': usina.timestamp.strftime("%d/%m/%Y, %H:%M:%S"),
         'setpot_usina': "{:1.3f}".format(usina.ug1_setpot + usina.ug2_setpot),
         'setpot_ug1': "{:1.3f}".format(usina.ug1_setpot),
@@ -36,7 +35,7 @@ def monitoramento_view(request, *args, **kwargs):
     if client.open():
         regs = client.read_holding_registers(0, 7)
         client.close()
-        if regs is None:
+        if regs is None or regs[0] < 2000:
             context['modbus_status'] = "Sem comunicação (regs is None)"
         else:
             context['modbus_status'] = 'Ok!'
@@ -44,5 +43,15 @@ def monitoramento_view(request, *args, **kwargs):
             context['hb_datestring'] = hb_detetime.strftime("%d/%m/%Y, %H:%M:%S")
     else:
         context['modbus_status'] = "Sem comunicação (client.open() falhou)"
+
+    tempo_desde_moa_comunicando = datetime.datetime.now(usina.timestamp.tzinfo) - usina.timestamp - datetime.timedelta(hours=3)
+
+    hours = int(tempo_desde_moa_comunicando.seconds // 3600)
+    remainder = int(tempo_desde_moa_comunicando.seconds - hours * 3600)
+    mins = int(remainder // 60)
+    secs = int(remainder - mins * 60)
+
+    context['tempo_desde_moa_comunicando'] = "{} dias, {:02d}:{:02d}:{:02d}".format(tempo_desde_moa_comunicando.days,
+                                                                         hours, mins, secs)
 
     return render(request, 'monitoramento.html', context=context)
