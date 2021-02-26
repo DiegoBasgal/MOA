@@ -1,18 +1,18 @@
 # Import site é necessário para funcionar fora da IDE devido a necessidade de adicionar o diretório ao PATH
-import math
 import site
-
+from numpy import random
 site.addsitedir('..')
 
 from datetime import datetime
 from pyModbusTCP.server import ModbusServer, DataBank
 from time import sleep
-import logging
+import curses
+import math
 import MCLPS.CLP_config as CLPconfig
 import MCLPS.connector_db as db
-import os
+import logging
+import matplotlib.pyplot as plt
 import threading
-
 
 '''
     Simulador de CLP com comunicação Modbus
@@ -21,7 +21,7 @@ import threading
 # Constantes
 ESCALA_DE_TEMPO = 60
 
-PLOTAR_GRAFICO_DEBBUG = True
+PLOTAR_GRAFICO_DEBBUG = False
 
 USINA_CAP_RESERVATORIO = 43000.0
 USINA_NV_MAX = 643.5
@@ -148,40 +148,145 @@ def q_afluente(tempo, UG1, UG2, nv_mont, nv_mont_ant, pos_comporta):
     return resultado
 
 
+def plotar_debug():
+    fp = open('debug.out', 'w')
+    fp.write("")
+    fp.close()
+    sleep(0.5)
+
+    limite_t = 24
+
+    fig, ax1 = plt.subplots()
+
+    ax1.set_xlabel('Tempo decorrido na simulação (h)')
+    ax1.set_ylabel('Nível montante (m)', color='blue')
+    ax1.axis([0, limite_t, 642.95, 643.75])
+
+    ax3 = ax1.twinx()
+    ax3.set_ylabel('Vazão Afluente (m³/s)', color='Green')
+    ax3.axis([0, limite_t, 0, 30])
+    ax3.spines['right'].set_position(('outward', 60))
+    ax3.xaxis.set_ticks([])
+
+    ax2 = ax1.twinx()
+    ax2.set_ylabel('Potências (MW)', color='Red')
+    ax2.axis([0, limite_t, 0, 5])
+
+    ax1.axhline(y=643.50, color="black", linestyle="--")
+    ax1.axhline(y=643.25, color="gray", linestyle=":")
+    ax1.axhline(y=643.00, color="black", linestyle="--")
+    plt.title("MOA - Simulação do comportamento")
+    plt.xticks(range(0, limite_t + 1, 5))
+
+    # fig.tight_layout()  # otherwise the right y-label is slightly clipped
+
+    # segundos_simulados, q_afluente, nv_montante, ug1_pot, ug2_pot
+
+    t_sim = [0]
+    nv_m = [0]
+    q_aflu = [0]
+    pot1 = [0]
+    pot2 = [0]
+    pott = [0]
+    setpoint = [0]
+
+    primeira_vez = True
+
+    while True:
+        aux = False
+        while not aux:
+            fp = open('debug.out', 'r')
+            aux = fp.readline()
+            fp.close()
+            sleep(0.1)
+        if aux:
+            aux = aux.split()[:]
+            for a in range(len(aux)):
+                aux[a] = float(aux[a])
+            t_sim.append(aux[0] / 3600)
+            q_aflu.append(aux[1])
+            nv_m.append(round(aux[2], 3))
+            pot1.append(aux[3])
+            pot2.append(aux[4])
+            pott.append(aux[3] + aux[4])
+            setpoint.append(aux[5])
+
+        if t_sim[-1] >= limite_t:
+            ax1.axis([t_sim[-1] - limite_t, t_sim[-1], 642.95, 643.75])
+            ax2.axis([t_sim[-1] - limite_t, t_sim[-1], 0, 5])
+            ax3.axis([t_sim[-1] - limite_t, t_sim[-1], 0, 30])
+
+        linha1, = ax1.plot(t_sim, nv_m, label='Nível montante', color='blue')
+        linha5, = ax3.plot(t_sim, q_aflu, label='Afluente', color='green')
+
+        linha4, = ax2.plot(t_sim, pott, label='Potência total', color='red', linestyle=":")
+
+        linha2, = ax2.plot(t_sim, pot1, label='Potência UG1', color='orange', linestyle="--")
+        linha3, = ax2.plot(t_sim, pot2, label='Potência UG2', color='yellow', linestyle="--")
+
+        # linha6, = ax2.plot(t_sim, setpoint, label='SetPoint', color='purple', linestyle=":")
+        if primeira_vez:
+            # plt.legend(handles=[linha1, linha5, linha2, linha3, linha4, linha6], loc='upper center', bbox_to_anchor=(0.5, -0.05), ncol=3)
+            plt.legend(handles=[linha1, linha5, linha2, linha3, linha4], loc='upper center',
+                       bbox_to_anchor=(0.5, -0.075), ncol=5)
+
+        # print(t_sim)
+        # print("running...")
+
+        plt.pause(0.6)
+        primeira_vez = False
+        # print("Plot Progress: {:3.3f}%".format(t_sim[-1] * 100 / limite_t))
+
+        if t_sim[-1] >= limite_t:
+            figtitle = "resultados/plot_{}_{}.png".format(int(t_sim[-1]), datetime.now().strftime("%d-%m-%Y_%H-%M-%S"))
+            plt.savefig(figtitle)
+            exit()
+
+
 class ComportamentoReal:
     
-    setpoint_ug1 = 0
-    setpoint_ug2 = 0
-    comp_flags = 0
-    comp_fechada = 0
-    comp_p1 = 0
-    comp_p2 = 0
-    comp_p3 = 0
-    comp_p4 = 0
-    comp_aberta = 0
-    nv_montante = 0
-    volume = 0
-    pot_ug1 = 0
-    pot_ug2 = 0
-    sinc_ug1 = 0
-    sinc_ug2 = 0
-    tempo_ug1 = 0
-    tempo_ug2 = 0
     flags_usina = 0
+    q_aflu = 5.8623152  # 1UG@1,5MW + SANI@1/2NVMAX
+    ug1_flags = 0
+    ug1_minutos = 0
+    ug1_perda_grade = 0
+    ug1_pot = 0
+    ug1_setpoint = 0
+    ug1_sinc = 0
+    ug1_temp_mancal = 0
+    ug2_flags = 0
+    ug2_flags = 0
+    ug2_minutos = 0
+    ug2_perda_grade = 0
+    ug2_pot = 0
+    ug2_setpoint = 0
+    ug2_sinc = 0
+    ug2_temp_mancal = 0
+    volume = 192300
+    segundos_simulados = 0
 
     def __init__(self):
 
-        self.volume = 192300
-        self.atualiza_nv_montante()
-        self.pot_ug1 = 0
-        self.pot_ug2 = 0
-        self.setpoint_ug1 = 0
-        self.setpoint_ug2 = 0
-        self.sinc_ug1 = 0
-        self.sinc_ug2 = 0
-        self.tempo_ug1 = 0
-        self.tempo_ug2 = 0
         self.flags_usina = 0
+        self.q_aflu = 5.8623152  # 1UG@1,5MW + SANI@1/2NVMAX
+        self.ug1_flags = 0
+        self.ug1_minutos = 0
+        self.ug1_perda_grade = 0
+        self.ug1_pot = 0
+        self.ug1_setpoint = 0
+        self.ug1_sinc = 0
+        self.ug1_temp_mancal = 80
+        self.ug2_flags = 0
+        self.ug2_flags = 0
+        self.ug2_minutos = 0
+        self.ug2_perda_grade = 0
+        self.ug2_pot = 0
+        self.ug2_setpoint = 0
+        self.ug2_sinc = 0
+        self.ug2_temp_mancal = 80
+        self.volume = 192300
+        self.segundos_simulados = 0
+        self.atualiza_nv_montante()
 
     def atualiza_nv_montante(self):
         nv = - 0.0000000002 * ((self.volume / 1000) ** 4) + 0.0000002 * ((self.volume / 1000) ** 3) - 0.0001 * (
@@ -189,29 +294,89 @@ class ComportamentoReal:
         self.nv_montante = nv
         return nv
 
-    def comportamento_reservatorio(self):
+    def comportamento_real(self):
 
-        logging.info("Comportamento_reservatório rodando")
+        logging.info("Comportamento rodando")
         amostras = db.get_amostras_afluente()
 
         while True:
-            logging.info("Simuladndo a partir do inicio da tabela de afluentes")
-            logging.debug("T simulação (s); Afluente; Efluente; Turbinado; Nv_montante")
 
             t0 = datetime.now()
             t1 = datetime.now()
-            segundos_simulados = 0
+            self.segundos_simulados = 0
             segundos_simulados_ant = 0
             a = 0
             while a in range(len(amostras) - 1):
 
+                '''
+                        Detalhamento dos conteúdos dos registradores
+
+                        REGS    Descrição 
+                                    
+                        0       nivel_montante  [620 + X mm]
+                        
+                        10      comporta        [raw]
+                        11      comporta        [0:fechada, 1:pos1: 2:pos2, 3:pos3, 4:pos4, 5:aberta]
+                        
+                        20      UG 1 Flags      [raw]
+                        21      UG 1 Potência   [kW]
+                        22      UG 1 Setpoint   [kW]
+                        23      UG 1 Tempo      [min]
+                        24      UG 1 T Mancal   [C*100]
+                        25      UG 1 Perda grd  [m*100]
+                        
+                        30      UG 2 Flags      [raw]
+                        31      UG 2 Potência   [kW]
+                        32      UG 2 Setpoint   [kW]
+                        33      UG 2 Tempo      [min]
+                        34      UG 2 T Mancal   [C*100]
+                        35      UG 2 Perda grd  [m*100]
+                        
+                        100     Usina Flags     [raw]   
+
+                    '''
+
+
+                ###################
+                # Entradas da CLP #
+                ###################
+
+                REGS = DataBank.get_words(0, 101)
+                self.ug1_flags = (int(REGS[20]))
+                self.ug1_setpoint = (int(REGS[22]) / 1000)
+                self.ug2_flags = (int(REGS[30]))
+                self.ug2_setpoint = (int(REGS[32]) / 1000)
+                self.comp_flags = REGS[10]
+                self.comp_fechada = REGS[11] & 0b00000001
+                self.comp_p1 = REGS[11] & 0b00000010
+                self.comp_p2 = REGS[11] & 0b00000100
+                self.comp_p3 = REGS[11] & 0b00001000
+                self.comp_p4 = REGS[11] & 0b00010000
+                self.comp_aberta = REGS[11] & 0b00100000
+                self.flags_usina = int(REGS[100])
+
+                #################
+                # Saidas da CLP #
+                #################
+
+                DataBank.set_words(0, [int(((self.nv_montante - 620) * 100 + random.normal(scale=0.5)))*10])
+                DataBank.set_words(21, [int(self.ug1_pot * 1000)])
+                DataBank.set_words(23, [int(self.ug1_minutos)])
+                DataBank.set_words(24, [int(self.ug1_temp_mancal*100)])
+                DataBank.set_words(25, [int(self.ug1_perda_grade*10)*10])
+                DataBank.set_words(31, [int(self.ug2_pot * 1000)])
+                DataBank.set_words(33, [int(self.ug2_minutos)])
+                DataBank.set_words(34, [int(self.ug2_temp_mancal*100)])
+                DataBank.set_words(35, [int(self.ug2_perda_grade*10)*10])
+
+                # acerto de tempo
                 segundos_reais = (datetime.now()-t0).total_seconds()
-                segundos_simulados_ant = segundos_simulados
-                segundos_simulados = segundos_reais * ESCALA_DE_TEMPO
-                delta_t_sim = segundos_simulados - segundos_simulados_ant
+                segundos_simulados_ant = self.segundos_simulados
+                self.segundos_simulados = segundos_reais * ESCALA_DE_TEMPO
+                delta_t_sim = self.segundos_simulados - segundos_simulados_ant
                 sleep(0.001)  # tick
 
-                if (amostras[a][0] - amostras[0][0]).total_seconds() < segundos_simulados:
+                if (amostras[a][0] - amostras[0][0]).total_seconds() < self.segundos_simulados:
                     a += 1
                     t_c = (datetime.now() - t1).total_seconds()
                     t_a = (amostras[a + 1][0] - amostras[a][0]).total_seconds()
@@ -221,56 +386,75 @@ class ComportamentoReal:
 
                 else:
 
-                    # Acerta as UGS
-                    if self.flags_usina > 1:
-                        self.setpoint_ug1 = 0
-                        self.setpoint_ug2 = 0
-                        print("ALERTOU NA CLP! {}".format(self.flags_usina))
+                    # Ciclo da simulação
 
+                    self.ug1_temp_mancal = round(self.ug1_temp_mancal + random.normal(scale=0.1), 1)
+                    self.ug2_temp_mancal = round(self.ug2_temp_mancal + random.normal(scale=0.1), 1)
+
+                    self.ug1_perda_grade = max(self.ug1_perda_grade + random.exponential(scale=0.001) - 0.0008, 0)
+                    self.ug2_perda_grade = max(self.ug2_perda_grade + random.exponential(scale=0.001) - 0.0008, 0)
+
+                    # Acerta as UGS
+                    if self.flags_usina >= 1:
+                        self.ug1_setpoint = 0
+                        self.ug1_sinc = 0
+                        self.ug2_setpoint = 0
+                        self.ug2_sinc = 0
+                        # print("ALERTOU NA CLP! {}".format(self.flags_usina))
+
+                    if self.ug1_flags > 0:
+                        self.ug1_setpoint = 0
+                        self.ug1_sinc = 0
+                        # print("ALERTOU NA CLP! UG1 {}".format(self.ug1_flags))
+
+                    if self.ug2_flags > 0:
+                        self.ug2_setpoint = 0
+                        self.ug2_sinc = 0
+                        # print("ALERTOU NA CLP! UG2 {}".format(self.ug2_flags))
 
                     #ug1
-                    if self.setpoint_ug1 >= 1:
-                        self.sinc_ug1 += 0.2 * (delta_t_sim / 60)
-                        if self.sinc_ug1 >= 1:
-                            self.sinc_ug1 = 1
-                            var_ug1_por_minuto = (self.setpoint_ug1 - self.pot_ug1) / (delta_t_sim / 60)
+                    if self.ug1_setpoint >= 1:
+                        self.ug1_sinc += 0.2 * (delta_t_sim / 60)
+                        if self.ug1_sinc >= 1:
+                            self.ug1_sinc = 1
+                            var_ug1_por_minuto = (self.ug1_setpoint - self.ug1_pot) / (delta_t_sim / 60)
                             var_ug1_por_minuto = math.copysign(min(0.625, abs(var_ug1_por_minuto)), var_ug1_por_minuto)
-                            self.pot_ug1 += (var_ug1_por_minuto / 60) * delta_t_sim
-                            self.pot_ug1 = max(1, self.pot_ug1)
+                            self.ug1_pot += (var_ug1_por_minuto / 60) * delta_t_sim
+                            self.ug1_pot = min(max(1, self.ug1_pot), 2.6) + random.normal(scale=0.001)
                     else:
-                        self.sinc_ug1 = 0
-                        self.pot_ug1 -= (0.625 / 60) * delta_t_sim
-                        self.pot_ug1 = max(0, self.pot_ug1)
-                    if self.sinc_ug1 > 0.5:
-                        self.tempo_ug1 += delta_t_sim
+                        self.ug1_sinc = 0
+                        self.ug1_pot -= (0.625 / 60) * delta_t_sim
+                        self.ug1_pot = max(0, self.ug1_pot)
+
+                    if self.ug1_sinc > 0.5:
+                        self.ug1_minutos += delta_t_sim/60
 
                     #ug2
-                    if self.setpoint_ug2 >= 1:
-                        self.sinc_ug2 += 0.2 * (delta_t_sim / 60)
-                        if self.sinc_ug2 >= 1:
-                            self.sinc_ug2 = 1
-                            var_ug2_por_minuto = (self.setpoint_ug2 - self.pot_ug2) / (delta_t_sim / 60)
+                    if self.ug2_setpoint >= 1:
+                        self.ug2_sinc += 0.2 * (delta_t_sim / 60)
+                        if self.ug2_sinc >= 1:
+                            self.ug2_sinc = 1
+                            var_ug2_por_minuto = (self.ug2_setpoint - self.ug2_pot) / (delta_t_sim / 60)
                             var_ug2_por_minuto = math.copysign(min(0.625, abs(var_ug2_por_minuto)), var_ug2_por_minuto)
-                            self.pot_ug2 += (var_ug2_por_minuto / 60) * delta_t_sim
-                            self.pot_ug2 = max(1, self.pot_ug2)
+                            self.ug2_pot += (var_ug2_por_minuto / 60) * delta_t_sim
+                            self.ug2_pot = min(max(1, self.ug2_pot), 2.6) + random.normal(scale=0.001)
                     else:
-                        self.sinc_ug2 = 0
-                        self.pot_ug2 -= (0.625 / 60) * delta_t_sim
-                        self.pot_ug2 = max(0, self.pot_ug2)
-                    if self.sinc_ug2 > 0.5:
-                        self.tempo_ug2 += delta_t_sim
+                        self.ug2_sinc = 0
+                        self.ug2_pot -= (0.625 / 60) * delta_t_sim
+                        self.ug2_pot = max(0, self.ug2_pot)
+
+                    if self.ug2_sinc > 0.5:
+                        self.ug2_minutos += delta_t_sim/60
 
                     # Acerta as Vazoes
-                    #q_aflu = amostras[a][1]
-                    #q_aflu = 5.8623152  # 1UG@1,5MW + SANI@1/2NVMAX
-                    q_aflu = 8
+                    # self.q_aflu = amostras[a][1]
                     q_vert = q_vertimento(self.nv_montante)
                     q_comp = q_comporta(self.comp_fechada, self.comp_p1, self.comp_p2, self.comp_p3, self.comp_p4,
                                               self.comp_aberta, self.nv_montante)
                     q_sani = q_sanitaria(self.nv_montante)
-                    q_turb = q_turbinada(self.pot_ug1, self.pot_ug2)
+                    q_turb = q_turbinada(self.ug1_pot, self.ug2_pot)
                     q_eflu = q_vert + q_comp + q_sani + q_turb
-                    q_liquida = q_aflu - q_eflu
+                    q_liquida = self.q_aflu - q_eflu
 
                     # Acerta o NV
                     self.volume += q_liquida * delta_t_sim
@@ -283,23 +467,26 @@ class ComportamentoReal:
                     # para grafico de debbug
                     if PLOTAR_GRAFICO_DEBBUG:
                         fp = open('debug.out', 'w+')
-                        fp.write("{:15.0f} {:5.5f} {:5.5f} {:5.5f} {:5.5f} {:5.5f}\n".format(segundos_simulados,  q_aflu, self.nv_montante, self.pot_ug1,
-                                                                                     self.pot_ug2, self.setpoint_ug1+self.setpoint_ug2))
+                        fp.write("{:15.0f} {:5.5f} {:5.5f} {:5.5f} {:5.5f} {:5.5f}\n".format(self.segundos_simulados,  self.q_aflu, self.nv_montante, self.ug1_pot,
+                                                                                     self.ug2_pot, self.ug1_setpoint+self.ug2_setpoint))
                         fp.close()
 
-                    logging.debug(("{:15.0f};{:5.5f};{:5.5f};{:5.5f};{:5.5f};{:5.5f}\n".format(segundos_simulados,  q_aflu, self.nv_montante, self.pot_ug1,
-                                                                                     self.pot_ug2, self.setpoint_ug1+self.setpoint_ug2)))
+                    logging.debug(("{:15.0f};{:5.5f};{:5.5f};{:5.5f};{:5.5f};{:5.5f}\n".format(self.segundos_simulados,  self.q_aflu, self.nv_montante, self.ug1_pot,
+                                                                                     self.ug2_pot, self.ug1_setpoint+self.ug2_setpoint)))
             logging.info("Final das amostras")
-
-
-def plotar_debug():
-    from MCLPS import plotar_debbug
 
 
 # +-------------------------------------------------------------------------------------------------------------------+
 # | MAIN                                                                                                              |
 # +-------------------------------------------------------------------------------------------------------------------+
 if __name__ == "__main__":
+
+    i = 0
+    tempo_inicio = datetime.now()
+
+    import os
+    cmd = 'mode 120,40'
+    os.system(cmd)
 
     # Inicializando o logging
     logFormatter = logging.Formatter("%(asctime)s [%(threadName)-12.12s] [%(levelname)-5.5s]  %(message)s")
@@ -323,14 +510,34 @@ if __name__ == "__main__":
     # Inicialização dos comportamentos
     logging.info("Simulador iniciado. Iniciando Threads")
 
-    comportamento_usina = ComportamentoReal()
-    t_comportamento_reservatorio = threading.Thread(target=comportamento_usina.comportamento_reservatorio)
-    t_comportamento_reservatorio.daemon = False
-    t_comportamento_reservatorio.start()
+    cr = ComportamentoReal()
+    t_cr = threading.Thread(target=cr.comportamento_real)
+    t_cr.daemon = False
+    t_cr.start()
+
+    # CLI
+    # create a curses object
+    stdscr = curses.initscr()
+    height, width = stdscr.getmaxyx()  # get the window size
+
+    # define two color pairs, 1- header/footer , 2 - dynamic text, 3 - background, 4- erro
+    curses.start_color()
+    curses.init_pair(1, curses.COLOR_BLACK, curses.COLOR_WHITE)
+    curses.init_pair(2, curses.COLOR_GREEN, curses.COLOR_BLACK)
+    curses.init_pair(3, curses.COLOR_WHITE, curses.COLOR_BLACK)
+    curses.init_pair(4, curses.COLOR_WHITE, curses.COLOR_RED)
+
+    # Write a header and footer, first write colored strip, then write text
+    stdscr.bkgd(curses.color_pair(3))
+    stdscr.addstr(0, 0, " " * width, curses.color_pair(1))
+    stdscr.addstr(height - 1, 0, " " * (width - 1), curses.color_pair(1))
+    stdscr.addstr(0, 0, "MCPLS - Módulo controlador lógico programavél simulado - Ritmo Energia 2021", curses.color_pair(1))
+    stdscr.addstr(height - 1, 0, " Key Commands : q - Sair; a - Alterar Afluente; d - Alterar Databank", curses.color_pair(1))
+    stdscr.refresh()
 
 
     ########################
-    # Comportamento da CLP #
+    # Interface #
     ########################
 
     logging.info("Iniciando Comportamento do clp")
@@ -339,66 +546,94 @@ if __name__ == "__main__":
     ip = CLPconfig.SLAVE_IP
     porta = CLPconfig.SLAVE_PORT
     temporizador = CLPconfig.CLP_REFRESH_RATE
-    REGS = [0]*101  # registradores
-    '''
-        Detalhamento dos conteúdos dos registradores
-
-        REGS[0]:    nivel_montante  [620 + X mm]
-        REGS[1]:    setpoint ug1    [X kw]
-        REGS[2]:    FLAGS_ug1     [RAW]
-        REGS[3]:    setpoint ug2    [X kw]
-        REGS[4]:    FLAGS_ug2     [RAW]
-        REGS[5]:    comp_value  [RAW]
-        REGS[6]:    comp_flags  [0]:fechada
-                                    [1]:pos1
-                                    [2]:pos2
-                                    [3]:pos3
-                                    [4]:pos4
-                                    [5]:aberta)
-        8 Pot REAL UG1
-        9 Pot REAL UG2
-        10 tempo REAL UG1 em mins
-        11 tempo REAL UG2 em mins
-        
-        100 flags usina        
-
-    '''
 
     server = ModbusServer(host=ip, port=porta, no_block=True)
     try:
         server.start()
         while True:
-            # Limpa a interface de linha
-            os.system('cls' if os.name == 'nt' else 'clear')
-            print("CLP rodando...")
-            # Carrega os REGs, da memória, sem conectar.
-            REGS = DataBank.get_words(0, 101)
 
-            # Entradas da CLP
-            comportamento_usina.setpoint_ug1 = (int(REGS[1])/1000)
-            comportamento_usina.setpoint_ug2 = (int(REGS[3])/1000)
-            comportamento_usina.comp_flags = REGS[5]
-            comportamento_usina.comp_fechada = REGS[6] & 0b00000001
-            comportamento_usina.comp_p1 = REGS[6] & 0b00000010
-            comportamento_usina.comp_p2 = REGS[6] & 0b00000100
-            comportamento_usina.comp_p3 = REGS[6] & 0b00001000
-            comportamento_usina.comp_p4 = REGS[6] & 0b00010000
-            comportamento_usina.comp_aberta = REGS[6] & 0b00100000
-            comportamento_usina.flags_usina = int(REGS[100])
+            k = 0
+            stdscr.nodelay(True)
+            k = stdscr.getch()
+            if k == ord('q') or k == ord('Q'):
+                curses.endwin()
+                raise KeyboardInterrupt
+            elif k == ord('a') or k == ord('A'):
+                try:
+                    valor = 0
+                    for k in range(26, height-1):
+                        stdscr.addstr(k, 0, " "*width, curses.color_pair(3))
+                    stdscr.addstr(26, 0, "Insira o novo valor da vazão afluente (q_aflu) (entre 0 e 50 m³/s):", curses.color_pair(3))
+                    valor = stdscr.getstr()
+                    valor = float(valor)
+                    valor = min(max(valor, 0), 50)
+                    cr.q_aflu = valor
+                    stdscr.addstr(26, 0, " "*width, curses.color_pair(3))
+                except Exception as e:
+                    stdscr.addstr(26, 0, " "*width, curses.color_pair(4))
+                    stdscr.addstr(26, 0, "Erro! {} ".format(e), curses.color_pair(4))
 
-            # Saidas da CLP
-            DataBank.set_words(0, [int((comportamento_usina.nv_montante - 620) * 100) * 10])
-            DataBank.set_words(8, [int(comportamento_usina.pot_ug1 * 1000)])
-            DataBank.set_words(9, [int(comportamento_usina.pot_ug2 * 1000)])
-            DataBank.set_words(10, [int(comportamento_usina.tempo_ug1 / 60)])
-            DataBank.set_words(11, [int(comportamento_usina.tempo_ug2 / 60)])
-            print(REGS[0:16],REGS[100])
-            sleep(temporizador)
+            elif k == ord('d') or k == ord('D'):
+                try:
+                    valor = 0
+                    anterior = cr.q_aflu
+                    for k in range(26, height-1):
+                        stdscr.addstr(k, 0, " "*width, curses.color_pair(3))
+                    stdscr.addstr(26, 0, "Alterar o valor de qual endereço (endereço entre 0 - 65535)? ", curses.color_pair(3))
+                    end = stdscr.getstr()
+                    end = int(end)
+                    if not (0 <= valor <= 65535):
+                        stdscr.addstr(26, 0, " " * width, curses.color_pair(4))
+                        stdscr.addstr(26, 0, "Operação abortada: Endereço inválido", curses.color_pair(4))
+                    stdscr.addstr(27, 0, "Insira o valor a ser escrito no endereço {} (valor entre 0 - 65535): ".format(end), curses.color_pair(3))
+                    valor = stdscr.getstr()
+                    valor = int(valor)
+                    valor = min(max(valor, 0), 65535)
+                    DataBank.set_words(end, [valor])
+                    stdscr.addstr(26, 0, " "*width, curses.color_pair(3))
+                    stdscr.addstr(27, 0, " "*width, curses.color_pair(3))
+                except Exception as e:
+                    stdscr.addstr(26, 0, " "*width, curses.color_pair(4))
+                    stdscr.addstr(26, 0, "Erro! {} ".format(e), curses.color_pair(4))
+
+            else:
+                tempo_real = datetime.now() - tempo_inicio
+                i = i+1 if i < 3 else 0
+                texto_rodando = str("  Tempo decorrido: {:.1f} minutos  |  Horas simulas: {:.1f}  |  ".format(tempo_real.seconds/60, cr.segundos_simulados/3600) + "Rodando" + "."*i)
+                stdscr.addstr(2, 0, " "*width, curses.color_pair(3))
+                stdscr.addstr(2, 0, texto_rodando, curses.color_pair(3))
+                stdscr.addstr(3, 0, "-"*width, curses.color_pair(3))
+                sensor_nv = 620 + (DataBank.get_words(0, 1)[0]/1000)
+                stdscr.addstr(4, 0, "  Nível montante: Real:{:3.2f}m Sensor:{:3.2f}m  |  Flags Usina {:^5d}  |  Aflu: {:2.3f}m³/s ".format(cr.nv_montante, sensor_nv, cr.flags_usina, cr.q_aflu), curses.color_pair(3))
+                stdscr.addstr(4, 0, "  Nível montante: Real:{:3.2f}m Sensor:{:3.2f}m  |  Flags Usina {:^5d}  |  Aflu: {:2.3f}m³/s ".format(cr.nv_montante, sensor_nv, cr.flags_usina, cr.q_aflu), curses.color_pair(3))
+                stdscr.addstr(5, 0, "-"*width, curses.color_pair(3))
+                stdscr.addstr(6, 0, "  UG  |  Potencia  |  Setpoint  |  Flags  |  Sinc  |  T mancal  |  Perda grade  |  Horas-máquina".format(cr.nv_montante, cr.flags_usina), curses.color_pair(3))
+                stdscr.addstr(7, 0,
+                              "   1  |   {:1.3f}MW  |   {:1.3f}MW  |  {:^5d}  |  {:3.0f}%  |   {:2.1f}°C   |     {:1.2f}m     |      {:1.3f}h"
+                              .format(cr.ug1_pot, cr.ug1_setpoint, cr.ug1_flags, cr.ug1_sinc * 100, cr.ug1_temp_mancal, cr.ug1_perda_grade,
+                                      cr.ug1_minutos/60), curses.color_pair(3))
+                stdscr.addstr(8, 0,
+                              "   1  |   {:1.3f}MW  |   {:1.3f}MW  |  {:^5d}  |  {:3.0f}%  |   {:2.1f}°C   |     {:1.2f}m     |      {:1.3f}h"
+                              .format(cr.ug2_pot, cr.ug2_setpoint, cr.ug2_flags, cr.ug2_sinc * 100,  cr.ug2_temp_mancal, cr.ug2_perda_grade,
+                                      cr.ug2_minutos/60), curses.color_pair(3))
+
+                stdscr.addstr(9, 0, "-" * width, curses.color_pair(3))
+                stdscr.addstr(10, 0, "  Data bank ", curses.color_pair(3))
+                stdscr.addstr(11, 0, "-" * width, curses.color_pair(3))
+                stdscr.addstr(12, 0, "      :   0     1     2     3     4     5     6     7     8     9   :    "
+
+                              , curses.color_pair(3))
+
+                for j in range(11):
+                    stdscr.addstr(13+j, 0, "  {:3d} : {:^5d} {:^5d} {:^5d} {:^5d} {:^5d} {:^5d} {:^5d} {:^5d} {:^5d} {:^5d} : {:<3d}".format(*([j*10]+DataBank.get_words(0+(10*j), 10)+[9+(10*j)])), curses.color_pair(3))
+                stdscr.addstr(25, 0, "-"*width, curses.color_pair(3))
+                stdscr.addstr(height-2, 0, "DEBUG: Valor entrado: {}".format(k), curses.color_pair(2))
+
+                sleep(temporizador)
 
     except Exception as e:
         logging.error("Erro na execução do CLP: {}".format(e))
     finally:
-        logging.info("O comportamento_clp parou")
         pass
-
+    curses.endwin()
     logging.info("Final da Main")
