@@ -26,14 +26,14 @@ AGENDAMENTO_NORMALIZAR_UG_2 = 21
 
 # Constante referentes ao modbus com a CLP
 ENDERECO_CLP_NV_MONATNTE = 0
-ENDERECO_CLP_UG1_FLAGS = 3
-ENDERECO_CLP_UG1_HORAS = 10
-ENDERECO_CLP_UG1_SETPOINT = 8
-ENDERECO_CLP_UG1_POTENCIA = 1
-ENDERECO_CLP_UG2_FLAGS = 4
-ENDERECO_CLP_UG2_HORAS = 11
-ENDERECO_CLP_UG2_SETPOINT = 9
-ENDERECO_CLP_UG2_POTENCIA = 2
+ENDERECO_CLP_UG1_FLAGS = 20
+ENDERECO_CLP_UG1_HORAS = 23
+ENDERECO_CLP_UG1_SETPOINT = 22
+ENDERECO_CLP_UG1_POTENCIA = 21
+ENDERECO_CLP_UG2_FLAGS = 30
+ENDERECO_CLP_UG2_HORAS = 33
+ENDERECO_CLP_UG2_SETPOINT = 32
+ENDERECO_CLP_UG2_POTENCIA = 3
 ENDERECO_CLP_USINA_FLAGS = 100
 
 # Constante referentes ao databank local para acesso via modbus
@@ -129,7 +129,7 @@ class UnidadeDeGeracao:
         Indisponibiliza a ug
         """
 
-        self.disponivel = True
+        self.disponivel = False
         modbus_clp.write_single_register(self.registrador_flags, 1)
 
 
@@ -393,8 +393,8 @@ class Usina:
             # Comunicação modbus
             if modbus_clp.open():
                 # Atribuir potência para as ugs
-                modbus_clp.write_single_register(1, int(self.ug1.setpoint * 1000))
-                modbus_clp.write_single_register(3, int(self.ug2.setpoint * 1000))
+                modbus_clp.write_single_register(ENDERECO_CLP_UG1_SETPOINT, int(self.ug1.setpoint * 1000))
+                modbus_clp.write_single_register(ENDERECO_CLP_UG2_SETPOINT, int(self.ug2.setpoint * 1000))
                 modbus_clp.close()
             else:
                 self.clp_online = False
@@ -520,8 +520,9 @@ class Usina:
                         self.ug2.disponivel = True
                         client = ModbusClient(host=self.clp_ip, port=self.clp_porta, timeout=5, unit_id=1)
                         if client.open():
-                            client.write_single_register(2, 0)
-                            client.write_single_register(4, 0)
+                            client.write_single_register(ENDERECO_CLP_UG1_FLAGS, 0)
+                            client.write_single_register(ENDERECO_CLP_UG2_FLAGS, 0)
+                            client.write_single_register(ENDERECO_CLP_USINA_FLAGS, 0)
                             client.close()
 
                     except Exception as e:
@@ -569,31 +570,20 @@ class Usina:
 
                 elif agendamento[2] == AGENDAMENTO_INDISPONIBILIZAR_UG_1:
                     logger.info("Indisponibilizando a UG1 (comando via agendamento).")
-                    self.ug1.disponivel = False
-                    client = ModbusClient(host=self.clp_ip, port=self.clp_porta, timeout=5, unit_id=1)
-                    if client.open():
-                        client.write_single_register(2, 1)
-                        client.close()
+                    self.ug1.indisponibilizar()
 
                 elif agendamento[2] == AGENDAMENTO_INDISPONIBILIZAR_UG_2:
                     logger.info("Indisponibilizando a UG2 (comando via agendamento).")
-                    self.ug2.disponivel = False
-                    client = ModbusClient(host=self.clp_ip, port=self.clp_porta, timeout=5, unit_id=1)
-                    if client.open():
-                        client.write_single_register(4, 1)
-                        client.close()
+                    self.ug2.indisponibilizar()
 
                 elif agendamento[2] == AGENDAMENTO_NORMALIZAR_UG_1:
                     logger.info("Normalizando a UG1 (comando via agendamento).")
                     self.ug1.normalizar()
 
+
                 elif agendamento[2] == AGENDAMENTO_NORMALIZAR_UG_2:
                     logger.info("Normalizando a UG2 (comando via agendamento).")
-                    self.ug2.disponivel = True
-                    client = ModbusClient(host=self.clp_ip, port=self.clp_porta, timeout=5, unit_id=1)
-                    if client.open():
-                        client.write_single_register(4, 0)
-                        client.close()
+                    self.ug2.normalizar()
 
                 # fim case agendamento
 

@@ -1,0 +1,59 @@
+2021-02-25 17:56:27,406 [MainThread  ] [INFO ]  Inicializando o MOA
+2021-02-25 17:56:27,478 [MainThread  ] [INFO ]  O modo de prioridade na escolha das ugs foi alterado (#1).
+2021-02-25 17:56:27,478 [MainThread  ] [INFO ]  Iniciando Servidor/Slave Modbus MOA.
+2021-02-25 17:56:27,481 [MainThread  ] [INFO ]  Servidor/Slave Modbus MOA Iniciado com sucesso. Endereço: 172.21.15.12:5002.
+2021-02-25 17:56:27,481 [MainThread  ] [INFO ]  Executando o MOA.
+2021-02-25 17:56:27,481 [MainThread  ] [INFO ]  Iniciando conexão com a CLP.
+2021-02-25 17:56:27,486 [MainThread  ] [INFO ]  Conexão com a CLP ok.
+2021-02-25 17:56:27,501 [MainThread  ] [INFO ]  Modo autonomo ativado.
+2021-02-25 17:56:27,501 [MainThread  ] [WARNI]  O nv_montante (642.48) está abaixo do limite inferior.
+2021-02-25 17:57:17,421 [MainThread  ] [INFO ]  MOA recebeu uma interrupção por teclado: ''.
+2021-02-25 17:57:17,421 [MainThread  ] [INFO ]  MOA finalizado.
+2021-02-25 17:57:19,768 [MainThread  ] [INFO ]  Inicializando o MOA
+2021-02-25 17:57:19,776 [MainThread  ] [INFO ]  O modo de prioridade na escolha das ugs foi alterado (#1).
+2021-02-25 17:57:19,776 [MainThread  ] [INFO ]  Iniciando Servidor/Slave Modbus MOA.
+2021-02-25 17:57:19,779 [MainThread  ] [INFO ]  Servidor/Slave Modbus MOA Iniciado com sucesso. Endereço: 172.21.15.12:5002.
+2021-02-25 17:57:19,779 [MainThread  ] [INFO ]  Executando o MOA.
+2021-02-25 17:57:19,779 [MainThread  ] [INFO ]  Iniciando conexão com a CLP.
+2021-02-25 17:57:19,788 [MainThread  ] [INFO ]  Conexão com a CLP ok.
+2021-02-25 17:57:19,797 [MainThread  ] [INFO ]  Modo autonomo ativado.
+2021-02-25 17:58:52,446 [MainThread  ] [INFO ]  MOA recebeu uma interrupção por teclado: ''.
+2021-02-25 17:58:52,446 [MainThread  ] [INFO ]  MOA finalizado.
+2021-02-25 18:01:48,843 [MainThread  ] [INFO ]  Inicializando o MOA
+2021-02-25 18:01:48,850 [MainThread  ] [INFO ]  O modo de prioridade na escolha das ugs foi alterado (#1).
+2021-02-25 18:01:48,851 [MainThread  ] [INFO ]  Iniciando Servidor/Slave Modbus MOA.
+2021-02-25 18:01:48,853 [MainThread  ] [INFO ]  Servidor/Slave Modbus MOA Iniciado com sucesso. Endereço: 172.21.15.12:5002.
+2021-02-25 18:01:48,853 [MainThread  ] [INFO ]  Executando o MOA.
+2021-02-25 18:01:48,853 [MainThread  ] [INFO ]  Iniciando conexão com a CLP.
+2021-02-25 18:01:48,857 [MainThread  ] [INFO ]  Conexão com a CLP ok.
+2021-02-25 18:01:48,865 [MainThread  ] [INFO ]  Modo autonomo ativado.
+2021-02-25 18:08:01,201 [MainThread  ] [INFO ]  MOA recebeu uma interrupção por teclado: ''.
+2021-02-25 18:08:01,201 [MainThread  ] [INFO ]  MOA finalizado.
+2021-02-25 18:08:03,811 [MainThread  ] [INFO ]  Inicializando o MOA
+2021-02-25 18:08:03,819 [MainThread  ] [INFO ]  O modo de prioridade na escolha das ugs foi alterado (#1).
+2021-02-25 18:08:03,819 [MainThread  ] [INFO ]  Iniciando Servidor/Slave Modbus MOA.
+2021-02-25 18:08:03,821 [MainThread  ] [INFO ]  Servidor/Slave Modbus MOA Iniciado com sucesso. Endereço: 172.21.15.12:5002.
+2021-02-25 18:08:03,821 [MainThread  ] [INFO ]  Executando o MOA.
+2021-02-25 18:08:03,821 [MainThread  ] [INFO ]  Iniciando conexão com a CLP.
+2021-02-25 18:08:03,826 [MainThread  ] [INFO ]  Conexão com a CLP ok.
+2021-02-25 18:08:03,835 [MainThread  ] [INFO ]  Modo autonomo ativado.
+2021-02-25 18:09:12,841 [MainThread  ] [INFO ]  MOA recebeu uma interrupção por teclado: ''.
+2021-02-25 18:09:12,842 [MainThread  ] [INFO ]  MOA finalizado.
+2021-02-25 18:09:14,491 [MainThread  ] [INFO ]  Inicializando o MOA
+2021-02-25 18:09:14,500 [MainThread  ] [INFO ]  O modo de prioridade na escolha das ugs foi alterado (#1).
+2021-02-25 18:09:14,500 [MainThread  ] [INFO ]  Iniciando Servidor/Slave Modbus MOA.
+2021-02-25 18:09:14,502 [MainThread  ] [INFO ]  Servidor/Slave Modbus MOA Iniciado com sucesso. Endereço: 172.21.15.12:5002.
+2021-02-25 18:09:14,502 [MainThread  ] [INFO ]  Executando o MOA.
+2021-02-25 18:09:14,502 [MainThread  ] [INFO ]  Iniciando conexão com a CLP.
+2021-02-25 18:09:14,508 [MainThread  ] [INFO ]  Conexão com a CLP ok.
+2021-02-25 18:09:14,517 [MainThread  ] [INFO ]  Modo autonomo ativado.
+2021-02-25 18:12:23,946 [MainThread  ] [INFO ]  MOA recebeu uma interrupção por teclado: ''.
+2021-02-25 18:12:23,946 [MainThread  ] [INFO ]  MOA finalizado.
+2021-02-25 18:12:25,564 [MainThread  ] [INFO ]  Inicializando o MOA
+2021-02-25 18:12:25,571 [MainThread  ] [INFO ]  O modo de prioridade na escolha das ugs foi alterado (#1).
+2021-02-25 18:12:25,571 [MainThread  ] [INFO ]  Iniciando Servidor/Slave Modbus MOA.
+2021-02-25 18:12:25,573 [MainThread  ] [INFO ]  Servidor/Slave Modbus MOA Iniciado com sucesso. Endereço: 172.21.15.12:5002.
+2021-02-25 18:12:25,573 [MainThread  ] [INFO ]  Executando o MOA.
+2021-02-25 18:12:25,573 [MainThread  ] [INFO ]  Iniciando conexão com a CLP.
+2021-02-25 18:12:25,578 [MainThread  ] [INFO ]  Conexão com a CLP ok.
+2021-02-25 18:12:25,586 [MainThread  ] [INFO ]  Modo autonomo ativado.

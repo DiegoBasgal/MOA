@@ -275,7 +275,7 @@ while True:
                         if pot_alvo > ((2 * u.pot_minima) + u.margem_pot_critica):
                             u.ug1.setpoint = pot_alvo / 2
                             u.ug2.setpoint = pot_alvo / 2
-                    elif (pot_alvo > (u.pot_nominal_ug + u.margem_pot_critica)) and (abs(erro_nv) < 0.05) \
+                    elif (pot_alvo > (u.pot_nominal_ug + u.margem_pot_critica)) and (abs(erro_nv) > 0.05) \
                             and u.ug1.disponivel and u.ug2.disponivel:
                         u.ug1.setpoint = pot_alvo / 2
                         u.ug2.setpoint = pot_alvo / 2
