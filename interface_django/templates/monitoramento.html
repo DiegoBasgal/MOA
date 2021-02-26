@@ -9,10 +9,9 @@
     </br>
     </br>
     <h3>MOA</h3>
-    <p>Atualizado em  {{ timestamp }}</p>
+    <p>Atualizado em  {{ timestamp }} ({{ tempo_desde_moa_comunicando }} atrás)</p>
     <p>Estado:  {{ estado }}</p>
-    <p>Emergencia Django:  {{ em_django }}</p>
-    <p>Emergencia Elipse:  {{ em_elipse }}</p>
+    <p>Emergencia:  {{ em_acionada }}</p>
     <p>Estado CLP:  {{ CLP_ON }} @ {{ CLP_IP }}</p>
     <p>Set-point usina: {{ setpot_usina }}MW</p>
     <p>UG1: {{ pot_ug1 }}MW (SP: {{ setpot_ug1 }}) (Horas máquina: {{ tempo_ug1 }})</p>

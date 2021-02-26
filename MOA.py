@@ -1,53 +1,13 @@
 import logging
 from datetime import datetime
-from sys import stdout
-
 from pyModbusTCP.server import DataBank, ModbusServer
+from sys import stdout
 from time import sleep
+
 
 # Meus imports
 import mensageiro as msg
 import usina
-
-
-def atualiza_regs_de_saida():
-    sucesso = False
-    tentativas = 0
-    while (not sucesso) and (tentativas < 3):
-        tentativas += 1
-        try:
-            agora = datetime.now()
-            ano = int(agora.year)
-            mes = int(agora.month)
-            dia = int(agora.day)
-            hor = int(agora.hour)
-            mnt = int(agora.minute)
-            seg = int(agora.second)
-            mil = int(agora.microsecond / 1000)
-            DataBank.set_words(0, [ano, mes, dia, hor, mnt, seg, mil])
-
-            DataBank.set_words(9, [int((u.nv_montante - 620) * 1000)])
-            DataBank.set_words(10, [int((u.nv_alvo - 620) * 1000)])
-            DataBank.set_words(11, [int((u.nv_religamento - 620) * 1000)])
-
-            DataBank.set_words(19, [int(u.ug1_pot*1000)])
-            DataBank.set_words(20, [int(u.ug1_setpot*1000)])
-            DataBank.set_words(21, [int(u.ug1_disp)])
-
-            DataBank.set_words(29, [int(u.ug2_pot*1000)])
-            DataBank.set_words(30, [int(u.ug2_setpot*1000)])
-            DataBank.set_words(31, [int(u.ug2_disp)])
-
-            clp_online = 1 if u.clp_online else 0
-            DataBank.set_words(99, [int(clp_online)])
-            DataBank.set_words(100, [int(u.status_moa)])
-
-            sucesso = True
-        except Exception as ex:
-            logger.error(
-                "Erro ao escrever no registrador (tentativa:{}, repetindo em 1s). {}".format(tentativas, ex))
-            sleep(1)
-            continue
 
 
 def controle_proporcional(erro_nivel):
@@ -112,8 +72,7 @@ controle_p = 0
 controle_i = 0
 controle_d = 0
 erro_nv = 0
-em_emergencia_elipse = False
-em_emergencia_django = False
+em_emergencia = False
 emergencias_removidas = True
 modo_autonomo_sinalizado = False
 ###########################
@@ -137,7 +96,6 @@ while not modbus_server.is_run:
         aviso = "Erro ao iniciar Modbus MOA: '{:}'. Tentando novamente em 5s.".format(e)
         logger.error(aviso)
         msg.enviar_whatsapp(aviso)
-
         sleep(5)
         continue
 
@@ -152,7 +110,7 @@ while True:
     logger.info(aviso)
     msg.enviar_whatsapp(aviso)
     try:
-        u.atualizar_valores_locais()
+        u.ler_valores()
         if u.clp_online:
             aviso = "Conexão com a CLP ok."
             logger.info(aviso)
@@ -184,12 +142,12 @@ while True:
     # INÍCIO DO CICLO DO MOA #
     ##########################
     try:
-
         ########################
         # ATUALIZAÇÃO DAS VARS #
         ########################
-        u.atualizar_valores_remotos()
-        u.atualizar_valores_locais()
+
+        u.verificar_agendamentos()
+        u.ler_valores()
 
         # Atualiza níveis de referência
         nv_montante_recentes.append(u.nv_montante)
@@ -207,47 +165,28 @@ while True:
         erro_nv = u.nv_alvo - nv_montante_recente
         erro_nv_anterior = u.nv_alvo - nv_montante_anterior
 
-        # Atualiza o estado da comporta
-        estado_comp = u.posicao_comporta
-
         # Verifica se está em emergência
-        if u.emergencia_django_acionada and (not em_emergencia_django):
-            em_emergencia_django = True
+        if u.emergencia_acionada and (not em_emergencia):
+            em_emergencia = True
             u.acionar_emergerncia_clp()
             emergencias_removidas = False
             u.status_moa = 1001
-            aviso = "A emergência do django foi acionada! Status MOA: {}".format(u.status_moa)
+            aviso = "A emergência foi acionada! Status MOA: {}".format(u.status_moa)
             logger.warning(aviso)
             msg.enviar_whatsapp(aviso)
             msg.enviar_voz_teste()
-        if (not u.emergencia_django_acionada) and em_emergencia_django:
-            em_emergencia_django = False
-            aviso = "A emergência do django foi removida! Status MOA: {}".format(u.status_moa)
+        if (not u.emergencia_acionada) and em_emergencia:
+            em_emergencia = False
+            aviso = "A emergência foi removida! Status MOA: {}".format(u.status_moa)
             logger.warning(aviso)
             msg.enviar_whatsapp(aviso)
 
-        if u.emergencia_elipse_acionada and (not em_emergencia_elipse):
-            em_emergencia_elipse = True
-            u.acionar_emergerncia_clp()
-            emergencias_removidas = False
-            u.status_moa = 1002
-            aviso = "A emergência do elipse foi acionada! Status MOA: {}".format(u.status_moa)
-            logger.warning(aviso)
-            msg.enviar_whatsapp(aviso)
-            msg.enviar_voz_teste()
-        if (not u.emergencia_elipse_acionada) and em_emergencia_elipse:
-            em_emergencia_elipse = False
-            aviso = "A emergência do elipse foi removida! Status MOA: {}".format(u.status_moa)
-            logger.warning(aviso)
-            msg.enviar_whatsapp(aviso)
-
-
-        if not (em_emergencia_django or em_emergencia_elipse):
+        if not em_emergencia:
             if not emergencias_removidas:
                 aviso = "Removendo emegências."
                 logger.info(aviso)
                 msg.enviar_whatsapp(aviso)
-                u.remover_emergencia_clp()
+                u.normalizar_emergencia_clp()
                 emergencias_removidas = True
 
             if u.modo_autonomo:
@@ -303,15 +242,15 @@ while True:
 
                         # Calcula o integrador de estabilidade e limita
                         saida_ie = saida_pid * (Kie / ESCALA_DE_TEMPO) + saida_ie
-                        if u.ug1_sinc and u.ug2_sinc:
+                        if u.ug1.sincronizada and u.ug2.sincronizada:
                             saida_ie = max(min(saida_ie, 1), 0)
                         else:
-                            saida_ie = max(min(saida_ie, (u.pot_nominal_ug+(1.1*u.margem_pot_critica))/u.pot_nominal), 0)
+                            saida_ie = max(min(saida_ie, (u.pot_nominal_ug+(1.1*u.margem_pot_critica))/u.pot_nominal),
+                                           0)
 
                         # Calcula a pot alvo e limita
                         pot_alvo = round(u.pot_nominal * saida_ie, 2)
                         pot_alvo = max(min(pot_alvo, u.pot_nominal), u.pot_minima)
-
 
                     # Distribui a potência para as UGs
                     logger.debug("Pot Alvo: {:2.3f} (PID: {:2.3f} {:2.3f}+{:2.3f}+{:2.3f}; Int: {:2.3f})".format(
@@ -325,52 +264,40 @@ while True:
                 # Distribuir POT #
                 ##################
 
-                # Limitar pot
                 if pot_alvo < u.pot_minima:
                     pot_alvo = 0
-                    u.ug1_setpot = 0
-                    u.ug2_setpot = 0
+                    u.ug1.setpoint = 0
+                    u.ug2.setpoint = 0
                 else:
                     pot_alvo = min(pot_alvo, u.pot_disp)
 
-                    if u.ug1_sinc and u.ug2_sinc and pot_alvo > (2 * u.pot_minima) and u.ug1_disp and u.ug2_disp:
+                    if u.ug1.sincronizada and u.ug2.sincronizada and pot_alvo > (2 * u.pot_minima):
                         if pot_alvo > ((2 * u.pot_minima) + u.margem_pot_critica):
-                            u.ug1_setpot = pot_alvo / 2
-                            u.ug2_setpot = pot_alvo / 2
-                    elif (pot_alvo > (u.pot_nominal_ug + u.margem_pot_critica)) and (abs(erro_nv) > 0.05) and u.ug1_disp and u.ug2_disp:
-                            u.ug1_setpot = pot_alvo / 2
-                            u.ug2_setpot = pot_alvo / 2
+                            u.ug1.setpoint = pot_alvo / 2
+                            u.ug2.setpoint = pot_alvo / 2
+                    elif (pot_alvo > (u.pot_nominal_ug + u.margem_pot_critica)) and (abs(erro_nv) < 0.05) \
+                            and u.ug1.disponivel and u.ug2.disponivel:
+                        u.ug1.setpoint = pot_alvo / 2
+                        u.ug2.setpoint = pot_alvo / 2
                     else:
                         pot_alvo = min(pot_alvo, u.pot_nominal_ug)
-                        if u.ug1_sinc and u.ug1_disp:
-                            u.ug1_setpot = pot_alvo
-                            u.ug2_setpot = 0
-                        elif u.ug2_sinc and u.ug2_disp:
-                            u.ug1_setpot = 0
-                            u.ug2_setpot = pot_alvo
-                        elif u.ug1_tempo <= u.ug2_tempo and u.ug1_disp:
-                            u.ug1_setpot = pot_alvo
-                            u.ug2_setpot = 0
-                        elif u.ug1_tempo > u.ug2_tempo and u.ug2_disp:
-                            u.ug1_setpot = 0
-                            u.ug2_setpot = pot_alvo
-                        elif u.ug1_disp:
-                            u.ug1_setpot = pot_alvo
-                            u.ug2_setpot = 0
-                        elif u.ug2_disp:
-                            u.ug1_setpot = 0
-                            u.ug2_setpot = pot_alvo
+                        ugs = u.lista_de_ugs_disponiveis()
+                        if len(ugs) > 0:
+                            ugs[0].setpoint = pot_alvo
+                            for ug in ugs[1:]:
+                                ug.setpoint = 0
                         else:
-                            u.ug1_setpot = 0
-                            u.ug2_setpot = 0
+                            for ug in ugs:
+                                ug.setpoint = 0
+
                 # DEBBUG!
                 # EXCEL
                 # logger.debug(("{:03.4f};{:03.4f};{:03.4f};{:03.4f};{:03.4f}"
                 # .format(nv_montante, nv_montante_recente, pot_alvo, pot_ug1, pot_ug2)).replace(".", ","))
 
                 logger.debug("T{:} Alv:{:3.2f}m Monte:{:3.2f}m Alvo:{:1.3f}MW Pot:{:1.3f}MW SP1:{:1.3f}MW SP2:{:1.3f}MW"
-                             .format(datetime.now(), u.nv_alvo, u.nv_montante, pot_alvo, u.ug1_pot+u.ug2_pot,
-                                     u.ug1_setpot, u.ug2_setpot))
+                             .format(datetime.now(), u.nv_alvo, u.nv_montante, pot_alvo, u.ug1.potencia+u.ug2.potencia,
+                                     u.ug1.setpoint, u.ug2.setpoint))
 
                 # Temporizador entre ciclos
                 # Valor padrão é de 5 segundos, assim a média móvel rapda do nv_montante representa 1m (e a lenta 5m)
@@ -387,7 +314,8 @@ while True:
 
         # heartbeat da usina para o E3, ou equivalente...
         logger.debug("HB")
-        atualiza_regs_de_saida()
+        u.escrever_valores()
+        # FINAL DO CICLO
 
     ############################
     # TRATAMENTO DE EXCEPTIONS #
@@ -395,10 +323,15 @@ while True:
 
     # Erro na conexão
     except ConnectionError as e:
-        aviso = "MOA perdeu a conexo com a usina. Tentando novamente em {}s".format(u.timer_erro)
+        while not u.clp_online:
+            aviso = "MOA perdeu a conexo com a usina. Tentando novamente em {}s".format(u.timer_erro)
+            logger.error(aviso)
+            msg.enviar_whatsapp(aviso)
+            sleep(u.timer_erro)
+            u.ler_valores()
+        aviso = "Conexão com a CLP ok."
         logger.info(aviso)
         msg.enviar_whatsapp(aviso)
-        sleep(u.timer_erro)
         continue
 
     # Parada abrupta pelo teclado (ctrl-c ou equivalente)

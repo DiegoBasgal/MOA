@@ -6,6 +6,7 @@
 {{ modo_autonomo_ativado }}
 <form method='post' action='/parametros_moa/'>
     {% csrf_token %}
+
     <p>Modo autonomo:</p>
     <input type="radio" id="modo_autonomo_ativado" name="modo_autonomo_ativado" value="True"
            {% if modo_autonomo_ativado == True %}
@@ -17,6 +18,24 @@
            CHECKED
            {% endif %}>
     <label for="False">Desativado</label>
+
+    <p>Ordem de partida das Unidades de Geração:</p>
+    <input type="radio" id="escolha_ugs" name="escolha_ugs" value="0"
+           {% if escolha_ugs == 0 %}
+           CHECKED
+           {% endif %}>
+    <label for="0">Menor horas-máquina</label>
+    <input type="radio" id="escolha_ugs" name="escolha_ugs" value="1"
+           {% if escolha_ugs == 1 %}
+           CHECKED
+           {% endif %}>
+    <label for="1">Priorizar UG1</label>
+    <input type="radio" id="escolha_ugs" name="escolha_ugs" value="2"
+           {% if escolha_ugs == 2 %}
+           CHECKED
+           {% endif %}>
+    <label for="2">Priorizar UG2</label>
+
     <input type="submit" value="Salvar"/>
 </form>
 
