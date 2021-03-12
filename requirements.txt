@@ -1,3 +1,4 @@
 pyModbusTCP==0.1.10
 mysqlclient==2.0.3
 Django==3.1.7
+gunicorn
