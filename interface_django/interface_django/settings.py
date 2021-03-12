@@ -83,6 +83,10 @@ WSGI_APPLICATION = 'interface_django.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql',
+        'NAME': 'django_db',
+        'USER': 'root',
+        'PASSWORD': '11Marco2020@',
+        'default-character-set': 'utf8',
         'OPTIONS': {
             'read_default_file': '/etc/mysql/my.cnf',
             'init_command': 'SET default_storage_engine=INNODB',
