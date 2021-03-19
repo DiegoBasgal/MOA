@@ -12,6 +12,7 @@ def monitoramento_view(request, *args, **kwargs):
     usina = ParametrosUsina.objects.get(id=1)
 
     context = {
+        'usina': usina,
         'estado': "{}".format(usina.status_moa),
         'em_acionada': "{}".format(usina.emergencia_acionada),
         'timestamp': usina.timestamp.strftime("%d/%m/%Y, %H:%M:%S"),

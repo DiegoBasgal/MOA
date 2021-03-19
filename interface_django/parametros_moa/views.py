@@ -37,9 +37,48 @@ def parametros_moa_view(request, *args, **kwargs):
             usina.ug1_prioridade = 0
             usina.ug2_prioridade = 100
 
+        nv_p1_ant = float(request.POST['nv_p1_ant'].replace(",", "."))
+        nv_p2_ant = float(request.POST['nv_p2_ant'].replace(",", "."))
+        nv_p3_ant = float(request.POST['nv_p3_ant'].replace(",", "."))
+        nv_p4_ant = float(request.POST['nv_p4_ant'].replace(",", "."))
+        nv_p5_ant = float(request.POST['nv_p5_ant'].replace(",", "."))
+        usina.nv_comporta_pos_1_ant = nv_p1_ant if isinstance(nv_p1_ant, float) and nv_p1_ant > 0 else usina.nv_comporta_pos_1_ant
+        usina.nv_comporta_pos_2_ant = nv_p2_ant if isinstance(nv_p2_ant, float) and nv_p2_ant > 0 else usina.nv_comporta_pos_2_ant
+        usina.nv_comporta_pos_3_ant = nv_p3_ant if isinstance(nv_p3_ant, float) and nv_p3_ant > 0 else usina.nv_comporta_pos_3_ant
+        usina.nv_comporta_pos_4_ant = nv_p4_ant if isinstance(nv_p4_ant, float) and nv_p4_ant > 0 else usina.nv_comporta_pos_4_ant
+        usina.nv_comporta_pos_5_ant = nv_p5_ant if isinstance(nv_p5_ant, float) and nv_p5_ant > 0 else usina.nv_comporta_pos_5_ant
 
-    usina.timestamp = datetime.now()
-    usina.save()
+        nv_p0_prox = float(request.POST['nv_p0_prox'].replace(",", "."))
+        nv_p1_prox = float(request.POST['nv_p1_prox'].replace(",", "."))
+        nv_p2_prox = float(request.POST['nv_p2_prox'].replace(",", "."))
+        nv_p3_prox = float(request.POST['nv_p3_prox'].replace(",", "."))
+        nv_p4_prox = float(request.POST['nv_p4_prox'].replace(",", "."))
+        usina.nv_comporta_pos_0_prox = nv_p0_prox if isinstance(nv_p0_prox, float) and nv_p0_prox > 0 else usina.nv_comporta_pos_0_prox
+        usina.nv_comporta_pos_1_prox = nv_p1_prox if isinstance(nv_p1_prox, float) and nv_p1_prox > 0 else usina.nv_comporta_pos_1_prox
+        usina.nv_comporta_pos_2_prox = nv_p2_prox if isinstance(nv_p2_prox, float) and nv_p2_prox > 0 else usina.nv_comporta_pos_2_prox
+        usina.nv_comporta_pos_3_prox = nv_p3_prox if isinstance(nv_p3_prox, float) and nv_p3_prox > 0 else usina.nv_comporta_pos_3_prox
+        usina.nv_comporta_pos_4_prox = nv_p4_prox if isinstance(nv_p4_prox, float) and nv_p4_prox > 0 else usina.nv_comporta_pos_4_prox
+
+        ug1_temp_maxima = float(request.POST['ug1_temp_maxima'].replace(",", "."))
+        ug2_temp_maxima = float(request.POST['ug2_temp_maxima'].replace(",", "."))
+        ug1_temp_alerta = float(request.POST['ug1_temp_alerta'].replace(",", "."))
+        ug2_temp_alerta = float(request.POST['ug2_temp_alerta'].replace(",", "."))
+        ug1_perda_grade_maxima = float(request.POST['ug1_perda_grade_maxima'].replace(",", "."))
+        ug2_perda_grade_maxima = float(request.POST['ug2_perda_grade_maxima'].replace(",", "."))
+        ug1_perda_grade_alerta = float(request.POST['ug1_perda_grade_alerta'].replace(",", "."))
+        ug2_perda_grade_alerta = float(request.POST['ug2_perda_grade_alerta'].replace(",", "."))
+
+        usina.ug1_temp_alerta = ug1_temp_alerta if isinstance(ug1_temp_alerta, float) and ug1_temp_alerta > 0 else usina.ug1_temp_alerta
+        usina.ug2_temp_alerta = ug2_temp_alerta if isinstance(ug2_temp_alerta, float) and ug2_temp_alerta > 0 else usina.ug2_temp_alerta
+        usina.ug1_temp_maxima = ug1_temp_maxima if isinstance(ug1_temp_maxima, float) and ug1_temp_maxima > 0 else usina.ug1_temp_maxima
+        usina.ug2_temp_maxima = ug2_temp_maxima if isinstance(ug2_temp_maxima, float) and ug2_temp_maxima > 0 else usina.ug2_temp_maxima
+        usina.ug1_perda_grade_alerta = ug1_perda_grade_alerta if isinstance(ug1_perda_grade_alerta, float) and ug1_perda_grade_alerta > 0 else usina.ug1_perda_grade_alerta
+        usina.ug2_perda_grade_alerta = ug2_perda_grade_alerta if isinstance(ug2_perda_grade_alerta, float) and ug2_perda_grade_alerta > 0 else usina.ug2_perda_grade_alerta
+        usina.ug1_perda_grade_maxima = ug1_perda_grade_maxima if isinstance(ug1_perda_grade_maxima, float) and ug1_perda_grade_maxima > 0 else usina.ug1_perda_grade_maxima
+        usina.ug2_perda_grade_maxima = ug2_perda_grade_maxima if isinstance(ug2_perda_grade_maxima, float) and ug2_perda_grade_maxima > 0 else usina.ug2_perda_grade_maxima
+
+        usina.timestamp = datetime.now()
+        usina.save()
 
     escolha_ugs = 0
     if (usina.modo_de_escolha_das_ugs == 2) and (usina.ug1_prioridade > usina.ug2_prioridade):
@@ -50,7 +89,8 @@ def parametros_moa_view(request, *args, **kwargs):
 
     context = {
         'escolha_ugs': escolha_ugs,
-        'modo_autonomo_ativado': usina.modo_autonomo,
+        'usina': usina
+
     }
     return render(request, 'parametros_moa.html', context=context)
 

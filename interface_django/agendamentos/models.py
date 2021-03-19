@@ -2,6 +2,7 @@ from django.db import models
 from parametros_moa.models import Comando
 # Create your models here.
 
+
 class Agendamento(models.Model):
 
     executado = models.IntegerField(default=0)

@@ -200,6 +200,10 @@ while True:
                 ###############################################
                 # VERIFICA CONDIÇÕES E EXECUTA COMPORTAMENTOS #
                 ###############################################
+
+                # Acertar as comportas
+                u.comporta.atualizar_estado(nv_montante_recente)
+
                 # Se passar do nv de espera, turbinar!
                 if u.nv_montante > u.nv_religamento:
                     if u.aguardando_reservatorio:
@@ -222,7 +226,7 @@ while True:
 
                     # Se estiver vertendo
                     if nv_montante_recente >= u.nv_maximo:
-                        pot_alvo = u.pot_nominal
+                        pot_alvo = u.pot_maxima
 
                     # Se não estiver vertendo
                     else:
@@ -232,25 +236,30 @@ while True:
                         controle_i = controle_integral(erro_nv, controle_i)
                         controle_d = controle_derivativo(erro_nv, erro_nv_anterior)
 
+                        """
                         # Verifica/calcula o PID na região alternativa de 1cm prox ao erro
                         if 0.01 < abs(erro_nv) <= 0.025:
                             controle_p = controle_p*0.75
                         if abs(erro_nv) <= 0.01:
                             controle_p = controle_p*0.5
                             controle_d = controle_d*0.01
-                        saida_pid = controle_p + controle_i + controle_d
+                        """
 
+                        saida_pid = controle_p + controle_i + controle_d
                         # Calcula o integrador de estabilidade e limita
                         saida_ie = saida_pid * (Kie / ESCALA_DE_TEMPO) + saida_ie
+
+                        """
                         if u.ug1.sincronizada and u.ug2.sincronizada:
                             saida_ie = max(min(saida_ie, 1), 0)
                         else:
-                            saida_ie = max(min(saida_ie, (u.pot_nominal_ug+(1.1*u.margem_pot_critica))/u.pot_nominal),
+                            saida_ie = max(min(saida_ie, (u.pot_maxima_ug+(1.1*u.margem_pot_critica))/u.pot_maxima),
                                            0)
+                        """
 
                         # Calcula a pot alvo e limita
-                        pot_alvo = round(u.pot_nominal * saida_ie, 2)
-                        pot_alvo = max(min(pot_alvo, u.pot_nominal), u.pot_minima)
+                        pot_alvo = round(u.pot_maxima * saida_ie, 2)
+                        pot_alvo = max(min(pot_alvo, u.pot_maxima), u.pot_minima)
 
                     # Distribui a potência para as UGs
                     logger.debug("Pot Alvo: {:2.3f} (PID: {:2.3f} {:2.3f}+{:2.3f}+{:2.3f}; Int: {:2.3f})".format(
@@ -264,31 +273,32 @@ while True:
                 # Distribuir POT #
                 ##################
 
+                if u.pot_medidor > u.pot_maxima_alvo and pot_alvo > (u.pot_maxima_alvo*0.95):
+                    pot_alvo = pot_alvo * 0.99 * ( u.pot_maxima_alvo / u.pot_medidor )
+
                 if pot_alvo < u.pot_minima:
                     pot_alvo = 0
-                    u.ug1.setpoint = 0
-                    u.ug2.setpoint = 0
+                    u.ug1.mudar_setpoint(0)
+                    u.ug2.mudar_setpoint(0)
                 else:
                     pot_alvo = min(pot_alvo, u.pot_disp)
-
                     if u.ug1.sincronizada and u.ug2.sincronizada and pot_alvo > (2 * u.pot_minima):
-                        if pot_alvo > ((2 * u.pot_minima) + u.margem_pot_critica):
-                            u.ug1.setpoint = pot_alvo / 2
-                            u.ug2.setpoint = pot_alvo / 2
-                    elif (pot_alvo > (u.pot_nominal_ug + u.margem_pot_critica)) and (abs(erro_nv) > 0.05) \
+                        u.ug1.mudar_setpoint(pot_alvo / 2)
+                        u.ug2.mudar_setpoint(pot_alvo / 2)
+                    elif (pot_alvo > (u.pot_maxima_ug + u.margem_pot_critica)) and (abs(erro_nv) > 0.05) \
                             and u.ug1.disponivel and u.ug2.disponivel:
-                        u.ug1.setpoint = pot_alvo / 2
-                        u.ug2.setpoint = pot_alvo / 2
+                        u.ug1.mudar_setpoint(pot_alvo / 2)
+                        u.ug2.mudar_setpoint(pot_alvo / 2)
                     else:
-                        pot_alvo = min(pot_alvo, u.pot_nominal_ug)
+                        pot_alvo = min(pot_alvo, u.pot_maxima_ug)
                         ugs = u.lista_de_ugs_disponiveis()
                         if len(ugs) > 0:
-                            ugs[0].setpoint = pot_alvo
+                            ugs[0].mudar_setpoint(pot_alvo)
                             for ug in ugs[1:]:
-                                ug.setpoint = 0
+                                ug.mudar_setpoint(0)
                         else:
                             for ug in ugs:
-                                ug.setpoint = 0
+                                ug.mudar_setpoint(0)
 
                 # DEBBUG!
                 # EXCEL

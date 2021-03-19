@@ -2,39 +2,117 @@
 
 {% block content %}
 <h1>Parametros MOA</h1>
-<p>Página de parametros usados pelo MOA.</p>
-{{ modo_autonomo_ativado }}
-<form method='post' action='/parametros_moa/'>
+Página de configuraço dos parametros usados pelo MOA.
+
+<form method='post' action='/parametros_moa/' style="margin-top: 40px;">
     {% csrf_token %}
 
-    <p>Modo autonomo:</p>
-    <input type="radio" id="modo_autonomo_ativado" name="modo_autonomo_ativado" value="True"
-           {% if modo_autonomo_ativado == True %}
-           CHECKED
-           {% endif %}>
-    <label for="True">Ativado</label>
-    <input type="radio" id="modo_autonomo_ativado" name="modo_autonomo_ativado" value="False"
-           {% if modo_autonomo_ativado == False %}
-           CHECKED
-           {% endif %}>
-    <label for="False">Desativado</label>
+    <div style="margin-bottom: 20px;">
+        <b>Modo autonomo:</b><br>
+        <input type="radio" id="modo_autonomo_ativado" name="modo_autonomo_ativado" value="True"
+               {% if usina.modo_autonomo == True %}
+               CHECKED
+               {% endif %}/>
+        <label for="True">Ativado</label>
+        <input type="radio" id="modo_autonomo_ativado" name="modo_autonomo_ativado" value="False"
+               {% if usina.modo_autonomo == False %}
+               CHECKED
+               {% endif %}/>
+        <label for="False">Desativado</label>
+    </div>
 
-    <p>Ordem de partida das Unidades de Geração:</p>
-    <input type="radio" id="escolha_ugs" name="escolha_ugs" value="0"
-           {% if escolha_ugs == 0 %}
-           CHECKED
-           {% endif %}>
-    <label for="0">Menor horas-máquina</label>
-    <input type="radio" id="escolha_ugs" name="escolha_ugs" value="1"
-           {% if escolha_ugs == 1 %}
-           CHECKED
-           {% endif %}>
-    <label for="1">Priorizar UG1</label>
-    <input type="radio" id="escolha_ugs" name="escolha_ugs" value="2"
-           {% if escolha_ugs == 2 %}
-           CHECKED
-           {% endif %}>
-    <label for="2">Priorizar UG2</label>
+    <div style="margin-bottom: 20px;">
+        <b>Priorização da partida e parada das Unidades de Geração:</b><br>
+        <input type="radio" id="escolha_ugs" name="escolha_ugs" value="0"
+               {% if escolha_ugs == 0 %}
+               CHECKED
+               {% endif %}/>
+        <label for="0">Priorizar por horas-máquina</label>
+        <input type="radio" id="escolha_ugs" name="escolha_ugs" value="1"
+               {% if escolha_ugs == 1 %}
+               CHECKED
+               {% endif %}/>
+        <label for="1">Priorizar a UG1</label>
+        <input type="radio" id="escolha_ugs" name="escolha_ugs" value="2"
+               {% if escolha_ugs == 2 %}
+               CHECKED
+               {% endif %}/>
+        <label for="2">Priorizar a UG2</label>
+    </div>
+
+    <div style="margin-bottom: 20px;">
+        <b>Limites de operação das Unidades de Geração</b><br>
+        <table style="text-align:center" border="solid 1px black">
+            <tr>
+                <th>Parametro</th>
+                <th>UG 1</th>
+                <th>UG 2</th>
+            </tr>
+            <tr>
+                <td>Temperatura alerta <br/>
+                    no mancal</td>
+                <td><input id="ug1_temp_alerta" name="ug1_temp_alerta"  size=15 value="{{ usina.ug1_temp_alerta}}"/></td>
+                <td><input id="ug2_temp_alerta" name="ug2_temp_alerta"  size=15 value="{{ usina.ug2_temp_alerta}}"/></td>
+            </tr>
+            <tr>
+                <td>Temperatura máxima <br/>
+                    no mancal</td>
+                <td><input id="ug1_temp_maxima" name="ug1_temp_maxima"  size=15 value="{{ usina.ug1_temp_maxima}}"/></td>
+                <td><input id="ug2_temp_maxima" name="ug2_temp_maxima"  size=15 value="{{ usina.ug2_temp_maxima}}"/></td>
+            </tr>
+            <tr>
+                <td>Perda alerta na grade</td>
+                <td><input id="ug1_perda_grade_alerta" name="ug1_perda_grade_alerta"  size=15 value="{{ usina.ug1_perda_grade_alerta}}"/></td>
+                <td><input id="ug2_perda_grade_alerta" name="ug2_perda_grade_alerta"  size=15 value="{{ usina.ug2_perda_grade_alerta}}"/></td>
+            </tr>
+            <tr>
+                <td>Perda máxima na grade</td>
+                <td><input id="ug1_perda_grade_maxima" name="ug1_perda_grade_maxima"  size=15 value="{{ usina.ug1_perda_grade_maxima}}"/></td>
+                <td><input id="ug2_perda_grade_maxima" name="ug2_perda_grade_maxima"  size=15 value="{{ usina.ug2_perda_grade_maxima}}"/></td>
+            </tr>
+        </table>
+    </div>
+
+    <div style="margin-bottom: 20px;">
+        <b>Níveis de abertura da comporta:</b><br/>
+        <table style="text-align:center" border="solid 1px black">
+            <tr>
+                <th>Estado da comporta</th>
+                <th>Reduzir abertura</th>
+                <th>Aumentar abertura</th>
+            </tr>
+            <tr>
+                <td>Fechada</td>
+                <td> - </td>
+                <td><input id="nv_p0_prox" name="nv_p0_prox"  size=15 value="{{ usina.nv_comporta_pos_0_prox}}"/></td>
+            </tr>
+            <tr>
+                <td>Posição 1</td>
+                <td><input id="nv_p1_ant" name="nv_p1_ant"  size=15 value="{{ usina.nv_comporta_pos_1_ant}}"/></td>
+                <td><input id="nv_p1_prox" name="nv_p1_prox"  size=15 value="{{ usina.nv_comporta_pos_1_prox}}"/></td>
+            </tr>
+            <tr>
+                <td>Posição 2</td>
+                <td><input id="nv_p2_ant" name="nv_p2_ant"  size=15 value="{{ usina.nv_comporta_pos_2_ant}}"/></td>
+                <td><input id="nv_p2_prox" name="nv_p2_prox"  size=15 value="{{ usina.nv_comporta_pos_2_prox}}"/></td>
+            </tr>
+            <tr>
+                <td>Posição 3</td>
+                <td><input id="nv_p3_ant" name="nv_p3_ant"  size=15 value="{{ usina.nv_comporta_pos_3_ant}}"/></td>
+                <td><input id="nv_p3_prox" name="nv_p3_prox"  size=15 value="{{ usina.nv_comporta_pos_3_prox}}"/></td>
+            </tr>
+            <tr>
+                <td>Posição 4</td>
+                <td><input id="nv_p4_ant" name="nv_p4_ant"  size=15 value="{{ usina.nv_comporta_pos_4_ant}}"/></td>
+                <td><input id="nv_p4_prox" name="nv_p4_prox"  size=15 value="{{ usina.nv_comporta_pos_4_prox}}"/></td>
+            </tr>
+            <tr>
+                <td>Abertura max</td>
+                <td><input id="nv_p5_ant" name="nv_p5_ant"  size=15 value="{{ usina.nv_comporta_pos_5_ant}}"/></td>
+                <td> - </td>
+            </tr>
+        </table>
+    </div>
 
     <input type="submit" value="Salvar"/>
 </form>
