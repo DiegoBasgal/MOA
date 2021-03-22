@@ -1,4 +1,6 @@
 import logging
+from cmath import sqrt
+
 import mysql.connector
 import socket
 from datetime import datetime, timedelta
@@ -192,12 +194,12 @@ class UnidadeDeGeracao:
 
         alvo = max(alvo, 0)
         if self.temp_mancal > self.temp_mancal_alerta:
-            alvo = alvo * (1 - ((self.temp_mancal_alerta - self.temp_mancal) / (
-                        self.temp_mancal_alerta - self.temp_mancal_max)))
+            alvo = alvo * sqrt(sqrt(
+                1-((self.temp_mancal-self.temp_mancal_alerta)/(self.temp_mancal_max-self.temp_mancal_alerta))))
 
         if self.perda_na_grade > self.perda_na_grade_alerta:
-            alvo = alvo * (1 - ((self.perda_na_grade_alerta - self.perda_na_grade) / (
-                        self.perda_na_grade_alerta - self.perda_na_grade_max)))
+            alvo = alvo * sqrt(sqrt(
+                1 - ((self.perda_na_grade - self.perda_na_grade_alerta) / (self.perda_na_grade_max - self.perda_na_grade_alerta))))
         self.setpoint = alvo
 
 class Comporta:
