@@ -21,7 +21,7 @@ import threading
 # Constantes
 ESCALA_DE_TEMPO = 60
 
-PLOTAR_GRAFICO_DEBBUG = False
+PLOTAR_GRAFICO_DEBBUG = True
 
 USINA_CAP_RESERVATORIO = 43000.0
 USINA_NV_MAX = 643.5
@@ -245,6 +245,7 @@ def plotar_debug():
 
 class ComportamentoReal:
     
+    run_cr = True
     flags_usina = 0
     q_aflu = 5.8623152  # 1UG@1,5MW + SANI@1/2NVMAX
     ug1_flags = 0
@@ -264,9 +265,20 @@ class ComportamentoReal:
     ug2_temp_mancal = 0
     volume = 192300
     segundos_simulados = 0
+    comp_flags = 0
+    comp_fechada = 0
+    comp_p1 = 0
+    comp_p2 = 0
+    comp_p3 = 0
+    comp_p4 = 0
+    comp_aberta = 0
+    rodando = 0
+    tick = 0
+    pot_no_medidor = 0
 
     def __init__(self):
 
+        self.run_cr = True
         self.flags_usina = 0
         self.q_aflu = 5.8623152  # 1UG@1,5MW + SANI@1/2NVMAX
         self.ug1_flags = 0
@@ -275,7 +287,7 @@ class ComportamentoReal:
         self.ug1_pot = 0
         self.ug1_setpoint = 0
         self.ug1_sinc = 0
-        self.ug1_temp_mancal = 80
+        self.ug1_temp_mancal = 0
         self.ug2_flags = 0
         self.ug2_flags = 0
         self.ug2_minutos = 0
@@ -283,7 +295,7 @@ class ComportamentoReal:
         self.ug2_pot = 0
         self.ug2_setpoint = 0
         self.ug2_sinc = 0
-        self.ug2_temp_mancal = 80
+        self.ug2_temp_mancal = 0
         self.volume = 192300
         self.segundos_simulados = 0
         self.atualiza_nv_montante()
@@ -294,19 +306,21 @@ class ComportamentoReal:
         self.nv_montante = nv
         return nv
 
+
     def comportamento_real(self):
 
-        logging.info("Comportamento rodando")
+        logger.info("Comportamento rodando")
         amostras = db.get_amostras_afluente()
 
-        while True:
+        while self.run_cr:
 
             t0 = datetime.now()
             t1 = datetime.now()
             self.segundos_simulados = 0
             segundos_simulados_ant = 0
+
             a = 0
-            while a in range(len(amostras) - 1):
+            while a in range(len(amostras) - 1) and self.run_cr:
 
                 '''
                         Detalhamento dos conteúdos dos registradores
@@ -314,9 +328,10 @@ class ComportamentoReal:
                         REGS    Descrição 
                                     
                         0       nivel_montante  [620 + X mm]
+                        1       medidor         [kW]
                         
-                        10      comporta        [raw]
-                        11      comporta        [0:fechada, 1:pos1: 2:pos2, 3:pos3, 4:pos4, 5:aberta]
+                        10      comporta flags  [raw]
+                        11      comporta pos    [0:fechada, 1:pos1: 2:pos2, 3:pos3, 4:pos4, 5:aberta]
                         
                         20      UG 1 Flags      [raw]
                         21      UG 1 Potência   [kW]
@@ -329,7 +344,7 @@ class ComportamentoReal:
                         31      UG 2 Potência   [kW]
                         32      UG 2 Setpoint   [kW]
                         33      UG 2 Tempo      [min]
-                        34      UG 2 T Mancal   [C*100]
+                        34      UG 2 T Mancal   [C*10]
                         35      UG 2 Perda grd  [m*100]
                         
                         100     Usina Flags     [raw]   
@@ -360,39 +375,48 @@ class ComportamentoReal:
                 #################
 
                 DataBank.set_words(0, [int(((self.nv_montante - 620) * 100 + random.normal(scale=0.5)))*10])
+                DataBank.set_words(1, [int(self.pot_no_medidor*1000)])
                 DataBank.set_words(21, [int(self.ug1_pot * 1000)])
                 DataBank.set_words(23, [int(self.ug1_minutos)])
-                DataBank.set_words(24, [int(self.ug1_temp_mancal*100)])
-                DataBank.set_words(25, [int(self.ug1_perda_grade*10)*10])
+                DataBank.set_words(24, [int(self.ug1_temp_mancal*10)])
+                DataBank.set_words(25, [int(self.ug1_perda_grade*100)])
                 DataBank.set_words(31, [int(self.ug2_pot * 1000)])
                 DataBank.set_words(33, [int(self.ug2_minutos)])
-                DataBank.set_words(34, [int(self.ug2_temp_mancal*100)])
-                DataBank.set_words(35, [int(self.ug2_perda_grade*10)*10])
+                DataBank.set_words(34, [int(self.ug2_temp_mancal*10)])
+                DataBank.set_words(35, [int(self.ug2_perda_grade*100)])
 
                 # acerto de tempo
+
+
                 segundos_reais = (datetime.now()-t0).total_seconds()
                 segundos_simulados_ant = self.segundos_simulados
                 self.segundos_simulados = segundos_reais * ESCALA_DE_TEMPO
                 delta_t_sim = self.segundos_simulados - segundos_simulados_ant
                 sleep(0.001)  # tick
 
+                if self.rodando <= 2:
+                    self.rodando += 1
+                else:
+                    self.rodando = 1
+
+                self.tick += 1
+
                 if (amostras[a][0] - amostras[0][0]).total_seconds() < self.segundos_simulados:
                     a += 1
                     t_c = (datetime.now() - t1).total_seconds()
                     t_a = (amostras[a + 1][0] - amostras[a][0]).total_seconds()
                     if t_c > 0:
-                        logging.debug("Escala da simulação: {:2.3f}".format(t_a / t_c))
+                        logger.debug("Escala da simulação: {:2.3f}".format(t_a / t_c))
                     t1 = datetime.now()
 
                 else:
 
                     # Ciclo da simulação
+                    self.ug1_temp_mancal = max(self.ug1_temp_mancal, 25) + random.normal(0, 0.01)
+                    self.ug2_temp_mancal = max(self.ug2_temp_mancal, 25) + random.normal(0, 0.01)
 
-                    self.ug1_temp_mancal = round(self.ug1_temp_mancal + random.normal(scale=0.1), 1)
-                    self.ug2_temp_mancal = round(self.ug2_temp_mancal + random.normal(scale=0.1), 1)
-
-                    self.ug1_perda_grade = max(self.ug1_perda_grade + random.exponential(scale=0.001) - 0.0008, 0)
-                    self.ug2_perda_grade = max(self.ug2_perda_grade + random.exponential(scale=0.001) - 0.0008, 0)
+                    self.ug1_perda_grade = max(self.ug1_perda_grade + random.exponential(scale=0.001) - 0.001, 0)
+                    self.ug2_perda_grade = max(self.ug2_perda_grade + random.exponential(scale=0.001) - 0.001, 0)
 
                     # Acerta as UGS
                     if self.flags_usina >= 1:
@@ -413,6 +437,7 @@ class ComportamentoReal:
                         # print("ALERTOU NA CLP! UG2 {}".format(self.ug2_flags))
 
                     #ug1
+
                     if self.ug1_setpoint >= 1:
                         self.ug1_sinc += 0.2 * (delta_t_sim / 60)
                         if self.ug1_sinc >= 1:
@@ -421,6 +446,9 @@ class ComportamentoReal:
                             var_ug1_por_minuto = math.copysign(min(0.625, abs(var_ug1_por_minuto)), var_ug1_por_minuto)
                             self.ug1_pot += (var_ug1_por_minuto / 60) * delta_t_sim
                             self.ug1_pot = min(max(1, self.ug1_pot), 2.6) + random.normal(scale=0.001)
+                        else:
+                            pass
+
                     else:
                         self.ug1_sinc = 0
                         self.ug1_pot -= (0.625 / 60) * delta_t_sim
@@ -438,6 +466,8 @@ class ComportamentoReal:
                             var_ug2_por_minuto = math.copysign(min(0.625, abs(var_ug2_por_minuto)), var_ug2_por_minuto)
                             self.ug2_pot += (var_ug2_por_minuto / 60) * delta_t_sim
                             self.ug2_pot = min(max(1, self.ug2_pot), 2.6) + random.normal(scale=0.001)
+                        else:
+                            pass
                     else:
                         self.ug2_sinc = 0
                         self.ug2_pot -= (0.625 / 60) * delta_t_sim
@@ -445,6 +475,9 @@ class ComportamentoReal:
 
                     if self.ug2_sinc > 0.5:
                         self.ug2_minutos += delta_t_sim/60
+
+                    # Acerta o medidor
+                    self.pot_no_medidor = (self.ug1_pot + self.ug2_pot)*max(min(random.normal(0.985, 0.002), 1.005), 0.95)
 
                     # Acerta as Vazoes
                     # self.q_aflu = amostras[a][1]
@@ -462,6 +495,13 @@ class ComportamentoReal:
                         self.volume = 0
                     self.atualiza_nv_montante()
 
+                    if (self.nv_montante < 642.5) or (self.nv_montante > 644.3) :
+                        logger.error("Algo deu errado e o nv foi apra fora dos limites.")
+                        logger.error("q_aflu:{}, q_vert:{}, q_comp:{}, q_sani:{}, q_turb:{}, q_eflu:{}, q_liq:{},".format(
+                            self.q_aflu, q_vert, q_comp, q_sani, q_turb, q_eflu, q_liquida
+                        ))
+                        raise Exception
+
                     # print("Simulando...")
 
                     # para grafico de debbug
@@ -471,9 +511,14 @@ class ComportamentoReal:
                                                                                      self.ug2_pot, self.ug1_setpoint+self.ug2_setpoint))
                         fp.close()
 
-                    logging.debug(("{:15.0f};{:5.5f};{:5.5f};{:5.5f};{:5.5f};{:5.5f}\n".format(self.segundos_simulados,  self.q_aflu, self.nv_montante, self.ug1_pot,
+                    logger.debug(("{:15.0f};{:5.5f};{:5.5f};{:5.5f};{:5.5f};{:5.5f}\n".format(self.segundos_simulados,  self.q_aflu, self.nv_montante, self.ug1_pot,
                                                                                      self.ug2_pot, self.ug1_setpoint+self.ug2_setpoint)))
-            logging.info("Final das amostras")
+            logger.info("Final das amostras")
+
+    def kill(self):
+        self.run_cr = False
+        print("RUN = ", self.run_cr)
+
 
 
 # +-------------------------------------------------------------------------------------------------------------------+
@@ -490,16 +535,16 @@ if __name__ == "__main__":
 
     # Inicializando o logging
     logFormatter = logging.Formatter("%(asctime)s [%(threadName)-12.12s] [%(levelname)-5.5s]  %(message)s")
-    rootLogger = logging.getLogger()
-    rootLogger.setLevel(logging.INFO)
+    logger = logging.getLogger(__name__)
+    logger.setLevel(logging.INFO)
     # LOG to file
     fileHandler = logging.FileHandler("simulador_clp.log", mode='w+')
     fileHandler.setFormatter(logFormatter)
-    rootLogger.addHandler(fileHandler)
+    logger.addHandler(fileHandler)
     # LOG to console
     consoleHandler = logging.StreamHandler()
     consoleHandler.setFormatter(logFormatter)
-    rootLogger.addHandler(consoleHandler)
+    logger.addHandler(consoleHandler)
 
     if PLOTAR_GRAFICO_DEBBUG:
         t_plotar_debug = threading.Thread(target=plotar_debug)
@@ -508,7 +553,7 @@ if __name__ == "__main__":
         sleep(2)
 
     # Inicialização dos comportamentos
-    logging.info("Simulador iniciado. Iniciando Threads")
+    logger.info("Simulador iniciado. Iniciando Threads")
 
     cr = ComportamentoReal()
     t_cr = threading.Thread(target=cr.comportamento_real)
@@ -530,9 +575,11 @@ if __name__ == "__main__":
     # Write a header and footer, first write colored strip, then write text
     stdscr.bkgd(curses.color_pair(3))
     stdscr.addstr(0, 0, " " * width, curses.color_pair(1))
+    stdscr.addstr(height - 2, 0, " " * (width - 1), curses.color_pair(1))
     stdscr.addstr(height - 1, 0, " " * (width - 1), curses.color_pair(1))
     stdscr.addstr(0, 0, "MCPLS - Módulo controlador lógico programavél simulado - Ritmo Energia 2021", curses.color_pair(1))
-    stdscr.addstr(height - 1, 0, " Key Commands : q - Sair; a - Alterar Afluente; d - Alterar Databank", curses.color_pair(1))
+    stdscr.addstr(height - 2, 0, " Key Commands :", curses.color_pair(1))
+    stdscr.addstr(height - 1, 0, " q - Sair; a - Alterar Q_afluente; d - Alterar Databank; m - Temp. do mancal; g - Perda na grade", curses.color_pair(1))
     stdscr.refresh()
 
 
@@ -540,9 +587,9 @@ if __name__ == "__main__":
     # Interface #
     ########################
 
-    logging.info("Iniciando Comportamento do clp")
+    logger.info("Iniciando Comportamento do clp")
 
-    logging.info("Iniciando Servidor/Slave Modbus ")
+    logger.info("Iniciando Servidor/Slave Modbus ")
     ip = CLPconfig.SLAVE_IP
     porta = CLPconfig.SLAVE_PORT
     temporizador = CLPconfig.CLP_REFRESH_RATE
@@ -558,15 +605,16 @@ if __name__ == "__main__":
             if k == ord('q') or k == ord('Q'):
                 curses.endwin()
                 raise KeyboardInterrupt
+
             elif k == ord('a') or k == ord('A'):
                 try:
                     valor = 0
-                    for k in range(26, height-1):
+                    for k in range(26, height-2):
                         stdscr.addstr(k, 0, " "*width, curses.color_pair(3))
-                    stdscr.addstr(26, 0, "Insira o novo valor da vazão afluente (q_aflu) (entre 0 e 50 m³/s):", curses.color_pair(3))
+                    stdscr.addstr(26, 0, "Insira o novo valor da vazão afluente (q_aflu) (entre 0 e 1000 m³/s):", curses.color_pair(3))
                     valor = stdscr.getstr()
                     valor = float(valor)
-                    valor = min(max(valor, 0), 50)
+                    valor = min(max(valor, 0), 1000)
                     cr.q_aflu = valor
                     stdscr.addstr(26, 0, " "*width, curses.color_pair(3))
                 except Exception as e:
@@ -576,8 +624,7 @@ if __name__ == "__main__":
             elif k == ord('d') or k == ord('D'):
                 try:
                     valor = 0
-                    anterior = cr.q_aflu
-                    for k in range(26, height-1):
+                    for k in range(26, height-2):
                         stdscr.addstr(k, 0, " "*width, curses.color_pair(3))
                     stdscr.addstr(26, 0, "Alterar o valor de qual endereço (endereço entre 0 - 65535)? ", curses.color_pair(3))
                     end = stdscr.getstr()
@@ -596,44 +643,116 @@ if __name__ == "__main__":
                     stdscr.addstr(26, 0, " "*width, curses.color_pair(4))
                     stdscr.addstr(26, 0, "Erro! {} ".format(e), curses.color_pair(4))
 
+            elif k == ord('m') or k == ord('M'):
+                try:
+                    valor = 0
+                    for k in range(26, height - 2):
+                        stdscr.addstr(k, 0, " " * width, curses.color_pair(3))
+                    stdscr.addstr(26, 0, "Inserir a nova temperatura do mancal da UG1 (pressione enter para não alterar): ", curses.color_pair(3))
+                    valor = stdscr.getstr()
+                    if valor:
+                        valor = float(valor)
+                        cr.ug1_temp_mancal = valor
+                    stdscr.addstr(26, 0, " "*width, curses.color_pair(3))
+                    stdscr.addstr(26, 0, "Inserir a nova temperatura do mancal da UG2 (pressione enter para não alterar): ", curses.color_pair(3))
+                    valor = stdscr.getstr()
+                    if valor:
+                        valor = float(valor)
+                        cr.ug2_temp_mancal = valor
+                    stdscr.addstr(26, 0, " " * width, curses.color_pair(3))
+                    stdscr.addstr(27, 0, " " * width, curses.color_pair(3))
+
+                except Exception as e:
+                    stdscr.addstr(26, 0, " " * width, curses.color_pair(4))
+                    stdscr.addstr(26, 0, "Erro! {} ".format(e), curses.color_pair(4))
+
+            elif k == ord('g') or k == ord('G'):
+                try:
+                    valor = 0
+                    for k in range(26, height - 2):
+                        stdscr.addstr(k, 0, " " * width, curses.color_pair(3))
+                    stdscr.addstr(26, 0, "Inserir a nova perda da grade da UG1 (pressione enter para não alterar): ", curses.color_pair(3))
+                    valor = stdscr.getstr()
+                    if valor:
+                        valor = float(valor)
+                        cr.ug1_perda_grade = valor
+                    stdscr.addstr(26, 0, " "*width, curses.color_pair(3))
+                    stdscr.addstr(26, 0,  "Inserir a nova perda da grade da UG2 (pressione enter para não alterar): ", curses.color_pair(3))
+                    valor = stdscr.getstr()
+                    if valor:
+                        valor = float(valor)
+                        cr.ug2_perda_grade = valor
+                    stdscr.addstr(26, 0, " " * width, curses.color_pair(3))
+                    stdscr.addstr(27, 0, " " * width, curses.color_pair(3))
+
+                except Exception as e:
+                    stdscr.addstr(26, 0, " " * width, curses.color_pair(4))
+                    stdscr.addstr(26, 0, "Erro! {} ".format(e), curses.color_pair(4))
+
             else:
                 tempo_real = datetime.now() - tempo_inicio
-                i = i+1 if i < 3 else 0
-                texto_rodando = str("  Tempo decorrido: {:.1f} minutos  |  Horas simulas: {:.1f}  |  ".format(tempo_real.seconds/60, cr.segundos_simulados/3600) + "Rodando" + "."*i)
+
+                texto_rodando = str("  Tempo decorrido: {:.1f} minutos  |  Horas simulas: {:.1f}  |  Tick: {:10d}  |  ".format(tempo_real.seconds/60, cr.segundos_simulados/3600, cr.tick) + "Rodando" + "." * cr.rodando)
                 stdscr.addstr(2, 0, " "*width, curses.color_pair(3))
                 stdscr.addstr(2, 0, texto_rodando, curses.color_pair(3))
                 stdscr.addstr(3, 0, "-"*width, curses.color_pair(3))
                 sensor_nv = 620 + (DataBank.get_words(0, 1)[0]/1000)
-                stdscr.addstr(4, 0, "  Nível montante: Real:{:3.2f}m Sensor:{:3.2f}m  |  Flags Usina {:^5d}  |  Aflu: {:2.3f}m³/s ".format(cr.nv_montante, sensor_nv, cr.flags_usina, cr.q_aflu), curses.color_pair(3))
-                stdscr.addstr(4, 0, "  Nível montante: Real:{:3.2f}m Sensor:{:3.2f}m  |  Flags Usina {:^5d}  |  Aflu: {:2.3f}m³/s ".format(cr.nv_montante, sensor_nv, cr.flags_usina, cr.q_aflu), curses.color_pair(3))
+                stdscr.addstr(4, 0, "  Nível montante: Real:{:3.2f}m Sensor:{:3.2f}m  |  Pot no Medidor: {:5.3f}MW  |  Flags Usina {:^5d}  |  Aflu: {:2.3f}m³/s ".format(cr.nv_montante, sensor_nv, cr.pot_no_medidor, cr.flags_usina, cr.q_aflu), curses.color_pair(3))
                 stdscr.addstr(5, 0, "-"*width, curses.color_pair(3))
-                stdscr.addstr(6, 0, "  UG  |  Potencia  |  Setpoint  |  Flags  |  Sinc  |  T mancal  |  Perda grade  |  Horas-máquina".format(cr.nv_montante, cr.flags_usina), curses.color_pair(3))
-                stdscr.addstr(7, 0,
-                              "   1  |   {:1.3f}MW  |   {:1.3f}MW  |  {:^5d}  |  {:3.0f}%  |   {:2.1f}°C   |     {:1.2f}m     |      {:1.3f}h"
+
+                estado_comporta_string = "None"
+                if bool(cr.comp_fechada):
+                    estado_comporta_string = "P0/Fechada"
+                elif bool(cr.comp_p1):
+                    estado_comporta_string = "P1"
+                elif bool(cr.comp_p2):
+                    estado_comporta_string = "P2"
+                elif bool(cr.comp_p3):
+                    estado_comporta_string = "P3"
+                elif bool(cr.comp_p4):
+                    estado_comporta_string = "P4"
+                elif bool(cr.comp_aberta):
+                    estado_comporta_string = "P5/Aberta"
+
+                stdscr.addstr(6, 0, "  Comporta: {:10s}  |  Flags:{}".format(estado_comporta_string,cr.comp_flags), curses.color_pair(3))
+                stdscr.addstr(7, 0, "-"*width, curses.color_pair(3))
+                stdscr.addstr(8, 0, "  UG  |  Potencia  |  Setpoint  |  Flags  |  Sinc  |   T mancal   |  Perda grade  |  Horas-máquina".format(cr.nv_montante, cr.flags_usina), curses.color_pair(3))
+                stdscr.addstr(9, 0,
+                              "   1  |   {:5.3f}MW  |   {:5.3f}MW  |  {:^5d}  |  {:3.0f}%  |   {:6.1f}°C   |     {:4.2f}m     |      {:.3f}h"
                               .format(cr.ug1_pot, cr.ug1_setpoint, cr.ug1_flags, cr.ug1_sinc * 100, cr.ug1_temp_mancal, cr.ug1_perda_grade,
                                       cr.ug1_minutos/60), curses.color_pair(3))
-                stdscr.addstr(8, 0,
-                              "   1  |   {:1.3f}MW  |   {:1.3f}MW  |  {:^5d}  |  {:3.0f}%  |   {:2.1f}°C   |     {:1.2f}m     |      {:1.3f}h"
+                stdscr.addstr(10, 0,
+                              "   2  |   {:5.3f}MW  |   {:5.3f}MW  |  {:^5d}  |  {:3.0f}%  |   {:6.1f}°C   |     {:4.2f}m     |      {:.3f}h"
                               .format(cr.ug2_pot, cr.ug2_setpoint, cr.ug2_flags, cr.ug2_sinc * 100,  cr.ug2_temp_mancal, cr.ug2_perda_grade,
                                       cr.ug2_minutos/60), curses.color_pair(3))
 
-                stdscr.addstr(9, 0, "-" * width, curses.color_pair(3))
-                stdscr.addstr(10, 0, "  Data bank ", curses.color_pair(3))
                 stdscr.addstr(11, 0, "-" * width, curses.color_pair(3))
-                stdscr.addstr(12, 0, "      :   0     1     2     3     4     5     6     7     8     9   :    "
+                stdscr.addstr(12, 0, "  Data bank ", curses.color_pair(3))
+                stdscr.addstr(13, 0, "-" * width, curses.color_pair(3))
+                stdscr.addstr(14, 0, "      :   0     1     2     3     4     5     6     7     8     9   :    "
 
                               , curses.color_pair(3))
 
                 for j in range(11):
-                    stdscr.addstr(13+j, 0, "  {:3d} : {:^5d} {:^5d} {:^5d} {:^5d} {:^5d} {:^5d} {:^5d} {:^5d} {:^5d} {:^5d} : {:<3d}".format(*([j*10]+DataBank.get_words(0+(10*j), 10)+[9+(10*j)])), curses.color_pair(3))
+                    stdscr.addstr(15+j, 0, "  {:3d} : {:^5d} {:^5d} {:^5d} {:^5d} {:^5d} {:^5d} {:^5d} {:^5d} {:^5d} {:^5d} : {:<3d}".format(*([j*10]+DataBank.get_words(0+(10*j), 10)+[9+(10*j)])), curses.color_pair(3))
                 stdscr.addstr(25, 0, "-"*width, curses.color_pair(3))
-                stdscr.addstr(height-2, 0, "DEBUG: Valor entrado: {}".format(k), curses.color_pair(2))
+                stdscr.addstr(height-3, 0, "DEBUG: Valor entrado: {}".format(k), curses.color_pair(2))
 
                 sleep(temporizador)
 
     except Exception as e:
-        logging.error("Erro na execução do CLP: {}".format(e))
+        logger.error("Erro na execução do CLP: {}".format(e))
+
+    except KeyboardInterrupt as e:
+        logger.info("Finalizando por interrupção de teclado ({})".format(e))
+
     finally:
-        pass
-    curses.endwin()
-    logging.info("Final da Main")
+        curses.endwin()
+        logger.info("Finalizando t_cr")
+        while t_cr.is_alive():
+            cr.kill()
+            sleep(2)
+        logger.info("Finalizado t_cr")
+
+    input("Pressione enter para sair...")
+    logger.info("Final da Main")
