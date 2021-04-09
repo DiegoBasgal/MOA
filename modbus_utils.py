@@ -1605,5 +1605,5 @@ while True:
     except TypeError as e:
         print("Erro Na leitura. ", e)
     duracao =  time() - start
-    print("Sleep por ", 60-duracao)
+    print("[", datetime.now().strftime('%x %X'), "] Sleep por ", 60-duracao)
     sleep(60-duracao)
