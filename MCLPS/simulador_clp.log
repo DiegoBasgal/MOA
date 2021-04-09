@@ -1,4 +1,0 @@
-2021-02-25 18:12:48,343 [MainThread  ] [INFO ]  Simulador iniciado. Iniciando Threads
-2021-02-25 18:12:48,344 [Thread-1    ] [INFO ]  Comportamento rodando
-2021-02-25 18:12:48,347 [MainThread  ] [INFO ]  Iniciando Comportamento do clp
-2021-02-25 18:12:48,347 [MainThread  ] [INFO ]  Iniciando Servidor/Slave Modbus 
