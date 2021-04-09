@@ -1,5 +1,7 @@
-from time import sleep
+from datetime import datetime
+from time import sleep, time
 from pyModbusTCP.client import ModbusClient
+from functools import wraps
 
 REG_UG1_Alarme01 = 14199
 REG_UG1_Alarme02 = 14200
@@ -1517,67 +1519,91 @@ USN_slave = ModbusClient(host=USN_slave_ip, port=USN_slave_porta, timeout=5, uni
 
 def ler_todos():
 
-        ug1_regs = []
-        ug2_regs = []
-        usn_regs = []
+    ug1_regs = []
+    ug2_regs = []
+    usn_regs = []
 
-        # UG1
-        aux = []
-        aux += UG1_slave.read_holding_registers(12289, 73)
-        aux += UG1_slave.read_holding_registers(13569, 92)
-        aux += UG1_slave.read_holding_registers(14199, 16)
-        aux += UG1_slave.read_holding_registers(12764, 124)
-        aux += UG1_slave.read_holding_registers(12564, 32)
-        aux += UG1_slave.read_holding_registers(14279, 128)
-        aux += UG1_slave.read_holding_registers(12766, 4)
-        for a in aux:
-            if a >= 2**15:
-                a = -a + 2**15
-            ug1_regs.append(a)
+    # UG1
+    aux = []
+    aux += UG1_slave.read_holding_registers(12288, 73)
+    aux += UG1_slave.read_holding_registers(13568, 92)
+    aux += UG1_slave.read_holding_registers(14198, 16)
+    aux += UG1_slave.read_holding_registers(12763, 124)
+    aux += UG1_slave.read_holding_registers(12563, 32)
+    aux += UG1_slave.read_holding_registers(14278, 124)
+    aux += UG1_slave.read_holding_registers(12765, 4)
+    for a in aux:
+      if a >= 2**15:
+        a =  -a + 2**15
+      ug1_regs.append(a)
 
-        # UG2
-        aux = []
-        aux += UG2_slave.read_holding_registers(12289, 73)
-        aux += UG2_slave.read_holding_registers(13569, 92)
-        aux += UG2_slave.read_holding_registers(14199, 16)
-        aux += UG2_slave.read_holding_registers(12764, 124)
-        aux += UG2_slave.read_holding_registers(12564, 32)
-        aux += UG2_slave.read_holding_registers(14279, 128)
-        aux += UG2_slave.read_holding_registers(12766, 4)
-        for a in aux:
-            if a >= 2 ** 15:
-                a = -a + 2 ** 15
-            ug2_regs.append(a)
+    # UG2
+    aux = []
+    aux += UG2_slave.read_holding_registers(12288, 73)
+    aux += UG2_slave.read_holding_registers(13568, 92)
+    aux += UG2_slave.read_holding_registers(14198, 16)
+    aux += UG2_slave.read_holding_registers(12763, 124)
+    aux += UG2_slave.read_holding_registers(12563, 32)
+    aux += UG2_slave.read_holding_registers(14278, 124)
+    aux += UG2_slave.read_holding_registers(12765, 4)
+    for a in aux:
+        if a >= 2 ** 15:
+            a =  -a + 2 ** 15
+        ug2_regs.append(a)
 
-        # USN
-        aux = []
-        aux += USN_slave.read_holding_registers(12764, 220)
-        aux += USN_slave.read_holding_registers(12289, 53)
-        aux += USN_slave.read_holding_registers(14199, 16)
-        aux += USN_slave.read_holding_registers(14279, 128)
-        aux += USN_slave.read_holding_registers(13569, 77)
-        aux += USN_slave.read_holding_registers(12564, 64)
-        aux += USN_slave.read_holding_registers(12766, 4)
-        for a in aux:
-            if a >= 2 ** 15:
-                a = -a + 2 ** 15
-            usn_regs.append(a)
+    # USN
+    aux = []
+    aux += USN_slave.read_holding_registers(12763, 125)
+    aux += USN_slave.read_holding_registers(12288, 53)
+    aux += USN_slave.read_holding_registers(14198, 16)
+    aux += USN_slave.read_holding_registers(14278, 124)
+    aux += USN_slave.read_holding_registers(13568, 77)
+    aux += USN_slave.read_holding_registers(12563, 64)
+    aux += USN_slave.read_holding_registers(12765, 4)
+    for a in aux:
+        if a >= 2 ** 15:
+            a = -a + 2 ** 15
+        usn_regs.append(a)
 
-        return usn_regs, ug1_regs, ug2_regs
+    return usn_regs, ug1_regs, ug2_regs
 
 def ack_rst_alarmes():
 
-    UG1_slave.write_single_register(12288+8, 1)  # desliga em
-    UG1_slave.write_single_register(12288+1, 1)  # reconehce
-    UG1_slave.write_single_register(12288+0, 1)  # reset
+  UG1_slave.write_single_register(12288+8, 1) # desliga em
+  UG1_slave.write_single_register(12288+1, 1) # reconehce
+  UG1_slave.write_single_register(12288+0, 1) # reset
 
-    UG2_slave.write_single_register(12288+8, 1)  # desliga em
-    UG2_slave.write_single_register(12288+1, 1)  # reconehce
-    UG2_slave.write_single_register(12288+0, 1)  # reset
+  UG2_slave.write_single_register(12288+8, 1) # desliga em
+  UG2_slave.write_single_register(12288+1, 1) # reconehce
+  UG2_slave.write_single_register(12288+0, 1) # reset
 
-    USN_slave.write_single_register(12288+3, 1)  # desliga em
-    USN_slave.write_single_register(12288+1, 1)  # reconehce
-    USN_slave.write_single_register(12288+0, 1)  # reset
-    USN_slave.write_single_register(12288+5, 11)  # dj52L
+  USN_slave.write_single_register(12288+3, 1) # desliga em
+  USN_slave.write_single_register(12288+1, 1) # reconehce
+  USN_slave.write_single_register(12288+0, 1) # reset
+  USN_slave.write_single_register(12288+5, 11) # dj52L
 
-ack_rst_alarmes()
+
+def ler_e_gravar_log():
+    print("Lendo...")
+    dt =  datetime.now().strftime('%x %X')
+    usn_regs, ug1_regs, ug2_regs =  ler_todos()
+    print("OK!\nEscrevendo...")
+    with open("log_modbus_ug1.csv", "a") as f:
+        f.write("{}, {}\n".format(dt, ug1_regs))
+    with open("log_modbus_ug2.csv", "a") as f:
+        f.write("{}, {}\n".format(dt, ug2_regs))
+    with open("log_modbus_usina.csv", "a") as f:
+        f.write("{}, {}\n".format(dt, usn_regs))
+    print("OK!")
+
+
+while True:
+
+    start =  time()
+    try:
+        ler_e_gravar_log()
+    except TypeError as e:
+        print("Erro Na leitura. ", e)
+    duracao =  time() - start
+    print("Sleep por ", 60-duracao)
+    sleep(60-duracao)
