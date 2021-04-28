@@ -1,5 +1,6 @@
 import json
 import logging
+import os
 from sys import stdout
 import telegram
 from telegram import Update
@@ -8,7 +9,6 @@ from telegram.ext import Updater, CommandHandler, CallbackContext
 # Inicializando o logger principal
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.DEBUG)
-# LOG to file
 fh = logging.FileHandler("telegram_bot.log")
 ch = logging.StreamHandler(stdout)
 logFormatter = logging.Formatter("%(asctime)s [%(threadName)-12.12s] [%(levelname)-5.5s]  %(message)s")
@@ -20,7 +20,7 @@ logger.addHandler(fh)
 logger.addHandler(ch)
 
 # Carrega as configurações e vars
-config_file = 'telegram_config.json'
+config_file = os.path.join(os.path.dirname(__file__), 'telegram_config.json')
 with open(config_file, 'r') as file:
     config = json.load(file)
 logger.debug("Config: {}".format(config))

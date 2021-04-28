@@ -1,13 +1,14 @@
 import logging
 from datetime import datetime
-from pyModbusTCP.server import DataBank, ModbusServer
+# from pyModbusTCP.server import DataBank, ModbusServer
 from sys import stdout
 from time import sleep
+from src.mensageiro.mensageiro_log_handler import MensageiroHandler
 
 
 # Meus imports
-import mensageiro as msg
-import usina
+# import mensageiro as msg
+# import usina
 
 
 def controle_proporcional(erro_nivel):
@@ -34,24 +35,28 @@ rootLogger = logging.getLogger()
 rootLogger.setLevel(logging.CRITICAL)
 
 # Inicializando o logger principal
-logFormatter = logging.Formatter("%(asctime)s [%(threadName)-12.12s] [%(levelname)-5.5s]  %(message)s")
 logger = logging.getLogger(__name__)
-logger.setLevel(logging.INFO)
-# LOG to file
-fileHandler = logging.FileHandler("MOA.log")
-fileHandler.setFormatter(logFormatter)
-logger.addHandler(fileHandler)
-# LOG to console
-consoleHandler = logging.StreamHandler(stdout)
-consoleHandler.setFormatter(logFormatter)
-logger.addHandler(consoleHandler)
+logger.setLevel(logging.DEBUG)
+fh = logging.FileHandler("MOA.log")
+ch = logging.StreamHandler(stdout)
+mh = MensageiroHandler()
+logFormatter = logging.Formatter("%(asctime)s [%(threadName)-12.12s] [%(levelname)-5.5s]  %(message)s")
+logFormatterSimples = logging.Formatter("[%(levelname)-5.5s]  %(message)s")
+fh.setFormatter(logFormatter)
+ch.setFormatter(logFormatter)
+mh.setFormatter(logFormatterSimples)
+fh.setLevel(logging.INFO)
+ch.setLevel(logging.DEBUG)
+mh.setLevel(logging.DEBUG)
+logger.addHandler(fh)
+logger.addHandler(ch)
+logger.addHandler(mh)
 
 #######################
 # Inicializando o MOA #
 #######################
 
 logger.info('Inicializando o MOA')
-msg.enviar_whatsapp("Inicializando MOA")
 # A escala de tempo é utilizada para acelerar as simulações do sistema
 # Utilizar 10x para testes sérios e 120x no máximo para testes simples
 ESCALA_DE_TEMPO = 60
@@ -82,7 +87,6 @@ modo_autonomo_sinalizado = False
 # Inicializando Servidor Modbus (para algumas comunicações com o Elipse)
 aviso = "Iniciando Servidor/Slave Modbus MOA."
 logger.info(aviso)
-msg.enviar_whatsapp(aviso)
 modbus_server = ModbusServer(host=u.modbus_server_ip, port=u.modbus_server_porta, no_block=True)
 while not modbus_server.is_run:
     try:
@@ -91,40 +95,33 @@ while not modbus_server.is_run:
         aviso = "Servidor/Slave Modbus MOA Iniciado com sucesso. Endereço: {:}:{:}.".format(u.modbus_server_ip,
                                                                                             u.modbus_server_porta)
         logger.info(aviso)
-        msg.enviar_whatsapp(aviso)
     except Exception as e:
         aviso = "Erro ao iniciar Modbus MOA: '{:}'. Tentando novamente em 5s.".format(e)
         logger.error(aviso)
-        msg.enviar_whatsapp(aviso)
         sleep(5)
         continue
 
 
 aviso = "Executando o MOA."
 logger.info(aviso)
-msg.enviar_whatsapp(aviso)
 
 # Espera conexão com o CLP
 while True:
     aviso = "Iniciando conexão com a CLP."
     logger.info(aviso)
-    msg.enviar_whatsapp(aviso)
     try:
         u.ler_valores()
         if u.clp_online:
             aviso = "Conexão com a CLP ok."
             logger.info(aviso)
-            msg.enviar_whatsapp(aviso)
             break
         else:
             aviso = "Não conectou, tentando novamente em {}s.".format(u.timer_erro)
             logger.info(aviso)
-            msg.enviar_whatsapp(aviso)
             sleep(u.timer_erro)
     except Exception as e:
         aviso = "MOA Não conectou a CLP! '{}'. Tentando novamente em {}s.".format(e, u.timer_erro)
         logger.error(aviso)
-        msg.enviar_whatsapp(aviso)
         sleep(u.timer_erro)
 
 
@@ -173,19 +170,15 @@ while True:
             u.status_moa = 1001
             aviso = "A emergência foi acionada! Status MOA: {}".format(u.status_moa)
             logger.warning(aviso)
-            msg.enviar_whatsapp(aviso)
-            msg.enviar_voz_teste()
         if (not u.emergencia_acionada) and em_emergencia:
             em_emergencia = False
             aviso = "A emergência foi removida! Status MOA: {}".format(u.status_moa)
             logger.warning(aviso)
-            msg.enviar_whatsapp(aviso)
 
         if not em_emergencia:
             if not emergencias_removidas:
                 aviso = "Removendo emegências."
                 logger.info(aviso)
-                msg.enviar_whatsapp(aviso)
                 u.normalizar_emergencia_clp()
                 emergencias_removidas = True
 
@@ -194,7 +187,6 @@ while True:
                 if not modo_autonomo_sinalizado:
                     aviso = "Modo autonomo ativado."
                     logger.info(aviso)
-                    msg.enviar_whatsapp(aviso)
                     modo_autonomo_sinalizado = True
 
                 ###############################################
@@ -209,7 +201,6 @@ while True:
                     if u.aguardando_reservatorio:
                         aviso = "O nv_montante ({:03.2f}) está acima do limite de religamento.".format(u.nv_montante)
                         logger.info(aviso)
-                        msg.enviar_whatsapp(aviso)
                     u.aguardando_reservatorio = False
 
                 # Se estiver sem água no reservatorio, travar até o nv_montante subir
@@ -217,7 +208,6 @@ while True:
                     if not u.aguardando_reservatorio:
                         aviso = "O nv_montante ({:03.2f}) está abaixo do limite inferior.".format(u.nv_montante)
                         logger.warning(aviso)
-                        msg.enviar_whatsapp(aviso)
                     u.aguardando_reservatorio = True
                     pot_alvo = 0
 
@@ -318,7 +308,6 @@ while True:
                     u.status_moa = 1
                     aviso = "Modo autonomo desativado."
                     logger.info(aviso)
-                    msg.enviar_whatsapp(aviso)
                     modo_autonomo_sinalizado = False
                 # Todo o que fazer quando não está no autônomo ?
 
@@ -336,29 +325,24 @@ while True:
         while not u.clp_online:
             aviso = "MOA perdeu a conexo com a usina. Tentando novamente em {}s".format(u.timer_erro)
             logger.error(aviso)
-            msg.enviar_whatsapp(aviso)
             sleep(u.timer_erro)
             u.ler_valores()
         aviso = "Conexão com a CLP ok."
         logger.info(aviso)
-        msg.enviar_whatsapp(aviso)
         continue
 
     # Parada abrupta pelo teclado (ctrl-c ou equivalente)
     except KeyboardInterrupt as e:
         aviso = "MOA recebeu uma interrupção por teclado: '{}'.".format(e)
         logger.info(aviso)
-        msg.enviar_whatsapp(aviso)
         break
 
     # Exception padrão/sem descritivo
     except Exception as e:
         aviso = "MOA experienciou uma Exception: '{}'.".format(e)
-        logger.error(aviso)
-        msg.enviar_whatsapp(aviso)
+        logger.critical(aviso)
         raise e
 
 
 aviso = "MOA finalizado."
 logger.info(aviso)
-msg.enviar_whatsapp(aviso)

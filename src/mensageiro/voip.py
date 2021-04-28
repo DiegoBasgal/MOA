@@ -1,5 +1,6 @@
 import json
 import logging
+import os
 from sys import stdout
 from urllib.request import Request, urlopen
 # from MySQLdb import connect, cursors
@@ -19,7 +20,7 @@ logger.addHandler(fh)
 logger.addHandler(ch)
 
 # Carrega as configurações e vars
-config_file = 'voip_config.json'
+config_file = os.path.join(os.path.dirname(__file__), 'voip_config.json')
 with open(config_file, 'r') as file:
     config = json.load(file)
 
