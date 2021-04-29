@@ -5,11 +5,10 @@ from datetime import datetime
 from pyModbusTCP.server import DataBank, ModbusServer
 from sys import stdout
 from time import sleep
-from src.mensageiro.mensageiro_log_handler import MensageiroHandler
-
+from mensageiro.mensageiro_log_handler import MensageiroHandler
 
 # Meus imports
-import usina
+from MOA import usina
 
 
 def controle_proporcional(erro_nivel):

@@ -177,12 +177,17 @@ class UnidadeDeGeracao:
         # Verificações
 
         if self.temp_mancal >= self.temp_mancal_max and not (self.flag & 0b10):
-            self.indisponibilizar(0b10, "Temperatura máxima do mancal excedida (atual:{}; max:{})".format(self.temp_mancal, self.temp_mancal_max))
+            self.indisponibilizar(0b10,
+                                  "Temperatura do mancal excedida (atual:{}; max:{})".format(self.temp_mancal,
+                                                                                             self.temp_mancal_max))
         elif self.temp_mancal < self.temp_mancal_max and (self.flag & 0b10):
             self.normalizar(0b10)
 
         if self.perda_na_grade >= self.perda_na_grade_max and not (self.flag & 0b100):
-            self.indisponibilizar(0b100, "Perda máxima na grade excedida (atual:{}; max:{})".format(self.perda_na_grade, self.perda_na_grade_max))
+            self.indisponibilizar(0b100,
+                                  "Perda máxima na grade excedida (atual:{}; max:{})".format(self.perda_na_grade,
+                                                                                             self.perda_na_grade_max))
+
         elif self.perda_na_grade < self.perda_na_grade_max and (self.flag & 0b100):
             self.normalizar(0b100)
 
@@ -192,14 +197,16 @@ class UnidadeDeGeracao:
     def mudar_setpoint(self, alvo):
 
         alvo = max(alvo, 0)
+
         if self.temp_mancal > self.temp_mancal_alerta:
-            alvo = alvo * sqrt(sqrt(
-                1-((self.temp_mancal-self.temp_mancal_alerta)/(self.temp_mancal_max-self.temp_mancal_alerta))))
+            alvo *= sqrt(sqrt(1-((self.temp_mancal-self.temp_mancal_alerta)/(self.temp_mancal_max-self.temp_mancal_alerta))))
 
         if self.perda_na_grade > self.perda_na_grade_alerta:
-            alvo = alvo * sqrt(sqrt(
-                1 - ((self.perda_na_grade - self.perda_na_grade_alerta) / (self.perda_na_grade_max - self.perda_na_grade_alerta))))
+            alvo *= sqrt(
+                sqrt(1 - ((self.perda_na_grade - self.perda_na_grade_alerta) / (self.perda_na_grade_max - self.perda_na_grade_alerta))))
+
         self.setpoint = alvo
+
 
 class Comporta:
 
@@ -218,9 +225,7 @@ class Comporta:
     def __init__(self):
         self.endereco_clp_pos = ENDERECO_CLP_COMPORTA_POS
 
-
     def atualizar_estado(self, nv_montante):
-
         estado_alvo = self.pos_comporta
         for pos in self.posicoes:
             if (nv_montante < pos['anterior']) and (pos['pos'] <= self.pos_comporta) and (self.pos_comporta >= 1):
@@ -428,9 +433,7 @@ class Usina:
             self.ug1.atualizar_estado()
             self.ug2.atualizar_estado()
 
-
         else:
-
             # Se não conectou, a clp não está online.
             self.clp_online = False
             raise ConnectionError
@@ -750,7 +753,6 @@ class Usina:
                     logger.info("Normalizando a UG1 (comando via agendamento).")
                     self.ug1.normalizar()
 
-
                 elif agendamento[2] == AGENDAMENTO_NORMALIZAR_UG_2:
                     logger.info("Normalizando a UG2 (comando via agendamento).")
                     self.ug2.normalizar()
@@ -778,8 +780,9 @@ def get_ip_local():
         # doesn't even have to be reachable
         s.connect(('10.255.255.255', 1))
         temp = s.getsockname()[0]
-    except Exception:
-        temp = 'localhost'
+    except Exception as e:
+        logger.error("Erro ao obter IP local, retornando localhost. {}".format(e))
+        return 'localhost'
     finally:
         s.close()
     return temp

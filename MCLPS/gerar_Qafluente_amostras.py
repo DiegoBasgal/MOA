@@ -1,8 +1,6 @@
-from math import isnan
-
 import pandas as pd
 import MCLPS.connector_db as db
-import usina
+from MOA import usina
 
 primeira_amostra = True
 lista = []
