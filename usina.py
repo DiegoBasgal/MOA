@@ -1,6 +1,5 @@
 import logging
 from cmath import sqrt
-
 import mysql.connector
 import socket
 from datetime import datetime, timedelta
@@ -308,13 +307,16 @@ class Usina:
         """
         Inicia a ug
         """
-        self.modbus_server_ip = get_ip_local()
-        self.ler_valores()
-        self.status_moa = 7
+        try:
+            self.modbus_server_ip = get_ip_local()
+            self.ler_valores()
+            self.status_moa = 7
 
-        global modbus_clp
-        modbus_clp = ModbusClient(host=self.clp_ip, port=self.clp_porta,
-                                  timeout=5, unit_id=1, auto_open=True, auto_close=False)
+            global modbus_clp
+            modbus_clp = ModbusClient(host=self.clp_ip, port=self.clp_porta,
+                                      timeout=5, unit_id=1, auto_open=True, auto_close=False)
+        except Exception as e:
+            raise e
 
     def ler_valores(self):
         """

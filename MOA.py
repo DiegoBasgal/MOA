@@ -1,14 +1,15 @@
 import logging
+import sys
+import traceback
 from datetime import datetime
-# from pyModbusTCP.server import DataBank, ModbusServer
+from pyModbusTCP.server import DataBank, ModbusServer
 from sys import stdout
 from time import sleep
 from src.mensageiro.mensageiro_log_handler import MensageiroHandler
 
 
 # Meus imports
-# import mensageiro as msg
-# import usina
+import usina
 
 
 def controle_proporcional(erro_nivel):
@@ -64,66 +65,69 @@ ESCALA_DE_TEMPO = 60
 ##############################
 # INICIALIZAÇÃO DE VARIAVEIS #
 ##############################
-u = usina.Usina()
-flags = 0
-Kp = 0
-Ki = 0
-Kd = 0
-Kie = 0
-saida_ie = u.valor_ie_inicial
-saida_pid = 0
-pot_alvo = 0
-controle_p = 0
-controle_i = 0
-controle_d = 0
-erro_nv = 0
-em_emergencia = False
-emergencias_removidas = True
-modo_autonomo_sinalizado = False
-###########################
-# ANTES DOS CICLOS DO MOA #
-###########################
+try:
 
-# Inicializando Servidor Modbus (para algumas comunicações com o Elipse)
-aviso = "Iniciando Servidor/Slave Modbus MOA."
-logger.info(aviso)
-modbus_server = ModbusServer(host=u.modbus_server_ip, port=u.modbus_server_porta, no_block=True)
-while not modbus_server.is_run:
-    try:
-        modbus_server.start()
-        DataBank.set_words(0, [0] * 0x10000)
-        aviso = "Servidor/Slave Modbus MOA Iniciado com sucesso. Endereço: {:}:{:}.".format(u.modbus_server_ip,
-                                                                                            u.modbus_server_porta)
-        logger.info(aviso)
-    except Exception as e:
-        aviso = "Erro ao iniciar Modbus MOA: '{:}'. Tentando novamente em 5s.".format(e)
-        logger.error(aviso)
-        sleep(5)
-        continue
+    u = usina.Usina()
+    flags = 0
+    Kp = 0
+    Ki = 0
+    Kd = 0
+    Kie = 0
+    saida_ie = u.valor_ie_inicial
+    saida_pid = 0
+    pot_alvo = 0
+    controle_p = 0
+    controle_i = 0
+    controle_d = 0
+    erro_nv = 0
+    em_emergencia = False
+    emergencias_removidas = True
+    modo_autonomo_sinalizado = False
+    ###########################
+    # ANTES DOS CICLOS DO MOA #
+    ###########################
+
+    # Inicializando Servidor Modbus (para algumas comunicações com o Elipse)
+    logger.debug("Iniciando Servidor/Slave Modbus MOA.")
+    modbus_server = ModbusServer(host=u.modbus_server_ip, port=u.modbus_server_porta, no_block=True)
+    tentativa = 1
+    while not modbus_server.is_run:
+        try:
+            tentativa += 1
+            modbus_server.start()
+            DataBank.set_words(0, [0] * 0x10000)
+            logger.info("Servidor/Slave Modbus MOA Iniciado com sucesso. Endereço: {:}:{:}.".format(u.modbus_server_ip, u.modbus_server_porta))
+        except Exception as e:
+            if tentativa < 5:
+                logger.error("Erro ao iniciar Modbus MOA: '{:}'. Tentando novamente em 10s. (tentativa {}/5).".format(e, tentativa))
+            else:
+                logger.error("Tentativas exedidas ao iniciar Modbbus MOA. {}".format(e))
+                raise e
+
+except Exception as e:
+    logger.error("{}".format(e))
+    logger.debug("{}".format(traceback.format_exc()))
+    logger.critical("Erro na inicialização do MOA. Finalizando o processo.")
+    sys.exit(-1)
 
 
-aviso = "Executando o MOA."
-logger.info(aviso)
+logger.info("Executando o MOA.")
 
 # Espera conexão com o CLP
 while True:
-    aviso = "Iniciando conexão com a CLP."
-    logger.info(aviso)
+
+    logger.debug("Iniciando conexão com a CLP.")
     try:
         u.ler_valores()
         if u.clp_online:
-            aviso = "Conexão com a CLP ok."
-            logger.info(aviso)
+            logger.debug("Conexão com a CLP ok.")
             break
-        else:
-            aviso = "Não conectou, tentando novamente em {}s.".format(u.timer_erro)
-            logger.info(aviso)
-            sleep(u.timer_erro)
-    except Exception as e:
-        aviso = "MOA Não conectou a CLP! '{}'. Tentando novamente em {}s.".format(e, u.timer_erro)
-        logger.error(aviso)
-        sleep(u.timer_erro)
 
+    except Exception as e:
+        logger.debug("{}".format(traceback.format_exc()))
+        logger.error("Falha na conexão com a CLP. {}. Tentando novamente em {}s.".format(e, u.timer_erro))
+        sleep(u.timer_erro)
+        continue
 
 # inicializção de vetores
 nv_montante_recentes = [u.nv_montante] * u.n_movel_R
@@ -168,25 +172,21 @@ while True:
             u.acionar_emergerncia_clp()
             emergencias_removidas = False
             u.status_moa = 1001
-            aviso = "A emergência foi acionada! Status MOA: {}".format(u.status_moa)
-            logger.warning(aviso)
+            logger.warning("A emergência foi acionada! Status MOA: {}".format(u.status_moa))
         if (not u.emergencia_acionada) and em_emergencia:
             em_emergencia = False
-            aviso = "A emergência foi removida! Status MOA: {}".format(u.status_moa)
-            logger.warning(aviso)
+            logger.warning("A emergência foi removida! Status MOA: {}".format(u.status_moa))
 
         if not em_emergencia:
             if not emergencias_removidas:
-                aviso = "Removendo emegências."
-                logger.info(aviso)
+                logger.info("Removendo emegências.")
                 u.normalizar_emergencia_clp()
                 emergencias_removidas = True
 
             if u.modo_autonomo:
                 u.status_moa = 5
                 if not modo_autonomo_sinalizado:
-                    aviso = "Modo autonomo ativado."
-                    logger.info(aviso)
+                    logger.info("Modo autonomo ativado.")
                     modo_autonomo_sinalizado = True
 
                 ###############################################
@@ -199,15 +199,13 @@ while True:
                 # Se passar do nv de espera, turbinar!
                 if u.nv_montante > u.nv_religamento:
                     if u.aguardando_reservatorio:
-                        aviso = "O nv_montante ({:03.2f}) está acima do limite de religamento.".format(u.nv_montante)
-                        logger.info(aviso)
+                        logger.info("O nv_montante ({:03.2f}) está acima do limite de religamento.".format(u.nv_montante))
                     u.aguardando_reservatorio = False
 
                 # Se estiver sem água no reservatorio, travar até o nv_montante subir
                 if u.nv_montante <= u.nv_minimo:
                     if not u.aguardando_reservatorio:
-                        aviso = "O nv_montante ({:03.2f}) está abaixo do limite inferior.".format(u.nv_montante)
-                        logger.warning(aviso)
+                        logger.warning("O nv_montante ({:03.2f}) está abaixo do limite inferior.".format(u.nv_montante))
                     u.aguardando_reservatorio = True
                     pot_alvo = 0
 
@@ -306,8 +304,7 @@ while True:
             else:
                 if modo_autonomo_sinalizado:
                     u.status_moa = 1
-                    aviso = "Modo autonomo desativado."
-                    logger.info(aviso)
+                    logger.info("Modo autonomo desativado.")
                     modo_autonomo_sinalizado = False
                 # Todo o que fazer quando não está no autônomo ?
 
@@ -322,27 +319,22 @@ while True:
 
     # Erro na conexão
     except ConnectionError as e:
+
         while not u.clp_online:
-            aviso = "MOA perdeu a conexo com a usina. Tentando novamente em {}s".format(u.timer_erro)
-            logger.error(aviso)
+            logger.error("MOA perdeu a conexo com a usina. Tentando novamente em {}s".format(u.timer_erro))
             sleep(u.timer_erro)
             u.ler_valores()
-        aviso = "Conexão com a CLP ok."
-        logger.info(aviso)
+        logger.info("Conexão com a CLP ok.")
         continue
 
     # Parada abrupta pelo teclado (ctrl-c ou equivalente)
     except KeyboardInterrupt as e:
-        aviso = "MOA recebeu uma interrupção por teclado: '{}'.".format(e)
-        logger.info(aviso)
-        break
+        logger.info("MOA recebeu uma interrupção por teclado: '{}'.".format(e))
+        sys.exit(0)
 
     # Exception padrão/sem descritivo
     except Exception as e:
-        aviso = "MOA experienciou uma Exception: '{}'.".format(e)
-        logger.critical(aviso)
+        logger.critical("MOA experienciou uma Exception: '{}'.".format(e))
         raise e
 
-
-aviso = "MOA finalizado."
-logger.info(aviso)
+logger.info("MOA finalizado.")
