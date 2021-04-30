@@ -4,14 +4,21 @@
 # Note that environment variables can be set in several places
 # See https://docs.gitlab.com/ee/ci/variables/#priority-of-environment-variables
 stages:
+  - deploy
   - test
 
-build:
+deploy:
+  stage: deploy
+  script:
+    - echo "Deploying"
+    - mkdir teste
+    - touch teste/deployed.txt
+
+test:
   stage: test
   script:
     - echo "Testing"
-    - mkdir teste
-    - touch teste/info.txt
+    - touch teste/tested.txt
 
 sast:
   stage: test
