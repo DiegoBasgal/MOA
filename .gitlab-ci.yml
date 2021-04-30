@@ -14,6 +14,7 @@ deploy:
   stage: deploy
   script:
     - echo "Deploying"
+    - apt-get install python3
     - pip install -r requirements.txt 
 
 test:
