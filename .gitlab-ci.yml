@@ -17,7 +17,7 @@ deploy:
     - apt-get update
     - apt-get install -y python3
     - apt-get install -y python3-pip
-    - pip install -r requirements.txt 
+    - pip3 install -r requirements.txt 
 
 test:
   stage: test
