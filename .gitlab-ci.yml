@@ -11,14 +11,12 @@ deploy:
   stage: deploy
   script:
     - echo "Deploying"
-    - mkdir teste
-    - touch teste/deployed.txt
+    - pip install -r requirements.txt 
 
 test:
   stage: test
   script:
     - echo "Testing"
-    - touch teste/tested.txt
 
 sast:
   stage: test
