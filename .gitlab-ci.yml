@@ -4,8 +4,16 @@
 # Note that environment variables can be set in several places
 # See https://docs.gitlab.com/ee/ci/variables/#priority-of-environment-variables
 stages:
-- development
-sast: 
+  - test
+
+build:
+  stage: test
+  script:
+    - echo "Testing"
+    - mkdir teste
+    - touch teste/info.txt
+
+sast:
   stage: development
 include:
 - template: Security/SAST.gitlab-ci.yml
