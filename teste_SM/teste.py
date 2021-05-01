@@ -13,10 +13,12 @@ class StateMachine:
 
 
 class State:
+
     def __init__(self, *args, **kwargs):
         self.args = args
         self.kwargs = kwargs
         self.nome_do_estado = "Estado Genérico"
+
     def run(self) -> object:
         return self
 
