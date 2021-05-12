@@ -1,7 +1,0 @@
-{
-    "unit_id": 1 ,
-    "ip_slave": "localhost",
-    "port_slave": 502,
-    "timeout_modbus": 5,
-    "timeout_moa": 60
-}
