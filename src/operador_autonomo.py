@@ -5,10 +5,10 @@ from datetime import datetime
 from pyModbusTCP.server import DataBank, ModbusServer
 from sys import stdout
 from time import sleep
-from mensageiro.mensageiro_log_handler import MensageiroHandler
 
 # Meus imports
-from MOA import usina
+from mensageiro.mensageiro_log_handler import  MensageiroHandler
+import usina
 
 
 def controle_proporcional(erro_nivel):
@@ -47,7 +47,7 @@ ch.setFormatter(logFormatter)
 mh.setFormatter(logFormatterSimples)
 fh.setLevel(logging.INFO)
 ch.setLevel(logging.DEBUG)
-mh.setLevel(logging.DEBUG)
+mh.setLevel(logging.INFO)
 logger.addHandler(fh)
 logger.addHandler(ch)
 logger.addHandler(mh)
@@ -59,7 +59,7 @@ logger.addHandler(mh)
 logger.info('Inicializando o MOA')
 # A escala de tempo é utilizada para acelerar as simulações do sistema
 # Utilizar 10x para testes sérios e 120x no máximo para testes simples
-ESCALA_DE_TEMPO = 60
+ESCALA_DE_TEMPO = 1
 
 ##############################
 # INICIALIZAÇÃO DE VARIAVEIS #
@@ -98,13 +98,13 @@ try:
             logger.info("Servidor/Slave Modbus MOA Iniciado com sucesso. Endereço: {:}:{:}.".format(u.modbus_server_ip, u.modbus_server_porta))
         except Exception as e:
             if tentativa < 5:
-                logger.error("Erro ao iniciar Modbus MOA: '{:}'. Tentando novamente em 10s. (tentativa {}/5).".format(e, tentativa))
+                logger.error("Erro ao iniciar Modbus MOA: '{:}'. Tentando novamente em 10s. (tentativa {}/5).".format(repr(e), tentativa))
             else:
-                logger.error("Tentativas exedidas ao iniciar Modbbus MOA. {}".format(e))
+                logger.error("Tentativas exedidas ao iniciar Modbbus MOA. {}".format(repr(e)))
                 raise e
 
-except Exception as e:
-    logger.error("{}".format(e))
+except BaseException as e:
+    logger.error(repr(e))
     logger.debug("{}".format(traceback.format_exc()))
     logger.critical("Erro na inicialização do MOA. Finalizando o processo.")
     sys.exit(-1)
@@ -124,7 +124,7 @@ while True:
 
     except Exception as e:
         logger.debug("{}".format(traceback.format_exc()))
-        logger.error("Falha na conexão com a CLP. {}. Tentando novamente em {}s.".format(e, u.timer_erro))
+        logger.error("Falha na conexão com a CLP. {}. Tentando novamente em {}s.".format(repr(e), u.timer_erro))
         sleep(u.timer_erro)
         continue
 
@@ -235,7 +235,7 @@ while True:
                         saida_pid = controle_p + controle_i + controle_d
                         # Calcula o integrador de estabilidade e limita
                         saida_ie = saida_pid * (Kie / ESCALA_DE_TEMPO) + saida_ie
-
+                        saida_ie = max(min(saida_ie, 1), 0)
                         """
                         if u.ug1.sincronizada and u.ug2.sincronizada:
                             saida_ie = max(min(saida_ie, 1), 0)
@@ -320,20 +320,23 @@ while True:
     except ConnectionError as e:
 
         while not u.clp_online:
-            logger.error("MOA perdeu a conexo com a usina. Tentando novamente em {}s".format(u.timer_erro))
-            sleep(u.timer_erro)
-            u.ler_valores()
+            try:
+                logger.error("MOA perdeu a conexão com a usina. Tentando novamente em {}s".format(u.timer_erro))
+                sleep(u.timer_erro)
+                u.ler_valores()
+            except Exception as e:
+                continue
         logger.info("Conexão com a CLP ok.")
         continue
 
     # Parada abrupta pelo teclado (ctrl-c ou equivalente)
     except KeyboardInterrupt as e:
-        logger.info("MOA recebeu uma interrupção por teclado: '{}'.".format(e))
+        logger.info("MOA recebeu uma interrupção por teclado: '{}'.".format(repr(e)))
         sys.exit(0)
 
     # Exception padrão/sem descritivo
     except Exception as e:
-        logger.critical("MOA experienciou uma Exception: '{}'.".format(e))
+        logger.critical("MOA experienciou uma Exception: '{}'.".format(repr(e)))
         raise e
 
 logger.info("MOA finalizado.")

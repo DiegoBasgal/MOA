@@ -1,31 +1,14 @@
 import sys
 from random import random
 from time import sleep
-
-
-class StateMachine:
-
-    def __init__(self, initial_state):
-        self.state = initial_state
-
-    def run(self):
-        self.state = self.state.run()
-
-
-class State:
-
-    def __init__(self, *args, **kwargs):
-        self.args = args
-        self.kwargs = kwargs
-        self.nome_do_estado = "Estado Genérico"
-
-    def run(self) -> object:
-        return self
+from sm import State, StateMachine, HaltState
 
 
 class EstadoA(State):
 
     def __init__(self, *args, **kargs):
+        super().__init__(*args, **kargs)
+
         self.paredes_restantes = args[0]
         self.nome_do_estado = "ESTADO-AMADORES"
         print("Temos que pintar {} paredes.".format(self.paredes_restantes))
@@ -34,7 +17,7 @@ class EstadoA(State):
 
         if self.paredes_restantes <= 0:
             print("Tudo pintado.")
-            return HaltSM()
+            return HaltState()
 
         n = random()
         if n > 0.2:
@@ -51,6 +34,8 @@ class EstadoA(State):
 class EstadoB(State):
 
     def __init__(self, *args, **kargs):
+        super().__init__(*args, **kargs)
+
         self.paredes_restantes = args[0]
         self.nome_do_estado = "ESTADO-PINTOR"
         print("O pintor entrou na casa")
@@ -70,17 +55,7 @@ class EstadoB(State):
             return EstadoA(self.paredes_restantes)
 
 
-class HaltSM(State):
-
-    def __init__(self):
-        self.nome_do_estado = "HALT"
-
-    def run(self):
-        while True:
-            sleep(1)
-
-
-sm = StateMachine(initial_state=EstadoA(10))
+sm = StateMachine(EstadoA(10))
 while True:
     print("Rodando a sm. Estado = {}".format(sm.state.nome_do_estado))
     sm.run()
