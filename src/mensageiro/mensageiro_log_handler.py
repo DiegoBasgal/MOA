@@ -2,6 +2,7 @@ from logging import Handler
 from . import telegram_bot
 from . import voip
 
+
 class MensageiroHandler(Handler):
 
     def emit(self, record):
