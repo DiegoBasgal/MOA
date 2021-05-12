@@ -1,3 +1,6 @@
+"""
+Módulo de teste do whatchdog. Não deve ser utilizado em ptrodução
+"""
 from datetime import datetime
 from time import sleep
 from pyModbusTCP.server import ModbusServer, DataBank
