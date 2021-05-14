@@ -99,4 +99,3 @@ def enviar_voz_teste(lista_de_contatos=None):
             request = Request('https://api.nvoip.com.br/v1/torpedovoz', data=data, headers=headers)
             response_body = urlopen(request).read()
             logger.debug("Response: {} ".format(response_body))
-
