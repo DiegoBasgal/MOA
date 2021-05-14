@@ -1,3 +1,11 @@
+"""
+operador_autonomo.py
+
+Este módulo é a grande estrela do show. Ele tem como funcionalidade o controle
+da usina conforme necessário para uma boa operação priorizando aumentar a geração
+e diminuir os gastos de maneira geral.
+"""
+
 import logging
 import sys
 import traceback
@@ -8,21 +16,40 @@ from time import sleep
 
 # Meus imports
 from mensageiro.mensageiro_log_handler import  MensageiroHandler
-import usina
+import usina  # camada de abstração entre o operador e a usina
 
 
 def controle_proporcional(erro_nivel):
+    """
+    Controle Proporcional do PID
+    https://en.wikipedia.org/wiki/PID_controller#Proportional
+    :param erro_nivel: Float
+    :return: Sinal de controle proporcional
+    """
     return Kp * erro_nivel
 
 
 def controle_integral(erro_nivel, ganho_integral_anterior):
+    """
+    Controle Integral do PID
+    https://en.wikipedia.org/wiki/PID_controller#Integral
+    :param erro_nivel: Float
+    :return: Float sinal de controle integral
+    """
     res = (Ki * erro_nivel) + ganho_integral_anterior
-    res = min(res, 0.8)
-    res = max(res, 0)
+    res = min(res, 0.8)  # Limite superior
+    res = max(res, 0)  # Limite inferior = 0
     return res
 
 
 def controle_derivativo(erro_nivel, erro_nivel_anterior):
+    """
+    Controle Derivativo do PID
+    https://en.wikipedia.org/wiki/PID_controller#Derivative
+    :param erro_nivel_anterior: Float
+    :param erro_nivel: Float
+    :return: Float: Sinal de controle derivativo
+    """
     return Kd * (erro_nivel - erro_nivel_anterior)
 
 
@@ -37,9 +64,9 @@ rootLogger.setLevel(logging.CRITICAL)
 # Inicializando o logger principal
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.DEBUG)
-fh = logging.FileHandler("MOA.log")
-ch = logging.StreamHandler(stdout)
-mh = MensageiroHandler()
+fh = logging.FileHandler("MOA.log")  # log para arquivo
+ch = logging.StreamHandler(stdout)  # log para linha de comando
+mh = MensageiroHandler()  # log para telegram e voip
 logFormatter = logging.Formatter("%(asctime)s [%(threadName)-12.12s] [%(levelname)-5.5s]  %(message)s")
 logFormatterSimples = logging.Formatter("[%(levelname)-5.5s]  %(message)s")
 fh.setFormatter(logFormatter)
@@ -58,15 +85,40 @@ logger.addHandler(mh)
 
 logger.info('Inicializando o MOA')
 # A escala de tempo é utilizada para acelerar as simulações do sistema
-# Utilizar 10x para testes sérios e 120x no máximo para testes simples
+# Utilizar 1 para testes sérios e 120 no máximo para testes simples
 ESCALA_DE_TEMPO = 1
 
-##############################
-# INICIALIZAÇÃO DE VARIAVEIS #
-##############################
+# Inicialização
 try:
 
-    u = usina.Usina()
+    # Inicialização de vars
+
+    # A inicialização da camada de abstração pode acarretar em diversos erros
+    # portanto, deve ser executada dentro de um try-catch e devidamente tratado
+    # em caso de problemas (refazer a conexão, etc)...
+
+    # Estabelece conexão com a usina
+    tentativa = 1
+    while True:
+        logger.debug("Iniciando conexão com a CLP.")
+        try:
+            u = None
+            u = usina.Usina()
+            if u:
+                if u.clp_online:
+                    logger.debug("Conexão com a CLP ok.")
+                    # Apenas após esta conexão o moa pode prosseguir.
+                    break
+        except Exception as e:
+            if tentativa <= 5:
+                logger.debug("{}".format(traceback.format_exc()))
+                logger.error("Falha na conexão com a CLP. {}. Tentando novamente em {}s. {}/5".format(repr(e), 30, tentativa))
+                tentativa += 1
+                sleep(30)
+                pass
+            else:
+                raise ConnectionError
+
     flags = 0
     Kp = 0
     Ki = 0
@@ -82,13 +134,15 @@ try:
     em_emergencia = False
     emergencias_removidas = True
     modo_autonomo_sinalizado = False
-    ###########################
-    # ANTES DOS CICLOS DO MOA #
-    ###########################
+    nv_montante_recentes = []
+    nv_montante_anteriores = []
+    nv_montante_recente = 0
 
     # Inicializando Servidor Modbus (para algumas comunicações com o Elipse)
     logger.debug("Iniciando Servidor/Slave Modbus MOA.")
     modbus_server = ModbusServer(host=u.modbus_server_ip, port=u.modbus_server_porta, no_block=True)
+
+    # Tenta 5x, senão informa e levanta uma exception
     tentativa = 1
     while not modbus_server.is_run:
         try:
@@ -103,38 +157,20 @@ try:
                 logger.error("Tentativas exedidas ao iniciar Modbbus MOA. {}".format(repr(e)))
                 raise e
 
+# Tratamento de exceptions
 except BaseException as e:
     logger.error(repr(e))
     logger.debug("{}".format(traceback.format_exc()))
     logger.critical("Erro na inicialização do MOA. Finalizando o processo.")
     sys.exit(-1)
 
-
 logger.info("Executando o MOA.")
 
-# Espera conexão com o CLP
-while True:
-
-    logger.debug("Iniciando conexão com a CLP.")
-    try:
-        u.ler_valores()
-        if u.clp_online:
-            logger.debug("Conexão com a CLP ok.")
-            break
-
-    except Exception as e:
-        logger.debug("{}".format(traceback.format_exc()))
-        logger.error("Falha na conexão com a CLP. {}. Tentando novamente em {}s.".format(repr(e), u.timer_erro))
-        sleep(u.timer_erro)
-        continue
-
-# inicializção de vetores
 nv_montante_recentes = [u.nv_montante] * u.n_movel_R
 nv_montante_anteriores = [u.nv_montante] * u.n_movel_L
 nv_montante_recente = sum(nv_montante_recentes) / len(nv_montante_recentes)
 
-# DEBBUG
-logger.debug("Tempo simulado; Nível montante;Nível médio;Potência alvo;Leitura UG1;Leitura UG2; AfluenteSIMUL")
+# Fim da inicialização
 
 while True:
 

@@ -72,7 +72,7 @@ class UnidadeDeGeracao:
     Classe UnidadeDeGeração
 
     Atributos:
-        flag = int
+        flag : int
         disponivel : bool
         horas_maquina : int
         id_da_ug : int
@@ -310,16 +310,16 @@ class Usina:
 
     def __init__(self):
         """
-        Inicia a ug
+        Inicia a camada de abstração
         """
         try:
+            global modbus_clp
+            modbus_clp = ModbusClient(host=self.clp_ip, port=self.clp_porta,
+                                      timeout=5, unit_id=1, auto_open=True, auto_close=False)
             self.modbus_server_ip = get_ip_local()
             self.ler_valores()
             self.status_moa = 7
 
-            global modbus_clp
-            modbus_clp = ModbusClient(host=self.clp_ip, port=self.clp_porta,
-                                      timeout=5, unit_id=1, auto_open=True, auto_close=False)
         except Exception as e:
             raise e
 
