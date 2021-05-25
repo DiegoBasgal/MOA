@@ -1,6 +1,6 @@
 import logging
 from cmath import sqrt
-import mysql.connector
+from database_connector import Database
 import socket
 from datetime import datetime, timedelta
 from pyModbusTCP.client import ModbusClient
@@ -41,7 +41,7 @@ ENDERECO_CLP_UG2_PERGA_GRADE = 35
 ENDERECO_CLP_UG2_POTENCIA = 31
 ENDERECO_CLP_UG2_SETPOINT = 32
 ENDERECO_CLP_UG2_T_MANCAL = 34
-ENDERECO_CLP_USINA_FLAGS = 100
+ENDERECO_CLP_USINA_FLAGS = 99
 
 # Constante referentes ao databank local para acesso via modbus
 ENDERECO_LOCAL_NV_MONATNTE = 9
@@ -212,12 +212,12 @@ class UnidadeDeGeracao:
 class Comporta:
     pos_comporta = 0
 
-    pos_0 = {'pos': 0, 'anterior': 0, 'proximo': 0}
-    pos_1 = {'pos': 1, 'anterior': 0, 'proximo': 0}
-    pos_2 = {'pos': 2, 'anterior': 0, 'proximo': 0}
-    pos_3 = {'pos': 3, 'anterior': 0, 'proximo': 0}
-    pos_4 = {'pos': 4, 'anterior': 0, 'proximo': 0}
-    pos_5 = {'pos': 5, 'anterior': 0, 'proximo': 1000}
+    pos_0 = {'pos': 0, 'anterior': 0.0, 'proximo': 0.0}
+    pos_1 = {'pos': 1, 'anterior': 0.0, 'proximo': 0.0}
+    pos_2 = {'pos': 2, 'anterior': 0.0, 'proximo': 0.0}
+    pos_3 = {'pos': 3, 'anterior': 0.0, 'proximo': 0.0}
+    pos_4 = {'pos': 4, 'anterior': 0.0, 'proximo': 0.0}
+    pos_5 = {'pos': 5, 'anterior': 0.0, 'proximo': 0.0}
     posicoes = [pos_0, pos_1, pos_2, pos_3, pos_4, pos_5]
 
     endereco_clp_pos = 0
@@ -256,82 +256,76 @@ class Comporta:
 
 class Usina:
 
-
-    aguardando_reservatorio = False
-    clp_ip = ''
-    clp_online = False
-    clp_porta = 0
-    controle_d = 0
-    controle_i = 0
-    controle_p = 0
-    em_emergencia = False
-    emergencia_acionada = False
-    emergencia_elipse_acionada = False
-    emergencias_removidas = True
-    erro_nv = 0
-    erro_nv_anterior = 0
-    estado_anterior_modo_manual_elipse = False
-    flags = 0
-    kd = 0
-    ki = 0
-    kie = 0
-    kp = 0
-    margem_pot_critica = 0
-    modbus_server_ip = ''
-    modbus_server_porta = 0
-    modo_autonomo = True
-    modo_autonomo_sinalizado = False
-    modo_de_escolha_das_ugs = 0
-    modo_manual_elipse_acionado = False
-    n_movel_L = 0
-    n_movel_R = 0
-    nv_alvo = 0
-    nv_maximo = 0
-    nv_minimo = 0
-    nv_montante = 0
-    nv_montante_anteriores = []
-    nv_montante_recente = 0
-    nv_montante_recentes = []
-    nv_religamento = 0
-    pot_alvo = 0
-    pot_disp = 0
-    pot_maxima = 0
-    pot_maxima_alvo = 0
-    pot_maxima_ug = 0
-    pot_medidor = 0
-    pot_minima = 0
-    pot_nominal = 0
-    pot_nominal_ug = 2.5
-    saida_pid = 0
-    status_moa = 0  # Menor que 10 é bom
-    timer_erro = 0
-    timeout_padrao = 10
-    tolerancia_pot_maxima = 1
-    valor_ie_inicial = 0.3
-    saida_ie = valor_ie_inicial
-    nv_montante_recentes = []
-    nv_montante_anteriores = []
-    nv_montante_recente = 0
-
-    ug1 = UnidadeDeGeracao(1)
-    ug2 = UnidadeDeGeracao(2)
-    ugs = ug1, ug2
-
-    comporta = Comporta()
-
-    mysql_config = {
-        'host': "172.21.15.12",
-        'user': "root",
-        'passwd': "11Marco2020@",
-        'db': "django_db",
-        'charset': 'utf8',
-        'autocommit': True,
-    }
-
     def __init__(self):
         """
         Inicia a camada de abstração
         """
+
+        self.agendamentos_atrasados = 0
+        self.aguardando_reservatorio = False
+        self.clp_ip = ''
+        self.clp_online = False
+        self.clp_porta = 0
+        self.controle_d = 0
+        self.controle_i = 0
+        self.controle_p = 0
+        self.em_emergencia = False
+        self.emergencia_acionada = False
+        self.emergencia_elipse_acionada = False
+        self.emergencias_removidas = True
+        self.erro_nv = 0
+        self.erro_nv_anterior = 0
+        self.estado_anterior_modo_manual_elipse = False
+        self.flags = 0
+        self.kd = 0
+        self.ki = 0
+        self.kie = 0
+        self.kp = 0
+        self.margem_pot_critica = 0
+        self.modbus_server_ip = ''
+        self.modbus_server_porta = 0
+        self.modo_autonomo = True
+        self.modo_autonomo_sinalizado = False
+        self.modo_de_escolha_das_ugs = 0
+        self.modo_manual_elipse_acionado = False
+        self.n_movel_L = 30
+        self.n_movel_R = 5
+        self.nv_alvo = 0
+        self.nv_maximo = 0
+        self.nv_minimo = 0
+        self.nv_montante = 0
+        self.nv_montante_anterior = 0
+        self.nv_montante_anteriores = []
+        self.nv_montante_recente = 0
+        self.nv_montante_recentes = []
+        self.nv_religamento = 0
+        self.pot_alvo = 0
+        self.pot_disp = 0
+        self.pot_maxima = 0
+        self.pot_maxima_alvo = 0
+        self.pot_maxima_ug = 0
+        self.pot_medidor = 0
+        self.pot_minima = 0
+        self.pot_nominal = 0
+        self.pot_nominal_ug = 2.5
+        self.saida_pid = 0
+        self.status_moa = 0  # Menor que 10 é bom
+        self.timer_erro = 0
+        self.timeout_padrao = 10
+        self.timeout_normalizacao = 60
+        self.tolerancia_pot_maxima = 1
+        self.valor_ie_inicial = 0.3
+        self.saida_ie = self.valor_ie_inicial
+        self.nv_montante_recentes = []
+        self.nv_montante_anteriores = []
+        self.nv_montante_recente = 0
+
+        self.ug1 = UnidadeDeGeracao(1)
+        self.ug2 = UnidadeDeGeracao(2)
+        self.ugs = self.ug1, self.ug2
+
+        self.comporta = Comporta()
+
         try:
             global modbus_clp
 
@@ -389,24 +383,9 @@ class Usina:
         self.modbus_server_ip = get_ip_local()
 
         # Lê os valores da usina que estão no banco de dados
-        q = "SELECT * FROM parametros_moa_parametrosusina WHERE id = 1"
-        q2 = "SHOW COLUMNS FROM parametros_moa_parametrosusina"
-        mydb = mysql.connector.connect(**self.mysql_config)
-        mycursor = mydb.cursor()
-        mycursor.execute(q2)
-        cols = mycursor.fetchall()
-        mycursor.execute(q)
-        parametros_raw = mycursor.fetchone()
-
         parametros = {}
-        for i in range(len(cols)):
-            parametros[cols[i][0]] = parametros_raw[i]
-
-        """
-        print("{:^25s} | {:^10s} |".format("cols[i][0]", "parametros_raw[i]"))
-        for p in parametros:
-            print("{:25s} | {} ".format(p, parametros[p]))
-        """
+        with Database() as db:
+            parametros = db.get_parametros_usina()
 
         self.clp_ip = parametros["clp_ip"]
         self.clp_porta = int(parametros["clp_porta"])
@@ -472,6 +451,9 @@ class Usina:
                 self.clp_online = False
                 raise ConnectionError
 
+            # clp emrg
+            self.emergencia_acionada = True if regs[ENDERECO_CLP_USINA_FLAGS] else False
+
             # clp online
             self.clp_online = True
 
@@ -498,33 +480,32 @@ class Usina:
             self.pot_disp += self.pot_maxima_ug
 
         # Verifica o acionamento do modo de emergência pelo elipse
+        # DEBUG/Prova de conceito
+        """
         self.emergencia_elipse_acionada = True if DataBank.get_words(1000, 1)[0] > 0 else False
         if not (self.emergencia_elipse_acionada == estado_anterior_emergencia_elipse):
             # Mudou! Atualizar.
             self.emergencia_acionada = not self.emergencia_elipse_acionada
-            q = """UPDATE parametros_moa_parametrosusina
-                   SET emergencia_acionada = '{}'
-                   WHERE id = 1; """.format(1 if self.emergencia_acionada else 0)
+            q = "UPDATE parametros_moa_parametrosusina SET emergencia_acionada = '{}' WHERE id = 1;".format(1 if self.emergencia_acionada else 0)
             mydb = mysql.connector.connect(**self.mysql_config)
             mycursor = mydb.cursor()
             mycursor.execute(q)
+        
 
         # Verifica o acionamento do modo manual pelo elipse
         self.modo_manual_elipse_acionado = True if DataBank.get_words(1001, 1)[0] > 0 else False
         # Mudou! Atualizar.
         if not (self.modo_manual_elipse_acionado == estado_anterior_modo_manual_elipse):
             self.modo_autonomo = not self.modo_manual_elipse_acionado
-            q = """UPDATE parametros_moa_parametrosusina
-                   SET modo_autonomo = '{}'
-                   WHERE id = 1; """.format(1 if self.modo_autonomo else 0)
+            q = "UPDATE parametros_moa_parametrosusina SET modo_autonomo = '{}' WHERE id = 1; ".format(1 if self.modo_autonomo else 0)
             mydb = mysql.connector.connect(**self.mysql_config)
             mycursor = mydb.cursor()
             mycursor.execute(q)
+        """
 
         # Verifica o modo de escolha das ugs
         if not (modo_de_escolha_das_ugs_ant == self.modo_de_escolha_das_ugs):
-            logger.info("O modo de prioridade na escolha das ugs foi alterado (#{})."
-                        .format(self.modo_de_escolha_das_ugs))
+            logger.info("O modo de prioridade na escolha das ugs foi alterado (#{}).".format(self.modo_de_escolha_das_ugs))
 
         if self.nv_montante_recente < 1:
             self.nv_montante_recentes = [self.nv_montante] * self.n_movel_R
@@ -554,56 +535,55 @@ class Usina:
             self.heartbeat()
 
             # Escreve no banco
-            q = """ UPDATE parametros_moa_parametrosusina
-                    SET
-                    timestamp = '{}',
-                    status_moa = '{}',
-                    aguardando_reservatorio = {},
-                    clp_online = {},
-                    nv_montante = {},
-                    pot_disp = {},
-                    ug1_disp = {},
-                    ug1_pot = {},
-                    ug1_setpot = {},
-                    ug1_sinc = {},
-                    ug1_tempo = {},
-                    ug2_disp = {},
-                    ug2_pot = {},
-                    ug2_setpot = {},
-                    ug2_sinc = {},
-                    ug2_tempo = {},
-                    pos_comporta = {},
-                    ug1_perda_grade = {},
-                    ug1_temp_mancal = {},
-                    ug2_perda_grade = {},
-                    ug2_temp_mancal = {}        
-                    WHERE id = 1; 
-                    """.format(datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
-                               self.status_moa,
-                               1 if self.aguardando_reservatorio else 0,
-                               1 if self.clp_online else 0,
-                               self.nv_montante,
-                               self.pot_disp,
-                               1 if self.ug1.disponivel else 0,
-                               self.ug1.potencia,
-                               self.ug1.setpoint,
-                               1 if self.ug1.sincronizada else 0,
-                               self.ug1.horas_maquina,
-                               1 if self.ug2.disponivel else 0,
-                               self.ug2.potencia,
-                               self.ug2.setpoint,
-                               1 if self.ug2.sincronizada else 0,
-                               self.ug2.horas_maquina,
-                               self.comporta.pos_comporta,
-                               self.ug1.perda_na_grade,
-                               self.ug1.temp_mancal,
-                               self.ug2.perda_na_grade,
-                               self.ug2.temp_mancal,
-                               )
+            with Database() as db:
+                q = """ UPDATE parametros_moa_parametrosusina
+                         SET
+                         timestamp = '{}',
+                         status_moa = '{}',
+                         aguardando_reservatorio = {},
+                         clp_online = {},
+                         nv_montante = {},
+                         pot_disp = {},
+                         ug1_disp = {},
+                         ug1_pot = {},
+                         ug1_setpot = {},
+                         ug1_sinc = {},
+                         ug1_tempo = {},
+                         ug2_disp = {},
+                         ug2_pot = {},
+                         ug2_setpot = {},
+                         ug2_sinc = {},
+                         ug2_tempo = {},
+                         pos_comporta = {},
+                         ug1_perda_grade = {},
+                         ug1_temp_mancal = {},
+                         ug2_perda_grade = {},
+                         ug2_temp_mancal = {}        
+                         WHERE id = 1; 
+                         """.format(datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+                                    self.status_moa,
+                                    1 if self.aguardando_reservatorio else 0,
+                                    1 if self.clp_online else 0,
+                                    self.nv_montante,
+                                    self.pot_disp,
+                                    1 if self.ug1.disponivel else 0,
+                                    self.ug1.potencia,
+                                    self.ug1.setpoint,
+                                    1 if self.ug1.sincronizada else 0,
+                                    self.ug1.horas_maquina,
+                                    1 if self.ug2.disponivel else 0,
+                                    self.ug2.potencia,
+                                    self.ug2.setpoint,
+                                    1 if self.ug2.sincronizada else 0,
+                                    self.ug2.horas_maquina,
+                                    self.comporta.pos_comporta,
+                                    self.ug1.perda_na_grade,
+                                    self.ug1.temp_mancal,
+                                    self.ug2.perda_na_grade,
+                                    self.ug2.temp_mancal,
+                                    )
+                db.execute(q)
 
-            mydb = mysql.connector.connect(**self.mysql_config)
-            mycursor = mydb.cursor()
-            mycursor.execute(q)
         except Exception as e:
             logger.error("Erro ao escrever variaveis de saida. {}".format(e))
 
@@ -634,7 +614,6 @@ class Usina:
         """
         Retorn uma lista de ugs disponiveis conforme a ordenação selecionada
         """
-
         ls = []
         for ug in self.ugs:
             if ug.disponivel:
@@ -646,7 +625,6 @@ class Usina:
         else:
             # escolher por menor horas_maquina primeiro
             ls = sorted(ls, key=lambda y: (not y.sincronizada, not y.setpoint, y.horas_maquina, not y.prioridade,))
-
         return ls
 
     def verificar_agendamentos(self):
@@ -657,21 +635,32 @@ class Usina:
         agora = agora - timedelta(seconds=agora.second, microseconds=agora.microsecond)
         futuro = agora + timedelta(minutes=1)
         agendamentos = self.get_agendamentos_pendentes()
+
+        if len(agendamentos) == 0:
+            return True
+
+        atraso = False
         for agendamento in agendamentos:
-
             if agendamento[1] < agora:
-                # Já passou
-                # ToDo Veridicar comportamento para agendamentos passados, (executados ou atrasados)
-                # Deve-se executar alguma verificação caso já tenha passado da hora?
-                # Ex. Caso no tenha sido executado no minuto certo devido a rede, deve tentar executar ou ignorar?
-                pass
+                atraso = True
+                logger.warning("Agendamento #{} Atrasado! ({}).".format(agendamento[0], agendamento[2]))
+                self.agendamentos_atrasados += 1
+            if agendamento[1] < agora - timedelta(minutes=2):
+                self.agendamentos_atrasados = 999
+        if not atraso:
+            self.agendamentos_atrasados = 0
 
-            elif agendamento[1] < futuro and not bool(agendamento[3]):
-                # Está na hora e ainda não foi eecutado. Executar!
+        if self.agendamentos_atrasados > 3:
+            logger.info("Os agendamentos estão muito atrasados! Acionando emergência.")
+            self.acionar_emergerncia_clp()
+            return False
+
+        for agendamento in agendamentos:
+            if agendamento[1] < futuro and not bool(agendamento[3]):
+                # Está na hora e ainda não foi executado. Executar!
                 logger.info("Executando gendamento #{} - {}.".format(agendamento[0], agendamento[2]))
 
                 # Case agendamento:
-
                 if agendamento[2] == AGENDAMENTO_INDISPONIBILIZAR:
                     # Coloca em emerg^encia
                     logger.info("Indisponibilizando a usina (comando via agendamento).")
@@ -684,12 +673,9 @@ class Usina:
                         q2 = """UPDATE parametros_moa_parametrosusina
                                            SET emergencia_acionada = '{}'
                                            WHERE id = 1; """.format(1 if self.emergencia_acionada else 0)
-
-                        mydb = mysql.connector.connect(**self.mysql_config)
-                        mycursor = mydb.cursor()
-                        mycursor.execute(q)
-                        mycursor.execute(q2)
-
+                        with Database() as db:
+                            db.execute(q)
+                            db.execute(q2)
                     except Exception as e:
                         logger.error(e)
                         continue
@@ -707,9 +693,8 @@ class Usina:
                                            SET emergencia_acionada = '{}'
                                            WHERE id = 1; """.format(1 if self.emergencia_acionada else 0)
 
-                        mydb = mysql.connector.connect(**self.mysql_config)
-                        mycursor = mydb.cursor()
-                        mycursor.execute(q)
+                        with Database() as db:
+                            db.execute(q)
                         self.ug1.disponivel = True
                         self.ug2.disponivel = True
                         client = ModbusClient(host=self.clp_ip, port=self.clp_porta, timeout=5, unit_id=1)
@@ -766,10 +751,8 @@ class Usina:
                                                             tolerancia_pot_maxima = 1.04
                                                             WHERE id = 1; """.format(
                             datetime.now().strftime("%Y-%m-%d %H:%M:%S"))
-
-                        mydb = mysql.connector.connect(**self.mysql_config)
-                        mycursor = mydb.cursor()
-                        mycursor.execute(q)
+                        with Database() as db:
+                            db.execute(q)
 
                     except Exception as e:
                         logger.error(e)
@@ -797,9 +780,8 @@ class Usina:
                 q = "UPDATE agendamentos_agendamento " \
                     "SET executado = 1 " \
                     "WHERE id = {}".format(int(agendamento[0]))
-                mydb = mysql.connector.connect(**self.mysql_config)
-                mycursor = mydb.cursor()
-                mycursor.execute(q)
+                with Database() as db:
+                    db.execute(q)
                 logger.info("O comando #{} - {} foi executado.".format(agendamento[0], agendamento[2]))
 
             else:
@@ -813,13 +795,9 @@ class Usina:
         futuro = agora + timedelta(minutes=1)
 
         # Lê do banco
-        q = """SELECT id, DATE_SUB(data, INTERVAL 3 HOUR), comando_id, executado
-                        FROM agendamentos_agendamento
-                        WHERE executado = 0"""
-        mydb = mysql.connector.connect(**self.mysql_config)
-        mycursor = mydb.cursor()
-        mycursor.execute(q)
-        agendamentos = mycursor.fetchall()
+        agendamentos = []
+        with Database() as db:
+            agendamentos = db.get_agendamentos_pendentes()
         return agendamentos
 
     def heartbeat(self):
