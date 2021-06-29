@@ -12,7 +12,7 @@ from time import sleep
 from pyModbusTCP.server import ModbusServer
 from mensageiro.mensageiro_log_handler import MensageiroHandler
 # import abstracao_usina
-import reft_abstracao_usina as abstracao_usina
+import abstracao_usina
 
 DEBUG = False
 
