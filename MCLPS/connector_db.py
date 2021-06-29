@@ -7,7 +7,7 @@ def __conectardb():
     """
 
     DB_SERVER = "DEV-SUPER-1\MSSQL_DEV"
-    DB_SERVER = "localhost\MSSQL_DEV"
+    # DB_SERVER = "localhost\MSSQL_DEV"
     DB_DATABASE = 'CLP'
 
     #  Melhorar a segurança na conexao com o banco de dados.
