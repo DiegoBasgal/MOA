@@ -13,13 +13,14 @@ import MCLPS.connector_db as db
 import logging
 import matplotlib.pyplot as plt
 import threading
+import os
 
 '''
     Simulador de CLP com comunicação Modbus
 '''
 
 # Constantes
-ESCALA_DE_TEMPO = 60
+ESCALA_DE_TEMPO = 6
 
 PLOTAR_GRAFICO_DEBBUG = True
 
@@ -175,10 +176,11 @@ def plotar_debug():
     ax1.axhline(y=643.50, color="black", linestyle="--")
     ax1.axhline(y=643.25, color="gray", linestyle=":")
     ax1.axhline(y=643.00, color="black", linestyle="--")
-    plt.title("MOA - Simulação do comportamento")
-    plt.xticks(range(0, limite_t + 1, 5))
 
-    # fig.tight_layout()  # otherwise the right y-label is slightly clipped
+    plt.title("MOA - Simulação do comportamento")
+    plt.xticks(range(0, limite_t+1, 1))
+
+    fig.tight_layout()  # otherwise the right y-label is slightly clipped
 
     # segundos_simulados, q_afluente, nv_montante, ug1_pot, ug2_pot
 
@@ -203,7 +205,7 @@ def plotar_debug():
             aux = aux.split()[:]
             for a in range(len(aux)):
                 aux[a] = float(aux[a])
-            t_sim.append(aux[0] / 3600)
+            t_sim.append(int(aux[0])/3600)
             q_aflu.append(aux[1])
             nv_m.append(round(aux[2], 3))
             pot1.append(aux[3])
@@ -224,18 +226,16 @@ def plotar_debug():
         linha2, = ax2.plot(t_sim, pot1, label='Potência UG1', color='orange', linestyle="--")
         linha3, = ax2.plot(t_sim, pot2, label='Potência UG2', color='yellow', linestyle="--")
 
-        # linha6, = ax2.plot(t_sim, setpoint, label='SetPoint', color='purple', linestyle=":")
+        linha6, = ax2.plot(t_sim, setpoint, label='SetPoint', color='purple', linestyle=":")
         if primeira_vez:
-            # plt.legend(handles=[linha1, linha5, linha2, linha3, linha4, linha6], loc='upper center', bbox_to_anchor=(0.5, -0.05), ncol=3)
-            plt.legend(handles=[linha1, linha5, linha2, linha3, linha4], loc='upper center',
-                       bbox_to_anchor=(0.5, -0.075), ncol=5)
+            #plt.legend(handles=[linha1, linha5, linha2, linha3, linha4, linha6], loc='upper center', bbox_to_anchor=(0.5, -0.05), ncol=3)
+            plt.legend(handles=[linha1, linha5, linha2, linha3, linha4], loc='upper center',  bbox_to_anchor=(0.5, -0.075), ncol=5)
 
         # print(t_sim)
         # print("running...")
 
-        plt.pause(0.6)
+        plt.pause(0.5)
         primeira_vez = False
-        # print("Plot Progress: {:3.3f}%".format(t_sim[-1] * 100 / limite_t))
 
         if t_sim[-1] >= limite_t:
             figtitle = "resultados/plot_{}_{}.png".format(int(t_sim[-1]), datetime.now().strftime("%d-%m-%Y_%H-%M-%S"))
@@ -310,7 +310,11 @@ class ComportamentoReal:
     def comportamento_real(self):
 
         logger.info("Comportamento rodando")
-        amostras = db.get_amostras_afluente()
+        try:
+            amostras = db.get_amostras_afluente()
+        except Exception as e:
+            logger.critical(e)
+            exit(-1)
 
         while self.run_cr:
 
@@ -450,7 +454,8 @@ class ComportamentoReal:
                             pass
 
                     else:
-                        self.ug1_sinc = 0
+                        self.ug1_sinc -= 0.5 * (delta_t_sim / 60)
+                        self.ug1_sinc = max(self.ug1_sinc, 0)
                         self.ug1_pot -= (0.625 / 60) * delta_t_sim
                         self.ug1_pot = max(0, self.ug1_pot)
 
@@ -469,7 +474,8 @@ class ComportamentoReal:
                         else:
                             pass
                     else:
-                        self.ug2_sinc = 0
+                        self.ug2_sinc -= 0.5 * (delta_t_sim / 60)
+                        self.ug2_sinc = max(self.ug2_sinc, 0)
                         self.ug2_pot -= (0.625 / 60) * delta_t_sim
                         self.ug2_pot = max(0, self.ug2_pot)
 
@@ -479,8 +485,8 @@ class ComportamentoReal:
                     # Acerta o medidor
                     self.pot_no_medidor = (self.ug1_pot + self.ug2_pot)*max(min(random.normal(0.985, 0.002), 1.005), 0.95)
 
-                    # Acerta as Vazoes
-                    # self.q_aflu = amostras[a][1]
+                    # TODO Acerta as Vazoes
+                    self.q_aflu = amostras[a][1]
                     q_vert = q_vertimento(self.nv_montante)
                     q_comp = q_comporta(self.comp_fechada, self.comp_p1, self.comp_p2, self.comp_p3, self.comp_p4,
                                               self.comp_aberta, self.nv_montante)
@@ -526,10 +532,11 @@ class ComportamentoReal:
 # +-------------------------------------------------------------------------------------------------------------------+
 if __name__ == "__main__":
 
+    os.remove('debug.out')
+
     i = 0
     tempo_inicio = datetime.now()
 
-    import os
     cmd = 'mode 120,40'
     os.system(cmd)
 
@@ -559,6 +566,7 @@ if __name__ == "__main__":
     t_cr = threading.Thread(target=cr.comportamento_real)
     t_cr.daemon = False
     t_cr.start()
+
 
     # CLI
     # create a curses object
@@ -737,6 +745,9 @@ if __name__ == "__main__":
                     stdscr.addstr(15+j, 0, "  {:3d} : {:^5d} {:^5d} {:^5d} {:^5d} {:^5d} {:^5d} {:^5d} {:^5d} {:^5d} {:^5d} : {:<3d}".format(*([j*10]+DataBank.get_words(0+(10*j), 10)+[9+(10*j)])), curses.color_pair(3))
                 stdscr.addstr(25, 0, "-"*width, curses.color_pair(3))
                 stdscr.addstr(height-3, 0, "DEBUG: Valor entrado: {}".format(k), curses.color_pair(2))
+
+                if not t_cr.is_alive():
+                    raise Exception("Erro tread morreu");
 
                 sleep(temporizador)
 
