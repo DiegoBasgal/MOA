@@ -9,8 +9,7 @@ praticidade, foi feito em apenas um handler.
 
 from logging import Handler
 from . import telegram_bot
-from . import voip
-
+#from . import voip
 
 class MensageiroHandler(Handler):
     """
@@ -32,5 +31,5 @@ class MensageiroHandler(Handler):
         # Só dipara torpedos de voz em caso CRITICO (levelno >= 50)
         if record.levelno >= 50:
             telegram_bot.enviar_a_todos("[CRIT] Acionando VOIP")
-            voip.enviar_voz_teste()
+            #voip.enviar_voz_teste()
         return True

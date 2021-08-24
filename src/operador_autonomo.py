@@ -15,7 +15,7 @@ from sys import stdout
 from time import sleep
 
 # Meus imports
-from mensageiro.mensageiro_log_handler import  MensageiroHandler
+from mensageiro.mensageiro_log_handler import MensageiroHandler
 import usina  # camada de abstração entre o operador e a usina
 
 

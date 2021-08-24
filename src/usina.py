@@ -1,6 +1,6 @@
 import logging
 from cmath import sqrt
-import mysql.connector
+#import mysql.connector
 import socket
 from datetime import datetime, timedelta
 from pyModbusTCP.client import ModbusClient
