@@ -25,7 +25,7 @@ SECRET_KEY = 'kHZm^mArRv3@DVB5kq@60Va(lYP82p+rn3V@OofRq-Kvod^(me'
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = False
 
-ALLOWED_HOSTS = ["172.21.15.12", "localhost", "127.0.0.1"]
+ALLOWED_HOSTS = ["*", "10.101.2.242", "localhost", "127.0.0.1"]
 
 
 # Application definition
@@ -84,7 +84,7 @@ DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql',
         'NAME': 'django_db',
-        'USER': 'root',
+        'USER': 'moa',
         'PASSWORD': '11Marco2020@',
         'default-character-set': 'utf8',
         'OPTIONS': {
@@ -131,7 +131,8 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/3.1/howto/static-files/
 
-STATIC_URL = '/static/'
+STATIC_ROOT = os.path.join(BASE_DIR, "static/")
+STATIC_URL = STATIC_ROOT
 
 # Redirect to home URL after login (Default redirects to /accounts/profile/)
 LOGIN_REDIRECT_URL = '/monitoramento/'

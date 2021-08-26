@@ -538,7 +538,7 @@ if __name__ == "__main__":
     logger = logging.getLogger(__name__)
     logger.setLevel(logging.INFO)
     # LOG to file
-    fileHandler = logging.FileHandler("simulador_clp.log", mode='w+')
+    fileHandler = logging.FileHandler("logs/simulador_clp.log", mode='w+')
     fileHandler.setFormatter(logFormatter)
     logger.addHandler(fileHandler)
     # LOG to console

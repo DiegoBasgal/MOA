@@ -1,5 +1,6 @@
 import logging
-import threading
+import subprocess
+import traceback
 from datetime import datetime
 from sys import stdout
 from src.mensageiro.mensageiro_log_handler import MensageiroHandler
@@ -33,24 +34,32 @@ logger.info("Finished running tests")
 
 # Simular comportamento completo
 logger.info("Running full run simulation")
-# 1 thread para simular de facto
-th_world_abstraction = world_abstraction.world_abstraction(simulation_speed=1)
-th_world_abstraction.start()
-
-# 1 thread para interagir com a simulação
-th_simulation_interface = simulation_interface.simulation_interface()
-th_simulation_interface.start()
-
-# Join e sair
 try:
+    # 1 thread para simular de facto
+    th_world_abstraction = world_abstraction.world_abstraction(simulation_speed=1)
+    th_world_abstraction.start()
+
+    # 1 thread para interagir com a simulação
+    th_simulation_interface = simulation_interface.simulation_interface()
+    th_simulation_interface.start()
+
+    # Inicia o MOA
+    subprocess.Popen(['python', '../src/operador_autonomo.py'])
+
+    # Join e sair
     th_world_abstraction.join()
     th_simulation_interface.join()
+
 except KeyboardInterrupt:
-    logger.info("Stopping simulation")
+    logger.info("Soft stopping simulation (user command)")
     th_world_abstraction.stop()
     th_simulation_interface.stop()
     th_world_abstraction.join()
     th_simulation_interface.join()
+
+except Exception as e:
+    logger.error("Error during simulation:\n{}".format(traceback.format_exc()))
+
 finally:
     logger.info("Finished full run simulation")
 
