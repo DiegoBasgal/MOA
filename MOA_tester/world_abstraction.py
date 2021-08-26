@@ -9,7 +9,8 @@ from time import sleep
 import logging
 from sys import stdout
 from src.mensageiro.mensageiro_log_handler import MensageiroHandler
-from src.custom_exceptions import TimeoutException
+
+string_date = datetime.now().strftime("%Y-%m-%d_%H-%M")
 
 # SILENCIANDO O LOOGER ROOT
 rootLogger = logging.getLogger()
@@ -17,7 +18,7 @@ rootLogger.setLevel(logging.CRITICAL)
 # Inicializando o logger principal
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.DEBUG)
-fh = logging.FileHandler("logs/{}-test.log".format(datetime.now().strftime("%Y-%m-%d %H:%M")))  # log para arquivo
+fh = logging.FileHandler("logs/{}-test.log".format(string_date))  # log para arquivo
 ch = logging.StreamHandler(stdout)  # log para linha de comando
 mh = MensageiroHandler()  # log para telegram e voip
 logFormatter = logging.Formatter("%(asctime)s [%(threadName)-12.12s] [%(levelname)-5.5s]  %(message)s")
@@ -167,7 +168,7 @@ class world_abstraction(threading.Thread):
         self.comp_p3 = 0
         self.comp_p4 = 0
         self.flags_usina = 0
-        self.volume = 192300
+        self.volume = 175000
         self.nv_montante = - 0.0000000002 * ((self.volume / 1000) ** 4) + 0.0000002 * ((self.volume / 1000) ** 3) - 0.0001 * (
                     (self.volume / 1000) ** 2) + 0.0331 * (self.volume / 1000) + 639.43
         self.pot_no_medidor = 0

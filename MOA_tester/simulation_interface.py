@@ -1,3 +1,4 @@
+import csv
 from time import sleep
 
 from pyModbusTCP.server import ModbusServer, DataBank
@@ -7,13 +8,15 @@ import datetime
 from sys import stdout
 from src.mensageiro.mensageiro_log_handler import MensageiroHandler
 
+string_date = datetime.datetime.now().strftime("%Y-%m-%d_%H-%M")
+
 # SILENCIANDO O LOOGER ROOT
 rootLogger = logging.getLogger()
 rootLogger.setLevel(logging.CRITICAL)
 # Inicializando o logger principal
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.DEBUG)
-fh = logging.FileHandler("logs/{}-test.log".format(datetime.datetime.now().strftime("%Y-%m-%d %H:%M")))  # log para arquivo
+fh = logging.FileHandler("logs/{}-test.log".format(string_date))  # log para arquivo
 ch = logging.StreamHandler(stdout)  # log para linha de comando
 mh = MensageiroHandler()  # log para telegram e voip
 logFormatter = logging.Formatter("%(asctime)s [%(threadName)-12.12s] [%(levelname)-5.5s]  %(message)s")
@@ -34,7 +37,17 @@ class simulation_interface(threading.Thread):
         super().__init__()
         self.lock = threading.Lock()
         self.stop_signal = False
-        logger.info("simulation_interface init OK")
+        self.simulation_data_log_path = "logs/simulation_data_{}.csv".format(string_date)
+        with open(self.simulation_data_log_path, 'w+') as f:
+            logger.info("Simulation data is being saved to {}".format(self.simulation_data_log_path))
+            header = ["segundos_simulados", "nv_montante", "pot_medidor", "usina_flags", "comporta_flags", "comporta_pos",
+                        "ug1_flags", "ug1_pot", "ug1_setpot", "ug1_tempo", "ug1_t_mancal", "ug1_perda_grade",
+                        "ug2_flags", "ug2_pot", "ug2_setpot", "ug2_tempo", "ug2_t_mancal", "ug2_perda_grade"]
+            writer = csv.writer(f, dialect='excel')
+            writer.writerow(header)
+
+        logger.debug("simulation_interface init OK")
+
 
     def stop(self):
         self.stop_signal = True
@@ -64,6 +77,14 @@ class simulation_interface(threading.Thread):
                 ug2_perda_grade = REGS[35]/100
                 segundos_simulados = REGS[99]*60
 
+                row = [segundos_simulados, nv_montante, pot_medidor, usina_flags, comporta_flags, comporta_pos,
+                          ug1_flags, ug1_pot, ug1_setpot, ug1_tempo, ug1_t_mancal, ug1_perda_grade,
+                          ug2_flags, ug2_pot, ug2_setpot, ug2_tempo, ug2_t_mancal, ug2_perda_grade]
+
+                with open(self.simulation_data_log_path, 'a') as f:
+                    writer = csv.writer(f, dialect='excel')
+                    writer.writerow(row)
+
                 print("Tempo simulado: {:} | NV montante: {:3.2f}m | Pot Medidor: {:5.0f}kW"
                       .format(str(datetime.timedelta(seconds=segundos_simulados)), nv_montante, pot_medidor))
                 print("Flags Usina: {:08b} | Flags Comporta: {:8b}| Pos Cmporta: {:}"
@@ -75,7 +96,8 @@ class simulation_interface(threading.Thread):
                     "UG2 | Flags: {:08b} | Potência: {:5.0f}kW | Setpoint: {:5.0f}kW | Horimetro: {:3.1f}h | Temp Mancal {:3.1f}C | Perda na grade: {:1.2f}m"
                     .format(ug2_flags, ug2_pot, ug2_setpot, ug2_tempo / 60, ug2_t_mancal, ug2_perda_grade))
 
-                sleep(2)
+                sleep(1)
+
             finally:
                 self.lock.release()
 
