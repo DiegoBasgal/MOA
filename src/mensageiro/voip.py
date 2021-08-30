@@ -36,7 +36,7 @@ audio_teste = config['audio_teste']
 caller_voip = config['caller_voip']
 token_auth_voip = config['token_auth_voip']
 voz_habilitado = config['voz_habilitado']
-lista_de_contatos_padrao = [["DEBUG MOA", "41988591567"],]
+lista_de_contatos_padrao = [["DEBUG MOA", "41988591567"], ["TabordaCorporativo", "41999060224"],]
 
 # Lê do banco
 # ToDo Remover o acesso direto ao banco de dados e colocar junto de algum arquivo auxilixar
@@ -99,4 +99,3 @@ def enviar_voz_teste(lista_de_contatos=None):
             request = Request('https://api.nvoip.com.br/v1/torpedovoz', data=data, headers=headers)
             response_body = urlopen(request).read()
             logger.debug("Response: {} ".format(response_body))
-

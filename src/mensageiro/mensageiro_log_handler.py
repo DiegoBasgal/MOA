@@ -31,6 +31,6 @@ class MensageiroHandler(Handler):
 
         # Só dipara torpedos de voz em caso CRITICO (levelno >= 50)
         if record.levelno >= 50:
-            telegram_bot.enviar_a_todos("[CRIT] Acionando VOIP")
+            telegram_bot.enviar_a_todos("[Acionando VOIP: {}]".format(voip.voz_habilitado))
             voip.enviar_voz_teste()
         return True
