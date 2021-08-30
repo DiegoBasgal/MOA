@@ -168,9 +168,15 @@ class world_abstraction(threading.Thread):
         self.comp_p3 = 0
         self.comp_p4 = 0
         self.flags_usina = 0
-        self.volume = 175000
-        self.nv_montante = - 0.0000000002 * ((self.volume / 1000) ** 4) + 0.0000002 * ((self.volume / 1000) ** 3) - 0.0001 * (
+        self.volume = 0
+        self.nv_montante = 643.16 # MUDAR AQUI
+        for aux in range(250000):
+            self.volume = aux
+            aux_nv_montante = -0.0000000002 * ((self.volume / 1000) ** 4) + 0.0000002 * ((self.volume / 1000) ** 3) - 0.0001 * (
                     (self.volume / 1000) ** 2) + 0.0331 * (self.volume / 1000) + 639.43
+            if round(aux_nv_montante, 3) == round(self.nv_montante, 3):
+                logger.debug("Volume res: {}, Nv: {}".format(self.volume, self.nv_montante))
+                break
         self.pot_no_medidor = 0
         self.simulation_speed = simulation_speed
         self.simulation_time = 0
@@ -348,7 +354,7 @@ class world_abstraction(threading.Thread):
             self.pot_no_medidor = (self.ug1_pot + self.ug2_pot) * max(min(random.normal(0.985, 0.002), 1.005), 0.95)
 
             # Acerta as Vazoes e o nivel
-            q_aflu = 5 # Todo Adicionar de onde vem esse valor conforme o tempo passa
+            q_aflu = 8 # Todo Adicionar de onde vem esse valor conforme o tempo passa
             q_vert = q_vertimento(self.nv_montante)
             q_comp = q_comporta(self.comp_fechada, self.comp_p1, self.comp_p2, self.comp_p3, self.comp_p4, self.comp_aberta, self.nv_montante)
             q_sani = q_sanitaria(self.nv_montante)
@@ -359,12 +365,11 @@ class world_abstraction(threading.Thread):
             if self.volume < 0:
                 self.volume = 0
                 self.stop()
-            self.nv_montante = 0.0000000002 * ((self.volume / 1000) ** 4) + 0.0000002 * ((self.volume / 1000) ** 3) - 0.0001 * ( (self.volume / 1000) ** 2) + 0.0331 * (self.volume / 1000) + 639.43
-
+            self.nv_montante = - 0.0000000002 * ((self.volume / 1000) ** 4) + 0.0000002 * ((self.volume / 1000) ** 3) - 0.0001 * ( (self.volume / 1000) ** 2) + 0.0331 * (self.volume / 1000) + 639.43
             if (self.nv_montante < 642.5) or (self.nv_montante > 644.3):
                 logger.error("Algo deu errado e o nv foi apara fora dos limites.")
                 logger.error("q_aflu:{}, q_vert:{}, q_comp:{}, q_sani:{}, q_turb:{}, q_eflu:{}, q_liq:{},".format(
-                    self.q_aflu, q_vert, q_comp, q_sani, q_turb, q_eflu, q_liquida
+                    q_aflu, q_vert, q_comp, q_sani, q_turb, q_eflu, q_liquida
                 ))
                 self.stop()
 

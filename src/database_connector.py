@@ -20,7 +20,7 @@ class Database:
 
     def __init__(self):
         mysql_config = {
-            'host': "172.21.15.12",
+            'host': "localhost",
             'user': "root",
             'passwd': "11Marco2020@",
             'db': "django_db",

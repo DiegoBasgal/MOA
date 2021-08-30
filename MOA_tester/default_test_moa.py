@@ -45,7 +45,7 @@ try:
     th_simulation_interface.start()
 
     # Inicia o MOA
-    subprocess.Popen(['python', '../src/operador_autonomo.py', '{}'.format(simulation_speed)])
+    subprocess.Popen(['python', '../src/operador_autonomo_sm.py', '{}'.format(simulation_speed)])
 
     # Join e sair
     th_world_abstraction.join()

@@ -14,7 +14,7 @@ from mensageiro.mensageiro_log_handler import MensageiroHandler
 # import abstracao_usina
 import abstracao_usina
 
-DEBUG = False
+DEBUG = True
 
 # Set-up logging
 rootLogger = logging.getLogger()
@@ -41,7 +41,11 @@ logger.addHandler(mh)
 
 # Vars globais
 usina = abstracao_usina.Usina
-ESCALA_DE_TEMPO = 6
+# A escala de tempo é utilizada para acelerar as simulações do sistema
+# Utilizar 1 para testes sérios e 120 no máximo para testes simples
+ESCALA_DE_TEMPO = 1
+if len(sys.argv) > 1:
+    ESCALA_DE_TEMPO = int(sys.argv[1])
 controle_p = 0
 controle_i = 0
 controle_d = 0
@@ -108,7 +112,8 @@ class NaoInicializado(State):
         super().__init__(*args, **kwargs)
         self.n_tentativa = 0
         self.timeout = 30
-        logger.info("Iniciando o MOA")
+        logger.info("Iniciando o MOA_SM")
+        logger.debug("Debug is ON")
 
     def run(self):
         """
@@ -116,6 +121,7 @@ class NaoInicializado(State):
         Tenta de novo 3x, se falhar, entra em modo de emergência
         :return: State
         """
+        logger.debug("RUN")
 
         # Var global usina
         global usina
@@ -264,11 +270,13 @@ class ValoresInternosAtualizados(State):
         # Verifica-se então a situação do reservatório
         if usina.aguardando_reservatorio:
             if usina.nv_montante_recente > usina.nv_religamento:
+                logger.info("Reservatorio dentro do nivel de trabalho")
                 usina.aguardando_reservatorio = 0
             return Pronto()
 
         if usina.nv_montante < usina.nv_minimo:
             usina.aguardando_reservatorio = 1
+            logger.info("Reservatorio abaixo do nivel de trabalho")
             return ReservatorioAbaixoDoMinimo()
 
         if usina.nv_montante >= usina.nv_maximo:

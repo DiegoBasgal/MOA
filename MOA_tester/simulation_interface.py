@@ -37,7 +37,7 @@ class simulation_interface(threading.Thread):
         super().__init__()
         self.lock = threading.Lock()
         self.stop_signal = False
-        self.simulation_data_log_path = "logs/simulation_data_{}.csv".format(string_date)
+        self.simulation_data_log_path = "logs/log_simulation_data_{}.csv".format(string_date)
         with open(self.simulation_data_log_path, 'w+') as f:
             logger.info("Simulation data is being saved to {}".format(self.simulation_data_log_path))
             header = ["segundos_simulados", "nv_montante", "pot_medidor", "usina_flags", "comporta_flags", "comporta_pos",

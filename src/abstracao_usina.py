@@ -133,8 +133,11 @@ class Usina:
         #  - Niveis de operação da comporta
         
         parametros = {}
-        with Database() as db:
-            parametros = db.get_parametros_usina()
+        try:
+            with Database() as db:
+                parametros = db.get_parametros_usina()
+        except Exception as e:
+            raise e
         
         # Botão de emergência
         self.db_emergencia_acionada = int(parametros["emergencia_acionada"])
