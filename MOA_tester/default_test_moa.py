@@ -33,10 +33,11 @@ logger.info("Running tests")
 logger.info("Finished running tests")
 
 # Simular comportamento completo
-logger.info("Running full run simulation")
+simulation_speed = 60
+logger.info("Running full run simulation ({}x real time)".format(simulation_speed))
 try:
     # 1 thread para simular de facto
-    th_world_abstraction = world_abstraction.world_abstraction(simulation_speed=1)
+    th_world_abstraction = world_abstraction.world_abstraction(simulation_speed=simulation_speed)
     th_world_abstraction.start()
 
     # 1 thread para interagir com a simulação
@@ -44,7 +45,7 @@ try:
     th_simulation_interface.start()
 
     # Inicia o MOA
-    subprocess.Popen(['python', '../src/operador_autonomo.py'])
+    subprocess.Popen(['python', '../src/operador_autonomo.py', '{}'.format(simulation_speed)])
 
     # Join e sair
     th_world_abstraction.join()

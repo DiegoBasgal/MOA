@@ -85,16 +85,16 @@ class simulation_interface(threading.Thread):
                     writer = csv.writer(f, dialect='excel')
                     writer.writerow(row)
 
-                print("Tempo simulado: {:} | NV montante: {:3.2f}m | Pot Medidor: {:5.0f}kW"
-                      .format(str(datetime.timedelta(seconds=segundos_simulados)), nv_montante, pot_medidor))
-                print("Flags Usina: {:08b} | Flags Comporta: {:8b}| Pos Cmporta: {:}"
-                      .format(usina_flags, comporta_flags, comporta_pos))
-                print(
-                    "UG1 | Flags: {:08b} | Potência: {:5.0f}kW | Setpoint: {:5.0f}kW | Horimetro: {:3.1f}h | Temp Mancal {:3.1f}C | Perda na grade: {:1.2f}m"
-                    .format(ug1_flags, ug1_pot, ug1_setpot, ug1_tempo / 60, ug1_t_mancal, ug1_perda_grade))
-                print(
-                    "UG2 | Flags: {:08b} | Potência: {:5.0f}kW | Setpoint: {:5.0f}kW | Horimetro: {:3.1f}h | Temp Mancal {:3.1f}C | Perda na grade: {:1.2f}m"
-                    .format(ug2_flags, ug2_pot, ug2_setpot, ug2_tempo / 60, ug2_t_mancal, ug2_perda_grade))
+                #print("Tempo simulado: {:} | NV montante: {:3.2f}m | Pot Medidor: {:5.0f}kW"
+                #      .format(str(datetime.timedelta(seconds=segundos_simulados)), nv_montante, pot_medidor))
+                #print("Flags Usina: {:08b} | Flags Comporta: {:8b}| Pos Cmporta: {:}"
+                #      .format(usina_flags, comporta_flags, comporta_pos))
+                #print(
+                #    "UG1 | Flags: {:08b} | Potência: {:5.0f}kW | Setpoint: {:5.0f}kW | Horimetro: {:3.1f}h | Temp Mancal {:3.1f}C | Perda na grade: {:1.2f}m"
+                #    .format(ug1_flags, ug1_pot, ug1_setpot, ug1_tempo / 60, ug1_t_mancal, ug1_perda_grade))
+                #print(
+                #    "UG2 | Flags: {:08b} | Potência: {:5.0f}kW | Setpoint: {:5.0f}kW | Horimetro: {:3.1f}h | Temp Mancal {:3.1f}C | Perda na grade: {:1.2f}m"
+                #    .format(ug2_flags, ug2_pot, ug2_setpot, ug2_tempo / 60, ug2_t_mancal, ug2_perda_grade))
 
                 sleep(1)
 

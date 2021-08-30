@@ -300,7 +300,7 @@ class Usina:
 
     valor_ie_inicial = 0.3
     mysql_config = {
-        'host': "172.21.15.12",
+        'host': "localhost",
         'user': "root",
         'passwd': "11Marco2020@",
         'db': "django_db",
@@ -436,6 +436,8 @@ class Usina:
         else:
             # Se não conectou, a clp não está online.
             self.clp_online = False
+            logger.debug(self.clp_ip)
+            logger.debug(self.clp_porta)
             raise ConnectionError
 
         # Verifica a pot que est disponível para ser trabalhada
@@ -692,10 +694,10 @@ class Usina:
                 elif agendamento[2] == AGENDAMENTO_RESET_PARMAETROS:
                     try:
                         q = """ UPDATE parametros_moa_parametrosusina
-                                                            SET clp_ip = '172.21.15.13',
-                                                            clp_porta = 502,
-                                                            modbus_server_ip = '172.21.15.12',
-                                                            modbus_server_porta = 5002,
+                                                            SET clp_ip = '{}',
+                                                            clp_porta = 5002,
+                                                            modbus_server_ip = '{}',
+                                                            modbus_server_porta = 5003,
                                                             kp = -20.000,
                                                             ki = -0.300,
                                                             kd = - 50.000,
@@ -731,6 +733,8 @@ class Usina:
                                                             nv_comporta_pos_5_prox = 643.80,
                                                             tolerancia_pot_maxima = 1.04
                                                             WHERE id = 1; """.format(
+                            get_ip_local(),
+                            get_ip_local(),
                             datetime.now().strftime("%Y-%m-%d %H:%M:%S"))
 
                         mydb = mysql.connector.connect(**self.mysql_config)

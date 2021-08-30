@@ -224,7 +224,7 @@ class world_abstraction(threading.Thread):
         # Acertar potência na UG
         if self.ug1_sinc >= 1:
             # Se estiver sincronizada subir/ajustar potencia
-            var_ug1_por_minuto = (self.ug1_setpoint - self.ug1_pot) / (self.seconds_per_step / 60)
+            var_ug1_por_minuto = ((self.ug1_setpoint - self.ug1_pot) * 60) / (self.seconds_per_step)
             var_ug1_por_minuto = math.copysign(min(0.625, abs(var_ug1_por_minuto)), var_ug1_por_minuto)
             self.ug1_pot += (var_ug1_por_minuto / 60) * self.seconds_per_step
             self.ug1_pot = min(max(1, self.ug1_pot), 2.6) + random.normal(scale=0.001)
@@ -262,7 +262,7 @@ class world_abstraction(threading.Thread):
         # Acertar potência na UG
         if self.ug2_sinc >= 1:
             # Se estiver sincronizada subir/ajustar potencia
-            var_ug2_por_minuto = (self.ug2_setpoint - self.ug2_pot) / (self.seconds_per_step / 60)
+            var_ug2_por_minuto = ((self.ug2_setpoint - self.ug2_pot) * 60 )/ (self.seconds_per_step)
             var_ug2_por_minuto = math.copysign(min(0.625, abs(var_ug2_por_minuto)), var_ug2_por_minuto)
             self.ug2_pot += (var_ug2_por_minuto / 60) * self.seconds_per_step
             self.ug2_pot = min(max(1, self.ug2_pot), 2.6) + random.normal(scale=0.001)
@@ -275,7 +275,8 @@ class world_abstraction(threading.Thread):
         self.stop_signal = True
     
     def run(self):
-
+        server = ModbusServer(host='localhost', port=5002, no_block=True)
+        server.start()
         while not self.stop_signal:
 
             remaining_step_time = 0
@@ -347,7 +348,7 @@ class world_abstraction(threading.Thread):
             self.pot_no_medidor = (self.ug1_pot + self.ug2_pot) * max(min(random.normal(0.985, 0.002), 1.005), 0.95)
 
             # Acerta as Vazoes e o nivel
-            q_aflu = 10 # Todo Adicionar de onde vem esse valor conforme o tempo passa
+            q_aflu = 5 # Todo Adicionar de onde vem esse valor conforme o tempo passa
             q_vert = q_vertimento(self.nv_montante)
             q_comp = q_comporta(self.comp_fechada, self.comp_p1, self.comp_p2, self.comp_p3, self.comp_p4, self.comp_aberta, self.nv_montante)
             q_sani = q_sanitaria(self.nv_montante)
