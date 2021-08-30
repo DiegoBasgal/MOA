@@ -87,6 +87,8 @@ logger.info('Inicializando o MOA')
 # A escala de tempo é utilizada para acelerar as simulações do sistema
 # Utilizar 1 para testes sérios e 120 no máximo para testes simples
 ESCALA_DE_TEMPO = 1
+if len(sys.argv) > 1:
+    ESCALA_DE_TEMPO = int(sys.argv[1])
 
 # Inicialização
 try:
@@ -300,6 +302,7 @@ while True:
                     pot_alvo = pot_alvo * 0.99 * ( u.pot_maxima_alvo / u.pot_medidor )
 
                 if pot_alvo < u.pot_minima:
+                    logger.debug("Pot alvo {} <  min {}".format(pot_alvo, u.pot_minima))
                     pot_alvo = 0
                     u.ug1.mudar_setpoint(0)
                     u.ug2.mudar_setpoint(0)
