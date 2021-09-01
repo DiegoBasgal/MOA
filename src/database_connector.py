@@ -19,7 +19,7 @@ import mysql.connector
 class Database:
 
     def __init__(self):
-        mysql_config = {
+        config = {
             'host': "localhost",
             'user': "root",
             'passwd': "11Marco2020@",
@@ -27,7 +27,7 @@ class Database:
             'charset': 'utf8',
         }
 
-        self._conn = mysql.connector.connect(**mysql_config)
+        self._conn = mysql.connector.connect(**config)
         self._cursor = self._conn.cursor()
 
     """
