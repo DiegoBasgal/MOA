@@ -237,7 +237,7 @@ class Comporta:
             self.mudar_estado(estado_alvo)
 
     def mudar_estado(self, alvo):
-        logger.info("Alterando o estado da comprota para {} (atual:{})".format(alvo, self.pos_comporta))
+        logger.info("Alterando o estado da comporta para {} (atual:{})".format(alvo, self.pos_comporta))
         if alvo == 1:
             modbus_clp.write_single_register(self.endereco_clp_pos, 2)
         elif alvo == 2:
