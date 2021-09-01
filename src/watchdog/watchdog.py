@@ -21,8 +21,8 @@ logger.setLevel(logging.DEBUG)
 fh = logging.FileHandler("logs/watchdog.log")  # log para arquivo
 ch = logging.StreamHandler(stdout)  # log para linha de comando
 mh = MensageiroHandler()  # log para telegram e voip
-logFormatter = logging.Formatter("%(asctime)s [%(threadName)-12.12s] [%(levelname)-5.5s]  %(message)s")
-logFormatterSimples = logging.Formatter("[%(levelname)-5.5s]  %(message)s")
+logFormatter = logging.Formatter("%(asctime)s [%(threadName)-12.12s] [%(levelname)-5.5s] [WATCHDOG] %(message)s")
+logFormatterSimples = logging.Formatter("[%(levelname)-5.5s] [WATCHDOG] %(message)s")
 fh.setFormatter(logFormatter)
 ch.setFormatter(logFormatter)
 mh.setFormatter(logFormatterSimples)

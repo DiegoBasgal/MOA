@@ -1,37 +1,12 @@
 import math
 from numpy import random
-
 from pyModbusTCP.server import ModbusServer, DataBank
-import signal
 import threading
 from datetime import datetime
 from time import sleep
 import logging
-from sys import stdout
-from src.mensageiro.mensageiro_log_handler import MensageiroHandler
 
-string_date = datetime.now().strftime("%Y-%m-%d_%H-%M")
-
-# SILENCIANDO O LOOGER ROOT
-rootLogger = logging.getLogger()
-rootLogger.setLevel(logging.CRITICAL)
-# Inicializando o logger principal
-logger = logging.getLogger(__name__)
-logger.setLevel(logging.DEBUG)
-fh = logging.FileHandler("logs/{}-test.log".format(string_date))  # log para arquivo
-ch = logging.StreamHandler(stdout)  # log para linha de comando
-mh = MensageiroHandler()  # log para telegram e voip
-logFormatter = logging.Formatter("%(asctime)s [%(threadName)-12.12s] [%(levelname)-5.5s]  %(message)s")
-logFormatterSimples = logging.Formatter("[%(levelname)-5.5s]  %(message)s")
-fh.setFormatter(logFormatter)
-ch.setFormatter(logFormatter)
-mh.setFormatter(logFormatterSimples)
-fh.setLevel(logging.INFO)
-ch.setLevel(logging.DEBUG)
-mh.setLevel(logging.INFO)
-logger.addHandler(fh)
-logger.addHandler(ch)
-logger.addHandler(mh)
+logger = logging.getLogger('__main__')
 
 USINA_CAP_RESERVATORIO = 43000.0
 USINA_NV_MAX = 643.5

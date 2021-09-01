@@ -27,8 +27,8 @@ else:
 fh = logging.FileHandler("MOA.log")  # log para arquivo
 ch = logging.StreamHandler(stdout)  # log para linha de comando
 mh = MensageiroHandler()  # log para telegram e voip
-logFormatter = logging.Formatter("%(asctime)s [%(threadName)-12.12s] [%(levelname)-5.5s]  %(message)s")
-logFormatterSimples = logging.Formatter("[%(levelname)-5.5s]  %(message)s")
+logFormatter = logging.Formatter("%(asctime)s [%(threadName)-12.12s] [%(levelname)-5.5s] [MOA-SM] %(message)s")
+logFormatterSimples = logging.Formatter("[%(levelname)-5.5s] [MOA-SM] %(message)s")
 fh.setFormatter(logFormatter)
 ch.setFormatter(logFormatter)
 mh.setFormatter(logFormatterSimples)
