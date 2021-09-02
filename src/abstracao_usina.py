@@ -185,14 +185,15 @@ class Usina:
 
 
             # UG1
+            self.modbus_clp.write_single_register(self.cfg['ENDERECO_CLP_UG1_FLAGS'], self.ug1.flag)
             self.modbus_clp.write_single_register(self.cfg['ENDERECO_CLP_UG1_SETPOINT'], int(self.ug1.setpoint * 1000))
 
             # UG2
+            self.modbus_clp.write_single_register(self.cfg['ENDERECO_CLP_UG2_FLAGS'], self.ug2.flag)
             self.modbus_clp.write_single_register(self.cfg['ENDERECO_CLP_UG2_SETPOINT'], int(self.ug2.setpoint * 1000))
 
             # Comporta
-            self.modbus_clp.write_single_register(self.cfg['ENDERECO_CLP_COMPORTA_POS'],
-                                                  2 ** self.comporta.pos_comporta)
+            self.modbus_clp.write_single_register(self.cfg['ENDERECO_CLP_COMPORTA_POS'], int(self.comporta.pos_comporta))
 
             self.modbus_clp.close()
 
@@ -443,30 +444,18 @@ class UnidadeDeGeracao:
         self.pot_disponivel = 0
 
     def normalizar(self, flag=0b1):
-        """
         #Normaliza a ug
 
-        flag_nova = self.flag ^ flag
-
-        if not self.disponivel:
-            self.disponivel = 1
-            modbus_clp.write_single_register(self.registrador_flags, flag_nova)
+        if self.flag & flag:
+            self.flag = self.flag - flag
             logger.info("UG {} normalizada a flag {}.".format(self.id_da_ug, flag))
-        """
-        raise NotImplementedError
 
     def indisponibilizar(self, flag=0b1, descr="Sem descrição adcional"):
-        """
         #Indisponibiliza a ug
 
-        flag_nova = self.flag ^ flag
-        if flag_nova != self.flag:
-            self.disponivel = False
-            modbus_clp.write_single_register(self.registrador_flags, flag_nova)
-            modbus_clp.write_single_register(self.registrador_setpoint, 0)
-            logger.info("UG {} indisponibilizada. Flag ({}) ({})".format(self.id_da_ug, flag, descr))
-        """
-        raise NotImplementedError
+        if not self.flag & flag:
+            logger.info("Indisponibilizando UG {}. Flag ({}) ({})".format(self.id_da_ug, flag, descr))
+            self.flag += flag
 
     def atualizar_estado(self):
         """
@@ -475,29 +464,29 @@ class UnidadeDeGeracao:
 
         if self.flag and self.disponivel:
             logger.warning("UG {} indisponivel. Flag {}.".format(self.id_da_ug, self.flag))
+            self.disponivel = False
 
         if not self.flag and not self.disponivel:
             logger.warning("UG {} disponivel. Flag {}.".format(self.id_da_ug, self.flag))
+            self.disponivel = True
 
-        self.disponivel = not bool(self.flag)
         self.sincronizada = True if self.potencia > 0 else False
 
         # todo Verificações
-        """
-        if self.temp_mancal >= self.temp_mancal_max and not (self.flag & 0b10):
+        if self.temp_mancal >= self.temp_mancal_max:
             self.indisponibilizar(0b10,
                                   "Temperatura do mancal excedida (atual:{}; max:{})".format(self.temp_mancal,
                                                                                              self.temp_mancal_max))
-        elif self.temp_mancal < self.temp_mancal_max and (self.flag & 0b10):
+        else:
             self.normalizar(0b10)
 
-        if self.perda_na_grade >= self.perda_na_grade_max and not (self.flag & 0b100):
+        if self.perda_na_grade >= self.perda_na_grade_max:
             self.indisponibilizar(0b100,
                                   "Perda máxima na grade excedida (atual:{}; max:{})".format(self.perda_na_grade,
                                                                                             self.perda_na_grade_max))
-        elif self.perda_na_grade < self.perda_na_grade_max and (self.flag & 0b100):
+        else:
             self.normalizar(0b100)
-        """
+
 
     def mudar_setpoint(self, alvo):
 

@@ -14,7 +14,7 @@ from mensageiro.mensageiro_log_handler import MensageiroHandler
 # import abstracao_usina
 import abstracao_usina
 
-DEBUG = True
+DEBUG = False
 
 # Set-up logging
 rootLogger = logging.getLogger()
@@ -261,6 +261,8 @@ class ValoresInternosAtualizados(State):
         # Atualizar os estados
         for ug in usina.ugs:
             ug.atualizar_estado()
+
+        #TODO SEPARA FUNÇÃO
         usina.comporta.atualizar_estado(usina.nv_montante)
 
         # Verificamos se existem agendamentos
@@ -370,6 +372,8 @@ class ReservatorioAcimaDoMaximo(State):
 
     def run(self):
         usina.distribuir_potencia(usina.cfg['pot_maxima_usina'])
+        global saida_ie
+        saida_ie = 0.8
         return ControleRealizado()
 
 
@@ -386,17 +390,16 @@ class ReservatorioNormal(State):
         global saida_pid
         global saida_ie
 
-
         # Calcula PID
         logger.debug("Alvo: {:0.3f}, Recente: {:0.3f}, Anterior: {:0.3f}".format(usina.nv_alvo, usina.nv_montante_recente, usina.nv_montante_anterior))
         controle_p = controle_proporcional(usina.cfg['kp'], usina.erro_nv)
         controle_i = controle_integral(usina.cfg['ki'], usina.erro_nv, controle_i)
         controle_d = controle_derivativo(usina.cfg['kd'], usina.erro_nv, usina.erro_nv_anterior)
-        saida_pid = controle_p + controle_i + controle_d
+        saida_pid = controle_p + controle_i + min(max(-0.3, controle_d), 0.3)
         logger.debug("PID: {:0.3f}, P:{:0.3f}, I:{:0.3f}, D:{:0.3f}".format(saida_pid, controle_p, controle_i, controle_d))
 
         # Calcula o integrador de estabilidade e limita
-        saida_ie = saida_pid * (usina.cfg['kie'] / ESCALA_DE_TEMPO) + saida_ie
+        saida_ie = saida_pid * usina.cfg['kie'] + saida_ie
         saida_ie = max(min(saida_ie, 1), 0)
 
         # Arredondamento e limitação
