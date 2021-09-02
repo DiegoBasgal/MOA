@@ -1,3 +1,4 @@
+import csv
 import math
 from numpy import random
 from pyModbusTCP.server import ModbusServer, DataBank
@@ -45,20 +46,6 @@ def q_turbinada(UG1, UG2):
     return resultado
 
 
-def q_vertimento(nv):
-
-    """
-    Retorna o valor do vertimento conforme cálculo preestabelecido
-    Cálculo retirado da planilha de excel
-    """
-
-    resultado = 0
-    if nv > USINA_NV_MAX:
-        resultado = 2.11 * (0.096006 * ((nv - 643.5) / 2.78) ** 3 - 0.270618 * ((nv - 643.5) / 2.78) ** 2 + 0.386699 * (
-                    (nv - 643.5) / 2.78) + 0.783742) * 46.5 * (nv - 643.5) ** 1.5
-    return resultado
-
-
 def q_comporta(fechado, pos1, pos2, pos3, pos4, aberto, montante):
 
     resultado = 0
@@ -91,45 +78,6 @@ def q_sanitaria(nv):
         return 0.07474 * math.sqrt(19.62*temp)      # vazao
 
 
-def q_afluente(tempo, UG1, UG2, nv_mont, nv_mont_ant, pos_comporta):
-
-    """
-    Retorna o valor do afluente conforme cálculo preestabelecido
-    Cálculo retirado da planilha de excel
-    """
-
-    if not isinstance(nv_mont_ant, float):
-        return -1
-
-    resultado = 0
-    aux = 0
-
-    resultado += q_turbinada(UG1, UG2)
-    resultado += q_vertimento(nv_mont)
-    resultado += q_sanitaria(nv_mont)
-    comp_fechada = pos_comporta & 0b1
-    comp_pos1 = pos_comporta & 0b10
-    comp_pos2 = pos_comporta & 0b100
-    comp_pos3 = pos_comporta & 0b1000
-    comp_pos4 = pos_comporta & 0b10000
-    comp_aberta = pos_comporta & 0b100000
-    resultado += q_comporta(comp_fechada, comp_pos1, comp_pos2, comp_pos3, comp_pos4, comp_aberta, nv_mont)
-
-    if nv_mont > USINA_NV_MAX:
-        aux += USINA_NV_MAX
-    else:
-        aux += nv_mont
-
-    if nv_mont_ant > USINA_NV_MAX:
-        aux -= USINA_NV_MAX
-    else:
-        aux -= nv_mont_ant
-
-    resultado += (aux * ((USINA_CAP_RESERVATORIO / (USINA_NV_MAX - USINA_NV_MIN)) / tempo))
-
-    return resultado
-
-
 class world_abstraction(threading.Thread):
 
     def __init__(self, simulation_speed=1):
@@ -144,13 +92,13 @@ class world_abstraction(threading.Thread):
         self.comp_p4 = 0
         self.flags_usina = 0
         self.volume = 0
-        self.nv_montante = 643.16 # MUDAR AQUI
+        self.nv_montante = 643.25 # MUDAR AQUI
         for aux in range(250000):
             self.volume = aux
             aux_nv_montante = -0.0000000002 * ((self.volume / 1000) ** 4) + 0.0000002 * ((self.volume / 1000) ** 3) - 0.0001 * (
                     (self.volume / 1000) ** 2) + 0.0331 * (self.volume / 1000) + 639.43
             if round(aux_nv_montante, 3) == round(self.nv_montante, 3):
-                logger.debug("Volume res: {}, Nv: {}".format(self.volume, self.nv_montante))
+                logger.info("[SIMUL] Volume res: {}, Nv: {}".format(self.volume, self.nv_montante))
                 break
         self.pot_no_medidor = 0
         self.simulation_speed = simulation_speed
@@ -172,9 +120,15 @@ class world_abstraction(threading.Thread):
         self.lock = threading.Lock()
         self.stop_signal = False
         self.simulation_speed = max(self.simulation_speed, 1)
-        self.simulation_speed = min(self.simulation_speed, 240)
-        self.step_time = 0.1
+        self.step_time = 0.001
         self.seconds_per_step = self.step_time * self.simulation_speed
+        self.events = []
+        with open('simulated_events.csv') as f:
+            d = csv.excel
+            d.delimiter = ';'
+            for row in csv.reader(f, dialect=d):
+                self.events.append(row)
+        self.events = self.events[1:]
 
     def step_ug1(self):
         # Variaveis do ambiente
@@ -254,14 +208,17 @@ class world_abstraction(threading.Thread):
 
     def stop(self):
         self.stop_signal = True
+        logger.info("[SIMUL] Soft Stopping thread")
     
     def run(self):
         server = ModbusServer(host='localhost', port=5002, no_block=True)
         server.start()
+        q_aflu = 0
+        q_vert = 0
         while not self.stop_signal:
 
-            remaining_step_time = 0
 
+            remaining_step_time = 0
             step_start_time = datetime.now()
             self.lock.acquire()
 
@@ -303,7 +260,6 @@ class world_abstraction(threading.Thread):
             self.ug2_flags = (int(self.REGS[30]))
             self.ug2_setpoint = (int(self.REGS[32]) / 1000)
             self.comp_flags = self.REGS[10]
-            self.comp_fechada = self.REGS[11] & 0b00000001
             self.comp_p1 = self.REGS[11] & 0b00000010
             self.comp_p2 = self.REGS[11] & 0b00000100
             self.comp_p3 = self.REGS[11] & 0b00001000
@@ -315,6 +271,29 @@ class world_abstraction(threading.Thread):
 
             # Acerto de tempo
             self.simulation_time += self.seconds_per_step
+            # Ler eventos
+            # ['minuto', 'q_aflu', 'flag_usina', 'disp_ug1', 'temp_ug1', 'perda_ug1', 'disp_ug2', 'temp_ug2', 'perda_ug2']
+            if not len(self.events) == 0:
+                if self.events[0][0] == "STOP":
+                    logger.info("[SIMUL] Executando evento agendado na simulação STOP")
+                    DataBank.set_words(1000, [1])
+                    self.stop()
+                    continue
+
+                if float(self.events[0][0])*60 <= self.simulation_time:
+                    current_event = self.events[0]  # hold current
+                    for i in range(9):
+                        current_event[i] = float(current_event[i].replace(',', '.'))
+                    self.events = self.events[1:]   # remove current from list
+                    q_aflu = min(max(0, current_event[1]), 100) if current_event[1] >= 0 else q_aflu
+                    self.flags_usina = current_event[2] if current_event[2] >= 0 else self.flags_usina
+                    self.ug1_flags = current_event[3] if current_event[3] >= 0 else self.ug1_flags
+                    self.ug1_temp_mancal = current_event[4] if current_event[4] >= 0 else self.ug1_temp_mancal
+                    self.ug1_perda_grade = current_event[5] if current_event[5] >= 0 else self.ug1_perda_grade
+                    self.ug2_flags = current_event[6] if current_event[6] >= 0 else self.ug2_flags
+                    self.ug2_temp_mancal = current_event[7] if current_event[7] >= 0 else self.ug2_temp_mancal
+                    self.ug2_perda_grade = current_event[8] if current_event[8] >= 0 else self.ug2_perda_grade
+                    logger.debug("[SIMUL] Executando evento agendado na simulação {}".format(current_event))
 
             # Verifica flags da Usina
             if not (self.flags_usina == 0):
@@ -329,43 +308,49 @@ class world_abstraction(threading.Thread):
             self.pot_no_medidor = (self.ug1_pot + self.ug2_pot) * max(min(random.normal(0.985, 0.002), 1.005), 0.95)
 
             # Acerta as Vazoes e o nivel
-            q_aflu = 8 # Todo Adicionar de onde vem esse valor conforme o tempo passa
-            q_vert = q_vertimento(self.nv_montante)
             q_comp = q_comporta(self.comp_fechada, self.comp_p1, self.comp_p2, self.comp_p3, self.comp_p4, self.comp_aberta, self.nv_montante)
             q_sani = q_sanitaria(self.nv_montante)
             q_turb = q_turbinada(self.ug1_pot, self.ug2_pot)
-            q_eflu = q_vert + q_comp + q_sani + q_turb
-            q_liquida = q_aflu - q_eflu
-            self.volume += q_liquida * self.seconds_per_step
-            if self.volume < 0:
-                self.volume = 0
-                self.stop()
-            self.nv_montante = - 0.0000000002 * ((self.volume / 1000) ** 4) + 0.0000002 * ((self.volume / 1000) ** 3) - 0.0001 * ( (self.volume / 1000) ** 2) + 0.0331 * (self.volume / 1000) + 639.43
+
+            if self.nv_montante <= USINA_NV_MAX:
+                self.volume += (q_aflu - q_comp - q_sani - q_turb) * self.seconds_per_step
+                self.nv_montante = - 0.0000000002 * ((self.volume / 1000) ** 4) + 0.0000002 * (
+                            (self.volume / 1000) ** 3) - 0.0001 * ((self.volume / 1000) ** 2) + 0.0331 * (
+                                               self.volume / 1000) + 639.43
+            else:
+                q_vert = q_aflu - q_comp - q_sani - q_turb
+                self.nv_montante = USINA_NV_MAX + ((q_vert / ((1.66 + 0.0017336 * q_vert) * 110)) ** (2 / 3)).real
+
+
             if (self.nv_montante < 642.5) or (self.nv_montante > 644.3):
-                logger.error("Algo deu errado e o nv foi apara fora dos limites.")
-                logger.error("q_aflu:{}, q_vert:{}, q_comp:{}, q_sani:{}, q_turb:{}, q_eflu:{}, q_liq:{},".format(
-                    q_aflu, q_vert, q_comp, q_sani, q_turb, q_eflu, q_liquida
+                logger.error("[SIMUL] Algo deu errado e o nv foi apara fora dos limites.")
+                logger.error("[SIMUL] vol: {}, q_aflu:{}, q_comp:{}, q_sani:{}, q_turb:{}, q_vert:{},".format(
+                    self.volume, q_aflu, q_comp, q_sani, q_turb, q_vert
                 ))
                 self.stop()
 
             # Atualiza registradores internos
-            DataBank.set_words(0, [int(((self.nv_montante - 620) * 100 + random.normal(scale=0.5)))*10])
+            DataBank.set_words(0, [int(((self.nv_montante - 620) * 100 + random.normal(scale=0.1)))*10])
             DataBank.set_words(1, [int(self.pot_no_medidor*1000)])
+            DataBank.set_words(20, [self.ug1_flags])
             DataBank.set_words(21, [int(self.ug1_pot * 1000)])
             DataBank.set_words(23, [int(self.ug1_minutos)])
             DataBank.set_words(24, [int(self.ug1_temp_mancal*10)])
             DataBank.set_words(25, [int(self.ug1_perda_grade*100)])
+            DataBank.set_words(30, [self.ug2_flags])
             DataBank.set_words(31, [int(self.ug2_pot * 1000)])
             DataBank.set_words(33, [int(self.ug2_minutos)])
             DataBank.set_words(34, [int(self.ug2_temp_mancal*10)])
             DataBank.set_words(35, [int(self.ug2_perda_grade*100)])
             DataBank.set_words(99, [int(self.simulation_time/60)])
+            DataBank.set_words(100, [self.flags_usina])
             # Final do comportamento modelado
 
-            remaining_step_time = (datetime.now()-step_start_time).microseconds/1000
+            remaining_step_time = self.step_time - (datetime.now()-step_start_time).seconds
             # print("Remaining time on step {:}s".format(remaining_step_time))
-            self.lock.release()
 
+            self.lock.release()
             if remaining_step_time > 0:
                 sleep(remaining_step_time)
-
+            else:
+                logger.warning("[SIMUL] Step time too low or speed too high!")
