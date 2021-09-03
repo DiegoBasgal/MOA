@@ -2,5 +2,6 @@
 **/*.log
 **/*.out
 *.pyc
-*log
-**log
+logs/**
+log_*
+logs/log_*
