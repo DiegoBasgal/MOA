@@ -34,7 +34,7 @@ class Usina:
         self.modbus_clp = ModbusClient(
             host=self.clp_ip,
             port=self.clp_porta,
-            timeout=5,
+            timeout=1, # Para debug colocar baixo (1s)
             unit_id=1,
             auto_open=True,
             auto_close=True)
@@ -281,7 +281,6 @@ class Usina:
         if self.modbus_clp.open():
             self.modbus_clp.write_single_register(self.cfg['ENDERECO_CLP_USINA_FLAGS'], int(0))
             self.modbus_clp.close()
-            sleep(5)
         else:
             # Se não conectou, a clp não está online.
             self.clp_online = False
@@ -458,6 +457,8 @@ class Usina:
 
         # Calcula o integrador de estabilidade e limita
         self.controle_ie = max(min(saida_pid * self.kie + self.controle_ie, 1), 0)
+        if self.nv_maximo - self.nv_montante_recente < 0.01:
+            self.controle_ie = min(self.controle_ie, 0.8)
 
         # Arredondamento e limitação
         pot_alvo = max(min(round(self.cfg['pot_maxima_usina'] * self.controle_ie, 2), self.cfg['pot_maxima_usina']), self.cfg['pot_minima'])

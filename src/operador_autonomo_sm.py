@@ -277,6 +277,7 @@ class Emergencia(State):
                     logger.info("Normalizando usina. (tentativa{}/3) (limite entre tentaivas: {}s)"
                                 .format(self.n_tentativa, usina.cfg['timeout_normalizacao']))
                     usina.normalizar_emergencia_clp()
+                    sleep(usina.cfg['timeout_normalizacao']/ESCALA_DE_TEMPO)
                     usina.ler_valores()
                 except Exception as e:
                     logger.error("Erro durante a comunicação do MOA com a usina. Tentando novamente em {}s. Exception: {}."

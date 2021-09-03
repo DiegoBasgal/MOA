@@ -1,6 +1,10 @@
 import csv
+import json
 import math
+import os
+
 from numpy import random
+from pyModbusTCP.client import ModbusClient
 from pyModbusTCP.server import ModbusServer, DataBank
 import threading
 from datetime import datetime
@@ -81,7 +85,12 @@ def q_sanitaria(nv):
 class world_abstraction(threading.Thread):
 
     def __init__(self, simulation_speed=1):
-        super().__init__()   
+        super().__init__()
+
+        config_file = os.path.join(os.path.dirname(__file__), '..', 'src', 'config.json')
+        with open(config_file, 'r') as file:
+            self.cfg = json.load(file)
+        self.moa_slave = ModbusClient(host=self.cfg['moa_slave_ip'], port=self.cfg['moa_slave_porta'])
         self.REGS = []
         self.comp_aberta = 0
         self.comp_fechada = 0
@@ -144,10 +153,10 @@ class world_abstraction(threading.Thread):
         # Tratar Sincronismo
         if self.ug1_setpoint >= 1:
             # Sincronizar com a rede
-            self.ug1_sinc += (self.seconds_per_step / 60) / 5  # 5 minutos 
+            self.ug1_sinc += (self.seconds_per_step / 60) / 5  # 5 minutos
         else:
             # Remover da rede
-            self.ug1_sinc -= (self.seconds_per_step / 60) / 1  # 1 minuto 
+            self.ug1_sinc -= (self.seconds_per_step / 60) / 1  # 1 minuto
 
         # Limitar o sincronismo de 0% a 100%
         self.ug1_sinc = max(min(self.ug1_sinc, 1), 0)
@@ -167,7 +176,7 @@ class world_abstraction(threading.Thread):
             # Se estiver desincronizada descer potencia
             self.ug1_pot -= (0.625 / 60) * self.seconds_per_step
             self.ug1_pot = max(0, self.ug1_pot)
-            
+
     def step_ug2(self):
         # Variaveis do ambiente
         self.ug2_temp_mancal = max(self.ug2_temp_mancal, 25) + random.normal(0, 0.01)
@@ -182,10 +191,10 @@ class world_abstraction(threading.Thread):
         # Tratar Sincronismo
         if self.ug2_setpoint >= 1:
             # Sincronizar com a rede
-            self.ug2_sinc += (self.seconds_per_step / 60) / 5  # 5 minutos 
+            self.ug2_sinc += (self.seconds_per_step / 60) / 5  # 5 minutos
         else:
             # Remover da rede
-            self.ug2_sinc -= (self.seconds_per_step / 60) / 1  # 1 minuto 
+            self.ug2_sinc -= (self.seconds_per_step / 60) / 1  # 1 minuto
 
         # Limitar o sincronismo de 0% a 100%
         self.ug2_sinc = max(min(self.ug2_sinc, 1), 0)
@@ -209,14 +218,23 @@ class world_abstraction(threading.Thread):
     def stop(self):
         self.stop_signal = True
         logger.info("[SIMUL] Soft Stopping thread")
-    
+
     def run(self):
         server = ModbusServer(host='localhost', port=5002, no_block=True)
         server.start()
         q_aflu = 0
         q_vert = 0
-        while not self.stop_signal:
+        DataBank.set_words(0, [int(((self.nv_montante - 620) * 100 + random.normal(scale=0.1))) * 10])
+        logger.info("[SIMUL] Aguardando MOA")
+        moa_is_alive = False
+        while not moa_is_alive:
+            moa_is_alive = self.moa_slave.open()
+            sleep(0.01)
+        self.moa_slave.close()
+        logger.info("[SIMUL] Rodando")
+        simul_start_time = datetime.now()
 
+        while not self.stop_signal:
 
             remaining_step_time = 0
             step_start_time = datetime.now()
@@ -312,15 +330,16 @@ class world_abstraction(threading.Thread):
             q_sani = q_sanitaria(self.nv_montante)
             q_turb = q_turbinada(self.ug1_pot, self.ug2_pot)
 
-            if self.nv_montante <= USINA_NV_MAX:
+            q_vert = q_aflu - q_comp - q_sani - q_turb
+            q_vert = max(0, q_vert)
+
+            if self.nv_montante <= USINA_NV_MAX or q_vert == 0:
                 self.volume += (q_aflu - q_comp - q_sani - q_turb) * self.seconds_per_step
                 self.nv_montante = - 0.0000000002 * ((self.volume / 1000) ** 4) + 0.0000002 * (
                             (self.volume / 1000) ** 3) - 0.0001 * ((self.volume / 1000) ** 2) + 0.0331 * (
                                                self.volume / 1000) + 639.43
             else:
-                q_vert = q_aflu - q_comp - q_sani - q_turb
-                self.nv_montante = USINA_NV_MAX + ((q_vert / ((1.66 + 0.0017336 * q_vert) * 110)) ** (2 / 3)).real
-
+                self.nv_montante = USINA_NV_MAX + ((q_vert / ((1.66 + 0.0017336 * q_vert) * 110)) ** (2 / 3))
 
             if (self.nv_montante < 642.5) or (self.nv_montante > 644.3):
                 logger.error("[SIMUL] Algo deu errado e o nv foi apara fora dos limites.")
@@ -354,3 +373,11 @@ class world_abstraction(threading.Thread):
                 sleep(remaining_step_time)
             else:
                 logger.warning("[SIMUL] Step time too low or speed too high!")
+
+        simul_mesured_speed = self.simulation_time/(datetime.now() - simul_start_time).seconds
+        logger.info("Simulated with an actual speed of: {:.3f}x".format(simul_mesured_speed))
+
+if __name__ == '__main__':
+    th = world_abstraction()
+    th.run()
+    th.join()

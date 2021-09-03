@@ -37,109 +37,101 @@ class simulation_interface(threading.Thread):
 
     def run(self):
 
-        with_plot = False
-        with_clp_text = True
-        save_plot = True
-
-        if with_plot:
-
-            fig, ax1 = plt.subplots()
-            ax2 = ax1.twinx()
-            ax1.plot([0, 10000000], [643.0, 643.0], linestyle='dotted', color='red')
-            ax1.plot([0, 10000000], [643.5, 643.5], linestyle='dotted', color='red')
-            ax1.plot([0, 10000000], [643.25, 643.25], linestyle='dotted', color='gray')
-            ax2.plot([0, 10000000], [5, 5], linestyle='dashed', color='gray')
-
         rows = []
         while not self.stop_signal:
             try:
                 self.lock.acquire()
                 REGS = DataBank.get_words(0, 1001)
-
-                nv_montante = (REGS[0] / 1000) + 620
-                pot_medidor = REGS[1]
-                usina_flags = REGS[100]
-                comporta_flags = REGS[10]
-                comporta_pos = REGS[11]
-                ug1_flags = REGS[20]
-                ug1_pot = REGS[21]
-                ug1_setpot = REGS[22]
-                ug1_tempo = REGS[23]/60
-                ug1_t_mancal = REGS[24]/10
-                ug1_perda_grade = REGS[25]/100
-                ug2_flags = REGS[30]
-                ug2_pot = REGS[31]
-                ug2_setpot = REGS[32]
-                ug2_tempo = REGS[33]/60
-                ug2_t_mancal = REGS[34]/10
-                ug2_perda_grade = REGS[35]/100
-                segundos_simulados = REGS[99]*60
-
-                if REGS[1000]:
-                    self.stop()
-                    continue
-
-                if len(rows) > 1:
-                    if segundos_simulados/60 == rows[-1][0]:
-                        sleep(0.001)
-                        continue
-
-                rows.append([segundos_simulados/60, nv_montante, pot_medidor/1000, usina_flags, comporta_flags, comporta_pos,
-                          ug1_flags, ug1_pot/1000, ug1_setpot, ug1_tempo, ug1_t_mancal, ug1_perda_grade,
-                          ug2_flags, ug2_pot/1000, ug2_setpot, ug2_tempo, ug2_t_mancal, ug2_perda_grade])
-
-                with open(self.simulation_data_log_path, 'a') as f:
-                    writer = csv.writer(f, dialect='excel')
-                    writer.writerow(rows[-1])
-
-                if with_plot:
-                    ax1.plot(list(map(list, zip(*rows)))[0], list(map(list, zip(*rows)))[1], color='blue')
-                    ax2.plot(list(map(list, zip(*rows)))[0], list(map(list, zip(*rows)))[2], color='orange')
-                    ax2.plot(list(map(list, zip(*rows)))[0], list(map(list, zip(*rows)))[7], color='pink', linestyle=':')
-                    ax2.plot(list(map(list, zip(*rows)))[0], list(map(list, zip(*rows)))[13], color='khaki', linestyle=':')
-                    plt.xlim(0, rows[-1][0])
-                    plt.pause(0.05)
-
-                if with_clp_text:
-                    print("-----------------------------------------------------------------------------------------------")
-                    print("Tempo simulado: {:} | NV montante: {:3.2f}m | Pot Medidor: {:5.0f}kW"
-                          .format(str(datetime.timedelta(seconds=segundos_simulados)), nv_montante, pot_medidor))
-                    print("Flags Usina: {:08b} | Flags Comporta: {:8b}| Pos Cmporta: {:}"
-                          .format(usina_flags, comporta_flags, comporta_pos))
-                    print(
-                        "UG1 | Flags: {:08b} | Potência: {:5.0f}kW | Setpoint: {:5.0f}kW | Horimetro: {:3.1f}h | Temp Mancal {:3.1f}C | Perda na grade: {:1.2f}m"
-                        .format(ug1_flags, ug1_pot, ug1_setpot, ug1_tempo / 60, ug1_t_mancal, ug1_perda_grade))
-                    print(
-                        "UG2 | Flags: {:08b} | Potência: {:5.0f}kW | Setpoint: {:5.0f}kW | Horimetro: {:3.1f}h | Temp Mancal {:3.1f}C | Perda na grade: {:1.2f}m"
-                        .format(ug2_flags, ug2_pot, ug2_setpot, ug2_tempo / 60, ug2_t_mancal, ug2_perda_grade))
-
             finally:
                 self.lock.release()
 
+            nv_montante = (REGS[0] / 1000) + 620
+            pot_medidor = REGS[1]
+            usina_flags = REGS[100]
+            comporta_flags = REGS[10]
+            comporta_pos = REGS[11]
+            ug1_flags = REGS[20]
+            ug1_pot = REGS[21]
+            ug1_setpot = REGS[22]
+            ug1_tempo = REGS[23]/60
+            ug1_t_mancal = REGS[24]/10
+            ug1_perda_grade = REGS[25]/100
+            ug2_flags = REGS[30]
+            ug2_pot = REGS[31]
+            ug2_setpot = REGS[32]
+            ug2_tempo = REGS[33]/60
+            ug2_t_mancal = REGS[34]/10
+            ug2_perda_grade = REGS[35]/100
+            segundos_simulados = REGS[99]*60
+
+            if REGS[1000]:
+                self.stop()
+                continue
+
+            if segundos_simulados/60 == 0:
+                continue
+
+            if len(rows) > 1:
+                if int(segundos_simulados/60) == int(rows[-1][0]):
+                    sleep(0.0001)
+                    continue
+
+            rows.append([segundos_simulados/60, nv_montante, pot_medidor/1000, usina_flags, comporta_flags, comporta_pos,ug1_flags, ug1_pot/1000, ug1_setpot, ug1_tempo, ug1_t_mancal, ug1_perda_grade,ug2_flags, ug2_pot/1000, ug2_setpot, ug2_tempo, ug2_t_mancal, ug2_perda_grade])
+
+            with open(self.simulation_data_log_path, 'a') as f:
+                writer = csv.writer(f, dialect='excel')
+                writer.writerow(rows[-1])
+
+            with_clp_text = True
+            if with_clp_text:
+                print("-----------------------------------------------------------------------------------------------")
+                print("Tempo simulado: {:} | NV montante: {:3.2f}m | Pot Medidor: {:5.0f}kW"
+                      .format(str(datetime.timedelta(seconds=segundos_simulados)), nv_montante, pot_medidor))
+                print("Flags Usina: {:08b} | Flags Comporta: {:8b}| Pos Cmporta: {:}"
+                      .format(usina_flags, comporta_flags, comporta_pos))
+                print(
+                    "UG1 | Flags: {:08b} | Potência: {:5.0f}kW | Setpoint: {:5.0f}kW | Horimetro: {:3.1f}h | Temp Mancal {:3.1f}C | Perda na grade: {:1.2f}m"
+                    .format(ug1_flags, ug1_pot, ug1_setpot, ug1_tempo / 60, ug1_t_mancal, ug1_perda_grade))
+                print(
+                    "UG2 | Flags: {:08b} | Potência: {:5.0f}kW | Setpoint: {:5.0f}kW | Horimetro: {:3.1f}h | Temp Mancal {:3.1f}C | Perda na grade: {:1.2f}m"
+                    .format(ug2_flags, ug2_pot, ug2_setpot, ug2_tempo / 60, ug2_t_mancal, ug2_perda_grade))
+
         # After stop sig
-        if save_plot:
-            fig, ax1 = plt.subplots()
-            ax2 = ax1.twinx()
-            ax1.plot([0, 10000000], [643.0, 643.0], linestyle='dotted', color='red')
-            ax1.plot([0, 10000000], [643.5, 643.5], linestyle='dotted', color='red')
-            ax1.plot([0, 10000000], [643.25, 643.25], linestyle='dotted', color='gray')
-            ax2.plot([0, 10000000], [5, 5], linestyle='dashed', color='gray')
-            ax1.plot(list(map(list, zip(*rows)))[0], list(map(list, zip(*rows)))[1], color='blue')
-            ax2.plot(list(map(list, zip(*rows)))[0], list(map(list, zip(*rows)))[2], color='orange')
-            ax2.plot(list(map(list, zip(*rows)))[0], list(map(list, zip(*rows)))[7], color='pink', linestyle=':')
-            ax2.plot(list(map(list, zip(*rows)))[0], list(map(list, zip(*rows)))[13], color='khaki', linestyle=':')
-            ax1.set_ylim(642.5, 645.5)
-            plt.xlim(0, rows[-1][0])
-            import src.database_connector as db_con
-            with db_con.Database() as db:
-                res = db.get_parametros_usina()
-                kp = float(res['kp'])
-                ki = float(res['ki'])
-                kd = float(res['kd'])
-                kie = float(res['kie'])
-                ml = float(res['n_movel_L'])
-                mr = float(res['n_movel_R'])
-            plt.savefig("logs/log_plot kp{} kd{} ki{} Kie{} mr{} ml{}".format(kp, kd, ki, kie, mr, ml).replace('.', '_')+".png")
+        fig, (ax1, ax2, ax3) = plt.subplots(3, 1)
+        plt.gcf().set_size_inches(12, 9)
+        ax1.grid(True)
+        ax2.grid(True)
+        ax3.grid(True)
+        ax1.plot([0, 10000000], [643.0, 643.0], linestyle='dotted', color='red')
+        ax1.plot([0, 10000000], [643.5, 643.5], linestyle='dotted', color='red')
+        ax1.plot([0, 10000000], [643.25, 643.25], linestyle='dotted', color='gray')
+        ax2.plot([0, 10000000], [5, 5], linestyle='dashed', color='gray')
+        data = map(list, zip(*rows))
+        ax1.plot(data[0], data[1], color='blue', label="nv_montante")
+        ax2.plot(data[0], data[2], color='orange', label="pot_medidor")
+        ax2.plot(data[0], data[7], color='pink', linestyle=':', label="pot_ug1")
+        ax2.plot(data[0], data[13], color='khaki', linestyle=':', label="pot_ug2")
+        ax3.plot(data[0], data[3], color='orange', label="trip_usina")
+        ax3.plot(data[0], data[5], color='blue', label="nv_comporta")
+        ax3.plot(data[0], data[6], color='pink', label="trip_ug1")
+        ax3.plot(data[0], data[12], color='khaki', label="trip_ug2")
+        ax1.legend()
+        ax2.legend()
+        ax3.legend()
+        ax1.set_xlim([0, rows[-1][0]])
+        ax2.set_xlim([0, rows[-1][0]])
+        ax3.set_xlim([0, rows[-1][0]])
+
+        import src.database_connector as db_con
+        with db_con.Database() as db:
+            res = db.get_parametros_usina()
+            kp = float(res['kp'])
+            ki = float(res['ki'])
+            kd = float(res['kd'])
+            kie = float(res['kie'])
+            ml = float(res['n_movel_L'])
+            mr = float(res['n_movel_R'])
+        plt.savefig("logs/log_plot kp{} kd{} ki{} Kie{} mr{} ml{}".format(kp, kd, ki, kie, mr, ml).replace('.', '_')+".png", dpi=100)
 
         total_error = 0
         for row in rows:
