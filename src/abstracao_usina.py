@@ -570,7 +570,6 @@ class Comporta:
                 break
             if (nv_montante >= pos['proximo']):
                 estado_alvo = pos['pos'] + 1
-                break
         self.pos_comporta = estado_alvo
         if not estado_alvo == self.pos_comporta:
             logger.info("Mudança de setpoint da comprota para {} (atual:{})".format(estado_alvo, self.pos_comporta))
