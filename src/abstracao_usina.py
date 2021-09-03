@@ -563,13 +563,14 @@ class Comporta:
                          self.pos_3, self.pos_4, self.pos_5]
 
     def atualizar_estado(self, nv_montante):
-        estado_alvo = self.pos_comporta
+        estado_alvo = 0
         for pos in self.posicoes:
-            if (nv_montante < pos['anterior']) and (pos['pos'] <= self.pos_comporta) and (self.pos_comporta >= 1):
+            if (nv_montante < pos['anterior']) and (self.pos_comporta >= 1):
                 estado_alvo = pos['pos'] - 1
                 break
-            if (nv_montante >= pos['proximo']) and (pos['pos'] >= self.pos_comporta) and (self.pos_comporta < 5):
+            if (nv_montante >= pos['proximo']):
                 estado_alvo = pos['pos'] + 1
+                break
+        self.pos_comporta = estado_alvo
         if not estado_alvo == self.pos_comporta:
-            self.pos_comporta = estado_alvo
             logger.info("Mudança de setpoint da comprota para {} (atual:{})".format(estado_alvo, self.pos_comporta))

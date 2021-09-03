@@ -64,6 +64,10 @@ class simulation_interface(threading.Thread):
             ug2_perda_grade = REGS[35]/100
             segundos_simulados = REGS[99]*60
 
+            if ug1_flags > 64 or ug2_flags > 64:
+                print(segundos_simulados/60)
+                raise Exception
+
             if REGS[1000]:
                 self.stop()
                 continue
@@ -106,15 +110,15 @@ class simulation_interface(threading.Thread):
         ax1.plot([0, 10000000], [643.5, 643.5], linestyle='dotted', color='red')
         ax1.plot([0, 10000000], [643.25, 643.25], linestyle='dotted', color='gray')
         ax2.plot([0, 10000000], [5, 5], linestyle='dashed', color='gray')
-        data = map(list, zip(*rows))
+        data = list(map(list, zip(*rows)))
         ax1.plot(data[0], data[1], color='blue', label="nv_montante")
         ax2.plot(data[0], data[2], color='orange', label="pot_medidor")
         ax2.plot(data[0], data[7], color='pink', linestyle=':', label="pot_ug1")
         ax2.plot(data[0], data[13], color='khaki', linestyle=':', label="pot_ug2")
-        ax3.plot(data[0], data[3], color='orange', label="trip_usina")
-        ax3.plot(data[0], data[5], color='blue', label="nv_comporta")
-        ax3.plot(data[0], data[6], color='pink', label="trip_ug1")
-        ax3.plot(data[0], data[12], color='khaki', label="trip_ug2")
+        ax3.bar(data[0], data[3], color='orange', label="trip_usina")
+        ax3.bar(data[0], data[5], color='lightblue', label="nv_comporta")
+        ax3.bar(data[0], data[6], color='pink', label="trip_ug1")
+        ax3.bar(data[0], data[12], color='khaki', label="trip_ug2")
         ax1.legend()
         ax2.legend()
         ax3.legend()
