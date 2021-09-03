@@ -16,7 +16,6 @@ logger = logging.getLogger('__main__')
 class Usina:
 
     def __init__(self):
-
         # Carrega o arquivo de configuração inicial
         config_file = os.path.join(os.path.dirname(__file__), 'config.json')
         with open(config_file, 'r') as file:
@@ -48,8 +47,18 @@ class Usina:
         self.nv_maximo = self.cfg['nv_maximo']
         self.nv_religamento = self.cfg['nv_religamento']
         self.nv_alvo = self.cfg['nv_alvo']
+        self.kp = self.cfg['kp']
+        self.ki = self.cfg['ki']
+        self.kd = self.cfg['kd']
+        self.kie = self.cfg['kie']
+        self.controle_ie = self.cfg['saida_ie_inicial']
+        self.n_movel_L = self.cfg['n_movel_L']
+        self.n_movel_R = self.cfg['n_movel_R']
 
         # Outras vars
+        self.controle_p = 0
+        self.controle_i = 0
+        self.controle_d = 0
         self.clp_emergencia_acionada = 0
         self.db_emergencia_acionada = 0
         self.nv_montante = 0
@@ -91,8 +100,8 @@ class Usina:
             self.pot_medidor = round((regs[self.cfg['ENDERECO_CLP_MEDIDOR']] * 0.001), 3)
             self.clp_online = True
             if self.nv_montante_recente < 1:
-                self.nv_montante_recentes = [self.nv_montante] * self.cfg['n_movel_R']
-                self.nv_montante_anteriores = [self.nv_montante] * self.cfg['n_movel_L']
+                self.nv_montante_recentes = [self.nv_montante] * self.n_movel_R
+                self.nv_montante_anteriores = [self.nv_montante] * self.n_movel_L
             self.nv_montante_recentes.append(self.nv_montante)
             self.nv_montante_recentes = self.nv_montante_recentes[1:]
             self.nv_montante_recente = sum(self.nv_montante_recentes) / self.cfg['n_movel_R']
@@ -177,6 +186,14 @@ class Usina:
         self.comporta.pos_4['proximo'] = float(parametros["nv_comporta_pos_4_prox"])
         self.comporta.pos_5['anterior'] = float(parametros["nv_comporta_pos_5_ant"])
         self.comporta.pos_5['proximo'] = float(parametros["nv_comporta_pos_5_prox"])
+
+        # Parametros banco
+        self.kp = float(parametros['kp'])
+        self.ki = float(parametros['ki'])
+        self.kd = float(parametros['kd'])
+        self.kie = float(parametros['kie'])
+        self.n_movel_L = float(parametros['n_movel_L'])
+        self.n_movel_R = float(parametros['n_movel_R'])
 
     def escrever_valores(self):
 
@@ -421,6 +438,30 @@ class Usina:
             # escolher por menor horas_maquina primeiro
             ls = sorted(ls, key=lambda y: (not y.sincronizada, not y.setpoint, y.horas_maquina, not y.prioridade,))
         return ls
+
+    def controle_normal(self):
+        """
+        Controle PID
+        https://en.wikipedia.org/wiki/PID_controller#Proportional
+        :param erro_nivel: Float
+        :return: Sinal de controle proporcional
+        """
+
+        # Calcula PID
+        logger.debug("Alvo: {:0.3f}, Recente: {:0.3f}, Anterior: {:0.3f}".format(self.nv_alvo, self.nv_montante_recente, self.nv_montante_anterior))
+
+        self.controle_p = self.kp * self.erro_nv
+        self.controle_i = res = max(min((self.ki * self.erro_nv) + self.controle_i, 0.8), 0)
+        self.controle_d = self.kd*(self.erro_nv -self.erro_nv_anterior)
+        saida_pid = self.controle_p + self.controle_i + min(max(-0.3, self.controle_d), 0.3)
+        logger.debug("PID: {:0.3f}, P:{:0.3f}, I:{:0.3f}, D:{:0.3f}".format(saida_pid, self.controle_p, self.controle_i, self.controle_d))
+
+        # Calcula o integrador de estabilidade e limita
+        self.controle_ie = max(min(saida_pid * self.kie + self.controle_ie, 1), 0)
+
+        # Arredondamento e limitação
+        pot_alvo = max(min(round(self.cfg['pot_maxima_usina'] * self.controle_ie, 2), self.cfg['pot_maxima_usina']), self.cfg['pot_minima'])
+        self.distribuir_potencia(pot_alvo)
 
 
 class UnidadeDeGeracao:

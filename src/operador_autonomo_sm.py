@@ -46,44 +46,6 @@ usina = abstracao_usina.Usina
 ESCALA_DE_TEMPO = 1
 if len(sys.argv) > 1:
     ESCALA_DE_TEMPO = int(sys.argv[1])
-controle_p = 0
-controle_i = 0
-controle_d = 0
-saida_pid = 0
-saida_ie = 0
-
-def controle_proporcional(Kp, erro_nivel):
-    """
-    Controle Proporcional do PID
-    https://en.wikipedia.org/wiki/PID_controller#Proportional
-    :param erro_nivel: Float
-    :return: Sinal de controle proporcional
-    """
-    return Kp * erro_nivel
-
-
-def controle_integral(Ki, erro_nivel, ganho_integral_anterior):
-    """
-    Controle Integral do PID
-    https://en.wikipedia.org/wiki/PID_controller#Integral
-    :param erro_nivel: Float
-    :return: Float sinal de controle integral
-    """
-    res = (Ki * erro_nivel) + ganho_integral_anterior
-    res = min(res, 0.8)  # Limite superior
-    res = max(res, 0)  # Limite inferior
-    return res
-
-
-def controle_derivativo(Kd, erro_nivel, erro_nivel_anterior):
-    """
-    Controle Derivativo do PID
-    https://en.wikipedia.org/wiki/PID_controller#Derivative
-    :param erro_nivel_anterior: Float
-    :param erro_nivel: Float
-    :return: Float: Sinal de controle derivativo
-    """
-    return Kd * (erro_nivel - erro_nivel_anterior)
 
 
 class StateMachine:
@@ -384,29 +346,7 @@ class ReservatorioNormal(State):
 
     def run(self):
 
-        global controle_p
-        global controle_i
-        global controle_d
-        global saida_pid
-        global saida_ie
-
-        # Calcula PID
-        logger.debug("Alvo: {:0.3f}, Recente: {:0.3f}, Anterior: {:0.3f}".format(usina.nv_alvo, usina.nv_montante_recente, usina.nv_montante_anterior))
-        controle_p = controle_proporcional(usina.cfg['kp'], usina.erro_nv)
-        controle_i = controle_integral(usina.cfg['ki'], usina.erro_nv, controle_i)
-        controle_d = controle_derivativo(usina.cfg['kd'], usina.erro_nv, usina.erro_nv_anterior)
-        saida_pid = controle_p + controle_i + min(max(-0.3, controle_d), 0.3)
-        logger.debug("PID: {:0.3f}, P:{:0.3f}, I:{:0.3f}, D:{:0.3f}".format(saida_pid, controle_p, controle_i, controle_d))
-
-        # Calcula o integrador de estabilidade e limita
-        saida_ie = saida_pid * usina.cfg['kie'] + saida_ie
-        saida_ie = max(min(saida_ie, 1), 0)
-
-        # Arredondamento e limitação
-        pot_alvo = round(usina.cfg['pot_maxima_usina'] * saida_ie, 2)
-        pot_alvo = max(min(pot_alvo, usina.cfg['pot_maxima_usina']), usina.cfg['pot_minima'])
-        usina.distribuir_potencia(pot_alvo)
-
+        usina.controle_normal()
         return ControleRealizado()
 
 
