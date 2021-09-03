@@ -457,7 +457,7 @@ class Usina:
 
         # Calcula o integrador de estabilidade e limita
         self.controle_ie = max(min(saida_pid * self.kie + self.controle_ie, 1), 0)
-        if self.nv_maximo - self.nv_montante_recente < 0.01:
+        if self.nv_maximo - self.nv_montante_recente < 0.01 and self.nv_montante_recente > self.nv_alvo:
             self.controle_ie = min(self.controle_ie, 0.8)
 
         # Arredondamento e limitação
@@ -571,5 +571,8 @@ class Comporta:
             if (nv_montante >= pos['proximo']):
                 estado_alvo = pos['pos'] + 1
         self.pos_comporta = estado_alvo
+        if nv_montante < 643.5:
+            self.pos_comporta = 0
+
         if not estado_alvo == self.pos_comporta:
             logger.info("Mudança de setpoint da comprota para {} (atual:{})".format(estado_alvo, self.pos_comporta))

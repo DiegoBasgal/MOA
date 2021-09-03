@@ -335,8 +335,8 @@ class ReservatorioAcimaDoMaximo(State):
 
     def run(self):
         usina.distribuir_potencia(usina.cfg['pot_maxima_usina'])
-        global saida_ie
-        saida_ie = 0.8
+        usina.controle_ie = 0.5
+        usina.controle_i = 0.5
         return ControleRealizado()
 
 
