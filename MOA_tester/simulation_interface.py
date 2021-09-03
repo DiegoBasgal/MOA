@@ -39,7 +39,7 @@ class simulation_interface(threading.Thread):
 
         with_plot = False
         with_clp_text = True
-        show_end_plot = True
+        save_plot = True
 
         if with_plot:
 
@@ -117,7 +117,7 @@ class simulation_interface(threading.Thread):
                 self.lock.release()
 
         # After stop sig
-        if show_end_plot:
+        if save_plot:
             fig, ax1 = plt.subplots()
             ax2 = ax1.twinx()
             ax1.plot([0, 10000000], [643.0, 643.0], linestyle='dotted', color='red')
@@ -130,7 +130,16 @@ class simulation_interface(threading.Thread):
             ax2.plot(list(map(list, zip(*rows)))[0], list(map(list, zip(*rows)))[13], color='khaki', linestyle=':')
             ax1.set_ylim(642.5, 645.5)
             plt.xlim(0, rows[-1][0])
-            plt.show()
+            import src.database_connector as db_con
+            with db_con.Database() as db:
+                res = db.get_parametros_usina()
+                kp = float(res['kp'])
+                ki = float(res['ki'])
+                kd = float(res['kd'])
+                kie = float(res['kie'])
+                ml = float(res['n_movel_L'])
+                mr = float(res['n_movel_R'])
+            plt.savefig("logs/log_plot kp{} kd{} ki{} Kie{} mr{} ml{}".format(kp, kd, ki, kie, mr, ml).replace('.', '_')+".png")
 
         total_error = 0
         for row in rows:
