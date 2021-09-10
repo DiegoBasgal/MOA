@@ -4,6 +4,8 @@ import logging
 import matplotlib.pyplot as plt
 import threading
 from time import sleep
+
+import numpy as np
 from pyModbusTCP.server import DataBank
 
 string_date = datetime.datetime.now().strftime("%Y-%m-%d_%H-%M")
@@ -87,7 +89,7 @@ class simulation_interface(threading.Thread):
                 writer.writerow(rows[-1])
 
             with_clp_text = True
-            if with_clp_text:
+            if with_clp_text and not segundos_simulados % 3600:
                 print("-----------------------------------------------------------------------------------------------")
                 print("Tempo simulado: {:} | NV montante: {:3.2f}m | Pot Medidor: {:5.0f}kW"
                       .format(str(datetime.timedelta(seconds=segundos_simulados)), nv_montante, pot_medidor))
@@ -101,30 +103,47 @@ class simulation_interface(threading.Thread):
                     .format(ug2_flags, ug2_pot, ug2_setpot, ug2_tempo / 60, ug2_t_mancal, ug2_perda_grade))
 
         # After stop sig
+        data = np.array(list(map(list, zip(*rows))))
+        data[0] = data[0]/60
+        data[3] = data[3]/np.linalg.norm(data[3])
+        data[5] = data[5]/np.linalg.norm(data[5])
+        data[6] = data[6]/np.linalg.norm(data[6])
+        data[10] = data[10]/np.linalg.norm(data[10])
+        data[11] = data[11]/np.linalg.norm(data[11])
+        data[12] = data[12]/np.linalg.norm(data[12])
+        data[16] = data[16]/np.linalg.norm(data[16])
+        data[17] = data[17]/np.linalg.norm(data[17])
+
         fig, (ax1, ax2, ax3) = plt.subplots(3, 1)
         plt.gcf().set_size_inches(12, 9)
         ax1.grid(True)
         ax2.grid(True)
         ax3.grid(True)
-        ax1.plot([0, 10000000], [643.0, 643.0], linestyle='dotted', color='red')
-        ax1.plot([0, 10000000], [643.5, 643.5], linestyle='dotted', color='red')
-        ax1.plot([0, 10000000], [643.25, 643.25], linestyle='dotted', color='gray')
-        ax2.plot([0, 10000000], [5, 5], linestyle='dashed', color='gray')
-        data = list(map(list, zip(*rows)))
+        ax1.plot([0, data[0][-1]], [643.0, 643.0], linestyle='dotted', color='red')
+        ax1.plot([0, data[0][-1]], [643.5, 643.5], linestyle='dotted', color='red')
+        ax1.plot([0, data[0][-1]], [643.25, 643.25], linestyle='dotted', color='gray')
+        ax2.plot([0, data[0][-1]], [5, 5], linestyle='dashed', color='gray')
         ax1.plot(data[0], data[1], color='blue', label="nv_montante")
         ax2.plot(data[0], data[2], color='orange', label="pot_medidor")
         ax2.plot(data[0], data[7], color='pink', linestyle=':', label="pot_ug1")
         ax2.plot(data[0], data[13], color='khaki', linestyle=':', label="pot_ug2")
-        ax3.bar(data[0], data[3], color='orange', label="trip_usina")
-        ax3.bar(data[0], data[5], color='lightblue', label="nv_comporta")
-        ax3.bar(data[0], data[6], color='pink', label="trip_ug1")
-        ax3.bar(data[0], data[12], color='khaki', label="trip_ug2")
+        ax3.plot(data[0], data[3], color='orange', label="trip_usina")
+        ax3.plot(data[0], data[5], color='lightblue', label="nv_comporta")
+        ax3.plot(data[0], data[6], color='firebrick', label="trip_ug1")
+        ax3.plot(data[0], data[10], color='maroon', label="temp_ug1")
+        ax3.plot(data[0], data[11], color='indianred', label="trip_ug1")
+        ax3.plot(data[0], data[12], color='olivedrab', label="trip_ug2")
+        ax3.plot(data[0], data[16], color='yellowgreen', label="temp_ug2")
+        ax3.plot(data[0], data[17], color='darkolivegreen', label="perda_ug2")
         ax1.legend()
         ax2.legend()
         ax3.legend()
-        ax1.set_xlim([0, rows[-1][0]])
-        ax2.set_xlim([0, rows[-1][0]])
-        ax3.set_xlim([0, rows[-1][0]])
+        ax1.set_xlim([0, data[0][-1]])
+        ax2.set_xlim([0, data[0][-1]])
+        ax3.set_xlim([0, data[0][-1]])
+        ax1.yaxis.set_major_formatter("{x:.2f}m")
+        ax2.yaxis.set_major_formatter("{x:.2f}MW")
+        ax3.yaxis.set_major_formatter("-")
 
         import src.database_connector as db_con
         with db_con.Database() as db:
@@ -135,7 +154,7 @@ class simulation_interface(threading.Thread):
             kie = float(res['kie'])
             ml = float(res['n_movel_L'])
             mr = float(res['n_movel_R'])
-        plt.savefig("logs/log_plot kp{} kd{} ki{} Kie{} mr{} ml{}".format(kp, kd, ki, kie, mr, ml).replace('.', '_')+".png", dpi=100)
+        plt.savefig("logs/imgs/log_plot kp{} kd{} ki{} Kie{} mr{} ml{}".format(kp, kd, ki, kie, mr, ml).replace('.', '_')+".png", dpi=100)
 
         total_error = 0
         for row in rows:
