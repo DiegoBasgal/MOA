@@ -36,7 +36,7 @@ logger.addHandler(fh)
 logger.addHandler(ch)
 logger.addHandler(mh)
 
-simulation_speed = 60
+simulation_speed = 600
 
 logger.info("[PRE] Setting world up for simulations ({}x real time).".format(simulation_speed))
 # 1 thread para simular o reservatorio

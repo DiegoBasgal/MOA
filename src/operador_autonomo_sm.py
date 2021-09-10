@@ -210,7 +210,6 @@ class ValoresInternosAtualizados(State):
             return Emergencia()
 
         if usina.db_emergencia_acionada:
-            usina.acionar_emergencia_clp()
             return Emergencia()
 
         # Em seguida com o modo manual (não autonomo)
@@ -258,6 +257,8 @@ class Emergencia(State):
         global usina
         self.n_tentativa = 0
         logger.warning("Usina entrado em estado de emergência")
+        usina.distribuir_potencia(0)
+        usina.escrever_valores()
         usina.acionar_emergencia_clp()
 
     def run(self):
@@ -277,17 +278,16 @@ class Emergencia(State):
                     logger.info("Normalizando usina. (tentativa{}/3) (limite entre tentaivas: {}s)"
                                 .format(self.n_tentativa, usina.cfg['timeout_normalizacao']))
                     usina.normalizar_emergencia_clp()
-                    sleep(usina.cfg['timeout_normalizacao']/ESCALA_DE_TEMPO)
+                    # sleep(usina.cfg['timeout_normalizacao']/ESCALA_DE_TEMPO)
                     usina.ler_valores()
                 except Exception as e:
                     logger.error("Erro durante a comunicação do MOA com a usina. Tentando novamente em {}s. Exception: {}."
                                  .format(usina.cfg['timeout_normalizacao'], repr(e)))
                 finally:
-                    sleep(usina.cfg['timeout_normalizacao'])
                     return self
             else:
                 logger.info("Usina normalizada")
-                return Pronto()
+                return ControleRealizado()
 
 
 class ModoManualAtivado(State):

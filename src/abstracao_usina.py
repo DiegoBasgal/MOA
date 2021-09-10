@@ -34,7 +34,7 @@ class Usina:
         self.modbus_clp = ModbusClient(
             host=self.clp_ip,
             port=self.clp_porta,
-            timeout=1, # Para debug colocar baixo (1s)
+            timeout=0.1,  # Para debug colocar baixo (0,1s)
             unit_id=1,
             auto_open=True,
             auto_close=True)
@@ -199,7 +199,6 @@ class Usina:
 
         # CLP
         if self.modbus_clp.open():
-
 
             # UG1
             self.modbus_clp.write_single_register(self.cfg['ENDERECO_CLP_UG1_FLAGS'], self.ug1.flag)
@@ -450,15 +449,21 @@ class Usina:
         logger.debug("Alvo: {:0.3f}, Recente: {:0.3f}, Anterior: {:0.3f}".format(self.nv_alvo, self.nv_montante_recente, self.nv_montante_anterior))
 
         self.controle_p = self.kp * self.erro_nv
-        self.controle_i = res = max(min((self.ki * self.erro_nv) + self.controle_i, 0.8), 0)
+        self.controle_i = max(min((self.ki * self.erro_nv) + self.controle_i, 0.8), 0)
         self.controle_d = self.kd*(self.erro_nv -self.erro_nv_anterior)
         saida_pid = self.controle_p + self.controle_i + min(max(-0.3, self.controle_d), 0.3)
         logger.debug("PID: {:0.3f}, P:{:0.3f}, I:{:0.3f}, D:{:0.3f}".format(saida_pid, self.controle_p, self.controle_i, self.controle_d))
 
         # Calcula o integrador de estabilidade e limita
-        self.controle_ie = max(min(saida_pid * self.kie + self.controle_ie, 1), 0)
-        if self.nv_maximo - self.nv_montante_recente < 0.01 and self.nv_montante_recente > self.nv_alvo:
-            self.controle_ie = min(self.controle_ie, 0.8)
+        self.controle_ie = max(min(saida_pid + self.controle_ie * self.kie, 1), 0)
+
+        if self.nv_montante_recente >= (self.nv_maximo - 0.03):
+            self.controle_ie = 1
+            self.controle_i = min(max(self.controle_i, 0.8), self.controle_i)
+
+        if self.nv_montante_recente <= (self.nv_minimo + 0.03):
+            self.controle_ie = min(self.controle_ie, 0.3)
+            self.controle_i = 0
 
         # Arredondamento e limitação
         pot_alvo = max(min(round(self.cfg['pot_maxima_usina'] * self.controle_ie, 2), self.cfg['pot_maxima_usina']), self.cfg['pot_minima'])
@@ -563,16 +568,22 @@ class Comporta:
                          self.pos_3, self.pos_4, self.pos_5]
 
     def atualizar_estado(self, nv_montante):
-        estado_alvo = 0
-        for pos in self.posicoes:
-            if (nv_montante < pos['anterior']) and (self.pos_comporta >= 1):
-                estado_alvo = pos['pos'] - 1
-                break
-            if (nv_montante >= pos['proximo']):
-                estado_alvo = pos['pos'] + 1
-        self.pos_comporta = estado_alvo
-        if nv_montante < 643.5:
-            self.pos_comporta = 0
 
-        if not estado_alvo == self.pos_comporta:
-            logger.info("Mudança de setpoint da comprota para {} (atual:{})".format(estado_alvo, self.pos_comporta))
+        if not 0 <= self.pos_comporta <= 5:
+            raise IndexError("Pos comporta invalida {}".format(self.pos_comporta))
+
+        estado_atual = self.posicoes[self.pos_comporta]
+        pos_alvo = self.pos_comporta
+        if nv_montante < 643.5:
+            pos_alvo = 0
+        else:
+            if nv_montante < estado_atual['anterior']:
+                pos_alvo = self.pos_comporta - 1
+            elif nv_montante >= estado_atual['proximo']:
+                pos_alvo = self.pos_comporta + 1
+            pos_alvo = min(max(0, pos_alvo), 5)
+        if not pos_alvo == self.pos_comporta:
+            self.pos_comporta = pos_alvo
+            logger.info("Mudança de setpoint da comprota para {} (atual:{})".format(pos_alvo, self.pos_comporta))
+
+        return pos_alvo
