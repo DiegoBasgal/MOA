@@ -97,10 +97,18 @@ class NaoInicializado(State):
             with open(config_file, 'r') as file:
                 cfg = json.load(file)
 
+            # Inicia o Cliente Modbus
+            modbus_clp = ModbusClient(host=self.cfg['clp_ip'],
+                                        port=self.cfg['clp_porta'],
+                                        timeout=0.1,  # Para debug colocar baixo (0,1s)
+                                        unit_id=1,
+                                        auto_open=True,
+                                        auto_close=True)
+
             # Tenta iniciar a classe usina
             logger.debug("Iniciando classe Usina")
             try:
-                usina = abstracao_usina.Usina(cfg)
+                usina = abstracao_usina.Usina(cfg, modbus_clp)
                 if usina.clp_online:
                     logger.debug("Conexão com a CLP ok.")
                 else:
