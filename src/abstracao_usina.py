@@ -16,8 +16,8 @@ logger = logging.getLogger('__main__')
 class Usina:
 
     def __init__(self):
-
         # Carrega o arquivo de configuração inicial
+        # Paulo: ler arquivo no bootstrap e receber cfg como parâmetreo
         config_file = os.path.join(os.path.dirname(__file__), 'config.json')
         with open(config_file, 'r') as file:
             self.cfg = json.load(file)
@@ -32,10 +32,11 @@ class Usina:
         self.clp_online = False
         self.clp_ip = self.cfg['clp_ip']
         self.clp_porta = self.cfg['clp_porta']
+        # Paulo: inicializar modbus no bootstrap e receber como parâmetro
         self.modbus_clp = ModbusClient(
             host=self.clp_ip,
             port=self.clp_porta,
-            timeout=5,
+            timeout=0.1,  # Para debug colocar baixo (0,1s)
             unit_id=1,
             auto_open=True,
             auto_close=True)
@@ -48,8 +49,18 @@ class Usina:
         self.nv_maximo = self.cfg['nv_maximo']
         self.nv_religamento = self.cfg['nv_religamento']
         self.nv_alvo = self.cfg['nv_alvo']
+        self.kp = self.cfg['kp']
+        self.ki = self.cfg['ki']
+        self.kd = self.cfg['kd']
+        self.kie = self.cfg['kie']
+        self.controle_ie = self.cfg['saida_ie_inicial']
+        self.n_movel_L = self.cfg['n_movel_L']
+        self.n_movel_R = self.cfg['n_movel_R']
 
         # Outras vars
+        self.controle_p = 0
+        self.controle_i = 0
+        self.controle_d = 0
         self.clp_emergencia_acionada = 0
         self.db_emergencia_acionada = 0
         self.nv_montante = 0
@@ -91,8 +102,8 @@ class Usina:
             self.pot_medidor = round((regs[self.cfg['ENDERECO_CLP_MEDIDOR']] * 0.001), 3)
             self.clp_online = True
             if self.nv_montante_recente < 1:
-                self.nv_montante_recentes = [self.nv_montante] * self.cfg['n_movel_R']
-                self.nv_montante_anteriores = [self.nv_montante] * self.cfg['n_movel_L']
+                self.nv_montante_recentes = [self.nv_montante] * self.n_movel_R
+                self.nv_montante_anteriores = [self.nv_montante] * self.n_movel_L
             self.nv_montante_recentes.append(self.nv_montante)
             self.nv_montante_recentes = self.nv_montante_recentes[1:]
             self.nv_montante_recente = sum(self.nv_montante_recentes) / self.cfg['n_movel_R']
@@ -116,6 +127,7 @@ class Usina:
             self.ug2.perda_na_grade = int(regs[self.cfg['ENDERECO_CLP_UG2_PERGA_GRADE']]) / 100
             self.ug2.temp_mancal = int(regs[self.cfg['ENDERECO_CLP_UG2_T_MANCAL']]) / 10
 
+            # Paulo: fechar conexão com modbus logo após ler valores
             self.modbus_clp.close()
 
         else:
@@ -133,8 +145,11 @@ class Usina:
         #  - Niveis de operação da comporta
         
         parametros = {}
-        with Database() as db:
-            parametros = db.get_parametros_usina()
+        try:
+            with Database() as db:
+                parametros = db.get_parametros_usina()
+        except Exception as e:
+            raise e
         
         # Botão de emergência
         self.db_emergencia_acionada = int(parametros["emergencia_acionada"])
@@ -175,21 +190,29 @@ class Usina:
         self.comporta.pos_5['anterior'] = float(parametros["nv_comporta_pos_5_ant"])
         self.comporta.pos_5['proximo'] = float(parametros["nv_comporta_pos_5_prox"])
 
+        # Parametros banco
+        self.kp = float(parametros['kp'])
+        self.ki = float(parametros['ki'])
+        self.kd = float(parametros['kd'])
+        self.kie = float(parametros['kie'])
+        self.n_movel_L = float(parametros['n_movel_L'])
+        self.n_movel_R = float(parametros['n_movel_R'])
+
     def escrever_valores(self):
 
         # CLP
         if self.modbus_clp.open():
 
-
             # UG1
+            self.modbus_clp.write_single_register(self.cfg['ENDERECO_CLP_UG1_FLAGS'], self.ug1.flag)
             self.modbus_clp.write_single_register(self.cfg['ENDERECO_CLP_UG1_SETPOINT'], int(self.ug1.setpoint * 1000))
 
             # UG2
+            self.modbus_clp.write_single_register(self.cfg['ENDERECO_CLP_UG2_FLAGS'], self.ug2.flag)
             self.modbus_clp.write_single_register(self.cfg['ENDERECO_CLP_UG2_SETPOINT'], int(self.ug2.setpoint * 1000))
 
             # Comporta
-            self.modbus_clp.write_single_register(self.cfg['ENDERECO_CLP_COMPORTA_POS'],
-                                                  2 ** self.comporta.pos_comporta)
+            self.modbus_clp.write_single_register(self.cfg['ENDERECO_CLP_COMPORTA_POS'], int(self.comporta.pos_comporta))
 
             self.modbus_clp.close()
 
@@ -200,6 +223,7 @@ class Usina:
 
         # DB
         # Escreve no banco
+        # Paulo: mover lógica de escrever no banco para um método em DBService
         with Database() as db:
             q = """ UPDATE parametros_moa_parametrosusina
                      SET
@@ -260,7 +284,6 @@ class Usina:
         if self.modbus_clp.open():
             self.modbus_clp.write_single_register(self.cfg['ENDERECO_CLP_USINA_FLAGS'], int(0))
             self.modbus_clp.close()
-            sleep(5)
         else:
             # Se não conectou, a clp não está online.
             self.clp_online = False
@@ -418,6 +441,38 @@ class Usina:
             ls = sorted(ls, key=lambda y: (not y.sincronizada, not y.setpoint, y.horas_maquina, not y.prioridade,))
         return ls
 
+    def controle_normal(self):
+        """
+        Controle PID
+        https://en.wikipedia.org/wiki/PID_controller#Proportional
+        :param erro_nivel: Float
+        :return: Sinal de controle proporcional
+        """
+
+        # Calcula PID
+        logger.debug("Alvo: {:0.3f}, Recente: {:0.3f}, Anterior: {:0.3f}".format(self.nv_alvo, self.nv_montante_recente, self.nv_montante_anterior))
+
+        self.controle_p = self.kp * self.erro_nv
+        self.controle_i = max(min((self.ki * self.erro_nv) + self.controle_i, 0.8), 0)
+        self.controle_d = self.kd*(self.erro_nv -self.erro_nv_anterior)
+        saida_pid = self.controle_p + self.controle_i + min(max(-0.3, self.controle_d), 0.3)
+        logger.debug("PID: {:0.3f}, P:{:0.3f}, I:{:0.3f}, D:{:0.3f}".format(saida_pid, self.controle_p, self.controle_i, self.controle_d))
+
+        # Calcula o integrador de estabilidade e limita
+        self.controle_ie = max(min(saida_pid + self.controle_ie * self.kie, 1), 0)
+
+        if self.nv_montante_recente >= (self.nv_maximo - 0.03):
+            self.controle_ie = 1
+            self.controle_i = min(max(self.controle_i, 0.8), self.controle_i)
+
+        if self.nv_montante_recente <= (self.nv_minimo + 0.03):
+            self.controle_ie = min(self.controle_ie, 0.3)
+            self.controle_i = 0
+
+        # Arredondamento e limitação
+        pot_alvo = max(min(round(self.cfg['pot_maxima_usina'] * self.controle_ie, 2), self.cfg['pot_maxima_usina']), self.cfg['pot_minima'])
+        self.distribuir_potencia(pot_alvo)
+
 
 class UnidadeDeGeracao:
 
@@ -440,30 +495,18 @@ class UnidadeDeGeracao:
         self.pot_disponivel = 0
 
     def normalizar(self, flag=0b1):
-        """
         #Normaliza a ug
 
-        flag_nova = self.flag ^ flag
-
-        if not self.disponivel:
-            self.disponivel = 1
-            modbus_clp.write_single_register(self.registrador_flags, flag_nova)
+        if self.flag & flag:
+            self.flag = self.flag - flag
             logger.info("UG {} normalizada a flag {}.".format(self.id_da_ug, flag))
-        """
-        raise NotImplementedError
 
     def indisponibilizar(self, flag=0b1, descr="Sem descrição adcional"):
-        """
         #Indisponibiliza a ug
 
-        flag_nova = self.flag ^ flag
-        if flag_nova != self.flag:
-            self.disponivel = False
-            modbus_clp.write_single_register(self.registrador_flags, flag_nova)
-            modbus_clp.write_single_register(self.registrador_setpoint, 0)
-            logger.info("UG {} indisponibilizada. Flag ({}) ({})".format(self.id_da_ug, flag, descr))
-        """
-        raise NotImplementedError
+        if not self.flag & flag:
+            logger.info("Indisponibilizando UG {}. Flag ({}) ({})".format(self.id_da_ug, flag, descr))
+            self.flag += flag
 
     def atualizar_estado(self):
         """
@@ -472,29 +515,29 @@ class UnidadeDeGeracao:
 
         if self.flag and self.disponivel:
             logger.warning("UG {} indisponivel. Flag {}.".format(self.id_da_ug, self.flag))
+            self.disponivel = False
 
         if not self.flag and not self.disponivel:
             logger.warning("UG {} disponivel. Flag {}.".format(self.id_da_ug, self.flag))
+            self.disponivel = True
 
-        self.disponivel = not bool(self.flag)
         self.sincronizada = True if self.potencia > 0 else False
 
         # todo Verificações
-        """
-        if self.temp_mancal >= self.temp_mancal_max and not (self.flag & 0b10):
+        if self.temp_mancal >= self.temp_mancal_max:
             self.indisponibilizar(0b10,
                                   "Temperatura do mancal excedida (atual:{}; max:{})".format(self.temp_mancal,
                                                                                              self.temp_mancal_max))
-        elif self.temp_mancal < self.temp_mancal_max and (self.flag & 0b10):
+        else:
             self.normalizar(0b10)
 
-        if self.perda_na_grade >= self.perda_na_grade_max and not (self.flag & 0b100):
+        if self.perda_na_grade >= self.perda_na_grade_max:
             self.indisponibilizar(0b100,
                                   "Perda máxima na grade excedida (atual:{}; max:{})".format(self.perda_na_grade,
                                                                                             self.perda_na_grade_max))
-        elif self.perda_na_grade < self.perda_na_grade_max and (self.flag & 0b100):
+        else:
             self.normalizar(0b100)
-        """
+
 
     def mudar_setpoint(self, alvo):
 
@@ -529,13 +572,22 @@ class Comporta:
                          self.pos_3, self.pos_4, self.pos_5]
 
     def atualizar_estado(self, nv_montante):
-        estado_alvo = self.pos_comporta
-        for pos in self.posicoes:
-            if (nv_montante < pos['anterior']) and (pos['pos'] <= self.pos_comporta) and (self.pos_comporta >= 1):
-                estado_alvo = pos['pos'] - 1
-                break
-            if (nv_montante >= pos['proximo']) and (pos['pos'] >= self.pos_comporta) and (self.pos_comporta < 5):
-                estado_alvo = pos['pos'] + 1
-        if not estado_alvo == self.pos_comporta:
-            self.pos_comporta = estado_alvo
-            logger.info("Mudança de setpoint da comprota para {} (atual:{})".format(estado_alvo, self.pos_comporta))
+
+        if not 0 <= self.pos_comporta <= 5:
+            raise IndexError("Pos comporta invalida {}".format(self.pos_comporta))
+
+        estado_atual = self.posicoes[self.pos_comporta]
+        pos_alvo = self.pos_comporta
+        if nv_montante < 643.5:
+            pos_alvo = 0
+        else:
+            if nv_montante < estado_atual['anterior']:
+                pos_alvo = self.pos_comporta - 1
+            elif nv_montante >= estado_atual['proximo']:
+                pos_alvo = self.pos_comporta + 1
+            pos_alvo = min(max(0, pos_alvo), 5)
+        if not pos_alvo == self.pos_comporta:
+            self.pos_comporta = pos_alvo
+            logger.info("Mudança de setpoint da comprota para {} (atual:{})".format(pos_alvo, self.pos_comporta))
+
+        return pos_alvo

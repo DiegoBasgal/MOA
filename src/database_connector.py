@@ -19,15 +19,16 @@ import mysql.connector
 class Database:
 
     def __init__(self):
-        mysql_config = {
-            'host': "172.21.15.12",
+        self.config = {
+            'host': "localhost",
             'user': "root",
             'passwd': "11Marco2020@",
             'db': "django_db",
             'charset': 'utf8',
         }
 
-        self._conn = mysql.connector.connect(**mysql_config)
+        # Paulo: criar pool com 5 conexões
+        self._conn = mysql.connector.connect(**self.config)
         self._cursor = self._conn.cursor()
 
     """
