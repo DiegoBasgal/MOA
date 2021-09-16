@@ -92,11 +92,15 @@ class NaoInicializado(State):
         if self.n_tentativa > 3:
             return FalhaCritica()
         else:
+            # carrega as configurações
+            config_file = os.path.join(os.path.dirname(__file__), 'config.json')
+            with open(config_file, 'r') as file:
+                cfg = json.load(file)
 
-            # Tenta conectar com a usina antes de tudo
+            # Tenta iniciar a classe usina
             logger.debug("Iniciando classe Usina")
             try:
-                usina = abstracao_usina.Usina()
+                usina = abstracao_usina.Usina(cfg)
                 if usina.clp_online:
                     logger.debug("Conexão com a CLP ok.")
                 else:
