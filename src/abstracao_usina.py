@@ -86,6 +86,8 @@ class Usina:
         if self.modbus_clp.open():
             # Se conectou, lê, fecha a conexão e atribui os vales certos.
             regs = self.modbus_clp.read_holding_registers(0, 101)
+            self.modbus_clp.close()
+            
             if regs is None:
                 # Se os regs estiverem vazios, a conexão falhou
                 self.clp_online = False
@@ -121,9 +123,6 @@ class Usina:
             self.ug2.horas_maquina = int(regs[self.cfg['ENDERECO_CLP_UG2_MINUTOS']]) / 60
             self.ug2.perda_na_grade = int(regs[self.cfg['ENDERECO_CLP_UG2_PERGA_GRADE']]) / 100
             self.ug2.temp_mancal = int(regs[self.cfg['ENDERECO_CLP_UG2_T_MANCAL']]) / 10
-
-            # Paulo: fechar conexão com modbus logo após ler valores
-            self.modbus_clp.close()
 
         else:
             # Se não conectou, a clp não está online.
