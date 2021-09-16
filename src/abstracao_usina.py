@@ -17,6 +17,7 @@ class Usina:
 
     def __init__(self):
         # Carrega o arquivo de configuração inicial
+        # Paulo: ler arquivo no bootstrap e receber cfg como parâmetreo
         config_file = os.path.join(os.path.dirname(__file__), 'config.json')
         with open(config_file, 'r') as file:
             self.cfg = json.load(file)
@@ -31,6 +32,7 @@ class Usina:
         self.clp_online = False
         self.clp_ip = self.cfg['clp_ip']
         self.clp_porta = self.cfg['clp_porta']
+        # Paulo: inicializar modbus no bootstrap e receber como parâmetro
         self.modbus_clp = ModbusClient(
             host=self.clp_ip,
             port=self.clp_porta,
@@ -125,6 +127,7 @@ class Usina:
             self.ug2.perda_na_grade = int(regs[self.cfg['ENDERECO_CLP_UG2_PERGA_GRADE']]) / 100
             self.ug2.temp_mancal = int(regs[self.cfg['ENDERECO_CLP_UG2_T_MANCAL']]) / 10
 
+            # Paulo: fechar conexão com modbus logo após ler valores
             self.modbus_clp.close()
 
         else:
@@ -220,6 +223,7 @@ class Usina:
 
         # DB
         # Escreve no banco
+        # Paulo: mover lógica de escrever no banco para um método em DBService
         with Database() as db:
             q = """ UPDATE parametros_moa_parametrosusina
                      SET

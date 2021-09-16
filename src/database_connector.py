@@ -27,6 +27,7 @@ class Database:
             'charset': 'utf8',
         }
 
+        # Paulo: criar pool com 5 conexões
         self._conn = mysql.connector.connect(**self.config)
         self._cursor = self._conn.cursor()
 

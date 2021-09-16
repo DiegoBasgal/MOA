@@ -366,6 +366,18 @@ class ControleRealizado(State):
 
 if __name__ == "__main__":
 
+    '''
+    Paulo:
+    - mover lógica do estado NaoInicializado para fora da sm
+    - inicializar depedências no bootstrap e passar no constutor
+    - criar arquivo comService.py para encapsular lógica de inicializar modbus, ler e escrever dados
+    - criar arquivo dbService.py para encapsular lógica de criar conexão e fazer queries no banco
+    - usar pool de conexões com banco para aumentar resiliência
+    
+    ex:
+    usina = Usina(ComService(), DBService(), config)
+    sm = StateMachine(initial_state=Pronto(), usina)
+    '''
     sm = StateMachine(initial_state=NaoInicializado())
     while True:
         t_i = time.time()
