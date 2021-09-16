@@ -12,15 +12,14 @@ from src.database_connector import Database
 
 logger = logging.getLogger('__main__')
 
-
 class Usina:
 
-    def __init__(self):
-        # Carrega o arquivo de configuração inicial
-        # Paulo: ler arquivo no bootstrap e receber cfg como parâmetreo
-        config_file = os.path.join(os.path.dirname(__file__), 'config.json')
-        with open(config_file, 'r') as file:
-            self.cfg = json.load(file)
+    def __init__(self, cfg=None):
+
+        if not cfg:
+            raise Exception
+        else:
+            self.cfg = cfg
 
         # Inicializa Objs da usina
         self.ug1 = UnidadeDeGeracao(1)
