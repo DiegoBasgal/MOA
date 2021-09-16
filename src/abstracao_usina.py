@@ -14,12 +14,17 @@ logger = logging.getLogger('__main__')
 
 class Usina:
 
-    def __init__(self, cfg=None):
+    def __init__(self, cfg=None, modbus_clp=None):
 
         if not cfg:
             raise Exception
         else:
             self.cfg = cfg
+
+        if not modbus_clp:
+            raise Exception
+        else:
+            self.modbus_clp = modbus_clp
 
         # Inicializa Objs da usina
         self.ug1 = UnidadeDeGeracao(1)
@@ -29,17 +34,6 @@ class Usina:
 
         # Define as vars inciais
         self.clp_online = False
-        self.clp_ip = self.cfg['clp_ip']
-        self.clp_porta = self.cfg['clp_porta']
-        # Paulo: inicializar modbus no bootstrap e receber como parâmetro
-        self.modbus_clp = ModbusClient(
-            host=self.clp_ip,
-            port=self.clp_porta,
-            timeout=0.1,  # Para debug colocar baixo (0,1s)
-            unit_id=1,
-            auto_open=True,
-            auto_close=True)
-
         self.modbus_server_ip = self.cfg['moa_slave_ip']
         self.modbus_server_porta = self.cfg['moa_slave_porta']
         self.timeout_padrao = self.cfg['timeout_padrao']
