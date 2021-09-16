@@ -27,7 +27,10 @@ class MensageiroHandler(Handler):
         """
 
         log_entry = self.format(record)
-        telegram_bot.enviar_a_todos(log_entry)
+        try:
+            telegram_bot.enviar_a_todos(log_entry)
+        except Exception as e:
+            print("Erro ao logar no telegram")
 
         # Só dipara torpedos de voz em caso CRITICO (levelno >= 50)
         if record.levelno >= 50:

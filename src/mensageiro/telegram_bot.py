@@ -25,9 +25,9 @@ from telegram.ext import Updater, CommandHandler, CallbackContext
 # Inicializando o logger principal
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.DEBUG)
-fh = logging.FileHandler("watchdog.log")  # log para arquivo
+fh = logging.FileHandler("logs/telegram.log")  # log para arquivo
 ch = logging.StreamHandler(stdout)  # log para linha de comando
-logFormatter = logging.Formatter("%(asctime)s [%(threadName)-12.12s] [%(levelname)-5.5s]  %(message)s")
+logFormatter = logging.Formatter("%(asctime)s [%(threadName)-12.12s] [%(levelname)-5.5s] %(message)s")
 fh.setFormatter(logFormatter)
 ch.setFormatter(logFormatter)
 fh.setLevel(logging.INFO)
@@ -40,6 +40,7 @@ config_file = os.path.join(os.path.dirname(__file__), 'telegram_config.json')
 with open(config_file, 'r') as file:
     config = json.load(file)
 logger.debug("Config: {}".format(config))
+
 
 def salvar_config():
     """
@@ -144,6 +145,7 @@ def enviar_a_todos(mensagem):
             logger.error("Erro \"{}\" no chat \"{}\"".format(e, chat_id))
             continue
 
+
 def main() -> None:
     """
     Esta é a função principal do modo "server" e lida com o pooling das mensagens
@@ -167,6 +169,7 @@ def main() -> None:
 
     logger.info("Telegram-bot Iniciado")
     enviar_a_todos("[DEBUG] O Bot está ativo.")
+
 
 if __name__ == '__main__':
     main()

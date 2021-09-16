@@ -27,8 +27,8 @@ else:
 fh = logging.FileHandler("MOA.log")  # log para arquivo
 ch = logging.StreamHandler(stdout)  # log para linha de comando
 mh = MensageiroHandler()  # log para telegram e voip
-logFormatter = logging.Formatter("%(asctime)s [%(threadName)-12.12s] [%(levelname)-5.5s]  %(message)s")
-logFormatterSimples = logging.Formatter("[%(levelname)-5.5s]  %(message)s")
+logFormatter = logging.Formatter("%(asctime)s [%(threadName)-12.12s] [%(levelname)-5.5s] [MOA-SM] %(message)s")
+logFormatterSimples = logging.Formatter("[%(levelname)-5.5s] [MOA-SM] %(message)s")
 fh.setFormatter(logFormatter)
 ch.setFormatter(logFormatter)
 mh.setFormatter(logFormatterSimples)
@@ -41,45 +41,11 @@ logger.addHandler(mh)
 
 # Vars globais
 usina = abstracao_usina.Usina
-ESCALA_DE_TEMPO = 6
-controle_p = 0
-controle_i = 0
-controle_d = 0
-saida_pid = 0
-saida_ie = 0
-
-def controle_proporcional(Kp, erro_nivel):
-    """
-    Controle Proporcional do PID
-    https://en.wikipedia.org/wiki/PID_controller#Proportional
-    :param erro_nivel: Float
-    :return: Sinal de controle proporcional
-    """
-    return Kp * erro_nivel
-
-
-def controle_integral(Ki, erro_nivel, ganho_integral_anterior):
-    """
-    Controle Integral do PID
-    https://en.wikipedia.org/wiki/PID_controller#Integral
-    :param erro_nivel: Float
-    :return: Float sinal de controle integral
-    """
-    res = (Ki * erro_nivel) + ganho_integral_anterior
-    res = min(res, 0.8)  # Limite superior
-    res = max(res, 0)  # Limite inferior
-    return res
-
-
-def controle_derivativo(Kd, erro_nivel, erro_nivel_anterior):
-    """
-    Controle Derivativo do PID
-    https://en.wikipedia.org/wiki/PID_controller#Derivative
-    :param erro_nivel_anterior: Float
-    :param erro_nivel: Float
-    :return: Float: Sinal de controle derivativo
-    """
-    return Kd * (erro_nivel - erro_nivel_anterior)
+# A escala de tempo é utilizada para acelerar as simulações do sistema
+# Utilizar 1 para testes sérios e 120 no máximo para testes simples
+ESCALA_DE_TEMPO = 1
+if len(sys.argv) > 1:
+    ESCALA_DE_TEMPO = int(sys.argv[1])
 
 
 class StateMachine:
@@ -108,7 +74,8 @@ class NaoInicializado(State):
         super().__init__(*args, **kwargs)
         self.n_tentativa = 0
         self.timeout = 30
-        logger.info("Iniciando o MOA")
+        logger.info("Iniciando o MOA_SM")
+        logger.debug("Debug is ON")
 
     def run(self):
         """
@@ -116,6 +83,7 @@ class NaoInicializado(State):
         Tenta de novo 3x, se falhar, entra em modo de emergência
         :return: State
         """
+        logger.debug("RUN")
 
         # Var global usina
         global usina
@@ -242,7 +210,6 @@ class ValoresInternosAtualizados(State):
             return Emergencia()
 
         if usina.db_emergencia_acionada:
-            usina.acionar_emergencia_clp()
             return Emergencia()
 
         # Em seguida com o modo manual (não autonomo)
@@ -255,6 +222,8 @@ class ValoresInternosAtualizados(State):
         # Atualizar os estados
         for ug in usina.ugs:
             ug.atualizar_estado()
+
+        #TODO SEPARA FUNÇÃO
         usina.comporta.atualizar_estado(usina.nv_montante)
 
         # Verificamos se existem agendamentos
@@ -264,11 +233,13 @@ class ValoresInternosAtualizados(State):
         # Verifica-se então a situação do reservatório
         if usina.aguardando_reservatorio:
             if usina.nv_montante_recente > usina.nv_religamento:
+                logger.info("Reservatorio dentro do nivel de trabalho")
                 usina.aguardando_reservatorio = 0
             return Pronto()
 
         if usina.nv_montante < usina.nv_minimo:
             usina.aguardando_reservatorio = 1
+            logger.info("Reservatorio abaixo do nivel de trabalho")
             return ReservatorioAbaixoDoMinimo()
 
         if usina.nv_montante >= usina.nv_maximo:
@@ -286,6 +257,8 @@ class Emergencia(State):
         global usina
         self.n_tentativa = 0
         logger.warning("Usina entrado em estado de emergência")
+        usina.distribuir_potencia(0)
+        usina.escrever_valores()
         usina.acionar_emergencia_clp()
 
     def run(self):
@@ -305,16 +278,16 @@ class Emergencia(State):
                     logger.info("Normalizando usina. (tentativa{}/3) (limite entre tentaivas: {}s)"
                                 .format(self.n_tentativa, usina.cfg['timeout_normalizacao']))
                     usina.normalizar_emergencia_clp()
+                    # sleep(usina.cfg['timeout_normalizacao']/ESCALA_DE_TEMPO)
                     usina.ler_valores()
                 except Exception as e:
                     logger.error("Erro durante a comunicação do MOA com a usina. Tentando novamente em {}s. Exception: {}."
                                  .format(usina.cfg['timeout_normalizacao'], repr(e)))
                 finally:
-                    sleep(usina.cfg['timeout_normalizacao'])
                     return self
             else:
                 logger.info("Usina normalizada")
-                return Pronto()
+                return ControleRealizado()
 
 
 class ModoManualAtivado(State):
@@ -362,6 +335,8 @@ class ReservatorioAcimaDoMaximo(State):
 
     def run(self):
         usina.distribuir_potencia(usina.cfg['pot_maxima_usina'])
+        usina.controle_ie = 0.5
+        usina.controle_i = 0.5
         return ControleRealizado()
 
 
@@ -372,30 +347,7 @@ class ReservatorioNormal(State):
 
     def run(self):
 
-        global controle_p
-        global controle_i
-        global controle_d
-        global saida_pid
-        global saida_ie
-
-
-        # Calcula PID
-        logger.debug("Alvo: {:0.3f}, Recente: {:0.3f}, Anterior: {:0.3f}".format(usina.nv_alvo, usina.nv_montante_recente, usina.nv_montante_anterior))
-        controle_p = controle_proporcional(usina.cfg['kp'], usina.erro_nv)
-        controle_i = controle_integral(usina.cfg['ki'], usina.erro_nv, controle_i)
-        controle_d = controle_derivativo(usina.cfg['kd'], usina.erro_nv, usina.erro_nv_anterior)
-        saida_pid = controle_p + controle_i + controle_d
-        logger.debug("PID: {:0.3f}, P:{:0.3f}, I:{:0.3f}, D:{:0.3f}".format(saida_pid, controle_p, controle_i, controle_d))
-
-        # Calcula o integrador de estabilidade e limita
-        saida_ie = saida_pid * (usina.cfg['kie'] / ESCALA_DE_TEMPO) + saida_ie
-        saida_ie = max(min(saida_ie, 1), 0)
-
-        # Arredondamento e limitação
-        pot_alvo = round(usina.cfg['pot_maxima_usina'] * saida_ie, 2)
-        pot_alvo = max(min(pot_alvo, usina.cfg['pot_maxima_usina']), usina.cfg['pot_minima'])
-        usina.distribuir_potencia(pot_alvo)
-
+        usina.controle_normal()
         return ControleRealizado()
 
 
@@ -414,6 +366,18 @@ class ControleRealizado(State):
 
 if __name__ == "__main__":
 
+    '''
+    Paulo:
+    - mover lógica do estado NaoInicializado para fora da sm
+    - inicializar depedências no bootstrap e passar no constutor
+    - criar arquivo comService.py para encapsular lógica de inicializar modbus, ler e escrever dados
+    - criar arquivo dbService.py para encapsular lógica de criar conexão e fazer queries no banco
+    - usar pool de conexões com banco para aumentar resiliência
+    
+    ex:
+    usina = Usina(ComService(), DBService(), config)
+    sm = StateMachine(initial_state=Pronto(), usina)
+    '''
     sm = StateMachine(initial_state=NaoInicializado())
     while True:
         t_i = time.time()

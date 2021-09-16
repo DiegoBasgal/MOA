@@ -17,9 +17,9 @@ from urllib.request import Request, urlopen
 # Inicializando o logger principal
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.DEBUG)
-fh = logging.FileHandler("watchdog.log")  # log para arquivo
+fh = logging.FileHandler("logs/watchdog.log")  # log para arquivo
 ch = logging.StreamHandler(stdout)  # log para linha de comando
-logFormatter = logging.Formatter("%(asctime)s [%(threadName)-12.12s] [%(levelname)-5.5s]  %(message)s")
+logFormatter = logging.Formatter("%(asctime)s [%(threadName)-12.12s] [%(levelname)-5.5s] %(message)s")
 fh.setFormatter(logFormatter)
 ch.setFormatter(logFormatter)
 fh.setLevel(logging.INFO)
