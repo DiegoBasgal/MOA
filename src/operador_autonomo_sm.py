@@ -7,7 +7,6 @@ import logging
 import os
 import sys
 import time
-from datetime import datetime
 from sys import stdout
 from time import sleep
 
@@ -16,7 +15,6 @@ import json
 from pyModbusTCP.client import ModbusClient
 from pyModbusTCP.server import ModbusServer
 from mensageiro.mensageiro_log_handler import MensageiroHandler
-# import abstracao_usina
 import abstracao_usina
 
 DEBUG = False
@@ -46,9 +44,6 @@ logger.addHandler(fh)
 logger.addHandler(ch)
 logger.addHandler(mh)
 
-# Vars globais
-usina = abstracao_usina.Usina
-cfg = {}
 # A escala de tempo é utilizada para acelerar as simulações do sistema
 # Utilizar 1 para testes sérios e 120 no máximo para testes simples
 ESCALA_DE_TEMPO = 1
@@ -76,30 +71,243 @@ class State:
         return self
 
 
-class NaoInicializado(State):
-
+class FalhaCritica(State):
+    """
+    Lida com a falha na inicialização do MOA
+    :return: None
+    """
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.n_tentativa = 0
-        self.timeout = 30
-        logger.info("Iniciando o MOA_SM")
-        logger.debug("Debug is ON")
+        logger.critical("Falha crítica MOA.")
+        sys.exit(1)
 
     def run(self):
-        """
-        Cuida da inicialização do módulo usina.py e do slave modbus do MOA.
-        Tenta de novo 3x, se falhar, entra em modo de emergência
-        :return: State
-        """
-        logger.debug("RUN")
+        while True:
+            sleep(1)
 
-        # Var global usina
-        global usina
-        global cfg
 
+class Pronto(State):
+    """
+    MOA está pronto, agora ele deve atualizar a vars
+    :return: State
+    """
+    def __init__(self, instancia_usina, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.n_tentativa = 0
+        self.usina = instancia_usina
+
+    def run(self):
+
+        if self.n_tentativa >= 3:
+            return FalhaCritica()
+        else:
+
+            try:
+                self.usina.ler_valores()
+                return ValoresInternosAtualizados(self.usina)
+
+            except Exception as e:
+                self.n_tentativa += 1
+                logger.error("Erro durante a comunicação do MOA com a usina. Tentando novamente em {}s (tentativa{}/3)."
+                             " Exception: {}.".format(usina.timeout_padrao, self.n_tentativa, repr(e)))
+                sleep(self.usina.timeout_padrao)
+                return self
+
+
+class ValoresInternosAtualizados(State):
+
+    def __init__(self, instancia_usina, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.usina = instancia_usina
+
+    def run(self):
+        """Decidir para qual modo de operação o sistema deve ir"""
+
+        """
+        Aqui a ordem do checks importa, e muito.
+        """
+
+        # Sempre lidar primeiro com a emergência.
+        if self.usina.clp_emergencia_acionada:
+            return Emergencia(self.usina)
+
+        if self.usina.db_emergencia_acionada:
+            return Emergencia(self.usina)
+
+        # Em seguida com o modo manual (não autonomo)
+        if not self.usina.modo_autonomo:
+            return ModoManualAtivado(self.usina)
+
+        # Se não foi redirecionado ainda,
+        # assume-se que o MOA deve executar de modo autônomo
+
+        # Atualizar os estados
+        for ug in self.usina.ugs:
+            ug.atualizar_estado()
+
+        # TODO SEPARA FUNÇÃO
+        self.usina.comporta.atualizar_estado(self.usina.nv_montante)
+
+        # Verificamos se existem agendamentos
+        if len(self.usina.get_agendamentos_pendentes()) > 0:
+            return AgendamentosPendentes(self.usina)
+
+        # Verifica-se então a situação do reservatório
+        if self.usina.aguardando_reservatorio:
+            if self.usina.nv_montante_recente > self.usina.nv_religamento:
+                logger.info("Reservatorio dentro do nivel de trabalho")
+                self.usina.aguardando_reservatorio = 0
+            return Pronto(self.usina)
+
+        if self.usina.nv_montante < self.usina.nv_minimo:
+            self.usina.aguardando_reservatorio = 1
+            logger.info("Reservatorio abaixo do nivel de trabalho")
+            return ReservatorioAbaixoDoMinimo(self.usina)
+
+        if self.usina.nv_montante >= self.usina.nv_maximo:
+            return ReservatorioAcimaDoMaximo(self.usina)
+
+        # Se estiver tudo ok:
+        return ReservatorioNormal(self.usina)
+
+
+# ToDo Emergência
+class Emergencia(State):
+
+    def __init__(self, instancia_usina, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.usina = instancia_usina
+        self.n_tentativa = 0
+        logger.warning("Usina entrado em estado de emergência")
+        self.usina.distribuir_potencia(0)
+        self.usina.escrever_valores()
+        self.usina.acionar_emergencia_clp()
+
+    def run(self):
         self.n_tentativa += 1
         if self.n_tentativa > 3:
             return FalhaCritica()
+        else:
+            if self.usina.db_emergencia_acionada:
+                logger.info("Emergencia acionada via Django/DB")
+                self.usina.acionar_emergencia_clp()
+                self.usina.distribuir_potencia(0)
+            while self.usina.db_emergencia_acionada:
+                self.usina.ler_valores()
+
+            if self.usina.clp_emergencia_acionada:
+                try:
+                    logger.info("Normalizando usina. (tentativa{}/3) (limite entre tentaivas: {}s)"
+                                .format(self.n_tentativa, self.usina.cfg['timeout_normalizacao']))
+                    self.usina.normalizar_emergencia_clp()
+                    # sleep(self.usina.cfg['timeout_normalizacao']/ESCALA_DE_TEMPO)
+                    self.usina.ler_valores()
+                except Exception as e:
+                    logger.error("Erro durante a comunicação do MOA com a usina. Tentando novamente em {}s. "
+                                 "Exception: {}.".format(self.usina.cfg['timeout_normalizacao'], repr(e)))
+                return self
+            else:
+                logger.info("Usina normalizada")
+                return ControleRealizado(self.usina)
+
+
+class ModoManualAtivado(State):
+
+    def __init__(self, instancia_usina, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.usina = instancia_usina
+        logger.info("Usina em modo manual, deve-se alterar via painel ou interface web.")
+
+    def run(self):
+
+        self.usina.heartbeat()
+        self.usina.ler_valores()
+        if self.usina.modo_autonomo:
+            logger.info("Usina voltou para o modo Autonomo")
+            return Pronto(self.usina)
+
+        return self
+
+
+class AgendamentosPendentes(State):
+
+    def __init__(self, instancia_usina, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.usina = instancia_usina
+
+    def run(self):
+        logger.info("Tratando agendamentos")
+        self.usina.verificar_agendamentos()
+        return Pronto(self.usina)
+
+
+class ReservatorioAbaixoDoMinimo(State):
+
+    def __init__(self, instancia_usina, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.usina = instancia_usina
+
+    def run(self):
+        self.usina.distribuir_potencia(0)
+        return ControleRealizado(self.usina)
+
+
+class ReservatorioAcimaDoMaximo(State):
+
+    def __init__(self, instancia_usina, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.usina = instancia_usina
+
+    def run(self):
+        self.usina.distribuir_potencia(self.usina.cfg['pot_maxima_usina'])
+        self.usina.controle_ie = 0.5
+        self.usina.controle_i = 0.5
+        return ControleRealizado(self.usina)
+
+
+class ReservatorioNormal(State):
+
+    def __init__(self, instancia_usina, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.usina = instancia_usina
+
+    def run(self):
+
+        self.usina.controle_normal()
+        return ControleRealizado(self.usina)
+
+
+class ControleRealizado(State):
+
+    def __init__(self, instancia_usina, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.usina = instancia_usina
+
+    def run(self):
+        logger.debug("Escrevendo valores")
+        self.usina.escrever_valores()
+        logger.debug("HB")
+        self.usina.heartbeat()
+        return Pronto(self.usina)
+
+
+if __name__ == "__main__":
+
+    '''
+    Paulo:
+    - criar arquivo comService.py para encapsular lógica de inicializar modbus, ler e escrever dados
+    '''
+
+    n_tentativa = 0
+    timeout = 30
+    logger.info("Iniciando o MOA_SM")
+    logger.debug("Debug is ON")
+
+    prox_estado = 0
+    while prox_estado == 0:
+        n_tentativa += 1
+        if n_tentativa > 3:
+            prox_estado = FalhaCritica
         else:
             # carrega as configurações
             config_file = os.path.join(os.path.dirname(__file__), 'config.json')
@@ -108,11 +316,11 @@ class NaoInicializado(State):
 
             # Inicia o Cliente Modbus
             modbus_clp = ModbusClient(host=cfg['clp_ip'],
-                                        port=cfg['clp_porta'],
-                                        timeout=0.1,  # Para debug colocar baixo (0,1s)
-                                        unit_id=1,
-                                        auto_open=True,
-                                        auto_close=True)
+                                      port=cfg['clp_porta'],
+                                      timeout=0.1,  # Para debug colocar baixo (0,1s)
+                                      unit_id=1,
+                                      auto_open=True,
+                                      auto_close=True)
 
             # Tenta iniciar a classe usina
             logger.debug("Iniciando classe Usina")
@@ -126,285 +334,61 @@ class NaoInicializado(State):
             except ConnectionError as e:
                 if DEBUG:
                     raise e
-                logger.error("A conexão com a CLP falhou. Tentando novamente em {}s (tentativa {}/3). Exception: {}.".format(self.timeout, self.n_tentativa, repr(e)))
-                sleep(self.timeout)
-                return self
+                logger.error(
+                    "A conexão com a CLP falhou. Tentando novamente em {}s (tentativa {}/3). Exception: {}.".format(
+                        timeout, n_tentativa, repr(e)))
+                sleep(timeout)
 
             except AttributeError as e:
                 if DEBUG:
                     raise e
-                logger.error("A conexão com a CLP falhou. Tentando novamente em {}s (tentativa {}/3). Exception: {}.".format(self.timeout, self.n_tentativa, repr(e)))
-                sleep(self.timeout)
-                return self
+                logger.error(
+                    "A conexão com a CLP falhou. Tentando novamente em {}s (tentativa {}/3). Exception: {}.".format(
+                        timeout, n_tentativa, repr(e)))
+                sleep(timeout)
 
             except Exception as e:
                 if DEBUG:
                     raise e
-                logger.error("Erro Inesperado. Tentando novamente em {}s (tentativa{}/3). Exception: {}.".format(self.timeout, self.n_tentativa, repr(e)))
-                sleep(self.timeout)
-                return self
+                logger.error("Erro Inesperado. Tentando novamente em {}s (tentativa{}/3). Exception: {}.".format(
+                    timeout, n_tentativa, repr(e)))
+                sleep(timeout)
 
             # Inicializando Servidor Modbus (para algumas comunicações com o Elipse)
             try:
                 logger.debug("Iniciando Servidor/Slave Modbus MOA.")
-                modbus_server = ModbusServer(host=usina.modbus_server_ip, port=usina.modbus_server_porta, no_block=True)
+                modbus_server = ModbusServer(host=usina.modbus_server_ip, port=usina.modbus_server_porta,
+                                             no_block=True)
                 modbus_server.start()
                 if not modbus_server.is_run:
                     raise ConnectionError
+            except TypeError as e:
+                logger.error(
+                    "Erro ao iniciar abstração da usina. Tentando novamente em {}s (tentativa {}/3). Exception: {}."
+                    "".format(timeout, n_tentativa, repr(e)))
+                sleep(timeout)
             except ConnectionError as e:
-                logger.error("Erro ao iniciar Modbus MOA. Tentando novamente em {}s (tentativa {}/3). Exception: {}.".format(self.timeout, self.n_tentativa, repr(e)))
-                sleep(self.timeout)
-                return self
+                logger.error(
+                    "Erro ao iniciar Modbus MOA. Tentando novamente em {}s (tentativa {}/3). Exception: {}.".format(
+                        timeout, n_tentativa, repr(e)))
+                sleep(timeout)
             except PermissionError as e:
-                logger.error("Não foi possivél iniciar o Modbus MOA devido a permissão do usuário.")
-                return FalhaCritica()
+                logger.error("Não foi possível iniciar o Modbus MOA devido a permissão do usuário.")
+                prox_estado = FalhaCritica
             except Exception as e:
                 if DEBUG:
                     raise e
-                logger.error("Erro Inesperado. Tentando novamente em {}s (tentativa{}/3). Exception: {}.".format(self.timeout, self.n_tentativa, repr(e)))
-                sleep(self.timeout)
-                return self
+                logger.error("Erro Inesperado. Tentando novamente em {}s (tentativa{}/3). Exception: {}.".format(
+                    timeout, n_tentativa, repr(e)))
+                sleep(timeout)
 
-            global saida_ie
-            saida_ie = usina.cfg['saida_ie_inicial']
             logger.info("Inicialização completa, executando o MOA")
-            return Pronto()
+            prox_estado = Pronto
 
-
-class FalhaCritica(State):
-    """
-    Lida com a falha na inicialização do MOA
-    :return: None
-    """
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        logger.critical("Falha crítica MOA.")
-        sys.exit(1)
-
-    def run(self) -> object:
-        while True:
-            sleep(1)
-
-
-class Pronto(State):
-    """
-    MOA está pronto, agora ele deve atualizar a vars
-    :return: State
-    """
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        self.n_tentativa = 0
-
-    def run(self):
-        global usina
-
-        if self.n_tentativa >= 3:
-            return FalhaCritica()
-        else:
-
-            try:
-                usina.ler_valores()
-                return ValoresInternosAtualizados()
-
-            except Exception as e:
-                self.n_tentativa += 1
-                logger.error("Erro durante a comunicação do MOA com a usina. Tentando novamente em {}s (tentativa{}/3). Exception: {}.".format(usina.timeout_padrao, self.n_tentativa, repr(e)))
-                sleep(usina.timeout_padrao)
-                return self
-
-
-class ValoresInternosAtualizados(State):
-
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-
-    def run(self):
-        "Decidir para qual modo de operação o sistema deve ir"
-        global usina
-
-        """
-        Aqui a ordem do checks importa, e muito.
-        """
-
-        # Sempre lidar primeiro com a emergência.
-        if usina.clp_emergencia_acionada:
-            return Emergencia()
-
-        if usina.db_emergencia_acionada:
-            return Emergencia()
-
-        # Em seguida com o modo manual (não autonomo)
-        if not usina.modo_autonomo:
-            return ModoManualAtivado()
-
-        # Se não foi redirecionado ainda,
-        # assume-se que o MOA deve executar de modo autônomo
-
-        # Atualizar os estados
-        for ug in usina.ugs:
-            ug.atualizar_estado()
-
-        #TODO SEPARA FUNÇÃO
-        usina.comporta.atualizar_estado(usina.nv_montante)
-
-        # Verificamos se existem agendamentos
-        if len(usina.get_agendamentos_pendentes()) > 0:
-            return AgendamentosPendentes()
-
-        # Verifica-se então a situação do reservatório
-        if usina.aguardando_reservatorio:
-            if usina.nv_montante_recente > usina.nv_religamento:
-                logger.info("Reservatorio dentro do nivel de trabalho")
-                usina.aguardando_reservatorio = 0
-            return Pronto()
-
-        if usina.nv_montante < usina.nv_minimo:
-            usina.aguardando_reservatorio = 1
-            logger.info("Reservatorio abaixo do nivel de trabalho")
-            return ReservatorioAbaixoDoMinimo()
-
-        if usina.nv_montante >= usina.nv_maximo:
-            return ReservatorioAcimaDoMaximo()
-
-        # Se estiver tudo ok:
-        return ReservatorioNormal()
-
-
-# ToDo Emergência
-class Emergencia(State):
-
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        global usina
-        self.n_tentativa = 0
-        logger.warning("Usina entrado em estado de emergência")
-        usina.distribuir_potencia(0)
-        usina.escrever_valores()
-        usina.acionar_emergencia_clp()
-
-    def run(self):
-        self.n_tentativa += 1
-        if self.n_tentativa > 3:
-            return FalhaCritica()
-        else:
-            if usina.db_emergencia_acionada:
-                logger.info("Emergencia acionada via Django/DB")
-                usina.acionar_emergencia_clp()
-                usina.distribuir_potencia(0)
-            while usina.db_emergencia_acionada:
-                usina.ler_valores()
-
-            if usina.clp_emergencia_acionada:
-                try:
-                    logger.info("Normalizando usina. (tentativa{}/3) (limite entre tentaivas: {}s)"
-                                .format(self.n_tentativa, usina.cfg['timeout_normalizacao']))
-                    usina.normalizar_emergencia_clp()
-                    # sleep(usina.cfg['timeout_normalizacao']/ESCALA_DE_TEMPO)
-                    usina.ler_valores()
-                except Exception as e:
-                    logger.error("Erro durante a comunicação do MOA com a usina. Tentando novamente em {}s. Exception: {}."
-                                 .format(usina.cfg['timeout_normalizacao'], repr(e)))
-                finally:
-                    return self
-            else:
-                logger.info("Usina normalizada")
-                return ControleRealizado()
-
-
-class ModoManualAtivado(State):
-
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        logger.info("Usina em modo manual, deve-se alterar via painel ou interface web.")
-
-    def run(self):
-
-        usina.heartbeat()
-        usina.ler_valores()
-        if usina.modo_autonomo:
-            logger.info("Usina voltou para o modo Autonomo")
-            return Pronto()
-
-        return self
-
-
-class AgendamentosPendentes(State):
-
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-
-    def run(self):
-        logger.info("Tratando agendamentos")
-        usina.verificar_agendamentos()
-        return Pronto()
-
-
-class ReservatorioAbaixoDoMinimo(State):
-
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-
-    def run(self):
-        usina.distribuir_potencia(0)
-        return ControleRealizado()
-
-
-class ReservatorioAcimaDoMaximo(State):
-
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-
-    def run(self):
-        usina.distribuir_potencia(usina.cfg['pot_maxima_usina'])
-        usina.controle_ie = 0.5
-        usina.controle_i = 0.5
-        return ControleRealizado()
-
-
-class ReservatorioNormal(State):
-
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-
-    def run(self):
-
-        usina.controle_normal()
-        return ControleRealizado()
-
-
-class ControleRealizado(State):
-
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-
-    def run(self):
-        logger.debug("Escrevendo valores")
-        usina.escrever_valores()
-        logger.debug("HB")
-        usina.heartbeat()
-        return Pronto()
-
-
-if __name__ == "__main__":
-
-    '''
-    Paulo:
-    - mover lógica do estado NaoInicializado para fora da sm
-    - inicializar depedências no bootstrap e passar no constutor
-    - criar arquivo comService.py para encapsular lógica de inicializar modbus, ler e escrever dados
-    - criar arquivo dbService.py para encapsular lógica de criar conexão e fazer queries no banco
-    - usar pool de conexões com banco para aumentar resiliência
-    
-    ex:
-    usina = Usina(ComService(), DBService(), config)
-    sm = StateMachine(initial_state=Pronto(), usina)
-    '''
-    sm = StateMachine(initial_state=NaoInicializado())
+    sm = StateMachine(initial_state=prox_estado(usina))
     while True:
         t_i = time.time()
         logger.debug("Executando estado: {}".format(sm.state.__class__.__name__))
         sm.exec()
         t_restante = max(5 - (time.time() - t_i), 0)/ESCALA_DE_TEMPO
         sleep(t_restante)
-
-
