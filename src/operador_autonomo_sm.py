@@ -4,11 +4,16 @@ operador_autonomo_sm.py
 Implementacao teste de uma versao do moa utilizando SM
 """
 import logging
+import os
 import sys
 import time
 from datetime import datetime
 from sys import stdout
 from time import sleep
+
+import json
+
+from pyModbusTCP.client import ModbusClient
 from pyModbusTCP.server import ModbusServer
 from mensageiro.mensageiro_log_handler import MensageiroHandler
 # import abstracao_usina
@@ -41,6 +46,7 @@ logger.addHandler(mh)
 
 # Vars globais
 usina = abstracao_usina.Usina
+cfg = {}
 # A escala de tempo é utilizada para acelerar as simulações do sistema
 # Utilizar 1 para testes sérios e 120 no máximo para testes simples
 ESCALA_DE_TEMPO = 1
@@ -87,6 +93,7 @@ class NaoInicializado(State):
 
         # Var global usina
         global usina
+        global cfg
 
         self.n_tentativa += 1
         if self.n_tentativa > 3:
@@ -98,8 +105,8 @@ class NaoInicializado(State):
                 cfg = json.load(file)
 
             # Inicia o Cliente Modbus
-            modbus_clp = ModbusClient(host=self.cfg['clp_ip'],
-                                        port=self.cfg['clp_porta'],
+            modbus_clp = ModbusClient(host=cfg['clp_ip'],
+                                        port=cfg['clp_porta'],
                                         timeout=0.1,  # Para debug colocar baixo (0,1s)
                                         unit_id=1,
                                         auto_open=True,
