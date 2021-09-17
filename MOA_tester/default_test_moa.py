@@ -21,6 +21,8 @@ rootLogger.setLevel(logging.CRITICAL)
 # Inicializando o logger principal
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
+if not os.path.exists("logs/"):
+    os.mkdir("logs/")
 fh = logging.FileHandler("logs/{}-test.log".format(datetime.now().strftime("%Y-%m-%d %H:%M")))  # log para arquivo
 ch = logging.StreamHandler(stdout)  # log para linha de comando
 mh = MensageiroHandler()  # log para telegram e voip
