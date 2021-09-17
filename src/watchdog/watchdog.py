@@ -18,6 +18,8 @@ import os.path
 # Inicializando o logger principal
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.DEBUG)
+if not os.path.exists("logs/"):
+    os.mkdir("logs/")
 fh = logging.FileHandler("logs/watchdog.log")  # log para arquivo
 ch = logging.StreamHandler(stdout)  # log para linha de comando
 mh = MensageiroHandler()  # log para telegram e voip

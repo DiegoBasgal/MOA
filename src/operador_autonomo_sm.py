@@ -29,7 +29,9 @@ if DEBUG:
     logger.setLevel(logging.DEBUG)
 else:
     logger.setLevel(logging.INFO)
-fh = logging.FileHandler("MOA.log")  # log para arquivo
+if not os.path.exists("logs/"):
+    os.mkdir("logs/")
+fh = logging.FileHandler("logs/MOA.log")  # log para arquivo
 ch = logging.StreamHandler(stdout)  # log para linha de comando
 mh = MensageiroHandler()  # log para telegram e voip
 logFormatter = logging.Formatter("%(asctime)s [%(threadName)-12.12s] [%(levelname)-5.5s] [MOA-SM] %(message)s")
