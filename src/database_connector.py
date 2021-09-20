@@ -31,18 +31,6 @@ class Database:
         self._conn = mysql.connector.connect(**self.config)
         self._cursor = self._conn.cursor()
 
-    """
-    __enter__ e __exit__: exemplo de uso:
-    with Database('db_file.sqlite') as db:
-        # do stuff
-    """
-
-    def __enter__(self):
-        return self
-
-    def __exit__(self, exc_type, exc_val, exc_tb):
-        self.close()
-
     @property
     def connection(self):
         return self._conn
@@ -86,3 +74,51 @@ class Database:
                          FROM agendamentos_agendamento
                          WHERE executado = 0"""
         return self.query(q)
+
+    def update_parametrosusina(self, values):
+        q = """ UPDATE parametros_moa_parametrosusina
+                             SET
+                             timestamp = '{}',
+                             aguardando_reservatorio = {},
+                             clp_online = {},
+                             nv_montante = {},
+                             pot_disp = {},
+                             ug1_disp = {},
+                             ug1_pot = {},
+                             ug1_setpot = {},
+                             ug1_sinc = {},
+                             ug1_tempo = {},
+                             ug2_disp = {},
+                             ug2_pot = {},
+                             ug2_setpot = {},
+                             ug2_sinc = {},
+                             ug2_tempo = {},
+                             pos_comporta = {},
+                             ug1_perda_grade = {},
+                             ug1_temp_mancal = {},
+                             ug2_perda_grade = {},
+                             ug2_temp_mancal = {}        
+                             WHERE id = 1; 
+                             """.format(*values)
+        self.execute(q)
+        return True
+
+    def update_agendamento(self,id_agendamento, executado):
+        if executado:
+            executado = 1
+        else:
+            executado = 0
+        q = "UPDATE agendamentos_agendamento " \
+            "SET executado = {} " \
+            "WHERE id = {}".format(executado, int(id_agendamento))
+        self.execute(q)
+
+    def update_emergencia(self, estado):
+        if estado:
+            estado = 1
+        else:
+            estado = 0
+        q = """UPDATE parametros_moa_parametrosusina
+                   SET emergencia_acionada = '{}'
+                   WHERE id = 1; """.format(estado)
+        self.execute(q)
