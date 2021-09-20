@@ -8,14 +8,14 @@ from time import sleep
 from pyModbusTCP.client import ModbusClient
 from pyModbusTCP.server import DataBank
 
-from src.database_connector import Database
+from database_connector import Database
 
 logger = logging.getLogger('__main__')
 
 
 class Usina:
 
-    def __init__(self):
+    def __init__(self, modbus_clp, database):
         # Carrega o arquivo de configuração inicial
         # Paulo: ler arquivo no bootstrap e receber cfg como parâmetreo
         config_file = os.path.join(os.path.dirname(__file__), 'config.json')
@@ -33,13 +33,8 @@ class Usina:
         self.clp_ip = self.cfg['clp_ip']
         self.clp_porta = self.cfg['clp_porta']
         # Paulo: inicializar modbus no bootstrap e receber como parâmetro
-        self.modbus_clp = ModbusClient(
-            host=self.clp_ip,
-            port=self.clp_porta,
-            timeout=0.1,  # Para debug colocar baixo (0,1s)
-            unit_id=1,
-            auto_open=True,
-            auto_close=True)
+        self.modbus_clp = modbus_clp
+        self.database = database
 
         self.modbus_server_ip = self.cfg['moa_slave_ip']
         self.modbus_server_porta = self.cfg['moa_slave_porta']
@@ -146,14 +141,13 @@ class Usina:
         
         parametros = {}
         try:
-            with Database() as db:
-                parametros = db.get_parametros_usina()
+            parametros = self.database.get_parametros_usina()
         except Exception as e:
             raise e
         
         # Botão de emergência
         self.db_emergencia_acionada = int(parametros["emergencia_acionada"])
-        
+
         # Limites de operação das UGS
         # UG1
         self.ug1.perda_na_grade_alerta = float(parametros["ug1_perda_grade_alerta"])
@@ -317,35 +311,44 @@ class Usina:
         Retorna os agendamentos pendentes para a usina.
         :return: list[] agendamentos
         """
-        agendamentos = []
-        with Database() as db:
-            agendamentos = db.get_agendamentos_pendentes()
-        return agendamentos
+        return self.database.get_agendamentos_pendentes()
 
     def verificar_agendamentos(self):
         """
         Verifica os agendamentos feitos pelo django no banco de dados e lida com eles, executando, etc...
         """
+        print("verificar")
         agora = datetime.now()
         agora = agora - timedelta(seconds=agora.second, microseconds=agora.microsecond)
         futuro = agora + timedelta(minutes=1)
         agendamentos = self.get_agendamentos_pendentes()
+
+        print(agendamentos)
+        print(agora)
 
         if len(agendamentos) == 0:
             return True
 
         atraso = False
         for agendamento in agendamentos:
+            print(agendamento)
             if agendamento[1] < agora:
+                print("atraso")
                 atraso = True
                 logger.warning("Agendamento #{} Atrasado! ({}).".format(agendamento[0], agendamento[2]))
                 self.agendamentos_atrasados += 1
+            print(agendamento[1] < agora - timedelta(minutes=2))
+            print(agendamento[1])
+            print(agora - timedelta(minutes=2))
             if agendamento[1] < agora - timedelta(minutes=2):
+                print("deu ruim")
                 self.agendamentos_atrasados = 999
         if not atraso:
+            print("not atraso")
             self.agendamentos_atrasados = 0
 
         if self.agendamentos_atrasados > 3:
+            print("tres atrassos")
             logger.info("Os agendamentos estão muito atrasados! Acionando emergência.")
             self.acionar_emergencia_clp()
             return False
