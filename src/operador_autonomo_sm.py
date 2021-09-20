@@ -12,10 +12,11 @@ from time import sleep
 
 import json
 
-from pyModbusTCP.client import ModbusClient
 from pyModbusTCP.server import ModbusServer
+
 from mensageiro.mensageiro_log_handler import MensageiroHandler
 import abstracao_usina
+from src import clp_connector, database_connector
 
 DEBUG = False
 
@@ -181,7 +182,7 @@ class Emergencia(State):
         logger.warning("Usina entrado em estado de emergência")
         self.usina.distribuir_potencia(0)
         self.usina.escrever_valores()
-        self.usina.acionar_emergencia_clp()
+        self.usina.acionar_emergencia()
 
     def run(self):
         self.n_tentativa += 1
@@ -190,7 +191,7 @@ class Emergencia(State):
         else:
             if self.usina.db_emergencia_acionada:
                 logger.info("Emergencia acionada via Django/DB")
-                self.usina.acionar_emergencia_clp()
+                self.usina.acionar_emergencia()
                 self.usina.distribuir_potencia(0)
             while self.usina.db_emergencia_acionada:
                 self.usina.ler_valores()
@@ -199,7 +200,7 @@ class Emergencia(State):
                 try:
                     logger.info("Normalizando usina. (tentativa{}/3) (limite entre tentaivas: {}s)"
                                 .format(self.n_tentativa, self.usina.cfg['timeout_normalizacao']))
-                    self.usina.normalizar_emergencia_clp()
+                    self.usina.normalizar_emergencia()
                     # sleep(self.usina.cfg['timeout_normalizacao']/ESCALA_DE_TEMPO)
                     self.usina.ler_valores()
                 except Exception as e:
@@ -293,11 +294,6 @@ class ControleRealizado(State):
 
 if __name__ == "__main__":
 
-    '''
-    Paulo:
-    - criar arquivo comService.py para encapsular lógica de inicializar modbus, ler e escrever dados
-    '''
-
     n_tentativa = 0
     timeout = 30
     logger.info("Iniciando o MOA_SM")
@@ -315,49 +311,18 @@ if __name__ == "__main__":
                 cfg = json.load(file)
 
             # Inicia o Cliente Modbus
-            modbus_clp = ModbusClient(host=cfg['clp_ip'],
-                                      port=cfg['clp_porta'],
-                                      timeout=0.1,  # Para debug colocar baixo (0,1s)
-                                      unit_id=1,
-                                      auto_open=True,
-                                      auto_close=True)
+            clp = clp_connector.Clp(cfg['clp_ip'], cfg['clp_porta'])
 
+            # Inicia o conector do banco
+            db = database_connector.Database()
             # Tenta iniciar a classe usina
             logger.debug("Iniciando classe Usina")
-            try:
-                usina = abstracao_usina.Usina(cfg, modbus_clp)
-                if usina.clp_online:
-                    logger.debug("Conexão com a CLP ok.")
-                else:
-                    raise ConnectionError
-
-            except ConnectionError as e:
-                if DEBUG:
-                    raise e
-                logger.error(
-                    "A conexão com a CLP falhou. Tentando novamente em {}s (tentativa {}/3). Exception: {}.".format(
-                        timeout, n_tentativa, repr(e)))
-                sleep(timeout)
-
-            except AttributeError as e:
-                if DEBUG:
-                    raise e
-                logger.error(
-                    "A conexão com a CLP falhou. Tentando novamente em {}s (tentativa {}/3). Exception: {}.".format(
-                        timeout, n_tentativa, repr(e)))
-                sleep(timeout)
-
-            except Exception as e:
-                if DEBUG:
-                    raise e
-                logger.error("Erro Inesperado. Tentando novamente em {}s (tentativa{}/3). Exception: {}.".format(
-                    timeout, n_tentativa, repr(e)))
-                sleep(timeout)
+            usina = abstracao_usina.Usina(cfg, clp, db)
 
             # Inicializando Servidor Modbus (para algumas comunicações com o Elipse)
             try:
                 logger.debug("Iniciando Servidor/Slave Modbus MOA.")
-                modbus_server = ModbusServer(host=usina.modbus_server_ip, port=usina.modbus_server_porta,
+                modbus_server = ModbusServer(host=cfg['moa_slave_ip'], port=cfg['moa_slave_porta'],
                                              no_block=True)
                 modbus_server.start()
                 if not modbus_server.is_run:

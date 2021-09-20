@@ -66,9 +66,9 @@ class simulation_interface(threading.Thread):
             ug2_perda_grade = REGS[35]/100
             segundos_simulados = REGS[99]*60
 
-            if ug1_flags > 64 or ug2_flags > 64:
+            if usina_flags+ug1_flags+ug2_flags > 32:
                 print(segundos_simulados/60)
-                raise Exception
+                raise ValueError
 
             if REGS[1000]:
                 self.stop()
@@ -77,10 +77,9 @@ class simulation_interface(threading.Thread):
             if segundos_simulados/60 == 0:
                 continue
 
-            if len(rows) > 1:
-                if int(segundos_simulados/60) == int(rows[-1][0]):
-                    sleep(0.0001)
-                    continue
+            if rows and int(segundos_simulados/60) == int(rows[-1][0]):
+                sleep(0.0001)
+                continue
 
             rows.append([segundos_simulados/60, nv_montante, pot_medidor/1000, usina_flags, comporta_flags, comporta_pos,ug1_flags, ug1_pot/1000, ug1_setpot, ug1_tempo, ug1_t_mancal, ug1_perda_grade,ug2_flags, ug2_pot/1000, ug2_setpot, ug2_tempo, ug2_t_mancal, ug2_perda_grade])
 
@@ -145,15 +144,15 @@ class simulation_interface(threading.Thread):
         ax2.yaxis.set_major_formatter("{x:.2f}MW")
         ax3.yaxis.set_major_formatter("-")
 
-        import src.database_connector as db_con
-        with db_con.Database() as db:
-            res = db.get_parametros_usina()
-            kp = float(res['kp'])
-            ki = float(res['ki'])
-            kd = float(res['kd'])
-            kie = float(res['kie'])
-            ml = float(res['n_movel_L'])
-            mr = float(res['n_movel_R'])
+        import src.database_connector
+        db = src.database_connector.Database()
+        res = db.get_parametros_usina()
+        kp = float(res['kp'])
+        ki = float(res['ki'])
+        kd = float(res['kd'])
+        kie = float(res['kie'])
+        ml = float(res['n_movel_L'])
+        mr = float(res['n_movel_R'])
         plt.savefig("logs/imgs/log_plot kp{} kd{} ki{} Kie{} mr{} ml{}".format(kp, kd, ki, kie, mr, ml).replace('.', '_')+".png", dpi=100)
 
         total_error = 0
