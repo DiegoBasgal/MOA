@@ -106,3 +106,4 @@ wadllib==1.3.3
 xkit==0.0.0
 zipp==1.0.0
 zope.interface==4.7.1
+nose==1.3.7
