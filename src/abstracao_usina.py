@@ -68,7 +68,8 @@ class Usina:
     def ler_valores(self):
 
         # CLP
-        regs = self.clp.read_sequential(0, 101)
+        regs = [0]*40000
+        regs += self.clp.read_sequential(40000, 101)
 
         # USN
         self.clp_emergencia_acionada = regs[self.cfg['ENDERECO_CLP_USINA_FLAGS']]
