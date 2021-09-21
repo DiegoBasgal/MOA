@@ -21,6 +21,10 @@ rootLogger.setLevel(logging.CRITICAL)
 # Inicializando o logger principal
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
+if not os.path.exists("logs/"):
+    os.mkdir("logs/")
+if not os.path.exists("logs/imgs/"):
+    os.mkdir("logs/imgs/")
 fh = logging.FileHandler("logs/{}-test.log".format(datetime.now().strftime("%Y-%m-%d %H:%M")))  # log para arquivo
 ch = logging.StreamHandler(stdout)  # log para linha de comando
 mh = MensageiroHandler()  # log para telegram e voip
@@ -47,6 +51,7 @@ th_simulation_interface = simulation_interface.simulation_interface()
 if simulation_speed < 120:
     th_world_abstraction.start()
     th_simulation_interface.start()
+    sleep(5)
     logger.info("[PRE] World model and clp model is running.")
 
     # Carrega o arquivo de configuração inicial
@@ -83,20 +88,7 @@ if simulation_speed < 120:
         logger.debug("[TEST] Fail caused by: {}".format(repr(e)))
 
     # Comunicação -> DB local ok?
-    try:
-        with Database() as db:
-            db_conf = "{}@{}".format(db.config['user'], db.config['host'])
-            res = db.query("SELECT NOW();")
-            if res:
-                logger.debug("[TEST] Connect to Local Database on ({}) PASSED".format(db_conf))
-            else:
-                raise Exception("Query 'NOW()' returned '{}' ({}).".format(res, type(res)))
-    except Exception as e:
-        logger.info("[TEST] Connect to Local Database on ({}) FAILLED".format(db_conf))
-        logger.debug("[TEST] Fail caused by: {}".format(repr(e)))
-
     # Comunicação -> Medidores ok?
-    logger.info("[TEST] Connect to medidores FAILLED (TEST NOT IMPLEMENTED)")
 
     # Emergência aciona vars corretas?
     # As entradas fisicas funcionam?

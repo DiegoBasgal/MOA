@@ -1,26 +1,24 @@
-import json
 import logging
-import os
 from datetime import datetime, timedelta
 from cmath import sqrt
-from time import sleep
 
-from pyModbusTCP.client import ModbusClient
 from pyModbusTCP.server import DataBank
 
-from database_connector import Database
-
 logger = logging.getLogger('__main__')
+
+AGENDAMENTO_INDISPONIBILIZAR = 2
 
 
 class Usina:
 
-    def __init__(self, modbus_clp, database):
-        # Carrega o arquivo de configuração inicial
-        # Paulo: ler arquivo no bootstrap e receber cfg como parâmetreo
-        config_file = os.path.join(os.path.dirname(__file__), 'config.json')
-        with open(config_file, 'r') as file:
-            self.cfg = json.load(file)
+    def __init__(self, cfg=None, clp=None, db=None):
+
+        if not cfg or not clp or not db:
+            raise ValueError
+        else:
+            self.cfg = cfg
+            self.clp = clp
+            self.db = db
 
         # Inicializa Objs da usina
         self.ug1 = UnidadeDeGeracao(1)
@@ -30,14 +28,6 @@ class Usina:
 
         # Define as vars inciais
         self.clp_online = False
-        self.clp_ip = self.cfg['clp_ip']
-        self.clp_porta = self.cfg['clp_porta']
-        # Paulo: inicializar modbus no bootstrap e receber como parâmetro
-        self.modbus_clp = modbus_clp
-        self.database = database
-
-        self.modbus_server_ip = self.cfg['moa_slave_ip']
-        self.modbus_server_porta = self.cfg['moa_slave_porta']
         self.timeout_padrao = self.cfg['timeout_padrao']
         self.timeout_emergencia = self.cfg['timeout_emergencia']
         self.nv_minimo = self.cfg['nv_minimo']
@@ -49,8 +39,8 @@ class Usina:
         self.kd = self.cfg['kd']
         self.kie = self.cfg['kie']
         self.controle_ie = self.cfg['saida_ie_inicial']
-        self.n_movel_L = self.cfg['n_movel_L']
-        self.n_movel_R = self.cfg['n_movel_R']
+        self.n_movel_l = self.cfg['n_movel_L']
+        self.n_movel_r = self.cfg['n_movel_R']
 
         # Outras vars
         self.controle_p = 0
@@ -73,62 +63,44 @@ class Usina:
         self.agendamentos_atrasados = 0
 
         # Estabelece as conexões iniciais com CLP e DB
-        try:
-            self.ler_valores()
-        except Exception as e:
-            raise e
+        self.ler_valores()
 
     def ler_valores(self):
 
         # CLP
+        regs = [0]*40000
+        regs += self.clp.read_sequential(40000, 101)
 
-        # Tenta abrir uma conexão
-        if self.modbus_clp.open():
-            # Se conectou, lê, fecha a conexão e atribui os vales certos.
-            regs = self.modbus_clp.read_holding_registers(0, 101)
-            if regs is None:
-                # Se os regs estiverem vazios, a conexão falhou
-                self.clp_online = False
-                raise ConnectionError
+        # USN
+        self.clp_emergencia_acionada = regs[self.cfg['ENDERECO_CLP_USINA_FLAGS']]
+        self.nv_montante = round((regs[self.cfg['ENDERECO_CLP_NV_MONATNTE']] * 0.001) + 620, 2)
+        self.pot_medidor = round((regs[self.cfg['ENDERECO_CLP_MEDIDOR']] * 0.001), 3)
+        self.clp_online = True
+        if self.nv_montante_recente < 1:
+            self.nv_montante_recentes = [self.nv_montante] * self.n_movel_r
+            self.nv_montante_anteriores = [self.nv_montante] * self.n_movel_l
+        self.nv_montante_recentes.append(self.nv_montante)
+        self.nv_montante_recentes = self.nv_montante_recentes[1:]
+        self.nv_montante_recente = sum(self.nv_montante_recentes) / self.cfg['n_movel_R']
+        self.nv_montante_anteriores.append(self.nv_montante)
+        self.nv_montante_anteriores = self.nv_montante_anteriores[1:]
+        self.nv_montante_anterior = sum(self.nv_montante_anteriores) / self.cfg['n_movel_L']
+        self.erro_nv = self.nv_alvo - self.nv_montante_recente
+        self.erro_nv_anterior = self.nv_alvo - self.nv_montante_anterior
 
-            # USN
-            self.clp_emergencia_acionada = regs[self.cfg['ENDERECO_CLP_USINA_FLAGS']]
-            self.nv_montante = round((regs[self.cfg['ENDERECO_CLP_NV_MONATNTE']] * 0.001) + 620, 2)
-            self.pot_medidor = round((regs[self.cfg['ENDERECO_CLP_MEDIDOR']] * 0.001), 3)
-            self.clp_online = True
-            if self.nv_montante_recente < 1:
-                self.nv_montante_recentes = [self.nv_montante] * self.n_movel_R
-                self.nv_montante_anteriores = [self.nv_montante] * self.n_movel_L
-            self.nv_montante_recentes.append(self.nv_montante)
-            self.nv_montante_recentes = self.nv_montante_recentes[1:]
-            self.nv_montante_recente = sum(self.nv_montante_recentes) / self.cfg['n_movel_R']
-            self.nv_montante_anteriores.append(self.nv_montante)
-            self.nv_montante_anteriores = self.nv_montante_anteriores[1:]
-            self.nv_montante_anterior = sum(self.nv_montante_anteriores) / self.cfg['n_movel_L']
-            self.erro_nv = self.nv_alvo - self.nv_montante_recente
-            self.erro_nv_anterior = self.nv_alvo - self.nv_montante_anterior
+        # UG1
+        self.ug1.flag = int(regs[self.cfg['ENDERECO_CLP_UG1_FLAGS']])
+        self.ug1.potencia = int(regs[self.cfg['ENDERECO_CLP_UG1_POTENCIA']]) / 1000
+        self.ug1.horas_maquina = int(regs[self.cfg['ENDERECO_CLP_UG1_MINUTOS']]) / 60
+        self.ug1.perda_na_grade = int(regs[self.cfg['ENDERECO_CLP_UG1_PERGA_GRADE']]) / 100
+        self.ug1.temp_mancal = int(regs[self.cfg['ENDERECO_CLP_UG1_T_MANCAL']]) / 10
 
-            # UG1
-            self.ug1.flag = int(regs[self.cfg['ENDERECO_CLP_UG1_FLAGS']])
-            self.ug1.potencia = int(regs[self.cfg['ENDERECO_CLP_UG1_POTENCIA']]) / 1000
-            self.ug1.horas_maquina = int(regs[self.cfg['ENDERECO_CLP_UG1_MINUTOS']]) / 60
-            self.ug1.perda_na_grade = int(regs[self.cfg['ENDERECO_CLP_UG1_PERGA_GRADE']]) / 100
-            self.ug1.temp_mancal = int(regs[self.cfg['ENDERECO_CLP_UG1_T_MANCAL']]) / 10
-
-            # Ug2
-            self.ug2.flag = int(regs[self.cfg['ENDERECO_CLP_UG2_FLAGS']])
-            self.ug2.potencia = int(regs[self.cfg['ENDERECO_CLP_UG2_POTENCIA']]) / 1000
-            self.ug2.horas_maquina = int(regs[self.cfg['ENDERECO_CLP_UG2_MINUTOS']]) / 60
-            self.ug2.perda_na_grade = int(regs[self.cfg['ENDERECO_CLP_UG2_PERGA_GRADE']]) / 100
-            self.ug2.temp_mancal = int(regs[self.cfg['ENDERECO_CLP_UG2_T_MANCAL']]) / 10
-
-            # Paulo: fechar conexão com modbus logo após ler valores
-            self.modbus_clp.close()
-
-        else:
-            # Se não conectou, a clp não está online.
-            self.clp_online = False
-            raise ConnectionError
+        # Ug2
+        self.ug2.flag = int(regs[self.cfg['ENDERECO_CLP_UG2_FLAGS']])
+        self.ug2.potencia = int(regs[self.cfg['ENDERECO_CLP_UG2_POTENCIA']]) / 1000
+        self.ug2.horas_maquina = int(regs[self.cfg['ENDERECO_CLP_UG2_MINUTOS']]) / 60
+        self.ug2.perda_na_grade = int(regs[self.cfg['ENDERECO_CLP_UG2_PERGA_GRADE']]) / 100
+        self.ug2.temp_mancal = int(regs[self.cfg['ENDERECO_CLP_UG2_T_MANCAL']]) / 10
 
         # DB
         #
@@ -139,15 +111,11 @@ class Usina:
         #  - Modo de prioridade UGS
         #  - Niveis de operação da comporta
         
-        parametros = {}
-        try:
-            parametros = self.database.get_parametros_usina()
-        except Exception as e:
-            raise e
-        
+        parametros = self.db.get_parametros_usina()
+
         # Botão de emergência
         self.db_emergencia_acionada = int(parametros["emergencia_acionada"])
-
+        
         # Limites de operação das UGS
         # UG1
         self.ug1.perda_na_grade_alerta = float(parametros["ug1_perda_grade_alerta"])
@@ -168,7 +136,7 @@ class Usina:
         # Modo de prioridade UGS
         if not self.modo_de_escolha_das_ugs == int(parametros["modo_de_escolha_das_ugs"]):
             self.modo_de_escolha_das_ugs = int(parametros["modo_de_escolha_das_ugs"])
-            logger.info("O modo de prioridade na escolha das ugs foi alterado (#{}).".format(self.modo_de_escolha_das_ugs))
+            logger.info("O modo de prioridade das ugs foi alterado (#{}).".format(self.modo_de_escolha_das_ugs))
 
         # Niveis de operação da comporta
         self.comporta.pos_0['anterior'] = float(parametros["nv_comporta_pos_0_ant"])
@@ -189,99 +157,53 @@ class Usina:
         self.ki = float(parametros['ki'])
         self.kd = float(parametros['kd'])
         self.kie = float(parametros['kie'])
-        self.n_movel_L = float(parametros['n_movel_L'])
-        self.n_movel_R = float(parametros['n_movel_R'])
+        self.n_movel_l = float(parametros['n_movel_L'])
+        self.n_movel_r = float(parametros['n_movel_R'])
 
     def escrever_valores(self):
 
         # CLP
-        if self.modbus_clp.open():
-
-            # UG1
-            self.modbus_clp.write_single_register(self.cfg['ENDERECO_CLP_UG1_FLAGS'], self.ug1.flag)
-            self.modbus_clp.write_single_register(self.cfg['ENDERECO_CLP_UG1_SETPOINT'], int(self.ug1.setpoint * 1000))
-
-            # UG2
-            self.modbus_clp.write_single_register(self.cfg['ENDERECO_CLP_UG2_FLAGS'], self.ug2.flag)
-            self.modbus_clp.write_single_register(self.cfg['ENDERECO_CLP_UG2_SETPOINT'], int(self.ug2.setpoint * 1000))
-
-            # Comporta
-            self.modbus_clp.write_single_register(self.cfg['ENDERECO_CLP_COMPORTA_POS'], int(self.comporta.pos_comporta))
-
-            self.modbus_clp.close()
-
-        else:
-            # Se não conectou, a clp não está online.
-            self.clp_online = False
-            raise ConnectionError
+        self.clp.write_to_single(self.cfg['ENDERECO_CLP_UG1_FLAGS'], self.ug1.flag)
+        self.clp.write_to_single(self.cfg['ENDERECO_CLP_UG1_SETPOINT'], int(self.ug1.setpoint * 1000))
+        self.clp.write_to_single(self.cfg['ENDERECO_CLP_UG2_FLAGS'], self.ug2.flag)
+        self.clp.write_to_single(self.cfg['ENDERECO_CLP_UG2_SETPOINT'], int(self.ug2.setpoint * 1000))
+        self.clp.write_to_single(self.cfg['ENDERECO_CLP_COMPORTA_POS'], int(self.comporta.pos_comporta))
 
         # DB
         # Escreve no banco
         # Paulo: mover lógica de escrever no banco para um método em DBService
-        with Database() as db:
-            q = """ UPDATE parametros_moa_parametrosusina
-                     SET
-                     timestamp = '{}',
-                     aguardando_reservatorio = {},
-                     clp_online = {},
-                     nv_montante = {},
-                     pot_disp = {},
-                     ug1_disp = {},
-                     ug1_pot = {},
-                     ug1_setpot = {},
-                     ug1_sinc = {},
-                     ug1_tempo = {},
-                     ug2_disp = {},
-                     ug2_pot = {},
-                     ug2_setpot = {},
-                     ug2_sinc = {},
-                     ug2_tempo = {},
-                     pos_comporta = {},
-                     ug1_perda_grade = {},
-                     ug1_temp_mancal = {},
-                     ug2_perda_grade = {},
-                     ug2_temp_mancal = {}        
-                     WHERE id = 1; 
-                     """.format(datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
-                                1 if self.aguardando_reservatorio else 0,
-                                1 if self.clp_online else 0,
-                                self.nv_montante,
-                                self.pot_disp,
-                                1 if self.ug1.disponivel else 0,
-                                self.ug1.potencia,
-                                self.ug1.setpoint,
-                                1 if self.ug1.sincronizada else 0,
-                                self.ug1.horas_maquina,
-                                1 if self.ug2.disponivel else 0,
-                                self.ug2.potencia,
-                                self.ug2.setpoint,
-                                1 if self.ug2.sincronizada else 0,
-                                self.ug2.horas_maquina,
-                                self.comporta.pos_comporta,
-                                self.ug1.perda_na_grade,
-                                self.ug1.temp_mancal,
-                                self.ug2.perda_na_grade,
-                                self.ug2.temp_mancal,
-                                )
-            db.execute(q)
+        pars = [datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+                1 if self.aguardando_reservatorio else 0,
+                1 if self.clp_online else 0,
+                self.nv_montante,
+                self.pot_disp,
+                1 if self.ug1.disponivel else 0,
+                self.ug1.potencia,
+                self.ug1.setpoint,
+                1 if self.ug1.sincronizada else 0,
+                self.ug1.horas_maquina,
+                1 if self.ug2.disponivel else 0,
+                self.ug2.potencia,
+                self.ug2.setpoint,
+                1 if self.ug2.sincronizada else 0,
+                self.ug2.horas_maquina,
+                self.comporta.pos_comporta,
+                self.ug1.perda_na_grade,
+                self.ug1.temp_mancal,
+                self.ug2.perda_na_grade,
+                self.ug2.temp_mancal,
+                ]
+        self.db.update_parametrosusina(pars)
 
-    def acionar_emergencia_clp(self):
-        if self.modbus_clp.open():
-            self.modbus_clp.write_single_register(self.cfg['ENDERECO_CLP_USINA_FLAGS'], int(1))
-            self.modbus_clp.close()
-        else:
-            # Se não conectou, a clp não está online.
-            self.clp_online = False
-            raise ConnectionError
+    def acionar_emergencia(self):
+        self.clp.write_to_single(self.cfg['ENDERECO_CLP_USINA_FLAGS'], 1)
+        self.clp_emergencia_acionada = 1
 
-    def normalizar_emergencia_clp(self):
-        if self.modbus_clp.open():
-            self.modbus_clp.write_single_register(self.cfg['ENDERECO_CLP_USINA_FLAGS'], int(0))
-            self.modbus_clp.close()
-        else:
-            # Se não conectou, a clp não está online.
-            self.clp_online = False
-            raise ConnectionError
+    def normalizar_emergencia(self):
+        self.db.update_emergencia(0)
+        self.db_emergencia_acionada = 0
+        self.clp.write_to_single(self.cfg['ENDERECO_CLP_USINA_FLAGS'], 0)
+        self.clp_emergencia_acionada = 0
 
     def heartbeat(self):
         agora = datetime.now()
@@ -311,47 +233,29 @@ class Usina:
         Retorna os agendamentos pendentes para a usina.
         :return: list[] agendamentos
         """
-        return self.database.get_agendamentos_pendentes()
+        return self.db.get_agendamentos_pendentes()
 
     def verificar_agendamentos(self):
         """
         Verifica os agendamentos feitos pelo django no banco de dados e lida com eles, executando, etc...
         """
-        print("verificar")
         agora = datetime.now()
         agora = agora - timedelta(seconds=agora.second, microseconds=agora.microsecond)
         futuro = agora + timedelta(minutes=1)
         agendamentos = self.get_agendamentos_pendentes()
 
-        print(agendamentos)
-        print(agora)
-
         if len(agendamentos) == 0:
             return True
 
-        atraso = False
+        self.agendamentos_atrasados = 0
         for agendamento in agendamentos:
-            print(agendamento)
             if agendamento[1] < agora:
-                print("atraso")
-                atraso = True
                 logger.warning("Agendamento #{} Atrasado! ({}).".format(agendamento[0], agendamento[2]))
                 self.agendamentos_atrasados += 1
-            print(agendamento[1] < agora - timedelta(minutes=2))
-            print(agendamento[1])
-            print(agora - timedelta(minutes=2))
-            if agendamento[1] < agora - timedelta(minutes=2):
-                print("deu ruim")
-                self.agendamentos_atrasados = 999
-        if not atraso:
-            print("not atraso")
-            self.agendamentos_atrasados = 0
-
-        if self.agendamentos_atrasados > 3:
-            print("tres atrassos")
-            logger.info("Os agendamentos estão muito atrasados! Acionando emergência.")
-            self.acionar_emergencia_clp()
-            return False
+            if agendamento[1] < agora - timedelta(minutes=5) or self.agendamentos_atrasados > 3:
+                logger.info("Os agendamentos estão muito atrasados! Acionando emergência.")
+                self.acionar_emergencia()
+                return False
 
         for agendamento in agendamentos:
             if agendamento[1] < futuro and not bool(agendamento[3]):
@@ -359,34 +263,13 @@ class Usina:
                 logger.info("Executando gendamento #{} - {}.".format(agendamento[0], agendamento[2]))
 
                 # Exemplo Case agendamento:
-                AGENDAMENTO_INDISPONIBILIZAR = 2
                 if agendamento[2] == AGENDAMENTO_INDISPONIBILIZAR:
                     # Coloca em emergência
                     logger.info("Indisponibilizando a usina (comando via agendamento).")
-                    try:
-                        # atualiza o banco
-                        q = "UPDATE agendamentos_agendamento " \
-                            "SET executado = 1 " \
-                            "WHERE id = {}".format(int(agendamento[0]))
-                        q2 = """UPDATE parametros_moa_parametrosusina
-                                           SET emergencia_acionada = '{}'
-                                           WHERE id = 1; """.format(1 if self.emergencia_acionada else 0)
-                        with Database() as db:
-                            db.execute(q)
-                            db.execute(q2)
-                    except Exception as e:
-                        logger.error(e)
-                        continue
-                    finally:
-                        # finalmente, aciona no clp
-                        self.acionar_emergencia_clp()
+                    self.acionar_emergencia()
 
                 # Após executar, indicar no banco de dados
-                q = "UPDATE agendamentos_agendamento " \
-                    "SET executado = 1 " \
-                    "WHERE id = {}".format(int(agendamento[0]))
-                with Database() as db:
-                    db.execute(q)
+                self.db.update_agendamento(int(agendamento[0]), 1)
                 logger.info("O comando #{} - {} foi executado.".format(agendamento[0], agendamento[2]))
 
             else:
@@ -401,7 +284,7 @@ class Usina:
         if self.ug2.disponivel:
             self.pot_disp += self.cfg['pot_maxima_ug']
 
-        if self.pot_medidor > self.cfg['pot_maxima_alvo'] and pot_alvo > (self.cfg['pot_maxima_alvo']* 0.95):
+        if self.pot_medidor > self.cfg['pot_maxima_alvo'] and pot_alvo > (self.cfg['pot_maxima_alvo'] * 0.95):
             pot_alvo = pot_alvo * 0.99 * (self.cfg['pot_maxima_alvo'] / self.pot_medidor)
 
         if pot_alvo < self.cfg['pot_minima']:
@@ -409,23 +292,17 @@ class Usina:
             self.ug2.mudar_setpoint(0)
         else:
             pot_alvo = min(pot_alvo, self.pot_disp)
-            if self.ug1.sincronizada and self.ug2.sincronizada and pot_alvo > (2 * self.cfg['pot_minima']):
-                self.ug1.mudar_setpoint(pot_alvo / 2)
-                self.ug2.mudar_setpoint(pot_alvo / 2)
-            elif (pot_alvo > (self.cfg['pot_maxima_ug'] + self.cfg['margem_pot_critica'])) and (abs(self.erro_nv) > 0.05) \
-                    and self.ug1.disponivel and self.ug2.disponivel:
+            if self.ug1.sincronizada and self.ug2.sincronizada and pot_alvo > (2 * self.cfg['pot_minima']) or \
+                    ((pot_alvo > (self.cfg['pot_maxima_ug'] + self.cfg['margem_pot_critica']))
+                     and (abs(self.erro_nv) > 0.05) and self.ug1.disponivel and self.ug2.disponivel):
                 self.ug1.mudar_setpoint(pot_alvo / 2)
                 self.ug2.mudar_setpoint(pot_alvo / 2)
             else:
                 pot_alvo = min(pot_alvo, self.cfg['pot_maxima_ug'])
                 ugs = self.lista_de_ugs_disponiveis()
-                if len(ugs) > 0:
-                    ugs[0].mudar_setpoint(pot_alvo)
-                    for ug in ugs[1:]:
-                        ug.mudar_setpoint(0)
-                else:
-                    for ug in ugs:
-                        ug.mudar_setpoint(0)
+                ugs[0].mudar_setpoint(pot_alvo)
+                for ug in ugs[1:]:
+                    ug.mudar_setpoint(0)
 
     def lista_de_ugs_disponiveis(self):
         """
@@ -448,18 +325,18 @@ class Usina:
         """
         Controle PID
         https://en.wikipedia.org/wiki/PID_controller#Proportional
-        :param erro_nivel: Float
-        :return: Sinal de controle proporcional
         """
 
         # Calcula PID
-        logger.debug("Alvo: {:0.3f}, Recente: {:0.3f}, Anterior: {:0.3f}".format(self.nv_alvo, self.nv_montante_recente, self.nv_montante_anterior))
+        logger.debug("Alvo: {:0.3f}, Recente: {:0.3f}, Anterior: {:0.3f}".format(self.nv_alvo, self.nv_montante_recente,
+                                                                                 self.nv_montante_anterior))
 
         self.controle_p = self.kp * self.erro_nv
         self.controle_i = max(min((self.ki * self.erro_nv) + self.controle_i, 0.8), 0)
-        self.controle_d = self.kd*(self.erro_nv -self.erro_nv_anterior)
+        self.controle_d = self.kd*(self.erro_nv - self.erro_nv_anterior)
         saida_pid = self.controle_p + self.controle_i + min(max(-0.3, self.controle_d), 0.3)
-        logger.debug("PID: {:0.3f}, P:{:0.3f}, I:{:0.3f}, D:{:0.3f}".format(saida_pid, self.controle_p, self.controle_i, self.controle_d))
+        logger.debug("PID: {:0.3f}, P:{:0.3f}, I:{:0.3f}, D:{:0.3f}".format(saida_pid, self.controle_p, self.controle_i,
+                                                                            self.controle_d))
 
         # Calcula o integrador de estabilidade e limita
         self.controle_ie = max(min(saida_pid + self.controle_ie * self.kie, 1), 0)
@@ -473,7 +350,8 @@ class Usina:
             self.controle_i = 0
 
         # Arredondamento e limitação
-        pot_alvo = max(min(round(self.cfg['pot_maxima_usina'] * self.controle_ie, 2), self.cfg['pot_maxima_usina']), self.cfg['pot_minima'])
+        pot_alvo = max(min(round(self.cfg['pot_maxima_usina'] * self.controle_ie, 2), self.cfg['pot_maxima_usina']),
+                       self.cfg['pot_minima'])
         self.distribuir_potencia(pot_alvo)
 
 
@@ -498,14 +376,14 @@ class UnidadeDeGeracao:
         self.pot_disponivel = 0
 
     def normalizar(self, flag=0b1):
-        #Normaliza a ug
+        # Normaliza a ug
 
         if self.flag & flag:
             self.flag = self.flag - flag
             logger.info("UG {} normalizada a flag {}.".format(self.id_da_ug, flag))
 
     def indisponibilizar(self, flag=0b1, descr="Sem descrição adcional"):
-        #Indisponibiliza a ug
+        # Indisponibiliza a ug
 
         if not self.flag & flag:
             logger.info("Indisponibilizando UG {}. Flag ({}) ({})".format(self.id_da_ug, flag, descr))
@@ -537,10 +415,9 @@ class UnidadeDeGeracao:
         if self.perda_na_grade >= self.perda_na_grade_max:
             self.indisponibilizar(0b100,
                                   "Perda máxima na grade excedida (atual:{}; max:{})".format(self.perda_na_grade,
-                                                                                            self.perda_na_grade_max))
+                                                                                             self.perda_na_grade_max))
         else:
             self.normalizar(0b100)
-
 
     def mudar_setpoint(self, alvo):
 
@@ -553,7 +430,8 @@ class UnidadeDeGeracao:
         else:
             if self.temp_mancal > self.temp_mancal_alerta:
                 alvo *= sqrt(sqrt(
-                    1 - ((self.temp_mancal - self.temp_mancal_alerta) / (self.temp_mancal_max - self.temp_mancal_alerta))))
+                    1 - ((self.temp_mancal - self.temp_mancal_alerta) /
+                         (self.temp_mancal_max - self.temp_mancal_alerta))))
             if self.perda_na_grade > self.perda_na_grade_alerta:
                 alvo *= sqrt(
                     sqrt(1 - ((self.perda_na_grade - self.perda_na_grade_alerta) / (

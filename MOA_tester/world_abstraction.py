@@ -220,11 +220,11 @@ class world_abstraction(threading.Thread):
         logger.info("[SIMUL] Soft Stopping thread")
 
     def run(self):
-        server = ModbusServer(host='localhost', port=5002, no_block=True)
+        server = ModbusServer(host='0.0.0.0', port=5002, no_block=True)
         server.start()
         q_aflu = 0
         q_vert = 0
-        DataBank.set_words(0, [int(((self.nv_montante - 620) * 100 + random.normal(scale=0.1))) * 10])
+        DataBank.set_words(40000, [int(((self.nv_montante - 620) * 100 + random.normal(scale=0.1))) * 10])
         logger.info("[SIMUL] Aguardando MOA")
         moa_is_alive = False
         while not moa_is_alive:
@@ -294,7 +294,7 @@ class world_abstraction(threading.Thread):
             if not len(self.events) == 0:
                 if self.events[0][0] == "STOP":
                     logger.info("[SIMUL] Executando evento agendado na simulação STOP")
-                    DataBank.set_words(1000, [1])
+                    DataBank.set_words(41000, [1])
                     self.stop()
                     continue
 
@@ -349,20 +349,20 @@ class world_abstraction(threading.Thread):
                 self.stop()
 
             # Atualiza registradores internos
-            DataBank.set_words(0, [int(((self.nv_montante - 620) * 100 + random.normal(scale=0.1)))*10])
-            DataBank.set_words(1, [int(self.pot_no_medidor*1000)])
-            DataBank.set_words(20, [self.ug1_flags])
-            DataBank.set_words(21, [int(self.ug1_pot * 1000)])
-            DataBank.set_words(23, [int(self.ug1_minutos)])
-            DataBank.set_words(24, [int(self.ug1_temp_mancal*10)])
-            DataBank.set_words(25, [int(self.ug1_perda_grade*100)])
-            DataBank.set_words(30, [self.ug2_flags])
-            DataBank.set_words(31, [int(self.ug2_pot * 1000)])
-            DataBank.set_words(33, [int(self.ug2_minutos)])
-            DataBank.set_words(34, [int(self.ug2_temp_mancal*10)])
-            DataBank.set_words(35, [int(self.ug2_perda_grade*100)])
-            DataBank.set_words(99, [int(self.simulation_time/60)])
-            DataBank.set_words(100, [self.flags_usina])
+            DataBank.set_words(40000, [int(((self.nv_montante - 620) * 100 + random.normal(scale=0.1)))*10])
+            DataBank.set_words(40001, [int(self.pot_no_medidor*1000)])
+            DataBank.set_words(40020, [self.ug1_flags])
+            DataBank.set_words(40021, [int(self.ug1_pot * 1000)])
+            DataBank.set_words(40023, [int(self.ug1_minutos)])
+            DataBank.set_words(40024, [int(self.ug1_temp_mancal*10)])
+            DataBank.set_words(40025, [int(self.ug1_perda_grade*100)])
+            DataBank.set_words(40030, [self.ug2_flags])
+            DataBank.set_words(40031, [int(self.ug2_pot * 1000)])
+            DataBank.set_words(40033, [int(self.ug2_minutos)])
+            DataBank.set_words(40034, [int(self.ug2_temp_mancal*10)])
+            DataBank.set_words(40035, [int(self.ug2_perda_grade*100)])
+            DataBank.set_words(40099, [int(self.simulation_time/60)])
+            DataBank.set_words(40100, [self.flags_usina])
             # Final do comportamento modelado
 
             remaining_step_time = self.step_time - (datetime.now()-step_start_time).seconds
