@@ -190,11 +190,12 @@ class Emergencia(State):
             return FalhaCritica()
         else:
             if self.usina.db_emergencia_acionada:
-                logger.info("Emergencia acionada via Django/DB")
-                self.usina.acionar_emergencia()
-                self.usina.distribuir_potencia(0)
-            while self.usina.db_emergencia_acionada:
-                self.usina.ler_valores()
+                logger.info("Emergencia acionada via Django/DB, aguardando Reset/Reco pela interface web ou pelo CLP")
+                while self.usina.db_emergencia_acionada:
+                    self.usina.ler_valores()
+                    if not self.usina.clp.em_emergencia():
+                        self.usina.db.update_emergencia(0)
+                        self.usina.db_emergencia_acionada = 0
 
             if self.usina.clp_emergencia_acionada:
                 try:
