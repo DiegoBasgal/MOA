@@ -64,6 +64,7 @@ class Usina:
 
         # Estabelece as conexões iniciais com CLP e DB
         self.ler_valores()
+        self.controle_ie = (self.ug1.potencia + self.ug2.potencia)/cfg['pot_maxima_alvo']
 
     def ler_valores(self):
 
