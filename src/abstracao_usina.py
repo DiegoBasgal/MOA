@@ -204,6 +204,8 @@ class Usina:
         self.db.update_emergencia(0)
         self.db_emergencia_acionada = 0
         self.clp.write_to_single(self.cfg['ENDERECO_CLP_USINA_FLAGS'], 0)
+        self.clp.write_to_single(self.cfg['ENDERECO_CLP_UG1_FLAGS'], 0)
+        self.clp.write_to_single(self.cfg['ENDERECO_CLP_UG2_FLAGS'], 0)
         self.clp_emergencia_acionada = 0
 
     def heartbeat(self):
@@ -301,9 +303,8 @@ class Usina:
             else:
                 pot_alvo = min(pot_alvo, self.cfg['pot_maxima_ug'])
                 ugs = self.lista_de_ugs_disponiveis()
-                ugs[0].mudar_setpoint(pot_alvo)
-                for ug in ugs[1:]:
-                    ug.mudar_setpoint(0)
+                if len(ugs) > 0:
+                    ugs[0].mudar_setpoint(pot_alvo)
 
     def lista_de_ugs_disponiveis(self):
         """
@@ -378,17 +379,22 @@ class UnidadeDeGeracao:
 
     def normalizar(self, flag=0b1):
         # Normaliza a ug
-
         if self.flag & flag:
             self.flag = self.flag - flag
-            logger.info("UG {} normalizada a flag {}.".format(self.id_da_ug, flag))
+            logger.info("UG {} normalizando a flag {:08b} -> {:08b}.".format(self.id_da_ug, flag, self.flag))
 
-    def indisponibilizar(self, flag=0b1, descr="Sem descrição adcional"):
+    def indisponibilizar(self, flag=None, descr="Sem descrição adcional"):
         # Indisponibiliza a ug
+        if flag is None:
+            raise ValueError
 
         if not self.flag & flag:
-            logger.info("Indisponibilizando UG {}. Flag ({}) ({})".format(self.id_da_ug, flag, descr))
-            self.flag += flag
+            logger.info("Indisponibilizando UG {}. Flag ({:08b}) ({})".format(self.id_da_ug, flag, descr))
+            self.sincronizada = False
+            self.setpoint = 0
+            self.flag = self.flag | flag
+            logger.info("Flag ({:08b}) ({})".format(self.flag, flag))
+
 
     def atualizar_estado(self):
         """
@@ -396,16 +402,17 @@ class UnidadeDeGeracao:
         """
 
         if self.flag and self.disponivel:
-            logger.warning("UG {} indisponivel. Flag {}.".format(self.id_da_ug, self.flag))
+            logger.warning("UG {} indisponivel. Flags 0b{:08b} ({}).".format(self.id_da_ug, self.flag, self.flag))
             self.disponivel = False
 
         if not self.flag and not self.disponivel:
-            logger.warning("UG {} disponivel. Flag {}.".format(self.id_da_ug, self.flag))
+            logger.info("UG {} disponivel.   Flags 0b{:08b} ({}).".format(self.id_da_ug, self.flag, self.flag))
             self.disponivel = True
 
         self.sincronizada = True if self.potencia > 0 else False
 
         # todo Verificações
+
         if self.temp_mancal >= self.temp_mancal_max:
             self.indisponibilizar(0b10,
                                   "Temperatura do mancal excedida (atual:{}; max:{})".format(self.temp_mancal,
