@@ -89,109 +89,225 @@ class TesteComportamentoPotencia(unittest.TestCase):
         return cfg, clp_mock, db_mock
 
     def test_distribuir_pot_caso_max(self):
+        # Teste:            test_distribuir_pot_caso_max
+        # Objetivo:         Verificar distribuição de potência máxima
+        # Estado inicial:   Tudo normalizado,
+        #                   setpoint = 0
+        # Resposta:         Soma dos setpoints deve ser a potência nominal da usina
         cfg, clp_mock, db_mock = self.get_base_mocks()
         usina = Usina(cfg=cfg, clp=clp_mock, db=db_mock)
-        for _ in range(10):
+        for _ in range(10):  # Ajuste para malha de controle
             usina.distribuir_potencia(cfg['pot_maxima_alvo'])
+            usina.pot_medidor = sum(ug.setpoint for ug in usina.ugs)  # Ajuste para malha de controle
         self.assertEqual(usina.ug1.setpoint + usina.ug2.setpoint, cfg['pot_maxima_alvo'])
 
     def test_distribuir_pot_caso_acima(self):
+        # Teste:            test_distribuir_pot_caso_acima
+        # Objetivo:         Verificar distribuição de potência caso algo esteja acima do permitido, seja medidor ou UG
+        # Estado inicial:   Tudo normalizado,
+        #                   teste sem perda,
+        #                   setpoint = 2 x Máximo UG,
+        #                   pot no medidor = 2 x Nominal
+        # Resposta:         Potência no medidor deve ser a potência nominal da usina
         cfg, clp_mock, db_mock = self.get_base_mocks()
         usina = Usina(cfg=cfg, clp=clp_mock, db=db_mock)
         usina.pot_medidor = cfg['pot_maxima_alvo']*2
         usina.ug1.potencia = cfg['pot_maxima_ug']*2
         usina.ug2.potencia = cfg['pot_maxima_ug']*2
-        for _ in range(10):
+        for _ in range(10):  # Ajuste para malha de controle
             usina.distribuir_potencia(cfg['pot_maxima_alvo'])
-            usina.pot_medidor = usina.ug1.setpoint + usina.ug2.setpoint
+            usina.pot_medidor = sum(ug.setpoint for ug in usina.ugs)  # Ajuste para malha de controle
         self.assertEqual(usina.pot_medidor, cfg['pot_maxima_alvo'])
 
     def test_divisao_pot_caso_zero(self):
+        # Teste:            test_divisao_pot_caso_zero
+        # Objetivo:         Verificar distribuição de potência zero (Desligar UGs)
+        # Estado inicial:   Tudo normalizado
+        # Resposta:         setpoint das UGs deve ser 0
         cfg, clp_mock, db_mock = self.get_base_mocks()
         usina = Usina(cfg=cfg, clp=clp_mock, db=db_mock)
         pot = cfg['pot_minima']*0.9
-        for _ in range(10):
+        for _ in range(10):  # Ajuste para malha de controle
             usina.distribuir_potencia(pot)
-            usina.pot_medidor = usina.ug1.setpoint + usina.ug2.setpoint
-            self.assertEqual(usina.ug1.setpoint, 0)
-            self.assertEqual(usina.ug2.setpoint, 0)
+            usina.pot_medidor = sum(ug.setpoint for ug in usina.ugs)  # Ajuste para malha de controle
+            for ug in usina.ugs:
+                self.assertEqual(ug.setpoint, 0)
 
     def test_divisao_pot_caso_A(self):
-        # Caso A:   Potencia abaixo do range de uma ug
-        #           Abaixo da margem critica
-        #           Sem erro significativo no nivel.
-        # Resultado esperado: Nenhuma uma UG deve partir
+        # Teste:            test_divisao_pot_caso_A
+        # Objetivo:         Comprovar divisão adequada da carga entre as UGs
+        # Estado inicial:   Alvo < Máximo de uma UG,
+        # Resposta:         setpoint da UG1 == alvo, setpoint das demais = 0
         cfg, clp_mock, db_mock = self.get_base_mocks()
         usina = Usina(cfg=cfg, clp=clp_mock, db=db_mock)
         usina.erro_nv = 0
         pot = cfg['pot_maxima_ug']
-        for _ in range(10):
+        for _ in range(10):  # Ajuste para malha de controle
             usina.distribuir_potencia(pot)
-            usina.pot_medidor = usina.ug1.setpoint + usina.ug2.setpoint
-            self.assertEqual(usina.ug1.setpoint, pot)
-            self.assertEqual(usina.ug2.setpoint, 0)
+            usina.pot_medidor = sum(ug.setpoint for ug in usina.ugs)  # Ajuste para malha de controle
+            self.assertEqual(usina.ugs[0].setpoint, pot)
+            for ug in usina.ugs[1:]:
+                self.assertEqual(ug.setpoint, 0)
 
     def test_divisao_pot_caso_B(self):
-        # Caso B:   Potencia fora do range de uma ug
-        #           Abaixo da margem critica
-        #           Sem erro significativo no nivel.
-        # Resultado esperado: Apenas uma UG deve partir
+        # Teste:            test_divisao_pot_caso_B
+        # Objetivo:         Comprovar divisão adequada da carga entre as UGs
+        # Estado inicial:   Máximo de uma UG < Alvo < (Máximo de uma UG + Margem crítica),
+        #                   Nível alvo atingido
+        # Resposta:         setpoint da UG1 == Máximo da UG, setpoint das demais = 0
         cfg, clp_mock, db_mock = self.get_base_mocks()
         usina = Usina(cfg=cfg, clp=clp_mock, db=db_mock)
-        usina.erro_nv = 1
+        usina.erro_nv = 0
         pot = cfg['pot_maxima_ug']+cfg['margem_pot_critica']*0.9
-        for _ in range(10):
+        for _ in range(10):  # Ajuste para malha de controle
             usina.distribuir_potencia(pot)
-            usina.pot_medidor = usina.ug1.setpoint + usina.ug2.setpoint
-            self.assertEqual(usina.ug1.setpoint, cfg['pot_maxima_ug'])
+            usina.pot_medidor = sum(ug.setpoint for ug in usina.ugs)  # Ajuste para malha de controle
             self.assertEqual(usina.ug2.setpoint, 0)
+            self.assertEqual(usina.ugs[0].setpoint, cfg['pot_maxima_ug'])
+            for ug in usina.ugs[1:]:
+                self.assertEqual(ug.setpoint, 0)
 
     def test_divisao_pot_caso_C(self):
-        # Caso C:   Potencia acima do range de uma ug
-        #           Acima da margem critica
-        #           Sem erro significativo no nivel.
-        # Resultado esperado: Apenas uma UG deve partir
+        # Teste:            test_divisao_pot_caso_C
+        # Objetivo:         Comprovar divisão adequada da carga entre as UGs
+        # Estado inicial:   Alvo > (Máximo de uma UG + Margem crítica),
+        #                   Nível alvo atingido
+        # Resposta:         setpoint da UG1 == Máximo da UG, setpoint das demais = 0
         cfg, clp_mock, db_mock = self.get_base_mocks()
         usina = Usina(cfg=cfg, clp=clp_mock, db=db_mock)
         usina.erro_nv = 0
         pot = cfg['pot_maxima_ug']+cfg['margem_pot_critica']*1.1
-        for _ in range(10):
+        for _ in range(10):  # Ajuste para malha de controle
             usina.distribuir_potencia(pot)
-            usina.pot_medidor = usina.ug1.setpoint + usina.ug2.setpoint
-            self.assertEqual(usina.ug1.setpoint, cfg['pot_maxima_ug'])
-            self.assertEqual(usina.ug2.setpoint, 0)
+            usina.pot_medidor = sum(ug.setpoint for ug in usina.ugs)  # Ajuste para malha de controle
+            self.assertEqual(usina.ugs[0].setpoint, cfg['pot_maxima_ug'])
+            for ug in usina.ugs[1:]:
+                self.assertEqual(ug.setpoint, 0)
 
     def test_divisao_pot_caso_D(self):
-        # Caso D:   Potencia acima do range de uma ug
-        #           Acima da margem critica
-        #           Com erro significativo no nivel.
-        # Resultado esperado: Ambas as UGs devem partir
+        # Teste:            test_divisao_pot_caso_D
+        # Objetivo:         Comprovar divisão adequada da carga entre as UGs
+        # Estado inicial:   Alvo > (Máximo de uma UG + Margem crítica),
+        #                   Nível alvo atingido, 
+        #                   UGs Sincronizadas
+        # Resposta esperada: setpoint da UGs == alvo/Numero de UGs
+        cfg, clp_mock, db_mock = self.get_base_mocks()
+        usina = Usina(cfg=cfg, clp=clp_mock, db=db_mock)
+        usina.erro_nv = 0
+        for ug in usina.ugs:
+            ug.sincronizada = True
+        pot = cfg['pot_maxima_ug']+cfg['margem_pot_critica']*1.1
+        for _ in range(10):  # Ajuste para malha de controle
+            usina.distribuir_potencia(pot)
+            usina.pot_medidor = sum(ug.setpoint for ug in usina.ugs)  # Ajuste para malha de controle
+            self.assertEqual(usina.ug1.setpoint, pot/len(usina.ugs))
+            self.assertEqual(usina.ug2.setpoint, pot/len(usina.ugs))
+
+    def test_divisao_pot_caso_E(self):
+        # Teste:            test_divisao_pot_caso_E
+        # Estado inicial:   Alvo > (Máximo de uma UG + Margem crítica),
+        #                   Nível alvo não atingido,
+        #                   UGs Não Sincronizadas
+        # Resposta:         setpoint da UGs == alvo/Numero de UGs
         cfg, clp_mock, db_mock = self.get_base_mocks()
         usina = Usina(cfg=cfg, clp=clp_mock, db=db_mock)
         usina.erro_nv = 1
         pot = cfg['pot_maxima_ug']+cfg['margem_pot_critica']*1.1
-        for _ in range(10):
+        for _ in range(10):  # Ajuste para malha de controle
             usina.distribuir_potencia(pot)
-            usina.pot_medidor = usina.ug1.setpoint + usina.ug2.setpoint
+            usina.pot_medidor = sum(ug.setpoint for ug in usina.ugs)  # Ajuste para malha de controle
             self.assertEqual(usina.ug1.setpoint, pot/2)
             self.assertEqual(usina.ug2.setpoint, pot/2)
 
-    def test_divisao_pot_caso_E(self):
-        # Caso E:   Potencia maxima
-        #           UG1 restrita por flag
-        # Resultado esperado: Apenas a UG2 deve partir
+    def test_divisao_pot_caso_F(self):
+        # Teste:            test_divisao_pot_caso_E
+        # Estado inicial:   Alvo = Pot Nominal
+        # Estados testados: UGs com flag (uma UG por vez, uma flag por vez)
+        #                   UGs com flag (uma UG por vez, varias flag por vez)
+        #                   UGs com flag (varias UGs por vez, varias flag por vez)
+        # Resposta:         Não deve partir nenhuma UG com Flag
+
+
         cfg, clp_mock, db_mock = self.get_base_mocks()
         usina = Usina(cfg=cfg, clp=clp_mock, db=db_mock)
-        usina.ug1.flag = 1
-        for ug in usina.ugs:
-            ug.atualizar_estado()
         pot = cfg['pot_maxima_alvo']
-        for _ in range(10):
-            usina.distribuir_potencia(pot)
-            usina.pot_medidor = usina.ug1.setpoint + usina.ug2.setpoint
-            self.assertEqual(usina.ug1.setpoint, 0)
-            self.assertTrue(usina.ug1.flag)
-            self.assertEqual(usina.ug2.setpoint, cfg['pot_maxima_ug'])
+
+        # UGs com flag (uma UG por vez, uma flag por vez)
+        for ug in usina.ugs:
+            ug.setpoint = 1
+            ug.flag = 0
+        for ug_com_flag in range(len(usina.ugs)):
+            for bit in range(17):
+                for ug in usina.ugs:
+                    ug.normalizar = MagicMock().return_value(True)
+                    ug.flag = 0
+                    ug.setpoint = 0
+                    ug.atualizar_estado()
+                usina.ugs[ug_com_flag].indisponibilizar(2 ** bit)
+                usina.ugs[ug_com_flag].atualizar_estado()
+                self.assertEqual(usina.ugs[ug_com_flag].flag, 2 ** bit)
+                usina.distribuir_potencia(pot)
+                usina.pot_medidor = sum(ug.setpoint for ug in usina.ugs)  # Ajuste para malha de controle
+                for ug in usina.ugs:
+                    if ug.flag:
+                        self.assertEqual(ug.setpoint, 0,
+                                         "(uma UG por vez, uma flag por vez) UG{}_FLAG{} .. {}".format(ug.id_da_ug,
+                                                                                                       ug.flag,
+                                                                                                       bit))
+                    else:
+                        self.assertGreater(ug.setpoint, 0,
+                                           "(uma UG por vez, uma flag por vez) UG{}_FLAG{} .. {}".format(
+                                               ug.id_da_ug, ug.flag, bit))
+
+        # UGs com flag (uma UG por vez, varais flags por vez)
+        for ug in usina.ugs:
+            ug.setpoint = 1
+            ug.flag = 0
+        for ug_com_flag in range(len(usina.ugs)):
+            for ug in usina.ugs:
+                ug.flag = 0
+            for bit in range(17):
+                for ug in usina.ugs:
+                    ug.normalizar = MagicMock()
+                    ug.setpoint = 0
+                    ug.atualizar_estado()
+                usina.ugs[ug_com_flag].indisponibilizar(2 ** bit)
+                usina.ugs[ug_com_flag].atualizar_estado()
+                self.assertGreaterEqual(usina.ugs[ug_com_flag].flag, 2 ** bit)
+                usina.distribuir_potencia(pot)
+                usina.pot_medidor = sum(
+                    ug.setpoint for ug in usina.ugs)  # Ajuste para malha de controle
+                for ug in usina.ugs:
+                    if ug.flag:
+                        self.assertEqual(ug.setpoint, 0,
+                                         "(uma UG por vez, uma flag por vez) UG{}_FLAG{} .. {}".format(
+                                             ug.id_da_ug, ug.flag, bit))
+                    else:
+                        self.assertGreater(ug.setpoint, 0,
+                                           "(uma UG por vez, uma flag por vez) UG{}_FLAG{} .. {}".format(
+                                               ug.id_da_ug, ug.flag, bit))
+
+        # UGs com flag (varais UGs por vez, varais flags por vez)
+        for ug in usina.ugs:
+            ug.setpoint = 1
+            ug.flag = 0
+        for ug_com_flag in range(len(usina.ugs)):
+            for bit in range(17):
+                for ug in usina.ugs:
+                    ug.normalizar = MagicMock().return_value(True)
+                    ug.setpoint = 0
+                    ug.atualizar_estado()
+                usina.ugs[ug_com_flag].indisponibilizar(2**bit)
+                usina.ugs[ug_com_flag].atualizar_estado()
+                self.assertGreaterEqual(usina.ugs[ug_com_flag].flag, 2**bit)
+                usina.distribuir_potencia(pot)
+                usina.pot_medidor = sum(ug.setpoint for ug in usina.ugs)  # Ajuste para malha de controle
+                for ug in usina.ugs:
+                    if ug.flag:
+                        self.assertEqual(ug.setpoint, 0, "(uma UG por vez, uma flag por vez) UG{}_FLAG{} .. {}".format(ug.id_da_ug, ug.flag, bit))
+                    else:
+                        self.assertGreater(ug.setpoint, 0, "(uma UG por vez, uma flag por vez) UG{}_FLAG{} .. {}".format(ug.id_da_ug, ug.flag, bit))
+
 
 if __name__ == '__main__':
     unittest.main()
