@@ -103,7 +103,7 @@ class Database:
         self.execute(q)
         return True
 
-    def update_agendamento(self,id_agendamento, executado):
+    def update_agendamento(self, id_agendamento, executado):
         if executado:
             executado = 1
         else:
