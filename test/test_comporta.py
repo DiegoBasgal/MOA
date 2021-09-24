@@ -1,8 +1,17 @@
+import logging
 import unittest
 from src.abstracao_usina import Comporta
 
 
 class TesteComportamentoDaComporta(unittest.TestCase):
+
+    @classmethod
+    def setUpClass(cls):
+        logging.disable(logging.CRITICAL)
+
+    @classmethod
+    def tearDownClass(cls):
+        logging.disable(logging.NOTSET)
 
     def test_nivel_rampa_decr(self):
         # Objetivo Verificar que a comporta fecha de uma vez independente da posição atual
