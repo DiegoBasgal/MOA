@@ -50,6 +50,7 @@ class StateMachine:
 
     def __init__(self, initial_state):
         self.state = initial_state
+        self.em_falha_critica = False
 
     def exec(self):
         try:
@@ -58,6 +59,7 @@ class StateMachine:
             self.state = self.state.run()
         except Exception as e:
             logger.critical("Estado Incorreto.n\n Exception: {}".format(repr(e)))
+            self.em_falha_critica = True
             self.state = FalhaCritica()
 
 
@@ -80,11 +82,9 @@ class FalhaCritica(State):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         logger.critical("Falha crítica MOA.")
-        sys.exit(1)
 
     def run(self):
-        while True:
-            sleep(1)
+        sys.exit(1)
 
 
 class Pronto(State):
