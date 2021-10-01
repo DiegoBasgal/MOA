@@ -1,5 +1,7 @@
 #Implementação MOA
 
+sudo apt install python3
+sudo apt install pip
 sudo apt install git
 sudo mkdir /usr/local/operacao-autonoma
 cd /usr/local/
