@@ -5,11 +5,11 @@ sudo mkdir /usr/local/operacao-autonoma
 cd /usr/local/
 sudo git clone https://gitlab.com/ritmo-energia/operacao-autonoma.git
 cd operacao-autonoma
-git branch -a
-git checkout BRANCH
+#git branch -a
+#git checkout BRANCH
 ll
 sudo apt install mariadb-server
-sudo apt install mysql-client
+sudo apt install mariadb-client
 sudo mysql_secure_installation
 sudo mariadb
 #GRANT ALL ON *.* TO 'moa'@'localhost' IDENTIFIED BY 'password' WITH GRANT OPTION;
