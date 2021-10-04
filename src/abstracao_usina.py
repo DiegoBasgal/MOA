@@ -379,9 +379,7 @@ class UnidadeDeGeracao:
 
     def normalizar(self, flag=0b1):
         # Normaliza a ug
-        if self.flag & flag:
-            self.flag = self.flag - flag
-            logger.info("UG {} normalizando a flag {:08b} -> {:08b}.".format(self.id_da_ug, flag, self.flag))
+        pass
 
     def indisponibilizar(self, flag=None, descr="Sem descrição adcional"):
         # Indisponibiliza a ug

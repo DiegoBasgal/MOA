@@ -40,7 +40,7 @@ logger.addHandler(fh)
 logger.addHandler(ch)
 logger.addHandler(mh)
 
-simulation_speed = 600
+simulation_speed = 60
 
 logger.info("[PRE] Setting world up for simulations ({}x real time).".format(simulation_speed))
 # 1 thread para simular o reservatorio
@@ -52,7 +52,7 @@ th_simulation_interface = simulation_interface.simulation_interface()
 logger.info("[SIMUL] Running operador_autonomo_sm ({}x real time)".format(simulation_speed))
 try:
     # Inicia o MOA
-    subprocess.Popen(['python', '../src/operador_autonomo_sm.py', '{}'.format(simulation_speed)])
+    subprocess.Popen(['python3', '../src/operador_autonomo_sm.py', '{}'.format(simulation_speed)])
     if not th_world_abstraction.is_alive():
         th_world_abstraction.start()
     if not th_simulation_interface.is_alive():

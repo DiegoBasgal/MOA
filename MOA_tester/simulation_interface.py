@@ -66,10 +66,6 @@ class simulation_interface(threading.Thread):
             ug2_perda_grade = REGS[35]/100
             segundos_simulados = REGS[99]*60
 
-            if usina_flags+ug1_flags+ug2_flags > 128:
-                print(segundos_simulados/60)
-                raise ValueError
-
             if REGS[1000]:
                 self.stop()
                 continue
@@ -148,8 +144,8 @@ class simulation_interface(threading.Thread):
         ax4.set_xlim([0, data[0][-1]])
         ax1.yaxis.set_major_formatter("{x:.2f}m")
         ax2.yaxis.set_major_formatter("{x:.2f}MW")
-        ax3.yaxis.set_major_formatter("{x:d}")
-        ax4.yaxis.set_major_formatter("{x:d}")
+        # ax3.yaxis.set_major_formatter("{x:d}")
+        # ax4.yaxis.set_major_formatter("{x:d}")
 
         import src.database_connector
         db = src.database_connector.Database()
@@ -160,7 +156,7 @@ class simulation_interface(threading.Thread):
         kie = float(res['kie'])
         ml = float(res['n_movel_L'])
         mr = float(res['n_movel_R'])
-        plt.savefig("logs/imgs/log_plot kp{} kd{} ki{} Kie{} mr{} ml{}".format(kp, kd, ki, kie, mr, ml).replace('.', '_')+".png", dpi=100)
+        plt.savefig("logs/imgs/log_plot kp{} kd{} ki{} Kie{} mr{} ml{}".format(kp, kd, ki, kie, mr, ml).replace('.', '_') + ".png", dpi=100)
 
         total_error = 0
         for row in rows:

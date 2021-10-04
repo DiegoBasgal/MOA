@@ -11,7 +11,6 @@ cachetools==4.2.2
 certifi==2019.11.28
 chardet==3.0.4
 Click==7.0
-cloud-init==21.2
 colorama==0.4.3
 command-not-found==0.3
 configobj==5.0.6
@@ -74,7 +73,6 @@ pyOpenSSL==19.0.0
 pyRFC3339==1.1
 pyrsistent==0.15.5
 pyserial==3.4
-python-apt==2.0.0+ubuntu0.20.4.5
 python-dateutil==2.7.3
 python-debian===0.1.36ubuntu1
 python-telegram-bot==13.7
@@ -88,7 +86,6 @@ SecretStorage==2.3.1
 service-identity==18.1.0
 simplejson==3.16.0
 six==1.14.0
-sos==4.1
 sqlparse==0.4.1
 ssh-import-id==5.10
 systemd-python==234
