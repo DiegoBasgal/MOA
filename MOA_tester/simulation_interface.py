@@ -130,9 +130,9 @@ class simulation_interface(threading.Thread):
         ax3.plot(data[0], data[11], color='indianred', label="perda_ug1")
         ax3.plot(data[0], data[16], color='yellowgreen', label="temp_ug2")
         ax3.plot(data[0], data[17], color='darkolivegreen', label="perda_ug2")
-        ax4.bar(data[0], data[6], color='orange', label="trip_ug1")
-        ax4.bar(data[0], data[3], color='red', label="trip_usina")
-        ax4.bar(data[0], data[12], color='yellow', label="trip_ug2")
+        ax4.plot(data[0], data[6], color='orange', label="trip_ug1")
+        ax4.plot(data[0], data[3], color='red', label="trip_usina")
+        ax4.plot(data[0], data[12], color='yellow', label="trip_ug2")
 
         ax1.legend()
         ax2.legend()

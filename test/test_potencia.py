@@ -3,10 +3,7 @@ import datetime
 from unittest.mock import MagicMock
 from src.abstracao_usina import Usina
 import logging
-
-def Decimal(value):
-    return float(value)
-
+from decimal import Decimal
 
 class TesteComportamentoPotencia(unittest.TestCase):
 

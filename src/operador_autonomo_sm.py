@@ -340,6 +340,7 @@ if __name__ == "__main__":
                 modbus_server = ModbusServer(host=cfg['moa_slave_ip'], port=cfg['moa_slave_porta'],
                                              no_block=True)
                 modbus_server.start()
+                sleep(1)
                 if not modbus_server.is_run:
                     raise ConnectionError
                 prox_estado = Pronto

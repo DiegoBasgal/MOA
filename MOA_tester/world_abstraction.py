@@ -145,10 +145,10 @@ class world_abstraction(threading.Thread):
         self.ug1_perda_grade = max(self.ug1_perda_grade + random.exponential(scale=0.001) - 0.001, 0)
 
         if self.ug1_temp_mancal >= 100:
-            self.ug1_flags += 2
+            self.ug1_flags = self.ug1_flags | 2
 
         if self.ug1_perda_grade >= 3:
-            self.ug1_flags += 4
+            self.ug1_flags = self.ug1_flags | 4
 
         # Tratar flag da UG
         if not (self.ug1_flags == 0):
@@ -188,11 +188,11 @@ class world_abstraction(threading.Thread):
         self.ug2_temp_mancal = max(self.ug2_temp_mancal, 25) + random.normal(0, 0.01)
         self.ug2_perda_grade = max(self.ug2_perda_grade + random.exponential(scale=0.001) - 0.001, 0)
 
-        if self.ug1_temp_mancal >= 100:
-            self.ug1_flags += 2
+        if self.ug2_temp_mancal >= 100:
+            self.ug2_flags = self.ug2_flags | 2
 
-        if self.ug1_perda_grade >= 3:
-            self.ug1_flags += 4
+        if self.ug2_perda_grade >= 3:
+            self.ug2_flags = self.ug2_flags | 4
 
         # Tratar flag da UG
         if not (self.ug2_flags == 0):
