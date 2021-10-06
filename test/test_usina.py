@@ -2,7 +2,7 @@ import unittest
 from unittest.mock import MagicMock
 from datetime import datetime, timedelta
 
-import abstracao_usina
+import src.abstracao_usina
 
 class Usina(unittest.TestCase):
     pass

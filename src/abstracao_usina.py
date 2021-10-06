@@ -7,6 +7,7 @@ from pyModbusTCP.server import DataBank
 logger = logging.getLogger('__main__')
 
 AGENDAMENTO_INDISPONIBILIZAR = 2
+AGENDAMENTO_DISPARAR_MENSAGEM_TESTE = 777
 
 
 class Usina:
@@ -70,8 +71,8 @@ class Usina:
 
         # CLP
         regs = [0]*40000
-        regs += self.clp.read_sequential(40000, 101)
-
+        aux = self.clp.read_sequential(40000, 101)
+        regs += aux
         # USN
         self.clp_emergencia_acionada = regs[self.cfg['ENDERECO_CLP_USINA_FLAGS']]
         self.nv_montante = round((regs[self.cfg['ENDERECO_CLP_NV_MONATNTE']] * 0.001) + 620, 2)
@@ -164,9 +165,11 @@ class Usina:
     def escrever_valores(self):
 
         # CLP
-        self.clp.write_to_single(self.cfg['ENDERECO_CLP_UG1_FLAGS'], self.ug1.flag)
+        if self.ug1.pendente:
+            self.clp.write_to_single(self.cfg['ENDERECO_CLP_UG1_FLAGS'], self.ug1.flag)
         self.clp.write_to_single(self.cfg['ENDERECO_CLP_UG1_SETPOINT'], int(self.ug1.setpoint * 1000))
-        self.clp.write_to_single(self.cfg['ENDERECO_CLP_UG2_FLAGS'], self.ug2.flag)
+        if self.ug2.pendente:
+            self.clp.write_to_single(self.cfg['ENDERECO_CLP_UG2_FLAGS'], self.ug2.flag)
         self.clp.write_to_single(self.cfg['ENDERECO_CLP_UG2_SETPOINT'], int(self.ug2.setpoint * 1000))
         self.clp.write_to_single(self.cfg['ENDERECO_CLP_COMPORTA_POS'], int(self.comporta.pos_comporta))
 
@@ -236,7 +239,14 @@ class Usina:
         Retorna os agendamentos pendentes para a usina.
         :return: list[] agendamentos
         """
-        return self.db.get_agendamentos_pendentes()
+        agora = datetime.now()
+        agora = agora - timedelta(seconds=agora.second, microseconds=agora.microsecond)
+        agendamentos_pendentes = []
+        agendamentos = self.db.get_agendamentos_pendentes()
+        for agendamento in agendamentos:
+            if agendamento[1] <= agora:
+                agendamentos_pendentes.append(agendamento)
+        return agendamentos_pendentes
 
     def verificar_agendamentos(self):
         """
@@ -266,6 +276,11 @@ class Usina:
                 logger.info("Executando gendamento #{} - {}.".format(agendamento[0], agendamento[2]))
 
                 # Exemplo Case agendamento:
+                if agendamento[2] == AGENDAMENTO_DISPARAR_MENSAGEM_TESTE:
+                    # Coloca em emergência
+                    logger.info("Disparando mensagem teste (comando via agendamento).")
+                    self.disparar_mensagem_teste()
+
                 if agendamento[2] == AGENDAMENTO_INDISPONIBILIZAR:
                     # Coloca em emergência
                     logger.info("Indisponibilizando a usina (comando via agendamento).")
@@ -356,11 +371,19 @@ class Usina:
                        self.cfg['pot_minima'])
         self.distribuir_potencia(pot_alvo)
 
+    def disparar_mensagem_teste(self):
+        logger.debug("Este e um teste!")
+        logger.info("Este e um teste!")
+        logger.warning("Este e um teste!")
+        logger.error("Este e um teste!")
+        logger.critical("Este e um teste!")
+
 
 class UnidadeDeGeracao:
 
     def __init__(self, id_ug):
 
+        self.pendente = True
         self.id_da_ug = id_ug
         self.flag = 0
         self.disponivel = True
@@ -378,10 +401,12 @@ class UnidadeDeGeracao:
         self.pot_disponivel = 0
 
     def normalizar(self, flag=0b1):
-        # Normaliza a ug
-        if self.flag & flag:
-            self.flag = self.flag - flag
-            logger.info("UG {} normalizando a flag {:08b} -> {:08b}.".format(self.id_da_ug, flag, self.flag))
+        if self.flag % flag:
+            temp = self.flag
+            self.flag = self.flag & ~flag
+            logger.info("Normalizando Flag {:08b} & ~{:08b} --> {:08b}({})".format(temp, flag, self.flag, self.flag))
+            self.pendente = True
+
 
     def indisponibilizar(self, flag=None, descr="Sem descrição adcional"):
         # Indisponibiliza a ug
@@ -392,9 +417,10 @@ class UnidadeDeGeracao:
             logger.info("Indisponibilizando UG {}. Flag ({:08b}) ({})".format(self.id_da_ug, flag, descr))
             self.sincronizada = False
             self.setpoint = 0
+            temp = self.flag
             self.flag = self.flag | flag
-            logger.info("Flag ({:08b}) ({})".format(self.flag, flag))
-
+            logger.info("Flag {:08b} | {:08b} --> {:08b}({})".format(temp, flag, self.flag, self.flag))
+            self.pendente = True
 
     def atualizar_estado(self):
         """
@@ -417,15 +443,15 @@ class UnidadeDeGeracao:
             self.indisponibilizar(0b10,
                                   "Temperatura do mancal excedida (atual:{}; max:{})".format(self.temp_mancal,
                                                                                              self.temp_mancal_max))
-        else:
-            self.normalizar(0b10)
 
         if self.perda_na_grade >= self.perda_na_grade_max:
             self.indisponibilizar(0b100,
                                   "Perda máxima na grade excedida (atual:{}; max:{})".format(self.perda_na_grade,
                                                                                              self.perda_na_grade_max))
-        else:
-            self.normalizar(0b100)
+        if self.perda_na_grade < self.perda_na_grade_alerta and self.flag == 0b100:
+            self.normalizar(4)
+
+        self.pendente = False
 
     def mudar_setpoint(self, alvo):
 
