@@ -14,9 +14,8 @@ import json
 
 from pyModbusTCP.server import ModbusServer
 
-from mensageiro.mensageiro_log_handler import MensageiroHandler
-import abstracao_usina
-from src import clp_connector, database_connector
+from src.mensageiro.mensageiro_log_handler import MensageiroHandler
+from src import clp_connector, database_connector, abstracao_usina
 
 DEBUG = False
 
@@ -32,18 +31,18 @@ if not os.path.exists("logs/"):
     os.mkdir("logs/")
 fh = logging.FileHandler("logs/MOA.log")  # log para arquivo
 ch = logging.StreamHandler(stdout)  # log para linha de comando
-mh = MensageiroHandler()  # log para telegram e voip
+#mh = MensageiroHandler()  # log para telegram e voip
 logFormatter = logging.Formatter("%(asctime)s [%(threadName)-12.12s] [%(levelname)-5.5s] [MOA-SM] %(message)s")
 logFormatterSimples = logging.Formatter("[%(levelname)-5.5s] [MOA-SM] %(message)s")
 fh.setFormatter(logFormatter)
 ch.setFormatter(logFormatter)
-mh.setFormatter(logFormatterSimples)
+#mh.setFormatter(logFormatterSimples)
 fh.setLevel(logging.INFO)
 ch.setLevel(logging.DEBUG)
-mh.setLevel(logging.INFO)
+#mh.setLevel(logging.INFO)
 logger.addHandler(fh)
 logger.addHandler(ch)
-logger.addHandler(mh)
+#logger.addHandler(mh)
 
 
 class StateMachine:
@@ -84,6 +83,7 @@ class FalhaCritica(State):
         logger.critical("Falha crítica MOA.")
 
     def run(self):
+        logger.critical("Falha crítica MOA. Exiting...")
         sys.exit(1)
 
 
@@ -301,11 +301,12 @@ if __name__ == "__main__":
         ESCALA_DE_TEMPO = int(sys.argv[1])
 
     n_tentativa = 0
-    timeout = 30
+    timeout = 3
     logger.info("Iniciando o MOA_SM")
     logger.debug("Debug is ON")
 
     prox_estado = 0
+    usina = None
     while prox_estado == 0:
         n_tentativa += 1
         if n_tentativa > 3:
@@ -323,7 +324,15 @@ if __name__ == "__main__":
             db = database_connector.Database()
             # Tenta iniciar a classe usina
             logger.debug("Iniciando classe Usina")
-            usina = abstracao_usina.Usina(cfg, clp, db)
+            try:
+                usina = abstracao_usina.Usina(cfg, clp, db)
+            except ConnectionError as e:
+                logger.error(
+                    "Erro ao iniciar Classe Usina. Tentando novamente em {}s (tentativa {}/3). Exception: {}.".format(
+                        timeout, n_tentativa, repr(e)))
+                sleep(timeout)
+                continue
+
 
             # Inicializando Servidor Modbus (para algumas comunicações com o Elipse)
             try:
@@ -331,8 +340,11 @@ if __name__ == "__main__":
                 modbus_server = ModbusServer(host=cfg['moa_slave_ip'], port=cfg['moa_slave_porta'],
                                              no_block=True)
                 modbus_server.start()
+                sleep(1)
                 if not modbus_server.is_run:
                     raise ConnectionError
+                prox_estado = Pronto
+
             except TypeError as e:
                 logger.error(
                     "Erro ao iniciar abstração da usina. Tentando novamente em {}s (tentativa {}/3). Exception: {}."
@@ -353,8 +365,7 @@ if __name__ == "__main__":
                     timeout, n_tentativa, repr(e)))
                 sleep(timeout)
 
-            logger.info("Inicialização completa, executando o MOA")
-            prox_estado = Pronto
+    logger.info("Inicialização completa, executando o MOA")
 
     sm = StateMachine(initial_state=prox_estado(usina))
     while True:

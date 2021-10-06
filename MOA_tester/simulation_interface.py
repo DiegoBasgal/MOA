@@ -66,10 +66,6 @@ class simulation_interface(threading.Thread):
             ug2_perda_grade = REGS[35]/100
             segundos_simulados = REGS[99]*60
 
-            if usina_flags+ug1_flags+ug2_flags > 128:
-                print(segundos_simulados/60)
-                raise ValueError
-
             if REGS[1000]:
                 self.stop()
                 continue
@@ -134,9 +130,9 @@ class simulation_interface(threading.Thread):
         ax3.plot(data[0], data[11], color='indianred', label="perda_ug1")
         ax3.plot(data[0], data[16], color='yellowgreen', label="temp_ug2")
         ax3.plot(data[0], data[17], color='darkolivegreen', label="perda_ug2")
-        ax4.bar(data[0], data[6], color='orange', label="trip_ug1")
-        ax4.bar(data[0], data[3], color='red', label="trip_usina")
-        ax4.bar(data[0], data[12], color='yellow', label="trip_ug2")
+        ax4.plot(data[0], data[6], color='orange', label="trip_ug1")
+        ax4.plot(data[0], data[3], color='red', label="trip_usina")
+        ax4.plot(data[0], data[12], color='yellow', label="trip_ug2")
 
         ax1.legend()
         ax2.legend()
@@ -148,8 +144,8 @@ class simulation_interface(threading.Thread):
         ax4.set_xlim([0, data[0][-1]])
         ax1.yaxis.set_major_formatter("{x:.2f}m")
         ax2.yaxis.set_major_formatter("{x:.2f}MW")
-        ax3.yaxis.set_major_formatter("{x:d}")
-        ax4.yaxis.set_major_formatter("{x:d}")
+        # ax3.yaxis.set_major_formatter("{x:d}")
+        # ax4.yaxis.set_major_formatter("{x:d}")
 
         import src.database_connector
         db = src.database_connector.Database()
@@ -160,7 +156,7 @@ class simulation_interface(threading.Thread):
         kie = float(res['kie'])
         ml = float(res['n_movel_L'])
         mr = float(res['n_movel_R'])
-        plt.savefig("logs/imgs/log_plot kp{} kd{} ki{} Kie{} mr{} ml{}".format(kp, kd, ki, kie, mr, ml).replace('.', '_')+".png", dpi=100)
+        plt.savefig("logs/imgs/log_plot kp{} kd{} ki{} Kie{} mr{} ml{}".format(kp, kd, ki, kie, mr, ml).replace('.', '_') + ".png", dpi=100)
 
         total_error = 0
         for row in rows:

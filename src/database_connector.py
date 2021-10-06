@@ -21,8 +21,8 @@ class Database:
     def __init__(self):
         self.config = {
             'host': "localhost",
-            'user': "root",
-            'passwd': "11Marco2020@",
+            'user': "moa",
+            'passwd': "senhaFraca123",
             'db': "django_db",
             'charset': 'utf8',
         }
