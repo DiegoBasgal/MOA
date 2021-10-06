@@ -104,8 +104,11 @@ class TestAgendamentos(unittest.TestCase):
                                                               ug2_temp_alerta=Decimal('75.00'))
 
 
-    # Se houver ate 3 agendamentos para executar agora (< 5 min), ele executa o e marca no banco
     def test_executa_agendamento_simples(self):
+        # Teste:            test_executa_agendamento_simples
+        # Objetivo:         Verificar se o moa executa um evento programado teste
+        # Estado inicial:   1 agendamento ("atrasado" 1 minuto)
+        # Resposta:         O sm vai para o estado de tratamento de agenda e aciona e emergencia
         self.db_mock.get_agendamentos_pendentes.return_value = [(1, datetime.now() - timedelta(minutes=1), 777, 0), ]
         usina = Usina(cfg=self.cfg, clp=self.clp_mock, db=self.db_mock)
         usina.disparar_mensagem_teste = MagicMock()
@@ -117,6 +120,10 @@ class TestAgendamentos(unittest.TestCase):
 
     # Se houver pelo menos 1 agendamento muito atrasado (> 5 min), ele sinaliza e aciona a emergencia
     def test_executa_agendamentos_atraso_grande(self):
+        # Teste:            test_executa_agendamentos_atraso_grande
+        # Objetivo:         Verificar se o moa aciona a emergência caso um agendamento atrase muito
+        # Estado inicial:   1 agendamento atrasado 6 minutos
+        # Resposta:         O sm vai para o estado de tratamento de agenda e executa uma emergencia na clp
         self.db_mock.get_agendamentos_pendentes.return_value = [(1, datetime.now() - timedelta(minutes=6), 777, 0), ]
         usina = Usina(cfg=self.cfg, clp=self.clp_mock, db=self.db_mock)
         usina.acionar_emergencia = MagicMock()
@@ -128,6 +135,10 @@ class TestAgendamentos(unittest.TestCase):
 
     # Se houver 4 ou mais agendamentos levemente atrasados (< 5 min), ele sinaliza o erro e aciona e emergencia
     def test_executa_agendamentos_atraso_multiplo(self):
+        # Teste:            test_executa_agendamentos_atraso_multiplo
+        # Objetivo:         Verificar se o moa aciona a emergência caso varios agendamentos atrasados
+        # Estado inicial:   4 agendamentos atrasados 1 minutos
+        # Resposta:         O sm vai para o estado de tratamento de agenda e executa uma emergencia na clp
         self.db_mock.get_agendamentos_pendentes.return_value = [(1, datetime.now() - timedelta(minutes=1), 777, 0),
                                                                 (2, datetime.now() - timedelta(minutes=1), 777, 0),
                                                                 (3, datetime.now() - timedelta(minutes=1), 777, 0),
