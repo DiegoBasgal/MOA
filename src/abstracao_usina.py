@@ -8,7 +8,7 @@ logger = logging.getLogger('__main__')
 
 AGENDAMENTO_INDISPONIBILIZAR = 2
 AGENDAMENTO_DISPARAR_MENSAGEM_TESTE = 777
-
+MODO_ESCOLHA_MANUAL = 2
 
 class Usina:
 
@@ -337,7 +337,7 @@ class Usina:
             if ug.disponivel:
                 ls.append(ug)
 
-        if self.modo_de_escolha_das_ugs == 2:
+        if self.modo_de_escolha_das_ugs == MODO_ESCOLHA_MANUAL:
             # escolher por maior prioridade primeiro
             ls = sorted(ls, key=lambda y: (not y.sincronizada, not y.setpoint, not y.prioridade, y.horas_maquina))
         else:
