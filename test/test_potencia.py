@@ -127,7 +127,7 @@ class TesteComportamentoPotencia(unittest.TestCase):
         # Estado inicial:   Tudo normalizado
         # Resposta:         setpoint das UGs deve ser 0
         usina = Usina(cfg=self.cfg, clp=self.clp_mock, db=self.db_mock)
-        pot = self.cfg['pot_minima']*0.9
+        pot = 0
         for _ in range(10):  # Ajuste para malha de controle
             usina.distribuir_potencia(pot)
             usina.pot_medidor = sum(ug.setpoint for ug in usina.ugs)  # Ajuste para malha de controle
@@ -303,6 +303,90 @@ class TesteComportamentoPotencia(unittest.TestCase):
                     else:
                         self.assertGreater(ug.setpoint, 0, "(uma UG por vez, uma flag por vez) UG{}_FLAG{} .. {}".format(ug.id_da_ug, ug.flag, bit))
 
+    def test_divisao_pot_caso_G(self):
+        # Teste:            test_divisao_pot_caso_G
+        # Estado inicial:   Alvo < Minimo de uma UG
+        #                   1 UG sincronizada
+        # Resposta:         Uma UG -> pot, outras = 0
+        usina = Usina(cfg=self.cfg, clp=self.clp_mock, db=self.db_mock)
+        pot = self.cfg['pot_minima'] * 0.75
+        for _ in range(10):  # Ajuste para malha de controle
+            usina.distribuir_potencia(pot)
+            usina.pot_medidor = sum(ug.setpoint for ug in usina.ugs)  # Ajuste para malha de controle
+        self.assertEqual(usina.ug1.setpoint, self.cfg['pot_minima'])
+        for ug in usina.ugs[1:]:
+            self.assertEqual(ug.setpoint, 0)
+
+    def test_divisao_pot_caso_H(self):
+        # Teste:            test_divisao_pot_caso_H
+        # Estado inicial:   Alvo < Minimo de uma UG
+        #                   Todas UGs sincronizadas
+        # Resposta:         Uma UG -> pot, outras = 0
+        usina = Usina(cfg=self.cfg, clp=self.clp_mock, db=self.db_mock)
+        for ug in usina.ugs:
+            ug.setpoint = self.cfg['pot_maxima_ug']
+            ug.potencia = self.cfg['pot_maxima_ug']
+            ug.sincronizada = True
+        pot = self.cfg['pot_minima'] * 0.75
+        for _ in range(10):  # Ajuste para malha de controle
+            usina.distribuir_potencia(pot)
+            usina.pot_medidor = sum(ug.setpoint for ug in usina.ugs)  # Ajuste para malha de controle
+        self.assertEqual(usina.ug1.setpoint, self.cfg['pot_minima'])
+        for ug in usina.ugs[1:]:
+            self.assertEqual(ug.setpoint, 0)
+
+    def test_divisao_pot_caso_I(self):
+        # Teste:            test_divisao_pot_caso_I
+        # Estado inicial:   Max de uma UG < Alvo <= Max + margem
+        #                   Todas UGs sincronizadas
+        # Resposta:         Uma UG -> pot, outras = 0
+        usina = Usina(cfg=self.cfg, clp=self.clp_mock, db=self.db_mock)
+        for ug in usina.ugs:
+            ug.setpoint = self.cfg['pot_maxima_ug']
+            ug.potencia = self.cfg['pot_maxima_ug']
+            ug.sincronizada = True
+        pot = self.cfg['pot_maxima_ug'] + self.cfg['margem_pot_critica'] * 0.5
+        for _ in range(10):  # Ajuste para malha de controle
+            usina.distribuir_potencia(pot)
+            usina.pot_medidor = sum(ug.setpoint for ug in usina.ugs)  # Ajuste para malha de controle
+        for ug in usina.ugs:
+            self.assertEqual(ug.setpoint, pot/len(usina.ugs))
+
+    def test_divisao_pot_caso_J(self):
+        # Teste:            test_divisao_pot_caso_J
+        # Estado inicial:   Max UG - margem < Alvo <= Max UG
+        #                   Todas UGs sincronizadas
+        # Resposta:         Uma UG -> pot, outras = 0
+        usina = Usina(cfg=self.cfg, clp=self.clp_mock, db=self.db_mock)
+        for ug in usina.ugs:
+            ug.setpoint = self.cfg['pot_maxima_ug']
+            ug.potencia = self.cfg['pot_maxima_ug']
+            ug.sincronizada = True
+        pot = self.cfg['pot_maxima_ug'] - self.cfg['margem_pot_critica'] * 1.1
+        for _ in range(10):  # Ajuste para malha de controle
+            usina.distribuir_potencia(pot)
+            usina.pot_medidor = sum(ug.setpoint for ug in usina.ugs)  # Ajuste para malha de controle
+        self.assertEqual(usina.ug1.setpoint, pot)
+        for ug in usina.ugs[1:]:
+            self.assertEqual(ug.setpoint, 0)
+
+    def test_divisao_pot_caso_K(self):
+        # Teste:            test_divisao_pot_caso_K
+        # Estado inicial:   Alvo < Min UG
+        #                   Todas UGs sincronizadas
+        # Resposta:         Uma UG -> pot, outras = 0
+        usina = Usina(cfg=self.cfg, clp=self.clp_mock, db=self.db_mock)
+        for ug in usina.ugs:
+            ug.setpoint = self.cfg['pot_maxima_ug']
+            ug.potencia = self.cfg['pot_maxima_ug']
+            ug.sincronizada = True
+        pot = self.cfg['pot_minima'] * 0.5
+        for _ in range(10):  # Ajuste para malha de controle
+            usina.distribuir_potencia(pot)
+            usina.pot_medidor = sum(ug.setpoint for ug in usina.ugs)  # Ajuste para malha de controle
+        self.assertEqual(usina.ug1.setpoint, self.cfg['pot_minima'])
+        for ug in usina.ugs[1:]:
+            self.assertEqual(ug.setpoint, 0)
 
 if __name__ == '__main__':
     unittest.main()
