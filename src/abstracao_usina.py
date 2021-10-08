@@ -305,19 +305,26 @@ class Usina:
         if self.pot_medidor > self.cfg['pot_maxima_alvo'] and pot_alvo > (self.cfg['pot_maxima_alvo'] * 0.95):
             pot_alvo = pot_alvo * 0.99 * (self.cfg['pot_maxima_alvo'] / self.pot_medidor)
 
-        if pot_alvo < self.cfg['pot_minima']:
-            self.ug1.mudar_setpoint(0)
-            self.ug2.mudar_setpoint(0)
+        ugs = self.lista_de_ugs_disponiveis()
+
+        if 0.1 < pot_alvo < self.cfg['pot_minima']:
+            if len(ugs) > 0:
+                ugs[0].mudar_setpoint(self.cfg['pot_minima'])
+                for ug in ugs[1:]:
+                    ug.mudar_setpoint(0)
+        elif pot_alvo < self.cfg['pot_maxima_ug'] - self.cfg['margem_pot_critica']:
+            ugs[0].mudar_setpoint(pot_alvo)
+            for ug in ugs[1:]:
+                ug.mudar_setpoint(0)
         else:
             pot_alvo = min(pot_alvo, self.pot_disp)
             if self.ug1.sincronizada and self.ug2.sincronizada and pot_alvo > (2 * self.cfg['pot_minima']) or \
                     ((pot_alvo > (self.cfg['pot_maxima_ug'] + self.cfg['margem_pot_critica']))
                      and (abs(self.erro_nv) > 0.05) and self.ug1.disponivel and self.ug2.disponivel):
-                self.ug1.mudar_setpoint(pot_alvo / 2)
-                self.ug2.mudar_setpoint(pot_alvo / 2)
+                for ug in ugs:
+                    ug.mudar_setpoint(pot_alvo/len(ugs))
             else:
                 pot_alvo = min(pot_alvo, self.cfg['pot_maxima_ug'])
-                ugs = self.lista_de_ugs_disponiveis()
                 if len(ugs) > 0:
                     ugs[0].mudar_setpoint(pot_alvo)
 
