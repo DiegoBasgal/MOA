@@ -144,6 +144,12 @@ class world_abstraction(threading.Thread):
         self.ug1_temp_mancal = max(self.ug1_temp_mancal, 25) + random.normal(0, 0.01)
         self.ug1_perda_grade = max(self.ug1_perda_grade + random.exponential(scale=0.001) - 0.001, 0)
 
+        if self.ug1_temp_mancal >= 100:
+            self.ug1_flags = self.ug1_flags | 2
+
+        if self.ug1_perda_grade >= 3:
+            self.ug1_flags = self.ug1_flags | 4
+
         # Tratar flag da UG
         if not (self.ug1_flags == 0):
             self.ug1_setpoint = 0
@@ -181,6 +187,12 @@ class world_abstraction(threading.Thread):
         # Variaveis do ambiente
         self.ug2_temp_mancal = max(self.ug2_temp_mancal, 25) + random.normal(0, 0.01)
         self.ug2_perda_grade = max(self.ug2_perda_grade + random.exponential(scale=0.001) - 0.001, 0)
+
+        if self.ug2_temp_mancal >= 100:
+            self.ug2_flags = self.ug2_flags | 2
+
+        if self.ug2_perda_grade >= 3:
+            self.ug2_flags = self.ug2_flags | 4
 
         # Tratar flag da UG
         if not (self.ug2_flags == 0):
@@ -272,7 +284,7 @@ class world_abstraction(threading.Thread):
             100     Usina Flags     [raw]   
             """
 
-            self.REGS = DataBank.get_words(0, 101)
+            self.REGS = DataBank.get_words(40000, 101)
             self.ug1_flags = (int(self.REGS[20]))
             self.ug1_setpoint = (int(self.REGS[22]) / 1000)
             self.ug2_flags = (int(self.REGS[30]))
@@ -301,7 +313,7 @@ class world_abstraction(threading.Thread):
                 if float(self.events[0][0])*60 <= self.simulation_time:
                     current_event = self.events[0]  # hold current
                     for i in range(9):
-                        current_event[i] = float(current_event[i].replace(',', '.'))
+                        current_event[i] = float(current_event[i])
                     self.events = self.events[1:]   # remove current from list
                     q_aflu = min(max(0, current_event[1]), 100) if current_event[1] >= 0 else q_aflu
                     self.flags_usina = current_event[2] if current_event[2] >= 0 else self.flags_usina

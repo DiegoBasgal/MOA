@@ -48,70 +48,11 @@ th_world_abstraction = world_abstraction.world_abstraction(simulation_speed=simu
 # 1 thread para interagir com a simulação
 th_simulation_interface = simulation_interface.simulation_interface()
 
-if simulation_speed < 120:
-    th_world_abstraction.start()
-    th_simulation_interface.start()
-    sleep(5)
-    logger.info("[PRE] World model and clp model is running.")
-
-    # Carrega o arquivo de configuração inicial
-    config_file = os.path.join('..', 'src', 'config.json')
-    with open(config_file, 'r') as file:
-        temp_cfg = json.load(file)
-
-    # Executar testes
-    logger.info("[TEST] Running tests")
-    # Todo testes
-    # Comunicação modbus -> CLP ok?
-    try:
-        modbus_client = ModbusClient(host=temp_cfg['clp_ip'], port=temp_cfg['clp_porta'], timeout=5, unit_id=1, auto_open=True, auto_close=True)
-        if modbus_client.open():
-            logger.debug("[TEST] Connect to Modbus slave on ({}:{}) PASSED".format(temp_cfg['clp_ip'], temp_cfg['clp_porta']))
-        else:
-            raise ConnectionError()
-        modbus_client.close()
-    except Exception as e:
-        logger.info("[TEST] Connect to Modbus slave on ({}:{}) FAILLED".format(temp_cfg['clp_ip'], temp_cfg['clp_porta']))
-        logger.debug("[TEST] Fail caused by: {}".format(repr(e)))
-
-    # Modbus server liga ok?
-    try:
-        modbus_server = ModbusServer(host=temp_cfg['moa_slave_ip'], port=temp_cfg['moa_slave_porta'], no_block=True)
-        modbus_server.start()
-        if modbus_server.is_run:
-            logger.debug("[TEST] Opening Modbus slave on ({}:{}) PASSED".format(temp_cfg['moa_slave_ip'], temp_cfg['moa_slave_porta']))
-        else:
-            raise ConnectionError()
-        modbus_server.stop()
-    except Exception as e:
-        logger.info("[TEST] Opening Modbus slave on ({}:{}) FAILLED".format(temp_cfg['moa_slave_ip'], temp_cfg['moa_slave_porta']))
-        logger.debug("[TEST] Fail caused by: {}".format(repr(e)))
-
-    # Comunicação -> DB local ok?
-    # Comunicação -> Medidores ok?
-
-    # Emergência aciona vars corretas?
-    # As entradas fisicas funcionam?
-    #   Se sim, gatilho de leitura dispara rotina de leitura?
-    #   Habilita/Desabilita MOA conforme painel?
-    # Maquinas bloqueiam quando ordenado?
-    #   Pelo CLP
-    #   Pelo contato eletrico
-    #
-    # Comporta ok?
-    # Prioridades das ugs ok?
-    # Agendamentos ok?
-    #   Verifica anteriores e trata?
-    #   Verifica atual e executa?
-    #   Verifica futuro e sabe?
-
-    logger.info("[TEST] Finished running tests")
-
 # Simular comportamento completo
 logger.info("[SIMUL] Running operador_autonomo_sm ({}x real time)".format(simulation_speed))
 try:
     # Inicia o MOA
-    subprocess.Popen(['python', '../src/operador_autonomo_sm.py', '{}'.format(simulation_speed)])
+    subprocess.Popen(['python3', '../src/operador_autonomo_sm.py', '{}'.format(simulation_speed)])
     if not th_world_abstraction.is_alive():
         th_world_abstraction.start()
     if not th_simulation_interface.is_alive():
