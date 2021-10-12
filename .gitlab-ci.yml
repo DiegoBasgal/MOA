@@ -1,0 +1,44 @@
+image: "python:3.8"
+
+variables:
+  PIP_CACHE_DIR: "$CI_PROJECT_DIR/.cache/pip"
+  SAST_EXCLUDED_ANALYZERS: "eslint-sast"
+  SAST_EXCLUDED_PATHS: "spec, test, tests, tmp, site-packages"
+
+cache:
+  paths:
+    - .cache/pip
+    - venv/
+
+stages:
+  - build
+  - static-analysis
+  - test
+
+build-moa:
+  stage: build
+  script:
+  - apt-get update && apt-get install -y g++ unixodbc-dev
+  - apt-get install -y build-essential libssl-dev libffi-dev python3-dev
+  - pip install virtualenv
+  - virtualenv venv
+  - source venv/bin/activate
+  - pip install -r src/requirements.txt
+
+unit-test-moa:
+  stage: test
+  script:
+  - pip install virtualenv
+  - virtualenv venv
+  - source venv/bin/activate
+  - pip install nose
+  - nosetests --where test --with-coverage --cover-erase --cover-branches --cover-package src --cover-min-percentage=5
+
+include:
+  - template: Security/SAST.gitlab-ci.yml
+  - template: Security/Secret-Detection.gitlab-ci.yml
+
+sast:
+  stage: static-analysis
+secret_detection:
+  stage: static-analysis
