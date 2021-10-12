@@ -7,7 +7,7 @@ from decimal import Decimal
 
 import src.abstracao_usina
 import src.operador_autonomo_sm
-from src.mensageiro import voip
+from src.mensageiro import voip, telegram_bot
 
 
 class TestNivel(unittest.TestCase):
@@ -16,6 +16,7 @@ class TestNivel(unittest.TestCase):
     def setUpClass(cls):
         logging.disable(logging.CRITICAL)
         voip.enviar_voz_teste = MagicMock()
+        telegram_bot.enviar_a_todos = MagicMock()
 
     @classmethod
     def tearDownClass(cls):
