@@ -7,7 +7,8 @@ from pyModbusTCP.server import DataBank
 logger = logging.getLogger('__main__')
 
 AGENDAMENTO_INDISPONIBILIZAR = 2
-
+AGENDAMENTO_DISPARAR_MENSAGEM_TESTE = 777
+MODO_ESCOLHA_MANUAL = 2
 
 class Usina:
 
@@ -64,13 +65,14 @@ class Usina:
 
         # Estabelece as conexões iniciais com CLP e DB
         self.ler_valores()
+        self.controle_ie = (self.ug1.potencia + self.ug2.potencia)/cfg['pot_maxima_alvo']
 
     def ler_valores(self):
 
         # CLP
         regs = [0]*40000
-        regs += self.clp.read_sequential(40000, 101)
-
+        aux = self.clp.read_sequential(40000, 101)
+        regs += aux
         # USN
         self.clp_emergencia_acionada = regs[self.cfg['ENDERECO_CLP_USINA_FLAGS']]
         self.nv_montante = round((regs[self.cfg['ENDERECO_CLP_NV_MONATNTE']] * 0.001) + 620, 2)
@@ -163,9 +165,11 @@ class Usina:
     def escrever_valores(self):
 
         # CLP
-        self.clp.write_to_single(self.cfg['ENDERECO_CLP_UG1_FLAGS'], self.ug1.flag)
+        if self.ug1.pendente:
+            self.clp.write_to_single(self.cfg['ENDERECO_CLP_UG1_FLAGS'], self.ug1.flag)
         self.clp.write_to_single(self.cfg['ENDERECO_CLP_UG1_SETPOINT'], int(self.ug1.setpoint * 1000))
-        self.clp.write_to_single(self.cfg['ENDERECO_CLP_UG2_FLAGS'], self.ug2.flag)
+        if self.ug2.pendente:
+            self.clp.write_to_single(self.cfg['ENDERECO_CLP_UG2_FLAGS'], self.ug2.flag)
         self.clp.write_to_single(self.cfg['ENDERECO_CLP_UG2_SETPOINT'], int(self.ug2.setpoint * 1000))
         self.clp.write_to_single(self.cfg['ENDERECO_CLP_COMPORTA_POS'], int(self.comporta.pos_comporta))
 
@@ -203,6 +207,8 @@ class Usina:
         self.db.update_emergencia(0)
         self.db_emergencia_acionada = 0
         self.clp.write_to_single(self.cfg['ENDERECO_CLP_USINA_FLAGS'], 0)
+        self.clp.write_to_single(self.cfg['ENDERECO_CLP_UG1_FLAGS'], 0)
+        self.clp.write_to_single(self.cfg['ENDERECO_CLP_UG2_FLAGS'], 0)
         self.clp_emergencia_acionada = 0
 
     def heartbeat(self):
@@ -233,7 +239,14 @@ class Usina:
         Retorna os agendamentos pendentes para a usina.
         :return: list[] agendamentos
         """
-        return self.db.get_agendamentos_pendentes()
+        agora = datetime.now()
+        agora = agora - timedelta(seconds=agora.second, microseconds=agora.microsecond)
+        agendamentos_pendentes = []
+        agendamentos = self.db.get_agendamentos_pendentes()
+        for agendamento in agendamentos:
+            if agendamento[1] <= agora:
+                agendamentos_pendentes.append(agendamento)
+        return agendamentos_pendentes
 
     def verificar_agendamentos(self):
         """
@@ -263,6 +276,11 @@ class Usina:
                 logger.info("Executando gendamento #{} - {}.".format(agendamento[0], agendamento[2]))
 
                 # Exemplo Case agendamento:
+                if agendamento[2] == AGENDAMENTO_DISPARAR_MENSAGEM_TESTE:
+                    # Coloca em emergência
+                    logger.info("Disparando mensagem teste (comando via agendamento).")
+                    self.disparar_mensagem_teste()
+
                 if agendamento[2] == AGENDAMENTO_INDISPONIBILIZAR:
                     # Coloca em emergência
                     logger.info("Indisponibilizando a usina (comando via agendamento).")
@@ -287,22 +305,28 @@ class Usina:
         if self.pot_medidor > self.cfg['pot_maxima_alvo'] and pot_alvo > (self.cfg['pot_maxima_alvo'] * 0.95):
             pot_alvo = pot_alvo * 0.99 * (self.cfg['pot_maxima_alvo'] / self.pot_medidor)
 
-        if pot_alvo < self.cfg['pot_minima']:
-            self.ug1.mudar_setpoint(0)
-            self.ug2.mudar_setpoint(0)
+        ugs = self.lista_de_ugs_disponiveis()
+
+        if 0.1 < pot_alvo < self.cfg['pot_minima']:
+            if len(ugs) > 0:
+                ugs[0].mudar_setpoint(self.cfg['pot_minima'])
+                for ug in ugs[1:]:
+                    ug.mudar_setpoint(0)
+        elif pot_alvo < self.cfg['pot_maxima_ug'] - self.cfg['margem_pot_critica']:
+            ugs[0].mudar_setpoint(pot_alvo)
+            for ug in ugs[1:]:
+                ug.mudar_setpoint(0)
         else:
             pot_alvo = min(pot_alvo, self.pot_disp)
             if self.ug1.sincronizada and self.ug2.sincronizada and pot_alvo > (2 * self.cfg['pot_minima']) or \
                     ((pot_alvo > (self.cfg['pot_maxima_ug'] + self.cfg['margem_pot_critica']))
                      and (abs(self.erro_nv) > 0.05) and self.ug1.disponivel and self.ug2.disponivel):
-                self.ug1.mudar_setpoint(pot_alvo / 2)
-                self.ug2.mudar_setpoint(pot_alvo / 2)
+                for ug in ugs:
+                    ug.mudar_setpoint(pot_alvo/len(ugs))
             else:
                 pot_alvo = min(pot_alvo, self.cfg['pot_maxima_ug'])
-                ugs = self.lista_de_ugs_disponiveis()
-                ugs[0].mudar_setpoint(pot_alvo)
-                for ug in ugs[1:]:
-                    ug.mudar_setpoint(0)
+                if len(ugs) > 0:
+                    ugs[0].mudar_setpoint(pot_alvo)
 
     def lista_de_ugs_disponiveis(self):
         """
@@ -313,7 +337,7 @@ class Usina:
             if ug.disponivel:
                 ls.append(ug)
 
-        if self.modo_de_escolha_das_ugs == 2:
+        if self.modo_de_escolha_das_ugs == MODO_ESCOLHA_MANUAL:
             # escolher por maior prioridade primeiro
             ls = sorted(ls, key=lambda y: (not y.sincronizada, not y.setpoint, not y.prioridade, y.horas_maquina))
         else:
@@ -354,11 +378,19 @@ class Usina:
                        self.cfg['pot_minima'])
         self.distribuir_potencia(pot_alvo)
 
+    def disparar_mensagem_teste(self):
+        logger.debug("Este e um teste!")
+        logger.info("Este e um teste!")
+        logger.warning("Este e um teste!")
+        logger.error("Este e um teste!")
+        logger.critical("Este e um teste!")
+
 
 class UnidadeDeGeracao:
 
     def __init__(self, id_ug):
 
+        self.pendente = True
         self.id_da_ug = id_ug
         self.flag = 0
         self.disponivel = True
@@ -376,18 +408,26 @@ class UnidadeDeGeracao:
         self.pot_disponivel = 0
 
     def normalizar(self, flag=0b1):
-        # Normaliza a ug
+        if self.flag % flag:
+            temp = self.flag
+            self.flag = self.flag & ~flag
+            logger.info("Normalizando Flag {:08b} & ~{:08b} --> {:08b}({})".format(temp, flag, self.flag, self.flag))
+            self.pendente = True
 
-        if self.flag & flag:
-            self.flag = self.flag - flag
-            logger.info("UG {} normalizada a flag {}.".format(self.id_da_ug, flag))
 
-    def indisponibilizar(self, flag=0b1, descr="Sem descrição adcional"):
+    def indisponibilizar(self, flag=None, descr="Sem descrição adcional"):
         # Indisponibiliza a ug
+        if flag is None:
+            raise ValueError
 
         if not self.flag & flag:
-            logger.info("Indisponibilizando UG {}. Flag ({}) ({})".format(self.id_da_ug, flag, descr))
-            self.flag += flag
+            logger.info("Indisponibilizando UG {}. Flag ({:08b}) ({})".format(self.id_da_ug, flag, descr))
+            self.sincronizada = False
+            self.setpoint = 0
+            temp = self.flag
+            self.flag = self.flag | flag
+            logger.info("Flag {:08b} | {:08b} --> {:08b}({})".format(temp, flag, self.flag, self.flag))
+            self.pendente = True
 
     def atualizar_estado(self):
         """
@@ -395,29 +435,30 @@ class UnidadeDeGeracao:
         """
 
         if self.flag and self.disponivel:
-            logger.warning("UG {} indisponivel. Flag {}.".format(self.id_da_ug, self.flag))
+            logger.warning("UG {} indisponivel. Flags 0b{:08b} ({}).".format(self.id_da_ug, self.flag, self.flag))
             self.disponivel = False
 
         if not self.flag and not self.disponivel:
-            logger.warning("UG {} disponivel. Flag {}.".format(self.id_da_ug, self.flag))
+            logger.info("UG {} disponivel.   Flags 0b{:08b} ({}).".format(self.id_da_ug, self.flag, self.flag))
             self.disponivel = True
 
         self.sincronizada = True if self.potencia > 0 else False
 
         # todo Verificações
+
         if self.temp_mancal >= self.temp_mancal_max:
             self.indisponibilizar(0b10,
                                   "Temperatura do mancal excedida (atual:{}; max:{})".format(self.temp_mancal,
                                                                                              self.temp_mancal_max))
-        else:
-            self.normalizar(0b10)
 
         if self.perda_na_grade >= self.perda_na_grade_max:
             self.indisponibilizar(0b100,
                                   "Perda máxima na grade excedida (atual:{}; max:{})".format(self.perda_na_grade,
                                                                                              self.perda_na_grade_max))
-        else:
-            self.normalizar(0b100)
+        if self.perda_na_grade < self.perda_na_grade_alerta and self.flag == 0b100:
+            self.normalizar(4)
+
+        self.pendente = False
 
     def mudar_setpoint(self, alvo):
 
@@ -454,12 +495,15 @@ class Comporta:
 
     def atualizar_estado(self, nv_montante):
 
+        self.posicoes = [self.pos_0, self.pos_1, self.pos_2,
+                         self.pos_3, self.pos_4, self.pos_5]
+
         if not 0 <= self.pos_comporta <= 5:
             raise IndexError("Pos comporta invalida {}".format(self.pos_comporta))
 
         estado_atual = self.posicoes[self.pos_comporta]
         pos_alvo = self.pos_comporta
-        if nv_montante < 643.5:
+        if nv_montante < self.pos_1['anterior']:
             pos_alvo = 0
         else:
             if nv_montante < estado_atual['anterior']:
@@ -468,7 +512,7 @@ class Comporta:
                 pos_alvo = self.pos_comporta + 1
             pos_alvo = min(max(0, pos_alvo), 5)
         if not pos_alvo == self.pos_comporta:
-            self.pos_comporta = pos_alvo
             logger.info("Mudança de setpoint da comprota para {} (atual:{})".format(pos_alvo, self.pos_comporta))
+            self.pos_comporta = pos_alvo
 
         return pos_alvo

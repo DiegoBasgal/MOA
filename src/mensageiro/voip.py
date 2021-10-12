@@ -40,28 +40,6 @@ token_auth_voip = config['token_auth_voip']
 voz_habilitado = config['voz_habilitado']
 lista_de_contatos_padrao = [["DEBUG MOA", "41988591567"], ["TabordaCorporativo", "41999060224"],]
 
-# Lê do banco
-# ToDo Remover o acesso direto ao banco de dados e colocar junto de algum arquivo auxilixar
-from MySQLdb import connect, cursors
-try:
-    mysql_config = {
-            "host": "localhost",
-            "user": "root",
-            "passwd": "11Marco2020@",  #REMOVER
-            "db": "django_db",
-            "charset": "utf8"
-        }
-
-    db = connect(**mysql_config)
-    cur = db.cursor(cursors.DictCursor)
-    cur.execute("SELECT nome, numero FROM parametros_moa_contato")
-    rows = cur.fetchall()
-    for row in rows:
-        lista_de_contatos_padrao.append([row["nome"], row["numero"]])
-except Exception as e:
-    logger.error("Exception ao ler os contatos do banco de dados. {}".format(e))
-
-
 def enviar_voz_teste(lista_de_contatos=None):
     """
     Esta função exemplifica como o envio de um torpedo d voz deve ser feio.

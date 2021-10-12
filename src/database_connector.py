@@ -21,8 +21,8 @@ class Database:
     def __init__(self):
         self.config = {
             'host': "localhost",
-            'user': "root",
-            'passwd': "11Marco2020@",
+            'user': "moa",
+            'passwd': "senhaFraca123",
             'db': "django_db",
             'charset': 'utf8',
         }
@@ -103,7 +103,7 @@ class Database:
         self.execute(q)
         return True
 
-    def update_agendamento(self,id_agendamento, executado):
+    def update_agendamento(self, id_agendamento, executado):
         if executado:
             executado = 1
         else:
