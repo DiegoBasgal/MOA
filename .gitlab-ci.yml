@@ -23,6 +23,15 @@ build-moa:
   - source venv/bin/activate
   - pip install -r src/requirements.txt
 
+test-artifact:
+  stage: build
+  script:
+  - wget https://i.pinimg.com/originals/88/5b/7b/885b7b783181234c51ea17ec48a02506.jpg
+  artifacts:
+    paths:
+      - 885b7b783181234c51ea17ec48a02506.jpg
+    expire_in: 1 week
+
 unit-test-moa:
   stage: test
   script:
