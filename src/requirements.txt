@@ -1,0 +1,9 @@
+future~=0.18.2
+numpy~=1.21.2
+Django~=3.2.6
+matplotlib~=3.4.3
+python_telegram_bot~=13.7
+mysql_connector_repackaged~=0.3.1
+pyModbusTCP~=0.1.10
+pyodbc~=4.0.32
+telegram~=0.0.1
