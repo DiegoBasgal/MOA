@@ -106,7 +106,7 @@ class TestNivel(unittest.TestCase):
 
         self.usina = src.abstracao_usina.Usina(cfg=self.cfg, clp=self.clp_mock, db=self.db_mock)
 
-    def teste_nivel_abaixo_do_limite(self):
+    def test_nivel_abaixo_do_limite(self):
         logging.disable(logging.NOTSET)
         nv_teste = 641.24
         self.usina.acionar_emergencia = MagicMock()
@@ -121,7 +121,7 @@ class TestNivel(unittest.TestCase):
         self.usina.acionar_emergencia.assert_called()
         voip.enviar_voz_teste.assert_called()
 
-    def teste_nivel_acima_do_limite(self):
+    def test_nivel_acima_do_limite(self):
         logging.disable(logging.NOTSET)
         nv_teste = 647.01
         self.usina.acionar_emergencia = MagicMock()

@@ -5,7 +5,7 @@ from unittest.mock import MagicMock, patch
 from src import operador_autonomo_sm
 
 
-class TesteComportamentoSM(unittest.TestCase):
+class TestComportamentoSM(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls):

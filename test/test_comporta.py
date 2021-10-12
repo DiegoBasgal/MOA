@@ -3,7 +3,7 @@ import unittest
 from src.abstracao_usina import Comporta
 
 
-class TesteComportamentoDaComporta(unittest.TestCase):
+class TestComportamentoDaComporta(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls):
@@ -43,7 +43,7 @@ class TesteComportamentoDaComporta(unittest.TestCase):
             comporta.atualizar_estado(100.0)
             self.assertEqual(comporta.pos_comporta, resposta_desejada)
 
-    def teste_nivel_degrau_abaixo(self):
+    def test_nivel_degrau_abaixo(self):
         # Objetivo Verificar que a comporta fecha somente o necessário
         comporta = Comporta()
         comporta.pos_0 = {'pos': 0, 'anterior':  0.0, 'proximo': 15.0}
@@ -61,7 +61,7 @@ class TesteComportamentoDaComporta(unittest.TestCase):
                 comporta.atualizar_estado(nv_teste)
             self.assertEqual(comporta.pos_comporta, resposta_desejada)
 
-    def teste_nivel_degrau_acima(self):
+    def test_nivel_degrau_acima(self):
         # Objetivo Verificar que a comporta abre somente o necessário
         comporta = Comporta()
         comporta.pos_0 = {'pos': 0, 'anterior':  0.0, 'proximo': 15.0}
