@@ -99,6 +99,9 @@ class TestUG(unittest.TestCase):
                                                               ug2_temp_alerta=Decimal('75.00'))
         self.usina = Usina(cfg=self.cfg, clp=self.clp_mock, db=self.db_mock)
 
+    def tearDown(self):
+        pass
+
     def test_distribuir_pot_caso_max(self):
         # Teste:            test_distribuir_pot_caso_max
         # Objetivo:         Verificar distribuição de potência máxima
@@ -412,6 +415,57 @@ class TestUG(unittest.TestCase):
             self.assertIs(ug, lista[0])
             self.assertIsNot(ug, lista[1])
 
+    def test_zona_alerta_teperadura(self):
+        # Se temperatura > alerta ent�o setpoint ug < alvo
+        for ug in self.usina.ugs:
+            for ug_aux in self.usina.ugs:
+                ug_aux.temp_mancal_alerta = 70
+                ug_aux.temp_mancal_max = 90
+                ug_aux.temp_mancal = 25
+            ug.temp_mancal = 80
+            alvo = round(self.cfg['pot_maxima_ug'] * 0.9, 2)
+            ug.mudar_setpoint(alvo)
+            ug.atualizar_estado()
+            self.assertLess(ug.setpoint, alvo)
+
+    def test_zona_limite_teperadura(self):
+        # Se temperatura > limite ent�o setpoint ug == 0
+        for ug in self.usina.ugs:
+            for ug_aux in self.usina.ugs:
+                ug_aux.temp_mancal_alerta = 70
+                ug_aux.temp_mancal_max = 90
+                ug_aux.temp_mancal = 25
+            ug.temp_mancal = 91
+            alvo = round(self.cfg['pot_maxima_ug'] * 0.9, 2)
+            ug.mudar_setpoint(alvo)
+            ug.atualizar_estado()
+            self.assertEqual(ug.setpoint, 0)
+
+    def test_zona_alerta_perda_na_grade(self):
+        # Se perda na grade > alerta ent�o setpoint ug < alvo
+        for ug in self.usina.ugs:
+            for ug_aux in self.usina.ugs:
+                ug_aux.perda_na_grade_alerta = 2
+                ug_aux.perda_na_grade_mancal_max = 3
+                ug_aux.perda_na_grade_mancal = 1
+            ug.perda_na_grade = 2.5
+            alvo = round(self.cfg['pot_maxima_ug'] * 0.9, 2)
+            ug.mudar_setpoint(alvo)
+            ug.atualizar_estado()
+            self.assertLess(ug.setpoint, alvo)
+
+    def test_zona_limite_perda_na_grade(self):
+        # Se perda na grade > limite ent�o setpoint ug == 0
+        for ug in self.usina.ugs:
+            for ug_aux in self.usina.ugs:
+                ug_aux.perda_na_grade_alerta = 2
+                ug_aux.perda_na_grade_mancal_max = 3
+                ug_aux.perda_na_grade_mancal = 1
+            ug.perda_na_grade = 3.5
+            alvo = round(self.cfg['pot_maxima_ug'] * 0.9, 2)
+            ug.mudar_setpoint(alvo)
+            ug.atualizar_estado()
+            self.assertLess(ug.setpoint, alvo)
 
 if __name__ == '__main__':
     unittest.main()
