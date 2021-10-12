@@ -1,4 +1,4 @@
-image: "python:3.8"
+image: "registry.gitlab.com/ritmo-energia/operacao-autonoma:latest"
 
 variables:
   PIP_CACHE_DIR: "$CI_PROJECT_DIR/.cache/pip"
@@ -12,14 +12,12 @@ cache:
 
 stages:
   - build
-  - static-analysis
   - test
+  - static-analysis
 
 build-moa:
   stage: build
   script:
-  - apt-get update && apt-get install -y g++ unixodbc-dev
-  - apt-get install -y build-essential libssl-dev libffi-dev python3-dev
   - pip install virtualenv
   - virtualenv venv
   - source venv/bin/activate
