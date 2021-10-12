@@ -334,6 +334,8 @@ if __name__ == "__main__":
             logger.debug("Iniciando classe Usina")
             try:
                 usina = abstracao_usina.Usina(cfg, clp, db)
+                # Update class values for the first time
+                usina.ler_valores()
             except ConnectionError as e:
                 logger.error(
                     "Erro ao iniciar Classe Usina. Tentando novamente em {}s (tentativa {}/3). Exception: {}.".format(

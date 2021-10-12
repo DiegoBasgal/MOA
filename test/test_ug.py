@@ -99,6 +99,7 @@ class TestUG(unittest.TestCase):
                                                               ug2_perda_grade_alerta=Decimal('1.000'),
                                                               ug2_temp_alerta=Decimal('75.00'))
         self.usina = Usina(cfg=self.cfg, clp=self.clp_mock, db=self.db_mock)
+        self.usina.ler_valores()
 
     def tearDown(self):
         pass

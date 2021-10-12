@@ -59,6 +59,5 @@
     "ki": -0.015,
     "kd":  -10,
     "kie": 0.08,
-    "saida_ie_inicial" : 0.0
-
+    "saida_ie_inicial" : "auto"
 }

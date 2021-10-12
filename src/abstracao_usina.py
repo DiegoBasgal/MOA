@@ -65,10 +65,6 @@ class Usina:
         self.pot_disp = 0
         self.agendamentos_atrasados = 0
 
-        # Estabelece as conexões iniciais com CLP e DB
-        self.ler_valores()
-        self.controle_ie = (self.ug1.potencia + self.ug2.potencia)/cfg['pot_maxima_alvo']
-
     def ler_valores(self):
 
         # CLP
@@ -163,6 +159,11 @@ class Usina:
         self.kie = float(parametros['kie'])
         self.n_movel_l = float(parametros['n_movel_L'])
         self.n_movel_r = float(parametros['n_movel_R'])
+
+        # ajuste inicial ie
+        if self.controle_ie == 'auto':
+            self.controle_ie = (self.ug1.potencia + self.ug2.potencia)/self.cfg['pot_maxima_alvo']
+
 
     def escrever_valores(self):
 
