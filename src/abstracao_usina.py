@@ -31,8 +31,10 @@ class Usina:
         self.clp_online = False
         self.timeout_padrao = self.cfg['timeout_padrao']
         self.timeout_emergencia = self.cfg['timeout_emergencia']
+        self.nv_fundo_reservatorio = self.cfg['nv_fundo_reservatorio']
         self.nv_minimo = self.cfg['nv_minimo']
         self.nv_maximo = self.cfg['nv_maximo']
+        self.nv_maximorum = self.cfg['nv_maximorum']
         self.nv_religamento = self.cfg['nv_religamento']
         self.nv_alvo = self.cfg['nv_alvo']
         self.kp = self.cfg['kp']

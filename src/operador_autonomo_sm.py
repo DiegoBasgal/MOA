@@ -31,18 +31,18 @@ if not os.path.exists("logs/"):
     os.mkdir("logs/")
 fh = logging.FileHandler("logs/MOA.log")  # log para arquivo
 ch = logging.StreamHandler(stdout)  # log para linha de comando
-#mh = MensageiroHandler()  # log para telegram e voip
+mh = MensageiroHandler()  # log para telegram e voip
 logFormatter = logging.Formatter("%(asctime)s [%(threadName)-12.12s] [%(levelname)-5.5s] [MOA-SM] %(message)s")
 logFormatterSimples = logging.Formatter("[%(levelname)-5.5s] [MOA-SM] %(message)s")
 fh.setFormatter(logFormatter)
 ch.setFormatter(logFormatter)
-#mh.setFormatter(logFormatterSimples)
+mh.setFormatter(logFormatterSimples)
 fh.setLevel(logging.INFO)
 ch.setLevel(logging.DEBUG)
-#mh.setLevel(logging.INFO)
+mh.setLevel(logging.INFO)
 logger.addHandler(fh)
 logger.addHandler(ch)
-#logger.addHandler(mh)
+logger.addHandler(mh)
 
 
 class StateMachine:
@@ -251,6 +251,9 @@ class ReservatorioAbaixoDoMinimo(State):
 
     def run(self):
         self.usina.distribuir_potencia(0)
+        if self.usina.nv_montante <= self.usina.nv_fundo_reservatorio:
+            logger.critical("Nivel montante ({:3.2f}) atingiu o fundo do reservatorio!".format(self.usina.nv_montante))
+            return Emergencia(self.usina)
         return ControleRealizado(self.usina)
 
 
@@ -261,10 +264,15 @@ class ReservatorioAcimaDoMaximo(State):
         self.usina = instancia_usina
 
     def run(self):
-        self.usina.distribuir_potencia(self.usina.cfg['pot_maxima_usina'])
-        self.usina.controle_ie = 0.5
-        self.usina.controle_i = 0.5
-        return ControleRealizado(self.usina)
+        if self.usina.nv_montante >= self.usina.nv_maximorum:
+            self.usina.distribuir_potencia(0)
+            logger.critical("Nivel montante ({:3.2f}) atingiu o maximorum!".format(self.usina.nv_montante))
+            return Emergencia(self.usina)
+        else:
+            self.usina.distribuir_potencia(self.usina.cfg['pot_maxima_usina'])
+            self.usina.controle_ie = 0.5
+            self.usina.controle_i = 0.5
+            return ControleRealizado(self.usina)
 
 
 class ReservatorioNormal(State):

@@ -39,7 +39,8 @@ class TestAgendamentos(unittest.TestCase):
                         ENDERECO_LOCAL_UG2_SETPOINT=40030, ENDERECO_LOCAL_UG2_DISP=40031,
                         ENDERECO_LOCAL_CLP_ONLINE=40099, ENDERECO_LOCAL_STATUS_MOA=40100, timeout_padrao=5,
                         timeout_emergencia=10, timeout_normalizacao=10, n_movel_R=5, n_movel_L=30,
-                        nv_minimo=643.0, nv_alvo=643.25, nv_maximo=643.5, nv_religamento=643.25,
+                        nv_fundo_reservatorio=641.25, nv_minimo=643.0, nv_alvo=643.25, nv_maximo=643.5,
+                        nv_maximorum=647, nv_religamento=643.25,
                         pot_maxima_usina=5.2, pot_maxima_alvo=5.0, pot_minima=1.0, margem_pot_critica=1.0,
                         pot_maxima_ug=2.6, kp=-2.0, ki=-0.015, kd=-10, kie=0.08, saida_ie_inicial=0.0)
 

@@ -6,7 +6,7 @@ A princípio pode-se substituir essa implementação por dois handlers
 saparados, um para voip e um para o telegram, mas por motivos de
 praticidade, foi feito em apenas um handler.
 """
-
+import logging
 from logging import Handler
 from . import telegram_bot
 from . import voip
@@ -33,7 +33,7 @@ class MensageiroHandler(Handler):
             print("Erro ao logar no telegram")
 
         # Só dipara torpedos de voz em caso CRITICO (levelno >= 50)
-        if record.levelno >= 50:
+        if record.levelno >= logging.CRITICAL:
             telegram_bot.enviar_a_todos("[Acionando VOIP: {}]".format(voip.voz_habilitado))
             voip.enviar_voz_teste()
         return True

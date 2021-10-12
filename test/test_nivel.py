@@ -7,6 +7,7 @@ from decimal import Decimal
 
 import src.abstracao_usina
 import src.operador_autonomo_sm
+from src.mensageiro import voip
 
 
 class TestNivel(unittest.TestCase):
@@ -14,6 +15,7 @@ class TestNivel(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
         logging.disable(logging.CRITICAL)
+        voip.enviar_voz_teste = MagicMock()
 
     @classmethod
     def tearDownClass(cls):
@@ -38,7 +40,8 @@ class TestNivel(unittest.TestCase):
                         ENDERECO_LOCAL_UG2_SETPOINT=40030, ENDERECO_LOCAL_UG2_DISP=40031,
                         ENDERECO_LOCAL_CLP_ONLINE=40099, ENDERECO_LOCAL_STATUS_MOA=40100, timeout_padrao=5,
                         timeout_emergencia=10, timeout_normalizacao=10, n_movel_R=5, n_movel_L=30,
-                        nv_minimo=643.0, nv_alvo=643.25, nv_maximo=643.5, nv_religamento=643.25,
+                        nv_fundo_reservatorio=641.25, nv_minimo=643.0, nv_alvo=643.25, nv_maximo=643.5,
+                        nv_maximorum=647, nv_religamento=643.25,
                         pot_maxima_usina=5.2, pot_maxima_alvo=5.0, pot_minima=1.0, margem_pot_critica=1.0,
                         pot_maxima_ug=2.6, kp=-2.0, ki=-0.015, kd=-10, kie=0.08, saida_ie_inicial=0.0)
 
@@ -104,36 +107,34 @@ class TestNivel(unittest.TestCase):
         self.usina = src.abstracao_usina.Usina(cfg=self.cfg, clp=self.clp_mock, db=self.db_mock)
 
     def teste_nivel_abaixo_do_limite(self):
+        logging.disable(logging.NOTSET)
         nv_teste = 641.24
-        with mock.patch('src.mensageiro.voip') as voip:
-            voip.enviar_voz_teste = MagicMock()
-            self.usina.acionar_emergencia = MagicMock()
-            sm = src.operador_autonomo_sm.StateMachine(initial_state=src.operador_autonomo_sm.Pronto(self.usina))
-            self.clp_mock.read_sequential.return_value = [int((nv_teste - 620) * 1000)] + [0]*100
-            sm.exec()  # Atualiza valroes internos
-            self.assertEqual(self.usina.nv_montante, 641.24)
-            sm.exec()  # Deve ter entrado no Reservatorio abaixo do normal
-            self.assertIsInstance(sm.state, src.operador_autonomo_sm.ReservatorioAbaixoDoMinimo)
-            sm.exec()  # Deve ter entrado no Emergencia e ligado para os resp.
-            self.assertIsInstance(sm.state, src.operador_autonomo_sm.Emergencia)
-            self.usina.acionar_emergencia.assert_called()
-            voip.enviar_voz_teste.assert_called()
+        self.usina.acionar_emergencia = MagicMock()
+        sm = src.operador_autonomo_sm.StateMachine(initial_state=src.operador_autonomo_sm.Pronto(self.usina))
+        self.clp_mock.read_sequential.return_value = [int((nv_teste - 620) * 1000)] + [0]*100
+        sm.exec()  # Atualiza valroes internos
+        self.assertEqual(self.usina.nv_montante, nv_teste)
+        sm.exec()  # Deve ter entrado no Reservatorio abaixo do normal
+        self.assertIsInstance(sm.state, src.operador_autonomo_sm.ReservatorioAbaixoDoMinimo)
+        sm.exec()  # Deve ter entrado no Emergencia
+        self.assertIsInstance(sm.state, src.operador_autonomo_sm.Emergencia)
+        self.usina.acionar_emergencia.assert_called()
+        voip.enviar_voz_teste.assert_called()
 
     def teste_nivel_acima_do_limite(self):
+        logging.disable(logging.NOTSET)
         nv_teste = 647.01
-        with mock.patch('src.mensageiro.voip') as voip:
-            voip.enviar_voz_teste = MagicMock()
-            self.usina.acionar_emergencia = MagicMock()
-            sm = src.operador_autonomo_sm.StateMachine(initial_state=src.operador_autonomo_sm.Pronto(self.usina))
-            self.clp_mock.read_sequential.return_value = [int((nv_teste - 620) * 1000)] + [0]*100
-            sm.exec()  # Atualiza valroes internos
-            self.assertEqual(self.usina.nv_montante, 647.01)
-            sm.exec()  # Deve ter entrado no Reservatorio abaixo do normal
-            self.assertIsInstance(sm.state, src.operador_autonomo_sm.ReservatorioAbaixoDoMinimo)
-            sm.exec()  # Deve ter entrado no Emergencia e ligado para os resp.
-            self.assertIsInstance(sm.state, src.operador_autonomo_sm.Emergencia)
-            self.usina.acionar_emergencia.assert_called()
-            voip.enviar_voz_teste.assert_called()
+        self.usina.acionar_emergencia = MagicMock()
+        sm = src.operador_autonomo_sm.StateMachine(initial_state=src.operador_autonomo_sm.Pronto(self.usina))
+        self.clp_mock.read_sequential.return_value = [int((nv_teste - 620) * 1000)] + [0]*100
+        sm.exec()  # Atualiza valroes internos
+        self.assertEqual(self.usina.nv_montante, 647.01)
+        sm.exec()  # Deve ter entrado no Reservatorio abaixo do normal
+        self.assertIsInstance(sm.state, src.operador_autonomo_sm.ReservatorioAcimaDoMaximo)
+        sm.exec()  # Deve ter entrado no Emergencia e ligado para os resp.
+        self.assertIsInstance(sm.state, src.operador_autonomo_sm.Emergencia)
+        self.usina.acionar_emergencia.assert_called()
+        voip.enviar_voz_teste.assert_called()
 
 if __name__ == '__main__':
     unittest.main()
