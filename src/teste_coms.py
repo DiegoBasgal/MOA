@@ -37,14 +37,15 @@ def escrever_no_banco(data, medidor, potencia):
     cursor.execute(q)
     print("Escrito no banco")
 
+
 medidores_NBR = {
     #                IP          PORT  +/- TP    TC  ESCALA
-    "SEB_MP": ["192.141.60.208", 8001, -1*(350)*(20)*(0.001)],
-    "SEB_MR": ["192.141.60.208", 8002, -1*(350)*(20)*(0.001)],
-    "POP_MP": ["177.85.112.52", 5001, -1*(700)*(20)*(0.001)],
-    "POP_MR": ["177.85.112.52", 5002, -1*(700)*(20)*(0.001)],
-    "COV_MP": ["177.220.134.10", 5006, -1*(175)*(20)*(0.001)],
-    "COV_MR": ["177.220.134.10", 5005, -1*(175)*(20)*(0.001)],
+    "SEB_MP": ["192.141.60.208", 8001, -1 * (350) * (20) * (0.001)],
+    "SEB_MR": ["192.141.60.208", 8002, -1 * (350) * (20) * (0.001)],
+    "POP_MP": ["177.85.112.52", 5001, -1 * (700) * (20) * (0.001)],
+    "POP_MR": ["177.85.112.52", 5002, -1 * (700) * (20) * (0.001)],
+    "COV_MP": ["177.220.134.10", 5006, -1 * (175) * (20) * (0.001)],
+    "COV_MR": ["177.220.134.10", 5005, -1 * (175) * (20) * (0.001)],
 }
 
 medidores_MODBUS = {
@@ -86,12 +87,12 @@ while True:
                 sock.send(data)
                 response = sock.recv(1024)
                 response = response[1:]
-                #hora = bcd_to_i(response[6])
-                #minuto = bcd_to_i(response[7])
-                #segundo = bcd_to_i(response[8])
-                #dia = bcd_to_i(response[9])
-                #mes = bcd_to_i(response[10])
-                #ano = bcd_to_i(response[11])
+                # hora = bcd_to_i(response[6])
+                # minuto = bcd_to_i(response[7])
+                # segundo = bcd_to_i(response[8])
+                # dia = bcd_to_i(response[9])
+                # mes = bcd_to_i(response[10])
+                # ano = bcd_to_i(response[11])
                 pot_ativa_trifasica = k * struct.unpack('f', response[64:68])[0]
                 resultados.append([t0, medidor, pot_ativa_trifasica])
                 print(resultados[-1])
@@ -113,7 +114,7 @@ while True:
                 raw = ((regs[0] << 16) + regs[1])
                 if raw > 0b1000000000000000:
                     raw = 0xffffffff - raw
-                pot_ativa_trifasica = round(k*raw, 2)
+                pot_ativa_trifasica = round(k * raw, 2)
                 linha = "{}, {:02d}/{:02d}/20{:02d} {:02d}:{:02d}:{:02d}, {:.2f}".format(medidor, dia, mes, ano, hora, minuto, segundo, pot_ativa_trifasica)
                 resultados.append([t0, medidor, pot_ativa_trifasica])
                 print(resultados[-1])
@@ -124,7 +125,7 @@ while True:
             t0, medidor, pot_ativa_trifasica = resultado
             escrever_no_banco(t0, medidor, pot_ativa_trifasica)
 
-        delta_t = datetime.now()-t0
+        delta_t = datetime.now() - t0
         sleep(max(30 - delta_t.seconds, 0))
 
     except BaseException as e:

@@ -30,9 +30,9 @@ class MensageiroHandler(Handler):
         try:
             telegram_bot.enviar_a_todos(log_entry)
         except Exception as e:
-            print("Erro ao logar no telegram")
+            print("Erro ao logar no telegram. Exception: {}.".format(repr(e)))
 
-        # Só dipara torpedos de voz em caso CRITICO (levelno >= 50)
+        # Só dispara torpedos de voz em caso CRITICO (levelno >= 50)
         if record.levelno >= logging.CRITICAL:
             telegram_bot.enviar_a_todos("[Acionando VOIP: {}]".format(voip.voz_habilitado))
             voip.enviar_voz_teste()

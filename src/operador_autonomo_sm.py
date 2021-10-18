@@ -78,6 +78,7 @@ class FalhaCritica(State):
     Lida com a falha na inicialização do MOA
     :return: None
     """
+
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         logger.critical("Falha crítica MOA.")
@@ -92,6 +93,7 @@ class Pronto(State):
     MOA está pronto, agora ele deve atualizar a vars
     :return: State
     """
+
     def __init__(self, instancia_usina, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.n_tentativa = 0
@@ -343,7 +345,6 @@ if __name__ == "__main__":
                 sleep(timeout)
                 continue
 
-
             # Inicializando Servidor Modbus (para algumas comunicações com o Elipse)
             try:
                 logger.debug("Iniciando Servidor/Slave Modbus MOA.")
@@ -366,7 +367,7 @@ if __name__ == "__main__":
                         timeout, n_tentativa, repr(e)))
                 sleep(timeout)
             except PermissionError as e:
-                logger.error("Não foi possível iniciar o Modbus MOA devido a permissão do usuário.")
+                logger.error("Não foi possível iniciar o Modbus MOA devido a permissão do usuário. Exception: {}.".format(repr(e)))
                 prox_estado = FalhaCritica
             except Exception as e:
                 if DEBUG:
@@ -382,5 +383,5 @@ if __name__ == "__main__":
         t_i = time.time()
         logger.debug("Executando estado: {}".format(sm.state.__class__.__name__))
         sm.exec()
-        t_restante = max(5 - (time.time() - t_i), 0)/ESCALA_DE_TEMPO
+        t_restante = max(5 - (time.time() - t_i), 0) / ESCALA_DE_TEMPO
         sleep(t_restante)

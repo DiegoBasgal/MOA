@@ -91,14 +91,15 @@ while True:
                 if moa_halted:
                     # Se estav antes, avisar que voltou a respoder.
                     moa_halted = False
-                    logger.info("O coração voltou a bater em  {}.".format(timestamp.strftime("%Y-%m-%d, %H:%M:%S"), config['timeout_moa']))
+                    logger.info("O coração voltou a bater em  {}.".format(timestamp.strftime("%Y-%m-%d, %H:%M:%S")))
         else:
             # Se a conexão não abriu, levantar uma exception deste erro
             raise ConnectionError("modbus_client.open() failled.")
 
     # Captura de exceptions durtante a comunicação. Caso ocorrom, continuar o loop.
     except ConnectionError as e:
-        logger.warning("Erro de conexão com o MOA. A última do atualização do HB foi em {}".format(e, timestamp.strftime("%Y-%m-%d, %H:%M:%S")))
+        logger.warning("Erro de conexão com o MOA. A última do atualização do HB foi em {}. Exception: {}".format(
+            timestamp.strftime("%Y-%m-%d, %H:%M:%S"), e))
         continue
     except Exception as e:
         logger.warning("Exception {} durante a conexão com o MOA".format(e))
