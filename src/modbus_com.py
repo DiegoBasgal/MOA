@@ -1519,7 +1519,6 @@ REG_USINA_VersaoCustom = 12765
 
 
 def ler_todos():
-
     """
     Esta função lê todos os endereços de interesse da usina de COVÓ e retorna os dados sem tratamento
     :return: usn_regs, ug1_regs, ug2_regs
@@ -1613,19 +1612,19 @@ def remover_alarmes():
     USN_slave = ModbusClient(host=USN_slave_ip, port=USN_slave_porta, timeout=5, unit_id=1, auto_open=True, auto_close=True)
 
     # Desliga as emergências
-    UG1_slave.write_single_register(REG_UG1_Operacao_EmergenciaDesligar-1, 1)
-    UG2_slave.write_single_register(REG_UG2_Operacao_EmergenciaDesligar-1, 1)
-    USN_slave.write_single_register(REG_USINA_EmergenciaDesligar-1, 1)
+    UG1_slave.write_single_register(REG_UG1_Operacao_EmergenciaDesligar - 1, 1)
+    UG2_slave.write_single_register(REG_UG2_Operacao_EmergenciaDesligar - 1, 1)
+    USN_slave.write_single_register(REG_USINA_EmergenciaDesligar - 1, 1)
 
     # Reconehce as emergências
-    UG2_slave.write_single_register(REG_UG2_Operacao_PCH_CovoReconheceAlarmes-1, 1)
-    UG1_slave.write_single_register(REG_UG1_Operacao_PCH_CovoReconheceAlarmes+1, 1)
-    USN_slave.write_single_register(REG_USINA_ReconheceAlarmes-1, 1)
+    UG2_slave.write_single_register(REG_UG2_Operacao_PCH_CovoReconheceAlarmes - 1, 1)
+    UG1_slave.write_single_register(REG_UG1_Operacao_PCH_CovoReconheceAlarmes + 1, 1)
+    USN_slave.write_single_register(REG_USINA_ReconheceAlarmes - 1, 1)
 
     # Reseta os alarmes
-    UG1_slave.write_single_register(REG_UG1_Operacao_PCH_CovoResetAlarmes-1, 1)
-    UG2_slave.write_single_register(REG_UG2_Operacao_PCH_CovoResetAlarmes-1, 1)
-    USN_slave.write_single_register(REG_USINA_ResetAlarmes-1, 1)
+    UG1_slave.write_single_register(REG_UG1_Operacao_PCH_CovoResetAlarmes - 1, 1)
+    UG2_slave.write_single_register(REG_UG2_Operacao_PCH_CovoResetAlarmes - 1, 1)
+    USN_slave.write_single_register(REG_USINA_ResetAlarmes - 1, 1)
 
 
 def fecha_dj52L():
@@ -1641,12 +1640,13 @@ def fecha_dj52L():
     USN_slave = ModbusClient(host=USN_slave_ip, port=USN_slave_porta, timeout=5, unit_id=1, auto_open=True, auto_close=True)
 
     # Fecha o Disjuntor
-    res = USN_slave.write_single_register(REG_USINA_Disj52LFechar-1, 1)  # dj52L
+    res = USN_slave.write_single_register(REG_USINA_Disj52LFechar - 1, 1)  # dj52L
     if not res:
         # Se não foi possivel escrever no registrador, levanta um erro de conexão
         raise ConnectionError("fecha_dj52L: write_single_register failled.")
 
     return True
+
 
 def DEBUG_ler_e_gravar_log():
     """

@@ -12,8 +12,9 @@ cache:
 
 stages:
   - build
-  - test
   - static-analysis
+  - test
+  - security-analysis
 
 build-moa:
   stage: build
@@ -23,14 +24,14 @@ build-moa:
   - source venv/bin/activate
   - pip install -r src/requirements.txt
 
-test-artifact:
-  stage: build
+lint-moa:
+  stage: static-analysis
   script:
-  - wget https://i.pinimg.com/originals/88/5b/7b/885b7b783181234c51ea17ec48a02506.jpg
-  artifacts:
-    paths:
-      - 885b7b783181234c51ea17ec48a02506.jpg
-    expire_in: 1 week
+  - pip install virtualenv
+  - virtualenv venv
+  - source venv/bin/activate
+  - pip install flake8
+  - flake8 src/
 
 unit-test-moa:
   stage: test
@@ -46,6 +47,6 @@ include:
   - template: Security/Secret-Detection.gitlab-ci.yml
 
 sast:
-  stage: static-analysis
+  stage: security-analysis
 secret_detection:
-  stage: static-analysis
+  stage: security-analysis
