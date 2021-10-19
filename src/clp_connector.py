@@ -31,4 +31,3 @@ class Clp:
             return result
         else:
             raise ConnectionError
-

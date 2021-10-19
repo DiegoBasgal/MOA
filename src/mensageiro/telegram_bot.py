@@ -8,7 +8,7 @@ Existem duas maneiras de utilizar esta integração:
 com mensagens enviadas a ele. Para utilizar este modo basta usar o main().
 
 "Server-less": A implementação permite que o bot envie mensagens aos
-destinatários mesmo que não esteja trodando continuamente, porém isto 
+destinatários mesmo que não esteja trodando continuamente, porém isto
 significa que o bot não atenderá a comandois recebidos no chat.
 A principal maneira de se utilizar o modo server-less é através da
 função enviar_a_todos().
@@ -175,4 +175,3 @@ def main() -> None:
 
 if __name__ == '__main__':
     main()
-
