@@ -1,6 +1,6 @@
 import unittest
 import datetime
-from unittest.mock import MagicMock
+from unittest.mock import MagicMock, patch
 from src.abstracao_usina import Usina
 import logging
 from decimal import Decimal
@@ -19,7 +19,9 @@ class TestUG(unittest.TestCase):
     def setUp(self):
         self.cfg = dict(UG1_slave_ip='192.168.70.10', UG1_slave_porta=502, UG2_slave_ip='192.168.70.13',
                         UG2_slave_porta=502, USN_slave_ip='192.168.70.16', USN_slave_porta=502,
-                        clp_ip='10.101.2.242', clp_porta=5002, moa_slave_ip='0.0.0.0',
+                        clp_A_IP='10.101.2.242', clp_A_PORT=5002,
+                        clp_B_IP='10.101.2.242', clp_B_PORT=5002,
+                        moa_slave_ip='0.0.0.0',
                         moa_slave_porta=5003, ENDERECO_CLP_NV_MONATNTE=40000, ENDERECO_CLP_MEDIDOR=40001,
                         ENDERECO_CLP_COMPORTA_FLAGS=40010, ENDERECO_CLP_COMPORTA_POS=40011,
                         ENDERECO_CLP_UG1_FLAGS=40020, ENDERECO_CLP_UG1_MINUTOS=40023,
@@ -39,11 +41,6 @@ class TestUG(unittest.TestCase):
                         nv_maximorum=647, nv_religamento=643.25,
                         pot_maxima_usina=5.2, pot_maxima_alvo=5.0, pot_minima=1.0, margem_pot_critica=1.0,
                         pot_maxima_ug=2.6, kp=-2.0, ki=-0.015, kd=-10, kie=0.08, saida_ie_inicial=0.0)
-
-        self.clp_mock = MagicMock()
-        self.clp_mock.is_online.return_value = True
-        self.clp_mock.write_to_single.return_value = True
-        self.clp_mock.read_sequential.return_value = [0] * 1000
 
         self.db_mock = MagicMock()
         self.db_mock.get_parametros_usina.return_value = dict(id=1, modo_autonomo=1, status_moa=7,
@@ -98,23 +95,36 @@ class TestUG(unittest.TestCase):
                                                               ug1_temp_alerta=Decimal('75.00'),
                                                               ug2_perda_grade_alerta=Decimal('1.000'),
                                                               ug2_temp_alerta=Decimal('75.00'))
-        self.usina = Usina(cfg=self.cfg, clp=self.clp_mock, db=self.db_mock)
-        self.usina.ler_valores()
 
+        self.mock_con = MagicMock()
+        self.mock_con.get_emergencia_acionada.return_value = 0
+        self.mock_con.get_nv_montante.return_value = 0
+        self.mock_con.get_pot_medidor.return_value = 0
+        self.mock_con.get_flags_ug1.return_value = 0
+        self.mock_con.get_potencia_ug1.return_value = 0
+        self.mock_con.get_horas_ug1.return_value = 0
+        self.mock_con.get_perda_na_grade_ug1.return_value = 0
+        self.mock_con.get_temperatura_do_mancal_ug1.return_value = 0
+        self.mock_con.get_flags_ug2.return_value = 0
+        self.mock_con.get_potencia_ug2.return_value = 0
+        self.mock_con.get_horas_ug2.return_value = 0
+        self.mock_con.get_perda_na_grade_ug2.return_value = 0
+        self.mock_con.get_temperatura_do_mancal_ug2.return_value = 0
+        self.mock_con.set_ug1_flag.return_value = 0
+        self.mock_con.set_ug1_setpoint.return_value = 0
+        self.mock_con.set_ug2_flag.return_value = 0
+        self.mock_con.set_ug2_setpoint.return_value = 0
+        self.mock_con.set_pos_comporta.return_value = 0
+        self.mock_con.acionar_emergencia.return_value = 0
+        self.mock_con.normalizar_emergencia.return_value = 0
+        
+        self.usina = Usina(cfg=self.cfg, db=self.db_mock, con=self.mock_con)
+        self.usina.ler_valores()
+        
     def tearDown(self):
         pass
 
-    def test_distribuir_pot_caso_max(self):
-        # Teste:            test_distribuir_pot_caso_max
-        # Objetivo:         Verificar distribuição de potência máxima
-        # Estado inicial:   Tudo normalizado,
-        #                   setpoint = 0
-        # Resposta:         Soma dos setpoints deve ser a potência nominal da usina
-        for _ in range(10):  # Ajuste para malha de controle
-            self.usina.distribuir_potencia(self.cfg['pot_maxima_alvo'])
-            self.usina.pot_medidor = sum(ug.setpoint for ug in self.usina.ugs)  # Ajuste para malha de controle
-        self.assertEqual(self.usina.ug1.setpoint + self.usina.ug2.setpoint, self.cfg['pot_maxima_alvo'])
-
+    
     def test_distribuir_pot_caso_acima(self):
         # Teste:            test_distribuir_pot_caso_acima
         # Objetivo:         Verificar distribuição de potência caso algo esteja acima do permitido, seja medidor ou UG
@@ -130,6 +140,17 @@ class TestUG(unittest.TestCase):
             self.usina.distribuir_potencia(self.cfg['pot_maxima_alvo'])
             self.usina.pot_medidor = sum(ug.setpoint for ug in self.usina.ugs)  # Ajuste para malha de controle
         self.assertEqual(self.usina.pot_medidor, self.cfg['pot_maxima_alvo'])
+            
+    def test_distribuir_pot_caso_max(self):
+            # Teste:            test_distribuir_pot_caso_max
+            # Objetivo:         Verificar distribuição de potência máxima
+            # Estado inicial:   Tudo normalizado,
+            #                   setpoint = 0
+            # Resposta:         Soma dos setpoints deve ser a potência nominal da usina]
+            for _ in range(10):  # Ajuste para malha de controle
+                self.usina.distribuir_potencia(self.cfg['pot_maxima_alvo'])
+                self.usina.pot_medidor = sum(ug.setpoint for ug in self.usina.ugs)  # Ajuste para malha de controle
+            self.assertEqual(self.usina.ug1.setpoint + self.usina.ug2.setpoint, self.cfg['pot_maxima_alvo'])
 
     def test_divisao_pot_caso_zero(self):
         # Teste:            test_divisao_pot_caso_zero
