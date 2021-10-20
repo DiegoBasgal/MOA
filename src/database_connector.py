@@ -11,8 +11,6 @@ with Database('my_db.sqlite') as db:
     comments = db.query('SELECT * FROM comments')
     print(comments)
 """
-from datetime import datetime
-
 import mysql.connector
 
 

@@ -12,6 +12,7 @@ AGENDAMENTO_INDISPONIBILIZAR = 2
 AGENDAMENTO_DISPARAR_MENSAGEM_TESTE = 777
 MODO_ESCOLHA_MANUAL = 2
 
+
 class Usina:
 
     def __init__(self, cfg=None, db=None, con=None):
@@ -123,12 +124,12 @@ class Usina:
         #  - Modo autonomo
         #  - Modo de prioridade UGS
         #  - Niveis de operação da comporta
-        
+
         parametros = self.db.get_parametros_usina()
 
         # Botão de emergência
         self.db_emergencia_acionada = int(parametros["emergencia_acionada"])
-        
+
         # Limites de operação das UGS
         # UG1
         self.ug1.perda_na_grade_alerta = float(parametros["ug1_perda_grade_alerta"])
@@ -175,8 +176,7 @@ class Usina:
 
         # ajuste inicial ie
         if self.controle_ie == 'auto':
-            self.controle_ie = (self.ug1.potencia + self.ug2.potencia)/self.cfg['pot_maxima_alvo']
-
+            self.controle_ie = (self.ug1.potencia + self.ug2.potencia) / self.cfg['pot_maxima_alvo']
 
     def escrever_valores(self):
 
@@ -343,7 +343,7 @@ class Usina:
                     ((pot_alvo > (self.cfg['pot_maxima_ug'] + self.cfg['margem_pot_critica']))
                      and (abs(self.erro_nv) > 0.05) and self.ug1.disponivel and self.ug2.disponivel):
                 for ug in ugs:
-                    ug.mudar_setpoint(pot_alvo/len(ugs))
+                    ug.mudar_setpoint(pot_alvo / len(ugs))
             else:
                 pot_alvo = min(pot_alvo, self.cfg['pot_maxima_ug'])
                 if len(ugs) > 0:
@@ -378,7 +378,7 @@ class Usina:
 
         self.controle_p = self.kp * self.erro_nv
         self.controle_i = max(min((self.ki * self.erro_nv) + self.controle_i, 0.8), 0)
-        self.controle_d = self.kd*(self.erro_nv - self.erro_nv_anterior)
+        self.controle_d = self.kd * (self.erro_nv - self.erro_nv_anterior)
         saida_pid = self.controle_p + self.controle_i + min(max(-0.3, self.controle_d), 0.3)
         logger.debug("PID: {:0.3f}, P:{:0.3f}, I:{:0.3f}, D:{:0.3f}".format(saida_pid, self.controle_p, self.controle_i,
                                                                             self.controle_d))
@@ -434,7 +434,6 @@ class UnidadeDeGeracao:
             self.flag = self.flag & ~flag
             logger.info("Normalizando Flag {:08b} & ~{:08b} --> {:08b}({})".format(temp, flag, self.flag, self.flag))
             self.pendente = True
-
 
     def indisponibilizar(self, flag=None, descr="Sem descrição adcional"):
         # Indisponibiliza a ug
@@ -497,7 +496,7 @@ class UnidadeDeGeracao:
             if self.perda_na_grade > self.perda_na_grade_alerta:
                 alvo *= sqrt(
                     sqrt(1 - ((self.perda_na_grade - self.perda_na_grade_alerta) / (
-                            self.perda_na_grade_max - self.perda_na_grade_alerta))))
+                        self.perda_na_grade_max - self.perda_na_grade_alerta))))
         self.setpoint = alvo.real
 
 

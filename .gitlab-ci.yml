@@ -1,4 +1,4 @@
-image: "python:3.8"
+image: "registry.gitlab.com/ritmo-energia/operacao-autonoma:latest"
 
 variables:
   PIP_CACHE_DIR: "$CI_PROJECT_DIR/.cache/pip"
@@ -14,16 +14,24 @@ stages:
   - build
   - static-analysis
   - test
+  - security-analysis
 
 build-moa:
   stage: build
   script:
-  - apt-get update && apt-get install -y g++ unixodbc-dev
-  - apt-get install -y build-essential libssl-dev libffi-dev python3-dev
   - pip install virtualenv
   - virtualenv venv
   - source venv/bin/activate
   - pip install -r src/requirements.txt
+
+lint-moa:
+  stage: static-analysis
+  script:
+  - pip install virtualenv
+  - virtualenv venv
+  - source venv/bin/activate
+  - pip install flake8
+  - flake8 src/
 
 unit-test-moa:
   stage: test
@@ -39,6 +47,6 @@ include:
   - template: Security/Secret-Detection.gitlab-ci.yml
 
 sast:
-  stage: static-analysis
+  stage: security-analysis
 secret_detection:
-  stage: static-analysis
+  stage: security-analysis
