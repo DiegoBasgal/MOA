@@ -79,7 +79,7 @@ class Database:
             "ug1_disp = %s, ug1_pot = %s, ug1_setpot = %s, ug1_sinc = %s, ug1_tempo = %s, ug2_disp = %s, ug2_pot = %s, " \
             "ug2_setpot = %s, ug2_sinc = %s, ug2_tempo = %s, pos_comporta = %s, ug1_perda_grade = %s, " \
             "ug1_temp_mancal = %s, ug2_perda_grade = %s, ug2_temp_mancal = %s " \
-            "WHERE id = 1;"
+            "WHERE id = 1"
         self.execute(q, tuple(values))
         return True
 
@@ -90,9 +90,8 @@ class Database:
             "WHERE id = %s;"
         self.execute(q, (executado, int(id_agendamento)))
 
-    def update_emergencia(self, estado):
-        estado = 1 if estado else 0
+    def update_remove_emergencia(self):
         q = "UPDATE parametros_moa_parametrosusina " \
-            "SET emergencia_acionada = %s " \
+            "SET emergencia_acionada = 0 " \
             "WHERE id = 1;"
-        self.execute(q, estado)
+        self.execute(q)

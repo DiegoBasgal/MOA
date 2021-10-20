@@ -2,11 +2,12 @@ import datetime
 import logging
 import unittest
 from unittest import mock
-from unittest.mock import MagicMock
+from unittest.mock import MagicMock, patch
 from decimal import Decimal
 
-import src.abstracao_usina
+from src.abstracao_usina import Usina
 import src.operador_autonomo_sm
+from src.field_connector import FieldConnector
 from src.mensageiro import voip, telegram_bot
 
 
@@ -25,7 +26,9 @@ class TestNivel(unittest.TestCase):
     def setUp(self):
         self.cfg = dict(UG1_slave_ip='192.168.70.10', UG1_slave_porta=502, UG2_slave_ip='192.168.70.13',
                         UG2_slave_porta=502, USN_slave_ip='192.168.70.16', USN_slave_porta=502,
-                        clp_ip='10.101.2.242', clp_porta=5002, moa_slave_ip='0.0.0.0',
+                        clp_A_IP='10.101.2.242', clp_A_PORT=5002,
+                        clp_B_IP='10.101.2.242', clp_B_PORT=5002,
+                        moa_slave_ip='0.0.0.0',
                         moa_slave_porta=5003, ENDERECO_CLP_NV_MONATNTE=40000, ENDERECO_CLP_MEDIDOR=40001,
                         ENDERECO_CLP_COMPORTA_FLAGS=40010, ENDERECO_CLP_COMPORTA_POS=40011,
                         ENDERECO_CLP_UG1_FLAGS=40020, ENDERECO_CLP_UG1_MINUTOS=40023,
@@ -45,11 +48,6 @@ class TestNivel(unittest.TestCase):
                         nv_maximorum=647, nv_religamento=643.25,
                         pot_maxima_usina=5.2, pot_maxima_alvo=5.0, pot_minima=1.0, margem_pot_critica=1.0,
                         pot_maxima_ug=2.6, kp=-2.0, ki=-0.015, kd=-10, kie=0.08, saida_ie_inicial=0.0)
-
-        self.clp_mock = MagicMock()
-        self.clp_mock.is_online.return_value = True
-        self.clp_mock.write_to_single.return_value = True
-        self.clp_mock.read_sequential.return_value = [0] * 1000
 
         self.db_mock = MagicMock()
         self.db_mock.get_parametros_usina.return_value = dict(id=1, modo_autonomo=1, status_moa=7,
@@ -105,14 +103,38 @@ class TestNivel(unittest.TestCase):
                                                               ug2_perda_grade_alerta=Decimal('1.000'),
                                                               ug2_temp_alerta=Decimal('75.00'))
 
-        self.usina = src.abstracao_usina.Usina(cfg=self.cfg, clp=self.clp_mock, db=self.db_mock)
+        self.mock_con = MagicMock()
+        self.mock_con.get_emergencia_acionada.return_value = 0
+        self.mock_con.get_nv_montante.return_value = 0
+        self.mock_con.get_pot_medidor.return_value = 0
+        self.mock_con.get_flags_ug1.return_value = 0
+        self.mock_con.get_potencia_ug1.return_value = 0
+        self.mock_con.get_horas_ug1.return_value = 0
+        self.mock_con.get_perda_na_grade_ug1.return_value = 0
+        self.mock_con.get_temperatura_do_mancal_ug1.return_value = 0
+        self.mock_con.get_flags_ug2.return_value = 0
+        self.mock_con.get_potencia_ug2.return_value = 0
+        self.mock_con.get_horas_ug2.return_value = 0
+        self.mock_con.get_perda_na_grade_ug2.return_value = 0
+        self.mock_con.get_temperatura_do_mancal_ug2.return_value = 0
+        self.mock_con.set_ug1_flag.return_value = 0
+        self.mock_con.set_ug1_setpoint.return_value = 0
+        self.mock_con.set_ug2_flag.return_value = 0
+        self.mock_con.set_ug2_setpoint.return_value = 0
+        self.mock_con.set_pos_comporta.return_value = 0
+        self.mock_con.acionar_emergencia.return_value = 0
+        self.mock_con.normalizar_emergencia.return_value = 0
+        
+        self.usina = Usina(cfg=self.cfg, db=self.db_mock, con=self.mock_con)
+        self.usina.ler_valores()
+     
 
     def test_nivel_abaixo_do_limite(self):
-        logging.disable(logging.NOTSET)
         nv_teste = 641.24
         self.usina.acionar_emergencia = MagicMock()
+        self.usina.con.get_nv_montante.return_value = nv_teste
+        logging.disable(logging.NOTSET)
         sm = src.operador_autonomo_sm.StateMachine(initial_state=src.operador_autonomo_sm.Pronto(self.usina))
-        self.clp_mock.read_sequential.return_value = [int((nv_teste - 620) * 1000)] + [0]*100
         sm.exec()  # Atualiza valroes internos
         self.assertEqual(self.usina.nv_montante, nv_teste)
         sm.exec()  # Deve ter entrado no Reservatorio abaixo do normal
@@ -123,11 +145,11 @@ class TestNivel(unittest.TestCase):
         voip.enviar_voz_teste.assert_called()
 
     def test_nivel_acima_do_limite(self):
-        logging.disable(logging.NOTSET)
         nv_teste = 647.01
         self.usina.acionar_emergencia = MagicMock()
+        self.usina.con.get_nv_montante.return_value = nv_teste
+        logging.disable(logging.NOTSET)
         sm = src.operador_autonomo_sm.StateMachine(initial_state=src.operador_autonomo_sm.Pronto(self.usina))
-        self.clp_mock.read_sequential.return_value = [int((nv_teste - 620) * 1000)] + [0]*100
         sm.exec()  # Atualiza valroes internos
         self.assertEqual(self.usina.nv_montante, 647.01)
         sm.exec()  # Deve ter entrado no Reservatorio abaixo do normal

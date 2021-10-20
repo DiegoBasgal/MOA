@@ -57,7 +57,7 @@ class StateMachine:
                 raise TypeError
             self.state = self.state.run()
         except Exception as e:
-            logger.critical("Estado Incorreto.n\n Exception: {}".format(repr(e)))
+            logger.critical("Estado ({}) levantou uma exception: {}".format(self.state, repr(e)))
             self.em_falha_critica = True
             self.state = FalhaCritica()
 
@@ -112,7 +112,7 @@ class Pronto(State):
             except Exception as e:
                 self.n_tentativa += 1
                 logger.error("Erro durante a comunicação do MOA com a usina. Tentando novamente em {}s (tentativa{}/3)."
-                             " Exception: {}.".format(usina.timeout_padrao, self.n_tentativa, repr(e)))
+                             " Exception: {}.".format(self.usina.timeout_padrao, self.n_tentativa, repr(e)))
                 sleep(self.usina.timeout_padrao)
                 return self
 
@@ -327,15 +327,12 @@ if __name__ == "__main__":
             with open(config_file, 'r') as file:
                 cfg = json.load(file)
 
-            # Inicia o Cliente Modbus
-            clp = clp_connector.Clp(cfg['clp_ip'], cfg['clp_porta'])
-
             # Inicia o conector do banco
             db = database_connector.Database()
             # Tenta iniciar a classe usina
             logger.debug("Iniciando classe Usina")
             try:
-                usina = abstracao_usina.Usina(cfg, clp, db)
+                usina = abstracao_usina.Usina(cfg, db)
                 # Update class values for the first time
                 usina.ler_valores()
             except ConnectionError as e:
@@ -376,7 +373,7 @@ if __name__ == "__main__":
                     timeout, n_tentativa, repr(e)))
                 sleep(timeout)
 
-    logger.info("Inicialização completa, executando o MOA")
+    logger.info("Inicialização completa, executando o MOA \U0001F916")
 
     sm = StateMachine(initial_state=prox_estado(usina))
     while True:

@@ -23,7 +23,9 @@ class TestAgendamentos(unittest.TestCase):
     def setUp(self):
         self.cfg = dict(UG1_slave_ip='192.168.70.10', UG1_slave_porta=502, UG2_slave_ip='192.168.70.13',
                         UG2_slave_porta=502, USN_slave_ip='192.168.70.16', USN_slave_porta=502,
-                        clp_ip='10.101.2.242', clp_porta=5002, moa_slave_ip='0.0.0.0',
+                        clp_A_IP='10.101.2.242', clp_A_PORT=5002,
+                        clp_B_IP='10.101.2.242', clp_B_PORT=5002,
+                        moa_slave_ip='0.0.0.0',
                         moa_slave_porta=5003, ENDERECO_CLP_NV_MONATNTE=40000, ENDERECO_CLP_MEDIDOR=40001,
                         ENDERECO_CLP_COMPORTA_FLAGS=40010, ENDERECO_CLP_COMPORTA_POS=40011,
                         ENDERECO_CLP_UG1_FLAGS=40020, ENDERECO_CLP_UG1_MINUTOS=40023,
@@ -43,12 +45,6 @@ class TestAgendamentos(unittest.TestCase):
                         nv_maximorum=647, nv_religamento=643.25,
                         pot_maxima_usina=5.2, pot_maxima_alvo=5.0, pot_minima=1.0, margem_pot_critica=1.0,
                         pot_maxima_ug=2.6, kp=-2.0, ki=-0.015, kd=-10, kie=0.08, saida_ie_inicial=0.0)
-
-        self.clp_mock = MagicMock()
-        self.clp_mock.is_online.return_value = True
-        self.clp_mock.write_to_single.return_value = True
-        # self.clp_mock.read_sequential.return_value = [23250] + [0] * 1000
-        self.clp_mock.read_sequential.return_value = [0] * 1000
 
         self.db_mock = MagicMock()
         self.db_mock.get_parametros_usina.return_value = dict(id=1, modo_autonomo=1, status_moa=7,
@@ -104,6 +100,7 @@ class TestAgendamentos(unittest.TestCase):
                                                               ug2_perda_grade_alerta=Decimal('1.000'),
                                                               ug2_temp_alerta=Decimal('75.00'))
 
+        self.usina = Usina(cfg=self.cfg, db=self.db_mock)
 
     def test_executa_agendamento_simples(self):
         # Teste:            test_executa_agendamento_simples
@@ -111,13 +108,12 @@ class TestAgendamentos(unittest.TestCase):
         # Estado inicial:   1 agendamento ("atrasado" 1 minuto)
         # Resposta:         O sm vai para o estado de tratamento de agenda e aciona e emergencia
         self.db_mock.get_agendamentos_pendentes.return_value = [(1, datetime.now() - timedelta(minutes=1), 777, 0), ]
-        usina = Usina(cfg=self.cfg, clp=self.clp_mock, db=self.db_mock)
-        usina.disparar_mensagem_teste = MagicMock()
-        estado = src.operador_autonomo_sm.ValoresInternosAtualizados(usina)
+        self.usina.disparar_mensagem_teste = MagicMock()
+        estado = src.operador_autonomo_sm.ValoresInternosAtualizados(self.usina)
         estado = estado.run()
         self.assertIsInstance(estado, src.operador_autonomo_sm.AgendamentosPendentes)
         estado = estado.run()
-        usina.disparar_mensagem_teste.assert_called_once()
+        self.usina.disparar_mensagem_teste.assert_called_once()
 
     # Se houver pelo menos 1 agendamento muito atrasado (> 5 min), ele sinaliza e aciona a emergencia
     def test_executa_agendamentos_atraso_grande(self):
@@ -126,13 +122,13 @@ class TestAgendamentos(unittest.TestCase):
         # Estado inicial:   1 agendamento atrasado 6 minutos
         # Resposta:         O sm vai para o estado de tratamento de agenda e executa uma emergencia na clp
         self.db_mock.get_agendamentos_pendentes.return_value = [(1, datetime.now() - timedelta(minutes=6), 777, 0), ]
-        usina = Usina(cfg=self.cfg, clp=self.clp_mock, db=self.db_mock)
-        usina.acionar_emergencia = MagicMock()
-        estado = src.operador_autonomo_sm.ValoresInternosAtualizados(usina)
+        
+        self.usina.acionar_emergencia = MagicMock()
+        estado = src.operador_autonomo_sm.ValoresInternosAtualizados(self.usina)
         estado = estado.run()
         self.assertIsInstance(estado, src.operador_autonomo_sm.AgendamentosPendentes)
         estado = estado.run()
-        usina.acionar_emergencia.assert_called_once()
+        self.usina.acionar_emergencia.assert_called_once()
 
     # Se houver 4 ou mais agendamentos levemente atrasados (< 5 min), ele sinaliza o erro e aciona e emergencia
     def test_executa_agendamentos_atraso_multiplo(self):
@@ -145,13 +141,13 @@ class TestAgendamentos(unittest.TestCase):
                                                                 (3, datetime.now() - timedelta(minutes=1), 777, 0),
                                                                 (4, datetime.now() - timedelta(minutes=1), 777, 0)]
 
-        usina = Usina(cfg=self.cfg, clp=self.clp_mock, db=self.db_mock)
-        usina.acionar_emergencia = MagicMock()
-        estado = src.operador_autonomo_sm.ValoresInternosAtualizados(usina)
+        
+        self.usina.acionar_emergencia = MagicMock()
+        estado = src.operador_autonomo_sm.ValoresInternosAtualizados(self.usina)
         estado = estado.run()
         self.assertIsInstance(estado, src.operador_autonomo_sm.AgendamentosPendentes)
         estado = estado.run()
-        usina.acionar_emergencia.assert_called_once()
+        self.usina.acionar_emergencia.assert_called_once()
 
 if __name__ == '__main__':
     unittest.main()
