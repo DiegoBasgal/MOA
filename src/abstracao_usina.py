@@ -4,6 +4,8 @@ from cmath import sqrt
 
 from pyModbusTCP.server import DataBank
 
+from src.field_connector import FieldConnector
+
 logger = logging.getLogger('__main__')
 
 AGENDAMENTO_INDISPONIBILIZAR = 2
@@ -12,14 +14,18 @@ MODO_ESCOLHA_MANUAL = 2
 
 class Usina:
 
-    def __init__(self, cfg=None, clp=None, db=None):
+    def __init__(self, cfg=None, db=None, con=None):
 
-        if not cfg or not clp or not db:
+        if not cfg or not db:
             raise ValueError
         else:
             self.cfg = cfg
-            self.clp = clp
             self.db = db
+
+        if not con:
+            self.con = FieldConnector(self.cfg['clp_A_IP'],  self.cfg['clp_A_PORT'], self.cfg['clp_B_IP'],  self.cfg['clp_B_PORT'])
+        else:
+            self.con = con
 
         # Inicializa Objs da usina
         self.ug1 = UnidadeDeGeracao(1)
@@ -68,17 +74,38 @@ class Usina:
     def ler_valores(self):
 
         # CLP
-        regs = [0]*40000
-        aux = self.clp.read_sequential(40000, 101)
-        regs += aux
+        # regs = [0]*40000
+        # aux = self.clp.read_sequential(40000, 101)
+        # regs += aux
         # USN
-        self.clp_emergencia_acionada = regs[self.cfg['ENDERECO_CLP_USINA_FLAGS']]
-        self.nv_montante = round((regs[self.cfg['ENDERECO_CLP_NV_MONATNTE']] * 0.001) + 620, 2)
-        self.pot_medidor = round((regs[self.cfg['ENDERECO_CLP_MEDIDOR']] * 0.001), 3)
+        # self.clp_emergencia_acionada = regs[self.cfg['ENDERECO_CLP_USINA_FLAGS']]
+        # self.nv_montante = round((regs[self.cfg['ENDERECO_CLP_NV_MONATNTE']] * 0.001) + 620, 2)
+        # self.pot_medidor = round((regs[self.cfg['ENDERECO_CLP_MEDIDOR']] * 0.001), 3)
+
+        self.con.open()
         self.clp_online = True
+        self.clp_emergencia_acionada = self.con.get_emergencia_acionada()
+        self.nv_montante = self.con.get_nv_montante()
+        self.pot_medidor = self.con.get_pot_medidor()
+
+        # UG1
+        self.ug1.flag = self.con.get_flags_ug1()
+        self.ug1.potencia = self.con.get_potencia_ug1()
+        self.ug1.horas_maquina = self.con.get_horas_ug1()
+        self.ug1.perda_na_grade = self.con.get_perda_na_grade_ug1()
+        self.ug1.temp_mancal = self.con.get_temperatura_do_mancal_ug1()
+        # Ug2
+        self.ug2.flag = self.con.get_flags_ug2()
+        self.ug2.potencia = self.con.get_potencia_ug2()
+        self.ug2.horas_maquina = self.con.get_horas_ug2()
+        self.ug2.perda_na_grade = self.con.get_perda_na_grade_ug2()
+        self.ug2.temp_mancal = self.con.get_temperatura_do_mancal_ug2()
+
+        self.con.close()
+
         if self.nv_montante_recente < 1:
-            self.nv_montante_recentes = [self.nv_montante] * self.n_movel_r
-            self.nv_montante_anteriores = [self.nv_montante] * self.n_movel_l
+            self.nv_montante_recentes = [self.nv_montante] * int(self.n_movel_r)
+            self.nv_montante_anteriores = [self.nv_montante] * int(self.n_movel_l)
         self.nv_montante_recentes.append(self.nv_montante)
         self.nv_montante_recentes = self.nv_montante_recentes[1:]
         self.nv_montante_recente = sum(self.nv_montante_recentes) / self.cfg['n_movel_R']
@@ -87,20 +114,6 @@ class Usina:
         self.nv_montante_anterior = sum(self.nv_montante_anteriores) / self.cfg['n_movel_L']
         self.erro_nv = self.nv_alvo - self.nv_montante_recente
         self.erro_nv_anterior = self.nv_alvo - self.nv_montante_anterior
-
-        # UG1
-        self.ug1.flag = int(regs[self.cfg['ENDERECO_CLP_UG1_FLAGS']])
-        self.ug1.potencia = int(regs[self.cfg['ENDERECO_CLP_UG1_POTENCIA']]) / 1000
-        self.ug1.horas_maquina = int(regs[self.cfg['ENDERECO_CLP_UG1_MINUTOS']]) / 60
-        self.ug1.perda_na_grade = int(regs[self.cfg['ENDERECO_CLP_UG1_PERGA_GRADE']]) / 100
-        self.ug1.temp_mancal = int(regs[self.cfg['ENDERECO_CLP_UG1_T_MANCAL']]) / 10
-
-        # Ug2
-        self.ug2.flag = int(regs[self.cfg['ENDERECO_CLP_UG2_FLAGS']])
-        self.ug2.potencia = int(regs[self.cfg['ENDERECO_CLP_UG2_POTENCIA']]) / 1000
-        self.ug2.horas_maquina = int(regs[self.cfg['ENDERECO_CLP_UG2_MINUTOS']]) / 60
-        self.ug2.perda_na_grade = int(regs[self.cfg['ENDERECO_CLP_UG2_PERGA_GRADE']]) / 100
-        self.ug2.temp_mancal = int(regs[self.cfg['ENDERECO_CLP_UG2_T_MANCAL']]) / 10
 
         # DB
         #
@@ -168,13 +181,15 @@ class Usina:
     def escrever_valores(self):
 
         # CLP
+        self.con.open()        
         if self.ug1.pendente:
-            self.clp.write_to_single(self.cfg['ENDERECO_CLP_UG1_FLAGS'], self.ug1.flag)
-        self.clp.write_to_single(self.cfg['ENDERECO_CLP_UG1_SETPOINT'], int(self.ug1.setpoint * 1000))
+            self.con.set_ug1_flag(self.ug1.flag)
+        self.con.set_ug1_setpoint(int(self.ug1.setpoint * 1000))
         if self.ug2.pendente:
-            self.clp.write_to_single(self.cfg['ENDERECO_CLP_UG2_FLAGS'], self.ug2.flag)
-        self.clp.write_to_single(self.cfg['ENDERECO_CLP_UG2_SETPOINT'], int(self.ug2.setpoint * 1000))
-        self.clp.write_to_single(self.cfg['ENDERECO_CLP_COMPORTA_POS'], int(self.comporta.pos_comporta))
+            self.con.set_ug2_flag(self.ug2.flag)
+        self.con.set_ug2_setpoint(int(self.ug1.setpoint * 1000))
+        self.con.set_pos_comporta(int(self.comporta.pos_comporta))
+        self.con.close()
 
         # DB
         # Escreve no banco
@@ -203,15 +218,18 @@ class Usina:
         self.db.update_parametrosusina(pars)
 
     def acionar_emergencia(self):
-        self.clp.write_to_single(self.cfg['ENDERECO_CLP_USINA_FLAGS'], 1)
+        self.con.open()        
+        self.con.acionar_emergencia()
+        self.con.close()
         self.clp_emergencia_acionada = 1
 
+
     def normalizar_emergencia(self):
-        self.db.update_emergencia(0)
+        self.db.update_remove_emergencia()
         self.db_emergencia_acionada = 0
-        self.clp.write_to_single(self.cfg['ENDERECO_CLP_USINA_FLAGS'], 0)
-        self.clp.write_to_single(self.cfg['ENDERECO_CLP_UG1_FLAGS'], 0)
-        self.clp.write_to_single(self.cfg['ENDERECO_CLP_UG2_FLAGS'], 0)
+        self.con.open()        
+        self.con.normalizar_emergencia()
+        self.con.close()
         self.clp_emergencia_acionada = 0
 
     def heartbeat(self):

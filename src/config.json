@@ -5,8 +5,10 @@
     "UG2_slave_porta": 502,
     "USN_slave_ip": "192.168.70.16",
     "USN_slave_porta": 502,
-    "clp_ip": "localhost",
-    "clp_porta": 5002,
+    "clp_A_IP": "localhost",
+    "clp_B_IP": "localhost",
+    "clp_A_PORT": 5002,
+    "clp_B_PORT": 5002,
     "moa_slave_ip": "0.0.0.0",
     "moa_slave_porta": 5003,
 
