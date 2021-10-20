@@ -71,6 +71,8 @@ class Usina:
         self.aguardando_reservatorio = 0
         self.pot_disp = 0
         self.agendamentos_atrasados = 0
+        self.deve_tentar_normalizar = True
+        self.tentativas_de_normalizar = 0
 
     def ler_valores(self):
 
@@ -88,6 +90,7 @@ class Usina:
         self.clp_emergencia_acionada = self.con.get_emergencia_acionada()
         self.nv_montante = self.con.get_nv_montante()
         self.pot_medidor = self.con.get_pot_medidor()
+        self.tensao_na_linha = self.con.get_tensao_na_linha()
 
         # UG1
         self.ug1.flag = self.con.get_flags_ug1()
@@ -225,13 +228,18 @@ class Usina:
 
 
     def normalizar_emergencia(self):
-        self.db.update_remove_emergencia()
-        self.db_emergencia_acionada = 0
-        self.con.open()        
-        self.con.normalizar_emergencia()
-        self.con.close()
-        self.clp_emergencia_acionada = 0
-
+        if self.cfg['TENSAO_LINHA_BAIXA'] < self.tensao_na_linha < self.cfg['TENSAO_LINHA_ALTA'] and self.deve_tentar_normalizar:
+            self.db.update_remove_emergencia()
+            self.db_emergencia_acionada = 0
+            self.con.open()
+            self.con.normalizar_emergencia()
+            self.con.close()
+            self.clp_emergencia_acionada = 0
+            for ug in self.ugs:
+                ug.normalizar()
+            return True
+        else:
+            return False
     def heartbeat(self):
         agora = datetime.now()
         ano = int(agora.year)
@@ -406,11 +414,16 @@ class Usina:
         logger.error("Este e um teste!")
         logger.critical("Este e um teste!")
 
+    def entrar_em_modo_manual(self):
+        self.modo_autonomo = 0
+        self.db.update_modo_manual()
 
 class UnidadeDeGeracao:
 
     def __init__(self, id_ug):
-
+        
+        self.deve_tentar_normalizar = True
+        self.tentativas_de_normalizar = 0
         self.pendente = True
         self.id_da_ug = id_ug
         self.flag = 0
@@ -429,6 +442,7 @@ class UnidadeDeGeracao:
         self.pot_disponivel = 0
 
     def normalizar(self, flag=0b1):
+        self.tentativas_de_normalizar += 1
         if self.flag % flag:
             temp = self.flag
             self.flag = self.flag & ~flag
@@ -461,6 +475,10 @@ class UnidadeDeGeracao:
         if not self.flag and not self.disponivel:
             logger.info("UG {} disponivel.   Flags 0b{:08b} ({}).".format(self.id_da_ug, self.flag, self.flag))
             self.disponivel = True
+            self.tentativas_de_normalizar = 0
+            if not self.deve_tentar_normalizar:
+                self.deve_tentar_normalizar = True 
+                logger.info("Comportamento de normalização automática ligado.")
 
         self.sincronizada = True if self.potencia > 0 else False
 
@@ -475,8 +493,13 @@ class UnidadeDeGeracao:
             self.indisponibilizar(0b100,
                                   "Perda máxima na grade excedida (atual:{}; max:{})".format(self.perda_na_grade,
                                                                                              self.perda_na_grade_max))
-        if self.perda_na_grade < self.perda_na_grade_alerta and self.flag == 0b100:
+        if self.perda_na_grade < self.perda_na_grade_alerta and self.flag == 0b100 and self.tentativas_de_normalizar <= 3:
+            logger.info("Tentativa de normalização #{:d}".format(self.tentativas_de_normalizar))
             self.normalizar(4)
+
+        if self.tentativas_de_normalizar > 3 and self.deve_tentar_normalizar:
+            self.deve_tentar_normalizar = False
+            logger.info("Tentativas de normalização excedidas! MOA não irá mais tentar.")
 
         self.pendente = False
 

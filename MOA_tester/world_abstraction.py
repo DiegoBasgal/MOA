@@ -18,6 +18,9 @@ USINA_NV_MAX = 643.5
 USINA_NV_MIN = 643.0
 USINA_VAZAO_SANITARIA_COTA = 641
 
+TRIP_NV_MIN = 643.0
+TRIP_TENSAO_SUPERIOR = 36200
+TRIP_TENSAO_ABAIXO = 31050
 
 def q_turbinada(UG1, UG2):
 
@@ -92,6 +95,7 @@ class world_abstraction(threading.Thread):
             self.cfg = json.load(file)
         self.moa_slave = ModbusClient(host=self.cfg['moa_slave_ip'], port=self.cfg['moa_slave_porta'])
         self.REGS = []
+        self.tensao_na_linha = 34500
         self.comp_aberta = 0
         self.comp_fechada = 0
         self.comp_flags = 0
@@ -262,6 +266,7 @@ class world_abstraction(threading.Thread):
                         
             0       nivel_montante  [620 + X mm]
             1       medidor         [kW]
+            2       tensao         [V]
             
             10      comporta flags  [raw]
             11      comporta pos    [0:fechada, 1:pos1: 2:pos2, 3:pos3, 4:pos4, 5:aberta]
@@ -312,7 +317,7 @@ class world_abstraction(threading.Thread):
 
                 if float(self.events[0][0])*60 <= self.simulation_time:
                     current_event = self.events[0]  # hold current
-                    for i in range(9):
+                    for i in range(10):
                         current_event[i] = float(current_event[i])
                     self.events = self.events[1:]   # remove current from list
                     q_aflu = min(max(0, current_event[1]), 100) if current_event[1] >= 0 else q_aflu
@@ -323,12 +328,25 @@ class world_abstraction(threading.Thread):
                     self.ug2_flags = current_event[6] if current_event[6] >= 0 else self.ug2_flags
                     self.ug2_temp_mancal = current_event[7] if current_event[7] >= 0 else self.ug2_temp_mancal
                     self.ug2_perda_grade = current_event[8] if current_event[8] >= 0 else self.ug2_perda_grade
+                    self.tensao_na_linha = current_event[9] if current_event[9] >= 0 else self.tensao_na_linha
                     logger.debug("[SIMUL] Executando evento agendado na simulação {}".format(current_event))
 
             # Verifica flags da Usina
+            if not (TRIP_TENSAO_ABAIXO < self.tensao_na_linha < TRIP_TENSAO_SUPERIOR):
+                self.flags_usina = int(self.flags_usina) | 2
+
+            if not (TRIP_NV_MIN < self.nv_montante):
+                self.flags_usina = int(self.flags_usina) | 4
+
             if not (self.flags_usina == 0):
+                old_flag_ug1 = self.ug1_flags
+                old_flag_ug2 = self.ug2_flags
                 self.ug1_flags = 1
                 self.ug2_flags = 1
+                self.step_ug1()  # UG1
+                self.step_ug2()  # UG2
+                self.ug1_flags = old_flag_ug1
+                self.ug2_flags = old_flag_ug2
 
             # Comportamento das UGs
             self.step_ug1()  # UG1
@@ -363,6 +381,7 @@ class world_abstraction(threading.Thread):
             # Atualiza registradores internos
             DataBank.set_words(40000, [int(((self.nv_montante - 620) * 100 + random.normal(scale=0.1)))*10])
             DataBank.set_words(40001, [int(self.pot_no_medidor*1000)])
+            DataBank.set_words(40002, [int(self.tensao_na_linha + random.normal()*10)])
             DataBank.set_words(40020, [self.ug1_flags])
             DataBank.set_words(40021, [int(self.ug1_pot * 1000)])
             DataBank.set_words(40023, [int(self.ug1_minutos)])

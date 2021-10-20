@@ -2,6 +2,7 @@ from pyModbusTCP.client import ModbusClient
 
 ENDERECO_CLP_NV_MONATNTE = 40000
 ENDERECO_CLP_MEDIDOR = 40001
+ENDERECO_CLP_TENSAO_NA_LINHA = 40002
 ENDERECO_CLP_COMPORTA_FLAGS = 40010
 ENDERECO_CLP_COMPORTA_POS = 40011
 ENDERECO_CLP_UG1_FLAGS = 40020
@@ -28,7 +29,6 @@ ENDERECO_LOCAL_UG2_SETPOINT = 40030
 ENDERECO_LOCAL_UG2_DISP = 40031
 ENDERECO_LOCAL_CLP_ONLINE = 40099
 ENDERECO_LOCAL_STATUS_MOA = 40100
-
 
 class ModbusClientFailedToOpen(Exception):
     pass
@@ -96,6 +96,9 @@ class FieldConnector:
 
     def get_temperatura_do_mancal_ug2(self):
         return self.modbus_clp_A.read_holding_registers(ENDERECO_CLP_UG2_T_MANCAL)[0]/10
+
+    def get_tensao_na_linha(self):
+        return self.modbus_clp_A.read_holding_registers(ENDERECO_CLP_TENSAO_NA_LINHA)[0]/10
 
     def set_ug1_flag(self, flags):
         self.modbus_clp_A.write_single_register(ENDERECO_CLP_UG1_FLAGS, flags)

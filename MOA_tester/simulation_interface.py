@@ -49,6 +49,7 @@ class simulation_interface(threading.Thread):
 
             nv_montante = (REGS[0] / 1000) + 620
             pot_medidor = REGS[1]
+            tensao = REGS[2]
             usina_flags = REGS[100]
             comporta_flags = REGS[10]
             comporta_pos = REGS[11]
@@ -77,7 +78,7 @@ class simulation_interface(threading.Thread):
                 sleep(0.00001)
                 continue
 
-            rows.append([segundos_simulados/60, nv_montante, pot_medidor/1000, usina_flags, comporta_flags, comporta_pos,ug1_flags, ug1_pot/1000, ug1_setpot, ug1_tempo, ug1_t_mancal, ug1_perda_grade,ug2_flags, ug2_pot/1000, ug2_setpot, ug2_tempo, ug2_t_mancal, ug2_perda_grade])
+            rows.append([segundos_simulados/60, nv_montante, pot_medidor/1000, usina_flags, comporta_flags, comporta_pos,ug1_flags, ug1_pot/1000, ug1_setpot, ug1_tempo, ug1_t_mancal, ug1_perda_grade,ug2_flags, ug2_pot/1000, ug2_setpot, ug2_tempo, ug2_t_mancal, ug2_perda_grade, tensao])
 
             with open(self.simulation_data_log_path, 'a+') as f:
                 writer = csv.writer(f, dialect='excel')
@@ -86,8 +87,8 @@ class simulation_interface(threading.Thread):
             with_clp_text = True
             if with_clp_text and not segundos_simulados % 600:
                 print("-----------------------------------------------------------------------------------------------")
-                print("Tempo simulado: {:} | NV montante: {:3.2f}m | Pot Medidor: {:5.0f}kW"
-                      .format(str(datetime.timedelta(seconds=segundos_simulados)), nv_montante, pot_medidor))
+                print("Tempo simulado: {:} | NV montante: {:3.2f}m | Pot Medidor: {:5.0f}kW | Linha: {:2.3f}kV"
+                      .format(str(datetime.timedelta(seconds=segundos_simulados)), nv_montante, pot_medidor, tensao))
                 print("Flags Usina: {:08b} | Flags Comporta: {:8b}| Pos Cmporta: {:}"
                       .format(usina_flags, comporta_flags, comporta_pos))
                 print(
