@@ -4,7 +4,7 @@ from cmath import sqrt
 
 from pyModbusTCP.server import DataBank
 
-from src.field_connector import FieldConnector
+from field_connector import FieldConnector
 
 logger = logging.getLogger('__main__')
 

@@ -67,8 +67,11 @@ while True:
         db.update_desabilitar_autonomo()
         print("desabilitar modo autonomo")
     if gpio.input(IN_03):
-        print("emergencia_modbus = 1")
+        print("emergencia eletrica = 1")
         modbus.write_single_register(40200, 1)
+    elif not modbus.read_holding_registers(40100)[0] == 0:
+        modbus.write_single_register(40200, 0)
+        print("emergencia eletrica = 0")
     db.close()
 
     ug1_block = False if modbus.read_holding_registers(40020)[0] == 0 else True

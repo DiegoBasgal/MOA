@@ -1,7 +1,7 @@
 import csv
 import datetime
 import logging
-import matplotlib.pyplot as plt
+#import matplotlib.pyplot as plt
 import threading
 from time import sleep
 
@@ -110,6 +110,7 @@ class simulation_interface(threading.Thread):
         data[16] = data[16]/np.linalg.norm(data[16])
         data[17] = data[17]/np.linalg.norm(data[17])
 
+        """
         fig, (ax1, ax2, ax3, ax4) = plt.subplots(4, 1)
         plt.gcf().set_size_inches(12, 9)
         ax1.grid(True)
@@ -147,6 +148,7 @@ class simulation_interface(threading.Thread):
         ax2.yaxis.set_major_formatter("{x:.2f}MW")
         # ax3.yaxis.set_major_formatter("{x:d}")
         # ax4.yaxis.set_major_formatter("{x:d}")
+        """
 
         import src.database_connector
         db = src.database_connector.Database()

@@ -10,6 +10,10 @@ from time import sleep
 from pyModbusTCP.client import ModbusClient
 from pyModbusTCP.server import ModbusServer
 
+import os.path, sys
+sys.path.append(os.path.join(os.path.dirname(os.path.realpath(__file__)), os.pardir))
+sys.path.append(os.path.join(os.path.dirname(os.path.realpath(__file__)), os.pardir, os.pardir))
+
 from src.mensageiro.mensageiro_log_handler import MensageiroHandler
 import world_abstraction
 import simulation_interface
@@ -40,7 +44,7 @@ logger.addHandler(fh)
 logger.addHandler(ch)
 logger.addHandler(mh)
 
-simulation_speed = 1
+simulation_speed = 10
 
 logger.info("[PRE] Setting world up for simulations ({}x real time).".format(simulation_speed))
 # 1 thread para simular o reservatorio

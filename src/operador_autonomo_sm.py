@@ -14,8 +14,8 @@ import json
 
 from pyModbusTCP.server import ModbusServer
 
-from src.mensageiro.mensageiro_log_handler import MensageiroHandler
-from src import clp_connector, database_connector, abstracao_usina
+from mensageiro.mensageiro_log_handler import MensageiroHandler
+import clp_connector, database_connector, abstracao_usina
 
 DEBUG = False
 
@@ -198,7 +198,9 @@ class Emergencia(State):
                 while self.usina.db_emergencia_acionada:
                     self.usina.ler_valores()
                     if not self.usina.clp.em_emergencia():
+                        self.usina.db.dbopen()
                         self.usina.db.update_emergencia(0)
+                        self.usina.db.close()
                         self.usina.db_emergencia_acionada = 0
 
             if self.usina.clp_emergencia_acionada:
