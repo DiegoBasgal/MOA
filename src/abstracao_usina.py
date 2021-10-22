@@ -124,9 +124,11 @@ class Usina:
         #  - Modo autonomo
         #  - Modo de prioridade UGS
         #  - Niveis de operação da comporta
-
+        
+        self.db.dbopen()
         parametros = self.db.get_parametros_usina()
-
+        self.db.close()
+        
         # Botão de emergência
         self.db_emergencia_acionada = int(parametros["emergencia_acionada"])
 
@@ -215,7 +217,9 @@ class Usina:
                 self.ug2.perda_na_grade,
                 self.ug2.temp_mancal,
                 ]
+        self.db.dbopen()
         self.db.update_parametrosusina(pars)
+        self.db.close()
 
     def acionar_emergencia(self):
         self.con.open()        
@@ -225,7 +229,9 @@ class Usina:
 
 
     def normalizar_emergencia(self):
+        self.db.dbopen()
         self.db.update_remove_emergencia()
+        self.db.close()
         self.db_emergencia_acionada = 0
         self.con.open()        
         self.con.normalizar_emergencia()
@@ -263,12 +269,14 @@ class Usina:
         agora = datetime.now()
         agora = agora - timedelta(seconds=agora.second, microseconds=agora.microsecond)
         agendamentos_pendentes = []
+        self.db.dbopen()
         agendamentos = self.db.get_agendamentos_pendentes()
         for agendamento in agendamentos:
             if agendamento[1] <= agora:
                 agendamentos_pendentes.append(agendamento)
         return agendamentos_pendentes
-
+        self.db.close()
+        
     def verificar_agendamentos(self):
         """
         Verifica os agendamentos feitos pelo django no banco de dados e lida com eles, executando, etc...
@@ -308,7 +316,9 @@ class Usina:
                     self.acionar_emergencia()
 
                 # Após executar, indicar no banco de dados
+                self.db.dbopen()
                 self.db.update_agendamento(int(agendamento[0]), 1)
+                self.db.close()
                 logger.info("O comando #{} - {} foi executado.".format(agendamento[0], agendamento[2]))
 
             else:

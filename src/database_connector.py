@@ -12,38 +12,36 @@ with Database('my_db.sqlite') as db:
     print(comments)
 """
 import mysql.connector
-
+from mysql.connector import pooling
 
 class Database:
 
-    def __init__(self):
-        self.config = {
-            'host': "localhost",
-            'user': "moa",
-            'passwd': "senhaFraca123",
-            'db': "django_db",
-            'charset': 'utf8',
-        }
+    def __init__(self):    
+        self.connection_pool = pooling.MySQLConnectionPool(pool_name="my_pool",
+                                                           pool_size=5,
+                                                           pool_reset_session=True,
+                                                           host = "localhost",
+                                                           user = "moa",
+                                                           password = "senhaFraca123",
+                                                           database = "django_db")
+                                                           
 
         # Paulo: criar pool com 5 conexões
-        self._conn = mysql.connector.connect(**self.config)
-        self._cursor = self._conn.cursor()
-
-    @property
-    def connection(self):
-        return self._conn
-
-    @property
-    def cursor(self):
-        return self._cursor
-
+        self.conn = None
+        self.cursor = None
+         
     def commit(self):
-        self.connection.commit()
+        self.conn.commit()
+
+    def dbopen(self):
+        self.conn = self.connection_pool.get_connection()
+        self.cursor = self.conn.cursor()
 
     def close(self, commit=True):
         if commit:
             self.commit()
-        self.connection.close()
+        self.cursor.close()
+        self.conn.close()
 
     def execute(self, sql, params=None):
         self.cursor.execute(sql, params or ())
@@ -89,6 +87,18 @@ class Database:
             "SET executado = %s " \
             "WHERE id = %s;"
         self.execute(q, (executado, int(id_agendamento)))
+
+    def update_habilitar_autonomo(self):
+        q = "UPDATE parametros_moa_parametrosusina " \
+            "SET modo_autonomo = 1 " \
+            "WHERE id = 1;"
+        self.execute(q)
+
+    def update_desabilitar_autonomo(self):
+        q = "UPDATE parametros_moa_parametrosusina " \
+            "SET modo_autonomo = 0 " \
+            "WHERE id = 1;"
+        self.execute(q)
 
     def update_remove_emergencia(self):
         q = "UPDATE parametros_moa_parametrosusina " \

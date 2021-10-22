@@ -284,7 +284,7 @@ class world_abstraction(threading.Thread):
             100     Usina Flags     [raw]   
             """
 
-            self.REGS = DataBank.get_words(40000, 101)
+            self.REGS = DataBank.get_words(40000, 201)
             self.ug1_flags = (int(self.REGS[20]))
             self.ug1_setpoint = (int(self.REGS[22]) / 1000)
             self.ug2_flags = (int(self.REGS[30]))
@@ -296,6 +296,7 @@ class world_abstraction(threading.Thread):
             self.comp_p4 = self.REGS[11] & 0b00010000
             self.comp_aberta = self.REGS[11] & 0b00100000
             self.flags_usina = int(self.REGS[100])
+            self.trip_painel = int(self.REGS[200])
 
             # Comportamento fisico
 
@@ -326,6 +327,11 @@ class world_abstraction(threading.Thread):
                     logger.debug("[SIMUL] Executando evento agendado na simulação {}".format(current_event))
 
             # Verifica flags da Usina
+            if not self.trip_painel == 0 and not self.flags_usina:
+                self.flags_usina = 1
+                self.ug1_flags = 1
+                self.ug2_flags = 1
+
             if not (self.flags_usina == 0):
                 self.ug1_flags = 1
                 self.ug2_flags = 1

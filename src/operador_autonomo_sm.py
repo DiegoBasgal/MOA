@@ -226,6 +226,7 @@ class ModoManualAtivado(State):
 
         self.usina.heartbeat()
         self.usina.ler_valores()
+        print(usina.modo_autonomo)
         if self.usina.modo_autonomo:
             logger.info("Usina voltou para o modo Autonomo")
             return Pronto(self.usina)
@@ -381,4 +382,5 @@ if __name__ == "__main__":
         logger.debug("Executando estado: {}".format(sm.state.__class__.__name__))
         sm.exec()
         t_restante = max(5 - (time.time() - t_i), 0) / ESCALA_DE_TEMPO
+        print(t_restante)
         sleep(t_restante)
