@@ -81,6 +81,13 @@ class Database:
         self.execute(q, tuple(values))
         return True
 
+    def update_modo_manual(self):
+        q = "UPDATE parametros_moa_parametrosusina " \
+            "SET modo_autonomo = 0 " \
+            "WHERE id = 1"
+        self.execute(q,)
+        return True
+
     def update_agendamento(self, id_agendamento, executado):
         executado = 1 if executado else 0
         q = "UPDATE agendamentos_agendamento " \

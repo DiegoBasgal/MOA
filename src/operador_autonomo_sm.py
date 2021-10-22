@@ -189,7 +189,9 @@ class Emergencia(State):
     def run(self):
         self.n_tentativa += 1
         if self.n_tentativa > 3:
-            return FalhaCritica()
+            logger.warning("Numeor de tentaivas de normalização excedidas, entrando em modo manual.")
+            self.usina.entrar_em_modo_manual()
+            return ModoManualAtivado(self.usina)
         else:
             if self.usina.db_emergencia_acionada:
                 logger.info("Emergencia acionada via Django/DB, aguardando Reset/Reco pela interface web ou pelo CLP")

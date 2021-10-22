@@ -61,5 +61,8 @@
     "ki": -0.015,
     "kd":  -10,
     "kie": 0.08,
-    "saida_ie_inicial" : "auto"
+    "saida_ie_inicial" : "auto",
+    "TENSAO_LINHA_BAIXA": 31050,
+    "TENSAO_LINHA_ALTA": 36200
+
 }
