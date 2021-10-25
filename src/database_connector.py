@@ -25,22 +25,22 @@ class Database:
                                                            password = "senhaFraca123",
                                                            database = "django_db")
                                                            
-
-        # Paulo: criar pool com 5 conexões
         self.conn = None
         self.cursor = None
-         
+
     def commit(self):
         self.conn.commit()
 
-    def dbopen(self):
+    def _open(self):
         self.conn = self.connection_pool.get_connection()
         self.cursor = self.conn.cursor()
 
-    def close(self, commit=True):
+    def _close(self, commit=True):
         if commit:
             self.commit()
         self.cursor.close()
+        if commit:
+            self.commit()
         self.conn.close()
 
     def execute(self, sql, params=None):
@@ -57,19 +57,24 @@ class Database:
         return self.fetchall()
 
     def get_parametros_usina(self):
+        self._open()
         cols = self.query("SHOW COLUMNS FROM parametros_moa_parametrosusina")
         self.execute("SELECT * FROM parametros_moa_parametrosusina WHERE id = 1")
         parametros_raw = self.fetchone()
         parametros = {}
         for i in range(len(cols)):
             parametros[cols[i][0]] = parametros_raw[i]
+        self._close()
         return parametros
 
     def get_agendamentos_pendentes(self):
         q = "SELECT id, DATE_SUB(data, INTERVAL 3 HOUR), comando_id, executado " \
             "FROM agendamentos_agendamento " \
             "WHERE executado = 0;"
-        return self.query(q)
+        self._open()
+        result =  self.query(q)
+        self._close()
+        return result
 
     def update_parametrosusina(self, values):
         q = "UPDATE parametros_moa_parametrosusina " \
@@ -78,14 +83,18 @@ class Database:
             "ug2_setpot = %s, ug2_sinc = %s, ug2_tempo = %s, pos_comporta = %s, ug1_perda_grade = %s, " \
             "ug1_temp_mancal = %s, ug2_perda_grade = %s, ug2_temp_mancal = %s " \
             "WHERE id = 1"
+        self._open()
         self.execute(q, tuple(values))
+        self._close()
         return True
 
     def update_modo_manual(self):
         q = "UPDATE parametros_moa_parametrosusina " \
             "SET modo_autonomo = 0 " \
             "WHERE id = 1"
+        self._open()
         self.execute(q,)
+        self._close()
         return True
 
     def update_agendamento(self, id_agendamento, executado):
@@ -93,22 +102,30 @@ class Database:
         q = "UPDATE agendamentos_agendamento " \
             "SET executado = %s " \
             "WHERE id = %s;"
+        self._open()
         self.execute(q, (executado, int(id_agendamento)))
+        self._close()
 
     def update_habilitar_autonomo(self):
         q = "UPDATE parametros_moa_parametrosusina " \
             "SET modo_autonomo = 1 " \
             "WHERE id = 1;"
-        self.execute(q)
+        self._open()
+        self.execute(q,)
+        self._close()
 
     def update_desabilitar_autonomo(self):
         q = "UPDATE parametros_moa_parametrosusina " \
             "SET modo_autonomo = 0 " \
             "WHERE id = 1;"
-        self.execute(q)
+        self._open()
+        self.execute(q,)
+        self._close()
 
     def update_remove_emergencia(self):
         q = "UPDATE parametros_moa_parametrosusina " \
             "SET emergencia_acionada = 0 " \
             "WHERE id = 1;"
-        self.execute(q)
+        self._open()
+        self.execute(q,)
+        self._close()

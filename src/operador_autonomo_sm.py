@@ -198,9 +198,7 @@ class Emergencia(State):
                 while self.usina.db_emergencia_acionada:
                     self.usina.ler_valores()
                     if not self.usina.clp.em_emergencia():
-                        self.usina.db.dbopen()
                         self.usina.db.update_emergencia(0)
-                        self.usina.db.close()
                         self.usina.db_emergencia_acionada = 0
 
             if self.usina.clp_emergencia_acionada:
@@ -228,9 +226,8 @@ class ModoManualAtivado(State):
 
     def run(self):
 
-        self.usina.heartbeat()
         self.usina.ler_valores()
-        print(usina.modo_autonomo)
+        self.usina.heartbeat()
         if self.usina.modo_autonomo:
             logger.info("Usina voltou para o modo Autonomo")
             return Pronto(self.usina)
@@ -386,5 +383,4 @@ if __name__ == "__main__":
         logger.debug("Executando estado: {}".format(sm.state.__class__.__name__))
         sm.exec()
         t_restante = max(5 - (time.time() - t_i), 0) / ESCALA_DE_TEMPO
-        print(t_restante)
         sleep(t_restante)

@@ -2,6 +2,7 @@
 from pyModbusTCP.client import ModbusClient
 import RPi.GPIO as gpio
 import time
+import socket
 from pyModbusTCP.server import DataBank
 import database_connector
 db = database_connector.Database()
@@ -51,32 +52,45 @@ for pin_name, pin_number in OUT_PINS.items():
     print('Pin {} ({}) set as OUTPUT'.format(pin_name, pin_number))
             
 
-modbus = ModbusClient(host='localhost', port=5002, unit_id=1)
+modbus = ModbusClient(host='localhost', port=5003, unit_id=1)
+painel_sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+painel_sock.bind(("127.0.0.1", 10200))
+painel_sock.listen(5)
+painel_sock.setblocking(0)
 
+ug1_flag = False
+ug2_flag = False
+modo_auto = False
 while True:
+    
     time.sleep(0.1)
-    modbus.open()
-    if not modbus.open():
+    
+    if modbus.open():
+        modo_auto = True if modbus.read_holding_registers(40100)[0] else False
+        ug1_flag = True if modbus.read_holding_registers(40022)[0] else False
+        ug2_flag = True if modbus.read_holding_registers(40032)[0] else False
         modbus.close()
-        raise Exception("Modbus client failed to open.")
-    db.dbopen()
+    
     if gpio.input(IN_02):
         db.update_habilitar_autonomo()
         print("habilitar modo autonomo")
+    
     if gpio.input(IN_01):
         db.update_desabilitar_autonomo()
         print("desabilitar modo autonomo")
+    
     if gpio.input(IN_03):
         print("emergencia eletrica = 1")
-        modbus.write_single_register(40200, 1)
-    elif not modbus.read_holding_registers(40100)[0] == 0:
-        modbus.write_single_register(40200, 0)
-        print("emergencia eletrica = 0")
-    db.close()
+        try:
+            wa_sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+            wa_sock.connect(('127.0.0.1',10100))
+            wa_sock.send(b'1')
+            wa_sock.close()
+        except Exception as e:
+            print(e)
+            pass
 
-    ug1_block = False if modbus.read_holding_registers(40020)[0] == 0 else True
-    ug2_block = False if modbus.read_holding_registers(40030)[0] == 0 else True
-    gpio.output(OUT_07, ug1_block)
-    gpio.output(OUT_08, ug2_block)
-    print("TRIP MODBUS: ", modbus.read_holding_registers(40100)[0])
-    modbus.close()
+    gpio.output(OUT_06, not modo_auto)
+    gpio.output(OUT_07, not ug1_flag)
+    gpio.output(OUT_08, not ug2_flag)
+    

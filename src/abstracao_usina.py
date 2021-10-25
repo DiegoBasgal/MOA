@@ -128,9 +128,7 @@ class Usina:
         #  - Modo de prioridade UGS
         #  - Niveis de operação da comporta
 
-        self.db.dbopen()
         parametros = self.db.get_parametros_usina()
-        self.db.close()
 
         # Botão de emergência
         self.db_emergencia_acionada = int(parametros["emergencia_acionada"])
@@ -220,9 +218,7 @@ class Usina:
                 self.ug2.perda_na_grade,
                 self.ug2.temp_mancal,
                 ]
-        self.db.dbopen()
         self.db.update_parametrosusina(pars)
-        self.db.close()
 
     def acionar_emergencia(self):
         self.con.open()        
@@ -232,20 +228,24 @@ class Usina:
 
 
     def normalizar_emergencia(self):
+        logger.info("Verificando condições para normalização")
+        logger.info("{}, {}".format(self.tensao_na_linha, self.deve_tentar_normalizar))
         if self.cfg['TENSAO_LINHA_BAIXA'] < self.tensao_na_linha < self.cfg['TENSAO_LINHA_ALTA'] and self.deve_tentar_normalizar:
-            self.db.dbopen()
-            self.db.update_remove_emergencia()
-            self.db.close()
-            self.db_emergencia_acionada = 0
+            logger.info("Normalizando a Usina")
             self.con.open()
             self.con.normalizar_emergencia()
             self.con.close()
             self.clp_emergencia_acionada = 0
+            logger.info("Normalizando as UGS")
             for ug in self.ugs:
                 ug.normalizar()
+            logger.info("Normalizando no banco")
+            self.db.update_remove_emergencia()
+            self.db_emergencia_acionada = 0
             return True
         else:
             return False
+            
     def heartbeat(self):
         agora = datetime.now()
         ano = int(agora.year)
@@ -261,13 +261,16 @@ class Usina:
         DataBank.set_words(self.cfg['ENDERECO_LOCAL_NV_RELIGAMENTO'], [int((self.nv_religamento - 620) * 1000)])
         DataBank.set_words(self.cfg['ENDERECO_LOCAL_UG1_POT'], [int(self.ug1.potencia * 1000)])
         DataBank.set_words(self.cfg['ENDERECO_LOCAL_UG1_SETPOINT'], [int(self.ug1.setpoint * 1000)])
-        DataBank.set_words(self.cfg['ENDERECO_LOCAL_UG1_DISP'], [int(self.ug1.disponivel)])
+        DataBank.set_words(self.cfg['ENDERECO_LOCAL_UG1_DISP'], [int(self.ug1.disponivel)])        
+        DataBank.set_words(self.cfg['ENDERECO_LOCAL_UG1_FLAGS'], [int(self.ug1.flag)])
         DataBank.set_words(self.cfg['ENDERECO_LOCAL_UG2_POT'], [int(self.ug2.potencia * 1000)])
         DataBank.set_words(self.cfg['ENDERECO_LOCAL_UG2_SETPOINT'], [int(self.ug2.setpoint * 1000)])
         DataBank.set_words(self.cfg['ENDERECO_LOCAL_UG2_DISP'], [int(self.ug2.disponivel)])
+        DataBank.set_words(self.cfg['ENDERECO_LOCAL_UG2_FLAGS'], [int(self.ug2.flag)])
+        DataBank.set_words(self.cfg['ENDERECO_LOCAL_UG2_FLAGS'], [int(self.ug2.flag)])
+        DataBank.set_words(self.cfg['ENDERECO_LOCAL_MODO_AUTONOMO'], [int(self.modo_autonomo)])
         clp_online = 1 if self.clp_online else 0
         DataBank.set_words(self.cfg['ENDERECO_LOCAL_CLP_ONLINE'], [int(clp_online)])
-        # Todo DataBank.set_words(self.cfg['ENDERECO_LOCAL_STATUS_MOA'], [int(self.status_moa)])
 
     def get_agendamentos_pendentes(self):
         """
@@ -277,13 +280,11 @@ class Usina:
         agora = datetime.now()
         agora = agora - timedelta(seconds=agora.second, microseconds=agora.microsecond)
         agendamentos_pendentes = []
-        self.db.dbopen()
         agendamentos = self.db.get_agendamentos_pendentes()
         for agendamento in agendamentos:
             if agendamento[1] <= agora:
                 agendamentos_pendentes.append(agendamento)
         return agendamentos_pendentes
-        self.db.close()
 
     def verificar_agendamentos(self):
         """
@@ -324,9 +325,7 @@ class Usina:
                     self.acionar_emergencia()
 
                 # Após executar, indicar no banco de dados
-                self.db.dbopen()
                 self.db.update_agendamento(int(agendamento[0]), 1)
-                self.db.close()
                 logger.info("O comando #{} - {} foi executado.".format(agendamento[0], agendamento[2]))
 
             else:
@@ -426,9 +425,7 @@ class Usina:
 
     def entrar_em_modo_manual(self):
         self.modo_autonomo = 0
-        self.db.dbopen()
         self.db.update_modo_manual()
-        self.db.close()
 
 class UnidadeDeGeracao:
 

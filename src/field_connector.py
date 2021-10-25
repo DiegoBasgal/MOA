@@ -98,7 +98,7 @@ class FieldConnector:
         return self.modbus_clp_A.read_holding_registers(ENDERECO_CLP_UG2_T_MANCAL)[0]/10
 
     def get_tensao_na_linha(self):
-        return self.modbus_clp_A.read_holding_registers(ENDERECO_CLP_TENSAO_NA_LINHA)[0]/10
+        return self.modbus_clp_A.read_holding_registers(ENDERECO_CLP_TENSAO_NA_LINHA)[0]
 
     def set_ug1_flag(self, flags):
         self.modbus_clp_A.write_single_register(ENDERECO_CLP_UG1_FLAGS, flags)

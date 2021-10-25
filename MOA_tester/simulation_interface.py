@@ -85,7 +85,7 @@ class simulation_interface(threading.Thread):
                 writer.writerow(rows[-1])
 
             with_clp_text = True
-            if with_clp_text and not segundos_simulados % 600:
+            if with_clp_text and not segundos_simulados % 60:
                 print("-----------------------------------------------------------------------------------------------")
                 print("Tempo simulado: {:} | NV montante: {:3.2f}m | Pot Medidor: {:5.0f}kW | Linha: {:2.3f}kV"
                       .format(str(datetime.timedelta(seconds=segundos_simulados)), nv_montante, pot_medidor, tensao))

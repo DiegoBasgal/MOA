@@ -2,7 +2,7 @@ import csv
 import json
 import math
 import os
-
+import socket
 from numpy import random
 from pyModbusTCP.client import ModbusClient
 from pyModbusTCP.server import ModbusServer, DataBank
@@ -133,7 +133,7 @@ class world_abstraction(threading.Thread):
         self.lock = threading.Lock()
         self.stop_signal = False
         self.simulation_speed = max(self.simulation_speed, 1)
-        self.step_time = 0.001
+        self.step_time = 0.01
         self.seconds_per_step = self.step_time * self.simulation_speed
         self.events = []
         with open('simulated_events.csv') as f:
@@ -236,12 +236,18 @@ class world_abstraction(threading.Thread):
         logger.info("[SIMUL] Soft Stopping thread")
 
     def run(self):
+        sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        sock.bind(("127.0.0.1", 10100))
+        sock.listen(5)
+        sock.setblocking(0)
+                
         server = ModbusServer(host='0.0.0.0', port=5002, no_block=True)
         server.start()
         q_aflu = 0
         q_vert = 0
         DataBank.set_words(40000, [int(((self.nv_montante - 620) * 100 + random.normal(scale=0.1))) * 10])
         logger.info("[SIMUL] Aguardando MOA")
+        sent = False
         moa_is_alive = False
         while not moa_is_alive:
             moa_is_alive = self.moa_slave.open()
@@ -254,7 +260,7 @@ class world_abstraction(threading.Thread):
 
             remaining_step_time = 0
             step_start_time = datetime.now()
-            self.lock.acquire()
+            self.lock.acquire() 
 
             # Comportamento do modelo
 
@@ -300,9 +306,11 @@ class world_abstraction(threading.Thread):
             self.comp_p3 = self.REGS[11] & 0b00001000
             self.comp_p4 = self.REGS[11] & 0b00010000
             self.comp_aberta = self.REGS[11] & 0b00100000
-            self.flags_usina = int(self.REGS[100])
-            self.trip_painel = int(self.REGS[200])
-
+            if self.flags_usina and int(self.REGS[100]) == 0:
+                print("TENTATIVA DE NORMALIZACAO RECEBIDA")
+                self.flags_usina = 0
+            elif int(self.REGS[100]) > 0:
+                self.flags_usina = int(self.REGS[100])
             # Comportamento fisico
 
             # Acerto de tempo
@@ -323,6 +331,8 @@ class world_abstraction(threading.Thread):
                     self.events = self.events[1:]   # remove current from list
                     q_aflu = min(max(0, current_event[1]), 100) if current_event[1] >= 0 else q_aflu
                     self.flags_usina = current_event[2] if current_event[2] >= 0 else self.flags_usina
+                    if current_event[2]:
+                        print("EVENT FLAG")
                     self.ug1_flags = current_event[3] if current_event[3] >= 0 else self.ug1_flags
                     self.ug1_temp_mancal = current_event[4] if current_event[4] >= 0 else self.ug1_temp_mancal
                     self.ug1_perda_grade = current_event[5] if current_event[5] >= 0 else self.ug1_perda_grade
@@ -333,24 +343,31 @@ class world_abstraction(threading.Thread):
                     logger.debug("[SIMUL] Executando evento agendado na simulação {}".format(current_event))
 
             # Verifica flags da Usina
-            if not self.trip_painel == 0:
-                self.flags_usina = int(self.flags_usina) | 1
+            try:
+                conn, addr = sock.accept()
+                data = conn.recv(1)
+                if int(data) == 1:
+                    print ('RECIVED ELETRIC TRIP SIGNAL (socket)')
+                    DataBank.set_words(40100, [1])
+                    DataBank.set_words(40020, [1])
+                    DataBank.set_words(40030, [1])
+                    self.flags_usina = 1
+                    self.ug1_flags = 1
+                    self.ug2_flags = 1
+            except Exception as e:
+                pass
 
             if not (TRIP_TENSAO_ABAIXO < self.tensao_na_linha < TRIP_TENSAO_SUPERIOR):
                 self.flags_usina = int(self.flags_usina) | 2
+                print("TENSAO FLAG")
 
             if not (TRIP_NV_MIN < self.nv_montante):
                 self.flags_usina = int(self.flags_usina) | 4
+                print("NV FLAG")
 
             if not (self.flags_usina == 0):
-                old_flag_ug1 = self.ug1_flags
-                old_flag_ug2 = self.ug2_flags
-                self.ug1_flags = 1
-                self.ug2_flags = 1
-                self.step_ug1()  # UG1
-                self.step_ug2()  # UG2
-                self.ug1_flags = old_flag_ug1
-                self.ug2_flags = old_flag_ug2
+                self.ug1_flags = self.ug1_flags | 1
+                self.ug2_flags = self.ug2_flags | 1
 
             # Comportamento das UGs
             self.step_ug1()  # UG1
@@ -398,10 +415,11 @@ class world_abstraction(threading.Thread):
             DataBank.set_words(40035, [int(self.ug2_perda_grade*100)])
             DataBank.set_words(40099, [int(self.simulation_time/60)])
             DataBank.set_words(40100, [self.flags_usina])
+
             # Final do comportamento modelado
 
             remaining_step_time = self.step_time - (datetime.now()-step_start_time).seconds
-            # print("Remaining time on step {:}s".format(remaining_step_time))
+            #print("Remaining time on step {:}s".format(remaining_step_time))
 
             self.lock.release()
             if remaining_step_time > 0:
