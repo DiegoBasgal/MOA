@@ -28,6 +28,8 @@ class Usina:
         else:
             self.con = con
 
+        self.state_moa = 1
+
         # Inicializa Objs da usina
         self.ug1 = UnidadeDeGeracao(1)
         self.ug2 = UnidadeDeGeracao(2)
@@ -48,11 +50,13 @@ class Usina:
         self.ki = self.cfg['ki']
         self.kd = self.cfg['kd']
         self.kie = self.cfg['kie']
+        self.kimedidor = 0
         self.controle_ie = self.cfg['saida_ie_inicial']
         self.n_movel_l = self.cfg['n_movel_L']
         self.n_movel_r = self.cfg['n_movel_R']
 
         # Outras vars
+        self.state_moa = 0
         self.controle_p = 0
         self.controle_i = 0
         self.controle_d = 0
@@ -74,6 +78,17 @@ class Usina:
         self.deve_tentar_normalizar = True
         self.tentativas_de_normalizar = 0
 
+        pars = [datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+                        self.kp,
+                        self.ki,
+                        self.kd,
+                        self.kie,
+                        self.n_movel_l,
+                        self.n_movel_r,
+                        self.nv_alvo
+                        ]
+        self.db.update_parametros_usina(pars)
+
     def ler_valores(self):
 
         # CLP
@@ -84,6 +99,7 @@ class Usina:
         # self.clp_emergencia_acionada = regs[self.cfg['ENDERECO_CLP_USINA_FLAGS']]
         # self.nv_montante = round((regs[self.cfg['ENDERECO_CLP_NV_MONATNTE']] * 0.001) + 620, 2)
         # self.pot_medidor = round((regs[self.cfg['ENDERECO_CLP_MEDIDOR']] * 0.001), 3)
+
 
         self.con.open()
         self.clp_online = True
@@ -156,7 +172,7 @@ class Usina:
             logger.info("O modo de prioridade das ugs foi alterado (#{}).".format(self.modo_de_escolha_das_ugs))
 
         # Niveis de operação da comporta
-        self.comporta.pos_0['anterior'] = float(parametros["nv_comporta_pos_0_ant"])
+        # self.comporta.pos_0['anterior'] = float(parametros["nv_comporta_pos_0_ant"])
         self.comporta.pos_0['proximo'] = float(parametros["nv_comporta_pos_0_prox"])
         self.comporta.pos_1['anterior'] = float(parametros["nv_comporta_pos_1_ant"])
         self.comporta.pos_1['proximo'] = float(parametros["nv_comporta_pos_1_prox"])
@@ -167,7 +183,7 @@ class Usina:
         self.comporta.pos_4['anterior'] = float(parametros["nv_comporta_pos_4_ant"])
         self.comporta.pos_4['proximo'] = float(parametros["nv_comporta_pos_4_prox"])
         self.comporta.pos_5['anterior'] = float(parametros["nv_comporta_pos_5_ant"])
-        self.comporta.pos_5['proximo'] = float(parametros["nv_comporta_pos_5_prox"])
+        # self.comporta.pos_5['proximo'] = float(parametros["nv_comporta_pos_5_prox"])
 
         # Parametros banco
         self.kp = float(parametros['kp'])
@@ -177,9 +193,25 @@ class Usina:
         self.n_movel_l = float(parametros['n_movel_L'])
         self.n_movel_r = float(parametros['n_movel_R'])
 
+        # Le o databank interno
+        
+        if DataBank.get_words(self.cfg['REG_MOA_IN_EMERG'])[0] != 0:
+            logger.warning("Emergência elétrica detectada antes de acusar na CLP, algo parece estar errado...")
+            self.clp_emergencia_acionada = True
+
+
+        if DataBank.get_words(self.cfg['REG_MOA_IN_HABILITA_AUTO'])[0] == 1:
+            self.modo_autonomo = 1
+        
+        if DataBank.get_words(self.cfg['REG_MOA_IN_DESABILITA_AUTO'])[0] == 1:
+            self.modo_autonomo = 0
+
         # ajuste inicial ie
         if self.controle_ie == 'auto':
             self.controle_ie = (self.ug1.potencia + self.ug2.potencia) / self.cfg['pot_maxima_alvo']
+
+        self.heartbeat()
+
 
     def escrever_valores(self):
 
@@ -197,7 +229,7 @@ class Usina:
         # DB
         # Escreve no banco
         # Paulo: mover lógica de escrever no banco para um método em DBService
-        pars = [datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+        valores = [datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
                 1 if self.aguardando_reservatorio else 0,
                 1 if self.clp_online else 0,
                 self.nv_montante,
@@ -218,7 +250,7 @@ class Usina:
                 self.ug2.perda_na_grade,
                 self.ug2.temp_mancal,
                 ]
-        self.db.update_parametrosusina(pars)
+        self.db.update_valores_usina(valores)
 
     def acionar_emergencia(self):
         self.con.open()        
@@ -256,21 +288,20 @@ class Usina:
         seg = int(agora.second)
         mil = int(agora.microsecond / 1000)
         DataBank.set_words(0, [ano, mes, dia, hor, mnt, seg, mil])
-        DataBank.set_words(self.cfg['ENDERECO_LOCAL_NV_MONATNTE'], [int((self.nv_montante - 620) * 1000)])
-        DataBank.set_words(self.cfg['ENDERECO_LOCAL_NV_ALVO'], [int((self.nv_alvo - 620) * 1000)])
-        DataBank.set_words(self.cfg['ENDERECO_LOCAL_NV_RELIGAMENTO'], [int((self.nv_religamento - 620) * 1000)])
-        DataBank.set_words(self.cfg['ENDERECO_LOCAL_UG1_POT'], [int(self.ug1.potencia * 1000)])
-        DataBank.set_words(self.cfg['ENDERECO_LOCAL_UG1_SETPOINT'], [int(self.ug1.setpoint * 1000)])
-        DataBank.set_words(self.cfg['ENDERECO_LOCAL_UG1_DISP'], [int(self.ug1.disponivel)])        
-        DataBank.set_words(self.cfg['ENDERECO_LOCAL_UG1_FLAGS'], [int(self.ug1.flag)])
-        DataBank.set_words(self.cfg['ENDERECO_LOCAL_UG2_POT'], [int(self.ug2.potencia * 1000)])
-        DataBank.set_words(self.cfg['ENDERECO_LOCAL_UG2_SETPOINT'], [int(self.ug2.setpoint * 1000)])
-        DataBank.set_words(self.cfg['ENDERECO_LOCAL_UG2_DISP'], [int(self.ug2.disponivel)])
-        DataBank.set_words(self.cfg['ENDERECO_LOCAL_UG2_FLAGS'], [int(self.ug2.flag)])
-        DataBank.set_words(self.cfg['ENDERECO_LOCAL_UG2_FLAGS'], [int(self.ug2.flag)])
-        DataBank.set_words(self.cfg['ENDERECO_LOCAL_MODO_AUTONOMO'], [int(self.modo_autonomo)])
-        clp_online = 1 if self.clp_online else 0
-        DataBank.set_words(self.cfg['ENDERECO_LOCAL_CLP_ONLINE'], [int(clp_online)])
+        DataBank.set_words(self.cfg['REG_MOA_OUT_STATUS'], [self.state_moa])
+        DataBank.set_words(self.cfg['REG_MOA_OUT_MODE'], [self.modo_autonomo])
+        if self.modo_autonomo:
+            DataBank.set_words(self.cfg['REG_MOA_OUT_EMERG'], [1 if self.clp_emergencia_acionada else 0])
+            DataBank.set_words(self.cfg['REG_MOA_OUT_TARGET_LEVEL'], [self.nv_alvo-620]*1000)
+            DataBank.set_words(self.cfg['REG_MOA_OUT_SETPOINT'], [self.ug1.setpoint + self.ug2.setpoint])
+            DataBank.set_words(self.cfg['REG_MOA_OUT_BLOCK_UG1'], [1 if self.ug1.flag else 0])
+            DataBank.set_words(self.cfg['REG_MOA_OUT_BLOCK_UG2'], [1 if self.ug2.flag else 0])
+        else:
+            DataBank.set_words(self.cfg['REG_MOA_OUT_EMERG'], [0])
+            DataBank.set_words(self.cfg['REG_MOA_OUT_TARGET_LEVEL'], [0])
+            DataBank.set_words(self.cfg['REG_MOA_OUT_SETPOINT'], [0])
+            DataBank.set_words(self.cfg['REG_MOA_OUT_BLOCK_UG1'], [0])
+            DataBank.set_words(self.cfg['REG_MOA_OUT_BLOCK_UG2'], [0])
 
     def get_agendamentos_pendentes(self):
         """
@@ -341,7 +372,8 @@ class Usina:
             self.pot_disp += self.cfg['pot_maxima_ug']
 
         if self.pot_medidor > self.cfg['pot_maxima_alvo'] and pot_alvo > (self.cfg['pot_maxima_alvo'] * 0.95):
-            pot_alvo = pot_alvo * 0.99 * (self.cfg['pot_maxima_alvo'] / self.pot_medidor)
+            self.kimedidor += - 0.0001 * (pot_alvo - self.pot_medidor) 
+            pot_alvo = pot_alvo - 0.5 * (pot_alvo - self.pot_medidor) + self.kimedidor
 
         ugs = self.lista_de_ugs_disponiveis()
 
@@ -449,6 +481,10 @@ class UnidadeDeGeracao:
         self.perda_na_grade_alerta = 0
         self.temp_mancal_alerta = 0
         self.pot_disponivel = 0
+
+    def voltar_a_tentar_resetar(self):
+        self.deve_tentar_normalizar = True
+        self.tentativas_de_normalizar = 0
 
     def normalizar(self, flag=0b1):
         self.tentativas_de_normalizar += 1

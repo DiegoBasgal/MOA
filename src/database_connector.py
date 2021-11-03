@@ -76,7 +76,18 @@ class Database:
         self._close()
         return result
 
-    def update_parametrosusina(self, values):
+    def update_parametros_usina(self, values):
+        q = "UPDATE parametros_moa_parametrosusina " \
+            "SET timestamp = %s, " \
+            "kp = %s, ki = %s, kd = %s,  kie = %s, n_movel_L = %s, n_movel_R = %s, nv_alvo = %s " \
+            "WHERE id = 1"
+        self._open()
+        self.execute(q, tuple(values))
+        self._close()
+        return True
+
+    
+    def update_valores_usina(self, values):
         q = "UPDATE parametros_moa_parametrosusina " \
             "SET timestamp = %s, aguardando_reservatorio = %s, clp_online = %s, nv_montante = %s, pot_disp = %s, " \
             "ug1_disp = %s, ug1_pot = %s, ug1_setpot = %s, ug1_sinc = %s, ug1_tempo = %s, ug2_disp = %s, ug2_pot = %s, " \

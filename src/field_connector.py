@@ -18,21 +18,12 @@ ENDERECO_CLP_UG2_POTENCIA = 40031
 ENDERECO_CLP_UG2_SETPOINT = 40032
 ENDERECO_CLP_UG2_T_MANCAL = 40034
 ENDERECO_CLP_USINA_FLAGS = 40100
-ENDERECO_LOCAL_NV_MONATNTE = 40009
-ENDERECO_LOCAL_NV_ALVO = 40010
-ENDERECO_LOCAL_NV_RELIGAMENTO = 40011
-ENDERECO_LOCAL_UG1_POT = 40019
-ENDERECO_LOCAL_UG1_SETPOINT = 40020
-ENDERECO_LOCAL_UG1_DISP = 40021
-ENDERECO_LOCAL_UG2_POT = 40029
-ENDERECO_LOCAL_UG2_SETPOINT = 40030
-ENDERECO_LOCAL_UG2_DISP = 40031
-ENDERECO_LOCAL_CLP_ONLINE = 40099
-ENDERECO_LOCAL_STATUS_MOA = 40100
 
 class ModbusClientFailedToOpen(Exception):
     pass
 
+class ModbusFailedToFetch(Exception):
+    pass
 
 class FieldConnector:
 
@@ -42,13 +33,17 @@ class FieldConnector:
         self.port_A = port_A
         self.ip_B = ip_B
         self.port_B = port_B
-        self.modbus_clp_A = ModbusClient(host=self.ip_A, port=self.port_A, timeout=0.1, unit_id=1)
+        self.modbus_clp_A = ModbusClient(host=self.ip_A, port=self.port_A, timeout=5, unit_id=1)
         #self.modbus_clp_B = ModbusClient(host=self.ip_B, port=self.port_B, timeout=0.1, unit_id=1)
 
     def open(self):
         if not self.modbus_clp_A.open():
             self.close()
             raise ModbusClientFailedToOpen("Modbus client ({}:{}) failed to open.".format(self.ip_A, self.port_A))
+
+        if self.modbus_clp_A.read_holding_registers(ENDERECO_CLP_MEDIDOR) is None:
+            raise ModbusFailedToFetch("Modbus client ({}:{}) failed to fetch data.".format(self.ip_A, self.port_A))
+
         #if not self.modbus_clp_B.open():
         #    self.close()
         #    raise ModbusClientFailedToOpen("Modbus client ({}:{}) failed to open.".format(self.ip_A, self.port_A))

@@ -6,18 +6,19 @@ Implementacao teste de uma versao do moa utilizando SM
 import logging
 import os
 import sys
+from threading import Thread
 import time
 from sys import stdout
 from time import sleep
 
 import json
 
-from pyModbusTCP.server import ModbusServer
+from pyModbusTCP.server import DataBank, ModbusServer
 
 from mensageiro.mensageiro_log_handler import MensageiroHandler
 import clp_connector, database_connector, abstracao_usina
 
-DEBUG = False
+DEBUG = True
 
 # Set-up logging
 rootLogger = logging.getLogger()
@@ -98,6 +99,7 @@ class Pronto(State):
         super().__init__(*args, **kwargs)
         self.n_tentativa = 0
         self.usina = instancia_usina
+        self.usina.state_moa = 3
 
     def run(self):
 
@@ -122,6 +124,8 @@ class ValoresInternosAtualizados(State):
     def __init__(self, instancia_usina, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.usina = instancia_usina
+        DataBank.set_words(cfg['REG_PAINEL_LIDO'], [1])
+
 
     def run(self):
         """Decidir para qual modo de operação o sistema deve ir"""
@@ -174,7 +178,6 @@ class ValoresInternosAtualizados(State):
         return ReservatorioNormal(self.usina)
 
 
-# ToDo Emergência
 class Emergencia(State):
 
     def __init__(self, instancia_usina, *args, **kwargs):
@@ -185,12 +188,15 @@ class Emergencia(State):
         self.usina.distribuir_potencia(0)
         self.usina.escrever_valores()
         self.usina.acionar_emergencia()
+        self.usina.heartbeat()
 
     def run(self):
+        self.usina.heartbeat()
         self.n_tentativa += 1
         if self.n_tentativa > 3:
             logger.warning("Numeor de tentaivas de normalização excedidas, entrando em modo manual.")
             self.usina.entrar_em_modo_manual()
+            self.usina.heartbeat()
             return ModoManualAtivado(self.usina)
         else:
             if self.usina.db_emergencia_acionada:
@@ -214,6 +220,7 @@ class Emergencia(State):
                 return self
             else:
                 logger.info("Usina normalizada")
+                self.usina.heartbeat()
                 return ControleRealizado(self.usina)
 
 
@@ -225,11 +232,15 @@ class ModoManualAtivado(State):
         logger.info("Usina em modo manual, deve-se alterar via painel ou interface web.")
 
     def run(self):
-
         self.usina.ler_valores()
+        DataBank.set_words(cfg['REG_PAINEL_LIDO'], [1])
         self.usina.heartbeat()
         if self.usina.modo_autonomo:
             logger.info("Usina voltou para o modo Autonomo")
+            self.usina.ler_valores()
+            for ug in self.usina.ugs:
+                ug.voltar_a_tentar_resetar()
+            self.usina.heartbeat()
             return Pronto(self.usina)
 
         return self
@@ -313,7 +324,7 @@ if __name__ == "__main__":
         ESCALA_DE_TEMPO = int(sys.argv[1])
 
     n_tentativa = 0
-    timeout = 3
+    timeout = 10
     logger.info("Iniciando o MOA_SM")
     logger.debug("Debug is ON")
 
@@ -335,14 +346,15 @@ if __name__ == "__main__":
             logger.debug("Iniciando classe Usina")
             try:
                 usina = abstracao_usina.Usina(cfg, db)
-                # Update class values for the first time
-                usina.ler_valores()
-            except ConnectionError as e:
+            except Exception as e:
                 logger.error(
                     "Erro ao iniciar Classe Usina. Tentando novamente em {}s (tentativa {}/3). Exception: {}.".format(
                         timeout, n_tentativa, repr(e)))
                 sleep(timeout)
                 continue
+
+            # Update class values for the first time
+            usina.ler_valores()
 
             # Inicializando Servidor Modbus (para algumas comunicações com o Elipse)
             try:
