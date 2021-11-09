@@ -55,6 +55,11 @@ OUT_10 = 12
 INPUTS = [IN_01, IN_02, IN_03, IN_04]
 OUTPUTS = [OUT_01, OUT_02, OUT_03, OUT_04, OUT_05, OUT_06, OUT_07, OUT_08, OUT_09, OUT_10]
 
+SAIDA_PRONTO = OUT_01
+SAIDA_BLOCK_UG1 = OUT_04
+SAIDA_BLOCK_UG2 = OUT_05
+SAIDA_MODO_AUTO = OUT_06
+
 class Painel(threading.Thread):
 
     def __init__(self):
@@ -77,7 +82,7 @@ class Painel(threading.Thread):
             raise e
     
         for _ in range(5):
-            self.blink(0.1, pin=[OUT_01, OUT_04])
+            self.blink(0.1, pin=[SAIDA_PRONTO, SAIDA_MODO_AUTO])
 
         # carrega as configurações
         self.cfg = []
@@ -96,7 +101,7 @@ class Painel(threading.Thread):
             raise e
         
 
-    def blink(self, t=0.5, pin=OUT_02):
+    def blink(self, t=0.5, pin=SAIDA_PRONTO):
         if pin is list:
             pins = pin
         else:
@@ -169,8 +174,7 @@ class Painel(threading.Thread):
                     if gpio.input(IN_03):
                         logger.info("Comando recebido: emergencia.")
                         self.modbus.write_single_register(self.cfg['REG_MOA_IN_EMERG'], 1)
-                        self.modbus.write_single_register(self.cfg['REG_PAINEL_LIDO'], 0)
-                        panel_was_updated = False
+                        
                         #################################################################### simul
                         try:
                             wa_sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -181,30 +185,32 @@ class Painel(threading.Thread):
                             print(e)
                             pass
                         #################################################################### simul                   
-
+                    else:
+                        self.modbus.write_single_register(self.cfg['REG_MOA_IN_EMERG'], 0)
+                    
                     # Close modbus con
                     self.modbus.close()
 
                     if panel_was_updated:
-                        gpio.output(OUT_04, not autonomous_mode_activated) # inverted output
+                        gpio.output(SAIDA_MODO_AUTO, not autonomous_mode_activated) # inverted output
                     else:
-                        self.blink(pin=OUT_04)
+                        self.blink(pin=SAIDA_MODO_AUTO)
                     
                     if autonomous_mode_activated:
-                        gpio.output(OUT_02, not block_ug1_activated)
-                        gpio.output(OUT_03, not block_ug2_activated)
+                        gpio.output(SAIDA_BLOCK_UG1, not block_ug1_activated)
+                        gpio.output(SAIDA_BLOCK_UG2, not block_ug2_activated)
                     elif not autonomous_mode_activated: #If on manual, dont trip UGS
-                        gpio.output(OUT_02, True)
-                        gpio.output(OUT_03, True)
+                        gpio.output(SAIDA_BLOCK_UG1, True)
+                        gpio.output(SAIDA_BLOCK_UG2, True)
                    
                 else:
                     logger.error("Comunicação com o MOA falhou. Modbus did not open.")
-                    self.blink(pin=[OUT_01,OUT_04])
+                    self.blink(pin=[SAIDA_PRONTO,SAIDA_MODO_AUTO])
 
                 time.sleep(self.delay)
                 # Cicle end
             except Exception as e:
-                self.blink(t=1, pin=[OUT_01,OUT_04])
+                self.blink(t=1, pin=[SAIDA_PRONTO,SAIDA_MODO_AUTO])
                 logger.error("Comunicação com o MOA falhou... {}".format(tentativas, repr(e)))
                 if tentativas > 3:
                     logger.error("Esse erro não será mais exibito até que a situação seja normalizada")               

@@ -37,6 +37,9 @@ def parametros_moa_view(request, *args, **kwargs):
             usina.ug1_prioridade = 0
             usina.ug2_prioridade = 100
 
+        nv_alvo = float(request.POST['nv_alvo'].replace(",", "."))
+        usina.nv_alvo = nv_alvo if isinstance(nv_alvo, float) else usina.nv_alvo
+        
         nv_p1_ant = float(request.POST['nv_p1_ant'].replace(",", "."))
         nv_p2_ant = float(request.POST['nv_p2_ant'].replace(",", "."))
         nv_p3_ant = float(request.POST['nv_p3_ant'].replace(",", "."))

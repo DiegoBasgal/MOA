@@ -1,16 +1,3 @@
-"""
-databse_connector.py
-
-Implementado segundo sugestão de carusot42
-https://stackoverflow.com/questions/38076220/python-mysqldb-connection-in-a-class/38078544
-
-Here's some sample code where we create a table, add some data, and then read it back out:
-with Database('my_db.sqlite') as db:
-    db.execute('CREATE TABLE comments(pkey INTEGER PRIMARY KEY AUTOINCREMENT, username VARCHAR, comment_body VARCHAR, date_posted TIMESTAMP)')
-    db.execute('INSERT INTO comments (username, comment_body, date_posted) VALUES (%s, %s, current_date)', ('tom', 'this is a comment'))
-    comments = db.query('SELECT * FROM comments')
-    print(comments)
-"""
 import mysql.connector
 from mysql.connector import pooling
 
@@ -68,7 +55,7 @@ class Database:
         return parametros
 
     def get_agendamentos_pendentes(self):
-        q = "SELECT id, DATE_SUB(data, INTERVAL 3 HOUR), comando_id, executado " \
+        q = "SELECT *" \
             "FROM agendamentos_agendamento " \
             "WHERE executado = 0;"
         self._open()

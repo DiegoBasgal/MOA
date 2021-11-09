@@ -1,4 +1,6 @@
 import logging
+import pyodbc
+
 from datetime import datetime, timedelta
 from cmath import sqrt
 
@@ -8,7 +10,12 @@ from field_connector import FieldConnector
 
 logger = logging.getLogger('__main__')
 
-AGENDAMENTO_INDISPONIBILIZAR = 2
+AGENDAMENTO_INDISPONIBILIZAR = 1
+AGENDAMENTO_ALETRAR_NV_ALVO = 2
+AGENDAMENTO_INDISPONIBILIZAR_UG_1 = 101
+AGENDAMENTO_ALETRAR_POT_ALVO_UG_1 = 102
+AGENDAMENTO_INDISPONIBILIZAR_UG_2 = 201
+AGENDAMENTO_ALETRAR_POT_ALVO_UG_2 = 202
 AGENDAMENTO_DISPARAR_MENSAGEM_TESTE = 777
 MODO_ESCOLHA_MANUAL = 2
 
@@ -132,8 +139,8 @@ class Usina:
         self.nv_montante_anteriores.append(self.nv_montante)
         self.nv_montante_anteriores = self.nv_montante_anteriores[1:]
         self.nv_montante_anterior = sum(self.nv_montante_anteriores) / self.cfg['n_movel_L']
-        self.erro_nv = self.nv_alvo - self.nv_montante_recente
-        self.erro_nv_anterior = self.nv_alvo - self.nv_montante_anterior
+        self.erro_nv = self.nv_montante_recente - self.nv_alvo
+        self.erro_nv_anterior = self.nv_montante_anterior - self.nv_alvo
 
         # DB
         #
@@ -186,6 +193,7 @@ class Usina:
         # self.comporta.pos_5['proximo'] = float(parametros["nv_comporta_pos_5_prox"])
 
         # Parametros banco
+        self.nv_alvo = float(parametros['nv_alvo'])
         self.kp = float(parametros['kp'])
         self.ki = float(parametros['ki'])
         self.kd = float(parametros['kd'])
@@ -196,9 +204,7 @@ class Usina:
         # Le o databank interno
         
         if DataBank.get_words(self.cfg['REG_MOA_IN_EMERG'])[0] != 0:
-            logger.warning("Emergência elétrica detectada antes de acusar na CLP, algo parece estar errado...")
-            self.clp_emergencia_acionada = True
-
+            logger.warning("Emergência elétrica detectada ler coils de alarme....")
 
         if DataBank.get_words(self.cfg['REG_MOA_IN_HABILITA_AUTO'])[0] == 1:
             self.modo_autonomo = 1
@@ -222,7 +228,7 @@ class Usina:
         self.con.set_ug1_setpoint(int(self.ug1.setpoint * 1000))
         if self.ug2.pendente:
             self.con.set_ug2_flag(self.ug2.flag)
-        self.con.set_ug2_setpoint(int(self.ug1.setpoint * 1000))
+        self.con.set_ug2_setpoint(int(self.ug2.setpoint * 1000))
         self.con.set_pos_comporta(int(self.comporta.pos_comporta))
         self.con.close()
 
@@ -307,14 +313,16 @@ class Usina:
         """
         Retorna os agendamentos pendentes para a usina.
         :return: list[] agendamentos
-        """
+        
         agora = datetime.now()
         agora = agora - timedelta(seconds=agora.second, microseconds=agora.microsecond)
+        """
         agendamentos_pendentes = []
         agendamentos = self.db.get_agendamentos_pendentes()
         for agendamento in agendamentos:
-            if agendamento[1] <= agora:
-                agendamentos_pendentes.append(agendamento)
+            ag = list(agendamento)
+            ag[1] = ag[1] - timedelta(0, 60*60*3)
+            agendamentos_pendentes.append(ag)
         return agendamentos_pendentes
 
     def verificar_agendamentos(self):
@@ -326,38 +334,70 @@ class Usina:
         futuro = agora + timedelta(minutes=1)
         agendamentos = self.get_agendamentos_pendentes()
 
+        logger.debug(agendamentos)
+
         if len(agendamentos) == 0:
             return True
 
         self.agendamentos_atrasados = 0
         for agendamento in agendamentos:
-            if agendamento[1] < agora:
-                logger.warning("Agendamento #{} Atrasado! ({}).".format(agendamento[0], agendamento[2]))
+            logger.debug((agendamento[1] - agora).seconds)
+            if (agendamento[1] - agora).seconds > 60:
+                logger.warning("Agendamento #{} Atrasado! ({} - {}).".format(agendamento[0], agendamento[3], agendamento))
                 self.agendamentos_atrasados += 1
-            if agendamento[1] < agora - timedelta(minutes=5) or self.agendamentos_atrasados > 3:
+            if (agendamento[1] - agora).seconds > 300 or self.agendamentos_atrasados > 3:
                 logger.info("Os agendamentos estão muito atrasados! Acionando emergência.")
                 self.acionar_emergencia()
                 return False
 
         for agendamento in agendamentos:
-            if agendamento[1] < futuro and not bool(agendamento[3]):
+            if (agendamento[1] - agora).seconds < 60 and not bool(agendamento[4]):
                 # Está na hora e ainda não foi executado. Executar!
-                logger.info("Executando gendamento #{} - {}.".format(agendamento[0], agendamento[2]))
+                logger.info("Executando gendamento #{} - {}.".format(agendamento[0], agendamento))
 
                 # Exemplo Case agendamento:
-                if agendamento[2] == AGENDAMENTO_DISPARAR_MENSAGEM_TESTE:
+                if agendamento[3] == AGENDAMENTO_DISPARAR_MENSAGEM_TESTE:
                     # Coloca em emergência
                     logger.info("Disparando mensagem teste (comando via agendamento).")
                     self.disparar_mensagem_teste()
 
-                if agendamento[2] == AGENDAMENTO_INDISPONIBILIZAR:
+                if agendamento[3] == AGENDAMENTO_INDISPONIBILIZAR:
                     # Coloca em emergência
                     logger.info("Indisponibilizando a usina (comando via agendamento).")
                     self.acionar_emergencia()
+                
+                if agendamento[3] == AGENDAMENTO_ALETRAR_NV_ALVO:
+                    try:
+                        novo = float(agendamento[2].replace(",", "."))
+                    except Exception as e:
+                        logger.info("Valor inválido no comando #{} ({} é inválido).".format(agendamento[0], agendamento[3]))
+                    self.nv_alvo = novo
+                
+                if agendamento[3] == AGENDAMENTO_ALETRAR_POT_ALVO_UG_1:
+                    try:
+                        novo = float(agendamento[2].replace(",", "."))
+                    except Exception as e:
+                        logger.info("Valor inválido no comando #{} ({} é inválido).".format(agendamento[0], agendamento[3]))
+                    self.ug1.pot_disponivel = novo
+                
+                if agendamento[3] == AGENDAMENTO_INDISPONIBILIZAR_UG_1:
+                    self.ug1.indisponibilizar()   
+    
+                if agendamento[3] == AGENDAMENTO_ALETRAR_POT_ALVO_UG_2:
+                    try:
+                        novo = float(agendamento[2].replace(",", "."))
+                    except Exception as e:
+                        logger.info("Valor inválido no comando #{} ({} é inválido).".format(agendamento[0], agendamento[3]))
+                    self.ug2.pot_disponivel = novo
+                
+                if agendamento[3] == AGENDAMENTO_INDISPONIBILIZAR_UG_2:
+                    self.ug2.indisponibilizar()   
+
 
                 # Após executar, indicar no banco de dados
                 self.db.update_agendamento(int(agendamento[0]), 1)
                 logger.info("O comando #{} - {} foi executado.".format(agendamento[0], agendamento[2]))
+                self.escrever_valores()
 
             else:
                 # Ainda não é a hora de executar.
@@ -376,26 +416,33 @@ class Usina:
             pot_alvo = pot_alvo - 0.5 * (pot_alvo - self.pot_medidor) + self.kimedidor
 
         ugs = self.lista_de_ugs_disponiveis()
-
+        
+        logger.debug("Distribuindo {}".format(pot_alvo))
         if 0.1 < pot_alvo < self.cfg['pot_minima']:
+            logger.debug("0.1 < {} < self.cfg['pot_minima']".format(pot_alvo))
             if len(ugs) > 0:
                 ugs[0].mudar_setpoint(self.cfg['pot_minima'])
                 for ug in ugs[1:]:
                     ug.mudar_setpoint(0)
         elif pot_alvo < self.cfg['pot_maxima_ug'] - self.cfg['margem_pot_critica']:
+            logger.debug("{} < self.cfg['pot_maxima_ug'] - self.cfg['margem_pot_critica']".format(pot_alvo))
             ugs[0].mudar_setpoint(pot_alvo)
             for ug in ugs[1:]:
                 ug.mudar_setpoint(0)
         else:
             pot_alvo = min(pot_alvo, self.pot_disp)
+            logger.debug("Alvo =  {}".format(pot_alvo))
             if self.ug1.sincronizada and self.ug2.sincronizada and pot_alvo > (2 * self.cfg['pot_minima']) or \
                     ((pot_alvo > (self.cfg['pot_maxima_ug'] + self.cfg['margem_pot_critica']))
-                     and (abs(self.erro_nv) > 0.05) and self.ug1.disponivel and self.ug2.disponivel):
+                     and (abs(self.erro_nv) > 0.02) and self.ug1.disponivel and self.ug2.disponivel):
+                logger.debug("Dividir entre as ugs (cada = {})".format(pot_alvo / len(ugs)))
                 for ug in ugs:
                     ug.mudar_setpoint(pot_alvo / len(ugs))
             else:
                 pot_alvo = min(pot_alvo, self.cfg['pot_maxima_ug'])
                 if len(ugs) > 0:
+                    for ug in ugs[1:]:
+                        ug.mudar_setpoint(0)
                     ugs[0].mudar_setpoint(pot_alvo)
 
     def lista_de_ugs_disponiveis(self):
@@ -420,17 +467,20 @@ class Usina:
         Controle PID
         https://en.wikipedia.org/wiki/PID_controller#Proportional
         """
-
+        logger.debug("-------------------------------------------------")
+        
         # Calcula PID
         logger.debug("Alvo: {:0.3f}, Recente: {:0.3f}, Anterior: {:0.3f}".format(self.nv_alvo, self.nv_montante_recente,
                                                                                  self.nv_montante_anterior))
-
-        self.controle_p = self.kp * self.erro_nv
+        if abs(self.erro_nv) <= 0.01:
+            self.controle_p = self.kp * 0.5 * self.erro_nv 
+        else:
+            self.controle_p = self.kp * self.erro_nv 
         self.controle_i = max(min((self.ki * self.erro_nv) + self.controle_i, 0.8), 0)
         self.controle_d = self.kd * (self.erro_nv - self.erro_nv_anterior)
         saida_pid = self.controle_p + self.controle_i + min(max(-0.3, self.controle_d), 0.3)
-        logger.debug("PID: {:0.3f}, P:{:0.3f}, I:{:0.3f}, D:{:0.3f}".format(saida_pid, self.controle_p, self.controle_i,
-                                                                            self.controle_d))
+        logger.debug("PID: {:0.3f} <-- P:{:0.3f} + I:{:0.3f} + D:{:0.3f}; ERRO={}".format(saida_pid, self.controle_p, self.controle_i,
+                                                                            self.controle_d, self.erro_nv))
 
         # Calcula o integrador de estabilidade e limita
         self.controle_ie = max(min(saida_pid + self.controle_ie * self.kie, 1), 0)
@@ -443,9 +493,26 @@ class Usina:
             self.controle_ie = min(self.controle_ie, 0.3)
             self.controle_i = 0
 
+        logger.debug("IE: {:0.3f}".format(self.controle_ie))
+
         # Arredondamento e limitação
-        pot_alvo = max(min(round(self.cfg['pot_maxima_usina'] * self.controle_ie, 2), self.cfg['pot_maxima_usina']),
+        pot_alvo = max(min(round(self.cfg['pot_maxima_usina'] * self.controle_ie, 5), self.cfg['pot_maxima_usina']),
                        self.cfg['pot_minima'])
+        
+        logger.debug("Pot alvo: {:0.3f}".format(pot_alvo))
+        self.insert_debug_PID(datetime.now().utcnow().strftime("%Y-%m-%d %H:%M:%S"),
+                            self.controle_p,
+                            self.controle_i,
+                            self.controle_d, 
+                            self.controle_ie, 
+                            self.nv_alvo, 
+                            self.nv_montante_recente, 
+                            self.kp, 
+                            self.ki, 
+                            self.kd, 
+                            self.kie)
+        logger.debug("-------------------------------------------------")
+
         self.distribuir_potencia(pot_alvo)
 
     def disparar_mensagem_teste(self):
@@ -458,6 +525,23 @@ class Usina:
     def entrar_em_modo_manual(self):
         self.modo_autonomo = 0
         self.db.update_modo_manual()
+
+    def insert_debug_PID(self, ts, cp, ci, cd, cie, alvo, ref, kp, ki, kd, kie):
+        DB_SERVER = '10.101.3.87'
+        DB_DATABASE = 'COG_NV'
+        DB_USERNAME = 'usrDev'
+        DB_PASSWORD = "uXv&WQ9D&m3Sx^9%"
+        con = pyodbc.connect(driver='{FreeTDS}', TDS_Version=8.0,
+                            server=DB_SERVER,
+                            database=DB_DATABASE,
+                            port=1433,
+                            uid=DB_USERNAME, pwd=DB_PASSWORD,
+                            autocommit=True)
+        cursor = con.cursor()
+        q = "INSERT INTO moa_debug_PID VALUES ('{}', {}, {}, {}, {}, {}, {}, {}, {}, {}, {})".format(ts, cp, ci, cd, cie, alvo, ref, kp, ki, kd, kie)
+        cursor.execute(q)
+        return True
+
 
 class UnidadeDeGeracao:
 
@@ -481,6 +565,7 @@ class UnidadeDeGeracao:
         self.perda_na_grade_alerta = 0
         self.temp_mancal_alerta = 0
         self.pot_disponivel = 0
+        self.ts_ultima_tesntativa_de_normalizacao = datetime.now()
 
     def voltar_a_tentar_resetar(self):
         self.deve_tentar_normalizar = True
@@ -488,6 +573,8 @@ class UnidadeDeGeracao:
 
     def normalizar(self, flag=0b1):
         self.tentativas_de_normalizar += 1
+        self.ts_ultima_tesntativa_de_normalizacao = datetime.now()
+
         if self.flag % flag:
             temp = self.flag
             self.flag = self.flag & ~flag
@@ -538,7 +625,11 @@ class UnidadeDeGeracao:
             self.indisponibilizar(0b100,
                                   "Perda máxima na grade excedida (atual:{}; max:{})".format(self.perda_na_grade,
                                                                                              self.perda_na_grade_max))
-        if self.perda_na_grade < self.perda_na_grade_alerta and self.flag == 0b100 and self.tentativas_de_normalizar <= 3:
+
+        if self.perda_na_grade < self.perda_na_grade_alerta \
+            and self.flag == 0b100 \
+            and self.tentativas_de_normalizar <= 3  \
+            and (self.ts_ultima_tesntativa_de_normalizacao - datetime.now()).seconds >= 60 * self.tentativas_de_normalizar: 
             logger.info("Tentativa de normalização #{:d}".format(self.tentativas_de_normalizar))
             self.normalizar(4)
 

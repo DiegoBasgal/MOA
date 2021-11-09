@@ -114,8 +114,8 @@ class Pronto(State):
             except Exception as e:
                 self.n_tentativa += 1
                 logger.error("Erro durante a comunicação do MOA com a usina. Tentando novamente em {}s (tentativa{}/3)."
-                             " Exception: {}.".format(self.usina.timeout_padrao, self.n_tentativa, repr(e)))
-                sleep(self.usina.timeout_padrao)
+                             " Exception: {}.".format(self.usina.timeout_padrao * n_tentativa, self.n_tentativa, repr(e)))
+                sleep(self.usina.timeout_padrao * n_tentativa)
                 return self
 
 
@@ -194,7 +194,7 @@ class Emergencia(State):
         self.usina.heartbeat()
         self.n_tentativa += 1
         if self.n_tentativa > 3:
-            logger.warning("Numeor de tentaivas de normalização excedidas, entrando em modo manual.")
+            logger.warning("Numero de tentaivas de normalização excedidas, entrando em modo manual.")
             self.usina.entrar_em_modo_manual()
             self.usina.heartbeat()
             return ModoManualAtivado(self.usina)
@@ -210,17 +210,15 @@ class Emergencia(State):
             if self.usina.clp_emergencia_acionada:
                 try:
                     logger.info("Normalizando usina. (tentativa{}/3) (limite entre tentaivas: {}s)"
-                                .format(self.n_tentativa, self.usina.cfg['timeout_normalizacao']))
+                                .format(self.n_tentativa, n_tentativa*self.usina.cfg['timeout_normalizacao']))
                     self.usina.normalizar_emergencia()
-                    # sleep(self.usina.cfg['timeout_normalizacao']/ESCALA_DE_TEMPO)
+                    sleep(self.usina.cfg['timeout_normalizacao'] * n_tentativa)
                     self.usina.ler_valores()
                 except Exception as e:
-                    logger.error("Erro durante a comunicação do MOA com a usina. Tentando novamente em {}s. "
-                                 "Exception: {}.".format(self.usina.cfg['timeout_normalizacao'], repr(e)))
+                    logger.error("Erro durante a comunicação do MOA com a usina. Exception: {}.".format(repr(e)))
                 return self
             else:
                 logger.info("Usina normalizada")
-                self.usina.heartbeat()
                 return ControleRealizado(self.usina)
 
 
