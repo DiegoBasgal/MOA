@@ -1,7 +1,8 @@
 import logging
+from time import sleep
 import pyodbc
 
-from datetime import datetime, timedelta
+from datetime import date, datetime, timedelta
 from cmath import sqrt
 
 from pyModbusTCP.server import DataBank
@@ -31,15 +32,15 @@ class Usina:
             self.db = db
 
         if not con:
-            self.con = FieldConnector(self.cfg['clp_A_IP'],  self.cfg['clp_A_PORT'], self.cfg['clp_B_IP'],  self.cfg['clp_B_PORT'])
+            self.con = FieldConnector(self.cfg)
         else:
             self.con = con
 
         self.state_moa = 1
 
         # Inicializa Objs da usina
-        self.ug1 = UnidadeDeGeracao(1)
-        self.ug2 = UnidadeDeGeracao(2)
+        self.ug1 = UnidadeDeGeracao(1, self.con)
+        self.ug2 = UnidadeDeGeracao(2, self.con)
         self.ugs = [self.ug1, self.ug2]
         self.comporta = Comporta()
 
@@ -94,6 +95,7 @@ class Usina:
                         self.n_movel_r,
                         self.nv_alvo
                         ]
+        self.con.open()
         self.db.update_parametros_usina(pars)
 
     def ler_valores(self):
@@ -108,7 +110,7 @@ class Usina:
         # self.pot_medidor = round((regs[self.cfg['ENDERECO_CLP_MEDIDOR']] * 0.001), 3)
 
 
-        self.con.open()
+        #self.con.open()
         self.clp_online = True
         self.clp_emergencia_acionada = self.con.get_emergencia_acionada()
         self.nv_montante = self.con.get_nv_montante()
@@ -116,19 +118,21 @@ class Usina:
         self.tensao_na_linha = self.con.get_tensao_na_linha()
 
         # UG1
-        self.ug1.flag = self.con.get_flags_ug1()
+        self.ug1.flag = self.con.get_flag_ug1()
+        self.ug1.sincronizada = self.con.get_sincro_ug1()
         self.ug1.potencia = self.con.get_potencia_ug1()
         self.ug1.horas_maquina = self.con.get_horas_ug1()
         self.ug1.perda_na_grade = self.con.get_perda_na_grade_ug1()
         self.ug1.temp_mancal = self.con.get_temperatura_do_mancal_ug1()
         # Ug2
-        self.ug2.flag = self.con.get_flags_ug2()
+        self.ug2.flag = self.con.get_flag_ug2()
+        self.ug2.sincronizada = self.con.get_sincro_ug2()
         self.ug2.potencia = self.con.get_potencia_ug2()
         self.ug2.horas_maquina = self.con.get_horas_ug2()
         self.ug2.perda_na_grade = self.con.get_perda_na_grade_ug2()
         self.ug2.temp_mancal = self.con.get_temperatura_do_mancal_ug2()
 
-        self.con.close()
+        #self.con.close()
 
         if self.nv_montante_recente < 1:
             self.nv_montante_recentes = [self.nv_montante] * int(self.n_movel_r)
@@ -172,7 +176,6 @@ class Usina:
 
         # Modo autonomo
         self.modo_autonomo = int(parametros["modo_autonomo"])
-
         # Modo de prioridade UGS
         if not self.modo_de_escolha_das_ugs == int(parametros["modo_de_escolha_das_ugs"]):
             self.modo_de_escolha_das_ugs = int(parametros["modo_de_escolha_das_ugs"])
@@ -209,8 +212,9 @@ class Usina:
         if DataBank.get_words(self.cfg['REG_MOA_IN_HABILITA_AUTO'])[0] == 1:
             self.modo_autonomo = 1
         
-        if DataBank.get_words(self.cfg['REG_MOA_IN_DESABILITA_AUTO'])[0] == 1:
+        if DataBank.get_words(self.cfg['REG_MOA_IN_DESABILITA_AUTO'])[0] == 1 or self.modo_autonomo == 0:
             self.modo_autonomo = 0
+            self.entrar_em_modo_manual()
 
         # ajuste inicial ie
         if self.controle_ie == 'auto':
@@ -222,15 +226,8 @@ class Usina:
     def escrever_valores(self):
 
         # CLP
-        self.con.open()        
-        if self.ug1.pendente:
-            self.con.set_ug1_flag(self.ug1.flag)
-        self.con.set_ug1_setpoint(int(self.ug1.setpoint * 1000))
-        if self.ug2.pendente:
-            self.con.set_ug2_flag(self.ug2.flag)
-        self.con.set_ug2_setpoint(int(self.ug2.setpoint * 1000))
+        #self.con.open()           
         self.con.set_pos_comporta(int(self.comporta.pos_comporta))
-        self.con.close()
 
         # DB
         # Escreve no banco
@@ -259,9 +256,9 @@ class Usina:
         self.db.update_valores_usina(valores)
 
     def acionar_emergencia(self):
-        self.con.open()        
+        #self.con.open()        
         self.con.acionar_emergencia()
-        self.con.close()
+        #self.con.close()
         self.clp_emergencia_acionada = 1
 
 
@@ -270,9 +267,9 @@ class Usina:
         logger.info("{}, {}".format(self.tensao_na_linha, self.deve_tentar_normalizar))
         if self.cfg['TENSAO_LINHA_BAIXA'] < self.tensao_na_linha < self.cfg['TENSAO_LINHA_ALTA'] and self.deve_tentar_normalizar:
             logger.info("Normalizando a Usina")
-            self.con.open()
+            #self.con.open()
             self.con.normalizar_emergencia()
-            self.con.close()
+            #self.con.close()
             self.clp_emergencia_acionada = 0
             logger.info("Normalizando as UGS")
             for ug in self.ugs:
@@ -351,7 +348,7 @@ class Usina:
                 return False
 
         for agendamento in agendamentos:
-            if (agendamento[1] - agora).seconds < 60 and not bool(agendamento[4]):
+            if (agendamento[1] - agora).seconds <= 60 and not bool(agendamento[4]):
                 # Está na hora e ainda não foi executado. Executar!
                 logger.info("Executando gendamento #{} - {}.".format(agendamento[0], agendamento))
 
@@ -372,6 +369,17 @@ class Usina:
                     except Exception as e:
                         logger.info("Valor inválido no comando #{} ({} é inválido).".format(agendamento[0], agendamento[3]))
                     self.nv_alvo = novo
+                    pars = [datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+                        self.kp,
+                        self.ki,
+                        self.kd,
+                        self.kie,
+                        self.n_movel_l,
+                        self.n_movel_r,
+                        self.nv_alvo
+                        ]
+                    self.db.update_parametros_usina(pars)
+                    self.escrever_valores()
                 
                 if agendamento[3] == AGENDAMENTO_ALETRAR_POT_ALVO_UG_1:
                     try:
@@ -432,12 +440,16 @@ class Usina:
         else:
             pot_alvo = min(pot_alvo, self.pot_disp)
             logger.debug("Alvo =  {}".format(pot_alvo))
-            if self.ug1.sincronizada and self.ug2.sincronizada and pot_alvo > (2 * self.cfg['pot_minima']) or \
-                    ((pot_alvo > (self.cfg['pot_maxima_ug'] + self.cfg['margem_pot_critica']))
-                     and (abs(self.erro_nv) > 0.02) and self.ug1.disponivel and self.ug2.disponivel):
+            if self.ug1.sincronizada and self.ug2.sincronizada and pot_alvo > (2 * self.cfg['pot_minima']):
                 logger.debug("Dividir entre as ugs (cada = {})".format(pot_alvo / len(ugs)))
                 for ug in ugs:
                     ug.mudar_setpoint(pot_alvo / len(ugs))
+
+            elif ((pot_alvo > (self.cfg['pot_maxima_ug'] + self.cfg['margem_pot_critica']))
+                     and (abs(self.erro_nv) > 0.02) and self.ug1.disponivel and self.ug2.disponivel):
+                ugs[0].mudar_setpoint(self.cfg['pot_maxima_ug'])
+                for ug in ugs[1:]:
+                        ug.mudar_setpoint(pot_alvo/len(ugs))
             else:
                 pot_alvo = min(pot_alvo, self.cfg['pot_maxima_ug'])
                 if len(ugs) > 0:
@@ -500,17 +512,9 @@ class Usina:
                        self.cfg['pot_minima'])
         
         logger.debug("Pot alvo: {:0.3f}".format(pot_alvo))
-        self.insert_debug_PID(datetime.now().utcnow().strftime("%Y-%m-%d %H:%M:%S"),
-                            self.controle_p,
-                            self.controle_i,
-                            self.controle_d, 
-                            self.controle_ie, 
-                            self.nv_alvo, 
-                            self.nv_montante_recente, 
-                            self.kp, 
-                            self.ki, 
-                            self.kd, 
-                            self.kie)
+        ts = datetime.now().timestamp()
+        self.db.insert_debug(ts, self.kp, self.ki, self.kd, self.kie, self.controle_p, self.controle_i, self.controle_d, self.controle_ie,
+                                self.ug1.setpoint, self.ug1.potencia, self.ug2.setpoint, self.ug2.potencia, self.nv_montante_recente, self.erro_nv)
         logger.debug("-------------------------------------------------")
 
         self.distribuir_potencia(pot_alvo)
@@ -526,32 +530,15 @@ class Usina:
         self.modo_autonomo = 0
         self.db.update_modo_manual()
 
-    def insert_debug_PID(self, ts, cp, ci, cd, cie, alvo, ref, kp, ki, kd, kie):
-        DB_SERVER = '10.101.3.87'
-        DB_DATABASE = 'COG_NV'
-        DB_USERNAME = 'usrDev'
-        DB_PASSWORD = "uXv&WQ9D&m3Sx^9%"
-        con = pyodbc.connect(driver='{FreeTDS}', TDS_Version=8.0,
-                            server=DB_SERVER,
-                            database=DB_DATABASE,
-                            port=1433,
-                            uid=DB_USERNAME, pwd=DB_PASSWORD,
-                            autocommit=True)
-        cursor = con.cursor()
-        q = "INSERT INTO moa_debug_PID VALUES ('{}', {}, {}, {}, {}, {}, {}, {}, {}, {}, {})".format(ts, cp, ci, cd, cie, alvo, ref, kp, ki, kd, kie)
-        cursor.execute(q)
-        return True
-
-
 class UnidadeDeGeracao:
 
-    def __init__(self, id_ug):
+    def __init__(self, id_ug, con):
 
+        self.con = con
         self.deve_tentar_normalizar = True
         self.tentativas_de_normalizar = 0
-        self.pendente = True
         self.id_da_ug = id_ug
-        self.flag = 0
+        self.flag = False
         self.disponivel = True
         self.horas_maquina = 0
         self.potencia = 0
@@ -566,78 +553,91 @@ class UnidadeDeGeracao:
         self.temp_mancal_alerta = 0
         self.pot_disponivel = 0
         self.ts_ultima_tesntativa_de_normalizacao = datetime.now()
+        self.partir = True
+        self.partindo = False
+        self.parando = False
+
 
     def voltar_a_tentar_resetar(self):
         self.deve_tentar_normalizar = True
         self.tentativas_de_normalizar = 0
 
-    def normalizar(self, flag=0b1):
+    def normalizar(self):
+        logger.info("Normalização UG {}".format(self.id_da_ug))
         self.tentativas_de_normalizar += 1
         self.ts_ultima_tesntativa_de_normalizacao = datetime.now()
+        self.flag = False
+        #self.con.open()        
+        self.con.normalizar_emergencia()           
+        #self.con.close()        
 
-        if self.flag % flag:
-            temp = self.flag
-            self.flag = self.flag & ~flag
-            logger.info("Normalizando Flag {:08b} & ~{:08b} --> {:08b}({})".format(temp, flag, self.flag, self.flag))
-            self.pendente = True
 
-    def indisponibilizar(self, flag=None, descr="Sem descrição adcional"):
+    def indisponibilizar(self):
         # Indisponibiliza a ug
-        if flag is None:
-            raise ValueError
-
-        if not self.flag & flag:
-            logger.info("Indisponibilizando UG {}. Flag ({:08b}) ({})".format(self.id_da_ug, flag, descr))
-            self.sincronizada = False
-            self.setpoint = 0
-            temp = self.flag
-            self.flag = self.flag | flag
-            logger.info("Flag {:08b} | {:08b} --> {:08b}({})".format(temp, flag, self.flag, self.flag))
-            self.pendente = True
+        self.flag = True
+        self.parando = True
+        if self.id_da_ug == 1:
+            #self.con.open()        
+            self.con.parar_ug1()
+            if self.parado:
+                self.con.acionar_emergencia_ug1()
+            #self.con.close()        
+        if self.id_da_ug == 2:
+            self.con.parar_ug2() 
+            if self.parado:
+                self.con.acionar_emergencia_ug2()
 
     def atualizar_estado(self):
         """
         Atualiza o estado da ug conforme as vars dela. Executa o "Comportamento" da ug.
         """
+        if not self.parando:
 
-        if self.flag and self.disponivel:
-            logger.warning("UG {} indisponivel. Flags 0b{:08b} ({}).".format(self.id_da_ug, self.flag, self.flag))
-            self.disponivel = False
+            if self.flag and self.disponivel:
+                logger.warning("UG {} indisponivel.".format(self.id_da_ug))
+                self.disponivel = False
 
-        if not self.flag and not self.disponivel:
-            logger.info("UG {} disponivel.   Flags 0b{:08b} ({}).".format(self.id_da_ug, self.flag, self.flag))
-            self.disponivel = True
-            self.tentativas_de_normalizar = 0
-            if not self.deve_tentar_normalizar:
-                self.deve_tentar_normalizar = True
-                logger.info("Comportamento de normalização automática ligado.")
+            if not self.flag and not self.disponivel:
+                logger.info("UG {} disponivel.".format(self.id_da_ug))
+                self.disponivel = True
+                self.tentativas_de_normalizar = 0
+                if not self.deve_tentar_normalizar:
+                    self.deve_tentar_normalizar = True
+                    logger.info("Comportamento de normalização automática ligado.")
 
-        self.sincronizada = True if self.potencia > 0 else False
+            # todo Verificações
 
-        # todo Verificações
+            if self.temp_mancal >= self.temp_mancal_max:
+                self.indisponibilizar()
 
-        if self.temp_mancal >= self.temp_mancal_max:
-            self.indisponibilizar(0b10,
-                                  "Temperatura do mancal excedida (atual:{}; max:{})".format(self.temp_mancal,
-                                                                                             self.temp_mancal_max))
+            if self.perda_na_grade >= self.perda_na_grade_max:
+                self.indisponibilizar()
 
-        if self.perda_na_grade >= self.perda_na_grade_max:
-            self.indisponibilizar(0b100,
-                                  "Perda máxima na grade excedida (atual:{}; max:{})".format(self.perda_na_grade,
-                                                                                             self.perda_na_grade_max))
+            if self.perda_na_grade < self.perda_na_grade_alerta \
+                and self.flag \
+                and self.deve_tentar_normalizar \
+                and self.tentativas_de_normalizar <= 3  \
+                and (self.ts_ultima_tesntativa_de_normalizacao - datetime.now()).seconds >= 60 * self.tentativas_de_normalizar: 
+                logger.info("Tentativa de normalização #{:d}".format(self.tentativas_de_normalizar))
+                self.normalizar()
 
-        if self.perda_na_grade < self.perda_na_grade_alerta \
-            and self.flag == 0b100 \
-            and self.tentativas_de_normalizar <= 3  \
-            and (self.ts_ultima_tesntativa_de_normalizacao - datetime.now()).seconds >= 60 * self.tentativas_de_normalizar: 
-            logger.info("Tentativa de normalização #{:d}".format(self.tentativas_de_normalizar))
-            self.normalizar(4)
+            if self.tentativas_de_normalizar > 3 and self.deve_tentar_normalizar:
+                self.deve_tentar_normalizar = False
+                logger.info("Tentativas de normalização excedidas! MOA não irá mais tentar.")
 
-        if self.tentativas_de_normalizar > 3 and self.deve_tentar_normalizar:
-            self.deve_tentar_normalizar = False
-            logger.info("Tentativas de normalização excedidas! MOA não irá mais tentar.")
+        else:
+            if self.id_da_ug == 1:
+                if self.con.get_ug1_parada():
+                    self.parando = False
+                    self.parado = True
 
-        self.pendente = False
+            if self.id_da_ug == 2:
+                if self.con.get_ug2_parada():
+                    self.parando = False
+                    self.parado = True
+
+
+
 
     def mudar_setpoint(self, alvo):
 
@@ -658,6 +658,32 @@ class UnidadeDeGeracao:
                         self.perda_na_grade_max - self.perda_na_grade_alerta))))
         self.setpoint = alvo.real
 
+        
+        if self.setpoint >= 1:
+            if self.id_da_ug == 1:
+                if self.con.get_potencia_ug1() < 1000:
+                    self.partindo = True
+                    self.con.partir_ug1()
+                else:
+                    self.partindo = False
+
+                self.con.set_ug1_setpoint(int(self.setpoint * 1000))
+         
+            if self.id_da_ug == 2:
+                if self.con.get_potencia_ug2() < 1000:
+                    self.partindo = True
+                    self.con.partir_ug2()   
+                else:
+                    self.partindo = False
+                self.con.set_ug2_setpoint(int(self.setpoint * 1000))
+
+        if self.setpoint < 0.9 and not self.partindo:
+            if self.id_da_ug == 1:
+                self.con.parar_ug1()  
+         
+            if self.id_da_ug == 2:
+                self.con.parar_ug2()  
+                self.con.set_ug2_setpoint(int(self.setpoint * 1000))
 
 class Comporta:
 

@@ -127,3 +127,10 @@ class Database:
         self._open()
         self.execute(q,)
         self._close()
+
+    def insert_debug(self, ts, kp, ki, kd, kie, cp, ci, cd, cie, sp1, p1, sp2, p2, nv, erro):
+        q = "INSERT INTO `debug`.`moa_debug` " \
+            "VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s ); "
+        self._open()
+        self.execute(q,tuple([ts, kp, ki, kd, kie, cp, ci, cd, cie, sp1, p1, sp2, p2, nv, erro]))
+        self._close()

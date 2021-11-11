@@ -76,7 +76,7 @@ class Painel(threading.Thread):
                 gpio.setup(pin_number, gpio.IN)
             for pin_number in OUTPUTS:
                 gpio.setup(pin_number, gpio.OUT)
-                gpio.output(pin_number, True)
+                gpio.output(pin_number, False)
         except Exception as e:
             logger.error("Erro ao iniciar GPIO.")
             raise e
@@ -107,10 +107,10 @@ class Painel(threading.Thread):
         else:
             pins = [pin]
         for p in pins:    
-            gpio.output(pin, True)
+            gpio.output(pin, False)
         time.sleep(t)
         for p in pins:    
-            gpio.output(pin, False)
+            gpio.output(pin, True)
         time.sleep(t)
 
     def stop(self):
@@ -192,16 +192,16 @@ class Painel(threading.Thread):
                     self.modbus.close()
 
                     if panel_was_updated:
-                        gpio.output(SAIDA_MODO_AUTO, not autonomous_mode_activated) # inverted output
+                        gpio.output(SAIDA_MODO_AUTO, autonomous_mode_activated)
                     else:
                         self.blink(pin=SAIDA_MODO_AUTO)
                     
                     if autonomous_mode_activated:
-                        gpio.output(SAIDA_BLOCK_UG1, not block_ug1_activated)
-                        gpio.output(SAIDA_BLOCK_UG2, not block_ug2_activated)
+                        gpio.output(SAIDA_BLOCK_UG1, block_ug1_activated)
+                        gpio.output(SAIDA_BLOCK_UG2, block_ug2_activated)
                     elif not autonomous_mode_activated: #If on manual, dont trip UGS
-                        gpio.output(SAIDA_BLOCK_UG1, True)
-                        gpio.output(SAIDA_BLOCK_UG2, True)
+                        gpio.output(SAIDA_BLOCK_UG1, False)
+                        gpio.output(SAIDA_BLOCK_UG2, False)
                    
                 else:
                     logger.error("Comunicação com o MOA falhou. Modbus did not open.")

@@ -1,23 +1,7 @@
+import logging
 from pyModbusTCP.client import ModbusClient
-
-ENDERECO_CLP_NV_MONATNTE = 40000
-ENDERECO_CLP_MEDIDOR = 40001
-ENDERECO_CLP_TENSAO_NA_LINHA = 40002
-ENDERECO_CLP_COMPORTA_FLAGS = 40010
-ENDERECO_CLP_COMPORTA_POS = 40011
-ENDERECO_CLP_UG1_FLAGS = 40020
-ENDERECO_CLP_UG1_MINUTOS = 40023
-ENDERECO_CLP_UG1_PERGA_GRADE = 40025
-ENDERECO_CLP_UG1_POTENCIA = 40021
-ENDERECO_CLP_UG1_SETPOINT = 40022
-ENDERECO_CLP_UG1_T_MANCAL = 40024
-ENDERECO_CLP_UG2_FLAGS = 40030
-ENDERECO_CLP_UG2_MINUTOS = 40033
-ENDERECO_CLP_UG2_PERGA_GRADE = 40035
-ENDERECO_CLP_UG2_POTENCIA = 40031
-ENDERECO_CLP_UG2_SETPOINT = 40032
-ENDERECO_CLP_UG2_T_MANCAL = 40034
-ENDERECO_CLP_USINA_FLAGS = 40100
+from modbus_com import *
+import time
 
 class ModbusClientFailedToOpen(Exception):
     pass
@@ -27,97 +11,341 @@ class ModbusFailedToFetch(Exception):
 
 class FieldConnector:
 
-    def __init__(self, ip_A, port_A, ip_B, port_B, cfg=None):
+    def __init__(self, cfg=None):
 
-        self.ip_A = ip_A
-        self.port_A = port_A
-        self.ip_B = ip_B
-        self.port_B = port_B
-        self.modbus_clp_A = ModbusClient(host=self.ip_A, port=self.port_A, timeout=5, unit_id=1)
-        #self.modbus_clp_B = ModbusClient(host=self.ip_B, port=self.port_B, timeout=0.1, unit_id=1)
+        if cfg is None:
+            raise TypeError
+        else:
+            self.ug1_ip = cfg["UG1_slave_ip"]
+            self.ug1_port = cfg["UG1_slave_porta"]
+            self.ug2_ip = cfg["UG2_slave_ip"]
+            self.ug2_port = cfg["UG2_slave_porta"]
+            self.usn_ip = cfg["USN_slave_ip"]
+            self.usn_port = cfg["USN_slave_porta"]
+            self.ug1_clp = ModbusClient(host=self.ug1_ip, port=self.ug1_port, timeout=5, unit_id=1, auto_open=True, auto_close=False)
+            self.ug2_clp = ModbusClient(host=self.ug2_ip, port=self.ug2_port, timeout=5, unit_id=1, auto_open=True, auto_close=False)
+            self.usn_clp = ModbusClient(host=self.usn_ip, port=self.usn_port, timeout=5, unit_id=1, auto_open=True, auto_close=False)
 
     def open(self):
-        if not self.modbus_clp_A.open():
-            self.close()
-            raise ModbusClientFailedToOpen("Modbus client ({}:{}) failed to open.".format(self.ip_A, self.port_A))
-
-        if self.modbus_clp_A.read_holding_registers(ENDERECO_CLP_MEDIDOR) is None:
-            raise ModbusFailedToFetch("Modbus client ({}:{}) failed to fetch data.".format(self.ip_A, self.port_A))
-
-        #if not self.modbus_clp_B.open():
-        #    self.close()
-        #    raise ModbusClientFailedToOpen("Modbus client ({}:{}) failed to open.".format(self.ip_A, self.port_A))
+        print("Opening Modbus")
+        if not self.ug1_clp.open():
+            raise ModbusClientFailedToOpen("Modbus client ({}:{}) failed to open.".format(self.ug1_ip, self.ug1_port))
+        
+        if not self.ug2_clp.open():
+            raise ModbusClientFailedToOpen("Modbus client ({}:{}) failed to open.".format(self.ug2_ip, self.ug2_port))
+        
+        if not self.usn_clp.open():
+            raise ModbusClientFailedToOpen("Modbus client ({}:{}) failed to open.".format(self.usn_ip, self.usn_port))
+        
+        print("Openned Modbus")
         return self
 
     def close(self):
-        self.modbus_clp_A.close()
-        #self.modbus_clp_B.close()
+        print("Closing Modbus")
+        self.ug1_clp.close()
+        self.ug2_clp.close()
+        self.usn_clp.close()
+        print("Closed Modbus")
 
     def get_emergencia_acionada(self):
-        return int(self.modbus_clp_A.read_holding_registers(ENDERECO_CLP_USINA_FLAGS)[0])
+        # return int(self.usn_clp.read_holding_registers(REG_USINA_Usina_Emergencia_Info - 1)[0])
+        # PCH_Covo.Driver.USINA.Alarmes.Alarme01.Bit00 01.00 - Botão de Emergência Pressionado
+        # PCH_Covo.Driver.USINA.Alarmes.Alarme01.Bit01 01.01 - Emergência Supervisório Pressionada
+        # PCH_Covo.Driver.USINA.Alarmes.Alarme01.Bit03 01.03 - Relé 86BF Atuado (Falha Disjuntores)
+        # PCH_Covo.Driver.USINA.Alarmes.Alarme01.Bit04 01.04 - Relé 86TE Atuado (falha Trafo Elevador)
+        # PCH_Covo.Driver.USINA.Alarmes.Alarme01.Bit13 01.13 - PACP - Relé Proteção SEL787 - Trip Atuado
+        return 0
 
     def get_nv_montante(self):
-        return round(self.modbus_clp_A.read_holding_registers(ENDERECO_CLP_NV_MONATNTE)[0] * 0.001 + 620, 2)
+        return round(self.usn_clp.read_holding_registers(REG_USINA_NivelBarragem - 1)[0] / 100, 3)
 
     def get_pot_medidor(self):
-        return round(self.modbus_clp_A.read_holding_registers(ENDERECO_CLP_MEDIDOR)[0] * 0.001, 3)
+        return round(self.usn_clp.read_holding_registers(REG_USINA_Subestacao_PotenciaAtivaMedia - 1)[0] * 0.001, 3)
 
-    def get_flags_ug1(self):
-        return self.modbus_clp_A.read_holding_registers(ENDERECO_CLP_UG1_FLAGS)[0]
-    
+    def get_flag_ug1(self):
+        
+        all_low = True
+       
+        # PCH_Covo.Driver.UG01.Alarmes.Alarme01.Bit00 01.00 - Emergência Supervisório Pressionada
+        if not self.ug1_clp.read_holding_registers(REG_UG1_Alarme01 - 1)[0] & (2**0) == 0:
+            all_low = False
+            print("PCH_Covo.Driver.UG01.Alarmes.Alarme01.Bit00 01.00 - Emergência Supervisório Pressionada")
+
+       # PCH_Covo.Driver.UG01.Alarmes.Alarme01.Bit01 01.01 - PCP-U1 - Botão de Emergência Pressionado
+        if not self.ug1_clp.read_holding_registers(REG_UG1_Alarme01 - 1)[0] & (2**1) == 0:
+            all_low = False
+            print("PCH_Covo.Driver.UG01.Alarmes.Alarme01.Bit01 01.01 - PCP-U1 - Botão de Emergência Pressionado")
+
+        # PCH_Covo.Driver.UG01.Alarmes.Alarme01.Bit02 01.02 - Q49 - Botão de Emergência Pressionado
+        if not self.ug1_clp.read_holding_registers(REG_UG1_Alarme01 - 1)[0] & (2**2) == 0:
+            all_low = False
+            print("PCH_Covo.Driver.UG01.Alarmes.Alarme01.Bit02 01.02 - Q49 - Botão de Emergência Pressionado")
+        
+        # PCH_Covo.Driver.UG01.Alarmes.Alarme04.Bit02 04.02 - Reg Velocidade - TRIP
+        if not self.ug1_clp.read_holding_registers(REG_UG1_Alarme04 - 1)[0] & (2**2) == 0:
+            all_low = False
+            print("PCH_Covo.Driver.UG01.Alarmes.Alarme04.Bit02 04.02 - Reg Velocidade - TRIP")
+
+        # PCH_Covo.Driver.UG01.Alarmes.Alarme04.Bit05 04.05 - Dispositivo de SobreVelocidade Mecânico Atuado
+        if not self.ug1_clp.read_holding_registers(REG_UG1_Alarme04 - 1)[0] & (2**5) == 0:
+            all_low = False
+            print("PCH_Covo.Driver.UG01.Alarmes.Alarme04.Bit05 04.05 - Dispositivo de SobreVelocidade Mecânico Atuado")
+
+        # PCH_Covo.Driver.UG01.Alarmes.Alarme04.Bit12 04.12 - Reg Tensão - TRIP
+        if not self.ug1_clp.read_holding_registers(REG_UG1_Alarme04 - 1)[0] & (2**12) == 0:
+            all_low = False
+            print("PCH_Covo.Driver.UG01.Alarmes.Alarme04.Bit12 04.12 - Reg Tensão - TRIP")
+
+        # PCH_Covo.Driver.UG01.Alarmes.Alarme05.Bit06 05.06 - Relé de Bloqueio 86M Trip Atuado 
+        if not self.ug1_clp.read_holding_registers(REG_UG1_Alarme05 - 1)[0] & (2**6) == 0:
+            all_low = False
+            print("PCH_Covo.Driver.UG01.Alarmes.Alarme05.Bit06 05.06 - Relé de Bloqueio 86M Trip Atuado")
+
+        # PCH_Covo.Driver.UG01.Alarmes.Alarme05.Bit07 05.07 - Relé de Bloqueio 86M Trip Atuado Temporizado
+        if not self.ug1_clp.read_holding_registers(REG_UG1_Alarme05 - 1)[0] & (2**7) == 0:
+            all_low = False
+            print("PCH_Covo.Driver.UG01.Alarmes.Alarme05.Bit07 05.07 - Relé de Bloqueio 86M Trip Atuado Temporizado")
+
+        # PCH_Covo.Driver.UG01.Alarmes.Alarme05.Bit08 05.08 - Relé de Bloqueio 86M Trip Atuado pelo CLP
+        if not self.ug1_clp.read_holding_registers(REG_UG1_Alarme05 - 1)[0] & (2**8) == 0:
+            all_low = False
+            print("PCH_Covo.Driver.UG01.Alarmes.Alarme05.Bit08 05.08 - Relé de Bloqueio 86M Trip Atuado pelo CLP")
+
+        # PCH_Covo.Driver.UG01.Alarmes.Alarme05.Bit09 05.09 - Relé de Bloqueio 86E Trip Atuado
+        if not self.ug1_clp.read_holding_registers(REG_UG1_Alarme05 - 1)[0] & (2**9) == 0:
+            all_low = False
+            print("PCH_Covo.Driver.UG01.Alarmes.Alarme05.Bit09 05.09 - Relé de Bloqueio 86E Trip Atuado")
+
+        # PCH_Covo.Driver.UG01.Alarmes.Alarme05.Bit10 05.10 - Relé de Bloqueio 86E Trip Atuado Temporizado
+        if not self.ug1_clp.read_holding_registers(REG_UG1_Alarme05 - 1)[0] & (2**10) == 0:
+            all_low = False
+            print("PCH_Covo.Driver.UG01.Alarmes.Alarme05.Bit10 05.10 - Relé de Bloqueio 86E Trip Atuado Temporizado")
+
+        # PCH_Covo.Driver.UG01.Alarmes.Alarme05.Bit11 05.11 - Relé de Bloqueio 86E Trip Atuado pelo CLP
+        if not self.ug1_clp.read_holding_registers(REG_UG1_Alarme05 - 1)[0] & (2**11) == 0:
+            all_low = False
+            print("PCH_Covo.Driver.UG01.Alarmes.Alarme05.Bit11 05.11 - Relé de Bloqueio 86E Trip Atuado pelo CLP")
+
+        # PCH_Covo.Driver.UG01.Alarmes.Alarme05.Bit12 05.12 - Relé de Bloqueio 86H Trip Atuado
+        if not self.ug1_clp.read_holding_registers(REG_UG1_Alarme05 - 1)[0] & (2**12) == 0:
+            all_low = False
+            print("PCH_Covo.Driver.UG01.Alarmes.Alarme05.Bit12 05.12 - Relé de Bloqueio 86H Trip Atuado")
+
+        # PCH_Covo.Driver.UG01.Alarmes.Alarme05.Bit13 05.13 - Relé de Bloqueio 86H Trip Atuado pelo CLP
+        if not self.ug1_clp.read_holding_registers(REG_UG1_Alarme05 - 1)[0] & (2**13) == 0:
+            all_low = False
+            print("PCH_Covo.Driver.UG01.Alarmes.Alarme05.Bit13 05.13 - Relé de Bloqueio 86H Trip Atuado pelo CLP")
+
+        # PCH_Covo.Driver.UG01.Alarmes.Alarme06.Bit00 06.00 - Relé de Proteção do Gerador - Trip Atuado
+        if not self.ug1_clp.read_holding_registers(REG_UG1_Alarme06 - 1)[0] & (2**0) == 0:
+            all_low = False
+            print("PCH_Covo.Driver.UG01.Alarmes.Alarme06.Bit00 06.00 - Relé de Proteção do Gerador - Trip Atuado")
+        
+        if all_low:
+            return False
+        else:
+            return True
+
     def get_potencia_ug1(self):
-        return self.modbus_clp_A.read_holding_registers(ENDERECO_CLP_UG1_POTENCIA)[0]/1000
-    
+        return round(self.ug1_clp.read_holding_registers(REG_UG1_Gerador_PotenciaAtivaMedia - 1)[0] * 0.001, 3)
+
     def get_horas_ug1(self):
-        return self.modbus_clp_A.read_holding_registers(ENDERECO_CLP_UG1_MINUTOS)[0]/60
+        high = self.ug1_clp.read_holding_registers(REG_UG1_HorimetroEletrico_High - 1)[0]
+        low = self.ug1_clp.read_holding_registers(REG_UG1_HorimetroEletrico_Low - 1)[0]
+        return low
     
-    def  get_perda_na_grade_ug1(self):
-        return self.modbus_clp_A.read_holding_registers(ENDERECO_CLP_UG1_PERGA_GRADE)[0]/100
+    def get_perda_na_grade_ug1(self):
+        return 0
     
     def get_temperatura_do_mancal_ug1(self):
-        return self.modbus_clp_A.read_holding_registers(ENDERECO_CLP_UG1_T_MANCAL)[0]/10
+        return round(self.ug1_clp.read_holding_registers(REG_UG1_Gerador_PotenciaAtivaMedia - 1)[0] * 0.001, 3)
 
-    def get_flags_ug2(self):
-        return self.modbus_clp_A.read_holding_registers(ENDERECO_CLP_UG2_FLAGS)[0]
+    def get_sincro_ug1(self):
+        return True if self.get_potencia_ug1() > 1 else False
     
+    def get_ug1_parada(self):
+        return True if self.ug1_clp.read_holding_registers(REG_UG1_Turb_Info - 1) & (2**4) == 1 else False
+
+    def get_ug2_parada(self):
+        return True if self.ug1_clp.read_holding_registers(REG_UG1_Turb_Info - 1) & (2**4) == 1 else False
+
+    def get_flag_ug2(self):
+        
+        all_low = True
+       
+        # PCH_Covo.Driver.UG02.Alarmes.Alarme01.Bit00 01.00 - Emergência Supervisório Pressionada
+        if not self.ug2_clp.read_holding_registers(REG_UG2_Alarme01 - 1)[0] & (2**0) == 0:
+            all_low = False
+            print("PCH_Covo.Driver.UG02.Alarmes.Alarme01.Bit00 01.00 - Emergência Supervisório Pressionada")
+
+       # PCH_Covo.Driver.UG02.Alarmes.Alarme01.Bit01 01.01 - PCP-U1 - Botão de Emergência Pressionado
+        if not self.ug2_clp.read_holding_registers(REG_UG2_Alarme01 - 1)[0] & (2**1) == 0:
+            all_low = False
+            print("PCH_Covo.Driver.UG02.Alarmes.Alarme01.Bit01 01.01 - PCP-U1 - Botão de Emergência Pressionado")
+
+        # PCH_Covo.Driver.UG02.Alarmes.Alarme01.Bit02 01.02 - Q49 - Botão de Emergência Pressionado
+        if not self.ug2_clp.read_holding_registers(REG_UG2_Alarme01 - 1)[0] & (2**2) == 0:
+            all_low = False
+            print("PCH_Covo.Driver.UG02.Alarmes.Alarme01.Bit02 01.02 - Q49 - Botão de Emergência Pressionado")
+        
+        # PCH_Covo.Driver.UG02.Alarmes.Alarme04.Bit02 04.02 - Reg Velocidade - TRIP
+        if not self.ug2_clp.read_holding_registers(REG_UG2_Alarme04 - 1)[0] & (2**2) == 0:
+            all_low = False
+            print("PCH_Covo.Driver.UG02.Alarmes.Alarme04.Bit02 04.02 - Reg Velocidade - TRIP")
+
+        # PCH_Covo.Driver.UG02.Alarmes.Alarme04.Bit05 04.05 - Dispositivo de SobreVelocidade Mecânico Atuado
+        if not self.ug2_clp.read_holding_registers(REG_UG2_Alarme04 - 1)[0] & (2**5) == 0:
+            all_low = False
+            print("PCH_Covo.Driver.UG02.Alarmes.Alarme04.Bit05 04.05 - Dispositivo de SobreVelocidade Mecânico Atuado")
+
+        # PCH_Covo.Driver.UG02.Alarmes.Alarme04.Bit12 04.12 - Reg Tensão - TRIP
+        if not self.ug2_clp.read_holding_registers(REG_UG2_Alarme04 - 1)[0] & (2**12) == 0:
+            all_low = False
+            print("PCH_Covo.Driver.UG02.Alarmes.Alarme04.Bit12 04.12 - Reg Tensão - TRIP")
+
+        # PCH_Covo.Driver.UG02.Alarmes.Alarme05.Bit06 05.06 - Relé de Bloqueio 86M Trip Atuado 
+        if not self.ug2_clp.read_holding_registers(REG_UG2_Alarme05 - 1)[0] & (2**6) == 0:
+            all_low = False
+            print("PCH_Covo.Driver.UG02.Alarmes.Alarme05.Bit06 05.06 - Relé de Bloqueio 86M Trip Atuado")
+
+        # PCH_Covo.Driver.UG02.Alarmes.Alarme05.Bit07 05.07 - Relé de Bloqueio 86M Trip Atuado Temporizado
+        if not self.ug2_clp.read_holding_registers(REG_UG2_Alarme05 - 1)[0] & (2**7) == 0:
+            all_low = False
+            print("PCH_Covo.Driver.UG02.Alarmes.Alarme05.Bit07 05.07 - Relé de Bloqueio 86M Trip Atuado Temporizado")
+
+        # PCH_Covo.Driver.UG02.Alarmes.Alarme05.Bit08 05.08 - Relé de Bloqueio 86M Trip Atuado pelo CLP
+        if not self.ug2_clp.read_holding_registers(REG_UG2_Alarme05 - 1)[0] & (2**8) == 0:
+            all_low = False
+            print("PCH_Covo.Driver.UG02.Alarmes.Alarme05.Bit08 05.08 - Relé de Bloqueio 86M Trip Atuado pelo CLP")
+
+        # PCH_Covo.Driver.UG02.Alarmes.Alarme05.Bit09 05.09 - Relé de Bloqueio 86E Trip Atuado
+        if not self.ug2_clp.read_holding_registers(REG_UG2_Alarme05 - 1)[0] & (2**9) == 0:
+            all_low = False
+            print("PCH_Covo.Driver.UG02.Alarmes.Alarme05.Bit09 05.09 - Relé de Bloqueio 86E Trip Atuado")
+
+        # PCH_Covo.Driver.UG02.Alarmes.Alarme05.Bit10 05.10 - Relé de Bloqueio 86E Trip Atuado Temporizado
+        if not self.ug2_clp.read_holding_registers(REG_UG2_Alarme05 - 1)[0] & (2**10) == 0:
+            all_low = False
+            print("PCH_Covo.Driver.UG02.Alarmes.Alarme05.Bit10 05.10 - Relé de Bloqueio 86E Trip Atuado Temporizado")
+
+        # PCH_Covo.Driver.UG02.Alarmes.Alarme05.Bit11 05.11 - Relé de Bloqueio 86E Trip Atuado pelo CLP
+        if not self.ug2_clp.read_holding_registers(REG_UG2_Alarme05 - 1)[0] & (2**11) == 0:
+            all_low = False
+            print("PCH_Covo.Driver.UG02.Alarmes.Alarme05.Bit11 05.11 - Relé de Bloqueio 86E Trip Atuado pelo CLP")
+
+        # PCH_Covo.Driver.UG02.Alarmes.Alarme05.Bit12 05.12 - Relé de Bloqueio 86H Trip Atuado
+        if not self.ug2_clp.read_holding_registers(REG_UG2_Alarme05 - 1)[0] & (2**12) == 0:
+            all_low = False
+            print("PCH_Covo.Driver.UG02.Alarmes.Alarme05.Bit12 05.12 - Relé de Bloqueio 86H Trip Atuado")
+
+        # PCH_Covo.Driver.UG02.Alarmes.Alarme05.Bit13 05.13 - Relé de Bloqueio 86H Trip Atuado pelo CLP
+        if not self.ug2_clp.read_holding_registers(REG_UG2_Alarme05 - 1)[0] & (2**13) == 0:
+            all_low = False
+            print("PCH_Covo.Driver.UG02.Alarmes.Alarme05.Bit13 05.13 - Relé de Bloqueio 86H Trip Atuado pelo CLP")
+
+        # PCH_Covo.Driver.UG02.Alarmes.Alarme06.Bit00 06.00 - Relé de Proteção do Gerador - Trip Atuado
+        if not self.ug2_clp.read_holding_registers(REG_UG2_Alarme06 - 1)[0] & (2**0) == 0:
+            all_low = False
+            print("PCH_Covo.Driver.UG02.Alarmes.Alarme06.Bit00 06.00 - Relé de Proteção do Gerador - Trip Atuado")
+        
+        if all_low:
+            return False
+        else:
+            return True
+
     def get_potencia_ug2(self):
-        return self.modbus_clp_A.read_holding_registers(ENDERECO_CLP_UG2_POTENCIA)[0]/1000
+        return round(self.ug2_clp.read_holding_registers(REG_UG2_Gerador_PotenciaAtivaMedia - 1)[0] * 0.001, 3)
     
     def get_horas_ug2(self):
-        return self.modbus_clp_A.read_holding_registers(ENDERECO_CLP_UG2_MINUTOS)[0]/60
+        high = self.ug2_clp.read_holding_registers(REG_UG2_HorimetroEletrico_High - 1)[0]
+        low = self.ug2_clp.read_holding_registers(REG_UG2_HorimetroEletrico_Low - 1)[0]
+        return low
     
     def get_perda_na_grade_ug2(self):
-        return self.modbus_clp_A.read_holding_registers(ENDERECO_CLP_UG2_PERGA_GRADE)[0]/100
+        return 0
 
     def get_temperatura_do_mancal_ug2(self):
-        return self.modbus_clp_A.read_holding_registers(ENDERECO_CLP_UG2_T_MANCAL)[0]/10
+        return round(self.ug2_clp.read_holding_registers(REG_UG2_Gerador_PotenciaAtivaMedia - 1)[0] * 0.001, 3)
+
+    def get_sincro_ug2(self):
+        return True if self.get_potencia_ug2() > 1 else False
 
     def get_tensao_na_linha(self):
-        return self.modbus_clp_A.read_holding_registers(ENDERECO_CLP_TENSAO_NA_LINHA)[0]
+        sn = self.usn_clp.read_holding_registers(REG_USINA_Subestacao_TensaoSN - 1)[0]
+        tn = self.usn_clp.read_holding_registers(REG_USINA_Subestacao_TensaoTN - 1)[0]
+        rn = self.usn_clp.read_holding_registers(REG_USINA_Subestacao_TensaoRN - 1)[0]
+        st = self.usn_clp.read_holding_registers(REG_USINA_Subestacao_TensaoST - 1)[0]
+        tr = self.usn_clp.read_holding_registers(REG_USINA_Subestacao_TensaoTR - 1)[0]
+        rs = self.usn_clp.read_holding_registers(REG_USINA_Subestacao_TensaoRS - 1)[0]
+        return 1
 
-    def set_ug1_flag(self, flags):
-        self.modbus_clp_A.write_single_register(ENDERECO_CLP_UG1_FLAGS, flags)
+    def partir_ug1(self):
+        if not self.get_sincro_ug1():
+            response = self.ug1_clp.write_single_register(REG_UG1_Operacao_US - 1, 1)
+            print("REG_UG1_Operacao_US(1): ", response)        
+
+    def parar_ug1(self):      
+        response = self.ug1_clp.write_single_register(REG_UG1_Operacao_UP - 1, 1)
+        print("REG_UG1_Operacao_UP", response)        
+
+    def partir_ug2(self):
+        if not self.get_sincro_ug2():
+            response = self.ug2_clp.write_single_register(REG_UG2_Operacao_US - 1, 1)
+            print("REG_UG2_Operacao_US(1): ", response)    
+
+    def parar_ug2(self):
+        response = self.ug2_clp.write_single_register(REG_UG2_Operacao_UP - 1, 1)
+        print("REG_UG2_Operacao_UP", response)        
 
     def set_ug1_setpoint(self, setpoint):
-        self.modbus_clp_A.write_single_register(ENDERECO_CLP_UG1_SETPOINT, int(setpoint))
-
-    def set_ug2_flag(self, flags):
-        self.modbus_clp_A.write_single_register(ENDERECO_CLP_UG2_FLAGS, flags)
+        response = self.ug1_clp.write_single_register(REG_UG1_CtrlPotencia_ModoNivelDesligar - 1, 1)
+        response = self.ug1_clp.write_single_register(REG_UG1_CtrlPotencia_ModoPotenciaDesligar - 1, 1)
+        response = self.ug1_clp.write_single_register(REG_UG1_CtrlPotencia_Alvo, int(setpoint))
+        print("REG_UG1_CtrlPotencia_Alvo(" , setpoint, ") response: ", response)
 
     def set_ug2_setpoint(self, setpoint):
-        self.modbus_clp_A.write_single_register(ENDERECO_CLP_UG2_SETPOINT, int(setpoint))
+        response = self.ug2_clp.write_single_register(REG_UG2_CtrlPotencia_ModoNivelDesligar - 1, 1)
+        response = self.ug2_clp.write_single_register(REG_UG2_CtrlPotencia_ModoPotenciaDesligar - 1, 1)
+        response = self.ug2_clp.write_single_register(REG_UG2_CtrlPotencia_Alvo - 1, int(setpoint))
+        print("REG_UG2_CtrlPotencia_Alvo(" , setpoint, ") response: ", response)
 
     def set_pos_comporta(self, pos_comporta):
-        self.modbus_clp_A.write_single_register(ENDERECO_CLP_COMPORTA_POS, int(pos_comporta))
+        pass
 
-    def acionar_emergencia(self, flags=1):
-        if flags == 0:
-            self.modbus_clp_A.write_single_register(ENDERECO_CLP_USINA_FLAGS, 1)
-            raise ValueError("A emergencia deve ser acionada com uma flag válida. Recebido: {}".format(flags))
-        else:
-            self.modbus_clp_A.write_single_register(ENDERECO_CLP_USINA_FLAGS, flags)
+    def acionar_emergencia(self):
+        self.usn_clp.write_single_register(REG_USINA_EmergenciaLigar - 1, 1)
+        self.acionar_emergencia_ug1()
+        self.acionar_emergencia_ug2()
+        time.sleep(1)
+        self.usn_clp.write_single_register(REG_USINA_EmergenciaLigar - 1, 0)
+
+    def acionar_emergencia_ug1(self):
+        self.ug1_clp.write_single_register(REG_UG1_Operacao_EmergenciaLigar - 1, 1)
+        time.sleep(1)
+        self.ug1_clp.write_single_register(REG_UG1_Operacao_EmergenciaLigar - 1, 0)
+        
+    def acionar_emergencia_ug2(self):
+        self.ug2_clp.write_single_register(REG_UG2_Operacao_EmergenciaLigar - 1, 1)
+        time.sleep(1)
+        self.ug2_clp.write_single_register(REG_UG2_Operacao_EmergenciaLigar - 1, 0)
 
     def normalizar_emergencia(self):
-        self.modbus_clp_A.write_single_register(ENDERECO_CLP_USINA_FLAGS, 0)
-        self.modbus_clp_A.write_single_register(ENDERECO_CLP_UG1_FLAGS, 0)
-        self.modbus_clp_A.write_single_register(ENDERECO_CLP_UG2_FLAGS, 0)
+        print("NORMALIZANDO CLPS RECONHECE E RESET")
+        self.ug1_clp.write_single_register(REG_UG1_Operacao_EmergenciaLigar - 1, 0)
+        self.ug2_clp.write_single_register(REG_UG2_Operacao_EmergenciaLigar - 1, 0)
+        self.usn_clp.write_single_register(REG_USINA_EmergenciaLigar - 1, 0)
+
+        self.ug1_clp.write_single_register(REG_UG1_Operacao_EmergenciaDesligar - 1, 1)
+        self.ug2_clp.write_single_register(REG_UG2_Operacao_EmergenciaDesligar - 1, 1)
+        self.usn_clp.write_single_register(REG_USINA_EmergenciaDesligar - 1, 1)
+
+        self.usn_clp.write_single_register(REG_USINA_ReconheceAlarmes - 1, 1) 
+        self.ug1_clp.write_single_register(REG_UG1_Operacao_PCH_CovoReconheceAlarmes - 1, 1)
+        self.ug2_clp.write_single_register(REG_UG2_Operacao_PCH_CovoReconheceAlarmes - 1, 1)
+
+        self.usn_clp.write_single_register(REG_USINA_ResetAlarmes - 1, 1)
+        self.ug1_clp.write_single_register(REG_UG1_Operacao_PCH_CovoResetAlarmes - 1, 1)
+        self.ug2_clp.write_single_register(REG_UG2_Operacao_PCH_CovoResetAlarmes - 1, 1)
+
+        response = self.usn_clp.write_single_register(REG_USINA_Disj52LFechar - 1, 1)
+        print("REG_USINA_Disj52LFechar", response)  

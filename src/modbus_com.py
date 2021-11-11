@@ -2,7 +2,6 @@
 modbus_com.py
 
 Este arquivo contem os endereçõs referentes a usina de COVÓ e funções auxiliares a comunicação via modbus com a usina.
-As configurações relevantes a este módulo estão em "config.json"
 
 ATENÇÃO, os endereços estão como escritos no ELIPSE E3, deve-se subtrair 1 para utilização do pyModbusTCP
 
@@ -11,10 +10,7 @@ REG_XYZ = 12345
 ABC.write_single_register(REG_XYZ-1, 1)
 
 """
-import json
-import os
-from datetime import datetime
-from pyModbusTCP.client import ModbusClient
+
 
 REG_UG1_Alarme01 = 14199
 REG_UG1_Alarme02 = 14200
@@ -32,7 +28,7 @@ REG_UG1_Alarme13 = 14211
 REG_UG1_Alarme14 = 14212
 REG_UG1_Alarme15 = 14213
 REG_UG1_Alarme16 = 14214
-REG_UG1_CtrlPotencia_Alvo = 13586
+REG_UG1_CtrlPotencia_Alvo = 13569 + 17 -1
 REG_UG1_CtrlPotencia_Info = 12865
 REG_UG1_CtrlPotencia_ModoNivelDesligar = 12334
 REG_UG1_CtrlPotencia_ModoNivelLigar = 12333
@@ -501,7 +497,7 @@ REG_UG2_Alarme13 = 14211
 REG_UG2_Alarme14 = 14212
 REG_UG2_Alarme15 = 14213
 REG_UG2_Alarme16 = 14214
-REG_UG2_CtrlPotencia_Alvo = 13586
+REG_UG2_CtrlPotencia_Alvo = 13569 + 17
 REG_UG2_CtrlPotencia_Info = 12865
 REG_UG2_CtrlPotencia_ModoNivelDesligar = 12334
 REG_UG2_CtrlPotencia_ModoNivelLigar = 12333
@@ -1515,163 +1511,4 @@ REG_USINA_Usina_Temperatura_06 = 12888
 REG_USINA_Usina_Temperatura_07 = 12889
 REG_USINA_Usina_Temperatura_08 = 12890
 REG_USINA_VersaoBase = 12764
-REG_USINA_VersaoCustom = 12765
-
-
-def ler_todos():
-    """
-    Esta função lê todos os endereços de interesse da usina de COVÓ e retorna os dados sem tratamento
-    :return: usn_regs, ug1_regs, ug2_regs
-    """
-
-    # Carrega a configuração
-    config = get_config()
-    UG1_slave_ip = config['UG1_slave_ip']
-    UG1_slave_porta = config['UG1_slave_porta']
-    UG2_slave_ip = config['UG2_slave_ip']
-    UG2_slave_porta = config['UG2_slave_porta']
-    USN_slave_ip = config['USN_slave_ip']
-    USN_slave_porta = config['USN_slave_porta']
-    UG1_slave = ModbusClient(host=UG1_slave_ip, port=UG1_slave_porta, timeout=5, unit_id=1, auto_open=True, auto_close=True)
-    UG2_slave = ModbusClient(host=UG2_slave_ip, port=UG2_slave_porta, timeout=5, unit_id=1, auto_open=True, auto_close=True)
-    USN_slave = ModbusClient(host=USN_slave_ip, port=USN_slave_porta, timeout=5, unit_id=1, auto_open=True, auto_close=True)
-
-    # Inicia vars
-    ug1_regs = []
-    ug2_regs = []
-    usn_regs = []
-
-    # Leituras UG1
-    aux = []
-    aux += UG1_slave.read_holding_registers(12288, 73)
-    aux += UG1_slave.read_holding_registers(13568, 92)
-    aux += UG1_slave.read_holding_registers(14198, 16)
-    aux += UG1_slave.read_holding_registers(12763, 124)
-    aux += UG1_slave.read_holding_registers(12563, 32)
-    aux += UG1_slave.read_holding_registers(14278, 124)
-    aux += UG1_slave.read_holding_registers(12765, 4)
-    # Tratamento de valores negativos
-    for a in aux:
-        if a >= 2**15:
-            a = -a + 2**15
-        ug1_regs.append(a)
-
-    # Leituras UG2
-    aux = []
-    aux += UG2_slave.read_holding_registers(12288, 73)
-    aux += UG2_slave.read_holding_registers(13568, 92)
-    aux += UG2_slave.read_holding_registers(14198, 16)
-    aux += UG2_slave.read_holding_registers(12763, 124)
-    aux += UG2_slave.read_holding_registers(12563, 32)
-    aux += UG2_slave.read_holding_registers(14278, 124)
-    aux += UG2_slave.read_holding_registers(12765, 4)
-    # Tratamento de valores negativos
-    for a in aux:
-        if a >= 2 ** 15:
-            a = -a + 2 ** 15
-        ug2_regs.append(a)
-
-    # Leituras USN
-    aux = []
-    aux += USN_slave.read_holding_registers(12763, 125)
-    aux += USN_slave.read_holding_registers(12288, 53)
-    aux += USN_slave.read_holding_registers(14198, 16)
-    aux += USN_slave.read_holding_registers(14278, 124)
-    aux += USN_slave.read_holding_registers(13568, 77)
-    aux += USN_slave.read_holding_registers(12563, 64)
-    aux += USN_slave.read_holding_registers(12765, 4)
-    # Tratamento de valores negativos
-    for a in aux:
-        if a >= 2 ** 15:
-            a = -a + 2 ** 15
-        usn_regs.append(a)
-
-    # Retorna os valores lidos (pode haver None incluso)
-    return usn_regs, ug1_regs, ug2_regs
-
-
-def remover_alarmes():
-    """
-    Esta função tenta remover os alarmesda seguinte maneira:
-    1. Desliga a emergência dos equipamentos
-    2. Reconhece os alarmes dos equipamentos
-    3. Reseta os alarmes dos equipamentos
-    :return: None
-    """
-
-    # Carrega a configuração
-    config = get_config()
-    UG1_slave_ip = config['UG1_slave_ip']
-    UG1_slave_porta = config['UG1_slave_porta']
-    UG2_slave_ip = config['UG2_slave_ip']
-    UG2_slave_porta = config['UG2_slave_porta']
-    USN_slave_ip = config['USN_slave_ip']
-    USN_slave_porta = config['USN_slave_porta']
-    UG1_slave = ModbusClient(host=UG1_slave_ip, port=UG1_slave_porta, timeout=5, unit_id=1, auto_open=True, auto_close=True)
-    UG2_slave = ModbusClient(host=UG2_slave_ip, port=UG2_slave_porta, timeout=5, unit_id=1, auto_open=True, auto_close=True)
-    USN_slave = ModbusClient(host=USN_slave_ip, port=USN_slave_porta, timeout=5, unit_id=1, auto_open=True, auto_close=True)
-
-    # Desliga as emergências
-    UG1_slave.write_single_register(REG_UG1_Operacao_EmergenciaDesligar - 1, 1)
-    UG2_slave.write_single_register(REG_UG2_Operacao_EmergenciaDesligar - 1, 1)
-    USN_slave.write_single_register(REG_USINA_EmergenciaDesligar - 1, 1)
-
-    # Reconehce as emergências
-    UG2_slave.write_single_register(REG_UG2_Operacao_PCH_CovoReconheceAlarmes - 1, 1)
-    UG1_slave.write_single_register(REG_UG1_Operacao_PCH_CovoReconheceAlarmes + 1, 1)
-    USN_slave.write_single_register(REG_USINA_ReconheceAlarmes - 1, 1)
-
-    # Reseta os alarmes
-    UG1_slave.write_single_register(REG_UG1_Operacao_PCH_CovoResetAlarmes - 1, 1)
-    UG2_slave.write_single_register(REG_UG2_Operacao_PCH_CovoResetAlarmes - 1, 1)
-    USN_slave.write_single_register(REG_USINA_ResetAlarmes - 1, 1)
-
-
-def fecha_dj52L():
-    """
-    Esta função auxiliar envia o comando para o fechamento do disjuntor 52L.
-    Em caso de sucesso da função não significa que o disjuntor fechou, apenas que o comando foi dado.
-    :return: True se o comando foi enviado
-    """
-    # Carrega a configuração
-    config = get_config()
-    USN_slave_ip = config['USN_slave_ip']
-    USN_slave_porta = config['USN_slave_porta']
-    USN_slave = ModbusClient(host=USN_slave_ip, port=USN_slave_porta, timeout=5, unit_id=1, auto_open=True, auto_close=True)
-
-    # Fecha o Disjuntor
-    res = USN_slave.write_single_register(REG_USINA_Disj52LFechar - 1, 1)  # dj52L
-    if not res:
-        # Se não foi possivel escrever no registrador, levanta um erro de conexão
-        raise ConnectionError("fecha_dj52L: write_single_register failled.")
-
-    return True
-
-
-def DEBUG_ler_e_gravar_log():
-    """
-    Esta função existe apenas para testar este módulo e não deve ser usada em produção.
-    :return: None
-    """
-    print("Lendo...")
-    dt = datetime.now().strftime('%x %X')
-    usn_regs, ug1_regs, ug2_regs = ler_todos()
-    print("OK!\nEscrevendo...")
-    with open("log_modbus_ug1.csv", "a") as f:
-        f.write("{}, {}\n".format(dt, ug1_regs))
-    with open("log_modbus_ug2.csv", "a") as f:
-        f.write("{}, {}\n".format(dt, ug2_regs))
-    with open("log_modbus_usina.csv", "a") as f:
-        f.write("{}, {}\n".format(dt, usn_regs))
-    print("OK!")
-
-
-def get_config():
-    """
-    Função auxiliar para carregar as configurações da usina.
-    :return: config
-    """
-    config_file = os.path.join(os.path.dirname(__file__), 'voip_config.json')
-    with open(config_file, 'r') as file:
-        config = json.load(file)
-    return config
+REG_USINA_VersaoCustom = 12765   
