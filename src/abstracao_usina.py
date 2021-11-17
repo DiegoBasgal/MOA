@@ -42,7 +42,8 @@ class Usina:
         self.ug1 = UnidadeDeGeracao(1, self.con)
         self.ug2 = UnidadeDeGeracao(2, self.con)
         self.ugs = [self.ug1, self.ug2]
-        self.comporta = Comporta()
+        self.comporta = Comporta(self.con)
+        self.avisado_em_eletrica = False
 
         # Define as vars inciais
         self.clp_online = False
@@ -52,7 +53,6 @@ class Usina:
         self.nv_minimo = self.cfg['nv_minimo']
         self.nv_maximo = self.cfg['nv_maximo']
         self.nv_maximorum = self.cfg['nv_maximorum']
-        self.nv_religamento = self.cfg['nv_religamento']
         self.nv_alvo = self.cfg['nv_alvo']
         self.kp = self.cfg['kp']
         self.ki = self.cfg['ki']
@@ -117,7 +117,8 @@ class Usina:
         self.nv_montante = self.con.get_nv_montante()
         self.pot_medidor = self.con.get_pot_medidor()
         self.tensao_na_linha = self.con.get_tensao_na_linha()
-
+        if self.tensao_na_linha < 30000 and self.modo_autonomo == 1 and not self.clp_emergencia_acionada:
+            self.clp_emergencia_acionada = True
         # UG1
         self.ug1.flag = self.con.get_flag_ug1()
         self.ug1.sincronizada = self.con.get_sincro_ug1()
@@ -132,6 +133,9 @@ class Usina:
         self.ug2.horas_maquina = self.con.get_horas_ug2()
         self.ug2.perda_na_grade = self.con.get_perda_na_grade_ug2()
         self.ug2.temp_mancal = self.con.get_temperatura_do_mancal_ug2()
+
+        if self.con.get_flag_falha52L():
+            self.acionar_emergencia()
 
         #self.con.close()
 
@@ -211,7 +215,11 @@ class Usina:
         # Le o databank interno
         
         if DataBank.get_words(self.cfg['REG_MOA_IN_EMERG'])[0] != 0:
-            logger.warning("Emergência elétrica detectada ler coils de alarme....")
+            if not self.avisado_em_eletrica:
+                self.avisado_em_eletrica = True
+                logger.warning("Emergência elétrica detectada ler coils de alarme....")
+        else:
+            self.avisado_em_eletrica = False
 
         if DataBank.get_words(self.cfg['REG_MOA_IN_HABILITA_AUTO'])[0] == 1:
             self.modo_autonomo = 1
@@ -267,15 +275,16 @@ class Usina:
 
 
     def normalizar_emergencia(self):
-        self.tentativas_de_normalizar += 1
+        
         logger.info("Verificando condições para normalização")
-         
-        logger.info("Ultiam tentativa: {}. Tensão na linha: {}. Deve tentar normalizar: {}".format(self.ts_ultima_tesntativa_de_normalizacao, self.tensao_na_linha, self.deve_tentar_normalizar))
+        
+        logger.info("Ultima tentativa: {}. Tensão na linha: {:2.1f}kV.".format(self.ts_ultima_tesntativa_de_normalizacao, self.tensao_na_linha/1000))
 
-        if self.cfg['TENSAO_LINHA_BAIXA'] < self.tensao_na_linha < self.cfg['TENSAO_LINHA_ALTA']  \
-            and self.deve_tentar_normalizar \
+        if not (self.cfg['TENSAO_LINHA_BAIXA'] < self.tensao_na_linha < self.cfg['TENSAO_LINHA_ALTA']):
+           logger.warn("Tensão na linha fora do limite." )
+        elif self.deve_tentar_normalizar \
             and (datetime.now() - self.ts_ultima_tesntativa_de_normalizacao).seconds >= 60 * self.tentativas_de_normalizar:
-            
+            self.tentativas_de_normalizar += 1
             self.ts_ultima_tesntativa_de_normalizacao = datetime.now()
             logger.info("Normalizando a Usina")
             #self.con.open()
@@ -357,7 +366,7 @@ class Usina:
                     logger.info("Os agendamentos estão muito atrasados! Acionando emergência.")
                     self.acionar_emergencia()
                     return False
-            elif agora < agendamento[1]:
+            else:
                 segundos_adiantados = (agendamento[1]-agora).seconds
                 if segundos_adiantados <= 60 and not bool(agendamento[4]):
                     # Está na hora e ainda não foi executado. Executar!
@@ -372,6 +381,12 @@ class Usina:
                     if agendamento[3] == AGENDAMENTO_INDISPONIBILIZAR:
                         # Coloca em emergência
                         logger.info("Indisponibilizando a usina (comando via agendamento).")
+                        for ug in self.ugs:
+                            ug.indisponibilizar()
+                        while not self.ugs[0].parado and not self.ugs[1].parado:
+                            self.ler_valores()
+                            logger.debug("Indisponibilizando Usina... \n(freezing for 10 seconds)")
+                            sleep(10)
                         self.acionar_emergencia()
                     
                     if agendamento[3] == AGENDAMENTO_ALETRAR_NV_ALVO:
@@ -418,10 +433,6 @@ class Usina:
                     logger.info("O comando #{} - {} foi executado.".format(agendamento[0], agendamento[2]))
                     self.escrever_valores()
 
-            else:
-                # Ainda não é a hora de executar.
-                pass
-
     def distribuir_potencia(self, pot_alvo):
 
         if pot_alvo < 0.1:
@@ -442,37 +453,52 @@ class Usina:
 
         ugs = self.lista_de_ugs_disponiveis()
         
-        logger.debug("Distribuindo {}".format(pot_alvo))
-        if 0.1 < pot_alvo < self.cfg['pot_minima']:
-            logger.debug("0.1 < {} < self.cfg['pot_minima']".format(pot_alvo))
-            if len(ugs) > 0:
-                ugs[0].mudar_setpoint(self.cfg['pot_minima'])
-                for ug in ugs[1:]:
-                    ug.mudar_setpoint(0)
-        elif pot_alvo < self.cfg['pot_maxima_ug'] - self.cfg['margem_pot_critica']:
-            logger.debug("{} < self.cfg['pot_maxima_ug'] - self.cfg['margem_pot_critica']".format(pot_alvo))
+        if ugs is None:
+            return False
+        elif len(ugs) == 0:
+            return False
+        elif len(ugs) == 1:
+            pot_alvo = min(pot_alvo, self.cfg['pot_maxima_ug'])
             ugs[0].mudar_setpoint(pot_alvo)
-            for ug in ugs[1:]:
-                ug.mudar_setpoint(0)
+            return False
         else:
-            pot_alvo = min(pot_alvo, self.pot_disp)
-            logger.debug("Alvo =  {}".format(pot_alvo))
-            if self.ug1.sincronizada and self.ug2.sincronizada and pot_alvo > (2 * self.cfg['pot_minima']):
-                logger.debug("Dividir entre as ugs (cada = {})".format(pot_alvo / len(ugs)))
-                for ug in ugs:
-                    ug.mudar_setpoint(pot_alvo / len(ugs))
 
-            elif ((pot_alvo > (self.cfg['pot_maxima_ug'] + self.cfg['margem_pot_critica']))
-                     and (abs(self.erro_nv) > 0.02) and self.ug1.disponivel and self.ug2.disponivel):
-                ugs[0].mudar_setpoint(self.cfg['pot_maxima_ug'])
-                for ug in ugs[1:]:
-                        ug.mudar_setpoint(pot_alvo/len(ugs))
-            else:
-                pot_alvo = min(pot_alvo, self.cfg['pot_maxima_ug'])
+            logger.debug("Distribuindo {}".format(pot_alvo))
+            if 0.1 < pot_alvo < self.cfg['pot_minima']:
+                logger.debug("0.1 < {} < self.cfg['pot_minima']".format(pot_alvo))
                 if len(ugs) > 0:
+                    ugs[0].mudar_setpoint(self.cfg['pot_minima'])
                     for ug in ugs[1:]:
                         ug.mudar_setpoint(0)
+            else:
+                pot_alvo = min(pot_alvo, self.pot_disp)
+                logger.debug("Alvo =  {}".format(pot_alvo))
+                if self.ug1.sincronizada and self.ug2.sincronizada and pot_alvo > (2 * self.cfg['pot_minima']):
+                    logger.debug("Dividir entre as ugs (cada = {})".format(pot_alvo / len(ugs)))
+                    for ug in ugs:
+                        ug.mudar_setpoint(pot_alvo / len(ugs))
+
+                elif ((pot_alvo > (self.cfg['pot_maxima_ug'] + self.cfg['margem_pot_critica']))
+                        and (abs(self.erro_nv) > 0.02) and self.ug1.disponivel and self.ug2.disponivel):
+                    ugs[0].mudar_setpoint(self.cfg['pot_maxima_ug'])
+                    for ug in ugs[1:]:
+                            ug.mudar_setpoint(pot_alvo/len(ugs))
+                
+                elif pot_alvo < self.cfg['pot_maxima_ug'] - self.cfg['margem_pot_critica']:
+                    logger.debug("{} < self.cfg['pot_maxima_ug'] - self.cfg['margem_pot_critica']".format(pot_alvo))
                     ugs[0].mudar_setpoint(pot_alvo)
+                    for ug in ugs[1:]:
+                        ug.mudar_setpoint(0)
+                
+                else:
+                    pot_alvo = min(pot_alvo, self.cfg['pot_maxima_ug'])
+                    if len(ugs) > 0:
+                        for ug in ugs[1:]:
+                            ug.mudar_setpoint(0)
+                        ugs[0].mudar_setpoint(pot_alvo)
+                
+                for ug in self.ugs:
+                    logger.debug("UG{} SP:{}".format(ug.id_da_ug, ug.setpoint))
 
     def lista_de_ugs_disponiveis(self):
         """
@@ -653,18 +679,13 @@ class UnidadeDeGeracao:
                 self.deve_tentar_normalizar = False
                 logger.info("Tentativas de normalização excedidas! MOA não irá mais tentar.")
 
-        else:
             if self.id_da_ug == 1:
-                if self.con.get_ug1_parada():
-                    self.parando = False
-                    self.parado = True
-
+                self.parado = self.con.get_ug1_parada()
             if self.id_da_ug == 2:
-                if self.con.get_ug2_parada():
-                    self.parando = False
-                    self.parado = True
+                self.parado = self.con.get_ug2_parada()
 
-
+            if self.parado:
+                self.parando = False
 
 
     def mudar_setpoint(self, alvo):          
@@ -686,6 +707,7 @@ class UnidadeDeGeracao:
                         self.perda_na_grade_max - self.perda_na_grade_alerta))))
         self.setpoint = alvo.real
 
+        logger.debug("UG{} Partindo:{}, Sincronizada:{}, Parada:{}".format(self.id_da_ug, self.partindo, self.sincronizada, self.parado))
         if self.setpoint < 1 and ((not self.partindo) or self.sincronizada) and not self.parado:
             if self.id_da_ug == 1:
                 self.con.set_ug1_setpoint(0)
@@ -696,7 +718,7 @@ class UnidadeDeGeracao:
         else:
             if self.setpoint >= 1:
                 if self.id_da_ug == 1:
-                    if not self.sincronizada and not self.partindo:
+                    if not self.sincronizada:
                         self.partindo = True
                         self.con.partir_ug1()
                     elif self.sincronizada:
@@ -704,7 +726,7 @@ class UnidadeDeGeracao:
                     self.con.set_ug1_setpoint(int(self.setpoint * 1000))
             
                 if self.id_da_ug == 2:
-                    if not self.sincronizada and not self.partindo:
+                    if not self.sincronizada:
                         self.partindo = True
                         self.con.partir_ug2()   
                     elif self.sincronizada:
@@ -715,7 +737,8 @@ class UnidadeDeGeracao:
 
 class Comporta:
 
-    def __init__(self):
+    def __init__(self, con):
+        self.con = con
         self.pos_comporta = 0
         self.pos_0 = {'pos': 0, 'anterior': 0.0, 'proximo': 0.0}
         self.pos_1 = {'pos': 1, 'anterior': 0.0, 'proximo': 0.0}
@@ -729,7 +752,7 @@ class Comporta:
     def atualizar_estado(self, nv_montante):
 
         self.posicoes = [self.pos_0, self.pos_1, self.pos_2,
-                         self.pos_3, self.pos_4, self.pos_5]
+                            self.pos_3, self.pos_4, self.pos_5]
 
         if not 0 <= self.pos_comporta <= 5:
             raise IndexError("Pos comporta invalida {}".format(self.pos_comporta))

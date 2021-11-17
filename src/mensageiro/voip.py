@@ -38,7 +38,7 @@ audio_teste = config['audio_teste']
 caller_voip = config['caller_voip']
 token_auth_voip = config['token_auth_voip']
 voz_habilitado = config['voz_habilitado']
-lista_de_contatos_padrao = [["DEBUG MOA", "41988591567"], ["TabordaCorporativo", "41999060224"], ]
+lista_de_contatos_padrao = [["DEBUG MOA", "41988591567"], ["Luis", "48991058729"], ["Henrique P5", "41999610053"], ]
 
 
 def enviar_voz_teste(lista_de_contatos=None):

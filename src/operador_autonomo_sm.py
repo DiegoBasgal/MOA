@@ -3,6 +3,7 @@ operador_autonomo_sm.py
 
 Implementacao teste de uma versao do moa utilizando SM
 """
+from datetime import datetime
 import logging
 import os
 import sys
@@ -57,9 +58,11 @@ class StateMachine:
             if self.state is None:
                 raise TypeError
             self.state = self.state.run()
+        except TypeError as e:
+            pass
         except Exception as e:
-            logger.critical("Estado ({}) levantou uma exception: {}".format(self.state, repr(e)))
-            logger.critical("Traceback: {}".format(traceback.format_exc()))
+            logger.warning("Estado ({}) levantou uma exception: {}".format(self.state, repr(e)))
+            logger.warning("Traceback: {}".format(traceback.format_exc()))
             self.em_falha_critica = True
             self.state = FalhaCritica()
 
@@ -163,7 +166,7 @@ class ValoresInternosAtualizados(State):
 
         # Verifica-se então a situação do reservatório
         if self.usina.aguardando_reservatorio:
-            if self.usina.nv_montante_recente > self.usina.nv_religamento:
+            if self.usina.nv_montante_recente > self.usina.nv_alvo:
                 logger.info("Reservatorio dentro do nivel de trabalho")
                 self.usina.aguardando_reservatorio = 0
             return Pronto(self.usina)
@@ -184,13 +187,17 @@ class Emergencia(State):
 
     def __init__(self, instancia_usina, *args, **kwargs):
         super().__init__(*args, **kwargs)
+        self.em_sm_acionada = datetime.now()
+        logger.warning("Usina entrado em estado de emergência (Timestamp: {})".format(self.em_sm_acionada))
         self.usina = instancia_usina
         self.n_tentativa = 0
-        logger.warning("Usina entrado em estado de emergência")
+        if not (self.usina.cfg["TENSAO_LINHA_BAIXA"] < self.usina.tensao_na_linha < self.usina.cfg["TENSAO_LINHA_ALTA"]):
+            logger.warning("Tensao na linha fora dos limites {:2.3f}kV".format(self.usina.tensao_na_linha/1000))
         self.usina.distribuir_potencia(0)
         self.usina.escrever_valores()
         self.usina.acionar_emergencia()
         self.usina.heartbeat()
+        self.nao_ligou = True
 
     def run(self):
         self.usina.heartbeat()
@@ -211,10 +218,22 @@ class Emergencia(State):
 
             if self.usina.clp_emergencia_acionada:
                 try:
+                    if not (self.usina.cfg["TENSAO_LINHA_BAIXA"] < self.usina.tensao_na_linha < self.usina.cfg["TENSAO_LINHA_ALTA"]):
+                        self.n_tentativa = 0
+                        if (datetime.now() - self.em_sm_acionada).seconds > 30:
+                            if self.nao_ligou:
+                                self.nao_ligou = False
+                                logger.warning("Em emergência e sem tensão da mais de {:.1f} minutos".format((datetime.now() - self.em_sm_acionada).seconds/60))
+                            else:
+                                logger.debug("Em emergência e sem tensão da mais de {:.1f} minutos".format((datetime.now() - self.em_sm_acionada).seconds/60))
+                                if (datetime.now() - self.em_sm_acionada).seconds > 60:
+                                    logger.critical("Em emergência e sem tensão da mais de {:.1f} minutos".format((datetime.now() - self.em_sm_acionada).seconds/60))
+                                    self.usina.entrar_em_modo_manual()
+                                    return ModoManualAtivado(self.usina)
+                        return self
                     logger.info("Normalizando usina. (tentativa{}/3) (limite entre tentaivas: {}s)"
                                 .format(self.n_tentativa, n_tentativa*self.usina.cfg['timeout_normalizacao']))
                     self.usina.normalizar_emergencia()
-                    sleep(self.usina.cfg['timeout_normalizacao'] * n_tentativa)
                     self.usina.ler_valores()
                 except Exception as e:
                     logger.error("Erro durante a comunicação do MOA com a usina. Exception: {}.".format(repr(e)))
@@ -230,6 +249,8 @@ class ModoManualAtivado(State):
     def __init__(self, instancia_usina, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.usina = instancia_usina
+        self.usina.modo_autonomo = False
+        self.usina.escrever_valores()
         logger.info("Usina em modo manual, deve-se alterar via painel ou interface web.")
 
     def run(self):

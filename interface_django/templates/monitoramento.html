@@ -11,12 +11,12 @@
     <p>Estado:  {{ estado }}</p>
     <p>Emergencia:  {{ em_acionada }}</p>
     <p>Estado CLP:  {{ CLP_ON }} @ {{ CLP_IP }}</p>
-    <p>Set-point usina: {{ setpot_usina }}MW</p>
-    <p>UG1: {{ pot_ug1 }}MW (SP: {{ setpot_ug1 }} | Horas máquina: {{ tempo_ug1 }} | Temp.: {{ usina.ug1_temp_mancal }} | Perda na grade: {{ usina.ug1_perda_grade }})</p>
-    <p>UG2: {{ pot_ug2 }}MW (SP: {{ setpot_ug2 }} | Horas máquina: {{ tempo_ug2 }} | Temp.: {{ usina.ug2_temp_mancal }} | Perda na grade: {{ usina.ug2_perda_grade }})</p>
-    <p>Nv alvo: {{ nv_alvo }}m</p>
+    <p>Set-point usina: {{ setpot_usina }} MW</p>
+    <p>UG1: {{ pot_ug1 }} MW (SP: {{ setpot_ug1 }} | Horas máquina: {{ tempo_ug1 }} h | Temp.: {{ usina.ug1_temp_mancal | floatformat:2 }} ﹾC | Perda na grade: {{ usina.ug1_perda_grade | floatformat:2 }} m)</p>
+    <p>UG2: {{ pot_ug2 }} MW (SP: {{ setpot_ug2 }} | Horas máquina: {{ tempo_ug2 }} h | Temp.: {{ usina.ug2_temp_mancal | floatformat:2 }} ﹾC | Perda na grade: {{ usina.ug2_perda_grade | floatformat:2 }} m)</p>
+    <p>Nv alvo: {{ nv_alvo }} m</p>
     <p>Aguardando reservatório? {{ aguardo }}.</p>
-    <p>Nv montante: {{ nv_montante }}m</p>
+    <p>Nv montante: {{ nv_montante }} m</p>
     </br>
     </br>
     <h3>MOA Modbus Slave</h3>

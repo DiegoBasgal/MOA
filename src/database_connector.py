@@ -57,7 +57,7 @@ class Database:
     def get_agendamentos_pendentes(self):
         q = "SELECT *" \
             "FROM agendamentos_agendamento " \
-            "WHERE executado = 0;"
+            "WHERE executado = 0 AND data <= ((NOW() + INTERVAL 3 HOUR) + INTERVAL 55 SECOND);"
         self._open()
         result =  self.query(q)
         self._close()
