@@ -10,7 +10,7 @@ from threading import Thread
 import time
 from sys import stdout
 from time import sleep
-
+import traceback
 import json
 
 from pyModbusTCP.server import DataBank, ModbusServer
@@ -59,6 +59,7 @@ class StateMachine:
             self.state = self.state.run()
         except Exception as e:
             logger.critical("Estado ({}) levantou uma exception: {}".format(self.state, repr(e)))
+            logger.critical("Traceback: {}".format(traceback.format_exc()))
             self.em_falha_critica = True
             self.state = FalhaCritica()
 
@@ -115,6 +116,7 @@ class Pronto(State):
                 self.n_tentativa += 1
                 logger.error("Erro durante a comunicação do MOA com a usina. Tentando novamente em {}s (tentativa{}/3)."
                              " Exception: {}.".format(self.usina.timeout_padrao * n_tentativa, self.n_tentativa, repr(e)))
+                logger.critical("Traceback: {}".format(traceback.format_exc()))
                 sleep(self.usina.timeout_padrao * n_tentativa)
                 return self
 
@@ -216,6 +218,7 @@ class Emergencia(State):
                     self.usina.ler_valores()
                 except Exception as e:
                     logger.error("Erro durante a comunicação do MOA com a usina. Exception: {}.".format(repr(e)))
+                    logger.critical("Traceback: {}".format(traceback.format_exc()))
                 return self
             else:
                 logger.info("Usina normalizada")
@@ -348,6 +351,7 @@ if __name__ == "__main__":
                 logger.error(
                     "Erro ao iniciar Classe Usina. Tentando novamente em {}s (tentativa {}/3). Exception: {}.".format(
                         timeout, n_tentativa, repr(e)))
+                logger.critical("Traceback: {}".format(traceback.format_exc()))
                 sleep(timeout)
                 continue
 
@@ -369,20 +373,24 @@ if __name__ == "__main__":
                 logger.error(
                     "Erro ao iniciar abstração da usina. Tentando novamente em {}s (tentativa {}/3). Exception: {}."
                     "".format(timeout, n_tentativa, repr(e)))
+                logger.critical("Traceback: {}".format(traceback.format_exc()))
                 sleep(timeout)
             except ConnectionError as e:
                 logger.error(
                     "Erro ao iniciar Modbus MOA. Tentando novamente em {}s (tentativa {}/3). Exception: {}.".format(
                         timeout, n_tentativa, repr(e)))
+                logger.critical("Traceback: {}".format(traceback.format_exc()))
                 sleep(timeout)
             except PermissionError as e:
                 logger.error("Não foi possível iniciar o Modbus MOA devido a permissão do usuário. Exception: {}.".format(repr(e)))
+                logger.critical("Traceback: {}".format(traceback.format_exc()))
                 prox_estado = FalhaCritica
             except Exception as e:
                 if DEBUG:
                     raise e
                 logger.error("Erro Inesperado. Tentando novamente em {}s (tentativa{}/3). Exception: {}.".format(
                     timeout, n_tentativa, repr(e)))
+                logger.critical("Traceback: {}".format(traceback.format_exc()))
                 sleep(timeout)
 
     logger.info("Inicialização completa, executando o MOA \U0001F916")
@@ -392,5 +400,5 @@ if __name__ == "__main__":
         t_i = time.time()
         logger.debug("Executando estado: {}".format(sm.state.__class__.__name__))
         sm.exec()
-        t_restante = max(5 - (time.time() - t_i), 0) / ESCALA_DE_TEMPO
+        t_restante = max(1 - (time.time() - t_i), 0) / ESCALA_DE_TEMPO
         sleep(t_restante)

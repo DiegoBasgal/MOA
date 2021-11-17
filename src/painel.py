@@ -112,6 +112,7 @@ class Painel(threading.Thread):
         for p in pins:    
             gpio.output(pin, True)
         time.sleep(t)
+        
 
     def stop(self):
         self.stop_signal = True

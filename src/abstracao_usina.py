@@ -64,6 +64,7 @@ class Usina:
         self.n_movel_r = self.cfg['n_movel_R']
 
         # Outras vars
+        self.ts_ultima_tesntativa_de_normalizacao = datetime.now()
         self.state_moa = 0
         self.controle_p = 0
         self.controle_i = 0
@@ -174,6 +175,9 @@ class Usina:
         self.ug2.temp_mancal_alerta = float(parametros["ug2_temp_alerta"])
         self.ug2.temp_mancal_max = float(parametros["ug2_temp_maxima"])
 
+        # nv_minimo
+        self.nv_minimo = float(parametros["nv_minimo"])
+
         # Modo autonomo
         self.modo_autonomo = int(parametros["modo_autonomo"])
         # Modo de prioridade UGS
@@ -263,9 +267,16 @@ class Usina:
 
 
     def normalizar_emergencia(self):
+        self.tentativas_de_normalizar += 1
         logger.info("Verificando condições para normalização")
-        logger.info("{}, {}".format(self.tensao_na_linha, self.deve_tentar_normalizar))
-        if self.cfg['TENSAO_LINHA_BAIXA'] < self.tensao_na_linha < self.cfg['TENSAO_LINHA_ALTA'] and self.deve_tentar_normalizar:
+         
+        logger.info("Ultiam tentativa: {}. Tensão na linha: {}. Deve tentar normalizar: {}".format(self.ts_ultima_tesntativa_de_normalizacao, self.tensao_na_linha, self.deve_tentar_normalizar))
+
+        if self.cfg['TENSAO_LINHA_BAIXA'] < self.tensao_na_linha < self.cfg['TENSAO_LINHA_ALTA']  \
+            and self.deve_tentar_normalizar \
+            and (datetime.now() - self.ts_ultima_tesntativa_de_normalizacao).seconds >= 60 * self.tentativas_de_normalizar:
+            
+            self.ts_ultima_tesntativa_de_normalizacao = datetime.now()
             logger.info("Normalizando a Usina")
             #self.con.open()
             self.con.normalizar_emergencia()
@@ -297,8 +308,8 @@ class Usina:
             DataBank.set_words(self.cfg['REG_MOA_OUT_EMERG'], [1 if self.clp_emergencia_acionada else 0])
             DataBank.set_words(self.cfg['REG_MOA_OUT_TARGET_LEVEL'], [self.nv_alvo-620]*1000)
             DataBank.set_words(self.cfg['REG_MOA_OUT_SETPOINT'], [self.ug1.setpoint + self.ug2.setpoint])
-            DataBank.set_words(self.cfg['REG_MOA_OUT_BLOCK_UG1'], [1 if self.ug1.flag else 0])
-            DataBank.set_words(self.cfg['REG_MOA_OUT_BLOCK_UG2'], [1 if self.ug2.flag else 0])
+            DataBank.set_words(self.cfg['REG_MOA_OUT_BLOCK_UG1'], [1 if self.ug1.flag and self.clp_emergencia_acionada else 0])
+            DataBank.set_words(self.cfg['REG_MOA_OUT_BLOCK_UG2'], [1 if self.ug2.flag and self.clp_emergencia_acionada else 0])
         else:
             DataBank.set_words(self.cfg['REG_MOA_OUT_EMERG'], [0])
             DataBank.set_words(self.cfg['REG_MOA_OUT_TARGET_LEVEL'], [0])
@@ -327,10 +338,8 @@ class Usina:
         Verifica os agendamentos feitos pelo django no banco de dados e lida com eles, executando, etc...
         """
         agora = datetime.now()
-        agora = agora - timedelta(seconds=agora.second, microseconds=agora.microsecond)
-        futuro = agora + timedelta(minutes=1)
         agendamentos = self.get_agendamentos_pendentes()
-
+        
         logger.debug(agendamentos)
 
         if len(agendamentos) == 0:
@@ -338,80 +347,88 @@ class Usina:
 
         self.agendamentos_atrasados = 0
         for agendamento in agendamentos:
-            logger.debug((agendamento[1] - agora).seconds)
-            if (agendamento[1] - agora).seconds > 60:
-                logger.warning("Agendamento #{} Atrasado! ({} - {}).".format(agendamento[0], agendamento[3], agendamento))
-                self.agendamentos_atrasados += 1
-            if (agendamento[1] - agora).seconds > 300 or self.agendamentos_atrasados > 3:
-                logger.info("Os agendamentos estão muito atrasados! Acionando emergência.")
-                self.acionar_emergencia()
-                return False
-
-        for agendamento in agendamentos:
-            if (agendamento[1] - agora).seconds <= 60 and not bool(agendamento[4]):
-                # Está na hora e ainda não foi executado. Executar!
-                logger.info("Executando gendamento #{} - {}.".format(agendamento[0], agendamento))
-
-                # Exemplo Case agendamento:
-                if agendamento[3] == AGENDAMENTO_DISPARAR_MENSAGEM_TESTE:
-                    # Coloca em emergência
-                    logger.info("Disparando mensagem teste (comando via agendamento).")
-                    self.disparar_mensagem_teste()
-
-                if agendamento[3] == AGENDAMENTO_INDISPONIBILIZAR:
-                    # Coloca em emergência
-                    logger.info("Indisponibilizando a usina (comando via agendamento).")
+            if agora > agendamento[1]:
+                segundos_passados = (agora - agendamento[1]).seconds
+                logger.debug(segundos_passados)
+                if segundos_passados > 60:
+                    logger.warning("Agendamento #{} Atrasado! ({} - {}).".format(agendamento[0], agendamento[3], agendamento))
+                    self.agendamentos_atrasados += 1
+                if segundos_passados > 300 or self.agendamentos_atrasados > 3:
+                    logger.info("Os agendamentos estão muito atrasados! Acionando emergência.")
                     self.acionar_emergencia()
-                
-                if agendamento[3] == AGENDAMENTO_ALETRAR_NV_ALVO:
-                    try:
-                        novo = float(agendamento[2].replace(",", "."))
-                    except Exception as e:
-                        logger.info("Valor inválido no comando #{} ({} é inválido).".format(agendamento[0], agendamento[3]))
-                    self.nv_alvo = novo
-                    pars = [datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
-                        self.kp,
-                        self.ki,
-                        self.kd,
-                        self.kie,
-                        self.n_movel_l,
-                        self.n_movel_r,
-                        self.nv_alvo
-                        ]
-                    self.db.update_parametros_usina(pars)
+                    return False
+            elif agora < agendamento[1]:
+                segundos_adiantados = (agendamento[1]-agora).seconds
+                if segundos_adiantados <= 60 and not bool(agendamento[4]):
+                    # Está na hora e ainda não foi executado. Executar!
+                    logger.info("Executando gendamento #{} - {}.".format(agendamento[0], agendamento))
+
+                    # Exemplo Case agendamento:
+                    if agendamento[3] == AGENDAMENTO_DISPARAR_MENSAGEM_TESTE:
+                        # Coloca em emergência
+                        logger.info("Disparando mensagem teste (comando via agendamento).")
+                        self.disparar_mensagem_teste()
+
+                    if agendamento[3] == AGENDAMENTO_INDISPONIBILIZAR:
+                        # Coloca em emergência
+                        logger.info("Indisponibilizando a usina (comando via agendamento).")
+                        self.acionar_emergencia()
+                    
+                    if agendamento[3] == AGENDAMENTO_ALETRAR_NV_ALVO:
+                        try:
+                            novo = float(agendamento[2].replace(",", "."))
+                        except Exception as e:
+                            logger.info("Valor inválido no comando #{} ({} é inválido).".format(agendamento[0], agendamento[3]))
+                        self.nv_alvo = novo
+                        pars = [datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+                            self.kp,
+                            self.ki,
+                            self.kd,
+                            self.kie,
+                            self.n_movel_l,
+                            self.n_movel_r,
+                            self.nv_alvo
+                            ]
+                        self.db.update_parametros_usina(pars)
+                        self.escrever_valores()
+                    
+                    if agendamento[3] == AGENDAMENTO_ALETRAR_POT_ALVO_UG_1:
+                        try:
+                            novo = float(agendamento[2].replace(",", "."))
+                        except Exception as e:
+                            logger.info("Valor inválido no comando #{} ({} é inválido).".format(agendamento[0], agendamento[3]))
+                        self.ug1.pot_disponivel = novo
+                    
+                    if agendamento[3] == AGENDAMENTO_INDISPONIBILIZAR_UG_1:
+                        self.ug1.indisponibilizar()   
+        
+                    if agendamento[3] == AGENDAMENTO_ALETRAR_POT_ALVO_UG_2:
+                        try:
+                            novo = float(agendamento[2].replace(",", "."))
+                        except Exception as e:
+                            logger.info("Valor inválido no comando #{} ({} é inválido).".format(agendamento[0], agendamento[3]))
+                        self.ug2.pot_disponivel = novo
+                    
+                    if agendamento[3] == AGENDAMENTO_INDISPONIBILIZAR_UG_2:
+                        self.ug2.indisponibilizar()   
+
+
+                    # Após executar, indicar no banco de dados
+                    self.db.update_agendamento(int(agendamento[0]), 1)
+                    logger.info("O comando #{} - {} foi executado.".format(agendamento[0], agendamento[2]))
                     self.escrever_valores()
-                
-                if agendamento[3] == AGENDAMENTO_ALETRAR_POT_ALVO_UG_1:
-                    try:
-                        novo = float(agendamento[2].replace(",", "."))
-                    except Exception as e:
-                        logger.info("Valor inválido no comando #{} ({} é inválido).".format(agendamento[0], agendamento[3]))
-                    self.ug1.pot_disponivel = novo
-                
-                if agendamento[3] == AGENDAMENTO_INDISPONIBILIZAR_UG_1:
-                    self.ug1.indisponibilizar()   
-    
-                if agendamento[3] == AGENDAMENTO_ALETRAR_POT_ALVO_UG_2:
-                    try:
-                        novo = float(agendamento[2].replace(",", "."))
-                    except Exception as e:
-                        logger.info("Valor inválido no comando #{} ({} é inválido).".format(agendamento[0], agendamento[3]))
-                    self.ug2.pot_disponivel = novo
-                
-                if agendamento[3] == AGENDAMENTO_INDISPONIBILIZAR_UG_2:
-                    self.ug2.indisponibilizar()   
-
-
-                # Após executar, indicar no banco de dados
-                self.db.update_agendamento(int(agendamento[0]), 1)
-                logger.info("O comando #{} - {} foi executado.".format(agendamento[0], agendamento[2]))
-                self.escrever_valores()
 
             else:
                 # Ainda não é a hora de executar.
                 pass
 
     def distribuir_potencia(self, pot_alvo):
+
+        if pot_alvo < 0.1:
+            for ug in self.ugs:
+                ug.mudar_setpoint(0)
+                ug.parar()
+            return True
 
         self.pot_disp = 0
         if self.ug1.disponivel:
@@ -512,6 +529,8 @@ class Usina:
                        self.cfg['pot_minima'])
         
         logger.debug("Pot alvo: {:0.3f}".format(pot_alvo))
+        logger.debug("Nv alvo: {:0.3f}".format(self.nv_alvo))
+        logger.debug("Nv_minimo alvo: {:0.3f}".format(self.nv_minimo))
         ts = datetime.now().timestamp()
         self.db.insert_debug(ts, self.kp, self.ki, self.kd, self.kie, self.controle_p, self.controle_i, self.controle_d, self.controle_ie,
                                 self.ug1.setpoint, self.ug1.potencia, self.ug2.setpoint, self.ug2.potencia, self.nv_montante_recente, self.erro_nv)
@@ -556,6 +575,7 @@ class UnidadeDeGeracao:
         self.partir = True
         self.partindo = False
         self.parando = False
+        self.parado = True
 
 
     def voltar_a_tentar_resetar(self):
@@ -571,6 +591,14 @@ class UnidadeDeGeracao:
         self.con.normalizar_emergencia()           
         #self.con.close()        
 
+    def parar(self):
+        if self.id_da_ug == 1:
+            #self.con.open()        
+            self.con.parar_ug1()
+            #self.con.close()        
+        if self.id_da_ug == 2:
+            self.con.parar_ug2() 
+            
 
     def indisponibilizar(self):
         # Indisponibiliza a ug
@@ -617,7 +645,7 @@ class UnidadeDeGeracao:
                 and self.flag \
                 and self.deve_tentar_normalizar \
                 and self.tentativas_de_normalizar <= 3  \
-                and (self.ts_ultima_tesntativa_de_normalizacao - datetime.now()).seconds >= 60 * self.tentativas_de_normalizar: 
+                and (datetime.now() - self.ts_ultima_tesntativa_de_normalizacao).seconds >= 60 * self.tentativas_de_normalizar: 
                 logger.info("Tentativa de normalização #{:d}".format(self.tentativas_de_normalizar))
                 self.normalizar()
 
@@ -639,7 +667,7 @@ class UnidadeDeGeracao:
 
 
 
-    def mudar_setpoint(self, alvo):
+    def mudar_setpoint(self, alvo):          
 
         alvo = max(alvo, 0)
 
@@ -658,32 +686,32 @@ class UnidadeDeGeracao:
                         self.perda_na_grade_max - self.perda_na_grade_alerta))))
         self.setpoint = alvo.real
 
-        
-        if self.setpoint >= 1:
+        if self.setpoint < 1 and ((not self.partindo) or self.sincronizada) and not self.parado:
             if self.id_da_ug == 1:
-                if self.con.get_potencia_ug1() < 1000:
-                    self.partindo = True
-                    self.con.partir_ug1()
-                else:
-                    self.partindo = False
-
-                self.con.set_ug1_setpoint(int(self.setpoint * 1000))
-         
-            if self.id_da_ug == 2:
-                if self.con.get_potencia_ug2() < 1000:
-                    self.partindo = True
-                    self.con.partir_ug2()   
-                else:
-                    self.partindo = False
-                self.con.set_ug2_setpoint(int(self.setpoint * 1000))
-
-        if self.setpoint < 0.9 and not self.partindo:
-            if self.id_da_ug == 1:
+                self.con.set_ug1_setpoint(0)
                 self.con.parar_ug1()  
-         
             if self.id_da_ug == 2:
+                self.con.set_ug2_setpoint(0)
                 self.con.parar_ug2()  
-                self.con.set_ug2_setpoint(int(self.setpoint * 1000))
+        else:
+            if self.setpoint >= 1:
+                if self.id_da_ug == 1:
+                    if not self.sincronizada and not self.partindo:
+                        self.partindo = True
+                        self.con.partir_ug1()
+                    elif self.sincronizada:
+                        self.partindo = False
+                    self.con.set_ug1_setpoint(int(self.setpoint * 1000))
+            
+                if self.id_da_ug == 2:
+                    if not self.sincronizada and not self.partindo:
+                        self.partindo = True
+                        self.con.partir_ug2()   
+                    elif self.sincronizada:
+                        self.partindo = False
+                    self.con.set_ug2_setpoint(int(self.setpoint * 1000))
+
+
 
 class Comporta:
 
