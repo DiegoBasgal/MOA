@@ -195,7 +195,6 @@ class Emergencia(State):
             logger.warning("Tensao na linha fora dos limites {:2.3f}kV".format(self.usina.tensao_na_linha/1000))
         self.usina.distribuir_potencia(0)
         self.usina.escrever_valores()
-        self.usina.acionar_emergencia()
         self.usina.heartbeat()
         self.nao_ligou = True
 
@@ -218,9 +217,11 @@ class Emergencia(State):
 
             if self.usina.clp_emergencia_acionada:
                 try:
+                    self.usina.ler_valores()
                     if not (self.usina.cfg["TENSAO_LINHA_BAIXA"] < self.usina.tensao_na_linha < self.usina.cfg["TENSAO_LINHA_ALTA"]):
                         self.n_tentativa = 0
-                        if (datetime.now() - self.em_sm_acionada).seconds > 30:
+                        logger.debug("V: {} (erro faz {}min)".format(self.usina.tensao_na_linha, (datetime.now() - self.em_sm_acionada).seconds/60))
+                        if (datetime.now() - self.em_sm_acionada).seconds > 300:
                             if self.nao_ligou:
                                 self.nao_ligou = False
                                 logger.warning("Em emergência e sem tensão da mais de {:.1f} minutos".format((datetime.now() - self.em_sm_acionada).seconds/60))
@@ -231,6 +232,8 @@ class Emergencia(State):
                                     self.usina.entrar_em_modo_manual()
                                     return ModoManualAtivado(self.usina)
                         return self
+                    logger.debug("Bela adormecida 10s")
+                    sleep(10)
                     logger.info("Normalizando usina. (tentativa{}/3) (limite entre tentaivas: {}s)"
                                 .format(self.n_tentativa, n_tentativa*self.usina.cfg['timeout_normalizacao']))
                     self.usina.normalizar_emergencia()
@@ -259,6 +262,7 @@ class ModoManualAtivado(State):
         self.usina.heartbeat()
         if self.usina.modo_autonomo:
             logger.info("Usina voltou para o modo Autonomo")
+            self.usina.db.update_habilitar_autonomo()
             self.usina.ler_valores()
             for ug in self.usina.ugs:
                 ug.voltar_a_tentar_resetar()

@@ -186,7 +186,8 @@ class FieldConnector:
         return round(temperatura_max_mancal)
 
     def get_sincro_ug1(self):
-        return True if self.get_potencia_ug1() > 1 else False
+        response = self.ug1_clp.read_holding_registers(REG_UG1_Operacao_EtapaAtual - 1)[0]
+        return True if (response >> 4 & 1) == 1 else False
     
     def get_ug1_parada(self):
         logger.debug("UG1 {}".format(self.ug1_clp.read_holding_registers(REG_UG1_Turb_Info - 1)[0]))
@@ -316,7 +317,8 @@ class FieldConnector:
         return round(temperatura_max_mancal)
 
     def get_sincro_ug2(self):
-        return True if self.get_potencia_ug2() > 1 else False
+        response = self.ug2_clp.read_holding_registers(REG_UG2_Operacao_EtapaAtual - 1)[0]
+        return True if (response >> 4 & 1) == 1 else False
 
     def get_tensao_na_linha(self):
         sn = self.usn_clp.read_holding_registers(REG_USINA_Subestacao_TensaoSN - 1)[0]*10
@@ -332,7 +334,6 @@ class FieldConnector:
         response = self.usn_clp.write_single_register(REG_USINA_Disj52LFechar - 1, 1)
         response = self.ug1_clp.write_single_register(REG_UG1_Operacao_US - 1, 1)
         logger.debug("REG_UG1_Operacao_US(1): {}".format(response))       
-        logger.info("Partindo UG1 {}".format(response))       
 
     def parar_ug1(self):      
         response = self.ug1_clp.write_single_register(REG_UG1_Operacao_UP - 1, 1)
@@ -344,7 +345,6 @@ class FieldConnector:
         response = self.usn_clp.write_single_register(REG_USINA_Disj52LFechar - 1, 1)
         response = self.ug2_clp.write_single_register(REG_UG2_Operacao_US - 1, 1)
         logger.debug("REG_UG2_Operacao_US(1): {}".format(response))  
-        logger.info("Partindo UG2 {}".format(response))       
 
 
     def parar_ug2(self):
@@ -353,18 +353,41 @@ class FieldConnector:
         logger.info("Parando UG2 {}".format(response))       
 
     def set_ug1_setpoint(self, setpoint):
+        response = self.ug1_clp.write_single_register(REG_UG1_Operacao_US - 1, 1)
+        logger.debug("get_sincro_ug1 response: {}".format(self.get_sincro_ug1()))
+        logger.debug("get_etapa_alvo_up_ug1 response: {}".format(self.get_etapa_alvo_up_ug1()))
+        if self.get_sincro_ug1() and not self.get_etapa_alvo_up_ug1():
+            response = self.ug1_clp.write_single_register(REG_UG1_RegV_ColocarCarga - 1, 1)
+            logger.debug("write_single_register REG_UG1_RegV_ColocarCarga({}) response: {}".format(1, response))
         response = self.usn_clp.write_single_register(REG_USINA_Disj52LFechar - 1, 1)
+        response = self.usn_clp.write_single_register(REG_USINA_CtrlPotencia_ModoNivelDesligar - 1, 1)
+        response = self.usn_clp.write_single_register(REG_USINA_CtrlPotencia_ReligamentoDesligar - 1, 1)
         response = self.ug1_clp.write_single_register(REG_UG1_CtrlPotencia_ModoNivelDesligar - 1, 1)
         response = self.ug1_clp.write_single_register(REG_UG1_CtrlPotencia_ModoPotenciaDesligar - 1, 1)
         response = self.ug1_clp.write_single_register(REG_UG1_CtrlPotencia_Alvo, int(setpoint))
         logger.debug("REG_UG1_CtrlPotencia_Alvo({}) response: {}".format(setpoint, response))
 
     def set_ug2_setpoint(self, setpoint):
-        response = self.usn_clp.write_single_register(REG_USINA_Disj52LFechar - 1, 1)
-        response = self.ug2_clp.write_single_register(REG_UG2_CtrlPotencia_ModoNivelDesligar - 1, 1)
-        response = self.ug2_clp.write_single_register(REG_UG2_CtrlPotencia_ModoPotenciaDesligar - 1, 1)
-        response = self.ug2_clp.write_single_register(REG_UG2_CtrlPotencia_Alvo - 1, int(setpoint))
-        logger.debug("REG_UG2_CtrlPotencia_Alvo({}) response: {}".format(setpoint, response))
+            response = self.ug2_clp.write_single_register(REG_UG2_Operacao_US - 1, 1)
+            logger.debug("get_sincro_ug2 response: {}".format(self.get_sincro_ug2()))
+            logger.debug("get_etapa_alvo_up_ug2 response: {}".format(self.get_etapa_alvo_up_ug2()))
+            if self.get_sincro_ug2() and not self.get_etapa_alvo_up_ug2():
+                response = self.ug2_clp.write_single_register(REG_UG2_RegV_ColocarCarga - 1, 1)
+                logger.debug("write_single_register REG_UG2_RegV_ColocarCarga({}) response: {}".format(1, response))
+            response = self.usn_clp.write_single_register(REG_USINA_Disj52LFechar - 1, 1)
+            response = self.usn_clp.write_single_register(REG_USINA_CtrlPotencia_ModoNivelDesligar - 1, 1)
+            response = self.usn_clp.write_single_register(REG_USINA_CtrlPotencia_ReligamentoDesligar - 1, 1)
+            response = self.ug2_clp.write_single_register(REG_UG2_CtrlPotencia_ModoNivelDesligar - 1, 1)
+            response = self.ug2_clp.write_single_register(REG_UG2_CtrlPotencia_ModoPotenciaDesligar - 1, 1)
+            response = self.ug2_clp.write_single_register(REG_UG2_CtrlPotencia_Alvo, int(setpoint))
+
+    def get_etapa_alvo_up_ug1(self):
+        response = (self.ug1_clp.read_holding_registers(REG_UG1_Operacao_EtapaAlvo - 1)[0] >> 0 & 1)
+        return True if response == 1 else False
+    
+    def get_etapa_alvo_up_ug2(self):
+        response = (self.ug2_clp.read_holding_registers(REG_UG2_Operacao_EtapaAlvo - 1)[0] >> 0 & 1)
+        return True if response == 1 else False
 
     def set_pos_comporta(self, pos_comporta):
         pass

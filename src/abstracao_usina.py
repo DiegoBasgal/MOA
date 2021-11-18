@@ -123,6 +123,7 @@ class Usina:
         self.ug1.flag = self.con.get_flag_ug1()
         self.ug1.sincronizada = self.con.get_sincro_ug1()
         self.ug1.potencia = self.con.get_potencia_ug1()
+        self.ug1.potencia_minima = self.cfg['pot_minima']
         self.ug1.horas_maquina = self.con.get_horas_ug1()
         self.ug1.perda_na_grade = self.con.get_perda_na_grade_ug1()
         self.ug1.temp_mancal = self.con.get_temperatura_do_mancal_ug1()
@@ -130,6 +131,7 @@ class Usina:
         self.ug2.flag = self.con.get_flag_ug2()
         self.ug2.sincronizada = self.con.get_sincro_ug2()
         self.ug2.potencia = self.con.get_potencia_ug2()
+        self.ug2.potencia_minima = self.cfg['pot_minima']
         self.ug2.horas_maquina = self.con.get_horas_ug2()
         self.ug2.perda_na_grade = self.con.get_perda_na_grade_ug2()
         self.ug2.temp_mancal = self.con.get_temperatura_do_mancal_ug2()
@@ -183,6 +185,7 @@ class Usina:
         self.nv_minimo = float(parametros["nv_minimo"])
 
         # Modo autonomo
+        logging.debug("Modo autonomo que o banco respondeu: {}".format(int(parametros["modo_autonomo"])))
         self.modo_autonomo = int(parametros["modo_autonomo"])
         # Modo de prioridade UGS
         if not self.modo_de_escolha_das_ugs == int(parametros["modo_de_escolha_das_ugs"]):
@@ -217,14 +220,18 @@ class Usina:
         if DataBank.get_words(self.cfg['REG_MOA_IN_EMERG'])[0] != 0:
             if not self.avisado_em_eletrica:
                 self.avisado_em_eletrica = True
-                logger.warning("Emergência elétrica detectada ler coils de alarme....")
+                logger.warning("Emergência elétrica detectada ler coils de alarme...")
         else:
             self.avisado_em_eletrica = False
 
         if DataBank.get_words(self.cfg['REG_MOA_IN_HABILITA_AUTO'])[0] == 1:
+            DataBank.set_words(self.cfg['REG_MOA_IN_HABILITA_AUTO'], [0])
+            DataBank.set_words(self.cfg['REG_MOA_IN_DESABILITA_AUTO'], [0])
             self.modo_autonomo = 1
         
         if DataBank.get_words(self.cfg['REG_MOA_IN_DESABILITA_AUTO'])[0] == 1 or self.modo_autonomo == 0:
+            DataBank.set_words(self.cfg['REG_MOA_IN_HABILITA_AUTO'], [0])
+            DataBank.set_words(self.cfg['REG_MOA_IN_DESABILITA_AUTO'], [0])
             self.modo_autonomo = 0
             self.entrar_em_modo_manual()
 
@@ -236,7 +243,7 @@ class Usina:
 
 
     def escrever_valores(self):
-
+        
         # CLP
         #self.con.open()           
         self.con.set_pos_comporta(int(self.comporta.pos_comporta))
@@ -597,6 +604,7 @@ class UnidadeDeGeracao:
         self.perda_na_grade_alerta = 0
         self.temp_mancal_alerta = 0
         self.pot_disponivel = 0
+        self.potencia_minima = 0
         self.ts_ultima_tesntativa_de_normalizacao = datetime.now()
         self.partir = True
         self.partindo = False
@@ -630,6 +638,7 @@ class UnidadeDeGeracao:
         # Indisponibiliza a ug
         self.flag = True
         self.parando = True
+        self.disponivel = False
         if self.id_da_ug == 1:
             #self.con.open()        
             self.con.parar_ug1()
@@ -691,6 +700,7 @@ class UnidadeDeGeracao:
     def mudar_setpoint(self, alvo):          
 
         alvo = max(alvo, 0)
+        
 
         if self.temp_mancal > self.temp_mancal_max:
             alvo = 0
@@ -706,29 +716,34 @@ class UnidadeDeGeracao:
                     sqrt(1 - ((self.perda_na_grade - self.perda_na_grade_alerta) / (
                         self.perda_na_grade_max - self.perda_na_grade_alerta))))
         self.setpoint = alvo.real
+        if self.setpoint  < self.potencia_minima:
+            self.setpoint  = 0
 
         logger.debug("UG{} Partindo:{}, Sincronizada:{}, Parada:{}".format(self.id_da_ug, self.partindo, self.sincronizada, self.parado))
-        if self.setpoint < 1 and ((not self.partindo) or self.sincronizada) and not self.parado:
+        if self.setpoint < 1 and not self.partindo and not self.parado:
             if self.id_da_ug == 1:
-                self.con.set_ug1_setpoint(0)
                 self.con.parar_ug1()  
             if self.id_da_ug == 2:
-                self.con.set_ug2_setpoint(0)
                 self.con.parar_ug2()  
-        else:
+        elif not self.parando:
             if self.setpoint >= 1:
+                
                 if self.id_da_ug == 1:
                     if not self.sincronizada:
-                        self.partindo = True
                         self.con.partir_ug1()
+                        if not self.partindo:
+                            logger.info("Partindo UG1")       
+                        self.partindo = True
                     elif self.sincronizada:
                         self.partindo = False
                     self.con.set_ug1_setpoint(int(self.setpoint * 1000))
             
                 if self.id_da_ug == 2:
                     if not self.sincronizada:
+                        self.con.partir_ug2() 
+                        if not self.partindo:
+                            logger.info("Partindo UG2")  
                         self.partindo = True
-                        self.con.partir_ug2()   
                     elif self.sincronizada:
                         self.partindo = False
                     self.con.set_ug2_setpoint(int(self.setpoint * 1000))
