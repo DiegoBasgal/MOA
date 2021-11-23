@@ -379,7 +379,7 @@ class FieldConnector:
             response = self.usn_clp.write_single_register(REG_USINA_CtrlPotencia_ReligamentoDesligar - 1, 1)
             response = self.ug2_clp.write_single_register(REG_UG2_CtrlPotencia_ModoNivelDesligar - 1, 1)
             response = self.ug2_clp.write_single_register(REG_UG2_CtrlPotencia_ModoPotenciaDesligar - 1, 1)
-            response = self.ug2_clp.write_single_register(REG_UG2_CtrlPotencia_Alvo, int(setpoint))
+            response = self.ug2_clp.write_single_register(REG_UG2_CtrlPotencia_Alvo - 1, int(setpoint))
 
     def get_etapa_alvo_up_ug1(self):
         response = (self.ug1_clp.read_holding_registers(REG_UG1_Operacao_EtapaAlvo - 1)[0] >> 0 & 1)
