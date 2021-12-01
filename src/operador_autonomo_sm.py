@@ -260,6 +260,7 @@ class ModoManualAtivado(State):
         self.usina.ler_valores()
         DataBank.set_words(cfg['REG_PAINEL_LIDO'], [1])
         self.usina.heartbeat()
+        sleep(1)
         if self.usina.modo_autonomo:
             logger.info("Usina voltou para o modo Autonomo")
             self.usina.db.update_habilitar_autonomo()

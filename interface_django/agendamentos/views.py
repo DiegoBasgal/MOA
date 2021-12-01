@@ -50,26 +50,39 @@ def agendamento_detalhado_view(request, *args, **kwargs):
 @login_required
 def novo_agendamento_view(request, *args, **kwargs):
     if request.method == "POST":
+
+        now = datetime.now()
+        
         ano = int(request.POST['ano'])
         mes = int(request.POST['mes'])
         dia = int(request.POST['dia'])
         hora = int(request.POST['hora'])
         minuto = int(request.POST['minuto'])
         data_hora = datetime(ano, mes, dia, hora, minuto, 0)
+        if data_hora <= now:
+            return HttpResponseRedirect('../')
+
         observacao = request.POST['observacao']
         comando_id = request.POST['comando']
         ag = Agendamento(data=data_hora, observacao=observacao, comando=Comando.objects.get(id=comando_id))
         ag.save()
         return HttpResponseRedirect('../')
 
-    context = {'agora': datetime.now(),
-               'range_dias': range(1, 32),
-               'range_mes': range(1, 13),
-               'range_ano': range(2021, 2026),
-               'range_hora': range(24),
-               'range_minuto': range(60),
-               'range_segundo': range(60),
-               'comandos': Comando.objects.all()
-               }
+    now = datetime.now()
+    context = {'agora': now,
+                'dia': now.day,
+                'mes': now.month,
+                'ano': now.year,
+                'hora': now.hour,
+                'minuto': now.minute,
+                'prox_minuto': now.minute + 1,
+                'range_dias': range(1, 32),
+                'range_mes': range(1, 13),
+                'range_ano': range(2021, 2026),
+                'range_hora': range(24),
+                'range_minuto': range(60),
+                'range_segundo': range(60),
+                'comandos': Comando.objects.all()
+                }
 
     return render(request, 'novo_agendamento.html', context=context)

@@ -26,7 +26,6 @@ def monitoramento_view(request, *args, **kwargs):
         'nv_alvo': "{:3.2f}".format(usina.nv_alvo),
         'aguardo': "Sim" if usina.aguardando_reservatorio > 0 else "Não",
         'nv_montante': "{:3.2f}".format(usina.nv_montante),
-        'LOCAL_MODBUS_IP': usina.modbus_server_ip,
         'LOCAL_MODBUS_PORT': usina.modbus_server_porta,
         'CLP_IP': usina.clp_ip,
         'CLP_ON': "ONLINE" if usina.clp_online else "ERRO/OFFLINE",}

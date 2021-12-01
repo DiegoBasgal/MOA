@@ -5,7 +5,7 @@ class Database:
 
     def __init__(self):    
         self.connection_pool = pooling.MySQLConnectionPool(pool_name="my_pool",
-                                                           pool_size=5,
+                                                           pool_size=10,
                                                            pool_reset_session=True,
                                                            host = "localhost",
                                                            user = "moa",
@@ -14,21 +14,24 @@ class Database:
                                                            
         self.conn = None
         self.cursor = None
+        self.conn = self.connection_pool.get_connection()
+        self.cursor = self.conn.cursor()
 
     def commit(self):
         self.conn.commit()
 
     def _open(self):
-        self.conn = self.connection_pool.get_connection()
-        self.cursor = self.conn.cursor()
+        #self.conn = self.connection_pool.get_connection()
+        #self.cursor = self.conn.cursor()
+        pass
 
     def _close(self, commit=True):
         if commit:
             self.commit()
-        self.cursor.close()
+        #self.cursor.close()
         if commit:
             self.commit()
-        self.conn.close()
+        #self.conn.close()
 
     def execute(self, sql, params=None):
         self.cursor.execute(sql, params or ())
@@ -128,9 +131,9 @@ class Database:
         self.execute(q,)
         self._close()
 
-    def insert_debug(self, ts, kp, ki, kd, kie, cp, ci, cd, cie, sp1, p1, sp2, p2, nv, erro):
+    def insert_debug(self, ts, kp, ki, kd, kie, cp, ci, cd, cie, sp1, p1, sp2, p2, nv, erro, ma):
         q = "INSERT INTO `debug`.`moa_debug` " \
-            "VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s ); "
+            "VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s ); "
         self._open()
-        self.execute(q,tuple([ts, kp, ki, kd, kie, cp, ci, cd, cie, sp1, p1, sp2, p2, nv, erro]))
+        self.execute(q,tuple([ts, kp, ki, kd, kie, cp, ci, cd, cie, sp1, p1, sp2, p2, nv, erro, ma]))
         self._close()

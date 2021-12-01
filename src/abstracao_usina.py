@@ -309,6 +309,16 @@ class Usina:
             return False
             
     def heartbeat(self):
+
+        ts = datetime.now().timestamp()
+        try:
+            logger.debug("Inserting in db")
+            ma = 1 if self.modo_autonomo else 0
+            self.db.insert_debug(ts, self.kp, self.ki, self.kd, self.kie, self.controle_p, self.controle_i, self.controle_d, self.controle_ie,
+                                self.ug1.setpoint, self.ug1.potencia, self.ug2.setpoint, self.ug2.potencia, self.nv_montante_recente, self.erro_nv, ma)
+        except Exception as e:
+            pass
+
         agora = datetime.now()
         ano = int(agora.year)
         mes = int(agora.month)
@@ -563,11 +573,14 @@ class Usina:
         
         logger.debug("Pot alvo: {:0.3f}".format(pot_alvo))
         logger.debug("Nv alvo: {:0.3f}".format(self.nv_alvo))
-        logger.debug("Nv_minimo alvo: {:0.3f}".format(self.nv_minimo))
         ts = datetime.now().timestamp()
-        self.db.insert_debug(ts, self.kp, self.ki, self.kd, self.kie, self.controle_p, self.controle_i, self.controle_d, self.controle_ie,
-                                self.ug1.setpoint, self.ug1.potencia, self.ug2.setpoint, self.ug2.potencia, self.nv_montante_recente, self.erro_nv)
-        logger.debug("-------------------------------------------------")
+        try:
+            logger.debug("Inserting in db")
+            ma = 1 if self.modo_autonomo else 0
+            self.db.insert_debug(ts, self.kp, self.ki, self.kd, self.kie, self.controle_p, self.controle_i, self.controle_d, self.controle_ie,
+                                self.ug1.setpoint, self.ug1.potencia, self.ug2.setpoint, self.ug2.potencia, self.nv_montante_recente, self.erro_nv, ma)
+        except Exception as e:
+            passlogger.debug("-------------------------------------------------")
 
         self.distribuir_potencia(pot_alvo)
 
@@ -720,7 +733,18 @@ class UnidadeDeGeracao:
             self.setpoint  = 0
 
         logger.debug("UG{} Partindo:{}, Sincronizada:{}, Parada:{}".format(self.id_da_ug, self.partindo, self.sincronizada, self.parado))
+
+        if self.parando:
+            if self.id_da_ug == 1:
+                self.parado = self.con.get_ug1_parada()
+            if self.id_da_ug == 2:
+                self.parado = self.con.get_ug2_parada()
+
+            if self.parado:
+                self.parando = False
+                
         if self.setpoint < 1 and not self.partindo and not self.parado:
+            self.parando = True
             if self.id_da_ug == 1:
                 self.con.parar_ug1()  
             if self.id_da_ug == 2:

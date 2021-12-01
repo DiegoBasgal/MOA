@@ -336,9 +336,10 @@ class FieldConnector:
         logger.debug("REG_UG1_Operacao_US(1): {}".format(response))       
 
     def parar_ug1(self):      
+        if not self.get_etapa_alvo_up_ug1():
+            logger.info("Parando UG1")       
         response = self.ug1_clp.write_single_register(REG_UG1_Operacao_UP - 1, 1)
         logger.debug("REG_UG1_Operacao_UP{}".format(response))       
-        logger.info("Parando UG1 {}".format(response))       
 
     def partir_ug2(self):
         #if not self.get_sincro_ug2():
@@ -348,6 +349,8 @@ class FieldConnector:
 
 
     def parar_ug2(self):
+        if not self.get_etapa_alvo_up_ug2():
+            logger.info("Parando UG2")       
         response = self.ug2_clp.write_single_register(REG_UG2_Operacao_UP - 1, 1)
         logger.debug("REG_UG2_Operacao_UP{}".format(response))       
         logger.info("Parando UG2 {}".format(response))       
