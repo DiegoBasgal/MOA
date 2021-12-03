@@ -8,11 +8,12 @@ Painel Nvoip: http://painel.nvoip.com.br
 Acesso feito com as credênciais do Henrique.
 
 """
+from http.client import HTTPException
 import json
 import logging
 import os
 from sys import stdout
-from urllib.request import Request, urlopen
+from urllib.request import HTTPErrorProcessor, Request, urlopen
 
 # Inicializando o logger principal
 logger = logging.getLogger(__name__)
@@ -36,8 +37,9 @@ with open(config_file, 'r') as file:
 
 audio_teste = config['audio_teste']
 caller_voip = config['caller_voip']
-token_auth_voip = config['token_auth_voip']
 voz_habilitado = config['voz_habilitado']
+access_token = config['access_token']
+napikey = config['napikey']
 lista_de_contatos_padrao = [["DEBUG MOA", "41988591567"], ["Luis", "48991058729"], ["Henrique P5", "41999610053"], ]
 
 
@@ -65,11 +67,14 @@ def enviar_voz_teste(lista_de_contatos=None):
             data = {
                 'caller': caller_voip,  # caller fornecido pela nvoip
                 'called': '{}'.format(contato[1]),  # O número a ser chamado, no formato dddnnnnnnnnn
-                'audio': audio_teste  # URL do arquivo de audio (api acessa via GET)
+                'audios': [{
+                    'audio': audio_teste,  # URL do arquivo de audio (api acessa via GET)
+                    'positionAudio':1}],
+                    'dtmfs':[]
             }
             headers = {
                 'Content-Type': 'application/json',
-                'token_auth': token_auth_voip  # Token de autenticação fornecido pela nvoip
+                #'Authorization': access_token
             }
 
             # pharse/encode para json
@@ -77,6 +82,13 @@ def enviar_voz_teste(lista_de_contatos=None):
             data = str(data).encode()
 
             # Envia a request para a api e recebe a resposta
-            request = Request('https://api.nvoip.com.br/v1/torpedovoz', data=data, headers=headers)
-            response_body = urlopen(request).read()
-            logger.debug("Response: {} ".format(response_body))
+            request = Request('https://api.nvoip.com.br/v2/torpedo/voice?napikey=VUZYSzJtYmVkUEFOWjVLWDlpZ1VPVlhMOE9tR1pUZkg='.format(napikey), data=data, headers=headers)
+            try:
+                response_body = urlopen(request).read()
+            except Exception as e:
+                logger.debug("Exception NVOIP: {} ".format(e.read()))
+            else:
+                logger.debug("response_body: {} ".format(response_body))
+
+if __name__ == "__main__":
+    enviar_voz_teste()
