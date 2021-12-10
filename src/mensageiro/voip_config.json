@@ -1,7 +1,6 @@
 {
-    "audio_teste": "http://ritmoenergia.com.br/wp-content/uploads/2021/12/aviso1-COVO.mp3",
     "caller_voip": "15420001",
     "napikey": "VUZYSzJtYmVkUEFOWjVLWDlpZ1VPVlhMOE9tR1pUZkg=",
-    "access_token": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE2Mzg2MjE2NjAsInVzZXJfbmFtZSI6IjE1NDIwMDAxIiwiYXV0aG9yaXRpZXMiOlsiQ0xJRU5URSJdLCJqdGkiOiJlYTNmYTBhNS05YzNlLTQwNzItOWNkZi01Njg5NmMyMjYwY2UiLCJjbGllbnRfaWQiOiJOdm9pcEFwaVYyIiwic2NvcGUiOlsicmVhZCIsIndyaXRlIl19.nl606C0Kv6nlP7CGtY56Fi43bsIZvzDvIGg4ZCmrTbE",    
+    "user_token": "aiI#-h4SdIK2fCb@T-OZ@dLehl#76#-XhTBLPF3",
     "voz_habilitado": true
 }

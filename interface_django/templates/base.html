@@ -28,11 +28,11 @@
             <li><a href="{% url 'agendamentos'%}">Agendamentos</a></li>
             <li><a href="{% url 'ocorrencias'%}">Ocorrencias/TRIPS</a></li>
             <li><a href="{% url 'parametros_moa'%}">Parametros MOA</a></li>
+            <li><a href="{% url 'emergencia'%}">Emergência</a></li>
             <li>User: {{ user.get_username }} <a href="{% url 'logout'%}?next={{request.path}}">(Logout)</a></li>
             {% else %}
             <li><a href="{% url 'login'%}?next={{request.path}}">Login</a></li>
             {% endif %}
-            <li><a href="{% url 'emergencia'%}">Emergência</a></li>
         </ul>
     </div>
 

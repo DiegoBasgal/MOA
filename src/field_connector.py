@@ -16,7 +16,7 @@ class FieldConnector:
     def __init__(self, cfg=None):
 
         if cfg is None:
-            raise TypeError
+            raise Exception("A cfg dict is required")
         else:
             self.ug1_ip = cfg["UG1_slave_ip"]
             self.ug1_port = cfg["UG1_slave_porta"]
@@ -174,13 +174,13 @@ class FieldConnector:
         high = self.ug1_clp.read_holding_registers(REG_UG1_HorimetroEletrico_High - 1)[0]
         low = self.ug1_clp.read_holding_registers(REG_UG1_HorimetroEletrico_Low - 1)[0]
         return low
-    
+
     def get_perda_na_grade_ug1(self):
         montante_grade = round(self.usn_clp.read_holding_registers(REG_UG1_NivelBarragem - 1)[0] / 100, 3)
         jusantante_grade = round(self.usn_clp.read_holding_registers(REG_USINA_NivelCanalAducao - 1)[0] / 100, 3)
         perda_na_grade = max(0, montante_grade - jusantante_grade)
         return perda_na_grade
-    
+
     def get_temperatura_do_mancal_ug1(self):
         temperatura_max_mancal = max(self.ug1_clp.read_holding_registers(REG_UG1_Temperatura_04 - 1, 5))
         return round(temperatura_max_mancal)
@@ -188,7 +188,7 @@ class FieldConnector:
     def get_sincro_ug1(self):
         response = self.ug1_clp.read_holding_registers(REG_UG1_Operacao_EtapaAtual - 1)[0]
         return True if (response >> 4 & 1) == 1 else False
-    
+
     def get_ug1_parada(self):
         logger.debug("UG1 {}".format(self.ug1_clp.read_holding_registers(REG_UG1_Turb_Info - 1)[0]))
         return True if (self.ug1_clp.read_holding_registers(REG_UG1_Turb_Info - 1)[0] >> 4 & 1) == 1 else False
@@ -300,12 +300,12 @@ class FieldConnector:
 
     def get_potencia_ug2(self):
         return round(self.ug2_clp.read_holding_registers(REG_UG2_Gerador_PotenciaAtivaMedia - 1)[0] * 0.001, 3)
-    
+
     def get_horas_ug2(self):
         high = self.ug2_clp.read_holding_registers(REG_UG2_HorimetroEletrico_High - 1)[0]
         low = self.ug2_clp.read_holding_registers(REG_UG2_HorimetroEletrico_Low - 1)[0]
         return low
-    
+
     def get_perda_na_grade_ug2(self):
         montante_grade = round(self.usn_clp.read_holding_registers(REG_UG1_NivelBarragem - 1)[0] / 100, 3)
         jusantante_grade = round(self.usn_clp.read_holding_registers(REG_USINA_NivelCanalAducao - 1)[0] / 100, 3)
@@ -347,13 +347,11 @@ class FieldConnector:
         response = self.ug2_clp.write_single_register(REG_UG2_Operacao_US - 1, 1)
         logger.debug("REG_UG2_Operacao_US(1): {}".format(response))  
 
-
     def parar_ug2(self):
         if not self.get_etapa_alvo_up_ug2():
             logger.info("Parando UG2")       
         response = self.ug2_clp.write_single_register(REG_UG2_Operacao_UP - 1, 1)
         logger.debug("REG_UG2_Operacao_UP{}".format(response))       
-        logger.info("Parando UG2 {}".format(response))       
 
     def set_ug1_setpoint(self, setpoint):
         response = self.ug1_clp.write_single_register(REG_UG1_Operacao_US - 1, 1)
@@ -387,14 +385,14 @@ class FieldConnector:
     def get_etapa_alvo_up_ug1(self):
         response = (self.ug1_clp.read_holding_registers(REG_UG1_Operacao_EtapaAlvo - 1)[0] >> 0 & 1)
         return True if response == 1 else False
-    
+
     def get_etapa_alvo_up_ug2(self):
         response = (self.ug2_clp.read_holding_registers(REG_UG2_Operacao_EtapaAlvo - 1)[0] >> 0 & 1)
         return True if response == 1 else False
 
     def set_pos_comporta(self, pos_comporta):
         pass
-    
+
     def acionar_emergencia(self):
         logger.warning("Acionando emergencia USINA")
         self.usn_clp.write_single_register(REG_USINA_EmergenciaLigar - 1, 1)
@@ -413,7 +411,6 @@ class FieldConnector:
         time.sleep(1)
         self.ug1_clp.write_single_register(REG_UG1_Operacao_EmergenciaDesligar - 1, 1)
 
-        
     def acionar_emergencia_ug2(self):
         logger.warning("Acionando emergencia UG2")        
         self.ug2_clp.write_single_register(REG_UG2_Operacao_EmergenciaLigar - 1, 1)
@@ -421,7 +418,6 @@ class FieldConnector:
         self.ug2_clp.write_single_register(REG_UG2_Operacao_EmergenciaLigar - 1, 0)        
         time.sleep(1)
         self.ug2_clp.write_single_register(REG_UG2_Operacao_EmergenciaDesligar - 1, 1)
-
 
     def normalizar_emergencia(self):
         logger.info("Desliga emergencia")
@@ -446,3 +442,75 @@ class FieldConnector:
         response = self.usn_clp.read_holding_registers(REG_USINA_Subestacao_Disj52L - 1, 2)
         logger.debug(response)
         return False
+
+    def get_temperatura_enrolamento_fase_r_ug1(self):
+        # Gerador 1 - Enrolamento fase R
+        return self.ug1_clp.read_holding_registers(REG_UG1_Temperatura_01 - 1, 1)[0]
+    
+    def get_temperatura_enrolamento_fase_s_ug1(self):
+        # Gerador 1 - Enrolamento Fase S
+        return self.ug1_clp.read_holding_registers(REG_UG1_Temperatura_02 - 1, 1)[0]
+    
+    def get_temperatura_enrolamento_fase_t_ug1(self):
+        # Gerador 1 - Enrolamento fase T
+        return self.ug1_clp.read_holding_registers(REG_UG1_Temperatura_03 - 1, 1)[0]
+    
+    def get_temperatura_mancal_la_escora_1_ug1(self):
+        # Gerador 1 - Mancal L.A. Escora 01
+        return self.ug1_clp.read_holding_registers(REG_UG1_Temperatura_04 - 1, 1)[0]
+    
+    def get_temperatura_mancal_la_escora_2_ug1(self):
+        # Gerador 1 - Mancal L.A. Escora 02
+        return self.ug1_clp.read_holding_registers(REG_UG1_Temperatura_05 - 1, 1)[0]
+        
+    def get_temperatura_mancal_la_contra_escora_1_ug1(self):
+        # Gerador 1 - Mancal L. A. Contra Escora 01
+        return self.ug1_clp.read_holding_registers(REG_UG1_Temperatura_07 - 1, 1)[0]
+
+    def get_temperatura_mancal_la_contra_escora_2_ug1(self):
+        # Gerador 1 - Mancal L. A. Contra Escora 02
+        return self.ug1_clp.read_holding_registers(REG_UG1_Temperatura_09 - 1, 1)[0]
+
+    def get_temperatura_mancal_la_casquilho_ug1(self):
+        # Gerador 1 - Mancal L. A. Casquilho
+        return self.ug1_clp.read_holding_registers(REG_UG1_Temperatura_06 - 1, 1)[0]
+
+    def get_temperatura_mancal_lna_casquilho_ug1(self):
+        # Gerador 1 - Mancal L.N.A. Casquilho
+        return self.ug1_clp.read_holding_registers(REG_UG1_Temperatura_08 - 1, 1)[0]
+
+    def get_temperatura_enrolamento_fase_r_ug2(self):
+        # Gerador 2 - Enrolamento fase R
+        return self.ug2_clp.read_holding_registers(REG_UG2_Temperatura_01 - 1, 1)[0]
+    
+    def get_temperatura_enrolamento_fase_s_ug2(self):
+        # Gerador 2 - Enrolamento Fase S
+        return self.ug2_clp.read_holding_registers(REG_UG2_Temperatura_02 - 1, 1)[0]
+    
+    def get_temperatura_enrolamento_fase_t_ug2(self):
+        # Gerador 2 - Enrolamento fase T
+        return self.ug2_clp.read_holding_registers(REG_UG2_Temperatura_03 - 1, 1)[0]
+    
+    def get_temperatura_mancal_la_escora_1_ug2(self):
+        # Gerador 2 - Mancal L.A. Escora 01
+        return self.ug2_clp.read_holding_registers(REG_UG2_Temperatura_04 - 1, 1)[0]
+    
+    def get_temperatura_mancal_la_escora_2_ug2(self):
+        # Gerador 2 - Mancal L.A. Escora 02
+        return self.ug2_clp.read_holding_registers(REG_UG2_Temperatura_05 - 1, 1)[0]
+        
+    def get_temperatura_mancal_la_contra_escora_1_ug2(self):
+        # Gerador 2 - Mancal L. A. Contra Escora 01
+        return self.ug2_clp.read_holding_registers(REG_UG2_Temperatura_07 - 1, 1)[0]
+
+    def get_temperatura_mancal_la_contra_escora_2_ug2(self):
+        # Gerador 2 - Mancal L. A. Contra Escora 02
+        return self.ug2_clp.read_holding_registers(REG_UG2_Temperatura_09 - 1, 1)[0]
+
+    def get_temperatura_mancal_la_casquilho_ug2(self):
+        # Gerador 2 - Mancal L. A. Casquilho
+        return self.ug2_clp.read_holding_registers(REG_UG2_Temperatura_06 - 1, 1)[0]
+
+    def get_temperatura_mancal_lna_casquilho_ug2(self):
+        # Gerador 2 - Mancal L.N.A. Casquilho
+        return self.ug2_clp.read_holding_registers(REG_UG2_Temperatura_08 - 1, 1)[0]

@@ -1,7 +1,7 @@
 import logging
 from time import sleep
 import pyodbc
-
+import mensageiro.voip as voip
 from datetime import date, datetime, timedelta
 from cmath import sqrt
 
@@ -81,7 +81,7 @@ class Usina:
         self.nv_montante_anteriores = []
         self.erro_nv = 0
         self.erro_nv_anterior = 0
-        self.aguardando_reservatorio = 0
+        self.aguardando_reservatorio = 1
         self.pot_disp = 0
         self.agendamentos_atrasados = 0
         self.deve_tentar_normalizar = True
@@ -99,6 +99,14 @@ class Usina:
         self.con.open()
         self.db.update_parametros_usina(pars)
 
+        # ajuste inicial ie
+        if self.cfg['saida_ie_inicial'] == 'auto':
+            self.controle_ie = (self.ug1.potencia + self.ug2.potencia) / self.cfg['pot_maxima_alvo']
+        else:
+            self.controle_ie = self.cfg['saida_ie_inicial']
+        
+        self.controle_i = self.controle_ie
+    
     def ler_valores(self):
 
         # CLP
@@ -234,10 +242,6 @@ class Usina:
             DataBank.set_words(self.cfg['REG_MOA_IN_DESABILITA_AUTO'], [0])
             self.modo_autonomo = 0
             self.entrar_em_modo_manual()
-
-        # ajuste inicial ie
-        if self.controle_ie == 'auto':
-            self.controle_ie = (self.ug1.potencia + self.ug2.potencia) / self.cfg['pot_maxima_alvo']
 
         self.heartbeat()
 
@@ -489,7 +493,6 @@ class Usina:
                         ug.mudar_setpoint(0)
             else:
                 pot_alvo = min(pot_alvo, self.pot_disp)
-                logger.debug("Alvo =  {}".format(pot_alvo))
                 if self.ug1.sincronizada and self.ug2.sincronizada and pot_alvo > (2 * self.cfg['pot_minima']):
                     logger.debug("Dividir entre as ugs (cada = {})".format(pot_alvo / len(ugs)))
                     for ug in ugs:
@@ -580,7 +583,7 @@ class Usina:
             self.db.insert_debug(ts, self.kp, self.ki, self.kd, self.kie, self.controle_p, self.controle_i, self.controle_d, self.controle_ie,
                                 self.ug1.setpoint, self.ug1.potencia, self.ug2.setpoint, self.ug2.potencia, self.nv_montante_recente, self.erro_nv, ma)
         except Exception as e:
-            passlogger.debug("-------------------------------------------------")
+            logger.debug("-------------------------------------------------")
 
         self.distribuir_potencia(pot_alvo)
 
@@ -588,8 +591,7 @@ class Usina:
         logger.debug("Este e um teste!")
         logger.info("Este e um teste!")
         logger.warning("Este e um teste!")
-        logger.error("Este e um teste!")
-        logger.critical("Este e um teste!")
+        voip.enviar_voz_teste()
 
     def entrar_em_modo_manual(self):
         self.modo_autonomo = 0
@@ -709,26 +711,27 @@ class UnidadeDeGeracao:
             if self.parado:
                 self.parando = False
 
+    def ajuste_perdas(self, var, alerta, limite):
+        multiplicador = 1
+        if var > alerta:
+            multiplicador = max(min(sqrt(sqrt(1 - ((var - alerta) / (limite - alerta)))).real, 1), 0)
+        if var > limite:
+            multiplicador = 0
+        return multiplicador
 
     def mudar_setpoint(self, alvo):          
 
         alvo = max(alvo, 0)
-        
+        logger.debug("Mudar_setpoint alvo: {}".format(alvo))
 
-        if self.temp_mancal > self.temp_mancal_max:
-            alvo = 0
-        elif self.perda_na_grade > self.perda_na_grade_max:
-            alvo = 0
-        else:
-            if self.temp_mancal > self.temp_mancal_alerta:
-                alvo *= sqrt(sqrt(
-                    1 - ((self.temp_mancal - self.temp_mancal_alerta) /
-                         (self.temp_mancal_max - self.temp_mancal_alerta))))
-            if self.perda_na_grade > self.perda_na_grade_alerta:
-                alvo *= sqrt(
-                    sqrt(1 - ((self.perda_na_grade - self.perda_na_grade_alerta) / (
-                        self.perda_na_grade_max - self.perda_na_grade_alerta))))
-        self.setpoint = alvo.real
+        # Calcular perdas individuais e colocar numa lista
+        multiplicadores_perdas = [1,]
+        multiplicadores_perdas.append(self.ajuste_perdas(self.temp_mancal, self.temp_mancal_alerta, self.temp_mancal_max))
+        multiplicadores_perdas.append(self.ajuste_perdas(self.perda_na_grade, self.perda_na_grade_alerta, self.perda_na_grade_max))
+        perda = max(min(min(multiplicadores_perdas), 1), 0)
+        alvo = alvo * perda
+
+        self.setpoint = alvo
         if self.setpoint  < self.potencia_minima:
             self.setpoint  = 0
 
@@ -751,7 +754,6 @@ class UnidadeDeGeracao:
                 self.con.parar_ug2()  
         elif not self.parando:
             if self.setpoint >= 1:
-                
                 if self.id_da_ug == 1:
                     if not self.sincronizada:
                         self.con.partir_ug1()

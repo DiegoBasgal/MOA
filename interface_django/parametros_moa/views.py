@@ -97,7 +97,7 @@ def parametros_moa_view(request, *args, **kwargs):
     }
     return render(request, 'parametros_moa.html', context=context)
 
-
+@login_required
 def emergencia_view(request, *args, **kwargs):
 
     usina = ParametrosUsina.objects.get(id=1)

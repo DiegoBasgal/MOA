@@ -373,6 +373,7 @@ if __name__ == "__main__":
             logger.debug("Iniciando classe Usina")
             try:
                 usina = abstracao_usina.Usina(cfg, db)
+                usina.aguardando_reservatorio = 1
             except Exception as e:
                 logger.error(
                     "Erro ao iniciar Classe Usina. Tentando novamente em {}s (tentativa {}/3). Exception: {}.".format(
