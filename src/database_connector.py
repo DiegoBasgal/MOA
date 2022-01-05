@@ -82,7 +82,7 @@ class Database:
             "SET timestamp = %s, aguardando_reservatorio = %s, clp_online = %s, nv_montante = %s, pot_disp = %s, " \
             "ug1_disp = %s, ug1_pot = %s, ug1_setpot = %s, ug1_sinc = %s, ug1_tempo = %s, ug2_disp = %s, ug2_pot = %s, " \
             "ug2_setpot = %s, ug2_sinc = %s, ug2_tempo = %s, pos_comporta = %s, ug1_perda_grade = %s, " \
-            "ug1_temp_mancal = %s, ug2_perda_grade = %s, ug2_temp_mancal = %s " \
+            "ug2_perda_grade = %s " \
             "WHERE id = 1"
         self._open()
         self.execute(q, tuple(values))

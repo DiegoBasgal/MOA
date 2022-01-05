@@ -190,11 +190,11 @@ class FieldConnector:
         return True if (response >> 4 & 1) == 1 else False
 
     def get_ug1_parada(self):
-        logger.debug("UG1 {}".format(self.ug1_clp.read_holding_registers(REG_UG1_Turb_Info - 1)[0]))
+        logger.debug("get_ug1_parada: {}".format(self.ug1_clp.read_holding_registers(REG_UG1_Turb_Info - 1)[0]))
         return True if (self.ug1_clp.read_holding_registers(REG_UG1_Turb_Info - 1)[0] >> 4 & 1) == 1 else False
 
     def get_ug2_parada(self):
-        logger.debug("UG2 {}".format(self.ug2_clp.read_holding_registers(REG_UG2_Turb_Info - 1)[0]))
+        logger.debug("get_ug2_parada: {}".format(self.ug2_clp.read_holding_registers(REG_UG2_Turb_Info - 1)[0]))
         return True if (self.ug2_clp.read_holding_registers(REG_UG2_Turb_Info - 1)[0] >> 4 & 1) == 1 else False
 
     def get_flag_ug2(self):
@@ -336,7 +336,7 @@ class FieldConnector:
         logger.debug("REG_UG1_Operacao_US(1): {}".format(response))       
 
     def parar_ug1(self):      
-        if not self.get_etapa_alvo_up_ug1():
+        if not self.get_ug1_parada():
             logger.info("Parando UG1")       
         response = self.ug1_clp.write_single_register(REG_UG1_Operacao_UP - 1, 1)
         logger.debug("REG_UG1_Operacao_UP{}".format(response))       
@@ -348,7 +348,7 @@ class FieldConnector:
         logger.debug("REG_UG2_Operacao_US(1): {}".format(response))  
 
     def parar_ug2(self):
-        if not self.get_etapa_alvo_up_ug2():
+        if not self.get_ug2_parada():
             logger.info("Parando UG2")       
         response = self.ug2_clp.write_single_register(REG_UG2_Operacao_UP - 1, 1)
         logger.debug("REG_UG2_Operacao_UP{}".format(response))       
@@ -396,8 +396,6 @@ class FieldConnector:
     def acionar_emergencia(self):
         logger.warning("Acionando emergencia USINA")
         self.usn_clp.write_single_register(REG_USINA_EmergenciaLigar - 1, 1)
-        self.acionar_emergencia_ug1()
-        self.acionar_emergencia_ug2()
         time.sleep(1)
         self.usn_clp.write_single_register(REG_USINA_EmergenciaLigar - 1, 0)
         time.sleep(1)
@@ -420,22 +418,23 @@ class FieldConnector:
         self.ug2_clp.write_single_register(REG_UG2_Operacao_EmergenciaDesligar - 1, 1)
 
     def normalizar_emergencia(self):
-        logger.info("Desliga emergencia")
+        logger.info("Reconehce, reset, fecha Dj52L")
+        logger.debug("Desliga emergencia")
         self.ug1_clp.write_single_register(REG_UG1_Operacao_EmergenciaLigar - 1, 0)
         self.ug2_clp.write_single_register(REG_UG2_Operacao_EmergenciaLigar - 1, 0)
         self.usn_clp.write_single_register(REG_USINA_EmergenciaLigar - 1, 0)
         self.ug1_clp.write_single_register(REG_UG1_Operacao_EmergenciaDesligar - 1, 1)
         self.ug2_clp.write_single_register(REG_UG2_Operacao_EmergenciaDesligar - 1, 1)
         self.usn_clp.write_single_register(REG_USINA_EmergenciaDesligar - 1, 1)
-        logger.info("Reconhece alarmes")
+        logger.debug("Reconhece alarmes")
         self.usn_clp.write_single_register(REG_USINA_ReconheceAlarmes - 1, 1) 
         self.ug1_clp.write_single_register(REG_UG1_Operacao_PCH_CovoReconheceAlarmes - 1, 1)
         self.ug2_clp.write_single_register(REG_UG2_Operacao_PCH_CovoReconheceAlarmes - 1, 1)
-        logger.info("Reset alarmes")
+        logger.debug("Reset alarmes")
         self.usn_clp.write_single_register(REG_USINA_ResetAlarmes - 1, 1)
         self.ug1_clp.write_single_register(REG_UG1_Operacao_PCH_CovoResetAlarmes - 1, 1)
         self.ug2_clp.write_single_register(REG_UG2_Operacao_PCH_CovoResetAlarmes - 1, 1)
-        logger.info("Fecha Dj52L")  
+        logger.debug("Fecha Dj52L")  
         self.usn_clp.write_single_register(REG_USINA_Disj52LFechar - 1, 1)
 
     def get_flag_falha52L(self):

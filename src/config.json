@@ -5,6 +5,8 @@
     "UG2_slave_porta": 502,
     "USN_slave_ip": "192.168.70.16",
     "USN_slave_porta": 502,
+    "TDA_slave_ip": "192.168.70.19",
+    "TDA_slave_porta": 502,
     "moa_slave_ip": "0.0.0.0",
     "moa_slave_porta": 5003,
     

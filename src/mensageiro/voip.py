@@ -17,18 +17,6 @@ import random
 
 # Inicializando o logger principal
 logger = logging.getLogger(__name__)
-logger.setLevel(logging.DEBUG)
-if not os.path.exists("logs/"):
-    os.mkdir("logs/")
-fh = logging.FileHandler("logs/watchdog.log")  # log para arquivo
-ch = logging.StreamHandler(stdout)  # log para linha de comando
-logFormatter = logging.Formatter("%(asctime)s [%(threadName)-12.12s] [%(levelname)-5.5s] %(message)s")
-fh.setFormatter(logFormatter)
-ch.setFormatter(logFormatter)
-fh.setLevel(logging.INFO)
-ch.setLevel(logging.DEBUG)
-logger.addHandler(fh)
-logger.addHandler(ch)
 
 # Carrega as configurações e vars
 config_file = os.path.join(os.path.dirname(__file__), 'voip_config.json')

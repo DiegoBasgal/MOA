@@ -1,10 +1,9 @@
 import logging
 from time import sleep
-import pyodbc
 import mensageiro.voip as voip
 from datetime import date, datetime, timedelta
 from cmath import sqrt
-
+import subprocess
 from pyModbusTCP.server import DataBank
 
 from field_connector import FieldConnector
@@ -15,8 +14,10 @@ AGENDAMENTO_INDISPONIBILIZAR = 1
 AGENDAMENTO_ALETRAR_NV_ALVO = 2
 AGENDAMENTO_INDISPONIBILIZAR_UG_1 = 101
 AGENDAMENTO_ALETRAR_POT_ALVO_UG_1 = 102
+AGENDAMENTO_DISPONIBILIZAR_UG_1   = 103
 AGENDAMENTO_INDISPONIBILIZAR_UG_2 = 201
 AGENDAMENTO_ALETRAR_POT_ALVO_UG_2 = 202
+AGENDAMENTO_DISPONIBILIZAR_UG_2   = 203
 AGENDAMENTO_DISPARAR_MENSAGEM_TESTE = 777
 MODO_ESCOLHA_MANUAL = 2
 
@@ -117,7 +118,27 @@ class Usina:
         # self.clp_emergencia_acionada = regs[self.cfg['ENDERECO_CLP_USINA_FLAGS']]
         # self.nv_montante = round((regs[self.cfg['ENDERECO_CLP_NV_MONATNTE']] * 0.001) + 620, 2)
         # self.pot_medidor = round((regs[self.cfg['ENDERECO_CLP_MEDIDOR']] * 0.001), 3)
+      
+        #-> Verifica conexão com CLP Tomada d'água
+        #   -> Se não estiver ok, acionar emergencia CLP
+        if not ping(self.cfg['TDA_slave_ip']):
+            logger.warning("CLP TDA não respondeu a tentativa de comunicação!")
+            self.acionar_emergencia()
 
+        #-> Verifica conexão com CLP Sub
+        #   -> Se não estiver ok, avisa por logger.warning
+        if not ping(self.cfg['USN_slave_ip']):
+            logger.warning("CLP 'USN' (PACP) não respondeu a tentativa de comunicação!")
+
+        #-> Verifica conexão com CLP UG#
+        #    -> Se não estiver ok, acionar indisponibiliza UG# e avisa por logger.warning
+        if not ping(self.cfg['UG1_slave_ip']):
+            logger.warning("CLP UG1 não respondeu a tentativa de comunicação!")
+            self.ug1.indisponibilizar()        
+        
+        if not ping(self.cfg['UG2_slave_ip']):
+            logger.warning("CLP UG2 (PACP) não respondeu a tentativa de comunicação!")
+            self.ug2.indisponibilizar()        
 
         #self.con.open()
         self.clp_online = True
@@ -134,7 +155,16 @@ class Usina:
         self.ug1.potencia_minima = self.cfg['pot_minima']
         self.ug1.horas_maquina = self.con.get_horas_ug1()
         self.ug1.perda_na_grade = self.con.get_perda_na_grade_ug1()
-        self.ug1.temp_mancal = self.con.get_temperatura_do_mancal_ug1()
+        self.ug1.temperatura_enrolamento_fase_r = self.con.get_temperatura_enrolamento_fase_r_ug1()
+        self.ug1.temperatura_enrolamento_fase_s = self.con.get_temperatura_enrolamento_fase_s_ug1()
+        self.ug1.temperatura_enrolamento_fase_t = self.con.get_temperatura_enrolamento_fase_t_ug1()
+        self.ug1.temperatura_mancal_la_casquilho = self.con.get_temperatura_mancal_la_casquilho_ug1()
+        self.ug1.temperatura_mancal_la_contra_escora_1 = self.con.get_temperatura_mancal_la_contra_escora_1_ug1()
+        self.ug1.temperatura_mancal_la_contra_escora_2 = self.con.get_temperatura_mancal_la_contra_escora_2_ug1()
+        self.ug1.temperatura_mancal_la_escora_1 = self.con.get_temperatura_mancal_la_escora_1_ug1()
+        self.ug1.temperatura_mancal_la_escora_2 = self.con.get_temperatura_mancal_la_escora_2_ug1()
+        self.ug1.temperatura_mancal_lna_casquilho = self.con.get_temperatura_mancal_lna_casquilho_ug1()
+        
         # Ug2
         self.ug2.flag = self.con.get_flag_ug2()
         self.ug2.sincronizada = self.con.get_sincro_ug2()
@@ -142,7 +172,15 @@ class Usina:
         self.ug2.potencia_minima = self.cfg['pot_minima']
         self.ug2.horas_maquina = self.con.get_horas_ug2()
         self.ug2.perda_na_grade = self.con.get_perda_na_grade_ug2()
-        self.ug2.temp_mancal = self.con.get_temperatura_do_mancal_ug2()
+        self.ug2.temperatura_enrolamento_fase_r = self.con.get_temperatura_enrolamento_fase_r_ug2()
+        self.ug2.temperatura_enrolamento_fase_s = self.con.get_temperatura_enrolamento_fase_s_ug2()
+        self.ug2.temperatura_enrolamento_fase_t = self.con.get_temperatura_enrolamento_fase_t_ug2()
+        self.ug2.temperatura_mancal_la_casquilho = self.con.get_temperatura_mancal_la_casquilho_ug2()
+        self.ug2.temperatura_mancal_la_contra_escora_1 = self.con.get_temperatura_mancal_la_contra_escora_1_ug2()
+        self.ug2.temperatura_mancal_la_contra_escora_2 = self.con.get_temperatura_mancal_la_contra_escora_2_ug2()
+        self.ug2.temperatura_mancal_la_escora_1 = self.con.get_temperatura_mancal_la_escora_1_ug2()
+        self.ug2.temperatura_mancal_la_escora_2 = self.con.get_temperatura_mancal_la_escora_2_ug2()
+        self.ug2.temperatura_mancal_lna_casquilho = self.con.get_temperatura_mancal_lna_casquilho_ug2()
 
         if self.con.get_flag_falha52L():
             self.acionar_emergencia()
@@ -180,20 +218,54 @@ class Usina:
         self.ug1.perda_na_grade_alerta = float(parametros["ug1_perda_grade_alerta"])
         self.ug1.perda_na_grade_max = float(parametros["ug1_perda_grade_maxima"])
         self.ug1.prioridade = int(parametros["ug1_prioridade"])
-        self.ug1.temp_mancal_alerta = float(parametros["ug1_temp_alerta"])
-        self.ug1.temp_mancal_max = float(parametros["ug1_temp_maxima"])
+        self.ug1.temperatura_alerta_enrolamento_fase_r = float(parametros["temperatura_alerta_enrolamento_fase_r_ug1"])
+        self.ug1.temperatura_alerta_enrolamento_fase_s = float(parametros["temperatura_alerta_enrolamento_fase_s_ug1"])
+        self.ug1.temperatura_alerta_enrolamento_fase_t = float(parametros["temperatura_alerta_enrolamento_fase_t_ug1"])
+        self.ug1.temperatura_alerta_mancal_la_casquilho = float(parametros["temperatura_alerta_mancal_la_casquilho_ug1"])
+        self.ug1.temperatura_alerta_mancal_la_contra_escora_1 = float(parametros["temperatura_alerta_mancal_la_contra_escora_1_ug1"])
+        self.ug1.temperatura_alerta_mancal_la_contra_escora_2 = float(parametros["temperatura_alerta_mancal_la_contra_escora_2_ug1"])
+        self.ug1.temperatura_alerta_mancal_la_escora_1 = float(parametros["temperatura_alerta_mancal_la_escora_1_ug1"])
+        self.ug1.temperatura_alerta_mancal_la_escora_2 = float(parametros["temperatura_alerta_mancal_la_escora_2_ug1"])
+        self.ug1.temperatura_alerta_mancal_lna_casquilho = float(parametros["temperatura_alerta_mancal_lna_casquilho_ug1"])  
+        self.ug1.temperatura_limite_enrolamento_fase_r = float(parametros["temperatura_limite_enrolamento_fase_r_ug1"])
+        self.ug1.temperatura_limite_enrolamento_fase_s = float(parametros["temperatura_limite_enrolamento_fase_s_ug1"])
+        self.ug1.temperatura_limite_enrolamento_fase_t = float(parametros["temperatura_limite_enrolamento_fase_t_ug1"])
+        self.ug1.temperatura_limite_mancal_la_casquilho = float(parametros["temperatura_limite_mancal_la_casquilho_ug1"])
+        self.ug1.temperatura_limite_mancal_la_contra_escora_1 = float(parametros["temperatura_limite_mancal_la_contra_escora_1_ug1"])
+        self.ug1.temperatura_limite_mancal_la_contra_escora_2 = float(parametros["temperatura_limite_mancal_la_contra_escora_2_ug1"])
+        self.ug1.temperatura_limite_mancal_la_escora_1 = float(parametros["temperatura_limite_mancal_la_escora_1_ug1"])
+        self.ug1.temperatura_limite_mancal_la_escora_2 = float(parametros["temperatura_limite_mancal_la_escora_2_ug1"])
+        self.ug1.temperatura_limite_mancal_lna_casquilho = float(parametros["temperatura_limite_mancal_lna_casquilho_ug1"])
+
         # UG2
         self.ug2.perda_na_grade_alerta = float(parametros["ug2_perda_grade_alerta"])
         self.ug2.perda_na_grade_max = float(parametros["ug2_perda_grade_maxima"])
         self.ug2.prioridade = int(parametros["ug2_prioridade"])
-        self.ug2.temp_mancal_alerta = float(parametros["ug2_temp_alerta"])
-        self.ug2.temp_mancal_max = float(parametros["ug2_temp_maxima"])
+        self.ug2.temperatura_alerta_enrolamento_fase_r = float(parametros["temperatura_alerta_enrolamento_fase_r_ug2"])
+        self.ug2.temperatura_alerta_enrolamento_fase_s = float(parametros["temperatura_alerta_enrolamento_fase_s_ug2"])
+        self.ug2.temperatura_alerta_enrolamento_fase_t = float(parametros["temperatura_alerta_enrolamento_fase_t_ug2"])
+        self.ug2.temperatura_alerta_mancal_la_casquilho = float(parametros["temperatura_alerta_mancal_la_casquilho_ug2"])
+        self.ug2.temperatura_alerta_mancal_la_contra_escora_1 = float(parametros["temperatura_alerta_mancal_la_contra_escora_1_ug2"])
+        self.ug2.temperatura_alerta_mancal_la_contra_escora_2 = float(parametros["temperatura_alerta_mancal_la_contra_escora_2_ug2"])
+        self.ug2.temperatura_alerta_mancal_la_escora_1 = float(parametros["temperatura_alerta_mancal_la_escora_1_ug2"])
+        self.ug2.temperatura_alerta_mancal_la_escora_2 = float(parametros["temperatura_alerta_mancal_la_escora_2_ug2"])
+        self.ug2.temperatura_alerta_mancal_lna_casquilho = float(parametros["temperatura_alerta_mancal_lna_casquilho_ug2"])  
+        self.ug2.temperatura_limite_enrolamento_fase_r = float(parametros["temperatura_limite_enrolamento_fase_r_ug2"])
+        self.ug2.temperatura_limite_enrolamento_fase_s = float(parametros["temperatura_limite_enrolamento_fase_s_ug2"])
+        self.ug2.temperatura_limite_enrolamento_fase_t = float(parametros["temperatura_limite_enrolamento_fase_t_ug2"])
+        self.ug2.temperatura_limite_mancal_la_casquilho = float(parametros["temperatura_limite_mancal_la_casquilho_ug2"])
+        self.ug2.temperatura_limite_mancal_la_contra_escora_1 = float(parametros["temperatura_limite_mancal_la_contra_escora_1_ug2"])
+        self.ug2.temperatura_limite_mancal_la_contra_escora_2 = float(parametros["temperatura_limite_mancal_la_contra_escora_2_ug2"])
+        self.ug2.temperatura_limite_mancal_la_escora_1 = float(parametros["temperatura_limite_mancal_la_escora_1_ug2"])
+        self.ug2.temperatura_limite_mancal_la_escora_2 = float(parametros["temperatura_limite_mancal_la_escora_2_ug2"])
+        self.ug2.temperatura_limite_mancal_lna_casquilho = float(parametros["temperatura_limite_mancal_lna_casquilho_ug2"])
+
 
         # nv_minimo
         self.nv_minimo = float(parametros["nv_minimo"])
 
         # Modo autonomo
-        logging.debug("Modo autonomo que o banco respondeu: {}".format(int(parametros["modo_autonomo"])))
+        logger.debug("Modo autonomo que o banco respondeu: {}".format(int(parametros["modo_autonomo"])))
         self.modo_autonomo = int(parametros["modo_autonomo"])
         # Modo de prioridade UGS
         if not self.modo_de_escolha_das_ugs == int(parametros["modo_de_escolha_das_ugs"]):
@@ -272,9 +344,7 @@ class Usina:
                 self.ug2.horas_maquina,
                 self.comporta.pos_comporta,
                 self.ug1.perda_na_grade,
-                self.ug1.temp_mancal,
                 self.ug2.perda_na_grade,
-                self.ug2.temp_mancal,
                 ]
         self.db.update_valores_usina(valores)
 
@@ -289,7 +359,7 @@ class Usina:
         
         logger.info("Verificando condições para normalização")
         
-        logger.info("Ultima tentativa: {}. Tensão na linha: {:2.1f}kV.".format(self.ts_ultima_tesntativa_de_normalizacao, self.tensao_na_linha/1000))
+        logger.debug("Ultima tentativa: {}. Tensão na linha: {:2.1f}kV.".format(self.ts_ultima_tesntativa_de_normalizacao, self.tensao_na_linha/1000))
 
         if not (self.cfg['TENSAO_LINHA_BAIXA'] < self.tensao_na_linha < self.cfg['TENSAO_LINHA_ALTA']):
            logger.warn("Tensão na linha fora do limite." )
@@ -377,82 +447,97 @@ class Usina:
 
         self.agendamentos_atrasados = 0
         for agendamento in agendamentos:
+
             if agora > agendamento[1]:
+                segundos_adiantados = 0
                 segundos_passados = (agora - agendamento[1]).seconds
                 logger.debug(segundos_passados)
-                if segundos_passados > 60:
-                    logger.warning("Agendamento #{} Atrasado! ({} - {}).".format(agendamento[0], agendamento[3], agendamento))
-                    self.agendamentos_atrasados += 1
-                if segundos_passados > 300 or self.agendamentos_atrasados > 3:
-                    logger.info("Os agendamentos estão muito atrasados! Acionando emergência.")
-                    self.acionar_emergencia()
-                    return False
             else:
                 segundos_adiantados = (agendamento[1]-agora).seconds
-                if segundos_adiantados <= 60 and not bool(agendamento[4]):
-                    # Está na hora e ainda não foi executado. Executar!
-                    logger.info("Executando gendamento #{} - {}.".format(agendamento[0], agendamento))
+                segundos_passados = 0
 
-                    # Exemplo Case agendamento:
-                    if agendamento[3] == AGENDAMENTO_DISPARAR_MENSAGEM_TESTE:
-                        # Coloca em emergência
-                        logger.info("Disparando mensagem teste (comando via agendamento).")
-                        self.disparar_mensagem_teste()
+            if segundos_passados > 300 or self.agendamentos_atrasados > 3:
+                logger.info("Os agendamentos estão muito atrasados! Acionando emergência.")
+                self.acionar_emergencia()
+                return False
 
-                    if agendamento[3] == AGENDAMENTO_INDISPONIBILIZAR:
-                        # Coloca em emergência
-                        logger.info("Indisponibilizando a usina (comando via agendamento).")
-                        for ug in self.ugs:
-                            ug.indisponibilizar()
-                        while not self.ugs[0].parado and not self.ugs[1].parado:
-                            self.ler_valores()
-                            logger.debug("Indisponibilizando Usina... \n(freezing for 10 seconds)")
-                            sleep(10)
-                        self.acionar_emergencia()
-                    
-                    if agendamento[3] == AGENDAMENTO_ALETRAR_NV_ALVO:
-                        try:
-                            novo = float(agendamento[2].replace(",", "."))
-                        except Exception as e:
-                            logger.info("Valor inválido no comando #{} ({} é inválido).".format(agendamento[0], agendamento[3]))
-                        self.nv_alvo = novo
-                        pars = [datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
-                            self.kp,
-                            self.ki,
-                            self.kd,
-                            self.kie,
-                            self.n_movel_l,
-                            self.n_movel_r,
-                            self.nv_alvo
-                            ]
-                        self.db.update_parametros_usina(pars)
-                        self.escrever_valores()
-                    
-                    if agendamento[3] == AGENDAMENTO_ALETRAR_POT_ALVO_UG_1:
-                        try:
-                            novo = float(agendamento[2].replace(",", "."))
-                        except Exception as e:
-                            logger.info("Valor inválido no comando #{} ({} é inválido).".format(agendamento[0], agendamento[3]))
-                        self.ug1.pot_disponivel = novo
-                    
-                    if agendamento[3] == AGENDAMENTO_INDISPONIBILIZAR_UG_1:
-                        self.ug1.indisponibilizar()   
-        
-                    if agendamento[3] == AGENDAMENTO_ALETRAR_POT_ALVO_UG_2:
-                        try:
-                            novo = float(agendamento[2].replace(",", "."))
-                        except Exception as e:
-                            logger.info("Valor inválido no comando #{} ({} é inválido).".format(agendamento[0], agendamento[3]))
-                        self.ug2.pot_disponivel = novo
-                    
-                    if agendamento[3] == AGENDAMENTO_INDISPONIBILIZAR_UG_2:
-                        self.ug2.indisponibilizar()   
+            if segundos_passados > 60:
+                logger.warning("Agendamento #{} Atrasado! ({} - {}).".format(agendamento[0], agendamento[3], agendamento))
+                self.agendamentos_atrasados += 1
 
 
-                    # Após executar, indicar no banco de dados
-                    self.db.update_agendamento(int(agendamento[0]), 1)
-                    logger.info("O comando #{} - {} foi executado.".format(agendamento[0], agendamento[2]))
+            if segundos_adiantados <= 60 and not bool(agendamento[4]):
+                # Está na hora e ainda não foi executado. Executar!
+                logger.info("Executando gendamento #{} - {}.".format(agendamento[0], agendamento))
+
+                # Exemplo Case agendamento:
+                if agendamento[3] == AGENDAMENTO_DISPARAR_MENSAGEM_TESTE:
+                    # Coloca em emergência
+                    logger.info("Disparando mensagem teste (comando via agendamento).")
+                    self.disparar_mensagem_teste()
+
+                if agendamento[3] == AGENDAMENTO_INDISPONIBILIZAR:
+                    # Coloca em emergência
+                    logger.info("Indisponibilizando a usina (comando via agendamento).")
+                    for ug in self.ugs:
+                        ug.indisponibilizar()
+                    while not self.ugs[0].parado and not self.ugs[1].parado:
+                        self.ler_valores()
+                        logger.debug("Indisponibilizando Usina... \n(freezing for 10 seconds)")
+                        sleep(10)
+                    self.acionar_emergencia()
+                    logger.info("Emergência precionada após indizponibilização agendada mudando para modo manual para evitar normalização automática.")
+                    self.entrar_em_modo_manual() 
+
+                
+                if agendamento[3] == AGENDAMENTO_ALETRAR_NV_ALVO:
+                    try:
+                        novo = float(agendamento[2].replace(",", "."))
+                    except Exception as e:
+                        logger.info("Valor inválido no comando #{} ({} é inválido).".format(agendamento[0], agendamento[3]))
+                    self.nv_alvo = novo
+                    pars = [datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+                        self.kp,
+                        self.ki,
+                        self.kd,
+                        self.kie,
+                        self.n_movel_l,
+                        self.n_movel_r,
+                        self.nv_alvo
+                        ]
+                    self.db.update_parametros_usina(pars)
                     self.escrever_valores()
+                
+                if agendamento[3] == AGENDAMENTO_ALETRAR_POT_ALVO_UG_1:
+                    try:
+                        novo = float(agendamento[2].replace(",", "."))
+                    except Exception as e:
+                        logger.info("Valor inválido no comando #{} ({} é inválido).".format(agendamento[0], agendamento[3]))
+                    self.ug1.pot_disponivel = novo
+                
+                if agendamento[3] == AGENDAMENTO_INDISPONIBILIZAR_UG_1:
+                    self.ug1.indisponibilizar()      
+
+                if agendamento[3] == AGENDAMENTO_DISPONIBILIZAR_UG_1:
+                    self.ug1.disponibilizar()   
+    
+                if agendamento[3] == AGENDAMENTO_ALETRAR_POT_ALVO_UG_2:
+                    try:
+                        novo = float(agendamento[2].replace(",", "."))
+                    except Exception as e:
+                        logger.info("Valor inválido no comando #{} ({} é inválido).".format(agendamento[0], agendamento[3]))
+                    self.ug2.pot_disponivel = novo
+                
+                if agendamento[3] == AGENDAMENTO_INDISPONIBILIZAR_UG_2:
+                    self.ug2.indisponibilizar()   
+
+                if agendamento[3] == AGENDAMENTO_DISPONIBILIZAR_UG_2:
+                    self.ug2.disponibilizar()   
+
+                # Após executar, indicar no banco de dados
+                self.db.update_agendamento(int(agendamento[0]), 1)
+                logger.info("O comando #{} - {} foi executado.".format(agendamento[0], agendamento[2]))
+                self.escrever_valores()
 
     def distribuir_potencia(self, pot_alvo):
 
@@ -531,10 +616,10 @@ class Usina:
 
         if self.modo_de_escolha_das_ugs == MODO_ESCOLHA_MANUAL:
             # escolher por maior prioridade primeiro
-            ls = sorted(ls, key=lambda y: (not y.sincronizada, not y.setpoint, not y.prioridade, y.horas_maquina))
+            ls = sorted(ls, key=lambda y: (not y.partindo, not y.sincronizada, not y.setpoint, not y.prioridade, y.horas_maquina))
         else:
             # escolher por menor horas_maquina primeiro
-            ls = sorted(ls, key=lambda y: (not y.sincronizada, not y.setpoint, y.horas_maquina, not y.prioridade,))
+            ls = sorted(ls, key=lambda y: (not y.partindo, not y.sincronizada, not y.setpoint, y.horas_maquina, not y.prioridade,))
         return ls
 
     def controle_normal(self):
@@ -562,7 +647,7 @@ class Usina:
 
         if self.nv_montante_recente >= (self.nv_maximo - 0.03):
             self.controle_ie = 1
-            self.controle_i = min(max(self.controle_i, 0.8), self.controle_i)
+            self.controle_i = 1 - self.controle_p
 
         if self.nv_montante_recente <= (self.nv_minimo + 0.03):
             self.controle_ie = min(self.controle_ie, 0.3)
@@ -610,14 +695,38 @@ class UnidadeDeGeracao:
         self.horas_maquina = 0
         self.potencia = 0
         self.prioridade = 0
-        self.temp_mancal = 0
-        self.temp_mancal_max = 0
         self.perda_na_grade = 0
         self.perda_na_grade_max = 0
         self.setpoint = 0
         self.sincronizada = False
         self.perda_na_grade_alerta = 0
-        self.temp_mancal_alerta = 0
+        self.temperatura_enrolamento_fase_r = 0
+        self.temperatura_enrolamento_fase_s = 0
+        self.temperatura_enrolamento_fase_t = 0
+        self.temperatura_mancal_la_casquilho = 0
+        self.temperatura_mancal_la_contra_escora_1 = 0
+        self.temperatura_mancal_la_contra_escora_2 = 0
+        self.temperatura_mancal_la_escora_1 = 0
+        self.temperatura_mancal_la_escora_2 = 0
+        self.temperatura_mancal_lna_casquilho = 0
+        self.temperatura_alerta_enrolamento_fase_r = 0
+        self.temperatura_alerta_enrolamento_fase_s = 0
+        self.temperatura_alerta_enrolamento_fase_t = 0
+        self.temperatura_alerta_mancal_la_casquilho = 0
+        self.temperatura_alerta_mancal_la_contra_escora_1 = 0
+        self.temperatura_alerta_mancal_la_contra_escora_2 = 0
+        self.temperatura_alerta_mancal_la_escora_1 = 0
+        self.temperatura_alerta_mancal_la_escora_2 = 0
+        self.temperatura_alerta_mancal_lna_casquilho = 0  
+        self.temperatura_limite_enrolamento_fase_r = 0
+        self.temperatura_limite_enrolamento_fase_s = 0
+        self.temperatura_limite_enrolamento_fase_t = 0
+        self.temperatura_limite_mancal_la_casquilho = 0
+        self.temperatura_limite_mancal_la_contra_escora_1 = 0
+        self.temperatura_limite_mancal_la_contra_escora_2 = 0
+        self.temperatura_limite_mancal_la_escora_1 = 0
+        self.temperatura_limite_mancal_la_escora_2 = 0
+        self.temperatura_limite_mancal_lna_casquilho = 0
         self.pot_disponivel = 0
         self.potencia_minima = 0
         self.ts_ultima_tesntativa_de_normalizacao = datetime.now()
@@ -625,7 +734,6 @@ class UnidadeDeGeracao:
         self.partindo = False
         self.parando = False
         self.parado = True
-
 
     def voltar_a_tentar_resetar(self):
         self.deve_tentar_normalizar = True
@@ -636,7 +744,7 @@ class UnidadeDeGeracao:
         self.tentativas_de_normalizar += 1
         self.ts_ultima_tesntativa_de_normalizacao = datetime.now()
         self.flag = False
-        #self.con.open()        
+        #self.con.open()   
         self.con.normalizar_emergencia()           
         #self.con.close()        
 
@@ -648,6 +756,10 @@ class UnidadeDeGeracao:
         if self.id_da_ug == 2:
             self.con.parar_ug2() 
             
+    def disponibilizar(self):
+        self.flag = False
+        self.disponivel = True
+        self.normalizar()
 
     def indisponibilizar(self):
         # Indisponibiliza a ug
@@ -684,11 +796,44 @@ class UnidadeDeGeracao:
                     logger.info("Comportamento de normalização automática ligado.")
 
             # todo Verificações
-
-            if self.temp_mancal >= self.temp_mancal_max:
+            if self.temperatura_enrolamento_fase_r > self.temperatura_limite_enrolamento_fase_r:
+                logger.warning("UG{} temperatura_enrolamento_fase_r > limite".format(self.id_da_ug))
                 self.indisponibilizar()
 
-            if self.perda_na_grade >= self.perda_na_grade_max:
+            if self.temperatura_enrolamento_fase_s > self.temperatura_limite_enrolamento_fase_s:
+                logger.warning("UG{} temperatura_enrolamento_fase_s > limite".format(self.id_da_ug))
+                self.indisponibilizar()
+
+            if self.temperatura_enrolamento_fase_t > self.temperatura_limite_enrolamento_fase_t:
+                logger.warning("UG{} temperatura_enrolamento_fase_t > limite".format(self.id_da_ug))
+                self.indisponibilizar()
+
+            if self.temperatura_mancal_la_casquilho > self.temperatura_limite_mancal_la_casquilho:
+                logger.warning("UG{} temperatura_mancal_la_casquilho > limite".format(self.id_da_ug))
+                self.indisponibilizar()
+
+            if self.temperatura_mancal_la_contra_escora_1 > self.temperatura_limite_mancal_la_contra_escora_1:
+                logger.warning("UG{} temperatura_mancal_la_contra_escora_1 > limite".format(self.id_da_ug))
+                self.indisponibilizar()
+
+            if self.temperatura_mancal_la_contra_escora_2 > self.temperatura_limite_mancal_la_contra_escora_2:
+                logger.warning("UG{} temperatura_mancal_la_contra_escora_2 > limite".format(self.id_da_ug))
+                self.indisponibilizar()
+
+            if self.temperatura_mancal_la_escora_1 > self.temperatura_limite_mancal_la_escora_1:
+                logger.warning("UG{} temperatura_mancal_la_escora_1 > limite".format(self.id_da_ug))
+                self.indisponibilizar()
+
+            if self.temperatura_mancal_la_escora_2 > self.temperatura_limite_mancal_la_escora_2:
+                logger.warning("UG{} temperatura_mancal_la_escora_2 > limite".format(self.id_da_ug))
+                self.indisponibilizar()
+
+            if self.temperatura_mancal_lna_casquilho > self.temperatura_limite_mancal_lna_casquilho:
+                logger.warning("UG{} temperatura_mancal_lna_casquilho > limite".format(self.id_da_ug))
+                self.indisponibilizar()
+
+            if self.perda_na_grade > self.perda_na_grade_max:
+                logger.warning("UG{} perda_na_grade > limite".format(self.id_da_ug))
                 self.indisponibilizar()
 
             if self.perda_na_grade < self.perda_na_grade_alerta \
@@ -702,14 +847,28 @@ class UnidadeDeGeracao:
             if self.tentativas_de_normalizar > 3 and self.deve_tentar_normalizar:
                 self.deve_tentar_normalizar = False
                 logger.info("Tentativas de normalização excedidas! MOA não irá mais tentar.")
+     
+            if self.setpoint < 1 and not self.partindo:
+                self.parando = True
+                if self.id_da_ug == 1:
+                    self.con.parar_ug1()
+                    self.parado = self.con.get_ug1_parada()
+                if self.id_da_ug == 2:
+                    self.con.parar_ug2()  
+                    self.parado = self.con.get_ug2_parada()
+            
+            if self.parado:
+                self.partindo = False
+                self.sincronizada = False
+                self.parando = False
 
             if self.id_da_ug == 1:
-                self.parado = self.con.get_ug1_parada()
+                self.sincronizada = self.con.get_sincro_ug1()
             if self.id_da_ug == 2:
-                self.parado = self.con.get_ug2_parada()
+                self.sincronizada = self.con.get_sincro_ug2()
 
-            if self.parado:
-                self.parando = False
+            if self.sincronizada:
+                self.partindo = False
 
     def ajuste_perdas(self, var, alerta, limite):
         multiplicador = 1
@@ -717,18 +876,29 @@ class UnidadeDeGeracao:
             multiplicador = max(min(sqrt(sqrt(1 - ((var - alerta) / (limite - alerta)))).real, 1), 0)
         if var > limite:
             multiplicador = 0
+        logger.debug("UG{} var = {}, alerta = {}, limite = {}, multiplicador = {}".format(self.id_da_ug, var, alerta, limite, multiplicador))
         return multiplicador
 
     def mudar_setpoint(self, alvo):          
 
         alvo = max(alvo, 0)
-        logger.debug("Mudar_setpoint alvo: {}".format(alvo))
+        logger.debug("UG{} Mudar_setpoint alvo: {}".format(self.id_da_ug, alvo))
 
         # Calcular perdas individuais e colocar numa lista
         multiplicadores_perdas = [1,]
-        multiplicadores_perdas.append(self.ajuste_perdas(self.temp_mancal, self.temp_mancal_alerta, self.temp_mancal_max))
+        multiplicadores_perdas.append(self.ajuste_perdas(self.temperatura_enrolamento_fase_r, self.temperatura_alerta_enrolamento_fase_r, self.temperatura_limite_enrolamento_fase_r))
+        multiplicadores_perdas.append(self.ajuste_perdas(self.temperatura_enrolamento_fase_s, self.temperatura_alerta_enrolamento_fase_s, self.temperatura_limite_enrolamento_fase_s))
+        multiplicadores_perdas.append(self.ajuste_perdas(self.temperatura_enrolamento_fase_t, self.temperatura_alerta_enrolamento_fase_t, self.temperatura_limite_enrolamento_fase_t))
+        multiplicadores_perdas.append(self.ajuste_perdas(self.temperatura_mancal_la_casquilho, self.temperatura_alerta_mancal_la_casquilho, self.temperatura_limite_mancal_la_casquilho))
+        multiplicadores_perdas.append(self.ajuste_perdas(self.temperatura_mancal_la_contra_escora_1, self.temperatura_alerta_mancal_la_contra_escora_1, self.temperatura_limite_mancal_la_contra_escora_1))
+        multiplicadores_perdas.append(self.ajuste_perdas(self.temperatura_mancal_la_contra_escora_2, self.temperatura_alerta_mancal_la_contra_escora_2, self.temperatura_limite_mancal_la_contra_escora_2))
+        multiplicadores_perdas.append(self.ajuste_perdas(self.temperatura_mancal_la_escora_1, self.temperatura_alerta_mancal_la_escora_1, self.temperatura_limite_mancal_la_escora_1))
+        multiplicadores_perdas.append(self.ajuste_perdas(self.temperatura_mancal_la_escora_2, self.temperatura_alerta_mancal_la_escora_2, self.temperatura_limite_mancal_la_escora_2))
+        multiplicadores_perdas.append(self.ajuste_perdas(self.temperatura_mancal_lna_casquilho, self.temperatura_alerta_mancal_lna_casquilho, self.temperatura_limite_mancal_lna_casquilho))  
         multiplicadores_perdas.append(self.ajuste_perdas(self.perda_na_grade, self.perda_na_grade_alerta, self.perda_na_grade_max))
+
         perda = max(min(min(multiplicadores_perdas), 1), 0)
+        logger.debug("UG{} multiplicadores_perdas: {}, perda = {}, novo alvo = {}".format(self.id_da_ug, multiplicadores_perdas, perda, perda * alvo))
         alvo = alvo * perda
 
         self.setpoint = alvo
@@ -752,9 +922,11 @@ class UnidadeDeGeracao:
                 self.con.parar_ug1()  
             if self.id_da_ug == 2:
                 self.con.parar_ug2()  
+                
         elif not self.parando:
             if self.setpoint >= 1:
                 if self.id_da_ug == 1:
+                    self.sincronizada = self.con.get_sincro_ug1()
                     if not self.sincronizada:
                         self.con.partir_ug1()
                         if not self.partindo:
@@ -765,6 +937,7 @@ class UnidadeDeGeracao:
                     self.con.set_ug1_setpoint(int(self.setpoint * 1000))
             
                 if self.id_da_ug == 2:
+                    self.sincronizada = self.con.get_sincro_ug2()
                     if not self.sincronizada:
                         self.con.partir_ug2() 
                         if not self.partindo:
@@ -813,3 +986,12 @@ class Comporta:
             self.pos_comporta = pos_alvo
 
         return pos_alvo
+
+
+def ping(host):
+    """
+    Returns True if host (str) responds to a ping request.
+    Remember that a host may not respond to a ping (ICMP) request even if the host name is valid.
+    https://stackoverflow.com/questions/2953462/pinging-servers-in-python
+    """
+    return subprocess.call(['ping', '-c', '1', host], stdout=subprocess.PIPE) == 0

@@ -5,11 +5,12 @@ Implementacao teste de uma versao do moa utilizando SM
 """
 from datetime import datetime
 import logging
+import logging.handlers as handlers
 import os
 import sys
 from threading import Thread
 import time
-from sys import stdout
+from sys import stdout, stderr
 from time import sleep
 import traceback
 import json
@@ -19,32 +20,36 @@ from pyModbusTCP.server import DataBank, ModbusServer
 from mensageiro.mensageiro_log_handler import MensageiroHandler
 import clp_connector, database_connector, abstracao_usina
 
-DEBUG = True
-
 # Set-up logging
 rootLogger = logging.getLogger()
-rootLogger.setLevel(logging.CRITICAL)
+if (rootLogger.hasHandlers()):
+    rootLogger.handlers.clear()
+rootLogger.setLevel(logging.NOTSET)
+
 logger = logging.getLogger(__name__)
-if DEBUG:
-    logger.setLevel(logging.DEBUG)
-else:
-    logger.setLevel(logging.INFO)
+if (logger.hasHandlers()):
+    logger.handlers.clear()
+logger.setLevel(logging.NOTSET)
+
 if not os.path.exists("logs/"):
     os.mkdir("logs/")
-fh = logging.FileHandler("logs/MOA.log")  # log para arquivo
-ch = logging.StreamHandler(stdout)  # log para linha de comando
-mh = MensageiroHandler()  # log para telegram e voip
 logFormatter = logging.Formatter("%(asctime)s [%(threadName)-12.12s] [%(levelname)-5.5s] [MOA-SM] %(message)s")
 logFormatterSimples = logging.Formatter("[%(levelname)-5.5s] [MOA-SM] %(message)s")
-fh.setFormatter(logFormatter)
+
+ch = logging.StreamHandler(stderr)  # log para sdtout
 ch.setFormatter(logFormatter)
-mh.setFormatter(logFormatterSimples)
-fh.setLevel(logging.INFO)
-ch.setLevel(logging.DEBUG)
-mh.setLevel(logging.INFO)
-logger.addHandler(fh)
+ch.setLevel(logging.INFO)
 logger.addHandler(ch)
+
+mh = MensageiroHandler()  # log para telegram e voip
+mh.setFormatter(logFormatterSimples)
+mh.setLevel(logging.INFO)
 logger.addHandler(mh)
+
+fh = handlers.TimedRotatingFileHandler("logs/MOA.log", when='midnight', interval=1, backupCount=7)  # log para arquivo
+fh.setFormatter(logFormatter)
+fh.setLevel(logging.DEBUG)
+logger.addHandler(fh)
 
 
 class StateMachine:
@@ -267,6 +272,8 @@ class ModoManualAtivado(State):
             self.usina.ler_valores()
             for ug in self.usina.ugs:
                 ug.voltar_a_tentar_resetar()
+            if self.usina.clp_emergencia_acionada == 1 or self.usina.db_emergencia_acionada == 1:
+                self.usina.normalizar_emergencia()
             self.usina.heartbeat()
             return Pronto(self.usina)
 
@@ -413,8 +420,6 @@ if __name__ == "__main__":
                 logger.critical("Traceback: {}".format(traceback.format_exc()))
                 prox_estado = FalhaCritica
             except Exception as e:
-                if DEBUG:
-                    raise e
                 logger.error("Erro Inesperado. Tentando novamente em {}s (tentativa{}/3). Exception: {}.".format(
                     timeout, n_tentativa, repr(e)))
                 logger.critical("Traceback: {}".format(traceback.format_exc()))
