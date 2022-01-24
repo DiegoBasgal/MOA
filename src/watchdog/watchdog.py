@@ -83,7 +83,7 @@ while True:
                 if not moa_halted:
                     # Avisar da primeira vez
                     moa_halted = True
-                    logger.warning("O MOA está sem pulso desde {}! Tentando novamente a cada {}s.".format(timestamp.strftime("%Y-%m-%d, %H:%M:%S"), config['timeout_moa']))
+                    logger.warning("Conexão do MOA em {} com {} falhou ({})! Tentando novamente a cada {}s.".format(config['nome_usina'], config['nome_local'], timestamp.strftime("%Y-%m-%d, %H:%M:%S"), config['timeout_moa']))
                 # Espera antes de testar novamente
                 sleep(config['timeout_moa'])
             else:
@@ -98,11 +98,12 @@ while True:
 
     # Captura de exceptions durtante a comunicação. Caso ocorrom, continuar o loop.
     except ConnectionError as e:
-        logger.warning("Erro de conexão com o MOA. A última do atualização do HB foi em {}. Exception: {}".format(
-            timestamp.strftime("%Y-%m-%d, %H:%M:%S"), e))
+        logger.warning("Erro de conexão do MOA em {} com {}. A última do atualização do HB foi em {}. Exception: {}".format(
+            config['nome_usina'], config['nome_local'], timestamp.strftime("%Y-%m-%d, %H:%M:%S"), e))
         continue
     except Exception as e:
-        logger.warning("Exception {} durante a conexão com o MOA".format(e))
+        logger.warning("Exeption durante a conexão do MOA em {} com {}. A última do atualização do HB foi em {}. Exception: {}".format(
+            config['nome_usina'], config['nome_local'], timestamp.strftime("%Y-%m-%d, %H:%M:%S"), e))
         continue
     finally:
         # Fecha a comunicação e espera antes da próxima comunicação

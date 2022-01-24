@@ -1,11 +1,49 @@
 {
+    "python.testing.pytestEnabled": false,
+    "python.testing.unittestEnabled": true,
     "python.testing.unittestArgs": [
         "-v",
         "-s",
         "./test",
         "-p",
-        "test*.py"
+        "*test*.py"
     ],
-    "python.testing.pytestEnabled": false,
-    "python.testing.unittestEnabled": true
+    "editor.renderWhitespace": "all",
+    "editor.bracketPairColorization.enabled": true,
+    "editor.rulers": [80,120],
+    "workbench.colorCustomizations": {
+        "editorRuler.foreground": "#2f2f2f"
+    },    
+    "better-comments.multilineComments": true,
+    "better-comments.highlightPlainText": false,
+    "better-comments.tags": [
+        {
+            "tag": "",
+            "color": "#ccff00",
+            "strikethrough": false,
+            "underline": false,
+            "backgroundColor": "transparent",
+            "bold": false,
+            "italic": false
+          },        
+          {
+            "tag": "-",
+            "color": "#80a000",
+            "strikethrough": false,
+            "underline": false,
+            "backgroundColor": "#transparent",
+            "bold": false,
+            "italic": false
+          },          
+          {
+            "tag": "!",
+            "color": "#000000",
+            "strikethrough": false,
+            "underline": false,
+            "backgroundColor": "#ccff00",
+            "bold": true,
+            "italic": false
+          },
+      ]
+    
 }
