@@ -1,3 +1,4 @@
+from pathlib import Path
 import sys
 import threading
 from math import floor
@@ -14,7 +15,8 @@ class Window(QMainWindow, Ui_Form):
 
         super().__init__(parent)
         self.setupUi(self)
-        self.bg.setPixmap(QPixmap(u"gui/imgs/bg.png"))
+        path = Path(__file__).parent.absolute().joinpath("imgs","bg.png")
+        self.bg.setPixmap(QPixmap(path))
 
         self.shared_dict = shared_dict
         
