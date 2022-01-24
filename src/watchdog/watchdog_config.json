@@ -3,5 +3,7 @@
     "ip_slave": "172.21.15.12",
     "port_slave": 5002,
     "timeout_modbus": 5,
-    "timeout_moa": 30
+    "timeout_moa": 30,
+    "nome_usina": "Simul",
+    "nome_local": "NOME DO LOCAL QUE ESTA CONECTANDO"
 }

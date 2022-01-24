@@ -2,7 +2,6 @@
 modbus_com.py
 
 Este arquivo contem os endereçõs referentes a usina de COVÓ e funções auxiliares a comunicação via modbus com a usina.
-As configurações relevantes a este módulo estão em "config.json"
 
 ATENÇÃO, os endereços estão como escritos no ELIPSE E3, deve-se subtrair 1 para utilização do pyModbusTCP
 
@@ -11,10 +10,663 @@ REG_XYZ = 12345
 ABC.write_single_register(REG_XYZ-1, 1)
 
 """
-import json
-import os
-from datetime import datetime
-from pyModbusTCP.client import ModbusClient
+
+"""
+
+NA CLP ESTA COMO AT%MW???? ou AT%MX????
+ENDERECO PARA O PYTHON => 12288 + ????
+
+CLP UG1 DUMP
+=======================================================================================================================
+=======================================================================================================================
+VAR_GLOBAL
+
+	(*	======				Comandos				=======	*)
+
+	MODBUS_Comandos													AT%MW0: ARRAY [00..99] OF WORD;
+
+	MODBUS_Operacao_ResetAlarmes										AT%MX0.0:BOOL;		(*ok*)
+	MODBUS_Operacao_ReconheceAlarmes								AT%MX1.0:BOOL;		(*ok*)
+
+	MODBUS_Operacao_UP													AT%MX2.0:BOOL;		(*ok*)
+	MODBUS_Operacao_UPGM												AT%MX3.0:BOOL;		(*ok*)
+	MODBUS_Operacao_UMD												AT%MX4.0:BOOL;		(*ok*)
+	MODBUS_Operacao_UPS												AT%MX5.0:BOOL;		(*ok*)
+	MODBUS_Operacao_US													AT%MX6.0:BOOL;		(*ok*)
+
+	MODBUS_Operacao_EmergenciaLigar									AT%MX7.0:BOOL;		(*ok*)
+	MODBUS_Operacao_EmergenciaDesligar								AT%MX8.0:BOOL;		(*ok*)
+
+	MODBUS_Turb_ByPassAbrir												AT%MX9.0:BOOL;		(*ok*)
+	MODBUS_Turb_ByPassFechar											AT%MX10.0:BOOL;	(*ok*)
+	MODBUS_Turb_BorboletaAbrir											AT%MX11.0:BOOL;	(*ok*)
+	MODBUS_Turb_BorboletaFechar										AT%MX12.0:BOOL;	(*ok*)
+	MODBUS_Turb_FrenagemAplicar										AT%MX13.0:BOOL;
+	MODBUS_Turb_FrenagemDesaplicar									AT%MX14.0:BOOL;	(*ok*)
+	MODBUS_Turb_FrenagemManual										AT%MX15.0:BOOL;	(*ok*)
+	MODBUS_Turb_FrenagemAuto											AT%MX16.0:BOOL;
+	MODBUS_Turb_SensorAtivar											AT%MX17.0:BOOL;
+	MODBUS_Turb_SensorDesativar										AT%MX18.0:BOOL;
+
+	MODBUS_RegV_Partir													AT%MX19.0:BOOL;	(*ok*)
+	MODBUS_RegV_Parar													AT%MX20.0:BOOL;	(*ok*)
+	MODBUS_RegV_ColocarCarga											AT%MX21.0:BOOL;	(*ok*)
+	MODBUS_RegV_RetirarCarga											AT%MX22.0:BOOL;	(*ok*)
+	MODBUS_RegV_IncrementaVelocidade									AT%MX23.0:BOOL;	(*ok*)
+	MODBUS_RegV_DecrementaVelocidade								AT%MX24.0:BOOL;	(*ok*)
+	MODBUS_RegV_SelecionaModoEstatismo								AT%MX25.0:BOOL;
+	MODBUS_RegV_SelecionaModoBaseCarga							AT%MX26.0:BOOL;
+
+	MODBUS_RegT_Ligar													AT%MX27.0:BOOL;	(*ok*)
+	MODBUS_RegT_Desligar												AT%MX28.0:BOOL;	(*ok*)
+	MODBUS_RegT_IncrementaTensao										AT%MX29.0:BOOL;	(*ok*)
+	MODBUS_RegT_DecrementaTensao									AT%MX30.0:BOOL;	(*ok*)
+	MODBUS_RegT_PreExcitacao											AT%MX31.0:BOOL;
+
+	MODBUS_Sinc_Ligar														AT%MX32.0:BOOL;
+	MODBUS_Sinc_Desligar													AT%MX33.0:BOOL;
+	MODBUS_Sinc_ModoAutoLigar											AT%MX34.0:BOOL;	(*ok*)
+	MODBUS_Sinc_ModoManualLigar										AT%MX35.0:BOOL;	(*ok*)
+	MODBUS_Sinc_ModoBMortaLigar										AT%MX36.0:BOOL;
+
+	MODBUS_Disj52G_Abrir													AT%MX37.0:BOOL;	(*ok*)
+
+	MODBUS_CtrlReativo_ModoFPLigar										AT%MX38.0:BOOL;	(*ok*)
+	MODBUS_CtrlReativo_ModoFPDesligar									AT%MX39.0:BOOL;
+	MODBUS_CtrlReativo_ModoVArLigar									AT%MX40.0:BOOL;	(*ok*)
+	MODBUS_CtrlReativo_ModoVArDesligar								AT%MX41.0:BOOL;
+
+	MODBUS_CtrlPotencia_ModoPotenciaLigar								AT%MX42.0:BOOL;	(*ok*)
+	MODBUS_CtrlPotencia_ModoPotenciaDesligar							AT%MX43.0:BOOL;	(*ok*)
+	MODBUS_CtrlPotencia_ModoNivelLigar									AT%MX44.0:BOOL;	(*ok*)
+	MODBUS_CtrlPotencia_ModoNivelDesligar								AT%MX45.0:BOOL;	(*ok*)
+	MODBUS_CtrlPotencia_ReligamentoAutomaticoLigar					AT%MX46.0:BOOL;	(*ok*)
+	MODBUS_CtrlPotencia_ReligamentoAutomaticoDesligar				AT%MX47.0:BOOL;	(*ok*)
+
+	MODBUS_UHCT_Bomba01Ligar										AT%MX48.0:BOOL;	(*ok*)
+	MODBUS_UHCT_Bomba01Desligar									AT%MX49.0:BOOL;	(*ok*)
+	MODBUS_UHCT_Bomba01Principal									AT%MX50.0:BOOL;	(*ok*)
+	MODBUS_UHCT_Bomba02Ligar										AT%MX51.0:BOOL;	(*ok*)
+	MODBUS_UHCT_Bomba02Desligar									AT%MX52.0:BOOL;	(*ok*)
+	MODBUS_UHCT_Bomba02Principal									AT%MX53.0:BOOL;	(*ok*)
+	MODBUS_UHCT_BombaAguaLigar										AT%MX54.0:BOOL;
+	MODBUS_UHCT_BombaAguaDesligar									AT%MX55.0:BOOL;
+	MODBUS_UHCT_SensorAtivar											AT%MX56.0:BOOL;
+	MODBUS_UHCT_SensorDesativar										AT%MX57.0:BOOL;
+	MODBUS_UHCT_RodizioModoAutomatico								AT%MX58.0:BOOL;	(*ok*)
+	MODBUS_UHCT_RodizioModoManual									AT%MX59.0:BOOL;	(*ok*)
+
+	MODBUS_UHLM_Bomba01Ligar										AT%MX60.0:BOOL;	(*ok*)
+	MODBUS_UHLM_Bomba01Desligar									AT%MX61.0:BOOL;	(*ok*)
+	MODBUS_UHLM_Bomba01Principal									AT%MX62.0:BOOL;
+	MODBUS_UHLM_Bomba02Ligar										AT%MX63.0:BOOL;
+	MODBUS_UHLM_Bomba02Desligar									AT%MX64.0:BOOL;
+	MODBUS_UHLM_Bomba02Principal									AT%MX65.0:BOOL;
+	MODBUS_UHLM_JackingLigar											AT%MX66.0:BOOL;
+	MODBUS_UHLM_JackingDesligar										AT%MX67.0:BOOL;
+	MODBUS_UHLM_ValvulaMecanicaLigar									AT%MX68.0:BOOL;
+	MODBUS_UHLM_ValvulaMecanicaDesligar								AT%MX69.0:BOOL;
+	MODBUS_UHLM_RodizioModoAutomatico								AT%MX70.0:BOOL;
+	MODBUS_UHLM_RodizioModoManual									AT%MX71.0:BOOL;
+
+	MODBUS_OperacaoParada_Reset										AT%MX72.0:BOOL;	(*ok*)
+
+
+		(* --> Comandos para salvar e restaurar parâmetros da área de memória retentiva <-- *)
+
+	SaveRetainValues														AT%MX100.0: BOOL;
+	RestoreRetainValues														AT%MX101.0: BOOL;
+
+END_VAR
+
+VAR_GLOBAL
+
+		(* -=====    Leituras    =====- *)
+
+		VersaoBase													AT%MW475: INT;
+		VersaoCustom												AT%MW476: INT;
+
+		NivelJusante													AT%MW477: UINT;
+		NivelBarragem												AT%MW478: UINT;(*Nivel Montante Grade*)
+		NivelCanal													AT%MW479: UINT;(*Nivel Jusante Grade*)
+		NivelCamaraCarga											AT%MW480: UINT;
+
+		Operacao_PainelResetAlarmes								AT%MX481.0: BOOL; (*ok*)
+		Operacao_PainelReconheceAlarmes						AT%MX482.0: BOOL; (*ok*)
+
+		Operacao_Info												AT%MW483: INT;
+			Operacao_Emergencia									AT%MX483.0: BOOL;(*ok*)
+			Operacao_SireneLigada									AT%MX483.1: BOOL;
+			Operacao_ModoLocal									AT%MX483.2: BOOL;(*ok*)
+
+			Operacao_SalvandoParametros							AT%MX483.6: BOOL; (*ok*)
+			Operacao_RestaurandoParametros						AT%MX483.7: BOOL; (*ok*)
+
+		Operacao_Mensagem										AT%MB967: BYTE;  (*ok*)
+
+		Operacao_EtapaAlvo											AT%MW484: INT; (*ok*)
+			Operacao_EtapaAlvoUP									AT%MX484.0: BOOL;
+			Operacao_EtapaAlvoUPGM								AT%MX484.1: BOOL;
+			Operacao_EtapaAlvoUMD								AT%MX484.2: BOOL;
+			Operacao_EtapaAlvoUPS								AT%MX484.3: BOOL;
+			Operacao_EtapaAlvoUS									AT%MX484.4: BOOL;
+
+		Operacao_EtapaAtual										AT%MW485: INT; (*ok*)
+			Operacao_EtapaAtualUP									AT%MX485.0: BOOL;
+			Operacao_EtapaAtualUPGM								AT%MX485.1: BOOL;
+			Operacao_EtapaAtualUMD								AT%MX485.2: BOOL;
+			Operacao_EtapaAtualUPS								AT%MX485.3: BOOL;
+			Operacao_EtapaAtualUS									AT%MX485.4: BOOL; 
+
+		Operacao_EtapaTransicao									AT%MW486: INT; (*ok*)
+			Operacao_UPtoUPGM									AT%MX486.0: BOOL; 
+			Operacao_UPGMtoUMD									AT%MX486.1: BOOL; 
+			Operacao_UMDtoUPS									AT%MX486.2: BOOL; 
+			Operacao_UPStoUS										AT%MX486.3: BOOL; 
+			Operacao_UStoUPS										AT%MX486.4: BOOL;
+			Operacao_UPStoUMD									AT%MX486.5: BOOL; 
+			Operacao_UMDtoUPGM									AT%MX486.6: BOOL; 
+			Operacao_UPGMtoUP									AT%MX486.7: BOOL; 
+
+		Operacao_InfoParada										AT%MW487: INT; (*ok*)
+			Operacao_ParadaNormal								AT%MX487.0: BOOL; 
+			Operacao_ParadaEmergencia							AT%MX487.1: BOOL; 
+			Operacao_ParadaTRIPAgua								AT%MX487.2: BOOL; 
+			Operacao_ParadaTRIPMecanico						AT%MX487.3: BOOL; 
+			Operacao_ParadaTRIPEletrico							AT%MX487.4: BOOL; 
+			Operacao_ParadaTRIPHidraulico						AT%MX487.5: BOOL; 
+			Operacao_ReligamentoAutomatico						AT%MX487.6: BOOL;
+			Operacao_PartidaManual								AT%MX487.7: BOOL;
+			Operacao_ParadaInfoValida								AT%MX487.15: BOOL;
+
+		UHCT_Info													AT%MW488: INT;
+			UHCT_Operacional										AT%MX488.0: BOOL; (*ok*)
+			UHCT_Ligada												AT%MX488.1: BOOL;  (*ok*)
+			UHCT_SensorDesativado								AT%MX488.2: BOOL;
+			UHCT_ModoLocal										AT%MX488.3: BOOL;
+
+		UHCT_Bombas												AT%MW489: INT;
+			UHCT_Bomba01											AT%MX489.0: BOOL; (*ok*)
+			UHCT_Bomba02											AT%MX489.1: BOOL; (*ok*)
+
+		UHCT_Rodizio												AT%MW490: INT;
+			UHCT_Rodizio_Habilitado								AT%MX490.0: BOOL; (*ok*)
+			UHCT_RodizioBomba01									AT%MX490.1: BOOL; (*ok*)
+			UHCT_RodizioBomba02									AT%MX490.2: BOOL; (*ok*)
+
+
+		UHCT_Valvulas												AT%MW491: INT;
+			UHCT_Valvula01											AT%MX491.0: BOOL; (* Válvula de Reposição *)
+			UHCT_Valvula02											AT%MX491.1: BOOL; (* Válvula de Segurança *)
+			UHCT_Valvula03											AT%MX491.2: BOOL; (* Válvula Proporcional (Distribuidor) *)
+			UHCT_Valvula04											AT%MX491.3: BOOL;
+
+		UHCT_Filtros													AT%MW492: INT;
+			UHCT_Filtro01											AT%MX492.0: BOOL; (*ok*)
+			UHCT_Filtro02											AT%MX492.1: BOOL; (*ok*)
+			UHCT_Filtro03											AT%MX492.2: BOOL;
+			UHCT_Filtro04											AT%MX492.3: BOOL;
+			UHCT_Filtro05											AT%MX492.4: BOOL;
+			UHCT_Filtro06											AT%MX492.5: BOOL;
+
+		UHCT_Pressostatos											AT%MW493: INT;
+			UHCT_Pressostato01									AT%MX493.0: BOOL;(* Pressostato Crítica *)
+			UHCT_Pressostato02									AT%MX493.1: BOOL;
+			UHCT_Pressostato03									AT%MX493.2: BOOL;
+
+		UHCT_NivelOleo_Info										AT%MW494: INT;
+			UHCT_NivelOleoLL										AT%MX494.0: BOOL;(*ok*)
+			UHCT_NivelOleoL										AT%MX494.1: BOOL;(*ok*)
+			UHCT_NivelOleoH										AT%MX494.2: BOOL;
+			UHCT_NivelOleoHH										AT%MX494.3: BOOL;
+
+		UHCT_PressaoOleo											AT%MW495: INT; (*ok*)
+
+		UHCT_HorimetroLider										AT%MW496: INT; (*ok*)
+		UHCT_HorimetroRetaguarda								AT%MW497: INT; (*ok*)
+
+		UHLM_Info													AT%MW498: INT;
+			UHLM_Operacional										AT%MX498.0: BOOL; (*ok*)
+			UHLM_Ligada												AT%MX498.1: BOOL; (*ok*)
+			UHLM_ModoLocal										AT%MX498.2: BOOL;
+			UHLM_ValvulaBombaMecanica							AT%MX498.3: BOOL; (*ok*)
+			UHLM_ValvulaSuccao									AT%MX498.4: BOOL; (*ok*)
+			UHLM_ResistenciaAquecimento							AT%MX498.5: BOOL; (*ok*)
+
+		UHLM_Bombas												AT%MW499: INT;
+			UHLM_Bomba01											AT%MX499.0: BOOL; (*ok*)
+			UHLM_Bomba02											AT%MX499.1: BOOL;
+			UHLM_Bomba03											AT%MX499.2: BOOL;
+			UHLM_Bomba04											AT%MX499.3: BOOL;
+
+		UHLM_Rodizio												AT%MW500: INT;
+			UHLM_Rodizio_Habilitado								AT%MX500.0: BOOL;
+			UHLM_RodizioBomba01									AT%MX500.1: BOOL;
+			UHLM_RodizioBomba02									AT%MX500.2: BOOL;
+
+		UHLM_Filtros													AT%MW501: INT;
+			UHLM_Filtro01											AT%MX501.0: BOOL; (*ok*)
+			UHLM_Filtro02											AT%MX501.1: BOOL;
+			UHLM_Filtro03											AT%MX501.2: BOOL;
+			UHLM_Filtro04											AT%MX501.3: BOOL;
+
+		UHLM_Pressostatos											AT%MW502: INT;
+			UHLM_Pressostato01									AT%MX502.0: BOOL; (*PressostatoBombaEletrica*)
+			UHLM_Pressostato02									AT%MX502.1: BOOL; (*PressostatoBombaMecanica*)
+			UHLM_Pressostato03									AT%MX502.2: BOOL;
+			UHLM_Pressostato04									AT%MX502.3: BOOL;
+
+		UHLM_Fluxostatos											AT%MW503: INT;
+			UHLM_Fluxostato01										AT%MX503.0: BOOL; (*FluxoOleoMancalRadialGuia01*)
+			UHLM_Fluxostato02										AT%MX503.1: BOOL; (*FluxoOleoMancalRadialGuia02*)
+			UHLM_Fluxostato03										AT%MX503.2: BOOL; (*FluxoOleoMancalAxialEscora*)
+			UHLM_Fluxostato04										AT%MX503.3: BOOL; (*FluxoOleoMancalAxialContraEscora*)
+			UHLM_Fluxostato05										AT%MX503.4: BOOL; (*FluxoAguaResfriamento*)
+			UHLM_Fluxostato06										AT%MX503.5: BOOL;
+			UHLM_Fluxostato07										AT%MX503.6: BOOL;
+			UHLM_Fluxostato08										AT%MX503.7: BOOL;
+
+		UHLM_NivelOleo_Info										AT%MW504: INT;
+			UHLM_NivelOleoLL										AT%MX504.0: BOOL; (*ok*)
+			UHLM_NivelOleoL										AT%MX504.1: BOOL;
+			UHLM_NivelOleoH										AT%MX504.2: BOOL;
+			UHLM_NivelOleoHH										AT%MX504.3: BOOL;
+
+		UHLM_HorimetroLider										AT%MW505: INT;
+		UHLM_HorimetroRetaguarda								AT%MW506: INT;
+
+		Turb_Info														AT%MW507: INT;
+			Turb_Equalizada											AT%MX507.0: BOOL;  (*ok*)
+			Turb_Pronta												AT%MX507.1: BOOL;  (*ok*)
+			Turb_Fechada											AT%MX507.2: BOOL;  (*ok*)
+			Turb_Travada												AT%MX507.3: BOOL;
+			Turb_Parada												AT%MX507.4: BOOL; (*ok*)
+			Turb_Equalizando										AT%MX507.5: BOOL;  (*ok*)
+			Turb_Fechando											AT%MX507.6: BOOL; (*ok*)
+			Turb_SensorDesativado									AT%MX507.7: BOOL;
+			Turb_PasDesalinhadas									AT%MX507.8: BOOL;
+			Turb_DistribuidorFechado								AT%MX507.9: BOOL; (*ok*)
+			Turb_PressostatoVedacaoEixo							AT%MX507.10: BOOL;
+			Turb_FluxostatoVedacaoEixo								AT%MX507.11: BOOL;
+			Turb_ValvAeracao_Aberta								AT%MX507.12: BOOL;
+			Turb_ValvAeracao_Fechada								AT%MX507.13: BOOL;
+
+		Turb_ValvulaByPass											AT%MW508: INT;
+			Turb_ByPassAcionamento								AT%MX508.0: BOOL; (*ok*)
+			Turb_ByPassFechado									AT%MX508.1: BOOL; (*ok*)
+			Turb_ByPassAberto										AT%MX508.2: BOOL; (*ok*)
+
+		Turb_ValvulaBorboleta										AT%MW509: INT;
+			Turb_BorboletaAcionamento								AT%MX509.0: BOOL; (*ok*)
+			Turb_BorboletaFechada									AT%MX509.1: BOOL;  (*ok*)
+			Turb_BorboletaAberta									AT%MX509.2: BOOL;  (*ok*)
+			Turb_BorboletaDeriva									AT%MX509.3: BOOL;
+			Turb_BorboletaTravada									AT%MX509.4: BOOL; (*ok*)
+			Turb_BorboletaMantem									AT%MX509.5: BOOL; (*ok*)
+
+		Turb_TempoCrackEfetivo										AT%MW510: INT;
+		Turb_TempoEqualizacaoEfetivo								AT%MW511: INT; (*ok*)
+
+		Turb_PressaoConduto										AT%MW512: INT; (*ok*)
+		Turb_PressaoCaixaEspiral									AT%MW513: INT; (*ok*)
+
+		Turb_VazaoTurbinada										AT%MW514: INT;
+
+		Turb_Vibracao01												AT%MW515: INT; (*Vibracao Mancal LA*)
+		Turb_Vibracao02												AT%MW516: INT; (*Vibracao Mancal LNA*)
+		Turb_Vibracao03												AT%MW517: INT;
+		Turb_Vibracao04												AT%MW518: INT;
+
+		Turb_Frenagem												AT%MW519: INT;
+			Turb_Frenagem_FreioAplicado							AT%MX519.0: BOOL; (*ok*)
+			Turb_Frenagem_FreioManual							AT%MX519.1: BOOL;
+
+		RegV_Info														AT%MW520: INT;
+			RegV_Habilitacao											AT%MX520.0: BOOL;  (*ok*)
+			RegV_BasedeCarga										AT%MX520.1: BOOL;  (*ok*)
+			RegV_RPM030											AT%MX520.2: BOOL;  (*ok*)
+			RegV_RPM090											AT%MX520.3: BOOL; (*ok*)
+			RegV_CargaZerada										AT%MX520.4: BOOL;  (*ok*)
+			RegV_HabilitadoModoEstatismo							AT%MX520.5: BOOL;
+			RegV_HabilitadoModoBaseCarga						AT%MX520.6: BOOL;
+			RegV_Carga												AT%MX520.7: BOOL;
+
+		RegV_Estado													AT%MW521: INT;
+			RegV_Falha												AT%MX521.0: BOOL;
+			RegV_Parado												AT%MX521.1: BOOL;
+			RegV_ControleManualDistribuidor						AT%MX521.2: BOOL;
+			RegV_ControleManualValvula							AT%MX521.3: BOOL;
+			RegV_ControleVelocidade								AT%MX521.4: BOOL;
+			RegV_CompensacaoPotenciaAtiva						AT%MX521.5: BOOL;
+			RegV_ControlePotenciaAtiva								AT%MX521.6: BOOL;
+
+		RegV_Velocidade												AT%MW522: INT;  (*ok*)
+		RegV_Distribuidor											AT%MW523: INT;  (*ok*)
+		RegV_Rotor													AT%MW524: INT;
+		RegV_PotenciaAlvo											AT%MW525: INT;  (*ok*)
+
+		RegT_Info														AT%MW526: INT;
+			RegT_Habilitacao											AT%MX526.0: BOOL; (*ok*)
+			RegT_TensaoEstabilizada								AT%MX526.1: BOOL; (*ok*)
+			RegT_ContatorCampoAberto							AT%MX526.2: BOOL; (*ok*)
+			RegT_ContatorCampoFechado							AT%MX526.3: BOOL; (*ok*)
+			RegT_PreExcitacaoStatus								AT%MX526.4: BOOL; (*ok*)
+
+		RegT_UExcitacao												AT%MW527: INT;  (*ok*)
+		RegT_IExcitacao												AT%MW528: INT;  (*ok*)
+
+		Sinc_Info														AT%MW529: INT;
+			Sinc_Habilitacao											AT%MX529.0: BOOL;
+			Sinc_ModoAutomatico									AT%MX529.1: BOOL;  (*ok*)
+			Sinc_ModoManual										AT%MX529.2: BOOL; (*ok*)
+			Sinc_ModoBarraMorta									AT%MX529.3: BOOL;
+
+		Sinc_FrequenciaGerador										AT%MW530: INT; (*ok*)
+		Sinc_FrequenciaBarra										AT%MW531: INT; (*ok*)
+		Sinc_TensaoGerador											AT%MW532: INT; (*ok*)
+		Sinc_TensaoBarra											AT%MW533: INT; (*ok*)
+
+		Disj52G_Info													AT%MW534: INT;
+			Disj52G_Aberto											AT%MX534.0: BOOL;  (*ok*)
+			Disj52G_Fechado										AT%MX534.1: BOOL;  (*ok*)
+			Disj52G_Inconsistente									AT%MX534.2: BOOL;
+			Disj52G_TRIP												AT%MX534.3: BOOL;
+			Disj52G_Teste											AT%MX534.4: BOOL; (*ok*)
+			Disj52G_Inserido											AT%MX534.5: BOOL; (*ok*)
+			Disj52G_Extraivel											AT%MX534.6: BOOL;
+			Disj52G_MolaCarregada									AT%MX534.7: BOOL; (*ok*)
+			Disj52G_CondicaoFechamento							AT%MX534.8: BOOL; 
+			Disj52G_FaltaVcc											AT%MX534.9: BOOL;  (*ok*)
+			Disj52G_Abriu											AT%MX534.10: BOOL; (*ok*)
+			Disj52G_Fechou											AT%MX534.11: BOOL; (*ok*)
+
+		Gerador_TensaoRN											AT%MW535: INT;  (*ok*)
+		Gerador_TensaoSN											AT%MW536: INT;  (*ok*)
+		Gerador_TensaoTN											AT%MW537: INT;  (*ok*)
+		Gerador_TensaoRS											AT%MW538: INT;  (*ok*)
+		Gerador_TensaoST											AT%MW539: INT;  (*ok*)
+		Gerador_TensaoTR											AT%MW540: INT;  (*ok*)
+		Gerador_CorrenteR											AT%MW541: INT;  (*ok*)
+		Gerador_CorrenteS											AT%MW542: INT;  (*ok*)
+		Gerador_CorrenteT											AT%MW543: INT;  (*ok*)
+		Gerador_CorrenteMedia										AT%MW544: INT;  (*ok*)
+		Gerador_PotenciaAtiva1										AT%MW545: INT;  (*ok*)
+		Gerador_PotenciaAtiva2										AT%MW546: INT;  (*ok*)
+		Gerador_PotenciaAtiva3										AT%MW547: INT;  (*ok*)
+		Gerador_PotenciaAtivaMedia									AT%MW548: INT;  (*ok*)
+		Gerador_PotenciaReativa1									AT%MW549: INT;  (*ok*)
+		Gerador_PotenciaReativa2									AT%MW550: INT;  (*ok*)
+		Gerador_PotenciaReativa3									AT%MW551: INT;  (*ok*)
+		Gerador_PotenciaReativaMedia								AT%MW552: INT;  (*ok*)
+		Gerador_PotenciaAparente1									AT%MW553: INT;  (*ok*)
+		Gerador_PotenciaAparente2									AT%MW554: INT;  (*ok*)
+		Gerador_PotenciaAparente3									AT%MW555: INT;  (*ok*)
+		Gerador_PotenciaAparenteMedia							AT%MW556: INT; (*ok*)
+		Gerador_FatorPotencia1										AT%MW557: INT;  (*ok*)
+		Gerador_FatorPotencia2										AT%MW558: INT;  (*ok*)
+		Gerador_FatorPotencia3										AT%MW559: INT;  (*ok*)
+		Gerador_FatorPotenciaMedia								AT%MW560: INT;  (*ok*)
+		Gerador_Frequencia											AT%MW561: INT;  (*ok*)
+
+		Gerador_EnergiaFornecidaTWh								AT%MW562: INT; (*ok*)
+		Gerador_EnergiaFornecidaGWh								AT%MW563: INT; (*ok*)
+		Gerador_EnergiaFornecidaMWh								AT%MW564: INT;  (*ok*)
+		Gerador_EnergiaFornecidakWh								AT%MW565: INT;  (*ok*)
+
+		Gerador_EnergiaFornecidaTVArh							AT%MW566: INT;  (*ok*)
+		Gerador_EnergiaFornecidaGVArh							AT%MW567: INT;  (*ok*)
+		Gerador_EnergiaFornecidaMVArh							AT%MW568: INT;  (*ok*)
+		Gerador_EnergiaFornecidakVArh							AT%MW569: INT;  (*ok*)
+
+		Gerador_EnergiaConsumidaTVArh							AT%MW570: INT;  (*ok*)
+		Gerador_EnergiaConsumidaGVArh							AT%MW571: INT;  (*ok*)
+		Gerador_EnergiaConsumidaMVArh							AT%MW572: INT;  (*ok*)
+		Gerador_EnergiaConsumidakVArh							AT%MW573: INT;  (*ok*)
+
+		Gerador_FPInfo												AT%MW574: INT;
+			Gerador_Fase1Ind										AT%MX574.0: BOOL;  (*ok*)
+			Gerador_Fase1Cap										AT%MX574.1: BOOL;  (*ok*)
+			Gerador_Fase2Ind										AT%MX574.2: BOOL;  (*ok*)
+			Gerador_Fase2Cap										AT%MX574.3: BOOL;  (*ok*)
+			Gerador_Fase3Ind										AT%MX574.4: BOOL;  (*ok*)
+			Gerador_Fase3Cap										AT%MX574.5: BOOL;  (*ok*)
+			Gerador_TotalInd											AT%MX574.6: BOOL;  (*ok*)
+			Gerador_TotalCap										AT%MX574.7: BOOL;  (*ok*)
+
+		CtrlReativo_Info												AT%MW575: INT;
+			CtrlReativo_ModoFP										AT%MX575.0: BOOL;  (*ok*)
+			CtrlReativo_ModoVAR										AT%MX575.1: BOOL;  (*ok*)
+
+		CtrlPotencia_Info												AT%MW576: INT;
+			CtrlPotencia_ModoNivel									AT%MX576.0: BOOL;  (*ok*)
+			CtrlPotencia_ModoPotencia								AT%MX576.1: BOOL;  (*ok*)
+			CtrlPotencia_ReligamentoAutomatico					AT%MX576.2: BOOL;  (*ok*)
+
+		HorimetroEletrico_Low										AT%MW577: INT;  (*ok*)
+		HorimetroEletrico_High										AT%MW578: INT;  (*ok*)
+
+		HorimetroMecanico_Low										AT%MW579: INT;  (*ok*)
+		HorimetroMecanico_High									AT%MW580: INT; (*ok*)
+
+		SGI_Info														AT%MW581: INT;
+
+		Temperatura_01												AT%MW582: INT; (* Temperatura da Fase R do Gerador *)
+		Temperatura_02												AT%MW583: INT; (* Temperatura da Fase S do Gerador *)
+		Temperatura_03												AT%MW584: INT; (* Temperatura da Fase T do Gerador *)
+		Temperatura_04												AT%MW585: INT; (* Temperatura Mancal Lado Acoplado do Gerador (Escora 1) *)
+		Temperatura_05												AT%MW586: INT; (* Temperatura Mancal Lado Acoplado do Gerador (Escora 2) *)
+		Temperatura_06												AT%MW587: INT; (* Temperatura Mancal Lado Acoplado do Gerador (Casquilho) *)
+		Temperatura_07												AT%MW588: INT; (* Temperatura Mancal Lado Acoplado do Gerador (Contra-Escora 1) *)
+		Temperatura_08												AT%MW589: INT; (* Temperatura Mancal Lado Não Acoplado do Gerador (Casquilho) *)
+		Temperatura_09												AT%MW590: INT; (* Temperatura Mancal Lado Acoplado do Gerador (Contra-Esccora 2) *)
+		Temperatura_10												AT%MW591: INT; (* Temperatura Vedação do Eixo da Turbina *)
+		Temperatura_11												AT%MW592: INT; (* Temperatura do Óleo do Reservatório da UHLM *)
+		Temperatura_12												AT%MW593: INT; (* Temperatura do Óleo na Saída do Trocador de Calor *)
+		Temperatura_13												AT%MW594: INT; (* Temperatura da Água na Entrada do Trocador de Calor da UHLM *)
+		Temperatura_14												AT%MW595: INT; (* Temperatura da Água na Saída do Trocador de Calor da UHLM *)
+		Temperatura_15												AT%MW596: INT; (* Temperatura do Óleo do Reservatório da UHCT *)
+		Temperatura_16												AT%MW597: INT;
+
+		UHCT_NivelOleo												AT%MW598: INT; (*ok*)
+
+		RegT_FPAlvo													AT%MW599: INT;
+		RegT_ReativoAlvo											AT%MW600: INT;
+
+END_VAR
+
+VAR_GLOBAL
+
+
+		(* -=====    Setpoints    =====- *)
+
+		Setpoints														AT%MW1280 : ARRAY [001..256] OF INT;
+
+		UHCT_PressaoMaxima										AT%MW1280: INT; (*ok*)
+		UHCT_PressaoMinima										AT%MW1281: INT; (*ok*)
+		UHCT_PressaoDesligamento								AT%MW1282: INT; (*ok*)
+		UHCT_PressaoCritica										AT%MW1283: INT; (*ok*)
+
+		CtrlPotencia_NivelL1											AT%MW1284: INT; (*ok*)
+		CtrlPotencia_NivelL2											AT%MW1285: INT; (*ok*)
+		CtrlPotencia_NivelL3											AT%MW1286: INT; (*ok*)
+		CtrlPotencia_NivelL4											AT%MW1287: INT; (*ok*)
+		CtrlPotencia_NivelL5											AT%MW1288: INT; (*ok*)
+
+		CtrlPotencia_Potencia1										AT%MW1289: INT; (*ok*)
+		CtrlPotencia_Potencia2										AT%MW1290: INT; (*ok*)
+		CtrlPotencia_Potencia3										AT%MW1291: INT; (*ok*)
+		CtrlPotencia_Potencia4										AT%MW1292: INT; (*ok*)
+		CtrlPotencia_Potencia5										AT%MW1293: INT; (*ok*)
+
+		CtrlPotencia_PotenciaMinima								AT%MW1294: INT; (*ok*)
+		CtrlPotencia_PotenciaMinimaTempo						AT%MW1295: INT; (*ok*)
+		CtrlPotencia_NivelReligamento								AT%MW1296: INT; (*ok*)
+
+		CtrlPotencia_Alvo												AT%MW1297: INT; (*ok*)
+
+		CtrlPotencia_Tolerancia										AT%MW1298: INT; (*ok*)
+		CtrlPotencia_PulsoPotencia									AT%MW1299: INT; (*ok*)
+		CtrlPotencia_PulsoIntervalo									AT%MW1300: INT; (*ok*)
+		CtrlPotencia_SetpointNivel									AT%MW1301: INT; (*ok*)
+		CtrlPotencia_NivelMinimoAlarme							AT%MW1302: INT; (*ok*)
+		CtrlPotencia_NivelMinimoTRIP								AT%MW1303: INT; (*ok*)
+
+		CtrlReativo_SetpointFP										AT%MW1304: INT; (*ok*)
+		CtrlReativo_SetpointReativo									AT%MW1305: INT;(*ok*)
+
+		Turb_Vibracao01Alarme										AT%MW1306: INT;  (*ok*)
+		Turb_Vibracao01TRIP										AT%MW1307: INT;  (*ok*)
+		Turb_Vibracao02Alarme										AT%MW1308: INT;  (*ok*)
+		Turb_Vibracao02TRIP										AT%MW1309: INT;  (*ok*)
+		Turb_Vibracao03Alarme										AT%MW1310: INT;
+		Turb_Vibracao03TRIP										AT%MW1311: INT;
+		Turb_Vibracao04Alarme										AT%MW1312: INT;
+		Turb_Vibracao04TRIP										AT%MW1313: INT;
+
+		Turb_TempoEqualizacaoSetpoint							AT%MW1314: INT;(*ok*)
+
+		Freio_PulsoIntervalo											AT%MW1315: INT;
+		Freio_PulsoTempo											AT%MW1316: INT;
+
+		UHCT_TempoRodizioLider									AT%MW1317: INT;(*ok*)
+		UHCT_TempoRodizioRetaguarda							AT%MW1318: INT;(*ok*)
+		UHLM_TempoRodizioLider									AT%MW1319: INT;
+		UHLM_TempoRodizioRetaguarda							AT%MW1320: INT;
+
+		Temperatura_01Alarme										AT%MW1321: INT;(*ok*)
+		Temperatura_02Alarme										AT%MW1322: INT;(*ok*)
+		Temperatura_03Alarme										AT%MW1323: INT;(*ok*)
+		Temperatura_04Alarme										AT%MW1324: INT;(*ok*)
+		Temperatura_05Alarme										AT%MW1325: INT;(*ok*)
+		Temperatura_06Alarme										AT%MW1326: INT;(*ok*)
+		Temperatura_07Alarme										AT%MW1327: INT;(*ok*)
+		Temperatura_08Alarme										AT%MW1328: INT;(*ok*)
+		Temperatura_09Alarme										AT%MW1329: INT;(*ok*)
+		Temperatura_10Alarme										AT%MW1330: INT;(*ok*)
+		Temperatura_11Alarme										AT%MW1331: INT;(*ok*)
+		Temperatura_12Alarme										AT%MW1332: INT;(*ok*)
+		Temperatura_13Alarme										AT%MW1333: INT;(*ok*)
+		Temperatura_14Alarme										AT%MW1334: INT;(*ok*)
+		Temperatura_15Alarme										AT%MW1335: INT;
+		Temperatura_16Alarme										AT%MW1336: INT;
+
+		(*=============================================================================================================
+			Setpoints de temperaturas apenas para mostrar no supervisório e IHM. O relé de proteção não fornece esses dados via comunicação
+		==============================================================================================================*)
+
+		Temperatura_01Trip1										AT%MW1337: INT;(*ok*)
+		Temperatura_02Trip1										AT%MW1338: INT;(*ok*)
+		Temperatura_03Trip1										AT%MW1339: INT;(*ok*)
+		Temperatura_04Trip1										AT%MW1340: INT;(*ok*)
+		Temperatura_05Trip1										AT%MW1341: INT;(*ok*)
+		Temperatura_06Trip1										AT%MW1342: INT;(*ok*)
+		Temperatura_07Trip1										AT%MW1343: INT;(*ok*)
+		Temperatura_08Trip1										AT%MW1344: INT;(*ok*)
+		Temperatura_09Trip1										AT%MW1345: INT;(*ok*)
+		Temperatura_10Trip1										AT%MW1346: INT;(*ok*)
+		Temperatura_11Trip1										AT%MW1347: INT;(*ok*)
+		Temperatura_12Trip1										AT%MW1348: INT;(*ok*)
+		Temperatura_13Trip1										AT%MW1349: INT;(*ok*)
+		Temperatura_14Trip1										AT%MW1350: INT;(*ok*)
+		Temperatura_15Trip1										AT%MW1351: INT;
+		Temperatura_16Trip1										AT%MW1352: INT;
+
+		Temperatura_01Trip2										AT%MW1353: INT;(*ok*)
+		Temperatura_02Trip2										AT%MW1354: INT;(*ok*)
+		Temperatura_03Trip2										AT%MW1355: INT;(*ok*)
+		Temperatura_04Trip2										AT%MW1356: INT;(*ok*)
+		Temperatura_05Trip2										AT%MW1357: INT;(*ok*)
+		Temperatura_06Trip2										AT%MW1358: INT;(*ok*)
+		Temperatura_07Trip2										AT%MW1359: INT;(*ok*)
+		Temperatura_08Trip2										AT%MW1360: INT;(*ok*)
+		Temperatura_09Trip2										AT%MW1361: INT;(*ok*)
+		Temperatura_10Trip2										AT%MW1362: INT;(*ok*)
+		Temperatura_11Trip2										AT%MW1363: INT;(*ok*)
+		Temperatura_12Trip2										AT%MW1364: INT;(*ok*)
+		Temperatura_13Trip2										AT%MW1365: INT;(*ok*)
+		Temperatura_14Trip2										AT%MW1366: INT;(*ok*)
+		Temperatura_15Trip2										AT%MW1367: INT;
+		Temperatura_16Trip2										AT%MW1368: INT;
+
+		UHCT_NivelOleoMinimo									AT%MW1369: INT;(*ok*)
+
+		Turb_Posicao_Distrib_Liga_Aeracao					AT%MW1370: INT;
+		Turb_Posicao_Distrib_Desliga_Aeracao				AT%MW1371: INT;
+
+END_VAR
+
+VAR_GLOBAL
+
+		(* -=====    Alarmes    =====- *)
+
+		Alarme													AT%MW1910: ARRAY [01..16] OF WORD;
+
+END_VAR
+
+VAR_GLOBAL
+
+		(* -=====    Analogicas    =====- *)
+
+		Analogicas													AT%MW1990 : ARRAY [001..256] OF INT;
+
+		EA00															AT%MW1990: DT_EntradaAnalogica;
+		EA01															AT%MW1998: DT_EntradaAnalogica;
+		EA02															AT%MW2006: DT_EntradaAnalogica;
+		EA03															AT%MW2014: DT_EntradaAnalogica;
+		EA04															AT%MW2022: DT_EntradaAnalogica;
+		EA05															AT%MW2030: DT_EntradaAnalogica;
+		EA06															AT%MW2038: DT_EntradaAnalogica;
+		EA07															AT%MW2046: DT_EntradaAnalogica;
+		EA08															AT%MW2054: DT_EntradaAnalogica;
+		EA09															AT%MW2062: DT_EntradaAnalogica;
+		EA10															AT%MW2070: DT_EntradaAnalogica;
+		EA11															AT%MW2078: DT_EntradaAnalogica;
+		EA12															AT%MW2086: DT_EntradaAnalogica;
+		EA13															AT%MW2094: DT_EntradaAnalogica;
+		EA14															AT%MW2102: DT_EntradaAnalogica;
+		EA15															AT%MW2110: DT_EntradaAnalogica;
+
+END_VAR
+
+VAR_GLOBAL
+
+		(* Disjuntores Painel PCP-U1 *)
+
+		Disjuntor_01											AT%MW275: INT; 	(* Disjuntor Q125.1 - Alimentação Circuitos de Comando *)
+		Disjuntor_02											AT%MW276: INT; 	(* Disjuntor Q125.2 - Alimentação Regulador GRTD2000 *)
+		Disjuntor_03											AT%MW277: INT; 	(* Disjuntor Q125.3 - Alimentação Relé de Proteção *)
+		Disjuntor_04											AT%MW278: INT; 	(* Disjuntor Q24.0 - Alimentação Válvula Proporcional e Transdutor de Posição *)
+
+		(* Disjuntores CSS-U1 *)
+
+		Disjuntor_05											AT%MW279: INT; 	(* CSS-U1 - Disjuntor Q220.1 - Alimentação Motor Carregamento Mola Disjuntor 52G *)
+		Disjuntor_06											AT%MW280: INT; 	(* CSS-U1 - Disjuntor Q125.0 - Alimentação Circuitos de Comando do Disjuntor 52G *)
+
+		(* Disjuntores PDSA *)
+
+		Disjuntor_07											AT%MW281: INT; 	(* PDSA - Disjuntor Motor 1QM1 - Bomba de Óleo 01 da UHCT *)
+		Disjuntor_08											AT%MW282: INT;	(* PDSA - Disjuntor Motor 1QM2 - Bomba de Óleo 02 da UHCT *)
+		Disjuntor_09											AT%MW283: INT;	(* PDSA - Disjuntor Motor 1QM3 - Bomba de Óleo 01 da UHLM *)
+		Disjuntor_10											AT%MW284: INT;	(* PDSA - Disjuntor Motor 1Q380-2 - Resistência de Aquecimento do Óleo da UHLM *)
+		Disjuntor_11											AT%MW285: INT;	(* PDSA - Disjuntor Motor 1Q220-4 - Resistência de Aquecimento do Gerador *)
+
+		(* Disjuntores Quadro Q49 *)
+
+		Disjuntor_12											AT%MW286: INT;	(* Q49 - Disjuntor Q125-0 - Módulo de Temperatura SEL2600 *)
+
+		(* Disjuntor 52G  *)
+
+		Disjuntor_13											AT%MW287: INT;	(* Disjuntor 52G *)
+
+
+
+END_VAR
+
+=======================================================================================================================
+=======================================================================================================================
+
+"""
+
 
 REG_UG1_Alarme01 = 14199
 REG_UG1_Alarme02 = 14200
@@ -32,7 +684,7 @@ REG_UG1_Alarme13 = 14211
 REG_UG1_Alarme14 = 14212
 REG_UG1_Alarme15 = 14213
 REG_UG1_Alarme16 = 14214
-REG_UG1_CtrlPotencia_Alvo = 13586
+REG_UG1_CtrlPotencia_Alvo = 13569 + 17 -1
 REG_UG1_CtrlPotencia_Info = 12865
 REG_UG1_CtrlPotencia_ModoNivelDesligar = 12334
 REG_UG1_CtrlPotencia_ModoNivelLigar = 12333
@@ -501,7 +1153,7 @@ REG_UG2_Alarme13 = 14211
 REG_UG2_Alarme14 = 14212
 REG_UG2_Alarme15 = 14213
 REG_UG2_Alarme16 = 14214
-REG_UG2_CtrlPotencia_Alvo = 13586
+REG_UG2_CtrlPotencia_Alvo = 13569 + 17
 REG_UG2_CtrlPotencia_Info = 12865
 REG_UG2_CtrlPotencia_ModoNivelDesligar = 12334
 REG_UG2_CtrlPotencia_ModoNivelLigar = 12333
@@ -1334,6 +1986,7 @@ REG_USINA_QCTA_Bomba01Principal = 12328
 REG_USINA_QCTA_Bomba02Desligar = 12330
 REG_USINA_QCTA_Bomba02Ligar = 12329
 REG_USINA_QCTA_Bomba02Principal = 12331
+REG_USINA_QCTA_ComportaInfo = 682 + 12288
 REG_USINA_QCTA_ComportaAbrir = 12323
 REG_USINA_QCTA_ComportaFechar = 12325
 REG_USINA_QCTA_ComportaParar = 12324
@@ -1515,163 +2168,4 @@ REG_USINA_Usina_Temperatura_06 = 12888
 REG_USINA_Usina_Temperatura_07 = 12889
 REG_USINA_Usina_Temperatura_08 = 12890
 REG_USINA_VersaoBase = 12764
-REG_USINA_VersaoCustom = 12765
-
-
-def ler_todos():
-    """
-    Esta função lê todos os endereços de interesse da usina de COVÓ e retorna os dados sem tratamento
-    :return: usn_regs, ug1_regs, ug2_regs
-    """
-
-    # Carrega a configuração
-    config = get_config()
-    UG1_slave_ip = config['UG1_slave_ip']
-    UG1_slave_porta = config['UG1_slave_porta']
-    UG2_slave_ip = config['UG2_slave_ip']
-    UG2_slave_porta = config['UG2_slave_porta']
-    USN_slave_ip = config['USN_slave_ip']
-    USN_slave_porta = config['USN_slave_porta']
-    UG1_slave = ModbusClient(host=UG1_slave_ip, port=UG1_slave_porta, timeout=5, unit_id=1, auto_open=True, auto_close=True)
-    UG2_slave = ModbusClient(host=UG2_slave_ip, port=UG2_slave_porta, timeout=5, unit_id=1, auto_open=True, auto_close=True)
-    USN_slave = ModbusClient(host=USN_slave_ip, port=USN_slave_porta, timeout=5, unit_id=1, auto_open=True, auto_close=True)
-
-    # Inicia vars
-    ug1_regs = []
-    ug2_regs = []
-    usn_regs = []
-
-    # Leituras UG1
-    aux = []
-    aux += UG1_slave.read_holding_registers(12288, 73)
-    aux += UG1_slave.read_holding_registers(13568, 92)
-    aux += UG1_slave.read_holding_registers(14198, 16)
-    aux += UG1_slave.read_holding_registers(12763, 124)
-    aux += UG1_slave.read_holding_registers(12563, 32)
-    aux += UG1_slave.read_holding_registers(14278, 124)
-    aux += UG1_slave.read_holding_registers(12765, 4)
-    # Tratamento de valores negativos
-    for a in aux:
-        if a >= 2**15:
-            a = -a + 2**15
-        ug1_regs.append(a)
-
-    # Leituras UG2
-    aux = []
-    aux += UG2_slave.read_holding_registers(12288, 73)
-    aux += UG2_slave.read_holding_registers(13568, 92)
-    aux += UG2_slave.read_holding_registers(14198, 16)
-    aux += UG2_slave.read_holding_registers(12763, 124)
-    aux += UG2_slave.read_holding_registers(12563, 32)
-    aux += UG2_slave.read_holding_registers(14278, 124)
-    aux += UG2_slave.read_holding_registers(12765, 4)
-    # Tratamento de valores negativos
-    for a in aux:
-        if a >= 2 ** 15:
-            a = -a + 2 ** 15
-        ug2_regs.append(a)
-
-    # Leituras USN
-    aux = []
-    aux += USN_slave.read_holding_registers(12763, 125)
-    aux += USN_slave.read_holding_registers(12288, 53)
-    aux += USN_slave.read_holding_registers(14198, 16)
-    aux += USN_slave.read_holding_registers(14278, 124)
-    aux += USN_slave.read_holding_registers(13568, 77)
-    aux += USN_slave.read_holding_registers(12563, 64)
-    aux += USN_slave.read_holding_registers(12765, 4)
-    # Tratamento de valores negativos
-    for a in aux:
-        if a >= 2 ** 15:
-            a = -a + 2 ** 15
-        usn_regs.append(a)
-
-    # Retorna os valores lidos (pode haver None incluso)
-    return usn_regs, ug1_regs, ug2_regs
-
-
-def remover_alarmes():
-    """
-    Esta função tenta remover os alarmesda seguinte maneira:
-    1. Desliga a emergência dos equipamentos
-    2. Reconhece os alarmes dos equipamentos
-    3. Reseta os alarmes dos equipamentos
-    :return: None
-    """
-
-    # Carrega a configuração
-    config = get_config()
-    UG1_slave_ip = config['UG1_slave_ip']
-    UG1_slave_porta = config['UG1_slave_porta']
-    UG2_slave_ip = config['UG2_slave_ip']
-    UG2_slave_porta = config['UG2_slave_porta']
-    USN_slave_ip = config['USN_slave_ip']
-    USN_slave_porta = config['USN_slave_porta']
-    UG1_slave = ModbusClient(host=UG1_slave_ip, port=UG1_slave_porta, timeout=5, unit_id=1, auto_open=True, auto_close=True)
-    UG2_slave = ModbusClient(host=UG2_slave_ip, port=UG2_slave_porta, timeout=5, unit_id=1, auto_open=True, auto_close=True)
-    USN_slave = ModbusClient(host=USN_slave_ip, port=USN_slave_porta, timeout=5, unit_id=1, auto_open=True, auto_close=True)
-
-    # Desliga as emergências
-    UG1_slave.write_single_register(REG_UG1_Operacao_EmergenciaDesligar - 1, 1)
-    UG2_slave.write_single_register(REG_UG2_Operacao_EmergenciaDesligar - 1, 1)
-    USN_slave.write_single_register(REG_USINA_EmergenciaDesligar - 1, 1)
-
-    # Reconehce as emergências
-    UG2_slave.write_single_register(REG_UG2_Operacao_PCH_CovoReconheceAlarmes - 1, 1)
-    UG1_slave.write_single_register(REG_UG1_Operacao_PCH_CovoReconheceAlarmes + 1, 1)
-    USN_slave.write_single_register(REG_USINA_ReconheceAlarmes - 1, 1)
-
-    # Reseta os alarmes
-    UG1_slave.write_single_register(REG_UG1_Operacao_PCH_CovoResetAlarmes - 1, 1)
-    UG2_slave.write_single_register(REG_UG2_Operacao_PCH_CovoResetAlarmes - 1, 1)
-    USN_slave.write_single_register(REG_USINA_ResetAlarmes - 1, 1)
-
-
-def fecha_dj52L():
-    """
-    Esta função auxiliar envia o comando para o fechamento do disjuntor 52L.
-    Em caso de sucesso da função não significa que o disjuntor fechou, apenas que o comando foi dado.
-    :return: True se o comando foi enviado
-    """
-    # Carrega a configuração
-    config = get_config()
-    USN_slave_ip = config['USN_slave_ip']
-    USN_slave_porta = config['USN_slave_porta']
-    USN_slave = ModbusClient(host=USN_slave_ip, port=USN_slave_porta, timeout=5, unit_id=1, auto_open=True, auto_close=True)
-
-    # Fecha o Disjuntor
-    res = USN_slave.write_single_register(REG_USINA_Disj52LFechar - 1, 1)  # dj52L
-    if not res:
-        # Se não foi possivel escrever no registrador, levanta um erro de conexão
-        raise ConnectionError("fecha_dj52L: write_single_register failled.")
-
-    return True
-
-
-def DEBUG_ler_e_gravar_log():
-    """
-    Esta função existe apenas para testar este módulo e não deve ser usada em produção.
-    :return: None
-    """
-    print("Lendo...")
-    dt = datetime.now().strftime('%x %X')
-    usn_regs, ug1_regs, ug2_regs = ler_todos()
-    print("OK!\nEscrevendo...")
-    with open("log_modbus_ug1.csv", "a") as f:
-        f.write("{}, {}\n".format(dt, ug1_regs))
-    with open("log_modbus_ug2.csv", "a") as f:
-        f.write("{}, {}\n".format(dt, ug2_regs))
-    with open("log_modbus_usina.csv", "a") as f:
-        f.write("{}, {}\n".format(dt, usn_regs))
-    print("OK!")
-
-
-def get_config():
-    """
-    Função auxiliar para carregar as configurações da usina.
-    :return: config
-    """
-    config_file = os.path.join(os.path.dirname(__file__), 'voip_config.json')
-    with open(config_file, 'r') as file:
-        config = json.load(file)
-    return config
+REG_USINA_VersaoCustom = 12765   

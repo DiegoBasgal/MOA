@@ -6,5 +6,6 @@ log_modbus_ug2.csv
 log_modbus_usina.csv
 **/log*
 **/venv*
+**/__pycache__*
 *.pyc
 **/cover/*
