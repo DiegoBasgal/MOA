@@ -5,7 +5,7 @@ from datetime import date, datetime, timedelta
 from cmath import sqrt
 import subprocess
 from pyModbusTCP.server import DataBank
-
+from scipy.signal import butter, filtfilt
 from field_connector import FieldConnector
 
 logger = logging.getLogger('__main__')
@@ -87,6 +87,7 @@ class Usina:
         self.agendamentos_atrasados = 0
         self.deve_tentar_normalizar = True
         self.tentativas_de_normalizar = 0
+        self.ts_nv = []
 
         pars = [datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
                         self.kp,
@@ -188,16 +189,18 @@ class Usina:
         #self.con.close()
 
         if self.nv_montante_recente < 1:
-            self.nv_montante_recentes = [self.nv_montante] * int(self.n_movel_r)
-            self.nv_montante_anteriores = [self.nv_montante] * int(self.n_movel_l)
-        self.nv_montante_recentes.append(self.nv_montante)
+            self.nv_montante_recentes = [self.nv_montante] * 120
+        self.nv_montante_recentes.append(round((self.nv_montante+self.nv_montante_recentes[-1])/2,2))
         self.nv_montante_recentes = self.nv_montante_recentes[1:]
-        self.nv_montante_recente = sum(self.nv_montante_recentes) / self.cfg['n_movel_R']
-        self.nv_montante_anteriores.append(self.nv_montante)
-        self.nv_montante_anteriores = self.nv_montante_anteriores[1:]
-        self.nv_montante_anterior = sum(self.nv_montante_anteriores) / self.cfg['n_movel_L']
+        
+        # Filtro butterworth
+        b, a = butter(4, 1, fs=60)
+        self.nv_montante_recente = float(filtfilt(b, a, filtfilt(b, a, self.nv_montante_recentes))[-1])
+
+        self.erro_nv_anterior = self.erro_nv
         self.erro_nv = self.nv_montante_recente - self.nv_alvo
-        self.erro_nv_anterior = self.nv_montante_anterior - self.nv_alvo
+
+
 
         # DB
         #
@@ -616,10 +619,10 @@ class Usina:
 
         if self.modo_de_escolha_das_ugs == MODO_ESCOLHA_MANUAL:
             # escolher por maior prioridade primeiro
-            ls = sorted(ls, key=lambda y: (not y.partindo, not y.sincronizada, not y.setpoint, not y.prioridade, y.horas_maquina))
+            ls = sorted(ls, key=lambda y: (not y.sincronizada, not y.partindo, not y.setpoint, not y.prioridade, y.horas_maquina))
         else:
             # escolher por menor horas_maquina primeiro
-            ls = sorted(ls, key=lambda y: (not y.partindo, not y.sincronizada, not y.setpoint, y.horas_maquina, not y.prioridade,))
+            ls = sorted(ls, key=lambda y: (not y.sincronizada, not y.partindo, not y.setpoint, y.horas_maquina, not y.prioridade,))
         return ls
 
     def controle_normal(self):
@@ -630,8 +633,7 @@ class Usina:
         logger.debug("-------------------------------------------------")
         
         # Calcula PID
-        logger.debug("Alvo: {:0.3f}, Recente: {:0.3f}, Anterior: {:0.3f}".format(self.nv_alvo, self.nv_montante_recente,
-                                                                                 self.nv_montante_anterior))
+        logger.debug("Alvo: {:0.3f}, Recente: {:0.3f}".format(self.nv_alvo, self.nv_montante_recente))
         if abs(self.erro_nv) <= 0.01:
             self.controle_p = self.kp * 0.5 * self.erro_nv 
         else:
@@ -785,6 +787,7 @@ class UnidadeDeGeracao:
 
             if self.flag and self.disponivel:
                 logger.warning("UG {} indisponivel.".format(self.id_da_ug))
+                self.partindo = False
                 self.disponivel = False
 
             if not self.flag and not self.disponivel:
@@ -849,16 +852,19 @@ class UnidadeDeGeracao:
                 logger.info("Tentativas de normalização excedidas! MOA não irá mais tentar.")
      
             if self.setpoint < 1 and not self.partindo:
-                self.parando = True
                 if self.id_da_ug == 1:
-                    self.con.parar_ug1()
+                    if not self.parado and not self.parando:
+                        logger.info("Parando UG1")       
+                    self.con.parar_ug1()  
                     self.parado = self.con.get_ug1_parada()
                 if self.id_da_ug == 2:
+                    if not self.parado and not self.parando:
+                        logger.info("Parando UG2")       
                     self.con.parar_ug2()  
                     self.parado = self.con.get_ug2_parada()
-            
+                self.parando = True
+
             if self.parado:
-                self.partindo = False
                 self.sincronizada = False
                 self.parando = False
 

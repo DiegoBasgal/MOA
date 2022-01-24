@@ -1,7 +1,7 @@
 import logging
 from pyModbusTCP.client import ModbusClient
 from modbus_com import *
-import time
+from time import sleep
 
 logger = logging.getLogger('__main__')
 
@@ -321,13 +321,10 @@ class FieldConnector:
         return True if (response >> 4 & 1) == 1 else False
 
     def get_tensao_na_linha(self):
-        sn = self.usn_clp.read_holding_registers(REG_USINA_Subestacao_TensaoSN - 1)[0]*10
-        tn = self.usn_clp.read_holding_registers(REG_USINA_Subestacao_TensaoTN - 1)[0]*10
-        rn = self.usn_clp.read_holding_registers(REG_USINA_Subestacao_TensaoRN - 1)[0]*10
         st = self.usn_clp.read_holding_registers(REG_USINA_Subestacao_TensaoST - 1)[0]*10
         tr = self.usn_clp.read_holding_registers(REG_USINA_Subestacao_TensaoTR - 1)[0]*10
         rs = self.usn_clp.read_holding_registers(REG_USINA_Subestacao_TensaoRS - 1)[0]*10
-        return float(rs)
+        return float(min([rs, tr, st]))
 
     def partir_ug1(self):
         #if not self.get_sincro_ug1():
@@ -336,8 +333,6 @@ class FieldConnector:
         logger.debug("REG_UG1_Operacao_US(1): {}".format(response))       
 
     def parar_ug1(self):      
-        if not self.get_ug1_parada():
-            logger.info("Parando UG1")       
         response = self.ug1_clp.write_single_register(REG_UG1_Operacao_UP - 1, 1)
         logger.debug("REG_UG1_Operacao_UP{}".format(response))       
 
@@ -348,8 +343,6 @@ class FieldConnector:
         logger.debug("REG_UG2_Operacao_US(1): {}".format(response))  
 
     def parar_ug2(self):
-        if not self.get_ug2_parada():
-            logger.info("Parando UG2")       
         response = self.ug2_clp.write_single_register(REG_UG2_Operacao_UP - 1, 1)
         logger.debug("REG_UG2_Operacao_UP{}".format(response))       
 
@@ -426,14 +419,17 @@ class FieldConnector:
         self.ug1_clp.write_single_register(REG_UG1_Operacao_EmergenciaDesligar - 1, 1)
         self.ug2_clp.write_single_register(REG_UG2_Operacao_EmergenciaDesligar - 1, 1)
         self.usn_clp.write_single_register(REG_USINA_EmergenciaDesligar - 1, 1)
+        sleep(1)
         logger.debug("Reconhece alarmes")
         self.usn_clp.write_single_register(REG_USINA_ReconheceAlarmes - 1, 1) 
         self.ug1_clp.write_single_register(REG_UG1_Operacao_PCH_CovoReconheceAlarmes - 1, 1)
         self.ug2_clp.write_single_register(REG_UG2_Operacao_PCH_CovoReconheceAlarmes - 1, 1)
+        sleep(1)
         logger.debug("Reset alarmes")
         self.usn_clp.write_single_register(REG_USINA_ResetAlarmes - 1, 1)
         self.ug1_clp.write_single_register(REG_UG1_Operacao_PCH_CovoResetAlarmes - 1, 1)
         self.ug2_clp.write_single_register(REG_UG2_Operacao_PCH_CovoResetAlarmes - 1, 1)
+        sleep(5)
         logger.debug("Fecha Dj52L")  
         self.usn_clp.write_single_register(REG_USINA_Disj52LFechar - 1, 1)
 
