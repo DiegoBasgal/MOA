@@ -850,31 +850,30 @@ class UnidadeDeGeracao:
             if self.tentativas_de_normalizar > 3 and self.deve_tentar_normalizar:
                 self.deve_tentar_normalizar = False
                 logger.info("Tentativas de normalização excedidas! MOA não irá mais tentar.")
-     
-            if self.setpoint < 1 and not self.partindo:
-                if self.id_da_ug == 1:
-                    if not self.parado and not self.parando:
-                        logger.info("Parando UG1")       
-                    self.con.parar_ug1()  
-                    self.parado = self.con.get_ug1_parada()
-                if self.id_da_ug == 2:
-                    if not self.parado and not self.parando:
-                        logger.info("Parando UG2")       
-                    self.con.parar_ug2()  
-                    self.parado = self.con.get_ug2_parada()
-                self.parando = True
+
+            if self.id_da_ug == 1:
+                self.parado = self.con.get_ug1_parada()
+                self.sincronizada = self.con.get_sincro_ug1()
+
+            if self.id_da_ug == 2:
+                self.parado = self.con.get_ug2_parada()
+                self.sincronizada = self.con.get_sincro_ug2()
 
             if self.parado:
                 self.sincronizada = False
                 self.parando = False
 
-            if self.id_da_ug == 1:
-                self.sincronizada = self.con.get_sincro_ug1()
-            if self.id_da_ug == 2:
-                self.sincronizada = self.con.get_sincro_ug2()
-
             if self.sincronizada:
                 self.partindo = False
+
+            if self.setpoint < 1 and not self.partindo and not self.parado and not self.parando:
+                self.parando = True
+                if self.id_da_ug == 1:
+                    logger.info("Parando UG1")       
+                    self.con.parar_ug1()  
+                if self.id_da_ug == 2:
+                    logger.info("Parando UG2")       
+                    self.con.parar_ug2()  
 
     def ajuste_perdas(self, var, alerta, limite):
         multiplicador = 1
@@ -911,7 +910,7 @@ class UnidadeDeGeracao:
         if self.setpoint  < self.potencia_minima:
             self.setpoint  = 0
 
-        logger.debug("UG{} Partindo:{}, Sincronizada:{}, Parada:{}".format(self.id_da_ug, self.partindo, self.sincronizada, self.parado))
+        logger.info("[UG{}] Partindo:{}, Sincronizada:{}, Parada:{}, SP: {}".format(self.id_da_ug, self.partindo, self.sincronizada, self.parado, self.setpoint))
 
         if self.parando:
             if self.id_da_ug == 1:
@@ -922,8 +921,9 @@ class UnidadeDeGeracao:
             if self.parado:
                 self.parando = False
                 
-        if self.setpoint < 1 and not self.partindo and not self.parado:
-            self.parando = True
+        if self.setpoint < 1 and not self.partindo:
+            if not self.parado:
+                self.parando = True
             if self.id_da_ug == 1:
                 self.con.parar_ug1()  
             if self.id_da_ug == 2:
