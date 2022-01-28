@@ -44,4 +44,4 @@ UnidadeGeradora *-- StateManual
 UnidadeGeradora *-- StateRestrito
 
 @enduml
-
+'https://plantuml.com/guide'

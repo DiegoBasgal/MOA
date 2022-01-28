@@ -48,6 +48,6 @@
       ],
     "plantuml.server": "http://127.0.0.1:10080",
     "plantuml.render": "PlantUMLServer",
-    "plantuml.diagramsRoot": "diagramas/puml",
+    "plantuml.diagramsRoot": "diagramas/",
     "plantuml.exportOutDir": "diagramas"
 }

@@ -43,26 +43,4 @@ StateRestrito -r[#red,bold]-> StateIndisponivel     : Alarme/Limite
 StateRestrito -r-> StateDisponivel                  : Evento
     
 @enduml
-note bottom of StateDisponivel
-    MOA está controlando a ug
-    Em espera para o MOA
-    Indisponível para o operador
-end note
-
-note top of StateRestrito
-    MOA está controlando a ug
-    Em espera para o MOA
-    Indisponível para o operador
-end note
-
-note top of StateIndisponivel
-    MOA está controlando a ug
-    Indisponível para o MOA
-    Indisponível para o operador
-end note
-
-note top of StateManual
-    MOA não está controlando a ug
-    Indisponível para o MOA
-    Disponível para o operador
-end note
+'https://plantuml.com/guide'
