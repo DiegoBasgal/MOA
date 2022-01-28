@@ -1,7 +1,6 @@
-@startuml
-!pragma useVerticalIf on
-
+@startuml StateRestrito
 title StateRestrito 
+!pragma useVerticalIf on
 
 partition "innit()" {
     start

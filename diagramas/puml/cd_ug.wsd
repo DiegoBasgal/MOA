@@ -1,4 +1,4 @@
-@startuml
+@startuml UnidadeGeradora
 title UnidadeGeradora Class
 
 class Usina

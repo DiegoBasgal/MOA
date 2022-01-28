@@ -1,6 +1,5 @@
-@startuml
+@startuml StateDisponivel
 !pragma useVerticalIf on
-
 title StateDisponivel 
 
 partition "innit()" {
