@@ -1,0 +1,28 @@
+@startuml
+!pragma useVerticalIf on
+
+title StateIndisponivel 
+
+partition "innit()" {
+    start
+    #lightblue:log warning;
+    :self.selo = False;
+    end 
+}
+
+partition "step()" {
+    start
+    if (parent_ug.etapa_atual = UP\nor self.selo == True) then (True)
+        #lightblue:log warning;
+        :self.selo = True;
+        :acionar_trip_logico();
+        :acionar_trip_eletrico();
+    else (False)
+        :parent_ug.parar();
+    endif
+    #lightgray:return self;
+    detach
+}
+
+@enduml
+

@@ -14,6 +14,7 @@
     "workbench.colorCustomizations": {
         "editorRuler.foreground": "#2f2f2f"
     },    
+
     "better-comments.multilineComments": true,
     "better-comments.highlightPlainText": false,
     "better-comments.tags": [
@@ -44,6 +45,9 @@
             "bold": true,
             "italic": false
           },
-      ]
-    
+      ],
+    "plantuml.server": "http://127.0.0.1:10080",
+    "plantuml.render": "PlantUMLServer",
+    "plantuml.diagramsRoot": "diagramas/puml",
+    "plantuml.exportOutDir": "diagramas"
 }

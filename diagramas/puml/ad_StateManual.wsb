@@ -1,0 +1,18 @@
+@startuml
+!pragma useVerticalIf on
+
+title StateManual 
+
+partition "innit()" {
+    start
+    #lightblue:log info;
+    end 
+}
+
+partition "step()" {
+    start
+    #lightgray:return self;
+    detach
+}
+
+@enduml

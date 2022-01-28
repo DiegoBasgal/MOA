@@ -1,0 +1,30 @@
+@startuml
+!pragma useVerticalIf on
+
+title StateRestrito 
+
+partition "innit()" {
+    start
+    #lightblue:log info;
+    end 
+}
+
+partition "step()" {
+    start
+    :Lê alarmes e Limites;
+    if (Alarmes acionados ou\nlimites estourados) then (True)
+        #lightblue:log warning:
+        #lightgray:return StateIndisponivel(self.parent_ug);
+        detach
+    else (False)
+        if (parent_ug.etapa_atual = UP) then (True)
+        else (False)
+            :parent_ug.parar();
+        endif
+        #lightgray:return self;
+        detach
+    endif
+}
+
+@enduml
+
