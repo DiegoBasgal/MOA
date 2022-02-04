@@ -8,7 +8,6 @@ import logging
 import logging.handlers as handlers
 import os
 import sys
-from threading import Thread
 import time
 from sys import stdout, stderr
 from time import sleep
@@ -17,8 +16,7 @@ import json
 
 from pyModbusTCP.server import DataBank, ModbusServer
 
-from mensageiro.mensageiro_log_handler import MensageiroHandler
-import clp_connector, database_connector, abstracao_usina
+import database_connector, abstracao_usina
 
 # Set-up logging
 rootLogger = logging.getLogger()
@@ -40,11 +38,6 @@ ch = logging.StreamHandler(stderr)  # log para sdtout
 ch.setFormatter(logFormatter)
 ch.setLevel(logging.INFO)
 logger.addHandler(ch)
-
-mh = MensageiroHandler()  # log para telegram e voip
-mh.setFormatter(logFormatterSimples)
-mh.setLevel(logging.INFO)
-logger.addHandler(mh)
 
 fh = handlers.TimedRotatingFileHandler("logs/MOA.log", when='midnight', interval=1, backupCount=7)  # log para arquivo
 fh.setFormatter(logFormatter)
@@ -265,7 +258,7 @@ class ModoManualAtivado(State):
         self.usina.ler_valores()
         DataBank.set_words(cfg['REG_PAINEL_LIDO'], [1])
         self.usina.heartbeat()
-        sleep(1)
+        sleep(1/ESCALA_DE_TEMPO)
         if self.usina.modo_autonomo:
             logger.info("Usina voltou para o modo Autonomo")
             self.usina.db.update_habilitar_autonomo()
@@ -353,7 +346,7 @@ class ControleRealizado(State):
 if __name__ == "__main__":
     # A escala de tempo é utilizada para acelerar as simulações do sistema
     # Utilizar 1 para testes sérios e 120 no máximo para testes simples
-    ESCALA_DE_TEMPO = 1
+    ESCALA_DE_TEMPO = 60
     if len(sys.argv) > 1:
         ESCALA_DE_TEMPO = int(sys.argv[1])
 
