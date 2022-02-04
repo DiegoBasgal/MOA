@@ -8,12 +8,12 @@
         "-p",
         "*test*.py"
     ],
-    "editor.renderWhitespace": "all",
     "editor.bracketPairColorization.enabled": true,
-    "editor.rulers": [80,120],
+    "editor.rulers": [80, 88],
     "workbench.colorCustomizations": {
         "editorRuler.foreground": "#2f2f2f"
     },    
+
     "better-comments.multilineComments": true,
     "better-comments.highlightPlainText": false,
     "better-comments.tags": [
@@ -43,7 +43,19 @@
             "backgroundColor": "#ccff00",
             "bold": true,
             "italic": false
+          },          
+          {
+            "tag": "TODO",
+            "color": "#000000",
+            "strikethrough": false,
+            "underline": false,
+            "backgroundColor": "#ccff00",
+            "bold": false,
+            "italic": false
           },
-      ]
-    
+      ],
+    "plantuml.server": "http://127.0.0.1:10080",
+    "plantuml.render": "PlantUMLServer",
+    "plantuml.diagramsRoot": "diagramas/",
+    "plantuml.exportOutDir": "diagramas"
 }

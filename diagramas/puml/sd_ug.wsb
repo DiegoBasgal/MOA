@@ -1,0 +1,46 @@
+@startuml sd_ug
+title sd_ug
+hide empty description
+skinparam nodesep 100
+skinparam ranksep 200
+
+state StateDisponivel {
+    Parada -r[dashed]-> Partindo : estado_alvo == US
+    Partindo -d[dashed]-> Sincronizada : estado_atual == US
+    Sincronizada -l[dashed]-> Parando : estado_alvo == UP
+    Parando -u[dashed]-> Parada : estado_atual == UP
+}
+
+state StateRestrito {
+    [*] --> innit_StateRestrito
+    innit_StateRestrito --> step_StateRestrito
+    step_StateRestrito --> step_StateRestrito
+}
+
+state StateIndisponivel {
+    [*] --> innit_StateIndisponivel
+    innit_StateIndisponivel --> step_StateIndisponivel
+    step_StateIndisponivel --> step_StateIndisponivel
+}
+
+state StateManual {
+    [*] --> innit_StateManual
+    innit_StateManual --> step_StateManual
+    step_StateManual --> step_StateManual
+}
+
+StateDisponivel -d-> StateRestrito                   : Evento
+StateDisponivel -d[#blue,dashed]-> StateIndisponivel        : Operador
+StateDisponivel -d[#blue,dashed]-> StateManual              : Operador
+StateDisponivel -d[#red,bold]-> StateIndisponivel    : Alarme/Limite
+StateIndisponivel -r[#blue,dashed]-> StateManual           : Operador
+StateIndisponivel -u[#blue,dashed]-> StateDisponivel       : Operador
+StateManual -l[#blue,dashed]-> StateIndisponivel           : Operador
+StateManual -l[#blue,dashed]-> StateDisponivel             : Operador
+StateRestrito -r[#blue,dashed]-> StateIndisponivel         : Operador
+StateRestrito -r[#blue,dashed]-> StateManual               : Operador
+StateRestrito -r[#red,bold]-> StateIndisponivel     : Alarme/Limite
+StateRestrito -r-> StateDisponivel                  : Evento
+    
+@enduml
+'https://plantuml.com/guide'

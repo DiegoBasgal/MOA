@@ -22,7 +22,7 @@ class Window(QMainWindow, Ui_Form):
         
         # Timer de sincronização com o processo de simulação!
         self.sinc_timer = QTimer()
-        self.sinc_timer.setInterval(10)
+        self.sinc_timer.setInterval(100)
         self.sinc_timer.timeout.connect(self.sincro)
         self.sinc_timer.start()
 
