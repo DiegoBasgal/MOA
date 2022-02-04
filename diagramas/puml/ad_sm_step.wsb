@@ -1,6 +1,6 @@
 @startuml sm_step
 !pragma useVerticalIf on
-title sm_step 
+title ad_sm_step 
 
 partition "sm_step()" {
     start

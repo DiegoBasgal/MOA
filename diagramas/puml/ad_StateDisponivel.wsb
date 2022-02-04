@@ -1,6 +1,6 @@
 @startuml StateDisponivel
 !pragma useVerticalIf on
-title StateDisponivel 
+title ad_StateDisponivel 
 
 partition "innit()" {
     start
@@ -16,13 +16,13 @@ partition "step()" {
         detach
 
     else if (Alarmes/limites que NÃO forçam indisp.) then (True)
-        if (tentaivas_de_normalizacao > limite) then (True)
+        if (tentativas_de_normalizacao > limite) then (True)
             #lightblue:log warning;
             #lightgray:return StateIndisponivel(self.parent_ug);
             detach
         
         else if (ts_auxiliar < limite) then (True)
-            :tentaivas_de_normalizacao += 1;
+            :tentativas_de_normalizacao += 1;
             :ts_auxiliar = datetime.now();
             #lightblue:log info;
             :parent_ug.reconhece_reset_alarmes();
@@ -53,7 +53,7 @@ partition "step()" {
             endif
 
         else if (parent_ug.etapa_atual = US) then (True)
-            :tentaivas_de_normalizacao = 0;
+            :tentativas_de_normalizacao = 0;
             if (parent_ug.setpoint >=\nparent_ug.setpoint_minimo) then (True)
                 :parent_ug.enviar_setpoint();
             else (False)

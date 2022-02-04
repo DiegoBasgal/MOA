@@ -1,5 +1,5 @@
 @startuml StateManual
-title StateManual 
+title ad_StateManual 
 !pragma useVerticalIf on
 
 partition "innit()" {

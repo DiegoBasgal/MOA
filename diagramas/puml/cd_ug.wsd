@@ -1,5 +1,5 @@
 @startuml UnidadeGeradora
-title UnidadeGeradora Class
+title cd_UnidadeGeradora
 
 class Usina
 class UnidadeGeradora {

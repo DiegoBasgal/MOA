@@ -8,9 +8,8 @@
         "-p",
         "*test*.py"
     ],
-    "editor.renderWhitespace": "all",
     "editor.bracketPairColorization.enabled": true,
-    "editor.rulers": [80,120],
+    "editor.rulers": [80, 88],
     "workbench.colorCustomizations": {
         "editorRuler.foreground": "#2f2f2f"
     },    
@@ -43,6 +42,15 @@
             "underline": false,
             "backgroundColor": "#ccff00",
             "bold": true,
+            "italic": false
+          },          
+          {
+            "tag": "TODO",
+            "color": "#000000",
+            "strikethrough": false,
+            "underline": false,
+            "backgroundColor": "#ccff00",
+            "bold": false,
             "italic": false
           },
       ],

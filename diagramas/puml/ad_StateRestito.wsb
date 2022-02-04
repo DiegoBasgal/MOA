@@ -1,5 +1,5 @@
 @startuml StateRestrito
-title StateRestrito 
+title ad_StateRestrito 
 !pragma useVerticalIf on
 
 partition "innit()" {
@@ -12,11 +12,13 @@ partition "step()" {
     start
     :Lê alarmes e Limites;
     if (Alarmes acionados ou\nlimites estourados) then (True)
-        #lightblue:log warning:
+        #lightblue:log warning;
         #lightgray:return StateIndisponivel(self.parent_ug);
         detach
     else (False)
         if (parent_ug.etapa_atual = UP) then (True)
+            :acionar_trip_logico();
+            :acionar_trip_eletrico();
         else (False)
             :parent_ug.parar();
         endif

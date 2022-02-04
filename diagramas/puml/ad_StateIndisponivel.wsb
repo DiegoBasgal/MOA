@@ -1,5 +1,5 @@
 @startuml StateIndisponivel
-title StateIndisponivel 
+title ad_StateIndisponivel 
 !pragma useVerticalIf on
 
 partition "innit()" {
