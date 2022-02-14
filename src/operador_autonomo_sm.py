@@ -13,7 +13,7 @@ from sys import stdout, stderr
 from time import sleep
 import traceback
 import json
-
+from LeiturasUSN import *
 from pyModbusTCP.server import DataBank, ModbusServer
 
 import database_connector, abstracao_usina
@@ -151,12 +151,8 @@ class ValoresInternosAtualizados(State):
         # Se não foi redirecionado ainda,
         # assume-se que o MOA deve executar de modo autônomo
 
-        # Atualizar os estados
-        for ug in self.usina.ugs:
-            ug.atualizar_estado()
-
         # TODO SEPARA FUNÇÃO
-        self.usina.comporta.atualizar_estado(self.usina.nv_montante)
+        self.usina.comporta.atualizar_estado(self.usina.nv_montante_recente)
 
         # Verificamos se existem agendamentos
         if len(self.usina.get_agendamentos_pendentes()) > 0:
@@ -169,12 +165,12 @@ class ValoresInternosAtualizados(State):
                 self.usina.aguardando_reservatorio = 0
             return Pronto(self.usina)
 
-        if self.usina.nv_montante < self.usina.nv_minimo:
+        if self.usina.nv_montante_recente < self.usina.nv_minimo:
             self.usina.aguardando_reservatorio = 1
             logger.info("Reservatorio abaixo do nivel de trabalho")
             return ReservatorioAbaixoDoMinimo(self.usina)
 
-        if self.usina.nv_montante >= self.usina.nv_maximo:
+        if self.usina.nv_montante_recente >= self.usina.nv_maximo:
             return ReservatorioAcimaDoMaximo(self.usina)
 
         # Se estiver tudo ok:
@@ -189,8 +185,18 @@ class Emergencia(State):
         logger.warning("Usina entrado em estado de emergência (Timestamp: {})".format(self.em_sm_acionada))
         self.usina = instancia_usina
         self.n_tentativa = 0
-        if not (self.usina.cfg["TENSAO_LINHA_BAIXA"] < self.usina.tensao_na_linha < self.usina.cfg["TENSAO_LINHA_ALTA"]):
-            logger.warning("Tensao na linha fora dos limites {:2.3f}kV".format(self.usina.tensao_na_linha/1000))
+        if not (
+            self.usina.cfg["TENSAO_LINHA_BAIXA"] < leitura_tensao_rs.valor < self.usina.cfg["TENSAO_LINHA_ALTA"] and 
+            self.usina.cfg["TENSAO_LINHA_BAIXA"] < leitura_tensao_st.valor < self.usina.cfg["TENSAO_LINHA_ALTA"] and 
+            self.usina.cfg["TENSAO_LINHA_BAIXA"] < leitura_tensao_tr.valor < self.usina.cfg["TENSAO_LINHA_ALTA"]):
+            logger.info(
+                "Tensão na linha: RS {:2.1f}kV ST{:2.1f}kV TR{:2.1f}kV.".format(
+                    (datetime.now() - self.em_sm_acionada).seconds/60,
+                    leitura_tensao_rs.valor / 1000,
+                    leitura_tensao_st.valor / 1000,
+                    leitura_tensao_tr.valor / 1000,
+                )
+            )
         self.usina.distribuir_potencia(0)
         self.usina.escrever_valores()
         self.usina.heartbeat()
@@ -216,9 +222,21 @@ class Emergencia(State):
             if self.usina.clp_emergencia_acionada:
                 try:
                     self.usina.ler_valores()
-                    if not (self.usina.cfg["TENSAO_LINHA_BAIXA"] < self.usina.tensao_na_linha < self.usina.cfg["TENSAO_LINHA_ALTA"]):
+                    if not (
+                        self.usina.cfg["TENSAO_LINHA_BAIXA"] < leitura_tensao_rs.valor < self.usina.cfg["TENSAO_LINHA_ALTA"] and 
+                        self.usina.cfg["TENSAO_LINHA_BAIXA"] < leitura_tensao_st.valor < self.usina.cfg["TENSAO_LINHA_ALTA"] and 
+                        self.usina.cfg["TENSAO_LINHA_BAIXA"] < leitura_tensao_tr.valor < self.usina.cfg["TENSAO_LINHA_ALTA"]
+                    ):
                         self.n_tentativa = 0
-                        logger.debug("V: {} (erro faz {}min)".format(self.usina.tensao_na_linha, (datetime.now() - self.em_sm_acionada).seconds/60))
+
+                        logger.debug(
+                            "Sem tensão faz {} minutos. Tensão na linha: RS {:2.1f}kV ST{:2.1f}kV TR{:2.1f}kV.".format(
+                                (datetime.now() - self.em_sm_acionada).seconds/60,
+                                leitura_tensao_rs.valor / 1000,
+                                leitura_tensao_st.valor / 1000,
+                                leitura_tensao_tr.valor / 1000,
+                            )
+                        )
                         if (datetime.now() - self.em_sm_acionada).seconds > 300:
                             if self.nao_ligou:
                                 self.nao_ligou = False
@@ -293,8 +311,8 @@ class ReservatorioAbaixoDoMinimo(State):
 
     def run(self):
         self.usina.distribuir_potencia(0)
-        if self.usina.nv_montante <= self.usina.nv_fundo_reservatorio:
-            logger.critical("Nivel montante ({:3.2f}) atingiu o fundo do reservatorio!".format(self.usina.nv_montante))
+        if self.usina.nv_montante_recente <= self.usina.nv_fundo_reservatorio:
+            logger.critical("Nivel montante ({:3.2f}) atingiu o fundo do reservatorio!".format(self.usina.nv_montante_recente))
             return Emergencia(self.usina)
         return ControleRealizado(self.usina)
 
@@ -306,9 +324,9 @@ class ReservatorioAcimaDoMaximo(State):
         self.usina = instancia_usina
 
     def run(self):
-        if self.usina.nv_montante >= self.usina.nv_maximorum:
+        if self.usina.nv_montante_recente >= self.usina.nv_maximorum:
             self.usina.distribuir_potencia(0)
-            logger.critical("Nivel montante ({:3.2f}) atingiu o maximorum!".format(self.usina.nv_montante))
+            logger.critical("Nivel montante ({:3.2f}) atingiu o maximorum!".format(self.usina.nv_montante_recente))
             return Emergencia(self.usina)
         else:
             self.usina.distribuir_potencia(self.usina.cfg['pot_maxima_usina'])
@@ -337,6 +355,8 @@ class ControleRealizado(State):
 
     def run(self):
         logger.debug("Escrevendo valores")
+        for ug in self.usina.ugs:
+            ug.step()
         self.usina.escrever_valores()
         logger.debug("HB")
         self.usina.heartbeat()

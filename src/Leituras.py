@@ -8,6 +8,7 @@ __author__ = "Lucas Lavratti"
 
 import logging
 from pyModbusTCP.client import ModbusClient
+from modbus_mapa_antigo import *
 
 
 class LeituraBase:
@@ -84,7 +85,7 @@ class LeituraModbus(LeituraBase):
         Returns:
             float: valor já tratado
         """
-        return (self.raw / self.__escala) - self.__fundo_de_escala
+        return (self.raw * self.__escala) - self.__fundo_de_escala
 
     @property
     def raw(self) -> int:
@@ -143,3 +144,20 @@ class LeituraModbusBit(LeituraModbus):
         if self.__invertido:
             aux = not aux
         return aux
+
+
+class LeituraDelta(LeituraBase):
+    def __init__(self, descr: str, leitura_A: LeituraBase, leitura_B: LeituraBase):
+        super().__init__(descr)
+        self.__leitura_A = leitura_A
+        self.__leitura_B = leitura_B
+
+    @property
+    def valor(self) -> float:
+        """
+        Valor
+
+        Returns:
+            float: leitura_A - leitura_B
+        """
+        return self.__leitura_A.valor - self.__leitura_B.valor

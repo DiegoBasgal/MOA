@@ -9,7 +9,6 @@
     "TDA_slave_porta": 5002,
     "moa_slave_ip": "0.0.0.0",
     "moa_slave_porta": 5004,
-    
     "REG_MOA_OUT_STATUS": 7,
     "REG_SM_STATE": 8,
     "REG_MOA_OUT_MODE": 9,
@@ -22,7 +21,6 @@
     "REG_MOA_IN_EMERG": 12,
     "REG_MOA_IN_HABILITA_AUTO": 13,
     "REG_MOA_IN_DESABILITA_AUTO": 14,
-    
     "timeout_padrao": 5,
     "timeout_emergencia": 10,
     "timeout_normalizacao": 10,
@@ -33,17 +31,16 @@
     "nv_alvo": 643.3,
     "nv_maximo": 643.5,
     "nv_maximorum": 647.0,
-    "pot_maxima_usina": 5.1,
-    "pot_maxima_alvo": 5.0,
-    "pot_minima": 1.250,
+    "pot_maxima_usina": 5100,
+    "pot_maxima_alvo": 5000,
+    "pot_minima": 1250,
     "margem_pot_critica": 1.0,
-    "pot_maxima_ug": 2.55,
+    "pot_maxima_ug": 2550,
     "kp": 5.0,
     "ki": 0.005,
     "kd": 1.0,
     "kie": 0.1,
-    "saida_ie_inicial" : "auto",
+    "saida_ie_inicial": "auto",
     "TENSAO_LINHA_BAIXA": 31050,
     "TENSAO_LINHA_ALTA": 36200
-
 }
