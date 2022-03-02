@@ -36,7 +36,7 @@ logFormatterSimples = logging.Formatter("[%(levelname)-5.5s] [MOA-SM] %(message)
 
 ch = logging.StreamHandler(stderr)  # log para sdtout
 ch.setFormatter(logFormatter)
-ch.setLevel(logging.INFO)
+ch.setLevel(logging.DEBUG)
 logger.addHandler(ch)
 
 fh = handlers.TimedRotatingFileHandler("logs/MOA.log", when='midnight', interval=1, backupCount=7)  # log para arquivo
@@ -136,15 +136,14 @@ class ValoresInternosAtualizados(State):
         """
         Aqui a ordem do checks importa, e muito.
         """
-
-        # Sempre lidar primeiro com a emergência.
+    
         if self.usina.clp_emergencia_acionada:
             return Emergencia(self.usina)
 
         if self.usina.db_emergencia_acionada:
             return Emergencia(self.usina)
 
-        # Em seguida com o modo manual (não autonomo)
+         # Em seguida com o modo manual (não autonomo)
         if not self.usina.modo_autonomo:
             return ModoManualAtivado(self.usina)
 
@@ -160,17 +159,17 @@ class ValoresInternosAtualizados(State):
 
         # Verifica-se então a situação do reservatório
         if self.usina.aguardando_reservatorio:
-            if self.usina.nv_montante_recente > self.usina.nv_alvo:
+            if self.usina.nv_montante > self.usina.nv_alvo:
                 logger.info("Reservatorio dentro do nivel de trabalho")
                 self.usina.aguardando_reservatorio = 0
             return Pronto(self.usina)
 
-        if self.usina.nv_montante_recente < self.usina.nv_minimo:
+        if self.usina.nv_montante < self.usina.nv_minimo:
             self.usina.aguardando_reservatorio = 1
             logger.info("Reservatorio abaixo do nivel de trabalho")
             return ReservatorioAbaixoDoMinimo(self.usina)
 
-        if self.usina.nv_montante_recente >= self.usina.nv_maximo:
+        if self.usina.nv_montante >= self.usina.nv_maximo:
             return ReservatorioAcimaDoMaximo(self.usina)
 
         # Se estiver tudo ok:
@@ -281,8 +280,6 @@ class ModoManualAtivado(State):
             logger.info("Usina voltou para o modo Autonomo")
             self.usina.db.update_habilitar_autonomo()
             self.usina.ler_valores()
-            for ug in self.usina.ugs:
-                ug.voltar_a_tentar_resetar()
             if self.usina.clp_emergencia_acionada == 1 or self.usina.db_emergencia_acionada == 1:
                 self.usina.normalizar_emergencia()
             self.usina.heartbeat()

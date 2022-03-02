@@ -88,7 +88,7 @@ class FieldConnector:
         self.fechaDj52L()
     
     def acionar_emergencia(self):
-        logger.warning("Acionando emergencia")
+        logger.warning("FC: Acionando emergencia")
         self.usn_clp.write_single_register(REG_UG1_Operacao_EmergenciaLigar, 1)
         self.ug1_clp.write_single_register(REG_UG2_Operacao_EmergenciaLigar, 1)
         self.ug2_clp.write_single_register(REG_USINA_EmergenciaLigar, 1)

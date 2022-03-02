@@ -11,6 +11,7 @@ __author__ = "Lucas Lavratti"
 from abc import abstractmethod
 from datetime import datetime
 import logging
+from time import sleep
 import traceback
 
 from Leituras import *
@@ -127,6 +128,8 @@ class UnidadeDeGeracao:
             bool: True se sucesso, Falso caso contrário
         """
         try:
+            self.reconhece_reset_alarmes()
+            sleep(5)
             self.__next_state = StateDisponivel(self)
         except Exception as e:
             self.logger.error(
@@ -281,6 +284,7 @@ class UnidadeDeGeracao:
 
     @setpoint.setter
     def setpoint(self, var: int):
+        self.logger.debug("[UG{}] SP<-{}".format(self.id, var))
         if var < self.setpoint_minimo:
             self.__setpoint = 0
         elif var > self.setpoint_maximo:
@@ -724,8 +728,14 @@ class StateDisponivel(State):
             # A atenuação já vem normalizada de 0 a 1, portanto
             # para ter o ganho é necessário apenas subtrair a atenuação
             ganho = 1 - atenuacao
-            self.parent_ug.setpoint = self.parent_ug.setpoint * ganho
-            self.logger.debug("[UG{}] SP*GAIN: {}".format(self.parent_ug.id, self.parent_ug.setpoint))
+            if ((self.parent_ug.setpoint > self.parent_ug.setpoint_minimo)
+                and self.parent_ug.setpoint * ganho > self.parent_ug.setpoint_minimo):
+                self.parent_ug.setpoint = self.parent_ug.setpoint * ganho
+
+            self.logger.debug("[UG{}] SP {} * GAIN {} = {}".format(self.parent_ug.id, 
+                                self.parent_ug.setpoint,
+                                ganho,
+                                self.parent_ug.setpoint))
             # O comportamento da UG conforme a etapa em que a mesma se encontra
 
             if (
@@ -734,7 +744,7 @@ class StateDisponivel(State):
             ):
                 # Unidade parando
                 # Não fazer nada
-                pass
+                self.logger.debug("[UG{}] Unidade parando".format(self.parent_ug.id))
 
             elif (
                 self.parent_ug.etapa_alvo == UNIDADE_SINCRONIZADA
@@ -742,10 +752,11 @@ class StateDisponivel(State):
             ):
                 # Unidade sincronizando
                 # Não fazer nada
-                pass
+                self.logger.debug("[UG{}] Unidade sincronizando".format(self.parent_ug.id))
 
             elif self.parent_ug.etapa_atual == UNIDADE_PARADA:
                 # Unidade parada
+                self.logger.debug("[UG{}] Unidade parada".format(self.parent_ug.id))
                 # Se o setpoit for acima do mínimo
                 if self.parent_ug.setpoint >= self.parent_ug.setpoint_minimo:
                     # Deve partir a UG
@@ -755,6 +766,7 @@ class StateDisponivel(State):
 
             elif self.parent_ug.etapa_atual == UNIDADE_SINCRONIZADA:
                 # Unidade sincronizada
+                self.logger.debug("[UG{}] Unidade sincronizada".format(self.parent_ug.id))
                 # Unidade sincronizada significa que ela está normalizada, logo zera o contador de tentativas
                 self.parent_ug.tentativas_de_normalizacao = 0
                 # Se o setpoit estiver abaixo do mínimo
@@ -772,7 +784,7 @@ class StateDisponivel(State):
                 # Etapa inconsistente
                 # Logar o ocorrido
                 self.logger.warning(
-                    "[UG{}] UG em etapa inconsistente, indisponibilizando UG.".format(
+                    "[UG{}] UG em etapa inconsistente.".format(
                         self.parent_ug.id
                     )
                 )

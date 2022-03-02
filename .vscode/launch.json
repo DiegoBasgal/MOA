@@ -4,6 +4,12 @@
     // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
     "version": "0.2.0",
     "configurations": [
-    
+        {
+            "name": "Python: OP",
+            "type": "python",
+            "request": "launch",
+            "program": "${workspaceFolder}/src/operador_autonomo_sm.py",
+            "console": "integratedTerminal"
+        },
     ]
 }

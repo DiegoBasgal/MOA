@@ -81,7 +81,6 @@ class Usina:
         self.controle_d = 0
         self.clp_emergencia_acionada = 0
         self.db_emergencia_acionada = 0
-        self.nv_montante = 0
         self.pot_medidor = 0
         self.modo_autonomo = 1
         self.modo_de_escolha_das_ugs = 0
@@ -121,6 +120,10 @@ class Usina:
 
         self.controle_i = self.controle_ie
 
+    @property
+    def nv_montante(self):
+        return leitura_nv_montante.valor
+
     def ler_valores(self):
 
         # CLP
@@ -147,33 +150,34 @@ class Usina:
         #    -> Se não estiver ok, acionar indisponibiliza UG# e avisa por logger.warning
         if not ping(self.cfg["UG1_slave_ip"]):
             logger.warning("CLP UG1 não respondeu a tentativa de comunicação!")
-            self.ug1.indisponibilizar()
+            self.ug1.forcar_estado_indisponivel()
 
         if not ping(self.cfg["UG2_slave_ip"]):
             logger.warning("CLP UG2 (PACP) não respondeu a tentativa de comunicação!")
-            self.ug2.indisponibilizar()
+            self.ug2.forcar_estado_indisponivel()
 
         self.clp_online = True
         self.clp_emergencia_acionada = 0
 
-        if (
+        if (self.modo_autonomo == 1 and not self.clp_emergencia_acionada) and (
             not (
-                self.cfg["TENSAO_LINHA_BAIXA"] < leitura_tensao_rs.valor < self.cfg["TENSAO_LINHA_ALTA"] and 
-                self.cfg["TENSAO_LINHA_BAIXA"] < leitura_tensao_st.valor < self.cfg["TENSAO_LINHA_ALTA"] and
-                self.cfg["TENSAO_LINHA_BAIXA"] < leitura_tensao_tr.valor < self.cfg["TENSAO_LINHA_ALTA"] 
+                self.cfg["TENSAO_LINHA_BAIXA"]
+                < leitura_tensao_rs.valor
+                < self.cfg["TENSAO_LINHA_ALTA"]
+                and self.cfg["TENSAO_LINHA_BAIXA"]
+                < leitura_tensao_st.valor
+                < self.cfg["TENSAO_LINHA_ALTA"]
+                and self.cfg["TENSAO_LINHA_BAIXA"]
+                < leitura_tensao_tr.valor
+                < self.cfg["TENSAO_LINHA_ALTA"]
             )
-            and self.modo_autonomo == 1
-            and not self.clp_emergencia_acionada
-        ):
-            self.clp_emergencia_acionada = True
-
-        if (
-            leitura_dj52L_trip.valor
+            or leitura_dj52L_trip.valor
             or leitura_dj52L_inconsistente.valor
             or leitura_dj52L_falha_fechamento.valor
             or leitura_dj52L_falta_vcc.valor
         ):
             self.acionar_emergencia()
+            self.clp_emergencia_acionada = True
 
         if self.nv_montante_recente < 1:
             self.nv_montante_recentes = [leitura_nv_montante.valor] * 120
@@ -383,7 +387,7 @@ class Usina:
 
         logger.debug(
             "Ultima tentativa: {}. Tensão na linha: RS {:2.1f}kV ST{:2.1f}kV TR{:2.1f}kV.".format(
-                self.ts_ultima_tesntativa_de_normalizacao, 
+                self.ts_ultima_tesntativa_de_normalizacao,
                 leitura_tensao_rs.valor / 1000,
                 leitura_tensao_st.valor / 1000,
                 leitura_tensao_tr.valor / 1000,
@@ -391,9 +395,15 @@ class Usina:
         )
 
         if not (
-            self.cfg["TENSAO_LINHA_BAIXA"] < leitura_tensao_rs.valor < self.cfg["TENSAO_LINHA_ALTA"] and 
-            self.cfg["TENSAO_LINHA_BAIXA"] < leitura_tensao_st.valor < self.cfg["TENSAO_LINHA_ALTA"] and 
-            self.cfg["TENSAO_LINHA_BAIXA"] < leitura_tensao_tr.valor < self.cfg["TENSAO_LINHA_ALTA"]
+            self.cfg["TENSAO_LINHA_BAIXA"]
+            < leitura_tensao_rs.valor
+            < self.cfg["TENSAO_LINHA_ALTA"]
+            and self.cfg["TENSAO_LINHA_BAIXA"]
+            < leitura_tensao_st.valor
+            < self.cfg["TENSAO_LINHA_ALTA"]
+            and self.cfg["TENSAO_LINHA_BAIXA"]
+            < leitura_tensao_tr.valor
+            < self.cfg["TENSAO_LINHA_ALTA"]
         ):
             logger.warn("Tensão na linha fora do limite.")
         elif (
@@ -543,8 +553,11 @@ class Usina:
                     # Coloca em emergência
                     logger.info("Indisponibilizando a usina (comando via agendamento).")
                     for ug in self.ugs:
-                        ug.indisponibilizar()
-                    while not self.ugs[0].parado and not self.ugs[1].parado:
+                        ug.forcar_estado_indisponivel()
+                    while (
+                        not self.ugs[0].etapa_atual == UNIDADE_PARADA
+                        and not self.ugs[1].etapa_atual == UNIDADE_PARADA
+                    ):
                         self.ler_valores()
                         logger.debug(
                             "Indisponibilizando Usina... \n(freezing for 10 seconds)"
@@ -552,7 +565,7 @@ class Usina:
                         sleep(10)
                     self.acionar_emergencia()
                     logger.info(
-                        "Emergência precionada após indizponibilização agendada mudando para modo manual para evitar normalização automática."
+                        "Emergência pressionada após indizponibilização agendada mudando para modo manual para evitar normalização automática."
                     )
                     self.entrar_em_modo_manual()
 
@@ -591,10 +604,10 @@ class Usina:
                     self.ug1.pot_disponivel = novo
 
                 if agendamento[3] == AGENDAMENTO_INDISPONIBILIZAR_UG_1:
-                    self.ug1.indisponibilizar()
+                    self.ug1.forcar_estado_indisponivel()
 
                 if agendamento[3] == AGENDAMENTO_DISPONIBILIZAR_UG_1:
-                    self.ug1.disponibilizar()
+                    self.ug1.forcar_estado_disponivel()
 
                 if agendamento[3] == AGENDAMENTO_ALETRAR_POT_ALVO_UG_2:
                     try:
@@ -608,10 +621,10 @@ class Usina:
                     self.ug2.pot_disponivel = novo
 
                 if agendamento[3] == AGENDAMENTO_INDISPONIBILIZAR_UG_2:
-                    self.ug2.indisponibilizar()
+                    self.ug2.forcar_estado_indisponivel()
 
                 if agendamento[3] == AGENDAMENTO_DISPONIBILIZAR_UG_2:
-                    self.ug2.disponibilizar()
+                    self.ug2.forcar_estado_disponivel()
 
                 # Após executar, indicar no banco de dados
                 self.db.update_agendamento(int(agendamento[0]), 1)
@@ -646,6 +659,9 @@ class Usina:
             )
 
         ugs = self.lista_de_ugs_disponiveis()
+        logger.debug("lista_de_ugs_disponiveis:")
+        for ug in ugs:
+            logger.debug("UG{}".format(ug.id))
 
         if ugs is None:
             return False
@@ -656,36 +672,43 @@ class Usina:
             ugs[0].setpoint = pot_alvo
             return False
         else:
-            
+
             if leitura_dj52L_aberto.valor:
                 logger.info("Fechando Disjuntor 52L.")
                 self.con.fechaDj52L()
 
             else:
-            
+
                 logger.debug("Distribuindo {}".format(pot_alvo))
                 if 0.1 < pot_alvo < self.cfg["pot_minima"]:
                     logger.debug("0.1 < {} < self.cfg['pot_minima']".format(pot_alvo))
                     if len(ugs) > 0:
-                        ugs[0].setpoint = self.cfg["pot_minima"]
+                        ugs[0].setpoint = self.cfg["pot_minima"] + 1
                         for ug in ugs[1:]:
                             ug.setpoint = 0
                 else:
                     pot_alvo = min(pot_alvo, self.pot_disp)
+
+                    """
                     if (
                         self.ug1.etapa_atual == UNIDADE_SINCRONIZADA
                         and self.ug2.etapa_atual == UNIDADE_SINCRONIZADA
-                        and pot_alvo > (2 * self.cfg["pot_minima"])
+                        and pot_alvo > (2 * self.cfg["pot_minima"] - self.cfg["margem_pot_critica"])
                     ):
                         logger.debug(
-                            "Dividir entre as ugs (cada = {})".format(pot_alvo / len(ugs))
+                            "Dividir entre as ugs (cada = {})".format(
+                                pot_alvo / len(ugs)
+                            )
                         )
                         for ug in ugs:
                             ug.setpoint = int(pot_alvo / len(ugs))
                     elif (
                         (
                             pot_alvo
-                            > (self.cfg["pot_maxima_ug"] + self.cfg["margem_pot_critica"])
+                            > (
+                                self.cfg["pot_maxima_ug"]
+                                + self.cfg["margem_pot_critica"]
+                            )
                         )
                         and (abs(self.erro_nv) > 0.02)
                         and self.ug1.disponivel
@@ -697,11 +720,11 @@ class Usina:
 
                     elif (
                         pot_alvo
-                        < self.cfg["pot_maxima_ug"] - self.cfg["margem_pot_critica"]
+                        < (self.cfg["pot_maxima_ug"] - self.cfg["margem_pot_critica"])
                     ):
                         logger.debug(
-                            "{} < self.cfg['pot_maxima_ug'] - self.cfg['margem_pot_critica']".format(
-                                pot_alvo
+                            "{} < self.cfg['pot_maxima_ug'] ({}) - self.cfg['margem_pot_critica'] ({})".format(
+                                pot_alvo, self.cfg['pot_maxima_ug'], self.cfg["margem_pot_critica"]
                             )
                         )
                         ugs[0].setpoint = pot_alvo
@@ -714,9 +737,32 @@ class Usina:
                             ugs[0].setpoint = pot_alvo
                             for ug in ugs[1:]:
                                 ug.setpoint = 0
+                    """
+                    if len(ugs) == 0:
+                        return False
 
-                    for ug in self.ugs:
-                        logger.debug("UG{} SP:{}".format(ug.id, ug.setpoint))
+                    if (self.ug1.etapa_atual == UNIDADE_SINCRONIZADA
+                        and self.ug2.etapa_atual == UNIDADE_SINCRONIZADA
+                        and pot_alvo > (self.cfg["pot_maxima_ug"] - self.cfg["margem_pot_critica"])):
+                        logger.debug("Dividindo ingualmente entre as UGs")
+                        for ug in ugs[1:]:
+                            ug.setpoint = max(self.cfg["pot_minima"], pot_alvo / len(ugs))
+
+                    elif(pot_alvo > (self.cfg["pot_maxima_ug"] + self.cfg["margem_pot_critica"])):
+                        logger.debug("Dividindo desigualmente entre UGs pois está partindo uma ou mais UGs")
+                        ugs[0].setpoint = self.cfg["pot_maxima_ug"]
+                        for ug in ugs[1:]:
+                            ug.setpoint = max(self.cfg["pot_minima"], pot_alvo / len(ugs))
+
+                    else:
+                        logger.debug("Apenas uma UG deve estar sincronizada")
+                        pot_alvo = min(pot_alvo, self.cfg["pot_maxima_ug"])
+                        ugs[0].setpoint = max(self.cfg["pot_minima"], pot_alvo)
+                        for ug in ugs[1:]:
+                            ug.setpoint = 0
+
+                for ug in self.ugs:
+                    logger.debug("UG{} SP:{}".format(ug.id, ug.setpoint))
 
     def lista_de_ugs_disponiveis(self):
         """
@@ -832,7 +878,9 @@ class Usina:
                 ma,
             )
         except Exception as e:
-            logger.debug("Exception Banco-------------------------------------------------")
+            logger.debug(
+                "Exception Banco-------------------------------------------------"
+            )
 
         self.distribuir_potencia(pot_alvo)
 

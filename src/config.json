@@ -34,7 +34,7 @@
     "pot_maxima_usina": 5100,
     "pot_maxima_alvo": 5000,
     "pot_minima": 1250,
-    "margem_pot_critica": 1.0,
+    "margem_pot_critica": 1000,
     "pot_maxima_ug": 2550,
     "kp": 5.0,
     "ki": 0.005,

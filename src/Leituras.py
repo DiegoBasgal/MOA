@@ -108,12 +108,12 @@ class LeituraModbus(LeituraBase):
                 else:
                     return 0
             else:
-                raise ConnectionError("Erro na conexãp modbus.")
+                raise ConnectionError("Erro na conexão modbus.")
         except:
             # ! TODO Tratar exceptions
             # O que deve retornar caso não consiga comunicar?
-            raise NotImplementedError
-
+            # raise NotImplementedError
+            pass
 
 class LeituraModbusBit(LeituraModbus):
     """
@@ -161,3 +161,15 @@ class LeituraDelta(LeituraBase):
             float: leitura_A - leitura_B
         """
         return self.__leitura_A.valor - self.__leitura_B.valor
+
+class LeituraDebug(LeituraBase):
+    def __init__(self, descr: str) -> None:
+        super().__init__(descr)
+
+    @property
+    def valor(self) -> float:
+        return self.__valor
+    
+    @valor.setter
+    def valor(self, var):
+        self.__valor = var

@@ -355,7 +355,7 @@ class UnidadeDeGeracao2(UnidadeDeGeracao):
             bool: True se sucesso, Falso caso contrário
         """
         try:
-            self.logger.info(
+            self.logger.debug(
                 "[UG{}] Acionando sinal (via rede) de TRIP.".format(self.id)
             )
             response = self.clp.write_single_register(
@@ -375,7 +375,7 @@ class UnidadeDeGeracao2(UnidadeDeGeracao):
             bool: True se sucesso, Falso caso contrário
         """
         try:
-            self.logger.info(
+            self.logger.debug(
                 "[UG{}] Removendo sinal (via rede) de TRIP.".format(self.id)
             )
             response = self.clp.write_single_register(
@@ -395,7 +395,7 @@ class UnidadeDeGeracao2(UnidadeDeGeracao):
             bool: True se sucesso, Falso caso contrário
         """
         try:
-            self.logger.info(
+            self.logger.debug(
                 "[UG{}] Acionando sinal (elétrico) de TRIP.".format(self.id)
             )
             DataBank.set_words(
@@ -416,7 +416,7 @@ class UnidadeDeGeracao2(UnidadeDeGeracao):
             bool: True se sucesso, Falso caso contrário
         """
         try:
-            self.logger.info(
+            self.logger.debug(
                 "[UG{}] Removendo sinal (elétrico) de TRIP.".format(self.id)
             )
             DataBank.set_words(
@@ -441,6 +441,7 @@ class UnidadeDeGeracao2(UnidadeDeGeracao):
                 "[UG{}] Enviando comando (via rede) de partida.".format(self.id)
             )
             response = self.clp.write_single_register(REG_UG2_Operacao_US, 1)
+            self.enviar_setpoint(self.setpoint)
         except:
             #! TODO Tratar exceptions
             return False
@@ -476,6 +477,8 @@ class UnidadeDeGeracao2(UnidadeDeGeracao):
             self.logger.info(
                 "[UG{}] Enviando comando de reconhece e reset alarmes.".format(self.id)
             )
+            self.remover_trip_eletrico()
+            self.remover_trip_logico()
             response = self.clp.write_single_register(
                 REG_UG2_Operacao_PainelReconheceAlarmes, 1
             )

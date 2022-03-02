@@ -379,6 +379,9 @@ class UnidadeDeGeracao1(UnidadeDeGeracao):
                 "[UG{}] Removendo sinal (via rede) de TRIP.".format(self.id)
             )
             response = self.clp.write_single_register(
+                REG_UG1_Operacao_EmergenciaLigar, 0
+            )
+            response = self.clp.write_single_register(
                 REG_UG1_Operacao_EmergenciaDesligar, 1
             )
         except:
@@ -477,6 +480,8 @@ class UnidadeDeGeracao1(UnidadeDeGeracao):
             self.logger.info(
                 "[UG{}] Enviando comando de reconhece e reset alarmes.".format(self.id)
             )
+            self.remover_trip_eletrico()
+            self.remover_trip_logico()
             response = self.clp.write_single_register(
                 REG_UG1_Operacao_PainelReconheceAlarmes, 1
             )
