@@ -13,10 +13,10 @@ from sys import stdout, stderr
 from time import sleep
 import traceback
 import json
-from LeiturasUSN import *
 from pyModbusTCP.server import DataBank, ModbusServer
 
-import database_connector, abstracao_usina
+import src.database_connector as database_connector
+import src.abstracao_usina as abstracao_usina
 
 # Set-up logging
 rootLogger = logging.getLogger()
@@ -116,9 +116,9 @@ class Pronto(State):
             except Exception as e:
                 self.n_tentativa += 1
                 logger.error("Erro durante a comunicação do MOA com a usina. Tentando novamente em {}s (tentativa{}/3)."
-                             " Exception: {}.".format(self.usina.timeout_padrao * n_tentativa, self.n_tentativa, repr(e)))
+                             " Exception: {}.".format(self.usina.timeout_padrao * self.n_tentativa, self.n_tentativa, repr(e)))
                 logger.critical("Traceback: {}".format(traceback.format_exc()))
-                sleep(self.usina.timeout_padrao * n_tentativa)
+                sleep(self.usina.timeout_padrao * self.n_tentativa)
                 return self
 
 
@@ -127,7 +127,7 @@ class ValoresInternosAtualizados(State):
     def __init__(self, instancia_usina, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.usina = instancia_usina
-        DataBank.set_words(cfg['REG_PAINEL_LIDO'], [1])
+        DataBank.set_words(self.usina.cfg['REG_PAINEL_LIDO'], [1])
 
 
     def run(self):
@@ -185,15 +185,15 @@ class Emergencia(State):
         self.usina = instancia_usina
         self.n_tentativa = 0
         if not (
-            self.usina.cfg["TENSAO_LINHA_BAIXA"] < leitura_tensao_rs.valor < self.usina.cfg["TENSAO_LINHA_ALTA"] and 
-            self.usina.cfg["TENSAO_LINHA_BAIXA"] < leitura_tensao_st.valor < self.usina.cfg["TENSAO_LINHA_ALTA"] and 
-            self.usina.cfg["TENSAO_LINHA_BAIXA"] < leitura_tensao_tr.valor < self.usina.cfg["TENSAO_LINHA_ALTA"]):
+            self.usina.cfg["TENSAO_LINHA_BAIXA"] < self.usina.leituras.tensao_rs.valor < self.usina.cfg["TENSAO_LINHA_ALTA"] and 
+            self.usina.cfg["TENSAO_LINHA_BAIXA"] < self.usina.leituras.tensao_st.valor < self.usina.cfg["TENSAO_LINHA_ALTA"] and 
+            self.usina.cfg["TENSAO_LINHA_BAIXA"] < self.usina.leituras.tensao_tr.valor < self.usina.cfg["TENSAO_LINHA_ALTA"]):
             logger.info(
                 "Tensão na linha: RS {:2.1f}kV ST{:2.1f}kV TR{:2.1f}kV.".format(
                     (datetime.now() - self.em_sm_acionada).seconds/60,
-                    leitura_tensao_rs.valor / 1000,
-                    leitura_tensao_st.valor / 1000,
-                    leitura_tensao_tr.valor / 1000,
+                    self.usina.leituras.tensao_rs.valor / 1000,
+                    self.usina.leituras.tensao_st.valor / 1000,
+                    self.usina.leituras.tensao_tr.valor / 1000,
                 )
             )
         self.usina.distribuir_potencia(0)
@@ -222,18 +222,18 @@ class Emergencia(State):
                 try:
                     self.usina.ler_valores()
                     if not (
-                        self.usina.cfg["TENSAO_LINHA_BAIXA"] < leitura_tensao_rs.valor < self.usina.cfg["TENSAO_LINHA_ALTA"] and 
-                        self.usina.cfg["TENSAO_LINHA_BAIXA"] < leitura_tensao_st.valor < self.usina.cfg["TENSAO_LINHA_ALTA"] and 
-                        self.usina.cfg["TENSAO_LINHA_BAIXA"] < leitura_tensao_tr.valor < self.usina.cfg["TENSAO_LINHA_ALTA"]
+                        self.usina.cfg["TENSAO_LINHA_BAIXA"] < self.usina.leituras.tensao_rs.valor < self.usina.cfg["TENSAO_LINHA_ALTA"] and 
+                        self.usina.cfg["TENSAO_LINHA_BAIXA"] < self.usina.leituras.tensao_st.valor < self.usina.cfg["TENSAO_LINHA_ALTA"] and 
+                        self.usina.cfg["TENSAO_LINHA_BAIXA"] < self.usina.leituras.tensao_tr.valor < self.usina.cfg["TENSAO_LINHA_ALTA"]
                     ):
                         self.n_tentativa = 0
 
                         logger.debug(
                             "Sem tensão faz {} minutos. Tensão na linha: RS {:2.1f}kV ST{:2.1f}kV TR{:2.1f}kV.".format(
                                 (datetime.now() - self.em_sm_acionada).seconds/60,
-                                leitura_tensao_rs.valor / 1000,
-                                leitura_tensao_st.valor / 1000,
-                                leitura_tensao_tr.valor / 1000,
+                                self.usina.leituras.tensao_rs.valor / 1000,
+                                self.usina.leituras.tensao_st.valor / 1000,
+                                self.usina.leituras.tensao_tr.valor / 1000,
                             )
                         )
                         if (datetime.now() - self.em_sm_acionada).seconds > 300:
@@ -250,7 +250,7 @@ class Emergencia(State):
                     logger.debug("Bela adormecida 10s")
                     sleep(10)
                     logger.info("Normalizando usina. (tentativa{}/3) (limite entre tentaivas: {}s)"
-                                .format(self.n_tentativa, n_tentativa*self.usina.cfg['timeout_normalizacao']))
+                                .format(self.n_tentativa, self.usina.cfg['timeout_normalizacao']))
                     self.usina.normalizar_emergencia()
                     self.usina.ler_valores()
                 except Exception as e:
@@ -273,7 +273,7 @@ class ModoManualAtivado(State):
 
     def run(self):
         self.usina.ler_valores()
-        DataBank.set_words(cfg['REG_PAINEL_LIDO'], [1])
+        DataBank.set_words(usina.cfg['REG_PAINEL_LIDO'], [1])
         self.usina.heartbeat()
         sleep(1/ESCALA_DE_TEMPO)
         if self.usina.modo_autonomo:
@@ -405,7 +405,7 @@ if __name__ == "__main__":
             # Inicializando Servidor Modbus (para algumas comunicações com o Elipse)
             try:
                 logger.debug("Iniciando Servidor/Slave Modbus MOA.")
-                modbus_server = ModbusServer(host=cfg['moa_slave_ip'], port=cfg['moa_slave_porta'],
+                modbus_server = ModbusServer(host=usina.cfg['moa_slave_ip'], port=usina.cfg['moa_slave_porta'],
                                              no_block=True)
                 modbus_server.start()
                 sleep(1)

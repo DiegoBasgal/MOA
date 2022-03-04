@@ -7,7 +7,7 @@ dos valores de campo.
 __version__ = "0.1"
 __author__ = "Lucas Lavratti"
 
-from Leituras import *
+from src.Leituras import *
 
 
 class CondicionadorBase:

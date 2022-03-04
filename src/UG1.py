@@ -1,9 +1,10 @@
 import json
 import os
-from Condicionadores import *
-from Leituras import *
-from LeiturasUSN import *
-from UnidadeDeGeracao import *
+from unittest.mock import MagicMock
+from src.Condicionadores import *
+from src.Leituras import *
+from src.LeiturasUSN import *
+from src.UnidadeDeGeracao import *
 from pyModbusTCP.server import DataBank, ModbusServer
 
 
@@ -11,11 +12,19 @@ class UnidadeDeGeracao1(UnidadeDeGeracao):
     def __init__(
         self,
         id,
+        cfg=None,
+        leituras_usina=None
     ):
         super().__init__(id)
 
+        if not cfg or not leituras_usina:
+            raise ValueError
+        else:
+            self.cfg = cfg
+            self.leituras_usina = leituras_usina
+        
         # carrega as configurações
-        config_file = os.path.join(os.path.dirname(__file__), "config.json")
+        config_file = os.path.join(os.path.dirname(__file__), "..", "config.json")
         with open(config_file, "r") as file:
             self.cfg = json.load(file)
 
@@ -339,8 +348,8 @@ class UnidadeDeGeracao1(UnidadeDeGeracao):
         # Perda na garde
         self.leitura_perda_na_grade = LeituraDelta(
             "Perda na grade ug{}".format(self.id),
-            leitura_nv_montante,
-            leitura_nv_canal_aducao,
+            self.leituras_usina.leitura_nv_montante,
+            self.leituras_usina.leitura_nv_canal_aducao,
         )
         base, limite = 10, 20
         x = self.leitura_perda_na_grade
@@ -528,7 +537,7 @@ class UnidadeDeGeracao1(UnidadeDeGeracao):
     @property
     def etapa_alvo(self) -> int:
         try:
-            response = self.clp.read_holding_registers(REG_UG1_Operacao_EtapaAlvo)[0]
+            response = self.leitura_Operacao_EtapaAlvo.valor
         except:
             #! TODO Tratar exceptions
             return False
@@ -538,7 +547,7 @@ class UnidadeDeGeracao1(UnidadeDeGeracao):
     @property
     def etapa_atual(self) -> int:
         try:
-            response = self.clp.read_holding_registers(REG_UG1_Operacao_EtapaAtual)[0]
+            response = self.leitura_Operacao_EtapaAtual.valor
         except:
             #! TODO Tratar exceptions
             return False

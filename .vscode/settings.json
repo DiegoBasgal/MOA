@@ -8,6 +8,8 @@
         "-p",
         "*test*.py"
     ],
+    "testExplorer.useNativeTesting": true,
+    
     "editor.bracketPairColorization.enabled": true,
     "editor.rulers": [80, 88],
     "workbench.colorCustomizations": {

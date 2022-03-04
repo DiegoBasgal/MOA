@@ -6,7 +6,7 @@ from unittest.mock import MagicMock, patch
 from decimal import Decimal
 
 from src.abstracao_usina import Usina
-import src.operador_autonomo_sm
+import operador_autonomo_sm
 from src.field_connector import FieldConnector
 from src.mensageiro import voip, telegram_bot
 
@@ -24,30 +24,52 @@ class TestNivel(unittest.TestCase):
         logging.disable(logging.NOTSET)
 
     def setUp(self):
-        self.cfg = dict(UG1_slave_ip='192.168.70.10', UG1_slave_porta=502, UG2_slave_ip='192.168.70.13',
-                        UG2_slave_porta=502, USN_slave_ip='192.168.70.16', USN_slave_porta=502,
-                        clp_A_IP='10.101.2.242', clp_A_PORT=5002,
-                        clp_B_IP='10.101.2.242', clp_B_PORT=5002,
-                        moa_slave_ip='0.0.0.0',
-                        moa_slave_porta=5003, ENDERECO_CLP_NV_MONATNTE=40000, ENDERECO_CLP_MEDIDOR=40001,
-                        ENDERECO_CLP_COMPORTA_FLAGS=40010, ENDERECO_CLP_COMPORTA_POS=40011,
-                        ENDERECO_CLP_UG1_FLAGS=40020, ENDERECO_CLP_UG1_MINUTOS=40023,
-                        ENDERECO_CLP_UG1_PERGA_GRADE=40025, ENDERECO_CLP_UG1_POTENCIA=40021,
-                        ENDERECO_CLP_UG1_SETPOINT=40022, ENDERECO_CLP_UG1_T_MANCAL=40024,
-                        ENDERECO_CLP_UG2_FLAGS=40030, ENDERECO_CLP_UG2_MINUTOS=40033,
-                        ENDERECO_CLP_UG2_PERGA_GRADE=40035, ENDERECO_CLP_UG2_POTENCIA=40031,
-                        ENDERECO_CLP_UG2_SETPOINT=40032, ENDERECO_CLP_UG2_T_MANCAL=40034,
-                        ENDERECO_CLP_USINA_FLAGS=40100, ENDERECO_LOCAL_NV_MONATNTE=40009,
-                        ENDERECO_LOCAL_NV_ALVO=40010, ENDERECO_LOCAL_NV_RELIGAMENTO=40011,
-                        ENDERECO_LOCAL_UG1_POT=40019, ENDERECO_LOCAL_UG1_SETPOINT=40020,
-                        ENDERECO_LOCAL_UG1_DISP=40021, ENDERECO_LOCAL_UG2_POT=40029,
-                        ENDERECO_LOCAL_UG2_SETPOINT=40030, ENDERECO_LOCAL_UG2_DISP=40031,
-                        ENDERECO_LOCAL_CLP_ONLINE=40099, ENDERECO_LOCAL_STATUS_MOA=40100, timeout_padrao=5,
-                        timeout_emergencia=10, timeout_normalizacao=10, n_movel_R=5, n_movel_L=30,
-                        nv_fundo_reservatorio=641.25, nv_minimo=643.0, nv_alvo=643.25, nv_maximo=643.5,
-                        nv_maximorum=647, nv_religamento=643.25,
-                        pot_maxima_usina=5.2, pot_maxima_alvo=5.0, pot_minima=1.0, margem_pot_critica=1.0,
-                        pot_maxima_ug=2.6, kp=-2.0, ki=-0.015, kd=-10, kie=0.08, saida_ie_inicial=0.0)
+        self.cfg = {
+                    "UG1_slave_ip": "172.21.15.50",
+                    "UG1_slave_porta": 5002,
+                    "UG2_slave_ip": "172.21.15.50",
+                    "UG2_slave_porta": 5002,
+                    "USN_slave_ip": "172.21.15.50",
+                    "USN_slave_porta": 5002,
+                    "TDA_slave_ip": "172.21.15.50",
+                    "TDA_slave_porta": 5002,
+                    "moa_slave_ip": "0.0.0.0",
+                    "moa_slave_porta": 5004,
+                    "REG_MOA_OUT_STATUS": 7,
+                    "REG_SM_STATE": 8,
+                    "REG_MOA_OUT_MODE": 9,
+                    "REG_PAINEL_LIDO": 10,
+                    "REG_MOA_OUT_EMERG": 50,
+                    "REG_MOA_OUT_TARGET_LEVEL": 51,
+                    "REG_MOA_OUT_SETPOINT": 52,
+                    "REG_MOA_OUT_BLOCK_UG1": 60,
+                    "REG_MOA_OUT_BLOCK_UG2": 70,
+                    "REG_MOA_IN_EMERG": 12,
+                    "REG_MOA_IN_HABILITA_AUTO": 13,
+                    "REG_MOA_IN_DESABILITA_AUTO": 14,
+                    "timeout_padrao": 5,
+                    "timeout_emergencia": 10,
+                    "timeout_normalizacao": 10,
+                    "n_movel_R": 6,
+                    "n_movel_L": 30,
+                    "nv_fundo_reservatorio": 641.0,
+                    "nv_minimo": 643.01,
+                    "nv_alvo": 643.3,
+                    "nv_maximo": 643.5,
+                    "nv_maximorum": 647.0,
+                    "pot_maxima_usina": 5100,
+                    "pot_maxima_alvo": 5000,
+                    "pot_minima": 1250,
+                    "margem_pot_critica": 1000,
+                    "pot_maxima_ug": 2550,
+                    "kp": 5.0,
+                    "ki": 0.005,
+                    "kd": 1.0,
+                    "kie": 0.1,
+                    "saida_ie_inicial": "auto",
+                    "TENSAO_LINHA_BAIXA": 31050,
+                    "TENSAO_LINHA_ALTA": 36200
+                }
 
         self.db_mock = MagicMock()
         self.db_mock.get_parametros_usina.return_value = dict(id=1, modo_autonomo=1, status_moa=7,
@@ -125,8 +147,8 @@ class TestNivel(unittest.TestCase):
         self.mock_con.acionar_emergencia.return_value = 0
         self.mock_con.normalizar_emergencia.return_value = 0
         
-        self.usina = Usina(cfg=self.cfg, db=self.db_mock, con=self.mock_con)
-        self.usina.ler_valores()
+        self.usina = Usina(cfg=self.cfg, db=self.db_mock)
+        self.usina.con = MagicMock()
      
 
     def test_nivel_abaixo_do_limite(self):
@@ -134,13 +156,13 @@ class TestNivel(unittest.TestCase):
         self.usina.acionar_emergencia = MagicMock()
         self.usina.con.get_nv_montante.return_value = nv_teste
         logging.disable(logging.NOTSET)
-        sm = src.operador_autonomo_sm.StateMachine(initial_state=src.operador_autonomo_sm.Pronto(self.usina))
+        sm = operador_autonomo_sm.StateMachine(initial_state=operador_autonomo_sm.Pronto(self.usina))
         sm.exec()  # Atualiza valroes internos
         self.assertEqual(self.usina.nv_montante, nv_teste)
         sm.exec()  # Deve ter entrado no Reservatorio abaixo do normal
-        self.assertIsInstance(sm.state, src.operador_autonomo_sm.ReservatorioAbaixoDoMinimo)
+        self.assertIsInstance(sm.state, operador_autonomo_sm.ReservatorioAbaixoDoMinimo)
         sm.exec()  # Deve ter entrado no Emergencia
-        self.assertIsInstance(sm.state, src.operador_autonomo_sm.Emergencia)
+        self.assertIsInstance(sm.state, operador_autonomo_sm.Emergencia)
         self.usina.acionar_emergencia.assert_called()
         voip.enviar_voz_teste.assert_called()
 
@@ -149,13 +171,13 @@ class TestNivel(unittest.TestCase):
         self.usina.acionar_emergencia = MagicMock()
         self.usina.con.get_nv_montante.return_value = nv_teste
         logging.disable(logging.NOTSET)
-        sm = src.operador_autonomo_sm.StateMachine(initial_state=src.operador_autonomo_sm.Pronto(self.usina))
+        sm = operador_autonomo_sm.StateMachine(initial_state=operador_autonomo_sm.Pronto(self.usina))
         sm.exec()  # Atualiza valroes internos
         self.assertEqual(self.usina.nv_montante, 647.01)
         sm.exec()  # Deve ter entrado no Reservatorio abaixo do normal
-        self.assertIsInstance(sm.state, src.operador_autonomo_sm.ReservatorioAcimaDoMaximo)
+        self.assertIsInstance(sm.state, operador_autonomo_sm.ReservatorioAcimaDoMaximo)
         sm.exec()  # Deve ter entrado no Emergencia e ligado para os resp.
-        self.assertIsInstance(sm.state, src.operador_autonomo_sm.Emergencia)
+        self.assertIsInstance(sm.state, operador_autonomo_sm.Emergencia)
         self.usina.acionar_emergencia.assert_called()
         voip.enviar_voz_teste.assert_called()
 

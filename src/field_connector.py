@@ -1,9 +1,7 @@
 import logging
 from pyModbusTCP.client import ModbusClient
-from modbus_mapa_antigo import *
+from src.modbus_mapa_antigo import *
 from time import sleep
-
-from modbus_mapa_antigo import REG_UG1_Operacao_EmergenciaLigar
 
 logger = logging.getLogger('__main__')
 

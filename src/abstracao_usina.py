@@ -1,15 +1,14 @@
 import logging
-from time import sleep
-import Leituras
-import LeiturasUSN
-import UG1
-import mensageiro.voip as voip
-from datetime import date, datetime, timedelta
-from cmath import sqrt
 import subprocess
+from cmath import sqrt
+from datetime import date, datetime, timedelta
+from time import sleep
+
 from pyModbusTCP.server import DataBank
 from scipy.signal import butter, filtfilt
-from field_connector import FieldConnector
+import src.mensageiro.voip as voip
+from src.field_connector import FieldConnector
+from src.codes import *
 
 logger = logging.getLogger("__main__")
 
@@ -24,15 +23,9 @@ AGENDAMENTO_DISPONIBILIZAR_UG_2 = 203
 AGENDAMENTO_DISPARAR_MENSAGEM_TESTE = 777
 MODO_ESCOLHA_MANUAL = 2
 
-from UG1 import *
-from UG2 import *
-from Leituras import *
-from LeiturasUSN import *
-from Condicionadores import *
-
 
 class Usina:
-    def __init__(self, cfg=None, db=None, con=None):
+    def __init__(self, cfg=None, db=None, con=None, leituras=None):
 
         if not cfg or not db:
             raise ValueError
@@ -40,19 +33,28 @@ class Usina:
             self.cfg = cfg
             self.db = db
 
-        if not con:
-            self.con = FieldConnector(self.cfg)
-        else:
+        if con:
             self.con = con
+        else:  
+            from src.field_connector import FieldConnector
+            self.con = FieldConnector(self.cfg)
+
+        if leituras:
+            self.leituras = leituras
+        else:
+            from src.LeiturasUSN import LeiturasUSN
+            self.leituras = LeiturasUSN(self.cfg)
 
         self.state_moa = 1
 
         # Inicializa Objs da usina
-        self.ug1 = UnidadeDeGeracao1(1)
-        self.ug2 = UnidadeDeGeracao2(2)
+        from src.UG1 import UnidadeDeGeracao1
+        from src.UG2 import UnidadeDeGeracao2
+        self.ug1 = UnidadeDeGeracao1(1, cfg=self.cfg, leituras_usina=self.leituras)
+        self.ug2 = UnidadeDeGeracao2(2, cfg=self.cfg, leituras_usina=self.leituras)
         self.ugs = [self.ug1, self.ug2]
 
-        self.comporta = Comporta(self.con)
+        self.comporta = Comporta()
         self.avisado_em_eletrica = False
 
         # Define as vars inciais
@@ -81,7 +83,6 @@ class Usina:
         self.controle_d = 0
         self.clp_emergencia_acionada = 0
         self.db_emergencia_acionada = 0
-        self.pot_medidor = 0
         self.modo_autonomo = 1
         self.modo_de_escolha_das_ugs = 0
         self.nv_montante_recente = 0
@@ -122,7 +123,7 @@ class Usina:
 
     @property
     def nv_montante(self):
-        return leitura_nv_montante.valor
+        return self.leituras.nv_montante.valor
 
     def ler_valores(self):
 
@@ -162,27 +163,27 @@ class Usina:
         if (self.modo_autonomo == 1 and not self.clp_emergencia_acionada) and (
             not (
                 self.cfg["TENSAO_LINHA_BAIXA"]
-                < leitura_tensao_rs.valor
+                < self.leituras.tensao_rs.valor
                 < self.cfg["TENSAO_LINHA_ALTA"]
                 and self.cfg["TENSAO_LINHA_BAIXA"]
-                < leitura_tensao_st.valor
+                < self.leituras.tensao_st.valor
                 < self.cfg["TENSAO_LINHA_ALTA"]
                 and self.cfg["TENSAO_LINHA_BAIXA"]
-                < leitura_tensao_tr.valor
+                < self.leituras.tensao_tr.valor
                 < self.cfg["TENSAO_LINHA_ALTA"]
             )
-            or leitura_dj52L_trip.valor
-            or leitura_dj52L_inconsistente.valor
-            or leitura_dj52L_falha_fechamento.valor
-            or leitura_dj52L_falta_vcc.valor
+            or self.leituras.dj52L_trip.valor
+            or self.leituras.dj52L_inconsistente.valor
+            or self.leituras.dj52L_falha_fechamento.valor
+            or self.leituras.dj52L_falta_vcc.valor
         ):
             self.acionar_emergencia()
             self.clp_emergencia_acionada = True
 
         if self.nv_montante_recente < 1:
-            self.nv_montante_recentes = [leitura_nv_montante.valor] * 120
+            self.nv_montante_recentes = [self.leituras.nv_montante.valor] * 120
         self.nv_montante_recentes.append(
-            round((leitura_nv_montante.valor + self.nv_montante_recentes[-1]) / 2, 2)
+            round((self.leituras.nv_montante.valor + self.nv_montante_recentes[-1]) / 2, 2)
         )
         self.nv_montante_recentes = self.nv_montante_recentes[1:]
 
@@ -388,21 +389,21 @@ class Usina:
         logger.debug(
             "Ultima tentativa: {}. Tensão na linha: RS {:2.1f}kV ST{:2.1f}kV TR{:2.1f}kV.".format(
                 self.ts_ultima_tesntativa_de_normalizacao,
-                leitura_tensao_rs.valor / 1000,
-                leitura_tensao_st.valor / 1000,
-                leitura_tensao_tr.valor / 1000,
+                self.leituras.tensao_rs.valor / 1000,
+                self.leituras.tensao_st.valor / 1000,
+                self.leituras.tensao_tr.valor / 1000,
             )
         )
 
         if not (
             self.cfg["TENSAO_LINHA_BAIXA"]
-            < leitura_tensao_rs.valor
+            < self.leituras.tensao_rs.valor
             < self.cfg["TENSAO_LINHA_ALTA"]
             and self.cfg["TENSAO_LINHA_BAIXA"]
-            < leitura_tensao_st.valor
+            < self.leituras.tensao_st.valor
             < self.cfg["TENSAO_LINHA_ALTA"]
             and self.cfg["TENSAO_LINHA_BAIXA"]
-            < leitura_tensao_tr.valor
+            < self.leituras.tensao_tr.valor
             < self.cfg["TENSAO_LINHA_ALTA"]
         ):
             logger.warn("Tensão na linha fora do limite.")
@@ -509,6 +510,7 @@ class Usina:
         if len(agendamentos) == 0:
             return True
 
+
         self.agendamentos_atrasados = 0
         for agendamento in agendamentos:
 
@@ -519,14 +521,7 @@ class Usina:
             else:
                 segundos_adiantados = (agendamento[1] - agora).seconds
                 segundos_passados = 0
-
-            if segundos_passados > 300 or self.agendamentos_atrasados > 3:
-                logger.info(
-                    "Os agendamentos estão muito atrasados! Acionando emergência."
-                )
-                self.acionar_emergencia()
-                return False
-
+            
             if segundos_passados > 60:
                 logger.warning(
                     "Agendamento #{} Atrasado! ({} - {}).".format(
@@ -535,6 +530,13 @@ class Usina:
                 )
                 self.agendamentos_atrasados += 1
 
+            if segundos_passados > 300 or self.agendamentos_atrasados > 3:
+                logger.info(
+                    "Os agendamentos estão muito atrasados! Acionando emergência."
+                )
+                self.acionar_emergencia()
+                return False
+
             if segundos_adiantados <= 60 and not bool(agendamento[4]):
                 # Está na hora e ainda não foi executado. Executar!
                 logger.info(
@@ -542,7 +544,6 @@ class Usina:
                         agendamento[0], agendamento
                     )
                 )
-
                 # Exemplo Case agendamento:
                 if agendamento[3] == AGENDAMENTO_DISPARAR_MENSAGEM_TESTE:
                     # Coloca em emergência
@@ -640,7 +641,7 @@ class Usina:
         if pot_alvo < 0.1:
             for ug in self.ugs:
                 ug.setpoint = 0
-            return True
+            return 0
 
         self.pot_disp = 0
         if self.ug1.disponivel:
@@ -648,15 +649,8 @@ class Usina:
         if self.ug2.disponivel:
             self.pot_disp += self.cfg["pot_maxima_ug"]
 
-        if leitura_potencia_ativa_kW.valor > self.cfg[
-            "pot_maxima_alvo"
-        ] and pot_alvo > (self.cfg["pot_maxima_alvo"] * 0.95):
-            self.kimedidor += -0.0001 * (pot_alvo - leitura_potencia_ativa_kW.valor)
-            pot_alvo = (
-                pot_alvo
-                - 0.5 * (pot_alvo - leitura_potencia_ativa_kW.valor)
-                + self.kimedidor
-            )
+        if self.leituras.potencia_ativa_kW.valor > self.cfg["pot_maxima_alvo"] * 0.95:
+            pot_alvo = pot_alvo / (self.leituras.potencia_ativa_kW.valor/self.cfg["pot_maxima_alvo"])
 
         ugs = self.lista_de_ugs_disponiveis()
         logger.debug("lista_de_ugs_disponiveis:")
@@ -673,7 +667,7 @@ class Usina:
             return False
         else:
 
-            if leitura_dj52L_aberto.valor:
+            if self.leituras.dj52L_aberto.valor:
                 logger.info("Fechando Disjuntor 52L.")
                 self.con.fechaDj52L()
 
@@ -683,7 +677,7 @@ class Usina:
                 if 0.1 < pot_alvo < self.cfg["pot_minima"]:
                     logger.debug("0.1 < {} < self.cfg['pot_minima']".format(pot_alvo))
                     if len(ugs) > 0:
-                        ugs[0].setpoint = self.cfg["pot_minima"] + 1
+                        ugs[0].setpoint = self.cfg["pot_minima"]
                         for ug in ugs[1:]:
                             ug.setpoint = 0
                 else:
@@ -745,7 +739,7 @@ class Usina:
                         and self.ug2.etapa_atual == UNIDADE_SINCRONIZADA
                         and pot_alvo > (self.cfg["pot_maxima_ug"] - self.cfg["margem_pot_critica"])):
                         logger.debug("Dividindo ingualmente entre as UGs")
-                        for ug in ugs[1:]:
+                        for ug in ugs:
                             ug.setpoint = max(self.cfg["pot_minima"], pot_alvo / len(ugs))
 
                     elif(pot_alvo > (self.cfg["pot_maxima_ug"] + self.cfg["margem_pot_critica"])):
@@ -763,6 +757,8 @@ class Usina:
 
                 for ug in self.ugs:
                     logger.debug("UG{} SP:{}".format(ug.id, ug.setpoint))
+        
+        return pot_alvo
 
     def lista_de_ugs_disponiveis(self):
         """
@@ -778,11 +774,10 @@ class Usina:
             ls = sorted(
                 ls,
                 key=lambda y: (
-                    not y.etapa_atual == UNIDADE_SINCRONIZADA,
-                    not y.etapa_alvo == UNIDADE_SINCRONIZADA,
+                    -1 * y.etapa_atual,
+                    -1 * y.etapa_alvo,
                     -1 * y.leitura_potencia.valor,
-                    not y.prioridade,
-                    y.leitura_horimetro.valor,
+                    y.prioridade,
                 ),
             )
         else:
@@ -790,11 +785,10 @@ class Usina:
             ls = sorted(
                 ls,
                 key=lambda y: (
-                    not y.etapa_atual == UNIDADE_SINCRONIZADA,
-                    not y.etapa_alvo == UNIDADE_SINCRONIZADA,
+                    -1 * y.etapa_atual,
+                    -1 * y.etapa_alvo,
                     -1 * y.leitura_potencia.valor,
                     y.leitura_horimetro.valor,
-                    not y.prioridade,
                 ),
             )
         return ls
@@ -882,7 +876,7 @@ class Usina:
                 "Exception Banco-------------------------------------------------"
             )
 
-        self.distribuir_potencia(pot_alvo)
+        pot_alvo = self.distribuir_potencia(pot_alvo)
 
     def disparar_mensagem_teste(self):
         logger.debug("Este e um teste!")
@@ -896,8 +890,7 @@ class Usina:
 
 
 class Comporta:
-    def __init__(self, con):
-        self.con = con
+    def __init__(self):
         self.pos_comporta = 0
         self.pos_0 = {"pos": 0, "anterior": 0.0, "proximo": 0.0}
         self.pos_1 = {"pos": 1, "anterior": 0.0, "proximo": 0.0}

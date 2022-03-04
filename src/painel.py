@@ -6,8 +6,8 @@ import RPi.GPIO as gpio
 import time
 import json
 import logging
-from codes import *
-from mensageiro.mensageiro_log_handler import MensageiroHandler
+from src.codes import *
+from src.mensageiro.mensageiro_log_handler import MensageiroHandler
 from sys import stdout
 
 import socket # simul

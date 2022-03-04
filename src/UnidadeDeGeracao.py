@@ -14,8 +14,9 @@ import logging
 from time import sleep
 import traceback
 
-from Leituras import *
-from Condicionadores import *
+from src.codes import *
+from src.Leituras import *
+from src.Condicionadores import *
 
 # Class Stubs
 class UnidadeDeGeracao:
@@ -41,16 +42,6 @@ class StateManual(State):
 class StateRestrito(State):
     ...
 
-
-# Constantes
-UNIDADE_PARADA = 0
-UNIDADE_SINCRONIZADA = 4
-UNIDADE_LISTA_DE_ETAPAS = [UNIDADE_PARADA, UNIDADE_SINCRONIZADA]
-DEVE_INDISPONIBILIZAR = 2
-DEVE_NORMALIZAR = 1
-DEVE_IGNORAR = 0
-
-
 class UnidadeDeGeracao:
     """
     Unidade de geração.
@@ -67,6 +58,7 @@ class UnidadeDeGeracao:
 
         # Variavéis internas (não são lidas nem escritas diretamente)
         self.__id = id
+        self.__prioridade = 0
         self.__etapa_alvo = 0
         self.__etapa_atual = 0
         self.__tempo_entre_tentativas = 0
@@ -207,6 +199,20 @@ class UnidadeDeGeracao:
             int: id
         """
         return self.__id
+
+    @property
+    def prioridade(self) -> int:
+        """
+        Prioridade da unidade de deração
+
+        Returns:
+            int: id
+        """
+        return self.__prioridade
+
+    @prioridade.setter
+    def prioridade(self, var) -> None:
+        self.__prioridade = var
 
     @property
     def condicionadores(self) -> list([CondicionadorBase]):

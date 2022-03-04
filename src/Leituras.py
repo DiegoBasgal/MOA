@@ -8,19 +8,14 @@ __author__ = "Lucas Lavratti"
 
 import logging
 from pyModbusTCP.client import ModbusClient
-from modbus_mapa_antigo import *
+from src.modbus_mapa_antigo import *
 
 
-class LeituraBase:
-    ...
-
-
-class LeituraModbus(LeituraBase):
-    ...
-
-
-class LeituraModbusBit(LeituraBase):
-    ...
+class LeituraBase:  ...
+class LeituraModbus(LeituraBase):    ...
+class LeituraModbusBit(LeituraBase):    ...
+class LeituraDelta(LeituraBase):    ...
+class LeituraDebug(LeituraBase):    ...
 
 
 class LeituraBase:
@@ -55,7 +50,6 @@ class LeituraBase:
             str: descr
         """
         return self.__descr
-
 
 class LeituraModbus(LeituraBase):
     """
@@ -113,6 +107,7 @@ class LeituraModbus(LeituraBase):
             # ! TODO Tratar exceptions
             # O que deve retornar caso não consiga comunicar?
             # raise NotImplementedError
+            return 0
             pass
 
 class LeituraModbusBit(LeituraModbus):
@@ -144,7 +139,6 @@ class LeituraModbusBit(LeituraModbus):
         if self.__invertido:
             aux = not aux
         return aux
-
 
 class LeituraDelta(LeituraBase):
     def __init__(self, descr: str, leitura_A: LeituraBase, leitura_B: LeituraBase):
