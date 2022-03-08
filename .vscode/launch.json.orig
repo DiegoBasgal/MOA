@@ -1,0 +1,24 @@
+{
+    // Use IntelliSense to learn about possible attributes.
+    // Hover to view descriptions of existing attributes.
+    // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
+    "version": "0.2.0",
+    "configurations": [
+        {
+<<<<<<< HEAD
+            "name": "Python: Simulação da Usina",
+            "type": "python",
+            "request": "launch",
+            "program": "${workspaceFolder}/simulador/src/start_simulation.py",
+            "console": "integratedTerminal"
+        }
+=======
+            "name": "Python: OP",
+            "type": "python",
+            "request": "launch",
+            "program": "${workspaceFolder}/operador_autonomo_sm.py",
+            "console": "integratedTerminal"
+        },
+>>>>>>> dev-cov
+    ]
+}
