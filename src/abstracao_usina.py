@@ -12,17 +12,6 @@ from src.codes import *
 
 logger = logging.getLogger("__main__")
 
-AGENDAMENTO_INDISPONIBILIZAR = 1
-AGENDAMENTO_ALETRAR_NV_ALVO = 2
-AGENDAMENTO_INDISPONIBILIZAR_UG_1 = 101
-AGENDAMENTO_ALETRAR_POT_ALVO_UG_1 = 102
-AGENDAMENTO_DISPONIBILIZAR_UG_1 = 103
-AGENDAMENTO_INDISPONIBILIZAR_UG_2 = 201
-AGENDAMENTO_ALETRAR_POT_ALVO_UG_2 = 202
-AGENDAMENTO_DISPONIBILIZAR_UG_2 = 203
-AGENDAMENTO_DISPARAR_MENSAGEM_TESTE = 777
-MODO_ESCOLHA_MANUAL = 2
-
 
 class Usina:
     def __init__(self, cfg=None, db=None, con=None, leituras=None):
@@ -593,39 +582,51 @@ class Usina:
                     self.db.update_parametros_usina(pars)
                     self.escrever_valores()
 
-                if agendamento[3] == AGENDAMENTO_ALETRAR_POT_ALVO_UG_1:
+                if agendamento[3] == AGENDAMENTO_UG1_ALETRAR_POT_LIMITE:
                     try:
                         novo = float(agendamento[2].replace(",", "."))
+                        self.ug1.pot_disponivel = novo
                     except Exception as e:
                         logger.info(
                             "Valor inválido no comando #{} ({} é inválido).".format(
                                 agendamento[0], agendamento[3]
                             )
                         )
-                    self.ug1.pot_disponivel = novo
 
-                if agendamento[3] == AGENDAMENTO_INDISPONIBILIZAR_UG_1:
-                    self.ug1.forcar_estado_indisponivel()
+                if agendamento[3] == AGENDAMENTO_UG1_FORCAR_ESTADO_MANUAL:
+                    self.ug1.forcar_estado_manual()
 
-                if agendamento[3] == AGENDAMENTO_DISPONIBILIZAR_UG_1:
+                if agendamento[3] == AGENDAMENTO_UG1_FORCAR_ESTADO_DISPONIVEL:
                     self.ug1.forcar_estado_disponivel()
 
-                if agendamento[3] == AGENDAMENTO_ALETRAR_POT_ALVO_UG_2:
+                if agendamento[3] == AGENDAMENTO_UG1_FORCAR_ESTADO_INDISPONIVEL:
+                    self.ug1.forcar_estado_indisponivel()
+
+                if agendamento[3] == AGENDAMENTO_UG1_FORCAR_ESTADO_RESTRITO:
+                    self.ug1.forcar_estado_restrito()
+
+                if agendamento[3] == AGENDAMENTO_UG2_ALETRAR_POT_LIMITE:
                     try:
                         novo = float(agendamento[2].replace(",", "."))
+                        self.ug2.pot_disponivel = novo
                     except Exception as e:
                         logger.info(
                             "Valor inválido no comando #{} ({} é inválido).".format(
                                 agendamento[0], agendamento[3]
                             )
                         )
-                    self.ug2.pot_disponivel = novo
 
-                if agendamento[3] == AGENDAMENTO_INDISPONIBILIZAR_UG_2:
+                if agendamento[3] == AGENDAMENTO_UG2_FORCAR_ESTADO_MANUAL:
+                    self.ug2.forcar_estado_manual()
+
+                if agendamento[3] == AGENDAMENTO_UG2_FORCAR_ESTADO_DISPONIVEL:
+                    self.ug1.forcar_estado_disponivel()
+
+                if agendamento[3] == AGENDAMENTO_UG2_FORCAR_ESTADO_INDISPONIVEL:
                     self.ug2.forcar_estado_indisponivel()
 
-                if agendamento[3] == AGENDAMENTO_DISPONIBILIZAR_UG_2:
-                    self.ug2.forcar_estado_disponivel()
+                if agendamento[3] == AGENDAMENTO_UG2_FORCAR_ESTADO_RESTRITO:
+                    self.ug2.forcar_estado_restrito()
 
                 # Após executar, indicar no banco de dados
                 self.db.update_agendamento(int(agendamento[0]), 1)

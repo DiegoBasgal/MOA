@@ -348,8 +348,8 @@ class UnidadeDeGeracao1(UnidadeDeGeracao):
         # Perda na garde
         self.leitura_perda_na_grade = LeituraDelta(
             "Perda na grade ug{}".format(self.id),
-            self.leituras_usina.leitura_nv_montante,
-            self.leituras_usina.leitura_nv_canal_aducao,
+            self.leituras_usina.nv_montante,
+            self.leituras_usina.nv_canal_aducao,
         )
         base, limite = 10, 20
         x = self.leitura_perda_na_grade

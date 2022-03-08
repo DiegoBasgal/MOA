@@ -613,7 +613,7 @@ class StateRestrito(State):
             # Logar os condicionadores ativos
             self.logger.warning(
                 "[UG{}] UG em modo disponível detectou condicionadores ativos, indisponibilizando UG.\nCondicionadores ativos:\n{}".format(
-                    self.parent_ug.id, [d.desc for d in condicionadores_ativos]
+                    self.parent_ug.id, [d.descr for d in condicionadores_ativos]
                 )
             )
             # Vai para o estado StateIndisponivel

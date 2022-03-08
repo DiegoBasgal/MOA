@@ -8,7 +8,7 @@
             "name": "Python: OP",
             "type": "python",
             "request": "launch",
-            "program": "${workspaceFolder}/src/operador_autonomo_sm.py",
+            "program": "${workspaceFolder}/operador_autonomo_sm.py",
             "console": "integratedTerminal"
         },
     ]
