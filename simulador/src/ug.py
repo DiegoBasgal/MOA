@@ -24,6 +24,7 @@ class Ug:
         self.shared_dict["q_ug{}".format(self.id)] = 0
         self.shared_dict["reconhece_reset_ug{}".format(self.id)] = False
         self.shared_dict["setpoint_kw_ug{}".format(self.id)] = 0
+        self.shared_dict["debug_setpoint_kw_ug{}".format(self.id)] = 0
         self.shared_dict["trip_ug{}".format(self.id)] = False
         self.shared_dict["temperatura_ug{}_contra_escora_1".format(self.id)] = 25
         self.shared_dict["temperatura_ug{}_contra_escora_2".format(self.id)] = 25
@@ -34,7 +35,6 @@ class Ug:
         self.shared_dict["temperatura_ug{}_fase_t".format(self.id)] = 25
         self.shared_dict["temperatura_ug{}_la_casquilho".format(self.id)] = 25
         self.shared_dict["temperatura_ug{}_lna_casquilho".format(self.id)] = 25
-        self.shared_dict["perda_na_grade_ug{}".format(self.id)] = 0
 
         self.tempo_na_transicao = 0
         self.avisou_trip = False
@@ -67,6 +67,7 @@ class Ug:
             self.shared_dict["reconhece_reset_ug{}".format(self.id)] = False
             self.reconhece_reset_ug()
             self.shared_dict["trip_ug{}".format(self.id)] = False
+            self.flags = 0
         if self.shared_dict["trip_ug{}".format(self.id)]:
             self.tripar(1, "Trip Elétrico/CLP.")
         if self.shared_dict["debug_partir_ug{}".format(self.id)]:
@@ -172,7 +173,7 @@ class Ug:
                 if self.tempo_na_transicao <= -self.TEMPO_TRANS_US_UPS and self.potencia <= 0:
                     self.potencia = 0
                     self.etapa_atual = self.ETAPA_UPS
-                    self.tempo_na_transicao = 0                
+                    self.tempo_na_transicao = 0   
         # FIM COMPORTAMENTO self.ETAPAS
 
 
@@ -185,7 +186,6 @@ class Ug:
         self.shared_dict["temperatura_ug{}_fase_t".format(self.id)] = np.random.normal(25 , 1 * self.escala_ruido)
         self.shared_dict["temperatura_ug{}_la_casquilho".format(self.id)] = np.random.normal(25 , 1 * self.escala_ruido)
         self.shared_dict["temperatura_ug{}_lna_casquilho".format(self.id)] = np.random.normal(25 ,1 * self.escala_ruido)
-        self.shared_dict["perda_na_grade_ug{}".format(self.id)] = max(0, np.random.normal(0.5 , 0.5 * self.escala_ruido))
 
         if self.etapa_atual > self.ETAPA_UP:
             self.horimetro += self.segundos_por_passo/3600

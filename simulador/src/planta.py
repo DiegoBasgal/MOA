@@ -125,11 +125,16 @@ class Planta:
 
                 for ug in self.ugs:
                     self.shared_dict["setpoint_kw_ug{}".format(ug.id)] = DataBank.get_words(REG["REG_UG{}_CtrlPotencia_Alvo".format(ug.id)])[0]
-                    ug.setpoint = DataBank.get_words(REG["REG_UG{}_CtrlPotencia_Alvo".format(ug.id)])[0]
+                    if self.shared_dict["debug_setpoint_kw_ug{}".format(ug.id)] >= 0:
+                        self.shared_dict["setpoint_kw_ug{}".format(ug.id)] = self.shared_dict["debug_setpoint_kw_ug{}".format(ug.id)]
+                        DataBank.set_words(REG["REG_UG{}_CtrlPotencia_Alvo".format(ug.id)], [self.shared_dict["setpoint_kw_ug{}".format(ug.id)]])
+                        self.shared_dict["debug_setpoint_kw_ug{}".format(ug.id)] = -1
+
                     if DataBank.get_words(REG["REG_UG{}_Operacao_EmergenciaDesligar".format(ug.id)])[0] == 1:
                         DataBank.set_words(REG["REG_UG{}_Operacao_EmergenciaDesligar".format(ug.id)], [0])
                         DataBank.set_words(REG["REG_UG{}_Operacao_EmergenciaLigar".format(ug.id)], [0])
-                    
+                        ug.reconhece_reset_ug()
+
                     if DataBank.get_words(REG["REG_UG{}_Operacao_EmergenciaLigar".format(ug.id)])[0] == 1:
                         DataBank.set_words(REG["REG_UG{}_Operacao_EmergenciaDesligar".format(ug.id)], [0])
                         DataBank.set_words(REG["REG_UG{}_Operacao_EmergenciaLigar".format(ug.id)], [0])
@@ -177,6 +182,7 @@ class Planta:
                     self.shared_dict["q_liquida"] -= self.shared_dict["q_ug{}".format(ug.id)]
 
                 self.shared_dict["nv_montante"] = self.volume_para_nv_montate(volume + self.shared_dict["q_liquida"] * self.segundos_por_passo)
+                self.shared_dict["nv_jusante"] =  self.shared_dict["nv_montante"] - max(0, np.random.normal(1.0 , 0.5 * self.escala_ruido))
                 
                 if self.shared_dict["nv_montante"] >= self.USINA_NV_VERTEDOURO:
                     self.shared_dict["q_vertimento"] = self.shared_dict["q_liquida"]
@@ -188,16 +194,14 @@ class Planta:
 
                 # Escreve no databank
                 for ug in self.ugs:
-                    if ug.flags > 1:
-                        DataBank.set_words(REG["REG_UG{}_Alarme01".format(ug.id)], [2**17-1])
-                    else:
-                        DataBank.set_words(REG["REG_UG{}_Alarme01".format(ug.id)], [0])
+                    DataBank.set_words(REG["REG_UG{}_Alarme01".format(ug.id)], [int(ug.flags)])
                     DataBank.set_words(REG["REG_UG{}_Gerador_PotenciaAtivaMedia".format(ug.id)], [int(ug.potencia)])
                     DataBank.set_words(REG["REG_UG{}_HorimetroEletrico_Low".format(ug.id)], [int(ug.horimetro)])
-                    if ug.etapa_alvo is not None:
+                    if ug.etapa_alvo  == ug.etapa_atual:
                         DataBank.set_words(REG["REG_UG{}_Operacao_EtapaAlvo".format(ug.id)], [int(ug.etapa_alvo)])
-                    if ug.etapa_atual is not None:
-                        DataBank.set_words(REG["REG_UG{}_Operacao_EtapaAtual".format(ug.id)], [int(ug.etapa_atual)])
+                    else:
+                        DataBank.set_words(REG["REG_UG{}_Operacao_EtapaAlvo".format(ug.id)], [0b11111111])    
+                    DataBank.set_words(REG["REG_UG{}_Operacao_EtapaAtual".format(ug.id)], [int(ug.etapa_atual)])
                     DataBank.set_words(REG["REG_UG{}_Temperatura_01".format(ug.id)], [int(self.shared_dict["temperatura_ug{}_fase_r".format(ug.id)])])
                     DataBank.set_words(REG["REG_UG{}_Temperatura_02".format(ug.id)], [int(self.shared_dict["temperatura_ug{}_fase_s".format(ug.id)])])
                     DataBank.set_words(REG["REG_UG{}_Temperatura_03".format(ug.id)], [int(self.shared_dict["temperatura_ug{}_fase_t".format(ug.id)])])
@@ -209,7 +213,7 @@ class Planta:
                     DataBank.set_words(REG["REG_UG{}_Temperatura_09".format(ug.id)], [int(self.shared_dict["temperatura_ug{}_contra_escora_2".format(ug.id)])])
 
                 DataBank.set_words(REG["REG_USINA_NivelBarragem"], [int(self.shared_dict["nv_montante"]*100)])
-                DataBank.set_words(REG["REG_USINA_NivelCanalAducao"], [int(self.shared_dict["nv_montante"]*100)]) # TODO ?
+                DataBank.set_words(REG["REG_USINA_NivelCanalAducao"], [int(self.shared_dict["nv_jusante"]*100)]) # TODO ?
                 DataBank.set_words(REG["REG_USINA_Subestacao_PotenciaAtivaMedia"], [int(self.shared_dict["potencia_kw_se"])])
                 DataBank.set_words(REG["REG_USINA_Subestacao_TensaoRS"], [int(self.shared_dict["tensao_na_linha"]/10)])
                 DataBank.set_words(REG["REG_USINA_Subestacao_TensaoST"], [int(self.shared_dict["tensao_na_linha"]/10)])
