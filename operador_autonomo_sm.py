@@ -8,17 +8,15 @@ import logging
 import logging.handlers as handlers
 import os
 import sys
-from threading import Thread
 import time
 from sys import stdout, stderr
 from time import sleep
 import traceback
 import json
-
 from pyModbusTCP.server import DataBank, ModbusServer
 
-from mensageiro.mensageiro_log_handler import MensageiroHandler
-import clp_connector, database_connector, abstracao_usina
+import src.database_connector as database_connector
+import src.abstracao_usina as abstracao_usina
 
 # Set-up logging
 rootLogger = logging.getLogger()
@@ -38,13 +36,8 @@ logFormatterSimples = logging.Formatter("[%(levelname)-5.5s] [MOA-SM] %(message)
 
 ch = logging.StreamHandler(stderr)  # log para sdtout
 ch.setFormatter(logFormatter)
-ch.setLevel(logging.INFO)
+ch.setLevel(logging.DEBUG)
 logger.addHandler(ch)
-
-mh = MensageiroHandler()  # log para telegram e voip
-mh.setFormatter(logFormatterSimples)
-mh.setLevel(logging.INFO)
-logger.addHandler(mh)
 
 fh = handlers.TimedRotatingFileHandler("logs/MOA.log", when='midnight', interval=1, backupCount=7)  # log para arquivo
 fh.setFormatter(logFormatter)
@@ -123,9 +116,9 @@ class Pronto(State):
             except Exception as e:
                 self.n_tentativa += 1
                 logger.error("Erro durante a comunicação do MOA com a usina. Tentando novamente em {}s (tentativa{}/3)."
-                             " Exception: {}.".format(self.usina.timeout_padrao * n_tentativa, self.n_tentativa, repr(e)))
+                             " Exception: {}.".format(self.usina.timeout_padrao * self.n_tentativa, self.n_tentativa, repr(e)))
                 logger.critical("Traceback: {}".format(traceback.format_exc()))
-                sleep(self.usina.timeout_padrao * n_tentativa)
+                sleep(self.usina.timeout_padrao * self.n_tentativa)
                 return self
 
 
@@ -134,7 +127,7 @@ class ValoresInternosAtualizados(State):
     def __init__(self, instancia_usina, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.usina = instancia_usina
-        DataBank.set_words(cfg['REG_PAINEL_LIDO'], [1])
+        DataBank.set_words(self.usina.cfg['REG_PAINEL_LIDO'], [1])
 
 
     def run(self):
@@ -143,27 +136,22 @@ class ValoresInternosAtualizados(State):
         """
         Aqui a ordem do checks importa, e muito.
         """
-
-        # Sempre lidar primeiro com a emergência.
+    
         if self.usina.clp_emergencia_acionada:
             return Emergencia(self.usina)
 
         if self.usina.db_emergencia_acionada:
             return Emergencia(self.usina)
 
-        # Em seguida com o modo manual (não autonomo)
+         # Em seguida com o modo manual (não autonomo)
         if not self.usina.modo_autonomo:
             return ModoManualAtivado(self.usina)
 
         # Se não foi redirecionado ainda,
         # assume-se que o MOA deve executar de modo autônomo
 
-        # Atualizar os estados
-        for ug in self.usina.ugs:
-            ug.atualizar_estado()
-
         # TODO SEPARA FUNÇÃO
-        self.usina.comporta.atualizar_estado(self.usina.nv_montante)
+        self.usina.comporta.atualizar_estado(self.usina.nv_montante_recente)
 
         # Verificamos se existem agendamentos
         if len(self.usina.get_agendamentos_pendentes()) > 0:
@@ -171,7 +159,7 @@ class ValoresInternosAtualizados(State):
 
         # Verifica-se então a situação do reservatório
         if self.usina.aguardando_reservatorio:
-            if self.usina.nv_montante_recente > self.usina.nv_alvo:
+            if self.usina.nv_montante > self.usina.nv_alvo:
                 logger.info("Reservatorio dentro do nivel de trabalho")
                 self.usina.aguardando_reservatorio = 0
             return Pronto(self.usina)
@@ -196,8 +184,18 @@ class Emergencia(State):
         logger.warning("Usina entrado em estado de emergência (Timestamp: {})".format(self.em_sm_acionada))
         self.usina = instancia_usina
         self.n_tentativa = 0
-        if not (self.usina.cfg["TENSAO_LINHA_BAIXA"] < self.usina.tensao_na_linha < self.usina.cfg["TENSAO_LINHA_ALTA"]):
-            logger.warning("Tensao na linha fora dos limites {:2.3f}kV".format(self.usina.tensao_na_linha/1000))
+        if not (
+            self.usina.cfg["TENSAO_LINHA_BAIXA"] < self.usina.leituras.tensao_rs.valor < self.usina.cfg["TENSAO_LINHA_ALTA"] and 
+            self.usina.cfg["TENSAO_LINHA_BAIXA"] < self.usina.leituras.tensao_st.valor < self.usina.cfg["TENSAO_LINHA_ALTA"] and 
+            self.usina.cfg["TENSAO_LINHA_BAIXA"] < self.usina.leituras.tensao_tr.valor < self.usina.cfg["TENSAO_LINHA_ALTA"]):
+            logger.info(
+                "Tensão na linha: RS {:2.1f}kV ST{:2.1f}kV TR{:2.1f}kV.".format(
+                    (datetime.now() - self.em_sm_acionada).seconds/60,
+                    self.usina.leituras.tensao_rs.valor / 1000,
+                    self.usina.leituras.tensao_st.valor / 1000,
+                    self.usina.leituras.tensao_tr.valor / 1000,
+                )
+            )
         self.usina.distribuir_potencia(0)
         self.usina.escrever_valores()
         self.usina.heartbeat()
@@ -223,9 +221,21 @@ class Emergencia(State):
             if self.usina.clp_emergencia_acionada:
                 try:
                     self.usina.ler_valores()
-                    if not (self.usina.cfg["TENSAO_LINHA_BAIXA"] < self.usina.tensao_na_linha < self.usina.cfg["TENSAO_LINHA_ALTA"]):
+                    if not (
+                        self.usina.cfg["TENSAO_LINHA_BAIXA"] < self.usina.leituras.tensao_rs.valor < self.usina.cfg["TENSAO_LINHA_ALTA"] and 
+                        self.usina.cfg["TENSAO_LINHA_BAIXA"] < self.usina.leituras.tensao_st.valor < self.usina.cfg["TENSAO_LINHA_ALTA"] and 
+                        self.usina.cfg["TENSAO_LINHA_BAIXA"] < self.usina.leituras.tensao_tr.valor < self.usina.cfg["TENSAO_LINHA_ALTA"]
+                    ):
                         self.n_tentativa = 0
-                        logger.debug("V: {} (erro faz {}min)".format(self.usina.tensao_na_linha, (datetime.now() - self.em_sm_acionada).seconds/60))
+
+                        logger.debug(
+                            "Sem tensão faz {} minutos. Tensão na linha: RS {:2.1f}kV ST{:2.1f}kV TR{:2.1f}kV.".format(
+                                (datetime.now() - self.em_sm_acionada).seconds/60,
+                                self.usina.leituras.tensao_rs.valor / 1000,
+                                self.usina.leituras.tensao_st.valor / 1000,
+                                self.usina.leituras.tensao_tr.valor / 1000,
+                            )
+                        )
                         if (datetime.now() - self.em_sm_acionada).seconds > 300:
                             if self.nao_ligou:
                                 self.nao_ligou = False
@@ -240,7 +250,7 @@ class Emergencia(State):
                     logger.debug("Bela adormecida 10s")
                     sleep(10)
                     logger.info("Normalizando usina. (tentativa{}/3) (limite entre tentaivas: {}s)"
-                                .format(self.n_tentativa, n_tentativa*self.usina.cfg['timeout_normalizacao']))
+                                .format(self.n_tentativa, self.usina.cfg['timeout_normalizacao']))
                     self.usina.normalizar_emergencia()
                     self.usina.ler_valores()
                 except Exception as e:
@@ -263,15 +273,13 @@ class ModoManualAtivado(State):
 
     def run(self):
         self.usina.ler_valores()
-        DataBank.set_words(cfg['REG_PAINEL_LIDO'], [1])
+        DataBank.set_words(usina.cfg['REG_PAINEL_LIDO'], [1])
         self.usina.heartbeat()
-        sleep(1)
+        sleep(1/ESCALA_DE_TEMPO)
         if self.usina.modo_autonomo:
             logger.info("Usina voltou para o modo Autonomo")
             self.usina.db.update_habilitar_autonomo()
             self.usina.ler_valores()
-            for ug in self.usina.ugs:
-                ug.voltar_a_tentar_resetar()
             if self.usina.clp_emergencia_acionada == 1 or self.usina.db_emergencia_acionada == 1:
                 self.usina.normalizar_emergencia()
             self.usina.heartbeat()
@@ -300,8 +308,8 @@ class ReservatorioAbaixoDoMinimo(State):
 
     def run(self):
         self.usina.distribuir_potencia(0)
-        if self.usina.nv_montante <= self.usina.nv_fundo_reservatorio:
-            logger.critical("Nivel montante ({:3.2f}) atingiu o fundo do reservatorio!".format(self.usina.nv_montante))
+        if self.usina.nv_montante_recente <= self.usina.nv_fundo_reservatorio:
+            logger.critical("Nivel montante ({:3.2f}) atingiu o fundo do reservatorio!".format(self.usina.nv_montante_recente))
             return Emergencia(self.usina)
         return ControleRealizado(self.usina)
 
@@ -313,9 +321,9 @@ class ReservatorioAcimaDoMaximo(State):
         self.usina = instancia_usina
 
     def run(self):
-        if self.usina.nv_montante >= self.usina.nv_maximorum:
+        if self.usina.nv_montante_recente >= self.usina.nv_maximorum:
             self.usina.distribuir_potencia(0)
-            logger.critical("Nivel montante ({:3.2f}) atingiu o maximorum!".format(self.usina.nv_montante))
+            logger.critical("Nivel montante ({:3.2f}) atingiu o maximorum!".format(self.usina.nv_montante_recente))
             return Emergencia(self.usina)
         else:
             self.usina.distribuir_potencia(self.usina.cfg['pot_maxima_usina'])
@@ -344,6 +352,8 @@ class ControleRealizado(State):
 
     def run(self):
         logger.debug("Escrevendo valores")
+        for ug in self.usina.ugs:
+            ug.step()
         self.usina.escrever_valores()
         logger.debug("HB")
         self.usina.heartbeat()
@@ -353,7 +363,7 @@ class ControleRealizado(State):
 if __name__ == "__main__":
     # A escala de tempo é utilizada para acelerar as simulações do sistema
     # Utilizar 1 para testes sérios e 120 no máximo para testes simples
-    ESCALA_DE_TEMPO = 1
+    ESCALA_DE_TEMPO = 60
     if len(sys.argv) > 1:
         ESCALA_DE_TEMPO = int(sys.argv[1])
 
@@ -395,7 +405,7 @@ if __name__ == "__main__":
             # Inicializando Servidor Modbus (para algumas comunicações com o Elipse)
             try:
                 logger.debug("Iniciando Servidor/Slave Modbus MOA.")
-                modbus_server = ModbusServer(host=cfg['moa_slave_ip'], port=cfg['moa_slave_porta'],
+                modbus_server = ModbusServer(host=usina.cfg['moa_slave_ip'], port=usina.cfg['moa_slave_porta'],
                                              no_block=True)
                 modbus_server.start()
                 sleep(1)

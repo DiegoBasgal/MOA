@@ -8,18 +8,14 @@ __author__ = "Lucas Lavratti"
 
 import logging
 from pyModbusTCP.client import ModbusClient
+from src.modbus_mapa_antigo import *
 
 
-class LeituraBase:
-    ...
-
-
-class LeituraModbus(LeituraBase):
-    ...
-
-
-class LeituraModbusBit(LeituraBase):
-    ...
+class LeituraBase:  ...
+class LeituraModbus(LeituraBase):    ...
+class LeituraModbusBit(LeituraBase):    ...
+class LeituraDelta(LeituraBase):    ...
+class LeituraDebug(LeituraBase):    ...
 
 
 class LeituraBase:
@@ -55,7 +51,6 @@ class LeituraBase:
         """
         return self.__descr
 
-
 class LeituraModbus(LeituraBase):
     """
     Classe implementa a base para leituras da unidade da geração utilizando modbus.
@@ -84,7 +79,7 @@ class LeituraModbus(LeituraBase):
         Returns:
             float: valor já tratado
         """
-        return (self.raw / self.__escala) - self.__fundo_de_escala
+        return (self.raw * self.__escala) - self.__fundo_de_escala
 
     @property
     def raw(self) -> int:
@@ -107,12 +102,13 @@ class LeituraModbus(LeituraBase):
                 else:
                     return 0
             else:
-                raise ConnectionError("Erro na conexãp modbus.")
+                raise ConnectionError("Erro na conexão modbus.")
         except:
             # ! TODO Tratar exceptions
             # O que deve retornar caso não consiga comunicar?
-            raise NotImplementedError
-
+            # raise NotImplementedError
+            return 0
+            pass
 
 class LeituraModbusBit(LeituraModbus):
     """
@@ -143,3 +139,31 @@ class LeituraModbusBit(LeituraModbus):
         if self.__invertido:
             aux = not aux
         return aux
+
+class LeituraDelta(LeituraBase):
+    def __init__(self, descr: str, leitura_A: LeituraBase, leitura_B: LeituraBase):
+        super().__init__(descr)
+        self.__leitura_A = leitura_A
+        self.__leitura_B = leitura_B
+
+    @property
+    def valor(self) -> float:
+        """
+        Valor
+
+        Returns:
+            float: leitura_A - leitura_B
+        """
+        return self.__leitura_A.valor - self.__leitura_B.valor
+
+class LeituraDebug(LeituraBase):
+    def __init__(self, descr: str) -> None:
+        super().__init__(descr)
+
+    @property
+    def valor(self) -> float:
+        return self.__valor
+    
+    @valor.setter
+    def valor(self, var):
+        self.__valor = var

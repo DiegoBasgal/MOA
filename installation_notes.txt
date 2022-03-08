@@ -1,5 +1,6 @@
 #Implementação MOA
 sudo su
+sudo timedatectl set-timezone America/Sao_Paulo
 ufw allow mysql
 apt install python3 -y
 apt install pip -y

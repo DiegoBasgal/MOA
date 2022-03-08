@@ -8,6 +8,8 @@
         "-p",
         "*test*.py"
     ],
+    "testExplorer.useNativeTesting": true,
+    
     "editor.bracketPairColorization.enabled": true,
     "editor.rulers": [80, 88],
     "workbench.colorCustomizations": {
@@ -57,5 +59,9 @@
     "plantuml.server": "http://127.0.0.1:10080",
     "plantuml.render": "PlantUMLServer",
     "plantuml.diagramsRoot": "diagramas/",
-    "plantuml.exportOutDir": "diagramas"
+    "plantuml.exportOutDir": "diagramas",
+    "python.analysis.extraPaths": [
+      "./src",
+      "./src"
+    ]
 }

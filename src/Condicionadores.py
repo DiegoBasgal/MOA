@@ -7,13 +7,15 @@ dos valores de campo.
 __version__ = "0.1"
 __author__ = "Lucas Lavratti"
 
-from Leituras import *
+from src.Leituras import *
 
 
-class CondicionadorBase: ...
+class CondicionadorBase:
+    ...
 
 
-class CondicionadorExponencial(CondicionadorBase): ...
+class CondicionadorExponencial(CondicionadorBase):
+    ...
 
 
 class CondicionadorBase:
@@ -30,6 +32,10 @@ class CondicionadorBase:
         return "Condicionador {}, Gravidade: {}, Ativo: {}, Valor: {}".format(
             self.__descr, self.__gravidade, self.ativo, self.valor
         )
+
+    @property
+    def descr(self):
+        return self.__descr
 
     @property
     def leitura(self):
@@ -118,7 +124,7 @@ class CondicionadorExponencial(CondicionadorBase):
     @property
     def ativo(self) -> bool:
         """
-        Retorna se o condicionador está ativo ou não. 
+        Retorna se o condicionador está ativo ou não.
 
         Returns:
             bool: True se atenuação >= 100%, False caso contrário
@@ -132,19 +138,24 @@ class CondicionadorExponencial(CondicionadorBase):
 
         Returns:
             float: Valor de 0 a 1 (inclusivo) relativo a atenuacao após limitação operacional
-                   0 -> 0% de atenuação (sinal permanece inalterado)
-                   1 -> 100% de atenuação (sinal vai para 0)
         """
-        if self.leitura.valor > self.valor_base:
-            aux = ((
-                (self.valor_limite - self.leitura.valor)
-                / (self.valor_limite - self.valor_base)
-            ) ** (1 / self.ordem)).real
+        v_temp = float(self.leitura.valor)
+        if v_temp > self.valor_base and  v_temp < self.valor_limite:
+            aux = (
+                1
+                - (
+                    (
+                        (self.valor_limite - v_temp)
+                        / (self.valor_limite - self.valor_base)
+                    )
+                    ** (self.ordem)
+                ).real
+            )
             return max(
                 min(aux, 1),
                 0,
             )
-        elif self.leitura.valor > self.valor_limite:
-            return 0
-        else:
+        if self.leitura.valor > self.valor_limite:
             return 1
+        else:
+            return 0

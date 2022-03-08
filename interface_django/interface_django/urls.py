@@ -20,6 +20,7 @@ from django.views.generic import RedirectView
 from agendamentos.views import agendamentos_view
 from agendamentos.views import agendamento_detalhado_view
 from agendamentos.views import novo_agendamento_view
+from agendamentos.views import novo_agendamento_rapido_view
 from monitoramento.views import monitoramento_view
 from ocorrencias.views import ocorrencias_view
 from parametros_moa.views import parametros_moa_view
@@ -31,6 +32,7 @@ urlpatterns = [
     path('agendamentos/', agendamentos_view, name='agendamentos'),
     path('agendamentos/<int:ag_id>/', agendamento_detalhado_view, name='agendamento_detalhado'),
     path('agendamentos/novo_agendamento/', novo_agendamento_view, name='novo_agendamento'),
+    path('agendamentos/novo_agendamento_rapido/', novo_agendamento_rapido_view, name='novo_agendamento_rapido'),
     path('monitoramento/', monitoramento_view, name='monitoramento'),
     path('ocorrencias/', ocorrencias_view, name='ocorrencias'),
     path('parametros_moa/', parametros_moa_view, name='parametros_moa'),

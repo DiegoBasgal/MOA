@@ -8,15 +8,15 @@ __version__ = "0.1"
 __author__ = "Lucas Lavratti"
 
 
-from abc import abstractmethod, abstractproperty
+from abc import abstractmethod
 from datetime import datetime
-from math import sqrt
-from sys import stderr
 import logging
+from time import sleep
 import traceback
 
-from Leituras import *
-from src.Condicionadores import CondicionadorBase
+from src.codes import *
+from src.Leituras import *
+from src.Condicionadores import *
 
 # Class Stubs
 class UnidadeDeGeracao:
@@ -42,16 +42,6 @@ class StateManual(State):
 class StateRestrito(State):
     ...
 
-
-# Constantes
-UNIDADE_PARADA = 0
-UNIDADE_SINCRONIZADA = 1
-UNIDADE_LISTA_DE_ETAPAS = [UNIDADE_PARADA, UNIDADE_SINCRONIZADA]
-DEVE_INDISPONIBILIZAR = 2
-DEVE_NORMALIZAR = 1
-DEVE_IGNORAR = 0
-
-
 class UnidadeDeGeracao:
     """
     Unidade de geração.
@@ -68,6 +58,7 @@ class UnidadeDeGeracao:
 
         # Variavéis internas (não são lidas nem escritas diretamente)
         self.__id = id
+        self.__prioridade = 0
         self.__etapa_alvo = 0
         self.__etapa_atual = 0
         self.__tempo_entre_tentativas = 0
@@ -77,7 +68,7 @@ class UnidadeDeGeracao:
         self.__setpoint_maximo = 0
         self.__tentativas_de_normalizacao = 0
         self.__ts_auxiliar = datetime.now()
-        self.__next_state = None
+        self.__next_state = StateDisponivel(self)
         # Condicionadores devem ser adcionados após o init
         self.__condicionadores = []
 
@@ -113,10 +104,6 @@ class UnidadeDeGeracao:
         try:
             self.logger.debug("[UG{}] Step.".format(self.id))
             self.__next_state = self.__next_state.step()
-        except NotImplementedError as e:
-            self.logger.debug(
-                "[UG{}] {} Não Implementado".format(self.id, traceback.format_exc())
-            )
         except Exception as e:
             self.logger.error(
                 "[UG{}] Erro na execução da sm. Traceback: {}".format(
@@ -133,6 +120,8 @@ class UnidadeDeGeracao:
             bool: True se sucesso, Falso caso contrário
         """
         try:
+            self.reconhece_reset_alarmes()
+            sleep(5)
             self.__next_state = StateDisponivel(self)
         except Exception as e:
             self.logger.error(
@@ -212,7 +201,21 @@ class UnidadeDeGeracao:
         return self.__id
 
     @property
-    def condicionadores(self) -> list[CondicionadorBase]:
+    def prioridade(self) -> int:
+        """
+        Prioridade da unidade de deração
+
+        Returns:
+            int: id
+        """
+        return self.__prioridade
+
+    @prioridade.setter
+    def prioridade(self, var) -> None:
+        self.__prioridade = var
+
+    @property
+    def condicionadores(self) -> list([CondicionadorBase]):
         """
         Lista de condicionadores (objetos) relacionados com a unidade de geração
 
@@ -222,7 +225,7 @@ class UnidadeDeGeracao:
         return self.__condicionadores
 
     @condicionadores.setter
-    def condicionadores(self, var: list[CondicionadorBase]):
+    def condicionadores(self, var: list([CondicionadorBase])):
         self.__condicionadores = var
 
     @property
@@ -287,6 +290,7 @@ class UnidadeDeGeracao:
 
     @setpoint.setter
     def setpoint(self, var: int):
+        self.logger.debug("[UG{}] SP<-{}".format(self.id, var))
         if var < self.setpoint_minimo:
             self.__setpoint = 0
         elif var > self.setpoint_maximo:
@@ -305,6 +309,10 @@ class UnidadeDeGeracao:
         """
         return self.__setpoint_minimo
 
+    @setpoint_minimo.setter
+    def setpoint_minimo(self, var:int):
+        self.__setpoint_minimo = var 
+
     @property
     def setpoint_maximo(self) -> int:
         """
@@ -315,6 +323,10 @@ class UnidadeDeGeracao:
             int: setpoint_maximo [kW]
         """
         return self.__setpoint_maximo
+
+    @setpoint_maximo.setter
+    def setpoint_maximo(self, var:int):
+        self.__setpoint_maximo = var 
 
     @property
     def tentativas_de_normalizacao(self) -> int:
@@ -342,6 +354,13 @@ class UnidadeDeGeracao:
             datetime: ts_auxiliar
         """
         return self.__ts_auxiliar
+
+    @property
+    def disponivel(self) -> bool:
+        """
+        Retrofit
+        """
+        return isinstance(self.__next_state, StateDisponivel)
 
     def acionar_trip_logico(self) -> bool:
         """
@@ -426,7 +445,6 @@ class UnidadeDeGeracao:
             self.logger.info(
                 "[UG{}] Enviando comando (via rede) de partida.".format(self.id)
             )
-            self.__etapa_alvo = UNIDADE_SINCRONIZADA
             raise NotImplementedError
         except:
             #! TODO Tratar exceptions
@@ -445,8 +463,6 @@ class UnidadeDeGeracao:
             self.logger.info(
                 "[UG{}] Enviando comando (via rede) de parada.".format(self.id)
             )
-            self.__etapa_alvo = UNIDADE_PARADA
-
             raise NotImplementedError
         except:
             #! TODO Tratar exceptions
@@ -517,8 +533,7 @@ class StateManual(State):
         super().__init__(parent_ug)
 
         self.logger.info(
-            "[UG{}] Entrando no estado manual. Para retornar a operação autônoma da UG é necessário \
-            intervenção manual via interface web.".format(
+            "[UG{}] Entrando no estado manual. Para retornar a operação autônoma da UG é necessário intervenção manual via interface web.".format(
                 self.parent_ug.id
             )
         )
@@ -541,8 +556,7 @@ class StateIndisponivel(State):
 
         self.selo = False
         self.logger.warning(
-            "[UG{}] Entrando no estado indisponível. Para retornar a operação autônoma da UG é \
-            necessário intervenção manual via interface web.".format(
+            "[UG{}] Entrando no estado indisponível. Para retornar a operação autônoma da UG é necessário intervenção manual via interface web.".format(
                 self.parent_ug.id
             )
         )
@@ -599,7 +613,7 @@ class StateRestrito(State):
             # Logar os condicionadores ativos
             self.logger.warning(
                 "[UG{}] UG em modo disponível detectou condicionadores ativos, indisponibilizando UG.\nCondicionadores ativos:\n{}".format(
-                    self.parent_ug.id, [d.desc for d in condicionadores_ativos]
+                    self.parent_ug.id, [d.descr for d in condicionadores_ativos]
                 )
             )
             # Vai para o estado StateIndisponivel
@@ -653,7 +667,7 @@ class StateDisponivel(State):
             self.logger.warning(
                 "[UG{}] UG em modo disponível detectou condicionadores ativos, indisponibilizando UG.\nCondicionadores ativos:\n{}".format(
                     self.parent_ug.id,
-                    [d.desc for d in condicionadores_ativos],
+                    [d.descr for d in condicionadores_ativos],
                 )
             )
             # Vai para o estado StateIndisponivel
@@ -671,7 +685,7 @@ class StateDisponivel(State):
                 self.logger.warning(
                     "[UG{}] A UG estourou as tentativas de normalização, indisponibilizando UG. \n Condicionadores ativos:\n{}".format(
                         self.parent_ug.id,
-                        [d.desc for d in condicionadores_ativos],
+                        [d.descr for d in condicionadores_ativos],
                     )
                 )
                 # Vai para o estado StateIndisponivel
@@ -704,6 +718,8 @@ class StateDisponivel(State):
         # Se não detectou nenhum condicionador ativo:
         else:
 
+            self.logger.debug("[UG{}] Etapa atual: '{}', etapa alvo '{}'".format(self.parent_ug.id, self.parent_ug.etapa_atual, self.parent_ug.etapa_alvo))
+
             # Calcula a atenuação devido aos condicionadores antes de prosseguir
             atenuacao = 0
             # Para cada condicionador
@@ -718,8 +734,14 @@ class StateDisponivel(State):
             # A atenuação já vem normalizada de 0 a 1, portanto
             # para ter o ganho é necessário apenas subtrair a atenuação
             ganho = 1 - atenuacao
-            self.parent_ug.setpoint = self.parent_ug.setpoint * ganho
+            if ((self.parent_ug.setpoint > self.parent_ug.setpoint_minimo)
+                and self.parent_ug.setpoint * ganho > self.parent_ug.setpoint_minimo):
+                self.parent_ug.setpoint = self.parent_ug.setpoint * ganho
 
+            self.logger.debug("[UG{}] SP {} * GAIN {} = {}".format(self.parent_ug.id, 
+                                self.parent_ug.setpoint,
+                                ganho,
+                                self.parent_ug.setpoint))
             # O comportamento da UG conforme a etapa em que a mesma se encontra
 
             if (
@@ -728,7 +750,7 @@ class StateDisponivel(State):
             ):
                 # Unidade parando
                 # Não fazer nada
-                pass
+                self.logger.debug("[UG{}] Unidade parando".format(self.parent_ug.id))
 
             elif (
                 self.parent_ug.etapa_alvo == UNIDADE_SINCRONIZADA
@@ -736,24 +758,26 @@ class StateDisponivel(State):
             ):
                 # Unidade sincronizando
                 # Não fazer nada
-                pass
+                self.logger.debug("[UG{}] Unidade sincronizando".format(self.parent_ug.id))
 
             elif self.parent_ug.etapa_atual == UNIDADE_PARADA:
                 # Unidade parada
+                self.logger.debug("[UG{}] Unidade parada".format(self.parent_ug.id))
                 # Se o setpoit for acima do mínimo
                 if self.parent_ug.setpoint >= self.parent_ug.setpoint_minimo:
-                    # Deve parar a UG
+                    # Deve partir a UG
                     self.parent_ug.partir()
                     # E em seguida mandar o setpoint novo (boa prática)
                     self.parent_ug.enviar_setpoint(self.parent_ug.setpoint)
 
             elif self.parent_ug.etapa_atual == UNIDADE_SINCRONIZADA:
                 # Unidade sincronizada
+                self.logger.debug("[UG{}] Unidade sincronizada".format(self.parent_ug.id))
                 # Unidade sincronizada significa que ela está normalizada, logo zera o contador de tentativas
                 self.parent_ug.tentativas_de_normalizacao = 0
                 # Se o setpoit estiver abaixo do mínimo
                 if self.parent_ug.setpoint == 0:
-                    # Deve parar a UG
+                    # Deve manter a UG
                     self.parent_ug.parar()
                 else:
                     # Caso contrário, mandar o setpoint novo
@@ -766,11 +790,11 @@ class StateDisponivel(State):
                 # Etapa inconsistente
                 # Logar o ocorrido
                 self.logger.warning(
-                    "[UG{}] UG em etapa inconsistente, indisponibilizando UG.".format(
+                    "[UG{}] UG em etapa inconsistente.".format(
                         self.parent_ug.id
                     )
                 )
                 # Vai para o estado StateIndisponivel
-                return StateIndisponivel(self.parent_ug)
+                #return StateIndisponivel(self.parent_ug)
 
             return self
