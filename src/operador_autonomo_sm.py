@@ -262,10 +262,16 @@ class ModoManualAtivado(State):
         logger.info("Usina em modo manual, deve-se alterar via painel ou interface web.")
 
     def run(self):
+        self.usina.con.usn_clp.debug(state=True)
+        self.usina.con.ug1_clp.debug(state=True)
+        self.usina.con.ug2_clp.debug(state=True)
         self.usina.ler_valores()
         DataBank.set_words(cfg['REG_PAINEL_LIDO'], [1])
         self.usina.heartbeat()
         sleep(1)
+        self.usina.con.usn_clp.debug(state=False)
+        self.usina.con.ug1_clp.debug(state=False)
+        self.usina.con.ug2_clp.debug(state=False)
         if self.usina.modo_autonomo:
             logger.info("Usina voltou para o modo Autonomo")
             self.usina.db.update_habilitar_autonomo()
