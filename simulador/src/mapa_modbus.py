@@ -15,7 +15,7 @@ REG = {
     "REG_UG1_Alarme14" : 14212 -1 + 20000,
     "REG_UG1_Alarme15" : 14213 -1 + 20000,
     "REG_UG1_Alarme16" : 14214 -1 + 20000,
-    "REG_UG1_CtrlPotencia_Alvo" : 13569 + 17 + 20000,
+    "REG_UG1_CtrlPotencia_Alvo" : 13569 -1 + 17 + 20000,
     "REG_UG1_CtrlPotencia_Info" : 12865 -1 + 20000,
     "REG_UG1_CtrlPotencia_ModoNivelDesligar" : 12334 -1 + 20000,
     "REG_UG1_CtrlPotencia_ModoNivelLigar" : 12333 -1 + 20000,
