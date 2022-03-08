@@ -5,11 +5,11 @@
     "version": "0.2.0",
     "configurations": [
         {
-            "name": "Python: OP",
+            "name": "Python: Simulação da Usina",
             "type": "python",
             "request": "launch",
-            "program": "${workspaceFolder}/operador_autonomo_sm.py",
+            "program": "${workspaceFolder}/simulador/src/start_simulation.py",
             "console": "integratedTerminal"
-        },
+        }
     ]
 }
