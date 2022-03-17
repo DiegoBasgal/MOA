@@ -14,11 +14,14 @@ from time import sleep
 import traceback
 import json
 from pyModbusTCP.server import DataBank, ModbusServer
+from src.UnidadeDeGeracao import StateManual
 
 import src.database_connector as database_connector
 import src.abstracao_usina as abstracao_usina
+from src.codes import *
 
 # Set-up logging
+from src.mensageiro.mensageiro_log_handler import MensageiroHandler
 rootLogger = logging.getLogger()
 if (rootLogger.hasHandlers()):
     rootLogger.handlers.clear()
@@ -29,8 +32,8 @@ if (logger.hasHandlers()):
     logger.handlers.clear()
 logger.setLevel(logging.NOTSET)
 
-if not os.path.exists("logs/"):
-    os.mkdir("logs/")
+if not os.path.exists(os.path.join(os.path.dirname(__file__),"logs")):
+    os.mkdir(os.path.join(os.path.dirname(__file__),"logs"))
 logFormatter = logging.Formatter("%(asctime)s [%(threadName)-12.12s] [%(levelname)-5.5s] [MOA-SM] %(message)s")
 logFormatterSimples = logging.Formatter("[%(levelname)-5.5s] [MOA-SM] %(message)s")
 
@@ -39,11 +42,15 @@ ch.setFormatter(logFormatter)
 ch.setLevel(logging.DEBUG)
 logger.addHandler(ch)
 
-fh = handlers.TimedRotatingFileHandler("logs/MOA.log", when='midnight', interval=1, backupCount=7)  # log para arquivo
+fh = handlers.TimedRotatingFileHandler(os.path.join(os.path.dirname(__file__),"logs","MOA.log"), when='midnight', interval=1, backupCount=7)  # log para arquivo
 fh.setFormatter(logFormatter)
 fh.setLevel(logging.DEBUG)
 logger.addHandler(fh)
 
+mh = MensageiroHandler()
+mh.setFormatter(logFormatter)
+mh.setLevel(logging.INFO)
+logger.addHandler(mh)
 
 class StateMachine:
 
@@ -68,7 +75,6 @@ class StateMachine:
 class State:
 
     def __init__(self, *args, **kwargs):
-        logger.debug("State {} called super().__init__()".format(str(self.__class__.__name__)))
         self.args = args
         self.kwargs = kwargs
 
@@ -84,9 +90,6 @@ class FalhaCritica(State):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        logger.critical("Falha crítica MOA.")
-
-    def run(self):
         logger.critical("Falha crítica MOA. Exiting...")
         sys.exit(1)
 
@@ -105,7 +108,7 @@ class Pronto(State):
 
     def run(self):
 
-        if self.n_tentativa >= 3:
+        if self.n_tentativa >= 2:
             return FalhaCritica()
         else:
 
@@ -129,14 +132,19 @@ class ValoresInternosAtualizados(State):
         self.usina = instancia_usina
         DataBank.set_words(self.usina.cfg['REG_PAINEL_LIDO'], [1])
 
-
     def run(self):
         """Decidir para qual modo de operação o sistema deve ir"""
 
         """
         Aqui a ordem do checks importa, e muito.
         """
-    
+        
+        if self.usina.avisado_em_eletrica:
+            for condicionador in self.usina.condicionadores:
+                if condicionador.ativo and condicionador.gravidade >= DEVE_INDISPONIBILIZAR:
+                    return Emergencia(self.usina)
+
+
         if self.usina.clp_emergencia_acionada:
             return Emergencia(self.usina)
 
@@ -156,6 +164,9 @@ class ValoresInternosAtualizados(State):
         # Verificamos se existem agendamentos
         if len(self.usina.get_agendamentos_pendentes()) > 0:
             return AgendamentosPendentes(self.usina)
+
+        for ug in self.usina.ugs:
+            ug.step()
 
         # Verifica-se então a situação do reservatório
         if self.usina.aguardando_reservatorio:
@@ -184,19 +195,6 @@ class Emergencia(State):
         logger.warning("Usina entrado em estado de emergência (Timestamp: {})".format(self.em_sm_acionada))
         self.usina = instancia_usina
         self.n_tentativa = 0
-        if not (
-            self.usina.cfg["TENSAO_LINHA_BAIXA"] < self.usina.leituras.tensao_rs.valor < self.usina.cfg["TENSAO_LINHA_ALTA"] and 
-            self.usina.cfg["TENSAO_LINHA_BAIXA"] < self.usina.leituras.tensao_st.valor < self.usina.cfg["TENSAO_LINHA_ALTA"] and 
-            self.usina.cfg["TENSAO_LINHA_BAIXA"] < self.usina.leituras.tensao_tr.valor < self.usina.cfg["TENSAO_LINHA_ALTA"]):
-            logger.info(
-                "Tensão na linha: RS {:2.1f}kV ST{:2.1f}kV TR{:2.1f}kV.".format(
-                    (datetime.now() - self.em_sm_acionada).seconds/60,
-                    self.usina.leituras.tensao_rs.valor / 1000,
-                    self.usina.leituras.tensao_st.valor / 1000,
-                    self.usina.leituras.tensao_tr.valor / 1000,
-                )
-            )
-        self.usina.distribuir_potencia(0)
         self.usina.escrever_valores()
         self.usina.heartbeat()
         self.nao_ligou = True
@@ -204,7 +202,7 @@ class Emergencia(State):
     def run(self):
         self.usina.heartbeat()
         self.n_tentativa += 1
-        if self.n_tentativa > 3:
+        if self.n_tentativa > 2:
             logger.warning("Numero de tentaivas de normalização excedidas, entrando em modo manual.")
             self.usina.entrar_em_modo_manual()
             self.usina.heartbeat()
@@ -221,6 +219,45 @@ class Emergencia(State):
             if self.usina.clp_emergencia_acionada:
                 try:
                     self.usina.ler_valores()
+                    # Ler condiconadores
+                    deve_indisponibilizar = False
+                    deve_normalizar = False
+                    condicionadores_ativos = []
+                    for condicionador in self.usina.condicionadores:
+                        if condicionador.ativo:
+                            if condicionador.gravidade >= DEVE_INDISPONIBILIZAR:
+                                condicionadores_ativos.append(condicionador)
+                                deve_indisponibilizar = True
+                            
+                            if condicionador.gravidade == DEVE_NORMALIZAR:
+                                condicionadores_ativos.append(condicionador)
+                                deve_normalizar = True
+
+                    # Se algum condicionador deve gerar uma indisponibilidade
+                    if deve_indisponibilizar:
+                        # Logar os condicionadores ativos
+                        self.logger.critical(
+                            "[USN] USN detectou condicionadores ativos, passando USINA para manual e ligando por VOIP.\nCondicionadores ativos:\n{}".format(
+                                self.parent_ug.id, [d.descr for d in condicionadores_ativos]
+                            )
+                        )
+                        # Vai para o estado StateIndisponivel
+                        return ModoManualAtivado(self.usina)
+                    
+                    elif deve_normalizar:
+                        logger.debug("Bela adormecida 5s")
+                        sleep(5)
+                        logger.info("Normalizando usina. (tentativa{}/2) (limite entre tentaivas: {}s)"
+                                .format(self.n_tentativa, self.usina.cfg['timeout_normalizacao']))
+                        self.usina.normalizar_emergencia()
+                        self.usina.ler_valores()
+                        return self    
+
+                    else:
+                        logger.debug("Nenhum condicionador relevante ativo...")
+                        self.usina.ler_valores()
+                        return ControleRealizado(self.usina)
+                    """
                     if not (
                         self.usina.cfg["TENSAO_LINHA_BAIXA"] < self.usina.leituras.tensao_rs.valor < self.usina.cfg["TENSAO_LINHA_ALTA"] and 
                         self.usina.cfg["TENSAO_LINHA_BAIXA"] < self.usina.leituras.tensao_st.valor < self.usina.cfg["TENSAO_LINHA_ALTA"] and 
@@ -249,15 +286,19 @@ class Emergencia(State):
                         return self
                     logger.debug("Bela adormecida 10s")
                     sleep(10)
-                    logger.info("Normalizando usina. (tentativa{}/3) (limite entre tentaivas: {}s)"
+                    logger.info("Normalizando usina. (tentativa{}/2) (limite entre tentaivas: {}s)"
                                 .format(self.n_tentativa, self.usina.cfg['timeout_normalizacao']))
                     self.usina.normalizar_emergencia()
                     self.usina.ler_valores()
+                    """
+
                 except Exception as e:
                     logger.error("Erro durante a comunicação do MOA com a usina. Exception: {}.".format(repr(e)))
                     logger.critical("Traceback: {}".format(traceback.format_exc()))
                 return self
             else:
+                self.usina.normalizar_emergencia()
+                self.usina.ler_valores()
                 logger.info("Usina normalizada")
                 return ControleRealizado(self.usina)
 
@@ -363,7 +404,7 @@ class ControleRealizado(State):
 if __name__ == "__main__":
     # A escala de tempo é utilizada para acelerar as simulações do sistema
     # Utilizar 1 para testes sérios e 120 no máximo para testes simples
-    ESCALA_DE_TEMPO = 60
+    ESCALA_DE_TEMPO = 1
     if len(sys.argv) > 1:
         ESCALA_DE_TEMPO = int(sys.argv[1])
 
@@ -376,7 +417,7 @@ if __name__ == "__main__":
     usina = None
     while prox_estado == 0:
         n_tentativa += 1
-        if n_tentativa > 3:
+        if n_tentativa > 2:
             prox_estado = FalhaCritica
         else:
             # carrega as configurações
@@ -390,10 +431,10 @@ if __name__ == "__main__":
             logger.debug("Iniciando classe Usina")
             try:
                 usina = abstracao_usina.Usina(cfg, db)
-                usina.aguardando_reservatorio = 1
+                usina.aguardando_reservatorio = 0
             except Exception as e:
                 logger.error(
-                    "Erro ao iniciar Classe Usina. Tentando novamente em {}s (tentativa {}/3). Exception: {}.".format(
+                    "Erro ao iniciar Classe Usina. Tentando novamente em {}s (tentativa {}/2). Exception: {}.".format(
                         timeout, n_tentativa, repr(e)))
                 logger.critical("Traceback: {}".format(traceback.format_exc()))
                 sleep(timeout)
@@ -415,13 +456,13 @@ if __name__ == "__main__":
 
             except TypeError as e:
                 logger.error(
-                    "Erro ao iniciar abstração da usina. Tentando novamente em {}s (tentativa {}/3). Exception: {}."
+                    "Erro ao iniciar abstração da usina. Tentando novamente em {}s (tentativa {}/2). Exception: {}."
                     "".format(timeout, n_tentativa, repr(e)))
                 logger.critical("Traceback: {}".format(traceback.format_exc()))
                 sleep(timeout)
             except ConnectionError as e:
                 logger.error(
-                    "Erro ao iniciar Modbus MOA. Tentando novamente em {}s (tentativa {}/3). Exception: {}.".format(
+                    "Erro ao iniciar Modbus MOA. Tentando novamente em {}s (tentativa {}/2). Exception: {}.".format(
                         timeout, n_tentativa, repr(e)))
                 logger.critical("Traceback: {}".format(traceback.format_exc()))
                 sleep(timeout)
@@ -430,7 +471,7 @@ if __name__ == "__main__":
                 logger.critical("Traceback: {}".format(traceback.format_exc()))
                 prox_estado = FalhaCritica
             except Exception as e:
-                logger.error("Erro Inesperado. Tentando novamente em {}s (tentativa{}/3). Exception: {}.".format(
+                logger.error("Erro Inesperado. Tentando novamente em {}s (tentativa{}/2). Exception: {}.".format(
                     timeout, n_tentativa, repr(e)))
                 logger.critical("Traceback: {}".format(traceback.format_exc()))
                 sleep(timeout)
