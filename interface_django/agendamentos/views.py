@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import datetime, timedelta
 from django.http import HttpResponseRedirect
 from django.shortcuts import render
 from django.contrib.auth.decorators import login_required
@@ -23,7 +23,7 @@ def agendamentos_view(request, *args, **kwargs):
     comandos = Comando.objects.all()
 
     context = {'agendamentos': sorted(agendamentos, key=lambda y: y.data),
-               'agendamentos_executados': sorted(agendamentos_executados, key=lambda y: y.data),
+               'agendamentos_executados': sorted(agendamentos_executados, key=lambda y: y.data, reverse=True),
                'comandos': comandos,
                }
 
@@ -60,7 +60,10 @@ def novo_agendamento_view(request, *args, **kwargs):
         minuto = int(request.POST['minuto'])
         data_hora = datetime(ano, mes, dia, hora, minuto, 0)
         if data_hora <= now:
-            return HttpResponseRedirect('../')
+            if (now - data_hora).seconds < 60:
+                data_hora = now
+            else:
+                return HttpResponseRedirect('../')
 
         observacao = request.POST['observacao']
         comando_id = request.POST['comando']
@@ -86,3 +89,17 @@ def novo_agendamento_view(request, *args, **kwargs):
                 }
 
     return render(request, 'novo_agendamento.html', context=context)
+
+
+@login_required
+def novo_agendamento_rapido_view(request, *args, **kwargs):
+
+    now = datetime.now()
+    context = {'comandos': Comando.objects.all()}
+    if request.method == "POST":    
+        comando_id = request.POST['comando']
+        ag = Agendamento(data=now, observacao='COMANDO_RAPIDO', comando=Comando.objects.get(id=comando_id))
+        ag.save()
+        return HttpResponseRedirect('../')
+
+    return render(request, 'novo_agendamento_rapido.html', context=context)

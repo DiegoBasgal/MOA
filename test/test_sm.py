@@ -2,7 +2,7 @@ import logging
 import unittest
 from unittest.mock import MagicMock, patch
 
-from src import operador_autonomo_sm
+import operador_autonomo_sm
 
 
 class TestComportamentoSM(unittest.TestCase):
@@ -18,7 +18,7 @@ class TestComportamentoSM(unittest.TestCase):
     def test_entra_no_estado(self):
         # Teste:            test_entra_no_estado
         # Objetivo:         Verificar funcionamento basico da sm
-        # Resposta:         SM entra em um estado dado e executa o mesmo, devolvendo o proximo estado
+        # Resposta:         SM entra em um estado dado e executa-o, mesmo, devolvendo o proximo estado
 
         estado = operador_autonomo_sm.State
         estado.run = MagicMock()

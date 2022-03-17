@@ -1,0 +1,32 @@
+@startuml StateRestrito
+title ad_StateRestrito 
+!pragma useVerticalIf on
+
+partition "innit()" {
+    start
+    #lightblue:log info;
+    end 
+}
+
+partition "step()" {
+    start
+    :Lê alarmes e Limites;
+    if (Alarmes acionados ou\nlimites estourados) then (True)
+        #lightblue:log warning;
+        #lightgray:return StateIndisponivel(self.parent_ug);
+        detach
+    else (False)
+        if (parent_ug.etapa_atual = UP) then (True)
+            :acionar_trip_logico();
+            :acionar_trip_eletrico();
+        else (False)
+            :parent_ug.parar();
+        endif
+        #lightgray:return self;
+        detach
+    endif
+}
+
+@enduml
+'https://plantuml.com/guide'
+
