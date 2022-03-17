@@ -216,32 +216,34 @@ class Emergencia(State):
                         self.usina.db.update_emergencia(0)
                         self.usina.db_emergencia_acionada = 0
 
-            if self.usina.clp_emergencia_acionada:
-                try:
-                    self.usina.ler_valores()
-                    # Ler condiconadores
-                    deve_indisponibilizar = False
-                    deve_normalizar = False
-                    condicionadores_ativos = []
-                    for condicionador in self.usina.condicionadores:
-                        if condicionador.ativo:
-                            if condicionador.gravidade >= DEVE_INDISPONIBILIZAR:
-                                condicionadores_ativos.append(condicionador)
-                                deve_indisponibilizar = True
-                            
-                            if condicionador.gravidade == DEVE_NORMALIZAR:
-                                condicionadores_ativos.append(condicionador)
-                                deve_normalizar = True
+            self.usina.ler_valores()
+            # Ler condiconadores
+            deve_indisponibilizar = False
+            deve_normalizar = False
+            condicionadores_ativos = []
+            for condicionador in self.usina.condicionadores:
+                if condicionador.ativo:
+                    if condicionador.gravidade >= DEVE_INDISPONIBILIZAR:
+                        condicionadores_ativos.append(condicionador)
+                        deve_indisponibilizar = True
+                    
+                    if condicionador.gravidade == DEVE_NORMALIZAR:
+                        condicionadores_ativos.append(condicionador)
+                        deve_normalizar = True
 
+            if self.usina.clp_emergencia_acionada or deve_normalizar or deve_indisponibilizar:
+                try:
+                   
                     # Se algum condicionador deve gerar uma indisponibilidade
                     if deve_indisponibilizar:
                         # Logar os condicionadores ativos
-                        self.logger.critical(
+                        logger.critical(
                             "[USN] USN detectou condicionadores ativos, passando USINA para manual e ligando por VOIP.\nCondicionadores ativos:\n{}".format(
-                                self.parent_ug.id, [d.descr for d in condicionadores_ativos]
+                                [d.descr for d in condicionadores_ativos]
                             )
                         )
                         # Vai para o estado StateIndisponivel
+                        self.usina.entrar_em_modo_manual()
                         return ModoManualAtivado(self.usina)
                     
                     elif deve_normalizar:
@@ -257,47 +259,12 @@ class Emergencia(State):
                         logger.debug("Nenhum condicionador relevante ativo...")
                         self.usina.ler_valores()
                         return ControleRealizado(self.usina)
-                    """
-                    if not (
-                        self.usina.cfg["TENSAO_LINHA_BAIXA"] < self.usina.leituras.tensao_rs.valor < self.usina.cfg["TENSAO_LINHA_ALTA"] and 
-                        self.usina.cfg["TENSAO_LINHA_BAIXA"] < self.usina.leituras.tensao_st.valor < self.usina.cfg["TENSAO_LINHA_ALTA"] and 
-                        self.usina.cfg["TENSAO_LINHA_BAIXA"] < self.usina.leituras.tensao_tr.valor < self.usina.cfg["TENSAO_LINHA_ALTA"]
-                    ):
-                        self.n_tentativa = 0
-
-                        logger.debug(
-                            "Sem tensão faz {} minutos. Tensão na linha: RS {:2.1f}kV ST{:2.1f}kV TR{:2.1f}kV.".format(
-                                (datetime.now() - self.em_sm_acionada).seconds/60,
-                                self.usina.leituras.tensao_rs.valor / 1000,
-                                self.usina.leituras.tensao_st.valor / 1000,
-                                self.usina.leituras.tensao_tr.valor / 1000,
-                            )
-                        )
-                        if (datetime.now() - self.em_sm_acionada).seconds > 300:
-                            if self.nao_ligou:
-                                self.nao_ligou = False
-                                logger.warning("Em emergência e sem tensão da mais de {:.1f} minutos".format((datetime.now() - self.em_sm_acionada).seconds/60))
-                            else:
-                                logger.debug("Em emergência e sem tensão da mais de {:.1f} minutos".format((datetime.now() - self.em_sm_acionada).seconds/60))
-                                if (datetime.now() - self.em_sm_acionada).seconds > 60:
-                                    logger.critical("Em emergência e sem tensão da mais de {:.1f} minutos".format((datetime.now() - self.em_sm_acionada).seconds/60))
-                                    self.usina.entrar_em_modo_manual()
-                                    return ModoManualAtivado(self.usina)
-                        return self
-                    logger.debug("Bela adormecida 10s")
-                    sleep(10)
-                    logger.info("Normalizando usina. (tentativa{}/2) (limite entre tentaivas: {}s)"
-                                .format(self.n_tentativa, self.usina.cfg['timeout_normalizacao']))
-                    self.usina.normalizar_emergencia()
-                    self.usina.ler_valores()
-                    """
-
+                   
                 except Exception as e:
                     logger.error("Erro durante a comunicação do MOA com a usina. Exception: {}.".format(repr(e)))
                     logger.critical("Traceback: {}".format(traceback.format_exc()))
                 return self
             else:
-                self.usina.normalizar_emergencia()
                 self.usina.ler_valores()
                 logger.info("Usina normalizada")
                 return ControleRealizado(self.usina)

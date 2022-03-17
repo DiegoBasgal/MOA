@@ -67,7 +67,7 @@ class UnidadeDeGeracao:
         self.__setpoint_minimo = 0
         self.__setpoint_maximo = 0
         self.__tentativas_de_normalizacao = 0
-        self.__ts_auxiliar = datetime.now()
+        self.ts_auxiliar = datetime.now()
         self.__next_state = StateDisponivel(self)
         # Condicionadores devem ser adcionados após o init
         self.__condicionadores = []
@@ -350,16 +350,6 @@ class UnidadeDeGeracao:
             self.__tentativas_de_normalizacao = int(var)
         else:
             raise ValueError("Valor deve se um inteiro positivo")
-
-    @property
-    def ts_auxiliar(self) -> datetime:
-        """
-        Variavél timestamp auxiliar na temporização das tentativas de normalização e comandos modbus
-
-        Returns:
-            datetime: ts_auxiliar
-        """
-        return self.__ts_auxiliar
 
     @property
     def disponivel(self) -> bool:
@@ -655,6 +645,8 @@ class StateDisponivel(State):
 
     def step(self) -> State:
 
+        self.logger.debug("[UG{}] (tentativas_de_normalizacao atual: {})".format(self.parent_ug.id, self.parent_ug.tentativas_de_normalizacao))
+        
         # Ler condiconadores, verifica e armazena os ativos
         deve_indisponibilizar = False
         deve_normalizar = False

@@ -106,251 +106,275 @@ class Usina:
         self.relé_86bf_atuado_falha_disjuntores = LeituraModbusBit('01.03 - Relé 86BF Atuado (Falha Disjuntores)', clp, REG_USINA_Alarme01, 3)
         x = self.relé_86bf_atuado_falha_disjuntores 
         self.condicionadores.append(CondicionadorBase(x.descr, DEVE_INDISPONIBILIZAR, x))
-        
+                
         self.relé_86te_atuado_falha_trafo_elevador = LeituraModbusBit('01.04 - Relé 86TE Atuado (falha Trafo Elevador)', clp, REG_USINA_Alarme01, 4)
         x = self.relé_86te_atuado_falha_trafo_elevador 
         self.condicionadores.append(CondicionadorBase(x.descr, DEVE_INDISPONIBILIZAR, x))
-        
+                
         self.servauxiliar_seccionadora_89sa_aberta = LeituraModbusBit('01.06 - ServAuxiliar - Seccionadora 89SA Aberta', clp, REG_USINA_Alarme01, 6)
         x = self.servauxiliar_seccionadora_89sa_aberta 
         self.condicionadores.append(CondicionadorBase(x.descr, DEVE_INDISPONIBILIZAR, x))
-        
+                
         self.qpse_relé_proteção_woodward_f67_mra4_falha_de_hardware = LeituraModbusBit('01.11 - QPSE - Relé Proteção Woodward F67 (MRA4) - Falha de Hardware', clp, REG_USINA_Alarme01, 11)
         x = self.qpse_relé_proteção_woodward_f67_mra4_falha_de_hardware 
         self.condicionadores.append(CondicionadorBase(x.descr, DEVE_INDISPONIBILIZAR, x))
-        
+                
         self.pacp_relé_proteção_sel787_trip_atuado = LeituraModbusBit('01.13 - PACP - Relé Proteção SEL787 - Trip Atuado', clp, REG_USINA_Alarme01, 13)
         x = self.pacp_relé_proteção_sel787_trip_atuado 
         self.condicionadores.append(CondicionadorBase(x.descr, DEVE_INDISPONIBILIZAR, x))
-        
+                
         self.pacp_relé_proteção_sel787_falha_de_hardware = LeituraModbusBit('01.14 - PACP - Relé Proteção SEL787 - Falha de Hardware', clp, REG_USINA_Alarme01, 14)
         x = self.pacp_relé_proteção_sel787_falha_de_hardware 
         self.condicionadores.append(CondicionadorBase(x.descr, DEVE_INDISPONIBILIZAR, x))
-        
+                
         self.disjuntor_52l_falha_na_abertura = LeituraModbusBit('02.00 - Disjuntor 52L - Falha na Abertura', clp, REG_USINA_Alarme02, 00)
         x = self.disjuntor_52l_falha_na_abertura 
         self.condicionadores.append(CondicionadorBase(x.descr, DEVE_INDISPONIBILIZAR, x))
-        
+                
         self.disjuntor_52l_falha_inconsistência = LeituraModbusBit('02.02 - Disjuntor 52L - Falha Inconsistência', clp, REG_USINA_Alarme02, 2)
         x = self.disjuntor_52l_falha_inconsistência 
         self.condicionadores.append(CondicionadorBase(x.descr, DEVE_INDISPONIBILIZAR, x))
-        
+                
         self.seccionadora_89l_falha_abertura_indevida = LeituraModbusBit('02.04 - Seccionadora 89L - Falha Abertura indevida', clp, REG_USINA_Alarme02, 4)
         x = self.seccionadora_89l_falha_abertura_indevida 
         self.condicionadores.append(CondicionadorBase(x.descr, DEVE_INDISPONIBILIZAR, x))
-        
+                
         self.seccionadora_89l_falha_aberta = LeituraModbusBit('02.05 - Seccionadora 89L - Falha Aberta', clp, REG_USINA_Alarme02, 5)
         x = self.seccionadora_89l_falha_aberta 
         self.condicionadores.append(CondicionadorBase(x.descr, DEVE_INDISPONIBILIZAR, x))
-        
+                
         self.trafo_elevador_monitor_falha_de_hardware = LeituraModbusBit('02.07 - Trafo Elevador - Monitor Falha de Hardware', clp, REG_USINA_Alarme02, 7)
         x = self.trafo_elevador_monitor_falha_de_hardware 
         self.condicionadores.append(CondicionadorBase(x.descr, DEVE_INDISPONIBILIZAR, x))
-        
+                
         self.trafo_elevador_falha_relé_buchholz_alarme = LeituraModbusBit('02.10 - Trafo Elevador - Falha Relé BuchHolz Alarme', clp, REG_USINA_Alarme02, 10)
         x = self.trafo_elevador_falha_relé_buchholz_alarme 
         self.condicionadores.append(CondicionadorBase(x.descr, DEVE_INDISPONIBILIZAR, x))
-        
+                
         self.trafo_elevador_falha_relé_buchholz_trip = LeituraModbusBit('02.11 - Trafo Elevador - Falha Relé BuchHolz Trip', clp, REG_USINA_Alarme02, 11)
         x = self.trafo_elevador_falha_relé_buchholz_trip 
         self.condicionadores.append(CondicionadorBase(x.descr, DEVE_INDISPONIBILIZAR, x))
-        
+                
         self.trafo_elevador_temperatura_enrolamento_alarme = LeituraModbusBit('02.12 - Trafo Elevador - Temperatura Enrolamento Alarme', clp, REG_USINA_Alarme02, 12)
         x = self.trafo_elevador_temperatura_enrolamento_alarme 
         self.condicionadores.append(CondicionadorBase(x.descr, DEVE_INDISPONIBILIZAR, x))
-        
+                
         self.trafo_elevador_temperatura_enrolamento_trip = LeituraModbusBit('02.13 - Trafo Elevador - Temperatura Enrolamento Trip', clp, REG_USINA_Alarme02, 13)
         x = self.trafo_elevador_temperatura_enrolamento_trip 
         self.condicionadores.append(CondicionadorBase(x.descr, DEVE_INDISPONIBILIZAR, x))
-        
+                
         self.trafo_elevador_temperatura_óleo_alarme = LeituraModbusBit('02.14 - Trafo Elevador - Temperatura Óleo Alarme', clp, REG_USINA_Alarme02, 14)
         x = self.trafo_elevador_temperatura_óleo_alarme 
         self.condicionadores.append(CondicionadorBase(x.descr, DEVE_INDISPONIBILIZAR, x))
-        
+                
         self.trafo_elevador_temperatura_óleo_trip = LeituraModbusBit('02.15 - Trafo Elevador - Temperatura Óleo Trip', clp, REG_USINA_Alarme02, 15)
         x = self.trafo_elevador_temperatura_óleo_trip 
         self.condicionadores.append(CondicionadorBase(x.descr, DEVE_INDISPONIBILIZAR, x))
-        
+                
         self.trafo_elevador_válvula_alivio_alarme = LeituraModbusBit('03.00 - Trafo Elevador - Válvula Alivio Alarme', clp, REG_USINA_Alarme03, 00)
         x = self.trafo_elevador_válvula_alivio_alarme 
         self.condicionadores.append(CondicionadorBase(x.descr, DEVE_INDISPONIBILIZAR, x))
-        
+                
         self.trafo_elevador_válvula_alivio_trip = LeituraModbusBit('03.01 - Trafo Elevador - Válvula Alivio Trip', clp, REG_USINA_Alarme03, 1)
         x = self.trafo_elevador_válvula_alivio_trip 
         self.condicionadores.append(CondicionadorBase(x.descr, DEVE_INDISPONIBILIZAR, x))
-        
+                
         self.poço_de_drenagem_nível_inundação_trip_nível_bóia_02 = LeituraModbusBit('03.06 - Poço de Drenagem - Nível Inundação TRIP (Nível Bóia 02)', clp, REG_USINA_Alarme03, 6)
         x = self.poço_de_drenagem_nível_inundação_trip_nível_bóia_02 
         self.condicionadores.append(CondicionadorBase(x.descr, DEVE_INDISPONIBILIZAR, x))
-        
+                
         self.falha_de_comunicação_com_o_relé_de_proteção_sel_787 = LeituraModbusBit('04.10 - Falha de Comunicação com o Relé de Proteção SEL 787', clp, REG_USINA_Alarme04, 10)
         x = self.falha_de_comunicação_com_o_relé_de_proteção_sel_787 
         self.condicionadores.append(CondicionadorBase(x.descr, DEVE_INDISPONIBILIZAR, x))
-        
+                
         self.pacp_alimentação_circuitos_de_comando_disj_q125_0_desligado = LeituraModbusBit('05.02 - PACP - Alimentação Circuitos de Comando - Disj. Q125_0 Desligado', clp, REG_USINA_Alarme05, 2)
         x = self.pacp_alimentação_circuitos_de_comando_disj_q125_0_desligado 
         self.condicionadores.append(CondicionadorBase(x.descr, DEVE_INDISPONIBILIZAR, x))
-        
+                
         self.pacp_alimentação_circuitos_de_comando_do_disj_52l_disj_q125_1_desligado = LeituraModbusBit('05.03 - PACP - Alimentação Circuitos de Comando do Disj 52L - Disj. Q125_1 Desligado', clp, REG_USINA_Alarme05, 3)
         x = self.pacp_alimentação_circuitos_de_comando_do_disj_52l_disj_q125_1_desligado 
         self.condicionadores.append(CondicionadorBase(x.descr, DEVE_INDISPONIBILIZAR, x))
-        
+                
         self.pacp_alimentação_relé_de_proteção_sel787_disj_q125_2_desligado = LeituraModbusBit('05.04 - PACP - Alimentação Relé de Proteção SEL787 - Disj. Q125_2 Desligado', clp, REG_USINA_Alarme05, 4)
         x = self.pacp_alimentação_relé_de_proteção_sel787_disj_q125_2_desligado 
         self.condicionadores.append(CondicionadorBase(x.descr, DEVE_INDISPONIBILIZAR, x))
-        
+                
         self.pcp_u1_alimentação_circuitos_de_comando_disj_q24_1_desligado = LeituraModbusBit('05.06 - PCP-U1 - Alimentação Circuitos de Comando - Disj. Q24_1 Desligado', clp, REG_USINA_Alarme05, 6)
         x = self.pcp_u1_alimentação_circuitos_de_comando_disj_q24_1_desligado 
         self.condicionadores.append(CondicionadorBase(x.descr, DEVE_INDISPONIBILIZAR, x))
-        
+                
         self.pcp_u2_alimentação_fonte_125_24vcc_disj_q125_3_desligado = LeituraModbusBit('05.07 - PCP-U2 - Alimentação Fonte 125/24Vcc - Disj. Q125_3 Desligado', clp, REG_USINA_Alarme05, 7)
         x = self.pcp_u2_alimentação_fonte_125_24vcc_disj_q125_3_desligado 
         self.condicionadores.append(CondicionadorBase(x.descr, DEVE_INDISPONIBILIZAR, x))
-        
+                
         self.pdsa_alimentação_pacp_disj_q220_4_desligado = LeituraModbusBit('06.05 - PDSA - Alimentação PACP - Disj. Q220_4 Desligado', clp, REG_USINA_Alarme06, 5)
         x = self.pdsa_alimentação_pacp_disj_q220_4_desligado 
         self.condicionadores.append(CondicionadorBase(x.descr, DEVE_INDISPONIBILIZAR, x))
-        
+                
         self.pdsa_alimentação_disj_52l_carregamento_de_mola_disj_q220_8_desligado = LeituraModbusBit('06.09 - PDSA - Alimentação Disj 52L Carregamento de Mola - Disj. Q220_8 Desligado', clp, REG_USINA_Alarme06, 9)
         x = self.pdsa_alimentação_disj_52l_carregamento_de_mola_disj_q220_8_desligado 
         self.condicionadores.append(CondicionadorBase(x.descr, DEVE_INDISPONIBILIZAR, x))
-        
+                
         self.qpse_alimentação_woodward_f67_disj_q125_0_desligado = LeituraModbusBit('08.04 - QPSE - Alimentação Woodward F67 - Disj. Q125_0 Desligado', clp, REG_USINA_Alarme08, 4)
         x = self.qpse_alimentação_woodward_f67_disj_q125_0_desligado 
         self.condicionadores.append(CondicionadorBase(x.descr, DEVE_INDISPONIBILIZAR, x))
-        
+                
         self.relé_de_proteção_sel787_diferencial_do_transformador_87t = LeituraModbusBit('08.08 - Relé de Proteção SEL787 - Diferencial do Transformador (87T)', clp, REG_USINA_Alarme08, 8)
         x = self.relé_de_proteção_sel787_diferencial_do_transformador_87t 
         self.condicionadores.append(CondicionadorBase(x.descr, DEVE_INDISPONIBILIZAR, x))
-        
+                
         self.relé_de_proteção_sel787_sobrecorrente_instantânea_de_fase_lado_34_5kv_50pat = LeituraModbusBit('08.09 - Relé de Proteção SEL787 - Sobrecorrente Instantânea de Fase Lado 34,5kV (50PAT)', clp, REG_USINA_Alarme08, 9)
         x = self.relé_de_proteção_sel787_sobrecorrente_instantânea_de_fase_lado_34_5kv_50pat 
         self.condicionadores.append(CondicionadorBase(x.descr, DEVE_INDISPONIBILIZAR, x))
-        
+                
         self.relé_de_proteção_sel787_sobrecorrente_temporizada_de_fase_lado_34_5kv_51pat = LeituraModbusBit('08.10 - Relé de Proteção SEL787 - Sobrecorrente Temporizada de Fase Lado 34,5kV (51PAT)', clp, REG_USINA_Alarme08, 10)
         x = self.relé_de_proteção_sel787_sobrecorrente_temporizada_de_fase_lado_34_5kv_51pat 
         self.condicionadores.append(CondicionadorBase(x.descr, DEVE_INDISPONIBILIZAR, x))
-        
+                
         self.relé_de_proteção_sel787_sobrecorrente_temporizada_de_fase_lado_4_16kv_51pbt = LeituraModbusBit('08.11 - Relé de Proteção SEL787 - Sobrecorrente Temporizada de Fase Lado 4,16kV (51PBT)', clp, REG_USINA_Alarme08, 11)
         x = self.relé_de_proteção_sel787_sobrecorrente_temporizada_de_fase_lado_4_16kv_51pbt 
         self.condicionadores.append(CondicionadorBase(x.descr, DEVE_INDISPONIBILIZAR, x))
-        
+                
         self.relé_de_proteção_sel787_sobrecorrente_de_neutro_temporizada_51nat = LeituraModbusBit('08.12 - Relé de Proteção SEL787 - Sobrecorrente de Neutro Temporizada (51NAT)', clp, REG_USINA_Alarme08, 12)
         x = self.relé_de_proteção_sel787_sobrecorrente_de_neutro_temporizada_51nat 
         self.condicionadores.append(CondicionadorBase(x.descr, DEVE_INDISPONIBILIZAR, x))
-        
+                
         self.relé_de_proteção_sel787_sobrecorrente_residual_temporizada_51gat = LeituraModbusBit('08.13 - Relé de Proteção SEL787 - Sobrecorrente Residual Temporizada (51GAT)', clp, REG_USINA_Alarme08, 13)
         x = self.relé_de_proteção_sel787_sobrecorrente_residual_temporizada_51gat 
         self.condicionadores.append(CondicionadorBase(x.descr, DEVE_INDISPONIBILIZAR, x))
-        
+                
         self.sistema_de_incêndio_atuado = LeituraModbusBit('09.11 - Sistema de Incêndio Atuado', clp, REG_USINA_Alarme09, 11)
         x = self.sistema_de_incêndio_atuado 
         self.condicionadores.append(CondicionadorBase(x.descr, DEVE_INDISPONIBILIZAR, x))
-        
+                
         self.relé_de_proteção_da_linha_mra4_sobrecorrente_direcional_com_restrição_por_tensão_67vr = LeituraModbusBit('10.00 - Relé de Proteção da Linha (MRA4) - Sobrecorrente Direcional com Restrição por Tensão - 67VR', clp, REG_USINA_Alarme10, 00)
         x = self.relé_de_proteção_da_linha_mra4_sobrecorrente_direcional_com_restrição_por_tensão_67vr 
         self.condicionadores.append(CondicionadorBase(x.descr, DEVE_INDISPONIBILIZAR, x))
-        
+                
         self.relé_de_proteção_da_linha_mra4_sobrecorrente_temporizada_de_fase_51p = LeituraModbusBit('10.01 - Relé de Proteção da Linha (MRA4) - Sobrecorrente Temporizada de Fase - 51P', clp, REG_USINA_Alarme10, 1)
         x = self.relé_de_proteção_da_linha_mra4_sobrecorrente_temporizada_de_fase_51p 
         self.condicionadores.append(CondicionadorBase(x.descr, DEVE_INDISPONIBILIZAR, x))
-        
+                
         self.relé_de_proteção_da_linha_mra4_sobrecorrente_direcional_de_fase_67r = LeituraModbusBit('10.02 - Relé de Proteção da Linha (MRA4) - Sobrecorrente Direcional de Fase - 67R', clp, REG_USINA_Alarme10, 2)
         x = self.relé_de_proteção_da_linha_mra4_sobrecorrente_direcional_de_fase_67r 
         self.condicionadores.append(CondicionadorBase(x.descr, DEVE_INDISPONIBILIZAR, x))
-        
+                
         self.relé_de_proteção_da_linha_mra4_sobrecorrente_direcional_de_fase_67f = LeituraModbusBit('10.03 - Relé de Proteção da Linha (MRA4) - Sobrecorrente Direcional de Fase - 67F', clp, REG_USINA_Alarme10, 3)
         x = self.relé_de_proteção_da_linha_mra4_sobrecorrente_direcional_de_fase_67f 
         self.condicionadores.append(CondicionadorBase(x.descr, DEVE_INDISPONIBILIZAR, x))
-        
+                
         self.relé_de_proteção_da_linha_mra4_sobrecorrente_temporizada_de_neutro_51n = LeituraModbusBit('10.04 - Relé de Proteção da Linha (MRA4) - Sobrecorrente Temporizada de Neutro - 51N', clp, REG_USINA_Alarme10, 4)
         x = self.relé_de_proteção_da_linha_mra4_sobrecorrente_temporizada_de_neutro_51n 
         self.condicionadores.append(CondicionadorBase(x.descr, DEVE_INDISPONIBILIZAR, x))
-        
+                
         self.relé_de_proteção_da_linha_mra4_sobrecorrente_de_sequência_negativa_temporizada_46 = LeituraModbusBit('10.05 - Relé de Proteção da Linha (MRA4) - Sobrecorrente de Sequência Negativa Temporizada - 46', clp, REG_USINA_Alarme10, 5)
         x = self.relé_de_proteção_da_linha_mra4_sobrecorrente_de_sequência_negativa_temporizada_46 
         self.condicionadores.append(CondicionadorBase(x.descr, DEVE_INDISPONIBILIZAR, x))
-        
+                
         self.relé_de_proteção_da_linha_mra4_sobretensão_de_fase_59p = LeituraModbusBit('10.07 - Relé de Proteção da Linha (MRA4) - Sobretensão de Fase - 59P', clp, REG_USINA_Alarme10, 7)
         x = self.relé_de_proteção_da_linha_mra4_sobretensão_de_fase_59p 
         self.condicionadores.append(CondicionadorBase(x.descr, DEVE_INDISPONIBILIZAR, x))
-        
+                
         self.relé_de_proteção_da_linha_mra4_sobrefrequência_nível_1_81o = LeituraModbusBit('10.10 - Relé de Proteção da Linha (MRA4) - Sobrefrequência Nível 1 - 81O', clp, REG_USINA_Alarme10, 10)
         x = self.relé_de_proteção_da_linha_mra4_sobrefrequência_nível_1_81o 
         self.condicionadores.append(CondicionadorBase(x.descr, DEVE_INDISPONIBILIZAR, x))
-        
+                
         self.relé_de_proteção_da_linha_mra4_falha_no_disjuntor_50_62bf = LeituraModbusBit('10.14 - Relé de Proteção da Linha (MRA4) - Falha no Disjuntor - 50/62BF', clp, REG_USINA_Alarme10, 14)
         x = self.relé_de_proteção_da_linha_mra4_falha_no_disjuntor_50_62bf 
         self.condicionadores.append(CondicionadorBase(x.descr, DEVE_INDISPONIBILIZAR, x))
-        
+                
         self.relé_de_proteção_da_linha_mra4_sobrepotência_de_exportação_32o = LeituraModbusBit('10.15 - Relé de Proteção da Linha (MRA4) - Sobrepotência de Exportação - 32O', clp, REG_USINA_Alarme10, 15)
         x = self.relé_de_proteção_da_linha_mra4_sobrepotência_de_exportação_32o 
         self.condicionadores.append(CondicionadorBase(x.descr, DEVE_INDISPONIBILIZAR, x))
-        
+                
         self.relé_de_proteção_da_linha_mra4_potência_ativa_reversa_32r = LeituraModbusBit('11.00 - Relé de Proteção da Linha (MRA4) - Potência Ativa Reversa - 32R', clp, REG_USINA_Alarme11, 00)
         x = self.relé_de_proteção_da_linha_mra4_potência_ativa_reversa_32r 
         self.condicionadores.append(CondicionadorBase(x.descr, DEVE_INDISPONIBILIZAR, x))
-        
+                
         self.relé_de_proteção_da_linha_mra4_sobretensão_de_sequência_negativa_59q = LeituraModbusBit('11.01 - Relé de Proteção da Linha (MRA4) - Sobretensão de Sequência Negativa - 59Q', clp, REG_USINA_Alarme11, 1)
         x = self.relé_de_proteção_da_linha_mra4_sobretensão_de_sequência_negativa_59q 
         self.condicionadores.append(CondicionadorBase(x.descr, DEVE_INDISPONIBILIZAR, x))
-        
+                
         self.carregador_de_baterias_cb01_defeito_geral = LeituraModbusBit('11.06 - Carregador de Baterias CB01 - Defeito Geral', clp, REG_USINA_Alarme11, 6)
         x = self.carregador_de_baterias_cb01_defeito_geral 
         self.condicionadores.append(CondicionadorBase(x.descr, DEVE_INDISPONIBILIZAR, x))
-        
+                
         self.carregador_de_baterias_cb01_fuga_à_terra_pelo_positivo = LeituraModbusBit('11.08 - Carregador de Baterias CB01 - Fuga à Terra Pelo Positivo', clp, REG_USINA_Alarme11, 8)
         x = self.carregador_de_baterias_cb01_fuga_à_terra_pelo_positivo 
         self.condicionadores.append(CondicionadorBase(x.descr, DEVE_INDISPONIBILIZAR, x))
-        
+                
         self.carregador_de_baterias_cb01_fuga_à_terra_pelo_negativo = LeituraModbusBit('11.09 - Carregador de Baterias CB01 - Fuga à Terra Pelo Negativo', clp, REG_USINA_Alarme11, 9)
         x = self.carregador_de_baterias_cb01_fuga_à_terra_pelo_negativo 
         self.condicionadores.append(CondicionadorBase(x.descr, DEVE_INDISPONIBILIZAR, x))
-        
+                
         self.qcta_erro_de_leitura_na_entrada_analógica_nível_barragem_montante_grade = LeituraModbusBit('13.03 - QCTA - Erro de Leitura na Entrada Analógica Nível Barragem (Montante Grade)', clp, REG_USINA_Alarme13, 3)
         x = self.qcta_erro_de_leitura_na_entrada_analógica_nível_barragem_montante_grade 
         self.condicionadores.append(CondicionadorBase(x.descr, DEVE_INDISPONIBILIZAR, x))
-        
+                
         self.relé_de_proteção_sel700g_sobretensão_residual_59g = LeituraModbusBit('11.08 - Relé de Proteção SEL700G - Sobretensão Residual (59G)', clp, REG_USINA_Alarme11, 8)
         x = self.relé_de_proteção_sel700g_sobretensão_residual_59g 
         self.condicionadores.append(CondicionadorBase(x.descr, DEVE_INDISPONIBILIZAR, x))
-        
+                
         self.relé_de_proteção_sel700g_potência_reversa_32p = LeituraModbusBit('11.09 - Relé de Proteção SEL700G - Potência Reversa (32P)', clp, REG_USINA_Alarme11, 9)
         x = self.relé_de_proteção_sel700g_potência_reversa_32p 
         self.condicionadores.append(CondicionadorBase(x.descr, DEVE_INDISPONIBILIZAR, x))
-        
+                
         self.relé_de_proteção_sel700g_energização_indevida_50m = LeituraModbusBit('11.12 - Relé de Proteção SEL700G - Energização Indevida (50M)', clp, REG_USINA_Alarme11, 12)
         x = self.relé_de_proteção_sel700g_energização_indevida_50m 
         self.condicionadores.append(CondicionadorBase(x.descr, DEVE_INDISPONIBILIZAR, x))
-        
+                
         self.relé_de_proteção_sel700g_falha_do_disjuntor_52g_50_62bf = LeituraModbusBit('11.15 - Relé de Proteção SEL700G - Falha do Disjuntor 52G (50_62BF)', clp, REG_USINA_Alarme11, 15)
         x = self.relé_de_proteção_sel700g_falha_do_disjuntor_52g_50_62bf 
         self.condicionadores.append(CondicionadorBase(x.descr, DEVE_INDISPONIBILIZAR, x))
-        
+                
         self.grtd_2000_falha_sobrecorrente_de_excitação = LeituraModbusBit('12.04 - GRTD 2000 - Falha Sobrecorrente de Excitação', clp, REG_USINA_Alarme12, 4)
         x = self.grtd_2000_falha_sobrecorrente_de_excitação 
         self.condicionadores.append(CondicionadorBase(x.descr, DEVE_INDISPONIBILIZAR, x))
-        
+                
         self.erro_de_leitura_na_entrada_analógica_de_pressão_da_caixa_espiral = LeituraModbusBit('12.11 - Erro de Leitura na Entrada Analógica de Pressão da Caixa Espiral', clp, REG_USINA_Alarme12, 11)
         x = self.erro_de_leitura_na_entrada_analógica_de_pressão_da_caixa_espiral 
         self.condicionadores.append(CondicionadorBase(x.descr, DEVE_INDISPONIBILIZAR, x))
-        
+                
         self.css_u1_alimentação_motor_carregamento_mola_disjuntor_52g_disjuntor_q220_1_desligado = LeituraModbusBit('13.07 - CSS-U1 - Alimentação Motor Carregamento Mola Disjuntor 52G - Disjuntor Q220_1 Desligado', clp, REG_USINA_Alarme13, 7)
         x = self.css_u1_alimentação_motor_carregamento_mola_disjuntor_52g_disjuntor_q220_1_desligado 
         self.condicionadores.append(CondicionadorBase(x.descr, DEVE_INDISPONIBILIZAR, x))
-        
+                
         self.q49_módulo_de_temperatura_sel2600_disjuntor_q125_0_desligado = LeituraModbusBit('13.14 - Q49 - Módulo de Temperatura SEL2600 - Disjuntor Q125_0 Desligado', clp, REG_USINA_Alarme13, 14)
         x = self.q49_módulo_de_temperatura_sel2600_disjuntor_q125_0_desligado 
         self.condicionadores.append(CondicionadorBase(x.descr, DEVE_INDISPONIBILIZAR, x))
-        
+                
         self.trip_vibração_excessiva_no_mancal_la_do_gerador = LeituraModbusBit('15.01 - TRIP - Vibração Excessiva no Mancal LA do Gerador', clp, REG_USINA_Alarme15, 1)
         x = self.trip_vibração_excessiva_no_mancal_la_do_gerador 
         self.condicionadores.append(CondicionadorBase(x.descr, DEVE_INDISPONIBILIZAR, x))
-        
+                
         self.trip_vibração_excessiva_no_mancal_loa_do_gerador = LeituraModbusBit('15.03 - TRIP - Vibração Excessiva no Mancal LOA do Gerador', clp, REG_USINA_Alarme15, 3)
         x = self.trip_vibração_excessiva_no_mancal_loa_do_gerador 
         self.condicionadores.append(CondicionadorBase(x.descr, DEVE_INDISPONIBILIZAR, x))
+                
+        self.relé_de_proteção_da_linha_mra4_subtensão_de_fase_27p = LeituraModbusBit('10.06 - Relé de Proteção da Linha (MRA4) - Subtensão de Fase - 27P', clp, REG_USINA_Alarme10, 6)
+        x = self.relé_de_proteção_da_linha_mra4_subtensão_de_fase_27p
+        self.condicionadores.append(CondicionadorBase(x.descr, DEVE_NORMALIZAR, x))
         
+        self.relé_de_proteção_da_linha_mra4_subfrequência_nível_1_81u = LeituraModbusBit('10.08 - Relé de Proteção da Linha (MRA4) - Subfrequência Nível 1 - 81U', clp, REG_USINA_Alarme10, 8)
+        x = self.relé_de_proteção_da_linha_mra4_subfrequência_nível_1_81u
+        self.condicionadores.append(CondicionadorBase(x.descr, DEVE_NORMALIZAR, x))
+        
+        self.relé_de_proteção_da_linha_mra4_subfrequência_nível_2_81u = LeituraModbusBit('10.09 - Relé de Proteção da Linha (MRA4) - Subfrequência Nível 2 - 81U', clp, REG_USINA_Alarme10, 9)
+        x = self.relé_de_proteção_da_linha_mra4_subfrequência_nível_2_81u
+        self.condicionadores.append(CondicionadorBase(x.descr, DEVE_NORMALIZAR, x))
+        
+        self.relé_de_proteção_da_linha_mra4_sobrefrequência_nível_2_81o = LeituraModbusBit('10.11 - Relé de Proteção da Linha (MRA4) - Sobrefrequência Nível 2 - 81O', clp, REG_USINA_Alarme10, 11)
+        x = self.relé_de_proteção_da_linha_mra4_sobrefrequência_nível_2_81o
+        self.condicionadores.append(CondicionadorBase(x.descr, DEVE_NORMALIZAR, x))
+        
+        self.relé_de_proteção_da_linha_mra4_taxa_de_variação_de_frequência_81_df_dt = LeituraModbusBit('10.12 - Relé de Proteção da Linha (MRA4) - Taxa de Variação de Frequência  - 81 df/dt', clp, REG_USINA_Alarme10, 12)
+        x = self.relé_de_proteção_da_linha_mra4_taxa_de_variação_de_frequência_81_df_dt
+        self.condicionadores.append(CondicionadorBase(x.descr, DEVE_NORMALIZAR, x))
+        
+        self.relé_de_proteção_da_linha_mra4_perda_de_sincronismo_78 = LeituraModbusBit('10.13 - Relé de Proteção da Linha (MRA4) - Perda de Sincronismo  - 78', clp, REG_USINA_Alarme10, 13)
+        x = self.relé_de_proteção_da_linha_mra4_perda_de_sincronismo_78
+        self.condicionadores.append(CondicionadorBase(x.descr, DEVE_NORMALIZAR, x))
+                
 
         pars = [
             datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
@@ -645,7 +669,7 @@ class Usina:
 
     def normalizar_emergencia(self):
 
-        logger.info("Verificando condições para normalização")
+        logger.info("Normalizando (e verificaçẽos)")
 
         logger.debug(
             "Ultima tentativa: {}. Tensão na linha: RS {:2.1f}kV ST{:2.1f}kV TR{:2.1f}kV.".format(
