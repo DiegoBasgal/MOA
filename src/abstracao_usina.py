@@ -419,12 +419,12 @@ class Usina:
         # self.clp_emergencia_acionada = regs[self.cfg['ENDERECO_CLP_USINA_FLAGS']]
         # self.nv_montante = round((regs[self.cfg['ENDERECO_CLP_NV_MONATNTE']] * 0.001) + 620, 2)
         # self.pot_medidor = round((regs[self.cfg['ENDERECO_CLP_MEDIDOR']] * 0.001), 3)
-
+        
         # -> Verifica conexão com CLP Tomada d'água
         #   -> Se não estiver ok, acionar emergencia CLP
         if not ping(self.cfg["TDA_slave_ip"]):
             logger.warning("CLP TDA não respondeu a tentativa de comunicação!")
-            self.acionar_emergencia()
+            # self.acionar_emergencia()
 
         # -> Verifica conexão com CLP Sub
         #   -> Se não estiver ok, avisa por logger.warning
@@ -435,11 +435,15 @@ class Usina:
         #    -> Se não estiver ok, acionar indisponibiliza UG# e avisa por logger.warning
         if not ping(self.cfg["UG1_slave_ip"]):
             logger.warning("CLP UG1 não respondeu a tentativa de comunicação!")
-            self.ug1.forcar_estado_indisponivel()
+            self.ug1.forcar_estado_restrito()
+        elif not self.ug1.disponivel:
+            self.ug1.forcar_estado_disponivel()
 
         if not ping(self.cfg["UG2_slave_ip"]):
-            logger.warning("CLP UG2 (PACP) não respondeu a tentativa de comunicação!")
-            self.ug2.forcar_estado_indisponivel()
+            logger.warning("CLP UG2 não respondeu a tentativa de comunicação!")
+            self.ug2.forcar_estado_restrito()
+        elif not self.ug2.disponivel:
+            self.ug2.forcar_estado_disponivel()
 
         self.clp_online = True
         self.clp_emergencia_acionada = 0
@@ -1255,4 +1259,9 @@ def ping(host):
     Remember that a host may not respond to a ping (ICMP) request even if the host name is valid.
     https://stackoverflow.com/questions/2953462/pinging-servers-in-python
     """
-    return subprocess.call(["ping", "-c", "1", host], stdout=subprocess.PIPE) == 0
+    ping = False
+    for i in range(5):
+        ping = ping or (subprocess.call(["ping", "-c", "1", host], stdout=subprocess.PIPE) == 0)
+        if not ping:
+            sleep(1)
+    return ping
