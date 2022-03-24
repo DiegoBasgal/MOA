@@ -34,18 +34,18 @@ class FieldConnector:
         self.warned_ug2 = False
 
     def desliga_controles_locais(self):
-            self.usn_clp.write_single_register(REG_USINA_CtrlPotencia_ReligamentoLigar, 0)
-            self.usn_clp.write_single_register(REG_USINA_CtrlPotencia_ModoNivelLigar, 0)
-            self.usn_clp.write_single_register(REG_USINA_CtrlPotencia_ReligamentoDesligar, 1)
-            self.usn_clp.write_single_register(REG_USINA_CtrlPotencia_ModoNivelDesligar, 1)
-            self.ug1_clp.write_single_register(REG_UG1_CtrlPotencia_ModoPotenciaLigar, 0)
-            self.ug1_clp.write_single_register(REG_UG1_CtrlPotencia_ModoNivelLigar, 0)
-            self.ug1_clp.write_single_register(REG_UG1_CtrlPotencia_ModoPotenciaDesligar, 1)
-            self.ug1_clp.write_single_register(REG_UG1_CtrlPotencia_ModoNivelDesligar, 1)
-            self.ug2_clp.write_single_register(REG_UG2_CtrlPotencia_ModoPotenciaLigar, 0)
-            self.ug2_clp.write_single_register(REG_UG2_CtrlPotencia_ModoNivelLigar, 0)
-            self.ug2_clp.write_single_register(REG_UG2_CtrlPotencia_ModoPotenciaDesligar, 1)
-            self.ug2_clp.write_single_register(REG_UG2_CtrlPotencia_ModoNivelDesligar, 1)
+        self.usn_clp.write_single_register(REG_USINA_CtrlPotencia_ReligamentoLigar, 0)
+        self.usn_clp.write_single_register(REG_USINA_CtrlPotencia_ModoNivelLigar, 0)
+        self.usn_clp.write_single_register(REG_USINA_CtrlPotencia_ReligamentoDesligar, 1)
+        self.usn_clp.write_single_register(REG_USINA_CtrlPotencia_ModoNivelDesligar, 1)
+        self.ug1_clp.write_single_register(REG_UG1_CtrlPotencia_ModoPotenciaLigar, 0)
+        self.ug1_clp.write_single_register(REG_UG1_CtrlPotencia_ModoNivelLigar, 0)
+        self.ug1_clp.write_single_register(REG_UG1_CtrlPotencia_ModoPotenciaDesligar, 1)
+        self.ug1_clp.write_single_register(REG_UG1_CtrlPotencia_ModoNivelDesligar, 1)
+        self.ug2_clp.write_single_register(REG_UG2_CtrlPotencia_ModoPotenciaLigar, 0)
+        self.ug2_clp.write_single_register(REG_UG2_CtrlPotencia_ModoNivelLigar, 0)
+        self.ug2_clp.write_single_register(REG_UG2_CtrlPotencia_ModoPotenciaDesligar, 1)
+        self.ug2_clp.write_single_register(REG_UG2_CtrlPotencia_ModoNivelDesligar, 1)
 
     def open(self):
         logger.debug("Opening Modbus")
