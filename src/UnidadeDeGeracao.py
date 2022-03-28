@@ -556,6 +556,8 @@ class StateIndisponivel(State):
                 self.parent_ug.id
             )
         )
+        self.parent_ug.__next_state = self
+
 
     def step(self) -> State:
         # Se as unidades estiverem paradas, ou o selo estiver ativo
