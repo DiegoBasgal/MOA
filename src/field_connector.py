@@ -116,10 +116,10 @@ class FieldConnector:
         self.usn_clp.write_single_register(REG_UG1_Operacao_EmergenciaLigar, 0)
         self.ug1_clp.write_single_register(REG_UG2_Operacao_EmergenciaLigar, 0)
         self.ug2_clp.write_single_register(REG_USINA_EmergenciaLigar, 0)
-        sleep(1)
-        self.usn_clp.write_single_register(REG_USINA_EmergenciaDesligar, 1)
-        self.ug1_clp.write_single_register(REG_UG1_Operacao_EmergenciaDesligar, 1)
-        self.ug2_clp.write_single_register(REG_UG2_Operacao_EmergenciaDesligar, 1)
+        #sleep(1)
+        #self.usn_clp.write_single_register(REG_USINA_EmergenciaDesligar, 1)
+        #self.ug1_clp.write_single_register(REG_UG1_Operacao_EmergenciaDesligar, 1)
+        #self.ug2_clp.write_single_register(REG_UG2_Operacao_EmergenciaDesligar, 1)
 
     def get_flag_falha52L(self):
         

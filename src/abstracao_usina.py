@@ -448,26 +448,6 @@ class Usina:
         self.clp_online = True
         self.clp_emergencia_acionada = 0
 
-        if (self.modo_autonomo == 1 and not self.clp_emergencia_acionada) and (
-            not (
-                self.cfg["TENSAO_LINHA_BAIXA"]
-                < self.leituras.tensao_rs.valor
-                < self.cfg["TENSAO_LINHA_ALTA"]
-                and self.cfg["TENSAO_LINHA_BAIXA"]
-                < self.leituras.tensao_st.valor
-                < self.cfg["TENSAO_LINHA_ALTA"]
-                and self.cfg["TENSAO_LINHA_BAIXA"]
-                < self.leituras.tensao_tr.valor
-                < self.cfg["TENSAO_LINHA_ALTA"]
-            )
-            or self.leituras.dj52L_trip.valor
-            or self.leituras.dj52L_inconsistente.valor
-            or self.leituras.dj52L_falha_fechamento.valor
-            or self.leituras.dj52L_falta_vcc.valor
-        ):
-            self.acionar_emergencia()
-            self.clp_emergencia_acionada = True
-
         if self.nv_montante_recente < 1:
             self.nv_montante_recentes = [self.leituras.nv_montante.valor] * 120
         self.nv_montante_recentes.append(
