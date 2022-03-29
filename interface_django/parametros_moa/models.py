@@ -128,16 +128,6 @@ class Comando(models.Model):
     id = models.IntegerField(primary_key=True)
     nome = models.CharField(max_length=255)
     descricao = models.TextField()
-
-    """
-    AGENDAMENTO_RESET_PARMAETROS = 1
-    AGENDAMENTO_INDISPONIBILIZAR = 2
-    AGENDAMENTO_NORMALIZAR = 3
-
-    AGENDAMENTO_INDISPONIBILIZAR_UG_1 = 10
-    AGENDAMENTO_NORMALIZAR_UG_1 = 11
-
-    AGENDAMENTO_INDISPONIBILIZAR_UG_2 = 20
-    AGENDAMENTO_NORMALIZAR_UG_2 = 21
-    """
+    executavel_em_manual = models.BooleanField(default=False)
+    executavel_em_autmoatico = models.BooleanField(default=True)
 
