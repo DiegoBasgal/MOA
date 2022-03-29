@@ -662,16 +662,26 @@ class StateDisponivel(State):
                     condicionadores_ativos.append(condicionador)
                     deve_normalizar = True
 
-        # Se algum condicionador deve gerar uma indisponibilidade
-        if deve_indisponibilizar:
-            # Logar os condicionadores ativos
-            self.logger.warning(
-                "[UG{}] UG em modo disponível detectou condicionadores ativos, indisponibilizando UG.\nCondicionadores ativos:".format(
+        # Logar os condicionadores ativos
+        if deve_indisponibilizar or deve_normalizar:
+            self.logger.info(
+                "[UG{}] UG em modo disponível detectou condicionadores ativos.\nCondicionadores ativos:".format(
                     self.parent_ug.id
                 )
             )
             for d in condicionadores_ativos:
-                self.logger.warning("Desc: {}; Ativo: {}; Valor: {};".format( d.descr, d.ativo, d.valor,))
+                self.logger.warning("Desc: {}; Ativo: {}; Valor: {}; Gravidade: {}".format(
+                    d.descr, d.ativo, d.valor, d.gravidade
+                )
+            )
+
+        # Se algum condicionador deve gerar uma indisponibilidade
+        if deve_indisponibilizar:
+            self.logger.warning(
+                "[UG{}] Indisponibilizando UG.".format(
+                    self.parent_ug.id
+                )
+            )
             # Vai para o estado StateIndisponivel
             return StateIndisponivel(self.parent_ug)
 
