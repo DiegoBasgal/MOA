@@ -771,6 +771,7 @@ class Usina:
         agendamentos = self.db.get_agendamentos_pendentes()
         for agendamento in agendamentos:
             ag = list(agendamento)
+            # ag -> [id, data, observacao, comando_id, executado, campo_auxiliar, criado_por, modificado_por, ts_criado, ts_modificado]
             ag[1] = ag[1] - timedelta(0, 60 * 60 * 3)
             agendamentos_pendentes.append(ag)
         return agendamentos_pendentes
@@ -790,7 +791,7 @@ class Usina:
 
         self.agendamentos_atrasados = 0
         for agendamento in agendamentos:
-
+            # ag -> [id, data, observacao, comando_id, executado, campo_auxiliar, criado_por, modificado_por, ts_criado, ts_modificado]
             if agora > agendamento[1]:
                 segundos_adiantados = 0
                 segundos_passados = (agora - agendamento[1]).seconds
@@ -801,8 +802,8 @@ class Usina:
             
             if segundos_passados > 60:
                 logger.warning(
-                    "Agendamento #{} Atrasado! ({} - {}).".format(
-                        agendamento[0], agendamento[3], agendamento
+                    "Agendamento #{} Atrasado! ({}).".format(
+                        agendamento[0], agendamento[3]
                     )
                 )
                 self.agendamentos_atrasados += 1
@@ -821,6 +822,26 @@ class Usina:
                         agendamento[0], agendamento
                     )
                 )
+
+                # se o MOA estiver em autonomo e o agendamento não for executavel em autonomo
+                #   marca como executado e altera a descricao
+                #   proximo
+                if self.modo_autonomo and not self.db.get_executabilidade(agendamento[3])["executavel_em_autmoatico"]:
+                    obs = "Este agendamento não tem efeito com o módulo em modo autônomo. Executado sem realizar nenhuma ação"
+                    logger.warning(obs)
+                    self.db.update_agendamento(agendamento[0], True, obs)
+                    return True
+            
+                # se o MOA estiver em manual e o agendamento não for executavel em manual
+                #   marca como executado e altera a descricao
+                #   proximo
+                if not self.modo_autonomo and not self.db.get_executabilidade(agendamento[3])["executavel_em_manual"]:
+                    obs = "Este agendamento não tem efeito com o módulo em modo manual. Executado sem realizar nenhuma ação"
+                    logger.warning(obs)
+                    self.db.update_agendamento(agendamento[0], True, obs)
+                    return True
+            
+
                 # Exemplo Case agendamento:
                 if agendamento[3] == AGENDAMENTO_DISPARAR_MENSAGEM_TESTE:
                     # Coloca em emergência

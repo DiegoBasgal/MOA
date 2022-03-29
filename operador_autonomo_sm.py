@@ -151,6 +151,10 @@ class ValoresInternosAtualizados(State):
         if self.usina.db_emergencia_acionada:
             return Emergencia(self.usina)
 
+        # Verificamos se existem agendamentos
+        if len(self.usina.get_agendamentos_pendentes()) > 0:
+            return AgendamentosPendentes(self.usina)
+
          # Em seguida com o modo manual (não autonomo)
         if not self.usina.modo_autonomo:
             return ModoManualAtivado(self.usina)
@@ -160,10 +164,6 @@ class ValoresInternosAtualizados(State):
 
         # TODO SEPARA FUNÇÃO
         self.usina.comporta.atualizar_estado(self.usina.nv_montante_recente)
-
-        # Verificamos se existem agendamentos
-        if len(self.usina.get_agendamentos_pendentes()) > 0:
-            return AgendamentosPendentes(self.usina)
 
         for ug in self.usina.ugs:
             ug.step()
@@ -293,6 +293,9 @@ class ModoManualAtivado(State):
             self.usina.heartbeat()
             return Pronto(self.usina)
 
+        if len(self.usina.get_agendamentos_pendentes()) > 0:
+            return AgendamentosPendentes(self.usina)
+        
         return self
 
 

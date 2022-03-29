@@ -40,8 +40,12 @@ def agendamento_detalhado_view(request, *args, **kwargs):
     context = {'ag': ag}
 
     if request.method == "POST":
-        if request.POST['acao'] == "remover":
-            ag.delete()
+        if request.POST.get('acao') == "alterar":
+            ag.ts_modificado = datetime.now()
+            ag.modificado_por = str(request.user)
+            ag.executado = True
+            ag.observacao = ag.observacao + " - MARCADO COMO EXECUTADO PELA INTERFACE WEB"
+            ag.save()
             return HttpResponseRedirect('../')
 
     return render(request, 'agendamento_detalhado.html', context=context)
@@ -49,15 +53,20 @@ def agendamento_detalhado_view(request, *args, **kwargs):
 
 @login_required
 def novo_agendamento_view(request, *args, **kwargs):
+
+    now = datetime.now()
+
     if request.method == "POST":
 
-        now = datetime.now()
-        
-        ano = int(request.POST['ano'])
-        mes = int(request.POST['mes'])
-        dia = int(request.POST['dia'])
-        hora = int(request.POST['hora'])
-        minuto = int(request.POST['minuto'])
+        ano             = int(request.POST.get('ano'))
+        mes             = int(request.POST.get('mes'))
+        dia             = int(request.POST.get('dia'))
+        hora            = int(request.POST.get('hora'))
+        minuto          = int(request.POST.get('minuto'))
+        observacao      = request.POST.get('observacao')
+        campo_auxiliar  = request.POST.get('campo_auxiliar')
+        comando_id      = request.POST.get('comando')
+
         data_hora = datetime(ano, mes, dia, hora, minuto, 0)
         if data_hora <= now:
             if (now - data_hora).seconds < 60:
@@ -65,13 +74,22 @@ def novo_agendamento_view(request, *args, **kwargs):
             else:
                 return HttpResponseRedirect('../')
 
-        observacao = request.POST['observacao']
-        comando_id = request.POST['comando']
-        ag = Agendamento(data=data_hora, observacao=observacao, comando=Comando.objects.get(id=comando_id))
+        ag = Agendamento(
+            ts_criado       = now,
+            criado_por      = request.user,
+            ts_modificado   = now,
+            modificado_por  = request.user,
+            data            = data_hora,
+            comando         = Comando.objects.get(id=comando_id),
+            campo_auxiliar  = campo_auxiliar,
+            observacao      = observacao,
+            executado       = False,
+        )
+
         ag.save()
+        
         return HttpResponseRedirect('../')
 
-    now = datetime.now()
     context = {'agora': now,
                 'dia': now.day,
                 'mes': now.month,
@@ -96,9 +114,21 @@ def novo_agendamento_rapido_view(request, *args, **kwargs):
 
     now = datetime.now()
     context = {'comandos': Comando.objects.all()}
+    
     if request.method == "POST":    
-        comando_id = request.POST['comando']
-        ag = Agendamento(data=now, observacao='COMANDO_RAPIDO', comando=Comando.objects.get(id=comando_id))
+
+        comando_id      = request.POST.get('comando')
+        ag = Agendamento(
+            ts_criado       = now,
+            criado_por      = request.user,
+            ts_modificado   = now,
+            modificado_por  = request.user,
+            data            = now,
+            comando         = Comando.objects.get(id=comando_id),
+            campo_auxiliar  = '',
+            observacao      = 'Criado pela tela de comando rápido',
+            executado       = False,
+        )
         ag.save()
         return HttpResponseRedirect('../')
 
