@@ -425,22 +425,22 @@ if __name__ == "__main__":
                 logger.error(
                     "Erro ao iniciar abstração da usina. Tentando novamente em {}s (tentativa {}/2). Exception: {}."
                     "".format(timeout, n_tentativa, repr(e)))
-                logger.critical("Traceback: {}".format(traceback.format_exc()))
+                logger.error("Traceback: {}".format(traceback.format_exc()))
                 sleep(timeout)
             except ConnectionError as e:
                 logger.error(
                     "Erro ao iniciar Modbus MOA. Tentando novamente em {}s (tentativa {}/2). Exception: {}.".format(
                         timeout, n_tentativa, repr(e)))
-                logger.critical("Traceback: {}".format(traceback.format_exc()))
+                logger.error("Traceback: {}".format(traceback.format_exc()))
                 sleep(timeout)
             except PermissionError as e:
                 logger.error("Não foi possível iniciar o Modbus MOA devido a permissão do usuário. Exception: {}.".format(repr(e)))
-                logger.critical("Traceback: {}".format(traceback.format_exc()))
+                logger.error("Traceback: {}".format(traceback.format_exc()))
                 prox_estado = FalhaCritica
             except Exception as e:
                 logger.error("Erro Inesperado. Tentando novamente em {}s (tentativa{}/2). Exception: {}.".format(
                     timeout, n_tentativa, repr(e)))
-                logger.critical("Traceback: {}".format(traceback.format_exc()))
+                logger.error("Traceback: {}".format(traceback.format_exc()))
                 sleep(timeout)
 
     logger.info("Inicialização completa, executando o MOA \U0001F916")
