@@ -67,10 +67,11 @@ class UnidadeDeGeracao:
         self.__setpoint_minimo = 0
         self.__setpoint_maximo = 0
         self.__tentativas_de_normalizacao = 0
-        self.__ts_auxiliar = datetime.now()
+        self.ts_auxiliar = datetime.now()
         self.__next_state = StateDisponivel(self)
         # Condicionadores devem ser adcionados após o init
         self.__condicionadores = []
+        self.aux_tempo_sincronizada = None
 
     def debug_set_etapa_alvo(self, var):
         self.__etapa_alvo = var
@@ -121,7 +122,7 @@ class UnidadeDeGeracao:
         """
         try:
             self.reconhece_reset_alarmes()
-            sleep(5)
+            sleep(1)
             self.__next_state = StateDisponivel(self)
         except Exception as e:
             self.logger.error(
@@ -248,6 +249,11 @@ class UnidadeDeGeracao:
         Returns:
             int: ETAPA_ATUAL
         """
+        self.logger.debug(
+                        "[UG{}] etapa_atual = __etapa_atual <- {}".format(
+                            self.id, self.__etapa_atual
+                        )
+                    )
         return self.__etapa_atual
 
     @property
@@ -344,16 +350,6 @@ class UnidadeDeGeracao:
             self.__tentativas_de_normalizacao = int(var)
         else:
             raise ValueError("Valor deve se um inteiro positivo")
-
-    @property
-    def ts_auxiliar(self) -> datetime:
-        """
-        Variavél timestamp auxiliar na temporização das tentativas de normalização e comandos modbus
-
-        Returns:
-            datetime: ts_auxiliar
-        """
-        return self.__ts_auxiliar
 
     @property
     def disponivel(self) -> bool:
@@ -560,9 +556,12 @@ class StateIndisponivel(State):
                 self.parent_ug.id
             )
         )
+        self.parent_ug.__next_state = self
+
 
     def step(self) -> State:
         # Se as unidades estiverem paradas, ou o selo estiver ativo
+        self.logger.debug("[UG{}] self.parent_ug.etapa_atual -> {}".format(self.parent_ug.id, self.parent_ug.etapa_atual))
         if self.parent_ug.etapa_atual == UNIDADE_PARADA or self.selo:
             # Ativar o selo interno do moa
             self.selo = True
@@ -648,6 +647,8 @@ class StateDisponivel(State):
 
     def step(self) -> State:
 
+        self.logger.debug("[UG{}] (tentativas_de_normalizacao atual: {})".format(self.parent_ug.id, self.parent_ug.tentativas_de_normalizacao))
+        
         # Ler condiconadores, verifica e armazena os ativos
         deve_indisponibilizar = False
         deve_normalizar = False
@@ -661,13 +662,24 @@ class StateDisponivel(State):
                     condicionadores_ativos.append(condicionador)
                     deve_normalizar = True
 
+        # Logar os condicionadores ativos
+        if deve_indisponibilizar or deve_normalizar:
+            self.logger.info(
+                "[UG{}] UG em modo disponível detectou condicionadores ativos.\nCondicionadores ativos:".format(
+                    self.parent_ug.id
+                )
+            )
+            for d in condicionadores_ativos:
+                self.logger.warning("Desc: {}; Ativo: {}; Valor: {}; Gravidade: {}".format(
+                    d.descr, d.ativo, d.valor, d.gravidade
+                )
+            )
+
         # Se algum condicionador deve gerar uma indisponibilidade
         if deve_indisponibilizar:
-            # Logar os condicionadores ativos
             self.logger.warning(
-                "[UG{}] UG em modo disponível detectou condicionadores ativos, indisponibilizando UG.\nCondicionadores ativos:\n{}".format(
-                    self.parent_ug.id,
-                    [d.descr for d in condicionadores_ativos],
+                "[UG{}] Indisponibilizando UG.".format(
+                    self.parent_ug.id
                 )
             )
             # Vai para o estado StateIndisponivel
@@ -749,16 +761,28 @@ class StateDisponivel(State):
                 and not self.parent_ug.etapa_atual == UNIDADE_PARADA
             ):
                 # Unidade parando
-                # Não fazer nada
                 self.logger.debug("[UG{}] Unidade parando".format(self.parent_ug.id))
+                # Se o setpoit for acima do mínimo
+                if self.parent_ug.setpoint >= self.parent_ug.setpoint_minimo:
+                    # Deve partir a UG
+                    self.parent_ug.partir()
+                    # E em seguida mandar o setpoint novo (boa prática)
+                    self.parent_ug.enviar_setpoint(self.parent_ug.setpoint)
 
             elif (
-                self.parent_ug.etapa_alvo == UNIDADE_SINCRONIZADA
+                self.parent_ug.etapa_alvo > UNIDADE_PARADA
                 and not self.parent_ug.etapa_atual == UNIDADE_SINCRONIZADA
             ):
                 # Unidade sincronizando
-                # Não fazer nada
                 self.logger.debug("[UG{}] Unidade sincronizando".format(self.parent_ug.id))
+
+                # Se potência = 0, impedir,
+                if self.parent_ug.setpoint == 0:
+                    self.logger.warning("[UG{}] A UG estava sincronizando com SP zerado, parando a UG.".format(self.parent_ug.id))
+                    self.parent_ug.parar()
+                else:
+                    self.parent_ug.partir()
+                # Se não fazer nada
 
             elif self.parent_ug.etapa_atual == UNIDADE_PARADA:
                 # Unidade parada
@@ -774,7 +798,10 @@ class StateDisponivel(State):
                 # Unidade sincronizada
                 self.logger.debug("[UG{}] Unidade sincronizada".format(self.parent_ug.id))
                 # Unidade sincronizada significa que ela está normalizada, logo zera o contador de tentativas
-                self.parent_ug.tentativas_de_normalizacao = 0
+                if not self.parent_ug.aux_tempo_sincronizada:
+                    self.parent_ug.aux_tempo_sincronizada = datetime.now()
+                elif (datetime.now() - self.parent_ug.aux_tempo_sincronizada).seconds >= 300:
+                    self.parent_ug.tentativas_de_normalizacao = 0
                 # Se o setpoit estiver abaixo do mínimo
                 if self.parent_ug.setpoint == 0:
                     # Deve manter a UG
@@ -796,5 +823,8 @@ class StateDisponivel(State):
                 )
                 # Vai para o estado StateIndisponivel
                 #return StateIndisponivel(self.parent_ug)
+
+            if not self.parent_ug.etapa_atual == UNIDADE_SINCRONIZADA:
+                self.parent_ug.aux_tempo_sincronizada = None
 
             return self

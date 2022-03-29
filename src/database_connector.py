@@ -1,3 +1,4 @@
+from datetime import datetime
 import mysql.connector
 from mysql.connector import pooling
 
@@ -98,13 +99,19 @@ class Database:
         self._close()
         return True
 
-    def update_agendamento(self, id_agendamento, executado):
+    def update_agendamento(self, id_agendamento, executado, obs=''):
+        if len(obs) >= 1:
+            obs = " - " + obs
         executado = 1 if executado else 0
-        q = "UPDATE agendamentos_agendamento " \
-            "SET executado = %s " \
-            "WHERE id = %s;"
+        q  = "UPDATE agendamentos_agendamento " \
+            " SET " \
+            " observacao = if(observacao is null, %s, concat(observacao, %s)), " \
+            " executado = %s, " \
+            " modificado_por = 'MOA', " \
+            " ts_modificado = %s " \
+            " WHERE id = %s;"
         self._open()
-        self.execute(q, (executado, int(id_agendamento)))
+        self.execute(q, (obs, obs, executado, datetime.now(), int(id_agendamento)))
         self._close()
 
     def update_habilitar_autonomo(self):
@@ -137,3 +144,11 @@ class Database:
         self._open()
         self.execute(q,tuple([ts, kp, ki, kd, kie, cp, ci, cd, cie, sp1, p1, sp2, p2, nv, erro, ma]))
         self._close()
+
+    def get_executabilidade(self, id_comando):
+        q = "SELECT executavel_em_autmoatico, executavel_em_manual FROM parametros_moa_comando WHERE id = %s"
+        self._open()
+        self.execute(q,tuple([id_comando]))
+        parametros_raw = self.fetchone()
+        self._close()
+        return {'executavel_em_autmoatico':parametros_raw[0], 'executavel_em_manual':parametros_raw[1]}
