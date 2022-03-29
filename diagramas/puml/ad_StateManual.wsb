@@ -1,0 +1,18 @@
+@startuml StateManual
+title ad_StateManual 
+!pragma useVerticalIf on
+
+partition "innit()" {
+    start
+    #lightblue:log info;
+    end 
+}
+
+partition "step()" {
+    start
+    #lightgray:return self;
+    detach
+}
+
+@enduml
+'https://plantuml.com/guide'

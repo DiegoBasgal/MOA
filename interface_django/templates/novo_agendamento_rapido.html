@@ -1,0 +1,18 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<h1>Novo agendamento rápido</h1>
+
+Comando:
+
+{% for comando in comandos %}
+<form method='post' action='/agendamentos/novo_agendamento_rapido/'>
+    {% csrf_token %}
+    <input type="hidden" id="comando" name="comando" value="{{ comando.id }}"/>
+    <input type="submit" value="Agendar agora: {{ comando.nome }}."/>
+</form>
+{% endfor %}    
+
+
+{% endblock content %}

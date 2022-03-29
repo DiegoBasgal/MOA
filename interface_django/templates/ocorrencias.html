@@ -1,6 +1,46 @@
 {% extends "base.html" %}
 
 {% block content %}
-<h1>Ocorrencias MOA</h1>
-<p>Página de Ocorrencias.</p>
+<div>
+    <h1>Ocorrencias MOA</h1>
+    <p>Página de Ocorrencias.</p>
+</div>
+
+<div>
+    <form action = "">
+        Número de linhas na busca:
+        <select id="nlinhas" name="nlinhas">
+            <option value="5" selected>5</option>
+            <option value="10">10</option>
+            <option value="25">25</option>
+            <option value="50">50</option>
+            <option value="1000">1000</option>
+          </select>
+        <input type="submit" value="Buscar">
+    </form><br>
+</div>
+
+<div>
+    <table>
+        <tr>
+            <th>Data</th>
+            <th>Severidade</th>
+            <th>Descritivo</th>
+        </tr>
+        {% for linha in log %}
+        <tr>
+            <td>
+                {{ linha.datahora }}
+            </td>
+            <td>
+                {{ linha.severidade }}
+            </td>
+            <td>
+                {{ linha.conteudo }}
+            </td>
+        </tr>
+        {% endfor %}
+    </table>
+</div>
+
 {% endblock content %}

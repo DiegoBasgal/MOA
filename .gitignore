@@ -1,9 +1,11 @@
+*.pyc
+**/__pycache__/
+**__pycache__**
 **/.idea/
+**/.vscode/
 **/*.log
 **/*.out
-log_modbus_ug1.csv
-log_modbus_ug2.csv
-log_modbus_usina.csv
+**/cover/*
 **/log*
 **/venv*
 **/__pycache__*
