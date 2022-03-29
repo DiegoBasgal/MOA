@@ -8,6 +8,6 @@
 **/cover/*
 **/log*
 **/venv*
-log_modbus_ug1.csv
-log_modbus_ug2.csv
-log_modbus_usina.csv
+**/__pycache__*
+*.pyc
+**/cover/*
