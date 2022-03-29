@@ -18,9 +18,9 @@ import os.path
 # Inicializando o logger principal
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.DEBUG)
-if not os.path.exists("logs/"):
-    os.mkdir("logs/")
-fh = logging.FileHandler("logs/watchdog.log")  # log para arquivo
+if not os.path.exists(os.path.join(os.path.dirname(__file__),"logs")):
+    os.mkdir(os.path.join(os.path.dirname(__file__),"logs"))
+fh = logging.FileHandler(os.path.join(os.path.dirname(__file__),"logs", "watchdog.log"))  # log para arquivo
 ch = logging.StreamHandler(stdout)  # log para linha de comando
 mh = MensageiroHandler()  # log para telegram e voip
 logFormatter = logging.Formatter("%(asctime)s [%(threadName)-12.12s] [%(levelname)-5.5s] [WATCHDOG] %(message)s")

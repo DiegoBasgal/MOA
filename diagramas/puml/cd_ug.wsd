@@ -1,0 +1,47 @@
+@startuml UnidadeGeradora
+title cd_UnidadeGeradora
+
+class Usina
+class UnidadeGeradora {
+    - alarmes : dict
+    - estado_alvo : int
+    - estado_atual : int
+    - horimetro : int
+    - perda_na_grade : float
+    - potencia : int
+    - setpoint : int
+    - temperaturas : dict 
+    - tentativas_de_normalizacao : int
+    - limite_tentativas_de_normalizacao : int
+    - ts_auxiliar : datetime
+    - sm_state : State
+    + sm_step()
+    - reconhece_reset_alarmes()
+    - acionar_trip_logico()
+    - acionar_trip_eletrico()
+}
+
+class DriverDeComunicacao
+together {
+    class State {
+        - parent_ug : UnidadeGeradora
+        - __innit__()
+        + step()
+    }
+    together {
+        class StateDisponivel implements State 
+        class StateIndisponivel implements State 
+        class StateManual implements State 
+        class StateRestrito implements State 
+    }
+}
+
+Usina "1" o-- "várias"  UnidadeGeradora : contém
+UnidadeGeradora *-- DriverDeComunicacao
+UnidadeGeradora *-- StateDisponivel
+UnidadeGeradora *-- StateIndisponivel
+UnidadeGeradora *-- StateManual
+UnidadeGeradora *-- StateRestrito
+
+@enduml
+'https://plantuml.com/guide'

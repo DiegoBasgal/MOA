@@ -1,0 +1,18 @@
+@startuml sm_step
+!pragma useVerticalIf on
+title ad_sm_step 
+
+partition "sm_step()" {
+    start
+    :next_state = self.sm_state.step();
+    if (Exception) then (Exception)
+        :self.sm_state = StateIndisponivel(self);
+    else (No Exception)
+        #lightblue:log error;
+        :self.sm_state = next_state;
+    endif
+    end
+}
+
+@enduml
+'https://plantuml.com/guide'

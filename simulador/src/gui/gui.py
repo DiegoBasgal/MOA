@@ -1,3 +1,4 @@
+from pathlib import Path
 import sys
 import threading
 from math import floor
@@ -14,13 +15,14 @@ class Window(QMainWindow, Ui_Form):
 
         super().__init__(parent)
         self.setupUi(self)
-        self.bg.setPixmap(QPixmap(u"gui/imgs/bg.png"))
+        path = Path(__file__).parent.absolute().joinpath("imgs","bg.png")
+        self.bg.setPixmap(QPixmap(path))
 
         self.shared_dict = shared_dict
         
         # Timer de sincronização com o processo de simulação!
         self.sinc_timer = QTimer()
-        self.sinc_timer.setInterval(10)
+        self.sinc_timer.setInterval(100)
         self.sinc_timer.timeout.connect(self.sincro)
         self.sinc_timer.start()
 
@@ -71,7 +73,7 @@ class Window(QMainWindow, Ui_Form):
             self.lcdNumber_temperatura_ug1_fase_t.display("{:03.1f}".format(self.shared_dict["temperatura_ug1_fase_t"]))
             self.lcdNumber_temperatura_ug1_la_casquilho.display("{:03.1f}".format(self.shared_dict["temperatura_ug1_la_casquilho"]))
             self.lcdNumber_temperatura_ug1_lna_casquilho.display("{:03.1f}".format(self.shared_dict["temperatura_ug1_lna_casquilho"]))
-            self.lcdNumber_perda_na_grade_ug1.display("{:03.1f}".format(self.shared_dict["perda_na_grade_ug1"]))
+            self.lcdNumber_perda_na_grade_ug1.display("{:03.1f}".format(self.shared_dict["nv_montante"] - self.shared_dict["nv_jusante"]))
 
             self.checkBox_sinal_trip_ug2.setChecked(self.shared_dict["trip_ug2"])
             self.lcdNumber_potencia_ug2.display("{:1.3f}".format(self.shared_dict["potencia_kw_ug2"]/1000))
@@ -94,7 +96,7 @@ class Window(QMainWindow, Ui_Form):
             self.lcdNumber_temperatura_ug2_fase_t.display("{:03.1f}".format(self.shared_dict["temperatura_ug2_fase_t"]))
             self.lcdNumber_temperatura_ug2_la_casquilho.display("{:03.1f}".format(self.shared_dict["temperatura_ug2_la_casquilho"]))
             self.lcdNumber_temperatura_ug2_lna_casquilho.display("{:03.1f}".format(self.shared_dict["temperatura_ug2_lna_casquilho"]))
-            self.lcdNumber_perda_na_grade_ug2.display("{:3.1f}".format(self.shared_dict["perda_na_grade_ug2"]))
+            self.lcdNumber_perda_na_grade_ug2.display("{:3.1f}".format(self.shared_dict["nv_montante"] - self.shared_dict["nv_jusante"]))
         
         except Exception as e:
             print(repr(e))
@@ -152,7 +154,7 @@ class Window(QMainWindow, Ui_Form):
         self.shared_dict["debug_parar_ug1"] = True
 
     def mudar_setpoint_ug1(self):
-        self.shared_dict["setpoint_kw_ug1"] = self.horizontalSlider_setpoint_ug1.value()
+        self.shared_dict["debug_setpoint_kw_ug1"] = self.horizontalSlider_setpoint_ug1.value()
 
     # ug2
     def pulso_trip_ug2(self):
@@ -176,7 +178,7 @@ class Window(QMainWindow, Ui_Form):
         self.shared_dict["debug_parar_ug2"] = True
 
     def mudar_setpoint_ug2(self):
-        self.shared_dict["setpoint_kw_ug2"] = self.horizontalSlider_setpoint_ug2.value()
+        self.shared_dict["debug_setpoint_kw_ug2"] = self.horizontalSlider_setpoint_ug2.value()
 
     # dj52L
     def alternar_estado_dj52L(self):
