@@ -12,19 +12,35 @@ class Dj52L:
         self.shared_dict["debug_dj52L_abrir"] = False
         self.shared_dict["debug_dj52L_fechar"] = False
         self.shared_dict["debug_dj52L_reconhece_reset"] = False
-        self.shared_dict["dj52L_aberto"] = True
-        self.shared_dict["dj52L_fechado"] = False
+        self.shared_dict["dj52L_aberto"] = False
+        self.shared_dict["dj52L_fechado"] = True
         self.shared_dict["dj52L_inconsistente"] = False
         self.shared_dict["dj52L_trip"] = False
         self.shared_dict["dj52L_mola_carregada"] = True
         self.shared_dict["dj52L_falta_vcc"] = False
-        self.shared_dict["dj52L_condicao_de_fechamento"] = True
+        self.shared_dict["dj52L_condicao_de_fechamento"] = False
         self.shared_dict["dj52L_falha_fechamento"] = False
 
         self.avisou_trip = False
         self.aux_mola = 0
         self.tempo_carregamento_mola = 2
 
+    def passo(self):
+        pass
+
+    def tripar(self, desc=None):
+        pass
+
+    def reconhece_reset_dj52L(self):
+        pass
+
+    def abrir(self):
+        pass
+
+    def fechar(self):
+        pass
+
+    """
     def passo(self):
         if self.shared_dict["debug_dj52L_fechar"] and self.shared_dict["debug_dj52L_abrir"]:
             self.shared_dict["debug_dj52L_abrir"] = False
@@ -119,4 +135,6 @@ class Dj52L:
                 self.shared_dict["dj52L_mola_carregada"] = False
                 return True
   
+    
+    """
     
