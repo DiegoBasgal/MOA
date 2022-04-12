@@ -13,6 +13,7 @@ from datetime import datetime
 import logging
 from time import sleep
 import traceback
+import inspect
 
 from src.codes import *
 from src.Leituras import *
@@ -121,6 +122,15 @@ class UnidadeDeGeracao:
             bool: True se sucesso, Falso caso contrário
         """
         try:
+            caller = inspect.getframeinfo(inspect.stack()[1][0])
+            self.logger.debug(
+                "[UG{}] Executando forcar_estado_disponivel. {}:{}:{}".format(
+                    self.id,
+                    caller.filename,
+                    caller.function,
+                    caller.lineno
+                )
+            )
             self.reconhece_reset_alarmes()
             sleep(1)
             self.__next_state = StateDisponivel(self)
@@ -142,7 +152,17 @@ class UnidadeDeGeracao:
             bool: True se sucesso, Falso caso contrário
         """
         try:
+            caller = inspect.getframeinfo(inspect.stack()[1][0])
+            self.logger.debug(
+                "[UG{}] Executando forcar_estado_indisponivel. {}:{}:{}".format(
+                    self.id,
+                    caller.filename,
+                    caller.function,
+                    caller.lineno
+                )
+            )
             self.__next_state = StateIndisponivel(self)
+            self.step()
         except Exception as e:
             self.logger.error(
                 "[UG{}] {} Não foi possivel forcar_estado_indisponivel. {}".format(
@@ -161,6 +181,15 @@ class UnidadeDeGeracao:
             bool: True se sucesso, Falso caso contrário
         """
         try:
+            caller = inspect.getframeinfo(inspect.stack()[1][0])
+            self.logger.debug(
+                "[UG{}] Executando forcar_estado_manual. {}:{}:{}".format(
+                    self.id,
+                    caller.filename,
+                    caller.function,
+                    caller.lineno
+                )
+            )
             self.__next_state = StateManual(self)
         except Exception as e:
             self.logger.error(
@@ -180,6 +209,15 @@ class UnidadeDeGeracao:
             bool: True se sucesso, Falso caso contrário
         """
         try:
+            caller = inspect.getframeinfo(inspect.stack()[1][0])
+            self.logger.debug(
+                "[UG{}] Executando forcar_estado_restrito. {}:{}:{}".format(
+                    self.id,
+                    caller.filename,
+                    caller.function,
+                    caller.lineno
+                )
+            )
             self.__next_state = StateRestrito(self)
         except Exception as e:
             self.logger.error(
@@ -561,7 +599,7 @@ class StateIndisponivel(State):
 
     def step(self) -> State:
         # Se as unidades estiverem paradas, ou o selo estiver ativo
-        self.logger.debug("[UG{}] self.parent_ug.etapa_atual -> {}".format(self.parent_ug.id, self.parent_ug.etapa_atual))
+        self.logger.debug("[UG{}] [INDISP] self.parent_ug.etapa_atual -> {}".format(self.parent_ug.id, self.parent_ug.etapa_atual))
         if self.parent_ug.etapa_atual == UNIDADE_PARADA or self.selo:
             # Ativar o selo interno do moa
             self.selo = True

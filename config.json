@@ -33,7 +33,7 @@
     "nv_alvo": 643.3,
     "nv_maximo": 643.5,
     "nv_maximorum": 647.0,
-    "pot_maxima_usina": 5100,
+    "pot_maxima_usina": 5000,
     "pot_maxima_alvo": 5000,
     "pot_minima": 1250,
     "margem_pot_critica": 1000,

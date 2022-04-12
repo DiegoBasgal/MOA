@@ -269,7 +269,7 @@ class Usina:
                 
         self.relé_de_proteção_da_linha_mra4_sobrecorrente_de_sequência_negativa_temporizada_46 = LeituraModbusBit('10.05 - Relé de Proteção da Linha (MRA4) - Sobrecorrente de Sequência Negativa Temporizada - 46', clp, REG_USINA_Alarme10, 5)
         x = self.relé_de_proteção_da_linha_mra4_sobrecorrente_de_sequência_negativa_temporizada_46 
-        self.condicionadores.append(CondicionadorBase(x.descr, DEVE_INDISPONIBILIZAR, x))
+        self.condicionadores.append(CondicionadorBase(x.descr, DEVE_NORMALIZAR, x))
                 
         self.relé_de_proteção_da_linha_mra4_sobretensão_de_fase_59p = LeituraModbusBit('10.07 - Relé de Proteção da Linha (MRA4) - Sobretensão de Fase - 59P', clp, REG_USINA_Alarme10, 7)
         x = self.relé_de_proteção_da_linha_mra4_sobretensão_de_fase_59p 
@@ -436,14 +436,10 @@ class Usina:
         if not ping(self.cfg["UG1_slave_ip"]):
             logger.warning("CLP UG1 não respondeu a tentativa de comunicação!")
             self.ug1.forcar_estado_restrito()
-        elif not self.ug1.disponivel:
-            self.ug1.forcar_estado_disponivel()
 
         if not ping(self.cfg["UG2_slave_ip"]):
             logger.warning("CLP UG2 não respondeu a tentativa de comunicação!")
             self.ug2.forcar_estado_restrito()
-        elif not self.ug2.disponivel:
-            self.ug2.forcar_estado_disponivel()
 
         self.clp_online = True
         self.clp_emergencia_acionada = 0
@@ -847,6 +843,22 @@ class Usina:
                     # Coloca em emergência
                     logger.info("Disparando mensagem teste (comando via agendamento).")
                     self.disparar_mensagem_teste()
+                    
+                #Pot Maxima UG
+                if agendamento[3] == AGENDAMENTO_ALETRAR_POT_MAX:
+                    # Coloca em emergência
+                    try:
+                        novo = float(agendamento[5].replace(",", "."))
+                        logger.info("Alterando pot maxima para: {} kW (comando via agendamento).".format(novo))
+                        self.cfg["pot_maxima_alvo"] = novo
+                        self.cfg["pot_maxima_usina"] = novo
+                    except Exception as e:
+                        obs =  "Valor inválido no comando {} ('{}'  é inválido).".format(agendamento[0], agendamento[5])
+                        logger.info(
+                           obs
+                        )
+                        self.db.update_agendamento(agendamento[0], True, obs)
+
 
                 if agendamento[3] == AGENDAMENTO_INDISPONIBILIZAR:
                     # Coloca em emergência
@@ -870,37 +882,38 @@ class Usina:
 
                 if agendamento[3] == AGENDAMENTO_ALETRAR_NV_ALVO:
                     try:
-                        novo = float(agendamento[2].replace(",", "."))
+                        novo = float(agendamento[5].replace(",", "."))
+                        self.nv_alvo = novo
+                        pars = [
+                            datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+                            self.kp,
+                            self.ki,
+                            self.kd,
+                            self.kie,
+                            self.n_movel_l,
+                            self.n_movel_r,
+                            self.nv_alvo,
+                        ]
+                        self.db.update_parametros_usina(pars)
+                        self.escrever_valores()
                     except Exception as e:
+                        obs =  "Valor inválido no comando {} ('{}'  é inválido).".format(agendamento[0], agendamento[5])
                         logger.info(
-                            "Valor inválido no comando #{} ({} é inválido).".format(
-                                agendamento[0], agendamento[3]
-                            )
+                           obs
                         )
-                    self.nv_alvo = novo
-                    pars = [
-                        datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
-                        self.kp,
-                        self.ki,
-                        self.kd,
-                        self.kie,
-                        self.n_movel_l,
-                        self.n_movel_r,
-                        self.nv_alvo,
-                    ]
-                    self.db.update_parametros_usina(pars)
-                    self.escrever_valores()
+                        self.db.update_agendamento(agendamento[0], True, obs)
+                    
 
                 if agendamento[3] == AGENDAMENTO_UG1_ALETRAR_POT_LIMITE:
                     try:
-                        novo = float(agendamento[2].replace(",", "."))
+                        novo = float(agendamento[5].replace(",", "."))
                         self.ug1.pot_disponivel = novo
                     except Exception as e:
+                        obs =  "Valor inválido no comando {} ('{}'  é inválido).".format(agendamento[0], agendamento[5])
                         logger.info(
-                            "Valor inválido no comando #{} ({} é inválido).".format(
-                                agendamento[0], agendamento[3]
-                            )
+                           obs
                         )
+                        self.db.update_agendamento(agendamento[0], True, obs)
 
                 if agendamento[3] == AGENDAMENTO_UG1_FORCAR_ESTADO_MANUAL:
                     self.ug1.forcar_estado_manual()
@@ -916,14 +929,14 @@ class Usina:
 
                 if agendamento[3] == AGENDAMENTO_UG2_ALETRAR_POT_LIMITE:
                     try:
-                        novo = float(agendamento[2].replace(",", "."))
+                        novo = float(agendamento[5].replace(",", "."))
                         self.ug2.pot_disponivel = novo
                     except Exception as e:
+                        obs =  "Valor inválido no comando {} ('{}'  é inválido).".format(agendamento[0], agendamento[5])
                         logger.info(
-                            "Valor inválido no comando #{} ({} é inválido).".format(
-                                agendamento[0], agendamento[3]
-                            )
+                           obs
                         )
+                        self.db.update_agendamento(agendamento[0], True, obs)
 
                 if agendamento[3] == AGENDAMENTO_UG2_FORCAR_ESTADO_MANUAL:
                     self.ug2.forcar_estado_manual()
@@ -941,7 +954,7 @@ class Usina:
                 self.db.update_agendamento(int(agendamento[0]), 1)
                 logger.info(
                     "O comando #{} - {} foi executado.".format(
-                        agendamento[0], agendamento[2]
+                        agendamento[0], agendamento[5]
                     )
                 )
                 self.con.somente_reconhecer_emergencia()
