@@ -37,6 +37,7 @@ UNIDADE_LISTA_DE_ETAPAS = [UNIDADE_PARADA, UNIDADE_SINCRONIZADA]
 DEVE_INDISPONIBILIZAR = 2
 DEVE_NORMALIZAR = 1
 DEVE_IGNORAR = 0
+LISTA_GRAVIDADES = ["ignorar", "normal", "indisponibilizar"]
 
 # Agendamentos
 AGENDAMENTO_INDISPONIBILIZAR = 1
@@ -56,4 +57,22 @@ AGENDAMENTO_UG2_FORCAR_ESTADO_MANUAL = 205
 AGENDAMENTO_UG2_FORCAR_ESTADO_RESTRITO = 206
 
 AGENDAMENTO_DISPARAR_MENSAGEM_TESTE = 777
+
+INT_TO_AGENDAMENTOS = {
+    1: "Indisponibilizar usina",
+    2: "Alterar nível alvo",
+    3: "Alterar potência máxima",
+    102: "UG1 Alterar potência limite",
+    103: "UG1 Forçar estado DISPONIVEL",
+    104: "UG1 Forçar estado INDISPONIVEL",
+    105: "UG1 Forçar estado MANUAL",
+    106: "UG1 Forçar estado RESTRITO",
+    202: "UG2 Alterar potência limite",
+    203: "UG2 Forçar estado DISPONIVEL",
+    204: "UG2 Forçar estado INDISPONIVEL",
+    205: "UG2 Forçar estado MANUAL",
+    206: "UG2 Forçar estado RESTRITO",
+    777: "Disparar mensagens teste",
+}
+
 MODO_ESCOLHA_MANUAL = 2
