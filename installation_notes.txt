@@ -1,46 +1,41 @@
 #Implementação MOA
-
-sudo apt install python3
-sudo apt install pip
-sudo apt install git
-sudo mkdir /usr/local/operacao-autonoma
-cd /usr/local/
-sudo git clone https://gitlab.com/ritmo-energia/operacao-autonoma.git
+sudo su
+sudo timedatectl set-timezone America/Sao_Paulo
+ufw allow mysql
+apt install python3 -y
+apt install pip -y
+sudo mkdir /opt/operacao-autonoma
+cd /opt/
+git clone https://gitlab.com/ritmo-energia/operacao-autonoma.git
 cd operacao-autonoma
-export PYTHONPATH=$PYTHONPATH:/usr/local/operacao-autonoma
-#git branch -a
-#git checkout BRANCH
-ll
-sudo apt install mariadb-server
-sudo apt install mariadb-client
-sudo mysql_secure_installation
-sudo mariadb
-#GRANT ALL ON *.* TO 'moa'@'localhost' IDENTIFIED BY 'password' WITH GRANT OPTION;
-#FLUSH PRIVILEGES;
-#EXIT
-sudo apt-get install libmysqlclient-dev
-sudo apt-get install libmariadb-dev
-sudo pip install -r requirements.txt # Vai FALHAR! Editar conforme necessário para instalar
-sudo cp interface_django/uwsgi.service /etc/systemd/system/uwsgi.service
-sudo nano /etc/systemd/system/uwsgi.service 
-sudo nano interface_django/interface_django_uwsgi.ini # Editar conforme necessário para instalar
-sudo systemctl enable uwsgi.service
-sudo systemctl start uwsgi.service
-sudo apt-get install nginx
-sudo /etc/init.d/nginx start 
-sudo cp interface_django/interface_django_nginx.conf /etc/nginx/sites-available/
-sudo nano /etc/nginx/sites-available/interface_django_nginx.conf #EDITAR
-sudo ln -s /etc/nginx/sites-available/interface_django_nginx.conf /etc/nginx/sites-enabled/
-sudo /etc/init.d/nginx restart
-sudo systemctl start uwsgi.service
+export PYTHONPATH=$PYTHONPATH:/opt/operacao-autonoma
+git branch -a
+git checkout #BRANCH
+apt install mariadb-server -y
+apt install mariadb-client -y
+mysql_secure_installation
+mariadb
+#GRANT ALL ON *.* TO 'moa'@'localhost' IDENTIFIED BY 'password' WITH GRANT OPTION; FLUSH PRIVILEGES; EXIT;
+apt install libmysqlclient-dev -y
+apt install libmariadb-dev -y
+apt install unixodbc unixodbc-dev -y
+pip install -r ./src/requirements.txt # Vai FALHAR! Editar conforme necessário para instalar
+cp interface_django/uwsgi.service /etc/systemd/system/uwsgi.service
+nano /etc/systemd/system/uwsgi.service 
+nano interface_django/interface_django_uwsgi.ini # Editar conforme necessário para instalar
+#systemctl enable uwsgi.service
+#systemctl start uwsgi.service
+apt-get install nginx -y
+/etc/init.d/nginx start 
+cp interface_django/interface_django_nginx.conf /etc/nginx/sites-available/
+nano /etc/nginx/sites-available/interface_django_nginx.conf #EDITAR
+ln -s /etc/nginx/sites-available/interface_django_nginx.conf /etc/nginx/sites-enabled/
+/etc/init.d/nginx restart
 sudo mariadb -u root -p
-#CREATE DATABASE django_db;
-#EXIT
-sudo python3 interface_django/manage.py migrate
-sudo mariadb -u root -p
-#USE django_db;
-#INSERT INTO `parametros_moa_parametrosusina` VALUES (1,1,7,0,'2021-08-31 12:32:23.000000',0,1,'localhost',5002,'localhost',5003,-20.0000000000,-0.2000000000,-500.0000000000,0.5000000000,0.50000,60,6,643.250,643.500,643.000,643.210,643.250,1.00000,5.00000,2.50000,5.20000,30,1.00000,2.59900,2.60000,1,636,0,1.00000,0.00000,0.00000,0,638,0,0.50000,1,0,643.50,643.55,643.55,643.60,643.60,643.65,643.65,643.70,643.70,643.75,643.75,643.80,1.04000,0.740,10.000,27.10,100.00,0.650,10.000,40.00,100.00,5.00000,10.000,100.00,10.000,100.00);
-#EXIT
+#CREATE DATABASE django_db; EXIT;
+nano interface_django/interface_django/settings.py # Alterar senha no Django
+python3 interface_django/manage.py migrate
+## COPIAR BANCO DO MODELO!
 sudo python3 interface_django/manage.py createsuperuser
 sudo reboot
 
