@@ -48,7 +48,7 @@ fh.setLevel(logging.DEBUG)
 logger.addHandler(fh)
 
 mh = MensageiroHandler()
-mh.setFormatter(logFormatter)
+mh.setFormatter(logFormatterSimples)
 mh.setLevel(logging.INFO)
 logger.addHandler(mh)
 
@@ -306,7 +306,7 @@ class AgendamentosPendentes(State):
         self.usina = instancia_usina
 
     def run(self):
-        logger.info("Tratando agendamentos")
+        logger.debug("Tratando agendamentos")
         self.usina.verificar_agendamentos()
         return Pronto(self.usina)
 
