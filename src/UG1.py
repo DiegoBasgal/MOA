@@ -85,7 +85,7 @@ class UnidadeDeGeracao1(UnidadeDeGeracao):
         
         self.relé_de_bloqueio_86h_trip_atuado = LeituraModbusBit('05.12 - Relé de Bloqueio 86H Trip Atuado', self.clp, REG_UG1_Alarme05, 12)
         x = self.relé_de_bloqueio_86h_trip_atuado 
-        self.condicionadores.append(CondicionadorBase(x.descr, DEVE_INDISPONIBILIZAR, x))
+        self.condicionadores.append(CondicionadorBase(x.descr, DEVE_NORMALIZAR, x))
         
         self.relé_de_bloqueio_86h_trip_atuado_pelo_clp = LeituraModbusBit('05.13 - Relé de Bloqueio 86H Trip Atuado pelo CLP', self.clp, REG_UG1_Alarme05, 13)
         x = self.relé_de_bloqueio_86h_trip_atuado_pelo_clp 
