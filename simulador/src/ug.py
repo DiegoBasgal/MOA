@@ -17,8 +17,8 @@ class Ug:
         
         self.shared_dict["debug_parar_ug{}".format(self.id)] = False
         self.shared_dict["debug_partir_ug{}".format(self.id)] = False
-        self.shared_dict["etapa_alvo_ug{}".format(self.id)] = 0
-        self.shared_dict["etapa_atual_ug{}".format(self.id)] = 0
+        self.shared_dict["etapa_alvo_ug{}".format(self.id)] = 1
+        self.shared_dict["etapa_atual_ug{}".format(self.id)] = 1
         self.shared_dict["flags_ug{}".format(self.id)] = 0
         self.shared_dict["potencia_kw_ug{}".format(self.id)] = 0
         self.shared_dict["q_ug{}".format(self.id)] = 0
@@ -39,16 +39,16 @@ class Ug:
         self.tempo_na_transicao = 0
         self.avisou_trip = False
         self.etapa_alvo = 0
-        self.etapa_atual = 0
+        self.etapa_atual = 1
         self.flags = 0
         self.potencia = 0
         self.setpoint = 0
         self.horimetro = 0
-        self.ETAPA_UP = 0
-        self.ETAPA_UPGM = 1
-        self.ETAPA_UVD = 2
-        self.ETAPA_UPS = 3
-        self.ETAPA_US = 4
+        self.ETAPA_UP = 1
+        self.ETAPA_UPGM = 2
+        self.ETAPA_UVD = 3
+        self.ETAPA_UPS = 4
+        self.ETAPA_US = 5
 
         self.TEMPO_TRANS_UP_UPGM = 20
         self.TEMPO_TRANS_UPGM_UVD = 20
@@ -155,7 +155,7 @@ class Ug:
                 self.etapa_alvo = None
                 self.shared_dict["etapa_alvo_ug{}".format(self.id)] = self.etapa_alvo
                 if self.shared_dict["dj52L_fechado"] and not self.shared_dict["dj52L_trip"]:
-                    self.potencia = min(self.potencia, 500)
+                    self.potencia = min(self.potencia, 550)
                     if self.setpoint > self.potencia:
                         self.potencia += 10.4167 * self.segundos_por_passo
                     else:
@@ -168,6 +168,7 @@ class Ug:
                     self.shared_dict["etapa_alvo_ug{}".format(self.id)] = self.etapa_alvo
                     self.tempo_na_transicao = 0
             elif self.etapa_alvo < self.etapa_atual:
+                print("DEVERIA ESTAR PARADNDO A UG{}".format(self.id))
                 self.tempo_na_transicao -= self.segundos_por_passo
                 self.potencia -= 10.4167 * self.segundos_por_passo
                 if self.tempo_na_transicao <= -self.TEMPO_TRANS_US_UPS and self.potencia <= 0:
@@ -191,8 +192,11 @@ class Ug:
             self.horimetro += self.segundos_por_passo/3600
 
         if self.etapa_atual > self.ETAPA_UP and self.shared_dict["nv_montante"] < self.USINA_NV_MINIMO_OPERACAO:
-            self.tripar(1, "Trip nível baixo.")
-            self.shared_dict["trip_ug{}".format(self.id)] = True
+            #self.tripar(1, "Trip nível baixo.")
+            #self.shared_dict["trip_ug{}".format(self.id)] = True
+            self.potencia = 0
+            self.etapa_atual = 1
+            self.etapa_alvo = 1
 
         self.shared_dict["q_ug{}".format(self.id)] = self.q_ug(self.potencia)
         self.shared_dict["potencia_kw_ug{}".format(self.id)] = self.potencia
@@ -204,8 +208,8 @@ class Ug:
             self.avisou_trip = True
             self.logger.warning("[UG{}] Trip!. {}".format(self.id, desc))
         self.potencia = 0
-        self.etapa_atual = 0
-        self.etapa_alvo = None
+        self.etapa_atual = 1
+        self.etapa_alvo = 1
         self.shared_dict["etapa_alvo_ug{}".format(self.id)] = self.etapa_alvo
         self.flags = flag
 
@@ -226,6 +230,6 @@ class Ug:
 
     def q_ug(self, potencia_kW):
         if potencia_kW > 1:
-            return 0.676 + 0.0087 * potencia_kW
+            return (0.676 + 0.0087 * potencia_kW)/2
         else:
             return 0
