@@ -42,9 +42,9 @@ class Planta:
         self.logger.addHandler(fh)
         # Fim Set-up logging
 
-        self.USINA_NV_VERTEDOURO = 643.5
-        self.USINA_VAZAO_SANITARIA_COTA = 641
-        self.USINA_NV_MINIMO_OPERACAO = 642.95
+        self.USINA_NV_VERTEDOURO = 821
+        self.USINA_VAZAO_SANITARIA_COTA = 820.39
+        self.USINA_NV_MINIMO_OPERACAO = 819
         self.USINA_TENSAO_MINIMA = 31050
         self.USINA_TENSAO_MAXIMA = 36200
         
@@ -67,7 +67,7 @@ class Planta:
     def run(self):
 
         # INICIO DECLARAÇÃO shared_dict
-        self.shared_dict["nv_montante"] = 643.25
+        self.shared_dict["nv_montante"] = 820.75
         self.shared_dict["potencia_kw_se"] = 0
         self.shared_dict["q_alfuente"] = 0
         self.shared_dict["q_liquida"] = 0
@@ -184,7 +184,7 @@ class Planta:
                 self.shared_dict["nv_montante"] = self.volume_para_nv_montate(volume + self.shared_dict["q_liquida"] * self.segundos_por_passo)
                 self.shared_dict["nv_jusante"] =  self.shared_dict["nv_montante"] - max(0, np.random.normal(1.0 , 0.5 * self.escala_ruido))
                 
-                if self.shared_dict["nv_montante"] >= self.USINA_NV_VERTEDOURO:
+                if self.shared_dict["nv_montante"] > self.USINA_NV_VERTEDOURO:
                     self.shared_dict["q_vertimento"] = self.shared_dict["q_liquida"]
                     self.shared_dict["q_liquida"] = 0
                     self.shared_dict["nv_montante"] = self.USINA_NV_VERTEDOURO + ((self.shared_dict["q_vertimento"] / (
@@ -219,37 +219,6 @@ class Planta:
                 DataBank.set_words(REG["REG_USINA_Subestacao_TensaoST"], [int(self.shared_dict["tensao_na_linha"]/10)])
                 DataBank.set_words(REG["REG_USINA_Subestacao_TensaoTR"], [int(self.shared_dict["tensao_na_linha"]/10)])
 
-                aux = 0
-                if self.shared_dict["dj52L_aberto"]:
-                    aux += 2**0	
-                if self.shared_dict["dj52L_fechado"]:
-                    aux += 2**1
-                if self.shared_dict["dj52L_inconsistente"]: 
-                    aux += 2**2
-                if self.shared_dict["dj52L_trip"]: 
-                    aux += 2**3
-                #if Subestacao_Disj52LModoLocal: 
-                #    aux += 2**4
-                #if Subestacao_Disj52LModoRemoto: 
-                #    aux += 2**5	
-                if self.shared_dict["dj52L_mola_carregada"]: 
-                    aux += 2**6
-                #if Subestacao_Disj52LPressaoSF6Alarme:
-                #    aux += 2**7
-                if self.shared_dict["dj52L_falta_vcc"]:
-                    aux += 2**8	
-                if self.shared_dict["dj52L_condicao_de_fechamento"]:
-                    aux += 2**9
-                #if Subestacao_Disj52LAbriu:
-                #    aux += 2**10
-                #if Subestacao_Disj52LFechou:
-                #    aux += 2**11
-                if self.shared_dict["dj52L_falha_fechamento"]:
-                    aux += 2**12
-                #if Subestacao_Disj52LPressaoSF6Trip:
-                #    aux += 2**13
-                DataBank.set_words(REG["REG_USINA_Subestacao_Disj52L"], [int(aux)])
-
                 # FIM COMPORTAMENTO USINA
                 lock.release()
                 tempo_restante = self.passo_simulacao - \
@@ -265,11 +234,11 @@ class Planta:
                 continue
 
     def volume_para_nv_montate(self, volume):
-        return 1.224 * (10 ** -5) * volume + 640.85
+        return 817.2487 + 0.002746156*volume - 0.0000008093185*volume**2 + 0.0000000001036295*volume**3
 
     def nv_montate_para_volume(self, nv_montante):
-        return 81699.3 * (nv_montante - 640.85)
+        return 201090380 - 491550*nv_montante + 300.39*nv_montante**2
 
     def q_sanitaria(self, nv_montante):
         temp = (nv_montante - self.USINA_VAZAO_SANITARIA_COTA) if nv_montante > self.USINA_VAZAO_SANITARIA_COTA else 0
-        return 0.07474 * ((19.62*temp)**(1/2))
+        return 0.22
