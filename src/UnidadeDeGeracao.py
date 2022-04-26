@@ -555,7 +555,7 @@ class StateManual(State):
     def __init__(self, parent_ug: UnidadeDeGeracao):
         super().__init__(parent_ug)
 
-        self.logger.info(
+        self.logger.warning(
             "[UG{}] Entrando no estado manual. Para retornar a operação autônoma da UG é necessário intervenção manual via interface web.".format(
                 self.parent_ug.id
             )
@@ -578,7 +578,7 @@ class StateIndisponivel(State):
         super().__init__(parent_ug)
 
         self.selo = False
-        self.logger.warning(
+        self.logger.critical(
             "[UG{}] Entrando no estado indisponível. Para retornar a operação autônoma da UG é necessário intervenção manual via interface web.".format(
                 self.parent_ug.id
             )
@@ -712,9 +712,6 @@ class StateDisponivel(State):
             )
         # Se algum condicionador deve gerar uma indisponibilidade
         if deve_indisponibilizar:
-            self.logger.warning(
-                "[UG{}] Indisponibilizando UG.".format(self.parent_ug.id)
-            )
             # Vai para o estado StateIndisponivel
             return StateIndisponivel(self.parent_ug)
 
