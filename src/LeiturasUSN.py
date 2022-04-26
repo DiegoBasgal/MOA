@@ -15,59 +15,12 @@ class LeiturasUSN:
             auto_close=False,
         )
 
-        self.dj52L_aberto = LeituraModbusBit(
-            "Subestacao_Disj52L",
-            self.clp_usina,
-            REG_USINA_Subestacao_Disj52L,
-            0,
-        )
-        self.dj52L_fechado = LeituraModbusBit(
-            "REG_USINA_Subestacao_Disj52L",
-            self.clp_usina,
-            REG_USINA_Subestacao_Disj52L,
-            1,
-        )
-        self.dj52L_inconsistente = LeituraModbusBit(
-            "REG_USINA_Subestacao_Disj52L",
-            self.clp_usina,
-            REG_USINA_Subestacao_Disj52L,
-            2,
-        )
-        self.dj52L_trip = LeituraModbusBit(
-            "REG_USINA_Subestacao_Disj52L",
-            self.clp_usina,
-            REG_USINA_Subestacao_Disj52L,
-            3,
-        )
-        self.dj52L_mola_carregada = LeituraModbusBit(
-            "REG_USINA_Subestacao_Disj52L",
-            self.clp_usina,
-            REG_USINA_Subestacao_Disj52L,
-            6,
-        )
-        self.dj52L_falta_vcc = LeituraModbusBit(
-            "REG_USINA_Subestacao_Disj52L",
-            self.clp_usina,
-            REG_USINA_Subestacao_Disj52L,
-            8,
-        )
-        self.dj52L_condicao_de_fechamento = LeituraModbusBit(
-            "REG_USINA_Subestacao_Disj52L",
-            self.clp_usina,
-            REG_USINA_Subestacao_Disj52L,
-            9,
-        )
-        self.dj52L_falha_fechamento = LeituraModbusBit(
-            "REG_USINA_Subestacao_Disj52L",
-            self.clp_usina,
-            REG_USINA_Subestacao_Disj52L,
-            13,
-        )
         self.nv_montante = LeituraModbus(
             "REG_USINA_NivelBarragem",
             self.clp_usina,
             REG_USINA_NivelBarragem,
             1 / 100,
+            819
         )
         self.potencia_ativa_kW = LeituraModbus(
             "REG_USINA_Subestacao_PotenciaAtivaMedia",
@@ -97,6 +50,7 @@ class LeiturasUSN:
             self.clp_usina,
             REG_USINA_NivelCanalAducao,
             1 / 100,
+            819
         )
 
     

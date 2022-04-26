@@ -22,14 +22,9 @@ class UnidadeDeGeracao1(UnidadeDeGeracao):
         else:
             self.cfg = cfg
             self.leituras_usina = leituras_usina
-        
-        # carrega as configurações
-        config_file = os.path.join(os.path.dirname(__file__), "..", "config.json")
-        with open(config_file, "r") as file:
-            self.cfg = json.load(file)
 
         self.setpoint_minimo = self.cfg["pot_minima"]
-        self.setpoint_maximo = self.cfg["pot_maxima_ug"]
+        self.setpoint_maximo = self.cfg["pot_maxima_ug{}".format(self.id)]
 
         self.clp_ip = self.cfg["UG1_slave_ip"]
         self.clp_port = self.cfg["UG1_slave_porta"]
@@ -46,6 +41,129 @@ class UnidadeDeGeracao1(UnidadeDeGeracao):
         self.__last_EtapaAlvo = -1
         self.enviar_trip_eletrico = False
 
+        self.leitura_potencia = LeituraModbus(
+            "ug{}_Gerador_PotenciaAtivaMedia".format(self.id),
+            self.clp,
+            REG_UG1_Gerador_PotenciaAtivaMedia,
+        )
+
+        self.leitura_horimetro = LeituraModbus(
+            "ug{}_HorimetroEletrico_Low".format(self.id),
+            self.clp,
+            REG_UG1_HorimetroEletrico_Low,
+        )
+
+        self.leitura_Operacao_EtapaAtual = LeituraModbus(
+            "ug{}_Operacao_EtapaAtual".format(self.id),
+            self.clp,
+            REG_UG1_Operacao_EtapaAtual,
+        )
+
+        self.leitura_Operacao_EtapaAlvo = LeituraModbus(
+            "ug{}_Operacao_EtapaAlvo".format(self.id),
+            self.clp,
+            REG_UG1_Operacao_EtapaAlvo,
+        )
+
+        """
+        # Gerador - Enrolamento fase R
+        self.leitura_temperatura_enrolamento_fase_r = LeituraModbus(
+            "Gerador {} - Enrolamento fase R".format(self.id),
+            self.clp,
+            REG_UG1_Temperatura_01,
+        )
+        base, limite = 100, 200
+        x = self.leitura_temperatura_enrolamento_fase_r
+        self.condicionador_temperatura_enrolamento_fase_r = CondicionadorExponencial(x.descr, DEVE_INDISPONIBILIZAR, x, base, limite)
+        self.condicionadores.append(self.condicionador_temperatura_enrolamento_fase_r)
+
+        # Gerador - Enrolamento Fase S
+        self.leitura_temperatura_enrolamento_fase_s = LeituraModbus(
+            "Gerador {} - Enrolamento Fase S".format(self.id),
+            self.clp,
+            REG_UG1_Temperatura_02,
+        )
+        base, limite = 100, 200
+        x = self.leitura_temperatura_enrolamento_fase_s
+        self.condicionador_temperatura_enrolamento_fase_s = CondicionadorExponencial(x.descr, DEVE_INDISPONIBILIZAR, x, base, limite)
+        self.condicionadores.append(self.condicionador_temperatura_enrolamento_fase_s)
+
+        # Gerador - Enrolamento fase T
+        self.leitura_temperatura_enrolamento_fase_t = LeituraModbus(
+            "Gerador {} - Enrolamento fase T".format(self.id),
+            self.clp,
+            REG_UG1_Temperatura_03,
+        )
+        base, limite = 100, 200
+        x = self.leitura_temperatura_enrolamento_fase_t
+        self.condicionador_temperatura_enrolamento_fase_t = CondicionadorExponencial(x.descr, DEVE_INDISPONIBILIZAR, x, base, limite)
+        self.condicionadores.append(self.condicionador_temperatura_enrolamento_fase_t)
+
+        # Gerador - Mancal L.A. Escora 01
+        self.leitura_temperatura_mancal_la_escora_1 = LeituraModbus(
+            "Gerador {} - Mancal L.A. Escora 01".format(self.id),
+            self.clp,
+            REG_UG1_Temperatura_04,
+        )
+        base, limite = 100, 200
+        x = self.leitura_temperatura_mancal_la_escora_1
+        self.condicionador_temperatura_mancal_la_escora_1 = CondicionadorExponencial(x.descr, DEVE_INDISPONIBILIZAR, x, base, limite)
+        self.condicionadores.append(self.condicionador_temperatura_mancal_la_escora_1)
+
+        # Gerador - Mancal L.A. Escora 02
+        self.leitura_temperatura_mancal_la_escora_2 = LeituraModbus(
+            "Gerador {} - Mancal L.A. Escora 02".format(self.id),
+            self.clp,
+            REG_UG1_Temperatura_05,
+        )
+        base, limite = 100, 200
+        x = self.leitura_temperatura_mancal_la_escora_2
+        self.condicionador_temperatura_mancal_la_escora_2 = CondicionadorExponencial(x.descr, DEVE_INDISPONIBILIZAR, x, base, limite)
+        self.condicionadores.append(self.condicionador_temperatura_mancal_la_escora_2)
+
+        # Gerador - Mancal L. A. Contra Escora 01
+        self.leitura_temperatura_mancal_la_contra_escora_1 = LeituraModbus(
+            "Gerador {} - Mancal L. A. Contra Escora 01".format(self.id),
+            self.clp,
+            REG_UG1_Temperatura_07,
+        )
+        base, limite = 100, 200
+        x = self.leitura_temperatura_mancal_la_contra_escora_1
+        self.condicionador_temperatura_mancal_la_contra_escora_1 = CondicionadorExponencial(x.descr, DEVE_INDISPONIBILIZAR, x, base, limite)
+        self.condicionadores.append(self.condicionador_temperatura_mancal_la_contra_escora_1)
+
+        # Gerador - Mancal L. A. Contra Escora 02
+        self.leitura_temperatura_mancal_la_contra_escora_2 = LeituraModbus(
+            "Gerador {} - Mancal L. A. Contra Escora 02".format(self.id),
+            self.clp,
+            REG_UG1_Temperatura_09,
+        )
+        base, limite = 100, 200
+        x = self.leitura_temperatura_mancal_la_contra_escora_2
+        self.condicionador_temperatura_mancal_la_contra_escora_2 = CondicionadorExponencial(x.descr, DEVE_INDISPONIBILIZAR, x, base, limite)
+        self.condicionadores.append(self.condicionador_temperatura_mancal_la_contra_escora_2)
+
+        # Gerador - Mancal L. A. Casquilho
+        self.leitura_temperatura_mancal_la_casquilho = LeituraModbus(
+            "Gerador {} - Mancal L. A. Casquilho".format(self.id),
+            self.clp,
+            REG_UG1_Temperatura_06,
+        )
+        base, limite = 100, 200
+        x = self.leitura_temperatura_mancal_la_casquilho
+        self.condicionador_temperatura_mancal_la_casquilho = CondicionadorExponencial(x.descr, DEVE_INDISPONIBILIZAR, x, base, limite)
+        self.condicionadores.append(self.condicionador_temperatura_mancal_la_casquilho)
+
+        # Gerador - Mancal L.N.A. Casquilho
+        self.leitura_temperatura_mancal_lna_casquilho = LeituraModbus(
+            "Gerador {} - Mancal L.N.A. Casquilho".format(self.id),
+            self.clp,
+            REG_UG1_Temperatura_08,
+        )
+        base, limite = 100, 200
+        x = self.leitura_temperatura_mancal_lna_casquilho
+        self.condicionador_temperatura_mancal_lna_casquilho = CondicionadorExponencial(x.descr, DEVE_INDISPONIBILIZAR, x, base, limite)
+        self.condicionadores.append(self.condicionador_temperatura_mancal_lna_casquilho)
         
         self.uhct_filtro_de_óleo_linha_de_pressão_01_sujo = LeituraModbusBit('03.02 - UHCT - Filtro de Óleo Linha de Pressão 01 Sujo', self.clp, REG_UG1_Alarme03, 2)
         x = self.uhct_filtro_de_óleo_linha_de_pressão_01_sujo 
@@ -357,131 +475,9 @@ class UnidadeDeGeracao1(UnidadeDeGeracao):
         
         self.grtd_2000_falha_na_realimentação_de_posição_do_distribuidor = LeituraModbusBit('12.07 - GRTD 2000 - Falha na Realimentação de posição do Distribuidor', self.clp, REG_UG1_Alarme12, 7)
         x = self.grtd_2000_falha_na_realimentação_de_posição_do_distribuidor 
-        self.condicionadores.append(CondicionadorBase(x.descr, DEVE_NORMALIZAR, x))
+        self.condicionadores.append(CondicionadorBase(x.descr, DEVE_NORMALIZAR, x))      
+        """
 
-        self.leitura_potencia = LeituraModbus(
-            "ug{}_Gerador_PotenciaAtivaMedia".format(self.id),
-            self.clp,
-            REG_UG1_Gerador_PotenciaAtivaMedia,
-        )
-
-        self.leitura_horimetro = LeituraModbus(
-            "ug{}_HorimetroEletrico_Low".format(self.id),
-            self.clp,
-            REG_UG1_HorimetroEletrico_Low,
-        )
-
-        self.leitura_Operacao_EtapaAtual = LeituraModbus(
-            "ug{}_Operacao_EtapaAtual".format(self.id),
-            self.clp,
-            REG_UG1_Operacao_EtapaAtual,
-        )
-
-        self.leitura_Operacao_EtapaAlvo = LeituraModbus(
-            "ug{}_Operacao_EtapaAlvo".format(self.id),
-            self.clp,
-            REG_UG1_Operacao_EtapaAlvo,
-        )
-
-        # Gerador - Enrolamento fase R
-        self.leitura_temperatura_enrolamento_fase_r = LeituraModbus(
-            "Gerador {} - Enrolamento fase R".format(self.id),
-            self.clp,
-            REG_UG1_Temperatura_01,
-        )
-        base, limite = 100, 200
-        x = self.leitura_temperatura_enrolamento_fase_r
-        self.condicionador_temperatura_enrolamento_fase_r = CondicionadorExponencial(x.descr, DEVE_INDISPONIBILIZAR, x, base, limite)
-        self.condicionadores.append(self.condicionador_temperatura_enrolamento_fase_r)
-
-        # Gerador - Enrolamento Fase S
-        self.leitura_temperatura_enrolamento_fase_s = LeituraModbus(
-            "Gerador {} - Enrolamento Fase S".format(self.id),
-            self.clp,
-            REG_UG1_Temperatura_02,
-        )
-        base, limite = 100, 200
-        x = self.leitura_temperatura_enrolamento_fase_s
-        self.condicionador_temperatura_enrolamento_fase_s = CondicionadorExponencial(x.descr, DEVE_INDISPONIBILIZAR, x, base, limite)
-        self.condicionadores.append(self.condicionador_temperatura_enrolamento_fase_s)
-
-        # Gerador - Enrolamento fase T
-        self.leitura_temperatura_enrolamento_fase_t = LeituraModbus(
-            "Gerador {} - Enrolamento fase T".format(self.id),
-            self.clp,
-            REG_UG1_Temperatura_03,
-        )
-        base, limite = 100, 200
-        x = self.leitura_temperatura_enrolamento_fase_t
-        self.condicionador_temperatura_enrolamento_fase_t = CondicionadorExponencial(x.descr, DEVE_INDISPONIBILIZAR, x, base, limite)
-        self.condicionadores.append(self.condicionador_temperatura_enrolamento_fase_t)
-
-        # Gerador - Mancal L.A. Escora 01
-        self.leitura_temperatura_mancal_la_escora_1 = LeituraModbus(
-            "Gerador {} - Mancal L.A. Escora 01".format(self.id),
-            self.clp,
-            REG_UG1_Temperatura_04,
-        )
-        base, limite = 100, 200
-        x = self.leitura_temperatura_mancal_la_escora_1
-        self.condicionador_temperatura_mancal_la_escora_1 = CondicionadorExponencial(x.descr, DEVE_INDISPONIBILIZAR, x, base, limite)
-        self.condicionadores.append(self.condicionador_temperatura_mancal_la_escora_1)
-
-        # Gerador - Mancal L.A. Escora 02
-        self.leitura_temperatura_mancal_la_escora_2 = LeituraModbus(
-            "Gerador {} - Mancal L.A. Escora 02".format(self.id),
-            self.clp,
-            REG_UG1_Temperatura_05,
-        )
-        base, limite = 100, 200
-        x = self.leitura_temperatura_mancal_la_escora_2
-        self.condicionador_temperatura_mancal_la_escora_2 = CondicionadorExponencial(x.descr, DEVE_INDISPONIBILIZAR, x, base, limite)
-        self.condicionadores.append(self.condicionador_temperatura_mancal_la_escora_2)
-
-        # Gerador - Mancal L. A. Contra Escora 01
-        self.leitura_temperatura_mancal_la_contra_escora_1 = LeituraModbus(
-            "Gerador {} - Mancal L. A. Contra Escora 01".format(self.id),
-            self.clp,
-            REG_UG1_Temperatura_07,
-        )
-        base, limite = 100, 200
-        x = self.leitura_temperatura_mancal_la_contra_escora_1
-        self.condicionador_temperatura_mancal_la_contra_escora_1 = CondicionadorExponencial(x.descr, DEVE_INDISPONIBILIZAR, x, base, limite)
-        self.condicionadores.append(self.condicionador_temperatura_mancal_la_contra_escora_1)
-
-        # Gerador - Mancal L. A. Contra Escora 02
-        self.leitura_temperatura_mancal_la_contra_escora_2 = LeituraModbus(
-            "Gerador {} - Mancal L. A. Contra Escora 02".format(self.id),
-            self.clp,
-            REG_UG1_Temperatura_09,
-        )
-        base, limite = 100, 200
-        x = self.leitura_temperatura_mancal_la_contra_escora_2
-        self.condicionador_temperatura_mancal_la_contra_escora_2 = CondicionadorExponencial(x.descr, DEVE_INDISPONIBILIZAR, x, base, limite)
-        self.condicionadores.append(self.condicionador_temperatura_mancal_la_contra_escora_2)
-
-        # Gerador - Mancal L. A. Casquilho
-        self.leitura_temperatura_mancal_la_casquilho = LeituraModbus(
-            "Gerador {} - Mancal L. A. Casquilho".format(self.id),
-            self.clp,
-            REG_UG1_Temperatura_06,
-        )
-        base, limite = 100, 200
-        x = self.leitura_temperatura_mancal_la_casquilho
-        self.condicionador_temperatura_mancal_la_casquilho = CondicionadorExponencial(x.descr, DEVE_INDISPONIBILIZAR, x, base, limite)
-        self.condicionadores.append(self.condicionador_temperatura_mancal_la_casquilho)
-
-        # Gerador - Mancal L.N.A. Casquilho
-        self.leitura_temperatura_mancal_lna_casquilho = LeituraModbus(
-            "Gerador {} - Mancal L.N.A. Casquilho".format(self.id),
-            self.clp,
-            REG_UG1_Temperatura_08,
-        )
-        base, limite = 100, 200
-        x = self.leitura_temperatura_mancal_lna_casquilho
-        self.condicionador_temperatura_mancal_lna_casquilho = CondicionadorExponencial(x.descr, DEVE_INDISPONIBILIZAR, x, base, limite)
-        self.condicionadores.append(self.condicionador_temperatura_mancal_lna_casquilho)
-        
         # Perda na garde
         self.leitura_perda_na_grade = LeituraDelta(
             "Perda na grade ug{}".format(self.id),
@@ -492,6 +488,10 @@ class UnidadeDeGeracao1(UnidadeDeGeracao):
         x = self.leitura_perda_na_grade
         self.condicionador_perda_na_grade = CondicionadorExponencial(x.descr, DEVE_INDISPONIBILIZAR, x, base, limite, ordem=1)
         self.condicionadores.append(self.condicionador_perda_na_grade)
+
+        self.tripdebug = LeituraModbus('TRIP debug', self.clp, REG_UG1_Alarme01)
+        x = self.tripdebug 
+        self.condicionadores.append(CondicionadorBase(x.descr, DEVE_NORMALIZAR, x))
 
     def acionar_trip_logico(self) -> bool:
         """
@@ -626,6 +626,8 @@ class UnidadeDeGeracao1(UnidadeDeGeracao):
                 ) 
             response = self.clp.write_single_register(REG_UG1_Operacao_UP, 1)
             self.enviar_setpoint(0)
+            response = self.clp.write_single_register(REG_UG1_Operacao_UP, 1)
+
         except:
             #! TODO Tratar exceptions
             return False
@@ -674,6 +676,10 @@ class UnidadeDeGeracao1(UnidadeDeGeracao):
             bool: True se sucesso, Falso caso contrário
         """
         try:
+        
+            self.setpoint_minimo = self.cfg["pot_minima"]
+            self.setpoint_maximo = self.cfg["pot_maxima_ug{}".format(self.id)]
+
             self.setpoint = int(setpoint_kw)
             self.logger.debug(
                 "[UG{}] Enviando setpoint {} kW.".format(self.id, int(self.setpoint))
@@ -703,7 +709,7 @@ class UnidadeDeGeracao1(UnidadeDeGeracao):
         try:
             response = self.leitura_Operacao_EtapaAlvo.valor
             
-            if response > 0:
+            if response > 0 and response < 255:
                 self.__last_EtapaAlvo = response
             else:
                 self.__last_EtapaAlvo = self.etapa_atual
@@ -730,3 +736,9 @@ class UnidadeDeGeracao1(UnidadeDeGeracao):
             return False
         else:
             return response
+
+    def modbus_update_state_register(self):
+        DataBank.set_words(
+                    self.cfg["REG_MOA_OUT_STATE_UG{}".format(self.id)],
+                    [self.codigo_state],
+                )

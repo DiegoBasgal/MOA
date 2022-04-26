@@ -79,7 +79,7 @@ class LeituraModbus(LeituraBase):
         Returns:
             float: valor já tratado
         """
-        return (self.raw * self.__escala) - self.__fundo_de_escala
+        return (self.raw * self.__escala) + self.__fundo_de_escala
 
     @property
     def raw(self) -> int:

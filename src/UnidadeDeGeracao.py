@@ -72,12 +72,16 @@ class UnidadeDeGeracao:
         # Condicionadores devem ser adcionados após o init
         self.__condicionadores = []
         self.aux_tempo_sincronizada = None
+        self.codigo_state = MOA_UNIDADE_RESTRITA
 
     def debug_set_etapa_alvo(self, var):
         self.__etapa_alvo = var
 
     def debug_set_etapa_atual(self, var):
         self.__etapa_atual = var
+
+    def modbus_update_state_register(self):
+        raise NotImplementedError
 
     def carregar_parametros(self, parametros: dict):
         """
@@ -105,6 +109,8 @@ class UnidadeDeGeracao:
         try:
             self.logger.debug("[UG{}] Step.".format(self.id))
             self.__next_state = self.__next_state.step()
+            self.modbus_update_state_register()
+
         except Exception as e:
             self.logger.error(
                 "[UG{}] Erro na execução da sm. Traceback: {}".format(
@@ -296,13 +302,14 @@ class UnidadeDeGeracao:
 
     @setpoint.setter
     def setpoint(self, var: int):
-        self.logger.debug("[UG{}] SP<-{}".format(self.id, var))
         if var < self.setpoint_minimo:
             self.__setpoint = 0
         elif var > self.setpoint_maximo:
             self.__setpoint = self.setpoint_maximo
         else:
             self.__setpoint = int(var)
+        self.logger.debug("[UG{}] SP<-{}".format(self.id, var))
+
 
     @property
     def setpoint_minimo(self) -> int:
@@ -527,6 +534,7 @@ class StateManual(State):
 
     def __init__(self, parent_ug: UnidadeDeGeracao):
         super().__init__(parent_ug)
+        self.codigo_state = MOA_UNIDADE_MANUAL
 
         self.logger.info(
             "[UG{}] Entrando no estado manual. Para retornar a operação autônoma da UG é necessário intervenção manual via interface web.".format(
@@ -535,6 +543,7 @@ class StateManual(State):
         )
 
     def step(self) -> State:
+        self.codigo_state = MOA_UNIDADE_MANUAL
         return self
 
 
@@ -549,6 +558,7 @@ class StateIndisponivel(State):
     def __init__(self, parent_ug: UnidadeDeGeracao):
 
         super().__init__(parent_ug)
+        self.codigo_state = MOA_UNIDADE_INDISPONIVEL
 
         self.selo = False
         self.logger.warning(
@@ -560,6 +570,7 @@ class StateIndisponivel(State):
 
 
     def step(self) -> State:
+        self.codigo_state = MOA_UNIDADE_INDISPONIVEL
         # Se as unidades estiverem paradas, ou o selo estiver ativo
         self.logger.debug("[UG{}] self.parent_ug.etapa_atual -> {}".format(self.parent_ug.id, self.parent_ug.etapa_atual))
         if self.parent_ug.etapa_atual == UNIDADE_PARADA or self.selo:
@@ -587,13 +598,13 @@ class StateRestrito(State):
     def __init__(self, parent_ug: UnidadeDeGeracao):
 
         super().__init__(parent_ug)
-
+        self.codigo_state = MOA_UNIDADE_RESTRITA
         self.logger.info(
             "[UG{}] Entrando no estado restrito.".format(self.parent_ug.id)
         )
 
     def step(self) -> State:
-
+        self.codigo_state = MOA_UNIDADE_RESTRITA
         # Ler condiconadores
         deve_indisponibilizar = False
         deve_normalizar = False
@@ -640,12 +651,13 @@ class StateDisponivel(State):
     def __init__(self, parent_ug: UnidadeDeGeracao):
 
         super().__init__(parent_ug)
-
+        self.codigo_state = MOA_UNIDADE_DISPONIVEL
         self.logger.info(
             "[UG{}] Entrando no estado disponível.".format(self.parent_ug.id)
         )
 
     def step(self) -> State:
+        self.codigo_state = MOA_UNIDADE_DISPONIVEL
 
         self.logger.debug("[UG{}] (tentativas_de_normalizacao atual: {})".format(self.parent_ug.id, self.parent_ug.tentativas_de_normalizacao))
         
@@ -817,8 +829,10 @@ class StateDisponivel(State):
                 # Etapa inconsistente
                 # Logar o ocorrido
                 self.logger.warning(
-                    "[UG{}] UG em etapa inconsistente.".format(
-                        self.parent_ug.id
+                    "[UG{}] UG em etapa inconsistente. (etapa_atual:{};  etapa_alvo:{})".format(
+                        self.parent_ug.id,
+                        self.parent_ug.etapa_atual,
+                        self.parent_ug.etapa_alvo,
                     )
                 )
                 # Vai para o estado StateIndisponivel
