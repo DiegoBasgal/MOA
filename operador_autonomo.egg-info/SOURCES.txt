@@ -1,0 +1,11 @@
+README.md
+setup.py
+operador_autonomo.egg-info/PKG-INFO
+operador_autonomo.egg-info/SOURCES.txt
+operador_autonomo.egg-info/dependency_links.txt
+operador_autonomo.egg-info/top_level.txt
+test/test_agendamentos.py
+test/test_comporta.py
+test/test_nivel.py
+test/test_sm.py
+test/test_ug.py

@@ -85,7 +85,7 @@ DATABASES = {
         'ENGINE': 'django.db.backends.mysql',
         'NAME': 'django_db',
         'USER': 'moa',
-        'PASSWORD': 'senhaFraca123',
+        'PASSWORD': '&264H3$M@&z$',
         'default-character-set': 'utf8',
         'OPTIONS': {
             'read_default_file': '/etc/mysql/my.cnf',

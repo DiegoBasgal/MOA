@@ -10,7 +10,7 @@ class Database:
                                                            pool_reset_session=True,
                                                            host = "localhost",
                                                            user = "moa",
-                                                           password = "senhaFraca123",
+                                                           password = "&264H3$M@&z$",
                                                            database = "django_db")
                                                            
         self.conn = None
