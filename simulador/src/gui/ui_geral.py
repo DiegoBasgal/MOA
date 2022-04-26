@@ -1022,9 +1022,9 @@ class Ui_Form(object):
     # setupUi
 
     def retranslateUi(self, Form):
-        Form.setWindowTitle(QCoreApplication.translate("Form", u"Digital Twin PCH Cov\u00f3", None))
+        Form.setWindowTitle(QCoreApplication.translate("Form", u"Digital Twin PCH PPN", None))
         self.bg.setText("")
-        self.label.setText(QCoreApplication.translate("Form", u"Simula\u00e7\u00e3o PCH Cov\u00f3", None))
+        self.label.setText(QCoreApplication.translate("Form", u"Simula\u00e7\u00e3o PCH PPN", None))
         self.label_52L.setText(QCoreApplication.translate("Form", u"Dj 52L", None))
         self.checkBox_52L_aberto.setText(QCoreApplication.translate("Form", u"Aberto", None))
         self.checkBox_52L_fechado.setText(QCoreApplication.translate("Form", u"Fechado", None))
