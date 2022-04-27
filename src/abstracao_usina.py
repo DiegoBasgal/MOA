@@ -1193,4 +1193,3 @@ def ping(host):
         if not ping:
             sleep(1)
     return ping
-<<<<<<< HEAD
