@@ -25,6 +25,7 @@ class MensageiroHandler(Handler):
         :param record:
         :return: True
         """
+        return True
 
         log_entry = self.format(record)
         try:
