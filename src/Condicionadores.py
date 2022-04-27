@@ -159,3 +159,31 @@ class CondicionadorExponencial(CondicionadorBase):
             return 1
         else:
             return 0
+
+class CondicionadorCombinadoAND:
+
+
+    def __init__(
+        self,
+        descr: str,
+        gravidade: int,
+        lista_par: list
+    ):
+        self.descr = descr
+        self.gravidade = gravidade
+        self.lista_par = lista_par
+ 
+    @property
+    def ativo(self) -> bool:
+        """
+        Retorna se o condicionador está ativo ou não.
+        """
+        aux = True
+        for par in self.lista_par:
+            if not (par[0] == par[1].ativo):
+                aux = False
+        return aux
+
+    @property
+    def valor(self) -> float:
+        return 1.0 if self.ativo else 0.0

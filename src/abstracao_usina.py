@@ -86,7 +86,7 @@ class Usina:
             auto_close=True,
         )
 
-        """
+        
         self.relé_86bf_atuado_falha_disjuntores = LeituraModbusBit('01.03 - Relé 86BF Atuado (Falha Disjuntores)', clp, REG_USINA_Alarme01, 3)
         x = self.relé_86bf_atuado_falha_disjuntores 
         self.condicionadores.append(CondicionadorBase(x.descr, DEVE_INDISPONIBILIZAR, x))
@@ -99,6 +99,10 @@ class Usina:
         x = self.servauxiliar_seccionadora_89sa_aberta 
         self.condicionadores.append(CondicionadorBase(x.descr, DEVE_INDISPONIBILIZAR, x))
                 
+        self.qpse_relé_proteção_woodward_f67_mra4_trip_atuado = LeituraModbusBit('01.10 - QPSE - Relé Proteção Woodward F67 (MRA4) - Trip Atuado', clp, REG_USINA_Alarme01, 10)
+        x = self.qpse_relé_proteção_woodward_f67_mra4_trip_atuado 
+        self.condicionadores.append(CondicionadorBase(x.descr, DEVE_NORMALIZAR, x))
+
         self.qpse_relé_proteção_woodward_f67_mra4_falha_de_hardware = LeituraModbusBit('01.11 - QPSE - Relé Proteção Woodward F67 (MRA4) - Falha de Hardware', clp, REG_USINA_Alarme01, 11)
         x = self.qpse_relé_proteção_woodward_f67_mra4_falha_de_hardware 
         self.condicionadores.append(CondicionadorBase(x.descr, DEVE_INDISPONIBILIZAR, x))
@@ -358,8 +362,26 @@ class Usina:
         self.relé_de_proteção_da_linha_mra4_perda_de_sincronismo_78 = LeituraModbusBit('10.13 - Relé de Proteção da Linha (MRA4) - Perda de Sincronismo  - 78', clp, REG_USINA_Alarme10, 13)
         x = self.relé_de_proteção_da_linha_mra4_perda_de_sincronismo_78
         self.condicionadores.append(CondicionadorBase(x.descr, DEVE_NORMALIZAR, x))
-        """        
+                
+        self.leitura_poco_nivel_1 = LeituraModbus('Poço Nível 1', clp, REG_USINA_Poco_Nivel, 0)
+        self.leitura_poco_nivel_2 = LeituraModbus('Poço Nível 2', clp, REG_USINA_Poco_Nivel, 1)       
+        self.leitura_poco_nivel_3 = LeituraModbus('Poço Nível 3', clp, REG_USINA_Poco_Nivel, 2)       
+        self.leitura_poco_nivel_4 = LeituraModbus('Poço Nível 4', clp, REG_USINA_Poco_Nivel, 3)       
+        self.leitura_poco_nivel_5 = LeituraModbus('Poço Nível 5', clp, REG_USINA_Poco_Nivel, 4)       
+        self.leitura_poco_nivel_6 = LeituraModbus('Poço Nível 6', clp, REG_USINA_Poco_Nivel, 5)
 
+        self.condicionadores.append(
+            CondicionadorCombinadoAND(
+                "MRA4 & Poço NV6 Inundação & não Poço NV5",
+                DEVE_SUPER_NORMALIZAR,
+                [   
+                    [True, CondicionadorBase(self.qpse_relé_proteção_woodward_f67_mra4_trip_atuado.descr, DEVE_NORMALIZAR, self.qpse_relé_proteção_woodward_f67_mra4_trip_atuado)],
+                    [True, CondicionadorBase(self.leitura_poco_nivel_6.descr, DEVE_INDISPONIBILIZAR, self.leitura_poco_nivel_6)],
+                    [False, CondicionadorBase(self.leitura_poco_nivel_5.descr, DEVE_NORMALIZAR, self.leitura_poco_nivel_5)],
+                ]
+            )
+        )
+        
         pars = [
             datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
             self.cfg["kp"],
@@ -494,7 +516,6 @@ class Usina:
         # Limites de operação das UGS
         for ug in self.ugs:
             ug.prioridade = int(parametros["ug{}_prioridade".format(ug.id)])
-            """
             ug.condicionador_perda_na_grade.valor_base = float(
                 parametros["ug{}_perda_grade_alerta".format(ug.id)]
             )
@@ -563,7 +584,6 @@ class Usina:
             ug.condicionador_temperatura_mancal_lna_casquilho.valor_limite = float(
                 parametros["temperatura_limite_mancal_lna_casquilho_ug{}".format(ug.id)]
             )
-            """
 
         # nv_minimo
         self.cfg["nv_minimo"] = float(parametros["nv_minimo"])

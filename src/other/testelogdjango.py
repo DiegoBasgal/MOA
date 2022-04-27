@@ -2,7 +2,7 @@ from datetime import datetime
 
 
 rawlog = []
-with open('/opt/operacao-autonoma/logs/MOA.log') as fp:
+with open('/usr/local/operacao-autonoma/logs/MOA.log') as fp:
     rawlog = fp.readlines()
 
 log = []

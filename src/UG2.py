@@ -1,4 +1,5 @@
 import json
+import math
 import os
 from unittest.mock import MagicMock
 from src.Condicionadores import *
@@ -488,6 +489,25 @@ class UnidadeDeGeracao2(UnidadeDeGeracao):
         self.condicionador_perda_na_grade = CondicionadorExponencial(x.descr, DEVE_INDISPONIBILIZAR, x, base, limite, ordem=1)
         self.condicionadores.append(self.condicionador_perda_na_grade)
 
+        
+
+        self.condicionador_86h_e_86m_e_nao_temperaturas = CondicionadorCombinadoAND(
+            "condicionador_86h_e_86m_e_nao_temperaturas",
+            DEVE_SUPER_NORMALIZAR,
+            [
+                [True, CondicionadorBase(self.relé_de_bloqueio_86m_trip_atuado.descr, DEVE_INDISPONIBILIZAR, self.relé_de_bloqueio_86m_trip_atuado)],
+                [True, CondicionadorBase(self.relé_de_bloqueio_86h_trip_atuado.descr, DEVE_NORMALIZAR, self.relé_de_bloqueio_86h_trip_atuado)],
+                [False, self.condicionador_temperatura_enrolamento_fase_r],
+                [False, self.condicionador_temperatura_enrolamento_fase_s],
+                [False, self.condicionador_temperatura_enrolamento_fase_t],
+                [False, self.condicionador_temperatura_mancal_la_escora_1],
+                [False, self.condicionador_temperatura_mancal_la_escora_2],
+                [False, self.condicionador_temperatura_mancal_la_contra_escora_1],
+                [False, self.condicionador_temperatura_mancal_la_contra_escora_2],
+                [False, self.condicionador_temperatura_mancal_la_casquilho],
+                [False, self.condicionador_temperatura_mancal_lna_casquilho],
+            ]        
+        )
 
     def acionar_trip_logico(self) -> bool:
         """
@@ -736,5 +756,5 @@ class UnidadeDeGeracao2(UnidadeDeGeracao):
     def modbus_update_state_register(self):
         DataBank.set_words(
                     self.cfg["REG_MOA_OUT_STATE_UG{}".format(self.id)],
-                    [self.codigo_state],
+                    [self.etapa_atual],
                 )

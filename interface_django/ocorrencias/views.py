@@ -13,7 +13,7 @@ def ocorrencias_view(request, *args, **kwargs):
         nlinhas = int(request.GET.get('nlinhas', 0))
         
     rawlog = []
-    with open('/opt/operacao-autonoma/logs/MOA.log', 'rb') as fp:
+    with open('/usr/local/operacao-autonoma/logs/MOA.log', 'rb') as fp:
         rawlog = tail(fp, nlinhas*5).decode()
         rawlog = rawlog.split('\n')
 

@@ -19,7 +19,6 @@ import logging
 import os
 from sys import stdout
 import telegram
-from telegram.ext import Updater, CommandHandler, CallbackContext
 
 
 # Inicializando o logger principal
@@ -54,70 +53,6 @@ def salvar_config():
     with open(config_file, "w") as file:
         json.dump(config, file, indent=4)
 
-
-def start(update: Update, _: CallbackContext) -> None:
-    """
-    Esta função é referente a operação do bot em modo "server".
-    Esta função insere o usuário na lista de destinatários do bot.
-    """
-    chat_id = update.message.chat.id
-    name = "{}".format(update.message.from_user.full_name)
-    logger.info("Chamada start de {} (Chat_id: {})".format(name, chat_id))
-    if chat_id in config['chat_ids']:
-        update.message.reply_text('Este Chat já esta adicionado a lista de destinatários')
-    else:
-        config['chat_ids'].append(chat_id)
-        salvar_config()
-        update.message.reply_text('Chat adicionado a lista de destinatários')
-
-
-def help_command(update: Update, _: CallbackContext) -> None:
-    """
-    Esta função é referente a operação do bot em modo "server".
-    Esta função envia uma mensagem com informações de ajuda ao usuário.
-    """
-    chat_id = update.message.chat.id
-    name = "{}".format(update.message.from_user.full_name)
-    logger.info("Chamada help_command de {} (Chat_id: {})".format(name, chat_id))
-    update.message.reply_text('Esse é o comando de ajuda.\n'
-                              'Os comandos implementados são:\n'
-                              '/ajuda\n'
-                              '/help\n'
-                              '/quit\n'
-                              '/sair\n'
-                              '/spam\n'
-                              '/start\n'
-                              '\n'
-                              '[DEBUG] chat.id:{:d}'.format(update.message.chat.id))
-
-
-def spam_command(update: Update, _: CallbackContext) -> None:
-    """
-    Esta função é referente a operação do bot em modo "server".
-    Esta função envia várias (5) mensagens repetidas ao usuário.
-    Utilizada em debug.
-    """
-    chat_id = update.message.chat.id
-    name = "{}".format(update.message.from_user.full_name)
-    logger.info("Chamada spam_command de {} (Chat_id: {})".format(name, chat_id))
-    for i in range(5):
-        update.message.reply_text("SPAM! {}/5".format(i))
-
-
-def quit_command(update: Update, _: CallbackContext) -> None:
-    """
-    Esta função é referente a operação do bot em modo "server".
-    Esta função remove um usuário ou grupo da lista de destinatários do bot.
-    """
-    chat_id = update.message.chat.id
-    name = "{}".format(update.message.from_user.full_name)
-    logger.info("Chamada quit_command de {} (Chat_id: {})".format(name, chat_id))
-    chat_id = update.message.chat.id
-    update.message.reply_text("Chat removido da lista.")
-    config['chat_ids'].remove(chat_id)
-    salvar_config()
-
-
 def enviar_a_todos(mensagem):
     """
     Esta função é referente a operação do bot em modo "server-less".
@@ -147,32 +82,3 @@ def enviar_a_todos(mensagem):
         except Exception as e:
             logger.error("Erro \"{}\" no chat \"{}\"".format(e, chat_id))
             continue
-
-
-def main() -> None:
-    """
-    Esta é a função principal do modo "server" e lida com o pooling das mensagens
-    recebidas pelo telegram, efetuando assim o tratamento dos comandos relevantes.
-
-    :return: None
-    """
-
-    logger.info("Telegram-bot está sendo iniciado")
-
-    """ Interatividade """
-    updater = Updater(config['bot_token'])
-    dispatcher = updater.dispatcher
-    dispatcher.add_handler(CommandHandler("start", start))
-    dispatcher.add_handler(CommandHandler("help", help_command))
-    dispatcher.add_handler(CommandHandler("ajuda", help_command))
-    dispatcher.add_handler(CommandHandler("spam", spam_command))
-    dispatcher.add_handler(CommandHandler("sair", quit_command))
-    dispatcher.add_handler(CommandHandler("quit", quit_command))
-    updater.start_polling()
-
-    logger.info("Telegram-bot Iniciado")
-    enviar_a_todos("[DEBUG] O Bot está ativo.")
-
-
-if __name__ == '__main__':
-    main()

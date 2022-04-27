@@ -641,12 +641,15 @@ class StateRestrito(State):
         condicionadores_ativos = []
         for condicionador in self.parent_ug.condicionadores:
             if condicionador.ativo:
-                if condicionador.gravidade >= DEVE_INDISPONIBILIZAR:
+                if condicionador.gravidade == DEVE_INDISPONIBILIZAR:
                     condicionadores_ativos.append(condicionador)
                     deve_indisponibilizar = True
-                elif condicionador.gravidade >= DEVE_NORMALIZAR:
+                elif condicionador.gravidade == DEVE_NORMALIZAR:
                     condicionadores_ativos.append(condicionador)
                     deve_normalizar = True
+                elif condicionador.gravidade == DEVE_SUPER_NORMALIZAR:
+                    condicionadores_ativos.append(condicionador)
+                    deve_super_normalizar = True
 
         # Se algum condicionador deve gerar uma indisponibilidade
         if deve_indisponibilizar:
@@ -698,18 +701,22 @@ class StateDisponivel(State):
         # Ler condiconadores, verifica e armazena os ativos
         deve_indisponibilizar = False
         deve_normalizar = False
+        deve_super_normalizar = False
         condicionadores_ativos = []
         for condicionador in self.parent_ug.condicionadores:
             if condicionador.ativo:
-                if condicionador.gravidade >= DEVE_INDISPONIBILIZAR:
+                if condicionador.gravidade == DEVE_INDISPONIBILIZAR:
                     condicionadores_ativos.append(condicionador)
                     deve_indisponibilizar = True
-                elif condicionador.gravidade >= DEVE_NORMALIZAR:
+                elif condicionador.gravidade == DEVE_NORMALIZAR:
                     condicionadores_ativos.append(condicionador)
                     deve_normalizar = True
+                elif condicionador.gravidade == DEVE_SUPER_NORMALIZAR:
+                    condicionadores_ativos.append(condicionador)
+                    deve_super_normalizar = True
 
         # Logar os condicionadores ativos
-        if deve_indisponibilizar or deve_normalizar:
+        if deve_indisponibilizar or deve_normalizar or deve_super_normalizar:
             self.logger.info(
                 "[UG{}] UG em modo disponível detectou condicionadores ativos.\n"
                 + "Condicionadores ativos:\n".format(self.parent_ug.id)
@@ -722,6 +729,8 @@ class StateDisponivel(State):
                     ]
                 )
             )
+        
+
         # Se algum condicionador deve gerar uma indisponibilidade
         if deve_indisponibilizar:
             # Vai para o estado StateIndisponivel

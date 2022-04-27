@@ -224,14 +224,20 @@ class Emergencia(State):
             condicionadores_ativos = []
             for condicionador in self.usina.condicionadores:
                 if condicionador.ativo:
-                    if condicionador.gravidade >= DEVE_INDISPONIBILIZAR:
+                    if condicionador.gravidade == DEVE_INDISPONIBILIZAR:
                         condicionadores_ativos.append(condicionador)
                         deve_indisponibilizar = True
-                    
-                    if condicionador.gravidade == DEVE_NORMALIZAR:
+                    elif condicionador.gravidade == DEVE_NORMALIZAR:
                         condicionadores_ativos.append(condicionador)
                         deve_normalizar = True
-
+                    elif condicionador.gravidade == DEVE_SUPER_NORMALIZAR:
+                        condicionadores_ativos.append(condicionador)
+                        deve_super_normalizar = True
+                        
+            if deve_super_normalizar:
+                deve_indisponibilizar = False
+                deve_normalizar = True
+                
             if self.usina.clp_emergencia_acionada or deve_normalizar or deve_indisponibilizar:
                 try:
                    
@@ -460,7 +466,7 @@ if __name__ == "__main__":
         t_i = time.time()
         logger.debug("Executando estado: {}".format(sm.state.__class__.__name__))
         sm.exec()
-        t_restante = max(1 - (time.time() - t_i), 0) / ESCALA_DE_TEMPO
+        t_restante = max(5 - (time.time() - t_i), 0) / ESCALA_DE_TEMPO
         if t_restante == 0:
-            logger.error("######################################################\n######################################################\nCiclo está demorando mais que o permitido\n######################################################\n######################################################")
+            logger.debug("Ciclo está demorando mais que o permitido!")
         sleep(t_restante)
