@@ -8,3 +8,4 @@ pyModbusTCP
 mysqlclient
 pyodbc~=4.0.32
 scipy
+python-telegram-bot

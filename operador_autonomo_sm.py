@@ -35,16 +35,16 @@ logger.setLevel(logging.NOTSET)
 if not os.path.exists(os.path.join(os.path.dirname(__file__),"logs")):
     os.mkdir(os.path.join(os.path.dirname(__file__),"logs"))
 logFormatter = logging.Formatter("%(asctime)s [%(threadName)-12.12s] [%(levelname)-5.5s] [MOA-SM] %(message)s")
-logFormatterSimples = logging.Formatter("[%(levelname)-5.5s] [MOA-SM] %(message)s")
+logFormatterSimples = logging.Formatter("[%(levelname)-5.5s] %(message)s")
 
 ch = logging.StreamHandler(stderr)  # log para sdtout
 ch.setFormatter(logFormatter)
-ch.setLevel(logging.DEBUG)
+ch.setLevel(logging.INFO)
 logger.addHandler(ch)
 
 fh = handlers.TimedRotatingFileHandler(os.path.join(os.path.dirname(__file__),"logs","MOA.log"), when='midnight', interval=1, backupCount=7)  # log para arquivo
 fh.setFormatter(logFormatter)
-fh.setLevel(logging.DEBUG)
+fh.setLevel(logging.INFO)
 logger.addHandler(fh)
 
 mh = MensageiroHandler()
@@ -63,8 +63,7 @@ class StateMachine:
             if self.state is None:
                 raise TypeError
             self.state = self.state.run()
-        except TypeError as e:
-            pass
+
         except Exception as e:
             logger.warning("Estado ({}) levantou uma exception: {}".format(self.state, repr(e)))
             logger.warning("Traceback: {}".format(traceback.format_exc()))
@@ -119,9 +118,9 @@ class Pronto(State):
             except Exception as e:
                 self.n_tentativa += 1
                 logger.error("Erro durante a comunicação do MOA com a usina. Tentando novamente em {}s (tentativa{}/3)."
-                             " Exception: {}.".format(self.usina.timeout_padrao * self.n_tentativa, self.n_tentativa, repr(e)))
+                             " Exception: {}.".format(self.usina.cfg["timeout_padrao"] * self.n_tentativa, self.n_tentativa, repr(e)))
                 logger.critical("Traceback: {}".format(traceback.format_exc()))
-                sleep(self.usina.timeout_padrao * self.n_tentativa)
+                sleep(self.usina.cfg["timeout_padrao"] * self.n_tentativa)
                 return self
 
 
@@ -138,6 +137,11 @@ class ValoresInternosAtualizados(State):
         """
         Aqui a ordem do checks importa, e muito.
         """
+
+        # atualizar arquivo das configurações
+        with open(os.path.join(os.path.dirname(__file__), 'config.json'), 'w') as file:
+            json.dump(self.usina.cfg, file)
+
         
         if self.usina.avisado_em_eletrica:
             for condicionador in self.usina.condicionadores:
@@ -162,25 +166,22 @@ class ValoresInternosAtualizados(State):
         # Se não foi redirecionado ainda,
         # assume-se que o MOA deve executar de modo autônomo
 
-        # TODO SEPARA FUNÇÃO
-        self.usina.comporta.atualizar_estado(self.usina.nv_montante_recente)
-
         for ug in self.usina.ugs:
             ug.step()
 
         # Verifica-se então a situação do reservatório
         if self.usina.aguardando_reservatorio:
-            if self.usina.nv_montante > self.usina.nv_alvo:
+            if self.usina.nv_montante > self.usina.cfg["nv_alvo"]:
                 logger.info("Reservatorio dentro do nivel de trabalho")
                 self.usina.aguardando_reservatorio = 0
             return Pronto(self.usina)
 
-        if self.usina.nv_montante < self.usina.nv_minimo:
+        if self.usina.nv_montante < self.usina.cfg["nv_minimo"]:
             self.usina.aguardando_reservatorio = 1
             logger.info("Reservatorio abaixo do nivel de trabalho")
             return ReservatorioAbaixoDoMinimo(self.usina)
 
-        if self.usina.nv_montante >= self.usina.nv_maximo:
+        if self.usina.nv_montante >= self.usina.cfg["nv_maximo"]: 
             return ReservatorioAcimaDoMaximo(self.usina)
 
         # Se estiver tudo ok:
@@ -319,7 +320,7 @@ class ReservatorioAbaixoDoMinimo(State):
 
     def run(self):
         self.usina.distribuir_potencia(0)
-        if self.usina.nv_montante_recente <= self.usina.nv_fundo_reservatorio:
+        if self.usina.nv_montante_recente <= self.usina.cfg["nv_fundo_reservatorio"]:
             logger.critical("Nivel montante ({:3.2f}) atingiu o fundo do reservatorio!".format(self.usina.nv_montante_recente))
             return Emergencia(self.usina)
         return ControleRealizado(self.usina)
@@ -332,7 +333,7 @@ class ReservatorioAcimaDoMaximo(State):
         self.usina = instancia_usina
 
     def run(self):
-        if self.usina.nv_montante_recente >= self.usina.nv_maximorum:
+        if self.usina.nv_montante_recente >= self.usina.cfg["nv_maximorum"]:
             self.usina.distribuir_potencia(0)
             logger.critical("Nivel montante ({:3.2f}) atingiu o maximorum!".format(self.usina.nv_montante_recente))
             return Emergencia(self.usina)
@@ -348,6 +349,7 @@ class ReservatorioNormal(State):
     def __init__(self, instancia_usina, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.usina = instancia_usina
+
 
     def run(self):
 
@@ -380,7 +382,7 @@ if __name__ == "__main__":
 
     n_tentativa = 0
     timeout = 10
-    logger.info("Iniciando o MOA_SM")
+    logger.info("Iniciando o MOA_SM ESCALA_DE_TEMPO:{}".format(ESCALA_DE_TEMPO))
     logger.debug("Debug is ON")
 
     prox_estado = 0
@@ -394,6 +396,11 @@ if __name__ == "__main__":
             config_file = os.path.join(os.path.dirname(__file__), 'config.json')
             with open(config_file, 'r') as file:
                 cfg = json.load(file)
+                
+            # bkp das configurações
+            config_file = os.path.join(os.path.dirname(__file__), 'config.json.bkp')
+            with open(config_file, 'w') as file:
+                json.dump(cfg, file)
 
             # Inicia o conector do banco
             db = database_connector.Database()
@@ -454,4 +461,6 @@ if __name__ == "__main__":
         logger.debug("Executando estado: {}".format(sm.state.__class__.__name__))
         sm.exec()
         t_restante = max(1 - (time.time() - t_i), 0) / ESCALA_DE_TEMPO
+        if t_restante == 0:
+            logger.error("######################################################\n######################################################\nCiclo está demorando mais que o permitido\n######################################################\n######################################################")
         sleep(t_restante)
