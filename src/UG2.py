@@ -22,14 +22,9 @@ class UnidadeDeGeracao2(UnidadeDeGeracao):
         else:
             self.cfg = cfg
             self.leituras_usina = leituras_usina
-        
-        # carrega as configurações
-        config_file = os.path.join(os.path.dirname(__file__), "..", "config.json")
-        with open(config_file, "r") as file:
-            self.cfg = json.load(file)
 
         self.setpoint_minimo = self.cfg["pot_minima"]
-        self.setpoint_maximo = self.cfg["pot_maxima_ug"]
+        self.setpoint_maximo = self.cfg["pot_maxima_ug{}".format(self.id)]
 
         self.clp_ip = self.cfg["UG2_slave_ip"]
         self.clp_port = self.cfg["UG2_slave_porta"]
@@ -493,6 +488,7 @@ class UnidadeDeGeracao2(UnidadeDeGeracao):
         self.condicionador_perda_na_grade = CondicionadorExponencial(x.descr, DEVE_INDISPONIBILIZAR, x, base, limite, ordem=1)
         self.condicionadores.append(self.condicionador_perda_na_grade)
 
+
     def acionar_trip_logico(self) -> bool:
         """
         Envia o comando de acionamento do TRIP para o CLP via rede
@@ -626,6 +622,8 @@ class UnidadeDeGeracao2(UnidadeDeGeracao):
                 ) 
             response = self.clp.write_single_register(REG_UG2_Operacao_UP, 1)
             self.enviar_setpoint(0)
+            response = self.clp.write_single_register(REG_UG2_Operacao_UP, 1)
+
         except:
             #! TODO Tratar exceptions
             return False
@@ -674,6 +672,10 @@ class UnidadeDeGeracao2(UnidadeDeGeracao):
             bool: True se sucesso, Falso caso contrário
         """
         try:
+        
+            self.setpoint_minimo = self.cfg["pot_minima"]
+            self.setpoint_maximo = self.cfg["pot_maxima_ug{}".format(self.id)]
+
             self.setpoint = int(setpoint_kw)
             self.logger.debug(
                 "[UG{}] Enviando setpoint {} kW.".format(self.id, int(self.setpoint))
@@ -703,7 +705,7 @@ class UnidadeDeGeracao2(UnidadeDeGeracao):
         try:
             response = self.leitura_Operacao_EtapaAlvo.valor
             
-            if response > 0:
+            if response > 0 and response < 255:
                 self.__last_EtapaAlvo = response
             else:
                 self.__last_EtapaAlvo = self.etapa_atual
@@ -730,3 +732,9 @@ class UnidadeDeGeracao2(UnidadeDeGeracao):
             return False
         else:
             return response
+
+    def modbus_update_state_register(self):
+        DataBank.set_words(
+                    self.cfg["REG_MOA_OUT_STATE_UG{}".format(self.id)],
+                    [self.codigo_state],
+                )
