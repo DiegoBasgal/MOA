@@ -217,10 +217,12 @@ class Emergencia(State):
                         self.usina.db.update_emergencia(0)
                         self.usina.db_emergencia_acionada = 0
 
+
             self.usina.ler_valores()
             # Ler condiconadores
             deve_indisponibilizar = False
             deve_normalizar = False
+            deve_super_normalizar = False
             condicionadores_ativos = []
             for condicionador in self.usina.condicionadores:
                 if condicionador.ativo:
