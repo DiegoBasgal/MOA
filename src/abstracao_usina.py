@@ -839,11 +839,7 @@ class Usina:
             if segundos_adiantados <= 60 and not bool(agendamento[4]):
                 # Está na hora e ainda não foi executado. Executar!
                 logger.info(
-                    "Executando gendamento #{}\n" + \
-                    "Comando: {}\n" + \
-                    "Data agendamento: {}\n" + \
-                    "Obs: {}\n" + \
-                    "Valor: {}".format(
+                    "Executando gendamento #{}\nComando: {}\nData agendamento: {}\nObs: {}\nValor: {}".format(
                         agendamento[0],
                         INT_TO_AGENDAMENTOS[agendamento[3]],
                         agendamento[1],
