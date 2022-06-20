@@ -44,6 +44,10 @@ class Ug:
         self.potencia = 0
         self.setpoint = 0
         self.horimetro = 0
+
+        self.POT_MAX = 3460
+        self.POT_MIN = 0.4 * self.POT_MAX
+
         self.ETAPA_UP = 1
         self.ETAPA_UPGM = 2
         self.ETAPA_UVD = 3
@@ -155,7 +159,8 @@ class Ug:
                 self.etapa_alvo = None
                 self.shared_dict["etapa_alvo_ug{}".format(self.id)] = self.etapa_alvo
                 if self.shared_dict["dj52L_fechado"] and not self.shared_dict["dj52L_trip"]:
-                    self.potencia = min(self.potencia, 550)
+                    self.potencia = min(self.potencia, self.POT_MAX)
+                    self.potencia = max(self.potencia, self.POT_MIN)
                     if self.setpoint > self.potencia:
                         self.potencia += 10.4167 * self.segundos_por_passo
                     else:
@@ -168,7 +173,6 @@ class Ug:
                     self.shared_dict["etapa_alvo_ug{}".format(self.id)] = self.etapa_alvo
                     self.tempo_na_transicao = 0
             elif self.etapa_alvo < self.etapa_atual:
-                print("DEVERIA ESTAR PARADNDO A UG{}".format(self.id))
                 self.tempo_na_transicao -= self.segundos_por_passo
                 self.potencia -= 10.4167 * self.segundos_por_passo
                 if self.tempo_na_transicao <= -self.TEMPO_TRANS_US_UPS and self.potencia <= 0:
@@ -230,6 +234,6 @@ class Ug:
 
     def q_ug(self, potencia_kW):
         if potencia_kW > 1:
-            return (0.676 + 0.0087 * potencia_kW)/2
+            return 0.00065 * potencia_kW
         else:
             return 0

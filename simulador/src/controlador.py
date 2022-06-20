@@ -41,6 +41,7 @@ class Controlador:
         self.timed_afluente = []
         with open('simulation_input_data.csv', 'r') as fp:
             rawlines = fp.readlines()
+            
         i = 0
         for line in rawlines: 
             line = line.split(',')

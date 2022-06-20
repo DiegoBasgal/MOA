@@ -15,8 +15,7 @@ class Window(QMainWindow, Ui_Form):
 
         super().__init__(parent)
         self.setupUi(self)
-        path = Path(__file__).parent.absolute().joinpath("imgs","bg.png")
-        self.bg.setPixmap(QPixmap(path))
+
 
         self.shared_dict = shared_dict
         
@@ -98,8 +97,31 @@ class Window(QMainWindow, Ui_Form):
             self.lcdNumber_temperatura_ug2_lna_casquilho.display("{:03.1f}".format(self.shared_dict["temperatura_ug2_lna_casquilho"]))
             self.lcdNumber_perda_na_grade_ug2.display("{:3.1f}".format(self.shared_dict["nv_montante"] - self.shared_dict["nv_jusante"]))
         
+            self.checkBox_sinal_trip_ug3.setChecked(self.shared_dict["trip_ug3"])
+            self.lcdNumber_potencia_ug3.display("{:1.3f}".format(self.shared_dict["potencia_kw_ug3"]/1000))
+            self.lcdNumber_setpoint_ug3.display("{:1.3f}".format(self.shared_dict["setpoint_kw_ug3"]/1000))
+            if self.shared_dict["etapa_alvo_ug3"] is None:
+                self.lcdNumber_etapa_alvo_ug3.setHexMode()
+                self.lcdNumber_etapa_alvo_ug3.display(15)
+            else:
+                self.lcdNumber_etapa_alvo_ug3.setDecMode()
+                self.lcdNumber_etapa_alvo_ug3.display("{:d}".format(self.shared_dict["etapa_alvo_ug3"]))
+            self.lcdNumber_etapa_atual_ug3.display("{:d}".format(self.shared_dict["etapa_atual_ug3"]))
+            self.lcdNumber_bitsalarme_ug3.display("{:08b}".format(self.shared_dict["flags_ug3"]))
+            self.lcdNumber_q_ug3.display("{:2.3f}".format(self.shared_dict["q_ug3"]))
+            self.lcdNumber_temperatura_ug3_contra_escora_1.display("{:03.1f}".format(self.shared_dict["temperatura_ug3_contra_escora_1"]))
+            self.lcdNumber_temperatura_ug3_contra_escora_2.display("{:03.1f}".format(self.shared_dict["temperatura_ug3_contra_escora_2"]))
+            self.lcdNumber_temperatura_ug3_escora_1.display("{:03.1f}".format(self.shared_dict["temperatura_ug3_escora_1"]))
+            self.lcdNumber_temperatura_ug3_escora_2.display("{:03.1f}".format(self.shared_dict["temperatura_ug3_escora_2"]))
+            self.lcdNumber_temperatura_ug3_fase_r.display("{:03.1f}".format(self.shared_dict["temperatura_ug3_fase_r"]))
+            self.lcdNumber_temperatura_ug3_fase_s.display("{:03.1f}".format(self.shared_dict["temperatura_ug3_fase_s"]))
+            self.lcdNumber_temperatura_ug3_fase_t.display("{:03.1f}".format(self.shared_dict["temperatura_ug3_fase_t"]))
+            self.lcdNumber_temperatura_ug3_la_casquilho.display("{:03.1f}".format(self.shared_dict["temperatura_ug3_la_casquilho"]))
+            self.lcdNumber_temperatura_ug3_lna_casquilho.display("{:03.1f}".format(self.shared_dict["temperatura_ug3_lna_casquilho"]))
+            self.lcdNumber_perda_na_grade_ug3.display("{:3.1f}".format(self.shared_dict["nv_montante"] - self.shared_dict["nv_jusante"]))
+        
         except Exception as e:
-            print(repr(e))
+            print("A", repr(e))
             pass
   
 
@@ -120,7 +142,7 @@ class Window(QMainWindow, Ui_Form):
         self.shared_dict["tensao_na_linha"] = 0
 
     def reset_trip_linha(self):
-        self.shared_dict["tensao_na_linha"] = 34500
+        self.shared_dict["tensao_na_linha"] = 69000
 
     def pulse_trip_52L(self):
         self.set_trip_52L()
@@ -179,6 +201,30 @@ class Window(QMainWindow, Ui_Form):
 
     def mudar_setpoint_ug2(self):
         self.shared_dict["debug_setpoint_kw_ug2"] = self.horizontalSlider_setpoint_ug2.value()
+   
+    # ug3
+    def pulso_trip_ug3(self):
+        self.set_trip_high_ug3()
+        QTimer.singleShot(2000, self.set_trip_low_ug3)
+
+    def set_trip_high_ug3(self):
+        self.shared_dict["trip_ug3"] = True
+
+    def set_trip_low_ug3(self):
+        self.shared_dict["trip_ug3"] = False
+
+    def reconhece_reset_ug3(self):
+        self.shared_dict["reconhece_reset_ug3"] = True
+
+    def partir_ug3(self):
+        self.shared_dict["debug_partir_ug3"] = True
+        print("partir ug3 GUI")
+
+    def parar_ug3(self):
+        self.shared_dict["debug_parar_ug3"] = True
+
+    def mudar_setpoint_ug3(self):
+        self.shared_dict["debug_setpoint_kw_ug3"] = self.horizontalSlider_setpoint_ug3.value()
 
     # dj52L
     def alternar_estado_dj52L(self):

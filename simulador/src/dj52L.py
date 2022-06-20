@@ -25,22 +25,7 @@ class Dj52L:
         self.aux_mola = 0
         self.tempo_carregamento_mola = 2
 
-    def passo(self):
-        pass
-
-    def tripar(self, desc=None):
-        pass
-
-    def reconhece_reset_dj52L(self):
-        pass
-
-    def abrir(self):
-        pass
-
-    def fechar(self):
-        pass
-
-    """
+    
     def passo(self):
         if self.shared_dict["debug_dj52L_fechar"] and self.shared_dict["debug_dj52L_abrir"]:
             self.shared_dict["debug_dj52L_abrir"] = False
@@ -134,7 +119,3 @@ class Dj52L:
                     return False
                 self.shared_dict["dj52L_mola_carregada"] = False
                 return True
-  
-    
-    """
-    

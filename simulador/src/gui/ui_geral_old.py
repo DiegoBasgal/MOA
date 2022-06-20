@@ -1,13 +1,13 @@
 # -*- coding: utf-8 -*-
 
 ################################################################################
-## Form generated from reading UI file 'geralgxlMxY.ui'
+## Form generated from reading UI file 'geralZbQkNA.ui'
 ##
-## Created by: Qt User Interface Compiler version 6.3.0
+## Created by: Qt User Interface Compiler version 6.2.2
 ##
 ## WARNING! All changes made in this file will be lost when recompiling UI file!
 ################################################################################
-import os 
+
 from PySide6.QtCore import (QCoreApplication, QDate, QDateTime, QLocale,
     QMetaObject, QObject, QPoint, QRect,
     QSize, QTime, QUrl, Qt)
@@ -24,34 +24,32 @@ class Ui_Form(object):
         if not Form.objectName():
             Form.setObjectName(u"Form")
         Form.resize(1280, 720)
-
-
-        self.label_4 = QLabel(Form)
-        self.label_4.setObjectName(u"label_4")
-        self.label_4.setGeometry(QRect(0, 0, 1280, 720))
-        self.label_4.setPixmap(QPixmap(os.path.join(os.path.abspath(__file__), "imgs", "bg.png")))
-        self.label_4.setScaledContents(True)
-        self.label_4.raise_()
-
+        Form.setMinimumSize(QSize(1280, 720))
+        Form.setMaximumSize(QSize(1280, 720))
+        self.bg = QLabel(Form)
+        self.bg.setObjectName(u"bg")
+        self.bg.setGeometry(QRect(0, 0, 1280, 720))
+        font = QFont()
+        font.setPointSize(10)
+        self.bg.setFont(font)
+        self.bg.setPixmap(QPixmap(u"imgs/bg.png"))
+        self.bg.setScaledContents(True)
         self.label = QLabel(Form)
         self.label.setObjectName(u"label")
-        self.label.setGeometry(QRect(0, 20, 1280, 30))
-        font = QFont()
-        font.setPointSize(24)
-        self.label.setFont(font)
+        self.label.setGeometry(QRect(0, 20, 1271, 31))
+        font1 = QFont()
+        font1.setPointSize(24)
+        self.label.setFont(font1)
         self.label.setAlignment(Qt.AlignCenter)
-
         self.layoutWidget_3 = QWidget(Form)
         self.layoutWidget_3.setObjectName(u"layoutWidget_3")
-        self.layoutWidget_3.setGeometry(QRect(950, 330, 177, 336))
+        self.layoutWidget_3.setGeometry(QRect(960, 400, 177, 284))
         self.verticalLayout_52L = QVBoxLayout(self.layoutWidget_3)
         self.verticalLayout_52L.setObjectName(u"verticalLayout_52L")
         self.verticalLayout_52L.setContentsMargins(0, 0, 0, 0)
         self.label_52L = QLabel(self.layoutWidget_3)
         self.label_52L.setObjectName(u"label_52L")
-        font1 = QFont()
-        font1.setPointSize(10)
-        self.label_52L.setFont(font1)
+        self.label_52L.setFont(font)
         self.label_52L.setAlignment(Qt.AlignCenter)
 
         self.verticalLayout_52L.addWidget(self.label_52L)
@@ -108,7 +106,7 @@ class Ui_Form(object):
 
         self.layoutWidget_15 = QWidget(Form)
         self.layoutWidget_15.setObjectName(u"layoutWidget_15")
-        self.layoutWidget_15.setGeometry(QRect(980, 240, 96, 54))
+        self.layoutWidget_15.setGeometry(QRect(900, 260, 96, 50))
         self.verticalLayout_SE = QVBoxLayout(self.layoutWidget_15)
         self.verticalLayout_SE.setObjectName(u"verticalLayout_SE")
         self.verticalLayout_SE.setContentsMargins(0, 0, 0, 0)
@@ -136,13 +134,13 @@ class Ui_Form(object):
 
         self.layoutWidget_4 = QWidget(Form)
         self.layoutWidget_4.setObjectName(u"layoutWidget_4")
-        self.layoutWidget_4.setGeometry(QRect(730, 330, 191, 141))
+        self.layoutWidget_4.setGeometry(QRect(670, 530, 191, 151))
         self.gridLayout_ug2 = QGridLayout(self.layoutWidget_4)
         self.gridLayout_ug2.setObjectName(u"gridLayout_ug2")
         self.gridLayout_ug2.setContentsMargins(0, 0, 0, 0)
         self.label_potencia_ug2 = QLabel(self.layoutWidget_4)
         self.label_potencia_ug2.setObjectName(u"label_potencia_ug2")
-        self.label_potencia_ug2.setFont(font1)
+        self.label_potencia_ug2.setFont(font)
 
         self.gridLayout_ug2.addWidget(self.label_potencia_ug2, 0, 0, 1, 1)
 
@@ -158,25 +156,25 @@ class Ui_Form(object):
 
         self.label_setpoint_ug2 = QLabel(self.layoutWidget_4)
         self.label_setpoint_ug2.setObjectName(u"label_setpoint_ug2")
-        self.label_setpoint_ug2.setFont(font1)
+        self.label_setpoint_ug2.setFont(font)
 
         self.gridLayout_ug2.addWidget(self.label_setpoint_ug2, 1, 0, 1, 1)
 
         self.label_etapa_ug2 = QLabel(self.layoutWidget_4)
         self.label_etapa_ug2.setObjectName(u"label_etapa_ug2")
-        self.label_etapa_ug2.setFont(font1)
+        self.label_etapa_ug2.setFont(font)
 
         self.gridLayout_ug2.addWidget(self.label_etapa_ug2, 2, 0, 1, 1)
 
         self.label_bitsalarme_ug2 = QLabel(self.layoutWidget_4)
         self.label_bitsalarme_ug2.setObjectName(u"label_bitsalarme_ug2")
-        self.label_bitsalarme_ug2.setFont(font1)
+        self.label_bitsalarme_ug2.setFont(font)
 
         self.gridLayout_ug2.addWidget(self.label_bitsalarme_ug2, 3, 0, 1, 1)
 
         self.label_q_ug2 = QLabel(self.layoutWidget_4)
         self.label_q_ug2.setObjectName(u"label_q_ug2")
-        self.label_q_ug2.setFont(font1)
+        self.label_q_ug2.setFont(font)
         self.label_q_ug2.setAlignment(Qt.AlignLeading|Qt.AlignLeft|Qt.AlignVCenter)
 
         self.gridLayout_ug2.addWidget(self.label_q_ug2, 4, 0, 1, 1)
@@ -235,7 +233,7 @@ class Ui_Form(object):
 
         self.layoutWidget = QWidget(Form)
         self.layoutWidget.setObjectName(u"layoutWidget")
-        self.layoutWidget.setGeometry(QRect(1090, 110, 151, 56))
+        self.layoutWidget.setGeometry(QRect(1060, 110, 151, 52))
         self.horizontalLayout_MPMR = QHBoxLayout(self.layoutWidget)
         self.horizontalLayout_MPMR.setObjectName(u"horizontalLayout_MPMR")
         self.horizontalLayout_MPMR.setContentsMargins(0, 0, 0, 0)
@@ -287,7 +285,7 @@ class Ui_Form(object):
 
         self.layoutWidget1 = QWidget(Form)
         self.layoutWidget1.setObjectName(u"layoutWidget1")
-        self.layoutWidget1.setGeometry(QRect(50, 220, 141, 83))
+        self.layoutWidget1.setGeometry(QRect(50, 240, 141, 83))
         self.layoutWidget1.setFont(font3)
         self.layoutWidget1.setAutoFillBackground(False)
         self.gridLayout_q = QGridLayout(self.layoutWidget1)
@@ -355,66 +353,103 @@ class Ui_Form(object):
 
         self.layoutWidget2 = QWidget(Form)
         self.layoutWidget2.setObjectName(u"layoutWidget2")
-        self.layoutWidget2.setGeometry(QRect(50, 330, 341, 334))
-        self.layoutWidget2.setFont(font1)
+        self.layoutWidget2.setGeometry(QRect(50, 350, 321, 336))
+        self.layoutWidget2.setFont(font)
         self.gridLayout_vars_ug = QGridLayout(self.layoutWidget2)
         self.gridLayout_vars_ug.setObjectName(u"gridLayout_vars_ug")
         self.gridLayout_vars_ug.setContentsMargins(0, 0, 0, 0)
-        self.lcdNumber_temperatura_ug1_la_casquilho = QLCDNumber(self.layoutWidget2)
-        self.lcdNumber_temperatura_ug1_la_casquilho.setObjectName(u"lcdNumber_temperatura_ug1_la_casquilho")
-        self.lcdNumber_temperatura_ug1_la_casquilho.setFont(font4)
-        self.lcdNumber_temperatura_ug1_la_casquilho.setAutoFillBackground(True)
-        self.lcdNumber_temperatura_ug1_la_casquilho.setSmallDecimalPoint(True)
-        self.lcdNumber_temperatura_ug1_la_casquilho.setDigitCount(5)
-        self.lcdNumber_temperatura_ug1_la_casquilho.setSegmentStyle(QLCDNumber.Flat)
-        self.lcdNumber_temperatura_ug1_la_casquilho.setProperty("value", 12.340000000000000)
+        self.label_temperatura_titulo = QLabel(self.layoutWidget2)
+        self.label_temperatura_titulo.setObjectName(u"label_temperatura_titulo")
+        self.label_temperatura_titulo.setFont(font)
 
-        self.gridLayout_vars_ug.addWidget(self.lcdNumber_temperatura_ug1_la_casquilho, 4, 1, 1, 1)
+        self.gridLayout_vars_ug.addWidget(self.label_temperatura_titulo, 0, 0, 1, 1)
 
-        self.label_temperatura_8 = QLabel(self.layoutWidget2)
-        self.label_temperatura_8.setObjectName(u"label_temperatura_8")
-        self.label_temperatura_8.setFont(font1)
+        self.label_ug1 = QLabel(self.layoutWidget2)
+        self.label_ug1.setObjectName(u"label_ug1")
+        self.label_ug1.setFont(font)
+        self.label_ug1.setAlignment(Qt.AlignCenter)
 
-        self.gridLayout_vars_ug.addWidget(self.label_temperatura_8, 8, 0, 1, 1)
+        self.gridLayout_vars_ug.addWidget(self.label_ug1, 0, 1, 1, 1)
 
-        self.lcdNumber_temperatura_ug2_la_casquilho = QLCDNumber(self.layoutWidget2)
-        self.lcdNumber_temperatura_ug2_la_casquilho.setObjectName(u"lcdNumber_temperatura_ug2_la_casquilho")
-        self.lcdNumber_temperatura_ug2_la_casquilho.setFont(font4)
-        self.lcdNumber_temperatura_ug2_la_casquilho.setAutoFillBackground(True)
-        self.lcdNumber_temperatura_ug2_la_casquilho.setSmallDecimalPoint(True)
-        self.lcdNumber_temperatura_ug2_la_casquilho.setDigitCount(5)
-        self.lcdNumber_temperatura_ug2_la_casquilho.setSegmentStyle(QLCDNumber.Flat)
-        self.lcdNumber_temperatura_ug2_la_casquilho.setProperty("value", 12.340000000000000)
+        self.label_ug2 = QLabel(self.layoutWidget2)
+        self.label_ug2.setObjectName(u"label_ug2")
+        self.label_ug2.setFont(font)
+        self.label_ug2.setAlignment(Qt.AlignCenter)
 
-        self.gridLayout_vars_ug.addWidget(self.lcdNumber_temperatura_ug2_la_casquilho, 4, 2, 1, 1)
+        self.gridLayout_vars_ug.addWidget(self.label_ug2, 0, 2, 1, 1)
 
-        self.lcdNumber_perda_na_grade_ug1 = QLCDNumber(self.layoutWidget2)
-        self.lcdNumber_perda_na_grade_ug1.setObjectName(u"lcdNumber_perda_na_grade_ug1")
-        self.lcdNumber_perda_na_grade_ug1.setFont(font4)
-        self.lcdNumber_perda_na_grade_ug1.setAutoFillBackground(True)
-        self.lcdNumber_perda_na_grade_ug1.setSmallDecimalPoint(True)
-        self.lcdNumber_perda_na_grade_ug1.setDigitCount(5)
-        self.lcdNumber_perda_na_grade_ug1.setSegmentStyle(QLCDNumber.Flat)
-        self.lcdNumber_perda_na_grade_ug1.setProperty("value", 12.340000000000000)
+        self.label_temperatura_1 = QLabel(self.layoutWidget2)
+        self.label_temperatura_1.setObjectName(u"label_temperatura_1")
+        self.label_temperatura_1.setFont(font)
 
-        self.gridLayout_vars_ug.addWidget(self.lcdNumber_perda_na_grade_ug1, 11, 1, 1, 1)
+        self.gridLayout_vars_ug.addWidget(self.label_temperatura_1, 1, 0, 1, 1)
 
-        self.lcdNumber_temperatura_ug1_contra_escora_1 = QLCDNumber(self.layoutWidget2)
-        self.lcdNumber_temperatura_ug1_contra_escora_1.setObjectName(u"lcdNumber_temperatura_ug1_contra_escora_1")
-        self.lcdNumber_temperatura_ug1_contra_escora_1.setFont(font4)
-        self.lcdNumber_temperatura_ug1_contra_escora_1.setAutoFillBackground(True)
-        self.lcdNumber_temperatura_ug1_contra_escora_1.setSmallDecimalPoint(True)
-        self.lcdNumber_temperatura_ug1_contra_escora_1.setDigitCount(5)
-        self.lcdNumber_temperatura_ug1_contra_escora_1.setSegmentStyle(QLCDNumber.Flat)
-        self.lcdNumber_temperatura_ug1_contra_escora_1.setProperty("value", 12.340000000000000)
+        self.lcdNumber_temperatura_ug1_fase_r = QLCDNumber(self.layoutWidget2)
+        self.lcdNumber_temperatura_ug1_fase_r.setObjectName(u"lcdNumber_temperatura_ug1_fase_r")
+        self.lcdNumber_temperatura_ug1_fase_r.setFont(font4)
+        self.lcdNumber_temperatura_ug1_fase_r.setAutoFillBackground(True)
+        self.lcdNumber_temperatura_ug1_fase_r.setSmallDecimalPoint(True)
+        self.lcdNumber_temperatura_ug1_fase_r.setDigitCount(5)
+        self.lcdNumber_temperatura_ug1_fase_r.setSegmentStyle(QLCDNumber.Flat)
+        self.lcdNumber_temperatura_ug1_fase_r.setProperty("value", 12.340000000000000)
 
-        self.gridLayout_vars_ug.addWidget(self.lcdNumber_temperatura_ug1_contra_escora_1, 8, 1, 1, 1)
+        self.gridLayout_vars_ug.addWidget(self.lcdNumber_temperatura_ug1_fase_r, 1, 1, 1, 1)
 
-        self.label_temperatura_5 = QLabel(self.layoutWidget2)
-        self.label_temperatura_5.setObjectName(u"label_temperatura_5")
-        self.label_temperatura_5.setFont(font1)
+        self.lcdNumber_temperatura_ug2_fase_r = QLCDNumber(self.layoutWidget2)
+        self.lcdNumber_temperatura_ug2_fase_r.setObjectName(u"lcdNumber_temperatura_ug2_fase_r")
+        self.lcdNumber_temperatura_ug2_fase_r.setFont(font4)
+        self.lcdNumber_temperatura_ug2_fase_r.setAutoFillBackground(True)
+        self.lcdNumber_temperatura_ug2_fase_r.setSmallDecimalPoint(True)
+        self.lcdNumber_temperatura_ug2_fase_r.setDigitCount(5)
+        self.lcdNumber_temperatura_ug2_fase_r.setSegmentStyle(QLCDNumber.Flat)
+        self.lcdNumber_temperatura_ug2_fase_r.setProperty("value", 12.340000000000000)
 
-        self.gridLayout_vars_ug.addWidget(self.label_temperatura_5, 5, 0, 1, 1)
+        self.gridLayout_vars_ug.addWidget(self.lcdNumber_temperatura_ug2_fase_r, 1, 2, 1, 1)
+
+        self.label_temperatura_2 = QLabel(self.layoutWidget2)
+        self.label_temperatura_2.setObjectName(u"label_temperatura_2")
+        self.label_temperatura_2.setFont(font)
+
+        self.gridLayout_vars_ug.addWidget(self.label_temperatura_2, 2, 0, 1, 1)
+
+        self.lcdNumber_temperatura_ug1_fase_s = QLCDNumber(self.layoutWidget2)
+        self.lcdNumber_temperatura_ug1_fase_s.setObjectName(u"lcdNumber_temperatura_ug1_fase_s")
+        self.lcdNumber_temperatura_ug1_fase_s.setFont(font4)
+        self.lcdNumber_temperatura_ug1_fase_s.setAutoFillBackground(True)
+        self.lcdNumber_temperatura_ug1_fase_s.setSmallDecimalPoint(True)
+        self.lcdNumber_temperatura_ug1_fase_s.setDigitCount(5)
+        self.lcdNumber_temperatura_ug1_fase_s.setSegmentStyle(QLCDNumber.Flat)
+        self.lcdNumber_temperatura_ug1_fase_s.setProperty("value", 12.340000000000000)
+
+        self.gridLayout_vars_ug.addWidget(self.lcdNumber_temperatura_ug1_fase_s, 2, 1, 1, 1)
+
+        self.lcdNumber_temperatura_ug2_fase_s = QLCDNumber(self.layoutWidget2)
+        self.lcdNumber_temperatura_ug2_fase_s.setObjectName(u"lcdNumber_temperatura_ug2_fase_s")
+        self.lcdNumber_temperatura_ug2_fase_s.setFont(font4)
+        self.lcdNumber_temperatura_ug2_fase_s.setAutoFillBackground(True)
+        self.lcdNumber_temperatura_ug2_fase_s.setSmallDecimalPoint(True)
+        self.lcdNumber_temperatura_ug2_fase_s.setDigitCount(5)
+        self.lcdNumber_temperatura_ug2_fase_s.setSegmentStyle(QLCDNumber.Flat)
+        self.lcdNumber_temperatura_ug2_fase_s.setProperty("value", 12.340000000000000)
+
+        self.gridLayout_vars_ug.addWidget(self.lcdNumber_temperatura_ug2_fase_s, 2, 2, 1, 1)
+
+        self.label_temperatura_3 = QLabel(self.layoutWidget2)
+        self.label_temperatura_3.setObjectName(u"label_temperatura_3")
+        self.label_temperatura_3.setFont(font)
+
+        self.gridLayout_vars_ug.addWidget(self.label_temperatura_3, 3, 0, 1, 1)
+
+        self.lcdNumber_temperatura_ug1_fase_t = QLCDNumber(self.layoutWidget2)
+        self.lcdNumber_temperatura_ug1_fase_t.setObjectName(u"lcdNumber_temperatura_ug1_fase_t")
+        self.lcdNumber_temperatura_ug1_fase_t.setFont(font4)
+        self.lcdNumber_temperatura_ug1_fase_t.setAutoFillBackground(True)
+        self.lcdNumber_temperatura_ug1_fase_t.setSmallDecimalPoint(True)
+        self.lcdNumber_temperatura_ug1_fase_t.setDigitCount(5)
+        self.lcdNumber_temperatura_ug1_fase_t.setSegmentStyle(QLCDNumber.Flat)
+        self.lcdNumber_temperatura_ug1_fase_t.setProperty("value", 12.340000000000000)
+
+        self.gridLayout_vars_ug.addWidget(self.lcdNumber_temperatura_ug1_fase_t, 3, 1, 1, 1)
 
         self.lcdNumber_temperatura_ug2_fase_t = QLCDNumber(self.layoutWidget2)
         self.lcdNumber_temperatura_ug2_fase_t.setObjectName(u"lcdNumber_temperatura_ug2_fase_t")
@@ -427,24 +462,162 @@ class Ui_Form(object):
 
         self.gridLayout_vars_ug.addWidget(self.lcdNumber_temperatura_ug2_fase_t, 3, 2, 1, 1)
 
-        self.label_perdagrade = QLabel(self.layoutWidget2)
-        self.label_perdagrade.setObjectName(u"label_perdagrade")
-        self.label_perdagrade.setFont(font1)
-
-        self.gridLayout_vars_ug.addWidget(self.label_perdagrade, 11, 0, 1, 1)
-
-        self.label_ug2 = QLabel(self.layoutWidget2)
-        self.label_ug2.setObjectName(u"label_ug2")
-        self.label_ug2.setFont(font1)
-        self.label_ug2.setAlignment(Qt.AlignCenter)
-
-        self.gridLayout_vars_ug.addWidget(self.label_ug2, 0, 2, 1, 1)
-
         self.label_temperatura_4 = QLabel(self.layoutWidget2)
         self.label_temperatura_4.setObjectName(u"label_temperatura_4")
-        self.label_temperatura_4.setFont(font1)
+        self.label_temperatura_4.setFont(font)
 
         self.gridLayout_vars_ug.addWidget(self.label_temperatura_4, 4, 0, 1, 1)
+
+        self.lcdNumber_temperatura_ug1_la_casquilho = QLCDNumber(self.layoutWidget2)
+        self.lcdNumber_temperatura_ug1_la_casquilho.setObjectName(u"lcdNumber_temperatura_ug1_la_casquilho")
+        self.lcdNumber_temperatura_ug1_la_casquilho.setFont(font4)
+        self.lcdNumber_temperatura_ug1_la_casquilho.setAutoFillBackground(True)
+        self.lcdNumber_temperatura_ug1_la_casquilho.setSmallDecimalPoint(True)
+        self.lcdNumber_temperatura_ug1_la_casquilho.setDigitCount(5)
+        self.lcdNumber_temperatura_ug1_la_casquilho.setSegmentStyle(QLCDNumber.Flat)
+        self.lcdNumber_temperatura_ug1_la_casquilho.setProperty("value", 12.340000000000000)
+
+        self.gridLayout_vars_ug.addWidget(self.lcdNumber_temperatura_ug1_la_casquilho, 4, 1, 1, 1)
+
+        self.lcdNumber_temperatura_ug2_la_casquilho = QLCDNumber(self.layoutWidget2)
+        self.lcdNumber_temperatura_ug2_la_casquilho.setObjectName(u"lcdNumber_temperatura_ug2_la_casquilho")
+        self.lcdNumber_temperatura_ug2_la_casquilho.setFont(font4)
+        self.lcdNumber_temperatura_ug2_la_casquilho.setAutoFillBackground(True)
+        self.lcdNumber_temperatura_ug2_la_casquilho.setSmallDecimalPoint(True)
+        self.lcdNumber_temperatura_ug2_la_casquilho.setDigitCount(5)
+        self.lcdNumber_temperatura_ug2_la_casquilho.setSegmentStyle(QLCDNumber.Flat)
+        self.lcdNumber_temperatura_ug2_la_casquilho.setProperty("value", 12.340000000000000)
+
+        self.gridLayout_vars_ug.addWidget(self.lcdNumber_temperatura_ug2_la_casquilho, 4, 2, 1, 1)
+
+        self.label_temperatura_5 = QLabel(self.layoutWidget2)
+        self.label_temperatura_5.setObjectName(u"label_temperatura_5")
+        self.label_temperatura_5.setFont(font)
+
+        self.gridLayout_vars_ug.addWidget(self.label_temperatura_5, 5, 0, 1, 1)
+
+        self.lcdNumber_temperatura_ug1_lna_casquilho = QLCDNumber(self.layoutWidget2)
+        self.lcdNumber_temperatura_ug1_lna_casquilho.setObjectName(u"lcdNumber_temperatura_ug1_lna_casquilho")
+        self.lcdNumber_temperatura_ug1_lna_casquilho.setFont(font4)
+        self.lcdNumber_temperatura_ug1_lna_casquilho.setAutoFillBackground(True)
+        self.lcdNumber_temperatura_ug1_lna_casquilho.setSmallDecimalPoint(True)
+        self.lcdNumber_temperatura_ug1_lna_casquilho.setDigitCount(5)
+        self.lcdNumber_temperatura_ug1_lna_casquilho.setSegmentStyle(QLCDNumber.Flat)
+        self.lcdNumber_temperatura_ug1_lna_casquilho.setProperty("value", 12.340000000000000)
+
+        self.gridLayout_vars_ug.addWidget(self.lcdNumber_temperatura_ug1_lna_casquilho, 5, 1, 1, 1)
+
+        self.lcdNumber_temperatura_ug2_lna_casquilho = QLCDNumber(self.layoutWidget2)
+        self.lcdNumber_temperatura_ug2_lna_casquilho.setObjectName(u"lcdNumber_temperatura_ug2_lna_casquilho")
+        self.lcdNumber_temperatura_ug2_lna_casquilho.setFont(font4)
+        self.lcdNumber_temperatura_ug2_lna_casquilho.setAutoFillBackground(True)
+        self.lcdNumber_temperatura_ug2_lna_casquilho.setSmallDecimalPoint(True)
+        self.lcdNumber_temperatura_ug2_lna_casquilho.setDigitCount(5)
+        self.lcdNumber_temperatura_ug2_lna_casquilho.setSegmentStyle(QLCDNumber.Flat)
+        self.lcdNumber_temperatura_ug2_lna_casquilho.setProperty("value", 12.340000000000000)
+
+        self.gridLayout_vars_ug.addWidget(self.lcdNumber_temperatura_ug2_lna_casquilho, 5, 2, 1, 1)
+
+        self.label_temperatura_6 = QLabel(self.layoutWidget2)
+        self.label_temperatura_6.setObjectName(u"label_temperatura_6")
+        self.label_temperatura_6.setFont(font)
+
+        self.gridLayout_vars_ug.addWidget(self.label_temperatura_6, 6, 0, 1, 1)
+
+        self.lcdNumber_temperatura_ug1_escora_1 = QLCDNumber(self.layoutWidget2)
+        self.lcdNumber_temperatura_ug1_escora_1.setObjectName(u"lcdNumber_temperatura_ug1_escora_1")
+        self.lcdNumber_temperatura_ug1_escora_1.setFont(font4)
+        self.lcdNumber_temperatura_ug1_escora_1.setAutoFillBackground(True)
+        self.lcdNumber_temperatura_ug1_escora_1.setSmallDecimalPoint(True)
+        self.lcdNumber_temperatura_ug1_escora_1.setDigitCount(5)
+        self.lcdNumber_temperatura_ug1_escora_1.setSegmentStyle(QLCDNumber.Flat)
+        self.lcdNumber_temperatura_ug1_escora_1.setProperty("value", 12.340000000000000)
+
+        self.gridLayout_vars_ug.addWidget(self.lcdNumber_temperatura_ug1_escora_1, 6, 1, 1, 1)
+
+        self.lcdNumber_temperatura_ug2_escora_1 = QLCDNumber(self.layoutWidget2)
+        self.lcdNumber_temperatura_ug2_escora_1.setObjectName(u"lcdNumber_temperatura_ug2_escora_1")
+        self.lcdNumber_temperatura_ug2_escora_1.setFont(font4)
+        self.lcdNumber_temperatura_ug2_escora_1.setAutoFillBackground(True)
+        self.lcdNumber_temperatura_ug2_escora_1.setSmallDecimalPoint(True)
+        self.lcdNumber_temperatura_ug2_escora_1.setDigitCount(5)
+        self.lcdNumber_temperatura_ug2_escora_1.setSegmentStyle(QLCDNumber.Flat)
+        self.lcdNumber_temperatura_ug2_escora_1.setProperty("value", 12.340000000000000)
+
+        self.gridLayout_vars_ug.addWidget(self.lcdNumber_temperatura_ug2_escora_1, 6, 2, 1, 1)
+
+        self.label_temperatura_7 = QLabel(self.layoutWidget2)
+        self.label_temperatura_7.setObjectName(u"label_temperatura_7")
+        self.label_temperatura_7.setFont(font)
+
+        self.gridLayout_vars_ug.addWidget(self.label_temperatura_7, 7, 0, 1, 1)
+
+        self.lcdNumber_temperatura_ug1_escora_2 = QLCDNumber(self.layoutWidget2)
+        self.lcdNumber_temperatura_ug1_escora_2.setObjectName(u"lcdNumber_temperatura_ug1_escora_2")
+        self.lcdNumber_temperatura_ug1_escora_2.setFont(font4)
+        self.lcdNumber_temperatura_ug1_escora_2.setAutoFillBackground(True)
+        self.lcdNumber_temperatura_ug1_escora_2.setSmallDecimalPoint(True)
+        self.lcdNumber_temperatura_ug1_escora_2.setDigitCount(5)
+        self.lcdNumber_temperatura_ug1_escora_2.setSegmentStyle(QLCDNumber.Flat)
+        self.lcdNumber_temperatura_ug1_escora_2.setProperty("value", 12.340000000000000)
+
+        self.gridLayout_vars_ug.addWidget(self.lcdNumber_temperatura_ug1_escora_2, 7, 1, 1, 1)
+
+        self.lcdNumber_temperatura_ug2_escora_2 = QLCDNumber(self.layoutWidget2)
+        self.lcdNumber_temperatura_ug2_escora_2.setObjectName(u"lcdNumber_temperatura_ug2_escora_2")
+        self.lcdNumber_temperatura_ug2_escora_2.setFont(font4)
+        self.lcdNumber_temperatura_ug2_escora_2.setAutoFillBackground(True)
+        self.lcdNumber_temperatura_ug2_escora_2.setSmallDecimalPoint(True)
+        self.lcdNumber_temperatura_ug2_escora_2.setDigitCount(5)
+        self.lcdNumber_temperatura_ug2_escora_2.setSegmentStyle(QLCDNumber.Flat)
+        self.lcdNumber_temperatura_ug2_escora_2.setProperty("value", 12.340000000000000)
+
+        self.gridLayout_vars_ug.addWidget(self.lcdNumber_temperatura_ug2_escora_2, 7, 2, 1, 1)
+
+        self.label_temperatura_8 = QLabel(self.layoutWidget2)
+        self.label_temperatura_8.setObjectName(u"label_temperatura_8")
+        self.label_temperatura_8.setFont(font)
+
+        self.gridLayout_vars_ug.addWidget(self.label_temperatura_8, 8, 0, 1, 1)
+
+        self.lcdNumber_temperatura_ug1_contra_escora_1 = QLCDNumber(self.layoutWidget2)
+        self.lcdNumber_temperatura_ug1_contra_escora_1.setObjectName(u"lcdNumber_temperatura_ug1_contra_escora_1")
+        self.lcdNumber_temperatura_ug1_contra_escora_1.setFont(font4)
+        self.lcdNumber_temperatura_ug1_contra_escora_1.setAutoFillBackground(True)
+        self.lcdNumber_temperatura_ug1_contra_escora_1.setSmallDecimalPoint(True)
+        self.lcdNumber_temperatura_ug1_contra_escora_1.setDigitCount(5)
+        self.lcdNumber_temperatura_ug1_contra_escora_1.setSegmentStyle(QLCDNumber.Flat)
+        self.lcdNumber_temperatura_ug1_contra_escora_1.setProperty("value", 12.340000000000000)
+
+        self.gridLayout_vars_ug.addWidget(self.lcdNumber_temperatura_ug1_contra_escora_1, 8, 1, 1, 1)
+
+        self.lcdNumber_temperatura_ug2_contra_escora_1 = QLCDNumber(self.layoutWidget2)
+        self.lcdNumber_temperatura_ug2_contra_escora_1.setObjectName(u"lcdNumber_temperatura_ug2_contra_escora_1")
+        self.lcdNumber_temperatura_ug2_contra_escora_1.setFont(font4)
+        self.lcdNumber_temperatura_ug2_contra_escora_1.setAutoFillBackground(True)
+        self.lcdNumber_temperatura_ug2_contra_escora_1.setSmallDecimalPoint(True)
+        self.lcdNumber_temperatura_ug2_contra_escora_1.setDigitCount(5)
+        self.lcdNumber_temperatura_ug2_contra_escora_1.setSegmentStyle(QLCDNumber.Flat)
+        self.lcdNumber_temperatura_ug2_contra_escora_1.setProperty("value", 12.340000000000000)
+
+        self.gridLayout_vars_ug.addWidget(self.lcdNumber_temperatura_ug2_contra_escora_1, 8, 2, 1, 1)
+
+        self.label_temperatura_9 = QLabel(self.layoutWidget2)
+        self.label_temperatura_9.setObjectName(u"label_temperatura_9")
+        self.label_temperatura_9.setFont(font)
+
+        self.gridLayout_vars_ug.addWidget(self.label_temperatura_9, 9, 0, 1, 1)
+
+        self.lcdNumber_temperatura_ug1_contra_escora_2 = QLCDNumber(self.layoutWidget2)
+        self.lcdNumber_temperatura_ug1_contra_escora_2.setObjectName(u"lcdNumber_temperatura_ug1_contra_escora_2")
+        self.lcdNumber_temperatura_ug1_contra_escora_2.setFont(font4)
+        self.lcdNumber_temperatura_ug1_contra_escora_2.setAutoFillBackground(True)
+        self.lcdNumber_temperatura_ug1_contra_escora_2.setSmallDecimalPoint(True)
+        self.lcdNumber_temperatura_ug1_contra_escora_2.setDigitCount(5)
+        self.lcdNumber_temperatura_ug1_contra_escora_2.setSegmentStyle(QLCDNumber.Flat)
+        self.lcdNumber_temperatura_ug1_contra_escora_2.setProperty("value", 12.340000000000000)
+
+        self.gridLayout_vars_ug.addWidget(self.lcdNumber_temperatura_ug1_contra_escora_2, 9, 1, 1, 1)
 
         self.lcdNumber_temperatura_ug2_contra_escora_2 = QLCDNumber(self.layoutWidget2)
         self.lcdNumber_temperatura_ug2_contra_escora_2.setObjectName(u"lcdNumber_temperatura_ug2_contra_escora_2")
@@ -459,157 +632,34 @@ class Ui_Form(object):
 
         self.label_ug1_2 = QLabel(self.layoutWidget2)
         self.label_ug1_2.setObjectName(u"label_ug1_2")
-        self.label_ug1_2.setFont(font1)
+        self.label_ug1_2.setFont(font)
         self.label_ug1_2.setAlignment(Qt.AlignCenter)
 
         self.gridLayout_vars_ug.addWidget(self.label_ug1_2, 10, 1, 1, 1)
 
-        self.lcdNumber_temperatura_ug2_fase_s = QLCDNumber(self.layoutWidget2)
-        self.lcdNumber_temperatura_ug2_fase_s.setObjectName(u"lcdNumber_temperatura_ug2_fase_s")
-        self.lcdNumber_temperatura_ug2_fase_s.setFont(font4)
-        self.lcdNumber_temperatura_ug2_fase_s.setAutoFillBackground(True)
-        self.lcdNumber_temperatura_ug2_fase_s.setSmallDecimalPoint(True)
-        self.lcdNumber_temperatura_ug2_fase_s.setDigitCount(5)
-        self.lcdNumber_temperatura_ug2_fase_s.setSegmentStyle(QLCDNumber.Flat)
-        self.lcdNumber_temperatura_ug2_fase_s.setProperty("value", 12.340000000000000)
+        self.label_ug2_2 = QLabel(self.layoutWidget2)
+        self.label_ug2_2.setObjectName(u"label_ug2_2")
+        self.label_ug2_2.setFont(font)
+        self.label_ug2_2.setAlignment(Qt.AlignCenter)
 
-        self.gridLayout_vars_ug.addWidget(self.lcdNumber_temperatura_ug2_fase_s, 2, 2, 1, 1)
+        self.gridLayout_vars_ug.addWidget(self.label_ug2_2, 10, 2, 1, 1)
 
-        self.label_temperatura_9 = QLabel(self.layoutWidget2)
-        self.label_temperatura_9.setObjectName(u"label_temperatura_9")
-        self.label_temperatura_9.setFont(font1)
+        self.label_perdagrade = QLabel(self.layoutWidget2)
+        self.label_perdagrade.setObjectName(u"label_perdagrade")
+        self.label_perdagrade.setFont(font)
 
-        self.gridLayout_vars_ug.addWidget(self.label_temperatura_9, 9, 0, 1, 1)
+        self.gridLayout_vars_ug.addWidget(self.label_perdagrade, 11, 0, 1, 1)
 
-        self.lcdNumber_temperatura_ug2_fase_r = QLCDNumber(self.layoutWidget2)
-        self.lcdNumber_temperatura_ug2_fase_r.setObjectName(u"lcdNumber_temperatura_ug2_fase_r")
-        self.lcdNumber_temperatura_ug2_fase_r.setFont(font4)
-        self.lcdNumber_temperatura_ug2_fase_r.setAutoFillBackground(True)
-        self.lcdNumber_temperatura_ug2_fase_r.setSmallDecimalPoint(True)
-        self.lcdNumber_temperatura_ug2_fase_r.setDigitCount(5)
-        self.lcdNumber_temperatura_ug2_fase_r.setSegmentStyle(QLCDNumber.Flat)
-        self.lcdNumber_temperatura_ug2_fase_r.setProperty("value", 12.340000000000000)
+        self.lcdNumber_perda_na_grade_ug1 = QLCDNumber(self.layoutWidget2)
+        self.lcdNumber_perda_na_grade_ug1.setObjectName(u"lcdNumber_perda_na_grade_ug1")
+        self.lcdNumber_perda_na_grade_ug1.setFont(font4)
+        self.lcdNumber_perda_na_grade_ug1.setAutoFillBackground(True)
+        self.lcdNumber_perda_na_grade_ug1.setSmallDecimalPoint(True)
+        self.lcdNumber_perda_na_grade_ug1.setDigitCount(5)
+        self.lcdNumber_perda_na_grade_ug1.setSegmentStyle(QLCDNumber.Flat)
+        self.lcdNumber_perda_na_grade_ug1.setProperty("value", 12.340000000000000)
 
-        self.gridLayout_vars_ug.addWidget(self.lcdNumber_temperatura_ug2_fase_r, 1, 2, 1, 1)
-
-        self.lcdNumber_temperatura_ug1_fase_s = QLCDNumber(self.layoutWidget2)
-        self.lcdNumber_temperatura_ug1_fase_s.setObjectName(u"lcdNumber_temperatura_ug1_fase_s")
-        self.lcdNumber_temperatura_ug1_fase_s.setFont(font4)
-        self.lcdNumber_temperatura_ug1_fase_s.setAutoFillBackground(True)
-        self.lcdNumber_temperatura_ug1_fase_s.setSmallDecimalPoint(True)
-        self.lcdNumber_temperatura_ug1_fase_s.setDigitCount(5)
-        self.lcdNumber_temperatura_ug1_fase_s.setSegmentStyle(QLCDNumber.Flat)
-        self.lcdNumber_temperatura_ug1_fase_s.setProperty("value", 12.340000000000000)
-
-        self.gridLayout_vars_ug.addWidget(self.lcdNumber_temperatura_ug1_fase_s, 2, 1, 1, 1)
-
-        self.lcdNumber_temperatura_ug2_lna_casquilho = QLCDNumber(self.layoutWidget2)
-        self.lcdNumber_temperatura_ug2_lna_casquilho.setObjectName(u"lcdNumber_temperatura_ug2_lna_casquilho")
-        self.lcdNumber_temperatura_ug2_lna_casquilho.setFont(font4)
-        self.lcdNumber_temperatura_ug2_lna_casquilho.setAutoFillBackground(True)
-        self.lcdNumber_temperatura_ug2_lna_casquilho.setSmallDecimalPoint(True)
-        self.lcdNumber_temperatura_ug2_lna_casquilho.setDigitCount(5)
-        self.lcdNumber_temperatura_ug2_lna_casquilho.setSegmentStyle(QLCDNumber.Flat)
-        self.lcdNumber_temperatura_ug2_lna_casquilho.setProperty("value", 12.340000000000000)
-
-        self.gridLayout_vars_ug.addWidget(self.lcdNumber_temperatura_ug2_lna_casquilho, 5, 2, 1, 1)
-
-        self.lcdNumber_temperatura_ug1_escora_1 = QLCDNumber(self.layoutWidget2)
-        self.lcdNumber_temperatura_ug1_escora_1.setObjectName(u"lcdNumber_temperatura_ug1_escora_1")
-        self.lcdNumber_temperatura_ug1_escora_1.setFont(font4)
-        self.lcdNumber_temperatura_ug1_escora_1.setAutoFillBackground(True)
-        self.lcdNumber_temperatura_ug1_escora_1.setSmallDecimalPoint(True)
-        self.lcdNumber_temperatura_ug1_escora_1.setDigitCount(5)
-        self.lcdNumber_temperatura_ug1_escora_1.setSegmentStyle(QLCDNumber.Flat)
-        self.lcdNumber_temperatura_ug1_escora_1.setProperty("value", 12.340000000000000)
-
-        self.gridLayout_vars_ug.addWidget(self.lcdNumber_temperatura_ug1_escora_1, 6, 1, 1, 1)
-
-        self.lcdNumber_temperatura_ug3_fase_s = QLCDNumber(self.layoutWidget2)
-        self.lcdNumber_temperatura_ug3_fase_s.setObjectName(u"lcdNumber_temperatura_ug3_fase_s")
-        self.lcdNumber_temperatura_ug3_fase_s.setFont(font4)
-        self.lcdNumber_temperatura_ug3_fase_s.setAutoFillBackground(True)
-        self.lcdNumber_temperatura_ug3_fase_s.setSmallDecimalPoint(True)
-        self.lcdNumber_temperatura_ug3_fase_s.setDigitCount(5)
-        self.lcdNumber_temperatura_ug3_fase_s.setSegmentStyle(QLCDNumber.Flat)
-        self.lcdNumber_temperatura_ug3_fase_s.setProperty("value", 12.340000000000000)
-
-        self.gridLayout_vars_ug.addWidget(self.lcdNumber_temperatura_ug3_fase_s, 2, 3, 1, 1)
-
-        self.lcdNumber_temperatura_ug2_escora_2 = QLCDNumber(self.layoutWidget2)
-        self.lcdNumber_temperatura_ug2_escora_2.setObjectName(u"lcdNumber_temperatura_ug2_escora_2")
-        self.lcdNumber_temperatura_ug2_escora_2.setFont(font4)
-        self.lcdNumber_temperatura_ug2_escora_2.setAutoFillBackground(True)
-        self.lcdNumber_temperatura_ug2_escora_2.setSmallDecimalPoint(True)
-        self.lcdNumber_temperatura_ug2_escora_2.setDigitCount(5)
-        self.lcdNumber_temperatura_ug2_escora_2.setSegmentStyle(QLCDNumber.Flat)
-        self.lcdNumber_temperatura_ug2_escora_2.setProperty("value", 12.340000000000000)
-
-        self.gridLayout_vars_ug.addWidget(self.lcdNumber_temperatura_ug2_escora_2, 7, 2, 1, 1)
-
-        self.lcdNumber_temperatura_ug1_fase_t = QLCDNumber(self.layoutWidget2)
-        self.lcdNumber_temperatura_ug1_fase_t.setObjectName(u"lcdNumber_temperatura_ug1_fase_t")
-        self.lcdNumber_temperatura_ug1_fase_t.setFont(font4)
-        self.lcdNumber_temperatura_ug1_fase_t.setAutoFillBackground(True)
-        self.lcdNumber_temperatura_ug1_fase_t.setSmallDecimalPoint(True)
-        self.lcdNumber_temperatura_ug1_fase_t.setDigitCount(5)
-        self.lcdNumber_temperatura_ug1_fase_t.setSegmentStyle(QLCDNumber.Flat)
-        self.lcdNumber_temperatura_ug1_fase_t.setProperty("value", 12.340000000000000)
-
-        self.gridLayout_vars_ug.addWidget(self.lcdNumber_temperatura_ug1_fase_t, 3, 1, 1, 1)
-
-        self.lcdNumber_temperatura_ug3_fase_r = QLCDNumber(self.layoutWidget2)
-        self.lcdNumber_temperatura_ug3_fase_r.setObjectName(u"lcdNumber_temperatura_ug3_fase_r")
-        self.lcdNumber_temperatura_ug3_fase_r.setFont(font4)
-        self.lcdNumber_temperatura_ug3_fase_r.setAutoFillBackground(True)
-        self.lcdNumber_temperatura_ug3_fase_r.setSmallDecimalPoint(True)
-        self.lcdNumber_temperatura_ug3_fase_r.setDigitCount(5)
-        self.lcdNumber_temperatura_ug3_fase_r.setSegmentStyle(QLCDNumber.Flat)
-        self.lcdNumber_temperatura_ug3_fase_r.setProperty("value", 12.340000000000000)
-
-        self.gridLayout_vars_ug.addWidget(self.lcdNumber_temperatura_ug3_fase_r, 1, 3, 1, 1)
-
-        self.label_temperatura_2 = QLabel(self.layoutWidget2)
-        self.label_temperatura_2.setObjectName(u"label_temperatura_2")
-        self.label_temperatura_2.setFont(font1)
-
-        self.gridLayout_vars_ug.addWidget(self.label_temperatura_2, 2, 0, 1, 1)
-
-        self.label_temperatura_1 = QLabel(self.layoutWidget2)
-        self.label_temperatura_1.setObjectName(u"label_temperatura_1")
-        self.label_temperatura_1.setFont(font1)
-
-        self.gridLayout_vars_ug.addWidget(self.label_temperatura_1, 1, 0, 1, 1)
-
-        self.label_temperatura_titulo = QLabel(self.layoutWidget2)
-        self.label_temperatura_titulo.setObjectName(u"label_temperatura_titulo")
-        self.label_temperatura_titulo.setFont(font1)
-
-        self.gridLayout_vars_ug.addWidget(self.label_temperatura_titulo, 0, 0, 1, 1)
-
-        self.label_ug2_3 = QLabel(self.layoutWidget2)
-        self.label_ug2_3.setObjectName(u"label_ug2_3")
-        self.label_ug2_3.setFont(font1)
-        self.label_ug2_3.setAlignment(Qt.AlignCenter)
-
-        self.gridLayout_vars_ug.addWidget(self.label_ug2_3, 0, 3, 1, 1)
-
-        self.lcdNumber_temperatura_ug1_contra_escora_2 = QLCDNumber(self.layoutWidget2)
-        self.lcdNumber_temperatura_ug1_contra_escora_2.setObjectName(u"lcdNumber_temperatura_ug1_contra_escora_2")
-        self.lcdNumber_temperatura_ug1_contra_escora_2.setFont(font4)
-        self.lcdNumber_temperatura_ug1_contra_escora_2.setAutoFillBackground(True)
-        self.lcdNumber_temperatura_ug1_contra_escora_2.setSmallDecimalPoint(True)
-        self.lcdNumber_temperatura_ug1_contra_escora_2.setDigitCount(5)
-        self.lcdNumber_temperatura_ug1_contra_escora_2.setSegmentStyle(QLCDNumber.Flat)
-        self.lcdNumber_temperatura_ug1_contra_escora_2.setProperty("value", 12.340000000000000)
-
-        self.gridLayout_vars_ug.addWidget(self.lcdNumber_temperatura_ug1_contra_escora_2, 9, 1, 1, 1)
-
-        self.label_temperatura_3 = QLabel(self.layoutWidget2)
-        self.label_temperatura_3.setObjectName(u"label_temperatura_3")
-        self.label_temperatura_3.setFont(font1)
-
-        self.gridLayout_vars_ug.addWidget(self.label_temperatura_3, 3, 0, 1, 1)
+        self.gridLayout_vars_ug.addWidget(self.lcdNumber_perda_na_grade_ug1, 11, 1, 1, 1)
 
         self.lcdNumber_perda_na_grade_ug2 = QLCDNumber(self.layoutWidget2)
         self.lcdNumber_perda_na_grade_ug2.setObjectName(u"lcdNumber_perda_na_grade_ug2")
@@ -622,191 +672,15 @@ class Ui_Form(object):
 
         self.gridLayout_vars_ug.addWidget(self.lcdNumber_perda_na_grade_ug2, 11, 2, 1, 1)
 
-        self.lcdNumber_temperatura_ug1_lna_casquilho = QLCDNumber(self.layoutWidget2)
-        self.lcdNumber_temperatura_ug1_lna_casquilho.setObjectName(u"lcdNumber_temperatura_ug1_lna_casquilho")
-        self.lcdNumber_temperatura_ug1_lna_casquilho.setFont(font4)
-        self.lcdNumber_temperatura_ug1_lna_casquilho.setAutoFillBackground(True)
-        self.lcdNumber_temperatura_ug1_lna_casquilho.setSmallDecimalPoint(True)
-        self.lcdNumber_temperatura_ug1_lna_casquilho.setDigitCount(5)
-        self.lcdNumber_temperatura_ug1_lna_casquilho.setSegmentStyle(QLCDNumber.Flat)
-        self.lcdNumber_temperatura_ug1_lna_casquilho.setProperty("value", 12.340000000000000)
-
-        self.gridLayout_vars_ug.addWidget(self.lcdNumber_temperatura_ug1_lna_casquilho, 5, 1, 1, 1)
-
-        self.label_ug2_2 = QLabel(self.layoutWidget2)
-        self.label_ug2_2.setObjectName(u"label_ug2_2")
-        self.label_ug2_2.setFont(font1)
-        self.label_ug2_2.setAlignment(Qt.AlignCenter)
-
-        self.gridLayout_vars_ug.addWidget(self.label_ug2_2, 10, 2, 1, 1)
-
-        self.lcdNumber_temperatura_ug2_contra_escora_1 = QLCDNumber(self.layoutWidget2)
-        self.lcdNumber_temperatura_ug2_contra_escora_1.setObjectName(u"lcdNumber_temperatura_ug2_contra_escora_1")
-        self.lcdNumber_temperatura_ug2_contra_escora_1.setFont(font4)
-        self.lcdNumber_temperatura_ug2_contra_escora_1.setAutoFillBackground(True)
-        self.lcdNumber_temperatura_ug2_contra_escora_1.setSmallDecimalPoint(True)
-        self.lcdNumber_temperatura_ug2_contra_escora_1.setDigitCount(5)
-        self.lcdNumber_temperatura_ug2_contra_escora_1.setSegmentStyle(QLCDNumber.Flat)
-        self.lcdNumber_temperatura_ug2_contra_escora_1.setProperty("value", 12.340000000000000)
-
-        self.gridLayout_vars_ug.addWidget(self.lcdNumber_temperatura_ug2_contra_escora_1, 8, 2, 1, 1)
-
-        self.lcdNumber_temperatura_ug1_escora_2 = QLCDNumber(self.layoutWidget2)
-        self.lcdNumber_temperatura_ug1_escora_2.setObjectName(u"lcdNumber_temperatura_ug1_escora_2")
-        self.lcdNumber_temperatura_ug1_escora_2.setFont(font4)
-        self.lcdNumber_temperatura_ug1_escora_2.setAutoFillBackground(True)
-        self.lcdNumber_temperatura_ug1_escora_2.setSmallDecimalPoint(True)
-        self.lcdNumber_temperatura_ug1_escora_2.setDigitCount(5)
-        self.lcdNumber_temperatura_ug1_escora_2.setSegmentStyle(QLCDNumber.Flat)
-        self.lcdNumber_temperatura_ug1_escora_2.setProperty("value", 12.340000000000000)
-
-        self.gridLayout_vars_ug.addWidget(self.lcdNumber_temperatura_ug1_escora_2, 7, 1, 1, 1)
-
-        self.label_ug1 = QLabel(self.layoutWidget2)
-        self.label_ug1.setObjectName(u"label_ug1")
-        self.label_ug1.setFont(font1)
-        self.label_ug1.setAlignment(Qt.AlignCenter)
-
-        self.gridLayout_vars_ug.addWidget(self.label_ug1, 0, 1, 1, 1)
-
-        self.lcdNumber_temperatura_ug1_fase_r = QLCDNumber(self.layoutWidget2)
-        self.lcdNumber_temperatura_ug1_fase_r.setObjectName(u"lcdNumber_temperatura_ug1_fase_r")
-        self.lcdNumber_temperatura_ug1_fase_r.setFont(font4)
-        self.lcdNumber_temperatura_ug1_fase_r.setAutoFillBackground(True)
-        self.lcdNumber_temperatura_ug1_fase_r.setSmallDecimalPoint(True)
-        self.lcdNumber_temperatura_ug1_fase_r.setDigitCount(5)
-        self.lcdNumber_temperatura_ug1_fase_r.setSegmentStyle(QLCDNumber.Flat)
-        self.lcdNumber_temperatura_ug1_fase_r.setProperty("value", 12.340000000000000)
-
-        self.gridLayout_vars_ug.addWidget(self.lcdNumber_temperatura_ug1_fase_r, 1, 1, 1, 1)
-
-        self.label_temperatura_7 = QLabel(self.layoutWidget2)
-        self.label_temperatura_7.setObjectName(u"label_temperatura_7")
-        self.label_temperatura_7.setFont(font1)
-
-        self.gridLayout_vars_ug.addWidget(self.label_temperatura_7, 7, 0, 1, 1)
-
-        self.label_temperatura_6 = QLabel(self.layoutWidget2)
-        self.label_temperatura_6.setObjectName(u"label_temperatura_6")
-        self.label_temperatura_6.setFont(font1)
-
-        self.gridLayout_vars_ug.addWidget(self.label_temperatura_6, 6, 0, 1, 1)
-
-        self.lcdNumber_temperatura_ug2_escora_1 = QLCDNumber(self.layoutWidget2)
-        self.lcdNumber_temperatura_ug2_escora_1.setObjectName(u"lcdNumber_temperatura_ug2_escora_1")
-        self.lcdNumber_temperatura_ug2_escora_1.setFont(font4)
-        self.lcdNumber_temperatura_ug2_escora_1.setAutoFillBackground(True)
-        self.lcdNumber_temperatura_ug2_escora_1.setSmallDecimalPoint(True)
-        self.lcdNumber_temperatura_ug2_escora_1.setDigitCount(5)
-        self.lcdNumber_temperatura_ug2_escora_1.setSegmentStyle(QLCDNumber.Flat)
-        self.lcdNumber_temperatura_ug2_escora_1.setProperty("value", 12.340000000000000)
-
-        self.gridLayout_vars_ug.addWidget(self.lcdNumber_temperatura_ug2_escora_1, 6, 2, 1, 1)
-
-        self.lcdNumber_temperatura_ug3_fase_t = QLCDNumber(self.layoutWidget2)
-        self.lcdNumber_temperatura_ug3_fase_t.setObjectName(u"lcdNumber_temperatura_ug3_fase_t")
-        self.lcdNumber_temperatura_ug3_fase_t.setFont(font4)
-        self.lcdNumber_temperatura_ug3_fase_t.setAutoFillBackground(True)
-        self.lcdNumber_temperatura_ug3_fase_t.setSmallDecimalPoint(True)
-        self.lcdNumber_temperatura_ug3_fase_t.setDigitCount(5)
-        self.lcdNumber_temperatura_ug3_fase_t.setSegmentStyle(QLCDNumber.Flat)
-        self.lcdNumber_temperatura_ug3_fase_t.setProperty("value", 12.340000000000000)
-
-        self.gridLayout_vars_ug.addWidget(self.lcdNumber_temperatura_ug3_fase_t, 3, 3, 1, 1)
-
-        self.lcdNumber_temperatura_ug3_la_casquilho = QLCDNumber(self.layoutWidget2)
-        self.lcdNumber_temperatura_ug3_la_casquilho.setObjectName(u"lcdNumber_temperatura_ug3_la_casquilho")
-        self.lcdNumber_temperatura_ug3_la_casquilho.setFont(font4)
-        self.lcdNumber_temperatura_ug3_la_casquilho.setAutoFillBackground(True)
-        self.lcdNumber_temperatura_ug3_la_casquilho.setSmallDecimalPoint(True)
-        self.lcdNumber_temperatura_ug3_la_casquilho.setDigitCount(5)
-        self.lcdNumber_temperatura_ug3_la_casquilho.setSegmentStyle(QLCDNumber.Flat)
-        self.lcdNumber_temperatura_ug3_la_casquilho.setProperty("value", 12.340000000000000)
-
-        self.gridLayout_vars_ug.addWidget(self.lcdNumber_temperatura_ug3_la_casquilho, 4, 3, 1, 1)
-
-        self.lcdNumber_temperatura_ug3_lna_casquilho = QLCDNumber(self.layoutWidget2)
-        self.lcdNumber_temperatura_ug3_lna_casquilho.setObjectName(u"lcdNumber_temperatura_ug3_lna_casquilho")
-        self.lcdNumber_temperatura_ug3_lna_casquilho.setFont(font4)
-        self.lcdNumber_temperatura_ug3_lna_casquilho.setAutoFillBackground(True)
-        self.lcdNumber_temperatura_ug3_lna_casquilho.setSmallDecimalPoint(True)
-        self.lcdNumber_temperatura_ug3_lna_casquilho.setDigitCount(5)
-        self.lcdNumber_temperatura_ug3_lna_casquilho.setSegmentStyle(QLCDNumber.Flat)
-        self.lcdNumber_temperatura_ug3_lna_casquilho.setProperty("value", 12.340000000000000)
-
-        self.gridLayout_vars_ug.addWidget(self.lcdNumber_temperatura_ug3_lna_casquilho, 5, 3, 1, 1)
-
-        self.lcdNumber_temperatura_ug3_escora_1 = QLCDNumber(self.layoutWidget2)
-        self.lcdNumber_temperatura_ug3_escora_1.setObjectName(u"lcdNumber_temperatura_ug3_escora_1")
-        self.lcdNumber_temperatura_ug3_escora_1.setFont(font4)
-        self.lcdNumber_temperatura_ug3_escora_1.setAutoFillBackground(True)
-        self.lcdNumber_temperatura_ug3_escora_1.setSmallDecimalPoint(True)
-        self.lcdNumber_temperatura_ug3_escora_1.setDigitCount(5)
-        self.lcdNumber_temperatura_ug3_escora_1.setSegmentStyle(QLCDNumber.Flat)
-        self.lcdNumber_temperatura_ug3_escora_1.setProperty("value", 12.340000000000000)
-
-        self.gridLayout_vars_ug.addWidget(self.lcdNumber_temperatura_ug3_escora_1, 6, 3, 1, 1)
-
-        self.lcdNumber_temperatura_ug3_escora_2 = QLCDNumber(self.layoutWidget2)
-        self.lcdNumber_temperatura_ug3_escora_2.setObjectName(u"lcdNumber_temperatura_ug3_escora_2")
-        self.lcdNumber_temperatura_ug3_escora_2.setFont(font4)
-        self.lcdNumber_temperatura_ug3_escora_2.setAutoFillBackground(True)
-        self.lcdNumber_temperatura_ug3_escora_2.setSmallDecimalPoint(True)
-        self.lcdNumber_temperatura_ug3_escora_2.setDigitCount(5)
-        self.lcdNumber_temperatura_ug3_escora_2.setSegmentStyle(QLCDNumber.Flat)
-        self.lcdNumber_temperatura_ug3_escora_2.setProperty("value", 12.340000000000000)
-
-        self.gridLayout_vars_ug.addWidget(self.lcdNumber_temperatura_ug3_escora_2, 7, 3, 1, 1)
-
-        self.lcdNumber_temperatura_ug3_contra_escora_1 = QLCDNumber(self.layoutWidget2)
-        self.lcdNumber_temperatura_ug3_contra_escora_1.setObjectName(u"lcdNumber_temperatura_ug3_contra_escora_1")
-        self.lcdNumber_temperatura_ug3_contra_escora_1.setFont(font4)
-        self.lcdNumber_temperatura_ug3_contra_escora_1.setAutoFillBackground(True)
-        self.lcdNumber_temperatura_ug3_contra_escora_1.setSmallDecimalPoint(True)
-        self.lcdNumber_temperatura_ug3_contra_escora_1.setDigitCount(5)
-        self.lcdNumber_temperatura_ug3_contra_escora_1.setSegmentStyle(QLCDNumber.Flat)
-        self.lcdNumber_temperatura_ug3_contra_escora_1.setProperty("value", 12.340000000000000)
-
-        self.gridLayout_vars_ug.addWidget(self.lcdNumber_temperatura_ug3_contra_escora_1, 8, 3, 1, 1)
-
-        self.lcdNumber_temperatura_ug3_contra_escora_2 = QLCDNumber(self.layoutWidget2)
-        self.lcdNumber_temperatura_ug3_contra_escora_2.setObjectName(u"lcdNumber_temperatura_ug3_contra_escora_2")
-        self.lcdNumber_temperatura_ug3_contra_escora_2.setFont(font4)
-        self.lcdNumber_temperatura_ug3_contra_escora_2.setAutoFillBackground(True)
-        self.lcdNumber_temperatura_ug3_contra_escora_2.setSmallDecimalPoint(True)
-        self.lcdNumber_temperatura_ug3_contra_escora_2.setDigitCount(5)
-        self.lcdNumber_temperatura_ug3_contra_escora_2.setSegmentStyle(QLCDNumber.Flat)
-        self.lcdNumber_temperatura_ug3_contra_escora_2.setProperty("value", 12.340000000000000)
-
-        self.gridLayout_vars_ug.addWidget(self.lcdNumber_temperatura_ug3_contra_escora_2, 9, 3, 1, 1)
-
-        self.lcdNumber_perda_na_grade_ug3 = QLCDNumber(self.layoutWidget2)
-        self.lcdNumber_perda_na_grade_ug3.setObjectName(u"lcdNumber_perda_na_grade_ug3")
-        self.lcdNumber_perda_na_grade_ug3.setFont(font4)
-        self.lcdNumber_perda_na_grade_ug3.setAutoFillBackground(True)
-        self.lcdNumber_perda_na_grade_ug3.setSmallDecimalPoint(True)
-        self.lcdNumber_perda_na_grade_ug3.setDigitCount(5)
-        self.lcdNumber_perda_na_grade_ug3.setSegmentStyle(QLCDNumber.Flat)
-        self.lcdNumber_perda_na_grade_ug3.setProperty("value", 12.340000000000000)
-
-        self.gridLayout_vars_ug.addWidget(self.lcdNumber_perda_na_grade_ug3, 11, 3, 1, 1)
-
-        self.label_ug2_4 = QLabel(self.layoutWidget2)
-        self.label_ug2_4.setObjectName(u"label_ug2_4")
-        self.label_ug2_4.setFont(font1)
-        self.label_ug2_4.setAlignment(Qt.AlignCenter)
-
-        self.gridLayout_vars_ug.addWidget(self.label_ug2_4, 10, 3, 1, 1)
-
         self.layoutWidget3 = QWidget(Form)
         self.layoutWidget3.setObjectName(u"layoutWidget3")
-        self.layoutWidget3.setGeometry(QRect(730, 130, 191, 141))
+        self.layoutWidget3.setGeometry(QRect(670, 100, 191, 151))
         self.gridLayout_ug1 = QGridLayout(self.layoutWidget3)
         self.gridLayout_ug1.setObjectName(u"gridLayout_ug1")
         self.gridLayout_ug1.setContentsMargins(0, 0, 0, 0)
         self.label_potencia_ug1 = QLabel(self.layoutWidget3)
         self.label_potencia_ug1.setObjectName(u"label_potencia_ug1")
-        self.label_potencia_ug1.setFont(font1)
+        self.label_potencia_ug1.setFont(font)
 
         self.gridLayout_ug1.addWidget(self.label_potencia_ug1, 0, 0, 1, 1)
 
@@ -822,25 +696,25 @@ class Ui_Form(object):
 
         self.label_setpoint_ug1 = QLabel(self.layoutWidget3)
         self.label_setpoint_ug1.setObjectName(u"label_setpoint_ug1")
-        self.label_setpoint_ug1.setFont(font1)
+        self.label_setpoint_ug1.setFont(font)
 
         self.gridLayout_ug1.addWidget(self.label_setpoint_ug1, 1, 0, 1, 1)
 
         self.label_etapa_ug1 = QLabel(self.layoutWidget3)
         self.label_etapa_ug1.setObjectName(u"label_etapa_ug1")
-        self.label_etapa_ug1.setFont(font1)
+        self.label_etapa_ug1.setFont(font)
 
         self.gridLayout_ug1.addWidget(self.label_etapa_ug1, 2, 0, 1, 1)
 
         self.label_bitsalarme_ug1 = QLabel(self.layoutWidget3)
         self.label_bitsalarme_ug1.setObjectName(u"label_bitsalarme_ug1")
-        self.label_bitsalarme_ug1.setFont(font1)
+        self.label_bitsalarme_ug1.setFont(font)
 
         self.gridLayout_ug1.addWidget(self.label_bitsalarme_ug1, 3, 0, 1, 1)
 
         self.label_q_ug1 = QLabel(self.layoutWidget3)
         self.label_q_ug1.setObjectName(u"label_q_ug1")
-        self.label_q_ug1.setFont(font1)
+        self.label_q_ug1.setFont(font)
         self.label_q_ug1.setAlignment(Qt.AlignLeading|Qt.AlignLeft|Qt.AlignVCenter)
 
         self.gridLayout_ug1.addWidget(self.label_q_ug1, 4, 0, 1, 1)
@@ -888,11 +762,9 @@ class Ui_Form(object):
         self.splitter.addWidget(self.lcdNumber_etapa_atual_ug1)
         self.lcdNumber_etapa_alvo_ug1 = QLCDNumber(self.splitter)
         self.lcdNumber_etapa_alvo_ug1.setObjectName(u"lcdNumber_etapa_alvo_ug1")
-        self.lcdNumber_etapa_alvo_ug1.setEnabled(True)
         self.lcdNumber_etapa_alvo_ug1.setAutoFillBackground(True)
         self.lcdNumber_etapa_alvo_ug1.setSmallDecimalPoint(False)
         self.lcdNumber_etapa_alvo_ug1.setDigitCount(1)
-        self.lcdNumber_etapa_alvo_ug1.setMode(QLCDNumber.Hex)
         self.lcdNumber_etapa_alvo_ug1.setSegmentStyle(QLCDNumber.Flat)
         self.lcdNumber_etapa_alvo_ug1.setProperty("value", 1.000000000000000)
         self.splitter.addWidget(self.lcdNumber_etapa_alvo_ug1)
@@ -901,13 +773,13 @@ class Ui_Form(object):
 
         self.layoutWidget4 = QWidget(Form)
         self.layoutWidget4.setObjectName(u"layoutWidget4")
-        self.layoutWidget4.setGeometry(QRect(1140, 330, 116, 169))
+        self.layoutWidget4.setGeometry(QRect(1150, 400, 116, 131))
         self.verticalLayout_linha = QVBoxLayout(self.layoutWidget4)
         self.verticalLayout_linha.setObjectName(u"verticalLayout_linha")
         self.verticalLayout_linha.setContentsMargins(0, 0, 0, 0)
         self.label_3 = QLabel(self.layoutWidget4)
         self.label_3.setObjectName(u"label_3")
-        self.label_3.setFont(font1)
+        self.label_3.setFont(font)
 
         self.verticalLayout_linha.addWidget(self.label_3)
 
@@ -939,7 +811,7 @@ class Ui_Form(object):
 
         self.layoutWidget5 = QWidget(Form)
         self.layoutWidget5.setObjectName(u"layoutWidget5")
-        self.layoutWidget5.setGeometry(QRect(560, 130, 167, 149))
+        self.layoutWidget5.setGeometry(QRect(500, 100, 164, 151))
         self.verticalLayout_ug1 = QVBoxLayout(self.layoutWidget5)
         self.verticalLayout_ug1.setObjectName(u"verticalLayout_ug1")
         self.verticalLayout_ug1.setContentsMargins(0, 0, 0, 0)
@@ -970,7 +842,7 @@ class Ui_Form(object):
 
         self.layoutWidget6 = QWidget(Form)
         self.layoutWidget6.setObjectName(u"layoutWidget6")
-        self.layoutWidget6.setGeometry(QRect(50, 50, 221, 82))
+        self.layoutWidget6.setGeometry(QRect(50, 50, 221, 81))
         self.gridLayout_montante = QGridLayout(self.layoutWidget6)
         self.gridLayout_montante.setObjectName(u"gridLayout_montante")
         self.gridLayout_montante.setContentsMargins(0, 0, 0, 0)
@@ -978,7 +850,7 @@ class Ui_Form(object):
         self.gridLayout_montante_2.setObjectName(u"gridLayout_montante_2")
         self.label_q_alfuente = QLabel(self.layoutWidget6)
         self.label_q_alfuente.setObjectName(u"label_q_alfuente")
-        self.label_q_alfuente.setFont(font1)
+        self.label_q_alfuente.setFont(font)
         self.label_q_alfuente.setAlignment(Qt.AlignLeading|Qt.AlignLeft|Qt.AlignVCenter)
 
         self.gridLayout_montante_2.addWidget(self.label_q_alfuente, 1, 0, 1, 1)
@@ -1008,7 +880,7 @@ class Ui_Form(object):
 
         self.label_nv_montante = QLabel(self.layoutWidget6)
         self.label_nv_montante.setObjectName(u"label_nv_montante")
-        self.label_nv_montante.setFont(font1)
+        self.label_nv_montante.setFont(font)
 
         self.gridLayout_montante_2.addWidget(self.label_nv_montante, 0, 0, 1, 1)
 
@@ -1025,7 +897,7 @@ class Ui_Form(object):
 
         self.layoutWidget7 = QWidget(Form)
         self.layoutWidget7.setObjectName(u"layoutWidget7")
-        self.layoutWidget7.setGeometry(QRect(1120, 20, 91, 62))
+        self.layoutWidget7.setGeometry(QRect(1120, 20, 91, 50))
         self.verticalLayout_tempo_simul = QVBoxLayout(self.layoutWidget7)
         self.verticalLayout_tempo_simul.setObjectName(u"verticalLayout_tempo_simul")
         self.verticalLayout_tempo_simul.setContentsMargins(0, 0, 0, 0)
@@ -1043,7 +915,7 @@ class Ui_Form(object):
 
         self.layoutWidget8 = QWidget(Form)
         self.layoutWidget8.setObjectName(u"layoutWidget8")
-        self.layoutWidget8.setGeometry(QRect(560, 90, 361, 36))
+        self.layoutWidget8.setGeometry(QRect(500, 70, 361, 24))
         self.horizontalLayout = QHBoxLayout(self.layoutWidget8)
         self.horizontalLayout.setObjectName(u"horizontalLayout")
         self.horizontalLayout.setContentsMargins(0, 0, 0, 0)
@@ -1059,7 +931,7 @@ class Ui_Form(object):
 
         self.horizontalSlider_setpoint_ug1 = QSlider(self.layoutWidget8)
         self.horizontalSlider_setpoint_ug1.setObjectName(u"horizontalSlider_setpoint_ug1")
-        self.horizontalSlider_setpoint_ug1.setMaximum(3460)
+        self.horizontalSlider_setpoint_ug1.setMaximum(2600)
         self.horizontalSlider_setpoint_ug1.setSingleStep(50)
         self.horizontalSlider_setpoint_ug1.setPageStep(100)
         self.horizontalSlider_setpoint_ug1.setOrientation(Qt.Horizontal)
@@ -1068,7 +940,7 @@ class Ui_Form(object):
 
         self.layoutWidget_5 = QWidget(Form)
         self.layoutWidget_5.setObjectName(u"layoutWidget_5")
-        self.layoutWidget_5.setGeometry(QRect(560, 290, 361, 36))
+        self.layoutWidget_5.setGeometry(QRect(500, 500, 361, 24))
         self.horizontalLayout_2 = QHBoxLayout(self.layoutWidget_5)
         self.horizontalLayout_2.setObjectName(u"horizontalLayout_2")
         self.horizontalLayout_2.setContentsMargins(0, 0, 0, 0)
@@ -1084,7 +956,7 @@ class Ui_Form(object):
 
         self.horizontalSlider_setpoint_ug2 = QSlider(self.layoutWidget_5)
         self.horizontalSlider_setpoint_ug2.setObjectName(u"horizontalSlider_setpoint_ug2")
-        self.horizontalSlider_setpoint_ug2.setMaximum(3460)
+        self.horizontalSlider_setpoint_ug2.setMaximum(2600)
         self.horizontalSlider_setpoint_ug2.setSingleStep(50)
         self.horizontalSlider_setpoint_ug2.setPageStep(100)
         self.horizontalSlider_setpoint_ug2.setOrientation(Qt.Horizontal)
@@ -1093,7 +965,7 @@ class Ui_Form(object):
 
         self.layoutWidget_6 = QWidget(Form)
         self.layoutWidget_6.setObjectName(u"layoutWidget_6")
-        self.layoutWidget_6.setGeometry(QRect(560, 330, 167, 149))
+        self.layoutWidget_6.setGeometry(QRect(500, 530, 164, 151))
         self.verticalLayout_ug2 = QVBoxLayout(self.layoutWidget_6)
         self.verticalLayout_ug2.setObjectName(u"verticalLayout_ug2")
         self.verticalLayout_ug2.setContentsMargins(0, 0, 0, 0)
@@ -1122,181 +994,6 @@ class Ui_Form(object):
 
         self.verticalLayout_ug2.addWidget(self.pushButton_reconhece_reset_ug2)
 
-        self.layoutWidget_7 = QWidget(Form)
-        self.layoutWidget_7.setObjectName(u"layoutWidget_7")
-        self.layoutWidget_7.setGeometry(QRect(560, 490, 361, 36))
-        self.horizontalLayout_3 = QHBoxLayout(self.layoutWidget_7)
-        self.horizontalLayout_3.setObjectName(u"horizontalLayout_3")
-        self.horizontalLayout_3.setContentsMargins(0, 0, 0, 0)
-        self.pushButton_partir_ug3 = QPushButton(self.layoutWidget_7)
-        self.pushButton_partir_ug3.setObjectName(u"pushButton_partir_ug3")
-
-        self.horizontalLayout_3.addWidget(self.pushButton_partir_ug3)
-
-        self.pushButton_parar_ug3 = QPushButton(self.layoutWidget_7)
-        self.pushButton_parar_ug3.setObjectName(u"pushButton_parar_ug3")
-
-        self.horizontalLayout_3.addWidget(self.pushButton_parar_ug3)
-
-        self.horizontalSlider_setpoint_ug3 = QSlider(self.layoutWidget_7)
-        self.horizontalSlider_setpoint_ug3.setObjectName(u"horizontalSlider_setpoint_ug3")
-        self.horizontalSlider_setpoint_ug3.setMaximum(3460)
-        self.horizontalSlider_setpoint_ug3.setSingleStep(50)
-        self.horizontalSlider_setpoint_ug3.setPageStep(100)
-        self.horizontalSlider_setpoint_ug3.setOrientation(Qt.Horizontal)
-
-        self.horizontalLayout_3.addWidget(self.horizontalSlider_setpoint_ug3)
-
-        self.layoutWidget_8 = QWidget(Form)
-        self.layoutWidget_8.setObjectName(u"layoutWidget_8")
-        self.layoutWidget_8.setGeometry(QRect(560, 530, 167, 149))
-        self.verticalLayout_ug3 = QVBoxLayout(self.layoutWidget_8)
-        self.verticalLayout_ug3.setObjectName(u"verticalLayout_ug3")
-        self.verticalLayout_ug3.setContentsMargins(0, 0, 0, 0)
-        self.checkBox_sinal_trip_ug3 = QCheckBox(self.layoutWidget_8)
-        self.checkBox_sinal_trip_ug3.setObjectName(u"checkBox_sinal_trip_ug3")
-
-        self.verticalLayout_ug3.addWidget(self.checkBox_sinal_trip_ug3)
-
-        self.pushButton_pulso_trip_ug3 = QPushButton(self.layoutWidget_8)
-        self.pushButton_pulso_trip_ug3.setObjectName(u"pushButton_pulso_trip_ug3")
-
-        self.verticalLayout_ug3.addWidget(self.pushButton_pulso_trip_ug3)
-
-        self.pushButton_set_trip_high_ug3 = QPushButton(self.layoutWidget_8)
-        self.pushButton_set_trip_high_ug3.setObjectName(u"pushButton_set_trip_high_ug3")
-
-        self.verticalLayout_ug3.addWidget(self.pushButton_set_trip_high_ug3)
-
-        self.pushButton_set_trip_low_ug3 = QPushButton(self.layoutWidget_8)
-        self.pushButton_set_trip_low_ug3.setObjectName(u"pushButton_set_trip_low_ug3")
-
-        self.verticalLayout_ug3.addWidget(self.pushButton_set_trip_low_ug3)
-
-        self.pushButton_reconhece_reset_ug3 = QPushButton(self.layoutWidget_8)
-        self.pushButton_reconhece_reset_ug3.setObjectName(u"pushButton_reconhece_reset_ug3")
-
-        self.verticalLayout_ug3.addWidget(self.pushButton_reconhece_reset_ug3)
-
-        self.layoutWidget_9 = QWidget(Form)
-        self.layoutWidget_9.setObjectName(u"layoutWidget_9")
-        self.layoutWidget_9.setGeometry(QRect(730, 530, 191, 141))
-        self.gridLayout_ug3 = QGridLayout(self.layoutWidget_9)
-        self.gridLayout_ug3.setObjectName(u"gridLayout_ug3")
-        self.gridLayout_ug3.setContentsMargins(0, 0, 0, 0)
-        self.label_potencia_ug3 = QLabel(self.layoutWidget_9)
-        self.label_potencia_ug3.setObjectName(u"label_potencia_ug3")
-        self.label_potencia_ug3.setFont(font1)
-
-        self.gridLayout_ug3.addWidget(self.label_potencia_ug3, 0, 0, 1, 1)
-
-        self.lcdNumber_potencia_ug3 = QLCDNumber(self.layoutWidget_9)
-        self.lcdNumber_potencia_ug3.setObjectName(u"lcdNumber_potencia_ug3")
-        self.lcdNumber_potencia_ug3.setAutoFillBackground(True)
-        self.lcdNumber_potencia_ug3.setSmallDecimalPoint(True)
-        self.lcdNumber_potencia_ug3.setDigitCount(4)
-        self.lcdNumber_potencia_ug3.setSegmentStyle(QLCDNumber.Flat)
-        self.lcdNumber_potencia_ug3.setProperty("value", 5.123000000000000)
-
-        self.gridLayout_ug3.addWidget(self.lcdNumber_potencia_ug3, 0, 1, 1, 1)
-
-        self.label_setpoint_ug3 = QLabel(self.layoutWidget_9)
-        self.label_setpoint_ug3.setObjectName(u"label_setpoint_ug3")
-        self.label_setpoint_ug3.setFont(font1)
-
-        self.gridLayout_ug3.addWidget(self.label_setpoint_ug3, 1, 0, 1, 1)
-
-        self.label_etapa_ug3 = QLabel(self.layoutWidget_9)
-        self.label_etapa_ug3.setObjectName(u"label_etapa_ug3")
-        self.label_etapa_ug3.setFont(font1)
-
-        self.gridLayout_ug3.addWidget(self.label_etapa_ug3, 2, 0, 1, 1)
-
-        self.label_bitsalarme_ug3 = QLabel(self.layoutWidget_9)
-        self.label_bitsalarme_ug3.setObjectName(u"label_bitsalarme_ug3")
-        self.label_bitsalarme_ug3.setFont(font1)
-
-        self.gridLayout_ug3.addWidget(self.label_bitsalarme_ug3, 3, 0, 1, 1)
-
-        self.label_q_ug3 = QLabel(self.layoutWidget_9)
-        self.label_q_ug3.setObjectName(u"label_q_ug3")
-        self.label_q_ug3.setFont(font1)
-        self.label_q_ug3.setAlignment(Qt.AlignLeading|Qt.AlignLeft|Qt.AlignVCenter)
-
-        self.gridLayout_ug3.addWidget(self.label_q_ug3, 4, 0, 1, 1)
-
-        self.lcdNumber_setpoint_ug3 = QLCDNumber(self.layoutWidget_9)
-        self.lcdNumber_setpoint_ug3.setObjectName(u"lcdNumber_setpoint_ug3")
-        self.lcdNumber_setpoint_ug3.setAutoFillBackground(True)
-        self.lcdNumber_setpoint_ug3.setSmallDecimalPoint(True)
-        self.lcdNumber_setpoint_ug3.setDigitCount(4)
-        self.lcdNumber_setpoint_ug3.setSegmentStyle(QLCDNumber.Flat)
-        self.lcdNumber_setpoint_ug3.setProperty("value", 5.100000000000000)
-
-        self.gridLayout_ug3.addWidget(self.lcdNumber_setpoint_ug3, 1, 1, 1, 1)
-
-        self.lcdNumber_bitsalarme_ug3 = QLCDNumber(self.layoutWidget_9)
-        self.lcdNumber_bitsalarme_ug3.setObjectName(u"lcdNumber_bitsalarme_ug3")
-        self.lcdNumber_bitsalarme_ug3.setAutoFillBackground(True)
-        self.lcdNumber_bitsalarme_ug3.setSmallDecimalPoint(False)
-        self.lcdNumber_bitsalarme_ug3.setDigitCount(5)
-        self.lcdNumber_bitsalarme_ug3.setSegmentStyle(QLCDNumber.Flat)
-        self.lcdNumber_bitsalarme_ug3.setProperty("value", 65356.000000000000000)
-
-        self.gridLayout_ug3.addWidget(self.lcdNumber_bitsalarme_ug3, 3, 1, 1, 1)
-
-        self.lcdNumber_q_ug3 = QLCDNumber(self.layoutWidget_9)
-        self.lcdNumber_q_ug3.setObjectName(u"lcdNumber_q_ug3")
-        self.lcdNumber_q_ug3.setAutoFillBackground(True)
-        self.lcdNumber_q_ug3.setSmallDecimalPoint(True)
-        self.lcdNumber_q_ug3.setDigitCount(4)
-        self.lcdNumber_q_ug3.setSegmentStyle(QLCDNumber.Flat)
-        self.lcdNumber_q_ug3.setProperty("value", 12.340000000000000)
-
-        self.gridLayout_ug3.addWidget(self.lcdNumber_q_ug3, 4, 1, 1, 1)
-
-        self.splitter_3 = QSplitter(self.layoutWidget_9)
-        self.splitter_3.setObjectName(u"splitter_3")
-        self.splitter_3.setOrientation(Qt.Horizontal)
-        self.lcdNumber_etapa_atual_ug3 = QLCDNumber(self.splitter_3)
-        self.lcdNumber_etapa_atual_ug3.setObjectName(u"lcdNumber_etapa_atual_ug3")
-        self.lcdNumber_etapa_atual_ug3.setAutoFillBackground(True)
-        self.lcdNumber_etapa_atual_ug3.setSmallDecimalPoint(False)
-        self.lcdNumber_etapa_atual_ug3.setDigitCount(1)
-        self.lcdNumber_etapa_atual_ug3.setSegmentStyle(QLCDNumber.Flat)
-        self.lcdNumber_etapa_atual_ug3.setProperty("value", 1.000000000000000)
-        self.splitter_3.addWidget(self.lcdNumber_etapa_atual_ug3)
-        self.lcdNumber_etapa_alvo_ug3 = QLCDNumber(self.splitter_3)
-        self.lcdNumber_etapa_alvo_ug3.setObjectName(u"lcdNumber_etapa_alvo_ug3")
-        self.lcdNumber_etapa_alvo_ug3.setAutoFillBackground(True)
-        self.lcdNumber_etapa_alvo_ug3.setSmallDecimalPoint(False)
-        self.lcdNumber_etapa_alvo_ug3.setDigitCount(1)
-        self.lcdNumber_etapa_alvo_ug3.setSegmentStyle(QLCDNumber.Flat)
-        self.lcdNumber_etapa_alvo_ug3.setProperty("value", 1.000000000000000)
-        self.splitter_3.addWidget(self.lcdNumber_etapa_alvo_ug3)
-
-        self.gridLayout_ug3.addWidget(self.splitter_3, 2, 1, 1, 1)
-
-
-        self.label.raise_()
-#        self.label_4.raise_()
-        self.layoutWidget_3.raise_()
-        self.layoutWidget_15.raise_()
-        self.layoutWidget_4.raise_()
-        self.layoutWidget7.raise_()
-        self.layoutWidget7.raise_()
-        self.layoutWidget7.raise_()
-        self.layoutWidget7.raise_()
-        self.layoutWidget7.raise_()
-        self.layoutWidget7.raise_()
-        self.layoutWidget7.raise_()
-        self.layoutWidget7.raise_()
-        self.layoutWidget7.raise_()
-        self.layoutWidget_5.raise_()
-        self.layoutWidget_6.raise_()
-        self.layoutWidget_7.raise_()
-        self.layoutWidget_8.raise_()
-        self.layoutWidget_9.raise_()
 
         self.retranslateUi(Form)
         self.horizontalSlider_q_afluente.valueChanged.connect(Form.mudar_q_afluente)
@@ -1305,6 +1002,7 @@ class Ui_Form(object):
         self.pushButton_reset_trip_linha.clicked.connect(Form.reset_trip_linha)
         self.pushButton_partir_ug1.clicked.connect(Form.partir_ug1)
         self.pushButton_parar_ug1.clicked.connect(Form.parar_ug1)
+        self.horizontalSlider_setpoint_ug1.valueChanged.connect(Form.mudar_setpoint_ug1)
         self.pushButton_partir_ug2.clicked.connect(Form.partir_ug2)
         self.pushButton_parar_ug2.clicked.connect(Form.parar_ug2)
         self.horizontalSlider_setpoint_ug2.valueChanged.connect(Form.mudar_setpoint_ug2)
@@ -1319,21 +1017,14 @@ class Ui_Form(object):
         self.pushButton_52L_alternar_estado.clicked.connect(Form.alternar_estado_dj52L)
         self.pushButton_52L_provocar_inconsistencia.clicked.connect(Form.provocar_inconsistencia_dj52L)
         self.pushButton_52L_reconhece_reset.clicked.connect(Form.reconhecer_reset_dj52L)
-        self.horizontalSlider_setpoint_ug1.valueChanged.connect(Form.mudar_setpoint_ug1)
-        self.pushButton_partir_ug3.clicked.connect(Form.partir_ug3)
-        self.pushButton_parar_ug3.clicked.connect(Form.parar_ug3)
-        self.pushButton_pulso_trip_ug3.clicked.connect(Form.pulso_trip_ug3)
-        self.pushButton_set_trip_high_ug3.clicked.connect(Form.set_trip_high_ug3)
-        self.pushButton_set_trip_low_ug3.clicked.connect(Form.set_trip_low_ug3)
-        self.pushButton_reconhece_reset_ug3.clicked.connect(Form.reconhece_reset_ug3)
-        self.horizontalSlider_setpoint_ug3.valueChanged.connect(Form.mudar_setpoint_ug3)
 
         QMetaObject.connectSlotsByName(Form)
     # setupUi
 
     def retranslateUi(self, Form):
-        Form.setWindowTitle(QCoreApplication.translate("Form", u"Digital Twin PCH SEB", None))
-        self.label.setText(QCoreApplication.translate("Form", u"Simula\u00e7\u00e3o PCH  S\u00e3o Sebasti\u00e3o", None))
+        Form.setWindowTitle(QCoreApplication.translate("Form", u"Digital Twin PCH PPN", None))
+        self.bg.setText("")
+        self.label.setText(QCoreApplication.translate("Form", u"Simula\u00e7\u00e3o PCH PPN", None))
         self.label_52L.setText(QCoreApplication.translate("Form", u"Dj 52L", None))
         self.checkBox_52L_aberto.setText(QCoreApplication.translate("Form", u"Aberto", None))
         self.checkBox_52L_fechado.setText(QCoreApplication.translate("Form", u"Fechado", None))
@@ -1356,23 +1047,21 @@ class Ui_Form(object):
         self.label_q_sanitaria.setText(QCoreApplication.translate("Form", u"Q Sanit", None))
         self.label_q_liquida.setText(QCoreApplication.translate("Form", u"Q L\u00edquida", None))
         self.label_q_vertimento.setText(QCoreApplication.translate("Form", u"Q Vert.", None))
-        self.label_temperatura_8.setText(QCoreApplication.translate("Form", u"Manca L.A. Contra escora 1", None))
-        self.label_temperatura_5.setText(QCoreApplication.translate("Form", u"Manca L.N.A. Casquilho", None))
-        self.label_perdagrade.setText(QCoreApplication.translate("Form", u"Perda na grade", None))
-        self.label_ug2.setText(QCoreApplication.translate("Form", u"UG 2", None))
-        self.label_temperatura_4.setText(QCoreApplication.translate("Form", u"Manca L.A. Casquilho", None))
-        self.label_ug1_2.setText(QCoreApplication.translate("Form", u"UG 1", None))
-        self.label_temperatura_9.setText(QCoreApplication.translate("Form", u"Manca L.A. Contra escora 2", None))
-        self.label_temperatura_2.setText(QCoreApplication.translate("Form", u"Fase S", None))
-        self.label_temperatura_1.setText(QCoreApplication.translate("Form", u"Fase R", None))
         self.label_temperatura_titulo.setText(QCoreApplication.translate("Form", u"Temperaturas", None))
-        self.label_ug2_3.setText(QCoreApplication.translate("Form", u"UG 3", None))
-        self.label_temperatura_3.setText(QCoreApplication.translate("Form", u"Fase T", None))
-        self.label_ug2_2.setText(QCoreApplication.translate("Form", u"UG 2", None))
         self.label_ug1.setText(QCoreApplication.translate("Form", u"UG 1", None))
-        self.label_temperatura_7.setText(QCoreApplication.translate("Form", u"Manca L.A. Escora 2", None))
+        self.label_ug2.setText(QCoreApplication.translate("Form", u"UG 2", None))
+        self.label_temperatura_1.setText(QCoreApplication.translate("Form", u"Fase R", None))
+        self.label_temperatura_2.setText(QCoreApplication.translate("Form", u"Fase S", None))
+        self.label_temperatura_3.setText(QCoreApplication.translate("Form", u"Fase T", None))
+        self.label_temperatura_4.setText(QCoreApplication.translate("Form", u"Manca L.A. Casquilho", None))
+        self.label_temperatura_5.setText(QCoreApplication.translate("Form", u"Manca L.N.A. Casquilho", None))
         self.label_temperatura_6.setText(QCoreApplication.translate("Form", u"Manca L.A. Escora 1", None))
-        self.label_ug2_4.setText(QCoreApplication.translate("Form", u"UG 3", None))
+        self.label_temperatura_7.setText(QCoreApplication.translate("Form", u"Manca L.A. Escora 2", None))
+        self.label_temperatura_8.setText(QCoreApplication.translate("Form", u"Manca L.A. Contra escora 1", None))
+        self.label_temperatura_9.setText(QCoreApplication.translate("Form", u"Manca L.A. Contra escora 2", None))
+        self.label_ug1_2.setText(QCoreApplication.translate("Form", u"UG 1", None))
+        self.label_ug2_2.setText(QCoreApplication.translate("Form", u"UG 2", None))
+        self.label_perdagrade.setText(QCoreApplication.translate("Form", u"Perda na grade", None))
         self.label_potencia_ug1.setText(QCoreApplication.translate("Form", u"Pot\u00eancia", None))
         self.label_setpoint_ug1.setText(QCoreApplication.translate("Form", u"Setpoint", None))
         self.label_etapa_ug1.setText(QCoreApplication.translate("Form", u"Etapa Atual/Alvo", None))
@@ -1381,7 +1070,7 @@ class Ui_Form(object):
         self.label_3.setText(QCoreApplication.translate("Form", u"Tens\u00e3o na linha", None))
         self.pushButton_pulse_trip_linha.setText(QCoreApplication.translate("Form", u"Pulsar", None))
         self.pushButton_set_trip_linha.setText(QCoreApplication.translate("Form", u"Tens\u00e3o -> 0V", None))
-        self.pushButton_reset_trip_linha.setText(QCoreApplication.translate("Form", u"Tens\u00e3o -> 69kV", None))
+        self.pushButton_reset_trip_linha.setText(QCoreApplication.translate("Form", u"Tens\u00e3o -> 34,5kV", None))
         self.checkBox_sinal_trip_ug1.setText(QCoreApplication.translate("Form", u"Sinal de TRIP", None))
         self.pushButton_pulso_trip_ug1.setText(QCoreApplication.translate("Form", u"Pulso TRIP HIGH, 2s, LOW", None))
         self.pushButton_set_trip_high_ug1.setText(QCoreApplication.translate("Form", u" TRIP -> HIGH", None))
@@ -1401,18 +1090,5 @@ class Ui_Form(object):
         self.pushButton_set_trip_high_ug2.setText(QCoreApplication.translate("Form", u" TRIP -> HIGH", None))
         self.pushButton_set_trip_low_ug2.setText(QCoreApplication.translate("Form", u"TRIP -> LOW", None))
         self.pushButton_reconhece_reset_ug2.setText(QCoreApplication.translate("Form", u"Reconhece Reset", None))
-        self.pushButton_partir_ug3.setText(QCoreApplication.translate("Form", u"Partir", None))
-        self.pushButton_parar_ug3.setText(QCoreApplication.translate("Form", u"Parar", None))
-        self.checkBox_sinal_trip_ug3.setText(QCoreApplication.translate("Form", u"Sinal de TRIP", None))
-        self.pushButton_pulso_trip_ug3.setText(QCoreApplication.translate("Form", u"Pulso TRIP HIGH, 2s, LOW", None))
-        self.pushButton_set_trip_high_ug3.setText(QCoreApplication.translate("Form", u" TRIP -> HIGH", None))
-        self.pushButton_set_trip_low_ug3.setText(QCoreApplication.translate("Form", u"TRIP -> LOW", None))
-        self.pushButton_reconhece_reset_ug3.setText(QCoreApplication.translate("Form", u"Reconhece Reset", None))
-        self.label_potencia_ug3.setText(QCoreApplication.translate("Form", u"Pot\u00eancia", None))
-        self.label_setpoint_ug3.setText(QCoreApplication.translate("Form", u"Setpoint", None))
-        self.label_etapa_ug3.setText(QCoreApplication.translate("Form", u"Etapa Atual/Alvo", None))
-        self.label_bitsalarme_ug3.setText(QCoreApplication.translate("Form", u"Bits Alarme", None))
-        self.label_q_ug3.setText(QCoreApplication.translate("Form", u"Q UG", None))
-        self.label_4.setText("")
     # retranslateUi
 

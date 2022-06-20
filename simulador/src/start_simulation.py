@@ -1,10 +1,7 @@
 import logging
 import threading
-from random import randint
 from sys import stdout
 import threading
-from time import sleep
-
 import gui.gui as gui
 import planta
 import controlador
