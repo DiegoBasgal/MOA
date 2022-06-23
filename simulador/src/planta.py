@@ -63,6 +63,7 @@ class Planta:
 
         cust_data_bank = DataBank()
         self.server = ModbusServer(host='0.0.0.0', port=5002, no_block=True, data_bank=cust_data_bank)
+        self.server.start()
         for R in REG:
             self.server.data_bank.set_holding_registers(int(REG[R]),[0])
 
@@ -216,13 +217,7 @@ class Planta:
                     self.server.data_bank.set_holding_registers(REG["REG_UG{}_Temperatura_08".format(ug.id)], [round(self.shared_dict["temperatura_ug{}_lna_casquilho".format(ug.id)])])
                     self.server.data_bank.set_holding_registers(REG["REG_UG{}_Temperatura_09".format(ug.id)], [round(self.shared_dict["temperatura_ug{}_contra_escora_2".format(ug.id)])])
 
-                self.server.data_bank.set_holding_registers(REG["REG_USINA_NivelBarragem"], [round((self.shared_dict["nv_montante"]-819)*100)])
-                self.server.data_bank.set_holding_registers(REG["REG_USINA_NivelCanalAducao"], [round((self.shared_dict["nv_jusante"]-819)*100)]) # TODO ?
-                self.server.data_bank.set_holding_registers(REG["REG_USINA_Subestacao_PotenciaAtivaMedia"], [round(self.shared_dict["potencia_kw_se"])])
-                self.server.data_bank.set_holding_registers(REG["REG_USINA_Subestacao_TensaoRS"], [round(self.shared_dict["tensao_na_linha"]/10)])
-                self.server.data_bank.set_holding_registers(REG["REG_USINA_Subestacao_TensaoST"], [round(self.shared_dict["tensao_na_linha"]/10)])
-                self.server.data_bank.set_holding_registers(REG["REG_USINA_Subestacao_TensaoTR"], [round(self.shared_dict["tensao_na_linha"]/10)])
-
+                
                 # FIM COMPORTAMENTO USINA
                 lock.release()
                 tempo_restante = self.passo_simulacao - \
