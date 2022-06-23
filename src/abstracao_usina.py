@@ -42,9 +42,11 @@ class Usina:
         # Inicializa Objs da usina
         from src.UG1 import UnidadeDeGeracao1
         from src.UG2 import UnidadeDeGeracao2
+        from src.UG3 import UnidadeDeGeracao3
         self.ug1 = UnidadeDeGeracao1(1, cfg=self.cfg, leituras_usina=self.leituras)
         self.ug2 = UnidadeDeGeracao2(2, cfg=self.cfg, leituras_usina=self.leituras)
-        self.ugs = [self.ug1, self.ug2]
+        self.ug3 = UnidadeDeGeracao3(3, cfg=self.cfg, leituras_usina=self.leituras)
+        self.ugs = [self.ug1, self.ug2, self.ug3]
 
         self.avisado_em_eletrica = False
 
@@ -71,6 +73,9 @@ class Usina:
         self.tentativas_de_normalizar = 0
         self.ts_nv = []
         self.condicionadores = []
+        self.__split1 = False
+        self.__split2 = False
+        self.__split3 = False
         clp = ModbusClient(
             host=self.cfg["USN_slave_ip"],
             port=self.cfg["USN_slave_porta"],
@@ -370,7 +375,7 @@ class Usina:
         # ajuste inicial ie
         if self.cfg["saida_ie_inicial"] == "auto":
             self.controle_ie = (
-                self.ug1.leitura_potencia.valor + self.ug2.leitura_potencia.valor
+                self.ug1.leitura_potencia.valor + self.ug2.leitura_potencia.valor + self.ug3.leitura_potencia.valor
             ) / self.cfg["pot_maxima_alvo"]
         else:
             self.controle_ie = self.cfg["saida_ie_inicial"]
@@ -380,8 +385,10 @@ class Usina:
         # ajuste inicial SP
         logger.debug("self.ug1.leitura_potencia.valor -> {}".format(self.ug1.leitura_potencia.valor))
         logger.debug("self.ug2.leitura_potencia.valor -> {}".format(self.ug2.leitura_potencia.valor))
+        logger.debug("self.ug3.leitura_potencia.valor -> {}".format(self.ug3.leitura_potencia.valor))
         self.ug1.setpoint = self.ug1.leitura_potencia.valor
         self.ug2.setpoint = self.ug2.leitura_potencia.valor
+        self.ug3.setpoint = self.ug3.leitura_potencia.valor
 
     @property
     def nv_montante(self):
@@ -418,6 +425,10 @@ class Usina:
         if not ping(self.cfg["UG2_slave_ip"]):
             logger.warning("CLP UG2 não respondeu a tentativa de comunicação!")
             self.ug2.forcar_estado_restrito()
+
+        if not ping(self.cfg["UG3_slave_ip"]):
+            logger.warning("CLP UG3 não respondeu a tentativa de comunicação!")
+            self.ug3.forcar_estado_restrito()
 
         self.clp_online = True
         self.clp_emergencia_acionada = 0
@@ -460,78 +471,82 @@ class Usina:
         self.db_emergencia_acionada = int(parametros["emergencia_acionada"])
 
         # Limites de operação das UGS
+        # for ug in self.ugs:
         for ug in self.ugs:
-            ug.prioridade = int(parametros["ug{}_prioridade".format(ug.id)])
-            """
-            ug.condicionador_perda_na_grade.valor_base = float(
-                parametros["ug{}_perda_grade_alerta".format(ug.id)]
-            )
-            ug.condicionador_perda_na_grade.valor_limite = float(
-                parametros["ug{}_perda_grade_maxima".format(ug.id)]
-            )
-            ug.condicionador_temperatura_enrolamento_fase_r.valor_base = float(
-                parametros["temperatura_alerta_enrolamento_fase_r_ug{}".format(ug.id)]
-            )
-            ug.condicionador_temperatura_enrolamento_fase_s.valor_base = float(
-                parametros["temperatura_alerta_enrolamento_fase_s_ug{}".format(ug.id)]
-            )
-            ug.condicionador_temperatura_enrolamento_fase_t.valor_base = float(
-                parametros["temperatura_alerta_enrolamento_fase_t_ug{}".format(ug.id)]
-            )
-            ug.condicionador_temperatura_mancal_la_casquilho.valor_base = float(
-                parametros["temperatura_alerta_mancal_la_casquilho_ug{}".format(ug.id)]
-            )
-            ug.condicionador_temperatura_mancal_la_contra_escora_1.valor_base = float(
-                parametros[
-                    "temperatura_alerta_mancal_la_contra_escora_1_ug{}".format(ug.id)
-                ]
-            )
-            ug.condicionador_temperatura_mancal_la_contra_escora_2.valor_base = float(
-                parametros[
-                    "temperatura_alerta_mancal_la_contra_escora_2_ug{}".format(ug.id)
-                ]
-            )
-            ug.condicionador_temperatura_mancal_la_escora_1.valor_base = float(
-                parametros["temperatura_alerta_mancal_la_escora_1_ug{}".format(ug.id)]
-            )
-            ug.condicionador_temperatura_mancal_la_escora_2.valor_base = float(
-                parametros["temperatura_alerta_mancal_la_escora_2_ug{}".format(ug.id)]
-            )
-            ug.condicionador_temperatura_mancal_lna_casquilho.valor_base = float(
-                parametros["temperatura_alerta_mancal_lna_casquilho_ug{}".format(ug.id)]
-            )
-            ug.condicionador_temperatura_enrolamento_fase_r.valor_limite = float(
-                parametros["temperatura_limite_enrolamento_fase_r_ug{}".format(ug.id)]
-            )
-            ug.condicionador_temperatura_enrolamento_fase_s.valor_limite = float(
-                parametros["temperatura_limite_enrolamento_fase_s_ug{}".format(ug.id)]
-            )
-            ug.condicionador_temperatura_enrolamento_fase_t.valor_limite = float(
-                parametros["temperatura_limite_enrolamento_fase_t_ug{}".format(ug.id)]
-            )
-            ug.condicionador_temperatura_mancal_la_casquilho.valor_limite = float(
-                parametros["temperatura_limite_mancal_la_casquilho_ug{}".format(ug.id)]
-            )
-            ug.condicionador_temperatura_mancal_la_contra_escora_1.valor_limite = float(
-                parametros[
-                    "temperatura_limite_mancal_la_contra_escora_1_ug{}".format(ug.id)
-                ]
-            )
-            ug.condicionador_temperatura_mancal_la_contra_escora_2.valor_limite = float(
-                parametros[
-                    "temperatura_limite_mancal_la_contra_escora_2_ug{}".format(ug.id)
-                ]
-            )
-            ug.condicionador_temperatura_mancal_la_escora_1.valor_limite = float(
-                parametros["temperatura_limite_mancal_la_escora_1_ug{}".format(ug.id)]
-            )
-            ug.condicionador_temperatura_mancal_la_escora_2.valor_limite = float(
-                parametros["temperatura_limite_mancal_la_escora_2_ug{}".format(ug.id)]
-            )
-            ug.condicionador_temperatura_mancal_lna_casquilho.valor_limite = float(
-                parametros["temperatura_limite_mancal_lna_casquilho_ug{}".format(ug.id)]
-            )
-            """
+            try:
+                ug.prioridade = int(parametros["ug{}_prioridade".format(ug.id)])
+                """
+                ug.condicionador_perda_na_grade.valor_base = float(
+                    parametros["ug{}_perda_grade_alerta".format(ug.id)]
+                )
+                ug.condicionador_perda_na_grade.valor_limite = float(
+                    parametros["ug{}_perda_grade_maxima".format(ug.id)]
+                )
+                ug.condicionador_temperatura_enrolamento_fase_r.valor_base = float(
+                    parametros["temperatura_alerta_enrolamento_fase_r_ug{}".format(ug.id)]
+                )
+                ug.condicionador_temperatura_enrolamento_fase_s.valor_base = float(
+                    parametros["temperatura_alerta_enrolamento_fase_s_ug{}".format(ug.id)]
+                )
+                ug.condicionador_temperatura_enrolamento_fase_t.valor_base = float(
+                    parametros["temperatura_alerta_enrolamento_fase_t_ug{}".format(ug.id)]
+                )
+                ug.condicionador_temperatura_mancal_la_casquilho.valor_base = float(
+                    parametros["temperatura_alerta_mancal_la_casquilho_ug{}".format(ug.id)]
+                )
+                ug.condicionador_temperatura_mancal_la_contra_escora_1.valor_base = float(
+                    parametros[
+                        "temperatura_alerta_mancal_la_contra_escora_1_ug{}".format(ug.id)
+                    ]
+                )
+                ug.condicionador_temperatura_mancal_la_contra_escora_2.valor_base = float(
+                    parametros[
+                        "temperatura_alerta_mancal_la_contra_escora_2_ug{}".format(ug.id)
+                    ]
+                )
+                ug.condicionador_temperatura_mancal_la_escora_1.valor_base = float(
+                    parametros["temperatura_alerta_mancal_la_escora_1_ug{}".format(ug.id)]
+                )
+                ug.condicionador_temperatura_mancal_la_escora_2.valor_base = float(
+                    parametros["temperatura_alerta_mancal_la_escora_2_ug{}".format(ug.id)]
+                )
+                ug.condicionador_temperatura_mancal_lna_casquilho.valor_base = float(
+                    parametros["temperatura_alerta_mancal_lna_casquilho_ug{}".format(ug.id)]
+                )
+                ug.condicionador_temperatura_enrolamento_fase_r.valor_limite = float(
+                    parametros["temperatura_limite_enrolamento_fase_r_ug{}".format(ug.id)]
+                )
+                ug.condicionador_temperatura_enrolamento_fase_s.valor_limite = float(
+                    parametros["temperatura_limite_enrolamento_fase_s_ug{}".format(ug.id)]
+                )
+                ug.condicionador_temperatura_enrolamento_fase_t.valor_limite = float(
+                    parametros["temperatura_limite_enrolamento_fase_t_ug{}".format(ug.id)]
+                )
+                ug.condicionador_temperatura_mancal_la_casquilho.valor_limite = float(
+                    parametros["temperatura_limite_mancal_la_casquilho_ug{}".format(ug.id)]
+                )
+                ug.condicionador_temperatura_mancal_la_contra_escora_1.valor_limite = float(
+                    parametros[
+                        "temperatura_limite_mancal_la_contra_escora_1_ug{}".format(ug.id)
+                    ]
+                )
+                ug.condicionador_temperatura_mancal_la_contra_escora_2.valor_limite = float(
+                    parametros[
+                        "temperatura_limite_mancal_la_contra_escora_2_ug{}".format(ug.id)
+                    ]
+                )
+                ug.condicionador_temperatura_mancal_la_escora_1.valor_limite = float(
+                    parametros["temperatura_limite_mancal_la_escora_1_ug{}".format(ug.id)]
+                )
+                ug.condicionador_temperatura_mancal_la_escora_2.valor_limite = float(
+                    parametros["temperatura_limite_mancal_la_escora_2_ug{}".format(ug.id)]
+                )
+                ug.condicionador_temperatura_mancal_lna_casquilho.valor_limite = float(
+                    parametros["temperatura_limite_mancal_lna_casquilho_ug{}".format(ug.id)]
+                )
+                """
+            except KeyError as e:
+                logger.exception(e)
 
         # nv_minimo
         self.cfg["nv_minimo"] = float(parametros["nv_minimo"])
@@ -710,7 +725,7 @@ class Usina:
             )
             DataBank.set_words(
                 self.cfg["REG_MOA_OUT_SETPOINT"],
-                [self.ug1.setpoint + self.ug2.setpoint],
+                [self.ug1.setpoint + self.ug2.setpoint + self.ug3.setpoint],
             )
             DataBank.set_words(
                 self.cfg["REG_MOA_OUT_BLOCK_UG1"],
@@ -720,6 +735,10 @@ class Usina:
                 self.cfg["REG_MOA_OUT_BLOCK_UG2"],
                 [1 if self.ug2.enviar_trip_eletrico else 0]
             )
+            DataBank.set_words(
+                self.cfg["REG_MOA_OUT_BLOCK_UG3"],
+                [1 if self.ug3.enviar_trip_eletrico else 0]
+            )
 
         else:
             DataBank.set_words(self.cfg["REG_MOA_OUT_EMERG"], [0])
@@ -727,6 +746,7 @@ class Usina:
             DataBank.set_words(self.cfg["REG_MOA_OUT_SETPOINT"], [0])
             DataBank.set_words(self.cfg["REG_MOA_OUT_BLOCK_UG1"], [0])
             DataBank.set_words(self.cfg["REG_MOA_OUT_BLOCK_UG2"], [0])
+            DataBank.set_words(self.cfg["REG_MOA_OUT_BLOCK_UG3"], [0])
 
     def get_agendamentos_pendentes(self):
         """
@@ -908,6 +928,31 @@ class Usina:
                 if agendamento[3] == AGENDAMENTO_UG2_FORCAR_ESTADO_RESTRITO:
                     self.ug2.forcar_estado_restrito()
 
+                if agendamento[3] == AGENDAMENTO_UG3_ALTERAR_POT_LIMITE:
+                    try:
+                        novo = float(agendamento[5].replace(",", "."))
+                        self.cfg['pot_maxima_ug3'] = novo
+                        self.ug3.pot_disponivel = novo
+                    except Exception as e:
+                        logger.info(
+                            "Valor inválido no comando #{} ({} é inválido).".format(
+                                agendamento[0], agendamento[3]
+                            )
+                        )
+
+                if agendamento[3] == AGENDAMENTO_UG3_FORCAR_ESTADO_MANUAL:
+                    self.ug3.forcar_estado_manual()
+
+                if agendamento[3] == AGENDAMENTO_UG3_FORCAR_ESTADO_DISPONIVEL:
+                    self.ug3.forcar_estado_disponivel()
+
+                if agendamento[3] == AGENDAMENTO_UG3_FORCAR_ESTADO_INDISPONIVEL:
+                    self.ug3.forcar_estado_indisponivel()
+
+                if agendamento[3] == AGENDAMENTO_UG3_FORCAR_ESTADO_RESTRITO:
+                    self.ug3.forcar_estado_restrito()
+
+
                 # Após executar, indicar no banco de dados
                 self.db.update_agendamento(int(agendamento[0]), 1)
                 logger.info(
@@ -939,13 +984,61 @@ class Usina:
             return False
         elif len(ugs) == 0:
             return False
-        elif len(ugs) == 1:
-            pot_alvo = min(pot_alvo, self.cfg["pot_maxima_ug{}".format(ugs[0].id)])
-            ugs[0].setpoint = pot_alvo
-            return False
         else:
-
+            
             logger.debug("Distribuindo {}".format(pot_alvo))
+
+            sp = pot_alvo/self.cfg["pot_maxima_usina"] 
+
+            self.__split1 = True if sp > (0.133 + self.cfg["margem_pot_critica"]) else self.__split1
+            self.__split2 = True if sp > (0.333 + self.cfg["margem_pot_critica"]) and ugs[0].etapa_atual == UNIDADE_SINCRONIZADA else self.__split2
+            self.__split3 = True if sp > (0.666 + self.cfg["margem_pot_critica"]) and ugs[0].etapa_atual == UNIDADE_SINCRONIZADA and ugs[1].etapa_atual == UNIDADE_SINCRONIZADA else self.__split3
+            
+            self.__split3 = False if sp < (0.666) else self.__split3
+            self.__split2 = False if sp < (0.333) else self.__split2       
+            self.__split1 = False if sp < (0.133) else self.__split1
+
+            logger.debug(f"Sp {sp}")
+
+            if self.__split3:
+                logger.debug("Split 3")
+                ugs[0].setpoint = (
+                    sp * ugs[0].setpoint_maximo
+                )
+                ugs[1].setpoint = (
+                    sp * ugs[1].setpoint_maximo
+                )
+                ugs[2].setpoint = (
+                    sp * ugs[2].setpoint_maximo
+                )
+
+            elif self.__split2:
+                logger.debug("Split 2")
+                sp = sp * 3 / 2
+                ugs[0].setpoint = (
+                    sp * ugs[0].setpoint_maximo
+                )
+                ugs[1].setpoint = (
+                    sp * ugs[1].setpoint_maximo
+                )
+                ugs[2].setpoint = 0
+
+            elif self.__split1:
+                logger.debug("Split 1")
+                sp = sp * 3 / 1
+                ugs[0].setpoint = (
+                    sp * ugs[0].setpoint_maximo
+                )
+                ugs[1].setpoint = 0
+                ugs[2].setpoint = 0
+            else:
+                ugs[0].setpoint = 0
+                ugs[1].setpoint = 0
+                ugs[2].setpoint = 0
+
+            """
+            
+
             if 0.1 < pot_alvo < self.cfg["pot_minima"]:
                 logger.debug("0.1 < {} < self.cfg['pot_minima']".format(pot_alvo))
                 if len(ugs) > 0:
@@ -956,7 +1049,7 @@ class Usina:
                 pot_alvo = min(pot_alvo, self.pot_disp)
 
                 if len(ugs) == 0:
-                    return False
+                    return False                    
 
                 if (self.ug1.etapa_atual == UNIDADE_SINCRONIZADA
                     and self.ug2.etapa_atual == UNIDADE_SINCRONIZADA
@@ -979,6 +1072,7 @@ class Usina:
                     ugs[0].setpoint = max(self.cfg["pot_minima"], pot_alvo)
                     for ug in ugs[1:]:
                         ug.setpoint = 0
+            """
 
             for ug in self.ugs:
                 logger.debug("UG{} SP:{}".format(ug.id, ug.setpoint))
