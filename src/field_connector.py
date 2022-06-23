@@ -22,16 +22,20 @@ class FieldConnector:
             self.ug1_port = cfg["UG1_slave_porta"]
             self.ug2_ip = cfg["UG2_slave_ip"]
             self.ug2_port = cfg["UG2_slave_porta"]
+            self.ug3_ip = cfg["UG3_slave_ip"]
+            self.ug3_port = cfg["UG3_slave_porta"]
             self.usn_ip = cfg["USN_slave_ip"]
             self.usn_port = cfg["USN_slave_porta"]
             self.ug1_clp = ModbusClient(host=self.ug1_ip, port=self.ug1_port, timeout=5, unit_id=1, auto_open=True, auto_close=True)
             self.ug2_clp = ModbusClient(host=self.ug2_ip, port=self.ug2_port, timeout=5, unit_id=1, auto_open=True, auto_close=True)
+            self.ug3_clp = ModbusClient(host=self.ug3_ip, port=self.ug3_port, timeout=5, unit_id=1, auto_open=True, auto_close=True)
             self.usn_clp = ModbusClient(host=self.usn_ip, port=self.usn_port, timeout=5, unit_id=1, auto_open=True, auto_close=True)
 
 
             
         self.warned_ug1 = False
         self.warned_ug2 = False
+        self.warned_ug3 = False
 
     def desliga_controles_locais(self):
         self.usn_clp.write_single_register(REG_USINA_CtrlPotencia_ReligamentoLigar, 0)
@@ -46,6 +50,10 @@ class FieldConnector:
         self.ug2_clp.write_single_register(REG_UG2_CtrlPotencia_ModoNivelLigar, 0)
         self.ug2_clp.write_single_register(REG_UG2_CtrlPotencia_ModoPotenciaDesligar, 1)
         self.ug2_clp.write_single_register(REG_UG2_CtrlPotencia_ModoNivelDesligar, 1)
+        self.ug3_clp.write_single_register(REG_UG3_CtrlPotencia_ModoPotenciaLigar, 0)
+        self.ug3_clp.write_single_register(REG_UG3_CtrlPotencia_ModoNivelLigar, 0)
+        self.ug3_clp.write_single_register(REG_UG3_CtrlPotencia_ModoPotenciaDesligar, 1)
+        self.ug3_clp.write_single_register(REG_UG3_CtrlPotencia_ModoNivelDesligar, 1)
 
     def open(self):
         logger.debug("Opening Modbus")
@@ -54,6 +62,9 @@ class FieldConnector:
         
         if not self.ug2_clp.open():
             raise ModbusClientFailedToOpen("Modbus client ({}:{}) failed to open.".format(self.ug2_ip, self.ug2_port))
+                
+        if not self.ug3_clp.open():
+            raise ModbusClientFailedToOpen("Modbus client ({}:{}) failed to open.".format(self.ug3_ip, self.ug3_port))
         
         if not self.usn_clp.open():
             raise ModbusClientFailedToOpen("Modbus client ({}:{}) failed to open.".format(self.usn_ip, self.usn_port))
@@ -65,6 +76,7 @@ class FieldConnector:
         logger.debug("Closing Modbus")
         self.ug1_clp.close()
         self.ug2_clp.close()
+        self.ug3_clp.close()
         self.usn_clp.close()
         logger.debug("Closed Modbus")
 
@@ -83,20 +95,24 @@ class FieldConnector:
         logger.debug("Desliga emergencia")
         self.ug1_clp.write_single_register(REG_UG1_Operacao_EmergenciaLigar, 0)
         self.ug2_clp.write_single_register(REG_UG2_Operacao_EmergenciaLigar, 0)
+        self.ug3_clp.write_single_register(REG_UG3_Operacao_EmergenciaLigar, 0)
         self.usn_clp.write_single_register(REG_USINA_EmergenciaLigar, 0)
         self.ug1_clp.write_single_register(REG_UG1_Operacao_EmergenciaDesligar, 1)
         self.ug2_clp.write_single_register(REG_UG2_Operacao_EmergenciaDesligar, 1)
+        self.ug3_clp.write_single_register(REG_UG3_Operacao_EmergenciaDesligar, 1)
         self.usn_clp.write_single_register(REG_USINA_EmergenciaDesligar, 1)
         sleep(1)
         logger.debug("Reconhece alarmes")
         self.usn_clp.write_single_register(REG_USINA_ReconheceAlarmes, 1) 
         self.ug1_clp.write_single_register(REG_UG1_Operacao_PCH_CovoReconheceAlarmes, 1)
         self.ug2_clp.write_single_register(REG_UG2_Operacao_PCH_CovoReconheceAlarmes, 1)
+        self.ug3_clp.write_single_register(REG_UG3_Operacao_PCH_CovoReconheceAlarmes, 1)
         sleep(1)
         logger.debug("Reset alarmes")
         self.usn_clp.write_single_register(REG_USINA_ResetAlarmes, 1)
         self.ug1_clp.write_single_register(REG_UG1_Operacao_PCH_CovoResetAlarmes, 1)
         self.ug2_clp.write_single_register(REG_UG2_Operacao_PCH_CovoResetAlarmes, 1)
+        self.ug3_clp.write_single_register(REG_UG3_Operacao_PCH_CovoResetAlarmes, 1)
         sleep(5)
         logger.debug("Fecha Dj52L")  
         self.fechaDj52L()
@@ -106,16 +122,19 @@ class FieldConnector:
         self.usn_clp.write_single_register(REG_USINA_ReconheceAlarmes, 1) 
         self.ug1_clp.write_single_register(REG_UG1_Operacao_PCH_CovoReconheceAlarmes, 1)
         self.ug2_clp.write_single_register(REG_UG2_Operacao_PCH_CovoReconheceAlarmes, 1)
+        self.ug3_clp.write_single_register(REG_UG3_Operacao_PCH_CovoReconheceAlarmes, 1)
 
     def acionar_emergencia(self):
         logger.warning("FC: Acionando emergencia")
         self.usn_clp.write_single_register(REG_UG1_Operacao_EmergenciaLigar, 1)
         self.ug1_clp.write_single_register(REG_UG2_Operacao_EmergenciaLigar, 1)
-        self.ug2_clp.write_single_register(REG_USINA_EmergenciaLigar, 1)
+        self.ug1_clp.write_single_register(REG_UG3_Operacao_EmergenciaLigar, 1)
+        self.ug3_clp.write_single_register(REG_USINA_EmergenciaLigar, 1)
         sleep(1)
         self.usn_clp.write_single_register(REG_UG1_Operacao_EmergenciaLigar, 0)
         self.ug1_clp.write_single_register(REG_UG2_Operacao_EmergenciaLigar, 0)
-        self.ug2_clp.write_single_register(REG_USINA_EmergenciaLigar, 0)
+        self.ug1_clp.write_single_register(REG_UG3_Operacao_EmergenciaLigar, 0)
+        self.ug3_clp.write_single_register(REG_USINA_EmergenciaLigar, 0)
         #sleep(1)
         #self.usn_clp.write_single_register(REG_USINA_EmergenciaDesligar, 1)
         #self.ug1_clp.write_single_register(REG_UG1_Operacao_EmergenciaDesligar, 1)

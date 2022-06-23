@@ -48,6 +48,12 @@ class ParametrosUsina(models.Model):
     ug2_sinc = models.IntegerField()
     ug2_tempo = models.IntegerField()
     ug2_prioridade = models.IntegerField()
+    ug3_disp = models.DecimalField(max_digits=10, decimal_places=5)
+    ug3_pot = models.DecimalField(max_digits=10, decimal_places=5)
+    ug3_setpot = models.DecimalField(max_digits=10, decimal_places=5)
+    ug3_sinc = models.IntegerField()
+    ug3_tempo = models.IntegerField()
+    ug3_prioridade = models.IntegerField()
     valor_ie_inicial = models.DecimalField(max_digits=10, decimal_places=5)
     modo_de_escolha_das_ugs = models.IntegerField()
     # modo 1 = hora depois prioridade
@@ -71,17 +77,23 @@ class ParametrosUsina(models.Model):
 
     ug1_temp_alerta = models.DecimalField(max_digits=10, decimal_places=2)
     ug2_temp_alerta = models.DecimalField(max_digits=10, decimal_places=2)
+    ug3_temp_alerta = models.DecimalField(max_digits=10, decimal_places=2)
     ug1_temp_maxima = models.DecimalField(max_digits=10, decimal_places=2)
     ug2_temp_maxima = models.DecimalField(max_digits=10, decimal_places=2)
+    ug3_temp_maxima = models.DecimalField(max_digits=10, decimal_places=2)
     ug1_temp_mancal = models.DecimalField(max_digits=10, decimal_places=2)
     ug2_temp_mancal = models.DecimalField(max_digits=10, decimal_places=2)
+    ug3_temp_mancal = models.DecimalField(max_digits=10, decimal_places=2)
 
     ug1_perda_grade_alerta = models.DecimalField(max_digits=10, decimal_places=3)
     ug2_perda_grade_alerta = models.DecimalField(max_digits=10, decimal_places=3)
+    ug3_perda_grade_alerta = models.DecimalField(max_digits=10, decimal_places=3)
     ug1_perda_grade_maxima = models.DecimalField(max_digits=10, decimal_places=3)
     ug2_perda_grade_maxima = models.DecimalField(max_digits=10, decimal_places=3)
+    ug3_perda_grade_maxima = models.DecimalField(max_digits=10, decimal_places=3)
     ug1_perda_grade = models.DecimalField(max_digits=10, decimal_places=3)
     ug2_perda_grade = models.DecimalField(max_digits=10, decimal_places=3)
+    ug3_perda_grade = models.DecimalField(max_digits=10, decimal_places=3)
 
     pot_maxima_alvo = models.DecimalField(max_digits=10, decimal_places=5)
 
@@ -122,6 +134,26 @@ class ParametrosUsina(models.Model):
     temperatura_limite_mancal_la_escora_1_ug2 = models.DecimalField(max_digits=10, decimal_places=5)
     temperatura_limite_mancal_la_escora_2_ug2 = models.DecimalField(max_digits=10, decimal_places=5)
     temperatura_limite_mancal_lna_casquilho_ug2 = models.DecimalField(max_digits=10, decimal_places=5)
+
+
+    temperatura_alerta_enrolamento_fase_r_ug3 = models.DecimalField(max_digits=10, decimal_places=5)
+    temperatura_alerta_enrolamento_fase_s_ug3 = models.DecimalField(max_digits=10, decimal_places=5)
+    temperatura_alerta_enrolamento_fase_t_ug3 = models.DecimalField(max_digits=10, decimal_places=5)
+    temperatura_alerta_mancal_la_casquilho_ug3 = models.DecimalField(max_digits=10, decimal_places=5)
+    temperatura_alerta_mancal_la_contra_escora_1_ug3 = models.DecimalField(max_digits=10, decimal_places=5)
+    temperatura_alerta_mancal_la_contra_escora_2_ug3 = models.DecimalField(max_digits=10, decimal_places=5)
+    temperatura_alerta_mancal_la_escora_1_ug3 = models.DecimalField(max_digits=10, decimal_places=5)
+    temperatura_alerta_mancal_la_escora_2_ug3 = models.DecimalField(max_digits=10, decimal_places=5)
+    temperatura_alerta_mancal_lna_casquilho_ug3 = models.DecimalField(max_digits=10, decimal_places=5)    
+    temperatura_limite_enrolamento_fase_r_ug3 = models.DecimalField(max_digits=10, decimal_places=5)
+    temperatura_limite_enrolamento_fase_s_ug3 = models.DecimalField(max_digits=10, decimal_places=5)
+    temperatura_limite_enrolamento_fase_t_ug3 = models.DecimalField(max_digits=10, decimal_places=5)
+    temperatura_limite_mancal_la_casquilho_ug3 = models.DecimalField(max_digits=10, decimal_places=5)
+    temperatura_limite_mancal_la_contra_escora_1_ug3 = models.DecimalField(max_digits=10, decimal_places=5)
+    temperatura_limite_mancal_la_contra_escora_2_ug3 = models.DecimalField(max_digits=10, decimal_places=5)
+    temperatura_limite_mancal_la_escora_1_ug3 = models.DecimalField(max_digits=10, decimal_places=5)
+    temperatura_limite_mancal_la_escora_2_ug3 = models.DecimalField(max_digits=10, decimal_places=5)
+    temperatura_limite_mancal_lna_casquilho_ug3 = models.DecimalField(max_digits=10, decimal_places=5)
 
 
 class Comando(models.Model):

@@ -61,9 +61,10 @@ INPUTS = [IN_01, IN_02, IN_03, IN_04]
 OUTPUTS = [OUT_01, OUT_02, OUT_03, OUT_04, OUT_05, OUT_06, OUT_07, OUT_08, OUT_09, OUT_10]
 
 SAIDA_PRONTO = OUT_01
-SAIDA_BLOCK_UG1 = OUT_04
+SAIDA_BLOCK_UG1 = OUT_04                      
 SAIDA_BLOCK_UG2 = OUT_05
-SAIDA_MODO_AUTO = OUT_06
+SAIDA_BLOCK_UG3 = OUT_06
+SAIDA_MODO_AUTO = OUT_07
 
 class Painel(threading.Thread):
 
@@ -124,7 +125,8 @@ class Painel(threading.Thread):
     def run(self):
         
         block_ug1_activated = False
-        block_ug2_activated = False        
+        block_ug2_activated = False  
+        block_ug3_activated = False        
         panel_was_updated = False
         autonomous_mode_activated = False
         tentativas = 0
@@ -157,6 +159,12 @@ class Painel(threading.Thread):
                         block_ug2_activated = True if  reg_value == 1 else False
                     else:
                         logger.warning("Leitura incorreta do registrador 'REG_MOA_OUT_BLOCK_UG2({}) => '{}'.".format(self.cfg['REG_MOA_OUT_BLOCK_UG2'], reg_value))
+                    
+                    reg_value = self.modbus.read_holding_registers(self.cfg['REG_MOA_OUT_BLOCK_UG3'])[0]
+                    if reg_value == 0 or reg_value == 1:
+                        block_ug3_activated = True if  reg_value == 1 else False
+                    else:
+                        logger.warning("Leitura incorreta do registrador 'REG_MOA_OUT_BLOCK_UG3({}) => '{}'.".format(self.cfg['REG_MOA_OUT_BLOCK_UG3'], reg_value))
 
                     reg_value = self.modbus.read_holding_registers(self.cfg['REG_PAINEL_LIDO'])[0]
                     if reg_value == 0 or reg_value == 1:
@@ -196,13 +204,16 @@ class Painel(threading.Thread):
                         if autonomous_mode_activated:
                             gpio.output(SAIDA_BLOCK_UG1, block_ug1_activated)
                             gpio.output(SAIDA_BLOCK_UG2, block_ug2_activated)
+                            gpio.output(SAIDA_BLOCK_UG3, block_ug3_activated)
                         elif not autonomous_mode_activated: #If on manual, dont trip UGS
                             gpio.output(SAIDA_BLOCK_UG1, False)
                             gpio.output(SAIDA_BLOCK_UG2, False)
+                            gpio.output(SAIDA_BLOCK_UG3, False)
                     else:
                         self.blink(pin=SAIDA_MODO_AUTO)                    
                         gpio.output(SAIDA_BLOCK_UG1, False)
                         gpio.output(SAIDA_BLOCK_UG2, False)
+                        gpio.output(SAIDA_BLOCK_UG3, False)
                 else:
                     logger.error("Comunicação com o MOA falhou. Modbus did not open.")
                     self.blink(pin=[SAIDA_PRONTO,SAIDA_MODO_AUTO])

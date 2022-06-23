@@ -25,7 +25,6 @@ class MensageiroHandler(Handler):
         :param record:
         :return: True
         """
-        return True
 
         log_entry = self.format(record)
         try:
@@ -33,6 +32,7 @@ class MensageiroHandler(Handler):
         except Exception as e:
             print("Erro ao logar no telegram. Exception: {}.".format(repr(e)))
 
+        return True
         # Só dispara torpedos de voz em caso CRITICO (levelno >= 50)
         if record.levelno >= logging.CRITICAL:
             try:

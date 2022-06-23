@@ -376,7 +376,7 @@ class ControleRealizado(State):
 if __name__ == "__main__":
     # A escala de tempo é utilizada para acelerar as simulações do sistema
     # Utilizar 1 para testes sérios e 120 no máximo para testes simples
-    ESCALA_DE_TEMPO = 1
+    ESCALA_DE_TEMPO = 30
     if len(sys.argv) > 1:
         ESCALA_DE_TEMPO = int(sys.argv[1])
 
@@ -408,6 +408,7 @@ if __name__ == "__main__":
             logger.debug("Iniciando classe Usina")
             try:
                 usina = abstracao_usina.Usina(cfg, db)
+                usina.normalizar_emergencia()
                 usina.aguardando_reservatorio = 0
             except Exception as e:
                 logger.error(
@@ -460,7 +461,8 @@ if __name__ == "__main__":
         t_i = time.time()
         logger.debug("Executando estado: {}".format(sm.state.__class__.__name__))
         sm.exec()
-        t_restante = max(1 - (time.time() - t_i), 0) / ESCALA_DE_TEMPO
+        t_restante = max(10 - (time.time() - t_i), 0) / ESCALA_DE_TEMPO
         if t_restante == 0:
-            logger.error("######################################################\n######################################################\nCiclo está demorando mais que o permitido\n######################################################\n######################################################")
+            print("######################################################\n######################################################\nCiclo está demorando mais que o permitido\n######################################################\n######################################################")
+            #logger.error("######################################################\n######################################################\nCiclo está demorando mais que o permitido\n######################################################\n######################################################")
         sleep(t_restante)

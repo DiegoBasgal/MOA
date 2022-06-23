@@ -38,6 +38,11 @@ Página de configuraço dos parametros usados pelo MOA.
                CHECKED
                {% endif %}/>
         <label for="2">Priorizar a UG2</label>
+        <input type="radio" id="escolha_ugs" name="escolha_ugs" value="3"
+        {% if escolha_ugs == 3 %}
+        CHECKED
+        {% endif %}/>
+        <label for="3">Priorizar a UG3</label>
     </div>
 
     <div style="margin-bottom: 20px;">
@@ -63,6 +68,11 @@ Página de configuraço dos parametros usados pelo MOA.
                 <td><input id="ug2_perda_grade_alerta" name="ug2_perda_grade_alerta" size=10 value="{{usina.ug2_perda_grade_alerta}}"/></td>
                 <td><input id="ug2_perda_grade_maxima" name="ug2_perda_grade_maxima" size=10 value="{{usina.ug2_perda_grade_maxima}}"/></td>
             </tr>
+            <tr>
+                <td>UG 3</td>
+                <td><input id="ug3_perda_grade_alerta" name="ug3_perda_grade_alerta" size=10 value="{{usina.ug3_perda_grade_alerta}}"/></td>
+                <td><input id="ug3_perda_grade_maxima" name="ug3_perda_grade_maxima" size=10 value="{{usina.ug3_perda_grade_maxima}}"/></td>
+            </tr>
         </table>
         <table style="text-align:center" border="solid 1px black">
             <tr>
@@ -71,6 +81,8 @@ Página de configuraço dos parametros usados pelo MOA.
                 <th>UG1 limite</th>
                 <th>UG2 alerta</th>
                 <th>UG2 limite</th>
+                <th>UG3 alerta</th>
+                <th>UG3 limite</th>
             </tr>
             <tr>
                 <td>Fase R</td>
@@ -78,6 +90,8 @@ Página de configuraço dos parametros usados pelo MOA.
                 <td><input id="temperatura_limite_enrolamento_fase_r_ug1" name="temperatura_limite_enrolamento_fase_r_ug1" size=10 value="{{usina.temperatura_limite_enrolamento_fase_r_ug1}}"/></td>
                 <td><input id="temperatura_alerta_enrolamento_fase_r_ug2" name="temperatura_alerta_enrolamento_fase_r_ug2" size=10 value="{{usina.temperatura_alerta_enrolamento_fase_r_ug2}}"/></td>
                 <td><input id="temperatura_limite_enrolamento_fase_r_ug2" name="temperatura_limite_enrolamento_fase_r_ug2" size=10 value="{{usina.temperatura_limite_enrolamento_fase_r_ug2}}"/></td>
+                <td><input id="temperatura_alerta_enrolamento_fase_r_ug3" name="temperatura_alerta_enrolamento_fase_r_ug3" size=10 value="{{usina.temperatura_alerta_enrolamento_fase_r_ug3}}"/></td>
+                <td><input id="temperatura_limite_enrolamento_fase_r_ug3" name="temperatura_limite_enrolamento_fase_r_ug3" size=10 value="{{usina.temperatura_limite_enrolamento_fase_r_ug3}}"/></td>
             </tr>
             <tr>
                 <td>Fase S</td>
@@ -85,6 +99,8 @@ Página de configuraço dos parametros usados pelo MOA.
                 <td><input id="temperatura_limite_enrolamento_fase_s_ug1" name="temperatura_limite_enrolamento_fase_s_ug1" size=10 value="{{usina.temperatura_limite_enrolamento_fase_s_ug1}}"/></td>
                 <td><input id="temperatura_alerta_enrolamento_fase_s_ug2" name="temperatura_alerta_enrolamento_fase_s_ug2" size=10 value="{{usina.temperatura_alerta_enrolamento_fase_s_ug2}}"/></td>
                 <td><input id="temperatura_limite_enrolamento_fase_s_ug2" name="temperatura_limite_enrolamento_fase_s_ug2" size=10 value="{{usina.temperatura_limite_enrolamento_fase_s_ug2}}"/></td>
+                <td><input id="temperatura_alerta_enrolamento_fase_s_ug3" name="temperatura_alerta_enrolamento_fase_s_ug3" size=10 value="{{usina.temperatura_alerta_enrolamento_fase_s_ug3}}"/></td>
+                <td><input id="temperatura_limite_enrolamento_fase_s_ug3" name="temperatura_limite_enrolamento_fase_s_ug3" size=10 value="{{usina.temperatura_limite_enrolamento_fase_s_ug3}}"/></td>
             </tr>
             <tr>
                 <td>Fase T</td>
@@ -92,6 +108,8 @@ Página de configuraço dos parametros usados pelo MOA.
                 <td><input id="temperatura_limite_enrolamento_fase_t_ug1" name="temperatura_limite_enrolamento_fase_t_ug1" size=10 value="{{usina.temperatura_limite_enrolamento_fase_t_ug1}}"/></td>
                 <td><input id="temperatura_alerta_enrolamento_fase_t_ug2" name="temperatura_alerta_enrolamento_fase_t_ug2" size=10 value="{{usina.temperatura_alerta_enrolamento_fase_t_ug2}}"/></td>
                 <td><input id="temperatura_limite_enrolamento_fase_t_ug2" name="temperatura_limite_enrolamento_fase_t_ug2" size=10 value="{{usina.temperatura_limite_enrolamento_fase_t_ug2}}"/></td>
+                <td><input id="temperatura_alerta_enrolamento_fase_t_ug3" name="temperatura_alerta_enrolamento_fase_t_ug3" size=10 value="{{usina.temperatura_alerta_enrolamento_fase_t_ug3}}"/></td>
+                <td><input id="temperatura_limite_enrolamento_fase_t_ug3" name="temperatura_limite_enrolamento_fase_t_ug3" size=10 value="{{usina.temperatura_limite_enrolamento_fase_t_ug3}}"/></td>
             </tr>
             <tr>
                 <td>Manca L.A. Casquilho</td>
@@ -99,6 +117,8 @@ Página de configuraço dos parametros usados pelo MOA.
                 <td><input id="temperatura_limite_mancal_la_casquilho_ug1" name="temperatura_limite_mancal_la_casquilho_ug1" size=10 value="{{usina.temperatura_limite_mancal_la_casquilho_ug1}}"/></td>
                 <td><input id="temperatura_alerta_mancal_la_casquilho_ug2" name="temperatura_alerta_mancal_la_casquilho_ug2" size=10 value="{{usina.temperatura_alerta_mancal_la_casquilho_ug2}}"/></td>
                 <td><input id="temperatura_limite_mancal_la_casquilho_ug2" name="temperatura_limite_mancal_la_casquilho_ug2" size=10 value="{{usina.temperatura_limite_mancal_la_casquilho_ug2}}"/></td>
+                <td><input id="temperatura_alerta_mancal_la_casquilho_ug3" name="temperatura_alerta_mancal_la_casquilho_ug3" size=10 value="{{usina.temperatura_alerta_mancal_la_casquilho_ug3}}"/></td>
+                <td><input id="temperatura_limite_mancal_la_casquilho_ug3" name="temperatura_limite_mancal_la_casquilho_ug3" size=10 value="{{usina.temperatura_limite_mancal_la_casquilho_ug3}}"/></td>
             </tr>
             <tr>
                 <td>Manca L.N.A. Casquilho</td>
@@ -106,6 +126,8 @@ Página de configuraço dos parametros usados pelo MOA.
                 <td><input id="temperatura_limite_mancal_lna_casquilho_ug1" name="temperatura_limite_mancal_lna_casquilho_ug1" size=10 value="{{usina.temperatura_limite_mancal_lna_casquilho_ug1}}"/></td>
                 <td><input id="temperatura_alerta_mancal_lna_casquilho_ug2" name="temperatura_alerta_mancal_lna_casquilho_ug2" size=10 value="{{usina.temperatura_alerta_mancal_lna_casquilho_ug2}}"/></td>
                 <td><input id="temperatura_limite_mancal_lna_casquilho_ug2" name="temperatura_limite_mancal_lna_casquilho_ug2" size=10 value="{{usina.temperatura_limite_mancal_lna_casquilho_ug2}}"/></td>
+                <td><input id="temperatura_alerta_mancal_lna_casquilho_ug3" name="temperatura_alerta_mancal_lna_casquilho_ug3" size=10 value="{{usina.temperatura_alerta_mancal_lna_casquilho_ug3}}"/></td>
+                <td><input id="temperatura_limite_mancal_lna_casquilho_ug3" name="temperatura_limite_mancal_lna_casquilho_ug3" size=10 value="{{usina.temperatura_limite_mancal_lna_casquilho_ug3}}"/></td>
             </tr>
             <tr>
                 <td>Manca L.A. Escora 1</td>
@@ -113,6 +135,8 @@ Página de configuraço dos parametros usados pelo MOA.
                 <td><input id="temperatura_limite_mancal_la_escora_1_ug1" name="temperatura_limite_mancal_la_escora_1_ug1" size=10 value="{{usina.temperatura_limite_mancal_la_escora_1_ug1}}"/></td>
                 <td><input id="temperatura_alerta_mancal_la_escora_1_ug2" name="temperatura_alerta_mancal_la_escora_1_ug2" size=10 value="{{usina.temperatura_alerta_mancal_la_escora_1_ug2}}"/></td>
                 <td><input id="temperatura_limite_mancal_la_escora_1_ug2" name="temperatura_limite_mancal_la_escora_1_ug2" size=10 value="{{usina.temperatura_limite_mancal_la_escora_1_ug2}}"/></td>
+                <td><input id="temperatura_alerta_mancal_la_escora_1_ug3" name="temperatura_alerta_mancal_la_escora_1_ug3" size=10 value="{{usina.temperatura_alerta_mancal_la_escora_1_ug3}}"/></td>
+                <td><input id="temperatura_limite_mancal_la_escora_1_ug3" name="temperatura_limite_mancal_la_escora_1_ug3" size=10 value="{{usina.temperatura_limite_mancal_la_escora_1_ug3}}"/></td>
             </tr>
             <tr>
                 <td>Manca L.A. Escora 2</td>
@@ -120,12 +144,16 @@ Página de configuraço dos parametros usados pelo MOA.
                 <td><input id="temperatura_limite_mancal_la_escora_2_ug1" name="temperatura_limite_mancal_la_escora_2_ug1" size=10 value="{{usina.temperatura_limite_mancal_la_escora_2_ug1}}"/></td>
                 <td><input id="temperatura_alerta_mancal_la_escora_2_ug2" name="temperatura_alerta_mancal_la_escora_2_ug2" size=10 value="{{usina.temperatura_alerta_mancal_la_escora_2_ug2}}"/></td>
                 <td><input id="temperatura_limite_mancal_la_escora_2_ug2" name="temperatura_limite_mancal_la_escora_2_ug2" size=10 value="{{usina.temperatura_limite_mancal_la_escora_2_ug2}}"/></td>
+                <td><input id="temperatura_alerta_mancal_la_escora_2_ug3" name="temperatura_alerta_mancal_la_escora_2_ug3" size=10 value="{{usina.temperatura_alerta_mancal_la_escora_2_ug3}}"/></td>
+                <td><input id="temperatura_limite_mancal_la_escora_2_ug3" name="temperatura_limite_mancal_la_escora_2_ug3" size=10 value="{{usina.temperatura_limite_mancal_la_escora_2_ug3}}"/></td>
             </tr>            <tr>
                 <td>Manca L.A. Contra escora 1</td>
                 <td><input id="temperatura_alerta_mancal_la_contra_escora_1_ug1" name="temperatura_alerta_mancal_la_contra_escora_1_ug1" size=10 value="{{usina.temperatura_alerta_mancal_la_contra_escora_1_ug1}}"/></td>
                 <td><input id="temperatura_limite_mancal_la_contra_escora_1_ug1" name="temperatura_limite_mancal_la_contra_escora_1_ug1" size=10 value="{{usina.temperatura_limite_mancal_la_contra_escora_1_ug1}}"/></td>
                 <td><input id="temperatura_alerta_mancal_la_contra_escora_1_ug2" name="temperatura_alerta_mancal_la_contra_escora_1_ug2" size=10 value="{{usina.temperatura_alerta_mancal_la_contra_escora_1_ug2}}"/></td>
                 <td><input id="temperatura_limite_mancal_la_contra_escora_1_ug2" name="temperatura_limite_mancal_la_contra_escora_1_ug2" size=10 value="{{usina.temperatura_limite_mancal_la_contra_escora_1_ug2}}"/></td>
+                <td><input id="temperatura_alerta_mancal_la_contra_escora_1_ug3" name="temperatura_alerta_mancal_la_contra_escora_1_ug3" size=10 value="{{usina.temperatura_alerta_mancal_la_contra_escora_1_ug3}}"/></td>
+                <td><input id="temperatura_limite_mancal_la_contra_escora_1_ug3" name="temperatura_limite_mancal_la_contra_escora_1_ug3" size=10 value="{{usina.temperatura_limite_mancal_la_contra_escora_1_ug3}}"/></td>
             </tr>
             <tr>
                 <td>Manca L.A. Contra escora 2</td>
@@ -133,6 +161,8 @@ Página de configuraço dos parametros usados pelo MOA.
                 <td><input id="temperatura_limite_mancal_la_contra_escora_2_ug1" name="temperatura_limite_mancal_la_contra_escora_2_ug1" size=10 value="{{usina.temperatura_limite_mancal_la_contra_escora_2_ug1}}"/></td>
                 <td><input id="temperatura_alerta_mancal_la_contra_escora_2_ug2" name="temperatura_alerta_mancal_la_contra_escora_2_ug2" size=10 value="{{usina.temperatura_alerta_mancal_la_contra_escora_2_ug2}}"/></td>
                 <td><input id="temperatura_limite_mancal_la_contra_escora_2_ug2" name="temperatura_limite_mancal_la_contra_escora_2_ug2" size=10 value="{{usina.temperatura_limite_mancal_la_contra_escora_2_ug2}}"/></td>
+                <td><input id="temperatura_alerta_mancal_la_contra_escora_2_ug3" name="temperatura_alerta_mancal_la_contra_escora_2_ug3" size=10 value="{{usina.temperatura_alerta_mancal_la_contra_escora_2_ug3}}"/></td>
+                <td><input id="temperatura_limite_mancal_la_contra_escora_2_ug3" name="temperatura_limite_mancal_la_contra_escora_2_ug3" size=10 value="{{usina.temperatura_limite_mancal_la_contra_escora_2_ug3}}"/></td>
             </tr>
 
         </table>

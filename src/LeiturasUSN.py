@@ -20,7 +20,7 @@ class LeiturasUSN:
             self.clp_usina,
             REG_USINA_NivelBarragem,
             1 / 100,
-            819
+            404
         )
         self.potencia_ativa_kW = LeituraModbus(
             "REG_USINA_Subestacao_PotenciaAtivaMedia",
@@ -50,7 +50,7 @@ class LeiturasUSN:
             self.clp_usina,
             REG_USINA_NivelCanalAducao,
             1 / 100,
-            819
+            404
         )
 
     
