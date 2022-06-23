@@ -216,6 +216,13 @@ class Planta:
                     self.server.data_bank.set_holding_registers(REG["REG_UG{}_Temperatura_07".format(ug.id)], [round(self.shared_dict["temperatura_ug{}_contra_escora_1".format(ug.id)])])
                     self.server.data_bank.set_holding_registers(REG["REG_UG{}_Temperatura_08".format(ug.id)], [round(self.shared_dict["temperatura_ug{}_lna_casquilho".format(ug.id)])])
                     self.server.data_bank.set_holding_registers(REG["REG_UG{}_Temperatura_09".format(ug.id)], [round(self.shared_dict["temperatura_ug{}_contra_escora_2".format(ug.id)])])
+                
+                self.server.data_bank.set_holding_registers(REG["REG_USINA_NivelBarragem"], [round((self.shared_dict["nv_montante"]-404)*100)])
+                self.server.data_bank.set_holding_registers(REG["REG_USINA_NivelCanalAducao"], [round((self.shared_dict["nv_jusante"]-404)*100)]) # TODO ?
+                self.server.data_bank.set_holding_registers(REG["REG_USINA_Subestacao_PotenciaAtivaMedia"], [round(self.shared_dict["potencia_kw_se"])])
+                self.server.data_bank.set_holding_registers(REG["REG_USINA_Subestacao_TensaoRS"], [round(self.shared_dict["tensao_na_linha"]/10)])
+                self.server.data_bank.set_holding_registers(REG["REG_USINA_Subestacao_TensaoST"], [round(self.shared_dict["tensao_na_linha"]/10)])
+                self.server.data_bank.set_holding_registers(REG["REG_USINA_Subestacao_TensaoTR"], [round(self.shared_dict["tensao_na_linha"]/10)])
 
                 
                 # FIM COMPORTAMENTO USINA
