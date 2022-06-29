@@ -107,7 +107,7 @@ class Usina:
         x = self.relé_86bf_atuado_falha_disjuntores 
         self.condicionadores.append(CondicionadorBase(x.descr, DEVE_INDISPONIBILIZAR, x))
                 
-        self.relé_86te_atuado_falha_trafo_elevador = LeituraModbusBit('01.04 - Relé 86TE Atuado (falha Trafo Elevador)', clp, REG_USINA_Alarme01, 4)
+        self. relé_86te_atuado_falha_trafo_elevador = LeituraModbusBit('01.04 - Relé 86TE Atuado (falha Trafo Elevador)', clp, REG_USINA_Alarme01, 4)
         x = self.relé_86te_atuado_falha_trafo_elevador 
         self.condicionadores.append(CondicionadorBase(x.descr, DEVE_INDISPONIBILIZAR, x))
                 
@@ -848,6 +848,11 @@ class Usina:
                     logger.info("Disparando mensagem teste (comando via agendamento).")
                     self.disparar_mensagem_teste()
 
+                if agendamento[3] == AGENDAMENTO_ACK_RST:
+                    logger.info("Enviando comandos de reconhece e reset (comando via agendamento).")
+                    self.ug1.reconhece_reset_alarmes()
+                    self.ug2.reconhece_reset_alarmes()
+
                 if agendamento[3] == AGENDAMENTO_INDISPONIBILIZAR:
                     # Coloca em emergência
                     logger.info("Indisponibilizando a usina (comando via agendamento).")
@@ -914,6 +919,26 @@ class Usina:
                 if agendamento[3] == AGENDAMENTO_UG1_FORCAR_ESTADO_RESTRITO:
                     self.ug1.forcar_estado_restrito()
 
+                if agendamento[3] == AGENDAMENTO_UG1_FORCAR_PARTIDA:
+                    logger.info("Recebido forçar partida UG1 (comando via agendamento).")
+                    self.ug1.partir()
+
+                if agendamento[3] == AGENDAMENTO_UG1_FORCAR_PARADA:
+                    logger.info("Recebido forçar parada UG1 (comando via agendamento).")
+                    self.ug1.parar()
+
+                if agendamento[3] == AGENDAMENTO_UG1_ALETRAR_POT_LIMITE:
+                    logger.info("Recebido alterar set-point UG1 (comando via agendamento).")
+                    try:
+                        novo = float(agendamento[2].replace(",", "."))
+                        self.ug1.enviar_setpoint(novo)
+                    except Exception as e:
+                        logger.info(
+                            "Valor inválido no comando #{} ({} é inválido).".format(
+                                agendamento[0], agendamento[3]
+                            )
+                        )
+
                 if agendamento[3] == AGENDAMENTO_UG2_ALETRAR_POT_LIMITE:
                     try:
                         novo = float(agendamento[2].replace(",", "."))
@@ -937,6 +962,25 @@ class Usina:
                 if agendamento[3] == AGENDAMENTO_UG2_FORCAR_ESTADO_RESTRITO:
                     self.ug2.forcar_estado_restrito()
 
+                if agendamento[3] == AGENDAMENTO_UG2_FORCAR_PARTIDA:
+                    logger.info("Recebido forçar partida UG2 (comando via agendamento).")
+                    self.ug2.partir()
+
+                if agendamento[3] == AGENDAMENTO_UG2_FORCAR_PARADA:
+                    logger.info("Recebido forçar parada UG2 (comando via agendamento).")
+                    self.ug2.parar()
+
+                if agendamento[3] == AGENDAMENTO_UG2_ALETRAR_POT_LIMITE:
+                    logger.info("Recebido alterar set-point UG2 (comando via agendamento).")
+                    try:
+                        novo = float(agendamento[2].replace(",", "."))
+                        self.ug2.enviar_setpoint(novo)
+                    except Exception as e:
+                        logger.info(
+                            "Valor inválido no comando #{} ({} é inválido).".format(
+                                agendamento[0], agendamento[3]
+                            )
+                        )
                 # Após executar, indicar no banco de dados
                 self.db.update_agendamento(int(agendamento[0]), 1)
                 logger.info(
