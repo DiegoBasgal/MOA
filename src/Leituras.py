@@ -7,6 +7,7 @@ __version__ = "0.1"
 __author__ = "Lucas Lavratti"
 
 import logging
+
 from pyModbusTCP.client import ModbusClient
 from src.modbus_mapa_antigo import *
 
@@ -97,6 +98,66 @@ class LeituraModbus(LeituraBase):
         try:
             if self.__modbus_client.open():
                 aux = self.__modbus_client.read_holding_registers(self.__registrador)[0]
+                if aux is not None:
+                    return aux
+                else:
+                    return 0
+            else:
+                raise ConnectionError("Erro na conexão modbus.")
+        except:
+            # ! TODO Tratar exceptions
+            # O que deve retornar caso não consiga comunicar?
+            # raise NotImplementedError
+            return 0
+            pass
+
+class LeituraModbusCoil(LeituraBase):
+    """
+    Classe implementa a base para leituras da unidade da geração utilizando modbus.
+    """
+
+    def __init__(
+        self,
+        descr: str,
+        modbus_client: ModbusClient,
+        registrador: int,
+        invertido: bool = False,
+    ):
+        super().__init__(descr)
+        self.__descr = descr
+        self.__modbus_client = modbus_client
+        self.__registrador = registrador
+        self.__invertido = invertido
+
+    @property
+    def valor(self) -> float:
+        """
+        Valor
+
+        Returns:
+            float: valor já tratado
+        """
+        if self.__invertido:
+            return False if self.raw else True
+        else:
+            return True if self.raw else False
+
+    @property
+    def raw(self) -> int:
+        """
+        Raw Dado Crú
+        Retorna o valor como lido da CLP, o inteiro unsigned contido no registrador
+
+        Raises:
+            ConnectionError: Erro caso a conexão falhe
+            NotImplementedError: [description]
+
+        Returns:
+            int: [description]
+        """
+        try:
+            if self.__modbus_client.open():
+                aux = self.__modbus_client.read_discrete_inputs(self.__registrador)[0]
                 if aux is not None:
                     return aux
                 else:
