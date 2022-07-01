@@ -4,7 +4,7 @@ voip.py
 Este módulo tem como objetivo a efetuar a comunicação por voip.
 O serviço de voip é fornecido pela nvoip e é acessado via web api.
 
-Painel Nvoip: http://painel.nvoip.com.br
+Painel Nvoip: https://painel.nvoip.com.br
 Acesso feito com as credênciais do Henrique.
 
 """
@@ -23,22 +23,22 @@ config_file = os.path.join(os.path.dirname(__file__), 'voip_config.json')
 with open(config_file, 'r') as file:
     config = json.load(file)
 
-audios_emerg = ['http://ritmoenergia.com.br/wp-content/uploads/2021/12/Emergencia-Alex.mp3',
-                'http://ritmoenergia.com.br/wp-content/uploads/2021/12/Emergencia-Amanda.mp3',
-                'http://ritmoenergia.com.br/wp-content/uploads/2021/12/Emergencia-Camila1.mp3',
-                'http://ritmoenergia.com.br/wp-content/uploads/2021/12/Emergencia-Camila2.mp3',
-                'http://ritmoenergia.com.br/wp-content/uploads/2021/12/Emergencia-Flavio.mp3',
-                'http://ritmoenergia.com.br/wp-content/uploads/2021/12/Emergencia-Lucas.mp3',
-                'http://ritmoenergia.com.br/wp-content/uploads/2021/12/Emergencia-Natali.mp3'
+audios_emerg = ['https://www.ritmoenergia.com.br/wp-content/uploads/2022/07/Emergencia-Alex.mp3',
+                'https://www.ritmoenergia.com.br/wp-content/uploads/2022/07/Emergencia-Amanda.mp3',
+                'https://www.ritmoenergia.com.br/wp-content/uploads/2022/07/Emergencia-Camila1.mp3',
+                'https://www.ritmoenergia.com.br/wp-content/uploads/2022/07/Emergencia-Camila2.mp3',
+                'https://www.ritmoenergia.com.br/wp-content/uploads/2022/07/Emergencia-Flavio.mp3',
+                'https://www.ritmoenergia.com.br/wp-content/uploads/2022/07/Emergencia-Lucas.mp3',
+                'https://www.ritmoenergia.com.br/wp-content/uploads/2022/07/Emergencia-Natali.mp3'
                 ]
 
-audios_teste = ['http://ritmoenergia.com.br/wp-content/uploads/2021/12/Teste-Alex.mp3',
-                'http://ritmoenergia.com.br/wp-content/uploads/2021/12/Teste-Amanda.mp3',
-                'http://ritmoenergia.com.br/wp-content/uploads/2021/12/Teste-Camila1.mp3',
-                'http://ritmoenergia.com.br/wp-content/uploads/2021/12/Teste-Camila2.mp3',
-                'http://ritmoenergia.com.br/wp-content/uploads/2021/12/Teste-Flavio.mp3',
-                'http://ritmoenergia.com.br/wp-content/uploads/2021/12/Teste-Lucas.mp3',
-                'http://ritmoenergia.com.br/wp-content/uploads/2021/12/Teste-Natali.mp3'
+audios_teste = ['https://www.ritmoenergia.com.br/wp-content/uploads/2022/07/Teste-Alex.mp3',
+                'https://www.ritmoenergia.com.br/wp-content/uploads/2022/07/Teste-Amanda.mp3',
+                'https://www.ritmoenergia.com.br/wp-content/uploads/2022/07/Teste-Camila1.mp3',
+                'https://www.ritmoenergia.com.br/wp-content/uploads/2022/07/Teste-Camila2.mp3',
+                'https://www.ritmoenergia.com.br/wp-content/uploads/2022/07/Teste-Flavio.mp3',
+                'https://www.ritmoenergia.com.br/wp-content/uploads/2022/07/Teste-Lucas.mp3',
+                'https://www.ritmoenergia.com.br/wp-content/uploads/2022/07/Teste-Natali.mp3'
                 ]
 
 caller_voip = config['caller_voip']
