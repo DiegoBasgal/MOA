@@ -23,22 +23,10 @@ config_file = os.path.join(os.path.dirname(__file__), 'voip_config.json')
 with open(config_file, 'r') as file:
     config = json.load(file)
 
-audios_emerg = ['https://www.ritmoenergia.com.br/wp-content/uploads/2022/07/Emergencia-Alex.mp3',
-                'https://www.ritmoenergia.com.br/wp-content/uploads/2022/07/Emergencia-Amanda.mp3',
-                'https://www.ritmoenergia.com.br/wp-content/uploads/2022/07/Emergencia-Camila1.mp3',
-                'https://www.ritmoenergia.com.br/wp-content/uploads/2022/07/Emergencia-Camila2.mp3',
-                'https://www.ritmoenergia.com.br/wp-content/uploads/2022/07/Emergencia-Flavio.mp3',
-                'https://www.ritmoenergia.com.br/wp-content/uploads/2022/07/Emergencia-Lucas.mp3',
-                'https://www.ritmoenergia.com.br/wp-content/uploads/2022/07/Emergencia-Natali.mp3'
+audios_emerg = ['https://www.ritmoenergia.com.br/wp-content/uploads/2022/07/Emergencia-SEB.mp3'
                 ]
 
-audios_teste = ['https://www.ritmoenergia.com.br/wp-content/uploads/2022/07/Teste-Alex.mp3',
-                'https://www.ritmoenergia.com.br/wp-content/uploads/2022/07/Teste-Amanda.mp3',
-                'https://www.ritmoenergia.com.br/wp-content/uploads/2022/07/Teste-Camila1.mp3',
-                'https://www.ritmoenergia.com.br/wp-content/uploads/2022/07/Teste-Camila2.mp3',
-                'https://www.ritmoenergia.com.br/wp-content/uploads/2022/07/Teste-Flavio.mp3',
-                'https://www.ritmoenergia.com.br/wp-content/uploads/2022/07/Teste-Lucas.mp3',
-                'https://www.ritmoenergia.com.br/wp-content/uploads/2022/07/Teste-Natali.mp3'
+audios_teste = ['https://www.ritmoenergia.com.br/wp-content/uploads/2022/07/Teste-Amanda-Generico.mp3',
                 ]
 
 caller_voip = config['caller_voip']
@@ -50,7 +38,6 @@ lista_de_contatos_padrao = [
                             #["Alex", "41996319885"], 
                             ["Escritorio", "41996570004"],
                             ["Lucas Lavratti", "41988591567"],
-                            ["Luis", "48991058729"], 
                             ["Henrique P5", "41999610053"],
                         ]
 
@@ -58,7 +45,6 @@ lista_de_contatos_padrao = [
 lista_de_contatos_teste = [
                             #["Alex", "41996319885"], 
                             ["Lucas Lavratti", "41988591567"],
-                            #["Luis", "48991058729"], 
                             ["Henrique P5", "41999610053"],
                         ]
 

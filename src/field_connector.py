@@ -26,10 +26,13 @@ class FieldConnector:
             self.ug3_port = cfg["UG3_slave_porta"]
             self.usn_ip = cfg["USN_slave_ip"]
             self.usn_port = cfg["USN_slave_porta"]
+            self.tda_ip = cfg["TDA_slave_ip"]
+            self.tda_port = cfg["TDA_slave_porta"]
             self.ug1_clp = ModbusClient(host=self.ug1_ip, port=self.ug1_port, timeout=5, unit_id=1, auto_open=True, auto_close=True)
             self.ug2_clp = ModbusClient(host=self.ug2_ip, port=self.ug2_port, timeout=5, unit_id=1, auto_open=True, auto_close=True)
             self.ug3_clp = ModbusClient(host=self.ug3_ip, port=self.ug3_port, timeout=5, unit_id=1, auto_open=True, auto_close=True)
             self.usn_clp = ModbusClient(host=self.usn_ip, port=self.usn_port, timeout=5, unit_id=1, auto_open=True, auto_close=True)
+            self.tda_clp = ModbusClient(host=self.tda_ip, port=self.tda_port, timeout=5, unit_id=1, auto_open=True, auto_close=True)
 
 
             
@@ -38,22 +41,8 @@ class FieldConnector:
         self.warned_ug3 = False
 
     def desliga_controles_locais(self):
-        self.usn_clp.write_single_register(REG_USINA_CtrlPotencia_ReligamentoLigar, 0)
-        self.usn_clp.write_single_register(REG_USINA_CtrlPotencia_ModoNivelLigar, 0)
-        self.usn_clp.write_single_register(REG_USINA_CtrlPotencia_ReligamentoDesligar, 1)
-        self.usn_clp.write_single_register(REG_USINA_CtrlPotencia_ModoNivelDesligar, 1)
-        self.ug1_clp.write_single_register(REG_UG1_CtrlPotencia_ModoPotenciaLigar, 0)
-        self.ug1_clp.write_single_register(REG_UG1_CtrlPotencia_ModoNivelLigar, 0)
-        self.ug1_clp.write_single_register(REG_UG1_CtrlPotencia_ModoPotenciaDesligar, 1)
-        self.ug1_clp.write_single_register(REG_UG1_CtrlPotencia_ModoNivelDesligar, 1)
-        self.ug2_clp.write_single_register(REG_UG2_CtrlPotencia_ModoPotenciaLigar, 0)
-        self.ug2_clp.write_single_register(REG_UG2_CtrlPotencia_ModoNivelLigar, 0)
-        self.ug2_clp.write_single_register(REG_UG2_CtrlPotencia_ModoPotenciaDesligar, 1)
-        self.ug2_clp.write_single_register(REG_UG2_CtrlPotencia_ModoNivelDesligar, 1)
-        self.ug3_clp.write_single_register(REG_UG3_CtrlPotencia_ModoPotenciaLigar, 0)
-        self.ug3_clp.write_single_register(REG_UG3_CtrlPotencia_ModoNivelLigar, 0)
-        self.ug3_clp.write_single_register(REG_UG3_CtrlPotencia_ModoPotenciaDesligar, 1)
-        self.ug3_clp.write_single_register(REG_UG3_CtrlPotencia_ModoNivelDesligar, 1)
+        self.tda_clp.write_single_register(REG_TDA_ComandosDigitais_MXW_Desab_Nivel, 1)
+        self.tda_clp.write_single_register(REG_TDA_ComandosDigitais_MXW_Desab_Religamento52L, 1)
 
     def open(self):
         logger.debug("Opening Modbus")
@@ -68,6 +57,9 @@ class FieldConnector:
         
         if not self.usn_clp.open():
             raise ModbusClientFailedToOpen("Modbus client ({}:{}) failed to open.".format(self.usn_ip, self.usn_port))
+                
+        if not self.tda_clp.open():
+            raise ModbusClientFailedToOpen("Modbus client ({}:{}) failed to open.".format(self.tda_ip, self.tda_port))
         
         logger.debug("Openned Modbus")
         return self
@@ -78,127 +70,86 @@ class FieldConnector:
         self.ug2_clp.close()
         self.ug3_clp.close()
         self.usn_clp.close()
+        self.tda_clp.close()
         logger.debug("Closed Modbus")
 
     def fechaDj52L(self):
         if self.get_flag_falha52L():
             return False
         else:
-            if self.usn_clp.read_holding_registers(REG_USINA_Subestacao_Disj52L)[0] & 2**1:
-                response = True
-            else:
-                response = self.usn_clp.write_single_register(REG_USINA_Disj52LFechar, 1)
-            return response
+            response = self.usn_clp.write_single_register(REG_SA_ComandosDigitais_MXW_Liga_DJ1, 1)
+            return self.get_flag_falha52L()
 
     def normalizar_emergencia(self):
         logger.info("Reconehce, reset, fecha Dj52L")
-        logger.debug("Desliga emergencia")
-        self.ug1_clp.write_single_register(REG_UG1_Operacao_EmergenciaLigar, 0)
-        self.ug2_clp.write_single_register(REG_UG2_Operacao_EmergenciaLigar, 0)
-        self.ug3_clp.write_single_register(REG_UG3_Operacao_EmergenciaLigar, 0)
-        self.usn_clp.write_single_register(REG_USINA_EmergenciaLigar, 0)
-        self.ug1_clp.write_single_register(REG_UG1_Operacao_EmergenciaDesligar, 1)
-        self.ug2_clp.write_single_register(REG_UG2_Operacao_EmergenciaDesligar, 1)
-        self.ug3_clp.write_single_register(REG_UG3_Operacao_EmergenciaDesligar, 1)
-        self.usn_clp.write_single_register(REG_USINA_EmergenciaDesligar, 1)
-        sleep(1)
-        logger.debug("Reconhece alarmes")
-        self.usn_clp.write_single_register(REG_USINA_ReconheceAlarmes, 1) 
-        self.ug1_clp.write_single_register(REG_UG1_Operacao_PCH_CovoReconheceAlarmes, 1)
-        self.ug2_clp.write_single_register(REG_UG2_Operacao_PCH_CovoReconheceAlarmes, 1)
-        self.ug3_clp.write_single_register(REG_UG3_Operacao_PCH_CovoReconheceAlarmes, 1)
-        sleep(1)
-        logger.debug("Reset alarmes")
-        self.usn_clp.write_single_register(REG_USINA_ResetAlarmes, 1)
-        self.ug1_clp.write_single_register(REG_UG1_Operacao_PCH_CovoResetAlarmes, 1)
-        self.ug2_clp.write_single_register(REG_UG2_Operacao_PCH_CovoResetAlarmes, 1)
-        self.ug3_clp.write_single_register(REG_UG3_Operacao_PCH_CovoResetAlarmes, 1)
+        logger.debug("Reconhece/Reset alarmes")
+        self.ug1_clp.write_single_register(REG_UG1_ComandosDigitais_MXW_ResetGeral, 1)
+        self.ug2_clp.write_single_register(REG_UG2_ComandosDigitais_MXW_ResetGeral, 1)
+        self.ug3_clp.write_single_register(REG_UG3_ComandosDigitais_MXW_ResetGeral, 1)
+        self.usn_clp.write_single_register(REG_SA_ComandosDigitais_MXW_ResetGeral, 1)
+        self.tda_clp.write_single_register(REG_TDA_ComandosDigitais_MXW_ResetGeral, 1)
         sleep(5)
         logger.debug("Fecha Dj52L")  
         self.fechaDj52L()
     
     def somente_reconhecer_emergencia(self):
-        logger.debug("Somente reconhece alarmes")
-        self.usn_clp.write_single_register(REG_USINA_ReconheceAlarmes, 1) 
-        self.ug1_clp.write_single_register(REG_UG1_Operacao_PCH_CovoReconheceAlarmes, 1)
-        self.ug2_clp.write_single_register(REG_UG2_Operacao_PCH_CovoReconheceAlarmes, 1)
-        self.ug3_clp.write_single_register(REG_UG3_Operacao_PCH_CovoReconheceAlarmes, 1)
+        logger.debug("Somente reconhece alarmes não implementado em SEB")
 
     def acionar_emergencia(self):
         logger.warning("FC: Acionando emergencia")
-        self.usn_clp.write_single_register(REG_UG1_Operacao_EmergenciaLigar, 1)
-        self.ug1_clp.write_single_register(REG_UG2_Operacao_EmergenciaLigar, 1)
-        self.ug1_clp.write_single_register(REG_UG3_Operacao_EmergenciaLigar, 1)
-        self.ug3_clp.write_single_register(REG_USINA_EmergenciaLigar, 1)
-        sleep(1)
-        self.usn_clp.write_single_register(REG_UG1_Operacao_EmergenciaLigar, 0)
-        self.ug1_clp.write_single_register(REG_UG2_Operacao_EmergenciaLigar, 0)
-        self.ug1_clp.write_single_register(REG_UG3_Operacao_EmergenciaLigar, 0)
-        self.ug3_clp.write_single_register(REG_USINA_EmergenciaLigar, 0)
-        #sleep(1)
-        #self.usn_clp.write_single_register(REG_USINA_EmergenciaDesligar, 1)
-        #self.ug1_clp.write_single_register(REG_UG1_Operacao_EmergenciaDesligar, 1)
-        #self.ug2_clp.write_single_register(REG_UG2_Operacao_EmergenciaDesligar, 1)
+        self.ug1_clp.write_single_register(REG_UG1_ComandosDigitais_MXW_EmergenciaViaSuper, 1)
+        self.ug2_clp.write_single_register(REG_UG2_ComandosDigitais_MXW_EmergenciaViaSuper, 1)
+        self.ug3_clp.write_single_register(REG_UG3_ComandosDigitais_MXW_EmergenciaViaSuper, 1)
+        sleep(5)
+        self.ug1_clp.write_single_register(REG_UG1_ComandosDigitais_MXW_EmergenciaViaSuper, 0)
+        self.ug2_clp.write_single_register(REG_UG2_ComandosDigitais_MXW_EmergenciaViaSuper, 0)
+        self.ug3_clp.write_single_register(REG_UG3_ComandosDigitais_MXW_EmergenciaViaSuper, 0)
+
 
     def get_flag_falha52L(self):
         
-        #dj52L_aberto
-        if self.usn_clp.read_holding_registers(REG_USINA_Subestacao_Disj52L)[0] & 2**0:
-            pass
-        
-        #dj52L_fechado
-        if self.usn_clp.read_holding_registers(REG_USINA_Subestacao_Disj52L)[0] & 2**1:
-            pass
-        
-        #dj52L_inconsistente
-        if self.usn_clp.read_holding_registers(REG_USINA_Subestacao_Disj52L)[0] & 2**2:
-            logger.info("dj52L_inconsistente")
-            return True
-        
-        #dj52L_trip
-        if self.usn_clp.read_holding_registers(REG_USINA_Subestacao_Disj52L)[0] & 2**3:
-            logger.info("dj52L_trip")
+        if not self.usn_clp.read_holding_registers(REG_SA_EntradasDigitais_MXI_SA_DisjDJ1_SuperBobAbert1)[0]:
+            logger.info("Sem DisjDJ1_SuperBobAbert1")
             return True
 
-        #Subestacao_Disj52LModoLocal: 
-        #if self.usn_clp.read_holding_registers(REG_USINA_Subestacao_Disj52L)[0] & 2**4:
-        #    return True
-        
-        #Subestacao_Disj52LModoRemoto: 
-        #if self.usn_clp.read_holding_registers(REG_USINA_Subestacao_Disj52L)[0] & 2**5:
-        #    return True
-
-        #dj52L_mola_carregada
-        if self.usn_clp.read_holding_registers(REG_USINA_Subestacao_Disj52L)[0] & 2**6:
-            pass
-
-        #Subestacao_Disj52LPressaoSF6Alarme
-        #if self.usn_clp.read_holding_registers(REG_USINA_Subestacao_Disj52L)[0] & 2**7:
-        #    return True
-
-        #dj52L_falta_vcc
-        if self.usn_clp.read_holding_registers(REG_USINA_Subestacao_Disj52L)[0] & 2**8:
-            logger.info("dj52L_falta_vcc")
+        if not self.usn_clp.read_holding_registers(REG_SA_EntradasDigitais_MXI_SA_DisjDJ1_SuperBobAbert2)[0]:
+            logger.info("Sem DisjDJ1_SuperBobAbert2")
             return True
-        
-        #dj52L_condicao_de_fechamento
-        if self.usn_clp.read_holding_registers(REG_USINA_Subestacao_Disj52L)[0] & 2**9:
-            pass
 
-        #Subestacao_Disj52LAbriu:
-        #if self.usn_clp.read_holding_registers(REG_USINA_Subestacao_Disj52L)[0] & 2**10:
-        #    return True
-                
-        #Subestacao_Disj52LFechou:
-        #if self.usn_clp.read_holding_registers(REG_USINA_Subestacao_Disj52L)[0] & 2**11:
-        #    return True
-
-        #dj52L_falha_fechamento
-        if self.usn_clp.read_holding_registers(REG_USINA_Subestacao_Disj52L)[0] & 2**12:
-            logger.info("dj52L_falha_fechamento")
+        if not self.usn_clp.read_holding_registers(REG_SA_EntradasDigitais_MXI_SA_DisjDJ1_Super125VccCiMot)[0]:
+            logger.info("Sem DisjDJ1_Super125VccCiMot")
             return True
-        
-        #Subestacao_Disj52LPressaoSF6Trip:
-        #if self.usn_clp.read_holding_registers(REG_USINA_Subestacao_Disj52L)[0] & 2**13:
-        #    return True
+
+        if not self.usn_clp.read_holding_registers(REG_SA_EntradasDigitais_MXI_SA_DisjDJ1_Super125VccCiCom)[0]:
+            logger.info("Sem DisjDJ1_Super125VccCiCom")
+            return True
+
+        if self.usn_clp.read_holding_registers(REG_SA_EntradasDigitais_MXI_SA_DisjDJ1_AlPressBaixa)[0]:
+            logger.info("DisjDJ1_AlPressBaixa")
+            return True
+
+        if self.usn_clp.read_holding_registers(REG_SA_RetornosDigitais_MXR_DJ1_FalhaInt)[0]:
+            logger.info("MXR_DJ1_FalhaInt")
+            return True
+
+        if self.usn_clp.read_holding_registers(REG_SA_EntradasDigitais_MXI_SA_DisjDJ1_BloqPressBaixa)[0]:
+            logger.info("DisjDJ1_BloqPressBaixa")
+            return True
+
+        if not self.usn_clp.read_holding_registers(REG_SA_EntradasDigitais_MXI_SA_DisjDJ1_Sup125VccBoFeAb1)[0]:
+            logger.info("Sem DisjDJ1_Sup125VccBoFeAb1")
+            return True
+
+        if not self.usn_clp.read_holding_registers(REG_SA_EntradasDigitais_MXI_SA_DisjDJ1_Sup125VccBoFeAb2)[0]:
+            logger.info("Sem DisjDJ1_Sup125VccBoFeAb2")
+            return True
+
+        if self.usn_clp.read_holding_registers(REG_SA_EntradasDigitais_MXI_SA_DisjDJ1_Local)[0]:
+            logger.info("DisjDJ1_Local")
+            return True
+
+        if self.usn_clp.read_holding_registers(REG_SA_EntradasDigitais_MXI_SA_DisjDJ1_MolaDescarregada)[0]:
+            logger.info("DisjDJ1_MolaDescarregada")
+            return True
+            
         return False

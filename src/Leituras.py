@@ -9,6 +9,7 @@ __author__ = "Lucas Lavratti"
 import logging
 
 from pyModbusTCP.client import ModbusClient
+from src import modbus_mapa_antigo
 from src.modbus_mapa_antigo import *
 
 
@@ -217,6 +218,61 @@ class LeituraDelta(LeituraBase):
         """
         return self.__leitura_A.valor - self.__leitura_B.valor
 
+
+class LeituraComposta(LeituraBase):
+    def __init__(self, descr: str, leitura1: LeituraBase,
+                                   leitura2: LeituraBase = None,
+                                   leitura3: LeituraBase = None,
+                                   leitura4: LeituraBase = None,
+                                   leitura5: LeituraBase = None,
+                                   leitura6: LeituraBase = None,
+                                   leitura7: LeituraBase = None,
+                                   leitura8: LeituraBase = None):
+        super().__init__(descr)
+        self.__leitura1 = leitura1
+        self.__leitura2 = leitura2
+        self.__leitura3 = leitura3
+        self.__leitura4 = leitura4
+        self.__leitura5 = leitura5
+        self.__leitura6 = leitura6
+        self.__leitura7 = leitura7
+        self.__leitura8 = leitura8
+
+    @property
+    def valor(self) -> float:
+        """
+        Valor
+
+        Returns:
+            float: 1*leitura1 + 2*leitura2 + 4*leitura3 + 8*leitura4...
+        """
+        res = 0
+        if self.__leitura1 is not None:
+            if self.__leitura1.valor:
+                res += 2**0
+        if self.__leitura2 is not None:
+            if self.__leitura2.valor:
+                res += 2**1
+        if self.__leitura3 is not None:
+            if self.__leitura3.valor:
+                res += 2**2
+        if self.__leitura4 is not None:
+            if self.__leitura4.valor:
+                res += 2**3
+        if self.__leitura5 is not None:
+            if self.__leitura5.valor:
+                res += 2**4
+        if self.__leitura6 is not None:
+            if self.__leitura6.valor:
+                res += 2**5
+        if self.__leitura7 is not None:
+            if self.__leitura7.valor:
+                res += 2**6
+        if self.__leitura8 is not None:
+            if self.__leitura8.valor:
+                res += 2**7
+        return res
+
 class LeituraDebug(LeituraBase):
     def __init__(self, descr: str) -> None:
         super().__init__(descr)
@@ -228,3 +284,34 @@ class LeituraDebug(LeituraBase):
     @valor.setter
     def valor(self, var):
         self.__valor = var
+
+
+"""
+8*WEG_Drivers.G1.RetornosDigitais.MXR_PartindoEmAuto +
+4*WEG_Drivers.G1.EntradasDigitais.MXI_RV_MaquinaParada + 
+2*WEG_Drivers.G1.RetornosDigitais.MXR_ParandoEmAuto + 
+1*WEG_Drivers.G1.EntradasDigitais.MXI_DisjGeradorFechado
+
+0 Inválido
+1 Em operação
+2-3 Parando
+4-7 Quina Parada
+8-15 Partindo
+
+from modbus_mapa_antigo import *
+from time import sleep
+mbc = ModbusClient(host="192.168.0.52", auto_open=True, auto_close=True)
+MXI_DisjGeradorFechado = LeituraModbusCoil(descr="MXR_PartindoEmAuto",modbus_client=mbc, registrador=REG_UG1_DisjGeradorFechado)
+MXR_ParandoEmAuto = LeituraModbusCoil(descr="MXR_PartindoEmAuto",modbus_client=mbc, registrador=REG_UG1_RetornosDigitais_MXR_ParandoEmAuto)
+MXI_RV_MaquinaParada = LeituraModbusCoil(descr="MXR_PartindoEmAuto",modbus_client=mbc, registrador=REG_UG1_RV_MaquinaParada)
+MXR_PartindoEmAuto = LeituraModbusCoil(descr="MXR_PartindoEmAuto",modbus_client=mbc, registrador=REG_UG1_RetornosDigitais_MXR_PartindoEmAuto)
+etapa_ug1 = LeituraComposta(descr="Etapa UG1",
+                            leitura1=MXI_DisjGeradorFechado,
+                            leitura2=MXR_ParandoEmAuto,
+                            leitura3=MXI_RV_MaquinaParada,
+                            leitura4=MXR_PartindoEmAuto)
+while True:
+    print(f"etapa: {etapa_ug1.valor}")
+    sleep(1)
+
+"""

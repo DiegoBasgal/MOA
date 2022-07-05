@@ -59,7 +59,6 @@ class UnidadeDeGeracao:
         # Variavéis internas (não são lidas nem escritas diretamente)
         self.__id = id
         self.__prioridade = 0
-        self.__etapa_alvo = 0
         self.__etapa_atual = 0
         self.__tempo_entre_tentativas = 0
         self.__limite_tentativas_de_normalizacao = 3
@@ -73,9 +72,6 @@ class UnidadeDeGeracao:
         self.__condicionadores = []
         self.aux_tempo_sincronizada = None
         self.codigo_state = MOA_UNIDADE_RESTRITA
-
-    def debug_set_etapa_alvo(self, var):
-        self.__etapa_alvo = var
 
     def debug_set_etapa_atual(self, var):
         self.__etapa_atual = var
@@ -234,17 +230,6 @@ class UnidadeDeGeracao:
     @condicionadores.setter
     def condicionadores(self, var: list([CondicionadorBase])):
         self.__condicionadores = var
-
-    @property
-    def etapa_alvo(self) -> int:
-        """
-        Etapa alvo, esta chamada deve recuperar a informação diratamente da unidade de geração por meio dos drivers de comunicação
-
-        Verifique a lista UNIDADE_LISTA_DE_ETAPAS para as constantes retornadas por esta chamda.
-        Returns:
-            int: ETAPA_ALVO
-        """
-        return self.__etapa_alvo
 
     @property
     def etapa_atual(self) -> int:
@@ -742,7 +727,7 @@ class StateDisponivel(State):
         # Se não detectou nenhum condicionador ativo:
         else:
 
-            self.logger.debug("[UG{}] Etapa atual: '{}', etapa alvo '{}'".format(self.parent_ug.id, self.parent_ug.etapa_atual, self.parent_ug.etapa_alvo))
+            self.logger.debug("[UG{}] Etapa atual: '{}'".format(self.parent_ug.id, self.parent_ug.etapa_atual))
 
             # Calcula a atenuação devido aos condicionadores antes de prosseguir
             atenuacao = 0
@@ -769,8 +754,7 @@ class StateDisponivel(State):
             # O comportamento da UG conforme a etapa em que a mesma se encontra
 
             if (
-                self.parent_ug.etapa_alvo == UNIDADE_PARADA
-                and not self.parent_ug.etapa_atual == UNIDADE_PARADA
+                 self.parent_ug.etapa_atual == UNIDADE_PARANDO
             ):
                 # Unidade parando
                 self.logger.debug("[UG{}] Unidade parando".format(self.parent_ug.id))
@@ -782,8 +766,7 @@ class StateDisponivel(State):
                     self.parent_ug.enviar_setpoint(self.parent_ug.setpoint)
 
             elif (
-                self.parent_ug.etapa_alvo > UNIDADE_PARADA
-                and not self.parent_ug.etapa_atual == UNIDADE_SINCRONIZADA
+                self.parent_ug.etapa_atual == UNIDADE_SINCRONIZANDO
             ):
                 # Unidade sincronizando
                 self.logger.debug("[UG{}] Unidade sincronizando".format(self.parent_ug.id))
@@ -824,15 +807,13 @@ class StateDisponivel(State):
 
             elif (
                 self.parent_ug.etapa_atual not in UNIDADE_LISTA_DE_ETAPAS
-                and self.parent_ug.etapa_alvo not in UNIDADE_LISTA_DE_ETAPAS
             ):
                 # Etapa inconsistente
                 # Logar o ocorrido
                 self.logger.warning(
-                    "[UG{}] UG em etapa inconsistente. (etapa_atual:{};  etapa_alvo:{})".format(
+                    "[UG{}] UG em etapa inconsistente. (etapa_atual:{})".format(
                         self.parent_ug.id,
                         self.parent_ug.etapa_atual,
-                        self.parent_ug.etapa_alvo,
                     )
                 )
                 # Vai para o estado StateIndisponivel
