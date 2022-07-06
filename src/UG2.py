@@ -1079,6 +1079,182 @@ class UnidadeDeGeracao2(UnidadeDeGeracao):
         x = self.leitura_RetornosDigitais_MXR_UG2_StsBloqueio
         self.condicionadores.append(CondicionadorBase(x.descr, DEVE_INDISPONIBILIZAR, x))
 
+        # R
+        self.leitura_temperatura_fase_R = LeituraModbus(
+            "Gerador {} - temperatura fase R".format(self.id),
+            self.clp,
+            REG_UG2_RetornosAnalogicos_MWR_Temperatura_01,
+        )
+        base, limite = 100, 200
+        x = self.leitura_temperatura_fase_R
+        self.condicionador_leitura_temperatura_fase_R = CondicionadorExponencial(x.descr, DEVE_INDISPONIBILIZAR, x, base, limite)
+        self.condicionadores.append(self.condicionador_leitura_temperatura_fase_R)
+        
+        # S
+        self.leitura_temperatura_fase_S = LeituraModbus(
+            "Gerador {} - temperatura fase s".format(self.id),
+            self.clp,
+            REG_UG2_RetornosAnalogicos_MWR_Temperatura_02,
+        )
+        base, limite = 100, 200
+        x = self.leitura_temperatura_fase_S
+        self.condicionador_leitura_temperatura_fase_S = CondicionadorExponencial(x.descr, DEVE_INDISPONIBILIZAR, x, base, limite)
+        self.condicionadores.append(self.condicionador_leitura_temperatura_fase_S)
+        
+        # T
+        self.leitura_temperatura_fase_T = LeituraModbus(
+            "Gerador {} - temperatura fase T".format(self.id),
+            self.clp,
+            REG_UG2_RetornosAnalogicos_MWR_Temperatura_03,
+        )
+        base, limite = 100, 200
+        x = self.leitura_temperatura_fase_T
+        self.condicionador_leitura_temperatura_fase_T = CondicionadorExponencial(x.descr, DEVE_INDISPONIBILIZAR, x, base, limite)
+        self.condicionadores.append(self.condicionador_leitura_temperatura_fase_T)
+
+        # Nucleo estator
+        self.leitura_temperatura_nucleo = LeituraModbus(
+            "Gerador {} - temperatura núcelo do estator".format(self.id),
+            self.clp,
+            REG_UG2_RetornosAnalogicos_MWR_Temperatura_04,
+        )
+        base, limite = 100, 200
+        x = self.leitura_temperatura_nucleo
+        self.condicionador_leitura_temperatura_nucleo = CondicionadorExponencial(x.descr, DEVE_INDISPONIBILIZAR, x, base, limite)
+        self.condicionadores.append(self.condicionador_leitura_temperatura_nucleo)
+        
+        # MRD 1
+        self.leitura_temperatura_mrd1 = LeituraModbus(
+            "Gerador {} - temperatura mancal radial dianteiro".format(self.id),
+            self.clp,
+            REG_UG2_RetornosAnalogicos_MWR_Temperatura_05,
+        )
+        base, limite = 100, 200
+        x = self.leitura_temperatura_mrd1
+        self.condicionador_leitura_temperatura_mrd1 = CondicionadorExponencial(x.descr, DEVE_INDISPONIBILIZAR, x, base, limite)
+        self.condicionadores.append(self.condicionador_leitura_temperatura_mrd1)
+        
+        # MRT 1
+        self.leitura_temperatura_mrt1 = LeituraModbus(
+            "Gerador {} - temperatura mancal radial traseiro".format(self.id),
+            self.clp,
+            REG_UG2_RetornosAnalogicos_MWR_Temperatura_06,
+        )
+        base, limite = 100, 200
+        x = self.leitura_temperatura_mrt1
+        self.condicionador_leitura_temperatura_mrt1 = CondicionadorExponencial(x.descr, DEVE_INDISPONIBILIZAR, x, base, limite)
+        self.condicionadores.append(self.condicionador_leitura_temperatura_mrt1)
+        
+        # MRD 2
+        self.leitura_temperatura_mrd2 = LeituraModbus(
+            "Gerador {} - temperatura mancal radial dianteiro 2".format(self.id),
+            self.clp,
+            REG_UG2_RetornosAnalogicos_MWR_Temperatura_07,
+        )
+        base, limite = 100, 200
+        x = self.leitura_temperatura_mrd2
+        self.condicionador_leitura_temperatura_mrd2 = CondicionadorExponencial(x.descr, DEVE_INDISPONIBILIZAR, x, base, limite)
+        self.condicionadores.append(self.condicionador_leitura_temperatura_mrd2)
+        
+        # MRT 2
+        self.leitura_temperatura_mrt2 = LeituraModbus(
+            "Gerador {} - temperatura mancal radial traseiro 2".format(self.id),
+            self.clp,
+            REG_UG2_RetornosAnalogicos_MWR_Temperatura_08,
+        )
+        base, limite = 100, 200
+        x = self.leitura_temperatura_mrt2
+        self.condicionador_leitura_temperatura_mrt2 = CondicionadorExponencial(x.descr, DEVE_INDISPONIBILIZAR, x, base, limite)
+        self.condicionadores.append(self.condicionador_leitura_temperatura_mrt2)
+                
+        # Saída de ar
+        self.leitura_temperatura_saida_de_ar = LeituraModbus(
+            "Gerador {} - saída de ar".format(self.id),
+            self.clp,
+            REG_UG2_RetornosAnalogicos_MWR_Temperatura_10,
+        )
+        base, limite = 100, 200
+        x = self.leitura_temperatura_saida_de_ar
+        self.condicionador_leitura_temperatura_saida_de_ar = CondicionadorExponencial(x.descr, DEVE_INDISPONIBILIZAR, x, base, limite)
+        self.condicionadores.append(self.condicionador_leitura_temperatura_saida_de_ar)
+                
+        # Perda na grade
+        self.leitura_NivelAntesGrade = LeituraModbus(
+            "TDA {} - Nivel Antes Grade".format(self.id),
+            self.clp,
+            REG_TDA_EntradasAnalogicas_MRR_NivelMaisCasasAntes,
+            escala=0.0001,
+            fundo_de_escala=400
+        )
+        self.leitura_NivelDepoisGrade = LeituraModbus(
+            "TDA {} - Nivel Depois Grade".format(self.id),
+            self.clp,
+            REG_TDA_EntradasAnalogicas_MRR_NivelMaisCasasDepois,
+            escala=0.0001,
+            fundo_de_escala=400
+        )
+        base, limite = 100, 200
+        self.leitura_perda_na_grade = LeituraDelta("Perda na grade", self.leitura_NivelAntesGrade, self.leitura_NivelDepoisGrade)
+        x = self.leitura_perda_na_grade
+        self.condicionadorleitura_perda_na_grade = CondicionadorExponencial(x.descr, DEVE_INDISPONIBILIZAR, x, base, limite)
+        self.condicionadores.append(self.condicionadorleitura_perda_na_grade)
+        
+         # Mancal Guia Radial
+        self.leitura_temperatura_guia_radial = LeituraModbus(
+            "Gerador {} - Mancal Guia Radial".format(self.id),
+            self.clp,
+            REG_UG2_EntradasAnalogicas_MRR_TempMcGuiaRadial,
+        )
+        base, limite = 100, 200
+        x = self.leitura_temperatura_guia_radial
+        self.condicionador_leitura_temperatura_guia_radial = CondicionadorExponencial(x.descr, DEVE_INDISPONIBILIZAR, x, base, limite)
+        self.condicionadores.append(self.condicionador_leitura_temperatura_guia_radial)
+         
+        # Mancal Guia escora
+        self.leitura_temperatura_guia_escora = LeituraModbus(
+            "Gerador {} - Mancal Guia escora".format(self.id),
+            self.clp,
+            REG_UG2_EntradasAnalogicas_MRR_TempMcGuiaEscora,
+        )
+        base, limite = 100, 200
+        x = self.leitura_temperatura_guia_escora
+        self.condicionador_leitura_temperatura_guia_escora = CondicionadorExponencial(x.descr, DEVE_INDISPONIBILIZAR, x, base, limite)
+        self.condicionadores.append(self.condicionador_leitura_temperatura_guia_escora)
+
+        # Mancal Guia contra_escora
+        self.leitura_temperatura_guia_contra_escora = LeituraModbus(
+            "Gerador {} - Mancal Guia contra_escora".format(self.id),
+            self.clp,
+            REG_UG2_EntradasAnalogicas_MRR_TempMcGuiaContraEscora,
+        )
+        base, limite = 100, 200
+        x = self.leitura_temperatura_guia_contra_escora
+        self.condicionador_leitura_temperatura_guia_contra_escora = CondicionadorExponencial(x.descr, DEVE_INDISPONIBILIZAR, x, base, limite)
+        self.condicionadores.append(self.condicionador_leitura_temperatura_guia_contra_escora)
+
+        # Óleo do Transformador Elevador
+        self.leitura_temperatura_oleo_trafo = LeituraModbus(
+            "Gerador {} - Óleo do Transformador Elevador".format(self.id),
+            self.clp,
+            REG_SA_EntradasAnalogicas_MRR_SA_TE_TempOleo,
+        )
+        base, limite = 100, 200
+        x = self.leitura_temperatura_oleo_trafo
+        self.condicionador_leitura_temperatura_oleo_trafo = CondicionadorExponencial(x.descr, DEVE_INDISPONIBILIZAR, x, base, limite)
+        self.condicionadores.append(self.condicionador_leitura_temperatura_oleo_trafo)
+
+        # Enrolamento do Transformador Elevador
+        self.leitura_temperatura_enrolamento_trafo = LeituraModbus(
+            "Gerador {} - Enrolamento do Transformador Elevador".format(self.id),
+            self.clp,
+            REG_SA_EntradasAnalogicas_MRR_SA_TE_TempEnrolamento,
+        )
+        base, limite = 100, 200
+        x = self.leitura_temperatura_enrolamento_trafo
+        self.condicionador_leitura_temperatura_enrolamento_trafo = CondicionadorExponencial(x.descr, DEVE_INDISPONIBILIZAR, x, base, limite)
+        self.condicionadores.append(self.condicionador_leitura_temperatura_enrolamento_trafo)
+
+
     def acionar_trip_logico(self) -> bool:
         """
         Envia o comando de acionamento do TRIP para o CLP via rede

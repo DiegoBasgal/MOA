@@ -16,41 +16,32 @@ class LeiturasUSN:
         )
 
         self.nv_montante = LeituraModbus(
-            "REG_USINA_NivelBarragem",
+            "REG_TDA_EntradasAnalogicas_MRR_NivelMaisCasasAntes",
             self.clp_usina,
-            REG_USINA_NivelBarragem,
-            1 / 100,
-            404
+            REG_TDA_EntradasAnalogicas_MRR_NivelMaisCasasAntes,
+            1 / 10000,
+            400
         )
         self.potencia_ativa_kW = LeituraModbus(
-            "REG_USINA_Subestacao_PotenciaAtivaMedia",
+            "REG_SA_RetornosAnalogicos_MWR_PM_810_Potencia_Ativa",
             self.clp_usina,
-            REG_USINA_Subestacao_PotenciaAtivaMedia,
+            REG_SA_RetornosAnalogicos_MWR_PM_810_Potencia_Ativa,
         )
         self.tensao_rs = LeituraModbus(
-            "REG_USINA_Subestacao_TensaoRS",
+            "REG_SA_RetornosAnalogicos_MWR_PM1_710_Tensao_AB",
             self.clp_usina,
-            REG_USINA_Subestacao_TensaoRS,
+            REG_SA_RetornosAnalogicos_MWR_PM1_710_Tensao_AB,
             10,
         )
         self.tensao_st = LeituraModbus(
-            "REG_USINA_Subestacao_TensaoST",
+            "REG_SA_RetornosAnalogicos_MWR_PM1_710_Tensao_BC",
             self.clp_usina,
-            REG_USINA_Subestacao_TensaoST,
+            REG_SA_RetornosAnalogicos_MWR_PM1_710_Tensao_BC,
             10,
         )
         self.tensao_tr = LeituraModbus(
-            "REG_USINA_Subestacao_TensaoTR",
+            "REG_SA_RetornosAnalogicos_MWR_PM1_710_Tensao_CA",
             self.clp_usina,
-            REG_USINA_Subestacao_TensaoTR,
+            REG_SA_RetornosAnalogicos_MWR_PM1_710_Tensao_CA,
             10,
         )
-        self.nv_canal_aducao = LeituraModbus(
-            "REG_USINA_NivelCanalAducao",
-            self.clp_usina,
-            REG_USINA_NivelCanalAducao,
-            1 / 100,
-            404
-        )
-
-    
