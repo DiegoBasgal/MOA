@@ -22,6 +22,8 @@ import telegram
 from telegram import Update
 from telegram.ext import Updater, CommandHandler, CallbackContext
 
+import threading
+from time import sleep
 
 # Inicializando o logger principal
 logger = logging.getLogger(__name__)
@@ -118,8 +120,10 @@ def quit_command(update: Update, _: CallbackContext) -> None:
     config['chat_ids'].remove(chat_id)
     salvar_config()
 
-
 def enviar_a_todos(mensagem):
+    threading.Thread(target=threaded_enviar_a_todos, args=([mensagem])).start()
+
+def threaded_enviar_a_todos(mensagem):
     """
     Esta função é referente a operação do bot em modo "server-less".
     Esta função envia a mensagem para todos os destinatários cadastrados na lista.
@@ -137,17 +141,22 @@ def enviar_a_todos(mensagem):
 
     bot = telegram.Bot(config['bot_token'])
     for chat_id in config['chat_ids']:
-        try:
-            bot.send_message(chat_id=chat_id, text=mensagem)
-        except telegram.error.Unauthorized as e:
-            logger.error("Erro \"{}\" no chat \"{}\"".format(e, chat_id))
-            config['chat_ids'].remove(chat_id)
-            salvar_config()
-            enviar_a_todos("Erro \"{}\" no chat \"{}\"\n Chat_id {} excluido.".format(e, chat_id, chat_id))
-            continue
-        except Exception as e:
-            logger.error("Erro \"{}\" no chat \"{}\"".format(e, chat_id))
-            continue
+        mandou = False
+        while not mandou:
+            try:
+                bot.send_message(chat_id=chat_id, text=mensagem)
+                mandou = True
+            except telegram.error.Unauthorized as e:
+                logger.error("Erro \"{}\" no chat \"{}\"".format(e, chat_id))
+                config['chat_ids'].remove(chat_id)
+                salvar_config()
+                enviar_a_todos("Erro \"{}\" no chat \"{}\"\n Chat_id {} excluido.".format(e, chat_id, chat_id))
+                sleep(5)
+                mandou = False
+            except Exception as e:
+                logger.error("Erro \"{}\" no chat \"{}\"".format(e, chat_id))
+                sleep(5)
+                mandou = False
 
 
 def main() -> None:

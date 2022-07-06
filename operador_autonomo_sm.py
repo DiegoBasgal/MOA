@@ -39,12 +39,12 @@ logFormatterSimples = logging.Formatter("[%(levelname)-5.5s] %(message)s")
 
 ch = logging.StreamHandler(stderr)  # log para sdtout
 ch.setFormatter(logFormatter)
-ch.setLevel(logging.INFO)
+ch.setLevel(logging.DEBUG)
 logger.addHandler(ch)
 
 fh = handlers.TimedRotatingFileHandler(os.path.join(os.path.dirname(__file__),"logs","MOA.log"), when='midnight', interval=1, backupCount=7)  # log para arquivo
 fh.setFormatter(logFormatter)
-fh.setLevel(logging.INFO)
+fh.setLevel(logging.DEBUG)
 logger.addHandler(fh)
 
 mh = MensageiroHandler()
@@ -293,7 +293,6 @@ class ModoManualAtivado(State):
                 self.usina.normalizar_emergencia()
             self.usina.heartbeat()
             return Pronto(self.usina)
-
         if len(self.usina.get_agendamentos_pendentes()) > 0:
             return AgendamentosPendentes(self.usina)
         
@@ -376,7 +375,7 @@ class ControleRealizado(State):
 if __name__ == "__main__":
     # A escala de tempo é utilizada para acelerar as simulações do sistema
     # Utilizar 1 para testes sérios e 120 no máximo para testes simples
-    ESCALA_DE_TEMPO = 30
+    ESCALA_DE_TEMPO = 1
     if len(sys.argv) > 1:
         ESCALA_DE_TEMPO = int(sys.argv[1])
 

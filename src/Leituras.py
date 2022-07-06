@@ -65,6 +65,7 @@ class LeituraModbus(LeituraBase):
         registrador: int,
         escala: float = 1,
         fundo_de_escala: float = 0,
+        op: int=3,
     ):
         super().__init__(descr)
         self.__descr = descr
@@ -72,6 +73,7 @@ class LeituraModbus(LeituraBase):
         self.__registrador = registrador
         self.__escala = escala
         self.__fundo_de_escala = fundo_de_escala
+        self.__op = op
 
     @property
     def valor(self) -> float:
@@ -98,7 +100,10 @@ class LeituraModbus(LeituraBase):
         """
         try:
             if self.__modbus_client.open():
-                aux = self.__modbus_client.read_holding_registers(self.__registrador)[0]
+                if self.__op == 3:
+                    aux = self.__modbus_client.read_holding_registers(self.__registrador)[0]
+                elif self.__op == 4:
+                    aux = self.__modbus_client.read_input_registers(self.__registrador)[0]
                 if aux is not None:
                     return aux
                 else:
@@ -203,10 +208,11 @@ class LeituraModbusBit(LeituraModbus):
         return aux
 
 class LeituraDelta(LeituraBase):
-    def __init__(self, descr: str, leitura_A: LeituraBase, leitura_B: LeituraBase):
+    def __init__(self, descr: str, leitura_A: LeituraBase, leitura_B: LeituraBase, min_is_zero=True):
         super().__init__(descr)
         self.__leitura_A = leitura_A
         self.__leitura_B = leitura_B
+        self.__min_is_zero = min_is_zero
 
     @property
     def valor(self) -> float:
@@ -216,7 +222,10 @@ class LeituraDelta(LeituraBase):
         Returns:
             float: leitura_A - leitura_B
         """
-        return self.__leitura_A.valor - self.__leitura_B.valor
+        if self.__min_is_zero:
+            return max(0, self.__leitura_A.valor - self.__leitura_B.valor)
+        else:
+            return self.__leitura_A.valor - self.__leitura_B.valor
 
 
 class LeituraComposta(LeituraBase):

@@ -1240,5 +1240,5 @@ REG_TDA_SaidasAnalogicas_MRW_Potencia_2_Baixa = 17  # OpLeitura de Words (Read H
 REG_TDA_SaidasAnalogicas_MRW_Potencia_3_Alta = 18  # OpLeitura de Words (Read Holding Regs - 4x)
 REG_TDA_SaidasAnalogicas_MRW_Potencia_3_Media = 19  # OpLeitura de Words (Read Holding Regs - 4x)
 REG_TDA_SaidasAnalogicas_MRW_Potencia_3_Baixa = 20  # OpLeitura de Words (Read Holding Regs - 4x)
-REG_TDA_EntradasAnalogicas_MRR_NivelMaisCasasAntes = 13 # Scale 400 + 0.0001 X - Op04 (Read Input Regs - 3x)
-REG_TDA_EntradasAnalogicas_MRR_NivelMaisCasasDepois = 14 # Scale 400 + 0.0001 X - Op04 (Read Input Regs - 3x)
+REG_TDA_NivelMaisCasasAntes = 12 # Scale 400 + 0.0001 X - Op04 (Read Input Regs - 3x)
+REG_TDA_NivelMaisCasasDepois = 13 # Scale 400 + 0.0001 X - Op04 (Read Input Regs - 3x)

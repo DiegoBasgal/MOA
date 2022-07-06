@@ -41,8 +41,11 @@ class FieldConnector:
         self.warned_ug3 = False
 
     def desliga_controles_locais(self):
-        self.tda_clp.write_single_register(REG_TDA_ComandosDigitais_MXW_Desab_Nivel, 1)
-        self.tda_clp.write_single_register(REG_TDA_ComandosDigitais_MXW_Desab_Religamento52L, 1)
+        self.tda_clp.write_single_coil(REG_TDA_ComandosDigitais_MXW_ResetGeral, 1)
+        self.tda_clp.write_single_coil(REG_TDA_ComandosDigitais_MXW_Hab_Nivel, 0)
+        self.tda_clp.write_single_coil(REG_TDA_ComandosDigitais_MXW_Desab_Nivel, 1)
+        self.tda_clp.write_single_coil(REG_TDA_ComandosDigitais_MXW_Hab_Religamento52L, 0)
+        self.tda_clp.write_single_coil(REG_TDA_ComandosDigitais_MXW_Desab_Religamento52L, 1)
 
     def open(self):
         logger.debug("Opening Modbus")
@@ -108,23 +111,23 @@ class FieldConnector:
 
     def get_flag_falha52L(self):
         
-        if not self.usn_clp.read_holding_registers(REG_SA_EntradasDigitais_MXI_SA_DisjDJ1_SuperBobAbert1)[0]:
-            logger.info("Sem DisjDJ1_SuperBobAbert1")
+        if self.usn_clp.read_holding_registers(REG_SA_EntradasDigitais_MXI_SA_DisjDJ1_SuperBobAbert1)[0]:
+            logger.info("DisjDJ1_SuperBobAbert1")
             return True
 
-        if not self.usn_clp.read_holding_registers(REG_SA_EntradasDigitais_MXI_SA_DisjDJ1_SuperBobAbert2)[0]:
-            logger.info("Sem DisjDJ1_SuperBobAbert2")
+        if self.usn_clp.read_holding_registers(REG_SA_EntradasDigitais_MXI_SA_DisjDJ1_SuperBobAbert2)[0]:
+            logger.info("DisjDJ1_SuperBobAbert2")
             return True
 
-        if not self.usn_clp.read_holding_registers(REG_SA_EntradasDigitais_MXI_SA_DisjDJ1_Super125VccCiMot)[0]:
-            logger.info("Sem DisjDJ1_Super125VccCiMot")
+        if self.usn_clp.read_holding_registers(REG_SA_EntradasDigitais_MXI_SA_DisjDJ1_Super125VccCiMot)[0]:
+            logger.info("DisjDJ1_Super125VccCiMot")
             return True
 
-        if not self.usn_clp.read_holding_registers(REG_SA_EntradasDigitais_MXI_SA_DisjDJ1_Super125VccCiCom)[0]:
-            logger.info("Sem DisjDJ1_Super125VccCiCom")
+        if self.usn_clp.read_holding_registers(REG_SA_EntradasDigitais_MXI_SA_DisjDJ1_Super125VccCiCom)[0]:
+            logger.info("DisjDJ1_Super125VccCiCom")
             return True
 
-        if self.usn_clp.read_holding_registers(REG_SA_EntradasDigitais_MXI_SA_DisjDJ1_AlPressBaixa)[0]:
+        if not self.usn_clp.read_holding_registers(REG_SA_EntradasDigitais_MXI_SA_DisjDJ1_AlPressBaixa)[0]:
             logger.info("DisjDJ1_AlPressBaixa")
             return True
 
@@ -136,12 +139,12 @@ class FieldConnector:
             logger.info("DisjDJ1_BloqPressBaixa")
             return True
 
-        if not self.usn_clp.read_holding_registers(REG_SA_EntradasDigitais_MXI_SA_DisjDJ1_Sup125VccBoFeAb1)[0]:
-            logger.info("Sem DisjDJ1_Sup125VccBoFeAb1")
+        if self.usn_clp.read_holding_registers(REG_SA_EntradasDigitais_MXI_SA_DisjDJ1_Sup125VccBoFeAb1)[0]:
+            logger.info("DisjDJ1_Sup125VccBoFeAb1")
             return True
 
-        if not self.usn_clp.read_holding_registers(REG_SA_EntradasDigitais_MXI_SA_DisjDJ1_Sup125VccBoFeAb2)[0]:
-            logger.info("Sem DisjDJ1_Sup125VccBoFeAb2")
+        if self.usn_clp.read_holding_registers(REG_SA_EntradasDigitais_MXI_SA_DisjDJ1_Sup125VccBoFeAb2)[0]:
+            logger.info("DisjDJ1_Sup125VccBoFeAb2")
             return True
 
         if self.usn_clp.read_holding_registers(REG_SA_EntradasDigitais_MXI_SA_DisjDJ1_Local)[0]:
