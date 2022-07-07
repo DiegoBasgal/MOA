@@ -53,7 +53,7 @@ class Usina:
 
         self.avisado_em_eletrica = False
         self.deve_ler_condicionadores = False
-        
+
         # Define as vars inciais
         self.ts_ultima_tesntativa_de_normalizacao = datetime.now()
         self.state_moa = 0
@@ -777,6 +777,9 @@ class Usina:
         self.cfg["ki"] = float(parametros["ki"])
         self.cfg["kd"] = float(parametros["kd"])
         self.cfg["kie"] = float(parametros["kie"])
+        self.cfg["pot_maxima_usina"] = float(parametros["pot_nominal_ug"])*3
+        self.cfg["pot_maxima_alvo"] = float(parametros["pot_nominal"])
+        self.cfg["pot_maxima_ug"] = float(parametros["pot_nominal_ug"])
 
         # Le o databank interno
 

@@ -35,7 +35,7 @@
     "timeout_normalizacao": 10,
     "nv_fundo_reservatorio": 404.6,
     "nv_minimo": 404.65,
-    "nv_alvo": 405.0,
+    "nv_alvo": 404.9,
     "nv_maximo": 405.18,
     "nv_maximorum": 407.5,
     "pot_maxima_usina": 9900,
@@ -47,10 +47,10 @@
     "pot_maxima_ug2": 3460.0,
     "pot_maxima_ug3": 3460.0,
     "kp": 5.8,
-    "ki": 0.01,
+    "ki": 0.1,
     "kd": 0.0,
     "kie": 0.1,
-    "saida_ie_inicial": 0.5,
+    "saida_ie_inicial": 0.1,
     "TENSAO_LINHA_BAIXA": 65550,
     "TENSAO_LINHA_ALTA": 72450
 }
