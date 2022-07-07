@@ -6,7 +6,6 @@ import operador_autonomo_sm
 
 
 class TestComportamentoSM(unittest.TestCase):
-
     @classmethod
     def setUpClass(cls):
         logging.disable(logging.CRITICAL)
@@ -22,12 +21,12 @@ class TestComportamentoSM(unittest.TestCase):
 
         estado = operador_autonomo_sm.State
         estado.run = MagicMock()
-        estado.run.return_value = 'next_state'
+        estado.run.return_value = "next_state"
         parametros = MagicMock()
         sm = operador_autonomo_sm.StateMachine(estado(parametros))
         sm.exec()
         estado.run.assert_called_once()
-        self.assertEqual('next_state', sm.state)
+        self.assertEqual("next_state", sm.state)
 
     def test_simple_sm(self):
         # Teste:            test_entra_no_estado
@@ -39,7 +38,7 @@ class TestComportamentoSM(unittest.TestCase):
                 self.i = i
 
             def run(self):
-                return EstadoB(self.i+1)
+                return EstadoB(self.i + 1)
 
         class EstadoB:
             def __init__(self, i):
@@ -71,10 +70,9 @@ class TestComportamentoSM(unittest.TestCase):
             sm.exec()
 
     def test_raise_into_falha_critica_2(self):
-
         class EstadoA:
             def run(self):
-                return 1/0
+                return 1 / 0
 
         sm = operador_autonomo_sm.StateMachine(EstadoA())
         sm.exec()
@@ -84,5 +82,5 @@ class TestComportamentoSM(unittest.TestCase):
             sm.exec()
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     unittest.main()

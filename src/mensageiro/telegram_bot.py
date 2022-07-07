@@ -28,12 +28,16 @@ from time import sleep
 # Inicializando o logger principal
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.DEBUG)
-if not os.path.exists(os.path.join(os.path.dirname(__file__),"logs")):
-    os.mkdir(os.path.join(os.path.dirname(__file__),"logs"))
-fh = logging.FileHandler(os.path.join(os.path.dirname(__file__),"logs", "telegram.log"))  # log para arquivo
+if not os.path.exists(os.path.join(os.path.dirname(__file__), "logs")):
+    os.mkdir(os.path.join(os.path.dirname(__file__), "logs"))
+fh = logging.FileHandler(
+    os.path.join(os.path.dirname(__file__), "logs", "telegram.log")
+)  # log para arquivo
 ch = logging.StreamHandler(stdout)  # log para linha de comando
 
-logFormatter = logging.Formatter("%(asctime)s [%(threadName)-12.12s] [%(levelname)-5.5s] %(message)s")
+logFormatter = logging.Formatter(
+    "%(asctime)s [%(threadName)-12.12s] [%(levelname)-5.5s] %(message)s"
+)
 fh.setFormatter(logFormatter)
 ch.setFormatter(logFormatter)
 fh.setLevel(logging.INFO)
@@ -42,8 +46,8 @@ logger.addHandler(fh)
 logger.addHandler(ch)
 
 # Carrega as configurações e vars
-config_file = os.path.join(os.path.dirname(__file__), 'telegram_config.json')
-with open(config_file, 'r') as file:
+config_file = os.path.join(os.path.dirname(__file__), "telegram_config.json")
+with open(config_file, "r") as file:
     config = json.load(file)
 logger.debug("Config: {}".format(config))
 
@@ -66,12 +70,14 @@ def start(update: Update, _: CallbackContext) -> None:
     chat_id = update.message.chat.id
     name = "{}".format(update.message.from_user.full_name)
     logger.info("Chamada start de {} (Chat_id: {})".format(name, chat_id))
-    if chat_id in config['chat_ids']:
-        update.message.reply_text('Este Chat já esta adicionado a lista de destinatários')
+    if chat_id in config["chat_ids"]:
+        update.message.reply_text(
+            "Este Chat já esta adicionado a lista de destinatários"
+        )
     else:
-        config['chat_ids'].append(chat_id)
+        config["chat_ids"].append(chat_id)
         salvar_config()
-        update.message.reply_text('Chat adicionado a lista de destinatários')
+        update.message.reply_text("Chat adicionado a lista de destinatários")
 
 
 def help_command(update: Update, _: CallbackContext) -> None:
@@ -82,16 +88,18 @@ def help_command(update: Update, _: CallbackContext) -> None:
     chat_id = update.message.chat.id
     name = "{}".format(update.message.from_user.full_name)
     logger.info("Chamada help_command de {} (Chat_id: {})".format(name, chat_id))
-    update.message.reply_text('Esse é o comando de ajuda.\n'
-                              'Os comandos implementados são:\n'
-                              '/ajuda\n'
-                              '/help\n'
-                              '/quit\n'
-                              '/sair\n'
-                              '/spam\n'
-                              '/start\n'
-                              '\n'
-                              '[DEBUG] chat.id:{:d}'.format(update.message.chat.id))
+    update.message.reply_text(
+        "Esse é o comando de ajuda.\n"
+        "Os comandos implementados são:\n"
+        "/ajuda\n"
+        "/help\n"
+        "/quit\n"
+        "/sair\n"
+        "/spam\n"
+        "/start\n"
+        "\n"
+        "[DEBUG] chat.id:{:d}".format(update.message.chat.id)
+    )
 
 
 def spam_command(update: Update, _: CallbackContext) -> None:
@@ -117,11 +125,13 @@ def quit_command(update: Update, _: CallbackContext) -> None:
     logger.info("Chamada quit_command de {} (Chat_id: {})".format(name, chat_id))
     chat_id = update.message.chat.id
     update.message.reply_text("Chat removido da lista.")
-    config['chat_ids'].remove(chat_id)
+    config["chat_ids"].remove(chat_id)
     salvar_config()
+
 
 def enviar_a_todos(mensagem):
     threading.Thread(target=threaded_enviar_a_todos, args=([mensagem])).start()
+
 
 def threaded_enviar_a_todos(mensagem):
     """
@@ -136,25 +146,29 @@ def threaded_enviar_a_todos(mensagem):
     """
 
     # Carrega as configurações e vars
-    with open(config_file, 'r') as file:
+    with open(config_file, "r") as file:
         config = json.load(file)
 
-    bot = telegram.Bot(config['bot_token'])
-    for chat_id in config['chat_ids']:
+    bot = telegram.Bot(config["bot_token"])
+    for chat_id in config["chat_ids"]:
         mandou = False
         while not mandou:
             try:
                 bot.send_message(chat_id=chat_id, text=mensagem)
                 mandou = True
             except telegram.error.Unauthorized as e:
-                logger.error("Erro \"{}\" no chat \"{}\"".format(e, chat_id))
-                config['chat_ids'].remove(chat_id)
+                logger.error('Erro "{}" no chat "{}"'.format(e, chat_id))
+                config["chat_ids"].remove(chat_id)
                 salvar_config()
-                enviar_a_todos("Erro \"{}\" no chat \"{}\"\n Chat_id {} excluido.".format(e, chat_id, chat_id))
+                enviar_a_todos(
+                    'Erro "{}" no chat "{}"\n Chat_id {} excluido.'.format(
+                        e, chat_id, chat_id
+                    )
+                )
                 sleep(5)
                 mandou = False
             except Exception as e:
-                logger.error("Erro \"{}\" no chat \"{}\"".format(e, chat_id))
+                logger.error('Erro "{}" no chat "{}"'.format(e, chat_id))
                 sleep(5)
                 mandou = False
 
@@ -170,7 +184,7 @@ def main() -> None:
     logger.info("Telegram-bot está sendo iniciado")
 
     """ Interatividade """
-    updater = Updater(config['bot_token'])
+    updater = Updater(config["bot_token"])
     dispatcher = updater.dispatcher
     dispatcher.add_handler(CommandHandler("start", start))
     dispatcher.add_handler(CommandHandler("help", help_command))
@@ -184,6 +198,6 @@ def main() -> None:
     enviar_a_todos("[DEBUG] O Bot está ativo.")
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     enviar_a_todos("[DEBUG] TESTE.")
-    #main()
+    # main()

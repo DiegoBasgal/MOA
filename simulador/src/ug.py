@@ -1,9 +1,7 @@
-import numpy as np 
-
+import numpy as np
 
 
 class Ug:
-
     def __init__(self, id, parent):
         self.id = id
 
@@ -13,8 +11,8 @@ class Ug:
         self.logger = parent.logger
         self.segundos_por_passo = self.parent.segundos_por_passo
         self.shared_dict = parent.shared_dict
-        self.escala_ruido=  parent.escala_ruido
-        
+        self.escala_ruido = parent.escala_ruido
+
         self.shared_dict["debug_parar_ug{}".format(self.id)] = False
         self.shared_dict["debug_partir_ug{}".format(self.id)] = False
         self.shared_dict["etapa_alvo_ug{}".format(self.id)] = 1
@@ -97,7 +95,7 @@ class Ug:
                 if self.tempo_na_transicao >= self.TEMPO_TRANS_US_UPS:
                     self.etapa_atual = self.ETAPA_UPGM
                     self.tempo_na_transicao = 0
-              
+
         # self.ETAPA UPGM
         if self.etapa_atual == self.ETAPA_UPGM:
             self.potencia = 0
@@ -114,8 +112,8 @@ class Ug:
                 self.tempo_na_transicao -= self.segundos_por_passo
                 if self.tempo_na_transicao <= -self.TEMPO_TRANS_UPGM_UP:
                     self.etapa_atual = self.ETAPA_UP
-                    self.tempo_na_transicao = 0        
-        
+                    self.tempo_na_transicao = 0
+
         # self.ETAPA UVD
         if self.etapa_atual == self.ETAPA_UVD:
             self.potencia = 0
@@ -132,8 +130,8 @@ class Ug:
                 self.tempo_na_transicao -= self.segundos_por_passo
                 if self.tempo_na_transicao <= -self.TEMPO_TRANS_UVD_UPGM:
                     self.etapa_atual = self.ETAPA_UPGM
-                    self.tempo_na_transicao = 0          
-        
+                    self.tempo_na_transicao = 0
+
         # self.ETAPA UPS
         if self.etapa_atual == self.ETAPA_UPS:
             self.potencia = 0
@@ -143,61 +141,94 @@ class Ug:
                 self.shared_dict["etapa_alvo_ug{}".format(self.id)] = self.etapa_alvo
             elif self.etapa_alvo > self.etapa_atual:
                 self.tempo_na_transicao += self.segundos_por_passo
-                if self.tempo_na_transicao >= self.TEMPO_TRANS_UPS_US and self.shared_dict["dj52L_fechado"]:
+                if (
+                    self.tempo_na_transicao >= self.TEMPO_TRANS_UPS_US
+                    and self.shared_dict["dj52L_fechado"]
+                ):
                     self.etapa_atual = self.ETAPA_US
                     self.tempo_na_transicao = 0
             elif self.etapa_alvo < self.etapa_atual:
                 self.tempo_na_transicao -= self.segundos_por_passo
                 if self.tempo_na_transicao <= -self.TEMPO_TRANS_UPS_UVD:
                     self.etapa_atual = self.ETAPA_UVD
-                    self.tempo_na_transicao = 0         
+                    self.tempo_na_transicao = 0
 
-        # self.ETAPA US     
+        # self.ETAPA US
         if self.etapa_atual == self.ETAPA_US:
             if (self.etapa_alvo is None) or (self.etapa_alvo == self.etapa_atual):
                 self.tempo_na_transicao = 0
                 self.etapa_alvo = None
                 self.shared_dict["etapa_alvo_ug{}".format(self.id)] = self.etapa_alvo
-                if self.shared_dict["dj52L_fechado"] and not self.shared_dict["dj52L_trip"]:
+                if (
+                    self.shared_dict["dj52L_fechado"]
+                    and not self.shared_dict["dj52L_trip"]
+                ):
                     self.potencia = min(self.potencia, self.POT_MAX)
                     self.potencia = max(self.potencia, self.POT_MIN)
                     if self.setpoint > self.potencia:
                         self.potencia += 10.4167 * self.segundos_por_passo
                     else:
                         self.potencia -= 10.4167 * self.segundos_por_passo
-                    self.potencia = np.random.normal(self.potencia , 1 * self.escala_ruido)
+                    self.potencia = np.random.normal(
+                        self.potencia, 1 * self.escala_ruido
+                    )
                 if self.shared_dict["dj52L_aberto"] or self.shared_dict["dj52L_trip"]:
                     self.potencia = 0
                     self.etapa_atual = self.ETAPA_UVD
                     self.etapa_alvo = self.ETAPA_US
-                    self.shared_dict["etapa_alvo_ug{}".format(self.id)] = self.etapa_alvo
+                    self.shared_dict[
+                        "etapa_alvo_ug{}".format(self.id)
+                    ] = self.etapa_alvo
                     self.tempo_na_transicao = 0
             elif self.etapa_alvo < self.etapa_atual:
                 self.tempo_na_transicao -= self.segundos_por_passo
                 self.potencia -= 10.4167 * self.segundos_por_passo
-                if self.tempo_na_transicao <= -self.TEMPO_TRANS_US_UPS and self.potencia <= 0:
+                if (
+                    self.tempo_na_transicao <= -self.TEMPO_TRANS_US_UPS
+                    and self.potencia <= 0
+                ):
                     self.potencia = 0
                     self.etapa_atual = self.ETAPA_UPS
-                    self.tempo_na_transicao = 0   
+                    self.tempo_na_transicao = 0
         # FIM COMPORTAMENTO self.ETAPAS
 
-
-        self.shared_dict["temperatura_ug{}_contra_escora_1".format(self.id)] = np.random.normal(25 , 1 * self.escala_ruido)
-        self.shared_dict["temperatura_ug{}_contra_escora_2".format(self.id)] = np.random.normal(25 , 1 * self.escala_ruido)
-        self.shared_dict["temperatura_ug{}_escora_1".format(self.id)] = np.random.normal(25 , 1 * self.escala_ruido)
-        self.shared_dict["temperatura_ug{}_escora_2".format(self.id)] = np.random.normal(25 , 1 * self.escala_ruido)
-        self.shared_dict["temperatura_ug{}_fase_r".format(self.id)] = np.random.normal(25 , 1 * self.escala_ruido)
-        self.shared_dict["temperatura_ug{}_fase_s".format(self.id)] = np.random.normal(25 , 1 * self.escala_ruido)
-        self.shared_dict["temperatura_ug{}_fase_t".format(self.id)] = np.random.normal(25 , 1 * self.escala_ruido)
-        self.shared_dict["temperatura_ug{}_la_casquilho".format(self.id)] = np.random.normal(25 , 1 * self.escala_ruido)
-        self.shared_dict["temperatura_ug{}_lna_casquilho".format(self.id)] = np.random.normal(25 ,1 * self.escala_ruido)
+        self.shared_dict[
+            "temperatura_ug{}_contra_escora_1".format(self.id)
+        ] = np.random.normal(25, 1 * self.escala_ruido)
+        self.shared_dict[
+            "temperatura_ug{}_contra_escora_2".format(self.id)
+        ] = np.random.normal(25, 1 * self.escala_ruido)
+        self.shared_dict[
+            "temperatura_ug{}_escora_1".format(self.id)
+        ] = np.random.normal(25, 1 * self.escala_ruido)
+        self.shared_dict[
+            "temperatura_ug{}_escora_2".format(self.id)
+        ] = np.random.normal(25, 1 * self.escala_ruido)
+        self.shared_dict["temperatura_ug{}_fase_r".format(self.id)] = np.random.normal(
+            25, 1 * self.escala_ruido
+        )
+        self.shared_dict["temperatura_ug{}_fase_s".format(self.id)] = np.random.normal(
+            25, 1 * self.escala_ruido
+        )
+        self.shared_dict["temperatura_ug{}_fase_t".format(self.id)] = np.random.normal(
+            25, 1 * self.escala_ruido
+        )
+        self.shared_dict[
+            "temperatura_ug{}_la_casquilho".format(self.id)
+        ] = np.random.normal(25, 1 * self.escala_ruido)
+        self.shared_dict[
+            "temperatura_ug{}_lna_casquilho".format(self.id)
+        ] = np.random.normal(25, 1 * self.escala_ruido)
 
         if self.etapa_atual > self.ETAPA_UP:
-            self.horimetro += self.segundos_por_passo/3600
+            self.horimetro += self.segundos_por_passo / 3600
 
-        if self.etapa_atual > self.ETAPA_UP and self.shared_dict["nv_montante"] < self.USINA_NV_MINIMO_OPERACAO:
-            #self.tripar(1, "Trip nível baixo.")
-            #self.shared_dict["trip_ug{}".format(self.id)] = True
+        if (
+            self.etapa_atual > self.ETAPA_UP
+            and self.shared_dict["nv_montante"] < self.USINA_NV_MINIMO_OPERACAO
+        ):
+            # self.tripar(1, "Trip nível baixo.")
+            # self.shared_dict["trip_ug{}".format(self.id)] = True
             self.potencia = 0
             self.etapa_atual = 1
             self.etapa_alvo = 1

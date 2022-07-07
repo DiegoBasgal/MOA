@@ -19,7 +19,18 @@ OUT_09 = 16
 OUT_10 = 12
 
 INPUTS = [IN_01, IN_02, IN_03, IN_04]
-OUTPUTS = [OUT_01, OUT_02, OUT_03, OUT_04, OUT_05, OUT_06, OUT_07, OUT_08, OUT_09, OUT_10]
+OUTPUTS = [
+    OUT_01,
+    OUT_02,
+    OUT_03,
+    OUT_04,
+    OUT_05,
+    OUT_06,
+    OUT_07,
+    OUT_08,
+    OUT_09,
+    OUT_10,
+]
 
 gpio.setmode(GPIO_MODE)
 
@@ -32,8 +43,8 @@ for pin_number in OUTPUTS:
 
 while True:
     for pin_number in OUTPUTS:
-        gpio.output(pin_number, True) 
+        gpio.output(pin_number, True)
     time.sleep(1)
     for pin_number in OUTPUTS:
-        gpio.output(pin_number, False) 
+        gpio.output(pin_number, False)
     time.sleep(1)

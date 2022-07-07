@@ -44,6 +44,7 @@
             "bold": true,
             "italic": false
           },
-      ]
+      ],
+      "python.formatting.provider": "black"
     
 }

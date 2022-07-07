@@ -6,13 +6,13 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('parametros_moa', '0006_auto_20210304_1514'),
+        ("parametros_moa", "0006_auto_20210304_1514"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='parametrosusina',
-            name='tolerancia_pot_maxima',
+            model_name="parametrosusina",
+            name="tolerancia_pot_maxima",
             field=models.DecimalField(decimal_places=5, default=1.05, max_digits=10),
             preserve_default=False,
         ),

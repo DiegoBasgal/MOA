@@ -259,7 +259,7 @@ class TestDistribuicaoPotencia(unittest.TestCase):
                 [ug.setpoint for ug in self.usina.ugs]
             )
         # FIM CICLOS DE CONTROLE -----------------------------------------------
-        
+
         # INICIO DA VERIFICAÇÕES -----------------------------------------------
         for ug in self.usina.ugs:
             self.assertEqual(ug.setpoint, pot_alvo)
@@ -607,7 +607,7 @@ class TestDistribuicaoPotencia(unittest.TestCase):
         # Estado inicial:   Alvo < Min UG
         #                   Todas UGs sincronizadas
         # Resposta:         Uma UG -> pot, outras = 0
-        
+
         # INICIO DECLARAÇÃO ESTADO INICIAL -------------------------------------
         for ug in self.usina.ugs:
             ug.setpoint = self.cfg["pot_maxima_ug"]
@@ -630,7 +630,7 @@ class TestDistribuicaoPotencia(unittest.TestCase):
                 [ug.setpoint for ug in self.usina.ugs]
             )
         # FIM CICLOS DE CONTROLE -----------------------------------------------
-        
+
         # INICIO DA VERIFICAÇÕES -----------------------------------------------
         self.assertEqual(self.usina.ug1.setpoint, self.cfg["pot_minima"])
         for ug in self.usina.ugs[1:]:
@@ -656,11 +656,10 @@ class TestDistribuicaoPotencia(unittest.TestCase):
         lista = self.usina.lista_de_ugs_disponiveis()
         # FIM CICLOS DE CONTROLE -----------------------------------------------
 
-        # INICIO DA VERIFICAÇÕES -----------------------------------------------       
+        # INICIO DA VERIFICAÇÕES -----------------------------------------------
         self.assertIs(self.usina.ug2, lista[0])
         self.assertIsNot(self.usina.ug2, lista[1])
         # FIM DA VERIFICAÇÕES --------------------------------------------------
-        
 
     def test_prioridade_manual(self):
         # Se o modo de prioridade estiver por modo "manual"
@@ -681,11 +680,10 @@ class TestDistribuicaoPotencia(unittest.TestCase):
         lista = self.usina.lista_de_ugs_disponiveis()
         # FIM CICLOS DE CONTROLE -----------------------------------------------
 
-        # INICIO DA VERIFICAÇÕES -----------------------------------------------       
+        # INICIO DA VERIFICAÇÕES -----------------------------------------------
         self.assertIs(self.usina.ug2, lista[0])
         self.assertIsNot(self.usina.ug2, lista[1])
         # FIM DA VERIFICAÇÕES --------------------------------------------------
-
 
     def test_prioridade_sincronismo(self):
         # A maquina sincronizando/sincronizada tem prioridade
@@ -706,11 +704,10 @@ class TestDistribuicaoPotencia(unittest.TestCase):
         lista = self.usina.lista_de_ugs_disponiveis()
         # FIM CICLOS DE CONTROLE -----------------------------------------------
 
-        # INICIO DA VERIFICAÇÕES -----------------------------------------------       
+        # INICIO DA VERIFICAÇÕES -----------------------------------------------
         self.assertIs(self.usina.ug2, lista[0])
         self.assertIsNot(self.usina.ug2, lista[1])
         # FIM DA VERIFICAÇÕES --------------------------------------------------
-
 
     def test_prioridade_potencia(self):
         # A maquina com a maior potência tem prioridade
@@ -730,7 +727,7 @@ class TestDistribuicaoPotencia(unittest.TestCase):
         lista = self.usina.lista_de_ugs_disponiveis()
         # FIM CICLOS DE CONTROLE -----------------------------------------------
 
-        # INICIO DA VERIFICAÇÕES -----------------------------------------------       
+        # INICIO DA VERIFICAÇÕES -----------------------------------------------
         self.assertIs(self.usina.ug2, lista[0])
         self.assertIsNot(self.usina.ug2, lista[1])
         # FIM DA VERIFICAÇÕES --------------------------------------------------

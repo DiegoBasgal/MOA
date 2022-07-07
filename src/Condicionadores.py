@@ -140,7 +140,7 @@ class CondicionadorExponencial(CondicionadorBase):
             float: Valor de 0 a 1 (inclusivo) relativo a atenuacao após limitação operacional
         """
         v_temp = float(self.leitura.valor)
-        if v_temp > self.valor_base and  v_temp < self.valor_limite:
+        if v_temp > self.valor_base and v_temp < self.valor_limite:
             aux = (
                 1
                 - (

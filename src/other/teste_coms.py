@@ -8,7 +8,7 @@ from pyModbusTCP.utils import crc16
 
 
 def bcd_to_i(i):
-    value = (i & 0xF)
+    value = i & 0xF
     value += ((i >> 4) & 0xF) * 10
     value += ((i >> 8) & 0xF) * 100
     value += ((i >> 12) & 0xF) * 1000
@@ -22,16 +22,27 @@ def addcrc(data):
 
 
 def escrever_no_banco(data, medidor, potencia):
-    data = data.strftime('%Y-%m-%d %H:%M:%S.000')
+    data = data.strftime("%Y-%m-%d %H:%M:%S.000")
     potencia = round(potencia, 3)
-    q = "INSERT INTO [dbo].[registros_medidores] VALUES('{}','{}',{});".format(data, medidor, potencia)
+    q = "INSERT INTO [dbo].[registros_medidores] VALUES('{}','{}',{});".format(
+        data, medidor, potencia
+    )
 
     DB_SERVER = "lug-cog"
     DB_DATABASE = "COG_CURITIBA"
-    DB_USERNAME = 'sa'
-    DB_PASSWORD = 'ctba2020'
-    cnxn = pyodbc.connect('DRIVER={ODBC Driver 17 for SQL Server};SERVER=' + DB_SERVER +
-                          ';DATABASE=' + DB_DATABASE + ';UID=' + DB_USERNAME + ';PWD=' + DB_PASSWORD, autocommit=True)
+    DB_USERNAME = "sa"
+    DB_PASSWORD = "ctba2020"
+    cnxn = pyodbc.connect(
+        "DRIVER={ODBC Driver 17 for SQL Server};SERVER="
+        + DB_SERVER
+        + ";DATABASE="
+        + DB_DATABASE
+        + ";UID="
+        + DB_USERNAME
+        + ";PWD="
+        + DB_PASSWORD,
+        autocommit=True,
+    )
     cursor = cnxn.cursor()
     cursor.execute("SET DATEFORMAT ymd")
     cursor.execute(q)
@@ -82,7 +93,9 @@ while True:
                 sock = socket.socket()
                 sock.settimeout(5)
                 sock.connect((ip, porta))
-                data = bytes.fromhex('019914000001020000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000')
+                data = bytes.fromhex(
+                    "019914000001020000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000"
+                )
                 data = addcrc(data)
                 sock.send(data)
                 response = sock.recv(1024)
@@ -93,7 +106,7 @@ while True:
                 # dia = bcd_to_i(response[9])
                 # mes = bcd_to_i(response[10])
                 # ano = bcd_to_i(response[11])
-                pot_ativa_trifasica = k * struct.unpack('f', response[64:68])[0]
+                pot_ativa_trifasica = k * struct.unpack("f", response[64:68])[0]
                 resultados.append([t0, medidor, pot_ativa_trifasica])
                 print(resultados[-1])
                 sock.close()
@@ -107,15 +120,33 @@ while True:
 
         for medidor in medidores_MODBUS:
             ip, porta, mode, k = medidores_MODBUS.get(medidor)
-            slave = ModbusClient(host=ip, port=porta, timeout=5, unit_id=100, auto_open=False, auto_close=False)
+            slave = ModbusClient(
+                host=ip,
+                port=porta,
+                timeout=0.5,
+                unit_id=100,
+                auto_open=False,
+                auto_close=False,
+            )
             slave.mode(mode)
-            if(slave.open()):
+            if slave.open():
                 regs = slave.read_holding_registers(32, 2)
-                raw = ((regs[0] << 16) + regs[1])
+                raw = (regs[0] << 16) + regs[1]
                 if raw > 0b1000000000000000:
-                    raw = 0xffffffff - raw
+                    raw = 0xFFFFFFFF - raw
                 pot_ativa_trifasica = round(k * raw, 2)
-                linha = "{}, {:02d}/{:02d}/20{:02d} {:02d}:{:02d}:{:02d}, {:.2f}".format(medidor, dia, mes, ano, hora, minuto, segundo, pot_ativa_trifasica)
+                linha = (
+                    "{}, {:02d}/{:02d}/20{:02d} {:02d}:{:02d}:{:02d}, {:.2f}".format(
+                        medidor,
+                        dia,
+                        mes,
+                        ano,
+                        hora,
+                        minuto,
+                        segundo,
+                        pot_ativa_trifasica,
+                    )
+                )
                 resultados.append([t0, medidor, pot_ativa_trifasica])
                 print(resultados[-1])
             else:

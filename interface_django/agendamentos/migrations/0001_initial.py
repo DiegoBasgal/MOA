@@ -9,17 +9,31 @@ class Migration(migrations.Migration):
     initial = True
 
     dependencies = [
-        ('parametros_moa', '0001_initial'),
+        ("parametros_moa", "0001_initial"),
     ]
 
     operations = [
         migrations.CreateModel(
-            name='Agendamento',
+            name="Agendamento",
             fields=[
-                ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('data', models.DateTimeField()),
-                ('descricao', models.TextField()),
-                ('comando', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='parametros_moa.comando')),
+                (
+                    "id",
+                    models.AutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                ("data", models.DateTimeField()),
+                ("descricao", models.TextField()),
+                (
+                    "comando",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        to="parametros_moa.comando",
+                    ),
+                ),
             ],
         ),
     ]

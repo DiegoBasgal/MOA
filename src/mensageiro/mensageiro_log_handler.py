@@ -36,7 +36,9 @@ class MensageiroHandler(Handler):
         # Só dispara torpedos de voz em caso CRITICO (levelno >= 50)
         if record.levelno >= logging.CRITICAL:
             try:
-                telegram_bot.enviar_a_todos("[Acionando VOIP: {}]".format(voip.voz_habilitado))
+                telegram_bot.enviar_a_todos(
+                    "[Acionando VOIP: {}]".format(voip.voz_habilitado)
+                )
                 voip.enviar_voz_emergencia()
             except Exception as e:
                 print("Erro ao ligar no voip. Exception: {}.".format(repr(e)))

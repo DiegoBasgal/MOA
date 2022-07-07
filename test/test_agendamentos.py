@@ -9,8 +9,8 @@ from unittest.mock import MagicMock, patch
 from src.abstracao_usina import Usina
 import operador_autonomo_sm
 
-class TestAgendamentos(unittest.TestCase):
 
+class TestAgendamentos(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
         logging.disable(logging.CRITICAL)
@@ -243,7 +243,9 @@ class TestAgendamentos(unittest.TestCase):
         # Objetivo:         Verificar se o moa executa um evento programado teste
         # Estado inicial:   1 agendamento para agora
         # Resposta:         O sm vai para o estado de tratamento de agenda e aciona e emergencia
-        self.db_mock.get_agendamentos_pendentes.return_value = [(1, datetime.utcnow(), 0, 777, 0), ]
+        self.db_mock.get_agendamentos_pendentes.return_value = [
+            (1, datetime.utcnow(), 0, 777, 0),
+        ]
         self.usina.disparar_mensagem_teste = MagicMock()
         estado = operador_autonomo_sm.ValoresInternosAtualizados(self.usina)
         estado = estado.run()
@@ -257,7 +259,9 @@ class TestAgendamentos(unittest.TestCase):
         # Objetivo:         Verificar se o moa aciona a emergência caso um agendamento atrase muito
         # Estado inicial:   1 agendamento atrasado 6 minutos
         # Resposta:         O sm vai para o estado de tratamento de agenda e executa uma emergencia na clp
-        self.db_mock.get_agendamentos_pendentes.return_value = [(1, datetime.utcnow() - timedelta(minutes=6), 0, 777, 0), ]
+        self.db_mock.get_agendamentos_pendentes.return_value = [
+            (1, datetime.utcnow() - timedelta(minutes=6), 0, 777, 0),
+        ]
 
         self.usina.acionar_emergencia = MagicMock()
         estado = operador_autonomo_sm.ValoresInternosAtualizados(self.usina)
@@ -272,13 +276,14 @@ class TestAgendamentos(unittest.TestCase):
         # Objetivo:         Verificar se o moa aciona a emergência caso varios agendamentos atrasados
         # Estado inicial:   5 agendamentos atrasados >1 minuto
         # Resposta:         O sm vai para o estado de tratamento de agenda e executa uma emergencia na clp
-        self.db_mock.get_agendamentos_pendentes.return_value = [(1, datetime.utcnow() - timedelta(seconds=61), 0, 777, 0), 
-                                                                (2, datetime.utcnow() - timedelta(seconds=61), 0, 777, 0), 
-                                                                (3, datetime.utcnow() - timedelta(seconds=61), 0, 777, 0), 
-                                                                (4, datetime.utcnow() - timedelta(seconds=61), 0, 777, 0), 
-                                                                (5, datetime.utcnow() - timedelta(seconds=61), 0, 777, 0), ]
+        self.db_mock.get_agendamentos_pendentes.return_value = [
+            (1, datetime.utcnow() - timedelta(seconds=61), 0, 777, 0),
+            (2, datetime.utcnow() - timedelta(seconds=61), 0, 777, 0),
+            (3, datetime.utcnow() - timedelta(seconds=61), 0, 777, 0),
+            (4, datetime.utcnow() - timedelta(seconds=61), 0, 777, 0),
+            (5, datetime.utcnow() - timedelta(seconds=61), 0, 777, 0),
+        ]
 
-        
         self.usina.acionar_emergencia = MagicMock()
         estado = operador_autonomo_sm.ValoresInternosAtualizados(self.usina)
         estado = estado.run()
@@ -286,5 +291,6 @@ class TestAgendamentos(unittest.TestCase):
         estado = estado.run()
         self.usina.acionar_emergencia.assert_called_once()
 
-if __name__ == '__main__':
+
+if __name__ == "__main__":
     unittest.main()

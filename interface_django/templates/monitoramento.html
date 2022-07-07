@@ -12,9 +12,27 @@
     <p>Emergencia:  {{ em_acionada }}</p>
     <p>Estado CLP:  {{ CLP_ON }} @ {{ CLP_IP }}</p>
     <p>Set-point usina: {{ setpot_usina }} MW</p>
-    <p>UG1: {{ pot_ug1 | floatformat:0 }} kW (Estado: {{ ug1_state }} | SP: {{ setpot_ug1 | floatformat:0 }} kW | Horas máquina: {{ tempo_ug1 | floatformat:2 }} h | Perda na grade: {{ usina.ug1_perda_grade | floatformat:2 }} m)</p>
-    <p>UG2: {{ pot_ug2 | floatformat:0 }} kW (Estado: {{ ug2_state }} } | SP: {{ setpot_ug2 | floatformat:0 }} kW | Horas máquina: {{ tempo_ug2 | floatformat:2 }} h | Perda na grade: {{ usina.ug2_perda_grade | floatformat:2 }} m)</p>
-    <p>UG3: {{ pot_ug3 | floatformat:0 }} kW (Estado: {{ ug3_state }} } | SP: {{ setpot_ug3 | floatformat:0 }} kW | Horas máquina: {{ tempo_ug3 | floatformat:2 }} h | Perda na grade: {{ usina.ug3_perda_grade | floatformat:2 }} m)</p>
+    
+    <p>UG1: {{ pot_ug1 | floatformat:0 }} kW <br>
+    Estado (MOA): {{ ug1_state }} <br>
+    Etapa: {{ ug1_etapa }} <br>
+    SP: {{ setpot_ug1 | floatformat:0 }} kW <br>
+    Horas máquina: {{ tempo_ug1 | floatformat:2 }} h <br>
+
+    <p>UG2: {{ pot_ug2 | floatformat:0 }} kW <br>
+    Estado (MOA): {{ ug2_state }} <br>
+    Etapa: {{ ug2_etapa }} <br>
+    SP: {{ setpot_ug2 | floatformat:0 }} kW <br>
+    Horas máquina: {{ tempo_ug2 | floatformat:2 }} h <br>
+
+    <p>UG3: {{ pot_ug3 | floatformat:0 }} kW <br>
+    Estado (MOA): {{ ug3_state }} <br>
+    Etapa: {{ ug3_etapa }} <br>
+    SP: {{ setpot_ug3 | floatformat:0 }} kW <br>
+    Horas máquina: {{ tempo_ug3 | floatformat:2 }} h <br>
+
+    
+    
     <p>Nv alvo: {{ nv_alvo }} m</p>
     <p>Aguardando reservatório? {{ aguardo }}.</p>
     <p>Nv montante: {{ nv_montante }} m</p>

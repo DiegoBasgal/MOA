@@ -6,13 +6,13 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('parametros_moa', '0002_auto_20210222_1605'),
+        ("parametros_moa", "0002_auto_20210222_1605"),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='comando',
-            name='id',
+            model_name="comando",
+            name="id",
             field=models.IntegerField(primary_key=True, serialize=False),
         ),
     ]

@@ -8,15 +8,17 @@ import controlador
 
 # Set-up logging
 rootLogger = logging.getLogger()
-if (rootLogger.hasHandlers()):
+if rootLogger.hasHandlers():
     rootLogger.handlers.clear()
 rootLogger.setLevel(logging.NOTSET)
 logger = logging.getLogger(__name__)
 
-if (logger.hasHandlers()):
+if logger.hasHandlers():
     logger.handlers.clear()
 logger.setLevel(logging.NOTSET)
-logFormatter = logging.Formatter("%(asctime)s [%(threadName)-12.12s] [%(levelname)-5.5s] [SIMUL] %(message)s")
+logFormatter = logging.Formatter(
+    "%(asctime)s [%(threadName)-12.12s] [%(levelname)-5.5s] [SIMUL] %(message)s"
+)
 
 ch = logging.StreamHandler(stdout)  # log para sdtout
 ch.setFormatter(logFormatter)

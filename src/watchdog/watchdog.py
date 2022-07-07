@@ -18,12 +18,16 @@ import os.path
 # Inicializando o logger principal
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.DEBUG)
-if not os.path.exists(os.path.join(os.path.dirname(__file__),"logs")):
-    os.mkdir(os.path.join(os.path.dirname(__file__),"logs"))
-fh = logging.FileHandler(os.path.join(os.path.dirname(__file__),"logs", "watchdog.log"))  # log para arquivo
+if not os.path.exists(os.path.join(os.path.dirname(__file__), "logs")):
+    os.mkdir(os.path.join(os.path.dirname(__file__), "logs"))
+fh = logging.FileHandler(
+    os.path.join(os.path.dirname(__file__), "logs", "watchdog.log")
+)  # log para arquivo
 ch = logging.StreamHandler(stdout)  # log para linha de comando
 mh = MensageiroHandler()  # log para telegram e voip
-logFormatter = logging.Formatter("%(asctime)s [%(threadName)-12.12s] [%(levelname)-5.5s] [WATCHDOG] %(message)s")
+logFormatter = logging.Formatter(
+    "%(asctime)s [%(threadName)-12.12s] [%(levelname)-5.5s] [WATCHDOG] %(message)s"
+)
 logFormatterSimples = logging.Formatter("[%(levelname)-5.5s] [WATCHDOG] %(message)s")
 fh.setFormatter(logFormatter)
 ch.setFormatter(logFormatter)
@@ -36,25 +40,27 @@ logger.addHandler(ch)
 logger.addHandler(mh)
 
 # Carrega as configurações
-config_file = os.path.join(os.path.dirname(__file__), 'watchdog_config.json')
-with open(config_file, 'r') as file:
+config_file = os.path.join(os.path.dirname(__file__), "watchdog_config.json")
+with open(config_file, "r") as file:
     config = json.load(file)
 logger.debug("Config: {}".format(config))
 
 # Inicialização
 timestamp = 0
 moa_halted = False
-modbus_client = ModbusClient(host=config['ip_slave'],
-                             port=config['port_slave'],
-                             timeout=config['timeout_modbus'],
-                             unit_id=config['unit_id'],
-                             auto_open=False,
-                             auto_close=False)
+modbus_client = ModbusClient(
+    host=config["ip_slave"],
+    port=config["port_slave"],
+    timeout=config["timeout_modbus"],
+    unit_id=config["unit_id"],
+    auto_open=False,
+    auto_close=False,
+)
 
 # Ciclo de verificação do MOA
 while True:
     # Continuar verificando até término do processo.
-    logger.debug("Pooling HB @ {}:{}".format(config['ip_slave'], config['port_slave']))
+    logger.debug("Pooling HB @ {}:{}".format(config["ip_slave"], config["port_slave"]))
 
     # Podem ocorrer erros durtante a comunicação.
     try:
@@ -78,34 +84,57 @@ while True:
             logger.debug("HB em {}!".format(timestamp.strftime("%Y-%m-%d, %H:%M:%S")))
 
             # Verifica-se se o HB é antigo
-            if (datetime.now() - timestamp) > timedelta(seconds=config['timeout_moa']):
+            if (datetime.now() - timestamp) > timedelta(seconds=config["timeout_moa"]):
                 # Se for mais velho que o timeout o moa está travado.
                 if not moa_halted:
                     # Avisar da primeira vez
                     moa_halted = True
-                    logger.warning("Conexão do MOA em {} com {} falhou ({})! Tentando novamente a cada {}s.".format(config['nome_usina'], config['nome_local'], timestamp.strftime("%Y-%m-%d, %H:%M:%S"), config['timeout_moa']))
+                    logger.warning(
+                        "Conexão do MOA em {} com {} falhou ({})! Tentando novamente a cada {}s.".format(
+                            config["nome_usina"],
+                            config["nome_local"],
+                            timestamp.strftime("%Y-%m-%d, %H:%M:%S"),
+                            config["timeout_moa"],
+                        )
+                    )
                 # Espera antes de testar novamente
-                sleep(config['timeout_moa'])
+                sleep(config["timeout_moa"])
             else:
                 # Se foir mais novo que o timeout o moa não está sendo considerado como travado.
                 if moa_halted:
                     # Se estav antes, avisar que voltou a respoder.
                     moa_halted = False
-                    logger.info("O coração voltou a bater em  {}.".format(timestamp.strftime("%Y-%m-%d, %H:%M:%S")))
+                    logger.info(
+                        "O coração voltou a bater em  {}.".format(
+                            timestamp.strftime("%Y-%m-%d, %H:%M:%S")
+                        )
+                    )
         else:
             # Se a conexão não abriu, levantar uma exception deste erro
             raise ConnectionError("modbus_client.open() failled.")
 
     # Captura de exceptions durtante a comunicação. Caso ocorrom, continuar o loop.
     except ConnectionError as e:
-        logger.warning("Erro de conexão do MOA em {} com {}. A última do atualização do HB foi em {}. Exception: {}".format(
-            config['nome_usina'], config['nome_local'], timestamp.strftime("%Y-%m-%d, %H:%M:%S"), e))
+        logger.warning(
+            "Erro de conexão do MOA em {} com {}. A última do atualização do HB foi em {}. Exception: {}".format(
+                config["nome_usina"],
+                config["nome_local"],
+                timestamp.strftime("%Y-%m-%d, %H:%M:%S"),
+                e,
+            )
+        )
         continue
     except Exception as e:
-        logger.warning("Exeption durante a conexão do MOA em {} com {}. A última do atualização do HB foi em {}. Exception: {}".format(
-            config['nome_usina'], config['nome_local'], timestamp.strftime("%Y-%m-%d, %H:%M:%S"), e))
+        logger.warning(
+            "Exeption durante a conexão do MOA em {} com {}. A última do atualização do HB foi em {}. Exception: {}".format(
+                config["nome_usina"],
+                config["nome_local"],
+                timestamp.strftime("%Y-%m-%d, %H:%M:%S"),
+                e,
+            )
+        )
         continue
     finally:
         # Fecha a comunicação e espera antes da próxima comunicação
         modbus_client.close()
-        sleep(config['timeout_moa'])
+        sleep(config["timeout_moa"])

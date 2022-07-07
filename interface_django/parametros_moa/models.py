@@ -9,151 +9,276 @@ class Contato(models.Model):
 
 class ParametrosUsina(models.Model):
 
-    modo_autonomo = models.IntegerField()
-    status_moa = models.IntegerField()
-    emergencia_acionada = models.IntegerField()
-    timestamp = models.DateTimeField()
-    aguardando_reservatorio = models.IntegerField()
-    clp_online = models.IntegerField()
-    clp_ip = models.CharField(max_length=15)
-    clp_porta = models.IntegerField()
-    modbus_server_ip = models.CharField(max_length=15)
-    modbus_server_porta = models.IntegerField()
-    kp = models.DecimalField(max_digits=15, decimal_places=10)
-    ki = models.DecimalField(max_digits=15, decimal_places=10)
-    kd = models.DecimalField(max_digits=15, decimal_places=10)
-    kie = models.DecimalField(max_digits=15, decimal_places=10)
-    margem_pot_critica = models.DecimalField(max_digits=10, decimal_places=5)
-    n_movel_L = models.IntegerField()
-    n_movel_R = models.IntegerField()
-    nv_alvo = models.DecimalField(max_digits=10, decimal_places=3)
-    nv_maximo = models.DecimalField(max_digits=10, decimal_places=3)
-    nv_minimo = models.DecimalField(max_digits=10, decimal_places=3)
-    nv_montante = models.DecimalField(max_digits=10, decimal_places=3)
-    nv_religamento = models.DecimalField(max_digits=10, decimal_places=3)
-    pot_minima = models.DecimalField(max_digits=10, decimal_places=5)
-    pot_nominal = models.DecimalField(max_digits=10, decimal_places=5)
-    pot_nominal_ug = models.DecimalField(max_digits=10, decimal_places=5)
-    pot_disp = models.DecimalField(max_digits=10, decimal_places=5)
-    timer_erro = models.IntegerField()
-    ug1_disp = models.DecimalField(max_digits=10, decimal_places=5)
-    ug1_pot = models.DecimalField(max_digits=10, decimal_places=5)
-    ug1_setpot = models.DecimalField(max_digits=10, decimal_places=5)
-    ug1_sinc = models.IntegerField()
-    ug1_tempo = models.IntegerField()
-    ug1_prioridade = models.IntegerField()
-    ug2_disp = models.DecimalField(max_digits=10, decimal_places=5)
-    ug2_pot = models.DecimalField(max_digits=10, decimal_places=5)
-    ug2_setpot = models.DecimalField(max_digits=10, decimal_places=5)
-    ug2_sinc = models.IntegerField()
-    ug2_tempo = models.IntegerField()
-    ug2_prioridade = models.IntegerField()
-    ug3_disp = models.DecimalField(max_digits=10, decimal_places=5)
-    ug3_pot = models.DecimalField(max_digits=10, decimal_places=5)
-    ug3_setpot = models.DecimalField(max_digits=10, decimal_places=5)
-    ug3_sinc = models.IntegerField()
-    ug3_tempo = models.IntegerField()
-    ug3_prioridade = models.IntegerField()
-    valor_ie_inicial = models.DecimalField(max_digits=10, decimal_places=5)
-    modo_de_escolha_das_ugs = models.IntegerField()
+    modo_autonomo = models.IntegerField(default=0)
+    status_moa = models.IntegerField(default=0)
+    emergencia_acionada = models.IntegerField(default=0)
+    timestamp = models.DateTimeField(default=0)
+    aguardando_reservatorio = models.IntegerField(default=1)
+    clp_online = models.IntegerField(default=0)
+    clp_ip = models.CharField(max_length=15, default="")
+    clp_porta = models.IntegerField(default=502)
+    modbus_server_ip = models.CharField(max_length=15, default="0.0.0.0")
+    modbus_server_porta = models.IntegerField(default=5003)
+    kp = models.DecimalField(max_digits=15, decimal_places=10, default=1)
+    ki = models.DecimalField(max_digits=15, decimal_places=10, default=0)
+    kd = models.DecimalField(max_digits=15, decimal_places=10, default=0)
+    kie = models.DecimalField(max_digits=15, decimal_places=10, default=0)
+    margem_pot_critica = models.DecimalField(
+        max_digits=10, decimal_places=5, default=0.2
+    )
+    nv_alvo = models.DecimalField(max_digits=10, decimal_places=3, default=0)
+    nv_maximo = models.DecimalField(max_digits=10, decimal_places=3, default=0)
+    nv_minimo = models.DecimalField(max_digits=10, decimal_places=3, default=0)
+    nv_montante = models.DecimalField(max_digits=10, decimal_places=3, default=0)
+    nv_religamento = models.DecimalField(max_digits=10, decimal_places=3, default=0)
+    pot_minima = models.DecimalField(max_digits=10, decimal_places=5, default=0)
+    pot_nominal = models.DecimalField(max_digits=10, decimal_places=5, default=0)
+    pot_nominal_ug = models.DecimalField(max_digits=10, decimal_places=5, default=0)
+    pot_disp = models.DecimalField(max_digits=10, decimal_places=5, default=0)
+    timer_erro = models.IntegerField(default=30)
+    valor_ie_inicial = models.DecimalField(max_digits=10, decimal_places=5, default=0)
+    modo_de_escolha_das_ugs = models.IntegerField(default=1)
     # modo 1 = hora depois prioridade
     # modo 2 = prioridade depois hora
 
-    pos_comporta = models.IntegerField()
-    nv_comporta_pos_0_ant = models.DecimalField(max_digits=10, decimal_places=2)
-    nv_comporta_pos_1_ant = models.DecimalField(max_digits=10, decimal_places=2)
-    nv_comporta_pos_2_ant = models.DecimalField(max_digits=10, decimal_places=2)
-    nv_comporta_pos_3_ant = models.DecimalField(max_digits=10, decimal_places=2)
-    nv_comporta_pos_4_ant = models.DecimalField(max_digits=10, decimal_places=2)
-    nv_comporta_pos_5_ant = models.DecimalField(max_digits=10, decimal_places=2)
-    nv_comporta_pos_0_prox = models.DecimalField(max_digits=10, decimal_places=2)
-    nv_comporta_pos_1_prox = models.DecimalField(max_digits=10, decimal_places=2)
-    nv_comporta_pos_2_prox = models.DecimalField(max_digits=10, decimal_places=2)
-    nv_comporta_pos_3_prox = models.DecimalField(max_digits=10, decimal_places=2)
-    nv_comporta_pos_4_prox = models.DecimalField(max_digits=10, decimal_places=2)
-    nv_comporta_pos_5_prox = models.DecimalField(max_digits=10, decimal_places=2)
+    # ug1
+    ug1_disp = models.DecimalField(max_digits=10, decimal_places=5, default=1)
+    ug1_pot = models.DecimalField(max_digits=10, decimal_places=5, default=0)
+    ug1_setpot = models.DecimalField(max_digits=10, decimal_places=5, default=0)
+    ug1_sinc = models.IntegerField(default=0)
+    ug1_tempo = models.IntegerField(default=0)
+    ug1_prioridade = models.IntegerField(default=0)
+    alerta_temperatura_fase_r_ug1 = models.DecimalField(
+        max_digits=10, decimal_places=2, default=100
+    )
+    alerta_temperatura_fase_s_ug1 = models.DecimalField(
+        max_digits=10, decimal_places=2, default=100
+    )
+    alerta_temperatura_fase_t_ug1_ug1 = models.DecimalField(
+        max_digits=10, decimal_places=2, default=100
+    )
+    alerta_temperatura_nucleo_estator_ug1 = models.DecimalField(
+        max_digits=10, decimal_places=2, default=100
+    )
+    alerta_temperatura_mancal_rad_dia_1_ug1 = models.DecimalField(
+        max_digits=10, decimal_places=2, default=100
+    )
+    alerta_temperatura_mancal_rad_dia_2_ug1 = models.DecimalField(
+        max_digits=10, decimal_places=2, default=100
+    )
+    alerta_temperatura_mancal_rad_tra_1_ug1 = models.DecimalField(
+        max_digits=10, decimal_places=2, default=100
+    )
+    alerta_temperatura_mancal_rad_tra_2_ug1 = models.DecimalField(
+        max_digits=10, decimal_places=2, default=100
+    )
+    alerta_temperatura_saida_de_ar_ug1 = models.DecimalField(
+        max_digits=10, decimal_places=2, default=100
+    )
+    alerta_temperatura_mancal_guia_escora_ug1 = models.DecimalField(
+        max_digits=10, decimal_places=2, default=100
+    )
+    alerta_temperatura_mancal_guia_radial_ug1 = models.DecimalField(
+        max_digits=10, decimal_places=2, default=100
+    )
+    alerta_temperatura_mancal_guia_contra_ug1 = models.DecimalField(
+        max_digits=10, decimal_places=2, default=100
+    )
+    limite_temperatura_fase_r_ug1 = models.DecimalField(
+        max_digits=10, decimal_places=2, default=200
+    )
+    limite_temperatura_fase_s_ug1 = models.DecimalField(
+        max_digits=10, decimal_places=2, default=200
+    )
+    limite_temperatura_fase_t_ug1_ug1 = models.DecimalField(
+        max_digits=10, decimal_places=2, default=200
+    )
+    limite_temperatura_nucleo_estator_ug1 = models.DecimalField(
+        max_digits=10, decimal_places=2, default=200
+    )
+    limite_temperatura_mancal_rad_dia_1_ug1 = models.DecimalField(
+        max_digits=10, decimal_places=2, default=200
+    )
+    limite_temperatura_mancal_rad_dia_2_ug1 = models.DecimalField(
+        max_digits=10, decimal_places=2, default=200
+    )
+    limite_temperatura_mancal_rad_tra_1_ug1 = models.DecimalField(
+        max_digits=10, decimal_places=2, default=200
+    )
+    limite_temperatura_mancal_rad_tra_2_ug1 = models.DecimalField(
+        max_digits=10, decimal_places=2, default=200
+    )
+    limite_temperatura_saida_de_ar_ug1 = models.DecimalField(
+        max_digits=10, decimal_places=2, default=200
+    )
+    limite_temperatura_mancal_guia_escora_ug1 = models.DecimalField(
+        max_digits=10, decimal_places=2, default=200
+    )
+    limite_temperatura_mancal_guia_radial_ug1 = models.DecimalField(
+        max_digits=10, decimal_places=2, default=200
+    )
+    limite_temperatura_mancal_guia_contra_ug1 = models.DecimalField(
+        max_digits=10, decimal_places=2, default=200
+    )
 
-    tolerancia_pot_maxima = models.DecimalField(max_digits=10, decimal_places=5)
+    # ug2
+    ug2_disp = models.DecimalField(max_digits=10, decimal_places=5, default=1)
+    ug2_pot = models.DecimalField(max_digits=10, decimal_places=5, default=0)
+    ug2_setpot = models.DecimalField(max_digits=10, decimal_places=5, default=0)
+    ug2_sinc = models.IntegerField(default=0)
+    ug2_tempo = models.IntegerField(default=0)
+    ug2_prioridade = models.IntegerField(default=0)
+    alerta_temperatura_fase_r_ug2 = models.DecimalField(
+        max_digits=10, decimal_places=2, default=100)
+    alerta_temperatura_fase_s_ug2 = models.DecimalField(
+        max_digits=10, decimal_places=2, default=100
+    )
+    alerta_temperatura_fase_t_ug2_ug2 = models.DecimalField(
+        max_digits=10, decimal_places=2, default=100
+    )
+    alerta_temperatura_nucleo_estator_ug2 = models.DecimalField(
+        max_digits=10, decimal_places=2, default=100
+    )
+    alerta_temperatura_mancal_rad_dia_1_ug2 = models.DecimalField(
+        max_digits=10, decimal_places=2, default=100
+    )
+    alerta_temperatura_mancal_rad_dia_2_ug2 = models.DecimalField(
+        max_digits=10, decimal_places=2, default=100
+    )
+    alerta_temperatura_mancal_rad_tra_1_ug2 = models.DecimalField(
+        max_digits=10, decimal_places=2, default=100
+    )
+    alerta_temperatura_mancal_rad_tra_2_ug2 = models.DecimalField(
+        max_digits=10, decimal_places=2, default=100
+    )
+    alerta_temperatura_saida_de_ar_ug2 = models.DecimalField(
+        max_digits=10, decimal_places=2, default=100
+    )
+    alerta_temperatura_mancal_guia_escora_ug2 = models.DecimalField(
+        max_digits=10, decimal_places=2, default=100
+    )
+    alerta_temperatura_mancal_guia_radial_ug2 = models.DecimalField(
+        max_digits=10, decimal_places=2, default=100
+    )
+    alerta_temperatura_mancal_guia_contra_ug2 = models.DecimalField(
+        max_digits=10, decimal_places=2, default=100
+    )
+    limite_temperatura_fase_r_ug2 = models.DecimalField(
+        max_digits=10, decimal_places=2, default=200
+    )
+    limite_temperatura_fase_s_ug2 = models.DecimalField(
+        max_digits=10, decimal_places=2, default=200
+    )
+    limite_temperatura_fase_t_ug2_ug2 = models.DecimalField(
+        max_digits=10, decimal_places=2, default=200
+    )
+    limite_temperatura_nucleo_estator_ug2 = models.DecimalField(
+        max_digits=10, decimal_places=2, default=200
+    )
+    limite_temperatura_mancal_rad_dia_1_ug2 = models.DecimalField(
+        max_digits=10, decimal_places=2, default=200
+    )
+    limite_temperatura_mancal_rad_dia_2_ug2 = models.DecimalField(
+        max_digits=10, decimal_places=2, default=200
+    )
+    limite_temperatura_mancal_rad_tra_1_ug2 = models.DecimalField(
+        max_digits=10, decimal_places=2, default=200
+    )
+    limite_temperatura_mancal_rad_tra_2_ug2 = models.DecimalField(
+        max_digits=10, decimal_places=2, default=200
+    )
+    limite_temperatura_saida_de_ar_ug2 = models.DecimalField(
+        max_digits=10, decimal_places=2, default=200
+    )
+    limite_temperatura_mancal_guia_escora_ug2 = models.DecimalField(
+        max_digits=10, decimal_places=2, default=200
+    )
+    limite_temperatura_mancal_guia_radial_ug2 = models.DecimalField(
+        max_digits=10, decimal_places=2, default=200
+    )
+    limite_temperatura_mancal_guia_contra_ug2 = models.DecimalField(
+        max_digits=10, decimal_places=2, default=200
+    )
 
-    ug1_temp_alerta = models.DecimalField(max_digits=10, decimal_places=2)
-    ug2_temp_alerta = models.DecimalField(max_digits=10, decimal_places=2)
-    ug3_temp_alerta = models.DecimalField(max_digits=10, decimal_places=2)
-    ug1_temp_maxima = models.DecimalField(max_digits=10, decimal_places=2)
-    ug2_temp_maxima = models.DecimalField(max_digits=10, decimal_places=2)
-    ug3_temp_maxima = models.DecimalField(max_digits=10, decimal_places=2)
-    ug1_temp_mancal = models.DecimalField(max_digits=10, decimal_places=2)
-    ug2_temp_mancal = models.DecimalField(max_digits=10, decimal_places=2)
-    ug3_temp_mancal = models.DecimalField(max_digits=10, decimal_places=2)
-
-    ug1_perda_grade_alerta = models.DecimalField(max_digits=10, decimal_places=3)
-    ug2_perda_grade_alerta = models.DecimalField(max_digits=10, decimal_places=3)
-    ug3_perda_grade_alerta = models.DecimalField(max_digits=10, decimal_places=3)
-    ug1_perda_grade_maxima = models.DecimalField(max_digits=10, decimal_places=3)
-    ug2_perda_grade_maxima = models.DecimalField(max_digits=10, decimal_places=3)
-    ug3_perda_grade_maxima = models.DecimalField(max_digits=10, decimal_places=3)
-    ug1_perda_grade = models.DecimalField(max_digits=10, decimal_places=3)
-    ug2_perda_grade = models.DecimalField(max_digits=10, decimal_places=3)
-    ug3_perda_grade = models.DecimalField(max_digits=10, decimal_places=3)
-
-    pot_maxima_alvo = models.DecimalField(max_digits=10, decimal_places=5)
-
-    temperatura_alerta_enrolamento_fase_r_ug1 = models.DecimalField(max_digits=10, decimal_places=5)
-    temperatura_alerta_enrolamento_fase_s_ug1 = models.DecimalField(max_digits=10, decimal_places=5)
-    temperatura_alerta_enrolamento_fase_t_ug1 = models.DecimalField(max_digits=10, decimal_places=5)
-    temperatura_alerta_mancal_la_casquilho_ug1 = models.DecimalField(max_digits=10, decimal_places=5)
-    temperatura_alerta_mancal_la_contra_escora_1_ug1 = models.DecimalField(max_digits=10, decimal_places=5)
-    temperatura_alerta_mancal_la_contra_escora_2_ug1 = models.DecimalField(max_digits=10, decimal_places=5)
-    temperatura_alerta_mancal_la_escora_1_ug1 = models.DecimalField(max_digits=10, decimal_places=5)
-    temperatura_alerta_mancal_la_escora_2_ug1 = models.DecimalField(max_digits=10, decimal_places=5)
-    temperatura_alerta_mancal_lna_casquilho_ug1 = models.DecimalField(max_digits=10, decimal_places=5)    
-    temperatura_limite_enrolamento_fase_r_ug1 = models.DecimalField(max_digits=10, decimal_places=5)
-    temperatura_limite_enrolamento_fase_s_ug1 = models.DecimalField(max_digits=10, decimal_places=5)
-    temperatura_limite_enrolamento_fase_t_ug1 = models.DecimalField(max_digits=10, decimal_places=5)
-    temperatura_limite_mancal_la_casquilho_ug1 = models.DecimalField(max_digits=10, decimal_places=5)
-    temperatura_limite_mancal_la_contra_escora_1_ug1 = models.DecimalField(max_digits=10, decimal_places=5)
-    temperatura_limite_mancal_la_contra_escora_2_ug1 = models.DecimalField(max_digits=10, decimal_places=5)
-    temperatura_limite_mancal_la_escora_1_ug1 = models.DecimalField(max_digits=10, decimal_places=5)
-    temperatura_limite_mancal_la_escora_2_ug1 = models.DecimalField(max_digits=10, decimal_places=5)
-    temperatura_limite_mancal_lna_casquilho_ug1 = models.DecimalField(max_digits=10, decimal_places=5)
-
-    temperatura_alerta_enrolamento_fase_r_ug2 = models.DecimalField(max_digits=10, decimal_places=5)
-    temperatura_alerta_enrolamento_fase_s_ug2 = models.DecimalField(max_digits=10, decimal_places=5)
-    temperatura_alerta_enrolamento_fase_t_ug2 = models.DecimalField(max_digits=10, decimal_places=5)
-    temperatura_alerta_mancal_la_casquilho_ug2 = models.DecimalField(max_digits=10, decimal_places=5)
-    temperatura_alerta_mancal_la_contra_escora_1_ug2 = models.DecimalField(max_digits=10, decimal_places=5)
-    temperatura_alerta_mancal_la_contra_escora_2_ug2 = models.DecimalField(max_digits=10, decimal_places=5)
-    temperatura_alerta_mancal_la_escora_1_ug2 = models.DecimalField(max_digits=10, decimal_places=5)
-    temperatura_alerta_mancal_la_escora_2_ug2 = models.DecimalField(max_digits=10, decimal_places=5)
-    temperatura_alerta_mancal_lna_casquilho_ug2 = models.DecimalField(max_digits=10, decimal_places=5)    
-    temperatura_limite_enrolamento_fase_r_ug2 = models.DecimalField(max_digits=10, decimal_places=5)
-    temperatura_limite_enrolamento_fase_s_ug2 = models.DecimalField(max_digits=10, decimal_places=5)
-    temperatura_limite_enrolamento_fase_t_ug2 = models.DecimalField(max_digits=10, decimal_places=5)
-    temperatura_limite_mancal_la_casquilho_ug2 = models.DecimalField(max_digits=10, decimal_places=5)
-    temperatura_limite_mancal_la_contra_escora_1_ug2 = models.DecimalField(max_digits=10, decimal_places=5)
-    temperatura_limite_mancal_la_contra_escora_2_ug2 = models.DecimalField(max_digits=10, decimal_places=5)
-    temperatura_limite_mancal_la_escora_1_ug2 = models.DecimalField(max_digits=10, decimal_places=5)
-    temperatura_limite_mancal_la_escora_2_ug2 = models.DecimalField(max_digits=10, decimal_places=5)
-    temperatura_limite_mancal_lna_casquilho_ug2 = models.DecimalField(max_digits=10, decimal_places=5)
-
-
-    temperatura_alerta_enrolamento_fase_r_ug3 = models.DecimalField(max_digits=10, decimal_places=5)
-    temperatura_alerta_enrolamento_fase_s_ug3 = models.DecimalField(max_digits=10, decimal_places=5)
-    temperatura_alerta_enrolamento_fase_t_ug3 = models.DecimalField(max_digits=10, decimal_places=5)
-    temperatura_alerta_mancal_la_casquilho_ug3 = models.DecimalField(max_digits=10, decimal_places=5)
-    temperatura_alerta_mancal_la_contra_escora_1_ug3 = models.DecimalField(max_digits=10, decimal_places=5)
-    temperatura_alerta_mancal_la_contra_escora_2_ug3 = models.DecimalField(max_digits=10, decimal_places=5)
-    temperatura_alerta_mancal_la_escora_1_ug3 = models.DecimalField(max_digits=10, decimal_places=5)
-    temperatura_alerta_mancal_la_escora_2_ug3 = models.DecimalField(max_digits=10, decimal_places=5)
-    temperatura_alerta_mancal_lna_casquilho_ug3 = models.DecimalField(max_digits=10, decimal_places=5)    
-    temperatura_limite_enrolamento_fase_r_ug3 = models.DecimalField(max_digits=10, decimal_places=5)
-    temperatura_limite_enrolamento_fase_s_ug3 = models.DecimalField(max_digits=10, decimal_places=5)
-    temperatura_limite_enrolamento_fase_t_ug3 = models.DecimalField(max_digits=10, decimal_places=5)
-    temperatura_limite_mancal_la_casquilho_ug3 = models.DecimalField(max_digits=10, decimal_places=5)
-    temperatura_limite_mancal_la_contra_escora_1_ug3 = models.DecimalField(max_digits=10, decimal_places=5)
-    temperatura_limite_mancal_la_contra_escora_2_ug3 = models.DecimalField(max_digits=10, decimal_places=5)
-    temperatura_limite_mancal_la_escora_1_ug3 = models.DecimalField(max_digits=10, decimal_places=5)
-    temperatura_limite_mancal_la_escora_2_ug3 = models.DecimalField(max_digits=10, decimal_places=5)
-    temperatura_limite_mancal_lna_casquilho_ug3 = models.DecimalField(max_digits=10, decimal_places=5)
+    # ug3
+    ug3_disp = models.DecimalField(max_digits=10, decimal_places=5, default=1)
+    ug3_pot = models.DecimalField(max_digits=10, decimal_places=5, default=0)
+    ug3_setpot = models.DecimalField(max_digits=10, decimal_places=5, default=0)
+    ug3_sinc = models.IntegerField(default=0)
+    ug3_tempo = models.IntegerField(default=0)
+    ug3_prioridade = models.IntegerField(default=0)
+    alerta_temperatura_fase_r_ug3 = models.DecimalField(
+        max_digits=10, decimal_places=2, default=100
+    )
+    alerta_temperatura_fase_s_ug3 = models.DecimalField(
+        max_digits=10, decimal_places=2, default=100
+    )
+    alerta_temperatura_fase_t_ug3_ug3 = models.DecimalField(
+        max_digits=10, decimal_places=2, default=100
+    )
+    alerta_temperatura_nucleo_estator_ug3 = models.DecimalField(
+        max_digits=10, decimal_places=2, default=100
+    )
+    alerta_temperatura_mancal_rad_dia_1_ug3 = models.DecimalField(
+        max_digits=10, decimal_places=2, default=100
+    )
+    alerta_temperatura_mancal_rad_dia_2_ug3 = models.DecimalField(
+        max_digits=10, decimal_places=2, default=100
+    )
+    alerta_temperatura_mancal_rad_tra_1_ug3 = models.DecimalField(
+        max_digits=10, decimal_places=2, default=100
+    )
+    alerta_temperatura_mancal_rad_tra_2_ug3 = models.DecimalField(
+        max_digits=10, decimal_places=2, default=100
+    )
+    alerta_temperatura_saida_de_ar_ug3 = models.DecimalField(
+        max_digits=10, decimal_places=2, default=100
+    )
+    alerta_temperatura_mancal_guia_escora_ug3 = models.DecimalField(
+        max_digits=10, decimal_places=2, default=100
+    )
+    alerta_temperatura_mancal_guia_radial_ug3 = models.DecimalField(
+        max_digits=10, decimal_places=2, default=100
+    )
+    alerta_temperatura_mancal_guia_contra_ug3 = models.DecimalField(
+        max_digits=10, decimal_places=2, default=100
+    )
+    limite_temperatura_fase_r_ug3 = models.DecimalField(
+        max_digits=10, decimal_places=2, default=200
+    )
+    limite_temperatura_fase_s_ug3 = models.DecimalField(
+        max_digits=10, decimal_places=2, default=200
+    )
+    limite_temperatura_fase_t_ug3_ug3 = models.DecimalField(
+        max_digits=10, decimal_places=2, default=200
+    )
+    limite_temperatura_nucleo_estator_ug3 = models.DecimalField(
+        max_digits=10, decimal_places=2, default=200
+    )
+    limite_temperatura_mancal_rad_dia_1_ug3 = models.DecimalField(
+        max_digits=10, decimal_places=2, default=200
+    )
+    limite_temperatura_mancal_rad_dia_2_ug3 = models.DecimalField(
+        max_digits=10, decimal_places=2, default=200
+    )
+    limite_temperatura_mancal_rad_tra_1_ug3 = models.DecimalField(
+        max_digits=10, decimal_places=2, default=200
+    )
+    limite_temperatura_mancal_rad_tra_2_ug3 = models.DecimalField(
+        max_digits=10, decimal_places=2, default=200
+    )
+    limite_temperatura_saida_de_ar_ug3 = models.DecimalField(
+        max_digits=10, decimal_places=2, default=200
+    )
+    limite_temperatura_mancal_guia_escora_ug3 = models.DecimalField(
+        max_digits=10, decimal_places=2, default=200
+    )
+    limite_temperatura_mancal_guia_radial_ug3 = models.DecimalField(
+        max_digits=10, decimal_places=2, default=200
+    )
+    limite_temperatura_mancal_guia_contra_ug3 = models.DecimalField(
+        max_digits=10, decimal_places=2, default=200
+    )
 
 
 class Comando(models.Model):
@@ -162,4 +287,3 @@ class Comando(models.Model):
     descricao = models.TextField()
     executavel_em_manual = models.BooleanField(default=False)
     executavel_em_autmoatico = models.BooleanField(default=True)
-

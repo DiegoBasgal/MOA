@@ -6,68 +6,68 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('parametros_moa', '0005_auto_20210303_1517'),
+        ("parametros_moa", "0005_auto_20210303_1517"),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='parametrosusina',
-            name='nv_comporta_pos_0_ant',
+            model_name="parametrosusina",
+            name="nv_comporta_pos_0_ant",
             field=models.DecimalField(decimal_places=3, max_digits=7),
         ),
         migrations.AlterField(
-            model_name='parametrosusina',
-            name='nv_comporta_pos_0_prox',
+            model_name="parametrosusina",
+            name="nv_comporta_pos_0_prox",
             field=models.DecimalField(decimal_places=3, max_digits=7),
         ),
         migrations.AlterField(
-            model_name='parametrosusina',
-            name='nv_comporta_pos_1_ant',
+            model_name="parametrosusina",
+            name="nv_comporta_pos_1_ant",
             field=models.DecimalField(decimal_places=3, max_digits=7),
         ),
         migrations.AlterField(
-            model_name='parametrosusina',
-            name='nv_comporta_pos_1_prox',
+            model_name="parametrosusina",
+            name="nv_comporta_pos_1_prox",
             field=models.DecimalField(decimal_places=3, max_digits=7),
         ),
         migrations.AlterField(
-            model_name='parametrosusina',
-            name='nv_comporta_pos_2_ant',
+            model_name="parametrosusina",
+            name="nv_comporta_pos_2_ant",
             field=models.DecimalField(decimal_places=3, max_digits=7),
         ),
         migrations.AlterField(
-            model_name='parametrosusina',
-            name='nv_comporta_pos_2_prox',
+            model_name="parametrosusina",
+            name="nv_comporta_pos_2_prox",
             field=models.DecimalField(decimal_places=3, max_digits=7),
         ),
         migrations.AlterField(
-            model_name='parametrosusina',
-            name='nv_comporta_pos_3_ant',
+            model_name="parametrosusina",
+            name="nv_comporta_pos_3_ant",
             field=models.DecimalField(decimal_places=3, max_digits=7),
         ),
         migrations.AlterField(
-            model_name='parametrosusina',
-            name='nv_comporta_pos_3_prox',
+            model_name="parametrosusina",
+            name="nv_comporta_pos_3_prox",
             field=models.DecimalField(decimal_places=3, max_digits=7),
         ),
         migrations.AlterField(
-            model_name='parametrosusina',
-            name='nv_comporta_pos_4_ant',
+            model_name="parametrosusina",
+            name="nv_comporta_pos_4_ant",
             field=models.DecimalField(decimal_places=3, max_digits=7),
         ),
         migrations.AlterField(
-            model_name='parametrosusina',
-            name='nv_comporta_pos_4_prox',
+            model_name="parametrosusina",
+            name="nv_comporta_pos_4_prox",
             field=models.DecimalField(decimal_places=3, max_digits=7),
         ),
         migrations.AlterField(
-            model_name='parametrosusina',
-            name='nv_comporta_pos_5_ant',
+            model_name="parametrosusina",
+            name="nv_comporta_pos_5_ant",
             field=models.DecimalField(decimal_places=3, max_digits=7),
         ),
         migrations.AlterField(
-            model_name='parametrosusina',
-            name='nv_comporta_pos_5_prox',
+            model_name="parametrosusina",
+            name="nv_comporta_pos_5_prox",
             field=models.DecimalField(decimal_places=3, max_digits=7),
         ),
     ]

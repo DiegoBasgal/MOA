@@ -1,5 +1,6 @@
 from django.db import models
 from parametros_moa.models import Comando
+
 # Create your models here.
 
 
@@ -14,4 +15,3 @@ class Agendamento(models.Model):
     campo_auxiliar = models.TextField()
     observacao = models.TextField()
     executado = models.IntegerField(default=0)
-

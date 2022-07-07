@@ -13,11 +13,24 @@ from src import modbus_mapa_antigo
 from src.modbus_mapa_antigo import *
 
 
-class LeituraBase:  ...
-class LeituraModbus(LeituraBase):    ...
-class LeituraModbusBit(LeituraBase):    ...
-class LeituraDelta(LeituraBase):    ...
-class LeituraDebug(LeituraBase):    ...
+class LeituraBase:
+    ...
+
+
+class LeituraModbus(LeituraBase):
+    ...
+
+
+class LeituraModbusBit(LeituraBase):
+    ...
+
+
+class LeituraDelta(LeituraBase):
+    ...
+
+
+class LeituraDebug(LeituraBase):
+    ...
 
 
 class LeituraBase:
@@ -53,6 +66,7 @@ class LeituraBase:
         """
         return self.__descr
 
+
 class LeituraModbus(LeituraBase):
     """
     Classe implementa a base para leituras da unidade da geração utilizando modbus.
@@ -65,7 +79,7 @@ class LeituraModbus(LeituraBase):
         registrador: int,
         escala: float = 1,
         fundo_de_escala: float = 0,
-        op: int=3,
+        op: int = 3,
     ):
         super().__init__(descr)
         self.__descr = descr
@@ -101,9 +115,13 @@ class LeituraModbus(LeituraBase):
         try:
             if self.__modbus_client.open():
                 if self.__op == 3:
-                    aux = self.__modbus_client.read_holding_registers(self.__registrador)[0]
+                    aux = self.__modbus_client.read_holding_registers(
+                        self.__registrador
+                    )[0]
                 elif self.__op == 4:
-                    aux = self.__modbus_client.read_input_registers(self.__registrador)[0]
+                    aux = self.__modbus_client.read_input_registers(self.__registrador)[
+                        0
+                    ]
                 if aux is not None:
                     return aux
                 else:
@@ -116,6 +134,7 @@ class LeituraModbus(LeituraBase):
             # raise NotImplementedError
             return 0
             pass
+
 
 class LeituraModbusCoil(LeituraBase):
     """
@@ -177,6 +196,7 @@ class LeituraModbusCoil(LeituraBase):
             return 0
             pass
 
+
 class LeituraModbusBit(LeituraModbus):
     """
     Classe implementa a leituras de bits de registradores da unidade da geração utilizando modbus.
@@ -207,8 +227,15 @@ class LeituraModbusBit(LeituraModbus):
             aux = not aux
         return aux
 
+
 class LeituraDelta(LeituraBase):
-    def __init__(self, descr: str, leitura_A: LeituraBase, leitura_B: LeituraBase, min_is_zero=True):
+    def __init__(
+        self,
+        descr: str,
+        leitura_A: LeituraBase,
+        leitura_B: LeituraBase,
+        min_is_zero=True,
+    ):
         super().__init__(descr)
         self.__leitura_A = leitura_A
         self.__leitura_B = leitura_B
@@ -229,14 +256,18 @@ class LeituraDelta(LeituraBase):
 
 
 class LeituraComposta(LeituraBase):
-    def __init__(self, descr: str, leitura1: LeituraBase,
-                                   leitura2: LeituraBase = None,
-                                   leitura3: LeituraBase = None,
-                                   leitura4: LeituraBase = None,
-                                   leitura5: LeituraBase = None,
-                                   leitura6: LeituraBase = None,
-                                   leitura7: LeituraBase = None,
-                                   leitura8: LeituraBase = None):
+    def __init__(
+        self,
+        descr: str,
+        leitura1: LeituraBase,
+        leitura2: LeituraBase = None,
+        leitura3: LeituraBase = None,
+        leitura4: LeituraBase = None,
+        leitura5: LeituraBase = None,
+        leitura6: LeituraBase = None,
+        leitura7: LeituraBase = None,
+        leitura8: LeituraBase = None,
+    ):
         super().__init__(descr)
         self.__leitura1 = leitura1
         self.__leitura2 = leitura2
@@ -282,6 +313,7 @@ class LeituraComposta(LeituraBase):
                 res += 2**7
         return res
 
+
 class LeituraDebug(LeituraBase):
     def __init__(self, descr: str) -> None:
         super().__init__(descr)
@@ -289,7 +321,7 @@ class LeituraDebug(LeituraBase):
     @property
     def valor(self) -> float:
         return self.__valor
-    
+
     @valor.setter
     def valor(self, var):
         self.__valor = var

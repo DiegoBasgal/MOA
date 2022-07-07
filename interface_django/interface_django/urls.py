@@ -27,20 +27,30 @@ from parametros_moa.views import parametros_moa_view
 from parametros_moa.views import emergencia_view
 
 urlpatterns = [
-    path('', RedirectView.as_view(url='parametros_moa/')),
-    path('admin/', admin.site.urls),
-    path('agendamentos/', agendamentos_view, name='agendamentos'),
-    path('agendamentos/<int:ag_id>/', agendamento_detalhado_view, name='agendamento_detalhado'),
-    path('agendamentos/novo_agendamento/', novo_agendamento_view, name='novo_agendamento'),
-    path('agendamentos/novo_agendamento_rapido/', novo_agendamento_rapido_view, name='novo_agendamento_rapido'),
-    path('monitoramento/', monitoramento_view, name='monitoramento'),
-    path('ocorrencias/', ocorrencias_view, name='ocorrencias'),
-    path('parametros_moa/', parametros_moa_view, name='parametros_moa'),
-    path('parametros_moa/emergencia/', emergencia_view, name='emergencia'),
+    path("", RedirectView.as_view(url="parametros_moa/")),
+    path("admin/", admin.site.urls),
+    path("agendamentos/", agendamentos_view, name="agendamentos"),
+    path(
+        "agendamentos/<int:ag_id>/",
+        agendamento_detalhado_view,
+        name="agendamento_detalhado",
+    ),
+    path(
+        "agendamentos/novo_agendamento/", novo_agendamento_view, name="novo_agendamento"
+    ),
+    path(
+        "agendamentos/novo_agendamento_rapido/",
+        novo_agendamento_rapido_view,
+        name="novo_agendamento_rapido",
+    ),
+    path("monitoramento/", monitoramento_view, name="monitoramento"),
+    path("ocorrencias/", ocorrencias_view, name="ocorrencias"),
+    path("parametros_moa/", parametros_moa_view, name="parametros_moa"),
+    path("parametros_moa/emergencia/", emergencia_view, name="emergencia"),
 ]
 
-#Add Django site authentication urls (for login, logout, password management)
+# Add Django site authentication urls (for login, logout, password management)
 
 urlpatterns += [
-    path('accounts/', include('django.contrib.auth.urls')),
+    path("accounts/", include("django.contrib.auth.urls")),
 ]

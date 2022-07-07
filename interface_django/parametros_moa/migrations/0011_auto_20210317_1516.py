@@ -6,31 +6,31 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('parametros_moa', '0010_parametrosusina_pot_maxima_alvo'),
+        ("parametros_moa", "0010_parametrosusina_pot_maxima_alvo"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='parametrosusina',
-            name='ug1_perda_grade_alerta',
+            model_name="parametrosusina",
+            name="ug1_perda_grade_alerta",
             field=models.DecimalField(decimal_places=3, default=0, max_digits=10),
             preserve_default=False,
         ),
         migrations.AddField(
-            model_name='parametrosusina',
-            name='ug1_temp_alerta',
+            model_name="parametrosusina",
+            name="ug1_temp_alerta",
             field=models.DecimalField(decimal_places=2, default=0, max_digits=10),
             preserve_default=False,
         ),
         migrations.AddField(
-            model_name='parametrosusina',
-            name='ug2_perda_grade_alerta',
+            model_name="parametrosusina",
+            name="ug2_perda_grade_alerta",
             field=models.DecimalField(decimal_places=3, default=0, max_digits=10),
             preserve_default=False,
         ),
         migrations.AddField(
-            model_name='parametrosusina',
-            name='ug2_temp_alerta',
+            model_name="parametrosusina",
+            name="ug2_temp_alerta",
             field=models.DecimalField(decimal_places=2, default=0, max_digits=10),
             preserve_default=False,
         ),
