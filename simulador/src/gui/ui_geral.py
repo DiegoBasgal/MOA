@@ -1252,7 +1252,7 @@ class Ui_Form(object):
         self.horizontalSlider_setpoint_ug1.setObjectName(
             "horizontalSlider_setpoint_ug1"
         )
-        self.horizontalSlider_setpoint_ug1.setMaximum(3460)
+        self.horizontalSlider_setpoint_ug1.setMaximum(3600)
         self.horizontalSlider_setpoint_ug1.setSingleStep(50)
         self.horizontalSlider_setpoint_ug1.setPageStep(100)
         self.horizontalSlider_setpoint_ug1.setOrientation(Qt.Horizontal)
@@ -1279,7 +1279,7 @@ class Ui_Form(object):
         self.horizontalSlider_setpoint_ug2.setObjectName(
             "horizontalSlider_setpoint_ug2"
         )
-        self.horizontalSlider_setpoint_ug2.setMaximum(3460)
+        self.horizontalSlider_setpoint_ug2.setMaximum(3600)
         self.horizontalSlider_setpoint_ug2.setSingleStep(50)
         self.horizontalSlider_setpoint_ug2.setPageStep(100)
         self.horizontalSlider_setpoint_ug2.setOrientation(Qt.Horizontal)
@@ -1339,7 +1339,7 @@ class Ui_Form(object):
         self.horizontalSlider_setpoint_ug3.setObjectName(
             "horizontalSlider_setpoint_ug3"
         )
-        self.horizontalSlider_setpoint_ug3.setMaximum(3460)
+        self.horizontalSlider_setpoint_ug3.setMaximum(3600)
         self.horizontalSlider_setpoint_ug3.setSingleStep(50)
         self.horizontalSlider_setpoint_ug3.setPageStep(100)
         self.horizontalSlider_setpoint_ug3.setOrientation(Qt.Horizontal)

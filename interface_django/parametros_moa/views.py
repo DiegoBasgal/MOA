@@ -41,7 +41,7 @@ def parametros_moa_view(request, *args, **kwargs):
             usina.ug3_prioridade = 0
 
         if int(request.POST.get("escolha_ugs")) == 3:
-            usina.modo_de_escolha_das_ugs = 3
+            usina.modo_de_escolha_das_ugs = 2
             usina.ug1_prioridade = 0
             usina.ug2_prioridade = 0
             usina.ug3_prioridade = 100

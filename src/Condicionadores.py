@@ -18,6 +18,10 @@ class CondicionadorExponencial(CondicionadorBase):
     ...
 
 
+class CondicionadorExponencialReverso(CondicionadorBase):
+    ...
+
+
 class CondicionadorBase:
     """
     Classe implementa a base para condicionadores. É "Abstrata" assim por se dizer...
@@ -131,6 +135,50 @@ class CondicionadorExponencial(CondicionadorBase):
         """
         return True if self.valor >= 1 else False
 
+
+class CondicionadorExponencialReverso(CondicionadorBase):
+    """
+    Implementação básica de limtes operacionais contínuos segundo curva exponencial de decaimento
+    """
+
+    def __init__(
+        self,
+        descr: str,
+        gravidade: int,
+        leitura: LeituraBase,
+        valor_base: float,
+        valor_limite: float,
+        ordem: float = 2,
+    ):
+        super().__init__(descr, gravidade, leitura)
+        self.__valor_base = valor_base
+        self.__valor_limite = valor_limite
+        self.__ordem = ordem
+
+    @property
+    def valor_base(self):
+        return self.__valor_base
+
+    @valor_base.setter
+    def valor_base(self, var):
+        self.__valor_base = var
+
+    @property
+    def valor_limite(self):
+        return self.__valor_limite
+
+    @valor_limite.setter
+    def valor_limite(self, var):
+        self.__valor_limite = var
+
+    @property
+    def ordem(self):
+        return self.__ordem
+
+    @ordem.setter
+    def ordem(self, var):
+        self.__ordem = var
+
     @property
     def valor(self) -> float:
         """
@@ -140,7 +188,40 @@ class CondicionadorExponencial(CondicionadorBase):
             float: Valor de 0 a 1 (inclusivo) relativo a atenuacao após limitação operacional
         """
         v_temp = float(self.leitura.valor)
-        if v_temp > self.valor_base and v_temp < self.valor_limite:
+        
+        if v_temp < 1:
+            return 0
+        elif self.valor_limite < v_temp < self.valor_base:
+            aux = (
+                1
+                - (
+                    (
+                        (self.valor_limite - v_temp)
+                        / (self.valor_limite - self.valor_base)
+                    )
+                    ** (self.ordem)
+                ).real
+            )
+            print(aux)
+            return max(
+                min(aux, 1),
+                0,
+            )
+        elif v_temp <= self.valor_limite:
+            return 1
+        else:
+            return 0
+
+    @property
+    def valor(self) -> float:
+        """
+        Valor relativo a quantidade de atenuação
+
+        Returns:
+            float: Valor de 0 a 1 (inclusivo) relativo a atenuacao após limitação operacional
+        """
+        v_temp = float(self.leitura.valor)
+        if self.valor_limite < v_temp < self.valor_base:
             aux = (
                 1
                 - (
@@ -155,7 +236,7 @@ class CondicionadorExponencial(CondicionadorBase):
                 min(aux, 1),
                 0,
             )
-        if self.leitura.valor > self.valor_limite:
+        elif v_temp <= self.valor_limite:
             return 1
         else:
             return 0

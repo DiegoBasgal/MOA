@@ -71,6 +71,7 @@ class UnidadeDeGeracao:
         self.__next_state = StateDisponivel(self)
         # Condicionadores devem ser adcionados após o init
         self.__condicionadores = []
+        self.__condicionadores_atenuadores = []
         self.aux_tempo_sincronizada = None
         self.deve_ler_condicionadores = False
         self.codigo_state = MOA_UNIDADE_RESTRITA
@@ -232,6 +233,20 @@ class UnidadeDeGeracao:
     @condicionadores.setter
     def condicionadores(self, var: list([CondicionadorBase])):
         self.__condicionadores = var
+
+    @property
+    def condicionadores_atenuadores(self) -> list([CondicionadorBase]):
+        """
+        Lista de condicionadores_atenuadores (objetos) relacionados com a unidade de geração
+
+        Returns:
+            list: lista de condicionadores_atenuadores (objetos)
+        """
+        return self.__condicionadores_atenuadores
+
+    @condicionadores_atenuadores.setter
+    def condicionadores_atenuadores(self, var: list([CondicionadorBase])):
+        self.__condicionadores_atenuadores = var
 
     @property
     def etapa_atual(self) -> int:
@@ -745,27 +760,28 @@ class StateDisponivel(State):
             # Calcula a atenuação devido aos condicionadores antes de prosseguir
             atenuacao = 0
             # Para cada condicionador
-            if self.parent_ug.deve_ler_condicionadores:
-                for condicionador in self.parent_ug.condicionadores:
-                    # Se ele não deve ser ignorado, verificar
-                    if not condicionador.gravidade == DEVE_IGNORAR:
-                        atenuacao = max(atenuacao, condicionador.valor)
-                    # Se ele deve ser ignorado, ignorar
-                    else:
-                        pass
+            self.logger.debug(f"[UG{self.parent_ug.id}] Lendo condicionadores_atenuadores")
+            for condicionador in self.parent_ug.condicionadores_atenuadores:
+                atenuacao = max(atenuacao, condicionador.valor)
+                self.logger.debug(f"[UG{self.parent_ug.id}] Atenuador \"{condicionador.descr}\" -> leitura: {condicionador.leitura.valor}-> atenucao: {atenuacao}")
 
             # A atenuação já vem normalizada de 0 a 1, portanto
             # para ter o ganho é necessário apenas subtrair a atenuação
             ganho = 1 - atenuacao
+            aux = self.parent_ug.setpoint
             if (
                 self.parent_ug.setpoint > self.parent_ug.setpoint_minimo
             ) and self.parent_ug.setpoint * ganho > self.parent_ug.setpoint_minimo:
                 self.parent_ug.setpoint = self.parent_ug.setpoint * ganho
 
+                
+            elif (self.parent_ug.setpoint * ganho < self.parent_ug.setpoint_minimo) and (self.parent_ug.setpoint > self.parent_ug.setpoint_minimo):
+                self.parent_ug.setpoint =  self.parent_ug.setpoint_minimo
+
             self.logger.debug(
                 "[UG{}] SP {} * GAIN {} = {}".format(
                     self.parent_ug.id,
-                    self.parent_ug.setpoint,
+                    aux,
                     ganho,
                     self.parent_ug.setpoint,
                 )

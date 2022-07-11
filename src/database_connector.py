@@ -184,11 +184,30 @@ class Database:
         self._close()
 
     def insert_debug(
-        self, ts, kp, ki, kd, kie, cp, ci, cd, cie, sp1, p1, sp2, p2, nv, erro, ma
+        self,
+        ts,
+        kp,
+        ki,
+        kd,
+        kie,
+        cp,
+        ci,
+        cd,
+        cie,
+        sp1,
+        p1,
+        sp2,
+        p2,
+        nv,
+        erro,
+        ma,
+        sp3,
+        p3,
     ):
         q = (
             "INSERT INTO `debug`.`moa_debug` "
             "VALUES (%s,%s, "
+            "%s,%s, "
             "%s,%s, "
             "%s,%s, "
             "%s,%s, "
@@ -201,7 +220,26 @@ class Database:
         self.execute(
             q,
             tuple(
-                [ts, kp, ki, kd, kie, cp, ci, cd, cie, sp1, p1, sp2, p2, nv, erro, ma]
+                [
+                    ts,
+                    kp,
+                    ki,
+                    kd,
+                    kie,
+                    cp,
+                    ci,
+                    cd,
+                    cie,
+                    sp1,
+                    p1,
+                    sp2,
+                    p2,
+                    nv,
+                    erro,
+                    ma,
+                    sp3,
+                    p3,
+                ]
             ),
         )
         self._close()

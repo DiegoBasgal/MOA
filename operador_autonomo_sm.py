@@ -317,6 +317,14 @@ class ModoManualAtivado(State):
     def run(self):
         self.usina.ler_valores()
         DataBank.set_words(usina.cfg["REG_PAINEL_LIDO"], [1])
+        self.usina.ug1.setpoint = self.usina.ug1.leitura_potencia.valor
+        self.usina.ug2.setpoint = self.usina.ug2.leitura_potencia.valor
+        self.usina.ug3.setpoint = self.usina.ug3.leitura_potencia.valor
+
+        self.usina.controle_ie = (
+            self.usina.ug1.setpoint + self.usina.ug2.setpoint + self.usina.ug3.setpoint
+        ) / self.usina.cfg["pot_maxima_alvo"]
+
         self.usina.heartbeat()
         sleep(1 / ESCALA_DE_TEMPO)
         if self.usina.modo_autonomo:

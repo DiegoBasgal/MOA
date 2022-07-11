@@ -11,8 +11,6 @@ import socket
 import struct
 
 from pyModbusTCP.client import ModbusClient
-from src import modbus_mapa_antigo
-from src.modbus_mapa_antigo import *
 from pyModbusTCP.utils import crc16
 
 
@@ -271,31 +269,6 @@ class LeituraDelta(LeituraBase):
         else:
             return self.__leitura_A.valor - self.__leitura_B.valor
 
-class LeituraSoma(LeituraBase):
-    def __init__(
-        self,
-        descr: str,
-        leitura_A: LeituraBase,
-        leitura_B: LeituraBase,
-        min_is_zero=True,
-    ):
-        super().__init__(descr)
-        self.__leitura_A = leitura_A
-        self.__leitura_B = leitura_B
-        self.__min_is_zero = min_is_zero
-
-    @property
-    def valor(self) -> float:
-        """
-        Valor
-
-        Returns:
-            float: leitura_A + leitura_B
-        """
-        if self.__min_is_zero:
-            return max(0, self.__leitura_A.valor + self.__leitura_B.valor)
-        else:
-            return self.__leitura_A.valor + self.__leitura_B.valor
 
 class LeituraComposta(LeituraBase):
     def __init__(
@@ -436,32 +409,90 @@ class LeituraNBRPower(LeituraBase):
         return 0
 
 
-"""
-8*WEG_Drivers.G1.RetornosDigitais.MXR_PartindoEmAuto +
-4*WEG_Drivers.G1.EntradasDigitais.MXI_RV_MaquinaParada + 
-2*WEG_Drivers.G1.RetornosDigitais.MXR_ParandoEmAuto + 
-1*WEG_Drivers.G1.EntradasDigitais.MXI_DisjGeradorFechado
 
-0 Inválido
-1 Em operação
-2-3 Parando
-4-7 Quina Parada
-8-15 Partindo
+class LeituraSoma(LeituraBase):
+    def __init__(
+        self,
+        descr: str,
+        leitura_A: LeituraBase,
+        leitura_B: LeituraBase,
+        min_is_zero=True,
+    ):
+        super().__init__(descr)
+        self.__leitura_A = leitura_A
+        self.__leitura_B = leitura_B
+        self.__min_is_zero = min_is_zero
 
-from modbus_mapa_antigo import *
-from time import sleep
-mbc = ModbusClient(host="192.168.0.52", auto_open=True, auto_close=True)
-MXI_DisjGeradorFechado = LeituraModbusCoil(descr="MXR_PartindoEmAuto",modbus_client=mbc, registrador=REG_UG1_DisjGeradorFechado)
-MXR_ParandoEmAuto = LeituraModbusCoil(descr="MXR_PartindoEmAuto",modbus_client=mbc, registrador=REG_UG1_RetornosDigitais_MXR_ParandoEmAuto)
-MXI_RV_MaquinaParada = LeituraModbusCoil(descr="MXR_PartindoEmAuto",modbus_client=mbc, registrador=REG_UG1_RV_MaquinaParada)
-MXR_PartindoEmAuto = LeituraModbusCoil(descr="MXR_PartindoEmAuto",modbus_client=mbc, registrador=REG_UG1_RetornosDigitais_MXR_PartindoEmAuto)
-etapa_ug1 = LeituraComposta(descr="Etapa UG1",
-                            leitura1=MXI_DisjGeradorFechado,
-                            leitura2=MXR_ParandoEmAuto,
-                            leitura3=MXI_RV_MaquinaParada,
-                            leitura4=MXR_PartindoEmAuto)
-while True:
-    print(f"etapa: {etapa_ug1.valor}")
-    sleep(1)
+    @property
+    def valor(self) -> float:
+        """
+        Valor
 
-"""
+        Returns:
+            float: leitura_A + leitura_B
+        """
+        if self.__min_is_zero:
+            return max(0, self.__leitura_A.valor + self.__leitura_B.valor)
+        else:
+            return self.__leitura_A.valor + self.__leitura_B.valor
+
+
+
+from pyModbusTCP.client import ModbusClient
+
+clp_ug1 = ModbusClient("192.168.0.51", 502, auto_open=True, auto_close=True)
+clp_ug2 = ModbusClient("192.168.0.52", 502, auto_open=True, auto_close=True)
+clp_ug3 = ModbusClient("192.168.0.53", 502, auto_open=True, auto_close=True)
+
+r_0 = 51
+
+h_ug1 = LeituraModbus(
+    descr="HORA UG1",
+    modbus_client=clp_ug1,
+    registrador=r_0,
+    op=4
+)
+m_ug1 = LeituraModbus(
+    descr="MINUTO UG1",
+    modbus_client=clp_ug1,
+    registrador=r_0+1,
+    op=4,
+    escala=1/60
+)
+
+h_ug2 = LeituraModbus(
+    descr="HORA UG2",
+    modbus_client=clp_ug2,
+    registrador=r_0,
+    op=4
+)
+m_ug2 = LeituraModbus(
+    descr="MINUTO UG2",
+    modbus_client=clp_ug2,
+    registrador=r_0+1,
+    op=4,
+    escala=1/60
+)
+
+h_ug3 = LeituraModbus(
+    descr="HORA UG3",
+    modbus_client=clp_ug3,
+    registrador=r_0,
+    op=4
+)
+m_ug3 = LeituraModbus(
+    descr="MINUTO UG3",
+    modbus_client=clp_ug3,
+    registrador=r_0+1,
+    op=4,
+    escala=1/60
+)
+
+
+hm_ug1 = LeituraSoma("UG1", h_ug1, m_ug1)
+hm_ug2 = LeituraSoma("UG2", h_ug2, m_ug2)
+hm_ug3 = LeituraSoma("UG3", h_ug3, m_ug3)
+
+print(f"UG1 {h_ug1.valor}:{m_ug1.valor*60} ... {hm_ug1.valor} h")
+print(f"UG2 {h_ug2.valor}:{m_ug2.valor*60} ... {hm_ug2.valor} h")
+print(f"UG3 {h_ug3.valor}:{m_ug3.valor*60} ... {hm_ug3.valor} h")

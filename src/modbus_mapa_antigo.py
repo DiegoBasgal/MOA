@@ -272,8 +272,8 @@ REG_UG1_RetornosAnalogicos_MWR_PM_710_Potencia_Ativa = 45  # Op04 (Read Input Re
 REG_UG1_RetornosAnalogicos_MWR_PM_710_Potencia_Reativa = (
     46  # Op04 (Read Input Regs - 3x)
 )
-REG_UG1_RetornosAnalogicos_MWR_Horimetro_Gerador = 47  # Op04 (Read Input Regs - 3x)
-REG_UG1_RetornosAnalogicos_MWR_Horimetro_Gerador_min = 48  # Op04 (Read Input Regs - 3x)
+REG_UG1_RetornosAnalogicos_MWR_Horimetro_Gerador = 51  # Op04 (Read Input Regs - 3x)
+REG_UG1_RetornosAnalogicos_MWR_Horimetro_Gerador_min = 52  # Op04 (Read Input Regs - 3x)
 REG_UG1_RetornosAnalogicos_MWR_Estabiliz_Tensao = 49  # Op04 (Read Input Regs - 3x)
 REG_UG1_EntradasAnalogicas_MRR_PosicaoDistribuidor = (
     0  # Scale 0.1 - Op04 (Read Input Regs - 3x)
@@ -622,8 +622,8 @@ REG_UG2_RetornosAnalogicos_MWR_PM_710_Potencia_Ativa = 45  # Op04 (Read Input Re
 REG_UG2_RetornosAnalogicos_MWR_PM_710_Potencia_Reativa = (
     46  # Op04 (Read Input Regs - 3x)
 )
-REG_UG2_RetornosAnalogicos_MWR_Horimetro_Gerador = 47  # Op04 (Read Input Regs - 3x)
-REG_UG2_RetornosAnalogicos_MWR_Horimetro_Gerador_min = 48  # Op04 (Read Input Regs - 3x)
+REG_UG2_RetornosAnalogicos_MWR_Horimetro_Gerador = 51  # Op04 (Read Input Regs - 3x)
+REG_UG2_RetornosAnalogicos_MWR_Horimetro_Gerador_min = 52  # Op04 (Read Input Regs - 3x)
 REG_UG2_RetornosAnalogicos_MWR_Estabiliz_Tensao = 49  # Op04 (Read Input Regs - 3x)
 REG_UG2_EntradasAnalogicas_MRR_PosicaoDistribuidor = (
     0  # Scale 0.1 - Op04 (Read Input Regs - 3x)
@@ -969,8 +969,8 @@ REG_UG3_RetornosAnalogicos_MWR_PM_710_Potencia_Ativa = 45  # Op04 (Read Input Re
 REG_UG3_RetornosAnalogicos_MWR_PM_710_Potencia_Reativa = (
     46  # Op04 (Read Input Regs - 3x)
 )
-REG_UG3_RetornosAnalogicos_MWR_Horimetro_Gerador = 47  # Op04 (Read Input Regs - 3x)
-REG_UG3_RetornosAnalogicos_MWR_Horimetro_Gerador_min = 48  # Op04 (Read Input Regs - 3x)
+REG_UG3_RetornosAnalogicos_MWR_Horimetro_Gerador = 51  # Op04 (Read Input Regs - 3x)
+REG_UG3_RetornosAnalogicos_MWR_Horimetro_Gerador_min = 52  # Op04 (Read Input Regs - 3x)
 REG_UG3_RetornosAnalogicos_MWR_Estabiliz_Tensao = 49  # Op04 (Read Input Regs - 3x)
 REG_UG3_EntradasAnalogicas_MRR_PosicaoDistribuidor = (
     0  # Scale 0.1 - Op04 (Read Input Regs - 3x)
@@ -1614,3 +1614,6 @@ REG_TDA_SaidasAnalogicas_MRW_Potencia_3_Baixa = (
 )
 REG_TDA_NivelMaisCasasAntes = 12  # Scale 400 + 0.0001 X - Op04 (Read Input Regs - 3x)
 REG_TDA_NivelMaisCasasDepois = 13  # Scale 400 + 0.0001 X - Op04 (Read Input Regs - 3x)
+REG_UG1_COND_PART = 223
+REG_UG2_COND_PART = 223
+REG_UG3_COND_PART = 223

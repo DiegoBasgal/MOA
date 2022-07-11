@@ -61,11 +61,23 @@ class UnidadeDeGeracao2(UnidadeDeGeracao):
             op=4,
         )
 
-        self.leitura_horimetro = LeituraModbus(
-            "ug{}_HorimetroEletrico_Low".format(self.id),
+        self.leitura_horimetro_hora = LeituraModbus(
+            "ug{} RetornosAnalogicos_MWR_Horimetro_Gerador".format(self.id),
             self.clp,
             REG_UG2_RetornosAnalogicos_MWR_Horimetro_Gerador,
             op=4,
+        )
+        self.leitura_horimetro_frac = LeituraModbus(
+            "ug{} RetornosAnalogicos_MWR_Horimetro_Gerador_min".format(self.id),
+            self.clp,
+            REG_UG2_RetornosAnalogicos_MWR_Horimetro_Gerador_min,
+            op=4,
+            escala=1/60
+        )
+        self.leitura_horimetro = LeituraSoma(
+            "ug{} horímetro".format(self.id),
+            self.leitura_horimetro_hora,
+            self.leitura_horimetro_frac
         )
 
         C1 = LeituraModbusCoil(
@@ -135,7 +147,6 @@ class UnidadeDeGeracao2(UnidadeDeGeracao):
         self.condicionadores.append(
             CondicionadorBase(x.descr, DEVE_INDISPONIBILIZAR, x)
         )
-
 
         self.leitura_EntradasDigitais_MXI_Falta125VccAlimVal = LeituraModbusCoil(
             "EntradasDigitais_MXI_Falta125VccAlimVal",
@@ -868,6 +879,23 @@ class UnidadeDeGeracao2(UnidadeDeGeracao):
         )
         self.condicionadores.append(self.condicionador_leitura_temperatura_oleo_trafo)
 
+        # CX Espiral
+        self.leitura_caixa_espiral = LeituraModbus(
+            "Gerador {} - Caixa espiral".format(self.id),
+            self.clp,
+            REG_UG2_EntradasAnalogicas_MRR_PressK1CaixaExpiral,
+            escala=0.1,
+            op = 4
+        )
+        base, limite = 16.5, 15.5
+        x = self.leitura_caixa_espiral
+        self.condicionador_leitura_caixa_espiral = CondicionadorExponencialReverso(
+            x.descr, DEVE_INDISPONIBILIZAR, x, base, limite
+        )
+        self.condicionadores_atenuadores.append(
+            self.condicionador_leitura_caixa_espiral
+        )
+
     def acionar_trip_logico(self) -> bool:
         """
         Envia o comando de acionamento do TRIP para o CLP via rede
@@ -966,6 +994,12 @@ class UnidadeDeGeracao2(UnidadeDeGeracao):
             bool: True se sucesso, Falso caso contrário
         """
         try:
+            #if not self.clp.read_coils(REG_UG2_COND_PART,1)[0]:
+            #    self.logger.debug(
+            #        "[UG{}] Sem cond. de partida. Vai partir quando tiver.".format(self.id)
+            #    )
+            #    return True
+
             if not self.etapa_atual == UNIDADE_SINCRONIZADA:
                 self.logger.info(
                     "[UG{}] Enviando comando (via rede) de partida.".format(self.id)
@@ -1133,7 +1167,7 @@ class UnidadeDeGeracao2(UnidadeDeGeracao):
         DataBank.set_words(
             self.cfg["REG_MOA_OUT_STATE_UG{}".format(self.id)],
             [self.codigo_state],
-        )        
+        )
         DataBank.set_words(
             self.cfg["REG_MOA_OUT_ETAPA_UG{}".format(self.id)],
             [self.etapa_atual],

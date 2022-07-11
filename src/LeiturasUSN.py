@@ -30,12 +30,16 @@ class LeiturasUSN:
             400,
             op=4,
         )
-        self.potencia_ativa_kW = LeituraModbus(
-            "REG_SA_RetornosAnalogicos_MWR_PM_810_Potencia_Ativa",
-            self.clp_usina,
-            REG_SA_RetornosAnalogicos_MWR_PM_810_Potencia_Ativa,
-            op=4,
+
+        self.potencia_ativa_kW = LeituraNBRPower(
+            "LeituraNBRPower potencia_ativa_kW",
+            ip_1=cfg["MP_ip"],
+            port_1=cfg["MP_port"],
+            ip_2=cfg["MR_ip"],
+            port_2=cfg["MR_port"],
+            escala=cfg["MPMR_scale"],
         )
+
         self.tensao_rs = LeituraModbus(
             "REG_SA_RetornosAnalogicos_MWR_PM_810_Tensao_AB",
             self.clp_usina,

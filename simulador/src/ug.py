@@ -43,7 +43,7 @@ class Ug:
         self.setpoint = 0
         self.horimetro = 0
 
-        self.POT_MAX = 3460
+        self.POT_MAX = 3600
         self.POT_MIN = 0.4 * self.POT_MAX
 
         self.ETAPA_UP = 1

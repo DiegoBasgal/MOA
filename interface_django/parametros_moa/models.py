@@ -46,7 +46,7 @@ class ParametrosUsina(models.Model):
     ug1_pot = models.DecimalField(max_digits=10, decimal_places=5, default=0)
     ug1_setpot = models.DecimalField(max_digits=10, decimal_places=5, default=0)
     ug1_sinc = models.IntegerField(default=0)
-    ug1_tempo = models.IntegerField(default=0)
+    ug1_tempo = models.DecimalField(max_digits=10, decimal_places=2, default=0)
     ug1_prioridade = models.IntegerField(default=0)
     alerta_temperatura_fase_r_ug1 = models.DecimalField(
         max_digits=10, decimal_places=2, default=100
@@ -121,15 +121,23 @@ class ParametrosUsina(models.Model):
         max_digits=10, decimal_places=2, default=200
     )
 
+    alerta_caixa_espiral_ug1 = models.DecimalField(
+        max_digits=10, decimal_places=2, default=10
+    )
+    limite_caixa_espiral_ug1 = models.DecimalField(
+        max_digits=10, decimal_places=2, default=0
+    )
+
     # ug2
     ug2_disp = models.DecimalField(max_digits=10, decimal_places=5, default=1)
     ug2_pot = models.DecimalField(max_digits=10, decimal_places=5, default=0)
     ug2_setpot = models.DecimalField(max_digits=10, decimal_places=5, default=0)
     ug2_sinc = models.IntegerField(default=0)
-    ug2_tempo = models.IntegerField(default=0)
+    ug2_tempo = models.DecimalField(max_digits=10, decimal_places=2, default=0)
     ug2_prioridade = models.IntegerField(default=0)
     alerta_temperatura_fase_r_ug2 = models.DecimalField(
-        max_digits=10, decimal_places=2, default=100)
+        max_digits=10, decimal_places=2, default=100
+    )
     alerta_temperatura_fase_s_ug2 = models.DecimalField(
         max_digits=10, decimal_places=2, default=100
     )
@@ -199,13 +207,19 @@ class ParametrosUsina(models.Model):
     limite_temperatura_mancal_guia_contra_ug2 = models.DecimalField(
         max_digits=10, decimal_places=2, default=200
     )
+    alerta_caixa_espiral_ug2 = models.DecimalField(
+        max_digits=10, decimal_places=2, default=10
+    )
+    limite_caixa_espiral_ug2 = models.DecimalField(
+        max_digits=10, decimal_places=2, default=0
+    )
 
     # ug3
     ug3_disp = models.DecimalField(max_digits=10, decimal_places=5, default=1)
     ug3_pot = models.DecimalField(max_digits=10, decimal_places=5, default=0)
     ug3_setpot = models.DecimalField(max_digits=10, decimal_places=5, default=0)
     ug3_sinc = models.IntegerField(default=0)
-    ug3_tempo = models.IntegerField(default=0)
+    ug3_tempo = models.DecimalField(max_digits=10, decimal_places=2, default=0)
     ug3_prioridade = models.IntegerField(default=0)
     alerta_temperatura_fase_r_ug3 = models.DecimalField(
         max_digits=10, decimal_places=2, default=100
@@ -278,6 +292,13 @@ class ParametrosUsina(models.Model):
     )
     limite_temperatura_mancal_guia_contra_ug3 = models.DecimalField(
         max_digits=10, decimal_places=2, default=200
+    )
+
+    alerta_caixa_espiral_ug3 = models.DecimalField(
+        max_digits=10, decimal_places=2, default=10
+    )
+    limite_caixa_espiral_ug3 = models.DecimalField(
+        max_digits=10, decimal_places=2, default=0
     )
 
 

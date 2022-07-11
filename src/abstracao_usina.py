@@ -3,6 +3,7 @@ import subprocess
 from cmath import sqrt
 from datetime import date, datetime, timedelta
 from time import sleep
+from typing import Type
 
 from pyModbusTCP.server import DataBank
 from scipy.signal import butter, filtfilt
@@ -547,16 +548,28 @@ class Usina:
             CondicionadorBase(x.descr, DEVE_INDISPONIBILIZAR, x)
         )
 
-        pars = [
-            datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
-            self.cfg["kp"],
-            self.cfg["ki"],
-            self.cfg["kd"],
-            self.cfg["kie"],
-            self.cfg["nv_alvo"],
+        valores = [
+            datetime.now().strftime("%Y-%m-%d %H:%M:%S"),  # timestamp
+            1 if self.aguardando_reservatorio else 0,  # aguardando_reservatorio
+            True,  # DEPRECATED clp_online
+            self.nv_montante,  # nv_montante
+            1 if self.ug1.disponivel else 0,  # ug1_disp
+            self.ug1.leitura_potencia.valor,  # ug1_pot
+            self.ug1.setpoint,  # ug1_setpot
+            self.ug1.etapa_atual,  # ug1_sinc
+            self.ug1.leitura_horimetro.valor,  # ug1_tempo
+            1 if self.ug2.disponivel else 0,  # ug2_disp
+            self.ug2.leitura_potencia.valor,  # ug2_pot
+            self.ug2.setpoint,  # ug2_setpot
+            self.ug2.etapa_atual,  # ug2_sinc
+            self.ug2.leitura_horimetro.valor,  # ug2_tempo
+            1 if self.ug3.disponivel else 0,  # ug3_disp
+            self.ug3.leitura_potencia.valor,  # ug3_pot
+            self.ug3.setpoint,  # ug3_setpot
+            self.ug3.etapa_atual,  # ug3_sinc
+            self.ug3.leitura_horimetro.valor,  # ug3_tempo
         ]
-        self.con.open()
-        self.db.update_parametros_usina(pars)
+        self.db.update_valores_usina(valores)
 
         # ajuste inicial ie
         if self.cfg["saida_ie_inicial"] == "auto":
@@ -653,7 +666,7 @@ class Usina:
                 (nv * (smoothing / (1 + len(self.nv_montante_recentes))))
                 + ema[-1] * (1 - (smoothing / (1 + len(self.nv_montante_recentes))))
             )
-        self.nv_montante_recente = ema[-1] # REMOVER SEB
+        self.nv_montante_recente = ema[-1]  # REMOVER SEB
         self.nv_montante_recente = self.leituras.nv_montante.valor
 
         self.erro_nv_anterior = self.erro_nv
@@ -777,7 +790,7 @@ class Usina:
         self.cfg["ki"] = float(parametros["ki"])
         self.cfg["kd"] = float(parametros["kd"])
         self.cfg["kie"] = float(parametros["kie"])
-        self.cfg["pot_maxima_usina"] = float(parametros["pot_nominal_ug"])*3
+        self.cfg["pot_maxima_usina"] = float(parametros["pot_nominal_ug"]) * 3
         self.cfg["pot_maxima_alvo"] = float(parametros["pot_nominal"])
         self.cfg["pot_maxima_ug"] = float(parametros["pot_nominal_ug"])
 
@@ -818,25 +831,25 @@ class Usina:
         # Escreve no banco
         # Paulo: mover lógica de escrever no banco para um método em DBService
         valores = [
-            datetime.now().strftime("%Y-%m-%d %H:%M:%S"), # timestamp
-            1 if self.aguardando_reservatorio else 0, # aguardando_reservatorio
-            1 if self.clp_online else 0, # clp_online
-            self.nv_montante, # nv_montante
-            1 if self.ug1.disponivel else 0, # ug1_disp
-            self.ug1.leitura_potencia.valor, # ug1_pot
-            self.ug1.setpoint, # ug1_setpot
-            self.ug1.etapa_atual, # ug1_sinc
-            self.ug1.leitura_horimetro.valor, # ug1_tempo
-            1 if self.ug2.disponivel else 0, # ug2_disp
-            self.ug2.leitura_potencia.valor, # ug2_pot
-            self.ug2.setpoint, # ug2_setpot
-            self.ug2.etapa_atual, # ug2_sinc
-            self.ug2.leitura_horimetro.valor, # ug2_tempo
-            1 if self.ug3.disponivel else 0, # ug3_disp
-            self.ug3.leitura_potencia.valor, # ug3_pot
-            self.ug3.setpoint, # ug3_setpot
-            self.ug3.etapa_atual, # ug3_sinc
-            self.ug3.leitura_horimetro.valor, # ug3_tempo
+            datetime.now().strftime("%Y-%m-%d %H:%M:%S"),  # timestamp
+            1 if self.aguardando_reservatorio else 0,  # aguardando_reservatorio
+            True,  # DEPRECATED clp_online
+            self.nv_montante,  # nv_montante
+            1 if self.ug1.disponivel else 0,  # ug1_disp
+            self.ug1.leitura_potencia.valor,  # ug1_pot
+            self.ug1.setpoint,  # ug1_setpot
+            self.ug1.etapa_atual,  # ug1_sinc
+            self.ug1.leitura_horimetro.valor,  # ug1_tempo
+            1 if self.ug2.disponivel else 0,  # ug2_disp
+            self.ug2.leitura_potencia.valor,  # ug2_pot
+            self.ug2.setpoint,  # ug2_setpot
+            self.ug2.etapa_atual,  # ug2_sinc
+            self.ug2.leitura_horimetro.valor,  # ug2_tempo
+            1 if self.ug3.disponivel else 0,  # ug3_disp
+            self.ug3.leitura_potencia.valor,  # ug3_pot
+            self.ug3.setpoint,  # ug3_setpot
+            self.ug3.etapa_atual,  # ug3_sinc
+            self.ug3.leitura_horimetro.valor,  # ug3_tempo
         ]
 
         self.db.update_valores_usina(valores)
@@ -912,10 +925,34 @@ class Usina:
                 self.ug2.leitura_potencia.valor,
                 self.nv_montante_recente,
                 self.erro_nv,
+                self.ug3.setpoint,
+                self.ug3.leitura_potencia.valor,
                 ma,
             )
+            valores = [
+                datetime.now().strftime("%Y-%m-%d %H:%M:%S"),  # timestamp
+                1 if self.aguardando_reservatorio else 0,  # aguardando_reservatorio
+                True,  # DEPRECATED clp_online
+                self.nv_montante,  # nv_montante
+                1 if self.ug1.disponivel else 0,  # ug1_disp
+                self.ug1.leitura_potencia.valor,  # ug1_pot
+                self.ug1.setpoint,  # ug1_setpot
+                self.ug1.etapa_atual,  # ug1_sinc
+                self.ug1.leitura_horimetro.valor,  # ug1_tempo
+                1 if self.ug2.disponivel else 0,  # ug2_disp
+                self.ug2.leitura_potencia.valor,  # ug2_pot
+                self.ug2.setpoint,  # ug2_setpot
+                self.ug2.etapa_atual,  # ug2_sinc
+                self.ug2.leitura_horimetro.valor,  # ug2_tempo
+                1 if self.ug3.disponivel else 0,  # ug3_disp
+                self.ug3.leitura_potencia.valor,  # ug3_pot
+                self.ug3.setpoint,  # ug3_setpot
+                self.ug3.etapa_atual,  # ug3_sinc
+                self.ug3.leitura_horimetro.valor,  # ug3_tempo
+            ]
+            self.db.update_valores_usina(valores)
         except Exception as e:
-            pass
+            logger.exception(e)
 
         agora = datetime.now()
         ano = int(agora.year)
@@ -1088,17 +1125,28 @@ class Usina:
                             )
                         )
                     self.cfg["nv_alvo"] = novo
-                    pars = [
-                        datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
-                        self.cfg["kp"],
-                        self.cfg["ki"],
-                        self.cfg["kd"],
-                        self.cfg["kie"],
-                        0,  # self.n_movel_l,
-                        0,  # self.n_movel_r,
-                        self.cfg["nv_alvo"],
+                    valores = [
+                        datetime.now().strftime("%Y-%m-%d %H:%M:%S"),  # timestamp
+                        1 if self.aguardando_reservatorio else 0,  # aguardando_reservatorio
+                        True,  # DEPRECATED clp_online
+                        self.nv_montante,  # nv_montante
+                        1 if self.ug1.disponivel else 0,  # ug1_disp
+                        self.ug1.leitura_potencia.valor,  # ug1_pot
+                        self.ug1.setpoint,  # ug1_setpot
+                        self.ug1.etapa_atual,  # ug1_sinc
+                        self.ug1.leitura_horimetro.valor,  # ug1_tempo
+                        1 if self.ug2.disponivel else 0,  # ug2_disp
+                        self.ug2.leitura_potencia.valor,  # ug2_pot
+                        self.ug2.setpoint,  # ug2_setpot
+                        self.ug2.etapa_atual,  # ug2_sinc
+                        self.ug2.leitura_horimetro.valor,  # ug2_tempo
+                        1 if self.ug3.disponivel else 0,  # ug3_disp
+                        self.ug3.leitura_potencia.valor,  # ug3_pot
+                        self.ug3.setpoint,  # ug3_setpot
+                        self.ug3.etapa_atual,  # ug3_sinc
+                        self.ug3.leitura_horimetro.valor,  # ug3_tempo
                     ]
-                    self.db.update_parametros_usina(pars)
+                    self.db.update_valores_usina(valores)
                     self.escrever_valores()
 
                 if agendamento[3] == AGENDAMENTO_UG1_ALTERAR_POT_LIMITE:
@@ -1189,13 +1237,18 @@ class Usina:
             for ug in self.ugs:
                 ug.setpoint = 0
             return 0
-        
+
         logger.debug("Pot alvo = {}".format(pot_alvo))
 
-        if self.leituras.potencia_ativa_kW.valor > self.cfg["pot_maxima_alvo"] * 0.95:
-            pot_alvo = pot_alvo / (
-                self.leituras.potencia_ativa_kW.valor / self.cfg["pot_maxima_alvo"]
-            )
+        pot_medidor = self.leituras.potencia_ativa_kW.valor
+        logger.debug("Pot no medidor = {}".format(pot_medidor))
+        try:
+            if pot_medidor > self.cfg["pot_maxima_alvo"]:
+                pot_alvo = 1 - (self.cfg["pot_maxima_alvo"] / pot_medidor)
+        except TypeError as e:
+            logger.info("A comunicação com os MFs falharam.")
+
+        logger.debug("Pot alvo após ajuste medidor = {}".format(pot_alvo))
 
         ugs = self.lista_de_ugs_disponiveis()
         self.pot_disp = 0
@@ -1203,25 +1256,21 @@ class Usina:
         for ug in ugs:
             logger.debug("UG{}".format(ug.id))
             self.pot_disp += ug.cfg["pot_maxima_ug{}".format(ugs[0].id)]
-
         if ugs is None:
             return False
         elif len(ugs) == 0:
             return False
+
         logger.debug("Distribuindo {}".format(pot_alvo))
 
         sp = pot_alvo / self.cfg["pot_maxima_usina"]
 
-        self.__split1 = True if sp > (0.133) else self.__split1
+        self.__split1 = True if sp > (0) else self.__split1
         self.__split2 = (
-            True
-            if sp > (0.333 + self.cfg["margem_pot_critica"])
-            else self.__split2
+            True if sp > (0.333 + self.cfg["margem_pot_critica"]) else self.__split2
         )
         self.__split3 = (
-            True
-            if sp > (0.666 + self.cfg["margem_pot_critica"])
-            else self.__split3
+            True if sp > (0.666 + self.cfg["margem_pot_critica"]) else self.__split3
         )
 
         self.__split3 = False if sp < (0.666) else self.__split3
@@ -1230,7 +1279,7 @@ class Usina:
 
         logger.debug(f"Sp {sp}")
         if len(ugs) == 3:
-        
+
             if self.__split3:
                 logger.debug("Split 3")
                 ugs[0].setpoint = sp * ugs[0].setpoint_maximo
@@ -1267,11 +1316,9 @@ class Usina:
                 ugs[0].setpoint = 0
                 ugs[1].setpoint = 0
 
-                
         elif len(ugs) == 1:
             logger.debug("Split 3B")
             ugs[0].setpoint = 3 * sp * ugs[0].setpoint_maximo
-
 
         for ug in self.ugs:
             logger.debug("UG{} SP:{}".format(ug.id, ug.setpoint))
@@ -1387,11 +1434,11 @@ class Usina:
                 self.nv_montante_recente,
                 self.erro_nv,
                 ma,
+                self.ug3.setpoint,
+                self.ug3.leitura_potencia.valor,
             )
         except Exception as e:
-            logger.debug(
-                "Exception Banco-------------------------------------------------"
-            )
+            logger.exception(e)
 
         pot_alvo = self.distribuir_potencia(pot_alvo)
 

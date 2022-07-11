@@ -126,7 +126,7 @@ class Painel(threading.Thread):
                 port=self.cfg["moa_slave_porta"],
                 unit_id=1,
                 auto_open=True,
-                timeout=0.5
+                timeout=0.5,
             )
         except Exception as e:
             logger.error("Erro ao criar leitor ModBus.")
@@ -228,6 +228,12 @@ class Painel(threading.Thread):
                         )
 
                     # Replicate panel on INPUTS
+
+                    print(f"IN1: {gpio.input(IN_01):}")
+                    print(f"IN2: {gpio.input(IN_02):}")
+                    print(f"IN3: {gpio.input(IN_03):}")
+                    print(f"IN4: {gpio.input(IN_04):}")
+
                     if gpio.input(IN_01):
                         logger.info("Comando recebido: desabilitar modo autonomo.")
                         self.modbus.write_single_register(
@@ -241,7 +247,7 @@ class Painel(threading.Thread):
                         )
                         panel_was_updated = False
 
-                    elif gpio.input(IN_02):
+                    elif gpio.input(IN_04):
                         logger.info("Comando recebido: habilitar modo autonomo.")
                         self.modbus.write_single_register(
                             self.cfg["REG_MOA_IN_DESABILITA_AUTO"], 0

@@ -86,7 +86,6 @@ class FieldConnector:
             REG_TDA_ComandosDigitais_MXW_Desab_Religamento52L, 1
         )
 
-
     def open(self):
         logger.debug("Opening Modbus")
         if not self.ug1_clp.open():
@@ -218,9 +217,9 @@ class FieldConnector:
             logger.info("DisjDJ1_AlPressBaixa")
             return True
 
-        if self.usn_clp.read_discrete_inputs(
-            REG_SA_RetornosDigitais_MXR_DJ1_FalhaInt
-        )[0]:
+        if self.usn_clp.read_discrete_inputs(REG_SA_RetornosDigitais_MXR_DJ1_FalhaInt)[
+            0
+        ]:
             logger.info("MXR_DJ1_FalhaInt")
             return True
 
