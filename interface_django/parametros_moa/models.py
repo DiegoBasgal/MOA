@@ -54,7 +54,7 @@ class ParametrosUsina(models.Model):
     alerta_temperatura_fase_s_ug1 = models.DecimalField(
         max_digits=10, decimal_places=2, default=100
     )
-    alerta_temperatura_fase_t_ug1_ug1 = models.DecimalField(
+    alerta_temperatura_fase_t_ug1 = models.DecimalField(
         max_digits=10, decimal_places=2, default=100
     )
     alerta_temperatura_nucleo_estator_ug1 = models.DecimalField(
@@ -90,7 +90,7 @@ class ParametrosUsina(models.Model):
     limite_temperatura_fase_s_ug1 = models.DecimalField(
         max_digits=10, decimal_places=2, default=200
     )
-    limite_temperatura_fase_t_ug1_ug1 = models.DecimalField(
+    limite_temperatura_fase_t_ug1 = models.DecimalField(
         max_digits=10, decimal_places=2, default=200
     )
     limite_temperatura_nucleo_estator_ug1 = models.DecimalField(
@@ -141,7 +141,7 @@ class ParametrosUsina(models.Model):
     alerta_temperatura_fase_s_ug2 = models.DecimalField(
         max_digits=10, decimal_places=2, default=100
     )
-    alerta_temperatura_fase_t_ug2_ug2 = models.DecimalField(
+    alerta_temperatura_fase_t_ug2 = models.DecimalField(
         max_digits=10, decimal_places=2, default=100
     )
     alerta_temperatura_nucleo_estator_ug2 = models.DecimalField(
@@ -177,7 +177,7 @@ class ParametrosUsina(models.Model):
     limite_temperatura_fase_s_ug2 = models.DecimalField(
         max_digits=10, decimal_places=2, default=200
     )
-    limite_temperatura_fase_t_ug2_ug2 = models.DecimalField(
+    limite_temperatura_fase_t_ug2 = models.DecimalField(
         max_digits=10, decimal_places=2, default=200
     )
     limite_temperatura_nucleo_estator_ug2 = models.DecimalField(
@@ -227,7 +227,7 @@ class ParametrosUsina(models.Model):
     alerta_temperatura_fase_s_ug3 = models.DecimalField(
         max_digits=10, decimal_places=2, default=100
     )
-    alerta_temperatura_fase_t_ug3_ug3 = models.DecimalField(
+    alerta_temperatura_fase_t_ug3 = models.DecimalField(
         max_digits=10, decimal_places=2, default=100
     )
     alerta_temperatura_nucleo_estator_ug3 = models.DecimalField(
@@ -263,7 +263,7 @@ class ParametrosUsina(models.Model):
     limite_temperatura_fase_s_ug3 = models.DecimalField(
         max_digits=10, decimal_places=2, default=200
     )
-    limite_temperatura_fase_t_ug3_ug3 = models.DecimalField(
+    limite_temperatura_fase_t_ug3 = models.DecimalField(
         max_digits=10, decimal_places=2, default=200
     )
     limite_temperatura_nucleo_estator_ug3 = models.DecimalField(

@@ -49,652 +49,240 @@ def parametros_moa_view(request, *args, **kwargs):
         nv_alvo = float(request.POST.get("nv_alvo").replace(",", "."))
         usina.nv_alvo = nv_alvo if isinstance(nv_alvo, float) else usina.nv_alvo
 
-        """
-        aux = float(
-            request.POST.get("temperatura_alerta_enrolamento_fase_r_ug1").replace(
-                ",", "."
-            )
-        )
-        usina.temperatura_alerta_enrolamento_fase_r_ug1 = (
-            aux
-            if isinstance(aux, float) and aux > 0
-            else usina.temperatura_alerta_enrolamento_fase_r_ug1
-        )
+        aux = request.POST.get("alerta_temperatura_fase_r_ug1")
+        usina.alerta_temperatura_fase_r_ug1 = (float(aux.replace(",", ".")) if aux is not None and aux > 0 else usina.alerta_temperatura_fase_r_ug1)
 
-        aux = float(
-            request.POST.get("temperatura_alerta_enrolamento_fase_s_ug1").replace(
-                ",", "."
-            )
-        )
-        usina.temperatura_alerta_enrolamento_fase_s_ug1 = (
-            aux
-            if isinstance(aux, float) and aux > 0
-            else usina.temperatura_alerta_enrolamento_fase_s_ug1
-        )
+        aux = request.POST.get("alerta_temperatura_fase_s_ug1")
+        usina.alerta_temperatura_fase_s_ug1 = (float(aux.replace(",", ".")) if aux is not None and aux > 0 else usina.alerta_temperatura_fase_s_ug1)
 
-        aux = float(
-            request.POST.get("temperatura_alerta_enrolamento_fase_t_ug1").replace(
-                ",", "."
-            )
-        )
-        usina.temperatura_alerta_enrolamento_fase_t_ug1 = (
-            aux
-            if isinstance(aux, float) and aux > 0
-            else usina.temperatura_alerta_enrolamento_fase_t_ug1
-        )
+        aux = request.POST.get("alerta_temperatura_fase_t_ug1")
+        usina.alerta_temperatura_fase_t_ug1 = (float(aux.replace(",", ".")) if aux is not None and aux > 0 else usina.alerta_temperatura_fase_t_ug1)
 
-        aux = float(
-            request.POST.get("temperatura_alerta_mancal_la_casquilho_ug1").replace(
-                ",", "."
-            )
-        )
-        usina.temperatura_alerta_mancal_la_casquilho_ug1 = (
-            aux
-            if isinstance(aux, float) and aux > 0
-            else usina.temperatura_alerta_mancal_la_casquilho_ug1
-        )
+        aux = request.POST.get("alerta_temperatura_nucleo_estator_ug1")
+        usina.alerta_temperatura_nucleo_estator_ug1 = (float(aux.replace(",", ".")) if aux is not None and aux > 0 else usina.alerta_temperatura_nucleo_estator_ug1)
 
-        aux = float(
-            request.POST.get(
-                "temperatura_alerta_mancal_la_contra_escora_1_ug1"
-            ).replace(",", ".")
-        )
-        usina.temperatura_alerta_mancal_la_contra_escora_1_ug1 = (
-            aux
-            if isinstance(aux, float) and aux > 0
-            else usina.temperatura_alerta_mancal_la_contra_escora_1_ug1
-        )
+        aux = request.POST.get("alerta_temperatura_mancal_rad_dia_1_ug1")
+        usina.alerta_temperatura_mancal_rad_dia_1_ug1 = (float(aux.replace(",", ".")) if aux is not None and aux > 0 else usina.alerta_temperatura_mancal_rad_dia_1_ug1)
 
-        aux = float(
-            request.POST.get(
-                "temperatura_alerta_mancal_la_contra_escora_2_ug1"
-            ).replace(",", ".")
-        )
-        usina.temperatura_alerta_mancal_la_contra_escora_2_ug1 = (
-            aux
-            if isinstance(aux, float) and aux > 0
-            else usina.temperatura_alerta_mancal_la_contra_escora_2_ug1
-        )
+        aux = request.POST.get("alerta_temperatura_mancal_rad_dia_2_ug1")
+        usina.alerta_temperatura_mancal_rad_dia_2_ug1 = (float(aux.replace(",", ".")) if aux is not None and aux > 0 else usina.alerta_temperatura_mancal_rad_dia_2_ug1)
 
-        aux = float(
-            request.POST.get("temperatura_alerta_mancal_la_escora_1_ug1").replace(
-                ",", "."
-            )
-        )
-        usina.temperatura_alerta_mancal_la_escora_1_ug1 = (
-            aux
-            if isinstance(aux, float) and aux > 0
-            else usina.temperatura_alerta_mancal_la_escora_1_ug1
-        )
+        aux = request.POST.get("alerta_temperatura_mancal_rad_tra_1_ug1")
+        usina.alerta_temperatura_mancal_rad_tra_1_ug1 = (float(aux.replace(",", ".")) if aux is not None and aux > 0 else usina.alerta_temperatura_mancal_rad_tra_1_ug1)
 
-        aux = float(
-            request.POST.get("temperatura_alerta_mancal_la_escora_2_ug1").replace(
-                ",", "."
-            )
-        )
-        usina.temperatura_alerta_mancal_la_escora_2_ug1 = (
-            aux
-            if isinstance(aux, float) and aux > 0
-            else usina.temperatura_alerta_mancal_la_escora_2_ug1
-        )
+        aux = request.POST.get("alerta_temperatura_mancal_rad_tra_2_ug1")
+        usina.alerta_temperatura_mancal_rad_tra_2_ug1 = (float(aux.replace(",", ".")) if aux is not None and aux > 0 else usina.alerta_temperatura_mancal_rad_tra_2_ug1)
 
-        aux = float(
-            request.POST.get("temperatura_alerta_mancal_lna_casquilho_ug1").replace(
-                ",", "."
-            )
-        )
-        usina.temperatura_alerta_mancal_lna_casquilho_ug1 = (
-            aux
-            if isinstance(aux, float) and aux > 0
-            else usina.temperatura_alerta_mancal_lna_casquilho_ug1
-        )
+        aux = request.POST.get("alerta_temperatura_saida_de_ar_ug1")
+        usina.alerta_temperatura_saida_de_ar_ug1 = (float(aux.replace(",", ".")) if aux is not None and aux > 0 else usina.alerta_temperatura_saida_de_ar_ug1)
 
-        aux = float(
-            request.POST.get("temperatura_limite_enrolamento_fase_r_ug1").replace(
-                ",", "."
-            )
-        )
-        usina.temperatura_limite_enrolamento_fase_r_ug1 = (
-            aux
-            if isinstance(aux, float) and aux > 0
-            else usina.temperatura_limite_enrolamento_fase_r_ug1
-        )
+        aux = request.POST.get("alerta_temperatura_mancal_guia_escora_ug1")
+        usina.alerta_temperatura_mancal_guia_escora_ug1 = (float(aux.replace(",", ".")) if aux is not None and aux > 0 else usina.alerta_temperatura_mancal_guia_escora_ug1)
 
-        aux = float(
-            request.POST.get("temperatura_limite_enrolamento_fase_s_ug1").replace(
-                ",", "."
-            )
-        )
-        usina.temperatura_limite_enrolamento_fase_s_ug1 = (
-            aux
-            if isinstance(aux, float) and aux > 0
-            else usina.temperatura_limite_enrolamento_fase_s_ug1
-        )
+        aux = request.POST.get("alerta_temperatura_mancal_guia_radial_ug1")
+        usina.alerta_temperatura_mancal_guia_radial_ug1 = (float(aux.replace(",", ".")) if aux is not None and aux > 0 else usina.alerta_temperatura_mancal_guia_radial_ug1)
 
-        aux = float(
-            request.POST.get("temperatura_limite_enrolamento_fase_t_ug1").replace(
-                ",", "."
-            )
-        )
-        usina.temperatura_limite_enrolamento_fase_t_ug1 = (
-            aux
-            if isinstance(aux, float) and aux > 0
-            else usina.temperatura_limite_enrolamento_fase_t_ug1
-        )
+        aux = request.POST.get("alerta_temperatura_mancal_guia_contra_ug1")
+        usina.alerta_temperatura_mancal_guia_contra_ug1 = (float(aux.replace(",", ".")) if aux is not None and aux > 0 else usina.alerta_temperatura_mancal_guia_contra_ug1)
 
-        aux = float(
-            request.POST.get("temperatura_limite_mancal_la_casquilho_ug1").replace(
-                ",", "."
-            )
-        )
-        usina.temperatura_limite_mancal_la_casquilho_ug1 = (
-            aux
-            if isinstance(aux, float) and aux > 0
-            else usina.temperatura_limite_mancal_la_casquilho_ug1
-        )
+        aux = request.POST.get("limite_temperatura_fase_r_ug1")
+        usina.limite_temperatura_fase_r_ug1 = (float(aux.replace(",", ".")) if aux is not None and aux > 0 else usina.limite_temperatura_fase_r_ug1)
 
-        aux = float(
-            request.POST.get(
-                "temperatura_limite_mancal_la_contra_escora_1_ug1"
-            ).replace(",", ".")
-        )
-        usina.temperatura_limite_mancal_la_contra_escora_1_ug1 = (
-            aux
-            if isinstance(aux, float) and aux > 0
-            else usina.temperatura_limite_mancal_la_contra_escora_1_ug1
-        )
+        aux = request.POST.get("limite_temperatura_fase_s_ug1")
+        usina.limite_temperatura_fase_s_ug1 = (float(aux.replace(",", ".")) if aux is not None and aux > 0 else usina.limite_temperatura_fase_s_ug1)
 
-        aux = float(
-            request.POST.get(
-                "temperatura_limite_mancal_la_contra_escora_2_ug1"
-            ).replace(",", ".")
-        )
-        usina.temperatura_limite_mancal_la_contra_escora_2_ug1 = (
-            aux
-            if isinstance(aux, float) and aux > 0
-            else usina.temperatura_limite_mancal_la_contra_escora_2_ug1
-        )
+        aux = request.POST.get("limite_temperatura_fase_t_ug1")
+        usina.limite_temperatura_fase_t_ug1 = (float(aux.replace(",", ".")) if aux is not None and aux > 0 else usina.limite_temperatura_fase_t_ug1)
 
-        aux = float(
-            request.POST.get("temperatura_limite_mancal_la_escora_1_ug1").replace(
-                ",", "."
-            )
-        )
-        usina.temperatura_limite_mancal_la_escora_1_ug1 = (
-            aux
-            if isinstance(aux, float) and aux > 0
-            else usina.temperatura_limite_mancal_la_escora_1_ug1
-        )
+        aux = request.POST.get("limite_temperatura_nucleo_estator_ug1")
+        usina.limite_temperatura_nucleo_estator_ug1 = (float(aux.replace(",", ".")) if aux is not None and aux > 0 else usina.limite_temperatura_nucleo_estator_ug1)
 
-        aux = float(
-            request.POST.get("temperatura_limite_mancal_la_escora_2_ug1").replace(
-                ",", "."
-            )
-        )
-        usina.temperatura_limite_mancal_la_escora_2_ug1 = (
-            aux
-            if isinstance(aux, float) and aux > 0
-            else usina.temperatura_limite_mancal_la_escora_2_ug1
-        )
+        aux = request.POST.get("limite_temperatura_mancal_rad_dia_1_ug1")
+        usina.limite_temperatura_mancal_rad_dia_1_ug1 = (float(aux.replace(",", ".")) if aux is not None and aux > 0 else usina.limite_temperatura_mancal_rad_dia_1_ug1)
 
-        aux = float(
-            request.POST.get("temperatura_limite_mancal_lna_casquilho_ug1").replace(
-                ",", "."
-            )
-        )
-        usina.temperatura_limite_mancal_lna_casquilho_ug1 = (
-            aux
-            if isinstance(aux, float) and aux > 0
-            else usina.temperatura_limite_mancal_lna_casquilho_ug1
-        )
+        aux = request.POST.get("limite_temperatura_mancal_rad_dia_2_ug1")
+        usina.limite_temperatura_mancal_rad_dia_2_ug1 = (float(aux.replace(",", ".")) if aux is not None and aux > 0 else usina.limite_temperatura_mancal_rad_dia_2_ug1)
 
-        aux = float(
-            request.POST.get("temperatura_alerta_enrolamento_fase_r_ug2").replace(
-                ",", "."
-            )
-        )
-        usina.temperatura_alerta_enrolamento_fase_r_ug2 = (
-            aux
-            if isinstance(aux, float) and aux > 0
-            else usina.temperatura_alerta_enrolamento_fase_r_ug2
-        )
+        aux = request.POST.get("limite_temperatura_mancal_rad_tra_1_ug1")
+        usina.limite_temperatura_mancal_rad_tra_1_ug1 = (float(aux.replace(",", ".")) if aux is not None and aux > 0 else usina.limite_temperatura_mancal_rad_tra_1_ug1)
 
-        aux = float(
-            request.POST.get("temperatura_alerta_enrolamento_fase_s_ug2").replace(
-                ",", "."
-            )
-        )
-        usina.temperatura_alerta_enrolamento_fase_s_ug2 = (
-            aux
-            if isinstance(aux, float) and aux > 0
-            else usina.temperatura_alerta_enrolamento_fase_s_ug2
-        )
+        aux = request.POST.get("limite_temperatura_mancal_rad_tra_2_ug1")
+        usina.limite_temperatura_mancal_rad_tra_2_ug1 = (float(aux.replace(",", ".")) if aux is not None and aux > 0 else usina.limite_temperatura_mancal_rad_tra_2_ug1)
 
-        aux = float(
-            request.POST.get("temperatura_alerta_enrolamento_fase_t_ug2").replace(
-                ",", "."
-            )
-        )
-        usina.temperatura_alerta_enrolamento_fase_t_ug2 = (
-            aux
-            if isinstance(aux, float) and aux > 0
-            else usina.temperatura_alerta_enrolamento_fase_t_ug2
-        )
+        aux = request.POST.get("limite_temperatura_saida_de_ar_ug1")
+        usina.limite_temperatura_saida_de_ar_ug1 = (float(aux.replace(",", ".")) if aux is not None and aux > 0 else usina.limite_temperatura_saida_de_ar_ug1)
 
-        aux = float(
-            request.POST.get("temperatura_alerta_mancal_la_casquilho_ug2").replace(
-                ",", "."
-            )
-        )
-        usina.temperatura_alerta_mancal_la_casquilho_ug2 = (
-            aux
-            if isinstance(aux, float) and aux > 0
-            else usina.temperatura_alerta_mancal_la_casquilho_ug2
-        )
+        aux = request.POST.get("limite_temperatura_mancal_guia_escora_ug1")
+        usina.limite_temperatura_mancal_guia_escora_ug1 = (float(aux.replace(",", ".")) if aux is not None and aux > 0 else usina.limite_temperatura_mancal_guia_escora_ug1)
 
-        aux = float(
-            request.POST.get(
-                "temperatura_alerta_mancal_la_contra_escora_1_ug2"
-            ).replace(",", ".")
-        )
-        usina.temperatura_alerta_mancal_la_contra_escora_1_ug2 = (
-            aux
-            if isinstance(aux, float) and aux > 0
-            else usina.temperatura_alerta_mancal_la_contra_escora_1_ug2
-        )
+        aux = request.POST.get("limite_temperatura_mancal_guia_radial_ug1")
+        usina.limite_temperatura_mancal_guia_radial_ug1 = (float(aux.replace(",", ".")) if aux is not None and aux > 0 else usina.limite_temperatura_mancal_guia_radial_ug1)
 
-        aux = float(
-            request.POST.get(
-                "temperatura_alerta_mancal_la_contra_escora_2_ug2"
-            ).replace(",", ".")
-        )
-        usina.temperatura_alerta_mancal_la_contra_escora_2_ug2 = (
-            aux
-            if isinstance(aux, float) and aux > 0
-            else usina.temperatura_alerta_mancal_la_contra_escora_2_ug2
-        )
+        aux = request.POST.get("limite_temperatura_mancal_guia_contra_ug1")
+        usina.limite_temperatura_mancal_guia_contra_ug1 = (float(aux.replace(",", ".")) if aux is not None and aux > 0 else usina.limite_temperatura_mancal_guia_contra_ug1)
 
-        aux = float(
-            request.POST.get("temperatura_alerta_mancal_la_escora_1_ug2").replace(
-                ",", "."
-            )
-        )
-        usina.temperatura_alerta_mancal_la_escora_1_ug2 = (
-            aux
-            if isinstance(aux, float) and aux > 0
-            else usina.temperatura_alerta_mancal_la_escora_1_ug2
-        )
+        aux = request.POST.get("alerta_caixa_espiral_ug1")
+        usina.alerta_caixa_espiral_ug1 = (float(aux.replace(",", ".")) if aux is not None and aux > 0 else usina.alerta_caixa_espiral_ug1)
 
-        aux = float(
-            request.POST.get("temperatura_alerta_mancal_la_escora_2_ug2").replace(
-                ",", "."
-            )
-        )
-        usina.temperatura_alerta_mancal_la_escora_2_ug2 = (
-            aux
-            if isinstance(aux, float) and aux > 0
-            else usina.temperatura_alerta_mancal_la_escora_2_ug2
-        )
+        aux = request.POST.get("limite_caixa_espiral_ug1")
+        usina.limite_caixa_espiral_ug1 = (float(aux.replace(",", ".")) if aux is not None and aux > 0 else usina.limite_caixa_espiral_ug1)
 
-        aux = float(
-            request.POST.get("temperatura_alerta_mancal_lna_casquilho_ug2").replace(
-                ",", "."
-            )
-        )
-        usina.temperatura_alerta_mancal_lna_casquilho_ug2 = (
-            aux
-            if isinstance(aux, float) and aux > 0
-            else usina.temperatura_alerta_mancal_lna_casquilho_ug2
-        )
+        aux = request.POST.get("alerta_temperatura_fase_r_ug2")
+        usina.alerta_temperatura_fase_r_ug2 = (float(aux.replace(",", ".")) if aux is not None and aux > 0 else usina.alerta_temperatura_fase_r_ug2)
 
-        aux = float(
-            request.POST.get("temperatura_limite_enrolamento_fase_r_ug2").replace(
-                ",", "."
-            )
-        )
-        usina.temperatura_limite_enrolamento_fase_r_ug2 = (
-            aux
-            if isinstance(aux, float) and aux > 0
-            else usina.temperatura_limite_enrolamento_fase_r_ug2
-        )
+        aux = request.POST.get("alerta_temperatura_fase_s_ug2")
+        usina.alerta_temperatura_fase_s_ug2 = (float(aux.replace(",", ".")) if aux is not None and aux > 0 else usina.alerta_temperatura_fase_s_ug2)
 
-        aux = float(
-            request.POST.get("temperatura_limite_enrolamento_fase_s_ug2").replace(
-                ",", "."
-            )
-        )
-        usina.temperatura_limite_enrolamento_fase_s_ug2 = (
-            aux
-            if isinstance(aux, float) and aux > 0
-            else usina.temperatura_limite_enrolamento_fase_s_ug2
-        )
+        aux = request.POST.get("alerta_temperatura_fase_t_ug2")
+        usina.alerta_temperatura_fase_t_ug2 = (float(aux.replace(",", ".")) if aux is not None and aux > 0 else usina.alerta_temperatura_fase_t_ug2)
 
-        aux = float(
-            request.POST.get("temperatura_limite_enrolamento_fase_t_ug2").replace(
-                ",", "."
-            )
-        )
-        usina.temperatura_limite_enrolamento_fase_t_ug2 = (
-            aux
-            if isinstance(aux, float) and aux > 0
-            else usina.temperatura_limite_enrolamento_fase_t_ug2
-        )
+        aux = request.POST.get("alerta_temperatura_nucleo_estator_ug2")
+        usina.alerta_temperatura_nucleo_estator_ug2 = (float(aux.replace(",", ".")) if aux is not None and aux > 0 else usina.alerta_temperatura_nucleo_estator_ug2)
 
-        aux = float(
-            request.POST.get("temperatura_limite_mancal_la_casquilho_ug2").replace(
-                ",", "."
-            )
-        )
-        usina.temperatura_limite_mancal_la_casquilho_ug2 = (
-            aux
-            if isinstance(aux, float) and aux > 0
-            else usina.temperatura_limite_mancal_la_casquilho_ug2
-        )
+        aux = request.POST.get("alerta_temperatura_mancal_rad_dia_1_ug2")
+        usina.alerta_temperatura_mancal_rad_dia_1_ug2 = (float(aux.replace(",", ".")) if aux is not None and aux > 0 else usina.alerta_temperatura_mancal_rad_dia_1_ug2)
 
-        aux = float(
-            request.POST.get(
-                "temperatura_limite_mancal_la_contra_escora_1_ug2"
-            ).replace(",", ".")
-        )
-        usina.temperatura_limite_mancal_la_contra_escora_1_ug2 = (
-            aux
-            if isinstance(aux, float) and aux > 0
-            else usina.temperatura_limite_mancal_la_contra_escora_1_ug2
-        )
+        aux = request.POST.get("alerta_temperatura_mancal_rad_dia_2_ug2")
+        usina.alerta_temperatura_mancal_rad_dia_2_ug2 = (float(aux.replace(",", ".")) if aux is not None and aux > 0 else usina.alerta_temperatura_mancal_rad_dia_2_ug2)
 
-        aux = float(
-            request.POST.get(
-                "temperatura_limite_mancal_la_contra_escora_2_ug2"
-            ).replace(",", ".")
-        )
-        usina.temperatura_limite_mancal_la_contra_escora_2_ug2 = (
-            aux
-            if isinstance(aux, float) and aux > 0
-            else usina.temperatura_limite_mancal_la_contra_escora_2_ug2
-        )
+        aux = request.POST.get("alerta_temperatura_mancal_rad_tra_1_ug2")
+        usina.alerta_temperatura_mancal_rad_tra_1_ug2 = (float(aux.replace(",", ".")) if aux is not None and aux > 0 else usina.alerta_temperatura_mancal_rad_tra_1_ug2)
 
-        aux = float(
-            request.POST.get("temperatura_limite_mancal_la_escora_1_ug2").replace(
-                ",", "."
-            )
-        )
-        usina.temperatura_limite_mancal_la_escora_1_ug2 = (
-            aux
-            if isinstance(aux, float) and aux > 0
-            else usina.temperatura_limite_mancal_la_escora_1_ug2
-        )
+        aux = request.POST.get("alerta_temperatura_mancal_rad_tra_2_ug2")
+        usina.alerta_temperatura_mancal_rad_tra_2_ug2 = (float(aux.replace(",", ".")) if aux is not None and aux > 0 else usina.alerta_temperatura_mancal_rad_tra_2_ug2)
 
-        aux = float(
-            request.POST.get("temperatura_limite_mancal_la_escora_2_ug2").replace(
-                ",", "."
-            )
-        )
-        usina.temperatura_limite_mancal_la_escora_2_ug2 = (
-            aux
-            if isinstance(aux, float) and aux > 0
-            else usina.temperatura_limite_mancal_la_escora_2_ug2
-        )
+        aux = request.POST.get("alerta_temperatura_saida_de_ar_ug2")
+        usina.alerta_temperatura_saida_de_ar_ug2 = (float(aux.replace(",", ".")) if aux is not None and aux > 0 else usina.alerta_temperatura_saida_de_ar_ug2)
 
-        aux = float(
-            request.POST.get("temperatura_limite_mancal_lna_casquilho_ug2").replace(
-                ",", "."
-            )
-        )
-        usina.temperatura_limite_mancal_lna_casquilho_ug2 = (
-            aux
-            if isinstance(aux, float) and aux > 0
-            else usina.temperatura_limite_mancal_lna_casquilho_ug2
-        )
+        aux = request.POST.get("alerta_temperatura_mancal_guia_escora_ug2")
+        usina.alerta_temperatura_mancal_guia_escora_ug2 = (float(aux.replace(",", ".")) if aux is not None and aux > 0 else usina.alerta_temperatura_mancal_guia_escora_ug2)
 
-        aux = float(
-            request.POST.get("temperatura_alerta_enrolamento_fase_r_ug3").replace(
-                ",", "."
-            )
-        )
-        usina.temperatura_alerta_enrolamento_fase_r_ug3 = (
-            aux
-            if isinstance(aux, float) and aux > 0
-            else usina.temperatura_alerta_enrolamento_fase_r_ug3
-        )
+        aux = request.POST.get("alerta_temperatura_mancal_guia_radial_ug2")
+        usina.alerta_temperatura_mancal_guia_radial_ug2 = (float(aux.replace(",", ".")) if aux is not None and aux > 0 else usina.alerta_temperatura_mancal_guia_radial_ug2)
 
-        aux = float(
-            request.POST.get("temperatura_alerta_enrolamento_fase_s_ug3").replace(
-                ",", "."
-            )
-        )
-        usina.temperatura_alerta_enrolamento_fase_s_ug3 = (
-            aux
-            if isinstance(aux, float) and aux > 0
-            else usina.temperatura_alerta_enrolamento_fase_s_ug3
-        )
+        aux = request.POST.get("alerta_temperatura_mancal_guia_contra_ug2")
+        usina.alerta_temperatura_mancal_guia_contra_ug2 = (float(aux.replace(",", ".")) if aux is not None and aux > 0 else usina.alerta_temperatura_mancal_guia_contra_ug2)
 
-        aux = float(
-            request.POST.get("temperatura_alerta_enrolamento_fase_t_ug3").replace(
-                ",", "."
-            )
-        )
-        usina.temperatura_alerta_enrolamento_fase_t_ug3 = (
-            aux
-            if isinstance(aux, float) and aux > 0
-            else usina.temperatura_alerta_enrolamento_fase_t_ug3
-        )
+        aux = request.POST.get("limite_temperatura_fase_r_ug2")
+        usina.limite_temperatura_fase_r_ug2 = (float(aux.replace(",", ".")) if aux is not None and aux > 0 else usina.limite_temperatura_fase_r_ug2)
 
-        aux = float(
-            request.POST.get("temperatura_alerta_mancal_la_casquilho_ug3").replace(
-                ",", "."
-            )
-        )
-        usina.temperatura_alerta_mancal_la_casquilho_ug3 = (
-            aux
-            if isinstance(aux, float) and aux > 0
-            else usina.temperatura_alerta_mancal_la_casquilho_ug3
-        )
+        aux = request.POST.get("limite_temperatura_fase_s_ug2")
+        usina.limite_temperatura_fase_s_ug2 = (float(aux.replace(",", ".")) if aux is not None and aux > 0 else usina.limite_temperatura_fase_s_ug2)
 
-        aux = float(
-            request.POST.get(
-                "temperatura_alerta_mancal_la_contra_escora_1_ug3"
-            ).replace(",", ".")
-        )
-        usina.temperatura_alerta_mancal_la_contra_escora_1_ug3 = (
-            aux
-            if isinstance(aux, float) and aux > 0
-            else usina.temperatura_alerta_mancal_la_contra_escora_1_ug3
-        )
+        aux = request.POST.get("limite_temperatura_fase_t_ug2")
+        usina.limite_temperatura_fase_t_ug2 = (float(aux.replace(",", ".")) if aux is not None and aux > 0 else usina.limite_temperatura_fase_t_ug2)
 
-        aux = float(
-            request.POST.get(
-                "temperatura_alerta_mancal_la_contra_escora_2_ug3"
-            ).replace(",", ".")
-        )
-        usina.temperatura_alerta_mancal_la_contra_escora_2_ug3 = (
-            aux
-            if isinstance(aux, float) and aux > 0
-            else usina.temperatura_alerta_mancal_la_contra_escora_2_ug3
-        )
+        aux = request.POST.get("limite_temperatura_nucleo_estator_ug2")
+        usina.limite_temperatura_nucleo_estator_ug2 = (float(aux.replace(",", ".")) if aux is not None and aux > 0 else usina.limite_temperatura_nucleo_estator_ug2)
 
-        aux = float(
-            request.POST.get("temperatura_alerta_mancal_la_escora_1_ug3").replace(
-                ",", "."
-            )
-        )
-        usina.temperatura_alerta_mancal_la_escora_1_ug3 = (
-            aux
-            if isinstance(aux, float) and aux > 0
-            else usina.temperatura_alerta_mancal_la_escora_1_ug3
-        )
+        aux = request.POST.get("limite_temperatura_mancal_rad_dia_1_ug2")
+        usina.limite_temperatura_mancal_rad_dia_1_ug2 = (float(aux.replace(",", ".")) if aux is not None and aux > 0 else usina.limite_temperatura_mancal_rad_dia_1_ug2)
 
-        aux = float(
-            request.POST.get("temperatura_alerta_mancal_la_escora_2_ug3").replace(
-                ",", "."
-            )
-        )
-        usina.temperatura_alerta_mancal_la_escora_2_ug3 = (
-            aux
-            if isinstance(aux, float) and aux > 0
-            else usina.temperatura_alerta_mancal_la_escora_2_ug3
-        )
+        aux = request.POST.get("limite_temperatura_mancal_rad_dia_2_ug2")
+        usina.limite_temperatura_mancal_rad_dia_2_ug2 = (float(aux.replace(",", ".")) if aux is not None and aux > 0 else usina.limite_temperatura_mancal_rad_dia_2_ug2)
 
-        aux = float(
-            request.POST.get("temperatura_alerta_mancal_lna_casquilho_ug3").replace(
-                ",", "."
-            )
-        )
-        usina.temperatura_alerta_mancal_lna_casquilho_ug3 = (
-            aux
-            if isinstance(aux, float) and aux > 0
-            else usina.temperatura_alerta_mancal_lna_casquilho_ug3
-        )
+        aux = request.POST.get("limite_temperatura_mancal_rad_tra_1_ug2")
+        usina.limite_temperatura_mancal_rad_tra_1_ug2 = (float(aux.replace(",", ".")) if aux is not None and aux > 0 else usina.limite_temperatura_mancal_rad_tra_1_ug2)
 
-        aux = float(
-            request.POST.get("temperatura_limite_enrolamento_fase_r_ug3").replace(
-                ",", "."
-            )
-        )
-        usina.temperatura_limite_enrolamento_fase_r_ug3 = (
-            aux
-            if isinstance(aux, float) and aux > 0
-            else usina.temperatura_limite_enrolamento_fase_r_ug3
-        )
+        aux = request.POST.get("limite_temperatura_mancal_rad_tra_2_ug2")
+        usina.limite_temperatura_mancal_rad_tra_2_ug2 = (float(aux.replace(",", ".")) if aux is not None and aux > 0 else usina.limite_temperatura_mancal_rad_tra_2_ug2)
 
-        aux = float(
-            request.POST.get("temperatura_limite_enrolamento_fase_s_ug3").replace(
-                ",", "."
-            )
-        )
-        usina.temperatura_limite_enrolamento_fase_s_ug3 = (
-            aux
-            if isinstance(aux, float) and aux > 0
-            else usina.temperatura_limite_enrolamento_fase_s_ug3
-        )
+        aux = request.POST.get("limite_temperatura_saida_de_ar_ug2")
+        usina.limite_temperatura_saida_de_ar_ug2 = (float(aux.replace(",", ".")) if aux is not None and aux > 0 else usina.limite_temperatura_saida_de_ar_ug2)
 
-        aux = float(
-            request.POST.get("temperatura_limite_enrolamento_fase_t_ug3").replace(
-                ",", "."
-            )
-        )
-        usina.temperatura_limite_enrolamento_fase_t_ug3 = (
-            aux
-            if isinstance(aux, float) and aux > 0
-            else usina.temperatura_limite_enrolamento_fase_t_ug3
-        )
+        aux = request.POST.get("limite_temperatura_mancal_guia_escora_ug2")
+        usina.limite_temperatura_mancal_guia_escora_ug2 = (float(aux.replace(",", ".")) if aux is not None and aux > 0 else usina.limite_temperatura_mancal_guia_escora_ug2)
 
-        aux = float(
-            request.POST.get("temperatura_limite_mancal_la_casquilho_ug3").replace(
-                ",", "."
-            )
-        )
-        usina.temperatura_limite_mancal_la_casquilho_ug3 = (
-            aux
-            if isinstance(aux, float) and aux > 0
-            else usina.temperatura_limite_mancal_la_casquilho_ug3
-        )
+        aux = request.POST.get("limite_temperatura_mancal_guia_radial_ug2")
+        usina.limite_temperatura_mancal_guia_radial_ug2 = (float(aux.replace(",", ".")) if aux is not None and aux > 0 else usina.limite_temperatura_mancal_guia_radial_ug2)
 
-        aux = float(
-            request.POST.get(
-                "temperatura_limite_mancal_la_contra_escora_1_ug3"
-            ).replace(",", ".")
-        )
-        usina.temperatura_limite_mancal_la_contra_escora_1_ug3 = (
-            aux
-            if isinstance(aux, float) and aux > 0
-            else usina.temperatura_limite_mancal_la_contra_escora_1_ug3
-        )
+        aux = request.POST.get("limite_temperatura_mancal_guia_contra_ug2")
+        usina.limite_temperatura_mancal_guia_contra_ug2 = (float(aux.replace(",", ".")) if aux is not None and aux > 0 else usina.limite_temperatura_mancal_guia_contra_ug2)
 
-        aux = float(
-            request.POST.get(
-                "temperatura_limite_mancal_la_contra_escora_2_ug3"
-            ).replace(",", ".")
-        )
-        usina.temperatura_limite_mancal_la_contra_escora_2_ug3 = (
-            aux
-            if isinstance(aux, float) and aux > 0
-            else usina.temperatura_limite_mancal_la_contra_escora_2_ug3
-        )
+        aux = request.POST.get("alerta_caixa_espiral_ug2")
+        usina.alerta_caixa_espiral_ug2 = (float(aux.replace(",", ".")) if aux is not None and aux > 0 else usina.alerta_caixa_espiral_ug2)
 
-        aux = float(
-            request.POST.get("temperatura_limite_mancal_la_escora_1_ug3").replace(
-                ",", "."
-            )
-        )
-        usina.temperatura_limite_mancal_la_escora_1_ug3 = (
-            aux
-            if isinstance(aux, float) and aux > 0
-            else usina.temperatura_limite_mancal_la_escora_1_ug3
-        )
+        aux = request.POST.get("limite_caixa_espiral_ug2")
+        usina.limite_caixa_espiral_ug2 = (float(aux.replace(",", ".")) if aux is not None and aux > 0 else usina.limite_caixa_espiral_ug2)
 
-        aux = float(
-            request.POST.get("temperatura_limite_mancal_la_escora_2_ug3").replace(
-                ",", "."
-            )
-        )
-        usina.temperatura_limite_mancal_la_escora_2_ug3 = (
-            aux
-            if isinstance(aux, float) and aux > 0
-            else usina.temperatura_limite_mancal_la_escora_2_ug3
-        )
+        aux = request.POST.get("alerta_temperatura_fase_r_ug3")
+        usina.alerta_temperatura_fase_r_ug3 = (float(aux.replace(",", ".")) if aux is not None and aux > 0 else usina.alerta_temperatura_fase_r_ug3)
 
-        aux = float(
-            request.POST.get("temperatura_limite_mancal_lna_casquilho_ug3").replace(
-                ",", "."
-            )
-        )
-        usina.temperatura_limite_mancal_lna_casquilho_ug3 = (
-            aux
-            if isinstance(aux, float) and aux > 0
-            else usina.temperatura_limite_mancal_lna_casquilho_ug3
-        )
+        aux = request.POST.get("alerta_temperatura_fase_s_ug3")
+        usina.alerta_temperatura_fase_s_ug3 = (float(aux.replace(",", ".")) if aux is not None and aux > 0 else usina.alerta_temperatura_fase_s_ug3)
 
-        ug1_perda_grade_maxima = float(
-            request.POST.get("ug1_perda_grade_maxima").replace(",", ".")
-        )
-        ug1_perda_grade_alerta = float(
-            request.POST.get("ug1_perda_grade_alerta").replace(",", ".")
-        )
-        usina.ug1_perda_grade_alerta = (
-            ug1_perda_grade_alerta
-            if isinstance(ug1_perda_grade_alerta, float) and ug1_perda_grade_alerta > 0
-            else usina.ug1_perda_grade_alerta
-        )
-        usina.ug1_perda_grade_maxima = (
-            ug1_perda_grade_maxima
-            if isinstance(ug1_perda_grade_maxima, float) and ug1_perda_grade_maxima > 0
-            else usina.ug1_perda_grade_maxima
-        )
+        aux = request.POST.get("alerta_temperatura_fase_t_ug3")
+        usina.alerta_temperatura_fase_t_ug3 = (float(aux.replace(",", ".")) if aux is not None and aux > 0 else usina.alerta_temperatura_fase_t_ug3)
 
-        ug2_perda_grade_maxima = float(
-            request.POST.get("ug2_perda_grade_maxima").replace(",", ".")
-        )
-        ug2_perda_grade_alerta = float(
-            request.POST.get("ug2_perda_grade_alerta").replace(",", ".")
-        )
-        usina.ug2_perda_grade_alerta = (
-            ug2_perda_grade_alerta
-            if isinstance(ug2_perda_grade_alerta, float) and ug2_perda_grade_alerta > 0
-            else usina.ug2_perda_grade_alerta
-        )
-        usina.ug2_perda_grade_maxima = (
-            ug2_perda_grade_maxima
-            if isinstance(ug2_perda_grade_maxima, float) and ug2_perda_grade_maxima > 0
-            else usina.ug2_perda_grade_maxima
-        )
+        aux = request.POST.get("alerta_temperatura_nucleo_estator_ug3")
+        usina.alerta_temperatura_nucleo_estator_ug3 = (float(aux.replace(",", ".")) if aux is not None and aux > 0 else usina.alerta_temperatura_nucleo_estator_ug3)
 
-        ug3_perda_grade_maxima = float(
-            request.POST.get("ug3_perda_grade_maxima").replace(",", ".")
-        )
-        ug3_perda_grade_alerta = float(
-            request.POST.get("ug3_perda_grade_alerta").replace(",", ".")
-        )
-        usina.ug3_perda_grade_alerta = (
-            ug3_perda_grade_alerta
-            if isinstance(ug3_perda_grade_alerta, float) and ug3_perda_grade_alerta > 0
-            else usina.ug3_perda_grade_alerta
-        )
-        usina.ug3_perda_grade_maxima = (
-            ug3_perda_grade_maxima
-            if isinstance(ug3_perda_grade_maxima, float) and ug3_perda_grade_maxima > 0
-            else usina.ug3_perda_grade_maxima
-        )
-"""
+        aux = request.POST.get("alerta_temperatura_mancal_rad_dia_1_ug3")
+        usina.alerta_temperatura_mancal_rad_dia_1_ug3 = (float(aux.replace(",", ".")) if aux is not None and aux > 0 else usina.alerta_temperatura_mancal_rad_dia_1_ug3)
+
+        aux = request.POST.get("alerta_temperatura_mancal_rad_dia_2_ug3")
+        usina.alerta_temperatura_mancal_rad_dia_2_ug3 = (float(aux.replace(",", ".")) if aux is not None and aux > 0 else usina.alerta_temperatura_mancal_rad_dia_2_ug3)
+
+        aux = request.POST.get("alerta_temperatura_mancal_rad_tra_1_ug3")
+        usina.alerta_temperatura_mancal_rad_tra_1_ug3 = (float(aux.replace(",", ".")) if aux is not None and aux > 0 else usina.alerta_temperatura_mancal_rad_tra_1_ug3)
+
+        aux = request.POST.get("alerta_temperatura_mancal_rad_tra_2_ug3")
+        usina.alerta_temperatura_mancal_rad_tra_2_ug3 = (float(aux.replace(",", ".")) if aux is not None and aux > 0 else usina.alerta_temperatura_mancal_rad_tra_2_ug3)
+
+        aux = request.POST.get("alerta_temperatura_saida_de_ar_ug3")
+        usina.alerta_temperatura_saida_de_ar_ug3 = (float(aux.replace(",", ".")) if aux is not None and aux > 0 else usina.alerta_temperatura_saida_de_ar_ug3)
+
+        aux = request.POST.get("alerta_temperatura_mancal_guia_escora_ug3")
+        usina.alerta_temperatura_mancal_guia_escora_ug3 = (float(aux.replace(",", ".")) if aux is not None and aux > 0 else usina.alerta_temperatura_mancal_guia_escora_ug3)
+
+        aux = request.POST.get("alerta_temperatura_mancal_guia_radial_ug3")
+        usina.alerta_temperatura_mancal_guia_radial_ug3 = (float(aux.replace(",", ".")) if aux is not None and aux > 0 else usina.alerta_temperatura_mancal_guia_radial_ug3)
+
+        aux = request.POST.get("alerta_temperatura_mancal_guia_contra_ug3")
+        usina.alerta_temperatura_mancal_guia_contra_ug3 = (float(aux.replace(",", ".")) if aux is not None and aux > 0 else usina.alerta_temperatura_mancal_guia_contra_ug3)
+
+        aux = request.POST.get("limite_temperatura_fase_r_ug3")
+        usina.limite_temperatura_fase_r_ug3 = (float(aux.replace(",", ".")) if aux is not None and aux > 0 else usina.limite_temperatura_fase_r_ug3)
+
+        aux = request.POST.get("limite_temperatura_fase_s_ug3")
+        usina.limite_temperatura_fase_s_ug3 = (float(aux.replace(",", ".")) if aux is not None and aux > 0 else usina.limite_temperatura_fase_s_ug3)
+
+        aux = request.POST.get("limite_temperatura_fase_t_ug3")
+        usina.limite_temperatura_fase_t_ug3 = (float(aux.replace(",", ".")) if aux is not None and aux > 0 else usina.limite_temperatura_fase_t_ug3)
+
+        aux = request.POST.get("limite_temperatura_nucleo_estator_ug3")
+        usina.limite_temperatura_nucleo_estator_ug3 = (float(aux.replace(",", ".")) if aux is not None and aux > 0 else usina.limite_temperatura_nucleo_estator_ug3)
+
+        aux = request.POST.get("limite_temperatura_mancal_rad_dia_1_ug3")
+        usina.limite_temperatura_mancal_rad_dia_1_ug3 = (float(aux.replace(",", ".")) if aux is not None and aux > 0 else usina.limite_temperatura_mancal_rad_dia_1_ug3)
+
+        aux = request.POST.get("limite_temperatura_mancal_rad_dia_2_ug3")
+        usina.limite_temperatura_mancal_rad_dia_2_ug3 = (float(aux.replace(",", ".")) if aux is not None and aux > 0 else usina.limite_temperatura_mancal_rad_dia_2_ug3)
+
+        aux = request.POST.get("limite_temperatura_mancal_rad_tra_1_ug3")
+        usina.limite_temperatura_mancal_rad_tra_1_ug3 = (float(aux.replace(",", ".")) if aux is not None and aux > 0 else usina.limite_temperatura_mancal_rad_tra_1_ug3)
+
+        aux = request.POST.get("limite_temperatura_mancal_rad_tra_2_ug3")
+        usina.limite_temperatura_mancal_rad_tra_2_ug3 = (float(aux.replace(",", ".")) if aux is not None and aux > 0 else usina.limite_temperatura_mancal_rad_tra_2_ug3)
+
+        aux = request.POST.get("limite_temperatura_saida_de_ar_ug3")
+        usina.limite_temperatura_saida_de_ar_ug3 = (float(aux.replace(",", ".")) if aux is not None and aux > 0 else usina.limite_temperatura_saida_de_ar_ug3)
+
+        aux = request.POST.get("limite_temperatura_mancal_guia_escora_ug3")
+        usina.limite_temperatura_mancal_guia_escora_ug3 = (float(aux.replace(",", ".")) if aux is not None and aux > 0 else usina.limite_temperatura_mancal_guia_escora_ug3)
+
+        aux = request.POST.get("limite_temperatura_mancal_guia_radial_ug3")
+        usina.limite_temperatura_mancal_guia_radial_ug3 = (float(aux.replace(",", ".")) if aux is not None and aux > 0 else usina.limite_temperatura_mancal_guia_radial_ug3)
+
+        aux = request.POST.get("limite_temperatura_mancal_guia_contra_ug3")
+        usina.limite_temperatura_mancal_guia_contra_ug3 = (float(aux.replace(",", ".")) if aux is not None and aux > 0 else usina.limite_temperatura_mancal_guia_contra_ug3)
+
+        aux = request.POST.get("alerta_caixa_espiral_ug3")
+        usina.alerta_caixa_espiral_ug3 = (float(aux.replace(",", ".")) if aux is not None and aux > 0 else usina.alerta_caixa_espiral_ug3)
+
+        aux = request.POST.get("limite_caixa_espiral_ug3")
+        usina.limite_caixa_espiral_ug3 = (float(aux.replace(",", ".")) if aux is not None and aux > 0 else usina.limite_caixa_espiral_ug3)
+
 
         usina.timestamp = datetime.now()
         usina.save()
