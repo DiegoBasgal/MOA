@@ -994,11 +994,12 @@ class UnidadeDeGeracao2(UnidadeDeGeracao):
             bool: True se sucesso, Falso caso contrário
         """
         try:
-            #if not self.clp.read_coils(REG_UG2_COND_PART,1)[0]:
-            #    self.logger.debug(
-            #        "[UG{}] Sem cond. de partida. Vai partir quando tiver.".format(self.id)
-            #    )
-            #    return True
+            if not self.clp.read_coils(REG_UG2_COND_PART,1)[0]:
+                self.logger.debug(
+                    "[UG{}] Sem cond. de partida. Vai partir quando tiver.".format(self.id)
+                )
+                return True
+            
 
             if not self.etapa_atual == UNIDADE_SINCRONIZADA:
                 self.logger.info(

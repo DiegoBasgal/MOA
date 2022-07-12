@@ -1614,6 +1614,6 @@ REG_TDA_SaidasAnalogicas_MRW_Potencia_3_Baixa = (
 )
 REG_TDA_NivelMaisCasasAntes = 12  # Scale 400 + 0.0001 X - Op04 (Read Input Regs - 3x)
 REG_TDA_NivelMaisCasasDepois = 13  # Scale 400 + 0.0001 X - Op04 (Read Input Regs - 3x)
-REG_UG1_COND_PART = 223
-REG_UG2_COND_PART = 223
-REG_UG3_COND_PART = 223
+REG_UG1_COND_PART = 222
+REG_UG2_COND_PART = 222
+REG_UG3_COND_PART = 222
