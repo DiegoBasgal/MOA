@@ -690,76 +690,112 @@ class Usina:
         for ug in self.ugs:
             try:
                 ug.prioridade = int(parametros["ug{}_prioridade".format(ug.id)])
-                """
-                ug.condicionador_perda_na_grade.valor_base = float(
-                    parametros["ug{}_perda_grade_alerta".format(ug.id)]
+                
+
+                ug.temperatura_fase_r_ug.valor_base = float(
+                    parametros["alerta_temperatura_fase_r_ug{}".format(ug.id)]
                 )
                 ug.condicionador_perda_na_grade.valor_limite = float(
-                    parametros["ug{}_perda_grade_maxima".format(ug.id)]
+                    parametros["limite_temperatura_fase_r_ug{}".format(ug.id)]
                 )
-                ug.condicionador_temperatura_enrolamento_fase_r.valor_base = float(
-                    parametros["temperatura_alerta_enrolamento_fase_r_ug{}".format(ug.id)]
+
+
+                ug.temperatura_fase_s_ug.valor_base = float(
+                    parametros["alerta_temperatura_fase_s_ug{}".format(ug.id)]
                 )
-                ug.condicionador_temperatura_enrolamento_fase_s.valor_base = float(
-                    parametros["temperatura_alerta_enrolamento_fase_s_ug{}".format(ug.id)]
+                ug.condicionador_perda_na_grade.valor_limite = float(
+                    parametros["limite_temperatura_fase_s_ug{}".format(ug.id)]
                 )
-                ug.condicionador_temperatura_enrolamento_fase_t.valor_base = float(
-                    parametros["temperatura_alerta_enrolamento_fase_t_ug{}".format(ug.id)]
+
+
+                ug.temperatura_fase_t_ug.valor_base = float(
+                    parametros["alerta_temperatura_fase_t_ug{}".format(ug.id)]
                 )
-                ug.condicionador_temperatura_mancal_la_casquilho.valor_base = float(
-                    parametros["temperatura_alerta_mancal_la_casquilho_ug{}".format(ug.id)]
+                ug.condicionador_perda_na_grade.valor_limite = float(
+                    parametros["limite_temperatura_fase_t_ug{}".format(ug.id)]
                 )
-                ug.condicionador_temperatura_mancal_la_contra_escora_1.valor_base = float(
-                    parametros[
-                        "temperatura_alerta_mancal_la_contra_escora_1_ug{}".format(ug.id)
-                    ]
+
+
+                ug.temperatura_nucleo_estator_ug.valor_base = float(
+                    parametros["alerta_temperatura_nucleo_estator_ug{}".format(ug.id)]
                 )
-                ug.condicionador_temperatura_mancal_la_contra_escora_2.valor_base = float(
-                    parametros[
-                        "temperatura_alerta_mancal_la_contra_escora_2_ug{}".format(ug.id)
-                    ]
+                ug.condicionador_perda_na_grade.valor_limite = float(
+                    parametros["limite_temperatura_nucleo_estator_ug{}".format(ug.id)]
                 )
-                ug.condicionador_temperatura_mancal_la_escora_1.valor_base = float(
-                    parametros["temperatura_alerta_mancal_la_escora_1_ug{}".format(ug.id)]
+
+
+                ug.temperatura_mancal_rad_dia_1_ug.valor_base = float(
+                    parametros["alerta_temperatura_mancal_rad_dia_1_ug{}".format(ug.id)]
                 )
-                ug.condicionador_temperatura_mancal_la_escora_2.valor_base = float(
-                    parametros["temperatura_alerta_mancal_la_escora_2_ug{}".format(ug.id)]
+                ug.condicionador_perda_na_grade.valor_limite = float(
+                    parametros["limite_temperatura_mancal_rad_dia_1_ug{}".format(ug.id)]
                 )
-                ug.condicionador_temperatura_mancal_lna_casquilho.valor_base = float(
-                    parametros["temperatura_alerta_mancal_lna_casquilho_ug{}".format(ug.id)]
+
+
+                ug.temperatura_mancal_rad_dia_2_ug.valor_base = float(
+                    parametros["alerta_temperatura_mancal_rad_dia_2_ug{}".format(ug.id)]
                 )
-                ug.condicionador_temperatura_enrolamento_fase_r.valor_limite = float(
-                    parametros["temperatura_limite_enrolamento_fase_r_ug{}".format(ug.id)]
+                ug.condicionador_perda_na_grade.valor_limite = float(
+                    parametros["limite_temperatura_mancal_rad_dia_2_ug{}".format(ug.id)]
                 )
-                ug.condicionador_temperatura_enrolamento_fase_s.valor_limite = float(
-                    parametros["temperatura_limite_enrolamento_fase_s_ug{}".format(ug.id)]
+
+
+                ug.temperatura_mancal_rad_tra_1_ug.valor_base = float(
+                    parametros["alerta_temperatura_mancal_rad_tra_1_ug{}".format(ug.id)]
                 )
-                ug.condicionador_temperatura_enrolamento_fase_t.valor_limite = float(
-                    parametros["temperatura_limite_enrolamento_fase_t_ug{}".format(ug.id)]
+                ug.condicionador_perda_na_grade.valor_limite = float(
+                    parametros["limite_temperatura_mancal_rad_tra_1_ug{}".format(ug.id)]
                 )
-                ug.condicionador_temperatura_mancal_la_casquilho.valor_limite = float(
-                    parametros["temperatura_limite_mancal_la_casquilho_ug{}".format(ug.id)]
+
+
+                ug.temperatura_mancal_rad_tra_2_ug.valor_base = float(
+                    parametros["alerta_temperatura_mancal_rad_tra_2_ug{}".format(ug.id)]
                 )
-                ug.condicionador_temperatura_mancal_la_contra_escora_1.valor_limite = float(
-                    parametros[
-                        "temperatura_limite_mancal_la_contra_escora_1_ug{}".format(ug.id)
-                    ]
+                ug.condicionador_perda_na_grade.valor_limite = float(
+                    parametros["limite_temperatura_mancal_rad_tra_2_ug{}".format(ug.id)]
                 )
-                ug.condicionador_temperatura_mancal_la_contra_escora_2.valor_limite = float(
-                    parametros[
-                        "temperatura_limite_mancal_la_contra_escora_2_ug{}".format(ug.id)
-                    ]
+
+
+                ug.temperatura_saida_de_ar_ug.valor_base = float(
+                    parametros["alerta_temperatura_saida_de_ar_ug{}".format(ug.id)]
                 )
-                ug.condicionador_temperatura_mancal_la_escora_1.valor_limite = float(
-                    parametros["temperatura_limite_mancal_la_escora_1_ug{}".format(ug.id)]
+                ug.condicionador_perda_na_grade.valor_limite = float(
+                    parametros["limite_temperatura_saida_de_ar_ug{}".format(ug.id)]
                 )
-                ug.condicionador_temperatura_mancal_la_escora_2.valor_limite = float(
-                    parametros["temperatura_limite_mancal_la_escora_2_ug{}".format(ug.id)]
+
+
+                ug.temperatura_mancal_guia_escora_ug.valor_base = float(
+                    parametros["alerta_temperatura_mancal_guia_escora_ug{}".format(ug.id)]
                 )
-                ug.condicionador_temperatura_mancal_lna_casquilho.valor_limite = float(
-                    parametros["temperatura_limite_mancal_lna_casquilho_ug{}".format(ug.id)]
+                ug.condicionador_perda_na_grade.valor_limite = float(
+                    parametros["limite_temperatura_mancal_guia_escora_ug{}".format(ug.id)]
                 )
-                """
+
+
+                ug.temperatura_mancal_guia_radial_ug.valor_base = float(
+                    parametros["alerta_temperatura_mancal_guia_radial_ug{}".format(ug.id)]
+                )
+                ug.condicionador_perda_na_grade.valor_limite = float(
+                    parametros["limite_temperatura_mancal_guia_radial_ug{}".format(ug.id)]
+                )
+
+
+                ug.temperatura_mancal_guia_contra_ug.valor_base = float(
+                    parametros["alerta_temperatura_mancal_guia_contra_ug{}".format(ug.id)]
+                )
+                ug.condicionador_perda_na_grade.valor_limite = float(
+                    parametros["limite_temperatura_mancal_guia_contra_ug{}".format(ug.id)]
+                )
+
+
+                ug.caixa_espiral_ug.valor_base = float(
+                    parametros["alerta_caixa_espiral_ug{}".format(ug.id)]
+                )
+                ug.condicionador_perda_na_grade.valor_limite = float(
+                    parametros["limite_caixa_espiral_ug{}".format(ug.id)]
+                )
+
+
             except KeyError as e:
                 logger.exception(e)
 
