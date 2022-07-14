@@ -37,7 +37,6 @@ def ocorrencias_view(request, *args, **kwargs):
                     "conteudo": "".join(line),
                 }
             )
-    log.reverse()
     context = {"log": log[-nlinhas:]}
 
     return render(request, "ocorrencias.html", context=context)

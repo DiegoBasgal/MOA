@@ -830,7 +830,7 @@ class UnidadeDeGeracao1(UnidadeDeGeracao):
             x.descr, DEVE_INDISPONIBILIZAR, x, base, limite
         )
         self.condicionadores_atenuadores.append(
-            self.condicionador_condicionador_caixa_espiral_ug
+            self.condicionador_caixa_espiral_ug
         )
 
     def acionar_trip_logico(self) -> bool:
