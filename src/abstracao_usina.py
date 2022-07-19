@@ -1256,6 +1256,22 @@ class Usina:
                 if agendamento[3] == AGENDAMENTO_UG3_FORCAR_ESTADO_RESTRITO:
                     self.ug3.forcar_estado_restrito()
 
+                if agendamento[3] == AGENDAMENTO_ALTERAR_POT_LIMITE_TODAS_AS_UGS:
+                    try:
+                        novo = float(agendamento[5].replace(",", "."))
+                        self.cfg["pot_maxima_ug1"] = novo
+                        self.ug1.pot_disponivel = novo
+                        self.cfg["pot_maxima_ug2"] = novo
+                        self.ug2.pot_disponivel = novo
+                        self.cfg["pot_maxima_ug3"] = novo
+                        self.ug3.pot_disponivel = novo
+                    except Exception as e:
+                        logger.info(
+                            "Valor inválido no comando #{} ({} é inválido).".format(
+                                agendamento[0], agendamento[3]
+                            )
+                        )
+
                 # Após executar, indicar no banco de dados
                 self.db.update_agendamento(int(agendamento[0]), 1)
                 logger.info(

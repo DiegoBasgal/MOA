@@ -14,6 +14,7 @@ import os
 from sys import stdout
 from urllib.request import Request, urlopen
 import random
+from datetime import datetime
 
 # Inicializando o logger principal
 logger = logging.getLogger(__name__)
@@ -43,13 +44,47 @@ lista_de_contatos_padrao = [
     ["Henrique P5", "41999610053"],
 ]
 
+def carrega_contatos():
+    phonebook = []
 
-lista_de_contatos_teste = [
-    # ["Alex", "41996319885"],
-    ["Lucas Lavratti", "41988591567"],
-    ["Henrique P5", "41999610053"],
-]
+    with open(os.path.join(os.path.dirname(__file__), "contatos.csv")) as fp:
+        list_r = fp.readlines()
 
+    for r in list_r:
+        r = r.strip().replace(", ", ",").replace(" ,", ",")
+        r = r.replace("(", "")
+        r = r.replace(")", "")
+        r = [i for i in r.split(",") if i != ""]
+
+        try:
+            name = str(r[0])
+            phone = str(r[1])
+            t_start = datetime.strptime(r[2], "%Y-%m-%d %H:%M")
+            t_end = datetime.strptime(r[3], "%Y-%m-%d %H:%M")
+            phonebook.append({"name": name,
+                            "phone": phone,
+                            "t_start": t_start,
+                            "t_end": t_end})
+
+        except ValueError as e:
+            print(f"Exception {e}. Skipped entry.")
+            continue
+        except AttributeError as e:
+            print(f"Exception {e}. Skipped entry.")
+            continue
+    res = []
+    now = datetime.now()
+    for addres in phonebook:
+        if now < addres["t_start"]:
+            print(f"Not yet: {now.time()} < {addres['t_start']}")
+            continue
+        elif now > addres["t_end"]:
+            print(f"Too late: {now.time()} > {addres['t_end']}")
+            continue
+        else:
+            res.append([addres["name"], addres["phone"]])
+        
+    return res
 
 def enviar_voz_emergencia(lista_de_contatos=None):
 
@@ -68,7 +103,13 @@ def enviar_voz_emergencia(lista_de_contatos=None):
 
         # Se a lista de conta não for fornecida, usa-se a lista padrão.
         if lista_de_contatos is None:
-            lista_de_contatos = lista_de_contatos_padrao
+            try:
+                lista_de_contatos = carrega_contatos()
+                if len(lista_de_contatos) < 1:
+                    raise ValueError("Lista de contatos com problema")
+            except Exception as e:
+                logger.exception(e)
+                lista_de_contatos = lista_de_contatos_padrao
 
         # Para cada contato na lista de contatos deve-se fazer uma chamada a web api
         for contato in lista_de_contatos:
@@ -120,7 +161,7 @@ def enviar_voz_teste():
 
     audio_url = random.choice(audios_teste)
     logger.debug("Enviando Voz Teste: {}".format(audio_url))
-    for contato in lista_de_contatos_teste:
+    for contato in carrega_contatos():
         logger.info(
             "Disparando torpedo de voz teste para {} ({})".format(
                 contato[0], contato[1]
