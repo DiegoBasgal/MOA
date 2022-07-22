@@ -29,6 +29,7 @@ audios_emerg = [
 ]
 
 audios_teste = [
+    "http://www.ritmoenergia.com.br/wp-content/uploads/2022/07/Teste-Lucas-_1_-_1_.mp3"
     "https://www.ritmoenergia.com.br/wp-content/uploads/2022/07/Teste-Amanda-Generico.mp3",
 ]
 
