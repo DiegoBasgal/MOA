@@ -57,6 +57,7 @@ class Usina:
 
         # Define as vars inciais
         self.ts_ultima_tesntativa_de_normalizacao = datetime.now()
+        self.ts_last_ping_tda = datetime.now()
         self.state_moa = 0
         self.controle_p = 0
         self.controle_i = 0
@@ -622,7 +623,12 @@ class Usina:
         #   -> Se não estiver ok, acionar emergencia CLP
         if not ping(self.cfg["TDA_slave_ip"]):
             logger.warning("CLP TDA não respondeu a tentativa de comunicação!")
-            # self.acionar_emergencia()
+            if (not self.avisado_via_voip_tda) and ((datetime.now() - self.ts_last_ping_tda).seconds >= 60 * 5):
+                voip.enviar_voz_emergencia()
+                self.avisado_via_voip_tda = True
+        else:
+            self.ts_last_ping_tda = datetime.now()
+            self.avisado_via_voip_tda = False
 
         # -> Verifica conexão com CLP Sub
         #   -> Se não estiver ok, avisa por logger.warning
