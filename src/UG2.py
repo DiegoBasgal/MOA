@@ -6,7 +6,7 @@ from src.Leituras import *
 from src.LeiturasUSN import *
 from src.UnidadeDeGeracao import *
 from pyModbusTCP.server import DataBank, ModbusServer
-
+from src.mensageiro import voip
 
 class UnidadeDeGeracao2(UnidadeDeGeracao):
     def __init__(self, id, cfg=None, leituras_usina=None):
@@ -53,6 +53,7 @@ class UnidadeDeGeracao2(UnidadeDeGeracao):
         )
         self.__last_EtapaAtual = 0
         self.enviar_trip_eletrico = False
+        self.avisou_emerg_voip = False
 
         self.leitura_potencia = LeituraModbus(
             "ug{}_Gerador_PotenciaAtivaMedia".format(self.id),
@@ -1177,3 +1178,10 @@ class UnidadeDeGeracao2(UnidadeDeGeracao):
             self.cfg["REG_MOA_OUT_ETAPA_UG{}".format(self.id)],
             [self.etapa_atual],
         )
+        
+    def interstep(self) -> None:
+        if (not self.avisou_emerg_voip) and (self.condicionador_caixa_espiral_ug.valor > 0.1):
+            self.avisou_emerg_voip = True
+            voip.enviar_voz_emergencia()
+        elif self.condicionador_caixa_espiral_ug.valor < 0.05:
+            self.avisou_emerg_voip = False

@@ -98,6 +98,9 @@ class UnidadeDeGeracao:
                 "[UG{}] Variavél carregada: {} = {}.".format(self.id, key, val)
             )
 
+    def interstep(self) -> None:
+        raise NotImplementedError
+        
     def step(self) -> None:
         """
         Função que rege a máquina de estados.
@@ -107,6 +110,7 @@ class UnidadeDeGeracao:
         """
         try:
             self.logger.debug("[UG{}] Step.".format(self.id))
+            self.interstep()
             self.__next_state = self.__next_state.step()
             self.modbus_update_state_register()
 

@@ -211,32 +211,3 @@ class CondicionadorExponencialReverso(CondicionadorBase):
             return 1
         else:
             return 0
-
-    @property
-    def valor(self) -> float:
-        """
-        Valor relativo a quantidade de atenuação
-
-        Returns:
-            float: Valor de 0 a 1 (inclusivo) relativo a atenuacao após limitação operacional
-        """
-        v_temp = float(self.leitura.valor)
-        if self.valor_limite < v_temp < self.valor_base:
-            aux = (
-                1
-                - (
-                    (
-                        (self.valor_limite - v_temp)
-                        / (self.valor_limite - self.valor_base)
-                    )
-                    ** (self.ordem)
-                ).real
-            )
-            return max(
-                min(aux, 1),
-                0,
-            )
-        elif v_temp <= self.valor_limite:
-            return 1
-        else:
-            return 0
