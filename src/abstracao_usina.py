@@ -804,11 +804,27 @@ class Usina:
         agora = datetime.now()
         agendamentos = self.get_agendamentos_pendentes()
 
+        # resolve os agendamentos muito juntos
+        limite_entre_agendamentos_iguais = 300 # segundos
+        agendamentos = sorted(agendamentos, key=lambda x:(x[3], x[1]))
+        i = 0
+        j = len(agendamentos)
+        while i < j - 1:
+
+            if agendamentos[i][3] == agendamentos[i+1][3] and (agendamentos[i+1][1] - agendamentos[i][1]).seconds < limite_entre_agendamentos_iguais:
+                ag_concatenado = agendamentos.pop(i)
+                obs = "Este agendamento foi concatenado ao seguinte por motivos de temporização."
+                logger.warning(obs)
+                self.db.update_agendamento(ag_concatenado[0], True, obs)
+                i -= 1
+
+            i += 1
+            j = len(agendamentos)
+
         logger.debug(agendamentos)
 
         if len(agendamentos) == 0:
             return True
-
 
         self.agendamentos_atrasados = 0
         for agendamento in agendamentos:

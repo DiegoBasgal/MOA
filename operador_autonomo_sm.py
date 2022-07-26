@@ -44,7 +44,7 @@ logger.addHandler(ch)
 
 fh = handlers.TimedRotatingFileHandler(os.path.join(os.path.dirname(__file__),"logs","MOA.log"), when='midnight', interval=1, backupCount=7)  # log para arquivo
 fh.setFormatter(logFormatter)
-fh.setLevel(logging.INFO)
+fh.setLevel(logging.DEBUG)
 logger.addHandler(fh)
 
 mh = MensageiroHandler()
@@ -469,6 +469,7 @@ if __name__ == "__main__":
         logger.debug("Executando estado: {}".format(sm.state.__class__.__name__))
         sm.exec()
         t_restante = max(5 - (time.time() - t_i), 0) / ESCALA_DE_TEMPO
+        logger.debug("Tempo gasto no ciclo: {} s".format(float(time.time() - t_i)))
         if t_restante == 0:
             logger.debug("Ciclo está demorando mais que o permitido!")
         sleep(t_restante)

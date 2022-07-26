@@ -608,7 +608,7 @@ class UnidadeDeGeracao1(UnidadeDeGeracao):
         """
         try:
             if not self.etapa_alvo == UNIDADE_SINCRONIZADA:
-                self.logger.info(
+                self.logger.debug(
                     "[UG{}] Enviando comando (via rede) de partida.".format(self.id)
                 )
             else:
@@ -632,7 +632,7 @@ class UnidadeDeGeracao1(UnidadeDeGeracao):
         """
         try:
             if not self.etapa_alvo == UNIDADE_PARADA:
-                self.logger.info(
+                self.logger.debug(
                     "[UG{}] Enviando comando (via rede) de parada.".format(self.id)
                 )
             else:
