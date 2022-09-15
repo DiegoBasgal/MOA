@@ -847,12 +847,12 @@ class Usina:
                     # Coloca em emergência
                     logger.info("Disparando mensagem teste (comando via agendamento).")
                     self.disparar_mensagem_teste()
-
+                '''     
                 if agendamento[3] == AGENDAMENTO_ACK_RST:
                     logger.info("Enviando comandos de reconhece e reset (comando via agendamento).")
                     self.ug1.reconhece_reset_alarmes()
                     self.ug2.reconhece_reset_alarmes()
-
+                '''
                 if agendamento[3] == AGENDAMENTO_INDISPONIBILIZAR:
                     # Coloca em emergência
                     logger.info("Indisponibilizando a usina (comando via agendamento).")
@@ -918,7 +918,7 @@ class Usina:
 
                 if agendamento[3] == AGENDAMENTO_UG1_FORCAR_ESTADO_RESTRITO:
                     self.ug1.forcar_estado_restrito()
-
+                '''
                 if agendamento[3] == AGENDAMENTO_UG1_FORCAR_PARTIDA:
                     logger.info("Recebido forçar partida UG1 (comando via agendamento).")
                     self.ug1.partir()
@@ -938,7 +938,7 @@ class Usina:
                                 agendamento[0], agendamento[3]
                             )
                         )
-
+                '''
                 if agendamento[3] == AGENDAMENTO_UG2_ALETRAR_POT_LIMITE:
                     try:
                         novo = float(agendamento[2].replace(",", "."))
@@ -961,7 +961,7 @@ class Usina:
 
                 if agendamento[3] == AGENDAMENTO_UG2_FORCAR_ESTADO_RESTRITO:
                     self.ug2.forcar_estado_restrito()
-
+                '''
                 if agendamento[3] == AGENDAMENTO_UG2_FORCAR_PARTIDA:
                     logger.info("Recebido forçar partida UG2 (comando via agendamento).")
                     self.ug2.partir()
@@ -981,6 +981,7 @@ class Usina:
                                 agendamento[0], agendamento[3]
                             )
                         )
+                '''
                 # Após executar, indicar no banco de dados
                 self.db.update_agendamento(int(agendamento[0]), 1)
                 logger.info(
