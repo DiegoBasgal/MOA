@@ -623,13 +623,15 @@ class Usina:
         #   -> Se não estiver ok, acionar emergencia CLP
         if not ping(self.cfg["TDA_slave_ip"]):
             logger.warning("CLP TDA não respondeu a tentativa de comunicação!")
+            """
             if (not self.avisado_via_voip_tda) and ((datetime.now() - self.ts_last_ping_tda).seconds >= 60 * 5):
                 voip.enviar_voz_emergencia()
                 self.avisado_via_voip_tda = True
         else:
             self.ts_last_ping_tda = datetime.now()
             self.avisado_via_voip_tda = False
-
+        """
+        
         # -> Verifica conexão com CLP Sub
         #   -> Se não estiver ok, avisa por logger.warning
         if not ping(self.cfg["USN_slave_ip"]):
