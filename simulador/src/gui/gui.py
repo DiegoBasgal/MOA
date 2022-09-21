@@ -31,13 +31,14 @@ class Window(QMainWindow, Ui_Form):
             segundos = floor(self.shared_dict["tempo_simul"] % 60)
             minutos = floor((self.shared_dict["tempo_simul"] / 60) % 60)
             horas = floor(self.shared_dict["tempo_simul"] / 3600)
-            self.label_tempo_simul.setText("{:02d}:{:02d}:{:02d}".format(horas, minutos, segundos))
 
+            self.label_tempo_simul.setText("{:02d}:{:02d}:{:02d}".format(horas, minutos, segundos))
             self.lcdNumber_tensao_linha.display(self.shared_dict["tensao_na_linha"])
+
             self.lcdNumber_potencia_se.display("{:1.3f}".format(self.shared_dict["potencia_kw_se"]/1000))
             self.lcdNumber_MP.display("{:1.3f}".format(self.shared_dict["potencia_kw_mp"]/1000))
             self.lcdNumber_MR.display("{:1.3f}".format(self.shared_dict["potencia_kw_mr"]/1000))
-
+    
             self.checkBox_52L_aberto.setChecked(self.shared_dict["dj52L_aberto"])
             self.checkBox_52L_fechado.setChecked(self.shared_dict["dj52L_fechado"])
             self.checkBox_52L_inconsistente.setChecked(self.shared_dict["dj52L_inconsistente"])
@@ -51,10 +52,14 @@ class Window(QMainWindow, Ui_Form):
             self.lcdNumber_q_liquida.display("{:2.3f}".format(self.shared_dict["q_liquida"]))
             self.lcdNumber_q_sanitaria.display("{:2.3f}".format(self.shared_dict["q_sanitaria"]))
             self.lcdNumber_q_vertimento.display("{:2.3f}".format(self.shared_dict["q_vertimento"]))
-
             self.checkBox_sinal_trip_ug1.setChecked(self.shared_dict["trip_ug1"])
-            self.lcdNumber_potencia_ug1.display("{:1.3f}".format(self.shared_dict["potencia_kw_ug1"]/1000))
-            self.lcdNumber_setpoint_ug1.display("{:1.3f}".format(self.shared_dict["setpoint_kw_ug1"]/1000))
+                 
+            self.lcdNumber_potencia_ug1.display("{:1.3f}".format(self.shared_dict["potencia_kw_ug1"] / 1000))
+            try:
+                self.lcdNumber_setpoint_ug1.display("{:1.3f}".format(self.shared_dict["setpoint_kw_ug1"][0] / 1000))
+            except Exception:
+                pass
+
             if self.shared_dict["etapa_alvo_ug1"] is None:
                 self.lcdNumber_etapa_alvo_ug1.setHexMode()
                 self.lcdNumber_etapa_alvo_ug1.display(15)
@@ -62,6 +67,7 @@ class Window(QMainWindow, Ui_Form):
                 self.lcdNumber_etapa_alvo_ug1.setDecMode()
                 self.lcdNumber_etapa_alvo_ug1.display("{:d}".format(self.shared_dict["etapa_alvo_ug1"]))
             self.lcdNumber_etapa_atual_ug1.display("{:d}".format(self.shared_dict["etapa_atual_ug1"]))
+
             self.lcdNumber_bitsalarme_ug1.display("{:08b}".format(self.shared_dict["flags_ug1"]))
             self.lcdNumber_q_ug1.display("{:2.3f}".format(self.shared_dict["q_ug1"]))
             self.lcdNumber_temperatura_ug1_contra_escora_1.display("{:03.1f}".format(self.shared_dict["temperatura_ug1_contra_escora_1"]))
@@ -76,14 +82,20 @@ class Window(QMainWindow, Ui_Form):
             self.lcdNumber_perda_na_grade_ug1.display("{:03.1f}".format(self.shared_dict["nv_montante"] - self.shared_dict["nv_jusante"]))
 
             self.checkBox_sinal_trip_ug2.setChecked(self.shared_dict["trip_ug2"])
-            self.lcdNumber_potencia_ug2.display("{:1.3f}".format(self.shared_dict["potencia_kw_ug2"]/1000))
-            self.lcdNumber_setpoint_ug2.display("{:1.3f}".format(self.shared_dict["setpoint_kw_ug2"]/1000))
+
+            self.lcdNumber_potencia_ug2.display("{:1.3f}".format(self.shared_dict["potencia_kw_ug2"] / 1000))
+            try:
+                self.lcdNumber_setpoint_ug2.display("{:1.3f}".format(self.shared_dict["setpoint_kw_ug2"][0] / 1000))
+            except Exception:
+                pass
+
             if self.shared_dict["etapa_alvo_ug2"] is None:
                 self.lcdNumber_etapa_alvo_ug2.setHexMode()
                 self.lcdNumber_etapa_alvo_ug2.display(15)
             else:
                 self.lcdNumber_etapa_alvo_ug2.setDecMode()
                 self.lcdNumber_etapa_alvo_ug2.display("{:d}".format(self.shared_dict["etapa_alvo_ug2"]))
+                
             self.lcdNumber_etapa_atual_ug2.display("{:d}".format(self.shared_dict["etapa_atual_ug2"]))
             self.lcdNumber_bitsalarme_ug2.display("{:08b}".format(self.shared_dict["flags_ug2"]))
             self.lcdNumber_q_ug2.display("{:2.3f}".format(self.shared_dict["q_ug2"]))
@@ -96,6 +108,7 @@ class Window(QMainWindow, Ui_Form):
             self.lcdNumber_temperatura_ug2_fase_t.display("{:03.1f}".format(self.shared_dict["temperatura_ug2_fase_t"]))
             self.lcdNumber_temperatura_ug2_la_casquilho.display("{:03.1f}".format(self.shared_dict["temperatura_ug2_la_casquilho"]))
             self.lcdNumber_temperatura_ug2_lna_casquilho.display("{:03.1f}".format(self.shared_dict["temperatura_ug2_lna_casquilho"]))
+    
             self.lcdNumber_perda_na_grade_ug2.display("{:3.1f}".format(self.shared_dict["nv_montante"] - self.shared_dict["nv_jusante"]))
         
         except Exception as e:
@@ -107,10 +120,9 @@ class Window(QMainWindow, Ui_Form):
         self.shared_dict["stop_sim"] = True
         self.sinc_timer.stop()
         return super().closeEvent(event)
-
+    
     def mudar_q_afluente(self):
-        self.shared_dict["q_alfuente"] = (10 ** (self.horizontalSlider_q_afluente.value()/75)-1)*2
-
+            self.shared_dict["q_alfuente"] = (10 ** (self.horizontalSlider_q_afluente.value()/75)-1)*2
     
     def pulse_trip_linha(self):
         self.set_trip_linha()
@@ -154,6 +166,7 @@ class Window(QMainWindow, Ui_Form):
         self.shared_dict["debug_parar_ug1"] = True
 
     def mudar_setpoint_ug1(self):
+        
         self.shared_dict["debug_setpoint_kw_ug1"] = self.horizontalSlider_setpoint_ug1.value()
 
     # ug2

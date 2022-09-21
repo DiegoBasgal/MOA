@@ -156,7 +156,7 @@ class Ug:
                 self.shared_dict["etapa_alvo_ug{}".format(self.id)] = self.etapa_alvo
                 if self.shared_dict["dj52L_fechado"] and not self.shared_dict["dj52L_trip"]:
                     self.potencia = min(self.potencia, 2600)
-                    if self.setpoint > self.potencia:
+                    if self.setpoint[0] > self.potencia:
                         self.potencia += 10.4167 * self.segundos_por_passo
                     else:
                         self.potencia -= 10.4167 * self.segundos_por_passo
