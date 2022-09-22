@@ -22,9 +22,7 @@ class Controlador:
         if self.logger.hasHandlers():
             self.logger.handlers.clear()
         self.logger.setLevel(logging.NOTSET)
-        logFormatter = logging.Formatter(
-            "%(asctime)s [%(threadName)-20.20s] [%(levelname)-5.5s] %(message)s"
-        )
+        logFormatter = logging.Formatter("%(asctime)s [%(threadName)-20.20s] [%(levelname)-5.5s] %(message)s")
 
         ch = logging.StreamHandler(stdout)  # log para sdtout
         ch.setFormatter(logFormatter)
@@ -48,7 +46,7 @@ class Controlador:
             line = line.split(",")
             self.timed_afluente.append([i, float(line[0]) * 60, float(line[1])])
             i += 1
-
+        """
         self.connection_pool = pooling.MySQLConnectionPool(
             pool_name="my_pool",
             pool_size=10,
@@ -61,7 +59,8 @@ class Controlador:
 
         self.conn = self.connection_pool.get_connection()
         self.cursor = self.conn.cursor()
-
+        """
+        
     def run(self):
 
         q_ant = 0
@@ -77,10 +76,7 @@ class Controlador:
                 t_inicio_passo = datetime.now()
                 lock.acquire()
 
-                if (
-                    self.timed_afluente[counter_timed_afluente + 1][1]
-                    <= self.shared_dict["tempo_simul"]
-                ):
+                if (self.timed_afluente[counter_timed_afluente + 1][1]<= self.shared_dict["tempo_simul"]):
                     counter_timed_afluente += 1
 
                 if self.timed_afluente[counter_timed_afluente][2] == -1:
@@ -105,12 +101,12 @@ class Controlador:
                 # FIM COMPORTAMENTO USINA
                 lock.release()
 
-                if not int(self.shared_dict["tempo_simul"] / 60) == int(
-                    last_log_time / 60
-                ):
+                if not int(self.shared_dict["tempo_simul"] / 60) == int(last_log_time / 60):
                     last_log_time = self.shared_dict["tempo_simul"]
                     # "ts,q_aflu,nv_montante,pot_ug1,set_ug1,pot_ug2,set_ug2"
                     ts = int(datetime.timestamp(datetime.now()))
+
+                    """
                     self.cursor.execute(
                         "INSERT INTO debug.simul_data VALUES({}, {}, {}, {}, {}, {}, {});".format(
                             ts,
@@ -123,6 +119,7 @@ class Controlador:
                         )
                     )
                     self.conn.commit()
+                    """
 
                 tempo_restante = (datetime.now() - t_inicio_passo).microseconds * 10e-6
                 if tempo_restante > 0:

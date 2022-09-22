@@ -192,41 +192,20 @@ class Ug:
                     self.tempo_na_transicao = 0
         # FIM COMPORTAMENTO self.ETAPAS
 
-        self.shared_dict[
-            "temperatura_ug{}_contra_escora_1".format(self.id)
-        ] = np.random.normal(25, 1 * self.escala_ruido)
-        self.shared_dict[
-            "temperatura_ug{}_contra_escora_2".format(self.id)
-        ] = np.random.normal(25, 1 * self.escala_ruido)
-        self.shared_dict[
-            "temperatura_ug{}_escora_1".format(self.id)
-        ] = np.random.normal(25, 1 * self.escala_ruido)
-        self.shared_dict[
-            "temperatura_ug{}_escora_2".format(self.id)
-        ] = np.random.normal(25, 1 * self.escala_ruido)
-        self.shared_dict["temperatura_ug{}_fase_r".format(self.id)] = np.random.normal(
-            25, 1 * self.escala_ruido
-        )
-        self.shared_dict["temperatura_ug{}_fase_s".format(self.id)] = np.random.normal(
-            25, 1 * self.escala_ruido
-        )
-        self.shared_dict["temperatura_ug{}_fase_t".format(self.id)] = np.random.normal(
-            25, 1 * self.escala_ruido
-        )
-        self.shared_dict[
-            "temperatura_ug{}_la_casquilho".format(self.id)
-        ] = np.random.normal(25, 1 * self.escala_ruido)
-        self.shared_dict[
-            "temperatura_ug{}_lna_casquilho".format(self.id)
-        ] = np.random.normal(25, 1 * self.escala_ruido)
+        self.shared_dict["temperatura_ug{}_contra_escora_1".format(self.id)] = np.random.normal(25, 1 * self.escala_ruido)
+        self.shared_dict["temperatura_ug{}_contra_escora_2".format(self.id)] = np.random.normal(25, 1 * self.escala_ruido)
+        self.shared_dict["temperatura_ug{}_escora_1".format(self.id)] = np.random.normal(25, 1 * self.escala_ruido)
+        self.shared_dict["temperatura_ug{}_escora_2".format(self.id)] = np.random.normal(25, 1 * self.escala_ruido)
+        self.shared_dict["temperatura_ug{}_fase_r".format(self.id)] = np.random.normal(25, 1 * self.escala_ruido)
+        self.shared_dict["temperatura_ug{}_fase_s".format(self.id)] = np.random.normal(25, 1 * self.escala_ruido)
+        self.shared_dict["temperatura_ug{}_fase_t".format(self.id)] = np.random.normal(25, 1 * self.escala_ruido)
+        self.shared_dict["temperatura_ug{}_la_casquilho".format(self.id)] = np.random.normal(25, 1 * self.escala_ruido)
+        self.shared_dict["temperatura_ug{}_lna_casquilho".format(self.id)] = np.random.normal(25, 1 * self.escala_ruido)
 
         if self.etapa_atual > self.ETAPA_UP:
             self.horimetro += self.segundos_por_passo / 3600
 
-        if (
-            self.etapa_atual > self.ETAPA_UP
-            and self.shared_dict["nv_montante"] < self.USINA_NV_MINIMO_OPERACAO
-        ):
+        if (self.etapa_atual > self.ETAPA_UP and self.shared_dict["nv_montante"] < self.USINA_NV_MINIMO_OPERACAO):
             # self.tripar(1, "Trip nível baixo.")
             # self.shared_dict["trip_ug{}".format(self.id)] = True
             self.potencia = 0
