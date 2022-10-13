@@ -89,15 +89,7 @@ class LeituraModbus(LeituraBase):
     Classe implementa a base para leituras da unidade da geração utilizando modbus.
     """
 
-    def __init__(
-        self,
-        descr: str,
-        modbus_client: ModbusClient,
-        registrador: int,
-        escala: float = 1,
-        fundo_de_escala: float = 0,
-        op: int = 3,
-    ):
+    def __init__(self,descr: str,modbus_client: ModbusClient,registrador: int,escala: float = 1,fundo_de_escala: float = 0,op: int = 3,):
         super().__init__(descr)
         self.__descr = descr
         self.__modbus_client = modbus_client
@@ -434,34 +426,3 @@ class LeituraNBRPower(LeituraBase):
                 return 0
 
         return 0
-
-
-"""
-8*WEG_Drivers.G1.RetornosDigitais.MXR_PartindoEmAuto +
-4*WEG_Drivers.G1.EntradasDigitais.MXI_RV_MaquinaParada + 
-2*WEG_Drivers.G1.RetornosDigitais.MXR_ParandoEmAuto + 
-1*WEG_Drivers.G1.EntradasDigitais.MXI_DisjGeradorFechado
-
-0 Inválido
-1 Em operação
-2-3 Parando
-4-7 Quina Parada
-8-15 Partindo
-
-from modbus_mapa_antigo import *
-from time import sleep
-mbc = ModbusClient(host="192.168.0.52", auto_open=True, auto_close=True)
-MXI_DisjGeradorFechado = LeituraModbusCoil(descr="MXR_PartindoEmAuto",modbus_client=mbc, registrador=REG_UG1_DisjGeradorFechado)
-MXR_ParandoEmAuto = LeituraModbusCoil(descr="MXR_PartindoEmAuto",modbus_client=mbc, registrador=REG_UG1_RetornosDigitais_MXR_ParandoEmAuto)
-MXI_RV_MaquinaParada = LeituraModbusCoil(descr="MXR_PartindoEmAuto",modbus_client=mbc, registrador=REG_UG1_RV_MaquinaParada)
-MXR_PartindoEmAuto = LeituraModbusCoil(descr="MXR_PartindoEmAuto",modbus_client=mbc, registrador=REG_UG1_RetornosDigitais_MXR_PartindoEmAuto)
-etapa_ug1 = LeituraComposta(descr="Etapa UG1",
-                            leitura1=MXI_DisjGeradorFechado,
-                            leitura2=MXR_ParandoEmAuto,
-                            leitura3=MXI_RV_MaquinaParada,
-                            leitura4=MXR_PartindoEmAuto)
-while True:
-    print(f"etapa: {etapa_ug1.valor}")
-    sleep(1)
-
-"""
