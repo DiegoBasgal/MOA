@@ -2,9 +2,9 @@ from pathlib import Path
 import sys
 import threading
 from math import floor
-from PyQt5.QtWidgets import QApplication, QMainWindow
-from PyQt5.QtCore import QTimer
-from PyQt5.QtGui import QPixmap
+from PySide6.QtWidgets import QApplication, QMainWindow
+from PySide6.QtCore import QTimer
+from PySide6.QtGui import QPixmap
 from .ui_geral import Ui_Form
 
 lock = threading.Lock()

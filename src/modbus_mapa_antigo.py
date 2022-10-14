@@ -93,6 +93,8 @@ REG_UG1_RetornosDigitais_MXR_SeqManual = 130  # Op02 (Read Input Status)
 REG_UG1_RetornosDigitais_MXR_SeqAutomatica = 131  # Op02 (Read Input Status)
 REG_UG1_RetornosDigitais_MXR_PartindoEmAuto = 132  # Op02 (Read Input Status)
 REG_UG1_RetornosDigitais_MXR_ParandoEmAuto = 133  # Op02 (Read Input Status)
+REG_UG1_RetornosDigitais_MXR_TripEletrico = 134  # Op02 (Read Input Status)
+REG_UG1_RetornosDigitais_MXR_TripMecanico = 135  # Op02 (Read Input Status)
 REG_UG1_RetornosDigitais_MXR_ValvSeg_Energizadas = 136  # Op02 (Read Input Status)
 REG_UG1_RetornosDigitais_MXR_FalhaAcionAbertValvBorb = 137  # Op02 (Read Input Status)
 REG_UG1_RetornosDigitais_MXR_FalhaAcionFechaValvBorb = 138  # Op02 (Read Input Status)
@@ -180,6 +182,7 @@ REG_UG1_ComandosDigitais_MXW_ResetGeral = 0  # Op15 (Write multiple coils)
 REG_UG1_ComandosDigitais_MXW_ResetReleBloq86H = 1  # Op15 (Write multiple coils)
 REG_UG1_ComandosDigitais_MXW_ResetReleBloq86M = 2  # Op15 (Write multiple coils)
 REG_UG1_ComandosDigitais_MXW_ResetRele700G = 3  # Op15 (Write multiple coils)
+REG_UG1_ComandosDigitais_MXW_EmergenciaViaSuper = 4  # Op15 (Write multiple coils)
 REG_UG1_ComandosDigitais_MXW_ResetReleRT = 5  # Op15 (Write multiple coils)
 REG_UG1_ComandosDigitais_MXW_ResetRV = 6  # Op15 (Write multiple coils)
 REG_UG1_ComandosDigitais_MXW_AumentaTensaoRT = 7  # Op15 (Write multiple coils)
@@ -220,6 +223,8 @@ REG_UG1_ComandosDigitais_MXW_HabSeqAuto = 41  # Op15 (Write multiple coils)
 REG_UG1_ComandosDigitais_MXW_HabSeqManual = 42  # Op15 (Write multiple coils)
 REG_UG1_ComandosDigitais_MXW_Freio_Aplica = 43  # Op15 (Write multiple coils)
 REG_UG1_ComandosDigitais_MXW_Freio_Desaplica = 44  # Op15 (Write multiple coils)
+REG_UG1_ComandosDigitais_MXW_IniciaPartida = 45  # Op15 (Write multiple coils)
+REG_UG1_ComandosDigitais_MXW_IniciaParada = 46  # Op15 (Write multiple coils)
 REG_UG1_ComandosDigitais_MXW_AbortaPartida = 47  # Op15 (Write multiple coils)
 REG_UG1_ComandosDigitais_MXW_ValvSeg_Liga = 48  # Op15 (Write multiple coils)
 REG_UG1_ComandosDigitais_MXW_ValvSeg_Desliga = 49  # Op15 (Write multiple coils)
@@ -240,6 +245,15 @@ REG_UG1_ComandosDigitais_MXW_RV_RefRemHabilita = 63  # Op15 (Write multiple coil
 REG_UG1_ComandosDigitais_MXW_RV_RefRemDesabilita = 64  # Op15 (Write multiple coils)
 REG_UG1_ComandosDigitais_MXW_Trip_PBCE_Habilita = 65  # Op15 (Write multiple coils)
 REG_UG1_ComandosDigitais_MXW_Trip_PBCE_Desabilita = 66  # Op15 (Write multiple coils)
+REG_UG1_RetornosAnalogicos_MWR_Temperatura_01 = 24  # Op04 (Read Input Regs - 3x)
+REG_UG1_RetornosAnalogicos_MWR_Temperatura_02 = 25  # Op04 (Read Input Regs - 3x)
+REG_UG1_RetornosAnalogicos_MWR_Temperatura_03 = 26  # Op04 (Read Input Regs - 3x)
+REG_UG1_RetornosAnalogicos_MWR_Temperatura_04 = 27  # Op04 (Read Input Regs - 3x)
+REG_UG1_RetornosAnalogicos_MWR_Temperatura_05 = 28  # Op04 (Read Input Regs - 3x)
+REG_UG1_RetornosAnalogicos_MWR_Temperatura_06 = 29  # Op04 (Read Input Regs - 3x)
+REG_UG1_RetornosAnalogicos_MWR_Temperatura_07 = 30  # Op04 (Read Input Regs - 3x)
+REG_UG1_RetornosAnalogicos_MWR_Temperatura_08 = 31  # Op04 (Read Input Regs - 3x)
+REG_UG1_RetornosAnalogicos_MWR_Temperatura_09 = 32  # Op04 (Read Input Regs - 3x)
 REG_UG1_RetornosAnalogicos_MWR_Temperatura_10 = 33  # Op04 (Read Input Regs - 3x)
 REG_UG1_RetornosAnalogicos_MWR_Temperatura_11 = 34  # Op04 (Read Input Regs - 3x)
 REG_UG1_RetornosAnalogicos_MWR_Temperatura_12 = 35  # Op04 (Read Input Regs - 3x)
@@ -254,6 +268,7 @@ REG_UG1_RetornosAnalogicos_MWR_PM_710_Fator_Potencia = 43  # Op04 (Read Input Re
 REG_UG1_RetornosAnalogicos_MWR_PM_710_Potencia_Aparente = (
     44  # Op04 (Read Input Regs - 3x)
 )
+REG_UG1_RetornosAnalogicos_MWR_PM_710_Potencia_Ativa = 45  # Op04 (Read Input Regs - 3x)
 REG_UG1_RetornosAnalogicos_MWR_PM_710_Potencia_Reativa = (
     46  # Op04 (Read Input Regs - 3x)
 )
@@ -261,7 +276,7 @@ REG_UG1_RetornosAnalogicos_MWR_Horimetro_Gerador = 51  # Op04 (Read Input Regs -
 REG_UG1_RetornosAnalogicos_MWR_Horimetro_Gerador_min = 52  # Op04 (Read Input Regs - 3x)
 REG_UG1_RetornosAnalogicos_MWR_Estabiliz_Tensao = 49  # Op04 (Read Input Regs - 3x)
 REG_UG1_EntradasAnalogicas_MRR_PosicaoDistribuidor = (
-    1  # Scale 0.1 - Op04 (Read Input Regs - 3x)
+    0  # Scale 0.1 - Op04 (Read Input Regs - 3x)
 )
 REG_UG1_EntradasAnalogicas_MRR_Velocidade = 1  # Scale 0.1 - Op04 (Read Input Regs - 3x)
 REG_UG1_EntradasAnalogicas_MRR_Reserva01 = 2  # Scale 0.1 - Op04 (Read Input Regs - 3x)
@@ -319,6 +334,7 @@ REG_UG1_EntradasAnalogicas_MRR_Reserva05 = 21  # Scale 0.1 - Op04 (Read Input Re
 REG_UG1_EntradasAnalogicas_MRR_Reserva06 = 22  # Scale 0.1 - Op04 (Read Input Regs - 3x)
 REG_UG1_EntradasAnalogicas_MRR_Reserva07 = 23  # Scale 0.1 - Op04 (Read Input Regs - 3x)
 REG_UG1_SaidasAnalogicas_MWW_Reserva01 = 0  # Scale - Op16 (Preset Multiple Regs - 4x)
+REG_UG1_SaidasAnalogicas_MWW_SPPotAtiva = 1  # Scale - Op16 (Preset Multiple Regs - 4x)
 REG_UG1_SaidasAnalogicas_MWW_Reserva03 = 2  # Scale - Op16 (Preset Multiple Regs - 4x)
 REG_UG1_SaidasAnalogicas_MWW_Reserva04 = 3  # Scale - Op16 (Preset Multiple Regs - 4x)
 REG_UG1_RetornosAnalogicos_Float_MWR_PM_710_Energia_Reativa_Consumida = (
@@ -333,11 +349,6 @@ REG_UG1_RetornosAnalogicos_Float_MWR_PM_710_Energia_Reativa_Fornecida = (
 REG_UG1_RetornosAnalogicos_Float_MWR_PM_710_Energia_Ativa_Fornecida = (
     155  # Scale 0.1 - Op04 (Read Input Regs - 3x)
 )
-
-
-#-----------------------------------------------------------------------------------------------------------------
-
-
 REG_UG2_EntradasDigitais_MXI_RV_MaquinaParada = 0  # Op02 (Read Input Status)
 REG_UG2_EntradasDigitais_MXI_RV_VeloMenor30 = 1  # Op02 (Read Input Status)
 REG_UG2_EntradasDigitais_MXI_RV_VeloMaior90 = 2  # Op02 (Read Input Status)
@@ -433,7 +444,8 @@ REG_UG2_RetornosDigitais_MXR_SeqManual = 130  # Op02 (Read Input Status)
 REG_UG2_RetornosDigitais_MXR_SeqAutomatica = 131  # Op02 (Read Input Status)
 REG_UG2_RetornosDigitais_MXR_PartindoEmAuto = 132  # Op02 (Read Input Status)
 REG_UG2_RetornosDigitais_MXR_ParandoEmAuto = 133  # Op02 (Read Input Status)
-
+REG_UG2_RetornosDigitais_MXR_TripEletrico = 134  # Op02 (Read Input Status)
+REG_UG2_RetornosDigitais_MXR_TripMecanico = 135  # Op02 (Read Input Status)
 REG_UG2_RetornosDigitais_MXR_ValvSeg_Energizadas = 136  # Op02 (Read Input Status)
 REG_UG2_RetornosDigitais_MXR_FalhaAcionAbertValvBorb = 137  # Op02 (Read Input Status)
 REG_UG2_RetornosDigitais_MXR_FalhaAcionFechaValvBorb = 138  # Op02 (Read Input Status)
@@ -519,7 +531,7 @@ REG_UG2_ComandosDigitais_MXW_ResetGeral = 0  # Op15 (Write multiple coils)
 REG_UG2_ComandosDigitais_MXW_ResetReleBloq86H = 1  # Op15 (Write multiple coils)
 REG_UG2_ComandosDigitais_MXW_ResetReleBloq86M = 2  # Op15 (Write multiple coils)
 REG_UG2_ComandosDigitais_MXW_ResetRele700G = 3  # Op15 (Write multiple coils)
-
+REG_UG2_ComandosDigitais_MXW_EmergenciaViaSuper = 4  # Op15 (Write multiple coils)
 REG_UG2_ComandosDigitais_MXW_ResetReleRT = 5  # Op15 (Write multiple coils)
 REG_UG2_ComandosDigitais_MXW_ResetRV = 6  # Op15 (Write multiple coils)
 REG_UG2_ComandosDigitais_MXW_AumentaTensaoRT = 7  # Op15 (Write multiple coils)
@@ -560,7 +572,8 @@ REG_UG2_ComandosDigitais_MXW_HabSeqAuto = 41  # Op15 (Write multiple coils)
 REG_UG2_ComandosDigitais_MXW_HabSeqManual = 42  # Op15 (Write multiple coils)
 REG_UG2_ComandosDigitais_MXW_Freio_Aplica = 43  # Op15 (Write multiple coils)
 REG_UG2_ComandosDigitais_MXW_Freio_Desaplica = 44  # Op15 (Write multiple coils)
-
+REG_UG2_ComandosDigitais_MXW_IniciaPartida = 45  # Op15 (Write multiple coils)
+REG_UG2_ComandosDigitais_MXW_IniciaParada = 46  # Op15 (Write multiple coils)
 REG_UG2_ComandosDigitais_MXW_AbortaPartida = 47  # Op15 (Write multiple coils)
 REG_UG2_ComandosDigitais_MXW_ValvSeg_Liga = 48  # Op15 (Write multiple coils)
 REG_UG2_ComandosDigitais_MXW_ValvSeg_Desliga = 49  # Op15 (Write multiple coils)
@@ -582,7 +595,15 @@ REG_UG2_ComandosDigitais_MXW_RV_RefRemHabilita = 64  # Op15 (Write multiple coil
 REG_UG2_ComandosDigitais_MXW_RV_RefRemDesabilita = 65  # Op15 (Write multiple coils)
 REG_UG2_ComandosDigitais_MXW_Trip_PBCE_Habilita = 66  # Op15 (Write multiple coils)
 REG_UG2_ComandosDigitais_MXW_Trip_PBCE_Desabilita = 67  # Op15 (Write multiple coils)
-
+REG_UG2_RetornosAnalogicos_MWR_Temperatura_01 = 24  # Op04 (Read Input Regs - 3x)
+REG_UG2_RetornosAnalogicos_MWR_Temperatura_02 = 25  # Op04 (Read Input Regs - 3x)
+REG_UG2_RetornosAnalogicos_MWR_Temperatura_03 = 26  # Op04 (Read Input Regs - 3x)
+REG_UG2_RetornosAnalogicos_MWR_Temperatura_04 = 27  # Op04 (Read Input Regs - 3x)
+REG_UG2_RetornosAnalogicos_MWR_Temperatura_05 = 28  # Op04 (Read Input Regs - 3x)
+REG_UG2_RetornosAnalogicos_MWR_Temperatura_06 = 29  # Op04 (Read Input Regs - 3x)
+REG_UG2_RetornosAnalogicos_MWR_Temperatura_07 = 30  # Op04 (Read Input Regs - 3x)
+REG_UG2_RetornosAnalogicos_MWR_Temperatura_08 = 31  # Op04 (Read Input Regs - 3x)
+REG_UG2_RetornosAnalogicos_MWR_Temperatura_09 = 32  # Op04 (Read Input Regs - 3x)
 REG_UG2_RetornosAnalogicos_MWR_Temperatura_10 = 33  # Op04 (Read Input Regs - 3x)
 REG_UG2_RetornosAnalogicos_MWR_Temperatura_11 = 34  # Op04 (Read Input Regs - 3x)
 REG_UG2_RetornosAnalogicos_MWR_Temperatura_12 = 35  # Op04 (Read Input Regs - 3x)
@@ -597,6 +618,7 @@ REG_UG2_RetornosAnalogicos_MWR_PM_710_Fator_Potencia = 43  # Op04 (Read Input Re
 REG_UG2_RetornosAnalogicos_MWR_PM_710_Potencia_Aparente = (
     44  # Op04 (Read Input Regs - 3x)
 )
+REG_UG2_RetornosAnalogicos_MWR_PM_710_Potencia_Ativa = 45  # Op04 (Read Input Regs - 3x)
 REG_UG2_RetornosAnalogicos_MWR_PM_710_Potencia_Reativa = (
     46  # Op04 (Read Input Regs - 3x)
 )
@@ -660,7 +682,7 @@ REG_UG2_EntradasAnalogicas_MRR_Reserva05 = 21  # Scale 0.1 - Op04 (Read Input Re
 REG_UG2_EntradasAnalogicas_MRR_Reserva06 = 22  # Scale 0.1 - Op04 (Read Input Regs - 3x)
 REG_UG2_EntradasAnalogicas_MRR_Reserva07 = 23  # Scale 0.1 - Op04 (Read Input Regs - 3x)
 REG_UG2_SaidasAnalogicas_MWW_Reserva01 = 0  # Scale - Op16 (Preset Multiple Regs - 4x)
-
+REG_UG2_SaidasAnalogicas_MWW_SPPotAtiva = 1  # Scale - Op16 (Preset Multiple Regs - 4x)
 REG_UG2_SaidasAnalogicas_MWW_Reserva03 = 2  # Scale - Op16 (Preset Multiple Regs - 4x)
 REG_UG2_SaidasAnalogicas_MWW_Reserva04 = 3  # Scale - Op16 (Preset Multiple Regs - 4x)
 REG_UG2_RetornosAnalogicos_Float_MWR_PM_710_Energia_Reativa_Consumida = (
@@ -757,7 +779,7 @@ REG_UG3_EntradasDigitais_MXI_QCAUG_Disj52A1Lig = 78  # Op02 (Read Input Status)
 REG_UG3_EntradasDigitais_MXI_QCAUG_TripDisj52A1 = 79  # Op02 (Read Input Status)
 REG_UG3_EntradasDigitais_MXI_UHLM_TripBomba1 = 80  # Op02 (Read Input Status)
 REG_UG3_EntradasDigitais_MXI_UHLM_TripBomba2 = 81  # Op02 (Read Input Status)
-REG_UG3_EntradasDigitais_MXI_TripPartRes = 82  # Op02 (Read Input Status)REG_UG3_RetornosDigitais_
+REG_UG3_EntradasDigitais_MXI_TripPartRes = 82  # Op02 (Read Input Status)
 REG_UG3_EntradasDigitais_MXI_UHRV_TripBomba1 = 83  # Op02 (Read Input Status)
 REG_UG3_EntradasDigitais_MXI_UHRV_TripBomba2 = 84  # Op02 (Read Input Status)
 REG_UG3_EntradasDigitais_MXI_TripAlimPainelFreio = 85  # Op02 (Read Input Status)
@@ -770,6 +792,8 @@ REG_UG3_RetornosDigitais_MXR_SeqManual = 130  # Op02 (Read Input Status)
 REG_UG3_RetornosDigitais_MXR_SeqAutomatica = 131  # Op02 (Read Input Status)
 REG_UG3_RetornosDigitais_MXR_PartindoEmAuto = 132  # Op02 (Read Input Status)
 REG_UG3_RetornosDigitais_MXR_ParandoEmAuto = 133  # Op02 (Read Input Status)
+REG_UG3_RetornosDigitais_MXR_TripEletrico = 134  # Op02 (Read Input Status)
+REG_UG3_RetornosDigitais_MXR_TripMecanico = 135  # Op02 (Read Input Status)
 REG_UG3_RetornosDigitais_MXR_ValvSeg_Energizadas = 136  # Op02 (Read Input Status)
 REG_UG3_RetornosDigitais_MXR_FalhaAcionAbertValvBorb = 137  # Op02 (Read Input Status)
 REG_UG3_RetornosDigitais_MXR_FalhaAcionFechaValvBorb = 138  # Op02 (Read Input Status)
@@ -855,6 +879,7 @@ REG_UG3_ComandosDigitais_MXW_ResetGeral = 0  # Op15 (Write multiple coils)
 REG_UG3_ComandosDigitais_MXW_ResetReleBloq86H = 1  # Op15 (Write multiple coils)
 REG_UG3_ComandosDigitais_MXW_ResetReleBloq86M = 2  # Op15 (Write multiple coils)
 REG_UG3_ComandosDigitais_MXW_ResetRele700G = 3  # Op15 (Write multiple coils)
+REG_UG3_ComandosDigitais_MXW_EmergenciaViaSuper = 4  # Op15 (Write multiple coils)
 REG_UG3_ComandosDigitais_MXW_ResetReleRT = 5  # Op15 (Write multiple coils)
 REG_UG3_ComandosDigitais_MXW_ResetRV = 6  # Op15 (Write multiple coils)
 REG_UG3_ComandosDigitais_MXW_AumentaTensaoRT = 7  # Op15 (Write multiple coils)
@@ -895,6 +920,8 @@ REG_UG3_ComandosDigitais_MXW_HabSeqAuto = 41  # Op15 (Write multiple coils)
 REG_UG3_ComandosDigitais_MXW_HabSeqManual = 42  # Op15 (Write multiple coils)
 REG_UG3_ComandosDigitais_MXW_Freio_Aplica = 43  # Op15 (Write multiple coils)
 REG_UG3_ComandosDigitais_MXW_Freio_Desaplica = 44  # Op15 (Write multiple coils)
+REG_UG3_ComandosDigitais_MXW_IniciaPartida = 45  # Op15 (Write multiple coils)
+REG_UG3_ComandosDigitais_MXW_IniciaParada = 46  # Op15 (Write multiple coils)
 REG_UG3_ComandosDigitais_MXW_AbortaPartida = 47  # Op15 (Write multiple coils)
 REG_UG3_ComandosDigitais_MXW_ValvSeg_Liga = 48  # Op15 (Write multiple coils)
 REG_UG3_ComandosDigitais_MXW_ValvSeg_Desliga = 49  # Op15 (Write multiple coils)
@@ -915,6 +942,15 @@ REG_UG3_ComandosDigitais_MXW_RV_RefRemHabilita = 63  # Op15 (Write multiple coil
 REG_UG3_ComandosDigitais_MXW_RV_RefRemDesabilita = 64  # Op15 (Write multiple coils)
 REG_UG3_ComandosDigitais_MXW_Trip_PBCE_Habilita = 65  # Op15 (Write multiple coils)
 REG_UG3_ComandosDigitais_MXW_Trip_PBCE_Desabilita = 66  # Op15 (Write multiple coils)
+REG_UG3_RetornosAnalogicos_MWR_Temperatura_01 = 24  # Op04 (Read Input Regs - 3x)
+REG_UG3_RetornosAnalogicos_MWR_Temperatura_02 = 25  # Op04 (Read Input Regs - 3x)
+REG_UG3_RetornosAnalogicos_MWR_Temperatura_03 = 26  # Op04 (Read Input Regs - 3x)
+REG_UG3_RetornosAnalogicos_MWR_Temperatura_04 = 27  # Op04 (Read Input Regs - 3x)
+REG_UG3_RetornosAnalogicos_MWR_Temperatura_05 = 28  # Op04 (Read Input Regs - 3x)
+REG_UG3_RetornosAnalogicos_MWR_Temperatura_06 = 29  # Op04 (Read Input Regs - 3x)
+REG_UG3_RetornosAnalogicos_MWR_Temperatura_07 = 30  # Op04 (Read Input Regs - 3x)
+REG_UG3_RetornosAnalogicos_MWR_Temperatura_08 = 31  # Op04 (Read Input Regs - 3x)
+REG_UG3_RetornosAnalogicos_MWR_Temperatura_09 = 32  # Op04 (Read Input Regs - 3x)
 REG_UG3_RetornosAnalogicos_MWR_Temperatura_10 = 33  # Op04 (Read Input Regs - 3x)
 REG_UG3_RetornosAnalogicos_MWR_Temperatura_11 = 34  # Op04 (Read Input Regs - 3x)
 REG_UG3_RetornosAnalogicos_MWR_Temperatura_12 = 35  # Op04 (Read Input Regs - 3x)
@@ -929,6 +965,7 @@ REG_UG3_RetornosAnalogicos_MWR_PM_710_Fator_Potencia = 43  # Op04 (Read Input Re
 REG_UG3_RetornosAnalogicos_MWR_PM_710_Potencia_Aparente = (
     44  # Op04 (Read Input Regs - 3x)
 )
+REG_UG3_RetornosAnalogicos_MWR_PM_710_Potencia_Ativa = 45  # Op04 (Read Input Regs - 3x)
 REG_UG3_RetornosAnalogicos_MWR_PM_710_Potencia_Reativa = (
     46  # Op04 (Read Input Regs - 3x)
 )
@@ -992,6 +1029,7 @@ REG_UG3_EntradasAnalogicas_MRR_Reserva05 = 21  # Scale 0.1 - Op04 (Read Input Re
 REG_UG3_EntradasAnalogicas_MRR_Reserva06 = 22  # Scale 0.1 - Op04 (Read Input Regs - 3x)
 REG_UG3_EntradasAnalogicas_MRR_Reserva07 = 23  # Scale 0.1 - Op04 (Read Input Regs - 3x)
 REG_UG3_SaidasAnalogicas_MWW_Reserva01 = 0  # Scale - Op16 (Preset Multiple Regs - 4x)
+REG_UG3_SaidasAnalogicas_MWW_SPPotAtiva = 1  # Scale - Op16 (Preset Multiple Regs - 4x)
 REG_UG3_SaidasAnalogicas_MWW_Reserva03 = 2  # Scale - Op16 (Preset Multiple Regs - 4x)
 REG_UG3_SaidasAnalogicas_MWW_Reserva04 = 3  # Scale - Op16 (Preset Multiple Regs - 4x)
 REG_UG3_RetornosAnalogicos_Float_MWR_PM_710_Energia_Reativa_Consumida = (
@@ -1200,7 +1238,7 @@ REG_SA_EntradasDigitais_MXI_SA_GMG_Operacao = 114  # Op02 (Read Discrete Inputs)
 REG_SA_EntradasDigitais_MXI_SA_GMG_BaixoComb = 115  # Op02 (Read Discrete Inputs)
 REG_SA_EntradasDigitais_MXI_SA_GMG_Automatico = 116  # Op02 (Read Discrete Inputs)
 REG_SA_EntradasDigitais_MXI_SA_GMG_DisjFechado = 117  # Op02 (Read Discrete Inputs)
-
+REG_SA_ComandosDigitais_MXW_ResetGeral = 0  # Scale - Op15 (Write multiple coils)
 REG_SA_ComandosDigitais_MXW_Liga_Secc1 = 1  # Scale - Op15 (Write multiple coils)
 REG_SA_ComandosDigitais_MXW_Desliga_Secc1 = 2  # Scale - Op15 (Write multiple coils)
 REG_SA_ComandosDigitais_MXW_Liga_Secc2 = 3  # Scale - Op15 (Write multiple coils)
@@ -1217,6 +1255,7 @@ REG_SA_ComandosDigitais_MXW_ResetRele787 = 13  # Scale - Op15 (Write multiple co
 REG_SA_ComandosDigitais_MXW_ResetRele59N = 14  # Scale - Op15 (Write multiple coils)
 REG_SA_ComandosDigitais_MXW_ResetRele311 = 15  # Scale - Op15 (Write multiple coils)
 REG_SA_ComandosDigitais_MXW_ResetReleMRL1 = 16  # Scale - Op15 (Write multiple coils)
+REG_SA_ComandosDigitais_MXW_Liga_DJ1 = 17  # Scale - Op15 (Write multiple coils)
 REG_SA_ComandosDigitais_MXW_Desliga_DJ1 = 18  # Scale - Op15 (Write multiple coils)
 REG_SA_ComandosDigitais_MXW_Liga_Disj52A1 = 19  # Scale - Op15 (Write multiple coils)
 REG_SA_ComandosDigitais_MXW_Desliga_Disj52A1 = 20  # Scale - Op15 (Write multiple coils)
@@ -1227,6 +1266,15 @@ REG_SA_ComandosDigitais_MXW_GMG_Desl = 24  # Scale - Op15 (Write multiple coils)
 REG_SA_ComandosDigitais_MXW_QCAP_Autom = 25  # Scale - Op15 (Write multiple coils)
 REG_SA_ComandosDigitais_MXW_QCAP_Manual = 26  # Scale - Op15 (Write multiple coils)
 REG_SA_ComandosDigitais_MXW_Cala_Sirene = 27  # Scale - Op15 (Write multiple coils)
+REG_SA_RetornosAnalogicos_MWR_PM_810_Tensao_AB = (
+    16  # Scale 0.1 - Op04 (Read Input Regs - 3x)
+)
+REG_SA_RetornosAnalogicos_MWR_PM_810_Tensao_BC = (
+    17  # Scale 0.1 - Op04 (Read Input Regs - 3x)
+)
+REG_SA_RetornosAnalogicos_MWR_PM_810_Tensao_CA = (
+    18  # Scale 0.1 - Op04 (Read Input Regs - 3x)
+)
 REG_SA_RetornosAnalogicos_MWR_PM_810_Corrente_A = (
     19  # Scale 0.01 - Op04 (Read Input Regs - 3x)
 )
@@ -1410,8 +1458,6 @@ REG_SA_RetornosAnalogicos_Float_MWR_PM2_710_Energia_Reativa_Fornecida = (
 REG_SA_RetornosAnalogicos_Float_MWR_PM2_710_Energia_Ativa_Fornecida = (
     171  # Op04 (Read Input Regs - 3x)
 )
-
-
 REG_TDA_EntradasDigitais_MXI_QcataDisj52EAberto = 0  # Op02 (Read Discrete Inputs)
 REG_TDA_EntradasDigitais_MXI_QcataDisj52ETrip = 1  # Op02 (Read Discrete Inputs)
 REG_TDA_EntradasDigitais_MXI_QcataDisj52ETripDisjSai = 2  # Op02 (Read Discrete Inputs)
@@ -1456,7 +1502,10 @@ REG_TDA_EntradasDigitais_MXR_3_TripNivelCritico = 40  # Op02 (Read Discrete Inpu
 REG_TDA_EntradasDigitais_MXR_VertendoAlm = 41  # Op02 (Read Discrete Inputs)
 REG_TDA_EntradasAnalogicas_MRR_NivelAntesGrade = (
     0  # Scale 0.01 - Op04 (Read Input Regs - 3x)
-    )
+)
+REG_TDA_EntradasAnalogicas_MRR_NivelDepoisGrade = (
+    1  # Scale 0.01 - Op04 (Read Input Regs - 3x)
+)
 REG_TDA_EntradasAnalogicas_MRR_Reserva01 = 2  # Op04 (Read Input Regs - 3x)
 REG_TDA_EntradasAnalogicas_MRR_Reserva02 = 3  # Op04 (Read Input Regs - 3x)
 REG_TDA_EntradasAnalogicas_MRR_Reserva03 = 4  # Op04 (Read Input Regs - 3x)
@@ -1486,7 +1535,7 @@ REG_TDA_RetornosDigitais_MXR_ExcedidoReligSE = 55  # Op02 (Read Discrete Inputs)
 REG_TDA_RetornosDigitais_MXR_StatusControleNivel = 56  # Op02 (Read Discrete Inputs)
 REG_TDA_RetornosDigitais_MXR_StatusRelig52L = 57  # Op02 (Read Discrete Inputs)
 REG_TDA_ComandosDigitais_MXW_ResetGeral = (
-    22288 # antigo -> 0  # Escrita de Word Simples (Preset Single Register - 4x)
+    0  # Escrita de Word Simples (Preset Single Register - 4x)
 )
 REG_TDA_ComandosDigitais_MXW_Hab_Nivel = (
     1  # Escrita de Word Simples (Preset Single Register - 4x)
@@ -1563,92 +1612,8 @@ REG_TDA_SaidasAnalogicas_MRW_Potencia_3_Media = (
 REG_TDA_SaidasAnalogicas_MRW_Potencia_3_Baixa = (
     20  # OpLeitura de Words (Read Holding Regs - 4x)
 )
-
+REG_TDA_NivelMaisCasasAntes = 12  # Scale 400 + 0.0001 X - Op04 (Read Input Regs - 3x)
 REG_TDA_NivelMaisCasasDepois = 13  # Scale 400 + 0.0001 X - Op04 (Read Input Regs - 3x)
 REG_UG1_COND_PART = 222
 REG_UG2_COND_PART = 222
 REG_UG3_COND_PART = 222
-
-
-
-#--------------------------------------------------------------------------------------------------------------------------------------#
-#Registradores utilizados na simulação, para voltar aos valores antigos, deletar os comentarios de linha "#antigo->" e manter o número.
-REG_UG1_RetornosDigitais_EtapaAux_Sim = 34901
-
-REG_UG1_ComandosDigitais_MXW_EmergenciaViaSuper = 32295 #antigo -> 4  # Op15 (Write multiple coils)
-REG_UG1_ComandosDigitais_MXW_IniciaPartida = 32294 #antigo -> 45  # Op15 (Write multiple coils)
-REG_UG1_ComandosDigitais_MXW_IniciaParada = 32290 #antigo -> 46  # Op15 (Write multiple coils)
-REG_UG1_RetornosDigitais_MXR_TripEletrico = 34198 #antigo -> 134  # Op02 (Read Input Status)
-REG_UG1_RetornosDigitais_MXR_TripMecanico = 34198 #antigo -> 135  # Op02 (Read Input Status)
-REG_UG1_RetornosAnalogicos_MWR_Temperatura_01 = 32871 #antigo -> 24  # Op04 (Read Input Regs - 3x)
-REG_UG1_RetornosAnalogicos_MWR_Temperatura_02 = 32872 #antigo -> 25  # Op04 (Read Input Regs - 3x)
-REG_UG1_RetornosAnalogicos_MWR_Temperatura_03 = 32873 #antigo -> 26  # Op04 (Read Input Regs - 3x)
-REG_UG1_RetornosAnalogicos_MWR_Temperatura_04 = 32874 #antigo -> 27  # Op04 (Read Input Regs - 3x)
-REG_UG1_RetornosAnalogicos_MWR_Temperatura_05 = 32875 #antigo -> 28  # Op04 (Read Input Regs - 3x)
-REG_UG1_RetornosAnalogicos_MWR_Temperatura_06 = 32876 #antigo -> 29  # Op04 (Read Input Regs - 3x)
-REG_UG1_RetornosAnalogicos_MWR_Temperatura_07 = 32877 #antigo -> 30  # Op04 (Read Input Regs - 3x)
-REG_UG1_RetornosAnalogicos_MWR_Temperatura_08 = 32878 #antigo -> 31  # Op04 (Read Input Regs - 3x)
-REG_UG1_RetornosAnalogicos_MWR_Temperatura_09 = 32879 #antigo -> 32  # Op04 (Read Input Regs - 3x)
-REG_UG1_RetornosAnalogicos_MWR_PM_710_Potencia_Ativa = 32836 #antigo->45  # Op04 (Read Input Regs - 3x)
-
-REG_UG1_SaidasAnalogicas_MWW_SPPotAtiva = 33585 #antigo -> 1  # Scale - Op16 (Preset Multiple Regs - 4x)
-
-REG_UG2_RetornosDigitais_EtapaAux_Sim = 44901
-
-REG_UG2_ComandosDigitais_MXW_EmergenciaViaSuper = 42295 #antigo -> 4  # Op15 (Write multiple coils)
-REG_UG2_ComandosDigitais_MXW_IniciaPartida = 42294 #antigo -> 45  # Op15 (Write multiple coils)
-REG_UG2_ComandosDigitais_MXW_IniciaParada = 42290 #antigo -> 46  # Op15 (Write multiple coils)
-REG_UG2_RetornosDigitais_MXR_TripEletrico = 44198  #antigo -> 134# Op02 (Read Input Status)
-REG_UG2_RetornosDigitais_MXR_TripMecanico = 44198  #antigo -> 135 # Op02 (Read Input Status)
-REG_UG2_RetornosAnalogicos_MWR_Temperatura_01 = 42871 #antigo -> 24  # Op04 (Read Input Regs - 3x)
-REG_UG2_RetornosAnalogicos_MWR_Temperatura_02 = 42872 #antigo -> 25  # Op04 (Read Input Regs - 3x)
-REG_UG2_RetornosAnalogicos_MWR_Temperatura_03 = 42873 #antigo -> 26  # Op04 (Read Input Regs - 3x)
-REG_UG2_RetornosAnalogicos_MWR_Temperatura_04 = 42874 #antigo -> 27  # Op04 (Read Input Regs - 3x)
-REG_UG2_RetornosAnalogicos_MWR_Temperatura_05 = 42875 #antigo -> 28  # Op04 (Read Input Regs - 3x)
-REG_UG2_RetornosAnalogicos_MWR_Temperatura_06 = 42876 #antigo -> 29  # Op04 (Read Input Regs - 3x)
-REG_UG2_RetornosAnalogicos_MWR_Temperatura_07 = 42877 #antigo -> 30  # Op04 (Read Input Regs - 3x)
-REG_UG2_RetornosAnalogicos_MWR_Temperatura_08 = 42878 #antigo -> 31  # Op04 (Read Input Regs - 3x)
-REG_UG2_RetornosAnalogicos_MWR_Temperatura_09 = 42879 #antigo -> 32  # Op04 (Read Input Regs - 3x)
-REG_UG2_RetornosAnalogicos_MWR_PM_710_Potencia_Ativa = 42836 #antigo ->45  # Op04 (Read Input Regs - 3x)
-
-REG_UG2_SaidasAnalogicas_MWW_SPPotAtiva = 43585 #antigo -> 1  # Scale - Op16 (Preset Multiple Regs - 4x)
-
-REG_UG3_RetornosDigitais_EtapaAux_Sim = 54901
-
-REG_UG3_ComandosDigitais_MXW_EmergenciaViaSuper = 52295 #antigo -> 4  # Op15 (Write multiple coils)
-REG_UG3_ComandosDigitais_MXW_IniciaPartida = 52294 #antigo -> 45  # Op15 (Write multiple coils)
-REG_UG3_ComandosDigitais_MXW_IniciaParada = 52290 #antigo -> 46  # Op15 (Write multiple coils)
-REG_UG3_RetornosDigitais_MXR_TripEletrico = 54198 #antigo -> 134  # Op02 (Read Input Status)
-REG_UG3_RetornosDigitais_MXR_TripMecanico = 54198 #antigo -> 135  # Op02 (Read Input Status)
-REG_UG3_RetornosAnalogicos_MWR_Temperatura_01 = 52871 #antigo -> 24  # Op04 (Read Input Regs - 3x)
-REG_UG3_RetornosAnalogicos_MWR_Temperatura_02 = 52872 #antigo -> 25  # Op04 (Read Input Regs - 3x)
-REG_UG3_RetornosAnalogicos_MWR_Temperatura_03 = 52873 #antigo -> 26  # Op04 (Read Input Regs - 3x)
-REG_UG3_RetornosAnalogicos_MWR_Temperatura_04 = 52874 #antigo -> 27  # Op04 (Read Input Regs - 3x)
-REG_UG3_RetornosAnalogicos_MWR_Temperatura_05 = 52875 #antigo -> 28  # Op04 (Read Input Regs - 3x)
-REG_UG3_RetornosAnalogicos_MWR_Temperatura_06 = 52876 #antigo -> 29  # Op04 (Read Input Regs - 3x)
-REG_UG3_RetornosAnalogicos_MWR_Temperatura_07 = 52877 #antigo -> 30  # Op04 (Read Input Regs - 3x)
-REG_UG3_RetornosAnalogicos_MWR_Temperatura_08 = 52878 #antigo -> 31  # Op04 (Read Input Regs - 3x)
-REG_UG3_RetornosAnalogicos_MWR_Temperatura_09 = 52879 #antigo -> 32  # Op04 (Read Input Regs - 3x)
-REG_UG3_RetornosAnalogicos_MWR_PM_710_Potencia_Ativa = 52836 #antigo->45  # Op04 (Read Input Regs - 3x)
-
-REG_UG3_SaidasAnalogicas_MWW_SPPotAtiva = 53585 #antigo -> 1  # Scale - Op16 (Preset Multiple Regs - 4x)
-
-REG_SA_ComandosDigitais_MXW_ResetGeral = 22288 #antigo -> 0  # Scale - Op15 (Write multiple coils)
-REG_SA_ComandosDigitais_MXW_Liga_DJ1 = 22293 #antigo -> 17  # Scale - Op15 (Write multiple coils)
-REG_SA_RetornosAnalogicos_Medidor_potencia_kw_mp = (
-    24900 # Op04 (Read Input Regs - 3x)
-)
-REG_SA_RetornosAnalogicos_MWR_PM_810_Tensao_AB = (
-    22789 #antigo -> 16  # Scale 0.1 - Op04 (Read Input Regs - 3x)
-)
-REG_SA_RetornosAnalogicos_MWR_PM_810_Tensao_BC = (
-    22790 #antigo -> 17  # Scale 0.1 - Op04 (Read Input Regs - 3x)
-)
-REG_SA_RetornosAnalogicos_MWR_PM_810_Tensao_CA = (
-    22791 #antigo -> 18  # Scale 0.1 - Op04 (Read Input Regs - 3x)
-)
-
-REG_TDA_NivelMaisCasasAntes = 22766 #antigo -> 12  # Scale 400 + 0.0001 X - Op04 (Read Input Regs - 3x)
-REG_TDA_EntradasAnalogicas_MRR_NivelDepoisGrade = (
-    22767 # antgo -> 1  # Scale 0.01 - Op04 (Read Input Regs - 3x)
-)

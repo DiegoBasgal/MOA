@@ -23,11 +23,17 @@ logger.setLevel(logging.INFO)
 if not os.path.exists(os.path.join(os.path.dirname(__file__), "..", "logs")):
     os.mkdir(os.path.join(os.path.dirname(__file__), "..", "logs"))
 
-fh = handlers.TimedRotatingFileHandler(os.path.join(os.path.dirname(__file__), "..", "logs", "painel.log"), when="midnight", interval=1, backupCount=7,)  
-# log para arquivo
+fh = handlers.TimedRotatingFileHandler(
+    os.path.join(os.path.dirname(__file__), "..", "logs", "painel.log"),
+    when="midnight",
+    interval=1,
+    backupCount=7,
+)  # log para arquivo
 ch = logging.StreamHandler(stdout)  # log para linha de comando
 mh = MensageiroHandler()  # log para telegram e voip
-logFormatter = logging.Formatter("%(asctime)s [%(threadName)-12.12s] [%(levelname)-5.5s] [PAINEL] %(message)s")
+logFormatter = logging.Formatter(
+    "%(asctime)s [%(threadName)-12.12s] [%(levelname)-5.5s] [PAINEL] %(message)s"
+)
 logFormatterSimples = logging.Formatter("[%(levelname)-5.5s] [PAINEL] %(message)s")
 fh.setFormatter(logFormatter)
 ch.setFormatter(logFormatter)
@@ -38,6 +44,7 @@ mh.setLevel(logging.INFO)
 logger.addHandler(fh)
 logger.addHandler(ch)
 logger.addHandler(mh)
+
 
 # DEFINE GPIO PINS AND MODE
 GPIO_MODE = gpio.BCM
@@ -59,7 +66,18 @@ OUT_09 = 16
 OUT_10 = 12
 
 INPUTS = [IN_01, IN_02, IN_03, IN_04]
-OUTPUTS = [ OUT_01, OUT_02, OUT_03, OUT_04, OUT_05, OUT_06, OUT_07, OUT_08, OUT_09, OUT_10,]
+OUTPUTS = [
+    OUT_01,
+    OUT_02,
+    OUT_03,
+    OUT_04,
+    OUT_05,
+    OUT_06,
+    OUT_07,
+    OUT_08,
+    OUT_09,
+    OUT_10,
+]
 
 SAIDA_PRONTO = OUT_01
 SAIDA_BLOCK_UG1 = OUT_04
@@ -103,7 +121,13 @@ class Painel(threading.Thread):
             raise e
 
         try:
-            self.modbus = ModbusClient(host="localhost", port=self.cfg["moa_slave_porta"], unit_id=1, auto_open=True, timeout=0.5,)
+            self.modbus = ModbusClient(
+                host="localhost",
+                port=self.cfg["moa_slave_porta"],
+                unit_id=1,
+                auto_open=True,
+                timeout=0.5,
+            )
         except Exception as e:
             logger.error("Erro ao criar leitor ModBus.")
             raise e
@@ -131,51 +155,77 @@ class Painel(threading.Thread):
         panel_was_updated = False
         autonomous_mode_activated = False
         tentativas = 0
-
         while not self.stop_signal:
             try:
                 tentativas += 1
-
                 # Open modbus con
                 if self.modbus.open():
                     gpio.output(SAIDA_PRONTO, True)
-
                     if tentativas > 1:
                         logger.info("Comunicação do painel normalizada.")
                     tentativas = 0
-
                     # Read moa output registers
-                    reg_value = self.modbus.read_holding_registers(self.cfg["REG_MOA_OUT_MODE"])[0]
+                    reg_value = self.modbus.read_holding_registers(
+                        self.cfg["REG_MOA_OUT_MODE"]
+                    )[0]
                     if reg_value == MOA_ACTIVATED_AUTONOMOUS_MODE:
                         autonomous_mode_activated = True
                     elif reg_value == MOA_DEACTIVATED_AUTONOMOUS_MODE:
                         autonomous_mode_activated = False
                     else:
-                        logger.warning("Leitura incorreta do registrador 'REG_MOA_OUT_MODE'({}) => '{}'.".format(self.cfg["REG_MOA_OUT_MODE"], reg_value))
+                        logger.warning(
+                            "Leitura incorreta do registrador 'REG_MOA_OUT_MODE'({}) => '{}'.".format(
+                                self.cfg["REG_MOA_OUT_MODE"], reg_value
+                            )
+                        )
 
-                    reg_value = self.modbus.read_holding_registers(self.cfg["REG_MOA_OUT_BLOCK_UG1"])[0]
+                    reg_value = self.modbus.read_holding_registers(
+                        self.cfg["REG_MOA_OUT_BLOCK_UG1"]
+                    )[0]
                     if reg_value == 0 or reg_value == 1:
                         block_ug1_activated = True if reg_value == 1 else False
                     else:
-                        logger.warning("Leitura incorreta do registrador 'REG_MOA_OUT_BLOCK_UG1({}) => '{}'.".format(self.cfg["REG_MOA_OUT_BLOCK_UG1"], reg_value))
+                        logger.warning(
+                            "Leitura incorreta do registrador 'REG_MOA_OUT_BLOCK_UG1({}) => '{}'.".format(
+                                self.cfg["REG_MOA_OUT_BLOCK_UG1"], reg_value
+                            )
+                        )
 
-                    reg_value = self.modbus.read_holding_registers(self.cfg["REG_MOA_OUT_BLOCK_UG2"])[0]
+                    reg_value = self.modbus.read_holding_registers(
+                        self.cfg["REG_MOA_OUT_BLOCK_UG2"]
+                    )[0]
                     if reg_value == 0 or reg_value == 1:
                         block_ug2_activated = True if reg_value == 1 else False
                     else:
-                        logger.warning("Leitura incorreta do registrador 'REG_MOA_OUT_BLOCK_UG2({}) => '{}'.".format(self.cfg["REG_MOA_OUT_BLOCK_UG2"], reg_value))
+                        logger.warning(
+                            "Leitura incorreta do registrador 'REG_MOA_OUT_BLOCK_UG2({}) => '{}'.".format(
+                                self.cfg["REG_MOA_OUT_BLOCK_UG2"], reg_value
+                            )
+                        )
 
-                    reg_value = self.modbus.read_holding_registers(self.cfg["REG_MOA_OUT_BLOCK_UG3"])[0]
+                    reg_value = self.modbus.read_holding_registers(
+                        self.cfg["REG_MOA_OUT_BLOCK_UG3"]
+                    )[0]
                     if reg_value == 0 or reg_value == 1:
                         block_ug3_activated = True if reg_value == 1 else False
                     else:
-                        logger.warning("Leitura incorreta do registrador 'REG_MOA_OUT_BLOCK_UG3({}) => '{}'.".format(self.cfg["REG_MOA_OUT_BLOCK_UG3"], reg_value))
+                        logger.warning(
+                            "Leitura incorreta do registrador 'REG_MOA_OUT_BLOCK_UG3({}) => '{}'.".format(
+                                self.cfg["REG_MOA_OUT_BLOCK_UG3"], reg_value
+                            )
+                        )
 
-                    reg_value = self.modbus.read_holding_registers(self.cfg["REG_PAINEL_LIDO"])[0]
+                    reg_value = self.modbus.read_holding_registers(
+                        self.cfg["REG_PAINEL_LIDO"]
+                    )[0]
                     if reg_value == 0 or reg_value == 1:
                         panel_was_updated = True if reg_value == 1 else False
                     else:
-                        logger.warning("Leitura incorreta do registrador 'REG_PAINEL_LIDO' => '{}'.".format(reg_value))
+                        logger.warning(
+                            "Leitura incorreta do registrador 'REG_PAINEL_LIDO' => '{}'.".format(
+                                reg_value
+                            )
+                        )
 
                     # Replicate panel on INPUTS
 
@@ -186,28 +236,43 @@ class Painel(threading.Thread):
 
                     if gpio.input(IN_01):
                         logger.info("Comando recebido: desabilitar modo autonomo.")
-                        self.modbus.write_single_register(self.cfg["REG_MOA_IN_DESABILITA_AUTO"], 1)
-                        self.modbus.write_single_register(self.cfg["REG_MOA_IN_HABILITA_AUTO"], 0)
-                        self.modbus.write_single_register(self.cfg["REG_PAINEL_LIDO"], 0)
+                        self.modbus.write_single_register(
+                            self.cfg["REG_MOA_IN_DESABILITA_AUTO"], 1
+                        )
+                        self.modbus.write_single_register(
+                            self.cfg["REG_MOA_IN_HABILITA_AUTO"], 0
+                        )
+                        self.modbus.write_single_register(
+                            self.cfg["REG_PAINEL_LIDO"], 0
+                        )
                         panel_was_updated = False
 
                     elif gpio.input(IN_04):
                         logger.info("Comando recebido: habilitar modo autonomo.")
-                        self.modbus.write_single_register(self.cfg["REG_MOA_IN_DESABILITA_AUTO"], 0)
-                        self.modbus.write_single_register(self.cfg["REG_MOA_IN_HABILITA_AUTO"], 1)
-                        self.modbus.write_single_register(self.cfg["REG_PAINEL_LIDO"], 0)
+                        self.modbus.write_single_register(
+                            self.cfg["REG_MOA_IN_DESABILITA_AUTO"], 0
+                        )
+                        self.modbus.write_single_register(
+                            self.cfg["REG_MOA_IN_HABILITA_AUTO"], 1
+                        )
+                        self.modbus.write_single_register(
+                            self.cfg["REG_PAINEL_LIDO"], 0
+                        )
                         panel_was_updated = False
 
                     if gpio.input(IN_03):
                         if not self.avisado:
                             self.avisado = True
                             logger.info("Comando recebido: emergencia.")
-                        self.modbus.write_single_register(self.cfg["REG_MOA_IN_EMERG"], 1)
+                        self.modbus.write_single_register(
+                            self.cfg["REG_MOA_IN_EMERG"], 1
+                        )
                     else:
                         logger.debug("REG_MOA_IN_EMERG <- 0")
-                        self.modbus.write_single_register(self.cfg["REG_MOA_IN_EMERG"], 0)
+                        self.modbus.write_single_register(
+                            self.cfg["REG_MOA_IN_EMERG"], 0
+                        )
                         self.avisado = False
-
                     # Close modbus con
                     self.modbus.close()
 
@@ -217,8 +282,9 @@ class Painel(threading.Thread):
                             gpio.output(SAIDA_BLOCK_UG1, block_ug1_activated)
                             gpio.output(SAIDA_BLOCK_UG2, block_ug2_activated)
                             gpio.output(SAIDA_BLOCK_UG3, block_ug3_activated)
-
-                        elif (not autonomous_mode_activated):  # If on manual, dont trip UGS
+                        elif (
+                            not autonomous_mode_activated
+                        ):  # If on manual, dont trip UGS
                             gpio.output(SAIDA_BLOCK_UG1, False)
                             gpio.output(SAIDA_BLOCK_UG2, False)
                             gpio.output(SAIDA_BLOCK_UG3, False)
@@ -236,12 +302,16 @@ class Painel(threading.Thread):
 
             except Exception as e:
                 self.blink(t=1, pin=[SAIDA_PRONTO, SAIDA_MODO_AUTO])
-                logger.error("Comunicação com o MOA falhou... {}".format(tentativas, repr(e)))
+                logger.error(
+                    "Comunicação com o MOA falhou... {}".format(tentativas, repr(e))
+                )
                 tentativas += 1
-
                 if tentativas > 3:
-                    logger.error("Esse erro não será mais exibito até que a situação seja normalizada")
+                    logger.error(
+                        "Esse erro não será mais exibito até que a situação seja normalizada"
+                    )
                 continue
+
 
 if __name__ == "__main__":
     # Iniciao o painel

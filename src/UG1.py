@@ -81,9 +81,7 @@ class UnidadeDeGeracao1(UnidadeDeGeracao):
             self.leitura_horimetro_hora,
             self.leitura_horimetro_frac
         )
-        
-#-----------------------------------------------------------------------------------------------------------------------
-        """
+
         C1 = LeituraModbusCoil(
             descr="MXR_PartindoEmAuto",
             modbus_client=self.clp,
@@ -111,31 +109,31 @@ class UnidadeDeGeracao1(UnidadeDeGeracao):
             leitura3=C3,
             leitura4=C4,
         )
-        """
-
-        # utilizar essa forma de leitura de etapa apenas quando for usar o simulador, 
-        # utilizar a forma comentada anterior quando for em produção
-        self.leitura_Operacao_EtapaAtual = LeituraModbus(
-            "REG_UG1_RetornosDigitais_EtapaAux_Sim",
-            self.clp,
-            REG_UG1_RetornosDigitais_EtapaAux_Sim,
-            1,
-            op=4
-        )
-#-----------------------------------------------------------------------------------------------------------------------
 
         # LISTA
-        self.leitura_ValvBorbTravada = LeituraModbusCoil("ValvBorbTravada", self.clp, REG_UG1_ValvBorbTravada)
+        self.leitura_ValvBorbTravada = LeituraModbusCoil(
+            "ValvBorbTravada", self.clp, REG_UG1_ValvBorbTravada
+        )
         x = self.leitura_ValvBorbTravada
-        self.condicionadores.append(CondicionadorBase(x.descr, DEVE_INDISPONIBILIZAR, x))
+        self.condicionadores.append(
+            CondicionadorBase(x.descr, DEVE_INDISPONIBILIZAR, x)
+        )
 
-        self.leitura_UHRV_TripBomba2 = LeituraModbusCoil("UHRV_TripBomba2", self.clp, REG_UG1_UHRV_TripBomba2)
+        self.leitura_UHRV_TripBomba2 = LeituraModbusCoil(
+            "UHRV_TripBomba2", self.clp, REG_UG1_UHRV_TripBomba2
+        )
         x = self.leitura_UHRV_TripBomba2
-        self.condicionadores.append(CondicionadorBase(x.descr, DEVE_INDISPONIBILIZAR, x))
+        self.condicionadores.append(
+            CondicionadorBase(x.descr, DEVE_INDISPONIBILIZAR, x)
+        )
 
-        self.leitura_UHRV_TripBomba1 = LeituraModbusCoil("UHRV_TripBomba1", self.clp, REG_UG1_UHRV_TripBomba1)
+        self.leitura_UHRV_TripBomba1 = LeituraModbusCoil(
+            "UHRV_TripBomba1", self.clp, REG_UG1_UHRV_TripBomba1
+        )
         x = self.leitura_UHRV_TripBomba1
-        self.condicionadores.append(CondicionadorBase(x.descr, DEVE_INDISPONIBILIZAR, x))
+        self.condicionadores.append(
+            CondicionadorBase(x.descr, DEVE_INDISPONIBILIZAR, x)
+        )
 
         self.leitura_UHRV_PressCriticaPos321 = LeituraModbusCoil(
             "UHRV_PressCriticaPos321", self.clp, REG_UG1_UHRV_PressCriticaPos321
@@ -901,16 +899,27 @@ class UnidadeDeGeracao1(UnidadeDeGeracao):
     def remover_trip_eletrico(self) -> bool:
         """
         Remove o TRIP elétricamente via painel
+
         Returns:
             bool: True se sucesso, Falso caso contrário
         """
         try:
             self.enviar_trip_eletrico = False
-            self.logger.debug("[UG{}] Removendo sinal (elétrico) de TRIP.".format(self.id))
-            DataBank.set_words(self.cfg["REG_MOA_OUT_BLOCK_UG{}".format(self.id)],[0],)
-            DataBank.set_words(self.cfg["REG_PAINEL_LIDO"],[0],)
+            self.logger.debug(
+                "[UG{}] Removendo sinal (elétrico) de TRIP.".format(self.id)
+            )
+            DataBank.set_words(
+                self.cfg["REG_MOA_OUT_BLOCK_UG{}".format(self.id)],
+                [0],
+            )
+            DataBank.set_words(
+                self.cfg["REG_PAINEL_LIDO"],
+                [0],
+            )
         except Exception as e:
-            self.logger.warning("Exception! Traceback: {}".format(traceback.format_exc()))
+            self.logger.warning(
+                "Exception! Traceback: {}".format(traceback.format_exc())
+            )
             return False
         else:
             return True
@@ -918,32 +927,48 @@ class UnidadeDeGeracao1(UnidadeDeGeracao):
     def partir(self) -> bool:
         """
         Envia o comando de parida da unidade de geração para o CLP via rede
+
         Returns:
             bool: True se sucesso, Falso caso contrário
         """
         try:
-            """
-            # na simulação, a condição a seguir, impede a partida das ugs. Retirar comentário quando for aplicar em campo
-            if not self.clp.read_coils(REG_UG1_COND_PART,1)[0]:self.logger.debug("[UG{}] Sem cond. de partida. Vai partir quando tiver.".format(self.id))
+            
+            if not self.clp.read_coils(REG_UG1_COND_PART,1)[0]:
+                self.logger.debug(
+                   "[UG{}] Sem cond. de partida. Vai partir quando tiver.".format(self.id)
+                )
                 return True
-            """
+
             if not self.etapa_atual == UNIDADE_SINCRONIZADA:
-                self.logger.info("[UG{}] Enviando comando (via rede) de partida.".format(self.id))
-                response = self.clp.write_single_coil(REG_UG1_ComandosDigitais_MXW_ResetGeral, 1)
-                response = self.clp.write_single_coil(REG_UG1_ComandosDigitais_MXW_ResetRele700G, 1)
-                response = self.clp.write_single_coil(REG_UG1_ComandosDigitais_MXW_ResetReleBloq86H, 1)
-                response = self.clp.write_single_coil(REG_UG1_ComandosDigitais_MXW_ResetReleBloq86M, 1)
-                response = self.clp.write_single_coil(REG_UG1_ComandosDigitais_MXW_ResetReleRT, 1)
-                response = self.clp.write_single_coil(REG_UG1_ComandosDigitais_MXW_ResetRV, 1)
-                """
-                utilizar o write_single_coil quando for em produção
-                response = self.clp.write_single_coil(REG_UG1_ComandosDigitais_MXW_IniciaPartida, 1)
-                """
-                # tilizar o write_single_register quando for para rodar o simulador
-                response = self.clp.write_single_register(REG_UG1_ComandosDigitais_MXW_IniciaPartida, int(1))
-                self.enviar_setpoint(self.setpoint)
+                self.logger.info(
+                    "[UG{}] Enviando comando (via rede) de partida.".format(self.id)
+                )
             else:
-                self.logger.debug("[UG{}] Enviando comando (via rede) de partida.".format(self.id))
+                self.logger.debug(
+                    "[UG{}] Enviando comando (via rede) de partida.".format(self.id)
+                )
+            response = self.clp.write_single_coil(
+                REG_UG1_ComandosDigitais_MXW_ResetGeral, 1
+            )
+            response = self.clp.write_single_coil(
+                REG_UG1_ComandosDigitais_MXW_ResetRele700G, 1
+            )
+            response = self.clp.write_single_coil(
+                REG_UG1_ComandosDigitais_MXW_ResetReleBloq86H, 1
+            )
+            response = self.clp.write_single_coil(
+                REG_UG1_ComandosDigitais_MXW_ResetReleBloq86M, 1
+            )
+            response = self.clp.write_single_coil(
+                REG_UG1_ComandosDigitais_MXW_ResetReleRT, 1
+            )
+            response = self.clp.write_single_coil(
+                REG_UG1_ComandosDigitais_MXW_ResetRV, 1
+            )
+            response = self.clp.write_single_coil(
+                REG_UG1_ComandosDigitais_MXW_IniciaPartida, 1
+            )
+            self.enviar_setpoint(self.setpoint)
         except:
             #! TODO Tratar exceptions
             return False
@@ -953,25 +978,31 @@ class UnidadeDeGeracao1(UnidadeDeGeracao):
     def parar(self) -> bool:
         """
         Envia o comando de parada da unidade de geração para o CLP via rede
+
         Returns:
             bool: True se sucesso, Falso caso contrário
         """
         try:
             if not self.etapa_atual == UNIDADE_PARADA:
-                self.logger.info("[UG{}] Enviando comando (via rede) de parada.".format(self.id))
-                response = False
-                response = self.clp.write_single_coil(REG_UG1_ComandosDigitais_MXW_AbortaPartida, 1)
-                response = self.clp.write_single_coil(REG_UG1_ComandosDigitais_MXW_AbortaSincronismo, 1)
-                # utilizar o write_single_register quando for para rodar o simulador
-                response = self.clp.write_single_register(REG_UG1_ComandosDigitais_MXW_IniciaParada, int(1))
-                """
-                utilizar o write_single_coil quando for em produção
-                response = self.clp.write_single_coil(REG_UG1_ComandosDigitais_MXW_IniciaParada, 1)
-                """
-                self.enviar_setpoint(self.setpoint)
+                self.logger.info(
+                    "[UG{}] Enviando comando (via rede) de parada.".format(self.id)
+                )
             else:
-                self.logger.debug("[UG{}] Enviando comando (via rede) de parada.".format(self.id))
-            
+                self.logger.debug(
+                    "[UG{}] Enviando comando (via rede) de parada.".format(self.id)
+                )
+            self.enviar_setpoint(0)
+            response = False
+            response = self.clp.write_single_coil(
+                REG_UG1_ComandosDigitais_MXW_AbortaPartida, 1
+            )
+            response = self.clp.write_single_coil(
+                REG_UG1_ComandosDigitais_MXW_AbortaSincronismo, 1
+            )
+            response = self.clp.write_single_coil(
+                REG_UG1_ComandosDigitais_MXW_IniciaParada, 1
+            )
+
         except Exception as e:
             self.logger.exception(e)
             return False
@@ -981,11 +1012,16 @@ class UnidadeDeGeracao1(UnidadeDeGeracao):
     def reconhece_reset_alarmes(self) -> bool:
         """
         Envia o comando de reconhece e reset dos alarmes da unidade de geração para o CLP via rede
+
         Returns:
             bool: True se sucesso, Falso caso contrário
         """
         try:
-            self.logger.info("[UG{}] Enviando comando de reconhece e reset alarmes. (Vai tomar aprox 10s)".format(self.id))
+            self.logger.info(
+                "[UG{}] Enviando comando de reconhece e reset alarmes. (Vai tomar aprox 10s)".format(
+                    self.id
+                )
+            )
 
             for _ in range(3):
                 DataBank.set_words(self.cfg["REG_PAINEL_LIDO"], [0])
@@ -993,7 +1029,9 @@ class UnidadeDeGeracao1(UnidadeDeGeracao):
                 DataBank.set_words(self.cfg["REG_PAINEL_LIDO"], [0])
                 sleep(1)
                 self.remover_trip_logico()
-                response = self.clp.write_single_coil(REG_UG1_ComandosDigitais_MXW_ResetGeral, 1)
+                response = self.clp.write_single_coil(
+                    REG_UG1_ComandosDigitais_MXW_ResetGeral, 1
+                )
                 DataBank.set_words(self.cfg["REG_PAINEL_LIDO"], [0])
                 sleep(1)
 
@@ -1006,20 +1044,30 @@ class UnidadeDeGeracao1(UnidadeDeGeracao):
     def enviar_setpoint(self, setpoint_kw: int) -> bool:
         """
         Envia o setpoint desejado para o CLP via rede
+
         Returns:
             bool: True se sucesso, Falso caso contrário
         """
         try:
+
             self.setpoint_minimo = self.cfg["pot_minima"]
             self.setpoint_maximo = self.cfg["pot_maxima_ug{}".format(self.id)]
 
             self.setpoint = int(setpoint_kw)
-            self.logger.debug("[UG{}] Enviando setpoint {} kW.".format(self.id, int(self.setpoint)))
+            self.logger.debug(
+                "[UG{}] Enviando setpoint {} kW.".format(self.id, int(self.setpoint))
+            )
             response = False
-            if self.setpoint >= 1:
-                response = self.clp.write_single_coil(REG_UG1_ComandosDigitais_MXW_ResetGeral, 1)
-                response = self.clp.write_single_coil(REG_UG1_ComandosDigitais_MXW_RV_RefRemHabilita, 1)
-                response = self.clp.write_single_register(REG_UG1_SaidasAnalogicas_MWW_SPPotAtiva, self.setpoint)
+            if self.setpoint > 1:
+                response = self.clp.write_single_coil(
+                    REG_UG1_ComandosDigitais_MXW_ResetGeral, 1
+                )
+                response = self.clp.write_single_coil(
+                    REG_UG1_ComandosDigitais_MXW_RV_RefRemHabilita, 1
+                )
+                response = self.clp.write_single_register(
+                    REG_UG1_SaidasAnalogicas_MWW_SPPotAtiva, self.setpoint
+                )
 
         except:
             #! TODO Tratar exceptions
@@ -1055,13 +1103,18 @@ class UnidadeDeGeracao1(UnidadeDeGeracao):
             return response
 
     def modbus_update_state_register(self):
-        DataBank.set_words(self.cfg["REG_MOA_OUT_STATE_UG{}".format(self.id)], [self.codigo_state],)
-        DataBank.set_words(self.cfg["REG_MOA_OUT_ETAPA_UG{}".format(self.id)], [self.etapa_atual],)
+        DataBank.set_words(
+            self.cfg["REG_MOA_OUT_STATE_UG{}".format(self.id)],
+            [self.codigo_state],
+        )
+        DataBank.set_words(
+            self.cfg["REG_MOA_OUT_ETAPA_UG{}".format(self.id)],
+            [self.etapa_atual],
+        )
 
     def interstep(self) -> None:
         if (not self.avisou_emerg_voip) and (self.condicionador_caixa_espiral_ug.valor > 0.1):
             self.avisou_emerg_voip = True
             voip.enviar_voz_emergencia()
-            
         elif self.condicionador_caixa_espiral_ug.valor < 0.05:
             self.avisou_emerg_voip = False
