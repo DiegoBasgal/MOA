@@ -5,22 +5,8 @@ from src.Leituras import *
 
 class LeiturasUSN:
     def __init__(self, cfg):
-        self.clp_usina = ModbusClient(
-            host=cfg["USN_slave_ip"],
-            port=cfg["USN_slave_porta"],
-            timeout=0.5,
-            unit_id=1,
-            auto_open=True,
-            auto_close=True,
-        )
-        self.clp_tda = ModbusClient(
-            host=cfg["TDA_slave_ip"],
-            port=cfg["TDA_slave_porta"],
-            timeout=0.5,
-            unit_id=1,
-            auto_open=True,
-            auto_close=True,
-        )
+        self.clp_usina = ModbusClient( host=cfg["USN_slave_ip"], port=cfg["USN_slave_porta"], timeout=0.5, unit_id=1, auto_open=True, auto_close=True,)
+        self.clp_tda = ModbusClient(host=cfg["TDA_slave_ip"], port=cfg["TDA_slave_porta"], timeout=0.5, unit_id=1, auto_open=True, auto_close=True,)
 
         self.nv_montante = LeituraModbus(
             "REG_TDA_EntradasAnalogicas_MRR_NivelMaisCasasAntes",
@@ -31,6 +17,30 @@ class LeiturasUSN:
             op=4,
         )
         
+        self.tensao_rs = LeituraModbus(
+            "REG_SA_RetornosAnalogicos_MWR_PM_810_Tensao_AB",
+            self.clp_usina,
+            REG_SA_RetornosAnalogicos_MWR_PM_810_Tensao_AB,
+            10,
+            op=4,
+        )
+
+        self.tensao_st = LeituraModbus(
+            "REG_SA_RetornosAnalogicos_MWR_PM_810_Tensao_BC",
+            self.clp_usina,
+            REG_SA_RetornosAnalogicos_MWR_PM_810_Tensao_BC,
+            10,
+            op=4,
+        )
+
+        self.tensao_tr = LeituraModbus(
+            "REG_SA_RetornosAnalogicos_MWR_PM_810_Tensao_CA",
+            self.clp_usina,
+            REG_SA_RetornosAnalogicos_MWR_PM_810_Tensao_CA,
+            10,
+            op=4,
+        )
+
         # essa forma de leitura de potencia ativa, deve ser utilizada apenas com o simulador
         self.potencia_ativa_kW = LeituraModbus(
             "REG_SA_RetornosAnalogicos_Medidor_potencia_kw_mp",
@@ -51,24 +61,3 @@ class LeiturasUSN:
             escala=cfg["MPMR_scale"],
         )
         """
-        self.tensao_rs = LeituraModbus(
-            "REG_SA_RetornosAnalogicos_MWR_PM_810_Tensao_AB",
-            self.clp_usina,
-            REG_SA_RetornosAnalogicos_MWR_PM_810_Tensao_AB,
-            10,
-            op=4,
-        )
-        self.tensao_st = LeituraModbus(
-            "REG_SA_RetornosAnalogicos_MWR_PM_810_Tensao_BC",
-            self.clp_usina,
-            REG_SA_RetornosAnalogicos_MWR_PM_810_Tensao_BC,
-            10,
-            op=4,
-        )
-        self.tensao_tr = LeituraModbus(
-            "REG_SA_RetornosAnalogicos_MWR_PM_810_Tensao_CA",
-            self.clp_usina,
-            REG_SA_RetornosAnalogicos_MWR_PM_810_Tensao_CA,
-            10,
-            op=4,
-        )

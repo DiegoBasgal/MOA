@@ -90,15 +90,15 @@ class Usina:
             auto_open=True,
             auto_close=True,
         )
-
+        
         self.leitura_EntradasDigitais_MXI_SA_SEL787_Trip = LeituraModbusCoil("EntradasDigitais_MXI_SA_SEL787_Trip", self.clp, REG_SA_EntradasDigitais_MXI_SA_SEL787_Trip,)
         x = self.leitura_EntradasDigitais_MXI_SA_SEL787_Trip
         self.condicionadores.append(CondicionadorBase(x.descr, DEVE_INDISPONIBILIZAR, x))
-
+        """
         self.leitura_EntradasDigitais_MXI_SA_SEL787_FalhaInterna = LeituraModbusCoil("EntradasDigitais_MXI_SA_SEL787_FalhaInterna",self.clp,REG_SA_EntradasDigitais_MXI_SA_SEL787_FalhaInterna,)
         x = self.leitura_EntradasDigitais_MXI_SA_SEL787_FalhaInterna
         self.condicionadores.append(CondicionadorBase(x.descr, DEVE_INDISPONIBILIZAR, x))
-
+        """
         self.leitura_EntradasDigitais_MXI_SA_SEL311_Trip = LeituraModbusCoil("EntradasDigitais_MXI_SA_SEL311_Trip",self.clp,REG_SA_EntradasDigitais_MXI_SA_SEL311_Trip,)
         x = self.leitura_EntradasDigitais_MXI_SA_SEL311_Trip
         self.condicionadores.append(CondicionadorBase(x.descr, DEVE_INDISPONIBILIZAR, x))
@@ -110,7 +110,7 @@ class Usina:
         self.leitura_EntradasDigitais_MXI_SA_MRU3_Trip = LeituraModbusCoil("EntradasDigitais_MXI_SA_MRU3_Trip",self.clp,REG_SA_EntradasDigitais_MXI_SA_MRU3_Trip,)
         x = self.leitura_EntradasDigitais_MXI_SA_MRU3_Trip
         self.condicionadores.append(CondicionadorBase(x.descr, DEVE_INDISPONIBILIZAR, x))
-
+        """
         self.leitura_EntradasDigitais_MXI_SA_MRU3_Falha = LeituraModbusCoil("EntradasDigitais_MXI_SA_MRU3_Falha",self.clp,REG_SA_EntradasDigitais_MXI_SA_MRU3_Falha,)
         x = self.leitura_EntradasDigitais_MXI_SA_MRU3_Falha
         self.condicionadores.append(CondicionadorBase(x.descr, DEVE_INDISPONIBILIZAR, x))
@@ -226,7 +226,7 @@ class Usina:
         self.leitura_RetornosAnalogicos_MWR_SEL787_Targets = LeituraModbusCoil("RetornosAnalogicos_MWR_SEL787_Targets",self.clp,REG_SA_RetornosAnalogicos_MWR_SEL787_Targets,)
         x = self.leitura_RetornosAnalogicos_MWR_SEL787_Targets
         self.condicionadores.append(CondicionadorBase(x.descr, DEVE_INDISPONIBILIZAR, x))
-
+        """
         self.leitura_RetornosAnalogicos_MWR_SEL787_Targets_Links_Bit00 = (LeituraModbusCoil("RetornosAnalogicos_MWR_SEL787_Targets_Links_Bit00",self.clp,REG_SA_RetornosAnalogicos_MWR_SEL787_Targets_Links_Bit00,))
         x = self.leitura_RetornosAnalogicos_MWR_SEL787_Targets_Links_Bit00
         self.condicionadores.append(CondicionadorBase(x.descr, DEVE_INDISPONIBILIZAR, x))
@@ -234,7 +234,7 @@ class Usina:
         self.leitura_RetornosAnalogicos_MWR_SEL787_Targets_Links_Bit01 = (LeituraModbusCoil("RetornosAnalogicos_MWR_SEL787_Targets_Links_Bit01",self.clp,REG_SA_RetornosAnalogicos_MWR_SEL787_Targets_Links_Bit01,))
         x = self.leitura_RetornosAnalogicos_MWR_SEL787_Targets_Links_Bit01
         self.condicionadores.append(CondicionadorBase(x.descr, DEVE_INDISPONIBILIZAR, x))
-
+        """
         self.leitura_RetornosAnalogicos_MWR_SEL787_Targets_Links_Bit02 = (LeituraModbusCoil("RetornosAnalogicos_MWR_SEL787_Targets_Links_Bit02",self.clp,REG_SA_RetornosAnalogicos_MWR_SEL787_Targets_Links_Bit02,))
         x = self.leitura_RetornosAnalogicos_MWR_SEL787_Targets_Links_Bit02
         self.condicionadores.append(CondicionadorBase(x.descr, DEVE_INDISPONIBILIZAR, x))
@@ -266,7 +266,8 @@ class Usina:
         self.leitura_RetornosDigitais_MXR_CLP_Falha = LeituraModbusCoil("RetornosDigitais_MXR_CLP_Falha",self.clp,REG_SA_RetornosDigitais_MXR_CLP_Falha,)
         x = self.leitura_RetornosDigitais_MXR_CLP_Falha
         self.condicionadores.append(CondicionadorBase(x.descr, DEVE_INDISPONIBILIZAR, x))
-
+        """
+        
         valores = [
             datetime.now().strftime("%Y-%m-%d %H:%M:%S"),  # timestamp
             1 if self.aguardando_reservatorio else 0,  # aguardando_reservatorio
