@@ -5,13 +5,14 @@ from parametros_moa.models import Comando
 
 
 class Agendamento(models.Model):
-
-    ts_criado = models.DateTimeField()
-    criado_por = models.CharField(max_length=255)
-    ts_modificado = models.DateTimeField()
-    modificado_por = models.CharField(max_length=255)
+    
+    id = models.IntegerField(primary_key=True)
     data = models.DateTimeField()
-    comando = models.ForeignKey(Comando, on_delete=models.CASCADE)
-    campo_auxiliar = models.TextField()
     observacao = models.TextField()
+    comando = models.ForeignKey(Comando, on_delete=models.CASCADE)
     executado = models.IntegerField(default=0)
+    campo_auxiliar = models.TextField()
+    criado_por = models.CharField(max_length=255)
+    modificado_por = models.CharField(max_length=255)
+    ts_criado = models.DateTimeField()
+    ts_modificado = models.DateTimeField()

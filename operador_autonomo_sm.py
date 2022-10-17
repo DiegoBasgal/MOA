@@ -3,7 +3,7 @@ operador_autonomo_sm.py
 
 Implementacao teste de uma versao do moa utilizando SM
 """
-from datetime import datetime
+from datetime import datetime, timezone
 import logging
 import logging.handlers as handlers
 import os
@@ -375,7 +375,7 @@ class ControleRealizado(State):
 if __name__ == "__main__":
     # A escala de tempo é utilizada para acelerar as simulações do sistema
     # Utilizar 1 para testes sérios e 120 no máximo para testes simples
-    ESCALA_DE_TEMPO = 5
+    ESCALA_DE_TEMPO = 3
     if len(sys.argv) > 1:
         ESCALA_DE_TEMPO = int(sys.argv[1])
 

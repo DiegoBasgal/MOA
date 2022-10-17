@@ -30,19 +30,9 @@ urlpatterns = [
     path("", RedirectView.as_view(url="parametros_moa/")),
     path("admin/", admin.site.urls),
     path("agendamentos/", agendamentos_view, name="agendamentos"),
-    path(
-        "agendamentos/<int:ag_id>/",
-        agendamento_detalhado_view,
-        name="agendamento_detalhado",
-    ),
-    path(
-        "agendamentos/novo_agendamento/", novo_agendamento_view, name="novo_agendamento"
-    ),
-    path(
-        "agendamentos/novo_agendamento_rapido/",
-        novo_agendamento_rapido_view,
-        name="novo_agendamento_rapido",
-    ),
+    path("agendamentos/<int:ag_id>/",agendamento_detalhado_view,name="agendamento_detalhado",),
+    path("agendamentos/novo_agendamento/", novo_agendamento_view, name="novo_agendamento"),
+    path("agendamentos/novo_agendamento_rapido/",novo_agendamento_rapido_view,name="novo_agendamento_rapido",),
     path("monitoramento/", monitoramento_view, name="monitoramento"),
     path("ocorrencias/", ocorrencias_view, name="ocorrencias"),
     path("parametros_moa/", parametros_moa_view, name="parametros_moa"),
@@ -57,4 +47,4 @@ urlpatterns += [
 
 from django.conf import settings
 from django.conf.urls.static import static
-urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+urlpatterns += static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)

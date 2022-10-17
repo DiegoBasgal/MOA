@@ -1,7 +1,7 @@
 import logging
 import subprocess
 from cmath import sqrt
-from datetime import date, datetime, timedelta
+from datetime import timezone, datetime, timedelta
 from time import sleep
 from typing import Type
 
@@ -618,6 +618,7 @@ class Usina:
         DataBank.set_words(0, [ano, mes, dia, hor, mnt, seg, mil])
         DataBank.set_words(self.cfg["REG_MOA_OUT_STATUS"], [self.state_moa])
         DataBank.set_words(self.cfg["REG_MOA_OUT_MODE"], [self.modo_autonomo])
+
         if self.modo_autonomo:
             DataBank.set_words(self.cfg["REG_MOA_OUT_EMERG"], [1 if self.clp_emergencia_acionada else 0],)
             DataBank.set_words(self.cfg["REG_MOA_OUT_TARGET_LEVEL"], [int((self.cfg["nv_alvo"] - 400) * 1000)])
@@ -644,6 +645,7 @@ class Usina:
         """
         agendamentos_pendentes = []
         agendamentos = self.db.get_agendamentos_pendentes()
+
         for agendamento in agendamentos:
             ag = list(agendamento)
             # ag -> [id, data, observacao, comando_id, executado, campo_auxiliar, criado_por, modificado_por, ts_criado, ts_modificado]
@@ -681,6 +683,7 @@ class Usina:
             return True
 
         self.agendamentos_atrasados = 0
+
         for agendamento in agendamentos:
             # ag -> [id, data, observacao, comando_id, executado, campo_auxiliar, criado_por, modificado_por, ts_criado, ts_modificado]
             if agora > agendamento[1]:
@@ -707,12 +710,7 @@ class Usina:
                 # se o MOA estiver em autonomo e o agendamento não for executavel em autonomo
                 #   marca como executado e altera a descricao
                 #   proximo
-                if (
-                    self.modo_autonomo
-                    and not self.db.get_executabilidade(agendamento[3])[
-                        "executavel_em_autmoatico"
-                    ]
-                ):
+                if (self.modo_autonomo and not self.db.get_executabilidade(agendamento[3])["executavel_em_autmoatico"]):
                     obs = "Este agendamento não tem efeito com o módulo em modo autônomo. Executado sem realizar nenhuma ação"
                     logger.warning(obs)
                     self.db.update_agendamento(agendamento[0], True, obs)
@@ -721,12 +719,7 @@ class Usina:
                 # se o MOA estiver em manual e o agendamento não for executavel em manual
                 #   marca como executado e altera a descricao
                 #   proximo
-                if (
-                    not self.modo_autonomo
-                    and not self.db.get_executabilidade(agendamento[3])[
-                        "executavel_em_manual"
-                    ]
-                ):
+                if (not self.modo_autonomo and not self.db.get_executabilidade(agendamento[3])["executavel_em_manual"]):
                     obs = "Este agendamento não tem efeito com o módulo em modo manual. Executado sem realizar nenhuma ação"
                     logger.warning(obs)
                     self.db.update_agendamento(agendamento[0], True, obs)
@@ -743,30 +736,20 @@ class Usina:
                     logger.info("Indisponibilizando a usina (comando via agendamento).")
                     for ug in self.ugs:
                         ug.forcar_estado_indisponivel()
-                    while (
-                        not self.ugs[0].etapa_atual == UNIDADE_PARADA
-                        and not self.ugs[1].etapa_atual == UNIDADE_PARADA
-                    ):
+                    while (not self.ugs[0].etapa_atual == UNIDADE_PARADA and not self.ugs[1].etapa_atual == UNIDADE_PARADA):
                         self.ler_valores()
-                        logger.debug(
-                            "Indisponibilizando Usina... \n(freezing for 10 seconds)"
-                        )
+                        logger.debug("Indisponibilizando Usina... \n(freezing for 10 seconds)")
                         sleep(10)
                     self.acionar_emergencia()
-                    logger.info(
-                        "Emergência pressionada após indizponibilização agendada mudando para modo manual para evitar normalização automática."
-                    )
+                    logger.info("Emergência pressionada após indizponibilização agendada mudando para modo manual para evitar normalização automática.")
                     self.entrar_em_modo_manual()
 
                 if agendamento[3] == AGENDAMENTO_ALTERAR_NV_ALVO:
                     try:
                         novo = float(agendamento[5].replace(",", "."))
                     except Exception as e:
-                        logger.info(
-                            "Valor inválido no comando #{} ({} é inválido).".format(
-                                agendamento[0], agendamento[3]
-                            )
-                        )
+                        logger.info("Valor inválido no comando #{} ({} é inválido).".format(agendamento[0], agendamento[3]))
+
                     self.cfg["nv_alvo"] = novo
                     valores = [
                         datetime.now().strftime("%Y-%m-%d %H:%M:%S"),  # timestamp
@@ -798,11 +781,7 @@ class Usina:
                         self.cfg["pot_maxima_ug1"] = novo
                         self.ug1.pot_disponivel = novo
                     except Exception as e:
-                        logger.info(
-                            "Valor inválido no comando #{} ({} é inválido).".format(
-                                agendamento[0], agendamento[3]
-                            )
-                        )
+                        logger.info("Valor inválido no comando #{} ({} é inválido).".format(agendamento[0], agendamento[3]))
 
                 if agendamento[3] == AGENDAMENTO_UG1_FORCAR_ESTADO_MANUAL:
                     self.ug1.forcar_estado_manual()
@@ -822,11 +801,7 @@ class Usina:
                         self.cfg["pot_maxima_ug2"] = novo
                         self.ug2.pot_disponivel = novo
                     except Exception as e:
-                        logger.info(
-                            "Valor inválido no comando #{} ({} é inválido).".format(
-                                agendamento[0], agendamento[3]
-                            )
-                        )
+                        logger.info("Valor inválido no comando #{} ({} é inválido).".format(agendamento[0], agendamento[3]))
 
                 if agendamento[3] == AGENDAMENTO_UG2_FORCAR_ESTADO_MANUAL:
                     self.ug2.forcar_estado_manual()
@@ -846,11 +821,7 @@ class Usina:
                         self.cfg["pot_maxima_ug3"] = novo
                         self.ug3.pot_disponivel = novo
                     except Exception as e:
-                        logger.info(
-                            "Valor inválido no comando #{} ({} é inválido).".format(
-                                agendamento[0], agendamento[3]
-                            )
-                        )
+                        logger.info("Valor inválido no comando #{} ({} é inválido).".format(agendamento[0], agendamento[3]))
 
                 if agendamento[3] == AGENDAMENTO_UG3_FORCAR_ESTADO_MANUAL:
                     self.ug3.forcar_estado_manual()
@@ -874,19 +845,11 @@ class Usina:
                         self.cfg["pot_maxima_ug3"] = novo
                         self.ug3.pot_disponivel = novo
                     except Exception as e:
-                        logger.info(
-                            "Valor inválido no comando #{} ({} é inválido).".format(
-                                agendamento[0], agendamento[3]
-                            )
-                        )
+                        logger.info("Valor inválido no comando #{} ({} é inválido).".format(agendamento[0], agendamento[3]))
 
                 # Após executar, indicar no banco de dados
                 self.db.update_agendamento(int(agendamento[0]), 1)
-                logger.info(
-                    "O comando #{} - {} foi executado.".format(
-                        agendamento[0], agendamento[5]
-                    )
-                )
+                logger.info("O comando #{} - {} foi executado.".format(agendamento[0], agendamento[5]))
                 self.con.somente_reconhecer_emergencia()
                 self.escrever_valores()
 
