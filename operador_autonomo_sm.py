@@ -150,12 +150,18 @@ class ValoresInternosAtualizados(State):
         if self.usina.avisado_em_eletrica:
             for condicionador in self.usina.condicionadores:
                 if (condicionador.ativo and condicionador.gravidade >= DEVE_INDISPONIBILIZAR):
+                    logger.info("Comando recebido: habilitando modo de emergencia.")
+                    sleep(2)
                     return Emergencia(self.usina)
 
         if self.usina.clp_emergencia_acionada:
+            logger.info("Comando recebido: habilitando modo de emergencia.")
+            sleep(2)
             return Emergencia(self.usina)
 
         if self.usina.db_emergencia_acionada:
+            logger.info("Comando recebido: habilitando modo de emergencia.")
+            sleep(2)
             return Emergencia(self.usina)
 
         # Verificamos se existem agendamentos
@@ -164,6 +170,8 @@ class ValoresInternosAtualizados(State):
 
         # Em seguida com o modo manual (não autonomo)
         if not self.usina.modo_autonomo:
+            logger.info("Comando recebido: desabilitar modo autonomo.")
+            sleep(2)
             return ModoManualAtivado(self.usina)
 
         # Se não foi redirecionado ainda,
@@ -292,6 +300,8 @@ class ModoManualAtivado(State):
         self.usina.heartbeat()
         sleep(1 / ESCALA_DE_TEMPO)
         if self.usina.modo_autonomo:
+            logger.info("Comando recebido: habilitar modo autonomo.")
+            sleep(2)
             logger.info("Usina voltou para o modo Autonomo")
             self.usina.db.update_habilitar_autonomo()
             self.usina.ler_valores()

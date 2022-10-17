@@ -15,7 +15,6 @@ from src import modbus_mapa_antigo
 from src.modbus_mapa_antigo import *
 from pyModbusTCP.utils import crc16
 
-
 def bcd_to_i(i):
     value = i & 0xF
     value += ((i >> 4) & 0xF) * 10
@@ -23,32 +22,25 @@ def bcd_to_i(i):
     value += ((i >> 12) & 0xF) * 1000
     return value
 
-
 def add_crc(data):
     crc = hex(crc16(data))
     crc = bytes.fromhex(crc[4] + crc[5] + crc[2] + crc[3])
     return data + crc
 
-
 class LeituraBase:
     ...
-
 
 class LeituraModbus(LeituraBase):
     ...
 
-
 class LeituraModbusBit(LeituraBase):
     ...
-
 
 class LeituraDelta(LeituraBase):
     ...
 
-
 class LeituraDebug(LeituraBase):
     ...
-
 
 class LeituraBase:
     """
@@ -82,7 +74,6 @@ class LeituraBase:
             str: descr
         """
         return self.__descr
-
 
 class LeituraModbus(LeituraBase):
     """
@@ -144,7 +135,6 @@ class LeituraModbus(LeituraBase):
             return 0
             pass
 
-
 class LeituraModbusCoil(LeituraBase):
     """
     Classe implementa a base para leituras da unidade da geração utilizando modbus.
@@ -205,7 +195,6 @@ class LeituraModbusCoil(LeituraBase):
             return 0
             pass
 
-
 class LeituraModbusBit(LeituraModbus):
     """
     Classe implementa a leituras de bits de registradores da unidade da geração utilizando modbus.
@@ -235,7 +224,6 @@ class LeituraModbusBit(LeituraModbus):
         if self.__invertido:
             aux = not aux
         return aux
-
 
 class LeituraDelta(LeituraBase):
     def __init__(
@@ -347,7 +335,6 @@ class LeituraComposta(LeituraBase):
                 res += 2**7
         return res
 
-
 class LeituraDebug(LeituraBase):
     def __init__(self, descr: str) -> None:
         super().__init__(descr)
@@ -359,7 +346,6 @@ class LeituraDebug(LeituraBase):
     @valor.setter
     def valor(self, var):
         self.__valor = var
-
 
 class LeituraNBRPower(LeituraBase):
     def __init__(

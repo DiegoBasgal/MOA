@@ -6,6 +6,7 @@ dos valores de campo.
 __version__ = "0.1"
 __author__ = "Lucas Lavratti"
 
+from asyncio.log import logger
 from src.Leituras import *
 
 class CondicionadorBase:
@@ -63,11 +64,10 @@ class CondicionadorBase:
         Gravidade do condicionador
         Returns:
             int: gravidade
-        """
         self.DEVE_INDISPONIBILIZAR = 2
         self.DEVE_NORMALIZAR = 1
         self.DEVE_IGNORAR = 0
-        
+        """
         return self.__gravidade
 
 class CondicionadorExponencial(CondicionadorBase):
@@ -112,6 +112,35 @@ class CondicionadorExponencial(CondicionadorBase):
             bool: True se atenuação >= 100%, False caso contrário
         """
         return True if self.valor >= 1 else False
+    
+    @property
+    def valor(self) -> float:
+        """
+        Valor relativo a quantidade de atenuação
+
+        Returns:
+            float: Valor de 0 a 1 (inclusivo) relativo a atenuacao após limitação operacional
+        """
+        v_temp = float(self.leitura.valor)
+        if v_temp > self.valor_base and  v_temp < self.valor_limite:
+            aux = (
+                1
+                - (
+                    (
+                        (self.valor_limite - v_temp)
+                        / (self.valor_limite - self.valor_base)
+                    )
+                    ** (self.ordem)
+                ).real
+            )
+            return max(
+                min(aux, 1),
+                0,
+            )
+        if self.leitura.valor > self.valor_limite:
+            return 1
+        else:
+            return 0
 
 
 class CondicionadorExponencialReverso(CondicionadorBase):

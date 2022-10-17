@@ -592,9 +592,12 @@ class StateRestrito(State):
         deve_indisponibilizar = False
         deve_normalizar = False
         condicionadores_ativos = []
+
         if self.parent_ug.deve_ler_condicionadores:
             for condicionador in self.parent_ug.condicionadores:
+
                 if condicionador.ativo:
+
                     if condicionador.gravidade >= DEVE_INDISPONIBILIZAR:
                         condicionadores_ativos.append(condicionador)
                         deve_indisponibilizar = True
@@ -649,8 +652,11 @@ class StateDisponivel(State):
         condicionadores_ativos = []
 
         if self.parent_ug.deve_ler_condicionadores:
+
             for condicionador in self.parent_ug.condicionadores:
+
                 if condicionador.ativo:
+
                     if condicionador.gravidade >= DEVE_INDISPONIBILIZAR:
                         condicionadores_ativos.append(condicionador)
                         deve_indisponibilizar = True
