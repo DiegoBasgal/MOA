@@ -74,7 +74,7 @@ class Window(QMainWindow, Ui_Form):
             self.lcdNumber_temperatura_ug1_fase_t.display("{:03.1f}".format(self.shared_dict["temperatura_ug1_fase_t"]))
             self.lcdNumber_temperatura_ug1_la_casquilho.display("{:03.1f}".format(self.shared_dict["temperatura_ug1_la_casquilho"]))
             self.lcdNumber_temperatura_ug1_lna_casquilho.display("{:03.1f}".format(self.shared_dict["temperatura_ug1_lna_casquilho"]))
-            self.lcdNumber_perda_na_grade_ug1.display("{:03.1f}".format(self.shared_dict["nv_montante"] - self.shared_dict["nv_jusante"]))
+            self.lcdNumber_perda_na_grade_ug1.display("{:03.1f}".format(self.shared_dict["nv_montante"] - self.shared_dict["nv_jusante_grade"]))
 
             self.checkBox_sinal_trip_ug2.setChecked(self.shared_dict["trip_ug2"])
 
@@ -101,7 +101,7 @@ class Window(QMainWindow, Ui_Form):
             self.lcdNumber_temperatura_ug2_fase_t.display("{:03.1f}".format(self.shared_dict["temperatura_ug2_fase_t"]))
             self.lcdNumber_temperatura_ug2_la_casquilho.display("{:03.1f}".format(self.shared_dict["temperatura_ug2_la_casquilho"]))
             self.lcdNumber_temperatura_ug2_lna_casquilho.display("{:03.1f}".format(self.shared_dict["temperatura_ug2_lna_casquilho"]))
-            self.lcdNumber_perda_na_grade_ug2.display("{:3.1f}".format(self.shared_dict["nv_montante"] - self.shared_dict["nv_jusante"]))
+            self.lcdNumber_perda_na_grade_ug2.display("{:3.1f}".format(self.shared_dict["nv_montante"] - self.shared_dict["nv_jusante_grade"]))
 
             self.checkBox_sinal_trip_ug3.setChecked(self.shared_dict["trip_ug3"])
 
@@ -127,7 +127,7 @@ class Window(QMainWindow, Ui_Form):
             self.lcdNumber_temperatura_ug3_fase_t.display("{:03.1f}".format(self.shared_dict["temperatura_ug3_fase_t"]))
             self.lcdNumber_temperatura_ug3_la_casquilho.display("{:03.1f}".format(self.shared_dict["temperatura_ug3_la_casquilho"]))
             self.lcdNumber_temperatura_ug3_lna_casquilho.display("{:03.1f}".format(self.shared_dict["temperatura_ug3_lna_casquilho"]))
-            self.lcdNumber_perda_na_grade_ug3.display("{:3.1f}".format(self.shared_dict["nv_montante"] - self.shared_dict["nv_jusante"]))
+            self.lcdNumber_perda_na_grade_ug3.display("{:3.1f}".format(self.shared_dict["nv_montante"] - self.shared_dict["nv_jusante_grade"]))
 
         except Exception as e:
             print("A", repr(e))
