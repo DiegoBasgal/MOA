@@ -46,20 +46,19 @@ class Controlador:
             line = line.split(",")
             self.timed_afluente.append([i, float(line[0]) * 60, float(line[1])])
             i += 1
-        """
+
         self.connection_pool = pooling.MySQLConnectionPool(
             pool_name="my_pool",
             pool_size=10,
             pool_reset_session=True,
-            host="172.21.15.7",
-            user="moa",
+            host="172.21.15.115",
+            user="root",
             password="&264H3$M@&z$",
             database="django_db",
         )
 
         self.conn = self.connection_pool.get_connection()
         self.cursor = self.conn.cursor()
-        """
         
     def run(self):
 
@@ -106,9 +105,8 @@ class Controlador:
                     # "ts,q_aflu,nv_montante,pot_ug1,set_ug1,pot_ug2,set_ug2"
                     ts = int(datetime.timestamp(datetime.now()))
 
-                    """
                     self.cursor.execute(
-                        "INSERT INTO debug.simul_data VALUES({}, {}, {}, {}, {}, {}, {});".format(
+                        "INSERT INTO debug.simul_data VALUES({}, {}, {}, {}, {}, {}, {}, {}, {});".format(
                             ts,
                             self.shared_dict["q_alfuente"],
                             self.shared_dict["nv_montante"],
@@ -116,10 +114,11 @@ class Controlador:
                             self.shared_dict["setpoint_kw_ug1"],
                             self.shared_dict["potencia_kw_ug2"],
                             self.shared_dict["setpoint_kw_ug2"],
+                            self.shared_dict["potencia_kw_ug3"],
+                            self.shared_dict["setpoint_kw_ug3"],
                         )
                     )
                     self.conn.commit()
-                    """
 
                 tempo_restante = (datetime.now() - t_inicio_passo).microseconds * 10e-6
                 if tempo_restante > 0:
