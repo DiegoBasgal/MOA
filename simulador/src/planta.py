@@ -115,12 +115,6 @@ class Planta:
                         ug.tripar(1, "REG_USINA_EmergenciaLigar via modbus")
                     self.dj52L.tripar("REG_USINA_EmergenciaLigar via modbus")
                     
-                """
-                if (self.cust_data_bank.get_words(REG["REG_USINA_ReconheceAlarmes"])[0]== 1):
-                    self.cust_data_bank.set_words(REG["REG_USINA_ReconheceAlarmes"], [0])
-                    logger.info("Comando modbus recebido: REG_USINA_ReconheceAlarmes ")
-                    pass
-                """
 
                 if (self.cust_data_bank.get_words(REG["REG_USINA_ResetAlarmes"])[0]== 1):
                     self.cust_data_bank.set_words(REG["REG_USINA_ResetAlarmes"], [0])
