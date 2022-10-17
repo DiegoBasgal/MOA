@@ -51,7 +51,7 @@ class Planta:
 
         self.shared_dict = shared_dict
         self.escala_ruido = 0.1
-        self.speed = 30
+        self.speed = 50
         self.passo_simulacao = 0.001
         self.segundos_por_passo = self.passo_simulacao * self.speed
 
@@ -63,15 +63,14 @@ class Planta:
         self.dj52L = Dj52L(self)
 
         self.cust_data_bank = DataBank()
-        self.server = ModbusServer(host="172.21.15.115", port=502, no_block=True)
+        self.server = ModbusServer(host="10.101.2.215", port=5003, no_block=True)
         self.server.start()
         for R in REG:
             self.cust_data_bank.set_words(int(REG[R]), [0])
 
     def run(self):
-
         # INICIO DECLARAÇÃO shared_dict
-        self.shared_dict["nv_montante"] = 820.90
+        self.shared_dict["nv_montante"] = 405.15
         self.shared_dict["potencia_kw_se"] = 0
         self.shared_dict["q_alfuente"] = 0
         self.shared_dict["q_liquida"] = 0
@@ -83,7 +82,7 @@ class Planta:
         self.shared_dict["tensao_na_linha"] = 69000
         self.shared_dict["potencia_kw_mp"] = 0
         self.shared_dict["potencia_kw_mr"] = 0
-        self.shared_dict["nv_jusante"] = 0
+        self.shared_dict["nv_jusante_grade"] = 0
 
         volume = self.nv_montate_para_volume(self.shared_dict["nv_montante"])
         self.dj52L.abrir()
@@ -115,14 +114,18 @@ class Planta:
                     for ug in self.ugs:
                         ug.tripar(1, "REG_USINA_EmergenciaLigar via modbus")
                     self.dj52L.tripar("REG_USINA_EmergenciaLigar via modbus")
-
+                    
+                """
                 if (self.cust_data_bank.get_words(REG["REG_USINA_ReconheceAlarmes"])[0]== 1):
                     self.cust_data_bank.set_words(REG["REG_USINA_ReconheceAlarmes"], [0])
                     logger.info("Comando modbus recebido: REG_USINA_ReconheceAlarmes ")
                     pass
+                """
 
                 if (self.cust_data_bank.get_words(REG["REG_USINA_ResetAlarmes"])[0]== 1):
                     self.cust_data_bank.set_words(REG["REG_USINA_ResetAlarmes"], [0])
+                    self.cust_data_bank.set_words(REG["REG_USINA_ReconheceAlarmes"], [0])
+                    logger.info("Comando modbus recebido: REG_USINA_ReconheceAlarmes ")
                     logger.info("Comando modbus recebido: REG_USINA_ResetAlarmes ")
                     for ug in self.ugs:
                         ug.reconhece_reset_ug()
@@ -144,24 +147,28 @@ class Planta:
                         self.cust_data_bank.set_words(REG["REG_UG{}_Operacao_EmergenciaDesligar".format(ug.id)], [0],)
                         self.cust_data_bank.set_words(REG["REG_UG{}_Operacao_EmergenciaLigar".format(ug.id)], [0])
                         ug.tripar(1, "Operacao_EmergenciaLigar via modbus")
-
-                    if (self.cust_data_bank.get_words(REG["REG_UG{}_Operacao_PCH_CovoReconheceAlarmes".format(ug.id)])[0]== 1):
-                        self.cust_data_bank.set_words(REG["REG_UG{}_Operacao_PCH_CovoReconheceAlarmes".format(ug.id)],[0],)
+                    
+                    """
+                    if (self.cust_data_bank.get_words(REG["REG_UG{}_Operacao_ReconheceAlarmes".format(ug.id)])[0]== 1):
+                        self.cust_data_bank.set_words(REG["REG_UG{}_Operacao_ReconheceAlarmes".format(ug.id)],[0],)
                         pass
+                    """
 
-                    if (self.cust_data_bank.get_words(REG["REG_UG{}_Operacao_PCH_CovoResetAlarmes".format(ug.id)])[0]== 1):
-                        self.cust_data_bank.set_words(REG["REG_UG{}_Operacao_PCH_CovoResetAlarmes".format(ug.id)],[0],)
+                    if (self.cust_data_bank.get_words(REG["REG_UG{}_Operacao_ResetAlarmes".format(ug.id)])[0]== 1):
+                        self.cust_data_bank.set_words(REG["REG_UG{}_Operacao_ReconheceAlarmes".format(ug.id)],[0],)
+                        self.cust_data_bank.set_words(REG["REG_UG{}_Operacao_ResetAlarmes".format(ug.id)],[0],)
                         ug.reconhece_reset_ug()
 
-                    if (self.cust_data_bank.get_words(REG["REG_UG{}_Operacao_UP".format(ug.id)])[0]== 1):
-                        self.cust_data_bank.set_words(REG["REG_UG{}_Operacao_UP".format(ug.id)], [0])
-                        ug.etapa_alvo = ug.ETAPA_UP
-                        ug.shared_dict["etapa_alvo_ug{}".format(ug.id)] = ug.ETAPA_UP
 
-                    if (self.cust_data_bank.get_words(REG["REG_UG{}_Operacao_US".format(ug.id)])[0]== 1):
+                    if (self.cust_data_bank.get_words(REG["REG_UG{}_Operacao_UP".format(ug.id)])[0] == 1):
+                        self.cust_data_bank.set_words(REG["REG_UG{}_Operacao_UP".format(ug.id)], [0])
+                        ug.parar()
+                        pass
+
+                    if (self.cust_data_bank.get_words(REG["REG_UG{}_Operacao_US".format(ug.id)])[0] == 1):
                         self.cust_data_bank.set_words(REG["REG_UG{}_Operacao_US".format(ug.id)], [0])
-                        ug.etapa_alvo = ug.ETAPA_US
-                        ug.shared_dict["etapa_alvo_ug{}".format(ug.id)] = ug.ETAPA_US
+                        ug.partir()
+                        pass
 
                 # dj52L
                 self.dj52L.passo()
@@ -187,7 +194,7 @@ class Planta:
                     self.shared_dict["q_liquida"] -= self.shared_dict["q_ug{}".format(ug.id)]
 
                 self.shared_dict["nv_montante"] = self.volume_para_nv_montate(volume + self.shared_dict["q_liquida"] * self.segundos_por_passo)
-                self.shared_dict["nv_jusante"] = self.shared_dict["nv_montante"] - max(0, np.random.normal(1.0, 0.5 * self.escala_ruido))
+                self.shared_dict["nv_jusante_grade"] = self.shared_dict["nv_montante"] - max(0, np.random.normal(1.0, 0.5 * self.escala_ruido))
 
                 if self.shared_dict["nv_montante"] >= self.USINA_NV_VERTEDOURO:
                     self.shared_dict["q_vertimento"] = self.shared_dict["q_liquida"]
@@ -204,14 +211,19 @@ class Planta:
                 # Escreve no self.cust_data_bank
                 for ug in self.ugs:
                     self.cust_data_bank.set_words(REG["REG_UG{}_Alarme01".format(ug.id)], [int(ug.flags)])
+
                     self.cust_data_bank.set_words(REG["REG_UG{}_Gerador_PotenciaAtivaMedia".format(ug.id)],[round(ug.potencia)],)
-                    self.cust_data_bank.set_words(REG["REG_UG{}_HorimetroEletrico_Low".format(ug.id)],[round(ug.horimetro)],)
+                    self.cust_data_bank.set_words(REG["REG_UG{}_HorimetroEletrico_Hora".format(ug.id)],[np.floor(ug.horimetro_hora)],)
+                    self.cust_data_bank.set_words(REG["REG_UG{}_HorimetroEletrico_Frac".format(ug.id)],[round((ug.horimetro_hora - np.floor(ug.horimetro_hora)) * 60, 0)],)
+                    
                     if ug.etapa_alvo == ug.etapa_atual:
                         self.cust_data_bank.set_words(REG["REG_UG{}_Operacao_EtapaAlvo".format(ug.id)],[int(ug.etapa_alvo)],)
                     else:
                         self.cust_data_bank.set_words(REG["REG_UG{}_Operacao_EtapaAlvo".format(ug.id)],[0b11111111],)
 
+                    self.cust_data_bank.set_words(REG["REG_UG{}_Etapa_AUX".format(ug.id)], [int(self.shared_dict["etapa_aux_ug{}".format(ug.id)])])
                     self.cust_data_bank.set_words(REG["REG_UG{}_Operacao_EtapaAtual".format(ug.id)],[int(ug.etapa_atual)],)
+                    
                     self.cust_data_bank.set_words(REG["REG_UG{}_Temperatura_01".format(ug.id)],[round(self.shared_dict["temperatura_ug{}_fase_r".format(ug.id)])],)
                     self.cust_data_bank.set_words(REG["REG_UG{}_Temperatura_02".format(ug.id)],[round(self.shared_dict["temperatura_ug{}_fase_s".format(ug.id)])],)
                     self.cust_data_bank.set_words(REG["REG_UG{}_Temperatura_03".format(ug.id)],[round(self.shared_dict["temperatura_ug{}_fase_t".format(ug.id)])],)
@@ -221,13 +233,16 @@ class Planta:
                     self.cust_data_bank.set_words(REG["REG_UG{}_Temperatura_07".format(ug.id)],[round(self.shared_dict["temperatura_ug{}_contra_escora_1".format(ug.id)])],)
                     self.cust_data_bank.set_words(REG["REG_UG{}_Temperatura_08".format(ug.id)],[round(self.shared_dict["temperatura_ug{}_lna_casquilho".format(ug.id)])],)
                     self.cust_data_bank.set_words(REG["REG_UG{}_Temperatura_09".format(ug.id)],[round(self.shared_dict["temperatura_ug{}_contra_escora_2".format(ug.id)])],)
+                    
 
-                self.cust_data_bank.set_words(REG["REG_USINA_NivelBarragem"],[round((self.shared_dict["nv_montante"] - 404) * 100)],)
-                self.cust_data_bank.set_words(REG["REG_USINA_NivelCanalAducao"],[round((self.shared_dict["nv_jusante"] - 404) * 100)],)  # TODO ?
+                self.cust_data_bank.set_words(REG["REG_USINA_NivelBarragem"],[round((self.shared_dict["nv_montante"] - 400) * 10000)],)
+                self.cust_data_bank.set_words(REG["REG_USINA_NivelCanalAducao"],[round((self.shared_dict["nv_jusante_grade"] - 400) * 10000)],)  # TODO ?
                 self.cust_data_bank.set_words(REG["REG_USINA_Subestacao_PotenciaAtivaMedia"],[round(self.shared_dict["potencia_kw_se"])],)
                 self.cust_data_bank.set_words(REG["REG_USINA_Subestacao_TensaoRS"],[round(self.shared_dict["tensao_na_linha"] / 10)],)
                 self.cust_data_bank.set_words(REG["REG_USINA_Subestacao_TensaoST"],[round(self.shared_dict["tensao_na_linha"] / 10)],)
                 self.cust_data_bank.set_words(REG["REG_USINA_Subestacao_TensaoTR"],[round(self.shared_dict["tensao_na_linha"] / 10)],)
+                self.cust_data_bank.set_words(REG["REG_USINA_potencia_kw_mp"],[round(max(0, self.shared_dict["potencia_kw_mp"]))],)
+                self.cust_data_bank.set_words(REG["REG_USINA_potencia_kw_mr"],[round(max(0, self.shared_dict["potencia_kw_mr"]))],)
 
                 # FIM COMPORTAMENTO USINA
                 lock.release()

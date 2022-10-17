@@ -13,10 +13,44 @@ class Ug:
         self.shared_dict = parent.shared_dict
         self.escala_ruido = parent.escala_ruido
 
+        self.tempo_na_transicao = 0
+        self.avisou_trip = False
+        self.etapa_alvo = 0
+        self.etapa_atual = 1
+        self.flags = 0
+        self.potencia = 0
+        self.setpoint = 0
+        self.horimetro_hora = 0
+
+        self.POT_MAX = 3600
+        self.POT_MIN = 0.4 * self.POT_MAX
+
+        self.ETAPA_UP = 1
+        self.ETAPA_UPGM = 2
+        self.ETAPA_UVD = 3
+        self.ETAPA_UPS = 4
+        self.ETAPA_US = 5
+
+        self.UNIDADE_SINCRONIZADA = 1
+        self.UNIDADE_PARANDO = 2
+        self.UNIDADE_PARADA = 5
+        self.UNIDADE_SINCRONIZANDO = 9
+
+        self.TEMPO_TRANS_UP_UPGM = 20
+        self.TEMPO_TRANS_UPGM_UVD = 20
+        self.TEMPO_TRANS_UVD_UPS = 20
+        self.TEMPO_TRANS_UPS_US = 20
+
+        self.TEMPO_TRANS_US_UPS = 20
+        self.TEMPO_TRANS_UPS_UVD = 20
+        self.TEMPO_TRANS_UVD_UPGM = 20
+        self.TEMPO_TRANS_UPGM_UP = 20
+
         self.shared_dict["debug_parar_ug{}".format(self.id)] = False
         self.shared_dict["debug_partir_ug{}".format(self.id)] = False
-        self.shared_dict["etapa_alvo_ug{}".format(self.id)] = 1
-        self.shared_dict["etapa_atual_ug{}".format(self.id)] = 1
+        self.shared_dict["etapa_alvo_ug{}".format(self.id)] = 0
+        self.shared_dict["etapa_atual_ug{}".format(self.id)] = 0
+        self.shared_dict["etapa_aux_ug{}".format(self.id)] = 5
         self.shared_dict["flags_ug{}".format(self.id)] = 0
         self.shared_dict["potencia_kw_ug{}".format(self.id)] = 0
         self.shared_dict["q_ug{}".format(self.id)] = 0
@@ -32,36 +66,8 @@ class Ug:
         self.shared_dict["temperatura_ug{}_fase_s".format(self.id)] = 25
         self.shared_dict["temperatura_ug{}_fase_t".format(self.id)] = 25
         self.shared_dict["temperatura_ug{}_la_casquilho".format(self.id)] = 25
-        self.shared_dict["temperatura_ug{}_lna_casquilho".format(self.id)] = 25
-
-        self.tempo_na_transicao = 0
-        self.avisou_trip = False
-        self.etapa_alvo = 0
-        self.etapa_atual = 1
-        self.flags = 0
-        self.potencia = 0
-        self.setpoint = 0
-        self.horimetro = 0
-
-        self.POT_MAX = 3600
-        self.POT_MIN = 0.4 * self.POT_MAX
-
-        self.ETAPA_UP = 1
-        self.ETAPA_UPGM = 2
-        self.ETAPA_UVD = 3
-        self.ETAPA_UPS = 4
-        self.ETAPA_US = 5
-
-        self.TEMPO_TRANS_UP_UPGM = 20
-        self.TEMPO_TRANS_UPGM_UVD = 20
-        self.TEMPO_TRANS_UVD_UPS = 20
-        self.TEMPO_TRANS_UPS_US = 20
-
-        self.TEMPO_TRANS_US_UPS = 20
-        self.TEMPO_TRANS_UPS_UVD = 20
-        self.TEMPO_TRANS_UVD_UPGM = 20
-        self.TEMPO_TRANS_UPGM_UP = 20
-
+        self.shared_dict["temperatura_ug{}_lna_casquilho".format(self.id)] = 2
+        
     def passo(self):
         # DEBUG VIA GUI
         self.setpoint = self.shared_dict["setpoint_kw_ug{}".format(self.id)]
@@ -86,12 +92,17 @@ class Ug:
         # self.ETAPA UP
         if self.etapa_atual == self.ETAPA_UP:
             self.potencia = 0
+            
             if (self.etapa_alvo is None) or (self.etapa_alvo == self.etapa_atual):
                 self.tempo_na_transicao = 0
                 self.etapa_alvo = None
                 self.shared_dict["etapa_alvo_ug{}".format(self.id)] = self.etapa_alvo
+                self.shared_dict["etapa_aux_ug{}".format(self.id)] = self.UNIDADE_PARADA
+
             elif self.etapa_alvo > self.etapa_atual:
                 self.tempo_na_transicao += self.segundos_por_passo
+                self.shared_dict["etapa_aux_ug{}".format(self.id)] = self.UNIDADE_SINCRONIZANDO
+
                 if self.tempo_na_transicao >= self.TEMPO_TRANS_US_UPS:
                     self.etapa_atual = self.ETAPA_UPGM
                     self.tempo_na_transicao = 0
@@ -99,35 +110,50 @@ class Ug:
         # self.ETAPA UPGM
         if self.etapa_atual == self.ETAPA_UPGM:
             self.potencia = 0
+
             if (self.etapa_alvo is None) or (self.etapa_alvo == self.etapa_atual):
                 self.tempo_na_transicao = 0
                 self.etapa_alvo = None
                 self.shared_dict["etapa_alvo_ug{}".format(self.id)] = self.etapa_alvo
+
             elif self.etapa_alvo > self.etapa_atual:
                 self.tempo_na_transicao += self.segundos_por_passo
+                self.shared_dict["etapa_aux_ug{}".format(self.id)] = self.UNIDADE_SINCRONIZANDO
+
                 if self.tempo_na_transicao >= self.TEMPO_TRANS_UPGM_UVD:
                     self.etapa_atual = self.ETAPA_UVD
                     self.tempo_na_transicao = 0
+
             elif self.etapa_alvo < self.etapa_atual:
                 self.tempo_na_transicao -= self.segundos_por_passo
+                self.shared_dict["etapa_aux_ug{}".format(self.id)] = self.UNIDADE_PARANDO
+
                 if self.tempo_na_transicao <= -self.TEMPO_TRANS_UPGM_UP:
                     self.etapa_atual = self.ETAPA_UP
                     self.tempo_na_transicao = 0
+                    self.shared_dict["etapa_aux_ug{}".format(self.id)] = self.UNIDADE_PARADA
 
         # self.ETAPA UVD
         if self.etapa_atual == self.ETAPA_UVD:
             self.potencia = 0
+
             if (self.etapa_alvo is None) or (self.etapa_alvo == self.etapa_atual):
                 self.tempo_na_transicao = 0
                 self.etapa_alvo = None
                 self.shared_dict["etapa_alvo_ug{}".format(self.id)] = self.etapa_alvo
+
             elif self.etapa_alvo > self.etapa_atual:
                 self.tempo_na_transicao += self.segundos_por_passo
+                self.shared_dict["etapa_aux_ug{}".format(self.id)] = self.UNIDADE_SINCRONIZANDO
+
                 if self.tempo_na_transicao >= self.TEMPO_TRANS_UVD_UPS:
                     self.etapa_atual = self.ETAPA_UPS
                     self.tempo_na_transicao = 0
+
             elif self.etapa_alvo < self.etapa_atual:
                 self.tempo_na_transicao -= self.segundos_por_passo
+                self.shared_dict["etapa_aux_ug{}".format(self.id)] = self.UNIDADE_PARANDO
+
                 if self.tempo_na_transicao <= -self.TEMPO_TRANS_UVD_UPGM:
                     self.etapa_atual = self.ETAPA_UPGM
                     self.tempo_na_transicao = 0
@@ -135,20 +161,25 @@ class Ug:
         # self.ETAPA UPS
         if self.etapa_atual == self.ETAPA_UPS:
             self.potencia = 0
+
             if (self.etapa_alvo is None) or (self.etapa_alvo == self.etapa_atual):
                 self.tempo_na_transicao = 0
                 self.etapa_alvo = None
                 self.shared_dict["etapa_alvo_ug{}".format(self.id)] = self.etapa_alvo
+
             elif self.etapa_alvo > self.etapa_atual:
                 self.tempo_na_transicao += self.segundos_por_passo
-                if (
-                    self.tempo_na_transicao >= self.TEMPO_TRANS_UPS_US
-                    and self.shared_dict["dj52L_fechado"]
-                ):
+                self.shared_dict["etapa_aux_ug{}".format(self.id)] = self.UNIDADE_SINCRONIZANDO
+
+                if (self.tempo_na_transicao >= self.TEMPO_TRANS_UPS_US and self.shared_dict["dj52L_fechado"]):
                     self.etapa_atual = self.ETAPA_US
                     self.tempo_na_transicao = 0
+                    self.shared_dict["etapa_aux_ug{}".format(self.id)] = self.UNIDADE_SINCRONIZADA
+
             elif self.etapa_alvo < self.etapa_atual:
                 self.tempo_na_transicao -= self.segundos_por_passo
+                self.shared_dict["etapa_aux_ug{}".format(self.id)] = self.UNIDADE_PARANDO
+
                 if self.tempo_na_transicao <= -self.TEMPO_TRANS_UPS_UVD:
                     self.etapa_atual = self.ETAPA_UVD
                     self.tempo_na_transicao = 0
@@ -159,37 +190,37 @@ class Ug:
                 self.tempo_na_transicao = 0
                 self.etapa_alvo = None
                 self.shared_dict["etapa_alvo_ug{}".format(self.id)] = self.etapa_alvo
-                if (
-                    self.shared_dict["dj52L_fechado"]
-                    and not self.shared_dict["dj52L_trip"]
-                ):
+
+                if (self.shared_dict["dj52L_fechado"] and not self.shared_dict["dj52L_trip"]):
                     self.potencia = min(self.potencia, self.POT_MAX)
                     self.potencia = max(self.potencia, self.POT_MIN)
+                    self.shared_dict["etapa_aux_ug{}".format(self.id)] = self.UNIDADE_SINCRONIZADA
+
                     if self.setpoint > self.potencia:
                         self.potencia += 10.4167 * self.segundos_por_passo
+
                     else:
                         self.potencia -= 10.4167 * self.segundos_por_passo
-                    self.potencia = np.random.normal(
-                        self.potencia, 1 * self.escala_ruido
-                    )
+
+                    self.potencia = np.random.normal(self.potencia, 1 * self.escala_ruido)
+
                 if self.shared_dict["dj52L_aberto"] or self.shared_dict["dj52L_trip"]:
                     self.potencia = 0
                     self.etapa_atual = self.ETAPA_UVD
                     self.etapa_alvo = self.ETAPA_US
-                    self.shared_dict[
-                        "etapa_alvo_ug{}".format(self.id)
-                    ] = self.etapa_alvo
+                    self.shared_dict["etapa_alvo_ug{}".format(self.id)] = self.etapa_alvo
                     self.tempo_na_transicao = 0
+
             elif self.etapa_alvo < self.etapa_atual:
                 self.tempo_na_transicao -= self.segundos_por_passo
                 self.potencia -= 10.4167 * self.segundos_por_passo
-                if (
-                    self.tempo_na_transicao <= -self.TEMPO_TRANS_US_UPS
-                    and self.potencia <= 0
-                ):
+                self.shared_dict["etapa_aux_ug{}".format(self.id)] = self.UNIDADE_PARANDO
+
+                if (self.tempo_na_transicao <= -self.TEMPO_TRANS_US_UPS and self.potencia <= 0):
                     self.potencia = 0
                     self.etapa_atual = self.ETAPA_UPS
                     self.tempo_na_transicao = 0
+
         # FIM COMPORTAMENTO self.ETAPAS
 
         self.shared_dict["temperatura_ug{}_contra_escora_1".format(self.id)] = np.random.normal(25, 1 * self.escala_ruido)
@@ -203,7 +234,7 @@ class Ug:
         self.shared_dict["temperatura_ug{}_lna_casquilho".format(self.id)] = np.random.normal(25, 1 * self.escala_ruido)
 
         if self.etapa_atual > self.ETAPA_UP:
-            self.horimetro += self.segundos_por_passo / 3600
+            self.horimetro_hora += self.segundos_por_passo / 3600
 
         if (self.etapa_atual > self.ETAPA_UP and self.shared_dict["nv_montante"] < self.USINA_NV_MINIMO_OPERACAO):
             # self.tripar(1, "Trip nível baixo.")
