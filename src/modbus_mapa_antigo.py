@@ -272,9 +272,7 @@ REG_UG1_EntradasAnalogicas_MRR_PressAguaVedEixo = (
 REG_UG1_EntradasAnalogicas_MRR_PressDifCaixaExpiral = (
     5  # Scale 0.1 - Op04 (Read Input Regs - 3x)
 )
-REG_UG1_EntradasAnalogicas_MRR_PressK1CaixaExpiral = (
-    6  # Scale 0.1 - Op04 (Read Input Regs - 3x)
-)
+
 REG_UG1_EntradasAnalogicas_MRR_PressK1Succao = (
     7  # Scale 0.1 - Op04 (Read Input Regs - 3x)
 )
@@ -615,9 +613,7 @@ REG_UG2_EntradasAnalogicas_MRR_PressAguaVedEixo = (
 REG_UG2_EntradasAnalogicas_MRR_PressDifCaixaExpiral = (
     5  # Scale 0.1 - Op04 (Read Input Regs - 3x)
 )
-REG_UG2_EntradasAnalogicas_MRR_PressK1CaixaExpiral = (
-    6  # Scale 0.1 - Op04 (Read Input Regs - 3x)
-)
+
 REG_UG2_EntradasAnalogicas_MRR_PressK1Succao = (
     7  # Scale 0.1 - Op04 (Read Input Regs - 3x)
 )
@@ -947,9 +943,7 @@ REG_UG3_EntradasAnalogicas_MRR_PressAguaVedEixo = (
 REG_UG3_EntradasAnalogicas_MRR_PressDifCaixaExpiral = (
     5  # Scale 0.1 - Op04 (Read Input Regs - 3x)
 )
-REG_UG3_EntradasAnalogicas_MRR_PressK1CaixaExpiral = (
-    6  # Scale 0.1 - Op04 (Read Input Regs - 3x)
-)
+
 REG_UG3_EntradasAnalogicas_MRR_PressK1Succao = (
     7  # Scale 0.1 - Op04 (Read Input Regs - 3x)
 )
@@ -1345,15 +1339,9 @@ REG_SA_RetornosAnalogicos_MWR_SEL787_Targets_Links_Bit00 = (
 REG_SA_RetornosAnalogicos_MWR_SEL787_Targets_Links_Bit01 = (
     64  # Op04 (Read Input Regs - 3x)
 )
-REG_SA_RetornosAnalogicos_MWR_SEL787_Targets_Links_Bit02 = (
-    65  # Op04 (Read Input Regs - 3x)
-)
-REG_SA_RetornosAnalogicos_MWR_SEL787_Targets_Links_Bit03 = (
-    66  # Op04 (Read Input Regs - 3x)
-)
-REG_SA_RetornosAnalogicos_MWR_SEL787_Targets_Links_Bit04 = (
-    67  # Op04 (Read Input Regs - 3x)
-)
+
+
+
 REG_SA_RetornosAnalogicos_MWR_SEL787_Targets_Links_Bit05 = (
     68  # Op04 (Read Input Regs - 3x)
 )
@@ -1574,7 +1562,6 @@ REG_UG3_COND_PART = 222
 #--------------------------------------------------------------------------------------------------------------------------------------#
 #Registradores utilizados na simulação, para voltar aos valores antigos, deletar os comentarios de linha "#antigo->" e manter o número.
 REG_UG1_RetornosDigitais_EtapaAux_Sim = 34901
-
 REG_UG1_ComandosDigitais_MXW_EmergenciaViaSuper = 32295 #antigo -> 4  # Op15 (Write multiple coils)
 REG_UG1_ComandosDigitais_MXW_IniciaPartida = 32294 #antigo -> 45  # Op15 (Write multiple coils)
 REG_UG1_ComandosDigitais_MXW_IniciaParada = 32290 #antigo -> 46  # Op15 (Write multiple coils)
@@ -1590,11 +1577,12 @@ REG_UG1_RetornosAnalogicos_MWR_Temperatura_07 = 32877 #antigo -> 30  # Op04 (Rea
 REG_UG1_RetornosAnalogicos_MWR_Temperatura_08 = 32878 #antigo -> 31  # Op04 (Read Input Regs - 3x)
 REG_UG1_RetornosAnalogicos_MWR_Temperatura_09 = 32879 #antigo -> 32  # Op04 (Read Input Regs - 3x)
 REG_UG1_RetornosAnalogicos_MWR_PM_710_Potencia_Ativa = 32836 #antigo->45  # Op04 (Read Input Regs - 3x)
-
 REG_UG1_SaidasAnalogicas_MWW_SPPotAtiva = 33585 #antigo -> 1  # Scale - Op16 (Preset Multiple Regs - 4x)
+REG_UG1_EntradasAnalogicas_MRR_PressK1CaixaExpiral = (
+    34902  # Scale 0.1 - Op04 (Read Input Regs - 3x)
+)
 
 REG_UG2_RetornosDigitais_EtapaAux_Sim = 44901
-
 REG_UG2_ComandosDigitais_MXW_EmergenciaViaSuper = 42295 #antigo -> 4  # Op15 (Write multiple coils)
 REG_UG2_ComandosDigitais_MXW_IniciaPartida = 42294 #antigo -> 45  # Op15 (Write multiple coils)
 REG_UG2_ComandosDigitais_MXW_IniciaParada = 42290 #antigo -> 46  # Op15 (Write multiple coils)
@@ -1610,11 +1598,12 @@ REG_UG2_RetornosAnalogicos_MWR_Temperatura_07 = 42877 #antigo -> 30  # Op04 (Rea
 REG_UG2_RetornosAnalogicos_MWR_Temperatura_08 = 42878 #antigo -> 31  # Op04 (Read Input Regs - 3x)
 REG_UG2_RetornosAnalogicos_MWR_Temperatura_09 = 42879 #antigo -> 32  # Op04 (Read Input Regs - 3x)
 REG_UG2_RetornosAnalogicos_MWR_PM_710_Potencia_Ativa = 42836 #antigo ->45  # Op04 (Read Input Regs - 3x)
-
 REG_UG2_SaidasAnalogicas_MWW_SPPotAtiva = 43585 #antigo -> 1  # Scale - Op16 (Preset Multiple Regs - 4x)
+REG_UG2_EntradasAnalogicas_MRR_PressK1CaixaExpiral = (
+    44902  # Scale 0.1 - Op04 (Read Input Regs - 3x)
+)
 
 REG_UG3_RetornosDigitais_EtapaAux_Sim = 54901
-
 REG_UG3_ComandosDigitais_MXW_EmergenciaViaSuper = 52295 #antigo -> 4  # Op15 (Write multiple coils)
 REG_UG3_ComandosDigitais_MXW_IniciaPartida = 52294 #antigo -> 45  # Op15 (Write multiple coils)
 REG_UG3_ComandosDigitais_MXW_IniciaParada = 52290 #antigo -> 46  # Op15 (Write multiple coils)
@@ -1630,11 +1619,23 @@ REG_UG3_RetornosAnalogicos_MWR_Temperatura_07 = 52877 #antigo -> 30  # Op04 (Rea
 REG_UG3_RetornosAnalogicos_MWR_Temperatura_08 = 52878 #antigo -> 31  # Op04 (Read Input Regs - 3x)
 REG_UG3_RetornosAnalogicos_MWR_Temperatura_09 = 52879 #antigo -> 32  # Op04 (Read Input Regs - 3x)
 REG_UG3_RetornosAnalogicos_MWR_PM_710_Potencia_Ativa = 52836 #antigo->45  # Op04 (Read Input Regs - 3x)
-
 REG_UG3_SaidasAnalogicas_MWW_SPPotAtiva = 53585 #antigo -> 1  # Scale - Op16 (Preset Multiple Regs - 4x)
+REG_UG3_EntradasAnalogicas_MRR_PressK1CaixaExpiral = (
+    54902  # Scale 0.1 - Op04 (Read Input Regs - 3x)
+)
 
 REG_SA_ComandosDigitais_MXW_ResetGeral = 22288 #antigo -> 0  # Scale - Op15 (Write multiple coils)
 REG_SA_ComandosDigitais_MXW_Liga_DJ1 = 22293 #antigo -> 17  # Scale - Op15 (Write multiple coils)
+REG_SA_RetrornosAnalogicos_AUX_Condicionadores =  24902
+REG_SA_RetornosAnalogicos_MWR_SEL787_Targets_Links_Bit02 = (
+    24903  # Op04 (Read Input Regs - 3x)
+)
+REG_SA_RetornosAnalogicos_MWR_SEL787_Targets_Links_Bit03 = (
+    24904  # Op04 (Read Input Regs - 3x)
+)
+REG_SA_RetornosAnalogicos_MWR_SEL787_Targets_Links_Bit04 = (
+    24905  # Op04 (Read Input Regs - 3x)
+)
 REG_SA_RetornosAnalogicos_Medidor_potencia_kw_mp = (
     24900 # Op04 (Read Input Regs - 3x)
 )
@@ -1648,7 +1649,10 @@ REG_SA_RetornosAnalogicos_MWR_PM_810_Tensao_CA = (
     22791 #antigo -> 18  # Scale 0.1 - Op04 (Read Input Regs - 3x)
 )
 
+REG_SA_RetrornosAnalogicos_AUX_Condicionadores =  24902
+
 REG_TDA_NivelMaisCasasAntes = 22766 #antigo -> 12  # Scale 400 + 0.0001 X - Op04 (Read Input Regs - 3x)
 REG_TDA_EntradasAnalogicas_MRR_NivelDepoisGrade = (
     22767 # antgo -> 1  # Scale 0.01 - Op04 (Read Input Regs - 3x)
 )
+

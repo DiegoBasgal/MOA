@@ -365,7 +365,6 @@ class UnidadeDeGeracao1(UnidadeDeGeracao):
             REG_UG1_RetornosAnalogicos_MWR_Temperatura_01,
             op=4,
         )
-        print(self.leitura_temperatura_fase_R)
         base, limite = 100, 200
         x = self.leitura_temperatura_fase_R
         self.condicionador_temperatura_fase_r_ug = CondicionadorExponencial(x.descr, DEVE_INDISPONIBILIZAR, x, base, limite)
@@ -614,13 +613,8 @@ class UnidadeDeGeracao1(UnidadeDeGeracao):
         """
         try:
             self.enviar_trip_eletrico = True
-            self.logger.debug(
-                "[UG{}] Acionando sinal (elétrico) de TRIP.".format(self.id)
-            )
-            DataBank.set_words(
-                self.cfg["REG_MOA_OUT_BLOCK_UG{}".format(self.id)],
-                [1],
-            )
+            self.logger.debug("[UG{}] Acionando sinal (elétrico) de TRIP.".format(self.id))
+            DataBank.set_words(self.cfg["REG_MOA_OUT_BLOCK_UG{}".format(self.id)],[1],)
         except:
             #! TODO Tratar exceptions
             return False

@@ -76,10 +76,8 @@ class FieldConnector:
 
     def fechaDj52L(self):
         if not self.get_flag_falha52L():
-            print('entrei aqui')
             return False
         else:
-            print('entrei certo')
             # utilizar o writ_single_register para a simulação
             response = self.usn_clp.write_single_register(REG_SA_ComandosDigitais_MXW_Liga_DJ1, int(1))
 

@@ -90,15 +90,15 @@ class Usina:
             auto_open=True,
             auto_close=True,
         )
-        
+        """
         self.leitura_EntradasDigitais_MXI_SA_SEL787_Trip = LeituraModbusCoil("EntradasDigitais_MXI_SA_SEL787_Trip", self.clp, REG_SA_EntradasDigitais_MXI_SA_SEL787_Trip,)
         x = self.leitura_EntradasDigitais_MXI_SA_SEL787_Trip
         self.condicionadores.append(CondicionadorBase(x.descr, DEVE_INDISPONIBILIZAR, x))
-        """
+        
         self.leitura_EntradasDigitais_MXI_SA_SEL787_FalhaInterna = LeituraModbusCoil("EntradasDigitais_MXI_SA_SEL787_FalhaInterna",self.clp,REG_SA_EntradasDigitais_MXI_SA_SEL787_FalhaInterna,)
         x = self.leitura_EntradasDigitais_MXI_SA_SEL787_FalhaInterna
         self.condicionadores.append(CondicionadorBase(x.descr, DEVE_INDISPONIBILIZAR, x))
-        """
+        
         self.leitura_EntradasDigitais_MXI_SA_SEL311_Trip = LeituraModbusCoil("EntradasDigitais_MXI_SA_SEL311_Trip",self.clp,REG_SA_EntradasDigitais_MXI_SA_SEL311_Trip,)
         x = self.leitura_EntradasDigitais_MXI_SA_SEL311_Trip
         self.condicionadores.append(CondicionadorBase(x.descr, DEVE_INDISPONIBILIZAR, x))
@@ -110,7 +110,7 @@ class Usina:
         self.leitura_EntradasDigitais_MXI_SA_MRU3_Trip = LeituraModbusCoil("EntradasDigitais_MXI_SA_MRU3_Trip",self.clp,REG_SA_EntradasDigitais_MXI_SA_MRU3_Trip,)
         x = self.leitura_EntradasDigitais_MXI_SA_MRU3_Trip
         self.condicionadores.append(CondicionadorBase(x.descr, DEVE_INDISPONIBILIZAR, x))
-        """
+        
         self.leitura_EntradasDigitais_MXI_SA_MRU3_Falha = LeituraModbusCoil("EntradasDigitais_MXI_SA_MRU3_Falha",self.clp,REG_SA_EntradasDigitais_MXI_SA_MRU3_Falha,)
         x = self.leitura_EntradasDigitais_MXI_SA_MRU3_Falha
         self.condicionadores.append(CondicionadorBase(x.descr, DEVE_INDISPONIBILIZAR, x))
@@ -226,7 +226,7 @@ class Usina:
         self.leitura_RetornosAnalogicos_MWR_SEL787_Targets = LeituraModbusCoil("RetornosAnalogicos_MWR_SEL787_Targets",self.clp,REG_SA_RetornosAnalogicos_MWR_SEL787_Targets,)
         x = self.leitura_RetornosAnalogicos_MWR_SEL787_Targets
         self.condicionadores.append(CondicionadorBase(x.descr, DEVE_INDISPONIBILIZAR, x))
-        """
+        
         self.leitura_RetornosAnalogicos_MWR_SEL787_Targets_Links_Bit00 = (LeituraModbusCoil("RetornosAnalogicos_MWR_SEL787_Targets_Links_Bit00",self.clp,REG_SA_RetornosAnalogicos_MWR_SEL787_Targets_Links_Bit00,))
         x = self.leitura_RetornosAnalogicos_MWR_SEL787_Targets_Links_Bit00
         self.condicionadores.append(CondicionadorBase(x.descr, DEVE_INDISPONIBILIZAR, x))
@@ -235,18 +235,18 @@ class Usina:
         x = self.leitura_RetornosAnalogicos_MWR_SEL787_Targets_Links_Bit01
         self.condicionadores.append(CondicionadorBase(x.descr, DEVE_INDISPONIBILIZAR, x))
         """
-        self.leitura_RetornosAnalogicos_MWR_SEL787_Targets_Links_Bit02 = (LeituraModbusCoil("RetornosAnalogicos_MWR_SEL787_Targets_Links_Bit02",self.clp,REG_SA_RetornosAnalogicos_MWR_SEL787_Targets_Links_Bit02,))
+        self.leitura_RetornosAnalogicos_MWR_SEL787_Targets_Links_Bit02 = (LeituraModbus("RetornosAnalogicos_MWR_SEL787_Targets_Links_Bit02",self.clp,REG_SA_RetornosAnalogicos_MWR_SEL787_Targets_Links_Bit02,))
         x = self.leitura_RetornosAnalogicos_MWR_SEL787_Targets_Links_Bit02
         self.condicionadores.append(CondicionadorBase(x.descr, DEVE_INDISPONIBILIZAR, x))
-
-        self.leitura_RetornosAnalogicos_MWR_SEL787_Targets_Links_Bit03 = (LeituraModbusCoil("RetornosAnalogicos_MWR_SEL787_Targets_Links_Bit03",self.clp,REG_SA_RetornosAnalogicos_MWR_SEL787_Targets_Links_Bit03,))
+    
+        self.leitura_RetornosAnalogicos_MWR_SEL787_Targets_Links_Bit03 = (LeituraModbus("RetornosAnalogicos_MWR_SEL787_Targets_Links_Bit03",self.clp,REG_SA_RetornosAnalogicos_MWR_SEL787_Targets_Links_Bit03,))
         x = self.leitura_RetornosAnalogicos_MWR_SEL787_Targets_Links_Bit03
         self.condicionadores.append(CondicionadorBase(x.descr, DEVE_INDISPONIBILIZAR, x))
 
-        self.leitura_RetornosAnalogicos_MWR_SEL787_Targets_Links_Bit04 = (LeituraModbusCoil("RetornosAnalogicos_MWR_SEL787_Targets_Links_Bit04",self.clp,REG_SA_RetornosAnalogicos_MWR_SEL787_Targets_Links_Bit04,))
+        self.leitura_RetornosAnalogicos_MWR_SEL787_Targets_Links_Bit04 = (LeituraModbus("RetornosAnalogicos_MWR_SEL787_Targets_Links_Bit04",self.clp,REG_SA_RetornosAnalogicos_MWR_SEL787_Targets_Links_Bit04,))
         x = self.leitura_RetornosAnalogicos_MWR_SEL787_Targets_Links_Bit04
         self.condicionadores.append(CondicionadorBase(x.descr, DEVE_INDISPONIBILIZAR, x))
-
+        """
         self.leitura_RetornosAnalogicos_MWR_SEL787_Targets_Links_Bit05 = (LeituraModbusCoil("RetornosAnalogicos_MWR_SEL787_Targets_Links_Bit05",self.clp,REG_SA_RetornosAnalogicos_MWR_SEL787_Targets_Links_Bit05,))
         x = self.leitura_RetornosAnalogicos_MWR_SEL787_Targets_Links_Bit05
         self.condicionadores.append(CondicionadorBase(x.descr, DEVE_INDISPONIBILIZAR, x))
@@ -468,7 +468,7 @@ class Usina:
         self.cfg["pot_maxima_ug"] = float(parametros["pot_nominal_ug"])
 
         # Le o databank interno
-        if DataBank.get_words(self.cfg["REG_MOA_IN_EMERG"])[0] != 0:
+        if DataBank.get_words(self.cfg["REG_MOA_IN_EMERG"])[0] != 0 or self.leituras.condic_ativos_sim != 0:
             self.avisado_em_eletrica = True
             for ug in self.ugs:
                 ug.deve_ler_condicionadores = True
@@ -624,9 +624,9 @@ class Usina:
             DataBank.set_words(self.cfg["REG_MOA_OUT_EMERG"], [1 if self.clp_emergencia_acionada else 0],)
             DataBank.set_words(self.cfg["REG_MOA_OUT_TARGET_LEVEL"], [int((self.cfg["nv_alvo"] - 400) * 1000)])
             DataBank.set_words(self.cfg["REG_MOA_OUT_SETPOINT"], [self.ug1.setpoint + self.ug2.setpoint + self.ug3.setpoint], )
-            DataBank.set_words(self.cfg["REG_MOA_OUT_BLOCK_UG1"], [1 if self.ug1.enviar_trip_eletrico else 0], )
-            DataBank.set_words(self.cfg["REG_MOA_OUT_BLOCK_UG2"], [1 if self.ug2.enviar_trip_eletrico else 0], )
-            DataBank.set_words(self.cfg["REG_MOA_OUT_BLOCK_UG3"],[1 if self.ug3.enviar_trip_eletrico else 0], )
+            DataBank.set_words(self.cfg["REG_MOA_OUT_BLOCK_UG1"], [1 if self.leituras.condic_ativos_sim else 0], )
+            DataBank.set_words(self.cfg["REG_MOA_OUT_BLOCK_UG2"], [1 if self.leituras.condic_ativos_sim else 0], )
+            DataBank.set_words(self.cfg["REG_MOA_OUT_BLOCK_UG3"],[1 if self.leituras.condic_ativos_sim else 0], )
 
         else:
             DataBank.set_words(self.cfg["REG_MOA_OUT_EMERG"], [0])

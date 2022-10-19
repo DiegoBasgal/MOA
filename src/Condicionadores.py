@@ -191,7 +191,6 @@ class CondicionadorExponencialReverso(CondicionadorBase):
 
         elif self.valor_limite < v_temp < self.valor_base:
             aux = (1 - (((self.valor_limite - v_temp) / (self.valor_limite - self.valor_base))** (self.ordem)).real)
-            print(aux)
             return max(min(aux, 1), 0,)
 
         elif v_temp <= self.valor_limite:
