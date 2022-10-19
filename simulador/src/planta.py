@@ -48,7 +48,9 @@ class Planta:
         self.USINA_NV_MINIMO_OPERACAO = 404.65
         self.USINA_TENSAO_MINIMA = 69000 * 0.95
         self.USINA_TENSAO_MAXIMA = 69000 * 1.05
-
+        self.aux1=0
+        self.aux2=0
+        self.aux3=0
         self.shared_dict = shared_dict
         self.escala_ruido = 0.1
         self.speed = 50
@@ -83,6 +85,9 @@ class Planta:
         self.shared_dict["potencia_kw_mp"] = 0
         self.shared_dict["potencia_kw_mr"] = 0
         self.shared_dict["nv_jusante_grade"] = 0
+        self.shared_dict["trip_condic_ug1"] = False
+        self.shared_dict["trip_condic_ug2"] = False
+        self.shared_dict["trip_condic_ug3"] = False
 
         volume = self.nv_montate_para_volume(self.shared_dict["nv_montante"])
         self.dj52L.abrir()
@@ -124,6 +129,38 @@ class Planta:
                     for ug in self.ugs:
                         ug.reconhece_reset_ug()
                     self.dj52L.reconhece_reset_dj52L()
+
+
+                if self.shared_dict["trip_condic_ug1"]==True:
+                    self.cust_data_bank.set_words(REG["REG_USINA_AUX_Condicionadores"], [1])
+                    self.cust_data_bank.set_words(REG["REG_USINA_Emergencia_Condicionadores1"], [1])
+                    for ug in self.ugs:
+                        ug.tripar(1, "Condicionadores ativos!")
+                    self.dj52L.tripar("Condicionadores ativos!")
+                elif self.shared_dict["trip_condic_ug1"]==False:
+                    self.cust_data_bank.set_words(REG["REG_USINA_AUX_Condicionadores"], [0])
+                    self.cust_data_bank.set_words(REG["REG_USINA_Emergencia_Condicionadores1"], [0])
+
+                if self.shared_dict["trip_condic_ug2"]==True:
+                    self.cust_data_bank.set_words(REG["REG_USINA_AUX_Condicionadores"], [1])
+                    self.cust_data_bank.set_words(REG["REG_USINA_Emergencia_Condicionadores2"], [1])
+                    for ug in self.ugs:
+                        ug.tripar(1, "Condicionadores ativos!")
+                    self.dj52L.tripar("Condicionadores ativos!")
+                elif self.shared_dict["trip_condic_ug2"]==False:
+                    self.cust_data_bank.set_words(REG["REG_USINA_AUX_Condicionadores"], [0])
+                    self.cust_data_bank.set_words(REG["REG_USINA_Emergencia_Condicionadores2"], [0])
+                
+                if self.shared_dict["trip_condic_ug3"]==True:
+                    self.cust_data_bank.set_words(REG["REG_USINA_AUX_Condicionadores"], [1])
+                    self.cust_data_bank.set_words(REG["REG_USINA_Emergencia_Condicionadores3"], [1])
+                    for ug in self.ugs:
+                        ug.tripar(1, "Condicionadores ativos!")
+                    self.dj52L.tripar("Condicionadores ativos!")
+                elif self.shared_dict["trip_condic_ug3"]==False:
+                    self.cust_data_bank.set_words(REG["REG_USINA_AUX_Condicionadores"], [0])
+                    self.cust_data_bank.set_words(REG["REG_USINA_Emergencia_Condicionadores3"], [0])
+                
 
                 for ug in self.ugs:
                     self.shared_dict["setpoint_kw_ug{}".format(ug.id)] = self.cust_data_bank.get_words(REG["REG_UG{}_CtrlPotencia_Alvo".format(ug.id)])[0]
@@ -188,7 +225,7 @@ class Planta:
                     self.shared_dict["q_liquida"] -= self.shared_dict["q_ug{}".format(ug.id)]
 
                 self.shared_dict["nv_montante"] = self.volume_para_nv_montate(volume + self.shared_dict["q_liquida"] * self.segundos_por_passo)
-                self.shared_dict["nv_jusante_grade"] = self.shared_dict["nv_montante"] - max(0, np.random.normal(1.0, 0.5 * self.escala_ruido))
+                self.shared_dict["nv_jusante_grade"] = self.shared_dict["nv_montante"] - max(0, np.random.normal(0.1, 0.1 * self.escala_ruido))
 
                 if self.shared_dict["nv_montante"] >= self.USINA_NV_VERTEDOURO:
                     self.shared_dict["q_vertimento"] = self.shared_dict["q_liquida"]
@@ -218,6 +255,7 @@ class Planta:
                     self.cust_data_bank.set_words(REG["REG_UG{}_Etapa_AUX".format(ug.id)], [int(self.shared_dict["etapa_aux_ug{}".format(ug.id)])])
                     self.cust_data_bank.set_words(REG["REG_UG{}_Operacao_EtapaAtual".format(ug.id)],[int(ug.etapa_atual)],)
                     
+                    self.cust_data_bank.set_words(REG["REG_UG{}_Pressao_CX_Espiral".format(ug.id)],[round(10 * self.shared_dict["pressao_caixa_espiral_ug{}".format(ug.id)])],)
                     self.cust_data_bank.set_words(REG["REG_UG{}_Temperatura_01".format(ug.id)],[round(self.shared_dict["temperatura_ug{}_fase_r".format(ug.id)])],)
                     self.cust_data_bank.set_words(REG["REG_UG{}_Temperatura_02".format(ug.id)],[round(self.shared_dict["temperatura_ug{}_fase_s".format(ug.id)])],)
                     self.cust_data_bank.set_words(REG["REG_UG{}_Temperatura_03".format(ug.id)],[round(self.shared_dict["temperatura_ug{}_fase_t".format(ug.id)])],)

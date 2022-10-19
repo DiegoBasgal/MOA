@@ -17,12 +17,17 @@ class Window(QMainWindow, Ui_Form):
         self.setupUi(self)
 
         self.shared_dict = shared_dict
-
         # Timer de sincronização com o processo de simulação!
         self.sinc_timer = QTimer()
         self.sinc_timer.setInterval(100)
         self.sinc_timer.timeout.connect(self.sincro)
         self.sinc_timer.start()
+        self.aux1=0
+        self.aux2=0 
+        self.aux3=0
+        self.shared_dict["trip_condic_ug1"]=False
+        self.shared_dict["trip_condic_ug2"]=False
+        self.shared_dict["trip_condic_ug3"]=False
 
     def sincro(self):
         try:
@@ -51,6 +56,8 @@ class Window(QMainWindow, Ui_Form):
             self.lcdNumber_q_vertimento.display("{:2.3f}".format(self.shared_dict["q_vertimento"]))
 
             self.checkBox_sinal_trip_ug1.setChecked(self.shared_dict["trip_ug1"])
+            self.checkBox_sinal_trip_condic_ug1.setChecked(self.shared_dict["trip_condic_ug1"])
+
             self.lcdNumber_potencia_ug1.display("{:1.3f}".format(self.shared_dict["potencia_kw_ug1"] / 1000))
             self.lcdNumber_setpoint_ug1.display("{:1.3f}".format(self.shared_dict["setpoint_kw_ug1"] / 1000))
 
@@ -65,6 +72,7 @@ class Window(QMainWindow, Ui_Form):
             self.lcdNumber_etapa_atual_ug1.display("{:d}".format(self.shared_dict["etapa_atual_ug1"]))
             self.lcdNumber_bitsalarme_ug1.display("{:08b}".format(self.shared_dict["flags_ug1"]))
             self.lcdNumber_q_ug1.display("{:2.3f}".format(self.shared_dict["q_ug1"]))
+            self.lcdNumber_caixa_espiral_ug1.display("{:03.1f}".format(self.shared_dict["pressao_caixa_espiral_ug1"]))
             self.lcdNumber_temperatura_ug1_contra_escora_1.display("{:03.1f}".format(self.shared_dict["temperatura_ug1_contra_escora_1"]))
             self.lcdNumber_temperatura_ug1_contra_escora_2.display("{:03.1f}".format(self.shared_dict["temperatura_ug1_contra_escora_2"]))
             self.lcdNumber_temperatura_ug1_escora_1.display("{:03.1f}".format(self.shared_dict["temperatura_ug1_escora_1"]))
@@ -75,8 +83,9 @@ class Window(QMainWindow, Ui_Form):
             self.lcdNumber_temperatura_ug1_la_casquilho.display("{:03.1f}".format(self.shared_dict["temperatura_ug1_la_casquilho"]))
             self.lcdNumber_temperatura_ug1_lna_casquilho.display("{:03.1f}".format(self.shared_dict["temperatura_ug1_lna_casquilho"]))
             self.lcdNumber_perda_na_grade_ug1.display("{:03.1f}".format(self.shared_dict["nv_montante"] - self.shared_dict["nv_jusante_grade"]))
-
+            
             self.checkBox_sinal_trip_ug2.setChecked(self.shared_dict["trip_ug2"])
+            self.checkBox_sinal_trip_condic_ug2.setChecked(self.shared_dict["trip_condic_ug2"])
 
             self.lcdNumber_potencia_ug2.display("{:1.3f}".format(self.shared_dict["potencia_kw_ug2"] / 1000))
             self.lcdNumber_setpoint_ug2.display("{:1.3f}".format(self.shared_dict["setpoint_kw_ug2"] / 1000))
@@ -92,6 +101,7 @@ class Window(QMainWindow, Ui_Form):
             self.lcdNumber_etapa_atual_ug2.display("{:d}".format(self.shared_dict["etapa_atual_ug2"]))
             self.lcdNumber_bitsalarme_ug2.display("{:08b}".format(self.shared_dict["flags_ug2"]))
             self.lcdNumber_q_ug2.display("{:2.3f}".format(self.shared_dict["q_ug2"]))
+            self.lcdNumber_caixa_espiral_ug2.display("{:03.1f}".format(self.shared_dict["pressao_caixa_espiral_ug2"]))
             self.lcdNumber_temperatura_ug2_contra_escora_1.display("{:03.1f}".format(self.shared_dict["temperatura_ug2_contra_escora_1"]))
             self.lcdNumber_temperatura_ug2_contra_escora_2.display("{:03.1f}".format(self.shared_dict["temperatura_ug2_contra_escora_2"]))
             self.lcdNumber_temperatura_ug2_escora_1.display("{:03.1f}".format(self.shared_dict["temperatura_ug2_escora_1"]))
@@ -104,6 +114,7 @@ class Window(QMainWindow, Ui_Form):
             self.lcdNumber_perda_na_grade_ug2.display("{:3.1f}".format(self.shared_dict["nv_montante"] - self.shared_dict["nv_jusante_grade"]))
 
             self.checkBox_sinal_trip_ug3.setChecked(self.shared_dict["trip_ug3"])
+            self.checkBox_sinal_trip_condic_ug3.setChecked(self.shared_dict["trip_condic_ug3"])
 
             self.lcdNumber_potencia_ug3.display("{:1.3f}".format(self.shared_dict["potencia_kw_ug3"] / 1000))
             self.lcdNumber_setpoint_ug3.display("{:1.3f}".format(self.shared_dict["setpoint_kw_ug3"] / 1000))
@@ -118,6 +129,7 @@ class Window(QMainWindow, Ui_Form):
             self.lcdNumber_etapa_atual_ug3.display("{:d}".format(self.shared_dict["etapa_atual_ug3"]))
             self.lcdNumber_bitsalarme_ug3.display("{:08b}".format(self.shared_dict["flags_ug3"]))
             self.lcdNumber_q_ug3.display("{:2.3f}".format(self.shared_dict["q_ug3"]))
+            self.lcdNumber_caixa_espiral_ug3.display("{:03.1f}".format(self.shared_dict["pressao_caixa_espiral_ug3"]))
             self.lcdNumber_temperatura_ug3_contra_escora_1.display("{:03.1f}".format(self.shared_dict["temperatura_ug3_contra_escora_1"]))
             self.lcdNumber_temperatura_ug3_contra_escora_2.display("{:03.1f}".format(self.shared_dict["temperatura_ug3_contra_escora_2"]))
             self.lcdNumber_temperatura_ug3_escora_1.display("{:03.1f}".format(self.shared_dict["temperatura_ug3_escora_1"]))
@@ -172,6 +184,12 @@ class Window(QMainWindow, Ui_Form):
     def set_trip_low_ug1(self):
         self.shared_dict["trip_ug1"] = False
 
+    def set_trip_condic_ug1(self):
+        self.shared_dict["trip_condic_ug1"] = True
+
+    def reset_trip_condic_ug1(self):
+        self.shared_dict["trip_condic_ug1"] = False
+
     def reconhece_reset_ug1(self):
         self.shared_dict["reconhece_reset_ug1"] = True
 
@@ -196,6 +214,12 @@ class Window(QMainWindow, Ui_Form):
     def set_trip_low_ug2(self):
         self.shared_dict["trip_ug2"] = False
 
+    def set_trip_condic_ug2(self):
+        self.shared_dict["trip_condic_ug2"] = True
+
+    def reset_trip_condic_ug2(self):
+        self.shared_dict["trip_condic_ug2"] = False
+
     def reconhece_reset_ug2(self):
         self.shared_dict["reconhece_reset_ug2"] = True
 
@@ -211,6 +235,7 @@ class Window(QMainWindow, Ui_Form):
             "debug_setpoint_kw_ug2"
         ] = self.horizontalSlider_setpoint_ug2.value()
 
+
     # ug3
     def pulso_trip_ug3(self):
         self.set_trip_high_ug3()
@@ -221,6 +246,12 @@ class Window(QMainWindow, Ui_Form):
 
     def set_trip_low_ug3(self):
         self.shared_dict["trip_ug3"] = False
+
+    def set_trip_condic_ug3(self):
+        self.shared_dict["trip_condic_ug3"] = True
+
+    def reset_trip_condic_ug3(self):
+        self.shared_dict["trip_condic_ug3"] = False
 
     def reconhece_reset_ug3(self):
         self.shared_dict["reconhece_reset_ug3"] = True

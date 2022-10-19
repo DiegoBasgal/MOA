@@ -67,6 +67,7 @@ class Ug:
         self.shared_dict["temperatura_ug{}_fase_t".format(self.id)] = 25
         self.shared_dict["temperatura_ug{}_la_casquilho".format(self.id)] = 25
         self.shared_dict["temperatura_ug{}_lna_casquilho".format(self.id)] = 2
+        self.shared_dict["pressao_caixa_espiral_ug{}".format(self.id)] = 20
         
     def passo(self):
         # DEBUG VIA GUI
@@ -232,6 +233,8 @@ class Ug:
         self.shared_dict["temperatura_ug{}_fase_t".format(self.id)] = np.random.normal(25, 1 * self.escala_ruido)
         self.shared_dict["temperatura_ug{}_la_casquilho".format(self.id)] = np.random.normal(25, 1 * self.escala_ruido)
         self.shared_dict["temperatura_ug{}_lna_casquilho".format(self.id)] = np.random.normal(25, 1 * self.escala_ruido)
+        self.shared_dict["pressao_caixa_espiral_ug{}".format(self.id)] = np.random.normal(20, 1 * self.escala_ruido)
+
 
         if self.etapa_atual > self.ETAPA_UP:
             self.horimetro_hora += self.segundos_por_passo / 3600
