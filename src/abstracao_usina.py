@@ -14,7 +14,6 @@ from src.Condicionadores import *
 
 logger = logging.getLogger("__main__")
 
-
 class Usina:
     def __init__(self, cfg=None, db=None, con=None, leituras=None):
 
@@ -79,9 +78,11 @@ class Usina:
         self.tentativas_de_normalizar = 0
         self.ts_nv = []
         self.condicionadores = []
+        self.condicionadores_essenciais = []
         self.__split1 = False
         self.__split2 = False
         self.__split3 = False
+        self.aux=1
         self.clp = ModbusClient(
             host=self.cfg["USN_slave_ip"],
             port=self.cfg["USN_slave_porta"],
@@ -90,182 +91,208 @@ class Usina:
             auto_open=True,
             auto_close=True,
         )
-        """
-        self.leitura_EntradasDigitais_MXI_SA_SEL787_Trip = LeituraModbusCoil("EntradasDigitais_MXI_SA_SEL787_Trip", self.clp, REG_SA_EntradasDigitais_MXI_SA_SEL787_Trip,)
+        
+
+        #Lista de condicionadores essenciais que devem ser lidos a todo momento
+#-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------#
+        #alterado de LeituraModbusCoil para LeituraModbus apenas para o simulador
+        self.leitura_EntradasDigitais_MXI_SA_SEL787_Trip = LeituraModbus("EntradasDigitais_MXI_SA_SEL787_Trip", self.clp, REG_SA_EntradasDigitais_MXI_SA_SEL787_Trip, )
         x = self.leitura_EntradasDigitais_MXI_SA_SEL787_Trip
-        self.condicionadores.append(CondicionadorBase(x.descr, DEVE_INDISPONIBILIZAR, x))
-        
-        self.leitura_EntradasDigitais_MXI_SA_SEL787_FalhaInterna = LeituraModbusCoil("EntradasDigitais_MXI_SA_SEL787_FalhaInterna",self.clp,REG_SA_EntradasDigitais_MXI_SA_SEL787_FalhaInterna,)
-        x = self.leitura_EntradasDigitais_MXI_SA_SEL787_FalhaInterna
-        self.condicionadores.append(CondicionadorBase(x.descr, DEVE_INDISPONIBILIZAR, x))
-        
-        self.leitura_EntradasDigitais_MXI_SA_SEL311_Trip = LeituraModbusCoil("EntradasDigitais_MXI_SA_SEL311_Trip",self.clp,REG_SA_EntradasDigitais_MXI_SA_SEL311_Trip,)
+        self.condicionadores_essenciais.append(CondicionadorBase(x.descr, DEVE_INDISPONIBILIZAR, x))
+        '''
+        self.leitura_EntradasDigitais_MXI_SA_SEL311_Trip = LeituraModbusCoil( "EntradasDigitais_MXI_SA_SEL311_Trip", self.clp, REG_SA_EntradasDigitais_MXI_SA_SEL311_Trip, )
         x = self.leitura_EntradasDigitais_MXI_SA_SEL311_Trip
-        self.condicionadores.append(CondicionadorBase(x.descr, DEVE_INDISPONIBILIZAR, x))
+        self.condicionadores_essenciais.append(CondicionadorBase(x.descr, DEVE_INDISPONIBILIZAR, x))
 
-        self.leitura_EntradasDigitais_MXI_SA_SEL311_Falha = LeituraModbusCoil("EntradasDigitais_MXI_SA_SEL311_Falha",self.clp,REG_SA_EntradasDigitais_MXI_SA_SEL311_Falha,)
-        x = self.leitura_EntradasDigitais_MXI_SA_SEL311_Falha
-        self.condicionadores.append(CondicionadorBase(x.descr, DEVE_INDISPONIBILIZAR, x))
-
-        self.leitura_EntradasDigitais_MXI_SA_MRU3_Trip = LeituraModbusCoil("EntradasDigitais_MXI_SA_MRU3_Trip",self.clp,REG_SA_EntradasDigitais_MXI_SA_MRU3_Trip,)
+        # MRU3 é o relé de bloqueio 27/59N
+        self.leitura_EntradasDigitais_MXI_SA_MRU3_Trip = LeituraModbusCoil("EntradasDigitais_MXI_SA_MRU3_Trip", self.clp, REG_SA_EntradasDigitais_MXI_SA_MRU3_Trip, )
         x = self.leitura_EntradasDigitais_MXI_SA_MRU3_Trip
+        self.condicionadores_essenciais.append(CondicionadorBase(x.descr, DEVE_INDISPONIBILIZAR, x))
+
+        # MRL1 é o relé de bloqueio 86T
+        self.leitura_EntradasDigitais_MXI_SA_MRL1_Trip = LeituraModbusCoil("EntradasDigitais_MXI_SA_MRL1_Trip", self.clp, REG_SA_EntradasDigitais_MXI_SA_MRL1_Trip, )
+        x = self.leitura_EntradasDigitais_MXI_SA_MRL1_Trip
+        self.condicionadores_essenciais.append(CondicionadorBase(x.descr, DEVE_INDISPONIBILIZAR, x))
+
+        self.leitura_EntradasDigitais_MXI_SA_QCADE_Disj52E1Trip = LeituraModbusCoil( "EntradasDigitais_MXI_SA_QCADE_Disj52E1Trip", self.clp, REG_SA_EntradasDigitais_MXI_SA_QCADE_Disj52E1Trip, )
+        x = self.leitura_EntradasDigitais_MXI_SA_QCADE_Disj52E1Trip
+        self.condicionadores_essenciais.append( CondicionadorBase(x.descr, DEVE_INDISPONIBILIZAR, x) )
+        '''
+#-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------#
+
+
+        #Lista de condiconadores que deverão ser lidos apenas quando houver uma chamada de leitura
+#-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------#
+        # Alterado de LeituraModbusCoil para LeituraModbus apenas para o simulador
+        self.leitura_EntradasDigitais_MXI_TDA_QcataDisj52ETrip = LeituraModbus("EntradasDigitais_MXI_TDA_QcataDisj52ETrip", self.clp, REG_TDA_EntradasDigitais_MXI_QcataDisj52ETrip, )
+        x = self.leitura_EntradasDigitais_MXI_TDA_QcataDisj52ETrip
+        self.condicionadores.append(CondicionadorBase(x.descr, DEVE_INDISPONIBILIZAR, x))
+        """
+        self.leitura_EntradasDigitais_MXI_TDA_QcataDisj52ETripDisjSai = LeituraModbusCoil("EntradasDigitais_MXI_TDA_QcataDisj52ETripDisjSai", self.clp, REG_TDA_EntradasDigitais_MXI_QcataDisj52ETripDisjSai, )
+        x = self.leitura_EntradasDigitais_MXI_TDA_QcataDisj52ETripDisjSai
         self.condicionadores.append(CondicionadorBase(x.descr, DEVE_INDISPONIBILIZAR, x))
         
-        self.leitura_EntradasDigitais_MXI_SA_MRU3_Falha = LeituraModbusCoil("EntradasDigitais_MXI_SA_MRU3_Falha",self.clp,REG_SA_EntradasDigitais_MXI_SA_MRU3_Falha,)
+        self.leitura_EntradasDigitais_MXI_TDA_QcataDisj52EFalha380VCA = LeituraModbusCoil("EntradasDigitais_MXI_TDA_QcataDisj52EFalha380VCA", self.clp, REG_TDA_EntradasDigitais_MXI_QcataDisj52EFalha380VCA, )
+        x = self.leitura_EntradasDigitais_MXI_TDA_QcataDisj52EFalha380VCA
+        self.condicionadores.append(CondicionadorBase(x.descr, DEVE_INDISPONIBILIZAR, x))
+        
+        # MRU3 é o relé de bloqueio 27/59N
+        self.leitura_EntradasDigitais_MXI_SA_MRU3_Falha = LeituraModbusCoil("EntradasDigitais_MXI_SA_MRU3_Falha", self.clp, REG_SA_EntradasDigitais_MXI_SA_MRU3_Falha, )
         x = self.leitura_EntradasDigitais_MXI_SA_MRU3_Falha
         self.condicionadores.append(CondicionadorBase(x.descr, DEVE_INDISPONIBILIZAR, x))
 
-        self.leitura_EntradasDigitais_MXI_SA_MRL1_Trip = LeituraModbusCoil("EntradasDigitais_MXI_SA_MRL1_Trip",self.clp,REG_SA_EntradasDigitais_MXI_SA_MRL1_Trip,)
-        x = self.leitura_EntradasDigitais_MXI_SA_MRL1_Trip
-        self.condicionadores.append(CondicionadorBase(x.descr, DEVE_INDISPONIBILIZAR, x))
+        self.leitura_EntradasDigitais_MXI_SA_SEL787_FalhaInterna = LeituraModbusCoil( "EntradasDigitais_MXI_SA_SEL787_FalhaInterna", self.clp, REG_SA_EntradasDigitais_MXI_SA_SEL787_FalhaInterna, )
+        x = self.leitura_EntradasDigitais_MXI_SA_SEL787_FalhaInterna
+        self.condicionadores.append( CondicionadorBase(x.descr, DEVE_INDISPONIBILIZAR, x) )
 
-        self.leitura_EntradasDigitais_MXI_SA_CTE_Falta125Vcc = LeituraModbusCoil("EntradasDigitais_MXI_SA_CTE_Falta125Vcc",self.clp,REG_SA_EntradasDigitais_MXI_SA_CTE_Falta125Vcc,)
+        self.leitura_EntradasDigitais_MXI_SA_SEL311_Falha = LeituraModbusCoil( "EntradasDigitais_MXI_SA_SEL311_Falha", self.clp, REG_SA_EntradasDigitais_MXI_SA_SEL311_Falha, )
+        x = self.leitura_EntradasDigitais_MXI_SA_SEL311_Falha
+        self.condicionadores.append( CondicionadorBase(x.descr, DEVE_INDISPONIBILIZAR, x) )
+
+        self.leitura_EntradasDigitais_MXI_SA_CTE_Falta125Vcc = LeituraModbusCoil( "EntradasDigitais_MXI_SA_CTE_Falta125Vcc", self.clp, REG_SA_EntradasDigitais_MXI_SA_CTE_Falta125Vcc, )
         x = self.leitura_EntradasDigitais_MXI_SA_CTE_Falta125Vcc
-        self.condicionadores.append(CondicionadorBase(x.descr, DEVE_INDISPONIBILIZAR, x))
+        self.condicionadores.append( CondicionadorBase(x.descr, DEVE_INDISPONIBILIZAR, x) )
 
-        self.leitura_EntradasDigitais_MXI_SA_CTE_Secc89TE_Aberta = LeituraModbusCoil("EntradasDigitais_MXI_SA_CTE_Secc89TE_Aberta",self.clp,REG_SA_EntradasDigitais_MXI_SA_CTE_Secc89TE_Aberta,)
+        self.leitura_EntradasDigitais_MXI_SA_CTE_Secc89TE_Aberta = LeituraModbusCoil( "EntradasDigitais_MXI_SA_CTE_Secc89TE_Aberta", self.clp, REG_SA_EntradasDigitais_MXI_SA_CTE_Secc89TE_Aberta, )
         x = self.leitura_EntradasDigitais_MXI_SA_CTE_Secc89TE_Aberta
-        self.condicionadores.append(CondicionadorBase(x.descr, DEVE_INDISPONIBILIZAR, x))
+        self.condicionadores.append( CondicionadorBase(x.descr, DEVE_INDISPONIBILIZAR, x) )
 
-        self.leitura_EntradasDigitais_MXI_SA_TE_AlarmeDetectorGas = LeituraModbusCoil("EntradasDigitais_MXI_SA_TE_AlarmeDetectorGas",self.clp,REG_SA_EntradasDigitais_MXI_SA_TE_AlarmeDetectorGas,)
+        self.leitura_EntradasDigitais_MXI_SA_TE_AlarmeDetectorGas = LeituraModbusCoil( "EntradasDigitais_MXI_SA_TE_AlarmeDetectorGas", self.clp, REG_SA_EntradasDigitais_MXI_SA_TE_AlarmeDetectorGas, )
         x = self.leitura_EntradasDigitais_MXI_SA_TE_AlarmeDetectorGas
-        self.condicionadores.append(CondicionadorBase(x.descr, DEVE_INDISPONIBILIZAR, x))
+        self.condicionadores.append( CondicionadorBase(x.descr, DEVE_INDISPONIBILIZAR, x) )
 
-        self.leitura_EntradasDigitais_MXI_SA_TE_AlarmeNivelMaxOleo = LeituraModbusCoil("EntradasDigitais_MXI_SA_TE_AlarmeNivelMaxOleo",self.clp,REG_SA_EntradasDigitais_MXI_SA_TE_AlarmeNivelMaxOleo,)
+        self.leitura_EntradasDigitais_MXI_SA_TE_AlarmeNivelMaxOleo = LeituraModbusCoil( "EntradasDigitais_MXI_SA_TE_AlarmeNivelMaxOleo", self.clp, REG_SA_EntradasDigitais_MXI_SA_TE_AlarmeNivelMaxOleo, )
         x = self.leitura_EntradasDigitais_MXI_SA_TE_AlarmeNivelMaxOleo
-        self.condicionadores.append(CondicionadorBase(x.descr, DEVE_INDISPONIBILIZAR, x))
+        self.condicionadores.append( CondicionadorBase(x.descr, DEVE_INDISPONIBILIZAR, x) )
 
-        self.leitura_EntradasDigitais_MXI_SA_TE_AlarmeAlivioPressao = LeituraModbusCoil("EntradasDigitais_MXI_SA_TE_AlarmeAlivioPressao",self.clp,REG_SA_EntradasDigitais_MXI_SA_TE_AlarmeAlivioPressao,)
+        self.leitura_EntradasDigitais_MXI_SA_TE_AlarmeAlivioPressao = LeituraModbusCoil( "EntradasDigitais_MXI_SA_TE_AlarmeAlivioPressao", self.clp, REG_SA_EntradasDigitais_MXI_SA_TE_AlarmeAlivioPressao, )
         x = self.leitura_EntradasDigitais_MXI_SA_TE_AlarmeAlivioPressao
-        self.condicionadores.append(CondicionadorBase(x.descr, DEVE_INDISPONIBILIZAR, x))
+        self.condicionadores.append( CondicionadorBase(x.descr, DEVE_INDISPONIBILIZAR, x) )
 
-        self.leitura_EntradasDigitais_MXI_SA_TE_AlarmeTempOleo = LeituraModbusCoil("EntradasDigitais_MXI_SA_TE_AlarmeTempOleo",self.clp,REG_SA_EntradasDigitais_MXI_SA_TE_AlarmeTempOleo,)
+        self.leitura_EntradasDigitais_MXI_SA_TE_AlarmeTempOleo = LeituraModbusCoil( "EntradasDigitais_MXI_SA_TE_AlarmeTempOleo", self.clp, REG_SA_EntradasDigitais_MXI_SA_TE_AlarmeTempOleo, )
         x = self.leitura_EntradasDigitais_MXI_SA_TE_AlarmeTempOleo
-        self.condicionadores.append(CondicionadorBase(x.descr, DEVE_INDISPONIBILIZAR, x))
+        self.condicionadores.append( CondicionadorBase(x.descr, DEVE_INDISPONIBILIZAR, x) )
 
-        self.leitura_EntradasDigitais_MXI_SA_TE_AlarmeTempEnrolamento = (LeituraModbusCoil("EntradasDigitais_MXI_SA_TE_AlarmeTempEnrolamento",self.clp,REG_SA_EntradasDigitais_MXI_SA_TE_AlarmeTempEnrolamento,))
+        self.leitura_EntradasDigitais_MXI_SA_TE_AlarmeTempEnrolamento = ( LeituraModbusCoil( "EntradasDigitais_MXI_SA_TE_AlarmeTempEnrolamento", self.clp, REG_SA_EntradasDigitais_MXI_SA_TE_AlarmeTempEnrolamento, ) )
         x = self.leitura_EntradasDigitais_MXI_SA_TE_AlarmeTempEnrolamento
-        self.condicionadores.append(CondicionadorBase(x.descr, DEVE_INDISPONIBILIZAR, x))
+        self.condicionadores.append( CondicionadorBase(x.descr, DEVE_INDISPONIBILIZAR, x) )
 
-        self.leitura_EntradasDigitais_MXI_SA_TE_AlarmeDesligamento = LeituraModbusCoil("EntradasDigitais_MXI_SA_TE_AlarmeDesligamento",self.clp,REG_SA_EntradasDigitais_MXI_SA_TE_AlarmeDesligamento,)
+        self.leitura_EntradasDigitais_MXI_SA_TE_AlarmeDesligamento = LeituraModbusCoil( "EntradasDigitais_MXI_SA_TE_AlarmeDesligamento", self.clp, REG_SA_EntradasDigitais_MXI_SA_TE_AlarmeDesligamento, )
         x = self.leitura_EntradasDigitais_MXI_SA_TE_AlarmeDesligamento
-        self.condicionadores.append(CondicionadorBase(x.descr, DEVE_INDISPONIBILIZAR, x))
+        self.condicionadores.append( CondicionadorBase(x.descr, DEVE_INDISPONIBILIZAR, x) )
 
-        self.leitura_EntradasDigitais_MXI_SA_TE_Falha = LeituraModbusCoil("EntradasDigitais_MXI_SA_TE_Falha",self.clp,REG_SA_EntradasDigitais_MXI_SA_TE_Falha,)
+        self.leitura_EntradasDigitais_MXI_SA_TE_Falha = LeituraModbusCoil( "EntradasDigitais_MXI_SA_TE_Falha", self.clp, REG_SA_EntradasDigitais_MXI_SA_TE_Falha, )
         x = self.leitura_EntradasDigitais_MXI_SA_TE_Falha
-        self.condicionadores.append(CondicionadorBase(x.descr, DEVE_INDISPONIBILIZAR, x))
+        self.condicionadores.append( CondicionadorBase(x.descr, DEVE_INDISPONIBILIZAR, x) )
 
-        self.leitura_EntradasDigitais_MXI_SA_FalhaDisjTPsProt = LeituraModbusCoil("EntradasDigitais_MXI_SA_FalhaDisjTPsProt",self.clp,REG_SA_EntradasDigitais_MXI_SA_FalhaDisjTPsProt,)
+        self.leitura_EntradasDigitais_MXI_SA_FalhaDisjTPsProt = LeituraModbusCoil( "EntradasDigitais_MXI_SA_FalhaDisjTPsProt", self.clp, REG_SA_EntradasDigitais_MXI_SA_FalhaDisjTPsProt, )
         x = self.leitura_EntradasDigitais_MXI_SA_FalhaDisjTPsProt
-        self.condicionadores.append(CondicionadorBase(x.descr, DEVE_INDISPONIBILIZAR, x))
+        self.condicionadores.append( CondicionadorBase(x.descr, DEVE_INDISPONIBILIZAR, x) )
 
-        self.leitura_EntradasDigitais_MXI_SA_FalhaDisjTPsSincr = LeituraModbusCoil("EntradasDigitais_MXI_SA_FalhaDisjTPsSincr",self.clp,REG_SA_EntradasDigitais_MXI_SA_FalhaDisjTPsSincr,)
+        self.leitura_EntradasDigitais_MXI_SA_FalhaDisjTPsSincr = LeituraModbusCoil( "EntradasDigitais_MXI_SA_FalhaDisjTPsSincr", self.clp, REG_SA_EntradasDigitais_MXI_SA_FalhaDisjTPsSincr, )
         x = self.leitura_EntradasDigitais_MXI_SA_FalhaDisjTPsSincr
-        self.condicionadores.append(CondicionadorBase(x.descr, DEVE_INDISPONIBILIZAR, x))
+        self.condicionadores.append( CondicionadorBase(x.descr, DEVE_INDISPONIBILIZAR, x) )
 
-        self.leitura_EntradasDigitais_MXI_SA_CSA1_Secc_Aberta = LeituraModbusCoil("EntradasDigitais_MXI_SA_CSA1_Secc_Aberta",self.clp,REG_SA_EntradasDigitais_MXI_SA_CSA1_Secc_Aberta,)
+        self.leitura_EntradasDigitais_MXI_SA_CSA1_Secc_Aberta = LeituraModbusCoil( "EntradasDigitais_MXI_SA_CSA1_Secc_Aberta", self.clp, REG_SA_EntradasDigitais_MXI_SA_CSA1_Secc_Aberta, )
         x = self.leitura_EntradasDigitais_MXI_SA_CSA1_Secc_Aberta
-        self.condicionadores.append(CondicionadorBase(x.descr, DEVE_INDISPONIBILIZAR, x))
+        self.condicionadores.append( CondicionadorBase(x.descr, DEVE_INDISPONIBILIZAR, x) )
 
-        self.leitura_EntradasDigitais_MXI_SA_CSA1_FusivelQueimado = LeituraModbusCoil("EntradasDigitais_MXI_SA_CSA1_FusivelQueimado",self.clp,REG_SA_EntradasDigitais_MXI_SA_CSA1_FusivelQueimado,)
+        self.leitura_EntradasDigitais_MXI_SA_CSA1_FusivelQueimado = LeituraModbusCoil( "EntradasDigitais_MXI_SA_CSA1_FusivelQueimado", self.clp, REG_SA_EntradasDigitais_MXI_SA_CSA1_FusivelQueimado, )
         x = self.leitura_EntradasDigitais_MXI_SA_CSA1_FusivelQueimado
-        self.condicionadores.append(CondicionadorBase(x.descr, DEVE_INDISPONIBILIZAR, x))
+        self.condicionadores.append( CondicionadorBase(x.descr, DEVE_INDISPONIBILIZAR, x) )
 
-        self.leitura_EntradasDigitais_MXI_SA_CSA1_FaltaTensao125Vcc = LeituraModbusCoil("EntradasDigitais_MXI_SA_CSA1_FaltaTensao125Vcc",self.clp,REG_SA_EntradasDigitais_MXI_SA_CSA1_FaltaTensao125Vcc,)
+        self.leitura_EntradasDigitais_MXI_SA_CSA1_FaltaTensao125Vcc = LeituraModbusCoil( "EntradasDigitais_MXI_SA_CSA1_FaltaTensao125Vcc", self.clp, REG_SA_EntradasDigitais_MXI_SA_CSA1_FaltaTensao125Vcc, )
         x = self.leitura_EntradasDigitais_MXI_SA_CSA1_FaltaTensao125Vcc
-        self.condicionadores.append(CondicionadorBase(x.descr, DEVE_INDISPONIBILIZAR, x))
+        self.condicionadores.append( CondicionadorBase(x.descr, DEVE_INDISPONIBILIZAR, x) )
 
-        self.leitura_EntradasDigitais_MXI_SA_QCADE_Nivel4 = LeituraModbusCoil("EntradasDigitais_MXI_SA_QCADE_Nivel4",self.clp,REG_SA_EntradasDigitais_MXI_SA_QCADE_Nivel4,)
+        self.leitura_EntradasDigitais_MXI_SA_QCADE_Nivel4 = LeituraModbusCoil( "EntradasDigitais_MXI_SA_QCADE_Nivel4", self.clp, REG_SA_EntradasDigitais_MXI_SA_QCADE_Nivel4, )
         x = self.leitura_EntradasDigitais_MXI_SA_QCADE_Nivel4
-        self.condicionadores.append(CondicionadorBase(x.descr, DEVE_INDISPONIBILIZAR, x))
+        self.condicionadores.append( CondicionadorBase(x.descr, DEVE_INDISPONIBILIZAR, x) )
 
-        self.leitura_EntradasDigitais_MXI_SA_QCADE_NivelMuitoAlto = LeituraModbusCoil("EntradasDigitais_MXI_SA_QCADE_NivelMuitoAlto",self.clp,REG_SA_EntradasDigitais_MXI_SA_QCADE_NivelMuitoAlto,)
+        self.leitura_EntradasDigitais_MXI_SA_QCADE_NivelMuitoAlto = LeituraModbusCoil( "EntradasDigitais_MXI_SA_QCADE_NivelMuitoAlto", self.clp, REG_SA_EntradasDigitais_MXI_SA_QCADE_NivelMuitoAlto, )
         x = self.leitura_EntradasDigitais_MXI_SA_QCADE_NivelMuitoAlto
-        self.condicionadores.append(CondicionadorBase(x.descr, DEVE_INDISPONIBILIZAR, x))
+        self.condicionadores.append( CondicionadorBase(x.descr, DEVE_INDISPONIBILIZAR, x) )
 
-        self.leitura_EntradasDigitais_MXI_SA_QCADE_Disj52E1Trip = LeituraModbusCoil("EntradasDigitais_MXI_SA_QCADE_Disj52E1Trip",self.clp,REG_SA_EntradasDigitais_MXI_SA_QCADE_Disj52E1Trip,)
-        x = self.leitura_EntradasDigitais_MXI_SA_QCADE_Disj52E1Trip
-        self.condicionadores.append(CondicionadorBase(x.descr, DEVE_INDISPONIBILIZAR, x))
-
-        self.leitura_EntradasDigitais_MXI_SA_QCADE_Falha220VCA = LeituraModbusCoil("EntradasDigitais_MXI_SA_QCADE_Falha220VCA",self.clp,REG_SA_EntradasDigitais_MXI_SA_QCADE_Falha220VCA,)
+        self.leitura_EntradasDigitais_MXI_SA_QCADE_Falha220VCA = LeituraModbusCoil( "EntradasDigitais_MXI_SA_QCADE_Falha220VCA", self.clp, REG_SA_EntradasDigitais_MXI_SA_QCADE_Falha220VCA, )
         x = self.leitura_EntradasDigitais_MXI_SA_QCADE_Falha220VCA
-        self.condicionadores.append(CondicionadorBase(x.descr, DEVE_INDISPONIBILIZAR, x))
+        self.condicionadores.append( CondicionadorBase(x.descr, DEVE_INDISPONIBILIZAR, x) )
 
-        self.leitura_EntradasDigitais_MXI_SA_QCCP_Disj72ETrip = LeituraModbusCoil("EntradasDigitais_MXI_SA_QCCP_Disj72ETrip",self.clp,REG_SA_EntradasDigitais_MXI_SA_QCCP_Disj72ETrip,)
+        # Verificar
+        self.leitura_EntradasDigitais_MXI_SA_QCCP_Disj72ETrip = LeituraModbusCoil( "EntradasDigitais_MXI_SA_QCCP_Disj72ETrip", self.clp, REG_SA_EntradasDigitais_MXI_SA_QCCP_Disj72ETrip, )
         x = self.leitura_EntradasDigitais_MXI_SA_QCCP_Disj72ETrip
-        self.condicionadores.append(CondicionadorBase(x.descr, DEVE_INDISPONIBILIZAR, x))
+        self.condicionadores.append( CondicionadorBase(x.descr, DEVE_INDISPONIBILIZAR, x) )
 
-        self.leitura_EntradasDigitais_MXI_SA_QCCP_Falta125Vcc = LeituraModbusCoil("EntradasDigitais_MXI_SA_QCCP_Falta125Vcc",self.clp,REG_SA_EntradasDigitais_MXI_SA_QCCP_Falta125Vcc,)
+        self.leitura_EntradasDigitais_MXI_SA_QCCP_Falta125Vcc = LeituraModbusCoil( "EntradasDigitais_MXI_SA_QCCP_Falta125Vcc", self.clp, REG_SA_EntradasDigitais_MXI_SA_QCCP_Falta125Vcc, )
         x = self.leitura_EntradasDigitais_MXI_SA_QCCP_Falta125Vcc
-        self.condicionadores.append(CondicionadorBase(x.descr, DEVE_INDISPONIBILIZAR, x))
+        self.condicionadores.append( CondicionadorBase(x.descr, DEVE_INDISPONIBILIZAR, x) )
 
-        self.leitura_EntradasDigitais_MXI_SA_QCCP_TripDisjAgrup = LeituraModbusCoil("EntradasDigitais_MXI_SA_QCCP_TripDisjAgrup",self.clp,REG_SA_EntradasDigitais_MXI_SA_QCCP_TripDisjAgrup,)
-        x = self.leitura_EntradasDigitais_MXI_SA_QCCP_TripDisjAgrup
-        self.condicionadores.append(CondicionadorBase(x.descr, DEVE_INDISPONIBILIZAR, x))
+        self.leitura_EntradasDigitais_MXI_SA_QCCP_TripDisjAgrup = LeituraModbusCoil( "EntradasDigitais_MXI_SA_QCCP_TripDisjAgrup", self.clp, REG_SA_EntradasDigitais_MXI_SA_QCCP_TripDisjAgrup, )
+        x = self.leitura_EntradasDigitais_MXI_SA_QCCP_TripDisjAgrup 
+        self.condicionadores.append( CondicionadorBase(x.descr, DEVE_INDISPONIBILIZAR, x) )
 
-        self.leitura_EntradasDigitais_MXI_SA_QCAP_Falta125Vcc = LeituraModbusCoil("EntradasDigitais_MXI_SA_QCAP_Falta125Vcc",self.clp,REG_SA_EntradasDigitais_MXI_SA_QCAP_Falta125Vcc,)
+        self.leitura_EntradasDigitais_MXI_SA_QCAP_Falta125Vcc = LeituraModbusCoil( "EntradasDigitais_MXI_SA_QCAP_Falta125Vcc", self.clp, REG_SA_EntradasDigitais_MXI_SA_QCAP_Falta125Vcc, )
         x = self.leitura_EntradasDigitais_MXI_SA_QCAP_Falta125Vcc
-        self.condicionadores.append(CondicionadorBase(x.descr, DEVE_INDISPONIBILIZAR, x))
+        self.condicionadores.append( CondicionadorBase(x.descr, DEVE_INDISPONIBILIZAR, x) )
 
-        self.leitura_EntradasDigitais_MXI_SA_QCAP_TripDisjAgrup = LeituraModbusCoil("EntradasDigitais_MXI_SA_QCAP_TripDisjAgrup",self.clp,REG_SA_EntradasDigitais_MXI_SA_QCAP_TripDisjAgrup,)
+        self.leitura_EntradasDigitais_MXI_SA_QCAP_TripDisjAgrup = LeituraModbusCoil( "EntradasDigitais_MXI_SA_QCAP_TripDisjAgrup", self.clp, REG_SA_EntradasDigitais_MXI_SA_QCAP_TripDisjAgrup, )
         x = self.leitura_EntradasDigitais_MXI_SA_QCAP_TripDisjAgrup
-        self.condicionadores.append(CondicionadorBase(x.descr, DEVE_INDISPONIBILIZAR, x))
+        self.condicionadores.append( CondicionadorBase(x.descr, DEVE_INDISPONIBILIZAR, x) )
 
-        self.leitura_EntradasDigitais_MXI_SA_QCAP_Disj52A1Falha = LeituraModbusCoil("EntradasDigitais_MXI_SA_QCAP_Disj52A1Falha",self.clp,REG_SA_EntradasDigitais_MXI_SA_QCAP_Disj52A1Falha,)
+        self.leitura_EntradasDigitais_MXI_SA_QCAP_Disj52A1Falha = LeituraModbusCoil( "EntradasDigitais_MXI_SA_QCAP_Disj52A1Falha", self.clp, REG_SA_EntradasDigitais_MXI_SA_QCAP_Disj52A1Falha, )
         x = self.leitura_EntradasDigitais_MXI_SA_QCAP_Disj52A1Falha
-        self.condicionadores.append(CondicionadorBase(x.descr, DEVE_INDISPONIBILIZAR, x))
+        self.condicionadores.append( CondicionadorBase(x.descr, DEVE_INDISPONIBILIZAR, x) )
 
-        self.leitura_EntradasDigitais_MXI_SA_QCAP_Disj52EFalha = LeituraModbusCoil("EntradasDigitais_MXI_SA_QCAP_Disj52EFalha",self.clp,REG_SA_EntradasDigitais_MXI_SA_QCAP_Disj52EFalha,)
+        self.leitura_EntradasDigitais_MXI_SA_QCAP_Disj52EFalha = LeituraModbusCoil( "EntradasDigitais_MXI_SA_QCAP_Disj52EFalha", self.clp, REG_SA_EntradasDigitais_MXI_SA_QCAP_Disj52EFalha, )
         x = self.leitura_EntradasDigitais_MXI_SA_QCAP_Disj52EFalha
-        self.condicionadores.append(CondicionadorBase(x.descr, DEVE_INDISPONIBILIZAR, x))
+        self.condicionadores.append( CondicionadorBase(x.descr, DEVE_INDISPONIBILIZAR, x) )
 
-        self.leitura_EntradasDigitais_MXI_SA_GMG_DisjFechado = LeituraModbusCoil("EntradasDigitais_MXI_SA_GMG_DisjFechado",self.clp,REG_SA_EntradasDigitais_MXI_SA_GMG_DisjFechado,)
+        self.leitura_EntradasDigitais_MXI_SA_GMG_DisjFechado = LeituraModbusCoil( "EntradasDigitais_MXI_SA_GMG_DisjFechado", self.clp, REG_SA_EntradasDigitais_MXI_SA_GMG_DisjFechado, )
         x = self.leitura_EntradasDigitais_MXI_SA_GMG_DisjFechado
-        self.condicionadores.append(CondicionadorBase(x.descr, DEVE_INDISPONIBILIZAR, x))
+        self.condicionadores.append( CondicionadorBase(x.descr, DEVE_INDISPONIBILIZAR, x) )
 
-        self.leitura_RetornosAnalogicos_MWR_SEL787_Targets = LeituraModbusCoil("RetornosAnalogicos_MWR_SEL787_Targets",self.clp,REG_SA_RetornosAnalogicos_MWR_SEL787_Targets,)
+        self.leitura_RetornosAnalogicos_MWR_SEL787_Targets = LeituraModbusCoil( "RetornosAnalogicos_MWR_SEL787_Targets", self.clp, REG_SA_RetornosAnalogicos_MWR_SEL787_Targets, )
         x = self.leitura_RetornosAnalogicos_MWR_SEL787_Targets
-        self.condicionadores.append(CondicionadorBase(x.descr, DEVE_INDISPONIBILIZAR, x))
-        
-        self.leitura_RetornosAnalogicos_MWR_SEL787_Targets_Links_Bit00 = (LeituraModbusCoil("RetornosAnalogicos_MWR_SEL787_Targets_Links_Bit00",self.clp,REG_SA_RetornosAnalogicos_MWR_SEL787_Targets_Links_Bit00,))
+        self.condicionadores.append( CondicionadorBase(x.descr, DEVE_INDISPONIBILIZAR, x) )
+
+        self.leitura_RetornosAnalogicos_MWR_SEL787_Targets_Links_Bit00 = ( LeituraModbusCoil( "RetornosAnalogicos_MWR_SEL787_Targets_Links_Bit00", self.clp, REG_SA_RetornosAnalogicos_MWR_SEL787_Targets_Links_Bit00, ) )
         x = self.leitura_RetornosAnalogicos_MWR_SEL787_Targets_Links_Bit00
-        self.condicionadores.append(CondicionadorBase(x.descr, DEVE_INDISPONIBILIZAR, x))
+        self.condicionadores.append( CondicionadorBase(x.descr, DEVE_INDISPONIBILIZAR, x) )
 
-        self.leitura_RetornosAnalogicos_MWR_SEL787_Targets_Links_Bit01 = (LeituraModbusCoil("RetornosAnalogicos_MWR_SEL787_Targets_Links_Bit01",self.clp,REG_SA_RetornosAnalogicos_MWR_SEL787_Targets_Links_Bit01,))
+        self.leitura_RetornosAnalogicos_MWR_SEL787_Targets_Links_Bit01 = ( LeituraModbusCoil( "RetornosAnalogicos_MWR_SEL787_Targets_Links_Bit01", self.clp, REG_SA_RetornosAnalogicos_MWR_SEL787_Targets_Links_Bit01, ) )
         x = self.leitura_RetornosAnalogicos_MWR_SEL787_Targets_Links_Bit01
-        self.condicionadores.append(CondicionadorBase(x.descr, DEVE_INDISPONIBILIZAR, x))
-        """
-        self.leitura_RetornosAnalogicos_MWR_SEL787_Targets_Links_Bit02 = (LeituraModbus("RetornosAnalogicos_MWR_SEL787_Targets_Links_Bit02",self.clp,REG_SA_RetornosAnalogicos_MWR_SEL787_Targets_Links_Bit02,))
+        self.condicionadores.append( CondicionadorBase(x.descr, DEVE_INDISPONIBILIZAR, x) )
+
+        self.leitura_RetornosAnalogicos_MWR_SEL787_Targets_Links_Bit02 = ( LeituraModbusCoil( "RetornosAnalogicos_MWR_SEL787_Targets_Links_Bit02", self.clp, REG_SA_RetornosAnalogicos_MWR_SEL787_Targets_Links_Bit02, ) )
         x = self.leitura_RetornosAnalogicos_MWR_SEL787_Targets_Links_Bit02
-        self.condicionadores.append(CondicionadorBase(x.descr, DEVE_INDISPONIBILIZAR, x))
-    
-        self.leitura_RetornosAnalogicos_MWR_SEL787_Targets_Links_Bit03 = (LeituraModbus("RetornosAnalogicos_MWR_SEL787_Targets_Links_Bit03",self.clp,REG_SA_RetornosAnalogicos_MWR_SEL787_Targets_Links_Bit03,))
+        self.condicionadores.append( CondicionadorBase(x.descr, DEVE_INDISPONIBILIZAR, x) )
+
+        self.leitura_RetornosAnalogicos_MWR_SEL787_Targets_Links_Bit03 = ( LeituraModbusCoil( "RetornosAnalogicos_MWR_SEL787_Targets_Links_Bit03", self.clp, REG_SA_RetornosAnalogicos_MWR_SEL787_Targets_Links_Bit03, ) )
         x = self.leitura_RetornosAnalogicos_MWR_SEL787_Targets_Links_Bit03
-        self.condicionadores.append(CondicionadorBase(x.descr, DEVE_INDISPONIBILIZAR, x))
+        self.condicionadores.append( CondicionadorBase(x.descr, DEVE_INDISPONIBILIZAR, x) )
 
-        self.leitura_RetornosAnalogicos_MWR_SEL787_Targets_Links_Bit04 = (LeituraModbus("RetornosAnalogicos_MWR_SEL787_Targets_Links_Bit04",self.clp,REG_SA_RetornosAnalogicos_MWR_SEL787_Targets_Links_Bit04,))
+        self.leitura_RetornosAnalogicos_MWR_SEL787_Targets_Links_Bit04 = ( LeituraModbusCoil( "RetornosAnalogicos_MWR_SEL787_Targets_Links_Bit04", self.clp, REG_SA_RetornosAnalogicos_MWR_SEL787_Targets_Links_Bit04, ) )
         x = self.leitura_RetornosAnalogicos_MWR_SEL787_Targets_Links_Bit04
-        self.condicionadores.append(CondicionadorBase(x.descr, DEVE_INDISPONIBILIZAR, x))
-        """
-        self.leitura_RetornosAnalogicos_MWR_SEL787_Targets_Links_Bit05 = (LeituraModbusCoil("RetornosAnalogicos_MWR_SEL787_Targets_Links_Bit05",self.clp,REG_SA_RetornosAnalogicos_MWR_SEL787_Targets_Links_Bit05,))
+        self.condicionadores.append( CondicionadorBase(x.descr, DEVE_INDISPONIBILIZAR, x) )
+
+        self.leitura_RetornosAnalogicos_MWR_SEL787_Targets_Links_Bit05 = ( LeituraModbusCoil( "RetornosAnalogicos_MWR_SEL787_Targets_Links_Bit05", self.clp, REG_SA_RetornosAnalogicos_MWR_SEL787_Targets_Links_Bit05, ) )
         x = self.leitura_RetornosAnalogicos_MWR_SEL787_Targets_Links_Bit05
-        self.condicionadores.append(CondicionadorBase(x.descr, DEVE_INDISPONIBILIZAR, x))
+        self.condicionadores.append( CondicionadorBase(x.descr, DEVE_INDISPONIBILIZAR, x) )
 
-        self.leitura_RetornosAnalogicos_MWR_SEL787_Targets_Links_Bit06 = (LeituraModbusCoil("RetornosAnalogicos_MWR_SEL787_Targets_Links_Bit06",self.clp,REG_SA_RetornosAnalogicos_MWR_SEL787_Targets_Links_Bit06,))
+        self.leitura_RetornosAnalogicos_MWR_SEL787_Targets_Links_Bit06 = ( LeituraModbusCoil( "RetornosAnalogicos_MWR_SEL787_Targets_Links_Bit06", self.clp, REG_SA_RetornosAnalogicos_MWR_SEL787_Targets_Links_Bit06, ) )
         x = self.leitura_RetornosAnalogicos_MWR_SEL787_Targets_Links_Bit06
-        self.condicionadores.append(CondicionadorBase(x.descr, DEVE_INDISPONIBILIZAR, x))
+        self.condicionadores.append( CondicionadorBase(x.descr, DEVE_INDISPONIBILIZAR, x) )
 
-        self.leitura_RetornosAnalogicos_MWR_SEL787_Targets_Links_Bit07 = (LeituraModbusCoil("RetornosAnalogicos_MWR_SEL787_Targets_Links_Bit07",self.clp,REG_SA_RetornosAnalogicos_MWR_SEL787_Targets_Links_Bit07,))
+        self.leitura_RetornosAnalogicos_MWR_SEL787_Targets_Links_Bit07 = ( LeituraModbusCoil( "RetornosAnalogicos_MWR_SEL787_Targets_Links_Bit07", self.clp, REG_SA_RetornosAnalogicos_MWR_SEL787_Targets_Links_Bit07, ) )
         x = self.leitura_RetornosAnalogicos_MWR_SEL787_Targets_Links_Bit07
-        self.condicionadores.append(CondicionadorBase(x.descr, DEVE_INDISPONIBILIZAR, x))
+        self.condicionadores.append( CondicionadorBase(x.descr, DEVE_INDISPONIBILIZAR, x) )
 
-        self.leitura_RetornosDigitais_MXR_DJ1_FalhaInt = LeituraModbusCoil("RetornosDigitais_MXR_DJ1_FalhaInt",self.clp,REG_SA_RetornosDigitais_MXR_DJ1_FalhaInt,)
+        self.leitura_RetornosDigitais_MXR_DJ1_FalhaInt = LeituraModbusCoil( "RetornosDigitais_MXR_DJ1_FalhaInt", self.clp, REG_SA_RetornosDigitais_MXR_DJ1_FalhaInt, )
         x = self.leitura_RetornosDigitais_MXR_DJ1_FalhaInt
-        self.condicionadores.append(CondicionadorBase(x.descr, DEVE_INDISPONIBILIZAR, x))
+        self.condicionadores.append( CondicionadorBase(x.descr, DEVE_INDISPONIBILIZAR, x) )
 
-        self.leitura_RetornosDigitais_MXR_CLP_Falha = LeituraModbusCoil("RetornosDigitais_MXR_CLP_Falha",self.clp,REG_SA_RetornosDigitais_MXR_CLP_Falha,)
+        self.leitura_RetornosDigitais_MXR_CLP_Falha = LeituraModbusCoil( "RetornosDigitais_MXR_CLP_Falha", self.clp, REG_SA_RetornosDigitais_MXR_CLP_Falha, )
         x = self.leitura_RetornosDigitais_MXR_CLP_Falha
-        self.condicionadores.append(CondicionadorBase(x.descr, DEVE_INDISPONIBILIZAR, x))
+        self.condicionadores.append( CondicionadorBase(x.descr, DEVE_INDISPONIBILIZAR, x) )
         """
         
         valores = [
@@ -327,14 +354,6 @@ class Usina:
         #   -> Se não estiver ok, acionar emergencia CLP
         if not ping(self.cfg["TDA_slave_ip"]):
             logger.warning("CLP TDA não respondeu a tentativa de comunicação!")
-            """
-            if (not self.avisado_via_voip_tda) and ((datetime.now() - self.ts_last_ping_tda).seconds >= 60 * 5):
-                voip.enviar_voz_emergencia()
-                self.avisado_via_voip_tda = True
-        else:
-            self.ts_last_ping_tda = datetime.now()
-            self.avisado_via_voip_tda = False
-        """
         
         # -> Verifica conexão com CLP Sub
         #   -> Se não estiver ok, avisa por logger.warning
@@ -364,19 +383,11 @@ class Usina:
         self.nv_montante_recentes.append(round(self.leituras.nv_montante.valor, 2))
         self.nv_montante_recentes = self.nv_montante_recentes[1:]
 
-        """
-        # Filtro butterworth
-        b, a = butter(8, 4, fs=120)
-        self.nv_montante_recente = float(
-            filtfilt(b, a, self.nv_montante_recentes)[-1]
-        )
-        """
-
+        # VERIFICAR SE O CÁLCULO SEGUINTE SERÁ USADO EM CAMPO
         smoothing = 5
         ema = [sum(self.nv_montante_recentes) / len(self.nv_montante_recentes)]
         for nv in self.nv_montante_recentes:
-            ema.append((nv * (smoothing / (1 + len(self.nv_montante_recentes))))
-                + ema[-1] * (1 - (smoothing / (1 + len(self.nv_montante_recentes)))))
+            ema.append((nv * (smoothing / (1 + len(self.nv_montante_recentes)))) + ema[-1] * (1 - (smoothing / (1 + len(self.nv_montante_recentes)))))
 
         self.nv_montante_recente = ema[-1]  # REMOVER SEB
         self.nv_montante_recente = self.leituras.nv_montante.valor
@@ -468,16 +479,33 @@ class Usina:
         self.cfg["pot_maxima_ug"] = float(parametros["pot_nominal_ug"])
 
         # Le o databank interno
-        if DataBank.get_words(self.cfg["REG_MOA_IN_EMERG"])[0] != 0 or self.leituras.condic_ativos_sim != 0:
+        if DataBank.get_words(self.cfg["REG_MOA_IN_EMERG"])[0] == 1:
+            self.aux=1
             self.avisado_em_eletrica = True
             for ug in self.ugs:
+                ug.parada_por_painel = True
                 ug.deve_ler_condicionadores = True
-                self.deve_ler_condicionadores = True
-        else:
+        elif DataBank.get_words(self.cfg["REG_MOA_IN_EMERG"])[0] == 0 and self.avisado_em_eletrica==True:
+            self.aux=0
             self.avisado_em_eletrica = False
-            ug.deve_ler_condicionadores = False
-            self.deve_ler_condicionadores = False
+            for ug in self.ugs:
+                ug.parada_por_painel = False
+                ug.deve_ler_condicionadores = False
 
+        if DataBank.get_words(self.cfg["REG_MOA_IN_EMERG_UG1"])[0] == 1:
+            self.ug1.parada_por_painel = True
+            self.ug1.deve_ler_condicionadores = True
+        elif DataBank.get_words(self.cfg["REG_MOA_IN_EMERG_UG2"])[0] == 1:
+            self.ug2.parada_por_painel = True
+            self.ug2.deve_ler_condicionadores = True
+        elif DataBank.get_words(self.cfg["REG_MOA_IN_EMERG_UG3"])[0] == 1:
+            self.ug3.parada_por_painel = True
+            self.ug3.deve_ler_condicionadores = True
+        else:
+            for ug in self.ugs:
+                ug.parada_por_painel = False
+                ug.deve_ler_condicionadores = False
+        
         if DataBank.get_words(self.cfg["REG_MOA_IN_HABILITA_AUTO"])[0] == 1:
             DataBank.set_words(self.cfg["REG_MOA_IN_HABILITA_AUTO"], [0])
             DataBank.set_words(self.cfg["REG_MOA_IN_DESABILITA_AUTO"], [0])
@@ -488,6 +516,17 @@ class Usina:
             DataBank.set_words(self.cfg["REG_MOA_IN_DESABILITA_AUTO"], [0])
             self.modo_autonomo = 0
             self.entrar_em_modo_manual()
+        
+        # As condições a seguir são utilizadas apenas para o simulador:
+        if self.ug1.condic_ativos_sim_ug1.valor == 1:
+            self.ug1.deve_ler_condicionadores = True
+        elif self.ug2.condic_ativos_sim_ug2.valor == 1:
+            self.ug2.deve_ler_condicionadores = True
+        elif self.ug3.condic_ativos_sim_ug3.valor == 1:
+            self.ug3.deve_ler_condicionadores = True
+        else:
+            for ug in self.ugs:
+                ug.deve_ler_condicionadores = False
 
         self.heartbeat()
 
@@ -529,7 +568,7 @@ class Usina:
 
     def normalizar_emergencia(self):
 
-        logger.info("Normalizando (e verificaçẽos)")
+        logger.debug("Normalizando (e verificaçẽos)")
 
         logger.debug("Ultima tentativa: {}. Tensão na linha: RS {:2.1f}kV ST{:2.1f}kV TR{:2.1f}kV.".format(
                 self.ts_ultima_tesntativa_de_normalizacao,
@@ -546,10 +585,10 @@ class Usina:
         elif (self.deve_tentar_normalizar and (datetime.now() - self.ts_ultima_tesntativa_de_normalizacao).seconds >= 60 * self.tentativas_de_normalizar):
             self.tentativas_de_normalizar += 1
             self.ts_ultima_tesntativa_de_normalizacao = datetime.now()
-            logger.info("Normalizando a Usina")
+            logger.info("Normalizando Usina")
             self.con.normalizar_emergencia()
             self.clp_emergencia_acionada = 0
-            logger.info("Normalizando no banco")
+            logger.info("Normalizando Banco de Dados")
             self.db.update_remove_emergencia()
             self.db_emergencia_acionada = 0
             return True
@@ -558,7 +597,6 @@ class Usina:
             return False
 
     def heartbeat(self):
-
         ts = datetime.now().timestamp()
         try:
             logger.debug("Inserting in db")
@@ -619,16 +657,34 @@ class Usina:
         DataBank.set_words(0, [ano, mes, dia, hor, mnt, seg, mil])
         DataBank.set_words(self.cfg["REG_MOA_OUT_STATUS"], [self.state_moa])
         DataBank.set_words(self.cfg["REG_MOA_OUT_MODE"], [self.modo_autonomo])
-
-        if self.modo_autonomo:
+        
+        if self.modo_autonomo == 1:
             DataBank.set_words(self.cfg["REG_MOA_OUT_EMERG"], [1 if self.clp_emergencia_acionada else 0],)
             DataBank.set_words(self.cfg["REG_MOA_OUT_TARGET_LEVEL"], [int((self.cfg["nv_alvo"] - 400) * 1000)])
-            DataBank.set_words(self.cfg["REG_MOA_OUT_SETPOINT"], [self.ug1.setpoint + self.ug2.setpoint + self.ug3.setpoint], )
-            DataBank.set_words(self.cfg["REG_MOA_OUT_BLOCK_UG1"], [1 if self.leituras.condic_ativos_sim else 0], )
-            DataBank.set_words(self.cfg["REG_MOA_OUT_BLOCK_UG2"], [1 if self.leituras.condic_ativos_sim else 0], )
-            DataBank.set_words(self.cfg["REG_MOA_OUT_BLOCK_UG3"],[1 if self.leituras.condic_ativos_sim else 0], )
+            DataBank.set_words(self.cfg["REG_MOA_OUT_SETPOINT"], [int(self.ug1.setpoint + self.ug2.setpoint + self.ug3.setpoint)], )
+            if self.avisado_em_eletrica==True and self.aux==1:
+                DataBank.set_words(self.cfg["REG_MOA_OUT_BLOCK_UG1"], [1],)
+                DataBank.set_words(self.cfg["REG_MOA_OUT_BLOCK_UG2"], [1],)
+                DataBank.set_words(self.cfg["REG_MOA_OUT_BLOCK_UG3"], [1],)
+            elif self.avisado_em_eletrica==False and self.aux==0:
+                DataBank.set_words(self.cfg["REG_MOA_OUT_BLOCK_UG1"], [0],)
+                DataBank.set_words(self.cfg["REG_MOA_OUT_BLOCK_UG2"], [0],)
+                DataBank.set_words(self.cfg["REG_MOA_OUT_BLOCK_UG3"], [0],)
 
-        else:
+            if DataBank.get_words(self.cfg["REG_MOA_OUT_BLOCK_UG1"])[0] == 1:
+                DataBank.set_words(self.cfg["REG_MOA_OUT_BLOCK_UG1"], [1])
+            elif DataBank.get_words(self.cfg["REG_MOA_OUT_BLOCK_UG1"])[0] == 0:
+                DataBank.set_words(self.cfg["REG_MOA_OUT_BLOCK_UG1"], [0])
+            if DataBank.get_words(self.cfg["REG_MOA_OUT_BLOCK_UG2"])[0] == 1:
+                DataBank.set_words(self.cfg["REG_MOA_OUT_BLOCK_UG2"], [1])
+            elif DataBank.get_words(self.cfg["REG_MOA_OUT_BLOCK_UG2"])[0] == 0:
+                DataBank.set_words(self.cfg["REG_MOA_OUT_BLOCK_UG2"], [0])
+            if DataBank.get_words(self.cfg["REG_MOA_OUT_BLOCK_UG3"])[0] == 1:
+                DataBank.set_words(self.cfg["REG_MOA_OUT_BLOCK_UG3"], [1])
+            elif DataBank.get_words(self.cfg["REG_MOA_OUT_BLOCK_UG3"])[0] == 0:
+                DataBank.set_words(self.cfg["REG_MOA_OUT_BLOCK_UG3"], [0])
+
+        elif self.modo_autonomo == 0:
             DataBank.set_words(self.cfg["REG_MOA_OUT_EMERG"], [0])
             DataBank.set_words(self.cfg["REG_MOA_OUT_TARGET_LEVEL"], [0])
             DataBank.set_words(self.cfg["REG_MOA_OUT_SETPOINT"], [0])
@@ -695,7 +751,8 @@ class Usina:
                 segundos_adiantados = (agendamento[1] - agora).seconds
                 segundos_passados = 0
 
-            if segundos_passados > 60:
+            
+            if segundos_passados > 240:
                 logger.warning("Agendamento #{} Atrasado! ({}).".format(agendamento[0], agendamento[3]))
                 self.agendamentos_atrasados += 1
 
@@ -1074,7 +1131,70 @@ class Usina:
     def entrar_em_modo_manual(self):
         self.modo_autonomo = 0
         self.db.update_modo_manual()
+    
+    def leituras_por_hora(self):
 
+        """
+        self.leitura_EntradasDigitais_MXI_SA_QLCF_Disj52EFechado = LeituraModbusCoil( "EntradasDigitais_MXI_SA_QLCF_Disj52EFechado", self.clp, REG_SA_EntradasDigitais_MXI_SA_QLCF_Disj52EFechado)
+        if self.leitura_EntradasDigitais_MXI_SA_QLCF_Disj52EFechado.valor != 0:
+            logger.warning("O Disjuntor do Gerador Diesel de Emergência QLCF foi fechado.")
+            voip.Disj_GDE_QLCF_Fechado = True
+            voip.enviar_voz_auxiliar()
+
+        self.leitura_EntradasDigitais_MXI_SA_QLCF_Disj52ETrip = LeituraModbusCoil( "EntradasDigitais_MXI_SA_QLCF_Disj52ETrip", self.clp, REG_SA_EntradasDigitais_MXI_SA_QLCF_Disj52ETrip)
+        if self.leitura_EntradasDigitais_MXI_SA_QLCF_Disj52ETrip.valor != 0:
+            logger.warning("O Disjuntor do Gerador Diesel de Emergência QLCF identificou um sinal de TRIP, favor verificar.")
+        
+        self.leitura_EntradasDigitais_MXI_SA_QLCF_TripDisjAgrup = LeituraModbusCoil( "EntradasDigitais_MXI_SA_QLCF_TripDisjAgrup", self.clp, REG_SA_EntradasDigitais_MXI_SA_QLCF_TripDisjAgrup)
+        if self.leitura_EntradasDigitais_MXI_SA_QLCF_TripDisjAgrup.valor != 0:
+            logger.warning("O sensor do Disjuntor de Agrupamento QLCF identificou um sinal de trip, favor verificar.")
+        
+        self.leitura_EntradasDigitais_MXI_SA_QCAP_Disj52EFechado = LeituraModbusCoil( "EntradasDigitais_MXI_SA_QCAP_Disj52EFechado", self.clp, REG_SA_EntradasDigitais_MXI_SA_QCAP_Disj52EFechado)
+        if self.leitura_EntradasDigitais_MXI_SA_QCAP_Disj52EFechado.valor != 0:
+            logger.warning("O sensor do Disjuntor GDE QCAP foi fechado.")
+
+        self.leitura_EntradasDigitais_MXI_SA_QCAP_SubtensaoBarraGeral = LeituraModbusCoil( "EntradasDigitais_MXI_SA_QCAP_SubtensaoBarraGeral", self.clp, REG_SA_EntradasDigitais_MXI_SA_QCAP_SubtensaoBarraGeral)
+        if self.leitura_EntradasDigitais_MXI_SA_QCAP_SubtensaoBarraGeral.valor != 0:
+            logger.warning("O sensor de Subtensão do Barramento Geral QCAP foi acionado, favor verificar.")
+
+        self.leitura_EntradasDigitais_MXI_SA_GMG_Alarme = LeituraModbusCoil( "EntradasDigitais_MXI_SA_GMG_Alarme", self.clp, REG_SA_EntradasDigitais_MXI_SA_GMG_Alarme)
+        if self.leitura_EntradasDigitais_MXI_SA_GMG_Alarme.valor != 0:
+            logger.warning("O alarme do Grupo Motor Gerador foi acionado, favor verificar.")
+
+        self.leitura_EntradasDigitais_MXI_SA_GMG_Trip = LeituraModbusCoil( "EntradasDigitais_MXI_SA_GMG_Trip", self.clp, REG_SA_EntradasDigitais_MXI_SA_GMG_Trip)
+        if self.leitura_EntradasDigitais_MXI_SA_GMG_Trip.valor != 0:
+            logger.warning("O sensor de TRIP do Grupo Motor Gerador foi acionado, favor verificar.")
+
+        self.leitura_EntradasDigitais_MXI_SA_GMG_Operacao = LeituraModbusCoil( "EntradasDigitais_MXI_SA_GMG_Operacao", self.clp, REG_SA_EntradasDigitais_MXI_SA_GMG_Operacao)
+        if self.leitura_EntradasDigitais_MXI_SA_GMG_Operacao.valor != 0:
+            logger.warning("O sensor de operação do Grupo Motor Gerador foi acionado, favor verificar.")
+
+        self.leitura_EntradasDigitais_MXI_SA_GMG_BaixoComb = LeituraModbusCoil( "EntradasDigitais_MXI_SA_GMG_BaixoComb", self.clp, REG_SA_EntradasDigitais_MXI_SA_GMG_BaixoComb)
+        if self.leitura_EntradasDigitais_MXI_SA_GMG_BaixoComb.valor != 0:
+            logger.warning("O sensor de de combustível do Grupo Motor Gerador, retornou que o nível está baixo, favor reabastercer o gerador.")
+        
+        self.leitura_RetornosDigitais_MXR_BbaDren1_FalhaAcion = LeituraModbusCoil( "RetornosDigitais_MXR_BbaDren1_FalhaAcion", self.clp, REG_SA_RetornosDigitais_MXR_BbaDren1_FalhaAcion)
+        if self.leitura_RetornosDigitais_MXR_BbaDren1_FalhaAcion.valor != 0:
+            logger.warning("O sensor da Bomba de Drenagem 1 identificou uma falha no acionamento, favor verificar.")
+
+        self.leitura_RetornosDigitais_MXR_BbaDren2_FalhaAcion = LeituraModbusCoil( "RetornosDigitais_MXR_BbaDren2_FalhaAcion", self.clp, REG_SA_RetornosDigitais_MXR_BbaDren2_FalhaAcion)
+        if self.leitura_RetornosDigitais_MXR_BbaDren2_FalhaAcion.valor != 0:
+            logger.warning("O sensor da Bomba de Drenagem 2 identificou uma falha no acionamento, favor verificar.")
+        
+        self.leitura_RetornosDigitais_MXR_BbaDren3_FalhaAcion = LeituraModbusCoil( "RetornosDigitais_MXR_BbaDren3_FalhaAcion", self.clp, REG_SA_RetornosDigitais_MXR_BbaDren3_FalhaAcion)
+        if self.leitura_RetornosDigitais_MXR_BbaDren3_FalhaAcion.valor != 0:
+            logger.warning("O sensor da Bomba de Drenagem 3 identificou uma falha no acionamento, favor verificar.")
+        
+        self.leitura_RetornosDigitais_MXR_SA_GMG_FalhaAcion = LeituraModbusCoil( "RetornosDigitais_MXR_SA_GMG_FalhaAcion", self.clp, REG_SA_RetornosDigitais_MXR_SA_GMG_FalhaAcion)
+        if self.leitura_RetornosDigitais_MXR_SA_GMG_FalhaAcion.valor != 0:
+            logger.warning("O sensor do Grupo Motor Gerador identificou uma falha no acionamento, favor verificar.")
+        
+        self.leitura_RetornosDigitais_MXR_FalhaComunSETDA = LeituraModbusCoil( "RetornosDigitais_MXR_FalhaComunSETDA", self.clp, REG_SA_RetornosDigitais_MXR_FalhaComunSETDA)
+        if self.leitura_RetornosDigitais_MXR_FalhaComunSETDA.valor != 0:
+            logger.warning("Houve uma falha de comunicação com o CLP da Subestação e o CLP da Tomada da Água, favor verificar")
+            voip.TDA_FalhaComum = True
+            voip.enviar_voz_auxiliar()
+        """
 
 def ping(host):
     """

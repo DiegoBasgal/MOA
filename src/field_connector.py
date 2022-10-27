@@ -86,7 +86,7 @@ class FieldConnector:
             return response
 
     def normalizar_emergencia(self):
-        logger.info("Reconehce, reset, fecha Dj52L")
+        logger.info("Reconhecendo alarmes, resetando usina e fechando Dj52L")
         logger.debug("Reconhece/Reset alarmes")
         self.ug1_clp.write_single_coil(REG_UG1_ComandosDigitais_MXW_ResetGeral, 1)
         self.ug2_clp.write_single_coil(REG_UG2_ComandosDigitais_MXW_ResetGeral, 1)
@@ -97,7 +97,6 @@ class FieldConnector:
         self.ug2_clp.write_single_coil(REG_UG2_ComandosDigitais_MXW_Cala_Sirene, 1)
         self.ug3_clp.write_single_coil(REG_UG3_ComandosDigitais_MXW_Cala_Sirene, 1)
         self.usn_clp.write_single_coil(REG_SA_ComandosDigitais_MXW_Cala_Sirene, 1)
-        sleep(5)
         logger.debug("Fecha Dj52L")
         self.fechaDj52L()
 

@@ -9,7 +9,7 @@ com mensagens enviadas a ele. Para utilizar este modo basta usar o main().
 
 "Server-less": A implementação permite que o bot envie mensagens aos
 destinatários mesmo que não esteja trodando continuamente, porém isto
-significa que o bot não atenderá a comandois recebidos no chat.
+significa que o bot não atenderá a comandos recebidos no chat.
 A principal maneira de se utilizar o modo server-less é através da
 função enviar_a_todos().
 
@@ -71,9 +71,7 @@ def start(update: Update, _: CallbackContext) -> None:
     name = "{}".format(update.message.from_user.full_name)
     logger.info("Chamada start de {} (Chat_id: {})".format(name, chat_id))
     if chat_id in config["chat_ids"]:
-        update.message.reply_text(
-            "Este Chat já esta adicionado a lista de destinatários"
-        )
+        update.message.reply_text("Este Chat já esta adicionado a lista de destinatários")
     else:
         config["chat_ids"].append(chat_id)
         salvar_config()
@@ -160,11 +158,7 @@ def threaded_enviar_a_todos(mensagem):
                 logger.error('Erro "{}" no chat "{}"'.format(e, chat_id))
                 config["chat_ids"].remove(chat_id)
                 salvar_config()
-                enviar_a_todos(
-                    'Erro "{}" no chat "{}"\n Chat_id {} excluido.'.format(
-                        e, chat_id, chat_id
-                    )
-                )
+                enviar_a_todos('Erro "{}" no chat "{}"\n Chat_id {} excluido.'.format(e, chat_id, chat_id))
                 sleep(5)
                 mandou = False
             except Exception as e:

@@ -41,14 +41,6 @@ class LeiturasUSN:
             op=4,
         )
 
-        self.condic_ativos_sim = LeituraModbus(
-            "REG_SA_RetrornosAnalogicos_AUX_Condicionadores",
-            self.clp_usina,
-            REG_SA_RetrornosAnalogicos_AUX_Condicionadores,
-            1,
-            op=4
-        )
-
         # essa forma de leitura de potencia ativa, deve ser utilizada apenas com o simulador
         self.potencia_ativa_kW = LeituraModbus(
             "REG_SA_RetornosAnalogicos_Medidor_potencia_kw_mp",
