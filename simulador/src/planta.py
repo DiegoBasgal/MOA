@@ -48,6 +48,7 @@ class Planta:
         self.USINA_NV_MINIMO_OPERACAO = 404.65
         self.USINA_TENSAO_MINIMA = 69000 * 0.95
         self.USINA_TENSAO_MAXIMA = 69000 * 1.05
+        self.aux=0
         self.aux1=0
         self.aux2=0
         self.aux3=0
@@ -85,9 +86,11 @@ class Planta:
         self.shared_dict["potencia_kw_mp"] = 0
         self.shared_dict["potencia_kw_mr"] = 0
         self.shared_dict["nv_jusante_grade"] = 0
+        self.shared_dict["trip_condic_usina"] = False
         self.shared_dict["trip_condic_ug1"] = False
         self.shared_dict["trip_condic_ug2"] = False
         self.shared_dict["trip_condic_ug3"] = False
+        self.shared_dict["reset_geral_condic"] = False
 
         volume = self.nv_montate_para_volume(self.shared_dict["nv_montante"])
         self.dj52L.abrir()
@@ -120,7 +123,6 @@ class Planta:
                         ug.tripar(1, "REG_USINA_EmergenciaLigar via modbus")
                     self.dj52L.tripar("REG_USINA_EmergenciaLigar via modbus")
                     
-
                 if (self.cust_data_bank.get_words(REG["REG_USINA_ResetAlarmes"])[0]== 1):
                     self.cust_data_bank.set_words(REG["REG_USINA_ResetAlarmes"], [0])
                     self.cust_data_bank.set_words(REG["REG_USINA_ReconheceAlarmes"], [0])
@@ -130,37 +132,56 @@ class Planta:
                         ug.reconhece_reset_ug()
                     self.dj52L.reconhece_reset_dj52L()
 
-
-                if self.shared_dict["trip_condic_ug1"]==True:
-                    self.cust_data_bank.set_words(REG["REG_USINA_AUX_Condicionadores"], [1])
-                    self.cust_data_bank.set_words(REG["REG_USINA_Emergencia_Condicionadores1"], [1])
-                    for ug in self.ugs:
-                        ug.tripar(1, "Condicionadores ativos!")
-                    self.dj52L.tripar("Condicionadores ativos!")
-                elif self.shared_dict["trip_condic_ug1"]==False:
-                    self.cust_data_bank.set_words(REG["REG_USINA_AUX_Condicionadores"], [0])
-                    self.cust_data_bank.set_words(REG["REG_USINA_Emergencia_Condicionadores1"], [0])
-
-                if self.shared_dict["trip_condic_ug2"]==True:
-                    self.cust_data_bank.set_words(REG["REG_USINA_AUX_Condicionadores"], [1])
-                    self.cust_data_bank.set_words(REG["REG_USINA_Emergencia_Condicionadores2"], [1])
-                    for ug in self.ugs:
-                        ug.tripar(1, "Condicionadores ativos!")
-                    self.dj52L.tripar("Condicionadores ativos!")
-                elif self.shared_dict["trip_condic_ug2"]==False:
-                    self.cust_data_bank.set_words(REG["REG_USINA_AUX_Condicionadores"], [0])
-                    self.cust_data_bank.set_words(REG["REG_USINA_Emergencia_Condicionadores2"], [0])
+                if self.shared_dict["trip_condic_usina"]==True and self.aux==0:
+                    self.aux = 1
+                    self.cust_data_bank.set_words(REG["REG_USINA_AUX_CondicionadoresE"], [int(1)])
+                    self.cust_data_bank.set_words(REG["REG_USINA_AUX_Condicionadores1"], [int(1)])
                 
-                if self.shared_dict["trip_condic_ug3"]==True:
-                    self.cust_data_bank.set_words(REG["REG_USINA_AUX_Condicionadores"], [1])
-                    self.cust_data_bank.set_words(REG["REG_USINA_Emergencia_Condicionadores3"], [1])
-                    for ug in self.ugs:
-                        ug.tripar(1, "Condicionadores ativos!")
-                    self.dj52L.tripar("Condicionadores ativos!")
-                elif self.shared_dict["trip_condic_ug3"]==False:
-                    self.cust_data_bank.set_words(REG["REG_USINA_AUX_Condicionadores"], [0])
-                    self.cust_data_bank.set_words(REG["REG_USINA_Emergencia_Condicionadores3"], [0])
+                elif self.shared_dict["trip_condic_usina"]==False and self.aux==1:
+                    self.aux = 0
+                    self.cust_data_bank.set_words(REG["REG_USINA_AUX_CondicionadoresE"], [int(0)])
+                    self.cust_data_bank.set_words(REG["REG_USINA_AUX_Condicionadores1"], [int(0)])
+
+                if self.shared_dict["trip_condic_ug1"]==True and self.aux1==0:
+                    self.aux1 = 1
+                    self.cust_data_bank.set_words(REG["REG_UG1_AUX_Condicionadores"], [int(1)])
+                    self.cust_data_bank.set_words(REG["REG_UG1_Emergencia_Condicionadores1"], [int(1)])
                 
+                elif self.shared_dict["trip_condic_ug1"]==False and self.aux1==1:
+                    self.aux1 = 0
+                    self.cust_data_bank.set_words(REG["REG_UG1_AUX_Condicionadores"], [int(0)])
+                    self.cust_data_bank.set_words(REG["REG_UG1_Emergencia_Condicionadores1"], [int(0)])
+
+                if self.shared_dict["trip_condic_ug2"]==True and self.aux2==0:
+                    self.aux2 = 1
+                    self.cust_data_bank.set_words(REG["REG_UG2_AUX_Condicionadores"], [int(1)])
+                    self.cust_data_bank.set_words(REG["REG_UG2_Emergencia_Condicionadores2"], [int(1)])
+                    
+                elif self.shared_dict["trip_condic_ug2"]==False and self.aux2==1:
+                    self.aux2 = 0
+                    self.cust_data_bank.set_words(REG["REG_UG2_AUX_Condicionadores"], [int(0)])
+                    self.cust_data_bank.set_words(REG["REG_UG2_Emergencia_Condicionadores2"], [int(0)])
+                
+                if self.shared_dict["trip_condic_ug3"]==True and self.aux3==0:
+                    self.aux3 = 1
+                    self.cust_data_bank.set_words(REG["REG_UG3_AUX_Condicionadores"], [int(1)])
+                    self.cust_data_bank.set_words(REG["REG_UG3_Emergencia_Condicionadores3"], [int(1)])
+                    
+                elif self.shared_dict["trip_condic_ug3"]==False and self.aux3==1:
+                    self.aux3 = 0
+                    self.cust_data_bank.set_words(REG["REG_UG3_AUX_Condicionadores"], [int(0)])
+                    self.cust_data_bank.set_words(REG["REG_UG3_Emergencia_Condicionadores3"], [int(0)])
+
+                if self.shared_dict["reset_geral_condic"]==True:
+                    self.cust_data_bank.set_words(REG["REG_USINA_AUX_CondicionadoresE"], [int(0)])
+                    self.cust_data_bank.set_words(REG["REG_USINA_AUX_Condicionadores1"], [int(0)])
+                    self.cust_data_bank.set_words(REG["REG_UG1_AUX_Condicionadores"], [int(0)])
+                    self.cust_data_bank.set_words(REG["REG_UG1_Emergencia_Condicionadores1"], [int(0)])
+                    self.cust_data_bank.set_words(REG["REG_UG2_AUX_Condicionadores"], [int(0)])
+                    self.cust_data_bank.set_words(REG["REG_UG2_Emergencia_Condicionadores2"], [int(0)])
+                    self.cust_data_bank.set_words(REG["REG_UG3_AUX_Condicionadores"], [int(0)])
+                    self.cust_data_bank.set_words(REG["REG_UG3_Emergencia_Condicionadores3"], [int(0)])
+
 
                 for ug in self.ugs:
                     self.shared_dict["setpoint_kw_ug{}".format(ug.id)] = self.cust_data_bank.get_words(REG["REG_UG{}_CtrlPotencia_Alvo".format(ug.id)])[0]

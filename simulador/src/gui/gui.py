@@ -25,6 +25,7 @@ class Window(QMainWindow, Ui_Form):
         self.aux1=0
         self.aux2=0 
         self.aux3=0
+        self.shared_dict["trip_condic_usina"]=False
         self.shared_dict["trip_condic_ug1"]=False
         self.shared_dict["trip_condic_ug2"]=False
         self.shared_dict["trip_condic_ug3"]=False
@@ -40,6 +41,8 @@ class Window(QMainWindow, Ui_Form):
             self.lcdNumber_potencia_se.display("{:1.3f}".format(self.shared_dict["potencia_kw_se"] / 1000))
             self.lcdNumber_MP.display("{:1.3f}".format(self.shared_dict["potencia_kw_mp"] / 1000))
             self.lcdNumber_MR.display("{:1.3f}".format(self.shared_dict["potencia_kw_mr"] / 1000))
+
+            self.checkBox_sinal_trip_condic_usina.setChecked(self.shared_dict["trip_condic_usina"])
 
             self.checkBox_52L_aberto.setChecked(self.shared_dict["dj52L_aberto"])
             self.checkBox_52L_fechado.setChecked(self.shared_dict["dj52L_fechado"])
@@ -152,11 +155,28 @@ class Window(QMainWindow, Ui_Form):
 
     def mudar_q_afluente(self):
         self.shared_dict["q_alfuente"] = (10 ** (self.horizontalSlider_q_afluente.value() / 75) - 1) * 2
+    
+    def set_trip_condic_usina(self):
+        self.shared_dict["trip_condic_usina"] = True
+
+    def reset_trip_condic_usina(self):
+        self.shared_dict["trip_condic_usina"] = False
+    
+    def reset_geral_condic_usina(self):
+        self.shared_dict["reset_geral_condic"] = True
+        self.shared_dict["trip_condic_usina"] = False
+        self.shared_dict["trip_condic_ug1"] = False
+        self.shared_dict["trip_condic_ug2"] = False
+        self.shared_dict["trip_condic_ug3"] = False
+        QTimer.singleShot(1000, self.aux_reset_geral_condic_usina)
+    
+    def aux_reset_geral_condic_usina(self):
+        self.shared_dict["reset_geral_condic"] = False
 
     def pulse_trip_linha(self):
         self.set_trip_linha()
         QTimer.singleShot(2000, self.reset_trip_linha)
-
+    
     def set_trip_linha(self):
         self.shared_dict["tensao_na_linha"] = 0
 

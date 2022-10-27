@@ -1975,14 +1975,22 @@ REG = {
     
     "REG_USINA_potencia_kw_mp": 14900 - 1 + 10000,
     "REG_USINA_potencia_kw_mr": 14901 - 1 + 10000,
-    "REG_USINA_AUX_Condicionadores": 14903 - 1 + 10000,
-    "REG_USINA_Emergencia_Condicionadores1": 14904 - 1 + 10000,
-    "REG_USINA_Emergencia_Condicionadores2": 14905 - 1 + 10000,
-    "REG_USINA_Emergencia_Condicionadores3": 14906 - 1 + 10000,
+
     "REG_UG1_Etapa_AUX": 14902 - 1 + 20000,
-    "REG_UG1_Pressao_CX_Espiral": 14903 - 1 + 20000,
+    "REG_UG1_Pressao_CX_Espiral": 14904 - 1 + 20000,
+    "REG_UG1_AUX_Condicionadores": 14903 - 1 + 20000,
+    "REG_UG1_Emergencia_Condicionadores1": 14905 - 1 + 20000,
+
     "REG_UG2_Etapa_AUX": 14902 - 1 + 30000,
-    "REG_UG2_Pressao_CX_Espiral": 14903 - 1 + 30000,
+    "REG_UG2_Pressao_CX_Espiral": 14904 - 1 + 30000,
+    "REG_UG2_AUX_Condicionadores": 14903 - 1 + 30000,
+    "REG_UG2_Emergencia_Condicionadores2": 14905 - 1 + 30000,
+
     "REG_UG3_Etapa_AUX": 14902 - 1 + 40000,
-    "REG_UG3_Pressao_CX_Espiral": 14903 - 1 + 40000,
+    "REG_UG3_Pressao_CX_Espiral": 14904 - 1 + 40000,
+    "REG_UG3_AUX_Condicionadores": 14903 - 1 + 40000,
+    "REG_UG3_Emergencia_Condicionadores3": 14905 - 1 + 40000,
+    
+    "REG_USINA_AUX_CondicionadoresE": 14906 - 1 + 10000,
+    "REG_USINA_AUX_Condicionadores1": 14907 - 1 + 10000, 
 }
