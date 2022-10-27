@@ -3,23 +3,23 @@ operador_autonomo_sm.py
 
 Implementacao teste de uma versao do moa utilizando SM
 """
-from datetime import datetime, timezone
-import logging
-import logging.handlers as handlers
+
 import os
 import sys
 import time
-from sys import stdout, stderr
-from time import sleep
-import traceback
 import json
-from pyModbusTCP.server import DataBank, ModbusServer
-from src.UnidadeDeGeracao import StateManual
-
-import src.database_connector as database_connector
+import logging
+import threading
+import traceback
+import logging.handlers as handlers
 import src.abstracao_usina as abstracao_usina
+import src.database_connector as database_connector
+from time import sleep
 from src.codes import *
-
+from sys import stdout, stderr
+from datetime import datetime, timezone
+from src.UnidadeDeGeracao import StateManual
+from pyModbusTCP.server import DataBank, ModbusServer
 # Set-up logging
 from src.mensageiro.mensageiro_log_handler import MensageiroHandler
 
@@ -78,7 +78,6 @@ class StateMachine:
             self.em_falha_critica = True
             self.state = FalhaCritica()
 
-
 class State:
     def __init__(self, *args, **kwargs):
         self.args = args
@@ -136,6 +135,9 @@ class ValoresInternosAtualizados(State):
         super().__init__(*args, **kwargs)
         self.usina = instancia_usina
         DataBank.set_words(self.usina.cfg["REG_PAINEL_LIDO"], [1])
+        self.deve_ler_condicionadores=False
+        self.habilitar_emerg_condic_e=False
+        self.habilitar_emerg_condic_c=False
 
     def run(self):
         """
@@ -147,12 +149,37 @@ class ValoresInternosAtualizados(State):
         with open(os.path.join(os.path.dirname(__file__), "config.json"), "w") as file:
             json.dump(self.usina.cfg, file, indent=4)
 
-        if self.usina.avisado_em_eletrica:
+        for condicionador_essencial in self.usina.condicionadores_essenciais:
+            if condicionador_essencial.ativo:
+                logger.debug("Foram detectados condicionadores essenciais ativos, iniciando leitura de condicionadores restantes...")
+                self.deve_ler_condicionadores=True
+
+        if self.usina.avisado_em_eletrica or self.deve_ler_condicionadores==True:
+            for condicionador_essencial in self.usina.condicionadores_essenciais:
+                if condicionador_essencial.ativo:
+                    if condicionador_essencial.gravidade >= DEVE_INDISPONIBILIZAR:
+                        logger.debug("Condicionador essencial com gravidade de INDISPONIBILIZAÇÃO detectado!")
+                        self.habilitar_emerg_condic_e=True
+                    else:
+                        self.habilitar_emerg_condic_e=False
+                else:
+                    logger.debug("Nenhum condicionador essencial ativo.")
+                    self.habilitar_emerg_condic_e=False
+            
             for condicionador in self.usina.condicionadores:
-                if (condicionador.ativo and condicionador.gravidade >= DEVE_INDISPONIBILIZAR):
-                    logger.info("Comando recebido: habilitando modo de emergencia.")
-                    sleep(2)
-                    return Emergencia(self.usina)
+                if condicionador.ativo:
+                    if condicionador.gravidade >= DEVE_INDISPONIBILIZAR:
+                        logger.debug("Condicionador comum com gravidade de INDISPONIBILIZAÇÃO detectado!")
+                        self.habilitar_emerg_condic_c=True
+                    else:
+                        self.habilitar_emerg_condic_c=False
+                else:
+                    logger.debug("Nenhum condicionador comum ativo.")
+                    self.habilitar_emerg_condic_c=False
+            
+            if self.habilitar_emerg_condic_e or self.habilitar_emerg_condic_c:
+                logger.info("Foram detectados condicionadores ativos com gravidade alta! Acionando estado de emergência. ")
+                return Emergencia(self.usina)
 
         if self.usina.clp_emergencia_acionada:
             logger.info("Comando recebido: habilitando modo de emergencia.")
@@ -233,15 +260,22 @@ class Emergencia(State):
             deve_indisponibilizar = False
             deve_normalizar = False
             condicionadores_ativos = []
-            for condicionador in self.usina.condicionadores:
-                if condicionador.ativo:
-                    if condicionador.gravidade >= DEVE_INDISPONIBILIZAR:
-                        condicionadores_ativos.append(condicionador)
-                        deve_indisponibilizar = True
+            
+            for condicionador_essencial in self.usina.condicionadores_essenciais:
+                if condicionador_essencial.ativo and condicionador_essencial.gravidade == DEVE_INDISPONIBILIZAR:
+                    condicionadores_ativos.append(condicionador_essencial)
+                    deve_indisponibilizar = True
+                elif condicionador_essencial.gravidade == DEVE_NORMALIZAR:
+                    condicionadores_ativos.append(condicionador_essencial)
+                    deve_normalizar = True
 
-                    if condicionador.gravidade == DEVE_NORMALIZAR:
-                        condicionadores_ativos.append(condicionador)
-                        deve_normalizar = True
+            for condicionador in self.usina.condicionadores:
+                if condicionador.ativo and condicionador.gravidade == DEVE_INDISPONIBILIZAR:
+                    condicionadores_ativos.append(condicionador)
+                    deve_indisponibilizar=True
+                elif condicionador.gravidade == DEVE_NORMALIZAR:
+                    condicionadores_ativos.append(condicionador)
+                    deve_indisponibilizar=False
 
             if (self.usina.clp_emergencia_acionada or deve_normalizar or deve_indisponibilizar):
                 try:
@@ -374,18 +408,30 @@ class ControleRealizado(State):
 
     def run(self):
         logger.debug("Escrevendo valores")
-        for ug in self.usina.ugs:
-            ug.step()
         self.usina.escrever_valores()
         logger.debug("HB")
         self.usina.heartbeat()
         return Pronto(self.usina)
 
 
+def leitura_temporizada(delay):
+    proxima_leitura = time.time() + delay
+
+    while True:
+        time.sleep(max(0, proxima_leitura - time.time()))
+        try:
+            print("Entrei")
+            usina.leituras_por_hora()
+        except Exception:
+            logger.debug("Houve um problema ao executar a leitura por hora")
+
+        proxima_leitura += (time.time() - proxima_leitura) // delay * delay + delay
+
+
 if __name__ == "__main__":
     # A escala de tempo é utilizada para acelerar as simulações do sistema
     # Utilizar 1 para testes sérios e 120 no máximo para testes simples
-    ESCALA_DE_TEMPO = 3
+    ESCALA_DE_TEMPO = 2
     if len(sys.argv) > 1:
         ESCALA_DE_TEMPO = int(sys.argv[1])
 
@@ -396,6 +442,9 @@ if __name__ == "__main__":
 
     prox_estado = 0
     usina = None
+
+    threading.Thread(target=lambda: leitura_temporizada(15)).start()
+
     while prox_estado == 0:
         n_tentativa += 1
         if n_tentativa > 2:
