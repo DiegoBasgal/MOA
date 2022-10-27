@@ -168,6 +168,7 @@ class Window(QMainWindow, Ui_Form):
         self.shared_dict["trip_condic_ug1"] = False
         self.shared_dict["trip_condic_ug2"] = False
         self.shared_dict["trip_condic_ug3"] = False
+        
         QTimer.singleShot(1000, self.aux_reset_geral_condic_usina)
     
     def aux_reset_geral_condic_usina(self):
