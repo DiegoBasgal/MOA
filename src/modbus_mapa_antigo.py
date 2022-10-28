@@ -1695,6 +1695,3 @@ REG_SA_RetornosDigitais_MXR_BbaDren2_FalhaAcion = 20010 # antigo -> 169  # Op02 
 REG_SA_RetornosDigitais_MXR_BbaDren3_FalhaAcion = 20011 # antigo -> 170  # Op02 (Read Input Status - 1x)
 REG_SA_RetornosDigitais_MXR_SA_GMG_FalhaAcion = 20012 # antigo -> 175  # Op02 (Read Input Status - 1x)
 REG_SA_RetornosDigitais_MXR_FalhaComunSETDA = 20013 # antigo -> 177  # Op02 (Read Input Status - 1x)
-
-
-

@@ -77,7 +77,6 @@ class UnidadeDeGeracao:
         self.aux_tempo_sincronizada = None
         self.deve_ler_condicionadores = False
         self.codigo_state = MOA_UNIDADE_RESTRITA
-        self.parada_por_painel = False
 
     def debug_set_etapa_atual(self, var):
         self.__etapa_atual = var
@@ -672,9 +671,6 @@ class StateDisponivel(State):
         for condicionador_essencial in self.parent_ug.condicionadores_essenciais:
             if condicionador_essencial.ativo:
                 self.parent_ug.deve_ler_condicionadores = True
-        
-        if self.parent_ug.parada_por_painel:
-            deve_indisponibilizar = True
 
         if self.parent_ug.deve_ler_condicionadores:
             for condicionador_essencial in self.parent_ug.condicionadores_essenciais:

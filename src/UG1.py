@@ -1,12 +1,8 @@
-import json
-import os
-from unittest.mock import MagicMock
-from src.Condicionadores import *
 from src.Leituras import *
 from src.LeiturasUSN import *
+from src.Condicionadores import *
 from src.UnidadeDeGeracao import *
-from pyModbusTCP.server import DataBank, ModbusServer
-from src.mensageiro import voip
+from pyModbusTCP.server import DataBank
 
 class UnidadeDeGeracao1(UnidadeDeGeracao):
     def __init__(self, id, cfg=None, leituras_usina=None):
@@ -17,6 +13,11 @@ class UnidadeDeGeracao1(UnidadeDeGeracao):
         else:
             self.cfg = cfg
             self.leituras_usina = leituras_usina
+        
+        self.__last_EtapaAtual = 0
+        self.TDA_FalhaComum = False
+        self.avisou_emerg_voip = False
+        self.enviar_trip_eletrico = False
 
         self.setpoint_minimo = self.cfg["pot_minima"]
         self.setpoint_maximo = self.cfg["pot_maxima_ug{}".format(self.id)]
@@ -31,7 +32,6 @@ class UnidadeDeGeracao1(UnidadeDeGeracao):
             auto_open=True,
             auto_close=True,
         )
-
         self.clp_sa_ip = self.cfg["USN_slave_ip"]
         self.clp_sa_port = self.cfg["USN_slave_porta"]
         self.clp_sa = ModbusClient(
@@ -42,18 +42,12 @@ class UnidadeDeGeracao1(UnidadeDeGeracao):
             auto_open=True,
             auto_close=True,
         )
-
-        self.__last_EtapaAtual = 0
-        self.enviar_trip_eletrico = False
-        self.avisou_emerg_voip = False
-
         self.leitura_potencia = LeituraModbus(
             "ug{}_Gerador_PotenciaAtivaMedia".format(self.id),
             self.clp,
             REG_UG1_RetornosAnalogicos_MWR_PM_710_Potencia_Ativa,
             op=4,
         )
-
         self.leitura_horimetro_hora = LeituraModbus(
             "ug{} RetornosAnalogicos_MWR_Horimetro_Gerador".format(self.id),
             self.clp,
@@ -81,12 +75,10 @@ class UnidadeDeGeracao1(UnidadeDeGeracao):
             1,
             op=4
         )
-
         self.condic_ativos_sim_ug1 = LeituraModbus("REG_UG1_RetrornosAnalogicos_AUX_Condicionadores",
             self.clp,
             REG_UG1_RetrornosAnalogicos_AUX_Condicionadores,
         )
-
         """
         C1 = LeituraModbusCoil(
             descr="MXR_PartindoEmAuto",
@@ -752,13 +744,13 @@ class UnidadeDeGeracao1(UnidadeDeGeracao):
     def interstep(self) -> None:
         if (not self.avisou_emerg_voip) and (self.condicionador_caixa_espiral_ug.valor > 0.1):
             self.avisou_emerg_voip = True
-            voip.enviar_voz_emergencia()
             
         elif self.condicionador_caixa_espiral_ug.valor < 0.05:
             self.avisou_emerg_voip = False
 
-    def leituras_por_hora(self) -> None:
-        
+    def leituras_por_hora(self):
+        print("Executando leitura UG1")
+        """
         self.leitura_EntradasDigitais_MXI_FreioPastilhaGasta = LeituraModbusCoil( "EntradasDigitais_MXI_FreioPastilhaGasta", self.clp, REG_UG1_EntradasDigitais_MXI_FreioPastilhaGasta )
         if self.leitura_EntradasDigitais_MXI_FreioPastilhaGasta.valor != 0:
             self.logger.warning("[UG{}] O sensor de Freio da UG retornou que a Pastilha está gasta, favor considerar troca.".format(self.id))
@@ -786,9 +778,13 @@ class UnidadeDeGeracao1(UnidadeDeGeracao):
         self.leitura_EntradasDigitais_MXI_TripPartRes = LeituraModbusCoil( "EntradasDigitais_MXI_TripPartRes", self.clp, REG_UG1_EntradasDigitais_MXI_TripPartRes )
         if self.leitura_EntradasDigitais_MXI_TripPartRes.valor != 0:
             self.logger.warning("[UG{}] O sensor TripPartRes retornou valor 1.".format(self.id))
-
+        """
         self.leitura_RetornosDigitais_MXR_FalhaComunG1TDA = LeituraModbusCoil( "RetornosDigitais_MXR_FalhaComunG1TDA", self.clp, REG_UG1_RetornosDigitais_MXR_FalhaComunG1TDA)
-        if self.leitura_RetornosDigitais_MXR_FalhaComunG1TDA.valor != 0:
+        if self.leitura_RetornosDigitais_MXR_FalhaComunG1TDA.valor == 1 and self.TDA_FalhaComum==False:
             self.logger.warning("[UG{}] Houve uma falha de comunicação com o CLP da UG com o CLP da Tomada da Água, favor verificar".format(self.id))
-            voip.TDA_FalhaComum = True
-            voip.enviar_voz_auxiliar()
+            self.TDA_FalhaComum = True
+            return True
+        elif self.leitura_RetornosDigitais_MXR_FalhaComunG1TDA.valor == 0 and self.TDA_FalhaComum==True:
+            self.TDA_FalhaComum = False
+        
+        return False
