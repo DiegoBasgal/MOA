@@ -11,7 +11,8 @@ Acesso feito com as credênciais do Henrique.
 import os
 import json
 import logging
-import datetime
+from sys import stdout
+from datetime import datetime
 from urllib.request import Request, urlopen
 
 # Inicializando o logger principal
@@ -35,7 +36,6 @@ lista_de_contatos_padrao = [
     #["Alex", "41996319885"],
     #["Escritorio", "41996570004"],
 ]
-
 
 def carrega_contatos():
     phonebook = []
@@ -154,6 +154,19 @@ def enviar_voz_teste():
 
     access_token = get_token()
 
+    if voz_habilitado:
+        logger.debug("Enviando Voz Emergencia")
+
+        # Se a lista de conta não for fornecida, usa-se a lista padrão.
+        if lista_de_contatos is None:
+            try:
+                lista_de_contatos = carrega_contatos()
+                if len(lista_de_contatos) < 1:
+                    raise ValueError("Lista de contatos com problema")
+            except Exception as e:
+                logger.exception(e)
+                lista_de_contatos = lista_de_contatos_padrao
+
     if TDA_FalhaComum or Disj_GDE_QLCF_Fechado:
         for contato in lista_de_contatos_padrao:
             data = {
@@ -173,13 +186,20 @@ def enviar_voz_teste():
             data = str(data).encode()
             request = Request("https://api.nvoip.com.br/v2/torpedo/voice?napikey={}".format(napikey), data=data, headers=headers)
 
-            response_body = urlopen(request).read()
+            try:
+                response_body = urlopen(request).read()
+            except Exception as e:
+                logger.debug("Exception NVOIP: {} ".format(e.read()))
+            else:
+                logger.debug("response_body: {} ".format(response_body))
 
-def enviar_voz_auxiliar():
+def enviar_voz_auxiliar(lista_de_contatos=None):
 
     access_token = get_token()
 
-    if Disj_GDE_QLCF_Fechado:
+    if voz_habilitado:
+        logger.debug("Enviando Voz Emergencia")
+
         if lista_de_contatos is None:
             try:
                 lista_de_contatos = carrega_contatos()
@@ -189,6 +209,7 @@ def enviar_voz_auxiliar():
                 logger.exception(e)
                 lista_de_contatos = lista_de_contatos_padrao
 
+    if Disj_GDE_QLCF_Fechado:
         # Para cada contato na lista de contatos deve-se fazer uma chamada a web api
         for contato in lista_de_contatos:
             logger.info("Disparando torpedo de voz para {} ({})".format(contato[0], contato[1]))
@@ -240,7 +261,12 @@ def enviar_voz_auxiliar():
             data = str(data).encode()
             request = Request("https://api.nvoip.com.br/v2/torpedo/voice?napikey={}".format(napikey), data=data, headers=headers)
 
-            response_body = urlopen(request).read()
+            try:
+                response_body = urlopen(request).read()
+            except Exception as e:
+                logger.debug("Exception NVOIP: {} ".format(e.read()))
+            else:
+                logger.debug("response_body: {} ".format(response_body))
 
 if __name__ == "__main__":
-   enviar_voz_teste()
+   enviar_voz_auxiliar()
