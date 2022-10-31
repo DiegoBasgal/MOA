@@ -3,22 +3,25 @@ operador_autonomo_sm.py
 
 Implementacao teste de uma versao do moa utilizando SM
 """
-from datetime import datetime
-import logging
-import logging.handlers as handlers
 import os
 import sys
-import time
-from sys import stdout, stderr
-from time import sleep
-import traceback
 import json
-from pyModbusTCP.server import DataBank, ModbusServer
-from src.UnidadeDeGeracao import StateManual
-
-import src.database_connector as database_connector
+import time
+import logging
+import threading
+import traceback
+import logging.handlers as handlers
 import src.abstracao_usina as abstracao_usina
+import src.database_connector as database_connector
+
+from time import sleep
 from src.codes import *
+from datetime import datetime
+from sys import stdout, stderr
+from src.mensageiro import voip
+from src.UnidadeDeGeracao import StateManual
+from pyModbusTCP.server import DataBank, ModbusServer
+
 
 # Set-up logging
 from src.mensageiro.mensageiro_log_handler import MensageiroHandler
@@ -381,6 +384,37 @@ class ControleRealizado(State):
         return Pronto(self.usina)
 
 
+def leitura_temporizada():
+    delay = 1800
+    proxima_leitura = time.time() + delay
+    while True:
+        time.sleep(max(0, proxima_leitura - time.time()))
+        try:
+            if usina.leituras_por_hora():
+                acionar_voip()
+                
+            for ug in usina.ugs:
+                if ug.leituras_por_hora():
+                    acionar_voip()
+
+        except Exception:
+            logger.debug("Houve um problema ao executar a leitura por hora")
+
+        proxima_leitura += (time.time() - proxima_leitura) // delay * delay + delay
+
+def acionar_voip():
+    try:
+        for ug in usina.ugs:
+            if ug.avisou_emerg_voip:
+                voip.enviar_voz_emergencia()
+
+        if usina.avisado_em_eletrica:
+            voip.enviar_voz_emergencia()
+
+    except Exception:
+        logger.warning("Houve um problema ao ligar por Voip")
+
+
 if __name__ == "__main__":
     # A escala de tempo é utilizada para acelerar as simulações do sistema
     # Utilizar 1 para testes sérios e 120 no máximo para testes simples
@@ -462,6 +496,8 @@ if __name__ == "__main__":
                 sleep(timeout)
 
     logger.info("Inicialização completa, executando o MOA \U0001F916")
+
+    threading.Thread(target=lambda: leitura_temporizada()).start()
 
     sm = StateMachine(initial_state=prox_estado(usina))
     while True:

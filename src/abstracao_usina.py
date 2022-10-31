@@ -1212,6 +1212,8 @@ class Usina:
         self.modo_autonomo = 0
         self.db.update_modo_manual()
 
+    def leituras_por_hora(self):
+        return False
 
 def ping(host):
     """
