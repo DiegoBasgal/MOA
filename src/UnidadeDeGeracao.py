@@ -578,6 +578,7 @@ class StateIndisponivel(State):
             self.parent_ug.parar()
         return self
 
+
 class StateRestrito(State):
     """
     Implementação do estado StateRestrito

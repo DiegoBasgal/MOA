@@ -32,7 +32,6 @@ class Usina:
         else:
             from src.LeiturasUSN import LeiturasUSN
             from src.Leituras import LeituraModbus
-            from src.Leituras import LeituraModbusBit
             self.leituras = LeiturasUSN(self.cfg)
 
         self.state_moa = 1
@@ -92,10 +91,10 @@ class Usina:
         #Lista de condicionadores essenciais que devem ser lidos a todo momento
 #-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------#
         #alterado de LeituraModbusCoil para LeituraModbus apenas para o simulador
-        self.leitura_EntradasDigitais_MXI_SA_SEL787_Trip = LeituraModbusCoil("EntradasDigitais_MXI_SA_SEL787_Trip", self.clp, REG_SA_EntradasDigitais_MXI_SA_SEL787_Trip, )
+        self.leitura_EntradasDigitais_MXI_SA_SEL787_Trip = LeituraModbus("EntradasDigitais_MXI_SA_SEL787_Trip", self.clp, REG_SA_EntradasDigitais_MXI_SA_SEL787_Trip, )
         x = self.leitura_EntradasDigitais_MXI_SA_SEL787_Trip
         self.condicionadores_essenciais.append(CondicionadorBase(x.descr, DEVE_INDISPONIBILIZAR, x))
-        
+        '''
         self.leitura_EntradasDigitais_MXI_SA_SEL311_Trip = LeituraModbusCoil( "EntradasDigitais_MXI_SA_SEL311_Trip", self.clp, REG_SA_EntradasDigitais_MXI_SA_SEL311_Trip, )
         x = self.leitura_EntradasDigitais_MXI_SA_SEL311_Trip
         self.condicionadores_essenciais.append(CondicionadorBase(x.descr, DEVE_INDISPONIBILIZAR, x))
@@ -113,16 +112,17 @@ class Usina:
         self.leitura_EntradasDigitais_MXI_SA_QCADE_Disj52E1Trip = LeituraModbusCoil( "EntradasDigitais_MXI_SA_QCADE_Disj52E1Trip", self.clp, REG_SA_EntradasDigitais_MXI_SA_QCADE_Disj52E1Trip, )
         x = self.leitura_EntradasDigitais_MXI_SA_QCADE_Disj52E1Trip
         self.condicionadores_essenciais.append( CondicionadorBase(x.descr, DEVE_INDISPONIBILIZAR, x) )
+        '''
 #-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------#
 
 
         #Lista de condiconadores que deverão ser lidos apenas quando houver uma chamada de leitura
 #-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------#
         # Alterado de LeituraModbusCoil para LeituraModbus apenas para o simulador
-        self.leitura_EntradasDigitais_MXI_TDA_QcataDisj52ETrip = LeituraModbusCoil("EntradasDigitais_MXI_TDA_QcataDisj52ETrip", self.clp, REG_TDA_EntradasDigitais_MXI_QcataDisj52ETrip, )
+        self.leitura_EntradasDigitais_MXI_TDA_QcataDisj52ETrip = LeituraModbus("EntradasDigitais_MXI_TDA_QcataDisj52ETrip", self.clp, REG_TDA_EntradasDigitais_MXI_QcataDisj52ETrip, )
         x = self.leitura_EntradasDigitais_MXI_TDA_QcataDisj52ETrip
         self.condicionadores.append(CondicionadorBase(x.descr, DEVE_INDISPONIBILIZAR, x))
-        
+        """
         self.leitura_EntradasDigitais_MXI_TDA_QcataDisj52ETripDisjSai = LeituraModbusCoil("EntradasDigitais_MXI_TDA_QcataDisj52ETripDisjSai", self.clp, REG_TDA_EntradasDigitais_MXI_QcataDisj52ETripDisjSai, )
         x = self.leitura_EntradasDigitais_MXI_TDA_QcataDisj52ETripDisjSai
         self.condicionadores.append(CondicionadorBase(x.descr, DEVE_INDISPONIBILIZAR, x))
@@ -288,7 +288,7 @@ class Usina:
         self.leitura_RetornosDigitais_MXR_CLP_Falha = LeituraModbusCoil( "RetornosDigitais_MXR_CLP_Falha", self.clp, REG_SA_RetornosDigitais_MXR_CLP_Falha, )
         x = self.leitura_RetornosDigitais_MXR_CLP_Falha
         self.condicionadores.append( CondicionadorBase(x.descr, DEVE_INDISPONIBILIZAR, x) )
-        
+        """
         
         valores = [
             datetime.now().strftime("%Y-%m-%d %H:%M:%S"),  # timestamp
@@ -503,8 +503,7 @@ class Usina:
             DataBank.set_words(self.cfg["REG_MOA_IN_DESABILITA_AUTO"], [0])
             self.modo_autonomo = 0
             self.entrar_em_modo_manual()
-
-        """
+        
         # As condições a seguir são utilizadas apenas para o simulador:
         if self.ug1.condic_ativos_sim_ug1.valor == 1:
             self.ug1.deve_ler_condicionadores = True
@@ -515,8 +514,7 @@ class Usina:
         else:
             for ug in self.ugs:
                 ug.deve_ler_condicionadores = False
-        """
-        
+
         self.heartbeat()
 
     def escrever_valores(self):
@@ -1118,6 +1116,8 @@ class Usina:
         self.db.update_modo_manual()
     
     def leituras_por_hora(self):
+        print("Executado a leitura usina")
+        """
         self.leitura_EntradasDigitais_MXI_SA_QLCF_Disj52ETrip = LeituraModbusCoil( "EntradasDigitais_MXI_SA_QLCF_Disj52ETrip", self.clp, REG_SA_EntradasDigitais_MXI_SA_QLCF_Disj52ETrip)
         if self.leitura_EntradasDigitais_MXI_SA_QLCF_Disj52ETrip.valor != 0:
             logger.warning("O Disjuntor do Gerador Diesel de Emergência QLCF identificou um sinal de TRIP, favor verificar.")
@@ -1165,7 +1165,7 @@ class Usina:
         self.leitura_RetornosDigitais_MXR_SA_GMG_FalhaAcion = LeituraModbusCoil( "RetornosDigitais_MXR_SA_GMG_FalhaAcion", self.clp, REG_SA_RetornosDigitais_MXR_SA_GMG_FalhaAcion)
         if self.leitura_RetornosDigitais_MXR_SA_GMG_FalhaAcion.valor != 0:
             logger.warning("O sensor do Grupo Motor Gerador identificou uma falha no acionamento, favor verificar.")
-        
+        """
         self.leitura_RetornosDigitais_MXR_FalhaComunSETDA = LeituraModbusCoil( "RetornosDigitais_MXR_FalhaComunSETDA", self.clp, REG_SA_RetornosDigitais_MXR_FalhaComunSETDA)
         if self.leitura_RetornosDigitais_MXR_FalhaComunSETDA.valor != 0 and self.TDA_FalhaComum==False:
             logger.warning("Houve uma falha de comunicação com o CLP da Subestação e o CLP da Tomada da Água, favor verificar")
