@@ -66,24 +66,10 @@ class UnidadeDeGeracao1(UnidadeDeGeracao):
             self.leitura_horimetro_hora,
             self.leitura_horimetro_frac
         )
-        
-#-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------#
-        # utilizar essa forma de leitura de etapa apenas quando for usar o simulador, 
-        # utilizar a forma comentada anterior quando for em produção
-        self.leitura_Operacao_EtapaAtual = LeituraModbus("REG_UG1_RetornosDigitais_EtapaAux_Sim",
-            self.clp,REG_UG1_RetornosDigitais_EtapaAux_Sim,
-            1,
-            op=4
-        )
-        self.condic_ativos_sim_ug1 = LeituraModbus("REG_UG1_RetrornosAnalogicos_AUX_Condicionadores",
-            self.clp,
-            REG_UG1_RetrornosAnalogicos_AUX_Condicionadores,
-        )
-        """
         C1 = LeituraModbusCoil(
             descr="MXR_PartindoEmAuto",
             modbus_client=self.clp,
-            registrador=REG_UG1_DisjGeradorFechado,
+            registrador=REG_UG1_EntradasDigitais_MXI_DisjGeradorFechado,
         )
         C2 = LeituraModbusCoil(
             descr="MXR_PartindoEmAuto",
@@ -93,7 +79,7 @@ class UnidadeDeGeracao1(UnidadeDeGeracao):
         C3 = LeituraModbusCoil(
             descr="MXR_PartindoEmAuto",
             modbus_client=self.clp,
-            registrador=REG_UG1_RV_MaquinaParada,
+            registrador=REG_UG1_EntradasDigitais_MXI_RV_MaquinaParada,
         )
         C4 = LeituraModbusCoil(
             descr="MXR_PartindoEmAuto",
@@ -106,6 +92,20 @@ class UnidadeDeGeracao1(UnidadeDeGeracao):
             leitura2=C2,
             leitura3=C3,
             leitura4=C4,
+        )
+        
+#-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------#
+        """
+        # utilizar essa forma de leitura de etapa apenas quando for usar o simulador, 
+        # utilizar a forma comentada anterior quando for em produção
+        self.leitura_Operacao_EtapaAtual = LeituraModbus("REG_UG1_RetornosDigitais_EtapaAux_Sim",
+            self.clp,REG_UG1_RetornosDigitais_EtapaAux_Sim,
+            1,
+            op=4
+        )
+        self.condic_ativos_sim_ug1 = LeituraModbus("REG_UG1_RetrornosAnalogicos_AUX_Condicionadores",
+            self.clp,
+            REG_UG1_RetrornosAnalogicos_AUX_Condicionadores,
         )
         """
 #-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------#
@@ -240,23 +240,23 @@ class UnidadeDeGeracao1(UnidadeDeGeracao):
             self.logger.warning("[UG{}] A pressão Caixa Espiral da UG passou do valor base! (Abaixo de 16.5 KGf/m2)".format(self.id))
         
         # alterado leituramodbuscoil para leituramodbus apenas para o simulador
-        self.leitura_RetornosDigitais_MXR_TripEletrico = LeituraModbus("RetornosDigitais_MXR_TripEletrico", self.clp, REG_UG1_RetornosDigitais_MXR_TripEletrico,)
+        self.leitura_RetornosDigitais_MXR_TripEletrico = LeituraModbusCoil("RetornosDigitais_MXR_TripEletrico", self.clp, REG_UG1_RetornosDigitais_MXR_TripEletrico,)
         x = self.leitura_RetornosDigitais_MXR_TripEletrico
         self.condicionadores_essenciais.append(CondicionadorBase(x.descr, DEVE_INDISPONIBILIZAR, x))
-        """
-        self.leitura_ReleBloqA86MAtuado = LeituraModbusCoil("ReleBloqA86MAtuado", self.clp, REG_UG1_ReleBloqA86MAtuado)
+        
+        self.leitura_ReleBloqA86MAtuado = LeituraModbusCoil("ReleBloqA86MAtuado", self.clp, REG_UG1_EntradasDigitais_MXI_ReleBloqA86MAtuado)
         x = self.leitura_ReleBloqA86MAtuado
         self.condicionadores_essenciais.append(CondicionadorBase(x.descr, DEVE_INDISPONIBILIZAR, x))
 
-        self.leitura_ReleBloqA86HAtuado = LeituraModbusCoil("ReleBloqA86HAtuado", self.clp, REG_UG1_ReleBloqA86HAtuado)
+        self.leitura_ReleBloqA86HAtuado = LeituraModbusCoil("ReleBloqA86HAtuado", self.clp, REG_UG1_EntradasDigitais_MXI_ReleBloqA86HAtuado)
         x = self.leitura_ReleBloqA86HAtuado
         self.condicionadores_essenciais.append(CondicionadorBase(x.descr, DEVE_INDISPONIBILIZAR, x))
 
-        self.leitura_SEL700G_Atuado = LeituraModbusCoil("SEL700G_Atuado", self.clp, REG_UG1_SEL700G_Atuado)
+        self.leitura_SEL700G_Atuado = LeituraModbusCoil("SEL700G_Atuado", self.clp, REG_UG1_EntradasDigitais_MXI_SEL700G_Atuado)
         x = self.leitura_SEL700G_Atuado
         self.condicionadores_essenciais.append(CondicionadorBase(x.descr, DEVE_INDISPONIBILIZAR, x))
 
-        self.leitura_RV_Trip = LeituraModbusCoil("RV_Trip", self.clp, REG_UG1_RV_Trip)
+        self.leitura_RV_Trip = LeituraModbusCoil("RV_Trip", self.clp, REG_UG1_EntradasDigitais_MXI_RV_Trip)
         x = self.leitura_RV_Trip
         self.condicionadores_essenciais.append(CondicionadorBase(x.descr, DEVE_INDISPONIBILIZAR, x))
 
@@ -268,21 +268,19 @@ class UnidadeDeGeracao1(UnidadeDeGeracao):
         x = self.leitura_RetornosDigitais_MXR_700G_Trip
         self.condicionadores_essenciais.append(CondicionadorBase(x.descr, DEVE_INDISPONIBILIZAR, x))
 
-        self.leitura_AVR_Trip = LeituraModbusCoil("AVR_Trip", self.clp, REG_UG1_AVR_Trip)
+        self.leitura_AVR_Trip = LeituraModbusCoil("AVR_Trip", self.clp, REG_UG1_EntradasDigitais_MXI_AVR_Trip)
         x = self.leitura_AVR_Trip
         self.condicionadores_essenciais.append(CondicionadorBase(x.descr, DEVE_INDISPONIBILIZAR, x))
-        """
 #-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------#
-
 
         #Lista de condiconadores que deverão ser lidos apenas quando houver uma chamada de leitura
 #-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------#
-        """
+        
         self.leitura_EntradasDigitais_MXI_Falta125VccQPCUG2 = LeituraModbusCoil("EntradasDigitais_MXI_Falta125VccQPCUG2",self.clp,REG_UG1_EntradasDigitais_MXI_Falta125VccQPCUG2,)
         x = self.leitura_EntradasDigitais_MXI_Falta125VccQPCUG2
         self.condicionadores.append(CondicionadorBase(x.descr, DEVE_INDISPONIBILIZAR, x))
 
-        self.leitura_EntradasDigitais_MXI_Falta125VccQPCUG3 = LeituraModbusCoil("EntradasDigitais_MXI_Falta125VccQPCUG3",self.clp,REG_EntradasDigitais_MXI_UG1_Falta125VccQPCUG3,)
+        self.leitura_EntradasDigitais_MXI_Falta125VccQPCUG3 = LeituraModbusCoil("EntradasDigitais_MXI_Falta125VccQPCUG3",self.clp,REG_UG1_EntradasDigitais_MXI_Falta125VccQPCUG3,)
         x = self.leitura_EntradasDigitais_MXI_Falta125VccQPCUG3
         self.condicionadores.append(CondicionadorBase(x.descr, DEVE_INDISPONIBILIZAR, x))
 
@@ -387,7 +385,7 @@ class UnidadeDeGeracao1(UnidadeDeGeracao):
         self.condicionadores.append( CondicionadorBase(x.descr, DEVE_INDISPONIBILIZAR, x) )
 
         self.leitura_EntradasDigitais_MXI_SEL700G_FalhaInterna = LeituraModbusCoil( "EntradasDigitais_MXI_SEL700G_FalhaInterna", self.clp, REG_UG1_EntradasDigitais_MXI_SEL700G_FalhaInterna )
-        x = self.EntradasDigitais_MXI_leitura_SEL700G_FalhaInterna
+        x = self.leitura_EntradasDigitais_MXI_SEL700G_FalhaInterna
         self.condicionadores.append( CondicionadorBase(x.descr, DEVE_INDISPONIBILIZAR, x) )
 
         self.leitura_RetornosDigitais_MXR_UHRV_FalhaAcionBbaM2 = LeituraModbusCoil( "RetornosDigitais_MXR_UHRV_FalhaAcionBbaM2", self.clp, REG_UG1_RetornosDigitais_MXR_UHRV_FalhaAcionBbaM2, )
@@ -483,7 +481,7 @@ class UnidadeDeGeracao1(UnidadeDeGeracao):
         self.condicionadores.append( CondicionadorBase(x.descr, DEVE_INDISPONIBILIZAR, x) )
 
         self.leitura_EntradasDigitais_MXI_FreioFiltroSaturado = LeituraModbusCoil( "EntradasDigitais_MXI_FreioFiltroSaturado", self.clp, REG_UG1_EntradasDigitais_MXI_FreioFiltroSaturado )
-        x = self.EntradasDigitais_MXI_leitura_FreioFiltroSaturado
+        x = self.leitura_EntradasDigitais_MXI_FreioFiltroSaturado
         self.condicionadores.append( CondicionadorBase(x.descr, DEVE_INDISPONIBILIZAR, x) )
 
         self.leitura_EntradasDigitais_MXI_FiltroRetSujo100Sujo = LeituraModbusCoil( "EntradasDigitais_MXI_FiltroRetSujo100Sujo", self.clp, REG_UG1_EntradasDigitais_MXI_FiltroRetSujo100Sujo )
@@ -519,13 +517,13 @@ class UnidadeDeGeracao1(UnidadeDeGeracao):
         self.condicionadores.append( CondicionadorBase(x.descr, DEVE_INDISPONIBILIZAR, x) )
 
         self.leitura_AVR_EntradasDigitais_MXI_FalhaInterna = LeituraModbusCoil( "EntradasDigitais_MXI_AVR_FalhaInterna", self.clp, REG_UG1_EntradasDigitais_MXI_AVR_FalhaInterna )
-        x = self.leitura_EntradasDigitais_MXI_AVR_FalhaInterna
+        x = self.leitura_AVR_EntradasDigitais_MXI_FalhaInterna
         self.condicionadores.append( CondicionadorBase(x.descr, DEVE_INDISPONIBILIZAR, x) )
 
         self.RetornosDigitais_MXR_TripPressaoCaixaEspiral = LeituraModbusCoil( "RetornosDigitais_MXR_TripPressaoCaixaEspiral", self.clp, REG_UG1_RetornosDigitais_MXR_TripPressaoCaixaEspiral, )
         x = self.RetornosDigitais_MXR_TripPressaoCaixaEspiral
         self.condicionadores.append( CondicionadorBase(x.descr, DEVE_INDISPONIBILIZAR, x) )
-        """
+
 #-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------#
 
     def acionar_trip_logico(self) -> bool:
@@ -605,11 +603,11 @@ class UnidadeDeGeracao1(UnidadeDeGeracao):
             bool: True se sucesso, Falso caso contrário
         """
         try:
-            """
             # na simulação, a condição a seguir, impede a partida das ugs. Retirar comentário quando for aplicar em campo
-            if not self.clp.read_coils(REG_UG1_COND_PART,1)[0]:self.logger.debug("[UG{}] Sem cond. de partida. Vai partir quando tiver.".format(self.id))
+            if not self.clp.read_coils(REG_UG1_COND_PART,1)[0]:
+                self.logger.debug("[UG{}] Sem cond. de partida. Vai partir quando tiver.".format(self.id))
                 return True
-            """
+            
             if not self.etapa_atual == UNIDADE_SINCRONIZADA:
                 self.logger.info("[UG{}] Enviando comando (via rede) de partida.".format(self.id))
                 response = self.clp.write_single_coil(REG_UG1_ComandosDigitais_MXW_ResetGeral, 1)
@@ -618,12 +616,8 @@ class UnidadeDeGeracao1(UnidadeDeGeracao):
                 response = self.clp.write_single_coil(REG_UG1_ComandosDigitais_MXW_ResetReleBloq86M, 1)
                 response = self.clp.write_single_coil(REG_UG1_ComandosDigitais_MXW_ResetReleRT, 1)
                 response = self.clp.write_single_coil(REG_UG1_ComandosDigitais_MXW_ResetRV, 1)
-                """
-                utilizar o write_single_coil quando for em produção
-                response = self.clp.write_single_coil(REG_UG1_ComandosDigitais_MXW_IniciaPartida, 1)
-                """
                 # tilizar o write_single_register quando for para rodar o simulador
-                response = self.clp.write_single_register(REG_UG1_ComandosDigitais_MXW_IniciaPartida, int(1))
+                response = self.clp.write_single_coil(REG_UG1_ComandosDigitais_MXW_IniciaPartida, 1)
                 self.enviar_setpoint(self.setpoint)
             else:
                 self.logger.debug("[UG{}] Enviando comando (via rede) de partida.".format(self.id))
@@ -646,11 +640,7 @@ class UnidadeDeGeracao1(UnidadeDeGeracao):
                 response = self.clp.write_single_coil(REG_UG1_ComandosDigitais_MXW_AbortaPartida, 1)
                 response = self.clp.write_single_coil(REG_UG1_ComandosDigitais_MXW_AbortaSincronismo, 1)
                 # utilizar o write_single_register quando for para rodar o simulador
-                response = self.clp.write_single_register(REG_UG1_ComandosDigitais_MXW_IniciaParada, int(1))
-                """
-                utilizar o write_single_coil quando for em produção
                 response = self.clp.write_single_coil(REG_UG1_ComandosDigitais_MXW_IniciaParada, 1)
-                """
                 self.enviar_setpoint(self.setpoint)
             else:
                 self.logger.debug("[UG{}] Enviando comando (via rede) de parada.".format(self.id))
@@ -749,8 +739,7 @@ class UnidadeDeGeracao1(UnidadeDeGeracao):
             self.avisou_emerg_voip = False
 
     def leituras_por_hora(self):
-        print("Executando leitura UG1")
-        """
+
         self.leitura_EntradasDigitais_MXI_FreioPastilhaGasta = LeituraModbusCoil( "EntradasDigitais_MXI_FreioPastilhaGasta", self.clp, REG_UG1_EntradasDigitais_MXI_FreioPastilhaGasta )
         if self.leitura_EntradasDigitais_MXI_FreioPastilhaGasta.valor != 0:
             self.logger.warning("[UG{}] O sensor de Freio da UG retornou que a Pastilha está gasta, favor considerar troca.".format(self.id))
@@ -778,7 +767,7 @@ class UnidadeDeGeracao1(UnidadeDeGeracao):
         self.leitura_EntradasDigitais_MXI_TripPartRes = LeituraModbusCoil( "EntradasDigitais_MXI_TripPartRes", self.clp, REG_UG1_EntradasDigitais_MXI_TripPartRes )
         if self.leitura_EntradasDigitais_MXI_TripPartRes.valor != 0:
             self.logger.warning("[UG{}] O sensor TripPartRes retornou valor 1.".format(self.id))
-        """
+        
         self.leitura_RetornosDigitais_MXR_FalhaComunG1TDA = LeituraModbusCoil( "RetornosDigitais_MXR_FalhaComunG1TDA", self.clp, REG_UG1_RetornosDigitais_MXR_FalhaComunG1TDA)
         if self.leitura_RetornosDigitais_MXR_FalhaComunG1TDA.valor == 1 and self.TDA_FalhaComum==False:
             self.logger.warning("[UG{}] Houve uma falha de comunicação com o CLP da UG com o CLP da Tomada da Água, favor verificar".format(self.id))
