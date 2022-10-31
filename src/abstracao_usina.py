@@ -315,17 +315,32 @@ class Usina:
 
         # ajuste inicial ie
         if self.cfg["saida_ie_inicial"] == "auto":
-            self.controle_ie = (self.ug1.leitura_potencia.valor + self.ug2.leitura_potencia.valor + self.ug3.leitura_potencia.valor) / self.cfg["pot_maxima_alvo"]
-
+            self.controle_ie = (
+                self.ug1.leitura_potencia.valor
+                + self.ug2.leitura_potencia.valor
+                + self.ug3.leitura_potencia.valor
+            ) / self.cfg["pot_maxima_alvo"]
         else:
             self.controle_ie = self.cfg["saida_ie_inicial"]
 
         self.controle_i = self.controle_ie
 
         # ajuste inicial SP
-        logger.debug("self.ug1.leitura_potencia.valor -> {}".format(self.ug1.leitura_potencia.valor))
-        logger.debug("self.ug2.leitura_potencia.valor -> {}".format(self.ug2.leitura_potencia.valor))
-        logger.debug("self.ug3.leitura_potencia.valor -> {}".format(self.ug3.leitura_potencia.valor))
+        logger.debug(
+            "self.ug1.leitura_potencia.valor -> {}".format(
+                self.ug1.leitura_potencia.valor
+            )
+        )
+        logger.debug(
+            "self.ug2.leitura_potencia.valor -> {}".format(
+                self.ug2.leitura_potencia.valor
+            )
+        )
+        logger.debug(
+            "self.ug3.leitura_potencia.valor -> {}".format(
+                self.ug3.leitura_potencia.valor
+            )
+        )
         self.ug1.setpoint = self.ug1.leitura_potencia.valor
         self.ug2.setpoint = self.ug2.leitura_potencia.valor
         self.ug3.setpoint = self.ug3.leitura_potencia.valor
@@ -374,7 +389,6 @@ class Usina:
 
         if self.nv_montante_recente < 1:
             self.nv_montante_recentes = [self.leituras.nv_montante.valor] * 240
-
         self.nv_montante_recentes.append(round(self.leituras.nv_montante.valor, 2))
         self.nv_montante_recentes = self.nv_montante_recentes[1:]
 
@@ -455,13 +469,22 @@ class Usina:
         self.cfg["nv_minimo"] = float(parametros["nv_minimo"])
 
         # Modo autonomo
-        logger.debug("Modo autonomo que o banco respondeu: {}".format(int(parametros["modo_autonomo"])))
+        logger.debug(
+            "Modo autonomo que o banco respondeu: {}".format(
+                int(parametros["modo_autonomo"])
+            )
+        )
         self.modo_autonomo = int(parametros["modo_autonomo"])
-
         # Modo de prioridade UGS
-        if not self.modo_de_escolha_das_ugs == int(parametros["modo_de_escolha_das_ugs"]):
+        if not self.modo_de_escolha_das_ugs == int(
+            parametros["modo_de_escolha_das_ugs"]
+        ):
             self.modo_de_escolha_das_ugs = int(parametros["modo_de_escolha_das_ugs"])
-            logger.info("O modo de prioridade das ugs foi alterado (#{}).".format(self.modo_de_escolha_das_ugs))
+            logger.info(
+                "O modo de prioridade das ugs foi alterado (#{}).".format(
+                    self.modo_de_escolha_das_ugs
+                )
+            )
 
         # Parametros banco
         self.cfg["nv_alvo"] = float(parametros["nv_alvo"])
@@ -498,7 +521,10 @@ class Usina:
             DataBank.set_words(self.cfg["REG_MOA_IN_DESABILITA_AUTO"], [0])
             self.modo_autonomo = 1
 
-        if (DataBank.get_words(self.cfg["REG_MOA_IN_DESABILITA_AUTO"])[0] == 1 or self.modo_autonomo == 0):
+        if (
+            DataBank.get_words(self.cfg["REG_MOA_IN_DESABILITA_AUTO"])[0] == 1
+            or self.modo_autonomo == 0
+        ):
             DataBank.set_words(self.cfg["REG_MOA_IN_HABILITA_AUTO"], [0])
             DataBank.set_words(self.cfg["REG_MOA_IN_DESABILITA_AUTO"], [0])
             self.modo_autonomo = 0
@@ -559,19 +585,35 @@ class Usina:
 
         logger.debug("Normalizando (e verificaçẽos)")
 
-        logger.debug("Ultima tentativa: {}. Tensão na linha: RS {:2.1f}kV ST{:2.1f}kV TR{:2.1f}kV.".format(
+        logger.debug(
+            "Ultima tentativa: {}. Tensão na linha: RS {:2.1f}kV ST{:2.1f}kV TR{:2.1f}kV.".format(
                 self.ts_ultima_tesntativa_de_normalizacao,
-                self.leituras.tensao_rs.valor / 10,
-                self.leituras.tensao_st.valor / 10,
-                self.leituras.tensao_tr.valor / 10,))
+                self.leituras.tensao_rs.valor / 1000,
+                self.leituras.tensao_st.valor / 1000,
+                self.leituras.tensao_tr.valor / 1000,
+            )
+        )
 
-        if not (self.cfg["TENSAO_LINHA_BAIXA"] < self.leituras.tensao_rs.valor < self.cfg["TENSAO_LINHA_ALTA"]
-            and self.cfg["TENSAO_LINHA_BAIXA"] < self.leituras.tensao_st.valor < self.cfg["TENSAO_LINHA_ALTA"]
-            and self.cfg["TENSAO_LINHA_BAIXA"] < self.leituras.tensao_tr.valor < self.cfg["TENSAO_LINHA_ALTA"]):
+        if not (
+            self.cfg["TENSAO_LINHA_BAIXA"]
+            < self.leituras.tensao_rs.valor
+            < self.cfg["TENSAO_LINHA_ALTA"]
+            and self.cfg["TENSAO_LINHA_BAIXA"]
+            < self.leituras.tensao_st.valor
+            < self.cfg["TENSAO_LINHA_ALTA"]
+            and self.cfg["TENSAO_LINHA_BAIXA"]
+            < self.leituras.tensao_tr.valor
+            < self.cfg["TENSAO_LINHA_ALTA"]
+        ):
             logger.warn("Tensão na linha fora do limite.")
-            logger.info(f"Tensão RS {self.leituras.tensao_rs.raw}, Tensão ST {self.leituras.tensao_st.raw}, Tensão TR {self.leituras.tensao_tr.raw}")
-
-        elif (self.deve_tentar_normalizar and (datetime.now() - self.ts_ultima_tesntativa_de_normalizacao).seconds >= 60 * self.tentativas_de_normalizar):
+            logger.info(
+                f"Tensão RS {self.leituras.tensao_rs.raw}, Tensão ST {self.leituras.tensao_st.raw}, Tensão TR {self.leituras.tensao_tr.raw}"
+            )
+        elif (
+            self.deve_tentar_normalizar
+            and (datetime.now() - self.ts_ultima_tesntativa_de_normalizacao).seconds
+            >= 60 * self.tentativas_de_normalizar
+        ):
             self.tentativas_de_normalizar += 1
             self.ts_ultima_tesntativa_de_normalizacao = datetime.now()
             logger.info("Normalizando Usina")
@@ -581,7 +623,6 @@ class Usina:
             self.db.update_remove_emergencia()
             self.db_emergencia_acionada = 0
             return True
-            
         else:
             return False
 
@@ -748,13 +789,19 @@ class Usina:
                 self.agendamentos_atrasados += 1
 
             if segundos_passados > 300 or self.agendamentos_atrasados > 3:
-                logger.info("Os agendamentos estão muito atrasados! Acionando emergência.")
+                logger.info(
+                    "Os agendamentos estão muito atrasados! Acionando emergência."
+                )
                 self.acionar_emergencia()
                 return False
 
             if segundos_adiantados <= 60 and not bool(agendamento[4]):
                 # Está na hora e ainda não foi executado. Executar!
-                logger.info("Executando gendamento #{} - {}.".format(agendamento[0], agendamento))
+                logger.info(
+                    "Executando gendamento #{} - {}.".format(
+                        agendamento[0], agendamento
+                    )
+                )
 
                 # se o MOA estiver em autonomo e o agendamento não for executavel em autonomo
                 #   marca como executado e altera a descricao

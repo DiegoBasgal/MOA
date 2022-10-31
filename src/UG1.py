@@ -582,16 +582,27 @@ class UnidadeDeGeracao1(UnidadeDeGeracao):
     def remover_trip_eletrico(self) -> bool:
         """
         Remove o TRIP elétricamente via painel
+
         Returns:
             bool: True se sucesso, Falso caso contrário
         """
         try:
             self.enviar_trip_eletrico = False
-            self.logger.debug("[UG{}] Removendo sinal (elétrico) de TRIP.".format(self.id))
-            DataBank.set_words(self.cfg["REG_MOA_OUT_BLOCK_UG{}".format(self.id)],[0],)
-            DataBank.set_words(self.cfg["REG_PAINEL_LIDO"],[0],)
+            self.logger.debug(
+                "[UG{}] Removendo sinal (elétrico) de TRIP.".format(self.id)
+            )
+            DataBank.set_words(
+                self.cfg["REG_MOA_OUT_BLOCK_UG{}".format(self.id)],
+                [0],
+            )
+            DataBank.set_words(
+                self.cfg["REG_PAINEL_LIDO"],
+                [0],
+            )
         except Exception as e:
-            self.logger.warning("Exception! Traceback: {}".format(traceback.format_exc()))
+            self.logger.warning(
+                "Exception! Traceback: {}".format(traceback.format_exc())
+            )
             return False
         else:
             return True
@@ -599,6 +610,7 @@ class UnidadeDeGeracao1(UnidadeDeGeracao):
     def partir(self) -> bool:
         """
         Envia o comando de parida da unidade de geração para o CLP via rede
+
         Returns:
             bool: True se sucesso, Falso caso contrário
         """
@@ -630,6 +642,7 @@ class UnidadeDeGeracao1(UnidadeDeGeracao):
     def parar(self) -> bool:
         """
         Envia o comando de parada da unidade de geração para o CLP via rede
+
         Returns:
             bool: True se sucesso, Falso caso contrário
         """
@@ -654,6 +667,7 @@ class UnidadeDeGeracao1(UnidadeDeGeracao):
     def reconhece_reset_alarmes(self) -> bool:
         """
         Envia o comando de reconhece e reset dos alarmes da unidade de geração para o CLP via rede
+
         Returns:
             bool: True se sucesso, Falso caso contrário
         """
@@ -666,7 +680,9 @@ class UnidadeDeGeracao1(UnidadeDeGeracao):
                 DataBank.set_words(self.cfg["REG_PAINEL_LIDO"], [0])
                 sleep(1)
                 self.remover_trip_logico()
-                response = self.clp.write_single_coil(REG_UG1_ComandosDigitais_MXW_ResetGeral, 1)
+                response = self.clp.write_single_coil(
+                    REG_UG1_ComandosDigitais_MXW_ResetGeral, 1
+                )
                 DataBank.set_words(self.cfg["REG_PAINEL_LIDO"], [0])
                 sleep(1)
 
@@ -679,20 +695,30 @@ class UnidadeDeGeracao1(UnidadeDeGeracao):
     def enviar_setpoint(self, setpoint_kw: int) -> bool:
         """
         Envia o setpoint desejado para o CLP via rede
+
         Returns:
             bool: True se sucesso, Falso caso contrário
         """
         try:
+
             self.setpoint_minimo = self.cfg["pot_minima"]
             self.setpoint_maximo = self.cfg["pot_maxima_ug{}".format(self.id)]
 
             self.setpoint = int(setpoint_kw)
-            self.logger.debug("[UG{}] Enviando setpoint {} kW.".format(self.id, int(self.setpoint)))
+            self.logger.debug(
+                "[UG{}] Enviando setpoint {} kW.".format(self.id, int(self.setpoint))
+            )
             response = False
-            if self.setpoint >= 1:
-                response = self.clp.write_single_coil(REG_UG1_ComandosDigitais_MXW_ResetGeral, 1)
-                response = self.clp.write_single_coil(REG_UG1_ComandosDigitais_MXW_RV_RefRemHabilita, 1)
-                response = self.clp.write_single_register(REG_UG1_SaidasAnalogicas_MWW_SPPotAtiva, self.setpoint)
+            if self.setpoint > 1:
+                response = self.clp.write_single_coil(
+                    REG_UG1_ComandosDigitais_MXW_ResetGeral, 1
+                )
+                response = self.clp.write_single_coil(
+                    REG_UG1_ComandosDigitais_MXW_RV_RefRemHabilita, 1
+                )
+                response = self.clp.write_single_register(
+                    REG_UG1_SaidasAnalogicas_MWW_SPPotAtiva, self.setpoint
+                )
 
         except:
             #! TODO Tratar exceptions
@@ -728,8 +754,14 @@ class UnidadeDeGeracao1(UnidadeDeGeracao):
             return response
 
     def modbus_update_state_register(self):
-        DataBank.set_words(self.cfg["REG_MOA_OUT_STATE_UG{}".format(self.id)], [self.codigo_state],)
-        DataBank.set_words(self.cfg["REG_MOA_OUT_ETAPA_UG{}".format(self.id)], [self.etapa_atual],)
+        DataBank.set_words(
+            self.cfg["REG_MOA_OUT_STATE_UG{}".format(self.id)],
+            [self.codigo_state],
+        )
+        DataBank.set_words(
+            self.cfg["REG_MOA_OUT_ETAPA_UG{}".format(self.id)],
+            [self.etapa_atual],
+        )
 
     def interstep(self) -> None:
         if (not self.avisou_emerg_voip) and (self.condicionador_caixa_espiral_ug.valor > 0.1):

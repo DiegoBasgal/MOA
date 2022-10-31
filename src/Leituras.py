@@ -80,7 +80,15 @@ class LeituraModbus(LeituraBase):
     Classe implementa a base para leituras da unidade da geração utilizando modbus.
     """
 
-    def __init__(self,descr: str,modbus_client: ModbusClient,registrador: int,escala: float = 1,fundo_de_escala: float = 0,op: int = 3,):
+    def __init__(
+        self,
+        descr: str,
+        modbus_client: ModbusClient,
+        registrador: int,
+        escala: float = 1,
+        fundo_de_escala: float = 0,
+        op: int = 3,
+    ):
         super().__init__(descr)
         self.__descr = descr
         self.__modbus_client = modbus_client

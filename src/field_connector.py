@@ -5,11 +5,14 @@ from time import sleep
 
 logger = logging.getLogger("__main__")
 
+
 class ModbusClientFailedToOpen(Exception):
     pass
 
+
 class ModbusFailedToFetch(Exception):
     pass
+
 
 class FieldConnector:
     def __init__(self, cfg=None):
@@ -27,12 +30,46 @@ class FieldConnector:
             self.usn_port = cfg["USN_slave_porta"]
             self.tda_ip = cfg["TDA_slave_ip"]
             self.tda_port = cfg["TDA_slave_porta"]
-
-            self.ug1_clp = ModbusClient(host=self.ug1_ip, port=self.ug1_port, timeout=0.5, unit_id=1, auto_open=True, auto_close=True,)
-            self.ug2_clp = ModbusClient(host=self.ug2_ip, port=self.ug2_port, timeout=0.5, unit_id=1, auto_open=True, auto_close=True,)
-            self.ug3_clp = ModbusClient(host=self.ug3_ip, port=self.ug3_port, timeout=0.5, unit_id=1, auto_open=True, auto_close=True,)
-            self.usn_clp = ModbusClient(host=self.usn_ip, port=self.usn_port, timeout=0.5, unit_id=1, auto_open=True, auto_close=True,)
-            self.tda_clp = ModbusClient(host=self.tda_ip, port=self.tda_port, timeout=0.5, unit_id=1, auto_open=True, auto_close=True,)
+            self.ug1_clp = ModbusClient(
+                host=self.ug1_ip,
+                port=self.ug1_port,
+                timeout=0.5,
+                unit_id=1,
+                auto_open=True,
+                auto_close=True,
+            )
+            self.ug2_clp = ModbusClient(
+                host=self.ug2_ip,
+                port=self.ug2_port,
+                timeout=0.5,
+                unit_id=1,
+                auto_open=True,
+                auto_close=True,
+            )
+            self.ug3_clp = ModbusClient(
+                host=self.ug3_ip,
+                port=self.ug3_port,
+                timeout=0.5,
+                unit_id=1,
+                auto_open=True,
+                auto_close=True,
+            )
+            self.usn_clp = ModbusClient(
+                host=self.usn_ip,
+                port=self.usn_port,
+                timeout=0.5,
+                unit_id=1,
+                auto_open=True,
+                auto_close=True,
+            )
+            self.tda_clp = ModbusClient(
+                host=self.tda_ip,
+                port=self.tda_port,
+                timeout=0.5,
+                unit_id=1,
+                auto_open=True,
+                auto_close=True,
+            )
 
         self.warned_ug1 = False
         self.warned_ug2 = False
