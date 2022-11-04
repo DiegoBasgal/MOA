@@ -52,6 +52,7 @@ class Planta:
         self.aux1=0
         self.aux2=0
         self.aux3=0
+        self.aux4=0
         self.shared_dict = shared_dict
         self.escala_ruido = 0.1
         self.speed = 50
@@ -139,8 +140,9 @@ class Planta:
                 
                 elif self.shared_dict["trip_condic_usina"]==False and self.aux==1:
                     self.aux = 0
-                    self.cust_data_bank.set_words(REG["REG_USINA_AUX_CondicionadoresE"], [int(0)])
-                    self.cust_data_bank.set_words(REG["REG_USINA_AUX_Condicionadores1"], [int(0)])
+                    self.cust_data_bank.set_words(REG["REG_USINA_AUX_CondicionadoresE"], [0])
+                    self.cust_data_bank.set_words(REG["REG_USINA_AUX_Condicionadores1"], [0])
+                    self.dj52L.reconhece_reset_dj52L()
 
                 if self.shared_dict["trip_condic_ug1"]==True and self.aux1==0:
                     self.aux1 = 1
@@ -182,6 +184,14 @@ class Planta:
                     self.cust_data_bank.set_words(REG["REG_UG3_AUX_Condicionadores"], [int(0)])
                     self.cust_data_bank.set_words(REG["REG_UG3_Emergencia_Condicionadores3"], [int(0)])
 
+                if self.cust_data_bank.get_words(REG["REG_USINA_AUX_CondicionadoresE"])[0] == 1 and self.aux4==0:
+                    self.aux4 = 1
+                elif self.cust_data_bank.get_words(REG["REG_USINA_AUX_CondicionadoresE"])[0] == 0 and self.aux4==1:
+                    self.aux4 = 0
+                    self.cust_data_bank.set_words(REG["REG_USINA_AUX_CondicionadoresE"], [0])
+                    self.cust_data_bank.set_words(REG["REG_USINA_AUX_Condicionadores1"], [0])
+                    self.shared_dict["trip_condic_usina"]=False
+                    self.dj52L.reconhece_reset_dj52L()
 
                 for ug in self.ugs:
                     self.shared_dict["setpoint_kw_ug{}".format(ug.id)] = self.cust_data_bank.get_words(REG["REG_UG{}_CtrlPotencia_Alvo".format(ug.id)])[0]

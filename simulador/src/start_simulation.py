@@ -46,7 +46,6 @@ th_ctl.start()
 th_gui.start()
 logger.info("Rodando simul.".format())
 
-
 th_gui.join()
 th_world.join()
 th_ctl.join()
