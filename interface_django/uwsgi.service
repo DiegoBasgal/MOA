@@ -3,7 +3,7 @@ Description=uWSGI
 After=syslog.target
 
 [Service]
-ExecStart=/usr/local/bin/uwsgi --ini /usr/local/operacao-autonoma/interface_django/interface_django_uwsgi.ini
+ExecStart=/usr/local/bin/uwsgi --ini /opt/operacao-autonoma/interface_django/interface_django_uwsgi.ini
 
 KillSignal=SIGQUIT
 Type=notify
