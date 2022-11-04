@@ -1,16 +1,14 @@
 import logging
 import subprocess
-from cmath import sqrt
-from datetime import timezone, datetime, timedelta
 from time import sleep
-from typing import Type
-
-from pyModbusTCP.server import DataBank
-from scipy.signal import butter, filtfilt
-import src.mensageiro.voip as voip
-from src.field_connector import FieldConnector
 from src.codes import *
+from src.mensageiro import voip
 from src.Condicionadores import *
+from src.UG1 import UnidadeDeGeracao1
+from src.UG2 import UnidadeDeGeracao2
+from src.UG3 import UnidadeDeGeracao3
+from pyModbusTCP.server import DataBank
+from datetime import datetime, timedelta
 
 logger = logging.getLogger("__main__")
 
@@ -27,7 +25,6 @@ class Usina:
             self.con = con
         else:
             from src.field_connector import FieldConnector
-
             self.con = FieldConnector(self.cfg)
 
         if leituras:
@@ -35,54 +32,53 @@ class Usina:
         else:
             from src.LeiturasUSN import LeiturasUSN
             from src.Leituras import LeituraModbus
-            from src.Leituras import LeituraModbusBit
-
             self.leituras = LeiturasUSN(self.cfg)
 
         self.state_moa = 1
 
         # Inicializa Objs da usina
-        from src.UG1 import UnidadeDeGeracao1
-        from src.UG2 import UnidadeDeGeracao2
-        from src.UG3 import UnidadeDeGeracao3
-
         self.ug1 = UnidadeDeGeracao1(1, cfg=self.cfg, leituras_usina=self.leituras)
         self.ug2 = UnidadeDeGeracao2(2, cfg=self.cfg, leituras_usina=self.leituras)
         self.ug3 = UnidadeDeGeracao3(3, cfg=self.cfg, leituras_usina=self.leituras)
         self.ugs = [self.ug1, self.ug2, self.ug3]
 
-        self.avisado_em_eletrica = False
-        self.deve_ler_condicionadores = False
-
         # Define as vars inciais
-        self.ts_ultima_tesntativa_de_normalizacao = datetime.now()
         self.ts_last_ping_tda = datetime.now()
+        self.ts_ultima_tesntativa_de_normalizacao = datetime.now()
+
+        self.ts_nv = []
+        self.condicionadores = []
+        self.nv_montante_recentes = []
+        self.nv_montante_anteriores = []
+        self.condicionadores_essenciais = []
+
+        self.aux = 1
+        self.erro_nv = 0
+        self.pot_disp = 0
         self.state_moa = 0
         self.controle_p = 0
         self.controle_i = 0
         self.controle_d = 0
-        self.clp_emergencia_acionada = 0
-        self.db_emergencia_acionada = 0
         self.modo_autonomo = 1
-        self.modo_de_escolha_das_ugs = 0
-        self.nv_montante_recente = 0
-        self.nv_montante_recentes = []
-        self.nv_montante_anterior = 0
-        self.nv_montante_anteriores = []
-        self.erro_nv = 0
         self.erro_nv_anterior = 0
+        self.nv_montante_recente = 0
+        self.nv_montante_anterior = 0
+        self.db_emergencia_acionada = 0
+        self.clp_emergencia_acionada = 0
+        self.modo_de_escolha_das_ugs = 0
         self.aguardando_reservatorio = 0
-        self.pot_disp = 0
         self.agendamentos_atrasados = 0
-        self.deve_tentar_normalizar = True
         self.tentativas_de_normalizar = 0
-        self.ts_nv = []
-        self.condicionadores = []
-        self.condicionadores_essenciais = []
+
         self.__split1 = False
         self.__split2 = False
         self.__split3 = False
-        self.aux=1
+        self.TDA_FalhaComum = False
+        self.avisado_em_eletrica = False
+        self.Disj_GDE_QLCF_Fechado = False
+        self.deve_tentar_normalizar = True
+        self.deve_ler_condicionadores = False
+
         self.clp = ModbusClient(
             host=self.cfg["USN_slave_ip"],
             port=self.cfg["USN_slave_porta"],
@@ -91,7 +87,6 @@ class Usina:
             auto_open=True,
             auto_close=True,
         )
-        
 
         #Lista de condicionadores essenciais que devem ser lidos a todo momento
 #-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------#
@@ -479,31 +474,23 @@ class Usina:
         self.cfg["pot_maxima_ug"] = float(parametros["pot_nominal_ug"])
 
         # Le o databank interno
-        if DataBank.get_words(self.cfg["REG_MOA_IN_EMERG"])[0] == 1:
-            self.aux=1
+        if DataBank.get_words(self.cfg["REG_MOA_IN_EMERG"])[0] == 1 and self.avisado_em_eletrica==False:
             self.avisado_em_eletrica = True
             for ug in self.ugs:
-                ug.parada_por_painel = True
                 ug.deve_ler_condicionadores = True
         elif DataBank.get_words(self.cfg["REG_MOA_IN_EMERG"])[0] == 0 and self.avisado_em_eletrica==True:
-            self.aux=0
             self.avisado_em_eletrica = False
             for ug in self.ugs:
-                ug.parada_por_painel = False
                 ug.deve_ler_condicionadores = False
 
         if DataBank.get_words(self.cfg["REG_MOA_IN_EMERG_UG1"])[0] == 1:
-            self.ug1.parada_por_painel = True
             self.ug1.deve_ler_condicionadores = True
         elif DataBank.get_words(self.cfg["REG_MOA_IN_EMERG_UG2"])[0] == 1:
-            self.ug2.parada_por_painel = True
             self.ug2.deve_ler_condicionadores = True
         elif DataBank.get_words(self.cfg["REG_MOA_IN_EMERG_UG3"])[0] == 1:
-            self.ug3.parada_por_painel = True
             self.ug3.deve_ler_condicionadores = True
         else:
             for ug in self.ugs:
-                ug.parada_por_painel = False
                 ug.deve_ler_condicionadores = False
         
         if DataBank.get_words(self.cfg["REG_MOA_IN_HABILITA_AUTO"])[0] == 1:
@@ -666,10 +653,12 @@ class Usina:
                 DataBank.set_words(self.cfg["REG_MOA_OUT_BLOCK_UG1"], [1],)
                 DataBank.set_words(self.cfg["REG_MOA_OUT_BLOCK_UG2"], [1],)
                 DataBank.set_words(self.cfg["REG_MOA_OUT_BLOCK_UG3"], [1],)
+                self.aux=0
             elif self.avisado_em_eletrica==False and self.aux==0:
                 DataBank.set_words(self.cfg["REG_MOA_OUT_BLOCK_UG1"], [0],)
                 DataBank.set_words(self.cfg["REG_MOA_OUT_BLOCK_UG2"], [0],)
                 DataBank.set_words(self.cfg["REG_MOA_OUT_BLOCK_UG3"], [0],)
+                self.aux=1
 
             if DataBank.get_words(self.cfg["REG_MOA_OUT_BLOCK_UG1"])[0] == 1:
                 DataBank.set_words(self.cfg["REG_MOA_OUT_BLOCK_UG1"], [1])
@@ -1122,25 +1111,13 @@ class Usina:
 
         pot_alvo = self.distribuir_potencia(pot_alvo)
 
-    def disparar_mensagem_teste(self):
-        logger.debug("Este e um teste!")
-        logger.info("Este e um teste!")
-        logger.warning("Este e um teste!")
-        voip.enviar_voz_teste()
-
     def entrar_em_modo_manual(self):
         self.modo_autonomo = 0
         self.db.update_modo_manual()
     
     def leituras_por_hora(self):
-
+        print("Executado a leitura usina")
         """
-        self.leitura_EntradasDigitais_MXI_SA_QLCF_Disj52EFechado = LeituraModbusCoil( "EntradasDigitais_MXI_SA_QLCF_Disj52EFechado", self.clp, REG_SA_EntradasDigitais_MXI_SA_QLCF_Disj52EFechado)
-        if self.leitura_EntradasDigitais_MXI_SA_QLCF_Disj52EFechado.valor != 0:
-            logger.warning("O Disjuntor do Gerador Diesel de Emergência QLCF foi fechado.")
-            voip.Disj_GDE_QLCF_Fechado = True
-            voip.enviar_voz_auxiliar()
-
         self.leitura_EntradasDigitais_MXI_SA_QLCF_Disj52ETrip = LeituraModbusCoil( "EntradasDigitais_MXI_SA_QLCF_Disj52ETrip", self.clp, REG_SA_EntradasDigitais_MXI_SA_QLCF_Disj52ETrip)
         if self.leitura_EntradasDigitais_MXI_SA_QLCF_Disj52ETrip.valor != 0:
             logger.warning("O Disjuntor do Gerador Diesel de Emergência QLCF identificou um sinal de TRIP, favor verificar.")
@@ -1188,13 +1165,24 @@ class Usina:
         self.leitura_RetornosDigitais_MXR_SA_GMG_FalhaAcion = LeituraModbusCoil( "RetornosDigitais_MXR_SA_GMG_FalhaAcion", self.clp, REG_SA_RetornosDigitais_MXR_SA_GMG_FalhaAcion)
         if self.leitura_RetornosDigitais_MXR_SA_GMG_FalhaAcion.valor != 0:
             logger.warning("O sensor do Grupo Motor Gerador identificou uma falha no acionamento, favor verificar.")
-        
-        self.leitura_RetornosDigitais_MXR_FalhaComunSETDA = LeituraModbusCoil( "RetornosDigitais_MXR_FalhaComunSETDA", self.clp, REG_SA_RetornosDigitais_MXR_FalhaComunSETDA)
-        if self.leitura_RetornosDigitais_MXR_FalhaComunSETDA.valor != 0:
-            logger.warning("Houve uma falha de comunicação com o CLP da Subestação e o CLP da Tomada da Água, favor verificar")
-            voip.TDA_FalhaComum = True
-            voip.enviar_voz_auxiliar()
         """
+        self.leitura_RetornosDigitais_MXR_FalhaComunSETDA = LeituraModbusCoil( "RetornosDigitais_MXR_FalhaComunSETDA", self.clp, REG_SA_RetornosDigitais_MXR_FalhaComunSETDA)
+        if self.leitura_RetornosDigitais_MXR_FalhaComunSETDA.valor != 0 and self.TDA_FalhaComum==False:
+            logger.warning("Houve uma falha de comunicação com o CLP da Subestação e o CLP da Tomada da Água, favor verificar")
+            self.TDA_FalhaComum = True
+            return True
+        elif self.leitura_RetornosDigitais_MXR_FalhaComunSETDA == 0 and self.TDA_FalhaComum == True:
+            self.TDA_FalhaComum = False
+
+        self.leitura_EntradasDigitais_MXI_SA_QLCF_Disj52EFechado = LeituraModbusCoil( "EntradasDigitais_MXI_SA_QLCF_Disj52EFechado", self.clp, REG_SA_EntradasDigitais_MXI_SA_QLCF_Disj52EFechado)
+        if self.leitura_EntradasDigitais_MXI_SA_QLCF_Disj52EFechado.valor == 1 and self.Disj_GDE_QLCF_Fechado==False:
+            logger.warning("O Disjuntor do Gerador Diesel de Emergência QLCF foi fechado.")
+            self.Disj_GDE_QLCF_Fechado = True
+            return True
+        elif self.leitura_EntradasDigitais_MXI_SA_QLCF_Disj52EFechado.valor == 0 and self.Disj_GDE_QLCF_Fechado==True:
+            self.Disj_GDE_QLCF_Fechado = False
+
+        return False
 
 def ping(host):
     """

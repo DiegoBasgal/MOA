@@ -14,14 +14,16 @@ import traceback
 import logging.handlers as handlers
 import src.abstracao_usina as abstracao_usina
 import src.database_connector as database_connector
+
+from sys import stderr
 from time import sleep
 from src.codes import *
-from sys import stdout, stderr
-from datetime import datetime, timezone
-from src.UnidadeDeGeracao import StateManual
+from datetime import datetime
+from src.mensageiro import voip
 from pyModbusTCP.server import DataBank, ModbusServer
 # Set-up logging
 from src.mensageiro.mensageiro_log_handler import MensageiroHandler
+
 
 rootLogger = logging.getLogger()
 if rootLogger.hasHandlers():
@@ -35,9 +37,7 @@ logger.setLevel(logging.NOTSET)
 
 if not os.path.exists(os.path.join(os.path.dirname(__file__), "logs")):
     os.mkdir(os.path.join(os.path.dirname(__file__), "logs"))
-logFormatter = logging.Formatter(
-    "%(asctime)s [%(threadName)-12.12s] [%(levelname)-5.5s] [MOA-SM] %(message)s"
-)
+logFormatter = logging.Formatter("%(asctime)s [%(threadName)-12.12s] [%(levelname)-5.5s] [MOA-SM] %(message)s")
 logFormatterSimples = logging.Formatter("[%(levelname)-5.5s] %(message)s")
 
 ch = logging.StreamHandler(stderr)  # log para sdtout
@@ -413,20 +413,50 @@ class ControleRealizado(State):
         self.usina.heartbeat()
         return Pronto(self.usina)
 
-
-def leitura_temporizada(delay):
+def leitura_temporizada():
+    delay = 1800
     proxima_leitura = time.time() + delay
-
     while True:
         time.sleep(max(0, proxima_leitura - time.time()))
         try:
-            print("Entrei")
-            usina.leituras_por_hora()
+            if usina.leituras_por_hora():
+                acionar_voip()
+                
+            for ug in usina.ugs:
+                if ug.leituras_por_hora():
+                    acionar_voip()
+
         except Exception:
             logger.debug("Houve um problema ao executar a leitura por hora")
 
         proxima_leitura += (time.time() - proxima_leitura) // delay * delay + delay
 
+def acionar_voip():
+    try:
+        for ug in usina.ugs:
+            if ug.TDA_FalhaComum:
+                voip.TDA_FalhaComum=True
+                voip.enviar_voz_auxiliar()
+            elif ug.avisou_emerg_voip:
+                voip.enviar_voz_auxiliar()
+
+        if usina.TDA_FalhaComum:
+            voip.TDA_FalhaComum=True
+            voip.enviar_voz_auxiliar()
+
+        elif usina.Disj_GDE_QLCF_Fechado:
+            voip.Disj_GDE_QLCF_Fechado=True
+            voip.enviar_voz_auxiliar()
+
+        elif usina.avisado_em_eletrica:
+            voip.enviar_voz_emergencia()
+
+        else:
+            voip.Disj_GDE_QLCF_Fechado=False
+            voip.TDA_FalhaComum=False
+            
+    except Exception:
+        logger.warning("Houve um problema ao ligar por Voip")
 
 if __name__ == "__main__":
     # A escala de tempo é utilizada para acelerar as simulações do sistema
@@ -435,15 +465,15 @@ if __name__ == "__main__":
     if len(sys.argv) > 1:
         ESCALA_DE_TEMPO = int(sys.argv[1])
 
-    n_tentativa = 0
-    timeout = 10
-    logger.info("Iniciando o MOA_SM ESCALA_DE_TEMPO:{}".format(ESCALA_DE_TEMPO))
-    logger.debug("Debug is ON")
-
-    prox_estado = 0
     usina = None
+    timeout = 10
+    prox_estado = 0
+    n_tentativa = 0
 
-    threading.Thread(target=lambda: leitura_temporizada(15)).start()
+    logger.debug("Debug is ON")
+    logger.info("Iniciando MOA...")
+    logger.debug("Iniciando o MOA_SM ESCALA_DE_TEMPO:{}".format(ESCALA_DE_TEMPO))
+    logger.debug("Inciando Threads de Leitura temporizada e acionamento por voip")
 
     while prox_estado == 0:
         n_tentativa += 1
@@ -508,6 +538,8 @@ if __name__ == "__main__":
                 sleep(timeout)
 
     logger.info("Inicialização completa, executando o MOA \U0001F916")
+
+    threading.Thread(target=lambda: leitura_temporizada()).start()
 
     sm = StateMachine(initial_state=prox_estado(usina))
     while True:

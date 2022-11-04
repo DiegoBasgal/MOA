@@ -1,12 +1,8 @@
-import json
-import os
-from unittest.mock import MagicMock
-from src.Condicionadores import *
 from src.Leituras import *
 from src.LeiturasUSN import *
+from src.Condicionadores import *
 from src.UnidadeDeGeracao import *
-from pyModbusTCP.server import DataBank, ModbusServer
-from src.mensageiro import voip
+from pyModbusTCP.server import DataBank
 
 class UnidadeDeGeracao3(UnidadeDeGeracao):
     def __init__(self, id, cfg=None, leituras_usina=None):
@@ -17,6 +13,11 @@ class UnidadeDeGeracao3(UnidadeDeGeracao):
         else:
             self.cfg = cfg
             self.leituras_usina = leituras_usina
+        
+        self.__last_EtapaAtual = 0
+        self.TDA_FalhaComum = False
+        self.avisou_emerg_voip = False
+        self.enviar_trip_eletrico = False
 
         self.setpoint_minimo = self.cfg["pot_minima"]
         self.setpoint_maximo = self.cfg["pot_maxima_ug{}".format(self.id)]
@@ -41,18 +42,12 @@ class UnidadeDeGeracao3(UnidadeDeGeracao):
             auto_open=True,
             auto_close=True,
         )
-        
-        self.__last_EtapaAtual = 0
-        self.enviar_trip_eletrico = False
-        self.avisou_emerg_voip = False
-
         self.leitura_potencia = LeituraModbus(
             "ug{}_Gerador_PotenciaAtivaMedia".format(self.id),
             self.clp,
             REG_UG3_RetornosAnalogicos_MWR_PM_710_Potencia_Ativa,
             op=4,
         )
-        
         self.leitura_horimetro_hora = LeituraModbus(
             "ug{} RetornosAnalogicos_MWR_Horimetro_Gerador".format(self.id),
             self.clp,
@@ -66,7 +61,6 @@ class UnidadeDeGeracao3(UnidadeDeGeracao):
             op=4,
             escala=1/60
         )
-        
         self.leitura_horimetro = LeituraSoma(
             "ug{} horímetro".format(self.id),
             self.leitura_horimetro_hora,
@@ -777,12 +771,13 @@ class UnidadeDeGeracao3(UnidadeDeGeracao):
     def interstep(self) -> None:
         if (not self.avisou_emerg_voip) and (self.condicionador_caixa_espiral_ug.valor > 0.1):
             self.avisou_emerg_voip = True
-            voip.enviar_voz_emergencia()
+
         elif self.condicionador_caixa_espiral_ug.valor < 0.05:
             self.avisou_emerg_voip = False
 
-    def leituras_por_hora(self) -> None:
-        
+    def leituras_por_hora(self):
+        print("Executando leitura UG3")
+        """
         self.leitura_EntradasDigitais_MXI_FreioPastilhaGasta = LeituraModbusCoil( "EntradasDigitais_MXI_FreioPastilhaGasta", self.clp, REG_UG3_EntradasDigitais_MXI_FreioPastilhaGasta )
         if self.leitura_EntradasDigitais_MXI_FreioPastilhaGasta.valor != 0:
             self.logger.warning("[UG{}] O sensor de Freio da UG retornou que a Pastilha está gasta, favor considerar troca.".format(self.id))
@@ -810,10 +805,14 @@ class UnidadeDeGeracao3(UnidadeDeGeracao):
         self.leitura_EntradasDigitais_MXI_TripPartRes = LeituraModbusCoil( "EntradasDigitais_MXI_TripPartRes", self.clp, REG_UG3_EntradasDigitais_MXI_TripPartRes )
         if self.leitura_EntradasDigitais_MXI_TripPartRes.valor != 0:
             self.logger.warning("[UG{}] O sensor TripPartRes retornou valor 1.".format(self.id))
-
+        """
         # deve enviar aviso por voip
         self.leitura_RetornosDigitais_MXR_FalhaComunG3TDA = LeituraModbusCoil( "RetornosDigitais_MXR_FalhaComunG3TDA", self.clp, REG_UG3_RetornosDigitais_MXR_FalhaComunG3TDA)
-        if self.leitura_RetornosDigitais_MXR_FalhaComunG3TDA.valor != 0:
+        if self.leitura_RetornosDigitais_MXR_FalhaComunG3TDA.valor == 1 and self.TDA_FalhaComum == False:
             self.logger.warning("[UG{}] Houve uma falha de comunicação com o CLP da UG com o CLP da Tomada da Água, favor verificar".format(self.id))
-            voip.TDA_FalhaComum = True
-            voip.enviar_voz_auxiliar()
+            self.TDA_FalhaComum = True
+            return True
+        elif self.leitura_RetornosDigitais_MXR_FalhaComunG3TDA.valor == 0 and self.TDA_FalhaComum == True:
+            self.TDA_FalhaComum = False
+        
+        return False
