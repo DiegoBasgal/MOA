@@ -88,6 +88,7 @@ class FieldConnector:
     def normalizar_emergencia(self):
         logger.info("Reconhecendo alarmes, resetando usina e fechando Dj52L")
         logger.debug("Reconhece/Reset alarmes")
+        self.usn_clp.write_single_register(REG_SA_EntradasDigitais_MXI_SA_QCAP_TensaoPresenteTSA, 0) # utilizar apenas para o simulador
         self.ug1_clp.write_single_coil(REG_UG1_ComandosDigitais_MXW_ResetGeral, 1)
         self.ug2_clp.write_single_coil(REG_UG2_ComandosDigitais_MXW_ResetGeral, 1)
         self.ug3_clp.write_single_coil(REG_UG3_ComandosDigitais_MXW_ResetGeral, 1)

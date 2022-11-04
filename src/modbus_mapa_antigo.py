@@ -1036,7 +1036,7 @@ REG_SA_EntradasAnalogicas_MRR_SA_TE_TempOleo = (
 )
 REG_SA_EntradasDigitais_MXI_SA_Reserva180 = 0  # Op02 (Read Discrete Inputs)
 REG_SA_EntradasDigitais_MXI_SA_Reserva181 = 1  # Op02 (Read Discrete Inputs)
-REG_SA_EntradasDigitais_MXI_SA_SEL787_Trip = 24905 # antigo -> 2  # Op02 (Read Discrete Inputs)
+#REG_SA_EntradasDigitais_MXI_SA_SEL787_Trip = 2  # Op02 (Read Discrete Inputs)
 REG_SA_EntradasDigitais_MXI_SA_SEL787_FalhaInterna = 3  # Op02 (Read Discrete Inputs)
 REG_SA_EntradasDigitais_MXI_SA_SEL311_Trip = 4  # Op02 (Read Discrete Inputs)
 REG_SA_EntradasDigitais_MXI_SA_SEL311_Falha = 5  # Op02 (Read Discrete Inputs)
@@ -1398,7 +1398,7 @@ REG_SA_RetornosAnalogicos_Float_MWR_PM2_710_Energia_Ativa_Fornecida = (
 
 
 REG_TDA_EntradasDigitais_MXI_QcataDisj52EAberto = 0  # Op02 (Read Discrete Inputs)
-REG_TDA_EntradasDigitais_MXI_QcataDisj52ETrip = 24906 #antigo -> 1  # Op02 (Read Discrete Inputs)
+
 REG_TDA_EntradasDigitais_MXI_QcataDisj52ETripDisjSai = 2  # Op02 (Read Discrete Inputs)
 REG_TDA_EntradasDigitais_MXI_QcataDisj52EFalha380VCA = 3  # Op02 (Read Discrete Inputs)
 REG_TDA_EntradasDigitais_MXI_DefeitoLimpaGrades = 4  # Op02 (Read Discrete Inputs)
@@ -1640,11 +1640,16 @@ REG_SA_RetornosAnalogicos_MWR_PM_810_Tensao_BC = (
 REG_SA_RetornosAnalogicos_MWR_PM_810_Tensao_CA = (
     22791 #antigo -> 18  # Scale 0.1 - Op04 (Read Input Regs - 3x)
 )
+REG_SA_EntradasDigitais_MXI_SA_QCAP_TensaoPresenteTSA = (
+    24905  # Op02 (Read Discrete Inputs)
+)
+
 
 REG_TDA_NivelMaisCasasAntes = 22766 #antigo -> 12  # Scale 400 + 0.0001 X - Op04 (Read Input Regs - 3x)
 REG_TDA_EntradasAnalogicas_MRR_NivelDepoisGrade = (
     22767 # antgo -> 1  # Scale 0.01 - Op04 (Read Input Regs - 3x)
 )
+REG_TDA_EntradasDigitais_MXI_QcataDisj52ETrip = 24906 #antigo -> 1  # Op02 (Read Discrete Inputs)
 
 
 REG_UG1_EntradasDigitais_MXI_FreioPastilhaGasta = 30000 # antigo -> 24  # Op02 (Read Input Status)
@@ -1680,7 +1685,7 @@ REG_UG2_RetornosDigitais_MXR_FalhaComunG2TDA = 40007 # antigo -> 210  # Op02 (Re
 REG_UG3_RetornosDigitais_MXR_FalhaComunG3TDA = 50007 # antigo -> 210  # Op02 (Read Input Status)
 
 
-
+REG_SA_EntradasDigitais_MXI_SA_SEL787_Trip = 2  # Op02 (Read Discrete Inputs)
 REG_SA_EntradasDigitais_MXI_SA_QLCF_Disj52EFechado = 20000 # antigo -> 84  # Op02 (Read Discrete Inputs)
 REG_SA_EntradasDigitais_MXI_SA_QLCF_Disj52ETrip = 20001 # antigo -> 85  # Op02 (Read Discrete Inputs)
 REG_SA_EntradasDigitais_MXI_SA_QLCF_TripDisjAgrup = 20002 # antigo -> 86  # Op02 (Read Discrete Inputs)

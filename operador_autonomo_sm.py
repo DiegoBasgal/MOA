@@ -24,7 +24,6 @@ from pyModbusTCP.server import DataBank, ModbusServer
 # Set-up logging
 from src.mensageiro.mensageiro_log_handler import MensageiroHandler
 
-
 rootLogger = logging.getLogger()
 if rootLogger.hasHandlers():
     rootLogger.handlers.clear()
@@ -77,6 +76,7 @@ class StateMachine:
             logger.warning("Traceback: {}".format(traceback.format_exc()))
             self.em_falha_critica = True
             self.state = FalhaCritica()
+
 
 class State:
     def __init__(self, *args, **kwargs):
@@ -144,41 +144,58 @@ class ValoresInternosAtualizados(State):
 		  Decidir para qual modo de operação o sistema deve ir
         Aqui a ordem do checks importa, e muito.
         """
-
         # atualizar arquivo das configurações
+        global aux
+        global deve_normalizar
+
         with open(os.path.join(os.path.dirname(__file__), "config.json"), "w") as file:
             json.dump(self.usina.cfg, file, indent=4)
 
         for condicionador_essencial in self.usina.condicionadores_essenciais:
             if condicionador_essencial.ativo:
-                logger.debug("Foram detectados condicionadores essenciais ativos, iniciando leitura de condicionadores restantes...")
                 self.deve_ler_condicionadores=True
 
         if self.usina.avisado_em_eletrica or self.deve_ler_condicionadores==True:
             for condicionador_essencial in self.usina.condicionadores_essenciais:
-                if condicionador_essencial.ativo:
-                    if condicionador_essencial.gravidade >= DEVE_INDISPONIBILIZAR:
-                        logger.debug("Condicionador essencial com gravidade de INDISPONIBILIZAÇÃO detectado!")
+                if condicionador_essencial.ativo and condicionador_essencial.gravidade >= DEVE_INDISPONIBILIZAR:
                         self.habilitar_emerg_condic_e=True
-                    else:
-                        self.habilitar_emerg_condic_e=False
+                elif condicionador_essencial.ativo and condicionador_essencial.gravidade == DEVE_NORMALIZAR:
+                    deve_normalizar=True
+                    self.habilitar_emerg_condic_e=False
                 else:
-                    logger.debug("Nenhum condicionador essencial ativo.")
+                    deve_normalizar=False
                     self.habilitar_emerg_condic_e=False
             
             for condicionador in self.usina.condicionadores:
-                if condicionador.ativo:
-                    if condicionador.gravidade >= DEVE_INDISPONIBILIZAR:
-                        logger.debug("Condicionador comum com gravidade de INDISPONIBILIZAÇÃO detectado!")
-                        self.habilitar_emerg_condic_c=True
-                    else:
-                        self.habilitar_emerg_condic_c=False
+                if condicionador.ativo and condicionador.gravidade >= DEVE_INDISPONIBILIZAR:
+                    self.habilitar_emerg_condic_c=True
+                elif condicionador.ativo and condicionador.gravidade == DEVE_NORMALIZAR:
+                    self.habilitar_emerg_condic_c=False
+                    deve_normalizar=True
                 else:
-                    logger.debug("Nenhum condicionador comum ativo.")
+                    deve_normalizar=False
                     self.habilitar_emerg_condic_c=False
             
             if self.habilitar_emerg_condic_e or self.habilitar_emerg_condic_c:
-                logger.info("Foram detectados condicionadores ativos com gravidade alta! Acionando estado de emergência. ")
+                logger.info("Condicionadores ativos com gravidade alta!")
+                return Emergencia(self.usina)
+
+        if deve_normalizar:
+            if (not self.usina.normalizar_emergencia()) and self.usina.tensao_ok==False and aux==0:
+                logger.warning("Tensão da linha fora do limite ")
+                aux = 1
+                threading.Thread(target=lambda: self.usina.aguardar_tensao(20)).start()
+
+            elif self.usina.timer_tensao:
+                aux = 0
+                deve_normalizar = None
+                self.usina.timer_tensao = None
+
+            elif self.usina.timer_tensao==False:
+                aux = 0
+                deve_normalizar = None
+                self.usina.timer_tensao = None
+                logger.warning("O tempo de normalização da linha excedeu o limite! (10 min)")
                 return Emergencia(self.usina)
 
         if self.usina.clp_emergencia_acionada:
@@ -203,7 +220,6 @@ class ValoresInternosAtualizados(State):
 
         # Se não foi redirecionado ainda,
         # assume-se que o MOA deve executar de modo autônomo
-
         for ug in self.usina.ugs:
             ug.step()
 
@@ -244,6 +260,9 @@ class Emergencia(State):
             logger.warning("Numero de tentaivas de normalização excedidas, entrando em modo manual.")
             self.usina.entrar_em_modo_manual()
             self.usina.heartbeat()
+            for ug in self.usina.ugs:
+                ug.forcar_estado_indisponivel()
+                ug.step()
             return ModoManualAtivado(self.usina)
 
         else:
@@ -259,8 +278,8 @@ class Emergencia(State):
             # Ler condiconadores
             deve_indisponibilizar = False
             deve_normalizar = False
-            condicionadores_ativos = []
-            
+            condicionadores_ativos=[]
+
             for condicionador_essencial in self.usina.condicionadores_essenciais:
                 if condicionador_essencial.ativo and condicionador_essencial.gravidade == DEVE_INDISPONIBILIZAR:
                     condicionadores_ativos.append(condicionador_essencial)
@@ -268,6 +287,9 @@ class Emergencia(State):
                 elif condicionador_essencial.gravidade == DEVE_NORMALIZAR:
                     condicionadores_ativos.append(condicionador_essencial)
                     deve_normalizar = True
+                else:
+                    deve_normalizar = False
+                    deve_indisponibilizar = False
 
             for condicionador in self.usina.condicionadores:
                 if condicionador.ativo and condicionador.gravidade == DEVE_INDISPONIBILIZAR:
@@ -275,7 +297,10 @@ class Emergencia(State):
                     deve_indisponibilizar=True
                 elif condicionador.gravidade == DEVE_NORMALIZAR:
                     condicionadores_ativos.append(condicionador)
-                    deve_indisponibilizar=False
+                    deve_normalizar = True
+                else:
+                    deve_normalizar = False
+                    deve_indisponibilizar = False
 
             if (self.usina.clp_emergencia_acionada or deve_normalizar or deve_indisponibilizar):
                 try:
@@ -289,10 +314,10 @@ class Emergencia(State):
                         return ModoManualAtivado(self.usina)
 
                     elif deve_normalizar:
-                        logger.debug("Bela adormecida 5s")
+                        logger.debug("Aguardando antes de tentar normalizar novamente (5s)")
                         sleep(5)
-                        logger.info("Normalizando usina. (tentativa{}/2) (limite entre tentaivas: {}s)".format(
-                                self.n_tentativa, self.usina.cfg["timeout_normalizacao"]))
+                        logger.info("Normalizando usina. (tentativa{}/2) (limite entre tentaivas: {}s)".format(self.n_tentativa, self.usina.cfg["timeout_normalizacao"]))
+                        self.usina.deve_normalizar_forcado=True
                         self.usina.normalizar_emergencia()
                         self.usina.ler_valores()
                         return self
@@ -461,10 +486,12 @@ def acionar_voip():
 if __name__ == "__main__":
     # A escala de tempo é utilizada para acelerar as simulações do sistema
     # Utilizar 1 para testes sérios e 120 no máximo para testes simples
-    ESCALA_DE_TEMPO = 2
+    ESCALA_DE_TEMPO = 3
     if len(sys.argv) > 1:
         ESCALA_DE_TEMPO = int(sys.argv[1])
-
+    
+    aux = 0
+    deve_normalizar = None
     usina = None
     timeout = 10
     prox_estado = 0
@@ -543,6 +570,7 @@ if __name__ == "__main__":
 
     sm = StateMachine(initial_state=prox_estado(usina))
     while True:
+        print("")
         t_i = time.time()
         logger.debug("Executando estado: {}".format(sm.state.__class__.__name__))
         sm.exec()

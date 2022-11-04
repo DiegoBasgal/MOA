@@ -600,7 +600,7 @@ class StateRestrito(State):
         # Ler condiconadores
 
         # Devemos estudar quais os condicionadores que serão lidos no modo restrito para poder re-colocar a leitura de condicionadores abaixo.
-        """
+        
         deve_indisponibilizar = False
         deve_normalizar = False
         condicionadores_ativos = []
@@ -632,7 +632,7 @@ class StateRestrito(State):
             self.logger.warning("[UG{}] UG em modo disponível detectou condicionadores ativos, indisponibilizando UG.\nCondicionadores ativos:\n{}".format(self.parent_ug.id, [d.descr for d in condicionadores_ativos]))
             # Vai para o estado StateIndisponivel
             return StateIndisponivel(self.parent_ug)
-        """
+
         # Se a unidade estiver parada, travar a mesma por sinal de TRIP
         if self.parent_ug.etapa_atual == UNIDADE_PARADA:
             self.parent_ug.acionar_trip_logico()
@@ -708,7 +708,7 @@ class StateDisponivel(State):
         # Se algum condicionador deve gerar uma tentativa de normalizacao
         if deve_normalizar:
             # Se estourou as tentativas de normalização, vai para o estado StateIndisponivel
-            if (self.parent_ug.tentativas_de_normalizacao> self.parent_ug.limite_tentativas_de_normalizacao):
+            if (self.parent_ug.tentativas_de_normalizacao > self.parent_ug.limite_tentativas_de_normalizacao):
                 # Logar o ocorrido
                 self.logger.warning("[UG{}] A UG estourou as tentativas de normalização, indisponibilizando UG. \n Condicionadores ativos:\n{}".format(self.parent_ug.id,[d.descr for d in condicionadores_ativos],))
                 # Vai para o estado StateIndisponivel
