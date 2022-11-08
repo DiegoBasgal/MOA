@@ -497,16 +497,16 @@ def acionar_voip():
             elif ug.avisou_emerg_voip:
                 voip.enviar_voz_auxiliar()
 
+        if usina.avisado_em_eletrica:
+            voip.enviar_voz_emergencia()
+
         if usina.TDA_FalhaComum:
             voip.TDA_FalhaComum=True
             voip.enviar_voz_auxiliar()
 
-        elif usina.Disj_GDE_QLCF_Fechado:
+        if usina.Disj_GDE_QLCF_Fechado:
             voip.Disj_GDE_QLCF_Fechado=True
             voip.enviar_voz_auxiliar()
-
-        elif usina.avisado_em_eletrica:
-            voip.enviar_voz_emergencia()
 
         else:
             voip.Disj_GDE_QLCF_Fechado=False
