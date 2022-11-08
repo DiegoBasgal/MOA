@@ -225,23 +225,27 @@ class UnidadeDeGeracao3(UnidadeDeGeracao):
             self.logger.warning("[UG{}] A temperatura do Mancal Guia Contra Escora da UG passou do valor base! (Acima de 100C)".format(self.id))
 
         # Óleo do Transformador Elevador
-        self.leitura_temperatura_oleo_trafo = LeituraModbus("Gerador {} - Óleo do Transformador Elevador".format(self.id),self.clp_sa,REG_SA_EntradasAnalogicas_MRR_SA_TE_TempOleo,)
-        base, limite = 100, 200
+        self.leitura_temperatura_oleo_trafo = LeituraModbus("Gerador {} - Óleo do Transformador Elevador".format(self.id),self.clp_sa,REG_SA_EntradasAnalogicas_MRR_SA_TE_TempOleo, escala = 0.1 , op = 4)
+        base = 100
+        limite = 200
+        escala = 0.1
         x = self.leitura_temperatura_oleo_trafo
-        self.condicionador_leitura_temperatura_oleo_trafo = CondicionadorExponencial(x.descr, DEVE_INDISPONIBILIZAR, x, base, limite)
+        self.condicionador_leitura_temperatura_oleo_trafo = CondicionadorExponencial(x.descr, DEVE_INDISPONIBILIZAR, x, base, limite, escala)
         self.condicionadores_essenciais.append(self.condicionador_leitura_temperatura_oleo_trafo)
         if self.leitura_temperatura_oleo_trafo.valor >= self.condicionador_leitura_temperatura_oleo_trafo.valor_base:
             self.logger.warning("[UG{}] A temperatura do Óleo do Transformador Elevador da UG passou do valor base! (Acima de 100C)".format(self.id))
-
+        
         # CX Espiral
         self.leitura_caixa_espiral = LeituraModbus("Gerador {} - Caixa espiral".format(self.id),self.clp,REG_UG3_EntradasAnalogicas_MRR_PressK1CaixaExpiral,escala=0.1,op = 4)
-        base, limite = 16.5, 15.5
+        base = 16.5 
+        limite = 15.5
+        escala = 0.1
         x = self.leitura_caixa_espiral
-        self.condicionador_caixa_espiral_ug = CondicionadorExponencialReverso(x.descr, DEVE_INDISPONIBILIZAR, x, base, limite)
-        self.condicionadores_atenuadores.append(self.condicionador_caixa_espiral_ug)
-        if self.leitura_caixa_espiral.valor <= self.condicionador_caixa_espiral_ug.valor_base:
-            self.logger.warning("[UG{}] A pressão Caixa Espiral da UG passou do valor base! (Abaixo de 16.5 KGf/m2)".format(self.id))
-
+        self.condicionador_caixa_espiral_ug = CondicionadorExponencialReverso(x.descr, DEVE_INDISPONIBILIZAR, x, base, limite, escala)
+        #self.condicionadores_atenuadores.append(self.condicionador_caixa_espiral_ug)
+        #if self.leitura_caixa_espiral.valor <= self.condicionador_caixa_espiral_ug.valor_base:
+        #    self.logger.warning("[UG{}] A pressão Caixa Espiral da UG passou do valor base! (Abaixo de 16.5 KGf/m2)".format(self.id))
+        
         # alterado leituramodbuscoil para leituramodbus apenas para o simulador
         self.leitura_RetornosDigitais_MXR_TripEletrico = LeituraModbusCoil("RetornosDigitais_MXR_TripEletrico",self.clp,REG_UG3_RetornosDigitais_MXR_TripEletrico,)
         x = self.leitura_RetornosDigitais_MXR_TripEletrico
@@ -292,14 +296,6 @@ class UnidadeDeGeracao3(UnidadeDeGeracao):
 
         self.leitura_EntradasDigitais_MXI_SA_Secc3_Aberta = LeituraModbusCoil("EntradasDigitais_MXI_SA_Secc3_Aberta",self.clp_sa,REG_SA_EntradasDigitais_MXI_SA_Secc3_Aberta,)
         x = self.leitura_EntradasDigitais_MXI_SA_Secc3_Aberta
-        self.condicionadores.append(CondicionadorBase(x.descr, DEVE_INDISPONIBILIZAR, x))
-
-        self.leitura_EntradasDigitais_MXI_SA_DisjDJ1_Super125VccCiMot = LeituraModbusCoil("EntradasDigitais_MXI_SA_DisjDJ1_Super125VccCiMot",self.clp_sa,REG_SA_EntradasDigitais_MXI_SA_DisjDJ1_Super125VccCiMot,)
-        x = self.leitura_EntradasDigitais_MXI_SA_DisjDJ1_Super125VccCiMot
-        self.condicionadores.append(CondicionadorBase(x.descr, DEVE_INDISPONIBILIZAR, x))
-
-        self.leitura_EntradasDigitais_MXI_SA_DisjDJ1_Super125VccCiCom = LeituraModbusCoil("EntradasDigitais_MXI_SA_DisjDJ1_Super125VccCiCom",self.clp_sa,REG_SA_EntradasDigitais_MXI_SA_DisjDJ1_Super125VccCiCom,)
-        x = self.leitura_EntradasDigitais_MXI_SA_DisjDJ1_Super125VccCiCom
         self.condicionadores.append(CondicionadorBase(x.descr, DEVE_INDISPONIBILIZAR, x))
 
         self.leitura_EntradasDigitais_MXI_SA_DisjDJ1_BloqPressBaixa = LeituraModbusCoil("EntradasDigitais_MXI_SA_DisjDJ1_BloqPressBaixa",self.clp_sa,REG_SA_EntradasDigitais_MXI_SA_DisjDJ1_BloqPressBaixa,)

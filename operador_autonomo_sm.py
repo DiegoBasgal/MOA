@@ -194,7 +194,7 @@ class ValoresInternosAtualizados(State):
             if (not self.usina.normalizar_emergencia()) and self.usina.tensao_ok==False and aux==0:
                 logger.warning("Tensão da linha fora do limite ")
                 aux = 1
-                threading.Thread(target=lambda: self.usina.aguardar_tensao(20)).start()
+                threading.Thread(target=lambda: self.usina.aguardar_tensao(600)).start()
 
             elif self.usina.timer_tensao:
                 aux = 0

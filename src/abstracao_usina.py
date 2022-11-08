@@ -391,9 +391,9 @@ class Usina:
         logger.debug("Normalizando (e verificações)")
         logger.debug("Ultima tentativa: {}. Tensão na linha: RS {:2.1f}kV ST{:2.1f}kV TR{:2.1f}kV.".format(
                 self.ts_ultima_tentativa_normalizacao,
-                self.leituras.tensao_rs.valor / 10,
-                self.leituras.tensao_st.valor / 10,
-                self.leituras.tensao_tr.valor / 10,))
+                self.leituras.tensao_rs.valor / 1000,
+                self.leituras.tensao_st.valor / 1000,
+                self.leituras.tensao_tr.valor / 1000,))
 
         if not(self.cfg["TENSAO_LINHA_BAIXA"] < self.leituras.tensao_rs.valor < self.cfg["TENSAO_LINHA_ALTA"] \
             and self.cfg["TENSAO_LINHA_BAIXA"] < self.leituras.tensao_st.valor < self.cfg["TENSAO_LINHA_ALTA"] \
