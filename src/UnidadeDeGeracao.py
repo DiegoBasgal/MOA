@@ -11,10 +11,11 @@ import pytz
 import logging
 import traceback
 
-from time import sleep
+from time import sleep, time
 from src.codes import *
 from src import Leituras
 from src.Leituras import *
+from threading import Thread
 from datetime import datetime
 from abc import abstractmethod
 from src.Condicionadores import *
@@ -75,7 +76,7 @@ class UnidadeDeGeracao:
         self.__condicionadores_atenuadores = []
         self.aux_tempo_sincronizada = None
         self.deve_ler_condicionadores = False
-        self.codigo_state = MOA_UNIDADE_RESTRITA
+        self.codigo_state = self.__codigo_state
 
     def debug_set_etapa_atual(self, var):
         self.__etapa_atual = var
@@ -388,7 +389,13 @@ class UnidadeDeGeracao:
         """
         return isinstance(self.__next_state, StateDisponivel)
 
-    
+    @property
+    def codigo_state(self) -> int:
+        return self.__codigo_state
+
+    @codigo_state.setter
+    def codigo_state(self, var) -> int:
+        self.__codigo_state = var
 
     def partir(self) -> bool:
         """
@@ -486,12 +493,12 @@ class StateManual(State):
 
     def __init__(self, parent_ug: UnidadeDeGeracao):
         super().__init__(parent_ug)
-        self.codigo_state = MOA_UNIDADE_MANUAL
+        self.parent_ug.codigo_state = MOA_UNIDADE_MANUAL
 
         self.logger.info("[UG{}] Entrando no estado manual. Para retornar a operação autônoma da UG é necessário intervenção manual via interface web.".format(self.parent_ug.id))
 
     def step(self) -> State:
-        self.codigo_state = MOA_UNIDADE_MANUAL
+        self.parent_ug.codigo_state = MOA_UNIDADE_MANUAL
         return self
 
 
@@ -506,14 +513,14 @@ class StateIndisponivel(State):
     def __init__(self, parent_ug: UnidadeDeGeracao):
 
         super().__init__(parent_ug)
-        self.codigo_state = MOA_UNIDADE_INDISPONIVEL
+        self.parent_ug.codigo_state = MOA_UNIDADE_INDISPONIVEL
 
         self.selo = False
         self.logger.warning("[UG{}] Entrando no estado indisponível. Para retornar a operação autônoma da UG é necessário intervenção manual via interface web.".format(self.parent_ug.id))
         self.parent_ug.__next_state = self
 
     def step(self) -> State:
-        self.codigo_state = MOA_UNIDADE_INDISPONIVEL
+        self.parent_ug.codigo_state = MOA_UNIDADE_INDISPONIVEL
         # Se as unidades estiverem paradas, ou o selo estiver ativo
         self.logger.debug(
             "[UG{}] self.parent_ug.etapa_atual -> {}".format(
@@ -544,11 +551,11 @@ class StateRestrito(State):
     def __init__(self, parent_ug: UnidadeDeGeracao):
 
         super().__init__(parent_ug)
-        self.codigo_state = MOA_UNIDADE_RESTRITA
+        self.parent_ug.codigo_state = MOA_UNIDADE_RESTRITA
         self.logger.info("[UG{}] Entrando no estado restrito.".format(self.parent_ug.id))
 
     def step(self) -> State:
-        self.codigo_state = MOA_UNIDADE_RESTRITA
+        self.parent_ug.codigo_state = MOA_UNIDADE_RESTRITA
         # Ler condiconadores
 
         # Devemos estudar quais os condicionadores que serão lidos no modo restrito para poder re-colocar a leitura de condicionadores abaixo.
@@ -607,13 +614,15 @@ class StateDisponivel(State):
     def __init__(self, parent_ug: UnidadeDeGeracao):
 
         super().__init__(parent_ug)
-        self.codigo_state = MOA_UNIDADE_DISPONIVEL
+        self.aux = 0
+        self.release = False
+        self.parent_ug.codigo_state = MOA_UNIDADE_DISPONIVEL
         self.logger.info(
             "[UG{}] Entrando no estado disponível.".format(self.parent_ug.id)
         )
 
     def step(self) -> State:
-        self.codigo_state = MOA_UNIDADE_DISPONIVEL
+        self.parent_ug.codigo_state = MOA_UNIDADE_DISPONIVEL
 
         self.logger.debug(
             "[UG{}] (tentativas_de_normalizacao atual: {})".format(
@@ -697,6 +706,10 @@ class StateDisponivel(State):
                 )
             )
 
+            if self.release == True and self.aux == 1:
+                self.release = False
+                self.aux = 0
+
             # Calcula a atenuação devido aos condicionadores antes de prosseguir
             atenuacao = 0
             # Para cada condicionador
@@ -739,7 +752,9 @@ class StateDisponivel(State):
             elif self.parent_ug.etapa_atual == UNIDADE_SINCRONIZANDO:
                 # Unidade sincronizando
                 self.logger.debug("[UG{}] Unidade sincronizando".format(self.parent_ug.id))
-
+                if self.release == False and self.aux == 0:
+                    Thread(target=lambda: self.verificar_partindo()).start()
+                    self.aux = 1
                 # Se potência = 0, impedir,
                 if self.parent_ug.setpoint == 0:
                     self.logger.warning(
@@ -797,3 +812,23 @@ class StateDisponivel(State):
                 self.parent_ug.aux_tempo_sincronizada = None
 
             return self
+    
+    def verificar_partindo(self) -> bool:
+        timer = time() + 15
+        try:
+            self.logger.debug("Iniciando o timer de verificação de partida")
+            while time() < timer:
+                if self.parent_ug.etapa_atual == UNIDADE_SINCRONIZADA:
+                    self.logger.debug("[UG{}] Unidade sincronizada. Saindo do timer de verificação de partida".format(self.parent_ug.id))
+                    self.release = True
+                    return True
+            self.logger.debug("[UG{}] A Unidade estourou o timer de verificação de partida, adicionando condição para normalizar".format(self.parent_ug.id))
+            self.parent_ug.clp.write_single_coil(REG_UG1_ComandosDigitais_MXW_EmergenciaViaSuper, [1 if self.parent_ug.id==1 else 0]) 
+            self.parent_ug.clp.write_single_coil(REG_UG2_ComandosDigitais_MXW_EmergenciaViaSuper, [1 if self.parent_ug.id==2 else 0])
+            self.parent_ug.clp.write_single_coil(REG_UG3_ComandosDigitais_MXW_EmergenciaViaSuper, [1 if self.parent_ug.id==3 else 0])
+            self.release = True
+
+        except Exception as e:
+            raise e
+
+        return False

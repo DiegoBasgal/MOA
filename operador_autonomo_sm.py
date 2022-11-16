@@ -492,11 +492,21 @@ def acionar_voip():
             if ug.TDA_FalhaComum:
                 voip.TDA_FalhaComum=True
                 voip.enviar_voz_auxiliar()
-            elif ug.avisou_emerg_voip:
+
+            if ug.FreioCmdRemoto:
+                voip.FreioCmdRemoto1=[True if usina.ug1.FreioCmdRemoto else False]
+                voip.FreioCmdRemoto2=[True if usina.ug2.FreioCmdRemoto else False]
+                voip.FreioCmdRemoto3=[True if usina.ug3.FreioCmdRemoto else False]
                 voip.enviar_voz_auxiliar()
 
-        if usina.avisado_em_eletrica:
-            voip.enviar_voz_emergencia()
+            if ug.QCAUGRemoto:
+                voip.QCAUG1Remoto = [True if usina.ug1.QCAUGRemoto else False]
+                voip.QCAUG2Remoto = [True if usina.ug2.QCAUGRemoto else False]
+                voip.QCAUG3Remoto = [True if usina.ug3.QCAUGRemoto else False]
+                voip.enviar_voz_auxiliar()
+
+            if ug.avisou_emerg_voip:
+                voip.enviar_voz_auxiliar()
 
         if usina.TDA_FalhaComum:
             voip.TDA_FalhaComum=True
@@ -506,9 +516,12 @@ def acionar_voip():
             voip.Disj_GDE_QLCF_Fechado=True
             voip.enviar_voz_auxiliar()
 
-        else:
-            voip.Disj_GDE_QLCF_Fechado=False
-            voip.TDA_FalhaComum=False
+        if usina.BombasDngRemoto:
+            voip.BombasDngRemoto=True
+            voip.enviar_voz_auxiliar()
+
+        if usina.avisado_em_eletrica:
+            voip.enviar_voz_emergencia()
             
     except Exception:
         logger.warning("Houve um problema ao ligar por Voip")

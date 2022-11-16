@@ -80,6 +80,7 @@ class Usina:
         self.tensao_ok = True
         self.timer_tensao = None
         self.TDA_FalhaComum = False
+        self.BombasDngRemoto = False
         self.avisado_em_eletrica = False
         self.Disj_GDE_QLCF_Fechado = False
         self.deve_tentar_normalizar = True
@@ -1114,6 +1115,14 @@ class Usina:
             return True
         elif self.leitura_EntradasDigitais_MXI_SA_QLCF_Disj52EFechado.valor == 0 and self.Disj_GDE_QLCF_Fechado==True:
             self.Disj_GDE_QLCF_Fechado = False
+
+        self.leitura_EntradasDigitais_MXI_SA_QCADE_BombasDng_Auto = LeituraModbusCoil( "EntradasDigitais_MXI_SA_QCADE_BombasDng_Auto", self.clp, REG_SA_EntradasDigitais_MXI_SA_QCADE_BombasDng_Auto)
+        if self.leitura_EntradasDigitais_MXI_SA_QCADE_BombasDng_Auto.valor != 1 and self.BombasDngRemoto==False:
+            logger.warning("O poço de drenagem da Usina entrou em modo remoto, favor verificar.")
+            self.BombasDngRemoto=True
+            return True
+        elif self.leitura_EntradasDigitais_MXI_SA_QCADE_BombasDng_Auto.valor == 1 and self.BombasDngRemoto==True:
+            self.BombasDngRemoto=False
 
         return False
 

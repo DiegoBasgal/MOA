@@ -18,7 +18,9 @@ class UnidadeDeGeracao1(UnidadeDeGeracao):
         self.con = FieldConnector(self.cfg)
 
         self.__last_EtapaAtual = 0
+        self.QCAUGRemoto = False
         self.TDA_FalhaComum = False
+        self.FreioCmdRemoto = False
         self.avisou_emerg_voip = False
         self.enviar_trip_eletrico = False
 
@@ -246,6 +248,10 @@ class UnidadeDeGeracao1(UnidadeDeGeracao):
         if self.leitura_caixa_espiral.valor <= self.condicionador_caixa_espiral_ug.valor_base and self.etapa_atual==UNIDADE_SINCRONIZADA:
             self.logger.warning("[UG{}] A pressão Caixa Espiral da UG passou do valor base! (Abaixo de 16.5 KGf/m2)".format(self.id))
         
+        self.leitura_ComandosDigitais_MXW_EmergenciaViaSuper = LeituraModbusCoil("ComandosDigitais_MXW_EmergenciaViaSuper", self.clp, REG_UG1_ComandosDigitais_MXW_EmergenciaViaSuper,)
+        x = self.leitura_ComandosDigitais_MXW_EmergenciaViaSuper
+        self.condicionadores_essenciais.append(CondicionadorBase(x.descr, DEVE_NORMALIZAR, x))
+
         # alterado leituramodbuscoil para leituramodbus apenas para o simulador
         self.leitura_RetornosDigitais_MXR_TripEletrico = LeituraModbusCoil("RetornosDigitais_MXR_TripEletrico", self.clp, REG_UG1_RetornosDigitais_MXR_TripEletrico,)
         x = self.leitura_RetornosDigitais_MXR_TripEletrico
@@ -600,8 +606,10 @@ class UnidadeDeGeracao1(UnidadeDeGeracao):
             if not self.clp.read_discrete_inputs(REG_UG1_COND_PART,1)[0]:
                 self.logger.debug("[UG{}] Máquina sem condição de partida. Irá partir quando as condições forem reestabelecidas.".format(self.id))
                 return True
-            
-            if not self.etapa_atual == UNIDADE_SINCRONIZADA:
+            elif self.clp_sa.read_coils(REG_SA_EntradasDigitais_MXI_SA_QCAP_Disj52A1Fechado)[0] != 1:
+                logger.debug("[UG{}] O Disjuntor 52A1 está aberto. Para partir a máquina, o mesmo deverá ser fechado.")
+                return True
+            elif not self.etapa_atual == UNIDADE_SINCRONIZADA:
                 self.logger.info("[UG{}] Enviando comando de partida.".format(self.id))
                 response = self.clp.write_single_coil(REG_UG1_ComandosDigitais_MXW_ResetGeral, 1)
                 response = self.clp.write_single_coil(REG_UG1_ComandosDigitais_MXW_ResetRele700G, 1)
@@ -792,4 +800,20 @@ class UnidadeDeGeracao1(UnidadeDeGeracao):
         elif self.leitura_RetornosDigitais_MXR_FalhaComunG1TDA.valor == 0 and self.TDA_FalhaComum==True:
             self.TDA_FalhaComum = False
         
+        self.leitura_EntradasDigitais_MXI_FreioCmdRemoto = LeituraModbusCoil( "EntradasDigitais_MXI_FreioCmdRemoto", self.clp, REG_UG1_EntradasDigitais_MXI_FreioCmdRemoto )
+        if self.leitura_EntradasDigitais_MXI_FreioCmdRemoto.valor != 1 and self.FreioCmdRemoto==False:
+            self.logger.warning("[UG{}] O sensor de freio da UG entrou em modo remoto, favor analisar a situação.".format(self.id))
+            self.FreioCmdRemoto=True
+            return True
+        elif self.leitura_EntradasDigitais_MXI_FreioCmdRemoto.valor == 1 and self.FreioCmdRemoto==True:
+            self.FreioCmdRemoto=False
+
+        self.leitura_EntradasDigitais_MXI_QCAUG1_Remoto = LeituraModbusCoil( "EntradasDigitais_MXI_QCAUG1_Remoto", self.clp, REG_UG1_EntradasDigitais_MXI_QCAUG1_Remoto )
+        if self.leitura_EntradasDigitais_MXI_QCAUG1_Remoto.valor != 1 and self.QCAUGRemoto==False:
+            self.logger.warning("[UG{}] O compressor da UG entrou em modo remoto, favor analisar a situação.".format(self.id))
+            self.QCAUGRemoto=True
+            return True
+        elif self.leitura_EntradasDigitais_MXI_QCAUG1_Remoto.valor == 1 and self.QCAUGRemoto==True:
+            self.QCAUGRemoto=False
+
         return False

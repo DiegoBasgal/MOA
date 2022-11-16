@@ -14,12 +14,14 @@ A principal maneira de se utilizar o modo server-less é através da
 função enviar_a_todos().
 
 """
+import os
+import pytz
 import json
 import logging
-import os
-from sys import stdout
 import telegram
+from sys import stdout
 from telegram import Update
+from datetime import datetime
 from telegram.ext import Updater, CommandHandler, CallbackContext
 
 import threading
@@ -35,9 +37,16 @@ fh = logging.FileHandler(
 )  # log para arquivo
 ch = logging.StreamHandler(stdout)  # log para linha de comando
 
+def timeConverter(*args):
+    return datetime.now(tz).timetuple()
+
+tz = pytz.timezone("Brazil/East")
+
 logFormatter = logging.Formatter(
     "%(asctime)s [%(threadName)-12.12s] [%(levelname)-5.5s] %(message)s"
 )
+logFormatter.converter =timeConverter
+
 fh.setFormatter(logFormatter)
 ch.setFormatter(logFormatter)
 fh.setLevel(logging.INFO)
@@ -51,6 +60,7 @@ with open(config_file, "r") as file:
     config = json.load(file)
 logger.debug("Config: {}".format(config))
 
+audio_url = "http://www.ritmoenergia.com.br/wp-content/uploads/2022/07/Emergencia-SEB.mp3"
 
 def salvar_config():
     """
@@ -161,6 +171,34 @@ def threaded_enviar_a_todos(mensagem):
                 enviar_a_todos('Erro "{}" no chat "{}"\n Chat_id {} excluido.'.format(e, chat_id, chat_id))
                 sleep(5)
                 mandou = False
+            except Exception as e:
+                logger.error('Erro "{}" no chat "{}"'.format(e, chat_id))
+                sleep(5)
+                mandou = False
+
+def enviar_a_todos_emergencia():
+    threading.Thread(target=threaded_enviar_voz_emergencia).start()
+
+def threaded_enviar_voz_emergencia():
+    with open(config_file, "r") as file:
+        config = json.load(file)
+
+    bot = telegram.Bot(config["bot_token"])
+    for chat_id in config["chat_ids"]:
+        mandou = False
+        while not mandou:
+            try:
+                bot.send_audio(chat_id=chat_id, audio=audio_url)
+                mandou = True
+
+            except telegram.error.Unauthorized as e:
+                logger.error('Erro "{}" no chat "{}"'.format(e, chat_id))
+                config["chat_ids"].remove(chat_id)
+                salvar_config()
+                enviar_a_todos('Erro "{}" no chat "{}"\n Chat_id {} excluido.'.format(e, chat_id, chat_id))
+                sleep(5)
+                mandou = False
+
             except Exception as e:
                 logger.error('Erro "{}" no chat "{}"'.format(e, chat_id))
                 sleep(5)

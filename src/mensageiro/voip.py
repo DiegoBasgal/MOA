@@ -23,7 +23,14 @@ config_file = os.path.join(os.path.dirname(__file__), "voip_config.json")
 with open(config_file, "r") as file:
     config = json.load(file)
 
+QCAUG1Remoto = False
+QCAUG2Remoto = False
+QCAUG3Remoto = False
+FreioCmdRemoto1 = False
+FreioCmdRemoto2 = False
+FreioCmdRemoto3 = False
 TDA_FalhaComum = False
+BombasDngRemoto = False
 Disj_GDE_QLCF_Fechado = False
 
 napikey = config["napikey"]
@@ -209,24 +216,130 @@ def enviar_voz_auxiliar(lista_de_contatos=None):
                 logger.exception(e)
                 lista_de_contatos = lista_de_contatos_padrao
 
-    if Disj_GDE_QLCF_Fechado:
+    
         # Para cada contato na lista de contatos deve-se fazer uma chamada a web api
         for contato in lista_de_contatos:
             logger.info("Disparando torpedo de voz para {} ({})".format(contato[0], contato[1]))
 
-            # Montagem do pacote para chamar a api
-            data = {
-                "caller": "{}".format(caller_voip),  # caller fornecido pela nvoip
-                "called": "{}".format(contato[1]),  # O número a ser chamado, no formato dddnnnnnnnnn
-                "audios": [
-                    {
-                        "audio": "Atenção! Foi identificado que o disjuntor do gerador diesel de emergência QLCF em São Sebastião foi fechado, favor verificar. Atenção! Foi identificado que o disjuntor do gerador diesel de emergência QLCF em São Sebastião foi fechado, favor verificar.",
-                        "positionAudio": 1,
-                    }
-                ],
-                "dtmfs": [],
-            }
+            if Disj_GDE_QLCF_Fechado:
+                # Montagem do pacote para chamar a api
+                data = {
+                    "caller": "{}".format(caller_voip),  # caller fornecido pela nvoip
+                    "called": "{}".format(contato[1]),  # O número a ser chamado, no formato dddnnnnnnnnn
+                    "audios": [
+                        {
+                            "audio": "Atenção! Foi identificado que o disjuntor do gerador diesel de emergência QLCF em São Sebastião foi fechado, favor verificar. Atenção! Foi identificado que o disjuntor do gerador diesel de emergência QLCF em São Sebastião foi fechado, favor verificar.",
+                            "positionAudio": 1,
+                        }
+                    ],
+                    "dtmfs": [],
+                }
 
+            if TDA_FalhaComum:
+                # Montagem do pacote para chamar a api
+                data = {
+                    "caller": "{}".format(caller_voip),  # caller fornecido pela nvoip
+                    "called": "{}".format(contato[1]),  # O número a ser chamado, no formato dddnnnnnnnnn
+                    "audios": [
+                        {
+                            "audio": "Atenção! Houve uma falha de comunicação com o CLP na Tomada da Água em São Sebastião, favor verificar o telegram para mais informações. Atenção! Houve uma falha de comunicação com o CLP na Tomada da Água em São Sebastião, favor verificar o telegram para mais informações.",
+                            "positionAudio": 1,
+                        }
+                    ],
+                    "dtmfs": [],
+                }
+
+            if BombasDngRemoto:
+                data = {
+                    "caller": "{}".format(caller_voip),  # caller fornecido pela nvoip
+                    "called": "{}".format(contato[1]),  # O número a ser chamado, no formato dddnnnnnnnnn
+                    "audios": [
+                        {
+                            "audio": "Atenção! Foi identificado que o painel do poço de drenagem em São Sebastião entrou em modo remoto, favor verificar. Atenção! Foi identificado que o painel do poço de drenagem em São Sebastião entrou em modo remoto, favor verificar.",
+                            "positionAudio": 1,
+                        }
+                    ],
+                    "dtmfs": [],
+                }
+
+            if QCAUG1Remoto:
+                data = {
+                    "caller": "{}".format(caller_voip),  # caller fornecido pela nvoip
+                    "called": "{}".format(contato[1]),  # O número a ser chamado, no formato dddnnnnnnnnn
+                    "audios": [
+                        {
+                            "audio": "Atenção! Foi identificado que o painel do compressor da UG1 em São Sebastião entrou em modo remoto, favor verificar. Atenção! Foi identificado que o painel do compressor da UG1 em São Sebastião entrou em modo remoto, favor verificar.",
+                            "positionAudio": 1,
+                        }
+                    ],
+                    "dtmfs": [],
+                }
+
+            if QCAUG2Remoto:
+                data = {
+                    "caller": "{}".format(caller_voip),  # caller fornecido pela nvoip
+                    "called": "{}".format(contato[1]),  # O número a ser chamado, no formato dddnnnnnnnnn
+                    "audios": [
+                        {
+                            "audio": "Atenção! Foi identificado que o painel do compressor da UG2 em São Sebastião entrou em modo remoto, favor verificar. Atenção! Foi identificado que o painel do compressor da UG2 em São Sebastião entrou em modo remoto, favor verificar.",
+                            "positionAudio": 1,
+                        }
+                    ],
+                    "dtmfs": [],
+                }
+
+            if QCAUG3Remoto:
+                data = {
+                    "caller": "{}".format(caller_voip),  # caller fornecido pela nvoip
+                    "called": "{}".format(contato[1]),  # O número a ser chamado, no formato dddnnnnnnnnn
+                    "audios": [
+                        {
+                            "audio": "Atenção! Foi identificado que o painel do compressor da UG3 em São Sebastião entrou em modo remoto, favor verificar. Atenção! Foi identificado que o painel do compressor da UG3 em São Sebastião entrou em modo remoto, favor verificar.",
+                            "positionAudio": 1,
+                        }
+                    ],
+                    "dtmfs": [],
+                }
+
+            if FreioCmdRemoto1:
+                data = {
+                    "caller": "{}".format(caller_voip),  # caller fornecido pela nvoip
+                    "called": "{}".format(contato[1]),  # O número a ser chamado, no formato dddnnnnnnnnn
+                    "audios": [
+                        {
+                            "audio": "Atenção! Foi identificado que o freio da UG1 em São Sebastião entrou em modo remoto, favor verificar. Atenção! Foi identificado que o freio da UG1 em São Sebastião entrou em modo remoto, favor verificar.",
+                            "positionAudio": 1,
+                        }
+                    ],
+                    "dtmfs": [],
+                }
+
+            if FreioCmdRemoto2:
+                data = {
+                    "caller": "{}".format(caller_voip),  # caller fornecido pela nvoip
+                    "called": "{}".format(contato[1]),  # O número a ser chamado, no formato dddnnnnnnnnn
+                    "audios": [
+                        {
+                            "audio": "Atenção! Foi identificado que o freio da UG2 em São Sebastião entrou em modo remoto, favor verificar. Atenção! Foi identificado que o freio da UG2 em São Sebastião entrou em modo remoto, favor verificar.",
+                            "positionAudio": 1,
+                        }
+                    ],
+                    "dtmfs": [],
+                }
+
+            if FreioCmdRemoto3:
+                data = {
+                    "caller": "{}".format(caller_voip),  # caller fornecido pela nvoip
+                    "called": "{}".format(contato[1]),  # O número a ser chamado, no formato dddnnnnnnnnn
+                    "audios": [
+                        {
+                            "audio": "Atenção! Foi identificado que o freio da UG3 em São Sebastião entrou em modo remoto, favor verificar. Atenção! Foi identificado que o freio da UG3 em São Sebastião entrou em modo remoto, favor verificar.",
+                            "positionAudio": 1,
+                        }
+                    ],
+                    "dtmfs": [],
+                }
+                
             headers = {"Content-Type": "application/json", "Authorization": access_token,}
 
             # pharse/encode para json
@@ -242,31 +355,6 @@ def enviar_voz_auxiliar(lista_de_contatos=None):
             else:
                 logger.debug("response_body: {} ".format(response_body))
 
-    elif TDA_FalhaComum:
-        for contato in lista_de_contatos_padrao:
-            data = {
-                "caller": "{}".format(caller_voip),  # caller fornecido pela nvoip
-                "called": "{}".format(contato[1]),  # O número a ser chamado, no formato dddnnnnnnnnn
-                "audios": [
-                    {
-                        "audio": "Atenção! Houve uma falha de comunicação com o CLP na Tomada da Água em São Sebastião, favor verificar o telegram para mais informações. Atenção! Houve uma falha de comunicação com o CLP na Tomada da Água em São Sebastião, favor verificar o telegram para mais informações.",
-                        "positionAudio": 1,
-                    }
-                ],
-                "dtmfs": [],
-            }
-
-            headers = {"Content-Type": "application/json", "Authorization": access_token}
-            data = json.dumps(data)
-            data = str(data).encode()
-            request = Request("https://api.nvoip.com.br/v2/torpedo/voice?napikey={}".format(napikey), data=data, headers=headers)
-
-            try:
-                response_body = urlopen(request).read()
-            except Exception as e:
-                logger.debug("Exception NVOIP: {} ".format(e.read()))
-            else:
-                logger.debug("response_body: {} ".format(response_body))
 
 if __name__ == "__main__":
    enviar_voz_auxiliar()
