@@ -14,6 +14,9 @@ class UnidadeDeGeracao1(UnidadeDeGeracao):
             self.cfg = cfg
             self.leituras_usina = leituras_usina
         
+        from src.field_connector import FieldConnector
+        self.con = FieldConnector(self.cfg)
+
         self.__last_EtapaAtual = 0
         self.TDA_FalhaComum = False
         self.avisou_emerg_voip = False
@@ -234,19 +237,19 @@ class UnidadeDeGeracao1(UnidadeDeGeracao):
         
         # CX Espiral
         self.leitura_caixa_espiral = LeituraModbus("Gerador {} - Caixa espiral".format(self.id),self.clp,REG_UG1_EntradasAnalogicas_MRR_PressK1CaixaExpiral,escala=0.1,op = 4)
-        base = 16.5 
+        base = 16.1
         limite = 15.5
         escala = 0.1
         x = self.leitura_caixa_espiral
         self.condicionador_caixa_espiral_ug = CondicionadorExponencialReverso(x.descr, DEVE_INDISPONIBILIZAR, x, base, limite, escala)
-        #self.condicionadores_atenuadores.append(self.condicionador_caixa_espiral_ug)
-        #if self.leitura_caixa_espiral.valor <= self.condicionador_caixa_espiral_ug.valor_base:
-        #    self.logger.warning("[UG{}] A pressão Caixa Espiral da UG passou do valor base! (Abaixo de 16.5 KGf/m2)".format(self.id))
+        self.condicionadores_atenuadores.append(self.condicionador_caixa_espiral_ug)
+        if self.leitura_caixa_espiral.valor <= self.condicionador_caixa_espiral_ug.valor_base and self.etapa_atual==UNIDADE_SINCRONIZADA:
+            self.logger.warning("[UG{}] A pressão Caixa Espiral da UG passou do valor base! (Abaixo de 16.5 KGf/m2)".format(self.id))
         
         # alterado leituramodbuscoil para leituramodbus apenas para o simulador
         self.leitura_RetornosDigitais_MXR_TripEletrico = LeituraModbusCoil("RetornosDigitais_MXR_TripEletrico", self.clp, REG_UG1_RetornosDigitais_MXR_TripEletrico,)
         x = self.leitura_RetornosDigitais_MXR_TripEletrico
-        self.condicionadores_essenciais.append(CondicionadorBase(x.descr, DEVE_INDISPONIBILIZAR, x))
+        self.condicionadores_essenciais.append(CondicionadorBase(x.descr, DEVE_NORMALIZAR, x))
         
         self.leitura_ReleBloqA86MAtuado = LeituraModbusCoil("ReleBloqA86MAtuado", self.clp, REG_UG1_EntradasDigitais_MXI_ReleBloqA86MAtuado)
         x = self.leitura_ReleBloqA86MAtuado
@@ -254,7 +257,8 @@ class UnidadeDeGeracao1(UnidadeDeGeracao):
 
         self.leitura_ReleBloqA86HAtuado = LeituraModbusCoil("ReleBloqA86HAtuado", self.clp, REG_UG1_EntradasDigitais_MXI_ReleBloqA86HAtuado)
         x = self.leitura_ReleBloqA86HAtuado
-        self.condicionadores_essenciais.append(CondicionadorBase(x.descr, DEVE_INDISPONIBILIZAR, x))
+        if not (self.etapa_atual==UNIDADE_PARADA or self.etapa_atual==UNIDADE_PARANDO):
+            self.condicionadores_essenciais.append(CondicionadorBase(x.descr, DEVE_NORMALIZAR, x))
 
         self.leitura_SEL700G_Atuado = LeituraModbusCoil("SEL700G_Atuado", self.clp, REG_UG1_EntradasDigitais_MXI_SEL700G_Atuado)
         x = self.leitura_SEL700G_Atuado
@@ -270,7 +274,8 @@ class UnidadeDeGeracao1(UnidadeDeGeracao):
 
         self.leitura_RetornosDigitais_MXR_700G_Trip = LeituraModbusCoil("RetornosDigitais_MXR_700G_Trip", self.clp, REG_UG1_RetornosDigitais_MXR_700G_Trip,) 
         x = self.leitura_RetornosDigitais_MXR_700G_Trip
-        self.condicionadores_essenciais.append(CondicionadorBase(x.descr, DEVE_INDISPONIBILIZAR, x))
+        if not (self.etapa_atual==UNIDADE_PARADA or self.etapa_atual==UNIDADE_PARANDO):
+            self.condicionadores_essenciais.append(CondicionadorBase(x.descr, DEVE_NORMALIZAR, x))
 
         self.leitura_AVR_Trip = LeituraModbusCoil("AVR_Trip", self.clp, REG_UG1_EntradasDigitais_MXI_AVR_Trip)
         x = self.leitura_AVR_Trip
@@ -279,21 +284,9 @@ class UnidadeDeGeracao1(UnidadeDeGeracao):
 
         #Lista de condiconadores que deverão ser lidos apenas quando houver uma chamada de leitura
 #-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------#
-        
-        self.leitura_EntradasDigitais_MXI_Falta125VccQPCUG2 = LeituraModbusCoil("EntradasDigitais_MXI_Falta125VccQPCUG2",self.clp,REG_UG1_EntradasDigitais_MXI_Falta125VccQPCUG2,)
-        x = self.leitura_EntradasDigitais_MXI_Falta125VccQPCUG2
-        self.condicionadores.append(CondicionadorBase(x.descr, DEVE_INDISPONIBILIZAR, x))
-
-        self.leitura_EntradasDigitais_MXI_Falta125VccQPCUG3 = LeituraModbusCoil("EntradasDigitais_MXI_Falta125VccQPCUG3",self.clp,REG_UG1_EntradasDigitais_MXI_Falta125VccQPCUG3,)
-        x = self.leitura_EntradasDigitais_MXI_Falta125VccQPCUG3
-        self.condicionadores.append(CondicionadorBase(x.descr, DEVE_INDISPONIBILIZAR, x))
 
         self.leitura_EntradasDigitais_MXI_SA_FalhaDisjTPsSincrG1 = LeituraModbusCoil("EntradasDigitais_MXI_SA_FalhaDisjTPsSincrG1",self.clp_sa,REG_SA_EntradasDigitais_MXI_SA_FalhaDisjTPsSincrG1,)
         x = self.leitura_EntradasDigitais_MXI_SA_FalhaDisjTPsSincrG1
-        self.condicionadores.append(CondicionadorBase(x.descr, DEVE_INDISPONIBILIZAR, x))
-
-        self.leitura_EntradasDigitais_MXI_SA_Secc1_Aberta = LeituraModbusCoil("EntradasDigitais_MXI_SA_Secc1_Aberta",self.clp_sa,REG_SA_EntradasDigitais_MXI_SA_Secc1_Aberta,)
-        x = self.leitura_EntradasDigitais_MXI_SA_Secc1_Aberta
         self.condicionadores.append(CondicionadorBase(x.descr, DEVE_INDISPONIBILIZAR, x))
 
         self.leitura_EntradasDigitais_MXI_SA_DisjDJ1_BloqPressBaixa = LeituraModbusCoil("EntradasDigitais_MXI_SA_DisjDJ1_BloqPressBaixa",self.clp_sa,REG_SA_EntradasDigitais_MXI_SA_DisjDJ1_BloqPressBaixa,)
@@ -306,7 +299,8 @@ class UnidadeDeGeracao1(UnidadeDeGeracao):
         
         self.leitura_EntradasDigitais_MXI_SA_Disj52G1_Aberto = LeituraModbusCoil("EntradasDigitais_MXI_SA_Disj52G1_Aberto",self.clp_sa,REG_SA_EntradasDigitais_MXI_SA_Disj52G1_Aberto,)
         x = self.leitura_EntradasDigitais_MXI_SA_Disj52G1_Aberto
-        self.condicionadores.append(CondicionadorBase(x.descr, DEVE_INDISPONIBILIZAR, x))
+        if self.etapa_atual==UNIDADE_SINCRONIZADA:
+            self.condicionadores.append(CondicionadorBase(x.descr, DEVE_NORMALIZAR, x))
         
         self.leitura_EntradasDigitais_MXI_ValvBorbTravada = LeituraModbusCoil( "EntradasDigitais_MXI_ValvBorbTravada", self.clp, REG_UG1_EntradasDigitais_MXI_ValvBorbTravada )
         x = self.leitura_EntradasDigitais_MXI_ValvBorbTravada
@@ -318,10 +312,6 @@ class UnidadeDeGeracao1(UnidadeDeGeracao):
 
         self.leitura_EntradasDigitais_MXI_UHRV_TripBomba1 = LeituraModbusCoil( "EntradasDigitais_MXI_UHRV_TripBomba1", self.clp, REG_UG1_EntradasDigitais_MXI_UHRV_TripBomba1 )
         x = self.leitura_EntradasDigitais_MXI_UHRV_TripBomba1
-        self.condicionadores.append( CondicionadorBase(x.descr, DEVE_INDISPONIBILIZAR, x) )
-
-        self.leitura_EntradasDigitais_MXI_UHRV_PressCriticaPos321 = LeituraModbusCoil( "EntradasDigitais_MXI_UHRV_PressCriticaPos321", self.clp, REG_UG1_EntradasDigitais_MXI_UHRV_PressCriticaPos321 )
-        x = self.leitura_EntradasDigitais_MXI_UHRV_PressCriticaPos321
         self.condicionadores.append( CondicionadorBase(x.descr, DEVE_INDISPONIBILIZAR, x) )
 
         self.leitura_EntradasDigitais_MXI_UHRV_NivOleominimoPos36 = LeituraModbusCoil( "EntradasDigitais_MXI_UHRV_NivOleominimoPos36", self.clp, REG_UG1_EntradasDigitais_MXI_UHRV_NivOleominimoPos36 )
@@ -462,7 +452,7 @@ class UnidadeDeGeracao1(UnidadeDeGeracao):
 
         self.leitura_EntradasDigitais_MXI_QCAUG_Falha380VcaPainel = LeituraModbusCoil( "EntradasDigitais_MXI_QCAUG_Falha380VcaPainel", self.clp, REG_UG1_EntradasDigitais_MXI_QCAUG_Falha380VcaPainel )
         x = self.leitura_EntradasDigitais_MXI_QCAUG_Falha380VcaPainel
-        self.condicionadores.append( CondicionadorBase(x.descr, DEVE_INDISPONIBILIZAR, x) )
+        self.condicionadores.append( CondicionadorBase(x.descr, DEVE_NORMALIZAR, x) )
 
         self.leitura_EntradasDigitais_MXI_PalhetasDesal = LeituraModbusCoil( "EntradasDigitais_MXI_PalhetasDesal", self.clp, REG_UG1_EntradasDigitais_MXI_PalhetasDesal )
         x = self.leitura_EntradasDigitais_MXI_PalhetasDesal
@@ -518,7 +508,7 @@ class UnidadeDeGeracao1(UnidadeDeGeracao):
 
         self.RetornosDigitais_MXR_TripPressaoCaixaEspiral = LeituraModbusCoil( "RetornosDigitais_MXR_TripPressaoCaixaEspiral", self.clp, REG_UG1_RetornosDigitais_MXR_TripPressaoCaixaEspiral, )
         x = self.RetornosDigitais_MXR_TripPressaoCaixaEspiral
-        self.condicionadores.append( CondicionadorBase(x.descr, DEVE_INDISPONIBILIZAR, x) )
+        self.condicionadores.append( CondicionadorBase(x.descr, DEVE_NORMALIZAR, x) )
 
 #-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------#
 
@@ -567,8 +557,8 @@ class UnidadeDeGeracao1(UnidadeDeGeracao):
         """
         try:
             self.enviar_trip_eletrico = True
-            self.logger.debug("[UG{}] Acionando sinal (elétrico) de TRIP.".format(self.id))
-            DataBank.set_words(self.cfg["REG_MOA_OUT_BLOCK_UG{}".format(self.id)],[1],)
+            self.logger.debug("[UG{}] Acionando sinal elétrico de TRIP.".format(self.id))
+            DataBank.set_words(self.cfg["REG_MOA_OUT_BLOCK_UG1"],[1],)
         except:
             #! TODO Tratar exceptions
             return False
@@ -584,21 +574,16 @@ class UnidadeDeGeracao1(UnidadeDeGeracao):
         """
         try:
             self.enviar_trip_eletrico = False
-            self.logger.debug(
-                "[UG{}] Removendo sinal (elétrico) de TRIP.".format(self.id)
-            )
-            DataBank.set_words(
-                self.cfg["REG_MOA_OUT_BLOCK_UG{}".format(self.id)],
-                [0],
-            )
-            DataBank.set_words(
-                self.cfg["REG_PAINEL_LIDO"],
-                [0],
-            )
+            self.logger.debug("[UG{}] Removendo sinal elétrico de TRIP.".format(self.id))
+            DataBank.set_words(self.cfg["REG_MOA_OUT_BLOCK_UG1"],[0],)
+            DataBank.set_words(self.cfg["REG_PAINEL_LIDO"],[0],)
+            response = self.clp.write_single_coil(REG_UG1_ComandosDigitais_MXW_Cala_Sirene, 1)
+
+            if self.clp_sa.read_coils(REG_SA_ComandosDigitais_MXW_Liga_DJ1)[0] == 0:
+                self.logger.debug("Comando recebido da UG1 - Fechando Dj52L")
+                self.con.fechaDj52L()
         except Exception as e:
-            self.logger.warning(
-                "Exception! Traceback: {}".format(traceback.format_exc())
-            )
+            self.logger.debug("Exception! Traceback: {}".format(traceback.format_exc()))
             return False
         else:
             return True
@@ -612,12 +597,12 @@ class UnidadeDeGeracao1(UnidadeDeGeracao):
         """
         try:
             # na simulação, a condição a seguir, impede a partida das ugs. Retirar comentário quando for aplicar em campo
-            if not self.clp.read_coils(REG_UG1_COND_PART,1)[0]:
-                self.logger.debug("[UG{}] Sem cond. de partida. Vai partir quando tiver.".format(self.id))
+            if not self.clp.read_discrete_inputs(REG_UG1_COND_PART,1)[0]:
+                self.logger.debug("[UG{}] Máquina sem condição de partida. Irá partir quando as condições forem reestabelecidas.".format(self.id))
                 return True
             
             if not self.etapa_atual == UNIDADE_SINCRONIZADA:
-                self.logger.info("[UG{}] Enviando comando (via rede) de partida.".format(self.id))
+                self.logger.info("[UG{}] Enviando comando de partida.".format(self.id))
                 response = self.clp.write_single_coil(REG_UG1_ComandosDigitais_MXW_ResetGeral, 1)
                 response = self.clp.write_single_coil(REG_UG1_ComandosDigitais_MXW_ResetRele700G, 1)
                 response = self.clp.write_single_coil(REG_UG1_ComandosDigitais_MXW_ResetReleBloq86H, 1)
@@ -626,9 +611,11 @@ class UnidadeDeGeracao1(UnidadeDeGeracao):
                 response = self.clp.write_single_coil(REG_UG1_ComandosDigitais_MXW_ResetRV, 1)
                 # tilizar o write_single_register quando for para rodar o simulador
                 response = self.clp.write_single_coil(REG_UG1_ComandosDigitais_MXW_IniciaPartida, 1)
+                response = self.clp.write_single_coil(REG_UG1_ComandosDigitais_MXW_Cala_Sirene, 1)
                 self.enviar_setpoint(self.setpoint)
             else:
-                self.logger.debug("[UG{}] Enviando comando (via rede) de partida.".format(self.id))
+                self.logger.debug("[UG{}] A unidade já está sincronizada.".format(self.id))
+                response = self.clp.write_single_coil(REG_UG1_ComandosDigitais_MXW_Cala_Sirene, 1)
         except:
             #! TODO Tratar exceptions
             return False
@@ -644,15 +631,17 @@ class UnidadeDeGeracao1(UnidadeDeGeracao):
         """
         try:
             if not self.etapa_atual == UNIDADE_PARADA:
-                self.logger.info("[UG{}] Enviando comando (via rede) de parada.".format(self.id))
+                self.logger.info("[UG{}] Enviando comando de parada.".format(self.id))
                 response = False
                 response = self.clp.write_single_coil(REG_UG1_ComandosDigitais_MXW_AbortaPartida, 1)
                 response = self.clp.write_single_coil(REG_UG1_ComandosDigitais_MXW_AbortaSincronismo, 1)
                 # utilizar o write_single_register quando for para rodar o simulador
                 response = self.clp.write_single_coil(REG_UG1_ComandosDigitais_MXW_IniciaParada, 1)
+                response = self.clp.write_single_coil(REG_UG1_ComandosDigitais_MXW_Cala_Sirene, 1)
                 self.enviar_setpoint(self.setpoint)
             else:
-                self.logger.debug("[UG{}] Enviando comando (via rede) de parada.".format(self.id))
+                self.logger.debug("[UG{}] A unidade já está parada.".format(self.id))
+                response = self.clp.write_single_coil(REG_UG1_ComandosDigitais_MXW_Cala_Sirene, 1)
             
         except Exception as e:
             self.logger.exception(e)
@@ -676,9 +665,8 @@ class UnidadeDeGeracao1(UnidadeDeGeracao):
                 DataBank.set_words(self.cfg["REG_PAINEL_LIDO"], [0])
                 sleep(1)
                 self.remover_trip_logico()
-                response = self.clp.write_single_coil(
-                    REG_UG1_ComandosDigitais_MXW_ResetGeral, 1
-                )
+                response = self.clp.write_single_coil(REG_UG1_ComandosDigitais_MXW_ResetGeral, 1)
+                response = self.clp.write_single_coil(REG_UG1_ComandosDigitais_MXW_Cala_Sirene, 1)
                 DataBank.set_words(self.cfg["REG_PAINEL_LIDO"], [0])
                 sleep(1)
 

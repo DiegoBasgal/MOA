@@ -1,7 +1,7 @@
 import logging
-from pyModbusTCP.client import ModbusClient
-from src.modbus_mapa_antigo import *
 from time import sleep
+from src.modbus_mapa_antigo import *
+from pyModbusTCP.client import ModbusClient
 
 logger = logging.getLogger("__main__")
 
@@ -112,14 +112,11 @@ class FieldConnector:
         logger.debug("Closed Modbus")
 
     def fechaDj52L(self):
-        if not self.get_flag_falha52L():
+        if self.get_flag_falha52L():
             return False
         else:
-            # utilizar o writ_single_register para a simulação
-            response = self.usn_clp.write_single_register(REG_SA_ComandosDigitais_MXW_Liga_DJ1, int(1))
-
-            # utilizar o writ_single_coil para o ambiente em produção
-            # response = self.usn_clp.write_single_coil(REG_SA_ComandosDigitais_MXW_Liga_DJ1, 1)
+            # utilizar o write_single_coil para o ambiente em produção e write_single_register para a simulação
+            response = self.usn_clp.write_single_coil(REG_SA_ComandosDigitais_MXW_Liga_DJ1, 1)
             return response
 
     def normalizar_emergencia(self):
@@ -139,6 +136,10 @@ class FieldConnector:
 
     def somente_reconhecer_emergencia(self):
         logger.debug("Somente reconhece alarmes não implementado em SEB")
+        self.ug1_clp.write_single_coil(REG_UG1_ComandosDigitais_MXW_Cala_Sirene, 1)
+        self.ug2_clp.write_single_coil(REG_UG2_ComandosDigitais_MXW_Cala_Sirene, 1)
+        self.ug3_clp.write_single_coil(REG_UG3_ComandosDigitais_MXW_Cala_Sirene, 1)
+        self.usn_clp.write_single_coil(REG_SA_ComandosDigitais_MXW_Cala_Sirene, 1)
 
     def acionar_emergencia(self):
         logger.warning("FC: Acionando emergencia")
@@ -151,47 +152,48 @@ class FieldConnector:
         self.ug3_clp.write_single_coil(REG_UG3_ComandosDigitais_MXW_EmergenciaViaSuper, 0)
 
     def get_flag_falha52L(self):
-        if not self.usn_clp.read_discrete_inputs(REG_SA_EntradasDigitais_MXI_SA_DisjDJ1_SuperBobAbert1)[0]:
+        # adicionar estado do disjuntor
+        if self.usn_clp.read_discrete_inputs(REG_SA_EntradasDigitais_MXI_SA_DisjDJ1_SuperBobAbert1)[0] == 0:
             logger.info("DisjDJ1_SuperBobAbert1")
             return True
 
-        if not self.usn_clp.read_discrete_inputs(REG_SA_EntradasDigitais_MXI_SA_DisjDJ1_SuperBobAbert2)[0]:
+        if self.usn_clp.read_discrete_inputs(REG_SA_EntradasDigitais_MXI_SA_DisjDJ1_SuperBobAbert2)[0] == 0:
             logger.info("DisjDJ1_SuperBobAbert2")
             return True
 
-        if not self.usn_clp.read_discrete_inputs(REG_SA_EntradasDigitais_MXI_SA_DisjDJ1_Super125VccCiMot)[0]:
+        if self.usn_clp.read_discrete_inputs(REG_SA_EntradasDigitais_MXI_SA_DisjDJ1_Super125VccCiMot)[0] == 0:
             logger.info("DisjDJ1_Super125VccCiMot")
             return True
 
-        if not self.usn_clp.read_discrete_inputs(REG_SA_EntradasDigitais_MXI_SA_DisjDJ1_Super125VccCiCom)[0]:
+        if self.usn_clp.read_discrete_inputs(REG_SA_EntradasDigitais_MXI_SA_DisjDJ1_Super125VccCiCom)[0] == 0:
             logger.info("DisjDJ1_Super125VccCiCom")
             return True
 
-        if self.usn_clp.read_discrete_inputs(REG_SA_EntradasDigitais_MXI_SA_DisjDJ1_AlPressBaixa)[0]:
+        if self.usn_clp.read_discrete_inputs(REG_SA_EntradasDigitais_MXI_SA_DisjDJ1_AlPressBaixa)[0] == 1:
             logger.info("DisjDJ1_AlPressBaixa")
             return True
 
-        if self.usn_clp.read_discrete_inputs(REG_SA_RetornosDigitais_MXR_DJ1_FalhaInt)[0]:
+        if self.usn_clp.read_discrete_inputs(REG_SA_RetornosDigitais_MXR_DJ1_FalhaInt)[0] == 1:
             logger.info("MXR_DJ1_FalhaInt")
             return True
 
-        if self.usn_clp.read_discrete_inputs(REG_SA_EntradasDigitais_MXI_SA_DisjDJ1_BloqPressBaixa)[0]:
+        if self.usn_clp.read_discrete_inputs(REG_SA_EntradasDigitais_MXI_SA_DisjDJ1_BloqPressBaixa)[0] == 1:
             logger.info("DisjDJ1_BloqPressBaixa")
             return True
 
-        if not self.usn_clp.read_discrete_inputs(REG_SA_EntradasDigitais_MXI_SA_DisjDJ1_Sup125VccBoFeAb1)[0]:
+        if self.usn_clp.read_discrete_inputs(REG_SA_EntradasDigitais_MXI_SA_DisjDJ1_Sup125VccBoFeAb1)[0] == 0:
             logger.info("DisjDJ1_Sup125VccBoFeAb1")
             return True
 
-        if not self.usn_clp.read_discrete_inputs(REG_SA_EntradasDigitais_MXI_SA_DisjDJ1_Sup125VccBoFeAb2)[0]:
+        if self.usn_clp.read_discrete_inputs(REG_SA_EntradasDigitais_MXI_SA_DisjDJ1_Sup125VccBoFeAb2)[0] == 0:
             logger.info("DisjDJ1_Sup125VccBoFeAb2")
             return True
 
-        if self.usn_clp.read_discrete_inputs(REG_SA_EntradasDigitais_MXI_SA_DisjDJ1_Local)[0]:
+        if self.usn_clp.read_discrete_inputs(REG_SA_EntradasDigitais_MXI_SA_DisjDJ1_Local)[0] == 1:
             logger.info("DisjDJ1_Local")
             return True
 
-        if self.usn_clp.read_discrete_inputs(REG_SA_EntradasDigitais_MXI_SA_DisjDJ1_MolaDescarregada)[0]:
+        if self.usn_clp.read_discrete_inputs(REG_SA_EntradasDigitais_MXI_SA_DisjDJ1_MolaDescarregada)[0] == 1:
             logger.info("DisjDJ1_MolaDescarregada")
             return True
 

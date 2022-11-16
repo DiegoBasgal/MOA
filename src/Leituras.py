@@ -400,8 +400,8 @@ class LeituraNBRPower(LeituraBase):
             sock.close()
             response = response[1:]
             return float(struct.unpack("f", response[64:68])[0])
-        except Exception as e:
-            self.logger.exception(e)
+        except Exception:
+            self.logger.debug("Socket timed out")
             try:
                 sock = socket.socket()
                 sock.settimeout(5)
@@ -415,8 +415,7 @@ class LeituraNBRPower(LeituraBase):
                 sock.close()
                 response = response[1:]
                 return float(struct.unpack("f", response[64:68])[0])
-            except Exception as e:
-                self.logger.exception(e)
+            except Exception:
+                self.logger.debug("Socket timed out")
                 return 0
-
         return 0

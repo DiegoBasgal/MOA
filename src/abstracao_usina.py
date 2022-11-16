@@ -1,9 +1,10 @@
-from curses import delay_output
+import pytz
 import logging
 import threading
 import subprocess
 from src.codes import *
 from time import sleep, time
+from curses import delay_output
 from src.mensageiro import voip
 from src.Condicionadores import *
 from src.UG1 import UnidadeDeGeracao1
@@ -46,8 +47,8 @@ class Usina:
         self.ugs = [self.ug1, self.ug2, self.ug3]
 
         # Define as vars inciais
-        self.ts_last_ping_tda = datetime.now()
-        self.ts_ultima_tentativa_normalizacao = datetime.now()
+        self.ts_last_ping_tda = datetime.now(pytz.timezone("Brazil/East")).replace(tzinfo=None)
+        self.ts_ultima_tentativa_normalizacao = datetime.now(pytz.timezone("Brazil/East")).replace(tzinfo=None)
 
         self.ts_nv = []
         self.condicionadores = []
@@ -96,57 +97,22 @@ class Usina:
 
         threading.Thread(target=lambda: self.leitura_condicionadores()).start()
         
-        valores = [
-            datetime.now().strftime("%Y-%m-%d %H:%M:%S"),  # timestamp
-            1 if self.aguardando_reservatorio else 0,  # aguardando_reservatorio
-            True,  # DEPRECATED clp_online
-            self.nv_montante,  # nv_montante
-            1 if self.ug1.disponivel else 0,  # ug1_disp
-            self.ug1.leitura_potencia.valor,  # ug1_pot
-            self.ug1.setpoint,  # ug1_setpot
-            self.ug1.etapa_atual,  # ug1_sinc
-            self.ug1.leitura_horimetro.valor,  # ug1_tempo
-            1 if self.ug2.disponivel else 0,  # ug2_disp
-            self.ug2.leitura_potencia.valor,  # ug2_pot
-            self.ug2.setpoint,  # ug2_setpot
-            self.ug2.etapa_atual,  # ug2_sinc
-            self.ug2.leitura_horimetro.valor,  # ug2_tempo
-            1 if self.ug3.disponivel else 0,  # ug3_disp
-            self.ug3.leitura_potencia.valor,  # ug3_pot
-            self.ug3.setpoint,  # ug3_setpot
-            self.ug3.etapa_atual,  # ug3_sinc
-            self.ug3.leitura_horimetro.valor,  # ug3_tempo
-        ]
-        self.db.update_valores_usina(valores)
+        self.escrever_valores()
 
         # ajuste inicial ie
         if self.cfg["saida_ie_inicial"] == "auto":
-            self.controle_ie = (
-                self.ug1.leitura_potencia.valor
-                + self.ug2.leitura_potencia.valor
-                + self.ug3.leitura_potencia.valor
-            ) / self.cfg["pot_maxima_alvo"]
+            self.controle_ie = (self.ug1.leitura_potencia.valor + self.ug2.leitura_potencia.valor + self.ug3.leitura_potencia.valor) / self.cfg["pot_maxima_alvo"]
+        
         else:
             self.controle_ie = self.cfg["saida_ie_inicial"]
 
         self.controle_i = self.controle_ie
 
         # ajuste inicial SP
-        logger.debug(
-            "self.ug1.leitura_potencia.valor -> {}".format(
-                self.ug1.leitura_potencia.valor
-            )
-        )
-        logger.debug(
-            "self.ug2.leitura_potencia.valor -> {}".format(
-                self.ug2.leitura_potencia.valor
-            )
-        )
-        logger.debug(
-            "self.ug3.leitura_potencia.valor -> {}".format(
-                self.ug3.leitura_potencia.valor
-            )
-        )
+        logger.debug("self.ug1.leitura_potencia.valor -> {}".format(self.ug1.leitura_potencia.valor))
+        logger.debug("self.ug2.leitura_potencia.valor -> {}".format(self.ug2.leitura_potencia.valor))
+        logger.debug("self.ug3.leitura_potencia.valor -> {}".format(self.ug3.leitura_potencia.valor))
+
         self.ug1.setpoint = self.ug1.leitura_potencia.valor
         self.ug2.setpoint = self.ug2.leitura_potencia.valor
         self.ug3.setpoint = self.ug3.leitura_potencia.valor
@@ -156,28 +122,15 @@ class Usina:
         return self.leituras.nv_montante.valor
 
     def ler_valores(self):
-
-        # CLP
-        # regs = [0]*40000
-        # aux = self.clp.read_sequential(40000, 101)
-        # regs += aux
-        # USN
-        # self.clp_emergencia_acionada = regs[self.cfg['ENDERECO_CLP_USINA_FLAGS']]
-        # self.nv_montante = round((regs[self.cfg['ENDERECO_CLP_NV_MONATNTE']] * 0.001) + 620, 2)
-        # self.pot_medidor = round((regs[self.cfg['ENDERECO_CLP_MEDIDOR']] * 0.001), 3)
-
         # -> Verifica conexão com CLP Tomada d'água
-        #   -> Se não estiver ok, acionar emergencia CLP
         if not ping(self.cfg["TDA_slave_ip"]):
             logger.warning("CLP TDA não respondeu a tentativa de comunicação!")
         
         # -> Verifica conexão com CLP Sub
-        #   -> Se não estiver ok, avisa por logger.warning
         if not ping(self.cfg["USN_slave_ip"]):
             logger.warning("CLP 'USN' (PACP) não respondeu a tentativa de comunicação!")
 
         # -> Verifica conexão com CLP UG#
-        #    -> Se não estiver ok, acionar indisponibiliza UG# e avisa por logger.warning
         if not ping(self.cfg["UG1_slave_ip"]):
             logger.warning("CLP UG1 não respondeu a tentativa de comunicação!")
             self.ug1.forcar_estado_restrito()
@@ -211,20 +164,13 @@ class Usina:
         self.erro_nv = self.nv_montante_recente - self.cfg["nv_alvo"]
 
         # DB
-        #
         # Ler apenas os parametros que estao disponiveis no django
-        #  - Botão de emergência
-        #  - Limites de operação das UGS
-        #  - Modo autonomo
-        #  - Modo de prioridade UGS
-
         parametros = self.db.get_parametros_usina()
 
         # Botão de emergência
         self.db_emergencia_acionada = int(parametros["emergencia_acionada"])
 
         # Limites de operação das UGS
-        # for ug in self.ugs:
         for ug in self.ugs:
             try:
                 ug.prioridade = int(parametros["ug{}_prioridade".format(ug.id)])
@@ -275,22 +221,14 @@ class Usina:
         self.cfg["nv_minimo"] = float(parametros["nv_minimo"])
 
         # Modo autonomo
-        logger.debug(
-            "Modo autonomo que o banco respondeu: {}".format(
-                int(parametros["modo_autonomo"])
-            )
-        )
+        logger.debug("Modo autonomo que o banco respondeu: {}".format(int(parametros["modo_autonomo"])))
+
         self.modo_autonomo = int(parametros["modo_autonomo"])
+
         # Modo de prioridade UGS
-        if not self.modo_de_escolha_das_ugs == int(
-            parametros["modo_de_escolha_das_ugs"]
-        ):
+        if not self.modo_de_escolha_das_ugs == int(parametros["modo_de_escolha_das_ugs"]):
             self.modo_de_escolha_das_ugs = int(parametros["modo_de_escolha_das_ugs"])
-            logger.info(
-                "O modo de prioridade das ugs foi alterado (#{}).".format(
-                    self.modo_de_escolha_das_ugs
-                )
-            )
+            logger.info("O modo de prioridade das ugs foi alterado (#{}).".format(self.modo_de_escolha_das_ugs))
 
         # Parametros banco
         self.cfg["nv_alvo"] = float(parametros["nv_alvo"])
@@ -307,6 +245,7 @@ class Usina:
             self.avisado_em_eletrica = True
             for ug in self.ugs:
                 ug.deve_ler_condicionadores = True
+
         elif DataBank.get_words(self.cfg["REG_MOA_IN_EMERG"])[0] == 0 and self.avisado_em_eletrica==True:
             self.avisado_em_eletrica = False
             for ug in self.ugs:
@@ -314,74 +253,63 @@ class Usina:
 
         if DataBank.get_words(self.cfg["REG_MOA_IN_EMERG_UG1"])[0] == 1:
             self.ug1.deve_ler_condicionadores = True
+
         elif DataBank.get_words(self.cfg["REG_MOA_IN_EMERG_UG2"])[0] == 1:
             self.ug2.deve_ler_condicionadores = True
+
         elif DataBank.get_words(self.cfg["REG_MOA_IN_EMERG_UG3"])[0] == 1:
             self.ug3.deve_ler_condicionadores = True
+
         else:
             for ug in self.ugs:
                 ug.deve_ler_condicionadores = False
         
         if DataBank.get_words(self.cfg["REG_MOA_IN_HABILITA_AUTO"])[0] == 1:
-            DataBank.set_words(self.cfg["REG_MOA_IN_HABILITA_AUTO"], [0])
+            DataBank.set_words(self.cfg["REG_MOA_IN_HABILITA_AUTO"], [1])
             DataBank.set_words(self.cfg["REG_MOA_IN_DESABILITA_AUTO"], [0])
             self.modo_autonomo = 1
 
-        if (
-            DataBank.get_words(self.cfg["REG_MOA_IN_DESABILITA_AUTO"])[0] == 1
-            or self.modo_autonomo == 0
-        ):
+        if DataBank.get_words(self.cfg["REG_MOA_IN_DESABILITA_AUTO"])[0] == 1:
             DataBank.set_words(self.cfg["REG_MOA_IN_HABILITA_AUTO"], [0])
-            DataBank.set_words(self.cfg["REG_MOA_IN_DESABILITA_AUTO"], [0])
+            DataBank.set_words(self.cfg["REG_MOA_IN_DESABILITA_AUTO"], [1])
             self.modo_autonomo = 0
             self.entrar_em_modo_manual()
 
-        """
-        # As condições a seguir são utilizadas apenas para o simulador:
-        if self.ug1.condic_ativos_sim_ug1.valor == 1:
-            self.ug1.deve_ler_condicionadores = True
-        elif self.ug2.condic_ativos_sim_ug2.valor == 1:
-            self.ug2.deve_ler_condicionadores = True
-        elif self.ug3.condic_ativos_sim_ug3.valor == 1:
-            self.ug3.deve_ler_condicionadores = True
-        else:
-            for ug in self.ugs:
-                ug.deve_ler_condicionadores = False
-        """
-        
         self.heartbeat()
 
     def escrever_valores(self):
 
         if self.modo_autonomo:
             self.con.modifica_controles_locais()
-
         # DB
         # Escreve no banco
         # Paulo: mover lógica de escrever no banco para um método em DBService
-        valores = [
-            datetime.now().strftime("%Y-%m-%d %H:%M:%S"),  # timestamp
-            1 if self.aguardando_reservatorio else 0,  # aguardando_reservatorio
-            True,  # DEPRECATED clp_online
-            self.nv_montante,  # nv_montante
-            1 if self.ug1.disponivel else 0,  # ug1_disp
-            self.ug1.leitura_potencia.valor,  # ug1_pot
-            self.ug1.setpoint,  # ug1_setpot
-            self.ug1.etapa_atual,  # ug1_sinc
-            self.ug1.leitura_horimetro.valor,  # ug1_tempo
-            1 if self.ug2.disponivel else 0,  # ug2_disp
-            self.ug2.leitura_potencia.valor,  # ug2_pot
-            self.ug2.setpoint,  # ug2_setpot
-            self.ug2.etapa_atual,  # ug2_sinc
-            self.ug2.leitura_horimetro.valor,  # ug2_tempo
-            1 if self.ug3.disponivel else 0,  # ug3_disp
-            self.ug3.leitura_potencia.valor,  # ug3_pot
-            self.ug3.setpoint,  # ug3_setpot
-            self.ug3.etapa_atual,  # ug3_sinc
-            self.ug3.leitura_horimetro.valor,  # ug3_tempo
-        ]
+        try:
+            valores = [
+                datetime.now(pytz.timezone("Brazil/East")).replace(tzinfo=None).strftime("%Y-%m-%d %H:%M:%S"),  # timestamp
+                1 if self.aguardando_reservatorio else 0,  # aguardando_reservatorio
+                True,  # DEPRECATED clp_online
+                self.nv_montante,  # nv_montante
+                1 if self.ug1.disponivel else 0,  # ug1_disp
+                self.ug1.leitura_potencia.valor,  # ug1_pot
+                self.ug1.setpoint,  # ug1_setpot
+                self.ug1.etapa_atual,  # ug1_sinc
+                self.ug1.leitura_horimetro.valor,  # ug1_tempo
+                1 if self.ug2.disponivel else 0,  # ug2_disp
+                self.ug2.leitura_potencia.valor,  # ug2_pot
+                self.ug2.setpoint,  # ug2_setpot
+                self.ug2.etapa_atual,  # ug2_sinc
+                self.ug2.leitura_horimetro.valor,  # ug2_tempo
+                1 if self.ug3.disponivel else 0,  # ug3_disp
+                self.ug3.leitura_potencia.valor,  # ug3_pot
+                self.ug3.setpoint,  # ug3_setpot
+                self.ug3.etapa_atual,  # ug3_sinc
+                self.ug3.leitura_horimetro.valor,  # ug3_tempo
+            ]
+            self.db.update_valores_usina(valores)
 
-        self.db.update_valores_usina(valores)
+        except Exception as e:
+            logger.exception(e)
 
     def acionar_emergencia(self):
         self.con.acionar_emergencia()
@@ -401,9 +329,9 @@ class Usina:
             self.tensao_ok = False
             return False
 
-        elif self.deve_normalizar_forcado or (self.deve_tentar_normalizar and (datetime.now() - self.ts_ultima_tentativa_normalizacao).seconds >= 60 * self.tentativas_de_normalizar):
+        elif self.deve_normalizar_forcado or (self.deve_tentar_normalizar and (datetime.now(pytz.timezone("Brazil/East")).replace(tzinfo=None) - self.ts_ultima_tentativa_normalizacao).seconds >= 60 * self.tentativas_de_normalizar):
             self.tentativas_de_normalizar += 1
-            self.ts_ultima_tentativa_normalizacao = datetime.now()
+            self.ts_ultima_tentativa_normalizacao = datetime.now(pytz.timezone("Brazil/East")).replace(tzinfo=None)
             logger.info("Normalizando Usina")
             self.con.normalizar_emergencia()
             self.clp_emergencia_acionada = 0
@@ -435,57 +363,9 @@ class Usina:
         return False
 
     def heartbeat(self):
-        ts = datetime.now().timestamp()
-        try:
-            logger.debug("Inserting in db")
-            ma = 1 if self.modo_autonomo else 0
-            self.db.insert_debug(
-                ts,
-                self.cfg["kp"],
-                self.cfg["ki"],
-                self.cfg["kd"],
-                self.cfg["kie"],
-                self.controle_p,
-                self.controle_i,
-                self.controle_d,
-                self.controle_ie,
-                self.ug1.setpoint,
-                self.ug1.leitura_potencia.valor,
-                self.ug2.setpoint,
-                self.ug2.leitura_potencia.valor,
-                self.nv_montante_recente,
-                self.erro_nv,
-                self.ug3.setpoint,
-                self.ug3.leitura_potencia.valor,
-                ma,
-            )
-            valores = [
-                datetime.now().strftime("%Y-%m-%d %H:%M:%S"),  # timestamp
-                1 if self.aguardando_reservatorio else 0,  # aguardando_reservatorio
-                True,  # DEPRECATED clp_online
-                self.nv_montante,  # nv_montante
-                1 if self.ug1.disponivel else 0,  # ug1_disp
-                self.ug1.leitura_potencia.valor,  # ug1_pot
-                self.ug1.setpoint,  # ug1_setpot
-                self.ug1.etapa_atual,  # ug1_sinc
-                self.ug1.leitura_horimetro.valor,  # ug1_tempo
-                1 if self.ug2.disponivel else 0,  # ug2_disp
-                self.ug2.leitura_potencia.valor,  # ug2_pot
-                self.ug2.setpoint,  # ug2_setpot
-                self.ug2.etapa_atual,  # ug2_sinc
-                self.ug2.leitura_horimetro.valor,  # ug2_tempo
-                1 if self.ug3.disponivel else 0,  # ug3_disp
-                self.ug3.leitura_potencia.valor,  # ug3_pot
-                self.ug3.setpoint,  # ug3_setpot
-                self.ug3.etapa_atual,  # ug3_sinc
-                self.ug3.leitura_horimetro.valor,  # ug3_tempo
-            ]
-            self.db.update_valores_usina(valores)
 
-        except Exception as e:
-            logger.exception(e)
+        agora = datetime.now(pytz.timezone("Brazil/East")).replace(tzinfo=None)
 
-        agora = datetime.now()
         ano = int(agora.year)
         mes = int(agora.month)
         dia = int(agora.day)
@@ -496,11 +376,12 @@ class Usina:
         DataBank.set_words(0, [ano, mes, dia, hor, mnt, seg, mil])
         DataBank.set_words(self.cfg["REG_MOA_OUT_STATUS"], [self.state_moa])
         DataBank.set_words(self.cfg["REG_MOA_OUT_MODE"], [self.modo_autonomo])
-        
+
         if self.modo_autonomo == 1:
             DataBank.set_words(self.cfg["REG_MOA_OUT_EMERG"], [1 if self.clp_emergencia_acionada else 0],)
             DataBank.set_words(self.cfg["REG_MOA_OUT_TARGET_LEVEL"], [int((self.cfg["nv_alvo"] - 400) * 1000)])
             DataBank.set_words(self.cfg["REG_MOA_OUT_SETPOINT"], [int(self.ug1.setpoint + self.ug2.setpoint + self.ug3.setpoint)], )
+
             if self.avisado_em_eletrica==True and self.aux==1:
                 DataBank.set_words(self.cfg["REG_MOA_OUT_BLOCK_UG1"], [1],)
                 DataBank.set_words(self.cfg["REG_MOA_OUT_BLOCK_UG2"], [1],)
@@ -512,16 +393,32 @@ class Usina:
                 DataBank.set_words(self.cfg["REG_MOA_OUT_BLOCK_UG3"], [0],)
                 self.aux=1
 
+            if DataBank.get_words(self.cfg["REG_MOA_IN_HABILITA_AUTO"])[0] == 1:
+                DataBank.set_words(self.cfg["REG_MOA_IN_HABILITA_AUTO"], [1])
+                DataBank.set_words(self.cfg["REG_MOA_IN_DESABILITA_AUTO"], [0])
+                self.modo_autonomo = 1
+
+            elif DataBank.get_words(self.cfg["REG_MOA_IN_DESABILITA_AUTO"])[0] == 1:
+                DataBank.set_words(self.cfg["REG_MOA_IN_HABILITA_AUTO"], [0])
+                DataBank.set_words(self.cfg["REG_MOA_IN_DESABILITA_AUTO"], [1])
+                self.modo_autonomo = 0
+                self.entrar_em_modo_manual()
+
             if DataBank.get_words(self.cfg["REG_MOA_OUT_BLOCK_UG1"])[0] == 1:
                 DataBank.set_words(self.cfg["REG_MOA_OUT_BLOCK_UG1"], [1])
+
             elif DataBank.get_words(self.cfg["REG_MOA_OUT_BLOCK_UG1"])[0] == 0:
                 DataBank.set_words(self.cfg["REG_MOA_OUT_BLOCK_UG1"], [0])
+
             if DataBank.get_words(self.cfg["REG_MOA_OUT_BLOCK_UG2"])[0] == 1:
                 DataBank.set_words(self.cfg["REG_MOA_OUT_BLOCK_UG2"], [1])
+
             elif DataBank.get_words(self.cfg["REG_MOA_OUT_BLOCK_UG2"])[0] == 0:
                 DataBank.set_words(self.cfg["REG_MOA_OUT_BLOCK_UG2"], [0])
+
             if DataBank.get_words(self.cfg["REG_MOA_OUT_BLOCK_UG3"])[0] == 1:
                 DataBank.set_words(self.cfg["REG_MOA_OUT_BLOCK_UG3"], [1])
+                
             elif DataBank.get_words(self.cfg["REG_MOA_OUT_BLOCK_UG3"])[0] == 0:
                 DataBank.set_words(self.cfg["REG_MOA_OUT_BLOCK_UG3"], [0])
 
@@ -532,13 +429,14 @@ class Usina:
             DataBank.set_words(self.cfg["REG_MOA_OUT_BLOCK_UG1"], [0])
             DataBank.set_words(self.cfg["REG_MOA_OUT_BLOCK_UG2"], [0])
             DataBank.set_words(self.cfg["REG_MOA_OUT_BLOCK_UG3"], [0])
+            
 
     def get_agendamentos_pendentes(self):
         """
         Retorna os agendamentos pendentes para a usina.
         :return: list[] agendamentos
 
-        agora = datetime.now()
+        agora = datetime.now(pytz.timezone("Brazil/East")).replace(tzinfo=None)
         agora = agora - timedelta(seconds=agora.second, microseconds=agora.microsecond)
         """
         agendamentos_pendentes = []
@@ -555,7 +453,7 @@ class Usina:
         """
         Verifica os agendamentos feitos pelo django no banco de dados e lida com eles, executando, etc...
         """
-        agora = datetime.now()
+        agora = datetime.now(pytz.timezone("Brazil/East")).replace(tzinfo=None)
         agendamentos = self.get_agendamentos_pendentes()
 
         # resolve os agendamentos muito juntos
@@ -598,19 +496,13 @@ class Usina:
                 self.agendamentos_atrasados += 1
 
             if segundos_passados > 300 or self.agendamentos_atrasados > 3:
-                logger.info(
-                    "Os agendamentos estão muito atrasados! Acionando emergência."
-                )
+                logger.info("Os agendamentos estão muito atrasados! Acionando emergência.")
                 self.acionar_emergencia()
                 return False
 
             if segundos_adiantados <= 60 and not bool(agendamento[4]):
                 # Está na hora e ainda não foi executado. Executar!
-                logger.info(
-                    "Executando gendamento #{} - {}.".format(
-                        agendamento[0], agendamento
-                    )
-                )
+                logger.info("Executando gendamento: {} - Comando: {} - Data: .".format(agendamento[0], agendamento[3], agendamento[9]))
 
                 # se o MOA estiver em autonomo e o agendamento não for executavel em autonomo
                 #   marca como executado e altera a descricao
@@ -633,7 +525,7 @@ class Usina:
                 # Exemplo Case agendamento:
                 if agendamento[3] == AGENDAMENTO_DISPARAR_MENSAGEM_TESTE:
                     # Coloca em emergência
-                    logger.info("Disparando mensagem teste (comando via agendamento).")
+                    logger.debug("Disparando mensagem teste (comando via agendamento).")
                     self.disparar_mensagem_teste()
 
                 if agendamento[3] == AGENDAMENTO_INDISPONIBILIZAR:
@@ -646,7 +538,7 @@ class Usina:
                         logger.debug("Indisponibilizando Usina... \n(freezing for 10 seconds)")
                         sleep(10)
                     self.acionar_emergencia()
-                    logger.info("Emergência pressionada após indizponibilização agendada mudando para modo manual para evitar normalização automática.")
+                    logger.debug("Emergência pressionada após indizponibilização agendada mudando para modo manual para evitar normalização automática.")
                     self.entrar_em_modo_manual()
 
                 if agendamento[3] == AGENDAMENTO_ALTERAR_NV_ALVO:
@@ -657,7 +549,7 @@ class Usina:
 
                     self.cfg["nv_alvo"] = novo
                     valores = [
-                        datetime.now().strftime("%Y-%m-%d %H:%M:%S"),  # timestamp
+                        datetime.now(pytz.timezone("Brazil/East")).replace(tzinfo=None).strftime("%Y-%m-%d %H:%M:%S"),  # timestamp
                         1 if self.aguardando_reservatorio else 0,  # aguardando_reservatorio
                         True,  # DEPRECATED clp_online
                         self.nv_montante,  # nv_montante
@@ -793,16 +685,12 @@ class Usina:
         sp = pot_alvo / self.cfg["pot_maxima_usina"]
 
         self.__split1 = True if sp > (0) else self.__split1
-        self.__split2 = (
-            True if sp > (0.333 + self.cfg["margem_pot_critica"]) else self.__split2
-        )
-        self.__split3 = (
-            True if sp > (0.666 + self.cfg["margem_pot_critica"]) else self.__split3
-        )
+        self.__split2 = (True if sp > (0.333 + self.cfg["margem_pot_critica"]) else self.__split2)
+        self.__split3 = (True if sp > (0.666 + self.cfg["margem_pot_critica"]) else self.__split3)
 
         self.__split3 = False if sp < (0.666) else self.__split3
         self.__split2 = False if sp < (0.333) else self.__split2
-        self.__split1 = False if sp < (0.133) else self.__split1
+        self.__split1 = False if sp < (self.cfg["pot_minima"] / self.cfg["pot_maxima_usina"]) else self.__split1
 
         logger.debug(f"Sp {sp}")
         if len(ugs) == 3:
@@ -891,33 +779,20 @@ class Usina:
         logger.debug("-------------------------------------------------")
 
         # Calcula PID
-        logger.debug(
-            "Alvo: {:0.3f}, Recente: {:0.3f}".format(
-                self.cfg["nv_alvo"], self.nv_montante_recente
-            )
-        )
+        logger.debug("Alvo: {:0.3f}, Recente: {:0.3f}".format(self.cfg["nv_alvo"], self.nv_montante_recente))
         self.controle_p = self.cfg["kp"] * self.erro_nv
-        self.controle_i = max(
-            min((self.cfg["ki"] * self.erro_nv) + self.controle_i, 0.8), 0
-        )
+        self.controle_i = max(min((self.cfg["ki"] * self.erro_nv) + self.controle_i, 0.8), 0)
         self.controle_d = self.cfg["kd"] * (self.erro_nv - self.erro_nv_anterior)
-        saida_pid = (
-            self.controle_p + self.controle_i + min(max(-0.3, self.controle_d), 0.3)
-        )
-        logger.debug(
-            "PID: {:0.3f} <-- P:{:0.3f} + I:{:0.3f} + D:{:0.3f}; ERRO={}".format(
+        saida_pid = (self.controle_p + self.controle_i + min(max(-0.3, self.controle_d), 0.3))
+        logger.debug("PID: {:0.3f} <-- P:{:0.3f} + I:{:0.3f} + D:{:0.3f}; ERRO={}".format(
                 saida_pid,
                 self.controle_p,
                 self.controle_i,
                 self.controle_d,
-                self.erro_nv,
-            )
-        )
+                self.erro_nv,))
 
         # Calcula o integrador de estabilidade e limita
-        self.controle_ie = max(
-            min(saida_pid + self.controle_ie * self.cfg["kie"], 1), 0
-        )
+        self.controle_ie = max(min(saida_pid + self.controle_ie * self.cfg["kie"], 1), 0)
 
         if self.nv_montante_recente >= (self.cfg["nv_maximo"] + 0.03):
             self.controle_ie = 1
@@ -930,18 +805,13 @@ class Usina:
         logger.debug("IE: {:0.3f}".format(self.controle_ie))
 
         # Arredondamento e limitação
-        pot_alvo = max(
-            min(
-                round(self.cfg["pot_maxima_usina"] * self.controle_ie, 5),
-                self.cfg["pot_maxima_usina"],
-            ),
-            self.cfg["pot_minima"],
-        )
+        pot_alvo = max(min(round(self.cfg["pot_maxima_usina"] * self.controle_ie, 5), self.cfg["pot_maxima_usina"],), self.cfg["pot_minima"],)
 
         logger.debug("Pot alvo: {:0.3f}".format(pot_alvo))
         logger.debug("Nv alvo: {:0.3f}".format(self.cfg["nv_alvo"]))
         ts = datetime.now().timestamp()
         try:
+            ts = datetime.now().timestamp()
             logger.debug("Inserting in db")
             ma = 1 if self.modo_autonomo else 0
             self.db.insert_debug(
@@ -960,9 +830,9 @@ class Usina:
                 self.ug2.leitura_potencia.valor,
                 self.nv_montante_recente,
                 self.erro_nv,
-                ma,
                 self.ug3.setpoint,
                 self.ug3.leitura_potencia.valor,
+                ma,
             )
         except Exception as e:
             logger.exception(e)

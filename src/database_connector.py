@@ -1,5 +1,6 @@
-from datetime import datetime
+import pytz
 import mysql.connector
+from datetime import datetime
 from mysql.connector import pooling
 
 
@@ -14,7 +15,7 @@ class Database:
             password="&264H3$M@&z$",
             database="django_db",
         )
-
+        
         self.conn = None
         self.cursor = None
         self.conn = self.connection_pool.get_connection()
@@ -144,7 +145,7 @@ class Database:
             " WHERE id = %s;"
         )
         self._open()
-        self.execute(q, (obs, obs, executado, datetime.now(), int(id_agendamento)))
+        self.execute(q, (obs, obs, executado, datetime.now(pytz.timezone("Brazil/East")).replace(tzinfo=None), int(id_agendamento)))
         self._close()
 
     def update_habilitar_autonomo(self):

@@ -7,16 +7,16 @@ da máquina de estado que rege a mesma.
 __version__ = "0.1"
 __author__ = "Lucas Lavratti"
 
-
-from abc import abstractmethod
-from datetime import datetime
+import pytz
 import logging
-from time import sleep
 import traceback
-from src import Leituras
 
+from time import sleep
 from src.codes import *
+from src import Leituras
 from src.Leituras import *
+from datetime import datetime
+from abc import abstractmethod
 from src.Condicionadores import *
 
 # Class Stubs
@@ -55,7 +55,6 @@ class UnidadeDeGeracao:
         Args:
             id (int): [description]
         """
-
         self.logger = logging.getLogger("__main__")
 
         # Variavéis internas (não são lidas nem escritas diretamente)
@@ -68,7 +67,7 @@ class UnidadeDeGeracao:
         self.__setpoint_minimo = 0
         self.__setpoint_maximo = 0
         self.__tentativas_de_normalizacao = 0
-        self.ts_auxiliar = datetime.now()
+        self.ts_auxiliar = datetime.now(pytz.timezone("Brazil/East")).replace(tzinfo=None)
         self.__next_state = StateDisponivel(self)
         # Condicionadores devem ser adcionados após o init
         self.__condicionadores_essenciais = []
@@ -389,77 +388,7 @@ class UnidadeDeGeracao:
         """
         return isinstance(self.__next_state, StateDisponivel)
 
-    def acionar_trip_logico(self) -> bool:
-        """
-        Envia o comando de acionamento do TRIP para o CLP via rede
-
-        Returns:
-            bool: True se sucesso, Falso caso contrário
-        """
-        try:
-            self.logger.info(
-                "[UG{}] Acionando sinal de TRIP Lógico.".format(self.id)
-            )
-            raise NotImplementedError
-        except:
-            #! TODO Tratar exceptions
-            return False
-        else:
-            return True
-
-    def remover_trip_logico(self) -> bool:
-        """
-        Envia o comando de remoção do TRIP para o CLP via rede
-
-        Returns:
-            bool: True se sucesso, Falso caso contrário
-        """
-        try:
-            self.logger.info(
-                "[UG{}] Removendo sinal de TRIP Lógico.".format(self.id)
-            )
-            raise NotImplementedError
-        except:
-            #! TODO Tratar exceptions
-            return False
-        else:
-            return True
-
-    def acionar_trip_eletrico(self) -> bool:
-        """
-        Aciona o TRIP elétricamente via painel
-
-        Returns:
-            bool: True se sucesso, Falso caso contrário
-        """
-        try:
-            self.logger.info(
-                "[UG{}] Acionando sinal de TRIP Elétrico.".format(self.id)
-            )
-            raise NotImplementedError
-        except:
-            #! TODO Tratar exceptions
-            return False
-        else:
-            return True
-
-    def remover_trip_eletrico(self) -> bool:
-        """
-        Remove o TRIP elétricamente via painel
-
-        Returns:
-            bool: True se sucesso, Falso caso contrário
-        """
-        try:
-            self.logger.info(
-                "[UG{}] Removendo sinal de TRIP Elétrico.".format(self.id)
-            )
-            raise NotImplementedError
-        except:
-            #! TODO Tratar exceptions
-            return False
-        else:
-            return True
+    
 
     def partir(self) -> bool:
         """
@@ -744,11 +673,11 @@ class StateDisponivel(State):
                 return StateIndisponivel(self.parent_ug)
 
             # Se não estourou as tentativas de normalização, e já se passou tempo suficiente, deve tentar normalizar
-            elif (self.parent_ug.ts_auxiliar - datetime.now()).seconds > self.parent_ug.tempo_entre_tentativas:
+            elif (self.parent_ug.ts_auxiliar - datetime.now(pytz.timezone("Brazil/East")).replace(tzinfo=None)).seconds > self.parent_ug.tempo_entre_tentativas:
                 # Adciona o contador
                 self.parent_ug.tentativas_de_normalizacao += 1
                 # Atualiza o timestamp
-                self.parent_ug.ts_auxiliar = datetime.now()
+                self.parent_ug.ts_auxiliar = datetime.now(pytz.timezone("Brazil/East")).replace(tzinfo=None)
                 # Logar o ocorrido
                 self.logger.info("[UG{}] Normalizando UG (tentativa {}/{}).".format(self.parent_ug.id,self.parent_ug.tentativas_de_normalizacao,self.parent_ug.limite_tentativas_de_normalizacao,))
                 # Reconhece e reset
@@ -840,9 +769,9 @@ class StateDisponivel(State):
                 )
                 # Unidade sincronizada significa que ela está normalizada, logo zera o contador de tentativas
                 if not self.parent_ug.aux_tempo_sincronizada:
-                    self.parent_ug.aux_tempo_sincronizada = datetime.now()
+                    self.parent_ug.aux_tempo_sincronizada = datetime.now(pytz.timezone("Brazil/East")).replace(tzinfo=None)
 
-                elif (datetime.now() - self.parent_ug.aux_tempo_sincronizada).seconds >= 300:
+                elif (datetime.now(pytz.timezone("Brazil/East")).replace(tzinfo=None) - self.parent_ug.aux_tempo_sincronizada).seconds >= 300:
                     self.parent_ug.tentativas_de_normalizacao = 0
                 # Se o setpoit estiver abaixo do mínimo
                 if self.parent_ug.setpoint == 0:

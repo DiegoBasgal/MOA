@@ -8,6 +8,7 @@ import os
 import sys
 import time
 import json
+import pytz
 import logging
 import threading
 import traceback
@@ -24,7 +25,6 @@ from pyModbusTCP.server import DataBank, ModbusServer
 # Set-up logging
 from src.mensageiro.mensageiro_log_handler import MensageiroHandler
 
-
 rootLogger = logging.getLogger()
 if rootLogger.hasHandlers():
     rootLogger.handlers.clear()
@@ -37,8 +37,14 @@ logger.setLevel(logging.NOTSET)
 
 if not os.path.exists(os.path.join(os.path.dirname(__file__), "logs")):
     os.mkdir(os.path.join(os.path.dirname(__file__), "logs"))
+
+def timeConverter(*args):
+    return datetime.now(tz).timetuple()
+
+tz = pytz.timezone("Brazil/East")
 logFormatter = logging.Formatter("%(asctime)s [%(threadName)-12.12s] [%(levelname)-5.5s] [MOA-SM] %(message)s")
 logFormatterSimples = logging.Formatter("[%(levelname)-5.5s] %(message)s")
+logFormatter.converter = timeConverter
 
 ch = logging.StreamHandler(stderr)  # log para sdtout
 ch.setFormatter(logFormatter)
@@ -73,10 +79,8 @@ class StateMachine:
             self.state = self.state.run()
 
         except Exception as e:
-            logger.warning(
-                "Estado ({}) levantou uma exception: {}".format(self.state, repr(e))
-            )
-            logger.warning("Traceback: {}".format(traceback.format_exc()))
+            logger.warning("Estado ({}) levantou uma exception: {}".format(self.state, repr(e)))
+            logger.debug("Traceback: {}".format(traceback.format_exc()))
             self.em_falha_critica = True
             self.state = FalhaCritica()
 
@@ -120,6 +124,7 @@ class Pronto(State):
         else:
 
             try:
+                self.usina.heartbeat()
                 self.usina.ler_valores()
                 return ValoresInternosAtualizados(self.usina)
 
@@ -133,7 +138,7 @@ class Pronto(State):
                         repr(e),
                     )
                 )
-                logger.critical("Traceback: {}".format(traceback.format_exc()))
+                logger.debug("Traceback: {}".format(traceback.format_exc()))
                 sleep(self.usina.cfg["timeout_padrao"] * self.n_tentativa)
                 return self
 
@@ -143,6 +148,7 @@ class ValoresInternosAtualizados(State):
         super().__init__(*args, **kwargs)
         self.usina = instancia_usina
         DataBank.set_words(self.usina.cfg["REG_PAINEL_LIDO"], [1])
+        self.usina.heartbeat()
         self.deve_ler_condicionadores=False
         self.habilitar_emerg_condic_e=False
         self.habilitar_emerg_condic_c=False
@@ -205,7 +211,7 @@ class ValoresInternosAtualizados(State):
                 aux = 0
                 deve_normalizar = None
                 self.usina.timer_tensao = None
-                logger.warning("O tempo de normalização da linha excedeu o limite! (10 min)")
+                logger.critical("O tempo de normalização da linha excedeu o limite! (10 min)")
                 return Emergencia(self.usina)
 
         if self.usina.clp_emergencia_acionada:
@@ -224,7 +230,7 @@ class ValoresInternosAtualizados(State):
 
         # Em seguida com o modo manual (não autonomo)
         if not self.usina.modo_autonomo:
-            logger.info("Comando recebido: desabilitar modo autonomo.")
+            logger.debug("Comando recebido: desabilitar modo autonomo.")
             sleep(2)
             return ModoManualAtivado(self.usina)
 
@@ -236,7 +242,7 @@ class ValoresInternosAtualizados(State):
         # Verifica-se então a situação do reservatório
         if self.usina.aguardando_reservatorio:
             if self.usina.nv_montante > self.usina.cfg["nv_alvo"]:
-                logger.info("Reservatorio dentro do nivel de trabalho")
+                logger.debug("Reservatorio dentro do nivel de trabalho")
                 self.usina.aguardando_reservatorio = 0
             return Pronto(self.usina)
 
@@ -255,7 +261,7 @@ class ValoresInternosAtualizados(State):
 class Emergencia(State):
     def __init__(self, instancia_usina, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.em_sm_acionada = datetime.now()
+        self.em_sm_acionada = datetime.now(pytz.timezone("Brazil/East")).replace(tzinfo=None)
         logger.warning(
             "Usina entrado em estado de emergência (Timestamp: {})".format(
                 self.em_sm_acionada
@@ -271,9 +277,7 @@ class Emergencia(State):
         self.usina.heartbeat()
         self.n_tentativa += 1
         if self.n_tentativa > 2:
-            logger.warning(
-                "Numero de tentaivas de normalização excedidas, entrando em modo manual."
-            )
+            logger.warning("Numero de tentaivas de normalização excedidas, entrando em modo manual.")
             self.usina.entrar_em_modo_manual()
             self.usina.heartbeat()
             for ug in self.usina.ugs:
@@ -282,9 +286,7 @@ class Emergencia(State):
             return ModoManualAtivado(self.usina)
         else:
             if self.usina.db_emergencia_acionada:
-                logger.info(
-                    "Emergencia acionada via Django/DB, aguardando Reset/Reco pela interface web ou pelo CLP"
-                )
+                logger.warning("Emergencia acionada via Interface WEB/DB, aguardando Reset/Reconhecimento pela interface ou CLP")
                 while self.usina.db_emergencia_acionada:
                     self.usina.ler_valores()
                     if not self.usina.clp.em_emergencia():
@@ -348,7 +350,7 @@ class Emergencia(State):
                             repr(e)
                         )
                     )
-                    logger.critical("Traceback: {}".format(traceback.format_exc()))
+                    logger.debug("Traceback: {}".format(traceback.format_exc()))
                 return self
             else:
                 self.usina.ler_valores()
@@ -362,9 +364,7 @@ class ModoManualAtivado(State):
         self.usina = instancia_usina
         self.usina.modo_autonomo = False
         self.usina.escrever_valores()
-        logger.info(
-            "Usina em modo manual, deve-se alterar via painel ou interface web."
-        )
+        logger.info("Usina em modo manual, deve-se alterar via painel ou interface web.")
 
     def run(self):
         self.usina.ler_valores()
@@ -380,9 +380,9 @@ class ModoManualAtivado(State):
         self.usina.heartbeat()
         sleep(1 / ESCALA_DE_TEMPO)
         if self.usina.modo_autonomo:
-            logger.info("Comando recebido: habilitar modo autonomo.")
+            logger.debug("Comando recebido: habilitar modo autonomo.")
             sleep(2)
-            logger.info("Usina voltou para o modo Autonomo")
+            logger.debug("Usina voltou para o modo Autonomo")
             self.usina.db.update_habilitar_autonomo()
             self.usina.ler_valores()
             if (
@@ -417,11 +417,7 @@ class ReservatorioAbaixoDoMinimo(State):
     def run(self):
         self.usina.distribuir_potencia(0)
         if self.usina.nv_montante_recente <= self.usina.cfg["nv_fundo_reservatorio"]:
-            logger.critical(
-                "Nivel montante ({:3.2f}) atingiu o fundo do reservatorio!".format(
-                    self.usina.nv_montante_recente
-                )
-            )
+            logger.critical("Nivel montante ({:3.2f}) atingiu o fundo do reservatorio!".format(self.usina.nv_montante_recente))
             return Emergencia(self.usina)
         return ControleRealizado(self.usina)
 
@@ -464,16 +460,18 @@ class ControleRealizado(State):
         self.usina = instancia_usina
 
     def run(self):
-        logger.debug("Escrevendo valores")
-        self.usina.escrever_valores()
         logger.debug("HB")
         self.usina.heartbeat()
+        logger.debug("Escrevendo valores")
+        self.usina.escrever_valores()
         return Pronto(self.usina)
 
 def leitura_temporizada():
     delay = 1800
     proxima_leitura = time.time() + delay
+    logger.debug("Iniciando o timer de leitura por hora.")
     while True:
+        logger.debug("Inciando nova leitura...")
         time.sleep(max(0, proxima_leitura - time.time()))
         try:
             if usina.leituras_por_hora():
@@ -518,7 +516,7 @@ def acionar_voip():
 if __name__ == "__main__":
     # A escala de tempo é utilizada para acelerar as simulações do sistema
     # Utilizar 1 para testes sérios e 120 no máximo para testes simples
-    ESCALA_DE_TEMPO = 1
+    ESCALA_DE_TEMPO = 2
     if len(sys.argv) > 1:
         ESCALA_DE_TEMPO = int(sys.argv[1])
 
@@ -563,7 +561,7 @@ if __name__ == "__main__":
                         timeout, n_tentativa, repr(e)
                     )
                 )
-                logger.critical("Traceback: {}".format(traceback.format_exc()))
+                logger.debug("Traceback: {}".format(traceback.format_exc()))
                 sleep(timeout)
                 continue
 
@@ -626,10 +624,7 @@ if __name__ == "__main__":
         t_i = time.time()
         logger.debug("Executando estado: {}".format(sm.state.__class__.__name__))
         sm.exec()
-        t_restante = max(10 - (time.time() - t_i), 0) / ESCALA_DE_TEMPO
+        t_restante = max(30 - (time.time() - t_i), 0) / ESCALA_DE_TEMPO
         if t_restante == 0:
-            print(
-                "######################################################\n######################################################\nCiclo está demorando mais que o permitido\n######################################################\n######################################################"
-            )
-            # logger.error("######################################################\n######################################################\nCiclo está demorando mais que o permitido\n######################################################\n######################################################")
+            print("######################################################\n######################################################\nCiclo está demorando mais que o permitido\n######################################################\n######################################################")
         sleep(t_restante)

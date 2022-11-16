@@ -1,12 +1,10 @@
+import pytz
 from datetime import datetime
-
 from django.shortcuts import render
-from django.contrib.auth.decorators import login_required
 from parametros_moa.models import ParametrosUsina
-
+from django.contrib.auth.decorators import login_required
 
 # Create your views here.
-
 
 @login_required
 def parametros_moa_view(request, *args, **kwargs):
@@ -284,7 +282,7 @@ def parametros_moa_view(request, *args, **kwargs):
         usina.limite_caixa_espiral_ug3 = (float(aux.replace(",", ".")) if aux is not None and float(aux.replace(",", ".")) > 0 else usina.limite_caixa_espiral_ug3)
 
 
-        usina.timestamp = datetime.now()
+        usina.timestamp = datetime.now(pytz.timezone("Brazil/East")).replace(tzinfo=None)
         usina.save()
 
     escolha_ugs = 0
@@ -322,7 +320,7 @@ def emergencia_view(request, *args, **kwargs):
     if request.method == "POST":
         codigo_emergencia = int(request.POST.get("codigo_emergencia"))
         usina.emergencia_acionada = codigo_emergencia
-        usina.timestamp = datetime.now()
+        usina.timestamp = datetime.now(pytz.timezone("Brazil/East")).replace(tzinfo=None)
         usina.save()
 
     context = {

@@ -1,3 +1,4 @@
+import pytz
 from datetime import datetime, timedelta
 from django.http import HttpResponseRedirect
 from django.shortcuts import render
@@ -5,9 +6,7 @@ from django.contrib.auth.decorators import login_required
 from agendamentos.models import Agendamento
 from parametros_moa.models import Comando
 
-
 # Create your views here.
-
 
 def agendamentos_view(request, *args, **kwargs):
 
@@ -45,7 +44,7 @@ def agendamento_detalhado_view(request, *args, **kwargs):
 
     if request.method == "POST":
         if request.POST.get("acao") == "alterar":
-            ag.ts_modificado = datetime.now()
+            ag.ts_modificado = datetime.now(pytz.timezone("Brazil/East")).replace(tzinfo=None)
             ag.modificado_por = str(request.user)
             ag.executado = True
             ag.observacao = (
@@ -60,7 +59,7 @@ def agendamento_detalhado_view(request, *args, **kwargs):
 @login_required
 def novo_agendamento_view(request, *args, **kwargs):
 
-    now = datetime.now()
+    now = datetime.now(pytz.timezone("Brazil/East")).replace(tzinfo=None)
 
     if request.method == "POST":
 
@@ -73,19 +72,12 @@ def novo_agendamento_view(request, *args, **kwargs):
         campo_auxiliar = request.POST.get("campo_auxiliar")
         comando_id = request.POST.get("comando")
 
-        data_hora = datetime(ano, mes, dia, hora, minuto, 0)
-        if data_hora <= now:
-            if (now - data_hora).seconds < 60:
-                data_hora = now
-            else:
-                return HttpResponseRedirect("../")
-
         ag = Agendamento(
             ts_criado=now,
             criado_por=request.user,
             ts_modificado=now,
             modificado_por=request.user,
-            data=data_hora,
+            data=now,
             comando=Comando.objects.get(id=comando_id),
             campo_auxiliar=campo_auxiliar,
             observacao=observacao,
@@ -119,7 +111,7 @@ def novo_agendamento_view(request, *args, **kwargs):
 @login_required
 def novo_agendamento_rapido_view(request, *args, **kwargs):
 
-    now = datetime.now()
+    now = datetime.now(pytz.timezone("Brazil/East")).replace(tzinfo=None)
     context = {"comandos": Comando.objects.all()}
 
     if request.method == "POST":
