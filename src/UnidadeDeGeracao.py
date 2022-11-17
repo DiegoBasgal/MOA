@@ -11,10 +11,9 @@ import pytz
 import logging
 import traceback
 
-from time import sleep, time
 from src.codes import *
-from src import Leituras
 from src.Leituras import *
+from time import sleep, time
 from threading import Thread
 from datetime import datetime
 from abc import abstractmethod

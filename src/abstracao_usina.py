@@ -4,14 +4,12 @@ import threading
 import subprocess
 from src.codes import *
 from time import sleep, time
-from curses import delay_output
-from src.mensageiro import voip
 from src.Condicionadores import *
 from src.UG1 import UnidadeDeGeracao1
 from src.UG2 import UnidadeDeGeracao2
 from src.UG3 import UnidadeDeGeracao3
 from pyModbusTCP.server import DataBank
-from datetime import date, datetime, timedelta
+from datetime import  datetime, timedelta
 
 logger = logging.getLogger("__main__")
 
@@ -33,8 +31,8 @@ class Usina:
         if leituras:
             self.leituras = leituras
         else:
-            from src.LeiturasUSN import LeiturasUSN
             from src.Leituras import LeituraModbus
+            from src.LeiturasUSN import LeiturasUSN
             from src.Leituras import LeituraModbusBit
             self.leituras = LeiturasUSN(self.cfg)
 
@@ -79,6 +77,7 @@ class Usina:
         self.__split3 = False
         self.tensao_ok = True
         self.timer_tensao = None
+        self.acionar_voip = False
         self.TDA_FalhaComum = False
         self.BombasDngRemoto = False
         self.avisado_em_eletrica = False
@@ -1104,27 +1103,30 @@ class Usina:
         if self.leitura_RetornosDigitais_MXR_FalhaComunSETDA.valor != 0 and self.TDA_FalhaComum==False:
             logger.warning("Houve uma falha de comunicação com o CLP da Subestação e o CLP da Tomada da Água, favor verificar")
             self.TDA_FalhaComum = True
-            return True
+            self.acionar_voip = True
         elif self.leitura_RetornosDigitais_MXR_FalhaComunSETDA == 0 and self.TDA_FalhaComum == True:
             self.TDA_FalhaComum = False
+            self.acionar_voip = False
 
         self.leitura_EntradasDigitais_MXI_SA_QLCF_Disj52EFechado = LeituraModbusCoil( "EntradasDigitais_MXI_SA_QLCF_Disj52EFechado", self.clp, REG_SA_EntradasDigitais_MXI_SA_QLCF_Disj52EFechado)
         if self.leitura_EntradasDigitais_MXI_SA_QLCF_Disj52EFechado.valor == 1 and self.Disj_GDE_QLCF_Fechado==False:
             logger.warning("O Disjuntor do Gerador Diesel de Emergência QLCF foi fechado.")
             self.Disj_GDE_QLCF_Fechado = True
-            return True
+            self.acionar_voip = True
         elif self.leitura_EntradasDigitais_MXI_SA_QLCF_Disj52EFechado.valor == 0 and self.Disj_GDE_QLCF_Fechado==True:
             self.Disj_GDE_QLCF_Fechado = False
+            self.acionar_voip = False
 
         self.leitura_EntradasDigitais_MXI_SA_QCADE_BombasDng_Auto = LeituraModbusCoil( "EntradasDigitais_MXI_SA_QCADE_BombasDng_Auto", self.clp, REG_SA_EntradasDigitais_MXI_SA_QCADE_BombasDng_Auto)
         if self.leitura_EntradasDigitais_MXI_SA_QCADE_BombasDng_Auto.valor != 1 and self.BombasDngRemoto==False:
             logger.warning("O poço de drenagem da Usina entrou em modo remoto, favor verificar.")
             self.BombasDngRemoto=True
-            return True
+            self.acionar_voip = True
         elif self.leitura_EntradasDigitais_MXI_SA_QCADE_BombasDng_Auto.valor == 1 and self.BombasDngRemoto==True:
             self.BombasDngRemoto=False
+            self.acionar_voip = False
 
-        return False
+        return True
 
 def ping(host):
     """

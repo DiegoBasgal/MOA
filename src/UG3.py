@@ -19,6 +19,7 @@ class UnidadeDeGeracao3(UnidadeDeGeracao):
 
         self.__last_EtapaAtual = 0
         self.QCAUGRemoto = False
+        self.acionar_voip = False
         self.TDA_FalhaComum = False
         self.FreioCmdRemoto = False
         self.avisou_emerg_voip = False
@@ -794,25 +795,27 @@ class UnidadeDeGeracao3(UnidadeDeGeracao):
         if self.leitura_RetornosDigitais_MXR_FalhaComunG3TDA.valor == 1 and self.TDA_FalhaComum == False:
             self.logger.warning("[UG{}] Houve uma falha de comunicação com o CLP da UG com o CLP da Tomada da Água, favor verificar".format(self.id))
             self.TDA_FalhaComum = True
-            return True
+            self.acionar_voip = True
         elif self.leitura_RetornosDigitais_MXR_FalhaComunG3TDA.valor == 0 and self.TDA_FalhaComum == True:
             self.TDA_FalhaComum = False
+            self.acionar_voip = False
         
         self.leitura_EntradasDigitais_MXI_FreioCmdRemoto = LeituraModbusCoil( "EntradasDigitais_MXI_FreioCmdRemoto", self.clp, REG_UG3_EntradasDigitais_MXI_FreioCmdRemoto )
         if self.leitura_EntradasDigitais_MXI_FreioCmdRemoto.valor != 1 and self.FreioCmdRemoto == False:
             self.logger.warning("[UG{}] O freio da UG entrou em modo remoto, favor analisar a situação.".format(self.id))
             self.FreioCmdRemoto = True
-            return True
+            self.acionar_voip = True
         elif self.leitura_EntradasDigitais_MXI_FreioCmdRemoto.valor == 1 and self.FreioCmdRemoto == True:
             self.FreioCmdRemoto = False
+            self.acionar_voip = False
 
         self.leitura_EntradasDigitais_MXI_QCAUG3_Remoto = LeituraModbusCoil( "EntradasDigitais_MXI_QCAUG3_Remoto", self.clp, REG_UG3_EntradasDigitais_MXI_QCAUG3_Remoto )
         if self.leitura_EntradasDigitais_MXI_QCAUG3_Remoto.valor != 1 and self.QCAUGRemoto == False:
             self.logger.warning("[UG{}] O compressor da UG entrou em modo remoto, favor analisar a situação.".format(self.id))
             self.QCAUGRemoto=True
-            return True
+            self.acionar_voip = True
         elif self.leitura_EntradasDigitais_MXI_QCAUG3_Remoto.valor == 1 and self.QCAUGRemoto == True:
             self.QCAUGRemoto=False
-        
-        
-        return False
+            self.acionar_voip = False
+
+        return True

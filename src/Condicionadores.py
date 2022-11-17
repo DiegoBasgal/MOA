@@ -7,8 +7,8 @@ dos valores de campo.
 __version__ = "0.1"
 __author__ = "Lucas Lavratti"
 
-from asyncio.log import logger
 from src.Leituras import *
+from asyncio.log import logger
 
 
 class CondicionadorBase:

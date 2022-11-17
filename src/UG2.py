@@ -19,6 +19,7 @@ class UnidadeDeGeracao2(UnidadeDeGeracao):
         
         self.__last_EtapaAtual = 0
         self.QCAUGRemoto = False
+        self.acionar_voip = False
         self.TDA_FalhaComum = False
         self.FreioCmdRemoto = False
         self.avisou_emerg_voip = False
@@ -254,7 +255,6 @@ class UnidadeDeGeracao2(UnidadeDeGeracao):
         self.leitura_ComandosDigitais_MXW_EmergenciaViaSuper = LeituraModbusCoil("ComandosDigitais_MXW_EmergenciaViaSuper", self.clp, REG_UG2_ComandosDigitais_MXW_EmergenciaViaSuper,)
         x = self.leitura_ComandosDigitais_MXW_EmergenciaViaSuper
         self.condicionadores_essenciais.append(CondicionadorBase(x.descr, DEVE_NORMALIZAR, x))
-
 
         # alterado leituramodbuscoil para leituramodbus apenas para o simulador
         self.leitura_RetornosDigitais_MXR_TripEletrico = LeituraModbusCoil("RetornosDigitais_MXR_TripEletrico",self.clp,REG_UG2_RetornosDigitais_MXR_TripEletrico,)
@@ -797,24 +797,27 @@ class UnidadeDeGeracao2(UnidadeDeGeracao):
         if self.leitura_RetornosDigitais_MXR_FalhaComunG2TDA.valor == 1 and self.TDA_FalhaComum==False:
             self.logger.warning("[UG{}] Houve uma falha de comunicação com o CLP da UG com o CLP da Tomada da Água, favor verificar".format(self.id))
             self.TDA_FalhaComum = True
-            return True
+            self.acionar_voip = True
         elif self.leitura_RetornosDigitais_MXR_FalhaComunG2TDA.valor == 0 and self.TDA_FalhaComum==True:
             self.TDA_FalhaComum = False
+            self.acionar_voip = False
 
         self.leitura_EntradasDigitais_MXI_FreioCmdRemoto = LeituraModbusCoil( "EntradasDigitais_MXI_FreioCmdRemoto", self.clp, REG_UG2_EntradasDigitais_MXI_FreioCmdRemoto )
         if self.leitura_EntradasDigitais_MXI_FreioCmdRemoto.valor != 1 and self.FreioCmdRemoto == False:
             self.logger.warning("[UG{}] O sensor de freio da UG entrou em modo remoto, favor analisar a situação.".format(self.id))
             self.FreioCmdRemoto = True
-            return True
+            self.acionar_voip = True
         elif self.leitura_EntradasDigitais_MXI_FreioCmdRemoto.valor == 1 and self.FreioCmdRemoto == True:
             self.FreioCmdRemoto=False
+            self.acionar_voip = False
 
         self.leitura_EntradasDigitais_MXI_QCAUG2_Remoto = LeituraModbusCoil( "EntradasDigitais_MXI_QCAUG2_Remoto", self.clp, REG_UG2_EntradasDigitais_MXI_QCAUG2_Remoto )
         if self.leitura_EntradasDigitais_MXI_QCAUG2_Remoto.valor != 1 and self.QCAUGRemoto == False:
             self.logger.warning("[UG{}] O compressor da UG entrou em modo remoto, favor analisar a situação.".format(self.id))
             self.QCAUGRemoto=True
-            return True
+            self.acionar_voip = True
         elif self.leitura_EntradasDigitais_MXI_QCAUG2_Remoto.valor != 1 and self.QCAUGRemoto == True:
             self.QCAUGRemoto=False
+            self.acionar_voip = False
         
-        return False
+        return True

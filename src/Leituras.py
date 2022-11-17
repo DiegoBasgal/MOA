@@ -6,14 +6,12 @@ Esse módulo corresponde a implementação das leituras, dos valores de campo.
 __version__ = "0.1"
 __author__ = "Lucas Lavratti"
 
-import logging
 import socket
 import struct
-
-from pyModbusTCP.client import ModbusClient
-from src import modbus_mapa_antigo
-from src.modbus_mapa_antigo import *
+import logging
+from src.mapa_modbus import *
 from pyModbusTCP.utils import crc16
+from pyModbusTCP.client import ModbusClient
 
 def bcd_to_i(i):
     value = i & 0xF

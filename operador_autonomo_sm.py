@@ -472,15 +472,14 @@ def leitura_temporizada():
     logger.debug("Iniciando o timer de leitura por hora.")
     while True:
         logger.debug("Inciando nova leitura...")
-        time.sleep(max(0, proxima_leitura - time.time()))
         try:
-            if usina.leituras_por_hora():
+            if usina.leituras_por_hora() and usina.acionar_voip:
                 acionar_voip()
-                
             for ug in usina.ugs:
-                if ug.leituras_por_hora():
+                if ug.leituras_por_hora() and ug.acionar_voip:
                     acionar_voip()
-
+            time.sleep(max(0, proxima_leitura - time.time()))
+            
         except Exception:
             logger.debug("Houve um problema ao executar a leitura por hora")
 
@@ -488,43 +487,29 @@ def leitura_temporizada():
 
 def acionar_voip():
     try:
-        for ug in usina.ugs:
-            if ug.TDA_FalhaComum:
-                voip.TDA_FalhaComum=True
-                voip.enviar_voz_auxiliar()
+        if usina.acionar_voip:
+            voip.TDA_FalhaComum=[True if usina.TDA_FalhaComum else False]
+            voip.BombasDngRemoto=[True if usina.BombasDngRemoto else False]
+            voip.Disj_GDE_QLCF_Fechado=[True if usina.Disj_GDE_QLCF_Fechado else False]
+            voip.enviar_voz_auxiliar()
+        elif usina.avisado_em_eletrica:
+            voip.enviar_voz_emergencia()
 
-            if ug.FreioCmdRemoto:
+        for ug in usina.ugs:
+            if ug.acionar_voip:
+                voip.TDA_FalhaComum=[True if ug.TDA_FalhaComum else False]
+                voip.QCAUG1Remoto=[True if usina.ug1.QCAUGRemoto else False]
+                voip.QCAUG2Remoto=[True if usina.ug2.QCAUGRemoto else False]
+                voip.QCAUG3Remoto=[True if usina.ug3.QCAUGRemoto else False]
                 voip.FreioCmdRemoto1=[True if usina.ug1.FreioCmdRemoto else False]
                 voip.FreioCmdRemoto2=[True if usina.ug2.FreioCmdRemoto else False]
                 voip.FreioCmdRemoto3=[True if usina.ug3.FreioCmdRemoto else False]
                 voip.enviar_voz_auxiliar()
-
-            if ug.QCAUGRemoto:
-                voip.QCAUG1Remoto = [True if usina.ug1.QCAUGRemoto else False]
-                voip.QCAUG2Remoto = [True if usina.ug2.QCAUGRemoto else False]
-                voip.QCAUG3Remoto = [True if usina.ug3.QCAUGRemoto else False]
+            elif ug.avisou_emerg_voip:
                 voip.enviar_voz_auxiliar()
 
-            if ug.avisou_emerg_voip:
-                voip.enviar_voz_auxiliar()
-
-        if usina.TDA_FalhaComum:
-            voip.TDA_FalhaComum=True
-            voip.enviar_voz_auxiliar()
-
-        if usina.Disj_GDE_QLCF_Fechado:
-            voip.Disj_GDE_QLCF_Fechado=True
-            voip.enviar_voz_auxiliar()
-
-        if usina.BombasDngRemoto:
-            voip.BombasDngRemoto=True
-            voip.enviar_voz_auxiliar()
-
-        if usina.avisado_em_eletrica:
-            voip.enviar_voz_emergencia()
-            
     except Exception:
-        logger.warning("Houve um problema ao ligar por Voip")
+        logger.critical("Houve um problema ao ligar por Voip")
 
 if __name__ == "__main__":
     # A escala de tempo é utilizada para acelerar as simulações do sistema

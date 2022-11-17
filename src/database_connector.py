@@ -1,5 +1,4 @@
 import pytz
-import mysql.connector
 from datetime import datetime
 from mysql.connector import pooling
 

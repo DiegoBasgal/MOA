@@ -12,6 +12,7 @@ import os
 import json
 import logging
 from sys import stdout
+from time import sleep
 from datetime import datetime
 from urllib.request import Request, urlopen
 
@@ -234,6 +235,19 @@ def enviar_voz_auxiliar(lista_de_contatos=None):
                     ],
                     "dtmfs": [],
                 }
+                headers = {"Content-Type": "application/json", "Authorization": access_token,}
+                # pharse/encode para json
+                data = json.dumps(data)
+                data = str(data).encode()
+                # Envia a request para a api e recebe a resposta
+                request = Request("https://api.nvoip.com.br/v2/torpedo/voice?napikey={}".format(napikey), data=data, headers=headers,)
+                try:
+                    response_body = urlopen(request).read()
+                except Exception as e:
+                    logger.debug("Exception NVOIP: {} ".format(e.read()))
+                else:
+                    logger.debug("response_body: {} ".format(response_body))
+                sleep(30)
 
             if TDA_FalhaComum:
                 # Montagem do pacote para chamar a api
@@ -248,6 +262,19 @@ def enviar_voz_auxiliar(lista_de_contatos=None):
                     ],
                     "dtmfs": [],
                 }
+                headers = {"Content-Type": "application/json", "Authorization": access_token,}
+                # pharse/encode para json
+                data = json.dumps(data)
+                data = str(data).encode()
+                # Envia a request para a api e recebe a resposta
+                request = Request("https://api.nvoip.com.br/v2/torpedo/voice?napikey={}".format(napikey), data=data, headers=headers,)
+                try:
+                    response_body = urlopen(request).read()
+                except Exception as e:
+                    logger.debug("Exception NVOIP: {} ".format(e.read()))
+                else:
+                    logger.debug("response_body: {} ".format(response_body))
+                sleep(30)
 
             if BombasDngRemoto:
                 data = {
@@ -261,6 +288,19 @@ def enviar_voz_auxiliar(lista_de_contatos=None):
                     ],
                     "dtmfs": [],
                 }
+                headers = {"Content-Type": "application/json", "Authorization": access_token,}
+                # pharse/encode para json
+                data = json.dumps(data)
+                data = str(data).encode()
+                # Envia a request para a api e recebe a resposta
+                request = Request("https://api.nvoip.com.br/v2/torpedo/voice?napikey={}".format(napikey), data=data, headers=headers,)
+                try:
+                    response_body = urlopen(request).read()
+                except Exception as e:
+                    logger.debug("Exception NVOIP: {} ".format(e.read()))
+                else:
+                    logger.debug("response_body: {} ".format(response_body))
+                sleep(30)
 
             if QCAUG1Remoto:
                 data = {
@@ -274,6 +314,19 @@ def enviar_voz_auxiliar(lista_de_contatos=None):
                     ],
                     "dtmfs": [],
                 }
+                headers = {"Content-Type": "application/json", "Authorization": access_token,}
+                # pharse/encode para json
+                data = json.dumps(data)
+                data = str(data).encode()
+                # Envia a request para a api e recebe a resposta
+                request = Request("https://api.nvoip.com.br/v2/torpedo/voice?napikey={}".format(napikey), data=data, headers=headers,)
+                try:
+                    response_body = urlopen(request).read()
+                except Exception as e:
+                    logger.debug("Exception NVOIP: {} ".format(e.read()))
+                else:
+                    logger.debug("response_body: {} ".format(response_body))
+                sleep(30)
 
             if QCAUG2Remoto:
                 data = {
@@ -287,6 +340,19 @@ def enviar_voz_auxiliar(lista_de_contatos=None):
                     ],
                     "dtmfs": [],
                 }
+                headers = {"Content-Type": "application/json", "Authorization": access_token,}
+                # pharse/encode para json
+                data = json.dumps(data)
+                data = str(data).encode()
+                # Envia a request para a api e recebe a resposta
+                request = Request("https://api.nvoip.com.br/v2/torpedo/voice?napikey={}".format(napikey), data=data, headers=headers,)
+                try:
+                    response_body = urlopen(request).read()
+                except Exception as e:
+                    logger.debug("Exception NVOIP: {} ".format(e.read()))
+                else:
+                    logger.debug("response_body: {} ".format(response_body))
+                sleep(30)
 
             if QCAUG3Remoto:
                 data = {
@@ -300,6 +366,19 @@ def enviar_voz_auxiliar(lista_de_contatos=None):
                     ],
                     "dtmfs": [],
                 }
+                headers = {"Content-Type": "application/json", "Authorization": access_token,}
+                # pharse/encode para json
+                data = json.dumps(data)
+                data = str(data).encode()
+                # Envia a request para a api e recebe a resposta
+                request = Request("https://api.nvoip.com.br/v2/torpedo/voice?napikey={}".format(napikey), data=data, headers=headers,)
+                try:
+                    response_body = urlopen(request).read()
+                except Exception as e:
+                    logger.debug("Exception NVOIP: {} ".format(e.read()))
+                else:
+                    logger.debug("response_body: {} ".format(response_body))
+                sleep(30)
 
             if FreioCmdRemoto1:
                 data = {
@@ -313,6 +392,19 @@ def enviar_voz_auxiliar(lista_de_contatos=None):
                     ],
                     "dtmfs": [],
                 }
+                headers = {"Content-Type": "application/json", "Authorization": access_token,}
+                # pharse/encode para json
+                data = json.dumps(data)
+                data = str(data).encode()
+                # Envia a request para a api e recebe a resposta
+                request = Request("https://api.nvoip.com.br/v2/torpedo/voice?napikey={}".format(napikey), data=data, headers=headers,)
+                try:
+                    response_body = urlopen(request).read()
+                except Exception as e:
+                    logger.debug("Exception NVOIP: {} ".format(e.read()))
+                else:
+                    logger.debug("response_body: {} ".format(response_body))
+                sleep(30)
 
             if FreioCmdRemoto2:
                 data = {
@@ -326,6 +418,19 @@ def enviar_voz_auxiliar(lista_de_contatos=None):
                     ],
                     "dtmfs": [],
                 }
+                headers = {"Content-Type": "application/json", "Authorization": access_token,}
+                # pharse/encode para json
+                data = json.dumps(data)
+                data = str(data).encode()
+                # Envia a request para a api e recebe a resposta
+                request = Request("https://api.nvoip.com.br/v2/torpedo/voice?napikey={}".format(napikey), data=data, headers=headers,)
+                try:
+                    response_body = urlopen(request).read()
+                except Exception as e:
+                    logger.debug("Exception NVOIP: {} ".format(e.read()))
+                else:
+                    logger.debug("response_body: {} ".format(response_body))
+                sleep(30)
 
             if FreioCmdRemoto3:
                 data = {
@@ -339,22 +444,19 @@ def enviar_voz_auxiliar(lista_de_contatos=None):
                     ],
                     "dtmfs": [],
                 }
-                
-            headers = {"Content-Type": "application/json", "Authorization": access_token,}
-
-            # pharse/encode para json
-            data = json.dumps(data)
-            data = str(data).encode()
-
-            # Envia a request para a api e recebe a resposta
-            request = Request("https://api.nvoip.com.br/v2/torpedo/voice?napikey={}".format(napikey), data=data, headers=headers,)
-            try:
-                response_body = urlopen(request).read()
-            except Exception as e:
-                logger.debug("Exception NVOIP: {} ".format(e.read()))
-            else:
-                logger.debug("response_body: {} ".format(response_body))
-
+                headers = {"Content-Type": "application/json", "Authorization": access_token,}
+                # pharse/encode para json
+                data = json.dumps(data)
+                data = str(data).encode()
+                # Envia a request para a api e recebe a resposta
+                request = Request("https://api.nvoip.com.br/v2/torpedo/voice?napikey={}".format(napikey), data=data, headers=headers,)
+                try:
+                    response_body = urlopen(request).read()
+                except Exception as e:
+                    logger.debug("Exception NVOIP: {} ".format(e.read()))
+                else:
+                    logger.debug("response_body: {} ".format(response_body))
+                sleep(30)
 
 if __name__ == "__main__":
    enviar_voz_auxiliar()

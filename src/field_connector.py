@@ -1,6 +1,6 @@
 import logging
 from time import sleep
-from src.modbus_mapa_antigo import *
+from src.mapa_modbus import *
 from pyModbusTCP.client import ModbusClient
 
 logger = logging.getLogger("__main__")

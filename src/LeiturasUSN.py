@@ -1,7 +1,6 @@
-import json
 import os
+import json
 from src.Leituras import *
-
 
 class LeiturasUSN:
     def __init__(self, cfg):
