@@ -88,7 +88,10 @@ class Usina:
             auto_close=True,
         )
 
-        
+        self.leitura_Disj52LAbrir = LeituraModbusBit("Disj52LAbrir", self.clp, REG_USINA_Disj52LAbrir)
+        x = self.leitura_Disj52LAbrir
+        self.condicionadores.append(CondicionadorBase(x.descr, DEVE_NORMALIZAR, x))
+
         self.relé_86bf_atuado_falha_disjuntores = LeituraModbusBit('01.03 - Relé 86BF Atuado (Falha Disjuntores)', clp, REG_USINA_Alarme01, 3)
         x = self.relé_86bf_atuado_falha_disjuntores 
         self.condicionadores.append(CondicionadorBase(x.descr, DEVE_INDISPONIBILIZAR, x))
