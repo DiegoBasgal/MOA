@@ -237,6 +237,9 @@ class Emergencia(State):
             logger.warning("Numero de tentaivas de normalização excedidas, entrando em modo manual.")
             self.usina.entrar_em_modo_manual()
             self.usina.heartbeat()
+            for ug in self.usina.ugs:
+                ug.forcar_estado_indisponivel()
+                ug.step()
             return ModoManualAtivado(self.usina)
         else:
             if self.usina.db_emergencia_acionada:
