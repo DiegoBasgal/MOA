@@ -184,7 +184,7 @@ class CondicionadorExponencialReverso(CondicionadorBase):
         self.__ordem = ordem
 
     @property
-    def valor_base(self):
+    def valor_base(self) -> float:
         return self.__valor_base
 
     @valor_base.setter
@@ -192,7 +192,7 @@ class CondicionadorExponencialReverso(CondicionadorBase):
         self.__valor_base = var
 
     @property
-    def valor_limite(self):
+    def valor_limite(self) -> float:
         return self.__valor_limite
 
     @valor_limite.setter

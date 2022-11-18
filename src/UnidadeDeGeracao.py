@@ -634,6 +634,8 @@ class StateDisponivel(State):
         deve_normalizar = False
         condicionadores_ativos = []
         
+        self.parent_ug.controle_limites_operacao()
+
         for condicionador_essencial in self.parent_ug.condicionadores_essenciais:
             if condicionador_essencial.ativo:
                 self.parent_ug.deve_ler_condicionadores = True
