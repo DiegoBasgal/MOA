@@ -350,6 +350,10 @@ REG_UG1_RetornosAnalogicos_Float_MWR_PM_710_Energia_Reativa_Fornecida = (
 REG_UG1_RetornosAnalogicos_Float_MWR_PM_710_Energia_Ativa_Fornecida = (
     155  # Scale 0.1 - Op04 (Read Input Regs - 3x)
 )
+REG_UG1_EntradasAnalogicas_MRR_PressK1CaixaExpiral_MaisCasas = (
+    157 # Scale 0.01 - Op04 (Read Input Regs)
+)
+
 REG_UG2_EntradasDigitais_MXI_RV_MaquinaParada = 0  # Op02 (Read Input Status)
 REG_UG2_EntradasDigitais_MXI_RV_VeloMenor30 = 1  # Op02 (Read Input Status)
 REG_UG2_EntradasDigitais_MXI_RV_VeloMaior90 = 2  # Op02 (Read Input Status)
@@ -699,6 +703,10 @@ REG_UG2_RetornosAnalogicos_Float_MWR_PM_710_Energia_Reativa_Fornecida = (
 REG_UG2_RetornosAnalogicos_Float_MWR_PM_710_Energia_Ativa_Fornecida = (
     155  # Scale 0.1 - Op04 (Read Input Regs - 3x)
 )
+REG_UG2_EntradasAnalogicas_MRR_PressK1CaixaExpiral_MaisCasas = (
+    157 # Scale 0.01 - Op04 (Read Input Regs)
+)
+
 REG_UG3_EntradasDigitais_MXI_RV_MaquinaParada = 0  # Op02 (Read Input Status)
 REG_UG3_EntradasDigitais_MXI_RV_VeloMenor30 = 1  # Op02 (Read Input Status)
 REG_UG3_EntradasDigitais_MXI_RV_VeloMaior90 = 2  # Op02 (Read Input Status)
@@ -1046,6 +1054,11 @@ REG_UG3_RetornosAnalogicos_Float_MWR_PM_710_Energia_Reativa_Fornecida = (
 REG_UG3_RetornosAnalogicos_Float_MWR_PM_710_Energia_Ativa_Fornecida = (
     155  # Scale 0.1 - Op04 (Read Input Regs - 3x)
 )
+REG_UG3_EntradasAnalogicas_MRR_PressK1CaixaExpiral_MaisCasas = (
+    157 # Scale 0.01 - Op04 (Read Input Regs)
+)
+
+
 REG_SA_EntradasAnalogicas_MRR_SA_Reserva07 = 15  # Scale - Op04 (Read Input Regs - 3x)
 REG_SA_EntradasAnalogicas_MRR_SA_QCAP_TensaoT = (
     14  # Scale 0.1 - Op04 (Read Input Regs - 3x)
