@@ -2,41 +2,36 @@ from django.db import models
 
 
 # Create your models here.
-class Contato(models.Model):
-
-    nome = models.CharField(max_length=250)
-    numero = models.CharField(max_length=20)
-
 
 class ParametrosUsina(models.Model):
 
-    modo_autonomo = models.IntegerField(default=0)
-    status_moa = models.IntegerField(default=0)
+    modo_autonomo = models.IntegerField(default=1)
+    status_moa = models.IntegerField(default=7)
     emergencia_acionada = models.IntegerField(default=0)
     timestamp = models.DateTimeField(default=0)
-    aguardando_reservatorio = models.IntegerField(default=1)
-    clp_online = models.IntegerField(default=0)
-    clp_ip = models.CharField(max_length=15, default="")
+    aguardando_reservatorio = models.IntegerField(default=0)
+    clp_online = models.IntegerField(default=1)
+    clp_ip = models.CharField(max_length=15, default="192.168.0.50")
     clp_porta = models.IntegerField(default=502)
     modbus_server_ip = models.CharField(max_length=15, default="0.0.0.0")
-    modbus_server_porta = models.IntegerField(default=5003)
-    kp = models.DecimalField(max_digits=15, decimal_places=10, default=1)
-    ki = models.DecimalField(max_digits=15, decimal_places=10, default=0)
+    modbus_server_porta = models.IntegerField(default=5002)
+    kp = models.DecimalField(max_digits=15, decimal_places=10, default=2)
+    ki = models.DecimalField(max_digits=15, decimal_places=10, default=0.1)
     kd = models.DecimalField(max_digits=15, decimal_places=10, default=0)
-    kie = models.DecimalField(max_digits=15, decimal_places=10, default=0)
+    kie = models.DecimalField(max_digits=15, decimal_places=10, default=0.1)
     margem_pot_critica = models.DecimalField(max_digits=10, decimal_places=5, default=0.2)
-    nv_alvo = models.DecimalField(max_digits=10, decimal_places=3, default=0)
-    nv_maximo = models.DecimalField(max_digits=10, decimal_places=3, default=0)
-    nv_minimo = models.DecimalField(max_digits=10, decimal_places=3, default=0)
-    nv_montante = models.DecimalField(max_digits=10, decimal_places=3, default=0)
-    nv_religamento = models.DecimalField(max_digits=10, decimal_places=3, default=0)
-    pot_minima = models.DecimalField(max_digits=10, decimal_places=5, default=0)
-    pot_nominal = models.DecimalField(max_digits=10, decimal_places=5, default=0)
-    pot_nominal_ug = models.DecimalField(max_digits=10, decimal_places=5, default=0)
+    nv_alvo = models.DecimalField(max_digits=10, decimal_places=3, default=405)
+    nv_maximo = models.DecimalField(max_digits=10, decimal_places=3, default=405.25)
+    nv_minimo = models.DecimalField(max_digits=10, decimal_places=3, default=404.65)
+    nv_montante = models.DecimalField(max_digits=10, decimal_places=3, default=405)
+    nv_religamento = models.DecimalField(max_digits=10, decimal_places=3, default=404.9)
+    pot_minima = models.DecimalField(max_digits=10, decimal_places=5, default=1360)
+    pot_nominal = models.DecimalField(max_digits=10, decimal_places=5, default=9900)
+    pot_nominal_ug = models.DecimalField(max_digits=10, decimal_places=5, default=3600)
     pot_disp = models.DecimalField(max_digits=10, decimal_places=5, default=0)
     timer_erro = models.IntegerField(default=30)
-    valor_ie_inicial = models.DecimalField(max_digits=10, decimal_places=5, default=0)
-    modo_de_escolha_das_ugs = models.IntegerField(default=1)
+    valor_ie_inicial = models.DecimalField(max_digits=10, decimal_places=5, default=0.5)
+    modo_de_escolha_das_ugs = models.IntegerField(default=2)
 
     ug1_disp = models.DecimalField(max_digits=10, decimal_places=5, default=1)
     ug1_pot = models.DecimalField(max_digits=10, decimal_places=5, default=0)
@@ -137,9 +132,25 @@ class ParametrosUsina(models.Model):
     alerta_caixa_espiral_ug3 = models.DecimalField(max_digits=10, decimal_places=2, default=10)
     limite_caixa_espiral_ug3 = models.DecimalField(max_digits=10, decimal_places=2, default=0)
 
+    cx_kp = models.DecimalField(max_digits=5, decimal_places=2, default=2)
+    cx_ki = models.DecimalField(max_digits=5, decimal_places=2, default=0.1)
+    cx_kie = models.DecimalField(max_digits=5, decimal_places=2, default=0)
+    press_cx_alvo = models.DecimalField(max_digits=10, decimal_places=2, default=16.3)
+
+    clp_tda_ip = models.CharField(max_length=15, default="192.168.0.54")
+    clp_tda_porta = models.IntegerField(default=502)
+
 class Comando(models.Model):
     id = models.IntegerField(primary_key=True)
     nome = models.CharField(max_length=255)
     descricao = models.TextField()
     executavel_em_manual = models.BooleanField(default=False)
     executavel_em_autmoatico = models.BooleanField(default=True)
+
+class Contato(models.Model):
+    nome = models.CharField(max_length=250, default="")
+    numero = models.CharField(max_length=20, default="")
+    data_inicio = models.DateField(default=0)
+    ts_inicio = models.TimeField(default=0)
+    data_fim = models.DateField(default=0)
+    ts_fim = models.TimeField(default=0)
