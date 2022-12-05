@@ -56,6 +56,7 @@ class Usina:
 
         self.aux = 1
         self.erro_nv = 0
+        self.aux_ping = 0
         self.pot_disp = 0
         self.state_moa = 0
         self.controle_p = 0
@@ -77,6 +78,7 @@ class Usina:
         self.__split3 = False
         self.tensao_ok = True
         self.timer_tensao = None
+        self.TDA_Offline = False
         self.acionar_voip = False
         self.TDA_FalhaComum = False
         self.BombasDngRemoto = False
@@ -117,14 +119,28 @@ class Usina:
         self.ug2.setpoint = self.ug2.leitura_potencia.valor
         self.ug3.setpoint = self.ug3.leitura_potencia.valor
 
+        parametros = self.db.get_parametros_usina()
+        self.atualizar_limites_operacao(parametros)
+
     @property
     def nv_montante(self):
         return self.leituras.nv_montante.valor
 
     def ler_valores(self):
+
+        parametros = self.db.get_parametros_usina()
+        self.cfg["TDA_slave_ip"] = parametros["clp_tda_ip"]
+
         # -> Verifica conexão com CLP Tomada d'água
         if not ping(self.cfg["TDA_slave_ip"]):
-            logger.warning("CLP TDA não respondeu a tentativa de comunicação!")
+            self.TDA_Offline = True
+            if self.TDA_Offline and self.aux_ping == 0:
+                self.aux_ping = 1
+                logger.warning("CLP TDA não respondeu a tentativa de comunicação!")
+        elif ping(self.cfg["TDA_slave_ip"]) and self.aux_ping == 1:
+            logger.info("Comunicação com o CLP TDA reestabelecida.")
+            self.aux_ping = 0
+            self.TDA_Offline = False
         
         # -> Verifica conexão com CLP Sub
         if not ping(self.cfg["USN_slave_ip"]):
@@ -146,83 +162,36 @@ class Usina:
         self.clp_online = True
         self.clp_emergencia_acionada = 0
 
-        if self.nv_montante_recente < 1:
-            self.nv_montante_recentes = [self.leituras.nv_montante.valor] * 240
-        self.nv_montante_recentes.append(round(self.leituras.nv_montante.valor, 2))
-        self.nv_montante_recentes = self.nv_montante_recentes[1:]
+        if not self.TDA_Offline:
+            if self.nv_montante_recente < 1:
+                self.nv_montante_recentes = [self.leituras.nv_montante.valor] * 240
 
-        # VERIFICAR SE O CÁLCULO SEGUINTE SERÁ USADO EM CAMPO
-        smoothing = 5
-        ema = [sum(self.nv_montante_recentes) / len(self.nv_montante_recentes)]
-        for nv in self.nv_montante_recentes:
-            ema.append((nv * (smoothing / (1 + len(self.nv_montante_recentes)))) + ema[-1] * (1 - (smoothing / (1 + len(self.nv_montante_recentes)))))
+            self.nv_montante_recentes.append(round(self.leituras.nv_montante.valor, 2))
+            self.nv_montante_recentes = self.nv_montante_recentes[1:]
 
-        self.nv_montante_recente = ema[-1]  # REMOVER SEB
-        self.nv_montante_recente = self.leituras.nv_montante.valor
+            # VERIFICAR SE O CÁLCULO SEGUINTE SERÁ USADO EM CAMPO
+            smoothing = 5
+            ema = [sum(self.nv_montante_recentes) / len(self.nv_montante_recentes)]
+            for nv in self.nv_montante_recentes:
+                ema.append((nv * (smoothing / (1 + len(self.nv_montante_recentes)))) + ema[-1] * (1 - (smoothing / (1 + len(self.nv_montante_recentes)))))
 
-        self.erro_nv_anterior = self.erro_nv
-        self.erro_nv = self.nv_montante_recente - self.cfg["nv_alvo"]
+            self.nv_montante_recente = ema[-1]  # REMOVER SEB
+            self.nv_montante_recente = self.leituras.nv_montante.valor
 
-        # DB
-        # Ler apenas os parametros que estao disponiveis no django
-        parametros = self.db.get_parametros_usina()
+            self.erro_nv_anterior = self.erro_nv
+            self.erro_nv = self.nv_montante_recente - self.cfg["nv_alvo"]
 
         # Botão de emergência
         self.db_emergencia_acionada = int(parametros["emergencia_acionada"])
 
         # Limites de operação das UGS
-        for ug in self.ugs:
-            try:
-                ug.prioridade = int(parametros["ug{}_prioridade".format(ug.id)])
-                
-                ug.condicionador_temperatura_fase_r_ug.valor_base = float(parametros["alerta_temperatura_fase_r_ug{}".format(ug.id)])
-                ug.condicionador_temperatura_fase_r_ug.valor_limite = float(parametros["limite_temperatura_fase_r_ug{}".format(ug.id)])
-
-                ug.condicionador_temperatura_fase_s_ug.valor_base = float(parametros["alerta_temperatura_fase_s_ug{}".format(ug.id)])
-                ug.condicionador_temperatura_fase_s_ug.valor_limite = float(parametros["limite_temperatura_fase_s_ug{}".format(ug.id)])
-
-                ug.condicionador_temperatura_fase_t_ug.valor_base = float(parametros["alerta_temperatura_fase_t_ug{}".format(ug.id)])
-                ug.condicionador_temperatura_fase_t_ug.valor_limite = float(parametros["limite_temperatura_fase_t_ug{}".format(ug.id)])
-
-                ug.condicionador_temperatura_nucleo_estator_ug.valor_base = float(parametros["alerta_temperatura_nucleo_estator_ug{}".format(ug.id)])
-                ug.condicionador_temperatura_nucleo_estator_ug.valor_limite = float(parametros["limite_temperatura_nucleo_estator_ug{}".format(ug.id)])
-
-                ug.condicionador_temperatura_mancal_rad_dia_1_ug.valor_base = float(parametros["alerta_temperatura_mancal_rad_dia_1_ug{}".format(ug.id)])
-                ug.condicionador_temperatura_mancal_rad_dia_1_ug.valor_limite = float(parametros["limite_temperatura_mancal_rad_dia_1_ug{}".format(ug.id)])
-
-                ug.condicionador_temperatura_mancal_rad_dia_2_ug.valor_base = float(parametros["alerta_temperatura_mancal_rad_dia_2_ug{}".format(ug.id)])
-                ug.condicionador_temperatura_mancal_rad_dia_2_ug.valor_limite = float(parametros["limite_temperatura_mancal_rad_dia_2_ug{}".format(ug.id)])
-
-                ug.condicionador_temperatura_mancal_rad_tra_1_ug.valor_base = float(parametros["alerta_temperatura_mancal_rad_tra_1_ug{}".format(ug.id)])
-                ug.condicionador_temperatura_mancal_rad_tra_1_ug.valor_limite = float(parametros["limite_temperatura_mancal_rad_tra_1_ug{}".format(ug.id)])
-
-                ug.condicionador_temperatura_mancal_rad_tra_2_ug.valor_base = float(parametros["alerta_temperatura_mancal_rad_tra_2_ug{}".format(ug.id)])
-                ug.condicionador_temperatura_mancal_rad_tra_2_ug.valor_limite = float(parametros["limite_temperatura_mancal_rad_tra_2_ug{}".format(ug.id)])
-
-                ug.condicionador_temperatura_saida_de_ar_ug.valor_base = float(parametros["alerta_temperatura_saida_de_ar_ug{}".format(ug.id)])
-                ug.condicionador_temperatura_saida_de_ar_ug.valor_limite = float(parametros["limite_temperatura_saida_de_ar_ug{}".format(ug.id)])
-
-                ug.condicionador_temperatura_mancal_guia_escora_ug.valor_base = float(parametros["alerta_temperatura_mancal_guia_escora_ug{}".format(ug.id)])
-                ug.condicionador_temperatura_mancal_guia_escora_ug.valor_limite = float(parametros["limite_temperatura_mancal_guia_escora_ug{}".format(ug.id)])
-
-                ug.condicionador_temperatura_mancal_guia_radial_ug.valor_base = float(parametros["alerta_temperatura_mancal_guia_radial_ug{}".format(ug.id)])
-                ug.condicionador_temperatura_mancal_guia_radial_ug.valor_limite = float(parametros["limite_temperatura_mancal_guia_radial_ug{}".format(ug.id)])
-
-                ug.condicionador_temperatura_mancal_guia_contra_ug.valor_base = float(parametros["alerta_temperatura_mancal_guia_contra_ug{}".format(ug.id)])
-                ug.condicionador_temperatura_mancal_guia_contra_ug.valor_limite = float(parametros["limite_temperatura_mancal_guia_contra_ug{}".format(ug.id)])
-
-                ug.condicionador_caixa_espiral_ug.valor_base = float(parametros["alerta_caixa_espiral_ug{}".format(ug.id)])
-                ug.condicionador_caixa_espiral_ug.valor_limite = float(parametros["limite_caixa_espiral_ug{}".format(ug.id)])
-
-            except KeyError as e:
-                logger.exception(e)
+        self.atualizar_limites_operacao(parametros)
 
         # nv_minimo
         self.cfg["nv_minimo"] = float(parametros["nv_minimo"])
 
         # Modo autonomo
         logger.debug("Modo autonomo que o banco respondeu: {}".format(int(parametros["modo_autonomo"])))
-
         self.modo_autonomo = int(parametros["modo_autonomo"])
 
         # Modo de prioridade UGS
@@ -239,6 +208,11 @@ class Usina:
         self.cfg["pot_maxima_usina"] = float(parametros["pot_nominal_ug"]) * 3
         self.cfg["pot_maxima_alvo"] = float(parametros["pot_nominal"])
         self.cfg["pot_maxima_ug"] = float(parametros["pot_nominal_ug"])
+
+        self.cfg["cx_kp"] = float(parametros["cx_kp"])
+        self.cfg["cx_ki"] = float(parametros["cx_ki"])
+        self.cfg["cx_kie"] = float(parametros["cx_kie"])
+        self.cfg["press_cx_alvo"] = float(parametros["press_cx_alvo"])
 
         # Le o databank interno
         if DataBank.get_words(self.cfg["REG_MOA_IN_EMERG"])[0] == 1 and self.avisado_em_eletrica==False:
@@ -289,7 +263,7 @@ class Usina:
                 datetime.now(pytz.timezone("Brazil/East")).replace(tzinfo=None).strftime("%Y-%m-%d %H:%M:%S"),  # timestamp
                 1 if self.aguardando_reservatorio else 0,  # aguardando_reservatorio
                 True,  # DEPRECATED clp_online
-                self.nv_montante,  # nv_montante
+                self.nv_montante if not self.TDA_Offline else 0,  # nv_montante
                 1 if self.ug1.disponivel else 0,  # ug1_disp
                 self.ug1.leitura_potencia.valor,  # ug1_pot
                 self.ug1.setpoint,  # ug1_setpot
@@ -310,6 +284,54 @@ class Usina:
 
         except Exception as e:
             logger.exception(e)
+
+    def atualizar_limites_operacao(self, db):
+        parametros = db
+        for ug in self.ugs:
+            try:
+                ug.prioridade = int(parametros["ug{}_prioridade".format(ug.id)])
+                
+                ug.condicionador_temperatura_fase_r_ug.valor_base = float(parametros["alerta_temperatura_fase_r_ug{}".format(ug.id)])
+                ug.condicionador_temperatura_fase_r_ug.valor_limite = float(parametros["limite_temperatura_fase_r_ug{}".format(ug.id)])
+
+                ug.condicionador_temperatura_fase_s_ug.valor_base = float(parametros["alerta_temperatura_fase_s_ug{}".format(ug.id)])
+                ug.condicionador_temperatura_fase_s_ug.valor_limite = float(parametros["limite_temperatura_fase_s_ug{}".format(ug.id)])
+
+                ug.condicionador_temperatura_fase_t_ug.valor_base = float(parametros["alerta_temperatura_fase_t_ug{}".format(ug.id)])
+                ug.condicionador_temperatura_fase_t_ug.valor_limite = float(parametros["limite_temperatura_fase_t_ug{}".format(ug.id)])
+
+                ug.condicionador_temperatura_nucleo_estator_ug.valor_base = float(parametros["alerta_temperatura_nucleo_estator_ug{}".format(ug.id)])
+                ug.condicionador_temperatura_nucleo_estator_ug.valor_limite = float(parametros["limite_temperatura_nucleo_estator_ug{}".format(ug.id)])
+
+                ug.condicionador_temperatura_mancal_rad_dia_1_ug.valor_base = float(parametros["alerta_temperatura_mancal_rad_dia_1_ug{}".format(ug.id)])
+                ug.condicionador_temperatura_mancal_rad_dia_1_ug.valor_limite = float(parametros["limite_temperatura_mancal_rad_dia_1_ug{}".format(ug.id)])
+
+                ug.condicionador_temperatura_mancal_rad_dia_2_ug.valor_base = float(parametros["alerta_temperatura_mancal_rad_dia_2_ug{}".format(ug.id)])
+                ug.condicionador_temperatura_mancal_rad_dia_2_ug.valor_limite = float(parametros["limite_temperatura_mancal_rad_dia_2_ug{}".format(ug.id)])
+
+                ug.condicionador_temperatura_mancal_rad_tra_1_ug.valor_base = float(parametros["alerta_temperatura_mancal_rad_tra_1_ug{}".format(ug.id)])
+                ug.condicionador_temperatura_mancal_rad_tra_1_ug.valor_limite = float(parametros["limite_temperatura_mancal_rad_tra_1_ug{}".format(ug.id)])
+
+                ug.condicionador_temperatura_mancal_rad_tra_2_ug.valor_base = float(parametros["alerta_temperatura_mancal_rad_tra_2_ug{}".format(ug.id)])
+                ug.condicionador_temperatura_mancal_rad_tra_2_ug.valor_limite = float(parametros["limite_temperatura_mancal_rad_tra_2_ug{}".format(ug.id)])
+
+                ug.condicionador_temperatura_saida_de_ar_ug.valor_base = float(parametros["alerta_temperatura_saida_de_ar_ug{}".format(ug.id)])
+                ug.condicionador_temperatura_saida_de_ar_ug.valor_limite = float(parametros["limite_temperatura_saida_de_ar_ug{}".format(ug.id)])
+
+                ug.condicionador_temperatura_mancal_guia_escora_ug.valor_base = float(parametros["alerta_temperatura_mancal_guia_escora_ug{}".format(ug.id)])
+                ug.condicionador_temperatura_mancal_guia_escora_ug.valor_limite = float(parametros["limite_temperatura_mancal_guia_escora_ug{}".format(ug.id)])
+
+                ug.condicionador_temperatura_mancal_guia_radial_ug.valor_base = float(parametros["alerta_temperatura_mancal_guia_radial_ug{}".format(ug.id)])
+                ug.condicionador_temperatura_mancal_guia_radial_ug.valor_limite = float(parametros["limite_temperatura_mancal_guia_radial_ug{}".format(ug.id)])
+
+                ug.condicionador_temperatura_mancal_guia_contra_ug.valor_base = float(parametros["alerta_temperatura_mancal_guia_contra_ug{}".format(ug.id)])
+                ug.condicionador_temperatura_mancal_guia_contra_ug.valor_limite = float(parametros["limite_temperatura_mancal_guia_contra_ug{}".format(ug.id)])
+
+                ug.condicionador_caixa_espiral_ug.valor_base = float(parametros["alerta_caixa_espiral_ug{}".format(ug.id)])
+                ug.condicionador_caixa_espiral_ug.valor_limite = float(parametros["limite_caixa_espiral_ug{}".format(ug.id)])
+
+            except KeyError as e:
+                logger.exception(e)
 
     def acionar_emergencia(self):
         self.con.acionar_emergencia()
@@ -333,6 +355,7 @@ class Usina:
             self.tentativas_de_normalizar += 1
             self.ts_ultima_tentativa_normalizacao = datetime.now(pytz.timezone("Brazil/East")).replace(tzinfo=None)
             logger.info("Normalizando Usina")
+            self.con.TDA_Offline = True if self.TDA_Offline else False
             self.con.normalizar_emergencia()
             self.clp_emergencia_acionada = 0
             logger.info("Normalizando Banco de Dados")
@@ -548,29 +571,6 @@ class Usina:
                         logger.info("Valor inválido no comando #{} ({} é inválido).".format(agendamento[0], agendamento[3]))
 
                     self.cfg["nv_alvo"] = novo
-                    valores = [
-                        datetime.now(pytz.timezone("Brazil/East")).replace(tzinfo=None).strftime("%Y-%m-%d %H:%M:%S"),  # timestamp
-                        1 if self.aguardando_reservatorio else 0,  # aguardando_reservatorio
-                        True,  # DEPRECATED clp_online
-                        self.nv_montante,  # nv_montante
-                        1 if self.ug1.disponivel else 0,  # ug1_disp
-                        self.ug1.leitura_potencia.valor,  # ug1_pot
-                        self.ug1.setpoint,  # ug1_setpot
-                        self.ug1.etapa_atual,  # ug1_sinc
-                        self.ug1.leitura_horimetro.valor,  # ug1_tempo
-                        1 if self.ug2.disponivel else 0,  # ug2_disp
-                        self.ug2.leitura_potencia.valor,  # ug2_pot
-                        self.ug2.setpoint,  # ug2_setpot
-                        self.ug2.etapa_atual,  # ug2_sinc
-                        self.ug2.leitura_horimetro.valor,  # ug2_tempo
-                        1 if self.ug3.disponivel else 0,  # ug3_disp
-                        self.ug3.leitura_potencia.valor,  # ug3_pot
-                        self.ug3.setpoint,  # ug3_setpot
-                        self.ug3.etapa_atual,  # ug3_sinc
-                        self.ug3.leitura_horimetro.valor,  # ug3_tempo
-                    ]
-                    self.db.update_valores_usina(valores)
-                    self.escrever_valores()
 
                 if agendamento[3] == AGENDAMENTO_UG1_ALTERAR_POT_LIMITE:
                     try:
@@ -833,6 +833,10 @@ class Usina:
                 self.ug3.setpoint,
                 self.ug3.leitura_potencia.valor,
                 ma,
+                self.cfg["cx_kp"],
+                self.cfg["cx_ki"],
+                self.cfg["cx_kie"],
+                0,
             )
         except Exception as e:
             logger.exception(e)
@@ -847,7 +851,6 @@ class Usina:
         
         #Lista de condicionadores essenciais que devem ser lidos a todo momento
         #-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------#
-        #alterado de LeituraModbusCoil para LeituraModbus apenas para o simulador
         self.leitura_EntradasDigitais_MXI_SA_QCAP_TensaoPresenteTSA = LeituraModbusCoil("EntradasDigitais_MXI_SA_QCAP_TensaoPresenteTSA", self.clp, REG_SA_EntradasDigitais_MXI_SA_QCAP_TensaoPresenteTSA, )
         x = self.leitura_EntradasDigitais_MXI_SA_QCAP_TensaoPresenteTSA
         self.condicionadores_essenciais.append(CondicionadorBase(x.descr, DEVE_NORMALIZAR, x))
@@ -877,18 +880,18 @@ class Usina:
         
         #Lista de condiconadores que deverão ser lidos apenas quando houver uma chamada de leitura
         #-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------#
-        # Alterado de LeituraModbusCoil para LeituraModbus apenas para o simulador
-        self.leitura_EntradasDigitais_MXI_TDA_QcataDisj52ETrip = LeituraModbusCoil("EntradasDigitais_MXI_TDA_QcataDisj52ETrip", self.clp, REG_TDA_EntradasDigitais_MXI_QcataDisj52ETrip, )
-        x = self.leitura_EntradasDigitais_MXI_TDA_QcataDisj52ETrip
-        self.condicionadores.append(CondicionadorBase(x.descr, DEVE_INDISPONIBILIZAR, x))
-        
-        self.leitura_EntradasDigitais_MXI_TDA_QcataDisj52ETripDisjSai = LeituraModbusCoil("EntradasDigitais_MXI_TDA_QcataDisj52ETripDisjSai", self.clp, REG_TDA_EntradasDigitais_MXI_QcataDisj52ETripDisjSai, )
-        x = self.leitura_EntradasDigitais_MXI_TDA_QcataDisj52ETripDisjSai
-        self.condicionadores.append(CondicionadorBase(x.descr, DEVE_INDISPONIBILIZAR, x))
+        if not self.TDA_Offline:
+            self.leitura_EntradasDigitais_MXI_TDA_QcataDisj52ETrip = LeituraModbusCoil("EntradasDigitais_MXI_TDA_QcataDisj52ETrip", self.clp, REG_TDA_EntradasDigitais_MXI_QcataDisj52ETrip, )
+            x = self.leitura_EntradasDigitais_MXI_TDA_QcataDisj52ETrip
+            self.condicionadores.append(CondicionadorBase(x.descr, DEVE_INDISPONIBILIZAR, x))
 
-        self.leitura_EntradasDigitais_MXI_TDA_QcataDisj52EFalha380VCA = LeituraModbusCoil("EntradasDigitais_MXI_TDA_QcataDisj52EFalha380VCA", self.clp, REG_TDA_EntradasDigitais_MXI_QcataDisj52EFalha380VCA, )
-        x = self.leitura_EntradasDigitais_MXI_TDA_QcataDisj52EFalha380VCA
-        self.condicionadores.append(CondicionadorBase(x.descr, DEVE_INDISPONIBILIZAR, x))
+            self.leitura_EntradasDigitais_MXI_TDA_QcataDisj52ETripDisjSai = LeituraModbusCoil("EntradasDigitais_MXI_TDA_QcataDisj52ETripDisjSai", self.clp, REG_TDA_EntradasDigitais_MXI_QcataDisj52ETripDisjSai, )
+            x = self.leitura_EntradasDigitais_MXI_TDA_QcataDisj52ETripDisjSai
+            self.condicionadores.append(CondicionadorBase(x.descr, DEVE_INDISPONIBILIZAR, x))
+
+            self.leitura_EntradasDigitais_MXI_TDA_QcataDisj52EFalha380VCA = LeituraModbusCoil("EntradasDigitais_MXI_TDA_QcataDisj52EFalha380VCA", self.clp, REG_TDA_EntradasDigitais_MXI_QcataDisj52EFalha380VCA, )
+            x = self.leitura_EntradasDigitais_MXI_TDA_QcataDisj52EFalha380VCA
+            self.condicionadores.append(CondicionadorBase(x.descr, DEVE_INDISPONIBILIZAR, x))
 
         # MRU3 é o relé de bloqueio 27/59N
         self.leitura_EntradasDigitais_MXI_SA_MRU3_Falha = LeituraModbusCoil("EntradasDigitais_MXI_SA_MRU3_Falha", self.clp, REG_SA_EntradasDigitais_MXI_SA_MRU3_Falha, )
@@ -1135,10 +1138,8 @@ def ping(host):
     https://stackoverflow.com/questions/2953462/pinging-servers-in-python
     """
     ping = False
-    for i in range(5):
-        ping = ping or (
-            subprocess.call(["ping", "-c", "1", host], stdout=subprocess.PIPE) == 0
-        )
+    for i in range(2):
+        ping = ping or (subprocess.call(["ping", "-c", "1", "-w", "1", host], stdout=subprocess.PIPE) == 0)
         if not ping:
-            sleep(1)
+            pass
     return ping

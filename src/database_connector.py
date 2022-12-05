@@ -203,6 +203,10 @@ class Database:
         ma,
         sp3,
         p3,
+        cx_kp,
+        cx_ki,
+        cx_kie,
+        cx_c_ie,
     ):
         q = (
             "INSERT INTO `debug`.`moa_debug` "
@@ -214,7 +218,9 @@ class Database:
             "%s,%s, "
             "%s,%s, "
             "%s,%s, "
-            "%s, %s ); "
+            "%s,%s, "
+            "%s,%s, "
+            "%s,%s);"
         )
         self._open()
         self.execute(
@@ -239,6 +245,10 @@ class Database:
                     ma,
                     sp3,
                     p3,
+                    cx_kp,
+                    cx_ki,
+                    cx_kie,
+                    cx_c_ie,
                 ]
             ),
         )
@@ -254,3 +264,13 @@ class Database:
             "executavel_em_autmoatico": parametros_raw[0],
             "executavel_em_manual": parametros_raw[1],
         }
+
+    def get_contato_emergencia(self):
+        self._open()
+        self.execute("SELECT * FROM parametros_moa_contato")
+        rows = self.fetchall()
+        parametros = {}
+        for row in range(len(rows)):
+            parametros = rows
+        self._close()
+        return parametros

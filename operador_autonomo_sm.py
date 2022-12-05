@@ -124,9 +124,11 @@ class Pronto(State):
         else:
 
             try:
-                self.usina.heartbeat()
                 self.usina.ler_valores()
-                return ValoresInternosAtualizados(self.usina)
+                if self.usina.TDA_Offline:
+                    return OperacaoTDAOffline(self.usina)
+                else:
+                    return ValoresInternosAtualizados(self.usina)
 
             except Exception as e:
                 self.n_tentativa += 1
@@ -163,6 +165,7 @@ class ValoresInternosAtualizados(State):
         # atualizar arquivo das configurações
         global aux
         global deve_normalizar
+        self.usina.TDA_Offline = False
 
         with open(os.path.join(os.path.dirname(__file__), "config.json"), "w") as file:
             json.dump(self.usina.cfg, file, indent=4)
@@ -244,7 +247,7 @@ class ValoresInternosAtualizados(State):
             if self.usina.nv_montante > self.usina.cfg["nv_alvo"]:
                 logger.debug("Reservatorio dentro do nivel de trabalho")
                 self.usina.aguardando_reservatorio = 0
-            return Pronto(self.usina)
+                return ReservatorioNormal(self.usina)
 
         if self.usina.nv_montante < self.usina.cfg["nv_minimo"]:
             self.usina.aguardando_reservatorio = 1
@@ -391,7 +394,8 @@ class ModoManualAtivado(State):
             ):
                 self.usina.normalizar_emergencia()
             self.usina.heartbeat()
-            return Pronto(self.usina)
+            return ControleRealizado(self.usina)
+
         if len(self.usina.get_agendamentos_pendentes()) > 0:
             return AgendamentosPendentes(self.usina)
 
@@ -406,7 +410,7 @@ class AgendamentosPendentes(State):
     def run(self):
         logger.info("Tratando agendamentos")
         self.usina.verificar_agendamentos()
-        return Pronto(self.usina)
+        return ControleRealizado(self.usina)
 
 
 class ReservatorioAbaixoDoMinimo(State):
@@ -417,8 +421,14 @@ class ReservatorioAbaixoDoMinimo(State):
     def run(self):
         self.usina.distribuir_potencia(0)
         if self.usina.nv_montante_recente <= self.usina.cfg["nv_fundo_reservatorio"]:
-            logger.critical("Nivel montante ({:3.2f}) atingiu o fundo do reservatorio!".format(self.usina.nv_montante_recente))
-            return Emergencia(self.usina)
+            if not abstracao_usina.ping(self.usina.cfg["TDA_slave_ip"]):
+                logger.warning("Sem comunicação com CLP TDA, entrando no modo de operação Offline")
+                self.usina.TDA_Offline = True
+                return OperacaoTDAOffline(self.usina)
+            else:
+                logger.critical("Nivel montante ({:3.2f}) atingiu o fundo do reservatorio!".format(self.usina.nv_montante_recente))
+                return Emergencia(self.usina)
+
         return ControleRealizado(self.usina)
 
 
@@ -453,6 +463,79 @@ class ReservatorioNormal(State):
         self.usina.controle_normal()
         return ControleRealizado(self.usina)
 
+class OperacaoTDAOffline(State):
+    def __init__(self, instancia_usina, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.usina = instancia_usina
+        self.deve_ler_condicionadores = False
+        self.habilitar_emerg_condic_e = False
+        self.habilitar_emerg_condic_c = False
+
+    def run(self):
+        global aux
+        global deve_normalizar
+        self.usina.TDA_Offline = True
+
+        for condicionador_essencial in self.usina.condicionadores_essenciais:
+            if condicionador_essencial.ativo:
+                self.deve_ler_condicionadores=True
+
+        if self.usina.avisado_em_eletrica or self.deve_ler_condicionadores==True:
+            for condicionador_essencial in self.usina.condicionadores_essenciais:
+                if condicionador_essencial.ativo and condicionador_essencial.gravidade >= DEVE_INDISPONIBILIZAR:
+                        self.habilitar_emerg_condic_e=True
+                elif condicionador_essencial.ativo and condicionador_essencial.gravidade == DEVE_NORMALIZAR:
+                    deve_normalizar=True
+                    self.habilitar_emerg_condic_e=False
+                else:
+                    deve_normalizar=False
+                    self.habilitar_emerg_condic_e=False
+            
+            for condicionador in self.usina.condicionadores:
+                if condicionador.ativo and condicionador.gravidade >= DEVE_INDISPONIBILIZAR:
+                    self.habilitar_emerg_condic_c=True
+                elif condicionador.ativo and condicionador.gravidade == DEVE_NORMALIZAR:
+                    self.habilitar_emerg_condic_c=False
+                    deve_normalizar=True
+                else:
+                    deve_normalizar=False
+                    self.habilitar_emerg_condic_c=False
+            
+            if self.habilitar_emerg_condic_e or self.habilitar_emerg_condic_c:
+                logger.info("Condicionadores ativos com gravidade alta!")
+                return Emergencia(self.usina)
+
+        if deve_normalizar:
+            if (not self.usina.normalizar_emergencia()) and self.usina.tensao_ok==False and aux==0:
+                logger.warning("Tensão da linha fora do limite ")
+                aux = 1
+                threading.Thread(target=lambda: self.usina.aguardar_tensao(20)).start()
+
+            elif self.usina.timer_tensao:
+                aux = 0
+                deve_normalizar = None
+                self.usina.timer_tensao = None
+
+            elif self.usina.timer_tensao==False:
+                aux = 0
+                deve_normalizar = None
+                self.usina.timer_tensao = None
+                logger.warning("O tempo de normalização da linha excedeu o limite! (10 min)")
+                return Emergencia(self.usina)
+        
+        if not self.usina.modo_autonomo:
+            logger.info("Comando recebido: desabilitar modo autonomo.")
+            sleep(2)
+            return ModoManualAtivado(self.usina)
+
+        if len(self.usina.get_agendamentos_pendentes()) > 0:
+            return AgendamentosPendentes(self.usina)
+
+        for ug in self.usina.ugs:
+            ug.controle_cx_espiral()
+            ug.step()
+
+        return ControleRealizado(self.usina)
 
 class ControleRealizado(State):
     def __init__(self, instancia_usina, *args, **kwargs):
@@ -509,7 +592,7 @@ def acionar_voip():
                 voip.enviar_voz_auxiliar()
 
     except Exception:
-        logger.critical("Houve um problema ao ligar por Voip")
+        logger.warning("Houve um problema ao ligar por Voip")
 
 if __name__ == "__main__":
     # A escala de tempo é utilizada para acelerar as simulações do sistema
@@ -551,6 +634,7 @@ if __name__ == "__main__":
             logger.debug("Iniciando classe Usina")
             try:
                 usina = abstracao_usina.Usina(cfg, db)
+                usina.ler_valores()
                 usina.normalizar_emergencia()
                 usina.aguardando_reservatorio = 0
             except Exception as e:
@@ -562,9 +646,6 @@ if __name__ == "__main__":
                 logger.debug("Traceback: {}".format(traceback.format_exc()))
                 sleep(timeout)
                 continue
-
-            # Update class values for the first time
-            usina.ler_valores()
 
             # Inicializando Servidor Modbus (para algumas comunicações com o Elipse)
             try:

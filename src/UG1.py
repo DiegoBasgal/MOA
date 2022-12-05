@@ -3,6 +3,7 @@ from src.LeiturasUSN import *
 from src.Condicionadores import *
 from src.UnidadeDeGeracao import *
 from pyModbusTCP.server import DataBank
+from src.database_connector import Database
 
 class UnidadeDeGeracao1(UnidadeDeGeracao):
     def __init__(self, id, cfg=None, leituras_usina=None):
@@ -14,9 +15,12 @@ class UnidadeDeGeracao1(UnidadeDeGeracao):
             self.cfg = cfg
             self.leituras_usina = leituras_usina
         
+        self.db = Database()
+
         from src.field_connector import FieldConnector
         self.con = FieldConnector(self.cfg)
 
+        self.modo_autonomo = 1
         self.__last_EtapaAtual = 0
         self.QCAUGRemoto = False
         self.acionar_voip = False
@@ -38,6 +42,26 @@ class UnidadeDeGeracao1(UnidadeDeGeracao):
             auto_open=True,
             auto_close=True,
         )
+        self.clp_ug2_ip = self.cfg["UG2_slave_ip"]
+        self.clp_ug2_port = self.cfg["UG2_slave_porta"]
+        self.clp_ug2 = ModbusClient(
+            host=self.clp_ug2_ip,
+            port=self.clp_ug2_port,
+            timeout=0.5,
+            unit_id=1,
+            auto_open=True,
+            auto_close=True,
+        )
+        self.clp_ug3_ip = self.cfg["UG3_slave_ip"]
+        self.clp_ug3_port = self.cfg["UG3_slave_porta"]
+        self.clp_ug3 = ModbusClient(
+            host=self.clp_ug3_ip,
+            port=self.clp_ug3_port,
+            timeout=0.5,
+            unit_id=1,
+            auto_open=True,
+            auto_close=True,
+        )
         self.clp_sa_ip = self.cfg["USN_slave_ip"]
         self.clp_sa_port = self.cfg["USN_slave_porta"]
         self.clp_sa = ModbusClient(
@@ -54,6 +78,31 @@ class UnidadeDeGeracao1(UnidadeDeGeracao):
             REG_UG1_RetornosAnalogicos_MWR_PM_710_Potencia_Ativa,
             op=4,
         )
+        self.leitura_potencia_ug2 = LeituraModbus(
+            "ug2_Gerador_PotenciaAtivaMedia",
+            self.clp_ug2,
+            REG_UG2_RetornosAnalogicos_MWR_PM_710_Potencia_Ativa,
+            op=4,
+        )
+        self.leitura_setpoint_ug2 = LeituraModbus(
+            "ug2_Setpoint",
+            self.clp_ug2,
+            REG_UG2_SaidasAnalogicas_MWW_SPPotAtiva,
+            op=4
+        )
+        self.leitura_potencia_ug3 = LeituraModbus(
+            "ug3_Gerador_PotenciaAtivaMedia",
+            self.clp_ug3,
+            REG_UG3_RetornosAnalogicos_MWR_PM_710_Potencia_Ativa,
+            op=4,
+        )
+        self.leitura_setpoint_ug3 = LeituraModbus(
+            "ug3_Setpoint",
+            self.clp_ug3,
+            REG_UG3_SaidasAnalogicas_MWW_SPPotAtiva,
+            op=4
+        )
+
         self.leitura_horimetro_hora = LeituraModbus(
             "ug{} RetornosAnalogicos_MWR_Horimetro_Gerador".format(self.id),
             self.clp,
@@ -201,7 +250,9 @@ class UnidadeDeGeracao1(UnidadeDeGeracao):
         limite = 15.5
         x = self.leitura_caixa_espiral
         self.condicionador_caixa_espiral_ug = CondicionadorExponencialReverso(x.descr, DEVE_INDISPONIBILIZAR, x, base, limite)
-        self.condicionadores_atenuadores.append(self.condicionador_caixa_espiral_ug)
+        if self.leitura_caixa_espiral.valor != 0:
+            self.condicionadores_atenuadores.append(self.condicionador_caixa_espiral_ug)
+
         
         self.leitura_ComandosDigitais_MXW_EmergenciaViaSuper = LeituraModbusCoil("ComandosDigitais_MXW_EmergenciaViaSuper", self.clp, REG_UG1_ComandosDigitais_MXW_EmergenciaViaSuper,)
         x = self.leitura_ComandosDigitais_MXW_EmergenciaViaSuper
@@ -471,6 +522,65 @@ class UnidadeDeGeracao1(UnidadeDeGeracao):
         self.condicionadores.append( CondicionadorBase(x.descr, DEVE_NORMALIZAR, x) )
 
 #-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------#
+        self.cx_controle_p = (self.leitura_caixa_espiral.valor - self.cfg["press_cx_alvo"]) * self.cfg["cx_kp"]
+        self.cx_ajuste_ie = (self.leitura_potencia.valor + self.leitura_potencia_ug2.valor + self.leitura_potencia_ug3.valor) / self.cfg["pot_maxima_alvo"]
+        self.cx_controle_i = self.cx_ajuste_ie - self.cx_controle_p
+
+    def controle_cx_espiral(self):
+        # Calcula PI
+        self.erro_press_cx = 0
+        self.erro_press_cx = self.leitura_caixa_espiral.valor - self.cfg["press_cx_alvo"]
+
+        self.logger.debug("[UG{}] Pressão Alvo: {:0.3f}, Recente: {:0.3f}".format(self.id, self.cfg["press_cx_alvo"], self.leitura_caixa_espiral.valor))
+
+        self.cx_controle_p = self.cfg["cx_kp"] * self.erro_press_cx
+        self.cx_controle_i = max(min((self.cfg["cx_ki"] * self.erro_press_cx) + self.cx_controle_i, 1), 0)
+        saida_pi = self.cx_controle_p + self.cx_controle_i
+        
+        self.logger.debug("[UG{}] PI: {:0.3f} <-- P:{:0.3f} + I:{:0.3f}; ERRO={}".format(self.id, saida_pi, self.cx_controle_p, self.cx_controle_i, self.erro_press_cx))
+
+        # Calcula o integrador de estabilidade e limita
+        self.cx_controle_ie = max(min(saida_pi + self.cx_ajuste_ie * self.cfg["cx_kie"], 1), 0)
+
+        # Arredondamento e limitação
+        pot_alvo = max(min(round(self.cfg["pot_maxima_ug1"] * self.cx_controle_ie, 5), self.cfg["pot_maxima_ug1"],),self.cfg["pot_minima"],)
+
+        self.logger.debug("[UG{}] Pot alvo: {:0.3f}".format(self.id, pot_alvo))
+        
+        ts = datetime.now(pytz.timezone("Brazil/East")).timestamp()
+        try:
+            self.db.insert_debug(
+                ts,
+                self.cfg["kp"],
+                self.cfg["ki"],
+                self.cfg["kd"],
+                self.cfg["kie"],
+                0,
+                0,
+                0,
+                0,
+                self.setpoint,
+                self.leitura_potencia.valor,
+                self.leitura_setpoint_ug2.valor,
+                self.leitura_potencia_ug2.valor,
+                0,
+                0,
+                1,
+                self.leitura_setpoint_ug3.valor,
+                self.leitura_potencia_ug3.valor,
+                self.cfg["cx_kp"],
+                self.cfg["cx_ki"],
+                self.cfg["cx_kie"],
+                self.cx_controle_ie,
+            )
+        except Exception as e:
+            logger.exception(e)
+
+        if self.leitura_caixa_espiral.valor >= 15.5:
+            self.enviar_setpoint(pot_alvo)
+        else:
+            self.enviar_setpoint(0)
+        print("")
 
     def acionar_trip_logico(self) -> bool:
         """
@@ -780,9 +890,9 @@ class UnidadeDeGeracao1(UnidadeDeGeracao):
         if self.leitura_temperatura_oleo_trafo.valor >= 0.9*(self.condicionador_leitura_temperatura_oleo_trafo.valor_limite - self.condicionador_leitura_temperatura_oleo_trafo.valor_base) + self.condicionador_leitura_temperatura_oleo_trafo.valor_base:
             self.logger.critical("[UG{}] A temperatura do Óleo do Transformador Elevador da UG está muito próxima do limite! ({}C) | Leitura: {}C".format(self.id, self.condicionador_leitura_temperatura_oleo_trafo.valor_limite, self.leitura_temperatura_oleo_trafo.valor))
 
-        if self.leitura_caixa_espiral.valor <= self.condicionador_caixa_espiral_ug.valor_base:
+        if self.leitura_caixa_espiral.valor <= self.condicionador_caixa_espiral_ug.valor_base and self.leitura_caixa_espiral.valor != 0:
             self.logger.warning("[UG{}] A pressão Caixa Espiral da UG passou do valor base! ({:03.2f} KGf/m2) | Leitura: {:03.2f}".format(self.id, self.condicionador_caixa_espiral_ug.valor_base, self.leitura_caixa_espiral.valor))
-        if self.leitura_caixa_espiral.valor <= self.condicionador_caixa_espiral_ug.valor_limite+0.9*(self.condicionador_caixa_espiral_ug.valor_base - self.condicionador_caixa_espiral_ug.valor_limite):
+        if self.leitura_caixa_espiral.valor <= self.condicionador_caixa_espiral_ug.valor_limite+0.9*(self.condicionador_caixa_espiral_ug.valor_base - self.condicionador_caixa_espiral_ug.valor_limite) and self.leitura_caixa_espiral.valor != 0:
             self.logger.critical("[UG{}] A pressão Caixa Espiral da UG está muito próxima do limite! ({:03.2f} KGf/m2) | Leitura: {:03.2f} KGf/m2".format(self.id, self.condicionador_caixa_espiral_ug.valor_limite, self.leitura_caixa_espiral.valor))
 
     def leituras_por_hora(self):

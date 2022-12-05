@@ -74,13 +74,17 @@ class FieldConnector:
         self.warned_ug1 = False
         self.warned_ug2 = False
         self.warned_ug3 = False
+        self.TDA_Offline = False
 
     def modifica_controles_locais(self):
-        self.tda_clp.write_single_coil(REG_TDA_ComandosDigitais_MXW_ResetGeral, 1)
-        self.tda_clp.write_single_coil(REG_TDA_ComandosDigitais_MXW_Hab_Nivel, 0)
-        self.tda_clp.write_single_coil(REG_TDA_ComandosDigitais_MXW_Desab_Nivel, 1)
-        self.tda_clp.write_single_coil(REG_TDA_ComandosDigitais_MXW_Hab_Religamento52L, 0)
-        self.tda_clp.write_single_coil(REG_TDA_ComandosDigitais_MXW_Desab_Religamento52L, 1)
+        if not self.TDA_Offline:
+            self.tda_clp.write_single_coil(REG_TDA_ComandosDigitais_MXW_ResetGeral, 1)
+            self.tda_clp.write_single_coil(REG_TDA_ComandosDigitais_MXW_Hab_Nivel, 0)
+            self.tda_clp.write_single_coil(REG_TDA_ComandosDigitais_MXW_Desab_Nivel, 1)
+            self.tda_clp.write_single_coil(REG_TDA_ComandosDigitais_MXW_Hab_Religamento52L, 0)
+            self.tda_clp.write_single_coil(REG_TDA_ComandosDigitais_MXW_Desab_Religamento52L, 1)
+        else:
+            logger.debug("Não é possível modificar os controles locais pois o CLP da TDA se encontra offline")
 
     def open(self):
         logger.debug("Opening Modbus")
@@ -126,7 +130,7 @@ class FieldConnector:
         self.ug2_clp.write_single_coil(REG_UG2_ComandosDigitais_MXW_ResetGeral, 1)
         self.ug3_clp.write_single_coil(REG_UG3_ComandosDigitais_MXW_ResetGeral, 1)
         self.usn_clp.write_single_coil(REG_SA_ComandosDigitais_MXW_ResetGeral, 1)
-        self.tda_clp.write_single_coil(REG_TDA_ComandosDigitais_MXW_ResetGeral, 1)
+        self.tda_clp.write_single_coil(REG_TDA_ComandosDigitais_MXW_ResetGeral, 1) if not self.TDA_Offline else logger.debug("CLP TDA Offline, não há como realizar o reset geral")
         self.ug1_clp.write_single_coil(REG_UG1_ComandosDigitais_MXW_Cala_Sirene, 1)
         self.ug2_clp.write_single_coil(REG_UG2_ComandosDigitais_MXW_Cala_Sirene, 1)
         self.ug3_clp.write_single_coil(REG_UG3_ComandosDigitais_MXW_Cala_Sirene, 1)

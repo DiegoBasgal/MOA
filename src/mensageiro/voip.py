@@ -9,12 +9,16 @@ Acesso feito com as credênciais do Henrique.
 
 """
 import os
+import sys
 import json
 import logging
+import pytz
 from sys import stdout
 from time import sleep
 from datetime import datetime
 from urllib.request import Request, urlopen
+sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+import database_connector
 
 # Inicializando o logger principal
 logger = logging.getLogger(__name__)
@@ -47,21 +51,15 @@ lista_de_contatos_padrao = [
 
 def carrega_contatos():
     phonebook = []
+    db = database_connector.Database()
+    parametros = db.get_contato_emergencia()
 
-    with open(os.path.join(os.path.dirname(__file__), "contatos.csv")) as fp:
-        list_r = fp.readlines()
-
-    for r in list_r:
-        r = r.strip().replace(", ", ",").replace(" ,", ",")
-        r = r.replace("(", "")
-        r = r.replace(")", "")
-        r = [i for i in r.split(",") if i != ""]
-
+    for i in range(len(parametros)):
         try:
-            name = str(r[0])
-            phone = str(r[1])
-            t_start = datetime.strptime(r[2], "%Y-%m-%d %H:%M")
-            t_end = datetime.strptime(r[3], "%Y-%m-%d %H:%M")
+            name = str(parametros[i][1])
+            phone = str(parametros[i][2])
+            t_start = str(parametros[i][3]) + " " + str(parametros[i][4])
+            t_end = str(parametros[i][5]) + " " + str(parametros[i][6])
 
             phonebook.append({"name": name, "phone": phone, "t_start": t_start, "t_end": t_end})
 
@@ -73,18 +71,19 @@ def carrega_contatos():
             continue
         
     res = []
-    now = datetime.now()
+    now = datetime.now(pytz.timezone("Brazil/East")).replace(tzinfo=None)
     for addres in phonebook:
-        if now < addres["t_start"]:
-            print(f"Not yet: {now.time()} < {addres['t_start']}")
+        if str(now) < addres["t_start"]:
+            print(f"Not yet: {str(now)} < {addres['t_start']}")
             continue
-        elif now > addres["t_end"]:
-            print(f"Too late: {now.time()} > {addres['t_end']}")
+        elif str(now) > addres["t_end"]:
+            print(f"Too late: {str(now)} > {addres['t_end']}")
             continue
         else:
             res.append([addres["name"], addres["phone"]])
-        
+
     return res
+
 
 def get_token():
     headers = {
