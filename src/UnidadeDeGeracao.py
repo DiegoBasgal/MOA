@@ -815,7 +815,7 @@ class StateDisponivel(State):
             return self
     
     def verificar_partindo(self) -> bool:
-        timer = time() + 15
+        timer = time() + 600
         try:
             self.logger.debug("Iniciando o timer de verificação de partida")
             while time() < timer:

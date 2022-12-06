@@ -307,7 +307,7 @@ def enviar_voz_auxiliar(lista_de_contatos=None):
                     "called": "{}".format(contato[1]),  # O número a ser chamado, no formato dddnnnnnnnnn
                     "audios": [
                         {
-                            "audio": "Atenção! Foi identificado que o painel do compressor da UG1 em São Sebastião entrou em modo remoto, favor verificar. Atenção! Foi identificado que o painel do compressor da UG1 em São Sebastião entrou em modo remoto, favor verificar.",
+                            "audio": "Atenção! Foi identificado que o painel do compressor da Unidade Geradora 1 em São Sebastião saiu do modo remoto, favor verificar. Atenção! Foi identificado que o painel do compressor da Unidade Geradora 1 em São Sebastião saiu do modo remoto, favor verificar.",
                             "positionAudio": 1,
                         }
                     ],
@@ -333,7 +333,7 @@ def enviar_voz_auxiliar(lista_de_contatos=None):
                     "called": "{}".format(contato[1]),  # O número a ser chamado, no formato dddnnnnnnnnn
                     "audios": [
                         {
-                            "audio": "Atenção! Foi identificado que o painel do compressor da UG2 em São Sebastião entrou em modo remoto, favor verificar. Atenção! Foi identificado que o painel do compressor da UG2 em São Sebastião entrou em modo remoto, favor verificar.",
+                            "audio": "Atenção! Foi identificado que o painel do compressor da Unidade Geradora 2 em São Sebastião saiu do modo remoto, favor verificar. Atenção! Foi identificado que o painel do compressor da Unidade Geradora 2 em São Sebastião saiu do modo remoto, favor verificar.",
                             "positionAudio": 1,
                         }
                     ],
@@ -359,7 +359,7 @@ def enviar_voz_auxiliar(lista_de_contatos=None):
                     "called": "{}".format(contato[1]),  # O número a ser chamado, no formato dddnnnnnnnnn
                     "audios": [
                         {
-                            "audio": "Atenção! Foi identificado que o painel do compressor da UG3 em São Sebastião entrou em modo remoto, favor verificar. Atenção! Foi identificado que o painel do compressor da UG3 em São Sebastião entrou em modo remoto, favor verificar.",
+                            "audio": "Atenção! Foi identificado que o painel do compressor da Unidade Geradora 3 em São Sebastião saiu do modo remoto, favor verificar. Atenção! Foi identificado que o painel do compressor da Unidade Geradora 3 em São Sebastião saiu do modo remoto, favor verificar.",
                             "positionAudio": 1,
                         }
                     ],
@@ -385,7 +385,7 @@ def enviar_voz_auxiliar(lista_de_contatos=None):
                     "called": "{}".format(contato[1]),  # O número a ser chamado, no formato dddnnnnnnnnn
                     "audios": [
                         {
-                            "audio": "Atenção! Foi identificado que o freio da UG1 em São Sebastião entrou em modo remoto, favor verificar. Atenção! Foi identificado que o freio da UG1 em São Sebastião entrou em modo remoto, favor verificar.",
+                            "audio": "Atenção! Foi identificado que o freio da Unidade Geradora 1 em São Sebastião saiu do modo remoto, favor verificar. Atenção! Foi identificado que o freio da Unidade Geradora 1 em São Sebastião saiu do modo remoto, favor verificar.",
                             "positionAudio": 1,
                         }
                     ],
@@ -411,7 +411,7 @@ def enviar_voz_auxiliar(lista_de_contatos=None):
                     "called": "{}".format(contato[1]),  # O número a ser chamado, no formato dddnnnnnnnnn
                     "audios": [
                         {
-                            "audio": "Atenção! Foi identificado que o freio da UG2 em São Sebastião entrou em modo remoto, favor verificar. Atenção! Foi identificado que o freio da UG2 em São Sebastião entrou em modo remoto, favor verificar.",
+                            "audio": "Atenção! Foi identificado que o freio da Unidade Geradora 2 em São Sebastião saiu do modo remoto, favor verificar. Atenção! Foi identificado que o freio da Unidade Geradora 2 em São Sebastião saiu do modo remoto, favor verificar.",
                             "positionAudio": 1,
                         }
                     ],
@@ -437,7 +437,7 @@ def enviar_voz_auxiliar(lista_de_contatos=None):
                     "called": "{}".format(contato[1]),  # O número a ser chamado, no formato dddnnnnnnnnn
                     "audios": [
                         {
-                            "audio": "Atenção! Foi identificado que o freio da UG3 em São Sebastião entrou em modo remoto, favor verificar. Atenção! Foi identificado que o freio da UG3 em São Sebastião entrou em modo remoto, favor verificar.",
+                            "audio": "Atenção! Foi identificado que o freio da Unidade Geradora 3 em São Sebastião saiu do modo remoto, favor verificar. Atenção! Foi identificado que o freio da Unidade Geradora 3 em São Sebastião saiu do modo remoto, favor verificar.",
                             "positionAudio": 1,
                         }
                     ],

@@ -9,6 +9,7 @@ Comando:
 {% for comando in comandos %}
 <form method='post' action='/agendamentos/novo_agendamento_rapido/'>
     {% csrf_token %}
+    <br>
     <input type="hidden" id="comando" name="comando" value="{{ comando.id }}"/>
     <input type="submit" value="Agendar agora: {{ comando.nome }}."/>
 </form>

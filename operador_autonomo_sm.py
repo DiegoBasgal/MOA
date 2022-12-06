@@ -410,7 +410,7 @@ class AgendamentosPendentes(State):
     def run(self):
         logger.info("Tratando agendamentos")
         self.usina.verificar_agendamentos()
-        return ControleRealizado(self.usina)
+        return ValoresInternosAtualizados(self.usina)
 
 
 class ReservatorioAbaixoDoMinimo(State):
@@ -581,12 +581,12 @@ def acionar_voip():
         for ug in usina.ugs:
             if ug.acionar_voip:
                 voip.TDA_FalhaComum=[True if ug.TDA_FalhaComum else False]
-                voip.QCAUG1Remoto=[True if usina.ug1.QCAUGRemoto else False]
-                voip.QCAUG2Remoto=[True if usina.ug2.QCAUGRemoto else False]
-                voip.QCAUG3Remoto=[True if usina.ug3.QCAUGRemoto else False]
-                voip.FreioCmdRemoto1=[True if usina.ug1.FreioCmdRemoto else False]
-                voip.FreioCmdRemoto2=[True if usina.ug2.FreioCmdRemoto else False]
-                voip.FreioCmdRemoto3=[True if usina.ug3.FreioCmdRemoto else False]
+                voip.QCAUG1Remoto=[True if not usina.ug1.QCAUGRemoto else False]
+                voip.QCAUG2Remoto=[True if not usina.ug2.QCAUGRemoto else False]
+                voip.QCAUG3Remoto=[True if not usina.ug3.QCAUGRemoto else False]
+                voip.FreioCmdRemoto1=[True if not usina.ug1.FreioCmdRemoto else False]
+                voip.FreioCmdRemoto2=[True if not usina.ug2.FreioCmdRemoto else False]
+                voip.FreioCmdRemoto3=[True if not usina.ug3.FreioCmdRemoto else False]
                 voip.enviar_voz_auxiliar()
             elif ug.avisou_emerg_voip:
                 voip.enviar_voz_auxiliar()

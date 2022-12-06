@@ -41,7 +41,7 @@ class LeiturasUSN:
         )
 
         # usar essa forma de leitura de potencia ativa quando for executar o moa de campo
-        
+        """
         self.potencia_ativa_kW = LeituraNBRPower(
             "LeituraNBRPower potencia_ativa_kW",
             ip_1=cfg["MP_ip"],
@@ -50,13 +50,12 @@ class LeiturasUSN:
             port_2=cfg["MR_port"],
             escala=cfg["MPMR_scale"],
         )
+        
         """
-        # essa forma de leitura de potencia ativa, deve ser utilizada apenas com o simulador
         self.potencia_ativa_kW = LeituraModbus(
             "REG_SA_RetornosAnalogicos_Medidor_potencia_kw_mp",
             self.clp_usina,
-            REG_SA_RetornosAnalogicos_Medidor_potencia_kw_mp,
+            REG_SA_RetornosAnalogicos_MWR_PM_810_Potencia_Ativa,
             1,
             op=4,
         )
-        """

@@ -64,6 +64,7 @@ class Usina:
         self.controle_d = 0
         self.modo_autonomo = 1
         self.erro_nv_anterior = 0
+        self.pot_alvo_anterior = -1
         self.nv_montante_recente = 0
         self.nv_montante_anterior = 0
         self.db_emergencia_acionada = 0
@@ -72,6 +73,7 @@ class Usina:
         self.aguardando_reservatorio = 0
         self.agendamentos_atrasados = 0
         self.tentativas_de_normalizar = 0
+        
 
         self.__split1 = False
         self.__split2 = False
@@ -83,7 +85,7 @@ class Usina:
         self.TDA_FalhaComum = False
         self.BombasDngRemoto = False
         self.avisado_em_eletrica = False
-        self.Disj_GDE_QLCF_Fechado = False
+        self.Disj_GDE_QCAP_Fechado = False
         self.deve_tentar_normalizar = True
         self.deve_normalizar_forcado = False
         self.deve_ler_condicionadores = False
@@ -114,10 +116,6 @@ class Usina:
         logger.debug("self.ug1.leitura_potencia.valor -> {}".format(self.ug1.leitura_potencia.valor))
         logger.debug("self.ug2.leitura_potencia.valor -> {}".format(self.ug2.leitura_potencia.valor))
         logger.debug("self.ug3.leitura_potencia.valor -> {}".format(self.ug3.leitura_potencia.valor))
-
-        self.ug1.setpoint = self.ug1.leitura_potencia.valor
-        self.ug2.setpoint = self.ug2.leitura_potencia.valor
-        self.ug3.setpoint = self.ug3.leitura_potencia.valor
 
         parametros = self.db.get_parametros_usina()
         self.atualizar_limites_operacao(parametros)
@@ -572,6 +570,32 @@ class Usina:
 
                     self.cfg["nv_alvo"] = novo
 
+                if agendamento[3] == AGENDAMENTO_BAIXAR_POT_UGS_MINIMO:
+                    try:
+                        self.cfg["pot_maxima_ug1"] = self.cfg["pot_minima"]
+                        self.cfg["pot_maxima_ug2"] = self.cfg["pot_minima"]
+                        self.cfg["pot_maxima_ug3"] = self.cfg["pot_minima"]
+                        for ug in self.ugs:
+                            if ug.etapa_atual == UNIDADE_PARADA or ug.etapa_atual == UNIDADE_PARANDO:
+                                logger.debug("A UG{} já está no estado parada/parando.".format(ug.id))
+                            else:
+                                logger.debug("Enviando o setpoint mínimo ({}) para a UG{}".format(self.cfg["pot_minima"], ug.id))
+                                ug.enviar_setpoint(self.cfg["pot_minima"])
+
+                    except Exception as e:
+                        logger.info("Traceback: {}".format(repr(e)))
+
+                if agendamento[3] == AGENDAMENTO_NORMALIZAR_POT_UGS_MINIMO:
+                    try:
+                        self.cfg["pot_maxima_ug1"] = self.cfg["pot_maxima_ug"]
+                        self.cfg["pot_maxima_ug2"] = self.cfg["pot_maxima_ug"]
+                        self.cfg["pot_maxima_ug3"] = self.cfg["pot_maxima_ug"]
+                        for ug in self.ugs:
+                            ug.enviar_setpoint(self.cfg["pot_maxima_ug"])
+
+                    except Exception as e:
+                        logger.debug("Traceback: {}".format(repr(e)))
+
                 if agendamento[3] == AGENDAMENTO_UG1_ALTERAR_POT_LIMITE:
                     try:
                         novo = float(agendamento[5].replace(",", "."))
@@ -651,6 +675,9 @@ class Usina:
                 self.escrever_valores()
 
     def distribuir_potencia(self, pot_alvo):
+        
+        if self.potencia_alvo_anterior == -1:
+            self.potencia_alvo_anterior = pot_alvo
 
         if pot_alvo < 0.1:
             for ug in self.ugs:
@@ -661,16 +688,32 @@ class Usina:
 
         pot_medidor = self.leituras.potencia_ativa_kW.valor
         logger.debug("Pot no medidor = {}".format(pot_medidor))
+
+        print("\nPot antes: ", pot_medidor, "\n")
+
+        # implementação nova
+        pot_aux = self.cfg["pot_maxima_alvo"] - (self.cfg["pot_maxima_usina"] - self.cfg["pot_maxima_alvo"])
+
+        pot_medidor = max(pot_aux, min(pot_medidor, self.cfg["pot_maxima_usina"]))
+
+        print("\nPot depois: ", pot_medidor, "\n")
+
         try:
             if pot_medidor > self.cfg["pot_maxima_alvo"]:
-                pot_alvo = 1 - (self.cfg["pot_maxima_alvo"] / pot_medidor)
+                pot_alvo = self.pot_alvo_anterior * (1 - ((pot_medidor - self.cfg["pot_maxima_alvo"]) / self.cfg["pot_maxima_alvo"]))
+                
+                print("\nPot alvo: ", pot_alvo, "\n")
+
         except TypeError as e:
             logger.info("A comunicação com os MFs falharam.")
 
+        self.pot_alvo_anterior = pot_alvo
+        
         logger.debug("Pot alvo após ajuste medidor = {}".format(pot_alvo))
 
         ugs = self.lista_de_ugs_disponiveis()
         self.pot_disp = 0
+
         logger.debug("lista_de_ugs_disponiveis:")
         for ug in ugs:
             logger.debug("UG{}".format(ug.id))
@@ -1061,10 +1104,6 @@ class Usina:
         self.leitura_EntradasDigitais_MXI_SA_QLCF_TripDisjAgrup = LeituraModbusCoil( "EntradasDigitais_MXI_SA_QLCF_TripDisjAgrup", self.clp, REG_SA_EntradasDigitais_MXI_SA_QLCF_TripDisjAgrup)
         if self.leitura_EntradasDigitais_MXI_SA_QLCF_TripDisjAgrup.valor != 0:
             logger.warning("O sensor do Disjuntor de Agrupamento QLCF identificou um sinal de trip, favor verificar.")
-        
-        self.leitura_EntradasDigitais_MXI_SA_QCAP_Disj52EFechado = LeituraModbusCoil( "EntradasDigitais_MXI_SA_QCAP_Disj52EFechado", self.clp, REG_SA_EntradasDigitais_MXI_SA_QCAP_Disj52EFechado)
-        if self.leitura_EntradasDigitais_MXI_SA_QCAP_Disj52EFechado.valor != 0:
-            logger.warning("O sensor do Disjuntor GDE QCAP foi fechado.")
 
         self.leitura_EntradasDigitais_MXI_SA_QCAP_SubtensaoBarraGeral = LeituraModbusCoil( "EntradasDigitais_MXI_SA_QCAP_SubtensaoBarraGeral", self.clp, REG_SA_EntradasDigitais_MXI_SA_QCAP_SubtensaoBarraGeral)
         if self.leitura_EntradasDigitais_MXI_SA_QCAP_SubtensaoBarraGeral.valor != 0:
@@ -1111,17 +1150,17 @@ class Usina:
             self.TDA_FalhaComum = False
             self.acionar_voip = False
 
-        self.leitura_EntradasDigitais_MXI_SA_QLCF_Disj52EFechado = LeituraModbusCoil( "EntradasDigitais_MXI_SA_QLCF_Disj52EFechado", self.clp, REG_SA_EntradasDigitais_MXI_SA_QLCF_Disj52EFechado)
-        if self.leitura_EntradasDigitais_MXI_SA_QLCF_Disj52EFechado.valor == 1 and self.Disj_GDE_QLCF_Fechado==False:
+        self.leitura_EntradasDigitais_MXI_SA_QCAP_Disj52EFechado = LeituraModbusCoil( "EntradasDigitais_MXI_SA_QCAP_Disj52EFechado", self.clp, REG_SA_EntradasDigitais_MXI_SA_QCAP_Disj52EFechado)
+        if self.leitura_EntradasDigitais_MXI_SA_QCAP_Disj52EFechado.valor == 1 and self.Disj_GDE_QCAP_Fechado==False:
             logger.warning("O Disjuntor do Gerador Diesel de Emergência QLCF foi fechado.")
-            self.Disj_GDE_QLCF_Fechado = True
+            self.Disj_GDE_QCAP_Fechado = True
             self.acionar_voip = True
-        elif self.leitura_EntradasDigitais_MXI_SA_QLCF_Disj52EFechado.valor == 0 and self.Disj_GDE_QLCF_Fechado==True:
-            self.Disj_GDE_QLCF_Fechado = False
+        elif self.leitura_EntradasDigitais_MXI_SA_QCAP_Disj52EFechado.valor == 0 and self.Disj_GDE_QCAP_Fechado==True:
+            self.Disj_GDE_QCAP_Fechado = False
             self.acionar_voip = False
 
         self.leitura_EntradasDigitais_MXI_SA_QCADE_BombasDng_Auto = LeituraModbusCoil( "EntradasDigitais_MXI_SA_QCADE_BombasDng_Auto", self.clp, REG_SA_EntradasDigitais_MXI_SA_QCADE_BombasDng_Auto)
-        if self.leitura_EntradasDigitais_MXI_SA_QCADE_BombasDng_Auto.valor != 1 and self.BombasDngRemoto==False:
+        if self.leitura_EntradasDigitais_MXI_SA_QCADE_BombasDng_Auto.valor == 0 and self.BombasDngRemoto==False:
             logger.warning("O poço de drenagem da Usina entrou em modo remoto, favor verificar.")
             self.BombasDngRemoto=True
             self.acionar_voip = True

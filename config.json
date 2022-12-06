@@ -53,7 +53,7 @@
     "press_cx_alvo": 16.3,
     "cx_kp": 2.0,
     "cx_ki": 0.1,
-    "cx_kie": 0.1,
+    "cx_kie": 0.0,
     "kp": 2.0,
     "ki": 0.1,
     "kd": 0.0,
