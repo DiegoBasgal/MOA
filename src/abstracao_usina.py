@@ -252,6 +252,7 @@ class Usina:
     def escrever_valores(self):
 
         if self.modo_autonomo:
+            self.con.TDA_Offline = True if self.TDA_Offline else False
             self.con.modifica_controles_locais()
         # DB
         # Escreve no banco
@@ -676,8 +677,8 @@ class Usina:
 
     def distribuir_potencia(self, pot_alvo):
         
-        if self.potencia_alvo_anterior == -1:
-            self.potencia_alvo_anterior = pot_alvo
+        if self.pot_alvo_anterior == -1:
+            self.pot_alvo_anterior = pot_alvo
 
         if pot_alvo < 0.1:
             for ug in self.ugs:
@@ -689,20 +690,20 @@ class Usina:
         pot_medidor = self.leituras.potencia_ativa_kW.valor
         logger.debug("Pot no medidor = {}".format(pot_medidor))
 
-        print("\nPot antes: ", pot_medidor, "\n")
+        print("\nPotência medidor antes: ", pot_medidor)
 
         # implementação nova
         pot_aux = self.cfg["pot_maxima_alvo"] - (self.cfg["pot_maxima_usina"] - self.cfg["pot_maxima_alvo"])
 
         pot_medidor = max(pot_aux, min(pot_medidor, self.cfg["pot_maxima_usina"]))
 
-        print("\nPot depois: ", pot_medidor, "\n")
+        print("\nPotência medidor depois: ", pot_medidor, "\n")
 
         try:
-            if pot_medidor > self.cfg["pot_maxima_alvo"]:
-                pot_alvo = self.pot_alvo_anterior * (1 - ((pot_medidor - self.cfg["pot_maxima_alvo"]) / self.cfg["pot_maxima_alvo"]))
+            if pot_medidor > self.cfg["pot_maxima_alvo"] * 0.97:
+                pot_alvo = self.pot_alvo_anterior * (1 - 0.5 * ((pot_medidor - self.cfg["pot_maxima_alvo"]) / self.cfg["pot_maxima_alvo"]))
                 
-                print("\nPot alvo: ", pot_alvo, "\n")
+                print("\nPotência alvo: ", pot_alvo, "\n")
 
         except TypeError as e:
             logger.info("A comunicação com os MFs falharam.")

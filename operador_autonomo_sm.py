@@ -239,8 +239,6 @@ class ValoresInternosAtualizados(State):
 
         # Se não foi redirecionado ainda,
         # assume-se que o MOA deve executar de modo autônomo
-        for ug in self.usina.ugs:
-            ug.step()
 
         # Verifica-se então a situação do reservatório
         if self.usina.aguardando_reservatorio:
@@ -410,7 +408,7 @@ class AgendamentosPendentes(State):
     def run(self):
         logger.info("Tratando agendamentos")
         self.usina.verificar_agendamentos()
-        return ValoresInternosAtualizados(self.usina)
+        return ControleRealizado(self.usina)
 
 
 class ReservatorioAbaixoDoMinimo(State):
@@ -419,13 +417,15 @@ class ReservatorioAbaixoDoMinimo(State):
         self.usina = instancia_usina
 
     def run(self):
-        self.usina.distribuir_potencia(0)
         if self.usina.nv_montante_recente <= self.usina.cfg["nv_fundo_reservatorio"]:
             if not abstracao_usina.ping(self.usina.cfg["TDA_slave_ip"]):
                 logger.warning("Sem comunicação com CLP TDA, entrando no modo de operação Offline")
                 self.usina.TDA_Offline = True
                 return OperacaoTDAOffline(self.usina)
             else:
+                self.usina.distribuir_potencia(0)
+                for ug in self.usina.ugs:
+                    ug.step()
                 logger.critical("Nivel montante ({:3.2f}) atingiu o fundo do reservatorio!".format(self.usina.nv_montante_recente))
                 return Emergencia(self.usina)
 
@@ -450,6 +450,9 @@ class ReservatorioAcimaDoMaximo(State):
             self.usina.distribuir_potencia(self.usina.cfg["pot_maxima_usina"])
             self.usina.controle_ie = 0.5
             self.usina.controle_i = 0.5
+            for ug in self.usina.ugs:
+                print("")
+                ug.step()
             return ControleRealizado(self.usina)
 
 
@@ -461,6 +464,9 @@ class ReservatorioNormal(State):
     def run(self):
 
         self.usina.controle_normal()
+        for ug in self.usina.ugs:
+            print("")
+            ug.step()
         return ControleRealizado(self.usina)
 
 class OperacaoTDAOffline(State):
@@ -580,7 +586,6 @@ def acionar_voip():
 
         for ug in usina.ugs:
             if ug.acionar_voip:
-                voip.TDA_FalhaComum=[True if ug.TDA_FalhaComum else False]
                 voip.QCAUG1Remoto=[True if not usina.ug1.QCAUGRemoto else False]
                 voip.QCAUG2Remoto=[True if not usina.ug2.QCAUGRemoto else False]
                 voip.QCAUG3Remoto=[True if not usina.ug3.QCAUGRemoto else False]
@@ -589,7 +594,7 @@ def acionar_voip():
                 voip.FreioCmdRemoto3=[True if not usina.ug3.FreioCmdRemoto else False]
                 voip.enviar_voz_auxiliar()
             elif ug.avisou_emerg_voip:
-                voip.enviar_voz_auxiliar()
+                voip.enviar_voz_emergencia()
 
     except Exception:
         logger.warning("Houve um problema ao ligar por Voip")

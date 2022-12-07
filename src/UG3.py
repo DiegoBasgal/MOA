@@ -1,5 +1,5 @@
+import src.LeiturasUSN as leituras
 from src.Leituras import *
-from src.LeiturasUSN import *
 from src.Condicionadores import *
 from src.UnidadeDeGeracao import *
 from pyModbusTCP.server import DataBank
@@ -20,11 +20,14 @@ class UnidadeDeGeracao3(UnidadeDeGeracao):
         from src.field_connector import FieldConnector
         self.con = FieldConnector(self.cfg)
 
+        from src.LeiturasUSN import LeiturasUSN
+        self.leituras = LeiturasUSN(self.cfg)
+
         self.modo_autonomo = 1
         self.__last_EtapaAtual = 0
+        self.pot_alvo_anterior = -1
         self.QCAUGRemoto = True
         self.acionar_voip = False
-        self.TDA_FalhaComum = False
         self.FreioCmdRemoto = True
         self.avisou_emerg_voip = False
         self.enviar_trip_eletrico = False
@@ -543,6 +546,39 @@ class UnidadeDeGeracao3(UnidadeDeGeracao):
 
         self.logger.debug("[UG{}] Pot alvo: {:0.3f}".format(self.id, pot_alvo))
 
+        if self.pot_alvo_anterior == -1:
+            self.pot_alvo_anterior = pot_alvo
+
+        self.logger.debug("Pot alvo = {}".format(pot_alvo))
+
+        pot_medidor = self.leituras.potencia_ativa_kW.valor
+
+        self.logger.debug("Pot no medidor = {}".format(pot_medidor))
+
+        print("\nPotência medidor antes: ", pot_medidor)
+
+        # implementação nova
+        pot_aux = self.cfg["pot_maxima_alvo"] - (self.cfg["pot_maxima_usina"] - self.cfg["pot_maxima_alvo"])
+
+        pot_medidor = max(pot_aux, min(pot_medidor, self.cfg["pot_maxima_usina"]))
+
+        print("\nPotência medidor depois: ", pot_medidor, "\n")
+
+        try:
+            if pot_medidor > self.cfg["pot_maxima_alvo"] * 0.97:
+                pot_alvo = self.pot_alvo_anterior * (1 - 0.5 * ((pot_medidor - self.cfg["pot_maxima_alvo"]) / self.cfg["pot_maxima_alvo"]))
+                
+                print("\nPotência alvo: ", pot_alvo, "\n")
+        except TypeError as e:
+            logger.info(repr(e))
+
+        self.pot_alvo_anterior = pot_alvo
+
+        if self.leitura_caixa_espiral.valor >= 15.5:
+            self.enviar_setpoint(pot_alvo)
+        else:
+            self.enviar_setpoint(0)
+
         ts = datetime.now(pytz.timezone("Brazil/East")).timestamp()
         try:
             self.db.insert_debug(
@@ -572,10 +608,6 @@ class UnidadeDeGeracao3(UnidadeDeGeracao):
         except Exception as e:
             logger.exception(e)
         
-        if self.leitura_caixa_espiral.valor >= 15.5:
-            self.enviar_setpoint(pot_alvo)
-        else:
-            self.enviar_setpoint(0)
         print("")
 
     def acionar_trip_logico(self) -> bool:

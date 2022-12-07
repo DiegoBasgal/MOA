@@ -497,6 +497,7 @@ class StateManual(State):
         self.logger.info("[UG{}] Entrando no estado manual. Para retornar a operação autônoma da UG é necessário intervenção manual via interface web.".format(self.parent_ug.id))
 
     def step(self) -> State:
+        self.parent_ug.setpoint = self.parent_ug.leitura_potencia.valor
         self.parent_ug.codigo_state = MOA_UNIDADE_MANUAL
         return self
 
