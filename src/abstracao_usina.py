@@ -573,15 +573,15 @@ class Usina:
 
                 if agendamento[3] == AGENDAMENTO_BAIXAR_POT_UGS_MINIMO:
                     try:
-                        self.cfg["pot_maxima_ug1"] = self.cfg["pot_minima"]
-                        self.cfg["pot_maxima_ug2"] = self.cfg["pot_minima"]
-                        self.cfg["pot_maxima_ug3"] = self.cfg["pot_minima"]
+                        self.cfg["pot_maxima_ug1"] = self.cfg["pot_limpeza_grade"]
+                        self.cfg["pot_maxima_ug2"] = self.cfg["pot_limpeza_grade"]
+                        self.cfg["pot_maxima_ug3"] = self.cfg["pot_limpeza_grade"]
                         for ug in self.ugs:
                             if ug.etapa_atual == UNIDADE_PARADA or ug.etapa_atual == UNIDADE_PARANDO:
                                 logger.debug("A UG{} já está no estado parada/parando.".format(ug.id))
                             else:
-                                logger.debug("Enviando o setpoint mínimo ({}) para a UG{}".format(self.cfg["pot_minima"], ug.id))
-                                ug.enviar_setpoint(self.cfg["pot_minima"])
+                                ug.limpeza_grade = True
+                                logger.debug("Enviando o setpoint de limpeza de grade ({}) para a UG{}".format(self.cfg["pot_limpeza_grade"], ug.id))
 
                     except Exception as e:
                         logger.info("Traceback: {}".format(repr(e)))
@@ -592,6 +592,7 @@ class Usina:
                         self.cfg["pot_maxima_ug2"] = self.cfg["pot_maxima_ug"]
                         self.cfg["pot_maxima_ug3"] = self.cfg["pot_maxima_ug"]
                         for ug in self.ugs:
+                            ug.limpeza_grade = False
                             ug.enviar_setpoint(self.cfg["pot_maxima_ug"])
 
                     except Exception as e:

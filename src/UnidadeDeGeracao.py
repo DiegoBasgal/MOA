@@ -727,7 +727,10 @@ class StateDisponivel(State):
             if (self.parent_ug.setpoint > self.parent_ug.setpoint_minimo) and self.parent_ug.setpoint * ganho > self.parent_ug.setpoint_minimo:
                 self.parent_ug.setpoint = self.parent_ug.setpoint * ganho
 
-                
+            elif self.parent_ug.limpeza_grade:
+                self.parent_ug.setpoint_minimo = self.parent_ug.cfg["pot_limpeza_grade"]
+                self.parent_ug.setpoint = self.parent_ug.setpoint_minimo
+
             elif (self.parent_ug.setpoint * ganho < self.parent_ug.setpoint_minimo) and (self.parent_ug.setpoint > self.parent_ug.setpoint_minimo):
                 self.parent_ug.setpoint =  self.parent_ug.setpoint_minimo
 

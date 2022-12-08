@@ -25,8 +25,10 @@ class UnidadeDeGeracao1(UnidadeDeGeracao):
         self.modo_autonomo = 1
         self.__last_EtapaAtual = 0
         self.pot_alvo_anterior = -1
+
         self.QCAUGRemoto = True
         self.acionar_voip = False
+        self.limpeza_grade = False
         self.FreioCmdRemoto = True
         self.avisou_emerg_voip = False
         self.enviar_trip_eletrico = False
@@ -788,8 +790,10 @@ class UnidadeDeGeracao1(UnidadeDeGeracao):
             bool: True se sucesso, Falso caso contrário
         """
         try:
-
-            self.setpoint_minimo = self.cfg["pot_minima"]
+            if self.limpeza_grade:
+                self.setpoint_minimo = self.cfg["pot_limpeza_grade"]
+            else:
+                self.setpoint_minimo = self.cfg["pot_minima"]
             self.setpoint_maximo = self.cfg["pot_maxima_ug{}".format(self.id)]
 
             self.setpoint = int(setpoint_kw)
