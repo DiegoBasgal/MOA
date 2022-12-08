@@ -72,12 +72,19 @@ def novo_agendamento_view(request, *args, **kwargs):
         campo_auxiliar = request.POST.get("campo_auxiliar")
         comando_id = request.POST.get("comando")
 
+        data_hora = datetime(ano, mes, dia, hora, minuto, 0)
+        if data_hora <= now:
+            if (now - data_hora).seconds < 60:
+                data_hora = now
+            else:
+                return HttpResponseRedirect('../')
+
         ag = Agendamento(
             ts_criado=now,
             criado_por=request.user,
             ts_modificado=now,
             modificado_por=request.user,
-            data=now,
+            data=data_hora,
             comando=Comando.objects.get(id=comando_id),
             campo_auxiliar=campo_auxiliar,
             observacao=observacao,
