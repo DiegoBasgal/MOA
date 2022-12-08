@@ -920,7 +920,7 @@ class UnidadeDeGeracao3(UnidadeDeGeracao):
 
         if self.leitura_caixa_espiral.valor <= self.condicionador_caixa_espiral_ug.valor_base and self.leitura_caixa_espiral.valor != 0 and self.etapa_atual == UNIDADE_SINCRONIZADA:
             self.logger.warning("[UG{}] A pressão Caixa Espiral da UG passou do valor base! ({:03.2f} KGf/m2) | Leitura: {:03.2f}".format(self.id, self.condicionador_caixa_espiral_ug.valor_base, self.leitura_caixa_espiral.valor))
-        if self.leitura_caixa_espiral.valor <= self.condicionador_caixa_espiral_ug.valor_limite+0.9*(self.condicionador_caixa_espiral_ug.valor_base - self.condicionador_caixa_espiral_ug.valor_limite) and self.leitura_caixa_espiral.valor != 0 and self.etapa_atual == UNIDADE_SINCRONIZADA:
+        if self.leitura_caixa_espiral.valor <= 16.1 and self.leitura_caixa_espiral.valor != 0 and self.etapa_atual == UNIDADE_SINCRONIZADA:
             self.logger.critical("[UG{}] A pressão Caixa Espiral da UG está muito próxima do limite! ({:03.2f} KGf/m2) | Leitura: {:03.2f} KGf/m2".format(self.id, self.condicionador_caixa_espiral_ug.valor_limite, self.leitura_caixa_espiral.valor))
 
     def leituras_por_hora(self):
@@ -960,7 +960,6 @@ class UnidadeDeGeracao3(UnidadeDeGeracao):
             self.acionar_voip = True
         elif self.leitura_EntradasDigitais_MXI_FreioCmdRemoto.valor == 1 and self.FreioCmdRemoto == False:
             self.FreioCmdRemoto = True
-            self.acionar_voip = False
 
         self.leitura_EntradasDigitais_MXI_QCAUG3_Remoto = LeituraModbusCoil( "EntradasDigitais_MXI_QCAUG3_Remoto", self.clp, REG_UG3_EntradasDigitais_MXI_QCAUG3_Remoto )
         if self.leitura_EntradasDigitais_MXI_QCAUG3_Remoto.valor == 0 and self.QCAUGRemoto == True:
@@ -969,6 +968,5 @@ class UnidadeDeGeracao3(UnidadeDeGeracao):
             self.acionar_voip = True
         elif self.leitura_EntradasDigitais_MXI_QCAUG3_Remoto.valor == 1 and self.QCAUGRemoto == False:
             self.QCAUGRemoto = True
-            self.acionar_voip = False
 
         return True

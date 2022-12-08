@@ -246,7 +246,8 @@ def enviar_voz_auxiliar(lista_de_contatos=None):
                     logger.debug("Exception NVOIP: {} ".format(e.read()))
                 else:
                     logger.debug("response_body: {} ".format(response_body))
-                sleep(30)
+                
+                Disj_GDE_QLCF_Fechado = False
 
             if TDA_FalhaComum:
                 # Montagem do pacote para chamar a api
@@ -273,7 +274,8 @@ def enviar_voz_auxiliar(lista_de_contatos=None):
                     logger.debug("Exception NVOIP: {} ".format(e.read()))
                 else:
                     logger.debug("response_body: {} ".format(response_body))
-                sleep(30)
+                
+                TDA_FalhaComum = False
 
             if BombasDngRemoto:
                 data = {
@@ -281,7 +283,7 @@ def enviar_voz_auxiliar(lista_de_contatos=None):
                     "called": "{}".format(contato[1]),  # O número a ser chamado, no formato dddnnnnnnnnn
                     "audios": [
                         {
-                            "audio": "Atenção! Foi identificado que o painel do poço de drenagem em São Sebastião entrou em modo remoto, favor verificar. Atenção! Foi identificado que o painel do poço de drenagem em São Sebastião entrou em modo remoto, favor verificar.",
+                            "audio": "Atenção! Foi identificado que o painel do poço de drenagem em São Sebastião saiu do modo remoto, favor verificar. Atenção! Foi identificado que o painel do poço de drenagem em São Sebastião saiu do modo remoto, favor verificar.",
                             "positionAudio": 1,
                         }
                     ],
@@ -299,7 +301,8 @@ def enviar_voz_auxiliar(lista_de_contatos=None):
                     logger.debug("Exception NVOIP: {} ".format(e.read()))
                 else:
                     logger.debug("response_body: {} ".format(response_body))
-                sleep(30)
+                
+                BombasDngRemoto = False
 
             if QCAUG1Remoto:
                 data = {
@@ -325,7 +328,8 @@ def enviar_voz_auxiliar(lista_de_contatos=None):
                     logger.debug("Exception NVOIP: {} ".format(e.read()))
                 else:
                     logger.debug("response_body: {} ".format(response_body))
-                sleep(30)
+                
+                QCAUG1Remoto = False
 
             if QCAUG2Remoto:
                 data = {
@@ -351,7 +355,8 @@ def enviar_voz_auxiliar(lista_de_contatos=None):
                     logger.debug("Exception NVOIP: {} ".format(e.read()))
                 else:
                     logger.debug("response_body: {} ".format(response_body))
-                sleep(30)
+                
+                QCAUG2Remoto = False
 
             if QCAUG3Remoto:
                 data = {
@@ -377,7 +382,8 @@ def enviar_voz_auxiliar(lista_de_contatos=None):
                     logger.debug("Exception NVOIP: {} ".format(e.read()))
                 else:
                     logger.debug("response_body: {} ".format(response_body))
-                sleep(30)
+                
+                QCAUG3Remoto = False
 
             if FreioCmdRemoto1:
                 data = {
@@ -403,7 +409,8 @@ def enviar_voz_auxiliar(lista_de_contatos=None):
                     logger.debug("Exception NVOIP: {} ".format(e.read()))
                 else:
                     logger.debug("response_body: {} ".format(response_body))
-                sleep(30)
+                
+                FreioCmdRemoto1 = False
 
             if FreioCmdRemoto2:
                 data = {
@@ -429,7 +436,8 @@ def enviar_voz_auxiliar(lista_de_contatos=None):
                     logger.debug("Exception NVOIP: {} ".format(e.read()))
                 else:
                     logger.debug("response_body: {} ".format(response_body))
-                sleep(30)
+
+                FreioCmdRemoto2 = False
 
             if FreioCmdRemoto3:
                 data = {
@@ -455,7 +463,8 @@ def enviar_voz_auxiliar(lista_de_contatos=None):
                     logger.debug("Exception NVOIP: {} ".format(e.read()))
                 else:
                     logger.debug("response_body: {} ".format(response_body))
-                sleep(30)
+                
+                FreioCmdRemoto3 = False
 
 if __name__ == "__main__":
    enviar_voz_auxiliar()

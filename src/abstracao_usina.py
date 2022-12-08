@@ -690,20 +690,14 @@ class Usina:
         pot_medidor = self.leituras.potencia_ativa_kW.valor
         logger.debug("Pot no medidor = {}".format(pot_medidor))
 
-        print("\nPotência medidor antes: ", pot_medidor)
-
         # implementação nova
         pot_aux = self.cfg["pot_maxima_alvo"] - (self.cfg["pot_maxima_usina"] - self.cfg["pot_maxima_alvo"])
 
         pot_medidor = max(pot_aux, min(pot_medidor, self.cfg["pot_maxima_usina"]))
 
-        print("\nPotência medidor depois: ", pot_medidor, "\n")
-
         try:
             if pot_medidor > self.cfg["pot_maxima_alvo"] * 0.97:
                 pot_alvo = self.pot_alvo_anterior * (1 - 0.5 * ((pot_medidor - self.cfg["pot_maxima_alvo"]) / self.cfg["pot_maxima_alvo"]))
-                
-                print("\nPotência alvo: ", pot_alvo, "\n")
 
         except TypeError as e:
             logger.info("A comunicação com os MFs falharam.")
@@ -1143,13 +1137,12 @@ class Usina:
             logger.warning("O sensor do Grupo Motor Gerador identificou uma falha no acionamento, favor verificar.")
         
         self.leitura_RetornosDigitais_MXR_FalhaComunSETDA = LeituraModbusCoil( "RetornosDigitais_MXR_FalhaComunSETDA", self.clp, REG_SA_RetornosDigitais_MXR_FalhaComunSETDA)
-        if self.leitura_RetornosDigitais_MXR_FalhaComunSETDA.valor != 0 and self.TDA_FalhaComum==False:
+        if self.leitura_RetornosDigitais_MXR_FalhaComunSETDA.valor == 1 and self.TDA_FalhaComum == False:
             logger.warning("Houve uma falha de comunicação com o CLP da Subestação e o CLP da Tomada da Água, favor verificar")
             self.TDA_FalhaComum = True
             self.acionar_voip = True
-        elif self.leitura_RetornosDigitais_MXR_FalhaComunSETDA == 0 and self.TDA_FalhaComum == True:
+        elif self.leitura_RetornosDigitais_MXR_FalhaComunSETDA.valor == 0 and self.TDA_FalhaComum == True:
             self.TDA_FalhaComum = False
-            self.acionar_voip = False
 
         self.leitura_EntradasDigitais_MXI_SA_QCAP_Disj52EFechado = LeituraModbusCoil( "EntradasDigitais_MXI_SA_QCAP_Disj52EFechado", self.clp, REG_SA_EntradasDigitais_MXI_SA_QCAP_Disj52EFechado)
         if self.leitura_EntradasDigitais_MXI_SA_QCAP_Disj52EFechado.valor == 1 and self.Disj_GDE_QCAP_Fechado==False:
@@ -1158,7 +1151,6 @@ class Usina:
             self.acionar_voip = True
         elif self.leitura_EntradasDigitais_MXI_SA_QCAP_Disj52EFechado.valor == 0 and self.Disj_GDE_QCAP_Fechado==True:
             self.Disj_GDE_QCAP_Fechado = False
-            self.acionar_voip = False
 
         self.leitura_EntradasDigitais_MXI_SA_QCADE_BombasDng_Auto = LeituraModbusCoil( "EntradasDigitais_MXI_SA_QCADE_BombasDng_Auto", self.clp, REG_SA_EntradasDigitais_MXI_SA_QCADE_BombasDng_Auto)
         if self.leitura_EntradasDigitais_MXI_SA_QCADE_BombasDng_Auto.valor == 0 and self.BombasDngRemoto==False:
@@ -1167,7 +1159,6 @@ class Usina:
             self.acionar_voip = True
         elif self.leitura_EntradasDigitais_MXI_SA_QCADE_BombasDng_Auto.valor == 1 and self.BombasDngRemoto==True:
             self.BombasDngRemoto=False
-            self.acionar_voip = False
 
         return True
 

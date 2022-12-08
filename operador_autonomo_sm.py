@@ -581,8 +581,10 @@ def acionar_voip():
             voip.BombasDngRemoto=[True if usina.BombasDngRemoto else False]
             voip.Disj_GDE_QLCF_Fechado=[True if usina.Disj_GDE_QLCF_Fechado else False]
             voip.enviar_voz_auxiliar()
+            usina.acionar_voip = False
         elif usina.avisado_em_eletrica:
             voip.enviar_voz_emergencia()
+            usina.avisado_em_eletrica = False
 
         for ug in usina.ugs:
             if ug.acionar_voip:
@@ -593,11 +595,13 @@ def acionar_voip():
                 voip.FreioCmdRemoto2=[True if not usina.ug2.FreioCmdRemoto else False]
                 voip.FreioCmdRemoto3=[True if not usina.ug3.FreioCmdRemoto else False]
                 voip.enviar_voz_auxiliar()
+                ug.acionar_voip = False
             elif ug.avisou_emerg_voip:
                 voip.enviar_voz_emergencia()
+                ug.avisou_emerg_voip = False
 
     except Exception:
-        logger.warning("Houve um problema ao ligar por Voip")
+        logger.debug("Houve um problema ao ligar por Voip")
 
 if __name__ == "__main__":
     # A escala de tempo é utilizada para acelerar as simulações do sistema
