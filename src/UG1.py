@@ -646,6 +646,7 @@ class UnidadeDeGeracao1(UnidadeDeGeracao):
             self.logger.debug("[UG{}] Removendo sinal (via rede) de TRIP.".format(self.id))
             response = self.clp.write_single_coil(REG_UG1_ComandosDigitais_MXW_ResetGeral, 1)
             response = self.clp.write_single_coil(REG_UG1_EntradasDigitais_MXI_ReleBloqA86HAtuado, 0)
+            response = self.clp.write_single_coil(REG_UG1_EntradasDigitais_MXI_ReleBloqA86MAtuado, 0)
             response = self.clp.write_single_coil(REG_UG1_RetornosDigitais_MXR_700G_Trip, 0)
             
         except:

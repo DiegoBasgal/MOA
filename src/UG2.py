@@ -641,6 +641,7 @@ class UnidadeDeGeracao2(UnidadeDeGeracao):
                 REG_UG2_ComandosDigitais_MXW_ResetGeral, 1
             )
             response = self.clp.write_single_coil(REG_UG2_EntradasDigitais_MXI_ReleBloqA86HAtuado, 0)
+            response = self.clp.write_single_coil(REG_UG2_EntradasDigitais_MXI_ReleBloqA86MAtuado, 0)
             response = self.clp.write_single_coil(REG_UG2_RetornosDigitais_MXR_700G_Trip, 0)
         except:
             #! TODO Tratar exceptions
