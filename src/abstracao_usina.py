@@ -662,6 +662,9 @@ class Usina:
                     try:
                         novo = float(agendamento[5].replace(",", "."))
                         self.cfg["pot_maxima_alvo"] = novo
+                        self.db._open()
+                        self.db.execute("UPDATE parametros_moa_parametrosusina SET pot_nominal = {}".format(novo))
+                        self.db._close()
                     except Exception as e:
                         logger.info("Valor inválido no comando #{} ({} é inválido).".format(agendamento[0], agendamento[3]))
 
