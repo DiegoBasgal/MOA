@@ -666,7 +666,7 @@ class StateDisponivel(State):
         if deve_indisponibilizar or deve_normalizar:
             self.logger.info("[UG{}] UG em modo disponível detectou condicionadores ativos.\nCondicionadores ativos:".format(self.parent_ug.id))
             for d in condicionadores_ativos:
-                self.logger.warning("Desc: {}; Ativo: {}; Valor: {}; Gravidade: {}".format(d.descr, d.ativo, d.valor, d.gravidade))
+                self.logger.warning("[UG{}] Registrador: {}; \nAtivo: {}; \nGravidade: {}".format(self.parent_ug.id, d.descr, d.ativo, d.gravidade))
 
         # Se algum condicionador deve gerar uma indisponibilidade
         if deve_indisponibilizar:
@@ -682,6 +682,10 @@ class StateDisponivel(State):
                 self.logger.warning("[UG{}] A UG estourou as tentativas de normalização, indisponibilizando UG. \n Condicionadores ativos:\n{}".format(self.parent_ug.id,[d.descr for d in condicionadores_ativos],))
                 # Vai para o estado StateIndisponivel
                 return StateIndisponivel(self.parent_ug)
+            
+            elif self.parent_ug.etapa_atual == UNIDADE_PARANDO or self.parent_ug.etapa_atual == UNIDADE_SINCRONIZANDO:
+                self.logger.debug("[UG{}] Esperando para normalizar, {}".format(UNIDADE_PARANDO if self.parent_ug.etapa_atual==2 else UNIDADE_SINCRONIZANDO))
+                return self
 
             # Se não estourou as tentativas de normalização, e já se passou tempo suficiente, deve tentar normalizar
             elif (self.parent_ug.ts_auxiliar - datetime.now(pytz.timezone("Brazil/East")).replace(tzinfo=None)).seconds > self.parent_ug.tempo_entre_tentativas:

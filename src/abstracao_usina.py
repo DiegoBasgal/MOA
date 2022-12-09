@@ -524,7 +524,15 @@ class Usina:
 
             if segundos_adiantados <= 60 and not bool(agendamento[4]):
                 # Está na hora e ainda não foi executado. Executar!
-                logger.info("Executando gendamento: {} - Comando: {} - Data: .".format(agendamento[0], agendamento[3], agendamento[9]))
+                logger.info(
+                    "Executando agendamento #{}\nComando: {}\nData agendamento: {}\nValor: {}".format(
+                        agendamento[0],
+                        agendamento[3],
+                        agendamento[1],
+                        agendamento[5],
+                    )
+                )
+
 
                 # se o MOA estiver em autonomo e o agendamento não for executavel em autonomo
                 #   marca como executado e altera a descricao

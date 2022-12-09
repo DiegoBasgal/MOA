@@ -37,7 +37,7 @@ def monitoramento_view(request, *args, **kwargs):
         "estado": "{}".format(usina.status_moa),
         "em_acionada": "{}".format(usina.emergencia_acionada),
         "timestamp": usina.timestamp.strftime("%d/%m/%Y, %H:%M:%S"),
-        "setpot_usina": "{:1.3f}".format(usina.ug1_setpot + usina.ug2_setpot),
+        "setpot_usina": "{:1.3f}".format(usina.ug1_setpot + usina.ug2_setpot + usina.ug3_setpot),
         "setpot_ug1": "{:1.3f}".format(usina.ug1_setpot),
         "pot_ug1": "{:1.3f}".format(usina.ug1_pot),
         "tempo_ug1": "{:.2f}".format(usina.ug1_tempo + 45362),

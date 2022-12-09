@@ -406,7 +406,7 @@ class AgendamentosPendentes(State):
         self.usina = instancia_usina
 
     def run(self):
-        logger.info("Tratando agendamentos")
+        logger.debug("Tratando agendamentos")
         self.usina.verificar_agendamentos()
         return ControleRealizado(self.usina)
 
