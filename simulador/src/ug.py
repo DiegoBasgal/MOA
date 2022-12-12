@@ -67,7 +67,7 @@ class Ug:
         self.shared_dict["temperatura_ug{}_mancal_casq_rad".format(self.id)] = 25
         self.shared_dict["temperatura_ug{}_mancal_casq_comb".format(self.id)] = 25
         self.shared_dict["temperatura_ug{}_mancal_escora_comb".format(self.id)] = 25
-        self.shared_dict["pressao_caixa_espiral_ug{}".format(self.id)] = 20
+        self.shared_dict["pressao_caixa_espiral_ug{}".format(self.id)] = 16.2
         
     def passo(self):
         # DEBUG VIA GUI
@@ -233,7 +233,7 @@ class Ug:
         self.shared_dict["temperatura_ug{}_mancal_casq_rad".format(self.id)] = np.random.normal(25, 1 * self.escala_ruido)
         self.shared_dict["temperatura_ug{}_mancal_casq_comb".format(self.id)] = np.random.normal(25, 1 * self.escala_ruido)
         self.shared_dict["temperatura_ug{}_mancal_escora_comb".format(self.id)] = np.random.normal(25, 1 * self.escala_ruido)
-        self.shared_dict["pressao_caixa_espiral_ug{}".format(self.id)] = np.random.normal(20, 1 * self.escala_ruido)
+       #self.shared_dict["pressao_caixa_espiral_ug{}".format(self.id)] = np.random.normal(20, 1 * self.escala_ruido)
 
 
         if self.etapa_atual > self.ETAPA_UP:

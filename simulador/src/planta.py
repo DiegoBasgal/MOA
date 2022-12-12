@@ -303,7 +303,7 @@ class Planta:
         return min(max(820.80, 820.80 + volume / 11301.84), 821)
 
     def nv_montate_para_volume(self, nv_montante):
-        return 11301.84 * (min(max(820.80, nv_montante), 481) - 820.80)
+        return 11301.84 * (min(max(820.80, nv_montante), 820.80) - 820.80)
 
     def q_sanitaria(self, nv_montante):
         return 0.22
