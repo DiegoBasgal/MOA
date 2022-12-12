@@ -24,8 +24,6 @@ class FieldConnector:
             self.ug1_port = cfg["UG1_slave_porta"]
             self.ug2_ip = cfg["UG2_slave_ip"]
             self.ug2_port = cfg["UG2_slave_porta"]
-            self.ug3_ip = cfg["UG3_slave_ip"]
-            self.ug3_port = cfg["UG3_slave_porta"]
             self.usn_ip = cfg["USN_slave_ip"]
             self.usn_port = cfg["USN_slave_porta"]
             self.tda_ip = cfg["TDA_slave_ip"]
@@ -41,14 +39,6 @@ class FieldConnector:
             self.ug2_clp = ModbusClient(
                 host=self.ug2_ip,
                 port=self.ug2_port,
-                timeout=0.5,
-                unit_id=1,
-                auto_open=True,
-                auto_close=True,
-            )
-            self.ug3_clp = ModbusClient(
-                host=self.ug3_ip,
-                port=self.ug3_port,
                 timeout=0.5,
                 unit_id=1,
                 auto_open=True,
@@ -73,7 +63,6 @@ class FieldConnector:
 
         self.warned_ug1 = False
         self.warned_ug2 = False
-        self.warned_ug3 = False
         self.TDA_Offline = False
 
     def modifica_controles_locais(self):
@@ -94,9 +83,6 @@ class FieldConnector:
         if not self.ug2_clp.open():
             raise ModbusClientFailedToOpen("Modbus client ({}:{}) failed to open.".format(self.ug2_ip, self.ug2_port))
 
-        if not self.ug3_clp.open():
-            raise ModbusClientFailedToOpen("Modbus client ({}:{}) failed to open.".format(self.ug3_ip, self.ug3_port))
-
         if not self.usn_clp.open():
             raise ModbusClientFailedToOpen("Modbus client ({}:{}) failed to open.".format(self.usn_ip, self.usn_port))
 
@@ -110,7 +96,6 @@ class FieldConnector:
         logger.debug("Closing Modbus")
         self.ug1_clp.close()
         self.ug2_clp.close()
-        self.ug3_clp.close()
         self.usn_clp.close()
         self.tda_clp.close()
         logger.debug("Closed Modbus")
@@ -128,12 +113,10 @@ class FieldConnector:
         logger.debug("Reconhece/Reset alarmes")
         self.ug1_clp.write_single_coil(REG_UG1_ComandosDigitais_MXW_ResetGeral, 1)
         self.ug2_clp.write_single_coil(REG_UG2_ComandosDigitais_MXW_ResetGeral, 1)
-        self.ug3_clp.write_single_coil(REG_UG3_ComandosDigitais_MXW_ResetGeral, 1)
         self.usn_clp.write_single_coil(REG_SA_ComandosDigitais_MXW_ResetGeral, 1)
         self.tda_clp.write_single_coil(REG_TDA_ComandosDigitais_MXW_ResetGeral, 1) if not self.TDA_Offline else logger.debug("CLP TDA Offline, não há como realizar o reset geral")
         self.ug1_clp.write_single_coil(REG_UG1_ComandosDigitais_MXW_Cala_Sirene, 1)
         self.ug2_clp.write_single_coil(REG_UG2_ComandosDigitais_MXW_Cala_Sirene, 1)
-        self.ug3_clp.write_single_coil(REG_UG3_ComandosDigitais_MXW_Cala_Sirene, 1)
         self.usn_clp.write_single_coil(REG_SA_ComandosDigitais_MXW_Cala_Sirene, 1)
         logger.debug("Fecha Dj52L")
         self.fechaDj52L()
@@ -142,18 +125,15 @@ class FieldConnector:
         logger.debug("Somente reconhece alarmes não implementado em SEB")
         self.ug1_clp.write_single_coil(REG_UG1_ComandosDigitais_MXW_Cala_Sirene, 1)
         self.ug2_clp.write_single_coil(REG_UG2_ComandosDigitais_MXW_Cala_Sirene, 1)
-        self.ug3_clp.write_single_coil(REG_UG3_ComandosDigitais_MXW_Cala_Sirene, 1)
         self.usn_clp.write_single_coil(REG_SA_ComandosDigitais_MXW_Cala_Sirene, 1)
 
     def acionar_emergencia(self):
         logger.warning("FC: Acionando emergencia")
         self.ug1_clp.write_single_coil(REG_UG1_ComandosDigitais_MXW_EmergenciaViaSuper, 1)
         self.ug2_clp.write_single_coil(REG_UG2_ComandosDigitais_MXW_EmergenciaViaSuper, 1)
-        self.ug3_clp.write_single_coil(REG_UG3_ComandosDigitais_MXW_EmergenciaViaSuper, 1)
         sleep(5)
         self.ug1_clp.write_single_coil(REG_UG1_ComandosDigitais_MXW_EmergenciaViaSuper, 0)
         self.ug2_clp.write_single_coil(REG_UG2_ComandosDigitais_MXW_EmergenciaViaSuper, 0)
-        self.ug3_clp.write_single_coil(REG_UG3_ComandosDigitais_MXW_EmergenciaViaSuper, 0)
 
     def get_flag_falha52L(self):
         # adicionar estado do disjuntor

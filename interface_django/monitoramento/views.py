@@ -40,13 +40,10 @@ def monitoramento_view(request, *args, **kwargs):
         "setpot_usina": "{:1.3f}".format(usina.ug1_setpot + usina.ug2_setpot),
         "setpot_ug1": "{:1.3f}".format(usina.ug1_setpot),
         "pot_ug1": "{:1.3f}".format(usina.ug1_pot),
-        "tempo_ug1": "{:.2f}".format(usina.ug1_tempo + 45362),
+        "tempo_ug1": "{:.2f}".format(usina.ug1_tempo),
         "setpot_ug2": "{:1.3f}".format(usina.ug2_setpot),
         "pot_ug2": "{:1.3f}".format(usina.ug2_pot),
-        "tempo_ug2": "{:.2f}".format(usina.ug2_tempo + 45673),
-        "setpot_ug3": "{:1.3f}".format(usina.ug3_setpot),
-        "pot_ug3": "{:1.3f}".format(usina.ug3_pot),
-        "tempo_ug3": "{:.2f}".format(usina.ug3_tempo + 45255),
+        "tempo_ug2": "{:.2f}".format(usina.ug2_tempo),
         "nv_alvo": "{:3.2f}".format(usina.nv_alvo),
         "aguardo": "Sim" if usina.aguardando_reservatorio > 0 else "Não",
         "nv_montante": "{:3.2f}".format(usina.nv_montante),
@@ -87,13 +84,6 @@ def monitoramento_view(request, *args, **kwargs):
                     else f"Inconsistente {regs[71]}"
                 ),
             )
-            context["ug3_state"] = (
-                "{}".format(
-                    MOA_DICT_DE_STATES[regs[81]]
-                    if regs[81] in MOA_DICT_DE_STATES
-                    else f"Inconsistente {regs[81]}"
-                ),
-            )
             context["ug1_etapa"] = (
                 "{}".format(
                     UNIDADE_DICT_DE_ETAPAS[regs[62]]
@@ -106,13 +96,6 @@ def monitoramento_view(request, *args, **kwargs):
                     UNIDADE_DICT_DE_ETAPAS[regs[72]]
                     if regs[72] in UNIDADE_DICT_DE_ETAPAS
                     else f"Inconsistente {regs[72]}"
-                ),
-            )
-            context["ug3_etapa"] = (
-                "{}".format(
-                    UNIDADE_DICT_DE_ETAPAS[regs[82]]
-                    if regs[82] in UNIDADE_DICT_DE_ETAPAS
-                    else f"Inconsistente {regs[82]}"
                 ),
             )
             hb_detetime = datetime.datetime(

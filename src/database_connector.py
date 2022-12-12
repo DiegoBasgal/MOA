@@ -104,11 +104,6 @@ class Database:
             "ug2_setpot = %s, "
             "ug2_sinc = %s, "
             "ug2_tempo = %s, "
-            "ug3_disp = %s, "
-            "ug3_pot = %s, "
-            "ug3_setpot = %s, "
-            "ug3_sinc = %s, "
-            "ug3_tempo = %s "
             "WHERE id = 1"
         )
         self._open()
@@ -201,8 +196,6 @@ class Database:
         nv,
         erro,
         ma,
-        sp3,
-        p3,
         cx_kp,
         cx_ki,
         cx_kie,
@@ -219,8 +212,7 @@ class Database:
             "%s,%s, "
             "%s,%s, "
             "%s,%s, "
-            "%s,%s, "
-            "%s,%s);"
+            "%s,%s,);"
         )
         self._open()
         self.execute(
@@ -243,8 +235,6 @@ class Database:
                     nv,
                     erro,
                     ma,
-                    sp3,
-                    p3,
                     cx_kp,
                     cx_ki,
                     cx_kie,

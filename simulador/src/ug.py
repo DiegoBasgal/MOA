@@ -22,11 +22,11 @@ class Ug:
         self.setpoint = 0
         self.horimetro_hora = 0
 
-        self.POT_MAX = 3600
+        self.POT_MAX = 500
         self.POT_MIN = 0.4 * self.POT_MAX
 
-        self.ETAPA_UP = 1
-        self.ETAPA_UPGM = 2
+        self.ETAPA_UP = 0
+        self.ETAPA_UPGM = 1
         self.ETAPA_UVD = 3
         self.ETAPA_UPS = 4
         self.ETAPA_US = 5
@@ -58,15 +58,15 @@ class Ug:
         self.shared_dict["setpoint_kw_ug{}".format(self.id)] = 0
         self.shared_dict["debug_setpoint_kw_ug{}".format(self.id)] = 0
         self.shared_dict["trip_ug{}".format(self.id)] = False
-        self.shared_dict["temperatura_ug{}_contra_escora_1".format(self.id)] = 25
-        self.shared_dict["temperatura_ug{}_contra_escora_2".format(self.id)] = 25
-        self.shared_dict["temperatura_ug{}_escora_1".format(self.id)] = 25
-        self.shared_dict["temperatura_ug{}_escora_2".format(self.id)] = 25
         self.shared_dict["temperatura_ug{}_fase_r".format(self.id)] = 25
         self.shared_dict["temperatura_ug{}_fase_s".format(self.id)] = 25
         self.shared_dict["temperatura_ug{}_fase_t".format(self.id)] = 25
-        self.shared_dict["temperatura_ug{}_la_casquilho".format(self.id)] = 25
-        self.shared_dict["temperatura_ug{}_lna_casquilho".format(self.id)] = 2
+        self.shared_dict["temperatura_ug{}_nucleo_gerador_1".format(self.id)] = 25
+        self.shared_dict["temperatura_ug{}_nucleo_gerador_2".format(self.id)] = 25
+        self.shared_dict["temperatura_ug{}_nucleo_gerador_3".format(self.id)] = 25
+        self.shared_dict["temperatura_ug{}_mancal_casq_rad".format(self.id)] = 25
+        self.shared_dict["temperatura_ug{}_mancal_casq_comb".format(self.id)] = 25
+        self.shared_dict["temperatura_ug{}_mancal_escora_comb".format(self.id)] = 25
         self.shared_dict["pressao_caixa_espiral_ug{}".format(self.id)] = 20
         
     def passo(self):
@@ -224,15 +224,15 @@ class Ug:
 
         # FIM COMPORTAMENTO self.ETAPAS
 
-        self.shared_dict["temperatura_ug{}_contra_escora_1".format(self.id)] = np.random.normal(25, 1 * self.escala_ruido)
-        self.shared_dict["temperatura_ug{}_contra_escora_2".format(self.id)] = np.random.normal(25, 1 * self.escala_ruido)
-        self.shared_dict["temperatura_ug{}_escora_1".format(self.id)] = np.random.normal(25, 1 * self.escala_ruido)
-        self.shared_dict["temperatura_ug{}_escora_2".format(self.id)] = np.random.normal(25, 1 * self.escala_ruido)
         self.shared_dict["temperatura_ug{}_fase_r".format(self.id)] = np.random.normal(25, 1 * self.escala_ruido)
         self.shared_dict["temperatura_ug{}_fase_s".format(self.id)] = np.random.normal(25, 1 * self.escala_ruido)
         self.shared_dict["temperatura_ug{}_fase_t".format(self.id)] = np.random.normal(25, 1 * self.escala_ruido)
-        self.shared_dict["temperatura_ug{}_la_casquilho".format(self.id)] = np.random.normal(25, 1 * self.escala_ruido)
-        self.shared_dict["temperatura_ug{}_lna_casquilho".format(self.id)] = np.random.normal(25, 1 * self.escala_ruido)
+        self.shared_dict["temperatura_ug{}_nucleo_gerador_1".format(self.id)] = np.random.normal(25, 1 * self.escala_ruido)
+        self.shared_dict["temperatura_ug{}_nucleo_gerador_2".format(self.id)] = np.random.normal(25, 1 * self.escala_ruido)
+        self.shared_dict["temperatura_ug{}_nucleo_gerador_3".format(self.id)] = np.random.normal(25, 1 * self.escala_ruido)
+        self.shared_dict["temperatura_ug{}_mancal_casq_rad".format(self.id)] = np.random.normal(25, 1 * self.escala_ruido)
+        self.shared_dict["temperatura_ug{}_mancal_casq_comb".format(self.id)] = np.random.normal(25, 1 * self.escala_ruido)
+        self.shared_dict["temperatura_ug{}_mancal_escora_comb".format(self.id)] = np.random.normal(25, 1 * self.escala_ruido)
         self.shared_dict["pressao_caixa_espiral_ug{}".format(self.id)] = np.random.normal(20, 1 * self.escala_ruido)
 
 
@@ -277,7 +277,7 @@ class Ug:
         self.shared_dict["etapa_alvo_ug{}".format(self.id)] = self.etapa_alvo
 
     def q_ug(self, potencia_kW):
-        if potencia_kW > 1:
-            return 0.00065 * potencia_kW
+        if potencia_kW > 200:
+            return 0.0106 * potencia_kW
         else:
             return 0

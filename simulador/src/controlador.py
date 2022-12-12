@@ -51,7 +51,7 @@ class Controlador:
             pool_name="my_pool",
             pool_size=10,
             pool_reset_session=True,
-            host="172.21.15.115",
+            host="172.21.15.171",
             user="root",
             password="&264H3$M@&z$",
             database="django_db",
@@ -106,7 +106,7 @@ class Controlador:
                     ts = int(datetime.timestamp(datetime.now()))
 
                     self.cursor.execute(
-                        "INSERT INTO debug.simul_data VALUES({}, {}, {}, {}, {}, {}, {}, {}, {});".format(
+                        "INSERT INTO debug.simul_data VALUES({}, {}, {}, {}, {}, {}, {});".format(
                             ts,
                             self.shared_dict["q_alfuente"],
                             self.shared_dict["nv_montante"],
@@ -114,8 +114,6 @@ class Controlador:
                             self.shared_dict["setpoint_kw_ug1"],
                             self.shared_dict["potencia_kw_ug2"],
                             self.shared_dict["setpoint_kw_ug2"],
-                            self.shared_dict["potencia_kw_ug3"],
-                            self.shared_dict["setpoint_kw_ug3"],
                         )
                     )
                     self.conn.commit()

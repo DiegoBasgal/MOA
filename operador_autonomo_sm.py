@@ -374,11 +374,8 @@ class ModoManualAtivado(State):
         DataBank.set_words(usina.cfg["REG_PAINEL_LIDO"], [1])
         self.usina.ug1.setpoint = self.usina.ug1.leitura_potencia.valor
         self.usina.ug2.setpoint = self.usina.ug2.leitura_potencia.valor
-        self.usina.ug3.setpoint = self.usina.ug3.leitura_potencia.valor
 
-        self.usina.controle_ie = (
-            self.usina.ug1.setpoint + self.usina.ug2.setpoint + self.usina.ug3.setpoint
-        ) / self.usina.cfg["pot_maxima_alvo"]
+        self.usina.controle_ie = (self.usina.ug1.setpoint + self.usina.ug2.setpoint) / self.usina.cfg["pot_maxima_alvo"]
 
         self.usina.heartbeat()
         sleep(1 / ESCALA_DE_TEMPO)
@@ -572,24 +569,26 @@ def acionar_voip():
     try:
         if usina.acionar_voip:
             voip.TDA_FalhaComum=[True if usina.TDA_FalhaComum else False]
-            voip.BombasDngRemoto=[True if usina.BombasDngRemoto else False]
+            voip.BombasDngRemoto=[True if not usina.BombasDngRemoto else False]
             voip.Disj_GDE_QLCF_Fechado=[True if usina.Disj_GDE_QLCF_Fechado else False]
             voip.enviar_voz_auxiliar()
+            usina.acionar_voip = False
         elif usina.avisado_em_eletrica:
             voip.enviar_voz_emergencia()
+            usina.avisado_em_eletrica = False
 
         for ug in usina.ugs:
             if ug.acionar_voip:
                 voip.TDA_FalhaComum=[True if ug.TDA_FalhaComum else False]
                 voip.QCAUG1Remoto=[True if not usina.ug1.QCAUGRemoto else False]
                 voip.QCAUG2Remoto=[True if not usina.ug2.QCAUGRemoto else False]
-                voip.QCAUG3Remoto=[True if not usina.ug3.QCAUGRemoto else False]
                 voip.FreioCmdRemoto1=[True if not usina.ug1.FreioCmdRemoto else False]
                 voip.FreioCmdRemoto2=[True if not usina.ug2.FreioCmdRemoto else False]
-                voip.FreioCmdRemoto3=[True if not usina.ug3.FreioCmdRemoto else False]
                 voip.enviar_voz_auxiliar()
+                ug.acionar_voip = False
             elif ug.avisou_emerg_voip:
                 voip.enviar_voz_auxiliar()
+                ug.avisou_emerg_voip = False
 
     except Exception:
         logger.warning("Houve um problema ao ligar por Voip")

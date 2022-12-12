@@ -497,6 +497,7 @@ class StateManual(State):
         self.logger.info("[UG{}] Entrando no estado manual. Para retornar a operação autônoma da UG é necessário intervenção manual via interface web.".format(self.parent_ug.id))
 
     def step(self) -> State:
+        self.parent_ug.setpoint = self.parent_ug.leitura_potencia.valor
         self.parent_ug.codigo_state = MOA_UNIDADE_MANUAL
         return self
 
@@ -616,18 +617,12 @@ class StateDisponivel(State):
         self.aux = 0
         self.release = False
         self.parent_ug.codigo_state = MOA_UNIDADE_DISPONIVEL
-        self.logger.info(
-            "[UG{}] Entrando no estado disponível.".format(self.parent_ug.id)
-        )
+        self.logger.info("[UG{}] Entrando no estado disponível.".format(self.parent_ug.id))
 
     def step(self) -> State:
         self.parent_ug.codigo_state = MOA_UNIDADE_DISPONIVEL
 
-        self.logger.debug(
-            "[UG{}] (tentativas_de_normalizacao atual: {})".format(
-                self.parent_ug.id, self.parent_ug.tentativas_de_normalizacao
-            )
-        )
+        self.logger.debug("[UG{}] (tentativas_de_normalizacao atual: {})".format(self.parent_ug.id, self.parent_ug.tentativas_de_normalizacao))
 
         # Ler condiconadores, verifica e armazena os ativos
         deve_indisponibilizar = False
@@ -702,8 +697,8 @@ class StateDisponivel(State):
         else:
 
             self.logger.debug(
-                "[UG{}] Etapa atual: '{}'".format(
-                    self.parent_ug.id, self.parent_ug.etapa_atual
+                "[UG{}] Etapa atual: '{}', etapa_alvo: '{}'".format(
+                    self.parent_ug.id, self.parent_ug.etapa_atual, self.parent_ug.etapa_alvo
                 )
             )
 
@@ -726,7 +721,10 @@ class StateDisponivel(State):
             if (self.parent_ug.setpoint > self.parent_ug.setpoint_minimo) and self.parent_ug.setpoint * ganho > self.parent_ug.setpoint_minimo:
                 self.parent_ug.setpoint = self.parent_ug.setpoint * ganho
 
-                
+            elif self.parent_ug.limpeza_grade:
+                self.parent_ug.setpoint_minimo = self.parent_ug.cfg["pot_limpeza_grade"]
+                self.parent_ug.setpoint = self.parent_ug.setpoint_minimo
+
             elif (self.parent_ug.setpoint * ganho < self.parent_ug.setpoint_minimo) and (self.parent_ug.setpoint > self.parent_ug.setpoint_minimo):
                 self.parent_ug.setpoint =  self.parent_ug.setpoint_minimo
 
@@ -740,7 +738,7 @@ class StateDisponivel(State):
             )
             # O comportamento da UG conforme a etapa em que a mesma se encontra
 
-            if self.parent_ug.etapa_atual == UNIDADE_PARANDO:
+            if self.parent_ug.etapa_alvo == UNIDADE_PARADA and not self.parent_ug.etapa_atual == UNIDADE_PARANDO:
                 # Unidade parando
                 self.logger.debug("[UG{}] Unidade parando".format(self.parent_ug.id))
                 # Se o setpoit for acima do mínimo
@@ -750,7 +748,7 @@ class StateDisponivel(State):
                     # E em seguida mandar o setpoint novo (boa prática)
                     self.parent_ug.enviar_setpoint(self.parent_ug.setpoint)
 
-            elif self.parent_ug.etapa_atual == UNIDADE_SINCRONIZANDO:
+            elif self.parent_ug.etapa_alvo == UNIDADE_SINCRONIZADA and not self.parent_ug.etapa_atual == UNIDADE_SINCRONIZADA:
                 # Unidade sincronizando
                 self.logger.debug("[UG{}] Unidade sincronizando".format(self.parent_ug.id))
                 if self.release == False and self.aux == 0:
@@ -758,11 +756,7 @@ class StateDisponivel(State):
                     self.aux = 1
                 # Se potência = 0, impedir,
                 if self.parent_ug.setpoint == 0:
-                    self.logger.warning(
-                        "[UG{}] A UG estava sincronizando com SP zerado, parando a UG.".format(
-                            self.parent_ug.id
-                        )
-                    )
+                    self.logger.warning("[UG{}] A UG estava sincronizando com SP zerado, parando a UG.".format(self.parent_ug.id))
                     self.parent_ug.parar()
                 else:
                     self.parent_ug.partir()
@@ -780,9 +774,8 @@ class StateDisponivel(State):
 
             elif self.parent_ug.etapa_atual == UNIDADE_SINCRONIZADA:
                 # Unidade sincronizada
-                self.logger.debug(
-                    "[UG{}] Unidade sincronizada".format(self.parent_ug.id)
-                )
+                self.logger.debug("[UG{}] Unidade sincronizada".format(self.parent_ug.id))
+
                 # Unidade sincronizada significa que ela está normalizada, logo zera o contador de tentativas
                 if not self.parent_ug.aux_tempo_sincronizada:
                     self.parent_ug.aux_tempo_sincronizada = datetime.now(pytz.timezone("Brazil/East")).replace(tzinfo=None)
@@ -800,12 +793,8 @@ class StateDisponivel(State):
             elif self.parent_ug.etapa_atual not in UNIDADE_LISTA_DE_ETAPAS:
                 # Etapa inconsistente
                 # Logar o ocorrido
-                self.logger.warning(
-                    "[UG{}] UG em etapa inconsistente. (etapa_atual:{})".format(
-                        self.parent_ug.id,
-                        self.parent_ug.etapa_atual,
-                    )
-                )
+                self.logger.warning("[UG{}] UG em etapa inconsistente. (etapa_atual:{})".format(self.parent_ug.id,self.parent_ug.etapa_atual,))
+
                 # Vai para o estado StateIndisponivel
                 # return StateIndisponivel(self.parent_ug)
 
@@ -826,7 +815,6 @@ class StateDisponivel(State):
             self.logger.debug("[UG{}] A Unidade estourou o timer de verificação de partida, adicionando condição para normalizar".format(self.parent_ug.id))
             self.parent_ug.clp.write_single_coil(REG_UG1_ComandosDigitais_MXW_EmergenciaViaSuper, [1 if self.parent_ug.id==1 else 0]) 
             self.parent_ug.clp.write_single_coil(REG_UG2_ComandosDigitais_MXW_EmergenciaViaSuper, [1 if self.parent_ug.id==2 else 0])
-            self.parent_ug.clp.write_single_coil(REG_UG3_ComandosDigitais_MXW_EmergenciaViaSuper, [1 if self.parent_ug.id==3 else 0])
             self.release = True
 
         except Exception as e:

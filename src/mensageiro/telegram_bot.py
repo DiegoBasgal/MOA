@@ -60,7 +60,6 @@ with open(config_file, "r") as file:
     config = json.load(file)
 logger.debug("Config: {}".format(config))
 
-audio_url = "http://www.ritmoenergia.com.br/wp-content/uploads/2022/07/Emergencia-SEB.mp3"
 
 def salvar_config():
     """
@@ -188,7 +187,7 @@ def threaded_enviar_voz_emergencia():
         mandou = False
         while not mandou:
             try:
-                bot.send_audio(chat_id=chat_id, audio=audio_url)
+                bot.send_message(chat_id=chat_id, text="\U000026A0 \U0000203C EMERGÊNCIA! \U0000203C \U000026A0")
                 mandou = True
 
             except telegram.error.Unauthorized as e:

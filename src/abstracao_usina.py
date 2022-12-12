@@ -7,7 +7,6 @@ from time import sleep, time
 from src.Condicionadores import *
 from src.UG1 import UnidadeDeGeracao1
 from src.UG2 import UnidadeDeGeracao2
-from src.UG3 import UnidadeDeGeracao3
 from pyModbusTCP.server import DataBank
 from datetime import  datetime, timedelta
 
@@ -41,8 +40,7 @@ class Usina:
         # Inicializa Objs da usina
         self.ug1 = UnidadeDeGeracao1(1, cfg=self.cfg, leituras_usina=self.leituras)
         self.ug2 = UnidadeDeGeracao2(2, cfg=self.cfg, leituras_usina=self.leituras)
-        self.ug3 = UnidadeDeGeracao3(3, cfg=self.cfg, leituras_usina=self.leituras)
-        self.ugs = [self.ug1, self.ug2, self.ug3]
+        self.ugs = [self.ug1, self.ug2]
 
         # Define as vars inciais
         self.ts_last_ping_tda = datetime.now(pytz.timezone("Brazil/East")).replace(tzinfo=None)
@@ -73,17 +71,15 @@ class Usina:
         self.aguardando_reservatorio = 0
         self.agendamentos_atrasados = 0
         self.tentativas_de_normalizar = 0
-        
 
         self.__split1 = False
         self.__split2 = False
-        self.__split3 = False
         self.tensao_ok = True
         self.timer_tensao = None
         self.TDA_Offline = False
         self.acionar_voip = False
         self.TDA_FalhaComum = False
-        self.BombasDngRemoto = False
+        self.BombasDngRemoto = True
         self.avisado_em_eletrica = False
         self.Disj_GDE_QCAP_Fechado = False
         self.deve_tentar_normalizar = True
@@ -105,7 +101,7 @@ class Usina:
 
         # ajuste inicial ie
         if self.cfg["saida_ie_inicial"] == "auto":
-            self.controle_ie = (self.ug1.leitura_potencia.valor + self.ug2.leitura_potencia.valor + self.ug3.leitura_potencia.valor) / self.cfg["pot_maxima_alvo"]
+            self.controle_ie = (self.ug1.leitura_potencia.valor + self.ug2.leitura_potencia.valor) / self.cfg["pot_maxima_alvo"]
         
         else:
             self.controle_ie = self.cfg["saida_ie_inicial"]
@@ -115,7 +111,6 @@ class Usina:
         # ajuste inicial SP
         logger.debug("self.ug1.leitura_potencia.valor -> {}".format(self.ug1.leitura_potencia.valor))
         logger.debug("self.ug2.leitura_potencia.valor -> {}".format(self.ug2.leitura_potencia.valor))
-        logger.debug("self.ug3.leitura_potencia.valor -> {}".format(self.ug3.leitura_potencia.valor))
 
         parametros = self.db.get_parametros_usina()
         self.atualizar_limites_operacao(parametros)
@@ -152,10 +147,6 @@ class Usina:
         if not ping(self.cfg["UG2_slave_ip"]):
             logger.warning("CLP UG2 não respondeu a tentativa de comunicação!")
             self.ug2.forcar_estado_restrito()
-
-        if not ping(self.cfg["UG3_slave_ip"]):
-            logger.warning("CLP UG3 não respondeu a tentativa de comunicação!")
-            self.ug3.forcar_estado_restrito()
 
         self.clp_online = True
         self.clp_emergencia_acionada = 0
@@ -229,9 +220,6 @@ class Usina:
         elif DataBank.get_words(self.cfg["REG_MOA_IN_EMERG_UG2"])[0] == 1:
             self.ug2.deve_ler_condicionadores = True
 
-        elif DataBank.get_words(self.cfg["REG_MOA_IN_EMERG_UG3"])[0] == 1:
-            self.ug3.deve_ler_condicionadores = True
-
         else:
             for ug in self.ugs:
                 ug.deve_ler_condicionadores = False
@@ -272,11 +260,6 @@ class Usina:
                 self.ug2.setpoint,  # ug2_setpot
                 self.ug2.etapa_atual,  # ug2_sinc
                 self.ug2.leitura_horimetro.valor,  # ug2_tempo
-                1 if self.ug3.disponivel else 0,  # ug3_disp
-                self.ug3.leitura_potencia.valor,  # ug3_pot
-                self.ug3.setpoint,  # ug3_setpot
-                self.ug3.etapa_atual,  # ug3_sinc
-                self.ug3.leitura_horimetro.valor,  # ug3_tempo
             ]
             self.db.update_valores_usina(valores)
 
@@ -298,32 +281,23 @@ class Usina:
                 ug.condicionador_temperatura_fase_t_ug.valor_base = float(parametros["alerta_temperatura_fase_t_ug{}".format(ug.id)])
                 ug.condicionador_temperatura_fase_t_ug.valor_limite = float(parametros["limite_temperatura_fase_t_ug{}".format(ug.id)])
 
-                ug.condicionador_temperatura_nucleo_estator_ug.valor_base = float(parametros["alerta_temperatura_nucleo_estator_ug{}".format(ug.id)])
-                ug.condicionador_temperatura_nucleo_estator_ug.valor_limite = float(parametros["limite_temperatura_nucleo_estator_ug{}".format(ug.id)])
+                ug.condicionador_temperatura_nucleo_gerador_1_ug.valor_base = float(parametros["alerta_temperatura_nucleo_gerador_1_ug{}".format(ug.id)])
+                ug.condicionador_temperatura_nucleo_gerador_1_ug.valor_limite = float(parametros["limite_temperatura_nucleo_gerador_1_ug{}".format(ug.id)])
 
-                ug.condicionador_temperatura_mancal_rad_dia_1_ug.valor_base = float(parametros["alerta_temperatura_mancal_rad_dia_1_ug{}".format(ug.id)])
-                ug.condicionador_temperatura_mancal_rad_dia_1_ug.valor_limite = float(parametros["limite_temperatura_mancal_rad_dia_1_ug{}".format(ug.id)])
+                ug.condicionador_temperatura_nucleo_gerador_2_ug.valor_base = float(parametros["alerta_temperatura_nucleo_gerador_2_ug{}".format(ug.id)])
+                ug.condicionador_temperatura_nucleo_gerador_2_ug.valor_limite = float(parametros["limite_temperatura_nucleo_gerador_2_ug{}".format(ug.id)])
 
-                ug.condicionador_temperatura_mancal_rad_dia_2_ug.valor_base = float(parametros["alerta_temperatura_mancal_rad_dia_2_ug{}".format(ug.id)])
-                ug.condicionador_temperatura_mancal_rad_dia_2_ug.valor_limite = float(parametros["limite_temperatura_mancal_rad_dia_2_ug{}".format(ug.id)])
+                ug.condicionador_temperatura_nucleo_gerador_3_ug.valor_base = float(parametros["alerta_temperatura_nucleo_gerador_3_ug{}".format(ug.id)])
+                ug.condicionador_temperatura_nucleo_gerador_3_ug.valor_limite = float(parametros["limite_temperatura_nucleo_gerador_3_ug{}".format(ug.id)])
 
-                ug.condicionador_temperatura_mancal_rad_tra_1_ug.valor_base = float(parametros["alerta_temperatura_mancal_rad_tra_1_ug{}".format(ug.id)])
-                ug.condicionador_temperatura_mancal_rad_tra_1_ug.valor_limite = float(parametros["limite_temperatura_mancal_rad_tra_1_ug{}".format(ug.id)])
+                ug.condicionador_temperatura_mancal_casq_rad_ug.valor_base = float(parametros["alerta_temperatura_mancal_casq_rad_ug{}".format(ug.id)])
+                ug.condicionador_temperatura_mancal_casq_rad_ug.valor_limite = float(parametros["limite_temperatura_mancal_casq_rad_ug{}".format(ug.id)])
 
-                ug.condicionador_temperatura_mancal_rad_tra_2_ug.valor_base = float(parametros["alerta_temperatura_mancal_rad_tra_2_ug{}".format(ug.id)])
-                ug.condicionador_temperatura_mancal_rad_tra_2_ug.valor_limite = float(parametros["limite_temperatura_mancal_rad_tra_2_ug{}".format(ug.id)])
+                ug.condicionador_temperatura_mancal_casq_comb_ug.valor_base = float(parametros["alerta_temperatura_mancal_casq_comb_ug{}".format(ug.id)])
+                ug.condicionador_temperatura_mancal_casq_comb_ug.valor_limite = float(parametros["limite_temperatura_mancal_casq_comb_ug{}".format(ug.id)])
 
-                ug.condicionador_temperatura_saida_de_ar_ug.valor_base = float(parametros["alerta_temperatura_saida_de_ar_ug{}".format(ug.id)])
-                ug.condicionador_temperatura_saida_de_ar_ug.valor_limite = float(parametros["limite_temperatura_saida_de_ar_ug{}".format(ug.id)])
-
-                ug.condicionador_temperatura_mancal_guia_escora_ug.valor_base = float(parametros["alerta_temperatura_mancal_guia_escora_ug{}".format(ug.id)])
-                ug.condicionador_temperatura_mancal_guia_escora_ug.valor_limite = float(parametros["limite_temperatura_mancal_guia_escora_ug{}".format(ug.id)])
-
-                ug.condicionador_temperatura_mancal_guia_radial_ug.valor_base = float(parametros["alerta_temperatura_mancal_guia_radial_ug{}".format(ug.id)])
-                ug.condicionador_temperatura_mancal_guia_radial_ug.valor_limite = float(parametros["limite_temperatura_mancal_guia_radial_ug{}".format(ug.id)])
-
-                ug.condicionador_temperatura_mancal_guia_contra_ug.valor_base = float(parametros["alerta_temperatura_mancal_guia_contra_ug{}".format(ug.id)])
-                ug.condicionador_temperatura_mancal_guia_contra_ug.valor_limite = float(parametros["limite_temperatura_mancal_guia_contra_ug{}".format(ug.id)])
+                ug.condicionador_temperatura_mancal_escora_comb_ug.valor_base = float(parametros["alerta_temperatura_mancal_escora_comb_ug{}".format(ug.id)])
+                ug.condicionador_temperatura_mancal_escora_comb_ug.valor_limite = float(parametros["limite_temperatura_mancal_escora_comb_ug{}".format(ug.id)])
 
                 ug.condicionador_caixa_espiral_ug.valor_base = float(parametros["alerta_caixa_espiral_ug{}".format(ug.id)])
                 ug.condicionador_caixa_espiral_ug.valor_limite = float(parametros["limite_caixa_espiral_ug{}".format(ug.id)])
@@ -400,18 +374,16 @@ class Usina:
 
         if self.modo_autonomo == 1:
             DataBank.set_words(self.cfg["REG_MOA_OUT_EMERG"], [1 if self.clp_emergencia_acionada else 0],)
-            DataBank.set_words(self.cfg["REG_MOA_OUT_TARGET_LEVEL"], [int((self.cfg["nv_alvo"] - 400) * 1000)])
-            DataBank.set_words(self.cfg["REG_MOA_OUT_SETPOINT"], [int(self.ug1.setpoint + self.ug2.setpoint + self.ug3.setpoint)], )
+            DataBank.set_words(self.cfg["REG_MOA_OUT_TARGET_LEVEL"], [int((self.cfg["nv_alvo"] - 820.9) * 1000)])
+            DataBank.set_words(self.cfg["REG_MOA_OUT_SETPOINT"], [int(self.ug1.setpoint + self.ug2.setpoint)], )
 
             if self.avisado_em_eletrica==True and self.aux==1:
                 DataBank.set_words(self.cfg["REG_MOA_OUT_BLOCK_UG1"], [1],)
                 DataBank.set_words(self.cfg["REG_MOA_OUT_BLOCK_UG2"], [1],)
-                DataBank.set_words(self.cfg["REG_MOA_OUT_BLOCK_UG3"], [1],)
                 self.aux=0
             elif self.avisado_em_eletrica==False and self.aux==0:
                 DataBank.set_words(self.cfg["REG_MOA_OUT_BLOCK_UG1"], [0],)
                 DataBank.set_words(self.cfg["REG_MOA_OUT_BLOCK_UG2"], [0],)
-                DataBank.set_words(self.cfg["REG_MOA_OUT_BLOCK_UG3"], [0],)
                 self.aux=1
 
             if DataBank.get_words(self.cfg["REG_MOA_IN_HABILITA_AUTO"])[0] == 1:
@@ -437,19 +409,12 @@ class Usina:
             elif DataBank.get_words(self.cfg["REG_MOA_OUT_BLOCK_UG2"])[0] == 0:
                 DataBank.set_words(self.cfg["REG_MOA_OUT_BLOCK_UG2"], [0])
 
-            if DataBank.get_words(self.cfg["REG_MOA_OUT_BLOCK_UG3"])[0] == 1:
-                DataBank.set_words(self.cfg["REG_MOA_OUT_BLOCK_UG3"], [1])
-                
-            elif DataBank.get_words(self.cfg["REG_MOA_OUT_BLOCK_UG3"])[0] == 0:
-                DataBank.set_words(self.cfg["REG_MOA_OUT_BLOCK_UG3"], [0])
-
         elif self.modo_autonomo == 0:
             DataBank.set_words(self.cfg["REG_MOA_OUT_EMERG"], [0])
             DataBank.set_words(self.cfg["REG_MOA_OUT_TARGET_LEVEL"], [0])
             DataBank.set_words(self.cfg["REG_MOA_OUT_SETPOINT"], [0])
             DataBank.set_words(self.cfg["REG_MOA_OUT_BLOCK_UG1"], [0])
             DataBank.set_words(self.cfg["REG_MOA_OUT_BLOCK_UG2"], [0])
-            DataBank.set_words(self.cfg["REG_MOA_OUT_BLOCK_UG3"], [0])
             
 
     def get_agendamentos_pendentes(self):
@@ -574,9 +539,8 @@ class Usina:
                     try:
                         self.cfg["pot_maxima_ug1"] = self.cfg["pot_minima"]
                         self.cfg["pot_maxima_ug2"] = self.cfg["pot_minima"]
-                        self.cfg["pot_maxima_ug3"] = self.cfg["pot_minima"]
                         for ug in self.ugs:
-                            if ug.etapa_atual == UNIDADE_PARADA or ug.etapa_atual == UNIDADE_PARANDO:
+                            if ug.etapa_atual == UNIDADE_PARADA or ug.etapa_alvo == UNIDADE_PARADA:
                                 logger.debug("A UG{} já está no estado parada/parando.".format(ug.id))
                             else:
                                 logger.debug("Enviando o setpoint mínimo ({}) para a UG{}".format(self.cfg["pot_minima"], ug.id))
@@ -589,7 +553,6 @@ class Usina:
                     try:
                         self.cfg["pot_maxima_ug1"] = self.cfg["pot_maxima_ug"]
                         self.cfg["pot_maxima_ug2"] = self.cfg["pot_maxima_ug"]
-                        self.cfg["pot_maxima_ug3"] = self.cfg["pot_maxima_ug"]
                         for ug in self.ugs:
                             ug.enviar_setpoint(self.cfg["pot_maxima_ug"])
 
@@ -636,26 +599,6 @@ class Usina:
                 if agendamento[3] == AGENDAMENTO_UG2_FORCAR_ESTADO_RESTRITO:
                     self.ug2.forcar_estado_restrito()
 
-                if agendamento[3] == AGENDAMENTO_UG3_ALTERAR_POT_LIMITE:
-                    try:
-                        novo = float(agendamento[5].replace(",", "."))
-                        self.cfg["pot_maxima_ug3"] = novo
-                        self.ug3.pot_disponivel = novo
-                    except Exception as e:
-                        logger.info("Valor inválido no comando #{} ({} é inválido).".format(agendamento[0], agendamento[3]))
-
-                if agendamento[3] == AGENDAMENTO_UG3_FORCAR_ESTADO_MANUAL:
-                    self.ug3.forcar_estado_manual()
-
-                if agendamento[3] == AGENDAMENTO_UG3_FORCAR_ESTADO_DISPONIVEL:
-                    self.ug3.forcar_estado_disponivel()
-
-                if agendamento[3] == AGENDAMENTO_UG3_FORCAR_ESTADO_INDISPONIVEL:
-                    self.ug3.forcar_estado_indisponivel()
-
-                if agendamento[3] == AGENDAMENTO_UG3_FORCAR_ESTADO_RESTRITO:
-                    self.ug3.forcar_estado_restrito()
-
                 if agendamento[3] == AGENDAMENTO_ALTERAR_POT_LIMITE_TODAS_AS_UGS:
                     try:
                         novo = float(agendamento[5].replace(",", "."))
@@ -663,8 +606,6 @@ class Usina:
                         self.ug1.pot_disponivel = novo
                         self.cfg["pot_maxima_ug2"] = novo
                         self.ug2.pot_disponivel = novo
-                        self.cfg["pot_maxima_ug3"] = novo
-                        self.ug3.pot_disponivel = novo
                     except Exception as e:
                         logger.info("Valor inválido no comando #{} ({} é inválido).".format(agendamento[0], agendamento[3]))
 
@@ -728,55 +669,38 @@ class Usina:
         sp = pot_alvo / self.cfg["pot_maxima_usina"]
 
         self.__split1 = True if sp > (0) else self.__split1
-        self.__split2 = (True if sp > (0.333 + self.cfg["margem_pot_critica"]) else self.__split2)
-        self.__split3 = (True if sp > (0.666 + self.cfg["margem_pot_critica"]) else self.__split3)
+        self.__split2 = (True if sp > (0.5 + self.cfg["margem_pot_critica"]) else self.__split2)
 
-        self.__split3 = False if sp < (0.666) else self.__split3
-        self.__split2 = False if sp < (0.333) else self.__split2
+        self.__split2 = False if sp < (0.5) else self.__split2
         self.__split1 = False if sp < (self.cfg["pot_minima"] / self.cfg["pot_maxima_usina"]) else self.__split1
 
         logger.debug(f"Sp {sp}")
-        if len(ugs) == 3:
+        if len(ugs) == 2:
 
-            if self.__split3:
-                logger.debug("Split 3")
-                ugs[0].setpoint = sp * ugs[0].setpoint_maximo
-                ugs[1].setpoint = sp * ugs[1].setpoint_maximo
-                ugs[2].setpoint = sp * ugs[2].setpoint_maximo
-            elif self.__split2:
+            if self.__split2:
                 logger.debug("Split 2")
-                sp = sp * 3 / 2
                 ugs[0].setpoint = sp * ugs[0].setpoint_maximo
                 ugs[1].setpoint = sp * ugs[1].setpoint_maximo
-                ugs[2].setpoint = 0
+
             elif self.__split1:
                 logger.debug("Split 1")
-                sp = sp * 3 / 1
+                sp = sp * 2 / 1
                 ugs[0].setpoint = sp * ugs[0].setpoint_maximo
                 ugs[1].setpoint = 0
-                ugs[2].setpoint = 0
             else:
                 for ug in ugs:
                     ug.setpoint = 0
 
-        elif len(ugs) == 2:
-            if self.__split2 or self.__split3:
-                logger.debug("Split 2B")
-                sp = sp * 3 / 2
+        elif len(ugs) == 1:
+            if self.__split1 or self.__split2:
+                logger.debug("Split 1B")
+                sp = sp * 2 / 1
                 ugs[0].setpoint = sp * ugs[0].setpoint_maximo
-                ugs[1].setpoint = sp * ugs[1].setpoint_maximo
-            elif self.__split1:
-                logger.debug("Split 1")
-                sp = sp * 3 / 1
-                ugs[0].setpoint = sp * ugs[0].setpoint_maximo
-                ugs[1].setpoint = 0
-            else:
-                ugs[0].setpoint = 0
                 ugs[1].setpoint = 0
 
-        elif len(ugs) == 1:
-            logger.debug("Split 3B")
-            ugs[0].setpoint = 3 * sp * ugs[0].setpoint_maximo
+            else:
+                for ug in ugs:
+                    ug.setpoint = 0
 
         for ug in self.ugs:
             logger.debug("UG{} SP:{}".format(ug.id, ug.setpoint))
@@ -873,8 +797,6 @@ class Usina:
                 self.ug2.leitura_potencia.valor,
                 self.nv_montante_recente,
                 self.erro_nv,
-                self.ug3.setpoint,
-                self.ug3.leitura_potencia.valor,
                 ma,
                 self.cfg["cx_kp"],
                 self.cfg["cx_ki"],
@@ -891,6 +813,7 @@ class Usina:
         self.db.update_modo_manual()
     
     def leitura_condicionadores(self):
+        """
         
         #Lista de condicionadores essenciais que devem ser lidos a todo momento
         #-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------#
@@ -1095,8 +1018,10 @@ class Usina:
         self.condicionadores.append( CondicionadorBase(x.descr, DEVE_INDISPONIBILIZAR, x) )
 
         return True
+        """
 
     def leituras_por_hora(self):
+        """
         self.leitura_EntradasDigitais_MXI_SA_QLCF_Disj52ETrip = LeituraModbusCoil( "EntradasDigitais_MXI_SA_QLCF_Disj52ETrip", self.clp, REG_SA_EntradasDigitais_MXI_SA_QLCF_Disj52ETrip)
         if self.leitura_EntradasDigitais_MXI_SA_QLCF_Disj52ETrip.valor != 0:
             logger.warning("O Disjuntor do Gerador Diesel de Emergência QLCF identificou um sinal de TRIP, favor verificar.")
@@ -1148,7 +1073,6 @@ class Usina:
             self.acionar_voip = True
         elif self.leitura_RetornosDigitais_MXR_FalhaComunSETDA == 0 and self.TDA_FalhaComum == True:
             self.TDA_FalhaComum = False
-            self.acionar_voip = False
 
         self.leitura_EntradasDigitais_MXI_SA_QCAP_Disj52EFechado = LeituraModbusCoil( "EntradasDigitais_MXI_SA_QCAP_Disj52EFechado", self.clp, REG_SA_EntradasDigitais_MXI_SA_QCAP_Disj52EFechado)
         if self.leitura_EntradasDigitais_MXI_SA_QCAP_Disj52EFechado.valor == 1 and self.Disj_GDE_QCAP_Fechado==False:
@@ -1157,18 +1081,17 @@ class Usina:
             self.acionar_voip = True
         elif self.leitura_EntradasDigitais_MXI_SA_QCAP_Disj52EFechado.valor == 0 and self.Disj_GDE_QCAP_Fechado==True:
             self.Disj_GDE_QCAP_Fechado = False
-            self.acionar_voip = False
 
         self.leitura_EntradasDigitais_MXI_SA_QCADE_BombasDng_Auto = LeituraModbusCoil( "EntradasDigitais_MXI_SA_QCADE_BombasDng_Auto", self.clp, REG_SA_EntradasDigitais_MXI_SA_QCADE_BombasDng_Auto)
-        if self.leitura_EntradasDigitais_MXI_SA_QCADE_BombasDng_Auto.valor == 0 and self.BombasDngRemoto==False:
-            logger.warning("O poço de drenagem da Usina entrou em modo remoto, favor verificar.")
-            self.BombasDngRemoto=True
-            self.acionar_voip = True
-        elif self.leitura_EntradasDigitais_MXI_SA_QCADE_BombasDng_Auto.valor == 1 and self.BombasDngRemoto==True:
+        if self.leitura_EntradasDigitais_MXI_SA_QCADE_BombasDng_Auto.valor == 0 and self.BombasDngRemoto==True:
+            logger.warning("O poço de drenagem da Usina saiu do modo remoto, favor verificar.")
             self.BombasDngRemoto=False
-            self.acionar_voip = False
+            self.acionar_voip = True
+        elif self.leitura_EntradasDigitais_MXI_SA_QCADE_BombasDng_Auto.valor == 1 and self.BombasDngRemoto==False:
+            self.BombasDngRemoto=True
 
         return True
+        """
 
 def ping(host):
     """
