@@ -101,11 +101,11 @@ class FieldConnector:
         logger.debug("Closed Modbus")
 
     def fechaDj52L(self):
-        if self.get_flag_falha52L():
+        if not self.get_flag_falha52L():
             return False
         else:
             # utilizar o write_single_coil para o ambiente em produção e write_single_register para a simulação
-            response = self.usn_clp.write_single_coil(REG_SA_ComandosDigitais_MXW_Liga_DJ1, 1)
+            response = self.usn_clp.write_single_register(REG_SA_ComandosDigitais_MXW_Liga_DJ1, 1)
             return response
 
     def normalizar_emergencia(self):

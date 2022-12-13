@@ -350,9 +350,6 @@ REG_UG1_RetornosAnalogicos_Float_MWR_PM_710_Energia_Reativa_Fornecida = (
 REG_UG1_RetornosAnalogicos_Float_MWR_PM_710_Energia_Ativa_Fornecida = (
     155  # Scale 0.1 - Op04 (Read Input Regs - 3x)
 )
-REG_UG1_EntradasAnalogicas_MRR_PressK1CaixaExpiral_MaisCasas = (
-    157 # Scale 0.01 - Op04 (Read Input Regs)
-)
 
 REG_UG2_EntradasDigitais_MXI_RV_MaquinaParada = 0  # Op02 (Read Input Status)
 REG_UG2_EntradasDigitais_MXI_RV_VeloMenor30 = 1  # Op02 (Read Input Status)
@@ -703,9 +700,7 @@ REG_UG2_RetornosAnalogicos_Float_MWR_PM_710_Energia_Reativa_Fornecida = (
 REG_UG2_RetornosAnalogicos_Float_MWR_PM_710_Energia_Ativa_Fornecida = (
     155  # Scale 0.1 - Op04 (Read Input Regs - 3x)
 )
-REG_UG2_EntradasAnalogicas_MRR_PressK1CaixaExpiral_MaisCasas = (
-    157 # Scale 0.01 - Op04 (Read Input Regs)
-)
+
 
 REG_SA_EntradasAnalogicas_MRR_SA_Reserva07 = 15  # Scale - Op04 (Read Input Regs - 3x)
 REG_SA_EntradasAnalogicas_MRR_SA_QCAP_TensaoT = (
@@ -918,7 +913,7 @@ REG_SA_ComandosDigitais_MXW_ResetRele787 = 13  # Scale - Op15 (Write multiple co
 REG_SA_ComandosDigitais_MXW_ResetRele59N = 14  # Scale - Op15 (Write multiple coils)
 REG_SA_ComandosDigitais_MXW_ResetRele311 = 15  # Scale - Op15 (Write multiple coils)
 REG_SA_ComandosDigitais_MXW_ResetReleMRL1 = 16  # Scale - Op15 (Write multiple coils)
-REG_SA_ComandosDigitais_MXW_Liga_DJ1 = 17  # Scale - Op15 (Write multiple coils)
+#REG_SA_ComandosDigitais_MXW_Liga_DJ1 = 17  # Scale - Op15 (Write multiple coils)
 REG_SA_ComandosDigitais_MXW_Desliga_DJ1 = 18  # Scale - Op15 (Write multiple coils)
 REG_SA_ComandosDigitais_MXW_Liga_Disj52A1 = 19  # Scale - Op15 (Write multiple coils)
 REG_SA_ComandosDigitais_MXW_Desliga_Disj52A1 = 20  # Scale - Op15 (Write multiple coils)
@@ -1282,10 +1277,16 @@ REG_UG2_COND_PART = 222
 
 
 
-"""
 #--------------------------------------------------------------------------------------------------------------------------------------#
 #Registradores utilizados na simulação, para voltar aos valores antigos, deletar os comentarios de linha "#antigo->" e manter o número.
-REG_UG1_RetornosDigitais_EtapaAux_Sim = 34901
+REG_UG1_RetornosDigitais_EtapaAux_Sim = 32773
+REG_UG1_RetornosDigitais_EtapaAlvo_Sim = 32772
+
+REG_UG1_EntradasAnalogicas_MRR_PressK1CaixaExpiral_MaisCasas = (
+    34903 # Scale 0.01 - Op04 (Read Input Regs)
+)
+
+
 REG_UG1_RetrornosAnalogicos_AUX_Condicionadores = 34902
 REG_UG1_ComandosDigitais_MXW_EmergenciaViaSuper = 32295 #antigo -> 4  # Op15 (Write multiple coils)
 REG_UG1_ComandosDigitais_MXW_IniciaPartida = 32294 #antigo -> 45  # Op15 (Write multiple coils)
@@ -1307,7 +1308,9 @@ REG_UG1_EntradasAnalogicas_MRR_PressK1CaixaExpiral = (
     34903  # Scale 0.1 - Op04 (Read Input Regs - 3x)
 )
 
-REG_UG2_RetornosDigitais_EtapaAux_Sim = 44901
+REG_UG2_RetornosDigitais_EtapaAux_Sim = 42773
+REG_UG2_RetornosDigitais_EtapaAlvo_Sim = 42772
+
 REG_UG2_RetrornosAnalogicos_AUX_Condicionadores = 44902
 REG_UG2_ComandosDigitais_MXW_EmergenciaViaSuper = 42295 #antigo -> 4  # Op15 (Write multiple coils)
 REG_UG2_ComandosDigitais_MXW_IniciaPartida = 42294 #antigo -> 45  # Op15 (Write multiple coils)
@@ -1329,6 +1332,10 @@ REG_UG2_EntradasAnalogicas_MRR_PressK1CaixaExpiral = (
     44903  # Scale 0.1 - Op04 (Read Input Regs - 3x)
 )
 
+REG_UG2_EntradasAnalogicas_MRR_PressK1CaixaExpiral_MaisCasas = (
+    44903 # Scale 0.01 - Op04 (Read Input Regs)
+)
+
 REG_SA_ComandosDigitais_MXW_ResetGeral = 22288 #antigo -> 0  # Scale - Op15 (Write multiple coils)
 REG_SA_ComandosDigitais_MXW_Liga_DJ1 = 22293 #antigo -> 17  # Scale - Op15 (Write multiple coils)
 REG_SA_RetornosAnalogicos_Medidor_potencia_kw_mp = (
@@ -1343,6 +1350,8 @@ REG_SA_RetornosAnalogicos_MWR_PM_810_Tensao_BC = (
 REG_SA_RetornosAnalogicos_MWR_PM_810_Tensao_CA = (
     22791 #antigo -> 18  # Scale 0.1 - Op04 (Read Input Regs - 3x)
 )
+
+REG_SA_RetornosAnalogicos_MWR_PM_810_Potencia_Ativa = 22799  # Op04 (Read Input Regs - 3x)
 
 REG_TDA_NivelMaisCasasAntes = 22766 #antigo -> 12  # Scale 400 + 0.0001 X - Op04 (Read Input Regs - 3x)
 REG_TDA_EntradasAnalogicas_MRR_NivelDepoisGrade = (
@@ -1388,4 +1397,3 @@ REG_SA_RetornosDigitais_MXR_BbaDren2_FalhaAcion = 20010 # antigo -> 169  # Op02 
 REG_SA_RetornosDigitais_MXR_BbaDren3_FalhaAcion = 20011 # antigo -> 170  # Op02 (Read Input Status - 1x)
 REG_SA_RetornosDigitais_MXR_SA_GMG_FalhaAcion = 20012 # antigo -> 175  # Op02 (Read Input Status - 1x)
 REG_SA_RetornosDigitais_MXR_FalhaComunSETDA = 20013 # antigo -> 177  # Op02 (Read Input Status - 1x)
-"""

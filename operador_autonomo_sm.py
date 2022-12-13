@@ -239,8 +239,6 @@ class ValoresInternosAtualizados(State):
 
         # Se não foi redirecionado ainda,
         # assume-se que o MOA deve executar de modo autônomo
-        for ug in self.usina.ugs:
-            ug.step()
 
         # Verifica-se então a situação do reservatório
         if self.usina.aguardando_reservatorio:
@@ -407,7 +405,7 @@ class AgendamentosPendentes(State):
     def run(self):
         logger.info("Tratando agendamentos")
         self.usina.verificar_agendamentos()
-        return ValoresInternosAtualizados(self.usina)
+        return ControleRealizado(self.usina)
 
 
 class ReservatorioAbaixoDoMinimo(State):
@@ -425,7 +423,9 @@ class ReservatorioAbaixoDoMinimo(State):
             else:
                 logger.critical("Nivel montante ({:3.2f}) atingiu o fundo do reservatorio!".format(self.usina.nv_montante_recente))
                 return Emergencia(self.usina)
-
+        for ug in self.usina.ugs:
+            print("")
+            ug.step()
         return ControleRealizado(self.usina)
 
 
@@ -437,16 +437,15 @@ class ReservatorioAcimaDoMaximo(State):
     def run(self):
         if self.usina.nv_montante_recente >= self.usina.cfg["nv_maximorum"]:
             self.usina.distribuir_potencia(0)
-            logger.critical(
-                "Nivel montante ({:3.2f}) atingiu o maximorum!".format(
-                    self.usina.nv_montante_recente
-                )
-            )
+            logger.critical("Nivel montante ({:3.2f}) atingiu o maximorum!".format(self.usina.nv_montante_recente))
             return Emergencia(self.usina)
         else:
             self.usina.distribuir_potencia(self.usina.cfg["pot_maxima_usina"])
             self.usina.controle_ie = 0.5
             self.usina.controle_i = 0.5
+            for ug in self.usina.ugs:
+                print("")
+                ug.step()
             return ControleRealizado(self.usina)
 
 
@@ -458,6 +457,9 @@ class ReservatorioNormal(State):
     def run(self):
 
         self.usina.controle_normal()
+        for ug in self.usina.ugs:
+            print("")
+            ug.step()
         return ControleRealizado(self.usina)
 
 class OperacaoTDAOffline(State):
@@ -529,6 +531,7 @@ class OperacaoTDAOffline(State):
             return AgendamentosPendentes(self.usina)
 
         for ug in self.usina.ugs:
+            print("")
             ug.controle_cx_espiral()
             ug.step()
 
@@ -596,7 +599,7 @@ def acionar_voip():
 if __name__ == "__main__":
     # A escala de tempo é utilizada para acelerar as simulações do sistema
     # Utilizar 1 para testes sérios e 120 no máximo para testes simples
-    ESCALA_DE_TEMPO = 2
+    ESCALA_DE_TEMPO = 3
     if len(sys.argv) > 1:
         ESCALA_DE_TEMPO = int(sys.argv[1])
 

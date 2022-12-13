@@ -12,7 +12,7 @@ class LeiturasUSN:
             self.clp_tda,
             REG_TDA_NivelMaisCasasAntes,
             1 / 10000,
-            400,
+            819.2,
             op=4,
         )
         
@@ -20,7 +20,7 @@ class LeiturasUSN:
             "REG_SA_RetornosAnalogicos_MWR_PM_810_Tensao_AB",
             self.clp_usina,
             REG_SA_RetornosAnalogicos_MWR_PM_810_Tensao_AB,
-            100,
+            1000,
             op=4,
         )
 
@@ -28,7 +28,7 @@ class LeiturasUSN:
             "REG_SA_RetornosAnalogicos_MWR_PM_810_Tensao_BC",
             self.clp_usina,
             REG_SA_RetornosAnalogicos_MWR_PM_810_Tensao_BC,
-            100,
+            1000,
             op=4,
         )
 
@@ -36,7 +36,7 @@ class LeiturasUSN:
             "REG_SA_RetornosAnalogicos_MWR_PM_810_Tensao_CA",
             self.clp_usina,
             REG_SA_RetornosAnalogicos_MWR_PM_810_Tensao_CA,
-            100,
+            1000,
             op=4,
         )
 

@@ -103,7 +103,7 @@ class Database:
             "ug2_pot = %s, "
             "ug2_setpot = %s, "
             "ug2_sinc = %s, "
-            "ug2_tempo = %s, "
+            "ug2_tempo = %s "
             "WHERE id = 1"
         )
         self._open()
@@ -212,7 +212,7 @@ class Database:
             "%s,%s, "
             "%s,%s, "
             "%s,%s, "
-            "%s,%s,);"
+            "%s,%s);"
         )
         self._open()
         self.execute(

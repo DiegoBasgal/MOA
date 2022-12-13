@@ -696,11 +696,7 @@ class StateDisponivel(State):
         # Se não detectou nenhum condicionador ativo:
         else:
 
-            self.logger.debug(
-                "[UG{}] Etapa atual: '{}', etapa_alvo: '{}'".format(
-                    self.parent_ug.id, self.parent_ug.etapa_atual, self.parent_ug.etapa_alvo
-                )
-            )
+            self.logger.debug("[UG{}] Etapa atual: '{}', etapa_alvo: '{}'".format(self.parent_ug.id, self.parent_ug.etapa_atual, self.parent_ug.etapa_alvo))
 
             if self.release == True and self.aux == 1:
                 self.release = False
@@ -738,7 +734,7 @@ class StateDisponivel(State):
             )
             # O comportamento da UG conforme a etapa em que a mesma se encontra
 
-            if self.parent_ug.etapa_alvo == UNIDADE_PARADA and not self.parent_ug.etapa_atual == UNIDADE_PARANDO:
+            if self.parent_ug.etapa_alvo == UNIDADE_PARADA and not self.parent_ug.etapa_atual == UNIDADE_PARADA:
                 # Unidade parando
                 self.logger.debug("[UG{}] Unidade parando".format(self.parent_ug.id))
                 # Se o setpoit for acima do mínimo

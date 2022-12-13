@@ -26,6 +26,7 @@ class UnidadeDeGeracao1(UnidadeDeGeracao):
 
         self.QCAUGRemoto = True
         self.acionar_voip = False
+        self.limpeza_grade = False
         self.TDA_FalhaComum = False
         self.FreioCmdRemoto = True
         self.avisou_emerg_voip = False
@@ -101,6 +102,25 @@ class UnidadeDeGeracao1(UnidadeDeGeracao):
             self.leitura_horimetro_hora,
             self.leitura_horimetro_frac
         )
+
+#-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------#
+        # utilizar essa forma de leitura de etapa apenas quando for usar o simulador, 
+        # utilizar a forma comentada anterior quando for em produção
+        self.leitura_Operacao_EtapaAtual = LeituraModbus("REG_UG1_RetornosDigitais_EtapaAux_Sim",
+            self.clp,REG_UG1_RetornosDigitais_EtapaAux_Sim,
+            1,
+            op=4
+        )
+        self.leitura_Operacao_EtapaAlvo = LeituraModbus("REG_UG1_RetornosDigitais_Operacao_EtapaAlvo",
+            self.clp,REG_UG1_RetornosDigitais_EtapaAlvo_Sim,
+            1,
+            op=4
+        )
+        self.condic_ativos_sim_ug1 = LeituraModbus("REG_UG1_RetrornosAnalogicos_AUX_Condicionadores",
+            self.clp,
+            REG_UG1_RetrornosAnalogicos_AUX_Condicionadores,
+        )
+        """
         C1 = LeituraModbusCoil(
             descr="MXR_PartindoEmAuto",
             modbus_client=self.clp,
@@ -128,6 +148,7 @@ class UnidadeDeGeracao1(UnidadeDeGeracao):
             leitura3=C3,
             leitura4=C4,
         )
+        """
 
         #Lista de condicionadores essenciais que devem ser lidos a todo momento
 #-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------#
@@ -159,7 +180,7 @@ class UnidadeDeGeracao1(UnidadeDeGeracao):
         self.condicionador_temperatura_nucleo_gerador_1_ug = CondicionadorExponencial(x.descr, DEVE_INDISPONIBILIZAR, x, base, limite)
         self.condicionadores_essenciais.append(self.condicionador_temperatura_nucleo_gerador_1_ug)
 
-        # Nucleo Gerador 2
+        # Nucleo Gerador 2mancal
         self.leitura_temperatura_nucleo_gerador_2 = LeituraModbus("Gerador {} - temperatura núcelo do Gerador 2".format(self.id),self.clp,REG_UG1_RetornosAnalogicos_MWR_Temperatura_04,op=4,)
         base, limite = 100, 200
         x = self.leitura_temperatura_nucleo_gerador_2
@@ -184,8 +205,8 @@ class UnidadeDeGeracao1(UnidadeDeGeracao):
         self.leitura_temperatura_mancal_casq_comb = LeituraModbus("Gerador {} - temperatura mancal casquilho combinado".format(self.id),self.clp,REG_UG1_RetornosAnalogicos_MWR_Temperatura_10,op=4,)
         base, limite = 100, 200
         x = self.leitura_temperatura_mancal_casq_comb
-        self.condicionador_temperatura_mancal_casq_comb = CondicionadorExponencial(x.descr, DEVE_INDISPONIBILIZAR, x, base, limite)
-        self.condicionadores_essenciais.append(self.condicionador_temperatura_mancal_casq_comb)
+        self.condicionador_temperatura_mancal_casq_comb_ug = CondicionadorExponencial(x.descr, DEVE_INDISPONIBILIZAR, x, base, limite)
+        self.condicionadores_essenciais.append(self.condicionador_temperatura_mancal_casq_comb_ug)
 
         # Mancal Escora Combinado
         self.leitura_temperatura_mancal_escora_comb = LeituraModbus("Gerador {} - temperatura mancal escora Combinado".format(self.id),self.clp,REG_UG1_RetornosAnalogicos_MWR_Temperatura_07,op=4,)
@@ -195,7 +216,7 @@ class UnidadeDeGeracao1(UnidadeDeGeracao):
         self.condicionadores_essenciais.append(self.condicionador_temperatura_mancal_escora_comb_ug)
         
         # CX Espiral
-        self.leitura_caixa_espiral = LeituraModbus("Gerador {} - Caixa espiral".format(self.id),self.clp,REG_UG1_EntradasAnalogicas_MRR_PressK1CaixaExpiral_MaisCasas,escala=0.01 ,op = 4)
+        self.leitura_caixa_espiral = LeituraModbus("Gerador {} - Caixa espiral".format(self.id),self.clp,REG_UG1_EntradasAnalogicas_MRR_PressK1CaixaExpiral_MaisCasas,escala=0.1 ,op = 4)
         base = 16.1
         limite = 15.5
         x = self.leitura_caixa_espiral
@@ -472,7 +493,7 @@ class UnidadeDeGeracao1(UnidadeDeGeracao):
         """
 #-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------#
         self.cx_controle_p = (self.leitura_caixa_espiral.valor - self.cfg["press_cx_alvo"]) * self.cfg["cx_kp"]
-        self.cx_ajuste_ie = (self.leitura_potencia.valor + self.leitura_potencia_ug2.valor + self.leitura_potencia_ug3.valor) / self.cfg["pot_maxima_alvo"]
+        self.cx_ajuste_ie = (self.leitura_potencia.valor + self.leitura_potencia_ug2.valor) / self.cfg["pot_maxima_alvo"]
         self.cx_controle_i = self.cx_ajuste_ie - self.cx_controle_p
 
     def controle_cx_espiral(self):
@@ -613,13 +634,15 @@ class UnidadeDeGeracao1(UnidadeDeGeracao):
         """
         try:
             # na simulação, a condição a seguir, impede a partida das ugs. Retirar comentário quando for aplicar em campo
+            """
             if not self.clp.read_discrete_inputs(REG_UG1_COND_PART,1)[0]:
                 self.logger.debug("[UG{}] Máquina sem condição de partida. Irá partir quando as condições forem reestabelecidas.".format(self.id))
                 return True
             elif self.clp_sa.read_coils(REG_SA_EntradasDigitais_MXI_SA_QCAP_Disj52A1Fechado)[0] != 0:
                 self.logger.info("[UG{}] O Disjuntor 52A1 está aberto. Para partir a máquina, o mesmo deverá ser fechado.")
                 return True
-            elif not self.etapa_alvo == UNIDADE_SINCRONIZADA:
+            """
+            if not self.etapa_alvo == UNIDADE_SINCRONIZADA:
                 self.logger.info("[UG{}] Enviando comando de partida.".format(self.id))
                 response = self.clp.write_single_coil(REG_UG1_ComandosDigitais_MXW_ResetGeral, 1)
                 response = self.clp.write_single_coil(REG_UG1_ComandosDigitais_MXW_ResetRele700G, 1)
@@ -627,7 +650,7 @@ class UnidadeDeGeracao1(UnidadeDeGeracao):
                 response = self.clp.write_single_coil(REG_UG1_ComandosDigitais_MXW_ResetReleBloq86M, 1)
                 response = self.clp.write_single_coil(REG_UG1_ComandosDigitais_MXW_ResetReleRT, 1)
                 response = self.clp.write_single_coil(REG_UG1_ComandosDigitais_MXW_ResetRV, 1)
-                response = self.clp.write_single_coil(REG_UG1_ComandosDigitais_MXW_IniciaPartida, 1)
+                response = self.clp.write_single_register(REG_UG1_ComandosDigitais_MXW_IniciaPartida, 1)
                 response = self.clp.write_single_coil(REG_UG1_ComandosDigitais_MXW_Cala_Sirene, 1)
                 self.enviar_setpoint(self.setpoint)
             else:
@@ -652,7 +675,7 @@ class UnidadeDeGeracao1(UnidadeDeGeracao):
                 response = False
                 response = self.clp.write_single_coil(REG_UG1_ComandosDigitais_MXW_AbortaPartida, 1)
                 response = self.clp.write_single_coil(REG_UG1_ComandosDigitais_MXW_AbortaSincronismo, 1)
-                response = self.clp.write_single_coil(REG_UG1_ComandosDigitais_MXW_IniciaParada, 1)
+                response = self.clp.write_single_register(REG_UG1_ComandosDigitais_MXW_IniciaParada, 1)
                 response = self.clp.write_single_coil(REG_UG1_ComandosDigitais_MXW_Cala_Sirene, 1)
                 self.enviar_setpoint(0)
             else:
@@ -718,7 +741,7 @@ class UnidadeDeGeracao1(UnidadeDeGeracao):
         else:
             return response
 
-     @property
+    @property
     def etapa_alvo(self) -> int:
         try:
             response = self.leitura_Operacao_EtapaAlvo.valor

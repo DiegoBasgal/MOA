@@ -38,11 +38,6 @@ Página de configuraço dos parametros usados pelo MOA.
                CHECKED
                {% endif %}/>
         <label for="2">Priorizar a UG2</label>
-        <input type="radio" id="escolha_ugs" name="escolha_ugs" value="3"
-        {% if escolha_ugs == 3 %}
-        CHECKED
-        {% endif %}/>
-        <label for="3">Priorizar a UG3</label>
     </div>
 
     <div style="margin-bottom: 20px;">
@@ -66,8 +61,6 @@ Página de configuraço dos parametros usados pelo MOA.
                 <th>UG1 limite</th>
                 <th>UG2 alerta</th>
                 <th>UG2 limite</th>
-                <th>UG3 alerta</th>
-                <th>UG3 limite</th>
             </tr>
             
             <tr>
@@ -76,8 +69,6 @@ Página de configuraço dos parametros usados pelo MOA.
                 <td><input id="limite_temperatura_fase_r_ug1" name="limite_temperatura_fase_r_ug1" size=10 value="{{usina.limite_temperatura_fase_r_ug1}}"/></td>
                 <td><input id="alerta_temperatura_fase_r_ug2" name="alerta_temperatura_fase_r_ug2" size=10 value="{{usina.alerta_temperatura_fase_r_ug2}}"/></td>
                 <td><input id="limite_temperatura_fase_r_ug2" name="limite_temperatura_fase_r_ug2" size=10 value="{{usina.limite_temperatura_fase_r_ug2}}"/></td>
-                <td><input id="alerta_temperatura_fase_r_ug3" name="alerta_temperatura_fase_r_ug3" size=10 value="{{usina.alerta_temperatura_fase_r_ug3}}"/></td>
-                <td><input id="limite_temperatura_fase_r_ug3" name="limite_temperatura_fase_r_ug3" size=10 value="{{usina.limite_temperatura_fase_r_ug3}}"/></td>
             </tr>
                 
             <tr>
@@ -86,8 +77,6 @@ Página de configuraço dos parametros usados pelo MOA.
                 <td><input id="limite_temperatura_fase_s_ug1" name="limite_temperatura_fase_s_ug1" size=10 value="{{usina.limite_temperatura_fase_s_ug1}}"/></td>
                 <td><input id="alerta_temperatura_fase_s_ug2" name="alerta_temperatura_fase_s_ug2" size=10 value="{{usina.alerta_temperatura_fase_s_ug2}}"/></td>
                 <td><input id="limite_temperatura_fase_s_ug2" name="limite_temperatura_fase_s_ug2" size=10 value="{{usina.limite_temperatura_fase_s_ug2}}"/></td>
-                <td><input id="alerta_temperatura_fase_s_ug3" name="alerta_temperatura_fase_s_ug3" size=10 value="{{usina.alerta_temperatura_fase_s_ug3}}"/></td>
-                <td><input id="limite_temperatura_fase_s_ug3" name="limite_temperatura_fase_s_ug3" size=10 value="{{usina.limite_temperatura_fase_s_ug3}}"/></td>
             </tr>
                 
             <tr>
@@ -96,98 +85,54 @@ Página de configuraço dos parametros usados pelo MOA.
                 <td><input id="limite_temperatura_fase_t_ug1" name="limite_temperatura_fase_t_ug1" size=10 value="{{usina.limite_temperatura_fase_t_ug1}}"/></td>
                 <td><input id="alerta_temperatura_fase_t_ug2" name="alerta_temperatura_fase_t_ug2" size=10 value="{{usina.alerta_temperatura_fase_t_ug2}}"/></td>
                 <td><input id="limite_temperatura_fase_t_ug2" name="limite_temperatura_fase_t_ug2" size=10 value="{{usina.limite_temperatura_fase_t_ug2}}"/></td>
-                <td><input id="alerta_temperatura_fase_t_ug3" name="alerta_temperatura_fase_t_ug3" size=10 value="{{usina.alerta_temperatura_fase_t_ug3}}"/></td>
-                <td><input id="limite_temperatura_fase_t_ug3" name="limite_temperatura_fase_t_ug3" size=10 value="{{usina.limite_temperatura_fase_t_ug3}}"/></td>
             </tr>
                 
             <tr>
-                <td>temperatura_nucleo_estator_ug</td>
-                <td><input id="alerta_temperatura_nucleo_estator_ug1" name="alerta_temperatura_nucleo_estator_ug1" size=10 value="{{usina.alerta_temperatura_nucleo_estator_ug1}}"/></td>
-                <td><input id="limite_temperatura_nucleo_estator_ug1" name="limite_temperatura_nucleo_estator_ug1" size=10 value="{{usina.limite_temperatura_nucleo_estator_ug1}}"/></td>
-                <td><input id="alerta_temperatura_nucleo_estator_ug2" name="alerta_temperatura_nucleo_estator_ug2" size=10 value="{{usina.alerta_temperatura_nucleo_estator_ug2}}"/></td>
-                <td><input id="limite_temperatura_nucleo_estator_ug2" name="limite_temperatura_nucleo_estator_ug2" size=10 value="{{usina.limite_temperatura_nucleo_estator_ug2}}"/></td>
-                <td><input id="alerta_temperatura_nucleo_estator_ug3" name="alerta_temperatura_nucleo_estator_ug3" size=10 value="{{usina.alerta_temperatura_nucleo_estator_ug3}}"/></td>
-                <td><input id="limite_temperatura_nucleo_estator_ug3" name="limite_temperatura_nucleo_estator_ug3" size=10 value="{{usina.limite_temperatura_nucleo_estator_ug3}}"/></td>
+                <td>temperatura_nucleo_gerador_1_ug</td>
+                <td><input id="alerta_temperatura_nucleo_gerador_1_ug1" name="alerta_temperatura_nucleo_gerador_1_ug1" size=10 value="{{usina.alerta_temperatura_nucleo_gerador_1_ug1}}"/></td>
+                <td><input id="limite_temperatura_nucleo_gerador_1_ug1" name="limite_temperatura_nucleo_gerador_1_ug1" size=10 value="{{usina.limite_temperatura_nucleo_gerador_1_ug1}}"/></td>
+                <td><input id="alerta_temperatura_nucleo_gerador_1_ug2" name="alerta_temperatura_nucleo_gerador_1_ug2" size=10 value="{{usina.alerta_temperatura_nucleo_gerador_1_ug2}}"/></td>
+                <td><input id="limite_temperatura_nucleo_gerador_1_ug2" name="limite_temperatura_nucleo_gerador_1_ug2" size=10 value="{{usina.limite_temperatura_nucleo_gerador_1_ug2}}"/></td>
             </tr>
                 
             <tr>
-                <td>temperatura_mancal_rad_dia_1_ug</td>
-                <td><input id="alerta_temperatura_mancal_rad_dia_1_ug1" name="alerta_temperatura_mancal_rad_dia_1_ug1" size=10 value="{{usina.alerta_temperatura_mancal_rad_dia_1_ug1}}"/></td>
-                <td><input id="limite_temperatura_mancal_rad_dia_1_ug1" name="limite_temperatura_mancal_rad_dia_1_ug1" size=10 value="{{usina.limite_temperatura_mancal_rad_dia_1_ug1}}"/></td>
-                <td><input id="alerta_temperatura_mancal_rad_dia_1_ug2" name="alerta_temperatura_mancal_rad_dia_1_ug2" size=10 value="{{usina.alerta_temperatura_mancal_rad_dia_1_ug2}}"/></td>
-                <td><input id="limite_temperatura_mancal_rad_dia_1_ug2" name="limite_temperatura_mancal_rad_dia_1_ug2" size=10 value="{{usina.limite_temperatura_mancal_rad_dia_1_ug2}}"/></td>
-                <td><input id="alerta_temperatura_mancal_rad_dia_1_ug3" name="alerta_temperatura_mancal_rad_dia_1_ug3" size=10 value="{{usina.alerta_temperatura_mancal_rad_dia_1_ug3}}"/></td>
-                <td><input id="limite_temperatura_mancal_rad_dia_1_ug3" name="limite_temperatura_mancal_rad_dia_1_ug3" size=10 value="{{usina.limite_temperatura_mancal_rad_dia_1_ug3}}"/></td>
+                <td>temperatura_nucleo_gerador_2_ug</td>
+                <td><input id="alerta_temperatura_nucleo_gerador_2_ug1" name="alerta_temperatura_nucleo_gerador_2_ug1" size=10 value="{{usina.alerta_temperatura_nucleo_gerador_2_ug1}}"/></td>
+                <td><input id="limite_temperatura_nucleo_gerador_2_ug1" name="limite_temperatura_nucleo_gerador_2_ug1" size=10 value="{{usina.limite_temperatura_nucleo_gerador_2_ug1}}"/></td>
+                <td><input id="alerta_temperatura_nucleo_gerador_2_ug2" name="alerta_temperatura_nucleo_gerador_2_ug2" size=10 value="{{usina.alerta_temperatura_nucleo_gerador_2_ug2}}"/></td>
+                <td><input id="limite_temperatura_nucleo_gerador_2_ug2" name="limite_temperatura_nucleo_gerador_2_ug2" size=10 value="{{usina.limite_temperatura_nucleo_gerador_2_ug2}}"/></td>
+            </tr>
+
+            <tr>
+                <td>temperatura_nucleo_gerador_3_ug</td>
+                <td><input id="alerta_temperatura_nucleo_gerador_3_ug1" name="alerta_temperatura_nucleo_gerador_3_ug1" size=10 value="{{usina.alerta_temperatura_nucleo_gerador_3_ug1}}"/></td>
+                <td><input id="limite_temperatura_nucleo_gerador_3_ug1" name="limite_temperatura_nucleo_gerador_3_ug1" size=10 value="{{usina.limite_temperatura_nucleo_gerador_3_ug1}}"/></td>
+                <td><input id="alerta_temperatura_nucleo_gerador_3_ug2" name="alerta_temperatura_nucleo_gerador_3_ug2" size=10 value="{{usina.alerta_temperatura_nucleo_gerador_3_ug2}}"/></td>
+                <td><input id="limite_temperatura_nucleo_gerador_3_ug2" name="limite_temperatura_nucleo_gerador_3_ug2" size=10 value="{{usina.limite_temperatura_nucleo_gerador_3_ug2}}"/></td>
             </tr>
                 
             <tr>
-                <td>temperatura_mancal_rad_dia_2_ug</td>
-                <td><input id="alerta_temperatura_mancal_rad_dia_2_ug1" name="alerta_temperatura_mancal_rad_dia_2_ug1" size=10 value="{{usina.alerta_temperatura_mancal_rad_dia_2_ug1}}"/></td>
-                <td><input id="limite_temperatura_mancal_rad_dia_2_ug1" name="limite_temperatura_mancal_rad_dia_2_ug1" size=10 value="{{usina.limite_temperatura_mancal_rad_dia_2_ug1}}"/></td>
-                <td><input id="alerta_temperatura_mancal_rad_dia_2_ug2" name="alerta_temperatura_mancal_rad_dia_2_ug2" size=10 value="{{usina.alerta_temperatura_mancal_rad_dia_2_ug2}}"/></td>
-                <td><input id="limite_temperatura_mancal_rad_dia_2_ug2" name="limite_temperatura_mancal_rad_dia_2_ug2" size=10 value="{{usina.limite_temperatura_mancal_rad_dia_2_ug2}}"/></td>
-                <td><input id="alerta_temperatura_mancal_rad_dia_2_ug3" name="alerta_temperatura_mancal_rad_dia_2_ug3" size=10 value="{{usina.alerta_temperatura_mancal_rad_dia_2_ug3}}"/></td>
-                <td><input id="limite_temperatura_mancal_rad_dia_2_ug3" name="limite_temperatura_mancal_rad_dia_2_ug3" size=10 value="{{usina.limite_temperatura_mancal_rad_dia_2_ug3}}"/></td>
+                <td>temperatura_mancal_casq_rad_ug</td>
+                <td><input id="alerta_temperatura_mancal_casq_rad_ug_ug1" name="alerta_temperatura_mancal_casq_rad_ug_ug1" size=10 value="{{usina.alerta_temperatura_mancal_casq_rad_ug1}}"/></td>
+                <td><input id="limite_temperatura_mancal_casq_rad_ug_ug1" name="limite_temperatura_mancal_casq_rad_ug_ug1" size=10 value="{{usina.limite_temperatura_mancal_casq_rad_ug1}}"/></td>
+                <td><input id="alerta_temperatura_mancal_casq_rad_ug_ug2" name="alerta_temperatura_mancal_casq_rad_ug_ug2" size=10 value="{{usina.alerta_temperatura_mancal_casq_rad_ug2}}"/></td>
+                <td><input id="limite_temperatura_mancal_casq_rad_ug_ug2" name="limite_temperatura_mancal_casq_rad_ug_ug2" size=10 value="{{usina.limite_temperatura_mancal_casq_rad_ug2}}"/></td>
             </tr>
                 
             <tr>
-                <td>temperatura_mancal_rad_tra_1_ug</td>
-                <td><input id="alerta_temperatura_mancal_rad_tra_1_ug1" name="alerta_temperatura_mancal_rad_tra_1_ug1" size=10 value="{{usina.alerta_temperatura_mancal_rad_tra_1_ug1}}"/></td>
-                <td><input id="limite_temperatura_mancal_rad_tra_1_ug1" name="limite_temperatura_mancal_rad_tra_1_ug1" size=10 value="{{usina.limite_temperatura_mancal_rad_tra_1_ug1}}"/></td>
-                <td><input id="alerta_temperatura_mancal_rad_tra_1_ug2" name="alerta_temperatura_mancal_rad_tra_1_ug2" size=10 value="{{usina.alerta_temperatura_mancal_rad_tra_1_ug2}}"/></td>
-                <td><input id="limite_temperatura_mancal_rad_tra_1_ug2" name="limite_temperatura_mancal_rad_tra_1_ug2" size=10 value="{{usina.limite_temperatura_mancal_rad_tra_1_ug2}}"/></td>
-                <td><input id="alerta_temperatura_mancal_rad_tra_1_ug3" name="alerta_temperatura_mancal_rad_tra_1_ug3" size=10 value="{{usina.alerta_temperatura_mancal_rad_tra_1_ug3}}"/></td>
-                <td><input id="limite_temperatura_mancal_rad_tra_1_ug3" name="limite_temperatura_mancal_rad_tra_1_ug3" size=10 value="{{usina.limite_temperatura_mancal_rad_tra_1_ug3}}"/></td>
+                <td>temperatura_mancal_casq_comb_ug</td>
+                <td><input id="alerta_temperatura_mancal_casq_comb_ug_ug1" name="alerta_temperatura_mancal_casq_comb_ug_ug1" size=10 value="{{usina.alerta_temperatura_mancal_casq_comb_ug1}}"/></td>
+                <td><input id="limite_temperatura_mancal_casq_comb_ug_ug1" name="limite_temperatura_mancal_casq_comb_ug_ug1" size=10 value="{{usina.limite_temperatura_mancal_casq_comb_ug1}}"/></td>
+                <td><input id="alerta_temperatura_mancal_casq_comb_ug_ug2" name="alerta_temperatura_mancal_casq_comb_ug_ug2" size=10 value="{{usina.alerta_temperatura_mancal_casq_comb_ug2}}"/></td>
+                <td><input id="limite_temperatura_mancal_casq_comb_ug_ug2" name="limite_temperatura_mancal_casq_comb_ug_ug2" size=10 value="{{usina.limite_temperatura_mancal_casq_comb_ug2}}"/></td>
             </tr>
                 
             <tr>
-                <td>temperatura_mancal_rad_tra_2_ug</td>
-                <td><input id="alerta_temperatura_mancal_rad_tra_2_ug1" name="alerta_temperatura_mancal_rad_tra_2_ug1" size=10 value="{{usina.alerta_temperatura_mancal_rad_tra_2_ug1}}"/></td>
-                <td><input id="limite_temperatura_mancal_rad_tra_2_ug1" name="limite_temperatura_mancal_rad_tra_2_ug1" size=10 value="{{usina.limite_temperatura_mancal_rad_tra_2_ug1}}"/></td>
-                <td><input id="alerta_temperatura_mancal_rad_tra_2_ug2" name="alerta_temperatura_mancal_rad_tra_2_ug2" size=10 value="{{usina.alerta_temperatura_mancal_rad_tra_2_ug2}}"/></td>
-                <td><input id="limite_temperatura_mancal_rad_tra_2_ug2" name="limite_temperatura_mancal_rad_tra_2_ug2" size=10 value="{{usina.limite_temperatura_mancal_rad_tra_2_ug2}}"/></td>
-                <td><input id="alerta_temperatura_mancal_rad_tra_2_ug3" name="alerta_temperatura_mancal_rad_tra_2_ug3" size=10 value="{{usina.alerta_temperatura_mancal_rad_tra_2_ug3}}"/></td>
-                <td><input id="limite_temperatura_mancal_rad_tra_2_ug3" name="limite_temperatura_mancal_rad_tra_2_ug3" size=10 value="{{usina.limite_temperatura_mancal_rad_tra_2_ug3}}"/></td>
-            </tr>
-                
-            <tr>
-                <td>temperatura_saida_de_ar_ug</td>
-                <td><input id="alerta_temperatura_saida_de_ar_ug1" name="alerta_temperatura_saida_de_ar_ug1" size=10 value="{{usina.alerta_temperatura_saida_de_ar_ug1}}"/></td>
-                <td><input id="limite_temperatura_saida_de_ar_ug1" name="limite_temperatura_saida_de_ar_ug1" size=10 value="{{usina.limite_temperatura_saida_de_ar_ug1}}"/></td>
-                <td><input id="alerta_temperatura_saida_de_ar_ug2" name="alerta_temperatura_saida_de_ar_ug2" size=10 value="{{usina.alerta_temperatura_saida_de_ar_ug2}}"/></td>
-                <td><input id="limite_temperatura_saida_de_ar_ug2" name="limite_temperatura_saida_de_ar_ug2" size=10 value="{{usina.limite_temperatura_saida_de_ar_ug2}}"/></td>
-                <td><input id="alerta_temperatura_saida_de_ar_ug3" name="alerta_temperatura_saida_de_ar_ug3" size=10 value="{{usina.alerta_temperatura_saida_de_ar_ug3}}"/></td>
-                <td><input id="limite_temperatura_saida_de_ar_ug3" name="limite_temperatura_saida_de_ar_ug3" size=10 value="{{usina.limite_temperatura_saida_de_ar_ug3}}"/></td>
-            </tr>
-                
-            <tr>
-                <td>temperatura_mancal_guia_escora_ug</td>
-                <td><input id="alerta_temperatura_mancal_guia_escora_ug1" name="alerta_temperatura_mancal_guia_escora_ug1" size=10 value="{{usina.alerta_temperatura_mancal_guia_escora_ug1}}"/></td>
-                <td><input id="limite_temperatura_mancal_guia_escora_ug1" name="limite_temperatura_mancal_guia_escora_ug1" size=10 value="{{usina.limite_temperatura_mancal_guia_escora_ug1}}"/></td>
-                <td><input id="alerta_temperatura_mancal_guia_escora_ug2" name="alerta_temperatura_mancal_guia_escora_ug2" size=10 value="{{usina.alerta_temperatura_mancal_guia_escora_ug2}}"/></td>
-                <td><input id="limite_temperatura_mancal_guia_escora_ug2" name="limite_temperatura_mancal_guia_escora_ug2" size=10 value="{{usina.limite_temperatura_mancal_guia_escora_ug2}}"/></td>
-                <td><input id="alerta_temperatura_mancal_guia_escora_ug3" name="alerta_temperatura_mancal_guia_escora_ug3" size=10 value="{{usina.alerta_temperatura_mancal_guia_escora_ug3}}"/></td>
-                <td><input id="limite_temperatura_mancal_guia_escora_ug3" name="limite_temperatura_mancal_guia_escora_ug3" size=10 value="{{usina.limite_temperatura_mancal_guia_escora_ug3}}"/></td>
-            </tr>
-                
-            <tr>
-                <td>temperatura_mancal_guia_radial_ug</td>
-                <td><input id="alerta_temperatura_mancal_guia_radial_ug1" name="alerta_temperatura_mancal_guia_radial_ug1" size=10 value="{{usina.alerta_temperatura_mancal_guia_radial_ug1}}"/></td>
-                <td><input id="limite_temperatura_mancal_guia_radial_ug1" name="limite_temperatura_mancal_guia_radial_ug1" size=10 value="{{usina.limite_temperatura_mancal_guia_radial_ug1}}"/></td>
-                <td><input id="alerta_temperatura_mancal_guia_radial_ug2" name="alerta_temperatura_mancal_guia_radial_ug2" size=10 value="{{usina.alerta_temperatura_mancal_guia_radial_ug2}}"/></td>
-                <td><input id="limite_temperatura_mancal_guia_radial_ug2" name="limite_temperatura_mancal_guia_radial_ug2" size=10 value="{{usina.limite_temperatura_mancal_guia_radial_ug2}}"/></td>
-                <td><input id="alerta_temperatura_mancal_guia_radial_ug3" name="alerta_temperatura_mancal_guia_radial_ug3" size=10 value="{{usina.alerta_temperatura_mancal_guia_radial_ug3}}"/></td>
-                <td><input id="limite_temperatura_mancal_guia_radial_ug3" name="limite_temperatura_mancal_guia_radial_ug3" size=10 value="{{usina.limite_temperatura_mancal_guia_radial_ug3}}"/></td>
-            </tr>
-                
-            <tr>
-                <td>temperatura_mancal_guia_contra_ug</td>
-                <td><input id="alerta_temperatura_mancal_guia_contra_ug1" name="alerta_temperatura_mancal_guia_contra_ug1" size=10 value="{{usina.alerta_temperatura_mancal_guia_contra_ug1}}"/></td>
-                <td><input id="limite_temperatura_mancal_guia_contra_ug1" name="limite_temperatura_mancal_guia_contra_ug1" size=10 value="{{usina.limite_temperatura_mancal_guia_contra_ug1}}"/></td>
-                <td><input id="alerta_temperatura_mancal_guia_contra_ug2" name="alerta_temperatura_mancal_guia_contra_ug2" size=10 value="{{usina.alerta_temperatura_mancal_guia_contra_ug2}}"/></td>
-                <td><input id="limite_temperatura_mancal_guia_contra_ug2" name="limite_temperatura_mancal_guia_contra_ug2" size=10 value="{{usina.limite_temperatura_mancal_guia_contra_ug2}}"/></td>
-                <td><input id="alerta_temperatura_mancal_guia_contra_ug3" name="alerta_temperatura_mancal_guia_contra_ug3" size=10 value="{{usina.alerta_temperatura_mancal_guia_contra_ug3}}"/></td>
-                <td><input id="limite_temperatura_mancal_guia_contra_ug3" name="limite_temperatura_mancal_guia_contra_ug3" size=10 value="{{usina.limite_temperatura_mancal_guia_contra_ug3}}"/></td>
+                <td>temperatura_mancal_escora_comb_ug</td>
+                <td><input id="alerta_temperatura_mancal_escora_comb_ug_ug1" name="alerta_temperatura_mancal_escora_comb_ug_ug1" size=10 value="{{usina.alerta_temperatura_mancal_escora_comb_ug1}}"/></td>
+                <td><input id="limite_temperatura_mancal_escora_comb_ug_ug1" name="limite_temperatura_mancal_escora_comb_ug_ug1" size=10 value="{{usina.limite_temperatura_mancal_escora_comb_ug1}}"/></td>
+                <td><input id="alerta_temperatura_mancal_escora_comb_ug_ug2" name="alerta_temperatura_mancal_escora_comb_ug_ug2" size=10 value="{{usina.alerta_temperatura_mancal_escora_comb_ug2}}"/></td>
+                <td><input id="limite_temperatura_mancal_escora_comb_ug_ug2" name="limite_temperatura_mancal_escora_comb_ug_ug2" size=10 value="{{usina.limite_temperatura_mancal_escora_comb_ug2}}"/></td>
             </tr>
                 
             <tr>
@@ -196,8 +141,7 @@ Página de configuraço dos parametros usados pelo MOA.
                 <td><input id="limite_caixa_espiral_ug1" name="limite_caixa_espiral_ug1" size=10 value="{{usina.limite_caixa_espiral_ug1}}"/></td>
                 <td><input id="alerta_caixa_espiral_ug2" name="alerta_caixa_espiral_ug2" size=10 value="{{usina.alerta_caixa_espiral_ug2}}"/></td>
                 <td><input id="limite_caixa_espiral_ug2" name="limite_caixa_espiral_ug2" size=10 value="{{usina.limite_caixa_espiral_ug2}}"/></td>
-                <td><input id="alerta_caixa_espiral_ug3" name="alerta_caixa_espiral_ug3" size=10 value="{{usina.alerta_caixa_espiral_ug3}}"/></td>
-                <td><input id="limite_caixa_espiral_ug3" name="limite_caixa_espiral_ug3" size=10 value="{{usina.limite_caixa_espiral_ug3}}"/></td>
+
             </tr>
         </table>
     </div>

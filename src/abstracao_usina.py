@@ -51,6 +51,7 @@ class Usina:
         self.nv_montante_recentes = []
         self.nv_montante_anteriores = []
         self.condicionadores_essenciais = []
+        
 
         self.aux = 1
         self.erro_nv = 0
@@ -66,6 +67,7 @@ class Usina:
         self.nv_montante_recente = 0
         self.nv_montante_anterior = 0
         self.db_emergencia_acionada = 0
+        self.potencia_alvo_anterior = -1
         self.clp_emergencia_acionada = 0
         self.modo_de_escolha_das_ugs = 0
         self.aguardando_reservatorio = 0
@@ -194,7 +196,7 @@ class Usina:
         self.cfg["ki"] = float(parametros["ki"])
         self.cfg["kd"] = float(parametros["kd"])
         self.cfg["kie"] = float(parametros["kie"])
-        self.cfg["pot_maxima_usina"] = float(parametros["pot_nominal_ug"]) * 3
+        self.cfg["pot_maxima_usina"] = float(parametros["pot_nominal_ug"]) * 2
         self.cfg["pot_maxima_alvo"] = float(parametros["pot_nominal"])
         self.cfg["pot_maxima_ug"] = float(parametros["pot_nominal_ug"])
 
@@ -630,20 +632,14 @@ class Usina:
         pot_medidor = self.leituras.potencia_ativa_kW.valor
         logger.debug("Pot no medidor = {}".format(pot_medidor))
 
-        print("\nPot antes: ", pot_medidor, "\n")
-
         # implementação nova
         pot_aux = self.cfg["pot_maxima_alvo"] - (self.cfg["pot_maxima_usina"] - self.cfg["pot_maxima_alvo"])
 
         pot_medidor = max(pot_aux, min(pot_medidor, self.cfg["pot_maxima_usina"]))
 
-        print("\nPot depois: ", pot_medidor, "\n")
-
         try:
             if pot_medidor > self.cfg["pot_maxima_alvo"]:
                 pot_alvo = self.pot_alvo_anterior * (1 - ((pot_medidor - self.cfg["pot_maxima_alvo"]) / self.cfg["pot_maxima_alvo"]))
-                
-                print("\nPot alvo: ", pot_alvo, "\n")
 
         except TypeError as e:
             logger.info("A comunicação com os MFs falharam.")
