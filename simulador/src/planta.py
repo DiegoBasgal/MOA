@@ -281,9 +281,9 @@ class Planta:
                 self.cust_data_bank.set_words(REG["REG_USINA_NivelBarragem"],[round((self.shared_dict["nv_montante"]) * 10000)],)
                 self.cust_data_bank.set_words(REG["REG_USINA_NivelCanalAducao"],[round((self.shared_dict["nv_jusante_grade"]) * 10000)],)  # TODO ?
                 self.cust_data_bank.set_words(REG["REG_USINA_Subestacao_PotenciaAtivaMedia"],[round(self.shared_dict["potencia_kw_se"])],)
-                self.cust_data_bank.set_words(REG["REG_USINA_Subestacao_TensaoRS"],[round(self.shared_dict["tensao_na_linha"] / 10)],)
-                self.cust_data_bank.set_words(REG["REG_USINA_Subestacao_TensaoST"],[round(self.shared_dict["tensao_na_linha"] / 10)],)
-                self.cust_data_bank.set_words(REG["REG_USINA_Subestacao_TensaoTR"],[round(self.shared_dict["tensao_na_linha"] / 10)],)
+                self.cust_data_bank.set_words(REG["REG_USINA_Subestacao_TensaoRS"],[round(self.shared_dict["tensao_na_linha"] / 1000)],)
+                self.cust_data_bank.set_words(REG["REG_USINA_Subestacao_TensaoST"],[round(self.shared_dict["tensao_na_linha"] / 1000)],)
+                self.cust_data_bank.set_words(REG["REG_USINA_Subestacao_TensaoTR"],[round(self.shared_dict["tensao_na_linha"] / 1000)],)
                 self.cust_data_bank.set_words(REG["REG_USINA_potencia_kw_mp"],[round(max(0, self.shared_dict["potencia_kw_mp"]))],)
                 self.cust_data_bank.set_words(REG["REG_USINA_potencia_kw_mr"],[round(max(0, self.shared_dict["potencia_kw_mr"]))],)
 

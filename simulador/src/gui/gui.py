@@ -133,11 +133,11 @@ class Window(QMainWindow, Ui_Form):
         if self.shared_dict["set_press_cx_espiral_ug1"] == True:
             self.shared_dict["pressao_caixa_espiral_ug1"] = self.horizontalSlider_press_cx_espiral.value() *0.01
             if self.shared_dict["pressao_caixa_espiral_ug1"] == 15.49:
-                self.shared_dict["pressao_caixa_espiral_ug1"] = 0.0
+                self.shared_dict["pressao_caixa_espiral_ug1"] = 16.2
         if self.shared_dict["set_press_cx_espiral_ug2"] == True:
             self.shared_dict["pressao_caixa_espiral_ug2"] = self.horizontalSlider_press_cx_espiral.value() * 0.01
             if self.shared_dict["pressao_caixa_espiral_ug2"] == 15.49:
-                self.shared_dict["pressao_caixa_espiral_ug2"] = 0.0
+                self.shared_dict["pressao_caixa_espiral_ug2"] = 16.2
     
     def set_trip_condic_usina(self):
         self.shared_dict["trip_condic_usina"] = True
