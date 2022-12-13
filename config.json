@@ -39,7 +39,7 @@
     "timeout_normalizacao": 10,
     "nv_fundo_reservatorio": 404.6,
     "nv_minimo": 404.65,
-    "nv_alvo": 405.0,
+    "nv_alvo": 405.1,
     "nv_maximo": 405.25,
     "nv_maximorum": 407.5,
     "pot_maxima_usina": 10800.0,

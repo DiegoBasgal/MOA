@@ -634,12 +634,8 @@ class UnidadeDeGeracao2(UnidadeDeGeracao):
             bool: True se sucesso, Falso caso contrário
         """
         try:
-            self.logger.debug(
-                "[UG{}] Removendo sinal (via rede) de TRIP.".format(self.id)
-            )
-            response = self.clp.write_single_coil(
-                REG_UG2_ComandosDigitais_MXW_ResetGeral, 1
-            )
+            self.logger.debug("[UG{}] Removendo sinal (via rede) de TRIP.".format(self.id))
+            response = self.clp.write_single_coil(REG_UG2_ComandosDigitais_MXW_ResetGeral, 1)
             response = self.clp.write_single_coil(REG_UG2_EntradasDigitais_MXI_ReleBloqA86HAtuado, 0)
             response = self.clp.write_single_coil(REG_UG2_EntradasDigitais_MXI_ReleBloqA86MAtuado, 0)
             response = self.clp.write_single_coil(REG_UG2_RetornosDigitais_MXR_700G_Trip, 0)
@@ -793,9 +789,7 @@ class UnidadeDeGeracao2(UnidadeDeGeracao):
             self.setpoint_maximo = self.cfg["pot_maxima_ug{}".format(self.id)]
 
             self.setpoint = int(setpoint_kw)
-            self.logger.debug(
-                "[UG{}] Enviando setpoint {} kW.".format(self.id, int(self.setpoint))
-            )
+            self.logger.debug("[UG{}] Enviando setpoint {} kW.".format(self.id, int(self.setpoint)))
             response = False
             if self.setpoint > 1:
                 response = self.clp.write_single_coil(
