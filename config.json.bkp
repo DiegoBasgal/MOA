@@ -44,7 +44,7 @@
     "pot_maxima_ug": 500.0,
     "pot_maxima_ug1": 500.0,
     "pot_maxima_ug2": 500.0,
-    "press_cx_alvo": 16.3,
+    "press_cx_alvo": 16.2,
     "cx_kp": 2.0,
     "cx_ki": 0.1,
     "cx_kie": 0.0,

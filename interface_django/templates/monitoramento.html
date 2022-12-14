@@ -6,34 +6,38 @@
 <div id="content_container">
     <h1>Monitoramento</h1>
     <p>Página de monitoramento. Atualiza a cada 2 segundos.</p>
-    <h3>MOA</h3>
     <p>Atualizado em  {{ timestamp }} ({{ tempo_desde_moa_comunicando }} atrás)</p>
-    <p>Estado:  {{ estado }}</p>
-    <p>Emergencia:  {{ em_acionada }}</p>
-    <p>Estado CLP:  {{ CLP_ON }} @ {{ CLP_IP }}</p>
+
+    <h3>TDA:</h3>
+    <p>Nível Alvo: {{ nv_alvo }} m<br>
+    Nível Montante: {{ nv_montante }} m<br>
+    Nível Pós-grade: {{nv_pos_grade}} m</p>
+
+    <h3>USINA:</h3>
     <p>Set-point usina: {{ setpot_usina }} MW</p>
     
-    <p>UG1: {{ pot_ug1 | floatformat:0 }} kW <br>
+    <p><b>UG1:</b> {{ pot_ug1 | floatformat:0 }} kW <br>
     Estado (MOA): {{ ug1_state }} <br>
     Etapa: {{ ug1_etapa }} <br>
     SP: {{ setpot_ug1 | floatformat:0 }} kW <br>
     Horas máquina: {{ tempo_ug1 | floatformat:2 }} h <br>
 
-    <p>UG2: {{ pot_ug2 | floatformat:0 }} kW <br>
+    <p><b>UG2:</b> {{ pot_ug2 | floatformat:0 }} kW <br>
     Estado (MOA): {{ ug2_state }} <br>
     Etapa: {{ ug2_etapa }} <br>
     SP: {{ setpot_ug2 | floatformat:0 }} kW <br>
     Horas máquina: {{ tempo_ug2 | floatformat:2 }} h <br>
-    
-    <p>Nv alvo: {{ nv_alvo }} m</p>
-    <p>Aguardando reservatório? {{ aguardo }}.</p>
-    <p>Nv montante: {{ nv_montante }} m</p>
-    </br>
-    </br>
-    <h3>MOA Modbus Slave</h3>
-    <p>Porta:{{ LOCAL_MODBUS_PORT }}.</p>
-    <p>Status: {{ modbus_status}}.</p>
-    <p>Heart-beat: {{ hb_datestring }}</p>
+
+    <h3>MOA:</h3>
+    <p>Estado:  {{ estado }}<br>
+    Emergencia:  {{ em_acionada }}<br>
+    Aguardando reservatório? {{ aguardo }}<br>
+    Estado CLP:  {{ CLP_ON }} @ {{ CLP_IP }}</p>
+
+    <h3>Modbus Slave</h3>
+    <p>Porta:{{ LOCAL_MODBUS_PORT }}<br>
+    Status: {{ modbus_status}}.<br>
+    Heart-beat: {{ hb_datestring }}</p>
 </div>
 
 <script type = "text/JavaScript">

@@ -484,9 +484,29 @@ class Usina:
                 self.agendamentos_atrasados += 1
 
             if segundos_passados > 300 or self.agendamentos_atrasados > 3:
-                logger.info("Os agendamentos estão muito atrasados! Acionando emergência.")
-                self.acionar_emergencia()
-                return False
+                logger.info("Os agendamentos estão muito atrasados!")
+                if agendamento[3] == AGENDAMENTO_INDISPONIBILIZAR:
+                    logger.warning("Acionando emergência!")
+                    self.acionar_emergencia()
+                    return False
+                elif agendamento[3] == AGENDAMENTO_ALTERAR_NV_ALVO or AGENDAMENTO_ALTERAR_POT_LIMITE_TODAS_AS_UGS or AGENDAMENTO_BAIXAR_POT_UGS_MINIMO or AGENDAMENTO_NORMALIZAR_POT_UGS_MINIMO:
+                    logger.info("Não foi possível executar o agendamento! Favor re-agendar")
+                    return False
+                elif agendamento[3] in AGENDAMENTO_LISTA_BLOQUEIO_UG1:
+                    logger.info("Indisponibilizando UG1")
+                    self.ug1.forcar_estado_indisponivel()
+                    return False
+                elif agendamento[3] in AGENDAMENTO_LISTA_BLOQUEIO_UG2:
+                    logger.info("Indisponibilizando UG2")
+                    self.ug2.forcar_estado_indisponivel()
+                    return False
+                elif agendamento[3] in AGENDAMENTO_LISTA_BLOQUEIO_UG3:
+                    logger.info("Indisponibilizando UG3")
+                    self.ug3.forcar_estado_indisponivel()
+                    return False
+                else:
+                    logger.info("Agendamento não encontrado! Retomando operação...")
+                    return False
 
             if segundos_adiantados <= 60 and not bool(agendamento[4]):
                 # Está na hora e ainda não foi executado. Executar!

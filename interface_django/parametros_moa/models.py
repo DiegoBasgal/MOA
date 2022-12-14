@@ -25,6 +25,7 @@ class ParametrosUsina(models.Model):
     nv_minimo = models.DecimalField(max_digits=10, decimal_places=3, default=820.80)
     nv_montante = models.DecimalField(max_digits=10, decimal_places=3, default=820.90)
     nv_religamento = models.DecimalField(max_digits=10, decimal_places=3, default=820.85)
+    nv_pos_grade = models.DecimalField(max_digits=10, decimal_places=3, default=820.80)
     pot_minima = models.DecimalField(max_digits=10, decimal_places=5, default=200)
     pot_nominal = models.DecimalField(max_digits=10, decimal_places=5, default=1000)
     pot_nominal_ug = models.DecimalField(max_digits=10, decimal_places=5, default=500)
