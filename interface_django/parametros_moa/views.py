@@ -10,7 +10,6 @@ from parametros_moa.models import ParametrosUsina, Contato
 @login_required
 def parametros_moa_view(request, *args, **kwargs):
     
-    contato = Contato.objects.all()
     usina = ParametrosUsina.objects.get(id=1)
     modo_autonomo_ativado = True if usina.modo_autonomo else False
     
@@ -175,33 +174,9 @@ def parametros_moa_view(request, *args, **kwargs):
     if ((usina.modo_de_escolha_das_ugs == 2) and (usina.ug2_prioridade > usina.ug1_prioridade)):
         escolha_ugs = 2
 
-    context = {"escolha_ugs": escolha_ugs, "usina": usina, "contato": contato}
+    context = {"escolha_ugs": escolha_ugs, "usina": usina}
     return render(request, "parametros_moa.html", context=context)
 
-@login_required
-def adicionar(request, *args, **kwargs):
-
-    if request.method=='POST':
-        try:
-            ctt_nome = request.POST.get("nome") 
-            ctt_numero = request.POST.get("numero").replace("(", "").replace(")", "")
-            ctt_dt_inicio = request.POST.get("data_inicio")
-            ctt_ts_inicio = request.POST.get("ts_inicio")
-            ctt_dt_fim = request.POST.get("data_fim")
-            ctt_ts_fim = request.POST.get("ts_fim")
-
-            contato = Contato.objects.create(nome=ctt_nome, numero=ctt_numero, data_inicio=ctt_dt_inicio, ts_inicio=ctt_ts_inicio, data_fim=ctt_dt_fim, ts_fim=ctt_ts_fim)
-
-        except Exception as e:
-            return render(request, 'erro.html', {'mensagem': e})
-
-    return HttpResponseRedirect(reverse('parametros_moa'))
-
-@login_required
-def deletar(request, id,*args, **kwargs):
-    contato = Contato.objects.filter(id=id)
-    contato.delete()
-    return HttpResponseRedirect(reverse('parametros_moa'))
 
 @login_required
 def emergencia_view(request, *args, **kwargs):
@@ -226,5 +201,36 @@ def emergencia_view(request, *args, **kwargs):
     return render(request, "emergencia.html", context=context)
 
 @login_required
+def contatos_view(request, *args, **kwargs):
+    contato = Contato.objects.all()
+    context = {"contato": contato}
+    return render(request, "contatos.html", context=context)
+
+@login_required
 def retornar(request, *args, **kwargs):
-    return HttpResponseRedirect(reverse('parametros_moa'))
+    return HttpResponseRedirect(reverse('contatos'))
+
+@login_required
+def adicionar(request, *args, **kwargs):
+
+    if request.method=='POST':
+        try:
+            ctt_nome = request.POST.get("nome") 
+            ctt_numero = request.POST.get("numero").replace("(", "").replace(")", "")
+            ctt_dt_inicio = request.POST.get("data_inicio")
+            ctt_ts_inicio = request.POST.get("ts_inicio")
+            ctt_dt_fim = request.POST.get("data_fim")
+            ctt_ts_fim = request.POST.get("ts_fim")
+
+            contato = Contato.objects.create(nome=ctt_nome, numero=ctt_numero, data_inicio=ctt_dt_inicio, ts_inicio=ctt_ts_inicio, data_fim=ctt_dt_fim, ts_fim=ctt_ts_fim)
+
+        except Exception as e:
+            return render(request, 'erro.html', {'mensagem': e})
+
+    return HttpResponseRedirect(reverse('contatos'))
+
+@login_required
+def deletar(request, id,*args, **kwargs):
+    contato = Contato.objects.filter(id=id)
+    contato.delete()
+    return HttpResponseRedirect(reverse('contatos'))
