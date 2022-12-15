@@ -1276,7 +1276,6 @@ REG_UG1_COND_PART = 222
 REG_UG2_COND_PART = 222
 
 
-
 #--------------------------------------------------------------------------------------------------------------------------------------#
 #Registradores utilizados na simulação, para voltar aos valores antigos, deletar os comentarios de linha "#antigo->" e manter o número.
 REG_UG1_RetornosDigitais_EtapaAux_Sim = 32773
