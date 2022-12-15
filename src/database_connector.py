@@ -196,10 +196,10 @@ class Database:
         nv,
         erro,
         ma,
-        cx_kp,
-        cx_ki,
-        cx_kie,
-        cx_c_ie,
+        pt_kp,
+        pt_ki,
+        pt_kie,
+        pt_c_ie,
     ):
         q = (
             "INSERT INTO `debug`.`moa_debug` "
@@ -235,10 +235,10 @@ class Database:
                     nv,
                     erro,
                     ma,
-                    cx_kp,
-                    cx_ki,
-                    cx_kie,
-                    cx_c_ie,
+                    pt_kp,
+                    pt_ki,
+                    pt_kie,
+                    pt_c_ie,
                 ]
             ),
         )

@@ -12,7 +12,7 @@ class LeiturasUSN:
             self.clp_tda,
             REG_TDA_NivelMaisCasasAntes,
             1 / 10000,
-            819.2,
+            460.37,
             op=4,
         )
         

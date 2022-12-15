@@ -51,7 +51,6 @@ class Usina:
         self.nv_montante_recentes = []
         self.nv_montante_anteriores = []
         self.condicionadores_essenciais = []
-        
 
         self.aux = 1
         self.erro_nv = 0
@@ -200,10 +199,10 @@ class Usina:
         self.cfg["pot_maxima_alvo"] = float(parametros["pot_nominal"])
         self.cfg["pot_maxima_ug"] = float(parametros["pot_nominal_ug"])
 
-        self.cfg["cx_kp"] = float(parametros["cx_kp"])
-        self.cfg["cx_ki"] = float(parametros["cx_ki"])
-        self.cfg["cx_kie"] = float(parametros["cx_kie"])
-        self.cfg["press_cx_alvo"] = float(parametros["press_cx_alvo"])
+        self.cfg["pt_kp"] = float(parametros["pt_kp"])
+        self.cfg["pt_ki"] = float(parametros["pt_ki"])
+        self.cfg["pt_kie"] = float(parametros["pt_kie"])
+        self.cfg["press_turbina_alvo"] = float(parametros["press_turbina_alvo"])
 
         # Le o databank interno
         if DataBank.get_words(self.cfg["REG_MOA_IN_EMERG"])[0] == 1 and self.avisado_em_eletrica==False:
@@ -286,23 +285,29 @@ class Usina:
                 ug.condicionador_temperatura_nucleo_gerador_1_ug.valor_base = float(parametros["alerta_temperatura_nucleo_gerador_1_ug{}".format(ug.id)])
                 ug.condicionador_temperatura_nucleo_gerador_1_ug.valor_limite = float(parametros["limite_temperatura_nucleo_gerador_1_ug{}".format(ug.id)])
 
-                ug.condicionador_temperatura_nucleo_gerador_2_ug.valor_base = float(parametros["alerta_temperatura_nucleo_gerador_2_ug{}".format(ug.id)])
-                ug.condicionador_temperatura_nucleo_gerador_2_ug.valor_limite = float(parametros["limite_temperatura_nucleo_gerador_2_ug{}".format(ug.id)])
+                ug.condicionador_temperatura_mancal_guia_ug.valor_base = float(parametros["alerta_temperatura_mancal_guia_ug{}".format(ug.id)])
+                ug.condicionador_temperatura_mancal_guia_ug.valor_limite = float(parametros["limite_temperatura_mancal_guia_ug{}".format(ug.id)])
 
-                ug.condicionador_temperatura_nucleo_gerador_3_ug.valor_base = float(parametros["alerta_temperatura_nucleo_gerador_3_ug{}".format(ug.id)])
-                ug.condicionador_temperatura_nucleo_gerador_3_ug.valor_limite = float(parametros["limite_temperatura_nucleo_gerador_3_ug{}".format(ug.id)])
+                ug.condicionador_temperatura_mancal_guia_interno_1_ug.valor_base = float(parametros["alerta_temperatura_mancal_guia_interno_1_ug{}".format(ug.id)])
+                ug.condicionador_temperatura_mancal_guia_interno_1_ug.valor_limite = float(parametros["limite_temperatura_mancal_guia_interno_1_ug{}".format(ug.id)])
 
-                ug.condicionador_temperatura_mancal_casq_rad_ug.valor_base = float(parametros["alerta_temperatura_mancal_casq_rad_ug{}".format(ug.id)])
-                ug.condicionador_temperatura_mancal_casq_rad_ug.valor_limite = float(parametros["limite_temperatura_mancal_casq_rad_ug{}".format(ug.id)])
+                ug.condicionador_temperatura_mancal_guia_interno_2_ug.valor_base = float(parametros["alerta_temperatura_mancal_guia_interno_2_ug{}".format(ug.id)])
+                ug.condicionador_temperatura_mancal_guia_interno_2_ug.valor_limite = float(parametros["limite_temperatura_mancal_guia_interno_2_ug{}".format(ug.id)])
+
+                ug.condicionador_temperatura_patins_mancal_comb_1_ug.valor_base = float(parametros["alerta_temperatura_patins_mancal_comb_1_ug{}".format(ug.id)])
+                ug.condicionador_temperatura_patins_mancal_comb_1_ug.valor_limite = float(parametros["limite_temperatura_patins_mancal_comb_1_ug{}".format(ug.id)])
+                
+                ug.condicionador_temperatura_patins_mancal_comb_2_ug.valor_base = float(parametros["alerta_temperatura_patins_mancal_comb_2_ug{}".format(ug.id)])
+                ug.condicionador_temperatura_patins_mancal_comb_2_ug.valor_limite = float(parametros["limite_temperatura_patins_mancal_comb_2_ug{}".format(ug.id)])
 
                 ug.condicionador_temperatura_mancal_casq_comb_ug.valor_base = float(parametros["alerta_temperatura_mancal_casq_comb_ug{}".format(ug.id)])
                 ug.condicionador_temperatura_mancal_casq_comb_ug.valor_limite = float(parametros["limite_temperatura_mancal_casq_comb_ug{}".format(ug.id)])
+                
+                ug.condicionador_temperatura_mancal_contra_esc_comb_ug.valor_base = float(parametros["alerta_temperatura_mancal_contra_esc_comb_ug{}".format(ug.id)])
+                ug.condicionador_temperatura_mancal_contra_esc_comb_ug.valor_limite = float(parametros["limite_temperatura_mancal_contra_esc_comb_ug{}".format(ug.id)])
 
-                ug.condicionador_temperatura_mancal_escora_comb_ug.valor_base = float(parametros["alerta_temperatura_mancal_escora_comb_ug{}".format(ug.id)])
-                ug.condicionador_temperatura_mancal_escora_comb_ug.valor_limite = float(parametros["limite_temperatura_mancal_escora_comb_ug{}".format(ug.id)])
-
-                ug.condicionador_caixa_espiral_ug.valor_base = float(parametros["alerta_caixa_espiral_ug{}".format(ug.id)])
-                ug.condicionador_caixa_espiral_ug.valor_limite = float(parametros["limite_caixa_espiral_ug{}".format(ug.id)])
+                ug.condicionador_pressao_turbina_ug.valor_base = float(parametros["alerta_pressao_turbina_ug{}".format(ug.id)])
+                ug.condicionador_pressao_turbina_ug.valor_limite = float(parametros["limite_pressao_turbina_ug{}".format(ug.id)])
 
             except KeyError as e:
                 logger.exception(e)
@@ -376,7 +381,7 @@ class Usina:
 
         if self.modo_autonomo == 1:
             DataBank.set_words(self.cfg["REG_MOA_OUT_EMERG"], [1 if self.clp_emergencia_acionada else 0],)
-            DataBank.set_words(self.cfg["REG_MOA_OUT_TARGET_LEVEL"], [int((self.cfg["nv_alvo"] - 820.9) * 1000)])
+            DataBank.set_words(self.cfg["REG_MOA_OUT_TARGET_LEVEL"], [int((self.cfg["nv_alvo"] - 461.37) * 1000)])
             DataBank.set_words(self.cfg["REG_MOA_OUT_SETPOINT"], [int(self.ug1.setpoint + self.ug2.setpoint)], )
 
             if self.avisado_em_eletrica==True and self.aux==1:
@@ -794,9 +799,9 @@ class Usina:
                 self.nv_montante_recente,
                 self.erro_nv,
                 ma,
-                self.cfg["cx_kp"],
-                self.cfg["cx_ki"],
-                self.cfg["cx_kie"],
+                self.cfg["pt_kp"],
+                self.cfg["pt_ki"],
+                self.cfg["pt_kie"],
                 0,
             )
         except Exception as e:

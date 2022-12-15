@@ -43,11 +43,11 @@ class Planta:
         # Fim Set-up logging
 
         # Declaração de variáveis padrão da usina
-        self.USINA_NV_VERTEDOURO = 821
-        self.USINA_VAZAO_SANITARIA_COTA = 820.80
-        self.USINA_NV_MINIMO_OPERACAO = 820.80
-        self.USINA_TENSAO_MINIMA = 34500 * 0.95
-        self.USINA_TENSAO_MAXIMA = 34500 * 1.05
+        self.USINA_NV_VERTEDOURO = 462.37
+        self.USINA_VAZAO_SANITARIA_COTA = 461.37
+        self.USINA_NV_MINIMO_OPERACAO = 461.37
+        self.USINA_TENSAO_MINIMA = 23100 * 0.95
+        self.USINA_TENSAO_MAXIMA = 23100 * 1.05
         self.aux=0
         self.aux1=0
         self.aux2=0
@@ -82,7 +82,7 @@ class Planta:
         self.shared_dict["stop_gui"] = False
         self.shared_dict["stop_sim"] = False
         self.shared_dict["tempo_simul"] = 0
-        self.shared_dict["tensao_na_linha"] = 34500
+        self.shared_dict["tensao_na_linha"] = 24255
         self.shared_dict["potencia_kw_mp"] = 0
         self.shared_dict["potencia_kw_mr"] = 0
         self.shared_dict["nv_jusante_grade"] = 0
@@ -242,10 +242,10 @@ class Planta:
                     self.shared_dict["q_vertimento"] = self.shared_dict["q_liquida"]
                     self.shared_dict["q_liquida"] = 0
                     self.shared_dict["nv_montante"] = (
-                        0.000000027849 * self.shared_dict["q_vertimento"] ** 3
-                        - 0.00002181 * self.shared_dict["q_vertimento"] ** 2
-                        + 0.0080744 * self.shared_dict["q_vertimento"]
-                        + 821
+                        0.0000021411 * self.shared_dict["q_vertimento"] ** 3
+                        - 0.00025189 * self.shared_dict["q_vertimento"] ** 2
+                        + 0.014859 * self.shared_dict["q_vertimento"]
+                        + 462.37
                     )
 
                 volume += self.shared_dict["q_liquida"] * self.segundos_por_passo
@@ -266,16 +266,18 @@ class Planta:
                     self.cust_data_bank.set_words(REG["REG_UG{}_Etapa_AUX".format(ug.id)], [int(self.shared_dict["etapa_aux_ug{}".format(ug.id)])])
                     self.cust_data_bank.set_words(REG["REG_UG{}_Operacao_EtapaAtual".format(ug.id)],[int(ug.etapa_atual)],)
                     
-                    self.cust_data_bank.set_words(REG["REG_UG{}_Pressao_CX_Espiral".format(ug.id)],[round(10 * self.shared_dict["pressao_caixa_espiral_ug{}".format(ug.id)])],)
+                    self.cust_data_bank.set_words(REG["REG_UG{}_Pressao_Trubina".format(ug.id)],[round(10 * self.shared_dict["pressao_turbina_ug{}".format(ug.id)])],)
                     self.cust_data_bank.set_words(REG["REG_UG{}_Temperatura_01".format(ug.id)],[round(self.shared_dict["temperatura_ug{}_fase_r".format(ug.id)])],)
                     self.cust_data_bank.set_words(REG["REG_UG{}_Temperatura_02".format(ug.id)],[round(self.shared_dict["temperatura_ug{}_fase_s".format(ug.id)])],)
                     self.cust_data_bank.set_words(REG["REG_UG{}_Temperatura_03".format(ug.id)],[round(self.shared_dict["temperatura_ug{}_fase_t".format(ug.id)])],)
                     self.cust_data_bank.set_words(REG["REG_UG{}_Temperatura_04".format(ug.id)],[round(self.shared_dict["temperatura_ug{}_nucleo_gerador_1".format(ug.id)])],)
-                    self.cust_data_bank.set_words(REG["REG_UG{}_Temperatura_05".format(ug.id)],[round(self.shared_dict["temperatura_ug{}_nucleo_gerador_2".format(ug.id)])],)
-                    self.cust_data_bank.set_words(REG["REG_UG{}_Temperatura_06".format(ug.id)],[round(self.shared_dict["temperatura_ug{}_nucleo_gerador_3".format(ug.id)])],)
-                    self.cust_data_bank.set_words(REG["REG_UG{}_Temperatura_07".format(ug.id)],[round(self.shared_dict["temperatura_ug{}_mancal_casq_rad".format(ug.id)])],)
-                    self.cust_data_bank.set_words(REG["REG_UG{}_Temperatura_08".format(ug.id)],[round(self.shared_dict["temperatura_ug{}_mancal_casq_comb".format(ug.id)])],)
-                    self.cust_data_bank.set_words(REG["REG_UG{}_Temperatura_09".format(ug.id)],[round(self.shared_dict["temperatura_ug{}_mancal_escora_comb".format(ug.id)])],)
+                    self.cust_data_bank.set_words(REG["REG_UG{}_Temperatura_05".format(ug.id)],[round(self.shared_dict["temperatura_ug{}_mancal_guia".format(ug.id)])],)
+                    self.cust_data_bank.set_words(REG["REG_UG{}_Temperatura_06".format(ug.id)],[round(self.shared_dict["temperatura_ug{}_mancal_guia_interno_1".format(ug.id)])],)
+                    self.cust_data_bank.set_words(REG["REG_UG{}_Temperatura_07".format(ug.id)],[round(self.shared_dict["temperatura_ug{}_mancal_guia_interno_2".format(ug.id)])],)
+                    self.cust_data_bank.set_words(REG["REG_UG{}_Temperatura_08".format(ug.id)],[round(self.shared_dict["temperatura_ug{}_patins_mancal_comb_1".format(ug.id)])],)
+                    self.cust_data_bank.set_words(REG["REG_UG{}_Temperatura_09".format(ug.id)],[round(self.shared_dict["temperatura_ug{}_patins_mancal_comb_2".format(ug.id)])],)
+                    self.cust_data_bank.set_words(REG["REG_UG{}_Temperatura_10".format(ug.id)],[round(self.shared_dict["temperatura_ug{}_mancal_casq_comb".format(ug.id)])],)
+                    self.cust_data_bank.set_words(REG["REG_UG{}_Temperatura_11".format(ug.id)],[round(self.shared_dict["temperatura_ug{}_mancal_contra_esc_comb".format(ug.id)])],)
                     
 
                 self.cust_data_bank.set_words(REG["REG_USINA_NivelBarragem"],[round((self.shared_dict["nv_montante"]) * 10000)],)
@@ -300,10 +302,10 @@ class Planta:
                 continue
 
     def volume_para_nv_montate(self, volume):
-        return min(max(820.80, 820.80 + volume / 11301.84), 821)
+        return min(max(461.37, 461.37 + volume / 190000), 462.37)
 
     def nv_montate_para_volume(self, nv_montante):
-        return 11301.84 * (min(max(820.80, nv_montante), 820.80) - 820.80)
+        return 190000 * (min(max(461.37, nv_montante), 462.37) - 461.37)
 
     def q_sanitaria(self, nv_montante):
-        return 0.22
+        return 2.33

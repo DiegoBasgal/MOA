@@ -532,7 +532,7 @@ class OperacaoTDAOffline(State):
 
         for ug in self.usina.ugs:
             print("")
-            ug.controle_cx_espiral()
+            ug.controle_press_turbina()
             ug.step()
 
         return ControleRealizado(self.usina)

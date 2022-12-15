@@ -22,7 +22,7 @@ class Ug:
         self.setpoint = 0
         self.horimetro_hora = 0
 
-        self.POT_MAX = 500
+        self.POT_MAX = 3037.5
         self.POT_MIN = 0.4 * self.POT_MAX
 
         self.ETAPA_UP = 0
@@ -62,12 +62,14 @@ class Ug:
         self.shared_dict["temperatura_ug{}_fase_s".format(self.id)] = 25
         self.shared_dict["temperatura_ug{}_fase_t".format(self.id)] = 25
         self.shared_dict["temperatura_ug{}_nucleo_gerador_1".format(self.id)] = 25
-        self.shared_dict["temperatura_ug{}_nucleo_gerador_2".format(self.id)] = 25
-        self.shared_dict["temperatura_ug{}_nucleo_gerador_3".format(self.id)] = 25
-        self.shared_dict["temperatura_ug{}_mancal_casq_rad".format(self.id)] = 25
+        self.shared_dict["temperatura_ug{}_mancal_guia".format(self.id)] = 25
+        self.shared_dict["temperatura_ug{}_mancal_guia_interno_1".format(self.id)] = 25
+        self.shared_dict["temperatura_ug{}_mancal_guia_interno_2".format(self.id)] = 25
+        self.shared_dict["temperatura_ug{}_patins_mancal_comb_1".format(self.id)] = 25
+        self.shared_dict["temperatura_ug{}_patins_mancal_comb_2".format(self.id)] = 25
         self.shared_dict["temperatura_ug{}_mancal_casq_comb".format(self.id)] = 25
-        self.shared_dict["temperatura_ug{}_mancal_escora_comb".format(self.id)] = 25
-        self.shared_dict["pressao_caixa_espiral_ug{}".format(self.id)] = 16.2
+        self.shared_dict["temperatura_ug{}_mancal_contra_esc_comb".format(self.id)] = 25
+        self.shared_dict["pressao_turbina_ug{}".format(self.id)] = 16.2
         
     def passo(self):
         # DEBUG VIA GUI
@@ -228,12 +230,14 @@ class Ug:
         self.shared_dict["temperatura_ug{}_fase_s".format(self.id)] = np.random.normal(25, 1 * self.escala_ruido)
         self.shared_dict["temperatura_ug{}_fase_t".format(self.id)] = np.random.normal(25, 1 * self.escala_ruido)
         self.shared_dict["temperatura_ug{}_nucleo_gerador_1".format(self.id)] = np.random.normal(25, 1 * self.escala_ruido)
-        self.shared_dict["temperatura_ug{}_nucleo_gerador_2".format(self.id)] = np.random.normal(25, 1 * self.escala_ruido)
-        self.shared_dict["temperatura_ug{}_nucleo_gerador_3".format(self.id)] = np.random.normal(25, 1 * self.escala_ruido)
-        self.shared_dict["temperatura_ug{}_mancal_casq_rad".format(self.id)] = np.random.normal(25, 1 * self.escala_ruido)
+        self.shared_dict["temperatura_ug{}_mancal_guia".format(self.id)] = np.random.normal(25, 1 * self.escala_ruido)
+        self.shared_dict["temperatura_ug{}_mancal_guia_interno_1".format(self.id)] = np.random.normal(25, 1 * self.escala_ruido)
+        self.shared_dict["temperatura_ug{}_mancal_guia_interno_2".format(self.id)] = np.random.normal(25, 1 * self.escala_ruido)
+        self.shared_dict["temperatura_ug{}_patins_mancal_comb_1".format(self.id)] = np.random.normal(25, 1 * self.escala_ruido)
+        self.shared_dict["temperatura_ug{}_patins_mancal_comb_2".format(self.id)] = np.random.normal(25, 1 * self.escala_ruido)
         self.shared_dict["temperatura_ug{}_mancal_casq_comb".format(self.id)] = np.random.normal(25, 1 * self.escala_ruido)
-        self.shared_dict["temperatura_ug{}_mancal_escora_comb".format(self.id)] = np.random.normal(25, 1 * self.escala_ruido)
-       #self.shared_dict["pressao_caixa_espiral_ug{}".format(self.id)] = np.random.normal(20, 1 * self.escala_ruido)
+        self.shared_dict["temperatura_ug{}_mancal_contra_esc_comb".format(self.id)] = np.random.normal(25, 1 * self.escala_ruido)
+       #self.shared_dict["pressao_turbina_ug{}".format(self.id)] = np.random.normal(20, 1 * self.escala_ruido)
 
 
         if self.etapa_atual > self.ETAPA_UP:
@@ -277,7 +281,7 @@ class Ug:
         self.shared_dict["etapa_alvo_ug{}".format(self.id)] = self.etapa_alvo
 
     def q_ug(self, potencia_kW):
-        if potencia_kW > 200:
-            return 0.0106 * potencia_kW
+        if potencia_kW > 911:
+            return 0.005610675 * potencia_kW
         else:
             return 0

@@ -1506,12 +1506,12 @@ REG = {
     "REG_USINA_potencia_kw_mr": 14901 - 1 + 10000,
 
     "REG_UG1_Etapa_AUX": 14902 - 1 + 20000,
-    "REG_UG1_Pressao_CX_Espiral": 14904 - 1 + 20000,
+    "REG_UG1_Pressao_Trubina": 14904 - 1 + 20000,
     "REG_UG1_AUX_Condicionadores": 14903 - 1 + 20000,
     "REG_UG1_Emergencia_Condicionadores1": 14905 - 1 + 20000,
 
     "REG_UG2_Etapa_AUX": 14902 - 1 + 30000,
-    "REG_UG2_Pressao_CX_Espiral": 14904 - 1 + 30000,
+    "REG_UG2_Pressao_Turbina": 14904 - 1 + 30000,
     "REG_UG2_AUX_Condicionadores": 14903 - 1 + 30000,
     "REG_UG2_Emergencia_Condicionadores2": 14905 - 1 + 30000,
     

@@ -1,11 +1,11 @@
 uwsgi
 future~=0.18.2
 numpy~=1.21.2
-Django~=3.2.6
+Django
 matplotlib~=3.4.3
 python-telegram-bot
-pyModbusTCP
+pyModbusTCP~=0.1.8
 mysqlclient
 pyodbc~=4.0.32
 scipy
-python-telegram-bot
+nginx
