@@ -3,7 +3,7 @@ import logging
 import subprocess
 from cmath import sqrt
 from datetime import date, datetime, timedelta
-from time import sleep
+from time import sleep, time
 
 from pyModbusTCP.server import DataBank
 from scipy.signal import butter, filtfilt
@@ -75,6 +75,8 @@ class Usina:
         self.borda_aviso_clp_tda = False
         self.borda_aviso_clp_ug1 = False
         self.borda_aviso_clp_ug2 = False
+        self.timer_tensao = None
+        self.tensao_ok = False
 
         self.condicionadores = []
         clp = ModbusClient(
@@ -86,7 +88,10 @@ class Usina:
             auto_close=True,
         )
 
-        
+        self.leitura_Disj52LAbrir = LeituraModbusBit("Disj52LAbrir", self.clp, REG_USINA_Disj52LAbrir)
+        x = self.leitura_Disj52LAbrir
+        self.condicionadores.append(CondicionadorBase(x.descr, DEVE_NORMALIZAR, x))
+
         self.relé_86bf_atuado_falha_disjuntores = LeituraModbusBit('01.03 - Relé 86BF Atuado (Falha Disjuntores)', clp, REG_USINA_Alarme01, 3)
         x = self.relé_86bf_atuado_falha_disjuntores 
         self.condicionadores.append(CondicionadorBase(x.descr, DEVE_INDISPONIBILIZAR, x))
@@ -697,6 +702,8 @@ class Usina:
             < self.cfg["TENSAO_LINHA_ALTA"]
         ):
             logger.warn("Tensão na linha fora do limite.")
+            self.tensao_ok = False
+            return False
         elif (
             self.deve_tentar_normalizar
             and (datetime.now() - self.ts_ultima_tesntativa_de_normalizacao).seconds
@@ -712,7 +719,25 @@ class Usina:
             self.db_emergencia_acionada = 0
             return True
         else:
+            self.tensao_ok = True
             return False
+
+    def aguardar_tensao(self, delay):
+        temporizador = time() + delay
+        logger.warning("Iniciando o timer para a normalização da tensão na linha")
+    
+        while time() <= temporizador:
+            sleep(time() - (time() - 15))
+            if (self.cfg["TENSAO_LINHA_BAIXA"] < self.leituras.tensao_rs.valor < self.cfg["TENSAO_LINHA_ALTA"] \
+                and self.cfg["TENSAO_LINHA_BAIXA"] < self.leituras.tensao_st.valor < self.cfg["TENSAO_LINHA_ALTA"] \
+                and self.cfg["TENSAO_LINHA_BAIXA"] < self.leituras.tensao_tr.valor < self.cfg["TENSAO_LINHA_ALTA"]):
+                logger.info("Tensão na linha reestabelecida.")
+                self.timer_tensao = True
+                return True
+        
+        logger.warning("Não foi possível reestabelecer a tensão na linha")
+        self.timer_tensao = False
+        return False
 
     def heartbeat(self):
 

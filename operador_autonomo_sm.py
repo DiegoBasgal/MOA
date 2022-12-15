@@ -15,6 +15,7 @@ import traceback
 import json
 from pyModbusTCP.server import DataBank, ModbusServer
 from src.UnidadeDeGeracao import StateManual
+from threading import Thread
 
 import src.database_connector as database_connector
 import src.abstracao_usina as abstracao_usina
@@ -130,6 +131,7 @@ class ValoresInternosAtualizados(State):
         super().__init__(*args, **kwargs)
         self.usina = instancia_usina
         DataBank.set_words(self.usina.cfg['REG_PAINEL_LIDO'], [1])
+        self.habilitar_emerg_condic_c=False
 
     def run(self):
         """Decidir para qual modo de operação o sistema deve ir"""
@@ -137,17 +139,45 @@ class ValoresInternosAtualizados(State):
         """
         Aqui a ordem do checks importa, e muito.
         """
+        global aux
+        global deve_normalizar
 
         # atualizar arquivo das configurações
         with open(os.path.join(os.path.dirname(__file__), 'config.json'), 'w') as file:
             json.dump(self.usina.cfg, file)
 
-        
         if self.usina.avisado_em_eletrica:
             for condicionador in self.usina.condicionadores:
                 if condicionador.ativo and condicionador.gravidade >= DEVE_INDISPONIBILIZAR:
-                    return Emergencia(self.usina)
+                    self.habilitar_emerg_condic_c=True
+                elif condicionador.ativo and condicionador.gravidade == DEVE_NORMALIZAR:
+                    self.habilitar_emerg_condic_c=False
+                    deve_normalizar=True
+                else:
+                    deve_normalizar=False
+                    self.habilitar_emerg_condic_c=False
+            
+            if self.habilitar_emerg_condic_c:
+                logger.info("Condicionadores ativos com gravidade alta!")
+                return Emergencia(self.usina)
 
+        if deve_normalizar:
+            if (not self.usina.normalizar_emergencia()) and self.usina.tensao_ok==False and aux==0:
+                logger.warning("Tensão da linha fora do limite ")
+                aux = 1
+                Thread(target=lambda: self.usina.aguardar_tensao(600)).start()
+
+            elif self.usina.timer_tensao:
+                aux = 0
+                deve_normalizar = None
+                self.usina.timer_tensao = None
+
+            elif self.usina.timer_tensao==False:
+                aux = 0
+                deve_normalizar = None
+                self.usina.timer_tensao = None
+                logger.critical("O tempo de normalização da linha excedeu o limite! (10 min)")
+                return Emergencia(self.usina)
 
         if self.usina.clp_emergencia_acionada:
             return Emergencia(self.usina)
@@ -207,6 +237,9 @@ class Emergencia(State):
             logger.warning("Numero de tentaivas de normalização excedidas, entrando em modo manual.")
             self.usina.entrar_em_modo_manual()
             self.usina.heartbeat()
+            for ug in self.usina.ugs:
+                ug.forcar_estado_indisponivel()
+                ug.step()
             return ModoManualAtivado(self.usina)
         else:
             if self.usina.db_emergencia_acionada:
@@ -388,6 +421,8 @@ if __name__ == "__main__":
     if len(sys.argv) > 1:
         ESCALA_DE_TEMPO = int(sys.argv[1])
 
+    aux = 0
+    deve_normalizar = None
     n_tentativa = 0
     timeout = 10
     logger.info("Iniciando o MOA_SM ESCALA_DE_TEMPO:{}".format(ESCALA_DE_TEMPO))

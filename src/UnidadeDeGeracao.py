@@ -7,16 +7,16 @@ da máquina de estado que rege a mesma.
 __version__ = "0.1"
 __author__ = "Lucas Lavratti"
 
-
-from abc import abstractmethod
-from datetime import datetime
-import logging
-from time import sleep
-import traceback
 import inspect
+import logging
+import traceback
 
 from src.codes import *
 from src.Leituras import *
+from time import sleep, time
+from threading import Thread
+from datetime import datetime
+from abc import abstractmethod
 from src.Condicionadores import *
 
 # Class Stubs
@@ -684,6 +684,8 @@ class StateDisponivel(State):
     def __init__(self, parent_ug: UnidadeDeGeracao):
 
         super().__init__(parent_ug)
+        self.aux = 0
+        self.release = False
         self.codigo_state = MOA_UNIDADE_DISPONIVEL
         self.logger.info(
             "[UG{}] Entrando no estado disponível.".format(self.parent_ug.id)
@@ -703,6 +705,7 @@ class StateDisponivel(State):
         deve_normalizar = False
         deve_super_normalizar = False
         condicionadores_ativos = []
+
         for condicionador in self.parent_ug.condicionadores:
             if condicionador.ativo:
                 if condicionador.gravidade == DEVE_INDISPONIBILIZAR:
@@ -794,6 +797,9 @@ class StateDisponivel(State):
                     self.parent_ug.etapa_alvo,
                 )
             )
+            if self.release == True and self.aux == 1:
+                self.release = False
+                self.aux = 0
 
             # Calcula a atenuação devido aos condicionadores antes de prosseguir
             atenuacao = 0
@@ -845,6 +851,9 @@ class StateDisponivel(State):
                 self.logger.debug(
                     "[UG{}] Unidade sincronizando".format(self.parent_ug.id)
                 )
+                if self.release == False and self.aux == 0:
+                    Thread(target=lambda: self.verificar_partindo()).start()
+                    self.aux = 1
 
                 # Se potência = 0, impedir,
                 if self.parent_ug.setpoint == 0:
@@ -873,6 +882,7 @@ class StateDisponivel(State):
                 self.logger.debug(
                     "[UG{}] Unidade sincronizada".format(self.parent_ug.id)
                 )
+                
                 # Unidade sincronizada significa que ela está normalizada, logo zera o contador de tentativas
                 if not self.parent_ug.aux_tempo_sincronizada:
                     self.parent_ug.aux_tempo_sincronizada = datetime.now()
@@ -908,3 +918,22 @@ class StateDisponivel(State):
                 self.parent_ug.aux_tempo_sincronizada = None
 
             return self
+
+    def verificar_partindo(self) -> bool:
+        timer = time() + 600
+        try:
+            self.logger.debug("Iniciando o timer de verificação de partida")
+            while time() < timer:
+                if self.parent_ug.etapa_atual == UNIDADE_SINCRONIZADA:
+                    self.logger.debug("[UG{}] Unidade sincronizada. Saindo do timer de verificação de partida".format(self.parent_ug.id))
+                    self.release = True
+                    return True
+            self.logger.debug("[UG{}] A Unidade estourou o timer de verificação de partida, adicionando condição para normalizar".format(self.parent_ug.id))
+            self.parent_ug.clp.write_single_coil(REG_UG1_Operacao_EmergenciaLigar, [1 if self.parent_ug.id==1 else 0]) 
+            self.parent_ug.clp.write_single_coil(REG_UG2_Operacao_EmergenciaLigar, [1 if self.parent_ug.id==2 else 0])
+            self.release = True
+
+        except Exception as e:
+            raise e
+
+        return False

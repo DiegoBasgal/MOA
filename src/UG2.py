@@ -42,7 +42,10 @@ class UnidadeDeGeracao2(UnidadeDeGeracao):
         self.__last_EtapaAlvo = -1
         self.enviar_trip_eletrico = False
 
-        
+        self.leitura_Operacao_EmergenciaLigar = LeituraModbus('Operacao_EmergenciaLigar', self.clp, REG_UG2_Operacao_EmergenciaLigar)
+        x = self.leitura_Operacao_EmergenciaLigar 
+        self.condicionadores.append(CondicionadorBase(x.descr, DEVE_NORMALIZAR, x))
+
         self.uhct_filtro_de_óleo_linha_de_pressão_01_sujo = LeituraModbusBit('03.02 - UHCT - Filtro de Óleo Linha de Pressão 01 Sujo', self.clp, REG_UG2_Alarme03, 2)
         x = self.uhct_filtro_de_óleo_linha_de_pressão_01_sujo 
         self.condicionadores.append(CondicionadorBase(x.descr, DEVE_INDISPONIBILIZAR, x))
