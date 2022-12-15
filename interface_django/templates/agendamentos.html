@@ -22,7 +22,19 @@
     </tr>
     {% endfor %}
 </table>
-
+<br>
+<h3>Referência dos códigos dos comandos</h3>
+<table style="text-align:center" border="solid 1px black">
+    <tr>
+       <th width="50px">id</th>
+       <th width="250px">Comando</th>
+       <th width="700px">Descrição</th>
+    </tr>
+    {% for comando in comandos %}
+    <tr><td>{{ comando.id }}</td><td>{{ comando.nome }}</td><td>{{ comando.descricao }}</td></tr>
+    {% endfor %}
+</table>
+<br>
 <h3>Lista de Agendamentos executados</h3>
 <table style="text-align:center" border="solid 1px black">
     <tr height="75px">
@@ -40,24 +52,8 @@
     </tr>
     {% endfor %}
 </table>
-
 <br/>
 <br/>
 <br/>
 <br/>
-
-<b>Referência dos códigos dos comandos</b>
-<table style="text-align:center" border="solid 1px black">
-    <tr>
-       <th width="50px">id</th>
-       <th width="250px">Comando</th>
-       <th width="700px">Descrição</th>
-    </tr>
-    {% for comando in comandos %}
-    <tr><td>{{ comando.id }}</td><td>{{ comando.nome }}</td><td>{{ comando.descricao }}</td></tr>
-    {% endfor %}
-
-</table>
-
-
 {% endblock content %}

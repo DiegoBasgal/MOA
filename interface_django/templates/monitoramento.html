@@ -11,7 +11,7 @@
     <h3>TDA:</h3>
     <p>Nível alvo: {{ nv_alvo }} m<br>
     Nível montante: {{ nv_montante }} m</p>
-    
+    <hr style="height:10pt; visibility:hidden;" />
     <h3>USINA:</h3>
     <p>Set-point usina: {{ setpot_usina }} MW</p>
     
@@ -26,7 +26,7 @@
     SP: {{ setpot_ug2 | floatformat:0 }} kW<br>
     Horas máquina: {{ tempo_ug2 | floatformat:2 }} h<br>
     Perda na grade: {{ usina.ug2_perda_grade | floatformat:2 }} m</p>
-    
+    <hr style="height:10pt; visibility:hidden;" />
     <h3>MOA:</h3>
     <p>Estado:  {{ estado }}<br>
     Emergencia:  {{ em_acionada }}<br>
