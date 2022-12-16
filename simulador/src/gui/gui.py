@@ -31,10 +31,10 @@ class Window(QMainWindow, Ui_Form):
         self.shared_dict["set_press_turbina_ug1"] = False
         self.shared_dict["set_press_turbina_ug2"] = False
         self.shared_dict["comporta_aberta_ug1"] = False
-        self.shared_dict["comporta_fechada_ug1"] = False
+        self.shared_dict["comporta_fechada_ug1"] = True
         self.shared_dict["comporta_cracking_ug1"] = False
         self.shared_dict["comporta_aberta_ug2"] = False
-        self.shared_dict["comporta_fechada_ug2"] = False
+        self.shared_dict["comporta_fechada_ug2"] = True
         self.shared_dict["comporta_cracking_ug2"] = False
 
     def sincro(self):
@@ -282,6 +282,7 @@ class Window(QMainWindow, Ui_Form):
             self.lcdNumber_pressao_turbina_ug2.setFrameShadow(QFrame.Sunken)
     
     def set_abertura_comporta_ug2(self):
+        if self.shared_dict[""]
         return True
         
     def set_fechamento_comporta_ug2(self):

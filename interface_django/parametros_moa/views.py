@@ -35,7 +35,7 @@ def parametros_moa_view(request, *args, **kwargs):
             usina.modo_de_escolha_das_ugs = 2
             usina.ug1_prioridade = 0
             usina.ug2_prioridade = 100
-
+            
 
         nv_alvo = float(request.POST.get("nv_alvo").replace(",", "."))
         usina.nv_alvo = nv_alvo if isinstance(nv_alvo, float) else usina.nv_alvo

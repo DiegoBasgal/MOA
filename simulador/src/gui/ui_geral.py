@@ -2128,6 +2128,17 @@ class Ui_Form(object):
 
         self.horizontalLayout_4.addWidget(self.label_comporta_ug2)
 
+        self.lcdNumber_status_comporta_ug2 = QLCDNumber(self.horizontalLayoutWidget_2)
+        self.lcdNumber_status_comporta_ug2.setObjectName(u"lcdNumber_status_comporta_ug2")
+        self.lcdNumber_status_comporta_ug2.setMaximumSize(QSize(30, 16777215))
+        self.lcdNumber_status_comporta_ug2.setStyleSheet(u"background-color: rgb(255, 255, 255);")
+        self.lcdNumber_status_comporta_ug2.setFrameShape(QFrame.WinPanel)
+        self.lcdNumber_status_comporta_ug2.setFrameShadow(QFrame.Sunken)
+        self.lcdNumber_status_comporta_ug2.setDigitCount(1)
+        self.lcdNumber_status_comporta_ug2.setSegmentStyle(QLCDNumber.Flat)
+
+        self.horizontalLayout_4.addWidget(self.lcdNumber_status_comporta_ug2)
+
         self.pushButton_abrir_comporta_ug2 = QPushButton(self.horizontalLayoutWidget_2)
         self.pushButton_abrir_comporta_ug2.setObjectName(u"pushButton_abrir_comporta_ug2")
         self.pushButton_abrir_comporta_ug2.setMaximumSize(QSize(60, 16777215))
@@ -2175,6 +2186,17 @@ class Ui_Form(object):
 
         self.horizontalLayout_5.addWidget(self.label_comporta_ug1)
 
+        self.lcdNumber_status_comporta_ug1 = QLCDNumber(self.horizontalLayoutWidget_3)
+        self.lcdNumber_status_comporta_ug1.setObjectName(u"lcdNumber_status_comporta_ug1")
+        self.lcdNumber_status_comporta_ug1.setMaximumSize(QSize(30, 16777215))
+        self.lcdNumber_status_comporta_ug1.setStyleSheet(u"background-color: rgb(255, 255, 255);")
+        self.lcdNumber_status_comporta_ug1.setFrameShape(QFrame.WinPanel)
+        self.lcdNumber_status_comporta_ug1.setFrameShadow(QFrame.Sunken)
+        self.lcdNumber_status_comporta_ug1.setDigitCount(1)
+        self.lcdNumber_status_comporta_ug1.setSegmentStyle(QLCDNumber.Flat)
+
+        self.horizontalLayout_5.addWidget(self.lcdNumber_status_comporta_ug1)
+
         self.pushButton_abrir_comporta_ug1 = QPushButton(self.horizontalLayoutWidget_3)
         self.pushButton_abrir_comporta_ug1.setObjectName(u"pushButton_abrir_comporta_ug1")
         self.pushButton_abrir_comporta_ug1.setMaximumSize(QSize(60, 16777215))
@@ -2212,9 +2234,9 @@ class Ui_Form(object):
         self.frame.raise_()
         self.label.raise_()
         self.layoutWidget_4.raise_()
-        self.layoutWidget1.raise_()
-        self.layoutWidget1.raise_()
-        self.layoutWidget1.raise_()
+        self.layoutWidget3.raise_()
+        self.layoutWidget3.raise_()
+        self.layoutWidget3.raise_()
         self.layoutWidget_5.raise_()
         self.layoutWidget_6.raise_()
         self.layoutWidget_16.raise_()
@@ -2262,7 +2284,6 @@ class Ui_Form(object):
         self.pushButton_reset_condicionadores_geral.clicked.connect(Form.reset_geral_condic_usina)
         self.pushButton_set_press_turbina_ug1.clicked.connect(Form.set_press_turbina_ug1)
         self.pushButton_set_press_turbina_ug2.clicked.connect(Form.set_press_turbina_ug2)
-
         QMetaObject.connectSlotsByName(Form)
     # setupUi
 
