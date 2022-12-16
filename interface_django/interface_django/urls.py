@@ -23,7 +23,7 @@ from agendamentos.views import novo_agendamento_view
 from agendamentos.views import novo_agendamento_rapido_view
 from monitoramento.views import monitoramento_view
 from ocorrencias.views import ocorrencias_view
-from parametros_moa.views import parametros_moa_view, emergencia_view, deletar, adicionar, retornar
+from parametros_moa.views import parametros_moa_view, emergencia_view, contatos_view, deletar, adicionar, retornar
 
 urlpatterns = [
     path("", RedirectView.as_view(url="parametros_moa/")),
@@ -36,9 +36,10 @@ urlpatterns = [
     path("ocorrencias/", ocorrencias_view, name="ocorrencias"),
     path("parametros_moa/", parametros_moa_view, name="parametros_moa"),
     path("parametros_moa/emergencia/", emergencia_view, name="emergencia"),
-    path("parametros_moa/adicionar/", adicionar, name="adicionar"),
-    path("parametros_moa/deletar/<int:id>", deletar, name="deletar"),
-    path("parametros_moa/adicionar/retornar/", retornar, name="retornar"),
+    path("parametros_moa/contatos/", contatos_view, name="contatos"),
+    path("parametros_moa/contatos/adicionar/", adicionar, name="adicionar"),
+    path("parametros_moa/contatos/deletar/<int:id>", deletar, name="deletar"),
+    path("parametros_moa/contatos/adicionar/retornar/", retornar, name="retornar"),
 ]
 
 # Add Django site authentication urls (for login, logout, password management)

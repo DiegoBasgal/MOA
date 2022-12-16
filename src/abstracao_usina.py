@@ -466,7 +466,8 @@ class Usina:
             i += 1
             j = len(agendamentos)
 
-        logger.debug(agendamentos)
+        i = len(agendamentos)
+        logger.debug("Data: {}  Criado por: {}  Comando: {}".format(agendamentos[i-1][1].strftime("%Y-%m-%d %H:%M:%S"), agendamentos[i-1][6], agendamentos[i-1][3]))
 
         if len(agendamentos) == 0:
             return True
@@ -488,10 +489,32 @@ class Usina:
                 logger.warning("Agendamento #{} Atrasado! ({}).".format(agendamento[0], agendamento[3]))
                 self.agendamentos_atrasados += 1
 
-            if segundos_passados > 300 or self.agendamentos_atrasados > 3:
-                logger.info("Os agendamentos estão muito atrasados! Acionando emergência.")
-                self.acionar_emergencia()
-                return False
+            if segundos_passados > 5 or self.agendamentos_atrasados > 3:
+                logger.info("Os agendamentos estão muito atrasados!")
+                if agendamento[3] == AGENDAMENTO_INDISPONIBILIZAR:
+                    logger.warning("Acionando emergência!")
+                    self.acionar_emergencia()
+                    self.db.update_agendamento(int(agendamento[0]), 1, obs="AGENDAMENTO NÃO EXECUTADO POR CONTA DE ATRASO!")
+                    return False
+                elif agendamento[3] == AGENDAMENTO_ALTERAR_NV_ALVO or agendamento[3] == AGENDAMENTO_ALTERAR_POT_LIMITE_TODAS_AS_UGS or agendamento[3] == AGENDAMENTO_BAIXAR_POT_UGS_MINIMO or agendamento[3] == AGENDAMENTO_NORMALIZAR_POT_UGS_MINIMO:
+                    logger.info("Não foi possível executar o agendamento! Favor re-agendar")
+                    self.db.update_agendamento(int(agendamento[0]), 1, obs="AGENDAMENTO NÃO EXECUTADO POR CONTA DE ATRASO!")
+                    return False
+                elif agendamento[3] in AGENDAMENTO_LISTA_BLOQUEIO_UG1:
+                    logger.info("Indisponibilizando UG1")
+                    self.ug1.forcar_estado_indisponivel()
+                    self.db.update_agendamento(int(agendamento[0]), 1, obs="AGENDAMENTO NÃO EXECUTADO POR CONTA DE ATRASO!")
+                    return False
+                elif agendamento[3] in AGENDAMENTO_LISTA_BLOQUEIO_UG2:
+                    logger.info("Indisponibilizando UG2")
+                    self.ug2.forcar_estado_indisponivel()
+                    self.db.update_agendamento(int(agendamento[0]), 1, obs="AGENDAMENTO NÃO EXECUTADO POR CONTA DE ATRASO!")
+                    return False
+                else:
+                    logger.info("Agendamento não encontrado! Retomando operação...")
+                    self.db.update_agendamento(int(agendamento[0]), 1, obs="Agendamento inexistente.")
+                    return False
+
 
             if segundos_adiantados <= 60 and not bool(agendamento[4]):
                 # Está na hora e ainda não foi executado. Executar!

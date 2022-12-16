@@ -45,8 +45,8 @@ Página de configuraço dos parametros usados pelo MOA.
         <input id="nv_alvo" name="nv_alvo" size=4 value="{{usina.nv_alvo}}"/></td>
         <br>
         <br>
-        <b>Pressão Caixa Espiral Alvo: </b>
-        <input id="press_cx_alvo" name="press_cx_alvo" size=4 value="{{usina.press_cx_alvo}}"/></td>
+        <b>Pressão Entrada da Turbina Alvo: </b>
+        <input id="press_turbina_alvo" name="press_turbina_alvo" size=4 value="{{usina.press_turbina_alvo}}"/></td>
         <label> (Parâmetro funcional apenas para operação sem comunicação com a TDA)</label>
         <br>
     </div>
@@ -204,56 +204,5 @@ Página de configuraço dos parametros usados pelo MOA.
 <br>
 <br>
 <br>
-<form method='post' action='/parametros_moa/adicionar/'>
-    {% csrf_token %}
-    <div style="margin-bottom: 20px;">
-        <h3>Adicionar contatos para sobreaviso:</h3>
-        <label>Nome: &nbsp;&nbsp;&nbsp;</label>
-        <input id="nome" name="nome" size=10 value="{{contato.nome}}"/></td>
-        <br>
-        <label>Telefone: </label>
-        <input type="tel" id="numero" name="numero" size=10 value="{{contato.numero}}"/></td>
-        <br>
-        <br>
-        <label>Data início: </label>
-        <input type="date" id="data_inicio" name="data_inicio" size=6 value="{{contato.data_inicio}}"/></td>
-        <label> &nbsp;Horário: </label>
-        <input type="time" id="ts_inicio" name="ts_inicio" size=4 value="{{contato.ts_inicio}}"/></td>
-        <br>
-        <label>Data fim: &ensp;&nbsp;</label>
-        <input type="date" id="data_fim" name="data_fim" size=6 value="{{contato.data_fim}}"/></td>
-        <label> &nbsp;Horário: </label>
-        <input type="time" id="ts_fim" name="ts_fim" size=4 value="{{contato.ts_fim}}"/></td>
-        <br>
-        <br>
-        <b>Adicionar contato:</b>
-        <input type="submit" value="Adicionar"/>
-    </div>
-<form action='/parametros_moa/'>
-    <div>
-        <b>Lista de contatos cadastrados</b>
-        <table style="text-align:center" border="solid 1px black">
-            <tr>
-                <th>Nome</th>
-                <th>Número</th>
-                <th>Data Início</th>
-                <th width="70px">Horário</th>
-                <th>Data Fim</th>
-                <th width="70px">Horário</th>
-            </tr>
-            {% for ctt in contato  %}
-            <tr>
-                <td width="80px">{{ ctt.nome}}</td>
-                <td width="120px">{{ ctt.numero}}</td>
-                <td width="120px">{{ ctt.data_inicio|date:"d/M/Y" }}</td>
-                <td>{{ ctt.ts_inicio}}</td>
-                <td width="120px">{{ ctt.data_fim|date:"d/M/Y"}}</td>
-                <td>{{ ctt.ts_fim}}</td>
-                <td><a href="deletar/{{ctt.id}}">Remover</a></td>
-            </tr>
-            {% endfor %}
-        </table>
-    </div>
-</form>
 
 {% endblock content %}
