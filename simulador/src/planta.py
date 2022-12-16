@@ -73,7 +73,7 @@ class Planta:
 
     def run(self):
         # INICIO DECLARAÇÃO shared_dict
-        self.shared_dict["nv_montante"] = 821
+        self.shared_dict["nv_montante"] = 461.9
         self.shared_dict["potencia_kw_se"] = 0
         self.shared_dict["q_alfuente"] = 0
         self.shared_dict["q_liquida"] = 0
@@ -82,7 +82,7 @@ class Planta:
         self.shared_dict["stop_gui"] = False
         self.shared_dict["stop_sim"] = False
         self.shared_dict["tempo_simul"] = 0
-        self.shared_dict["tensao_na_linha"] = 24255
+        self.shared_dict["tensao_na_linha"] = 23100
         self.shared_dict["potencia_kw_mp"] = 0
         self.shared_dict["potencia_kw_mr"] = 0
         self.shared_dict["nv_jusante_grade"] = 0
@@ -266,7 +266,7 @@ class Planta:
                     self.cust_data_bank.set_words(REG["REG_UG{}_Etapa_AUX".format(ug.id)], [int(self.shared_dict["etapa_aux_ug{}".format(ug.id)])])
                     self.cust_data_bank.set_words(REG["REG_UG{}_Operacao_EtapaAtual".format(ug.id)],[int(ug.etapa_atual)],)
                     
-                    self.cust_data_bank.set_words(REG["REG_UG{}_Pressao_Trubina".format(ug.id)],[round(10 * self.shared_dict["pressao_turbina_ug{}".format(ug.id)])],)
+                    self.cust_data_bank.set_words(REG["REG_UG{}_Pressao_Turbina".format(ug.id)],[round(10 * self.shared_dict["pressao_turbina_ug{}".format(ug.id)])],)
                     self.cust_data_bank.set_words(REG["REG_UG{}_Temperatura_01".format(ug.id)],[round(self.shared_dict["temperatura_ug{}_fase_r".format(ug.id)])],)
                     self.cust_data_bank.set_words(REG["REG_UG{}_Temperatura_02".format(ug.id)],[round(self.shared_dict["temperatura_ug{}_fase_s".format(ug.id)])],)
                     self.cust_data_bank.set_words(REG["REG_UG{}_Temperatura_03".format(ug.id)],[round(self.shared_dict["temperatura_ug{}_fase_t".format(ug.id)])],)

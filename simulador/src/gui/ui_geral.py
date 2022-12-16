@@ -17,8 +17,8 @@ from PySide6.QtGui import (QBrush, QColor, QConicalGradient, QCursor,
     QPalette, QPixmap, QRadialGradient, QTransform)
 from PySide6.QtWidgets import (QApplication, QCheckBox, QComboBox, QFrame,
     QGridLayout, QHBoxLayout, QLCDNumber, QLabel,
-    QLayout, QPushButton, QSizePolicy, QSlider,
-    QSplitter, QVBoxLayout, QWidget)
+    QLayout, QProgressBar, QPushButton, QSizePolicy,
+    QSlider, QSplitter, QVBoxLayout, QWidget)
 
 class Ui_Form(object):
     def setupUi(self, Form):
@@ -817,7 +817,7 @@ class Ui_Form(object):
 
         self.horizontalSlider_setpoint_ug2 = QSlider(self.layoutWidget_5)
         self.horizontalSlider_setpoint_ug2.setObjectName(u"horizontalSlider_setpoint_ug2")
-        self.horizontalSlider_setpoint_ug2.setMaximum(3037.5)
+        self.horizontalSlider_setpoint_ug2.setMaximum(3038)
         self.horizontalSlider_setpoint_ug2.setSingleStep(10)
         self.horizontalSlider_setpoint_ug2.setPageStep(100)
         self.horizontalSlider_setpoint_ug2.setOrientation(Qt.Horizontal)
@@ -1183,7 +1183,7 @@ class Ui_Form(object):
 
         self.layoutWidget_16 = QWidget(Form)
         self.layoutWidget_16.setObjectName(u"layoutWidget_16")
-        self.layoutWidget_16.setGeometry(QRect(600, 259, 371, 36))
+        self.layoutWidget_16.setGeometry(QRect(600, 254, 371, 36))
         self.horizontalLayout = QHBoxLayout(self.layoutWidget_16)
         self.horizontalLayout.setObjectName(u"horizontalLayout")
         self.horizontalLayout.setContentsMargins(0, 0, 0, 0)
@@ -1201,7 +1201,7 @@ class Ui_Form(object):
 
         self.horizontalSlider_setpoint_ug1 = QSlider(self.layoutWidget_16)
         self.horizontalSlider_setpoint_ug1.setObjectName(u"horizontalSlider_setpoint_ug1")
-        self.horizontalSlider_setpoint_ug1.setMaximum(3037.5)
+        self.horizontalSlider_setpoint_ug1.setMaximum(3038)
         self.horizontalSlider_setpoint_ug1.setSingleStep(10)
         self.horizontalSlider_setpoint_ug1.setPageStep(100)
         self.horizontalSlider_setpoint_ug1.setOrientation(Qt.Horizontal)
@@ -1214,7 +1214,7 @@ class Ui_Form(object):
         self.pushButton_partir_ug1.raise_()
         self.layoutWidget_14 = QWidget(Form)
         self.layoutWidget_14.setObjectName(u"layoutWidget_14")
-        self.layoutWidget_14.setGeometry(QRect(600, 299, 167, 162))
+        self.layoutWidget_14.setGeometry(QRect(600, 294, 167, 162))
         self.verticalLayout_ug1 = QVBoxLayout(self.layoutWidget_14)
         self.verticalLayout_ug1.setObjectName(u"verticalLayout_ug1")
         self.verticalLayout_ug1.setContentsMargins(0, 0, 0, 0)
@@ -1254,7 +1254,7 @@ class Ui_Form(object):
         self.pushButton_set_trip_low_ug1.raise_()
         self.layoutWidget_13 = QWidget(Form)
         self.layoutWidget_13.setObjectName(u"layoutWidget_13")
-        self.layoutWidget_13.setGeometry(QRect(770, 299, 201, 151))
+        self.layoutWidget_13.setGeometry(QRect(770, 294, 201, 151))
         self.gridLayout_ug1 = QGridLayout(self.layoutWidget_13)
         self.gridLayout_ug1.setObjectName(u"gridLayout_ug1")
         self.gridLayout_ug1.setContentsMargins(0, 0, 0, 0)
@@ -1420,9 +1420,10 @@ class Ui_Form(object):
 
         self.horizontalSlider_press_turbina = QSlider(self.layoutWidget_18)
         self.horizontalSlider_press_turbina.setObjectName(u"horizontalSlider_press_turbina")
-        self.horizontalSlider_press_turbina.setMaximum(100)
+        self.horizontalSlider_press_turbina.setMinimum(1549)
+        self.horizontalSlider_press_turbina.setMaximum(1650)
         self.horizontalSlider_press_turbina.setPageStep(1)
-        self.horizontalSlider_press_turbina.setValue(0)
+        self.horizontalSlider_press_turbina.setValue(1630)
         self.horizontalSlider_press_turbina.setSliderPosition(0)
         self.horizontalSlider_press_turbina.setOrientation(Qt.Horizontal)
 
@@ -1655,7 +1656,7 @@ class Ui_Form(object):
 
         self.frame_2 = QFrame(Form)
         self.frame_2.setObjectName(u"frame_2")
-        self.frame_2.setGeometry(QRect(419, 256, 561, 208))
+        self.frame_2.setGeometry(QRect(419, 251, 561, 208))
         self.frame_2.setMaximumSize(QSize(561, 208))
         self.frame_2.setStyleSheet(u"background-color: transparent;")
         self.frame_2.setFrameShape(QFrame.Box)
@@ -2107,6 +2108,100 @@ class Ui_Form(object):
         self.frame_9.setFrameShape(QFrame.Box)
         self.frame_9.setFrameShadow(QFrame.Plain)
         self.frame_9.setLineWidth(2)
+        self.frame_10 = QFrame(Form)
+        self.frame_10.setObjectName(u"frame_10")
+        self.frame_10.setGeometry(QRect(419, 474, 561, 41))
+        self.frame_10.setStyleSheet(u"background-color:transparent;")
+        self.frame_10.setFrameShape(QFrame.Box)
+        self.frame_10.setFrameShadow(QFrame.Plain)
+        self.frame_10.setLineWidth(2)
+        self.horizontalLayoutWidget_2 = QWidget(self.frame_10)
+        self.horizontalLayoutWidget_2.setObjectName(u"horizontalLayoutWidget_2")
+        self.horizontalLayoutWidget_2.setGeometry(QRect(10, 5, 541, 32))
+        self.horizontalLayout_4 = QHBoxLayout(self.horizontalLayoutWidget_2)
+        self.horizontalLayout_4.setSpacing(12)
+        self.horizontalLayout_4.setObjectName(u"horizontalLayout_4")
+        self.horizontalLayout_4.setContentsMargins(7, 0, 0, 0)
+        self.label_comporta_ug2 = QLabel(self.horizontalLayoutWidget_2)
+        self.label_comporta_ug2.setObjectName(u"label_comporta_ug2")
+        self.label_comporta_ug2.setFont(font4)
+
+        self.horizontalLayout_4.addWidget(self.label_comporta_ug2)
+
+        self.pushButton_abrir_comporta_ug2 = QPushButton(self.horizontalLayoutWidget_2)
+        self.pushButton_abrir_comporta_ug2.setObjectName(u"pushButton_abrir_comporta_ug2")
+        self.pushButton_abrir_comporta_ug2.setMaximumSize(QSize(60, 16777215))
+        self.pushButton_abrir_comporta_ug2.setStyleSheet(u"background-color: rgb(241, 241, 241);")
+
+        self.horizontalLayout_4.addWidget(self.pushButton_abrir_comporta_ug2)
+
+        self.pushButton_fechar_comporta_ug2 = QPushButton(self.horizontalLayoutWidget_2)
+        self.pushButton_fechar_comporta_ug2.setObjectName(u"pushButton_fechar_comporta_ug2")
+        self.pushButton_fechar_comporta_ug2.setMaximumSize(QSize(60, 16777215))
+        self.pushButton_fechar_comporta_ug2.setStyleSheet(u"background-color: rgb(241, 241, 241);")
+
+        self.horizontalLayout_4.addWidget(self.pushButton_fechar_comporta_ug2)
+
+        self.pushButton_cracking_comporta_ug2 = QPushButton(self.horizontalLayoutWidget_2)
+        self.pushButton_cracking_comporta_ug2.setObjectName(u"pushButton_cracking_comporta_ug2")
+        self.pushButton_cracking_comporta_ug2.setMaximumSize(QSize(60, 16777215))
+        self.pushButton_cracking_comporta_ug2.setStyleSheet(u"background-color: rgb(241, 241, 241);")
+
+        self.horizontalLayout_4.addWidget(self.pushButton_cracking_comporta_ug2)
+
+        self.progressBar_comporta_ug2 = QProgressBar(self.horizontalLayoutWidget_2)
+        self.progressBar_comporta_ug2.setObjectName(u"progressBar_comporta_ug2")
+        self.progressBar_comporta_ug2.setValue(0)
+
+        self.horizontalLayout_4.addWidget(self.progressBar_comporta_ug2)
+
+        self.frame_11 = QFrame(Form)
+        self.frame_11.setObjectName(u"frame_11")
+        self.frame_11.setGeometry(QRect(419, 207, 561, 41))
+        self.frame_11.setStyleSheet(u"background-color:transparent;")
+        self.frame_11.setFrameShape(QFrame.Box)
+        self.frame_11.setFrameShadow(QFrame.Plain)
+        self.frame_11.setLineWidth(2)
+        self.horizontalLayoutWidget_3 = QWidget(self.frame_11)
+        self.horizontalLayoutWidget_3.setObjectName(u"horizontalLayoutWidget_3")
+        self.horizontalLayoutWidget_3.setGeometry(QRect(10, 5, 541, 32))
+        self.horizontalLayout_5 = QHBoxLayout(self.horizontalLayoutWidget_3)
+        self.horizontalLayout_5.setSpacing(12)
+        self.horizontalLayout_5.setObjectName(u"horizontalLayout_5")
+        self.horizontalLayout_5.setContentsMargins(7, 0, 0, 0)
+        self.label_comporta_ug1 = QLabel(self.horizontalLayoutWidget_3)
+        self.label_comporta_ug1.setObjectName(u"label_comporta_ug1")
+        self.label_comporta_ug1.setFont(font4)
+
+        self.horizontalLayout_5.addWidget(self.label_comporta_ug1)
+
+        self.pushButton_abrir_comporta_ug1 = QPushButton(self.horizontalLayoutWidget_3)
+        self.pushButton_abrir_comporta_ug1.setObjectName(u"pushButton_abrir_comporta_ug1")
+        self.pushButton_abrir_comporta_ug1.setMaximumSize(QSize(60, 16777215))
+        self.pushButton_abrir_comporta_ug1.setStyleSheet(u"background-color: rgb(241, 241, 241);")
+
+        self.horizontalLayout_5.addWidget(self.pushButton_abrir_comporta_ug1)
+
+        self.pushButton_fechar_comporta_ug1 = QPushButton(self.horizontalLayoutWidget_3)
+        self.pushButton_fechar_comporta_ug1.setObjectName(u"pushButton_fechar_comporta_ug1")
+        self.pushButton_fechar_comporta_ug1.setMaximumSize(QSize(60, 16777215))
+        self.pushButton_fechar_comporta_ug1.setStyleSheet(u"background-color: rgb(241, 241, 241);")
+
+        self.horizontalLayout_5.addWidget(self.pushButton_fechar_comporta_ug1)
+
+        self.pushButton_cracking_comporta_ug1 = QPushButton(self.horizontalLayoutWidget_3)
+        self.pushButton_cracking_comporta_ug1.setObjectName(u"pushButton_cracking_comporta_ug1")
+        self.pushButton_cracking_comporta_ug1.setMaximumSize(QSize(60, 16777215))
+        self.pushButton_cracking_comporta_ug1.setStyleSheet(u"background-color: rgb(241, 241, 241);")
+
+        self.horizontalLayout_5.addWidget(self.pushButton_cracking_comporta_ug1)
+
+        self.progressBar_comporta_ug1 = QProgressBar(self.horizontalLayoutWidget_3)
+        self.progressBar_comporta_ug1.setObjectName(u"progressBar_comporta_ug1")
+        self.progressBar_comporta_ug1.setValue(0)
+
+        self.horizontalLayout_5.addWidget(self.progressBar_comporta_ug1)
+
         self.frame_5.raise_()
         self.frame_4.raise_()
         self.frame_8.raise_()
@@ -2117,9 +2212,9 @@ class Ui_Form(object):
         self.frame.raise_()
         self.label.raise_()
         self.layoutWidget_4.raise_()
-        self.layoutWidget2.raise_()
-        self.layoutWidget2.raise_()
-        self.layoutWidget2.raise_()
+        self.layoutWidget1.raise_()
+        self.layoutWidget1.raise_()
+        self.layoutWidget1.raise_()
         self.layoutWidget_5.raise_()
         self.layoutWidget_6.raise_()
         self.layoutWidget_16.raise_()
@@ -2130,6 +2225,8 @@ class Ui_Form(object):
         self.layoutWidget_19.raise_()
         self.layoutWidget_3.raise_()
         self.layoutWidget_17.raise_()
+        self.frame_10.raise_()
+        self.frame_11.raise_()
 
         self.retranslateUi(Form)
         self.horizontalSlider_q_afluente.valueChanged.connect(Form.mudar_q_afluente)
@@ -2457,5 +2554,13 @@ class Ui_Form(object):
         self.comboBox.setItemText(47, QCoreApplication.translate("Form", u"MXI_SA_TE_AlarmeNivelMaxOleo", None))
         self.comboBox.setItemText(48, QCoreApplication.translate("Form", u"MXI_SA_TE_AlarmeTempEnrolamento", None))
 
+        self.label_comporta_ug2.setText(QCoreApplication.translate("Form", u"Comporta UG2", None))
+        self.pushButton_abrir_comporta_ug2.setText(QCoreApplication.translate("Form", u"Abrir", None))
+        self.pushButton_fechar_comporta_ug2.setText(QCoreApplication.translate("Form", u"Fechar", None))
+        self.pushButton_cracking_comporta_ug2.setText(QCoreApplication.translate("Form", u"Cracking", None))
+        self.label_comporta_ug1.setText(QCoreApplication.translate("Form", u"Comporta UG1", None))
+        self.pushButton_abrir_comporta_ug1.setText(QCoreApplication.translate("Form", u"Abrir", None))
+        self.pushButton_fechar_comporta_ug1.setText(QCoreApplication.translate("Form", u"Fechar", None))
+        self.pushButton_cracking_comporta_ug1.setText(QCoreApplication.translate("Form", u"Cracking", None))
     # retranslateUi
 

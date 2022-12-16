@@ -46,8 +46,15 @@ class Ug:
         self.TEMPO_TRANS_UVD_UPGM = 20
         self.TEMPO_TRANS_UPGM_UP = 20
 
+        self.TEMPO_ABERTURA_COMPORTA = 193
+        self.TEMPO_FECHAMENTO_COMPORTA = 1
+        self.TEMPO_CRACKING_COMPORTA = 106
+
         self.shared_dict["debug_parar_ug{}".format(self.id)] = False
         self.shared_dict["debug_partir_ug{}".format(self.id)] = False
+        self.shared_dict["comporta_aberta_ug{}".format(self.id)] = False
+        self.shared_dict["comporta_fechada_ug{}".format(self.id)] = False
+        self.shared_dict["comporta_cracking_ug{}".format(self.id)] = False
         self.shared_dict["etapa_alvo_ug{}".format(self.id)] = 0
         self.shared_dict["etapa_atual_ug{}".format(self.id)] = 0
         self.shared_dict["etapa_aux_ug{}".format(self.id)] = 5
