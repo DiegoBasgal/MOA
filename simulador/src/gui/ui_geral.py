@@ -2134,6 +2134,7 @@ class Ui_Form(object):
         self.lcdNumber_status_comporta_ug2.setStyleSheet(u"background-color: rgb(255, 255, 255);")
         self.lcdNumber_status_comporta_ug2.setFrameShape(QFrame.WinPanel)
         self.lcdNumber_status_comporta_ug2.setFrameShadow(QFrame.Sunken)
+        self.lcdNumber_status_comporta_ug2.display("F")
         self.lcdNumber_status_comporta_ug2.setDigitCount(1)
         self.lcdNumber_status_comporta_ug2.setSegmentStyle(QLCDNumber.Flat)
 
@@ -2193,6 +2194,7 @@ class Ui_Form(object):
         self.lcdNumber_status_comporta_ug1.setFrameShape(QFrame.WinPanel)
         self.lcdNumber_status_comporta_ug1.setFrameShadow(QFrame.Sunken)
         self.lcdNumber_status_comporta_ug1.setDigitCount(1)
+        self.lcdNumber_status_comporta_ug1.display("F")
         self.lcdNumber_status_comporta_ug1.setSegmentStyle(QLCDNumber.Flat)
 
         self.horizontalLayout_5.addWidget(self.lcdNumber_status_comporta_ug1)
@@ -2284,6 +2286,12 @@ class Ui_Form(object):
         self.pushButton_reset_condicionadores_geral.clicked.connect(Form.reset_geral_condic_usina)
         self.pushButton_set_press_turbina_ug1.clicked.connect(Form.set_press_turbina_ug1)
         self.pushButton_set_press_turbina_ug2.clicked.connect(Form.set_press_turbina_ug2)
+        self.pushButton_abrir_comporta_ug1.clicked.connect(Form.threaded_abertura_comporta_ug1)
+        self.pushButton_fechar_comporta_ug1.clicked.connect(Form.threaded_fechamento_comporta_ug1)
+        self.pushButton_cracking_comporta_ug1.clicked.connect(Form.threaded_cracking_comporta_ug1)
+        self.pushButton_abrir_comporta_ug2.clicked.connect(Form.threaded_abertura_comporta_ug2)
+        self.pushButton_fechar_comporta_ug2.clicked.connect(Form.threaded_fechamento_comporta_ug2)
+        self.pushButton_cracking_comporta_ug2.clicked.connect(Form.threaded_cracking_comporta_ug2)
         QMetaObject.connectSlotsByName(Form)
     # setupUi
 
