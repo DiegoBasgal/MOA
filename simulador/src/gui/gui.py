@@ -25,8 +25,6 @@ class Window(QMainWindow, Ui_Form):
         self.aux1=0
         self.aux2=0 
         self.aux3=0
-        self.progresso_ug1 = 0
-        self.progresso_ug2 = 0
         self.shared_dict["trip_condic_usina"]=False
         self.shared_dict["trip_condic_ug1"]=False
         self.shared_dict["trip_condic_ug2"]=False
@@ -38,6 +36,14 @@ class Window(QMainWindow, Ui_Form):
         self.shared_dict["comporta_aberta_ug2"] = False
         self.shared_dict["comporta_fechada_ug2"] = True
         self.shared_dict["comporta_cracking_ug2"] = False
+        
+        self.shared_dict["thread_comp_aberta_ug1"] = False
+        self.shared_dict["thread_comp_fechada_ug1"] = False
+        self.shared_dict["thread_comp_cracking_ug1"] = False
+        
+        self.shared_dict["thread_comp_aberta_ug2"] = False
+        self.shared_dict["thread_comp_fechada_ug2"] = False
+        self.shared_dict["thread_comp_cracking_ug2"] = False
 
     def sincro(self):
         try:
@@ -128,6 +134,18 @@ class Window(QMainWindow, Ui_Form):
             self.lcdNumber_temperatura_ug2_mancal_casq_comb.display("{:03.1f}".format(self.shared_dict["temperatura_ug2_mancal_casq_comb"]))
             self.lcdNumber_temperatura_ug2_mancal_con_esc_comb.display("{:03.1f}".format(self.shared_dict["temperatura_ug2_mancal_contra_esc_comb"]))
             self.lcdNumber_perda_na_grade_ug2.display("{:3.1f}".format(self.shared_dict["nv_montante"] - self.shared_dict["nv_jusante_grade"]))
+
+            self.progressBar_comporta_ug1.setValue(self.shared_dict["progresso_ug1"])
+            self.progressBar_comporta_ug2.setValue(self.shared_dict["progresso_ug2"])
+
+            if self.shared_dict["comporta_aberta_ug1"]:
+                self.lcdNumber_status_comporta_ug1.display("A")
+            elif self.shared_dict["comporta_fechada_ug1"]:
+                self.lcdNumber_status_comporta_ug1.display("F")
+            elif self.shared_dict["comporta_cracking_ug1"]:
+                self.lcdNumber_status_comporta_ug1.display("C")
+            else:
+                self.lcdNumber_status_comporta_ug1.display("-")
 
         except Exception as e:
             print("A", repr(e))
@@ -231,72 +249,14 @@ class Window(QMainWindow, Ui_Form):
             self.horizontalSlider_press_turbina.setValue(1549)
             self.lcdNumber_pressao_turbina_ug1.setFrameShadow(QFrame.Sunken)
     
-    def threaded_abertura_comporta_ug1(self):
-        threading.Thread(target=lambda: self.set_abertura_comporta_ug1()).start()
-
-    def set_abertura_comporta_ug1(self):
-        if self.shared_dict["comporta_cracking_ug1"] == True and self.shared_dict["comporta_fechada_ug1"] == False:
-            self.lcdNumber_status_comporta_ug1.display("-")
-            while self.progresso_ug1 <= 100:
-                self.progresso_ug1 += 0.00001
-                self.progressBar_comporta_ug1.setValue(self.progresso_ug1)
-            self.shared_dict["comporta_fechada_ug1"] = False
-            self.shared_dict["comporta_aberta_ug1"] = True
-            self.shared_dict["comporta_cracking_ug1"] = False
-            self.lcdNumber_status_comporta_ug1.display("A")
-        elif self.shared_dict["comporta_cracking_ug1"] == False and self.shared_dict["comporta_fechada_ug1"] == True:
-            print("A comporta está fechada, execute a operação de cracking primeiro!")
-        else:
-            print("A comporta já está aberta.")
-            self.lcdNumber_status_comporta_ug1.display("A")
-        return True
+    def set_thread_comp_aberta_ug1(self):
+        self.shared_dict["thread_comp_aberta_ug1"] = True
     
-    def threaded_fechamento_comporta_ug1(self):
-        threading.Thread(target=lambda: self.set_fechamento_comporta_ug1()).start()
-
-    def set_fechamento_comporta_ug1(self):
-        if self.shared_dict["comporta_aberta_ug1"] == True and self.shared_dict["comporta_cracking_ug1"] == False:
-            self.lcdNumber_status_comporta_ug1.display("-")
-            while self.progresso_ug1 >= 0:
-                self.progresso_ug1 -= 0.00001
-                self.progressBar_comporta_ug1.setValue(self.progresso_ug1)
-            self.shared_dict["comporta_fechada_ug1"] = True
-            self.shared_dict["comporta_aberta_ug1"] = False
-            self.shared_dict["comporta_cracking_ug1"] = False
-            self.lcdNumber_status_comporta_ug1.display("F")
-        elif self.shared_dict["comporta_cracking_ug1"] == True and self.shared_dict["comporta_aberta_ug1"] == False:
-            self.lcdNumber_status_comporta_ug1.display("-")
-            while self.progresso_ug1 >= 0:
-                self.progresso_ug1 -= 0.00001
-                self.progressBar_comporta_ug1.setValue(self.progresso_ug1)
-            self.shared_dict["comporta_fechada_ug1"] = True
-            self.shared_dict["comporta_aberta_ug1"] = False
-            self.shared_dict["comporta_cracking_ug1"] = False
-            self.lcdNumber_status_comporta_ug1.display("F")
-        else:
-            print("A comporta já está fechada.")
-            self.lcdNumber_status_comporta_ug1.display("F")
-        return True
+    def set_thread_comp_fechada_ug1(self):
+        self.shared_dict["thread_comp_fechada_ug1"] = True
     
-    def threaded_cracking_comporta_ug1(self):
-        threading.Thread(target=lambda: self.set_cracking_comporta_ug1()).start()
-
-    def set_cracking_comporta_ug1(self):
-        if self.shared_dict["comporta_fechada_ug1"] == True and self.shared_dict["comporta_aberta_ug1"] == False:
-            self.lcdNumber_status_comporta_ug1.display("-")
-            while self.progresso_ug1 <= 50:
-                self.progresso_ug1 += 0.00001
-                self.progressBar_comporta_ug1.setValue(self.progresso_ug1)
-            self.shared_dict["comporta_fechada_ug1"] = False
-            self.shared_dict["comporta_aberta_ug1"] = False
-            self.shared_dict["comporta_cracking_ug1"] = True
-            self.lcdNumber_status_comporta_ug1.display("C")
-        elif self.shared_dict["comporta_aberta_ug1"] == True and self.shared_dict["comporta_fechada_ug1"] == False:
-            print("A comporta já está aberta.")
-        else:
-            print("A comporta já está na posição de cracking.")
-            self.lcdNumber_status_comporta_ug1.display("C")
-        return True
+    def set_thread_comp_cracking_ug1(self):
+        self.shared_dict["thread_comp_cracking_ug1"] = True
 
     # ug2
     def pulso_trip_ug2(self):
@@ -342,73 +302,15 @@ class Window(QMainWindow, Ui_Form):
             self.shared_dict["set_press_turbina_ug2"] = False
             self.horizontalSlider_press_turbina.setValue(1549)
             self.lcdNumber_pressao_turbina_ug2.setFrameShadow(QFrame.Sunken)
-    
-    def threaded_abertura_comporta_ug2(self):
-        threading.Thread(target=lambda: self.set_abertura_comporta_ug2()).start()
 
-    def set_abertura_comporta_ug2(self):
-        if self.shared_dict["comporta_cracking_ug2"] == True and self.shared_dict["comporta_fechada_ug2"] == False:
-            self.lcdNumber_status_comporta_ug2.display("-")
-            while self.progresso_ug2 <= 100:
-                self.progresso_ug2 += 0.00001
-                self.progressBar_comporta_ug2.setValue(self.progresso_ug2)
-            self.shared_dict["comporta_fechada_ug2"] = False
-            self.shared_dict["comporta_aberta_ug2"] = True
-            self.shared_dict["comporta_cracking_ug2"] = False
-            self.lcdNumber_status_comporta_ug2.display("A")
-        elif self.shared_dict["comporta_cracking_ug2"] == False and self.shared_dict["comporta_fechada_ug2"] == True:
-            print("A comporta está fechada, execute a operação de cracking primeiro!")
-        else:
-            print("A comporta já está aberta.")
-            self.lcdNumber_status_comporta_ug2.display("A")
-        return True
+    def set_thread_comp_aberta_ug2(self):
+        self.shared_dict["thread_comp_aberta_ug2"] = True
     
-    def threaded_fechamento_comporta_ug2(self):
-        threading.Thread(target=lambda: self.set_fechamento_comporta_ug2()).start()
-
-    def set_fechamento_comporta_ug2(self):
-        if self.shared_dict["comporta_aberta_ug2"] == True and self.shared_dict["comporta_cracking_ug2"] == False:
-            self.lcdNumber_status_comporta_ug2.display("-")
-            while self.progresso_ug2 >= 0:
-                self.progresso_ug2 -= 0.00001
-                self.progressBar_comporta_ug2.setValue(self.progresso_ug2)
-            self.shared_dict["comporta_fechada_ug2"] = True
-            self.shared_dict["comporta_aberta_ug2"] = False
-            self.shared_dict["comporta_cracking_ug2"] = False
-            self.lcdNumber_status_comporta_ug2.display("F")
-        elif self.shared_dict["comporta_cracking_ug2"] == True and self.shared_dict["comporta_aberta_ug2"] == False:
-            self.lcdNumber_status_comporta_ug2.display("-")
-            while self.progresso_ug2 >= 0:
-                self.progresso_ug2 -= 0.00001
-                self.progressBar_comporta_ug2.setValue(self.progresso_ug2)
-            self.shared_dict["comporta_fechada_ug2"] = True
-            self.shared_dict["comporta_aberta_ug2"] = False
-            self.shared_dict["comporta_cracking_ug2"] = False
-            self.lcdNumber_status_comporta_ug2.display("F")
-        else:
-            print("A comporta já está fechada.")
-            self.lcdNumber_status_comporta_ug2.display("F")
-        return True
+    def set_thread_comp_fechada_ug2(self):
+        self.shared_dict["thread_comp_fechada_ug2"] = True
     
-    def threaded_cracking_comporta_ug2(self):
-        threading.Thread(target=lambda: self.set_cracking_comporta_ug2()).start()
-
-    def set_cracking_comporta_ug2(self):
-        if self.shared_dict["comporta_fechada_ug2"] == True and self.shared_dict["comporta_aberta_ug2"] == False:
-            self.lcdNumber_status_comporta_ug2.display("-")
-            while self.progresso_ug2 <= 50:
-                self.progresso_ug2 += 0.00001
-                self.progressBar_comporta_ug2.setValue(self.progresso_ug2)
-            self.shared_dict["comporta_fechada_ug2"] = False
-            self.shared_dict["comporta_aberta_ug2"] = False
-            self.shared_dict["comporta_cracking_ug2"] = True
-            self.lcdNumber_status_comporta_ug2.display("C")
-        elif self.shared_dict["comporta_aberta_ug2"] == True and self.shared_dict["comporta_fechada_ug2"] == False:
-            print("A comporta já está aberta.")
-        else:
-            print("A comporta já está na posição de cracking.")
-            self.lcdNumber_status_comporta_ug2.display("C")
-        return True
+    def set_thread_comp_cracking_ug2(self):
+        self.shared_dict["thread_comp_cracking_ug2"] = True
 
     # dj52L
     def alternar_estado_dj52L(self):

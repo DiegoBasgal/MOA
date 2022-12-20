@@ -1,4 +1,5 @@
 import numpy as np
+from threading import Thread
 
 
 class Ug:
@@ -53,8 +54,16 @@ class Ug:
         self.shared_dict["debug_parar_ug{}".format(self.id)] = False
         self.shared_dict["debug_partir_ug{}".format(self.id)] = False
         self.shared_dict["comporta_aberta_ug{}".format(self.id)] = False
-        self.shared_dict["comporta_fechada_ug{}".format(self.id)] = False
+        self.shared_dict["comporta_fechada_ug{}".format(self.id)] = True
         self.shared_dict["comporta_cracking_ug{}".format(self.id)] = False
+        self.shared_dict["thread_comp_aberta_ug1"] = False
+        self.shared_dict["thread_comp_fechada_ug1"] = False
+        self.shared_dict["thread_comp_cracking_ug1"] = False
+        self.shared_dict["thread_comp_aberta_ug2"] = False
+        self.shared_dict["thread_comp_fechada_ug2"] = False
+        self.shared_dict["thread_comp_cracking_ug2"] = False
+        self.shared_dict["progresso_ug1"] = 0
+        self.shared_dict["progresso_ug2"] = 0
         self.shared_dict["etapa_alvo_ug{}".format(self.id)] = 0
         self.shared_dict["etapa_atual_ug{}".format(self.id)] = 0
         self.shared_dict["etapa_aux_ug{}".format(self.id)] = 5
@@ -261,6 +270,116 @@ class Ug:
         self.shared_dict["potencia_kw_ug{}".format(self.id)] = self.potencia
         self.shared_dict["etapa_atual_ug{}".format(self.id)] = self.etapa_atual
         self.shared_dict["flags_ug{}".format(self.id)] = self.flags
+    
+        if self.shared_dict["thread_comp_aberta_ug1"] == True:
+            Thread(target=lambda: self.set_abertura_comporta_ug1()).start()
+            self.shared_dict["thread_comp_aberta_ug1"] = False
+    
+        if self.shared_dict["thread_comp_fechada_ug1"] == True:
+            Thread(target=lambda: self.set_fechamento_comporta_ug1()).start()
+            self.shared_dict["thread_comp_fechada_ug1"] = False
+    
+        if self.shared_dict["thread_comp_cracking_ug1"] == True:
+            Thread(target=lambda: self.set_cracking_comporta_ug1()).start()
+            self.shared_dict["thread_comp_cracking_ug1"] = False
+        
+        if self.shared_dict["thread_comp_aberta_ug2"] == True:
+            Thread(target=lambda: self.set_abertura_comporta_ug2()).start()
+            self.shared_dict["thread_comp_aberta_ug2"] = False
+    
+        if self.shared_dict["thread_comp_fechada_ug2"] == True:
+            Thread(target=lambda: self.set_fechamento_comporta_ug2()).start()
+            self.shared_dict["thread_comp_fechada_ug2"] = False
+    
+        if self.shared_dict["thread_comp_cracking_ug2"] == True:
+            Thread(target=lambda: self.set_cracking_comporta_ug2()).start()
+            self.shared_dict["thread_comp_cracking_ug2"] = False
+
+    def set_abertura_comporta_ug1(self):
+        if self.shared_dict["comporta_cracking_ug1"] == True and self.shared_dict["comporta_fechada_ug1"] == False:
+            while self.shared_dict["progresso_ug1"] <= 100:
+                self.shared_dict["progresso_ug1"] += 0.00001
+            self.shared_dict["comporta_fechada_ug1"] = False
+            self.shared_dict["comporta_aberta_ug1"] = True
+            self.shared_dict["comporta_cracking_ug1"] = False
+        elif self.shared_dict["comporta_cracking_ug1"] == False and self.shared_dict["comporta_fechada_ug1"] == True:
+            print("A comporta está fechada, execute a operação de cracking primeiro!")
+        else:
+            print("A comporta já está aberta.")
+        return True
+    
+    def set_fechamento_comporta_ug1(self):
+        if self.shared_dict["comporta_aberta_ug1"] == True and self.shared_dict["comporta_cracking_ug1"] == False:
+            while self.shared_dict["progresso_ug1"] >= 0:
+                self.shared_dict["progresso_ug1"] -= 0.00001
+            self.shared_dict["comporta_fechada_ug1"] = True
+            self.shared_dict["comporta_aberta_ug1"] = False
+            self.shared_dict["comporta_cracking_ug1"] = False
+        elif self.shared_dict["comporta_cracking_ug1"] == True and self.shared_dict["comporta_aberta_ug1"] == False:
+            while self.shared_dict["progresso_ug1"] >= 0:
+                self.shared_dict["progresso_ug1"] -= 0.00001
+            self.shared_dict["comporta_fechada_ug1"] = True
+            self.shared_dict["comporta_aberta_ug1"] = False
+            self.shared_dict["comporta_cracking_ug1"] = False
+        else:
+            print("A comporta já está fechada.")
+        return True
+
+    def set_cracking_comporta_ug1(self):
+        if self.shared_dict["comporta_fechada_ug1"] == True and self.shared_dict["comporta_aberta_ug1"] == False:
+            while self.shared_dict["progresso_ug1"] <= 50:
+                self.shared_dict["progresso_ug1"] += 0.00001
+            self.shared_dict["comporta_fechada_ug1"] = False
+            self.shared_dict["comporta_aberta_ug1"] = False
+            self.shared_dict["comporta_cracking_ug1"] = True
+        elif self.shared_dict["comporta_aberta_ug1"] == True and self.shared_dict["comporta_fechada_ug1"] == False:
+            print("A comporta já está aberta.")
+        else:
+            print("A comporta já está na posição de cracking.")
+        return True
+    
+    def set_abertura_comporta_ug2(self):
+        if self.shared_dict["comporta_cracking_ug2"] == True and self.shared_dict["comporta_fechada_ug2"] == False:
+            while self.shared_dict["progresso_ug2"] <= 100:
+                self.shared_dict["progresso_ug2"] += 0.00001
+            self.shared_dict["comporta_fechada_ug2"] = False
+            self.shared_dict["comporta_aberta_ug2"] = True
+            self.shared_dict["comporta_cracking_ug2"] = False
+        elif self.shared_dict["comporta_cracking_ug2"] == False and self.shared_dict["comporta_fechada_ug2"] == True:
+            print("A comporta está fechada, execute a operação de cracking primeiro!")
+        else:
+            print("A comporta já está aberta.")
+        return True
+    
+    def set_fechamento_comporta_ug2(self):
+        if self.shared_dict["comporta_aberta_ug2"] == True and self.shared_dict["comporta_cracking_ug2"] == False:
+            while self.shared_dict["progresso_ug2"] >= 0:
+                self.shared_dict["progresso_ug2"] -= 0.00001
+            self.shared_dict["comporta_fechada_ug2"] = True
+            self.shared_dict["comporta_aberta_ug2"] = False
+            self.shared_dict["comporta_cracking_ug2"] = False
+        elif self.shared_dict["comporta_cracking_ug2"] == True and self.shared_dict["comporta_aberta_ug2"] == False:
+            while self.shared_dict["progresso_ug2"] >= 0:
+                self.shared_dict["progresso_ug2"] -= 0.00001
+            self.shared_dict["comporta_fechada_ug2"] = True
+            self.shared_dict["comporta_aberta_ug2"] = False
+            self.shared_dict["comporta_cracking_ug2"] = False
+        else:
+            print("A comporta já está fechada.")
+        return True
+    
+    def set_cracking_comporta_ug2(self):
+        if self.shared_dict["comporta_fechada_ug2"] == True and self.shared_dict["comporta_aberta_ug2"] == False:
+            while self.shared_dict["progresso_ug2"] <= 50:
+                self.shared_dict["progresso_ug2"] += 0.00001
+            self.shared_dict["comporta_fechada_ug2"] = False
+            self.shared_dict["comporta_aberta_ug2"] = False
+            self.shared_dict["comporta_cracking_ug2"] = True
+        elif self.shared_dict["comporta_aberta_ug2"] == True and self.shared_dict["comporta_fechada_ug2"] == False:
+            print("A comporta já está aberta.")
+        else:
+            print("A comporta já está na posição de cracking.")
+        return True
 
     def tripar(self, flag, desc=None):
         if not self.avisou_trip:
