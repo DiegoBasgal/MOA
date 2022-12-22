@@ -924,15 +924,15 @@ REG_SA_ComandosDigitais_MXW_GMG_Desl = 24  # Scale - Op15 (Write multiple coils)
 REG_SA_ComandosDigitais_MXW_QCAP_Autom = 25  # Scale - Op15 (Write multiple coils)
 REG_SA_ComandosDigitais_MXW_QCAP_Manual = 26  # Scale - Op15 (Write multiple coils)
 REG_SA_ComandosDigitais_MXW_Cala_Sirene = 27  # Scale - Op15 (Write multiple coils)
-REG_SA_RetornosAnalogicos_MWR_PM_810_Tensao_AB = (
-    16  # Scale 0.1 - Op04 (Read Input Regs - 3x)
-)
-REG_SA_RetornosAnalogicos_MWR_PM_810_Tensao_BC = (
-    17  # Scale 0.1 - Op04 (Read Input Regs - 3x)
-)
-REG_SA_RetornosAnalogicos_MWR_PM_810_Tensao_CA = (
-    18  # Scale 0.1 - Op04 (Read Input Regs - 3x)
-)
+#REG_SA_RetornosAnalogicos_MWR_PM_810_Tensao_AB = (
+    #16  # Scale 0.1 - Op04 (Read Input Regs - 3x)
+#)
+#REG_SA_RetornosAnalogicos_MWR_PM_810_Tensao_BC = (
+    #17  # Scale 0.1 - Op04 (Read Input Regs - 3x)
+#)
+#REG_SA_RetornosAnalogicos_MWR_PM_810_Tensao_CA = (
+    #18  # Scale 0.1 - Op04 (Read Input Regs - 3x)
+#)
 REG_SA_RetornosAnalogicos_MWR_PM_810_Corrente_A = (
     19  # Scale 0.01 - Op04 (Read Input Regs - 3x)
 )
@@ -1285,6 +1285,7 @@ REG_UG1_EntradasAnalogicas_MRR_PressK1CaixaExpiral_MaisCasas = (
     34903 # Scale 0.01 - Op04 (Read Input Regs)
 )
 
+REG_UG1_RetornosDigitais_StatusComporta = 34905
 
 REG_UG1_RetrornosAnalogicos_AUX_Condicionadores = 34902
 REG_UG1_ComandosDigitais_MXW_EmergenciaViaSuper = 32295 #antigo -> 4  # Op15 (Write multiple coils)
@@ -1309,6 +1310,7 @@ REG_UG1_EntradasAnalogicas_MRR_PressK1CaixaExpiral = (
 
 REG_UG2_RetornosDigitais_EtapaAux_Sim = 42773
 REG_UG2_RetornosDigitais_EtapaAlvo_Sim = 42772
+REG_UG2_RetornosDigitais_StatusComporta = 44905
 
 REG_UG2_RetrornosAnalogicos_AUX_Condicionadores = 44902
 REG_UG2_ComandosDigitais_MXW_EmergenciaViaSuper = 42295 #antigo -> 4  # Op15 (Write multiple coils)

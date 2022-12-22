@@ -536,6 +536,8 @@ class StateIndisponivel(State):
         else:
             # Caso contrário, deve parar a unidade
             self.parent_ug.parar()
+            sleep(2)
+            self.parent_ug.fechar_comporta()
         return self
 
 class StateRestrito(State):
@@ -599,6 +601,8 @@ class StateRestrito(State):
         # Caso contrário, deve parar a unidade
         else:
             self.parent_ug.parar()
+            sleep(2)
+            self.parent_ug.fechar_comporta()
         return self
 
 
@@ -738,8 +742,10 @@ class StateDisponivel(State):
                 # Unidade parando
                 self.logger.debug("[UG{}] Unidade parando".format(self.parent_ug.id))
                 # Se o setpoit for acima do mínimo
+                self.parent_ug.fechar_comporta()
                 if self.parent_ug.setpoint >= self.parent_ug.setpoint_minimo:
                     # Deve partir a UG
+                    self.parent_ug.cracking_comporta()
                     self.parent_ug.partir()
                     # E em seguida mandar o setpoint novo (boa prática)
                     self.parent_ug.enviar_setpoint(self.parent_ug.setpoint)
@@ -754,7 +760,9 @@ class StateDisponivel(State):
                 if self.parent_ug.setpoint == 0:
                     self.logger.warning("[UG{}] A UG estava sincronizando com SP zerado, parando a UG.".format(self.parent_ug.id))
                     self.parent_ug.parar()
+                    self.parent_ug.fechar_comporta()
                 else:
+                    self.parent_ug.abrir_comporta()
                     self.parent_ug.partir()
                 # Se não fazer nada
 
@@ -762,7 +770,10 @@ class StateDisponivel(State):
                 # Unidade parada
                 self.logger.debug("[UG{}] Unidade parada".format(self.parent_ug.id))
                 # Se o setpoit for acima do mínimo
-                if self.parent_ug.setpoint >= self.parent_ug.setpoint_minimo:
+                if self.parent_ug.setpoint >= self.parent_ug.setpoint_minimo and self.parent_ug.status_comporta == COMPORTA_FECHADA:
+                    #Deve realizar o cracking de comporta para partir a ug
+                    self.parent_ug.cracking_comporta()
+                    sleep(2)
                     # Deve partir a UG
                     self.parent_ug.partir()
                     # E em seguida mandar o setpoint novo (boa prática)
@@ -771,7 +782,7 @@ class StateDisponivel(State):
             elif self.parent_ug.etapa_atual == UNIDADE_SINCRONIZADA:
                 # Unidade sincronizada
                 self.logger.debug("[UG{}] Unidade sincronizada".format(self.parent_ug.id))
-
+                self.parent_ug.abrir_comporta()
                 # Unidade sincronizada significa que ela está normalizada, logo zera o contador de tentativas
                 if not self.parent_ug.aux_tempo_sincronizada:
                     self.parent_ug.aux_tempo_sincronizada = datetime.now(pytz.timezone("Brazil/East")).replace(tzinfo=None)
@@ -781,6 +792,7 @@ class StateDisponivel(State):
                 # Se o setpoit estiver abaixo do mínimo
                 if self.parent_ug.setpoint == 0:
                     # Deve manter a UG
+                    self.parent_ug.fechar_comporta()
                     self.parent_ug.parar()
                 else:
                     # Caso contrário, mandar o setpoint novo

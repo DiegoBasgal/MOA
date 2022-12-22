@@ -122,6 +122,10 @@ class UnidadeDeGeracao2(UnidadeDeGeracao):
             self.clp,
             REG_UG2_RetrornosAnalogicos_AUX_Condicionadores,
         )
+        self.leitura_Status_Comporta = LeituraModbus("REG_UG2_RetornosDigitais_StatusComporta",
+            self.clp,
+            REG_UG2_RetornosDigitais_StatusComporta
+        )
         """
         C1 = LeituraModbusCoil(
             descr="MXR_PartindoEmAuto",
@@ -777,6 +781,43 @@ class UnidadeDeGeracao2(UnidadeDeGeracao):
                 return self.__last_EtapaAtual
         except:
             #! TODO Tratar exceptions
+            return False
+        else:
+            return response
+
+    @property
+    def status_comporta(self) -> int:
+        try:
+            response = self.leitura_Status_Comporta.valor
+        except Exception as e:
+            raise(e)
+            return False
+        else:
+            return response
+
+    def abrir_comporta(self) -> bool:
+        try:
+            response = self.clp.write_single_register(REG_UG2_RetornosDigitais_StatusComporta, 1)
+        except Exception as e:
+            raise(e)
+            return False
+        else:
+            return response
+    
+    def fechar_comporta(self) -> bool:
+        try:
+            response = self.clp.write_single_register(REG_UG2_RetornosDigitais_StatusComporta, 0)
+        except Exception as e:
+            raise(e)
+            return False
+        else:
+            return response
+
+    def cracking_comporta(self) -> bool:
+        try:
+            response = self.clp.write_single_register(REG_UG2_RetornosDigitais_StatusComporta, 2)
+        except Exception as e:
+            raise(e)
             return False
         else:
             return response

@@ -698,6 +698,7 @@ if __name__ == "__main__":
     logger.info("Inicialização completa, executando o MOA \U0001F916")
 
     threading.Thread(target=lambda: leitura_temporizada()).start()
+    threading.Thread(target=lambda: usina.emergencia_tensao_comporta()).start()
 
     sm = StateMachine(initial_state=prox_estado(usina))
     while True:

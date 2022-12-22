@@ -82,6 +82,7 @@ class Usina:
         self.TDA_FalhaComum = False
         self.BombasDngRemoto = True
         self.avisado_em_eletrica = False
+        self.tensao_emerg_comporta = True
         self.Disj_GDE_QCAP_Fechado = False
         self.deve_tentar_normalizar = True
         self.deve_normalizar_forcado = False
