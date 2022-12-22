@@ -45,7 +45,7 @@ class Planta:
         # Declaração de variáveis padrão da usina
         self.USINA_NV_VERTEDOURO = 462.37
         self.USINA_VAZAO_SANITARIA_COTA = 461.37
-        self.USINA_NV_MINIMO_OPERACAO = 461.37
+        self.USINA_NV_MINIMO_OPERACAO = 461.00
         self.USINA_TENSAO_MINIMA = 23100 * 0.95
         self.USINA_TENSAO_MAXIMA = 23100 * 1.05
         self.aux=0
@@ -53,6 +53,12 @@ class Planta:
         self.aux2=0
         self.aux3=0
         self.aux4=0
+        self.aux_comp_fechada_ug1 = False
+        self.aux_comp_aberta_ug1 = False
+        self.aux_comp_cracking_ug1 = False
+        self.aux_comp_fechada_ug2 = False
+        self.aux_comp_aberta_ug2 = False
+        self.aux_comp_cracking_ug2 = False
         self.shared_dict = shared_dict
         self.escala_ruido = 0.1
         self.speed = 50
@@ -178,6 +184,56 @@ class Planta:
                     self.cust_data_bank.set_words(REG["REG_USINA_AUX_Condicionadores1"], [0])
                     self.shared_dict["trip_condic_usina"]=False
                     self.dj52L.reconhece_reset_dj52L()
+                
+                if self.cust_data_bank.get_words(REG["REG_UG1_Status_Comporta"])[0] == 0 and self.aux_comp_fechada_ug1 == False:
+                    self.cust_data_bank.set_words(REG["REG_UG1_Status_Comporta"], [0])
+                    self.aux_comp_fechada_ug1 = True
+                    self.shared_dict["thread_comp_aberta_ug1"] = False
+                    self.shared_dict["thread_comp_fechada_ug1"] = True
+                    self.shared_dict["thread_comp_cracking_ug1"] = False
+                elif self.cust_data_bank.get_words(REG["REG_UG1_Status_Comporta"])[0] != 0 and self.aux_comp_fechada_ug1 == True:
+                    self.aux_comp_fechada_ug1 = False
+                if self.cust_data_bank.get_words(REG["REG_UG1_Status_Comporta"])[0] == 1 and self.aux_comp_aberta_ug1 == False:
+                    self.cust_data_bank.set_words(REG["REG_UG1_Status_Comporta"], [1])
+                    self.aux_comp_aberta_ug1 = True
+                    self.shared_dict["thread_comp_aberta_ug1"] = True
+                    self.shared_dict["thread_comp_fechada_ug1"] = False
+                    self.shared_dict["thread_comp_cracking_ug1"] = False
+                elif self.cust_data_bank.get_words(REG["REG_UG1_Status_Comporta"])[0] != 1 and self.aux_comp_aberta_ug1 == True:
+                    self.aux_comp_aberta_ug1 = False
+                if self.cust_data_bank.get_words(REG["REG_UG1_Status_Comporta"])[0] == 2 and self.aux_comp_cracking_ug1 == False:
+                    self.cust_data_bank.set_words(REG["REG_UG1_Status_Comporta"], [2])
+                    self.aux_comp_cracking_ug1 = True
+                    self.shared_dict["thread_comp_aberta_ug1"] = False
+                    self.shared_dict["thread_comp_fechada_ug1"] = False
+                    self.shared_dict["thread_comp_cracking_ug1"] = True
+                elif self.cust_data_bank.get_words(REG["REG_UG1_Status_Comporta"])[0] != 2 and self.aux_comp_cracking_ug1 == True:
+                    self.aux_comp_cracking_ug1 = False
+                
+                if self.cust_data_bank.get_words(REG["REG_UG2_Status_Comporta"])[0] == 0 and self.aux_comp_fechada_ug2 == False:
+                    self.cust_data_bank.set_words(REG["REG_UG2_Status_Comporta"], [0])
+                    self.aux_comp_fechada_ug2 = True
+                    self.shared_dict["thread_comp_aberta_ug2"] = False
+                    self.shared_dict["thread_comp_fechada_ug2"] = True
+                    self.shared_dict["thread_comp_cracking_ug2"] = False
+                elif self.cust_data_bank.get_words(REG["REG_UG2_Status_Comporta"])[0] != 0 and self.aux_comp_fechada_ug2 == True:
+                    self.aux_comp_fechada_ug2 = False
+                if self.cust_data_bank.get_words(REG["REG_UG2_Status_Comporta"])[0] == 1 and self.aux_comp_aberta_ug2 == False:
+                    self.cust_data_bank.set_words(REG["REG_UG2_Status_Comporta"], [1])
+                    self.aux_comp_aberta_ug2 = True
+                    self.shared_dict["thread_comp_aberta_ug2"] = True
+                    self.shared_dict["thread_comp_fechada_ug2"] = False
+                    self.shared_dict["thread_comp_cracking_ug2"] = False
+                elif self.cust_data_bank.get_words(REG["REG_UG2_Status_Comporta"])[0] != 1 and self.aux_comp_aberta_ug2 == True:
+                    self.aux_comp_aberta_ug2 = False
+                if self.cust_data_bank.get_words(REG["REG_UG2_Status_Comporta"])[0] == 2 and self.aux_comp_cracking_ug2 == False:
+                    self.cust_data_bank.set_words(REG["REG_UG2_Status_Comporta"], [2])
+                    self.aux_comp_cracking_ug2 = True
+                    self.shared_dict["thread_comp_aberta_ug2"] = False
+                    self.shared_dict["thread_comp_fechada_ug2"] = False
+                    self.shared_dict["thread_comp_cracking_ug2"] = True
+                elif self.cust_data_bank.get_words(REG["REG_UG2_Status_Comporta"])[0] != 2 and self.aux_comp_cracking_ug2 == True:
+                    self.aux_comp_cracking_ug2 = False
 
                 for ug in self.ugs:
                     self.shared_dict["setpoint_kw_ug{}".format(ug.id)] = self.cust_data_bank.get_words(REG["REG_UG{}_CtrlPotencia_Alvo".format(ug.id)])[0]
@@ -211,6 +267,7 @@ class Planta:
                         self.cust_data_bank.set_words(REG["REG_UG{}_Operacao_US".format(ug.id)], [0])
                         ug.partir()
                         pass
+                    
 
                 # dj52L
                 self.dj52L.passo()
@@ -302,10 +359,10 @@ class Planta:
                 continue
 
     def volume_para_nv_montate(self, volume):
-        return min(max(461.37, 461.37 + volume / 190000), 462.37)
+        return min(max(460, 460 + volume / 40000), 462.37)
 
     def nv_montate_para_volume(self, nv_montante):
-        return 190000 * (min(max(461.37, nv_montante), 462.37) - 461.37)
+        return 40000 * (min(max(460, nv_montante), 462.37) - 460)
 
     def q_sanitaria(self, nv_montante):
         return 2.33

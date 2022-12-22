@@ -16,7 +16,7 @@ class Ug:
 
         self.tempo_na_transicao = 0
         self.avisou_trip = False
-        self.etapa_alvo = 0
+        self.etapa_alvo = 1
         self.etapa_atual = 1
         self.flags = 0
         self.potencia = 0
@@ -26,8 +26,8 @@ class Ug:
         self.POT_MAX = 3037.5
         self.POT_MIN = 0.4 * self.POT_MAX
 
-        self.ETAPA_UP = 0
-        self.ETAPA_UPGM = 1
+        self.ETAPA_UP = 1
+        self.ETAPA_UPGM = 2
         self.ETAPA_UVD = 3
         self.ETAPA_UPS = 4
         self.ETAPA_US = 5
@@ -327,7 +327,7 @@ class Ug:
 
     def set_cracking_comporta_ug1(self):
         if self.shared_dict["comporta_fechada_ug1"] == True and self.shared_dict["comporta_aberta_ug1"] == False:
-            while self.shared_dict["progresso_ug1"] <= 50:
+            while self.shared_dict["progresso_ug1"] <= 30:
                 self.shared_dict["progresso_ug1"] += 0.00001
             self.shared_dict["comporta_fechada_ug1"] = False
             self.shared_dict["comporta_aberta_ug1"] = False
@@ -370,7 +370,7 @@ class Ug:
     
     def set_cracking_comporta_ug2(self):
         if self.shared_dict["comporta_fechada_ug2"] == True and self.shared_dict["comporta_aberta_ug2"] == False:
-            while self.shared_dict["progresso_ug2"] <= 50:
+            while self.shared_dict["progresso_ug2"] <= 30:
                 self.shared_dict["progresso_ug2"] += 0.00001
             self.shared_dict["comporta_fechada_ug2"] = False
             self.shared_dict["comporta_aberta_ug2"] = False

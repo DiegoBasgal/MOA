@@ -1509,11 +1509,13 @@ REG = {
     "REG_UG1_Pressao_Turbina": 14904 - 1 + 20000,
     "REG_UG1_AUX_Condicionadores": 14903 - 1 + 20000,
     "REG_UG1_Emergencia_Condicionadores1": 14905 - 1 + 20000,
+    "REG_UG1_Status_Comporta": 14906 - 1 + 20000,
 
     "REG_UG2_Etapa_AUX": 14902 - 1 + 30000,
     "REG_UG2_Pressao_Turbina": 14904 - 1 + 30000,
     "REG_UG2_AUX_Condicionadores": 14903 - 1 + 30000,
     "REG_UG2_Emergencia_Condicionadores2": 14905 - 1 + 30000,
+    "REG_UG2_Status_Comporta": 14906 - 1 + 30000,
     
     "REG_USINA_AUX_CondicionadoresE": 14906 - 1 + 10000,
     "REG_USINA_AUX_Condicionadores1": 14907 - 1 + 10000, 

@@ -147,6 +147,15 @@ class Window(QMainWindow, Ui_Form):
             else:
                 self.lcdNumber_status_comporta_ug1.display("-")
 
+            if self.shared_dict["comporta_aberta_ug2"]:
+                self.lcdNumber_status_comporta_ug2.display("A")
+            elif self.shared_dict["comporta_fechada_ug2"]:
+                self.lcdNumber_status_comporta_ug2.display("F")
+            elif self.shared_dict["comporta_cracking_ug2"]:
+                self.lcdNumber_status_comporta_ug2.display("C")
+            else:
+                self.lcdNumber_status_comporta_ug2.display("-")
+
         except Exception as e:
             print("A", repr(e))
             pass
@@ -227,9 +236,8 @@ class Window(QMainWindow, Ui_Form):
         self.shared_dict["reconhece_reset_ug1"] = True
 
     def partir_ug1(self):
-        if self.shared_dict["comporta_cracking_ug1"]:
-            self.shared_dict["debug_partir_ug1"] = True
-            print("partir ug1 GUI")
+        self.shared_dict["debug_partir_ug1"] = True
+        print("partir ug1 GUI")
 
     def parar_ug1(self):
         self.shared_dict["debug_parar_ug1"] = True
@@ -279,9 +287,8 @@ class Window(QMainWindow, Ui_Form):
         self.shared_dict["reconhece_reset_ug2"] = True
 
     def partir_ug2(self):
-        if self.shared_dict["comporta_aberta_ug2"] == True:
-            self.shared_dict["debug_partir_ug2"] = True
-            print("partir ug2 GUI")
+        self.shared_dict["debug_partir_ug2"] = True
+        print("partir ug2 GUI")
 
     def parar_ug2(self):
         self.shared_dict["debug_parar_ug2"] = True
