@@ -746,6 +746,8 @@ class StateDisponivel(State):
                 if self.parent_ug.setpoint >= self.parent_ug.setpoint_minimo:
                     # Deve partir a UG
                     self.parent_ug.cracking_comporta()
+                    sleep(3)
+                    self.parent_ug.abrir_comporta()
                     self.parent_ug.partir()
                     # E em seguida mandar o setpoint novo (boa prática)
                     self.parent_ug.enviar_setpoint(self.parent_ug.setpoint)
@@ -762,6 +764,8 @@ class StateDisponivel(State):
                     self.parent_ug.parar()
                     self.parent_ug.fechar_comporta()
                 else:
+                    self.parent_ug.cracking_comporta()
+                    sleep(3)
                     self.parent_ug.abrir_comporta()
                     self.parent_ug.partir()
                 # Se não fazer nada
@@ -771,10 +775,11 @@ class StateDisponivel(State):
                 self.logger.debug("[UG{}] Unidade parada".format(self.parent_ug.id))
                 # Se o setpoit for acima do mínimo
                 if self.parent_ug.setpoint >= self.parent_ug.setpoint_minimo and self.parent_ug.status_comporta == COMPORTA_FECHADA:
-                    #Deve realizar o cracking de comporta para partir a ug
+                    #Deve realizar o cracking e abertura de comporta para partir a ug
                     self.parent_ug.cracking_comporta()
-                    sleep(2)
+                    sleep(3)
                     # Deve partir a UG
+                    self.parent_ug.abrir_comporta()
                     self.parent_ug.partir()
                     # E em seguida mandar o setpoint novo (boa prática)
                     self.parent_ug.enviar_setpoint(self.parent_ug.setpoint)
@@ -782,7 +787,6 @@ class StateDisponivel(State):
             elif self.parent_ug.etapa_atual == UNIDADE_SINCRONIZADA:
                 # Unidade sincronizada
                 self.logger.debug("[UG{}] Unidade sincronizada".format(self.parent_ug.id))
-                self.parent_ug.abrir_comporta()
                 # Unidade sincronizada significa que ela está normalizada, logo zera o contador de tentativas
                 if not self.parent_ug.aux_tempo_sincronizada:
                     self.parent_ug.aux_tempo_sincronizada = datetime.now(pytz.timezone("Brazil/East")).replace(tzinfo=None)
