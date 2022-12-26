@@ -413,6 +413,41 @@ class ControleRealizado(State):
         self.usina.heartbeat()
         return Pronto(self.usina)
 
+def leitura_temporizada():
+    delay = 1800
+    proxima_leitura = time.time() + delay
+    while True:
+        try:
+            if usina.leituras_por_hora():
+                acionar_voip()
+                
+            for ug in usina.ugs:
+                ug.leituras_por_hora():
+                    
+        time.sleep(max(0, proxima_leitura - time.time()))
+        except Exception:
+            logger.debug("Houve um problema ao executar a leitura por hora")
+
+        proxima_leitura += (time.time() - proxima_leitura) // delay * delay + delay
+
+def acionar_voip():
+    try:
+        if usina.acionar_voip:
+            voip.falha_abertura_comp = True if usina.falha_abertura_comp else False
+            voip.falha_fechamento_comp = True if usina.falha_fechamento_comp else False
+            voip.alarme_temp_oleo_trafo = True if usina.alarme_temp_oleo_trafo else False
+            voip.alarme_temp_enrol_trafo = True if usina.alarme_temp_enrol_trafo else False
+            voip.falha_part_grupo_diesel = True if usina.falha_part_grupo_diesel else False
+            voip.falha_fechamento_DJ52L = True if usina.falha_fechamento_DJ52L else False
+            voip.enviar_voz_auxiliar()
+            usina.acionar_voip = False
+
+        if usina.avisado_em_eletrica:
+            voip.enviar_voz_emergencia()
+            usina.acionar_voip = False
+
+    except Exception:
+        logger.warning("Houve um problema ao ligar por Voip")
 
 if __name__ == "__main__":
     # A escala de tempo é utilizada para acelerar as simulações do sistema

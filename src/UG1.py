@@ -760,3 +760,87 @@ class UnidadeDeGeracao1(UnidadeDeGeracao):
                     self.cfg["REG_MOA_OUT_STATE_UG{}".format(self.id)],
                     [self.etapa_atual],
                 )
+            
+    def leituras_por_hora(self) -> bool:
+
+        self.falha_abertura_borboleta = LeituraModbusBit("03.13 - Borboleta - Falha na Abertura ", self.clp, REG_UG1_Alarme03, 13)
+        if self.falha_abertura_borboleta.valor != 0:
+            self.logger.warning("[UG1] Houve uma falha na abertura das borboletas do gerador! Favor verificar.")
+        
+        self.alarme_sobretemperatura_enrol_fase_r = LeituraModbusBit("07.14 - Alarme de Sobretemperatura do Enrolamento da Fase R do Gerador via CLP", self.clp, REG_UG1_Alarme07, 14)
+        if self.alarme_sobretemperatura_enrol_fase_r.valor != 0:
+            self.logger.warning("[UG1] O alarme de sobretemperatura do enrolamento de fase R do gerador foi ativado! Favor verificar.")
+        
+        self.alarme_sobretemperatura_enrol_fase_s = LeituraModbusBit("07.15 - Alarme de Sobretemperatura do Enrolamento da Fase S do Gerador via CLP", self.clp, REG_UG1_Alarme07, 15)
+        if self.alarme_sobretemperatura_enrol_fase_s.valor != 0:
+            self.logger.warning("[UG1] O alarme de sobretemperatura do enrolamento de fase S do gerador foi ativado! Favor verificar.")
+        
+        self.alarme_sobretemperatura_enrol_fase_t = LeituraModbusBit("08.00 - Alarme de Sobretemperatura do Enrolamento da Fase T do Gerador via CLP", self.clp, REG_UG1_Alarme08, 00)
+        if self.alarme_sobretemperatura_enrol_fase_t.valor != 0:
+            self.logger.warning("[UG1] O alarme de sobretemperatura do enrolamento de fase R do gerador foi ativado! Favor verificar.")
+
+        self.alarme_sobretemperatura_mancal_la_escora_1 = LeituraModbusBit("08.01 - Alarme de Sobretemperatura do Mancal LA do Gerador (Escora 1) via CLP", self.clp, REG_UG1_Alarme08, 01)
+        if self.alarme_sobretemperatura_mancal_la_escora_1.valor != 0:
+            self.logger.warning("[UG1] O alarme de sobretemperatura do mancal LA escora 1 do gerador foi ativado! Favor verificar.")
+        
+        self.alarme_sobretemperatura_mancal_la_escora_2 = LeituraModbusBit("08.02 - Alarme de Sobretemperatura do Mancal LA do Gerador (Escora 2) via CLP", self.clp, REG_UG1_Alarme08, 02)
+        if self.alarme_sobretemperatura_mancal_la_escora_2.valor != 0:
+            self.logger.warning("[UG1] O alarme de sobretemperatura do mancal LA escora 2 do gerador foi ativado! Favor verificar.")
+        
+        self.alarme_sobretemperatura_mancal_la_casquilho = LeituraModbusBit("08.03 - Alarme de Sobretemperatura do Mancal LA do Gerador (Casquilho) via CLP", self.clp, REG_UG1_Alarme08, 03)
+        if self.alarme_sobretemperatura_mancal_la_casquilho.valor != 0:
+            self.logger.warning("[UG1] O alarme de sobretemperatura do mancal LA casquilho do gerador foi ativado! Favor verificar.")
+        
+        self.alarme_sobretemperatura_mancal_lna_casquilho = LeituraModbusBit("08.05 - Alarme de Sobretemperatura do Mancal LNA do Gerador (Casquilho) via CLP", self.clp, REG_UG1_Alarme08, 05)
+        if self.alarme_sobretemperatura_mancal_lna_casquilho.valor != 0:
+            self.logger.warning("[UG1] O alarme de sobretemperatura do mancal LA casquilho do gerador foi ativado! Favor verificar.")
+        
+        self.alarme_sobretemperatura_mancal_la_contra_escora_1 = LeituraModbusBit("08.04 - Alarme de Sobretemperatura do Mancal LA do Gerador (Contra-Escora 1) via CLP", self.clp, REG_UG1_Alarme08, 04)
+        if self.alarme_sobretemperatura_mancal_la_contra_escora_1.valor != 0:
+            self.logger.warning("[UG1] O alarme de sobretemperatura do mancal LA contra escora 1 do gerdaor foi ativado! Favoer verificar.")
+        
+        self.alarme_sobretemperatura_mancal_la_contra_escora_2 = LeituraModbusBit("08.06 - Alarme de Sobretemperatura do Mancal LA do Gerador (Contra-Escora 2) via CLP", self.clp, REG_UG1_Alarme08, 06)
+        if self.alarme_sobretemperatura_mancal_la_contra_escora_2.valor != 0:
+            self.logger.warning("[UG1] O alarme de sobretemperatura do mancal LA contra escora 2 do gerdaor foi ativado! Favoer verificar.")
+
+        self.alarme_sobretemperatura_vedacao_eixo_turb = LeituraModbusBit("08.07 - Alarme de Sobretemperatura da Vedação do Eixo da Turbina via CLP", self.clp, REG_UG1_Alarme08, 07)
+        if self.alarme_sobretemperatura_vedacao_eixo_turb.valor != 0:
+            self.logger.warning("[UG1] O alarme de sobretemperatura de vedação do eixo da turbina foi ativado! Favor verificar.")
+        
+        self.alarme_sobretemperatura_oleo_reser_uhlm = LeituraModbusBit("08.08 - Alarme de Sobretemperatura do Óleo do Reservatório da UHLM via CLP", self.clp, REG_UG1_Alarme08, 08)
+        if self.alarme_sobretemperatura_oleo_reser_uhlm.valor != 0:
+            self.logger.warning("[UG1] O alarme de sobretemperatura do óleo do reservatório ULHM foi ativado! Favor verificar.")
+        
+        self.alarme_sobretemperatura_oleo_saida_troc_calor = LeituraModbusBit("08.09 - Alarme de Sobretemperatura do Óleo na Saída do Trocador de Calor da UHLM via CLP", self.clp, REG_UG1_Alarme08, 09)
+        if self.alarme_sobretemperatura_oleo_saida_troc_calor.valor != 0:
+            self.logger.warning("[UG1] O alarme de sobretemperatura do óleo na saída do trocador de calor da ULHM foi ativado! Favor verificar.")
+        
+        self.alarme_sobretemperatura_agua_entrada_troc_calor = LeituraModbusBit("08.10 - Alarme de Sobretemperatura da Água na Entrada do Trocador de Calor da UHLM via CLP", self.clp, REG_UG1_Alarme08, 10)
+        if self.alarme_sobretemperatura_agua_entrada_troc_calor.valor != 0:
+            self.logger.warning("[UG1] O alarme de sobretemperatura de água na entrada do trocador de calor da ULHM foi ativado! Favor verificar.")
+        
+        self.alarme_sobretemperatura_agua_saida_troc_calor = LeituraModbusBit("08.11 - Alarme de Sobretemperatura da Água na Saída do Trocador de Calor da UHLM via CLP", self.clp, REG_UG1_Alarme08, 11)
+        if self.alarme_sobretemperatura_agua_saida_troc_calor.valor != 0:
+            self.logger.warning("[UG1] O alarme de sobretemperatura de água no sáida do trocador de calor da ULHM foi ativado! Favor verificar.")
+        
+        self.alarme_sobretemperatura_oleo_reservatorio_UHCT = LeituraModbusBit("08.12 - Alarme de Sobretemperatura do Óleo do Reservatório da UHCT via CLP", self.clp, REG_UG1_Alarme08, 12)
+        if self.alarme_sobretemperatura_oleo_reservatorio_UHCT.valor != 0:
+            self.logger.warning("[UG1] O alarme de sobretemperatura do óleo do reservatório da UHCT foi ativado! Favor verificar.")
+
+        self.falha_desaplicacao_freio = LeituraModbusBit("14.10 - Freio - Falha na Desaplicação", self.clp, REG_UG1_Alarme14, 10)
+        if self.falha_desaplicacao_freio.valor != 0:
+            self.logger.warning("[UG1] Houve uma falha na desaplicação do freio do Gerador! Favor verificar.")
+
+        self.pastilha_freio_gasta = LeituraModbusBit("14.11 - Freio - Pastilha Gasta", self.clp, REG_UG1_Alarme14, 11)
+        if self.pastilha_freio_gasta.valor != 0:
+            self.logger.warning("[UG1] O alarme de pastilha de freio gasta do Gerador foi ativado! Favor verificar.")
+
+        self.alarme_vibracao_excessiva_mancal_la = LeituraModbusBit("15.00 - Alarme - Vibração Excessiva no Mancal LA do Gerador", self.clp, REG_UG1_Alarme15, 00)
+        if self.alarme_vibracao_excessiva_mancal_la.valor != 0:
+            self.logger.warning("[UG1] O alarme de vibração excessiva do mancal LA do Gerador foi ativado! Favor verificar.")
+        
+        self.alarme_vibracao_excessiva_mancal_lna = LeituraModbusBit("15.02 - Alarme - Vibração Excessiva no Mancal LNA do Gerador", self.clp, REG_UG1_Alarme15, 02)
+        if self.alarme_vibracao_excessiva_mancal_lna.valor != 0:
+            self.logger.warning("[UG1] O alarme de vibração excessiva do mancal LNA do Gerador foi ativado! Favor verificar.")
+
+        return True

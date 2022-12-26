@@ -51,34 +51,45 @@ class Usina:
 
         # Define as vars inciais
         self.ts_ultima_tesntativa_de_normalizacao = datetime.now()
+        
+        self.erro_nv = 0
+        self.pot_disp = 0
         self.state_moa = 0
         self.controle_p = 0
         self.controle_i = 0
         self.controle_d = 0
-        self.clp_emergencia_acionada = 0
-        self.db_emergencia_acionada = 0
         self.modo_autonomo = 1
-        self.modo_de_escolha_das_ugs = 0
-        self.nv_montante_recente = 0
-        self.nv_montante_recentes = []
-        self.nv_montante_anterior = 0
-        self.nv_montante_anteriores = []
-        self.erro_nv = 0
         self.erro_nv_anterior = 0
-        self.aguardando_reservatorio = 0
-        self.pot_disp = 0
+        self.nv_montante_recente = 0
+        self.nv_montante_anterior = 0
         self.agendamentos_atrasados = 0
-        self.deve_tentar_normalizar = True
+        self.db_emergencia_acionada = 0
+        self.modo_de_escolha_das_ugs = 0
+        self.clp_emergencia_acionada = 0
+        self.aguardando_reservatorio = 0
         self.tentativas_de_normalizar = 0
-        self.ts_nv = []
-        self.borda_aviso_clp_pacp = False
+
+        self.tensao_ok = False
+        self.timer_tensao = None
+        self.acionar_voip = False
+        self.falha_abertura_comp = False
+        self.avisado_em_eletrica = False
         self.borda_aviso_clp_tda = False
         self.borda_aviso_clp_ug1 = False
         self.borda_aviso_clp_ug2 = False
-        self.timer_tensao = None
-        self.tensao_ok = False
+        self.borda_aviso_clp_pacp = False
+        self.falha_fechamento_comp = False
+        self.deve_tentar_normalizar = True
+        self.falha_fechamento_DJ52L = False 
+        self.alarme_temp_oleo_trafo = False
+        self.alarme_temp_enrol_trafo = False
+        self.falha_part_grupo_diesel = False
 
+        self.ts_nv = []
         self.condicionadores = []
+        self.nv_montante_recentes = []
+        self.nv_montante_anteriores = []
+        
         clp = ModbusClient(
             host=self.cfg["USN_slave_ip"],
             port=self.cfg["USN_slave_porta"],
@@ -1237,6 +1248,143 @@ class Usina:
         self.modo_autonomo = 0
         self.db.update_modo_manual()
 
+    def leituras_por_hora(self):
+        
+        # Disparo de mensagens por Telegram
+        self.falta_fase_trafo_auxiliar = LeituraModbusBit("01.07 - Serviço Auxiliar - Falta de Fase Fonte 01 (Trafo Auxiliar)", clp, REG_USINA_Alarme01, 07)
+        if self.falta_fase_trafo_auxiliar.valor != 0:
+            logger.warning("O Serviço Auxiliar apontou uma falta de fase no Transformador Auxiliar! Favor verificar.")
+        
+        self.falta_fase_grupo_diesel = LeituraModbusBit("01.08 - Serviço Auxiliar - Falta de Fase Fonte 02 (Frupo Diesel)", clp, REG_USINA_Alarme01, 08)]
+        if self.falta_fase_grupo_diesel.valor != 0:
+            logger.warning("O serviço Auxiliar apontou uma falta de fase no Grupo Diesel! Favor verificar.")
+            
+        self.alarme_nivel_oleo_alto_trafo_elevador = LeituraModbusBit("02.08 - Trafo Elevador - Nível Óleo Alto Alarme", clp, REG_USINA_Alarme02, 08)
+        if self.alarme_nivel_oleo_alto_trafo_elevador.valor != 0:
+            logger.warning("Alarme de nível de óleo alto do Tranformador Elevador ativado! Favor verificar.")
+        
+        self.alarme_nivel_muito_alto_poco_drenagem = LeituraModbusBit("03.05 - Poço de Drenagem - Nível Muito Alto Alarme", clp, REG_USINA_Alarme03, 05)
+        if self.alarme_nivel_muito_alto_poco_drenagem.valor != 0:
+            logger.warning("Alarme de nível muito alto do poço de drenagem ativado! Favor verificar.")
+
+        self.falha_acionamento_bomba_drenagem_1 = LeituraModbusBit("03.07 - Bomba de Drenagem 01 - Falha no Acionamento", clp, REG_USINA_Alarme03, 07)
+        if self.falha_acionamento_bomba_drenagem_1.valor != 0:
+            logger.warning("Houve uma falha no acionamento da bomba de drenagem 1! Favor verificar.")
+        
+        self.falha_acionamento_bomba_drenagem_2 = LeituraModbusBit("03.09 - Bomba de Drenagem 02 - Falha no Acionamento", clp, REG_USINA_Alarme03, 09)
+        if self.falha_acionamento_bomba_drenagem_2.valor != 0:
+            logger.warning("Houve uma falha no acionamento da bomba de drenagem 2! Favor verificar.")
+        
+        self.falha_sistema_filtro = LeituraModbusBit("03.13 - Filtro Água Primário - Falha no Sistema de Filtro", clp, REG_USINA_Alarme03, 13)
+        if self.falha_sistema_filtro.valor != 0:
+            logger.warning("Houve uma falha no sistema de filtro de água primário! Favor verificar.")
+        
+        self.alarme_nivel_minimo_barragem = LeituraModbusBit("04.05 - Nível Barragem - Nível Minimo Alarme", clp, REG_USINA_Alarme04, 05)
+        if self.alarme_nivel_minimo_barragem.valor != 0:
+            logger.warning("Alarme de nível mínimo da barragem ativado! Favor verificar.")
+
+        self.falha_com_clp_pacp_qcta = LeituraModbusBit("04.09 - Falha de Comunicação entre o CLP do PACP com o CLP do QCTA", clp, REG_USINA_Alarme04, 09)
+        if self.falha_com_clp_pacp_qcta.valor != 0:
+            logger.warning("Houve uma falha de comunicação entre o CLP PACP com o CLP QCTA! Favor verificar.")
+
+        self.disj_q3804_desligado = LeituraModbusBit("06.01 - PDSA - Alimentação Carregador Baterias - Disj. Q380.4 Desligado", clp, REG_UG1_Alarme06, 01)
+        if disj_q3804_desligado.valor != 0:
+            logger.warning("O disjuntor Q380.4 (alimentação de baterias) foi desligado! Favor verificar.")
+        
+        self.disj_1q3800_desligado = LeituraModbusBit("06.11 - PDSA - Alimentação Cargas Essenciais UG01 - Disj. 1Q380.0 Desligado", clp, REG_UG1_Alarme06, 11)
+        if self.disj_1q3800_desligado.valor != 0:
+            logger.warning("O disjuntor 1Q308.0 (alimentação de cargas essenciais UG1) foi desligado! FAvor verificar.")
+
+        self.falha_analog_ar_comprimido = LeituraModbusBit("09.02 - Falha Entrada Analógica Pressão Sistema Ar Comprimido", clp, REG_USINA_Alarme09, 02)
+        if self.falha_analog_ar_comprimido.valor != 0:
+            logger.warning("Houve uma falha na entrada analógica de pressão do sismtema de ar comprimido! Favor verificar.")
+        
+        self.diferencial_grade_suja = LeituraModbusBit("09.09 - Diferencial Grade Suja", clp, REG_USINA_Alarme09, 09)
+        if self.diferencial_grade_suja.valor != 0:
+            logger.warning("Alarme de difenrecial de grade suja ativado! Favor verificar.")
+        
+        self.difenrecial_grade_muito_suja = LeituraModbusBit("09.10 - Diferencial Grade Muito Suja", clp, REG_USINA_Alarme09, 10)
+        if self.diferencial_grade_muito_suja.valor != 0:
+            logger.warning("Alarme de diferencial de grade muito suja ativado! Favor verificar.")
+        
+        self.tensao_anormal_ret_cons = LeituraModbusBit("11.07 - Carregador de Baterias CB01 - Tensão Anormal no Retificador ou Consumidor", clp, REG_USINA_Alarme11, 07)
+        if self.tensao_anormal_ret_cons.valor != 0:
+            logger.warning("Houve um registro de tensão anromal no retificar ou consumidor do carregador de baterias CB01")
+
+        self.anormalidade_baterias = LeituraModbusBit("11.10 - Carregador de Baterias CB01 - Anormalidade nas Baterias", clp, REG_USINA_Alarme11, 10)
+        if self.anormalidade_baterias.valor != 0
+            logger.warning("Houve um registro de anormalidade nas baterias, apontado pelo carregador de baterias CB01")
+        
+        self.flutuacao_anormal = LeituraModbusBit("11.11 - Carregador de Baterias CB01 - Flutuação Anormal", clp, REG_USINA_Alarme11, 11)
+        if self.flutuacao_anormal.valor != 0:
+            logger.warning("Houve um  registro de flutação anromal, apontado pelo carregador de baterias CB01! Favor verificar.")
+
+        self.falta_fase = LeituraModbusBit("12.02 - QCTA - UHTA - Falta Fase", clp, REG_USINA_Alarme12, 02)
+        if self.falta_fase.valor != 0:
+            logger.warning("Houve um registro de falta de fase na QCTA UHTA! Favor verificar.")
+        
+        self.filtro_sujo = LeituraModbusBit("12.03 - QCTA - UHTA - Filtro Sujo", clp, REG_USINA_Alarme12, 03)
+        if self.filtro_sujo.valor != 0:
+            logger.warning("Houve um registro de filtro sujo na QCTA UHTA! Favor verificar.")
+        
+        self.falha_acionamento_bomba_1 = LeituraModbusBit("12.10 - QCTA - UHTA - Falha Acionamento da Bomba 01", clp, REG_USINA_Alarme12, 10)
+        if self.falha_acionamento_bomba_1.valor != 0:
+            logger.warning("Houve uma falha no acionamento da bomba 1 da QCTA UHTA! Favor verificar.")
+        
+        self.falha_acionamento_bomba_2 = LeituraModbusBit("12.12 - QCTA - UHTA - Falha Acionamento da Bomba 02", clp, REG_USINA_Alarme12, 12)
+        if self.falha_acionamento_bomba_2.valor != 0:
+            logger.warning("Houve uma falha no acionamento da bomba 2 da QCTA UHTA! Favor verificar.")
+
+        # Disparo de mensagens Telegram + Ligação por voip
+        self.trafo_elevador_temperatura_enrolamento_alarme = LeituraModbusBit('02.12 - Trafo Elevador - Temperatura Enrolamento Alarme', clp, REG_USINA_Alarme02, 12)
+        if self.trafo_elevador_temperatura_enrolamento_alarme.valor == 1 and self.alarme_temp_enrol_trafo == False:
+            logger.warning("Alarme de temperatura do enrolamento do transformador elevdor ativado! Favor verificar.")
+            self.alarme_temp_enrol_trafo = True
+            self.acionar_voip = True
+        elif self.trafo_elevador_temperatura_enrolamento_alarme.valor == 0 and self.alarme_temp_enrol_trafo == True:
+            self.alarme_temp_enrol_trafo = False
+
+        self.trafo_elevador_temperatura_oleo_alarme = LeituraModbusBit('02.14 - Trafo Elevador - Temperatura Óleo Alarme', clp, REG_USINA_Alarme02, 14)
+        if self.trafo_elevador_temperatura_oleo_alarme.valor == 1 and self.alarme_temp_oleo_trafo == False:
+            logger.warning("Alarme de temperatura do óleo do transformador elevador ativado! Favor verificar.")
+            self.alarme_temp_oleo_trafo = True
+            self.acionar_voip = True
+        elif self.trafo_elevador_temperatura_oleo_alarme.valor == 0 and self.alarme_temp_oleo_trafo == True:
+            self.alarme_temp_oleo_trafo = False
+
+        self.falha_partida_grupo_diesel = LeituraModbusBit('01.09 - Serviço Auxiliar - Falha na Partida do Grupo Diesel', clp, REG_USINA_Alarme01, 09)
+        if self.falha_partida_grupo_diesel.valor == 1 and self.falha_part_grupo_diesel == False:
+            logger.warning("Houve uma falha na partida do grupo diesel! Favor verificar")
+            self.falha_part_grupo_diesel = True
+            self.acionar_voip = True
+        elif self.falha_partida_grupo_diesel.valor == 0 and self.falha_part_grupo_diesel == True:
+            self.falha_part_grupo_diesel = False
+
+        self.disjuntor_52l_falha_no_fechamento = LeituraModbusBit('02.01 - Disjuntor 52L - Falha no Fechamento', clp, REG_USINA_Alarme02, 01)
+        if self.disjuntor_52l_falha_no_fechamento.valor == 1 and self.falha_fechamento_DJ52L == False:
+            logger.warning("Houve uma falha no fechamento do Disjuntor 52L! Favor verificar.")
+            self.falha_fechamento_DJ52L = True
+            self.acionar_voip = True
+        elif self.disjuntor_52l_falha_no_fechamento.valor == 0 and self.falha_fechamento_DJ52L == True:
+            self.falha_fechamento_DJ52L = False 
+
+        self.falha_abertura_comporta = LeituraModbusBit("12.05 - QCTA - Comporta Falha na Abertura", clp, REG_USINA_Alarme12, 15)
+        if self.falha_abertura_comporta.valor == 1 and self.falha_abertura_comp == False:
+            logger.warning("Houve uma falha na abertura da comportas! Favor verificar.")
+            self.falha_abertura_comp = True
+            self.acionar_voip = True
+        elif self.falha_abertura_comporta.valor == 0 and self.falha_abertura_comp == True:
+            self.falha_abertura_comp = False
+        
+        self.falha_fechamento_comporta = LeituraModbusBit("13.00 - QCTA - Comporta Falha no Fechamento", clp, REG_USINA_Alarme13, 00)
+        if self.falha_fechamento_comporta.valor == 1 and self.falha_fechamento_comp == False:
+            logger.warning("Houve uma falha no fechamento das comportas! Favor verificar.")
+            self.falha_fechamento_comp = True
+            self.acionar_voip = True
+        elif self.falha_fechamento_comporta.valor == 0 and self.falha_fechamento_comp == True:
+            self.falha_fechamento_comp = False
+
+        return True
 
 def ping(host):
     """
