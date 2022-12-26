@@ -23,14 +23,20 @@ config_file = os.path.join(os.path.dirname(__file__), 'voip_config.json')
 with open(config_file, 'r') as file:
     config = json.load(file)
 
-
 caller_voip = config['caller_voip']
 voz_habilitado = config['voz_habilitado']
 napikey = config['napikey']
 user_token = config['user_token']
 
+falha_abertura_comp = False
+falha_fechamento_comp = False
+alarme_temp_oleo_trafo = False
+alarme_temp_enrol_trafo = False
+falha_part_grupo_diesel = False
+falha_fechamento_DJ52L = False
+
 lista_de_contatos_padrao = [
-    #["Diego", "41999111134"], 
+    ["Diego", "41999111134"], 
     #["Luis", "48991058729"], 
     #["Escritorio", "41996570004"],
     #["Henrique P5", "41999610053"],
@@ -150,6 +156,190 @@ def enviar_voz_emergencia(lista_de_contatos=None):
                 logger.debug("Exception NVOIP: {} ".format(e.read()))
             else:
                 logger.debug("response_body: {} ".format(response_body))
+
+
+def enviar_voz_auxiliar(lista_de_contatos=None):
+
+    access_token = get_token()
+
+    if voz_habilitado:
+        logger.debug("Enviando Voz Emergencia")
+
+        if lista_de_contatos is None:
+            try:
+                lista_de_contatos = carrega_contatos()
+                if len(lista_de_contatos) < 1:
+                    raise ValueError("Lista de contatos com problema")
+            except Exception as e:
+                logger.exception(e)
+                lista_de_contatos = lista_de_contatos_padrao
+
+    
+        # Para cada contato na lista de contatos deve-se fazer uma chamada a web api
+        for contato in lista_de_contatos:
+            logger.info("Disparando torpedo de voz para {} ({})".format(contato[0], contato[1]))
+
+            if falha_abertura_comp:
+                # Montagem do pacote para chamar a api
+                data = {
+                    "caller": "{}".format(caller_voip),  # caller fornecido pela nvoip
+                    "called": "{}".format(contato[1]),  # O número a ser chamado, no formato dddnnnnnnnnn
+                    "audios": [
+                        {
+                            "audio": "Atenção! Houve uma falha na abertura de comportas na PCH Covó, favor verificar. Atenção! Houve uma falha na abertura de comportas na PCH Covó, favor verificar.",
+                            "positionAudio": 1,
+                        }
+                    ],
+                    "dtmfs": [],
+                }
+                headers = {"Content-Type": "application/json", "Authorization": access_token,}
+                # pharse/encode para json
+                data = json.dumps(data)
+                data = str(data).encode()
+                # Envia a request para a api e recebe a resposta
+                request = Request("https://api.nvoip.com.br/v2/torpedo/voice?napikey={}".format(napikey), data=data, headers=headers,)
+                try:
+                    response_body = urlopen(request).read()
+                except Exception as e:
+                    logger.debug("Exception NVOIP: {} ".format(e.read()))
+                else:
+                    logger.debug("response_body: {} ".format(response_body))
+                sleep(20)
+            
+            if falha_fechamento_comp:
+                # Montagem do pacote para chamar a api
+                data = {
+                    "caller": "{}".format(caller_voip),  # caller fornecido pela nvoip
+                    "called": "{}".format(contato[1]),  # O número a ser chamado, no formato dddnnnnnnnnn
+                    "audios": [
+                        {
+                            "audio": "Atenção! Houve uma falha no fechamento das comportas na PCH Covó, favor verificar. Atenção! Houve uma falha no fechamento das comportas na PCH Covó, favor verificar.",
+                            "positionAudio": 1,
+                        }
+                    ],
+                    "dtmfs": [],
+                }
+                headers = {"Content-Type": "application/json", "Authorization": access_token,}
+                # pharse/encode para json
+                data = json.dumps(data)
+                data = str(data).encode()
+                # Envia a request para a api e recebe a resposta
+                request = Request("https://api.nvoip.com.br/v2/torpedo/voice?napikey={}".format(napikey), data=data, headers=headers,)
+                try:
+                    response_body = urlopen(request).read()
+                except Exception as e:
+                    logger.debug("Exception NVOIP: {} ".format(e.read()))
+                else:
+                    logger.debug("response_body: {} ".format(response_body))
+                sleep(20)
+            
+            if alarme_temp_oleo_trafo:
+                # Montagem do pacote para chamar a api
+                data = {
+                    "caller": "{}".format(caller_voip),  # caller fornecido pela nvoip
+                    "called": "{}".format(contato[1]),  # O número a ser chamado, no formato dddnnnnnnnnn
+                    "audios": [
+                        {
+                            "audio": "Atenção! O alarme de temperatura de óleo do transformador elevador na PCH Covó foi ativado, favor verificar. Atenção! O alarme de temperatura de óleo do transformador elevador na PCH Covó foi ativado, favor verificar.",
+                            "positionAudio": 1,
+                        }
+                    ],
+                    "dtmfs": [],
+                }
+                headers = {"Content-Type": "application/json", "Authorization": access_token,}
+                # pharse/encode para json
+                data = json.dumps(data)
+                data = str(data).encode()
+                # Envia a request para a api e recebe a resposta
+                request = Request("https://api.nvoip.com.br/v2/torpedo/voice?napikey={}".format(napikey), data=data, headers=headers,)
+                try:
+                    response_body = urlopen(request).read()
+                except Exception as e:
+                    logger.debug("Exception NVOIP: {} ".format(e.read()))
+                else:
+                    logger.debug("response_body: {} ".format(response_body))
+                sleep(20)
+
+            if alarme_temp_enrol_trafo:
+                # Montagem do pacote para chamar a api
+                data = {
+                    "caller": "{}".format(caller_voip),  # caller fornecido pela nvoip
+                    "called": "{}".format(contato[1]),  # O número a ser chamado, no formato dddnnnnnnnnn
+                    "audios": [
+                        {
+                            "audio": "Atenção! O alarme de temperatura de enrolamento do transformador elevador na PCH Covó foi ativado, favor verificar. Atenção! O alarme de temperatura de enrolamento do transformador elevador na PCH Covó foi ativado, favor verificar.",
+                            "positionAudio": 1,
+                        }
+                    ],
+                    "dtmfs": [],
+                }
+                headers = {"Content-Type": "application/json", "Authorization": access_token,}
+                # pharse/encode para json
+                data = json.dumps(data)
+                data = str(data).encode()
+                # Envia a request para a api e recebe a resposta
+                request = Request("https://api.nvoip.com.br/v2/torpedo/voice?napikey={}".format(napikey), data=data, headers=headers,)
+                try:
+                    response_body = urlopen(request).read()
+                except Exception as e:
+                    logger.debug("Exception NVOIP: {} ".format(e.read()))
+                else:
+                    logger.debug("response_body: {} ".format(response_body))
+                sleep(20)
+
+            if falha_part_grupo_diesel:
+                # Montagem do pacote para chamar a api
+                data = {
+                    "caller": "{}".format(caller_voip),  # caller fornecido pela nvoip
+                    "called": "{}".format(contato[1]),  # O número a ser chamado, no formato dddnnnnnnnnn
+                    "audios": [
+                        {
+                            "audio": "Atenção! Houve uma falha na partida do grupo diesel na PCH Covó, favor verificar. Atenção! Houve uma falha na partida do grupo diesel na PCH Covó, favor verificar.",
+                            "positionAudio": 1,
+                        }
+                    ],
+                    "dtmfs": [],
+                }
+                headers = {"Content-Type": "application/json", "Authorization": access_token,}
+                # pharse/encode para json
+                data = json.dumps(data)
+                data = str(data).encode()
+                # Envia a request para a api e recebe a resposta
+                request = Request("https://api.nvoip.com.br/v2/torpedo/voice?napikey={}".format(napikey), data=data, headers=headers,)
+                try:
+                    response_body = urlopen(request).read()
+                except Exception as e:
+                    logger.debug("Exception NVOIP: {} ".format(e.read()))
+                else:
+                    logger.debug("response_body: {} ".format(response_body))
+                sleep(20)
+
+            if falha_fechamento_DJ52L:
+                # Montagem do pacote para chamar a api
+                data = {
+                    "caller": "{}".format(caller_voip),  # caller fornecido pela nvoip
+                    "called": "{}".format(contato[1]),  # O número a ser chamado, no formato dddnnnnnnnnn
+                    "audios": [
+                        {
+                            "audio": "Atenção! Houve uma falha no fechamento do disjuntor 52L na PCH Covó, favor verificar. Atenção! Houve uma falha no fechamento do disjuntor 52L na PCH Covó, favor verificar.",
+                            "positionAudio": 1,
+                        }
+                    ],
+                    "dtmfs": [],
+                }
+                headers = {"Content-Type": "application/json", "Authorization": access_token,}
+                # pharse/encode para json
+                data = json.dumps(data)
+                data = str(data).encode()
+                # Envia a request para a api e recebe a resposta
+                request = Request("https://api.nvoip.com.br/v2/torpedo/voice?napikey={}".format(napikey), data=data, headers=headers,)
+                try:
+                    response_body = urlopen(request).read()
+                except Exception as e:
+                    logger.debug("Exception NVOIP: {} ".format(e.read()))
+                else:
+                    logger.debug("response_body: {} ".format(response_body))
+                sleep(20)
 
 def enviar_voz_teste():
 

@@ -936,6 +936,7 @@ REG_UG2_UHLM_RodizioPrincipal = -1 + 13608
 REG_UG2_UHLM_RodizioRetaguarda = -1 + 13609
 REG_UG2_VersaoBase = -1 + 12764
 REG_UG2_VersaoCustom = -1 + 12765
+
 REG_USINA_Alarme01 = -1 + 14199
 REG_USINA_Alarme02 = -1 + 14200
 REG_USINA_Alarme03 = -1 + 14201

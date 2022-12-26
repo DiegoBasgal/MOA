@@ -388,15 +388,14 @@ def leitura_temporizada():
     delay = 1800
     proxima_leitura = time.time() + delay
     while True:
-        time.sleep(max(0, proxima_leitura - time.time()))
         try:
             if usina.leituras_por_hora():
                 acionar_voip()
                 
             for ug in usina.ugs:
-                if ug.leituras_por_hora():
-                    acionar_voip()
-
+                ug.leituras_por_hora():
+                    
+        time.sleep(max(0, proxima_leitura - time.time()))
         except Exception:
             logger.debug("Houve um problema ao executar a leitura por hora")
 
@@ -404,12 +403,19 @@ def leitura_temporizada():
 
 def acionar_voip():
     try:
-        for ug in usina.ugs:
-            if ug.avisou_emerg_voip:
-                voip.enviar_voz_emergencia()
+        if usina.acionar_voip:
+            voip.falha_abertura_comp = True if usina.falha_abertura_comp else False
+            voip.falha_fechamento_comp = True if usina.falha_fechamento_comp else False
+            voip.alarme_temp_oleo_trafo = True if usina.alarme_temp_oleo_trafo else False
+            voip.alarme_temp_enrol_trafo = True if usina.alarme_temp_enrol_trafo else False
+            voip.falha_part_grupo_diesel = True if usina.falha_part_grupo_diesel else False
+            voip.falha_fechamento_DJ52L = True if usina.falha_fechamento_DJ52L else False
+            voip.enviar_voz_auxiliar()
+            usina.acionar_voip = False
 
         if usina.avisado_em_eletrica:
             voip.enviar_voz_emergencia()
+            usina.acionar_voip = False
 
     except Exception:
         logger.warning("Houve um problema ao ligar por Voip")
