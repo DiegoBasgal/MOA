@@ -461,7 +461,8 @@ class Usina:
             i += 1
             j = len(agendamentos)
 
-        logger.debug(agendamentos)
+        i = len(agendamentos)
+        logger.debug("Data: {}  Criado por: {}  Comando: {}".format(agendamentos[i-1][1].strftime("%Y-%m-%d %H:%M:%S"), agendamentos[i-1][6], agendamentos[i-1][3]))
 
         if len(agendamentos) == 0:
             return True
@@ -488,21 +489,21 @@ class Usina:
                 if agendamento[3] == AGENDAMENTO_INDISPONIBILIZAR:
                     logger.warning("Acionando emergência!")
                     self.acionar_emergencia()
+                    self.db.update_agendamento(int(agendamento[0]), 1, obs="AGENDAMENTO NÃO EXECUTADO POR CONTA DE ATRASO!")
                     return False
                 elif agendamento[3] == AGENDAMENTO_ALTERAR_NV_ALVO or AGENDAMENTO_ALTERAR_POT_LIMITE_TODAS_AS_UGS or AGENDAMENTO_BAIXAR_POT_UGS_MINIMO or AGENDAMENTO_NORMALIZAR_POT_UGS_MINIMO:
                     logger.info("Não foi possível executar o agendamento! Favor re-agendar")
+                    self.db.update_agendamento(int(agendamento[0]), 1, obs="AGENDAMENTO NÃO EXECUTADO POR CONTA DE ATRASO!")
                     return False
                 elif agendamento[3] in AGENDAMENTO_LISTA_BLOQUEIO_UG1:
                     logger.info("Indisponibilizando UG1")
                     self.ug1.forcar_estado_indisponivel()
+                    self.db.update_agendamento(int(agendamento[0]), 1, obs="AGENDAMENTO NÃO EXECUTADO POR CONTA DE ATRASO!")
                     return False
                 elif agendamento[3] in AGENDAMENTO_LISTA_BLOQUEIO_UG2:
                     logger.info("Indisponibilizando UG2")
                     self.ug2.forcar_estado_indisponivel()
-                    return False
-                elif agendamento[3] in AGENDAMENTO_LISTA_BLOQUEIO_UG3:
-                    logger.info("Indisponibilizando UG3")
-                    self.ug3.forcar_estado_indisponivel()
+                    self.db.update_agendamento(int(agendamento[0]), 1, obs="AGENDAMENTO NÃO EXECUTADO POR CONTA DE ATRASO!")
                     return False
                 else:
                     logger.info("Agendamento não encontrado! Retomando operação...")
