@@ -16,7 +16,7 @@ class Ug:
         self.tempo_na_transicao = 0
         self.avisou_trip = False
         self.etapa_alvo = 0
-        self.etapa_atual = 1
+        self.etapa_atual = 0
         self.flags = 0
         self.potencia = 0
         self.setpoint = 0

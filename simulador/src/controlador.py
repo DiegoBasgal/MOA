@@ -83,9 +83,9 @@ class Controlador:
                     self.shared_dict["stop_gui"] = True
                     exit()
 
-                # lf.shared_dict["q_alfuente"] = self.timed_afluente[counter_timed_afluente][2]
+                self.shared_dict["q_alfuente"] = self.timed_afluente[counter_timed_afluente][2]
 
-                """
+                
                 qmed = 7
                 qdelta = 3           
                 w = 0.5
@@ -95,7 +95,7 @@ class Controlador:
                     self.shared_dict["q_alfuente"] = qmed - (qdelta/2) + qdelta * (2 * duty)
                 else:
                     self.shared_dict["q_alfuente"] = qmed + (qdelta/2) + qdelta * (2 * (0.5-duty))
-                """
+                
 
                 # FIM COMPORTAMENTO USINA
                 lock.release()
