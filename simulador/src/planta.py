@@ -72,7 +72,7 @@ class Planta:
         self.dj52L = Dj52L(self)
 
         self.cust_data_bank = DataBank()
-        self.server = ModbusServer(host="10.101.2.215", port=5003, no_block=True)
+        self.server = ModbusServer(host="localhost", port=5003, no_block=True)
         self.server.start()
         for R in REG:
             self.cust_data_bank.set_words(int(REG[R]), [0])
@@ -365,4 +365,5 @@ class Planta:
         return 40000 * (min(max(460, nv_montante), 462.37) - 460)
 
     def q_sanitaria(self, nv_montante):
+        # alterar para que quando as ugs estiverem em operação a vazao ser 0
         return 2.33

@@ -24,7 +24,7 @@ class Ug:
         self.horimetro_hora = 0
 
         self.POT_MAX = 3037.5
-        self.POT_MIN = 0.4 * self.POT_MAX
+        self.POT_MIN = 0.3 * self.POT_MAX
 
         self.ETAPA_UP = 1
         self.ETAPA_UPGM = 2
