@@ -365,5 +365,8 @@ class Planta:
         return 40000 * (min(max(460, nv_montante), 462.37) - 460)
 
     def q_sanitaria(self, nv_montante):
-        # alterar para que quando as ugs estiverem em operação a vazao ser 0
-        return 2.33
+        for ug in self.ugs:
+            if ug.etapa_atual != 1:
+                return 0
+            else:
+                return 2.33

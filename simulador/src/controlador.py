@@ -51,7 +51,7 @@ class Controlador:
             pool_name="my_pool",
             pool_size=10,
             pool_reset_session=True,
-            host="172.21.15.171",
+            host="172.21.15.45",
             user="moa",
             password="&264H3$M@&z$",
             database="django_db",
