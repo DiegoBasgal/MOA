@@ -55,6 +55,8 @@ class Planta:
         self.aux4=0
         self.aux5=0
         self.aux6=0
+        self.aux7=0
+        self.aux8=0
         self.aux_comp_fechada_ug1 = False
         self.aux_comp_aberta_ug1 = False
         self.aux_comp_cracking_ug1 = False
@@ -100,6 +102,8 @@ class Planta:
         self.shared_dict["reset_geral_condic"] = False
         self.shared_dict["condicao_falha_cracking_ug1"] = False
         self.shared_dict["condicao_falha_cracking_ug2"] = False
+        self.shared_dict["permissao_abrir_comporta_ug1"] = False
+        self.shared_dict["permissao_abrir_comporta_ug2"] = False
 
         volume = self.nv_montate_para_volume(self.shared_dict["nv_montante"])
         self.dj52L.abrir()
@@ -254,6 +258,20 @@ class Planta:
                     self.cust_data_bank.set_words(REG["REG_UG2_AUX_Condicionadores"], [0])
                     self.shared_dict["condicao_falha_cracking_ug2"] = False
                     self.aux6 = 0
+
+                if self.shared_dict["permissao_abrir_comporta_ug1"] == True and self.aux7 == 0:
+                    #self.cust_data_bank.set_words(REG["REG_UG1_Permissao_Abrir_Comp"], [1])
+                    self.aux7 = 1
+                elif self.shared_dict["permissao_abrir_comporta_ug1"] == False and self.aux7 == 1:
+                    #self.cust_data_bank.set_words(REG["REG_UG1_Permissao_Abrir_Comp"], [0])
+                    self.aux7 = 0
+
+                if self.shared_dict["permissao_abrir_comporta_ug2"] == True and self.aux8 == 0:
+                    #self.cust_data_bank.set_words(REG["REG_UG2_Permissao_Abrir_Comp"], [1])
+                    self.aux8 = 1
+                elif self.shared_dict["permissao_abrir_comporta_ug2"] == False and self.aux8 == 1:
+                    #self.cust_data_bank.set_words(REG["REG_UG2_Permissao_Abrir_Comp"], [0])
+                    self.aux8 = 0
 
                 for ug in self.ugs:
                     self.shared_dict["setpoint_kw_ug{}".format(ug.id)] = self.cust_data_bank.get_words(REG["REG_UG{}_CtrlPotencia_Alvo".format(ug.id)])[0]

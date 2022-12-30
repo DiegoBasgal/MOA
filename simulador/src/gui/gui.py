@@ -25,29 +25,30 @@ class Window(QMainWindow, Ui_Form):
         self.aux1=0
         self.aux2=0 
         self.aux3=0
+
         self.shared_dict["trip_condic_usina"]=False
-        self.shared_dict["trip_condic_ug1"]=False
-        self.shared_dict["trip_condic_ug2"]=False
+        self.shared_dict["limpa_grades_operando"] = False
+        
+        self.shared_dict["equalizar_ug1"] = False
+        self.shared_dict["equalizar_ug2"] = False
+        self.shared_dict["trip_condic_ug1"] = False
+        self.shared_dict["trip_condic_ug2"] = False
+        self.shared_dict["comporta_aberta_ug1"] = False
+        self.shared_dict["comporta_aberta_ug2"] = False
+        self.shared_dict["comporta_fechada_ug1"] = True
+        self.shared_dict["comporta_fechada_ug2"] = True
+        self.shared_dict["comporta_cracking_ug1"] = False
+        self.shared_dict["comporta_cracking_ug2"] = False
+        self.shared_dict["comporta_operando_ug1"] = False
+        self.shared_dict["comporta_operando_ug2"] = False
         self.shared_dict["set_press_turbina_ug1"] = False
         self.shared_dict["set_press_turbina_ug2"] = False
-        self.shared_dict["comporta_aberta_ug1"] = False
-        self.shared_dict["comporta_fechada_ug1"] = True
-        self.shared_dict["comporta_cracking_ug1"] = False
-        self.shared_dict["comporta_aberta_ug2"] = False
-        self.shared_dict["comporta_fechada_ug2"] = True
-        self.shared_dict["comporta_cracking_ug2"] = False
-        
         self.shared_dict["thread_comp_aberta_ug1"] = False
-        self.shared_dict["thread_comp_fechada_ug1"] = False
-        self.shared_dict["thread_comp_cracking_ug1"] = False
-        
         self.shared_dict["thread_comp_aberta_ug2"] = False
+        self.shared_dict["thread_comp_fechada_ug1"] = False
         self.shared_dict["thread_comp_fechada_ug2"] = False
+        self.shared_dict["thread_comp_cracking_ug1"] = False
         self.shared_dict["thread_comp_cracking_ug2"] = False
-
-        self.shared_dict["limpa_grades_operando"] = False
-        self.shared_dict["equalizer_ug1"] = False
-        self.shared_dict["equalizer_ug2"] = False
 
     def sincro(self):
         try:
@@ -357,13 +358,17 @@ class Window(QMainWindow, Ui_Form):
     # limpa grades
 
     def operar_limpa_grades(self):
-        if self.shared_dict["limpa_grades_operando"] == False:
+        if self.shared_dict["comporta_operando_ug1"] == True or self.shared_dict["comporta_operando_ug2"] == True:
+            print("Não é possível operar o limpa grades pois as comportas estão em operação")
+        elif self.shared_dict["limpa_grades_operando"] == False:
             self.shared_dict["limpa_grades_operando"] = True
         else:
             print("O limpa grades já está em operação.")
     
     def parar_limpa_grades(self):
-        if self.shared_dict["limpa_grades_operando"] == True:
+        if self.shared_dict["comporta_operando_ug1"] == True or self.shared_dict["comporta_operando_ug2"] == True:
+            print("Não é possível parar o limpa grades pois as comportas estão em operação")
+        elif self.shared_dict["limpa_grades_operando"] == True:
             self.shared_dict["limpa_grades_operando"] = False
         else:
             print("O limpa grades já está parado.")

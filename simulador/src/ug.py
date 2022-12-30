@@ -52,47 +52,45 @@ class Ug:
         self.TEMPO_FECHAMENTO_COMPORTA = 1
         self.TEMPO_CRACKING_COMPORTA = 106
 
+        self.shared_dict["limpa_grades_operando"] = False
+
+        self.shared_dict["trip_ug{}".format(self.id)] = False
+        self.shared_dict["equalizar_ug{}".format(self.id)] = False
         self.shared_dict["debug_parar_ug{}".format(self.id)] = False
         self.shared_dict["debug_partir_ug{}".format(self.id)] = False
+        self.shared_dict["reconhece_reset_ug{}".format(self.id)] = False
         self.shared_dict["comporta_aberta_ug{}".format(self.id)] = False
         self.shared_dict["comporta_fechada_ug{}".format(self.id)] = True
         self.shared_dict["comporta_cracking_ug{}".format(self.id)] = False
         self.shared_dict["comporta_operando_ug{}".format(self.id)] = False
-        self.shared_dict["equalizar_ug{}".format(self.id)] = None
+        self.shared_dict["thread_comp_aberta_ug{}".format(self.id)] = False
+        self.shared_dict["thread_comp_fechada_ug{}".format(self.id)] = False
+        self.shared_dict["thread_comp_cracking_ug{}".format(self.id)] = False
         self.shared_dict["condicao_falha_cracking_ug{}".format(self.id)] = False
         self.shared_dict["permissao_abrir_comporta_ug{}".format(self.id)] = False
-        self.shared_dict["limpa_grades_operando"] = False
-        self.shared_dict["thread_comp_aberta_ug1"] = False
-        self.shared_dict["thread_comp_fechada_ug1"] = False
-        self.shared_dict["thread_comp_cracking_ug1"] = False
-        self.shared_dict["thread_comp_aberta_ug2"] = False
-        self.shared_dict["thread_comp_fechada_ug2"] = False
-        self.shared_dict["thread_comp_cracking_ug2"] = False
 
-        self.shared_dict["progresso_ug1"] = 0
-        self.shared_dict["progresso_ug2"] = 0
+        self.shared_dict["q_ug{}".format(self.id)] = 0
+        self.shared_dict["flags_ug{}".format(self.id)] = 0
+        self.shared_dict["etapa_aux_ug{}".format(self.id)] = 5
+        self.shared_dict["progresso_ug{}".format(self.id)] = 0
         self.shared_dict["etapa_alvo_ug{}".format(self.id)] = 0
         self.shared_dict["etapa_atual_ug{}".format(self.id)] = 0
-        self.shared_dict["etapa_aux_ug{}".format(self.id)] = 5
-        self.shared_dict["flags_ug{}".format(self.id)] = 0
         self.shared_dict["potencia_kw_ug{}".format(self.id)] = 0
-        self.shared_dict["q_ug{}".format(self.id)] = 0
-        self.shared_dict["reconhece_reset_ug{}".format(self.id)] = False
         self.shared_dict["setpoint_kw_ug{}".format(self.id)] = 0
         self.shared_dict["debug_setpoint_kw_ug{}".format(self.id)] = 0
-        self.shared_dict["trip_ug{}".format(self.id)] = False
+        
+        self.shared_dict["pressao_turbina_ug{}".format(self.id)] = 16.2
         self.shared_dict["temperatura_ug{}_fase_r".format(self.id)] = 25
         self.shared_dict["temperatura_ug{}_fase_s".format(self.id)] = 25
         self.shared_dict["temperatura_ug{}_fase_t".format(self.id)] = 25
-        self.shared_dict["temperatura_ug{}_nucleo_gerador_1".format(self.id)] = 25
         self.shared_dict["temperatura_ug{}_mancal_guia".format(self.id)] = 25
-        self.shared_dict["temperatura_ug{}_mancal_guia_interno_1".format(self.id)] = 25
-        self.shared_dict["temperatura_ug{}_mancal_guia_interno_2".format(self.id)] = 25
+        self.shared_dict["temperatura_ug{}_mancal_casq_comb".format(self.id)] = 25
+        self.shared_dict["temperatura_ug{}_nucleo_gerador_1".format(self.id)] = 25
         self.shared_dict["temperatura_ug{}_patins_mancal_comb_1".format(self.id)] = 25
         self.shared_dict["temperatura_ug{}_patins_mancal_comb_2".format(self.id)] = 25
-        self.shared_dict["temperatura_ug{}_mancal_casq_comb".format(self.id)] = 25
+        self.shared_dict["temperatura_ug{}_mancal_guia_interno_1".format(self.id)] = 25
+        self.shared_dict["temperatura_ug{}_mancal_guia_interno_2".format(self.id)] = 25
         self.shared_dict["temperatura_ug{}_mancal_contra_esc_comb".format(self.id)] = 25
-        self.shared_dict["pressao_turbina_ug{}".format(self.id)] = 16.2
         
     def passo(self):
         # DEBUG VIA GUI
@@ -310,7 +308,7 @@ class Ug:
             self.logger.info("Não é possível realizar a abertura da comporta 1 pois o limpa grades se encontra em operação.")
 
         elif self.shared_dict["permissao_abrir_comporta_ug1"] == False:
-            self.logger.info("As permissões de abertura da ug ainda não foram ativadas. Favor aguardar a equalização.")
+            self.logger.info("As permissões de abertura da comporta 1 ainda não foram ativadas.")
 
         elif self.shared_dict["comporta_cracking_ug1"] == True and self.shared_dict["comporta_fechada_ug1"] == False:
             self.shared_dict["comporta_operando_ug1"] = True
@@ -330,7 +328,10 @@ class Ug:
         return True
     
     def set_fechamento_comporta_ug1(self):
-        if self.shared_dict["comporta_aberta_ug1"] == True and self.shared_dict["comporta_cracking_ug1"] == False:
+        if self.etapa_atual != self.ETAPA_UP:
+            self.logger.warning("[UG1] A Unidade deve estar completamente parada para realizar o fechamento da comporta!")
+
+        elif self.shared_dict["comporta_aberta_ug1"] == True and self.shared_dict["comporta_cracking_ug1"] == False:
             while self.shared_dict["progresso_ug1"] >= 0:
                 self.shared_dict["progresso_ug1"] -= 0.000001
             self.shared_dict["comporta_fechada_ug1"] = True
@@ -363,7 +364,7 @@ class Ug:
             self.shared_dict["comporta_fechada_ug1"] = False
             self.shared_dict["comporta_aberta_ug1"] = False
             self.shared_dict["comporta_cracking_ug1"] = True
-            Thread(target=lambda: self.timer_equalizacao_cracking()).start()
+            Thread(target=lambda: self.timer_equalizacao_cracking_ug1()).start()
         
         elif self.shared_dict["comporta_aberta_ug1"] == True and self.shared_dict["comporta_fechada_ug1"] == False:
             self.logger.info("A comporta já está aberta.")
@@ -380,7 +381,7 @@ class Ug:
             self.logger.info("Não é possível realizar a abertura da comporta 2 pois o limpa grades se encontra em operação.")
         
         elif self.shared_dict["permissao_abrir_comporta_ug2"] == False:
-            self.logger.info("As permissões de abertura da ug ainda não foram ativadas. Favor aguardar a equalização.")
+            self.logger.info("As permissões de abertura da comporta 2 ainda não foram ativadas.")
 
         elif self.shared_dict["comporta_cracking_ug2"] == True and self.shared_dict["comporta_fechada_ug2"] == False:
             self.shared_dict["comporta_operando_ug2"] = True
@@ -400,7 +401,10 @@ class Ug:
         return True
     
     def set_fechamento_comporta_ug2(self):
-        if self.shared_dict["comporta_aberta_ug2"] == True and self.shared_dict["comporta_cracking_ug2"] == False:
+        if self.etapa_atual != self.ETAPA_UP:
+            self.logger.warning("[UG2] A Unidade deve estar completamente parada para realizar o fechamento da comporta!")
+
+        elif self.shared_dict["comporta_aberta_ug2"] == True and self.shared_dict["comporta_cracking_ug2"] == False:
             while self.shared_dict["progresso_ug2"] >= 0:
                 self.shared_dict["progresso_ug2"] -= 0.000001
             self.shared_dict["comporta_fechada_ug2"] = True
@@ -433,7 +437,7 @@ class Ug:
             self.shared_dict["comporta_fechada_ug2"] = False
             self.shared_dict["comporta_aberta_ug2"] = False
             self.shared_dict["comporta_cracking_ug2"] = True
-            Thread(target=lambda: self.timer_equalizacao_cracking()).start()
+            Thread(target=lambda: self.timer_equalizacao_cracking_ug2()).start()
         
         elif self.shared_dict["comporta_aberta_ug2"] == True and self.shared_dict["comporta_fechada_ug2"] == False:
             self.logger.info("A comporta já está aberta.")
@@ -442,22 +446,37 @@ class Ug:
             self.logger.info("A comporta já está na posição de cracking.")
         return True
 
-    def timer_equalizacao_cracking(self):
-        delay = 120
-        tempo_agora = time()
+    def timer_equalizacao_cracking_ug1(self):
+        delay = 20
+        self.logger.debug("Aguardando equalização de pressão da UG.")
         tempo_equalizacao = time() + delay
-        self.logger.debug("Equalizando UG pós cracking.")
-        while tempo_agora < tempo_equalizacao:
-            if self.shared_dict["equalizar_ug{}".format(self.id)] == True:
+        while time() <= tempo_equalizacao:
+            if self.shared_dict["equalizar_ug1"] == True:
                 self.logger.info("A unidade foi equalizada, permissão para abrir comporta ativada!")
-                self.shared_dict["permissao_abrir_comporta_ug{}".format(self.id)] = True
+                self.shared_dict["permissao_abrir_comporta_ug1"] = True
                 return True
 
-            elif self.shared_dict["equalizar_ug{}".format(self.id)] == False:
-                self.logger.warning("Não foi possível equalizar a unidade! Fechando comporta e adicionando condicionador")
-                self.shared_dict["condicao_falha_cracking_ug{}".format(self.id)] = True
-                self.shared_dict["thread_comp_fechada_ug{}".format(self.id)] = True
-                return False
+        self.logger.warning("Não foi possível equalizar a unidade! Fechando comporta e adicionando condicionador")
+        self.shared_dict["trip_ug1"] = True
+        self.shared_dict["condicao_falha_cracking_ug1"] = True
+        self.shared_dict["thread_comp_fechada_ug1"] = True
+        return False
+    
+    def timer_equalizacao_cracking_ug2(self):
+        delay = 20
+        self.logger.debug("Aguardando equalização de pressão da UG.")
+        tempo_equalizacao = time() + delay
+        while time() <= tempo_equalizacao:
+            if self.shared_dict["equalizar_ug2"] == True:
+                self.logger.info("A unidade foi equalizada, permissão para abrir comporta ativada!")
+                self.shared_dict["permissao_abrir_comporta_ug2"] = True
+                return True
+
+        self.logger.warning("Não foi possível equalizar a unidade! Fechando comporta e adicionando condicionador")
+        self.shared_dict["trip_ug2"] = True
+        self.shared_dict["condicao_falha_cracking_ug2"] = True
+        self.shared_dict["thread_comp_fechada_ug2"] = True
+        return False
 
     def tripar(self, flag, desc=None):
         if not self.avisou_trip:
@@ -475,9 +494,12 @@ class Ug:
         self.flags = 0
 
     def partir(self):
-        self.logger.info("[UG{}] partir(): etapa_alvo -> 4.".format(self.id))
-        self.etapa_alvo = self.ETAPA_US
-        self.shared_dict["etapa_alvo_ug{}".format(self.id)] = self.etapa_alvo
+        if self.shared_dict["comporta_aberta_ug{}".format(self.id)]:
+            self.logger.info("[UG{}] partir(): etapa_alvo -> 4.".format(self.id))
+            self.etapa_alvo = self.ETAPA_US
+            self.shared_dict["etapa_alvo_ug{}".format(self.id)] = self.etapa_alvo
+        else:
+            self.logger.warning("[UG{}] Para partir a ug é necessário abrir a comporta primeiro!".format(self.id))
 
     def parar(self):
         self.logger.info("[UG{}] parar(): etapa_alvo -> 0.".format(self.id))
