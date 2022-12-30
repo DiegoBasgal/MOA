@@ -260,17 +260,21 @@ class Planta:
                     self.aux6 = 0
 
                 if self.shared_dict["permissao_abrir_comporta_ug1"] == True and self.aux7 == 0:
-                    #self.cust_data_bank.set_words(REG["REG_UG1_Permissao_Abrir_Comp"], [1])
+                    self.cust_data_bank.set_words(REG["REG_UG1_Permissao_Abertura_Comp_1"], [1])
+                    self.cust_data_bank.set_words(REG["REG_UG1_Permissao_Abertura_Comp_2"], [1])
                     self.aux7 = 1
                 elif self.shared_dict["permissao_abrir_comporta_ug1"] == False and self.aux7 == 1:
-                    #self.cust_data_bank.set_words(REG["REG_UG1_Permissao_Abrir_Comp"], [0])
+                    self.cust_data_bank.set_words(REG["REG_UG1_Permissao_Abertura_Comp_1"], [0])
+                    self.cust_data_bank.set_words(REG["REG_UG1_Permissao_Abertura_Comp_2"], [0])
                     self.aux7 = 0
 
                 if self.shared_dict["permissao_abrir_comporta_ug2"] == True and self.aux8 == 0:
-                    #self.cust_data_bank.set_words(REG["REG_UG2_Permissao_Abrir_Comp"], [1])
+                    self.cust_data_bank.set_words(REG["REG_UG2_Permissao_Abertura_Comp_1"], [1])
+                    self.cust_data_bank.set_words(REG["REG_UG2_Permissao_Abertura_Comp_2"], [1])
                     self.aux8 = 1
                 elif self.shared_dict["permissao_abrir_comporta_ug2"] == False and self.aux8 == 1:
-                    #self.cust_data_bank.set_words(REG["REG_UG2_Permissao_Abrir_Comp"], [0])
+                    self.cust_data_bank.set_words(REG["REG_UG2_Permissao_Abertura_Comp_1"], [0])
+                    self.cust_data_bank.set_words(REG["REG_UG2_Permissao_Abertura_Comp_2"], [0])
                     self.aux8 = 0
 
                 for ug in self.ugs:

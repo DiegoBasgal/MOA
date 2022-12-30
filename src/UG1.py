@@ -124,6 +124,10 @@ class UnidadeDeGeracao1(UnidadeDeGeracao):
             self.clp,
             REG_UG1_RetornosDigitais_StatusComporta
         )
+        self.leitura_Permissao_Abrir_Comporta = LeituraModbus("REG_UG1_COMPORTA_PERMISSIVO_ABERTURA_OK",
+            self.clp,
+            REG_UG1_COMPORTA_PERMISSIVO_ABERTURA_OK
+        )
 
         """
         C1 = LeituraModbusCoil(
@@ -800,7 +804,6 @@ class UnidadeDeGeracao1(UnidadeDeGeracao):
             response = self.leitura_Status_Comporta.valor
         except Exception as e:
             raise(e)
-            return False
         else:
             return response
 
