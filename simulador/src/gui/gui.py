@@ -45,6 +45,10 @@ class Window(QMainWindow, Ui_Form):
         self.shared_dict["thread_comp_fechada_ug2"] = False
         self.shared_dict["thread_comp_cracking_ug2"] = False
 
+        self.shared_dict["limpa_grades_operando"] = False
+        self.shared_dict["equalizer_ug1"] = False
+        self.shared_dict["equalizer_ug2"] = False
+
     def sincro(self):
         try:
             segundos = floor(self.shared_dict["tempo_simul"] % 60)
@@ -137,6 +141,11 @@ class Window(QMainWindow, Ui_Form):
 
             self.progressBar_comporta_ug1.setValue(self.shared_dict["progresso_ug1"])
             self.progressBar_comporta_ug2.setValue(self.shared_dict["progresso_ug2"])
+
+            if self.shared_dict["limpa_grades_operando"]:
+                self.lcdNumber_status_limpa_grades.display("O")
+            else:
+                self.lcdNumber_status_limpa_grades.display("P")
 
             if self.shared_dict["comporta_aberta_ug1"]:
                 self.lcdNumber_status_comporta_ug1.display("A")
@@ -265,6 +274,12 @@ class Window(QMainWindow, Ui_Form):
     
     def set_thread_comp_cracking_ug1(self):
         self.shared_dict["thread_comp_cracking_ug1"] = True
+    
+    def equalizar_cracking_ug1(self):
+        if self.shared_dict["comporta_cracking_ug1"]:
+            self.shared_dict["equalizar_ug1"] = True
+        else:
+            print("Não é possível equalizar a unidade pois ela não está na posição de cracking!")
 
     # ug2
     def pulso_trip_ug2(self):
@@ -318,6 +333,12 @@ class Window(QMainWindow, Ui_Form):
     
     def set_thread_comp_cracking_ug2(self):
         self.shared_dict["thread_comp_cracking_ug2"] = True
+    
+    def equalizar_cracking_ug2(self):
+        if self.shared_dict["comporta_cracking_ug2"]:
+            self.shared_dict["equalizar_ug2"] = True
+        else:
+            print("Não é possível equalizar a unidade pois ela não está na posição de cracking!")
 
     # dj52L
     def alternar_estado_dj52L(self):
@@ -332,6 +353,20 @@ class Window(QMainWindow, Ui_Form):
 
     def reconhecer_reset_dj52L(self):
         self.shared_dict["debug_dj52L_reconhece_reset"] = True
+
+    # limpa grades
+
+    def operar_limpa_grades(self):
+        if self.shared_dict["limpa_grades_operando"] == False:
+            self.shared_dict["limpa_grades_operando"] = True
+        else:
+            print("O limpa grades já está em operação.")
+    
+    def parar_limpa_grades(self):
+        if self.shared_dict["limpa_grades_operando"] == True:
+            self.shared_dict["limpa_grades_operando"] = False
+        else:
+            print("O limpa grades já está parado.")
 
 def start_gui(shared_dict):
     app = QApplication(sys.argv)

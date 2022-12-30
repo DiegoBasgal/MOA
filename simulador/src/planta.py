@@ -53,6 +53,8 @@ class Planta:
         self.aux2=0
         self.aux3=0
         self.aux4=0
+        self.aux5=0
+        self.aux6=0
         self.aux_comp_fechada_ug1 = False
         self.aux_comp_aberta_ug1 = False
         self.aux_comp_cracking_ug1 = False
@@ -65,9 +67,9 @@ class Planta:
         self.passo_simulacao = 0.001
         self.segundos_por_passo = self.passo_simulacao * self.speed
 
-        ug1 = Ug(1, self)
-        ug2 = Ug(2, self)
-        self.ugs = [ug1, ug2]
+        self.ug1 = Ug(1, self)
+        self.ug2 = Ug(2, self)
+        self.ugs = [self.ug1, self.ug2]
 
         self.dj52L = Dj52L(self)
 
@@ -96,6 +98,8 @@ class Planta:
         self.shared_dict["trip_condic_ug1"] = False
         self.shared_dict["trip_condic_ug2"] = False
         self.shared_dict["reset_geral_condic"] = False
+        self.shared_dict["condicao_falha_cracking_ug1"] = False
+        self.shared_dict["condicao_falha_cracking_ug2"] = False
 
         volume = self.nv_montate_para_volume(self.shared_dict["nv_montante"])
         self.dj52L.abrir()
@@ -235,6 +239,22 @@ class Planta:
                 elif self.cust_data_bank.get_words(REG["REG_UG2_Status_Comporta"])[0] != 2 and self.aux_comp_cracking_ug2 == True:
                     self.aux_comp_cracking_ug2 = False
 
+                if self.shared_dict["condicao_falha_cracking_ug1"] == True and self.aux5 == 0:
+                    self.cust_data_bank.set_words(REG["REG_UG1_AUX_Condicionadores"], [1])
+                    self.aux5 = 1
+                elif self.shared_dict["reset_geral_condic"] == True and self.aux5 == 1:
+                    self.cust_data_bank.set_words(REG["REG_UG1_AUX_Condicionadores"], [0])
+                    self.shared_dict["condicao_falha_cracking_ug1"] = False
+                    self.aux5 = 0
+                
+                if self.shared_dict["condicao_falha_cracking_ug2"] == True and self.aux6 == 0:
+                    self.cust_data_bank.set_words(REG["REG_UG2_AUX_Condicionadores"], [1])
+                    self.aux6 = 1
+                elif self.shared_dict["reset_geral_condic"] == True and self.aux6 == 1:
+                    self.cust_data_bank.set_words(REG["REG_UG2_AUX_Condicionadores"], [0])
+                    self.shared_dict["condicao_falha_cracking_ug2"] = False
+                    self.aux6 = 0
+
                 for ug in self.ugs:
                     self.shared_dict["setpoint_kw_ug{}".format(ug.id)] = self.cust_data_bank.get_words(REG["REG_UG{}_CtrlPotencia_Alvo".format(ug.id)])[0]
                     if self.shared_dict["debug_setpoint_kw_ug{}".format(ug.id)] >= 0:
@@ -365,8 +385,9 @@ class Planta:
         return 40000 * (min(max(460, nv_montante), 462.37) - 460)
 
     def q_sanitaria(self, nv_montante):
-        for ug in self.ugs:
-            if ug.etapa_atual != 1:
-                return 0
-            else:
-                return 2.33
+        if  self.ug1.etapa_atual != 1:
+            return 0
+        elif self.ug2.etapa_atual != 1:
+            return 0
+        else:
+            return 2.33

@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 ################################################################################
-## Form generated from reading UI file 'new_geral.ui'
+## Form generated from reading UI file 'ui.txt'
 ##
 ## Created by: Qt User Interface Compiler version 6.3.2
 ##
@@ -166,7 +166,7 @@ class Ui_Form(object):
         self.label_etapa_ug2.raise_()
         self.layoutWidget = QWidget(Form)
         self.layoutWidget.setObjectName(u"layoutWidget")
-        self.layoutWidget.setGeometry(QRect(724, 89, 141, 103))
+        self.layoutWidget.setGeometry(QRect(619, 89, 141, 103))
         font2 = QFont()
         font2.setBold(False)
         self.layoutWidget.setFont(font2)
@@ -1047,7 +1047,7 @@ class Ui_Form(object):
 
         self.frame_4 = QFrame(Form)
         self.frame_4.setObjectName(u"frame_4")
-        self.frame_4.setGeometry(QRect(524, 77, 351, 126))
+        self.frame_4.setGeometry(QRect(419, 77, 351, 126))
         self.frame_4.setStyleSheet(u"background-color: transparent;")
         self.frame_4.setFrameShape(QFrame.Box)
         self.frame_4.setFrameShadow(QFrame.Plain)
@@ -1420,10 +1420,9 @@ class Ui_Form(object):
 
         self.horizontalSlider_press_turbina = QSlider(self.layoutWidget_18)
         self.horizontalSlider_press_turbina.setObjectName(u"horizontalSlider_press_turbina")
-        self.horizontalSlider_press_turbina.setMinimum(1549)
-        self.horizontalSlider_press_turbina.setMaximum(1650)
+        self.horizontalSlider_press_turbina.setMaximum(100)
         self.horizontalSlider_press_turbina.setPageStep(1)
-        self.horizontalSlider_press_turbina.setValue(1630)
+        self.horizontalSlider_press_turbina.setValue(0)
         self.horizontalSlider_press_turbina.setSliderPosition(0)
         self.horizontalSlider_press_turbina.setOrientation(Qt.Horizontal)
 
@@ -2134,7 +2133,6 @@ class Ui_Form(object):
         self.lcdNumber_status_comporta_ug2.setStyleSheet(u"background-color: rgb(255, 255, 255);")
         self.lcdNumber_status_comporta_ug2.setFrameShape(QFrame.WinPanel)
         self.lcdNumber_status_comporta_ug2.setFrameShadow(QFrame.Sunken)
-        self.lcdNumber_status_comporta_ug2.display("F")
         self.lcdNumber_status_comporta_ug2.setDigitCount(1)
         self.lcdNumber_status_comporta_ug2.setSegmentStyle(QLCDNumber.Flat)
 
@@ -2142,14 +2140,14 @@ class Ui_Form(object):
 
         self.pushButton_abrir_comporta_ug2 = QPushButton(self.horizontalLayoutWidget_2)
         self.pushButton_abrir_comporta_ug2.setObjectName(u"pushButton_abrir_comporta_ug2")
-        self.pushButton_abrir_comporta_ug2.setMaximumSize(QSize(60, 16777215))
+        self.pushButton_abrir_comporta_ug2.setMaximumSize(QSize(40, 16777215))
         self.pushButton_abrir_comporta_ug2.setStyleSheet(u"background-color: rgb(241, 241, 241);")
 
         self.horizontalLayout_4.addWidget(self.pushButton_abrir_comporta_ug2)
 
         self.pushButton_fechar_comporta_ug2 = QPushButton(self.horizontalLayoutWidget_2)
         self.pushButton_fechar_comporta_ug2.setObjectName(u"pushButton_fechar_comporta_ug2")
-        self.pushButton_fechar_comporta_ug2.setMaximumSize(QSize(60, 16777215))
+        self.pushButton_fechar_comporta_ug2.setMaximumSize(QSize(50, 16777215))
         self.pushButton_fechar_comporta_ug2.setStyleSheet(u"background-color: rgb(241, 241, 241);")
 
         self.horizontalLayout_4.addWidget(self.pushButton_fechar_comporta_ug2)
@@ -2160,6 +2158,13 @@ class Ui_Form(object):
         self.pushButton_cracking_comporta_ug2.setStyleSheet(u"background-color: rgb(241, 241, 241);")
 
         self.horizontalLayout_4.addWidget(self.pushButton_cracking_comporta_ug2)
+
+        self.pushButton_equalizar_ug2 = QPushButton(self.horizontalLayoutWidget_2)
+        self.pushButton_equalizar_ug2.setObjectName(u"pushButton_equalizar_ug2")
+        self.pushButton_equalizar_ug2.setMaximumSize(QSize(60, 16777215))
+        self.pushButton_equalizar_ug2.setStyleSheet(u"background-color: rgb(241, 241, 241);")
+
+        self.horizontalLayout_4.addWidget(self.pushButton_equalizar_ug2)
 
         self.progressBar_comporta_ug2 = QProgressBar(self.horizontalLayoutWidget_2)
         self.progressBar_comporta_ug2.setObjectName(u"progressBar_comporta_ug2")
@@ -2194,21 +2199,20 @@ class Ui_Form(object):
         self.lcdNumber_status_comporta_ug1.setFrameShape(QFrame.WinPanel)
         self.lcdNumber_status_comporta_ug1.setFrameShadow(QFrame.Sunken)
         self.lcdNumber_status_comporta_ug1.setDigitCount(1)
-        self.lcdNumber_status_comporta_ug1.display("F")
         self.lcdNumber_status_comporta_ug1.setSegmentStyle(QLCDNumber.Flat)
 
         self.horizontalLayout_5.addWidget(self.lcdNumber_status_comporta_ug1)
 
         self.pushButton_abrir_comporta_ug1 = QPushButton(self.horizontalLayoutWidget_3)
         self.pushButton_abrir_comporta_ug1.setObjectName(u"pushButton_abrir_comporta_ug1")
-        self.pushButton_abrir_comporta_ug1.setMaximumSize(QSize(60, 16777215))
+        self.pushButton_abrir_comporta_ug1.setMaximumSize(QSize(40, 16777215))
         self.pushButton_abrir_comporta_ug1.setStyleSheet(u"background-color: rgb(241, 241, 241);")
 
         self.horizontalLayout_5.addWidget(self.pushButton_abrir_comporta_ug1)
 
         self.pushButton_fechar_comporta_ug1 = QPushButton(self.horizontalLayoutWidget_3)
         self.pushButton_fechar_comporta_ug1.setObjectName(u"pushButton_fechar_comporta_ug1")
-        self.pushButton_fechar_comporta_ug1.setMaximumSize(QSize(60, 16777215))
+        self.pushButton_fechar_comporta_ug1.setMaximumSize(QSize(50, 16777215))
         self.pushButton_fechar_comporta_ug1.setStyleSheet(u"background-color: rgb(241, 241, 241);")
 
         self.horizontalLayout_5.addWidget(self.pushButton_fechar_comporta_ug1)
@@ -2220,11 +2224,77 @@ class Ui_Form(object):
 
         self.horizontalLayout_5.addWidget(self.pushButton_cracking_comporta_ug1)
 
+        self.pushButton_equalizar_ug1 = QPushButton(self.horizontalLayoutWidget_3)
+        self.pushButton_equalizar_ug1.setObjectName(u"pushButton_equalizar_ug1")
+        self.pushButton_equalizar_ug1.setMaximumSize(QSize(60, 16777215))
+        self.pushButton_equalizar_ug1.setStyleSheet(u"background-color: rgb(241, 241, 241);")
+
+        self.horizontalLayout_5.addWidget(self.pushButton_equalizar_ug1)
+
         self.progressBar_comporta_ug1 = QProgressBar(self.horizontalLayoutWidget_3)
         self.progressBar_comporta_ug1.setObjectName(u"progressBar_comporta_ug1")
         self.progressBar_comporta_ug1.setValue(0)
 
         self.horizontalLayout_5.addWidget(self.progressBar_comporta_ug1)
+
+        self.frame_3 = QFrame(Form)
+        self.frame_3.setObjectName(u"frame_3")
+        self.frame_3.setGeometry(QRect(777, 77, 203, 126))
+        self.frame_3.setStyleSheet(u"background-color:transparent;")
+        self.frame_3.setFrameShape(QFrame.Box)
+        self.frame_3.setFrameShadow(QFrame.Plain)
+        self.frame_3.setLineWidth(2)
+        self.verticalLayoutWidget_2 = QWidget(self.frame_3)
+        self.verticalLayoutWidget_2.setObjectName(u"verticalLayoutWidget_2")
+        self.verticalLayoutWidget_2.setGeometry(QRect(12, 13, 181, 101))
+        self.verticalLayout_2 = QVBoxLayout(self.verticalLayoutWidget_2)
+        self.verticalLayout_2.setObjectName(u"verticalLayout_2")
+        self.verticalLayout_2.setContentsMargins(0, 0, 0, 0)
+        self.label_limpa_grades = QLabel(self.verticalLayoutWidget_2)
+        self.label_limpa_grades.setObjectName(u"label_limpa_grades")
+        self.label_limpa_grades.setMaximumSize(QSize(16777215, 28))
+        self.label_limpa_grades.setFont(font4)
+        self.label_limpa_grades.setLayoutDirection(Qt.LeftToRight)
+        self.label_limpa_grades.setAlignment(Qt.AlignHCenter|Qt.AlignTop)
+
+        self.verticalLayout_2.addWidget(self.label_limpa_grades)
+
+        self.horizontalLayout_3 = QHBoxLayout()
+        self.horizontalLayout_3.setSpacing(9)
+        self.horizontalLayout_3.setObjectName(u"horizontalLayout_3")
+        self.lcdNumber_status_limpa_grades = QLCDNumber(self.verticalLayoutWidget_2)
+        self.lcdNumber_status_limpa_grades.setObjectName(u"lcdNumber_status_limpa_grades")
+        self.lcdNumber_status_limpa_grades.setMaximumSize(QSize(60, 65))
+        self.lcdNumber_status_limpa_grades.setStyleSheet(u"background-color: rgb(255, 255, 255);")
+        self.lcdNumber_status_limpa_grades.setFrameShape(QFrame.WinPanel)
+        self.lcdNumber_status_limpa_grades.setFrameShadow(QFrame.Sunken)
+        self.lcdNumber_status_limpa_grades.setDigitCount(1)
+        self.lcdNumber_status_limpa_grades.setSegmentStyle(QLCDNumber.Flat)
+
+        self.horizontalLayout_3.addWidget(self.lcdNumber_status_limpa_grades)
+
+        self.verticalLayout_3 = QVBoxLayout()
+        self.verticalLayout_3.setSpacing(7)
+        self.verticalLayout_3.setObjectName(u"verticalLayout_3")
+        self.pushButton_operar_limpa_grades = QPushButton(self.verticalLayoutWidget_2)
+        self.pushButton_operar_limpa_grades.setObjectName(u"pushButton_operar_limpa_grades")
+        self.pushButton_operar_limpa_grades.setMaximumSize(QSize(106, 16777215))
+        self.pushButton_operar_limpa_grades.setStyleSheet(u"background-color: rgb(241, 241, 241);")
+
+        self.verticalLayout_3.addWidget(self.pushButton_operar_limpa_grades)
+
+        self.pushButton_parar_limpa_grades = QPushButton(self.verticalLayoutWidget_2)
+        self.pushButton_parar_limpa_grades.setObjectName(u"pushButton_parar_limpa_grades")
+        self.pushButton_parar_limpa_grades.setMaximumSize(QSize(106, 16777215))
+        self.pushButton_parar_limpa_grades.setStyleSheet(u"background-color: rgb(241, 241, 241);")
+
+        self.verticalLayout_3.addWidget(self.pushButton_parar_limpa_grades)
+
+
+        self.horizontalLayout_3.addLayout(self.verticalLayout_3)
+
+
+        self.verticalLayout_2.addLayout(self.horizontalLayout_3)
 
         self.frame_5.raise_()
         self.frame_4.raise_()
@@ -2236,9 +2306,9 @@ class Ui_Form(object):
         self.frame.raise_()
         self.label.raise_()
         self.layoutWidget_4.raise_()
-        self.layoutWidget3.raise_()
-        self.layoutWidget3.raise_()
-        self.layoutWidget3.raise_()
+        self.layoutWidget.raise_()
+        self.layoutWidget.raise_()
+        self.layoutWidget.raise_()
         self.layoutWidget_5.raise_()
         self.layoutWidget_6.raise_()
         self.layoutWidget_16.raise_()
@@ -2251,6 +2321,7 @@ class Ui_Form(object):
         self.layoutWidget_17.raise_()
         self.frame_10.raise_()
         self.frame_11.raise_()
+        self.frame_3.raise_()
 
         self.retranslateUi(Form)
         self.horizontalSlider_q_afluente.valueChanged.connect(Form.mudar_q_afluente)
@@ -2293,6 +2364,12 @@ class Ui_Form(object):
         self.pushButton_abrir_comporta_ug2.clicked.connect(Form.set_thread_comp_aberta_ug2)
         self.pushButton_fechar_comporta_ug2.clicked.connect(Form.set_thread_comp_fechada_ug2)
         self.pushButton_cracking_comporta_ug2.clicked.connect(Form.set_thread_comp_cracking_ug2)
+
+        self.pushButton_operar_limpa_grades.clicked.connect(Form.operar_limpa_grades)
+        self.pushButton_parar_limpa_grades.clicked.connect(Form.parar_limpa_grades)
+        self.pushButton_equalizar_ug1.clicked.connect(Form.equalizar_cracking_ug1)
+        self.pushButton_equalizar_ug2.clicked.connect(Form.equalizar_cracking_ug2)
+
         QMetaObject.connectSlotsByName(Form)
     # setupUi
 
@@ -2584,13 +2661,20 @@ class Ui_Form(object):
         self.comboBox.setItemText(47, QCoreApplication.translate("Form", u"MXI_SA_TE_AlarmeNivelMaxOleo", None))
         self.comboBox.setItemText(48, QCoreApplication.translate("Form", u"MXI_SA_TE_AlarmeTempEnrolamento", None))
 
-        self.label_comporta_ug2.setText(QCoreApplication.translate("Form", u"Comporta UG2", None))
+        self.label_comporta_ug2.setText(QCoreApplication.translate("Form", u"Comporta 2", None))
         self.pushButton_abrir_comporta_ug2.setText(QCoreApplication.translate("Form", u"Abrir", None))
         self.pushButton_fechar_comporta_ug2.setText(QCoreApplication.translate("Form", u"Fechar", None))
         self.pushButton_cracking_comporta_ug2.setText(QCoreApplication.translate("Form", u"Cracking", None))
-        self.label_comporta_ug1.setText(QCoreApplication.translate("Form", u"Comporta UG1", None))
+        self.pushButton_equalizar_ug2.setText(QCoreApplication.translate("Form", u"Equalizar", None))
+        self.label_comporta_ug1.setText(QCoreApplication.translate("Form", u"Comporta 1", None))
         self.pushButton_abrir_comporta_ug1.setText(QCoreApplication.translate("Form", u"Abrir", None))
         self.pushButton_fechar_comporta_ug1.setText(QCoreApplication.translate("Form", u"Fechar", None))
         self.pushButton_cracking_comporta_ug1.setText(QCoreApplication.translate("Form", u"Cracking", None))
+        self.pushButton_equalizar_ug1.setText(QCoreApplication.translate("Form", u"Equalizar", None))
+#if QT_CONFIG(accessibility)
+        self.label_limpa_grades.setAccessibleDescription("")
+#endif // QT_CONFIG(accessibility)
+        self.label_limpa_grades.setText(QCoreApplication.translate("Form", u"Limpa Grades", None))
+        self.pushButton_operar_limpa_grades.setText(QCoreApplication.translate("Form", u"Operar", None))
+        self.pushButton_parar_limpa_grades.setText(QCoreApplication.translate("Form", u"Parar", None))
     # retranslateUi
-
