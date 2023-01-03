@@ -2,13 +2,18 @@ import pytz
 import logging
 import threading
 import subprocess
-from src.codes import *
+
+from opcua import Client
 from time import sleep, time
+from pyModbusTCP.server import DataBank
+from datetime import  datetime, timedelta
+
+from src.VAR_REG import *
 from src.Condicionadores import *
 from src.UG1 import UnidadeDeGeracao1
 from src.UG2 import UnidadeDeGeracao2
-from pyModbusTCP.server import DataBank
-from datetime import  datetime, timedelta
+from src.Conector import Database, FieldConnector
+from src.Leituras import LeituraOPC, LeiturasUSN
 
 logger = logging.getLogger("__main__")
 
@@ -24,15 +29,11 @@ class Usina:
         if con:
             self.con = con
         else:
-            from src.field_connector import FieldConnector
             self.con = FieldConnector(self.cfg)
 
         if leituras:
             self.leituras = leituras
         else:
-            from src.Leituras import LeituraModbus
-            from src.LeiturasUSN import LeiturasUSN
-            from src.Leituras import LeituraModbusBit
             self.leituras = LeiturasUSN(self.cfg)
 
         self.state_moa = 1
@@ -88,14 +89,7 @@ class Usina:
         self.deve_normalizar_forcado = False
         self.deve_ler_condicionadores = False
 
-        self.clp = ModbusClient(
-            host=self.cfg["USN_slave_ip"],
-            port=self.cfg["USN_slave_porta"],
-            timeout=0.5,
-            unit_id=1,
-            auto_open=True,
-            auto_close=True,
-        )
+        self.opc_server = Client(self.cfg["opc_server"])
 
         threading.Thread(target=lambda: self.leitura_condicionadores()).start()
         

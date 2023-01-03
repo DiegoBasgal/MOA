@@ -11,7 +11,7 @@ import pytz
 import logging
 import traceback
 
-from src.codes import *
+from src.VAR_REG import *
 from src.Leituras import *
 from time import sleep, time
 from threading import Thread

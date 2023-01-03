@@ -13,17 +13,19 @@ import logging
 import threading
 import traceback
 import logging.handlers as handlers
-import src.abstracao_usina as abstracao_usina
-import src.database_connector as database_connector
+
+import src.Usina as Usina
+import src.Conector as Conector
 
 from sys import stderr
 from time import sleep
-from src.codes import *
 from datetime import datetime
-from src.mensageiro import voip
 from pyModbusTCP.server import DataBank, ModbusServer
-# Set-up logging
+
+from src.VAR_REG import *
+from src.mensageiro import voip
 from src.mensageiro.mensageiro_log_handler import MensageiroHandler
+# Set-up logging
 
 rootLogger = logging.getLogger()
 if rootLogger.hasHandlers():
@@ -416,7 +418,7 @@ class ReservatorioAbaixoDoMinimo(State):
     def run(self):
         self.usina.distribuir_potencia(0)
         if self.usina.nv_montante_recente <= self.usina.cfg["nv_fundo_reservatorio"]:
-            if not abstracao_usina.ping(self.usina.cfg["TDA_slave_ip"]):
+            if not Usina.ping(self.usina.cfg["TDA_slave_ip"]):
                 logger.warning("Sem comunicação com CLP TDA, entrando no modo de operação Offline")
                 self.usina.TDA_Offline = True
                 return OperacaoTDAOffline(self.usina)
@@ -631,11 +633,11 @@ if __name__ == "__main__":
                 json.dump(cfg, file, indent=4)
 
             # Inicia o conector do banco
-            db = database_connector.Database()
+            db = Conector.Database()
             # Tenta iniciar a classe usina
             logger.debug("Iniciando classe Usina")
             try:
-                usina = abstracao_usina.Usina(cfg, db)
+                usina = Usina.Usina(cfg, db)
                 usina.ler_valores()
                 usina.normalizar_emergencia()
                 usina.aguardando_reservatorio = 0
