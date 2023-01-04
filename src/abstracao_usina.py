@@ -476,7 +476,7 @@ class Usina:
             if self.borda_aviso_clp_ug1:
                 logger.info("CLP UG1 voltou a comunicar!")
                 self.borda_aviso_clp_ug1 = False
-                self.ug1.forcar_estado_disponivel()
+                logger.info("Para disponibilizar a UG, fovar agendar na interface web.")
         # UG2
         if not ping(self.cfg["UG2_slave_ip"]):
             if not self.borda_aviso_clp_ug2:
@@ -487,7 +487,7 @@ class Usina:
             if self.borda_aviso_clp_ug2:
                 logger.info("CLP UG2 voltou a comunicar!")
                 self.borda_aviso_clp_ug2 = False
-                self.ug2.forcar_estado_disponivel()
+                logger.info("Para disponibilizar a UG, fovar agendar na interface web.")
 
         self.clp_online = True
         self.clp_emergencia_acionada = 0
