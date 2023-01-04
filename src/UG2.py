@@ -757,10 +757,10 @@ class UnidadeDeGeracao2(UnidadeDeGeracao):
             return response
 
     def modbus_update_state_register(self):
-        DataBank.set_words(
-                    self.cfg["REG_MOA_OUT_STATE_UG{}".format(self.id)],
-                    [self.etapa_atual],
-                )
+        DataBank.set_words(self.cfg["REG_MOA_OUT_STATE_UG{}".format(self.id)],[self.etapa_atual],)
+
+    def salvar_estado_anterior(self):
+        self.estado_anterior = self.codigo_state
 
     def leituras_por_hora(self) -> bool:
 

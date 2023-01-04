@@ -23,6 +23,8 @@ class UnidadeDeGeracao1(UnidadeDeGeracao):
             self.cfg = cfg
             self.leituras_usina = leituras_usina
 
+        self.estado_anterior = None
+
         self.setpoint_minimo = self.cfg["pot_minima"]
         self.setpoint_maximo = self.cfg["pot_maxima_ug{}".format(self.id)]
 
@@ -756,11 +758,11 @@ class UnidadeDeGeracao1(UnidadeDeGeracao):
             return response
 
     def modbus_update_state_register(self):
-        DataBank.set_words(
-                    self.cfg["REG_MOA_OUT_STATE_UG{}".format(self.id)],
-                    [self.etapa_atual],
-                )
-            
+        DataBank.set_words(self.cfg["REG_MOA_OUT_STATE_UG{}".format(self.id)],[self.etapa_atual],)
+    
+    def salvar_estado_anterior(self):
+        self.estado_anterior = self.codigo_state
+
     def leituras_por_hora(self) -> bool:
 
         self.falha_abertura_borboleta = LeituraModbusBit("03.13 - Borboleta - Falha na Abertura ", self.clp, REG_UG1_Alarme03, 13)

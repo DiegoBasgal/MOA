@@ -469,6 +469,7 @@ class Usina:
         # UG1
         if not ping(self.cfg["UG1_slave_ip"]):
             if not self.borda_aviso_clp_ug1:
+                self.ug1.salvar_estado_anterior()
                 logger.warning("CLP UG1 não respondeu a tentativa de comunicação!")
                 self.borda_aviso_clp_ug1 = True
                 self.ug1.forcar_estado_restrito()
@@ -476,10 +477,18 @@ class Usina:
             if self.borda_aviso_clp_ug1:
                 logger.info("CLP UG1 voltou a comunicar!")
                 self.borda_aviso_clp_ug1 = False
-                logger.info("Para disponibilizar a UG, fovar agendar na interface web.")
+                if self.ug1.estado_anterior == MOA_UNIDADE_MANUAL:
+                    self.ug1.forcar_estado_manual()
+                elif self.ug1.estado_anterior == MOA_UNIDADE_DISPONIVEL:
+                    self.ug1.forcar_estado_disponivel()
+                elif self.ug1.estado_anterior == MOA_UNIDADE_RESTRITA:
+                    self.ug1.forcar_estado_restrito()
+                else:
+                    self.ug1.forcar_estado_indisponivel()
         # UG2
         if not ping(self.cfg["UG2_slave_ip"]):
             if not self.borda_aviso_clp_ug2:
+                self.ug2.salvar_estado_anterior()
                 logger.warning("CLP UG2 não respondeu a tentativa de comunicação!")
                 self.borda_aviso_clp_ug2 = True
                 self.ug2.forcar_estado_restrito()
@@ -487,7 +496,14 @@ class Usina:
             if self.borda_aviso_clp_ug2:
                 logger.info("CLP UG2 voltou a comunicar!")
                 self.borda_aviso_clp_ug2 = False
-                logger.info("Para disponibilizar a UG, fovar agendar na interface web.")
+                if self.ug2.estado_anterior == MOA_UNIDADE_MANUAL:
+                    self.ug2.forcar_estado_manual()
+                elif self.ug2.estado_anterior == MOA_UNIDADE_DISPONIVEL:
+                    self.ug2.forcar_estado_disponivel()
+                elif self.ug2.estado_anterior == MOA_UNIDADE_RESTRITA:
+                    self.ug2.forcar_estado_restrito()
+                else:
+                    self.ug2.forcar_estado_indisponivel()
 
         self.clp_online = True
         self.clp_emergencia_acionada = 0
