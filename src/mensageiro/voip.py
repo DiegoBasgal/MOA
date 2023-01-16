@@ -36,7 +36,7 @@ falha_part_grupo_diesel = False
 falha_fechamento_DJ52L = False
 
 lista_de_contatos_padrao = [
-    ["Diego", "41999111134"], 
+    #s["Diego", "41999111134"], 
     #["Luis", "48991058729"], 
     #["Escritorio", "41996570004"],
     #["Henrique P5", "41999610053"],

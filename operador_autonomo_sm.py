@@ -420,11 +420,11 @@ def leitura_temporizada():
         try:
             if usina.leituras_por_hora():
                 acionar_voip()
-                
             for ug in usina.ugs:
-                ug.leituras_por_hora():
-                    
-        time.sleep(max(0, proxima_leitura - time.time()))
+                if ug.leituras_por_hora():
+                    acionar_voip()
+
+            time.sleep(max(0, proxima_leitura - time.time()))
         except Exception:
             logger.debug("Houve um problema ao executar a leitura por hora")
 
