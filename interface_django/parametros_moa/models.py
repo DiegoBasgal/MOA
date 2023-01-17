@@ -2,10 +2,6 @@ from django.db import models
 
 
 # Create your models here.
-class Contato(models.Model):
-    nome = models.CharField(max_length=250)
-    numero = models.CharField(max_length=20)
-
 
 class ParametrosUsina(models.Model):
 
@@ -131,3 +127,10 @@ class Comando(models.Model):
     executavel_em_manual = models.BooleanField(default=False)
     executavel_em_autmoatico = models.BooleanField(default=True)
 
+class Contato(models.Model):
+    nome = models.CharField(max_length=250, default="")
+    numero = models.CharField(max_length=20, default="")
+    data_inicio = models.DateField(default="2023-01-01")
+    ts_inicio = models.TimeField(default="00:00:00.00")
+    data_fim = models.DateField(default="2024-01-01")
+    ts_fim = models.TimeField(default="00:00:00.00")
