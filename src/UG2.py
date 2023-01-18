@@ -130,84 +130,84 @@ class UnidadeDeGeracao2(UnidadeDeGeracao):
         #Lista de condicionadores essenciais que devem ser lidos a todo momento
 #-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------#
         # R
-        self.leitura_temperatura_fase_R = LeituraOPC("Gerador {} - Temperatura Fase R".format(self.id),self.opc_server,REG_UG2_RetornosAnalogicos_MWR_Temperatura_01)
+        self.leitura_temperatura_fase_R = LeituraOPC("Gerador {} - Temperatura Fase R".format(self.id), self.opc_server, REG_OPC["UG2_TEMP_GERADOR_FASE_A"])
         base, limite = 100, 200
         x = self.leitura_temperatura_fase_R
         self.condicionador_temperatura_fase_r_ug = CondicionadorExponencial(x.descr, DEVE_INDISPONIBILIZAR, x, base, limite)
         self.condicionadores_essenciais.append(self.condicionador_temperatura_fase_r_ug)
 
         # S
-        self.leitura_temperatura_fase_S = LeituraOPC("Gerador {} - Temperatura Fase s".format(self.id),self.opc_server,REG_UG2_RetornosAnalogicos_MWR_Temperatura_02)
+        self.leitura_temperatura_fase_S = LeituraOPC("Gerador {} - Temperatura Fase s".format(self.id), self.opc_server, REG_OPC["UG2_TEMP_GERADOR_FASE_B"])
         base, limite = 100, 200
         x = self.leitura_temperatura_fase_S
         self.condicionador_temperatura_fase_s_ug = CondicionadorExponencial(x.descr, DEVE_INDISPONIBILIZAR, x, base, limite)
         self.condicionadores_essenciais.append(self.condicionador_temperatura_fase_s_ug)
         
         # T
-        self.leitura_temperatura_fase_T = LeituraOPC("Gerador {} - Temperatura Fase T".format(self.id),self.opc_server,REG_UG2_RetornosAnalogicos_MWR_Temperatura_03)
+        self.leitura_temperatura_fase_T = LeituraOPC("Gerador {} - Temperatura Fase T".format(self.id), self.opc_server, REG_OPC["UG2_TEMP_GERADOR_FASE_C"])
         base, limite = 100, 200
         x = self.leitura_temperatura_fase_T
         self.condicionador_temperatura_fase_t_ug = CondicionadorExponencial(x.descr, DEVE_INDISPONIBILIZAR, x, base, limite)
         self.condicionadores_essenciais.append(self.condicionador_temperatura_fase_t_ug)
         
         # Nucleo Gerador 1
-        self.leitura_temperatura_nucleo_gerador_1 = LeituraOPC("Gerador {} - Temperatura Núcelo do Gerador 1".format(self.id),self.opc_server,REG_UG2_RetornosAnalogicos_MWR_Temperatura_04)
+        self.leitura_temperatura_nucleo_gerador_1 = LeituraOPC("Gerador {} - Temperatura Núcelo do Gerador 1".format(self.id),self.opc_server, REG_OPC["UG2_TEMP_GERADOR_NUCLEO"])
         base, limite = 100, 200
         x = self.leitura_temperatura_nucleo_gerador_1
         self.condicionador_temperatura_nucleo_gerador_1_ug = CondicionadorExponencial(x.descr, DEVE_INDISPONIBILIZAR, x, base, limite)
         self.condicionadores_essenciais.append(self.condicionador_temperatura_nucleo_gerador_1_ug)
 
         # Mancal Guia
-        self.leitura_temperatura_mancal_guia = LeituraOPC("Gerador {} - Temperatura Mancal Guia".format(self.id),self.opc_server,REG_UG2_RetornosAnalogicos_MWR_Temperatura_04)
+        self.leitura_temperatura_mancal_guia = LeituraOPC("Gerador {} - Temperatura Mancal Guia".format(self.id), self.opc_server, REG_OPC["UG2_TEMP_MANCAL_GUIA_GERADOR"])
         base, limite = 100, 200
         x = self.leitura_temperatura_mancal_guia
         self.condicionador_temperatura_mancal_guia_ug = CondicionadorExponencial(x.descr, DEVE_INDISPONIBILIZAR, x, base, limite)
         self.condicionadores_essenciais.append(self.condicionador_temperatura_mancal_guia_ug)
 
         # Mancal Guia Interno 1
-        self.leitura_temperatura_mancal_guia_interno_1 = LeituraOPC("Gerador {} - Temperatura Mancal Guia Interno 1".format(self.id),self.opc_server,REG_UG2_RetornosAnalogicos_MWR_Temperatura_04)
+        self.leitura_temperatura_mancal_guia_interno_1 = LeituraOPC("Gerador {} - Temperatura Mancal Guia Interno 1".format(self.id),self.opc_server, REG_OPC["UG2_TEMP_1_MANCAL_GUIA_INTERNO"])
         base, limite = 100, 200
         x = self.leitura_temperatura_mancal_guia_interno_1
         self.condicionador_temperatura_mancal_guia_interno_1_ug = CondicionadorExponencial(x.descr, DEVE_INDISPONIBILIZAR, x, base, limite)
         self.condicionadores_essenciais.append(self.condicionador_temperatura_mancal_guia_interno_1_ug)
         
         # Mancal Guia Interno 2
-        self.leitura_temperatura_mancal_guia_interno_2 = LeituraOPC("Gerador {} - Temperatura Mancal Guia Interno 2".format(self.id),self.opc_server,REG_UG2_RetornosAnalogicos_MWR_Temperatura_04)
+        self.leitura_temperatura_mancal_guia_interno_2 = LeituraOPC("Gerador {} - Temperatura Mancal Guia Interno 2".format(self.id),self.opc_server, REG_OPC["UG2_TEMP_2_MANCAL_GUIA_INTERNO"])
         base, limite = 100, 200
         x = self.leitura_temperatura_mancal_guia_interno_2
         self.condicionador_temperatura_mancal_guia_interno_2_ug = CondicionadorExponencial(x.descr, DEVE_INDISPONIBILIZAR, x, base, limite)
         self.condicionadores_essenciais.append(self.condicionador_temperatura_mancal_guia_interno_2_ug)
         
         # Patins Mancal Combinado 1
-        self.leitura_temperatura_patins_mancal_comb_1 = LeituraOPC("Gerador {} - Temperatura Patins Mancal Combinado 1".format(self.id),self.opc_server,REG_UG2_RetornosAnalogicos_MWR_Temperatura_08)
+        self.leitura_temperatura_patins_mancal_comb_1 = LeituraOPC("Gerador {} - Temperatura Patins Mancal Combinado 1".format(self.id), self.opc_server, REG_OPC["UG2_TEMP_1_PATINS_MANCAL_COMBINADO"])
         base, limite = 100, 200
         x = self.leitura_temperatura_patins_mancal_comb_1
         self.condicionador_temperatura_patins_mancal_comb_1_ug = CondicionadorExponencial(x.descr, DEVE_INDISPONIBILIZAR, x, base, limite)
         self.condicionadores_essenciais.append(self.condicionador_temperatura_patins_mancal_comb_1_ug)
         
         # Patins Mancal Combinado 2
-        self.leitura_temperatura_patins_mancal_comb_2 = LeituraOPC("Gerador {} - Temperatura Patins Mancal Combinado 2".format(self.id),self.opc_server,REG_UG2_RetornosAnalogicos_MWR_Temperatura_08)
+        self.leitura_temperatura_patins_mancal_comb_2 = LeituraOPC("Gerador {} - Temperatura Patins Mancal Combinado 2".format(self.id),self.opc_server, REG_OPC["UG2_TEMP_2_PATINS_MANCAL_COMBINADO"])
         base, limite = 100, 200
         x = self.leitura_temperatura_patins_mancal_comb_2
         self.condicionador_temperatura_patins_mancal_comb_2_ug = CondicionadorExponencial(x.descr, DEVE_INDISPONIBILIZAR, x, base, limite)
         self.condicionadores_essenciais.append(self.condicionador_temperatura_patins_mancal_comb_2_ug)
         
         # Mancal Casquilho Combinado
-        self.leitura_temperatura_mancal_casq_comb = LeituraOPC("Gerador {} - Temperatura Mancal Casquilho Combinado".format(self.id),self.opc_server,REG_UG2_RetornosAnalogicos_MWR_Temperatura_10)
+        self.leitura_temperatura_mancal_casq_comb = LeituraOPC("Gerador {} - Temperatura Mancal Casquilho Combinado".format(self.id), self.opc_server, REG_OPC["UG2_TEMP_CASQ_MANCAL_COMBINADO"])
         base, limite = 100, 200
         x = self.leitura_temperatura_mancal_casq_comb
         self.condicionador_temperatura_mancal_casq_comb_ug = CondicionadorExponencial(x.descr, DEVE_INDISPONIBILIZAR, x, base, limite)
         self.condicionadores_essenciais.append(self.condicionador_temperatura_mancal_casq_comb_ug)
 
         # Mancal Contra Escora Combinado
-        self.leitura_temperatura_mancal_contra_esc_comb = LeituraOPC("Gerador {} - Temperatura Mancal Contra Escora Combinado".format(self.id),self.opc_server,REG_UG2_RetornosAnalogicos_MWR_Temperatura_07)
+        self.leitura_temperatura_mancal_contra_esc_comb = LeituraOPC("Gerador {} - Temperatura Mancal Contra Escora Combinado".format(self.id),self.opc_server, REG_OPC["UG2_TEMP_CONTRA_ESCORA_MANCAL_COMBINADO"])
         base, limite = 100, 200
         x = self.leitura_temperatura_mancal_contra_esc_comb
         self.condicionador_temperatura_mancal_contra_esc_comb_ug = CondicionadorExponencial(x.descr, DEVE_INDISPONIBILIZAR, x, base, limite)
         self.condicionadores_essenciais.append(self.condicionador_temperatura_mancal_contra_esc_comb_ug)
         
         # Pressão Entrada Turbina
-        self.leitura_pressao_turbina = LeituraOPC("Gerador {} - Pressão Turbina".format(self.id),self.opc_server,REG_UG2_EntradasAnalogicas_MRR_PressK1CaixaExpiral_MaisCasas,escala=0.1 ,op = 4)
+        self.leitura_pressao_turbina = LeituraOPC("Gerador {} - Pressão Turbina".format(self.id), self.opc_server, REG_OPC["UG2_PRESSAO_ENTRADA_TURBINA"],escala=0.1 ,op = 4)
         base = 16.1
         limite = 15.5
         x = self.leitura_pressao_turbina
@@ -533,6 +533,7 @@ class UnidadeDeGeracao2(UnidadeDeGeracao):
         else:
             self.enviar_setpoint(0)
         print("")
+        
     def acionar_trip_logico(self) -> bool:
         """
         Envia o comando de acionamento do TRIP para o CLP via rede

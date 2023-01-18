@@ -1,20 +1,24 @@
-from asyncio.log import logger
+import re
 import logging
-import numpy as np
 import threading
-from datetime import datetime
-from sys import stdout
-from time import sleep
+import numpy as np
 
-from pyModbusTCP.server import ModbusServer, DataBank
-from dj52L import Dj52L
-from ug import Ug
 import mapa_modbus
 
-REG = mapa_modbus.REG
+from sys import stdout
+from time import sleep
+from opcua import Server
+from datetime import datetime
+from asyncio.log import logger
+from pyModbusTCP.server import ModbusServer, DataBank
+
+from ug import Ug
+from dj52L import Dj52L
+
+REG_MB = mapa_modbus.REG_MB
+REG_OPC = mapa_modbus.REG_OPC
 
 lock = threading.Lock()
-
 
 class Planta:
 
@@ -43,67 +47,87 @@ class Planta:
         # Fim Set-up logging
 
         # Declaração de variáveis padrão da usina
+        self.shared_dict = shared_dict
+
         self.USINA_NV_VERTEDOURO = 462.37
-        self.USINA_VAZAO_SANITARIA_COTA = 461.37
         self.USINA_NV_MINIMO_OPERACAO = 461.00
+        self.USINA_VAZAO_SANITARIA_COTA = 461.37
         self.USINA_TENSAO_MINIMA = 23100 * 0.95
         self.USINA_TENSAO_MAXIMA = 23100 * 1.05
-        self.aux=0
-        self.aux1=0
-        self.aux2=0
-        self.aux3=0
-        self.aux4=0
-        self.aux5=0
-        self.aux6=0
-        self.aux7=0
-        self.aux8=0
-        self.aux_comp_fechada_ug1 = False
-        self.aux_comp_aberta_ug1 = False
-        self.aux_comp_cracking_ug1 = False
-        self.aux_comp_fechada_ug2 = False
-        self.aux_comp_aberta_ug2 = False
-        self.aux_comp_cracking_ug2 = False
-        self.shared_dict = shared_dict
-        self.escala_ruido = 0.1
+
         self.speed = 50
+        self.escala_ruido = 0.1
         self.passo_simulacao = 0.001
         self.segundos_por_passo = self.passo_simulacao * self.speed
+
+        self.dj52L = Dj52L(self)
 
         self.ug1 = Ug(1, self)
         self.ug2 = Ug(2, self)
         self.ugs = [self.ug1, self.ug2]
 
-        self.dj52L = Dj52L(self)
+        # Intância de servidores OPC e MB
+        self.DB = DataBank()
+        self.server_MB = ModbusServer(host="localhost", port=5003, no_block=True)
 
-        self.cust_data_bank = DataBank()
-        self.server = ModbusServer(host="localhost", port=5003, no_block=True)
-        self.server.start()
-        for R in REG:
-            self.cust_data_bank.set_words(int(REG[R]), [0])
+        self.server_OPC = Server()
+        self.server_OPC.set_endpoint("opc.tcp://localhost:4840")
+        self.server_OPC.register_namespace("Simulador XAV")
+
+        # Adiciona os registradores do mapa aos servidores OPC e MB
+        objects = self.server_OPC.get_objects_node()
+        self.reg_ug1 = objects.add_object("ns=7;s=CLP_UG1", "Registradores UG1")
+        self.reg_ug2 = objects.add_object("ns=7;s=CLP_UG2", "Registradores UG2")
+        self.reg_tda = objects.add_object("ns=7;s=CLP_TDA", "Registradores TDA")
+        self.reg_sa_se = objects.add_object("ns=7;s=CLP_SA", "Registradores SA/SE")
+
+        for i in zip(REG_MB, REG_OPC):
+
+            self.DB.set_words(int(REG_MB[i]), [0])
+
+            if re.search("^REG_UG1", i):
+                self.reg_ug1.add_variable("ns=7;s={}".format(i), "{}".format(re.sub("REG_UG1_", "", i)), REG_OPC[i])
+
+            if re.search("^REG_UG2", i):
+                self.reg_ug2.add_variable("ns=7;s={}".format(i), "{}".format(re.sub("REG_UG2_", "", i)), REG_OPC[i])
+        
+            if re.search("^REG_USINA", i):
+                self.reg_usina.add_variable("ns=7;s={}".format(i), "{}".format(re.sub("REG_USINA_", "", i)), REG_OPC[i])
+        
+        # Incia os servidores
+        self.server_MB.start()
+        self.server_OPC.start()
 
     def run(self):
         # INICIO DECLARAÇÃO shared_dict
-        self.shared_dict["nv_montante"] = 461.9
-        self.shared_dict["potencia_kw_se"] = 0
-        self.shared_dict["q_alfuente"] = 0
         self.shared_dict["q_liquida"] = 0
+        self.shared_dict["q_alfuente"] = 0
         self.shared_dict["q_sanitaria"] = 0
-        self.shared_dict["q_vertimento"] = 0
-        self.shared_dict["stop_gui"] = False
-        self.shared_dict["stop_sim"] = False
         self.shared_dict["tempo_simul"] = 0
-        self.shared_dict["tensao_na_linha"] = 23100
+        self.shared_dict["q_vertimento"] = 0
+        self.shared_dict["potencia_kw_se"] = 0
         self.shared_dict["potencia_kw_mp"] = 0
         self.shared_dict["potencia_kw_mr"] = 0
+        self.shared_dict["nv_montante"] = 461.9
         self.shared_dict["nv_jusante_grade"] = 0
+        self.shared_dict["tensao_na_linha"] = 23100
+
+        self.shared_dict["stop_sim"] = False
+        self.shared_dict["stop_gui"] = False
         self.shared_dict["trip_condic_usina"] = False
-        self.shared_dict["trip_condic_ug1"] = False
-        self.shared_dict["trip_condic_ug2"] = False
         self.shared_dict["reset_geral_condic"] = False
-        self.shared_dict["condicao_falha_cracking_ug1"] = False
-        self.shared_dict["condicao_falha_cracking_ug2"] = False
-        self.shared_dict["permissao_abrir_comporta_ug1"] = False
-        self.shared_dict["permissao_abrir_comporta_ug2"] = False
+
+        for i in range(12):
+            self.shared_dict["aux_borda{}".format(i)] = 0
+        
+        for ug in self.ugs:
+            self.shared_dict["aux_comp_a_ug{}".format(ug.id)] = 0
+            self.shared_dict["aux_comp_c_ug{}".format(ug.id)] = 0
+            self.shared_dict["aux_comp_f_ug{}".format(ug.id)] = 0
+
+            self.shared_dict["trip_condic_ug{}".format(ug.id)] = False 
+            self.shared_dict["condicao_falha_cracking_ug{}".format(ug.id)] = False
+            self.shared_dict["permissao_abrir_comporta_ug{}".format(ug.id)] = False
 
         volume = self.nv_montate_para_volume(self.shared_dict["nv_montante"])
         self.dj52L.abrir()
@@ -118,205 +142,155 @@ class Planta:
                 # Acerto temportal
                 self.shared_dict["tempo_simul"] += self.segundos_por_passo
 
-                # Lê do self.cust_data_bank
-                if (self.cust_data_bank.get_words(REG["REG_USINA_Disj52LFechar"])[0] == 1):
-                    self.cust_data_bank.set_words(REG["REG_USINA_Disj52LFechar"], [0])
-                    logger.info("Comando modbus recebido: REG_USINA_Disj52LFechar ")
+                # Leitura do dicionário compartilhado
+                if self.shared_dict["trip_condic_usina"] == True and self.shared_dict["aux_borda{}".format(1)] == 0:
+                    self.shared_dict["aux_borda{}".format(1)] = 1
+                    self.escrita_OPC("ns=3;s=REG_USINA_Condicionadores", 1)
+
+                elif self.shared_dict["trip_condic_usina"] == False and self.shared_dict["aux_borda{}".format(1)] == 1:
+                    self.shared_dict["aux_borda{}".format(1)] = 0
+                    self.escrita_OPC("ns=3;s=REG_USINA_Condicionadores", 0)
+                    self.dj52L.reconhece_reset_dj52L()
+
+                if self.shared_dict["reset_geral_condic"] == True:
+                    self.escrita_OPC("ns=1;s=REG_UG1_Condicionadores", 0)
+                    self.escrita_OPC("ns=2;s=REG_UG2_Condicionadores", 0)
+                    self.escrita_OPC("ns=3;s=REG_USINA_Condicionadores", 0)
+
+                # Leituras de registradores OPC e MB
+                if self.leitura_OPC("ns=3;s=REG_USINA_Disj52LFechar") == True:
+                    self.escrita_OPC("ns=3;s=REG_USINA_Disj52LFechar", False)
+                    logger.info("Comando OPC recebido, fechand DJ52L")
                     self.dj52L.fechar()
-
-                if (self.cust_data_bank.get_words(REG["REG_USINA_EmergenciaDesligar"])[0] == 1):
-                    self.cust_data_bank.set_words(REG["REG_USINA_EmergenciaDesligar"], [0])
-                    logger.info("Comando modbus recebido: REG_USINA_EmergenciaDesligar ")
-                    pass
-
-                if (self.cust_data_bank.get_words(REG["REG_USINA_EmergenciaLigar"])[0] == 1):
-                    self.cust_data_bank.set_words(REG["REG_USINA_EmergenciaLigar"], [0])
-                    logger.info("Comando modbus recebido: REG_USINA_EmergenciaLigar ")
-                    for ug in self.ugs:
-                        ug.tripar(1, "REG_USINA_EmergenciaLigar via modbus")
-                    self.dj52L.tripar("REG_USINA_EmergenciaLigar via modbus")
                     
-                if (self.cust_data_bank.get_words(REG["REG_USINA_ResetAlarmes"])[0]== 1):
-                    self.cust_data_bank.set_words(REG["REG_USINA_ResetAlarmes"], [0])
-                    self.cust_data_bank.set_words(REG["REG_USINA_ReconheceAlarmes"], [0])
-                    logger.info("Comando modbus recebido: REG_USINA_ReconheceAlarmes ")
-                    logger.info("Comando modbus recebido: REG_USINA_ResetAlarmes ")
+                if self.leitura_OPC("ns=3;s=REG_USINA_ResetAlarmes") == True:
+                    self.escrita_OPC("ns=3;s=REG_USINA_ResetAlarmes", False)
+                    logger.info("Comando OPC recebido: ns=3;s=REG_USINA_ResetAlarmes ")
                     for ug in self.ugs:
                         ug.reconhece_reset_ug()
                     self.dj52L.reconhece_reset_dj52L()
 
-                if self.shared_dict["trip_condic_usina"]==True and self.aux==0:
-                    self.aux = 1
-                    self.cust_data_bank.set_words(REG["REG_USINA_AUX_CondicionadoresE"], [int(1)])
-                    self.cust_data_bank.set_words(REG["REG_USINA_AUX_Condicionadores1"], [int(1)])
-                
-                elif self.shared_dict["trip_condic_usina"]==False and self.aux==1:
-                    self.aux = 0
-                    self.cust_data_bank.set_words(REG["REG_USINA_AUX_CondicionadoresE"], [0])
-                    self.cust_data_bank.set_words(REG["REG_USINA_AUX_Condicionadores1"], [0])
+                if self.leitura_OPC("ns=3;s=REG_USINA_Condicionadores") == 1 and self.shared_dict["aux_borda{}".format(2)] == 0:
+                    self.shared_dict["aux_borda{}".format(2)] = 1
+
+                elif self.leitura_OPC("ns=3;s=REG_USINA_Condicionadores") == 0 and self.shared_dict["aux_borda{}".format(2)] == 1:
+                    self.shared_dict["aux_borda{}".format(2)] = 0
+                    self.escrita_OPC("ns=3;s=REG_USINA_Condicionadores", 0)
+                    self.shared_dict["trip_condic_usina"] = False
                     self.dj52L.reconhece_reset_dj52L()
-
-                if self.shared_dict["trip_condic_ug1"]==True and self.aux1==0:
-                    self.aux1 = 1
-                    self.cust_data_bank.set_words(REG["REG_UG1_AUX_Condicionadores"], [int(1)])
-                    self.cust_data_bank.set_words(REG["REG_UG1_Emergencia_Condicionadores1"], [int(1)])
-                
-                elif self.shared_dict["trip_condic_ug1"]==False and self.aux1==1:
-                    self.aux1 = 0
-                    self.cust_data_bank.set_words(REG["REG_UG1_AUX_Condicionadores"], [int(0)])
-                    self.cust_data_bank.set_words(REG["REG_UG1_Emergencia_Condicionadores1"], [int(0)])
-
-                if self.shared_dict["trip_condic_ug2"]==True and self.aux2==0:
-                    self.aux2 = 1
-                    self.cust_data_bank.set_words(REG["REG_UG2_AUX_Condicionadores"], [int(1)])
-                    self.cust_data_bank.set_words(REG["REG_UG2_Emergencia_Condicionadores2"], [int(1)])
-                    
-                elif self.shared_dict["trip_condic_ug2"]==False and self.aux2==1:
-                    self.aux2 = 0
-                    self.cust_data_bank.set_words(REG["REG_UG2_AUX_Condicionadores"], [int(0)])
-                    self.cust_data_bank.set_words(REG["REG_UG2_Emergencia_Condicionadores2"], [int(0)])
-
-                if self.shared_dict["reset_geral_condic"]==True:
-                    self.cust_data_bank.set_words(REG["REG_USINA_AUX_CondicionadoresE"], [int(0)])
-                    self.cust_data_bank.set_words(REG["REG_USINA_AUX_Condicionadores1"], [int(0)])
-                    self.cust_data_bank.set_words(REG["REG_UG1_AUX_Condicionadores"], [int(0)])
-                    self.cust_data_bank.set_words(REG["REG_UG1_Emergencia_Condicionadores1"], [int(0)])
-                    self.cust_data_bank.set_words(REG["REG_UG2_AUX_Condicionadores"], [int(0)])
-                    self.cust_data_bank.set_words(REG["REG_UG2_Emergencia_Condicionadores2"], [int(0)])
-
-                if self.cust_data_bank.get_words(REG["REG_USINA_AUX_CondicionadoresE"])[0] == 1 and self.aux4==0:
-                    self.aux4 = 1
-                elif self.cust_data_bank.get_words(REG["REG_USINA_AUX_CondicionadoresE"])[0] == 0 and self.aux4==1:
-                    self.aux4 = 0
-                    self.cust_data_bank.set_words(REG["REG_USINA_AUX_CondicionadoresE"], [0])
-                    self.cust_data_bank.set_words(REG["REG_USINA_AUX_Condicionadores1"], [0])
-                    self.shared_dict["trip_condic_usina"]=False
-                    self.dj52L.reconhece_reset_dj52L()
-                
-                if self.cust_data_bank.get_words(REG["REG_UG1_Status_Comporta"])[0] == 0 and self.aux_comp_fechada_ug1 == False:
-                    self.cust_data_bank.set_words(REG["REG_UG1_Status_Comporta"], [0])
-                    self.aux_comp_fechada_ug1 = True
-                    self.shared_dict["thread_comp_aberta_ug1"] = False
-                    self.shared_dict["thread_comp_fechada_ug1"] = True
-                    self.shared_dict["thread_comp_cracking_ug1"] = False
-                elif self.cust_data_bank.get_words(REG["REG_UG1_Status_Comporta"])[0] != 0 and self.aux_comp_fechada_ug1 == True:
-                    self.aux_comp_fechada_ug1 = False
-                if self.cust_data_bank.get_words(REG["REG_UG1_Status_Comporta"])[0] == 1 and self.aux_comp_aberta_ug1 == False:
-                    self.cust_data_bank.set_words(REG["REG_UG1_Status_Comporta"], [1])
-                    self.aux_comp_aberta_ug1 = True
-                    self.shared_dict["thread_comp_aberta_ug1"] = True
-                    self.shared_dict["thread_comp_fechada_ug1"] = False
-                    self.shared_dict["thread_comp_cracking_ug1"] = False
-                elif self.cust_data_bank.get_words(REG["REG_UG1_Status_Comporta"])[0] != 1 and self.aux_comp_aberta_ug1 == True:
-                    self.aux_comp_aberta_ug1 = False
-                if self.cust_data_bank.get_words(REG["REG_UG1_Status_Comporta"])[0] == 2 and self.aux_comp_cracking_ug1 == False:
-                    self.cust_data_bank.set_words(REG["REG_UG1_Status_Comporta"], [2])
-                    self.aux_comp_cracking_ug1 = True
-                    self.shared_dict["thread_comp_aberta_ug1"] = False
-                    self.shared_dict["thread_comp_fechada_ug1"] = False
-                    self.shared_dict["thread_comp_cracking_ug1"] = True
-                elif self.cust_data_bank.get_words(REG["REG_UG1_Status_Comporta"])[0] != 2 and self.aux_comp_cracking_ug1 == True:
-                    self.aux_comp_cracking_ug1 = False
-                
-                if self.cust_data_bank.get_words(REG["REG_UG2_Status_Comporta"])[0] == 0 and self.aux_comp_fechada_ug2 == False:
-                    self.cust_data_bank.set_words(REG["REG_UG2_Status_Comporta"], [0])
-                    self.aux_comp_fechada_ug2 = True
-                    self.shared_dict["thread_comp_aberta_ug2"] = False
-                    self.shared_dict["thread_comp_fechada_ug2"] = True
-                    self.shared_dict["thread_comp_cracking_ug2"] = False
-                elif self.cust_data_bank.get_words(REG["REG_UG2_Status_Comporta"])[0] != 0 and self.aux_comp_fechada_ug2 == True:
-                    self.aux_comp_fechada_ug2 = False
-                if self.cust_data_bank.get_words(REG["REG_UG2_Status_Comporta"])[0] == 1 and self.aux_comp_aberta_ug2 == False:
-                    self.cust_data_bank.set_words(REG["REG_UG2_Status_Comporta"], [1])
-                    self.aux_comp_aberta_ug2 = True
-                    self.shared_dict["thread_comp_aberta_ug2"] = True
-                    self.shared_dict["thread_comp_fechada_ug2"] = False
-                    self.shared_dict["thread_comp_cracking_ug2"] = False
-                elif self.cust_data_bank.get_words(REG["REG_UG2_Status_Comporta"])[0] != 1 and self.aux_comp_aberta_ug2 == True:
-                    self.aux_comp_aberta_ug2 = False
-                if self.cust_data_bank.get_words(REG["REG_UG2_Status_Comporta"])[0] == 2 and self.aux_comp_cracking_ug2 == False:
-                    self.cust_data_bank.set_words(REG["REG_UG2_Status_Comporta"], [2])
-                    self.aux_comp_cracking_ug2 = True
-                    self.shared_dict["thread_comp_aberta_ug2"] = False
-                    self.shared_dict["thread_comp_fechada_ug2"] = False
-                    self.shared_dict["thread_comp_cracking_ug2"] = True
-                elif self.cust_data_bank.get_words(REG["REG_UG2_Status_Comporta"])[0] != 2 and self.aux_comp_cracking_ug2 == True:
-                    self.aux_comp_cracking_ug2 = False
-
-                if self.shared_dict["condicao_falha_cracking_ug1"] == True and self.aux5 == 0:
-                    self.cust_data_bank.set_words(REG["REG_UG1_AUX_Condicionadores"], [1])
-                    self.aux5 = 1
-                elif self.shared_dict["reset_geral_condic"] == True and self.aux5 == 1:
-                    self.cust_data_bank.set_words(REG["REG_UG1_AUX_Condicionadores"], [0])
-                    self.shared_dict["condicao_falha_cracking_ug1"] = False
-                    self.aux5 = 0
-                
-                if self.shared_dict["condicao_falha_cracking_ug2"] == True and self.aux6 == 0:
-                    self.cust_data_bank.set_words(REG["REG_UG2_AUX_Condicionadores"], [1])
-                    self.aux6 = 1
-                elif self.shared_dict["reset_geral_condic"] == True and self.aux6 == 1:
-                    self.cust_data_bank.set_words(REG["REG_UG2_AUX_Condicionadores"], [0])
-                    self.shared_dict["condicao_falha_cracking_ug2"] = False
-                    self.aux6 = 0
-
-                if self.shared_dict["permissao_abrir_comporta_ug1"] == True and self.aux7 == 0:
-                    self.cust_data_bank.set_words(REG["REG_UG1_Permissao_Abertura_Comp_1"], [1])
-                    self.cust_data_bank.set_words(REG["REG_UG1_Permissao_Abertura_Comp_2"], [1])
-                    self.aux7 = 1
-                elif self.shared_dict["permissao_abrir_comporta_ug1"] == False and self.aux7 == 1:
-                    self.cust_data_bank.set_words(REG["REG_UG1_Permissao_Abertura_Comp_1"], [0])
-                    self.cust_data_bank.set_words(REG["REG_UG1_Permissao_Abertura_Comp_2"], [0])
-                    self.aux7 = 0
-
-                if self.shared_dict["permissao_abrir_comporta_ug2"] == True and self.aux8 == 0:
-                    self.cust_data_bank.set_words(REG["REG_UG2_Permissao_Abertura_Comp_1"], [1])
-                    self.cust_data_bank.set_words(REG["REG_UG2_Permissao_Abertura_Comp_2"], [1])
-                    self.aux8 = 1
-                elif self.shared_dict["permissao_abrir_comporta_ug2"] == False and self.aux8 == 1:
-                    self.cust_data_bank.set_words(REG["REG_UG2_Permissao_Abertura_Comp_1"], [0])
-                    self.cust_data_bank.set_words(REG["REG_UG2_Permissao_Abertura_Comp_2"], [0])
-                    self.aux8 = 0
-
-                for ug in self.ugs:
-                    self.shared_dict["setpoint_kw_ug{}".format(ug.id)] = self.cust_data_bank.get_words(REG["REG_UG{}_CtrlPotencia_Alvo".format(ug.id)])[0]
-                    if self.shared_dict["debug_setpoint_kw_ug{}".format(ug.id)] >= 0:
-                        self.shared_dict["setpoint_kw_ug{}".format(ug.id)] = self.shared_dict["debug_setpoint_kw_ug{}".format(ug.id)]
-                        self.cust_data_bank.set_words(REG["REG_UG{}_CtrlPotencia_Alvo".format(ug.id)],[self.shared_dict["setpoint_kw_ug{}".format(ug.id)]],)
-                        self.shared_dict["debug_setpoint_kw_ug{}".format(ug.id)] = -1
-
-                    if (self.cust_data_bank.get_words(REG["REG_UG{}_Operacao_EmergenciaDesligar".format(ug.id)])[0]== 1):
-                        self.cust_data_bank.set_words(REG["REG_UG{}_Operacao_EmergenciaDesligar".format(ug.id)],[0],)
-                        self.cust_data_bank.set_words(REG["REG_UG{}_Operacao_EmergenciaLigar".format(ug.id)], [0])
-                        ug.reconhece_reset_ug()
-
-                    if (self.cust_data_bank.get_words(REG["REG_UG{}_Operacao_EmergenciaLigar".format(ug.id)])[0]== 1):
-                        self.cust_data_bank.set_words(REG["REG_UG{}_Operacao_EmergenciaDesligar".format(ug.id)], [0],)
-                        self.cust_data_bank.set_words(REG["REG_UG{}_Operacao_EmergenciaLigar".format(ug.id)], [0])
-                        ug.tripar(1, "Operacao_EmergenciaLigar via modbus")
-
-                    if (self.cust_data_bank.get_words(REG["REG_UG{}_Operacao_ResetAlarmes".format(ug.id)])[0]== 1):
-                        self.cust_data_bank.set_words(REG["REG_UG{}_Operacao_ReconheceAlarmes".format(ug.id)],[0],)
-                        self.cust_data_bank.set_words(REG["REG_UG{}_Operacao_ResetAlarmes".format(ug.id)],[0],)
-                        ug.reconhece_reset_ug()
-
-
-                    if (self.cust_data_bank.get_words(REG["REG_UG{}_Operacao_UP".format(ug.id)])[0] == 1):
-                        self.cust_data_bank.set_words(REG["REG_UG{}_Operacao_UP".format(ug.id)], [0])
-                        ug.parar()
-                        pass
-
-                    if (self.cust_data_bank.get_words(REG["REG_UG{}_Operacao_US".format(ug.id)])[0] == 1):
-                        self.cust_data_bank.set_words(REG["REG_UG{}_Operacao_US".format(ug.id)], [0])
-                        ug.partir()
-                        pass
-                    
 
                 # dj52L
                 self.dj52L.passo()
 
-                # UGS
+                # UGs
                 for ug in self.ugs:
+                    # Leitura do dicionário compartilhado
+                    self.shared_dict["setpoint_kw_ug{}".format(ug.id)] = self.leitura_MB(REG_MB["REG_UG{}_CtrlPotencia_Alvo".format(ug.id)])
+
+                    if self.shared_dict["debug_setpoint_kw_ug{}".format(ug.id)] >= 0:
+                        self.shared_dict["setpoint_kw_ug{}".format(ug.id)] = self.shared_dict["debug_setpoint_kw_ug{}".format(ug.id)]
+                        self.escrita_MB(REG_MB["REG_UG{}_CtrlPotencia_Alvo".format(ug.id)], self.shared_dict["setpoint_kw_ug{}".format(ug.id)])
+                        self.shared_dict["debug_setpoint_kw_ug{}".format(ug.id)] = -1
+
+
+                    if self.shared_dict["trip_condic_ug{}".format(ug.id)] and self.shared_dict["aux_borda{}".format(ug.id + 2)] == 0:
+                        self.shared_dict["aux_borda{}".format(ug.id + 2)] = 1
+                        self.escrita_OPC("ns={0};s=REG_UG{0}_Condicionadores".format(ug.id), 1)
+
+                    elif self.shared_dict["trip_condic_ug{}".format(ug.id)] == False and self.shared_dict["aux_borda{}".format(ug.id + 2)] == 1:
+                        self.shared_dict["aux_borda{}".format(ug.id + 2)] = 0
+                        self.escrita_OPC("ns={0};s=REG_UG{0}_Condicionadores".format(ug.id), 0)
+
+
+                    if self.shared_dict["permissao_abrir_comporta_ug{}".format(ug.id)] == True and self.shared_dict["aux_borda{}".format(ug.id + 4)] == 0:
+                        self.escrita_OPC("ns={0};s=REG_UG{0}_Permissao_Comporta".format(ug.id), 1)
+                        self.shared_dict["aux_borda{}".format(ug.id + 4)] = 1
+
+                    elif self.shared_dict["permissao_abrir_comporta_ug{}".format(ug.id)] == False and self.shared_dict["aux_borda{}".format(ug.id + 4)] == 1:
+                        self.escrita_OPC("ns={0};s=REG_UG{0}_Permissao_Comporta".format(ug.id), 0)
+                        self.shared_dict["aux_borda{}".format(ug.id + 4)] = 0
+
+
+                    if self.shared_dict["condicao_falha_cracking_ug{}".format(ug.id)] == True and self.shared_dict["aux_borda{}".format(ug.id + 6)] == 0:
+                        self.escrita_OPC("ns={0};s=REG_UG{0}_Condicionadores".format(ug.id), 1)
+                        self.shared_dict["aux_borda{}".format(ug.id + 6)] = 1
+
+                    elif self.shared_dict["reset_geral_condic"] == True and self.shared_dict["aux_borda{}".format(ug.id + 6)] == 1:
+                        self.escrita_OPC("ns={0};s=REG_UG{0}_Condicionadores".format(ug.id), 0)
+                        self.shared_dict["condicao_falha_cracking_ug{}".format(ug.id)] = False
+                        self.shared_dict["aux_borda{}".format(ug.id + 6)] = 0
+
+                    # Leitura de registradores OPC e MB
+                    if self.leitura_OPC("ns={0};s=REG_UG{0}_Operacao_ResetAlarmes".format(ug.id)) == 1:
+                        self.escrita_OPC("ns={0};s=REG_UG{0}_Operacao_ResetAlarmes".format(ug.id), 0)
+                        ug.reconhece_reset_ug()
+
+
+                    if self.leitura_OPC("ns={0};s=REG_UG{0}_Operacao_UP".format(ug.id)) == 1:
+                        self.escrita_OPC("ns={0};s=REG_UG{0}_Operacao_UP".format(ug.id), 0)
+                        ug.parar()
+
+                    elif self.leitura_OPC("ns={0};s=REG_UG{0}_Operacao_US".format(ug.id)) == 1:
+                        self.escrita_OPC("ns={0};s=REG_UG{0}_Operacao_US".format(ug.id), 0)
+                        ug.partir()
+
+
+                    if self.leitura_OPC("ns={0};s=REG_UG{0}_Status_Comporta".format(ug.id)) == 0 and self.shared_dict["aux_comp_f_ug{}".format(ug.id)] == 0:
+                        self.escrita_OPC("ns={0};s=REG_UG{0}_Status_Comporta".format(ug.id), 0)
+                        self.shared_dict["aux_comp_f_ug{}".format(ug.id)] = 1
+                        self.shared_dict["thread_comp_fechada_ug{}".format(ug.id)] = True
+
+                    elif self.leitura_OPC("ns={0};s=REG_UG{0}_Status_Comporta".format(ug.id)) != 0 and self.shared_dict["aux_comp_f_ug{}".format(ug.id)] == 1:
+                        self.shared_dict["aux_comp_f_ug{}".format(ug.id)] = 0
+                    
+
+                    if self.leitura_OPC("ns={0};s=REG_UG{0}_Status_Comporta".format(ug.id)) == 1 and self.shared_dict["aux_comp_a_ug{}".format(ug.id)] == 0:
+                        self.escrita_OPC("ns={0};s=REG_UG{0}_Status_Comporta".format(ug.id), 0)
+                        self.shared_dict["aux_comp_a_ug{}".format(ug.id)] = 1
+                        self.shared_dict["thread_comp_aberta_ug{}".format(ug.id)] = True
+
+                    elif self.leitura_OPC("ns={0};s=REG_UG{0}_Status_Comporta".format(ug.id)) != 1 and self.shared_dict["aux_comp_a_ug{}".format(ug.id)] == 1:
+                        self.shared_dict["aux_comp_a_ug{}".format(ug.id)] = 0
+                    
+
+                    if self.leitura_OPC("ns={0};s=REG_UG{0}_Status_Comporta".format(ug.id)) == 2 and self.shared_dict["aux_comp_c_ug{}".format(ug.id)] == 0:
+                        self.escrita_OPC("ns={0};s=REG_UG{0}_Status_Comporta".format(ug.id), 0)
+                        self.shared_dict["aux_comp_c_ug{}".format(ug.id)] = 1
+                        self.shared_dict["thread_comp_cracking_ug{}".format(ug.id)] = True
+
+                    elif self.leitura_OPC("ns={0};s=REG_UG{0}_Status_Comporta".format(ug.id)) != 2 and self.shared_dict["aux_comp_c_ug{}".format(ug.id)] == 1:
+                        self.shared_dict["aux_comp_c_ug{}".format(ug.id)] = 0
+
+
+                    if self.leitura_OPC("ns={0};s=REG_UG{0}_Operacao_EmergenciaLigar".format(ug.id)) == 1 and self.shared_dict["aux_borda{}".format(ug.id + 8)] == 0:
+                        self.escrita_OPC("ns={0};s=REG_UG{0}_Operacao_EmergenciaLigar".format(ug.id), 1)
+                        ug.tripar(1, "Operacao_EmergenciaLigar via OPC")
+                        self.shared_dict["aux_borda{}".format(ug.id + 8)] = 1
+
+                    elif self.leitura_OPC("ns={0};s=REG_UG{0}_Operacao_EmergenciaLigar".format(ug.id)) != 1 and self.shared_dict["aux_borda{}".format(ug.id + 8)] == 1:
+                        self.escrita_OPC("ns={0};s=REG_UG{0}_Operacao_EmergenciaLigar".format(ug.id), 0)
+                        ug.reconhece_reset_ug()
+                        self.shared_dict["aux_borda{}".format(ug.id + 8)] = 0
+                    
+                    # UG passo
                     ug.passo()
+
+                    # Escrita dos registradores UG
+                    self.escrita_OPC("ns={0};s=REG_UG{0}_Operacao_EtapaAtual".format(ug.id),[int(ug.etapa_atual)],)
+                    self.escrita_OPC("ns={0};s=REG_UG{0}_Gerador_PotenciaAtivaMedia".format(ug.id),[round(ug.potencia)],)
+                    self.escrita_OPC("ns={0};s=REG_UG{0}_HorimetroEletrico_Hora".format(ug.id),[np.floor(ug.horimetro_hora)],)
+                    self.escrita_OPC("ns={0};s=REG_UG{0}_Temperatura_01".format(ug.id),[round(self.shared_dict["temperatura_ug{}_fase_r".format(ug.id)])],)
+                    self.escrita_OPC("ns={0};s=REG_UG{0}_Temperatura_02".format(ug.id),[round(self.shared_dict["temperatura_ug{}_fase_s".format(ug.id)])],)
+                    self.escrita_OPC("ns={0};s=REG_UG{0}_Temperatura_03".format(ug.id),[round(self.shared_dict["temperatura_ug{}_fase_t".format(ug.id)])],)
+                    self.escrita_OPC("ns={0};s=REG_UG{0}_Temperatura_04".format(ug.id),[round(self.shared_dict["temperatura_ug{}_nucleo_gerador_1".format(ug.id)])],)
+                    self.escrita_OPC("ns={0};s=REG_UG{0}_Temperatura_05".format(ug.id),[round(self.shared_dict["temperatura_ug{}_mancal_guia".format(ug.id)])],)
+                    self.escrita_OPC("ns={0};s=REG_UG{0}_Temperatura_06".format(ug.id),[round(self.shared_dict["temperatura_ug{}_mancal_guia_interno_1".format(ug.id)])],)
+                    self.escrita_OPC("ns={0};s=REG_UG{0}_Temperatura_07".format(ug.id),[round(self.shared_dict["temperatura_ug{}_mancal_guia_interno_2".format(ug.id)])],)
+                    self.escrita_OPC("ns={0};s=REG_UG{0}_Temperatura_08".format(ug.id),[round(self.shared_dict["temperatura_ug{}_patins_mancal_comb_1".format(ug.id)])],)
+                    self.escrita_OPC("ns={0};s=REG_UG{0}_Temperatura_09".format(ug.id),[round(self.shared_dict["temperatura_ug{}_patins_mancal_comb_2".format(ug.id)])],)
+                    self.escrita_OPC("ns={0};s=REG_UG{0}_Temperatura_10".format(ug.id),[round(self.shared_dict["temperatura_ug{}_mancal_casq_comb".format(ug.id)])],)
+                    self.escrita_OPC("ns={0};s=REG_UG{0}_Temperatura_11".format(ug.id),[round(self.shared_dict["temperatura_ug{}_mancal_contra_esc_comb".format(ug.id)])],)
+                    self.escrita_OPC("ns={0};s=REG_UG{0}_Pressao_Turbina".format(ug.id),[round(10 * self.shared_dict["pressao_turbina_ug{}".format(ug.id)])],)
 
                 # SE
                 self.shared_dict["potencia_kw_se"] = sum([ug.potencia for ug in self.ugs]) * 0.995 + np.random.normal(0, 0.001 * self.escala_ruido)
@@ -331,12 +305,14 @@ class Planta:
                 self.shared_dict["q_liquida"] -= self.shared_dict["q_sanitaria"]
                 self.shared_dict["q_sanitaria"] = self.q_sanitaria(self.shared_dict["nv_montante"])
                 self.shared_dict["q_vertimento"] = 0
+
                 for ug in self.ugs:
                     self.shared_dict["q_liquida"] -= self.shared_dict["q_ug{}".format(ug.id)]
 
                 self.shared_dict["nv_montante"] = self.volume_para_nv_montate(volume + self.shared_dict["q_liquida"] * self.segundos_por_passo)
                 self.shared_dict["nv_jusante_grade"] = self.shared_dict["nv_montante"] - max(0, np.random.normal(0.1, 0.1 * self.escala_ruido))
 
+                # Cálculo de enchimento do reservatório
                 if self.shared_dict["nv_montante"] >= self.USINA_NV_VERTEDOURO:
                     self.shared_dict["q_vertimento"] = self.shared_dict["q_liquida"]
                     self.shared_dict["q_liquida"] = 0
@@ -349,44 +325,16 @@ class Planta:
 
                 volume += self.shared_dict["q_liquida"] * self.segundos_por_passo
 
-                # Escreve no self.cust_data_bank
-                for ug in self.ugs:
-                    self.cust_data_bank.set_words(REG["REG_UG{}_Alarme01".format(ug.id)], [int(ug.flags)])
-
-                    self.cust_data_bank.set_words(REG["REG_UG{}_Gerador_PotenciaAtivaMedia".format(ug.id)],[round(ug.potencia)],)
-                    self.cust_data_bank.set_words(REG["REG_UG{}_HorimetroEletrico_Hora".format(ug.id)],[np.floor(ug.horimetro_hora)],)
-                    self.cust_data_bank.set_words(REG["REG_UG{}_HorimetroEletrico_Frac".format(ug.id)],[round((ug.horimetro_hora - np.floor(ug.horimetro_hora)) * 60, 0)],)
-                    
-                    if ug.etapa_alvo == ug.etapa_atual:
-                        self.cust_data_bank.set_words(REG["REG_UG{}_Operacao_EtapaAlvo".format(ug.id)],[int(ug.etapa_alvo)],)
-                    else:
-                        self.cust_data_bank.set_words(REG["REG_UG{}_Operacao_EtapaAlvo".format(ug.id)],[0b11111111],)
-
-                    self.cust_data_bank.set_words(REG["REG_UG{}_Etapa_AUX".format(ug.id)], [int(self.shared_dict["etapa_aux_ug{}".format(ug.id)])])
-                    self.cust_data_bank.set_words(REG["REG_UG{}_Operacao_EtapaAtual".format(ug.id)],[int(ug.etapa_atual)],)
-                    
-                    self.cust_data_bank.set_words(REG["REG_UG{}_Pressao_Turbina".format(ug.id)],[round(10 * self.shared_dict["pressao_turbina_ug{}".format(ug.id)])],)
-                    self.cust_data_bank.set_words(REG["REG_UG{}_Temperatura_01".format(ug.id)],[round(self.shared_dict["temperatura_ug{}_fase_r".format(ug.id)])],)
-                    self.cust_data_bank.set_words(REG["REG_UG{}_Temperatura_02".format(ug.id)],[round(self.shared_dict["temperatura_ug{}_fase_s".format(ug.id)])],)
-                    self.cust_data_bank.set_words(REG["REG_UG{}_Temperatura_03".format(ug.id)],[round(self.shared_dict["temperatura_ug{}_fase_t".format(ug.id)])],)
-                    self.cust_data_bank.set_words(REG["REG_UG{}_Temperatura_04".format(ug.id)],[round(self.shared_dict["temperatura_ug{}_nucleo_gerador_1".format(ug.id)])],)
-                    self.cust_data_bank.set_words(REG["REG_UG{}_Temperatura_05".format(ug.id)],[round(self.shared_dict["temperatura_ug{}_mancal_guia".format(ug.id)])],)
-                    self.cust_data_bank.set_words(REG["REG_UG{}_Temperatura_06".format(ug.id)],[round(self.shared_dict["temperatura_ug{}_mancal_guia_interno_1".format(ug.id)])],)
-                    self.cust_data_bank.set_words(REG["REG_UG{}_Temperatura_07".format(ug.id)],[round(self.shared_dict["temperatura_ug{}_mancal_guia_interno_2".format(ug.id)])],)
-                    self.cust_data_bank.set_words(REG["REG_UG{}_Temperatura_08".format(ug.id)],[round(self.shared_dict["temperatura_ug{}_patins_mancal_comb_1".format(ug.id)])],)
-                    self.cust_data_bank.set_words(REG["REG_UG{}_Temperatura_09".format(ug.id)],[round(self.shared_dict["temperatura_ug{}_patins_mancal_comb_2".format(ug.id)])],)
-                    self.cust_data_bank.set_words(REG["REG_UG{}_Temperatura_10".format(ug.id)],[round(self.shared_dict["temperatura_ug{}_mancal_casq_comb".format(ug.id)])],)
-                    self.cust_data_bank.set_words(REG["REG_UG{}_Temperatura_11".format(ug.id)],[round(self.shared_dict["temperatura_ug{}_mancal_contra_esc_comb".format(ug.id)])],)
-                    
-
-                self.cust_data_bank.set_words(REG["REG_USINA_NivelBarragem"],[round((self.shared_dict["nv_montante"]) * 10000)],)
-                self.cust_data_bank.set_words(REG["REG_USINA_NivelCanalAducao"],[round((self.shared_dict["nv_jusante_grade"]) * 10000)],)  # TODO ?
-                self.cust_data_bank.set_words(REG["REG_USINA_Subestacao_PotenciaAtivaMedia"],[round(self.shared_dict["potencia_kw_se"])],)
-                self.cust_data_bank.set_words(REG["REG_USINA_Subestacao_TensaoRS"],[round(self.shared_dict["tensao_na_linha"] / 1000)],)
-                self.cust_data_bank.set_words(REG["REG_USINA_Subestacao_TensaoST"],[round(self.shared_dict["tensao_na_linha"] / 1000)],)
-                self.cust_data_bank.set_words(REG["REG_USINA_Subestacao_TensaoTR"],[round(self.shared_dict["tensao_na_linha"] / 1000)],)
-                self.cust_data_bank.set_words(REG["REG_USINA_potencia_kw_mp"],[round(max(0, self.shared_dict["potencia_kw_mp"]))],)
-                self.cust_data_bank.set_words(REG["REG_USINA_potencia_kw_mr"],[round(max(0, self.shared_dict["potencia_kw_mr"]))],)
+                # Escrita de registradores USINA
+                self.escrita_OPC("ns=3;s=REG_USINA_NivelBarragem",[round((self.shared_dict["nv_montante"]) * 10000)])
+                self.escrita_OPC("ns=3;s=REG_USINA_NivelCanalAducao",[round((self.shared_dict["nv_jusante_grade"]) * 10000)])
+                self.escrita_OPC("ns=3;s=REG_USINA_NivelCanalAducao",[round((self.shared_dict["nv_jusante_grade"]) * 10000)])
+                self.escrita_OPC("ns=3;s=REG_USINA_Subestacao_PotenciaAtivaMedia",[round(self.shared_dict["potencia_kw_se"])])
+                self.escrita_OPC("ns=3;s=REG_USINA_Subestacao_TensaoRS",[round(self.shared_dict["tensao_na_linha"] / 1000)])
+                self.escrita_OPC("ns=3;s=REG_USINA_Subestacao_TensaoST",[round(self.shared_dict["tensao_na_linha"] / 1000)])
+                self.escrita_OPC("ns=3;s=REG_USINA_Subestacao_TensaoTR",[round(self.shared_dict["tensao_na_linha"] / 1000)])
+                self.escrita_MB(REG_MB["REG_USINA_potencia_kw_mp"], round(max(0, self.shared_dict["potencia_kw_mp"])))
+                self.escrita_MB(REG_MB["REG_USINA_potencia_kw_mr"], round(max(0, self.shared_dict["potencia_kw_mr"])))
 
                 # FIM COMPORTAMENTO USINA
                 lock.release()
@@ -397,9 +345,12 @@ class Planta:
                     self.logger.warning("A simulação está demorando mais do que o permitido.")
 
             except KeyboardInterrupt:
+                self.server_MB.stop()
+                self.server_OPC.stop()
                 self.shared_dict["stop_gui"] = True
                 continue
 
+    # Métodos com cálculos de propriedades da USINA
     def volume_para_nv_montate(self, volume):
         return min(max(460, 460 + volume / 40000), 462.37)
 
@@ -413,3 +364,20 @@ class Planta:
             return 0
         else:
             return 2.33
+
+    # Métodos de leitura e escrita OPC/MB
+    def leitura_OPC(self, registrador):
+        leitura_OPC = self.server_OPC.get_node(registrador).get_value()
+        return leitura_OPC
+
+    def escrita_OPC(self, registrador, valor) -> bool:
+        escrita_OPC = self.server_OPC.get_node(registrador).set_value(valor)
+        return escrita_OPC
+
+    def leitura_MB(self, registrador):
+        leitura_MB = self.DB.get_words(registrador)[0]
+        return leitura_MB
+
+    def escrita_MB(self, registrador, valor):
+        escrita_MB = self.DB.set_words(registrador, [valor])
+        return escrita_MB

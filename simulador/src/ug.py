@@ -1,7 +1,7 @@
 import numpy as np
-from threading import Thread
-from time import sleep, time
 
+from time import  time
+from threading import Thread
 
 class Ug:
     def __init__(self, id, parent):
@@ -15,23 +15,24 @@ class Ug:
         self.shared_dict = parent.shared_dict
         self.escala_ruido = parent.escala_ruido
 
-        self.tempo_na_transicao = 0
-        self.avisou_trip = False
-        self.etapa_alvo = 1
-        self.etapa_atual = 1
         self.flags = 0
         self.potencia = 0
         self.setpoint = 0
+        self.etapa_alvo = 1
+        self.etapa_atual = 1
         self.horimetro_hora = 0
+        self.tempo_na_transicao = 0
+        
+        self.avisou_trip = False
 
         self.POT_MAX = 3037.5
         self.POT_MIN = 0.3 * self.POT_MAX
 
-        self.ETAPA_UP = 1
-        self.ETAPA_UPGM = 2
-        self.ETAPA_UVD = 3
-        self.ETAPA_UPS = 4
-        self.ETAPA_US = 5
+        self.ETAPA_UP = 1 # unidade parada
+        self.ETAPA_UPGM = 2 # unidade pronta para giro mecanico
+        self.ETAPA_UVD = 3  # unidade vazio desexcitado
+        self.ETAPA_UPS = 4 # unidade prota para sincronismo
+        self.ETAPA_US = 5 # unidade sincronizada
 
         self.UNIDADE_SINCRONIZADA = 1
         self.UNIDADE_PARANDO = 2
@@ -121,11 +122,9 @@ class Ug:
                 self.tempo_na_transicao = 0
                 self.etapa_alvo = None
                 self.shared_dict["etapa_alvo_ug{}".format(self.id)] = self.etapa_alvo
-                self.shared_dict["etapa_aux_ug{}".format(self.id)] = self.UNIDADE_PARADA
 
             elif self.etapa_alvo > self.etapa_atual:
                 self.tempo_na_transicao += self.segundos_por_passo
-                self.shared_dict["etapa_aux_ug{}".format(self.id)] = self.UNIDADE_SINCRONIZANDO
 
                 if self.tempo_na_transicao >= self.TEMPO_TRANS_US_UPS:
                     self.etapa_atual = self.ETAPA_UPGM
@@ -142,7 +141,6 @@ class Ug:
 
             elif self.etapa_alvo > self.etapa_atual:
                 self.tempo_na_transicao += self.segundos_por_passo
-                self.shared_dict["etapa_aux_ug{}".format(self.id)] = self.UNIDADE_SINCRONIZANDO
 
                 if self.tempo_na_transicao >= self.TEMPO_TRANS_UPGM_UVD:
                     self.etapa_atual = self.ETAPA_UVD
@@ -150,12 +148,10 @@ class Ug:
 
             elif self.etapa_alvo < self.etapa_atual:
                 self.tempo_na_transicao -= self.segundos_por_passo
-                self.shared_dict["etapa_aux_ug{}".format(self.id)] = self.UNIDADE_PARANDO
 
                 if self.tempo_na_transicao <= -self.TEMPO_TRANS_UPGM_UP:
                     self.etapa_atual = self.ETAPA_UP
                     self.tempo_na_transicao = 0
-                    self.shared_dict["etapa_aux_ug{}".format(self.id)] = self.UNIDADE_PARADA
 
         # self.ETAPA UVD
         if self.etapa_atual == self.ETAPA_UVD:
@@ -168,7 +164,6 @@ class Ug:
 
             elif self.etapa_alvo > self.etapa_atual:
                 self.tempo_na_transicao += self.segundos_por_passo
-                self.shared_dict["etapa_aux_ug{}".format(self.id)] = self.UNIDADE_SINCRONIZANDO
 
                 if self.tempo_na_transicao >= self.TEMPO_TRANS_UVD_UPS:
                     self.etapa_atual = self.ETAPA_UPS
@@ -176,7 +171,6 @@ class Ug:
 
             elif self.etapa_alvo < self.etapa_atual:
                 self.tempo_na_transicao -= self.segundos_por_passo
-                self.shared_dict["etapa_aux_ug{}".format(self.id)] = self.UNIDADE_PARANDO
 
                 if self.tempo_na_transicao <= -self.TEMPO_TRANS_UVD_UPGM:
                     self.etapa_atual = self.ETAPA_UPGM
@@ -193,16 +187,13 @@ class Ug:
 
             elif self.etapa_alvo > self.etapa_atual:
                 self.tempo_na_transicao += self.segundos_por_passo
-                self.shared_dict["etapa_aux_ug{}".format(self.id)] = self.UNIDADE_SINCRONIZANDO
 
                 if (self.tempo_na_transicao >= self.TEMPO_TRANS_UPS_US and self.shared_dict["dj52L_fechado"]):
                     self.etapa_atual = self.ETAPA_US
                     self.tempo_na_transicao = 0
-                    self.shared_dict["etapa_aux_ug{}".format(self.id)] = self.UNIDADE_SINCRONIZADA
 
             elif self.etapa_alvo < self.etapa_atual:
                 self.tempo_na_transicao -= self.segundos_por_passo
-                self.shared_dict["etapa_aux_ug{}".format(self.id)] = self.UNIDADE_PARANDO
 
                 if self.tempo_na_transicao <= -self.TEMPO_TRANS_UPS_UVD:
                     self.etapa_atual = self.ETAPA_UVD
@@ -218,7 +209,6 @@ class Ug:
                 if (self.shared_dict["dj52L_fechado"] and not self.shared_dict["dj52L_trip"]):
                     self.potencia = min(self.potencia, self.POT_MAX)
                     self.potencia = max(self.potencia, self.POT_MIN)
-                    self.shared_dict["etapa_aux_ug{}".format(self.id)] = self.UNIDADE_SINCRONIZADA
 
                     if self.setpoint > self.potencia:
                         self.potencia += 10.4167 * self.segundos_por_passo
@@ -238,7 +228,6 @@ class Ug:
             elif self.etapa_alvo < self.etapa_atual:
                 self.tempo_na_transicao -= self.segundos_por_passo
                 self.potencia -= 10.4167 * self.segundos_por_passo
-                self.shared_dict["etapa_aux_ug{}".format(self.id)] = self.UNIDADE_PARANDO
 
                 if (self.tempo_na_transicao <= -self.TEMPO_TRANS_US_UPS and self.potencia <= 0):
                     self.potencia = 0
@@ -258,8 +247,6 @@ class Ug:
         self.shared_dict["temperatura_ug{}_patins_mancal_comb_2".format(self.id)] = np.random.normal(25, 1 * self.escala_ruido)
         self.shared_dict["temperatura_ug{}_mancal_casq_comb".format(self.id)] = np.random.normal(25, 1 * self.escala_ruido)
         self.shared_dict["temperatura_ug{}_mancal_contra_esc_comb".format(self.id)] = np.random.normal(25, 1 * self.escala_ruido)
-       #self.shared_dict["pressao_turbina_ug{}".format(self.id)] = np.random.normal(20, 1 * self.escala_ruido)
-
 
         if self.etapa_atual > self.ETAPA_UP:
             self.horimetro_hora += self.segundos_por_passo / 3600

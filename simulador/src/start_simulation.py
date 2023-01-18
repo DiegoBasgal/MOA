@@ -38,16 +38,16 @@ th_world = threading.Thread(target=planta.Planta(shared_dict).run, args=())
 # 1 thread para interagir com a simulação
 th_gui = threading.Thread(target=gui.start_gui, args=(shared_dict,))
 # 1 thread para controlar e gravar a simulação
-th_ctl = threading.Thread(target=controlador.Controlador(shared_dict).run, args=())
+#th_ctl = threading.Thread(target=controlador.Controlador(shared_dict).run, args=())
 
 # Simular comportamento completo
 th_world.start()
-th_ctl.start()
+#th_ctl.start()
 th_gui.start()
 logger.info("Rodando simul.".format())
 
 
 th_gui.join()
 th_world.join()
-th_ctl.join()
+#th_ctl.join()
 logger.info("Fim da simul.")

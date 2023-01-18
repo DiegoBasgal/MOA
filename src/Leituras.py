@@ -10,9 +10,9 @@ __version__ = "0.2"
 __authors__ = "Lucas Lavratti", "Diego Basgal"
 
 import logging
-from opcua import Client, ua
-
-from src.VAR_REG import *
+import src.VAR_REG
+from opcua import Client
+from pyModbusTCP.client import ModbusClient
 
 class LeituraBase:
     """
@@ -71,18 +71,27 @@ class LeituraOPC(LeituraBase):
     def valor(self) -> float:
         return self.raw
 
-class LeituraSoma(LeituraBase):
+class LeituraModbus(LeituraBase):
+    """
+    Classe implementa a base para leituras da unidade da geração utilizando modbus.
+    """
+
     def __init__(
         self,
         descr: str,
-        leitura_A: LeituraBase,
-        leitura_B: LeituraBase,
-        min_is_zero=True,
+        modbus_client: ModbusClient,
+        registrador: int,
+        escala: float = 1,
+        fundo_de_escala: float = 0,
+        op: int = 3,
     ):
         super().__init__(descr)
-        self.__leitura_A = leitura_A
-        self.__leitura_B = leitura_B
-        self.__min_is_zero = min_is_zero
+        self.__descr = descr
+        self.__modbus_client = modbus_client
+        self.__registrador = registrador
+        self.__escala = escala
+        self.__fundo_de_escala = fundo_de_escala
+        self.__op = op
 
     @property
     def valor(self) -> float:
@@ -90,12 +99,75 @@ class LeituraSoma(LeituraBase):
         Valor
 
         Returns:
-            float: leitura_A + leitura_B
+            float: valor já tratado
         """
-        if self.__min_is_zero:
-            return max(0, self.__leitura_A.valor + self.__leitura_B.valor)
-        else:
-            return self.__leitura_A.valor + self.__leitura_B.valor
+        return (self.raw * self.__escala) + self.__fundo_de_escala
+
+    @property
+    def raw(self) -> int:
+        """
+        Raw Dado Crú
+        Retorna o valor como lido da CLP, o inteiro unsigned contido no registrador
+
+        Raises:
+            ConnectionError: Erro caso a conexão falhe
+            NotImplementedError: [description]
+
+        Returns:
+            int: [description]
+        """
+        try:
+            if self.__modbus_client.open():
+                if self.__op == 3:
+                    aux = self.__modbus_client.read_holding_registers(
+                        self.__registrador
+                    )[0]
+                elif self.__op == 4:
+                    aux = self.__modbus_client.read_input_registers(self.__registrador)[
+                        0
+                    ]
+                if aux is not None:
+                    return aux
+                else:
+                    return 0
+            else:
+                raise ConnectionError("Erro na conexão modbus.")
+        except:
+            # ! TODO Tratar exceptions
+            # O que deve retornar caso não consiga comunicar?
+            # raise NotImplementedError
+            return 0
+            pass
+
+class LeituraModbusBit(LeituraModbus):
+    """
+    Classe implementa a leituras de bits de registradores da unidade da geração utilizando modbus.
+    """
+
+    def __init__(
+        self,
+        descr: str,
+        modbus_client: ModbusClient,
+        registrador: int,
+        bit: int,
+        invertido: bool = False,
+    ):
+        super().__init__(descr, modbus_client, registrador)
+        self.__bit = bit
+        self.__invertido = invertido
+
+    @property
+    def valor(self) -> bool:
+        """
+        Valor
+
+        Returns:
+            bool: valor já tratado
+        """
+        aux = self.raw & 2**self.__bit
+        if self.__invertido:
+            aux = not aux
+        return aux
 
 class LeiturasUSN:
     def __init__(self, cfg):

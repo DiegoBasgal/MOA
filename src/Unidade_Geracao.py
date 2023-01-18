@@ -825,8 +825,8 @@ class StateDisponivel(State):
                     self.release = True
                     return True
             self.logger.debug("[UG{}] A Unidade estourou o timer de verificação de partida, adicionando condição para normalizar".format(self.parent_ug.id))
-            self.parent_ug.clp.write_single_coil(REG_UG1_ComandosDigitais_MXW_EmergenciaViaSuper, [1 if self.parent_ug.id==1 else 0]) 
-            self.parent_ug.clp.write_single_coil(REG_UG2_ComandosDigitais_MXW_EmergenciaViaSuper, [1 if self.parent_ug.id==2 else 0])
+            self.parent_ug.clp.write_single_coil("REG_UG1_ComandosDigitais_MXW_EmergenciaViaSuper", [1 if self.parent_ug.id==1 else 0]) 
+            self.parent_ug.clp.write_single_coil("REG_UG2_ComandosDigitais_MXW_EmergenciaViaSuper", [1 if self.parent_ug.id==2 else 0])
             self.release = True
 
         except Exception as e:

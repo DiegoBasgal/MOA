@@ -14,6 +14,7 @@ import threading
 import traceback
 import logging.handlers as handlers
 
+from VAR_REG import *
 import src.Usina as Usina
 import src.Conector as Conector
 
@@ -22,7 +23,6 @@ from time import sleep
 from datetime import datetime
 from pyModbusTCP.server import DataBank, ModbusServer
 
-from src.VAR_REG import *
 from src.mensageiro import voip
 from src.mensageiro.mensageiro_log_handler import MensageiroHandler
 # Set-up logging
@@ -623,9 +623,11 @@ if __name__ == "__main__":
             prox_estado = FalhaCritica
         else:
             # carrega as configurações
+            """
             config_file = os.path.join(os.path.dirname(__file__), "config.json")
             with open(config_file, "r") as file:
-                cfg = json.load(file)
+            """
+            cfg = CFG # json.load(file)
 
             # bkp das configurações
             config_file = os.path.join(os.path.dirname(__file__), "config.json.bkp")
