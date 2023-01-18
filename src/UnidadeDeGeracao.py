@@ -11,6 +11,7 @@ import inspect
 import logging
 import traceback
 
+from src.field_connector import FieldConnector
 from src.codes import *
 from src.Leituras import *
 from time import sleep, time
@@ -764,8 +765,7 @@ class StateDisponivel(State):
                 return StateIndisponivel(self.parent_ug)
 
             # Se não estourou as tentativas de normalização, e já se passou tempo suficiente, deve tentar normalizar
-            elif (
-                self.parent_ug.ts_auxiliar - datetime.now()
+            elif (self.parent_ug.ts_auxiliar - datetime.now()
             ).seconds > self.parent_ug.tempo_entre_tentativas:
                 # Adciona o contador
                 self.parent_ug.tentativas_de_normalizacao += 1
@@ -781,6 +781,7 @@ class StateDisponivel(State):
                 )
                 # Reconhece e reset
                 self.parent_ug.reconhece_reset_alarmes()
+                self.parent_ug.con.fechaDj52L()
                 return self
 
             # Caso contrário (se ainda não deu o tempo), não faz nada

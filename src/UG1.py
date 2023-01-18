@@ -23,8 +23,10 @@ class UnidadeDeGeracao1(UnidadeDeGeracao):
             self.cfg = cfg
             self.leituras_usina = leituras_usina
 
+        from src.field_connector import FieldConnector
+        self.con = FieldConnector(self.cfg)
+        
         self.estado_anterior = None
-
         self.setpoint_minimo = self.cfg["pot_minima"]
         self.setpoint_maximo = self.cfg["pot_maxima_ug{}".format(self.id)]
 

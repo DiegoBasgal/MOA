@@ -1166,6 +1166,7 @@ class Usina:
                     y.leitura_horimetro.valor,
                 ),
             )
+            logger.debug(ls)
         return ls
 
     def controle_normal(self):

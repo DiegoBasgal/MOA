@@ -8,6 +8,7 @@ Painel Nvoip: http://painel.nvoip.com.br
 Acesso feito com as credênciais do Henrique.
 
 """
+import sys
 import os
 import json
 import logging
@@ -39,12 +40,12 @@ falha_part_grupo_diesel = False
 falha_fechamento_DJ52L = False
 
 lista_de_contatos_padrao = [
-    ["Diego", "41999111134"], 
+    #["Diego", "41999111134"], 
     #["Luis", "48991058729"], 
     #["Escritorio", "41996570004"],
     #["Henrique P5", "41999610053"],
 ]
-
+"""
 def carrega_contatos():
     phonebook = []
     db = database_connector.Database()
@@ -82,7 +83,7 @@ def carrega_contatos():
             res.append([addres["name"], addres["phone"]])
         
     return res
-
+"""
 
 def get_token():
     headers = {
