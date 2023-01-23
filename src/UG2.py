@@ -253,8 +253,7 @@ class UnidadeDeGeracao2(UnidadeDeGeracao):
         limite = 15.5
         x = self.leitura_caixa_espiral
         self.condicionador_caixa_espiral_ug = CondicionadorExponencialReverso(x.descr, DEVE_INDISPONIBILIZAR, x, base, limite)
-        if self.leitura_caixa_espiral.valor != 0.0 and self.etapa_atual == UNIDADE_SINCRONIZADA:
-            self.condicionadores_atenuadores.append(self.condicionador_caixa_espiral_ug)
+        self.condicionadores_atenuadores.append(self.condicionador_caixa_espiral_ug)
         
         self.leitura_ComandosDigitais_MXW_EmergenciaViaSuper = LeituraModbusCoil("ComandosDigitais_MXW_EmergenciaViaSuper", self.clp, REG_UG2_ComandosDigitais_MXW_EmergenciaViaSuper,)
         x = self.leitura_ComandosDigitais_MXW_EmergenciaViaSuper
@@ -266,7 +265,7 @@ class UnidadeDeGeracao2(UnidadeDeGeracao):
 
         self.leitura_EntradasDigitais_MXI_ReleBloqA86HAtuado = LeituraModbusCoil("EntradasDigitais_MXI_ReleBloqA86HAtuado", self.clp, REG_UG2_EntradasDigitais_MXI_ReleBloqA86HAtuado)
         x = self.leitura_EntradasDigitais_MXI_ReleBloqA86HAtuado
-        if not (self.etapa_atual==UNIDADE_PARADA or self.etapa_atual==UNIDADE_PARANDO):
+        if not (self.etapa_atual == UNIDADE_PARADA or self.etapa_atual == UNIDADE_SINCRONIZANDO):
             self.condicionadores_essenciais.append(CondicionadorBase(x.descr, DEVE_NORMALIZAR, x))
 
         self.leitura_EntradasDigitais_MXI_ReleBloqA86MAtuado = LeituraModbusCoil("EntradasDigitais_MXI_ReleBloqA86MAtuado", self.clp, REG_UG2_EntradasDigitais_MXI_ReleBloqA86MAtuado)
@@ -309,10 +308,6 @@ class UnidadeDeGeracao2(UnidadeDeGeracao):
         x = self.leitura_EntradasDigitais_MXI_SA_DisjDJ1_AlPressBaixa
         self.condicionadores.append(CondicionadorBase(x.descr, DEVE_INDISPONIBILIZAR, x))
         
-        if self.etapa_atual==UNIDADE_SINCRONIZADA:
-            self.leitura_EntradasDigitais_MXI_SA_Disj52G2_Aberto = LeituraModbusCoil("EntradasDigitais_MXI_SA_Disj52G2_Aberto",self.clp_sa,REG_SA_EntradasDigitais_MXI_SA_Disj52G2_Aberto,)
-            x = self.leitura_EntradasDigitais_MXI_SA_Disj52G2_Aberto
-            self.condicionadores.append(CondicionadorBase(x.descr, DEVE_NORMALIZAR, x))
 
         self.leitura_EntradasDigitais_MXI_AVR_FalhaInterna = LeituraModbusCoil("EntradasDigitais_MXI_AVR_FalhaInterna",self.clp,REG_UG2_EntradasDigitais_MXI_AVR_FalhaInterna,)
         x = self.leitura_EntradasDigitais_MXI_AVR_FalhaInterna
@@ -509,10 +504,6 @@ class UnidadeDeGeracao2(UnidadeDeGeracao):
         self.leitura_RetornosDigitais_MXR_Q_Negativa = LeituraModbusCoil("RetornosDigitais_MXR_Q_Negativa",self.clp,REG_UG2_RetornosDigitais_MXR_Q_Negativa,)
         x = self.leitura_RetornosDigitais_MXR_Q_Negativa
         self.condicionadores.append(CondicionadorBase(x.descr, DEVE_INDISPONIBILIZAR, x))
-
-        self.RetornosDigitais_MXR_TripPressaoCaixaEspiral = LeituraModbusCoil( "RetornosDigitais_MXR_TripPressaoCaixaEspiral", self.clp, REG_UG2_RetornosDigitais_MXR_TripPressaoCaixaEspiral, )
-        x = self.RetornosDigitais_MXR_TripPressaoCaixaEspiral
-        self.condicionadores.append( CondicionadorBase(x.descr, DEVE_INDISPONIBILIZAR, x) )
 
 #-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------#
 

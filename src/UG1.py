@@ -254,8 +254,7 @@ class UnidadeDeGeracao1(UnidadeDeGeracao):
         limite = 15.5
         x = self.leitura_caixa_espiral
         self.condicionador_caixa_espiral_ug = CondicionadorExponencialReverso(x.descr, DEVE_INDISPONIBILIZAR, x, base, limite)
-        if self.leitura_caixa_espiral.valor != 0.0 and self.etapa_atual == UNIDADE_SINCRONIZADA:
-            self.condicionadores_atenuadores.append(self.condicionador_caixa_espiral_ug)
+        self.condicionadores_atenuadores.append(self.condicionador_caixa_espiral_ug)
         
         self.leitura_ComandosDigitais_MXW_EmergenciaViaSuper = LeituraModbusCoil("ComandosDigitais_MXW_EmergenciaViaSuper", self.clp, REG_UG1_ComandosDigitais_MXW_EmergenciaViaSuper,)
         x = self.leitura_ComandosDigitais_MXW_EmergenciaViaSuper
@@ -271,7 +270,7 @@ class UnidadeDeGeracao1(UnidadeDeGeracao):
 
         self.leitura_ReleBloqA86HAtuado = LeituraModbusCoil("ReleBloqA86HAtuado", self.clp, REG_UG1_EntradasDigitais_MXI_ReleBloqA86HAtuado)
         x = self.leitura_ReleBloqA86HAtuado
-        if not (self.etapa_atual==UNIDADE_PARADA or self.etapa_atual==UNIDADE_PARANDO):
+        if not (self.etapa_atual == UNIDADE_PARADA or self.etapa_atual == UNIDADE_SINCRONIZANDO):
             self.condicionadores_essenciais.append(CondicionadorBase(x.descr, DEVE_NORMALIZAR, x))
 
         self.leitura_SEL700G_Atuado = LeituraModbusCoil("SEL700G_Atuado", self.clp, REG_UG1_EntradasDigitais_MXI_SEL700G_Atuado)
@@ -310,11 +309,6 @@ class UnidadeDeGeracao1(UnidadeDeGeracao):
         self.leitura_EntradasDigitais_MXI_SA_DisjDJ1_AlPressBaixa = LeituraModbusCoil("EntradasDigitais_MXI_SA_DisjDJ1_AlPressBaixa",self.clp_sa,REG_SA_EntradasDigitais_MXI_SA_DisjDJ1_AlPressBaixa,)
         x = self.leitura_EntradasDigitais_MXI_SA_DisjDJ1_AlPressBaixa
         self.condicionadores.append(CondicionadorBase(x.descr, DEVE_INDISPONIBILIZAR, x))
-        
-        if self.etapa_atual==UNIDADE_SINCRONIZADA:
-            self.leitura_EntradasDigitais_MXI_SA_Disj52G1_Aberto = LeituraModbusCoil("EntradasDigitais_MXI_SA_Disj52G1_Aberto",self.clp_sa,REG_SA_EntradasDigitais_MXI_SA_Disj52G1_Aberto,)
-            x = self.leitura_EntradasDigitais_MXI_SA_Disj52G1_Aberto
-            self.condicionadores.append(CondicionadorBase(x.descr, DEVE_NORMALIZAR, x))
         
         self.leitura_EntradasDigitais_MXI_ValvBorbTravada = LeituraModbusCoil( "EntradasDigitais_MXI_ValvBorbTravada", self.clp, REG_UG1_EntradasDigitais_MXI_ValvBorbTravada )
         x = self.leitura_EntradasDigitais_MXI_ValvBorbTravada
@@ -519,10 +513,6 @@ class UnidadeDeGeracao1(UnidadeDeGeracao):
         self.leitura_AVR_EntradasDigitais_MXI_FalhaInterna = LeituraModbusCoil( "EntradasDigitais_MXI_AVR_FalhaInterna", self.clp, REG_UG1_EntradasDigitais_MXI_AVR_FalhaInterna )
         x = self.leitura_AVR_EntradasDigitais_MXI_FalhaInterna
         self.condicionadores.append( CondicionadorBase(x.descr, DEVE_INDISPONIBILIZAR, x) )
-
-        self.RetornosDigitais_MXR_TripPressaoCaixaEspiral = LeituraModbusCoil( "RetornosDigitais_MXR_TripPressaoCaixaEspiral", self.clp, REG_UG1_RetornosDigitais_MXR_TripPressaoCaixaEspiral, )
-        x = self.RetornosDigitais_MXR_TripPressaoCaixaEspiral
-        self.condicionadores.append( CondicionadorBase(x.descr, DEVE_NORMALIZAR, x) )
 
 #-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------#
         # Inicializa as variáveis de controle PI para operação TDA Offline

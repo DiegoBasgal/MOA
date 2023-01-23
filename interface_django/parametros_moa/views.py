@@ -49,8 +49,8 @@ def parametros_moa_view(request, *args, **kwargs):
         nv_alvo = float(request.POST.get("nv_alvo").replace(",", "."))
         usina.nv_alvo = nv_alvo if isinstance(nv_alvo, float) else usina.nv_alvo
 
-        press_cx_alvo = float(request.POST.get("press_cx_alvo").replace(",", "."))
-        usina.press_cx_alvo = press_cx_alvo if isinstance(press_cx_alvo, float) else usina.press_cx_alvo
+        """press_cx_alvo = float(request.POST.get("press_cx_alvo").replace(",", "."))
+        usina.press_cx_alvo = press_cx_alvo if isinstance(press_cx_alvo, float) else usina.press_cx_alvo"""
 
         aux = request.POST.get("alerta_temperatura_fase_r_ug1")
         usina.alerta_temperatura_fase_r_ug1 = (float(aux.replace(",", ".")) if aux is not None and float(aux.replace(",", ".")) > 0 else usina.alerta_temperatura_fase_r_ug1)

@@ -620,6 +620,7 @@ class StateDisponivel(State):
         self.logger.info(
             "[UG{}] Entrando no estado disponível.".format(self.parent_ug.id)
         )
+        self.parent_ug.tentativas_de_normalizacao = 0
 
     def step(self) -> State:
         self.parent_ug.codigo_state = MOA_UNIDADE_DISPONIVEL
@@ -647,17 +648,17 @@ class StateDisponivel(State):
                     if condicionador_essencial.gravidade >= DEVE_INDISPONIBILIZAR:
                         condicionadores_ativos.append(condicionador_essencial)
                         deve_indisponibilizar = True
-                    elif condicionador_essencial.gravidade>=DEVE_NORMALIZAR:
+                    elif condicionador_essencial.gravidade >= DEVE_NORMALIZAR:
                         condicionadores_ativos.append(condicionador_essencial)
                         self.parent_ug.deve_ler_condicionadores = False
                         deve_normalizar = True
 
             for condicionador in self.parent_ug.condicionadores:
                 if condicionador.ativo: 
-                    if condicionador.gravidade>=DEVE_INDISPONIBILIZAR:
+                    if condicionador.gravidade >= DEVE_INDISPONIBILIZAR:
                         condicionadores_ativos.append(condicionador)
                         deve_indisponibilizar = True
-                    elif condicionador.gravidade>=DEVE_NORMALIZAR:
+                    elif condicionador.gravidade >= DEVE_NORMALIZAR:
                         condicionadores_ativos.append(condicionador)
                         self.parent_ug.deve_ler_condicionadores = False
                         deve_normalizar = True
@@ -684,7 +685,7 @@ class StateDisponivel(State):
                 return StateIndisponivel(self.parent_ug)
             
             elif self.parent_ug.etapa_atual == UNIDADE_PARANDO or self.parent_ug.etapa_atual == UNIDADE_SINCRONIZANDO:
-                self.logger.debug("[UG{}] Esperando para normalizar, {}".format(UNIDADE_PARANDO if self.parent_ug.etapa_atual==2 else UNIDADE_SINCRONIZANDO))
+                self.logger.debug("[UG{}] Esperando para normalizar".format(self.parent_ug.id))
                 return self
 
             # Se não estourou as tentativas de normalização, e já se passou tempo suficiente, deve tentar normalizar

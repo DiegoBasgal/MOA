@@ -106,7 +106,6 @@ class Usina:
         # ajuste inicial ie
         if self.cfg["saida_ie_inicial"] == "auto":
             self.controle_ie = (self.ug1.leitura_potencia.valor + self.ug2.leitura_potencia.valor + self.ug3.leitura_potencia.valor) / self.cfg["pot_maxima_alvo"]
-        
         else:
             self.controle_ie = self.cfg["saida_ie_inicial"]
 
@@ -166,7 +165,7 @@ class Usina:
 
             self.nv_montante_recentes.append(round(self.leituras.nv_montante.valor, 2))
             self.nv_montante_recentes = self.nv_montante_recentes[1:]
-
+            """
             # VERIFICAR SE O CÁLCULO SEGUINTE SERÁ USADO EM CAMPO
             smoothing = 5
             ema = [sum(self.nv_montante_recentes) / len(self.nv_montante_recentes)]
@@ -174,6 +173,7 @@ class Usina:
                 ema.append((nv * (smoothing / (1 + len(self.nv_montante_recentes)))) + ema[-1] * (1 - (smoothing / (1 + len(self.nv_montante_recentes)))))
 
             self.nv_montante_recente = ema[-1]  # REMOVER SEB
+            """
             self.nv_montante_recente = self.leituras.nv_montante.valor
 
             self.erro_nv_anterior = self.erro_nv
@@ -703,7 +703,7 @@ class Usina:
         pot_medidor = max(pot_aux, min(pot_medidor, self.cfg["pot_maxima_usina"]))
 
         try:
-            if pot_medidor > self.cfg["pot_maxima_alvo"] * 0.97:
+            if pot_medidor > self.cfg["pot_maxima_alvo"] * 0.97 and pot_alvo >= self.cfg["pot_maxima_alvo"]:
                 pot_alvo = self.pot_alvo_anterior * (1 - 0.5 * ((pot_medidor - self.cfg["pot_maxima_alvo"]) / self.cfg["pot_maxima_alvo"]))
 
         except TypeError as e:
@@ -796,24 +796,11 @@ class Usina:
 
         if self.modo_de_escolha_das_ugs == MODO_ESCOLHA_MANUAL:
             # escolher por maior prioridade primeiro
-            ls = sorted(
-                ls,
-                key=lambda y: (
-                    -1 * y.leitura_potencia.valor,
-                    -1 * y.setpoint,
-                    y.prioridade,
-                ),
-            )
+            ls = sorted(ls, key=lambda y: (-1 * y.leitura_potencia.valor, -1 * y.setpoint, y.prioridade,),)
         else:
             # escolher por menor horas_maquina primeiro
-            ls = sorted(
-                ls,
-                key=lambda y: (
-                    -1 * y.leitura_potencia.valor,
-                    -1 * y.setpoint,
-                    y.leitura_horimetro.valor,
-                ),
-            )
+            ls = sorted(ls, key=lambda y: (-1 * y.leitura_potencia.valor, -1 * y.setpoint, y.leitura_horimetro.valor,),)
+            logger.debug("\nPrioridade por horas-máquina: ", ls)
         return ls
 
     def controle_normal(self):
@@ -875,9 +862,9 @@ class Usina:
                 self.ug2.leitura_potencia.valor,
                 self.nv_montante_recente,
                 self.erro_nv,
+                ma,
                 self.ug3.setpoint,
                 self.ug3.leitura_potencia.valor,
-                ma,
                 self.cfg["cx_kp"],
                 self.cfg["cx_ki"],
                 self.cfg["cx_kie"],
