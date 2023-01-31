@@ -374,16 +374,17 @@ class ModoManualAtivado(State):
         self.usina.ug2.setpoint = self.usina.ug2.leitura_potencia.valor
         self.usina.ug3.setpoint = self.usina.ug3.leitura_potencia.valor
 
-        self.usina.controle_ie = (
-            self.usina.ug1.setpoint + self.usina.ug2.setpoint + self.usina.ug3.setpoint
-        ) / self.usina.cfg["pot_maxima_alvo"]
+        self.usina.controle_ie = (self.usina.ug1.setpoint + self.usina.ug2.setpoint + self.usina.ug3.setpoint) / self.usina.cfg["pot_maxima_alvo"]
+
+        self.usina.controle_i = max(min(self.usina.controle_ie - self.usina.cfg["kp"] * self.usina.erro_nv - self.usina.cfg["kd"] * (self.usina.erro_nv - self.usina.erro_nv_anterior), 0.8), 0)
 
         self.usina.heartbeat()
+        self.usina.escrever_valores()
         sleep(1 / ESCALA_DE_TEMPO)
         if self.usina.modo_autonomo:
             logger.debug("Comando recebido: habilitar modo autonomo.")
             sleep(2)
-            logger.debug("Usina voltou para o modo Autonomo")
+            logger.info("Usina voltou para o modo Autonomo")
             self.usina.db.update_habilitar_autonomo()
             self.usina.ler_valores()
             if (
@@ -644,7 +645,6 @@ if __name__ == "__main__":
             try:
                 usina = abstracao_usina.Usina(cfg, db)
                 usina.ler_valores()
-                usina.normalizar_emergencia()
                 usina.aguardando_reservatorio = 0
             except Exception as e:
                 logger.error(

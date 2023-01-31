@@ -270,8 +270,7 @@ class UnidadeDeGeracao1(UnidadeDeGeracao):
 
         self.leitura_ReleBloqA86HAtuado = LeituraModbusCoil("ReleBloqA86HAtuado", self.clp, REG_UG1_EntradasDigitais_MXI_ReleBloqA86HAtuado)
         x = self.leitura_ReleBloqA86HAtuado
-        if not (self.etapa_atual == UNIDADE_PARADA or self.etapa_atual == UNIDADE_SINCRONIZANDO):
-            self.condicionadores_essenciais.append(CondicionadorBase(x.descr, DEVE_NORMALIZAR, x))
+        self.condicionadores_essenciais.append(CondicionadorBase(x.descr, DEVE_IGNORAR, x))
 
         self.leitura_SEL700G_Atuado = LeituraModbusCoil("SEL700G_Atuado", self.clp, REG_UG1_EntradasDigitais_MXI_SEL700G_Atuado)
         x = self.leitura_SEL700G_Atuado

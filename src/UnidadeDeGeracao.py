@@ -380,6 +380,10 @@ class UnidadeDeGeracao:
             self.__tentativas_de_normalizacao = int(var)
         else:
             raise ValueError("Valor deve se um inteiro positivo")
+    
+    @property
+    def manual(self) -> bool:
+        return isinstance(self.__next_state, StateManual)
 
     @property
     def disponivel(self) -> bool:
@@ -493,7 +497,6 @@ class StateManual(State):
     def __init__(self, parent_ug: UnidadeDeGeracao):
         super().__init__(parent_ug)
         self.parent_ug.codigo_state = MOA_UNIDADE_MANUAL
-
         self.logger.info("[UG{}] Entrando no estado manual. Para retornar a operação autônoma da UG é necessário intervenção manual via interface web.".format(self.parent_ug.id))
 
     def step(self) -> State:
@@ -754,8 +757,6 @@ class StateDisponivel(State):
                 self.logger.debug("[UG{}] Unidade parando".format(self.parent_ug.id))
                 # Se o setpoit for acima do mínimo
                 if self.parent_ug.setpoint >= self.parent_ug.setpoint_minimo:
-                    # Deve partir a UG
-                    self.parent_ug.partir()
                     # E em seguida mandar o setpoint novo (boa prática)
                     self.parent_ug.enviar_setpoint(self.parent_ug.setpoint)
 

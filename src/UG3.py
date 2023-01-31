@@ -266,8 +266,7 @@ class UnidadeDeGeracao3(UnidadeDeGeracao):
         
         self.leitura_EntradasDigitais_MXI_ReleBloqA86HAtuado = LeituraModbusCoil("EntradasDigitais_MXI_ReleBloqA86HAtuado", self.clp, REG_UG3_EntradasDigitais_MXI_ReleBloqA86HAtuado)
         x = self.leitura_EntradasDigitais_MXI_ReleBloqA86HAtuado
-        if not (self.etapa_atual == UNIDADE_PARADA or self.etapa_atual == UNIDADE_SINCRONIZANDO):
-            self.condicionadores_essenciais.append(CondicionadorBase(x.descr, DEVE_NORMALIZAR, x))
+        self.condicionadores_essenciais.append(CondicionadorBase(x.descr, DEVE_IGNORAR, x))
 
         self.leitura_EntradasDigitais_MXI_ReleBloqA86MAtuado = LeituraModbusCoil("EntradasDigitais_MXI_ReleBloqA86MAtuado", self.clp, REG_UG3_EntradasDigitais_MXI_ReleBloqA86MAtuado)
         x = self.leitura_EntradasDigitais_MXI_ReleBloqA86MAtuado

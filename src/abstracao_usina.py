@@ -73,11 +73,16 @@ class Usina:
         self.aguardando_reservatorio = 0
         self.agendamentos_atrasados = 0
         self.tentativas_de_normalizar = 0
-        
+        self.ug_operando = 0
 
-        self.__split1 = False
-        self.__split2 = False
-        self.__split3 = False
+        for ug in self.ugs:
+            if ug.etapa_atual == UNIDADE_SINCRONIZADA:
+                self.ug_operando += 1
+
+        self.__split1 = True if self.ug_operando == 1 else False
+        self.__split2 = True if self.ug_operando == 2 else False
+        self.__split3 = True if self.ug_operando == 3 else False
+
         self.tensao_ok = True
         self.timer_tensao = None
         self.TDA_Offline = False
@@ -101,7 +106,6 @@ class Usina:
 
         threading.Thread(target=lambda: self.leitura_condicionadores()).start()
         
-        self.escrever_valores()
 
         # ajuste inicial ie
         if self.cfg["saida_ie_inicial"] == "auto":
@@ -109,7 +113,7 @@ class Usina:
         else:
             self.controle_ie = self.cfg["saida_ie_inicial"]
 
-        self.controle_i = self.controle_ie
+        self.escrever_valores()
 
         # ajuste inicial SP
         logger.debug("self.ug1.leitura_potencia.valor -> {}".format(self.ug1.leitura_potencia.valor))
@@ -206,6 +210,7 @@ class Usina:
         self.cfg["pot_maxima_usina"] = float(parametros["pot_nominal_ug"]) * 3
         self.cfg["pot_maxima_alvo"] = float(parametros["pot_nominal"])
         self.cfg["pot_maxima_ug"] = float(parametros["pot_nominal_ug"])
+        self.cfg["margem_pot_critica"] = float(parametros["margem_pot_critica"])
 
         self.cfg["cx_kp"] = float(parametros["cx_kp"])
         self.cfg["cx_ki"] = float(parametros["cx_ki"])
@@ -281,6 +286,37 @@ class Usina:
             ]
             self.db.update_valores_usina(valores)
 
+        except Exception as e:
+            logger.exception(e)
+
+        try:
+            ts = datetime.now(pytz.timezone("Brazil/East")).timestamp()
+            logger.debug("Inserting in db")
+            ma = 1 if self.modo_autonomo else 0
+            self.db.insert_debug(
+                ts,
+                self.cfg["kp"],
+                self.cfg["ki"],
+                self.cfg["kd"],
+                self.cfg["kie"],
+                self.controle_p,
+                self.controle_i,
+                self.controle_d,
+                self.controle_ie,
+                self.ug1.setpoint,
+                self.ug1.leitura_potencia.valor,
+                self.ug2.setpoint,
+                self.ug2.leitura_potencia.valor,
+                self.nv_montante_recente,
+                self.erro_nv,
+                ma,
+                self.ug3.setpoint,
+                self.ug3.leitura_potencia.valor,
+                self.cfg["cx_kp"],
+                self.cfg["cx_ki"],
+                self.cfg["cx_kie"],
+                0,
+            )
         except Exception as e:
             logger.exception(e)
 
@@ -715,11 +751,14 @@ class Usina:
 
         ugs = self.lista_de_ugs_disponiveis()
         self.pot_disp = 0
+        self.ajuste_manual = 0
 
         logger.debug("lista_de_ugs_disponiveis:")
         for ug in ugs:
             logger.debug("UG{}".format(ug.id))
             self.pot_disp += ug.cfg["pot_maxima_ug{}".format(ugs[0].id)]
+            if ug.manual:
+                self.ajuste_manual += ug.leitura_potencia.valor
         if ugs is None:
             return False
         elif len(ugs) == 0:
@@ -727,14 +766,14 @@ class Usina:
 
         logger.debug("Distribuindo {}".format(pot_alvo))
 
-        sp = pot_alvo / self.cfg["pot_maxima_usina"]
+        sp = (pot_alvo - self.ajuste_manual) / self.cfg["pot_maxima_usina"]
 
         self.__split1 = True if sp > (0) else self.__split1
-        self.__split2 = (True if sp > (0.333 + self.cfg["margem_pot_critica"]) else self.__split2)
-        self.__split3 = (True if sp > (0.666 + self.cfg["margem_pot_critica"]) else self.__split3)
+        self.__split2 = (True if sp > ((self.cfg["pot_maxima_ug"] / self.cfg["pot_maxima_usina"]) + self.cfg["margem_pot_critica"]) else self.__split2)
+        self.__split3 = (True if sp > (2 * (self.cfg["pot_maxima_ug"] / self.cfg["pot_maxima_usina"]) + self.cfg["margem_pot_critica"]) else self.__split3)
 
-        self.__split3 = False if sp < (0.666) else self.__split3
-        self.__split2 = False if sp < (0.333) else self.__split2
+        self.__split3 = False if sp < (2 * (self.cfg["pot_maxima_ug"] / self.cfg["pot_maxima_usina"]) - self.cfg["margem_pot_critica"]) else self.__split3
+        self.__split2 = False if sp < ((self.cfg["pot_maxima_ug"] / self.cfg["pot_maxima_usina"]) - self.cfg["margem_pot_critica"]) else self.__split2
         self.__split1 = False if sp < (self.cfg["pot_minima"] / self.cfg["pot_maxima_usina"]) else self.__split1
 
         logger.debug(f"Sp {sp}")
@@ -745,18 +784,21 @@ class Usina:
                 ugs[0].setpoint = sp * ugs[0].setpoint_maximo
                 ugs[1].setpoint = sp * ugs[1].setpoint_maximo
                 ugs[2].setpoint = sp * ugs[2].setpoint_maximo
+
             elif self.__split2:
                 logger.debug("Split 2")
                 sp = sp * 3 / 2
                 ugs[0].setpoint = sp * ugs[0].setpoint_maximo
                 ugs[1].setpoint = sp * ugs[1].setpoint_maximo
                 ugs[2].setpoint = 0
+
             elif self.__split1:
                 logger.debug("Split 1")
                 sp = sp * 3 / 1
                 ugs[0].setpoint = sp * ugs[0].setpoint_maximo
                 ugs[1].setpoint = 0
                 ugs[2].setpoint = 0
+
             else:
                 for ug in ugs:
                     ug.setpoint = 0
@@ -791,16 +833,17 @@ class Usina:
         """
         ls = []
         for ug in self.ugs:
-            if ug.disponivel:
+            if ug.disponivel and not ug.etapa_atual == UNIDADE_PARANDO:
                 ls.append(ug)
 
         if self.modo_de_escolha_das_ugs == MODO_ESCOLHA_MANUAL:
             # escolher por maior prioridade primeiro
             ls = sorted(ls, key=lambda y: (-1 * y.leitura_potencia.valor, -1 * y.setpoint, y.prioridade,),)
+            logger.debug(ls)
         else:
             # escolher por menor horas_maquina primeiro
-            ls = sorted(ls, key=lambda y: (-1 * y.leitura_potencia.valor, -1 * y.setpoint, y.leitura_horimetro.valor,),)
-            logger.debug("\nPrioridade por horas-máquina: ", ls)
+            ls = sorted(ls, key=lambda y: (y.leitura_horimetro.valor, -1 * y.leitura_potencia.valor, -1 * y.setpoint,),)
+            logger.debug(ls)
         return ls
 
     def controle_normal(self):
@@ -841,9 +884,8 @@ class Usina:
 
         logger.debug("Pot alvo: {:0.3f}".format(pot_alvo))
         logger.debug("Nv alvo: {:0.3f}".format(self.cfg["nv_alvo"]))
-        ts = datetime.now().timestamp()
         try:
-            ts = datetime.now().timestamp()
+            ts = datetime.now(pytz.timezone("Brazil/East")).timestamp()
             logger.debug("Inserting in db")
             ma = 1 if self.modo_autonomo else 0
             self.db.insert_debug(
