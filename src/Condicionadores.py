@@ -6,7 +6,7 @@ dos valores de campo.
 """
 __version__ = "0.1"
 __author__ = "Lucas Lavratti"
-
+from Usina import Usina
 from src.Leituras import *
 from asyncio.log import logger
 
@@ -28,10 +28,13 @@ class CondicionadorBase:
     Classe implementa a base para condicionadores. É "Abstrata" assim por se dizer...
     """
 
-    def __init__(self, descr: str, gravidade: int, leitura: LeituraBase):
+    def __init__(self, descr: str, gravidade: int, leitura: LeituraBase, estados: list = None):
+        self.__estados = estados if estados is not None else []
         self.__descr = descr
         self.__gravidade = gravidade
         self.__leitura = leitura
+        self.__ugs = Usina.ugs
+        
 
     def __str__(self):
         return "Condicionador {}, Gravidade: {}, Ativo: {}, Valor: {}".format(
@@ -55,7 +58,14 @@ class CondicionadorBase:
         Returns:
             bool: True se ativo, False caso contrário
         """
-        return False if self.__leitura.valor == 0 else True
+        for state in self.__estados:
+            for ug in self.__ugs:
+                if state == ug.etapa_atual:
+                    return False if self.__leitura.valor == 0 else True
+                elif state == []:
+                    return False if self.__leitura.valor == 0 else True
+                else:
+                    return False
 
     @property
     def valor(self) -> float:
@@ -144,20 +154,8 @@ class CondicionadorExponencial(CondicionadorBase):
         """
         v_temp = float(self.leitura.valor)
         if v_temp > self.valor_base and  v_temp < self.valor_limite:
-            aux = (
-                1
-                - (
-                    (
-                        (self.valor_limite - v_temp)
-                        / (self.valor_limite - self.valor_base)
-                    )
-                    ** (self.ordem)
-                ).real
-            )
-            return max(
-                min(aux, 1),
-                0,
-            )
+            aux = (1- (((self.valor_limite - v_temp) / (self.valor_limite - self.valor_base)) ** (self.ordem)).real)
+            return max(min(aux, 1),0,)
         if self.leitura.valor > self.valor_limite:
             return 1
         else:
@@ -220,7 +218,7 @@ class CondicionadorExponencialReverso(CondicionadorBase):
         if v_temp < 1:
             return 0
         elif self.valor_limite < v_temp < self.valor_base:
-            aux = (1 - (((self.valor_limite - v_temp) / (self.valor_limite - self.valor_base))** (self.ordem)).real)
+            aux = (1 - (((self.valor_limite - v_temp) / (self.valor_limite - self.valor_base)) ** (self.ordem)).real)
             return max(min(aux, 1), 0,)
 
         elif v_temp <= self.valor_limite:

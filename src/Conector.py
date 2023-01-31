@@ -280,7 +280,7 @@ class FieldConnector:
         if cfg is None:
             raise Exception("A cfg dict is required")
         else:
-            self.opc_server = Client(cfg["opc_server"])
+            self.client = Client(cfg["client"])
 
         self.warned_ug1 = False
         self.warned_ug2 = False
@@ -288,25 +288,22 @@ class FieldConnector:
 
     def modifica_controles_locais(self):
         if not self.TDA_Offline:
-            Escrita.write_value_bool(self.opc_server, "REG_TDA_ComandosDigitais_MXW_ResetGeral", True)
-            Escrita.write_value_bool(self.opc_server, "REG_TDA_ComandosDigitais_MXW_Hab_Nivel", False)
-            Escrita.write_value_bool(self.opc_server, "REG_TDA_ComandosDigitais_MXW_Desab_Nivel", True)
-            Escrita.write_value_bool(self.opc_server, "REG_TDA_ComandosDigitais_MXW_Hab_Religamento52L", False)
-            Escrita.write_value_bool(self.opc_server, "REG_TDA_ComandosDigitais_MXW_Desab_Religamento52L", True)
+            EscritaOPCBit(self.client, REG_OPC["TDA"]["CP1_CMD_REARME_FALHAS"], 0, 1)
+            EscritaOPCBit(self.client, REG_OPC["TDA"]["CP1_CMD_REARME_FALHAS"], 0, 1)
         else:
             logger.debug("Não é possível modificar os controles locais pois o CLP da TDA se encontra offline")
 
     def open(self):
         logger.debug("Conectando ao servidor OPC")
-        if not self.opc_server.connect():
-            raise ua.UaError("OPC Client ({}) failed to open.".format(self.opc_server))
+        if not self.client.connect():
+            raise ua.UaError("OPC Client ({}) failed to open.".format(self.client))
 
         logger.debug("Conectado!")
         return self
 
     def close(self):
         logger.debug("Encerrando conexão OPC")
-        self.opc_server.disconnect()
+        self.client.disconnect()
         logger.debug("Conexão encerrada!")
 
     def fechaDj52L(self):
@@ -314,79 +311,91 @@ class FieldConnector:
             return False
         else:
             # utilizar o write_value_bool para o ambiente em produção e write_single_register para a simulação
-            response = Escrita.write_value_int(self.opc_server, "REG_SA_ComandosDigitais_MXW_Liga_DJ1", 1)
+            response = EscritaOPCBit(self.client, REG_OPC["SE"]["CMD_SE_FECHA_52L"], 4, 1)
             return response
 
     def normalizar_emergencia(self):
         logger.info("Reconhecendo alarmes, resetando usina e fechando Dj52L")
         logger.debug("Reconhece/Reset alarmes")
-        Escrita.write_value_bool(self.opc_server, "REG_UG1_ComandosDigitais_MXW_ResetGeral", True)
-        Escrita.write_value_bool(self.opc_server, "REG_UG2_ComandosDigitais_MXW_ResetGeral", True)
-        Escrita.write_value_bool(self.opc_server, "REG_SA_ComandosDigitais_MXW_ResetGeral", True)
-        Escrita.write_value_bool(self.opc_server, "REG_TDA_ComandosDigitais_MXW_ResetGeral", True) if not self.TDA_Offline else logger.debug("CLP TDA Offline, não há como realizar o reset geral")
-        Escrita.write_value_bool(self.opc_server, "REG_UG1_ComandosDigitais_MXW_Cala_Sirene", True)
-        Escrita.write_value_bool(self.opc_server, "REG_UG2_ComandosDigitais_MXW_Cala_Sirene", True)
-        Escrita.write_value_bool(self.opc_server, "REG_SA_ComandosDigitais_MXW_Cala_Sirene", True)
+        EscritaOPCBit(self.client, REG_OPC["UG"]["UG1_CMD_RESET_FALHAS_PASSOS"], 0, 1)
+        EscritaOPCBit(self.client, REG_OPC["UG"]["UG1_CMD_REARME_BLOQUEIO_86M"], 1, 1)
+        EscritaOPCBit(self.client, REG_OPC["UG"]["UG1_CMD_REARME_BLOQUEIO_86E"], 2, 1)
+        EscritaOPCBit(self.client, REG_OPC["UG"]["UG1_CMD_REARME_BLOQUEIO_86H"], 3, 1)
+        EscritaOPCBit(self.client, REG_OPC["UG"]["UG1_CMD_UHRV_REARME_FALHAS"], 0, 1)
+        EscritaOPCBit(self.client, REG_OPC["UG"]["UG1_CMD_UHLM_REARME_FALHAS"], 16, 1)
+        EscritaOPCBit(self.client, REG_OPC["UG"]["UG2_CMD_RESET_FALHAS_PASSOS"], 0, 1)
+        EscritaOPCBit(self.client, REG_OPC["UG"]["UG2_CMD_REARME_BLOQUEIO_86M"], 1, 1)
+        EscritaOPCBit(self.client, REG_OPC["UG"]["UG2_CMD_REARME_BLOQUEIO_86E"], 2, 1)
+        EscritaOPCBit(self.client, REG_OPC["UG"]["UG2_CMD_REARME_BLOQUEIO_86H"], 3, 1)
+        EscritaOPCBit(self.client, REG_OPC["UG"]["UG2_CMD_UHRV_REARME_FALHAS"], 0, 1)
+        EscritaOPCBit(self.client, REG_OPC["UG"]["UG2_CMD_UHLM_REARME_FALHAS"], 16, 1)
+        EscritaOPCBit(self.client, REG_OPC["SA"]["RESET_FALHAS_BARRA_CA"], 0, 1)
+        EscritaOPCBit(self.client, REG_OPC["SA"]["RESET_FALHAS_SISTEMA_AGUA"], 1, 1)
+        EscritaOPCBit(self.client, REG_OPC["SA"]["REARME_BLOQUEIO_GERAL_E_FALHAS_SA"], 23, 1)
+        EscritaOPCBit(self.client, REG_OPC["SE"]["CMD_SE_REARME_BLOQUEIO_GERAL"], 0, 1)
+        EscritaOPCBit(self.client, REG_OPC["SE"]["CMD_SE_REARME_86T"], 1, 1)
+        EscritaOPCBit(self.client, REG_OPC["SE"]["CMD_SE_REARME_86BF"], 2, 1)
+        EscritaOPCBit(self.client, REG_OPC["SE"]["REARME_86BF_86T"], 22, 1)
+        EscritaOPCBit(self.client, REG_OPC["SE"]["CMD_SE_RESET_REGISTROS"], 5, 1)
+        EscritaOPCBit(self.client, REG_OPC["TDA"]["CP1_CMD_REARME_FALHAS"], 0, 1) if not self.TDA_Offline else logger.debug("CLP TDA Offline, não há como realizar o reset geral")
+        EscritaOPCBit(self.client, REG_OPC["TDA"]["CP1_CMD_REARME_FALHAS"], 0, 1) if not self.TDA_Offline else logger.debug("CLP TDA Offline, não há como realizar o reset geral")
         logger.debug("Fecha Dj52L")
         self.fechaDj52L()
 
     def somente_reconhecer_emergencia(self):
-        logger.debug("Somente reconhece alarmes não implementado em XAV")
-        Escrita.write_value_bool(self.opc_server, "REG_UG1_ComandosDigitais_MXW_Cala_Sirene", True)
-        Escrita.write_value_bool(self.opc_server, "REG_UG2_ComandosDigitais_MXW_Cala_Sirene", True)
-        Escrita.write_value_bool(self.opc_server, "REG_SA_ComandosDigitais_MXW_Cala_Sirene", True)
+        logger.debug("XAV possui apenas reconhecimento interno de alarmes")
 
     def acionar_emergencia(self):
         logger.warning("FC: Acionando emergencia")
-        Escrita.write_value_bool(self.opc_server, "REG_UG1_ComandosDigitais_MXW_EmergenciaViaSuper", True)
-        Escrita.write_value_bool(self.opc_server, "REG_UG2_ComandosDigitais_MXW_EmergenciaViaSuper", True)
+        EscritaOPCBit(self.client, REG_OPC["UG"]["UG1_CMD_PARADA_EMERGENCIA"], 4, 1)
+        EscritaOPCBit(self.client, REG_OPC["UG"]["UG2_CMD_PARADA_EMERGENCIA"], 4, 1)
         sleep(5)
-        Escrita.write_value_bool(self.opc_server, "REG_UG1_ComandosDigitais_MXW_EmergenciaViaSuper", False)
-        Escrita.write_value_bool(self.opc_server, "REG_UG2_ComandosDigitais_MXW_EmergenciaViaSuper", False)
+        EscritaOPCBit(self.client, REG_OPC["UG"]["UG1_CMD_PARADA_EMERGENCIA"], 4, 0)
+        EscritaOPCBit(self.client, REG_OPC["UG"]["UG2_CMD_PARADA_EMERGENCIA"], 4, 0)
 
     def get_flag_falha52L(self):
         # adicionar estado do disjuntor
-        if read_input_value(self.opc_server, "REG_SA_EntradasDigitais_MXI_SA_DisjDJ1_SuperBobAbert1") == 0:
+        if LeituraOPC(self.client, REG_OPC["REG_SA_EntradasDigitais_MXI_SA_DisjDJ1_SuperBobAbert1"]) == 0:
             logger.info("DisjDJ1_SuperBobAbert1")
             return True
 
-        if read_input_value(self.opc_server, "REG_SA_EntradasDigitais_MXI_SA_DisjDJ1_SuperBobAbert2") == 0:
+        if LeituraOPC(self.client, REG_OPC["REG_SA_EntradasDigitais_MXI_SA_DisjDJ1_SuperBobAbert2"]) == 0:
             logger.info("DisjDJ1_SuperBobAbert2")
             return True
 
-        if read_input_value(self.opc_server, "REG_SA_EntradasDigitais_MXI_SA_DisjDJ1_Super125VccCiMot") == 0:
+        if LeituraOPC(self.client, REG_OPC["REG_SA_EntradasDigitais_MXI_SA_DisjDJ1_Super125VccCiMot"]) == 0:
             logger.info("DisjDJ1_Super125VccCiMot")
             return True
 
-        if read_input_value(self.opc_server, "REG_SA_EntradasDigitais_MXI_SA_DisjDJ1_Super125VccCiCom") == 0:
+        if LeituraOPC(self.client, REG_OPC["REG_SA_EntradasDigitais_MXI_SA_DisjDJ1_Super125VccCiCom"]) == 0:
             logger.info("DisjDJ1_Super125VccCiCom")
             return True
 
-        if read_input_value(self.opc_server, "REG_SA_EntradasDigitais_MXI_SA_DisjDJ1_AlPressBaixa") == 1:
+        if LeituraOPC(self.client, REG_OPC["REG_SA_EntradasDigitais_MXI_SA_DisjDJ1_AlPressBaixa"]) == 1:
             logger.info("DisjDJ1_AlPressBaixa")
             return True
 
-        if read_input_value(self.opc_server, "REG_SA_RetornosDigitais_MXR_DJ1_FalhaInt") == 1:
+        if LeituraOPC(self.client, REG_OPC["REG_SA_RetornosDigitais_MXR_DJ1_FalhaInt"]) == 1:
             logger.info("MXR_DJ1_FalhaInt")
             return True
 
-        if read_input_value(self.opc_server, "REG_SA_EntradasDigitais_MXI_SA_DisjDJ1_BloqPressBaixa") == 1:
+        if LeituraOPC(self.client, REG_OPC["REG_SA_EntradasDigitais_MXI_SA_DisjDJ1_BloqPressBaixa"]) == 1:
             logger.info("DisjDJ1_BloqPressBaixa")
             return True
 
-        if read_input_value(self.opc_server, "REG_SA_EntradasDigitais_MXI_SA_DisjDJ1_Sup125VccBoFeAb1") == 0:
+        if LeituraOPC(self.client, REG_OPC["REG_SA_EntradasDigitais_MXI_SA_DisjDJ1_Sup125VccBoFeAb1"]) == 0:
             logger.info("DisjDJ1_Sup125VccBoFeAb1")
             return True
 
-        if read_input_value(self.opc_server, "REG_SA_EntradasDigitais_MXI_SA_DisjDJ1_Sup125VccBoFeAb2") == 0:
+        if LeituraOPC(self.client, REG_OPC["REG_SA_EntradasDigitais_MXI_SA_DisjDJ1_Sup125VccBoFeAb2"]) == 0:
             logger.info("DisjDJ1_Sup125VccBoFeAb2")
             return True
 
-        if read_input_value(self.opc_server, "REG_SA_EntradasDigitais_MXI_SA_DisjDJ1_Local")[0] == 1:
+        if LeituraOPC(self.client, REG_OPC["REG_SA_EntradasDigitais_MXI_SA_DisjDJ1_Local"])[0] == 1:
             logger.info("DisjDJ1_Local")
             return True
 
-        if read_input_value(self.opc_server, "REG_SA_EntradasDigitais_MXI_SA_DisjDJ1_MolaDescarregada")[0] == 1:
+        if LeituraOPC(self.client, REG_OPC["REG_SA_EntradasDigitais_MXI_SA_DisjDJ1_MolaDescarregada"])[0] == 1:
             logger.info("DisjDJ1_MolaDescarregada")
             return True
 

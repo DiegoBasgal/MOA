@@ -18,7 +18,7 @@ from time import sleep
 from datetime import datetime
 from urllib.request import Request, urlopen
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-import database_connector
+import Conector
 
 # Inicializando o logger principal
 logger = logging.getLogger(__name__)
@@ -28,13 +28,30 @@ config_file = os.path.join(os.path.dirname(__file__), "voip_config.json")
 with open(config_file, "r") as file:
     config = json.load(file)
 
-QCAUG1Remoto = False
-QCAUG2Remoto = False
-FreioCmdRemoto1 = False
-FreioCmdRemoto2 = False
-TDA_FalhaComum = False
-BombasDngRemoto = False
-Disj_GDE_QLCF_Fechado = False
+VARS = {
+    "LG_FALHA_ATUADA": [False, "Atenção! Houve uma falha com o Limpa Grades na PCH Xavantina, favor analisar a situação. Atenção! Houve uma falha com o Limpa Grades na PCH Xavantina, favor analisar a situação."],
+    "FALHA_NIVEL_MONTANTE": [False, "Atenção! Houve uma falha na leitura de nível montante na PCH Xavantina, favor analisar a situação. Atenção! Houve uma falha na leitura de nível montante na PCH Xavantina, favor analisar a situação."],
+    "FILTRAGEM_BOMBA_FALHA": [False, "Atenção! Houve uma falha com a bomba de filtragem na PCH Xavantina, favor analisar a situação. Atenção! Houve uma falha com a bomba de filtragem na PCH Xavantina, favor analisar a situação."],
+    "DRENAGEM_UNIDADES_BOMBA_FALHA": [False, "Atenção! Houve uma falha com a bomba de drenagem na PCH Xavantina, favor analisar a situação. Atenção! Houve uma falha com a bomba de drenagem na PCH Xavantina, favor analisar a situação."],
+    "BOMBA_RECALQUE_TUBO_SUCCAO_FALHA": [False, "Atenção! Houve uma falha com o tubo de succção da bomba de recalque, favor analisar a situação. Atenção! Houve uma falha com o tubo de succção da bomba de recalque, favor analisar a situação."],
+    "POCO_DRENAGEM_NIVEL_MUITO_ALTO": [False, "Atenção! O nível do poço de drenagem na PCH Xavantina está muito alto, favor analisar a situação. Atenção! O nível do poço de drenagem na PCH Xavantina está muito alto, favor analisar a situação."],
+    "POCO_DRENAGEM_NIVEL_ALTO": [False, "Atenção! O nível do poço de drenagem na PCH Xavantina está alto, favor monitorar. Atenção! O nível do poço de drenagem na PCH Xavantina está alto, favor monitorar."],
+    "52SA1_SEM_FALHA": [False, "Atenção! Houve uma falha com o disjuntor 52SA1 do transformador do serviço auxiliar na PCH Xavantina, favor analisar a situação. Atenção! Houve uma falha com o disjuntor 52SA1 do transformador do serviço auxiliarna PCH Xavantina, favor analisar a situação."],
+    "52SA2_SEM_FALHA": [False, "Atenção! Houve uma falha com o disjuntor 52SA2 do gerador dieselna PCH Xavantina, favor analisar a situação. Atenção! Houve uma falha com o disjuntor 52SA2 do gerador dieselna PCH Xavantina, favor analisar a situação."],
+    "52SA3_SEM_FALHA": [False, "Atenção! Houve uma falha com o disjuntor 52SA3 do barramento de cargas não essenciais na PCH Xavantina, favor analisar a situação . Atenção! Houve uma falha com o disjuntor 52SA3 do barramento de cargas não essenciaisna PCH Xavantina, favor analisar a situação."],
+    "SISTEMA_INCENDIO_ALARME_ATUADO": [False, "Atenção! O alarme de incêndio da PCH Xavantina foi acionado, favor analisar a situação. Atenção! O alarme de incêndio da PCH Xavantina foi acionado, favor analisar a situação."],
+    "SISTEMA_SEGURANCA_ALARME_ATUADO": [False, "Atenção! O alarme do sistema de segurança da PCH Xavantina foi acionado, favor verificar a situração. Atenção! O alarme do sistema de segurança da PCH Xavantina foi acionado, favor verificar a situração."],
+    "GMG_FALHA_PARTIR": [False, "Atenção! Houve uma falha ao partir o gerador diesel na PCH Xavantina, favor analisar a situação. Atenção! Houve uma falha ao partir o gerador diesel na PCH Xavantina, favor analisar a situação."],
+    "GMG_FALHA_PARAR": [False, "Atenção! Houve uma falha ao parar o gerador diesel na PCH Xavantina, favor analisar a situação. Atenção! Houve uma falha ao parar o gerador diesel na PCH Xavantina, favor analisar a situação."],
+    "GMG_OPERACAO_MANUAL": [False, "Atenção! O gerador diesel saiu do modo remoto, favor analisar a situação. Atenção! O gerador diesel saiu do modo remoto, favor analisar a situação."],
+    "TE_ALARME_TEMPERATURA_ENROLAMENTO": [False, "Atenção! A temperatura do enrolamento do transformador elevador na PCH Xavantina está alto, favor monitorar. Atenção! A temperatura do enrolamento do transformador elevador na PCH Xavantina está alto, favor monitorar."],
+    "TE_ALM_TEMPERATURA_ENROLAMENTO": [False, "Atenção! A temperatura do enrolamento do transformador elevador na PCH Xavantina está alto, favor monitorar. Atenção! A temperatura do enrolamento do transformador elevador na PCH Xavantina está alto, favor monitorar."],
+    "TE_ALARME_TEMPERATURA_OLEO": [False, "Atenção! A temperatura do óleo do transformador elevador na PCH Xavantina está alto, favor monitorar. Atenção! A temperatura do óleo do transformador elevador na PCH Xavantina está alto, favor monitorar."],
+    "TE_ALM_TEMPERATURA_OLEO": [False, "Atenção! A temperatura do óleo do transformador elevador na PCH Xavantina está alto, favor monitorar. Atenção! A temperatura do óleo do transformador elevador na PCH Xavantina está alto, favor monitorar."],
+    "TE_NIVEL_OLEO_MUITO_ALTO": [False, "Atenção! O nível do óleo do transformador elevador na PCH Xavantina está muito alto, favor analisar a situação. Atenção! O nível do óleo do transformador elevador na PCH Xavantina está muito alto, favor analisar a situação."],
+    "TE_NIVEL_OLEO_MUITO_BAIXO": [False, "Atenção! O nível do óleo do transformador elevador a PCH Xavantina está muito baixo, favor analisar a situação. Atenção! O nível do óleo do transformador elevador a PCH Xavantina está muito baixo, favor analisar a situação."]
+}
+
 
 napikey = config["napikey"]
 user_token = config["user_token"]
@@ -49,7 +66,7 @@ lista_de_contatos_padrao = [
 
 def carrega_contatos():
     phonebook = []
-    db = database_connector.Database()
+    db = Conector.Database()
     parametros = db.get_contato_emergencia()
 
     for i in range(len(parametros)):
@@ -133,7 +150,7 @@ def enviar_voz_emergencia(lista_de_contatos=None):
                 "called": "{}".format(contato[1]),  # O número a ser chamado, no formato dddnnnnnnnnn
                 "audios": [
                     {
-                        "audio": "Atenção! Houve um acionamento de emergência na PCH Pampeana, por favor verificar a situação. Atenção! Houve um acionamento de emergência na PCH Pampeana, por favor verificar a situação.",
+                        "audio": "Atenção! Houve um acionamento de emergência na PCH Pampeana, por favor analisar a situação. Atenção! Houve um acionamento de emergência na PCH Pampeana, por favor analisar a situação.",
                         "positionAudio": 1,
                     }
                 ],
@@ -148,49 +165,6 @@ def enviar_voz_emergencia(lista_de_contatos=None):
 
             # Envia a request para a api e recebe a resposta
             request = Request("https://api.nvoip.com.br/v2/torpedo/voice?napikey={}".format(napikey), data=data, headers=headers,)
-            try:
-                response_body = urlopen(request).read()
-            except Exception as e:
-                logger.debug("Exception NVOIP: {} ".format(e.read()))
-            else:
-                logger.debug("response_body: {} ".format(response_body))
-
-def enviar_voz_teste():
-
-    access_token = get_token()
-
-    if voz_habilitado:
-        logger.debug("Enviando Voz Emergencia")
-
-        # Se a lista de conta não for fornecida, usa-se a lista padrão.
-        if lista_de_contatos is None:
-            try:
-                lista_de_contatos = carrega_contatos()
-                if len(lista_de_contatos) < 1:
-                    raise ValueError("Lista de contatos com problema")
-            except Exception as e:
-                logger.exception(e)
-                lista_de_contatos = lista_de_contatos_padrao
-
-    if TDA_FalhaComum or Disj_GDE_QLCF_Fechado:
-        for contato in lista_de_contatos_padrao:
-            data = {
-                "caller": "{}".format(caller_voip),  # caller fornecido pela nvoip
-                "called": "{}".format(contato[1]),  # O número a ser chamado, no formato dddnnnnnnnnn
-                "audios": [
-                    {
-                        "audio": "Esta é apenas uma mensagem de teste. Esta é apenas uma mensagem de teste.",
-                        "positionAudio": 1,
-                    }
-                ],
-                "dtmfs": [],
-            }
-
-            headers = {"Content-Type": "application/json", "Authorization": access_token}
-            data = json.dumps(data)
-            data = str(data).encode()
-            request = Request("https://api.nvoip.com.br/v2/torpedo/voice?napikey={}".format(napikey), data=data, headers=headers)
-
             try:
                 response_body = urlopen(request).read()
             except Exception as e:
@@ -219,189 +193,33 @@ def enviar_voz_auxiliar(lista_de_contatos=None):
         for contato in lista_de_contatos:
             logger.info("Disparando torpedo de voz para {} ({})".format(contato[0], contato[1]))
 
-            if Disj_GDE_QLCF_Fechado:
-                # Montagem do pacote para chamar a api
-                data = {
-                    "caller": "{}".format(caller_voip),  # caller fornecido pela nvoip
-                    "called": "{}".format(contato[1]),  # O número a ser chamado, no formato dddnnnnnnnnn
-                    "audios": [
-                        {
-                            "audio": "Atenção! Foi identificado que o disjuntor do gerador diesel de emergência QLCF em Pampeana foi fechado, favor verificar. Atenção! Foi identificado que o disjuntor do gerador diesel de emergência QLCF em Pampeana foi fechado, favor verificar.",
-                            "positionAudio": 1,
-                        }
-                    ],
-                    "dtmfs": [],
-                }
-                headers = {"Content-Type": "application/json", "Authorization": access_token,}
-                # pharse/encode para json
-                data = json.dumps(data)
-                data = str(data).encode()
-                # Envia a request para a api e recebe a resposta
-                request = Request("https://api.nvoip.com.br/v2/torpedo/voice?napikey={}".format(napikey), data=data, headers=headers,)
-                try:
-                    response_body = urlopen(request).read()
-                except Exception as e:
-                    logger.debug("Exception NVOIP: {} ".format(e.read()))
-                else:
-                    logger.debug("response_body: {} ".format(response_body))
-                Disj_GDE_QLCF_Fechado = False
-
-            if TDA_FalhaComum:
-                # Montagem do pacote para chamar a api
-                data = {
-                    "caller": "{}".format(caller_voip),  # caller fornecido pela nvoip
-                    "called": "{}".format(contato[1]),  # O número a ser chamado, no formato dddnnnnnnnnn
-                    "audios": [
-                        {
-                            "audio": "Atenção! Houve uma falha de comunicação com o CLP na Tomada da Água em Pampeana, favor verificar o telegram para mais informações. Atenção! Houve uma falha de comunicação com o CLP na Tomada da Água em Pampeana, favor verificar o telegram para mais informações.",
-                            "positionAudio": 1,
-                        }
-                    ],
-                    "dtmfs": [],
-                }
-                headers = {"Content-Type": "application/json", "Authorization": access_token,}
-                # pharse/encode para json
-                data = json.dumps(data)
-                data = str(data).encode()
-                # Envia a request para a api e recebe a resposta
-                request = Request("https://api.nvoip.com.br/v2/torpedo/voice?napikey={}".format(napikey), data=data, headers=headers,)
-                try:
-                    response_body = urlopen(request).read()
-                except Exception as e:
-                    logger.debug("Exception NVOIP: {} ".format(e.read()))
-                else:
-                    logger.debug("response_body: {} ".format(response_body))
-                TDA_FalhaComum = False
-
-            if BombasDngRemoto:
-                data = {
-                    "caller": "{}".format(caller_voip),  # caller fornecido pela nvoip
-                    "called": "{}".format(contato[1]),  # O número a ser chamado, no formato dddnnnnnnnnn
-                    "audios": [
-                        {
-                            "audio": "Atenção! Foi identificado que o painel do poço de drenagem em Pampeana saiu do modo remoto, favor verificar. Atenção! Foi identificado que o painel do poço de drenagem em Pampeana saiu do modo remoto, favor verificar.",
-                            "positionAudio": 1,
-                        }
-                    ],
-                    "dtmfs": [],
-                }
-                headers = {"Content-Type": "application/json", "Authorization": access_token,}
-                # pharse/encode para json
-                data = json.dumps(data)
-                data = str(data).encode()
-                # Envia a request para a api e recebe a resposta
-                request = Request("https://api.nvoip.com.br/v2/torpedo/voice?napikey={}".format(napikey), data=data, headers=headers,)
-                try:
-                    response_body = urlopen(request).read()
-                except Exception as e:
-                    logger.debug("Exception NVOIP: {} ".format(e.read()))
-                else:
-                    logger.debug("response_body: {} ".format(response_body))
-                BombasDngRemoto = False
-
-            if QCAUG1Remoto:
-                data = {
-                    "caller": "{}".format(caller_voip),  # caller fornecido pela nvoip
-                    "called": "{}".format(contato[1]),  # O número a ser chamado, no formato dddnnnnnnnnn
-                    "audios": [
-                        {
-                            "audio": "Atenção! Foi identificado que o painel do compressor da Unidade Geradora 1 em Pampeana saiu do modo remoto, favor verificar. Atenção! Foi identificado que o painel do compressor da Unidade Geradora 1 em Pampeana saiu do modo remoto, favor verificar.",
-                            "positionAudio": 1,
-                        }
-                    ],
-                    "dtmfs": [],
-                }
-                headers = {"Content-Type": "application/json", "Authorization": access_token,}
-                # pharse/encode para json
-                data = json.dumps(data)
-                data = str(data).encode()
-                # Envia a request para a api e recebe a resposta
-                request = Request("https://api.nvoip.com.br/v2/torpedo/voice?napikey={}".format(napikey), data=data, headers=headers,)
-                try:
-                    response_body = urlopen(request).read()
-                except Exception as e:
-                    logger.debug("Exception NVOIP: {} ".format(e.read()))
-                else:
-                    logger.debug("response_body: {} ".format(response_body))
-                QCAUG1Remoto = False
-
-            if QCAUG2Remoto:
-                data = {
-                    "caller": "{}".format(caller_voip),  # caller fornecido pela nvoip
-                    "called": "{}".format(contato[1]),  # O número a ser chamado, no formato dddnnnnnnnnn
-                    "audios": [
-                        {
-                            "audio": "Atenção! Foi identificado que o painel do compressor da Unidade Geradora 2 em Pampeana saiu do modo remoto, favor verificar. Atenção! Foi identificado que o painel do compressor da Unidade Geradora 2 em Pampeana saiu do modo remoto, favor verificar.",
-                            "positionAudio": 1,
-                        }
-                    ],
-                    "dtmfs": [],
-                }
-                headers = {"Content-Type": "application/json", "Authorization": access_token,}
-                # pharse/encode para json
-                data = json.dumps(data)
-                data = str(data).encode()
-                # Envia a request para a api e recebe a resposta
-                request = Request("https://api.nvoip.com.br/v2/torpedo/voice?napikey={}".format(napikey), data=data, headers=headers,)
-                try:
-                    response_body = urlopen(request).read()
-                except Exception as e:
-                    logger.debug("Exception NVOIP: {} ".format(e.read()))
-                else:
-                    logger.debug("response_body: {} ".format(response_body))
-                QCAUG2Remoto = False
-
-            if FreioCmdRemoto1:
-                data = {
-                    "caller": "{}".format(caller_voip),  # caller fornecido pela nvoip
-                    "called": "{}".format(contato[1]),  # O número a ser chamado, no formato dddnnnnnnnnn
-                    "audios": [
-                        {
-                            "audio": "Atenção! Foi identificado que o freio da Unidade Geradora 1 em Pampeana saiu do modo remoto, favor verificar. Atenção! Foi identificado que o freio da Unidade Geradora 1 em Pampeana saiu do modo remoto, favor verificar.",
-                            "positionAudio": 1,
-                        }
-                    ],
-                    "dtmfs": [],
-                }
-                headers = {"Content-Type": "application/json", "Authorization": access_token,}
-                # pharse/encode para json
-                data = json.dumps(data)
-                data = str(data).encode()
-                # Envia a request para a api e recebe a resposta
-                request = Request("https://api.nvoip.com.br/v2/torpedo/voice?napikey={}".format(napikey), data=data, headers=headers,)
-                try:
-                    response_body = urlopen(request).read()
-                except Exception as e:
-                    logger.debug("Exception NVOIP: {} ".format(e.read()))
-                else:
-                    logger.debug("response_body: {} ".format(response_body))
-                FreioCmdRemoto1 = False
-
-            if FreioCmdRemoto2:
-                data = {
-                    "caller": "{}".format(caller_voip),  # caller fornecido pela nvoip
-                    "called": "{}".format(contato[1]),  # O número a ser chamado, no formato dddnnnnnnnnn
-                    "audios": [
-                        {
-                            "audio": "Atenção! Foi identificado que o freio da Unidade Geradora 2 em Pampeana saiu do modo remoto, favor verificar. Atenção! Foi identificado que o freio da Unidade Geradora 2 em Pampeana saiu do modo remoto, favor verificar.",
-                            "positionAudio": 1,
-                        }
-                    ],
-                    "dtmfs": [],
-                }
-                headers = {"Content-Type": "application/json", "Authorization": access_token,}
-                # pharse/encode para json
-                data = json.dumps(data)
-                data = str(data).encode()
-                # Envia a request para a api e recebe a resposta
-                request = Request("https://api.nvoip.com.br/v2/torpedo/voice?napikey={}".format(napikey), data=data, headers=headers,)
-                try:
-                    response_body = urlopen(request).read()
-                except Exception as e:
-                    logger.debug("Exception NVOIP: {} ".format(e.read()))
-                else:
-                    logger.debug("response_body: {} ".format(response_body))
-                FreioCmdRemoto2 = False
+            for i in VARS:
+                if VARS[i][0]:
+                    # Montagem do pacote para chamar a api
+                    data = {
+                        "caller": "{}".format(caller_voip),  # caller fornecido pela nvoip
+                        "called": "{}".format(contato[1]),  # O número a ser chamado, no formato dddnnnnnnnnn
+                        "audios": [
+                            {
+                                "audio": VARS[i][1],
+                                "positionAudio": 1,
+                            }
+                        ],
+                        "dtmfs": [],
+                    }
+                    headers = {"Content-Type": "application/json", "Authorization": access_token,}
+                    # pharse/encode para json
+                    data = json.dumps(data)
+                    data = str(data).encode()
+                    # Envia a request para a api e recebe a resposta
+                    request = Request("https://api.nvoip.com.br/v2/torpedo/voice?napikey={}".format(napikey), data=data, headers=headers,)
+                    try:
+                        response_body = urlopen(request).read()
+                    except Exception as e:
+                        logger.debug("Exception NVOIP: {} ".format(e.read()))
+                    else:
+                        logger.debug("response_body: {} ".format(response_body))
+                    VARS[i][0] = False
 
 if __name__ == "__main__":
    enviar_voz_auxiliar()

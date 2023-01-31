@@ -7,7 +7,7 @@ import mapa_modbus
 
 from sys import stdout
 from time import sleep
-from opcua import Server
+from opcua import Server, ua
 from datetime import datetime
 from asyncio.log import logger
 from pyModbusTCP.server import ModbusServer, DataBank
@@ -75,24 +75,7 @@ class Planta:
         self.server_OPC.register_namespace("Simulador XAV")
 
         # Adiciona os registradores do mapa aos servidores OPC e MB
-        objects = self.server_OPC.get_objects_node()
-        self.reg_ug1 = objects.add_object("ns=7;s=CLP_UG1", "Registradores UG1")
-        self.reg_ug2 = objects.add_object("ns=7;s=CLP_UG2", "Registradores UG2")
-        self.reg_tda = objects.add_object("ns=7;s=CLP_TDA", "Registradores TDA")
-        self.reg_sa_se = objects.add_object("ns=7;s=CLP_SA", "Registradores SA/SE")
-
-        for i in zip(REG_MB, REG_OPC):
-
-            self.DB.set_words(int(REG_MB[i]), [0])
-
-            if re.search("^REG_UG1", i):
-                self.reg_ug1.add_variable("ns=7;s={}".format(i), "{}".format(re.sub("REG_UG1_", "", i)), REG_OPC[i])
-
-            if re.search("^REG_UG2", i):
-                self.reg_ug2.add_variable("ns=7;s={}".format(i), "{}".format(re.sub("REG_UG2_", "", i)), REG_OPC[i])
-        
-            if re.search("^REG_USINA", i):
-                self.reg_usina.add_variable("ns=7;s={}".format(i), "{}".format(re.sub("REG_USINA_", "", i)), REG_OPC[i])
+        self.build_server()
         
         # Incia os servidores
         self.server_MB.start()
@@ -145,37 +128,37 @@ class Planta:
                 # Leitura do dicionário compartilhado
                 if self.shared_dict["trip_condic_usina"] == True and self.shared_dict["aux_borda{}".format(1)] == 0:
                     self.shared_dict["aux_borda{}".format(1)] = 1
-                    self.escrita_OPC("ns=3;s=REG_USINA_Condicionadores", 1)
+                    self.escrita_MB(REG_MB["REG_USINA_Condicionadores"], 1)
 
                 elif self.shared_dict["trip_condic_usina"] == False and self.shared_dict["aux_borda{}".format(1)] == 1:
                     self.shared_dict["aux_borda{}".format(1)] = 0
-                    self.escrita_OPC("ns=3;s=REG_USINA_Condicionadores", 0)
+                    self.escrita_MB(REG_MB["REG_USINA_Condicionadores"], 0)
                     self.dj52L.reconhece_reset_dj52L()
 
                 if self.shared_dict["reset_geral_condic"] == True:
-                    self.escrita_OPC("ns=1;s=REG_UG1_Condicionadores", 0)
-                    self.escrita_OPC("ns=2;s=REG_UG2_Condicionadores", 0)
-                    self.escrita_OPC("ns=3;s=REG_USINA_Condicionadores", 0)
+                    self.escrita_MB(REG_MB["REG_UG1_Condicionadores"], 0)
+                    self.escrita_MB(REG_MB["REG_UG2_Condicionadores"], 0)
+                    self.escrita_MB(REG_MB["REG_USINA_Condicionadores"], 0)
 
                 # Leituras de registradores OPC e MB
-                if self.leitura_OPC("ns=3;s=REG_USINA_Disj52LFechar") == True:
-                    self.escrita_OPC("ns=3;s=REG_USINA_Disj52LFechar", False)
-                    logger.info("Comando OPC recebido, fechand DJ52L")
+                if self.leiturabit_OPC(REG_OPC["CMD_SE_FECHA_52L"], 4) == True:
+                    self.escritabit_OPC(REG_OPC["CMD_SE_FECHA_52L"], 4, 1)
+                    logger.info("Comando OPC recebido, fechando DJ52L")
                     self.dj52L.fechar()
                     
-                if self.leitura_OPC("ns=3;s=REG_USINA_ResetAlarmes") == True:
-                    self.escrita_OPC("ns=3;s=REG_USINA_ResetAlarmes", False)
-                    logger.info("Comando OPC recebido: ns=3;s=REG_USINA_ResetAlarmes ")
+                if self.leiturabit_OPC(REG_OPC["RESET_FALHAS_BARRA_CA"], 0) == True:
+                    self.escritabit_OPC(REG_OPC["RESET_FALHAS_BARRA_CA"], 0, 0)
+                    logger.info("Comando OPC recebido: RESET_FALHAS_BARRA_CA")
                     for ug in self.ugs:
                         ug.reconhece_reset_ug()
                     self.dj52L.reconhece_reset_dj52L()
 
-                if self.leitura_OPC("ns=3;s=REG_USINA_Condicionadores") == 1 and self.shared_dict["aux_borda{}".format(2)] == 0:
+                if self.leitura_MB(REG_MB["REG_USINA_Condicionadores"]) == 1 and self.shared_dict["aux_borda{}".format(2)] == 0:
                     self.shared_dict["aux_borda{}".format(2)] = 1
 
-                elif self.leitura_OPC("ns=3;s=REG_USINA_Condicionadores") == 0 and self.shared_dict["aux_borda{}".format(2)] == 1:
+                elif self.leitura_MB(REG_MB["REG_USINA_Condicionadores"]) == 0 and self.shared_dict["aux_borda{}".format(2)] == 1:
                     self.shared_dict["aux_borda{}".format(2)] = 0
-                    self.escrita_OPC("ns=3;s=REG_USINA_Condicionadores", 0)
+                    self.escrita_MB(REG_MB["REG_USINA_Condicionadores"], 0)
                     self.shared_dict["trip_condic_usina"] = False
                     self.dj52L.reconhece_reset_dj52L()
 
@@ -195,102 +178,106 @@ class Planta:
 
                     if self.shared_dict["trip_condic_ug{}".format(ug.id)] and self.shared_dict["aux_borda{}".format(ug.id + 2)] == 0:
                         self.shared_dict["aux_borda{}".format(ug.id + 2)] = 1
-                        self.escrita_OPC("ns={0};s=REG_UG{0}_Condicionadores".format(ug.id), 1)
+                        self.escrita_MB(REG_MB["REG_UG{}_Condicionadores".format(ug.id)], 1)
 
                     elif self.shared_dict["trip_condic_ug{}".format(ug.id)] == False and self.shared_dict["aux_borda{}".format(ug.id + 2)] == 1:
                         self.shared_dict["aux_borda{}".format(ug.id + 2)] = 0
-                        self.escrita_OPC("ns={0};s=REG_UG{0}_Condicionadores".format(ug.id), 0)
+                        self.escrita_MB(REG_MB["REG_UG{}_Condicionadores".format(ug.id)], 0)
 
 
                     if self.shared_dict["permissao_abrir_comporta_ug{}".format(ug.id)] == True and self.shared_dict["aux_borda{}".format(ug.id + 4)] == 0:
-                        self.escrita_OPC("ns={0};s=REG_UG{0}_Permissao_Comporta".format(ug.id), 1)
+                        self.escritabit_OPC(REG_OPC["CP{}_PERMISSIVOS_OK"].format(ug.id), 31, 1)
                         self.shared_dict["aux_borda{}".format(ug.id + 4)] = 1
 
                     elif self.shared_dict["permissao_abrir_comporta_ug{}".format(ug.id)] == False and self.shared_dict["aux_borda{}".format(ug.id + 4)] == 1:
-                        self.escrita_OPC("ns={0};s=REG_UG{0}_Permissao_Comporta".format(ug.id), 0)
+                        self.escritabit_OPC(REG_OPC["CP{}_PERMISSIVOS_OK"].format(ug.id), 31, 0)
                         self.shared_dict["aux_borda{}".format(ug.id + 4)] = 0
 
 
                     if self.shared_dict["condicao_falha_cracking_ug{}".format(ug.id)] == True and self.shared_dict["aux_borda{}".format(ug.id + 6)] == 0:
-                        self.escrita_OPC("ns={0};s=REG_UG{0}_Condicionadores".format(ug.id), 1)
+                        self.escrita_MB(REG_MB["REG_UG{}_Condicionadores".format(ug.id)], 1)
                         self.shared_dict["aux_borda{}".format(ug.id + 6)] = 1
 
                     elif self.shared_dict["reset_geral_condic"] == True and self.shared_dict["aux_borda{}".format(ug.id + 6)] == 1:
-                        self.escrita_OPC("ns={0};s=REG_UG{0}_Condicionadores".format(ug.id), 0)
+                        self.escrita_MB(REG_MB["REG_UG{}_Condicionadores".format(ug.id)], 0)
                         self.shared_dict["condicao_falha_cracking_ug{}".format(ug.id)] = False
                         self.shared_dict["aux_borda{}".format(ug.id + 6)] = 0
 
                     # Leitura de registradores OPC e MB
-                    if self.leitura_OPC("ns={0};s=REG_UG{0}_Operacao_ResetAlarmes".format(ug.id)) == 1:
-                        self.escrita_OPC("ns={0};s=REG_UG{0}_Operacao_ResetAlarmes".format(ug.id), 0)
-                        ug.reconhece_reset_ug()
-
-
-                    if self.leitura_OPC("ns={0};s=REG_UG{0}_Operacao_UP".format(ug.id)) == 1:
-                        self.escrita_OPC("ns={0};s=REG_UG{0}_Operacao_UP".format(ug.id), 0)
-                        ug.parar()
-
-                    elif self.leitura_OPC("ns={0};s=REG_UG{0}_Operacao_US".format(ug.id)) == 1:
-                        self.escrita_OPC("ns={0};s=REG_UG{0}_Operacao_US".format(ug.id), 0)
+                    if self.leiturabit_OPC(REG_OPC["UG{}_CMD_PARTIDA_CMD_SINCRONISMO".format(ug.id)], 10) == True:
+                        self.escritabit_OPC(REG_OPC["UG{}_CMD_PARTIDA_CMD_SINCRONISMO".format(ug.id)], 10, 0)
                         ug.partir()
 
+                    elif self.leiturabit_OPC(REG_OPC["UG{}_CMD_PARADA_CMD_PARA_RV_APLICA_FREIO".format(ug.id)], 13) == True:
+                        self.escritabit_OPC(REG_OPC["UG{}_CMD_PARADA_CMD_PARA_RV_APLICA_FREIO".format(ug.id)], 13, 0)
+                        ug.parar()
 
-                    if self.leitura_OPC("ns={0};s=REG_UG{0}_Status_Comporta".format(ug.id)) == 0 and self.shared_dict["aux_comp_f_ug{}".format(ug.id)] == 0:
-                        self.escrita_OPC("ns={0};s=REG_UG{0}_Status_Comporta".format(ug.id), 0)
+
+                    if self.leiturabit_OPC(REG_OPC["CP{}_CMD_FECHAMENTO".format(ug.id)], 3) == True and self.shared_dict["aux_comp_f_ug{}".format(ug.id)] == 0:
+                        self.escritabit_OPC(REG_OPC["CP{}_CMD_FECHAMENTO".format(ug.id)], 3, 0)
+                        self.escritabit_OPC(REG_OPC["CP{}_COMPORTA_OPERANDO".format(ug.id)], 0, 1)
                         self.shared_dict["aux_comp_f_ug{}".format(ug.id)] = 1
                         self.shared_dict["thread_comp_fechada_ug{}".format(ug.id)] = True
+                        if self.shared_dict["comporta_fechada_ug{}"] == True:
+                            self.escritabit_OPC(REG_OPC["CP{}_COMPORTA_OPERANDO".format(ug.id)], 0, 0)
 
-                    elif self.leitura_OPC("ns={0};s=REG_UG{0}_Status_Comporta".format(ug.id)) != 0 and self.shared_dict["aux_comp_f_ug{}".format(ug.id)] == 1:
+                    elif self.leiturabit_OPC(REG_OPC["CP{}_CMD_FECHAMENTO".format(ug.id)], 3) == False and self.shared_dict["aux_comp_f_ug{}".format(ug.id)] == 1:
                         self.shared_dict["aux_comp_f_ug{}".format(ug.id)] = 0
-                    
 
-                    if self.leitura_OPC("ns={0};s=REG_UG{0}_Status_Comporta".format(ug.id)) == 1 and self.shared_dict["aux_comp_a_ug{}".format(ug.id)] == 0:
-                        self.escrita_OPC("ns={0};s=REG_UG{0}_Status_Comporta".format(ug.id), 0)
+
+                    if self.leiturabit_OPC(REG_OPC["CP{}_CMD_ABERTURA_TOTAL".format(ug.id)], 2) == True and self.shared_dict["aux_comp_a_ug{}".format(ug.id)] == 0:
+                        self.escritabit_OPC(REG_OPC["CP{}_CMD_ABERTURA_TOTAL".format(ug.id)], 2, 0)
+                        self.escritabit_OPC(REG_OPC["CP{}_COMPORTA_OPERANDO".format(ug.id)], 31, 1)
                         self.shared_dict["aux_comp_a_ug{}".format(ug.id)] = 1
                         self.shared_dict["thread_comp_aberta_ug{}".format(ug.id)] = True
+                        if self.shared_dict["comporta_aberta_ug{}"] == True:
+                            self.escritabit_OPC(REG_OPC["CP{}_COMPORTA_OPERANDO".format(ug.id)], 31, 0)
 
-                    elif self.leitura_OPC("ns={0};s=REG_UG{0}_Status_Comporta".format(ug.id)) != 1 and self.shared_dict["aux_comp_a_ug{}".format(ug.id)] == 1:
+                    elif self.leiturabit_OPC(REG_OPC["CP{}_CMD_ABERTURA_TOTAL".format(ug.id)], 2) == False and self.shared_dict["aux_comp_a_ug{}".format(ug.id)] == 1:
                         self.shared_dict["aux_comp_a_ug{}".format(ug.id)] = 0
                     
 
-                    if self.leitura_OPC("ns={0};s=REG_UG{0}_Status_Comporta".format(ug.id)) == 2 and self.shared_dict["aux_comp_c_ug{}".format(ug.id)] == 0:
-                        self.escrita_OPC("ns={0};s=REG_UG{0}_Status_Comporta".format(ug.id), 0)
+                    if self.leiturabit_OPC(REG_OPC["CP{}_CMD_ABERTURA_CRACKING".format(ug.id)], 1) == True and self.shared_dict["aux_comp_c_ug{}".format(ug.id)] == 0:
+                        self.escritabit_OPC(REG_OPC["CP{}_CMD_ABERTURA_CRACKING".format(ug.id)], 1, 0)
+                        self.escritabit_OPC(REG_OPC["CP{}_COMPORTA_OPERANDO".format(ug.id)], 31, 1)
                         self.shared_dict["aux_comp_c_ug{}".format(ug.id)] = 1
                         self.shared_dict["thread_comp_cracking_ug{}".format(ug.id)] = True
+                        if self.shared_dict["comporta_cracking_ug{}"] == True:
+                            self.escritabit_OPC(REG_OPC["CP{}_COMPORTA_OPERANDO".format(ug.id)], 31, 0)
 
-                    elif self.leitura_OPC("ns={0};s=REG_UG{0}_Status_Comporta".format(ug.id)) != 2 and self.shared_dict["aux_comp_c_ug{}".format(ug.id)] == 1:
+                    elif self.leiturabit_OPC(REG_OPC["CP{}_CMD_ABERTURA_CRACKING".format(ug.id)], 1) == False and self.shared_dict["aux_comp_c_ug{}".format(ug.id)] == 1:
                         self.shared_dict["aux_comp_c_ug{}".format(ug.id)] = 0
 
 
-                    if self.leitura_OPC("ns={0};s=REG_UG{0}_Operacao_EmergenciaLigar".format(ug.id)) == 1 and self.shared_dict["aux_borda{}".format(ug.id + 8)] == 0:
-                        self.escrita_OPC("ns={0};s=REG_UG{0}_Operacao_EmergenciaLigar".format(ug.id), 1)
+                    if self.leiturabit_OPC(REG_OPC["UG{}_CMD_PARADA_EMERGENCIA".format(ug.id)], 4) == True and self.shared_dict["aux_borda{}".format(ug.id + 8)] == 0:
+                        self.escritabit_OPC(REG_OPC["UG{}_CMD_PARADA_EMERGENCIA".format(ug.id)], 4, 1)
                         ug.tripar(1, "Operacao_EmergenciaLigar via OPC")
                         self.shared_dict["aux_borda{}".format(ug.id + 8)] = 1
 
-                    elif self.leitura_OPC("ns={0};s=REG_UG{0}_Operacao_EmergenciaLigar".format(ug.id)) != 1 and self.shared_dict["aux_borda{}".format(ug.id + 8)] == 1:
-                        self.escrita_OPC("ns={0};s=REG_UG{0}_Operacao_EmergenciaLigar".format(ug.id), 0)
+                    elif self.leiturabit_OPC(REG_OPC["UG{}_CMD_PARADA_EMERGENCIA".format(ug.id)], 4) == False and self.shared_dict["aux_borda{}".format(ug.id + 8)] == 1:
+                        self.escritabit_OPC(REG_OPC["UG{}_CMD_PARADA_EMERGENCIA".format(ug.id)], 4, 0)
                         ug.reconhece_reset_ug()
                         self.shared_dict["aux_borda{}".format(ug.id + 8)] = 0
                     
                     # UG passo
                     ug.passo()
-
+                    
                     # Escrita dos registradores UG
-                    self.escrita_OPC("ns={0};s=REG_UG{0}_Operacao_EtapaAtual".format(ug.id),[int(ug.etapa_atual)],)
-                    self.escrita_OPC("ns={0};s=REG_UG{0}_Gerador_PotenciaAtivaMedia".format(ug.id),[round(ug.potencia)],)
-                    self.escrita_OPC("ns={0};s=REG_UG{0}_HorimetroEletrico_Hora".format(ug.id),[np.floor(ug.horimetro_hora)],)
-                    self.escrita_OPC("ns={0};s=REG_UG{0}_Temperatura_01".format(ug.id),[round(self.shared_dict["temperatura_ug{}_fase_r".format(ug.id)])],)
-                    self.escrita_OPC("ns={0};s=REG_UG{0}_Temperatura_02".format(ug.id),[round(self.shared_dict["temperatura_ug{}_fase_s".format(ug.id)])],)
-                    self.escrita_OPC("ns={0};s=REG_UG{0}_Temperatura_03".format(ug.id),[round(self.shared_dict["temperatura_ug{}_fase_t".format(ug.id)])],)
-                    self.escrita_OPC("ns={0};s=REG_UG{0}_Temperatura_04".format(ug.id),[round(self.shared_dict["temperatura_ug{}_nucleo_gerador_1".format(ug.id)])],)
-                    self.escrita_OPC("ns={0};s=REG_UG{0}_Temperatura_05".format(ug.id),[round(self.shared_dict["temperatura_ug{}_mancal_guia".format(ug.id)])],)
-                    self.escrita_OPC("ns={0};s=REG_UG{0}_Temperatura_06".format(ug.id),[round(self.shared_dict["temperatura_ug{}_mancal_guia_interno_1".format(ug.id)])],)
-                    self.escrita_OPC("ns={0};s=REG_UG{0}_Temperatura_07".format(ug.id),[round(self.shared_dict["temperatura_ug{}_mancal_guia_interno_2".format(ug.id)])],)
-                    self.escrita_OPC("ns={0};s=REG_UG{0}_Temperatura_08".format(ug.id),[round(self.shared_dict["temperatura_ug{}_patins_mancal_comb_1".format(ug.id)])],)
-                    self.escrita_OPC("ns={0};s=REG_UG{0}_Temperatura_09".format(ug.id),[round(self.shared_dict["temperatura_ug{}_patins_mancal_comb_2".format(ug.id)])],)
-                    self.escrita_OPC("ns={0};s=REG_UG{0}_Temperatura_10".format(ug.id),[round(self.shared_dict["temperatura_ug{}_mancal_casq_comb".format(ug.id)])],)
-                    self.escrita_OPC("ns={0};s=REG_UG{0}_Temperatura_11".format(ug.id),[round(self.shared_dict["temperatura_ug{}_mancal_contra_esc_comb".format(ug.id)])],)
-                    self.escrita_OPC("ns={0};s=REG_UG{0}_Pressao_Turbina".format(ug.id),[round(10 * self.shared_dict["pressao_turbina_ug{}".format(ug.id)])],)
+                    self.escrita_MB(REG_MB["UG{}_RV_ESTADO_OPERACAO".format(ug.id)],[int(ug.etapa_atual)],)
+                    self.escrita_OPC(REG_OPC["UG{}_UG_P".format(ug.id)],[round(ug.potencia)],)
+                    self.escrita_OPC(REG_OPC["UG{}_UG_HORIMETRO".format(ug.id)],[np.floor(ug.horimetro_hora)],)
+                    self.escrita_OPC(REG_OPC["UG{}_TEMP_GERADOR_FASE_A".format(ug.id)],[round(self.shared_dict["temperatura_ug{}_fase_r".format(ug.id)])],)
+                    self.escrita_OPC(REG_OPC["UG{}_TEMP_GERADOR_FASE_B".format(ug.id)],[round(self.shared_dict["temperatura_ug{}_fase_s".format(ug.id)])],)
+                    self.escrita_OPC(REG_OPC["UG{}_TEMP_GERADOR_FASE_C".format(ug.id)],[round(self.shared_dict["temperatura_ug{}_fase_t".format(ug.id)])],)
+                    self.escrita_OPC(REG_OPC["UG{}_TEMP_GERADOR_NUCLEO".format(ug.id)],[round(self.shared_dict["temperatura_ug{}_nucleo_gerador_1".format(ug.id)])],)
+                    self.escrita_OPC(REG_OPC["UG{}_TEMP_MANCAL_GUIA_GERADOR".format(ug.id)],[round(self.shared_dict["temperatura_ug{}_mancal_guia".format(ug.id)])],)
+                    self.escrita_OPC(REG_OPC["UG{}_TEMP_1_MANCAL_GUIA_INTERNO".format(ug.id)],[round(self.shared_dict["temperatura_ug{}_mancal_guia_interno_1".format(ug.id)])],)
+                    self.escrita_OPC(REG_OPC["UG{}_TEMP_2_MANCAL_GUIA_INTERNO".format(ug.id)],[round(self.shared_dict["temperatura_ug{}_mancal_guia_interno_2".format(ug.id)])],)
+                    self.escrita_OPC(REG_OPC["UG{}_TEMP_1_PATINS_MANCAL_COMBINADO".format(ug.id)],[round(self.shared_dict["temperatura_ug{}_patins_mancal_comb_1".format(ug.id)])],)
+                    self.escrita_OPC(REG_OPC["UG{}_TEMP_2_PATINS_MANCAL_COMBINADO".format(ug.id)],[round(self.shared_dict["temperatura_ug{}_patins_mancal_comb_2".format(ug.id)])],)
+                    self.escrita_OPC(REG_OPC["UG{}_TEMP_CASQ_MANCAL_COMBINADO".format(ug.id)],[round(self.shared_dict["temperatura_ug{}_mancal_casq_comb".format(ug.id)])],)
+                    self.escrita_OPC(REG_OPC["UG{}_TEMP_CONTRA_ESCORA_MANCAL_COMBINADO".format(ug.id)],[round(self.shared_dict["temperatura_ug{}_mancal_contra_esc_comb".format(ug.id)])],)
+                    self.escrita_OPC(REG_OPC["UG{}_PRESSAO_ENTRADA_TURBINA".format(ug.id)],[round(10 * self.shared_dict["pressao_turbina_ug{}".format(ug.id)])],)
 
                 # SE
                 self.shared_dict["potencia_kw_se"] = sum([ug.potencia for ug in self.ugs]) * 0.995 + np.random.normal(0, 0.001 * self.escala_ruido)
@@ -326,13 +313,13 @@ class Planta:
                 volume += self.shared_dict["q_liquida"] * self.segundos_por_passo
 
                 # Escrita de registradores USINA
-                self.escrita_OPC("ns=3;s=REG_USINA_NivelBarragem",[round((self.shared_dict["nv_montante"]) * 10000)])
-                self.escrita_OPC("ns=3;s=REG_USINA_NivelCanalAducao",[round((self.shared_dict["nv_jusante_grade"]) * 10000)])
-                self.escrita_OPC("ns=3;s=REG_USINA_NivelCanalAducao",[round((self.shared_dict["nv_jusante_grade"]) * 10000)])
-                self.escrita_OPC("ns=3;s=REG_USINA_Subestacao_PotenciaAtivaMedia",[round(self.shared_dict["potencia_kw_se"])])
-                self.escrita_OPC("ns=3;s=REG_USINA_Subestacao_TensaoRS",[round(self.shared_dict["tensao_na_linha"] / 1000)])
-                self.escrita_OPC("ns=3;s=REG_USINA_Subestacao_TensaoST",[round(self.shared_dict["tensao_na_linha"] / 1000)])
-                self.escrita_OPC("ns=3;s=REG_USINA_Subestacao_TensaoTR",[round(self.shared_dict["tensao_na_linha"] / 1000)])
+                self.escrita_OPC(REG_OPC["NIVEL_MONTANTE"],[round((self.shared_dict["nv_montante"]) * 10000)])
+                self.escrita_OPC(REG_OPC["NIVEL_JUSANTE_GRADE_COMPORTA_1"],[round((self.shared_dict["nv_jusante_grade"]) * 10000)])
+                self.escrita_OPC(REG_OPC["NIVEL_JUSANTE_GRADE_COMPORTA_2"],[round((self.shared_dict["nv_jusante_grade"]) * 10000)])
+                self.escrita_OPC(REG_OPC["LT_P"],[round(self.shared_dict["potencia_kw_se"])])
+                self.escrita_OPC(REG_OPC["LT_VAB"],[round(self.shared_dict["tensao_na_linha"] / 1000)])
+                self.escrita_OPC(REG_OPC["LT_VBC"],[round(self.shared_dict["tensao_na_linha"] / 1000)])
+                self.escrita_OPC(REG_OPC["LT_VCA"],[round(self.shared_dict["tensao_na_linha"] / 1000)])
                 self.escrita_MB(REG_MB["REG_USINA_potencia_kw_mp"], round(max(0, self.shared_dict["potencia_kw_mp"])))
                 self.escrita_MB(REG_MB["REG_USINA_potencia_kw_mr"], round(max(0, self.shared_dict["potencia_kw_mr"])))
 
@@ -370,9 +357,23 @@ class Planta:
         leitura_OPC = self.server_OPC.get_node(registrador).get_value()
         return leitura_OPC
 
-    def escrita_OPC(self, registrador, valor) -> bool:
+    def escrita_OPC(self, registrador, valor) -> int:
         escrita_OPC = self.server_OPC.get_node(registrador).set_value(valor)
         return escrita_OPC
+    
+    def leiturabit_OPC(self, registrador, bit) -> bool:
+        leitura = self.leitura_OPC(registrador)
+        return leitura & 2**bit
+
+    def escritabit_OPC(self, registrador, bit, valor) -> int:
+        leitura = self.leitura_OPC(registrador)
+        bin = [int(x) for x in list('{0:0b}'.format(leitura))]
+        for i in range(len(bin)):
+            if bit == i:
+                bin[i] = valor
+                break
+        v = sum(val*(2**x) for x, val in enumerate(reversed(bin)))
+        return self.server_OPC.get_node(registrador).set_value(v)
 
     def leitura_MB(self, registrador):
         leitura_MB = self.DB.get_words(registrador)[0]
@@ -381,3 +382,104 @@ class Planta:
     def escrita_MB(self, registrador, valor):
         escrita_MB = self.DB.set_words(registrador, [valor])
         return escrita_MB
+
+    def build_server(self):
+        for i in REG_MB:
+            self.DB.set_words(REG_MB[i], [0])
+
+        objects = self.server_OPC.get_objects_node()
+
+        reg_sa_f = objects.add_folder("ns=7;s=CLP_SA", "Serviço Auxiliar")
+        reg_sa_c = reg_sa_f.add_folder("ns=7;s=CLP_SA.SA.DB_COMANDOS", "Comandos")
+        reg_sa_cd = reg_sa_c.add_object("ns=7;s=CLP_SA.SA.DB_COMANDOS.DIGITAIS" , "Digitais")
+        reg_sa_s = reg_sa_f.add_folder("ns=7;s=CLP_SA.SA.DB_STATUS", "Retornos")
+        reg_sa_sm = reg_sa_s.add_object("ns=7;s=CLP_SA.SA.DB_STATUS.MULTIMEDIDOR_LT", "Multimedidor LT")
+
+        reg_tda_f = objects.add_folder("ns=7;s=CLP_TA", "Tomada da Água")
+        reg_tda_c = reg_tda_f.add_folder("ns=7;s=CLP_TA.STA.DB_COMANDOS", "Comandos")
+        reg_tda_cd = reg_tda_c.add_object("ns=7;s=CLP_TA.TA.DB_COMANDOS.DIGITAIS" , "Digitais")
+        reg_tda_s = reg_tda_f.add_folder("ns=7;s=CLP_TA.TA.DB_STATUS", "Retornos")
+        reg_tda_sd = reg_tda_s.add_object("ns=7;s=CLP_TA.TA.DB_STATUS.DIGITAIS", "Digitais")
+        reg_tda_sa = reg_tda_s.add_object("ns=7;s=CLP_TA.TA.DB_STATUS.ANALOGICOS", "Analógicos")
+
+        reg_ug1_f = objects.add_folder("ns=7;s=CLP_UG1", "UG1")
+        reg_ug1_c = reg_ug1_f.add_folder("ns=7;s=CLP_UG1.UG1.DB_COMANDOS", "Comandos")
+        reg_ug1_cd = reg_ug1_c.add_object("ns=7;s=CLP_UG1.UG1.DB_COMANDOS.DIGITAIS", "Digitais")
+        reg_ug1_s = reg_ug1_f.add_folder("ns=7;s=CLP_UG1.UG1.DB_STATUS", "Retornos")
+        reg_ug1_sa = reg_ug1_s.add_object("ns=7;s=CLP_UG1.UG1.DB_STATUS.ANALOGICAS", "Analógicos")
+        reg_ug1_sm = reg_ug1_s.add_object("ns=7;s=CLP_UG1.UG1.DB_STATUS.MULTIMEDIDOR", "Multimedidor")
+        reg_ug1_sh = reg_ug1_s.add_object("ns=7;s=CLP_UG1.UG1.DB_STATUS.HORIMETROS", "Horimetros")
+
+        reg_ug2_f = objects.add_folder("ns=7;s=CLP_UG2", "UG2")
+        reg_ug2_c = reg_ug2_f.add_folder("ns=7;s=CLP_UG2.UG2.DB_COMANDOS", "Comandos")
+        reg_ug2_cd = reg_ug2_c.add_object("ns=7;s=CLP_UG2.UG2.DB_COMANDOS.DIGITAIS", "Digitais")
+        reg_ug2_s = reg_ug2_f.add_folder("ns=7;s=CLP_UG2.UG2.DB_STATUS", "Retornos")
+        reg_ug2_sa = reg_ug2_s.add_object("ns=7;s=CLP_UG2.UG2.DB_STATUS.ANALOGICAS", "Analógicos")
+        reg_ug2_sm = reg_ug2_s.add_object("ns=7;s=CLP_UG2.UG2.DB_STATUS.MULTIMEDIDOR", "Multimedidor")
+        reg_ug2_sh = reg_ug2_s.add_object("ns=7;s=CLP_UG2.UG2.DB_STATUS.HORIMETROS", "Horimetros")
+
+
+        for i in REG_OPC:
+           if re.search("ns=7;s=CLP_SA.SA.DB_COMANDOS", REG_OPC[i]):
+              try:
+                 reg_sa_cd.add_variable(REG_OPC[i], re.split("[.]", REG_OPC[i])[-1], 0, ua.VariantType.Int32).\
+                    set_writable(True) if re.search("DIGITAIS", REG_OPC[i]) else print("")
+              except ua.UaError:
+                 pass
+           elif re.search("ns=7;s=CLP_SA.SA.DB_STATUS", REG_OPC[i]):
+              try:
+                 reg_sa_sm.add_variable(REG_OPC[i], re.split("[.]", REG_OPC[i])[-1], 0, ua.VariantType.Int32).\
+                    set_writable(True) if re.search("MULTIMEDIDOR_LT", REG_OPC[i]) else print("")
+              except ua.UaError:
+                 pass
+             
+           if re.search("ns=7;s=CLP_TA.TA.DB_COMANDOS", REG_OPC[i]):
+              try:
+                 reg_tda_cd.add_variable(REG_OPC[i], re.split("[.]", REG_OPC[i])[-1], 0, ua.VariantType.Int32).\
+                    set_writable(True) if re.search("DIGITAIS", REG_OPC[i]) else print("")
+              except ua.UaError:
+                 pass
+           elif re.search("ns=7;s=CLP_TA.TA.DB_STATUS", REG_OPC[i]):
+              try:
+                 reg_tda_sd.add_variable(REG_OPC[i], re.split("[.]", REG_OPC[i])[-1], 0, ua.VariantType.Int32).\
+                    set_writable(True) if re.search("DIGITAIS", REG_OPC[i]) else print("")
+                 reg_tda_sa.add_variable(REG_OPC[i], re.split("[.]", REG_OPC[i])[-1], 0, ua.VariantType.Int32).\
+                    set_writable(True) if re.search("ANALOGICOS", REG_OPC[i]) else print("")
+              except ua.UaError:
+                 pass
+             
+           if re.search("ns=7;s=CLP_UG1.UG1.DB_COMANDOS", REG_OPC[i]):
+              try:
+                 reg_ug1_cd.add_variable(REG_OPC[i], re.split("[.]", REG_OPC[i])[-1], 0, ua.VariantType.Int32).\
+                    set_writable(True) if re.search("DIGITAIS", REG_OPC[i]) else print("")
+              except ua.UaError:
+                 pass
+           elif re.search("ns=7;s=CLP_UG1.UG1.DB_STATUS", REG_OPC[i]):
+              try:
+                 reg_ug1_sm.add_variable(REG_OPC[i], re.split("[.]", REG_OPC[i])[-1], 0, ua.VariantType.Int32).\
+                    set_writable(True) if re.search("MULTIMEDIDOR", REG_OPC[i]) else print("")
+                 reg_ug1_sa.add_variable(REG_OPC[i], re.split("[.]", REG_OPC[i])[-1], 0, ua.VariantType.Int32).\
+                    set_writable(True) if re.search("ANALOGICAS", REG_OPC[i]) else print("")
+                 reg_ug1_sh.add_variable(REG_OPC[i], re.split("[.]", REG_OPC[i])[-1], 0, ua.VariantType.Int32).\
+                    set_writable(True) if re.search("HORIMETROS", REG_OPC[i]) else print("")
+              except ua.UaError:
+                 pass
+             
+           if re.search("ns=7;s=CLP_UG2.UG2.DB_COMANDOS", REG_OPC[i]):
+              try:
+                 reg_ug2_cd.add_variable(REG_OPC[i], re.split("[.]", REG_OPC[i])[-1], 0, ua.VariantType.Int32).\
+                    set_writable(True) if re.search("DIGITAIS", REG_OPC[i]) else print("")
+              except ua.UaError:
+                 pass
+           elif re.search("ns=7;s=CLP_UG2.UG2.DB_STATUS", REG_OPC[i]):
+              try:
+                 reg_ug2_sm.add_variable(REG_OPC[i], re.split("[.]", REG_OPC[i])[-1], 0, ua.VariantType.Int32).\
+                    set_writable(True) if re.search("MULTIMEDIDOR", REG_OPC[i]) else print("")
+                 reg_ug2_sa.add_variable(REG_OPC[i], re.split("[.]", REG_OPC[i])[-1], 0, ua.VariantType.Int32).\
+                    set_writable(True) if re.search("ANALOGICAS", REG_OPC[i]) else print("")
+                 reg_ug2_sh.add_variable(REG_OPC[i], re.split("[.]", REG_OPC[i])[-1], 0, ua.VariantType.Int32).\
+                    set_writable(True) if re.search("HORIMETROS", REG_OPC[i]) else print("")
+              except ua.UaError:
+                 pass
+             
+        return True

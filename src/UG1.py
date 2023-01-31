@@ -25,467 +25,670 @@ class UnidadeDeGeracao1(UnidadeDeGeracao):
         self.__last_EtapaAtual = 0
         self.__last_EtapaAlvo = -1
 
-        self.QCAUGRemoto = True
-        self.acionar_voip = False
         self.limpeza_grade = False
-        self.TDA_FalhaComum = False
-        self.FreioCmdRemoto = True
         self.avisou_emerg_voip = False
         self.enviar_trip_eletrico = False
 
         self.setpoint_minimo = self.cfg["pot_minima"]
         self.setpoint_maximo = self.cfg["pot_maxima_ug{}".format(self.id)]
 
-        self.opc_server = Client(self.cfg["opc_server"])
-
-        self.leitura_potencia = LeituraOPC(
-            "UG{} Gerador Potência Ativa Média".format(self.id),
-            self.opc_server,
-            "REG_UG1_RetornosAnalogicos_MWR_PM_710_Potencia_Ativa"
+        self.client = Client(self.cfg["client"])
+        self.clp = ModbusClient(
+            host=self.cfg["UG1_slave_ip"],
+            port=self.cfg["UG1_slave_porta"],
+            timeout=0.5,
+            unit_id=1,
+            auto_open=True,
+            auto_close=True,
         )
 
-        self.leitura_potencia_ug2 = LeituraOPC(
-            "UG2 Gerador Potência Ativa Média",
-            self.opc_server,
-            "REG_UG2_RetornosAnalogicos_MWR_PM_710_Potencia_Ativa"
-        )
+        self.leitura_potencia = LeituraOPC(self.client,REG_OPC["UG"]["UG1_UG_P"])
 
-        self.leitura_setpoint_ug2 = LeituraOPC(
-            "UG2 Setpoint",
-            self.opc_server,
-            "REG_UG2_SaidasAnalogicas_MWW_SPPotAtiva"
-        )
+        self.leitura_horimetro_hora = LeituraOPC(self.client, REG_OPC["UG"]["UG1_UG_HORIMETRO"])
 
-        self.leitura_horimetro_hora = LeituraOPC(
-            "UG{} Horímetro Gerador".format(self.id),
-            self.opc_server,
-            "REG_UG1_RetornosAnalogicos_MWR_Horimetro_Gerador"
-        )
+        self.leitura_Status_Comporta = LeituraOPCBit(self.client, REG_OPC["UG"]["CP1_COMPORTA_OPERANDO"], 0)
 
-        self.leitura_horimetro_frac = LeituraOPC(
-            "UG{} Horímetro Gerador min".format(self.id),
-            self.opc_server,
-            "REG_UG1_RetornosAnalogicos_MWR_Horimetro_Gerador_min"
-        )
+        self.leitura_Permissao_Abrir_Comporta = LeituraOPCBit(self.client, REG_OPC["UG"]["CP1_PERMISSIVOS_OK"], 31)
 
-        self.leitura_horimetro = LeituraSoma(
-            "UG{} Horímetro".format(self.id),
-            self.leitura_horimetro_hora,
-            self.leitura_horimetro_frac
-        )
+        self.leitura_Operacao_EtapaAtual = LeituraModbus(self.clp, REG_MB["UG"]["UG1_RV_ESTADO_OPERACAO"])
+        
+        self.leitura_potencia_ug2 = LeituraOPC(self.client, REG_OPC["UG"]["UG2_UG_P"])
 
-#-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------#
-        # utilizar essa forma de leitura de etapa apenas quando for usar o simulador, 
-        # utilizar a forma comentada anterior quando for em produção
-        self.leitura_Operacao_EtapaAtual = LeituraOPC("REG_UG1_RetornosDigitais_EtapaAux_Sim",
-            self.opc_server,
-            "REG_UG1_RetornosDigitais_EtapaAux_Sim"
-        )
-        self.leitura_Operacao_EtapaAlvo = LeituraOPC("REG_UG1_RetornosDigitais_Operacao_EtapaAlvo",
-            self.opc_server,
-            "REG_UG1_RetornosDigitais_EtapaAlvo_Sim"
-        )
+        self.leitura_setpoint_ug2 = LeituraModbus(self.clp, REG_MB["UG"]["UG2_RV_SETPOINT_POTENCIA_ATIVA_PU"])
 
-        self.condic_ativos_sim_ug1 = LeituraOPC("REG_UG1_RetrornosAnalogicos_AUX_Condicionadores",
-            self.opc_server,
-            "REG_UG1_RetrornosAnalogicos_AUX_Condicionadores",
-        )
-        self.leitura_Status_Comporta = LeituraOPC("REG_UG1_RetornosDigitais_StatusComporta",
-            self.opc_server,
-            "REG_UG1_RetornosDigitais_StatusComporta"
-        )
-        self.leitura_Permissao_Abrir_Comporta = LeituraOPC("REG_UG1_COMPORTA_PERMISSIVO_ABERTURA_OK",
-            self.opc_server,
-            "REG_UG1_COMPORTA_PERMISSIVO_ABERTURA_OK"
-        )
+        # Simulador
+        self.condic_ativos_sim_ug1 = LeituraOPC(self.client, REG_OPC["UG"]["REG_UG1_RetrornosAnalogicos_AUX_Condicionadores"])
 
-        """
-        C1 = LeituraOPC(
-            descr="MXR_PartindoEmAuto",
-            modbus_client=self.opc_server,
-            registrador=REG_UG1_EntradasDigitais_MXI_DisjGeradorFechado,
-        )
-        C2 = LeituraOPC(
-            descr="MXR_PartindoEmAuto",
-            modbus_client=self.opc_server,
-            registrador=REG_UG1_RetornosDigitais_MXR_ParandoEmAuto,
-        )
-        C3 = LeituraOPC(
-            descr="MXR_PartindoEmAuto",
-            modbus_client=self.opc_server,
-            registrador=REG_UG1_EntradasDigitais_MXI_RV_MaquinaParada,
-        )
-        C4 = LeituraOPC(
-            descr="MXR_PartindoEmAuto",
-            modbus_client=self.opc_server,
-            registrador=REG_UG1_RetornosDigitais_MXR_PartindoEmAuto,
-        )
-        self.leitura_Operacao_EtapaAtual = LeituraComposta(
-            "ug{}_Operacao_EtapaAtual".format(self.id),
-            leitura1=C1,
-            leitura2=C2,
-            leitura3=C3,
-            leitura4=C4,
-        )
-        """
 
-        #Lista de condicionadores essenciais que devem ser lidos a todo momento
-#-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------#
+        # Temperaturas
         # R
-        self.leitura_temperatura_fase_R = LeituraOPC("Gerador {} - Temperatura Fase R".format(self.id),self.opc_server,REG_UG1_RetornosAnalogicos_MWR_Temperatura_01,op=4,)
+        self.leitura_temperatura_fase_R = LeituraOPC(self.client, REG_OPC["UG"]["UG1_TEMP_GERADOR_FASE_A"])
         base, limite = 100, 200
         x = self.leitura_temperatura_fase_R
-        self.condicionador_temperatura_fase_r_ug = CondicionadorExponencial(x.descr, DEVE_INDISPONIBILIZAR, x, base, limite)
+        self.condicionador_temperatura_fase_r_ug = CondicionadorExponencial("UG1_TEMP_GERADOR_FASE_A", DEVE_INDISPONIBILIZAR, x, base, limite)
         self.condicionadores_essenciais.append(self.condicionador_temperatura_fase_r_ug)
 
         # S
-        self.leitura_temperatura_fase_S = LeituraOPC("Gerador {} - Temperatura Fase s".format(self.id),self.opc_server,REG_UG1_RetornosAnalogicos_MWR_Temperatura_02,op=4,)
+        self.leitura_temperatura_fase_S = LeituraOPC(self.client, REG_OPC["UG"]["UG1_TEMP_GERADOR_FASE_B"])
         base, limite = 100, 200
         x = self.leitura_temperatura_fase_S
-        self.condicionador_temperatura_fase_s_ug = CondicionadorExponencial(x.descr, DEVE_INDISPONIBILIZAR, x, base, limite)
+        self.condicionador_temperatura_fase_s_ug = CondicionadorExponencial("UG1_TEMP_GERADOR_FASE_B", DEVE_INDISPONIBILIZAR, x, base, limite)
         self.condicionadores_essenciais.append(self.condicionador_temperatura_fase_s_ug)
         
         # T
-        self.leitura_temperatura_fase_T = LeituraOPC("Gerador {} - Temperatura Fase T".format(self.id),self.opc_server,REG_UG1_RetornosAnalogicos_MWR_Temperatura_03,op=4,)
+        self.leitura_temperatura_fase_T = LeituraOPC(self.client, REG_OPC["UG"]["UG1_TEMP_GERADOR_FASE_C"])
         base, limite = 100, 200
         x = self.leitura_temperatura_fase_T
-        self.condicionador_temperatura_fase_t_ug = CondicionadorExponencial(x.descr, DEVE_INDISPONIBILIZAR, x, base, limite)
+        self.condicionador_temperatura_fase_t_ug = CondicionadorExponencial("UG1_TEMP_GERADOR_FASE_C", DEVE_INDISPONIBILIZAR, x, base, limite)
         self.condicionadores_essenciais.append(self.condicionador_temperatura_fase_t_ug)
         
         # Nucleo Gerador 1
-        self.leitura_temperatura_nucleo_gerador_1 = LeituraOPC("Gerador {} - Temperatura Núcelo do Gerador 1".format(self.id),self.opc_server,REG_UG1_RetornosAnalogicos_MWR_Temperatura_04,op=4,)
+        self.leitura_temperatura_nucleo_gerador_1 = LeituraOPC(self.client, REG_OPC["UG"]["UG1_TEMP_GERADOR_NUCLEO"])
         base, limite = 100, 200
         x = self.leitura_temperatura_nucleo_gerador_1
-        self.condicionador_temperatura_nucleo_gerador_1_ug = CondicionadorExponencial(x.descr, DEVE_INDISPONIBILIZAR, x, base, limite)
+        self.condicionador_temperatura_nucleo_gerador_1_ug = CondicionadorExponencial("UG1_TEMP_GERADOR_NUCLEO", DEVE_INDISPONIBILIZAR, x, base, limite)
         self.condicionadores_essenciais.append(self.condicionador_temperatura_nucleo_gerador_1_ug)
 
         # Mancal Guia
-        self.leitura_temperatura_mancal_guia = LeituraOPC("Gerador {} - Temperatura Mancal Guia".format(self.id),self.opc_server,REG_UG1_RetornosAnalogicos_MWR_Temperatura_04,op=4,)
+        self.leitura_temperatura_mancal_guia = LeituraOPC(self.client, REG_OPC["UG"]["UG1_TEMP_MANCAL_GUIA_GERADOR"])
         base, limite = 100, 200
         x = self.leitura_temperatura_mancal_guia
-        self.condicionador_temperatura_mancal_guia_ug = CondicionadorExponencial(x.descr, DEVE_INDISPONIBILIZAR, x, base, limite)
+        self.condicionador_temperatura_mancal_guia_ug = CondicionadorExponencial("UG1_TEMP_MANCAL_GUIA_GERADOR", DEVE_INDISPONIBILIZAR, x, base, limite)
         self.condicionadores_essenciais.append(self.condicionador_temperatura_mancal_guia_ug)
 
         # Mancal Guia Interno 1
-        self.leitura_temperatura_mancal_guia_interno_1 = LeituraOPC("Gerador {} - Temperatura Mancal Guia Interno 1".format(self.id),self.opc_server,REG_UG1_RetornosAnalogicos_MWR_Temperatura_04,op=4,)
+        self.leitura_temperatura_mancal_guia_interno_1 = LeituraOPC(self.client, REG_OPC["UG"]["UG1_TEMP_1_MANCAL_GUIA_INTERNO"])
         base, limite = 100, 200
         x = self.leitura_temperatura_mancal_guia_interno_1
-        self.condicionador_temperatura_mancal_guia_interno_1_ug = CondicionadorExponencial(x.descr, DEVE_INDISPONIBILIZAR, x, base, limite)
+        self.condicionador_temperatura_mancal_guia_interno_1_ug = CondicionadorExponencial("UG1_TEMP_1_MANCAL_GUIA_INTERNO", DEVE_INDISPONIBILIZAR, x, base, limite)
         self.condicionadores_essenciais.append(self.condicionador_temperatura_mancal_guia_interno_1_ug)
         
         # Mancal Guia Interno 2
-        self.leitura_temperatura_mancal_guia_interno_2 = LeituraOPC("Gerador {} - Temperatura Mancal Guia Interno 2".format(self.id),self.opc_server,REG_UG1_RetornosAnalogicos_MWR_Temperatura_04,op=4,)
+        self.leitura_temperatura_mancal_guia_interno_2 = LeituraOPC(self.client, REG_OPC["UG"]["UG1_TEMP_2_MANCAL_GUIA_INTERNO"])
         base, limite = 100, 200
         x = self.leitura_temperatura_mancal_guia_interno_2
-        self.condicionador_temperatura_mancal_guia_interno_2_ug = CondicionadorExponencial(x.descr, DEVE_INDISPONIBILIZAR, x, base, limite)
+        self.condicionador_temperatura_mancal_guia_interno_2_ug = CondicionadorExponencial("UG1_TEMP_2_MANCAL_GUIA_INTERNO", DEVE_INDISPONIBILIZAR, x, base, limite)
         self.condicionadores_essenciais.append(self.condicionador_temperatura_mancal_guia_interno_2_ug)
         
         # Patins Mancal Combinado 1
-        self.leitura_temperatura_patins_mancal_comb_1 = LeituraOPC("Gerador {} - Temperatura Patins Mancal Combinado 1".format(self.id),self.opc_server,REG_UG1_RetornosAnalogicos_MWR_Temperatura_08,op=4,)
+        self.leitura_temperatura_patins_mancal_comb_1 = LeituraOPC(self.client, REG_OPC["UG"]["UG1_TEMP_1_PATINS_MANCAL_COMBINADO"])
         base, limite = 100, 200
         x = self.leitura_temperatura_patins_mancal_comb_1
-        self.condicionador_temperatura_patins_mancal_comb_1_ug = CondicionadorExponencial(x.descr, DEVE_INDISPONIBILIZAR, x, base, limite)
+        self.condicionador_temperatura_patins_mancal_comb_1_ug = CondicionadorExponencial("UG1_TEMP_1_PATINS_MANCAL_COMBINADO", DEVE_INDISPONIBILIZAR, x, base, limite)
         self.condicionadores_essenciais.append(self.condicionador_temperatura_patins_mancal_comb_1_ug)
         
         # Patins Mancal Combinado 2
-        self.leitura_temperatura_patins_mancal_comb_2 = LeituraOPC("Gerador {} - Temperatura Patins Mancal Combinado 2".format(self.id),self.opc_server,REG_UG1_RetornosAnalogicos_MWR_Temperatura_08,op=4,)
+        self.leitura_temperatura_patins_mancal_comb_2 = LeituraOPC(self.client, REG_OPC["UG"]["UG1_TEMP_2_PATINS_MANCAL_COMBINADO"])
         base, limite = 100, 200
         x = self.leitura_temperatura_patins_mancal_comb_2
-        self.condicionador_temperatura_patins_mancal_comb_2_ug = CondicionadorExponencial(x.descr, DEVE_INDISPONIBILIZAR, x, base, limite)
+        self.condicionador_temperatura_patins_mancal_comb_2_ug = CondicionadorExponencial("UG1_TEMP_2_PATINS_MANCAL_COMBINADO", DEVE_INDISPONIBILIZAR, x, base, limite)
         self.condicionadores_essenciais.append(self.condicionador_temperatura_patins_mancal_comb_2_ug)
         
         # Mancal Casquilho Combinado
-        self.leitura_temperatura_mancal_casq_comb = LeituraOPC("Gerador {} - Temperatura Mancal Casquilho Combinado".format(self.id),self.opc_server,REG_UG1_RetornosAnalogicos_MWR_Temperatura_10,op=4,)
+        self.leitura_temperatura_mancal_casq_comb = LeituraOPC(self.client, REG_OPC["UG"]["UG1_TEMP_CASQ_MANCAL_COMBINADO"])
         base, limite = 100, 200
         x = self.leitura_temperatura_mancal_casq_comb
-        self.condicionador_temperatura_mancal_casq_comb_ug = CondicionadorExponencial(x.descr, DEVE_INDISPONIBILIZAR, x, base, limite)
+        self.condicionador_temperatura_mancal_casq_comb_ug = CondicionadorExponencial("UG1_TEMP_CASQ_MANCAL_COMBINADO", DEVE_INDISPONIBILIZAR, x, base, limite)
         self.condicionadores_essenciais.append(self.condicionador_temperatura_mancal_casq_comb_ug)
 
         # Mancal Contra Escora Combinado
-        self.leitura_temperatura_mancal_contra_esc_comb = LeituraOPC("Gerador {} - Temperatura Mancal Contra Escora Combinado".format(self.id),self.opc_server,REG_UG1_RetornosAnalogicos_MWR_Temperatura_07,op=4,)
+        self.leitura_temperatura_mancal_contra_esc_comb = LeituraOPC(self.client, REG_OPC["UG"]["UG1_TEMP_CONTRA_ESCORA_MANCAL_COMBINADO"])
         base, limite = 100, 200
         x = self.leitura_temperatura_mancal_contra_esc_comb
-        self.condicionador_temperatura_mancal_contra_esc_comb_ug = CondicionadorExponencial(x.descr, DEVE_INDISPONIBILIZAR, x, base, limite)
+        self.condicionador_temperatura_mancal_contra_esc_comb_ug = CondicionadorExponencial("UG1_TEMP_CONTRA_ESCORA_MANCAL_COMBINADO", DEVE_INDISPONIBILIZAR, x, base, limite)
         self.condicionadores_essenciais.append(self.condicionador_temperatura_mancal_contra_esc_comb_ug)
         
         # Pressão Entrada Turbina
-        self.leitura_pressao_turbina = LeituraOPC("Gerador {} - Pressão Turbina".format(self.id),self.opc_server,REG_UG1_EntradasAnalogicas_MRR_PressK1CaixaExpiral_MaisCasas,escala=0.1 ,op = 4)
+        self.leitura_pressao_turbina = LeituraOPC(self.client, REG_OPC["UG"]["UG1_PRESSAO_ENTRADA_TURBINA"], escala=0.1)
         base = 16.1
         limite = 15.5
         x = self.leitura_pressao_turbina
-        self.condicionador_pressao_turbina_ug = CondicionadorExponencialReverso(x.descr, DEVE_INDISPONIBILIZAR, x, base, limite)
-        if self.leitura_pressao_turbina.valor != 0.0 and self.etapa_atual == UNIDADE_SINCRONIZADA:
-            self.condicionadores_atenuadores.append(self.condicionador_pressao_turbina_ug)
+        self.condicionador_pressao_turbina_ug = CondicionadorExponencialReverso("UG1_PRESSAO_ENTRADA_TURBINA", DEVE_INDISPONIBILIZAR, x, base, limite)
+        self.condicionadores_atenuadores.append(self.condicionador_pressao_turbina_ug)
 
-        """
-        self.leitura_ComandosDigitais_MXW_EmergenciaViaSuper = LeituraOPC("ComandosDigitais_MXW_EmergenciaViaSuper", self.opc_server, REG_UG1_ComandosDigitais_MXW_EmergenciaViaSuper,)
-        x = self.leitura_ComandosDigitais_MXW_EmergenciaViaSuper
-        self.condicionadores_essenciais.append(CondicionadorBase(x.descr, DEVE_NORMALIZAR, x))
 
-        self.leitura_RetornosDigitais_MXR_TripEletrico = LeituraOPC("RetornosDigitais_MXR_TripEletrico", self.opc_server, REG_UG1_RetornosDigitais_MXR_TripEletrico,)
-        x = self.leitura_RetornosDigitais_MXR_TripEletrico
-        self.condicionadores_essenciais.append(CondicionadorBase(x.descr, DEVE_NORMALIZAR, x))
+        # Essenciais
+        self.leitura_saidas_digitiais_rv_b0 = LeituraModbusBit(self.clp, REG_MB["UG"]["UG1_RV_SAIDAS_DIGITAIS"], 0, True)
+        x = self.leitura_alarme_1_rt_b0
+        self.condicionadores_essenciais.append(CondicionadorBase("UG1_RV_SAIDAS_DIGITAIS - bit 00", DEVE_NORMALIZAR, x))
+
+        self.leitura_falha_2_rv_b3 = LeituraModbusBit(self.clp, REG_MB["UG"]["UG1_RV_FALHA_2"], 3)
+        x = self.leitura_falha_2_rv_b3
+        self.condicionadores_essenciais.append(CondicionadorBase("UG1_RV_FALHA_2 - bit 03", DEVE_NORMALIZAR, x))
+
+        self.leitura_saidas_digitais_rt_b0 = LeituraModbusBit(self.clp, REG_MB["UG"]["UG1_RT_SAIDAS_DIGITAIS"], 0, True)
+        x = self.leitura_saidas_digitais_rt_b0
+        self.condicionadores_essenciais.aapend(CondicionadorBase("UG1_RT_SAIDAS_DIGITAIS - bit 00", DEVE_NORMALIZAR, x))
+    
+        self.leitura_trip_rele700G_atuado = LeituraOPCBit(self.client, REG_OPC["UG"]["UG1_RELE_700G_TRIP_ATUADO"], 31)
+        x = self.leitura_trip_rele700G_atuado
+        self.condicionadores_essenciais.append(CondicionadorBase("UG1_RELE_700G_TRIP_ATUADO - bit 31", DEVE_NORMALIZAR, x))
+
+        self.leitura_rele_bloq_86EH_desatuado = LeituraOPCBit(self.client, REG_OPC["UG"]["UG1_RELE_BLOQUEIO_86EH_DESATUADO"], 28, True)
+        x = self.leitura_rele_bloq_86EH_desatuado
+        self.condicionadores_essenciais.append(CondicionadorBase("UG1_RELE_BLOQUEIO_86EH_DESATUADO - bit 28", DEVE_NORMALIZAR, x))
+
+        self.leitura_trip_rele_rv_naoatuado = LeituraOPCBit(self.client, REG_OPC["UG"]["UG1_RV_RELE_TRIP_NAO_ATUADO"], 14, True)
+        x = self.leitura_trip_rele_rv_naoatuado
+        self.condicionadores_essenciais.append(CondicionadorBase("UG1_RV_RELE_TRIP_NAO_ATUADO - bit 14", DEVE_NORMALIZAR, x))
         
-        self.leitura_ReleBloqA86MAtuado = LeituraOPC("ReleBloqA86MAtuado", self.opc_server, REG_UG1_EntradasDigitais_MXI_ReleBloqA86MAtuado)
-        x = self.leitura_ReleBloqA86MAtuado
-        self.condicionadores_essenciais.append(CondicionadorBase(x.descr, DEVE_INDISPONIBILIZAR, x))
+        self.leitura_trip_rele_rt_naoatuado = LeituraOPCBit(self.client, REG_OPC["UG"]["UG1_RT_RELE_TRIP_NAO_ATUADO"], 23, True)
+        x = self.leitura_trip_rele_rt_naoatuado
+        self.condicionadores_essenciais.append(CondicionadorBase("UG1_RT_RELE_TRIP_NAO_ATUADO - bit 23", DEVE_NORMALIZAR, x))
 
-        self.leitura_ReleBloqA86HAtuado = LeituraOPC("ReleBloqA86HAtuado", self.opc_server, REG_UG1_EntradasDigitais_MXI_ReleBloqA86HAtuado)
-        x = self.leitura_ReleBloqA86HAtuado
-        if not (self.etapa_atual==UNIDADE_PARADA or self.etapa_atual==UNIDADE_PARANDO):
-            self.condicionadores_essenciais.append(CondicionadorBase(x.descr, DEVE_NORMALIZAR, x))
+        self.leitura_bt_emerg_naoatuado = LeituraOPCBit(self.client, REG_OPC["UG"]["UG1_BT_EMERGENCIA_NAO_ATUADO"], 11, True)
+        x = self.leitura_bt_emerg_naoatuado
+        self.condicionadores_essenciais.append(CondicionadorBase("UG1_BT_EMERGENCIA_NAO_ATUADO - bit 11", DEVE_NORMALIZAR, x))
 
-        self.leitura_SEL700G_Atuado = LeituraOPC("SEL700G_Atuado", self.opc_server, REG_UG1_EntradasDigitais_MXI_SEL700G_Atuado)
-        x = self.leitura_SEL700G_Atuado
-        self.condicionadores_essenciais.append(CondicionadorBase(x.descr, DEVE_INDISPONIBILIZAR, x))
+        self.leitura_clp_geral_sem_bloq_exter = LeituraOPCBit(self.client, REG_OPC["UG"]["UG1_CLP_GERAL_SEM_BLOQUEIO_EXTERNO"], 1, True)
+        x = self.leitura_clp_geral_sem_bloq_exter
+        self.condicionadores_essenciais.append(CondicionadorBase("UG1_CLP_GERAL_SEM_BLOQUEIO_EXTERNO - bit 1", DEVE_NORMALIZAR, x))
 
-        self.leitura_RV_Trip = LeituraOPC("RV_Trip", self.opc_server, REG_UG1_EntradasDigitais_MXI_RV_Trip)
-        x = self.leitura_RV_Trip
-        self.condicionadores_essenciais.append(CondicionadorBase(x.descr, DEVE_INDISPONIBILIZAR, x))
-
-        self.leitura_RetornosDigitais_MXR_TripMecanico = LeituraOPC("RetornosDigitais_MXR_TripMecanico", self.opc_server, REG_UG1_RetornosDigitais_MXR_TripMecanico,)
-        x = self.leitura_RetornosDigitais_MXR_TripMecanico
-        self.condicionadores_essenciais.append(CondicionadorBase(x.descr, DEVE_INDISPONIBILIZAR, x))
-
-        self.leitura_RetornosDigitais_MXR_700G_Trip = LeituraOPC("RetornosDigitais_MXR_700G_Trip", self.opc_server, REG_UG1_RetornosDigitais_MXR_700G_Trip,) 
-        x = self.leitura_RetornosDigitais_MXR_700G_Trip
-        if not (self.etapa_atual==UNIDADE_PARADA or self.etapa_atual==UNIDADE_PARANDO):
-            self.condicionadores_essenciais.append(CondicionadorBase(x.descr, DEVE_NORMALIZAR, x))
-
-        self.leitura_AVR_Trip = LeituraOPC("AVR_Trip", self.opc_server, REG_UG1_EntradasDigitais_MXI_AVR_Trip)
-        x = self.leitura_AVR_Trip
-        self.condicionadores_essenciais.append(CondicionadorBase(x.descr, DEVE_INDISPONIBILIZAR, x))
-#-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------#
-
-        #Lista de condiconadores que deverão ser lidos apenas quando houver uma chamada de leitura
-#-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------#
-
-        self.leitura_EntradasDigitais_MXI_SA_FalhaDisjTPsSincrG1 = LeituraOPC("EntradasDigitais_MXI_SA_FalhaDisjTPsSincrG1",self.opc_server_sa,REG_SA_EntradasDigitais_MXI_SA_FalhaDisjTPsSincrG1,)
-        x = self.leitura_EntradasDigitais_MXI_SA_FalhaDisjTPsSincrG1
-        self.condicionadores.append(CondicionadorBase(x.descr, DEVE_INDISPONIBILIZAR, x))
-
-        self.leitura_EntradasDigitais_MXI_SA_DisjDJ1_BloqPressBaixa = LeituraOPC("EntradasDigitais_MXI_SA_DisjDJ1_BloqPressBaixa",self.opc_server_sa,REG_SA_EntradasDigitais_MXI_SA_DisjDJ1_BloqPressBaixa,)
-        x = self.leitura_EntradasDigitais_MXI_SA_DisjDJ1_BloqPressBaixa
-        self.condicionadores.append(CondicionadorBase(x.descr, DEVE_INDISPONIBILIZAR, x))
-
-        self.leitura_EntradasDigitais_MXI_SA_DisjDJ1_AlPressBaixa = LeituraOPC("EntradasDigitais_MXI_SA_DisjDJ1_AlPressBaixa",self.opc_server_sa,REG_SA_EntradasDigitais_MXI_SA_DisjDJ1_AlPressBaixa,)
-        x = self.leitura_EntradasDigitais_MXI_SA_DisjDJ1_AlPressBaixa
-        self.condicionadores.append(CondicionadorBase(x.descr, DEVE_INDISPONIBILIZAR, x))
+        self.leitura_bloq_86M_atuado = LeituraOPCBit(self.client, REG_OPC["UG"]["UG1_BLOQUEIO_86M_ATUADO"], 31)
+        x = self.leitura_bloq_86M_atuado
+        self.condicionadores_essenciais.append(CondicionadorBase("UG1_BLOQUEIO_86M_ATUADO - bit 31", DEVE_NORMALIZAR, x))
         
-        if self.etapa_atual==UNIDADE_SINCRONIZADA:
-            self.leitura_EntradasDigitais_MXI_SA_Disj52G1_Aberto = LeituraOPC("EntradasDigitais_MXI_SA_Disj52G1_Aberto",self.opc_server_sa,REG_SA_EntradasDigitais_MXI_SA_Disj52G1_Aberto,)
-            x = self.leitura_EntradasDigitais_MXI_SA_Disj52G1_Aberto
-            self.condicionadores.append(CondicionadorBase(x.descr, DEVE_NORMALIZAR, x))
+        self.leitura_bloq_86E_atuado = LeituraOPCBit(self.client, REG_OPC["UG"]["UG1_BLOQUEIO_86E_ATUADO"], 31)
+        x = self.leitura_bloq_86E_atuado
+        self.condicionadores_essenciais.append(CondicionadorBase("UG1_BLOQUEIO_86E_ATUADO - bit 31", DEVE_NORMALIZAR, x))
         
-        self.leitura_EntradasDigitais_MXI_ValvBorbTravada = LeituraOPC( "EntradasDigitais_MXI_ValvBorbTravada", self.opc_server, REG_UG1_EntradasDigitais_MXI_ValvBorbTravada )
-        x = self.leitura_EntradasDigitais_MXI_ValvBorbTravada
-        self.condicionadores.append( CondicionadorBase(x.descr, DEVE_INDISPONIBILIZAR, x) )
+        self.leitura_bloq_86H_atuado = LeituraOPCBit(self.client, REG_OPC["UG"]["UG1_BLOQUEIO_86H_ATUADO"], 31)
+        x = self.leitura_bloq_86H_atuado
+        self.condicionadores_essenciais.append(CondicionadorBase("UG1_BLOQUEIO_86H_ATUADO - bit 31", DEVE_NORMALIZAR, x))
 
-        self.leitura_EntradasDigitais_MXI_UHRV_TripBomba2 = LeituraOPC( "EntradasDigitais_MXI_UHRV_TripBomba2", self.opc_server, REG_UG1_EntradasDigitais_MXI_UHRV_TripBomba2 )
-        x = self.leitura_EntradasDigitais_MXI_UHRV_TripBomba2
-        self.condicionadores.append( CondicionadorBase(x.descr, DEVE_INDISPONIBILIZAR, x) )
 
-        self.leitura_EntradasDigitais_MXI_UHRV_TripBomba1 = LeituraOPC( "EntradasDigitais_MXI_UHRV_TripBomba1", self.opc_server, REG_UG1_EntradasDigitais_MXI_UHRV_TripBomba1 )
-        x = self.leitura_EntradasDigitais_MXI_UHRV_TripBomba1
-        self.condicionadores.append( CondicionadorBase(x.descr, DEVE_INDISPONIBILIZAR, x) )
+        # Gerais
+        self.leitura_falha_1_rv_b0 = LeituraModbusBit(self.clp, REG_MB["UG"]["UG1_RV_FALHA_1"], 0)
+        x = self.leitura_falha_1_rv_b0
+        self.condicionadores.append(CondicionadorBase("UG1_RV_FALHA_1 - bit 00", DEVE_NORMALIZAR, x))
 
-        self.leitura_EntradasDigitais_MXI_UHRV_NivOleominimoPos36 = LeituraOPC( "EntradasDigitais_MXI_UHRV_NivOleominimoPos36", self.opc_server, REG_UG1_EntradasDigitais_MXI_UHRV_NivOleominimoPos36 )
-        x = self.leitura_EntradasDigitais_MXI_UHRV_NivOleominimoPos36
-        self.condicionadores.append( CondicionadorBase(x.descr, DEVE_INDISPONIBILIZAR, x) )
+        self.leitura_falha_1_rv_b1 = LeituraModbusBit(self.clp, REG_MB["UG"]["UG1_RV_FALHA_1"], 1)
+        x = self.leitura_falha_1_rv_b1
+        self.condicionadores.append(CondicionadorBase("UG1_RV_FALHA_1 - bit 01", DEVE_NORMALIZAR, x))
 
-        self.leitura_EntradasDigitais_MXI_UHRV_NivOleoCriticoPos35 = LeituraOPC( "EntradasDigitais_MXI_UHRV_NivOleoCriticoPos35", self.opc_server, REG_UG1_EntradasDigitais_MXI_UHRV_NivOleoCriticoPos35 )
-        x = self.leitura_EntradasDigitais_MXI_UHRV_NivOleoCriticoPos35
-        self.condicionadores.append( CondicionadorBase(x.descr, DEVE_INDISPONIBILIZAR, x) )
+        self.leitura_falha_1_rv_b2 = LeituraModbusBit(self.clp, REG_MB["UG"]["UG1_RV_FALHA_1"], 2)
+        x = self.leitura_falha_1_rv_b2
+        self.condicionadores.append(CondicionadorBase("UG1_RV_FALHA_1 - bit 02", DEVE_NORMALIZAR, x))
 
-        self.leitura_EntradasDigitais_MXI_UHLM_Filt2PresSujo100Sujo = LeituraOPC( "EntradasDigitais_MXI_UHLM_Filt2PresSujo100Sujo", self.opc_server, REG_UG1_EntradasDigitais_MXI_UHLM_Filt2PresSujo100Sujo )
-        x = self.leitura_EntradasDigitais_MXI_UHLM_Filt2PresSujo100Sujo
-        self.condicionadores.append( CondicionadorBase(x.descr, DEVE_INDISPONIBILIZAR, x) )
+        self.leitura_falha_1_rv_b3 = LeituraModbusBit(self.clp, REG_MB["UG"]["UG1_RV_FALHA_1"], 3)
+        x = self.leitura_falha_1_rv_b3
+        self.condicionadores.append(CondicionadorBase("UG1_RV_FALHA_1 - bit 03", DEVE_NORMALIZAR, x))
 
-        self.leitura_EntradasDigitais_MXI_UHLM_Filt1PresSujo100Sujo = LeituraOPC( "EntradasDigitais_MXI_UHLM_Filt1PresSujo100Sujo", self.opc_server, REG_UG1_EntradasDigitais_MXI_UHLM_Filt1PresSujo100Sujo )
-        x = self.leitura_EntradasDigitais_MXI_UHLM_Filt1PresSujo100Sujo
-        self.condicionadores.append( CondicionadorBase(x.descr, DEVE_INDISPONIBILIZAR, x) )
+        self.leitura_falha_1_rv_b4 = LeituraModbusBit(self.clp, REG_MB["UG"]["UG1_RV_FALHA_1"], 4)
+        x = self.leitura_falha_1_rv_b4
+        self.condicionadores.append(CondicionadorBase("UG1_RV_FALHA_1 - bit 04", DEVE_NORMALIZAR, x))
 
-        self.leitura_EntradasDigitais_MXI_UHLM_TripBomba2 = LeituraOPC( "EntradasDigitais_MXI_UHLM_TripBomba2", self.opc_server, REG_UG1_EntradasDigitais_MXI_UHLM_TripBomba2 )
-        x = self.leitura_EntradasDigitais_MXI_UHLM_TripBomba2
-        self.condicionadores.append( CondicionadorBase(x.descr, DEVE_INDISPONIBILIZAR, x) )
+        self.leitura_falha_1_rv_b5 = LeituraModbusBit(self.clp, REG_MB["UG"]["UG1_RV_FALHA_1"], 5)
+        x = self.leitura_falha_1_rv_b5
+        self.condicionadores.append(CondicionadorBase("UG1_RV_FALHA_1 - bit 05", DEVE_NORMALIZAR, x))
 
-        self.leitura_EntradasDigitais_MXI_UHLM_TripBomba1 = LeituraOPC( "EntradasDigitais_MXI_UHLM_TripBomba1", self.opc_server, REG_UG1_EntradasDigitais_MXI_UHLM_TripBomba1 )
-        x = self.leitura_EntradasDigitais_MXI_UHLM_TripBomba1
-        self.condicionadores.append( CondicionadorBase(x.descr, DEVE_INDISPONIBILIZAR, x) )
+        self.leitura_falha_1_rv_b10 = LeituraModbusBit(self.clp, REG_MB["UG"]["UG1_RV_FALHA_1"], 10)
+        x = self.leitura_falha_1_rv_b10
+        self.condicionadores.append(CondicionadorBase("UG1_RV_FALHA_1 - bit 10", DEVE_NORMALIZAR, x))
 
-        self.leitura_EntradasDigitais_MXI_UHLM_NivelminOleo = LeituraOPC( "EntradasDigitais_MXI_UHLM_NivelminOleo", self.opc_server, REG_UG1_EntradasDigitais_MXI_UHLM_NivelminOleo )
-        x = self.leitura_EntradasDigitais_MXI_UHLM_NivelminOleo
-        self.condicionadores.append( CondicionadorBase(x.descr, DEVE_INDISPONIBILIZAR, x) )
+        self.leitura_falha_1_rv_b11 = LeituraModbusBit(self.clp, REG_MB["UG"]["UG1_RV_FALHA_1"], 11)
+        x = self.leitura_falha_1_rv_b11
+        self.condicionadores.append(CondicionadorBase("UG1_RV_FALHA_1 - bit 11", DEVE_NORMALIZAR, x))
 
-        self.leitura_EntradasDigitais_MXI_UHLM_NivelCritOleo = LeituraOPC( "EntradasDigitais_MXI_UHLM_NivelCritOleo", self.opc_server, REG_UG1_EntradasDigitais_MXI_UHLM_NivelCritOleo )
-        x = self.leitura_EntradasDigitais_MXI_UHLM_NivelCritOleo
-        self.condicionadores.append( CondicionadorBase(x.descr, DEVE_INDISPONIBILIZAR, x) )
+        self.leitura_falha_1_rv_b12 = LeituraModbusBit(self.clp, REG_MB["UG"]["UG1_RV_FALHA_1"], 12)
+        x = self.leitura_falha_1_rv_b12
+        self.condicionadores.append(CondicionadorBase("UG1_RV_FALHA_1 - bit 12", DEVE_NORMALIZAR, x))
 
-        self.leitura_EntradasDigitais_MXI_UHLM_FluxoMcTras = LeituraOPC( "EntradasDigitais_MXI_UHLM_FluxoMcTras", self.opc_server, REG_UG1_EntradasDigitais_MXI_UHLM_FluxoMcTras )
-        x = self.leitura_EntradasDigitais_MXI_UHLM_FluxoMcTras
-        self.condicionadores.append( CondicionadorBase(x.descr, DEVE_INDISPONIBILIZAR, x) )
+        self.leitura_falha_1_rv_b13 = LeituraModbusBit(self.clp, REG_MB["UG"]["UG1_RV_FALHA_1"], 13)
+        x = self.leitura_falha_1_rv_b13
+        self.condicionadores.append(CondicionadorBase("UG1_RV_FALHA_1 - bit 13", DEVE_NORMALIZAR, x))
+        
+        self.leitura_alarme_1_rt_b8 = LeituraModbusBit(self.clp, REG_MB["UG"]["UG1_RT_ALARMES_1"], 8)
+        x = self.leitura_alarme_1_rt_b8
+        self.condicionadores.append(CondicionadorBase("UG1_RT_ALARMES_1 - bit 08", DEVE_NORMALIZAR, x))
 
-        self.leitura_EntradasDigitais_MXI_UHLM_FluxoMcDianteiro = LeituraOPC( "EntradasDigitais_MXI_UHLM_FluxoMcDianteiro", self.opc_server, REG_UG1_EntradasDigitais_MXI_UHLM_FluxoMcDianteiro )
-        x = self.leitura_EntradasDigitais_MXI_UHLM_FluxoMcDianteiro
-        self.condicionadores.append( CondicionadorBase(x.descr, DEVE_INDISPONIBILIZAR, x) )
+        self.leitura_falha_1_rt_b1 = LeituraModbusBit(self.clp, REG_MB["UG"]["UG1_RT_FALHAS_1"], 1)
+        x = self.leitura_falha_1_rt_b1
+        self.condicionadores.append(CondicionadorBase("UG1_RT_FALHAS_1 - bit 01", DEVE_NORMALIZAR, x))
+        
+        self.leitura_falha_1_rt_b2 = LeituraModbusBit(self.clp, REG_MB["UG"]["UG1_RT_FALHAS_1"], 2)
+        x = self.leitura_falha_1_rt_b2
+        self.condicionadores.append(CondicionadorBase("UG1_RT_FALHAS_1 - bit 02", DEVE_NORMALIZAR, x))
+        
+        self.leitura_falha_1_rt_b3 = LeituraModbusBit(self.clp, REG_MB["UG"]["UG1_RT_FALHAS_1"], 3)
+        x = self.leitura_falha_1_rt_b3
+        self.condicionadores.append(CondicionadorBase("UG1_RT_FALHAS_1 - bit 03", DEVE_NORMALIZAR, x))
+        
+        self.leitura_falha_2_rt_b2 = LeituraModbusBit(self.clp, REG_MB["UG"]["UG1_RT_FALHAS_2"], 2)
+        x = self.leitura_falha_2_rt_b2
+        self.condicionadores.append(CondicionadorBase("UG1_RT_FALHAS_2 - bit 02", DEVE_NORMALIZAR, x))
+        
+        self.leitura_falha_2_rt_b5 = LeituraModbusBit(self.clp, REG_MB["UG"]["UG1_RT_FALHAS_2"], 5)
+        x = self.leitura_falha_2_rt_b5
+        self.condicionadores.append(CondicionadorBase("UG1_RT_FALHAS_2 - bit 05", DEVE_NORMALIZAR, x))
+        
+        self.leitura_falha_2_rt_b6 = LeituraModbusBit(self.clp, REG_MB["UG"]["UG1_RT_FALHAS_2"], 6)
+        x = self.leitura_falha_2_rt_b6
+        self.condicionadores.append(CondicionadorBase("UG1_RT_FALHAS_2 - bit 06", DEVE_NORMALIZAR, x))
+        
+        self.leitura_falha_2_rt_b7 = LeituraModbusBit(self.clp, REG_MB["UG"]["UG1_RT_FALHAS_2"], 7)
+        x = self.leitura_falha_2_rt_b7
+        self.condicionadores.append(CondicionadorBase("UG1_RT_FALHAS_2 - bit 07", DEVE_NORMALIZAR, x))
+        
+        self.leitura_falha_2_rt_b10 = LeituraModbusBit(self.clp, REG_MB["UG"]["UG1_RT_FALHAS_2"], 10)
+        x = self.leitura_falha_2_rt_b10
+        self.condicionadores.append(CondicionadorBase("UG1_RT_FALHAS_2 - bit 10", DEVE_NORMALIZAR, x))
+        
+        self.leitura_falha_2_rt_b11 = LeituraModbusBit(self.clp, REG_MB["UG"]["UG1_RT_FALHAS_2"], 11)
+        x = self.leitura_falha_2_rt_b11
+        self.condicionadores.append(CondicionadorBase("UG1_RT_FALHAS_2 - bit 11", DEVE_NORMALIZAR, x))
+        
+        self.leitura_falha_2_rt_b12 = LeituraModbusBit(self.clp, REG_MB["UG"]["UG1_RT_FALHAS_2"], 12)
+        x = self.leitura_falha_2_rt_b12
+        self.condicionadores.append(CondicionadorBase("UG1_RT_FALHAS_2 - bit 12", DEVE_NORMALIZAR, x))
+        
+        self.leitura_falha_bomba_1_uhrv = LeituraOPCBit(self.client, REG_OPC["UG"]["UG1_UHRV_BOMBA_1_FALHA"], 0)
+        x = self.leitura_falha_bomba_1_uhrv
+        self.condicionadores.append(CondicionadorBase("UG1_UHRV_BOMBA_1_FALHA - bit 00", DEVE_NORMALIZAR, x))
+        
+        self.leitura_falha_bomba_2_uhrv = LeituraOPCBit(self.client, REG_OPC["UG"]["UG1_UHRV_BOMBA_2_FALHA"], 2)
+        x = self.leitura_falha_bomba_2_uhrv
+        self.condicionadores.append(CondicionadorBase("UG1_UHRV_BOMBA_2_FALHA - bit 02", DEVE_NORMALIZAR, x))
 
-        self.leitura_EntradasDigitais_MXI_UHLM_FaltaPressTroc = LeituraOPC( "EntradasDigitais_MXI_UHLM_FaltaPressTroc", self.opc_server, REG_UG1_EntradasDigitais_MXI_UHLM_FaltaPressTroc )
-        x = self.leitura_EntradasDigitais_MXI_UHLM_FaltaPressTroc
-        self.condicionadores.append( CondicionadorBase(x.descr, DEVE_INDISPONIBILIZAR, x) )
+        self.leitura_falha_bomba_1_uhlm = LeituraOPCBit(self.client, REG_OPC["UG"]["UG1_UHLM_BOMBA_1_FALHA"], 4)
+        x = self.leitura_falha_bomba_1_uhlm
+        self.condicionadores.append(CondicionadorBase("UG1_UHLM_BOMBA_1_FALHA - bit 04", DEVE_NORMALIZAR, x))
 
-        self.leitura_EntradasDigitais_MXI_UHLM_FaltaFluxTroc = LeituraOPC( "EntradasDigitais_MXI_UHLM_FaltaFluxTroc", self.opc_server, REG_UG1_EntradasDigitais_MXI_UHLM_FaltaFluxTroc )
-        x = self.leitura_EntradasDigitais_MXI_UHLM_FaltaFluxTroc
-        self.condicionadores.append( CondicionadorBase(x.descr, DEVE_INDISPONIBILIZAR, x) )
+        self.leitura_falha_bomba_2_uhlm = LeituraOPCBit(self.client, REG_OPC["UG"]["UG1_UHLM_BOMBA_2_FALHA"], 6)
+        x = self.leitura_falha_bomba_2_uhlm
+        self.condicionadores.append(CondicionadorBase("UG1_UHLM_BOMBA_2_FALHA - bit 06", DEVE_NORMALIZAR, x))
+       
+        self.leitura_alarme_rele_rv_atuado = LeituraOPCBit(self.client, REG_OPC["UG"]["UG1_RV_RELE_ALARME_ATUADO"], 15)
+        x = self.leitura_alarme_rele_rv_atuado
+        self.condicionadores.append(CondicionadorBase("UG1_RV_RELE_ALARME_ATUADO - bit 15", DEVE_NORMALIZAR, 15))
 
-        self.leitura_EntradasDigitais_MXI_TripAlimPainelFreio = LeituraOPC( "EntradasDigitais_MXI_TripAlimPainelFreio", self.opc_server, REG_UG1_EntradasDigitais_MXI_TripAlimPainelFreio )
-        x = self.leitura_EntradasDigitais_MXI_TripAlimPainelFreio
-        self.condicionadores.append( CondicionadorBase(x.descr, DEVE_INDISPONIBILIZAR, x) )
+        self.leitura_sistema_agua_clp_geral_ok = LeituraOPCBit(self.client, REG_OPC["UG"]["UG1_CLP_GERAL_SISTEMA_AGUA_OK"], 2, True)
+        x = self.leitura_sistema_agua_clp_geral_ok
+        self.condicionadores.append(CondicionadorBase("UG1_CLP_GERAL_SISTEMA_AGUA_OK - bit 02", DEVE_NORMALIZAR, x))
 
-        self.leitura_EntradasDigitais_MXI_SobreVeloMecPos18 = LeituraOPC( "EntradasDigitais_MXI_SobreVeloMecPos18", self.opc_server, REG_UG1_EntradasDigitais_MXI_SobreVeloMecPos18 )
-        x = self.leitura_EntradasDigitais_MXI_SobreVeloMecPos18
-        self.condicionadores.append( CondicionadorBase(x.descr, DEVE_INDISPONIBILIZAR, x) )
+        self.leitura_clp_geral_com_tens_barra_essenc = LeituraOPCBit(self.client, REG_OPC["UG"]["UG1_CLP_GERAL_COM_TENSAO_BARRA_ESSENCIAIS"], 3, True)
+        x = self.leitura_clp_geral_com_tens_barra_essenc
+        self.condicionadores.append(CondicionadorBase("UG1_CLP_GERAL_COM_TENSAO_BARRA_ESSENCIAIS - bit 03", DEVE_NORMALIZAR, x))
 
-        self.leitura_EntradasDigitais_MXI_SEL700G_FalhaInterna = LeituraOPC( "EntradasDigitais_MXI_SEL700G_FalhaInterna", self.opc_server, REG_UG1_EntradasDigitais_MXI_SEL700G_FalhaInterna )
-        x = self.leitura_EntradasDigitais_MXI_SEL700G_FalhaInterna
-        self.condicionadores.append( CondicionadorBase(x.descr, DEVE_INDISPONIBILIZAR, x) )
+        self.leitura_disparo_mecanico_atuado = LeituraOPCBit(self.client, REG_OPC["UG"]["UG1_DISPARO_MECANICO_ATUADO"], 9)
+        x = self.leitura_disparo_mecanico_atuado
+        self.condicionadores.append(CondicionadorBase("UG1_DISPARO_MECANICO_ATUADO - bit 09", DEVE_NORMALIZAR, x))
 
-        self.leitura_RetornosDigitais_MXR_UHRV_FalhaAcionBbaM2 = LeituraOPC( "RetornosDigitais_MXR_UHRV_FalhaAcionBbaM2", self.opc_server, REG_UG1_RetornosDigitais_MXR_UHRV_FalhaAcionBbaM2, )
-        x = self.leitura_RetornosDigitais_MXR_UHRV_FalhaAcionBbaM2
-        self.condicionadores.append( CondicionadorBase(x.descr, DEVE_INDISPONIBILIZAR, x) )
+        self.leitura_disparo_mecanico_desatuado = LeituraOPCBit(self.client, REG_OPC["UG"]["UG1_DISPARO_MECANICO_DESATUADO"], 8, True)
+        x = self.leitura_disparo_mecanico_desatuado
+        self.condicionadores.append(CondicionadorBase("UG1_DISPARO_MECANICO_DESATUADO - bit 08", DEVE_NORMALIZAR, x))
 
-        self.leitura_RetornosDigitais_MXR_UHRV_FalhaAcionBbaM1 = LeituraOPC( "RetornosDigitais_MXR_UHRV_FalhaAcionBbaM1", self.opc_server, REG_UG1_RetornosDigitais_MXR_UHRV_FalhaAcionBbaM1, )
-        x = self.leitura_RetornosDigitais_MXR_UHRV_FalhaAcionBbaM1
-        self.condicionadores.append( CondicionadorBase(x.descr, DEVE_INDISPONIBILIZAR, x) )
+        self.leitura_falha_habilitar_sistema_agua = LeituraOPCBit(self.client, REG_OPC["UG"]["UG1_FALHA_HABILITAR_SISTEMA_AGUA"], 11)
+        x = self.leitura_falha_habilitar_sistema_agua
+        self.condicionadores.append(CondicionadorBase("UG1_FALHA_HABILITAR_SISTEMA_AGUA - bit 11", DEVE_NORMALIZAR, x))
 
-        self.leitura_RetornosDigitais_MXR_UHLM_FalhaAcionBbaM2 = LeituraOPC( "RetornosDigitais_MXR_UHLM_FalhaAcionBbaM2", self.opc_server, REG_UG1_RetornosDigitais_MXR_UHLM_FalhaAcionBbaM2, )
-        x = self.leitura_RetornosDigitais_MXR_UHLM_FalhaAcionBbaM2
-        self.condicionadores.append( CondicionadorBase(x.descr, DEVE_INDISPONIBILIZAR, x) )
+        self.leitura_trip_temp_oleo_uhlm = LeituraOPCBit(self.client, REG_OPC["UG"]["UG1_TRIP_TEMP_OLEO_UHLM"], 4)
+        x = self.leitura_trip_temp_oleo_uhlm
+        self.condicionadores.append(CondicionadorBase("UG1_TRIP_TEMP_OLEO_UHLM - bit 04", DEVE_NORMALIZAR, x))
 
-        self.leitura_RetornosDigitais_MXR_UHLM_FalhaAcionBbaM1 = LeituraOPC( "RetornosDigitais_MXR_UHLM_FalhaAcionBbaM1", self.opc_server, REG_UG1_RetornosDigitais_MXR_UHLM_FalhaAcionBbaM1, )
-        x = self.leitura_RetornosDigitais_MXR_UHLM_FalhaAcionBbaM1
-        self.condicionadores.append( CondicionadorBase(x.descr, DEVE_INDISPONIBILIZAR, x) )
+        self.leitura_trip_temp_oleo_uhrv = LeituraOPCBit(self.client, REG_OPC["UG"]["UG1_TRIP_TEMP_OLEO_UHRV"], 5)
+        x = self.leitura_trip_temp_oleo_uhrv
+        self.condicionadores.append(CondicionadorBase("UG1_TRIP_TEMP_OLEO_UHRV - bit 05", DEVE_NORMALIZAR, x))
 
-        self.leitura_RetornosDigitais_MXR_TripVibr2 = LeituraOPC( "RetornosDigitais_MXR_TripVibr2", self.opc_server, REG_UG1_RetornosDigitais_MXR_TripVibr2, )
-        x = self.leitura_RetornosDigitais_MXR_TripVibr2
-        self.condicionadores.append( CondicionadorBase(x.descr, DEVE_INDISPONIBILIZAR, x) )
+        self.leitura_parada_bloq_abertura_disj = LeituraOPCBit(self.client, REG_OPC["UG"]["UG1_PARADA_BLOQUEIO_ABERTURA_DISJUNTOR"], 11)
+        x = self.leitura_parada_bloq_abertura_disj
+        self.condicionadores.append(CondicionadorBase("UG1_PARADA_BLOQUEIO_ABERTURA_DISJUNTOR - bit 11", DEVE_NORMALIZAR, x))
 
-        self.leitura_RetornosDigitais_MXR_TripVibr1 = LeituraOPC( "RetornosDigitais_MXR_TripVibr1", self.opc_server, REG_UG1_RetornosDigitais_MXR_TripVibr1, )
-        x = self.leitura_RetornosDigitais_MXR_TripVibr1
-        self.condicionadores.append( CondicionadorBase(x.descr, DEVE_INDISPONIBILIZAR, x) )
+        self.leitura_parada_bloq_descarga_pot = LeituraOPCBit(self.client, REG_OPC["UG"]["UG1_PARADA_BLOQUEIO_DESCARGA_POTENCIA"], 10)
+        x = self.leitura_parada_bloq_descarga_pot
+        self.condicionadores.append(CondicionadorBase("UG1_PARADA_BLOQUEIO_DESCARGA_POTENCIA - bit 10", DEVE_NORMALIZAR, x))
 
-        self.leitura_RetornosDigitais_MXR_TripTempUHRV = LeituraOPC( "RetornosDigitais_MXR_TripTempUHRV", self.opc_server, REG_UG1_RetornosDigitais_MXR_TripTempUHRV, )
-        x = self.leitura_RetornosDigitais_MXR_TripTempUHRV
-        self.condicionadores.append( CondicionadorBase(x.descr, DEVE_INDISPONIBILIZAR, x) )
+        self.leitura_falha_pressao_linha_b1_uhlm = LeituraOPCBit(self.client, REG_OPC["UG"]["UG1_UHLM_FALHA_PRESSAO_LINHA_B1"], 9)
+        x = self.leitura_falha_pressao_linha_b1_uhlm
+        self.condicionadores.append(CondicionadorBase("UG1_UHLM_FALHA_PRESSAO_LINHA_B1 - bit 09", DEVE_NORMALIZAR, x))
 
-        self.leitura_RetornosDigitais_MXR_TripTempUHLM = LeituraOPC( "RetornosDigitais_MXR_TripTempUHLM", self.opc_server, REG_UG1_RetornosDigitais_MXR_TripTempUHLM, )
-        x = self.leitura_RetornosDigitais_MXR_TripTempUHLM
-        self.condicionadores.append( CondicionadorBase(x.descr, DEVE_INDISPONIBILIZAR, x) )
+        self.leitura_falha_pressao_linha_b2_uhlm = LeituraOPCBit(self.client, REG_OPC["UG"]["UG1_UHLM_FALHA_PRESSAO_LINHA_B2"], 10)
+        x = self.leitura_falha_pressao_linha_b2_uhlm
+        self.condicionadores.append(CondicionadorBase("UG1_UHLM_FALHA_PRESSAO_LINHA_B2 - bit 10", DEVE_NORMALIZAR, x))
 
-        self.leitura_RetornosDigitais_MXR_TripTempMcGuiaRadial = LeituraOPC( "RetornosDigitais_MXR_TripTempMcGuiaRadial", self.opc_server, REG_UG1_RetornosDigitais_MXR_TripTempMcGuiaRadial, )
-        x = self.leitura_RetornosDigitais_MXR_TripTempMcGuiaRadial
-        self.condicionadores.append( CondicionadorBase(x.descr, DEVE_INDISPONIBILIZAR, x) )
+        self.leitura_falha_pressostato_linha_uhlm = LeituraOPCBit(self.client, REG_OPC["UG"]["UG1_UHLM_FALHA_PRESSOSTATO_LINHA"], 11)
+        x = self.leitura_falha_pressostato_linha_uhlm
+        self.condicionadores.append(CondicionadorBase("UG1_UHLM_FALHA_PRESSOSTATO_LINHA - bit 11", DEVE_NORMALIZAR, x))
 
-        self.leitura_RetornosDigitais_MXR_TripTempMcGuiaEscora = LeituraOPC( "RetornosDigitais_MXR_TripTempMcGuiaEscora", self.opc_server, REG_UG1_RetornosDigitais_MXR_TripTempMcGuiaEscora, )
-        x = self.leitura_RetornosDigitais_MXR_TripTempMcGuiaEscora
-        self.condicionadores.append( CondicionadorBase(x.descr, DEVE_INDISPONIBILIZAR, x) )
+        self.leitura_falha_habilitar_rv = LeituraOPCBit(self.client, REG_OPC["UG"]["UG1_RV_FALHA_HABILITAR_RV"], 0)
+        x = self.leitura_falha_habilitar_rv
+        self.condicionadores.append(CondicionadorBase("UG1_RV_FALHA_HABILITAR_RV - bit 00", DEVE_NORMALIZAR, x))
 
-        self.leitura_RetornosDigitais_MXR_TripTempMcGuiaContraEscora = ( LeituraOPC( "RetornosDigitais_MXR_TripTempMcGuiaContraEscora", self.opc_server, REG_UG1_RetornosDigitais_MXR_TripTempMcGuiaContraEscora, ) )
-        x = self.leitura_RetornosDigitais_MXR_TripTempMcGuiaContraEscora
-        self.condicionadores.append( CondicionadorBase(x.descr, DEVE_INDISPONIBILIZAR, x) )
+        self.leitura_falha_partir_rv = LeituraOPCBit(self.client, REG_OPC["UG"]["UG1_RV_FALHA_PARTIR_RV"], 1)
+        x = self.leitura_falha_partir_rv
+        self.condicionadores.append(CondicionadorBase("UG1_RV_FALHA_PARTIR_RV - bit 01", DEVE_NORMALIZAR, x))
 
-        self.leitura_RetornosDigitais_MXR_TripTempGaxeteiro = LeituraOPC( "RetornosDigitais_MXR_TripTempGaxeteiro", self.opc_server, REG_UG1_RetornosDigitais_MXR_TripTempGaxeteiro, )
-        x = self.leitura_RetornosDigitais_MXR_TripTempGaxeteiro
-        self.condicionadores.append( CondicionadorBase(x.descr, DEVE_INDISPONIBILIZAR, x) )
+        self.leitura_falha_desabilitar_rv = LeituraOPCBit(self.client, REG_OPC["UG"]["UG1_RV_FALHA_DESABILITAR_RV"], 2)
+        x = self.leitura_falha_desabilitar_rv
+        self.condicionadores.append(CondicionadorBase("UG1_RV_FALHA_DESABILITAR_RV - bit 02", DEVE_NORMALIZAR, x))
 
-        self.leitura_RetornosDigitais_MXR_Q_Negativa = LeituraOPC( "RetornosDigitais_MXR_Q_Negativa", self.opc_server, REG_UG1_RetornosDigitais_MXR_Q_Negativa, )
-        x = self.leitura_RetornosDigitais_MXR_Q_Negativa
-        self.condicionadores.append( CondicionadorBase(x.descr, DEVE_INDISPONIBILIZAR, x) )
+        self.leitura_falha_habilitar_rt = LeituraOPCBit(self.client, REG_OPC["UG"]["UG1_RT_FALHA_HABILITAR"], 16)
+        x = self.leitura_falha_habilitar_rt
+        self.condicionadores.append(CondicionadorBase("UG1_RT_FALHA_HABILITAR - bit 16", DEVE_NORMALIZAR, x))
 
-        self.leitura_RetornosDigitais_MXR_FalhaIbntDisjGer = LeituraOPC( "RetornosDigitais_MXR_FalhaIbntDisjGer", self.opc_server, REG_UG1_RetornosDigitais_MXR_FalhaIbntDisjGer, )
-        x = self.leitura_RetornosDigitais_MXR_FalhaIbntDisjGer
-        self.condicionadores.append( CondicionadorBase(x.descr, DEVE_INDISPONIBILIZAR, x) )
+        self.leitura_falha_partir_rt = LeituraOPCBit(self.client, REG_OPC["UG"]["UG1_RT_FALHA_PARTIR"], 17)
+        x = self.leitura_falha_partir_rt
+        self.condicionadores.append(CondicionadorBase("UG1_RT_FALHA_PARTIR - bit 17", DEVE_NORMALIZAR, x))
 
-        self.leitura_RetornosDigitais_MXR_FalhaAcionFechaValvBorb = LeituraOPC( "RetornosDigitais_MXR_FalhaAcionFechaValvBorb", self.opc_server, REG_UG1_RetornosDigitais_MXR_FalhaAcionFechaValvBorb, )
-        x = self.leitura_RetornosDigitais_MXR_FalhaAcionFechaValvBorb
-        self.condicionadores.append( CondicionadorBase(x.descr, DEVE_INDISPONIBILIZAR, x) )
 
-        self.leitura_RetornosDigitais_MXR_CLP_Falha = LeituraOPC( "RetornosDigitais_MXR_CLP_Falha", self.opc_server, REG_UG1_RetornosDigitais_MXR_CLP_Falha, )
-        x = self.leitura_RetornosDigitais_MXR_CLP_Falha
-        self.condicionadores.append( CondicionadorBase(x.descr, DEVE_INDISPONIBILIZAR, x) )
+        self.leitura_alarme_1_rt_b0 = LeituraModbusBit(self.clp, REG_OPC["UG"]["UG1_RT_ALARMES_1"], 0)
+        x = self.leitura_alarme_1_rt_b0
+        self.condicionadores.append(CondicionadorBase("UG1_RT_ALARMES_1 - bit 00", DEVE_INDISPONIBILIZAR, x))
+        
+        self.leitura_alarme_1_rt_b4 = LeituraModbusBit(self.clp, REG_OPC["UG"]["UG1_RT_ALARMES_1"], 4)
+        x = self.leitura_alarme_1_rt_b4
+        self.condicionadores.append(CondicionadorBase("UG1_RT_ALARMES_1 - bit 04", DEVE_INDISPONIBILIZAR, x))
+        
+        self.leitura_alarme_1_rt_b5 = LeituraModbusBit(self.clp, REG_OPC["UG"]["UG1_RT_ALARMES_1"], 5)
+        x = self.leitura_alarme_1_rt_b5
+        self.condicionadores.append(CondicionadorBase("UG1_RT_ALARMES_1 - bit 05", DEVE_INDISPONIBILIZAR, x))
 
-        self.leitura_RetornosDigitais_MXR_Remota_Falha = LeituraOPC( "RetornosDigitais_MXR_Remota_Falha", self.opc_server, REG_UG1_RetornosDigitais_MXR_Remota_Falha, )
-        x = self.leitura_RetornosDigitais_MXR_Remota_Falha
-        self.condicionadores.append( CondicionadorBase(x.descr, DEVE_INDISPONIBILIZAR, x) )
+        self.leitura_falha_1_rt_b0 = LeituraModbusBit(self.clp, REG_MB["UG"]["UG1_RT_FALHAS_1"], 0)
+        x = self.leitura_falha_1_rt_b0
+        self.condicionadores.append(CondicionadorBase("UG1_RT_FALHAS_1 - bit 00", DEVE_INDISPONIBILIZAR, x))
+        
+        self.leitura_falha_1_rt_b4 = LeituraModbusBit(self.clp, REG_MB["UG"]["UG1_RT_FALHAS_1"], 4)
+        x = self.leitura_falha_1_rt_b4
+        self.condicionadores.append(CondicionadorBase("UG1_RT_FALHAS_1 - bit 04", DEVE_INDISPONIBILIZAR, x))
+        
+        self.leitura_falha_1_rt_b5 = LeituraModbusBit(self.clp, REG_MB["UG"]["UG1_RT_FALHAS_1"], 5)
+        x = self.leitura_falha_1_rt_b5
+        self.condicionadores.append(CondicionadorBase("UG1_RT_FALHAS_1 - bit 05", DEVE_INDISPONIBILIZAR, x))
+        
+        self.leitura_falha_1_rt_b6 = LeituraModbusBit(self.clp, REG_MB["UG"]["UG1_RT_FALHAS_1"], 6)
+        x = self.leitura_falha_1_rt_b6
+        self.condicionadores.append(CondicionadorBase("UG1_RT_FALHAS_1 - bit 06", DEVE_INDISPONIBILIZAR, x))
+        
+        self.leitura_falha_1_rt_b7 = LeituraModbusBit(self.clp, REG_MB["UG"]["UG1_RT_FALHAS_1"], 7)
+        x = self.leitura_falha_1_rt_b7
+        self.condicionadores.append(CondicionadorBase("UG1_RT_FALHAS_1 - bit 07", DEVE_INDISPONIBILIZAR, x))
+        
+        self.leitura_falha_1_rt_b8 = LeituraModbusBit(self.clp, REG_MB["UG"]["UG1_RT_FALHAS_1"], 8)
+        x = self.leitura_falha_1_rt_b8
+        self.condicionadores.append(CondicionadorBase("UG1_RT_FALHAS_1 - bit 08", DEVE_INDISPONIBILIZAR, x))
+        
+        self.leitura_falha_1_rt_b9 = LeituraModbusBit(self.clp, REG_MB["UG"]["UG1_RT_FALHAS_1"], 9)
+        x = self.leitura_falha_1_rt_b9
+        self.condicionadores.append(CondicionadorBase("UG1_RT_FALHAS_1 - bit 09", DEVE_INDISPONIBILIZAR, x))
+        
+        self.leitura_falha_1_rt_b10 = LeituraModbusBit(self.clp, REG_MB["UG"]["UG1_RT_FALHAS_1"], 10)
+        x = self.leitura_falha_1_rt_b10
+        self.condicionadores.append(CondicionadorBase("UG1_RT_FALHAS_1 - bit 10", DEVE_INDISPONIBILIZAR, x))
+        
+        self.leitura_falha_1_rt_b11 = LeituraModbusBit(self.clp, REG_MB["UG"]["UG1_RT_FALHAS_1"], 11)
+        x = self.leitura_falha_1_rt_b11
+        self.condicionadores.append(CondicionadorBase("UG1_RT_FALHAS_1 - bit 11", DEVE_INDISPONIBILIZAR, x))
+        
+        self.leitura_falha_1_rt_b12 = LeituraModbusBit(self.clp, REG_MB["UG"]["UG1_RT_FALHAS_1"], 12)
+        x = self.leitura_falha_1_rt_b12
+        self.condicionadores.append(CondicionadorBase("UG1_RT_FALHAS_1 - bit 12", DEVE_INDISPONIBILIZAR, x))
+        
+        self.leitura_falha_1_rt_b13 = LeituraModbusBit(self.clp, REG_MB["UG"]["UG1_RT_FALHAS_1"], 13)
+        x = self.leitura_falha_1_rt_b13
+        self.condicionadores.append(CondicionadorBase("UG1_RT_FALHAS_1 - bit 13", DEVE_INDISPONIBILIZAR, x))
+        
+        self.leitura_falha_1_rt_b14 = LeituraModbusBit(self.clp, REG_MB["UG"]["UG1_RT_FALHAS_1"], 14)
+        x = self.leitura_falha_1_rt_b14
+        self.condicionadores.append(CondicionadorBase("UG1_RT_FALHAS_1 - bit 14", DEVE_INDISPONIBILIZAR, x))
+        
+        self.leitura_falha_1_rt_b15 = LeituraModbusBit(self.clp, REG_MB["UG"]["UG1_RT_FALHAS_1"], 15)
+        x = self.leitura_falha_1_rt_b15
+        self.condicionadores.append(CondicionadorBase("UG1_RT_FALHAS_1 - bit 15", DEVE_INDISPONIBILIZAR, x))
+        
+        self.leitura_falha_2_rt_b0 = LeituraModbusBit(self.clp, REG_MB["UG"]["UG1_RV_FALHAS_2"], 0)
+        x = self.leitura_falha_2_rt_b0
+        self.condicionadores.append(CondicionadorBase("UG1_RV_FALHAS_2 - bit 00", DEVE_INDISPONIBILIZAR, x))
+        
+        self.leitura_falha_2_rt_b1 = LeituraModbusBit(self.clp, REG_MB["UG"]["UG1_RV_FALHAS_2"], 1)
+        x = self.leitura_falha_2_rt_b1
+        self.condicionadores.append(CondicionadorBase("UG1_RV_FALHAS_2 - bit 01", DEVE_INDISPONIBILIZAR, x))
+        
+        self.leitura_falha_2_rt_b3 = LeituraModbusBit(self.clp, REG_MB["UG"]["UG1_RV_FALHAS_2"], 3)
+        x = self.leitura_falha_2_rt_b3
+        self.condicionadores.append(CondicionadorBase("UG1_RV_FALHAS_2 - bit 03", DEVE_INDISPONIBILIZAR, x))
+        
+        self.leitura_falha_2_rt_b4 = LeituraModbusBit(self.clp, REG_MB["UG"]["UG1_RV_FALHAS_2"], 4)
+        x = self.leitura_falha_2_rt_b4
+        self.condicionadores.append(CondicionadorBase("UG1_RV_FALHAS_2 - bit 04", DEVE_INDISPONIBILIZAR, x))
+        
+        self.leitura_falha_2_rt_b8 = LeituraModbusBit(self.clp, REG_MB["UG"]["UG1_RV_FALHAS_2"], 8)
+        x = self.leitura_falha_2_rt_b8
+        self.condicionadores.append(CondicionadorBase("UG1_RV_FALHAS_2 - bit 08", DEVE_INDISPONIBILIZAR, x))
+        
+        self.leitura_falha_2_rt_b9 = LeituraModbusBit(self.clp, REG_MB["UG"]["UG1_RV_FALHAS_2"], 9)
+        x = self.leitura_falha_2_rt_b9
+        self.condicionadores.append(CondicionadorBase("UG1_RV_FALHAS_2 - bit 09", DEVE_INDISPONIBILIZAR, x))
+        
+        self.leitura_falha_2_rv_b1 = LeituraModbusBit(self.clp, REG_MB["UG"]["UG1_RV_FALHA_2"], 1)
+        x = self.leitura_falha_2_rv_b1
+        self.condicionadores.append(CondicionadorBase("UG1_RV_FALHA_2 - bit 01", DEVE_INDISPONIBILIZAR, x))
+        
+        self.leitura_falha_2_rv_b2 = LeituraModbusBit(self.clp, REG_MB["UG"]["UG1_RV_FALHA_2"], 2)
+        x = self.leitura_falha_2_rv_b2
+        self.condicionadores.append(CondicionadorBase("UG1_RV_FALHA_2 - bit 02", DEVE_INDISPONIBILIZAR, x))
 
-        self.leitura_EntradasDigitais_MXI_QCAUG_TripDisjAgrup = LeituraOPC( "EntradasDigitais_MXI_QCAUG_TripDisjAgrup", self.opc_server, REG_UG1_EntradasDigitais_MXI_QCAUG_TripDisjAgrup )
-        x = self.leitura_EntradasDigitais_MXI_QCAUG_TripDisjAgrup
-        self.condicionadores.append( CondicionadorBase(x.descr, DEVE_INDISPONIBILIZAR, x) )
+        self.leitura_rele_700G_bf_atuado = LeituraOPCBit(self.client, REG_OPC["UG"]["UG1_RELE_700G_BF_ATUADO"], 0)
+        x = self.leitura_rele_700G_bf_atuado
+        self.condicionadores.append(CondicionadorBase("UG1_RELE_700G_BF_ATUADO - bit 00", DEVE_INDISPONIBILIZAR, x))
 
-        self.leitura_EntradasDigitais_MXI_QCAUG_TripDisj52A1 = LeituraOPC( "EntradasDigitais_MXI_QCAUG_TripDisj52A1", self.opc_server, REG_UG1_EntradasDigitais_MXI_QCAUG_TripDisj52A1 )
-        x = self.leitura_EntradasDigitais_MXI_QCAUG_TripDisj52A1
-        self.condicionadores.append( CondicionadorBase(x.descr, DEVE_INDISPONIBILIZAR, x) )
+        self.leitura_sup_tensao_125vcc = LeituraOPCBit(self.client, REG_OPC["UG"]["UG1_SUPERVISAO_TENSAO_125VCC"], 29, True)
+        x = self.leitura_sup_tensao_125vcc
+        self.condicionadores.append(CondicionadorBase("UG1_SUPERVISAO_TENSAO_125VCC - bit 29", DEVE_INDISPONIBILIZAR, x))
 
-        self.leitura_EntradasDigitais_MXI_QCAUG_Falha380VcaPainel = LeituraOPC( "EntradasDigitais_MXI_QCAUG_Falha380VcaPainel", self.opc_server, REG_UG1_EntradasDigitais_MXI_QCAUG_Falha380VcaPainel )
-        x = self.leitura_EntradasDigitais_MXI_QCAUG_Falha380VcaPainel
-        self.condicionadores.append( CondicionadorBase(x.descr, DEVE_NORMALIZAR, x) )
+        self.leitura_sup_tensao_24vcc = LeituraOPCBit(self.client, REG_OPC["UG"]["UG1_SUPERVISAO_TENSAO_24VCC"], 30, True)
+        x = self.leitura_sup_tensao_24vcc
+        self.condicionadores.append(CondicionadorBase("UG1_SUPERVISAO_TENSAO_24VCC - bit 30", DEVE_INDISPONIBILIZAR, x))
 
-        self.leitura_EntradasDigitais_MXI_PalhetasDesal = LeituraOPC( "EntradasDigitais_MXI_PalhetasDesal", self.opc_server, REG_UG1_EntradasDigitais_MXI_PalhetasDesal )
-        x = self.leitura_EntradasDigitais_MXI_PalhetasDesal
-        self.condicionadores.append( CondicionadorBase(x.descr, DEVE_INDISPONIBILIZAR, x) )
+        self.leitura_sup_bobina_52g = LeituraOPCBit(self.client, REG_OPC["UG"]["UG1_SUPERVISAO_BOBINA_52G"], 12, True)
+        x = self.leitura_sup_bobina_52g
+        self.condicionadores.append(CondicionadorBase("UG1_SUPERVISAO_BOBINA_52G - bit 12", DEVE_INDISPONIBILIZAR, x))
 
-        self.leitura_EntradasDigitais_MXI_NivelMAltoPocoDren = LeituraOPC( "EntradasDigitais_MXI_NivelMAltoPocoDren", self.opc_server, REG_UG1_EntradasDigitais_MXI_NivelMAltoPocoDren )
-        x = self.leitura_EntradasDigitais_MXI_NivelMAltoPocoDren
-        self.condicionadores.append( CondicionadorBase(x.descr, DEVE_INDISPONIBILIZAR, x) )
+        self.leitura_sup_bobina_86eh = LeituraOPCBit(self.client, REG_OPC["UG"]["UG1_SUPERVISAO_BOBINA_86EH"], 13, True)
+        x = self.leitura_sup_bobina_86eh
+        self.condicionadores.append(CondicionadorBase("UG1_SUPERVISAO_BOBINA_86EH - bit 13", DEVE_INDISPONIBILIZAR, x))
 
-        self.leitura_EntradasDigitais_MXI_FreioSemEnergia = LeituraOPC( "EntradasDigitais_MXI_FreioSemEnergia", self.opc_server, REG_UG1_EntradasDigitais_MXI_FreioSemEnergia )
-        x = self.leitura_EntradasDigitais_MXI_FreioSemEnergia
-        self.condicionadores.append( CondicionadorBase(x.descr, DEVE_INDISPONIBILIZAR, x) )
+        self.leitura_disj_125vcc_fechados = LeituraOPCBit(self.client, REG_OPC["UG"]["UG1_DISJUNTORES_125VCC_FECHADOS"], 31, True)
+        x = self.leitura_disj_125vcc_fechados
+        self.condicionadores.append(CondicionadorBase("UG1_DISJUNTORES_125VCC_FECHADOS - bit 31", DEVE_INDISPONIBILIZAR, x))
 
-        self.leitura_EntradasDigitais_MXI_FreioFiltroSaturado = LeituraOPC( "EntradasDigitais_MXI_FreioFiltroSaturado", self.opc_server, REG_UG1_EntradasDigitais_MXI_FreioFiltroSaturado )
-        x = self.leitura_EntradasDigitais_MXI_FreioFiltroSaturado
-        self.condicionadores.append( CondicionadorBase(x.descr, DEVE_INDISPONIBILIZAR, x) )
+        self.leitura_disj_24vcc_fechados = LeituraOPCBit(self.client, REG_OPC["UG"]["UG1_DISJUNTORES_24VCC_FECHADOS"], 0, True)
+        x = self.leitura_disj_24vcc_fechados
+        self.condicionadores.append(CondicionadorBase("UG1_DISJUNTORES_24VCC_FECHADOS - bit 00", DEVE_INDISPONIBILIZAR, x))
 
-        self.leitura_EntradasDigitais_MXI_FiltroRetSujo100Sujo = LeituraOPC( "EntradasDigitais_MXI_FiltroRetSujo100Sujo", self.opc_server, REG_UG1_EntradasDigitais_MXI_FiltroRetSujo100Sujo )
-        x = self.leitura_EntradasDigitais_MXI_FiltroRetSujo100Sujo
-        self.condicionadores.append( CondicionadorBase(x.descr, DEVE_INDISPONIBILIZAR, x) )
+        self.leitura_falha_temp_ponte_fase_a = LeituraOPCBit(self.client, REG_OPC["UG"]["UG1_FALHA_TEMP_PONTE_FASE_A"], 0)
+        x = self.leitura_falha_temp_ponte_fase_a
+        self.condicionadores.append(CondicionadorBase("UG1_FALHA_TEMP_PONTE_FASE_A - bit 00", DEVE_INDISPONIBILIZAR, x))
 
-        self.leitura_EntradasDigitais_MXI_FiltroPresSujo100Sujo = LeituraOPC( "EntradasDigitais_MXI_FiltroPresSujo100Sujo", self.opc_server, REG_UG1_EntradasDigitais_MXI_FiltroPresSujo100Sujo )
-        x = self.leitura_EntradasDigitais_MXI_FiltroPresSujo100Sujo
-        self.condicionadores.append( CondicionadorBase(x.descr, DEVE_INDISPONIBILIZAR, x) )
+        self.leitura_falha_temp_ponte_fase_b = LeituraOPCBit(self.client, REG_OPC["UG"]["UG1_FALHA_TEMP_PONTE_FASE_B"], 1)
+        x = self.leitura_falha_temp_ponte_fase_b
+        self.condicionadores.append(CondicionadorBase("UG1_FALHA_TEMP_PONTE_FASE_B - bit 01", DEVE_INDISPONIBILIZAR, x))
 
-        self.leitura_EntradasDigitais_MXI_FiltroPressaoBbaMecSj100 = LeituraOPC( "EntradasDigitais_MXI_FiltroPressaoBbaMecSj100", self.opc_server, REG_UG1_EntradasDigitais_MXI_FiltroPressaoBbaMecSj100 )
-        x = self.leitura_EntradasDigitais_MXI_FiltroPressaoBbaMecSj100
-        self.condicionadores.append( CondicionadorBase(x.descr, DEVE_INDISPONIBILIZAR, x) )
+        self.leitura_falha_temp_ponte_fase_c = LeituraOPCBit(self.client, REG_OPC["UG"]["UG1_FALHA_TEMP_PONTE_FASE_C"], 2)
+        x = self.leitura_falha_temp_ponte_fase_c
+        self.condicionadores.append(CondicionadorBase("UG1_FALHA_TEMP_PONTE_FASE_C - bit 02", DEVE_INDISPONIBILIZAR, x))
 
-        self.leitura_EntradasDigitais_MXI_FaltaFluxoOleoMc = LeituraOPC( "EntradasDigitais_MXI_FaltaFluxoOleoMc", self.opc_server, REG_UG1_EntradasDigitais_MXI_FaltaFluxoOleoMc )
-        x = self.leitura_EntradasDigitais_MXI_FaltaFluxoOleoMc
-        self.condicionadores.append( CondicionadorBase(x.descr, DEVE_INDISPONIBILIZAR, x) )
+        self.leitura_falha_temp_trafo_excita = LeituraOPCBit(self.client, REG_OPC["UG"]["UG1_FALHA_TEMP_TRAFO_EXCITACAO"], 4)
+        x = self.leitura_falha_temp_trafo_excita
+        self.condicionadores.append(CondicionadorBase("UG1_FALHA_TEMP_TRAFO_EXCITACAO - bit 04", DEVE_INDISPONIBILIZAR, x))
 
-        self.leitura_EntradasDigitais_MXI_Falta125VccCom = LeituraOPC( "EntradasDigitais_MXI_Falta125VccCom", self.opc_server, REG_UG1_EntradasDigitais_MXI_Falta125VccCom )
-        x = self.leitura_EntradasDigitais_MXI_Falta125VccCom
-        self.condicionadores.append( CondicionadorBase(x.descr, DEVE_INDISPONIBILIZAR, x) )
+        self.leitura_falha_temp_mancal_guia = LeituraOPCBit(self.client, REG_OPC["UG"]["UG1_FALHA_TEMP_MANCAL_GUIA"], 5)
+        x = self.leitura_falha_temp_mancal_guia
+        self.condicionadores.append(CondicionadorBase("UG1_FALHA_TEMP_MANCAL_GUIA - bit 05", DEVE_INDISPONIBILIZAR, x))
 
-        self.leitura_EntradasDigitais_MXI_Falta125VccAlimVal = LeituraOPC( "EntradasDigitais_MXI_Falta125VccAlimVal", self.opc_server, REG_UG1_EntradasDigitais_MXI_Falta125VccAlimVal )
-        x = self.leitura_EntradasDigitais_MXI_Falta125VccAlimVal
-        self.condicionadores.append( CondicionadorBase(x.descr, DEVE_INDISPONIBILIZAR, x) )
+        self.leitura_falha_temp_oleo_uhrv = LeituraOPCBit(self.client, REG_OPC["UG"]["UG1_FALHA_TEMP_OLEO_UHRV"], 6)
+        x = self.leitura_falha_temp_oleo_uhrv
+        self.condicionadores.append(CondicionadorBase("UG1_FALHA_TEMP_OLEO_UHRV - bit 06", DEVE_INDISPONIBILIZAR, x))
 
-        self.leitura_EntradasDigitais_MXI_Falta125Vcc = LeituraOPC( "EntradasDigitais_MXI_Falta125Vcc", self.opc_server, REG_UG1_EntradasDigitais_MXI_Falta125Vcc )
-        x = self.leitura_EntradasDigitais_MXI_Falta125Vcc
-        self.condicionadores.append( CondicionadorBase(x.descr, DEVE_INDISPONIBILIZAR, x) )
+        self.leitura_falha_temp_oleo_uhlm = LeituraOPCBit(self.client, REG_OPC["UG"]["UG1_FALHA_TEMP_OLEO_UHLM"], 7)
+        x = self.leitura_falha_temp_oleo_uhlm
+        self.condicionadores.append(CondicionadorBase("UG1_FALHA_TEMP_OLEO_UHLM - bit 07", DEVE_INDISPONIBILIZAR, x))
 
-        self.leitura_EntradasDigitais_MXI_FalhaDisjTpsProt = LeituraOPC( "EntradasDigitais_MXI_FalhaDisjTpsProt", self.opc_server, REG_UG1_EntradasDigitais_MXI_FalhaDisjTpsProt )
-        x = self.leitura_EntradasDigitais_MXI_FalhaDisjTpsProt
-        self.condicionadores.append( CondicionadorBase(x.descr, DEVE_INDISPONIBILIZAR, x) )
+        self.leitura_falha_temp_mancal_casq_comb = LeituraOPCBit(self.client, REG_OPC["UG"]["UG1_FALHA_TEMP_CASQ_MANCAL_COMBINADO"], 8)
+        x = self.leitura_falha_temp_mancal_casq_comb
+        self.condicionadores.append(CondicionadorBase("UG1_FALHA_TEMP_CASQ_MANCAL_COMBINADO - bit 08", DEVE_INDISPONIBILIZAR, x))
 
-        self.leitura_AVR_EntradasDigitais_MXI_FalhaInterna = LeituraOPC( "EntradasDigitais_MXI_AVR_FalhaInterna", self.opc_server, REG_UG1_EntradasDigitais_MXI_AVR_FalhaInterna )
-        x = self.leitura_AVR_EntradasDigitais_MXI_FalhaInterna
-        self.condicionadores.append( CondicionadorBase(x.descr, DEVE_INDISPONIBILIZAR, x) )
+        self.leitura_falha_temp_mancal_con_esc_comb = LeituraOPCBit(self.client, REG_OPC["UG"]["UG1_FALHA_TEMP_CONTRA_ESCORA_MANCAL_COMBINADO"], 9)
+        x = self.leitura_falha_temp_mancal_con_esc_comb
+        self.condicionadores.append(CondicionadorBase("UG1_FALHA_TEMP_CONTRA_ESCORA_MANCAL_COMBINADO - bit 09", DEVE_INDISPONIBILIZAR, x))
 
-        self.RetornosDigitais_MXR_TripPressaoCaixaEspiral = LeituraOPC( "RetornosDigitais_MXR_TripPressaoCaixaEspiral", self.opc_server, REG_UG1_RetornosDigitais_MXR_TripPressaoCaixaEspiral, )
-        x = self.RetornosDigitais_MXR_TripPressaoCaixaEspiral
-        self.condicionadores.append( CondicionadorBase(x.descr, DEVE_NORMALIZAR, x) )
-        """
-#-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------#
+        self.leitura_falha_temp_mancal_pat_1_comb = LeituraOPCBit(self.client, REG_OPC["UG"]["UG1_FALHA_TEMP_1_PATINS_MANCAL_COMBINADO"], 10)
+        x = self.leitura_falha_temp_mancal_pat_1_comb
+        self.condicionadores.append(CondicionadorBase("UG1_FALHA_TEMP_1_PATINS_MANCAL_COMBINADO - bit 10", DEVE_INDISPONIBILIZAR, x))
+
+        self.leitura_falha_temp_mancal_pat_2_comb = LeituraOPCBit(self.client, REG_OPC["UG"]["UG1_FALHA_TEMP_2_PATINS_MANCAL_COMBINADO"], 11)
+        x = self.leitura_falha_temp_mancal_pat_2_comb
+        self.condicionadores.append(CondicionadorBase("UG1_FALHA_TEMP_2_PATINS_MANCAL_COMBINADO - bit 11", DEVE_INDISPONIBILIZAR, x))
+
+        self.leitura_falha_temp_mancal_guia_interno_1 = LeituraOPCBit(self.client, REG_OPC["UG"]["UG1_FALHA_TEMP_1_MANCAL_GUIA_INTERNO"], 12)
+        x = self.leitura_falha_temp_mancal_guia_interno_1
+        self.condicionadores.append(CondicionadorBase("UG1_FALHA_TEMP_1_MANCAL_GUIA_INTERNO - bit 12", DEVE_INDISPONIBILIZAR, x))
+        
+        self.leitura_falha_temp_mancal_guia_interno_2 = LeituraOPCBit(self.client, REG_OPC["UG"]["UG1_FALHA_TEMP_2_MANCAL_GUIA_INTERNO"], 13)
+        x = self.leitura_falha_temp_mancal_guia_interno_2
+        self.condicionadores.append(CondicionadorBase("UG1_FALHA_TEMP_2_MANCAL_GUIA_INTERNO - bit 13", DEVE_INDISPONIBILIZAR, x))
+
+        self.leitura_falha_temp_gerador_nucleo_esta = LeituraOPCBit(self.client, REG_OPC["UG"]["UG1_FALHA_TEMP_GERADOR_NUCLEO_ESTATORICO"], 14)
+        x = self.leitura_falha_temp_gerador_nucleo_esta
+        self.condicionadores.append(CondicionadorBase("UG1_FALHA_TEMP_GERADOR_NUCLEO_ESTATORICO - bit 14", DEVE_INDISPONIBILIZAR, x))
+
+        self.leitura_falha_temp_gerador_fase_a = LeituraOPCBit(self.client, REG_OPC["UG"]["UG1_FALHA_TEMP_GERADOR_FASE_A"], 15)
+        x = self.leitura_falha_temp_gerador_fase_a
+        self.condicionadores.append(CondicionadorBase("UG1_FALHA_TEMP_GERADOR_FASE_A - bit 15", DEVE_INDISPONIBILIZAR, x))
+
+        self.leitura_falha_temp_gerador_fase_b = LeituraOPCBit(self.client, REG_OPC["UG"]["UG1_FALHA_TEMP_GERADOR_FASE_B"], 16)
+        x = self.leitura_falha_temp_gerador_fase_b
+        self.condicionadores.append(CondicionadorBase("UG1_FALHA_TEMP_GERADOR_FASE_B - bit 16", DEVE_INDISPONIBILIZAR, x))
+
+        self.leitura_falha_temp_gerador_fase_c = LeituraOPCBit(self.client, REG_OPC["UG"]["UG1_FALHA_TEMP_GERADOR_FASE_C"], 17)
+        x = self.leitura_falha_temp_gerador_fase_c
+        self.condicionadores.append(CondicionadorBase("UG1_FALHA_TEMP_GERADOR_FASE_C - bit 17", DEVE_INDISPONIBILIZAR, x))
+
+        self.leitura_falha_pressao_entrada_turb = LeituraOPCBit(self.client, REG_OPC["UG"]["UG1_FALHA_PRESSAO_ENTRADA_TURBINA"], 20)
+        x = self.leitura_falha_pressao_entrada_turb
+        self.condicionadores.append(CondicionadorBase("UG1_FALHA_PRESSAO_ENTRADA_TURBINA - bit 20", DEVE_INDISPONIBILIZAR, x))
+
+        self.leitura_falha_vibra_eixo_x_mancal_comb = LeituraOPCBit(self.client, REG_OPC["UG"]["UG1_FALHA_VIBRACAO_EIXO_X_MANCAL_COMBINADO"], 24)
+        x = self.leitura_falha_vibra_eixo_x_mancal_comb
+        self.condicionadores.append(CondicionadorBase("UG1_FALHA_VIBRACAO_EIXO_X_MANCAL_COMBINADO - bit 24", DEVE_INDISPONIBILIZAR, x))
+
+        self.leitura_falha_vibra_eixo_y_mancal_comb = LeituraOPCBit(self.client, REG_OPC["UG"]["UG1_FALHA_VIBRACAO_EIXO_Y_MANCAL_COMBINADO"], 25)
+        x = self.leitura_falha_vibra_eixo_y_mancal_comb
+        self.condicionadores.append(CondicionadorBase("UG1_FALHA_VIBRACAO_EIXO_Y_MANCAL_COMBINADO - bit 25", DEVE_INDISPONIBILIZAR, x))
+
+        self.leitura_falha_vibra_eixo_z_mancal_comb = LeituraOPCBit(self.client, REG_OPC["UG"]["UG1_FALHA_VIBRACAO_EIXO_Z_MANCAL_COMBINADO"], 26)
+        x = self.leitura_falha_vibra_eixo_z_mancal_comb
+        self.condicionadores.append(CondicionadorBase("UG1_FALHA_VIBRACAO_EIXO_Z_MANCAL_COMBINADO - bit 26", DEVE_INDISPONIBILIZAR, x))
+
+        self.leitura_falha_vibra_detec_horizontal = LeituraOPCBit(self.client, REG_OPC["UG"]["UG1_FALHA_VIBRACAO_DETECCAO_HORIZONTAL"], 28)
+        x = self.leitura_falha_vibra_detec_horizontal
+        self.condicionadores.append(CondicionadorBase("UG1_FALHA_VIBRACAO_DETECCAO_HORIZONTAL - bit 28", DEVE_INDISPONIBILIZAR, x))
+
+        self.leitura_falha_vibra_detec_vertical = LeituraOPCBit(self.client, REG_OPC["UG"]["UG1_FALHA_VIBRACAO_DETECACAO_VERTICAL"], 29)
+        x = self.leitura_falha_vibra_detec_vertical
+        self.condicionadores.append(CondicionadorBase("UG1_FALHA_VIBRACAO_DETECACAO_VERTICAL - bit 29", DEVE_INDISPONIBILIZAR, x))
+
+        self.leitura_bloqueio_86M_atuado = LeituraOPCBit(self.client, REG_OPC["UG"]["UG1_BLOQUEIO_86M_ATUADO"], 31)
+        x = self.leitura_bloqueio_86M_atuado
+        self.condicionadores.append(CondicionadorBase("UG1_BLOQUEIO_86M_ATUADO - bit 31", DEVE_INDISPONIBILIZAR, x))
+
+        self.leitura_trip_vibra_detec_horizontal = LeituraOPCBit(self.client, REG_OPC["UG"]["UG1_TRIP_VIBRACAO_DETECCAO_HORIZONTAL"], 21)
+        x = self.leitura_trip_vibra_detec_horizontal
+        self.condicionadores.append(CondicionadorBase("UG1_TRIP_VIBRACAO_DETECCAO_HORIZONTAL - bit 21", DEVE_INDISPONIBILIZAR, x))
+
+        self.leitura_trip_vibra_detec_vertical = LeituraOPCBit(self.client, REG_OPC["UG"]["UG1_TRIP_VIBRACAO_DETECACAO_VERTICAL"], 22)
+        x = self.leitura_trip_vibra_detec_vertical
+        self.condicionadores.append(CondicionadorBase("UG1_TRIP_VIBRACAO_DETECACAO_VERTICAL - bit 22", DEVE_INDISPONIBILIZAR, x))
+
+        self.leitura_trip_vibra_eixo_x_mancal_comb = LeituraOPCBit(self.client, REG_OPC["UG"]["UG1_TRIP_VIBRACAO_EIXO_X_MANCAL_COMBINADO"], 23)
+        x = self.leitura_trip_vibra_eixo_x_mancal_comb
+        self.condicionadores.append(CondicionadorBase("UG1_TRIP_VIBRACAO_EIXO_X_MANCAL_COMBINADO - bit 23", DEVE_INDISPONIBILIZAR, x))
+
+        self.leitura_trip_vibra_eixo_y_mancal_comb = LeituraOPCBit(self.client, REG_OPC["UG"]["UG1_TRIP_VIBRACAO_EIXO_Y_MANCAL_COMBINADO"], 24)
+        x = self.leitura_trip_vibra_eixo_y_mancal_comb
+        self.condicionadores.append(CondicionadorBase("UG1_TRIP_VIBRACAO_EIXO_Y_MANCAL_COMBINADO - bit 24", DEVE_INDISPONIBILIZAR, x))
+
+        self.leitura_trip_vibra_eixo_z_mancal_comb = LeituraOPCBit(self.client, REG_OPC["UG"]["UG1_TRIP_VIBRACAO_EIXO_Z_MANCAL_COMBINADO"], 25)
+        x = self.leitura_trip_vibra_eixo_z_mancal_comb
+        self.condicionadores.append(CondicionadorBase("UG1_TRIP_VIBRACAO_EIXO_Z_MANCAL_COMBINADO - bit 25", DEVE_INDISPONIBILIZAR, x))
+
+        self.leitura_trip_temp_ponte_fase_a = LeituraOPCBit(self.client, REG_OPC["UG"]["UG1_TRIP_TEMP_PONTE_FASE_A"], 16)
+        x = self.leitura_trip_temp_ponte_fase_a
+        self.condicionadores.append(CondicionadorBase("UG1_TRIP_TEMP_PONTE_FASE_A - bit 16", DEVE_INDISPONIBILIZAR, x))
+
+        self.leitura_trip_temp_ponte_fase_b = LeituraOPCBit(self.client, REG_OPC["UG"]["UG1_TRIP_TEMP_PONTE_FASE_B"], 17)
+        x = self.leitura_trip_temp_ponte_fase_b
+        self.condicionadores.append(CondicionadorBase("UG1_TRIP_TEMP_PONTE_FASE_B - bit 17", DEVE_INDISPONIBILIZAR, x))
+
+        self.leitura_trip_temp_ponte_fase_c = LeituraOPCBit(self.client, REG_OPC["UG"]["UG1_TRIP_TEMP_PONTE_FASE_C"], 18)
+        x = self.leitura_trip_temp_ponte_fase_c
+        self.condicionadores.append(CondicionadorBase("UG1_TRIP_TEMP_PONTE_FASE_C - bit 18", DEVE_INDISPONIBILIZAR, x))
+
+        self.leitura_trip_temp_gerador_fase_a = LeituraOPCBit(self.client, REG_OPC["UG"]["UG1_TRIP_TEMP_GERADOR_FASE_A"], 19)
+        x = self.leitura_trip_temp_gerador_fase_a
+        self.condicionadores.append(CondicionadorBase("UG1_TRIP_TEMP_GERADOR_FASE_A - bit 19", DEVE_INDISPONIBILIZAR, x))
+
+        self.leitura_trip_temp_gerador_fase_b = LeituraOPCBit(self.client, REG_OPC["UG"]["UG1_TRIP_TEMP_GERADOR_FASE_B"], 20)
+        x = self.leitura_trip_temp_gerador_fase_b
+        self.condicionadores.append(CondicionadorBase("UG1_TRIP_TEMP_GERADOR_FASE_B - bit 20", DEVE_INDISPONIBILIZAR, x))
+
+        self.leitura_trip_temp_gerador_fase_c = LeituraOPCBit(self.client, REG_OPC["UG"]["UG1_TRIP_TEMP_GERADOR_FASE_C"], 21)
+        x = self.leitura_trip_temp_gerador_fase_c
+        self.condicionadores.append(CondicionadorBase("UG1_TRIP_TEMP_GERADOR_FASE_C - bit 21", DEVE_INDISPONIBILIZAR, x))
+
+        self.leitura_trip_temp_gerador_nucleo_estatorico = LeituraOPCBit(self.client, REG_OPC["UG"]["UG1_TRIP_TEMP_GERADOR_NUCLEO_ESTATORICO"], 22)
+        x = self.leitura_trip_temp_gerador_nucleo_estatorico
+        self.condicionadores.append(CondicionadorBase("UG1_TRIP_TEMP_GERADOR_NUCLEO_ESTATORICO - bit 22", DEVE_INDISPONIBILIZAR, x))
+
+        self.leitura_trip_temp_gerador_saida_ar = LeituraOPCBit(self.client, REG_OPC["UG"]["UG1_TRIP_TEMP_GERADOR_SAIDA_AR"], 23)
+        x = self.leitura_trip_temp_gerador_saida_ar
+        self.condicionadores.append(CondicionadorBase("UG1_TRIP_TEMP_GERADOR_SAIDA_AR - bit 23", DEVE_INDISPONIBILIZAR, x))
+
+        self.leitura_trip_temp_trafo_ateramento = LeituraOPCBit(self.client, REG_OPC["UG"]["UG1_TRIP_TEMP_TRAFO_ATERRAMENTO"], 24)
+        x = self.leitura_trip_temp_trafo_ateramento
+        self.condicionadores.append(CondicionadorBase("UG1_TRIP_TEMP_TRAFO_ATERRAMENTO - bit 24", DEVE_INDISPONIBILIZAR, x))
+
+        self.leitura_trip_temp_trafo_excitacao = LeituraOPCBit(self.client, REG_OPC["UG"]["UG1_TRIP_TEMP_TRAFO_EXCITACAO"], 25)
+        x = self.leitura_trip_temp_trafo_excitacao
+        self.condicionadores.append(CondicionadorBase("UG1_TRIP_TEMP_TRAFO_EXCITACAO - bit 25", DEVE_INDISPONIBILIZAR, x))
+
+        self.leitura_trip_pressao_acum_uhrv = LeituraOPCBit(self.client, REG_OPC["UG"]["UG1_TRIP_PRESSAO_ACUMULADOR_UHRV"], 5)
+        x = self.leitura_trip_pressao_acum_uhrv
+        self.condicionadores.append(CondicionadorBase("UG1_TRIP_PRESSAO_ACUMULADOR_UHRV - bit 05", DEVE_INDISPONIBILIZAR, x))
+
+        self.leitura_trip_temp_mancal_casq_comb = LeituraOPCBit(self.client, REG_OPC["UG"]["UG1_TRIP_TEMP_CASQ_MANCAL_COMBINADO"], 18)
+        x = self.leitura_trip_temp_mancal_casq_comb
+        self.condicionadores.append(CondicionadorBase("UG1_TRIP_TEMP_CASQ_MANCAL_COMBINADO - bit 18", DEVE_INDISPONIBILIZAR, x))
+
+        self.leitura_trip_temp_mancal_contra_esc_comb = LeituraOPCBit(self.client, REG_OPC["UG"]["UG1_TRIP_TEMP_CONTRA_ESCORA_MANCAL_COMBINADO"], 19)
+        x = self.leitura_trip_temp_mancal_contra_esc_comb
+        self.condicionadores.append(CondicionadorBase("UG1_TRIP_TEMP_CONTRA_ESCORA_MANCAL_COMBINADO - bit 19", DEVE_INDISPONIBILIZAR, x))
+
+        self.leitura_trip_temp_mancal_patins_1_comb = LeituraOPCBit(self.client, REG_OPC["UG"]["UG1_TRIP_TEMP_1_PATINS_MANCAL_COMBINADO"], 20)
+        x = self.leitura_trip_temp_mancal_patins_1_comb
+        self.condicionadores.append(CondicionadorBase("UG1_TRIP_TEMP_1_PATINS_MANCAL_COMBINADO - bit 20", DEVE_INDISPONIBILIZAR, x))
+
+        self.leitura_trip_temp_mancal_patins_2_comb = LeituraOPCBit(self.client, REG_OPC["UG"]["UG1_TRIP_TEMP_2_PATINS_MANCAL_COMBINADO"], 21)
+        x = self.leitura_trip_temp_mancal_patins_2_comb
+        self.condicionadores.append(CondicionadorBase("UG1_TRIP_TEMP_2_PATINS_MANCAL_COMBINADO - bit 21", DEVE_INDISPONIBILIZAR, x))
+
+        self.leitura_trip_temp_mancal_guia_interno_1 = LeituraOPCBit(self.client, REG_OPC["UG"]["UG1_TRIP_TEMP_1_MANCAL_GUIA_INTERNO"], 22)
+        x = self.leitura_trip_temp_mancal_guia_interno_1
+        self.condicionadores.append(CondicionadorBase("UG1_TRIP_TEMP_1_MANCAL_GUIA_INTERNO - bit 22", DEVE_INDISPONIBILIZAR, x))
+
+        self.leitura_trip_temp_mancal_guia_interno_2 = LeituraOPCBit(self.client, REG_OPC["UG"]["UG1_TRIP_TEMP_2_MANCAL_GUIA_INTERNO"], 23)
+        x = self.leitura_trip_temp_mancal_guia_interno_2
+        self.condicionadores.append(CondicionadorBase("UG1_TRIP_TEMP_2_MANCAL_GUIA_INTERNO - bit 23", DEVE_INDISPONIBILIZAR, x))
+
+        self.leitura_falha_fechar_distrib_rv = LeituraOPCBit(self.client, REG_OPC["UG"]["UG1_RV_FALHA_FECHAR_DISTRIBUIDOR"], 4)
+        x = self.leitura_falha_fechar_distrib_rv
+        self.condicionadores.append(CondicionadorBase("UG1_RV_FALHA_FECHAR_DISTRIBUIDOR - bit 04", DEVE_INDISPONIBILIZAR, x))
+
+        self.leitura_falha_desbilitar_rt = LeituraOPCBit(self.client, REG_OPC["UG"]["UG1_RT_FALHA_DESABILITAR"], 18)
+        x = self.leitura_falha_desbilitar_rt
+        self.condicionadores.append(CondicionadorBase("UG1_RT_FALHA_DESABILITAR - bit 18", DEVE_INDISPONIBILIZAR, x))
+
+
+        # Inicializa as variáveis de controle PI para operação TDA Offline
         self.pt_controle_p = (self.leitura_pressao_turbina.valor - self.cfg["press_turbina_alvo"]) * self.cfg["pt_kp"]
         self.pt_ajuste_ie = (self.leitura_potencia.valor + self.leitura_potencia_ug2.valor) / self.cfg["pot_maxima_alvo"]
         self.pt_controle_i = self.pt_ajuste_ie - self.pt_controle_p
@@ -553,7 +756,7 @@ class UnidadeDeGeracao1(UnidadeDeGeracao):
         """
         try:
             self.logger.debug("[UG{}] Acionando sinal de TRIP.".format(self.id))
-            response = Escrita.write_value_bool(self.opc_server, "REG_UG1_ComandosDigitais_MXW_EmergenciaViaSuper", True)
+            response = EscritaOPCBit(self.client, REG_OPC["UG"]["UG1_CMD_PARADA_EMERGENCIA"], 4, 1)
         except:
             #! TODO Tratar exceptions
             return False
@@ -569,10 +772,14 @@ class UnidadeDeGeracao1(UnidadeDeGeracao):
         """
         try:
             self.logger.debug("[UG{}] Removendo sinal de TRIP.".format(self.id))
-            response = Escrita.write_value_bool(self.opc_server, "REG_UG1_ComandosDigitais_MXW_ResetGeral", True)
-            response = Escrita.write_value_bool(self.opc_server, "REG_UG1_EntradasDigitais_MXI_ReleBloqA86HAtuado", False)
-            response = Escrita.write_value_bool(self.opc_server, "REG_UG1_RetornosDigitais_MXR_700G_Trip", False)
-            
+            response = EscritaOPCBit(self.client, REG_OPC["UG"]["UG1_CMD_RESET_FALHAS_PASSOS"], 0, 1)
+            response = EscritaOPCBit(self.client, REG_OPC["UG"]["UG1_CMD_REARME_BLOQUEIO_86M"], 1, 1)
+            response = EscritaOPCBit(self.client, REG_OPC["UG"]["UG1_CMD_REARME_BLOQUEIO_86E"], 2, 1)
+            response = EscritaOPCBit(self.client, REG_OPC["UG"]["UG1_CMD_REARME_BLOQUEIO_86H"], 3, 1)
+            response = EscritaOPCBit(self.client, REG_OPC["UG"]["UG1_CMD_UHRV_REARME_FALHAS"], 0, 1)
+            response = EscritaOPCBit(self.client, REG_OPC["UG"]["UG1_CMD_UHLM_REARME_FALHAS"], 16, 1)
+            response = EscritaOPCBit(self.client, REG_OPC["UG"]["UG1_BLOQUEIO_86H_ATUADO"], 31, 0)
+            response = EscritaOPCBit(self.client, REG_OPC["UG"]["UG1_RELE_700G_TRIP_ATUADO"], 31, 0)
         except:
             #! TODO Tratar exceptions
             return False
@@ -589,7 +796,7 @@ class UnidadeDeGeracao1(UnidadeDeGeracao):
         try:
             self.enviar_trip_eletrico = True
             self.logger.debug("[UG{}] Acionando sinal elétrico de TRIP.".format(self.id))
-            DataBank.set_words(self.cfg["REG_MOA_OUT_BLOCK_UG1"],[1],)
+            DataBank.set_words(REG_MB["MOA"]["OUT_BLOCK_UG1"],[1],)
         except:
             #! TODO Tratar exceptions
             return False
@@ -606,11 +813,10 @@ class UnidadeDeGeracao1(UnidadeDeGeracao):
         try:
             self.enviar_trip_eletrico = False
             self.logger.debug("[UG{}] Removendo sinal elétrico de TRIP.".format(self.id))
-            DataBank.set_words(self.cfg["REG_MOA_OUT_BLOCK_UG1"],[0],)
-            DataBank.set_words(self.cfg["REG_PAINEL_LIDO"],[0],)
-            response = Escrita.write_value_bool(self.opc_server, "REG_UG1_ComandosDigitais_MXW_Cala_Sirene", True)
+            DataBank.set_words(REG_MB["MOA"]["OUT_BLOCK_UG1"],[0],)
+            DataBank.set_words(REG_MB["MOA"]["PAINEL_LIDO"],[0],)
 
-            if read_input_value(self.opc_server, "REG_SA_ComandosDigitais_MXW_Liga_DJ1") == 0:
+            if not LeituraOPCBit(self.client, REG_OPC["SE"]["CMD_SE_FECHA_52L"], 4, True):
                 self.logger.debug("Comando recebido da UG1 - Fechando Dj52L")
                 self.con.fechaDj52L()
         except Exception as e:
@@ -629,27 +835,25 @@ class UnidadeDeGeracao1(UnidadeDeGeracao):
         try:
             # na simulação, a condição a seguir, impede a partida das ugs. Retirar comentário quando for aplicar em campo
             """
-            if not self.opc_server.read_discrete_inputs(REG_UG1_COND_PART,1)[0]:
+            if not self.client.read_discrete_inputs(REG_UG1_COND_PART,1)[0]:
                 self.logger.debug("[UG{}] Máquina sem condição de partida. Irá partir quando as condições forem reestabelecidas.".format(self.id))
                 return True
-            elif self.opc_server_sa.read_coils(REG_SA_EntradasDigitais_MXI_SA_QCAP_Disj52A1Fechado)[0] != 0:
+            elif self.client_sa.read_coils(REG_SA_EntradasDigitais_MXI_SA_QCAP_Disj52A1Fechado)[0] != 0:
                 self.logger.info("[UG{}] O Disjuntor 52A1 está aberto. Para partir a máquina, o mesmo deverá ser fechado.")
                 return True
             """
             if not self.etapa_alvo == UNIDADE_SINCRONIZADA:
                 self.logger.info("[UG{}] Enviando comando de partida.".format(self.id))
-                response = Escrita.write_value_bool(self.opc_server, "REG_UG1_ComandosDigitais_MXW_ResetGeral", True)
-                response = Escrita.write_value_bool(self.opc_server, "REG_UG1_ComandosDigitais_MXW_ResetRele700G", True)
-                response = Escrita.write_value_bool(self.opc_server, "REG_UG1_ComandosDigitais_MXW_ResetReleBloq86H", True)
-                response = Escrita.write_value_bool(self.opc_server, "REG_UG1_ComandosDigitais_MXW_ResetReleBloq86M", True)
-                response = Escrita.write_value_bool(self.opc_server, "REG_UG1_ComandosDigitais_MXW_ResetReleRT", True)
-                response = Escrita.write_value_bool(self.opc_server, "REG_UG1_ComandosDigitais_MXW_ResetRV", True)
-                response = Escrita.write_value_bool(self.opc_server, "REG_UG1_ComandosDigitais_MXW_IniciaPartida", True)
-                response = Escrita.write_value_bool(self.opc_server, "REG_UG1_ComandosDigitais_MXW_Cala_Sirene", True)
+                response = EscritaOPCBit(self.client, REG_OPC["UG"]["UG1_CMD_RESET_FALHAS_PASSOS"], 0, 1)
+                response = EscritaOPCBit(self.client, REG_OPC["UG"]["UG1_CMD_REARME_BLOQUEIO_86M"], 1, 1)
+                response = EscritaOPCBit(self.client, REG_OPC["UG"]["UG1_CMD_REARME_BLOQUEIO_86E"], 2, 1)
+                response = EscritaOPCBit(self.client, REG_OPC["UG"]["UG1_CMD_REARME_BLOQUEIO_86H"], 3, 1)
+                response = EscritaOPCBit(self.client, REG_OPC["UG"]["UG1_CMD_UHRV_REARME_FALHAS"], 0, 1)
+                response = EscritaOPCBit(self.client, REG_OPC["UG"]["UG1_CMD_UHLM_REARME_FALHAS"], 16, 1)
+                response = EscritaOPCBit(self.client, REG_OPC["UG"]["UG1_CMD_PARTIDA_CMD_SINCRONISMO"], 10, 1)
                 self.enviar_setpoint(self.setpoint)
             else:
                 self.logger.debug("[UG{}] A unidade já está sincronizada.".format(self.id))
-                response = Escrita.write_value_bool(self.opc_server, "REG_UG1_ComandosDigitais_MXW_Cala_Sirene", True)
         except:
             #! TODO Tratar exceptions
             return False
@@ -667,14 +871,10 @@ class UnidadeDeGeracao1(UnidadeDeGeracao):
             if not self.etapa_alvo == UNIDADE_PARADA:
                 self.logger.info("[UG{}] Enviando comando de parada.".format(self.id))
                 response = False
-                response = Escrita.write_value_bool(self.opc_server, "REG_UG1_ComandosDigitais_MXW_AbortaPartida", True)
-                response = Escrita.write_value_bool(self.opc_server, "REG_UG1_ComandosDigitais_MXW_AbortaSincronismo", True)
-                response = Escrita.write_value_bool(self.opc_server, "REG_UG1_ComandosDigitais_MXW_IniciaParada", True)
-                response = Escrita.write_value_bool(self.opc_server, "REG_UG1_ComandosDigitais_MXW_Cala_Sirene", True)
+                response = EscritaOPCBit(self.client, REG_OPC["UG"]["UG1_CMD_PARADA_CMD_DESABILITA_UHLM"], 15, 1)
                 self.enviar_setpoint(0)
             else:
                 self.logger.debug("[UG{}] A unidade já está parada.".format(self.id))
-                response = Escrita.write_value_bool(self.opc_server, "REG_UG1_ComandosDigitais_MXW_Cala_Sirene", True)
             
         except Exception as e:
             self.logger.exception(e)
@@ -693,14 +893,18 @@ class UnidadeDeGeracao1(UnidadeDeGeracao):
             self.logger.info("[UG{}] Enviando comando de reconhece e reset alarmes. (Aproximadamente 10s)".format(self.id))
 
             for _ in range(3):
-                DataBank.set_words(self.cfg["REG_PAINEL_LIDO"], [0])
+                DataBank.set_words(REG_MB["MOA"]["PAINEL_LIDO"], [0])
                 self.remover_trip_eletrico()
-                DataBank.set_words(self.cfg["REG_PAINEL_LIDO"], [0])
+                DataBank.set_words(REG_MB["MOA"]["PAINEL_LIDO"], [0])
                 sleep(1)
                 self.remover_trip_logico()
-                response = Escrita.write_value_bool(self.opc_server, "REG_UG1_ComandosDigitais_MXW_ResetGeral", True)
-                response = Escrita.write_value_bool(self.opc_server, "REG_UG1_ComandosDigitais_MXW_Cala_Sirene", True)
-                DataBank.set_words(self.cfg["REG_PAINEL_LIDO"], [0])
+                response = EscritaOPCBit(self.client, REG_OPC["UG"]["UG1_CMD_RESET_FALHAS_PASSOS"], 0, 1)
+                response = EscritaOPCBit(self.client, REG_OPC["UG"]["UG1_CMD_REARME_BLOQUEIO_86M"], 1, 1)
+                response = EscritaOPCBit(self.client, REG_OPC["UG"]["UG1_CMD_REARME_BLOQUEIO_86E"], 2, 1)
+                response = EscritaOPCBit(self.client, REG_OPC["UG"]["UG1_CMD_REARME_BLOQUEIO_86H"], 3, 1)
+                response = EscritaOPCBit(self.client, REG_OPC["UG"]["UG1_CMD_UHRV_REARME_FALHAS"], 0, 1)
+                response = EscritaOPCBit(self.client, REG_OPC["UG"]["UG1_CMD_UHLM_REARME_FALHAS"], 16, 1)
+                DataBank.set_words(REG_MB["MOA"]["PAINEL_LIDO"], [0])
                 sleep(1)
 
         except:
@@ -725,9 +929,13 @@ class UnidadeDeGeracao1(UnidadeDeGeracao):
             self.logger.debug("[UG{}] Enviando setpoint {} kW.".format(self.id, int(self.setpoint)))
             response = False
             if self.setpoint > 1:
-                response = Escrita.write_value_bool(self.opc_server, "REG_UG1_ComandosDigitais_MXW_ResetGeral", True)
-                response = Escrita.write_value_bool(self.opc_server, "REG_UG1_ComandosDigitais_MXW_RV_RefRemHabilita", True)
-                response = Escrita.write_value_int(self.opc_server, "REG_UG1_SaidasAnalogicas_MWW_SPPotAtiva", self.setpoint)
+                response = EscritaOPCBit(self.client, REG_OPC["UG"]["UG1_CMD_RESET_FALHAS_PASSOS"], 0, 1)
+                response = EscritaOPCBit(self.client, REG_OPC["UG"]["UG1_CMD_REARME_BLOQUEIO_86M"], 1, 1)
+                response = EscritaOPCBit(self.client, REG_OPC["UG"]["UG1_CMD_REARME_BLOQUEIO_86E"], 2, 1)
+                response = EscritaOPCBit(self.client, REG_OPC["UG"]["UG1_CMD_REARME_BLOQUEIO_86H"], 3, 1)
+                response = EscritaOPCBit(self.client, REG_OPC["UG"]["UG1_CMD_UHRV_REARME_FALHAS"], 0, 1)
+                response = EscritaOPCBit(self.client, REG_OPC["UG"]["UG1_CMD_UHLM_REARME_FALHAS"], 16, 1)
+                response = self.clp.write_single_register(REG_MB["UG"]["UG1_RV_SETPOINT_POTENCIA_ATIVA_PU"], self.setpoint)
 
         except:
             #! TODO Tratar exceptions
@@ -779,34 +987,31 @@ class UnidadeDeGeracao1(UnidadeDeGeracao):
 
     def abrir_comporta(self) -> bool:
         try:
-            response = Escrita.write_value_int(self.opc_server, "REG_UG1_RetornosDigitais_StatusComporta", 1)
+            response = EscritaOPCBit(self.client, REG_OPC["UG"]["CP1_CMD_ABERTURA_TOTAL"], 1, 1)
         except Exception as e:
             raise(e)
-            return False
         else:
             return response
     
     def fechar_comporta(self) -> bool:
         try:
-            response = Escrita.write_value_int(self.opc_server, "REG_UG1_RetornosDigitais_StatusComporta", 0)
+            response = EscritaOPCBit(self.client, REG_OPC["UG"]["CP1_CMD_FECHAMENTO"], 3, 1)
         except Exception as e:
             raise(e)
-            return False
         else:
             return response
 
     def cracking_comporta(self) -> bool:
         try:
-            response = Escrita.write_value_int(self.opc_server, "REG_UG1_RetornosDigitais_StatusComporta", 2)
+            response = EscritaOPCBit(self.client, REG_OPC["UG"]["CP1_CMD_ABERTURA_CRACKING"], 1, 1)
         except Exception as e:
             raise(e)
-            return False
         else:
             return response
 
     def modbus_update_state_register(self):
-        DataBank.set_words(self.cfg["REG_MOA_OUT_STATE_UG{}".format(self.id)],[self.codigo_state],)
-        DataBank.set_words(self.cfg["REG_MOA_OUT_ETAPA_UG{}".format(self.id)],[self.etapa_atual],)
+        DataBank.set_words(REG_MB["MOA"]["OUT_STATE_UG1"],[self.codigo_state],)
+        DataBank.set_words(REG_MB["MOA"]["OUT_ETAPA_UG1"],[self.etapa_atual],)
 
     def interstep(self) -> None:
         if (not self.avisou_emerg_voip) and (self.condicionador_pressao_turbina_ug.valor > 0.1):
@@ -816,7 +1021,6 @@ class UnidadeDeGeracao1(UnidadeDeGeracao):
             self.avisou_emerg_voip = False
 
     def controle_limites_operacao(self):
-
         if self.leitura_temperatura_fase_R.valor >= self.condicionador_temperatura_fase_r_ug.valor_base:
             self.logger.warning("[UG{}] A temperatura de Fase R da UG passou do valor base! ({}C) | Leitura: {}C".format(self.id, self.condicionador_temperatura_fase_r_ug.valor_base, self.leitura_temperatura_fase_R.valor))
         if self.leitura_temperatura_fase_R.valor >= 0.9*(self.condicionador_temperatura_fase_r_ug.valor_limite - self.condicionador_temperatura_fase_r_ug.valor_base) + self.condicionador_temperatura_fase_r_ug.valor_base:
@@ -878,50 +1082,208 @@ class UnidadeDeGeracao1(UnidadeDeGeracao):
             self.logger.critical("[UG{}] A pressão na entrada da turbina da UG está muito próxima do limite! ({:03.2f} KGf/m2) | Leitura: {:03.2f} KGf/m2".format(self.id, self.condicionador_pressao_turbina_ug.valor_limite, self.leitura_pressao_turbina.valor))
 
     def leituras_por_hora(self):
-        """
-        self.leitura_EntradasDigitais_MXI_FreioPastilhaGasta = LeituraOPC( "EntradasDigitais_MXI_FreioPastilhaGasta", self.opc_server, REG_UG1_EntradasDigitais_MXI_FreioPastilhaGasta )
-        if self.leitura_EntradasDigitais_MXI_FreioPastilhaGasta.valor != 0:
-            self.logger.warning("[UG{}] O sensor de Freio da UG retornou que a Pastilha está gasta, favor considerar troca.".format(self.id))
+        # Telegram
 
-        self.leitura_EntradasDigitais_MXI_FiltroPresSujo75Troc = LeituraOPC( "EntradasDigitais_MXI_FiltroPresSujo75Troc", self.opc_server, REG_UG1_EntradasDigitais_MXI_FiltroPresSujo75Troc )
-        if self.leitura_EntradasDigitais_MXI_FiltroPresSujo75Troc.valor != 0:
-            self.logger.warning("[UG{}] O sensor do Filtro de Pressão UHRV retornou que o filtro está 75% sujo, favor considerar troca.".format(self.id))
-
-        self.leitura_EntradasDigitais_MXI_FiltroRetSujo75Troc = LeituraOPC( "EntradasDigitais_MXI_FiltroRetSujo75Troc", self.opc_server, REG_UG1_EntradasDigitais_MXI_FiltroRetSujo75Troc )
-        if self.leitura_EntradasDigitais_MXI_FiltroRetSujo75Troc.valor != 0:
-            self.logger.warning("[UG{}] O sensor do Filtro de Retorno UHRV retornou que o filtro está 75% sujo, favor considerar troca.".format(self.id))
-
-        self.leitura_EntradasDigitais_MXI_UHLMFilt1PresSujo75Troc = LeituraOPC( "EntradasDigitais_MXI_UHLMFilt1PresSujo75Troc", self.opc_server, REG_UG1_EntradasDigitais_MXI_UHLM_Filt1PresSujo75Troc )
-        if self.leitura_EntradasDigitais_MXI_UHLMFilt1PresSujo75Troc.valor != 0:
-            self.logger.warning("[UG{}] O sensor do Filtro 1 de Pressão UHLM retornou que o filtro está 75% sujo, favor considerar troca.".format(self.id))
-
-        self.leitura_EntradasDigitais_MXI_UHLMFilt2PresSujo75Troc = LeituraOPC( "EntradasDigitais_MXI_UHLMFilt2PresSujo75Troc", self.opc_server, REG_UG1_EntradasDigitais_MXI_UHLM_Filt2PresSujo75Troc )
-        if self.leitura_EntradasDigitais_MXI_UHLMFilt2PresSujo75Troc.valor != 0:
-            self.logger.warning("[UG{}] O sensor do Filtro 2 de Pressão UHLM retornou que o filtro está 75% sujo, favor considerar troca.".format(self.id))
-
-        self.leitura_EntradasDigitais_MXI_FiltroPressaoBbaMecSj75 = LeituraOPC( "EntradasDigitais_MXI_FiltroPressaoBbaMecSj75", self.opc_server, REG_UG1_EntradasDigitais_MXI_FiltroPressaoBbaMecSj75 )
-        if self.leitura_EntradasDigitais_MXI_FiltroPressaoBbaMecSj75.valor != 0:
-            self.logger.warning("[UG{}] O sensor do Filtro de Pressão da Bomba Mecânica retornou que o filtro está 75% sujo, favor considerar troca.".format(self.id))
-
-        self.leitura_EntradasDigitais_MXI_TripPartRes = LeituraOPC( "EntradasDigitais_MXI_TripPartRes", self.opc_server, REG_UG1_EntradasDigitais_MXI_TripPartRes )
-        if self.leitura_EntradasDigitais_MXI_TripPartRes.valor != 0:
-            self.logger.warning("[UG{}] O sensor TripPartRes retornou valor 1.".format(self.id))
+        self.leitura_saidas_digitais_rv_b0 = LeituraModbusBit(self.clp, REG_MB["UG"]["UG1_RV_SAIDAS_DIGITAIS"], 0)
+        if self.leitura_saidas_digitais_rv_b0:
+            self.logger.warning("[UG{}] O alarme do Regulador de Velocidade da UG foi acionado. Favor verificar.".format(self.id))
         
-        self.leitura_EntradasDigitais_MXI_FreioCmdRemoto = LeituraOPC( "EntradasDigitais_MXI_FreioCmdRemoto", self.opc_server, REG_UG1_EntradasDigitais_MXI_FreioCmdRemoto )
-        if self.leitura_EntradasDigitais_MXI_FreioCmdRemoto.valor == 0 and self.FreioCmdRemoto == True:
-            self.logger.warning("[UG{}] O freio da UG saiu do modo remoto, favor analisar a situação.".format(self.id))
-            self.FreioCmdRemoto = False
-            self.acionar_voip = True
-        elif self.leitura_EntradasDigitais_MXI_FreioCmdRemoto.valor == 1 and self.FreioCmdRemoto == False:
-            self.FreioCmdRemoto = True
+        self.leitura_saidas_digitais_rt_b0 = LeituraModbusBit(self.clp, REG_MB["UG"]["UG1_RT_SAIDAS_DIGITAIS"], 0)
+        if self.leitura_saidas_digitais_rt_b0:
+            self.logger.warning("[UG{}] O alarme do Regulador de Tensão da UG foi acionado. Favor verificar.".format(self.id))
+        
+        self.leitura_falha_3_rt_b0 = LeituraModbusBit(self.clp, REG_MB["UG"]["UG1_RT_FALHAS_3"], 0)
+        if self.leitura_falha_3_rt_b0:
+            self.logger.warning("[UG{}] Houve uma falha na leitura de potência reativa pelo Regulador de Tensão da UG. Favor Verificar.". format(self.id))
+        
+        self.leitura_falha_3_rt_b1 = LeituraModbusBit(self.clp, REG_MB["UG"]["UG1_RT_FALHAS_3"], 1)
+        if self.leitura_falha_3_rt_b1:
+            self.logger.warning("[UG{}] Houve uma falha na leitura da tensão terminal pelo Regulador de Tensão da UG. Favor Verificar.". format(self.id))
+        
+        self.leitura_falha_3_rt_b2 = LeituraModbusBit(self.clp, REG_MB["UG"]["UG1_RT_FALHAS_3"], 2)
+        if self.leitura_falha_3_rt_b2:
+            self.logger.warning("[UG{}] Houve uma falha na leitura principal da corrente de excitação pelo Regulador de Tensão da UG. Favor Verificar.". format(self.id))
+        
+        self.leitura_falha_3_rt_b3 = LeituraModbusBit(self.clp, REG_MB["UG"]["UG1_RT_FALHAS_3"], 3)
+        if self.leitura_falha_3_rt_b3:
+            self.logger.warning("[UG{}] Houve uma falha na leitura retaguarda da corrente de excitação pelo Regulador de Tensão da UG. Favor Verificar.". format(self.id))
+        
+        self.leitura_falha_3_rt_b4 = LeituraModbusBit(self.clp, REG_MB["UG"]["UG1_RT_FALHAS_3"], 4)
+        if self.leitura_falha_3_rt_b4:
+            self.logger.warning("[UG{}] Foi identificado ruído na instrumentação de reativo do Regulador de Tensão da UG. Favor Verificar.". format(self.id))
+        
+        self.leitura_falha_3_rt_b5 = LeituraModbusBit(self.clp, REG_MB["UG"]["UG1_RT_FALHAS_3"], 5)
+        if self.leitura_falha_3_rt_b5:
+            self.logger.warning("[UG{}] Foi identificado ruído na instrumentação de tensão do Regulador de Tensão da UG. Favor Verificar.". format(self.id))
+        
+        self.leitura_falha_3_rt_b6 = LeituraModbusBit(self.clp, REG_MB["UG"]["UG1_RT_FALHAS_3"], 6)
+        if self.leitura_falha_3_rt_b6:
+            self.logger.warning("[UG{}] Foi identificado ruído na instrumentação de excitação principal do Regulador de Tensão da UG. Favor Verificar.". format(self.id))
+        
+        self.leitura_falha_3_rt_b7 = LeituraModbusBit(self.clp, REG_MB["UG"]["UG1_RT_FALHAS_3"], 7)
+        if self.leitura_falha_3_rt_b7:
+            self.logger.warning("[UG{}] Foi identificado ruído na instrumentação de excitação retaguarda do Regulador de Tensão da UG. Favor Verificar.". format(self.id))
+        
+        self.leitura_falha_1_rv_b4 = LeituraModbusBit(self.clp, REG_MB["UG"]["UG1_RV_FALHA_1"], 4)
+        if self.leitura_falha_1_rv_b4:
+            self.logger.warning("[UG{}] Houve uma falha de leitura de posição do distribuidor pelo Regulador de Velocidade da UG. Favor verificar.".format(self.id))
+        
+        self.leitura_falha_1_rv_b5 = LeituraModbusBit(self.clp, REG_MB["UG"]["UG1_RV_FALHA_1"], 5)
+        if self.leitura_falha_1_rv_b5:
+            self.logger.warning("[UG{}] Houve uma falha de leitura de posição do rotor pelo Regulador de Velocidade da UG. Favor verificar.".format(self.id))
+        
+        self.leitura_falha_1_rv_b6 = LeituraModbusBit(self.clp, REG_MB["UG"]["UG1_RV_FALHA_1"], 6)
+        if self.leitura_falha_1_rv_b6:
+            self.logger.warning("[UG{}] Houve uma falha de leitura de potência ativa pelo Regulador de Velocidade da UG. Favor verificar.".format(self.id))
+        
+        self.leitura_falha_1_rv_b7 = LeituraModbusBit(self.clp, REG_MB["UG"]["UG1_RV_FALHA_1"], 7)
+        if self.leitura_falha_1_rv_b7:
+            self.logger.warning("[UG{}] Houve uma falha de leitura de referência de potência pelo Regulador de Velocidade da UG. Favor verificar.".format(self.id))
+        
+        self.leitura_falha_1_rv_b8 = LeituraModbusBit(self.clp, REG_MB["UG"]["UG1_RV_FALHA_1"], 8)
+        if self.leitura_falha_1_rv_b8:
+            self.logger.warning("[UG{}] Houve uma falha de leitura de nível montante pelo Regulador de Velocidade da UG. Favor verificar.".format(self.id))
+        
+        self.leitura_falha_1_rv_b13 = LeituraModbusBit(self.clp, REG_MB["UG"]["UG1_RV_FALHA_1"], 13)
+        if self.leitura_falha_1_rv_b13:
+            self.logger.warning("[UG{}] Foi identificado ruído na medição principal de velocidade da UG. Favor verificar.".format(self.id))
+        
+        self.leitura_falha_1_rv_b14 = LeituraModbusBit(self.clp, REG_MB["UG"]["UG1_RV_FALHA_1"], 14)
+        if self.leitura_falha_1_rv_b14:
+            self.logger.warning("[UG{}] Foi identificado ruído na medição retaguarda de velocidade da UG. Favor verificar.".format(self.id))
+        
+        self.leitura_falha_1_rv_b15 = LeituraModbusBit(self.clp, REG_MB["UG"]["UG1_RV_FALHA_1"], 15)
+        if self.leitura_falha_1_rv_b15:
+            self.logger.warning("[UG{}] Foi identificada perda na medição principal de velocidade da UG. Favor verificar.".format(self.id))
+        
+        self.leitura_falha_2_rv_b0 = LeituraModbusBit(self.clp, REG_MB["UG"]["UG1_RV_FALHA_1"], 0)
+        if self.leitura_falha_2_rv_b0:
+            self.logger.warning("[UG{}] Foi identificada perda na medição retaguarda de velocidade da UG. Favor verificar.".format(self.id))
+        
+        self.leitura_falha_2_rv_b4 = LeituraModbusBit(self.clp, REG_MB["UG"]["UG1_RV_FALHA_1"], 4)
+        if self.leitura_falha_2_rv_b4:
+            self.logger.warning("[UG{}] Foi identificada diferença entre medidor principal e retaguarda da UG. Favor verificar.".format(self.id))
+        
+        self.leitura_unidade_manutencao_uhrv = LeituraOPCBit(self.client, REG_OPC["UG"]["UG1_UHRV_UNIDADE_EM_MANUTENCAO"], 0)
+        if self.leitura_unidade_manutencao_uhrv:
+            self.logger.warning("[UG{}] UHRV da UG entrou em modo de manutenção".format(self.id))
+        
+        self.leitura_unidade_manutencao_uhlm = LeituraOPCBit(self.client, REG_OPC["UG"]["UG1_UHLM_UNIDADE_EM_MANUTENCAO"], 4)
+        if self.leitura_unidade_manutencao_uhlm:
+            self.logger.warning("[UG{}] UHLM da UG entrou em modo de manutenção".format(self.id))
 
-        self.leitura_EntradasDigitais_MXI_QCAUG1_Remoto = LeituraOPC( "EntradasDigitais_MXI_QCAUG1_Remoto", self.opc_server, REG_UG1_EntradasDigitais_MXI_QCAUG1_Remoto )
-        if self.leitura_EntradasDigitais_MXI_QCAUG1_Remoto.valor == 0 and self.QCAUGRemoto==True:
-            self.logger.warning("[UG{}] O compressor da UG saiu do modo remoto, favor analisar a situação.".format(self.id))
-            self.QCAUGRemoto = False
-            self.acionar_voip = True
-        elif self.leitura_EntradasDigitais_MXI_QCAUG1_Remoto.valor == 1 and self.QCAUGRemoto==False:
-            self.QCAUGRemoto = True
+        self.leitura_filtro_limpo_uhrv = LeituraOPCBit(self.client, REG_OPC["UG"]["UG1_UHRV_FILTRO_LIMPO"], 24, True)
+        if not self.leitura_filtro_limpo_uhrv:
+            self.logger.warning("[UG{}] O filtro da UHRV da UG está sujo. Favor realizar limpeza/troca.".format(self.id))
 
-        return True
-        """
+        self.leitura_filtro_limpo_uhlm = LeituraOPCBit(self.client, REG_OPC["UG"]["UG1_UHLM_FILTRO_LIMPO"], 21, True)
+        if not self.leitura_filtro_limpo_uhrv:
+            self.logger.warning("[UG{}] O filtro da UHLM da UG está sujo. Favor realizar limpeza/troca.".format(self.id))
+
+        self.leitura_porta_interna_fechada_cpg = LeituraOPCBit(self.client, REG_OPC["UG"]["UG1_CPG_UG_PORTA_INTERNA_FECHADA"], 12, True)
+        if not self.leitura_porta_interna_fechada_cpg:
+            self.logger.warning("[UG{}] A porta interna do CPG da UG está aberta. Favor fechar.".format(self.id))
+
+        self.leitura_porta_traseira_fechada_cpg = LeituraOPCBit(self.client, REG_OPC["UG"]["UG1_CPG_UG_PORTA_TRASEIRA_FECHADA"], 13, True)
+        if not self.leitura_porta_traseira_fechada_cpg:
+            self.logger.warning("[UG{}] A porta traseira do CPG da UG está aberta. Favor fechar.".format(self.id))
+
+        self.leitura_resistencia_sem_falha = LeituraOPCBit(self.client, REG_OPC["UG"]["UG1_RESISTENCIA_SEM_FALHA"], 28, True)
+        if not self.leitura_resistencia_sem_falha:
+            self.logger.warning("[UG{}] Houve uma falha na resistência da UG. Favor verificar.".format(self.id))
+
+        self.leitura_escovas_gastas_polo_positivo = LeituraOPCBit(self.client, REG_OPC["UG"]["UG1_ESCOVAS_GASTAS_POLO_POSITIVO"], 5)
+        if self.leitura_escovas_gastas_polo_positivo:
+            self.logger.warning("[UG{}] Foi identificado que as escovas do polo positivo da UG estão gastas. Favor verificar.".format(self.id))
+        
+        self.leitura_escovas_gastas_polo_negativo = LeituraOPCBit(self.client, REG_OPC["UG"]["UG1_ESCOVAS_GASTAS_POLO_NEGATIVO"], 6)
+        if self.leitura_escovas_gastas_polo_negativo:
+            self.logger.warning("[UG{}] Foi identificado que as escovas do polo negativo da UG estão gastas. Favor verificar.".format(self.id))
+
+        self.leitura_alarme_temp_ponte_fase_a = LeituraOPCBit(self.client, REG_OPC["UG"]["UG1_ALM_TEMP_PONTE_FASE_A"], 0)
+        if self.leitura_alarme_temp_ponte_fase_a:
+            self.logger.warning("[UG{}] O alarme de temperatura da pote fase A foi acionado. Favor verificar.".format(self.id))
+
+        self.leitura_alarme_temp_ponte_fase_b = LeituraOPCBit(self.client, REG_OPC["UG"]["UG1_ALM_TEMP_PONTE_FASE_B"], 1)
+        if self.leitura_alarme_temp_ponte_fase_b:
+            self.logger.warning("[UG{}] O alarme de temperatura da pote fase B foi acionado. Favor verificar.".format(self.id))
+
+        self.leitura_alarme_temp_ponte_fase_c = LeituraOPCBit(self.client, REG_OPC["UG"]["UG1_ALM_TEMP_PONTE_FASE_C"], 2)
+        if self.leitura_alarme_temp_ponte_fase_c:
+            self.logger.warning("[UG{}] O alarme de temperatura da pote fase C foi acionado. Favor verificar.".format(self.id))
+        
+        self.leitura_alarme_temp_trafo_excitacao = LeituraOPCBit(self.client, REG_OPC["UG"]["UG1_ALM_TEMP_TRAFO_EXCITACAO"], 4)
+        if self.leitura_alarme_temp_trafo_excitacao:
+            self.logger.warning("[UG{}] O alarme de temperatura do transformador excitação foi acionado. Favor verificar.".format(self.id))
+        
+        self.leitura_alarme_temp_mancal_guia = LeituraOPCBit(self.client, REG_OPC["UG"]["UG1_ALM_TEMP_MANCAL_GUIA"], 5)
+        if self.leitura_alarme_temp_mancal_guia:
+            self.logger.warning("[UG{}] O alarme de temperatura do mancal guia foi acionado. Favor verificar.".format(self.id))
+        
+        self.leitura_alarme_temp_oleo_uhrv = LeituraOPCBit(self.client, REG_OPC["UG"]["UG1_ALM_TEMP_OLEO_UHRV"], 6)
+        if self.leitura_alarme_temp_oleo_uhrv:
+            self.logger.warning("[UG{}] O alarme de temperatura de óleo da UHRV foi acionado. Favor verificar.".format(self.id))
+        
+        self.leitura_alarme_temp_oleo_uhlm = LeituraOPCBit(self.client, REG_OPC["UG"]["UG1_ALM_TEMP_OLEO_UHLM"], 7)
+        if self.leitura_alarme_temp_oleo_uhlm:
+            self.logger.warning("[UG{}] O alarme de temperatura de óleo da UHLM foi acionado. Favor verificar.".format(self.id))
+
+        self.leitura_alarme_temp_mancal_casq_comb = LeituraOPCBit(self.client, REG_OPC["UG"]["UG1_ALM_TEMP_CASQ_MANCAL_COMBINADO"], 8)
+        if self.leitura_alarme_temp_mancal_casq_comb:
+            self.logger.warning("[UG{}] O alarme de temperatura do mancal casquilho combinado foi acionado. Favor verificar.".format(self.id))
+        
+        self.leitura_alarme_temp_mancal_con_esc_comb = LeituraOPCBit(self.client, REG_OPC["UG"]["UG1_ALM_TEMP_CONTRA_ESCORA_MANCAL_COMBINADO"], 9)
+        if self.leitura_alarme_temp_mancal_con_esc_comb:
+            self.logger.warning("[UG{}] O alarme de temperatura do mancal contra escora combinado foi acionado. Favor verificar.".format(self.id))
+        
+        self.leitura_alarme_temp_patins_1_mancal_comb = LeituraOPCBit(self.client, REG_OPC["UG"]["UG1_ALM_TEMP_1_PATINS_MANCAL_COMBINADO"], 10)
+        if self.leitura_alarme_temp_patins_1_mancal_comb:
+            self.logger.warning("[UG{}] O alarme de temperatura do patins 1 mancal combinado foi acionado. Favor verificar.".format(self.id))
+        
+        self.leitura_alarme_temp_patins_2_mancal_comb = LeituraOPCBit(self.client, REG_OPC["UG"]["UG1_ALM_TEMP_2_PATINS_MANCAL_COMBINADO"], 11)
+        if self.leitura_alarme_temp_patins_2_mancal_comb:
+            self.logger.warning("[UG{}] O alarme de temperatura do patins 2 mancal combinado foi acionado. Favor verificar.".format(self.id))
+        
+        self.leitura_alarme_temp_mancal_guia_interno_1 = LeituraOPCBit(self.client, REG_OPC["UG"]["UG1_ALM_TEMP_1_MANCAL_GUIA_INTERNO"], 12)
+        if self.leitura_alarme_temp_mancal_guia_interno_1:
+            self.logger.warning("[UG{}] O alarme de temperatura do mancal guia interno 1 foi acionado. Favor verificar.".format(self.id))
+        
+        self.leitura_alarme_temp_mancal_guia_interno_2 = LeituraOPCBit(self.client, REG_OPC["UG"]["UG1_ALM_TEMP_2_MANCAL_GUIA_INTERNO"], 13)
+        if self.leitura_alarme_temp_mancal_guia_interno_2:
+            self.logger.warning("[UG{}] O alarme de temperatura do mancal guia interno 2 foi acionado. Favor verificar.".format(self.id))
+
+        self.leitura_alarme_temp_nucleo_estatorico_gerador = LeituraOPCBit(self.client, REG_OPC["UG"]["UG1_ALM_TEMP_GERADOR_NUCLEO_ESTATORICO"], 14)
+        if self.leitura_alarme_temp_nucleo_estatorico_gerador:
+            self.logger.warning("[UG{}] O alarme de temperatura do núcleo estatórico do gerador foi acionado. Favor verificar.".format(self.id))
+        
+        self.leitura_temp_fase_a_gerador = LeituraOPCBit(self.client, REG_OPC["UG"]["UG1_ALM_TEMP_GERADOR_FASE_A"], 15)
+        if self.leitura_temp_fase_a_gerador:
+            self.logger.warning("[UG{}] O alarme de temperatura de fase A do gerador foi acionado. Favor verificar.".format(self.id))
+        
+        self.leitura_temp_fase_b_gerador = LeituraOPCBit(self.client, REG_OPC["UG"]["UG1_ALM_TEMP_GERADOR_FASE_B"], 16)
+        if self.leitura_temp_fase_b_gerador:
+            self.logger.warning("[UG{}] O alarme de temperatura de fase B do gerador foi acionado. Favor verificar.".format(self.id))
+        
+        self.leitura_temp_fase_c_gerador = LeituraOPCBit(self.client, REG_OPC["UG"]["UG1_ALM_TEMP_GERADOR_FASE_C"], 17)
+        if self.leitura_temp_fase_c_gerador:
+            self.logger.warning("[UG{}] O alarme de temperatura de fase C do gerador foi acionado. Favor verificar.".format(self.id))
+        
+        self.leitura_alarme_vibra_eixo_x_mancal_comb = LeituraOPCBit(self.client, REG_OPC["UG"]["UG1_ALM_VIBRACAO_EIXO_X_MANCAL_COMBINADO"], 24)
+        if self.leitura_alarme_vibra_eixo_x_mancal_comb:
+            self.logger.warning("[UG{}] O alarme de vibração do eixo X do mancal combinado foi acionado. Favor verificar.".format(self.id))
+        
+        self.leitura_alarme_vibra_eixo_y_mancal_comb = LeituraOPCBit(self.client, REG_OPC["UG"]["UG1_ALM_VIBRACAO_EIXO_Y_MANCAL_COMBINADO"], 25)
+        if self.leitura_alarme_vibra_eixo_y_mancal_comb:
+            self.logger.warning("[UG{}] O alarme de vibração do eixo Y do mancal combinado foi acionado. Favor verificar.".format(self.id))
+        
+        self.leitura_alarme_vibra_eixo_z_mancal_comb = LeituraOPCBit(self.client, REG_OPC["UG"]["UG1_ALM_VIBRACAO_EIXO_Z_MANCAL_COMBINADO"], 26)
+        if self.leitura_alarme_vibra_eixo_z_mancal_comb:
+            self.logger.warning("[UG{}] O alarme de vibração do eixo Z do mancal combinado foi acionado. Favor verificar.".format(self.id))
+
+        self.leitura_alarme_vibra_detec_horizontal = LeituraOPCBit(self.client, REG_OPC["UG"]["UG1_ALM_VIBRACAO_DETECCAO_HORIZONTAL"], 28)
+        if self.leitura_alarme_vibra_detec_horizontal:
+            self.logger.warning("[UG{}] O alarme de vibração detecção horizontal foi acionado. Favor verificar.".format(self.id))
+
+        self.leitura_alarme_vibra_detec_vertical = LeituraOPCBit(self.client, REG_OPC["UG"]["UG1_ALM_VIBRACAO_DETECCAO_VERTICAL"], 29)
+        if self.leitura_alarme_vibra_detec_vertical:
+            self.logger.warning("[UG{}] O alarme de vibração detecção vertical foi acionado. Favor verificar.".format(self.id))

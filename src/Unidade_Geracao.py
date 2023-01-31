@@ -11,7 +11,8 @@ import pytz
 import logging
 import traceback
 
-from src.VAR_REG import *
+from VAR_REG import *
+from Escrita import *
 from src.Leituras import *
 from time import sleep, time
 from threading import Thread
@@ -817,6 +818,7 @@ class StateDisponivel(State):
     
     def verificar_partindo(self) -> bool:
         timer = time() + 600
+        client = Client(CFG["client"])
         try:
             self.logger.debug("Iniciando o timer de verificação de partida")
             while time() < timer:
@@ -825,8 +827,7 @@ class StateDisponivel(State):
                     self.release = True
                     return True
             self.logger.debug("[UG{}] A Unidade estourou o timer de verificação de partida, adicionando condição para normalizar".format(self.parent_ug.id))
-            self.parent_ug.clp.write_single_coil("REG_UG1_ComandosDigitais_MXW_EmergenciaViaSuper", [1 if self.parent_ug.id==1 else 0]) 
-            self.parent_ug.clp.write_single_coil("REG_UG2_ComandosDigitais_MXW_EmergenciaViaSuper", [1 if self.parent_ug.id==2 else 0])
+            EscritaOPCBit(client, REG_OPC["UG"]["UG{}_CMD_PARADA_EMERGENCIA".format(self.parent_ug.id)], 4, 1)
             self.release = True
 
         except Exception as e:

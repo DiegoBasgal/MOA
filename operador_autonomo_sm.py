@@ -151,7 +151,7 @@ class ValoresInternosAtualizados(State):
     def __init__(self, instancia_usina, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.usina = instancia_usina
-        DataBank.set_words(self.usina.cfg["REG_PAINEL_LIDO"], [1])
+        DataBank.set_words(REG_MB["MOA"]["PAINEL_LIDO"], [1])
         self.usina.heartbeat()
         self.deve_ler_condicionadores=False
         self.habilitar_emerg_condic_e=False
@@ -371,7 +371,7 @@ class ModoManualAtivado(State):
 
     def run(self):
         self.usina.ler_valores()
-        DataBank.set_words(usina.cfg["REG_PAINEL_LIDO"], [1])
+        DataBank.set_words(REG_MB["MOA"]["PAINEL_LIDO"], [1])
         self.usina.ug1.setpoint = self.usina.ug1.leitura_potencia.valor
         self.usina.ug2.setpoint = self.usina.ug2.leitura_potencia.valor
 
@@ -382,7 +382,7 @@ class ModoManualAtivado(State):
         if self.usina.modo_autonomo:
             logger.debug("Comando recebido: habilitar modo autonomo.")
             sleep(2)
-            logger.debug("Usina voltou para o modo Autonomo")
+            logger.info("Usina voltou para o modo Autonomo")
             self.usina.db.update_habilitar_autonomo()
             self.usina.ler_valores()
             if (
@@ -561,8 +561,7 @@ def leitura_temporizada():
             if usina.leituras_por_hora() and usina.acionar_voip:
                 acionar_voip()
             for ug in usina.ugs:
-                if ug.leituras_por_hora() and ug.acionar_voip:
-                    acionar_voip()
+                ug.leituras_por_hora()
             time.sleep(max(0, proxima_leitura - time.time()))
             
         except Exception:
@@ -571,29 +570,18 @@ def leitura_temporizada():
         proxima_leitura += (time.time() - proxima_leitura) // delay * delay + delay
 
 def acionar_voip():
+    V_VARS = voip.VARS
     try:
         if usina.acionar_voip:
-            voip.TDA_FalhaComum=[True if usina.TDA_FalhaComum else False]
-            voip.BombasDngRemoto=[True if not usina.BombasDngRemoto else False]
-            voip.Disj_GDE_QLCF_Fechado=[True if usina.Disj_GDE_QLCF_Fechado else False]
+            for i, j in zip(VOIP, V_VARS):
+                if i == j and VOIP[i]:
+                    V_VARS[j][0] = VOIP[i]
             voip.enviar_voz_auxiliar()
             usina.acionar_voip = False
+
         elif usina.avisado_em_eletrica:
             voip.enviar_voz_emergencia()
             usina.avisado_em_eletrica = False
-
-        for ug in usina.ugs:
-            if ug.acionar_voip:
-                voip.TDA_FalhaComum=[True if ug.TDA_FalhaComum else False]
-                voip.QCAUG1Remoto=[True if not usina.ug1.QCAUGRemoto else False]
-                voip.QCAUG2Remoto=[True if not usina.ug2.QCAUGRemoto else False]
-                voip.FreioCmdRemoto1=[True if not usina.ug1.FreioCmdRemoto else False]
-                voip.FreioCmdRemoto2=[True if not usina.ug2.FreioCmdRemoto else False]
-                voip.enviar_voz_auxiliar()
-                ug.acionar_voip = False
-            elif ug.avisou_emerg_voip:
-                voip.enviar_voz_auxiliar()
-                ug.avisou_emerg_voip = False
 
     except Exception:
         logger.warning("Houve um problema ao ligar por Voip")

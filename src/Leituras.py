@@ -10,7 +10,7 @@ __version__ = "0.2"
 __authors__ = "Lucas Lavratti", "Diego Basgal"
 
 import logging
-import src.VAR_REG
+import VAR_REG
 from opcua import Client
 from pyModbusTCP.client import ModbusClient
 
@@ -20,14 +20,8 @@ class LeituraBase:
     """
 
     def __init__(self, descr: str) -> None:
-        self.__descr = descr
         self.__valor = None
         self.logger = logging.getLogger("__main__")
-
-    def __str__(self):
-        return "Leitura {}, Valor: {}, Raw: {}".format(
-            self.__descr, self.valor, self.raw
-        )
 
     @property
     def valor(self):
@@ -37,22 +31,12 @@ class LeituraBase:
     def raw(self):
         raise NotImplementedError("Deve ser implementado na classe herdeira.")
 
-    @property
-    def descr(self) -> str:
-        """
-        Descrição do limite em questão.
-
-        Returns:
-            str: descr
-        """
-        return self.__descr
-
 class LeituraOPC(LeituraBase):
-    def __init__(self, descr: str, opc_client: Client, registrador: str):
-        super().__init__(descr)
-        self.__descr = descr
+    def __init__(self, opc_client: Client, registrador: str, escala: float = 1):
+        super().__init__()
         self.__opc_client = opc_client
         self.__registrador = registrador
+        self.__escala = escala
    
     @property
     def raw(self) -> int:
@@ -69,7 +53,20 @@ class LeituraOPC(LeituraBase):
    
     @property
     def valor(self) -> float:
-        return self.raw
+        return self.raw * self.__escala
+
+class LeituraOPCBit(LeituraOPC):
+    def __init__(self, opc_client: Client, registrador: str, bit: int, invertido: bool = False):
+        super().__init__(opc_client, registrador)
+        self.__bit = bit
+        self.__invertido = invertido
+
+    @property
+    def valor(self) -> bool:
+        aux = self.raw & 2**self.__bit
+        if self.__invertido:
+            aux = not aux
+        return aux
 
 class LeituraModbus(LeituraBase):
     """
@@ -78,15 +75,13 @@ class LeituraModbus(LeituraBase):
 
     def __init__(
         self,
-        descr: str,
         modbus_client: ModbusClient,
         registrador: int,
         escala: float = 1,
         fundo_de_escala: float = 0,
         op: int = 3,
     ):
-        super().__init__(descr)
-        self.__descr = descr
+        super().__init__()
         self.__modbus_client = modbus_client
         self.__registrador = registrador
         self.__escala = escala
@@ -146,13 +141,12 @@ class LeituraModbusBit(LeituraModbus):
 
     def __init__(
         self,
-        descr: str,
         modbus_client: ModbusClient,
         registrador: int,
         bit: int,
         invertido: bool = False,
     ):
-        super().__init__(descr, modbus_client, registrador)
+        super().__init__(modbus_client, registrador)
         self.__bit = bit
         self.__invertido = invertido
 
@@ -169,41 +163,47 @@ class LeituraModbusBit(LeituraModbus):
             aux = not aux
         return aux
 
+class LeituraSoma(LeituraBase):
+    def __init__(
+        self,
+        leitura_A: LeituraBase,
+        leitura_B: LeituraBase,
+        min_is_zero=True,
+    ):
+        super().__init__()
+        self.__leitura_A = leitura_A
+        self.__leitura_B = leitura_B
+        self.__min_is_zero = min_is_zero
+
+    @property
+    def valor(self) -> float:
+        """
+        Valor
+
+        Returns:
+            float: leitura_A + leitura_B
+        """
+        if self.__min_is_zero:
+            return max(0, self.__leitura_A.valor + self.__leitura_B.valor)
+        else:
+            return self.__leitura_A.valor + self.__leitura_B.valor
+
+
 class LeiturasUSN:
-    def __init__(self, cfg):
-        self.opc_server = Client("opc.tcp://EOP:4845")
+    def __init__(self):
+        self.client = Client("opc.tcp://EOP:4845")
+        REG_OPC = VAR_REG.REG_OPC
 
-        self.nv_montante = LeituraOPC(
-            "Nível Montante",
-            self.opc_server,
-            "ns=7;s=CLP_TA.TA.DB_STATUS.ANALOGICOS.NIVEL_MONTANTE"
-        )
+        self.nv_montante = LeituraOPC(self.client, REG_OPC["NIVEL_MONTANTE"])
         
-        self.tensao_rs = LeituraOPC(
-            "Tensão RS",
-            self.opc_server,
-            "ns=7;s=CLP_SA."
-        )
+        self.tensao_rs = LeituraOPC(self.client, REG_OPC["LT_VAB"])
 
-        self.tensao_st = LeituraOPC(
-            "Tensão ST",
-            self.opc_server,
-            "ns=7;s=CLP_SA.",
-        )
+        self.tensao_st = LeituraOPC(self.client, REG_OPC["LT_VBC"])
 
-        self.tensao_tr = LeituraOPC(
-            "Tensão TR",
-            self.opc_server,
-            "ns=7;s=CLP_SA."
-        )
+        self.tensao_tr = LeituraOPC(self.client, REG_OPC["LT_VCA"])
         
         self.potencia_ativa_kW = LeituraOPC(
             "Potências de MP e MR",
-            self.opc_server,
+            self.client,
             "ns=7;s=CLP_SA."
         )
-
-def read_input_value(client, node_id):
-   client_node = client.get_node(node_id)
-   client_node_value = client_node.get_value()
-   return client_node_value
