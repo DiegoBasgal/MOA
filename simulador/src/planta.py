@@ -255,8 +255,10 @@ class Planta:
                     self.cust_data_bank.set_words(REG["REG_UG{}_Alarme01".format(ug.id)], [int(ug.flags)])
 
                     self.cust_data_bank.set_words(REG["REG_UG{}_Gerador_PotenciaAtivaMedia".format(ug.id)],[round(ug.potencia)],)
-                    self.cust_data_bank.set_words(REG["REG_UG{}_HorimetroEletrico_Hora".format(ug.id)],[np.floor(ug.horimetro_hora)],)
-                    self.cust_data_bank.set_words(REG["REG_UG{}_HorimetroEletrico_Frac".format(ug.id)],[round((ug.horimetro_hora - np.floor(ug.horimetro_hora)) * 60, 0)],)
+                    self.cust_data_bank.set_words(REG["REG_UG1_HorimetroEletrico_Hora".format(ug.id)],[0],)
+                    self.cust_data_bank.set_words(REG["REG_UG1_HorimetroEletrico_Frac".format(ug.id)],[0],)
+                    self.cust_data_bank.set_words(REG["REG_UG2_HorimetroEletrico_Hora".format(ug.id)],[np.floor(ug.horimetro_hora)],)
+                    self.cust_data_bank.set_words(REG["REG_UG2_HorimetroEletrico_Frac".format(ug.id)],[round((ug.horimetro_hora - np.floor(ug.horimetro_hora)) * 60, 0)],)
                     
                     if ug.etapa_alvo == ug.etapa_atual:
                         self.cust_data_bank.set_words(REG["REG_UG{}_Operacao_EtapaAlvo".format(ug.id)],[int(ug.etapa_alvo)],)
@@ -300,10 +302,10 @@ class Planta:
                 continue
 
     def volume_para_nv_montate(self, volume):
-        return min(max(820.80, 820.80 + volume / 11301.84), 821)
+        return min(max(820.00, 820.00 + volume / 11301.84), 821)
 
     def nv_montate_para_volume(self, nv_montante):
-        return 11301.84 * (min(max(820.80, nv_montante), 820.80) - 820.80)
+        return 11301.84 * (min(max(820.00, nv_montante), 820.00) - 820.00)
 
     def q_sanitaria(self, nv_montante):
         return 0.22

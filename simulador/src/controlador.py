@@ -74,7 +74,7 @@ class Controlador:
             try:
                 t_inicio_passo = datetime.now()
                 lock.acquire()
-
+        
                 if (self.timed_afluente[counter_timed_afluente + 1][1]<= self.shared_dict["tempo_simul"]):
                     counter_timed_afluente += 1
 

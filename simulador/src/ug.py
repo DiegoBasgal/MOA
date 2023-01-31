@@ -20,7 +20,7 @@ class Ug:
         self.flags = 0
         self.potencia = 0
         self.setpoint = 0
-        self.horimetro_hora = 0
+        self.horimetro_hora = 100
 
         self.POT_MAX = 500
         self.POT_MIN = 0.4 * self.POT_MAX
