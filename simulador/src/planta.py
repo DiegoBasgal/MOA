@@ -1,9 +1,8 @@
 import re
 import logging
 import threading
+import SIM_REG
 import numpy as np
-
-import mapa_modbus
 
 from sys import stdout
 from time import sleep
@@ -12,11 +11,11 @@ from datetime import datetime
 from asyncio.log import logger
 from pyModbusTCP.server import ModbusServer, DataBank
 
-from ug import Ug
-from dj52L import Dj52L
+from UG import Ug
+from Dj52L import Dj52L
 
-REG_MB = mapa_modbus.REG_MB
-REG_OPC = mapa_modbus.REG_OPC
+REG_MB = SIM_REG.REG_MB
+REG_OPC = SIM_REG.REG_OPC
 
 lock = threading.Lock()
 

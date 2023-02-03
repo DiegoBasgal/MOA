@@ -150,7 +150,7 @@ def enviar_voz_emergencia(lista_de_contatos=None):
                 "called": "{}".format(contato[1]),  # O número a ser chamado, no formato dddnnnnnnnnn
                 "audios": [
                     {
-                        "audio": "Atenção! Houve um acionamento de emergência na PCH Pampeana, por favor analisar a situação. Atenção! Houve um acionamento de emergência na PCH Pampeana, por favor analisar a situação.",
+                        "audio": "Atenção! Houve um acionamento de emergência na PCH Xavantina, por favor analisar a situação. Atenção! Houve um acionamento de emergência na PCH Xavantina, por favor analisar a situação.",
                         "positionAudio": 1,
                     }
                 ],

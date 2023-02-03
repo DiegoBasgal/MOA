@@ -1,10 +1,11 @@
 import logging
 import threading
+
 from sys import stdout
-import threading
+
+import Planta
+import Controlador
 import gui.gui as gui
-import planta
-import controlador
 
 # Set-up logging
 rootLogger = logging.getLogger()
@@ -16,9 +17,7 @@ logger = logging.getLogger(__name__)
 if logger.hasHandlers():
     logger.handlers.clear()
 logger.setLevel(logging.NOTSET)
-logFormatter = logging.Formatter(
-    "%(asctime)s [%(threadName)-12.12s] [%(levelname)-5.5s] [SIMUL] %(message)s"
-)
+logFormatter = logging.Formatter("%(asctime)s [%(threadName)-12.12s] [%(levelname)-5.5s] [SIMUL] %(message)s")
 
 ch = logging.StreamHandler(stdout)  # log para sdtout
 ch.setFormatter(logFormatter)
@@ -34,7 +33,7 @@ logger.addHandler(fh)
 logger.info("Iniciando abstraço e GUI.")
 shared_dict = {}
 # 1 thread para simular o reservatorio
-th_world = threading.Thread(target=planta.Planta(shared_dict).run, args=())
+th_world = threading.Thread(target=Planta.Planta(shared_dict).run, args=())
 # 1 thread para interagir com a simulação
 th_gui = threading.Thread(target=gui.start_gui, args=(shared_dict,))
 # 1 thread para controlar e gravar a simulação

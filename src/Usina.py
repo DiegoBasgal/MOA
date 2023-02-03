@@ -9,12 +9,11 @@ from pyModbusTCP.server import DataBank
 from pyModbusTCP.client import ModbusClient
 from datetime import  datetime, timedelta
 
-from src.VAR_REG import *
-from src.Condicionadores import *
-from src.UG1 import UnidadeDeGeracao1
-from src.UG2 import UnidadeDeGeracao2
-from src.Conector import Database, FieldConnector
-from src.Leituras import LeituraOPC, LeiturasUSN, LeituraOPCBit
+from VAR_REG import *
+from Condicionadores import *
+from Unidade_Geracao import UnidadeDeGeracao
+from Conector import Database, FieldConnector
+from Leituras import LeituraOPC, LeiturasUSN, LeituraOPCBit
 
 logger = logging.getLogger("__main__")
 
@@ -25,7 +24,7 @@ class Usina:
             raise ValueError
         else:
             self.cfg = cfg
-            self.db = db
+            self.db = Database()
 
         if con:
             self.con = con
@@ -40,8 +39,8 @@ class Usina:
         self.state_moa = 1
 
         # Inicializa Objs da usina
-        self.ug1 = UnidadeDeGeracao1(1, cfg=self.cfg, leituras_usina=self.leituras)
-        self.ug2 = UnidadeDeGeracao2(2, cfg=self.cfg, leituras_usina=self.leituras)
+        self.ug1 = UnidadeDeGeracao(1, cfg=self.cfg, leituras_usina=self.leituras)
+        self.ug2 = UnidadeDeGeracao(2, cfg=self.cfg, leituras_usina=self.leituras)
         self.ugs = [self.ug1, self.ug2]
 
         # Define as vars inciais
@@ -115,11 +114,15 @@ class Usina:
         self.controle_i = self.controle_ie
 
         # ajuste inicial SP
-        logger.debug("self.ug1.leitura_potencia.valor -> {}".format(self.ug1.leitura_potencia.valor))
-        logger.debug("self.ug2.leitura_potencia.valor -> {}".format(self.ug2.leitura_potencia.valor))
+        logger.debug("Leitura de potência UG1 -> {}".format(self.ug1.leitura_potencia.valor))
+        logger.debug("Leitura de potência UG2 -> {}".format(self.ug2.leitura_potencia.valor))
 
         parametros = self.db.get_parametros_usina()
         self.atualizar_limites_operacao(parametros)
+    
+    @property
+    def tentativas_normalizacao(self):
+        return self.tentativas_de_normalizar
 
     @property
     def nv_montante(self):
@@ -749,9 +752,10 @@ class Usina:
             ls = sorted(
                 ls,
                 key=lambda y: (
+                    -1 * y.etapa_atual,
+                    y.prioridade,
                     -1 * y.leitura_potencia.valor,
                     -1 * y.setpoint,
-                    y.prioridade,
                 ),
             )
         else:
@@ -759,9 +763,10 @@ class Usina:
             ls = sorted(
                 ls,
                 key=lambda y: (
+                    -1 * y.etapa_atual,
+                    y.leitura_horimetro.valor,
                     -1 * y.leitura_potencia.valor,
                     -1 * y.setpoint,
-                    y.leitura_horimetro.valor,
                 ),
             )
         return ls
