@@ -14,16 +14,16 @@ import threading
 import traceback
 import logging.handlers as handlers
 
-from VAR_REG import *
 import src.Usina as Usina
 import src.Conector as Conector
+import src.mensageiro.voip as voip
 
 from sys import stderr
 from time import sleep
 from datetime import datetime
 from pyModbusTCP.server import DataBank, ModbusServer
 
-from src.mensageiro import voip
+from src.VAR_REG import *
 from src.mensageiro.mensageiro_log_handler import MensageiroHandler
 # Set-up logging
 
@@ -385,10 +385,7 @@ class ModoManualAtivado(State):
             logger.info("Usina voltou para o modo Autonomo")
             self.usina.db.update_habilitar_autonomo()
             self.usina.ler_valores()
-            if (
-                self.usina.clp_emergencia_acionada == 1
-                or self.usina.db_emergencia_acionada == 1
-            ):
+            if (self.usina.clp_emergencia_acionada == 1 or self.usina.db_emergencia_acionada == 1):
                 self.usina.normalizar_emergencia()
             self.usina.heartbeat()
             return ControleRealizado(self.usina)
@@ -630,7 +627,6 @@ if __name__ == "__main__":
             try:
                 usina = Usina.Usina(cfg, db)
                 usina.ler_valores()
-                usina.normalizar_emergencia()
                 usina.aguardando_reservatorio = 0
             except Exception as e:
                 logger.error(

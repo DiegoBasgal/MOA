@@ -129,7 +129,6 @@ class Usina:
         return self.leituras.nv_montante.valor
 
     def ler_valores(self):
-
         parametros = self.db.get_parametros_usina()
         self.cfg["TDA_slave_ip"] = parametros["clp_tda_ip"]
 

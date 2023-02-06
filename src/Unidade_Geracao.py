@@ -146,7 +146,7 @@ class UnidadeDeGeracao:
 
     @property
     def etapa_atual(self) -> int:
-        self.logger.debug("[UG{}] etapa_atual = _etapa_atual <- {}".format(self.id, self._etapa_atual))
+        self.logger.debug("[UG{}] Etapa atual = Etapa atual <- {}".format(self.id, self._etapa_atual))
         return self._etapa_atual
     
     @etapa_atual.setter
@@ -609,6 +609,7 @@ class UnidadeDeGeracao:
                     return True
             self.logger.debug("[UG{}] A Unidade estourou o timer de verificação de partida, adicionando condição para normalizar".format(self.id))
             EscritaOPCBit(Client(CFG["client"]), REG_OPC["UG"]["UG{}_CMD_PARADA_EMERGENCIA".format(self.id)], 4, 1)
+            self.timer_sinc = True
         except Exception as e:
             raise (e)
         return False

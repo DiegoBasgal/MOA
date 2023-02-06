@@ -289,7 +289,7 @@ class FieldConnector:
     def modifica_controles_locais(self):
         if not self.TDA_Offline:
             EscritaOPCBit(self.client, REG_OPC["TDA"]["CP1_CMD_REARME_FALHAS"], 0, 1)
-            EscritaOPCBit(self.client, REG_OPC["TDA"]["CP1_CMD_REARME_FALHAS"], 0, 1)
+            EscritaOPCBit(self.client, REG_OPC["TDA"]["CP2_CMD_REARME_FALHAS"], 0, 1)
         else:
             logger.debug("Não é possível modificar os controles locais pois o CLP da TDA se encontra offline")
 
@@ -338,7 +338,7 @@ class FieldConnector:
         EscritaOPCBit(self.client, REG_OPC["SE"]["REARME_86BF_86T"], 22, 1)
         EscritaOPCBit(self.client, REG_OPC["SE"]["CMD_SE_RESET_REGISTROS"], 5, 1)
         EscritaOPCBit(self.client, REG_OPC["TDA"]["CP1_CMD_REARME_FALHAS"], 0, 1) if not self.TDA_Offline else logger.debug("CLP TDA Offline, não há como realizar o reset geral")
-        EscritaOPCBit(self.client, REG_OPC["TDA"]["CP1_CMD_REARME_FALHAS"], 0, 1) if not self.TDA_Offline else logger.debug("CLP TDA Offline, não há como realizar o reset geral")
+        EscritaOPCBit(self.client, REG_OPC["TDA"]["CP2_CMD_REARME_FALHAS"], 0, 1) if not self.TDA_Offline else logger.debug("CLP TDA Offline, não há como realizar o reset geral")
         logger.debug("Fecha Dj52L")
         self.fechaDj52L()
 

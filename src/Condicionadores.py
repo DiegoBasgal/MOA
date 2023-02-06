@@ -6,6 +6,7 @@ dos valores de campo.
 """
 __version__ = "0.1"
 __author__ = "Lucas Lavratti"
+
 from Usina import Usina
 from src.Leituras import *
 from asyncio.log import logger
