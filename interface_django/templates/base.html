@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>MOA - Interface Web</title>
+    <title>MOA - PPN</title>
     <style>
         body {
             background-color: black;
@@ -74,7 +74,7 @@
 <body>
     <div>
         <header>
-            <label class="logo">Módulo de Operação Autônoma</label>
+            <label class="logo">CGH Pampeana - Módulo de Operação Autônoma</label>
             <nav>
                 <ul id="nav_bar_list">
                     <li><a href="{% url 'monitoramento'%}">Monitoramento</a></li>
@@ -82,9 +82,9 @@
                     <li><a href="{% url 'agendamentos'%}">Agendamentos</a></li>
                     <li><a href="{% url 'parametros_moa'%}">Parâmetros</a></li>
                     <li><a href="{% url 'comandos_manual'%}">Comandos Manual</a></li>
-                    <li><a href="{% url 'ocorrencias'%}">Ocorrências</a></li>
                     <li><a href="{% url 'emergencia'%}">Emergência</a></li>
                     <li><a href="{% url 'contatos'%}">Contatos</a></li>
+                    <li><a href="{% url 'ocorrencias'%}">LOGs</a></li>
                     <li class="li_user">User: {{ user.get_username }} <a href="{% url 'logout'%}?next={{request.path}}" class="user">(Logout)</a></li>
                     {% else %}
                     <li><a href="{% url 'login'%}?next={{request.path}}">Login</a></li>

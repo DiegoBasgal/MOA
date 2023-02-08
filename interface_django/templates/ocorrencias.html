@@ -13,15 +13,14 @@
             color: white;
         }
 
-        h2 {
+        table th {
             color: white;
-        }
-        
-        h3 {
-            color: white;
+            text-align: center;
+            border: 1px solid white;
         }
 
-        h4 {
+        table td {
+            text-align: center;
             color: white;
         }
 
@@ -30,6 +29,10 @@
         }
 
         a {
+            color: white;
+        }
+
+        b {
             color: white;
         }
 
@@ -47,7 +50,7 @@
 
         <div>
             <form action = "">
-                Número de linhas na busca:
+                <a>Número de linhas na busca: </a>
                 <select id="nlinhas" name="nlinhas">
                     <option value="5" selected>5</option>
                     <option value="10">10</option>
@@ -63,7 +66,7 @@
             <table>
                 <tr>
                     <th>Data</th>
-                    <th>Severidade</th>
+                    <th style="padding-left: 10px; padding-right: 10px;">Severidade</th>
                     <th>Descritivo</th>
                 </tr>
                 {% for linha in log %}
@@ -72,7 +75,7 @@
                         {{ linha.datahora }}
                     </td>
                     <td>
-                        {{ linha.severidade }}
+                        [{{ linha.severidade }}]
                     </td>
                     <td>
                         {{ linha.conteudo }}

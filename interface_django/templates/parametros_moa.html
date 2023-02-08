@@ -10,12 +10,29 @@
         }
 
         table {
+            background-color: #111111;
             color: black;
             text-align: center;
-            border: 2px solid white;
+            border: 1px solid white;
+        }
+
+        table th{
+            border: 1px solid white;
+        }
+
+        table td{
+            border: 1px solid white;
+        }
+
+        input {
+            padding-top: 4px;
         }
 
         h1 {
+            color: white;
+        }
+
+        h3 {
             color: white;
         }
 
@@ -24,16 +41,22 @@
         }
 
         th {
-            background-color: white;
             color: white;
         }
 
         td{
-            background-color: white;
             color: white;
         }
 
         label {
+            color: white;
+        }
+        
+        a {
+            color: white;
+        }
+        
+        p {
             color: white;
         }
 
@@ -45,7 +68,7 @@
 <body>
     <div id="content_container">
         <h1 style="margin-bottom: 1px;">Parâmetros MOA</h1>
-        <p style="margin-top: 15px; margin-bottom: 40px; font-size: 16px;">Página de configuraço dos parâmetros usados pelo MOA.</p>
+        <p style="margin-top: 15px; margin-bottom: 40px; font-size: 16px;">Página de configuração dos parâmetros usados pelo MOA</p>
 
         <form method='post' action='/parametros_moa/' style="margin-top: 40px;">
             {% csrf_token %}

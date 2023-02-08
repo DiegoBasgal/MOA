@@ -43,7 +43,7 @@
         <h1>Novo agendamento</h1>
         <form method='post' action='/agendamentos/novo_agendamento/'>
             {% csrf_token %}
-            Data:
+            <a>Data:</a>
             <select id="dia" name="dia">
                 {% for i in range_dias %}
                     <option value="{{ i }}" {% if i == dia %}selected{% endif %}>{{ i }}</option>
@@ -64,7 +64,7 @@
             </br>
             </br>
         
-            Horário:
+            <a>Horário:</a>
             <select id="hora" name="hora">
                 {% for i in range_hora %}
                     <option value="{{ i }}" {% if i == hora %}selected{% endif %}>{{ i }}</option>
@@ -80,7 +80,7 @@
             </br>
             </br>
         
-            Comando:
+            <a>Comando:</a>
             <select id="comando" name="comando">
                 {% for comando in comandos %}
                     <option value="{{ comando.id }}">{{ comando.nome }}</option>
@@ -89,12 +89,12 @@
             </br>
             </br>
         
-            Campo auxiliar:
+            <a>Campo auxiliar:</a>
             <input id="campo_auxiliar" name="campo_auxiliar" type="text"/>
             </br>
             </br>
         
-            Observações:
+            <a>Observações:</a>
             <input id="observacao" name="observacao" type="text"/>
             </br>
             </br>
