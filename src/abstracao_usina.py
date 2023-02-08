@@ -73,9 +73,15 @@ class Usina:
         self.aguardando_reservatorio = 0
         self.agendamentos_atrasados = 0
         self.tentativas_de_normalizar = 0
+        self.ug_operando = 0
 
-        self.__split1 = False
-        self.__split2 = False
+        for ug in self.ugs:
+            if ug.etapa_atual == UNIDADE_SINCRONIZADA:
+                self.ug_operando += 1
+
+        self.__split1 = True if self.ug_operando == 1 else False
+        self.__split2 = True if self.ug_operando == 2 else False
+
         self.tensao_ok = True
         self.timer_tensao = None
         self.TDA_Offline = False
@@ -671,19 +677,22 @@ class Usina:
 
         ugs = self.lista_de_ugs_disponiveis()
         self.pot_disp = 0
+        self.ajuste_manual = 0
 
         logger.debug("lista_de_ugs_disponiveis:")
         for ug in ugs:
             logger.debug("UG{}".format(ug.id))
             self.pot_disp += ug.cfg["pot_maxima_ug{}".format(ugs[0].id)]
+            if ug.manual:
+                self.ajuste_manual += min(max(0, ug.leitura_potencia), 0)
         if ugs is None:
             return False
         elif len(ugs) == 0:
             return False
 
-        logger.debug("Distribuindo {}".format(pot_alvo))
+        logger.debug("Distribuindo {}".format(pot_alvo - self.ajuste_manual))
 
-        sp = pot_alvo / self.cfg["pot_maxima_usina"]
+        sp = (pot_alvo - self.ajuste_manual) / self.cfg["pot_maxima_usina"]
 
         self.__split1 = True if sp > (0) else self.__split1
         self.__split2 = (True if sp > (0.5 + self.cfg["margem_pot_critica"]) else self.__split2)
@@ -704,6 +713,7 @@ class Usina:
                 sp = sp * 2 / 1
                 ugs[0].setpoint = sp * ugs[0].setpoint_maximo
                 ugs[1].setpoint = 0
+            
             else:
                 for ug in ugs:
                     ug.setpoint = 0
@@ -713,7 +723,6 @@ class Usina:
                 logger.debug("Split 1B")
                 sp = sp * 2 / 1
                 ugs[0].setpoint = sp * ugs[0].setpoint_maximo
-                ugs[1].setpoint = 0
 
             else:
                 for ug in ugs:
@@ -730,29 +739,18 @@ class Usina:
         """
         ls = []
         for ug in self.ugs:
-            if ug.disponivel:
+            if ug.disponivel and not ug.etapa_atual == UNIDADE_PARANDO:
                 ls.append(ug)
 
         if self.modo_de_escolha_das_ugs == MODO_ESCOLHA_MANUAL:
             # escolher por maior prioridade primeiro
-            ls = sorted(
-                ls,
-                key=lambda y: (
-                    -1 * y.leitura_potencia.valor,
-                    -1 * y.setpoint,
-                    y.prioridade,
-                ),
-            )
+            ls = sorted(ls, key=lambda y: (-1 * y.leitura_potencia.valor, -1 * y.setpoint, y.prioridade,),)
         else:
             # escolher por menor horas_maquina primeiro
-            ls = sorted(
-                ls,
-                key=lambda y: (
-                    -1 * y.leitura_potencia.valor,
-                    -1 * y.setpoint,
-                    y.leitura_horimetro.valor,
-                ),
-            )
+            ls = sorted(ls, key=lambda y: (y.leitura_horimetro.valor, -1 * y.leitura_potencia.valor, -1 * y.setpoint,),)
+            print("")
+            print(ls)
+            print("")
         return ls
 
     def controle_normal(self):

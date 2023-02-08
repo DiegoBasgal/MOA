@@ -1,46 +1,87 @@
 {% extends "base.html" %}
-
 {% block content %}
-<div>
-    <h1>Ocorrencias MOA</h1>
-    <p>Página de Ocorrencias.</p>
-</div>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <style>
+        #content_container {
+            margin: 10px;
+            font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif
+        }
 
-<div>
-    <form action = "">
-        Número de linhas na busca:
-        <select id="nlinhas" name="nlinhas">
-            <option value="5" selected>5</option>
-            <option value="10">10</option>
-            <option value="25">25</option>
-            <option value="50">50</option>
-            <option value="1000">1000</option>
-          </select>
-        <input type="submit" value="Buscar">
-    </form><br>
-</div>
+        h1 {
+            color: white;
+        }
 
-<div>
-    <table>
-        <tr>
-            <th>Data</th>
-            <th>Severidade</th>
-            <th>Descritivo</th>
-        </tr>
-        {% for linha in log %}
-        <tr>
-            <td>
-                {{ linha.datahora }}
-            </td>
-            <td>
-                {{ linha.severidade }}
-            </td>
-            <td>
-                {{ linha.conteudo }}
-            </td>
-        </tr>
-        {% endfor %}
-    </table>
-</div>
+        h2 {
+            color: white;
+        }
+        
+        h3 {
+            color: white;
+        }
 
-{% endblock content %}
+        h4 {
+            color: white;
+        }
+
+        label {
+            color: white;
+        }
+
+        a {
+            color: white;
+        }
+
+        p {
+            color: white;
+        }
+    </style>
+</head>
+<body>
+    <div id="content_container">
+        <div>
+            <h1 style="margin-bottom: 1px;">Ocorrências</h1>
+            <p style="margin-top: 15px; margin-bottom: 40px; font-size: 16px;">Página de monitoramento de ocorrências.</p>
+        </div>
+
+        <div>
+            <form action = "">
+                Número de linhas na busca:
+                <select id="nlinhas" name="nlinhas">
+                    <option value="5" selected>5</option>
+                    <option value="10">10</option>
+                    <option value="25">25</option>
+                    <option value="50">50</option>
+                    <option value="1000">1000</option>
+                  </select>
+                <input type="submit" value="Buscar">
+            </form><br>
+        </div>
+
+        <div>
+            <table>
+                <tr>
+                    <th>Data</th>
+                    <th>Severidade</th>
+                    <th>Descritivo</th>
+                </tr>
+                {% for linha in log %}
+                <tr>
+                    <td>
+                        {{ linha.datahora }}
+                    </td>
+                    <td>
+                        {{ linha.severidade }}
+                    </td>
+                    <td>
+                        {{ linha.conteudo }}
+                    </td>
+                </tr>
+                {% endfor %}
+            </table>
+        </div>
+    </div>
+    {% endblock content %}
+</body>
+</html>

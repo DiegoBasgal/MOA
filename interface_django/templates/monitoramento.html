@@ -1,47 +1,82 @@
 {% extends "base.html" %}
-
 {% block content %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <style>
+        #content_container {
+            margin: 10px;
+            font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif
+        }
 
+        h1 {
+            color: white;
+        }
 
-<div id="content_container">
-    <h1>Monitoramento</h1>
-    <p>Página de monitoramento. Atualiza a cada 2 segundos.</p>
-    <p>Atualizado em  {{ timestamp }} ({{ tempo_desde_moa_comunicando }} atrás)</p>
+        h2 {
+            color: white;
+        }
+        
+        h3 {
+            color: white;
+        }
 
-    <h3>TDA:</h3>
-    <p>Nível Alvo: {{ nv_alvo }} m<br>
-    Nível Montante: {{ nv_montante }} m<br>
-    Nível Pós-grade: {{nv_pos_grade}} m</p>
-    <hr style="height:10pt; visibility:hidden;" />
-    <h3>USINA:</h3>
-    <p>Set-point usina: {{ setpot_usina }} MW</p>
-    
-    <p><b>UG1:</b> {{ pot_ug1 | floatformat:0 }} kW <br>
-    Estado (MOA): {{ ug1_state }} <br>
-    Etapa: {{ ug1_etapa }} <br>
-    SP: {{ setpot_ug1 | floatformat:0 }} kW <br>
-    Horas máquina: {{ tempo_ug1 | floatformat:2 }} h <br>
+        h4 {
+            color: white;
+        }
 
-    <p><b>UG2:</b> {{ pot_ug2 | floatformat:0 }} kW <br>
-    Estado (MOA): {{ ug2_state }} <br>
-    Etapa: {{ ug2_etapa }} <br>
-    SP: {{ setpot_ug2 | floatformat:0 }} kW <br>
-    Horas máquina: {{ tempo_ug2 | floatformat:2 }} h <br>
-    <hr style="height:10pt; visibility:hidden;" />
-    <h3>MOA:</h3>
-    <p>Estado:  {{ estado }}<br>
-    Emergencia:  {{ em_acionada }}<br>
-    Aguardando reservatório? {{ aguardo }}<br>
-    Estado CLP:  {{ CLP_ON }} @ {{ CLP_IP }}</p>
+        label {
+            color: white;
+        }
 
-    <h3>Modbus Slave</h3>
-    <p>Porta:{{ LOCAL_MODBUS_PORT }}<br>
-    Status: {{ modbus_status}}.<br>
-    Heart-beat: {{ hb_datestring }}</p>
-</div>
+        a {
+            color: white;
+        }
 
-<script type = "text/JavaScript">
-setTimeout("location.reload(true);", 2000);
-</script>
+        p {
+            color: white;
+        }
+    </style>
+</head>
+<body>
+    <div id="content_container">
+        <h1 style="margin-bottom: 5px;">Monitoramento</h1>
+        <p style="margin-bottom: 1px;">Página de monitoramento. Atualiza a cada 2 segundos.</p>
+        <p style="margin-top: 5px;">Atualizado em  {{ timestamp }} ({{ tempo_desde_moa_comunicando }} atrás)</p>
 
+        <h3 style="margin-top: 40px; margin-bottom: 5px;">TDA:</h3>
+        <p style="margin-top: 1px;">Nível Alvo: {{ nv_alvo }} m<br>
+        Nível Montante: {{ nv_montante }} m<br>
+        Nível Pós-grade: {{nv_pos_grade}} m</p>
+
+        <h3 style="margin-top: 40px; margin-bottom: 5px;">USINA:</h3>
+        <p style="margin-top: 1px; margin-bottom: 20px;">Setpoint usina: {{ setpot_usina }} MW</p>
+        
+        <p><b>UG1:</b> {{ pot_ug1 | floatformat:0 }} kW <br>
+        Estado (MOA): {{ ug1_state }} <br>
+        Etapa: {{ ug1_etapa }} <br>
+        SP: {{ setpot_ug1 | floatformat:0 }} kW <br>
+        Horas máquina: {{ tempo_ug1 | floatformat:2 }} h <br>
+        
+        <p><b>UG2:</b> {{ pot_ug2 | floatformat:0 }} kW <br>
+        Estado (MOA): {{ ug2_state }} <br>
+        Etapa: {{ ug2_etapa }} <br>
+        SP: {{ setpot_ug2 | floatformat:0 }} kW <br>
+        Horas máquina: {{ tempo_ug2 | floatformat:2 }} h <br>
+
+        <h3 style="margin-top: 40px; margin-bottom: 5px;">MOA:</h3>
+        <p style="margin-top: 1px;">Estado:  {{ estado }}<br>
+        Emergencia:  {{ em_acionada }}<br>
+        Aguardando reservatório? {{ aguardo }}<br>
+        Estado CLP:  {{ CLP_ON }} @ {{ CLP_IP }}</p>
+        
+        <h3 style="margin-top: 40px; margin-bottom: 5px;">Modbus Slave</h3>
+        <p style="margin-top: 1px;">Porta:{{ LOCAL_MODBUS_PORT }}<br>
+        Status: {{ modbus_status}}.<br>
+        Heart-beat: {{ hb_datestring }}</p>
+    </div>
+    <br>
+    <br>
+</body>
 {% endblock content %}
+</html>

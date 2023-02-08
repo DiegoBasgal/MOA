@@ -1,0 +1,181 @@
+{% extends "base.html" %}
+{% block content %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <style>
+        #content_container {
+            margin: 10px;
+            font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif
+        }
+
+        h1 {
+            color: white;
+        }
+
+        h2 {
+            color: white;
+        }
+        
+        h3 {
+            color: white;
+        }
+
+        h4 {
+            color: white;
+        }
+
+        label {
+            color: white;
+        }
+
+        a {
+            color: white;
+        }
+
+        p {
+            color: white;
+        }
+    </style>
+</head>
+<html>
+    <body>
+        <div id="content_container">
+            <h1 style="margin-bottom: 1px;">Comandos Modo Manual</h1>
+            <p style="margin-top: 15px; margin-bottom: 40px; font-size: 16px;">Página para comandos básicos no modo manual</p>
+            <div>
+                <h2 style="margin-bottom: 20px;"><b>Comandos Gerais: </b></h3>
+                <form method='post' action='/comandos_manual/'>
+                    {% csrf_token %}
+                    <div style="margin-bottom: 1px;">
+                        <table>
+                            <tr>
+                                <td>
+                                    <label style="font-size: 18px;"><b>MOA Modo autônomo: </b></label>
+                                </td>
+                                <td>
+                                    {% if usina.modo_autonomo == 1 %}
+                                        <label style="font-size: 17px; margin-left: 5px; color: green">Ativado</label>
+                                    {% else %}
+                                        <label style="font-size: 17px; margin-left: 5px; color: red;">Desativado</label>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                        </table>
+                    </div>
+                    <div style="margin-top: 1px;">
+                        <label style="font-size: 17px; margin-left: 3px;">Comando: </label>
+                        <input type="submit" name="ativar_ma" value="Ativar">
+                        <input type="submit" name="desativar_ma" value="Desativar">
+                    </div>
+                </form>
+            </div>
+            <div style="margin-top: 30px;">
+                <form method='post' action='/comandos_manual/disjuntor/'>
+                    {% csrf_token %}
+                    <table>
+                        <tr>
+                            <td>
+                                <label style="font-size: 18px; margin-top: 18px;"><b>Disjuntor 52L: </b></label>
+                            </td>
+                            <td>
+                                {% if comandos_manual.comando_dj52l == True %}
+                                    <label style="font-size: 17px; margin-left: 5px; color: red;">Fechado</label>
+                                {% else %}
+                                    <label style="font-size: 17px; margin-left: 5px; color: green;">Aberto</label>
+                                {% endif %}
+                            </td>
+                        </tr>
+                    </table>
+                    <label style="font-size: 17px; margin-left: 3px;">Comando: </label>
+                    <input type="submit" name="abrir_dj" value="Abrir">
+                    <input type="submit" name="fechar_dj" value="Fechar">
+                </form>
+            </div>
+            <div style="margin-top: 60px;">
+                <h2><b>Comandos Unidades de Geração: </b></h2>
+                <form method="post" action="/comandos_manual/ug1/">
+                    {% csrf_token %}
+                    <table style="margin-bottom: 1px;">
+                        <tr>
+                            <td>
+                                <label style="font-size: 18px; margin-top: 18px;"><b>UG1: </b></label>
+                            </td>
+                            <td>
+                                {% if comandos_manual.modo_ug1 == 0 %}
+                                    <label style="font-size: 17px; margin-left: 5px; color: blue;">Manual</label>
+                                {% endif %}
+                                {% if comandos_manual.modo_ug1 == 1 %}
+                                    <label style="font-size: 17px; margin-left: 5px; color: green;">Disponível</label>
+                                {% endif %}
+                                {% if comandos_manual.modo_ug1 == 2 %}
+                                    <label style="font-size: 17px; margin-left: 5px; color: yellow;">Restrito</label>
+                                {% endif %}
+                                {% if comandos_manual.modo_ug1 == 3 %}
+                                    <label style="font-size: 17px; margin-left: 5px; color: red;">Indisponível</label>
+                                {% endif %}
+                            </td>
+                        </tr>
+                    </table>
+                    <p style="margin-top: 1px; margin-left: 3px;">Potência: {{ usina.pot_ug1 | floatformat:0 }} kW <br>
+                        Etapa: {{ usina.ug1_etapa }} <br>
+                        SP: {{ usina.setpot_ug1 | floatformat:0 }} kW <br>
+                        Horas máquina: {{ usina.tempo_ug1 | floatformat:2 }} h</p>
+                    <label style="font-size: 16px; margin-left: 3px;">Comando partida/parada: </label>
+                    <input type="submit" name="patir_ug1" value="Partir"/>
+                    <input type="submit" name="parar_ug1" value="Parar"/>
+                    <br>
+                    <br>
+                    <label style="font-size: 16px; margin-left: 3px;">Modo: </label>
+                    <input type="submit" name="manual" value="Manual" />
+                    <input type="submit" name="disponivel" value="Disponível" />
+                    <input type="submit" name="restrito" value="Restrito" />
+                    <input type="submit" name="indisponivel" value="Indisponível" />
+                </form>
+            </div>
+            <div style="margin-top: 40px;">
+                <form method="post" action="/comandos_manual/ug2/">
+                    {% csrf_token %}
+                    <table>
+                        <tr>
+                            <td>
+                                <label style="font-size: 18px; margin-top: 18px;"><b>UG2: </b></h3>
+                            </td>
+                            <td>
+                                {% if comandos_manual.modo_ug2 == 0 %}
+                                    <label style="font-size: 17px; margin-left: 5px; color: blue;">Manual</label>
+                                {% endif %}
+                                {% if comandos_manual.modo_ug2 == 1 %}
+                                    <label style="font-size: 17px; margin-left: 5px; color: green;">Disponível</label>
+                                {% endif %}
+                                {% if comandos_manual.modo_ug2 == 2 %}
+                                    <label style="font-size: 17px; margin-left: 5px; color: yellow;">Restrito</label>
+                                {% endif %}
+                                {% if comandos_manual.modo_ug2 == 3 %}
+                                    <label style="font-size: 17px; margin-left: 5px; color: red;">Indisponível</label>
+                                {% endif %}
+                            </td>
+                        </tr>
+                    </table>
+                    <p style="margin-top: 1px; margin-left: 3px;">Potência: {{ usina.pot_ug2 | floatformat:0 }} kW <br>
+                        Etapa: {{ usina.ug2_etapa }} <br>
+                        SP: {{ usina.setpot_ug2 | floatformat:0 }} kW <br>
+                        Horas máquina: {{ usina.tempo_ug2 | floatformat:2 }} h</p>
+                    <label style="font-size: 16px; margin-left: 3px;">Comando partida/parada: </label>
+                    <input type="submit" name="patir_ug1" value="Partir"/>
+                    <input type="submit" name="parar_ug1" value="Parar"/>
+                    <br>
+                    <br>
+                    <label style="font-size: 16px; margin-left: 3px;">Modo: </label>
+                    <input type="submit" name="manual" value="Manual" />
+                    <input type="submit" name="disponivel" value="Disponível" />
+                    <input type="submit" name="restrito" value="Restrito" />
+                    <input type="submit" name="indisponivel" value="Indisponível" />
+                </form>
+            </div>
+        </div>
+        <br>
+        <br>
+    </body>
+</html>
+{% endblock content %}

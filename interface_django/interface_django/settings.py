@@ -42,6 +42,7 @@ INSTALLED_APPS = [
     "monitoramento",
     "ocorrencias",
     "parametros_moa",
+    "comandos_manual",
 ]
 
 MIDDLEWARE = [

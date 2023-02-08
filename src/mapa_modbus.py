@@ -273,8 +273,7 @@ REG_UG1_RetornosAnalogicos_MWR_PM_710_Potencia_Ativa = 45  # Op04 (Read Input Re
 REG_UG1_RetornosAnalogicos_MWR_PM_710_Potencia_Reativa = (
     46  # Op04 (Read Input Regs - 3x)
 )
-REG_UG1_RetornosAnalogicos_MWR_Horimetro_Gerador = 51  # Op04 (Read Input Regs - 3x)
-REG_UG1_RetornosAnalogicos_MWR_Horimetro_Gerador_min = 52  # Op04 (Read Input Regs - 3x)
+
 REG_UG1_RetornosAnalogicos_MWR_Estabiliz_Tensao = 49  # Op04 (Read Input Regs - 3x)
 REG_UG1_EntradasAnalogicas_MRR_PosicaoDistribuidor = (
     0  # Scale 0.1 - Op04 (Read Input Regs - 3x)
@@ -625,8 +624,7 @@ REG_UG2_RetornosAnalogicos_MWR_PM_710_Potencia_Ativa = 45  # Op04 (Read Input Re
 REG_UG2_RetornosAnalogicos_MWR_PM_710_Potencia_Reativa = (
     46  # Op04 (Read Input Regs - 3x)
 )
-REG_UG2_RetornosAnalogicos_MWR_Horimetro_Gerador = 51  # Op04 (Read Input Regs - 3x)
-REG_UG2_RetornosAnalogicos_MWR_Horimetro_Gerador_min = 52  # Op04 (Read Input Regs - 3x)
+
 REG_UG2_RetornosAnalogicos_MWR_Estabiliz_Tensao = 49  # Op04 (Read Input Regs - 3x)
 REG_UG2_EntradasAnalogicas_MRR_PosicaoDistribuidor = (
     0  # Scale 0.1 - Op04 (Read Input Regs - 3x)
@@ -1286,6 +1284,8 @@ REG_UG1_EntradasAnalogicas_MRR_PressK1CaixaExpiral_MaisCasas = (
     34903 # Scale 0.01 - Op04 (Read Input Regs)
 )
 
+REG_UG1_RetornosAnalogicos_MWR_Horimetro_Gerador = 32865  # Op04 (Read Input Regs - 3x)
+REG_UG1_RetornosAnalogicos_MWR_Horimetro_Gerador_min = 32866  # Op04 (Read Input Regs - 3x)
 
 REG_UG1_RetrornosAnalogicos_AUX_Condicionadores = 34902
 REG_UG1_ComandosDigitais_MXW_EmergenciaViaSuper = 32295 #antigo -> 4  # Op15 (Write multiple coils)
@@ -1310,6 +1310,9 @@ REG_UG1_EntradasAnalogicas_MRR_PressK1CaixaExpiral = (
 
 REG_UG2_RetornosDigitais_EtapaAux_Sim = 42773
 REG_UG2_RetornosDigitais_EtapaAlvo_Sim = 42772
+
+REG_UG2_RetornosAnalogicos_MWR_Horimetro_Gerador = 42865  # Op04 (Read Input Regs - 3x)
+REG_UG2_RetornosAnalogicos_MWR_Horimetro_Gerador_min = 42866  # Op04 (Read Input Regs - 3x)
 
 REG_UG2_RetrornosAnalogicos_AUX_Condicionadores = 44902
 REG_UG2_ComandosDigitais_MXW_EmergenciaViaSuper = 42295 #antigo -> 4  # Op15 (Write multiple coils)

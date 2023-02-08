@@ -1,154 +1,198 @@
 {% extends "base.html" %}
-
 {% block content %}
-<h1>Parametros MOA</h1>
-Página de configuraço dos parametros usados pelo MOA.
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <style>
+        #content_container {
+            margin: 10px;
+            font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif
+        }
 
-<form method='post' action='/parametros_moa/' style="margin-top: 40px;">
-    {% csrf_token %}
+        table {
+            color: black;
+            text-align: center;
+            border: 2px solid white;
+        }
 
-    <div style="margin-bottom: 20px;">
-        <b>Modo autonomo:</b><br>
-        <input type="radio" id="modo_autonomo_ativado" name="modo_autonomo_ativado" value="True"
-               {% if usina.modo_autonomo == True %}
-               CHECKED
-               {% endif %}/>
-        <label for="True">Ativado</label>
-        <input type="radio" id="modo_autonomo_ativado" name="modo_autonomo_ativado" value="False"
-               {% if usina.modo_autonomo == False %}
-               CHECKED
-               {% endif %}/>
-        <label for="False">Desativado</label>
-    </div>
+        h1 {
+            color: white;
+        }
 
-    <div style="margin-bottom: 20px;">
-        <b>Priorização da partida e parada das Unidades de Geração:</b><br>
-        <input type="radio" id="escolha_ugs" name="escolha_ugs" value="0"
-               {% if escolha_ugs == 0 %}
-               CHECKED
-               {% endif %}/>
-        <label for="0">Priorizar por horas-máquina</label>
-        <input type="radio" id="escolha_ugs" name="escolha_ugs" value="1"
-               {% if escolha_ugs == 1 %}
-               CHECKED
-               {% endif %}/>
-        <label for="1">Priorizar a UG1</label>
-        <input type="radio" id="escolha_ugs" name="escolha_ugs" value="2"
-               {% if escolha_ugs == 2 %}
-               CHECKED
-               {% endif %}/>
-        <label for="2">Priorizar a UG2</label>
-    </div>
+        tr {
+            color: white;
+        }
 
-    <div style="margin-bottom: 20px;">
-        <b>Nível Alvo: </b>
-        <input id="nv_alvo" name="nv_alvo" size=4 value="{{usina.nv_alvo}}"/></td>
-        <br>
-        <br>
-        <b>Pressão Caixa Espiral Alvo: </b>
-        <input id="press_cx_alvo" name="press_cx_alvo" size=4 value="{{usina.press_cx_alvo}}"/></td>
-        <label> (Parâmetro funcional apenas para operação sem comunicação com a TDA)</label>
-        <br>
-    </div>
+        th {
+            background-color: white;
+            color: white;
+        }
 
-    <div style="margin-bottom: 20px;">
-        <b>Limites de operação das Unidades de Geração</b><br>
+        td{
+            background-color: white;
+            color: white;
+        }
+
+        label {
+            color: white;
+        }
+
+        b {
+            color: white;
+        }
+    </style>
+</head>
+<body>
+    <div id="content_container">
+        <h1 style="margin-bottom: 1px;">Parâmetros MOA</h1>
+        <p style="margin-top: 15px; margin-bottom: 40px; font-size: 16px;">Página de configuraço dos parâmetros usados pelo MOA.</p>
+
+        <form method='post' action='/parametros_moa/' style="margin-top: 40px;">
+            {% csrf_token %}
+            <div style="margin-bottom: 30px;">
+                <h3 style="margin-bottom: 5px;">Modo autonomo:</h3>
+                <input type="radio" id="modo_autonomo_ativado" name="modo_autonomo_ativado" value="True"
+                       {% if usina.modo_autonomo == True %}
+                       CHECKED
+                       {% endif %}/>
+                <label for="True">Ativado</label>
+                <input type="radio" id="modo_autonomo_ativado" name="modo_autonomo_ativado" value="False"
+                       {% if usina.modo_autonomo == False %}
+                       CHECKED
+                       {% endif %}/>
+                <label for="False">Desativado</label>
+            </div>
         
-        <table style="text-align:center" border="solid 1px black">
-            <tr>
-                <th>Limites</th>
-                <th>UG1 alerta</th>
-                <th>UG1 limite</th>
-                <th>UG2 alerta</th>
-                <th>UG2 limite</th>
-            </tr>
-            
-            <tr>
-                <td>Fase R</td>
-                <td><input id="alerta_temperatura_fase_r_ug1" name="alerta_temperatura_fase_r_ug1" size=10 value="{{usina.alerta_temperatura_fase_r_ug1}}"/></td>
-                <td><input id="limite_temperatura_fase_r_ug1" name="limite_temperatura_fase_r_ug1" size=10 value="{{usina.limite_temperatura_fase_r_ug1}}"/></td>
-                <td><input id="alerta_temperatura_fase_r_ug2" name="alerta_temperatura_fase_r_ug2" size=10 value="{{usina.alerta_temperatura_fase_r_ug2}}"/></td>
-                <td><input id="limite_temperatura_fase_r_ug2" name="limite_temperatura_fase_r_ug2" size=10 value="{{usina.limite_temperatura_fase_r_ug2}}"/></td>
-            </tr>
-                
-            <tr>
-                <td>Fase S</td>
-                <td><input id="alerta_temperatura_fase_s_ug1" name="alerta_temperatura_fase_s_ug1" size=10 value="{{usina.alerta_temperatura_fase_s_ug1}}"/></td>
-                <td><input id="limite_temperatura_fase_s_ug1" name="limite_temperatura_fase_s_ug1" size=10 value="{{usina.limite_temperatura_fase_s_ug1}}"/></td>
-                <td><input id="alerta_temperatura_fase_s_ug2" name="alerta_temperatura_fase_s_ug2" size=10 value="{{usina.alerta_temperatura_fase_s_ug2}}"/></td>
-                <td><input id="limite_temperatura_fase_s_ug2" name="limite_temperatura_fase_s_ug2" size=10 value="{{usina.limite_temperatura_fase_s_ug2}}"/></td>
-            </tr>
-                
-            <tr>
-                <td>Fase T</td>
-                <td><input id="alerta_temperatura_fase_t_ug1" name="alerta_temperatura_fase_t_ug1" size=10 value="{{usina.alerta_temperatura_fase_t_ug1}}"/></td>
-                <td><input id="limite_temperatura_fase_t_ug1" name="limite_temperatura_fase_t_ug1" size=10 value="{{usina.limite_temperatura_fase_t_ug1}}"/></td>
-                <td><input id="alerta_temperatura_fase_t_ug2" name="alerta_temperatura_fase_t_ug2" size=10 value="{{usina.alerta_temperatura_fase_t_ug2}}"/></td>
-                <td><input id="limite_temperatura_fase_t_ug2" name="limite_temperatura_fase_t_ug2" size=10 value="{{usina.limite_temperatura_fase_t_ug2}}"/></td>
-            </tr>
-                
-            <tr>
-                <td>Núcleo Gerador 1</td>
-                <td><input id="alerta_temperatura_nucleo_gerador_1_ug1" name="alerta_temperatura_nucleo_gerador_1_ug1" size=10 value="{{usina.alerta_temperatura_nucleo_gerador_1_ug1}}"/></td>
-                <td><input id="limite_temperatura_nucleo_gerador_1_ug1" name="limite_temperatura_nucleo_gerador_1_ug1" size=10 value="{{usina.limite_temperatura_nucleo_gerador_1_ug1}}"/></td>
-                <td><input id="alerta_temperatura_nucleo_gerador_1_ug2" name="alerta_temperatura_nucleo_gerador_1_ug2" size=10 value="{{usina.alerta_temperatura_nucleo_gerador_1_ug2}}"/></td>
-                <td><input id="limite_temperatura_nucleo_gerador_1_ug2" name="limite_temperatura_nucleo_gerador_1_ug2" size=10 value="{{usina.limite_temperatura_nucleo_gerador_1_ug2}}"/></td>
-            </tr>
-                
-            <tr>
-                <td>Núcleo Gerador 2</td>
-                <td><input id="alerta_temperatura_nucleo_gerador_2_ug1" name="alerta_temperatura_nucleo_gerador_2_ug1" size=10 value="{{usina.alerta_temperatura_nucleo_gerador_2_ug1}}"/></td>
-                <td><input id="limite_temperatura_nucleo_gerador_2_ug1" name="limite_temperatura_nucleo_gerador_2_ug1" size=10 value="{{usina.limite_temperatura_nucleo_gerador_2_ug1}}"/></td>
-                <td><input id="alerta_temperatura_nucleo_gerador_2_ug2" name="alerta_temperatura_nucleo_gerador_2_ug2" size=10 value="{{usina.alerta_temperatura_nucleo_gerador_2_ug2}}"/></td>
-                <td><input id="limite_temperatura_nucleo_gerador_2_ug2" name="limite_temperatura_nucleo_gerador_2_ug2" size=10 value="{{usina.limite_temperatura_nucleo_gerador_2_ug2}}"/></td>
-            </tr>
+            <div style="margin-bottom: 30px;">
+                <h3 style="margin-bottom: 5px;">Priorização Unidades de Geração:</h3>
+                <input type="radio" id="escolha_ugs" name="escolha_ugs" value="0"
+                       {% if escolha_ugs == 0 %}
+                       CHECKED
+                       {% endif %}/>
+                <label for="0">Priorizar Horas-Máquina</label>
+                <input type="radio" id="escolha_ugs" name="escolha_ugs" value="1"
+                       {% if escolha_ugs == 1 %}
+                       CHECKED
+                       {% endif %}/>
+                <label for="1">Priorizar UG1</label>
+                <input type="radio" id="escolha_ugs" name="escolha_ugs" value="2"
+                       {% if escolha_ugs == 2 %}
+                       CHECKED
+                       {% endif %}/>
+                <label for="2">Priorizar UG2</label>
+            </div>
+        
+            <div style="margin-bottom: 30px;">
+                <b style="font-size: 18px;">Nível Alvo: </b>
+                <input style="margin-left: 10px;" id="nv_alvo" name="nv_alvo" size=4 value="{{usina.nv_alvo}}"/></td>
+            </div>
+            <div style="margin-bottom: 30px;">
+                <b style="font-size: 18px;">Pressão Caixa Espiral Alvo: </b>
+                <input style="margin-left: 10px;" id="press_cx_alvo" name="press_cx_alvo" size=4 value="{{usina.press_cx_alvo}}"/></td>
+                <label> (Operação TDA Off-line)</label>
+                <br>
+            </div>
+        
+            <div style="margin-bottom: 20px; margin-top: 50px;">
+                <p style="margin-bottom: 8px; font-size: 18px;"><b>Limites de operação das Unidades de Geração</b></p>
+                <table>
+                    <tr>
+                        <th>Limites</th>
+                        <th>UG1 alerta</th>
+                        <th>UG1 limite</th>
+                        <th>UG2 alerta</th>
+                        <th>UG2 limite</th>
+                    </tr>
 
-            <tr>
-                <td>Núcleo Gerador 3</td>
-                <td><input id="alerta_temperatura_nucleo_gerador_3_ug1" name="alerta_temperatura_nucleo_gerador_3_ug1" size=10 value="{{usina.alerta_temperatura_nucleo_gerador_3_ug1}}"/></td>
-                <td><input id="limite_temperatura_nucleo_gerador_3_ug1" name="limite_temperatura_nucleo_gerador_3_ug1" size=10 value="{{usina.limite_temperatura_nucleo_gerador_3_ug1}}"/></td>
-                <td><input id="alerta_temperatura_nucleo_gerador_3_ug2" name="alerta_temperatura_nucleo_gerador_3_ug2" size=10 value="{{usina.alerta_temperatura_nucleo_gerador_3_ug2}}"/></td>
-                <td><input id="limite_temperatura_nucleo_gerador_3_ug2" name="limite_temperatura_nucleo_gerador_3_ug2" size=10 value="{{usina.limite_temperatura_nucleo_gerador_3_ug2}}"/></td>
-            </tr>
-                
-            <tr>
-                <td>Mancal Casquilho Radial</td>
-                <td><input id="alerta_temperatura_mancal_casq_rad_ug_ug1" name="alerta_temperatura_mancal_casq_rad_ug_ug1" size=10 value="{{usina.alerta_temperatura_mancal_casq_rad_ug1}}"/></td>
-                <td><input id="limite_temperatura_mancal_casq_rad_ug_ug1" name="limite_temperatura_mancal_casq_rad_ug_ug1" size=10 value="{{usina.limite_temperatura_mancal_casq_rad_ug1}}"/></td>
-                <td><input id="alerta_temperatura_mancal_casq_rad_ug_ug2" name="alerta_temperatura_mancal_casq_rad_ug_ug2" size=10 value="{{usina.alerta_temperatura_mancal_casq_rad_ug2}}"/></td>
-                <td><input id="limite_temperatura_mancal_casq_rad_ug_ug2" name="limite_temperatura_mancal_casq_rad_ug_ug2" size=10 value="{{usina.limite_temperatura_mancal_casq_rad_ug2}}"/></td>
-            </tr>
-                
-            <tr>
-                <td>Mancal Casquilho Combinado</td>
-                <td><input id="alerta_temperatura_mancal_casq_comb_ug_ug1" name="alerta_temperatura_mancal_casq_comb_ug_ug1" size=10 value="{{usina.alerta_temperatura_mancal_casq_comb_ug1}}"/></td>
-                <td><input id="limite_temperatura_mancal_casq_comb_ug_ug1" name="limite_temperatura_mancal_casq_comb_ug_ug1" size=10 value="{{usina.limite_temperatura_mancal_casq_comb_ug1}}"/></td>
-                <td><input id="alerta_temperatura_mancal_casq_comb_ug_ug2" name="alerta_temperatura_mancal_casq_comb_ug_ug2" size=10 value="{{usina.alerta_temperatura_mancal_casq_comb_ug2}}"/></td>
-                <td><input id="limite_temperatura_mancal_casq_comb_ug_ug2" name="limite_temperatura_mancal_casq_comb_ug_ug2" size=10 value="{{usina.limite_temperatura_mancal_casq_comb_ug2}}"/></td>
-            </tr>
-                
-            <tr>
-                <td>Mancal Escora Combinado</td>
-                <td><input id="alerta_temperatura_mancal_escora_comb_ug_ug1" name="alerta_temperatura_mancal_escora_comb_ug_ug1" size=10 value="{{usina.alerta_temperatura_mancal_escora_comb_ug1}}"/></td>
-                <td><input id="limite_temperatura_mancal_escora_comb_ug_ug1" name="limite_temperatura_mancal_escora_comb_ug_ug1" size=10 value="{{usina.limite_temperatura_mancal_escora_comb_ug1}}"/></td>
-                <td><input id="alerta_temperatura_mancal_escora_comb_ug_ug2" name="alerta_temperatura_mancal_escora_comb_ug_ug2" size=10 value="{{usina.alerta_temperatura_mancal_escora_comb_ug2}}"/></td>
-                <td><input id="limite_temperatura_mancal_escora_comb_ug_ug2" name="limite_temperatura_mancal_escora_comb_ug_ug2" size=10 value="{{usina.limite_temperatura_mancal_escora_comb_ug2}}"/></td>
-            </tr>
-                
-            <tr>
-                <td>Caixa Espiral</td>
-                <td><input id="alerta_caixa_espiral_ug1" name="alerta_caixa_espiral_ug1" size=10 value="{{usina.alerta_caixa_espiral_ug1}}"/></td>
-                <td><input id="limite_caixa_espiral_ug1" name="limite_caixa_espiral_ug1" size=10 value="{{usina.limite_caixa_espiral_ug1}}"/></td>
-                <td><input id="alerta_caixa_espiral_ug2" name="alerta_caixa_espiral_ug2" size=10 value="{{usina.alerta_caixa_espiral_ug2}}"/></td>
-                <td><input id="limite_caixa_espiral_ug2" name="limite_caixa_espiral_ug2" size=10 value="{{usina.limite_caixa_espiral_ug2}}"/></td>
+                    <tr>
+                        <td>Fase R</td>
+                        <td><input id="alerta_temperatura_fase_r_ug1" name="alerta_temperatura_fase_r_ug1" size=10 value="{{usina.alerta_temperatura_fase_r_ug1}}"/></td>
+                        <td><input id="limite_temperatura_fase_r_ug1" name="limite_temperatura_fase_r_ug1" size=10 value="{{usina.limite_temperatura_fase_r_ug1}}"/></td>
+                        <td><input id="alerta_temperatura_fase_r_ug2" name="alerta_temperatura_fase_r_ug2" size=10 value="{{usina.alerta_temperatura_fase_r_ug2}}"/></td>
+                        <td><input id="limite_temperatura_fase_r_ug2" name="limite_temperatura_fase_r_ug2" size=10 value="{{usina.limite_temperatura_fase_r_ug2}}"/></td>
+                    </tr>
 
-            </tr>
-        </table>
+                    <tr>
+                        <td>Fase S</td>
+                        <td><input id="alerta_temperatura_fase_s_ug1" name="alerta_temperatura_fase_s_ug1" size=10 value="{{usina.alerta_temperatura_fase_s_ug1}}"/></td>
+                        <td><input id="limite_temperatura_fase_s_ug1" name="limite_temperatura_fase_s_ug1" size=10 value="{{usina.limite_temperatura_fase_s_ug1}}"/></td>
+                        <td><input id="alerta_temperatura_fase_s_ug2" name="alerta_temperatura_fase_s_ug2" size=10 value="{{usina.alerta_temperatura_fase_s_ug2}}"/></td>
+                        <td><input id="limite_temperatura_fase_s_ug2" name="limite_temperatura_fase_s_ug2" size=10 value="{{usina.limite_temperatura_fase_s_ug2}}"/></td>
+                    </tr>
+
+                    <tr>
+                        <td>Fase T</td>
+                        <td><input id="alerta_temperatura_fase_t_ug1" name="alerta_temperatura_fase_t_ug1" size=10 value="{{usina.alerta_temperatura_fase_t_ug1}}"/></td>
+                        <td><input id="limite_temperatura_fase_t_ug1" name="limite_temperatura_fase_t_ug1" size=10 value="{{usina.limite_temperatura_fase_t_ug1}}"/></td>
+                        <td><input id="alerta_temperatura_fase_t_ug2" name="alerta_temperatura_fase_t_ug2" size=10 value="{{usina.alerta_temperatura_fase_t_ug2}}"/></td>
+                        <td><input id="limite_temperatura_fase_t_ug2" name="limite_temperatura_fase_t_ug2" size=10 value="{{usina.limite_temperatura_fase_t_ug2}}"/></td>
+                    </tr>
+
+                    <tr>
+                        <td>Núcleo Gerador 1</td>
+                        <td><input id="alerta_temperatura_nucleo_gerador_1_ug1" name="alerta_temperatura_nucleo_gerador_1_ug1" size=10 value="{{usina.alerta_temperatura_nucleo_gerador_1_ug1}}"/></td>
+                        <td><input id="limite_temperatura_nucleo_gerador_1_ug1" name="limite_temperatura_nucleo_gerador_1_ug1" size=10 value="{{usina.limite_temperatura_nucleo_gerador_1_ug1}}"/></td>
+                        <td><input id="alerta_temperatura_nucleo_gerador_1_ug2" name="alerta_temperatura_nucleo_gerador_1_ug2" size=10 value="{{usina.alerta_temperatura_nucleo_gerador_1_ug2}}"/></td>
+                        <td><input id="limite_temperatura_nucleo_gerador_1_ug2" name="limite_temperatura_nucleo_gerador_1_ug2" size=10 value="{{usina.limite_temperatura_nucleo_gerador_1_ug2}}"/></td>
+                    </tr>
+
+                    <tr>
+                        <td>Núcleo Gerador 2</td>
+                        <td><input id="alerta_temperatura_nucleo_gerador_2_ug1" name="alerta_temperatura_nucleo_gerador_2_ug1" size=10 value="{{usina.alerta_temperatura_nucleo_gerador_2_ug1}}"/></td>
+                        <td><input id="limite_temperatura_nucleo_gerador_2_ug1" name="limite_temperatura_nucleo_gerador_2_ug1" size=10 value="{{usina.limite_temperatura_nucleo_gerador_2_ug1}}"/></td>
+                        <td><input id="alerta_temperatura_nucleo_gerador_2_ug2" name="alerta_temperatura_nucleo_gerador_2_ug2" size=10 value="{{usina.alerta_temperatura_nucleo_gerador_2_ug2}}"/></td>
+                        <td><input id="limite_temperatura_nucleo_gerador_2_ug2" name="limite_temperatura_nucleo_gerador_2_ug2" size=10 value="{{usina.limite_temperatura_nucleo_gerador_2_ug2}}"/></td>
+                    </tr>
+                
+                    <tr>
+                        <td>Núcleo Gerador 3</td>
+                        <td><input id="alerta_temperatura_nucleo_gerador_3_ug1" name="alerta_temperatura_nucleo_gerador_3_ug1" size=10 value="{{usina.alerta_temperatura_nucleo_gerador_3_ug1}}"/></td>
+                        <td><input id="limite_temperatura_nucleo_gerador_3_ug1" name="limite_temperatura_nucleo_gerador_3_ug1" size=10 value="{{usina.limite_temperatura_nucleo_gerador_3_ug1}}"/></td>
+                        <td><input id="alerta_temperatura_nucleo_gerador_3_ug2" name="alerta_temperatura_nucleo_gerador_3_ug2" size=10 value="{{usina.alerta_temperatura_nucleo_gerador_3_ug2}}"/></td>
+                        <td><input id="limite_temperatura_nucleo_gerador_3_ug2" name="limite_temperatura_nucleo_gerador_3_ug2" size=10 value="{{usina.limite_temperatura_nucleo_gerador_3_ug2}}"/></td>
+                    </tr>
+
+                    <tr>
+                        <td>Mancal Casquilho Radial</td>
+                        <td><input id="alerta_temperatura_mancal_casq_rad_ug_ug1" name="alerta_temperatura_mancal_casq_rad_ug_ug1" size=10 value="{{usina.alerta_temperatura_mancal_casq_rad_ug1}}"/></td>
+                        <td><input id="limite_temperatura_mancal_casq_rad_ug_ug1" name="limite_temperatura_mancal_casq_rad_ug_ug1" size=10 value="{{usina.limite_temperatura_mancal_casq_rad_ug1}}"/></td>
+                        <td><input id="alerta_temperatura_mancal_casq_rad_ug_ug2" name="alerta_temperatura_mancal_casq_rad_ug_ug2" size=10 value="{{usina.alerta_temperatura_mancal_casq_rad_ug2}}"/></td>
+                        <td><input id="limite_temperatura_mancal_casq_rad_ug_ug2" name="limite_temperatura_mancal_casq_rad_ug_ug2" size=10 value="{{usina.limite_temperatura_mancal_casq_rad_ug2}}"/></td>
+                    </tr>
+
+                    <tr>
+                        <td>Mancal Casquilho Combinado</td>
+                        <td><input id="alerta_temperatura_mancal_casq_comb_ug_ug1" name="alerta_temperatura_mancal_casq_comb_ug_ug1" size=10 value="{{usina.alerta_temperatura_mancal_casq_comb_ug1}}"/></td>
+                        <td><input id="limite_temperatura_mancal_casq_comb_ug_ug1" name="limite_temperatura_mancal_casq_comb_ug_ug1" size=10 value="{{usina.limite_temperatura_mancal_casq_comb_ug1}}"/></td>
+                        <td><input id="alerta_temperatura_mancal_casq_comb_ug_ug2" name="alerta_temperatura_mancal_casq_comb_ug_ug2" size=10 value="{{usina.alerta_temperatura_mancal_casq_comb_ug2}}"/></td>
+                        <td><input id="limite_temperatura_mancal_casq_comb_ug_ug2" name="limite_temperatura_mancal_casq_comb_ug_ug2" size=10 value="{{usina.limite_temperatura_mancal_casq_comb_ug2}}"/></td>
+                    </tr>
+
+                    <tr>
+                        <td>Mancal Escora Combinado</td>
+                        <td><input id="alerta_temperatura_mancal_escora_comb_ug_ug1" name="alerta_temperatura_mancal_escora_comb_ug_ug1" size=10 value="{{usina.alerta_temperatura_mancal_escora_comb_ug1}}"/></td>
+                        <td><input id="limite_temperatura_mancal_escora_comb_ug_ug1" name="limite_temperatura_mancal_escora_comb_ug_ug1" size=10 value="{{usina.limite_temperatura_mancal_escora_comb_ug1}}"/></td>
+                        <td><input id="alerta_temperatura_mancal_escora_comb_ug_ug2" name="alerta_temperatura_mancal_escora_comb_ug_ug2" size=10 value="{{usina.alerta_temperatura_mancal_escora_comb_ug2}}"/></td>
+                        <td><input id="limite_temperatura_mancal_escora_comb_ug_ug2" name="limite_temperatura_mancal_escora_comb_ug_ug2" size=10 value="{{usina.limite_temperatura_mancal_escora_comb_ug2}}"/></td>
+                    </tr>
+
+                    <tr>
+                        <td>Caixa Espiral</td>
+                        <td><input id="alerta_caixa_espiral_ug1" name="alerta_caixa_espiral_ug1" size=10 value="{{usina.alerta_caixa_espiral_ug1}}"/></td>
+                        <td><input id="limite_caixa_espiral_ug1" name="limite_caixa_espiral_ug1" size=10 value="{{usina.limite_caixa_espiral_ug1}}"/></td>
+                        <td><input id="alerta_caixa_espiral_ug2" name="alerta_caixa_espiral_ug2" size=10 value="{{usina.alerta_caixa_espiral_ug2}}"/></td>
+                        <td><input id="limite_caixa_espiral_ug2" name="limite_caixa_espiral_ug2" size=10 value="{{usina.limite_caixa_espiral_ug2}}"/></td>
+                    
+                    </tr>
+                </table>
+            </div>
+            <b>Salvar parâmetros: </b>
+            <input style="margin-left: 10px;" type="submit" value="Salvar"/>
+        </form>
+        <br>
+        <br>
+        <br>
     </div>
-    <b>Salvar parâmetros: </b>
-    <input type="submit" value="Salvar"/>
-</form>
-<br>
-<br>
-<br>
+</body>
+</html>
 {% endblock content %}
