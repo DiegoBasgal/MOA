@@ -20,11 +20,9 @@ def comandos_manual_view(request, *args, **kwargs):
    elif request.POST.get("desativar_ma"):
       usina.modo_autonomo = 0
 
+   usina.save()
    context = {"comandos_manual": comandos_manual, "usina": usina}
    return render(request, "comandos_manual.html", context=context)
-
-
-
 
 @login_required
 def comando_dj52l(request, *args, **kwargs):
@@ -38,8 +36,6 @@ def comando_dj52l(request, *args, **kwargs):
          comando_dj.comando_dj52l = False
 
    comando_dj.save()
-   context = {"comando_dj": comando_dj}
-   render(request, "comandos_manual.html", context=context)
    return HttpResponseRedirect(reverse('comandos_manual'))
 
 @login_required
@@ -65,8 +61,6 @@ def comando_ug1(request, *args, **kwargs):
          comando_ug1.partida_ug1 = False
 
    comando_ug1.save()
-   context = {"comando_ug1": comando_ug1}
-   render(request, "comandos_manual.html", context=context)
    return HttpResponseRedirect(reverse("comandos_manual"))
 
 @login_required
@@ -92,73 +86,4 @@ def comando_ug2(request, *args, **kwargs):
          comando_ug2.partida_ug2 = False
 
    comando_ug2.save()
-   context = {"comando_ug2": comando_ug2}
-   render(request, "comandos_manual.html", context=context)
    return HttpResponseRedirect(reverse("comandos_manual"))
-
-
-
-
-
-"""setpoint_ug1 = float(request.POST.get("setpoint_ug1"))
-      usina.ug1_setpot = setpoint_ug1 if isinstance(setpoint_ug1, float) else usina.ug1_setpot
-      
-      setpoint_ug2 = float(request.POST.get("setpoint_ug2"))
-      usina.ug2_setpot = setpoint_ug2 if isinstance(setpoint_ug2, float) else usina.ug2_setpot
-      
-      if request.method == "POST":
-      if request.POST.get("ativar_ma") == "True":
-         usina.modo_autonomo = 1
-      elif request.POST.get("desativar_ma") == "False":
-         usina.modo_autonomo = 0
-
-      
-
-      
-      
-      if request.POST.get("partir_ug2") == "True":
-         comandos_manual.partida_ug2 = True
-         sleep(2)
-         comandos_manual.partida_ug2 = False
-      
-      if request.POST.get("parar_ug2") == "True":
-         comandos_manual.parada_ug2 = True
-         sleep(2)
-         comandos_manual.parada_ug2 = False
-
-      if request.POST.get("forcar_manual_ug2") == "True":
-         comandos_manual.forcar_manual_ug2 = True
-         
-      elif request.POST.get("forcar_manual_ug2") == "False":
-         comandos_manual.forcar_manual_ug2 = False
-      
-      
-      if request.POST.get("abrir_comporta1") == "True":
-         comandos_manual.abrir_comporta1 = True
-         comandos_manual.fechar_comporta1 = False
-         comandos_manual.cracking_comporta1 = False
-      
-      if request.POST.get("fechar_comporta1") == "True":
-         comandos_manual.fechar_comporta1 = True
-         comandos_manual.abrir_comporta1 = False
-         comandos_manual.cracking_comporta1 = False
-
-      if request.POST.get("cracking_comporta1") == "True":
-         comandos_manual.cracking_comporta1 = True
-         comandos_manual.abrir_comporta1 = False
-         comandos_manual.fechar_comporta1 = False
-      
-      if request.POST.get("abrir_comporta2") == "True":
-         comandos_manual.abrir_comporta2 = True
-         comandos_manual.fechar_comporta2 = False
-         comandos_manual.cracking_comporta2 = False
-      
-      if request.POST.get("fechar_comporta2") == "True":
-         comandos_manual.fechar_comporta2 = True
-         comandos_manual.abrir_comporta2 = False
-         comandos_manual.cracking_comporta2 = False
-
-      if request.POST.get("cracking_comporta2") == "True":
-         comandos_manual.cracking_comporta2 = True
-         comandos_manual.abrir_comporta2 = False
-         comandos_manual.fechar_comporta2 = False"""
