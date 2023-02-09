@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>MOA - Web Interface</title>
+    <style>
+        div#nav_bar_container {
+            width: 100%;
+            height: 100%;
+            margin: 0 auto;
+            background: #808080;
+        }
+
+        ul#nav_bar_list li {
+            display: inline-block;
+            padding: 5px;
+            background-color: #A0A0A0;
+            text-align: center;
+        }
+    </style>
+
+</head>
+<body>
+    <div id="nav_bar_container">
+        <ul id="nav_bar_list">
+            <li><a href="{% url 'monitoramento'%}">Monitoramento</a></li>
+            {% if user.is_authenticated %}
+            <li><a href="{% url 'agendamentos'%}">Agendamentos</a></li>
+            <li><a href="{% url 'ocorrencias'%}">Ocorrencias/TRIPS</a></li>
+            <li><a href="{% url 'parametros_moa'%}">Parametros MOA</a></li>
+            <li><a href="{% url 'emergencia'%}">Emergência</a></li>
+            <li><a href="{% url 'contatos'%}">Contatos</a></li>
+            <li>User: {{ user.get_username }} <a href="{% url 'logout'%}?next={{request.path}}">(Logout)</a></li>
+            {% else %}
+            <li><a href="{% url 'login'%}?next={{request.path}}">Login</a></li>
+            {% endif %}
+        </ul>
+    </div>
+
+    {% block content %}
+    {% endblock content %}
+</body>
+</html>

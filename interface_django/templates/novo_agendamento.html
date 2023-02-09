@@ -1,0 +1,68 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<h1>Novo agendamento</h1>
+
+<form method='post' action='/agendamentos/novo_agendamento/'>
+    {% csrf_token %}
+    Data:
+    <select id="dia" name="dia">
+        {% for i in range_dias %}
+            <option value="{{ i }}" {% if i == dia %}selected{% endif %}>{{ i }}</option>
+        {% endfor %}
+    </select>
+    /
+    <select id="mes" name="mes">
+        {% for i in range_mes %}
+            <option value="{{ i }}" {% if i == mes %}selected{% endif %}>{{ i }}</option>
+        {% endfor %}
+    </select>
+    /
+    <select id="ano" name="ano">
+        {% for i in range_ano %}
+            <option value="{{ i }}" {% if i == ano %}selected{% endif %}>{{ i }}</option>
+        {% endfor %}
+    </select>
+    </br>
+    </br>
+
+    Horário:
+    <select id="hora" name="hora">
+        {% for i in range_hora %}
+            <option value="{{ i }}" {% if i == hora %}selected{% endif %}>{{ i }}</option>
+        {% endfor %}
+    </select>
+    :
+    <select id="minuto" name="minuto">
+        {% for i in range_minuto %}
+            <option value="{{ i }}" {% if i == prox_minuto %}selected{% endif %}>{{ i }}</option>
+        {% endfor %}
+    </select>
+
+    </br>
+    </br>
+
+    Comando:
+    <select id="comando" name="comando">
+        {% for comando in comandos %}
+            <option value="{{ comando.id }}">{{ comando.nome }}</option>
+        {% endfor %}
+    </select>
+    </br>
+    </br>
+
+    Campo auxiliar:
+    <input id="campo_auxiliar" name="campo_auxiliar" type="text"/>
+    </br>
+    </br>
+
+    Observações:
+    <input id="observacao" name="observacao" type="text"/>
+    </br>
+    </br>
+
+    <input type="submit" value="Criar"/>
+</form>
+
+{% endblock content %}
