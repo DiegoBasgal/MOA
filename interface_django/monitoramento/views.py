@@ -8,25 +8,17 @@ from parametros_moa.models import ParametrosUsina
 from pyModbusTCP.client import ModbusClient
 
 
-MOA_UNIDADE_MANUAL = 0
-MOA_UNIDADE_DISPONIVEL = 1
-MOA_UNIDADE_RESTRITA = 2
-MOA_UNIDADE_INDISPONIVEL = 3
 MOA_DICT_DE_STATES = {}
-MOA_DICT_DE_STATES[MOA_UNIDADE_MANUAL] = "MOA_UNIDADE_MANUAL"
-MOA_DICT_DE_STATES[MOA_UNIDADE_DISPONIVEL] = "MOA_UNIDADE_DISPONIVEL"
-MOA_DICT_DE_STATES[MOA_UNIDADE_RESTRITA] = "MOA_UNIDADE_RESTRITA"
-MOA_DICT_DE_STATES[MOA_UNIDADE_INDISPONIVEL] = "MOA_UNIDADE_INDISPONIVEL"
+MOA_DICT_DE_STATES[0] = 0
+MOA_DICT_DE_STATES[1] = 1
+MOA_DICT_DE_STATES[2] = 2
+MOA_DICT_DE_STATES[3] = 3
 
-UNIDADE_SINCRONIZADA = 1
-UNIDADE_PARANDO = 2
-UNIDADE_PARADA = 4
-UNIDADE_SINCRONIZANDO = 8
 UNIDADE_DICT_DE_ETAPAS = {}
-UNIDADE_DICT_DE_ETAPAS[UNIDADE_SINCRONIZADA] = "UNIDADE_SINCRONIZADA"
-UNIDADE_DICT_DE_ETAPAS[UNIDADE_PARANDO] = "UNIDADE_PARANDO"
-UNIDADE_DICT_DE_ETAPAS[UNIDADE_PARADA] = "UNIDADE_PARADA"
-UNIDADE_DICT_DE_ETAPAS[UNIDADE_SINCRONIZANDO] = "UNIDADE_SINCRONIZANDO"
+UNIDADE_DICT_DE_ETAPAS[1] = 1
+UNIDADE_DICT_DE_ETAPAS[2] = 2
+UNIDADE_DICT_DE_ETAPAS[3] = 3
+UNIDADE_DICT_DE_ETAPAS[4] = 4
 
 
 def monitoramento_view(request, *args, **kwargs):
@@ -47,11 +39,17 @@ def monitoramento_view(request, *args, **kwargs):
         "nv_alvo": "{:3.2f}".format(usina.nv_alvo),
         "aguardo": "Sim" if usina.aguardando_reservatorio > 0 else "Não",
         "nv_montante": "{:3.2f}".format(usina.nv_montante),
-        "nv_pos_grade": "{:3.2f}".format(usina.nv_pos_grade),
         "LOCAL_MODBUS_PORT": usina.modbus_server_porta,
         "CLP_IP": usina.clp_ip,
         "CLP_ON": "ONLINE" if usina.clp_online else "ERRO/OFFLINE",
     }
+
+    if 405 <= usina.nv_montante < 405.15:
+        context["tag"] = 0
+    elif 404.90 <= usina.nv_montante < 405:
+        context["tag"] = 1
+    elif usina.nv_montante < 404.90 or usina.nv_montante > 405.15:
+        context["tag"] = 2
 
     for key in context:
         if context[key] == "" or context[key] == " ":
@@ -64,41 +62,29 @@ def monitoramento_view(request, *args, **kwargs):
         timeout=0.5,
         unit_id=1,
     )
+
+    client_sa = ModbusClient("192.168.0.50", 502, unit_id=1, timeout=0.5)
+
+    if client_sa.open():
+        reg_dj = client_sa.read_coils(17)[0]
+        if reg_dj == 0:
+            context["status_dj52l"] = True
+        elif reg_dj == 1:
+            context["status_dj52l"] = False
+        else:
+            context["status_dj52l"] = None
+        client_sa.close()
+
     if client.open():
         regs = client.read_holding_registers(0, 120)
         client.close()
         if regs is None or regs[0] < 2000:
-            context["modbus_status"] = "Sem comunicação (regs is None)"
+            context["ug1_state", "ug2_state", "ug1_etapa", "ug2_etapa"] = 99
         else:
-            context["modbus_status"] = "Ok!"
-            context["ug1_state"] = (
-                "{}".format(
-                    MOA_DICT_DE_STATES[regs[61]]
-                    if regs[61] in MOA_DICT_DE_STATES
-                    else f"Inconsistente {regs[61]}"
-                ),
-            )
-            context["ug2_state"] = (
-                "{}".format(
-                    MOA_DICT_DE_STATES[regs[71]]
-                    if regs[71] in MOA_DICT_DE_STATES
-                    else f"Inconsistente {regs[71]}"
-                ),
-            )
-            context["ug1_etapa"] = (
-                "{}".format(
-                    UNIDADE_DICT_DE_ETAPAS[regs[62]]
-                    if regs[62] in UNIDADE_DICT_DE_ETAPAS
-                    else f"Inconsistente {regs[62]}"
-                ),
-            )
-            context["ug2_etapa"] = (
-                "{}".format(
-                    UNIDADE_DICT_DE_ETAPAS[regs[72]]
-                    if regs[72] in UNIDADE_DICT_DE_ETAPAS
-                    else f"Inconsistente {regs[72]}"
-                ),
-            )
+            context["ug1_state"] = MOA_DICT_DE_STATES[regs[61]] if regs[61] in MOA_DICT_DE_STATES else 4
+            context["ug2_state"] = MOA_DICT_DE_STATES[regs[71]] if regs[71] in MOA_DICT_DE_STATES else 4
+            context["ug1_etapa"] = UNIDADE_DICT_DE_ETAPAS[regs[62]] if regs[62] in UNIDADE_DICT_DE_ETAPAS else 99
+            context["ug2_etapa"] = UNIDADE_DICT_DE_ETAPAS[regs[72]] if regs[72] in UNIDADE_DICT_DE_ETAPAS else 99
             hb_detetime = datetime.datetime(
                 regs[0], regs[1], regs[2], regs[3], regs[4], regs[5], regs[6] * 1000
             )

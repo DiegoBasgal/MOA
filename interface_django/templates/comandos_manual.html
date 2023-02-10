@@ -36,6 +36,16 @@
         p {
             color: white;
         }
+        .messages {
+            color: white;
+        }
+        input {
+            background-color: rgb(168, 168, 168);
+        }
+        #submit{
+            background-color: white;
+        }
+
     </style>
 </head>
 <html>
@@ -66,8 +76,8 @@
                     </div>
                     <div style="margin-top: 1px;">
                         <label style="font-size: 17px; margin-left: 3px;">Comando: </label>
-                        <input type="submit" name="ativar_ma" value="Ativar">
-                        <input type="submit" name="desativar_ma" value="Desativar">
+                        <input id="submit" type="submit" name="ativar_ma" value="Ativar">
+                        <input id="submit" type="submit" name="desativar_ma" value="Desativar">
                     </div>
                 </form>
             </div>
@@ -80,17 +90,21 @@
                                 <label style="font-size: 18px; margin-top: 18px;"><b>Disjuntor 52L: </b></label>
                             </td>
                             <td>
-                                {% if comandos_manual.comando_dj52l == True %}
+                                {% if status_dj52l == True %}
                                     <label style="font-size: 17px; margin-left: 5px; color: red;">Fechado</label>
-                                {% else %}
+                                {% endif %}
+                                {% if status_dj52l == False %}
                                     <label style="font-size: 17px; margin-left: 5px; color: green;">Aberto</label>
+                                {% endif %}
+                                {% if status_dj52l == None %}
+                                    <label style="font-size: 17px; margin-left: 5px; color: yellow;">Inconsistente</label>
                                 {% endif %}
                             </td>
                         </tr>
                     </table>
                     <label style="font-size: 17px; margin-left: 3px;">Comando: </label>
-                    <input type="submit" name="abrir_dj" value="Abrir">
-                    <input type="submit" name="fechar_dj" value="Fechar">
+                    <input id="submit" type="submit" name="abrir_dj" value="Abrir">
+                    <input id="submit" type="submit" name="fechar_dj" value="Fechar">
                 </form>
             </div>
             <div style="margin-top: 60px;">
@@ -103,35 +117,71 @@
                                 <label style="font-size: 18px; margin-top: 18px;"><b>UG1: </b></label>
                             </td>
                             <td>
-                                {% if comandos_manual.modo_ug1 == 0 %}
-                                    <label style="font-size: 17px; margin-left: 5px; color: blue;">Manual</label>
+                                {% if ug1_state == 0 %}
+                                    <label style="font-size: 17px; margin-left: 5px; color: white;">Manual</label>
                                 {% endif %}
-                                {% if comandos_manual.modo_ug1 == 1 %}
+                                {% if ug1_state == 1 %}
                                     <label style="font-size: 17px; margin-left: 5px; color: green;">Disponível</label>
                                 {% endif %}
-                                {% if comandos_manual.modo_ug1 == 2 %}
+                                {% if ug1_state == 2 %}
                                     <label style="font-size: 17px; margin-left: 5px; color: yellow;">Restrito</label>
                                 {% endif %}
-                                {% if comandos_manual.modo_ug1 == 3 %}
+                                {% if ug1_state == 3 %}
                                     <label style="font-size: 17px; margin-left: 5px; color: red;">Indisponível</label>
+                                {% endif %}
+                                {% if ug1_state == 4 %}
+                                    <label style="font-size: 17px; margin-left: 5px; color: blue;">Inconsistente</label>
+                                {% endif %}
+                                {% if ug1_state == 99 %}
+                                    <label style="font-size: 17px; margin-left: 5px; color: deeppink;">Sem comunicação</label>
                                 {% endif %}
                             </td>
                         </tr>
                     </table>
-                    <p style="margin-top: 1px; margin-left: 3px;">Potência: {{ usina.pot_ug1 | floatformat:0 }} kW <br>
-                        Etapa: {{ usina.ug1_etapa }} <br>
-                        SP: {{ usina.setpot_ug1 | floatformat:0 }} kW <br>
-                        Horas máquina: {{ usina.tempo_ug1 | floatformat:2 }} h</p>
-                    <label style="font-size: 16px; margin-left: 3px;">Comando partida/parada: </label>
-                    <input type="submit" name="patir_ug1" value="Partir"/>
-                    <input type="submit" name="parar_ug1" value="Parar"/>
-                    <br>
-                    <br>
-                    <label style="font-size: 16px; margin-left: 3px;">Modo: </label>
-                    <input type="submit" name="manual" value="Manual" />
-                    <input type="submit" name="disponivel" value="Disponível" />
-                    <input type="submit" name="restrito" value="Restrito" />
-                    <input type="submit" name="indisponivel" value="Indisponível" />
+                    <table>
+                        <tr>
+                            <td style="padding-left: 1px;">
+                                <label>Etapa:</label>
+                            </td>
+                            <td>
+                                {% if ug1_etapa == 1 %}
+                                <label style="font-size: 17px; margin-left: 5px; color: yellow;">Parando</label>
+                                {% endif %}
+                                {% if ug1_etapa == 2 %}
+                                <label style="font-size: 17px; margin-left: 5px; color: red;">Parada</label>
+                                {% endif %}
+                                {% if ug1_etapa == 3 %}
+                                    <label style="font-size: 17px; margin-left: 5px; color: yellow;">Sincronizando</label>
+                                {% endif %}
+                                {% if ug1_etapa == 4 %}
+                                    <label style="font-size: 17px; margin-left: 5px; color: green;">Sincronizada</label>
+                                {% endif %}
+                                {% if ug1_etapa == 99 %}
+                                    <label style="font-size: 17px; margin-left: 5px; color: red;">Inconsistente</label>
+                                {% endif %}
+                            </td>
+                        </tr>
+                    </table>
+                    <label style="margin-left: 3px;">Potência:</label>
+                    <label>{{ pot_ug1 | floatformat:0 }} kW</label><br>
+                    <label style="margin-left: 3px;">Setpoint:</label>
+                    <label>{{ setpot_ug1 | floatformat:0 }} kW</label><br>
+                    <label style="margin-left: 3px;">Horas máquina:</label>
+                    <label>{{ tempo_ug1 | floatformat:2 }} h</label>
+                    <div style="margin-top: 8px;"></div>
+                    <label style="font-size: 16px; margin-left: 3px;">Enviar setpoint: </label>
+                    <input style="margin-left: 1px;" type="text" name="setpoint_ug1" size=5 value="{{usina.ug1_setpot}}" />
+                    <input id="submit" type="submit" name="enviar_setpoint_ug1" value="Enviar"/>
+                    <div style="margin-top: 8px;"></div>
+                    <label style="font-size: 16px; margin-left: 3px; margin-right: 1px;">Comando partida/parada: </label>
+                    <input id="submit" type="submit" name="partir_ug1" value="Partir"/>
+                    <input id="submit" type="submit" name="parar_ug1" value="Parar"/>
+                    <div style="margin-top: 8px;"></div>
+                    <label style="font-size: 16px; margin-left: 3px;">Alterar estado: </label>
+                    <input id="submit" type="submit" name="manual" value="Manual" />
+                    <input id="submit" type="submit" name="disponivel" value="Disponível" />
+                    <input id="submit" type="submit" name="restrito" value="Restrito" />
+                    <input id="submit" type="submit" name="indisponivel" value="Indisponível" />
                 </form>
             </div>
             <div style="margin-top: 40px;">
@@ -143,40 +193,77 @@
                                 <label style="font-size: 18px; margin-top: 18px;"><b>UG2: </b></h3>
                             </td>
                             <td>
-                                {% if comandos_manual.modo_ug2 == 0 %}
-                                    <label style="font-size: 17px; margin-left: 5px; color: blue;">Manual</label>
+                                {% if ug2_state == 0 %}
+                                    <label style="font-size: 17px; margin-left: 5px; color: white;">Manual</label>
                                 {% endif %}
-                                {% if comandos_manual.modo_ug2 == 1 %}
+                                {% if ug2_state == 1 %}
                                     <label style="font-size: 17px; margin-left: 5px; color: green;">Disponível</label>
                                 {% endif %}
-                                {% if comandos_manual.modo_ug2 == 2 %}
+                                {% if ug2_state == 2 %}
                                     <label style="font-size: 17px; margin-left: 5px; color: yellow;">Restrito</label>
                                 {% endif %}
-                                {% if comandos_manual.modo_ug2 == 3 %}
+                                {% if ug2_state == 3 %}
                                     <label style="font-size: 17px; margin-left: 5px; color: red;">Indisponível</label>
+                                {% endif %}
+                                {% if ug2_state == 4 %}
+                                    <label style="font-size: 17px; margin-left: 5px; color: blue;">Inconsistente</label>
+                                {% endif %}
+                                {% if ug2_state == 99 %}
+                                    <label style="font-size: 17px; margin-left: 5px; color: deeppink;">Sem comunicação</label>
                                 {% endif %}
                             </td>
                         </tr>
                     </table>
-                    <p style="margin-top: 1px; margin-left: 3px;">Potência: {{ usina.pot_ug2 | floatformat:0 }} kW <br>
-                        Etapa: {{ usina.ug2_etapa }} <br>
-                        SP: {{ usina.setpot_ug2 | floatformat:0 }} kW <br>
-                        Horas máquina: {{ usina.tempo_ug2 | floatformat:2 }} h</p>
-                    <label style="font-size: 16px; margin-left: 3px;">Comando partida/parada: </label>
-                    <input type="submit" name="patir_ug1" value="Partir"/>
-                    <input type="submit" name="parar_ug1" value="Parar"/>
-                    <br>
-                    <br>
-                    <label style="font-size: 16px; margin-left: 3px;">Modo: </label>
-                    <input type="submit" name="manual" value="Manual" />
-                    <input type="submit" name="disponivel" value="Disponível" />
-                    <input type="submit" name="restrito" value="Restrito" />
-                    <input type="submit" name="indisponivel" value="Indisponível" />
+                    <table>
+                        <tr>
+                            <td style="padding-left: 1px;">
+                                <label>Etapa:</label>
+                            </td>
+                            <td>
+                                {% if ug2_etapa == 1 %}
+                                <label style="font-size: 17px; margin-left: 5px; color: yellow;">Parando</label>
+                                {% endif %}
+                                {% if ug2_etapa == 2 %}
+                                <label style="font-size: 17px; margin-left: 5px; color: red;">Parada</label>
+                                {% endif %}
+                                {% if ug2_etapa == 3 %}
+                                <label style="font-size: 17px; margin-left: 5px; color: yellow;">Sincronizando</label>
+                                {% endif %}
+                                {% if ug2_etapa == 4 %}
+                                    <label style="font-size: 17px; margin-left: 5px; color: green;">Sincronizada</label>
+                                {% endif %}
+                                {% if ug2_etapa == 99 %}
+                                    <label style="font-size: 17px; margin-left: 5px; color: red;">Inconsistente</label>
+                                {% endif %}
+                            </td>
+                        </tr>
+                    </table>
+                    <label style="margin-left: 3px;">Potência:</label>
+                    <label>{{ pot_ug2 | floatformat:0 }} kW</label><br>
+                    <label style="margin-left: 3px;">Setpoint:</label>
+                    <label>{{ setpot_ug2 | floatformat:0 }} kW</label><br>
+                    <label style="margin-left: 3px;">Horas máquina:</label>
+                    <label>{{ tempo_ug2 | floatformat:2 }} h</label>
+                    <div style="margin-top: 8px;"></div>
+                    <label style="font-size: 16px; margin-left: 3px;">Enviar setpoint: </label>
+                    <input style="margin-left: 1px;" type="text" name="setpoint_ug2" size=5 value="{{usina.ug2_setpot}}" />
+                    <input id="submit" type="submit" name="enviar_setpoint_ug2" value="Enviar"/>
+                    <div style="margin-top: 8px;"></div>
+                    <label style="font-size: 16px; margin-left: 3px; margin-right: 1px;">Comando partida/parada: </label>
+                    <input id="submit" type="submit" name="partir_ug2" value="Partir"/>
+                    <input id="submit" type="submit" name="parar_ug2" value="Parar"/>
+                    <div style="margin-top: 8px;"></div>
+                    <label style="font-size: 16px; margin-left: 3px;">Alterar estado: </label>
+                    <input id="submit" type="submit" name="manual" value="Manual" />
+                    <input id="submit" type="submit" name="disponivel" value="Disponível" />
+                    <input id="submit" type="submit" name="restrito" value="Restrito" />
+                    <input id="submit" type="submit" name="indisponivel" value="Indisponível" />
                 </form>
             </div>
         </div>
         <br>
         <br>
+
     </body>
 </html>
 {% endblock content %}
