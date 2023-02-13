@@ -7,8 +7,11 @@ dos valores de campo.
 __version__ = "0.1"
 __author__ = "Lucas Lavratti"
 
-from src.Leituras import *
 from asyncio.log import logger
+
+from src.Leituras import *
+from src.abstracao_usina import *
+
 
 
 class CondicionadorBase:
@@ -27,11 +30,15 @@ class CondicionadorBase:
     """
     Classe implementa a base para condicionadores. É "Abstrata" assim por se dizer...
     """
+    ugs = []
 
-    def __init__(self, descr: str, gravidade: int, leitura: LeituraBase):
+    def __init__(self, descr: str, gravidade: int, leitura: LeituraBase, id: int = None, estados: list = None):
+        self.__estados = estados if estados is not None else []
         self.__descr = descr
         self.__gravidade = gravidade
         self.__leitura = leitura
+        self.__id = id
+        self.__ugs = self.ugs
 
     def __str__(self):
         return "Condicionador {}, Gravidade: {}, Ativo: {}, Valor: {}".format(
@@ -55,7 +62,13 @@ class CondicionadorBase:
         Returns:
             bool: True se ativo, False caso contrário
         """
-        return False if self.__leitura.valor == 0 else True
+        for ug in self.__ugs:
+            if ug.id == self.__id and ug.etapa_atual in self.__estados:
+                return False if self.__leitura.valor == 0 else True
+            elif ug.id == self.__id and self.__estados == []:
+                return False if self.__leitura.valor == 0 else True
+            else:
+                return False
 
     @property
     def valor(self) -> float:
@@ -93,12 +106,17 @@ class CondicionadorExponencial(CondicionadorBase):
         leitura: LeituraBase,
         valor_base: float,
         valor_limite: float,
+        id: int = None,
         ordem: float = (1 / 4),
+        estados: list = None
     ):
-        super().__init__(descr, gravidade, leitura)
+        super().__init__(descr, gravidade, leitura, id=None)
+        self.__estados == estados if estados is not None else []
         self.__valor_base = valor_base
         self.__valor_limite = valor_limite
         self.__ordem = ordem
+        self.__id = id
+        self.__ugs = self.ugs
 
     @property
     def valor_base(self):
@@ -176,12 +194,15 @@ class CondicionadorExponencialReverso(CondicionadorBase):
         leitura: LeituraBase,
         valor_base: float,
         valor_limite: float,
+        id: int = None,
         ordem: float = 2,
     ):
-        super().__init__(descr, gravidade, leitura)
+        super().__init__(descr, gravidade, leitura, id=None)
         self.__valor_base = valor_base
         self.__valor_limite = valor_limite
         self.__ordem = ordem
+        self.__id = id
+        self.__ugs = self.ugs
 
     @property
     def valor_base(self) -> float:

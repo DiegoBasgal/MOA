@@ -17,7 +17,7 @@ from time import sleep, time
 from threading import Thread
 from datetime import datetime
 from abc import abstractmethod
-from src.Condicionadores import *
+from src.Condicionadores import CondicionadorExponencial, CondicionadorBase, CondicionadorExponencialReverso
 
 # Class Stubs
 class UnidadeDeGeracao:
@@ -337,7 +337,7 @@ class UnidadeDeGeracao:
     @property
     def setpoint_minimo(self) -> int:
         """
-        Setpoint mínimo da unidade de geração
+        Setpoint mínimo da unidade de geração'
         Este valor deve ser carregado com o restante dos parâmetros da unidade de geração utilizando a função carregar_parametros()
 
         Returns:
@@ -768,11 +768,7 @@ class StateDisponivel(State):
                     self.aux = 1
                 # Se potência = 0, impedir,
                 if self.parent_ug.setpoint == 0:
-                    self.logger.warning(
-                        "[UG{}] A UG estava sincronizando com SP zerado, parando a UG.".format(
-                            self.parent_ug.id
-                        )
-                    )
+                    self.logger.warning("[UG{}] A UG estava sincronizando com SP zerado, parando a UG.".format(self.parent_ug.id))
                     self.parent_ug.parar()
                 else:
                     self.parent_ug.partir()

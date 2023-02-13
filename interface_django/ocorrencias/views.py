@@ -10,8 +10,8 @@ from numpy import block
 @login_required
 def ocorrencias_view(request, *args, **kwargs):
 
-    nlinhas = 5
-    if int(request.GET.get("nlinhas", 0)) > 5:
+    nlinhas = 15
+    if int(request.GET.get("nlinhas", 0)) > 15:
         nlinhas = int(request.GET.get("nlinhas", 0))
 
     rawlog = []

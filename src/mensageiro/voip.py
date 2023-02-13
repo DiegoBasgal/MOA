@@ -36,7 +36,7 @@ FreioCmdRemoto2 = False
 FreioCmdRemoto3 = False
 TDA_FalhaComum = False
 BombasDngRemoto = False
-Disj_GDE_QLCF_Fechado = False
+Disj_GDE_QCAP_Fechado = False
 
 napikey = config["napikey"]
 user_token = config["user_token"]
@@ -174,7 +174,7 @@ def enviar_voz_teste():
                 logger.exception(e)
                 lista_de_contatos = lista_de_contatos_padrao
 
-    if TDA_FalhaComum or Disj_GDE_QLCF_Fechado:
+    if TDA_FalhaComum or Disj_GDE_QCAP_Fechado:
         for contato in lista_de_contatos_padrao:
             data = {
                 "caller": "{}".format(caller_voip),  # caller fornecido pela nvoip
@@ -221,7 +221,7 @@ def enviar_voz_auxiliar(lista_de_contatos=None):
         for contato in lista_de_contatos:
             logger.info("Disparando torpedo de voz para {} ({})".format(contato[0], contato[1]))
 
-            if Disj_GDE_QLCF_Fechado:
+            if Disj_GDE_QCAP_Fechado:
                 # Montagem do pacote para chamar a api
                 data = {
                     "caller": "{}".format(caller_voip),  # caller fornecido pela nvoip
@@ -247,7 +247,7 @@ def enviar_voz_auxiliar(lista_de_contatos=None):
                 else:
                     logger.debug("response_body: {} ".format(response_body))
                 
-                Disj_GDE_QLCF_Fechado = False
+                Disj_GDE_QCAP_Fechado = False
 
             if TDA_FalhaComum:
                 # Montagem do pacote para chamar a api

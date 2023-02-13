@@ -1,0 +1,14 @@
+<h2>Não foi possível enviar o comando</h2>
+      {% if impedido_dj == True %}
+         <p style="margin-top: 15px; margin-bottom: 1px; font-size: 16px;">Motivo: MOA Modo Autônomo - <b style="color: red">Ativado</b></p>
+      {% endif %}
+      {% if impedido_ug1 == True or impedido_ug2 == True or impedido_ug3 == True %}
+         {% if mensagem_ug1 == 1 or mensagem_ug2 == 1 or mensagem_ug3 == 1 %}
+            <p style="margin-top: 15px; margin-bottom: 1px; font-size: 16px;">Motivo: Máquina sem condições de partida</p>
+         {% endif %}
+         {% if mensagem_ug1 == 2 or mensagem_ug2 == 2 or mensagem_ug3 == 2 %}
+            <p style="margin-top: 15px; margin-bottom: 1px; font-size: 16px;">Motivo: Disjuntor 52L - <b style="color: red">Aberto</b></p>
+         {% endif %}
+      {% endif %}
+      <br>
+      <a href="{% url 'comandos_manual'%}">Retornar à página de comandos manuais</a>

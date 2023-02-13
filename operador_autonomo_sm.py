@@ -441,16 +441,12 @@ class ReservatorioAcimaDoMaximo(State):
     def run(self):
         if self.usina.nv_montante_recente >= self.usina.cfg["nv_maximorum"]:
             self.usina.distribuir_potencia(0)
-            logger.critical(
-                "Nivel montante ({:3.2f}) atingiu o maximorum!".format(
-                    self.usina.nv_montante_recente
-                )
-            )
+            logger.critical("Nivel montante ({:3.2f}) atingiu o maximorum!".format(self.usina.nv_montante_recente))
             return Emergencia(self.usina)
         else:
+            self.usina.controle_ie = 1
+            self.usina.controle_i = 0.8
             self.usina.distribuir_potencia(self.usina.cfg["pot_maxima_usina"])
-            self.usina.controle_ie = 0.5
-            self.usina.controle_i = 0.5
             for ug in self.usina.ugs:
                 print("")
                 ug.step()
@@ -580,7 +576,7 @@ def acionar_voip():
         if usina.acionar_voip:
             voip.TDA_FalhaComum=[True if usina.TDA_FalhaComum else False]
             voip.BombasDngRemoto=[True if usina.BombasDngRemoto else False]
-            voip.Disj_GDE_QLCF_Fechado=[True if usina.Disj_GDE_QLCF_Fechado else False]
+            voip.Disj_GDE_QCAP_Fechado=[True if usina.Disj_GDE_QCAP_Fechado else False]
             voip.enviar_voz_auxiliar()
             usina.acionar_voip = False
         elif usina.avisado_em_eletrica:
@@ -589,12 +585,12 @@ def acionar_voip():
 
         for ug in usina.ugs:
             if ug.acionar_voip:
-                voip.QCAUG1Remoto=[True if not usina.ug1.QCAUGRemoto else False]
-                voip.QCAUG2Remoto=[True if not usina.ug2.QCAUGRemoto else False]
-                voip.QCAUG3Remoto=[True if not usina.ug3.QCAUGRemoto else False]
-                voip.FreioCmdRemoto1=[True if not usina.ug1.FreioCmdRemoto else False]
-                voip.FreioCmdRemoto2=[True if not usina.ug2.FreioCmdRemoto else False]
-                voip.FreioCmdRemoto3=[True if not usina.ug3.FreioCmdRemoto else False]
+                #voip.QCAUG1Remoto=[True if not usina.ug1.QCAUGRemoto else False]
+                #voip.QCAUG2Remoto=[True if not usina.ug2.QCAUGRemoto else False]
+                #voip.QCAUG3Remoto=[True if not usina.ug3.QCAUGRemoto else False]
+                #voip.FreioCmdRemoto1=[True if not usina.ug1.FreioCmdRemoto else False]
+                #voip.FreioCmdRemoto2=[True if not usina.ug2.FreioCmdRemoto else False]
+                #voip.FreioCmdRemoto3=[True if not usina.ug3.FreioCmdRemoto else False]
                 voip.enviar_voz_auxiliar()
                 ug.acionar_voip = False
             elif ug.avisou_emerg_voip:

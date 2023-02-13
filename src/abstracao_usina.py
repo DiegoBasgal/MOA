@@ -2,14 +2,20 @@ import pytz
 import logging
 import threading
 import subprocess
-from src.codes import *
+
 from time import sleep, time
-from src.Condicionadores import *
+from datetime import  datetime, timedelta
+from pyModbusTCP.client import ModbusClient
+from pyModbusTCP.server import DataBank, ModbusServer
+
+from src.codes import *
+from src.mapa_modbus import *
 from src.UG1 import UnidadeDeGeracao1
 from src.UG2 import UnidadeDeGeracao2
 from src.UG3 import UnidadeDeGeracao3
-from pyModbusTCP.server import DataBank
-from datetime import  datetime, timedelta
+from src.LeiturasUSN import LeiturasUSN
+from src.Condicionadores import CondicionadorBase
+from src.Leituras import LeituraModbus, LeituraModbusBit, LeituraModbusCoil
 
 logger = logging.getLogger("__main__")
 
@@ -31,9 +37,6 @@ class Usina:
         if leituras:
             self.leituras = leituras
         else:
-            from src.Leituras import LeituraModbus
-            from src.LeiturasUSN import LeiturasUSN
-            from src.Leituras import LeituraModbusBit
             self.leituras = LeiturasUSN(self.cfg)
 
         self.state_moa = 1
@@ -43,6 +46,8 @@ class Usina:
         self.ug2 = UnidadeDeGeracao2(2, cfg=self.cfg, leituras_usina=self.leituras)
         self.ug3 = UnidadeDeGeracao3(3, cfg=self.cfg, leituras_usina=self.leituras)
         self.ugs = [self.ug1, self.ug2, self.ug3]
+
+        CondicionadorBase.ugs = self.ugs
 
         # Define as vars inciais
         self.ts_last_ping_tda = datetime.now(pytz.timezone("Brazil/East")).replace(tzinfo=None)
@@ -833,16 +838,20 @@ class Usina:
         """
         ls = []
         for ug in self.ugs:
-            if ug.disponivel and not ug.etapa_atual == UNIDADE_PARANDO:
+            if ug.disponivel:
                 ls.append(ug)
 
         if self.modo_de_escolha_das_ugs == MODO_ESCOLHA_MANUAL:
             # escolher por maior prioridade primeiro
-            ls = sorted(ls, key=lambda y: (-1 * y.leitura_potencia.valor, -1 * y.setpoint, y.prioridade,),)
+            #!!TODO: corrigir etapa_atual
+            ls = sorted(ls, key=lambda y: (-1 * y.etapa_atual, -1 * y.leitura_potencia.valor, -1 * y.setpoint, y.prioridade,),)
             logger.debug(ls)
         else:
             # escolher por menor horas_maquina primeiro
-            ls = sorted(ls, key=lambda y: (y.leitura_horimetro.valor, -1 * y.leitura_potencia.valor, -1 * y.setpoint,),)
+            ls = sorted(ls, key=lambda y: (-1 * y.etapa_atual, y.leitura_horimetro.valor, -1 * y.leitura_potencia.valor, -1 * y.setpoint,),)
+            # ls = sorted(ls, key=lambda y: (-1 * y.etapa_atual if y.etapa_atual == UNIDADE_SINCRONIZADA else y.leitura_horimetro.valor,
+                                            #-1 * y.leitura_potencia.valor,
+                                            #-1 * y.setpoint,),)
             logger.debug(ls)
         return ls
 
@@ -1197,6 +1206,7 @@ class Usina:
             self.BombasDngRemoto=False
 
         return True
+
 
 def ping(host):
     """
