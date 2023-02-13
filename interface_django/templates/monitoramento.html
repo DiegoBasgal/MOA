@@ -53,7 +53,7 @@
                 <label style="color: green; font-size: 17px;">Aberto</label>
             {% endif %}
             {% if status_dj52l == None %}
-                <label style="color: yellow; font-size: 17px;">Inconsistente</label>
+                <label style="color: orange; font-size: 17px;">Inconsistente</label>
             {% endif %}
         </div>
         <h3 style="margin-bottom: 5px;">TDA:</h3>
@@ -95,10 +95,10 @@
                             <label style="font-size: 17px; margin-left: 5px; color: red;">Indisponível</label>
                         {% endif %}
                         {% if ug1_state == 4 %}
-                            <label style="font-size: 17px; margin-left: 5px; color: blue;">Inconsistente</label>
+                            <label style="font-size: 17px; margin-left: 5px; color: red;">Inconsistente</label>
                         {% endif %}
                         {% if ug1_state == 99 %}
-                            <label style="font-size: 17px; margin-left: 5px; color: blue;">Sem comunicação</label>
+                            <label style="font-size: 17px; margin-left: 5px; color: red;">Sem comunicação</label>
                         {% endif %}
                     </td>
                 </tr>
@@ -112,10 +112,10 @@
                         {% if ug1_etapa == 1 %}
                         <label style="font-size: 15px; margin-left: 3px; color: yellow;">Parando</label>
                         {% endif %}
-                        {% if ug1_etapa == 3 %}
+                        {% if ug1_etapa == 2 %}
                         <label style="font-size: 15px; margin-left: 3px; color: orange;">Parada</label>
                         {% endif %}
-                        {% if ug1_etapa == 2 %}
+                        {% if ug1_etapa == 3 %}
                             <label style="font-size: 15px; margin-left: 3px; color: yellow;">Sincronizando</label>
                         {% endif %}
                         {% if ug1_etapa == 4 %}
@@ -154,10 +154,10 @@
                             <label style="font-size: 17px; margin-left: 5px; color: red;">Indisponível</label>
                         {% endif %}
                         {% if ug2_state == 4 %}
-                            <label style="font-size: 17px; margin-left: 5px; color: blue;">Inconsistente</label>
+                            <label style="font-size: 17px; margin-left: 5px; color: red;">Inconsistente</label>
                         {% endif %}
                         {% if ug2_state == 99 %}
-                            <label style="font-size: 17px; margin-left: 5px; color: blue;">Sem comunicação</label>
+                            <label style="font-size: 17px; margin-left: 5px; color: red;">Sem comunicação</label>
                         {% endif %}
                     </td>
                 </tr>
@@ -171,10 +171,10 @@
                         {% if ug2_etapa == 1 %}
                         <label style="font-size: 15px; margin-left: 3px; color: yellow;">Parando</label>
                         {% endif %}
-                        {% if ug2_etapa == 3 %}
+                        {% if ug2_etapa == 2 %}
                         <label style="font-size: 15px; margin-left: 3px; color: orange;">Parada</label>
                         {% endif %}
-                        {% if ug2_etapa == 2 %}
+                        {% if ug2_etapa == 3 %}
                         <label style="font-size: 15px; margin-left: 3px; color: yellow;">Sincronizando</label>
                         {% endif %}
                         {% if ug2_etapa == 4 %}
@@ -213,10 +213,10 @@
                             <label style="font-size: 17px; margin-left: 5px; color: red;">Indisponível</label>
                         {% endif %}
                         {% if ug3_state == 4 %}
-                            <label style="font-size: 17px; margin-left: 5px; color: blue;">Inconsistente</label>
+                            <label style="font-size: 17px; margin-left: 5px; color: red;">Inconsistente</label>
                         {% endif %}
                         {% if ug3_state == 99 %}
-                            <label style="font-size: 17px; margin-left: 5px; color: blue;">Sem comunicação</label>
+                            <label style="font-size: 17px; margin-left: 5px; color: red;">Sem comunicação</label>
                         {% endif %}
                     </td>
                 </tr>
@@ -230,10 +230,10 @@
                         {% if ug3_etapa == 1 %}
                         <label style="font-size: 15px; margin-left: 3px; color: yellow;">Parando</label>
                         {% endif %}
-                        {% if ug3_etapa == 3 %}
+                        {% if ug3_etapa == 2 %}
                         <label style="font-size: 15px; margin-left: 3px; color: orange;">Parada</label>
                         {% endif %}
-                        {% if ug3_etapa == 2 %}
+                        {% if ug3_etapa == 3 %}
                         <label style="font-size: 15px; margin-left: 3px; color: yellow;">Sincronizando</label>
                         {% endif %}
                         {% if ug3_etapa == 4 %}
