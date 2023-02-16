@@ -70,7 +70,6 @@
             {% endif %}
             {% if tag == 2  %}
                 <label style="color: red">{{nv_montante}}</label>
-                <a> m (Vertendo)</a>
             {% endif %}
         </div>
         <label style="font-size: 18px;"><b>USINA:</b></label>
@@ -83,7 +82,7 @@
                     </td>
                     <td>
                         {% if ug1_state == 0 %}
-                            <label style="font-size: 17px; margin-left: 5px; color: white;">Manual</label>
+                            <label style="font-size: 17px; margin-left: 5px; color: orange;">Manual</label>
                         {% endif %}
                         {% if ug1_state == 1 %}
                             <label style="font-size: 17px; margin-left: 5px; color: green;">Disponível</label>
@@ -98,7 +97,7 @@
                             <label style="font-size: 17px; margin-left: 5px; color: blue;">Inconsistente</label>
                         {% endif %}
                         {% if ug1_state == 99 %}
-                            <label style="font-size: 17px; margin-left: 5px; color: deeppink;">Sem comunicação</label>
+                            <label style="font-size: 17px; margin-left: 5px; color: blue;">Sem comunicação</label>
                         {% endif %}
                     </td>
                 </tr>
@@ -113,7 +112,7 @@
                         <label style="font-size: 15px; margin-left: 3px; color: yellow;">Parando</label>
                         {% endif %}
                         {% if ug1_etapa == 2 %}
-                        <label style="font-size: 15px; margin-left: 3px; color: red;">Parada</label>
+                        <label style="font-size: 15px; margin-left: 3px; color: orange;">Parada</label>
                         {% endif %}
                         {% if ug1_etapa == 3 %}
                             <label style="font-size: 15px; margin-left: 3px; color: yellow;">Sincronizando</label>
@@ -142,7 +141,7 @@
                     </td>
                     <td>
                         {% if ug2_state == 0 %}
-                            <label style="font-size: 17px; margin-left: 5px; color: white;">Manual</label>
+                            <label style="font-size: 17px; margin-left: 5px; color: orange;">Manual</label>
                         {% endif %}
                         {% if ug2_state == 1 %}
                             <label style="font-size: 17px; margin-left: 5px; color: green;">Disponível</label>
@@ -157,7 +156,7 @@
                             <label style="font-size: 17px; margin-left: 5px; color: blue;">Inconsistente</label>
                         {% endif %}
                         {% if ug2_state == 99 %}
-                            <label style="font-size: 17px; margin-left: 5px; color: deeppink;">Sem comunicação</label>
+                            <label style="font-size: 17px; margin-left: 5px; color: blue;">Sem comunicação</label>
                         {% endif %}
                     </td>
                 </tr>
@@ -172,7 +171,7 @@
                         <label style="font-size: 15px; margin-left: 3px; color: yellow;">Parando</label>
                         {% endif %}
                         {% if ug2_etapa == 2 %}
-                        <label style="font-size: 15px; margin-left: 3px; color: red;">Parada</label>
+                        <label style="font-size: 15px; margin-left: 3px; color: orange;">Parada</label>
                         {% endif %}
                         {% if ug2_etapa == 3 %}
                         <label style="font-size: 15px; margin-left: 3px; color: yellow;">Sincronizando</label>

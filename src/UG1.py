@@ -21,14 +21,16 @@ class UnidadeDeGeracao1(UnidadeDeGeracao):
         self.con = FieldConnector(self.cfg)
 
         self.modo_autonomo = 1
+        self.tempo_normalizar = 0
         self.__last_EtapaAtual = 0
         self.__last_EtapaAlvo = -1
 
         self.QCAUGRemoto = True
         self.acionar_voip = False
         self.limpeza_grade = False
-        self.TDA_FalhaComum = False
+        self.norma_agendada = False
         self.FreioCmdRemoto = True
+        self.TDA_FalhaComum = False
         self.avisou_emerg_voip = False
         self.enviar_trip_eletrico = False
 
@@ -116,10 +118,10 @@ class UnidadeDeGeracao1(UnidadeDeGeracao):
             1,
             op=4
         )
-        self.condic_ativos_sim_ug1 = LeituraModbus("REG_UG1_RetrornosAnalogicos_AUX_Condicionadores",
-            self.clp,
-            REG_UG1_RetrornosAnalogicos_AUX_Condicionadores,
-        )
+        #self.condic_ativos_sim_ug1 = LeituraModbus("REG_UG1_RetrornosAnalogicos_AUX_Condicionadores",
+        #    self.clp,
+        #    REG_UG1_RetrornosAnalogicos_AUX_Condicionadores,
+        #)
         """
         C1 = LeituraModbusCoil(
             descr="MXR_PartindoEmAuto",
@@ -223,11 +225,11 @@ class UnidadeDeGeracao1(UnidadeDeGeracao):
         self.condicionador_caixa_espiral_ug = CondicionadorExponencialReverso(x.descr, DEVE_INDISPONIBILIZAR, x, base, limite)
         if self.leitura_caixa_espiral.valor != 0.0 and self.etapa_atual == UNIDADE_SINCRONIZADA:
             self.condicionadores_atenuadores.append(self.condicionador_caixa_espiral_ug)
-        """
-        self.leitura_ComandosDigitais_MXW_EmergenciaViaSuper = LeituraModbusCoil("ComandosDigitais_MXW_EmergenciaViaSuper", self.clp, REG_UG1_ComandosDigitais_MXW_EmergenciaViaSuper,)
+        
+        self.leitura_ComandosDigitais_MXW_EmergenciaViaSuper = LeituraModbus("ComandosDigitais_MXW_EmergenciaViaSuper", self.clp, REG_UG1_ComandosDigitais_MXW_EmergenciaViaSuper,)
         x = self.leitura_ComandosDigitais_MXW_EmergenciaViaSuper
-        self.condicionadores_essenciais.append(CondicionadorBase(x.descr, DEVE_NORMALIZAR, x))
-
+        self.condicionadores_essenciais.append(CondicionadorBase(x.descr, DEVE_AGUARDAR, x))
+        """
         self.leitura_RetornosDigitais_MXR_TripEletrico = LeituraModbusCoil("RetornosDigitais_MXR_TripEletrico", self.clp, REG_UG1_RetornosDigitais_MXR_TripEletrico,)
         x = self.leitura_RetornosDigitais_MXR_TripEletrico
         self.condicionadores_essenciais.append(CondicionadorBase(x.descr, DEVE_NORMALIZAR, x))

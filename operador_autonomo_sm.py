@@ -241,7 +241,7 @@ class ValoresInternosAtualizados(State):
         # assume-se que o MOA deve executar de modo autônomo
 
         # Verifica-se então a situação do reservatório
-        if self.usina.aguardando_reservatorio:
+        if self.usina.aguardando_reservatorio == 1:
             if self.usina.nv_montante > self.usina.cfg["nv_alvo"]:
                 logger.debug("Reservatorio dentro do nivel de trabalho")
                 self.usina.aguardando_reservatorio = 0
@@ -599,7 +599,7 @@ def acionar_voip():
 if __name__ == "__main__":
     # A escala de tempo é utilizada para acelerar as simulações do sistema
     # Utilizar 1 para testes sérios e 120 no máximo para testes simples
-    ESCALA_DE_TEMPO = 3
+    ESCALA_DE_TEMPO = 5
     if len(sys.argv) > 1:
         ESCALA_DE_TEMPO = int(sys.argv[1])
 

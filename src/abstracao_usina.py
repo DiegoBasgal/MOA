@@ -7,6 +7,7 @@ from time import sleep, time
 from src.Condicionadores import *
 from src.UG1 import UnidadeDeGeracao1
 from src.UG2 import UnidadeDeGeracao2
+from pyModbusTCP.client import ModbusClient
 from pyModbusTCP.server import DataBank
 from datetime import  datetime, timedelta
 
@@ -34,6 +35,8 @@ class Usina:
             from src.LeiturasUSN import LeiturasUSN
             from src.Leituras import LeituraModbusBit
             self.leituras = LeiturasUSN(self.cfg)
+
+
 
         self.state_moa = 1
 
@@ -93,6 +96,12 @@ class Usina:
         self.deve_tentar_normalizar = True
         self.deve_normalizar_forcado = False
         self.deve_ler_condicionadores = False
+
+        self.clp_moa = ModbusClient(
+            host=self.cfg["moa_slave_ip"],
+            port=self.cfg["moa_slave_porta"],
+            unit_id=1,
+            timeout=0.5)
 
         self.clp = ModbusClient(
             host=self.cfg["USN_slave_ip"],
@@ -497,7 +506,7 @@ class Usina:
                     self.acionar_emergencia()
                     self.db.update_agendamento(int(agendamento[0]), 1, obs="AGENDAMENTO NÃO EXECUTADO POR CONTA DE ATRASO!")
                     return False
-                elif agendamento[3] == AGENDAMENTO_ALTERAR_NV_ALVO or AGENDAMENTO_ALTERAR_POT_LIMITE_TODAS_AS_UGS or AGENDAMENTO_BAIXAR_POT_UGS_MINIMO or AGENDAMENTO_NORMALIZAR_POT_UGS_MINIMO:
+                elif agendamento[3] == AGENDAMENTO_ALTERAR_NV_ALVO or AGENDAMENTO_ALTERAR_POT_LIMITE_TODAS_AS_UGS or AGENDAMENTO_BAIXAR_POT_UGS_MINIMO or AGENDAMENTO_NORMALIZAR_POT_UGS_MINIMO or AGENDAMENTO_AGUARDAR_RESERVATORIO or AGENDAMENTO_NORMALIZAR_ESPERA_RESERVATORIO:
                     logger.info("Não foi possível executar o agendamento! Favor re-agendar")
                     self.db.update_agendamento(int(agendamento[0]), 1, obs="AGENDAMENTO NÃO EXECUTADO POR CONTA DE ATRASO!")
                     return False
@@ -588,6 +597,14 @@ class Usina:
                     except Exception as e:
                         logger.debug("Traceback: {}".format(repr(e)))
 
+                if agendamento[3] == AGENDAMENTO_AGUARDAR_RESERVATORIO:
+                    logger.debug("Ativando estado de espera de nível do reservatório")
+                    self.aguardando_reservatorio = 1
+
+                if agendamento[3] == AGENDAMENTO_NORMALIZAR_ESPERA_RESERVATORIO:
+                    logger.debug("Desativando estado de espera de nível do reservatório")
+                    self.aguardando_reservatorio = 0
+
                 if agendamento[3] == AGENDAMENTO_UG1_ALTERAR_POT_LIMITE:
                     try:
                         novo = float(agendamento[5].replace(",", "."))
@@ -608,6 +625,12 @@ class Usina:
                 if agendamento[3] == AGENDAMENTO_UG1_FORCAR_ESTADO_RESTRITO:
                     self.ug1.forcar_estado_restrito()
 
+                if agendamento[3] == AGENDAMENTO_UG1_TEMPO_ESPERA_RESTRITO:
+                    self.ug1.norma_agendada = True
+                    novo = agendamento[5].split(":")
+                    tempo = (int(novo[0]) * 3600) + (int(novo[1]) * 60)
+                    self.ug1.tempo_normalizar = tempo
+
                 if agendamento[3] == AGENDAMENTO_UG2_ALTERAR_POT_LIMITE:
                     try:
                         novo = float(agendamento[5].replace(",", "."))
@@ -627,6 +650,12 @@ class Usina:
 
                 if agendamento[3] == AGENDAMENTO_UG2_FORCAR_ESTADO_RESTRITO:
                     self.ug2.forcar_estado_restrito()
+                
+                if agendamento[3] == AGENDAMENTO_UG2_TEMPO_ESPERA_RESTRITO:
+                    self.ug2.norma_agendada = True
+                    novo = agendamento[5].split(":")
+                    tempo = (int(novo[0]) * 3600) + (int(novo[1]) * 60)
+                    self.ug2.tempo_normalizar = tempo
 
                 if agendamento[3] == AGENDAMENTO_ALTERAR_POT_LIMITE_TODAS_AS_UGS:
                     try:

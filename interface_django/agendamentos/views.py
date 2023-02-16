@@ -1,4 +1,5 @@
 import pytz
+from django.urls import reverse
 from datetime import datetime, timedelta
 from django.http import HttpResponseRedirect
 from django.shortcuts import render
@@ -8,8 +9,10 @@ from parametros_moa.models import Comando
 
 # Create your views here.
 
-def agendamentos_view(request, *args, **kwargs):
+passar_comando = 0
 
+def agendamentos_view(request, *args, **kwargs):
+    global passar_comando
     agendamentos = []
     agendamentos_executados = []
 
@@ -29,7 +32,7 @@ def agendamentos_view(request, *args, **kwargs):
         ),
         "comandos": comandos,
     }
-
+    passar_comando = 0
     return render(request, "agendamentos.html", context=context)
 
 
@@ -58,9 +61,8 @@ def agendamento_detalhado_view(request, *args, **kwargs):
 
 @login_required
 def novo_agendamento_view(request, *args, **kwargs):
-
+    global passar_comando
     now = datetime.now(pytz.timezone("Brazil/East")).replace(tzinfo=None)
-
     if request.method == "POST":
 
         ano = int(request.POST.get("ano"))
@@ -103,6 +105,7 @@ def novo_agendamento_view(request, *args, **kwargs):
         "range_minuto": range(60),
         "range_segundo": range(60),
         "comandos": Comando.objects.all(),
+        "passar_comando": passar_comando,
     }
 
     return render(request, "novo_agendamento.html", context=context)
@@ -111,24 +114,34 @@ def novo_agendamento_view(request, *args, **kwargs):
 @login_required
 def novo_agendamento_rapido_view(request, *args, **kwargs):
 
+    global passar_comando
     now = datetime.now(pytz.timezone("Brazil/East")).replace(tzinfo=None)
+    comandos_impedidos = [2, 3, 102, 107, 202, 207]
     context = {"comandos": Comando.objects.all()}
 
     if request.method == "POST":
-
         comando_id = request.POST.get("comando")
-        ag = Agendamento(
-            ts_criado=now,
-            criado_por=request.user,
-            ts_modificado=now,
-            modificado_por=request.user,
-            data=now,
-            comando=Comando.objects.get(id=comando_id),
-            campo_auxiliar="",
-            observacao="Criado pela tela de comando rápido",
-            executado=False,
-        )
-        ag.save()
-        return HttpResponseRedirect("../")
+        if int(request.POST.get("comando")) in comandos_impedidos:
+            context["impedido_agen"] = True
+            passar_comando = int(request.POST.get("comando"))
+            return HttpResponseRedirect(reverse('novo_agendamento'))
+        else:
+            ag = Agendamento(
+                ts_criado=now,
+                criado_por=request.user,
+                ts_modificado=now,
+                modificado_por=request.user,
+                data=now,
+                comando=Comando.objects.get(id=comando_id),
+                campo_auxiliar=str(""),
+                observacao="Criado pela tela de comando rápido",
+                executado=False,
+            )
+            ag.save()
+            return HttpResponseRedirect("../")
 
     return render(request, "novo_agendamento_rapido.html", context=context)
+
+@login_required
+def agendamento_impedido():
+    return HttpResponseRedirect(reverse('agendamentos.html'))

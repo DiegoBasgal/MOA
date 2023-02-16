@@ -8,7 +8,7 @@
     "TDA_slave_ip": "10.101.2.215",
     "TDA_slave_porta": 5003,
     "moa_slave_ip": "0.0.0.0",
-    "moa_slave_porta": 5002,
+    "moa_slave_porta": 502,
     "REG_MOA_OUT_STATUS": 7,
     "REG_SM_STATE": 8,
     "REG_MOA_OUT_MODE": 9,

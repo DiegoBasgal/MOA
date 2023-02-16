@@ -21,14 +21,16 @@ class UnidadeDeGeracao2(UnidadeDeGeracao):
         self.con = FieldConnector(self.cfg)
         
         self.modo_autonomo = 1
+        self.tempo_normalizar = 0
         self.__last_EtapaAtual = 0
         self.__last_EtapaAlvo = -1
 
         self.QCAUGRemoto = True
         self.acionar_voip = False
         self.limpeza_grade = False
-        self.TDA_FalhaComum = False
+        self.norma_agendada = False
         self.FreioCmdRemoto = True
+        self.TDA_FalhaComum = False
         self.avisou_emerg_voip = False
         self.enviar_trip_eletrico = False
 

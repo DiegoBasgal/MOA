@@ -551,59 +551,79 @@ class StateRestrito(State):
     O estado pode ser alterado atumoaticamente.
     O perador não tem controle sobre a UG.
     """
-
     def __init__(self, parent_ug: UnidadeDeGeracao):
-
         super().__init__(parent_ug)
+        self.release = False
+        self.parar_timer = False
+        self.deve_normalizar = False
+        self.deve_indisponibilizar = False
+
         self.parent_ug.codigo_state = MOA_UNIDADE_RESTRITA
         self.logger.info("[UG{}] Entrando no estado restrito.".format(self.parent_ug.id))
 
     def step(self) -> State:
-        self.parent_ug.codigo_state = MOA_UNIDADE_RESTRITA
-        # Ler condiconadores
-
-        # Devemos estudar quais os condicionadores que serão lidos no modo restrito para poder re-colocar a leitura de condicionadores abaixo.
-        
-        deve_indisponibilizar = False
-        deve_normalizar = False
         condicionadores_ativos = []
 
-        if self.parent_ug.deve_ler_condicionadores:
-            for condicionador_essencial in self.parent_ug.condicionadores_essenciais:
-                if condicionador_essencial.ativo:
-                    if condicionador_essencial >= DEVE_INDISPONIBILIZAR:
-                        condicionadores_ativos.append(condicionador_essencial)
-                        deve_indisponibilizar = True
-                    elif condicionador_essencial.gravidade>=DEVE_NORMALIZAR:
-                        condicionadores_ativos.append(condicionador_essencial)
-                        self.parent_ug.deve_ler_condicionadores = False
-                        deve_normalizar = True
+        for condic in self.parent_ug.condicionadores_essenciais:
+            if condic.ativo and condic.gravidade == DEVE_INDISPONIBILIZAR:
+                condicionadores_ativos.append(condic)
+                self.deve_indisponibilizar = True
+            elif condic.ativo and condic.gravidade == DEVE_AGUARDAR:
+                condicionadores_ativos.append(condic)
 
-            for condicionador in self.parent_ug.condicionadores:
-                if condicionador.ativo: 
-                    if condicionador.gravidade>=DEVE_INDISPONIBILIZAR:
-                        condicionadores_ativos.append(condicionador)
-                        deve_indisponibilizar = True
-                    elif condicionador.gravidade>=DEVE_NORMALIZAR:
-                        condicionadores_ativos.append(condicionador)
-                        self.parent_ug.deve_ler_condicionadores = False
-                        deve_normalizar = True
+        if condicionadores_ativos:
+            if self.parent_ug.norma_agendada and not self.release:
+                self.logger.info("[UG{}] Normalização por tempo ativada".format(self.parent_ug.id))
+                self.logger.info("[UG{}] Aguardando normalização por tempo -> Tempo definido: {}".format(self.parent_ug.id, self.parent_ug.tempo_normalizar))
+                self.release = True
+                Thread(target=lambda: self.espera_normalizar(self.parent_ug.tempo_normalizar)).start()
+            elif not self.release:
+                self.logger.debug("[UG{}] Aguardando normalização sem tempo pré-definido".format(self.parent_ug.id))
 
-        # Se algum condicionador deve gerar uma indisponibilidade
-        if deve_indisponibilizar:
-            # Logar os condicionadores ativos
-            self.logger.warning("[UG{}] UG em modo disponível detectou condicionadores ativos, indisponibilizando UG.\nCondicionadores ativos:\n{}".format(self.parent_ug.id, [d.descr for d in condicionadores_ativos]))
-            # Vai para o estado StateIndisponivel
+        elif not condicionadores_ativos:
+            self.logger.info("[UG{}] A UG não possui mais condicionadores ativos, normalizando e retornando para o estado disponível".format(self.parent_ug.id))
+            self.parent_ug.tentativas_de_normalizacao += 1
+            self.parent_ug.norma_agendada = False
+            self.parar_timer = True
+            self.release = False
+            self.parent_ug.reconhece_reset_alarmes()
+            return StateDisponivel(self.parent_ug)
+
+        if self.deve_indisponibilizar:
+            self.logger.warning("[UG{}] UG detectou condicionadores com gravidade alta, indisponibilizando UG.\nCondicionadores ativos:\n{}".format(self.parent_ug.id, [d.descr for d in condicionadores_ativos]))
+            self.parent_ug.norma_agendada = False
+            self.parar_timer = True
+            self.release = False
             return StateIndisponivel(self.parent_ug)
 
-        # Se a unidade estiver parada, travar a mesma por sinal de TRIP
+        elif self.deve_normalizar:
+            if (self.parent_ug.tentativas_de_normalizacao > self.parent_ug.limite_tentativas_de_normalizacao):
+                self.logger.warning("[UG{}] A UG estourou as tentativas de normalização, indisponibilizando UG. \n Condicionadores ativos:\n{}".format(self.parent_ug.id,[d.descr for d in condicionadores_ativos],))
+                self.parent_ug.norma_agendada = False
+                return StateIndisponivel(self.parent_ug)
+
+            elif (self.parent_ug.ts_auxiliar - datetime.now(pytz.timezone("Brazil/East")).replace(tzinfo=None)).seconds > self.parent_ug.tempo_entre_tentativas:
+                self.parent_ug.tentativas_de_normalizacao += 1
+                self.logger.info("[UG{}] Normalizando UG (tentativa {}/{}).".format(self.parent_ug.id,self.parent_ug.tentativas_de_normalizacao,self.parent_ug.limite_tentativas_de_normalizacao,))
+                self.parent_ug.ts_auxiliar = datetime.now(pytz.timezone("Brazil/East")).replace(tzinfo=None)
+                self.parent_ug.reconhece_reset_alarmes()
+                return self
+        
         if self.parent_ug.etapa_atual == UNIDADE_PARADA:
             self.parent_ug.acionar_trip_logico()
             self.parent_ug.acionar_trip_eletrico()
-        # Caso contrário, deve parar a unidade
         else:
             self.parent_ug.parar()
         return self
+
+    def espera_normalizar(self, delay):
+        tempo = time() + delay
+        logger.debug("[UG{}] Aguardando para normalizar UG".format(self.parent_ug.id))
+        while not self.parar_timer:
+            sleep(max(0, tempo - time()))
+            break
+        self.release = False
+        self.deve_normalizar = True
 
 
 class StateDisponivel(State):
@@ -628,9 +648,9 @@ class StateDisponivel(State):
 
         self.logger.debug("[UG{}] (tentativas_de_normalizacao atual: {})".format(self.parent_ug.id, self.parent_ug.tentativas_de_normalizacao))
 
-        # Ler condiconadores, verifica e armazena os ativos
-        deve_indisponibilizar = False
+        deve_aguardar = False
         deve_normalizar = False
+        deve_indisponibilizar = False
         condicionadores_ativos = []
         
         self.parent_ug.controle_limites_operacao()
@@ -640,28 +660,21 @@ class StateDisponivel(State):
                 self.parent_ug.deve_ler_condicionadores = True
 
         if self.parent_ug.deve_ler_condicionadores:
-            for condicionador_essencial in self.parent_ug.condicionadores_essenciais:
-                if condicionador_essencial.ativo:
-                    if condicionador_essencial.gravidade >= DEVE_INDISPONIBILIZAR:
-                        condicionadores_ativos.append(condicionador_essencial)
-                        deve_indisponibilizar = True
-                    elif condicionador_essencial.gravidade>=DEVE_NORMALIZAR:
-                        condicionadores_ativos.append(condicionador_essencial)
-                        self.parent_ug.deve_ler_condicionadores = False
-                        deve_normalizar = True
+            for condic in self.parent_ug.condicionadores_essenciais:
+                if condic.ativo and condic.gravidade == DEVE_INDISPONIBILIZAR:
+                    condicionadores_ativos.append(condic)
+                    deve_indisponibilizar = True
+                elif condic.ativo and condic.gravidade == DEVE_AGUARDAR:
+                    condicionadores_ativos.append(condic)
+                    deve_aguardar = True
+                elif condic.ativo and condic.gravidade == DEVE_NORMALIZAR:
+                    condicionadores_ativos.append(condic)
+                    deve_normalizar = True
 
-            for condicionador in self.parent_ug.condicionadores:
-                if condicionador.ativo: 
-                    if condicionador.gravidade>=DEVE_INDISPONIBILIZAR:
-                        condicionadores_ativos.append(condicionador)
-                        deve_indisponibilizar = True
-                    elif condicionador.gravidade>=DEVE_NORMALIZAR:
-                        condicionadores_ativos.append(condicionador)
-                        self.parent_ug.deve_ler_condicionadores = False
-                        deve_normalizar = True
+            self.parent_ug.deve_ler_condicionadores = False
 
         # Logar os condicionadores ativos
-        if deve_indisponibilizar or deve_normalizar:
+        if deve_indisponibilizar or deve_normalizar or deve_aguardar:
             self.logger.info("[UG{}] UG em modo disponível detectou condicionadores ativos.\nCondicionadores ativos:".format(self.parent_ug.id))
             for d in condicionadores_ativos:
                 self.logger.warning("Desc: {}; Ativo: {}; Valor: {}; Gravidade: {}".format(d.descr, d.ativo, d.valor, d.gravidade))
@@ -671,6 +684,10 @@ class StateDisponivel(State):
             self.logger.warning("[UG{}] Indisponibilizando UG.".format(self.parent_ug.id))
             # Vai para o estado StateIndisponivel
             return StateIndisponivel(self.parent_ug)
+
+        if deve_aguardar:
+            self.logger.warning("[UG{}] Entrando no estado Restrito até normalização da condição.".format(self.parent_ug.id))
+            return StateRestrito(self.parent_ug)
 
         # Se algum condicionador deve gerar uma tentativa de normalizacao
         if deve_normalizar:

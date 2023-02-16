@@ -17,14 +17,11 @@ from django.contrib import admin
 from django.urls import path, include
 from django.views.generic import RedirectView
 
-from agendamentos.views import agendamentos_view
-from agendamentos.views import agendamento_detalhado_view
-from agendamentos.views import novo_agendamento_view
-from agendamentos.views import novo_agendamento_rapido_view
-from monitoramento.views import monitoramento_view
 from ocorrencias.views import ocorrencias_view
-from comandos_manual.views import comandos_manual_view, comando_dj52l , confirma_comando_dj, comando_ug1, comando_ug2, comando_impedido
+from monitoramento.views import monitoramento_view
 from parametros_moa.views import parametros_moa_view, emergencia_view, contatos_view, deletar, adicionar, retornar
+from comandos_manual.views import comandos_manual_view, comando_dj52l , confirma_comando_dj, comando_ug1, comando_ug2, comando_impedido
+from agendamentos.views import agendamentos_view, agendamento_detalhado_view, novo_agendamento_view, novo_agendamento_rapido_view, agendamento_impedido
 
 urlpatterns = [
     path("", RedirectView.as_view(url="monitoramento/")),
@@ -33,6 +30,7 @@ urlpatterns = [
     path("agendamentos/<int:ag_id>/",agendamento_detalhado_view,name="agendamento_detalhado",),
     path("agendamentos/novo_agendamento/", novo_agendamento_view, name="novo_agendamento"),
     path("agendamentos/novo_agendamento_rapido/",novo_agendamento_rapido_view,name="novo_agendamento_rapido",),
+    path("agendamentos/impedido/", agendamento_impedido, name="agendamento_impedido"),
     path("monitoramento/", monitoramento_view, name="monitoramento"),
     path("ocorrencias/", ocorrencias_view, name="ocorrencias"),
     path("parametros_moa/", parametros_moa_view, name="parametros_moa"),

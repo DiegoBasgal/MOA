@@ -91,18 +91,26 @@
         
             </br>
             </br>
-        
+
             <a>Comando:</a>
-            <select id="comando" name="comando">
+            {% if passar_comando != 0 %}
+            <select id="comandofield" name="comando" onchange="changeFieldType()">
                 {% for comando in comandos %}
-                    <option value="{{ comando.id }}">{{ comando.nome }}</option>
+                    <option id="{{ comando.id }}" {% if comando.id == passar_comando %}selected{% endif %} value="{{ comando.id }}" {% if comando.id == passar_comando %}selected{% endif %} >{{ comando.nome }}</option>
                 {% endfor %}
             </select>
+            {% else %}
+            <select id="comandofield" name="comando" onchange="changeFieldType()" >
+                {% for comando in comandos %}
+                    <option id="{{ comando.id }}" value="{{ comando.id }}">{{ comando.nome }}</option>
+                {% endfor %}
+            </select>
+            {% endif %}
             </br>
             </br>
         
             <a>Campo auxiliar:</a>
-            <input id="campo_auxiliar" name="campo_auxiliar" type="text"/>
+            <input id="campo_auxiliar" name="campo_auxiliar" type="text" />
             </br>
             </br>
         
@@ -114,6 +122,29 @@
             <input id="input" type="submit" value="Criar"/>
         </form>
     </div>
+    <script type = "text/JavaScript">
+        function changeFieldType() {
+            var x = document.getElementById("comandofield").value;
+            if(x === "107" || x === "207"){
+                document.getElementById("campo_auxiliar").type = "time"
+            }
+            else{
+                document.getElementById("campo_auxiliar").type = "text"
+            }
+        };
+
+        window.onload = function loadFieldType() {
+            var x = document.getElementById("comandofield").value;
+            if(x === "107" || x === "207"){
+                document.getElementById("campo_auxiliar").type = "time"
+            }
+            else{
+                document.getElementById("campo_auxiliar").type = "text"
+            }
+        };
+
+
+    </script>
     {% endblock content %}
 </body>
 </html>
