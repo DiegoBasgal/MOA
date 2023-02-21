@@ -19,8 +19,8 @@ from django.views.generic import RedirectView
 
 from ocorrencias.views import ocorrencias_view
 from monitoramento.views import monitoramento_view
-from parametros_moa.views import parametros_moa_view, emergencia_view, contatos_view, deletar, adicionar, retornar
-from comandos_manual.views import comandos_manual_view, comando_dj52l , confirma_comando_dj, comando_ug1, comando_ug2, comando_impedido
+from parametros_moa.views import parametros_moa_view, emergencia_view, contatos_view, deletar, adicionar
+from comandos_manual.views import comandos_manual_view, comando_abrir_dj , comando_fechar_dj, comando_ug1, comando_ug2
 from agendamentos.views import agendamentos_view, agendamento_detalhado_view, novo_agendamento_view, novo_agendamento_rapido_view, agendamento_impedido
 
 urlpatterns = [
@@ -38,13 +38,11 @@ urlpatterns = [
     path("parametros_moa/contatos/", contatos_view, name="contatos"),
     path("parametros_moa/contatos/adicionar/", adicionar, name="adicionar"),
     path("parametros_moa/contatos/deletar/<int:id>", deletar, name="deletar"),
-    path("parametros_moa/contatos/adicionar/retornar/", retornar, name="retornar"),
     path("comandos_manual/", comandos_manual_view, name="comandos_manual"),
-    path("comandos_manual/disjuntor/", comando_dj52l, name="comandos_disjuntor"),
-    path("comandos_manual/disjuntor/confirmar/", confirma_comando_dj, name="confirma_comando_dj"),
+    path("comandos_manual/abrir_dj/", comando_abrir_dj, name="abrir_dj"),
+    path("comandos_manual/fechar_dj/", comando_fechar_dj, name="fechar_dj"),
     path("comandos_manual/ug1/", comando_ug1, name="comandos_ug1"),
     path("comandos_manual/ug2/", comando_ug2, name="comandos_ug2"),
-    path("comandos_manual/impedido/", comando_impedido, name="comando_impedido"),
 ]
 
 # Add Django site authentication urls (for login, logout, password management)

@@ -136,12 +136,15 @@ STATIC_ROOT = STATIC_URL
 # Redirect to home URL after login (Default redirects to /accounts/profile/)
 LOGIN_REDIRECT_URL = "/monitoramento/"
 
-from django.contrib.messages import constants as messages
+
+# Messages
+from django.contrib.messages import constants as messages_constants
 
 MESSAGE_TAGS = {
-    messages.DEBUG: 'alert-info',
-    messages.INFO: 'alert-info',
-    messages.SUCCESS: 'alert-success',
-    messages.WARNING: 'alert-warning',
-    messages.ERROR: 'alert-danger',
+    messages_constants.DEBUG: 'info',
+    messages_constants.INFO: 'info',
+    messages_constants.SUCCESS: 'success',
+    messages_constants.WARNING: 'warning',
+    messages_constants.ERROR: 'error',
 }
+

@@ -3,6 +3,7 @@ from django.urls import reverse
 from datetime import datetime, timedelta
 from django.http import HttpResponseRedirect
 from django.shortcuts import render
+from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from agendamentos.models import Agendamento
 from parametros_moa.models import Comando
@@ -113,7 +114,6 @@ def novo_agendamento_view(request, *args, **kwargs):
 
 @login_required
 def novo_agendamento_rapido_view(request, *args, **kwargs):
-
     global passar_comando
     now = datetime.now(pytz.timezone("Brazil/East")).replace(tzinfo=None)
     comandos_impedidos = [2, 3, 102, 107, 202, 207]
@@ -122,8 +122,8 @@ def novo_agendamento_rapido_view(request, *args, **kwargs):
     if request.method == "POST":
         comando_id = request.POST.get("comando")
         if int(request.POST.get("comando")) in comandos_impedidos:
-            context["impedido_agen"] = True
             passar_comando = int(request.POST.get("comando"))
+            messages.info(request, 'Agendamento impedido!', extra_tags='O comando precisa de um valor no campo auxiliar para ser executado')
             return HttpResponseRedirect(reverse('novo_agendamento'))
         else:
             ag = Agendamento(

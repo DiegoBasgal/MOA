@@ -36,17 +36,23 @@
         p {
             color: white;
         }
+
         .messages {
             color: white;
         }
+        
         input {
             background-color: rgb(168, 168, 168);
         }
+
         #submit{
             background-color: white;
         }
 
     </style>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="sweetalert2.min.js"></script>
+    <link rel="stylesheet" href="sweetalert2.min.css">
 </head>
 <html>
     <body>
@@ -82,30 +88,41 @@
                 </form>
             </div>
             <div style="margin-top: 30px;">
-                <form method='post' action='/comandos_manual/disjuntor/'>
-                    {% csrf_token %}
-                    <table>
-                        <tr>
-                            <td>
-                                <label style="font-size: 18px; margin-top: 18px;"><b>Disjuntor 52L: </b></label>
-                            </td>
-                            <td>
-                                {% if status_dj52l == True %}
-                                    <label style="font-size: 17px; margin-left: 5px; color: red;">Fechado</label>
-                                {% endif %}
-                                {% if status_dj52l == False %}
-                                    <label style="font-size: 17px; margin-left: 5px; color: green;">Aberto</label>
-                                {% endif %}
-                                {% if status_dj52l == None %}
-                                    <label style="font-size: 17px; margin-left: 5px; color: orange;">Inconsistente</label>
-                                {% endif %}
-                            </td>
-                        </tr>
-                    </table>
-                    <label style="font-size: 17px; margin-left: 3px;">Comando: </label>
-                    <input id="submit" type="submit" name="abrir_dj" value="Abrir">
-                    <input id="submit" type="submit" name="fechar_dj" value="Fechar">
-                </form>
+                <table>
+                    <tr>
+                        <td>
+                            <label style="font-size: 18px; margin-top: 18px;"><b>Disjuntor 52L: </b></label>
+                        </td>
+                        <td>
+                            {% if comandos_manual.comando_dj52l == 1 %}
+                            <label style="font-size: 17px; margin-left: 5px; color: red;">Fechado</label>
+                            {% endif %}
+                            {% if comandos_manual.comando_dj52l == 0 %}
+                            <label style="font-size: 17px; margin-left: 5px; color: green;">Aberto</label>
+                            {% endif %}
+                            {% if comandos_manual.comando_dj52l == 2 %}
+                            <label style="font-size: 17px; margin-left: 5px; color: orange;">Inconsistente</label>
+                            {% endif %}
+                        </td>
+                    </tr>
+                </table>
+                <table>
+                    <td>
+                        <label style="font-size: 17px; margin-left: 3px;">Comando: </label>
+                    </td>
+                    <td>
+                        <form id="form_abrir_dj" method='post' action='/comandos_manual/abrir_dj/'>
+                            {% csrf_token %}
+                            <input style="background-color: white;" type="submit" value="Abrir" name="abrir_dj">
+                        </form>
+                    </td>
+                    <td>
+                        <form id="form_fechar_dj" method='post' action='/comandos_manual/fechar_dj/'>
+                            {% csrf_token %}
+                            <input style="background-color: white;" type="submit" value="Fechar" name="fechar_dj">
+                        </form>
+                    </td>
+                </table>
             </div>
             <div style="margin-top: 60px;">
                 <h2><b>Comandos Unidades de Geração: </b></h2>
@@ -263,7 +280,62 @@
         </div>
         <br>
         <br>
-
+        {% if messages %}
+            <ul class="messages">
+                {% for message in messages %}
+                    {% if message.level %}
+                        <script>
+                            Swal.fire({
+                                title: "{{message}}",
+                                text: "{{message.extra_tags}}",
+                                timer: 2000,
+                                showConfirmButton: false,
+                            })
+                        </script>
+                    {% endif %}
+                {% endfor %}
+            </ul>
+        {% endif %}
+        <script>
+            document.getElementById('form_abrir_dj').addEventListener('submit', function(e){
+                e.preventDefault();
+                var form = document.getElementById('form_abrir_dj');
+                Swal.fire({
+                    title: "Confirma comando?",
+                    text: "Atenção! Este comando pode impactar na operação.",
+                    icon: "warning",
+                    showDenyButton: true,
+                    confirmButtonText: "Confirmar",
+                    denyButtonText: "Voltar",
+                }).then((result) => {
+                    if (result.isConfirmed){
+                        form.submit();
+                    }
+                    else if (result.isDenied){
+                        return;
+                    }
+                });
+            });
+            document.getElementById('form_fechar_dj').addEventListener('submit', function(e){
+                e.preventDefault();
+                var form = document.getElementById('form_fechar_dj');
+                Swal.fire({
+                    title: "Confirma comando?",
+                    text: "Atenção! Este comando pode impactar na operação.",
+                    icon: "warning",
+                    showDenyButton: true,
+                    confirmButtonText: "Confirmar",
+                    denyButtonText: "Voltar",
+                }).then((result) => {
+                    if (result.isConfirmed){
+                        form.submit();
+                    }
+                    else if (result.isDenied){
+                        return;
+                    }
+                });
+            });
+        </script>
     </body>
 </html>
 {% endblock content %}

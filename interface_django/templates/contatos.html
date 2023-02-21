@@ -74,6 +74,9 @@
             color: white;
         }
     </style>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="sweetalert2.min.js"></script>
+    <link rel="stylesheet" href="sweetalert2.min.css">
 </head>
 <body>
     <div id="content_container">
@@ -132,6 +135,22 @@
            </div>
         </form>
     </div>
+    {% if messages %}
+        <ul class="messages">
+            {% for message in messages %}
+                {% if message.level %}
+                    <script>
+                        Swal.fire({
+                            title: "{{message}}",
+                            text: "{{message.extra_tags}}",
+                            timer: 3000,
+                            showConfirmButton: false,
+                        })
+                    </script>
+                {% endif %}
+            {% endfor %}
+        </ul>
+    {% endif %}
 </body>
 </html>
 {%endblock%}

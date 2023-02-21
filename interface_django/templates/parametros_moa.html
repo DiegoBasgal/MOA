@@ -10,21 +10,22 @@
         }
 
         #submit {
+            padding-top: 2px;
             background-color: white;
         }
 
-        table {
+        #val_table {
             background-color: #111111;
             color: black;
             text-align: center;
             border: 1px solid gray;
         }
 
-        table th{
+        #val_table th{
             border: 1px solid gray;
         }
 
-        table td{
+        #val_table td{
             border: 1px solid gray;
         }
 
@@ -32,9 +33,10 @@
             padding-top: 4px;
             background-color: rgb(168, 168, 168);
         }
-
-        input {
-            padding-top: 4px;
+        
+        #alvo_txt {
+            padding-top: 2px;
+            background-color: rgb(168, 168, 168);
         }
 
         h1 {
@@ -81,53 +83,82 @@
 
         <form method='post' action='/parametros_moa/' style="margin-top: 40px;">
             {% csrf_token %}
-            <div style="margin-bottom: 30px;">
-                <h3 style="margin-bottom: 5px;">Modo autonomo:</h3>
-                <input type="radio" id="modo_autonomo_ativado" name="modo_autonomo_ativado" value="True"
-                       {% if usina.modo_autonomo == True %}
-                       CHECKED
-                       {% endif %}/>
-                <label for="True">Ativado</label>
-                <input type="radio" id="modo_autonomo_ativado" name="modo_autonomo_ativado" value="False"
-                       {% if usina.modo_autonomo == False %}
-                       CHECKED
-                       {% endif %}/>
-                <label for="False">Desativado</label>
+            <div style="margin-bottom: 1px;">
+                <table>
+                    <tr>
+                        <td>
+                            <label style="font-size: 18px;"><b>Modo autônomo: </b></label>
+                        </td>
+                        <td>
+                            {% if usina.modo_autonomo == 1 %}
+                                <label style="font-size: 17px; margin-left: 5px; color: green">Ativado</label>
+                            {% else %}
+                                <label style="font-size: 17px; margin-left: 5px; color: red;">Desativado</label>
+                            {% endif %}
+                        </td>
+                    </tr>
+                </table>
             </div>
-        
-            <div style="margin-bottom: 30px;">
-                <h3 style="margin-bottom: 5px;">Priorização Unidades de Geração:</h3>
-                <input type="radio" id="escolha_ugs" name="escolha_ugs" value="0"
-                       {% if escolha_ugs == 0 %}
-                       CHECKED
-                       {% endif %}/>
-                <label for="0">Priorizar Horas-Máquina</label>
-                <input type="radio" id="escolha_ugs" name="escolha_ugs" value="1"
-                       {% if escolha_ugs == 1 %}
-                       CHECKED
-                       {% endif %}/>
-                <label for="1">Priorizar UG1</label>
-                <input type="radio" id="escolha_ugs" name="escolha_ugs" value="2"
-                       {% if escolha_ugs == 2 %}
-                       CHECKED
-                       {% endif %}/>
-                <label for="2">Priorizar UG2</label>
+            <div style="margin-top: 1px;">
+                <label style="font-size: 17px; margin-left: 3px;">Comando: </label>
+                <input id="submit" type="submit" name="ativar_ma" value="Ativar">
+                <input id="submit" type="submit" name="desativar_ma" value="Desativar">
             </div>
-        
-            <div style="margin-bottom: 30px;">
-                <b style="font-size: 18px;">Nível Alvo: </b>
-                <input style="margin-left: 10px;" id="nv_alvo" name="nv_alvo" size=4 value="{{usina.nv_alvo}}"/></td>
+        </form>
+        <form method='post' action='/parametros_moa/'>
+            {% csrf_token %}
+            <div style="margin-top: 30px;">
+                <table>
+                    <tr>
+                        <td>
+                            <label style="font-size: 18px;"><b>Priorização Unidades de Geração: </b></label>
+                        </td>
+                        <td>
+                            {% if usina.modo_de_escolha_das_ugs == 1 %}
+                                <label style="font-size: 17px; margin-left: 5px; color: blue">Horas-Máquina</label>
+                            {% endif %}
+                            {% if usina.modo_de_escolha_das_ugs == 2 and usina.ug1_prioridade == 100 %}
+                                <label style="font-size: 17px; margin-left: 5px; color: orange">UG1</label>
+                            {% endif %}
+                            {% if usina.modo_de_escolha_das_ugs == 2 and usina.ug2_prioridade == 100 %}
+                                <label style="font-size: 17px; margin-left: 5px; color: orange">UG2</label>
+                            {% endif %}
+                        </td>
+                    </tr>
+                </table>
+            </div>
+            <div style="margin-bottom: 30px; margin-top: 1px;">
+                <label style="font-size: 17px; margin-left: 3px;">Priorizar: </label>
+                <input id="submit" type="submit" name="escolha_ugs0" value="Horas-Máquina"/>
+                <input id="submit" type="submit" name="escolha_ugs1" value="UG1" />
+                <input id="submit" type="submit" name="escolha_ugs2" value="UG2" />
+            </div>
+        </form>
+        <form method='post' action='/parametros_moa/'>
+            {% csrf_token %}
+            <div style="margin-bottom: 20px;">
+                <label style="font-size: 18px; margin-left: 3px;"><b>Nível alvo: </b></label>
+                <input style="margin-left: 3px;" id="alvo_txt" name="nv_alvo" size=4 value="{{usina.nv_alvo}}"/>
+                <input style="padding-top: 2px; padding-bottom: 2px;" id="submit" type="submit" name="bnv_alvo" value="Salvar"/>
             </div>
             <div style="margin-bottom: 30px;">
-                <b style="font-size: 18px;">Pressão Caixa Espiral Alvo: </b>
-                <input style="margin-left: 10px;" id="press_cx_alvo" name="press_cx_alvo" size=4 value="{{usina.press_cx_alvo}}"/></td>
-                <label> (Operação TDA Off-line)</label>
+                <label style="font-size: 18px; margin-left: 3px;"><b>Pressão Caixa Espiral Alvo: </b></label>
+                <input style="margin-left: 3px;" id="alvo_txt" name="press_cx_alvo" size=4 value="{{usina.press_cx_alvo}}"/></td>
+                <input style="padding-top: 2px; padding-bottom: 2px; margin-right: 3px;" id="submit" type="submit" name="bcx_alvo" value="Salvar"/>
+                {% if usina.tda_offline == 0 %}
+                    <label>(TDA: <a style="color: green;">On-line</a>)</label>
+                {% else %}
+                    <label>(TDA: <a style="color: red;">Off-line</a>)</label>
+                {% endif %}
                 <br>
             </div>
-        
+        </form>
+        <form method='post' action='/parametros_moa/'>
+            {% csrf_token %}
             <div style="margin-bottom: 20px; margin-top: 50px;">
-                <p style="margin-bottom: 8px; font-size: 18px;"><b>Limites de operação das Unidades de Geração</b></p>
-                <table>
+                <b style="margin-bottom: 8px; font-size: 18px;">Limites de operação das Unidades de Geração: </b>
+                <input id="submit" style="margin-left: 3px; margin-bottom: 7px;" name="salvar_params" type="submit" value="Salvar"/>
+                <table id="val_table">
                     <tr>
                         <th>Limites</th>
                         <th>UG1 alerta</th>
@@ -218,10 +249,7 @@
                     </tr>
                 </table>
             </div>
-            <b>Salvar parâmetros: </b>
-            <input id="submit" style="margin-left: 10px;" type="submit" value="Salvar"/>
         </form>
-        <br>
         <br>
         <br>
     </div>
