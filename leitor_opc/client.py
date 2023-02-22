@@ -1,36 +1,39 @@
 import os
 import json
 import OpenOPC
+import pywintypes
 
 from time import sleep
 
+pywintypes.datetime = pywintypes.TimeType
+
 config_file = os.path.join(os.path.dirname(__file__), "data.json")
 with open(config_file, "r") as file:
-   cfg = json.load(file)
+   data = json.load(file)
 
-config_file = os.path.join(os.path.dirname(__file__), "data.json.bkp")
-with open(config_file, "w") as file:
-    json.dump(json.load(file), file, indent=4)
+opc = OpenOPC.client()
 
-
-client = OpenOPC.client()
-
-client.servers()
-
-client.connect('localhost') # client.connect('Matrikon.OPC.Simulation') ## Exemplo sourceforge
+opc.connect('Elipse.OPCSvr.1')
 
 while True:
-   try:
-      client.read('Alguma.Coisa1') # Exemplo: (19169, 'Good', '06/24/07 15:56:11')
 
-      valor = client.read('Alguma.Coisa2')
-      cfg["Algum_valor"] = valor
-
-      client.write(('Triangle Waves.Real8', cfg["Valor_escrever"]))
-      sleep(5)
-
-   except Exception as e:
-      raise e
+   print(opc.read('Driver1.Pasta1.Coil.Value', group='Group0'))
+   sleep(4)
    
-   finally:
-      client.close()
+   ler_opc = opc.read('Driver1.Pasta1.Coil.Value', group='Group0')[0]
+   
+   if ler_opc != data["Driver1.Pasta1.Coil.Value"]:
+      data["Driver1.Pasta1.Coil.Value"] = ler_opc
+      dado_json_antigo = data["Driver1.Pasta1.Coil.Value"]
+      with open(config_file, "w") as file:
+         json.dump(data, file, indent=4)
+   else:
+      print("Os dados do server OPC e JSON continuam os mesmos")
+   sleep(4)
+
+
+   if data['Valor_coil_driver1'] != dado_json_antigo:
+      print(opc.write(('Driver1.Pasta1.Coil2.Value', data['Valor_coil_driver1e'])))
+   else:
+      print("O dado não mudou")
+   sleep(4)
