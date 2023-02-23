@@ -111,15 +111,15 @@
                         <label style="font-size: 17px; margin-left: 3px;">Comando: </label>
                     </td>
                     <td>
-                        <form id="form_abrir_dj" method='post' action='/comandos_manual/abrir_dj/'>
+                        <form method='post' action='/comandos_manual/abrir_dj/' onsubmit="return subform(this)">
                             {% csrf_token %}
-                            <input style="background-color: white;" type="submit" value="Abrir" name="abrir_dj">
+                            <input type="submit" value="Abrir" name="abrir_dj">
                         </form>
                     </td>
                     <td>
-                        <form id="form_fechar_dj" method='post' action='/comandos_manual/fechar_dj/'>
+                        <form method='post' action='/comandos_manual/fechar_dj/' onsubmit="return subform(this)">
                             {% csrf_token %}
-                            <input style="background-color: white;" type="submit" value="Fechar" name="fechar_dj">
+                            <input type="submit" value="Fechar" name="fechar_dj">
                         </form>
                     </td>
                 </table>
@@ -297,9 +297,8 @@
             </ul>
         {% endif %}
         <script>
-            document.getElementById('form_abrir_dj').addEventListener('submit', function(e){
-                e.preventDefault();
-                var form = document.getElementById('form_abrir_dj');
+            function subform(form){
+                event.preventDefault();
                 Swal.fire({
                     title: "Confirma comando?",
                     text: "Atenção! Este comando pode impactar na operação.",
@@ -315,26 +314,7 @@
                         return;
                     }
                 });
-            });
-            document.getElementById('form_fechar_dj').addEventListener('submit', function(e){
-                e.preventDefault();
-                var form = document.getElementById('form_fechar_dj');
-                Swal.fire({
-                    title: "Confirma comando?",
-                    text: "Atenção! Este comando pode impactar na operação.",
-                    icon: "warning",
-                    showDenyButton: true,
-                    confirmButtonText: "Confirmar",
-                    denyButtonText: "Voltar",
-                }).then((result) => {
-                    if (result.isConfirmed){
-                        form.submit();
-                    }
-                    else if (result.isDenied){
-                        return;
-                    }
-                });
-            });
+            }
         </script>
     </body>
 </html>

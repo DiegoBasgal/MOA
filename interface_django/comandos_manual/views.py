@@ -176,32 +176,32 @@ def comando_ug1(request, *args, **kwargs):
 
          try:
             if request.POST.get("manual"):
-               if DataBank.get_words(61)[0] != 0:
-                  DataBank.set_words(61, [0])
+               if client.read_coils(61)[0] != 0:
+                  client.write_single_coil(61, [0])
                   return HttpResponseRedirect(reverse("comandos_manual"))
                else:
                   messages.info(request, "Comando ignorado!", extra_tags="A unidade já está no modo manual")
                   return HttpResponseRedirect(reverse("comandos_manual"))
 
             elif request.POST.get("disponivel"):
-               if DataBank.get_words(61)[0] != 1:
-                  DataBank.set_words(61, [1])
+               if client.read_coils(61)[0] != 1:
+                  client.write_single_coil(61, [1])
                   return HttpResponseRedirect(reverse("comandos_manual"))
                else:
                   messages.info(request, "Comando ignorado!", extra_tags="A unidade já está no modo disponível")
                   return HttpResponseRedirect(reverse("comandos_manual"))
 
             elif request.POST.get("restrito"):
-               if DataBank.get_words(61)[0] != 2:
-                  DataBank.set_words(61, [2])
+               if client.read_coils(61)[0] != 2:
+                  client.write_single_coil(61, [2])
                   return HttpResponseRedirect(reverse("comandos_manual"))
                else:
                   messages.info(request, "Comando ignorado!", extra_tags="A unidade já está no modo restrito")
                   return HttpResponseRedirect(reverse("comandos_manual"))
 
             elif request.POST.get("indisponivel"):
-               if DataBank.get_words(61)[0] != 3:
-                  DataBank.set_words(61, [3])
+               if client.read_coils(61)[0] != 3:
+                  client.write_single_coil(61, [3])
                   return HttpResponseRedirect(reverse("comandos_manual"))
                else:
                   messages.info(request, "Comando ignorado!", extra_tags="A unidade já está no modo indisponivel")
@@ -268,32 +268,32 @@ def comando_ug2(request, *args, **kwargs):
 
          try:
             if request.POST.get("manual"):
-               if DataBank.get_words(61)[0] != 0:
-                  DataBank.set_words(61, [0])
+               if client.read_coils(71)[0] != 0:
+                  client.write_single_coil(71, [0])
                   return HttpResponseRedirect(reverse("comandos_manual"))
                else:
                   messages.info(request, "Comando ignorado!", extra_tags="A unidade já está no modo manual")
                   return HttpResponseRedirect(reverse("comandos_manual"))
 
             elif request.POST.get("disponivel"):
-               if DataBank.get_words(61)[0] != 1:
-                  DataBank.set_words(61, [1])
+               if client.read_coils(71)[0] != 1:
+                  client.write_single_coil(71, [1])
                   return HttpResponseRedirect(reverse("comandos_manual"))
                else:
                   messages.info(request, "Comando ignorado!", extra_tags="A unidade já está no modo disponivel")
                   return HttpResponseRedirect(reverse("comandos_manual"))
 
             elif request.POST.get("restrito"):
-               if DataBank.get_words(61)[0] != 2:
-                  DataBank.set_words(61, [2])
+               if client.read_coils(71)[0] != 2:
+                  client.write_single_coil(71, [2])
                   return HttpResponseRedirect(reverse("comandos_manual"))
                else:
                   messages.info(request, "Comando ignorado!", extra_tags="A unidade já está no modo restrito")
                   return HttpResponseRedirect(reverse("comandos_manual"))
 
             elif request.POST.get("indisponivel"):
-               if DataBank.get_words(61)[0] != 3:
-                  DataBank.set_words(61, [3])
+               if client.read_coils(71)[0] != 3:
+                  client.write_single_coil(71, [3])
                   return HttpResponseRedirect(reverse("comandos_manual"))
                else:
                   messages.info(request, "Comando ignorado!", extra_tags="A unidade já está no modo indisponivel")

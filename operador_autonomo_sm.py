@@ -21,7 +21,6 @@ from time import sleep
 from src.codes import *
 from datetime import datetime
 from src.mensageiro import voip
-from pyModbusTCP.server import DataBank, ModbusServer
 # Set-up logging
 from src.mensageiro.mensageiro_log_handler import MensageiroHandler
 
@@ -149,7 +148,7 @@ class ValoresInternosAtualizados(State):
     def __init__(self, instancia_usina, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.usina = instancia_usina
-        DataBank.set_words(self.usina.cfg["REG_PAINEL_LIDO"], [1])
+        self.usina.clp_moa.write_single_coil(self.usina.cfg["REG_PAINEL_LIDO"], [1])
         self.usina.heartbeat()
         self.deve_ler_condicionadores=False
         self.habilitar_emerg_condic_e=False
@@ -369,7 +368,7 @@ class ModoManualAtivado(State):
 
     def run(self):
         self.usina.ler_valores()
-        DataBank.set_words(usina.cfg["REG_PAINEL_LIDO"], [1])
+        self.usina.clp_moa.write_single_coil(usina.cfg["REG_PAINEL_LIDO"], [1])
         self.usina.ug1.setpoint = self.usina.ug1.leitura_potencia.valor
         self.usina.ug2.setpoint = self.usina.ug2.leitura_potencia.valor
 
@@ -649,18 +648,7 @@ if __name__ == "__main__":
                 sleep(timeout)
                 continue
 
-            # Inicializando Servidor Modbus (para algumas comunicações com o Elipse)
             try:
-                logger.debug("Iniciando Servidor/Slave Modbus MOA.")
-                modbus_server = ModbusServer(
-                    host=usina.cfg["moa_slave_ip"],
-                    port=usina.cfg["moa_slave_porta"],
-                    no_block=True,
-                )
-                modbus_server.start()
-                sleep(1)
-                if not modbus_server.is_run:
-                    raise ConnectionError
                 prox_estado = Pronto
 
             except TypeError as e:
