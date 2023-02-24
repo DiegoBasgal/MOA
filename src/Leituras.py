@@ -9,7 +9,9 @@ __author__ = "Lucas Lavratti"
 import socket
 import struct
 import logging
-from src.mapa_modbus import *
+
+import src.VAR_REG
+
 from pyModbusTCP.utils import crc16
 from pyModbusTCP.client import ModbusClient
 
