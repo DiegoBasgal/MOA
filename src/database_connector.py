@@ -129,6 +129,19 @@ class Database:
         self._close()
         return True
 
+    def update_tda_offline(self, valor):
+        q = (
+            "UPDATE parametros_moa_parametrosusina "
+            "SET tda_offline = %s "
+            "WHERE id = 1"
+        )
+        self._open()
+        self.execute(
+            q, valor
+        )
+        self._close()
+        return True
+
     def update_agendamento(self, id_agendamento, executado, obs=""):
         if len(obs) >= 1:
             obs = " - " + obs

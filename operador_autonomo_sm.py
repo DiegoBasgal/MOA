@@ -42,7 +42,8 @@ def timeConverter(*args):
     return datetime.now(tz).timetuple()
 
 tz = pytz.timezone("Brazil/East")
-logFormatter = logging.Formatter("%(asctime)s [%(threadName)-12.12s] [%(levelname)-5.5s] [MOA-SM] %(message)s")
+thread_id = threading.get_native_id()
+logFormatter = logging.Formatter("%(asctime)s [%(threadName)-12s] [%(levelname)-5.5s] [MOA] %(message)s")
 logFormatterSimples = logging.Formatter("[%(levelname)-5.5s] %(message)s")
 logFormatter.converter = timeConverter
 
@@ -118,7 +119,7 @@ class Pronto(State):
         self.usina.state_moa = 3
 
     def run(self):
-
+        self.usina.heartbeat()
         if self.n_tentativa >= 2:
             return FalhaCritica()
         else:
@@ -150,12 +151,12 @@ class ValoresInternosAtualizados(State):
         super().__init__(*args, **kwargs)
         self.usina = instancia_usina
         DataBank.set_words(self.usina.cfg["REG_PAINEL_LIDO"], [1])
-        self.usina.heartbeat()
         self.deve_ler_condicionadores=False
         self.habilitar_emerg_condic_e=False
         self.habilitar_emerg_condic_c=False
 
     def run(self):
+        self.usina.heartbeat()
         """Decidir para qual modo de operação o sistema deve ir"""
 
         """
@@ -271,7 +272,6 @@ class Emergencia(State):
         self.usina = instancia_usina
         self.n_tentativa = 0
         self.usina.escrever_valores()
-        self.usina.heartbeat()
         self.nao_ligou = True
 
     def run(self):
@@ -280,7 +280,6 @@ class Emergencia(State):
         if self.n_tentativa > 2:
             logger.warning("Numero de tentaivas de normalização excedidas, entrando em modo manual.")
             self.usina.entrar_em_modo_manual()
-            self.usina.heartbeat()
             for ug in self.usina.ugs:
                 ug.forcar_estado_indisponivel()
                 ug.step()
@@ -368,6 +367,7 @@ class ModoManualAtivado(State):
         logger.info("Usina em modo manual, deve-se alterar via painel ou interface web.")
 
     def run(self):
+        self.usina.heartbeat()
         self.usina.ler_valores()
         DataBank.set_words(usina.cfg["REG_PAINEL_LIDO"], [1])
         self.usina.ug1.setpoint = self.usina.ug1.leitura_potencia.valor
@@ -375,10 +375,8 @@ class ModoManualAtivado(State):
         self.usina.ug3.setpoint = self.usina.ug3.leitura_potencia.valor
 
         self.usina.controle_ie = (self.usina.ug1.setpoint + self.usina.ug2.setpoint + self.usina.ug3.setpoint) / self.usina.cfg["pot_maxima_alvo"]
+        self.usina.controle_i = max(min(self.usina.controle_ie - (self.usina.controle_i * self.usina.cfg["ki"]) - self.usina.cfg["kp"] * self.usina.erro_nv - self.usina.cfg["kd"] * (self.usina.erro_nv - self.usina.erro_nv_anterior), 0.8), 0)
 
-        self.usina.controle_i = max(min(self.usina.controle_ie - self.usina.cfg["kp"] * self.usina.erro_nv - self.usina.cfg["kd"] * (self.usina.erro_nv - self.usina.erro_nv_anterior), 0.8), 0)
-
-        self.usina.heartbeat()
         self.usina.escrever_valores()
         sleep(1 / ESCALA_DE_TEMPO)
         if self.usina.modo_autonomo:
@@ -392,7 +390,6 @@ class ModoManualAtivado(State):
                 or self.usina.db_emergencia_acionada == 1
             ):
                 self.usina.normalizar_emergencia()
-            self.usina.heartbeat()
             return ControleRealizado(self.usina)
 
         if len(self.usina.get_agendamentos_pendentes()) > 0:
@@ -418,6 +415,7 @@ class ReservatorioAbaixoDoMinimo(State):
         self.usina = instancia_usina
 
     def run(self):
+        self.usina.heartbeat()
         if self.usina.nv_montante_recente <= self.usina.cfg["nv_fundo_reservatorio"]:
             if not abstracao_usina.ping(self.usina.cfg["TDA_slave_ip"]):
                 logger.warning("Sem comunicação com CLP TDA, entrando no modo de operação Offline")
@@ -439,6 +437,7 @@ class ReservatorioAcimaDoMaximo(State):
         self.usina = instancia_usina
 
     def run(self):
+        self.usina.heartbeat()
         if self.usina.nv_montante_recente >= self.usina.cfg["nv_maximorum"]:
             self.usina.distribuir_potencia(0)
             logger.critical("Nivel montante ({:3.2f}) atingiu o maximorum!".format(self.usina.nv_montante_recente))
@@ -446,9 +445,8 @@ class ReservatorioAcimaDoMaximo(State):
         else:
             self.usina.controle_ie = 1
             self.usina.controle_i = 0.8
-            self.usina.distribuir_potencia(self.usina.cfg["pot_maxima_usina"])
+            self.usina.distribuir_potencia(self.usina.cfg["pot_maxima_alvo"])
             for ug in self.usina.ugs:
-                print("")
                 ug.step()
             return ControleRealizado(self.usina)
 
@@ -462,7 +460,6 @@ class ReservatorioNormal(State):
 
         self.usina.controle_normal()
         for ug in self.usina.ugs:
-            print("")
             ug.step()
         return ControleRealizado(self.usina)
 
@@ -475,6 +472,7 @@ class OperacaoTDAOffline(State):
         self.habilitar_emerg_condic_c = False
 
     def run(self):
+        self.usina.heartbeat()
         global aux
         global deve_normalizar
         self.usina.TDA_Offline = True
@@ -546,9 +544,8 @@ class ControleRealizado(State):
         self.usina = instancia_usina
 
     def run(self):
-        logger.debug("HB")
+        logger.debug("Heartbeat")
         self.usina.heartbeat()
-        logger.debug("Escrevendo valores")
         self.usina.escrever_valores()
         return Pronto(self.usina)
 
@@ -583,6 +580,7 @@ def acionar_voip():
             voip.enviar_voz_emergencia()
             usina.avisado_em_eletrica = False
 
+        """
         for ug in usina.ugs:
             if ug.acionar_voip:
                 #voip.QCAUG1Remoto=[True if not usina.ug1.QCAUGRemoto else False]
@@ -596,7 +594,7 @@ def acionar_voip():
             elif ug.avisou_emerg_voip:
                 voip.enviar_voz_emergencia()
                 ug.avisou_emerg_voip = False
-
+        """
     except Exception:
         logger.debug("Houve um problema ao ligar por Voip")
 
@@ -616,8 +614,7 @@ if __name__ == "__main__":
 
     logger.debug("Debug is ON")
     logger.info("Iniciando MOA...")
-    logger.debug("Iniciando o MOA_SM ESCALA_DE_TEMPO:{}".format(ESCALA_DE_TEMPO))
-    logger.debug("Inciando Threads de Leitura temporizada e acionamento por voip")
+    logger.debug("Escala de tempo: {}".format(ESCALA_DE_TEMPO))
 
     while prox_estado == 0:
         n_tentativa += 1
@@ -698,15 +695,14 @@ if __name__ == "__main__":
                 logger.error("Traceback: {}".format(traceback.format_exc()))
                 sleep(timeout)
 
-    logger.info("Inicialização completa, executando o MOA \U0001F916")
-
     threading.Thread(target=lambda: leitura_temporizada()).start()
+    logger.info("Inicialização completa, executando o MOA \U0001F916")
 
     sm = StateMachine(initial_state=prox_estado(usina))
     while True:
-        print("")
         t_i = time.time()
-        logger.debug("Executando estado: {}".format(sm.state.__class__.__name__))
+        logger.debug("")
+        logger.debug("Executando estado: \"{}\"".format(sm.state.__class__.__name__))
         sm.exec()
         t_restante = max(30 - (time.time() - t_i), 0) / ESCALA_DE_TEMPO
         if t_restante == 0:

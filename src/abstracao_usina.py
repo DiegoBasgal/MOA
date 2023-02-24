@@ -1,3 +1,4 @@
+import sys
 import pytz
 import logging
 import threading
@@ -106,7 +107,6 @@ class Usina:
             timeout=0.5,
             unit_id=1,
             auto_open=True,
-            auto_close=True,
         )
 
         threading.Thread(target=lambda: self.leitura_condicionadores()).start()
@@ -118,15 +118,10 @@ class Usina:
         else:
             self.controle_ie = self.cfg["saida_ie_inicial"]
 
-        self.escrever_valores()
-
-        # ajuste inicial SP
-        logger.debug("self.ug1.leitura_potencia.valor -> {}".format(self.ug1.leitura_potencia.valor))
-        logger.debug("self.ug2.leitura_potencia.valor -> {}".format(self.ug2.leitura_potencia.valor))
-        logger.debug("self.ug3.leitura_potencia.valor -> {}".format(self.ug3.leitura_potencia.valor))
-
         parametros = self.db.get_parametros_usina()
         self.atualizar_limites_operacao(parametros)
+
+        self.escrever_valores()
 
     @property
     def nv_montante(self):
@@ -140,6 +135,7 @@ class Usina:
         # -> Verifica conexão com CLP Tomada d'água
         if not ping(self.cfg["TDA_slave_ip"]):
             self.TDA_Offline = True
+            self.db.update_tda_offline(valor=1)
             if self.TDA_Offline and self.aux_ping == 0:
                 self.aux_ping = 1
                 logger.warning("CLP TDA não respondeu a tentativa de comunicação!")
@@ -147,6 +143,7 @@ class Usina:
             logger.info("Comunicação com o CLP TDA reestabelecida.")
             self.aux_ping = 0
             self.TDA_Offline = False
+            self.db.update_tda_offline(valor=0)
         
         # -> Verifica conexão com CLP Sub
         if not ping(self.cfg["USN_slave_ip"]):
@@ -198,7 +195,7 @@ class Usina:
         self.cfg["nv_minimo"] = float(parametros["nv_minimo"])
 
         # Modo autonomo
-        logger.debug("Modo autonomo que o banco respondeu: {}".format(int(parametros["modo_autonomo"])))
+        logger.debug("Modo autônomo: \"{}\"".format("Ativado" if int(parametros["modo_autonomo"]) == 1 else "Desativado"))
         self.modo_autonomo = int(parametros["modo_autonomo"])
 
         # Modo de prioridade UGS
@@ -296,7 +293,7 @@ class Usina:
 
         try:
             ts = datetime.now(pytz.timezone("Brazil/East")).timestamp()
-            logger.debug("Inserting in db")
+            logger.debug("Escrevendo no banco")
             ma = 1 if self.modo_autonomo else 0
             self.db.insert_debug(
                 ts,
@@ -428,7 +425,6 @@ class Usina:
     def heartbeat(self):
 
         agora = datetime.now(pytz.timezone("Brazil/East")).replace(tzinfo=None)
-
         ano = int(agora.year)
         mes = int(agora.month)
         dia = int(agora.day)
@@ -439,6 +435,9 @@ class Usina:
         DataBank.set_words(0, [ano, mes, dia, hor, mnt, seg, mil])
         DataBank.set_words(self.cfg["REG_MOA_OUT_STATUS"], [self.state_moa])
         DataBank.set_words(self.cfg["REG_MOA_OUT_MODE"], [self.modo_autonomo])
+
+        for ug in self.ugs:
+            ug.modbus_update_state_register()
 
         if self.modo_autonomo == 1:
             DataBank.set_words(self.cfg["REG_MOA_OUT_EMERG"], [1 if self.clp_emergencia_acionada else 0],)
@@ -733,10 +732,8 @@ class Usina:
                 ug.setpoint = 0
             return 0
 
-        logger.debug("Pot alvo = {}".format(pot_alvo))
-
         pot_medidor = self.leituras.potencia_ativa_kW.valor
-        logger.debug("Pot no medidor = {}".format(pot_medidor))
+        logger.debug("Potência no medidor: {:0.3f}".format(pot_medidor))
 
         # implementação nova
         pot_aux = self.cfg["pot_maxima_alvo"] - (self.cfg["pot_maxima_usina"] - self.cfg["pot_maxima_alvo"])
@@ -748,19 +745,18 @@ class Usina:
                 pot_alvo = self.pot_alvo_anterior * (1 - 0.5 * ((pot_medidor - self.cfg["pot_maxima_alvo"]) / self.cfg["pot_maxima_alvo"]))
 
         except TypeError as e:
-            logger.info("A comunicação com os MFs falharam.")
+            logger.info("A comunicação com os MFs falhou.")
 
         self.pot_alvo_anterior = pot_alvo
         
-        logger.debug("Pot alvo após ajuste medidor = {}".format(pot_alvo))
+        logger.debug("Potência alvo pós ajuste: {:0.3f}".format(pot_alvo))
 
         ugs = self.lista_de_ugs_disponiveis()
         self.pot_disp = 0
         self.ajuste_manual = 0
 
-        logger.debug("lista_de_ugs_disponiveis:")
         for ug in ugs:
-            logger.debug("UG{}".format(ug.id))
+            logger.debug(f"UG{ug.id}")
             self.pot_disp += ug.cfg["pot_maxima_ug{}".format(ugs[0].id)]
             if ug.manual:
                 self.ajuste_manual += ug.leitura_potencia.valor
@@ -769,7 +765,8 @@ class Usina:
         elif len(ugs) == 0:
             return False
 
-        logger.debug("Distribuindo {}".format(pot_alvo))
+        logger.debug("")
+        logger.debug("Distribuindo: {:0.3f}".format(pot_alvo))
 
         sp = (pot_alvo - self.ajuste_manual) / self.cfg["pot_maxima_usina"]
 
@@ -781,7 +778,7 @@ class Usina:
         self.__split2 = False if sp < ((self.cfg["pot_maxima_ug"] / self.cfg["pot_maxima_usina"]) - self.cfg["margem_pot_critica"]) else self.__split2
         self.__split1 = False if sp < (self.cfg["pot_minima"] / self.cfg["pot_maxima_usina"]) else self.__split1
 
-        logger.debug(f"Sp {sp}")
+        logger.debug(f"SP<-{sp}")
         if len(ugs) == 3:
 
             if self.__split3:
@@ -827,9 +824,6 @@ class Usina:
             logger.debug("Split 3B")
             ugs[0].setpoint = 3 * sp * ugs[0].setpoint_maximo
 
-        for ug in self.ugs:
-            logger.debug("UG{} SP:{}".format(ug.id, ug.setpoint))
-
         return pot_alvo
 
     def lista_de_ugs_disponiveis(self):
@@ -838,21 +832,23 @@ class Usina:
         """
         ls = []
         for ug in self.ugs:
-            if ug.disponivel:
+            if ug.disponivel and ug.etapa_atual in UNIDADE_LISTA_DE_ETAPAS:
                 ls.append(ug)
 
         if self.modo_de_escolha_das_ugs == MODO_ESCOLHA_MANUAL:
             # escolher por maior prioridade primeiro
             #!!TODO: corrigir etapa_atual
             ls = sorted(ls, key=lambda y: (-1 * y.etapa_atual, -1 * y.leitura_potencia.valor, -1 * y.setpoint, y.prioridade,),)
-            logger.debug(ls)
+            logger.debug("")
+            logger.debug("UGs disponíveis em ordem (prioridade):")
         else:
             # escolher por menor horas_maquina primeiro
             ls = sorted(ls, key=lambda y: (-1 * y.etapa_atual, y.leitura_horimetro.valor, -1 * y.leitura_potencia.valor, -1 * y.setpoint,),)
             # ls = sorted(ls, key=lambda y: (-1 * y.etapa_atual if y.etapa_atual == UNIDADE_SINCRONIZADA else y.leitura_horimetro.valor,
                                             #-1 * y.leitura_potencia.valor,
                                             #-1 * y.setpoint,),)
-            logger.debug(ls)
+            logger.debug("")
+            logger.debug("UGs disponíveis em ordem (horas-máquina):")
         return ls
 
     def controle_normal(self):
@@ -863,12 +859,12 @@ class Usina:
         logger.debug("-------------------------------------------------")
 
         # Calcula PID
-        logger.debug("Alvo: {:0.3f}, Recente: {:0.3f}".format(self.cfg["nv_alvo"], self.nv_montante_recente))
+        logger.debug("NÍVEL -> Leitura: {:0.3f}; Alvo: {:0.3f}".format(self.nv_montante_recente, self.cfg["nv_alvo"]))
         self.controle_p = self.cfg["kp"] * self.erro_nv
         self.controle_i = max(min((self.cfg["ki"] * self.erro_nv) + self.controle_i, 0.8), 0)
         self.controle_d = self.cfg["kd"] * (self.erro_nv - self.erro_nv_anterior)
         saida_pid = (self.controle_p + self.controle_i + min(max(-0.3, self.controle_d), 0.3))
-        logger.debug("PID: {:0.3f} <-- P:{:0.3f} + I:{:0.3f} + D:{:0.3f}; ERRO={}".format(
+        logger.debug("PID -> {:0.3f} P:{:0.3f} + I:{:0.3f} + D:{:0.3f}; ERRO={}".format(
                 saida_pid,
                 self.controle_p,
                 self.controle_i,
@@ -886,16 +882,15 @@ class Usina:
             self.controle_ie = min(self.controle_ie, 0.3)
             self.controle_i = 0
 
-        logger.debug("IE: {:0.3f}".format(self.controle_ie))
+        logger.debug("IE -> {:0.3f}".format(self.controle_ie))
+        logger.debug("")
 
         # Arredondamento e limitação
         pot_alvo = max(min(round(self.cfg["pot_maxima_usina"] * self.controle_ie, 5), self.cfg["pot_maxima_usina"],), self.cfg["pot_minima"],)
 
-        logger.debug("Pot alvo: {:0.3f}".format(pot_alvo))
-        logger.debug("Nv alvo: {:0.3f}".format(self.cfg["nv_alvo"]))
+        logger.debug("Potência alvo: {:0.3f}".format(pot_alvo))
         try:
             ts = datetime.now(pytz.timezone("Brazil/East")).timestamp()
-            logger.debug("Inserting in db")
             ma = 1 if self.modo_autonomo else 0
             self.db.insert_debug(
                 ts,

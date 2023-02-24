@@ -140,6 +140,8 @@ class ParametrosUsina(models.Model):
     clp_tda_ip = models.CharField(max_length=15, default="192.168.0.54")
     clp_tda_porta = models.IntegerField(default=502)
 
+    tda_offline = models.IntegerField(default=0)
+
 class Comando(models.Model):
     id = models.IntegerField(primary_key=True)
     nome = models.CharField(max_length=255)

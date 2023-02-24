@@ -4,8 +4,8 @@ from src.Leituras import *
 
 class LeiturasUSN:
     def __init__(self, cfg):
-        self.clp_usina = ModbusClient(host=cfg["USN_slave_ip"], port=cfg["USN_slave_porta"], timeout=0.5, unit_id=1, auto_open=True, auto_close=True,)
-        self.clp_tda = ModbusClient(host=cfg["TDA_slave_ip"], port=cfg["TDA_slave_porta"], timeout=0.5, unit_id=1, auto_open=True, auto_close=True,)
+        self.clp_usina = ModbusClient(host=cfg["USN_slave_ip"], port=cfg["USN_slave_porta"], timeout=0.5, unit_id=1, auto_open=True,)
+        self.clp_tda = ModbusClient(host=cfg["TDA_slave_ip"], port=cfg["TDA_slave_porta"], timeout=0.5, unit_id=1, auto_open=True,)
 
         self.nv_montante = LeituraModbus(
             "REG_TDA_EntradasAnalogicas_MRR_NivelMaisCasasAntes",

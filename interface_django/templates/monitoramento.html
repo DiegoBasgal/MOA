@@ -56,10 +56,15 @@
                 <label style="color: orange; font-size: 17px;">Inconsistente</label>
             {% endif %}
         </div>
-        <h3 style="margin-bottom: 5px;">TDA:</h3>
-        <a style="margin-top: 1px;">Nível Alvo: {{ nv_alvo }} m</a>
+        {% if usina.tda_offline == 0 %}
+            <label style="margin-bottom: 5px; font-size: 18px;"><b>TDA </b>(<a style="color: green">On-line</a>):</label>
+        {% else %}
+            <label style="margin-bottom: 5px; font-size: 18px;"><b>TDA </b>(<a style="color: red">Off-line</a>):</label>
+        {% endif %}
+        <br>
+        <a style="margin-top: 1px; margin-left: 3px;">Nível Alvo: {{ nv_alvo }} m</a>
         <div style="margin-bottom: 40px;">
-            <a>Nível Montante:</a>
+            <a style="margin-left: 3px;">Nível Montante:</a>
             {% if tag == 0 %}
                 <label style="color: green">{{nv_montante}}</label>
                 <a> m</a>
@@ -253,13 +258,13 @@
             <label>{{ tempo_ug3 | floatformat:2 }} h</label><br><br>
         </div>
         <h3 style="margin-top: 20px; margin-bottom: 5px;">MOA:</h3>
-        <p style="margin-top: 1px;">Estado:  {{ estado }}<br>
+        <p style="margin-top: 1px; margin-left: 3px;">Estado:  {{ estado }}<br>
         Emergencia:  {{ em_acionada }}<br>
         Aguardando reservatório? {{ aguardo }}<br>
         Estado CLP:  {{ CLP_ON }} @ {{ CLP_IP }}</p>
         
         <h3 style="margin-top: 40px; margin-bottom: 5px;">Modbus Slave</h3>
-        <p style="margin-top: 1px;">Porta:{{ LOCAL_MODBUS_PORT }}<br>
+        <p style="margin-top: 1px; margin-left: 3px;">Porta:{{ LOCAL_MODBUS_PORT }}<br>
         Status: {{ modbus_status}}.<br>
         Heart-beat: {{ hb_datestring }}</p>
     </div>

@@ -36,7 +36,6 @@ class FieldConnector:
                 timeout=0.5,
                 unit_id=1,
                 auto_open=True,
-                auto_close=True,
             )
             self.ug2_clp = ModbusClient(
                 host=self.ug2_ip,
@@ -44,7 +43,6 @@ class FieldConnector:
                 timeout=0.5,
                 unit_id=1,
                 auto_open=True,
-                auto_close=True,
             )
             self.ug3_clp = ModbusClient(
                 host=self.ug3_ip,
@@ -52,7 +50,6 @@ class FieldConnector:
                 timeout=0.5,
                 unit_id=1,
                 auto_open=True,
-                auto_close=True,
             )
             self.usn_clp = ModbusClient(
                 host=self.usn_ip,
@@ -60,7 +57,6 @@ class FieldConnector:
                 timeout=0.5,
                 unit_id=1,
                 auto_open=True,
-                auto_close=True,
             )
             self.tda_clp = ModbusClient(
                 host=self.tda_ip,
@@ -68,7 +64,6 @@ class FieldConnector:
                 timeout=0.5,
                 unit_id=1,
                 auto_open=True,
-                auto_close=True,
             )
 
         self.warned_ug1 = False
