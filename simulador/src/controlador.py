@@ -1,13 +1,12 @@
-from datetime import datetime
-from sys import stdout
-import threading
 import logging
+import threading
+
+from sys import stdout
 from time import sleep
 from datetime import datetime
 from mysql.connector import pooling
 
 lock = threading.Lock()
-
 
 class Controlador:
     def __init__(self, shared_dict):
@@ -51,7 +50,7 @@ class Controlador:
             pool_name="my_pool",
             pool_size=10,
             pool_reset_session=True,
-            host="172.21.15.171",
+            host="172.21.15.5",
             user="moa",
             password="&264H3$M@&z$",
             database="django_db",
@@ -59,9 +58,8 @@ class Controlador:
 
         self.conn = self.connection_pool.get_connection()
         self.cursor = self.conn.cursor()
-        
-    def run(self):
 
+    def run(self):
         q_ant = 0
         counter_timed_afluente = 0
         last_log_time = -1
@@ -74,7 +72,7 @@ class Controlador:
             try:
                 t_inicio_passo = datetime.now()
                 lock.acquire()
-        
+
                 if (self.timed_afluente[counter_timed_afluente + 1][1]<= self.shared_dict["tempo_simul"]):
                     counter_timed_afluente += 1
 
@@ -85,9 +83,8 @@ class Controlador:
 
                 self.shared_dict["q_alfuente"] = self.timed_afluente[counter_timed_afluente][2]
 
-                
                 qmed = 7
-                qdelta = 3           
+                qdelta = 3
                 w = 0.5
 
                 duty = (((self.shared_dict["tempo_simul"]*w)%3600)/3600)
@@ -95,26 +92,21 @@ class Controlador:
                     self.shared_dict["q_alfuente"] = qmed - (qdelta/2) + qdelta * (2 * duty)
                 else:
                     self.shared_dict["q_alfuente"] = qmed + (qdelta/2) + qdelta * (2 * (0.5-duty))
-                
 
-                # FIM COMPORTAMENTO USINA
                 lock.release()
 
                 if not int(self.shared_dict["tempo_simul"] / 60) == int(last_log_time / 60):
                     last_log_time = self.shared_dict["tempo_simul"]
-                    # "ts,q_aflu,nv_montante,pot_ug1,set_ug1,pot_ug2,set_ug2"
                     ts = int(datetime.timestamp(datetime.now()))
 
                     self.cursor.execute(
-                        "INSERT INTO debug.simul_data VALUES({}, {}, {}, {}, {}, {}, {});".format(
-                            ts,
-                            self.shared_dict["q_alfuente"],
-                            self.shared_dict["nv_montante"],
-                            self.shared_dict["potencia_kw_ug1"],
-                            self.shared_dict["setpoint_kw_ug1"],
-                            self.shared_dict["potencia_kw_ug2"],
-                            self.shared_dict["setpoint_kw_ug2"],
-                        )
+                        f"INSERT INTO debug.simul_data VALUES({ts}, \
+                        {self.shared_dict['q_alfuente']}, \
+                        {self.shared_dict['nv_montante']}, \
+                        {self.shared_dict['potencia_kw_ug1']}, \
+                        {self.shared_dict['setpoint_kw_ug1']}, \
+                        {self.shared_dict['potencia_kw_ug2']}, \
+                        {self.shared_dict['setpoint_kw_ug2']});"
                     )
                     self.conn.commit()
 

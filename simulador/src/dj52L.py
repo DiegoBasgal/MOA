@@ -1,3 +1,5 @@
+from DICT import *
+
 class Dj52L:
     def __init__(self, parent):
         # COPIA DE INFORMACOES DA CLASSE SITE
@@ -5,8 +7,6 @@ class Dj52L:
         self.logger = self.parent.logger
         self.shared_dict = parent.shared_dict
         self.segundos_por_passo = self.parent.segundos_por_passo
-        self.USINA_TENSAO_MINIMA = self.parent.USINA_TENSAO_MINIMA
-        self.USINA_TENSAO_MAXIMA = self.parent.USINA_TENSAO_MAXIMA
 
         self.shared_dict["debug_dj52L_abrir"] = False
         self.shared_dict["debug_dj52L_fechar"] = False
@@ -25,7 +25,7 @@ class Dj52L:
         self.tempo_carregamento_mola = 2
 
     def passo(self):
-        if (self.shared_dict["debug_dj52L_fechar"]and self.shared_dict["debug_dj52L_abrir"]):
+        if (self.shared_dict["debug_dj52L_fechar"] and self.shared_dict["debug_dj52L_abrir"]):
             self.shared_dict["debug_dj52L_abrir"] = False
             self.shared_dict["debug_dj52L_fechar"] = False
             self.shared_dict["dj52L_aberto"] = True
@@ -50,7 +50,7 @@ class Dj52L:
                 self.aux_mola = 0
                 self.shared_dict["dj52L_mola_carregada"] = True
 
-        if not (self.USINA_TENSAO_MINIMA < self.shared_dict["tensao_na_linha"] < self.USINA_TENSAO_MAXIMA):
+        if not (USINA_TENSAO_MINIMA < self.shared_dict["tensao_na_linha"] < USINA_TENSAO_MAXIMA):
             self.shared_dict["dj52L_falta_vcc"] = True
             self.tripar("Tensão fora dos limites")
 
@@ -83,7 +83,7 @@ class Dj52L:
             self.shared_dict["dj52L_fechado"] = False
             self.shared_dict["dj52L_mola_carregada"] = False
             self.shared_dict["dj52L_falha_fechamento"] = True
-            self.logger.warning("[dj52L] Trip!. {}".format(desc))
+            self.logger.warning(f"[dj52L] Trip!. {desc}")
             return True
 
     def reconhece_reset_dj52L(self):

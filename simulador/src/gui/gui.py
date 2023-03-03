@@ -23,7 +23,7 @@ class Window(QMainWindow, Ui_Form):
         self.sinc_timer.timeout.connect(self.sincro)
         self.sinc_timer.start()
         self.aux1=0
-        self.aux2=0 
+        self.aux2=0
         self.aux3=0
         self.shared_dict["trip_condic_usina"]=False
         self.shared_dict["trip_condic_ug1"]=False
@@ -150,7 +150,7 @@ class Window(QMainWindow, Ui_Form):
         self.shared_dict["trip_condic_usina"] = False
         self.shared_dict["trip_condic_ug1"] = False
         self.shared_dict["trip_condic_ug2"] = False
-        
+
         QTimer.singleShot(1000, self.aux_reset_geral_condic_usina)
     
     def aux_reset_geral_condic_usina(self):
@@ -159,7 +159,7 @@ class Window(QMainWindow, Ui_Form):
     def pulse_trip_linha(self):
         self.set_trip_linha()
         QTimer.singleShot(2000, self.reset_trip_linha)
-    
+
     def set_trip_linha(self):
         self.shared_dict["tensao_na_linha"] = 0
 
