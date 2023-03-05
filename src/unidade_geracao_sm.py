@@ -6,8 +6,9 @@ from time import sleep, time
 from threading import Thread
 from datetime import datetime
 
-from src.VAR_REG import *
 from src.leituras import *
+from src.constantes import *
+from src.registradores import *
 from src.unidade_geracao import UnidadeDeGeracao
 
 logger = logging.getLogger("__main__")

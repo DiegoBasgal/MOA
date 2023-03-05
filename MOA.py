@@ -13,7 +13,8 @@ import src.usina as usina
 import src.conector as conector
 
 from src.logger import *
-from src.VAR_REG import *
+from src.constantes import *
+from src.registradores import *
 from src.mensageiro import voip
 
 class StateMachine:
@@ -446,11 +447,11 @@ if __name__ == "__main__":
         if n_tentativa > 2:
             prox_estado = FalhaCritica
         else:
-            config_file = os.path.join(os.path.dirname(__file__), "config.json")
+            config_file = os.path.join(os.path.dirname(__file__), "cfg.json")
             with open(config_file, "r") as file:
                 cfg = json.load(file)
 
-            config_file = os.path.join(os.path.dirname(__file__), "config.json.bkp")
+            config_file = os.path.join(os.path.dirname(__file__), "cfg.json.bkp")
             with open(config_file, "w") as file:
                 json.dump(cfg, file, indent=4)
 

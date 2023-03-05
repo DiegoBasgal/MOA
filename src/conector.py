@@ -1,12 +1,14 @@
 import pytz
 import logging
+import traceback
 
 from time import sleep
 from datetime import datetime
 from mysql.connector import pooling
 from pyModbusTCP.client import ModbusClient
 
-from VAR_REG import *
+from constantes import *
+from registradores import *
 
 logger = logging.getLogger("__main__")
 
@@ -103,86 +105,98 @@ class FieldConnector:
         self.tda_clp.close()
         logger.debug("Closed Modbus")
 
-    def fechaDj52L(self):
-        if not self.get_flag_falha52L():
-            return False
-        else:
-            response = self.usn_clp.write_single_register(SA["REG_SA_ComandosDigitais_MXW_Liga_DJ1"], 1)
-            return response
+    def fechaDj52L(self) -> bool:
+        try:
+            if self.get_falha52L():
+                return False
+            else:
+                response = self.usn_clp.write_single_register(SA["REG_SA_ComandosDigitais_MXW_Liga_DJ1"], 1)
+                return response
+        except Exception:
+            logger.error(f"[CON] Houver um erro ao fechar o Dj52L.\nTraceback: {traceback.print_stack}")
 
-    def normalizar_emergencia(self):
-        logger.info("Reconhecendo alarmes, resetando usina e fechando Dj52L")
-        logger.debug("Reconhece/Reset alarmes")
-        self.ug1_clp.write_single_coil(UG["REG_UG1_ComandosDigitais_MXW_ResetGeral"], 1)
-        self.ug2_clp.write_single_coil(UG["REG_UG2_ComandosDigitais_MXW_ResetGeral"], 1)
-        self.usn_clp.write_single_coil(SA["REG_SA_ComandosDigitais_MXW_ResetGeral"], 1)
-        self.tda_clp.write_single_coil(TDA["REG_TDA_ComandosDigitais_MXW_ResetGeral"], 1) if not self.TDA_Offline else logger.debug("CLP TDA Offline, não há como realizar o reset geral")
-        self.ug1_clp.write_single_coil(UG["REG_UG1_ComandosDigitais_MXW_Cala_Sirene"], 1)
-        self.ug2_clp.write_single_coil(UG["REG_UG2_ComandosDigitais_MXW_Cala_Sirene"], 1)
-        self.usn_clp.write_single_coil(SA["REG_SA_ComandosDigitais_MXW_Cala_Sirene"], 1)
-        logger.debug("Fecha Dj52L")
+    def normalizar_emergencia(self) -> None:
+        logger.info("[CON] Normalizando emergência...")
+        self.resetar_emergencia()
+        self.reconhecer_emergencia()
         self.fechaDj52L()
 
-    def somente_reconhecer_emergencia(self):
-        logger.debug("Somente reconhece alarmes não implementado em SEB")
-        self.ug1_clp.write_single_coil(UG["REG_UG1_ComandosDigitais_MXW_Cala_Sirene"], 1)
-        self.ug2_clp.write_single_coil(UG["REG_UG2_ComandosDigitais_MXW_Cala_Sirene"], 1)
-        self.usn_clp.write_single_coil(SA["REG_SA_ComandosDigitais_MXW_Cala_Sirene"], 1)
+    def resetar_emergencia(self) -> None:
+        try:
+            logger.debug("[CON] Reset geral.")
+            self.ug1_clp.write_single_coil(UG["REG_UG1_ComandosDigitais_MXW_ResetGeral"], 1)
+            self.ug2_clp.write_single_coil(UG["REG_UG2_ComandosDigitais_MXW_ResetGeral"], 1)
+            self.usn_clp.write_single_coil(SA["REG_SA_ComandosDigitais_MXW_ResetGeral"], 1)
+            self.tda_clp.write_single_coil(TDA["REG_TDA_ComandosDigitais_MXW_ResetGeral"], 1) if not self.TDA_Offline else logger.debug("CLP TDA Offline, não há como realizar o reset geral")
+        except Exception:
+            logger.error(f"[CON] Houve um erro ao realizar o reset geral.\nTraceback: {traceback.print_stack}")
 
-    def acionar_emergencia(self):
-        logger.warning("FC: Acionando emergencia")
-        self.ug1_clp.write_single_coil(UG["REG_UG1_ComandosDigitais_MXW_EmergenciaViaSuper"], 1)
-        self.ug2_clp.write_single_coil(UG["REG_UG2_ComandosDigitais_MXW_EmergenciaViaSuper"], 1)
-        sleep(5)
-        self.ug1_clp.write_single_coil(UG["REG_UG1_ComandosDigitais_MXW_EmergenciaViaSuper"], 0)
-        self.ug2_clp.write_single_coil(UG["REG_UG2_ComandosDigitais_MXW_EmergenciaViaSuper"], 0)
+    def reconhecer_emergencia(self) -> None:
+        try:
+            logger.debug("[CON] Cala sirene.")
+            self.ug1_clp.write_single_coil(UG["REG_UG1_ComandosDigitais_MXW_Cala_Sirene"], 1)
+            self.ug2_clp.write_single_coil(UG["REG_UG2_ComandosDigitais_MXW_Cala_Sirene"], 1)
+            self.usn_clp.write_single_coil(SA["REG_SA_ComandosDigitais_MXW_Cala_Sirene"], 1)
+        except Exception:
+            logger.error(f"[CON] Houve um erro ao reconhecer os alarmes.\nTraceback: {traceback.print_stack}")
 
-    def get_flag_falha52L(self):
-        if self.usn_clp.read_discrete_inputs(SA["REG_SA_EntradasDigitais_MXI_SA_DisjDJ1_SuperBobAbert1"])[0] == 0:
-            logger.info("DisjDJ1_SuperBobAbert1")
-            return True
+    def acionar_emergencia(self) -> None:
+        try:
+            logger.warning("[CON] Acionando emergência.")
+            self.ug1_clp.write_single_coil(UG["REG_UG1_ComandosDigitais_MXW_EmergenciaViaSuper"], 1)
+            self.ug2_clp.write_single_coil(UG["REG_UG2_ComandosDigitais_MXW_EmergenciaViaSuper"], 1)
+            sleep(5)
+            self.ug1_clp.write_single_coil(UG["REG_UG1_ComandosDigitais_MXW_EmergenciaViaSuper"], 0)
+            self.ug2_clp.write_single_coil(UG["REG_UG2_ComandosDigitais_MXW_EmergenciaViaSuper"], 0)
+        except Exception:
+            logger.error(f"[CON] Houve um erro ao acionar a emergência.\nTraceback: {traceback.print_stack}")
 
-        if self.usn_clp.read_discrete_inputs(SA["REG_SA_EntradasDigitais_MXI_SA_DisjDJ1_SuperBobAbert2"])[0] == 0:
-            logger.info("DisjDJ1_SuperBobAbert2")
-            return True
+    def get_falha52L(self):
+        try:
+            flags = 0
+            logger.info("[CON] Foram detectadas Flags de bloqueio ao abrir o Dj52L.")
+            if self.usn_clp.read_discrete_inputs(SA["REG_SA_RetornosDigitais_MXR_DJ1_FalhaInt"])[0] == 1:
+                logger.debug("[CON] Flag -> MXR_DJ1_FalhaInt")
+                flags += 1
 
-        if self.usn_clp.read_discrete_inputs(SA["REG_SA_EntradasDigitais_MXI_SA_DisjDJ1_Super125VccCiMot"])[0] == 0:
-            logger.info("DisjDJ1_Super125VccCiMot")
-            return True
+            if self.usn_clp.read_discrete_inputs(SA["REG_SA_EntradasDigitais_MXI_SA_DisjDJ1_Local"])[0] == 1:
+                logger.debug("[CON] Flag -> DisjDJ1_Local")
+                flags += 1
 
-        if self.usn_clp.read_discrete_inputs(SA["REG_SA_EntradasDigitais_MXI_SA_DisjDJ1_Super125VccCiCom"])[0] == 0:
-            logger.info("DisjDJ1_Super125VccCiCom")
-            return True
+            if self.usn_clp.read_discrete_inputs(SA["REG_SA_EntradasDigitais_MXI_SA_DisjDJ1_AlPressBaixa"])[0] == 1:
+                logger.debug("[CON] Flag -> DisjDJ1_AlPressBaixa")
+                flags += 1
 
-        if self.usn_clp.read_discrete_inputs(SA["REG_SA_EntradasDigitais_MXI_SA_DisjDJ1_AlPressBaixa"])[0] == 1:
-            logger.info("DisjDJ1_AlPressBaixa")
-            return True
+            if self.usn_clp.read_discrete_inputs(SA["REG_SA_EntradasDigitais_MXI_SA_DisjDJ1_BloqPressBaixa"])[0] == 1:
+                logger.debug("[CON] Flag -> DisjDJ1_BloqPressBaixa")
+                flags += 1
 
-        if self.usn_clp.read_discrete_inputs(SA["REG_SA_RetornosDigitais_MXR_DJ1_FalhaInt"])[0] == 1:
-            logger.info("MXR_DJ1_FalhaInt")
-            return True
+            if self.usn_clp.read_discrete_inputs(SA["REG_SA_EntradasDigitais_MXI_SA_DisjDJ1_SuperBobAbert2"])[0] == 0:
+                logger.debug("[CON] Flag -> DisjDJ1_SuperBobAbert2")
+                flags += 1
 
-        if self.usn_clp.read_discrete_inputs(SA["REG_SA_EntradasDigitais_MXI_SA_DisjDJ1_BloqPressBaixa"])[0] == 1:
-            logger.info("DisjDJ1_BloqPressBaixa")
-            return True
+            if self.usn_clp.read_discrete_inputs(SA["REG_SA_EntradasDigitais_MXI_SA_DisjDJ1_Sup125VccBoFeAb1"])[0] == 0:
+                logger.debug("[CON] Flag -> DisjDJ1_Sup125VccBoFeAb1")
+                flags += 1
 
-        if self.usn_clp.read_discrete_inputs(SA["REG_SA_EntradasDigitais_MXI_SA_DisjDJ1_Sup125VccBoFeAb1"])[0] == 0:
-            logger.info("DisjDJ1_Sup125VccBoFeAb1")
-            return True
+            if self.usn_clp.read_discrete_inputs(SA["REG_SA_EntradasDigitais_MXI_SA_DisjDJ1_Super125VccCiMot"])[0] == 0:
+                logger.debug("[CON] Flag -> DisjDJ1_Super125VccCiMot")
+                flags += 1
 
-        if self.usn_clp.read_discrete_inputs(SA["REG_SA_EntradasDigitais_MXI_SA_DisjDJ1_Sup125VccBoFeAb2"])[0] == 0:
-            logger.info("DisjDJ1_Sup125VccBoFeAb2")
-            return True
+            if self.usn_clp.read_discrete_inputs(SA["REG_SA_EntradasDigitais_MXI_SA_DisjDJ1_Super125VccCiCom"])[0] == 0:
+                logger.debug("[CON] Flag -> DisjDJ1_Super125VccCiCom")
+                flags += 1
 
-        if self.usn_clp.read_discrete_inputs(SA["REG_SA_EntradasDigitais_MXI_SA_DisjDJ1_Local"])[0] == 1:
-            logger.info("DisjDJ1_Local")
-            return True
+            if self.usn_clp.read_discrete_inputs(SA["REG_SA_EntradasDigitais_MXI_SA_DisjDJ1_Sup125VccBoFeAb2"])[0] == 0:
+                logger.debug("[CON] Flag -> DisjDJ1_Sup125VccBoFeAb2")
+                flags += 1
 
-        if self.usn_clp.read_discrete_inputs(SA["REG_SA_EntradasDigitais_MXI_SA_DisjDJ1_MolaDescarregada"])[0] == 1:
-            logger.info("DisjDJ1_MolaDescarregada")
-            return True
+            logger.info(f"[CON] Número de flags ativas: \"{flags}\"")
+            return True if flags >= 1 else False
 
-        return False
+        except Exception:
+            logger.error(f"[CON] Houve um erro ao ler as flags do Dj52L. Traceback: {traceback.print_stack}")
+            return None
 
 class DatabaseConnector:
     def __init__(self):
@@ -312,8 +326,8 @@ class DatabaseConnector:
         q = (
             "UPDATE agendamentos_agendamento "
             " SET "
-            " observacao = if(observacao is null,%s, "
-            "concat(observacao, %s)), "
+            " observacao = if(observacao is null, %s, "
+            " concat(observacao, %s)), "
             " executado = %s, "
             " modificado_por = 'MOA', "
             " ts_modificado = %s "

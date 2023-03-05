@@ -2,12 +2,15 @@ import pytz
 import logging
 import traceback
 
+import os
+import json
+
 from time import sleep
 from datetime import datetime
 
-from src.VAR_REG import *
 from src.conector import *
 from src.leituras import *
+from src.registradores import *
 from src.condicionadores import *
 from src.unidade_geracao_sm import *
 
@@ -23,7 +26,9 @@ class UnidadeDeGeracao:
         if not cfg:
             raise ValueError
         else:
-            self.cfg = cfg
+            config_file = os.path.join(os.path.dirname(__file__), "cfg.json")
+            with open(config_file, "r") as file:
+                self.cfg = json.load(file)
 
         # Variáveis privadas
         self.__id = id
@@ -79,24 +84,24 @@ class UnidadeDeGeracao:
 
         # Clients modbus
         self.clp_ug = ModbusClient(
-            host=self.cfg[f"UG{self.id}_slave_ip"],
-            port=self.cfg[f"UG{self.id}_slave_porta"],
+            host=CFG[f"UG{self.id}_slave_ip"],
+            port=CFG[f"UG{self.id}_slave_porta"],
             timeout=0.5,
             unit_id=1,
             auto_open=True,
             auto_close=True,
         )
         self.clp_sa = ModbusClient(
-            host=self.cfg["USN_slave_ip"],
-            port=self.cfg["USN_slave_porta"],
+            host=CFG["USN_slave_ip"],
+            port=CFG["USN_slave_porta"],
             timeout=0.5,
             unit_id=1,
             auto_open=True,
             auto_close=True,
         )
         self.clp_moa = ModbusClient(
-            host=self.cfg["MOA_slave_ip"],
-            port=self.cfg["MOA_slave_porta"],
+            host=CFG["MOA_slave_ip"],
+            port=CFG["MOA_slave_porta"],
             timeout=0.5,
             unit_id=1,
             auto_open=True,

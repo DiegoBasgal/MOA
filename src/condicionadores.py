@@ -1,16 +1,20 @@
 __version__ = "0.1"
 __author__ = "Lucas Lavratti"
 
-from src.leituras import *
+from usina import usina
+from leituras import *
 
 class CondicionadorBase:
-    def __init__(self, descr: str, gravidade: int, leitura: LeituraBase):
+    def __init__(self, descr: str, gravidade: int, leitura: LeituraBase, ug_id: int = None, estados: list = None):
         self.__descr = descr
-        self.__gravidade = gravidade
         self.__leitura = leitura
+        self.__gravidade = gravidade
+        self.__ugs = usina.get_ugs()
+        self.__ug_id = ug_id if ug_id is not None else None
+        self.__estados = estados if estados is not None else []
 
     def __str__(self):
-        return f"Condicionador {self.__descr}, Gravidade: {self.__gravidade}, Ativo: {self.ativo}, Valor: {self.valor}"
+        return f"Condicionador: {self.__descr}, Gravidade: {self.__gravidade}"
     
     @property
     def descr(self):
@@ -18,11 +22,17 @@ class CondicionadorBase:
 
     @property
     def leitura(self):
-        return self.__leitura
+        return self.__leitura.valor
 
     @property
     def ativo(self) -> bool:
-        return False if self.__leitura.valor == 0 else True
+        for ug in self.__ugs:
+            if ug.id == self.__ug_id and ug.etapa_atual in self.__estados:
+                return False if self.leitura == 0 else True
+            elif ug.id == self.__ug_id and self.__estados == []:
+                return False if self.leitura == 0 else True
+            else:
+                return False
 
     @property
     def valor(self) -> float:
@@ -42,10 +52,10 @@ class CondicionadorExponencial(CondicionadorBase):
         valor_limite: float,
         ordem: float = (1 / 4),
     ):
-        super().__init__(descr, gravidade, leitura)
+        super().__init__(descr, gravidade, leitura, ug_id=None, estados=None)
+        self.__ordem = ordem
         self.__valor_base = valor_base
         self.__valor_limite = valor_limite
-        self.__ordem = ordem
 
     @property
     def valor_base(self):
@@ -73,19 +83,25 @@ class CondicionadorExponencial(CondicionadorBase):
 
     @property
     def ativo(self) -> bool:
-        return True if self.valor >= 1 else False
-    
+        for ug in self.__ugs:
+            if ug.id == self.__ug_id and ug.etapa_atual in self.__estados:
+                return True if self.valor >= 1 else False
+            elif ug.id == self.__ug_id and self.__estados == []:
+                return True if self.valor >= 1 else False
+            else:
+                return False
+
     @property
     def valor(self) -> float:
-        v_temp = float(self.leitura.valor)
+        v_temp = float(self.leitura)
 
         if v_temp > self.valor_base and  v_temp < self.valor_limite:
             aux = (1 - (((self.valor_limite - v_temp) / (self.valor_limite - self.valor_base)) ** (self.ordem)).real)
             return max(min(aux, 1), 0)
-        
-        if self.leitura.valor > self.valor_limite:
+
+        if self.leitura > self.valor_limite:
             return 1
-        
+
         else:
             return 0
 
@@ -99,10 +115,10 @@ class CondicionadorExponencialReverso(CondicionadorBase):
         valor_limite: float,
         ordem: float = 2,
     ):
-        super().__init__(descr, gravidade, leitura)
+        super().__init__(descr, gravidade, leitura, ug_id=None, estados=None)
+        self.__ordem = ordem
         self.__valor_base = valor_base
         self.__valor_limite = valor_limite
-        self.__ordem = ordem
 
     @property
     def valor_base(self) -> float:
@@ -130,17 +146,17 @@ class CondicionadorExponencialReverso(CondicionadorBase):
 
     @property
     def valor(self) -> float:
-        v_temp = float(self.leitura.valor)
-        
+        v_temp = float(self.leitura)
+
         if v_temp < 1:
             return 0
-        
+
         elif self.valor_limite < v_temp < self.valor_base:
             aux = (1 - (((self.valor_limite - v_temp) / (self.valor_limite - self.valor_base))** (self.ordem)).real)
-            return max(min(aux, 1), 0,)
+            return max(min(aux, 1), 0)
 
         elif v_temp <= self.valor_limite:
             return 1
-        
+
         else:
             return 0

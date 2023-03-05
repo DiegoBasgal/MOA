@@ -9,21 +9,24 @@ from time import sleep, time
 from datetime import  datetime, timedelta
 from pyModbusTCP.client import ModbusClient
 
-from src.VAR_REG import *
 from src.leituras import *
 from src.conector import *
+from src.constantes import *
+from src.registradores import *
 from src.condicionadores import *
 from src.unidade_geracao import UnidadeDeGeracao
 
 logger = logging.getLogger("__main__")
 
 class Usina:
-    def __init__(self, cfg=None, db=None, con=None, leituras=None):
+    def __init__(self, cfg=None, db=None, con=None):
 
         if not cfg:
             logger.warning("Um dicionário de configuração é necessário")
         else:
-            self.cfg = cfg
+            config_file = os.path.join(os.path.dirname(__file__), "cfg.json")
+            with open(config_file, "r") as file:
+                self.cfg = json.load(file)
 
         if not db:
             logger.warning("Não foi possível estabelecer a conexão com o banco de dados")
@@ -105,14 +108,6 @@ class Usina:
             auto_close=True
         )
 
-        self.nv_montante = LeituraModbus(
-            "Nível Montante",
-            self.clp_tda,
-            TDA["REG_TDA_NivelMaisCasasAntes"],
-            1 / 10000,
-            819.2,
-            op=4,
-        )
         self.tensao_rs = LeituraModbus(
             "Tensão R",
             self.clp_sa,
@@ -163,12 +158,23 @@ class Usina:
         self.escrever_valores()
 
     @property
-    def get_time(self):
+    def get_ugs(self) -> list:
+        return self.ugs
+
+    @property
+    def get_time(self) -> object:
         return datetime.now(pytz.timezone("Brazil/East")).replace(tzinfo=None)
 
     @property
     def nv_montante(self) -> float:
-        return self.nv_montante.valor
+        return LeituraModbus(
+            "Nível Montante",
+            self.clp_tda,
+            TDA["REG_TDA_NivelMaisCasasAntes"],
+            1 / 10000,
+            819.2,
+            op=4,
+        ).valor
 
     @property
     def pot_alvo_anterior(self) -> float:
@@ -300,9 +306,6 @@ class Usina:
         self.atualizar_limites_operacao(parametros)
 
     def escrever_valores(self) -> None:
-        if self.modo_autonomo:
-            self.con.modifica_controles_locais()
-
         try:
             valores = [
                 self.get_time.strftime("%Y-%m-%d %H:%M:%S"),  # timestamp
@@ -321,13 +324,11 @@ class Usina:
                 self.ug2.leitura_horimetro.valor,  # ug2_tempo
             ]
             self.db.update_valores_usina(valores)
-
         except Exception as e:
             logger.exception(e)
 
     def atualizar_cfg(self, parametros) -> None:
         self.cfg["TDA_slave_ip"] = parametros["clp_tda_ip"]
-
         self.cfg["kp"] = float(parametros["kp"])
         self.cfg["ki"] = float(parametros["ki"])
         self.cfg["kd"] = float(parametros["kd"])
@@ -337,7 +338,6 @@ class Usina:
         self.cfg["pot_maxima_alvo"] = float(parametros["pot_nominal"])
         self.cfg["pot_maxima_ug"] = float(parametros["pot_nominal_ug"])
         self.cfg["pot_maxima_usina"] = float(parametros["pot_nominal_ug"]) * 2
-
         self.cfg["cx_kp"] = float(parametros["cx_kp"])
         self.cfg["cx_ki"] = float(parametros["cx_ki"])
         self.cfg["cx_kie"] = float(parametros["cx_kie"])
@@ -347,34 +347,24 @@ class Usina:
         for ug in self.ugs:
             try:
                 ug.prioridade = int(parametros[f"ug{ug.id}_prioridade"])
-
                 ug.condicionador_temperatura_fase_r_ug.valor_base = float(parametros[f"alerta_temperatura_fase_r_ug{ug.id}"])
                 ug.condicionador_temperatura_fase_r_ug.valor_limite = float(parametros[f"limite_temperatura_fase_r_ug{ug.id}"])
-
                 ug.condicionador_temperatura_fase_s_ug.valor_base = float(parametros[f"alerta_temperatura_fase_s_ug{ug.id}"])
                 ug.condicionador_temperatura_fase_s_ug.valor_limite = float(parametros[f"limite_temperatura_fase_s_ug{ug.id}"])
-
                 ug.condicionador_temperatura_fase_t_ug.valor_base = float(parametros[f"alerta_temperatura_fase_t_ug{ug.id}"])
                 ug.condicionador_temperatura_fase_t_ug.valor_limite = float(parametros[f"limite_temperatura_fase_t_ug{ug.id}"])
-
                 ug.condicionador_temperatura_nucleo_gerador_1_ug.valor_base = float(parametros[f"alerta_temperatura_nucleo_gerador_1_ug{ug.id}"])
                 ug.condicionador_temperatura_nucleo_gerador_1_ug.valor_limite = float(parametros[f"limite_temperatura_nucleo_gerador_1_ug{ug.id}"])
-
                 ug.condicionador_temperatura_nucleo_gerador_2_ug.valor_base = float(parametros[f"alerta_temperatura_nucleo_gerador_2_ug{ug.id}"])
                 ug.condicionador_temperatura_nucleo_gerador_2_ug.valor_limite = float(parametros[f"limite_temperatura_nucleo_gerador_2_ug{ug.id}"])
-
                 ug.condicionador_temperatura_nucleo_gerador_3_ug.valor_base = float(parametros[f"alerta_temperatura_nucleo_gerador_3_ug{ug.id}"])
                 ug.condicionador_temperatura_nucleo_gerador_3_ug.valor_limite = float(parametros[f"limite_temperatura_nucleo_gerador_3_ug{ug.id}"])
-
                 ug.condicionador_temperatura_mancal_casq_rad_ug.valor_base = float(parametros[f"alerta_temperatura_mancal_casq_rad_ug{ug.id}"])
                 ug.condicionador_temperatura_mancal_casq_rad_ug.valor_limite = float(parametros[f"limite_temperatura_mancal_casq_rad_ug{ug.id}"])
-
                 ug.condicionador_temperatura_mancal_casq_comb_ug.valor_base = float(parametros[f"alerta_temperatura_mancal_casq_comb_ug{ug.id}"])
                 ug.condicionador_temperatura_mancal_casq_comb_ug.valor_limite = float(parametros[f"limite_temperatura_mancal_casq_comb_ug{ug.id}"])
-
                 ug.condicionador_temperatura_mancal_escora_comb_ug.valor_base = float(parametros[f"alerta_temperatura_mancal_escora_comb_ug{ug.id}"])
                 ug.condicionador_temperatura_mancal_escora_comb_ug.valor_limite = float(parametros[f"limite_temperatura_mancal_escora_comb_ug{ug.id}"])
-
                 ug.condicionador_caixa_espiral_ug.valor_base = float(parametros[f"alerta_caixa_espiral_ug{ug.id}"])
                 ug.condicionador_caixa_espiral_ug.valor_limite = float(parametros[f"limite_caixa_espiral_ug{ug.id}"])
 
@@ -630,7 +620,7 @@ class Usina:
 
                 self.db.update_agendamento(int(agendamento[0]), 1)
                 logger.info(f"O comando #{agendamento[0]} - {agendamento[5]} foi executado.")
-                self.con.somente_reconhecer_emergencia()
+                self.con.reconhecer_emergencia()
                 self.escrever_valores()
 
     def distribuir_potencia(self, pot_alvo):
