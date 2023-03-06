@@ -9,12 +9,13 @@ import traceback
 from time import sleep
 from datetime import datetime
 
-import src.usina as usina
 import src.conector as conector
 
+from src.reg import *
+from src.const import *
+from src.usina import *
 from src.logger import *
-from src.constantes import *
-from src.registradores import *
+from src.agendamentos import *
 from src.mensageiro import voip
 
 class StateMachine:
@@ -123,7 +124,7 @@ class ValoresInternosAtualizados(State):
             emergencia_condic=False
             return Emergencia(self.usina)
 
-        if len(self.usina.get_agendamentos_pendentes()) > 0:
+        if len(Agendamentos.agendamentos_pendentes()) > 0:
             return AgendamentosPendentes(self.usina)
 
         if not self.usina.modo_autonomo:
@@ -264,7 +265,7 @@ class AgendamentosPendentes(State):
 
     def run(self):
         logger.info("Tratando agendamentos")
-        self.usina.verificar_agendamentos()
+        Agendamentos.verificar_agendamentos()
         return ControleRealizado(self.usina)
 
 class ReservatorioAbaixoDoMinimo(State):
@@ -458,7 +459,7 @@ if __name__ == "__main__":
             db = conector.DatabaseConnector()
             logger.debug("Iniciando classe Usina")
             try:
-                usina = usina.Usina(cfg, db)
+                usina = Usina(cfg, db)
                 usina.ler_valores()
                 usina.normalizar_emergencia()
                 usina.aguardando_reservatorio = 0

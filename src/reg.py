@@ -23,7 +23,7 @@ VOIP = {
 }
 
 MOA = {
-        "REG_MOA_OUT_STATUS": 9,
+    "REG_MOA_OUT_STATUS": 9,
     "REG_SM_STATE": 10,
     "REG_MOA_OUT_MODE": 11,
     "REG_PAINEL_LIDO": 12,

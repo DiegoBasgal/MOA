@@ -10,7 +10,7 @@ from datetime import datetime
 
 from src.conector import *
 from src.leituras import *
-from src.registradores import *
+from src.reg import *
 from src.condicionadores import *
 from src.unidade_geracao_sm import *
 
@@ -67,6 +67,7 @@ class UnidadeDeGeracao:
 
         self.acionar_voip = False
         self.limpeza_grade = False
+        self.release_timer = False
         self.norma_agendada = False
         self.avisou_emerg_voip = False
         self.ler_condicionadores = False
@@ -276,7 +277,7 @@ class UnidadeDeGeracao:
             DEVE_INDISPONIBILIZAR,
             self.leitura_temperatura_mancal_casq_rad,
             self._temperatura_base,
-            self._temperatura_limite
+            self._temperatura_limite,
         )
         self.condicionadores_essenciais.append(self.condicionador_temperatura_mancal_casq_rad_ug)
 

@@ -6,9 +6,9 @@ from time import sleep, time
 from threading import Thread
 from datetime import datetime
 
+from src.reg import *
+from src.const import *
 from src.leituras import *
-from src.constantes import *
-from src.registradores import *
 from src.unidade_geracao import UnidadeDeGeracao
 
 logger = logging.getLogger("__main__")
@@ -282,6 +282,10 @@ class StateDisponivel(State):
                     logger.debug(f"[UG{self.parent.id}] Unidade sincronizada. Saindo do timer de verificação de partida")
                     self.release = True
                     return True
+                elif self.parent.release_timer:
+                    logger.debug(f"[UG{self.parent.id}] MOA entrou em modo manua. Saindo do timer de verificação de partida.")
+                    self.release = True
+                    return False
             logger.debug(f"[UG{self.parent.id}] A Unidade estourou o timer de verificação de partida, adicionando condição para normalizar")
             self.parent.clp_sa.write_single_coil([f"REG_UG{self.parent.id}_ComandosDigitais_MXW_EmergenciaViaSuper"], [1]) 
             self.release = True

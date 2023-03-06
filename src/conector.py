@@ -7,8 +7,8 @@ from datetime import datetime
 from mysql.connector import pooling
 from pyModbusTCP.client import ModbusClient
 
-from constantes import *
-from registradores import *
+from src.const import *
+from src.reg import *
 
 logger = logging.getLogger("__main__")
 
@@ -19,20 +19,7 @@ class ModbusFailedToFetch(Exception):
     pass
 
 class FieldConnector:
-    def __init__(self, cfg=None):
-
-        if cfg is None:
-            raise Exception("A CFG dict is required")
-        else:
-            self.ug1_ip = CFG["UG1_slave_ip"]
-            self.ug1_port = CFG["UG1_slave_porta"]
-            self.ug2_ip = CFG["UG2_slave_ip"]
-            self.ug2_port = CFG["UG2_slave_porta"]
-            self.sa_ip = CFG["USN_slave_ip"]
-            self.sa_port = CFG["USN_slave_ip"]
-            self.tda_ip = CFG["TDA_slave_ip"]
-            self.tda_port =  CFG["TDA_slave_ip"]
-
+    def __init__(self):
         self.ug1_clp = ModbusClient(
             host=CFG["UG1_slave_ip"],
             port=CFG["UG1_slave_porta"],
@@ -66,44 +53,40 @@ class FieldConnector:
             auto_close=True,
         )
 
-        self.warned_ug1 = False
-        self.warned_ug2 = False
         self.TDA_Offline = False
 
     def modifica_controles_locais(self):
-        if not self.TDA_Offline:
-            self.tda_clp.write_single_coil(TDA["REG_TDA_ComandosDigitais_MXW_ResetGeral"], 1)
-            self.tda_clp.write_single_coil(TDA["REG_TDA_ComandosDigitais_MXW_Hab_Nivel"], 0)
-            self.tda_clp.write_single_coil(TDA["REG_TDA_ComandosDigitais_MXW_Desab_Nivel"], 1)
-            self.tda_clp.write_single_coil(TDA["REG_TDA_ComandosDigitais_MXW_Hab_Religamento52L"], 0)
-            self.tda_clp.write_single_coil(TDA["REG_TDA_ComandosDigitais_MXW_Desab_Religamento52L"], 1)
-        else:
-            logger.debug("Não é possível modificar os controles locais pois o CLP da TDA se encontra offline")
+        try:
+            if not self.TDA_Offline:
+                self.tda_clp.write_single_coil(TDA["REG_TDA_ComandosDigitais_MXW_ResetGeral"], 1)
+                self.tda_clp.write_single_coil(TDA["REG_TDA_ComandosDigitais_MXW_Hab_Nivel"], 0)
+                self.tda_clp.write_single_coil(TDA["REG_TDA_ComandosDigitais_MXW_Desab_Nivel"], 1)
+                self.tda_clp.write_single_coil(TDA["REG_TDA_ComandosDigitais_MXW_Hab_Religamento52L"], 0)
+                self.tda_clp.write_single_coil(TDA["REG_TDA_ComandosDigitais_MXW_Desab_Religamento52L"], 1)
+            else:
+                logger.debug("[CON] Não é possível modificar os controles locais pois o CLP da TDA se encontra offline")
+        except Exception:
+            logger.error(f"[CON] Houve um erro ao modificar os controles locais.\nTraceback: {traceback.print_stack}")
 
-    def open(self):
-        logger.debug("Opening Modbus")
+    def open(self) -> None:
+        logger.debug("[CON] Iniciando conexão ModBus...")
         if not self.ug1_clp.open():
-            raise ModbusClientFailedToOpen(f"Modbus client ({self.ug1_ip}:{self.ug1_port}) failed to open.")
-
+            raise ModbusClientFailedToOpen(f"[CON] Modbus client ({self.ug1_ip}:{self.ug1_port}) failed to open.")
         if not self.ug2_clp.open():
-            raise ModbusClientFailedToOpen(f"Modbus client ({self.ug2_ip}:{self.ug2_port}) failed to open.")
-
+            raise ModbusClientFailedToOpen(f"[CON] Modbus client ({self.ug2_ip}:{self.ug2_port}) failed to open.")
         if not self.usn_clp.open():
-            raise ModbusClientFailedToOpen(f"Modbus client ({self.sa_ip}:{self.sa_port}) failed to open.")
-
+            raise ModbusClientFailedToOpen(f"[CON] Modbus client ({self.sa_ip}:{self.sa_port}) failed to open.")
         if not self.tda_clp.open():
-            raise ModbusClientFailedToOpen(f"Modbus client ({self.tda_ip}:{self.tda_port}) failed to open.")
+            raise ModbusClientFailedToOpen(f"[CON] Modbus client ({self.tda_ip}:{self.tda_port}) failed to open.")
+        logger.debug("[CON] Conexão inciada.")
 
-        logger.debug("Openned Modbus")
-        return self
-
-    def close(self):
-        logger.debug("Closing Modbus")
+    def close(self) -> None:
+        logger.debug("[CON] Encerrando conexão ModBus...")
         self.ug1_clp.close()
         self.ug2_clp.close()
         self.usn_clp.close()
         self.tda_clp.close()
-        logger.debug("Closed Modbus")
+        logger.debug("[CON] Conexão encerrada.")
 
     def fechaDj52L(self) -> bool:
         try:
@@ -127,7 +110,7 @@ class FieldConnector:
             self.ug1_clp.write_single_coil(UG["REG_UG1_ComandosDigitais_MXW_ResetGeral"], 1)
             self.ug2_clp.write_single_coil(UG["REG_UG2_ComandosDigitais_MXW_ResetGeral"], 1)
             self.usn_clp.write_single_coil(SA["REG_SA_ComandosDigitais_MXW_ResetGeral"], 1)
-            self.tda_clp.write_single_coil(TDA["REG_TDA_ComandosDigitais_MXW_ResetGeral"], 1) if not self.TDA_Offline else logger.debug("CLP TDA Offline, não há como realizar o reset geral")
+            self.tda_clp.write_single_coil(TDA["REG_TDA_ComandosDigitais_MXW_ResetGeral"], 1) if not self.TDA_Offline else logger.debug("[CON] CLP TDA Offline, não há como realizar o reset geral")
         except Exception:
             logger.error(f"[CON] Houve um erro ao realizar o reset geral.\nTraceback: {traceback.print_stack}")
 
@@ -158,42 +141,32 @@ class FieldConnector:
             if self.usn_clp.read_discrete_inputs(SA["REG_SA_RetornosDigitais_MXR_DJ1_FalhaInt"])[0] == 1:
                 logger.debug("[CON] Flag -> MXR_DJ1_FalhaInt")
                 flags += 1
-
             if self.usn_clp.read_discrete_inputs(SA["REG_SA_EntradasDigitais_MXI_SA_DisjDJ1_Local"])[0] == 1:
                 logger.debug("[CON] Flag -> DisjDJ1_Local")
                 flags += 1
-
             if self.usn_clp.read_discrete_inputs(SA["REG_SA_EntradasDigitais_MXI_SA_DisjDJ1_AlPressBaixa"])[0] == 1:
                 logger.debug("[CON] Flag -> DisjDJ1_AlPressBaixa")
                 flags += 1
-
             if self.usn_clp.read_discrete_inputs(SA["REG_SA_EntradasDigitais_MXI_SA_DisjDJ1_BloqPressBaixa"])[0] == 1:
                 logger.debug("[CON] Flag -> DisjDJ1_BloqPressBaixa")
                 flags += 1
-
             if self.usn_clp.read_discrete_inputs(SA["REG_SA_EntradasDigitais_MXI_SA_DisjDJ1_SuperBobAbert2"])[0] == 0:
                 logger.debug("[CON] Flag -> DisjDJ1_SuperBobAbert2")
                 flags += 1
-
             if self.usn_clp.read_discrete_inputs(SA["REG_SA_EntradasDigitais_MXI_SA_DisjDJ1_Sup125VccBoFeAb1"])[0] == 0:
                 logger.debug("[CON] Flag -> DisjDJ1_Sup125VccBoFeAb1")
                 flags += 1
-
             if self.usn_clp.read_discrete_inputs(SA["REG_SA_EntradasDigitais_MXI_SA_DisjDJ1_Super125VccCiMot"])[0] == 0:
                 logger.debug("[CON] Flag -> DisjDJ1_Super125VccCiMot")
                 flags += 1
-
             if self.usn_clp.read_discrete_inputs(SA["REG_SA_EntradasDigitais_MXI_SA_DisjDJ1_Super125VccCiCom"])[0] == 0:
                 logger.debug("[CON] Flag -> DisjDJ1_Super125VccCiCom")
                 flags += 1
-
             if self.usn_clp.read_discrete_inputs(SA["REG_SA_EntradasDigitais_MXI_SA_DisjDJ1_Sup125VccBoFeAb2"])[0] == 0:
                 logger.debug("[CON] Flag -> DisjDJ1_Sup125VccBoFeAb2")
                 flags += 1
-
             logger.info(f"[CON] Número de flags ativas: \"{flags}\"")
             return True if flags >= 1 else False
-
         except Exception:
             logger.error(f"[CON] Houve um erro ao ler as flags do Dj52L. Traceback: {traceback.print_stack}")
             return None
@@ -209,7 +182,7 @@ class DatabaseConnector:
             password="&264H3$M@&z$",
             database="django_db",
         )
-        
+
         self.conn = None
         self.cursor = None
         self.conn = self.connection_pool.get_connection()

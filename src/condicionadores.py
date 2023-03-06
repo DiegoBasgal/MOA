@@ -1,7 +1,6 @@
 __version__ = "0.1"
 __author__ = "Lucas Lavratti"
 
-from usina import usina
 from leituras import *
 
 class CondicionadorBase:
@@ -9,9 +8,9 @@ class CondicionadorBase:
         self.__descr = descr
         self.__leitura = leitura
         self.__gravidade = gravidade
-        self.__ugs = usina.get_ugs()
         self.__ug_id = ug_id if ug_id is not None else None
         self.__estados = estados if estados is not None else []
+        self.__ugs = []
 
     def __str__(self):
         return f"Condicionador: {self.__descr}, Gravidade: {self.__gravidade}"
@@ -22,17 +21,18 @@ class CondicionadorBase:
 
     @property
     def leitura(self):
-        return self.__leitura.valor
+        return self.__leitura
 
     @property
     def ativo(self) -> bool:
-        for ug in self.__ugs:
-            if ug.id == self.__ug_id and ug.etapa_atual in self.__estados:
-                return False if self.leitura == 0 else True
-            elif ug.id == self.__ug_id and self.__estados == []:
-                return False if self.leitura == 0 else True
-            else:
-                return False
+        if self.__ug_id is None or not self.__estados:
+            return False if self.leitura.valor == 0 else True
+        else:
+            for ug in self.__ugs:
+                if ug.id == self.__ug_id and ug.etapa_atual in self.__estados:
+                    return False if self.leitura.valor == 0 else True
+                else:
+                    return False
 
     @property
     def valor(self) -> float:
@@ -41,6 +41,9 @@ class CondicionadorBase:
     @property
     def gravidade(self) -> int:
         return self.__gravidade
+
+    def set_ugs(self, ugs: list) -> None:
+        self.__ugs = ugs
 
 class CondicionadorExponencial(CondicionadorBase):
     def __init__(
@@ -51,11 +54,15 @@ class CondicionadorExponencial(CondicionadorBase):
         valor_base: float,
         valor_limite: float,
         ordem: float = (1 / 4),
+        ug_id: int = None,
+        estados: list = None
     ):
-        super().__init__(descr, gravidade, leitura, ug_id=None, estados=None)
+        super().__init__(descr, gravidade, leitura)
         self.__ordem = ordem
         self.__valor_base = valor_base
         self.__valor_limite = valor_limite
+        self.__ug_id = ug_id if ug_id is not None else None
+        self.__estados = estados if estados is not None else []
 
     @property
     def valor_base(self):
@@ -83,23 +90,24 @@ class CondicionadorExponencial(CondicionadorBase):
 
     @property
     def ativo(self) -> bool:
-        for ug in self.__ugs:
-            if ug.id == self.__ug_id and ug.etapa_atual in self.__estados:
-                return True if self.valor >= 1 else False
-            elif ug.id == self.__ug_id and self.__estados == []:
-                return True if self.valor >= 1 else False
-            else:
-                return False
+        if self.__ug_id is None or not self.__estados:
+            return True if self.valor >= 1 else False
+        else:
+            for ug in self.__ugs:
+                if ug.id == self.__ug_id and ug.etapa_atual in self.__estados:
+                    return True if self.valor >= 1 else False
+                else:
+                    return False
 
     @property
     def valor(self) -> float:
-        v_temp = float(self.leitura)
+        v_temp = float(self.leitura.valor)
 
         if v_temp > self.valor_base and  v_temp < self.valor_limite:
             aux = (1 - (((self.valor_limite - v_temp) / (self.valor_limite - self.valor_base)) ** (self.ordem)).real)
             return max(min(aux, 1), 0)
 
-        if self.leitura > self.valor_limite:
+        if self.leitura.valor > self.valor_limite:
             return 1
 
         else:
@@ -115,7 +123,7 @@ class CondicionadorExponencialReverso(CondicionadorBase):
         valor_limite: float,
         ordem: float = 2,
     ):
-        super().__init__(descr, gravidade, leitura, ug_id=None, estados=None)
+        super().__init__(descr, gravidade, leitura)
         self.__ordem = ordem
         self.__valor_base = valor_base
         self.__valor_limite = valor_limite
