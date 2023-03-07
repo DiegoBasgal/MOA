@@ -2,36 +2,52 @@ import pytz
 import logging
 import traceback
 
-import os
-import json
-
-from time import sleep
+from time import sleep, time
+from threading import Thread
 from datetime import datetime
 
-from src.conector import *
-from src.leituras import *
-from src.reg import *
-from src.condicionadores import *
-from src.unidade_geracao_sm import *
+from conector import *
+from leituras import *
+from condicionadores import *
+from dicionarios.reg import *
+from dicionarios.const import *
+from maquinas_estado.unidade_geracao import *
 
 logger = logging.getLogger("__main__")
 
-# Class Stub
 class UnidadeDeGeracao:
-    ...
-
-class UnidadeDeGeracao:
-    def __init__(self, id: int, cfg=None):
-
-        if not cfg:
+    def __init__(
+            self,
+            id: int,
+            shared_dict=None,
+            con: FieldConnector=None,
+            db: DatabaseConnector=None
+        ):
+        if id == 0:
+            logger.error("[USN] A Unidade não pode ser instanciada com o ID -> \"0\".")
             raise ValueError
         else:
-            config_file = os.path.join(os.path.dirname(__file__), "cfg.json")
-            with open(config_file, "r") as file:
-                self.cfg = json.load(file)
+            self.__id = id
+
+        if not shared_dict:
+            logger.error("[USN] Não foi possível carregar o dicionário compartilhado.")
+            raise ValueError
+        else:
+            self.dict = shared_dict
+
+        if not db:
+            logger.error("[USN] Não foi possível estabelecer a conexão com o banco de dados.")
+            raise ConnectionError
+        else:
+            self.db = db
+
+        if not con:
+            logger.error("[USN] Não foi possível estabelecer a conexão com as leituras de campo.")
+            raise ConnectionError
+        else:
+            self.con = con
 
         # Variáveis privadas
-        self.__id = id
         self.__etapa_alvo = 0
         self.__etapa_atual = 0
         self.__last_EtapaAtual = 0
@@ -56,10 +72,12 @@ class UnidadeDeGeracao:
         self._condicionadores_essenciais = []
         self._condicionadores_atenuadores = []
 
-        self._cx_kp = self.cfg["cx_kp"]
-        self._cx_ki = self.cfg["cx_ki"]
-        self._cx_kie = self.cfg["cx_kie"]
-        
+        self._cx_kp = self.dict.CFG["cx_kp"]
+        self._cx_ki = self.dict.CFG["cx_ki"]
+        self._cx_kie = self.dict.CFG["cx_kie"]
+
+        self._lista_ugs = list([UnidadeDeGeracao])
+
         # Variáveis públicas
         self.modo_autonomo = 1
         self.cx_ajuste_ie = 0.1
@@ -74,35 +92,32 @@ class UnidadeDeGeracao:
         self.enviar_trip_eletrico = False
         self.aux_tempo_sincronizada = None
 
-        self.pressao_alvo = self.cfg["press_cx_alvo"]
-        self.setpoint_minimo = self.cfg["pot_minima"]
-        self.setpoint_maximo = self.cfg[f"pot_maxima_ug{self.id}"]
+        self.pressao_alvo = self.dict.IP["press_cx_alvo"]
+        self.setpoint_minimo = self.dict.IP["pot_minima"]
+        self.setpoint_maximo = self.dict.IP[f"pot_maxima_ug{self.id}"]
 
-        # Classes públicas
-        self.con = FieldConnector()
-        self.db = DatabaseConnector()
-        self.ts_auxiliar = datetime.now(pytz.timezone("Brazil/East")).replace(tzinfo=None)
+        self.ts_auxiliar = self.get_time
 
         # Clients modbus
         self.clp_ug = ModbusClient(
-            host=CFG[f"UG{self.id}_slave_ip"],
-            port=CFG[f"UG{self.id}_slave_porta"],
+            host=self.dict.IP[f"UG{self.id}_slave_ip"],
+            port=self.dict.IP[f"UG{self.id}_slave_porta"],
             timeout=0.5,
             unit_id=1,
             auto_open=True,
             auto_close=True,
         )
         self.clp_sa = ModbusClient(
-            host=CFG["USN_slave_ip"],
-            port=CFG["USN_slave_porta"],
+            host=self.dict.IP["USN_slave_ip"],
+            port=self.dict.IP["USN_slave_porta"],
             timeout=0.5,
             unit_id=1,
             auto_open=True,
             auto_close=True,
         )
         self.clp_moa = ModbusClient(
-            host=CFG["MOA_slave_ip"],
-            port=CFG["MOA_slave_porta"],
+            host=self.dict.IP["MOA_slave_ip"],
+            port=self.dict.IP["MOA_slave_porta"],
             timeout=0.5,
             unit_id=1,
             auto_open=True,
@@ -179,7 +194,7 @@ class UnidadeDeGeracao:
         self.condicionador_temperatura_fase_r_ug = CondicionadorExponencial(
             self.leitura_temperatura_fase_R.descr, 
             DEVE_INDISPONIBILIZAR, 
-            self.leitura_temperatura_fase_R, 
+            self.leitura_temperatura_fase_R,
             self._temperatura_base, 
             self._temperatura_limite
         )
@@ -362,7 +377,7 @@ class UnidadeDeGeracao:
             else:
                 return self.__last_EtapaAtual
         except Exception:
-            logger.error(f"[UG{self.id}] Não foi possível realizar a leitura da etapa atual.\nException: \"{traceback.format_exc()}\"")
+            logger.error(f"[UG{self.id}] Não foi possível realizar a leitura da etapa atual.\nException: \"{traceback.print_stack}\"")
             return False
 
     @property
@@ -377,7 +392,7 @@ class UnidadeDeGeracao:
                 self.__last_EtapaAlvo = self.etapa_atual
                 return self.__last_EtapaAlvo
         except Exception:
-            logger.error(f"[UG{self.id}] Não foi possível realizar a leitura da etapa alvo.\nException: \"{traceback.format_exc()}\"")
+            logger.error(f"[UG{self.id}] Não foi possível realizar a leitura da etapa alvo.\nException: \"{traceback.print_stack}\"")
             return False
 
     @property
@@ -388,6 +403,9 @@ class UnidadeDeGeracao:
     def limite_tentativas_de_normalizacao(self) -> int:
         return self.__limite_tentativas_de_normalizacao
 
+    @property
+    def get_time(self) -> object:
+        return datetime.now(pytz.timezone("Brazil/East")).replace(tzinfo=None)
 
     # Property/Setter Protegidas
     @property
@@ -527,6 +545,13 @@ class UnidadeDeGeracao:
     def condicionadores_atenuadores(self, var: list([CondicionadorBase])):
         self._condicionadores_atenuadores = var
 
+    @property
+    def lista_ugs(self) -> list:
+        return self._lista_ugs
+
+    @lista_ugs.setter
+    def lista_ugs(self, var: list) -> None:
+        self._lista_ugs = var
 
     # Funções
     def step(self) -> None:
@@ -536,7 +561,7 @@ class UnidadeDeGeracao:
             self.__next_state = self.__next_state.step()
             self.modbus_update_state_register()
         except Exception as e:
-            logger.error(f"[UG{self.id}] Erro na execução da máquina de estados -> step.\nException: {traceback.format_exc()}")
+            logger.error(f"[UG{self.id}] Erro na execução da máquina de estados -> step.\nException: {traceback.print_stack}")
             raise e
 
     def interstep(self) -> None:
@@ -546,15 +571,15 @@ class UnidadeDeGeracao:
             elif self.condicionador_caixa_espiral_ug.valor < 0.05:
                 self.avisou_emerg_voip = False
         except Exception as e:
-            logger.error(f"[UG{self.id}] Erro na execução da máquina de estados -> interstep.\nException: {traceback.format_exc()}")
+            logger.error(f"[UG{self.id}] Erro na execução da máquina de estados -> interstep.\nException: {traceback.print_stack}")
             raise e
 
     def modbus_update_state_register(self) -> None:
         try:
-            self.clp_moa.write_single_coil(self.cfg[f"REG_MOA_OUT_STATE_UG{self.id}"], [self.codigo_state])
-            self.clp_moa.write_single_coil(self.cfg[f"REG_MOA_OUT_ETAPA_UG{self.id}"], [self.etapa_atual])
+            self.clp_moa.write_single_coil(MOA[f"REG_MOA_OUT_STATE_UG{self.id}"], [self.codigo_state])
+            self.clp_moa.write_single_coil(MOA[f"REG_MOA_OUT_ETAPA_UG{self.id}"], [self.etapa_atual])
         except Exception as e:
-            logger.error(f"[UG{self.id}] Não foi possível escrever os valores no CLP MOA.\nException: {traceback.format_exc()}")
+            logger.error(f"[UG{self.id}] Não foi possível escrever os valores no CLP MOA.\nException: {traceback.print_stack}")
             raise e
 
     def carregar_parametros(self, parametros: dict) -> None:
@@ -565,7 +590,7 @@ class UnidadeDeGeracao:
                 setattr(self, key, val)
                 logger.debug(f"[UG{self.id}] Variavél carregada: {key} = {val}.")
         except Exception as e:
-            logger.error(f"[UG{self.id}] Não foi possível carregar os parâmetros.\nException: {traceback.format_exc()}")
+            logger.error(f"[UG{self.id}] Não foi possível carregar os parâmetros.\nException: {traceback.print_stack}")
             raise e
 
     def partir(self) -> bool:
@@ -589,7 +614,7 @@ class UnidadeDeGeracao:
                 logger.debug(f"[UG{self.id}] A UG já está sincronizada.")
                 response = self.clp_ug.write_single_coil(UG[f"REG_UG{self.id}_ComandosDigitais_MXW_Cala_Sirene"], 1)
         except Exception:
-            logger.error(f"[UG{self.id}] Não foi possível partir a UG.\nException: \"{traceback.format_exc()}\"")
+            logger.error(f"[UG{self.id}] Não foi possível partir a UG.\nException: \"{traceback.print_stack}\"")
             return False
         else:
             return response
@@ -607,7 +632,7 @@ class UnidadeDeGeracao:
                 logger.debug(f"[UG{self.id}] A unidade já está parada.")
                 response = self.clp_ug.write_single_coil(UG["REG_UG1_ComandosDigitais_MXW_Cala_Sirene"], 1)
         except Exception:
-            logger.error(f"[UG{self.id}] Não foi possível partir a UG.\nException: \"{traceback.format_exc()}\"")
+            logger.error(f"[UG{self.id}] Não foi possível partir a UG.\nException: \"{traceback.print_stack}\"")
             return False
         else:
             return response
@@ -622,7 +647,7 @@ class UnidadeDeGeracao:
                 response = self.clp_ug.write_single_coil(UG[f"REG_UG{self.id}_ComandosDigitais_MXW_RV_RefRemHabilita"], 1)
                 response = self.clp_ug.write_single_register(UG[f"REG_UG{self.id}_SaidasAnalogicas_MWW_SPPotAtiva"], self.setpoint)
         except Exception:
-            logger.error(f"[UG{self.id}] Não foi possivel enviar o setpoint.\nException: {traceback.format_exc()}")
+            logger.error(f"[UG{self.id}] Não foi possivel enviar o setpoint.\nException: {traceback.print_stack}")
             return False
         else:
             return response
@@ -632,7 +657,7 @@ class UnidadeDeGeracao:
             logger.debug(f"[UG{self.id}] Acionando TRIP -> Lógico.")
             response = self.clp_ug.write_single_coil(UG[f"REG_UG{self.id}_ComandosDigitais_MXW_EmergenciaViaSuper"], 1)
         except Exception:
-            logger.error(f"[UG{self.id}] Não foi possivel acionar o TRIP lógico.\nException: {traceback.format_exc()}")
+            logger.error(f"[UG{self.id}] Não foi possivel acionar o TRIP lógico.\nException: {traceback.print_stack}")
             return False
         else:
             return response
@@ -644,7 +669,7 @@ class UnidadeDeGeracao:
             response = self.clp_ug.write_single_coil(UG[f"REG_UG{self.id}_EntradasDigitais_MXI_ReleBloqA86HAtuado"], 0)
             response = self.clp_ug.write_single_coil(UG[f"REG_UG{self.id}_RetornosDigitais_MXR_700G_Trip"], 0)
         except Exception:
-            logger.error(f"[UG{self.id}] Não foi possível remover o TRIP lógico.\nException: \"{traceback.format_exc()}\"")
+            logger.error(f"[UG{self.id}] Não foi possível remover o TRIP lógico.\nException: \"{traceback.print_stack}\"")
             return False
         else:
             return response
@@ -653,9 +678,9 @@ class UnidadeDeGeracao:
         try:
             self.enviar_trip_eletrico = True
             logger.debug(f"[UG{self.id}] Acionando TRIP -> Elétrico.")
-            self.clp_moa.write_single_coil(self.cfg[f"REG_MOA_OUT_BLOCK_UG{self.id}"], [1])
+            self.clp_moa.write_single_coil(MOA[f"REG_MOA_OUT_BLOCK_UG{self.id}"], [1])
         except Exception:
-            logger.error(f"[UG{self.id}] Não foi possível acionar o TRIP elétrico.\nException: \"{traceback.format_exc()}\"")
+            logger.error(f"[UG{self.id}] Não foi possível acionar o TRIP elétrico.\nException: \"{traceback.print_stack}\"")
             return False
         else:
             return True
@@ -666,16 +691,15 @@ class UnidadeDeGeracao:
                 logger.debug(f"[UG{self.id}] Comando recebido -> Fechando DJ52L.")
                 self.con.fechaDj52L()
         except Exception:
-            logger.error(f"[UG{self.id}] Não foi possível fechar o DJ52L.\nException: \"{traceback.format_exc()}\"")
+            logger.error(f"[UG{self.id}] Não foi possível fechar o DJ52L.\nException: \"{traceback.print_stack}\"")
 
         try:
             self.enviar_trip_eletrico = False
             logger.debug(f"[UG{self.id}] Removendo TRIP -> Elétrico.")
-            self.clp_moa.write_single_coil(self.cfg[f"REG_MOA_OUT_BLOCK_UG{self.id}"], [0])
-            self.clp_moa.write_single_coil(self.cfg["REG_PAINEL_LIDO"], [0])
+            self.clp_moa.write_single_coil(MOA[f"REG_MOA_OUT_BLOCK_UG{self.id}"], [0])
             response = self.clp_ug.write_single_coil(UG[f"REG_UG{self.id}_ComandosDigitais_MXW_Cala_Sirene"], 1)
         except Exception:
-            logger.error(f"[UG{self.id}] Não foi possível remover o TRIP elétrico.\nException: \"{traceback.format_exc()}\"")
+            logger.error(f"[UG{self.id}] Não foi possível remover o TRIP elétrico.\nException: \"{traceback.print_stack}\"")
             return False
         else:
             return response
@@ -689,10 +713,10 @@ class UnidadeDeGeracao:
                 sleep(1)
                 self.remover_trip_logico()
                 sleep(1)
-                self.clp_moa.write_single_coil(self.cfg["REG_PAINEL_LIDO"], [0])
+                self.clp_moa.write_single_coil(MOA["REG_PAINEL_LIDO"], [0])
                 sleep(1)
         except:
-            logger.error(f"[UG{self.id}] Não foi possivel enviar o comando de reconhecer e resetar alarmes.\nException: {traceback.format_exc()}")
+            logger.error(f"[UG{self.id}] Não foi possivel enviar o comando de reconhecer e resetar alarmes.\nException: {traceback.print_stack}")
             return False
         else:
             return True
@@ -701,7 +725,7 @@ class UnidadeDeGeracao:
         try:
             self.__next_state = StateManual(self)
         except Exception:
-            logger.error(f"[UG{self.id}] Não foi possivel forçar o estado manual.\nException: {traceback.format_exc()}")
+            logger.error(f"[UG{self.id}] Não foi possivel forçar o estado manual.\nException: {traceback.print_stack}")
             return False
         else:
             return True
@@ -710,7 +734,7 @@ class UnidadeDeGeracao:
         try:
             self.__next_state = StateRestrito(self)
         except Exception:
-            logger.error(f"[UG{self.id}] Não foi possivel forçar o estado restrito.\nException: {traceback.format_exc()}")
+            logger.error(f"[UG{self.id}] Não foi possivel forçar o estado restrito.\nException: {traceback.print_stack}")
             return False
         else:
             return True
@@ -719,7 +743,7 @@ class UnidadeDeGeracao:
         try:
             self.__next_state = StateIndisponivel(self)
         except Exception:
-            logger.error(f"[UG{self.id}] Não foi possivel forçar o estado indisponível.\nException: {traceback.format_exc()}")
+            logger.error(f"[UG{self.id}] Não foi possivel forçar o estado indisponível.\nException: {traceback.print_stack}")
             return False
         else:
             return True
@@ -730,30 +754,30 @@ class UnidadeDeGeracao:
             sleep(1)
             self.__next_state = StateDisponivel(self)
         except Exception:
-            logger.error(f"[UG{self.id}] Não foi possivel forçar o estado disponível.\nException: {traceback.format_exc()}")
+            logger.error(f"[UG{self.id}] Não foi possivel forçar o estado disponível.\nException: {traceback.print_stack}")
             return False
         else:
             return True
 
     def controle_cx_espiral(self) -> None:
-        self.cx_kp = (self.leitura_caixa_espiral.valor - self.cfg["press_cx_alvo"]) * self.cfg["cx_kp"]
-        self.cx_ajuste_ie = (self.leitura_potencia.valor + self.leitura_potencia_outra_ug.valor) / self.cfg["pot_maxima_alvo"]
+        self.cx_kp = (self.leitura_caixa_espiral.valor - self.dict.CFG["press_cx_alvo"]) * self.dict.CFG["cx_kp"]
+        self.cx_ajuste_ie = (self.leitura_potencia.valor + self.leitura_potencia_outra_ug.valor) / self.dict.CFG["pot_maxima_alvo"]
         self.cx_ki = self.cx_ajuste_ie - self.cx_kp
 
         erro_press_cx = 0
-        erro_press_cx = self.leitura_caixa_espiral.valor - self.cfg["press_cx_alvo"]
+        erro_press_cx = self.leitura_caixa_espiral.valor - self.dict.CFG["press_cx_alvo"]
 
         logger.debug(f"[UG{self.id}] Pressão Alvo: {self.pressao_alvo:0.3f}, Recente: {self.leitura_caixa_espiral.valor:0.3f}")
 
-        self.cx_controle_p = self.cfg["cx_kp"] * erro_press_cx
-        self.cx_controle_i = max(min((self.cfg["cx_ki"] * erro_press_cx) + self.cx_controle_i, 1), 0)
+        self.cx_controle_p = self.dict.CFG["cx_kp"] * erro_press_cx
+        self.cx_controle_i = max(min((self.dict.CFG["cx_ki"] * erro_press_cx) + self.cx_controle_i, 1), 0)
         saida_pi = self.cx_controle_p + self.cx_controle_i
-        
+
         logger.debug(f"[UG{self.id}] PI: {saida_pi:0.3f} <-- P: {self.cx_controle_p:0.3f} + I: {self.cx_controle_i:0.3f}; ERRO={erro_press_cx}")
 
-        self.cx_controle_ie = max(min(saida_pi + self.cx_ajuste_ie * self.cfg["cx_kie"], 1), 0)
+        self.cx_controle_ie = max(min(saida_pi + self.cx_ajuste_ie * self.dict.CFG["cx_kie"], 1), 0)
 
-        pot_alvo = max(min(round(self.cfg[f"pot_maxima_ug{self.id}"] * self.cx_controle_ie, 5), self.cfg[f"pot_maxima_ug{self.id}"],),self.cfg["pot_minima"],)
+        pot_alvo = max(min(round(self.dict.CFG[f"pot_maxima_ug{self.id}"] * self.cx_controle_ie, 5), self.dict.CFG[f"pot_maxima_ug{self.id}"],),self.dict.CFG["pot_minima"],)
 
         logger.debug(f"[UG{self.id}] Pot alvo: {pot_alvo:0.3f}")
 
@@ -762,10 +786,10 @@ class UnidadeDeGeracao:
         try:
             self.db.insert_debug(
                 datetime.now(pytz.timezone("Brazil/East")).timestamp(),
-                self.cfg["kp"],
-                self.cfg["ki"],
-                self.cfg["kd"],
-                self.cfg["kie"],
+                self.dict.CFG["kp"],
+                self.dict.CFG["ki"],
+                self.dict.CFG["kd"],
+                self.dict.CFG["kie"],
                 0, # cp
                 0, # ci
                 0, # cd
@@ -777,13 +801,13 @@ class UnidadeDeGeracao:
                 0, # nivel
                 erro_press_cx,
                 1, # modo autonomo
-                self.cfg["cx_kp"],
-                self.cfg["cx_ki"],
-                self.cfg["cx_kie"],
+                self.dict.IP["cx_kp"],
+                self.dict.IP["cx_ki"],
+                self.dict.IP["cx_kie"],
                 self.cx_controle_ie,
             )
         except Exception:
-            logger.error(f"[UG{self.id}] Não foi possivel inserir dados no Banco.\nException: {traceback.format_exc()}")
+            logger.error(f"[UG{self.id}] Não foi possivel inserir dados no Banco.\nException: {traceback.print_stack}")
 
     def controle_limites_operacao(self) -> None:
         fase_r = [self.leitura_temperatura_fase_R.valor, self.condicionador_temperatura_fase_r_ug.valor_base, self.condicionador_temperatura_fase_r_ug.valor_limite]
@@ -846,6 +870,3 @@ class UnidadeDeGeracao:
             logger.warning(f"[UG{self.id}] A pressão Caixa Espiral da UG passou do valor base! ({caixa_espiral[1]:03.2f} KGf/m2) | Leitura: {caixa_espiral[0]:03.2f}")
         if caixa_espiral[0] <= caixa_espiral[2]+0.9*(caixa_espiral[1] - caixa_espiral[2]) and caixa_espiral[0] != 0 and self.etapa_atual == UNIDADE_SINCRONIZADA:
             logger.critical(f"[UG{self.id}] A pressão Caixa Espiral da UG está muito próxima do limite! ({caixa_espiral[2]:03.2f} KGf/m2) | Leitura: {caixa_espiral[0]:03.2f} KGf/m2")
-
-    def leituras_por_hora(self) -> None:
-        raise NotImplementedError

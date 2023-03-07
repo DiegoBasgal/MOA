@@ -14,7 +14,7 @@ class CondicionadorBase:
 
     def __str__(self):
         return f"Condicionador: {self.__descr}, Gravidade: {self.__gravidade}"
-    
+
     @property
     def descr(self):
         return self.__descr

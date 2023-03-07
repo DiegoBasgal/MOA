@@ -1,34 +1,46 @@
+import os
 import pytz
 import logging
 
 from datetime import datetime, timedelta
 
-from src.usina import *
-from src.conector import *
+from usina import *
+from conector import *
 
 logger = logging.getLogger("__main__")
 
 class Agendamentos:
-    def __init__(self) -> None:
+    def __init__(self, shared_dict=None, db: DatabaseConnector=None, ugs: list([UnidadeDeGeracao])=None):
+        if not shared_dict:
+            logger.warning("[AGN] Não foi possível carregar o arquivo de configuração.")
+            raise ValueError
+        else:
+            self.dict = shared_dict
+
+        if not db:
+            logger.warning("[AGN] Não foi possível estabelecer a conexão com o banco de dados.")
+            raise ConnectionError
+        else:
+            self.db = db
+
+        if not ugs:
+            logger.warning("[AGN] Não foi possível estabelecer a conexão com as leituras de campo.")
+            raise ValueError
+        else:
+            self.ugs = ugs
+            self.ug1 = ugs[0]
+            self.ug2 = ugs[1]
+
         self.agn_atrasados = 0
         self.segundos_passados = 0
         self.segundos_adiantados = 0
 
-        self.db = DatabaseConnector()
-
-        self.ugs = Usina.get_ugs
-        self.ug1 = self.ugs[0]
-        self.ug2 = self.ugs[1]
-
-        config_file = os.path.join(os.path.dirname(__file__), "cfg.json")
-        with open(config_file, "r") as file:
-            self.cfg = json.load(file)
-
+    @property
     def get_time(self) -> object:
         return datetime.now(pytz.timezone("Brazil/East")).replace(tzinfo=None)
 
     def verificar_agendamentos(self) -> bool:
-        agora = self.get_time()
+        agora = self.get_time
         agendamentos = self.agendamentos_pendentes()
         if agendamentos is None:
             return False
@@ -164,7 +176,7 @@ class Agendamentos:
         if agendamento[3] == AGENDAMENTO_ALTERAR_NV_ALVO:
             try:
                 novo = float(agendamento[5].replace(",", "."))
-                self.cfg["nv_alvo"] = novo
+                self.dict.CFG["nv_alvo"] = novo
             except Exception:
                 logger.exception(f"[AGN] Valor inválido no agendamento: {agendamento[0]} ({agendamento[3]} é inválido).")
                 return False
@@ -172,12 +184,12 @@ class Agendamentos:
         if agendamento[3] == AGENDAMENTO_BAIXAR_POT_UGS_MINIMO:
             try:
                 for ug in self.ugs:
-                    self.cfg[f"pot_maxima_ug{ug.id}"] = self.cfg["pot_minima"]
+                    self.dict.CFG[f"pot_maxima_ug{ug.id}"] = self.dict.CFG["pot_minima"]
                     if ug.etapa_atual == UNIDADE_PARADA or ug.etapa_alvo == UNIDADE_PARADA:
                         logger.debug(f"[AGN] A UG{ug.id} já está no estado parada/parando.")
                     else:
-                        logger.debug(f"[AGN] Enviando o setpoint mínimo ({self.cfg['pot_minima']}) para a UG{ug.id}")
-                        ug.enviar_setpoint(self.cfg["pot_minima"])
+                        logger.debug(f"[AGN] Enviando o setpoint mínimo ({self.dict.CFG['pot_minima']}) para a UG{ug.id}")
+                        ug.enviar_setpoint(self.dict.CFG["pot_minima"])
 
             except Exception as e:
                 logger.exception(f"[AGN] Houve um erro ao atribuir a potência mínima das UGs.\nTraceback: {traceback.print_stack}")
@@ -186,8 +198,8 @@ class Agendamentos:
         if agendamento[3] == AGENDAMENTO_NORMALIZAR_POT_UGS_MINIMO:
             try:
                 for ug in self.ugs:
-                    self.cfg[f"pot_maxima_ug{ug.id}"] = self.cfg["pot_maxima_ug"]
-                    ug.enviar_setpoint(self.cfg["pot_maxima_ug"])
+                    self.dict.CFG[f"pot_maxima_ug{ug.id}"] = self.dict.CFG["pot_maxima_ug"]
+                    ug.enviar_setpoint(self.dict.CFG["pot_maxima_ug"])
             except Exception:
                 logger.debug(f"[AGN] Houve um erro ao executar o agendamento de normalizar a potência das UGs.\nTraceback: {traceback.print_stack}")
                 return False
@@ -213,7 +225,7 @@ class Agendamentos:
         if agendamento[3] == AGENDAMENTO_UG1_ALTERAR_POT_LIMITE:
             try:
                 novo = float(agendamento[5].replace(",", "."))
-                self.cfg["pot_maxima_ug1"] = novo
+                self.dict.CFG["pot_maxima_ug1"] = novo
                 self.ug1.pot_disponivel = novo
             except Exception:
                 logger.exception(f"[AGN] Valor inválido no agendamento: {agendamento[0]} ({agendamento[3]} é inválido)")
@@ -248,7 +260,7 @@ class Agendamentos:
         if agendamento[3] == AGENDAMENTO_UG2_ALTERAR_POT_LIMITE:
             try:
                 novo = float(agendamento[5].replace(",", "."))
-                self.cfg["pot_maxima_ug2"] = novo
+                self.dict.CFG["pot_maxima_ug2"] = novo
                 self.ug2.pot_disponivel = novo
             except Exception as e:
                 logger.exception(f"[AGN] Valor inválido no agendamento: {agendamento[0]} ({agendamento[3]} é inválido)")
@@ -284,7 +296,7 @@ class Agendamentos:
             try:
                 novo = float(agendamento[5].replace(",", "."))
                 for ug in self.ugs:
-                    self.cfg[f"pot_maxima_ug{ug.id}"] = novo
+                    self.dict.CFG[f"pot_maxima_ug{ug.id}"] = novo
                     ug.pot_disponivel = novo
             except Exception:
                 logger.exception(f"[AGN] Valor inválido no agendamento: {agendamento[0]} ({agendamento[3]} é inválido)")

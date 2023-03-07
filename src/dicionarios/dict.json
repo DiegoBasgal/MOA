@@ -1,0 +1,67 @@
+{
+    "IP":{
+        "MP_ip": "10.101.2.215",
+        "MP_port": 8001,
+        "MR_ip": "10.101.2.215",
+        "MR_port": 8002,
+        "MPMR_scale": -7,
+        "UG1_slave_ip": "10.101.2.215",
+        "UG1_slave_porta": 5003,
+        "UG2_slave_ip": "10.101.2.215",
+        "UG2_slave_porta": 5003,
+        "USN_slave_ip": "10.101.2.215",
+        "USN_slave_porta": 5003,
+        "TDA_slave_ip": "10.101.2.215",
+        "TDA_slave_porta": 5003,
+        "MOA_slave_ip": "172.21.15.95",
+        "MOA_slave_porta": 502
+    },
+
+    "CFG": {
+        "kp": 2.0,
+        "ki": 0.1,
+        "kd": 0.0,
+        "kie": 0.1,
+        "saida_ie_inicial": 0.1,
+
+        "cx_kp": 2.0,
+        "cx_ki": 0.1,
+        "cx_kie": 0.0,
+        "press_cx_alvo": 16.2,
+
+        "timeout_padrao": 5,
+        "timeout_emergencia": 10,
+        "timeout_normalizacao": 10,
+
+        "nv_alvo": 820.9,
+        "nv_maximo": 821,
+        "nv_minimo": 820.8,
+        "nv_maximorum": 825,
+        "nv_fundo_reservatorio": 820.5,
+        
+        "pot_minima": 200.0,
+        "pot_maxima_ug": 500.0,
+        "pot_maxima_ug1": 500.0,
+        "pot_maxima_ug2": 500.0,
+        "pot_maxima_alvo": 1000.0,
+        "pot_maxima_usina": 1000.0,
+        "margem_pot_critica": 0.1,
+        
+        "TENSAO_LINHA_BAIXA": 32775,
+        "TENSAO_LINHA_ALTA": 36225
+    },
+
+    "GLB": {
+        "tda_offline": false,
+        "borda_tensao": false,
+        "avisado_em_eletrica": false
+    },
+
+    "VOIP":{
+        "QCAUGRemoto": false,
+        "FreioCmdRemoto": false,
+        "TDA_FalhaComum": false,
+        "BombasDngRemoto": false,
+        "Disj_GDE_QCAP_Fechado": false
+    }
+}

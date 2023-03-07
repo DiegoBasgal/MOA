@@ -6,16 +6,27 @@ from time import sleep, time
 from threading import Thread
 from datetime import datetime
 
-from src.reg import *
-from src.const import *
-from src.leituras import *
+from conector import *
+from leituras import *
+from condicionadores import *
+from dicionarios.reg import *
+from dicionarios.const import *
+from src.ocorrencias import Ocorrencias
 from src.unidade_geracao import UnidadeDeGeracao
 
-logger = logging.getLogger("__main__")
-
 class State:
-    def __init__(self, parent: UnidadeDeGeracao):
-        self.parent = parent
+    def __init__(self, parent: UnidadeDeGeracao=None, ocorrencias: Ocorrencias=None):
+        if not parent:
+            logger.error("HOuve um erro ao importar a instância da Unidade de Geração")
+            raise ReferenceError
+        else:
+            self.parent = parent
+        
+        if not ocorrencias:
+            logger.error("Houve um erro ao importar a classe de Ocorrências.")
+            raise ReferenceError
+        else:
+            self.ocorrencias = ocorrencias
 
     def step(self) -> object:
         pass
@@ -25,8 +36,9 @@ class State:
         return datetime.now(pytz.timezone("Brazil/East")).replace(tzinfo=None)
 
 class StateManual(State):
-    def __init__(self, parent: UnidadeDeGeracao):
-        super().__init__(parent)
+    def __init__(self):
+        super().__init__(parent=None, ocorrencias=None)
+
         self.parent.codigo_state = MOA_UNIDADE_MANUAL
         logger.info(f"[UG{self.parent.id}] Entrando no estado: \"Manual\". Para retornar a operação autônoma, favor agendar na interface web")
 
@@ -35,9 +47,11 @@ class StateManual(State):
         return self
 
 class StateIndisponivel(State):
-    def __init__(self, parent: UnidadeDeGeracao):
-        super().__init__(parent)
+    def __init__(self):
+        super().__init__(parent=None, ocorrencias=None)
+
         self.parent.codigo_state = MOA_UNIDADE_INDISPONIVEL
+
         self.selo = False
         self.parent.__next_state = self
         logger.info(f"[UG{self.parent.id}] Entrando no estado: \"Indisponível\". Para retornar a operação autônoma, favor agendar na interface web")
@@ -52,31 +66,16 @@ class StateIndisponivel(State):
         return self
 
 class StateRestrito(State):
-    def __init__(self, parent: UnidadeDeGeracao):
-        super().__init__(parent)
+    def __init__(self):
+        super().__init__(parent=None, ocorrencias=None)
+
         self.parent.codigo_state = MOA_UNIDADE_RESTRITA
         self.release = False
         self.parar_timer = False
-        self.deve_normalizar = False
         logger.info(f"[UG{self.parent.id}] Entrando no estado \"restrito\"")
 
     def step(self) -> State:
-        deve_indisponibilizar = False
-        condicionadores_ativos = []
-
-        for condic in self.parent.condicionadores_essenciais:
-            if condic.ativo and condic.gravidade == DEVE_INDISPONIBILIZAR:
-                condicionadores_ativos.append(condic)
-                deve_indisponibilizar = True
-            elif condic.ativo and condic.gravidade == DEVE_AGUARDAR:
-                condicionadores_ativos.append(condic)
-
-        for condic in self.parent.condicionadores:
-            if condic.ativo and condic.gravidade == DEVE_INDISPONIBILIZAR:
-                condicionadores_ativos.append(condic)
-                deve_indisponibilizar = True
-            elif condic.ativo and condic.gravidade == DEVE_AGUARDAR:
-                condicionadores_ativos.append(condic)
+        condicionadores_ativos = self.ocorrencias.verificar_condicionadores_ug_restrito()
 
         if condicionadores_ativos:
             if self.parent.norma_agendada and not self.release:
@@ -96,7 +95,7 @@ class StateRestrito(State):
             self.parent.reconhece_reset_alarmes()
             return StateDisponivel(self.parent)
 
-        if deve_indisponibilizar:
+        if self.ocorrencias.deve_indisponibilizar_ug:
             logger.warning(f"[UG{self.parent.id}] UG detectou condicionadores com gravidade alta, indisponibilizando UG.\nCondicionadores ativos:\n{[d.descr for d in condicionadores_ativos]}")
             self.parent.norma_agendada = False
             self.parar_timer = True
@@ -133,8 +132,9 @@ class StateRestrito(State):
         self.deve_normalizar = True
 
 class StateDisponivel(State):
-    def __init__(self, parent: UnidadeDeGeracao):
-        super().__init__(parent)
+    def __init__(self):
+        super().__init__(parent=None, ocorrencias=None)
+
         self.parent.codigo_state = MOA_UNIDADE_DISPONIVEL
         self.release = False
         self.borda_partindo = False
@@ -143,53 +143,22 @@ class StateDisponivel(State):
 
     def step(self) -> State:
         self.parent.controle_limites_operacao()
-        deve_aguardar = False
-        deve_normalizar = False
-        ler_condicionadores = False
-        deve_indisponibilizar = False
         condicionadores_ativos = []
 
-        for condic in self.parent.condicionadores_essenciais:
-            ler_condicionadores = True if condic.ativo else False
-            break
-
-        if ler_condicionadores or self.parent.ler_condicionadores:
-            for condic in self.parent.condicionadores_essenciais:
-                if condic.ativo and condic.gravidade == DEVE_INDISPONIBILIZAR:
-                    condicionadores_ativos.append(condic)
-                    deve_indisponibilizar = True
-                elif condic.ativo and condic.gravidade == DEVE_AGUARDAR:
-                    condicionadores_ativos.append(condic)
-                    deve_aguardar = True
-                elif condic.ativo and condic.gravidade == DEVE_NORMALIZAR:
-                    condicionadores_ativos.append(condic)
-                    deve_normalizar = True
-
-            for condic in self.parent.condicionadores:
-                if condic.ativo and condic.gravidade == DEVE_INDISPONIBILIZAR:
-                    condicionadores_ativos.append(condic)
-                    deve_indisponibilizar = True
-                elif condic.ativo and condic.gravidade == DEVE_AGUARDAR:
-                    condicionadores_ativos.append(condic)
-                    deve_aguardar = True
-                elif condic.ativo and condic.gravidade == DEVE_NORMALIZAR:
-                    condicionadores_ativos.append(condic)
-                    deve_normalizar = True
-
-        if deve_indisponibilizar or deve_normalizar or deve_aguardar:
+        if self.ocorrencias.deve_indisponibilizar_ug or self.ocorrencias.deve_normalizar_ug or self.ocorrencias.deve_aguardar_ug:
             logger.info(f"[UG{self.parent.id}] UG em modo disponível detectou condicionadores ativos.\nCondicionadores ativos:")
             for d in condicionadores_ativos:
                 logger.warning(f"Desc: {d.descr}; Ativo: {d.ativo}; Valor: {d.valor}; Gravidade: {d.gravidade}")
 
-        if deve_indisponibilizar:
+        if self.ocorrencias.deve_indisponibilizar_ug:
             logger.warning(f"[UG{self.parent.id}] Indisponibilizando UG.")
             return StateIndisponivel(self.parent)
 
-        if deve_aguardar:
+        if self.ocorrencias.deve_aguardar_ug:
             logger.warning(f"[UG{self.parent.id}] Entrando no estado Restrito até normalização da condição.")
             return StateRestrito(self.parent)
 
-        if deve_normalizar:
+        if self.ocorrencias.deve_normalizar_ug:
             if self.parent.tentativas_de_normalizacao > self.parent.limite_tentativas_de_normalizacao:
                 logger.warning(f"[UG{self.parent.id}] A UG estourou as tentativas de normalização, indisponibilizando UG. \n Condicionadores ativos:\n{[d.descr for d in condicionadores_ativos]}")
                 return StateIndisponivel(self.parent)
@@ -223,7 +192,7 @@ class StateDisponivel(State):
                 self.parent.setpoint = self.parent.setpoint * ganho
 
             elif self.parent.limpeza_grade:
-                self.parent.setpoint_minimo = self.parent.cfg["pot_limpeza_grade"]
+                self.parent.setpoint_minimo = self.parent.self.dict["IP"]["pot_limpeza_grade"]
                 self.parent.setpoint = self.parent.setpoint_minimo
 
             elif (self.parent.setpoint * ganho < self.parent.setpoint_minimo) and (self.parent.setpoint > self.parent.setpoint_minimo):

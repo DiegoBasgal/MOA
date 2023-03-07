@@ -236,20 +236,9 @@ class LeituraNBRPower(LeituraBase):
         escala: float = 1,
     ):
         super().__init__(descr)
-
-        self.__ip_1 = ip_1
-        self.__port_1 = port_1
         self.__escala = float(escala)
-
-        if ip_2 is not None:
-            self.__ip_2 = ip_2
-        else:
-            self.__ip_2 = ip_1
-
-        if port_2 is not None:
-            self.__port_2 = port_2
-        else:
-            self.__port_2 = port_1
+        self.__ip_2 = ip_2 if ip_2 is not None else ip_1
+        self.__port_2 = port_2 if port_2 is not None else port_1
 
     @property
     def valor(self) -> float:
