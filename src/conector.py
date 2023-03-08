@@ -58,8 +58,6 @@ class FieldConnector:
             auto_close=True,
         )
 
-        self.TDA_Offline = False
-
     def open(self) -> None:
         logger.debug("[CON] Iniciando conexão ModBus...")
         if not self.ug1_clp.open():
@@ -92,7 +90,7 @@ class FieldConnector:
             self.ug1_clp.write_single_coil(UG["REG_UG1_ComandosDigitais_MXW_ResetGeral"], 1)
             self.ug2_clp.write_single_coil(UG["REG_UG2_ComandosDigitais_MXW_ResetGeral"], 1)
             self.usn_clp.write_single_coil(SA["REG_SA_ComandosDigitais_MXW_ResetGeral"], 1)
-            self.tda_clp.write_single_coil(TDA["REG_TDA_ComandosDigitais_MXW_ResetGeral"], 1) if not self.TDA_Offline else logger.debug("[CON] CLP TDA Offline, não há como realizar o reset geral")
+            self.tda_clp.write_single_coil(TDA["REG_TDA_ComandosDigitais_MXW_ResetGeral"], 1) if not self.dict.CFG["tda_offline"] else logger.debug("[CON] CLP TDA Offline, não há como realizar o reset geral")
         except Exception:
             logger.exception(f"[CON] Houve um erro ao realizar o reset geral.\nTraceback: {traceback.print_stack}")
 
@@ -118,7 +116,7 @@ class FieldConnector:
 
     def modifica_controles_locais(self) -> None:
         try:
-            if not self.TDA_Offline:
+            if not self.dict.CFG["tda_offline"]:
                 self.tda_clp.write_single_coil(TDA["REG_TDA_ComandosDigitais_MXW_ResetGeral"], 1)
                 self.tda_clp.write_single_coil(TDA["REG_TDA_ComandosDigitais_MXW_Hab_Nivel"], 0)
                 self.tda_clp.write_single_coil(TDA["REG_TDA_ComandosDigitais_MXW_Desab_Nivel"], 1)

@@ -10,7 +10,7 @@ from conector import *
 logger = logging.getLogger("__main__")
 
 class Agendamentos:
-    def __init__(self, shared_dict=None, db: DatabaseConnector=None, ugs: list([UnidadeDeGeracao])=None):
+    def __init__(self, shared_dict=None, db: DatabaseConnector=None, usina: Usina=None, ugs: list([UnidadeDeGeracao])=None):
         if not shared_dict:
             logger.warning("[AGN] Não foi possível carregar o arquivo de configuração.")
             raise ValueError
@@ -23,9 +23,15 @@ class Agendamentos:
         else:
             self.db = db
 
+        if not usina:
+            logger.warning("[AGN] Não foi possível carregar a instância da classe Usina.")
+            raise ReferenceError
+        else:
+            self.usina = usina
+
         if not ugs:
-            logger.warning("[AGN] Não foi possível estabelecer a conexão com as leituras de campo.")
-            raise ValueError
+            logger.warning("[AGN] Não foi possível obter lista de Unidades de Geração.")
+            raise ReferenceError
         else:
             self.ugs = ugs
             self.ug1 = ugs[0]
@@ -117,7 +123,7 @@ class Agendamentos:
             logger.info("[AGN] Os agendamentos estão muito atrasados!")
             if agendamento[3] == AGENDAMENTO_INDISPONIBILIZAR:
                 logger.warning("[AGN] Acionando emergência!")
-                Usina.acionar_emergencia()
+                self.usina.acionar_emergencia()
                 self.db.update_agendamento(int(agendamento[0]), 1, obs="AGENDAMENTO EXECUTADO POR TRATATIVA DE CÓDIGO!")
                 return True
 
@@ -145,11 +151,11 @@ class Agendamentos:
         return False
 
     def agendamentos_sem_efeito(self, agendamento) -> bool:
-        if Usina.get_modo_autonomo and not self.db.get_executabilidade(agendamento[3])["executavel_em_autmoatico"]:
+        if self.usina.get_modo_autonomo and not self.db.get_executabilidade(agendamento[3])["executavel_em_autmoatico"]:
             self.db.update_agendamento(agendamento[0], True, obs="Este agendamento não tem efeito com o módulo em modo autônomo. Executado sem realizar nenhuma ação")
             return True
 
-        if not Usina.get_modo_autonomo and not self.db.get_executabilidade(agendamento[3])["executavel_em_manual"]:
+        if not self.usina.get_modo_autonomo and not self.db.get_executabilidade(agendamento[3])["executavel_em_manual"]:
             self.db.update_agendamento(agendamento[0], True, obs="Este agendamento não tem efeito com o módulo em modo manual. Executado sem realizar nenhuma ação")
             return True
 
@@ -163,12 +169,12 @@ class Agendamentos:
                     ug.forcar_estado_indisponivel()
 
                 while (not self.ug1.etapa_atual == UNIDADE_PARADA and not self.ug2.etapa_atual == UNIDADE_PARADA):
-                    Usina.ler_valores()
+                    self.usina.ler_valores()
                     logger.debug("[AGN] Indisponibilizando Usina...")
                     sleep(10)
-                Usina.acionar_emergencia()
+                self.usina.acionar_emergencia()
                 logger.debug("[AGN] Emergência pressionada após indizponibilização agendada mudando para modo manual para evitar normalização automática.")
-                Usina.entrar_em_modo_manual()
+                self.usina.entrar_em_modo_manual()
             except Exception:
                 logger.exception(f"[AGN] Houve um erro ao excutar o agendamento de indisponibilização da usina.\nTraceback: {traceback.print_stack}")
                 return False
@@ -209,7 +215,7 @@ class Agendamentos:
                 logger.debug("[AGN] Ativando estado de espera de nível do reservatório")
                 self.aguardando_reservatorio = 1
             except Exception:
-                logger.exception(f"[AGN] Houve um erro ao executar o agendamento de aguardar o resrvatório.\nTraceback: {traceback.print_stack}")
+                logger.exception(f"[AGN] Houve um erro ao executar o agendamento de aguardar o reservatório.\nTraceback: {traceback.print_stack}")
                 return False
 
         if agendamento[3] == AGENDAMENTO_NORMALIZAR_ESPERA_RESERVATORIO:

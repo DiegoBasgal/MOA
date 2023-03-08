@@ -72,18 +72,18 @@ if __name__ == "__main__":
                 continue
 
             try:
-                logger.info("Instanciando classes das Unidades de Geração.")
-                agendamentos = Agendamentos(shared_dict, db, ugs)
+                logger.info("Iniciando classe Usina.")
+                usina = Usina(shared_dict, con, db, ugs, ocorrencias)
             except Exception:
-                logger.exception(f"Erro ao inciar classe Agendamentos. Tentando novamente em \"{timeout}s\" (Tentativa: {n_tentativa}/3).\nTraceback: {traceback.print_stack}")
+                logger.exception(f"Erro ao iniciar classe Usina. Tentando novamente em \"{timeout}s\" (Tentativa: {n_tentativa}/3).\nTraceback: {traceback.print_stack}")
                 sleep(timeout)
                 continue
 
             try:
-                logger.info("Iniciando classe Usina.")
-                usina = Usina(shared_dict, con, db, ugs)
+                logger.info("Instanciando classes das Unidades de Geração.")
+                agendamentos = Agendamentos(shared_dict, db, usina, ugs)
             except Exception:
-                logger.exception(f"Erro ao iniciar classe Usina. Tentando novamente em \"{timeout}s\" (Tentativa: {n_tentativa}/3).\nTraceback: {traceback.print_stack}")
+                logger.exception(f"Erro ao inciar classe Agendamentos. Tentando novamente em \"{timeout}s\" (Tentativa: {n_tentativa}/3).\nTraceback: {traceback.print_stack}")
                 sleep(timeout)
                 continue
 

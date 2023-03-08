@@ -68,8 +68,6 @@ class UnidadeDeGeracao:
         self._pressao_caixa_limite = 15.50
         self._tentativas_de_normalizacao = 0
 
-        self._condicionadores = []
-        self._condicionadores_essenciais = []
         self._condicionadores_atenuadores = []
 
         self._cx_kp = self.dict.CFG["cx_kp"]
@@ -145,18 +143,6 @@ class UnidadeDeGeracao:
             UG[f"REG_UG{self.id}_RetornosAnalogicos_MWR_PM_710_Potencia_Ativa"],
             op=4,
         )
-        self.leitura_potencia_outra_ug = LeituraModbus(
-            f"[UG{2 if self.id == 1 else 1}] Potência",
-            self.clp_ug,
-            UG[f"REG_UG{2 if self.id == 1 else 1}_RetornosAnalogicos_MWR_PM_710_Potencia_Ativa"],
-            op=4,
-        )
-        self.leitura_setpoint_outra_ug = LeituraModbus(
-            f"[UG{2 if self.id == 1 else 1}]",
-            self.clp_ug,
-            UG[f"REG_UG{2 if self.id == 1 else 1}_SaidasAnalogicas_MWW_SPPotAtiva"],
-            op=4
-        )
         self.leitura_horimetro_hora = LeituraModbus(
             f"[UG{self.id}] Horímetro horas",
             self.clp_ug,
@@ -182,7 +168,14 @@ class UnidadeDeGeracao:
             1,
             op=4
         )
-
+        self.leitura_caixa_espiral = LeituraModbus(
+            f"[UG{self.id}] Pressão Caixa espiral",
+            self.clp_ug,
+            UG[f"REG_UG{self.id}_EntradasAnalogicas_MRR_PressK1CaixaExpiral_MaisCasas"],
+            escala=0.1,
+            op=4
+        )
+        
         # Leituras -> Condicionadores
         # Fase R
         self.leitura_temperatura_fase_R = LeituraModbus(
@@ -198,7 +191,6 @@ class UnidadeDeGeracao:
             self._temperatura_base, 
             self._temperatura_limite
         )
-        self.condicionadores_essenciais.append(self.condicionador_temperatura_fase_r_ug)
 
         # Fase S
         self.leitura_temperatura_fase_S = LeituraModbus(
@@ -214,7 +206,6 @@ class UnidadeDeGeracao:
             self._temperatura_base,
             self._temperatura_limite
         )
-        self.condicionadores_essenciais.append(self.condicionador_temperatura_fase_s_ug)
 
         # Fase T
         self.leitura_temperatura_fase_T = LeituraModbus(
@@ -230,7 +221,6 @@ class UnidadeDeGeracao:
             self._temperatura_base,
             self._temperatura_limite
         )
-        self.condicionadores_essenciais.append(self.condicionador_temperatura_fase_t_ug)
 
         # Nucleo Gerador 1
         self.leitura_temperatura_nucleo_gerador_1 = LeituraModbus(
@@ -246,7 +236,6 @@ class UnidadeDeGeracao:
             self._temperatura_base,
             self._temperatura_limite
         )
-        self.condicionadores_essenciais.append(self.condicionador_temperatura_nucleo_gerador_1_ug)
 
         # Nucleo Gerador 2
         self.leitura_temperatura_nucleo_gerador_2 = LeituraModbus(
@@ -262,7 +251,6 @@ class UnidadeDeGeracao:
             self._temperatura_base,
             self._temperatura_limite
         )
-        self.condicionadores_essenciais.append(self.condicionador_temperatura_nucleo_gerador_2_ug)
 
         # Nucleo Gerador 3
         self.leitura_temperatura_nucleo_gerador_3 = LeituraModbus(
@@ -278,7 +266,6 @@ class UnidadeDeGeracao:
             self._temperatura_base,
             self._temperatura_limite
         )
-        self.condicionadores_essenciais.append(self.condicionador_temperatura_nucleo_gerador_3_ug)
 
         # Mancal Casquilho Radial
         self.leitura_temperatura_mancal_casq_rad = LeituraModbus(
@@ -294,7 +281,6 @@ class UnidadeDeGeracao:
             self._temperatura_base,
             self._temperatura_limite,
         )
-        self.condicionadores_essenciais.append(self.condicionador_temperatura_mancal_casq_rad_ug)
 
         # Mancal Casquilho Combinado
         self.leitura_temperatura_mancal_casq_comb = LeituraModbus(
@@ -310,7 +296,6 @@ class UnidadeDeGeracao:
             self._temperatura_base,
             self._temperatura_limite
         )
-        self.condicionadores_essenciais.append(self.condicionador_temperatura_mancal_casq_comb_ug)
 
         # Mancal Escora Combinado
         self.leitura_temperatura_mancal_escora_comb = LeituraModbus(
@@ -326,16 +311,8 @@ class UnidadeDeGeracao:
             self._temperatura_base,
             self._temperatura_limite
         )
-        self.condicionadores_essenciais.append(self.condicionador_temperatura_mancal_escora_comb_ug)
 
         # CX Espiral
-        self.leitura_caixa_espiral = LeituraModbus(
-            f"[UG{self.id}] Pressão Caixa espiral",
-            self.clp_ug,
-            UG[f"REG_UG{self.id}_EntradasAnalogicas_MRR_PressK1CaixaExpiral_MaisCasas"],
-            escala=0.1,
-            op=4
-        )
         self.condicionador_caixa_espiral_ug = CondicionadorExponencialReverso(
             self.leitura_caixa_espiral.descr,
             DEVE_INDISPONIBILIZAR,
@@ -479,18 +456,18 @@ class UnidadeDeGeracao:
         self._setpoint_maximo = var
 
     @property
-    def temperaturas_base(self) -> int:
+    def temperatura_base(self) -> int:
         return self._temperatura_base
 
-    @temperaturas_base.setter
+    @temperatura_base.setter
     def temperatura_base(self, var: int):
         self._temperatura_base = var
 
     @property
-    def temperaturas_limite(self) -> int:
+    def temperatura_limite(self) -> int:
         return self._temperatura_limite
 
-    @temperaturas_base.setter
+    @temperatura_limite.setter
     def temperatura_limite(self, var: int):
         self._temperatura_limite = var
 
@@ -499,14 +476,14 @@ class UnidadeDeGeracao:
         return self._pressao_caixa_base
 
     @pressao_caixa_base.setter
-    def temperatura_base(self, var: float):
+    def pressao_caixa_base(self, var: float):
         self._pressao_caixa_base = var
     
     @property
     def pressao_caixa_limite(self) -> float:
         return self._pressao_caixa_limite
 
-    @temperaturas_base.setter
+    @pressao_caixa_limite.setter
     def pressao_caixa_limite(self, var: float):
         self._pressao_caixa_limite = var
 
@@ -522,35 +499,19 @@ class UnidadeDeGeracao:
             raise ValueError(f"[UG{self.id}] Valor deve se um inteiro positivo")
 
     @property
-    def condicionadores(self) -> list([CondicionadorBase]):
-        return self._condicionadores
-
-    @condicionadores.setter
-    def condicionadores(self, var: list([CondicionadorBase])):
-        self._condicionadores = var
-
-    @property
-    def condicionadores_essenciais(self) -> list([CondicionadorBase]):
-        return self._condicionadores_essenciais
-
-    @condicionadores_essenciais.setter
-    def condicionadores_essenciais(self, var: list([CondicionadorBase])):
-        self._condicionadores_essenciais = var
-
-    @property
     def condicionadores_atenuadores(self) -> list([CondicionadorBase]):
         return self._condicionadores_atenuadores
-
+    
     @condicionadores_atenuadores.setter
-    def condicionadores_atenuadores(self, var: list([CondicionadorBase])):
+    def condicionadores_atenuadores(self, var: list([CondicionadorBase])) -> None:
         self._condicionadores_atenuadores = var
 
     @property
-    def lista_ugs(self) -> list:
+    def lista_ugs(self) -> list([UnidadeDeGeracao]):
         return self._lista_ugs
 
     @lista_ugs.setter
-    def lista_ugs(self, var: list) -> None:
+    def lista_ugs(self, var: list([UnidadeDeGeracao])) -> None:
         self._lista_ugs = var
 
     # Funções
@@ -651,6 +612,10 @@ class UnidadeDeGeracao:
             return False
         else:
             return response
+
+    def acionar_trips(self) -> None:
+        self.acionar_trip_logico()
+        self.acionar_trip_eletrico()
 
     def acionar_trip_logico(self) -> bool:
         try:

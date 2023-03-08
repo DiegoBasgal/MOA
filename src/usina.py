@@ -8,6 +8,7 @@ from pyModbusTCP.client import ModbusClient
 
 from leituras import *
 from conector import *
+from ocorrencias import *
 from dicionarios.reg import *
 from dicionarios.const import *
 from unidade_geracao import UnidadeDeGeracao
@@ -21,6 +22,7 @@ class Usina:
             con: FieldConnector=None,
             db: DatabaseConnector=None,
             ugs: list([UnidadeDeGeracao])=None,
+            ocorrencias: Ocorrencias=None,
         ):
 
         if not shared_dict:
@@ -40,7 +42,13 @@ class Usina:
             raise ConnectionError
         else:
             self.con = con
-        
+
+        if not ocorrencias:
+            logger.warning("[USN] Não foi possível obter a instância da classe de ocorrências")
+            raise ReferenceError
+        else:
+            self.ocorrencias = ocorrencias
+
         if not ugs:
             logger.warning("[USN] Não foi possível estabelecer a conexão com as leituras de campo.")
             raise ValueError
@@ -53,7 +61,6 @@ class Usina:
         self._potencia_alvo_anterior = -1
 
         # Variáveis públicas
-
         self.erro_nv = 0
         self.pot_disp = 0
         self.state_moa = 0
@@ -73,8 +80,8 @@ class Usina:
 
         self.tensao_ok = True
         self.borda_ping = False
-        self.timer_tensao = None
-        self.TDA_Offline = False
+        self.borda_tensao = None
+        self.timer_tensao = False
         self.acionar_voip = False
         self.borda_in_emerg = False
         self.avisado_em_eletrica = False
@@ -290,13 +297,14 @@ class Usina:
         try:
             if self.clp_moa.read_coils(MOA["REG_MOA_IN_EMERG"])[0] == 1 and not self.avisado_em_eletrica:
                 self.avisado_em_eletrica = True
-                for ug in self.ugs: ug.ler_condicionadores = True
+                self.ocorrencias.verificar_condicionadores_ug()
 
             elif self.clp_moa.read_coils(MOA["REG_MOA_IN_EMERG"])[0] == 0 and self.avisado_em_eletrica:
                 self.avisado_em_eletrica = False
                 for ug in self.ugs: ug.ler_condicionadores = False
 
-            self.ug1.ler_condicionadores = True if self.clp_moa.read_coils(MOA["REG_MOA_IN_EMERG_UG1"])[0] == 1 else False
+            if self.clp_moa.read_coils(MOA["REG_MOA_IN_EMERG_UG1"])[0] == 1:
+                self.ocorrencias.verificar_condicionadores()
 
             self.ug2.ler_condicionadores = True if self.clp_moa.read_coils(MOA["REG_MOA_IN_EMERG_UG2"])[0] == 1 else False
 
@@ -327,7 +335,7 @@ class Usina:
                 self.get_time().strftime("%Y-%m-%d %H:%M:%S"),  # timestamp
                 1 if self.aguardando_reservatorio else 0,  # aguardando_reservatorio
                 True,  # DEPRECATED clp_online
-                self.nv_montante if not self.TDA_Offline else 0,  # nv_montante
+                self.nv_montante if not self.dict.CFG["tda_offline"] else 0,  # nv_montante
                 1 if self.ug1.disponivel else 0,  # ug1_disp
                 self.ug1.leitura_potencia.valor,  # ug1_pot
                 self.ug1.setpoint,  # ug1_setpot
@@ -346,14 +354,14 @@ class Usina:
     def ping_clps(self) -> None:
         try:
             if not ping(self.dict.IP["TDA_slave_ip"]):
-                self.TDA_Offline = True
-                if self.TDA_Offline and not self.borda_ping:
+                self.dict.CFG["tda_offline"] = True
+                if self.dict.CFG["tda_offline"] and not self.borda_ping:
                     self.borda_ping = True
                     logger.warning("[USN] CLP TDA não respondeu a tentativa de comunicação!")
             elif ping(self.dict.IP["TDA_slave_ip"]) and self.borda_ping:
                 logger.info("[USN] Comunicação com o CLP TDA reestabelecida.")
                 self.borda_ping = False
-                self.TDA_Offline = False
+                self.dict.GLB["tda_offline"] = False
 
             if not ping(self.dict.IP["USN_slave_ip"]):
                 logger.warning("[USN] CLP SA não respondeu a tentativa de comunicação!")
@@ -365,7 +373,7 @@ class Usina:
             logger.exception(f"[USN] Houve um erro ao executar o ping dos CLPs da usina.\nTraceback: {traceback.print_stack}")
 
     def atualizar_montante_recente(self) -> None:
-        if not self.TDA_Offline:
+        if not self.dict.GLB["tda_offline"]:
             self.nv_montante_recente = self.nv_montante
             self.erro_nv_anterior = self.erro_nv
             self.erro_nv = self.nv_montante_recente - self.dict.CFG["nv_alvo"]
@@ -386,6 +394,10 @@ class Usina:
             self.dict.CFG["pot_maxima_alvo"] = float(parametros["pot_nominal"])
             self.dict.CFG["pot_maxima_ug"] = float(parametros["pot_nominal_ug"])
             self.dict.CFG["pot_maxima_usina"] = float(parametros["pot_nominal_ug"]) * 2
+
+            for ug in self.ugs:
+                ug.prioridade = int(parametros[f"ug{ug.id}_prioridade"])
+
         except Exception:
             logger.exception(f"[USN] Houve um erro ao atualizar o arquivo de configuração \"cfg.json\".\nTraceback: {traceback.print_stack}")
 
@@ -403,33 +415,6 @@ class Usina:
         except Exception:
             logger.exception(f"[USN] Houve um erro ao ler e atualizar os parâmetros do Banco de Dados.\nTraceback: {traceback.print_stack}")
 
-    def atualizar_limites_operacao(self, parametros) -> None:
-        for ug in self.ugs:
-            try:
-                ug.prioridade = int(parametros[f"ug{ug.id}_prioridade"])
-                ug.condicionador_temperatura_fase_r_ug.valor_base = float(parametros[f"alerta_temperatura_fase_r_ug{ug.id}"])
-                ug.condicionador_temperatura_fase_r_ug.valor_limite = float(parametros[f"limite_temperatura_fase_r_ug{ug.id}"])
-                ug.condicionador_temperatura_fase_s_ug.valor_base = float(parametros[f"alerta_temperatura_fase_s_ug{ug.id}"])
-                ug.condicionador_temperatura_fase_s_ug.valor_limite = float(parametros[f"limite_temperatura_fase_s_ug{ug.id}"])
-                ug.condicionador_temperatura_fase_t_ug.valor_base = float(parametros[f"alerta_temperatura_fase_t_ug{ug.id}"])
-                ug.condicionador_temperatura_fase_t_ug.valor_limite = float(parametros[f"limite_temperatura_fase_t_ug{ug.id}"])
-                ug.condicionador_temperatura_nucleo_gerador_1_ug.valor_base = float(parametros[f"alerta_temperatura_nucleo_gerador_1_ug{ug.id}"])
-                ug.condicionador_temperatura_nucleo_gerador_1_ug.valor_limite = float(parametros[f"limite_temperatura_nucleo_gerador_1_ug{ug.id}"])
-                ug.condicionador_temperatura_nucleo_gerador_2_ug.valor_base = float(parametros[f"alerta_temperatura_nucleo_gerador_2_ug{ug.id}"])
-                ug.condicionador_temperatura_nucleo_gerador_2_ug.valor_limite = float(parametros[f"limite_temperatura_nucleo_gerador_2_ug{ug.id}"])
-                ug.condicionador_temperatura_nucleo_gerador_3_ug.valor_base = float(parametros[f"alerta_temperatura_nucleo_gerador_3_ug{ug.id}"])
-                ug.condicionador_temperatura_nucleo_gerador_3_ug.valor_limite = float(parametros[f"limite_temperatura_nucleo_gerador_3_ug{ug.id}"])
-                ug.condicionador_temperatura_mancal_casq_rad_ug.valor_base = float(parametros[f"alerta_temperatura_mancal_casq_rad_ug{ug.id}"])
-                ug.condicionador_temperatura_mancal_casq_rad_ug.valor_limite = float(parametros[f"limite_temperatura_mancal_casq_rad_ug{ug.id}"])
-                ug.condicionador_temperatura_mancal_casq_comb_ug.valor_base = float(parametros[f"alerta_temperatura_mancal_casq_comb_ug{ug.id}"])
-                ug.condicionador_temperatura_mancal_casq_comb_ug.valor_limite = float(parametros[f"limite_temperatura_mancal_casq_comb_ug{ug.id}"])
-                ug.condicionador_temperatura_mancal_escora_comb_ug.valor_base = float(parametros[f"alerta_temperatura_mancal_escora_comb_ug{ug.id}"])
-                ug.condicionador_temperatura_mancal_escora_comb_ug.valor_limite = float(parametros[f"limite_temperatura_mancal_escora_comb_ug{ug.id}"])
-                ug.condicionador_caixa_espiral_ug.valor_base = float(parametros[f"alerta_caixa_espiral_ug{ug.id}"])
-                ug.condicionador_caixa_espiral_ug.valor_limite = float(parametros[f"limite_caixa_espiral_ug{ug.id}"])
-            except Exception:
-                logger.exception(f"[USN] Houve um erro ao tentar atualizar parâmetros de base e limite dos condicionadores.\nTraceback: {traceback.print_stack}")
-
     def acionar_emergencia(self) -> None:
         self.con.acionar_emergencia()
         self.clp_emergencia_acionada = 1
@@ -437,14 +422,13 @@ class Usina:
     def normalizar_emergencia(self) -> bool:
         logger.debug("[USN] Normalizando...")
         logger.debug(f"[USN] Última tentativa: {self.ts_ultima_tentativa_normalizacao}. Tensão na linha: RS->{self.tensao_rs:2.1f}kV / ST->{self.tensao_st:2.1f}kV / TR->{self.tensao_tr:2.1f}kV")
+
         if not self.verificar_tensao():
-            self.tensao_ok = False
             return False
 
         elif self.deve_normalizar_forcado or (self.deve_tentar_normalizar and (self.get_time() - self.ts_ultima_tentativa_normalizacao).seconds >= 60 * self.tentativas_de_normalizar):
             self.tentativas_de_normalizar += 1
             self.ts_ultima_tentativa_normalizacao = self.get_time()
-            self.con.TDA_Offline = True if self.TDA_Offline else False
             self.db_emergencia_acionada = 0
             self.clp_emergencia_acionada = 0
             self.con.normalizar_emergencia()
@@ -453,28 +437,47 @@ class Usina:
 
         else:
             logger.debug("[USN] A normalização foi executada menos de 1 minuto atrás.")
-            self.tensao_ok = True
             return False
 
     def verificar_tensao(self) -> bool:
         if (self.dict.CFG["TENSAO_LINHA_BAIXA"] < self.tensao_rs < self.dict.CFG["TENSAO_LINHA_ALTA"]) \
             and (self.dict.CFG["TENSAO_LINHA_BAIXA"] < self.tensao_st < self.dict.CFG["TENSAO_LINHA_ALTA"]) \
             and (self.dict.CFG["TENSAO_LINHA_BAIXA"] < self.tensao_tr < self.dict.CFG["TENSAO_LINHA_ALTA"]):
+            self.tensao_ok = True
             return True
         else:
+            self.tensao_ok = False
+            logger.warning("[USN] Tensão da linha fora do limite.")
             return False
 
-    def aguardar_tensao(self, delay) -> bool:
-        logger.warning("[USN] Iniciando o timer para a normalização da tensão na linha")
+    def aguardar_tensao(self) -> bool:
+        if not self.tensao_ok and self.borda_tensao is None:
+            self.borda_tensao = True
+            logger.debug("[USN] Iniciando o timer para a normalização da tensão na linha.")
+            Thread(target=lambda: self.timeout_tensao(600)).start()
+
+        elif self.timer_tensao and self.borda_tensao:
+            logger.info("[USN] Tensão na linha reestabelecida.")
+            self.borda_tensao = None
+            self.tensao_ok = True
+            return True
+
+        elif not self.timer_tensao and self.borda_tensao:
+            logger.critical("[USN] Não foi possível reestabelecer a tensão na linha. Acionando emergência")
+            self.borda_tensao = None
+            self.tensao_ok = False
+            return False
+
+        else:
+            logger.debug("[USN] A tensão na linha ainda está fora.")
+
+    def timeout_tensao(self, delay) -> None:
         while time() <= time() + delay:
             if self.verificar_tensao():
-                logger.info("[USN] Tensão na linha reestabelecida.")
                 self.timer_tensao = True
-                return True
+                return
             sleep(time() - (time() - 15))
-        logger.warning("[USN] Não foi possível reestabelecer a tensão na linha.")
         self.timer_tensao = False
-        return False
 
     def distribuir_potencia(self, pot_alvo) -> float:
         if self.pot_alvo_anterior == -1:

@@ -84,9 +84,10 @@ class Ocorrencias:
             auto_open=True,
             auto_close=True
         )
-
+        
         self.leitura_condicionadores_usn()
-        self.leitura_condicionadores_ug()
+        for ug in self.ugs:
+            self.leitura_condicionadores_ug(ug.id)
 
     # Property/Setter Protegidos
     @property
@@ -129,7 +130,7 @@ class Ocorrencias:
     def condicionadores_essenciais_usn(self, var: list([CondicionadorBase])) -> None:
         self._condicionadores_essenciais_ug = var
 
-    def verificar_condicionadores_usn(self) -> list([CondicionadorBase]):
+    def verificar_condicionadores_usn(self) -> bool:
         condicionadores_ativos = []
         ler_condicionadores_usn = False
 
@@ -148,9 +149,15 @@ class Ocorrencias:
                 self.deve_indisponibilizar_usn=True if condic.gravidade == DEVE_INDISPONIBILIZAR else False
                 condicionadores_ativos.append(condic.ativo)
 
-        return condicionadores_ativos if condicionadores_ativos else []
+        if self.deve_normalizar_usn or self.deve_indisponibilizar_usn:
+            logger.info(f"[OCO-USN] Foram detectados condicionadores ativos na Usina:")
+            for condic in condicionadores_ativos:
+                logger.warning(f"[OCO-USN] Descrição: \"{condic.descr}\", Gravidade: {STR_CONDIC[condic.gravidade] if condic.gravidade in STR_CONDIC else 'Desconhecida'}")
+            return True
+        else:
+            return False
 
-    def verificar_condicionadores_ug(self) -> list([CondicionadorBase]):
+    def verificar_condicionadores_ug(self, ug_id) -> bool:
         condicionadores_ativos = []
         ler_condicionadores_ug = False
 
@@ -160,43 +167,41 @@ class Ocorrencias:
 
         if ler_condicionadores_ug:
             for condic in self.condicionadores_essenciais_ug:
-                if condic.ativo and condic.gravidade == DEVE_AGUARDAR:
-                    self.deve_aguardar_ug=True 
-                    condicionadores_ativos.append(condic.ativo)
-                if condic.ativo and condic.gravidade == DEVE_NORMALIZAR:
-                    self.deve_normalizar_ug=True 
-                    condicionadores_ativos.append(condic.ativo)
-                if condic.ativo and condic.gravidade == DEVE_INDISPONIBILIZAR:
-                    self.deve_indisponibilizar_ug=True 
+                if condic.ativo:
+                    self.deve_aguardar_ug = True if condic.gravidade == DEVE_AGUARDAR else False
+                    self.deve_normalizar_ug = True if condic.gravidade == DEVE_NORMALIZAR else False
+                    self.deve_indisponibilizar_ug = True if condic.gravidade == DEVE_INDISPONIBILIZAR else False
                     condicionadores_ativos.append(condic.ativo)
 
-            for condic.ativo in self.condicionadores_ug:
-                if condic.ativo and condic.gravidade == DEVE_AGUARDAR:
-                    self.deve_aguardar_ug=True 
-                    condicionadores_ativos.append(condic.ativo)
-                if condic.ativo and condic.gravidade == DEVE_NORMALIZAR:
-                    self.deve_normalizar_ug=True
-                    condicionadores_ativos.append(condic.ativo)
-                if condic.ativo and condic.gravidade == DEVE_INDISPONIBILIZAR:
-                    self.deve_indisponibilizar_ug=True
+            for condic in self.condicionadores_ug:
+                if condic.ativo:
+                    self.deve_aguardar_ug = True if condic.gravidade == DEVE_AGUARDAR else False
+                    self.deve_normalizar_ug = True if condic.gravidade == DEVE_NORMALIZAR else False
+                    self.deve_indisponibilizar_ug = True if condic.gravidade == DEVE_INDISPONIBILIZAR else False
                     condicionadores_ativos.append(condic.ativo)
 
-        return condicionadores_ativos if condicionadores_ativos else []
+            if self.deve_aguardar_ug or self.deve_normalizar_ug or self.deve_indisponibilizar_ug:
+                logger.info(f"[OCO-UG{ug_id}] Foram detectados condicionadores ativos na UG:")
+                for condic in condicionadores_ativos:
+                    logger.warning(f"[OCO-UG{ug_id}] Descrição: \"{condic.descr}\", Gravidade: {STR_CONDIC[condic.gravidade] if condic.gravidade in STR_CONDIC else 'Desconhecida'}")
+                return True
+            else:
+                return False
+        else:
+            return False
 
-    def verificar_condicionadores_ug_restrito(self) -> list([CondicionadorBase]):
+    def verificar_condicionadores_ug_restrito(self, ug_id) -> list([CondicionadorBase]):
         condicionadores_ativos = []
 
         for condic in self.condicionadores_essenciais_ug:
-            if condic.ativo and condic.gravidade == DEVE_AGUARDAR:
-                condicionadores_ativos.append(condic.ativo)
-            if condic.ativo and condic.gravidade == DEVE_INDISPONIBILIZAR:
-                self.deve_indisponibilizar_ug=True
+            if condic.ativo:
+                condicionadores_ativos.append(condic.ativo) if condic.gravidade == DEVE_AGUARDAR else None
+                self.deve_indisponibilizar_ug = True if condic.ativo and condic.gravidade == DEVE_INDISPONIBILIZAR else False
 
-        for condic.ativo in self.condicionadores_ug:
-            if condic.ativo and condic.gravidade == DEVE_AGUARDAR:
-                condicionadores_ativos.append(condic.ativo)
-            if condic.ativo and condic.gravidade == DEVE_INDISPONIBILIZAR:
-                self.deve_indisponibilizar_ug=True
+        for condic in self.condicionadores_ug:
+            if condic.ativo:
+                condicionadores_ativos.append(condic.ativo) if condic.gravidade == DEVE_AGUARDAR else None
+                self.deve_indisponibilizar_ug = True if condic.ativo and condic.gravidade == DEVE_INDISPONIBILIZAR else False
 
         return condicionadores_ativos if condicionadores_ativos else []
 
@@ -495,193 +500,203 @@ class Ocorrencias:
         leitura_RetornosDigitais_MXR_CLP_Falha = LeituraModbusCoil("RetornosDigitais_MXR_CLP_Falha", self.clp_sa, SA["REG_SA_RetornosDigitais_MXR_CLP_Falha"], )
         self.condicionadores_usn.append(CondicionadorBase(leitura_RetornosDigitais_MXR_CLP_Falha.descr, DEVE_INDISPONIBILIZAR, leitura_RetornosDigitais_MXR_CLP_Falha) )
 
-    def leitura_condicionadores_ug(self) -> None:
+    def leitura_condicionadores_ug(self, ug_id) -> None:
         for ug in self.ugs:
-            leitura_ComandosDigitais_MXW_EmergenciaViaSuper = LeituraModbusCoil("ComandosDigitais_MXW_EmergenciaViaSuper", self.ug_dict[f"clp_ug{ug.id}"], UG[f"REG_UG{ug.id}_ComandosDigitais_MXW_EmergenciaViaSuper"],)
-            self.condicionadores_essenciais_ug.append(CondicionadorBase(leitura_ComandosDigitais_MXW_EmergenciaViaSuper.descr, DEVE_NORMALIZAR, leitura_ComandosDigitais_MXW_EmergenciaViaSuper, ug.id, [UNIDADE_SINCRONIZADA, UNIDADE_SINCRONIZANDO]))
+            self.condicionadores_essenciais_ug.append(ug.condicionador_temperatura_fase_r_ug)
+            self.condicionadores_essenciais_ug.append(ug.condicionador_temperatura_fase_s_ug)
+            self.condicionadores_essenciais_ug.append(ug.condicionador_temperatura_fase_t_ug)
+            self.condicionadores_essenciais_ug.append(ug.condicionador_temperatura_nucleo_gerador_1_ug)
+            self.condicionadores_essenciais_ug.append(ug.condicionador_temperatura_nucleo_gerador_2_ug)
+            self.condicionadores_essenciais_ug.append(ug.condicionador_temperatura_nucleo_gerador_3_ug)
+            self.condicionadores_essenciais_ug.append(ug.condicionador_temperatura_mancal_casq_rad_ug)
+            self.condicionadores_essenciais_ug.append(ug.condicionador_temperatura_mancal_casq_comb_ug)
+            self.condicionadores_essenciais_ug.append(ug.condicionador_temperatura_mancal_escora_comb_ug)
 
-            leitura_RetornosDigitais_MXR_TripEletrico = LeituraModbusCoil("RetornosDigitais_MXR_TripEletrico", self.ug_dict[f"clp_ug{ug.id}"], UG[f"REG_UG{ug.id}_RetornosDigitais_MXR_TripEletrico"],)
-            self.condicionadores_essenciais_ug.append(CondicionadorBase(leitura_RetornosDigitais_MXR_TripEletrico.descr, DEVE_NORMALIZAR, leitura_RetornosDigitais_MXR_TripEletrico, ug.id, [UNIDADE_SINCRONIZADA, UNIDADE_SINCRONIZANDO]))
+        leitura_ComandosDigitais_MXW_EmergenciaViaSuper = LeituraModbusCoil("ComandosDigitais_MXW_EmergenciaViaSuper", self.ug_dict[f"clp_ug{ug_id}"], UG[f"REG_UG{ug_id}_ComandosDigitais_MXW_EmergenciaViaSuper"],)
+        self.condicionadores_essenciais_ug.append(CondicionadorBase(leitura_ComandosDigitais_MXW_EmergenciaViaSuper.descr, DEVE_NORMALIZAR, leitura_ComandosDigitais_MXW_EmergenciaViaSuper, ug_id, [UNIDADE_SINCRONIZADA, UNIDADE_SINCRONIZANDO]))
 
-            leitura_ReleBloqA86MAtuado = LeituraModbusCoil("ReleBloqA86MAtuado", self.ug_dict[f"clp_ug{ug.id}"], UG[f"REG_UG{ug.id}_EntradasDigitais_MXI_ReleBloqA86MAtuado"])
-            self.condicionadores_essenciais_ug.append(CondicionadorBase(leitura_ReleBloqA86MAtuado.descr, DEVE_INDISPONIBILIZAR, leitura_ReleBloqA86MAtuado))
+        leitura_RetornosDigitais_MXR_TripEletrico = LeituraModbusCoil("RetornosDigitais_MXR_TripEletrico", self.ug_dict[f"clp_ug{ug_id}"], UG[f"REG_UG{ug_id}_RetornosDigitais_MXR_TripEletrico"],)
+        self.condicionadores_essenciais_ug.append(CondicionadorBase(leitura_RetornosDigitais_MXR_TripEletrico.descr, DEVE_NORMALIZAR, leitura_RetornosDigitais_MXR_TripEletrico, ug_id, [UNIDADE_SINCRONIZADA, UNIDADE_SINCRONIZANDO]))
 
-            leitura_ReleBloqA86HAtuado = LeituraModbusCoil("ReleBloqA86HAtuado", self.ug_dict[f"clp_ug{ug.id}"], UG[f"REG_UG{ug.id}_EntradasDigitais_MXI_ReleBloqA86HAtuado"])
-            self.condicionadores_essenciais_ug.append(CondicionadorBase(leitura_ReleBloqA86HAtuado.descr, DEVE_NORMALIZAR, leitura_ReleBloqA86HAtuado, ug.id, [UNIDADE_SINCRONIZADA, UNIDADE_SINCRONIZANDO]))
+        leitura_ReleBloqA86MAtuado = LeituraModbusCoil("ReleBloqA86MAtuado", self.ug_dict[f"clp_ug{ug_id}"], UG[f"REG_UG{ug_id}_EntradasDigitais_MXI_ReleBloqA86MAtuado"])
+        self.condicionadores_essenciais_ug.append(CondicionadorBase(leitura_ReleBloqA86MAtuado.descr, DEVE_INDISPONIBILIZAR, leitura_ReleBloqA86MAtuado))
 
-            leitura_SEL700G_Atuado = LeituraModbusCoil("SEL700G_Atuado", self.ug_dict[f"clp_ug{ug.id}"], UG[f"REG_UG{ug.id}_EntradasDigitais_MXI_SEL700G_Atuado"])
-            self.condicionadores_essenciais_ug.append(CondicionadorBase(leitura_SEL700G_Atuado.descr, DEVE_INDISPONIBILIZAR, leitura_SEL700G_Atuado))
+        leitura_ReleBloqA86HAtuado = LeituraModbusCoil("ReleBloqA86HAtuado", self.ug_dict[f"clp_ug{ug_id}"], UG[f"REG_UG{ug_id}_EntradasDigitais_MXI_ReleBloqA86HAtuado"])
+        self.condicionadores_essenciais_ug.append(CondicionadorBase(leitura_ReleBloqA86HAtuado.descr, DEVE_NORMALIZAR, leitura_ReleBloqA86HAtuado, ug_id, [UNIDADE_SINCRONIZADA, UNIDADE_SINCRONIZANDO]))
 
-            leitura_RV_Trip = LeituraModbusCoil("RV_Trip", self.ug_dict[f"clp_ug{ug.id}"], UG[f"REG_UG{ug.id}_EntradasDigitais_MXI_RV_Trip"])
-            self.condicionadores_essenciais_ug.append(CondicionadorBase(leitura_RV_Trip.descr, DEVE_INDISPONIBILIZAR, leitura_RV_Trip))
+        leitura_SEL700G_Atuado = LeituraModbusCoil("SEL700G_Atuado", self.ug_dict[f"clp_ug{ug_id}"], UG[f"REG_UG{ug_id}_EntradasDigitais_MXI_SEL700G_Atuado"])
+        self.condicionadores_essenciais_ug.append(CondicionadorBase(leitura_SEL700G_Atuado.descr, DEVE_INDISPONIBILIZAR, leitura_SEL700G_Atuado))
 
-            leitura_RetornosDigitais_MXR_TripMecanico = LeituraModbusCoil("RetornosDigitais_MXR_TripMecanico", self.ug_dict[f"clp_ug{ug.id}"], UG[f"REG_UG{ug.id}_RetornosDigitais_MXR_TripMecanico"],)
-            self.condicionadores_essenciais_ug.append(CondicionadorBase(leitura_RetornosDigitais_MXR_TripMecanico.descr, DEVE_INDISPONIBILIZAR, leitura_RetornosDigitais_MXR_TripMecanico))
+        leitura_RV_Trip = LeituraModbusCoil("RV_Trip", self.ug_dict[f"clp_ug{ug_id}"], UG[f"REG_UG{ug_id}_EntradasDigitais_MXI_RV_Trip"])
+        self.condicionadores_essenciais_ug.append(CondicionadorBase(leitura_RV_Trip.descr, DEVE_INDISPONIBILIZAR, leitura_RV_Trip))
 
-            leitura_RetornosDigitais_MXR_700G_Trip = LeituraModbusCoil("RetornosDigitais_MXR_700G_Trip", self.ug_dict[f"clp_ug{ug.id}"], UG[f"REG_UG{ug.id}_RetornosDigitais_MXR_700G_Trip"],) 
-            self.condicionadores_essenciais_ug.append(CondicionadorBase(leitura_RetornosDigitais_MXR_700G_Trip.descr, DEVE_NORMALIZAR, leitura_RetornosDigitais_MXR_700G_Trip, ug.id, [UNIDADE_SINCRONIZADA, UNIDADE_SINCRONIZANDO]))
+        leitura_RetornosDigitais_MXR_TripMecanico = LeituraModbusCoil("RetornosDigitais_MXR_TripMecanico", self.ug_dict[f"clp_ug{ug_id}"], UG[f"REG_UG{ug_id}_RetornosDigitais_MXR_TripMecanico"],)
+        self.condicionadores_essenciais_ug.append(CondicionadorBase(leitura_RetornosDigitais_MXR_TripMecanico.descr, DEVE_INDISPONIBILIZAR, leitura_RetornosDigitais_MXR_TripMecanico))
 
-            leitura_AVR_Trip = LeituraModbusCoil("AVR_Trip", self.ug_dict[f"clp_ug{ug.id}"], UG[f"REG_UG{ug.id}_EntradasDigitais_MXI_AVR_Trip"])
-            self.condicionadores_essenciais_ug.append(CondicionadorBase(leitura_AVR_Trip.descr, DEVE_INDISPONIBILIZAR, leitura_AVR_Trip))
+        leitura_RetornosDigitais_MXR_700G_Trip = LeituraModbusCoil("RetornosDigitais_MXR_700G_Trip", self.ug_dict[f"clp_ug{ug_id}"], UG[f"REG_UG{ug_id}_RetornosDigitais_MXR_700G_Trip"],) 
+        self.condicionadores_essenciais_ug.append(CondicionadorBase(leitura_RetornosDigitais_MXR_700G_Trip.descr, DEVE_NORMALIZAR, leitura_RetornosDigitais_MXR_700G_Trip, ug_id, [UNIDADE_SINCRONIZADA, UNIDADE_SINCRONIZANDO]))
 
-            leitura_EntradasDigitais_MXI_SA_FalhaDisjTPsSincrG1 = LeituraModbusCoil("SA_FalhaDisjTPsSincrG1",self.clp_sa,SA["REG_SA_EntradasDigitais_MXI_SA_FalhaDisjTPsSincrG1"],)
-            self.condicionadores_ug.append(CondicionadorBase(leitura_EntradasDigitais_MXI_SA_FalhaDisjTPsSincrG1.descr, DEVE_INDISPONIBILIZAR, leitura_EntradasDigitais_MXI_SA_FalhaDisjTPsSincrG1))
+        leitura_AVR_Trip = LeituraModbusCoil("AVR_Trip", self.ug_dict[f"clp_ug{ug_id}"], UG[f"REG_UG{ug_id}_EntradasDigitais_MXI_AVR_Trip"])
+        self.condicionadores_essenciais_ug.append(CondicionadorBase(leitura_AVR_Trip.descr, DEVE_INDISPONIBILIZAR, leitura_AVR_Trip))
 
-            leitura_EntradasDigitais_MXI_SA_DisjDJ1_BloqPressBaixa = LeituraModbusCoil("SA_DisjDJ1_BloqPressBaixa",self.clp_sa,SA["REG_SA_EntradasDigitais_MXI_SA_DisjDJ1_BloqPressBaixa"],)
-            self.condicionadores_ug.append(CondicionadorBase(leitura_EntradasDigitais_MXI_SA_DisjDJ1_BloqPressBaixa.descr, DEVE_INDISPONIBILIZAR, leitura_EntradasDigitais_MXI_SA_DisjDJ1_BloqPressBaixa))
+        leitura_EntradasDigitais_MXI_SA_FalhaDisjTPsSincrG1 = LeituraModbusCoil("SA_FalhaDisjTPsSincrG1",self.clp_sa,SA["REG_SA_EntradasDigitais_MXI_SA_FalhaDisjTPsSincrG1"],)
+        self.condicionadores_ug.append(CondicionadorBase(leitura_EntradasDigitais_MXI_SA_FalhaDisjTPsSincrG1.descr, DEVE_INDISPONIBILIZAR, leitura_EntradasDigitais_MXI_SA_FalhaDisjTPsSincrG1))
 
-            leitura_EntradasDigitais_MXI_SA_DisjDJ1_AlPressBaixa = LeituraModbusCoil("SA_DisjDJ1_AlPressBaixa",self.clp_sa,SA["REG_SA_EntradasDigitais_MXI_SA_DisjDJ1_AlPressBaixa"],)
-            self.condicionadores_ug.append(CondicionadorBase(leitura_EntradasDigitais_MXI_SA_DisjDJ1_AlPressBaixa.descr, DEVE_INDISPONIBILIZAR, leitura_EntradasDigitais_MXI_SA_DisjDJ1_AlPressBaixa))
+        leitura_EntradasDigitais_MXI_SA_DisjDJ1_BloqPressBaixa = LeituraModbusCoil("SA_DisjDJ1_BloqPressBaixa",self.clp_sa,SA["REG_SA_EntradasDigitais_MXI_SA_DisjDJ1_BloqPressBaixa"],)
+        self.condicionadores_ug.append(CondicionadorBase(leitura_EntradasDigitais_MXI_SA_DisjDJ1_BloqPressBaixa.descr, DEVE_INDISPONIBILIZAR, leitura_EntradasDigitais_MXI_SA_DisjDJ1_BloqPressBaixa))
 
-            leitura_EntradasDigitais_MXI_ValvBorbTravada = LeituraModbusCoil("MXI_ValvBorbTravada", self.ug_dict[f"clp_ug{ug.id}"], UG[f"REG_UG{ug.id}_EntradasDigitais_MXI_ValvBorbTravada"] )
-            self.condicionadores_ug.append( CondicionadorBase(leitura_EntradasDigitais_MXI_ValvBorbTravada.descr, DEVE_INDISPONIBILIZAR, leitura_EntradasDigitais_MXI_ValvBorbTravada) )
+        leitura_EntradasDigitais_MXI_SA_DisjDJ1_AlPressBaixa = LeituraModbusCoil("SA_DisjDJ1_AlPressBaixa",self.clp_sa,SA["REG_SA_EntradasDigitais_MXI_SA_DisjDJ1_AlPressBaixa"],)
+        self.condicionadores_ug.append(CondicionadorBase(leitura_EntradasDigitais_MXI_SA_DisjDJ1_AlPressBaixa.descr, DEVE_INDISPONIBILIZAR, leitura_EntradasDigitais_MXI_SA_DisjDJ1_AlPressBaixa))
 
-            leitura_EntradasDigitais_MXI_UHRV_TripBomba2 = LeituraModbusCoil("UHRV_TripBomba2", self.ug_dict[f"clp_ug{ug.id}"], UG[f"REG_UG{ug.id}_EntradasDigitais_MXI_UHRV_TripBomba2"] )
-            self.condicionadores_ug.append( CondicionadorBase(leitura_EntradasDigitais_MXI_UHRV_TripBomba2.descr, DEVE_INDISPONIBILIZAR, leitura_EntradasDigitais_MXI_UHRV_TripBomba2) )
+        leitura_EntradasDigitais_MXI_ValvBorbTravada = LeituraModbusCoil("MXI_ValvBorbTravada", self.ug_dict[f"clp_ug{ug_id}"], UG[f"REG_UG{ug_id}_EntradasDigitais_MXI_ValvBorbTravada"] )
+        self.condicionadores_ug.append( CondicionadorBase(leitura_EntradasDigitais_MXI_ValvBorbTravada.descr, DEVE_INDISPONIBILIZAR, leitura_EntradasDigitais_MXI_ValvBorbTravada) )
 
-            leitura_EntradasDigitais_MXI_UHRV_TripBomba1 = LeituraModbusCoil("UHRV_TripBomba1", self.ug_dict[f"clp_ug{ug.id}"], UG[f"REG_UG{ug.id}_EntradasDigitais_MXI_UHRV_TripBomba1"] )
-            self.condicionadores_ug.append( CondicionadorBase(leitura_EntradasDigitais_MXI_UHRV_TripBomba1.descr, DEVE_INDISPONIBILIZAR, leitura_EntradasDigitais_MXI_UHRV_TripBomba1) )
+        leitura_EntradasDigitais_MXI_UHRV_TripBomba2 = LeituraModbusCoil("UHRV_TripBomba2", self.ug_dict[f"clp_ug{ug_id}"], UG[f"REG_UG{ug_id}_EntradasDigitais_MXI_UHRV_TripBomba2"] )
+        self.condicionadores_ug.append( CondicionadorBase(leitura_EntradasDigitais_MXI_UHRV_TripBomba2.descr, DEVE_INDISPONIBILIZAR, leitura_EntradasDigitais_MXI_UHRV_TripBomba2) )
 
-            leitura_EntradasDigitais_MXI_UHRV_NivOleominimoPos36 = LeituraModbusCoil("UHRV_NivOleominimoPos36", self.ug_dict[f"clp_ug{ug.id}"], UG[f"REG_UG{ug.id}_EntradasDigitais_MXI_UHRV_NivOleominimoPos36"] )
-            self.condicionadores_ug.append( CondicionadorBase(leitura_EntradasDigitais_MXI_UHRV_NivOleominimoPos36.descr, DEVE_INDISPONIBILIZAR, leitura_EntradasDigitais_MXI_UHRV_NivOleominimoPos36) )
+        leitura_EntradasDigitais_MXI_UHRV_TripBomba1 = LeituraModbusCoil("UHRV_TripBomba1", self.ug_dict[f"clp_ug{ug_id}"], UG[f"REG_UG{ug_id}_EntradasDigitais_MXI_UHRV_TripBomba1"] )
+        self.condicionadores_ug.append( CondicionadorBase(leitura_EntradasDigitais_MXI_UHRV_TripBomba1.descr, DEVE_INDISPONIBILIZAR, leitura_EntradasDigitais_MXI_UHRV_TripBomba1) )
 
-            leitura_EntradasDigitais_MXI_UHRV_NivOleoCriticoPos35 = LeituraModbusCoil("UHRV_NivOleoCriticoPos35", self.ug_dict[f"clp_ug{ug.id}"], UG[f"REG_UG{ug.id}_EntradasDigitais_MXI_UHRV_NivOleoCriticoPos35"] )
-            self.condicionadores_ug.append( CondicionadorBase(leitura_EntradasDigitais_MXI_UHRV_NivOleoCriticoPos35.descr, DEVE_INDISPONIBILIZAR, leitura_EntradasDigitais_MXI_UHRV_NivOleoCriticoPos35) )
+        leitura_EntradasDigitais_MXI_UHRV_NivOleominimoPos36 = LeituraModbusCoil("UHRV_NivOleominimoPos36", self.ug_dict[f"clp_ug{ug_id}"], UG[f"REG_UG{ug_id}_EntradasDigitais_MXI_UHRV_NivOleominimoPos36"] )
+        self.condicionadores_ug.append( CondicionadorBase(leitura_EntradasDigitais_MXI_UHRV_NivOleominimoPos36.descr, DEVE_INDISPONIBILIZAR, leitura_EntradasDigitais_MXI_UHRV_NivOleominimoPos36) )
 
-            leitura_EntradasDigitais_MXI_UHLM_Filt2PresSujo100Sujo = LeituraModbusCoil("UHLM_Filt2PresSujo100Sujo", self.ug_dict[f"clp_ug{ug.id}"], UG[f"REG_UG{ug.id}_EntradasDigitais_MXI_UHLM_Filt2PresSujo100Sujo"] )
-            self.condicionadores_ug.append( CondicionadorBase(leitura_EntradasDigitais_MXI_UHLM_Filt2PresSujo100Sujo.descr, DEVE_INDISPONIBILIZAR, leitura_EntradasDigitais_MXI_UHLM_Filt2PresSujo100Sujo) )
+        leitura_EntradasDigitais_MXI_UHRV_NivOleoCriticoPos35 = LeituraModbusCoil("UHRV_NivOleoCriticoPos35", self.ug_dict[f"clp_ug{ug_id}"], UG[f"REG_UG{ug_id}_EntradasDigitais_MXI_UHRV_NivOleoCriticoPos35"] )
+        self.condicionadores_ug.append( CondicionadorBase(leitura_EntradasDigitais_MXI_UHRV_NivOleoCriticoPos35.descr, DEVE_INDISPONIBILIZAR, leitura_EntradasDigitais_MXI_UHRV_NivOleoCriticoPos35) )
 
-            leitura_EntradasDigitais_MXI_UHLM_Filt1PresSujo100Sujo = LeituraModbusCoil("UHLM_Filt1PresSujo100Sujo", self.ug_dict[f"clp_ug{ug.id}"], UG[f"REG_UG{ug.id}_EntradasDigitais_MXI_UHLM_Filt1PresSujo100Sujo"] )
-            self.condicionadores_ug.append( CondicionadorBase(leitura_EntradasDigitais_MXI_UHLM_Filt1PresSujo100Sujo.descr, DEVE_INDISPONIBILIZAR, leitura_EntradasDigitais_MXI_UHLM_Filt1PresSujo100Sujo) )
+        leitura_EntradasDigitais_MXI_UHLM_Filt2PresSujo100Sujo = LeituraModbusCoil("UHLM_Filt2PresSujo100Sujo", self.ug_dict[f"clp_ug{ug_id}"], UG[f"REG_UG{ug_id}_EntradasDigitais_MXI_UHLM_Filt2PresSujo100Sujo"] )
+        self.condicionadores_ug.append( CondicionadorBase(leitura_EntradasDigitais_MXI_UHLM_Filt2PresSujo100Sujo.descr, DEVE_INDISPONIBILIZAR, leitura_EntradasDigitais_MXI_UHLM_Filt2PresSujo100Sujo) )
 
-            leitura_EntradasDigitais_MXI_UHLM_TripBomba2 = LeituraModbusCoil("UHLM_TripBomba2", self.ug_dict[f"clp_ug{ug.id}"], UG[f"REG_UG{ug.id}_EntradasDigitais_MXI_UHLM_TripBomba2"] )
-            self.condicionadores_ug.append( CondicionadorBase(leitura_EntradasDigitais_MXI_UHLM_TripBomba2.descr, DEVE_INDISPONIBILIZAR, leitura_EntradasDigitais_MXI_UHLM_TripBomba2) )
+        leitura_EntradasDigitais_MXI_UHLM_Filt1PresSujo100Sujo = LeituraModbusCoil("UHLM_Filt1PresSujo100Sujo", self.ug_dict[f"clp_ug{ug_id}"], UG[f"REG_UG{ug_id}_EntradasDigitais_MXI_UHLM_Filt1PresSujo100Sujo"] )
+        self.condicionadores_ug.append( CondicionadorBase(leitura_EntradasDigitais_MXI_UHLM_Filt1PresSujo100Sujo.descr, DEVE_INDISPONIBILIZAR, leitura_EntradasDigitais_MXI_UHLM_Filt1PresSujo100Sujo) )
 
-            leitura_EntradasDigitais_MXI_UHLM_TripBomba1 = LeituraModbusCoil("UHLM_TripBomba1", self.ug_dict[f"clp_ug{ug.id}"], UG[f"REG_UG{ug.id}_EntradasDigitais_MXI_UHLM_TripBomba1"] )
-            self.condicionadores_ug.append( CondicionadorBase(leitura_EntradasDigitais_MXI_UHLM_TripBomba1.descr, DEVE_INDISPONIBILIZAR, leitura_EntradasDigitais_MXI_UHLM_TripBomba1) )
+        leitura_EntradasDigitais_MXI_UHLM_TripBomba2 = LeituraModbusCoil("UHLM_TripBomba2", self.ug_dict[f"clp_ug{ug_id}"], UG[f"REG_UG{ug_id}_EntradasDigitais_MXI_UHLM_TripBomba2"] )
+        self.condicionadores_ug.append( CondicionadorBase(leitura_EntradasDigitais_MXI_UHLM_TripBomba2.descr, DEVE_INDISPONIBILIZAR, leitura_EntradasDigitais_MXI_UHLM_TripBomba2) )
 
-            leitura_EntradasDigitais_MXI_UHLM_NivelminOleo = LeituraModbusCoil("UHLM_NivelminOleo", self.ug_dict[f"clp_ug{ug.id}"], UG[f"REG_UG{ug.id}_EntradasDigitais_MXI_UHLM_NivelminOleo"] )
-            self.condicionadores_ug.append( CondicionadorBase(leitura_EntradasDigitais_MXI_UHLM_NivelminOleo.descr, DEVE_INDISPONIBILIZAR, leitura_EntradasDigitais_MXI_UHLM_NivelminOleo) )
+        leitura_EntradasDigitais_MXI_UHLM_TripBomba1 = LeituraModbusCoil("UHLM_TripBomba1", self.ug_dict[f"clp_ug{ug_id}"], UG[f"REG_UG{ug_id}_EntradasDigitais_MXI_UHLM_TripBomba1"] )
+        self.condicionadores_ug.append( CondicionadorBase(leitura_EntradasDigitais_MXI_UHLM_TripBomba1.descr, DEVE_INDISPONIBILIZAR, leitura_EntradasDigitais_MXI_UHLM_TripBomba1) )
 
-            leitura_EntradasDigitais_MXI_UHLM_NivelCritOleo = LeituraModbusCoil("UHLM_NivelCritOleo", self.ug_dict[f"clp_ug{ug.id}"], UG[f"REG_UG{ug.id}_EntradasDigitais_MXI_UHLM_NivelCritOleo"] )
-            self.condicionadores_ug.append( CondicionadorBase(leitura_EntradasDigitais_MXI_UHLM_NivelCritOleo.descr, DEVE_INDISPONIBILIZAR, leitura_EntradasDigitais_MXI_UHLM_NivelCritOleo) )
+        leitura_EntradasDigitais_MXI_UHLM_NivelminOleo = LeituraModbusCoil("UHLM_NivelminOleo", self.ug_dict[f"clp_ug{ug_id}"], UG[f"REG_UG{ug_id}_EntradasDigitais_MXI_UHLM_NivelminOleo"] )
+        self.condicionadores_ug.append( CondicionadorBase(leitura_EntradasDigitais_MXI_UHLM_NivelminOleo.descr, DEVE_INDISPONIBILIZAR, leitura_EntradasDigitais_MXI_UHLM_NivelminOleo) )
 
-            leitura_EntradasDigitais_MXI_UHLM_FluxoMcTras = LeituraModbusCoil("UHLM_FluxoMcTras", self.ug_dict[f"clp_ug{ug.id}"], UG[f"REG_UG{ug.id}_EntradasDigitais_MXI_UHLM_FluxoMcTras"] )
-            self.condicionadores_ug.append( CondicionadorBase(leitura_EntradasDigitais_MXI_UHLM_FluxoMcTras.descr, DEVE_INDISPONIBILIZAR, leitura_EntradasDigitais_MXI_UHLM_FluxoMcTras) )
+        leitura_EntradasDigitais_MXI_UHLM_NivelCritOleo = LeituraModbusCoil("UHLM_NivelCritOleo", self.ug_dict[f"clp_ug{ug_id}"], UG[f"REG_UG{ug_id}_EntradasDigitais_MXI_UHLM_NivelCritOleo"] )
+        self.condicionadores_ug.append( CondicionadorBase(leitura_EntradasDigitais_MXI_UHLM_NivelCritOleo.descr, DEVE_INDISPONIBILIZAR, leitura_EntradasDigitais_MXI_UHLM_NivelCritOleo) )
 
-            leitura_EntradasDigitais_MXI_UHLM_FluxoMcDianteiro = LeituraModbusCoil("UHLM_FluxoMcDianteiro", self.ug_dict[f"clp_ug{ug.id}"], UG[f"REG_UG{ug.id}_EntradasDigitais_MXI_UHLM_FluxoMcDianteiro"] )
-            self.condicionadores_ug.append( CondicionadorBase(leitura_EntradasDigitais_MXI_UHLM_FluxoMcDianteiro.descr, DEVE_INDISPONIBILIZAR, leitura_EntradasDigitais_MXI_UHLM_FluxoMcDianteiro) )
+        leitura_EntradasDigitais_MXI_UHLM_FluxoMcTras = LeituraModbusCoil("UHLM_FluxoMcTras", self.ug_dict[f"clp_ug{ug_id}"], UG[f"REG_UG{ug_id}_EntradasDigitais_MXI_UHLM_FluxoMcTras"] )
+        self.condicionadores_ug.append( CondicionadorBase(leitura_EntradasDigitais_MXI_UHLM_FluxoMcTras.descr, DEVE_INDISPONIBILIZAR, leitura_EntradasDigitais_MXI_UHLM_FluxoMcTras) )
 
-            leitura_EntradasDigitais_MXI_UHLM_FaltaPressTroc = LeituraModbusCoil("UHLM_FaltaPressTroc", self.ug_dict[f"clp_ug{ug.id}"], UG[f"REG_UG{ug.id}_EntradasDigitais_MXI_UHLM_FaltaPressTroc"] )
-            self.condicionadores_ug.append( CondicionadorBase(leitura_EntradasDigitais_MXI_UHLM_FaltaPressTroc.descr, DEVE_INDISPONIBILIZAR, leitura_EntradasDigitais_MXI_UHLM_FaltaPressTroc) )
+        leitura_EntradasDigitais_MXI_UHLM_FluxoMcDianteiro = LeituraModbusCoil("UHLM_FluxoMcDianteiro", self.ug_dict[f"clp_ug{ug_id}"], UG[f"REG_UG{ug_id}_EntradasDigitais_MXI_UHLM_FluxoMcDianteiro"] )
+        self.condicionadores_ug.append( CondicionadorBase(leitura_EntradasDigitais_MXI_UHLM_FluxoMcDianteiro.descr, DEVE_INDISPONIBILIZAR, leitura_EntradasDigitais_MXI_UHLM_FluxoMcDianteiro) )
 
-            leitura_EntradasDigitais_MXI_UHLM_FaltaFluxTroc = LeituraModbusCoil("UHLM_FaltaFluxTroc", self.ug_dict[f"clp_ug{ug.id}"], UG[f"REG_UG{ug.id}_EntradasDigitais_MXI_UHLM_FaltaFluxTroc"] )
-            self.condicionadores_ug.append( CondicionadorBase(leitura_EntradasDigitais_MXI_UHLM_FaltaFluxTroc.descr, DEVE_INDISPONIBILIZAR, leitura_EntradasDigitais_MXI_UHLM_FaltaFluxTroc) )
+        leitura_EntradasDigitais_MXI_UHLM_FaltaPressTroc = LeituraModbusCoil("UHLM_FaltaPressTroc", self.ug_dict[f"clp_ug{ug_id}"], UG[f"REG_UG{ug_id}_EntradasDigitais_MXI_UHLM_FaltaPressTroc"] )
+        self.condicionadores_ug.append( CondicionadorBase(leitura_EntradasDigitais_MXI_UHLM_FaltaPressTroc.descr, DEVE_INDISPONIBILIZAR, leitura_EntradasDigitais_MXI_UHLM_FaltaPressTroc) )
 
-            leitura_EntradasDigitais_MXI_TripAlimPainelFreio = LeituraModbusCoil("TripAlimPainelFreio", self.ug_dict[f"clp_ug{ug.id}"], UG[f"REG_UG{ug.id}_EntradasDigitais_MXI_TripAlimPainelFreio"] )
-            self.condicionadores_ug.append( CondicionadorBase(leitura_EntradasDigitais_MXI_TripAlimPainelFreio.descr, DEVE_INDISPONIBILIZAR, leitura_EntradasDigitais_MXI_TripAlimPainelFreio) )
+        leitura_EntradasDigitais_MXI_UHLM_FaltaFluxTroc = LeituraModbusCoil("UHLM_FaltaFluxTroc", self.ug_dict[f"clp_ug{ug_id}"], UG[f"REG_UG{ug_id}_EntradasDigitais_MXI_UHLM_FaltaFluxTroc"] )
+        self.condicionadores_ug.append( CondicionadorBase(leitura_EntradasDigitais_MXI_UHLM_FaltaFluxTroc.descr, DEVE_INDISPONIBILIZAR, leitura_EntradasDigitais_MXI_UHLM_FaltaFluxTroc) )
 
-            leitura_EntradasDigitais_MXI_SobreVeloMecPos18 = LeituraModbusCoil("SobreVeloMecPos18", self.ug_dict[f"clp_ug{ug.id}"], UG[f"REG_UG{ug.id}_EntradasDigitais_MXI_SobreVeloMecPos18"] )
-            self.condicionadores_ug.append( CondicionadorBase(leitura_EntradasDigitais_MXI_SobreVeloMecPos18.descr, DEVE_INDISPONIBILIZAR, leitura_EntradasDigitais_MXI_SobreVeloMecPos18) )
+        leitura_EntradasDigitais_MXI_TripAlimPainelFreio = LeituraModbusCoil("TripAlimPainelFreio", self.ug_dict[f"clp_ug{ug_id}"], UG[f"REG_UG{ug_id}_EntradasDigitais_MXI_TripAlimPainelFreio"] )
+        self.condicionadores_ug.append( CondicionadorBase(leitura_EntradasDigitais_MXI_TripAlimPainelFreio.descr, DEVE_INDISPONIBILIZAR, leitura_EntradasDigitais_MXI_TripAlimPainelFreio) )
 
-            leitura_EntradasDigitais_MXI_SEL700G_FalhaInterna = LeituraModbusCoil("SEL700G_FalhaInterna", self.ug_dict[f"clp_ug{ug.id}"], UG[f"REG_UG{ug.id}_EntradasDigitais_MXI_SEL700G_FalhaInterna"] )
-            self.condicionadores_ug.append( CondicionadorBase(leitura_EntradasDigitais_MXI_SEL700G_FalhaInterna.descr, DEVE_INDISPONIBILIZAR, leitura_EntradasDigitais_MXI_SEL700G_FalhaInterna) )
+        leitura_EntradasDigitais_MXI_SobreVeloMecPos18 = LeituraModbusCoil("SobreVeloMecPos18", self.ug_dict[f"clp_ug{ug_id}"], UG[f"REG_UG{ug_id}_EntradasDigitais_MXI_SobreVeloMecPos18"] )
+        self.condicionadores_ug.append( CondicionadorBase(leitura_EntradasDigitais_MXI_SobreVeloMecPos18.descr, DEVE_INDISPONIBILIZAR, leitura_EntradasDigitais_MXI_SobreVeloMecPos18) )
 
-            leitura_RetornosDigitais_MXR_UHRV_FalhaAcionBbaM2 = LeituraModbusCoil("UHRV_FalhaAcionBbaM2", self.ug_dict[f"clp_ug{ug.id}"], UG[f"REG_UG{ug.id}_RetornosDigitais_MXR_UHRV_FalhaAcionBbaM2"], )
-            self.condicionadores_ug.append( CondicionadorBase(leitura_RetornosDigitais_MXR_UHRV_FalhaAcionBbaM2.descr, DEVE_INDISPONIBILIZAR, leitura_RetornosDigitais_MXR_UHRV_FalhaAcionBbaM2) )
+        leitura_EntradasDigitais_MXI_SEL700G_FalhaInterna = LeituraModbusCoil("SEL700G_FalhaInterna", self.ug_dict[f"clp_ug{ug_id}"], UG[f"REG_UG{ug_id}_EntradasDigitais_MXI_SEL700G_FalhaInterna"] )
+        self.condicionadores_ug.append( CondicionadorBase(leitura_EntradasDigitais_MXI_SEL700G_FalhaInterna.descr, DEVE_INDISPONIBILIZAR, leitura_EntradasDigitais_MXI_SEL700G_FalhaInterna) )
 
-            leitura_RetornosDigitais_MXR_UHRV_FalhaAcionBbaM1 = LeituraModbusCoil("UHRV_FalhaAcionBbaM1", self.ug_dict[f"clp_ug{ug.id}"], UG[f"REG_UG{ug.id}_RetornosDigitais_MXR_UHRV_FalhaAcionBbaM1"], )
-            self.condicionadores_ug.append( CondicionadorBase(leitura_RetornosDigitais_MXR_UHRV_FalhaAcionBbaM1.descr, DEVE_INDISPONIBILIZAR, leitura_RetornosDigitais_MXR_UHRV_FalhaAcionBbaM1) )
+        leitura_RetornosDigitais_MXR_UHRV_FalhaAcionBbaM2 = LeituraModbusCoil("UHRV_FalhaAcionBbaM2", self.ug_dict[f"clp_ug{ug_id}"], UG[f"REG_UG{ug_id}_RetornosDigitais_MXR_UHRV_FalhaAcionBbaM2"], )
+        self.condicionadores_ug.append( CondicionadorBase(leitura_RetornosDigitais_MXR_UHRV_FalhaAcionBbaM2.descr, DEVE_INDISPONIBILIZAR, leitura_RetornosDigitais_MXR_UHRV_FalhaAcionBbaM2) )
 
-            leitura_RetornosDigitais_MXR_UHLM_FalhaAcionBbaM2 = LeituraModbusCoil("UHLM_FalhaAcionBbaM2", self.ug_dict[f"clp_ug{ug.id}"], UG[f"REG_UG{ug.id}_RetornosDigitais_MXR_UHLM_FalhaAcionBbaM2"], )
-            self.condicionadores_ug.append( CondicionadorBase(leitura_RetornosDigitais_MXR_UHLM_FalhaAcionBbaM2.descr, DEVE_INDISPONIBILIZAR, leitura_RetornosDigitais_MXR_UHLM_FalhaAcionBbaM2) )
+        leitura_RetornosDigitais_MXR_UHRV_FalhaAcionBbaM1 = LeituraModbusCoil("UHRV_FalhaAcionBbaM1", self.ug_dict[f"clp_ug{ug_id}"], UG[f"REG_UG{ug_id}_RetornosDigitais_MXR_UHRV_FalhaAcionBbaM1"], )
+        self.condicionadores_ug.append( CondicionadorBase(leitura_RetornosDigitais_MXR_UHRV_FalhaAcionBbaM1.descr, DEVE_INDISPONIBILIZAR, leitura_RetornosDigitais_MXR_UHRV_FalhaAcionBbaM1) )
 
-            leitura_RetornosDigitais_MXR_UHLM_FalhaAcionBbaM1 = LeituraModbusCoil("UHLM_FalhaAcionBbaM1", self.ug_dict[f"clp_ug{ug.id}"], UG[f"REG_UG{ug.id}_RetornosDigitais_MXR_UHLM_FalhaAcionBbaM1"], )
-            self.condicionadores_ug.append( CondicionadorBase(leitura_RetornosDigitais_MXR_UHLM_FalhaAcionBbaM1.descr, DEVE_INDISPONIBILIZAR, leitura_RetornosDigitais_MXR_UHLM_FalhaAcionBbaM1) )
+        leitura_RetornosDigitais_MXR_UHLM_FalhaAcionBbaM2 = LeituraModbusCoil("UHLM_FalhaAcionBbaM2", self.ug_dict[f"clp_ug{ug_id}"], UG[f"REG_UG{ug_id}_RetornosDigitais_MXR_UHLM_FalhaAcionBbaM2"], )
+        self.condicionadores_ug.append( CondicionadorBase(leitura_RetornosDigitais_MXR_UHLM_FalhaAcionBbaM2.descr, DEVE_INDISPONIBILIZAR, leitura_RetornosDigitais_MXR_UHLM_FalhaAcionBbaM2) )
 
-            leitura_RetornosDigitais_MXR_TripVibr2 = LeituraModbusCoil("TripVibr2", self.ug_dict[f"clp_ug{ug.id}"], UG[f"REG_UG{ug.id}_RetornosDigitais_MXR_TripVibr2"], )
-            self.condicionadores_ug.append( CondicionadorBase(leitura_RetornosDigitais_MXR_TripVibr2.descr, DEVE_INDISPONIBILIZAR, leitura_RetornosDigitais_MXR_TripVibr2) )
+        leitura_RetornosDigitais_MXR_UHLM_FalhaAcionBbaM1 = LeituraModbusCoil("UHLM_FalhaAcionBbaM1", self.ug_dict[f"clp_ug{ug_id}"], UG[f"REG_UG{ug_id}_RetornosDigitais_MXR_UHLM_FalhaAcionBbaM1"], )
+        self.condicionadores_ug.append( CondicionadorBase(leitura_RetornosDigitais_MXR_UHLM_FalhaAcionBbaM1.descr, DEVE_INDISPONIBILIZAR, leitura_RetornosDigitais_MXR_UHLM_FalhaAcionBbaM1) )
 
-            leitura_RetornosDigitais_MXR_TripVibr1 = LeituraModbusCoil("TripVibr1", self.ug_dict[f"clp_ug{ug.id}"], UG[f"REG_UG{ug.id}_RetornosDigitais_MXR_TripVibr1"], )
-            self.condicionadores_ug.append( CondicionadorBase(leitura_RetornosDigitais_MXR_TripVibr1.descr, DEVE_INDISPONIBILIZAR, leitura_RetornosDigitais_MXR_TripVibr1) )
+        leitura_RetornosDigitais_MXR_TripVibr2 = LeituraModbusCoil("TripVibr2", self.ug_dict[f"clp_ug{ug_id}"], UG[f"REG_UG{ug_id}_RetornosDigitais_MXR_TripVibr2"], )
+        self.condicionadores_ug.append( CondicionadorBase(leitura_RetornosDigitais_MXR_TripVibr2.descr, DEVE_INDISPONIBILIZAR, leitura_RetornosDigitais_MXR_TripVibr2) )
 
-            leitura_RetornosDigitais_MXR_TripTempUHRV = LeituraModbusCoil("TripTempUHRV", self.ug_dict[f"clp_ug{ug.id}"], UG[f"REG_UG{ug.id}_RetornosDigitais_MXR_TripTempUHRV"], )
-            self.condicionadores_ug.append( CondicionadorBase(leitura_RetornosDigitais_MXR_TripTempUHRV.descr, DEVE_INDISPONIBILIZAR, leitura_RetornosDigitais_MXR_TripTempUHRV) )
+        leitura_RetornosDigitais_MXR_TripVibr1 = LeituraModbusCoil("TripVibr1", self.ug_dict[f"clp_ug{ug_id}"], UG[f"REG_UG{ug_id}_RetornosDigitais_MXR_TripVibr1"], )
+        self.condicionadores_ug.append( CondicionadorBase(leitura_RetornosDigitais_MXR_TripVibr1.descr, DEVE_INDISPONIBILIZAR, leitura_RetornosDigitais_MXR_TripVibr1) )
 
-            leitura_RetornosDigitais_MXR_TripTempUHLM = LeituraModbusCoil("TripTempUHLM", self.ug_dict[f"clp_ug{ug.id}"], UG[f"REG_UG{ug.id}_RetornosDigitais_MXR_TripTempUHLM"], )
-            self.condicionadores_ug.append( CondicionadorBase(leitura_RetornosDigitais_MXR_TripTempUHLM.descr, DEVE_INDISPONIBILIZAR, leitura_RetornosDigitais_MXR_TripTempUHLM) )
+        leitura_RetornosDigitais_MXR_TripTempUHRV = LeituraModbusCoil("TripTempUHRV", self.ug_dict[f"clp_ug{ug_id}"], UG[f"REG_UG{ug_id}_RetornosDigitais_MXR_TripTempUHRV"], )
+        self.condicionadores_ug.append( CondicionadorBase(leitura_RetornosDigitais_MXR_TripTempUHRV.descr, DEVE_INDISPONIBILIZAR, leitura_RetornosDigitais_MXR_TripTempUHRV) )
 
-            leitura_RetornosDigitais_MXR_TripTempMcGuiaRadial = LeituraModbusCoil("TripTempMcGuiaRadial", self.ug_dict[f"clp_ug{ug.id}"], UG[f"REG_UG{ug.id}_RetornosDigitais_MXR_TripTempMcGuiaRadial"], )
-            self.condicionadores_ug.append( CondicionadorBase(leitura_RetornosDigitais_MXR_TripTempMcGuiaRadial.descr, DEVE_INDISPONIBILIZAR, leitura_RetornosDigitais_MXR_TripTempMcGuiaRadial) )
+        leitura_RetornosDigitais_MXR_TripTempUHLM = LeituraModbusCoil("TripTempUHLM", self.ug_dict[f"clp_ug{ug_id}"], UG[f"REG_UG{ug_id}_RetornosDigitais_MXR_TripTempUHLM"], )
+        self.condicionadores_ug.append( CondicionadorBase(leitura_RetornosDigitais_MXR_TripTempUHLM.descr, DEVE_INDISPONIBILIZAR, leitura_RetornosDigitais_MXR_TripTempUHLM) )
 
-            leitura_RetornosDigitais_MXR_TripTempMcGuiaEscora = LeituraModbusCoil("TripTempMcGuiaEscora", self.ug_dict[f"clp_ug{ug.id}"], UG[f"REG_UG{ug.id}_RetornosDigitais_MXR_TripTempMcGuiaEscora"], )
-            self.condicionadores_ug.append( CondicionadorBase(leitura_RetornosDigitais_MXR_TripTempMcGuiaEscora.descr, DEVE_INDISPONIBILIZAR, leitura_RetornosDigitais_MXR_TripTempMcGuiaEscora) )
+        leitura_RetornosDigitais_MXR_TripTempMcGuiaRadial = LeituraModbusCoil("TripTempMcGuiaRadial", self.ug_dict[f"clp_ug{ug_id}"], UG[f"REG_UG{ug_id}_RetornosDigitais_MXR_TripTempMcGuiaRadial"], )
+        self.condicionadores_ug.append( CondicionadorBase(leitura_RetornosDigitais_MXR_TripTempMcGuiaRadial.descr, DEVE_INDISPONIBILIZAR, leitura_RetornosDigitais_MXR_TripTempMcGuiaRadial) )
 
-            leitura_RetornosDigitais_MXR_TripTempMcGuiaContraEscora = LeituraModbusCoil("TripTempMcGuiaContraEscora", self.ug_dict[f"clp_ug{ug.id}"], UG[f"REG_UG{ug.id}_RetornosDigitais_MXR_TripTempMcGuiaContraEscora"], )
-            self.condicionadores_ug.append( CondicionadorBase(leitura_RetornosDigitais_MXR_TripTempMcGuiaContraEscora.descr, DEVE_INDISPONIBILIZAR, leitura_RetornosDigitais_MXR_TripTempMcGuiaContraEscora) )
+        leitura_RetornosDigitais_MXR_TripTempMcGuiaEscora = LeituraModbusCoil("TripTempMcGuiaEscora", self.ug_dict[f"clp_ug{ug_id}"], UG[f"REG_UG{ug_id}_RetornosDigitais_MXR_TripTempMcGuiaEscora"], )
+        self.condicionadores_ug.append( CondicionadorBase(leitura_RetornosDigitais_MXR_TripTempMcGuiaEscora.descr, DEVE_INDISPONIBILIZAR, leitura_RetornosDigitais_MXR_TripTempMcGuiaEscora) )
 
-            leitura_RetornosDigitais_MXR_TripTempGaxeteiro = LeituraModbusCoil("TripTempGaxeteiro", self.ug_dict[f"clp_ug{ug.id}"], UG[f"REG_UG{ug.id}_RetornosDigitais_MXR_TripTempGaxeteiro"], )
-            self.condicionadores_ug.append( CondicionadorBase(leitura_RetornosDigitais_MXR_TripTempGaxeteiro.descr, DEVE_INDISPONIBILIZAR, leitura_RetornosDigitais_MXR_TripTempGaxeteiro) )
+        leitura_RetornosDigitais_MXR_TripTempMcGuiaContraEscora = LeituraModbusCoil("TripTempMcGuiaContraEscora", self.ug_dict[f"clp_ug{ug_id}"], UG[f"REG_UG{ug_id}_RetornosDigitais_MXR_TripTempMcGuiaContraEscora"], )
+        self.condicionadores_ug.append( CondicionadorBase(leitura_RetornosDigitais_MXR_TripTempMcGuiaContraEscora.descr, DEVE_INDISPONIBILIZAR, leitura_RetornosDigitais_MXR_TripTempMcGuiaContraEscora) )
 
-            leitura_RetornosDigitais_MXR_Q_Negativa = LeituraModbusCoil("Q_Negativa", self.ug_dict[f"clp_ug{ug.id}"], UG[f"REG_UG{ug.id}_RetornosDigitais_MXR_Q_Negativa"], )
-            self.condicionadores_ug.append( CondicionadorBase(leitura_RetornosDigitais_MXR_Q_Negativa.descr, DEVE_INDISPONIBILIZAR, leitura_RetornosDigitais_MXR_Q_Negativa) )
+        leitura_RetornosDigitais_MXR_TripTempGaxeteiro = LeituraModbusCoil("TripTempGaxeteiro", self.ug_dict[f"clp_ug{ug_id}"], UG[f"REG_UG{ug_id}_RetornosDigitais_MXR_TripTempGaxeteiro"], )
+        self.condicionadores_ug.append( CondicionadorBase(leitura_RetornosDigitais_MXR_TripTempGaxeteiro.descr, DEVE_INDISPONIBILIZAR, leitura_RetornosDigitais_MXR_TripTempGaxeteiro) )
 
-            leitura_RetornosDigitais_MXR_FalhaIbntDisjGer = LeituraModbusCoil("FalhaIbntDisjGer", self.ug_dict[f"clp_ug{ug.id}"], UG[f"REG_UG{ug.id}_RetornosDigitais_MXR_FalhaIbntDisjGer"], )
-            self.condicionadores_ug.append( CondicionadorBase(leitura_RetornosDigitais_MXR_FalhaIbntDisjGer.descr, DEVE_INDISPONIBILIZAR, leitura_RetornosDigitais_MXR_FalhaIbntDisjGer) )
+        leitura_RetornosDigitais_MXR_Q_Negativa = LeituraModbusCoil("Q_Negativa", self.ug_dict[f"clp_ug{ug_id}"], UG[f"REG_UG{ug_id}_RetornosDigitais_MXR_Q_Negativa"], )
+        self.condicionadores_ug.append( CondicionadorBase(leitura_RetornosDigitais_MXR_Q_Negativa.descr, DEVE_INDISPONIBILIZAR, leitura_RetornosDigitais_MXR_Q_Negativa) )
 
-            leitura_RetornosDigitais_MXR_FalhaAcionFechaValvBorb = LeituraModbusCoil("FalhaAcionFechaValvBorb", self.ug_dict[f"clp_ug{ug.id}"], UG[f"REG_UG{ug.id}_RetornosDigitais_MXR_FalhaAcionFechaValvBorb"], )
-            self.condicionadores_ug.append( CondicionadorBase(leitura_RetornosDigitais_MXR_FalhaAcionFechaValvBorb.descr, DEVE_INDISPONIBILIZAR, leitura_RetornosDigitais_MXR_FalhaAcionFechaValvBorb) )
+        leitura_RetornosDigitais_MXR_FalhaIbntDisjGer = LeituraModbusCoil("FalhaIbntDisjGer", self.ug_dict[f"clp_ug{ug_id}"], UG[f"REG_UG{ug_id}_RetornosDigitais_MXR_FalhaIbntDisjGer"], )
+        self.condicionadores_ug.append( CondicionadorBase(leitura_RetornosDigitais_MXR_FalhaIbntDisjGer.descr, DEVE_INDISPONIBILIZAR, leitura_RetornosDigitais_MXR_FalhaIbntDisjGer) )
 
-            leitura_RetornosDigitais_MXR_CLP_Falha = LeituraModbusCoil("CLP_Falha", self.ug_dict[f"clp_ug{ug.id}"], UG[f"REG_UG{ug.id}_RetornosDigitais_MXR_CLP_Falha"], )
-            self.condicionadores_ug.append( CondicionadorBase(leitura_RetornosDigitais_MXR_CLP_Falha.descr, DEVE_INDISPONIBILIZAR, leitura_RetornosDigitais_MXR_CLP_Falha) )
+        leitura_RetornosDigitais_MXR_FalhaAcionFechaValvBorb = LeituraModbusCoil("FalhaAcionFechaValvBorb", self.ug_dict[f"clp_ug{ug_id}"], UG[f"REG_UG{ug_id}_RetornosDigitais_MXR_FalhaAcionFechaValvBorb"], )
+        self.condicionadores_ug.append( CondicionadorBase(leitura_RetornosDigitais_MXR_FalhaAcionFechaValvBorb.descr, DEVE_INDISPONIBILIZAR, leitura_RetornosDigitais_MXR_FalhaAcionFechaValvBorb) )
 
-            leitura_RetornosDigitais_MXR_Remota_Falha = LeituraModbusCoil("Remota_Falha", self.ug_dict[f"clp_ug{ug.id}"], UG[f"REG_UG{ug.id}_RetornosDigitais_MXR_Remota_Falha"], )
-            self.condicionadores_ug.append( CondicionadorBase(leitura_RetornosDigitais_MXR_Remota_Falha.descr, DEVE_INDISPONIBILIZAR, leitura_RetornosDigitais_MXR_Remota_Falha) )
+        leitura_RetornosDigitais_MXR_CLP_Falha = LeituraModbusCoil("CLP_Falha", self.ug_dict[f"clp_ug{ug_id}"], UG[f"REG_UG{ug_id}_RetornosDigitais_MXR_CLP_Falha"], )
+        self.condicionadores_ug.append( CondicionadorBase(leitura_RetornosDigitais_MXR_CLP_Falha.descr, DEVE_INDISPONIBILIZAR, leitura_RetornosDigitais_MXR_CLP_Falha) )
 
-            leitura_EntradasDigitais_MXI_QCAUG_TripDisjAgrup = LeituraModbusCoil("QCAUG_TripDisjAgrup", self.ug_dict[f"clp_ug{ug.id}"], UG[f"REG_UG{ug.id}_EntradasDigitais_MXI_QCAUG_TripDisjAgrup"] )
-            self.condicionadores_ug.append( CondicionadorBase(leitura_EntradasDigitais_MXI_QCAUG_TripDisjAgrup.descr, DEVE_INDISPONIBILIZAR, leitura_EntradasDigitais_MXI_QCAUG_TripDisjAgrup) )
+        leitura_RetornosDigitais_MXR_Remota_Falha = LeituraModbusCoil("Remota_Falha", self.ug_dict[f"clp_ug{ug_id}"], UG[f"REG_UG{ug_id}_RetornosDigitais_MXR_Remota_Falha"], )
+        self.condicionadores_ug.append( CondicionadorBase(leitura_RetornosDigitais_MXR_Remota_Falha.descr, DEVE_INDISPONIBILIZAR, leitura_RetornosDigitais_MXR_Remota_Falha) )
 
-            leitura_EntradasDigitais_MXI_QCAUG_TripDisj52A1 = LeituraModbusCoil("QCAUG_TripDisj52A1", self.ug_dict[f"clp_ug{ug.id}"], UG[f"REG_UG{ug.id}_EntradasDigitais_MXI_QCAUG_TripDisj52A1"] )
-            self.condicionadores_ug.append( CondicionadorBase(leitura_EntradasDigitais_MXI_QCAUG_TripDisj52A1.descr, DEVE_INDISPONIBILIZAR, leitura_EntradasDigitais_MXI_QCAUG_TripDisj52A1) )
+        leitura_EntradasDigitais_MXI_QCAUG_TripDisjAgrup = LeituraModbusCoil("QCAUG_TripDisjAgrup", self.ug_dict[f"clp_ug{ug_id}"], UG[f"REG_UG{ug_id}_EntradasDigitais_MXI_QCAUG_TripDisjAgrup"] )
+        self.condicionadores_ug.append( CondicionadorBase(leitura_EntradasDigitais_MXI_QCAUG_TripDisjAgrup.descr, DEVE_INDISPONIBILIZAR, leitura_EntradasDigitais_MXI_QCAUG_TripDisjAgrup) )
 
-            leitura_EntradasDigitais_MXI_QCAUG_Falha380VcaPainel = LeituraModbusCoil("QCAUG_Falha380VcaPainel", self.ug_dict[f"clp_ug{ug.id}"], UG[f"REG_UG{ug.id}_EntradasDigitais_MXI_QCAUG_Falha380VcaPainel"] )
-            self.condicionadores_ug.append( CondicionadorBase(leitura_EntradasDigitais_MXI_QCAUG_Falha380VcaPainel.descr, DEVE_NORMALIZAR, leitura_EntradasDigitais_MXI_QCAUG_Falha380VcaPainel) )
+        leitura_EntradasDigitais_MXI_QCAUG_TripDisj52A1 = LeituraModbusCoil("QCAUG_TripDisj52A1", self.ug_dict[f"clp_ug{ug_id}"], UG[f"REG_UG{ug_id}_EntradasDigitais_MXI_QCAUG_TripDisj52A1"] )
+        self.condicionadores_ug.append( CondicionadorBase(leitura_EntradasDigitais_MXI_QCAUG_TripDisj52A1.descr, DEVE_INDISPONIBILIZAR, leitura_EntradasDigitais_MXI_QCAUG_TripDisj52A1) )
 
-            leitura_EntradasDigitais_MXI_PalhetasDesal = LeituraModbusCoil("PalhetasDesal", self.ug_dict[f"clp_ug{ug.id}"], UG[f"REG_UG{ug.id}_EntradasDigitais_MXI_PalhetasDesal"] )
-            self.condicionadores_ug.append( CondicionadorBase(leitura_EntradasDigitais_MXI_PalhetasDesal.descr, DEVE_INDISPONIBILIZAR, leitura_EntradasDigitais_MXI_PalhetasDesal) )
+        leitura_EntradasDigitais_MXI_QCAUG_Falha380VcaPainel = LeituraModbusCoil("QCAUG_Falha380VcaPainel", self.ug_dict[f"clp_ug{ug_id}"], UG[f"REG_UG{ug_id}_EntradasDigitais_MXI_QCAUG_Falha380VcaPainel"] )
+        self.condicionadores_ug.append( CondicionadorBase(leitura_EntradasDigitais_MXI_QCAUG_Falha380VcaPainel.descr, DEVE_NORMALIZAR, leitura_EntradasDigitais_MXI_QCAUG_Falha380VcaPainel) )
 
-            leitura_EntradasDigitais_MXI_NivelMAltoPocoDren = LeituraModbusCoil("NivelMAltoPocoDren", self.ug_dict[f"clp_ug{ug.id}"], UG[f"REG_UG{ug.id}_EntradasDigitais_MXI_NivelMAltoPocoDren"] )
-            self.condicionadores_ug.append( CondicionadorBase(leitura_EntradasDigitais_MXI_NivelMAltoPocoDren.descr, DEVE_INDISPONIBILIZAR, leitura_EntradasDigitais_MXI_NivelMAltoPocoDren) )
+        leitura_EntradasDigitais_MXI_PalhetasDesal = LeituraModbusCoil("PalhetasDesal", self.ug_dict[f"clp_ug{ug_id}"], UG[f"REG_UG{ug_id}_EntradasDigitais_MXI_PalhetasDesal"] )
+        self.condicionadores_ug.append( CondicionadorBase(leitura_EntradasDigitais_MXI_PalhetasDesal.descr, DEVE_INDISPONIBILIZAR, leitura_EntradasDigitais_MXI_PalhetasDesal) )
 
-            leitura_EntradasDigitais_MXI_FreioSemEnergia = LeituraModbusCoil("FreioSemEnergia", self.ug_dict[f"clp_ug{ug.id}"], UG[f"REG_UG{ug.id}_EntradasDigitais_MXI_FreioSemEnergia"] )
-            self.condicionadores_ug.append( CondicionadorBase(leitura_EntradasDigitais_MXI_FreioSemEnergia.descr, DEVE_INDISPONIBILIZAR, leitura_EntradasDigitais_MXI_FreioSemEnergia) )
+        leitura_EntradasDigitais_MXI_NivelMAltoPocoDren = LeituraModbusCoil("NivelMAltoPocoDren", self.ug_dict[f"clp_ug{ug_id}"], UG[f"REG_UG{ug_id}_EntradasDigitais_MXI_NivelMAltoPocoDren"] )
+        self.condicionadores_ug.append( CondicionadorBase(leitura_EntradasDigitais_MXI_NivelMAltoPocoDren.descr, DEVE_INDISPONIBILIZAR, leitura_EntradasDigitais_MXI_NivelMAltoPocoDren) )
 
-            leitura_EntradasDigitais_MXI_FreioFiltroSaturado = LeituraModbusCoil("FreioFiltroSaturado", self.ug_dict[f"clp_ug{ug.id}"], UG[f"REG_UG{ug.id}_EntradasDigitais_MXI_FreioFiltroSaturado"] )
-            self.condicionadores_ug.append( CondicionadorBase(leitura_EntradasDigitais_MXI_FreioFiltroSaturado.descr, DEVE_INDISPONIBILIZAR, leitura_EntradasDigitais_MXI_FreioFiltroSaturado) )
+        leitura_EntradasDigitais_MXI_FreioSemEnergia = LeituraModbusCoil("FreioSemEnergia", self.ug_dict[f"clp_ug{ug_id}"], UG[f"REG_UG{ug_id}_EntradasDigitais_MXI_FreioSemEnergia"] )
+        self.condicionadores_ug.append( CondicionadorBase(leitura_EntradasDigitais_MXI_FreioSemEnergia.descr, DEVE_INDISPONIBILIZAR, leitura_EntradasDigitais_MXI_FreioSemEnergia) )
 
-            leitura_EntradasDigitais_MXI_FiltroRetSujo100Sujo = LeituraModbusCoil("FiltroRetSujo100Sujo", self.ug_dict[f"clp_ug{ug.id}"], UG[f"REG_UG{ug.id}_EntradasDigitais_MXI_FiltroRetSujo100Sujo"] )
-            self.condicionadores_ug.append( CondicionadorBase(leitura_EntradasDigitais_MXI_FiltroRetSujo100Sujo.descr, DEVE_INDISPONIBILIZAR, leitura_EntradasDigitais_MXI_FiltroRetSujo100Sujo) )
+        leitura_EntradasDigitais_MXI_FreioFiltroSaturado = LeituraModbusCoil("FreioFiltroSaturado", self.ug_dict[f"clp_ug{ug_id}"], UG[f"REG_UG{ug_id}_EntradasDigitais_MXI_FreioFiltroSaturado"] )
+        self.condicionadores_ug.append( CondicionadorBase(leitura_EntradasDigitais_MXI_FreioFiltroSaturado.descr, DEVE_INDISPONIBILIZAR, leitura_EntradasDigitais_MXI_FreioFiltroSaturado) )
 
-            leitura_EntradasDigitais_MXI_FiltroPresSujo100Sujo = LeituraModbusCoil("FiltroPresSujo100Sujo", self.ug_dict[f"clp_ug{ug.id}"], UG[f"REG_UG{ug.id}_EntradasDigitais_MXI_FiltroPresSujo100Sujo"] )
-            self.condicionadores_ug.append( CondicionadorBase(leitura_EntradasDigitais_MXI_FiltroPresSujo100Sujo.descr, DEVE_INDISPONIBILIZAR, leitura_EntradasDigitais_MXI_FiltroPresSujo100Sujo) )
+        leitura_EntradasDigitais_MXI_FiltroRetSujo100Sujo = LeituraModbusCoil("FiltroRetSujo100Sujo", self.ug_dict[f"clp_ug{ug_id}"], UG[f"REG_UG{ug_id}_EntradasDigitais_MXI_FiltroRetSujo100Sujo"] )
+        self.condicionadores_ug.append( CondicionadorBase(leitura_EntradasDigitais_MXI_FiltroRetSujo100Sujo.descr, DEVE_INDISPONIBILIZAR, leitura_EntradasDigitais_MXI_FiltroRetSujo100Sujo) )
 
-            leitura_EntradasDigitais_MXI_FiltroPressaoBbaMecSj100 = LeituraModbusCoil("FiltroPressaoBbaMecSj100", self.ug_dict[f"clp_ug{ug.id}"], UG[f"REG_UG{ug.id}_EntradasDigitais_MXI_FiltroPressaoBbaMecSj100"] )
-            self.condicionadores_ug.append( CondicionadorBase(leitura_EntradasDigitais_MXI_FiltroPressaoBbaMecSj100.descr, DEVE_INDISPONIBILIZAR, leitura_EntradasDigitais_MXI_FiltroPressaoBbaMecSj100) )
+        leitura_EntradasDigitais_MXI_FiltroPresSujo100Sujo = LeituraModbusCoil("FiltroPresSujo100Sujo", self.ug_dict[f"clp_ug{ug_id}"], UG[f"REG_UG{ug_id}_EntradasDigitais_MXI_FiltroPresSujo100Sujo"] )
+        self.condicionadores_ug.append( CondicionadorBase(leitura_EntradasDigitais_MXI_FiltroPresSujo100Sujo.descr, DEVE_INDISPONIBILIZAR, leitura_EntradasDigitais_MXI_FiltroPresSujo100Sujo) )
 
-            leitura_EntradasDigitais_MXI_FaltaFluxoOleoMc = LeituraModbusCoil("FaltaFluxoOleoMc", self.ug_dict[f"clp_ug{ug.id}"], UG[f"REG_UG{ug.id}_EntradasDigitais_MXI_FaltaFluxoOleoMc"] )
-            self.condicionadores_ug.append( CondicionadorBase(leitura_EntradasDigitais_MXI_FaltaFluxoOleoMc.descr, DEVE_INDISPONIBILIZAR, leitura_EntradasDigitais_MXI_FaltaFluxoOleoMc) )
+        leitura_EntradasDigitais_MXI_FiltroPressaoBbaMecSj100 = LeituraModbusCoil("FiltroPressaoBbaMecSj100", self.ug_dict[f"clp_ug{ug_id}"], UG[f"REG_UG{ug_id}_EntradasDigitais_MXI_FiltroPressaoBbaMecSj100"] )
+        self.condicionadores_ug.append( CondicionadorBase(leitura_EntradasDigitais_MXI_FiltroPressaoBbaMecSj100.descr, DEVE_INDISPONIBILIZAR, leitura_EntradasDigitais_MXI_FiltroPressaoBbaMecSj100) )
 
-            leitura_EntradasDigitais_MXI_Falta125VccCom = LeituraModbusCoil("Falta125VccCom", self.ug_dict[f"clp_ug{ug.id}"], UG[f"REG_UG{ug.id}_EntradasDigitais_MXI_Falta125VccCom"] )
-            self.condicionadores_ug.append( CondicionadorBase(leitura_EntradasDigitais_MXI_Falta125VccCom.descr, DEVE_INDISPONIBILIZAR, leitura_EntradasDigitais_MXI_Falta125VccCom) )
+        leitura_EntradasDigitais_MXI_FaltaFluxoOleoMc = LeituraModbusCoil("FaltaFluxoOleoMc", self.ug_dict[f"clp_ug{ug_id}"], UG[f"REG_UG{ug_id}_EntradasDigitais_MXI_FaltaFluxoOleoMc"] )
+        self.condicionadores_ug.append( CondicionadorBase(leitura_EntradasDigitais_MXI_FaltaFluxoOleoMc.descr, DEVE_INDISPONIBILIZAR, leitura_EntradasDigitais_MXI_FaltaFluxoOleoMc) )
 
-            leitura_EntradasDigitais_MXI_Falta125VccAlimVal = LeituraModbusCoil("Falta125VccAlimVal", self.ug_dict[f"clp_ug{ug.id}"], UG[f"REG_UG{ug.id}_EntradasDigitais_MXI_Falta125VccAlimVal"] )
-            self.condicionadores_ug.append( CondicionadorBase(leitura_EntradasDigitais_MXI_Falta125VccAlimVal.descr, DEVE_INDISPONIBILIZAR, leitura_EntradasDigitais_MXI_Falta125VccAlimVal) )
+        leitura_EntradasDigitais_MXI_Falta125VccCom = LeituraModbusCoil("Falta125VccCom", self.ug_dict[f"clp_ug{ug_id}"], UG[f"REG_UG{ug_id}_EntradasDigitais_MXI_Falta125VccCom"] )
+        self.condicionadores_ug.append( CondicionadorBase(leitura_EntradasDigitais_MXI_Falta125VccCom.descr, DEVE_INDISPONIBILIZAR, leitura_EntradasDigitais_MXI_Falta125VccCom) )
 
-            leitura_EntradasDigitais_MXI_Falta125Vcc = LeituraModbusCoil("Falta125Vcc", self.ug_dict[f"clp_ug{ug.id}"], UG[f"REG_UG{ug.id}_EntradasDigitais_MXI_Falta125Vcc"] )
-            self.condicionadores_ug.append( CondicionadorBase(leitura_EntradasDigitais_MXI_Falta125Vcc.descr, DEVE_INDISPONIBILIZAR, leitura_EntradasDigitais_MXI_Falta125Vcc) )
+        leitura_EntradasDigitais_MXI_Falta125VccAlimVal = LeituraModbusCoil("Falta125VccAlimVal", self.ug_dict[f"clp_ug{ug_id}"], UG[f"REG_UG{ug_id}_EntradasDigitais_MXI_Falta125VccAlimVal"] )
+        self.condicionadores_ug.append( CondicionadorBase(leitura_EntradasDigitais_MXI_Falta125VccAlimVal.descr, DEVE_INDISPONIBILIZAR, leitura_EntradasDigitais_MXI_Falta125VccAlimVal) )
 
-            leitura_EntradasDigitais_MXI_FalhaDisjTpsProt = LeituraModbusCoil("FalhaDisjTpsProt", self.ug_dict[f"clp_ug{ug.id}"], UG[f"REG_UG{ug.id}_EntradasDigitais_MXI_FalhaDisjTpsProt"] )
-            self.condicionadores_ug.append( CondicionadorBase(leitura_EntradasDigitais_MXI_FalhaDisjTpsProt.descr, DEVE_INDISPONIBILIZAR, leitura_EntradasDigitais_MXI_FalhaDisjTpsProt) )
+        leitura_EntradasDigitais_MXI_Falta125Vcc = LeituraModbusCoil("Falta125Vcc", self.ug_dict[f"clp_ug{ug_id}"], UG[f"REG_UG{ug_id}_EntradasDigitais_MXI_Falta125Vcc"] )
+        self.condicionadores_ug.append( CondicionadorBase(leitura_EntradasDigitais_MXI_Falta125Vcc.descr, DEVE_INDISPONIBILIZAR, leitura_EntradasDigitais_MXI_Falta125Vcc) )
 
-            leitura_AVR_EntradasDigitais_MXI_FalhaInterna = LeituraModbusCoil("AVR_FalhaInterna", self.ug_dict[f"clp_ug{ug.id}"], UG[f"REG_UG{ug.id}_EntradasDigitais_MXI_AVR_FalhaInterna"] )
-            self.condicionadores_ug.append( CondicionadorBase(leitura_AVR_EntradasDigitais_MXI_FalhaInterna.descr, DEVE_INDISPONIBILIZAR, leitura_AVR_EntradasDigitais_MXI_FalhaInterna) )
+        leitura_EntradasDigitais_MXI_FalhaDisjTpsProt = LeituraModbusCoil("FalhaDisjTpsProt", self.ug_dict[f"clp_ug{ug_id}"], UG[f"REG_UG{ug_id}_EntradasDigitais_MXI_FalhaDisjTpsProt"] )
+        self.condicionadores_ug.append( CondicionadorBase(leitura_EntradasDigitais_MXI_FalhaDisjTpsProt.descr, DEVE_INDISPONIBILIZAR, leitura_EntradasDigitais_MXI_FalhaDisjTpsProt) )
+
+        leitura_AVR_EntradasDigitais_MXI_FalhaInterna = LeituraModbusCoil("AVR_FalhaInterna", self.ug_dict[f"clp_ug{ug_id}"], UG[f"REG_UG{ug_id}_EntradasDigitais_MXI_AVR_FalhaInterna"] )
+        self.condicionadores_ug.append( CondicionadorBase(leitura_AVR_EntradasDigitais_MXI_FalhaInterna.descr, DEVE_INDISPONIBILIZAR, leitura_AVR_EntradasDigitais_MXI_FalhaInterna) )

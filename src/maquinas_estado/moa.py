@@ -26,7 +26,7 @@ class StateMachine:
                 raise TypeError
             self.state = self.state.run()
 
-        except Exception as e:
+        except Exception:
             logger.exception(f"Estado ({self.state}) levantou uma exception: {traceback.print_stack}")
             self.em_falha_critica = True
             self.state = FalhaCritica()
@@ -46,7 +46,7 @@ class State:
         self.args = args
         self.kwargs = kwargs
 
-        if (shared_dict or usina or ugs) is None:
+        if (shared_dict or usina or ugs or ocorrencias or agendamentos) is None:
             logger.error(f"Erro ao instanciar o estado base do MOA.\nTraceback: {traceback.print_stack}")
             self.state = FalhaCritica()
         else:
@@ -69,17 +69,18 @@ class FalhaCritica(State):
 
 class Pronto(State):
     def __init__(self, *args, **kwargs):
-        super().__init__(shared_dict=None, usina=None, *args, **kwargs)
+        super().__init__(*args, **kwargs)
         self.n_tentativa = 0
         self.usina.state_moa = 3
 
     def run(self):
+        self.usina.ler_valores()
+
         if self.n_tentativa >= 2:
             return FalhaCritica()
         else:
             try:
-                self.usina.ler_valores()
-                return ValoresInternosAtualizados(self) if not self.dict.CFG["tda_offline"] else OperacaoTDAOffline(self)
+                return ControleNormal() if not self.dict.GLB["tda_offline"] else ControleTdaOffline()
 
             except Exception:
                 self.n_tentativa += 1
@@ -87,76 +88,68 @@ class Pronto(State):
                 sleep(self.dict.CFG["timeout_padrao"] * self.n_tentativa)
                 return self
 
-class ValoresInternosAtualizados(State):
+class ControleNormal(State):
     def __init__(self, *args, **kwargs):
-        super().__init__(shared_dict=None, usina=None, *args, **kwargs)
-        
+        super().__init__(*args, **kwargs)
+
         self.dict.GLB["tda_offline"] = False
         self.usina.clp_moa.write_single_coil(MOA["REG_PAINEL_LIDO"], [1])
 
     def run(self):
         self.usina.ler_valores()
-        condicionadores_ativos = self.ocorrencias.verificar_condicionadores_usn()
+        self.ocorrencias.verificar_condicionadores_usn()
 
         if self.ocorrencias.deve_normalizar_usn:
-            if not self.usina.normalizar_emergencia() and not self.usina.tensao_ok and not self.dict.GLB["borda_tensao"]:
-                logger.warning("Tensão da linha fora do limite ")
-                self.dict.GLB["borda_tensao"] = True
-                threading.Thread(target=lambda: self.usina.aguardar_tensao(600)).start()
-
-            elif self.usina.timer_tensao:
-                self.dict.GLB["borda_tensao"] = False
-                self.usina.timer_tensao = None
-                self.ocorrencias.deve_normalizar_usn = None
-
-            elif not self.usina.timer_tensao:
-                self.dict.GLB["borda_tensao"] = False
-                self.usina.timer_tensao = None
-                self.ocorrencias.deve_normalizar_usn = None
-                logger.critical("O tempo de normalização da linha excedeu o limite! (10 min)")
-                return Emergencia(self)
+            if not self.usina.normalizar_emergencia() and not self.usina.tensao_ok:
+                if not self.usina.aguardar_tensao():
+                    return Emergencia()
 
         if self.usina.clp_emergencia_acionada or self.usina.db_emergencia_acionada or self.ocorrencias.deve_indisponibilizar_usn:
-            logger.info("Atenção! Emergência acionada!")
+            logger.critical("Atenção! Emergência acionada!")
             self.ocorrencias.deve_indisponibilizar_usn=False
-            return Emergencia(self)
+            return Emergencia()
 
-        if len(Agendamentos.agendamentos_pendentes()) > 0:
-            return AgendamentosPendentes(self)
+        if len(self.agendamentos.agendamentos_pendentes()) > 0:
+            return ControleAgendamentos()
 
         if not self.usina.modo_autonomo:
             logger.debug("Comando recebido: desabilitar modo autonomo.")
-            return ModoManualAtivado(self)
-
-        if self.usina.aguardando_reservatorio == 1 and (self.usina.nv_montante > self.dict.CFG["nv_alvo"]):
-            logger.debug("Reservatorio dentro do nivel de trabalho")
-            self.usina.aguardando_reservatorio = 0
-            return ReservatorioNormal(self)
+            return ModoManual()
 
         if self.usina.nv_montante < self.dict.CFG["nv_minimo"]:
             self.usina.aguardando_reservatorio = 1
             logger.info("Reservatorio abaixo do nivel de trabalho")
-            return ReservatorioAbaixoDoMinimo(self)
+            return ReservatorioMinimo()
 
         if self.usina.nv_montante >= self.dict.CFG["nv_maximo"]:
-            return ReservatorioAcimaDoMaximo(self)
+            return ReservatorioMaximo()
 
-        return ReservatorioNormal(self)
+        if self.usina.aguardando_reservatorio == 1 and (self.usina.nv_montante > self.dict.CFG["nv_alvo"]):
+            logger.debug("Reservatorio dentro do nivel de trabalho")
+            self.usina.aguardando_reservatorio = 0
+            return ReservatorioNormal()
+
+        elif self.usina.aguardando_reservatorio == 1:
+            logger.debug("Aguardando reservatório.")
+            return ControleDados()
+
+        else:
+            return ReservatorioNormal()
 
 class ReservatorioNormal(State):
     def __init__(self, *args, **kwargs):
-        super().__init__(usina=None, ugs=None, *args, **kwargs)
+        super().__init__(*args, **kwargs)
 
     def run(self):
         self.usina.ler_valores()
         self.usina.controle_normal()
         for ug in self.ugs:
             ug.step()
-        return ControleRealizado(self)
+        return ControleDados()
 
-class ReservatorioAbaixoDoMinimo(State):
+class ReservatorioMinimo(State):
     def __init__(self, *args, **kwargs):
-        super().__init__(shared_dict=None, usina=None, ugs=None, *args, **kwargs)
+        super().__init__(*args, **kwargs)
 
     def run(self):
         self.usina.ler_valores()
@@ -165,55 +158,55 @@ class ReservatorioAbaixoDoMinimo(State):
         if self.usina.nv_montante_recente <= self.dict.CFG["nv_fundo_reservatorio"]:
             if not self.usina.ping(self.dict.CFG["TDA_slave_ip"]):
                 logger.warning("Sem comunicação com CLP TDA, entrando no modo de operação Offline")
-                return OperacaoTDAOffline(self)
+                return ControleTdaOffline()
             else:
                 logger.critical(f"Nivel montante ({self.usina.nv_montante_recente:3.2f}) atingiu o fundo do reservatorio!")
-                return Emergencia(self)
+                return Emergencia()
 
         for ug in self.ugs:
             ug.step()
-        return ControleRealizado(self)
+        return ControleDados()
 
-class ReservatorioAcimaDoMaximo(State):
+class ReservatorioMaximo(State):
     def __init__(self, *args, **kwargs):
-        super().__init__(shared_dict=None, usina=None, ugs=None, *args,**kwargs)
+        super().__init__(*args,**kwargs)
 
     def run(self):
         self.usina.ler_valores()
         if self.usina.nv_montante_recente >= self.dict.CFG["nv_maximorum"]:
             self.usina.distribuir_potencia(0)
             logger.critical(f"Nivel montante ({self.usina.nv_montante_recente:3.2f}) atingiu o maximorum!")
-            return Emergencia(self)
+            return Emergencia()
         else:
             self.usina.distribuir_potencia(self.dict.CFG["pot_maxima_usina"])
             self.usina.controle_ie = 0.5
             self.usina.controle_i = 0.5
             for ug in self.ugs: 
                 ug.step()
-            return ControleRealizado(self)
+            return ControleDados()
 
-class ControleRealizado(State):
+class ControleDados(State):
     def __init__(self, *args, **kwargs):
-        super().__init__(usina=None, *args, **kwargs)
+        super().__init__(*args, **kwargs)
 
     def run(self):
         self.usina.ler_valores()
         logger.debug("Escrevendo valores")
         self.usina.escrever_valores()
-        return Pronto(self)
+        return Pronto()
 
-class AgendamentosPendentes(State):
+class ControleAgendamentos(State):
     def __init__(self, *args, **kwargs):
-        super().__init__(agendamentos=None, *args, **kwargs)
+        super().__init__(*args, **kwargs)
 
     def run(self):
         logger.info("Tratando agendamentos")
         self.agendamentos.verificar_agendamentos()
-        return ControleRealizado(self)
+        return ControleDados()
 
-class ModoManualAtivado(State):
+class ModoManual(State):
     def __init__(self, *args, **kwargs):
-        super().__init__(shared_dict=None, usina=None, ugs=None, *args, **kwargs)
+        super().__init__(*args, **kwargs)
 
         self.usina.modo_autonomo = False
 
@@ -238,13 +231,13 @@ class ModoManualAtivado(State):
             if self.usina.clp_emergencia_acionada == 1 or self.usina.db_emergencia_acionada == 1:
                 self.usina.normalizar_emergencia()
             self.usina.heartbeat()
-            return ControleRealizado(self)
+            return ControleDados()
 
-        return AgendamentosPendentes(self) if len(self.agendamentos.agendamentos_pendentes()) > 0 else self
+        return ControleAgendamentos() if len(self.agendamentos.agendamentos_pendentes()) > 0 else self
 
 class Emergencia(State):
     def __init__(self, *args, **kwargs):
-        super().__init__(shared_dict=None, usina=None, ugs=None,*args, **kwargs)
+        super().__init__(*args, **kwargs)
         self.n_tentativa = 0
         self.nao_ligou = True
         self.em_sm_acionada = datetime.now(pytz.timezone("Brazil/East")).replace(tzinfo=None)
@@ -261,7 +254,7 @@ class Emergencia(State):
             for ug in self.ugs:
                 ug.forcar_estado_indisponivel()
                 ug.step()
-            return ModoManualAtivado(self)
+            return ModoManual()
 
         else:
             if self.usina.db_emergencia_acionada:
@@ -278,7 +271,7 @@ class Emergencia(State):
                 if self.ocorrencias.deve_indisponibilizar_usn:
                     logger.critical("Passando para manual e ligando por VOIP.")
                     self.usina.entrar_em_modo_manual()
-                    return ModoManualAtivado(self.usina)
+                    return ModoManual()
 
                 elif self.ocorrencias.deve_normalizar_usn:
                     logger.info(f"Normalizando usina. (tentativa{self.n_tentativa}/2) (limite entre tentaivas: {self.dict.CFG['timeout_normalizacao']}s)")
@@ -288,11 +281,11 @@ class Emergencia(State):
 
                 else:
                     logger.debug("Usina normalizada. Retomando operação...")
-                    return ControleRealizado(self.usina)
+                    return ControleDados()
 
-class OperacaoTDAOffline(State):
+class ControleTdaOffline(State):
     def __init__(self, *args, **kwargs):
-        super().__init__(shared_dict=None, usina=None, ugs=None, *args, **kwargs)
+        super().__init__(*args, **kwargs)
 
         self.dict.GLB["tda_offline"] = True
 
@@ -300,9 +293,9 @@ class OperacaoTDAOffline(State):
         self.usina.ler_valores()
         self.ocorrencias.verificar_condicionadores_usn()
 
-        if self.ocorrencias.emergencia_condic:
+        if self.ocorrencias.deve_indisponibilizar_usn:
             logger.info("Condicionadores ativos com gravidade alta!")
-            return Emergencia(self)
+            return Emergencia()
 
         if self.ocorrencias.deve_normalizar_usn:
             if not self.usina.normalizar_emergencia() and not self.usina.tensao_ok and not self.dict.GLB["borda_tensao"]:
@@ -320,14 +313,14 @@ class OperacaoTDAOffline(State):
                 self.usina.timer_tensao = None
                 self.ocorrencias.deve_normalizar_usn = None
                 logger.warning("O tempo de normalização da linha excedeu o limite! (10 min)")
-                return Emergencia(self)
+                return Emergencia()
 
         if not self.usina.modo_autonomo:
             logger.info("Comando recebido: desabilitar modo autonomo")
-            return ModoManualAtivado(self)
+            return ModoManual()
 
         for ug in self.ugs:
             ug.controle_cx_espiral()
             ug.step()
 
-        return AgendamentosPendentes(self) if len(self.agendamentos.agendamentos_pendentes()) > 0 else ControleRealizado(self)
+        return ControleAgendamentos() if len(self.agendamentos.agendamentos_pendentes()) > 0 else ControleDados()
