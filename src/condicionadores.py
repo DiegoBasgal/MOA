@@ -4,13 +4,13 @@ __author__ = "Lucas Lavratti"
 from leituras import *
 
 class CondicionadorBase:
-    def __init__(self, descr: str, gravidade: int, leitura: LeituraBase, ug_id: int = None, estados: list = None):
+    def __init__(self, descr: str, gravidade: int, leitura: LeituraBase, ug_id: int = None, etapas: list = None):
         self.__descr = descr
         self.__leitura = leitura
         self.__gravidade = gravidade
-        self.__ug_id = ug_id if ug_id is not None else None
-        self.__estados = estados if estados is not None else []
         self.__ugs = []
+        self.__ug_id = ug_id if ug_id is not None else None
+        self.__etapas = etapas if etapas is not None else []
 
     def __str__(self):
         return f"Condicionador: {self.__descr}, Gravidade: {self.__gravidade}"
@@ -25,14 +25,15 @@ class CondicionadorBase:
 
     @property
     def ativo(self) -> bool:
-        if self.__ug_id is None or not self.__estados:
-            return False if self.leitura.valor == 0 else True
-        else:
-            for ug in self.__ugs:
-                if ug.id == self.__ug_id and ug.etapa_atual in self.__estados:
+        if self.__ug_id and self.__etapas:
+            for ug in self.ugs:
+                if ug.id == self.__ug_id and ug.etapa_atual in self.__etapas:
                     return False if self.leitura.valor == 0 else True
-                else:
-                    return False
+            else:
+                return False
+        else:
+            return False if self.leitura.valor == 0 else True
+
 
     @property
     def valor(self) -> float:
@@ -42,7 +43,12 @@ class CondicionadorBase:
     def gravidade(self) -> int:
         return self.__gravidade
 
-    def set_ugs(self, ugs: list) -> None:
+    @property
+    def ugs(self) -> list:
+        return self.__ugs
+
+    @ugs.setter
+    def ugs(self, ugs: list) -> None:
         self.__ugs = ugs
 
 class CondicionadorExponencial(CondicionadorBase):
@@ -55,14 +61,14 @@ class CondicionadorExponencial(CondicionadorBase):
         valor_limite: float,
         ordem: float = (1 / 4),
         ug_id: int = None,
-        estados: list = None
+        etapas: list = None
     ):
         super().__init__(descr, gravidade, leitura)
         self.__ordem = ordem
         self.__valor_base = valor_base
         self.__valor_limite = valor_limite
         self.__ug_id = ug_id if ug_id is not None else None
-        self.__estados = estados if estados is not None else []
+        self.__etapas = etapas if etapas is not None else []
 
     @property
     def valor_base(self):
@@ -90,14 +96,14 @@ class CondicionadorExponencial(CondicionadorBase):
 
     @property
     def ativo(self) -> bool:
-        if self.__ug_id is None or not self.__estados:
-            return True if self.valor >= 1 else False
-        else:
-            for ug in self.__ugs:
-                if ug.id == self.__ug_id and ug.etapa_atual in self.__estados:
+        if self.__ug_id and self.__etapas:
+            for ug in self.ugs:
+                if ug.id == self.__ug_id and ug.etapa_atual in self.__etapas:
                     return True if self.valor >= 1 else False
                 else:
                     return False
+        else:
+            return True if self.valor >= 1 else False
 
     @property
     def valor(self) -> float:

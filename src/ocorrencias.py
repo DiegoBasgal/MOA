@@ -86,8 +86,7 @@ class Ocorrencias:
         )
         
         self.leitura_condicionadores_usn()
-        for ug in self.ugs:
-            self.leitura_condicionadores_ug(ug.id)
+        [self.leitura_condicionadores_ug(ug.id) for ug in self.ugs]
 
     # Property/Setter Protegidos
     @property
@@ -131,79 +130,28 @@ class Ocorrencias:
         self._condicionadores_essenciais_ug = var
 
     def verificar_condicionadores_usn(self) -> bool:
-        condicionadores_ativos = []
-        ler_condicionadores_usn = False
+        if [True for condic in self.condicionadores_essenciais_usn if condic.ativo] or self.dict.GLB["avisado_em_eletrica"]:
+            condicionadores_ativos = [x for y in [self.condicionadores_essenciais_usn, self.condicionadores_usn] if y.ativo for x in y if x.ativo]
+            self.deve_normalizar_usn = [True for condic in condicionadores_ativos if condic.ativo and condic.gravidade == DEVE_NORMALIZAR]
+            self.deve_indisponibilizar_usn = [True for condic in condicionadores_ativos if condic.ativo and condic.gravidade == DEVE_INDISPONIBILIZAR]
+            logger.warning(f"[OCO-USN] Foram detectados condicionadores ativos na Usina:")
+            [logger.warning(f"[OCO-USN] Descrição: \"{condic.descr}\", Gravidade: {STR_CONDIC[condic.gravidade] if condic.gravidade in STR_CONDIC else 'Desconhecida'}") for condic in condicionadores_ativos]
 
-        for condic in self.condicionadores_essenciais_usn:
-            ler_condicionadores_usn=True if condic.ativo else False
-            break
-
-        if ler_condicionadores_usn or self.dict.GLB["avisado_em_eletrica"]:
-            for condic.ativo in self.condicionadores_essenciais_usn:
-                self.deve_normalizar_usn=True if condic.gravidade == DEVE_NORMALIZAR else False
-                self.deve_indisponibilizar_usn=True if condic.gravidade == DEVE_INDISPONIBILIZAR else False
-                condicionadores_ativos.append(condic.ativo)
-
-            for condic.ativo in self.condicionadores_usn:
-                self.deve_normalizar_usn=True if condic.gravidade == DEVE_NORMALIZAR else False
-                self.deve_indisponibilizar_usn=True if condic.gravidade == DEVE_INDISPONIBILIZAR else False
-                condicionadores_ativos.append(condic.ativo)
-
-        if self.deve_normalizar_usn or self.deve_indisponibilizar_usn:
-            logger.info(f"[OCO-USN] Foram detectados condicionadores ativos na Usina:")
-            for condic in condicionadores_ativos:
-                logger.warning(f"[OCO-USN] Descrição: \"{condic.descr}\", Gravidade: {STR_CONDIC[condic.gravidade] if condic.gravidade in STR_CONDIC else 'Desconhecida'}")
-            return True
+            return True if self.deve_normalizar_usn or self.deve_indisponibilizar_usn else False
         else:
             return False
 
     def verificar_condicionadores_ug(self, ug_id) -> bool:
-        condicionadores_ativos = []
-        ler_condicionadores_ug = False
+        if [True for condic in self.condicionadores_essenciais_ug if condic.ativo]:
+            condicionadores_ativos = [x for y in [self.condicionadores_essenciais_ug, self.condicionadores_ug] for x in y if x.ativo]
+            self.deve_aguardar_ug = [True for condic in condicionadores_ativos if condic.gravidade == DEVE_NORMALIZAR]
+            self.deve_normalizar_ug = [True for condic in condicionadores_ativos if condic.gravidade == DEVE_INDISPONIBILIZAR]
+            logger.warning(f"[OCO-USN] Foram detectados condicionadores ativos na Usina:")
+            [logger.warning(f"[OCO-USN] Descrição: \"{condic.descr}\", Gravidade: {STR_CONDIC[condic.gravidade] if condic.gravidade in STR_CONDIC else 'Desconhecida'}") for condic in condicionadores_ativos]
+            return True if self.deve_normalizar_ug or self.deve_indisponibilizar_ug else False 
 
-        for condic in self.condicionadores_essenciais_ug:
-            ler_condicionadores_ug=True if condic.ativo else False
-            break
-
-        if ler_condicionadores_ug:
-            for condic in self.condicionadores_essenciais_ug:
-                if condic.ativo:
-                    self.deve_aguardar_ug = True if condic.gravidade == DEVE_AGUARDAR else False
-                    self.deve_normalizar_ug = True if condic.gravidade == DEVE_NORMALIZAR else False
-                    self.deve_indisponibilizar_ug = True if condic.gravidade == DEVE_INDISPONIBILIZAR else False
-                    condicionadores_ativos.append(condic.ativo)
-
-            for condic in self.condicionadores_ug:
-                if condic.ativo:
-                    self.deve_aguardar_ug = True if condic.gravidade == DEVE_AGUARDAR else False
-                    self.deve_normalizar_ug = True if condic.gravidade == DEVE_NORMALIZAR else False
-                    self.deve_indisponibilizar_ug = True if condic.gravidade == DEVE_INDISPONIBILIZAR else False
-                    condicionadores_ativos.append(condic.ativo)
-
-            if self.deve_aguardar_ug or self.deve_normalizar_ug or self.deve_indisponibilizar_ug:
-                logger.info(f"[OCO-UG{ug_id}] Foram detectados condicionadores ativos na UG:")
-                for condic in condicionadores_ativos:
-                    logger.warning(f"[OCO-UG{ug_id}] Descrição: \"{condic.descr}\", Gravidade: {STR_CONDIC[condic.gravidade] if condic.gravidade in STR_CONDIC else 'Desconhecida'}")
-                return True
-            else:
-                return False
         else:
             return False
-
-    def verificar_condicionadores_ug_restrito(self, ug_id) -> list([CondicionadorBase]):
-        condicionadores_ativos = []
-
-        for condic in self.condicionadores_essenciais_ug:
-            if condic.ativo:
-                condicionadores_ativos.append(condic.ativo) if condic.gravidade == DEVE_AGUARDAR else None
-                self.deve_indisponibilizar_ug = True if condic.ativo and condic.gravidade == DEVE_INDISPONIBILIZAR else False
-
-        for condic in self.condicionadores_ug:
-            if condic.ativo:
-                condicionadores_ativos.append(condic.ativo) if condic.gravidade == DEVE_AGUARDAR else None
-                self.deve_indisponibilizar_ug = True if condic.ativo and condic.gravidade == DEVE_INDISPONIBILIZAR else False
-
-        return condicionadores_ativos if condicionadores_ativos else []
 
     def leitura_temporizada(self, delay) -> None:
         proxima_leitura = time() + delay
@@ -221,19 +169,19 @@ class Ocorrencias:
             proxima_leitura += (time() - proxima_leitura) // delay * delay + delay
 
     def acionar_voip(self) -> None:
-        V_VARS = voip.VARS
+        VOIP = voip.VARS
         try:
             if self.voip_usn:
-                for i, j in zip(self.dict.VOIP, V_VARS):
+                for i, j in zip(self.dict.VOIP, VOIP):
                     if i == j and self.dict.VOIP[i]:
-                        V_VARS[j][0] = self.dict.VOIP[i]
+                        VOIP[j][0] = self.dict.VOIP[i]
                 voip.enviar_voz_auxiliar()
                 self.voip_usn = False
 
             if self.voip_ug:
-                for i, j in zip(self.dict.VOIP, V_VARS):
+                for i, j in zip(self.dict.VOIP, VOIP):
                     if i == j and self.dict.VOIP[i]:
-                        V_VARS[j][0] = self.dict.VOIP[i]
+                        VOIP[j][0] = self.dict.VOIP[i]
                 voip.enviar_voz_auxiliar()
                 self.voip_ug = False
 

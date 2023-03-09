@@ -73,17 +73,18 @@ class StateRestrito(State):
     def step(self) -> State:
         self.parent.acionar_trips() if self.parent.etapa_atual == UNIDADE_PARADA else self.parent.parar()
 
-        condicionadores_ativos = self.ocorrencias.verificar_condicionadores_ug_restrito(self.parent.id)
+        condicionadores_ativos = [condic for condics in [self.ocorrencias.condicionadores_essenciais_ug, self.ocorrencias.condicionadores_ug] for condic in condics if condic.ativo]
+        deve_indisponibilizar = [True for condic in condicionadores_ativos if condic.gravidade == DEVE_INDISPONIBILIZAR]
 
         if condicionadores_ativos:
             if self.parent.norma_agendada and not self.release:
-                logger.info(f"[UG{self.parent.id}] Aguardando normalização por tempo -> Tempo definido: {self.parent.tempo_normalizar}")
+                logger.info(f"[UG{self.parent.id}] Normalização por tempo acionada -> Tempo definido: {self.parent.tempo_normalizar}")
                 self.release = True
                 Thread(target=lambda: self.espera_normalizar(self.parent.tempo_normalizar)).start()
             elif not self.release:
                 logger.debug(f"[UG{self.parent.id}] Aguardando normalização sem tempo pré-definido")
 
-            if self.ocorrencias.deve_indisponibilizar_ug:
+            if deve_indisponibilizar:
                 logger.warning(f"[UG{self.parent.id}] UG detectou condicionadores com gravidade alta, indisponibilizando UG.")
                 self.parent.norma_agendada = False
                 self.parar_timer = True

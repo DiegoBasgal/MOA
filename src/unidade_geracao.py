@@ -123,13 +123,6 @@ class UnidadeDeGeracao:
         )
 
         # Simulador -> remover em produção
-        self.leitura_Operacao_EtapaAtual = LeituraModbus(
-            f"[UG{self.id}] Etapa Aux SIM",
-            self.clp_ug,
-            UG[f"REG_UG{self.id}_RetornosDigitais_EtapaAux_Sim"],
-            1,
-            op=4
-        )
         self.condic_ativos_sim = LeituraModbus(
             f"[UG{self.id}] Condicionadores Aux SIM",
             self.clp_ug,
@@ -160,6 +153,14 @@ class UnidadeDeGeracao:
             f"[UG{self.id}] Horímetro",
             self.leitura_horimetro_hora,
             self.leitura_horimetro_min
+        )
+        # Simulador, trocar em campo
+        self.leitura_Operacao_EtapaAtual = LeituraModbus(
+            f"[UG{self.id}] Etapa Aux SIM",
+            self.clp_ug,
+            UG[f"REG_UG{self.id}_RetornosDigitais_EtapaAux_Sim"],
+            1,
+            op=4
         )
         self.leitura_Operacao_EtapaAlvo = LeituraModbus(
             f"[UG{self.id}] Etapa Alvo",
@@ -726,7 +727,7 @@ class UnidadeDeGeracao:
 
     def controle_cx_espiral(self) -> None:
         self.cx_kp = (self.leitura_caixa_espiral.valor - self.dict.CFG["press_cx_alvo"]) * self.dict.CFG["cx_kp"]
-        self.cx_ajuste_ie = (self.leitura_potencia.valor + self.leitura_potencia_outra_ug.valor) / self.dict.CFG["pot_maxima_alvo"]
+        self.cx_ajuste_ie = [sum(ug.leitura_potencia.valor) for ug in self.lista_ugs] / self.dict.CFG["pot_maxima_alvo"]
         self.cx_ki = self.cx_ajuste_ie - self.cx_kp
 
         erro_press_cx = 0
@@ -761,8 +762,8 @@ class UnidadeDeGeracao:
                 0, # cie
                 self.setpoint,
                 self.leitura_potencia.valor,
-                self.leitura_setpoint_outra_ug.valor,
-                self.leitura_setpoint_outra_ug.valor,
+                self.lista_ugs[1].setpoint,
+                self.lista_ugs[1].leitura_potencia.valor,
                 0, # nivel
                 erro_press_cx,
                 1, # modo autonomo

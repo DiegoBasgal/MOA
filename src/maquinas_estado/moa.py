@@ -143,8 +143,7 @@ class ReservatorioNormal(State):
     def run(self):
         self.usina.ler_valores()
         self.usina.controle_normal()
-        for ug in self.ugs:
-            ug.step()
+        [ug.step() for ug in self.ugs]
         return ControleDados()
 
 class ReservatorioMinimo(State):
@@ -163,8 +162,7 @@ class ReservatorioMinimo(State):
                 logger.critical(f"Nivel montante ({self.usina.nv_montante_recente:3.2f}) atingiu o fundo do reservatorio!")
                 return Emergencia()
 
-        for ug in self.ugs:
-            ug.step()
+        [ug.step() for ug in self.ugs]
         return ControleDados()
 
 class ReservatorioMaximo(State):
@@ -181,8 +179,7 @@ class ReservatorioMaximo(State):
             self.usina.distribuir_potencia(self.dict.CFG["pot_maxima_usina"])
             self.usina.controle_ie = 0.5
             self.usina.controle_i = 0.5
-            for ug in self.ugs: 
-                ug.step()
+            [ug.step() for ug in self.ugs]
             return ControleDados()
 
 class ControleDados(State):
@@ -217,8 +214,7 @@ class ModoManual(State):
 
     def run(self):
         self.usina.ler_valores()
-        for ug in self.ugs:
-            ug.setpoint = ug.leitura_potencia.valor
+        for ug in self.ugs: ug.setpoint = ug.leitura_potencia.valor
         self.usina.controle_ie = (self.ug1.setpoint + self.ug2.setpoint) / self.dict.CFG["pot_maxima_alvo"]
 
         sleep(1 / ESCALA_DE_TEMPO)
@@ -251,9 +247,7 @@ class Emergencia(State):
 
         if self.n_tentativa > 2:
             logger.warning("Numero de tentaivas de normalização excedidas, entrando em modo manual.")
-            for ug in self.ugs:
-                ug.forcar_estado_indisponivel()
-                ug.step()
+            [ug.forcar_estado_indisponivel() and ug.step() for ug in self.ugs]
             return ModoManual()
 
         else:
@@ -319,8 +313,6 @@ class ControleTdaOffline(State):
             logger.info("Comando recebido: desabilitar modo autonomo")
             return ModoManual()
 
-        for ug in self.ugs:
-            ug.controle_cx_espiral()
-            ug.step()
+        [ug.controle_cx_espiral() and ug.step() for ug in self.ugs]
 
         return ControleAgendamentos() if len(self.agendamentos.agendamentos_pendentes()) > 0 else ControleDados()

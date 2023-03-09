@@ -58,12 +58,8 @@ class Agendamentos:
         self.agendamentos_iguais(agendamentos)
 
         for agendamento in agendamentos:
-            if agora > agendamento[1]:
-                self.segundos_adiantados = 0
-                self.segundos_passados = (agora - agendamento[1]).seconds
-            else:
-                self.segundos_adiantados = (agendamento[1] - agora).seconds
-                self.segundos_passados = 0
+            self.segundos_passados = (agora - agendamento[1]).seconds if agora > agendamento[1] else 0
+            self.segundos_adiantados = (agendamento[1] - agora).seconds if agora < agendamento[1] else 0
 
             if self.agendamentos_atrasados(agendamento):
                 return False
@@ -165,8 +161,7 @@ class Agendamentos:
         if agendamento[3] == AGENDAMENTO_INDISPONIBILIZAR:
             try:
                 logger.info("[AGN] Indisponibilizando a usina via agendamento.")
-                for ug in self.ugs:
-                    ug.forcar_estado_indisponivel()
+                for ug in self.ugs: ug.forcar_estado_indisponivel()
 
                 while (not self.ug1.etapa_atual == UNIDADE_PARADA and not self.ug2.etapa_atual == UNIDADE_PARADA):
                     self.usina.ler_valores()

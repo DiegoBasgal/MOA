@@ -94,16 +94,7 @@ if __name__ == "__main__":
                 sleep(timeout)
                 continue
 
-    sm = StateMachine(
-        initial_state=Pronto(
-            shared_dict,
-            usina,
-            ugs,
-            ocorrencias,
-            agendamentos
-        )
-    )
-
+    sm = StateMachine(initial_state=Pronto(shared_dict, usina, ugs, ocorrencias, agendamentos))
     logger.info("Inicialização completa, executando o MOA \U0001F916")
     while True:
         logger.debug(f"Executando estado: {sm.state.__class__.__name__}")

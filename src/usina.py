@@ -56,6 +56,7 @@ class Usina:
             self.ugs = ugs
             self.ug1 = ugs[0]
             self.ug2 = ugs[1]
+            CondicionadorBase.ugs = ugs
 
         # Variáveis protegidas
         self._potencia_alvo_anterior = -1
