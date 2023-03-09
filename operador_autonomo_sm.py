@@ -369,6 +369,8 @@ class ModoManualAtivado(State):
     def run(self):
         self.usina.heartbeat()
         self.usina.ler_valores()
+        for ug in self.usina.ugs:
+            ug.release_timer = True
         DataBank.set_words(usina.cfg["REG_PAINEL_LIDO"], [1])
         self.usina.ug1.setpoint = self.usina.ug1.leitura_potencia.valor
         self.usina.ug2.setpoint = self.usina.ug2.leitura_potencia.valor

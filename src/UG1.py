@@ -28,6 +28,7 @@ class UnidadeDeGeracao1(UnidadeDeGeracao):
 
         self.QCAUGRemoto = True
         self.acionar_voip = False
+        self.release_timer = False
         self.limpeza_grade = False
         self.FreioCmdRemoto = True
         self.avisou_emerg_voip = False
@@ -246,11 +247,11 @@ class UnidadeDeGeracao1(UnidadeDeGeracao):
         
         self.leitura_ComandosDigitais_MXW_EmergenciaViaSuper = LeituraModbusCoil("ComandosDigitais_MXW_EmergenciaViaSuper", self.clp, REG_UG1_ComandosDigitais_MXW_EmergenciaViaSuper,)
         x = self.leitura_ComandosDigitais_MXW_EmergenciaViaSuper
-        self.condicionadores_essenciais.append(CondicionadorBase(x.descr, DEVE_NORMALIZAR, x, self.id, [UNIDADE_SINCRONIZADA, UNIDADE_SINCRONIZANDO]))
+        self.condicionadores_essenciais.append(CondicionadorBase(x.descr, DEVE_NORMALIZAR, x, self.id, [UNIDADE_SINCRONIZADA, UNIDADE_SINCRONIZANDO, UNIDADE_PARADA, UNIDADE_PARANDO]))
 
         self.leitura_RetornosDigitais_MXR_TripEletrico = LeituraModbusCoil("RetornosDigitais_MXR_TripEletrico", self.clp, REG_UG1_RetornosDigitais_MXR_TripEletrico,)
         x = self.leitura_RetornosDigitais_MXR_TripEletrico
-        self.condicionadores_essenciais.append(CondicionadorBase(x.descr, DEVE_NORMALIZAR, x, self.id, [UNIDADE_SINCRONIZADA, UNIDADE_SINCRONIZANDO]))
+        self.condicionadores_essenciais.append(CondicionadorBase(x.descr, DEVE_NORMALIZAR, x, self.id, [UNIDADE_SINCRONIZADA, UNIDADE_SINCRONIZANDO, UNIDADE_PARADA, UNIDADE_PARANDO]))
         
         self.leitura_ReleBloqA86MAtuado = LeituraModbusCoil("ReleBloqA86MAtuado", self.clp, REG_UG1_EntradasDigitais_MXI_ReleBloqA86MAtuado)
         x = self.leitura_ReleBloqA86MAtuado
@@ -258,7 +259,7 @@ class UnidadeDeGeracao1(UnidadeDeGeracao):
 
         self.leitura_ReleBloqA86HAtuado = LeituraModbusCoil("ReleBloqA86HAtuado", self.clp, REG_UG1_EntradasDigitais_MXI_ReleBloqA86HAtuado)
         x = self.leitura_ReleBloqA86HAtuado
-        self.condicionadores_essenciais.append(CondicionadorBase(x.descr, DEVE_NORMALIZAR, x, self.id, [UNIDADE_SINCRONIZADA, UNIDADE_SINCRONIZANDO]))
+        self.condicionadores_essenciais.append(CondicionadorBase(x.descr, DEVE_NORMALIZAR, x, self.id, [UNIDADE_SINCRONIZADA, UNIDADE_SINCRONIZANDO, UNIDADE_PARADA, UNIDADE_PARANDO]))
 
         self.leitura_SEL700G_Atuado = LeituraModbusCoil("SEL700G_Atuado", self.clp, REG_UG1_EntradasDigitais_MXI_SEL700G_Atuado)
         x = self.leitura_SEL700G_Atuado
@@ -274,7 +275,7 @@ class UnidadeDeGeracao1(UnidadeDeGeracao):
 
         self.leitura_RetornosDigitais_MXR_700G_Trip = LeituraModbusCoil("RetornosDigitais_MXR_700G_Trip", self.clp, REG_UG1_RetornosDigitais_MXR_700G_Trip,) 
         x = self.leitura_RetornosDigitais_MXR_700G_Trip
-        self.condicionadores_essenciais.append(CondicionadorBase(x.descr, DEVE_NORMALIZAR, x, self.id, [UNIDADE_SINCRONIZADA, UNIDADE_SINCRONIZANDO]))
+        self.condicionadores_essenciais.append(CondicionadorBase(x.descr, DEVE_NORMALIZAR, x, self.id, [UNIDADE_SINCRONIZADA, UNIDADE_SINCRONIZANDO, UNIDADE_PARADA, UNIDADE_PARANDO]))
 
         self.leitura_AVR_Trip = LeituraModbusCoil("AVR_Trip", self.clp, REG_UG1_EntradasDigitais_MXI_AVR_Trip)
         x = self.leitura_AVR_Trip

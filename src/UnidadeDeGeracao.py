@@ -17,7 +17,7 @@ from time import sleep, time
 from threading import Thread
 from datetime import datetime
 from abc import abstractmethod
-from src.Condicionadores import CondicionadorExponencial, CondicionadorBase, CondicionadorExponencialReverso
+from src.Condicionadores import CondicionadorBase
 
 # Class Stubs
 class UnidadeDeGeracao:
@@ -498,6 +498,7 @@ class StateManual(State):
     def __init__(self, parent_ug: UnidadeDeGeracao):
         super().__init__(parent_ug)
         self.parent_ug.codigo_state = MOA_UNIDADE_MANUAL
+        self.parent_ug.release_timer = True
         self.logger.info("[UG{}] Entrando no estado: \"Manual\". Para retornar a operação autônoma, favor agendar na interface web".format(self.parent_ug.id))
 
     def step(self) -> State:
@@ -522,6 +523,7 @@ class StateIndisponivel(State):
         self.selo = False
         self.logger.info("[UG{}] Entrando no estado: \"Indisponível\". Para retornar a operação autônoma, favor agendar na interface web".format(self.parent_ug.id))
         self.parent_ug.__next_state = self
+        self.parent_ug.release_timer = True
 
     def step(self) -> State:
         self.parent_ug.codigo_state = MOA_UNIDADE_INDISPONIVEL
@@ -557,6 +559,7 @@ class StateRestrito(State):
         super().__init__(parent_ug)
         self.parent_ug.codigo_state = MOA_UNIDADE_RESTRITA
         self.logger.info("[UG{}] Entrando no estado: \"Restrito\"".format(self.parent_ug.id))
+        self.parent_ug.release_timer = True
 
     def step(self) -> State:
         self.parent_ug.codigo_state = MOA_UNIDADE_RESTRITA
@@ -620,46 +623,41 @@ class StateDisponivel(State):
         super().__init__(parent_ug)
         self.aux = 0
         self.release = False
+        self.parent_ug.release_timer = False
         self.parent_ug.codigo_state = MOA_UNIDADE_DISPONIVEL
         self.logger.info("[UG{}] Entrando no estado: \"Disponível\"".format(self.parent_ug.id))
         self.parent_ug.tentativas_de_normalizacao = 0
 
     def step(self) -> State:
         self.parent_ug.codigo_state = MOA_UNIDADE_DISPONIVEL
-
-        # Ler condiconadores, verifica e armazena os ativos
-        deve_indisponibilizar = False
-        deve_normalizar = False
-        condicionadores_ativos = []
-        
         self.parent_ug.controle_limites_operacao()
 
-        for condicionador_essencial in self.parent_ug.condicionadores_essenciais:
-            if condicionador_essencial.ativo:
+        deve_normalizar = False
+        deve_indisponibilizar = False
+        condicionadores_ativos = []
+
+        for condic in self.parent_ug.condicionadores_essenciais:
+            if condic.ativo:
                 self.parent_ug.deve_ler_condicionadores = True
+                break
 
         if self.parent_ug.deve_ler_condicionadores:
-            for condicionador_essencial in self.parent_ug.condicionadores_essenciais:
-                if condicionador_essencial.ativo:
-                    if condicionador_essencial.gravidade >= DEVE_INDISPONIBILIZAR:
-                        condicionadores_ativos.append(condicionador_essencial)
-                        deve_indisponibilizar = True
-                    elif condicionador_essencial.gravidade >= DEVE_NORMALIZAR:
-                        condicionadores_ativos.append(condicionador_essencial)
-                        self.parent_ug.deve_ler_condicionadores = False
-                        deve_normalizar = True
+            for condic in self.parent_ug.condicionadores_essenciais:
+                if condic.ativo and condic.gravidade == DEVE_NORMALIZAR:
+                    condicionadores_ativos.append(condic)
+                    deve_normalizar = True
+                if condic.ativo and condic.gravidade == DEVE_INDISPONIBILIZAR:
+                    condicionadores_ativos.append(condic)
+                    deve_indisponibilizar = True
 
-            for condicionador in self.parent_ug.condicionadores:
-                if condicionador.ativo: 
-                    if condicionador.gravidade >= DEVE_INDISPONIBILIZAR:
-                        condicionadores_ativos.append(condicionador)
-                        deve_indisponibilizar = True
-                    elif condicionador.gravidade >= DEVE_NORMALIZAR:
-                        condicionadores_ativos.append(condicionador)
-                        self.parent_ug.deve_ler_condicionadores = False
-                        deve_normalizar = True
+            for condic in self.parent_ug.condicionadores:
+                if condic.ativo and condic.gravidade == DEVE_NORMALIZAR:
+                    condicionadores_ativos.append(condic)
+                    deve_normalizar = True
+                if condic.ativo and condic.gravidade == DEVE_INDISPONIBILIZAR:
+                    condicionadores_ativos.append(condic)
+                    deve_indisponibilizar = True
 
-        # Logar os condicionadores ativos
         if deve_indisponibilizar or deve_normalizar:
             self.logger.info("[UG{}] UG em modo disponível detectou condicionadores ativos.\nCondicionadores ativos:".format(self.parent_ug.id))
             for d in condicionadores_ativos:
@@ -667,8 +665,9 @@ class StateDisponivel(State):
 
         # Se algum condicionador deve gerar uma indisponibilidade
         if deve_indisponibilizar:
-            self.logger.warning("[UG{}] Indisponibilizando UG.".format(self.parent_ug.id))
+            self.logger.warning("[UG{}] Indisponibilizando UG por gravidade.".format(self.parent_ug.id))
             # Vai para o estado StateIndisponivel
+            self.parent_ug.deve_ler_condicionadores = False
             return StateIndisponivel(self.parent_ug)
 
         # Se algum condicionador deve gerar uma tentativa de normalizacao
@@ -676,12 +675,15 @@ class StateDisponivel(State):
             # Se estourou as tentativas de normalização, vai para o estado StateIndisponivel
             if (self.parent_ug.tentativas_de_normalizacao > self.parent_ug.limite_tentativas_de_normalizacao):
                 # Logar o ocorrido
-                self.logger.warning("[UG{}] A UG estourou as tentativas de normalização, indisponibilizando UG. \n Condicionadores ativos:\n{}".format(self.parent_ug.id,[d.descr for d in condicionadores_ativos],))
+                self.logger.warning(f"[UG{self.parent_ug.id}] Indisponibilizando UG por tentativas de normalização.")
+                [self.logger.warning(f"Descrição: \"{condic.descr}\"") for condic in condicionadores_ativos]
                 # Vai para o estado StateIndisponivel
+                self.parent_ug.deve_ler_condicionadores = False
                 return StateIndisponivel(self.parent_ug)
-            
+
             elif self.parent_ug.etapa_atual == UNIDADE_PARANDO or self.parent_ug.etapa_atual == UNIDADE_SINCRONIZANDO:
                 self.logger.debug("[UG{}] Esperando para normalizar".format(self.parent_ug.id))
+                self.parent_ug.deve_ler_condicionadores = False
                 return self
 
             # Se não estourou as tentativas de normalização, e já se passou tempo suficiente, deve tentar normalizar
@@ -694,15 +696,16 @@ class StateDisponivel(State):
                 self.logger.info("[UG{}] Normalizando UG (tentativa {}/{}).".format(self.parent_ug.id,self.parent_ug.tentativas_de_normalizacao,self.parent_ug.limite_tentativas_de_normalizacao,))
                 # Reconhece e reset
                 self.parent_ug.reconhece_reset_alarmes()
+                self.parent_ug.deve_ler_condicionadores = False
                 return self
 
-            # Caso contrário (se ainda não deu o tempo), não faz nada
+                # Caso contrário (se ainda não deu o tempo), não faz nada
             else:
+                self.parent_ug.deve_ler_condicionadores = False
                 return self
 
         # Se não detectou nenhum condicionador ativo:
         else:
-
             self.logger.debug("[UG{}] Etapa atual: \"{}\"".format(self.parent_ug.id, UNIDADE_DICT_ETAPAS[self.parent_ug.etapa_atual]))
 
             if self.release == True and self.aux == 1:
@@ -792,7 +795,7 @@ class StateDisponivel(State):
                 self.parent_ug.aux_tempo_sincronizada = None
 
             return self
-    
+
     def verificar_partindo(self) -> bool:
         timer = time() + 600
         try:
@@ -802,6 +805,10 @@ class StateDisponivel(State):
                     self.logger.debug("[UG{}] Unidade sincronizada. Saindo do timer de verificação de partida".format(self.parent_ug.id))
                     self.release = True
                     return True
+                elif self.parent_ug.release_timer:
+                    self.logger.debug("[UG{}] MOA em modo manual. Saindo do timer de verificação de partida".format(self.parent_ug.id))
+                    self.release = True
+                    return False
             self.logger.debug("[UG{}] A Unidade estourou o timer de verificação de partida, adicionando condição para normalizar".format(self.parent_ug.id))
             self.parent_ug.clp.write_single_coil(REG_UG1_ComandosDigitais_MXW_EmergenciaViaSuper, [1 if self.parent_ug.id==1 else 0]) 
             self.parent_ug.clp.write_single_coil(REG_UG2_ComandosDigitais_MXW_EmergenciaViaSuper, [1 if self.parent_ug.id==2 else 0])

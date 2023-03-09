@@ -47,7 +47,6 @@ class Usina:
         self.ug2 = UnidadeDeGeracao2(2, cfg=self.cfg, leituras_usina=self.leituras)
         self.ug3 = UnidadeDeGeracao3(3, cfg=self.cfg, leituras_usina=self.leituras)
         self.ugs = [self.ug1, self.ug2, self.ug3]
-
         CondicionadorBase.ugs = self.ugs
 
         # Define as vars inciais
@@ -110,7 +109,6 @@ class Usina:
         )
 
         threading.Thread(target=lambda: self.leitura_condicionadores()).start()
-        
 
         # ajuste inicial ie
         if self.cfg["saida_ie_inicial"] == "auto":
@@ -126,6 +124,9 @@ class Usina:
     @property
     def nv_montante(self):
         return self.leituras.nv_montante.valor
+
+    def get_ugs(self) -> list:
+        return self.ugs
 
     def ler_valores(self):
 

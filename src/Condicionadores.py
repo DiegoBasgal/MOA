@@ -10,9 +10,6 @@ __author__ = "Lucas Lavratti"
 from asyncio.log import logger
 
 from src.Leituras import *
-from src.abstracao_usina import *
-
-
 
 class CondicionadorBase:
     ...
@@ -30,20 +27,16 @@ class CondicionadorBase:
     """
     Classe implementa a base para condicionadores. É "Abstrata" assim por se dizer...
     """
-    ugs = []
-
-    def __init__(self, descr: str, gravidade: int, leitura: LeituraBase, id: int = None, estados: list = None):
-        self.__estados = estados if estados is not None else []
+    def __init__(self, descr: str, gravidade: int, leitura: LeituraBase, ug_id: int = None, etapas: list = None):
         self.__descr = descr
         self.__gravidade = gravidade
         self.__leitura = leitura
-        self.__id = id
-        self.__ugs = self.ugs
+        self.__ugs = []
+        self.__ug_id = ug_id if ug_id is not None else None
+        self.__etapas = etapas if etapas is not None else []
 
     def __str__(self):
-        return "Condicionador {}, Gravidade: {}, Ativo: {}, Valor: {}".format(
-            self.__descr, self.__gravidade, self.ativo, self.valor
-        )
+        return f"Condicionador {self.__descr}, Gravidade: {self.__gravidade}, Ativo: {self.ativo}, Valor: {self.valor}"
 
     @property
     def descr(self):
@@ -62,13 +55,16 @@ class CondicionadorBase:
         Returns:
             bool: True se ativo, False caso contrário
         """
-        for ug in self.__ugs:
-            if ug.id == self.__id and ug.etapa_atual in self.__estados:
-                return False if self.__leitura.valor == 0 else True
-            elif ug.id == self.__id and self.__estados == []:
-                return False if self.__leitura.valor == 0 else True
+        
+        if self.__ug_id and self.__etapas:
+            for ug in self.ugs:
+                if ug.id == self.__ug_id and ug.etapa_atual in self.__etapas:
+                    return False if self.leitura.valor == 0 else True
             else:
                 return False
+
+        else:
+            return False if self.leitura.valor == 0 else True
 
     @property
     def valor(self) -> float:
@@ -92,7 +88,14 @@ class CondicionadorBase:
         self.DEVE_IGNORAR = 0
         """
         return self.__gravidade
+    
+    @property
+    def ugs(self) -> list:
+        return self.__ugs
 
+    @ugs.setter
+    def ugs(self, ugs: list) -> None:
+        self.__ugs = ugs
 
 class CondicionadorExponencial(CondicionadorBase):
     """
@@ -106,17 +109,18 @@ class CondicionadorExponencial(CondicionadorBase):
         leitura: LeituraBase,
         valor_base: float,
         valor_limite: float,
-        id: int = None,
+        ug_id: int = None,
         ordem: float = (1 / 4),
-        estados: list = None
+        etapas: list = None,
+        *args,
+        **kwargs
     ):
-        super().__init__(descr, gravidade, leitura, id=None)
-        self.__estados == estados if estados is not None else []
+        super().__init__(descr, gravidade, leitura, *args, **kwargs)
+        self.__etapas == etapas if etapas is not None else []
         self.__valor_base = valor_base
         self.__valor_limite = valor_limite
         self.__ordem = ordem
-        self.__id = id
-        self.__ugs = self.ugs
+        self.__ug_id = ug_id
 
     @property
     def valor_base(self):
@@ -194,15 +198,16 @@ class CondicionadorExponencialReverso(CondicionadorBase):
         leitura: LeituraBase,
         valor_base: float,
         valor_limite: float,
-        id: int = None,
+        ug_id: int = None,
         ordem: float = 2,
+        *args,
+        **kwargs
     ):
-        super().__init__(descr, gravidade, leitura, id=None)
+        super().__init__(descr, gravidade, leitura, *args, **kwargs)
         self.__valor_base = valor_base
         self.__valor_limite = valor_limite
         self.__ordem = ordem
-        self.__id = id
-        self.__ugs = self.ugs
+        self.__ug_id = ug_id
 
     @property
     def valor_base(self) -> float:
