@@ -1,8 +1,5 @@
-"""
-Módulo de teste do whatchdog. Não deve ser utilizado em ptrodução
-"""
-from datetime import datetime
 from time import sleep
+from datetime import datetime
 from pyModbusTCP.server import ModbusServer, DataBank
 
 server = ModbusServer(port=502, no_block=True)

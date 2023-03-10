@@ -91,8 +91,9 @@ class FieldConnector:
             self.ug2_clp.write_single_coil(UG["REG_UG2_ComandosDigitais_MXW_ResetGeral"], 1)
             self.usn_clp.write_single_coil(SA["REG_SA_ComandosDigitais_MXW_ResetGeral"], 1)
             self.tda_clp.write_single_coil(TDA["REG_TDA_ComandosDigitais_MXW_ResetGeral"], 1) if not self.dict.CFG["tda_offline"] else logger.debug("[CON] CLP TDA Offline, não há como realizar o reset geral")
-        except Exception:
-            logger.exception(f"[CON] Houve um erro ao realizar o reset geral.\nTraceback: {traceback.print_stack}")
+        except Exception as e:
+            logger.exception(f"[CON] Houve um erro ao realizar o reset geral. Exception: \"{repr(e)}\"")
+            logger.exception(f"[CON] Traceback: {traceback.print_stack}")
 
     def reconhecer_emergencia(self) -> None:
         try:
@@ -100,8 +101,9 @@ class FieldConnector:
             self.ug1_clp.write_single_coil(UG["REG_UG1_ComandosDigitais_MXW_Cala_Sirene"], 1)
             self.ug2_clp.write_single_coil(UG["REG_UG2_ComandosDigitais_MXW_Cala_Sirene"], 1)
             self.usn_clp.write_single_coil(SA["REG_SA_ComandosDigitais_MXW_Cala_Sirene"], 1)
-        except Exception:
-            logger.exception(f"[CON] Houve um erro ao reconhecer os alarmes.\nTraceback: {traceback.print_stack}")
+        except Exception as e:
+            logger.exception(f"[CON] Houve um erro ao reconhecer os alarmes. Exception: \"{repr(e)}\"")
+            logger.exception(f"[CON] Traceback: {traceback.print_stack}")
 
     def acionar_emergencia(self) -> None:
         try:
@@ -111,8 +113,9 @@ class FieldConnector:
             sleep(5)
             self.ug1_clp.write_single_coil(UG["REG_UG1_ComandosDigitais_MXW_EmergenciaViaSuper"], 0)
             self.ug2_clp.write_single_coil(UG["REG_UG2_ComandosDigitais_MXW_EmergenciaViaSuper"], 0)
-        except Exception:
-            logger.exception(f"[CON] Houve um erro ao acionar a emergência.\nTraceback: {traceback.print_stack}")
+        except Exception as e:
+            logger.exception(f"[CON] Houve um erro ao acionar a emergência. Exception: \"{repr(e)}\"")
+            logger.exception(f"[CON] Traceback: {traceback.print_stack}")
 
     def modifica_controles_locais(self) -> None:
         try:
@@ -124,8 +127,9 @@ class FieldConnector:
                 self.tda_clp.write_single_coil(TDA["REG_TDA_ComandosDigitais_MXW_Desab_Religamento52L"], 1)
             else:
                 logger.debug("[CON] Não é possível modificar os controles locais pois o CLP da TDA se encontra offline")
-        except Exception:
-            logger.exception(f"[CON] Houve um erro ao modificar os controles locais.\nTraceback: {traceback.print_stack}")
+        except Exception as e:
+            logger.exception(f"[CON] Houve um erro ao modificar os controles locais. Exception: \"{repr(e)}\"")
+            logger.exception(f"[CON] Traceback: {traceback.print_stack}")
 
     def fechaDj52L(self) -> bool:
         try:
@@ -134,8 +138,9 @@ class FieldConnector:
             else:
                 response = self.usn_clp.write_single_register(SA["REG_SA_ComandosDigitais_MXW_Liga_DJ1"], 1)
                 return response
-        except Exception:
-            logger.exception(f"[CON] Houver um erro ao fechar o Dj52L.\nTraceback: {traceback.print_stack}")
+        except Exception as e:
+            logger.exception(f"[CON] Houver um erro ao fechar o Dj52L. Exception: \"{repr(e)}\"")
+            logger.exception(f"[CON] Traceback: {traceback.print_stack}")
             return False
 
     def get_falha52L(self) -> bool:
@@ -171,8 +176,10 @@ class FieldConnector:
                 flags += 1
             logger.info(f"[CON] Número de flags ativas: \"{flags}\"")
             return True if flags >= 1 else False
-        except Exception:
-            logger.exception(f"[CON] Houve um erro ao ler as flags do Dj52L.\nTraceback: {traceback.print_stack}")
+
+        except Exception as e:
+            logger.exception(f"[CON] Houve um erro ao ler as flags do Dj52L. Exception: \"{repr(e)}\"")
+            logger.exception(f"[CON] Traceback: {traceback.print_stack}")
             return None
 
 class DatabaseConnector:
@@ -191,6 +198,9 @@ class DatabaseConnector:
         self.cursor = None
         self.conn = self.connection_pool.get_connection()
         self.cursor = self.conn.cursor()
+
+    def get_time(self) -> object:
+        return datetime.now(pytz.timezone("Brazil/East")).replace(tzinfo=None)
 
     def commit(self):
         self.conn.commit()
@@ -311,7 +321,7 @@ class DatabaseConnector:
             " WHERE id = %s;"
         )
         self._open()
-        self.execute(q, (obs, obs, executado, datetime.now(pytz.timezone("Brazil/East")).replace(tzinfo=None), int(id_agendamento)))
+        self.execute(q, (obs, obs, executado, self.get_time()))
         self._close()
 
     def update_habilitar_autonomo(self):

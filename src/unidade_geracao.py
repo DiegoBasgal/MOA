@@ -24,25 +24,25 @@ class UnidadeDeGeracao:
             db: DatabaseConnector=None
         ):
         if id == 0:
-            logger.error("[USN] A Unidade não pode ser instanciada com o ID -> \"0\".")
+            logger.exception("[USN] A Unidade não pode ser instanciada com o ID -> \"0\".")
             raise ValueError
         else:
             self.__id = id
 
         if not shared_dict:
-            logger.error("[USN] Não foi possível carregar o dicionário compartilhado.")
+            logger.exception("[USN] Não foi possível carregar o dicionário compartilhado.")
             raise ValueError
         else:
             self.dict = shared_dict
 
         if not db:
-            logger.error("[USN] Não foi possível estabelecer a conexão com o banco de dados.")
+            logger.exception("[USN] Não foi possível estabelecer a conexão com o banco de dados.")
             raise ConnectionError
         else:
             self.db = db
 
         if not con:
-            logger.error("[USN] Não foi possível estabelecer a conexão com as leituras de campo.")
+            logger.exception("[USN] Não foi possível estabelecer a conexão com as leituras de campo.")
             raise ConnectionError
         else:
             self.con = con
@@ -354,8 +354,9 @@ class UnidadeDeGeracao:
                 return self.__etapa_atual
             else:
                 return self.__last_EtapaAtual
-        except Exception:
-            logger.error(f"[UG{self.id}] Não foi possível realizar a leitura da etapa atual.\nException: \"{traceback.print_stack}\"")
+        except Exception as e:
+            logger.exception(f"[UG{self.id}] Não foi possível realizar a leitura da etapa atual. Exception: \"{repr(e)}\"")
+            logger.exception(f"[UG{self.id}] Traceback: {traceback.print_stack}")
             return False
 
     @property
@@ -369,8 +370,9 @@ class UnidadeDeGeracao:
             else:
                 self.__last_EtapaAlvo = self.etapa_atual
                 return self.__last_EtapaAlvo
-        except Exception:
-            logger.error(f"[UG{self.id}] Não foi possível realizar a leitura da etapa alvo.\nException: \"{traceback.print_stack}\"")
+        except Exception as e:
+            logger.exception(f"[UG{self.id}] Não foi possível realizar a leitura da etapa alvo. Exception: \"{repr(e)}\"")
+            logger.exception(f"[UG{self.id}] Traceback: {traceback.print_stack}")
             return False
 
     @property
@@ -381,9 +383,6 @@ class UnidadeDeGeracao:
     def limite_tentativas_de_normalizacao(self) -> int:
         return self.__limite_tentativas_de_normalizacao
 
-    @property
-    def get_time(self) -> object:
-        return datetime.now(pytz.timezone("Brazil/East")).replace(tzinfo=None)
 
     # Property/Setter Protegidas
     @property
@@ -516,6 +515,9 @@ class UnidadeDeGeracao:
         self._lista_ugs = var
 
     # Funções
+    def get_time(self) -> object:
+        return datetime.now(pytz.timezone("Brazil/East")).replace(tzinfo=None)
+
     def step(self) -> None:
         try:
             logger.debug(f"[UG{self.id}] Step -> (Tentativas de normalização: {self.tentativas_de_normalizacao}/{self.limite_tentativas_de_normalizacao}).")
@@ -523,8 +525,8 @@ class UnidadeDeGeracao:
             self.__next_state = self.__next_state.step()
             self.modbus_update_state_register()
         except Exception as e:
-            logger.error(f"[UG{self.id}] Erro na execução da máquina de estados -> step.\nException: {traceback.print_stack}")
-            raise e
+            logger.exception(f"[UG{self.id}] Erro na execução da máquina de estados -> step. Exception: \"{repr(e)}\"")
+            logger.exception(f"[UG{self.id}] Traceback: {traceback.print_stack}")
 
     def interstep(self) -> None:
         try:
@@ -533,27 +535,16 @@ class UnidadeDeGeracao:
             elif self.condicionador_caixa_espiral_ug.valor < 0.05:
                 self.avisou_emerg_voip = False
         except Exception as e:
-            logger.error(f"[UG{self.id}] Erro na execução da máquina de estados -> interstep.\nException: {traceback.print_stack}")
-            raise e
+            logger.exception(f"[UG{self.id}] Erro na execução da máquina de estados -> interstep. Exception: \"{repr(e)}\"")
+            logger.exception(f"[UG{self.id}] Traceback: {traceback.print_stack}")
 
     def modbus_update_state_register(self) -> None:
         try:
             self.clp_moa.write_single_coil(MOA[f"REG_MOA_OUT_STATE_UG{self.id}"], [self.codigo_state])
             self.clp_moa.write_single_coil(MOA[f"REG_MOA_OUT_ETAPA_UG{self.id}"], [self.etapa_atual])
         except Exception as e:
-            logger.error(f"[UG{self.id}] Não foi possível escrever os valores no CLP MOA.\nException: {traceback.print_stack}")
-            raise e
-
-    def carregar_parametros(self, parametros: dict) -> None:
-        try:
-            for key, val in parametros.items():
-                while not key[0:1] == "__":
-                    key = "_" + key[:]
-                setattr(self, key, val)
-                logger.debug(f"[UG{self.id}] Variavél carregada: {key} = {val}.")
-        except Exception as e:
-            logger.error(f"[UG{self.id}] Não foi possível carregar os parâmetros.\nException: {traceback.print_stack}")
-            raise e
+            logger.exception(f"[UG{self.id}] Não foi possível escrever os valores no CLP MOA. Exception: \"{repr(e)}\"")
+            logger.exception(f"[UG{self.id}] Traceback: {traceback.print_stack}")
 
     def partir(self) -> bool:
         try:
@@ -575,11 +566,11 @@ class UnidadeDeGeracao:
             else:
                 logger.debug(f"[UG{self.id}] A UG já está sincronizada.")
                 response = self.clp_ug.write_single_coil(UG[f"REG_UG{self.id}_ComandosDigitais_MXW_Cala_Sirene"], 1)
-        except Exception:
-            logger.error(f"[UG{self.id}] Não foi possível partir a UG.\nException: \"{traceback.print_stack}\"")
-            return False
-        else:
             return response
+        except Exception as e:
+            logger.exception(f"[UG{self.id}] Não foi possível partir a UG. Exception: \"{repr(e)}\"")
+            logger.exception(f"[UG{self.id}] Traceback: {traceback.print_stack}")
+            return False
 
     def parar(self) -> bool:
         try:
@@ -593,11 +584,11 @@ class UnidadeDeGeracao:
             else:
                 logger.debug(f"[UG{self.id}] A unidade já está parada.")
                 response = self.clp_ug.write_single_coil(UG["REG_UG1_ComandosDigitais_MXW_Cala_Sirene"], 1)
-        except Exception:
-            logger.error(f"[UG{self.id}] Não foi possível partir a UG.\nException: \"{traceback.print_stack}\"")
-            return False
-        else:
             return response
+        except Exception as e:
+            logger.exception(f"[UG{self.id}] Não foi possível partir a UG. Exception: \"{repr(e)}\"")
+            logger.exception(f"[UG{self.id}] Traceback: {traceback.print_stack}")
+            return False
 
     def enviar_setpoint(self, setpoint_kw: int) -> bool:
         try:
@@ -608,11 +599,11 @@ class UnidadeDeGeracao:
                 response = self.clp_ug.write_single_coil(UG[f"REG_UG{self.id}_ComandosDigitais_MXW_ResetGeral"], 1)
                 response = self.clp_ug.write_single_coil(UG[f"REG_UG{self.id}_ComandosDigitais_MXW_RV_RefRemHabilita"], 1)
                 response = self.clp_ug.write_single_register(UG[f"REG_UG{self.id}_SaidasAnalogicas_MWW_SPPotAtiva"], self.setpoint)
-        except Exception:
-            logger.error(f"[UG{self.id}] Não foi possivel enviar o setpoint.\nException: {traceback.print_stack}")
-            return False
-        else:
             return response
+        except Exception as e:
+            logger.exception(f"[UG{self.id}] Não foi possivel enviar o setpoint. Exception: \"{repr(e)}\"")
+            logger.exception(f"[UG{self.id}] Traceback: {traceback.print_stack}")
+            return False
 
     def acionar_trips(self) -> None:
         self.acionar_trip_logico()
@@ -622,11 +613,11 @@ class UnidadeDeGeracao:
         try:
             logger.debug(f"[UG{self.id}] Acionando TRIP -> Lógico.")
             response = self.clp_ug.write_single_coil(UG[f"REG_UG{self.id}_ComandosDigitais_MXW_EmergenciaViaSuper"], 1)
-        except Exception:
-            logger.error(f"[UG{self.id}] Não foi possivel acionar o TRIP lógico.\nException: {traceback.print_stack}")
-            return False
-        else:
             return response
+        except Exception as e:
+            logger.exception(f"[UG{self.id}] Não foi possivel acionar o TRIP lógico. Exception: \"{repr(e)}\"")
+            logger.exception(f"[UG{self.id}] Traceback: {traceback.print_stack}")
+            return False
 
     def remover_trip_logico(self) -> bool:
         try:
@@ -634,41 +625,42 @@ class UnidadeDeGeracao:
             response = self.clp_ug.write_single_coil(UG[f"REG_UG{self.id}_ComandosDigitais_MXW_ResetGeral"], 1)
             response = self.clp_ug.write_single_coil(UG[f"REG_UG{self.id}_EntradasDigitais_MXI_ReleBloqA86HAtuado"], 0)
             response = self.clp_ug.write_single_coil(UG[f"REG_UG{self.id}_RetornosDigitais_MXR_700G_Trip"], 0)
-        except Exception:
-            logger.error(f"[UG{self.id}] Não foi possível remover o TRIP lógico.\nException: \"{traceback.print_stack}\"")
-            return False
-        else:
             return response
+        except Exception as e:
+            logger.exception(f"[UG{self.id}] Não foi possível remover o TRIP lógico. Exception: \"{repr(e)}\"")
+            logger.exception(f"[UG{self.id}] Traceback: {traceback.print_stack}")
+            return False
 
     def acionar_trip_eletrico(self) -> bool:
         try:
             self.enviar_trip_eletrico = True
             logger.debug(f"[UG{self.id}] Acionando TRIP -> Elétrico.")
-            self.clp_moa.write_single_coil(MOA[f"REG_MOA_OUT_BLOCK_UG{self.id}"], [1])
-        except Exception:
-            logger.error(f"[UG{self.id}] Não foi possível acionar o TRIP elétrico.\nException: \"{traceback.print_stack}\"")
+            response = self.clp_moa.write_single_coil(MOA[f"REG_MOA_OUT_BLOCK_UG{self.id}"], [1])
+            return response
+        except Exception as e:
+            logger.exception(f"[UG{self.id}] Não foi possível acionar o TRIP elétrico. Exception: \"{repr(e)}\"")
+            logger.exception(f"[UG{self.id}] Traceback: {traceback.print_stack}")
             return False
-        else:
-            return True
 
     def remover_trip_eletrico(self) -> bool:
         try:
             if self.clp_sa.read_coils(SA["REG_SA_ComandosDigitais_MXW_Liga_DJ1"])[0] == 0:
                 logger.debug(f"[UG{self.id}] Comando recebido -> Fechando DJ52L.")
                 self.con.fechaDj52L()
-        except Exception:
-            logger.error(f"[UG{self.id}] Não foi possível fechar o DJ52L.\nException: \"{traceback.print_stack}\"")
+        except Exception as e:
+            logger.exception(f"[UG{self.id}] Não foi possível fechar o DJ52L. Exception: \"{repr(e)}\"")
+            logger.exception(f"[UG{self.id}] Traceback: {traceback.print_stack}")
 
         try:
             self.enviar_trip_eletrico = False
             logger.debug(f"[UG{self.id}] Removendo TRIP -> Elétrico.")
-            self.clp_moa.write_single_coil(MOA[f"REG_MOA_OUT_BLOCK_UG{self.id}"], [0])
+            response = self.clp_moa.write_single_coil(MOA[f"REG_MOA_OUT_BLOCK_UG{self.id}"], [0])
             response = self.clp_ug.write_single_coil(UG[f"REG_UG{self.id}_ComandosDigitais_MXW_Cala_Sirene"], 1)
-        except Exception:
-            logger.error(f"[UG{self.id}] Não foi possível remover o TRIP elétrico.\nException: \"{traceback.print_stack}\"")
-            return False
-        else:
             return response
+        except Exception as e:
+            logger.exception(f"[UG{self.id}] Não foi possível remover o TRIP elétrico. Exception: \"{repr(e)}\"")
+            logger.exception(f"[UG{self.id}] Traceback: {traceback.print_stack}")
+            return False
 
     def reconhece_reset_alarmes(self) -> bool:
         try:
@@ -681,53 +673,52 @@ class UnidadeDeGeracao:
                 sleep(1)
                 self.clp_moa.write_single_coil(MOA["REG_PAINEL_LIDO"], [0])
                 sleep(1)
-        except:
-            logger.error(f"[UG{self.id}] Não foi possivel enviar o comando de reconhecer e resetar alarmes.\nException: {traceback.print_stack}")
-            return False
-        else:
             return True
+        except Exception as e:
+            logger.exception(f"[UG{self.id}] Não foi possivel enviar o comando de reconhecer e resetar alarmes. Exception: \"{repr(e)}\"")
+            logger.exception(f"[UG{self.id}] Traceback: {traceback.print_stack}")
+            return False
 
     def forcar_estado_manual(self) -> bool:
         try:
             self.__next_state = StateManual(self)
-        except Exception:
-            logger.error(f"[UG{self.id}] Não foi possivel forçar o estado manual.\nException: {traceback.print_stack}")
-            return False
-        else:
             return True
+        except Exception as e:
+            logger.exception(f"[UG{self.id}] Não foi possivel forçar o estado manual. Exception: \"{repr(e)}\"")
+            logger.exception(f"[UG{self.id}] Traceback: {traceback.print_stack}")
+            return False
 
     def forcar_estado_restrito(self) -> bool:
         try:
             self.__next_state = StateRestrito(self)
-        except Exception:
-            logger.error(f"[UG{self.id}] Não foi possivel forçar o estado restrito.\nException: {traceback.print_stack}")
-            return False
-        else:
             return True
+        except Exception as e:
+            logger.exception(f"[UG{self.id}] Não foi possivel forçar o estado restrito. Exception: \"{repr(e)}\"")
+            logger.exception(f"[UG{self.id}] Traceback: {traceback.print_stack}")
+            return False
 
     def forcar_estado_indisponivel(self) -> bool:
         try:
             self.__next_state = StateIndisponivel(self)
-        except Exception:
-            logger.error(f"[UG{self.id}] Não foi possivel forçar o estado indisponível.\nException: {traceback.print_stack}")
-            return False
-        else:
             return True
+        except Exception as e:
+            logger.exception(f"[UG{self.id}] Não foi possivel forçar o estado indisponível. Exception: \"{repr(e)}\"")
+            logger.exception(f"[UG{self.id}] Traceback: {traceback.print_stack}")
+            return False
 
     def forcar_estado_disponivel(self) -> bool:
         try:
             self.reconhece_reset_alarmes()
-            sleep(1)
             self.__next_state = StateDisponivel(self)
-        except Exception:
-            logger.error(f"[UG{self.id}] Não foi possivel forçar o estado disponível.\nException: {traceback.print_stack}")
-            return False
-        else:
             return True
+        except Exception as e:
+            logger.exception(f"[UG{self.id}] Não foi possivel forçar o estado disponível. Exception: \"{repr(e)}\"")
+            logger.exception(f"[UG{self.id}] Traceback: {traceback.print_stack}")
+            return False
 
     def controle_cx_espiral(self) -> None:
         self.cx_kp = (self.leitura_caixa_espiral.valor - self.dict.CFG["press_cx_alvo"]) * self.dict.CFG["cx_kp"]
-        self.cx_ajuste_ie = [sum(ug.leitura_potencia.valor) for ug in self.lista_ugs] / self.dict.CFG["pot_maxima_alvo"]
+        self.cx_ajuste_ie = [sum(ug.leitura_potencia.valor for ug in self.lista_ugs)] / self.dict.CFG["pot_maxima_alvo"]
         self.cx_ki = self.cx_ajuste_ie - self.cx_kp
 
         erro_press_cx = 0
@@ -751,7 +742,7 @@ class UnidadeDeGeracao:
 
         try:
             self.db.insert_debug(
-                datetime.now(pytz.timezone("Brazil/East")).timestamp(),
+                self.get_time(),
                 self.dict.CFG["kp"],
                 self.dict.CFG["ki"],
                 self.dict.CFG["kd"],
@@ -772,8 +763,9 @@ class UnidadeDeGeracao:
                 self.dict.IP["cx_kie"],
                 self.cx_controle_ie,
             )
-        except Exception:
-            logger.error(f"[UG{self.id}] Não foi possivel inserir dados no Banco.\nException: {traceback.print_stack}")
+        except Exception as e:
+            logger.exception(f"[UG{self.id}] Não foi possivel inserir dados no Banco. Exception: \"{repr(e)}\"")
+            logger.exception(f"[UG{self.id}] Traceback: {traceback.print_stack}")
 
     def controle_limites_operacao(self) -> None:
         fase_r = [self.leitura_temperatura_fase_R.valor, self.condicionador_temperatura_fase_r_ug.valor_base, self.condicionador_temperatura_fase_r_ug.valor_limite]

@@ -1,3 +1,4 @@
+import pytz
 import logging
 import threading
 
@@ -8,39 +9,19 @@ from mysql.connector import pooling
 
 lock = threading.Lock()
 
+logger = logging.getLogger("__main__")
+
 class Controlador:
     def __init__(self, shared_dict):
+        self.dict = shared_dict
 
-        # Set-up logging
-        rootLogger = logging.getLogger()
-        if rootLogger.hasHandlers():
-            rootLogger.handlers.clear()
-        rootLogger.setLevel(logging.NOTSET)
-        self.logger = logging.getLogger(__name__)
-
-        if self.logger.hasHandlers():
-            self.logger.handlers.clear()
-        self.logger.setLevel(logging.NOTSET)
-        logFormatter = logging.Formatter("%(asctime)s [%(threadName)-20.20s] [%(levelname)-5.5s] %(message)s")
-
-        ch = logging.StreamHandler(stdout)  # log para sdtout
-        ch.setFormatter(logFormatter)
-        ch.setLevel(logging.DEBUG)
-        self.logger.addHandler(ch)
-
-        fh = logging.FileHandler("simulacao.log")  # log para arquivo
-        fh.setFormatter(logFormatter)
-        fh.setLevel(logging.DEBUG)
-        self.logger.addHandler(fh)
-        # Fim Set-up logging
-
-        self.shared_dict = shared_dict
+        i = 0
 
         self.timed_afluente = []
+
         with open("simulation_input_data.csv", "r") as fp:
             rawlines = fp.readlines()
 
-        i = 0
         for line in rawlines:
             line = line.split(",")
             self.timed_afluente.append([i, float(line[0]) * 60, float(line[1])])
@@ -59,61 +40,58 @@ class Controlador:
         self.conn = self.connection_pool.get_connection()
         self.cursor = self.conn.cursor()
 
+    def get_time(self) -> object:
+        return datetime.now(pytz.timezone("Brazil/East")).replace(tzinfo=None)
+
     def run(self):
         q_ant = 0
-        counter_timed_afluente = 0
         last_log_time = -1
+        counter_timed_afluente = 0
 
-        with open("simulation_output_data.csv", "w") as fp:
-            fp.write("ts,q_aflu,nv_montante,pot_ug1,set_ug1,pot_ug2,set_ug2\n")
+        while not self.dict.GLB["stop_sim"]:
+            w = 0.5
+            qmed = 7
+            qdelta = 3
 
-        while not self.shared_dict["stop_sim"]:
-            self.shared_dict["stop_sim"] = self.shared_dict["stop_gui"]
+            self.dict.GLB["stop_sim"] = self.dict.GLB["stop_gui"]
+
             try:
-                t_inicio_passo = datetime.now()
+                t_inicio_passo = self.get_time()
                 lock.acquire()
 
-                if (self.timed_afluente[counter_timed_afluente + 1][1]<= self.shared_dict["tempo_simul"]):
+                if (self.timed_afluente[counter_timed_afluente + 1][1] <= self.dict.GLB["tempo_simul"]):
                     counter_timed_afluente += 1
 
                 if self.timed_afluente[counter_timed_afluente][2] == -1:
-                    self.shared_dict["stop_sim"] = True
-                    self.shared_dict["stop_gui"] = True
+                    self.dict.GLB["stop_sim"] = True
+                    self.dict.GLB["stop_gui"] = True
                     exit()
 
-                self.shared_dict["q_alfuente"] = self.timed_afluente[counter_timed_afluente][2]
+                self.dict.USN["q_alfuente"] = self.timed_afluente[counter_timed_afluente][2]
 
-                qmed = 7
-                qdelta = 3
-                w = 0.5
-
-                duty = (((self.shared_dict["tempo_simul"]*w)%3600)/3600)
-                if duty <= 0.5:
-                    self.shared_dict["q_alfuente"] = qmed - (qdelta/2) + qdelta * (2 * duty)
-                else:
-                    self.shared_dict["q_alfuente"] = qmed + (qdelta/2) + qdelta * (2 * (0.5-duty))
+                duty = (((self.dict.GLB["tempo_simul"] *  w) % 3600) / 3600)
+                self.dict.USN["q_alfuente"] = qmed - (qdelta/2) + qdelta * (2 * duty) if duty <= 0.5 else qmed + (qdelta/2) + qdelta * (2 * (0.5-duty))
 
                 lock.release()
 
-                if not int(self.shared_dict["tempo_simul"] / 60) == int(last_log_time / 60):
-                    last_log_time = self.shared_dict["tempo_simul"]
-                    ts = int(datetime.timestamp(datetime.now()))
-
+                if not int(self.dict.GLB["tempo_simul"] / 60) == int(last_log_time / 60):
+                    last_log_time = self.dict.GLB["tempo_simul"]
                     self.cursor.execute(
-                        f"INSERT INTO debug.simul_data VALUES({ts}, \
-                        {self.shared_dict['q_alfuente']}, \
-                        {self.shared_dict['nv_montante']}, \
-                        {self.shared_dict['potencia_kw_ug1']}, \
-                        {self.shared_dict['setpoint_kw_ug1']}, \
-                        {self.shared_dict['potencia_kw_ug2']}, \
-                        {self.shared_dict['setpoint_kw_ug2']});"
+                        f"INSERT INTO debug.simul_data VALUES({self.get_time().timestamp()}, \
+                        {self.dict['q_alfuente']}, \
+                        {self.dict['nv_montante']}, \
+                        {self.dict['potencia_kw_ug1']}, \
+                        {self.dict['setpoint_kw_ug1']}, \
+                        {self.dict['potencia_kw_ug2']}, \
+                        {self.dict['setpoint_kw_ug2']});"
                     )
                     self.conn.commit()
 
-                tempo_restante = (datetime.now() - t_inicio_passo).microseconds * 10e-6
+                tempo_restante = (self.get_time() - t_inicio_passo).microseconds * 10e-6
+
                 if tempo_restante > 0:
                     sleep(tempo_restante)
 
             except KeyboardInterrupt:
-                self.shared_dict["stop_gui"] = True
+                self.dict.GLB["stop_gui"] = True
                 continue

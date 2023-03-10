@@ -152,8 +152,9 @@ class Usina:
                 819.2,
                 op=4,
             ).valor
-        except Exception:
-            logger.exception(f"[USN] Houve um erro na leitura de nível montante.\nTraceback: {traceback.print_stack}")
+        except Exception as e:
+            logger.exception(f"[USN] Houve um erro na leitura de nível montante. Exception: \"{repr(e)}\"")
+            logger.exception(f"[USN] Traceback: {traceback.print_stack}")
             return 0
 
     @property
@@ -166,8 +167,9 @@ class Usina:
                 1000,
                 op=4,
             ).valor
-        except Exception:
-            logger.exception(f"[USN] Houve um erro na leitura de Tensão RS.\nTraceback: {traceback.print_stack}")
+        except Exception as e:
+            logger.exception(f"[USN] Houve um erro na leitura de Tensão RS. Exception: \"{repr(e)}\"")
+            logger.exception(f"[USN] Traceback: {traceback.print_stack}")
             return 0
 
     @property
@@ -180,8 +182,9 @@ class Usina:
                 1000,
                 op=4,
             ).valor
-        except Exception:
-            logger.exception(f"[USN] Houve um erro na leitura de Tensão RS.\nTraceback: {traceback.print_stack}")
+        except Exception as e:
+            logger.exception(f"[USN] Houve um erro na leitura de Tensão RS. Exception: \"{repr(e)}\"")
+            logger.exception(f"[USN] Traceback: {traceback.print_stack}")
             return 0
 
     @property
@@ -194,8 +197,9 @@ class Usina:
                 1000,
                 op=4,
             ).valor
-        except Exception:
-            logger.exception(f"[USN] Houve um erro na leitura de Tensão TR.\nTraceback: {traceback.print_stack}")
+        except Exception as e:
+            logger.exception(f"[USN] Houve um erro na leitura de Tensão TR. Exception: \"{repr(e)}\"")
+            logger.exception(f"[USN] Traceback: {traceback.print_stack}")
             return 0
 
     @property
@@ -208,13 +212,10 @@ class Usina:
                 1,
                 op=4,
             ).valor
-        except Exception:
-            logger.exception(f"[USN] Houve um erro na leitura de potência dos medidores MP/MR.\nTraceback: {traceback.print_stack}")
+        except Exception as e:
+            logger.exception(f"[USN] Houve um erro na leitura de potência dos medidores MP/MR. Exception: \"{repr(e)}\"")
+            logger.exception(f"[USN] Traceback: {traceback.print_stack}")
             return 0
-
-    @property
-    def get_ugs(self) -> list:
-        return self.ugs
 
     @property
     def get_modo_autonomo(self) -> int:
@@ -290,10 +291,11 @@ class Usina:
                 self.clp_moa.write_single_coil(MOA["REG_MOA_OUT_SETPOINT"], [0])
                 self.clp_moa.write_single_coil(MOA["REG_MOA_OUT_BLOCK_UG1"], [0])
                 self.clp_moa.write_single_coil(MOA["REG_MOA_OUT_BLOCK_UG2"], [0])
-        except Exception:
-            logger.exception(f"[USN] Houve um erro ao tentar escrever valores modbus no CLP MOA.\nTraceback: {traceback.print_stack}")
+        except Exception as e:
+            logger.exception(f"[USN] Houve um erro ao tentar escrever valores modbus no CLP MOA. Exception: \"{repr(e)}\"")
+            logger.exception(f"[USN] Traceback: {traceback.print_stack}")
 
-    def ler_valores(self) ->  None:
+    def ler_valores(self) -> None:
         self.ping_clps()
         try:
             if self.clp_moa.read_coils(MOA["REG_MOA_IN_EMERG"])[0] == 1 and not self.avisado_em_eletrica:
@@ -302,12 +304,9 @@ class Usina:
 
             elif self.clp_moa.read_coils(MOA["REG_MOA_IN_EMERG"])[0] == 0 and self.avisado_em_eletrica:
                 self.avisado_em_eletrica = False
-                for ug in self.ugs: ug.ler_condicionadores = False
 
-            if self.clp_moa.read_coils(MOA["REG_MOA_IN_EMERG_UG1"])[0] == 1:
-                self.ocorrencias.verificar_condicionadores()
-
-            self.ug2.ler_condicionadores = True if self.clp_moa.read_coils(MOA["REG_MOA_IN_EMERG_UG2"])[0] == 1 else False
+            if self.clp_moa.read_coils(MOA["REG_MOA_IN_EMERG_UG1"])[0] == 1 or self.clp_moa.read_coils(MOA["REG_MOA_IN_EMERG_UG2"])[0] == 1:
+                self.ocorrencias.verificar_condicionadores_ug()
 
             if self.clp_moa.read_coils(MOA["REG_MOA_IN_HABILITA_AUTO"])[0] == 1:
                 self.clp_moa.write_single_coil(MOA["REG_MOA_IN_HABILITA_AUTO"], [1])
@@ -319,8 +318,9 @@ class Usina:
                 self.clp_moa.write_single_coil(MOA["REG_MOA_IN_DESABILITA_AUTO"], [1])
                 self.modo_autonomo = 0
                 self.entrar_em_modo_manual()
-        except Exception:
-            logger.exception(f"[USN] Houve um erro ao tentar ler valores modbus no CLP MOA.\nTraceback: {traceback.print_stack}")
+        except Exception as e:
+            logger.exception(f"[USN] Houve um erro ao tentar ler valores modbus no CLP MOA. Exception: \"{repr(e)}\"")
+            logger.exception(f"[USN] Traceback: {traceback.print_stack}")
 
         self.heartbeat()
         self.atualizar_montante_recente()
@@ -328,7 +328,7 @@ class Usina:
         parametros = self.db.get_parametros_usina()
         self.atualizar_cfg(parametros)
         self.atualizar_parametros_db(parametros)
-        self.atualizar_limites_operacao(parametros)
+        self.atualizar_limites_condicionadores(parametros)
 
     def escrever_valores(self) -> None:
         try:
@@ -349,35 +349,30 @@ class Usina:
                 self.ug2.leitura_horimetro.valor,  # ug2_tempo
             ]
             self.db.update_valores_usina(valores)
-        except Exception:
-            logger.exception(f"[USN] Houve um erro ao inserir os valores no banco.\n Traceback: {traceback.print_stack}")
-
-    def ping_clps(self) -> None:
-        try:
-            if not ping(self.dict.IP["TDA_slave_ip"]):
-                self.dict.CFG["tda_offline"] = True
-                if self.dict.CFG["tda_offline"] and not self.borda_ping:
-                    self.borda_ping = True
-                    logger.warning("[USN] CLP TDA não respondeu a tentativa de comunicação!")
-            elif ping(self.dict.IP["TDA_slave_ip"]) and self.borda_ping:
-                logger.info("[USN] Comunicação com o CLP TDA reestabelecida.")
-                self.borda_ping = False
-                self.dict.GLB["tda_offline"] = False
-
-            if not ping(self.dict.IP["USN_slave_ip"]):
-                logger.warning("[USN] CLP SA não respondeu a tentativa de comunicação!")
-            if not ping(self.dict.IP["UG1_slave_ip"]):
-                logger.warning("[USN] CLP UG1 não respondeu a tentativa de comunicação!")
-            if not ping(self.dict.IP["UG2_slave_ip"]):
-                logger.warning("[USN] CLP UG2 não respondeu a tentativa de comunicação!")
-        except Exception:
-            logger.exception(f"[USN] Houve um erro ao executar o ping dos CLPs da usina.\nTraceback: {traceback.print_stack}")
+        except Exception as e:
+            logger.exception(f"[USN] Houve um erro ao inserir os valores no banco. Exception: \"{repr(e)}\"")
+            logger.exception(f"[USN] Traceback: {traceback.print_stack}")
 
     def atualizar_montante_recente(self) -> None:
         if not self.dict.GLB["tda_offline"]:
             self.nv_montante_recente = self.nv_montante
             self.erro_nv_anterior = self.erro_nv
             self.erro_nv = self.nv_montante_recente - self.dict.CFG["nv_alvo"]
+
+    def atualizar_parametros_db(self, parametros) -> None:
+        try:
+            self.db_emergencia_acionada = int(parametros["emergencia_acionada"])
+            logger.debug("[USN] Emergência acionada.")
+
+            self.modo_autonomo = int(parametros["modo_autonomo"])
+            logger.debug(f"[USN] Modo autonomo que o banco respondeu: {int(parametros['modo_autonomo'])}")
+
+            if not self.modo_de_escolha_das_ugs == int(parametros["modo_de_escolha_das_ugs"]):
+                self.modo_de_escolha_das_ugs = int(parametros["modo_de_escolha_das_ugs"])
+                logger.info(f"[USN] O modo de prioridade das ugs foi alterado (#{self.modo_de_escolha_das_ugs}).")
+        except Exception as e:
+            logger.exception(f"[USN] Houve um erro ao ler e atualizar os parâmetros do Banco de Dados. Exception: \"{repr(e)}\"")
+            logger.exception(f"[USN] Traceback: {traceback.print_stack}")
 
     def atualizar_cfg(self, parametros) -> None:
         try:
@@ -399,22 +394,38 @@ class Usina:
             for ug in self.ugs:
                 ug.prioridade = int(parametros[f"ug{ug.id}_prioridade"])
 
-        except Exception:
-            logger.exception(f"[USN] Houve um erro ao atualizar o arquivo de configuração \"cfg.json\".\nTraceback: {traceback.print_stack}")
+        except Exception as e:
+            logger.exception(f"[USN] Houve um erro ao atualizar o arquivo de configuração \"cfg.json\". Exception: \"{repr(e)}\"")
+            logger.exception(f"[USN] Traceback: {traceback.print_stack}")
 
-    def atualizar_parametros_db(self, parametros) -> None:
-        try:
-            self.db_emergencia_acionada = int(parametros["emergencia_acionada"])
-            logger.debug("[USN] Emergência acionada.")
+    def atualizar_limites_condicionadores(self, parametros) -> None:
+        for ug in self.ugs:
+            try:
+                ug.prioridade = int(parametros[f"ug{ug.id}_prioridade"])
+                ug.condicionador_temperatura_fase_r_ug.valor_base = float(parametros[f"alerta_temperatura_fase_r_ug{ug.id}"])
+                ug.condicionador_temperatura_fase_r_ug.valor_limite = float(parametros[f"limite_temperatura_fase_r_ug{ug.id}"])
+                ug.condicionador_temperatura_fase_s_ug.valor_base = float(parametros[f"alerta_temperatura_fase_s_ug{ug.id}"])
+                ug.condicionador_temperatura_fase_s_ug.valor_limite = float(parametros[f"limite_temperatura_fase_s_ug{ug.id}"])
+                ug.condicionador_temperatura_fase_t_ug.valor_base = float(parametros[f"alerta_temperatura_fase_t_ug{ug.id}"])
+                ug.condicionador_temperatura_fase_t_ug.valor_limite = float(parametros[f"limite_temperatura_fase_t_ug{ug.id}"])
+                ug.condicionador_temperatura_nucleo_gerador_1_ug.valor_base = float(parametros[f"alerta_temperatura_nucleo_gerador_1_ug{ug.id}"])
+                ug.condicionador_temperatura_nucleo_gerador_1_ug.valor_limite = float(parametros[f"limite_temperatura_nucleo_gerador_1_ug{ug.id}"])
+                ug.condicionador_temperatura_nucleo_gerador_2_ug.valor_base = float(parametros[f"alerta_temperatura_nucleo_gerador_2_ug{ug.id}"])
+                ug.condicionador_temperatura_nucleo_gerador_2_ug.valor_limite = float(parametros[f"limite_temperatura_nucleo_gerador_2_ug{ug.id}"])
+                ug.condicionador_temperatura_nucleo_gerador_3_ug.valor_base = float(parametros[f"alerta_temperatura_nucleo_gerador_3_ug{ug.id}"])
+                ug.condicionador_temperatura_nucleo_gerador_3_ug.valor_limite = float(parametros[f"limite_temperatura_nucleo_gerador_3_ug{ug.id}"])
+                ug.condicionador_temperatura_mancal_casq_rad_ug.valor_base = float(parametros[f"alerta_temperatura_mancal_casq_rad_ug{ug.id}"])
+                ug.condicionador_temperatura_mancal_casq_rad_ug.valor_limite = float(parametros[f"limite_temperatura_mancal_casq_rad_ug{ug.id}"])
+                ug.condicionador_temperatura_mancal_casq_comb_ug.valor_base = float(parametros[f"alerta_temperatura_mancal_casq_comb_ug{ug.id}"])
+                ug.condicionador_temperatura_mancal_casq_comb_ug.valor_limite = float(parametros[f"limite_temperatura_mancal_casq_comb_ug{ug.id}"])
+                ug.condicionador_temperatura_mancal_escora_comb_ug.valor_base = float(parametros[f"alerta_temperatura_mancal_escora_comb_ug{ug.id}"])
+                ug.condicionador_temperatura_mancal_escora_comb_ug.valor_limite = float(parametros[f"limite_temperatura_mancal_escora_comb_ug{ug.id}"])
+                ug.condicionador_caixa_espiral_ug.valor_base = float(parametros[f"alerta_caixa_espiral_ug{ug.id}"])
+                ug.condicionador_caixa_espiral_ug.valor_limite = float(parametros[f"limite_caixa_espiral_ug{ug.id}"])
 
-            self.modo_autonomo = int(parametros["modo_autonomo"])
-            logger.debug(f"[USN] Modo autonomo que o banco respondeu: {int(parametros['modo_autonomo'])}")
-
-            if not self.modo_de_escolha_das_ugs == int(parametros["modo_de_escolha_das_ugs"]):
-                self.modo_de_escolha_das_ugs = int(parametros["modo_de_escolha_das_ugs"])
-                logger.info(f"[USN] O modo de prioridade das ugs foi alterado (#{self.modo_de_escolha_das_ugs}).")
-        except Exception:
-            logger.exception(f"[USN] Houve um erro ao ler e atualizar os parâmetros do Banco de Dados.\nTraceback: {traceback.print_stack}")
+            except Exception as e:
+                logger.exception(f"[USN] Houve um erro ao atualizar os limites de temperaturas dos condicionadores. Exception: \"{repr(e)}\"")
+                logger.exception(f"[USN] Traceback: {traceback.print_stack}")
 
     def acionar_emergencia(self) -> None:
         self.con.acionar_emergencia()
@@ -441,15 +452,19 @@ class Usina:
             return False
 
     def verificar_tensao(self) -> bool:
-        if (self.dict.CFG["TENSAO_LINHA_BAIXA"] < self.tensao_rs < self.dict.CFG["TENSAO_LINHA_ALTA"]) \
-            and (self.dict.CFG["TENSAO_LINHA_BAIXA"] < self.tensao_st < self.dict.CFG["TENSAO_LINHA_ALTA"]) \
-            and (self.dict.CFG["TENSAO_LINHA_BAIXA"] < self.tensao_tr < self.dict.CFG["TENSAO_LINHA_ALTA"]):
-            self.tensao_ok = True
-            return True
-        else:
-            self.tensao_ok = False
-            logger.warning("[USN] Tensão da linha fora do limite.")
-            return False
+        try:
+            if (self.dict.CFG["TENSAO_LINHA_BAIXA"] < self.tensao_rs < self.dict.CFG["TENSAO_LINHA_ALTA"]) \
+                and (self.dict.CFG["TENSAO_LINHA_BAIXA"] < self.tensao_st < self.dict.CFG["TENSAO_LINHA_ALTA"]) \
+                and (self.dict.CFG["TENSAO_LINHA_BAIXA"] < self.tensao_tr < self.dict.CFG["TENSAO_LINHA_ALTA"]):
+                self.tensao_ok = True
+                return True
+            else:
+                self.tensao_ok = False
+                logger.warning("[USN] Tensão da linha fora do limite.")
+                return False
+        except Exception as e:
+            logger.exception(f"[USN] Houve um erro ao realizar a verificação da tensão na linha. Exception: \"{repr(e)}\"")
+            logger.exception(f"[USN] Traceback: {traceback.print_stack}")
 
     def aguardar_tensao(self) -> bool:
         if not self.tensao_ok and self.borda_tensao is None:
@@ -492,14 +507,14 @@ class Usina:
         logger.debug(f"[USN] Potência no medidor = {pot_medidor:0.3f}")
 
         pot_aux = self.dict.CFG["pot_maxima_alvo"] - (self.dict.CFG["pot_maxima_usina"] - self.dict.CFG["pot_maxima_alvo"])
-
         pot_medidor = max(pot_aux, min(pot_medidor, self.dict.CFG["pot_maxima_usina"]))
 
         try:
             if pot_medidor > self.dict.CFG["pot_maxima_alvo"]:
                 pot_alvo = self.pot_alvo_anterior * (1 - ((pot_medidor - self.dict.CFG["pot_maxima_alvo"]) / self.dict.CFG["pot_maxima_alvo"]))
-        except TypeError:
-            logger.exception("[USN] A comunicação com os MFs falharam.")
+        except TypeError as te:
+            logger.exception(f"[USN] A comunicação com os MFs falharam. Exception: \"{repr(te)}\"")
+            logger.exception(f"[USN] Traceback: {traceback.print_stack}")
 
         self.pot_alvo_anterior = pot_alvo
 
@@ -626,14 +641,39 @@ class Usina:
                 0,
             )
         except Exception as e:
-            logger.exception(e)
+            logger.exception(f"[USN] Houve um erro ao inserir dados DEBUG do controle de potência normal no banco. Exception: \"{repr(e)}\"")
+            logger.exception(f"[USN] Traceback: {traceback.print_stack}")
 
         pot_alvo = self.distribuir_potencia(pot_alvo)
 
-def ping(host):
-    ping = False
-    for i in range(2):
-        ping = ping or (subprocess.call(["ping", "-c", "1", "-w", "1", host], stdout=subprocess.PIPE) == 0)
-        if not ping:
-            pass
-    return ping
+    def ping(self, host) -> bool:
+        ping = False
+        for i in range(2):
+            ping = ping or (subprocess.call(["ping", "-c", "1", "-w", "1", host], stdout=subprocess.PIPE) == 0)
+            if not ping:
+                pass
+        return ping
+
+    def ping_clps(self) -> None:
+        try:
+            if not self.ping(self.dict.IP["TDA_slave_ip"]):
+                self.dict.CFG["tda_offline"] = True
+                if self.dict.CFG["tda_offline"] and not self.borda_ping:
+                    self.borda_ping = True
+                    logger.warning("[USN] CLP TDA não respondeu a tentativa de comunicação!")
+            elif self.ping(self.dict.IP["TDA_slave_ip"]) and self.borda_ping:
+                logger.info("[USN] Comunicação com o CLP TDA reestabelecida.")
+                self.borda_ping = False
+                self.dict.GLB["tda_offline"] = False
+
+            if not self.ping(self.dict.IP["USN_slave_ip"]):
+                logger.warning("[USN] CLP SA não respondeu a tentativa de comunicação!")
+            if not self.ping(self.dict.IP["UG1_slave_ip"]):
+                logger.warning("[USN] CLP UG1 não respondeu a tentativa de comunicação!")
+            if not self.ping(self.dict.IP["UG2_slave_ip"]):
+                logger.warning("[USN] CLP UG2 não respondeu a tentativa de comunicação!")
+        except Exception as e:
+            logger.exception(f"[USN] Houve um erro ao executar o ping dos CLPs da usina. Exception: \"{repr(e)}\"")
+            logger.exception(f"[USN] Traceback: {traceback.print_stack}")
+
+    

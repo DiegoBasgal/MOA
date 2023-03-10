@@ -34,7 +34,6 @@ class CondicionadorBase:
         else:
             return False if self.leitura.valor == 0 else True
 
-
     @property
     def valor(self) -> float:
         return self.ativo * 1.0

@@ -86,7 +86,7 @@ class Ocorrencias:
         )
         
         self.leitura_condicionadores_usn()
-        [self.leitura_condicionadores_ug(ug.id) for ug in self.ugs]
+        for ug in self.ugs: self.leitura_condicionadores_ug(ug.id)
 
     # Property/Setter Protegidos
     @property
@@ -164,8 +164,9 @@ class Ocorrencias:
                 if self.leitura_temporizada_ug() and self.voip_ug:
                     self.acionar_voip()
                 sleep(max(0, proxima_leitura - time()))
-            except Exception:
-                logger.debug("[OCO] Houve um problema ao executar a leitura por hora")
+            except Exception as e:
+                logger.exception(f"[OCO] Houve um problema ao executar a leitura por hora. Exception: \"{repr(e)}\"")
+                logger.exception(f"[OCO] Traceback: {traceback.print_stack}")
             proxima_leitura += (time() - proxima_leitura) // delay * delay + delay
 
     def acionar_voip(self) -> None:
@@ -189,8 +190,9 @@ class Ocorrencias:
                 voip.enviar_voz_emergencia()
                 avisado_em_eletrica = False
 
-        except Exception:
-            logger.warning("[OCO] Houve um problema ao ligar por Voip")
+        except Exception as e:
+            logger.exception(f"[OCO] Houve um problema ao ligar por Voip. Exception: \"{repr(e)}\"")
+            logger.exception(f"[OCO] Traceback: {traceback.print_stack}")
 
     def leitura_temporizada_usn(self) -> bool:
         try:
@@ -250,12 +252,12 @@ class Ocorrencias:
                 self.voip_usn = True
             elif leitura_QCADE_BombasDng_Auto.valor == 1 and self.dict.VOIP["BombasDngRemoto"]:
                 self.dict.VOIP["BombasDngRemoto"] = False
-
-        except Exception:
-            logger.exception(f"[OCO] Houve um erro ao realizar a leitura temporizada da Usina.\Traceback: {traceback.print_stack}")
-            return False
-        else:
             return True
+
+        except Exception as e:
+            logger.exception(f"[OCO] Houve um erro ao realizar a leitura temporizada da Usina. Exception: \"{repr(e)}\"")
+            logger.exception(f"[OCO] Traceback: {traceback.print_stack}")
+            return False
 
     def leitura_temporizada_ug(self) -> bool:
         for ug in self.ugs:
@@ -297,9 +299,11 @@ class Ocorrencias:
                 elif leitura_EntradasDigitais_MXI_QCAUG1_Remoto.valor == 1 and self.dict.VOIP["QCAUGRemoto"]:
                     self.dict.VOIP["QCAUGRemoto"] = False
 
-            except Exception:
-                logger.exception(f"[OCO] Houve um erro ao executar a leitura temporizada da UG{ug.id}.\nTraceback: {traceback.print_stack}")
+            except Exception as e:
+                logger.exception(f"[OCO] Houve um erro ao executar a leitura temporizada da UG{ug.id}. Exception: \"{repr(e)}\"")
+                logger.exception(f"[OCO] Traceback: {traceback.print_stack}")
                 return False
+
         return True
 
     def leitura_condicionadores_usn(self) -> None:

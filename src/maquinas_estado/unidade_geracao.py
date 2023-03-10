@@ -186,7 +186,7 @@ class StateDisponivel(State):
 
             return self
 
-    def atenuacao_carga(self) -> logger:
+    def atenuacao_carga(self) -> None:
         atenuacao = 0
         for condic in self.parent.condicionadores_atenuadores:
             atenuacao = max(atenuacao, condic.valor)
@@ -200,18 +200,21 @@ class StateDisponivel(State):
         elif (self.parent.setpoint * ganho < self.parent.setpoint_minimo) and (self.parent.setpoint > self.parent.setpoint_minimo):
             self.parent.setpoint = self.parent.setpoint_minimo
 
-        return logger.debug(f"[UG{self.parent.id}] SP {aux} * GANHO {ganho} = {self.parent.setpoint}")
+        logger.debug(f"[UG{self.parent.id}] SP {aux} * GANHO {ganho} = {self.parent.setpoint}")
 
-    def verificar_partindo(self) -> logger:
+    def verificar_partindo(self) -> None:
         try:
             while time() < (time() + 600):
                 if self.parent.etapa_atual == UNIDADE_SINCRONIZADA:
-                    return logger.debug(f"[UG{self.parent.id}] Unidade sincronizada. Verificar partindo encerrado.")
+                    logger.debug(f"[UG{self.parent.id}] Unidade sincronizada. Verificar partindo encerrado.")
+                    return
                 elif self.parent.release_timer:
                     self.release = False
-                    return logger.debug(f"[UG{self.parent.id}] MOA entrou em modo manual. Verificar partindo encerrado.")
+                    logger.debug(f"[UG{self.parent.id}] MOA entrou em modo manual. Verificar partindo encerrado.")
+                    return
             self.release = False
             self.parent.clp_sa.write_single_coil([f"REG_UG{self.parent.id}_ComandosDigitais_MXW_EmergenciaViaSuper"], [1])
-            return logger.debug(f"[UG{self.parent.id}] A Unidade estourou o timer de verificação de partida, adicionando condição para normalizar")
-        except Exception:
-            return logger.error(f"[UG{self.parent.id}] Erro na execução do timer de verificação de partida.\nException: {traceback.print_stack}")
+            logger.debug(f"[UG{self.parent.id}] A Unidade estourou o timer de verificação de partida, adicionando condição para normalizar")
+        except Exception as e:
+            logger.exception(f"[UG{self.parent.id}] Erro na execução do timer de verificação de partida. Exception: \"{repr(e)}\"")
+            logger.exception(f"[UG{self.parent.id}] Traceback: {traceback.print_stack}")

@@ -1,134 +1,120 @@
-from DICT import *
+import logging
+
+from simulador.src.const import *
+
+logger = logging.getLogger("__main__")
 
 class Dj52L:
-    def __init__(self, parent):
-        # COPIA DE INFORMACOES DA CLASSE SITE
-        self.parent = parent
-        self.logger = self.parent.logger
-        self.shared_dict = parent.shared_dict
-        self.segundos_por_passo = self.parent.segundos_por_passo
+    def __init__(self, shared_dict) -> None:
+        self.dict = shared_dict
 
-        self.shared_dict["debug_dj52L_abrir"] = False
-        self.shared_dict["debug_dj52L_fechar"] = False
-        self.shared_dict["debug_dj52L_reconhece_reset"] = False
-        self.shared_dict["dj52L_aberto"] = False
-        self.shared_dict["dj52L_fechado"] = True
-        self.shared_dict["dj52L_inconsistente"] = False
-        self.shared_dict["dj52L_trip"] = False
-        self.shared_dict["dj52L_mola_carregada"] = True
-        self.shared_dict["dj52L_falta_vcc"] = False
-        self.shared_dict["dj52L_condicao_de_fechamento"] = False
-        self.shared_dict["dj52L_falha_fechamento"] = False
+        self.speed = 50
+        self.escala_ruido = 0.1
+        self.passo_simulacao = 0.001
+        self.segundos_por_passo = self.passo_simulacao * self.speed
 
-        self.avisou_trip = False
-        self.aux_mola = 0
+        self.mola = 0
         self.tempo_carregamento_mola = 2
 
-    def passo(self):
-        if (self.shared_dict["debug_dj52L_fechar"] and self.shared_dict["debug_dj52L_abrir"]):
-            self.shared_dict["debug_dj52L_abrir"] = False
-            self.shared_dict["debug_dj52L_fechar"] = False
-            self.shared_dict["dj52L_aberto"] = True
-            self.shared_dict["dj52L_fechado"] = True
+        self.avisou_trip = False
+
+    def passo(self) -> None:
+        self.verificar_inconsistente()
+
+        self.verificar_mola()
+        self.verificar_tensao()
+        self.verificar_condicao()
+
+        if self.dict.DJ["debug_dj52L_fechar"] and self.dict.DJ["debug_dj52L_abrir"]:
+            self.dict.DJ["dj52L_aberto"] = True
+            self.dict.DJ["dj52L_fechado"] = True
+            self.dict.DJ["debug_dj52L_abrir"] = False
+            self.dict.DJ["debug_dj52L_fechar"] = False
             self.tripar()
 
-        elif self.shared_dict["debug_dj52L_fechar"]:
-            self.shared_dict["debug_dj52L_fechar"] = False
+        elif self.dict.DJ["debug_dj52L_fechar"]:
+            self.dict.DJ["debug_dj52L_fechar"] = False
             self.fechar()
 
-        elif self.shared_dict["debug_dj52L_abrir"]:
-            self.shared_dict["debug_dj52L_abrir"] = False
+        elif self.dict.DJ["debug_dj52L_abrir"]:
+            self.dict.DJ["debug_dj52L_abrir"] = False
             self.abrir()
 
-        if self.shared_dict["debug_dj52L_reconhece_reset"]:
-            self.reconhece_reset_dj52L()
-            self.shared_dict["debug_dj52L_reconhece_reset"] = False
+        if self.dict.DJ["debug_dj52L_reconhece_reset"]:
+            self.reconhece_reset()
 
-        if not self.shared_dict["dj52L_mola_carregada"]:
-            self.aux_mola += self.segundos_por_passo
-            if self.aux_mola >= self.tempo_carregamento_mola:
-                self.aux_mola = 0
-                self.shared_dict["dj52L_mola_carregada"] = True
-
-        if not (USINA_TENSAO_MINIMA < self.shared_dict["tensao_na_linha"] < USINA_TENSAO_MAXIMA):
-            self.shared_dict["dj52L_falta_vcc"] = True
-            self.tripar("Tensão fora dos limites")
-
-        else:
-            self.shared_dict["dj52L_falta_vcc"] = False
-
-        if self.shared_dict["dj52L_aberto"] == self.shared_dict["dj52L_fechado"]:
-            self.shared_dict["dj52L_inconsistente"] = True
-
-        self.shared_dict["dj52L_condicao_de_fechamento"] = True
-
-        if not self.shared_dict["dj52L_aberto"]:
-            self.shared_dict["dj52L_condicao_de_fechamento"] = False
-        if not self.shared_dict["dj52L_mola_carregada"]:
-            self.shared_dict["dj52L_condicao_de_fechamento"] = False
-        if self.shared_dict["dj52L_fechado"]:
-            self.shared_dict["dj52L_condicao_de_fechamento"] = False
-        if self.shared_dict["dj52L_trip"]:
-            self.shared_dict["dj52L_condicao_de_fechamento"] = False
-        if self.shared_dict["dj52L_inconsistente"]:
-            self.shared_dict["dj52L_condicao_de_fechamento"] = False
-        if self.shared_dict["dj52L_falta_vcc"]:
-            self.shared_dict["dj52L_condicao_de_fechamento"] = False
-
-    def tripar(self, desc=None):
-        if not self.avisou_trip:
-            self.avisou_trip = True
-            self.shared_dict["dj52L_trip"] = True
-            self.shared_dict["dj52L_aberto"] = True
-            self.shared_dict["dj52L_fechado"] = False
-            self.shared_dict["dj52L_mola_carregada"] = False
-            self.shared_dict["dj52L_falha_fechamento"] = True
-            self.logger.warning(f"[dj52L] Trip!. {desc}")
-            return True
-
-    def reconhece_reset_dj52L(self):
-        self.logger.info("[dj52L] Reconhece Reset.")
-        self.shared_dict["debug_dj52L_abrir"] = False
-        self.shared_dict["debug_dj52L_fechar"] = False
-        self.shared_dict["debug_dj52L_reconhece_reset"] = False
-        self.shared_dict["dj52L_aberto"] = False
-        self.shared_dict["dj52L_fechado"] = True
-        self.shared_dict["dj52L_inconsistente"] = False
-        self.shared_dict["dj52L_trip"] = False
-        self.shared_dict["dj52L_falha_fechamento"] = False
-        self.avisou_trip = False
-        return True
-
-    def abrir(self):
-        self.logger.info("[dj52L] Abrir.")
-        if self.shared_dict["dj52L_mola_carregada"]:
-            self.shared_dict["dj52L_aberto"] = True
-            self.shared_dict["dj52L_fechado"] = False
-
+    def abrir(self) -> None:
+        logger.info("[DJ] Abrir.")
+        if self.dict.DJ["dj52L_mola_carregada"]:
+            self.dict.DJ["dj52L_aberto"] = True
+            self.dict.DJ["dj52L_fechado"] = False
         else:
             self.tripar("Mandou antes de carregar a mola")
-            return False
 
-        self.shared_dict["dj52L_mola_carregada"] = False
-        return True
+        self.dict.DJ["dj52L_mola_carregada"] = False
 
-    def fechar(self):
-        if self.shared_dict["dj52L_trip"] == True:
-            self.shared_dict["dj52L_falha_fechamento"] = True
-            self.logger.warning("[dj52L] Picou!")
-            return False
-
+    def fechar(self) -> None:
+        if self.dict.DJ["dj52L_trip"]:
+            self.dict.DJ["dj52L_falha_fechamento"] = True
+            logger.warning("[DJ] Picou!")
         else:
-            if self.shared_dict["dj52L_fechado"] == False:
-                self.logger.info("[dj52L] Fechar.")
-                if self.shared_dict["dj52L_condicao_de_fechamento"]:
-                    self.shared_dict["dj52L_aberto"] = False
-                    self.shared_dict["dj52L_fechado"] = True
-
+            if not self.dict.DJ["dj52L_fechado"]:
+                logger.info("[DJ] Fechar.")
+                if self.dict.DJ["dj52L_condicao_de_fechamento"]:
+                    self.dict.DJ["dj52L_aberto"] = False
+                    self.dict.DJ["dj52L_fechado"] = True
+                    self.dict.DJ["dj52L_mola_carregada"] = False
                 else:
-                    self.shared_dict["dj52L_falha_fechamento"] = True
+                    self.dict.DJ["dj52L_falha_fechamento"] = True
                     self.tripar("Mandou antes de ter a condição de fechamento")
-                    return False
-                    
-                self.shared_dict["dj52L_mola_carregada"] = False
-                return True
+
+    def tripar(self, desc=None) -> None:
+        if not self.avisou_trip:
+            self.avisou_trip = True
+            self.dict.DJ["dj52L_trip"] = True
+            self.dict.DJ["dj52L_aberto"] = True
+            self.dict.DJ["dj52L_fechado"] = False
+            self.dict.DJ["dj52L_mola_carregada"] = False
+            self.dict.DJ["dj52L_falha_fechamento"] = True
+            logger.warning(f"[DJ] Trip!. {desc}")
+
+    def reconhece_reset(self) -> None:
+        logger.info("[DJ] Reconhece Reset.")
+        self.dict.DJ["dj52L_trip"] = False
+        self.dict.DJ["dj52L_aberto"] = False
+        self.dict.DJ["dj52L_fechado"] = True
+        self.dict.DJ["dj52L_inconsistente"] = False
+        self.dict.DJ["dj52L_falha_fechamento"] = False
+        self.dict.DJ["debug_dj52L_abrir"] = False
+        self.dict.DJ["debug_dj52L_fechar"] = False
+        self.dict.DJ["debug_dj52L_reconhece_reset"] = False
+        self.avisou_trip = False
+
+    def verificar_inconsistente(self) -> None:
+        if self.dict.DJ["dj52L_aberto"] == self.dict.DJ["dj52L_fechado"]:
+            self.dict.DJ["dj52L_inconsistente"] = True
+
+    def verificar_mola(self) -> None:
+        if not self.dict.DJ["dj52L_mola_carregada"]:
+            self.mola += self.segundos_por_passo
+            if self.mola >= self.tempo_carregamento_mola:
+                self.mola = 0
+                self.dict.DJ["dj52L_mola_carregada"] = True
+
+    def verificar_tensao(self) -> None:
+        if not (USINA_TENSAO_MINIMA < self.dict.DJ["tensao_na_linha"] < USINA_TENSAO_MAXIMA):
+            self.dict.DJ["dj52L_falta_vcc"] = True
+            self.tripar("Tensão fora dos limites")
+        else:
+            self.dict.DJ["dj52L_falta_vcc"] = False
+
+    def verificar_condicao(self) -> None:
+        if self.dict.DJ["dj52L_trip"] \
+        or self.dict.DJ["dj52L_fechado"] \
+        or self.dict.DJ["dj52L_falta_vcc"] \
+        or self.dict.DJ["dj52L_inconsistente"] \
+        or not self.dict.DJ["dj52L_aberto"] \
+        or not self.dict.DJ["dj52L_mola_carregada"]:
+            self.dict.DJ["dj52L_condicao_de_fechamento"] = False
+        else:
+            self.dict.DJ["dj52L_condicao_de_fechamento"] = True

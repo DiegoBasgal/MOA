@@ -41,12 +41,11 @@ class Agendamentos:
         self.segundos_passados = 0
         self.segundos_adiantados = 0
 
-    @property
     def get_time(self) -> object:
         return datetime.now(pytz.timezone("Brazil/East")).replace(tzinfo=None)
 
     def verificar_agendamentos(self) -> bool:
-        agora = self.get_time
+        agora = self.get_time()
         agendamentos = self.agendamentos_pendentes()
         if agendamentos is None:
             return False
@@ -90,8 +89,9 @@ class Agendamentos:
                 pendentes.append(ag)
 
             return pendentes
-        except Exception:
-            logger.exception(f"[AGN] Não foi possível extrair lista de agendamentos pendentes do banco.\nTraceback: {traceback.print_stack}")
+        except Exception as e:
+            logger.exception(f"[AGN] Não foi possível extrair lista de agendamentos pendentes do banco. Exception: \"{repr(e)}\"")
+            logger.exception(f"[AGN] Traceback: {traceback.print_stack}")
             return None
 
     def agendamentos_iguais(self, agendamentos) -> None:
@@ -170,8 +170,9 @@ class Agendamentos:
                 self.usina.acionar_emergencia()
                 logger.debug("[AGN] Emergência pressionada após indizponibilização agendada mudando para modo manual para evitar normalização automática.")
                 self.usina.entrar_em_modo_manual()
-            except Exception:
-                logger.exception(f"[AGN] Houve um erro ao excutar o agendamento de indisponibilização da usina.\nTraceback: {traceback.print_stack}")
+            except Exception as e:
+                logger.exception(f"[AGN] Houve um erro ao excutar o agendamento de indisponibilização da usina. Exception: \"{repr(e)}\"")
+                logger.exception(f"[AGN] Traceback: {traceback.print_stack}")
                 return False
 
         if agendamento[3] == AGENDAMENTO_ALTERAR_NV_ALVO:
@@ -193,7 +194,8 @@ class Agendamentos:
                         ug.enviar_setpoint(self.dict.CFG["pot_minima"])
 
             except Exception as e:
-                logger.exception(f"[AGN] Houve um erro ao atribuir a potência mínima das UGs.\nTraceback: {traceback.print_stack}")
+                logger.exception(f"[AGN] Houve um erro ao atribuir a potência mínima das UGs. Exception: \"{repr(e)}\"")
+                logger.exception(f"[AGN] Traceback: {traceback.print_stack}")
                 return False
 
         if agendamento[3] == AGENDAMENTO_NORMALIZAR_POT_UGS_MINIMO:
@@ -201,24 +203,27 @@ class Agendamentos:
                 for ug in self.ugs:
                     self.dict.CFG[f"pot_maxima_ug{ug.id}"] = self.dict.CFG["pot_maxima_ug"]
                     ug.enviar_setpoint(self.dict.CFG["pot_maxima_ug"])
-            except Exception:
-                logger.debug(f"[AGN] Houve um erro ao executar o agendamento de normalizar a potência das UGs.\nTraceback: {traceback.print_stack}")
+            except Exception as e:
+                logger.debug(f"[AGN] Houve um erro ao executar o agendamento de normalizar a potência das UGs. Exception: \"{repr(e)}\"")
+                logger.exception(f"[AGN] Traceback: {traceback.print_stack}")
                 return False
 
         if agendamento[3] == AGENDAMENTO_AGUARDAR_RESERVATORIO:
             try:
                 logger.debug("[AGN] Ativando estado de espera de nível do reservatório")
                 self.aguardando_reservatorio = 1
-            except Exception:
-                logger.exception(f"[AGN] Houve um erro ao executar o agendamento de aguardar o reservatório.\nTraceback: {traceback.print_stack}")
+            except Exception as e:
+                logger.exception(f"[AGN] Houve um erro ao executar o agendamento de aguardar o reservatório. Exception: \"{repr(e)}\"")
+                logger.exception(f"[AGN] Traceback: {traceback.print_stack}")
                 return False
 
         if agendamento[3] == AGENDAMENTO_NORMALIZAR_ESPERA_RESERVATORIO:
             try:
                 logger.debug("[AGN] Desativando estado de espera de nível do reservatório")
                 self.aguardando_reservatorio = 0
-            except Exception:
-                logger.exception(f"[AGN] Houve um erro ao executar o agendamento de normalizar espera do reservatório.\nTraceback: {traceback.print_stack}")
+            except Exception as e:
+                logger.exception(f"[AGN] Houve um erro ao executar o agendamento de normalizar espera do reservatório. Exception: \"{repr(e)}\"")
+                logger.exception(f"[AGN] Traceback: {traceback.print_stack}")
                 return False
         return True
 
@@ -244,8 +249,9 @@ class Agendamentos:
 
             if agendamento[3] == AGENDAMENTO_UG1_FORCAR_ESTADO_RESTRITO:
                 self.ug1.forcar_estado_restrito()
-        except Exception:
-            logger.exception(f"[AGN] Houve um erro ao executar o agendamento de forçar estado da UG.\nTraceback: {traceback.print_stack}")
+        except Exception as e:
+            logger.exception(f"[AGN] Houve um erro ao executar o agendamento de forçar estado da UG. Exception: \"{repr(e)}\"")
+            logger.exception(f"[AGN] Traceback: {traceback.print_stack}")
             return False
 
         if agendamento[3] == AGENDAMENTO_UG1_TEMPO_ESPERA_RESTRITO:
@@ -279,8 +285,9 @@ class Agendamentos:
 
             if agendamento[3] == AGENDAMENTO_UG2_FORCAR_ESTADO_RESTRITO:
                 self.ug2.forcar_estado_restrito()
-        except Exception:
-            logger.exception(f"[AGN] Houve um erro ao executar o agendamento de tempo de espera para normalização do estado restrito da UG2.\nTraceback: {traceback.print_stack}")
+        except Exception as e:
+            logger.exception(f"[AGN] Houve um erro ao executar o agendamento de tempo de espera para normalização do estado restrito da UG2. Exception: \"{repr(e)}\"")
+            logger.exception(f"[AGN] Traceback: {traceback.print_stack}")
             return False
 
         if agendamento[3] == AGENDAMENTO_UG2_TEMPO_ESPERA_RESTRITO:

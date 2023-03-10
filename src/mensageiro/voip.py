@@ -1,24 +1,14 @@
-"""
-voip.py
-
-Este módulo tem como objetivo a efetuar a comunicação por voip.
-O serviço de voip é fornecido pela nvoip e é acessado via web api.
-
-Painel Nvoip: https://painel.nvoip.com.br
-Acesso feito com as credênciais do Henrique.
-
-"""
 import os
 import sys
 import json
 import logging
 import pytz
-from sys import stdout
-from time import sleep
+
 from datetime import datetime
 from urllib.request import Request, urlopen
+
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-import src.conector as conector
+from src.conector import DatabaseConnector
 
 logger = logging.getLogger(__name__)
 
@@ -44,7 +34,7 @@ lista_de_contatos_padrao = [
 
 def carrega_contatos():
     phonebook = []
-    db = conector.Database()
+    db = DatabaseConnector()
     parametros = db.get_contato_emergencia()
 
     for i in range(len(parametros)):
@@ -82,19 +72,20 @@ def get_token():
         "Content-Type": "application/x-www-form-urlencoded",
         "Authorization": "Basic TnZvaXBBcGlWMjpUblp2YVhCQmNHbFdNakl3TWpFPQ==",
     }
-    data = "username={}&password={}&grant_type=password".format(caller_voip, user_token)
+    data = f"username={caller_voip}&password={user_token}&grant_type=password"
     data = str(data).encode()
     request = Request("https://api.nvoip.com.br/v2/oauth/token", data=data, headers=headers)
 
     try:
         response_body = urlopen(request).read()
         response_body = json.loads(response_body)
-        return "Bearer {}".format(response_body["access_token"])
+        return f"Bearer {response_body['access_token']}"
     except Exception as e:
-        logger.debug("Exception NVOIP: {} ".format(e.read()))
+        logger.debug(f"Exception NVOIP: {e.read()} ")
 
 def enviar_voz_emergencia(lista_de_contatos=None):
     access_token = get_token()
+    
     if voz_habilitado:
         logger.debug("Enviando Voz Emergencia")
         if lista_de_contatos is None:
@@ -107,11 +98,11 @@ def enviar_voz_emergencia(lista_de_contatos=None):
                 lista_de_contatos = lista_de_contatos_padrao
 
         for contato in lista_de_contatos:
-            logger.info("Disparando torpedo de voz para {} ({})".format(contato[0], contato[1]))
+            logger.info(f"Disparando torpedo de voz para {contato[0]} ({contato[1]})")
 
             data = {
-                "caller": "{}".format(caller_voip),
-                "called": "{}".format(contato[1]),
+                "caller": f"{caller_voip}",
+                "called": f"{contato[1]}",
                 "audios": [
                     {
                         "audio": "Atenção! Houve um acionamento de emergência na PCH Pampeana, por favor verificar a situação. Atenção! Houve um acionamento de emergência na PCH Pampeana, por favor verificar a situação.",
@@ -126,13 +117,13 @@ def enviar_voz_emergencia(lista_de_contatos=None):
             data = json.dumps(data)
             data = str(data).encode()
 
-            request = Request("https://api.nvoip.com.br/v2/torpedo/voice?napikey={}".format(napikey), data=data, headers=headers,)
+            request = Request(f"https://api.nvoip.com.br/v2/torpedo/voice?napikey={napikey}", data=data, headers=headers,)
             try:
                 response_body = urlopen(request).read()
             except Exception as e:
-                logger.debug("Exception NVOIP: {} ".format(e.read()))
+                logger.debug(f"Exception NVOIP: {e.read()}")
             else:
-                logger.debug("response_body: {} ".format(response_body))
+                logger.debug(f"response_body: {response_body}")
 
 def enviar_voz_teste():
     access_token = get_token()
@@ -140,8 +131,8 @@ def enviar_voz_teste():
     if voz_habilitado:
         for contato in lista_de_contatos_padrao:
             data = {
-                "caller": "{}".format(caller_voip),
-                "called": "{}".format(contato[1]),
+                "caller": f"{caller_voip}",
+                "called": f"{contato[1]}",
                 "audios": [
                     {
                         "audio": "Esta é apenas uma mensagem de teste. Esta é apenas uma mensagem de teste.",
@@ -153,13 +144,13 @@ def enviar_voz_teste():
             headers = {"Content-Type": "application/json", "Authorization": access_token}
             data = json.dumps(data)
             data = str(data).encode()
-            request = Request("https://api.nvoip.com.br/v2/torpedo/voice?napikey={}".format(napikey), data=data, headers=headers)
+            request = Request(f"https://api.nvoip.com.br/v2/torpedo/voice?napikey={napikey}", data=data, headers=headers)
             try:
                 response_body = urlopen(request).read()
             except Exception as e:
-                logger.debug("Exception NVOIP: {} ".format(e.read()))
+                logger.debug(f"Exception NVOIP: {e.read()}")
             else:
-                logger.debug("response_body: {} ".format(response_body))
+                logger.debug(f"response_body: {response_body}")
 
 def enviar_voz_auxiliar(lista_de_contatos=None):
     access_token = get_token()
@@ -177,31 +168,26 @@ def enviar_voz_auxiliar(lista_de_contatos=None):
                 lista_de_contatos = lista_de_contatos_padrao
 
         for contato in lista_de_contatos:
-            logger.info("Disparando torpedo de voz para {} ({})".format(contato[0], contato[1]))
+            logger.info(f"Disparando torpedo de voz para {contato[0]} ({contato[1]})")
 
             for i in VARS:
                 if VARS[i][0]:
                     data = {
-                        "caller": "{}".format(caller_voip),
-                        "called": "{}".format(contato[1]),
-                        "audios": [
-                            {
-                                "audio": VARS[i][1],
-                                "positionAudio": 1,
-                            }
-                        ],
+                        "caller": f"{caller_voip}",
+                        "called": f"{contato[1]}",
+                        "audios": [{"audio": VARS[i][1], "positionAudio": 1,}],
                         "dtmfs": [],
                     }
                     headers = {"Content-Type": "application/json", "Authorization": access_token,}
                     data = json.dumps(data)
                     data = str(data).encode()
-                    request = Request("https://api.nvoip.com.br/v2/torpedo/voice?napikey={}".format(napikey), data=data, headers=headers,)
+                    request = Request(f"https://api.nvoip.com.br/v2/torpedo/voice?napikey={napikey}", data=data, headers=headers,)
                     try:
                         response_body = urlopen(request).read()
                     except Exception as e:
-                        logger.debug("Exception NVOIP: {} ".format(e.read()))
+                        logger.debug(f"Exception NVOIP: {e.read()}")
                     else:
-                        logger.debug("response_body: {} ".format(response_body))
+                        logger.debug(f"response_body: {response_body}")
                     VARS[i][0] = False
 
 if __name__ == "__main__":

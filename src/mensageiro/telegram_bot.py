@@ -1,50 +1,32 @@
-"""
-telegram_bot.py
-
-Este módulo implementa um bot para a integração com o telegram.
-Existem duas maneiras de utilizar esta integração:
-
-"Server": Uma thread deve ficar ativada para que o bot possa interagir
-com mensagens enviadas a ele. Para utilizar este modo basta usar o main().
-
-"Server-less": A implementação permite que o bot envie mensagens aos
-destinatários mesmo que não esteja trodando continuamente, porém isto
-significa que o bot não atenderá a comandos recebidos no chat.
-A principal maneira de se utilizar o modo server-less é através da
-função enviar_a_todos().
-
-"""
 import os
 import pytz
 import json
 import logging
 import telegram
+import threading
+
 from sys import stdout
+from time import sleep
 from telegram import Update
 from datetime import datetime
 from telegram.ext import Updater, CommandHandler, CallbackContext
 
-import threading
-from time import sleep
-
-# Inicializando o logger principal
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.DEBUG)
+
 if not os.path.exists(os.path.join(os.path.dirname(__file__), "logs")):
     os.mkdir(os.path.join(os.path.dirname(__file__), "logs"))
-fh = logging.FileHandler(
-    os.path.join(os.path.dirname(__file__), "logs", "telegram.log")
-)  # log para arquivo
-ch = logging.StreamHandler(stdout)  # log para linha de comando
+
+fh = logging.FileHandler(os.path.join(os.path.dirname(__file__), "logs", "telegram.log"))
+
+ch = logging.StreamHandler(stdout)
 
 def timeConverter(*args):
     return datetime.now(tz).timetuple()
 
 tz = pytz.timezone("Brazil/East")
 
-logFormatter = logging.Formatter(
-    "%(asctime)s [%(threadName)-12.12s] [%(levelname)-5.5s] %(message)s"
-)
+logFormatter = logging.Formatter("%(asctime)s [%(threadName)-12.12s] [%(levelname)-5.5s] %(message)s")
 logFormatter.converter =timeConverter
 
 fh.setFormatter(logFormatter)
@@ -54,31 +36,22 @@ ch.setLevel(logging.DEBUG)
 logger.addHandler(fh)
 logger.addHandler(ch)
 
-# Carrega as configurações e vars
+
 config_file = os.path.join(os.path.dirname(__file__), "telegram_config.json")
 with open(config_file, "r") as file:
     config = json.load(file)
-logger.debug("Config: {}".format(config))
+logger.debug(f"Config: {config}")
 
 
 def salvar_config():
-    """
-    Esta função possibilita salvar as configurações carregadas em memória no
-    arquivo json relevante.
-    :return: None
-    """
     with open(config_file, "w") as file:
         json.dump(config, file, indent=4)
 
 
 def start(update: Update, _: CallbackContext) -> None:
-    """
-    Esta função é referente a operação do bot em modo "server".
-    Esta função insere o usuário na lista de destinatários do bot.
-    """
     chat_id = update.message.chat.id
-    name = "{}".format(update.message.from_user.full_name)
-    logger.info("Chamada start de {} (Chat_id: {})".format(name, chat_id))
+    name = f"{update.message.from_user.full_name}"
+    logger.info(f"Chamada start de {name} (Chat_id: {chat_id})")
     if chat_id in config["chat_ids"]:
         update.message.reply_text("Este Chat já esta adicionado a lista de destinatários")
     else:
@@ -88,13 +61,9 @@ def start(update: Update, _: CallbackContext) -> None:
 
 
 def help_command(update: Update, _: CallbackContext) -> None:
-    """
-    Esta função é referente a operação do bot em modo "server".
-    Esta função envia uma mensagem com informações de ajuda ao usuário.
-    """
     chat_id = update.message.chat.id
-    name = "{}".format(update.message.from_user.full_name)
-    logger.info("Chamada help_command de {} (Chat_id: {})".format(name, chat_id))
+    name = f"{update.message.from_user.full_name}"
+    logger.info(f"Chamada help_command de {name} (Chat_id: {chat_id})")
     update.message.reply_text(
         "Esse é o comando de ajuda.\n"
         "Os comandos implementados são:\n"
@@ -105,31 +74,22 @@ def help_command(update: Update, _: CallbackContext) -> None:
         "/spam\n"
         "/start\n"
         "\n"
-        "[DEBUG] chat.id:{:d}".format(update.message.chat.id)
+        f"[DEBUG] chat.id:{update.message.chat.id:d}"
     )
 
 
 def spam_command(update: Update, _: CallbackContext) -> None:
-    """
-    Esta função é referente a operação do bot em modo "server".
-    Esta função envia várias (5) mensagens repetidas ao usuário.
-    Utilizada em debug.
-    """
     chat_id = update.message.chat.id
-    name = "{}".format(update.message.from_user.full_name)
-    logger.info("Chamada spam_command de {} (Chat_id: {})".format(name, chat_id))
+    name = f"{update.message.from_user.full_name}"
+    logger.info(f"Chamada spam_command de {name} (Chat_id: {chat_id})")
     for i in range(5):
-        update.message.reply_text("SPAM! {}/5".format(i))
+        update.message.reply_text(f"SPAM! {i}/5")
 
 
 def quit_command(update: Update, _: CallbackContext) -> None:
-    """
-    Esta função é referente a operação do bot em modo "server".
-    Esta função remove um usuário ou grupo da lista de destinatários do bot.
-    """
     chat_id = update.message.chat.id
-    name = "{}".format(update.message.from_user.full_name)
-    logger.info("Chamada quit_command de {} (Chat_id: {})".format(name, chat_id))
+    name = f"{update.message.from_user.full_name}"
+    logger.info(f"Chamada quit_command de {name} (Chat_id: {chat_id})")
     chat_id = update.message.chat.id
     update.message.reply_text("Chat removido da lista.")
     config["chat_ids"].remove(chat_id)
@@ -141,18 +101,6 @@ def enviar_a_todos(mensagem):
 
 
 def threaded_enviar_a_todos(mensagem):
-    """
-    Esta função é referente a operação do bot em modo "server-less".
-    Esta função envia a mensagem para todos os destinatários cadastrados na lista.
-    A lista de destinatários é carregada novamente no início da função.
-    Isso pode acarretar em inconsistências caso o modo "server" esteja
-    ativo no mesmo momento e altere o arquivo.
-
-    :param mensagem: A menmsagem a ser enviada, já como String formatada.
-    :return: None
-    """
-
-    # Carrega as configurações e vars
     with open(config_file, "r") as file:
         config = json.load(file)
 
@@ -164,14 +112,14 @@ def threaded_enviar_a_todos(mensagem):
                 bot.send_message(chat_id=chat_id, text=mensagem)
                 mandou = True
             except telegram.error.Unauthorized as e:
-                logger.error('Erro "{}" no chat "{}"'.format(e, chat_id))
+                logger.error(f'Erro "{e}" no chat "{chat_id}"')
                 config["chat_ids"].remove(chat_id)
                 salvar_config()
-                enviar_a_todos('Erro "{}" no chat "{}"\n Chat_id {} excluido.'.format(e, chat_id, chat_id))
+                enviar_a_todos(f'Erro "{e}" no chat "{chat_id}"\n Chat_id {chat_id} excluido.')
                 sleep(5)
                 mandou = False
             except Exception as e:
-                logger.error('Erro "{}" no chat "{}"'.format(e, chat_id))
+                logger.error(f'Erro "{e}" no chat "{chat_id}"')
                 sleep(5)
                 mandou = False
 
@@ -191,30 +139,22 @@ def threaded_enviar_voz_emergencia():
                 mandou = True
 
             except telegram.error.Unauthorized as e:
-                logger.error('Erro "{}" no chat "{}"'.format(e, chat_id))
+                logger.error(f'Erro "{e}" no chat "{chat_id}"')
                 config["chat_ids"].remove(chat_id)
                 salvar_config()
-                enviar_a_todos('Erro "{}" no chat "{}"\n Chat_id {} excluido.'.format(e, chat_id, chat_id))
+                enviar_a_todos(f'Erro "{e}" no chat "{chat_id}"\n Chat_id {chat_id} excluido.')
                 sleep(5)
                 mandou = False
 
             except Exception as e:
-                logger.error('Erro "{}" no chat "{}"'.format(e, chat_id))
+                logger.error(f'Erro "{e}" no chat "{chat_id}"')
                 sleep(5)
                 mandou = False
 
 
 def main() -> None:
-    """
-    Esta é a função principal do modo "server" e lida com o pooling das mensagens
-    recebidas pelo telegram, efetuando assim o tratamento dos comandos relevantes.
-
-    :return: None
-    """
-
     logger.info("Telegram-bot está sendo iniciado")
 
-    """ Interatividade """
     updater = Updater(config["bot_token"])
     dispatcher = updater.dispatcher
     dispatcher.add_handler(CommandHandler("start", start))
