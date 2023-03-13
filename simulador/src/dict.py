@@ -1,9 +1,9 @@
-{
+SHARED_DICT = {
     "GLB": {
         "tempo_simul": 0,
 
-        "stop_sim": false,
-        "stop_gui": false
+        "stop_sim": False,
+        "stop_gui": False
     },
 
     "USN": {
@@ -13,31 +13,29 @@
         "q_vertimento": 0,
         "nv_montante": 821,
         "nv_jusante_grade": 0,
- 
+
         "potencia_kw_se": 0,
         "potencia_kw_mp": 0,
         "potencia_kw_mr": 0,
         "tensao_na_linha": 34500,
- 
-        "trip_condic_ug1": false,
-        "trip_condic_ug2": false,
-        "trip_condic_usina": false,
-        "reset_geral_condic": false
+
+        "trip_condic_usina": False,
+        "reset_geral_condic": False
     },
 
     "DJ": {
-        "dj52L_trip": false,
-        "dj52L_aberto": false,
-        "dj52L_fechado": true,
-        "dj52L_falta_vcc": false,
-        "dj52L_inconsistente": false,
-        "dj52L_mola_carregada": true,
-        "dj52L_falha_fechamento": false,
-        "dj52L_condicao_de_fechamento": false,
+        "dj52L_trip": False,
+        "dj52L_aberto": False,
+        "dj52L_fechado": True,
+        "dj52L_falta_vcc": False,
+        "dj52L_inconsistente": False,
+        "dj52L_mola_carregada": True,
+        "dj52L_falha_fechamento": False,
+        "dj52L_condicao_de_fechamento": False,
 
-        "debug_dj52L_abrir": false,
-        "debug_dj52L_fechar": false,
-        "debug_dj52L_reconhece_reset": false
+        "debug_dj52L_abrir": False,
+        "debug_dj52L_fechar": False,
+        "debug_dj52L_reconhece_reset": False
     },
 
     "UG": {
@@ -77,33 +75,27 @@
         "temperatura_ug2_mancal_escora_comb": 25,
         "pressao_caixa_espiral_ug2": 16.2,
 
-        "trip_ug1": false,
-        "trip_ug2": false,
-        "reconhece_reset_ug1": false,
-        "reconhece_reset_ug2": false,
+        "trip_ug1": False,
+        "trip_ug2": False,
+        "trip_condic_ug1": False,
+        "trip_condic_ug2": False,
+        "reconhece_reset_ug1": False,
+        "reconhece_reset_ug2": False,
+        "set_press_cx_espiral_ug1": False,
+        "set_press_cx_espiral_ug2": False,
 
         "debug_setpoint_kw_ug1": 0,
         "debug_setpoint_kw_ug2": 0,
 
-        "debug_parar_ug1": false,
-        "debug_partir_ug1": false,
-        "debug_parar_ug2": false,
-        "debug_partir_ug2": false
-    },
-
-    "GUI": {
-        "trip_condic_usina": false,
-
-        "trip_condic_ug1": false,
-        "trip_condic_ug2": false,
-        "set_press_cx_espiral_ug1": false,
-        "set_press_cx_espiral_ug2": false
+        "debug_parar_ug1": False,
+        "debug_partir_ug1": False,
+        "debug_parar_ug2": False,
+        "debug_partir_ug2": False
     },
 
     "BORDA": {
-        "db_condic": false,
-        "usn_condic": false,
-        "ug1_condic": false,
-        "ug2_condic": false
+        "usn_condic": False,
+        "ug1_condic": False,
+        "ug2_condic": False
     }
 }
