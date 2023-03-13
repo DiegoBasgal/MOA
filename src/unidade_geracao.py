@@ -2,6 +2,8 @@ import pytz
 import logging
 import traceback
 
+import dicionarios.dict as d
+
 from time import sleep, time
 from threading import Thread
 from datetime import datetime
@@ -19,31 +21,31 @@ class UnidadeDeGeracao:
     def __init__(
             self,
             id: int,
-            shared_dict=None,
+            cfg=None,
             con: FieldConnector=None,
             db: DatabaseConnector=None
         ):
         if id == 0:
-            logger.exception("[USN] A Unidade não pode ser instanciada com o ID -> \"0\".")
+            logger.exception(f"[UG{self.id}] A Unidade não pode ser instanciada com o ID -> \"0\".")
             raise ValueError
         else:
             self.__id = id
 
-        if not shared_dict:
-            logger.exception("[USN] Não foi possível carregar o dicionário compartilhado.")
+        if not cfg:
+            logger.exception(f"[UG{self.id}] Não foi possível carregar o arquivo de configuração \"cfg.json\".")
             raise ValueError
         else:
-            self.dict = shared_dict
+            self.cfg = cfg
 
         if not db:
-            logger.exception("[USN] Não foi possível estabelecer a conexão com o banco de dados.")
-            raise ConnectionError
+            logger.exception(f"[UG{self.id}] Não foi possível estabelecer a conexão com o banco de dados.")
+            raise ReferenceError
         else:
             self.db = db
 
         if not con:
-            logger.exception("[USN] Não foi possível estabelecer a conexão com as leituras de campo.")
-            raise ConnectionError
+            logger.exception(f"[UG{self.id}] Não foi possível estabelecer a conexão com as leituras de campo.")
+            raise ReferenceError
         else:
             self.con = con
 
@@ -70,9 +72,9 @@ class UnidadeDeGeracao:
 
         self._condicionadores_atenuadores = []
 
-        self._cx_kp = self.dict.CFG["cx_kp"]
-        self._cx_ki = self.dict.CFG["cx_ki"]
-        self._cx_kie = self.dict.CFG["cx_kie"]
+        self._cx_kp = self.cfg["cx_kp"]
+        self._cx_ki = self.cfg["cx_ki"]
+        self._cx_kie = self.cfg["cx_kie"]
 
         self._lista_ugs = list([UnidadeDeGeracao])
 
@@ -90,32 +92,32 @@ class UnidadeDeGeracao:
         self.enviar_trip_eletrico = False
         self.aux_tempo_sincronizada = None
 
-        self.pressao_alvo = self.dict.IP["press_cx_alvo"]
-        self.setpoint_minimo = self.dict.IP["pot_minima"]
-        self.setpoint_maximo = self.dict.IP[f"pot_maxima_ug{self.id}"]
+        self.setpoint_minimo = self.cfg["pot_minima"]
+        self.setpoint_maximo = self.cfg[f"pot_maxima_ug{self.id}"]
 
         self.ts_auxiliar = self.get_time
+        self.dict = d.shared_dict
 
         # Clients modbus
         self.clp_ug = ModbusClient(
-            host=self.dict.IP[f"UG{self.id}_slave_ip"],
-            port=self.dict.IP[f"UG{self.id}_slave_porta"],
+            host=self.dict["IP"][f"UG{self.id}_slave_ip"],
+            port=self.dict["IP"][f"UG{self.id}_slave_porta"],
             timeout=0.5,
             unit_id=1,
             auto_open=True,
             auto_close=True,
         )
         self.clp_sa = ModbusClient(
-            host=self.dict.IP["USN_slave_ip"],
-            port=self.dict.IP["USN_slave_porta"],
+            host=self.dict["IP"]["USN_slave_ip"],
+            port=self.dict["IP"]["USN_slave_porta"],
             timeout=0.5,
             unit_id=1,
             auto_open=True,
             auto_close=True,
         )
         self.clp_moa = ModbusClient(
-            host=self.dict.IP["MOA_slave_ip"],
-            port=self.dict.IP["MOA_slave_porta"],
+            host=self.dict["IP"]["MOA_slave_ip"],
+            port=self.dict["IP"]["MOA_slave_porta"],
             timeout=0.5,
             unit_id=1,
             auto_open=True,
@@ -717,24 +719,24 @@ class UnidadeDeGeracao:
             return False
 
     def controle_cx_espiral(self) -> None:
-        self.cx_kp = (self.leitura_caixa_espiral.valor - self.dict.CFG["press_cx_alvo"]) * self.dict.CFG["cx_kp"]
-        self.cx_ajuste_ie = [sum(ug.leitura_potencia.valor for ug in self.lista_ugs)] / self.dict.CFG["pot_maxima_alvo"]
+        self.cx_kp = (self.leitura_caixa_espiral.valor - self.cfg["press_cx_alvo"]) * self.cfg["cx_kp"]
+        self.cx_ajuste_ie = [sum(ug.leitura_potencia.valor) for ug in self.lista_ugs] / self.cfg["pot_maxima_alvo"]
         self.cx_ki = self.cx_ajuste_ie - self.cx_kp
 
         erro_press_cx = 0
-        erro_press_cx = self.leitura_caixa_espiral.valor - self.dict.CFG["press_cx_alvo"]
+        erro_press_cx = self.leitura_caixa_espiral.valor - self.cfg["press_cx_alvo"]
 
-        logger.debug(f"[UG{self.id}] Pressão Alvo: {self.pressao_alvo:0.3f}, Recente: {self.leitura_caixa_espiral.valor:0.3f}")
+        logger.debug(f"[UG{self.id}] Pressão Alvo: {self.cfg['press_cx_alvo']:0.3f}, Recente: {self.leitura_caixa_espiral.valor:0.3f}")
 
-        self.cx_controle_p = self.dict.CFG["cx_kp"] * erro_press_cx
-        self.cx_controle_i = max(min((self.dict.CFG["cx_ki"] * erro_press_cx) + self.cx_controle_i, 1), 0)
+        self.cx_controle_p = self.cfg["cx_kp"] * erro_press_cx
+        self.cx_controle_i = max(min((self.cfg["cx_ki"] * erro_press_cx) + self.cx_controle_i, 1), 0)
         saida_pi = self.cx_controle_p + self.cx_controle_i
 
         logger.debug(f"[UG{self.id}] PI: {saida_pi:0.3f} <-- P: {self.cx_controle_p:0.3f} + I: {self.cx_controle_i:0.3f}; ERRO={erro_press_cx}")
 
-        self.cx_controle_ie = max(min(saida_pi + self.cx_ajuste_ie * self.dict.CFG["cx_kie"], 1), 0)
+        self.cx_controle_ie = max(min(saida_pi + self.cx_ajuste_ie * self.cfg["cx_kie"], 1), 0)
 
-        pot_alvo = max(min(round(self.dict.CFG[f"pot_maxima_ug{self.id}"] * self.cx_controle_ie, 5), self.dict.CFG[f"pot_maxima_ug{self.id}"],),self.dict.CFG["pot_minima"],)
+        pot_alvo = max(min(round(self.cfg[f"pot_maxima_ug{self.id}"] * self.cx_controle_ie, 5), self.cfg[f"pot_maxima_ug{self.id}"],),self.cfg["pot_minima"],)
 
         logger.debug(f"[UG{self.id}] Pot alvo: {pot_alvo:0.3f}")
 
@@ -743,10 +745,10 @@ class UnidadeDeGeracao:
         try:
             self.db.insert_debug(
                 self.get_time(),
-                self.dict.CFG["kp"],
-                self.dict.CFG["ki"],
-                self.dict.CFG["kd"],
-                self.dict.CFG["kie"],
+                self.cfg["kp"],
+                self.cfg["ki"],
+                self.cfg["kd"],
+                self.cfg["kie"],
                 0, # cp
                 0, # ci
                 0, # cd
@@ -758,9 +760,9 @@ class UnidadeDeGeracao:
                 0, # nivel
                 erro_press_cx,
                 1, # modo autonomo
-                self.dict.IP["cx_kp"],
-                self.dict.IP["cx_ki"],
-                self.dict.IP["cx_kie"],
+                self.cfg["cx_kp"],
+                self.cfg["cx_ki"],
+                self.cfg["cx_kie"],
                 self.cx_controle_ie,
             )
         except Exception as e:

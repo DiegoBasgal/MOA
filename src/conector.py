@@ -8,6 +8,7 @@ from mysql.connector import pooling
 from pyModbusTCP.client import ModbusClient
 
 from dicionarios.reg import *
+from dicionarios.dict import *
 from dicionarios.const import *
 
 logger = logging.getLogger("__main__")
@@ -19,39 +20,36 @@ class ModbusFailedToFetch(Exception):
     pass
 
 class FieldConnector:
-    def __init__(self, shared_dict=None):
-        if not shared_dict:
-            logger.warning("[USN] Não foi possível obter dados do dicionário compartilhado")
-        else:
-            self.dict = shared_dict
+    def __init__(self):
+        self.dict = shared_dict
 
         self.ug1_clp = ModbusClient(
-            host=self.dict.IP["UG1_slave_ip"],
-            port=self.dict.IP["UG1_slave_porta"],
+            host=self.dict["IP"]["UG1_slave_ip"],
+            port=self.dict["IP"]["UG1_slave_porta"],
             timeout=0.5,
             unit_id=1,
             auto_open=True,
             auto_close=True,
         )
         self.ug2_clp = ModbusClient(
-            host=self.dict.IP["UG2_slave_ip"],
-            port=self.dict.IP["UG2_slave_porta"],
+            host=self.dict["IP"]["UG2_slave_ip"],
+            port=self.dict["IP"]["UG2_slave_porta"],
             timeout=0.5,
             unit_id=1,
             auto_open=True,
             auto_close=True,
         )
         self.usn_clp = ModbusClient(
-            host=self.dict.IP["USN_slave_ip"],
-            port=self.dict.IP["USN_slave_porta"],
+            host=self.dict["IP"]["USN_slave_ip"],
+            port=self.dict["IP"]["USN_slave_porta"],
             timeout=0.5,
             unit_id=1,
             auto_open=True,
             auto_close=True,
         )
         self.tda_clp = ModbusClient(
-            host=self.dict.IP["TDA_slave_ip"],
-            port=self.dict.IP["TDA_slave_porta"],
+            host=self.dict["IP"]["TDA_slave_ip"],
+            port=self.dict["IP"]["TDA_slave_porta"],
             timeout=0.5,
             unit_id=1,
             auto_open=True,
@@ -61,13 +59,13 @@ class FieldConnector:
     def open(self) -> None:
         logger.debug("[CON] Iniciando conexão ModBus...")
         if not self.ug1_clp.open():
-            raise ModbusClientFailedToOpen(f"[CON] Modbus client ({self.dict.IP['UG1_slave_ip']}:{self.dict.IP['UG1_slave_porta']}) failed to open.")
+            raise ModbusClientFailedToOpen(f"[CON] Modbus client ({self.dict['IP']['UG1_slave_ip']}:{self.dict['IP']['UG1_slave_porta']}) failed to open.")
         if not self.ug2_clp.open():
-            raise ModbusClientFailedToOpen(f"[CON] Modbus client ({self.dict.IP['UG2_slave_ip']}:{self.dict.IP['UG2_slave_porta']}) failed to open.")
+            raise ModbusClientFailedToOpen(f"[CON] Modbus client ({self.dict['IP']['UG2_slave_ip']}:{self.dict['IP']['UG2_slave_porta']}) failed to open.")
         if not self.usn_clp.open():
-            raise ModbusClientFailedToOpen(f"[CON] Modbus client ({self.dict.IP['USN_slave_ip']}:{self.dict.IP['USN_slave_porta']}) failed to open.")
+            raise ModbusClientFailedToOpen(f"[CON] Modbus client ({self.dict['IP']['USN_slave_ip']}:{self.dict['IP']['USN_slave_porta']}) failed to open.")
         if not self.tda_clp.open():
-            raise ModbusClientFailedToOpen(f"[CON] Modbus client ({self.dict.IP['TDA_slave_ip']}:{self.dict.IP['TDA_slave_porta']}) failed to open.")
+            raise ModbusClientFailedToOpen(f"[CON] Modbus client ({self.dict['IP']['TDA_slave_ip']}:{self.dict['IP']['TDA_slave_porta']}) failed to open.")
         logger.debug("[CON] Conexão inciada.")
 
     def close(self) -> None:
@@ -90,7 +88,7 @@ class FieldConnector:
             self.ug1_clp.write_single_coil(UG["REG_UG1_ComandosDigitais_MXW_ResetGeral"], 1)
             self.ug2_clp.write_single_coil(UG["REG_UG2_ComandosDigitais_MXW_ResetGeral"], 1)
             self.usn_clp.write_single_coil(SA["REG_SA_ComandosDigitais_MXW_ResetGeral"], 1)
-            self.tda_clp.write_single_coil(TDA["REG_TDA_ComandosDigitais_MXW_ResetGeral"], 1) if not self.dict.CFG["tda_offline"] else logger.debug("[CON] CLP TDA Offline, não há como realizar o reset geral")
+            self.tda_clp.write_single_coil(TDA["REG_TDA_ComandosDigitais_MXW_ResetGeral"], 1) if not self.dict["GLB"]["tda_offline"] else logger.debug("[CON] CLP TDA Offline, não há como realizar o reset geral")
         except Exception as e:
             logger.exception(f"[CON] Houve um erro ao realizar o reset geral. Exception: \"{repr(e)}\"")
             logger.exception(f"[CON] Traceback: {traceback.print_stack}")

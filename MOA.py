@@ -5,6 +5,8 @@ import json
 import logging
 import traceback
 
+import src.dicionarios.dict as d
+
 from sys import stderr
 from threading import Thread
 from time import sleep, time
@@ -14,6 +16,7 @@ from src.usina import *
 from src.conector import *
 from src.ocorrencias import *
 from src.agendamentos import *
+from src.condicionadores import *
 from src.dicionarios.const import *
 from src.maquinas_estado.moa import *
 from src.mensageiro.mensageiro_log_handler import MensageiroHandler
@@ -77,32 +80,37 @@ if __name__ == "__main__":
             prox_estado = FalhaCritica
         else:
             try:
-                logger.info("Carregando arquivo de configuração \"dict.json\".")
-                config_file = os.path.join(os.path.dirname(__file__), "dict.json")
+                logger.info("Carregando arquivo de configuração \"cfg.json\" e dicionário compartilhado")
+
+                config_file = os.path.join(os.path.dirname(__file__), "cfg.json")
                 with open(config_file, "r") as file:
-                    shared_dict = json.load(file)
-                config_file = os.path.join(os.path.dirname(__file__), "dict.json.bkp")
+                    cfg = json.load(file)
+
+                config_file = os.path.join(os.path.dirname(__file__), "cfg.json.bkp")
                 with open(config_file, "w") as file:
-                    json.dump(shared_dict, file, indent=4)
+                    json.dump(cfg, file, indent=4)
+
+                shared_dict = d.shared_dict
             except Exception:
-                logger.exception(f"Erro ao carregar arquivo de configuração \"dict.json\".Tentando novamente em \"{timeout}s\" (Tentativa: {n_tentativa}/3)\nTraceback: {traceback.print_stack}")
+                logger.exception(f"Erro ao carregar arquivo de configuração \"dict.json\" e dicionário compartilhado.Tentando novamente em \"{timeout}s\" (Tentativa: {n_tentativa}/3)\nTraceback: {traceback.print_stack}")
                 continue
 
             try:
                 logger.info("Iniciando classes de conexão.")
                 db = DatabaseConnector()
-                con = FieldConnector(shared_dict)
+                con = FieldConnector()
             except Exception:
                 logger.exception(f"Erro ao iniciar classes de conexão. Tentando novamente em \"{timeout}s\" (Tentativa: {n_tentativa}/3)\nTraceback: {traceback.print_stack}")
                 continue
 
             try:
                 logger.info("Instanciando classes das Unidades de Geração.")
-                ug1 = UnidadeDeGeracao(1, shared_dict, con, db)
-                ug2 = UnidadeDeGeracao(2, shared_dict, con, db)
+                ug1 = UnidadeDeGeracao(1, cfg, con, db)
+                ug2 = UnidadeDeGeracao(2, cfg, con, db)
                 ugs = [ug1, ug2]
                 ug1.lista_ugs = ugs
                 ug2.lista_ugs = ugs
+                CondicionadorBase.ugs = ugs
             except Exception:
                 logger.exception(f"Erro ao instanciar classes das Unidades de Geração. Tentando novamente em \"{timeout}s\" (Tentativa: {n_tentativa}/3)\nTraceback: {traceback.print_stack}")
                 continue
@@ -117,7 +125,7 @@ if __name__ == "__main__":
 
             try:
                 logger.info("Iniciando classe Usina.")
-                usina = Usina(shared_dict, con, db, ugs, ocorrencias)
+                usina = Usina(shared_dict, cfg, con, db, ugs, ocorrencias)
             except Exception:
                 logger.exception(f"Erro ao iniciar classe Usina. Tentando novamente em \"{timeout}s\" (Tentativa: {n_tentativa}/3).\nTraceback: {traceback.print_stack}")
                 sleep(timeout)
@@ -125,7 +133,7 @@ if __name__ == "__main__":
 
             try:
                 logger.info("Instanciando classes das Unidades de Geração.")
-                agendamentos = Agendamentos(shared_dict, db, usina, ugs)
+                agendamentos = Agendamentos(cfg, db, usina, ugs)
             except Exception:
                 logger.exception(f"Erro ao inciar classe Agendamentos. Tentando novamente em \"{timeout}s\" (Tentativa: {n_tentativa}/3).\nTraceback: {traceback.print_stack}")
                 sleep(timeout)
@@ -138,7 +146,7 @@ if __name__ == "__main__":
                 sleep(timeout)
                 continue
 
-    sm = StateMachine(initial_state=Pronto(shared_dict, usina, ugs, ocorrencias, agendamentos))
+    sm = StateMachine(initial_state=Pronto(shared_dict, cfg, usina, ugs, ocorrencias, agendamentos))
     logger.info("Inicialização completa, executando o MOA \U0001F916")
     while True:
         logger.debug(f"Executando estado: {sm.state.__class__.__name__}")

@@ -19,6 +19,7 @@ class Usina:
     def __init__(
             self,
             shared_dict=None,
+            cfg=None,
             con: FieldConnector=None,
             db: DatabaseConnector=None,
             ugs: list([UnidadeDeGeracao])=None,
@@ -30,6 +31,12 @@ class Usina:
             raise ValueError
         else:
             self.dict = shared_dict
+
+        if not cfg:
+            logger.warning("[USN] Não foi possível carregar o dicionário compartilhado.")
+            raise ValueError
+        else:
+            self.cfg = cfg
 
         if not db:
             logger.warning("[USN] Não foi possível estabelecer a conexão com o banco de dados.")
@@ -56,7 +63,6 @@ class Usina:
             self.ugs = ugs
             self.ug1 = ugs[0]
             self.ug2 = ugs[1]
-            CondicionadorBase.ugs = ugs
 
         # Variáveis protegidas
         self._potencia_alvo_anterior = -1
@@ -95,45 +101,40 @@ class Usina:
         self.nv_montante_anteriores = []
         self.condicionadores_essenciais = []
 
-        self.ts_last_ping_tda = datetime.now(pytz.timezone("Brazil/East")).replace(tzinfo=None)
-        self.ts_ultima_tentativa_normalizacao = datetime.now(pytz.timezone("Brazil/East")).replace(tzinfo=None)
+        self.ts_last_ping_tda = self.get_time()
+        self.ts_ultima_tentativa_normalizacao = self.get_time()
 
         self.clp_moa = ModbusClient(
-            host=self.dict.IP["MOA_slave_ip"],
-            port=self.dict.IP["MOA_slave_porta"],
+            host=self.dict["IP"]["MOA_slave_ip"],
+            port=self.dict["IP"]["MOA_slave_porta"],
             unit_id=1,
             timeout=0.5,
             auto_open=True,
             auto_close=True
         )
         self.clp_sa = ModbusClient(
-            host=self.dict.IP["USN_slave_ip"],
-            port=self.dict.IP["USN_slave_porta"],
+            host=self.dict["IP"]["USN_slave_ip"],
+            port=self.dict["IP"]["USN_slave_porta"],
             timeout=0.5,
             unit_id=1,
             auto_open=True,
             auto_close=True
         )
         self.clp_tda = ModbusClient(
-            host=self.dict.IP["TDA_slave_ip"],
-            port=self.dict.IP["TDA_slave_porta"],
+            host=self.dict["IP"]["TDA_slave_ip"],
+            port=self.dict["IP"]["TDA_slave_porta"],
             timeout=0.5,
             unit_id=1,
             auto_open=True,
             auto_close=True
         )
 
-        for ug in self.ugs:
-            if ug.etapa_atual == UNIDADE_SINCRONIZADA:
-                self.ug_operando += 1
+        self.ug_operando += [1 for ug in self.ugs if ug.etapa_atual == UNIDADE_SINCRONIZADA]
 
         self.__split1 = True if self.ug_operando == 1 else False
         self.__split2 = True if self.ug_operando == 2 else False
 
-        if self.dict.CFG["saida_ie_inicial"] == "auto":
-            self.controle_ie = (self.ug1.leitura_potencia.valor + self.ug2.leitura_potencia.valor) / self.dict.CFG["pot_maxima_alvo"]
-        else:
-            self.controle_ie = self.dict.CFG["saida_ie_inicial"]
+        self.controle_ie = [sum(ug.leitura_potencia.valor) / self.cfg["pot_maxima_alvo"] if self.cfg["saida_ie_inicial"] == "auto" else self.cfg["saida_ie_inicial"] for ug in self.ugs]
 
         self.controle_i = self.controle_ie
 
@@ -229,7 +230,7 @@ class Usina:
     def pot_alvo_anterior(self, var):
         self._potencia_alvo_anterior = var
 
-    def get_time(self) -> object:
+    def get_time(self) -> datetime:
         return datetime.now(pytz.timezone("Brazil/East")).replace(tzinfo=None)
 
     def entrar_em_modo_manual(self) -> None:
@@ -252,8 +253,8 @@ class Usina:
 
             if self.modo_autonomo == 1:
                 self.clp_moa.write_single_coil(MOA["REG_MOA_OUT_EMERG"], [self.clp_emergencia_acionada])
-                self.clp_moa.write_multiple_registers(MOA["REG_MOA_OUT_SETPOINT"], [int(self.ug1.setpoint + self.ug2.setpoint)])
-                self.clp_moa.write_multiple_registers(MOA["REG_MOA_OUT_TARGET_LEVEL"], [int((self.dict.CFG["nv_alvo"] - 820.9) * 1000)])
+                self.clp_moa.write_multiple_registers(MOA["REG_MOA_OUT_SETPOINT"], [int(sum(ug.setpoint)) for ug in self.ugs])
+                self.clp_moa.write_multiple_registers(MOA["REG_MOA_OUT_TARGET_LEVEL"], [int((self.cfg["nv_alvo"] - 820.9) * 1000)])
 
                 if self.avisado_em_eletrica and not self.borda_in_emerg:
                     self.clp_moa.write_single_coil(MOA["REG_MOA_OUT_BLOCK_UG1"], [1],)
@@ -336,7 +337,7 @@ class Usina:
                 self.get_time().strftime("%Y-%m-%d %H:%M:%S"),  # timestamp
                 1 if self.aguardando_reservatorio else 0,  # aguardando_reservatorio
                 True,  # DEPRECATED clp_online
-                self.nv_montante if not self.dict.CFG["tda_offline"] else 0,  # nv_montante
+                self.nv_montante if not self.dict["GLB"]["tda_offline"] else 0,  # nv_montante
                 1 if self.ug1.disponivel else 0,  # ug1_disp
                 self.ug1.leitura_potencia.valor,  # ug1_pot
                 self.ug1.setpoint,  # ug1_setpot
@@ -354,10 +355,10 @@ class Usina:
             logger.exception(f"[USN] Traceback: {traceback.print_stack}")
 
     def atualizar_montante_recente(self) -> None:
-        if not self.dict.GLB["tda_offline"]:
+        if not self.dict["GLB"]["tda_offline"]:
             self.nv_montante_recente = self.nv_montante
             self.erro_nv_anterior = self.erro_nv
-            self.erro_nv = self.nv_montante_recente - self.dict.CFG["nv_alvo"]
+            self.erro_nv = self.nv_montante_recente - self.cfg["nv_alvo"]
 
     def atualizar_parametros_db(self, parametros) -> None:
         try:
@@ -376,20 +377,20 @@ class Usina:
 
     def atualizar_cfg(self, parametros) -> None:
         try:
-            self.dict.CFG["TDA_slave_ip"] = parametros["clp_tda_ip"]
-            self.dict.CFG["kp"] = float(parametros["kp"])
-            self.dict.CFG["ki"] = float(parametros["ki"])
-            self.dict.CFG["kd"] = float(parametros["kd"])
-            self.dict.CFG["kie"] = float(parametros["kie"])
-            self.dict.CFG["cx_kp"] = float(parametros["cx_kp"])
-            self.dict.CFG["cx_ki"] = float(parametros["cx_ki"])
-            self.dict.CFG["cx_kie"] = float(parametros["cx_kie"])
-            self.dict.CFG["press_cx_alvo"] = float(parametros["press_cx_alvo"])
-            self.dict.CFG["nv_alvo"] = float(parametros["nv_alvo"])
-            self.dict.CFG["nv_minimo"] = float(parametros["nv_minimo"])
-            self.dict.CFG["pot_maxima_alvo"] = float(parametros["pot_nominal"])
-            self.dict.CFG["pot_maxima_ug"] = float(parametros["pot_nominal_ug"])
-            self.dict.CFG["pot_maxima_usina"] = float(parametros["pot_nominal_ug"]) * 2
+            self.cfg["TDA_slave_ip"] = parametros["clp_tda_ip"]
+            self.cfg["kp"] = float(parametros["kp"])
+            self.cfg["ki"] = float(parametros["ki"])
+            self.cfg["kd"] = float(parametros["kd"])
+            self.cfg["kie"] = float(parametros["kie"])
+            self.cfg["cx_kp"] = float(parametros["cx_kp"])
+            self.cfg["cx_ki"] = float(parametros["cx_ki"])
+            self.cfg["cx_kie"] = float(parametros["cx_kie"])
+            self.cfg["press_cx_alvo"] = float(parametros["press_cx_alvo"])
+            self.cfg["nv_alvo"] = float(parametros["nv_alvo"])
+            self.cfg["nv_minimo"] = float(parametros["nv_minimo"])
+            self.cfg["pot_maxima_alvo"] = float(parametros["pot_nominal"])
+            self.cfg["pot_maxima_ug"] = float(parametros["pot_nominal_ug"])
+            self.cfg["pot_maxima_usina"] = float(parametros["pot_nominal_ug"]) * 2
 
             for ug in self.ugs:
                 ug.prioridade = int(parametros[f"ug{ug.id}_prioridade"])
@@ -453,9 +454,9 @@ class Usina:
 
     def verificar_tensao(self) -> bool:
         try:
-            if (self.dict.CFG["TENSAO_LINHA_BAIXA"] < self.tensao_rs < self.dict.CFG["TENSAO_LINHA_ALTA"]) \
-                and (self.dict.CFG["TENSAO_LINHA_BAIXA"] < self.tensao_st < self.dict.CFG["TENSAO_LINHA_ALTA"]) \
-                and (self.dict.CFG["TENSAO_LINHA_BAIXA"] < self.tensao_tr < self.dict.CFG["TENSAO_LINHA_ALTA"]):
+            if (TENSAO_LINHA_BAIXA < self.tensao_rs < TENSAO_LINHA_ALTA) \
+                and (TENSAO_LINHA_BAIXA < self.tensao_st < TENSAO_LINHA_ALTA) \
+                and (TENSAO_LINHA_BAIXA < self.tensao_tr < TENSAO_LINHA_ALTA):
                 self.tensao_ok = True
                 return True
             else:
@@ -506,12 +507,12 @@ class Usina:
         pot_medidor = self.potencia_ativa_kW
         logger.debug(f"[USN] Potência no medidor = {pot_medidor:0.3f}")
 
-        pot_aux = self.dict.CFG["pot_maxima_alvo"] - (self.dict.CFG["pot_maxima_usina"] - self.dict.CFG["pot_maxima_alvo"])
-        pot_medidor = max(pot_aux, min(pot_medidor, self.dict.CFG["pot_maxima_usina"]))
+        pot_aux = self.cfg["pot_maxima_alvo"] - (self.cfg["pot_maxima_usina"] - self.cfg["pot_maxima_alvo"])
+        pot_medidor = max(pot_aux, min(pot_medidor, self.cfg["pot_maxima_usina"]))
 
         try:
-            if pot_medidor > self.dict.CFG["pot_maxima_alvo"]:
-                pot_alvo = self.pot_alvo_anterior * (1 - ((pot_medidor - self.dict.CFG["pot_maxima_alvo"]) / self.dict.CFG["pot_maxima_alvo"]))
+            if pot_medidor > self.cfg["pot_maxima_alvo"]:
+                pot_alvo = self.pot_alvo_anterior * (1 - ((pot_medidor - self.cfg["pot_maxima_alvo"]) / self.cfg["pot_maxima_alvo"]))
         except TypeError as te:
             logger.exception(f"[USN] A comunicação com os MFs falharam. Exception: \"{repr(te)}\"")
             logger.exception(f"[USN] Traceback: {traceback.print_stack}")
@@ -524,11 +525,9 @@ class Usina:
         self.pot_disp = 0
         self.ajuste_manual = 0
 
-        for ug in ugs:
-            logger.debug(f"[USN] UG{ug.id}")
-            self.pot_disp += ug.cfg[f"pot_maxima_ug{ugs[0].id}"]
-            if ug.manual:
-                self.ajuste_manual += min(max(0, ug.leitura_potencia), 0)
+        logger.debug(f"[USN] UG{[ug.id for ug in self.ugs]}")
+        self.pot_disp = [sum(ug.setpoint_maximo) for ug in self.ugs if not ug.manual]
+        self.ajuste_manual += [min(max(0, ug.leitura_potencia.valor)) for ug in self.ugs if ug.manual]
 
         if ugs is None:
             return False
@@ -537,13 +536,13 @@ class Usina:
 
         logger.debug(f"[USN] Distribuindo: {pot_alvo - self.ajuste_manual:0.3f}")
 
-        sp = (pot_alvo - self.ajuste_manual) / self.dict.CFG["pot_maxima_usina"]
+        sp = (pot_alvo - self.ajuste_manual) / self.cfg["pot_maxima_usina"]
 
         self.__split1 = True if sp > (0) else self.__split1
-        self.__split2 = (True if sp > (0.5 + self.dict.CFG["margem_pot_critica"]) else self.__split2)
+        self.__split2 = (True if sp > (0.5 + self.cfg["margem_pot_critica"]) else self.__split2)
 
         self.__split2 = False if sp < (0.5) else self.__split2
-        self.__split1 = False if sp < (self.dict.CFG["pot_minima"] / self.dict.CFG["pot_maxima_usina"]) else self.__split1
+        self.__split1 = False if sp < (self.cfg["pot_minima"] / self.cfg["pot_maxima_usina"]) else self.__split1
 
         logger.debug(f"[USN] SP<-{sp}")
         if len(ugs) == 2:
@@ -573,10 +572,7 @@ class Usina:
         return pot_alvo
 
     def lista_de_ugs_disponiveis(self) ->  list:
-        ls = []
-        for ug in self.ugs:
-            if ug.disponivel and not ug.etapa_atual == UNIDADE_PARANDO:
-                ls.append(ug)
+        ls = [ug for ug in self.ugs if ug.disponivel and not ug.etapa_atual == UNIDADE_PARANDO]
 
         if self.modo_de_escolha_das_ugs == MODO_ESCOLHA_MANUAL:
             ls = sorted(ls, key=lambda y: (-1 * y.leitura_potencia.valor, -1 * y.setpoint, y.prioridade,))
@@ -592,38 +588,38 @@ class Usina:
     def controle_normal(self) -> None:
         logger.debug("-------------------------------------------------------------------------")
 
-        self.controle_p = self.dict.CFG["kp"] * self.erro_nv
-        self.controle_i = max(min((self.dict.CFG["ki"] * self.erro_nv) + self.controle_i, 0.8), 0)
-        self.controle_d = self.dict.CFG["kd"] * (self.erro_nv - self.erro_nv_anterior)
+        self.controle_p = self.cfg["kp"] * self.erro_nv
+        self.controle_i = max(min((self.cfg["ki"] * self.erro_nv) + self.controle_i, 0.8), 0)
+        self.controle_d = self.cfg["kd"] * (self.erro_nv - self.erro_nv_anterior)
         saida_pid = (self.controle_p + self.controle_i + min(max(-0.3, self.controle_d), 0.3))
 
-        logger.debug(f"[USN] NÍVEL -> Leitura: {self.nv_montante_recente:0.3f}; Alvo: {self.dict.CFG['nv_alvo']:0.3f}")
+        logger.debug(f"[USN] NÍVEL -> Leitura: {self.nv_montante_recente:0.3f}; Alvo: {self.cfg['nv_alvo']:0.3f}")
         logger.debug(f"[USN] PID -> {saida_pid:0.3f} P:{self.controle_p:0.3f} + I:{self.controle_i:0.3f} + D:{self.controle_d:0.3f}; ERRO={self.erro_nv}")
 
-        self.controle_ie = max(min(saida_pid + self.controle_ie * self.dict.CFG["kie"], 1), 0)
+        self.controle_ie = max(min(saida_pid + self.controle_ie * self.cfg["kie"], 1), 0)
 
         logger.debug(f"[USN] IE: {self.controle_ie:0.3f}")
         logger.debug("")
 
-        if self.nv_montante_recente >= (self.dict.CFG["nv_maximo"] + 0.03):
+        if self.nv_montante_recente >= (self.cfg["nv_maximo"] + 0.03):
             self.controle_ie = 1
             self.controle_i = 1 - self.controle_p
 
-        if self.nv_montante_recente <= (self.dict.CFG["nv_minimo"] + 0.03):
+        if self.nv_montante_recente <= (self.cfg["nv_minimo"] + 0.03):
             self.controle_ie = min(self.controle_ie, 0.3)
             self.controle_i = 0
 
-        pot_alvo = max(min(round(self.dict.CFG["pot_maxima_usina"] * self.controle_ie, 5), self.dict.CFG["pot_maxima_usina"],), self.dict.CFG["pot_minima"],)
+        pot_alvo = max(min(round(self.cfg["pot_maxima_usina"] * self.controle_ie, 5), self.cfg["pot_maxima_usina"],), self.cfg["pot_minima"],)
 
         logger.debug(f"[USN] Potência alvo: {pot_alvo:0.3f}")
 
         try:
             self.db.insert_debug(
                 self.get_time().timestamp(),
-                self.dict.CFG["kp"],
-                self.dict.CFG["ki"],
-                self.dict.CFG["kd"],
-                self.dict.CFG["kie"],
+                self.cfg["kp"],
+                self.cfg["ki"],
+                self.cfg["kd"],
+                self.cfg["kie"],
                 self.controle_p,
                 self.controle_i,
                 self.controle_d,
@@ -635,9 +631,9 @@ class Usina:
                 self.nv_montante_recente,
                 self.erro_nv,
                 self.modo_autonomo,
-                self.dict.CFG["cx_kp"],
-                self.dict.CFG["cx_ki"],
-                self.dict.CFG["cx_kie"],
+                self.cfg["cx_kp"],
+                self.cfg["cx_ki"],
+                self.cfg["cx_kie"],
                 0,
             )
         except Exception as e:
@@ -647,30 +643,25 @@ class Usina:
         pot_alvo = self.distribuir_potencia(pot_alvo)
 
     def ping(self, host) -> bool:
-        ping = False
-        for i in range(2):
-            ping = ping or (subprocess.call(["ping", "-c", "1", "-w", "1", host], stdout=subprocess.PIPE) == 0)
-            if not ping:
-                pass
-        return ping
+        return [True if subprocess.call(["ping", "-c", "1", "-w", "1", host], stdout=subprocess.PIPE) == 0 else False for _ in range(2)]
 
     def ping_clps(self) -> None:
         try:
-            if not self.ping(self.dict.IP["TDA_slave_ip"]):
-                self.dict.CFG["tda_offline"] = True
-                if self.dict.CFG["tda_offline"] and not self.borda_ping:
+            if not self.ping(self.dict["IP"]["TDA_slave_ip"]):
+                self.dict["GLB"]["tda_offline"] = True
+                if self.dict["GLB"]["tda_offline"] and not self.borda_ping:
                     self.borda_ping = True
                     logger.warning("[USN] CLP TDA não respondeu a tentativa de comunicação!")
-            elif self.ping(self.dict.IP["TDA_slave_ip"]) and self.borda_ping:
+            elif self.ping(self.dict["IP"]["TDA_slave_ip"]) and self.borda_ping:
                 logger.info("[USN] Comunicação com o CLP TDA reestabelecida.")
                 self.borda_ping = False
-                self.dict.GLB["tda_offline"] = False
+                self.dict["GLB"]["tda_offline"] = False
 
-            if not self.ping(self.dict.IP["USN_slave_ip"]):
+            if not self.ping(self.dict["IP"]["USN_slave_ip"]):
                 logger.warning("[USN] CLP SA não respondeu a tentativa de comunicação!")
-            if not self.ping(self.dict.IP["UG1_slave_ip"]):
+            if not self.ping(self.dict["IP"]["UG1_slave_ip"]):
                 logger.warning("[USN] CLP UG1 não respondeu a tentativa de comunicação!")
-            if not self.ping(self.dict.IP["UG2_slave_ip"]):
+            if not self.ping(self.dict["IP"]["UG2_slave_ip"]):
                 logger.warning("[USN] CLP UG2 não respondeu a tentativa de comunicação!")
         except Exception as e:
             logger.exception(f"[USN] Houve um erro ao executar o ping dos CLPs da usina. Exception: \"{repr(e)}\"")

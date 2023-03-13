@@ -1,4 +1,4 @@
-SHARED_DICT = {
+shared_dict = {
     "GLB": {
         "tempo_simul": 0,
 

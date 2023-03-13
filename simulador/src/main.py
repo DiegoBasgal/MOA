@@ -4,7 +4,7 @@ import traceback
 from sys import stdout
 from threading import Thread
 
-import dict
+import dict as d
 
 from dj52L import *
 from planta import *
@@ -40,7 +40,7 @@ if __name__ == "__main__":
     logger.info("Iniciando abstraço e GUI.")
 
     try:
-        shared_dict = dict.SHARED_DICT
+        shared_dict = d.shared_dict
     except Exception as e:
         logger.exception(f"Houve um erro ao abrir o dicionário compartilhado. Exception: \"{repr(e)}\"")
         logger.exception(f"Traceback:{traceback.print_stack}")

@@ -52,16 +52,16 @@ class Ocorrencias:
 
         self.ug_dict = {
             "clp_ug1": ModbusClient(
-                host=self.dict.IP["UG1_slave_ip"],
-                port=self.dict.IP["UG1_slave_porta"],
+                host=self.dict["IP"]["UG1_slave_ip"],
+                port=self.dict["IP"]["UG1_slave_porta"],
                 unit_id=1,
                 timeout=0.5,
                 auto_open=True,
                 auto_close=True
             ),
             "clp_ug2": ModbusClient(
-                host=self.dict.IP["UG2_slave_ip"],
-                port=self.dict.IP["UG2_slave_porta"],
+                host=self.dict["IP"]["UG2_slave_ip"],
+                port=self.dict["IP"]["UG2_slave_porta"],
                 unit_id=1,
                 timeout=0.5,
                 auto_open=True,
@@ -69,16 +69,16 @@ class Ocorrencias:
             ),
         }
         self.clp_sa = ModbusClient(
-            host=self.dict.IP["USN_slave_ip"],
-            port=self.dict.IP["USN_slave_porta"],
+            host=self.dict["IP"]["USN_slave_ip"],
+            port=self.dict["IP"]["USN_slave_porta"],
             unit_id=1,
             timeout=0.5,
             auto_open=True,
             auto_close=True
         )
         self.clp_tda = ModbusClient(
-            host=self.dict.IP["TDA_slave_ip"],
-            port=self.dict.IP["TDA_slave_porta"],
+            host=self.dict["IP"]["TDA_slave_ip"],
+            port=self.dict["IP"]["TDA_slave_porta"],
             unit_id=1,
             timeout=0.5,
             auto_open=True,
@@ -130,7 +130,7 @@ class Ocorrencias:
         self._condicionadores_essenciais_ug = var
 
     def verificar_condicionadores_usn(self) -> bool:
-        if [True for condic in self.condicionadores_essenciais_usn if condic.ativo] or self.dict.GLB["avisado_em_eletrica"]:
+        if [True for condic in self.condicionadores_essenciais_usn if condic.ativo] or self.dict["GLB"]["avisado_em_eletrica"]:
             condicionadores_ativos = [x for y in [self.condicionadores_essenciais_usn, self.condicionadores_usn] if y.ativo for x in y if x.ativo]
             self.deve_normalizar_usn = [True for condic in condicionadores_ativos if condic.ativo and condic.gravidade == DEVE_NORMALIZAR]
             self.deve_indisponibilizar_usn = [True for condic in condicionadores_ativos if condic.ativo and condic.gravidade == DEVE_INDISPONIBILIZAR]
@@ -146,8 +146,8 @@ class Ocorrencias:
             condicionadores_ativos = [x for y in [self.condicionadores_essenciais_ug, self.condicionadores_ug] for x in y if x.ativo]
             self.deve_aguardar_ug = [True for condic in condicionadores_ativos if condic.gravidade == DEVE_NORMALIZAR]
             self.deve_normalizar_ug = [True for condic in condicionadores_ativos if condic.gravidade == DEVE_INDISPONIBILIZAR]
-            logger.warning(f"[OCO-USN] Foram detectados condicionadores ativos na Usina:")
-            [logger.warning(f"[OCO-USN] Descrição: \"{condic.descr}\", Gravidade: {STR_CONDIC[condic.gravidade] if condic.gravidade in STR_CONDIC else 'Desconhecida'}") for condic in condicionadores_ativos]
+            logger.warning(f"[OCO-UG{ug_id}] Foram detectados condicionadores ativos na UG:")
+            [logger.warning(f"[OCO-UG{ug_id}] Descrição: \"{condic.descr}\", Gravidade: {STR_CONDIC[condic.gravidade] if condic.gravidade in STR_CONDIC else 'Desconhecida'}") for condic in condicionadores_ativos]
             return True if self.deve_normalizar_ug or self.deve_indisponibilizar_ug else False 
 
         else:

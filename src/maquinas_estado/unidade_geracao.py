@@ -144,7 +144,7 @@ class StateDisponivel(State):
             logger.debug(f"[UG{self.parent.id}] Lendo condicionadores_atenuadores")
 
             if self.parent.limpeza_grade:
-                self.parent.setpoint_minimo = self.parent.dict.CFG["pot_limpeza_grade"]
+                self.parent.setpoint_minimo = self.parent.cfg["pot_limpeza_grade"]
                 self.parent.setpoint = self.parent.setpoint_minimo
             else:
                 self.atenuacao_carga()
