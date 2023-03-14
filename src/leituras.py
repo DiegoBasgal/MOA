@@ -14,7 +14,7 @@ class LeituraBase:
 
     def __str__(self):
         return f"Leitura {self.__descr}, Valor: {self.valor}, Raw: {self.raw}"
-    
+
     @property
     def valor(self):
         raise NotImplementedError("Deve ser implementado na classe herdeira.")

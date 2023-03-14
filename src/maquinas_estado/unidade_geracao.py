@@ -5,13 +5,13 @@ from time import sleep, time
 from threading import Thread
 
 from dicionarios.const import *
-from src.ocorrencias import Ocorrencias
+from src.ocorrencias import OcorrenciasUg
 from src.unidade_geracao import UnidadeDeGeracao
 
 logger = logging.getLogger("__main__")
 
 class State:
-    def __init__(self, parent: UnidadeDeGeracao=None, ocorrencias: Ocorrencias=None):
+    def __init__(self, parent: UnidadeDeGeracao=None, ocorrencias: OcorrenciasUg=None):
         if not parent:
             logger.error("[UG-SM] Houve um erro ao importar a instância da Unidade de Geração")
             raise ReferenceError
@@ -22,7 +22,7 @@ class State:
             logger.error("[UG-SM] Houve um erro ao importar a classe de Ocorrências.")
             raise ReferenceError
         else:
-            self.ocorrencias = ocorrencias
+            self.oco = ocorrencias
 
     def step(self) -> object:
         pass
@@ -73,7 +73,7 @@ class StateRestrito(State):
     def step(self) -> State:
         self.parent.acionar_trips() if self.parent.etapa_atual == UNIDADE_PARADA else self.parent.parar()
 
-        condicionadores_ativos = [condic for condics in [self.ocorrencias.condicionadores_essenciais_ug, self.ocorrencias.condicionadores_ug] for condic in condics if condic.ativo]
+        condicionadores_ativos = [condic for condics in [self.oco.condicionadores_essenciais, self.oco.condicionadores] for condic in condics if condic.ativo]
         deve_indisponibilizar = [True for condic in condicionadores_ativos if condic.gravidade == DEVE_INDISPONIBILIZAR]
 
         if condicionadores_ativos:
@@ -127,17 +127,17 @@ class StateDisponivel(State):
     def step(self) -> State:
         self.parent.controle_limites_operacao()
 
-        if self.ocorrencias.verificar_condicionadores_ug():
-            if self.ocorrencias.deve_indisponibilizar_ug:
-                logger.warning(f"[UG{self.parent.id}] UG detectou condicionadores com gravidade alta, indisponibilizando UG.")
-                return StateIndisponivel(self.parent)
-
-            if self.ocorrencias.deve_aguardar_ug:
+        if self.oco.verificar_condicionadores():
+            if self.oco.aguardar:
                 logger.warning(f"[UG{self.parent.id}] Entrando no estado Restrito até normalização da condição.")
                 return StateRestrito(self.parent)
 
-            if self.ocorrencias.deve_normalizar_ug:
+            if self.oco.normalizar:
                 return self if self.normalizar_ug() else StateIndisponivel(self.parent)
+
+            if self.oco.indisponibilizar:
+                logger.warning(f"[UG{self.parent.id}] UG detectou condicionadores com gravidade alta, indisponibilizando UG.")
+                return StateIndisponivel(self.parent)
 
         else:
             logger.debug(f"[UG{self.parent.id}] Etapa atual: \"{self.parent.etapa_atual}\" / Etapa alvo: \"{self.parent.etapa_alvo}\"")
@@ -149,37 +149,7 @@ class StateDisponivel(State):
             else:
                 self.atenuacao_carga()
 
-            # PARANDO
-            if self.parent.etapa_alvo == UNIDADE_PARADA and not self.parent.etapa_atual == UNIDADE_PARADA:
-                if self.parent.setpoint >= self.parent.setpoint_minimo:
-                    self.parent.enviar_setpoint(self.parent.setpoint)
-
-            # SINCRONIZANDO
-            elif self.parent.etapa_alvo == UNIDADE_SINCRONIZADA and not self.parent.etapa_atual == UNIDADE_SINCRONIZADA:
-                if not self.release and not self.borda_partindo:
-                    logger.debug(f"[UG{self.parent.id}] Iniciando o timer de verificação de partida")
-                    Thread(target=lambda: self.verificar_partindo()).start()
-                    self.borda_partindo = True
-
-                self.parent.parar() if self.parent.setpoint == 0 else self.parent.enviar_setpoint(self.parent.setpoint)
-
-            # PARADA
-            elif self.parent.etapa_atual == UNIDADE_PARADA:
-                if self.parent.setpoint >= self.parent.setpoint_minimo:
-                    self.parent.partir()
-                    self.parent.enviar_setpoint(self.parent.setpoint)
-
-            # SINCRONIZADA
-            elif self.parent.etapa_atual == UNIDADE_SINCRONIZADA:
-                self.release = False
-                self.borda_partindo = False
-                if not self.parent.aux_tempo_sincronizada:
-                    self.parent.aux_tempo_sincronizada = self.parent.get_time
-
-                elif (self.parent.get_time - self.parent.aux_tempo_sincronizada).seconds >= 300:
-                    self.parent.tentativas_de_normalizacao = 0
-
-                self.parent.parar() if self.parent.setpoint == 0 else self.parent.enviar_setpoint(self.parent.setpoint)
+            self.controle_etapas()
 
             if not self.parent.etapa_atual == UNIDADE_SINCRONIZADA:
                 self.parent.aux_tempo_sincronizada = None
@@ -213,8 +183,46 @@ class StateDisponivel(State):
                     logger.debug(f"[UG{self.parent.id}] MOA entrou em modo manual. Verificar partindo encerrado.")
                     return
             self.release = False
-            self.parent.clp_sa.write_single_coil([f"REG_UG{self.parent.id}_ComandosDigitais_MXW_EmergenciaViaSuper"], [1])
-            logger.debug(f"[UG{self.parent.id}] A Unidade estourou o timer de verificação de partida, adicionando condição para normalizar")
+            self.parent.clp_usn.write_single_coil([f"REG_UG{self.parent.id}_ComandosDigitais_MXW_EmergenciaViaSuper"], [1])
+            logger.debug(f"[UG{self.parent.id}] Verificação de partida estourou o timer, acionando normalização.")
+
         except Exception as e:
             logger.exception(f"[UG{self.parent.id}] Erro na execução do timer de verificação de partida. Exception: \"{repr(e)}\"")
             logger.exception(f"[UG{self.parent.id}] Traceback: {traceback.print_stack}")
+
+    def controle_etapas(self) -> None:
+        # PARANDO
+        if self.parent.etapa_alvo == UNIDADE_PARADA and not self.parent.etapa_atual == UNIDADE_PARADA:
+            if self.parent.setpoint >= self.parent.setpoint_minimo:
+                self.parent.enviar_setpoint(self.parent.setpoint)
+            return
+
+        # SINCRONIZANDO
+        elif self.parent.etapa_alvo == UNIDADE_SINCRONIZADA and not self.parent.etapa_atual == UNIDADE_SINCRONIZADA:
+            if not self.release and not self.borda_partindo:
+                logger.debug(f"[UG{self.parent.id}] Iniciando o timer de verificação de partida")
+                Thread(target=lambda: self.verificar_partindo()).start()
+                self.borda_partindo = True
+
+            self.parent.parar() if self.parent.setpoint == 0 else self.parent.enviar_setpoint(self.parent.setpoint)
+            return
+
+        # PARADA
+        elif self.parent.etapa_atual == UNIDADE_PARADA:
+            if self.parent.setpoint >= self.parent.setpoint_minimo:
+                self.parent.partir()
+                self.parent.enviar_setpoint(self.parent.setpoint)
+            return
+
+        # SINCRONIZADA
+        elif self.parent.etapa_atual == UNIDADE_SINCRONIZADA:
+            self.release = False
+            self.borda_partindo = False
+            if not self.parent.aux_tempo_sincronizada:
+                self.parent.aux_tempo_sincronizada = self.parent.get_time
+
+            elif (self.parent.get_time - self.parent.aux_tempo_sincronizada).seconds >= 300:
+                self.parent.tentativas_de_normalizacao = 0
+
+            self.parent.parar() if self.parent.setpoint == 0 else self.parent.enviar_setpoint(self.parent.setpoint)
+            return

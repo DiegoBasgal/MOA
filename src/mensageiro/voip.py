@@ -16,7 +16,7 @@ config_file = os.path.join(os.path.dirname(__file__), "voip_config.json")
 with open(config_file, "r") as file:
     config = json.load(file)
 
-VARS = {
+vars_dict = {
     "TDA_FalhaComum": [False, "Atenção! Houve uma falha de comunicação com o CLP na Tomada da Água em Pampeana, favor verificar o telegram para mais informações. Atenção! Houve uma falha de comunicação com o CLP na Tomada da Água em Pampeana, favor verificar o telegram para mais informações."],
     "Disj_GDE_QCAP_Fechado": [False, "Atenção! Foi identificado que o disjuntor do gerador diesel de emergência QLCF em Pampeana foi fechado, favor verificar. Atenção! Foi identificado que o disjuntor do gerador diesel de emergência QLCF em Pampeana foi fechado, favor verificar."],
     "BombasDngRemoto": [False, "Atenção! Foi identificado que o painel do poço de drenagem em Pampeana saiu do modo remoto, favor verificar. Atenção! Foi identificado que o painel do poço de drenagem em Pampeana saiu do modo remoto, favor verificar."],
@@ -170,12 +170,12 @@ def enviar_voz_auxiliar(lista_de_contatos=None):
         for contato in lista_de_contatos:
             logger.info(f"Disparando torpedo de voz para {contato[0]} ({contato[1]})")
 
-            for i in VARS:
-                if VARS[i][0]:
+            for i in vars_dict:
+                if vars_dict[i][0]:
                     data = {
                         "caller": f"{caller_voip}",
                         "called": f"{contato[1]}",
-                        "audios": [{"audio": VARS[i][1], "positionAudio": 1,}],
+                        "audios": [{"audio": vars_dict[i][1], "positionAudio": 1,}],
                         "dtmfs": [],
                     }
                     headers = {"Content-Type": "application/json", "Authorization": access_token,}
@@ -188,7 +188,7 @@ def enviar_voz_auxiliar(lista_de_contatos=None):
                         logger.debug(f"Exception NVOIP: {e.read()}")
                     else:
                         logger.debug(f"response_body: {response_body}")
-                    VARS[i][0] = False
+                    vars_dict[i][0] = False
 
 if __name__ == "__main__":
    enviar_voz_auxiliar()

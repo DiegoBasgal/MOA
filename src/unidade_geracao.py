@@ -15,6 +15,8 @@ from dicionarios.reg import *
 from dicionarios.const import *
 from maquinas_estado.unidade_geracao import *
 
+from clients import ClpClients
+
 logger = logging.getLogger("__main__")
 
 class UnidadeDeGeracao:
@@ -22,9 +24,12 @@ class UnidadeDeGeracao:
             self,
             id: int,
             cfg=None,
-            con: FieldConnector=None,
-            db: DatabaseConnector=None
+            clp: ClpClients=None,
+            con: ConectorCampo=None,
+            db: ConectorBancoDados=None
         ):
+
+        # VERIFICAÇÃO DE ARGUMENTOS
         if id == 0:
             logger.exception(f"[UG{self.id}] A Unidade não pode ser instanciada com o ID -> \"0\".")
             raise ValueError
@@ -37,19 +42,17 @@ class UnidadeDeGeracao:
         else:
             self.cfg = cfg
 
-        if not db:
-            logger.exception(f"[UG{self.id}] Não foi possível estabelecer a conexão com o banco de dados.")
-            raise ReferenceError
+        if not db or not con or not clp:
+            logger.warning(f"[UG{self.id}] Não foi possível carregar classes de conexão com clps | campo | banco de dados.")
+            raise ConnectionError
         else:
             self.db = db
-
-        if not con:
-            logger.exception(f"[UG{self.id}] Não foi possível estabelecer a conexão com as leituras de campo.")
-            raise ReferenceError
-        else:
             self.con = con
+            self.clp_moa = clp.clp_dict[0]
+            self.clp_usn = clp.clp_dict[1]
+            self.clp_ug = clp.clp_dict[f"clp_ug{self.id}"]
 
-        # Variáveis privadas
+        # ATRIBUIÇÃO DE VARIÁVEIS PRIVADAS
         self.__etapa_alvo = 0
         self.__etapa_atual = 0
         self.__last_EtapaAtual = 0
@@ -59,7 +62,7 @@ class UnidadeDeGeracao:
 
         self.__next_state = StateDisponivel(self)
 
-        # Variáveis protegidas
+        # ATRIBUIÇÃO DE VARIÁVEIS PROTEGIDAS
         self._setpoint = 0
         self._prioridade = 0
         self._setpoint_minimo = 0
@@ -78,8 +81,7 @@ class UnidadeDeGeracao:
 
         self._lista_ugs = list([UnidadeDeGeracao])
 
-        # Variáveis públicas
-        self.modo_autonomo = 1
+        # ATRIBUIÇÃO DE VARIÁVEIS PÚBLICAS
         self.cx_ajuste_ie = 0.1
         self.tempo_normalizar = 0
 
@@ -98,85 +100,11 @@ class UnidadeDeGeracao:
         self.ts_auxiliar = self.get_time
         self.dict = d.shared_dict
 
-        # Clients modbus
-        self.clp_ug = ModbusClient(
-            host=self.dict["IP"][f"UG{self.id}_slave_ip"],
-            port=self.dict["IP"][f"UG{self.id}_slave_porta"],
-            timeout=0.5,
-            unit_id=1,
-            auto_open=True,
-            auto_close=True,
-        )
-        self.clp_sa = ModbusClient(
-            host=self.dict["IP"]["USN_slave_ip"],
-            port=self.dict["IP"]["USN_slave_porta"],
-            timeout=0.5,
-            unit_id=1,
-            auto_open=True,
-            auto_close=True,
-        )
-        self.clp_moa = ModbusClient(
-            host=self.dict["IP"]["MOA_slave_ip"],
-            port=self.dict["IP"]["MOA_slave_porta"],
-            timeout=0.5,
-            unit_id=1,
-            auto_open=True,
-            auto_close=True,
-        )
-
         # Simulador -> remover em produção
         self.condic_ativos_sim = LeituraModbus(
             f"[UG{self.id}] Condicionadores Aux SIM",
             self.clp_ug,
             UG[f"REG_UG{self.id}_RetrornosAnalogicos_AUX_Condicionadores"],
-        )
-
-        # Leituras
-        self.leitura_potencia = LeituraModbus(
-            f"[UG{self.id}] Potência",
-            self.clp_ug,
-            UG[f"REG_UG{self.id}_RetornosAnalogicos_MWR_PM_710_Potencia_Ativa"],
-            op=4,
-        )
-        self.leitura_horimetro_hora = LeituraModbus(
-            f"[UG{self.id}] Horímetro horas",
-            self.clp_ug,
-            UG[f"REG_UG{self.id}_RetornosAnalogicos_MWR_Horimetro_Gerador"],
-            op=4,
-        )
-        self.leitura_horimetro_min = LeituraModbus(
-            f"[UG{self.id}] Horímetro minutos",
-            self.clp_ug,
-            UG[f"REG_UG{self.id}_RetornosAnalogicos_MWR_Horimetro_Gerador_min"],
-            op=4,
-            escala=1/60
-        )
-        self.leitura_horimetro = LeituraSoma(
-            f"[UG{self.id}] Horímetro",
-            self.leitura_horimetro_hora,
-            self.leitura_horimetro_min
-        )
-        # Simulador, trocar em campo
-        self.leitura_Operacao_EtapaAtual = LeituraModbus(
-            f"[UG{self.id}] Etapa Aux SIM",
-            self.clp_ug,
-            UG[f"REG_UG{self.id}_RetornosDigitais_EtapaAux_Sim"],
-            1,
-            op=4
-        )
-        self.leitura_Operacao_EtapaAlvo = LeituraModbus(
-            f"[UG{self.id}] Etapa Alvo",
-            self.clp_ug,
-            UG[f"REG_UG{self.id}_RetornosDigitais_EtapaAlvo_Sim"],
-            1,
-            op=4
-        )
-        self.leitura_caixa_espiral = LeituraModbus(
-            f"[UG{self.id}] Pressão Caixa espiral",
-            self.clp_ug,
-            UG[f"REG_UG{self.id}_EntradasAnalogicas_MRR_PressK1CaixaExpiral_MaisCasas"],
-            escala=0.1,
-            op=4
         )
         
         # Leituras -> Condicionadores
@@ -325,6 +253,7 @@ class UnidadeDeGeracao:
         )
         self.condicionadores_atenuadores.append(self.condicionador_caixa_espiral_ug)
 
+
     # Property Privadas
     @property
     def id(self) -> int:
@@ -347,9 +276,66 @@ class UnidadeDeGeracao:
         return isinstance(self.__next_state, StateIndisponivel)
 
     @property
+    def tempo_entre_tentativas(self) -> int:
+        return self.__tempo_entre_tentativas
+
+    @property
+    def limite_tentativas_de_normalizacao(self) -> int:
+        return self.__limite_tentativas_de_normalizacao
+
+    @property
+    def leitura_potencia(self) -> float:
+        return LeituraModbus(
+            f"[UG{self.id}] Potência",
+            self.clp_ug,
+            UG[f"REG_UG{self.id}_RetornosAnalogicos_MWR_PM_710_Potencia_Ativa"],
+            op=4,
+        ).valor
+
+    @property
+    def leitura_horimetro(self) -> int:
+        leitura_hora = LeituraModbus(
+            f"[UG{self.id}] Horímetro horas",
+            self.clp_ug,
+            UG[f"REG_UG{self.id}_RetornosAnalogicos_MWR_Horimetro_Gerador"],
+            op=4,
+        ).valor
+
+        leitura_min = LeituraModbus(
+            f"[UG{self.id}] Horímetro minutos",
+            self.clp_ug,
+            UG[f"REG_UG{self.id}_RetornosAnalogicos_MWR_Horimetro_Gerador_min"],
+            op=4,
+            escala=1/60
+        ).valor
+
+        return LeituraSoma(
+            f"[UG{self.id}] Horímetro",
+            leitura_hora,
+            leitura_min
+        ).valor
+
+    @property
+    def leitura_caixa_espiral(self) -> float:
+        return LeituraModbus(
+            f"[UG{self.id}] Pressão Caixa espiral",
+            self.clp_ug,
+            UG[f"REG_UG{self.id}_EntradasAnalogicas_MRR_PressK1CaixaExpiral_MaisCasas"],
+            escala=0.1,
+            op=4
+        ).valor
+
+    @property
     def etapa_atual(self) -> int:
         try:
-            leitura = self.leitura_Operacao_EtapaAtual.valor
+            leitura = LeituraModbus(
+                f"[UG{self.id}] Etapa Aux SIM",
+                self.clp_ug,
+                UG[f"REG_UG{self.id}_RetornosDigitais_EtapaAux_Sim"],
+                1,
+                op=4
+            ).valor
+
             if 0 < leitura < 255:
                 self.__last_EtapaAtual = leitura
                 self.__etapa_atual = leitura
@@ -364,7 +350,14 @@ class UnidadeDeGeracao:
     @property
     def etapa_alvo(self) -> int:
         try:
-            leitura = self.leitura_Operacao_EtapaAlvo.valor
+            leitura = LeituraModbus(
+                f"[UG{self.id}] Etapa Alvo",
+                self.clp_ug,
+                UG[f"REG_UG{self.id}_RetornosDigitais_EtapaAlvo_Sim"],
+                1,
+                op=4
+            ).valor
+
             if 0 < leitura < 255:
                 self.__last_EtapaAlvo = leitura
                 self.__etapa_alvo = leitura
@@ -376,15 +369,6 @@ class UnidadeDeGeracao:
             logger.exception(f"[UG{self.id}] Não foi possível realizar a leitura da etapa alvo. Exception: \"{repr(e)}\"")
             logger.exception(f"[UG{self.id}] Traceback: {traceback.print_stack}")
             return False
-
-    @property
-    def tempo_entre_tentativas(self) -> int:
-        return self.__tempo_entre_tentativas
-
-    @property
-    def limite_tentativas_de_normalizacao(self) -> int:
-        return self.__limite_tentativas_de_normalizacao
-
 
     # Property/Setter Protegidas
     @property

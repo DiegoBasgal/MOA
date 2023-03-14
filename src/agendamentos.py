@@ -10,7 +10,7 @@ from conector import *
 logger = logging.getLogger("__main__")
 
 class Agendamentos:
-    def __init__(self, cfg=None, db: DatabaseConnector=None, usina: Usina=None, ugs: list([UnidadeDeGeracao])=None):
+    def __init__(self, cfg=None, db: ConectorBancoDados=None, usn: Usina=None, ugs: list([UnidadeDeGeracao])=None):
         if not cfg:
             logger.warning("[AGN] Não foi possível carregar o arquivo de configuração \"cfg.json\".")
             raise ValueError
@@ -23,11 +23,11 @@ class Agendamentos:
         else:
             self.db = db
 
-        if not usina:
+        if not usn:
             logger.warning("[AGN] Não foi possível carregar a instância da classe Usina.")
             raise ReferenceError
         else:
-            self.usina = usina
+            self.usn = usn
 
         if not ugs:
             logger.warning("[AGN] Não foi possível obter lista de Unidades de Geração.")
@@ -119,7 +119,7 @@ class Agendamentos:
             logger.info("[AGN] Os agendamentos estão muito atrasados!")
             if agendamento[3] == AGENDAMENTO_INDISPONIBILIZAR:
                 logger.warning("[AGN] Acionando emergência!")
-                self.usina.acionar_emergencia()
+                self.usn.acionar_emergencia()
                 self.db.update_agendamento(int(agendamento[0]), 1, obs="AGENDAMENTO EXECUTADO POR TRATATIVA DE CÓDIGO!")
                 return True
 
@@ -147,11 +147,11 @@ class Agendamentos:
         return False
 
     def agendamentos_sem_efeito(self, agendamento) -> bool:
-        if self.usina.get_modo_autonomo and not self.db.get_executabilidade(agendamento[3])["executavel_em_autmoatico"]:
+        if self.usn.get_modo_autonomo and not self.db.get_executabilidade(agendamento[3])["executavel_em_autmoatico"]:
             self.db.update_agendamento(agendamento[0], True, obs="Este agendamento não tem efeito com o módulo em modo autônomo. Executado sem realizar nenhuma ação")
             return True
 
-        if not self.usina.get_modo_autonomo and not self.db.get_executabilidade(agendamento[3])["executavel_em_manual"]:
+        if not self.usn.get_modo_autonomo and not self.db.get_executabilidade(agendamento[3])["executavel_em_manual"]:
             self.db.update_agendamento(agendamento[0], True, obs="Este agendamento não tem efeito com o módulo em modo manual. Executado sem realizar nenhuma ação")
             return True
 
@@ -164,12 +164,12 @@ class Agendamentos:
                 for ug in self.ugs: ug.forcar_estado_indisponivel()
 
                 while (not self.ug1.etapa_atual == UNIDADE_PARADA and not self.ug2.etapa_atual == UNIDADE_PARADA):
-                    self.usina.ler_valores()
+                    self.usn.ler_valores()
                     logger.debug("[AGN] Indisponibilizando Usina...")
                     sleep(10)
-                self.usina.acionar_emergencia()
+                self.usn.acionar_emergencia()
                 logger.debug("[AGN] Emergência pressionada após indizponibilização agendada mudando para modo manual para evitar normalização automática.")
-                self.usina.entrar_em_modo_manual()
+                self.usn.entrar_em_modo_manual()
             except Exception as e:
                 logger.exception(f"[AGN] Houve um erro ao excutar o agendamento de indisponibilização da usina. Exception: \"{repr(e)}\"")
                 logger.exception(f"[AGN] Traceback: {traceback.print_stack}")

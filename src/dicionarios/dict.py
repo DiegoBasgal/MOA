@@ -24,8 +24,11 @@ shared_dict = {
     },
 
     "VOIP":{
-        "QCAUGRemoto": False,
-        "FreioCmdRemoto": False,
+        "UG1_QCAUGRemoto": False,
+        "UG1_FreioCmdRemoto": False,
+        "UG2_QCAUGRemoto": False,
+        "UG2_FreioCmdRemoto": False,
+
         "TDA_FalhaComum": False,
         "BombasDngRemoto": False,
         "Disj_GDE_QCAP_Fechado": False
