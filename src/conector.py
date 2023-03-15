@@ -124,7 +124,7 @@ class ConectorCampo:
             if self.clp_usn.read_discrete_inputs(SA["REG_SA_EntradasDigitais_MXI_SA_DisjDJ1_Sup125VccBoFeAb2"])[0] == 0:
                 logger.debug("[CON] Flag -> DisjDJ1_Sup125VccBoFeAb2")
                 flags += 1
-            logger.info(f"[CON] Número de flags ativas: \"{flags}\"")
+            logger.info(f"[CON] Número de bloqueios ativos: \"{flags}\"")
             return True if flags >= 1 else False
 
         except Exception as e:

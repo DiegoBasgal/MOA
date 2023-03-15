@@ -7,7 +7,7 @@ from pyModbusTCP.client import ModbusClient
 logger = logging.getLogger("__main__")
 
 class ClpClients:
-    def __init__(self) -> None:
+    def __init__(self, shared_dict=None) -> None:
         self.dict = d.shared_dict
 
         self.clp_dict = {

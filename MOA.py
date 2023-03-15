@@ -102,7 +102,7 @@ if __name__ == "__main__":
             try:
                 logger.info("Iniciando classe de conexão com os CLPs da usina.")
 
-                clp = ClpClients()
+                clp = ClpClients(sd)
                 clp.open_all()
 
             except Exception:
