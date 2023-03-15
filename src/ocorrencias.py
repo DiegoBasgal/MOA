@@ -349,14 +349,61 @@ class OcorrenciasUg(Ocorrencias):
     def __init__(self, sd, ugs):
         super().__init__(sd, ugs)
 
+        self._temperatura_base = 100
+        self._temperatura_limite = 200
+        self._pressao_caixa_base = 16
+        self._pressao_caixa_limite = 15.5
+
         self._condicionadores = []
         self._condicionadores_essenciais = []
+
+        self._condic_dict = {}
 
         self.aguardar = False
         self.normalizar = False
         self.indisponibilizar = False
 
         for ug in self.ugs: self.leitura_condicionadores(ug)
+
+    @property
+    def temperatura_base(self) -> int:
+        return self._temperatura_base
+
+    @temperatura_base.setter
+    def temperatura_base(self, var: int) -> None:
+        self._temperatura_base = var
+
+    @property
+    def temperatura_limite(self) -> int:
+        return self._temperatura_limite
+
+    @temperatura_limite.setter
+    def temperatura_limite(self, var: int) -> None:
+        self._temperatura_limite = var
+
+    @property
+    def pressao_caixa_base(self) -> float:
+        return self._pressao_caixa_base
+
+    @pressao_caixa_base.setter
+    def pressao_caixa_base(self, var: float):
+        self._pressao_caixa_base = var
+
+    @property
+    def pressao_caixa_limite(self) -> float:
+        return self._pressao_caixa_limite
+
+    @pressao_caixa_limite.setter
+    def pressao_caixa_limite(self, var: float):
+        self._pressao_caixa_limite = var
+
+    @property
+    def condic_dict(self) -> dict({CondicionadorExponencial}):
+        return self._condic_dict
+
+    @condic_dict.setter
+    def condic_dict(self, var: dict({CondicionadorExponencial})) -> None:
+        self._condic_dict = var
 
     @property
     def condicionadores(self) -> list([CondicionadorBase]):
@@ -392,30 +439,93 @@ class OcorrenciasUg(Ocorrencias):
     def atualizar_limites_condicionadores(self, parametros, ug: UnidadeDeGeracao) -> None:
         try:
             ug.prioridade = int(parametros[f"ug{ug.id}_prioridade"])
-            ug.condicionador_temperatura_fase_r_ug.valor_base = float(parametros[f"alerta_temperatura_fase_r_ug{ug.id}"])
-            ug.condicionador_temperatura_fase_r_ug.valor_limite = float(parametros[f"limite_temperatura_fase_r_ug{ug.id}"])
-            ug.condicionador_temperatura_fase_s_ug.valor_base = float(parametros[f"alerta_temperatura_fase_s_ug{ug.id}"])
-            ug.condicionador_temperatura_fase_s_ug.valor_limite = float(parametros[f"limite_temperatura_fase_s_ug{ug.id}"])
-            ug.condicionador_temperatura_fase_t_ug.valor_base = float(parametros[f"alerta_temperatura_fase_t_ug{ug.id}"])
-            ug.condicionador_temperatura_fase_t_ug.valor_limite = float(parametros[f"limite_temperatura_fase_t_ug{ug.id}"])
-            ug.condicionador_temperatura_nucleo_gerador_1_ug.valor_base = float(parametros[f"alerta_temperatura_nucleo_gerador_1_ug{ug.id}"])
-            ug.condicionador_temperatura_nucleo_gerador_1_ug.valor_limite = float(parametros[f"limite_temperatura_nucleo_gerador_1_ug{ug.id}"])
-            ug.condicionador_temperatura_nucleo_gerador_2_ug.valor_base = float(parametros[f"alerta_temperatura_nucleo_gerador_2_ug{ug.id}"])
-            ug.condicionador_temperatura_nucleo_gerador_2_ug.valor_limite = float(parametros[f"limite_temperatura_nucleo_gerador_2_ug{ug.id}"])
-            ug.condicionador_temperatura_nucleo_gerador_3_ug.valor_base = float(parametros[f"alerta_temperatura_nucleo_gerador_3_ug{ug.id}"])
-            ug.condicionador_temperatura_nucleo_gerador_3_ug.valor_limite = float(parametros[f"limite_temperatura_nucleo_gerador_3_ug{ug.id}"])
-            ug.condicionador_temperatura_mancal_casq_rad_ug.valor_base = float(parametros[f"alerta_temperatura_mancal_casq_rad_ug{ug.id}"])
-            ug.condicionador_temperatura_mancal_casq_rad_ug.valor_limite = float(parametros[f"limite_temperatura_mancal_casq_rad_ug{ug.id}"])
-            ug.condicionador_temperatura_mancal_casq_comb_ug.valor_base = float(parametros[f"alerta_temperatura_mancal_casq_comb_ug{ug.id}"])
-            ug.condicionador_temperatura_mancal_casq_comb_ug.valor_limite = float(parametros[f"limite_temperatura_mancal_casq_comb_ug{ug.id}"])
-            ug.condicionador_temperatura_mancal_escora_comb_ug.valor_base = float(parametros[f"alerta_temperatura_mancal_escora_comb_ug{ug.id}"])
-            ug.condicionador_temperatura_mancal_escora_comb_ug.valor_limite = float(parametros[f"limite_temperatura_mancal_escora_comb_ug{ug.id}"])
-            ug.condicionador_caixa_espiral_ug.valor_base = float(parametros[f"alerta_caixa_espiral_ug{ug.id}"])
-            ug.condicionador_caixa_espiral_ug.valor_limite = float(parametros[f"limite_caixa_espiral_ug{ug.id}"])
+            self.condic_dict[f"temperatura_fase_r_ug{ug.id}"].valor_base = float(parametros[f"alerta_temperatura_fase_r_ug{ug.id}"])
+            self.condic_dict[f"temperatura_fase_r_ug{ug.id}"].valor_limite = float(parametros[f"limite_temperatura_fase_r_ug{ug.id}"])
+            self.condic_dict[f"temperatura_fase_s_ug{ug.id}"].valor_base = float(parametros[f"alerta_temperatura_fase_s_ug{ug.id}"])
+            self.condic_dict[f"temperatura_fase_s_ug{ug.id}"].valor_limite = float(parametros[f"limite_temperatura_fase_s_ug{ug.id}"])
+            self.condic_dict[f"temperatura_fase_t_ug{ug.id}"].valor_base = float(parametros[f"alerta_temperatura_fase_t_ug{ug.id}"])
+            self.condic_dict[f"temperatura_fase_t_ug{ug.id}"].valor_limite = float(parametros[f"limite_temperatura_fase_t_ug{ug.id}"])
+            self.condic_dict[f"temperatura_nucleo_gerador_1_ug{ug.id}"].valor_base = float(parametros[f"alerta_temperatura_nucleo_gerador_1_ug{ug.id}"])
+            self.condic_dict[f"temperatura_nucleo_gerador_1_ug{ug.id}"].valor_limite = float(parametros[f"limite_temperatura_nucleo_gerador_1_ug{ug.id}"])
+            self.condic_dict[f"temperatura_nucleo_gerador_2_ug{ug.id}"].valor_base = float(parametros[f"alerta_temperatura_nucleo_gerador_2_ug{ug.id}"])
+            self.condic_dict[f"temperatura_nucleo_gerador_2_ug{ug.id}"].valor_limite = float(parametros[f"limite_temperatura_nucleo_gerador_2_ug{ug.id}"])
+            self.condic_dict[f"temperatura_nucleo_gerador_3_ug{ug.id}"].valor_base = float(parametros[f"alerta_temperatura_nucleo_gerador_3_ug{ug.id}"])
+            self.condic_dict[f"temperatura_nucleo_gerador_3_ug{ug.id}"].valor_limite = float(parametros[f"limite_temperatura_nucleo_gerador_3_ug{ug.id}"])
+            self.condic_dict[f"temperatura_mancal_casq_rad_ug{ug.id}"].valor_base = float(parametros[f"alerta_temperatura_mancal_casq_rad_ug{ug.id}"])
+            self.condic_dict[f"temperatura_mancal_casq_rad_ug{ug.id}"].valor_limite = float(parametros[f"limite_temperatura_mancal_casq_rad_ug{ug.id}"])
+            self.condic_dict[f"temperatura_mancal_casq_comb_ug{ug.id}"].valor_base = float(parametros[f"alerta_temperatura_mancal_casq_comb_ug{ug.id}"])
+            self.condic_dict[f"temperatura_mancal_casq_comb_ug{ug.id}"].valor_limite = float(parametros[f"limite_temperatura_mancal_casq_comb_ug{ug.id}"])
+            self.condic_dict[f"temperatura_mancal_escora_comb_ug{ug.id}"].valor_base = float(parametros[f"alerta_temperatura_mancal_escora_comb_ug{ug.id}"])
+            self.condic_dict[f"temperatura_mancal_escora_comb_ug{ug.id}"].valor_limite = float(parametros[f"limite_temperatura_mancal_escora_comb_ug{ug.id}"])
+            self.condic_dict[f"caixa_espiral_ug{ug.id}"].valor_base = float(parametros[f"alerta_caixa_espiral_ug{ug.id}"])
+            self.condic_dict[f"caixa_espiral_ug{ug.id}"].valor_limite = float(parametros[f"limite_caixa_espiral_ug{ug.id}"])
 
         except Exception as e:
             logger.exception(f"[OCO-UG{ug.id}] Houve um erro ao atualizar os limites de temperaturas dos condicionadores. Exception: \"{repr(e)}\"")
             logger.exception(f"[OCO-UG{ug.id}] Traceback: {traceback.print_stack}")
+
+    def controle_limites_operacao(self) -> None:
+        fase_r = [self.leitura_temperatura_fase_R.valor, self.condicionador_temperatura_fase_r_ug.valor_base, self.condicionador_temperatura_fase_r_ug.valor_limite]
+        fase_s = [self.leitura_temperatura_fase_S.valor, self.condicionador_temperatura_fase_s_ug.valor_base, self.condicionador_temperatura_fase_s_ug.valor_limite]
+        fase_t = [self.leitura_temperatura_fase_T.valor, self.condicionador_temperatura_fase_t_ug.valor_base, self.condicionador_temperatura_fase_t_ug.valor_limite]
+        nucleo_1 = [self.leitura_temperatura_nucleo_gerador_1.valor, self.condicionador_temperatura_nucleo_gerador_1_ug.valor_base, self.condicionador_temperatura_nucleo_gerador_1_ug.valor_limite]
+        nucleo_2 = [self.leitura_temperatura_nucleo_gerador_2.valor, self.condicionador_temperatura_nucleo_gerador_2_ug.valor_base, self.condicionador_temperatura_nucleo_gerador_2_ug.valor_limite]
+        nucleo_3 = [self.leitura_temperatura_nucleo_gerador_3.valor, self.condicionador_temperatura_nucleo_gerador_3_ug.valor_base, self.condicionador_temperatura_nucleo_gerador_3_ug.valor_limite]
+        mancal_CR = [self.leitura_temperatura_mancal_casq_rad.valor, self.condicionador_temperatura_mancal_casq_rad_ug.valor_base, self.condicionador_temperatura_mancal_casq_rad_ug.valor_limite]
+        mancal_CC = [self.leitura_temperatura_mancal_casq_comb.valor, self.condicionador_temperatura_mancal_casq_comb_ug.valor_base, self.condicionador_temperatura_mancal_casq_comb_ug.valor_limite]
+        mancal_EC = [self.leitura_temperatura_mancal_escora_comb.valor, self.condicionador_temperatura_mancal_escora_comb_ug.valor_base, self.condicionador_temperatura_mancal_escora_comb_ug.valor_limite]
+        caixa_espiral = [self.leitura_caixa_espiral.valor, self.condicionador_caixa_espiral_ug.valor_base, self.condicionador_caixa_espiral_ug.valor_limite]
+
+        if fase_r[0] >= fase_r[1]:
+            logger.warning(f"[UG{self.id}] A temperatura de Fase R da UG passou do valor base! ({fase_r[1]}C) | Leitura: {fase_r[0]}C")
+        if fase_r[0] >= 0.9*(fase_r[2] - fase_r[1]) + fase_r[1]:
+            logger.critical(f"[UG{self.id}] A temperatura de Fase R da UG está muito próxima do limite! ({fase_r[2]}C) | Leitura: {fase_r[0]}C")
+
+        if fase_s[0] >= fase_s[1]:
+            logger.warning(f"[UG{self.id}] A temperatura de Fase S da UG passou do valor base! ({fase_s[1]}C) | Leitura: {fase_s[0]}C")
+        if fase_s[0] >= 0.9*(fase_s[2] - fase_s[1]) + fase_s[1]:
+            logger.critical(f"[UG{self.id}] A temperatura de Fase S da UG está muito próxima do limite! ({fase_s[2]}C) | Leitura: {fase_s[0]}C")
+
+        if fase_t[0] >= fase_t[1]:
+            logger.warning(f"[UG{self.id}] A temperatura de Fase T da UG passou do valor base! ({fase_t[1]}C) | Leitura: {fase_t[0]}C")
+        if fase_t[0] >= 0.9*(fase_t[2] - fase_t[1]) + fase_t[1]:
+            logger.critical(f"[UG{self.id}] A temperatura de Fase T da UG está muito próxima do limite! ({fase_t[2]}C) | Leitura: {fase_t[0]}C")
+
+        if nucleo_1[0] >= nucleo_1[1]:
+            logger.warning(f"[UG{self.id}] A temperatura do Núcleo Gerador 1 da UG passou do valor base! ({nucleo_1[1]}C) | Leitura: {nucleo_1[0]}C")
+        if nucleo_1[0] >= 0.9*(nucleo_1[2] - nucleo_1[1]) + nucleo_1[1]:
+            logger.critical(f"[UG{self.id}] A temperatura do Núcleo Gerador 1 da UG está muito próxima do limite! ({nucleo_1[2]}C) | Leitura: {nucleo_1[0]}C")
+
+        if nucleo_2[0] >= nucleo_2[1]:
+            logger.warning(f"[UG{self.id}] A temperatura do Núcleo Gerador 2 da UG passou do valor base! ({nucleo_2[1]}C) | Leitura: {nucleo_2[0]}C")
+        if nucleo_2[0] >= 0.9*(nucleo_2[2] - nucleo_2[1]) + nucleo_2[1]:
+            logger.critical(f"[UG{self.id}] A temperatura do Núcleo Gerador 2 da UG está muito próxima do limite! ({nucleo_2[2]}C) | Leitura: {nucleo_2[0]}C")
+
+        if nucleo_3[0] >= nucleo_3[1]:
+            logger.warning(f"[UG{self.id}] A temperatura do Núcleo Gerador 3 da UG passou do valor base! ({nucleo_3[1]}C) | Leitura: {nucleo_3[0]}C")
+        if nucleo_3[0] >= 0.9*(nucleo_3[2] - nucleo_3[1]) + nucleo_3[1]:
+            logger.critical(f"[UG{self.id}] A temperatura do Núcleo Gerador 3 da UG está muito próxima do limite! ({nucleo_3[2]}C) | Leitura: {nucleo_3[0]}C")
+
+        if mancal_CR[0] >= mancal_CR[1]:
+            logger.warning(f"[UG{self.id}] A temperatura do Mancal Casquilho Radial da UG passou do valor base! ({mancal_CR[1]}C) | Leitura: {mancal_CR[0]}C")
+        if mancal_CR[0] >= 0.9*(mancal_CR[2] - mancal_CR[1]) + mancal_CR[1]:
+            logger.critical(f"[UG{self.id}] A temperatura do Mancal Casquilho Radial da UG está muito próxima do limite! ({mancal_CR[2]}C) | Leitura: {mancal_CR[0]}C")
+
+        if mancal_CC[0] >= mancal_CC[1]:
+            logger.warning(f"[UG{self.id}] A temperatura do Mancal Casquilho Combinado da UG passou do valor base! ({mancal_CC[1]}C) | Leitura: {mancal_CC[0]}C")
+        if mancal_CC[0] >= 0.9*(mancal_CC[2] - mancal_CC[1]) + mancal_CC[1]:
+            logger.critical(f"[UG{self.id}] A temperatura do Mancal Casquilho Combinado da UG está muito próxima do limite! ({mancal_CC[2]}C) | Leitura: {mancal_CC[0]}C")
+
+        if mancal_EC[0] >= mancal_EC[1]:
+            logger.warning(f"[UG{self.id}] A temperatura do Mancal Escora Combinado da UG passou do valor base! ({mancal_EC[1]}C) | Leitura: {mancal_EC[0]}C")
+        if mancal_EC[0] >= 0.9*(mancal_EC[2] - mancal_EC[1]) + mancal_EC[1]:
+            logger.critical(f"[UG{self.id}] A temperatura do Mancal Escora Combinado da UG está muito próxima do limite! ({mancal_EC[2]}C) | Leitura: {mancal_EC[0]}C")
+
+        if caixa_espiral[0] <= caixa_espiral[1] and caixa_espiral[0] != 0 and self.etapa_atual == UNIDADE_SINCRONIZADA:
+            logger.warning(f"[UG{self.id}] A pressão Caixa Espiral da UG passou do valor base! ({caixa_espiral[1]:03.2f} KGf/m2) | Leitura: {caixa_espiral[0]:03.2f}")
+        if caixa_espiral[0] <= caixa_espiral[2]+0.9*(caixa_espiral[1] - caixa_espiral[2]) and caixa_espiral[0] != 0 and self.etapa_atual == UNIDADE_SINCRONIZADA:
+            logger.critical(f"[UG{self.id}] A pressão Caixa Espiral da UG está muito próxima do limite! ({caixa_espiral[2]:03.2f} KGf/m2) | Leitura: {caixa_espiral[0]:03.2f} KGf/m2")
+
 
     def leitura_temporizada(self, ug: UnidadeDeGeracao) -> bool:
         try:
@@ -448,12 +558,12 @@ class OcorrenciasUg(Ocorrencias):
             elif leitura_EntradasDigitais_MXI_FreioCmdRemoto.valor == 1 and self.dict["VOIP"][f"UG{ug.id}_FreioCmdRemoto"]:
                 self.dict["VOIP"][f"UG{ug.id}_FreioCmdRemoto"] = False
 
-            leitura_EntradasDigitais_MXI_QCAUG1_Remoto = LeituraModbusCoil("QCAUG1_Remoto", self.clp_ug[f"ug{ug.id}"], UG[f"REG_UG{ug.id}_EntradasDigitais_MXI_QCAUG1_Remoto"] )
-            if leitura_EntradasDigitais_MXI_QCAUG1_Remoto.valor == 0 and not self.dict["VOIP"][f"UG{ug.id}_QCAUGRemoto"]:
+            leitura_EntradasDigitais_MXI_QCAUG_Remoto = LeituraModbusCoil("QCAUG_Remoto", self.clp_ug[f"ug{ug.id}"], UG[f"REG_UG{ug.id}_EntradasDigitais_MXI_QCAUG{ug.id}_Remoto"] )
+            if leitura_EntradasDigitais_MXI_QCAUG_Remoto.valor == 0 and not self.dict["VOIP"][f"UG{ug.id}_QCAUGRemoto"]:
                 logger.warning(f"[OCO-UG{ug.id}] O compressor da UG saiu do modo remoto, favor analisar a situação.")
                 self.dict["VOIP"][f"UG{ug.id}_QCAUGRemoto"] = True
                 self.voip_ug = True
-            elif leitura_EntradasDigitais_MXI_QCAUG1_Remoto.valor == 1 and self.dict["VOIP"][f"UG{ug.id}_QCAUGRemoto"]:
+            elif leitura_EntradasDigitais_MXI_QCAUG_Remoto.valor == 1 and self.dict["VOIP"][f"UG{ug.id}_QCAUGRemoto"]:
                 self.dict["VOIP"][f"UG{ug.id}_QCAUGRemoto"] = False
 
             return True if self.voip_ug else False
@@ -464,15 +574,167 @@ class OcorrenciasUg(Ocorrencias):
             return False
 
     def leitura_condicionadores(self, ug: UnidadeDeGeracao) -> None:
-        self.condicionadores_essenciais.append(ug.condicionador_temperatura_fase_r_ug)
-        self.condicionadores_essenciais.append(ug.condicionador_temperatura_fase_s_ug)
-        self.condicionadores_essenciais.append(ug.condicionador_temperatura_fase_t_ug)
-        self.condicionadores_essenciais.append(ug.condicionador_temperatura_nucleo_gerador_1_ug)
-        self.condicionadores_essenciais.append(ug.condicionador_temperatura_nucleo_gerador_2_ug)
-        self.condicionadores_essenciais.append(ug.condicionador_temperatura_nucleo_gerador_3_ug)
-        self.condicionadores_essenciais.append(ug.condicionador_temperatura_mancal_casq_rad_ug)
-        self.condicionadores_essenciais.append(ug.condicionador_temperatura_mancal_casq_comb_ug)
-        self.condicionadores_essenciais.append(ug.condicionador_temperatura_mancal_escora_comb_ug)
+        # Leituras -> Condicionadores
+        # Fase R
+        leitura_temperatura_fase_R = LeituraModbus(
+            f"[UG{ug.id}] Temperatura Fase R",
+            self.clp_ug,
+            UG[f"REG_UG{ug.id}_RetornosAnalogicos_MWR_Temperatura_01"],
+            op=4
+        )
+        self.condic_dict[f"temperatura_fase_r_ug{ug.id}"] = CondicionadorExponencial(
+            leitura_temperatura_fase_R.descr, 
+            DEVE_INDISPONIBILIZAR,
+            leitura_temperatura_fase_R,
+            self._temperatura_base,
+            self._temperatura_limite
+        )
+        self.condicionadores_essenciais.append(self.condic_dict[f"temperatura_fase_r_ug{ug.id}"])
+
+        # Fase S
+        leitura_temperatura_fase_S = LeituraModbus(
+            f"[UG{ug.id}] Temperatura Fase S",
+            self.clp_ug,
+            UG[f"REG_UG{ug.id}_RetornosAnalogicos_MWR_Temperatura_02"],
+            op=4
+        )
+        self.condic_dict[f"temperatura_fase_s_ug{ug.id}"] = CondicionadorExponencial(
+            leitura_temperatura_fase_S.descr,
+            DEVE_INDISPONIBILIZAR,
+            leitura_temperatura_fase_S,
+            self._temperatura_base,
+            self._temperatura_limite
+        )
+        self.condicionadores_essenciais.append(self.condic_dict[f"temperatura_fase_s_ug{ug.id}"])
+
+        # Fase T
+        leitura_temperatura_fase_T = LeituraModbus(
+            f"[UG{ug.id}] Temperatura Fase T",
+            self.clp_ug,
+            UG[f"REG_UG{ug.id}_RetornosAnalogicos_MWR_Temperatura_03"],
+            op=4
+        )
+        self.condic_dict[f"temperatura_fase_t_ug{ug.id}"] = CondicionadorExponencial(
+            leitura_temperatura_fase_T.descr,
+            DEVE_INDISPONIBILIZAR,
+            leitura_temperatura_fase_T,
+            self._temperatura_base,
+            self._temperatura_limite
+        )
+        self.condicionadores_essenciais.append(self.condic_dict[f"temperatura_fase_t_ug{ug.id}"])
+
+        # Nucleo Gerador 1
+        leitura_temperatura_nucleo_gerador_1 = LeituraModbus(
+            f"[UG{ug.id}] Temperatura Núcleo Gerador 1",
+            self.clp_ug,
+            UG[f"REG_UG{ug.id}_RetornosAnalogicos_MWR_Temperatura_04"],
+            op=4
+        )
+        self.condic_dict[f"temperatura_nucleo_gerador_1_ug{ug.id}"] = CondicionadorExponencial(
+            leitura_temperatura_nucleo_gerador_1.descr,
+            DEVE_INDISPONIBILIZAR,
+            leitura_temperatura_nucleo_gerador_1,
+            self._temperatura_base,
+            self._temperatura_limite
+        )
+        self.condicionadores_essenciais.append(self.condic_dict[f"temperatura_nucleo_gerador_1_ug{ug.id}"])
+
+        # Nucleo Gerador 2
+        leitura_temperatura_nucleo_gerador_2 = LeituraModbus(
+            f"[UG{ug.id}] Temperatura Núcleo Gerador 2",
+            self.clp_ug,
+            UG[f"REG_UG{ug.id}_RetornosAnalogicos_MWR_Temperatura_04"],
+            op=4
+        )
+        self.condic_dict[f"temperatura_nucleo_gerador_2_ug{ug.id}"] = CondicionadorExponencial(
+            leitura_temperatura_nucleo_gerador_2.descr,
+            DEVE_INDISPONIBILIZAR,
+            leitura_temperatura_nucleo_gerador_2,
+            self._temperatura_base,
+            self._temperatura_limite
+        )
+        self.condicionadores_essenciais.append(self.condic_dict[f"temperatura_nucleo_gerador_2_ug{ug.id}"])
+
+        # Nucleo Gerador 3
+        leitura_temperatura_nucleo_gerador_3 = LeituraModbus(
+            f"[UG{ug.id}] Temperatura Núcleo Gerador 3",
+            self.clp_ug,
+            UG[f"REG_UG{ug.id}_RetornosAnalogicos_MWR_Temperatura_04"],
+            op=4
+        )
+        self.condic_dict[f"temperatura_nucleo_gerador_3_ug{ug.id}"] = CondicionadorExponencial(
+            leitura_temperatura_nucleo_gerador_3.descr,
+            DEVE_INDISPONIBILIZAR,
+            leitura_temperatura_nucleo_gerador_3,
+            self._temperatura_base,
+            self._temperatura_limite
+        )
+        self.condicionadores_essenciais.append(self.condic_dict[f"temperatura_nucleo_gerador_3_ug{ug.id}"])
+
+        # Mancal Casquilho Radial
+        leitura_temperatura_mancal_casq_rad = LeituraModbus(
+            f"[UG{ug.id}] Temperatura Mancal Casquilho Radial",
+            self.clp_ug,
+            UG[f"REG_UG{ug.id}_RetornosAnalogicos_MWR_Temperatura_08"],
+            op=4
+        )
+        self.condic_dict[f"temperatura_mancal_casq_rad_ug{ug.id}"] = CondicionadorExponencial(
+            leitura_temperatura_mancal_casq_rad.descr,
+            DEVE_INDISPONIBILIZAR,
+            leitura_temperatura_mancal_casq_rad,
+            self._temperatura_base,
+            self._temperatura_limite,
+        )
+        self.condicionadores_essenciais.append(self.condic_dict[f"temperatura_mancal_casq_rad_ug{ug.id}"])
+
+        # Mancal Casquilho Combinado
+        leitura_temperatura_mancal_casq_comb = LeituraModbus(
+            f"[UG{ug.id}] Temperatura Mancal Casquilho Combinado",
+            self.clp_ug,
+            UG[f"REG_UG{ug.id}_RetornosAnalogicos_MWR_Temperatura_10"],
+            op=4
+        )
+        self.condic_dict[f"temperatura_mancal_casq_comb_ug{ug.id}"] = CondicionadorExponencial(
+            leitura_temperatura_mancal_casq_comb.descr,
+            DEVE_INDISPONIBILIZAR,
+            leitura_temperatura_mancal_casq_comb,
+            self._temperatura_base,
+            self._temperatura_limite
+        )
+        self.condicionadores_essenciais.append(self.condic_dict[f"temperatura_mancal_casq_comb_ug{ug.id}"])
+
+        # Mancal Escora Combinado
+        leitura_temperatura_mancal_escora_comb = LeituraModbus(
+            f"[UG{ug.id}] Temperatura Mancal Escora Combinado",
+            self.clp_ug,
+            UG[f"REG_UG{ug.id}_RetornosAnalogicos_MWR_Temperatura_07"],
+            op=4
+        )
+        self.condic_dict[f"temperatura_mancal_escora_comb_ug{ug.id}"] = CondicionadorExponencial(
+            leitura_temperatura_mancal_escora_comb.descr,
+            DEVE_INDISPONIBILIZAR,
+            leitura_temperatura_mancal_escora_comb,
+            self._temperatura_base,
+            self._temperatura_limite
+        )
+        self.condicionadores_essenciais.append(self.condic_dict[f"temperatura_mancal_escora_comb_ug{ug.id}"])
+
+        # CX Espiral
+        leitura_caixa_espiral = LeituraModbus(
+            f"[UG{self.id}] Pressão Caixa espiral",
+            self.clp_ug,
+            UG[f"REG_UG{self.id}_EntradasAnalogicas_MRR_PressK1CaixaExpiral_MaisCasas"],
+            escala=0.1,
+            op=4
+        )
+        self.condic_dict[f"caixa_espiral_ug{ug.id}"] = CondicionadorExponencialReverso(
+            leitura_caixa_espiral.descr,
+            DEVE_INDISPONIBILIZAR,
+            leitura_caixa_espiral,
+            self._pressao_caixa_base,
+            self._pressao_caixa_limite
+        )
+        self.condicionadores_atenuadores.append(self.condic_dict[f"caixa_espiral_ug{ug.id}"])
 
         leitura_ComandosDigitais_MXW_EmergenciaViaSuper = LeituraModbusCoil("ComandosDigitais_MXW_EmergenciaViaSuper", self.clp_ug[f"ug{ug.id}"], UG[f"REG_UG{ug.id}_ComandosDigitais_MXW_EmergenciaViaSuper"],)
         self.condicionadores_essenciais.append(CondicionadorBase(leitura_ComandosDigitais_MXW_EmergenciaViaSuper.descr, DEVE_NORMALIZAR, leitura_ComandosDigitais_MXW_EmergenciaViaSuper, ug.id, [UNIDADE_SINCRONIZADA, UNIDADE_SINCRONIZANDO]))
