@@ -67,13 +67,7 @@ class UnidadeDeGeracao:
         self._prioridade = 0
         self._setpoint_minimo = 0
         self._setpoint_maximo = 0
-        self._temperatura_base = 100
-        self._temperatura_limite = 200
-        self._pressao_caixa_base = 16.50
-        self._pressao_caixa_limite = 15.50
         self._tentativas_de_normalizacao = 0
-
-        self._condicionadores_atenuadores = []
 
         self._cx_kp = self.cfg["cx_kp"]
         self._cx_ki = self.cfg["cx_ki"]
@@ -83,6 +77,7 @@ class UnidadeDeGeracao:
 
         # ATRIBUIÇÃO DE VARIÁVEIS PÚBLICAS
         self.cx_ajuste_ie = 0.1
+        self.erro_press_cx = 0
         self.tempo_normalizar = 0
 
         self.acionar_voip = False
@@ -100,14 +95,8 @@ class UnidadeDeGeracao:
         self.dict = d.shared_dict
         self.ts_auxiliar = self.get_time()
 
-        # Simulador -> remover em produção
-        self.condic_ativos_sim = LeituraModbus(
-            f"[UG{self.id}] Condicionadores Aux SIM",
-            self.clp_ug,
-            UG[f"REG_UG{self.id}_RetrornosAnalogicos_AUX_Condicionadores"],
-        )
 
-    # Property Privadas
+    # Property -> VARIÁVEIS PRIVADAS
     @property
     def id(self) -> int:
         return self.__id
@@ -223,7 +212,7 @@ class UnidadeDeGeracao:
             logger.exception(f"[UG{self.id}] Traceback: {traceback.print_stack}")
             return False
 
-    # Property/Setter Protegidas
+    # Property/Setter -> VARIÁVEIS PROTEGIDAS
     @property
     def cx_kp(self) -> float:
         return self._cx_kp
@@ -306,14 +295,6 @@ class UnidadeDeGeracao:
             raise ValueError(f"[UG{self.id}] Valor deve se um inteiro positivo")
 
     @property
-    def condicionadores_atenuadores(self) -> list([CondicionadorBase]):
-        return self._condicionadores_atenuadores
-    
-    @condicionadores_atenuadores.setter
-    def condicionadores_atenuadores(self, var: list([CondicionadorBase])) -> None:
-        self._condicionadores_atenuadores = var
-
-    @property
     def lista_ugs(self) -> list([UnidadeDeGeracao]):
         return self._lista_ugs
 
@@ -330,7 +311,7 @@ class UnidadeDeGeracao:
             logger.debug(f"[UG{self.id}] Step -> (Tentativas de normalização: {self.tentativas_de_normalizacao}/{self.limite_tentativas_de_normalizacao}).")
             self.interstep()
             self.__next_state = self.__next_state.step()
-            self.modbus_update_state_register()
+            self.atualizar_modbus_moa()
         except Exception as e:
             logger.exception(f"[UG{self.id}] Erro na execução da máquina de estados -> step. Exception: \"{repr(e)}\"")
             logger.exception(f"[UG{self.id}] Traceback: {traceback.print_stack}")
@@ -345,7 +326,7 @@ class UnidadeDeGeracao:
             logger.exception(f"[UG{self.id}] Erro na execução da máquina de estados -> interstep. Exception: \"{repr(e)}\"")
             logger.exception(f"[UG{self.id}] Traceback: {traceback.print_stack}")
 
-    def modbus_update_state_register(self) -> None:
+    def atualizar_modbus_moa(self) -> None:
         try:
             self.clp_moa.write_single_coil(MOA[f"REG_MOA_OUT_STATE_UG{self.id}"], [self.codigo_state])
             self.clp_moa.write_single_coil(MOA[f"REG_MOA_OUT_ETAPA_UG{self.id}"], [self.etapa_atual])
@@ -528,16 +509,16 @@ class UnidadeDeGeracao:
         self.cx_ajuste_ie = [sum(ug.leitura_potencia) for ug in self.lista_ugs] / self.cfg["pot_maxima_alvo"]
         self.cx_ki = self.cx_ajuste_ie - self.cx_kp
 
-        erro_press_cx = 0
-        erro_press_cx = self.leitura_caixa_espiral - self.cfg["press_cx_alvo"]
+        self.erro_press_cx = 0
+        self.erro_press_cx = self.leitura_caixa_espiral - self.cfg["press_cx_alvo"]
 
         logger.debug(f"[UG{self.id}] Pressão Alvo: {self.cfg['press_cx_alvo']:0.3f}, Recente: {self.leitura_caixa_espiral:0.3f}")
 
-        self.cx_controle_p = self.cfg["cx_kp"] * erro_press_cx
-        self.cx_controle_i = max(min((self.cfg["cx_ki"] * erro_press_cx) + self.cx_controle_i, 1), 0)
+        self.cx_controle_p = self.cfg["cx_kp"] * self.erro_press_cx
+        self.cx_controle_i = max(min((self.cfg["cx_ki"] * self.erro_press_cx) + self.cx_controle_i, 1), 0)
         saida_pi = self.cx_controle_p + self.cx_controle_i
 
-        logger.debug(f"[UG{self.id}] PI: {saida_pi:0.3f} <-- P: {self.cx_controle_p:0.3f} + I: {self.cx_controle_i:0.3f}; ERRO={erro_press_cx}")
+        logger.debug(f"[UG{self.id}] PI: {saida_pi:0.3f} <-- P: {self.cx_controle_p:0.3f} + I: {self.cx_controle_i:0.3f}; ERRO={self.erro_press_cx}")
 
         self.cx_controle_ie = max(min(saida_pi + self.cx_ajuste_ie * self.cfg["cx_kie"], 1), 0)
 
@@ -546,32 +527,3 @@ class UnidadeDeGeracao:
         logger.debug(f"[UG{self.id}] Pot alvo: {pot_alvo:0.3f}")
 
         self.enviar_setpoint(pot_alvo) if self.leitura_caixa_espiral >= 15.5 else self.enviar_setpoint(0)
-
-        try:
-            self.db.insert_debug(
-                self.get_time(),
-                self.cfg["kp"],
-                self.cfg["ki"],
-                self.cfg["kd"],
-                self.cfg["kie"],
-                0, # cp
-                0, # ci
-                0, # cd
-                0, # cie
-                self.setpoint,
-                self.leitura_potencia,
-                self.lista_ugs[1].setpoint,
-                self.lista_ugs[1].leitura_potencia,
-                0, # nivel
-                erro_press_cx,
-                1, # modo autonomo
-                self.cfg["cx_kp"],
-                self.cfg["cx_ki"],
-                self.cfg["cx_kie"],
-                self.cx_controle_ie,
-            )
-        except Exception as e:
-            logger.exception(f"[UG{self.id}] Não foi possivel inserir dados no Banco. Exception: \"{repr(e)}\"")
-            logger.exception(f"[UG{self.id}] Traceback: {traceback.print_stack}")
-
-    

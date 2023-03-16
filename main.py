@@ -83,6 +83,8 @@ if __name__ == "__main__":
             try:
                 logger.info("Carregando arquivos de configuração \"cfg.json\" e \"shared_dict\".")
 
+                sd = d.shared_dict
+
                 config_file = os.path.join(os.path.dirname(__file__), "cfg.json")
                 with open(config_file, "r") as file:
                     cfg = json.load(file)
@@ -90,8 +92,6 @@ if __name__ == "__main__":
                 config_file = os.path.join(os.path.dirname(__file__), "cfg.json.bkp")
                 with open(config_file, "w") as file:
                     json.dump(cfg, file, indent=4)
-
-                sd = d.shared_dict
 
             except Exception:
                 logger.exception(f"Erro ao carregar arquivo de configuração e dicionário compartilhado. Tentando novamente em \"{timeout}s\" (Tentativa: {n_tentativa}/3).")
@@ -126,8 +126,8 @@ if __name__ == "__main__":
             try:
                 logger.info("Iniciando instâncias de classe Unidade de Geração.")
 
-                ug1 = UnidadeDeGeracao(1, cfg, con, db)
-                ug2 = UnidadeDeGeracao(2, cfg, con, db)
+                ug1 = UnidadeDeGeracao(1, cfg, clp, con, db)
+                ug2 = UnidadeDeGeracao(2, cfg, clp, con, db)
                 ugs = [ug1, ug2]
 
                 ug1.lista_ugs = ugs
@@ -177,7 +177,7 @@ if __name__ == "__main__":
             try:
                 logger.info("Iniciando Thread de leitura temporizada.")
 
-                th_lt = Thread(target=lambda: oco.leitura_temporizada(1800)).start()
+                th_lt = Thread(target=lambda: oco.leitura_periodica(1800)).start()
 
             except Exception:
                 logger.exception(f"Erro ao iniciar Threads de leituras temporizadas e leituras de condicionadores. Tentando novamente em \"{timeout}s\" (Tentativa: {n_tentativa}/3).")
@@ -188,7 +188,8 @@ if __name__ == "__main__":
             try:
                 logger.info("Inciando máquina de estados do MOA.")
 
-                sm = StateMachine(initial_state=Pronto(sd, cfg, usn, ugs, oco, agn))
+                # incia_sm = State(sd, cfg, usn, agn, oco, db, ugs)
+                sm = StateMachine(initial_state=Pronto(sd, cfg, usn, agn, oco, db, ugs))
 
             except Exception:
                 logger.exception(f"Erro ao instanciar máquina de estados do MOA. Tentando novamente em \"{timeout}s\" (Tentativa: {n_tentativa}/3).")

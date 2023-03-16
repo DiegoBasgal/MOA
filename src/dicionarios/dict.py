@@ -20,7 +20,7 @@ shared_dict = {
     "GLB": {
         "tda_offline": False,
         "borda_tensao": False,
-        "avisado_em_eletrica": False
+        "avisado_eletrica": False
     },
 
     "VOIP":{
