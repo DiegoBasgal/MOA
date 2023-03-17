@@ -26,7 +26,7 @@ class ConectorCampo:
             self.clp_ug1 = clp.clp_dict[3]
             self.clp_ug2 = clp.clp_dict[4]
 
-        self.dict = d.shared_dict
+        self.dict: dict = d.shared_dict
 
     def normalizar_emergencia(self) -> None:
         logger.info("[CON] Normalizando emergência...")
@@ -37,10 +37,10 @@ class ConectorCampo:
     def resetar_emergencia(self) -> None:
         try:
             logger.debug("[CON] Reset geral.")
-            self.clp_usn.write_single_coil(SA["REG_SA_ComandosDigitais_MXW_ResetGeral"], 1)
-            self.clp_tda.write_single_coil(TDA["REG_TDA_ComandosDigitais_MXW_ResetGeral"], 1) if not self.dict["GLB"]["tda_offline"] else logger.debug("[CON] CLP TDA Offline, não há como realizar o reset geral")
-            self.clp_ug1.write_single_coil(UG["REG_UG1_ComandosDigitais_MXW_ResetGeral"], 1)
-            self.clp_ug2.write_single_coil(UG["REG_UG2_ComandosDigitais_MXW_ResetGeral"], 1)
+            self.clp_usn.write_single_coil(SA["SA_CD_ResetGeral"], 1)
+            self.clp_ug1.write_single_coil(UG["UG1_CD_ResetGeral"], 1)
+            self.clp_ug2.write_single_coil(UG["UG2_CD_ResetGeral"], 1)
+            self.clp_tda.write_single_coil(TDA["TDA_CD_ResetGeral"], 1) if not self.dict["GLB"]["tda_offline"] else logger.debug("[CON] CLP TDA Offline, não há como realizar o reset geral")
         except Exception as e:
             logger.exception(f"[CON] Houve um erro ao realizar o reset geral. Exception: \"{repr(e)}\"")
             logger.exception(f"[CON] Traceback: {traceback.print_stack}")
@@ -48,9 +48,9 @@ class ConectorCampo:
     def reconhecer_emergencia(self) -> None:
         try:
             logger.debug("[CON] Cala sirene.")
-            self.clp_usn.write_single_coil(SA["REG_SA_ComandosDigitais_MXW_Cala_Sirene"], 1)
-            self.clp_ug1.write_single_coil(UG["REG_UG1_ComandosDigitais_MXW_Cala_Sirene"], 1)
-            self.clp_ug2.write_single_coil(UG["REG_UG2_ComandosDigitais_MXW_Cala_Sirene"], 1)
+            self.clp_usn.write_single_coil(SA["SA_CD_Cala_Sirene"], 1)
+            self.clp_ug1.write_single_coil(UG["UG1_CD_Cala_Sirene"], 1)
+            self.clp_ug2.write_single_coil(UG["UG2_CD_Cala_Sirene"], 1)
         except Exception as e:
             logger.exception(f"[CON] Houve um erro ao reconhecer os alarmes. Exception: \"{repr(e)}\"")
             logger.exception(f"[CON] Traceback: {traceback.print_stack}")
@@ -58,23 +58,23 @@ class ConectorCampo:
     def acionar_emergencia(self) -> None:
         try:
             logger.warning("[CON] Acionando emergência.")
-            self.clp_ug1.write_single_coil(UG["REG_UG1_ComandosDigitais_MXW_EmergenciaViaSuper"], 1)
-            self.clp_ug2.write_single_coil(UG["REG_UG2_ComandosDigitais_MXW_EmergenciaViaSuper"], 1)
+            self.clp_ug1.write_single_coil(UG["UG1_CD_EmergenciaViaSuper"], 1)
+            self.clp_ug2.write_single_coil(UG["UG2_CD_EmergenciaViaSuper"], 1)
             sleep(5)
-            self.clp_ug1.write_single_coil(UG["REG_UG1_ComandosDigitais_MXW_EmergenciaViaSuper"], 0)
-            self.clp_ug2.write_single_coil(UG["REG_UG2_ComandosDigitais_MXW_EmergenciaViaSuper"], 0)
+            self.clp_ug1.write_single_coil(UG["UG1_CD_EmergenciaViaSuper"], 0)
+            self.clp_ug2.write_single_coil(UG["UG2_CD_EmergenciaViaSuper"], 0)
         except Exception as e:
             logger.exception(f"[CON] Houve um erro ao acionar a emergência. Exception: \"{repr(e)}\"")
             logger.exception(f"[CON] Traceback: {traceback.print_stack}")
 
     def modifica_controles_locais(self) -> None:
         try:
-            if not self.dict.CFG["tda_offline"]:
-                self.clp_tda.write_single_coil(TDA["REG_TDA_ComandosDigitais_MXW_ResetGeral"], 1)
-                self.clp_tda.write_single_coil(TDA["REG_TDA_ComandosDigitais_MXW_Hab_Nivel"], 0)
-                self.clp_tda.write_single_coil(TDA["REG_TDA_ComandosDigitais_MXW_Desab_Nivel"], 1)
-                self.clp_tda.write_single_coil(TDA["REG_TDA_ComandosDigitais_MXW_Hab_Religamento52L"], 0)
-                self.clp_tda.write_single_coil(TDA["REG_TDA_ComandosDigitais_MXW_Desab_Religamento52L"], 1)
+            if not self.dict["GLB"]["tda_offline"]:
+                self.clp_tda.write_single_coil(TDA["TDA_CD_ResetGeral"], 1)
+                self.clp_tda.write_single_coil(TDA["TDA_CD_Hab_Nivel"], 0)
+                self.clp_tda.write_single_coil(TDA["TDA_CD_Desab_Nivel"], 1)
+                self.clp_tda.write_single_coil(TDA["TDA_CD_Hab_Religamento52L"], 0)
+                self.clp_tda.write_single_coil(TDA["TDA_CD_Desab_Religamento52L"], 1)
             else:
                 logger.debug("[CON] Não é possível modificar os controles locais pois o CLP da TDA se encontra offline")
         except Exception as e:
@@ -86,7 +86,7 @@ class ConectorCampo:
             if self.get_falha52L():
                 return False
             else:
-                response = self.clp_usn.write_single_register(SA["REG_SA_ComandosDigitais_MXW_Liga_DJ1"], 1)
+                response = self.clp_usn.write_single_register(SA["SA_CD_Liga_DJ1"], 1)
                 return response
         except Exception as e:
             logger.exception(f"[CON] Houver um erro ao fechar o Dj52L. Exception: \"{repr(e)}\"")
@@ -94,38 +94,25 @@ class ConectorCampo:
             return False
 
     def get_falha52L(self) -> bool:
+        dict_flags: dict[str, int] = {
+            SA["SA_RD_DJ1_FalhaInt"]: 1,
+            SA["SA_ED_DisjDJ1_Local"]: 1,
+            SA["SA_ED_DisjDJ1_AlPressBaixa"]: 1,
+            SA["SA_ED_DisjDJ1_BloqPressBaixa"]: 1,
+            SA["SA_ED_DisjDJ1_SuperBobAbert2"]: 0,
+            SA["SA_ED_DisjDJ1_Sup125VccBoFeAb1"]: 0,
+            SA["SA_ED_DisjDJ1_Super125VccCiMot"]: 0,
+            SA["SA_ED_DisjDJ1_Super125VccCiCom"]: 0,
+            SA["SA_ED_DisjDJ1_Sup125VccBoFeAb2"]: 0,
+        }
         try:
-            # TODO tentar automatizar criando um lista ou dicionario com os regs e retorno esperado e passar um for e compara caso flag 
             flags = 0
-            logger.info("[CON] Foram detectadas Flags de bloqueio ao abrir o Dj52L.")
-            if self.clp_usn.read_discrete_inputs(SA["REG_SA_RetornosDigitais_MXR_DJ1_FalhaInt"])[0] == 1:
-                logger.debug("[CON] Flag -> MXR_DJ1_FalhaInt")
-                flags += 1
-            if self.clp_usn.read_discrete_inputs(SA["REG_SA_EntradasDigitais_MXI_SA_DisjDJ1_Local"])[0] == 1:
-                logger.debug("[CON] Flag -> DisjDJ1_Local")
-                flags += 1
-            if self.clp_usn.read_discrete_inputs(SA["REG_SA_EntradasDigitais_MXI_SA_DisjDJ1_AlPressBaixa"])[0] == 1:
-                logger.debug("[CON] Flag -> DisjDJ1_AlPressBaixa")
-                flags += 1
-            if self.clp_usn.read_discrete_inputs(SA["REG_SA_EntradasDigitais_MXI_SA_DisjDJ1_BloqPressBaixa"])[0] == 1:
-                logger.debug("[CON] Flag -> DisjDJ1_BloqPressBaixa")
-                flags += 1
-            if self.clp_usn.read_discrete_inputs(SA["REG_SA_EntradasDigitais_MXI_SA_DisjDJ1_SuperBobAbert2"])[0] == 0:
-                logger.debug("[CON] Flag -> DisjDJ1_SuperBobAbert2")
-                flags += 1
-            if self.clp_usn.read_discrete_inputs(SA["REG_SA_EntradasDigitais_MXI_SA_DisjDJ1_Sup125VccBoFeAb1"])[0] == 0:
-                logger.debug("[CON] Flag -> DisjDJ1_Sup125VccBoFeAb1")
-                flags += 1
-            if self.clp_usn.read_discrete_inputs(SA["REG_SA_EntradasDigitais_MXI_SA_DisjDJ1_Super125VccCiMot"])[0] == 0:
-                logger.debug("[CON] Flag -> DisjDJ1_Super125VccCiMot")
-                flags += 1
-            if self.clp_usn.read_discrete_inputs(SA["REG_SA_EntradasDigitais_MXI_SA_DisjDJ1_Super125VccCiCom"])[0] == 0:
-                logger.debug("[CON] Flag -> DisjDJ1_Super125VccCiCom")
-                flags += 1
-            if self.clp_usn.read_discrete_inputs(SA["REG_SA_EntradasDigitais_MXI_SA_DisjDJ1_Sup125VccBoFeAb2"])[0] == 0:
-                logger.debug("[CON] Flag -> DisjDJ1_Sup125VccBoFeAb2")
-                flags += 1
-            logger.info(f"[CON] Número de bloqueios ativos: \"{flags}\"")
+            for nome, valor in zip(dict_flags[0], dict_flags.values()):
+                if self.clp_usn.read_discrete_inputs(nome)[0] == valor:
+                    logger.debug(f"[CON] Flag -> {nome.keys()}")
+                    flags += 1
+
+            logger.info(f"[CON] Foram detectadas Flags de bloqueio ao abrir o Dj52L. Número de bloqueios ativos: \"{flags}\"") if flags else ...
             return True if flags >= 1 else False
 
         except Exception as e:

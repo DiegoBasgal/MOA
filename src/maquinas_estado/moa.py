@@ -6,11 +6,11 @@ from time import sleep
 from datetime import datetime
 
 from src.usina import *
-from src.conector import *
-from src.ocorrencias import *
 from src.agendamentos import *
-from src.dicionarios.reg import *
 from src.dicionarios.const import *
+from src.dicionarios.reg import MOA
+from src.ocorrencias import OcorrenciasUsn
+from src.conector import ConectorBancoDados
 
 class StateMachine:
     def __init__(self, initial_state):
@@ -35,7 +35,7 @@ class State:
                 agn: Agendamentos=None,
                 oco: OcorrenciasUsn=None,
                 db : ConectorBancoDados=None,
-                ugs: list(UnidadeDeGeracao)=None,
+                ugs: list[UnidadeDeGeracao]=None,
             ):
 
         if None in (sd, cfg, usn, agn, oco, db, ugs):
@@ -79,7 +79,7 @@ class ControleNormal(State):
         super().__init__(sd, usn, *args, **kwargs)
         self.usn.estado_moa = MOA_SM_CONTROLE_NORMAL
         self.dict["GLB"]["tda_offline"] = False
-        self.usn.clp_moa.write_single_coil(MOA["REG_PAINEL_LIDO"], [1])
+        self.usn.clp_moa.write_single_coil(MOA["PAINEL_LIDO"], [1])
 
     def run(self):
         self.usn.ler_valores()
@@ -95,7 +95,7 @@ class ControleNormal(State):
             return ControleAgendamentos()
 
         else:
-            flag = self.oco.verificar_condicionadores()
+            flag: int = self.oco.verificar_condicionadores()
             if flag == CONDIC_INDISPONIBILIZAR:
                 return ControleEmergencia()
 
@@ -114,7 +114,7 @@ class ControleReservatorio(State):
 
     def run(self):
         self.usn.ler_valores()
-        flag = self.usn.controle_reservatorio()
+        flag: int = self.usn.controle_reservatorio()
 
         if flag == NV_FLAG_EMERGENCIA:
             return ControleEmergencia()
@@ -132,7 +132,7 @@ class ControleDados(State):
     def run(self):
         self.usn.ler_valores()
         self.usn.escrever_valores()
-        return Pronto()
+        return ControleNormal() if not self.dict["GLB"]["tda_offline"] else ControleTdaOffline()
 
 class ControleAgendamentos(State):
     def __init__(self, *args, **kwargs):
@@ -142,7 +142,7 @@ class ControleAgendamentos(State):
 
     def run(self):
         self.agn.verificar_agendamentos()
-        return ControleDados()
+        return ControleDados() if self.usn.modo_autonomo else ControleManual()
 
 class ControleManual(State):
     def __init__(self, usn, *args, **kwargs):
@@ -150,7 +150,7 @@ class ControleManual(State):
         self.usn.estado_moa = MOA_SM_CONTROLE_MANUAL
 
         self.usn.modo_autonomo = False
-        self.usn.clp_moa.write_single_coil(MOA["REG_PAINEL_LIDO"], [1])
+        self.usn.clp_moa.write_single_coil(MOA["PAINEL_LIDO"], [1])
 
         logger.info("Usina em modo manual. Para retornar a operação autônoma, acionar via painel ou página WEB")
 
@@ -193,26 +193,28 @@ class ControleEmergencia(State):
                 if not self.usn.clp_emergencia:
                     self.usn.db_emergencia = False
                     self.usn.db.update_remove_emergencia()
+                    return self
                 elif not self.usn.modo_autonomo:
                     self.usn.db_emergencia = False
                     self.usn.db.update_remove_emergencia()
                     return ControleManual()
 
-        elif self.oco.verificar_condicionadores():
-            if self.oco.indisponibilizar:
+        else:
+            flag = self.oco.verificar_condicionadores()
+            if flag == CONDIC_INDISPONIBILIZAR:
                 logger.critical("Acionando VOIP e entrando em modo manual")
                 return ControleManual()
 
-            elif self.oco.normalizar:
+            elif flag == CONDIC_NORMALIZAR:
                 self.tentativas += 1
                 logger.info(f"Normalizando usina. (Tentativa {self.tentativas}/3) (Limite entre tentaivas: {TIMEOUT_NORMALIZACAO}s)")
                 self.usn.normalizar_forcado = True
                 self.usn.normalizar_usina()
                 return self
 
-        else:
-            logger.debug("Usina normalizada. Retomando operação...")
-            return ControleDados()
+            else:
+                logger.debug("Usina normalizada. Retomando operação...")
+                return ControleDados()
 
 class ControleTdaOffline(State):
     def __init__(self, usn, oco, agn, *args, **kwargs):
@@ -229,21 +231,18 @@ class ControleTdaOffline(State):
 
         elif len(self.agn.agendamentos_pendentes()) > 0:
             return ControleAgendamentos()
+        else:
+            flag = self.oco.verificar_condicionadores()
+            if flag == CONDIC_INDISPONIBILIZAR:
+                    return ControleEmergencia()
 
-        elif self.oco.verificar_condicionadores():
-            if self.oco.indisponibilizar:
-                self.oco.indisponibilizar = False
-                return ControleEmergencia()
-
-            elif self.oco.normalizar:
-                self.oco.normalizar = False
+            elif flag == CONDIC_NORMALIZAR:
                 if self.usn.normalizar_usina() == False:
                     return ControleEmergencia() if self.usn.aguardar_tensao() == False else ControleDados()
                 else:
                     return ControleDados()
-
-        else:
-            for ug in self.ugs:
-                ug.controle_cx_espiral()
-                ug.step()
-            return ControleDados()
+            else:
+                for ug in self.ugs:
+                    ug.controle_cx_espiral()
+                    ug.step()
+                    return ControleDados()

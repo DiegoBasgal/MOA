@@ -127,3 +127,24 @@ AGN_LST_BLOQUEIO_UG2 = [
     AGN_UG2_FORCAR_ESTADO_RESTRITO,
     AGN_UG2_TEMPO_ESPERA_RESTRITO
 ]
+
+AGN_STR_DICT = {}
+AGN_STR_DICT[AGN_INDISPONIBILIZAR] = "Indisponibilizar Usina"
+AGN_STR_DICT[AGN_ALTERAR_NV_ALVO] = "Alterar nível alvo"
+AGN_STR_DICT[AGN_ALTERAR_POT_LIMITE_TODAS_AS_UGS] = "Baixar potênica limite da Usina"
+AGN_STR_DICT[AGN_BAIXAR_POT_UGS_MINIMO] = "Baixar potência para limpeza de grades"
+AGN_STR_DICT[AGN_NORMALIZAR_POT_UGS_MINIMO] = "Normalizar potência pós limpeza de grades"
+AGN_STR_DICT[AGN_AGUARDAR_RESERVATORIO] = "Aguardar reservatório"
+AGN_STR_DICT[AGN_NORMALIZAR_ESPERA_RESERVATORIO] = "Normalizar espera do reservatório"
+AGN_STR_DICT[AGN_UG1_ALTERAR_POT_LIMITE] = "Alterar potência limite"
+AGN_STR_DICT[AGN_UG1_FORCAR_ESTADO_DISPONIVEL] = "Forçar estado Disponível"
+AGN_STR_DICT[AGN_UG1_FORCAR_ESTADO_INDISPONIVEL] = "Forçar estado Indisponível"
+AGN_STR_DICT[AGN_UG1_FORCAR_ESTADO_MANUAL] = "Forçar estado Manual"
+AGN_STR_DICT[AGN_UG1_FORCAR_ESTADO_RESTRITO] = "Forçar estado Restrito"
+AGN_STR_DICT[AGN_UG1_TEMPO_ESPERA_RESTRITO] = "Aguardar temporizador para normalização Restrito"
+AGN_STR_DICT[AGN_UG2_ALTERAR_POT_LIMITE] = "Alterar potência limite"
+AGN_STR_DICT[AGN_UG2_FORCAR_ESTADO_DISPONIVEL] = "Forçar estado Disponível"
+AGN_STR_DICT[AGN_UG2_FORCAR_ESTADO_INDISPONIVEL] = "Forçar estado Indisponível"
+AGN_STR_DICT[AGN_UG2_FORCAR_ESTADO_MANUAL] = "Forçar estado Manual"
+AGN_STR_DICT[AGN_UG2_FORCAR_ESTADO_RESTRITO] = "Forçar estado Restrito"
+AGN_STR_DICT[AGN_UG2_TEMPO_ESPERA_RESTRITO] = "Aguardar temporizador para normalização Restrito"

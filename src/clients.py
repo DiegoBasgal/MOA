@@ -64,25 +64,11 @@ class ClpClients:
 
     def open_all(self) -> None:
         logger.debug("[CLP] Iniciando conexões ModBus...")
-        if not self.clp_dict["clp_moa"].open():
-            raise ModBusClientFail(self.clp_dict["clp_moa"])
-        if not self.clp_dict["clp_usn"].open():
-            raise ModBusClientFail(self.clp_dict["clp_usn"])
-        if not self.clp_dict["clp_tda"].open():
-            raise ModBusClientFail(self.clp_dict["clp_tda"])
-        if not self.clp_dict["clp_ug1"].open():
-            raise ModBusClientFail(self.clp_dict["clp_ug1"])
-        if not self.clp_dict["clp_ug2"].open():
-            raise ModBusClientFail(self.clp_dict["clp_ug2"])
-        logger.debug("[CLP] Conexão inciada.")
+        raise [ModBusClientFail(clp) if not clp.open() else logger.debug("[CLP] Conexão inciada.") for clp in self.clp_dict.values()]
 
     def close_all(self) -> None:
         logger.debug("[CLP] Encerrando conexões ModBus...")
-        self.clp_dict["clp_moa"].close()
-        self.clp_dict["clp_usn"].close()
-        self.clp_dict["clp_tda"].close()
-        self.clp_dict["clp_ug1"].close()
-        self.clp_dict["clp_ug2"].close()
+        [clp.close() for clp in self.clp_dict.values()]
         logger.debug("[CLP] Conexão encerrada.")
 
     def ping_clps(self) -> None:

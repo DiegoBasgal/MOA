@@ -8,20 +8,21 @@ from pyModbusTCP.client import ModbusClient
 logger = logging.getLogger("__main__")
 
 class LeituraBase:
-    def __init__(self, descr: str) -> None:
-        self.__descr = descr
-        self.__valor = None
+    def __init__(self, reg: dict, clp: ModbusClient, descr: str) -> None:
+        self.__reg = reg
+        self.__clp = clp
+        self.__descr = reg.keys()
 
     def __str__(self):
-        return f"Leitura {self.__descr}, Valor: {self.valor}, Raw: {self.raw}"
+        return f"[LER] Registrador: {self.descr}, Leitura: {self.valor} | Raw: {self.raw}"
 
     @property
     def valor(self):
-        raise NotImplementedError("Deve ser implementado na classe herdeira.")
+        raise NotImplementedError("[LER] Deve ser implementado na classe herdeira.")
 
     @property
     def raw(self):
-        raise NotImplementedError("Deve ser implementado na classe herdeira.")
+        raise NotImplementedError("[LER] Deve ser implementado na classe herdeira.")
 
     @property
     def descr(self) -> str:
@@ -30,54 +31,42 @@ class LeituraBase:
 class LeituraModbus(LeituraBase):
     def __init__(
         self,
-        descr: str,
-        modbus_client: ModbusClient,
-        registrador: int,
-        escala: float = 1,
-        fundo_de_escala: float = 0,
-        op: int = 3,
+        reg: dict,
+        clp: ModbusClient,
+        escala: float=1,
+        fundo_escala: float=0,
+        op: int=3,
+        descr: str=None,
     ):
-        super().__init__(descr)
-        self.__descr = descr
-        self.__modbus_client = modbus_client
-        self.__registrador = registrador
+        super().__init__(reg, clp, descr)
         self.__escala = escala
-        self.__fundo_de_escala = fundo_de_escala
+        self.__fundo_escala = fundo_escala
         self.__op = op
 
     @property
     def valor(self) -> float:
-        return (self.raw * self.__escala) + self.__fundo_de_escala
+        return (self.raw * self.__escala) + self.__fundo_escala
 
     @property
     def raw(self) -> int:
         try:
-            if self.__modbus_client.open():
-                if self.__op == 3:
-                    aux = self.__modbus_client.read_holding_registers(self.__registrador)[0]
-                elif self.__op == 4:
-                    aux = self.__modbus_client.read_input_registers(self.__registrador)[0]
-                if aux is not None:
-                    return aux
-                else:
-                    return 0
-            else:
-                raise ConnectionError("Erro na conexão modbus.")
-        except:
+            if self.__op == 3:
+                aux = self.__clp.read_holding_registers(self.__reg)[0]
+            elif self.__op == 4:
+                aux = self.__clp.read_input_registers(self.__reg)[0]
+            return aux if aux is not None else 0
+        except ConnectionError("[LER] Erro na conexão modbus"):
             return 0
 
 class LeituraModbusCoil(LeituraBase):
     def __init__(
         self,
-        descr: str,
-        modbus_client: ModbusClient,
-        registrador: int,
-        invertido: bool = False,
+        reg: dict,
+        clp: ModbusClient,
+        invertido: bool=False,
+        descr: str=None,
     ):
-        super().__init__(descr)
-        self.__descr = descr
-        self.__modbus_client = modbus_client
-        self.__registrador = registrador
+        super().__init__(reg, clp, descr)
         self.__invertido = invertido
 
     @property
@@ -90,36 +79,30 @@ class LeituraModbusCoil(LeituraBase):
     @property
     def raw(self) -> int:
         try:
-            if self.__modbus_client.open():
-                aux = self.__modbus_client.read_discrete_inputs(self.__registrador)[0]
-                if aux is not None:
-                    return aux
-                else:
-                    return 0
-            else:
-                raise ConnectionError("Erro na conexão modbus.")
-        except:
+            aux = self.__clp.read_discrete_inputs(self.__reg)[0]
+            return aux if aux is not None else 0
+        except ConnectionError("[LER] Erro na conexão modbus"):
             return 0
 
 class LeituraModbusBit(LeituraModbus):
     def __init__(
         self,
-        descr: str,
-        modbus_client: ModbusClient,
-        registrador: int,
-        bit: int,
-        invertido: bool = False,
+        reg: dict,
+        clp: ModbusClient,
+        bit: int=None,
+        invertido: bool=False,
+        descr: str=None,
     ):
-        super().__init__(descr, modbus_client, registrador)
+        super().__init__(reg, clp, descr)
         self.__bit = bit
         self.__invertido = invertido
 
     @property
     def valor(self) -> bool:
-        aux = self.raw & 2**self.__bit
-        if self.__invertido:
-            aux = not aux
-        return aux
+        return not(self.raw & 2**self.__bit) if self.__invertido else self.raw & 2**self.__bit
+
+
+# AVALIAR
 
 class LeituraDelta(LeituraBase):
     def __init__(
@@ -144,10 +127,10 @@ class LeituraDelta(LeituraBase):
 class LeituraSoma(LeituraBase):
     def __init__(
         self,
-        descr: str,
         leitura_A: LeituraBase,
         leitura_B: LeituraBase,
         min_is_zero=True,
+        descr: str=None,
     ):
         super().__init__(descr)
         self.__leitura_A = leitura_A

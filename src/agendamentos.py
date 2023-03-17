@@ -10,7 +10,8 @@ from conector import *
 logger = logging.getLogger("__main__")
 
 class Agendamentos:
-    def __init__(self, cfg=None, db: ConectorBancoDados=None, usn: Usina=None, ugs: list([UnidadeDeGeracao])=None):
+    def __init__(self, cfg=None, db: ConectorBancoDados=None, usn: Usina=None, ugs: list[UnidadeDeGeracao]=None):
+        #VERIFICAÇÃO DE ARGUMENTOS
         if not cfg:
             logger.warning("[AGN] Não foi possível carregar o arquivo de configuração \"cfg.json\".")
             raise ValueError
@@ -23,21 +24,18 @@ class Agendamentos:
         else:
             self.db = db
 
-        if not usn:
-            logger.warning("[AGN] Não foi possível carregar a instância da classe Usina.")
-            raise ReferenceError
+        if not ugs or not usn:
+            logger.warning("[AGN] Não foi possível instâncias da Usina, Unidades de Geração.")
+            raise ImportError
         else:
             self.usn = usn
-
-        if not ugs:
-            logger.warning("[AGN] Não foi possível obter lista de Unidades de Geração.")
-            raise ReferenceError
-        else:
             self.ugs = ugs
             self.ug1 = ugs[0]
             self.ug2 = ugs[1]
 
+        # VARIÁVEIS PÚBLICAS
         self.agn_atrasados: int = 0
+
         self.segundos_passados: datetime
         self.segundos_adiantados: datetime
 
@@ -52,7 +50,9 @@ class Agendamentos:
         else:
             i = len(agendamentos)
 
-        logger.debug(f"[AGN] Data: {agendamentos[i-1][1].strftime('%Y-%m-%d %H:%M:%S')}\nCriado por: {agendamentos[i-1][6]}\nComando: {agendamentos[i-1][3]}")
+        logger.debug(f"[AGN] Data: {agendamentos[i-1][1].strftime('%Y-%m-%d %H:%M:%S')}")
+        logger.debug(f"      Criado por: {agendamentos[i-1][6]}")
+        logger.debug(f"      Comando: {AGN_STR_DICT[agendamentos[i-1][3]] if agendamentos[i-1][3] in AGN_STR_DICT else 'Inexistente'}")
 
         self.agendamentos_iguais(agendamentos)
 
@@ -76,7 +76,7 @@ class Agendamentos:
                     return False
 
                 self.db.update_agendamento(int(agendamento[0]), 1)
-                logger.info(f"[AGN] O agendamento: {agendamento[0]} - {agendamento[5]} foi executado.")
+                logger.info(f"[AGN] O agendamento: {AGN_STR_DICT[agendamentos[i-1][3]] if agendamentos[i-1][3] in AGN_STR_DICT else 'Inexistente'} - {agendamento[5]} foi executado.")
 
     def agendamentos_pendentes(self) -> list:
         try:
@@ -147,11 +147,11 @@ class Agendamentos:
         return False
 
     def agendamentos_sem_efeito(self, agendamento) -> bool:
-        if self.usn.get_modo_autonomo and not self.db.get_executabilidade(agendamento[3])["executavel_em_autmoatico"]:
+        if self.usn.modo_autonomo and not self.db.get_executabilidade(agendamento[3])["executavel_em_autmoatico"]:
             self.db.update_agendamento(agendamento[0], True, obs="Este agendamento não tem efeito com o módulo em modo autônomo. Executado sem realizar nenhuma ação")
             return True
 
-        if not self.usn.get_modo_autonomo and not self.db.get_executabilidade(agendamento[3])["executavel_em_manual"]:
+        if not self.usn.modo_autonomo and not self.db.get_executabilidade(agendamento[3])["executavel_em_manual"]:
             self.db.update_agendamento(agendamento[0], True, obs="Este agendamento não tem efeito com o módulo em modo manual. Executado sem realizar nenhuma ação")
             return True
 
@@ -161,7 +161,8 @@ class Agendamentos:
         if agendamento[3] == AGN_INDISPONIBILIZAR:
             try:
                 logger.info("[AGN] Indisponibilizando a usina via agendamento.")
-                for ug in self.ugs: ug.forcar_estado_indisponivel()
+                for ug in self.ugs: 
+                    ug.forcar_estado_indisponivel()
 
                 while (not self.ug1.etapa_atual == UG_PARADA and not self.ug2.etapa_atual == UG_PARADA):
                     self.usn.ler_valores()
@@ -169,7 +170,7 @@ class Agendamentos:
                     sleep(10)
                 self.usn.acionar_emergencia()
                 logger.debug("[AGN] Emergência pressionada após indizponibilização agendada mudando para modo manual para evitar normalização automática.")
-                self.usn.entrar_em_modo_manual()
+                self.usn.modo_autonomo = False
             except Exception as e:
                 logger.exception(f"[AGN] Houve um erro ao excutar o agendamento de indisponibilização da usina. Exception: \"{repr(e)}\"")
                 logger.exception(f"[AGN] Traceback: {traceback.print_stack}")
@@ -232,7 +233,6 @@ class Agendamentos:
             try:
                 novo = float(agendamento[5].replace(",", "."))
                 self.cfg["pot_maxima_ug1"] = novo
-                self.ug1.pot_disponivel = novo
             except Exception:
                 logger.exception(f"[AGN] Valor inválido no agendamento: {agendamento[0]} ({agendamento[3]} é inválido)")
                 return False
@@ -268,7 +268,6 @@ class Agendamentos:
             try:
                 novo = float(agendamento[5].replace(",", "."))
                 self.cfg["pot_maxima_ug2"] = novo
-                self.ug2.pot_disponivel = novo
             except Exception as e:
                 logger.exception(f"[AGN] Valor inválido no agendamento: {agendamento[0]} ({agendamento[3]} é inválido)")
                 return False
@@ -305,7 +304,6 @@ class Agendamentos:
                 novo = float(agendamento[5].replace(",", "."))
                 for ug in self.ugs:
                     self.cfg[f"pot_maxima_ug{ug.id}"] = novo
-                    ug.pot_disponivel = novo
             except Exception:
                 logger.exception(f"[AGN] Valor inválido no agendamento: {agendamento[0]} ({agendamento[3]} é inválido)")
                 return False

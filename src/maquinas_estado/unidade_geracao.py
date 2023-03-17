@@ -1,5 +1,4 @@
 import logging
-import traceback
 
 from time import sleep, time
 from threading import Thread
@@ -12,17 +11,17 @@ logger = logging.getLogger("__main__")
 
 class State:
     def __init__(self, parent: UnidadeDeGeracao=None, ocorrencias: OcorrenciasUg=None):
-        if not parent:
-            logger.error("[UG-SM] Houve um erro ao importar a instância da Unidade de Geração")
-            raise ReferenceError
+        # VERIFICAÇÃO DE ARGUENTOS
+        if not parent or not ocorrencias:
+            logger.error("[UG-SM] Houve um erro ao importar as classes Unidade de Geração e Ocorrências")
+            raise ImportError
         else:
             self.parent = parent
-
-        if not ocorrencias:
-            logger.error("[UG-SM] Houve um erro ao importar a classe de Ocorrências.")
-            raise ReferenceError
-        else:
             self.oco = ocorrencias
+
+        # VARIÁVEIS PRIVADAS
+        self.borda_trips: bool = False
+        self.borda_parar: bool = False
 
     def step(self) -> object:
         pass
@@ -39,9 +38,17 @@ class State:
             self.parent.reconhece_reset_alarmes()
             return True
 
+    def bloquear_ug(self) -> None:
+        if self.parent.etapa_atual == UG_PARADA and not self.borda_trips: 
+            self.parent.acionar_trips()
+            self.borda_trips = True
+        elif not self.borda_parar:
+            self.parent.parar()
+            self.borda_parar = True
+
 class StateManual(State):
-    def __init__(self):
-        super().__init__()
+    def __init__(self, parent):
+        super().__init__(parent)
         self.parent.codigo_state = UG_SM_MANUAL
         logger.info(f"[UG{self.parent.id}] Entrando no estado: \"Manual\". Para retornar a operação autônoma, favor agendar na interface web")
 
@@ -50,79 +57,74 @@ class StateManual(State):
         return self
 
 class StateIndisponivel(State):
-    def __init__(self):
-        super().__init__()
+    def __init__(self, parent):
+        super().__init__(parent)
         self.parent.codigo_state = UG_SM_INDISPONIVEL
         logger.info(f"[UG{self.parent.id}] Entrando no estado: \"Indisponível\". Para retornar a operação autônoma, favor agendar na interface web")
 
+        self.borda_trips = True if self.borda_trips else False
+        self.borda_parar = True if self.borda_parar else False
+
     def step(self) -> State:
-        self.parent.acionar_trips() if self.parent.etapa_atual == UG_PARADA else self.parent.parar()
+        self.bloquear_ug()
+        logger.debug(f"[UG{self.parent.id}] Unidade Indisponível.")
         return self
 
 class StateRestrito(State):
-    def __init__(self):
-        super().__init__()
+    def __init__(self, parent):
+        super().__init__(parent)
         self.parent.codigo_state = UG_SM_RESTRITA
-
-        self.release = False
-        self.parar_timer = False
-        self.deve_normalizar = False
-
         logger.info(f"[UG{self.parent.id}] Entrando no estado \"restrito\"")
 
+        self.parar_timer: bool = False
+
+        self.borda_trips = True if self.borda_trips else False
+        self.borda_parar = True if self.borda_parar else False
+
     def step(self) -> State:
-        self.parent.acionar_trips() if self.parent.etapa_atual == UG_PARADA else self.parent.parar()
+        self.bloquear_ug()
+        self.oco.controle_limites_operacao()
+        flag = self.oco.verificar_condicionadores()
 
-        condicionadores_ativos = [condic for condics in [self.oco.condicionadores_essenciais, self.oco.condicionadores] for condic in condics if condic.ativo]
-        deve_indisponibilizar = [True for condic in condicionadores_ativos if condic.gravidade == CONDIC_INDISPONIBILIZAR]
+        if flag == CONDIC_INDISPONIBILIZAR:
+            logger.warning(f"[UG{self.parent.id}] UG detectou condicionadores com gravidade alta, indisponibilizando UG.")
+            self.parar_timer = True
+            return StateIndisponivel()
 
-        if condicionadores_ativos:
-            if self.parent.norma_agendada and not self.release:
-                logger.info(f"[UG{self.parent.id}] Normalização por tempo acionada -> Tempo definido: {self.parent.tempo_normalizar}")
-                self.release = True
-                Thread(target=lambda: self.espera_normalizar(self.parent.tempo_normalizar)).start()
-            elif not self.release:
-                logger.debug(f"[UG{self.parent.id}] Aguardando normalização sem tempo pré-definido")
+        elif flag == CONDIC_IGNORAR:
+            logger.info(f"[UG{self.parent.id}] A UG não possui mais condicionadores ativos, normalizando e retornando para o estado disponível")
+            self.parar_timer = True
+            self.parent.reconhece_reset_alarmes()
+            return StateDisponivel()
 
-            if deve_indisponibilizar:
-                logger.warning(f"[UG{self.parent.id}] UG detectou condicionadores com gravidade alta, indisponibilizando UG.")
-                self.parent.norma_agendada = False
-                self.parar_timer = True
-                self.release = False
-                return StateIndisponivel(self.parent)
+        if self.parent.normalizacao_agendada:
+            logger.info(f"[UG{self.parent.id}] Normalização por tempo acionada -> Tempo definido: {self.parent.tempo_normalizar}")
+            self.parent.normalizacao_agendada = False
+            Thread(target=lambda: self.espera_normalizar(self.parent.tempo_normalizar)).start()
 
-            elif self.deve_normalizar:
-                return self if self.normalizar_ug() else StateIndisponivel(self.parent)
+        elif self.parar_timer:
+            return self if self.normalizar_ug() else StateIndisponivel()
 
         else:
-            logger.info(f"[UG{self.parent.id}] A UG não possui mais condicionadores ativos, normalizando e retornando para o estado disponível")
-            self.parent.tentativas_de_normalizacao += 1
-            self.parent.norma_agendada = False
-            self.parar_timer = True
-            self.release = False
-            self.parent.reconhece_reset_alarmes()
-            return StateDisponivel(self.parent)
+            logger.debug(f"[UG{self.parent.id}] Aguardando normalização sem tempo pré-definido")
+            return self
 
-        return self
-
-    def espera_normalizar(self, delay):
+    def espera_normalizar(self, delay: int):
         while not self.parar_timer:
             sleep(max(0, time() + delay - time()))
-            break
-        self.release = False
-        self.deve_normalizar = True
+            self.parar_timer = True
+            return
 
 class StateDisponivel(State):
-    def __init__(self):
-        super().__init__()
-
+    def __init__(self, parent):
+        super().__init__(parent)
         self.parent.codigo_state = UG_SM_DISPONIVEL
+        logger.info(f"[UG{self.parent.id}] Entrando no estado: \"Disponível\"")
 
-        self.release = False
+        self.borda_trips = False
+        self.borda_parar = False
         self.borda_partindo = False
         self.parent.tentativas_de_normalizacao = 0
-
-        logger.info(f"[UG{self.parent.id}] Entrando no estado: \"Disponível\"")
 
     def step(self) -> State:
         self.oco.controle_limites_operacao()
@@ -130,22 +132,20 @@ class StateDisponivel(State):
 
         if flag == CONDIC_INDISPONIBILIZAR:
             logger.warning(f"[UG{self.parent.id}] Indisponibilizando UG.")
-            return StateIndisponivel(self.parent)
+            return StateIndisponivel()
 
         elif flag == CONDIC_AGUARDAR:
             logger.warning(f"[UG{self.parent.id}] Entrando no estado Restrito até normalização da condição.")
-            return StateRestrito(self.parent)
+            return StateRestrito()
 
         elif flag == CONDIC_NORMALIZAR:
-            return self if self.normalizar_ug() else StateIndisponivel(self.parent)
+            return self if self.normalizar_ug() else StateIndisponivel()
 
         else:
             logger.debug(f"[UG{self.parent.id}] Etapa atual: \"{self.parent.etapa_atual}\" / Etapa alvo: \"{self.parent.etapa_alvo}\"")
-            logger.debug(f"[UG{self.parent.id}] Lendo condicionadores_atenuadores")
 
             if self.parent.limpeza_grade:
-                self.parent.setpoint_minimo = self.parent.cfg["pot_limpeza_grade"]
-                self.parent.setpoint = self.parent.setpoint_minimo
+                self.parent.setpoint = self.parent.setpoint_minimo = self.parent.cfg["pot_limpeza_grade"]
             else:
                 self.atenuacao_carga()
                 self.controle_etapas()
@@ -153,12 +153,9 @@ class StateDisponivel(State):
             return self
 
     def atenuacao_carga(self) -> None:
-        atenuacao = 0
-        for condic in self.oco.condicionadores_atenuadores:
-            atenuacao = max(atenuacao, condic.valor)
-            logger.debug(f"[UG{self.parent.id}] Atenuador \"{condic.descr}\" -> Atenuação: {atenuacao} / Leitura: {condic.leitura.valor}")
+        logger.debug(f"[UG{self.parent.id}] Atenuador \"{condic.descr}\" -> Atenuação: {max(0, condic.valor)} / Leitura: {condic.leitura}" for condic in self.oco.condicionadores_atenuadores) 
 
-        ganho = 1 - atenuacao
+        ganho = 1 - max(0, [condic.ativo for condic in self.oco.condicionadores_atenuadores])
         aux = self.parent.setpoint
         if (self.parent.setpoint > self.parent.setpoint_minimo) and (self.parent.setpoint * ganho) > self.parent.setpoint_minimo:
             self.parent.setpoint = self.parent.setpoint * ganho
@@ -169,22 +166,15 @@ class StateDisponivel(State):
         logger.debug(f"[UG{self.parent.id}] SP {aux} * GANHO {ganho} = {self.parent.setpoint}")
 
     def verificar_partindo(self) -> None:
-        try:
-            while time() < (time() + 600):
-                if self.parent.etapa_atual == UG_SINCRONIZADA:
-                    logger.debug(f"[UG{self.parent.id}] Unidade sincronizada. Verificar partindo encerrado.")
-                    return
-                elif self.parent.release_timer:
-                    self.release = False
-                    logger.debug(f"[UG{self.parent.id}] MOA entrou em modo manual. Verificar partindo encerrado.")
-                    return
-            self.release = False
-            self.parent.clp_usn.write_single_coil([f"REG_UG{self.parent.id}_ComandosDigitais_MXW_EmergenciaViaSuper"], [1])
-            logger.debug(f"[UG{self.parent.id}] Verificação de partida estourou o timer, acionando normalização.")
-
-        except Exception as e:
-            logger.exception(f"[UG{self.parent.id}] Erro na execução do timer de verificação de partida. Exception: \"{repr(e)}\"")
-            logger.exception(f"[UG{self.parent.id}] Traceback: {traceback.print_stack}")
+        while time() < (time() + 600):
+            if self.parent.etapa_atual == UG_SINCRONIZADA or self.parent.release_timer:
+                logger.debug(f"[UG{self.parent.id}] {'Modo manual ativado' if self.parent.release_timer else 'Unidade Sincronizada'}. Verificação de partida encerrada.")
+                return
+        logger.debug(f"[UG{self.parent.id}] Verificação de partida estourou o timer, acionando normalização.")
+        self.borda_partindo = False
+        self.parent.clp_usn.write_single_coil([f"UG{self.parent.id}_CD_EmergenciaViaSuper"], [1])
+        sleep(1)
+        self.parent.clp_usn.write_single_coil([f"UG{self.parent.id}_CD_EmergenciaViaSuper"], [0])
 
     def controle_etapas(self) -> None:
         # PARANDO
@@ -194,7 +184,7 @@ class StateDisponivel(State):
 
         # SINCRONIZANDO
         elif self.parent.etapa_alvo == UG_SINCRONIZADA and not self.parent.etapa_atual == UG_SINCRONIZADA:
-            if not self.release and not self.borda_partindo:
+            if not self.borda_partindo:
                 logger.debug(f"[UG{self.parent.id}] Iniciando o timer de verificação de partida")
                 Thread(target=lambda: self.verificar_partindo()).start()
                 self.borda_partindo = True
@@ -209,7 +199,6 @@ class StateDisponivel(State):
 
         # SINCRONIZADA
         elif self.parent.etapa_atual == UG_SINCRONIZADA:
-            self.release = False
             self.borda_partindo = False
             if not self.parent.aux_tempo_sincronizada:
                 self.parent.aux_tempo_sincronizada = self.parent.get_time()
@@ -219,5 +208,6 @@ class StateDisponivel(State):
 
             self.parent.parar() if self.parent.setpoint == 0 else self.parent.enviar_setpoint(self.parent.setpoint)
 
+        # CONTROLE TEMPO SINCRONIZADAS
         if not self.parent.etapa_atual == UG_SINCRONIZADA:
             self.parent.aux_tempo_sincronizada = None
