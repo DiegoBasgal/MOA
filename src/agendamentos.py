@@ -37,11 +37,11 @@ class Agendamentos:
             self.ug1 = ugs[0]
             self.ug2 = ugs[1]
 
-        self.agn_atrasados = 0
-        self.segundos_passados = 0
-        self.segundos_adiantados = 0
+        self.agn_atrasados: int = 0
+        self.segundos_passados: datetime
+        self.segundos_adiantados: datetime
 
-    def get_time(self) -> object:
+    def get_time(self) -> datetime:
         return datetime.now(pytz.timezone("Brazil/East")).replace(tzinfo=None)
 
     def verificar_agendamentos(self) -> bool:

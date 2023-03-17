@@ -1,3 +1,5 @@
+# TODO melhorar os nomes de registradores para ficarem mais compactos
+
 MOA = {
     "REG_MOA_OUT_STATUS": 9,
     "REG_SM_STATE": 10,

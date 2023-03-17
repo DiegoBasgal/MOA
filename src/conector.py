@@ -95,6 +95,7 @@ class ConectorCampo:
 
     def get_falha52L(self) -> bool:
         try:
+            # TODO tentar automatizar criando um lista ou dicionario com os regs e retorno esperado e passar um for e compara caso flag 
             flags = 0
             logger.info("[CON] Foram detectadas Flags de bloqueio ao abrir o Dj52L.")
             if self.clp_usn.read_discrete_inputs(SA["REG_SA_RetornosDigitais_MXR_DJ1_FalhaInt"])[0] == 1:

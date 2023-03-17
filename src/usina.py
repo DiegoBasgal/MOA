@@ -80,13 +80,13 @@ class Usina:
 
         self.modo_de_escolha_das_ugs: int = 0
 
-        self.controle_p: float = 0.0
-        self.controle_i: float = 0.0
-        self.controle_d: float = 0.0
+        self.controle_p: float = 0
+        self.controle_i: float = 0
+        self.controle_d: float = 0
 
-        self.erro_nv: float = 0.0
-        self.erro_nv_anterior: float = 0.0
-        self.nv_montante_recente: float = 0.0
+        self.erro_nv: float = 0
+        self.erro_nv_anterior: float = 0
+        self.nv_montante_recente: float = 0
 
         # Booleanas
         self.borda_emerg: bool = False
