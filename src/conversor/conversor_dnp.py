@@ -3,39 +3,38 @@ import logging
 import OpenOPC
 import traceback
 
-from reg import BAY
+from reg import BAY, TESTE
 
 logger = logging.getLogger("__main__")
 
 class ConversorOpc:
-    def __init__(self, opc=None, dados: dict[str, bool]=None) -> None:
-        if not dados or opc:
+    def __init__(self, opc=None, dados: dict=None) -> None:
+        if not dados or not opc:
             logger.warning("Não foi possível iniciar os argumentos da classe. Encerrando conversor...")
-            sys.exit(1)
+            logger.debug(f"Tracebak: {traceback.print_stack}")
         else:
             self.dados = dados
             self.opc: OpenOPC.client = opc
         
         self._antigo: dict[str, bool] = {}
-
         self.carregar_dados_iniciais()
 
     @property
-    def antigo(self) -> dict[str, bool]:
+    def antigo(self) -> dict:
         return self._antigo
    
     @antigo.setter
-    def antigo(self, val:  dict[str, bool]) -> None:
+    def antigo(self, val:  dict) -> None:
         self._antigo = val
 
     def detectar_mudanca(self) -> list:
         valores = []
         try:
-            for (k1, r), (k2, v2) in zip(BAY.items(), self.antigo.items()):
-                leitura = self.opc.read(BAY[k1], group=0)
-                if BAY[k1] == self.antigo[k2] and self.antigo[v2] != leitura:
+            for (k1, r), (k2, v2) in zip(TESTE.items(), self.antigo.items()):
+                leitura = self.opc.read(TESTE[k1], group=0)
+                if TESTE[k1] == self.antigo[k2] and self.antigo[v2] != leitura:
                     logger.debug("Mudança detectada!")
-                    logger.debug(f"Leitura -> BAY: {BAY[k1]}, Valor: {self.antigo[v2]} -> {leitura}")
+                    logger.debug(f"Leitura -> TESTE: {TESTE[k1]}, Valor: {self.antigo[v2]} -> {leitura}")
                     self.antigo[v2] = leitura
                     key = self.registar_mudanca(self.antigo[k2], self.antigo[v2])
                     valores.append(key)
@@ -57,11 +56,8 @@ class ConversorOpc:
 
     def carregar_dados_iniciais(self) -> None:
         logger.debug("Carregando dados inciais...")
-        try:
-            for (k1, r), (k2, v2) in zip(BAY.items(), self.antigo.items()):
-                self.antigo[k2] == BAY[k1]
-                self.antigo[v2] == self.opc.read(BAY[k1], group=0)
-                logger.debug(f"Dado: {self.antigo[k2]} -> Valor: {self.antigo[k2]}, carregado.")
-
-        except Exception:
-            logger.exception(f"Erro ao carregar valor iniciais. Traceback: {traceback.print_stack}")
+        for k, v in zip(TESTE.items(), self.antigo.items()):
+            logger.debug("entrei")
+            self.antigo[k] = TESTE[k]
+            self.antigo[k][0] = self.opc.read(TESTE[k], group=0)
+            logger.debug(f"Dado: {self.antigo[k]} -> Valor: {self.antigo[k][v]}, carregado.")

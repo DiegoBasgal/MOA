@@ -40,8 +40,12 @@ BAY = {
     "RESERVA": "SE_COMUNICACAO.RELE_BAY.DNP.BI_10", # bit 10 OUT105
     "RESERVA": "SE_COMUNICACAO.RELE_BAY.DNP.BI_11", # bit 11 OUT106
     "RESERVA": "SE_COMUNICACAO.RELE_BAY.DNP.BI_12", # bit 12 OUT107
+}
 
-
-
-    ""
+TESTE = {
+    "TESTE_COIL1": "Driver1.Pasta1.Coil",
+    "TESTE_COIL2": "Driver1.Pasta1.Coil2",
+    "TESTE_COIL3": "Driver1.Pasta1.Coil3",
+    "TESTE_COIL4": "Driver1.Pasta1.Coil4",
+    "TESTE_COIL5": "Driver1.Pasta1.Coil5"
 }
