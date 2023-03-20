@@ -1,0 +1,35 @@
+{
+    "DJ_LINHA_FECHADO": false,
+    "DJ_MOLA_CARREGADA": false,
+
+    "BT_ABRE_DJ": false,
+    "BT_FECHA_DJ": false,
+
+    "SECC_FECHADA": false,
+    "FECHA_DJ": false,
+    "ABRE_DJ": false,
+    "FALHA_ABERTURA_DJL": false,
+
+    "SOBRECORR_INST_FASE_Z1": false,
+    "SOBRECORR_INST_FASE_Z2": false,
+    "SOBRECORR_INST_FASE_Z3": false,
+    "SOBRECORR_INST_SEQ_NEGATIVA_Z1": false,
+    "SOBRECORR_INST_SEQ_NEGATIVA_Z2": false,
+    "SOBRECORR_INST_SEQ_NEGATIVA_Z3": false,
+    "SOBRECORR_TEMP_FASE": false,
+    "SOBRECORR_RESID_TEMP": false,
+    "SOBRECORR_RESID_INST": false,
+
+    "ENVIO_TRANSFER_TRIP_RELE_SE": false,
+    "RECEB_TRANSFER_TRIP_RELE_SE_BFDJ": false,
+    "RECEB_TRANSFER_TRIP_RELE_SE_LOC_67P2": false,
+    "RECEB_TRANSFER_TRIP_RELE_BAY": false,
+    
+    "ID_BARRA_MORTA": false,
+    "ID_BARRA_VIVA": false,
+    "ID_LINHA_MORTA": false,
+    "ID_LINHA_VIVA": false,
+
+    "CMD_FECHA_DJ": false,
+    "CMD_ABRE_DJ": false
+}
