@@ -16,23 +16,23 @@ class ConversorOpc:
             self.dados = dados
             self.opc: OpenOPC.client = opc
         
-        self._antigo: dict[str, bool] = {}
+        self._antigo = {}
         self.carregar_dados_iniciais()
 
     @property
-    def antigo(self) -> dict:
+    def antigo(self) -> dict[str, bool]:
         return self._antigo
    
     @antigo.setter
-    def antigo(self, val:  dict) -> None:
+    def antigo(self, val:  dict[str, bool]) -> None:
         self._antigo = val
 
     def detectar_mudanca(self) -> list:
         valores = []
         try:
-            for (k1, r), (k2, v2) in zip(TESTE.items(), self.antigo.items()):
-                leitura = self.opc.read(TESTE[k1], group=0)
-                if TESTE[k1] == self.antigo[k2] and self.antigo[v2] != leitura:
+            for (n1, r), (n2, v) in zip(TESTE.items(), self.antigo.items()):
+                leitura = self.opc.read(TESTE[r], group='Group0')[0]
+                if TESTE == self.antigo and self.antigo[v2] != leitura:
                     logger.debug("Mudança detectada!")
                     logger.debug(f"Leitura -> TESTE: {TESTE[k1]}, Valor: {self.antigo[v2]} -> {leitura}")
                     self.antigo[v2] = leitura
@@ -48,16 +48,15 @@ class ConversorOpc:
             return []
 
     def registar_mudanca(self, reg, val) -> str:
-        for key, val in self.dados.items():
-            if self.dados[key] == reg and self.dados[val] != val:
-                self.dados[val] = val
-                logger.info(f"[JSON] Dado: {self.dados[key]}, alterado. Valor: {self.dados[val]}")
-                return self.dados[key]
+        for n, v in self.dados.items():
+            if self.dados == reg and self.dados[n] != val:
+                self.dados[n] = val
+                logger.info(f"[JSON] Dado: {self.dados[n]}, alterado. Valor: {self.dados[n]}")
+                return self.dados[n]
 
     def carregar_dados_iniciais(self) -> None:
         logger.debug("Carregando dados inciais...")
-        for k, v in zip(TESTE.items(), self.antigo.items()):
-            logger.debug("entrei")
-            self.antigo[k] = TESTE[k]
-            self.antigo[k][0] = self.opc.read(TESTE[k], group=0)
-            logger.debug(f"Dado: {self.antigo[k]} -> Valor: {self.antigo[k][v]}, carregado.")
+        for n, r in TESTE.items():
+            self.antigo = n
+            self.antigo[n] = self.opc.read(TESTE[r], group='Group0')[0]
+            logger.debug(f"Dado: {self.antigo} -> Valor: {self.antigo[n]}, carregado.")

@@ -43,9 +43,9 @@ BAY = {
 }
 
 TESTE = {
-    "TESTE_COIL1": "Driver1.Pasta1.Coil",
-    "TESTE_COIL2": "Driver1.Pasta1.Coil2",
-    "TESTE_COIL3": "Driver1.Pasta1.Coil3",
-    "TESTE_COIL4": "Driver1.Pasta1.Coil4",
-    "TESTE_COIL5": "Driver1.Pasta1.Coil5"
+    "TESTE_COIL1": "Driver1.Pasta1.Coil.Value",
+    "TESTE_COIL2": "Driver1.Pasta1.Coil2.Value",
+    "TESTE_COIL3": "Driver1.Pasta1.Coil3.Value",
+    "TESTE_COIL4": "Driver1.Pasta1.Coil4.Value",
+    "TESTE_COIL5": "Driver1.Pasta1.Coil5.Value",
 }
