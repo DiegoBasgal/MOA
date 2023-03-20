@@ -188,8 +188,8 @@ if __name__ == "__main__":
             try:
                 logger.info("Inciando máquina de estados do MOA.")
 
-                # incia_sm = State(sd, cfg, usn, agn, oco, db, ugs)
-                sm = StateMachine(initial_state=Pronto(sd, cfg, usn, agn, oco, db, ugs))
+                State(sd, cfg, usn, agn, oco, db, ugs)
+                sm = StateMachine(initial_state=Pronto())
 
             except Exception:
                 logger.exception(f"Erro ao instanciar máquina de estados do MOA. Tentando novamente em \"{timeout}s\" (Tentativa: {n_tentativa}/3).")
@@ -206,13 +206,14 @@ if __name__ == "__main__":
 
             t_i = time()
             sm.exec()
-            t_restante = max(30 - (time() - t_i), 0) / ESCALA_DE_TEMPO
+            if usn.estado_moa == MOA_SM_CONTROLE_DADOS:
+                t_restante = max(30 - (time() - t_i), 0) / ESCALA_DE_TEMPO
 
-            if t_restante == 0:
-                logger.warning("\n\"ATENÇÃO!\"")
-                logger.warning("O ciclo está demorando mais que o permitido!")
-                logger.warning("\"ATENÇÃO!\"\n")
-            sleep(t_restante)
+                if t_restante == 0:
+                    logger.warning("\n\"ATENÇÃO!\"")
+                    logger.warning("O ciclo está demorando mais que o permitido!")
+                    logger.warning("\"ATENÇÃO!\"\n")
+                sleep(t_restante)
 
         except Exception as e:
             logger.exception(f"Houve um erro na execução do loop principal da main do MOA. Exception: {repr(e)}")

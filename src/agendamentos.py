@@ -64,15 +64,11 @@ class Agendamentos:
                 return False
 
             if self.segundos_adiantados <= 60 and not bool(agendamento[4]):
-                logger.info(f"[AGN] Executando gendamento: {agendamento[0]} - Comando: {agendamento[3]} - Data: {agendamento[9]}.")
+                logger.info(f"[AGN] Executando agendamento: {agendamento[0]} - Comando: {agendamento[3]} - Data: {agendamento[9]}.")
 
-                if self.agendamentos_sem_efeito(agendamento):
-                    return False
+                self.agendamentos_sem_efeito(agendamento)
 
-                if not self.agendamentos_usina(agendamento):
-                    return False
-
-                if not self.agendamentos_ugs(agendamento):
+                if not self.agendamentos_usina(agendamento) or not self.agendamentos_ugs(agendamento):
                     return False
 
                 self.db.update_agendamento(int(agendamento[0]), 1)
@@ -126,36 +122,32 @@ class Agendamentos:
             elif agendamento[3] == AGN_ALTERAR_NV_ALVO or AGN_ALTERAR_POT_LIMITE_TODAS_AS_UGS or AGN_BAIXAR_POT_UGS_MINIMO or AGN_NORMALIZAR_POT_UGS_MINIMO or AGN_AGUARDAR_RESERVATORIO or AGN_NORMALIZAR_ESPERA_RESERVATORIO:
                 logger.info("[AGN] Não foi possível executar o agendamento! Favor re-agendar")
                 self.db.update_agendamento(int(agendamento[0]), 1, obs="AGENDAMENTO NÃO EXECUTADO POR CONTA DE ATRASO!")
-                return True
+                return False
 
             elif agendamento[3] in AGN_LST_BLOQUEIO_UG1:
                 logger.info("[AGN] Indisponibilizando UG1")
                 self.ug1.forcar_estado_indisponivel()
                 self.db.update_agendamento(int(agendamento[0]), 1, obs="AGENDAMENTO NÃO EXECUTADO POR CONTA DE ATRASO!")
-                return True
+                return False
 
             elif agendamento[3] in AGN_LST_BLOQUEIO_UG2:
                 logger.info("[AGN] Indisponibilizando UG2")
                 self.ug2.forcar_estado_indisponivel()
                 self.db.update_agendamento(int(agendamento[0]), 1, obs="AGENDAMENTO NÃO EXECUTADO POR CONTA DE ATRASO!")
-                return True
+                return False
 
             else:
                 logger.info("[AGN] Agendamento não encontrado! Retomando operação...")
-                return True
+                return False
 
         return False
 
-    def agendamentos_sem_efeito(self, agendamento) -> bool:
-        if self.usn.modo_autonomo and not self.db.get_executabilidade(agendamento[3])["executavel_em_autmoatico"]:
+    def agendamentos_sem_efeito(self, agendamento) -> None:
+        if self.usn.modo_autonomo and not self.db.get_executabilidade(agendamento[3])["executavel_em_automatico"]:
             self.db.update_agendamento(agendamento[0], True, obs="Este agendamento não tem efeito com o módulo em modo autônomo. Executado sem realizar nenhuma ação")
-            return True
 
         if not self.usn.modo_autonomo and not self.db.get_executabilidade(agendamento[3])["executavel_em_manual"]:
             self.db.update_agendamento(agendamento[0], True, obs="Este agendamento não tem efeito com o módulo em modo manual. Executado sem realizar nenhuma ação")
-            return True
-
-        return False
 
     def agendamentos_usina(self, agendamento) -> bool:
         if agendamento[3] == AGN_INDISPONIBILIZAR:

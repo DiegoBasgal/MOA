@@ -224,11 +224,12 @@ class Usina:
                 if self.clp_moa.read_coils(MOA["IN_HABILITA_AUTO"])[0] == 1:
                     self.clp_moa.write_single_coil(MOA["IN_HABILITA_AUTO"], [1])
                     self.clp_moa.write_single_coil(MOA["IN_DESABILITA_AUTO"], [0])
-                    self.modo_autonomo = 1
+                    self.modo_autonomo = True
+
                 elif self.clp_moa.read_coils(MOA["IN_DESABILITA_AUTO"])[0] == 1:
                     self.clp_moa.write_single_coil(MOA["IN_HABILITA_AUTO"], [0])
                     self.clp_moa.write_single_coil(MOA["IN_DESABILITA_AUTO"], [1])
-                    self.modo_autonomo = 0
+                    self.modo_autonomo = False
 
                 for ug in self.ugs:
                     if self.clp_moa.read_coils(MOA[f"OUT_BLOCK_UG{ug.id}"])[0] == 1:
@@ -262,12 +263,10 @@ class Usina:
             if self.clp_moa.read_coils(MOA["IN_HABILITA_AUTO"])[0] == 1:
                 self.clp_moa.write_single_coil(MOA["IN_HABILITA_AUTO"], [1])
                 self.clp_moa.write_single_coil(MOA["IN_DESABILITA_AUTO"], [0])
-                self.modo_autonomo = True
 
             if self.clp_moa.read_coils(MOA["IN_DESABILITA_AUTO"])[0] == 1:
                 self.clp_moa.write_single_coil(MOA["IN_HABILITA_AUTO"], [0])
                 self.clp_moa.write_single_coil(MOA["IN_DESABILITA_AUTO"], [1])
-                self.modo_autonomo = False
 
         except Exception as e:
             logger.exception(f"[USN] Houve um erro ao tentar ler valores modbus no CLP MOA. Exception: \"{repr(e)}\"")
@@ -561,14 +560,15 @@ class Usina:
                 self.controle_i = 0.5
                 self.controle_ie = 0.5
                 self.distribuir_potencia(self.cfg["pot_maxima_usina"])
-                for ug in self.ugs: ug.step()
+                for ug in self.ugs:
+                    ug.step()
 
         # Reservatório abaixo do nível mínimo
-        elif self.nv_montante < self.cfg["nv_minimo"] and not self.aguardando_reservatorio:
+        elif self.nv_montante <= self.cfg["nv_minimo"] and not self.aguardando_reservatorio:
             logger.info("[USN] Nível montante abaixo do mínimo.")
             self.aguardando_reservatorio = True
             self.distribuir_potencia(0)
-            if self.nv_montante_recente < NIVEL_FUNDO_RESERVATORIO:
+            if self.nv_montante_recente <= NIVEL_FUNDO_RESERVATORIO:
                 if not self.clp.ping(self.dict["IP"]["TDA_slave_ip"]):
                     return NV_FLAG_TDAOFFLINE
                 else:
@@ -577,7 +577,7 @@ class Usina:
 
         # Aguardando nível do reservatório
         elif self.aguardando_reservatorio:
-            if self.nv_montante > self.cfg["nv_alvo"]:
+            if self.nv_montante >= self.cfg["nv_alvo"]:
                 logger.debug("[USN] Nível montante dentro do limite de operação.")
                 self.aguardando_reservatorio = False
             else:

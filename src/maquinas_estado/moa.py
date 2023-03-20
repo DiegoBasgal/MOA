@@ -190,13 +190,11 @@ class ControleEmergencia(State):
             logger.warning("Acionado via página WEB, aguardando reset pela aba emergência.")
             while self.usn.db_emergencia:
                 self.usn.atualizar_parametros_db(self.usn.db.get_parametros_usina())
-                if not self.usn.clp_emergencia:
+                if not self.usn.db_emergencia:
                     self.usn.db_emergencia = False
-                    self.usn.db.update_remove_emergencia()
                     return self
-                elif not self.usn.modo_autonomo:
+                if not self.usn.modo_autonomo:
                     self.usn.db_emergencia = False
-                    self.usn.db.update_remove_emergencia()
                     return ControleManual()
 
         else:
@@ -231,6 +229,7 @@ class ControleTdaOffline(State):
 
         elif len(self.agn.agendamentos_pendentes()) > 0:
             return ControleAgendamentos()
+
         else:
             flag = self.oco.verificar_condicionadores()
             if flag == CONDIC_INDISPONIBILIZAR:
@@ -245,4 +244,4 @@ class ControleTdaOffline(State):
                 for ug in self.ugs:
                     ug.controle_cx_espiral()
                     ug.step()
-                    return ControleDados()
+                return ControleDados()

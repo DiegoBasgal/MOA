@@ -39,17 +39,16 @@ class State:
             return True
 
     def bloquear_ug(self) -> None:
-        if self.parent.etapa_atual == UG_PARADA and not self.borda_trips: 
+        if self.parent.etapa_atual == UG_PARADA: 
             self.parent.acionar_trips()
-            self.borda_trips = True
-        elif not self.borda_parar:
-            self.parent.parar()
+        elif not self.borda_parar and self.parent.parar():
             self.borda_parar = True
 
 class StateManual(State):
     def __init__(self, parent):
         super().__init__(parent)
         self.parent.codigo_state = UG_SM_MANUAL
+        self.borda_parar = False
         logger.info(f"[UG{self.parent.id}] Entrando no estado: \"Manual\". Para retornar a operação autônoma, favor agendar na interface web")
 
     def step(self) -> State:
@@ -62,7 +61,6 @@ class StateIndisponivel(State):
         self.parent.codigo_state = UG_SM_INDISPONIVEL
         logger.info(f"[UG{self.parent.id}] Entrando no estado: \"Indisponível\". Para retornar a operação autônoma, favor agendar na interface web")
 
-        self.borda_trips = True if self.borda_trips else False
         self.borda_parar = True if self.borda_parar else False
 
     def step(self) -> State:
@@ -78,7 +76,6 @@ class StateRestrito(State):
 
         self.parar_timer: bool = False
 
-        self.borda_trips = True if self.borda_trips else False
         self.borda_parar = True if self.borda_parar else False
 
     def step(self) -> State:
@@ -121,7 +118,6 @@ class StateDisponivel(State):
         self.parent.codigo_state = UG_SM_DISPONIVEL
         logger.info(f"[UG{self.parent.id}] Entrando no estado: \"Disponível\"")
 
-        self.borda_trips = False
         self.borda_parar = False
         self.borda_partindo = False
         self.parent.tentativas_de_normalizacao = 0
@@ -148,7 +144,8 @@ class StateDisponivel(State):
                 self.parent.setpoint = self.parent.setpoint_minimo = self.parent.cfg["pot_limpeza_grade"]
             else:
                 self.atenuacao_carga()
-                self.controle_etapas()
+
+            self.controle_etapas()
 
             return self
 

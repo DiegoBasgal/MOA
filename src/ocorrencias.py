@@ -118,7 +118,7 @@ class OcorrenciasUsn(Ocorrencias):
 
     def verificar_condicionadores(self) -> int:
         if [condic.ativo for condic in self.condicionadores_essenciais]:
-            condicionadores_ativos = [x for y in [self.condicionadores_essenciais, self.condicionadores] for x in y if x.ativo]
+            condicionadores_ativos = [condic for condics in [self.condicionadores_essenciais, self.condicionadores] for condic in condics if condic.ativo]
 
             self.flag = [CONDIC_NORMALIZAR for condic in condicionadores_ativos if condic.gravidade == CONDIC_NORMALIZAR]
             self.flag = [CONDIC_INDISPONIBILIZAR for condic in condicionadores_ativos if condic.gravidade == CONDIC_INDISPONIBILIZAR]
@@ -301,6 +301,7 @@ class OcorrenciasUg(Ocorrencias):
             logger.exception(f"[OCO-UG{ug.id}] Traceback: {traceback.print_stack}")
 
     def controle_limites_operacao(self, ug: UnidadeDeGeracao) -> None:
+        # TODO adicionar borda no caso de ter disparado a mensagem num tempo pre definido
         ld = self.leitura_dict
         cd = self.condic_dict
 

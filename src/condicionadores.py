@@ -101,6 +101,7 @@ class CondicionadorExponencial(CondicionadorBase):
             return 1 if self.leitura > self.valor_limite else 0
 
 class CondicionadorExponencialReverso(CondicionadorBase):
+    # TODO puxar implementacao de offset mais casas decimais
     def __init__(
             self,
             leitura: LeituraBase,

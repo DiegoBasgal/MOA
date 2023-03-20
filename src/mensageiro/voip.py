@@ -8,7 +8,7 @@ from datetime import datetime
 from urllib.request import Request, urlopen
 
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-from src.conector import DatabaseConnector
+from src.conector import ConectorBancoDados
 
 logger = logging.getLogger(__name__)
 
@@ -34,7 +34,7 @@ lista_de_contatos_padrao = [
 
 def carrega_contatos():
     phonebook = []
-    db = DatabaseConnector()
+    db = ConectorBancoDados()
     parametros = db.get_contato_emergencia()
 
     for i in range(len(parametros)):
