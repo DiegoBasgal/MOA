@@ -67,6 +67,7 @@ class Conversor:
 
                 self.ultimo_autor = autor
                 self.semaforo = VERDE
+                return alterados
 
             else:
                 logger.debug(f"[CNV] O método de escrita está sendo utilizado pelo \"{AUTOR_STR_DCT[OPC_DA] if autor == OPC_UA else AUTOR_STR_DCT[OPC_UA]}\".")
@@ -74,8 +75,7 @@ class Conversor:
                 return self
         else:
             logger.debug(f"[CNV] Não foi possível registrar a mudança pois autor atual ({AUTOR_STR_DCT[autor]}) é o mesmo que o último.")
-            return []
-
+            return alterados
 
 
 class ExternoParaNativo(Conversor):
