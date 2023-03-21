@@ -211,7 +211,7 @@ class Usina:
             if self.modo_autonomo:
                 self.clp_moa.write_single_coil(MOA["OUT_EMERG"], [self.clp_emergencia])
                 self.clp_moa.write_multiple_registers(MOA["OUT_SETPOINT"], [int(sum(ug.setpoint)) for ug in self.ugs])
-                self.clp_moa.write_multiple_registers(MOA["OUT_TARGET_LEVEL"], [int((self.cfg["nv_alvo"] - 820.9) * 1000)])
+                self.clp_moa.write_multiple_registers(MOA["OUT_TARGET_LEVEL"], [int((self.cfg["nv_alvo"] - 800) * 1000)])
 
                 if self.dict["GLB"]["avisado_eletrica"] and not self.borda_emerg:
                     [self.clp_moa.write_single_coil(MOA[f"OUT_BLOCK_UG{ug.id}"], [1]) for ug in self.ugs]
@@ -317,9 +317,9 @@ class Usina:
                 self.controle_d if not self.dict["GLB"]["tda_offline"] else 0,
                 self.controle_ie if not self.dict["GLB"]["tda_offline"] else 0,
                 self.ug1.setpoint,
-                self.ug1.leitura_potencia.valor,
+                self.ug1.leitura_potencia,
                 self.ug2.setpoint,
-                self.ug2.leitura_potencia.valor,
+                self.ug2.leitura_potencia,
                 self.nv_montante_recente if not self.dict["GLB"]["tda_offline"] else 0,
                 self.erro_nv if not self.dict["GLB"]["tda_offline"] else [sum(ug.erro_press_cx) for ug in self.ugs] / 2,
                 1 if self.modo_autonomo else 0,
@@ -509,7 +509,7 @@ class Usina:
         self.__split1 = True if self.ug_operando == 1 else False
         self.__split2 = True if self.ug_operando == 2 else False
 
-        self.controle_ie = [sum(ug.leitura_potencia.valor) / self.cfg["pot_maxima_alvo"] if self.cfg["saida_ie_inicial"] == "auto" else self.cfg["saida_ie_inicial"] for ug in self.ugs]
+        self.controle_ie = [sum(ug.leitura_potencia) / self.cfg["pot_maxima_alvo"] if self.cfg["saida_ie_inicial"] == "auto" else self.cfg["saida_ie_inicial"] for ug in self.ugs]
 
     def controle_potencia(self) -> None:
         logger.debug("-------------------------------------------------------------------------")

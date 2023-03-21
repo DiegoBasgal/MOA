@@ -149,6 +149,8 @@ class StateDisponivel(State):
 
             return self
 
+
+# TODO mudar métodos para dentro da classe da unidade de geração
     def atenuacao_carga(self) -> None:
         logger.debug(f"[UG{self.parent.id}] Atenuador \"{condic.descr}\" -> Atenuação: {max(0, condic.valor)} / Leitura: {condic.leitura}" for condic in self.oco.condicionadores_atenuadores) 
 

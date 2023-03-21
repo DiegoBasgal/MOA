@@ -237,7 +237,8 @@ class ControleTdaOffline(State):
 
             elif flag == CONDIC_NORMALIZAR:
                 if self.usn.normalizar_usina() == False:
-                    return ControleEmergencia() if self.usn.aguardar_tensao() == False else ControleDados()
+                    tensao = self.usn.aguardar_tensao()
+                    return ControleEmergencia() if tensao == False else self if tensao == None else ControleDados()
                 else:
                     return ControleDados()
             else:

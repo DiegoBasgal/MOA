@@ -75,6 +75,7 @@ class UnidadeDeGeracao:
         self.erro_press_cx: float = 0
 
         self.acionar_voip: bool = False
+        self.cx_ie_inicial: bool = False
         self.limpeza_grade: bool = False
         self.release_timer: bool = False
         self.avisou_emerg_voip: bool = False
@@ -313,8 +314,8 @@ class UnidadeDeGeracao:
 
     def partir(self) -> bool:
         try:
-            if self.clp_usn.read_coils(SA[f"SA_EntradasDigitais_MXI_SA_QCAP_Disj52A{self.id}Fechado"])[0] != 0:
-                logger.info(f"[UG{self.id}] O Disjuntor 52A{self.id} está aberto. Favor fechá-lo para partir a UG.")
+            if self.clp_usn.read_coils(SA[f"SA_ED_QCAP_Disj52A1Fechado"])[0] != 0:
+                logger.info(f"[UG{self.id}] O Disjuntor do TSA está aberto.")
                 return True
 
             if not self.etapa_atual == UG_SINCRONIZADA:
@@ -429,7 +430,7 @@ class UnidadeDeGeracao:
         try:
             logger.info(f"[UG{self.id}] Enviando comando de reconhecer e resetar alarmes.")
             for x in range(3):
-                logger.debug(f"[UG{self.id}] Tentativa: {x}/3")
+                logger.debug(f"[UG{self.id}] Passo: {x}/3")
                 self.remover_trip_eletrico()
                 sleep(1)
                 self.remover_trip_logico()
@@ -480,11 +481,13 @@ class UnidadeDeGeracao:
             return False
 
     def controle_cx_espiral(self) -> None:
-        self.cx_kp = (self.leitura_caixa_espiral - self.cfg["press_cx_alvo"]) * self.cfg["cx_kp"]
-        self.cx_ajuste_ie = [sum(ug.leitura_potencia) for ug in self.lista_ugs] / self.cfg["pot_maxima_alvo"]
-        self.cx_ki = self.cx_ajuste_ie - self.cx_kp
+        # TODO verificar uma forma no mysql de inserir uma lista com PID de cada ug e separar por id no grafana
+        if self.cx_ie_inicial:
+            self.cx_ajuste_ie = [sum(ug.leitura_potencia) for ug in self.lista_ugs] / self.cfg["pot_maxima_alvo"]
+            self.cx_kp = (self.leitura_caixa_espiral - self.cfg["press_cx_alvo"]) * self.cfg["cx_kp"]
+            self.cx_ki = self.cx_ajuste_ie - self.cx_kp
+            self.cx_ie_inicial = False
 
-        self.erro_press_cx = 0
         self.erro_press_cx = self.leitura_caixa_espiral - self.cfg["press_cx_alvo"]
 
         logger.debug(f"[UG{self.id}] Pressão Alvo: {self.cfg['press_cx_alvo']:0.3f}, Recente: {self.leitura_caixa_espiral:0.3f}")
@@ -496,7 +499,6 @@ class UnidadeDeGeracao:
         logger.debug(f"[UG{self.id}] PI: {saida_pi:0.3f} <-- P: {self.cx_controle_p:0.3f} + I: {self.cx_controle_i:0.3f}; ERRO={self.erro_press_cx}")
 
         self.cx_controle_ie = max(min(saida_pi + self.cx_ajuste_ie * self.cfg["cx_kie"], 1), 0)
-
         pot_alvo = max(min(round(self.cfg[f"pot_maxima_ug{self.id}"] * self.cx_controle_ie, 5), self.cfg[f"pot_maxima_ug{self.id}"],),self.cfg["pot_minima"],)
 
         logger.debug(f"[UG{self.id}] Pot alvo: {pot_alvo:0.3f}")
