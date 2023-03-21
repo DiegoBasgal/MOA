@@ -9,11 +9,14 @@ from pyModbusTCP.server import DataBank
 from pyModbusTCP.client import ModbusClient
 from datetime import  datetime, timedelta
 
-from VAR_REG import *
-from Condicionadores import *
-from Unidade_Geracao import UnidadeDeGeracao
-from Conector import Database, FieldConnector
-from Leituras import LeituraOPC, LeiturasUSN, LeituraOPCBit
+from condicionadores import *
+from dicionarios.reg import *
+from dicionarios.dict import *
+from dicionarios.const import *
+
+from unidade_geracao import UnidadeDeGeracao
+from conector import Database, FieldConnector
+from leitura import LeituraOPC, LeiturasUSN, LeituraOPCBit
 
 logger = logging.getLogger("__main__")
 

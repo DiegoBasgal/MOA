@@ -18,7 +18,7 @@ from time import sleep
 from datetime import datetime
 from urllib.request import Request, urlopen
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-import Conector
+import conector
 
 # Inicializando o logger principal
 logger = logging.getLogger(__name__)
@@ -66,7 +66,7 @@ lista_de_contatos_padrao = [
 
 def carrega_contatos():
     phonebook = []
-    db = Conector.Database()
+    db = conector.Database()
     parametros = db.get_contato_emergencia()
 
     for i in range(len(parametros)):

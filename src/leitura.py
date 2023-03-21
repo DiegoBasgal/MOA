@@ -10,9 +10,10 @@ __version__ = "0.2"
 __authors__ = "Lucas Lavratti", "Diego Basgal"
 
 import logging
-import VAR_REG
 from opcua import Client
 from pyModbusTCP.client import ModbusClient
+
+from dicionarios.reg import *
 
 class LeituraBase:
     """
@@ -56,7 +57,7 @@ class LeituraOPC(LeituraBase):
         return self.raw * self.__escala
 
 class LeituraOPCBit(LeituraOPC):
-    def __init__(self, opc_client: Client, registrador: str, bit: int, invertido: bool = False):
+    def __init__(self, opc_client: Client, registrador: str, bit: int, invertido: bool=False):
         super().__init__(opc_client, registrador)
         self.__bit = bit
         self.__invertido = invertido
@@ -192,7 +193,6 @@ class LeituraSoma(LeituraBase):
 class LeiturasUSN:
     def __init__(self):
         self.client = Client("opc.tcp://EOP:4845")
-        REG_OPC = VAR_REG.REG_OPC
 
         self.nv_montante = LeituraOPC(self.client, REG_OPC["NIVEL_MONTANTE"])
         

@@ -6,16 +6,16 @@ import pytz
 import OpenOPC
 import logging
 import traceback
-import pywintypes
+# import pywintypes
 import logging.handlers as handlers
 
 from sys import stderr
 from time import sleep
 from datetime import datetime
 
-from conversor_dnp import ConversorOpc
+from conversor import *
 
-pywintypes.datetime = pywintypes.TimeType
+# pywintypes.datetime = pywintypes.TimeType
 
 # Criar pasta para logs
 if not os.path.exists(os.path.join(os.path.dirname(__file__), "logs")):
@@ -104,7 +104,7 @@ if __name__ == "__main__":
 
             try:
                 logger.info("Inciando classe de comunicação OPC DA / DNP 3.0")
-                com = ConversorOpc(opc, dados)
+                com = ExternoParaNativo(opc, dados)
 
             except Exception as e:
                 logger.exception(f"Houve um erro ao instanciar a classe de comunicação. Exception: \"{repr(e)}\"")

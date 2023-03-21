@@ -5,10 +5,14 @@ from time import sleep
 from opcua import Client, ua
 from datetime import datetime
 from mysql.connector import pooling
+from opcua.client import client as OPC_UA
 
-from src.VAR_REG import *
-from src.Escrita import *
-from src.Leituras import *
+from escrita import *
+from leitura import *
+
+from dicionarios.reg import *
+from conversor_protocolo.reg import *
+from conversor_protocolo.conversor import *
 
 logger = logging.getLogger("__main__")
 
@@ -400,3 +404,16 @@ class FieldConnector:
             return True
 
         return False
+    
+
+class BayConnector:
+    def __init__(self, conversor: NativoParaExterno=None, dados: dict[str, bool]=None) -> None:
+        if None in (conversor, dados):
+            logger.warning("Erro ao carregar argumentos da classe \"BayConnector\".")
+            raise ImportError
+        else:
+            self.dados = dados
+            self.conv = conversor
+
+    def verificar_status_DJs(self) -> bool:
+        

@@ -1,4 +1,4 @@
-from Leituras import *
+from leitura import *
 from opcua import Client, ua
 
 class Escrita:
