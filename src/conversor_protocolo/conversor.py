@@ -24,9 +24,6 @@ class Conversor:
 
             self._semaforo = Semaphore(1)
 
-            self.forcar_autoria: bool = False
-
-
     @property
     def semaforo(self) -> Semaphore:
         return self._semaforo._value
@@ -51,28 +48,20 @@ class Conversor:
         else:
             raise ValueError("[CNV] Autor inexistente")
 
-    def registar_mudanca(self, reg, val, autor) -> list[str]:
+    def registar_mudanca(self, reg, val, autor, forcar_autoria=False) -> list[str]:
         alterados = []
 
-        if autor != self.ultimo_autor or self.forcar_autoria:
-            self.forcar_autoria = False
-            if self.semaforo == VERDE:
-                self.semaforo = VERMELHO
+        if autor != self.ultimo_autor or forcar_autoria:
+            forcar_autoria = False
 
-                for n in self.dados:
-                    if self.dados == reg and self.dados[n] != val:
-                        self.dados[n] = val
-                        logger.info(f"[CNV][JSON] Dado: {self.dados[n]}, alterado. Valor: {self.dados[n]}, Autor: {AUTOR_STR_DCT[autor]}")
-                        alterados.append(self.dados[n])
+            for n in self.dados:
+                if self.dados == reg and self.dados[n] != val:
+                    self.dados[n] = val
+                    logger.info(f"[CNV][JSON] Dado: {self.dados[n]}, alterado. Valor: {self.dados[n]}, Autor: {AUTOR_STR_DCT[autor]}")
+                    alterados.append(self.dados[n])
 
-                self.ultimo_autor = autor
-                self.semaforo = VERDE
-                return alterados
-
-            else:
-                logger.debug(f"[CNV] O método de escrita está sendo utilizado pelo \"{AUTOR_STR_DCT[OPC_DA] if autor == OPC_UA else AUTOR_STR_DCT[OPC_UA]}\".")
-                logger.debug(f"[CNV] Aguardando para escrever...")
-                return self
+            self.ultimo_autor = autor
+            return alterados
         else:
             logger.debug(f"[CNV] Não foi possível registrar a mudança pois autor atual ({AUTOR_STR_DCT[autor]}) é o mesmo que o último.")
             return alterados
@@ -90,30 +79,37 @@ class ExternoParaNativo(Conversor):
         self._valores_antigos = []
 
     @property
-    def valores_antigos(self) -> list[str, bool]:
+    def valores_antigos(self) -> list[tuple[str, bool]]:
         return self._valores_antigos
 
     @valores_antigos.setter
-    def valores_antigos(self, val: list[str, bool]) -> None:
-        self._valores_antigos = val
+    def valores_antigos(self, tupla: tuple[str, bool]) -> None:
+        if [tuplas[0] for tuplas in self.valores_antigos].index(tupla[0]):
+            self._valores_antigos.remove(tupla)
+        self._valores_antigos.append(tupla)
 
     def carregar_dados_iniciais(self) -> None:
         logger.debug("Carregando dados inciais...")
-        for n, r in TESTE.items():
-            self.valores_antigos = n
-            self.valores_antigos[n] = self.opc_da.read(TESTE[r], group='Group0')[0]
-            logger.debug(f"Dado: {self.valores_antigos} -> Valor: {self.valores_antigos[n]}, carregado.")
+        for nome, reg in TESTE.items():
+            leitura = bool(self.opc_da.read(TESTE[reg], group='Group0')[0])
+            self.valores_antigos = [nome, leitura]
+            logger.debug(f"Dado: {nome} -> Valor: {leitura}, carregado.")
 
     def detectar_mudanca(self) -> list[str]:
         valores = []
-        for (n1, r), (n2, v) in zip(TESTE.items(), self.valores_antigos.items()):
-            leitura = self.opc_da.read(TESTE[r], group='Group0')[0]
-            if TESTE == self.valores_antigos and self.valores_antigos[v] != leitura:
-                logger.debug("Mudança detectada!")
-                logger.debug(f"Leitura -> TESTE: {TESTE[n1]}, Valor: {self.valores_antigos[v]} -> {leitura}")
-                self.valores_antigos[v] = leitura
-                key = self.registar_mudanca(self.valores_antigos[n2], self.valores_antigos[v])
-                valores.append(key)
+        flag_forcar = 0
+
+        for reg in TESTE:
+            leitura = bool(self.opc_da.read(TESTE[reg], group='Group0')[0])
+
+            for nome, valor in self.valores_antigos:
+                if nome == reg and valor != leitura:
+                    logger.debug("Mudança na leitura detectada! Verificando autor do último registro.")
+
+                    if self.ultimo_autor == OPC_DA:
+                        logger.debug("Mesmo autor da última mudança (\"OPC_DA\"). Forçando autoria.")
+                        self.valores_antigos[nome] = leitura
+                        valores.append([self.valores_antigos[nome], leitura])
             else:
                 logger.debug("Nenhuma mudança...")
 
