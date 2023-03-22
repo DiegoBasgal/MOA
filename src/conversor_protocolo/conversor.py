@@ -6,8 +6,7 @@ from threading import Semaphore
 
 from OpenOPC import client as OpcDa
 
-from reg import BAY, TESTE
-
+from dicionarios.reg import *
 from dicionarios.const import *
 
 logger = logging.getLogger("__main__")
@@ -57,7 +56,7 @@ class Conversor:
             for n in self.dados:
                 if self.dados == reg and self.dados[n] != val:
                     self.dados[n] = val
-                    logger.info(f"[CNV][JSON] Dado: {self.dados[n]}, alterado. Valor: {self.dados[n]}, Autor: {AUTOR_STR_DCT[autor]}")
+                    logger.info(f"[CNV][JSN] Dado: {self.dados[n]}, alterado. Valor: {self.dados[n]}, Autor: {AUTOR_STR_DCT[autor]}")
                     alterados.append(self.dados[n])
 
             self.ultimo_autor = autor
@@ -71,7 +70,7 @@ class ExternoParaNativo(Conversor):
     def __init__(self, dados, opc_da: OpcDa=None) -> None:
         super().__init__(dados)
         if opc_da is None:
-            logger.warning("Não foi possível iniciar o cliente OPC DA. Encerrando conversor...")
+            logger.warning("[CNV][OPC] Não foi possível iniciar o cliente OPC DA. Encerrando conversor...")
             sys.exit(1)
         else: 
             self.opc_da = opc_da
@@ -89,11 +88,12 @@ class ExternoParaNativo(Conversor):
         self._valores_antigos.append(tupla)
 
     def carregar_dados_iniciais(self) -> None:
-        logger.debug("Carregando dados inciais...")
+        logger.debug("[CNV][OPC] Carregando dados inciais...")
         for nome, reg in TESTE.items():
             leitura = bool(self.opc_da.read(TESTE[reg], group='Group0')[0])
             self.valores_antigos = [nome, leitura]
-            logger.debug(f"Dado: {nome} -> Valor: {leitura}, carregado.")
+            logger.debug(f"[CNV][OPC] Dado: {nome} -> Valor: {leitura}, carregado.")
+        logger.debug(self.valores_antigos)
 
     def detectar_mudanca(self) -> list[str]:
         valores = []
@@ -104,14 +104,16 @@ class ExternoParaNativo(Conversor):
 
             for nome, valor in self.valores_antigos:
                 if nome == reg and valor != leitura:
-                    logger.debug("Mudança na leitura detectada! Verificando autor do último registro.")
+                    logger.debug("[CNV][OPC] Mudança na leitura detectada! Verificando autor do último registro.")
 
                     if self.ultimo_autor == OPC_DA:
-                        logger.debug("Mesmo autor da última mudança (\"OPC_DA\"). Forçando autoria.")
+                        logger.debug("[CNV][OPC] Mesmo autor da última mudança (\"OPC_DA\"). Forçando autoria.")
                         self.valores_antigos[nome] = leitura
                         valores.append([self.valores_antigos[nome], leitura])
+                    elif self.ultimo_autor == OPC_UA:
+
             else:
-                logger.debug("Nenhuma mudança...")
+                logger.debug("[CNV][OPC] Nenhuma mudança...")
 
         return valores if valores is not None else []
 
@@ -123,9 +125,35 @@ class NativoParaExterno(Conversor):
         self._valores_antigos = []
 
     @property
-    def valores_antigos(self) -> list[str, bool]:
+    def valores_antigos(self) -> list[tuple[str, bool]]:
         return self._valores_antigos
 
     @valores_antigos.setter
-    def valores_antigos(self, val: list[str, bool]) -> None:
-        self._valores_antigos = val
+    def valores_antigos(self, tupla: tuple[str, bool]) -> None:
+        if [tuplas[0] for tuplas in self.valores_antigos].index(tupla[0]):
+            self._valores_antigos.remove(tupla)
+        self._valores_antigos.append(tupla)
+
+    def copiar_dados_inciais(self) -> None:
+        for nome, valor in self.dados.items():
+            self.valores_antigos = [nome, valor]
+            logger.debug(f"[CNV][MOA] Dado: {nome} -> Valor: {valor}, copiado.")
+        logger.debug(self.valores_antigos)
+
+    def detectar_mudanca(self) -> list[str]:
+        valores = []
+        flag_forcar = 0
+
+        for n1, v1 in self.dados.items():
+            for n2, v2 in self.valores_antigos:
+                if n1 == n2 and v1 != v2:
+                    logger.debug("[CNV][MOA] Mudança na leitura detectada! Verificando autor do último registro.")
+
+                    if self.ultimo_autor == OPC_UA:
+                        logger.debug("[CNV][MOA] Mesmo autor da última mudança (\"OPC_UA\"). Forçando autoria.")
+                        self.valores_antigos[n2] = leitura
+                        valores.append([self.valores_antigos[nome], leitura])
+            else:
+                logger.debug("[CNV][MOA] Nenhuma mudança...")
+
+        return valores if valores is not None else []

@@ -1,209 +1,164 @@
-"""
-Leituras.
+__author__ = "Lucas Lavratti", "Diego Basgal"
+__credits__ = "Lucas Lavratti" , "Diego Basgal"
 
-Versão 0.1 -> Utiliza o protocolo ModBusTCP
-Versão 0.2 -> Utiliza o protocolo OPC
-
-Esse módulo corresponde a implementação das leituras, dos valores de campo.
-"""
 __version__ = "0.2"
-__authors__ = "Lucas Lavratti", "Diego Basgal"
+__status__ = "Development"
+__maintainer__ = "Diego Basgal"
+__email__ = "diego.garcia@ritmoenergia.com.br"
+__description__ = "Este módulo corresponde a implementação de leituras dos valores de campo."
+
 
 import logging
-from opcua import Client
+from opcua import Client as OpcClient
 from pyModbusTCP.client import ModbusClient
 
 from dicionarios.reg import *
 
-class LeituraBase:
-    """
-    Classe implementa a base para leituras. É "Abstrata" assim por se dizer...
-    """
+logger = logging.getLogger("__main__")
 
-    def __init__(self, descr: str) -> None:
-        self.__valor = None
-        self.logger = logging.getLogger("__main__")
+# Classe de Leitura Base
+class LeituraBase:
+    def __init__(self, client: OpcClient | ModbusClient = ..., registrador: str | int = ..., escala: int | float = ...) -> ...:
+
+        if client is None:
+            raise ValueError("[LEI] Não foi possível carregar o cliente.")
+        elif not type(client):
+            raise TypeError("[LEI] Tipagem de argumento inválida. O cliente deve ser \"Client\" (OPC) ou \"ModbusClient\" (ModBus).")
+        else:
+            self.__client = client
+
+        if registrador is None:
+            raise ValueError("[LER] A leitura precisa de um registrador para funcionar.")
+        elif not type(registrador):
+            raise TypeError("[LER] Tipagem de argumento inválida. O registrador deve ser \"str\" (OPC) ou \"int\" (Modbus).")
+        else:
+            self.__registrador = registrador
+        
+        if not type(escala):
+            raise TypeError("[LER] Tipagem de argumento inválida. A escala deve ser \"int\" ou \"float\".")
+        else:
+            self.__escala = 1 if escala is None else escala
 
     @property
     def valor(self):
-        raise NotImplementedError("Deve ser implementado na classe herdeira.")
+        raise NotImplementedError("[LEI] O método deve ser implementado na classe filho.")
 
     @property
     def raw(self):
-        raise NotImplementedError("Deve ser implementado na classe herdeira.")
+        raise NotImplementedError("[LEI] O método deve ser implementado na classe filho.")
 
-class LeituraOPC(LeituraBase):
-    def __init__(self, opc_client: Client, registrador: str, escala: float = 1):
-        super().__init__()
-        self.__opc_client = opc_client
-        self.__registrador = registrador
-        self.__escala = escala
-   
+
+
+# Classes de Leitura Opc UA
+class LeituraOpc(LeituraBase):
+    def __init__(self, client, registrador: str, escala) -> ...:
+        LeituraBase.__init__(self, client, registrador, escala)
+
     @property
     def raw(self) -> int:
         try:
-            self.__opc_client.connect()
-            aux = self.__opc_client.get_node(self.__registrador)
-            valor = aux.get_value()
-            if valor is not None:
-                return valor
-            else:
-                return 0
-        except:
+            valor = self.__client.get_node(self.__registrador).get_value()
+            return valor if valor is not None else 0
+        except ValueError("[LEI-OPC] Erro ao carregar dado \"raw\" do cliente Opc"):
             return 0
-   
+
     @property
     def valor(self) -> float:
         return self.raw * self.__escala
 
-class LeituraOPCBit(LeituraOPC):
-    def __init__(self, opc_client: Client, registrador: str, bit: int, invertido: bool=False):
-        super().__init__(opc_client, registrador)
-        self.__bit = bit
-        self.__invertido = invertido
+class LeituraOpcBit(LeituraOpc):
+    def __init__(self, client, registrador, bit: int = ..., invertido: bool = ...) -> ...:
+        LeituraOpc.__init__(self, client, registrador)
+        if bit is None:
+            raise ValueError("[LEI-OPC] A Leitura Opc Bit precisa de um valor para o argumento \"bit\".")
+        elif not type(bit):
+            raise TypeError("[LEI-OPC] Tipagem de argumento inválida. O bit deve ser \"int\".")
+        else:
+            self.__bit = bit
+
+        if not type(invertido):
+            raise TypeError("[LEI-OPC] Tipagem de argumento inválida. Invertido deve ser \"bool\".")
+        else:
+            self.__invertido = False if invertido is not None else invertido
 
     @property
     def valor(self) -> bool:
-        aux = self.raw & 2**self.__bit
-        if self.__invertido:
-            aux = not aux
-        return aux
+        ler_bit = self.raw & 2**self.__bit
+        return not ler_bit if self.__invertido else ler_bit
 
+
+
+# Classes de Leitura ModBus
 class LeituraModbus(LeituraBase):
-    """
-    Classe implementa a base para leituras da unidade da geração utilizando modbus.
-    """
+    def __init__(self, client, registrador: int, escala, fundo_de_escala: int | float = ..., op: int = ...):
+        LeituraBase.__init__(client, registrador, escala)
 
-    def __init__(
-        self,
-        modbus_client: ModbusClient,
-        registrador: int,
-        escala: float = 1,
-        fundo_de_escala: float = 0,
-        op: int = 3,
-    ):
-        super().__init__()
-        self.__modbus_client = modbus_client
-        self.__registrador = registrador
-        self.__escala = escala
-        self.__fundo_de_escala = fundo_de_escala
-        self.__op = op
+        if not type(fundo_de_escala):
+            raise TypeError("[LEI-MB] Tipagem de argumento inválida. O fundo de escala deve ser \"int\" ou \"float\".")
+        else:
+            self.__fundo_de_escala = 0 if fundo_de_escala is None else fundo_de_escala
+
+        if not type(op):
+            raise TypeError("[LEI-MB] Tipagem de argumento inválida. A op deve ser \"int\".")
+        else:
+            self.__op = 3 if op is None else op
 
     @property
-    def valor(self) -> float:
-        """
-        Valor
-
-        Returns:
-            float: valor já tratado
-        """
+    def valor(self) -> int | float:
         return (self.raw * self.__escala) + self.__fundo_de_escala
 
     @property
-    def raw(self) -> int:
-        """
-        Raw Dado Crú
-        Retorna o valor como lido da CLP, o inteiro unsigned contido no registrador
-
-        Raises:
-            ConnectionError: Erro caso a conexão falhe
-            NotImplementedError: [description]
-
-        Returns:
-            int: [description]
-        """
+    def raw(self) -> int | float:
         try:
-            if self.__modbus_client.open():
-                if self.__op == 3:
-                    aux = self.__modbus_client.read_holding_registers(
-                        self.__registrador
-                    )[0]
-                elif self.__op == 4:
-                    aux = self.__modbus_client.read_input_registers(self.__registrador)[
-                        0
-                    ]
-                if aux is not None:
-                    return aux
-                else:
-                    return 0
+            if self.__op == 3:
+                ler = self.__client.read_holding_registers(self.__registrador)[0]
+            elif self.__op == 4:
+                ler = self.__client.read_input_registers(self.__registrador)[0]
             else:
-                raise ConnectionError("Erro na conexão modbus.")
-        except:
-            # ! TODO Tratar exceptions
-            # O que deve retornar caso não consiga comunicar?
-            # raise NotImplementedError
+                return 0 if ler is None else ler
+        except ConnectionError("[LEI-MB] Erro ao conectar ao cliente ModBus.") \
+            or ValueError("[LEI-MB] Erro ao carregar o dado \"raw\" do cliente ModBus."):
             return 0
-            pass
 
 class LeituraModbusBit(LeituraModbus):
-    """
-    Classe implementa a leituras de bits de registradores da unidade da geração utilizando modbus.
-    """
+    def __init__(self, client, registrador: int, bit: int = ..., invertido: bool = ...):
+        LeituraModbus.__init__(client, registrador)
+        if bit is None:
+            raise ValueError("[LEI-MB] A Leitura ModBus Bit precisa de um valor para o argumento \"bit\".")
+        elif not type(bit):
+            raise TypeError("[LEI-MB] Tipagem de argumento inválida. O bit deve ser \"int\".")
+        else:
+            self.__bit = bit
 
-    def __init__(
-        self,
-        modbus_client: ModbusClient,
-        registrador: int,
-        bit: int,
-        invertido: bool = False,
-    ):
-        super().__init__(modbus_client, registrador)
-        self.__bit = bit
-        self.__invertido = invertido
+        if not type(bit):
+            raise TypeError("[LEI-MB] Tipagem de argumento inválida. Invertido deve ser \"bool\".")
+        else:
+            self.__invertido = False if invertido is not None else invertido
 
     @property
     def valor(self) -> bool:
-        """
-        Valor
+        ler_bit = self.raw & 2**self.__bit
+        return not ler_bit if self.__invertido else ler_bit
 
-        Returns:
-            bool: valor já tratado
-        """
-        aux = self.raw & 2**self.__bit
-        if self.__invertido:
-            aux = not aux
-        return aux
 
 class LeituraSoma(LeituraBase):
-    def __init__(
-        self,
-        leitura_A: LeituraBase,
-        leitura_B: LeituraBase,
-        min_is_zero=True,
-    ):
+    def __init__(self, leituras: list[LeituraBase] = ..., min_zero: bool = ...):
         super().__init__()
-        self.__leitura_A = leitura_A
-        self.__leitura_B = leitura_B
-        self.__min_is_zero = min_is_zero
+        if leituras < 2 or leituras is None:
+            raise ValueError("[LEI-SOM] A Leitura Soma precisa de \"2 ou mais\" leituras para funcionar.")
+        elif not type(leituras):
+            raise ValueError("[LEI-SOM] Tipagem de argumento inválida. As leituras devem ser uma lista de leitores provenientes da Leitura Base")
+        else:
+            self.__leituras = leituras
+
+        if not type(min_zero):
+            raise TypeError("[LEI-SOM] Tipagem de argumento inválida. O min_zero deve ser \"bool\".")
+        else:
+            self.__min_is_zero = False if min_zero is None else min_zero
 
     @property
-    def valor(self) -> float:
-        """
-        Valor
-
-        Returns:
-            float: leitura_A + leitura_B
-        """
+    def valor(self) -> int | float:
         if self.__min_is_zero:
-            return max(0, self.__leitura_A.valor + self.__leitura_B.valor)
+            return max(0, [sum(leitura.valor for leitura in self.__leituras)])
         else:
-            return self.__leitura_A.valor + self.__leitura_B.valor
-
-
-class LeiturasUSN:
-    def __init__(self):
-        self.client = Client("opc.tcp://EOP:4845")
-
-        self.nv_montante = LeituraOPC(self.client, REG_OPC["NIVEL_MONTANTE"])
-        
-        self.tensao_rs = LeituraOPC(self.client, REG_OPC["LT_VAB"])
-
-        self.tensao_st = LeituraOPC(self.client, REG_OPC["LT_VBC"])
-
-        self.tensao_tr = LeituraOPC(self.client, REG_OPC["LT_VCA"])
-        
-        self.potencia_ativa_kW = LeituraOPC(
-            "Potências de MP e MR",
-            self.client,
-            "ns=7;s=CLP_SA."
-        )
+            return [sum(leitura.valor for leitura in self.__leituras)]

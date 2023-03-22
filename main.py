@@ -26,6 +26,10 @@ from src.dicionarios.reg import *
 from src.dicionarios.dict import *
 from src.dicionarios.const import *
 from src.maquinas_estado.moa_sm import *
+
+from src.clients import Clients
+from src.unidade_geracao import UnidadeDeGeracao
+from src.conversor_protocolo.conversor import NativoParaExterno
 from src.mensageiro.mensageiro_log_handler import MensageiroHandler
 
 # Criar pasta para logs
@@ -71,14 +75,14 @@ def criar_logger() -> logging:
     return logger
 
 # Método de leitura do arquivo de dados json
-def leitura_json() -> dict:
-    arquivo = os.path.join(os.path.dirname(__file__), "dados.json")
+def leitura_json(nome: str) -> dict:
+    arquivo = os.path.join(os.path.dirname(__file__), nome)
     with open(arquivo, "r") as file:
         return json.load(file)
 
 # Método de escrever no arquivo de dados json após mudanças
-def escrita_json(valor) -> None:
-    arquivo = os.path.join(os.path.dirname(__file__), "dados.json")
+def escrita_json(valor, nome: str) -> None:
+    arquivo = os.path.join(os.path.dirname(__file__), nome)
     with open(arquivo, "w") as file:
         json.dump(valor, file, indent=4)
 
@@ -107,14 +111,13 @@ def acionar_voip():
     try:
         if usina.acionar_voip:
             for i, j in zip(voip, V_VARS):
-                if i == j and VOIP[i]:
-                    V_VARS[j][0] = VOIP[i]
+                if i == j and shared_dict["VOIP"][i]:
+                    V_VARS[j][0] = shared_dict["VOIP"][i]
             voip.enviar_voz_auxiliar()
-            usina.acionar_voip = False
 
-        elif usina.avisado_em_eletrica:
+        elif shared_dict["GLB"]["avisado_eletrica"]:
             voip.enviar_voz_emergencia()
-            usina.avisado_em_eletrica = False
+            shared_dict["GLB"]["avisado_eletrica"] = False
 
     except Exception:
         logger.warning("Houve um problema ao ligar por Voip")
@@ -136,89 +139,95 @@ if __name__ == "__main__":
 
     logger.debug("Debug is ON")
     logger.info("Iniciando MOA...")
-    logger.debug("Iniciando o MOA_SM ESCALA_DE_TEMPO:{}".format(ESCALA_DE_TEMPO))
-    logger.debug("Inciando Threads de Leitura temporizada e acionamento por voip")
+    logger.debug(f"ESCALA_DE_TEMPO: {ESCALA_DE_TEMPO}")
 
     while prox_estado == 0:
         n_tentativa += 1
-        if n_tentativa > 2:
+        if n_tentativa == 3:
             prox_estado = FalhaCritica
         else:
-            # carrega as configurações
-            """
-            config_file = os.path.join(os.path.dirname(__file__), "config.json")
-            with open(config_file, "r") as file:
-            """
-            cfg = CFG # json.load(file)
-
-            # bkp das configurações
-            config_file = os.path.join(os.path.dirname(__file__), "config.json.bkp")
-            with open(config_file, "w") as file:
-                json.dump(cfg, file, indent=4)
-
-            # Inicia o conector do banco
-            db = conector.Database()
-            # Tenta iniciar a classe usina
-            logger.debug("Iniciando classe Usina")
             try:
-                usina = usina.Usina(cfg, db)
-                usina.ler_valores()
-                usina.aguardando_reservatorio = 0
-            except Exception as e:
-                logger.error(
-                    "Erro ao iniciar Classe Usina. Tentando novamente em {}s (tentativa {}/2). Exception: {}.".format(
-                        timeout, n_tentativa, repr(e)
-                    )
-                )
-                logger.debug("Traceback: {}".format(traceback.format_exc()))
+                logger.info("Carregando arquivos de configuração, dicionário compartilhado e dados de conversão")
+
+                sd = shared_dict
+                cfg = leitura_json("cfg.json")
+                dcv = leitura_json("dados.json")
+                escrita_json(cfg, "cfg.json.bkp")
+
+            except Exception:
+                logger.exception(f"Erro ao carregar arquivo de configuração e dicionário compartilhado. Tentando novamente em \"{timeout}s\" (Tentativa: {n_tentativa}/3).")
+                logger.exception(f"Traceback: {traceback.print_stack}")
+                sleep(timeout)
+                continue
+            
+            try:
+                logger.info("Iniciando classe de conexão com o servidor OPC e CLPs da usina.")
+
+                cln = ClientsUsn(sd)
+                cln.open_all()
+
+            except Exception:
+                logger.exception(f"Erro ao iniciar conexão com os CLPs da usina. Tentando novamente em \"{timeout}s\" (Tentativa: {n_tentativa}/3).")
+                logger.exception(f"Traceback: {traceback.print_stack}")
+                sleep(timeout)
+                continue
+            
+            try:
+                logger.info("Iniciando classes de escrita OPC")
+
+                esc_opc = EscritaOpc(cln.opc_client)
+                esc_opc_bit = EscritaOpcBit(cln.opc_client)
+                escritas = [esc_opc, esc_opc_bit]
+
+            except Exception:
+                logger.exception(f"Erro ao iniciar classes de escrita. Tentando novamente em \"{timeout}s\" (Tentativa: {n_tentativa}/3).")
+                logger.exception(f"Traceback: {traceback.print_stack}")
                 sleep(timeout)
                 continue
 
-            # Inicializando Servidor Modbus (para algumas comunicações com o Elipse)
             try:
-                logger.debug("Iniciando Servidor/Slave Modbus MOA.")
-                modbus_server = ModbusServer(
-                    host=usina.cfg["moa_slave_ip"],
-                    port=usina.cfg["moa_slave_porta"],
-                    no_block=True,
-                )
-                modbus_server.start()
-                sleep(1)
-                if not modbus_server.is_run:
-                    raise ConnectionError
-                prox_estado = Pronto
+                logger.info("Inicando classe de conversão de dados OPC DA / OPC UA.")
+                cnv = NativoParaExterno(dcv)
 
-            except TypeError as e:
-                logger.error(
-                    "Erro ao iniciar abstração da usina. Tentando novamente em {}s (tentativa {}/2). Exception: {}."
-                    "".format(timeout, n_tentativa, repr(e))
-                )
-                logger.error("Traceback: {}".format(traceback.format_exc()))
+            except Exception:
+                logger.exception(f"Erro ao instanciar a classe de conversão de protocolo. Tentando novamente em \"{timeout}s\" (Tentativa: {n_tentativa}/3).")
+                logger.exception(f"Traceback: {traceback.print_stack}")
                 sleep(timeout)
-            except ConnectionError as e:
-                logger.error(
-                    "Erro ao iniciar Modbus MOA. Tentando novamente em {}s (tentativa {}/2). Exception: {}.".format(
-                        timeout, n_tentativa, repr(e)
-                    )
-                )
-                logger.error("Traceback: {}".format(traceback.format_exc()))
+                continue
+
+            try:
+                logger.info("Iniciando classes de conexão com campo, bay e banco de dados.")
+
+                db = ConectorBancoDados()
+                bay = ConectorBay(cnv, dcv)
+                fc = ConectorCampo(sd, cln, escritas)
+
+            except Exception:
+                logger.exception(f"Erro ao instanciar as classes de conexão. Tentando novamente em \"{timeout}s\" (Tentativa: {n_tentativa}/3).")
+                logger.exception(f"Traceback: {traceback.print_stack}")
                 sleep(timeout)
-            except PermissionError as e:
-                logger.error(
-                    "Não foi possível iniciar o Modbus MOA devido a permissão do usuário. Exception: {}.".format(
-                        repr(e)
-                    )
-                )
-                logger.error("Traceback: {}".format(traceback.format_exc()))
-                prox_estado = FalhaCritica
-            except Exception as e:
-                logger.error(
-                    "Erro Inesperado. Tentando novamente em {}s (tentativa{}/2). Exception: {}.".format(
-                        timeout, n_tentativa, repr(e)
-                    )
-                )
-                logger.error("Traceback: {}".format(traceback.format_exc()))
+                continue
+
+            try:
+                logger.info("Iniciando instâncias da classe Unidade de Geração")
+
+                ug1 = UnidadeDeGeracao(1, )
+
+            except Exception:
+                logger.exception(f"Erro ao instanciar a classe das Unidades de Geração. Tentando novamente em \"{timeout}s\" (Tentativa: {n_tentativa}/3).")
+                logger.exception(f"Traceback: {traceback.print_stack}")
                 sleep(timeout)
+                continue
+
+            try:
+                logger.info("Iniciando instância da classe Usina.")
+                usn = Usina(cfg, db)
+
+            except Exception:
+                logger.exception(f"Erro ao instanciar a classe Usina. Tentando novamente em \"{timeout}s\" (Tentativa: {n_tentativa}/3).")
+                logger.exception(f"Traceback: {traceback.print_stack}")
+                sleep(timeout)
+                continue
 
     logger.info("Inicialização completa, executando o MOA \U0001F916")
 

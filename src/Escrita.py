@@ -1,46 +1,81 @@
-from leitura import *
-from opcua import Client, ua
+__author__ = "Diego Basgal"
+__credits__ = "Lucas Lavratti" , "Diego Basgal"
 
-class Escrita:
-   def __init__(self) -> None:
-      super().__init__()
+__version__ = "0.1"
+__status__ = "Development"
+__maintainer__ = "Diego Basgal"
+__email__ = "diego.garcia@ritmoenergia.com.br"
+__description__ = "Este módulo corresponde a implementação de escrita nos registradores de campo."
 
-class EscritaOPC(Escrita):
-   def __init__(self, OPC_Client: Client, registrador: str, valor: int):
-      super().__init__()
-      self.__valor = valor
-      self.__reg = registrador
-      self.__client = OPC_Client
-      self.escrita
-   
-   @property
-   def escrita(self):
-      node = self.__client.get_node(self.__reg)
-      node.set_value(ua.DataValue(ua.Variant(self.__valor, ua.VariantType.Int32)))
+from opcua import ua
+from opcua import Client as OpcClient
 
-class EscritaOPCBit(Escrita):
-   def __init__(self, OPC_Client: Client, registrador: str, bit: int, valor: int):
-      super().__init__()
-      self.__bit = bit
-      self.__valor = valor
-      self.__reg = registrador
-      self.__client = OPC_Client
-      self.__raw = LeituraOPC(self.__client, self.__reg).raw
-      self.escrita
+# Classe de Escrita Base
+class EscritaBase:
+    def __init__(
+            self,
+            client: OpcClient | None = ...
+        ) -> ...:
 
-   @property
-   def escrita(self):
-      bin = [int(x) for x in list('{0:0b}'.format(self.__raw))]
-      
-      for i in range(len(bin)):
-         if self.__bit == i:
-            bin[i] = self.__valor
-            break
+        if client is None:
+            raise ValueError("[ESC] Não foi possível carregar o cliente.")
+        elif not type(client):
+            raise TypeError("[ESC] Tipagem de argumento inválida. O cliente deve ser a \"Client\" (OPC)")
+        else:
+            self.__client = client
 
-      v = sum(val*(2**x) for x, val in enumerate(reversed(bin)))
-      print(v)
-      client_node = self.__client.get_node(self.__reg)
-      client_node_dv = ua.DataValue(ua.Variant(v, ua.VariantType.Int32))
-      client_node.set_value(client_node_dv)
+    def escrever(self, registrador: str | int | None = ... , valor: int | float | None = ...) -> bool:
+        if registrador is None:
+            raise ValueError("[ESC] A escrita precisa de um registrador para funcionar.")
+        elif not type(registrador):
+            raise TypeError("[ESC] Tipagem de argumento inválida. O registrador deve ser \"str\" ou \"int\".")
+
+        if valor is None:
+            raise ValueError("[ESC] A escrita precisa de um valor para funcionar.")
+        elif not type(valor):
+            raise TypeError("[ESC] Tipagem de argumento inválida. O valor deve ser \"int\" ou \"float\".")
+
+        raise NotImplementedError("[ESC] O método deve ser implementado na classe filho")
 
 
+# Classes de Escrita OPC
+class EscritaOpc(EscritaBase):
+    def __init__(self, client) -> ...:
+        EscritaBase.__init__(self, client)
+
+    def escrever(self, registrador: str, valor) -> bool:
+        try:
+            node = self.__client.get_node(registrador)
+            return node.set_value(ua.DataValue(ua.Variant(valor, ua.VariantType.Int32)))
+
+        except ConnectionError("[ESC-OPC] Erro ao conectar no cliente Opc.") \
+            or ValueError("[ESC-OPC] Erro ao carregar dado \"raw\" do cliente Opc"):
+            return False
+
+class EscritaOpcBit(EscritaOpc):
+    def __init__(self, client) -> ...:
+        EscritaOpc.__init__(self, client)
+
+    def escrever(self, registrador: str, valor: int[0 | 1], bit: int[range(31)] | None = ...) -> bool:
+        if bit is None:
+            raise ValueError("[ESC-OPC] A escrita precisa do bit para funcionar.")
+        elif not type(bit):
+            raise TypeError("[ESC-OPC] Tipagem de argumento inválida. O bit deve ser \"int\" de \"0 a 31\".")
+        else:
+            try:
+                raw = self.__client.get_node(registrador).get_value()
+                bin = [int(x) for x in list('{0:0b}'.format(raw))]
+
+                for i in range(len(bin)):
+                    if bit == i:
+                        bin[i] = valor
+                        break
+
+                v = sum(val*(2**x) for x, val in enumerate(reversed(bin)))
+                client_node = self.__client.get_node(registrador)
+                client_node_dv = ua.DataValue(ua.Variant(v, ua.VariantType.Int32))
+                return client_node.set_value(client_node_dv)
+
+            except ConnectionError("[ESC-OPC] Erro ao conectar no cliente Opc.") \
+                or ValueError("[ESC-OPC] Erro ao carregar dado \"raw\" do cliente Opc"):
+                return False
