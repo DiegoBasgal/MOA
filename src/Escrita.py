@@ -18,22 +18,22 @@ class EscritaBase:
         ) -> ...:
 
         if client is None:
-            raise ValueError("[ESC] Não foi possível carregar o cliente.")
+            raise ValueError(f"[ESC] Não foi possível carregar a conexão com o cliente (\"{type(client).__name__}\").")
         elif not type(client):
-            raise TypeError("[ESC] Tipagem de argumento inválida. O cliente deve ser a \"Client\" (OPC)")
+            raise TypeError(f"[ESC] Tipagem de argumento inválida. O argumento \"cliente\" deve ser \"OpcClient\".")
         else:
             self.__client = client
 
     def escrever(self, registrador: str | int | None = ... , valor: int | float | None = ...) -> bool:
         if registrador is None:
-            raise ValueError("[ESC] A escrita precisa de um registrador para funcionar.")
+            raise ValueError("[ESC] A Escrita precisa de um valor para o argumento \"registrador\".")
         elif not type(registrador):
             raise TypeError("[ESC] Tipagem de argumento inválida. O registrador deve ser \"str\" ou \"int\".")
 
         if valor is None:
-            raise ValueError("[ESC] A escrita precisa de um valor para funcionar.")
+            raise ValueError("[ESC] A Escrita precisa de um valor para o argumento \"valor\".")
         elif not type(valor):
-            raise TypeError("[ESC] Tipagem de argumento inválida. O valor deve ser \"int\" ou \"float\".")
+            raise TypeError("[ESC] Tipagem de argumento inválida. O argumento \"valor\" deve ser \"int\" ou \"float\".")
 
         raise NotImplementedError("[ESC] O método deve ser implementado na classe filho")
 
@@ -58,9 +58,9 @@ class EscritaOpcBit(EscritaOpc):
 
     def escrever(self, registrador: str, valor: int[0 | 1], bit: int[range(31)] | None = ...) -> bool:
         if bit is None:
-            raise ValueError("[ESC-OPC] A escrita precisa do bit para funcionar.")
+            raise ValueError("[ESC-OPC] A escrita precisa de um valor para o argumento \"bit\".")
         elif not type(bit):
-            raise TypeError("[ESC-OPC] Tipagem de argumento inválida. O bit deve ser \"int\" de \"0 a 31\".")
+            raise TypeError("[ESC-OPC] Tipagem de argumento inválida. O argumento \"bit\" deve ser \"int\" de \"0 a 31\".")
         else:
             try:
                 raw = self.__client.get_node(registrador).get_value()

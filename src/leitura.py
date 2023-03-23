@@ -18,24 +18,29 @@ logger = logging.getLogger("__main__")
 
 # Classe de Leitura Base
 class LeituraBase:
-    def __init__(self, client: OpcClient | ModbusClient = ..., registrador: str | int = ..., escala: int | float = ...) -> ...:
+    def __init__(
+            self,
+            client: OpcClient | ModbusClient = ...,
+            registrador: str | int = ...,
+            escala: int | float = ...
+        ) -> ...:
 
         if client is None:
-            raise ValueError("[LEI] Não foi possível carregar o cliente.")
-        elif not type(client):
-            raise TypeError("[LEI] Tipagem de argumento inválida. O cliente deve ser \"Client\" (OPC) ou \"ModbusClient\" (ModBus).")
+            raise ValueError(f"[LEI] Não foi possível carregar a conexão com o cliente (\"{type(client).__name__}\").")
+        elif not isinstance(client, OpcClient | ModbusClient):
+            raise TypeError(f"[LEI] Tipagem de argumento inválida. O argumento \"cliente\" deve ser \"OpcClient\" ou \"ModbusClient\".")
         else:
             self.__client = client
 
         if registrador is None:
-            raise ValueError("[LER] A leitura precisa de um registrador para funcionar.")
-        elif not type(registrador):
-            raise TypeError("[LER] Tipagem de argumento inválida. O registrador deve ser \"str\" (OPC) ou \"int\" (Modbus).")
+            raise ValueError("[LEI] A Leitura precisa de um valor para o argumento \"registrador\".")
+        elif not isinstance(registrador, str | int):
+            raise TypeError(f"[LEI] Tipagem de argumento inválida. O argumento \"registrador\" deve ser \"Opc: str\" ou \"ModBus: int\".")
         else:
             self.__registrador = registrador
         
-        if not type(escala):
-            raise TypeError("[LER] Tipagem de argumento inválida. A escala deve ser \"int\" ou \"float\".")
+        if not isinstance(escala, int | float):
+            raise TypeError(f"[LEI] Tipagem de argumento inválida. O argumento \"escala\" deve ser \"int\" ou \"float\".")
         else:
             self.__escala = 1 if escala is None else escala
 
@@ -71,13 +76,13 @@ class LeituraOpcBit(LeituraOpc):
         LeituraOpc.__init__(self, client, registrador)
         if bit is None:
             raise ValueError("[LEI-OPC] A Leitura Opc Bit precisa de um valor para o argumento \"bit\".")
-        elif not type(bit):
-            raise TypeError("[LEI-OPC] Tipagem de argumento inválida. O bit deve ser \"int\".")
+        elif not isinstance(bit, int):
+            raise TypeError("[LEI-OPC] Tipagem de argumento inválida. O argumento \"bit\" deve ser \"int\".")
         else:
             self.__bit = bit
 
-        if not type(invertido):
-            raise TypeError("[LEI-OPC] Tipagem de argumento inválida. Invertido deve ser \"bool\".")
+        if not isinstance(invertido, bool):
+            raise TypeError("[LEI-OPC] Tipagem de argumento inválida. O argumento \"invertido\" deve ser \"bool\".")
         else:
             self.__invertido = False if invertido is not None else invertido
 
@@ -93,13 +98,13 @@ class LeituraModbus(LeituraBase):
     def __init__(self, client, registrador: int, escala, fundo_de_escala: int | float = ..., op: int = ...):
         LeituraBase.__init__(client, registrador, escala)
 
-        if not type(fundo_de_escala):
-            raise TypeError("[LEI-MB] Tipagem de argumento inválida. O fundo de escala deve ser \"int\" ou \"float\".")
+        if not isinstance(fundo_de_escala, int | float):
+            raise TypeError("[LEI-MB] Tipagem de argumento inválida. O argumento \"fundo de escala\" deve ser \"int\" ou \"float\".")
         else:
             self.__fundo_de_escala = 0 if fundo_de_escala is None else fundo_de_escala
 
-        if not type(op):
-            raise TypeError("[LEI-MB] Tipagem de argumento inválida. A op deve ser \"int\".")
+        if not isinstance(op, int):
+            raise TypeError("[LEI-MB] Tipagem de argumento inválida. o argumento \"op\" deve ser \"int\".")
         else:
             self.__op = 3 if op is None else op
 
@@ -126,12 +131,12 @@ class LeituraModbusBit(LeituraModbus):
         if bit is None:
             raise ValueError("[LEI-MB] A Leitura ModBus Bit precisa de um valor para o argumento \"bit\".")
         elif not type(bit):
-            raise TypeError("[LEI-MB] Tipagem de argumento inválida. O bit deve ser \"int\".")
+            raise TypeError("[LEI-MB] Tipagem de argumento inválida. O argumento \"bit\" deve ser \"int\".")
         else:
             self.__bit = bit
 
         if not type(bit):
-            raise TypeError("[LEI-MB] Tipagem de argumento inválida. Invertido deve ser \"bool\".")
+            raise TypeError("[LEI-MB] Tipagem de argumento inválida. O argumento \"invertido\" deve ser \"bool\".")
         else:
             self.__invertido = False if invertido is not None else invertido
 
@@ -145,14 +150,14 @@ class LeituraSoma(LeituraBase):
     def __init__(self, leituras: list[LeituraBase] = ..., min_zero: bool = ...):
         super().__init__()
         if leituras < 2 or leituras is None:
-            raise ValueError("[LEI-SOM] A Leitura Soma precisa de \"2 ou mais\" leituras para funcionar.")
+            raise ValueError("[LEI-SOM] A Leitura Soma precisa de \"2 ou mais\" leituras para o argumento \"leituras\".")
         elif not type(leituras):
-            raise ValueError("[LEI-SOM] Tipagem de argumento inválida. As leituras devem ser uma lista de leitores provenientes da Leitura Base")
+            raise ValueError("[LEI-SOM] Tipagem de argumento inválida. O argumento \"leituras\" deve ser uma lista com \"Leituras(Base, Opc, ModBus, ...)\".")
         else:
             self.__leituras = leituras
 
         if not type(min_zero):
-            raise TypeError("[LEI-SOM] Tipagem de argumento inválida. O min_zero deve ser \"bool\".")
+            raise TypeError("[LEI-SOM] Tipagem de argumento inválida. O argumento \"min_zero\" deve ser \"bool\".")
         else:
             self.__min_is_zero = False if min_zero is None else min_zero
 

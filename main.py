@@ -27,7 +27,8 @@ from src.dicionarios.dict import *
 from src.dicionarios.const import *
 from src.maquinas_estado.moa_sm import *
 
-from src.clients import Clients
+from src.clients import ClientsUsn
+from comporta import Comportas
 from src.unidade_geracao import UnidadeDeGeracao
 from src.conversor_protocolo.conversor import NativoParaExterno
 from src.mensageiro.mensageiro_log_handler import MensageiroHandler
@@ -149,7 +150,7 @@ if __name__ == "__main__":
             try:
                 logger.info("Carregando arquivos de configuração, dicionário compartilhado e dados de conversão")
 
-                sd = shared_dict
+                sd = dicionario
                 cfg = leitura_json("cfg.json")
                 dcv = leitura_json("dados.json")
                 escrita_json(cfg, "cfg.json.bkp")
@@ -159,7 +160,7 @@ if __name__ == "__main__":
                 logger.exception(f"Traceback: {traceback.print_stack}")
                 sleep(timeout)
                 continue
-            
+
             try:
                 logger.info("Iniciando classe de conexão com o servidor OPC e CLPs da usina.")
 
@@ -177,7 +178,7 @@ if __name__ == "__main__":
 
                 esc_opc = EscritaOpc(cln.opc_client)
                 esc_opc_bit = EscritaOpcBit(cln.opc_client)
-                escritas = [esc_opc, esc_opc_bit]
+                esc = [esc_opc, esc_opc_bit]
 
             except Exception:
                 logger.exception(f"Erro ao iniciar classes de escrita. Tentando novamente em \"{timeout}s\" (Tentativa: {n_tentativa}/3).")
@@ -196,11 +197,13 @@ if __name__ == "__main__":
                 continue
 
             try:
-                logger.info("Iniciando classes de conexão com campo, bay e banco de dados.")
+                logger.info("Iniciando classes de conexão com tda, subestacao, bay e banco de dados.")
 
-                db = ConectorBancoDados()
-                bay = ConectorBay(cnv, dcv)
-                fc = ConectorCampo(sd, cln, escritas)
+                db = BancoDados()
+                bay = Bay(cnv, dcv)
+                sub = Subestacao(sd, esc, cln)
+                tda = TomadaAgua()
+                con = [tda, sub, bay]
 
             except Exception:
                 logger.exception(f"Erro ao instanciar as classes de conexão. Tentando novamente em \"{timeout}s\" (Tentativa: {n_tentativa}/3).")
@@ -209,9 +212,11 @@ if __name__ == "__main__":
                 continue
 
             try:
-                logger.info("Iniciando instâncias da classe Unidade de Geração")
+                logger.info("Iniciando instâncias das classes Unidade de Geração")
 
-                ug1 = UnidadeDeGeracao(1, )
+                ug1 = UnidadeDeGeracao(1, cfg, cln, con, db, escs)
+                ug2 = UnidadeDeGeracao(2, cfg, cln, con, db)
+                UnidadeDeGeracao.lista_ugs = [ug1, ug2]
 
             except Exception:
                 logger.exception(f"Erro ao instanciar a classe das Unidades de Geração. Tentando novamente em \"{timeout}s\" (Tentativa: {n_tentativa}/3).")

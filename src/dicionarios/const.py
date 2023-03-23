@@ -23,12 +23,12 @@ VERDE = 1
 VERMELHO = 0
 
 # Autor da mudança no arquivo de conversor dados.json
-OPC_DA = 0
-OPC_UA = 1
+AUTOR_DA = 0
+AUTOR_UA = 1
 
 AUTOR_STR_DCT = {}
-AUTOR_STR_DCT[OPC_DA] = "OPC DA"
-AUTOR_STR_DCT[OPC_UA] = "OPC UA"
+AUTOR_STR_DCT[AUTOR_DA] = "OPC DA"
+AUTOR_STR_DCT[AUTOR_UA] = "OPC UA"
 
 # Posição das comportas
 CP_FECHADA = 0

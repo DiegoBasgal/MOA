@@ -15,14 +15,14 @@ class CondicionadorBase:
     def __init__(
             self, 
             leitura: LeituraBase | None = ...,
-            gravidade: int | None = ..., 
+            gravidade: int | None = ...,
             etapas: list | None = ...,
-            ug_id: int | None = ...
+            id_unidade: int | None = ...
         ):
         self.__leitura = leitura
-        self.__ug_id = None if ug_id is None else ug_id
         self.__etapas = [] if etapas is None else etapas
         self.__gravidade = 2 if gravidade is None else gravidade
+        self.__id_unidade = None if id_unidade is None else id_unidade
 
         self._ugs: list[UnidadeDeGeracao]
 
@@ -42,8 +42,8 @@ class CondicionadorBase:
         return self.__etapas
 
     @property
-    def ug_id(self) -> int:
-        return self.__ug_id
+    def id_unidade(self) -> int:
+        return self.__id_unidade
 
     @property
     def valor(self) -> int | float:
@@ -51,8 +51,8 @@ class CondicionadorBase:
 
     @property
     def ativo(self) -> bool:
-        if self.ug_id or self.etapas:
-            ug: UnidadeDeGeracao = [x if x.id == self.ug_id else None for x in self.ugs]
+        if self.id_unidade or self.etapas:
+            ug: UnidadeDeGeracao = [x if x.id == self.id_unidade else None for x in self.ugs]
             return False if ug is not None and ug.etapa_atual in self.etapas and self.leitura == 0 else False
         else:
             return False if self.leitura == 0 else True
@@ -65,6 +65,7 @@ class CondicionadorBase:
     def ugs(self, var: list[UnidadeDeGeracao]) -> None:
         self._ugs = var
 
+
 class CondicionadorExponencial(CondicionadorBase):
     def __init__(self, leitura, gravidade, valor_base: float | None = ..., valor_limite: float | None = ..., ordem: float | None = ...) -> ...:
         CondicionadorBase.__init__(leitura, gravidade)
@@ -74,8 +75,8 @@ class CondicionadorExponencial(CondicionadorBase):
 
     @property
     def ativo(self) -> bool:
-        if self.ug_id and self.etapas:
-            ug: UnidadeDeGeracao = [x if x.id == self.ug_id else None for x in self.ugs]
+        if self.id_unidade and self.etapas:
+            ug: UnidadeDeGeracao = [x if x.id == self.id_unidade else None for x in self.ugs]
             return True if ug is not None and ug.etapa_atual in self.etapas and self.valor >= 1 else False
         else:
             return True if self.valor >= 1 else False

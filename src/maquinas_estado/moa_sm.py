@@ -8,7 +8,6 @@ from datetime import datetime
 from src.usina import *
 from src.dicionarios.const import *
 from src.dicionarios.reg import MOA
-from src.conector import ConectorBancoDados
 
 class StateMachine:
     def __init__(self, initial_state):
@@ -28,22 +27,18 @@ class StateMachine:
 class State:
     def __init__(
             self,
-            sd: dict | None = ...,
-            cfg: dict | None = ...,
-            usn: Usina | None = ...,
-            db : ConectorBancoDados | None = ...,
-            ugs: list[UnidadeDeGeracao] | None = ...,
-        ) -> None:
+            config: dict | None = ...,
+            dicionario: dict | None = ...,
+            usina: Usina | None = ...
+        ) -> ...:
 
-        if None in (sd, cfg, usn, db, ugs):
+        if None in (dicionario, config, usina):
             logger.error(f"Erro ao instanciar o estado base do MOA. Exception: \"{repr(Exception)}\"")
             self.state = FalhaCritica()
         else:
-            self.db = db
-            self.cfg = cfg
-            self.usn = usn
-            self.ugs = ugs
-            self.dict = sd
+            self.cfg = config
+            self.usn = usina
+            self.dct = dicionario
 
         self.usn.estado_moa = MOA_SM_NAO_INICIALIZADO
 
@@ -61,8 +56,8 @@ class FalhaCritica(State):
         sys.exit(1)
 
 class Pronto(State):
-    def __init__(self, sd, usn):
-        State.__init__(sd, cfg, usn, db, ugs)
+    def __init__(self, config, dicionario, usina):
+        State.__init__(self, config, dicionario, usina)
         self.usn.estado_moa = MOA_SM_PRONTO
 
     def run(self):
@@ -71,8 +66,8 @@ class Pronto(State):
 
 
 class ControleNormal(State):
-    def __init__(self, usn):
-        super().__init__(usn)
+    def __init__(self, usina):
+        super().__init__(usina)
         self.usn.estado_moa = MOA_SM_CONTROLE_NORMAL
         self.dict["GLB"]["tda_offline"] = False
         self.usn.clp_moa.write_single_coil(MB["MOA"]["PAINEL_LIDO"], [1])
@@ -96,57 +91,18 @@ class ControleNormal(State):
             return ControleAgendamentos()
 
         else:
-            
-
+            condic_flag = self.usn.verificar_condicionadores()
             if condic_flag == CONDIC_INDISPONIBILIZAR:
-                    return ControleEmergencia()
+                return ControleEmergencia()
 
-                elif condic_flag == CONDIC_NORMALIZAR:
-                    if self.usn.normalizar_usina() == False:
-                        return ControleEmergencia() if self.usn.aguardar_tensao() == False else ControleDados()
-                    else:
-                        return ControleDados()
+            elif condic_flag == CONDIC_NORMALIZAR:
+                if self.usn.normalizar_usina() == False:
+                    return ControleEmergencia() if self.usn.aguardar_tensao() == False else ControleDados()
+                else:
+                    return ControleDados()
 
-        if self.usina.clp_emergencia_acionada:
-            logger.info("Comando recebido: habilitando modo de ControleEmergencia.")
-            sleep(2)
-            return ControleEmergencia(self.usina)
-
-        if self.usina.db_emergencia_acionada:
-            logger.info("Comando recebido: habilitando modo de ControleEmergencia.")
-            sleep(2)
-            return ControleEmergencia(self.usina)
-
-        # Verificamos se existem agendamentos
-        if len(self.usina.get_agendamentos_pendentes()) > 0:
-            return ControleAgendamentos(self.usina)
-
-        # Em seguida com o modo manual (não autonomo)
-        if not self.usina.modo_autonomo:
-            logger.debug("Comando recebido: desabilitar modo autonomo.")
-            sleep(2)
-            return ControleManual(self.usina)
-
-        # Se não foi redirecionado ainda,
-        # assume-se que o MOA deve executar de modo autônomo
-
-        # Verifica-se então a situação do reservatório
-        if self.usina.aguardando_reservatorio:
-            if self.usina.nv_montante > self.usina.cfg["nv_alvo"]:
-                logger.debug("Reservatorio dentro do nivel de trabalho")
-                self.usina.aguardando_reservatorio = 0
-                return ReservatorioNormal(self.usina)
-
-        if self.usina.nv_montante < self.usina.cfg["nv_minimo"]:
-            self.usina.aguardando_reservatorio = 1
-            logger.info("Reservatorio abaixo do nivel de trabalho")
-            return ReservatorioAbaixoDoMinimo(self.usina)
-
-        if self.usina.nv_montante >= self.usina.cfg["nv_maximo"]:
-            return ReservatorioAcimaDoMaximo(self.usina)
-
-        # Se estiver tudo ok:
-        return ReservatorioNormal(self.usina)
+            else:
+                return ControleReservatorio()
 
 class ControleReservatorio(State):
     def __init__(self, usn):
@@ -319,61 +275,6 @@ class ControleAgendamentos(State):
     def run(self):
         logger.info("Tratando agendamentos")
         self.usina.verificar_agendamentos()
-        return ControleDados(self.usina)
-
-
-class ReservatorioAbaixoDoMinimo(State):
-    def __init__(self, instancia_usina):
-        super().__init__()
-        self.usina = instancia_usina
-
-    def run(self):
-        self.usina.distribuir_potencia(0)
-        if self.usina.nv_montante_recente <= self.usina.cfg["nv_fundo_reservatorio"]:
-            if not usina.ping(self.usina.cfg["TDA_slave_ip"]):
-                logger.warning("Sem comunicação com CLP TDA, entrando no modo de operação Offline")
-                self.usina.TDA_Offline = True
-                return ControleTdaOffline(self.usina)
-            else:
-                logger.critical("Nivel montante ({:3.2f}) atingiu o fundo do reservatorio!".format(self.usina.nv_montante_recente))
-                return ControleEmergencia(self.usina)
-        for ug in self.usina.ugs:
-            print("")
-            ug.step()
-        return ControleDados(self.usina)
-
-
-class ReservatorioAcimaDoMaximo(State):
-    def __init__(self, instancia_usina):
-        super().__init__()
-        self.usina = instancia_usina
-
-    def run(self):
-        if self.usina.nv_montante_recente >= self.usina.cfg["nv_maximorum"]:
-            self.usina.distribuir_potencia(0)
-            logger.critical("Nivel montante ({:3.2f}) atingiu o maximorum!".format(self.usina.nv_montante_recente))
-            return ControleEmergencia(self.usina)
-        else:
-            self.usina.distribuir_potencia(self.usina.cfg["pot_maxima_usina"])
-            self.usina.controle_ie = 0.5
-            self.usina.controle_i = 0.5
-            for ug in self.usina.ugs:
-                print("")
-                ug.step()
-            return ControleDados(self.usina)
-
-
-class ReservatorioNormal(State):
-    def __init__(self, instancia_usina):
-        super().__init__()
-        self.usina = instancia_usina
-
-    def run(self):
-
-        self.usina.controle_normal()
-        for ug in self.usina.ugs:
-            print("")
-            ug.step()
         return ControleDados(self.usina)
 
 class ControleTdaOffline(State):

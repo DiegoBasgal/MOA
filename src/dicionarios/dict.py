@@ -1,4 +1,4 @@
-shared_dict = {
+dicionario = {
     "CFG": {
         "UG1_slave_ip": "10.101.2.215",
         "UG1_slave_porta": 5003,

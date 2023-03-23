@@ -20,7 +20,7 @@ logger = logging.getLogger("__main__")
 class ClientsUsn:
     def __init__(
             self,
-            sd: dict | None = ...
+            dicionario: dict | None = ...
         ) -> ...:
 
         if None in (sd):
