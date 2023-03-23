@@ -20,13 +20,13 @@ logger = logging.getLogger("__main__")
 class Usina:
     def __init__(
             self,
-            cfg=None,
             sd: dict=None,
+            cfg: dict=None,
             clp: ClpClients=None,
             oco: OcorrenciasUg=None,
             con: ConectorCampo=None,
             db: ConectorBancoDados=None,
-            ugs: list[UnidadeDeGeracao]=None,
+            ugs: "list[UnidadeDeGeracao]"=None,
         ):
 
         # VERIFICAÇÃO DE ARGUMENTOS
@@ -61,6 +61,45 @@ class Usina:
             self.ugs = ugs
             self.ug1 = ugs[0]
             self.ug2 = ugs[1]
+
+
+        # ATRIBUIÇÃO DE VARIÁVEIS PRIVADAS
+        # Leituras
+        self.__nv_montante: LeituraBase = LeituraModbus(
+            TDA["TDA_NivelMaisCasasAntes"],
+            self.clp_tda,
+            1 / 10000,
+            819.2,
+            op=4,
+        )
+
+        self.__tensao_rs: LeituraBase = LeituraModbus(
+            SA["SA_RA_PM_810_Tensao_AB"],
+            self.clp_usn,
+            1000,
+            op=4,
+        )
+
+        self.__tensao_st: LeituraBase = LeituraModbus(
+            SA["SA_RA_PM_810_Tensao_BC"],
+            self.clp_usn,
+            1000,
+            op=4,
+        )
+
+        self.__tensao_tr: LeituraBase = LeituraModbus(
+            SA["SA_RA_PM_810_Tensao_CA"],
+            self.clp_usn,
+            1000,
+            op=4,
+        )
+
+        self.__potencia_ativa_kW: LeituraBase = LeituraModbus(
+            SA["SA_RA_PM_810_Potencia_Ativa"],
+            self.clp_usn,
+            1,
+            op=4,
+        )
 
         # ATRIBUIÇÃO DE VARIÁVEIS PROTEGIDAS
         # Numéricas
@@ -115,49 +154,23 @@ class Usina:
 
     @property
     def nv_montante(self) -> float:
-        return LeituraModbus(
-            TDA["TDA_NivelMaisCasasAntes"],
-            self.clp_tda,
-            1 / 10000,
-            819.2,
-            op=4,
-        ).valor
+        return self.__nv_montante.valor
 
     @property
     def tensao_rs(self) -> float:
-        return LeituraModbus(
-            SA["SA_RA_PM_810_Tensao_AB"],
-            self.clp_usn,
-            1000,
-            op=4,
-        ).valor
+        return self.__tensao_rs.valor
 
     @property
     def tensao_st(self) -> float:
-        return LeituraModbus(
-            SA["SA_RA_PM_810_Tensao_BC"],
-            self.clp_usn,
-            1000,
-            op=4,
-        ).valor
+        return self.__tensao_st.valor
 
     @property
     def tensao_tr(self) -> float:
-        return LeituraModbus(
-            SA["SA_RA_PM_810_Tensao_CA"],
-            self.clp_usn,
-            1000,
-            op=4,
-        ).valor
+        return self.__tensao_tr.valor
 
     @property
     def potencia_ativa_kW(self) -> int:
-        return LeituraModbus(
-            SA["SA_RA_PM_810_Potencia_Ativa"],
-            self.clp_usn,
-            1,
-            op=4,
-        ).valor
+        return self.__potencia_ativa_KW.valor
 
     @property
     def modo_autonomo(self) -> bool:
@@ -509,7 +522,7 @@ class Usina:
         self.__split1 = True if self.ug_operando == 1 else False
         self.__split2 = True if self.ug_operando == 2 else False
 
-        self.controle_ie = [sum(ug.leitura_potencia) / self.cfg["pot_maxima_alvo"] if self.cfg["saida_ie_inicial"] == "auto" else self.cfg["saida_ie_inicial"] for ug in self.ugs]
+        self.controle_ie = self.ajustar_ie_padrao() if self.cfg["saida_ie_inicial"] == "auto" else self.cfg["saida_ie_inicial"]
 
     def controle_potencia(self) -> None:
         logger.debug("-------------------------------------------------------------------------")
