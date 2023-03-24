@@ -1,3 +1,12 @@
+__author__ = "Lucas Lavratti", " Henrique Pfeifer", "Diego Basgal"
+__credits__ = "Lucas Lavratti", " Henrique Pfeifer", "Diego Basgal"
+
+__version__ = "0.2"
+__status__ = "Development"
+__maintainer__ = "Diego Basgal"
+__email__ = "diego.garcia@ritmoenergia.com.br"
+__description__ = "Este módulo corresponde a implementação da máquina de estados do Módulo de Operação Autônoma (MOA)."
+
 import sys
 import pytz
 import traceback
@@ -6,8 +15,8 @@ from time import sleep
 from datetime import datetime
 
 from src.usina import *
+from src.dicionarios.reg import *
 from src.dicionarios.const import *
-from src.dicionarios.reg import MOA
 
 class StateMachine:
     def __init__(self, initial_state):
@@ -29,16 +38,19 @@ class State:
             self,
             config: dict | None = ...,
             dicionario: dict | None = ...,
+            banco_dados: BancoDados | None = ...,
             usina: Usina | None = ...
         ) -> ...:
 
-        if None in (dicionario, config, usina):
+        if None in (config, dicionario, banco_dados, usina):
             logger.error(f"Erro ao instanciar o estado base do MOA. Exception: \"{repr(Exception)}\"")
             self.state = FalhaCritica()
         else:
             self.cfg = config
-            self.usn = usina
             self.dct = dicionario
+            self.bds = banco_dados
+
+            self.usn = usina
 
         self.usn.estado_moa = MOA_SM_NAO_INICIALIZADO
 
@@ -52,6 +64,7 @@ class FalhaCritica(State):
     def __init__(self):
         super().__init__()
         self.usn.estado_moa = MOA_SM_FALHA_CRITICA
+
         logger.critical("Falha crítica MOA. Interrompendo execução...")
         sys.exit(1)
 
@@ -62,32 +75,27 @@ class Pronto(State):
 
     def run(self):
         self.usn.ler_valores()
-        return ControleNormal() if not self.dict["GLB"]["tda_offline"] else ControleTdaOffline()
-
+        return ControleNormal() if self.usn.modo_autonomo else ControleManual()
 
 class ControleNormal(State):
     def __init__(self, usina):
         super().__init__(usina)
         self.usn.estado_moa = MOA_SM_CONTROLE_NORMAL
-        self.dict["GLB"]["tda_offline"] = False
+
         self.usn.clp_moa.write_single_coil(MB["MOA"]["PAINEL_LIDO"], [1])
 
     def run(self):
         self.usn.ler_valores()
-
-        condic_emerg = False
-        ler_condicionadores = False
-
         condic_flag = CONDIC_IGNORAR
 
         if not self.usn.modo_autonomo:
             logger.info("Comando acionado: Desabilitar modo autônomo.")
             return ControleManual()
 
-        elif self.usn.clp_emergencia or self.usn.db_emergencia:
+        elif self.usn.clp_emergencia or self.usn.bd_emergencia:
             return ControleEmergencia()
 
-        elif len(self.usn.get_agendamentos_pendentes()) > 0:
+        elif len(self.usn.agn.get_agendamentos_pendentes()) > 0:
             return ControleAgendamentos()
 
         else:
@@ -105,251 +113,102 @@ class ControleNormal(State):
                 return ControleReservatorio()
 
 class ControleReservatorio(State):
-    def __init__(self, usn):
-        super().__init__(usn)
+    def __init__(self, usina):
+        super().__init__(usina)
         self.usn.estado_moa = MOA_SM_CONTROLE_RESERVATORIO
 
     def run(self):
         self.usn.ler_valores()
-        flag = self.usn.controle_reservatorio()
-
-        if flag == NV_FLAG_EMERGENCIA:
-            return ControleEmergencia()
-        elif flag == NV_FLAG_TDAOFFLINE:
-            return ControleTdaOffline()
-        else:
-            return ControleDados()
+        return ControleEmergencia() if self.usn.controle_reservatorio() == NV_FLAG_EMERGENCIA else ControleDados()
 
 class ControleDados(State):
-    def __init__(self, instancia_usina):
-        super().__init__()
-        self.usina = instancia_usina
+    def __init__(self, usina):
+        super().__init__(usina)
+        self.usn.estado_moa = MOA_SM_CONTROLE_DADOS
 
     def run(self):
-        logger.debug("HB")
-        self.usina.heartbeat()
-        logger.debug("Escrevendo valores")
-        self.usina.escrever_valores()
-        return Pronto(self.usina)
-
-class ControleEmergencia(State):
-    def __init__(self, instancia_usina):
-        super().__init__()
-        self.em_sm_acionada = datetime.now(pytz.timezone("Brazil/East")).replace(tzinfo=None)
-        logger.warning(
-            "Usina entrado em estado de emergência (Timestamp: {})".format(
-                self.em_sm_acionada
-            )
-        )
-        self.usina = instancia_usina
-        self.n_tentativa = 0
-        self.usina.escrever_valores()
-        self.usina.heartbeat()
-        self.nao_ligou = True
-
-    def run(self):
-        self.usina.heartbeat()
-        self.n_tentativa += 1
-        if self.n_tentativa > 2:
-            logger.warning("Numero de tentaivas de normalização excedidas, entrando em modo manual.")
-            self.usina.entrar_em_modo_manual()
-            self.usina.heartbeat()
-            for ug in self.usina.ugs:
-                ug.forcar_estado_indisponivel()
-                ug.step()
-            return ControleManual(self.usina)
-        else:
-            if self.usina.db_emergencia_acionada:
-                logger.warning("ControleEmergencia acionada via Interface WEB/DB, aguardando Reset/Reconhecimento pela interface ou CLP")
-                while self.usina.db_emergencia_acionada:
-                    self.usina.ler_valores()
-                    if not self.usina.clp.em_emergencia():
-                        self.usina.db.update_emergencia(0)
-                        self.usina.db_emergencia_acionada = 0
-
-            self.usina.ler_valores()
-            # Ler condiconadores
-            CONDIC_INDISPONIBILIZAR = False
-            CONDIC_NORMALIZAR = False
-            condicionadores_ativos = []
-            
-            for condicionador_essencial in self.usina.condicionadores_essenciais:
-                if condicionador_essencial.ativo and condicionador_essencial.gravidade == CONDIC_INDISPONIBILIZAR:
-                    condicionadores_ativos.append(condicionador_essencial)
-                    CONDIC_INDISPONIBILIZAR = True
-                elif condicionador_essencial.gravidade == CONDIC_NORMALIZAR:
-                    condicionadores_ativos.append(condicionador_essencial)
-                    CONDIC_NORMALIZAR = True
-
-            for condicionador in self.usina.condicionadores:
-                if condicionador.ativo and condicionador.gravidade == CONDIC_INDISPONIBILIZAR:
-                    condicionadores_ativos.append(condicionador)
-                    CONDIC_INDISPONIBILIZAR=True
-                elif condicionador.gravidade == CONDIC_NORMALIZAR:
-                    condicionadores_ativos.append(condicionador)
-                    CONDIC_INDISPONIBILIZAR=False
-
-            if (self.usina.clp_emergencia_acionada or CONDIC_NORMALIZAR or CONDIC_INDISPONIBILIZAR):
-                try:
-
-                    # Se algum condicionador deve gerar uma indisponibilidade
-                    if CONDIC_INDISPONIBILIZAR:
-                        # Logar os condicionadores ativos
-                        logger.critical(
-                            "[USN] USN detectou condicionadores ativos, passando USINA para manual e ligando por VOIP.\nCondicionadores ativos:\n{}".format(
-                                [d.descr for d in condicionadores_ativos]
-                            )
-                        )
-                        # Vai para o estado StateIndisponivel
-                        self.usina.entrar_em_modo_manual()
-                        return ControleManual(self.usina)
-
-                    elif CONDIC_NORMALIZAR:
-                        logger.debug("Aguardando antes de tentar normalizar novamente (5s)")
-                        sleep(5)
-                        logger.info("Normalizando usina. (tentativa{}/2) (limite entre tentaivas: {}s)".format(self.n_tentativa, self.usina.cfg["timeout_normalizacao"]))
-                        self.usina.deve_normalizar_forcado=True
-                        self.usina.normalizar_emergencia()
-                        self.usina.ler_valores()
-                        return self
-
-                    else:
-                        logger.debug("Nenhum condicionador relevante ativo...")
-                        self.usina.ler_valores()
-                        return ControleDados(self.usina)
-
-                except Exception as e:
-                    logger.error(
-                        "Erro durante a comunicação do MOA com a usina. Exception: {}.".format(
-                            repr(e)
-                        )
-                    )
-                    logger.debug("Traceback: {}".format(traceback.print_stack))
-                return self
-            else:
-                self.usina.ler_valores()
-                logger.info("Usina normalizada")
-                return ControleDados(self.usina)
-
-
-class ControleManual(State):
-    def __init__(self, instancia_usina):
-        super().__init__()
-        self.usina = instancia_usina
-        self.usina.modo_autonomo = False
-        self.usina.escrever_valores()
-        logger.info("Usina em modo manual, deve-se alterar via painel ou interface web.")
-
-    def run(self):
-        self.usina.ler_valores()
-        DataBank.set_words(REG_MB["MOA"]["PAINEL_LIDO"], [1])
-        self.usina.ug1.setpoint = self.usina.ug1.leitura_potencia.valor
-        self.usina.ug2.setpoint = self.usina.ug2.leitura_potencia.valor
-
-        self.usina.controle_ie = (self.usina.ug1.setpoint + self.usina.ug2.setpoint) / self.usina.cfg["pot_maxima_alvo"]
-
-        self.usina.heartbeat()
-        sleep(1 / ESCALA_DE_TEMPO)
-        if self.usina.modo_autonomo:
-            logger.debug("Comando recebido: habilitar modo autonomo.")
-            sleep(2)
-            logger.info("Usina voltou para o modo Autonomo")
-            self.usina.db.update_habilitar_autonomo()
-            self.usina.ler_valores()
-            if (self.usina.clp_emergencia_acionada == 1 or self.usina.db_emergencia_acionada == 1):
-                self.usina.normalizar_emergencia()
-            self.usina.heartbeat()
-            return ControleDados(self.usina)
-
-        if len(self.usina.get_agendamentos_pendentes()) > 0:
-            return ControleAgendamentos(self.usina)
-
-        return self
-
+        self.usn.ler_valores()
+        self.usn.escrever_valores()
+        return ControleNormal()
 
 class ControleAgendamentos(State):
-    def __init__(self, instancia_usina):
-        super().__init__()
-        self.usina = instancia_usina
+    def __init__(self, usina):
+        super().__init__(usina)
+        self.usn.estado_moa = MOA_SM_CONTROLE_AGENDAMENTOS
 
     def run(self):
-        logger.info("Tratando agendamentos")
-        self.usina.verificar_agendamentos()
-        return ControleDados(self.usina)
+        self.usn.agn.verificar_agendamentos()
+        return ControleDados() if self.usn.modo_autonomo else ControleManual()
 
-class ControleTdaOffline(State):
-    def __init__(self, instancia_usina):
-        super().__init__()
-        self.usina = instancia_usina
-        self.deve_ler_condicionadores = False
-        self.habilitar_emerg_condic_e = False
-        self.habilitar_emerg_condic_c = False
+class ControleManual(State):
+    def __init__(self, usina):
+        super().__init__(usina)
+        self.usn.estado_moa = MOA_SM_CONTROLE_MANUAL
+
+        self.usn.modo_autonomo = False
+        self.usn(MB["MOA"]["PAINEL_LIDO"], [1])
+
+        for ug in self.usn.ugs: ug.parar_timer = True
+
+        logger.info("Usina em modo manual. Para retornar a operação autônoma, acionar via painel ou página WEB")
 
     def run(self):
-        global aux
-        global CONDIC_NORMALIZAR
-        self.usina.TDA_Offline = True
+        self.usn.ler_valores()
+        for ug in self.usn.ugs:
+            ug.setpoint = ug.leitura_potencia
+        self.usn.ajustar_ie_padrao()
 
-        for condicionador_essencial in self.usina.condicionadores_essenciais:
-            if condicionador_essencial.ativo:
-                self.deve_ler_condicionadores=True
-
-        if self.usina.avisado_em_eletrica or self.deve_ler_condicionadores==True:
-            for condicionador_essencial in self.usina.condicionadores_essenciais:
-                if condicionador_essencial.ativo and condicionador_essencial.gravidade >= CONDIC_INDISPONIBILIZAR:
-                        self.habilitar_emerg_condic_e=True
-                elif condicionador_essencial.ativo and condicionador_essencial.gravidade == CONDIC_NORMALIZAR:
-                    CONDIC_NORMALIZAR=True
-                    self.habilitar_emerg_condic_e=False
-                else:
-                    CONDIC_NORMALIZAR=False
-                    self.habilitar_emerg_condic_e=False
-            
-            for condicionador in self.usina.condicionadores:
-                if condicionador.ativo and condicionador.gravidade >= CONDIC_INDISPONIBILIZAR:
-                    self.habilitar_emerg_condic_c=True
-                elif condicionador.ativo and condicionador.gravidade == CONDIC_NORMALIZAR:
-                    self.habilitar_emerg_condic_c=False
-                    CONDIC_NORMALIZAR=True
-                else:
-                    CONDIC_NORMALIZAR=False
-                    self.habilitar_emerg_condic_c=False
-            
-            if self.habilitar_emerg_condic_e or self.habilitar_emerg_condic_c:
-                logger.info("Condicionadores ativos com gravidade alta!")
-                return ControleEmergencia(self.usina)
-
-        if CONDIC_NORMALIZAR:
-            if (not self.usina.normalizar_emergencia()) and self.usina.tensao_ok==False and aux==0:
-                logger.warning("Tensão da linha fora do limite ")
-                aux = 1
-                threading.Thread(target=lambda: self.usina.aguardar_tensao(20)).start()
-
-            elif self.usina.timer_tensao:
-                aux = 0
-                CONDIC_NORMALIZAR = None
-                self.usina.timer_tensao = None
-
-            elif self.usina.timer_tensao==False:
-                aux = 0
-                CONDIC_NORMALIZAR = None
-                self.usina.timer_tensao = None
-                logger.warning("O tempo de normalização da linha excedeu o limite! (10 min)")
-                return ControleEmergencia(self.usina)
-        
-        if not self.usina.modo_autonomo:
-            logger.info("Comando recebido: desabilitar modo autonomo.")
+        if self.usn.modo_autonomo:
+            logger.debug("Comando acionado: Habilitar modo autonomo.")
+            self.usn.ler_valores()
             sleep(2)
-            return ControleManual(self.usina)
+            return ControleDados()
 
-        if len(self.usina.get_agendamentos_pendentes()) > 0:
-            return ControleAgendamentos(self.usina)
+        return ControleAgendamentos() if len(self.usn.agn.get_agendamentos_pendentes()) > 0 else self
 
-        for ug in self.usina.ugs:
-            print("")
-            ug.controle_press_turbina()
-            ug.step()
+class ControleEmergencia(State):
+    def __init__(self, usina):
+        super().__init__(usina)
+        self.usn.estado_moa = MOA_SM_CONTROLE_EMERGENCIA
 
-        return ControleDados(self.usina)
+        self.tentativas = 0
 
+        logger.critical(f"ATENÇÃO! Usina entrado em estado de emergência. (Horário: {self.get_time()})")
 
+    def run(self):
+        self.usn.ler_valores()
+
+        if self.tentativas == 3:
+            logger.warning("Tentativas de normalização excedidas, entrando em modo manual.")
+            for ug in self.usn.ugs:
+                ug.forcar_estado_indisponivel()
+                ug.step()
+            return ControleManual()
+
+        elif self.usn.bd_emergencia:
+            logger.warning("Emergência acionada via página WEB, aguardando reset pela aba emergência.")
+            while self.usn.bd_emergencia:
+                self.usn.atualizar_parametros_db(self.usn.bd.get_parametros_usina())
+                if not self.usn.bd_emergencia:
+                    self.usn.bd_emergencia = False
+                    return self
+                if not self.usn.modo_autonomo:
+                    self.usn.bd_emergencia = False
+                    return ControleManual()
+
+        else:
+            flag = self.usn.verificar_condicionadores()
+            if flag == CONDIC_INDISPONIBILIZAR:
+                logger.critical("Acionando VOIP e entrando em modo manual")
+                return ControleManual()
+
+            elif flag == CONDIC_NORMALIZAR:
+                self.tentativas += 1
+                logger.info(f"Normalizando usina. (Tentativa {self.tentativas}/3) (Limite entre tentaivas: {TIMEOUT_NORMALIZACAO}s)")
+                self.usn.normalizar_forcado = True
+                self.usn.normalizar_usina()
+                return self
+
+            else:
+                logger.debug("Usina normalizada. Retomando operação...")
+                return ControleDados()

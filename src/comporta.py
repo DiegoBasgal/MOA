@@ -1,36 +1,36 @@
+__author__ = "Diego Basgal"
+__credits__ = "Lucas Lavratti", " Henrique Pfeifer", "Diego Basgal"
 
-from time import sleep, time
-from opcua import Client as OpcClient
+__version__ = "0.1"
+__status__ = "Development"
+__maintainer__ = "Diego Basgal"
+__email__ = "diego.garcia@ritmoenergia.com.br"
+__description__ = "Este módulo corresponde a implementação da operação de comportas."
+
+import logging
+import traceback
+
+from time import  time
 
 from leitura import *
-from escrita import *
 from dicionarios.reg import *
-from dicionarios.dict import *
 from dicionarios.const import *
 
-from clients import ClientsUsn
 from comporta import Comporta
+from setores import TomadaAgua
 
-class Comporta:
-    logger = logging.getLogger("__main__")
+logger = logging.getLogger("__main__")
 
-    def __init__(
-            self,
-            id: int | None = ...,
-            clients: ClientsUsn | None = ...,
-            escrita: list[EscritaBase] | None = ...
-        ) -> ...:
-
+class Comporta(TomadaAgua):
+    def __init__(self, id: int | None = ...) -> ...:
+        # VERIFICAÇÃO DE ARGUMENTOS
         if not id or id < 1:
             raise ValueError(f"[CP{self.id}] A Comporta deve ser instanciada com um valor maior que \"0\".")
         else:
-            self.id = id
+            self.__id = id
 
-        if not clients:
-            raise ValueError(f"[CP{self.id}] Não foi possível carregar as conexões de campo (\"Clients\")")
-        else:
-            self.opc = clients
-
+        # ATRIBUIÇÃO DE VAIRÁVEIS PRIVADAS
+        # Leituras
         self.__aberta = LeituraOpcBit(self.opc, OPC_UA["TDA"][f"CP{self.id}_ABERTA"], 17)
         self.__fechada = LeituraOpcBit(self.opc, OPC_UA["TDA"][f"CP{self.id}_FECHADA"], 18)
         self.__cracking = LeituraOpcBit(self.opc, OPC_UA["TDA"][f"CP{self.id}_CRACKING"], 25)
@@ -40,7 +40,21 @@ class Comporta:
         self.__permissao = LeituraOpcBit(self.opc, OPC_UA["TDA"][f"CP{self.id}_PERMISSIVOS_OK"], 31, True)
         self.__bloqueio = LeituraOpcBit(self.opc, OPC_UA["TDA"][f"CP{self.id}_BLOQUEIO_ATUADO"], 31, True)
 
-        self._lista_comportas: list[Comportas] = []
+        # ATRIBUIÇÃO DE VARIÁVEIS PROTEGIDAS
+        # Instâncias das comportas
+        self._lista_comportas: list[Comporta] = []
+
+        # ATRIBUIÇÃO DE VARIÁVEIS PÚBLICAS
+        # Instância(s) da(s) outra(s) comporta(s)
+        self.cp2 = self.lista_comportas[1]
+
+        # Leituras
+        self.press_equalizada = LeituraOpcBit(self.opc, OPC_UA["TDA"][f"CP{self.id}_PRESSAO_EQUALIZADA"], 4)
+        self.aguardando_cmd_abert = LeituraOpcBit(self.opc, OPC_UA["TDA"][f"CP{self.id}_AGUARDANDO_COMANDO_ABERTURA"], 3)
+
+    @property
+    def id(self) -> int:
+        return self.__id
 
     @property
     def etapa_comporta(self) -> int:
@@ -85,111 +99,104 @@ class Comporta:
             return 99
 
     @property
-    def lista_comportas(self) -> list[Comportas]:
+    def lista_comportas(self) -> list[Comporta]:
         return self._lista_comportas
 
     @lista_comportas.setter
-    def lista_comportas(self, var: list[Comportas]):
+    def lista_comportas(self, var: list[Comporta]):
         self._lista_comportas = var
 
 
     def rearme_falhas_comporta(self) -> bool:
         try:
-            return EscritaOPCBit(self.opc, OPC_UA["TDA"]["CP{}_CMD_REARME_FALHAS".format(self.id)], 0, 1)
+            return self.e_opc_bit.escrever(self.opc, OPC_UA["TDA"][f"CP{self.id}_CMD_REARME_FALHAS"], 0, 1)
         except Exception as e:
             raise(e)
 
-    def abrir_comporta(self) -> bool:
+    def abrir_comporta(self) -> None:
         try:
             if self.etapa_comporta == CP_ABERTA:
-                logger.debug("[CP{0}] A comporta {0} já está aberta".format(self.id))
-                return True
+                logger.debug(f"[TDA][CP{self.id}] A comporta {self.id} já está aberta")
+                return
             elif self.verificar_precondicoes_comporta():
-                press_equalizada = LeituraOpcBit(self.opc, OPC_UA["TDA"]["CP{}_PRESSAO_EQUALIZADA".format(self.id)], 4)
-                aguardando_cmd_abert = LeituraOpcBit(self.opc, OPC_UA["TDA"]["CP{}_AGUARDANDO_COMANDO_ABERTURA".format(self.id)], 3)
-                if press_equalizada.valor and aguardando_cmd_abert.valor:
-                    logger.debug("[CP{0}] Enviando comando de abertura para a comporta {0}".format(self.id))
-                    response = EscritaOPCBit(self.opc, OPC_UA["TDA"]["CP{}_CMD_ABERTURA_TOTAL".format(self.id)], 1, 1)
-                else:
-                    return False
-            else:
-                return False
+                if self.press_equalizada.valor and self.aguardando_cmd_abert.valor:
+                    logger.debug(f"[TDA][CP{self.id}] Enviando comando de abertura para a comporta {self.id}")
+                    self.e_opc_bit.escrever(self.opc, OPC_UA["TDA"][f"CP{self.id}_CMD_ABERTURA_TOTAL"], 1, 1)
+                    return
         except Exception as e:
-            raise(e)
-        else:
-            return response
+            logger.exception(f"[TDA][CP{self.id}] Houve um erro ao abrir a comporta. Exception: \"{repr(e)}\"")
+            logger.exception(f"[TDA][CP{self.id}] Traceback: {traceback.print_stack}")
 
-    def fechar_comporta(self) -> bool:
+    def fechar_comporta(self) -> None:
         try:
             if self.etapa_comporta == CP_FECHADA:
-                logger.debug("[CP{0}] A comporta {0} já está fechada".format(self.id))
-                return True
+                logger.debug(f"[TDA][CP{self.id}] A comporta {self.id} já está fechada")
+                return
             else:
-                response = EscritaOPCBit(self.opc, OPC_UA["TDA"]["CP{}_CMD_FECHAMENTO".format(self.id)], 3, 1)
-        except Exception as e:
-            raise(e)
-        else:
-            return response
+                self.e_opc_bit.escrever(self.opc, OPC_UA["TDA"][f"CP{self.id}_CMD_FECHAMENTO"], 3, 1)
+                return
 
-    def cracking_comporta(self) -> bool:
+        except Exception as e:
+            logger.exception(f"[TDA][CP{self.id}] Houve um erro ao fechar a comporta. Exception: \"{repr(e)}\"")
+            logger.exception(f"[TDA][CP{self.id}] Traceback: {traceback.print_stack}")
+
+    def cracking_comporta(self) -> None:
         try:
             if self.etapa_comporta == CP_CRACKING:
-                logger.debug("[CP{0}] A comporta {} já está em cracking".format(self.id))
-                return True
+                logger.debug(f"[TDA][CP{self.id}] A comporta {self.id} já está em cracking")
+                return
             elif self.verificar_precondicoes_comporta():
-                logger.debug("[CP{0}] Enviando comando de cracking para a comporta {0}".format(self.id))
-                response = EscritaOPCBit(self.opc, OPC_UA["TDA"]["CP{}_CMD_ABERTURA_CRACKING".format(self.id)], 1, 1)
-            else:
-                return False
+                logger.debug(f"[TDA][CP{self.id}] Enviando comando de cracking para a comporta {self.id}")
+                self.e_opc_bit.escrever(self.opc, OPC_UA["TDA"][f"CP{self.id}_CMD_ABERTURA_CRACKING"], 1, 1)
+                return
+
         except Exception as e:
-            raise(e)
-        else:
-            return response
-    
-    def verificar_pressao(self) -> bool:
-        timer = time() + 120
+            logger.exception(f"[TDA][CP{self.id}] Houve um erro ao realizar o cracking da comporta. Exception: \"{repr(e)}\"")
+            logger.exception(f"[TDA][CP{self.id}] Traceback: {traceback.print_stack}")
+
+    def verificar_pressao(self) -> None:
         try:
-            logger.info(f"[CP{self.id}] Iniciando o timer para equilização da pressão da UH")
-            while time() < timer:
-                if LeituraOpcBit(Client(CFG["client"]), OPC_UA["TDA"]["CP{}_PRESSAO_EQUALIZADA"], 4).valor:
-                    logger.debug(f"[CP{self.id}] Pressão equalizada, saindo do timer")
+            logger.info(f"[TDA][CP{self.id}] Iniciando o timer para equilização da pressão da UH")
+            while time() < time() + 120:
+                if self.press_equalizada.valor:
+                    logger.debug(f"[TDA][CP{self.id}] Pressão equalizada, saindo do timer")
                     self.timer_press = True
-                    return True
-            logger.warning(f"[CP{self.id}] Estourou o timer de equalização de pressão da unidade hidráulica")
-            self.forcar_estado_indisponivel()
+                    return
+            logger.warning(f"[TDA][CP{self.id}] Estourou o timer de equalização de pressão da unidade hidráulica")
             self.timer_press = True
+
         except Exception as e:
-            raise(e)
-        return False
+            logger.exception(f"[TDA][CP{self.id}] Houve um erro ao verificar a pressão da UH da comporta. Exception: \"{repr(e)}\"")
+            logger.exception(f"[TDA][CP{self.id}] Traceback: {traceback.print_stack}")
 
     def verificar_precondicoes_comporta(self) -> bool:
         self.rearme_falhas_comporta()
         try:
-            if self.status_unidade_hidraulica and not self.permissao_comporta and not self.bloqueio_comporta:
-                if self.status_outra_comporta == (2 or 4 or 32) or self.status_valvula_borboleta != 0 or self.status_limpa_grades != 0:
-                    logger.debug("[CP{0}] Não há condições para operar a comporta {0}".format(self.id))
-                    if self.status_outra_comporta != 0:
-                        logger.debug("[CP{}] A comporta {} está repondo".format(self.id, 2 if self.id == 1 else 1)) if self.status_outra_comporta == 2 else None
-                        logger.debug("[CP{}] A comporta {} está abrindo".format(self.id, 2 if self.id == 1 else 1)) if self.status_outra_comporta == 4 else None
-                        logger.debug("[CP{}] A comporta {} está em cracking".format(self.id, 2 if self.id == 1 else 1)) if self.status_outra_comporta == 32 else None
+            if self.unidade_hidraulica and not self.permissao_comporta and not self.bloqueio_comporta:
+                if self.cp2.status_comporta in (2, 4, 32) or self.valvula_borboleta != 0 or self.limpa_grades != 0:
+                    logger.debug(f"[TDA][CP{self.id}] Não há condições para operar a comporta {self.id}")
+                    if self.cp2.status_comporta != 0:
+                        logger.debug(f"[TDA][CP{self.id}] A comporta {self.cp2.id} está repondo") if self.cp2.status_comporta == 2 else None
+                        logger.debug(f"[TDA][CP{self.id}] A comporta {self.cp2.id} está abrindo") if self.cp2.status_comporta == 4 else None
+                        logger.debug(f"[TDA][CP{self.id}] A comporta {self.cp2.id} está em cracking") if self.cp2.status_comporta == 32 else None
                         return False
-                    elif self.status_limpa_grades != 0:
-                        logger.debug("[CP{}] O limpa grades está em operação".format(self.id))
+                    elif self.limpa_grades != 0:
+                        logger.debug(f"[TDA][CP{self.id}] O limpa grades está em operação")
                         return False
-                    elif self.status_valvula_borboleta != 0:
-                        logger.debug("[CP{}] A válvula borboleta está em operação".format(self.id))
+                    elif self.valvula_borboleta != 0:
+                        logger.debug(f"[TDA][CP{self.id}] A válvula borboleta está em operação")
                         return False
                     else:
-                        logger.debug("[CP{}] Favor aguardar normalização".format(self.id))
+                        logger.debug(f"[TDA][CP{self.id}] Favor aguardar normalização")
                         return False
-            elif not self.status_unidade_hidraulica:
-                logger.debug("[CP{}] A Unidade Hidráulica ainda não está disponível".format(self.id))
+            elif not self.unidade_hidraulica:
+                logger.debug(f"[TDA][CP{self.id}] A Unidade Hidráulica ainda não está disponível")
                 return False
             elif self.bloqueio_comporta:
-                logger.debug("[CP{0}] A comporta {0} ainda possui bloqueios ativados".format(self.id))
+                logger.debug(f"[TDA][CP{self.id}] A comporta {self.id} ainda possui bloqueios ativados")
                 return False
             elif self.permissao_comporta:
-                logger.debug("[CP{0}] A permissão da comporta {0} ainda não foi concedida".format(self.id))
+                logger.debug(f"[TDA][CP{self.id}] A permissão da comporta {self.id} ainda não foi concedida")
                 return False
         except Exception as e:
             raise(e)

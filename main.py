@@ -1,9 +1,3 @@
-"""
-operador_autonomo_sm.py
-
-Implementacao teste de uma versao do moa utilizando SM
-"""
-
 import os
 import sys
 import time
@@ -15,21 +9,16 @@ import traceback
 import logging.handlers as handlers
 
 import usina as usina
-import conector as conector
-import src.mensageiro.voip as voip
 
 from sys import stderr
-from time import sleep
+from time import sleep, time
 from datetime import datetime
 
-from src.dicionarios.reg import *
 from src.dicionarios.dict import *
-from src.dicionarios.const import *
 from src.maquinas_estado.moa_sm import *
 
 from src.clients import ClientsUsn
-from comporta import Comportas
-from src.unidade_geracao import UnidadeDeGeracao
+from src.banco_dados import BancoDados
 from src.conversor_protocolo.conversor import NativoParaExterno
 from src.mensageiro.mensageiro_log_handler import MensageiroHandler
 
@@ -87,53 +76,12 @@ def escrita_json(valor, nome: str) -> None:
     with open(arquivo, "w") as file:
         json.dump(valor, file, indent=4)
 
-# Método de leitura por período
-def leitura_temporizada():
-    delay = 1800
-    proxima_leitura = time.time() + delay
-    logger.debug("Iniciando o timer de leitura por hora.")
-    while True:
-        logger.debug("Inciando nova leitura...")
-        try:
-            if usina.leituras_por_hora() and usina.acionar_voip:
-                acionar_voip()
-            for ug in usina.ugs:
-                ug.leituras_por_hora()
-            time.sleep(max(0, proxima_leitura - time.time()))
-            
-        except Exception:
-            logger.debug("Houve um problema ao executar a leitura por hora")
-
-        proxima_leitura += (time.time() - proxima_leitura) // delay * delay + delay
-
-# Método para acionamento voip
-def acionar_voip():
-    V_VARS = voip.VARS
-    try:
-        if usina.acionar_voip:
-            for i, j in zip(voip, V_VARS):
-                if i == j and shared_dict["VOIP"][i]:
-                    V_VARS[j][0] = shared_dict["VOIP"][i]
-            voip.enviar_voz_auxiliar()
-
-        elif shared_dict["GLB"]["avisado_eletrica"]:
-            voip.enviar_voz_emergencia()
-            shared_dict["GLB"]["avisado_eletrica"] = False
-
-    except Exception:
-        logger.warning("Houve um problema ao ligar por Voip")
-
 if __name__ == "__main__":
-
     ESCALA_DE_TEMPO = 3
     if len(sys.argv) > 1:
         ESCALA_DE_TEMPO = int(sys.argv[1])
-    
+
     logger = criar_logger()
-    aux = 0
-    deve_normalizar = None
-    normalizacao_geral_teste = 0
-    usina = None
     timeout = 10
     prox_estado = 0
     n_tentativa = 0
@@ -150,7 +98,7 @@ if __name__ == "__main__":
             try:
                 logger.info("Carregando arquivos de configuração, dicionário compartilhado e dados de conversão")
 
-                sd = dicionario
+                dct = dicionario
                 cfg = leitura_json("cfg.json")
                 dcv = leitura_json("dados.json")
                 escrita_json(cfg, "cfg.json.bkp")
@@ -164,24 +112,11 @@ if __name__ == "__main__":
             try:
                 logger.info("Iniciando classe de conexão com o servidor OPC e CLPs da usina.")
 
-                cln = ClientsUsn(sd)
+                cln = ClientsUsn(dct)
                 cln.open_all()
 
             except Exception:
                 logger.exception(f"Erro ao iniciar conexão com os CLPs da usina. Tentando novamente em \"{timeout}s\" (Tentativa: {n_tentativa}/3).")
-                logger.exception(f"Traceback: {traceback.print_stack}")
-                sleep(timeout)
-                continue
-            
-            try:
-                logger.info("Iniciando classes de escrita OPC")
-
-                esc_opc = EscritaOpc(cln.opc_client)
-                esc_opc_bit = EscritaOpcBit(cln.opc_client)
-                esc = [esc_opc, esc_opc_bit]
-
-            except Exception:
-                logger.exception(f"Erro ao iniciar classes de escrita. Tentando novamente em \"{timeout}s\" (Tentativa: {n_tentativa}/3).")
                 logger.exception(f"Traceback: {traceback.print_stack}")
                 sleep(timeout)
                 continue
@@ -195,56 +130,65 @@ if __name__ == "__main__":
                 logger.exception(f"Traceback: {traceback.print_stack}")
                 sleep(timeout)
                 continue
-
+            
             try:
-                logger.info("Iniciando classes de conexão com tda, subestacao, bay e banco de dados.")
+                logger.info("Iniciando classe de conexão com banco de dados.")
 
-                db = BancoDados()
-                bay = Bay(cnv, dcv)
-                sub = Subestacao(sd, esc, cln)
-                tda = TomadaAgua()
-                con = [tda, sub, bay]
+                bds = BancoDados()
 
             except Exception:
-                logger.exception(f"Erro ao instanciar as classes de conexão. Tentando novamente em \"{timeout}s\" (Tentativa: {n_tentativa}/3).")
-                logger.exception(f"Traceback: {traceback.print_stack}")
-                sleep(timeout)
-                continue
-
-            try:
-                logger.info("Iniciando instâncias das classes Unidade de Geração")
-
-                ug1 = UnidadeDeGeracao(1, cfg, cln, con, db, escs)
-                ug2 = UnidadeDeGeracao(2, cfg, cln, con, db)
-                UnidadeDeGeracao.lista_ugs = [ug1, ug2]
-
-            except Exception:
-                logger.exception(f"Erro ao instanciar a classe das Unidades de Geração. Tentando novamente em \"{timeout}s\" (Tentativa: {n_tentativa}/3).")
+                logger.exception(f"Erro ao instanciar a classe do banco de dados. Tentando novamente em \"{timeout}s\" (Tentativa: {n_tentativa}/3).")
                 logger.exception(f"Traceback: {traceback.print_stack}")
                 sleep(timeout)
                 continue
 
             try:
                 logger.info("Iniciando instância da classe Usina.")
-                usn = Usina(cfg, db)
+                usn = Usina(cfg, dct, cln, cnv, bds)
 
             except Exception:
                 logger.exception(f"Erro ao instanciar a classe Usina. Tentando novamente em \"{timeout}s\" (Tentativa: {n_tentativa}/3).")
                 logger.exception(f"Traceback: {traceback.print_stack}")
                 sleep(timeout)
                 continue
+            
+            try:
+                logger.info("Finalizando inicialização com intâncias da máquina de estados e Threads paralelas.")
+
+                sm = StateMachine(initial_state=Pronto(cfg, dct, usn, bds))
+
+                threading.Thread(target=lambda: usn.leitura_temporizada()).start()
+
+            except Exception:
+                logger.exception(f"Erro ao finalizar a incialização do MOA. Tentando novamente em \"{timeout}s\" (Tentativa: {n_tentativa}/3).")
+                logger.exception(f"Traceback: {traceback.print_stack}")
+                sleep(timeout)
+                continue
 
     logger.info("Inicialização completa, executando o MOA \U0001F916")
 
-    threading.Thread(target=lambda: leitura_temporizada()).start()
-
-    sm = StateMachine(initial_state=prox_estado(usina))
     while True:
-        print("")
-        t_i = time.time()
-        logger.debug("Executando estado: {}".format(sm.state.__class__.__name__))
-        sm.exec()
-        t_restante = max(30 - (time.time() - t_i), 0) / ESCALA_DE_TEMPO
-        if t_restante == 0:
-            print("######################################################\n######################################################\nCiclo está demorando mais que o permitido\n######################################################\n######################################################")
-        sleep(t_restante)
+        try:
+            logger.debug(f"Executando estado: \"{sm.state.__class__.__name__}\"")
+
+            t_i = time()
+            sm.exec()
+            if usn.estado_moa == MOA_SM_CONTROLE_DADOS:
+                t_restante = max(30 - (time() - t_i), 0) / ESCALA_DE_TEMPO
+
+                if t_restante == 0:
+                    logger.warning("\n\"ATENÇÃO!\"")
+                    logger.warning("O ciclo está demorando mais que o permitido!")
+                    logger.warning("\"ATENÇÃO!\"\n")
+                sleep(t_restante)
+
+        except Exception as e:
+            logger.exception(f"Houve um erro na execução do loop principal da main do MOA. Exception: {repr(e)}")
+            logger.exception(f"Traceback: {traceback.print_stack}")
+            cln.close_all()
+            break
+
+        except KeyboardInterrupt:
+            logger.warning("Execução do loop principal da main do MOA interrompido por comando de teclado.")
+            cln.close_all()
+            break

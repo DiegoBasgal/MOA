@@ -1,5 +1,5 @@
 __author__ = "Diego Basgal"
-__credits__ = "Lucas Lavratti" , "Diego Basgal"
+__credits__ = "Lucas Lavratti", " Henrique Pfeifer", "Diego Basgal"
 
 __version__ = "0.1"
 __status__ = "Development"
@@ -12,28 +12,23 @@ import traceback
 import subprocess
 
 from opcua import Client as OpcClient
-
 from pyModbusTCP.client import ModbusClient
 
 logger = logging.getLogger("__main__")
 
 class ClientsUsn:
-    def __init__(
-            self,
-            dicionario: dict | None = ...
-        ) -> ...:
-
-        if None in (sd):
+    def __init__(self, dicionario: dict | None = ...) -> ...:
+        if not dicionario:
             logger.warning("[CLN] Houve um erro ao carregar o dicionário compartilhado.")
             raise ValueError
         else:
-            self.dict = sd
+            self.dict = dicionario
 
         self.borda_ping: bool = False
 
-        self.clp_dict: dict[str, ModbusClient | OpcClient] = {}
+        self.opc_client = OpcClient(self.dict["IP"]["opc_server"])
 
-        self.clp_dict["clp_moa"] = ModbusClient(
+        self.clp_moa = ModbusClient(
             host=self.dict["IP"]["MOA_slave_ip"],
             port=self.dict["IP"]["MOA_slave_porta"],
             unit_id=1,
@@ -41,7 +36,7 @@ class ClientsUsn:
             auto_open=True,
             auto_close=True
         )
-        self.clp_dict["clp_ug1"] = ModbusClient(
+        self.clp_ug1 = ModbusClient(
             host=self.dict["IP"]["UG1_slave_ip"],
             port=self.dict["IP"]["UG1_slave_porta"],
             unit_id=1,
@@ -49,7 +44,7 @@ class ClientsUsn:
             auto_open=True,
             auto_close=True
         )
-        self.clp_dict["clp_ug2"] = ModbusClient(
+        self.clp_ug2 = ModbusClient(
             host=self.dict["IP"]["UG2_slave_ip"],
             port=self.dict["IP"]["UG2_slave_porta"],
             unit_id=1,
@@ -58,25 +53,24 @@ class ClientsUsn:
             auto_close=True
         )
 
-        self.opc_client = OpcClient(self.dict["IP"]["opc_server"])
+        self.lista_clps = [self.clp_moa, self.clp_ug1, self.clp_ug2]
 
     def ping(self, host) -> bool:
         return [True if subprocess.call(["ping", "-c", "1", "-w", "1", host], stdout=subprocess.PIPE) == 0 else False for _ in range(2)]
 
     def open_all(self) -> None:
         logger.debug("[CLN] Iniciando conexões OPC e ModBus...")
-        for clp in self.clp_dict.values():
-            raise ModBusClientFail(clp) if not clp.open() else ...
-
         if not self.opc_client.connect():
             raise OpcClientFail(self.opc_client)
 
+        for clp in self.lista_clps:
+            raise ModBusClientFail(clp) if not clp.open() else ...
         logger.info("[CLN] Conexões inciadas.")
 
     def close_all(self) -> None:
         logger.debug("[CLN] Encerrando conexões...")
-        [clp.close() for clp in self.clp_dict.values()]
         self.opc_client.disconnect()
+        [clp.close() for clp in self.lista_clps]
         logger.debug("[CLN] Conexões encerradas.")
 
     def ping_clients(self) -> None:

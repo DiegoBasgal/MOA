@@ -1,3 +1,12 @@
+__author__ = "Diego Basgal"
+__credits__ = "Lucas Lavratti", " Henrique Pfeifer", "Diego Basgal"
+
+__version__ = "0.1"
+__status__ = "Development"
+__maintainer__ = "Diego Basgal"
+__email__ = "diego.garcia@ritmoenergia.com.br"
+__description__ = "Este módulo corresponde a implementação do conversor de protocolos."
+
 import sys
 import logging
 import traceback

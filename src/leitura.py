@@ -1,20 +1,16 @@
-__author__ = "Lucas Lavratti", "Diego Basgal"
-__credits__ = "Lucas Lavratti" , "Diego Basgal"
+__author__ = "Lucas Lavratti", " Henrique Pfeifer", "Diego Basgal"
+__credits__ = "Lucas Lavratti", " Henrique Pfeifer", "Diego Basgal"
 
 __version__ = "0.2"
 __status__ = "Development"
 __maintainer__ = "Diego Basgal"
 __email__ = "diego.garcia@ritmoenergia.com.br"
-__description__ = "Este módulo corresponde a implementação de leituras dos valores de campo."
+__description__ = "Este módulo corresponde a implementação de leituras dos registradores de campo."
 
-
-import logging
 from opcua import Client as OpcClient
 from pyModbusTCP.client import ModbusClient
 
 from dicionarios.reg import *
-
-logger = logging.getLogger("__main__")
 
 # Classe de Leitura Base
 class LeituraBase:

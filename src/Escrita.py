@@ -1,5 +1,5 @@
 __author__ = "Diego Basgal"
-__credits__ = "Lucas Lavratti" , "Diego Basgal"
+__credits__ = "Lucas Lavratti", " Henrique Pfeifer", "Diego Basgal"
 
 __version__ = "0.1"
 __status__ = "Development"
