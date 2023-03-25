@@ -6,22 +6,23 @@ import subprocess
 
 from time import sleep, time
 from datetime import  datetime, timedelta
+from pyModbusTCP.server import DataBank
 from pyModbusTCP.client import ModbusClient
-from pyModbusTCP.server import DataBank, ModbusServer
 
 from src.codes import *
+from src.Leituras import  *
 from src.mapa_modbus import *
 from src.UG1 import UnidadeDeGeracao1
 from src.UG2 import UnidadeDeGeracao2
 from src.UG3 import UnidadeDeGeracao3
-from src.LeiturasUSN import LeiturasUSN
+from src.database_connector import Database
+from src.field_connector import FieldConnector
 from src.Condicionadores import CondicionadorBase
-from src.Leituras import LeituraModbus, LeituraModbusBit, LeituraModbusCoil
 
 logger = logging.getLogger("__main__")
 
 class Usina:
-    def __init__(self, cfg=None, db=None, con=None, leituras=None):
+    def __init__(self, cfg=None, db: Database=None, con=None, leituras=None):
 
         if not cfg or not db:
             raise ValueError
@@ -32,20 +33,63 @@ class Usina:
         if con:
             self.con = con
         else:
-            from src.field_connector import FieldConnector
             self.con = FieldConnector(self.cfg)
 
-        if leituras:
-            self.leituras = leituras
-        else:
-            self.leituras = LeiturasUSN(self.cfg)
+        self.clp = ModbusClient(host=self.cfg["USN_slave_ip"],port=self.cfg["USN_slave_porta"],timeout=0.5,unit_id=1,auto_open=True,)
+        self.clp_tda = ModbusClient(host=cfg["TDA_slave_ip"], port=cfg["TDA_slave_porta"], timeout=0.5, unit_id=1, auto_open=True,)
 
-        self.state_moa = 1
+        self.__potencia_ativa_kW = LeituraModbus(
+            "REG_SA_RetornosAnalogicos_Medidor_potencia_kw_mp",
+            self.clp,
+            REG_SA_RetornosAnalogicos_MWR_PM_810_Potencia_Ativa,
+            1,
+            op=4,
+        )
+        self.__nv_montante = LeituraModbus(
+            "REG_TDA_EntradasAnalogicas_MRR_NivelMaisCasasAntes",
+            self.clp_tda,
+            REG_TDA_NivelMaisCasasAntes,
+            1 / 10000,
+            400,
+            op=4,
+        )
+        self.__tensao_rs = LeituraModbus(
+            "REG_SA_RetornosAnalogicos_MWR_PM_810_Tensao_AB",
+            self.clp,
+            REG_SA_RetornosAnalogicos_MWR_PM_810_Tensao_AB,
+            100,
+            op=4,
+        )
+        self.__tensao_st = LeituraModbus(
+            "REG_SA_RetornosAnalogicos_MWR_PM_810_Tensao_BC",
+            self.clp,
+            REG_SA_RetornosAnalogicos_MWR_PM_810_Tensao_BC,
+            100,
+            op=4,
+        )
+        self.__tensao_tr = LeituraModbus(
+            "REG_SA_RetornosAnalogicos_MWR_PM_810_Tensao_CA",
+            self.clp,
+            REG_SA_RetornosAnalogicos_MWR_PM_810_Tensao_CA,
+            100,
+            op=4,
+        )
+        """
+        self.potencia_ativa_kW = LeituraNBRPower(
+            "LeituraNBRPower potencia_ativa_kW",
+            ip_1=cfg["MP_ip"],
+            port_1=cfg["MP_port"],
+            ip_2=cfg["MR_ip"],
+            port_2=cfg["MR_port"],
+            escala=cfg["MPMR_scale"],
+        )
+        
+        """
 
         # Inicializa Objs da usina
-        self.ug1 = UnidadeDeGeracao1(1, cfg=self.cfg, leituras_usina=self.leituras)
-        self.ug2 = UnidadeDeGeracao2(2, cfg=self.cfg, leituras_usina=self.leituras)
-        self.ug3 = UnidadeDeGeracao3(3, cfg=self.cfg, leituras_usina=self.leituras)
+        self.ug1 = UnidadeDeGeracao1(1, self.cfg, self.__potencia_ativa_kW)
+        self.ug2 = UnidadeDeGeracao2(2, self.cfg, self.__potencia_ativa_kW)
+        self.ug3 = UnidadeDeGeracao3(3, self.cfg, self.__potencia_ativa_kW)
         self.ugs = [self.ug1, self.ug2, self.ug3]
         CondicionadorBase.ugs = self.ugs
 
@@ -58,6 +102,8 @@ class Usina:
         self.nv_montante_recentes = []
         self.nv_montante_anteriores = []
         self.condicionadores_essenciais = []
+
+        self.state_moa = 1
 
         self.aux = 1
         self.erro_nv = 0
@@ -80,14 +126,6 @@ class Usina:
         self.tentativas_de_normalizar = 0
         self.ug_operando = 0
 
-        for ug in self.ugs:
-            if ug.etapa_atual == UNIDADE_SINCRONIZADA:
-                self.ug_operando += 1
-
-        self.__split1 = True if self.ug_operando == 1 else False
-        self.__split2 = True if self.ug_operando == 2 else False
-        self.__split3 = True if self.ug_operando == 3 else False
-
         self.tensao_ok = True
         self.timer_tensao = None
         self.TDA_Offline = False
@@ -100,15 +138,13 @@ class Usina:
         self.deve_normalizar_forcado = False
         self.deve_ler_condicionadores = False
 
-        self.clp = ModbusClient(
-            host=self.cfg["USN_slave_ip"],
-            port=self.cfg["USN_slave_porta"],
-            timeout=0.5,
-            unit_id=1,
-            auto_open=True,
-        )
+        for ug in self.ugs:
+            if ug.etapa_atual == UNIDADE_SINCRONIZADA:
+                self.ug_operando += 1
 
-        threading.Thread(target=lambda: self.leitura_condicionadores()).start()
+        self.__split1 = True if self.ug_operando == 1 else False
+        self.__split2 = True if self.ug_operando == 2 else False
+        self.__split3 = True if self.ug_operando == 3 else False
 
         # ajuste inicial ie
         if self.cfg["saida_ie_inicial"] == "auto":
@@ -116,14 +152,14 @@ class Usina:
         else:
             self.controle_ie = self.cfg["saida_ie_inicial"]
 
+        threading.Thread(target=lambda: self.leitura_condicionadores()).start()
         parametros = self.db.get_parametros_usina()
         self.atualizar_limites_operacao(parametros)
-
         self.escrever_valores()
 
     @property
     def nv_montante(self):
-        return self.leituras.nv_montante.valor
+        return self.__nv_montante.valor
 
     def get_ugs(self) -> list:
         return self.ugs
@@ -136,7 +172,7 @@ class Usina:
         # -> Verifica conexão com CLP Tomada d'água
         if not ping(self.cfg["TDA_slave_ip"]):
             self.TDA_Offline = True
-            self.db.update_tda_offline(valor=1)
+            self.db.update_tda_offline(True)
             if self.TDA_Offline and self.aux_ping == 0:
                 self.aux_ping = 1
                 logger.warning("CLP TDA não respondeu a tentativa de comunicação!")
@@ -144,7 +180,7 @@ class Usina:
             logger.info("Comunicação com o CLP TDA reestabelecida.")
             self.aux_ping = 0
             self.TDA_Offline = False
-            self.db.update_tda_offline(valor=0)
+            self.db.update_tda_offline(False)
         
         # -> Verifica conexão com CLP Sub
         if not ping(self.cfg["USN_slave_ip"]):
@@ -168,9 +204,9 @@ class Usina:
 
         if not self.TDA_Offline:
             if self.nv_montante_recente < 1:
-                self.nv_montante_recentes = [self.leituras.nv_montante.valor] * 240
+                self.nv_montante_recentes = [self.nv_montante] * 240
 
-            self.nv_montante_recentes.append(round(self.leituras.nv_montante.valor, 2))
+            self.nv_montante_recentes.append(round(self.nv_montante, 2))
             self.nv_montante_recentes = self.nv_montante_recentes[1:]
             """
             # VERIFICAR SE O CÁLCULO SEGUINTE SERÁ USADO EM CAMPO
@@ -181,7 +217,7 @@ class Usina:
 
             self.nv_montante_recente = ema[-1]  # REMOVER SEB
             """
-            self.nv_montante_recente = self.leituras.nv_montante.valor
+            self.nv_montante_recente = self.nv_montante
 
             self.erro_nv_anterior = self.erro_nv
             self.erro_nv = self.nv_montante_recente - self.cfg["nv_alvo"]
@@ -379,13 +415,11 @@ class Usina:
         logger.debug("Normalizando (e verificações)")
         logger.debug("Ultima tentativa: {}. Tensão na linha: RS {:2.1f}kV ST{:2.1f}kV TR{:2.1f}kV.".format(
                 self.ts_ultima_tentativa_normalizacao,
-                self.leituras.tensao_rs.valor / 1000,
-                self.leituras.tensao_st.valor / 1000,
-                self.leituras.tensao_tr.valor / 1000,))
+                self.tensao_rs.valor / 1000,
+                self.tensao_st.valor / 1000,
+                self.tensao_tr.valor / 1000,))
 
-        if not(self.cfg["TENSAO_LINHA_BAIXA"] < self.leituras.tensao_rs.valor < self.cfg["TENSAO_LINHA_ALTA"] \
-            and self.cfg["TENSAO_LINHA_BAIXA"] < self.leituras.tensao_st.valor < self.cfg["TENSAO_LINHA_ALTA"] \
-            and self.cfg["TENSAO_LINHA_BAIXA"] < self.leituras.tensao_tr.valor < self.cfg["TENSAO_LINHA_ALTA"]):
+        if not self.verificar_tensao():
             self.tensao_ok = False
             return False
 
@@ -396,7 +430,7 @@ class Usina:
             self.con.TDA_Offline = True if self.TDA_Offline else False
             self.con.normalizar_emergencia()
             self.clp_emergencia_acionada = 0
-            logger.info("Normalizando Banco de Dados")
+            logger.debug("Normalizando Banco de Dados")
             self.db.update_remove_emergencia()
             self.db_emergencia_acionada = 0
             return True
@@ -406,16 +440,25 @@ class Usina:
             self.tensao_ok = True
             return False
 
+    def verificar_tensao(self) -> bool:
+        try:
+            if not(self.cfg["TENSAO_LINHA_BAIXA"] < self.tensao_rs.valor < self.cfg["TENSAO_LINHA_ALTA"] \
+                and self.cfg["TENSAO_LINHA_BAIXA"] < self.tensao_st.valor < self.cfg["TENSAO_LINHA_ALTA"] \
+                and self.cfg["TENSAO_LINHA_BAIXA"] < self.tensao_tr.valor < self.cfg["TENSAO_LINHA_ALTA"]):
+                return False
+            else:
+                return True
+        except Exception as e:
+            logger.error(f"Erro ao ler valores da linha. Exception: \"{repr(e)}\".")
+            return False
+
     def aguardar_tensao(self, delay):
         temporizador = time() + delay
         logger.warning("Iniciando o timer para a normalização da tensão na linha")
     
         while time() <= temporizador:
             sleep(time() - (time() - 15))
-            if (self.cfg["TENSAO_LINHA_BAIXA"] < self.leituras.tensao_rs.valor < self.cfg["TENSAO_LINHA_ALTA"] \
-                and self.cfg["TENSAO_LINHA_BAIXA"] < self.leituras.tensao_st.valor < self.cfg["TENSAO_LINHA_ALTA"] \
-                and self.cfg["TENSAO_LINHA_BAIXA"] < self.leituras.tensao_tr.valor < self.cfg["TENSAO_LINHA_ALTA"]):
-                logger.info("Tensão na linha reestabelecida.")
+            if self.verificar_tensao():
                 self.timer_tensao = True
                 return True
         
@@ -555,11 +598,11 @@ class Usina:
 
             
             if segundos_passados > 240:
-                logger.warning("Agendamento #{} Atrasado! ({}).".format(agendamento[0], agendamento[3]))
+                logger.info("Agendamento #{} Atrasado! ({}).".format(agendamento[0], agendamento[3]))
                 self.agendamentos_atrasados += 1
 
             if segundos_passados > 300 or self.agendamentos_atrasados > 3:
-                logger.info("Os agendamentos estão muito atrasados! Acionando emergência.")
+                logger.warning("Os agendamentos estão muito atrasados! Acionando emergência.")
                 self.acionar_emergencia()
                 return False
 
@@ -580,7 +623,7 @@ class Usina:
                 #   proximo
                 if (self.modo_autonomo and not self.db.get_executabilidade(agendamento[3])["executavel_em_autmoatico"]):
                     obs = "Este agendamento não tem efeito com o módulo em modo autônomo. Executado sem realizar nenhuma ação"
-                    logger.warning(obs)
+                    logger.debug(obs)
                     self.db.update_agendamento(agendamento[0], True, obs)
                     return True
 
@@ -589,7 +632,7 @@ class Usina:
                 #   proximo
                 if (not self.modo_autonomo and not self.db.get_executabilidade(agendamento[3])["executavel_em_manual"]):
                     obs = "Este agendamento não tem efeito com o módulo em modo manual. Executado sem realizar nenhuma ação"
-                    logger.warning(obs)
+                    logger.debug(obs)
                     self.db.update_agendamento(agendamento[0], True, obs)
                     return True
 
@@ -633,7 +676,7 @@ class Usina:
                                 logger.debug("Enviando o setpoint de limpeza de grade ({}) para a UG{}".format(self.cfg["pot_limpeza_grade"], ug.id))
 
                     except Exception as e:
-                        logger.info("Traceback: {}".format(repr(e)))
+                        logger.error("Traceback: {}".format(repr(e)))
 
                 if agendamento[3] == AGENDAMENTO_NORMALIZAR_POT_UGS_MINIMO:
                     try:
@@ -733,7 +776,7 @@ class Usina:
                 ug.setpoint = 0
             return 0
 
-        pot_medidor = self.leituras.potencia_ativa_kW.valor
+        pot_medidor = self.__potencia_ativa_kW.valor
         logger.debug("Potência no medidor: {:0.3f}".format(pot_medidor))
 
         # implementação nova

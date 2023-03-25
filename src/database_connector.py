@@ -129,16 +129,15 @@ class Database:
         self._close()
         return True
 
-    def update_tda_offline(self, valor):
-        q = (
-            "UPDATE parametros_moa_parametrosusina "
-            "SET tda_offline = %s "
-            "WHERE id = 1"
-        )
+    def update_tda_offline(self, status=False):
+        q = ("UPDATE parametros_moa_parametrosusina "
+            "SET tda_offline = 1"
+            "WHERE id = 1") if status else \
+            ("UPDATE parametros_moa_parametrosusina "
+            "SET tda_offline = 0"
+            "WHERE id = 1")
         self._open()
-        self.execute(
-            q, valor
-        )
+        self.execute(q)
         self._close()
         return True
 

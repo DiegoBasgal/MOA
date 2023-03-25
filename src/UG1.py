@@ -3,24 +3,22 @@ from src.Condicionadores import *
 from src.UnidadeDeGeracao import *
 from pyModbusTCP.server import DataBank
 from src.database_connector import Database
+from src.field_connector import FieldConnector
 
 class UnidadeDeGeracao1(UnidadeDeGeracao):
-    def __init__(self, id, cfg=None, leituras_usina=None):
+    def __init__(self, id, cfg=None, potencia_usina=None):
         super().__init__(id)
 
-        if not cfg or not leituras_usina:
+        if not cfg:
             raise ValueError
         else:
             self.cfg = cfg
-            self.leituras_usina = leituras_usina
         
+        self.potencia_ativa_kW = potencia_usina
+
         self.db = Database()
 
-        from src.field_connector import FieldConnector
         self.con = FieldConnector(self.cfg)
-
-        from src.LeiturasUSN import LeiturasUSN
-        self.leituras = LeiturasUSN(self.cfg)
 
         self.modo_autonomo = 1
         self.__last_EtapaAtual = 0
@@ -247,11 +245,11 @@ class UnidadeDeGeracao1(UnidadeDeGeracao):
         
         self.leitura_ComandosDigitais_MXW_EmergenciaViaSuper = LeituraModbusCoil("ComandosDigitais_MXW_EmergenciaViaSuper", self.clp, REG_UG1_ComandosDigitais_MXW_EmergenciaViaSuper,)
         x = self.leitura_ComandosDigitais_MXW_EmergenciaViaSuper
-        self.condicionadores_essenciais.append(CondicionadorBase(x.descr, DEVE_NORMALIZAR, x, self.id, [UNIDADE_SINCRONIZADA, UNIDADE_SINCRONIZANDO, UNIDADE_PARADA, UNIDADE_PARANDO]))
+        self.condicionadores_essenciais.append(CondicionadorBase(x.descr, DEVE_NORMALIZAR, x))
 
         self.leitura_RetornosDigitais_MXR_TripEletrico = LeituraModbusCoil("RetornosDigitais_MXR_TripEletrico", self.clp, REG_UG1_RetornosDigitais_MXR_TripEletrico,)
         x = self.leitura_RetornosDigitais_MXR_TripEletrico
-        self.condicionadores_essenciais.append(CondicionadorBase(x.descr, DEVE_NORMALIZAR, x, self.id, [UNIDADE_SINCRONIZADA, UNIDADE_SINCRONIZANDO, UNIDADE_PARADA, UNIDADE_PARANDO]))
+        self.condicionadores_essenciais.append(CondicionadorBase(x.descr, DEVE_NORMALIZAR, x))
         
         self.leitura_ReleBloqA86MAtuado = LeituraModbusCoil("ReleBloqA86MAtuado", self.clp, REG_UG1_EntradasDigitais_MXI_ReleBloqA86MAtuado)
         x = self.leitura_ReleBloqA86MAtuado
@@ -259,7 +257,7 @@ class UnidadeDeGeracao1(UnidadeDeGeracao):
 
         self.leitura_ReleBloqA86HAtuado = LeituraModbusCoil("ReleBloqA86HAtuado", self.clp, REG_UG1_EntradasDigitais_MXI_ReleBloqA86HAtuado)
         x = self.leitura_ReleBloqA86HAtuado
-        self.condicionadores_essenciais.append(CondicionadorBase(x.descr, DEVE_NORMALIZAR, x, self.id, [UNIDADE_SINCRONIZADA, UNIDADE_SINCRONIZANDO, UNIDADE_PARADA, UNIDADE_PARANDO]))
+        self.condicionadores_essenciais.append(CondicionadorBase(x.descr, DEVE_NORMALIZAR, x, self.id, [UNIDADE_SINCRONIZADA]))
 
         self.leitura_SEL700G_Atuado = LeituraModbusCoil("SEL700G_Atuado", self.clp, REG_UG1_EntradasDigitais_MXI_SEL700G_Atuado)
         x = self.leitura_SEL700G_Atuado
@@ -275,7 +273,7 @@ class UnidadeDeGeracao1(UnidadeDeGeracao):
 
         self.leitura_RetornosDigitais_MXR_700G_Trip = LeituraModbusCoil("RetornosDigitais_MXR_700G_Trip", self.clp, REG_UG1_RetornosDigitais_MXR_700G_Trip,) 
         x = self.leitura_RetornosDigitais_MXR_700G_Trip
-        self.condicionadores_essenciais.append(CondicionadorBase(x.descr, DEVE_NORMALIZAR, x, self.id, [UNIDADE_SINCRONIZADA, UNIDADE_SINCRONIZANDO, UNIDADE_PARADA, UNIDADE_PARANDO]))
+        self.condicionadores_essenciais.append(CondicionadorBase(x.descr, DEVE_NORMALIZAR, x))
 
         self.leitura_AVR_Trip = LeituraModbusCoil("AVR_Trip", self.clp, REG_UG1_EntradasDigitais_MXI_AVR_Trip)
         x = self.leitura_AVR_Trip
@@ -533,7 +531,7 @@ class UnidadeDeGeracao1(UnidadeDeGeracao):
 
         self.logger.debug("Pot alvo = {}".format(pot_alvo))
 
-        pot_medidor = self.leituras.potencia_ativa_kW.valor
+        pot_medidor = self.potencia_ativa_kW.valor
 
         self.logger.debug("Pot no medidor = {}".format(pot_medidor))
 
@@ -552,7 +550,7 @@ class UnidadeDeGeracao1(UnidadeDeGeracao):
                 
                 print("\nPotência alvo: ", pot_alvo, "\n")
         except TypeError as e:
-            logger.info(repr(e))
+            logger.debug(repr(e))
 
         self.pot_alvo_anterior = pot_alvo
 
@@ -743,7 +741,7 @@ class UnidadeDeGeracao1(UnidadeDeGeracao):
             bool: True se sucesso, Falso caso contrário
         """
         try:
-            self.logger.info("[UG{}] Enviando comando de reconhece e reset alarmes. (Aproximadamente 10s)".format(self.id))
+            self.logger.debug("[UG{}] Enviando comando de reconhece e reset alarmes. (Aproximadamente 10s)".format(self.id))
 
             for _ in range(3):
                 DataBank.set_words(self.cfg["REG_PAINEL_LIDO"], [0])
@@ -941,14 +939,14 @@ class UnidadeDeGeracao1(UnidadeDeGeracao):
         
         self.leitura_EntradasDigitais_MXI_FreioCmdRemoto = LeituraModbusCoil( "EntradasDigitais_MXI_FreioCmdRemoto", self.clp, REG_UG1_EntradasDigitais_MXI_FreioCmdRemoto )
         if self.leitura_EntradasDigitais_MXI_FreioCmdRemoto.valor == 0 and self.FreioCmdRemoto == True:
-            self.logger.warning("[UG{}] O freio da UG saiu do modo remoto, favor analisar a situação.".format(self.id))
+            self.logger.debug("[UG{}] O freio da UG saiu do modo remoto, favor analisar a situação.".format(self.id))
             self.FreioCmdRemoto = False
         elif self.leitura_EntradasDigitais_MXI_FreioCmdRemoto.valor == 1 and self.FreioCmdRemoto == False:
             self.FreioCmdRemoto = True
 
         self.leitura_EntradasDigitais_MXI_QCAUG1_Remoto = LeituraModbusCoil( "EntradasDigitais_MXI_QCAUG1_Remoto", self.clp, REG_UG1_EntradasDigitais_MXI_QCAUG1_Remoto )
         if self.leitura_EntradasDigitais_MXI_QCAUG1_Remoto.valor == 0 and self.QCAUGRemoto==True:
-            self.logger.warning("[UG{}] O compressor da UG saiu do modo remoto, favor analisar a situação.".format(self.id))
+            self.logger.debug("[UG{}] O compressor da UG saiu do modo remoto, favor analisar a situação.".format(self.id))
             self.QCAUGRemoto = False
         elif self.leitura_EntradasDigitais_MXI_QCAUG1_Remoto.valor == 1 and self.QCAUGRemoto==False:
             self.QCAUGRemoto = True

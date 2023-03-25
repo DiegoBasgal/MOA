@@ -197,12 +197,12 @@ class ValoresInternosAtualizados(State):
                     self.habilitar_emerg_condic_c=False
             
             if self.habilitar_emerg_condic_e or self.habilitar_emerg_condic_c:
-                logger.info("Condicionadores ativos com gravidade alta!")
+                logger.warning("Foram detectados Condicionadores ativos com gravidade: \"Indisponibilizar\"!")
                 return Emergencia(self.usina)
 
         if deve_normalizar:
             if (not self.usina.normalizar_emergencia()) and self.usina.tensao_ok==False and aux==0:
-                logger.warning("Tensão da linha fora do limite ")
+                logger.warning("Tensão da linha fora do limite")
                 aux = 1
                 threading.Thread(target=lambda: self.usina.aguardar_tensao(600)).start()
 
@@ -218,13 +218,8 @@ class ValoresInternosAtualizados(State):
                 logger.critical("O tempo de normalização da linha excedeu o limite! (10 min)")
                 return Emergencia(self.usina)
 
-        if self.usina.clp_emergencia_acionada:
-            logger.info("Comando recebido: habilitando modo de emergencia.")
-            sleep(2)
-            return Emergencia(self.usina)
-
-        if self.usina.db_emergencia_acionada:
-            logger.info("Comando recebido: habilitando modo de emergencia.")
+        if self.usina.clp_emergencia_acionada or self.usina.db_emergencia_acionada:
+            logger.warning("Comando recebido: habilitando modo de emergencia.")
             sleep(2)
             return Emergencia(self.usina)
 
@@ -505,7 +500,7 @@ class OperacaoTDAOffline(State):
                     self.habilitar_emerg_condic_c=False
             
             if self.habilitar_emerg_condic_e or self.habilitar_emerg_condic_c:
-                logger.info("Condicionadores ativos com gravidade alta!")
+                logger.warning("Foram detectados Condicionadores ativos com gravidade: \"Indisponibilizar\"!")
                 return Emergencia(self.usina)
 
         if deve_normalizar:
@@ -582,21 +577,10 @@ def acionar_voip():
             voip.enviar_voz_emergencia()
             usina.avisado_em_eletrica = False
 
-        """
         for ug in usina.ugs:
             if ug.acionar_voip:
-                #voip.QCAUG1Remoto=[True if not usina.ug1.QCAUGRemoto else False]
-                #voip.QCAUG2Remoto=[True if not usina.ug2.QCAUGRemoto else False]
-                #voip.QCAUG3Remoto=[True if not usina.ug3.QCAUGRemoto else False]
-                #voip.FreioCmdRemoto1=[True if not usina.ug1.FreioCmdRemoto else False]
-                #voip.FreioCmdRemoto2=[True if not usina.ug2.FreioCmdRemoto else False]
-                #voip.FreioCmdRemoto3=[True if not usina.ug3.FreioCmdRemoto else False]
-                voip.enviar_voz_auxiliar()
                 ug.acionar_voip = False
-            elif ug.avisou_emerg_voip:
-                voip.enviar_voz_emergencia()
-                ug.avisou_emerg_voip = False
-        """
+                
     except Exception:
         logger.debug("Houve um problema ao ligar por Voip")
 

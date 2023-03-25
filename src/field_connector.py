@@ -119,7 +119,7 @@ class FieldConnector:
             return response
 
     def normalizar_emergencia(self):
-        logger.info("Reconhecendo alarmes, resetando usina e fechando Dj52L")
+        logger.debug("Reconhecendo alarmes, resetando usina e fechando Dj52L")
         logger.debug("Reconhece/Reset alarmes")
         self.ug1_clp.write_single_coil(REG_UG1_ComandosDigitais_MXW_ResetGeral, 1)
         self.ug2_clp.write_single_coil(REG_UG2_ComandosDigitais_MXW_ResetGeral, 1)
@@ -152,48 +152,54 @@ class FieldConnector:
 
     def get_flag_falha52L(self):
         # adicionar estado do disjuntor
+        flag = 0
+
         if self.usn_clp.read_discrete_inputs(REG_SA_EntradasDigitais_MXI_SA_DisjDJ1_SuperBobAbert1)[0] == 0:
-            logger.info("DisjDJ1_SuperBobAbert1")
-            return True
+            logger.debug("DisjDJ1_SuperBobAbert1")
+            flag += 1
 
         if self.usn_clp.read_discrete_inputs(REG_SA_EntradasDigitais_MXI_SA_DisjDJ1_SuperBobAbert2)[0] == 0:
-            logger.info("DisjDJ1_SuperBobAbert2")
-            return True
+            logger.debug("DisjDJ1_SuperBobAbert2")
+            flag += 1
 
         if self.usn_clp.read_discrete_inputs(REG_SA_EntradasDigitais_MXI_SA_DisjDJ1_Super125VccCiMot)[0] == 0:
-            logger.info("DisjDJ1_Super125VccCiMot")
-            return True
+            logger.debug("DisjDJ1_Super125VccCiMot")
+            flag += 1
 
         if self.usn_clp.read_discrete_inputs(REG_SA_EntradasDigitais_MXI_SA_DisjDJ1_Super125VccCiCom)[0] == 0:
-            logger.info("DisjDJ1_Super125VccCiCom")
-            return True
+            logger.debug("DisjDJ1_Super125VccCiCom")
+            flag += 1
 
         if self.usn_clp.read_discrete_inputs(REG_SA_EntradasDigitais_MXI_SA_DisjDJ1_AlPressBaixa)[0] == 1:
-            logger.info("DisjDJ1_AlPressBaixa")
-            return True
+            logger.debug("DisjDJ1_AlPressBaixa")
+            flag += 1
 
         if self.usn_clp.read_discrete_inputs(REG_SA_RetornosDigitais_MXR_DJ1_FalhaInt)[0] == 1:
-            logger.info("MXR_DJ1_FalhaInt")
-            return True
+            logger.debug("MXR_DJ1_FalhaInt")
+            flag += 1
 
         if self.usn_clp.read_discrete_inputs(REG_SA_EntradasDigitais_MXI_SA_DisjDJ1_BloqPressBaixa)[0] == 1:
-            logger.info("DisjDJ1_BloqPressBaixa")
-            return True
+            logger.debug("DisjDJ1_BloqPressBaixa")
+            flag += 1
 
         if self.usn_clp.read_discrete_inputs(REG_SA_EntradasDigitais_MXI_SA_DisjDJ1_Sup125VccBoFeAb1)[0] == 0:
-            logger.info("DisjDJ1_Sup125VccBoFeAb1")
-            return True
+            logger.debug("DisjDJ1_Sup125VccBoFeAb1")
+            flag += 1
 
         if self.usn_clp.read_discrete_inputs(REG_SA_EntradasDigitais_MXI_SA_DisjDJ1_Sup125VccBoFeAb2)[0] == 0:
-            logger.info("DisjDJ1_Sup125VccBoFeAb2")
-            return True
+            logger.debug("DisjDJ1_Sup125VccBoFeAb2")
+            flag += 1
 
         if self.usn_clp.read_discrete_inputs(REG_SA_EntradasDigitais_MXI_SA_DisjDJ1_Local)[0] == 1:
-            logger.info("DisjDJ1_Local")
-            return True
+            logger.debug("DisjDJ1_Local")
+            flag += 1
 
         if self.usn_clp.read_discrete_inputs(REG_SA_EntradasDigitais_MXI_SA_DisjDJ1_MolaDescarregada)[0] == 1:
-            logger.info("DisjDJ1_MolaDescarregada")
-            return True
+            logger.debug("DisjDJ1_MolaDescarregada")
+            flag += 1
 
-        return False
+        if flag > 0:
+            logger.warning(f"Foram detectados bloqueios ao fechar o Dj52L. Número de bloqueios: \"{flag}\".")
+            return True
+        else:
+            return False

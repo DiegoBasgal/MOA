@@ -19,7 +19,7 @@ class ParametrosUsina(models.Model):
     ki = models.DecimalField(max_digits=15, decimal_places=3, default=0.1)
     kd = models.DecimalField(max_digits=15, decimal_places=3, default=0)
     kie = models.DecimalField(max_digits=15, decimal_places=3, default=0.1)
-    margem_pot_critica = models.DecimalField(max_digits=10, decimal_places=0, default=0.2)
+    margem_pot_critica = models.DecimalField(max_digits=10, decimal_places=5, default=0.037)
     nv_alvo = models.DecimalField(max_digits=10, decimal_places=3, default=405)
     nv_maximo = models.DecimalField(max_digits=10, decimal_places=3, default=405.25)
     nv_minimo = models.DecimalField(max_digits=10, decimal_places=3, default=404.65)
