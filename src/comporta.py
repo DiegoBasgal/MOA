@@ -1,10 +1,5 @@
-__author__ = "Diego Basgal"
-__credits__ = "Lucas Lavratti", " Henrique Pfeifer", "Diego Basgal"
-
 __version__ = "0.1"
-__status__ = "Development"
-__maintainer__ = "Diego Basgal"
-__email__ = "diego.garcia@ritmoenergia.com.br"
+__author__ = "Diego Basgal"
 __description__ = "Este módulo corresponde a implementação da operação de comportas."
 
 import logging
@@ -17,7 +12,7 @@ from dicionarios.reg import *
 from dicionarios.const import *
 
 from comporta import Comporta
-from setores import TomadaAgua
+from setor import TomadaAgua
 
 logger = logging.getLogger("__main__")
 
@@ -118,6 +113,7 @@ class Comporta(TomadaAgua):
             if self.etapa_comporta == CP_ABERTA:
                 logger.debug(f"[TDA][CP{self.id}] A comporta {self.id} já está aberta")
                 return
+
             elif self.verificar_precondicoes_comporta():
                 if self.press_equalizada.valor and self.aguardando_cmd_abert.valor:
                     logger.debug(f"[TDA][CP{self.id}] Enviando comando de abertura para a comporta {self.id}")

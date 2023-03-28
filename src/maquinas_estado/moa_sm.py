@@ -1,11 +1,8 @@
-__author__ = "Lucas Lavratti", " Henrique Pfeifer", "Diego Basgal"
-__credits__ = "Lucas Lavratti", " Henrique Pfeifer", "Diego Basgal"
-
 __version__ = "0.2"
-__status__ = "Development"
-__maintainer__ = "Diego Basgal"
-__email__ = "diego.garcia@ritmoenergia.com.br"
-__description__ = "Este módulo corresponde a implementação da máquina de estados do Módulo de Operação Autônoma (MOA)."
+__author__ = "Diego Basgal"
+__credits__ = ["Lucas Lavratti", " Henrique Pfeifer", ...]
+__description__ = "Este módulo corresponde a implementação da máquina de estados do Módulo de Operação Autônoma."
+
 
 import sys
 import pytz
@@ -17,6 +14,7 @@ from datetime import datetime
 from src.usina import *
 from src.dicionarios.reg import *
 from src.dicionarios.const import *
+
 
 class StateMachine:
     def __init__(self, initial_state):
@@ -95,7 +93,7 @@ class ControleNormal(State):
         elif self.usn.clp_emergencia or self.usn.bd_emergencia:
             return ControleEmergencia()
 
-        elif len(self.usn.agn.get_agendamentos_pendentes()) > 0:
+        elif len(self.usn.agn.agendamentos_pendentes()) > 0:
             return ControleAgendamentos()
 
         else:

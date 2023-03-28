@@ -1,14 +1,12 @@
-__author__ = "Lucas Lavratti", " Henrique Pfeifer", "Diego Basgal"
-__credits__ = "Lucas Lavratti", " Henrique Pfeifer", "Diego Basgal"
-
 __version__ = "0.2"
-__status__ = "Development"
-__maintainer__ = "Diego Basgal"
-__email__ = "diego.garcia@ritmoenergia.com.br"
-__description__ = "Este módulo corresponde a implementação de condicionadores de campo."
+__authors__ = "Lucas Lavratti", " Henrique Pfeifer"
+__credits__ = ["Diego Basgal" , ...]
+__description__ = "Este módulo corresponde a implementação da lógica de Condicionadores."
 
 
 from leitura import *
+from dicionarios.const import *
+
 from unidade_geracao import UnidadeGeracao
 
 class CondicionadorBase:
@@ -17,17 +15,19 @@ class CondicionadorBase:
             leitura: LeituraBase | None = ...,
             gravidade: int | None = ...,
             etapas: list | None = ...,
-            id_unidade: int | None = ...
+            id_unidade: int | None = ...,
+            descricao: str | None = ...
         ):
         self.__leitura = leitura
         self.__etapas = [] if etapas is None else etapas
         self.__gravidade = 2 if gravidade is None else gravidade
         self.__id_unidade = None if id_unidade is None else id_unidade
+        self.__descricao = None if descricao is None else descricao
 
         self._ugs: list[UnidadeGeracao]
 
     def __str__(self):
-        return f"Condicionador: {self.descr}, Gravidade: {self.gravidade}"
+        return f"Condicionador: {self.descricao}, Gravidade: {CONDIC_STR_DCT[self.gravidade]}"
 
     @property
     def leitura(self) -> int | float:
@@ -44,6 +44,10 @@ class CondicionadorBase:
     @property
     def id_unidade(self) -> int:
         return self.__id_unidade
+
+    @property
+    def descricao(self) -> int:
+        return self.__descricao
 
     @property
     def valor(self) -> int | float:
@@ -67,8 +71,8 @@ class CondicionadorBase:
 
 
 class CondicionadorExponencial(CondicionadorBase):
-    def __init__(self, leitura, gravidade, valor_base: float | None = ..., valor_limite: float | None = ..., ordem: float | None = ...) -> ...:
-        CondicionadorBase.__init__(leitura, gravidade)
+    def __init__(self, leitura, gravidade, valor_base: float | None = ..., valor_limite: float | None = ..., ordem: float | None = ..., descricao = ...) -> ...:
+        CondicionadorBase.__init__(leitura, gravidade, descricao)
         self._ordem = 2 if ordem is None else ordem
         self._valor_base = 0 if valor_base is None else valor_base
         self._valor_limite = 0 if valor_limite is None else valor_limite
@@ -115,8 +119,8 @@ class CondicionadorExponencial(CondicionadorBase):
 
 class CondicionadorExponencialReverso(CondicionadorExponencial):
     # TODO puxar implementacao de offset mais casas decimais
-    def __init__(self,leitura, gravidade, valor_base, valor_limite, ordem) -> ...:
-        CondicionadorExponencial.__init__(leitura, gravidade, valor_base, valor_limite, ordem)
+    def __init__(self,leitura, gravidade, valor_base, valor_limite, ordem, descricao) -> ...:
+        CondicionadorExponencial.__init__(leitura, gravidade, valor_base, valor_limite, ordem, descricao)
 
     @property
     def valor(self) -> int | float:

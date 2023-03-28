@@ -1,68 +1,39 @@
+"""
+    Módulo de Operação Autônoma (MOA)
+"""
+__version__ = "2.0"
+__status__ = "Desenvolvimento"
+__description__ = "Módulo de Operação Autônoma"
+
+__maintainers__ = "Diego Basgal", "Henrique Pfeifer"
+__emails__ = "diego.garcia@ritmoenergia.com.br", "henrique@ritmoenergia.com.br"
+
+__authors__ = "Lucas Lavratti", " Henrique Pfeifer", "Diego Basgal"
+__credits__ = ["Lucas Lavratti", " Henrique Pfeifer", "Diego Basgal", ...]
+
+
 import os
 import sys
 import time
 import json
-import pytz
-import logging
 import threading
 import traceback
-import logging.handlers as handlers
 
 import usina as usina
+import metadados.dict as dicionarios
 
-from sys import stderr
 from time import sleep, time
 from datetime import datetime
 
-from src.dicionarios.dict import *
+from src.metadados.const import *
 from src.maquinas_estado.moa_sm import *
 
-from src.clients import ClientsUsn
+from conector import ClientsUsn
 from src.banco_dados import BancoDados
-from src.conversor_protocolo.conversor import NativoParaExterno
+from src.conversor.conversor_protocolo import NativoParaExterno
 from src.mensageiro.mensageiro_log_handler import MensageiroHandler
 
-# Criar pasta para logs
-if not os.path.exists(os.path.join(os.path.dirname(__file__), "logs")):
-    os.mkdir(os.path.join(os.path.dirname(__file__), "logs"))
 
-# Método para conversão de data/horário GMT:-03:00 (Brasil)
-def timeConverter() -> datetime:
-    tz = pytz.timezone("Brazil/East")
-    return datetime.now(tz).timetuple()
-
-# Método para criar logger principal
-def criar_logger() -> logging:
-    logger = logging.getLogger(__name__)
-    if logger.hasHandlers():
-        logger.handlers.clear()
-    logger.setLevel(logging.NOTSET)
-
-    logFormatter = logging.Formatter("%(asctime)s [%(threadName)-12.12s] [%(levelname)-5.5s] [MOA-SM] %(message)s")
-    logFormatterSimples = logging.Formatter("[%(levelname)-5.5s] %(message)s")
-    logFormatter.converter = timeConverter
-
-    ch = logging.StreamHandler(stderr)  # log para sdtout
-    ch.setFormatter(logFormatter)
-    ch.setLevel(logging.DEBUG)
-    logger.addHandler(ch)
-
-    fh = handlers.TimedRotatingFileHandler(
-        os.path.join(os.path.dirname(__file__), "logs", "MOA.log"),
-        when="midnight",
-        interval=1,
-        backupCount=7,
-    )  # log para arquivo
-    fh.setFormatter(logFormatter)
-    fh.setLevel(logging.DEBUG)
-    logger.addHandler(fh)
-
-    mh = MensageiroHandler()
-    mh.setFormatter(logFormatterSimples)
-    mh.setLevel(logging.INFO)
-    logger.addHandler(mh)
-
-    return logger
 
 # Método de leitura do arquivo de dados json
 def leitura_json(nome: str) -> dict:
@@ -81,7 +52,6 @@ if __name__ == "__main__":
     if len(sys.argv) > 1:
         ESCALA_DE_TEMPO = int(sys.argv[1])
 
-    logger = criar_logger()
     timeout = 10
     prox_estado = 0
     n_tentativa = 0
@@ -98,7 +68,7 @@ if __name__ == "__main__":
             try:
                 logger.info("Carregando arquivos de configuração, dicionário compartilhado e dados de conversão")
 
-                dct = dicionario
+                dct = dicionarios.compartilhado
                 cfg = leitura_json("cfg.json")
                 dcv = leitura_json("dados.json")
                 escrita_json(cfg, "cfg.json.bkp")

@@ -1,11 +1,3 @@
-"""
-watchdog.py
-
-Este módulo funciona como cão de guarda para o módulo de operação autônoma, lendo o heartbeat e enviando avisos conforme necessário.
-As configurações desde módulo estão no arquivo "watchdog_config.json"
-
-"""
-
 from datetime import datetime, timedelta
 from pyModbusTCP.client import ModbusClient
 from src.mensageiro.mensageiro_log_handler import MensageiroHandler
@@ -15,26 +7,31 @@ import json
 import logging
 import os.path
 
+if not os.path.exists(os.path.join(os.path.dirname(__file__), "logs")):
+    os.mkdir(os.path.join(os.path.dirname(__file__), "logs"))
+
 # Inicializando o logger principal
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.DEBUG)
-if not os.path.exists(os.path.join(os.path.dirname(__file__), "logs")):
-    os.mkdir(os.path.join(os.path.dirname(__file__), "logs"))
+
+logFormatter = logging.Formatter("%(asctime)s [%(threadName)-12.12s] [%(levelname)-5.5s] [WATCHDOG] %(message)s")
+logFormatterSimples = logging.Formatter("[%(levelname)-5.5s] [WATCHDOG] %(message)s")
+
 fh = logging.FileHandler(
     os.path.join(os.path.dirname(__file__), "logs", "watchdog.log")
-)  # log para arquivo
-ch = logging.StreamHandler(stdout)  # log para linha de comando
-mh = MensageiroHandler()  # log para telegram e voip
-logFormatter = logging.Formatter(
-    "%(asctime)s [%(threadName)-12.12s] [%(levelname)-5.5s] [WATCHDOG] %(message)s"
 )
-logFormatterSimples = logging.Formatter("[%(levelname)-5.5s] [WATCHDOG] %(message)s")
 fh.setFormatter(logFormatter)
-ch.setFormatter(logFormatter)
-mh.setFormatter(logFormatterSimples)
 fh.setLevel(logging.INFO)
-ch.setLevel(logging.DEBUG)
+
+mh = MensageiroHandler()
+mh.setFormatter(logFormatterSimples)
 mh.setLevel(logging.INFO)
+
+ch = logging.StreamHandler(stdout)
+
+
+ch.setFormatter(logFormatter)
+ch.setLevel(logging.DEBUG)
 logger.addHandler(fh)
 logger.addHandler(ch)
 logger.addHandler(mh)

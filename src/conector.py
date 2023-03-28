@@ -1,11 +1,7 @@
-__author__ = "Diego Basgal"
-__credits__ = "Lucas Lavratti", " Henrique Pfeifer", "Diego Basgal"
-
 __version__ = "0.1"
-__status__ = "Development"
-__maintainer__ = "Diego Basgal"
-__email__ = "diego.garcia@ritmoenergia.com.br"
-__description__ = "Este módulo corresponde a implementação de conexão com servidores de campo (Protocolos de comunicação)."
+__author__ = "Diego Basgal"
+__description__ = "Este módulo corresponde a implementação da conexão com servidore(s) e CLP(s)."
+
 
 import logging
 import traceback

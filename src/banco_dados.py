@@ -1,10 +1,6 @@
-__author__ = "Lucas Lavratti", " Henrique Pfeifer", "Diego Basgal"
-__credits__ = "Lucas Lavratti", " Henrique Pfeifer", "Diego Basgal"
-
 __version__ = "0.2"
-__status__ = "Development"
-__maintainer__ = "Diego Basgal"
-__email__ = "diego.garcia@ritmoenergia.com.br"
+__author__ = "Lucas Lavratti"
+__credits__ = ["Diego Basgal" , ...]
 __description__ = "Este módulo corresponde a implementação da conexão com banco de dados."
 
 import pytz

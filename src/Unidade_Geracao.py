@@ -1,10 +1,6 @@
-__author__ = "Lucas Lavratti", " Henrique Pfeifer", "Diego Basgal"
-__credits__ = "Lucas Lavratti", " Henrique Pfeifer", "Diego Basgal"
-
 __version__ = "0.2"
-__status__ = "Development"
-__maintainer__ = "Diego Basgal"
-__email__ = "diego.garcia@ritmoenergia.com.br"
+__authors__ = "Lucas Lavratti", " Henrique Pfeifer"
+__credits__ = ["Diego Basgal" , ...]
 __description__ = "Este módulo corresponde a implementação das Unidades de Geração."
 
 
@@ -17,13 +13,15 @@ from datetime import datetime
 
 from usina import *
 from leitura import *
-from condicionadores import *
-from dicionarios.reg import *
-from dicionarios.dict import *
-from dicionarios.const import *
+from condicionador import *
+from metadados.reg import *
+from metadados.dict import *
+from metadados.const import *
 from maquinas_estado.ug_sm import *
 
 logger = logging.getLogger("__main__")
+
+__annotations__
 
 class UnidadeGeracao:
     def __init__(
