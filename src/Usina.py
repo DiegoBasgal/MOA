@@ -3,30 +3,37 @@ __authors__ = "Lucas Lavratti", " Henrique Pfeifer"
 __credits__ = ["Diego Basgal", ...]
 __description__ = "Este módulo corresponde a implementação da operação da Usina."
 
-
 import pytz
 import logging
+import traceback
 
 import mensageiro.voip as voip
 
 from time import sleep, time
 from datetime import  datetime
+from opcua import Client as OpcClient
 
-from leitura import *
-from setor import *
 from condicionador import *
-from dicionarios.reg import *
-from dicionarios.dict import *
-from dicionarios.const import *
+from metadados.reg import *
+from metadados.dict import *
+from metadados.const import *
 
 from conector import ClientsUsn
 from banco_dados import BancoDados
 from agendamentos import Agendamentos
 from unidade_geracao import UnidadeGeracao
 
+from leitura_escrita.leitura import *
+from leitura_escrita.escrita import *
+from conversor_protocolo.conversor import *
+
+from setores.subestacao import Subestacao
+from setores.tomada_agua import TomadaAgua
+from setores.servico_auxiliar import ServicoAuxiliar
+
 logger = logging.getLogger("__main__")
 
-class Usina(UnidadeGeracao, ServicoAuxiliar, TomadaAgua, Subestacao, Bay):
+class Usina(UnidadeGeracao, ServicoAuxiliar, TomadaAgua, Subestacao):
     def __init__(
             self,
             config: dict | None = ...,
@@ -50,28 +57,24 @@ class Usina(UnidadeGeracao, ServicoAuxiliar, TomadaAgua, Subestacao, Bay):
             self.cln = clients
             self.opc = clients.opc_client
             self.clp_moa = clients.clp_moa
-            self.clp_ug1 = clients.clp_ug1
-            self.clp_ug2 = clients.clp_ug2
 
         if not conversor:
             raise ValueError("[USN] Não foi possível carregar o conversor de dados \"Opc UA\" -> \"Opc DA\".")
 
         # INCIALIZAÇÃO DE OBJETOS DA USINA
-        # Classes de Escrita Opc
-
-        self.e_opc = EscritaOpc(self.opc)
-        self.e_opc_bit = EscritaOpcBit(self.opc)
-        self.es_opc = [self.e_opc, self.e_opc_bit]
+        # Setter para o client base da leitura e escrita opc (Caso de XAV pois há apenas 1 servidor opc na IHM)
+        LeituraOpc.client = self.opc
+        EscritaOpc.client = self.opc
 
         # Setores da Usina
-        self.bay: Bay = Bay.__init__(self, conversor)
-        self.se: Subestacao = Subestacao.__init__(self, self.dct, self.opc, self.es_opc)
-        self.tda: TomadaAgua = TomadaAgua.__init__(self, self.dct, self.opc, self.es_opc)
-        self.sa: ServicoAuxiliar = ServicoAuxiliar.__init__(self, self.dct, self.opc, self.es_opc)
+        self.tda: TomadaAgua = TomadaAgua.__init__(self, self.dct)
+        self.sa: ServicoAuxiliar = ServicoAuxiliar.__init__(self, self.dct)
+        self.se: Subestacao = Subestacao.__init__(self, self.dct, conversor)
+        self.setores = [self.tda, self.se, self.sa]
 
         # Unidades de Geração
-        self.ug1: UnidadeGeracao = UnidadeGeracao.__init__(self, 1, self.cfg, self.bd, self.es_opc, [self.opc, self.clp_ug1, self.clp_moa])
-        self.ug2: UnidadeGeracao = UnidadeGeracao.__init__(self, 2, self.cfg, self.bd, self.es_opc, [self.opc, self.clp_ug2, self.clp_moa])
+        self.ug1: UnidadeGeracao = UnidadeGeracao.__init__(self, 1, self.cfg, self.bd, clients)
+        self.ug2: UnidadeGeracao = UnidadeGeracao.__init__(self, 2, self.cfg, self.bd, clients)
 
         self.ugs = [self.ug1, self.ug2]
         self.ug1.lista_ugs = self.ugs
@@ -191,6 +194,17 @@ class Usina(UnidadeGeracao, ServicoAuxiliar, TomadaAgua, Subestacao, Bay):
                 logger.info("[USN] Foram detectados condicionadores ativos!")
                 [logger.info(f"[USN] Condicionador: \"{condic.descr}\", Gravidade: \"{condic.gravidade}\".") for condic in condics_ativos]
 
+    def reconhecer_emergencia(self) -> None:
+        logger.info("[USN] Reconhecendo emergência.")
+        logger.debug("[USN] XAV possui apenas reconhecimento interno de alarmes")
+
+    def resetar_emergencia(self) -> None:
+        logger.info("[USN] Acionando reset de emergência.")
+        logger.debug("[USN] Bay resetado.") if self.bay.resetar_emergencia() else logger.info("[USN] Reset de emergência do Bay falhou.")
+        logger.debug("[USN] Subestação resetada.") if self.se.resetar_emergencia() else logger.info("[USN] Reset de emergência da subestação falhou.")
+        logger.debug("[USN] Tomada da Água resetada.") if self.tda.resetar_emergencia else logger.info("[USN] Reset de emergência da Tomada da Água falhou.")
+        logger.debug("[USN] Serviço Auxiliar resetado.") if self.sa.resetar_emergencia() else logger.info("[USN] Reset de emergência do serviço auxiliar falhou.")
+
     def acionar_emergencia(self):
         try:
             self.clp_emergencia = True
@@ -202,17 +216,6 @@ class Usina(UnidadeGeracao, ServicoAuxiliar, TomadaAgua, Subestacao, Bay):
             logger.exception(f"[CON] Houve um erro ao realizar acionar a emergência. Exception: \"{repr(e)}\"")
             logger.exception(f"[CON] Traceback: {traceback.print_stack}")
             return False
-
-    def resetar_emergencia(self) -> None:
-        logger.info("[USN] Acionando reset de emergência.")
-        logger.debug("[USN] Bay resetado.") if self.bay.resetar_emergencia() else logger.info("[USN] Reset de emergência do Bay falhou.")
-        logger.debug("[USN] Subestação resetada.") if self.se.resetar_emergencia() else logger.info("[USN] Reset de emergência da subestação falhou.")
-        logger.debug("[USN] Tomada da Água resetada.") if self.tda.resetar_emergencia else logger.info("[USN] Reset de emergência da Tomada da Água falhou.")
-        logger.debug("[USN] Serviço Auxiliar resetado.") if self.sa.resetar_emergencia() else logger.info("[USN] Reset de emergência do serviço auxiliar falhou.")
-
-    def reconhecer_emergencia(self) -> None:
-        logger.info("[USN] Reconhecendo emergência.")
-        logger.debug("[USN] XAV possui apenas reconhecimento interno de alarmes")
 
     def normalizar_usina(self) -> bool:
         logger.debug("[USN] Normalizando...")
@@ -233,37 +236,29 @@ class Usina(UnidadeGeracao, ServicoAuxiliar, TomadaAgua, Subestacao, Bay):
         else:
             logger.debug("[USN] A normalização foi executada menos de 1 minuto atrás.")
 
-    def leitura_periodica(self):
+    def leitura_temporizada(self):
         proxima_leitura = time() + 1800
-        logger.debug("Iniciando o timer de leitura por hora.")
+        logger.debug("Iniciando o timer de leitura periódica. Tempo definido -> \"30 min\".")
         while True:
-            try:
-                if self.leituras_por_hora() and self.acionar_voip:
-                    self.acionar_voip()
-                for ug in self.ugs:
-                    ug.leituras_por_hora()
-                sleep(max(0, proxima_leitura - time()))
+            for ug in self.ugs: ug.leitura_periodica()
+            for setor in self.setores: setor.leitura_periodica()
+            if True in (self.se.acionar_voip, self.tda.acionar_voip, self.sa.acionar_voip):
+                self.acionar_voip()
+            sleep(max(0, proxima_leitura - time()))
 
-            except Exception:
-                logger.debug("Houve um problema ao executar a leitura por hora")
-
-            proxima_leitura += (time() - proxima_leitura) // 1800 * 1800 + 1800
-
-    def acionar_voip(self):
-        V_VARS = voip.VARS
+    def acionar_voip(self) -> None:
         try:
-            if self.acionar_voip:
-                for i, j in zip(voip, V_VARS):
-                    if i == j and self.dct["VOIP"][i]:
-                        V_VARS[j][0] = self.dct["VOIP"][i]
-                voip.enviar_voz_auxiliar()
-
-            elif self.dct["GLB"]["avisado_eletrica"]:
+            if self.dct["GLB"]["avisado_eletrica"]:
                 voip.enviar_voz_emergencia()
                 self.dct["GLB"]["avisado_eletrica"] = False
-
-        except Exception:
-            logger.warning("Houve um problema ao ligar por Voip")
+            else:
+                for _, v in dct_voip.items():
+                    if v[0]:
+                        voip.enviar_voz_auxiliar()
+                        break
+        except Exception as e:
+            logger.exception(f"[USN] Houve um erro ao ligar por Voip. Exception: \"{repr(e)}\".")
+            logger.exception(f"Traceback: {traceback.print_stack}")
 
     def atualizar_montante_recente(self) -> None:
         if not self.dct["GLB"]["tda_offline"]:
@@ -552,7 +547,7 @@ class Usina(UnidadeGeracao, ServicoAuxiliar, TomadaAgua, Subestacao, Bay):
     def controle_normal(self):
         logger.debug("-------------------------------------------------")
         # Calcula PID
-        logger.debug("Alvo: {:0.3f}, Recente: {:0.3f}".format(self.cfg["nv_alvo"], self.nv_montante_recente))
+        logger.debug(f"Alvo: {self.cfg['nv_alvo']:0.3f}, Recente: {self.nv_montante_recente:0.3f}")
         self.controle_p = self.cfg["kp"] * self.erro_nv
         self.controle_i = max(min((self.cfg["ki"] * self.erro_nv) + self.controle_i, 0.8), 0)
         self.controle_d = self.cfg["kd"] * (self.erro_nv - self.erro_nv_anterior)

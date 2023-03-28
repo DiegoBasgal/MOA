@@ -5,6 +5,7 @@ TIMEOUT_NORMALIZACAO = 10
 
 # Valores fixos de nível
 NIVEL_MAXIMORUM = 466.37
+NIVEL_VERTIMENTO = ...
 NIVEL_FUNDO_RESERVATORIO = 460
 
 # Valores fixos de tensão na linha

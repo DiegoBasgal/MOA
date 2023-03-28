@@ -30,7 +30,7 @@ from src.maquinas_estado.moa_sm import *
 
 from conector import ClientsUsn
 from src.banco_dados import BancoDados
-from src.conversor.conversor_protocolo import NativoParaExterno
+from conversor.conversor import NativoParaExterno
 from src.mensageiro.mensageiro_log_handler import MensageiroHandler
 
 

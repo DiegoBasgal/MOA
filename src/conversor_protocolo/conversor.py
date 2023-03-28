@@ -15,8 +15,8 @@ from threading import Semaphore
 
 from OpenOPC import client as OpcDa
 
-from dicionarios.reg import *
-from dicionarios.const import *
+from metadados.reg import *
+from metadados.const import *
 
 logger = logging.getLogger("__main__")
 

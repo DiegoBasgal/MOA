@@ -5,38 +5,18 @@ __description__ = "Este módulo corresponde a implementação de escrita em regi
 from opcua import ua
 from opcua import Client as OpcClient
 
-# Classe de Escrita Base
-class EscritaBase:
-    def __init__(
-            self,
-            client: OpcClient | None = ...
-        ) -> ...:
-
-        if client is None:
-            raise ValueError(f"[ESC] Não foi possível carregar a conexão com o cliente (\"{type(client).__name__}\").")
-        elif not type(client):
-            raise TypeError(f"[ESC] Tipagem de argumento inválida. O argumento \"cliente\" deve ser \"OpcClient\".")
-        else:
-            self.__client = client
-
-    def escrever(self, registrador: str | int | None = ... , valor: int | float | None = ...) -> bool:
-        if registrador is None:
-            raise ValueError("[ESC] A Escrita precisa de um valor para o argumento \"registrador\".")
-        elif not type(registrador):
-            raise TypeError("[ESC] Tipagem de argumento inválida. O registrador deve ser \"str\" ou \"int\".")
-
-        if valor is None:
-            raise ValueError("[ESC] A Escrita precisa de um valor para o argumento \"valor\".")
-        elif not type(valor):
-            raise TypeError("[ESC] Tipagem de argumento inválida. O argumento \"valor\" deve ser \"int\" ou \"float\".")
-
-        raise NotImplementedError("[ESC] O método deve ser implementado na classe filho")
-
-
 # Classes de Escrita OPC
-class EscritaOpc(EscritaBase):
-    def __init__(self, client) -> ...:
-        EscritaBase.__init__(self, client)
+class EscritaOpc:
+    def __init__(self) -> ...:
+        self.__client: OpcClient = None
+
+    @property
+    def client(self) -> OpcClient:
+        return self.__client
+
+    @client.setter
+    def client(self, cln: OpcClient) -> None:
+        self.__client = cln
 
     def escrever(self, registrador: str, valor) -> bool:
         try:
@@ -48,10 +28,10 @@ class EscritaOpc(EscritaBase):
             return False
 
 class EscritaOpcBit(EscritaOpc):
-    def __init__(self, client) -> ...:
-        EscritaOpc.__init__(self, client)
+    def __init__(self) -> ...:
+        super().__init__(self)
 
-    def escrever(self, registrador: str, valor: int[0 | 1], bit: int[range(31)] | None = ...) -> bool:
+    def escrever_bit(self, registrador: str, valor: int[0 | 1], bit: int[range(31)] | None = ...) -> bool:
         if bit is None:
             raise ValueError("[ESC-OPC] A escrita precisa de um valor para o argumento \"bit\".")
         elif not type(bit):

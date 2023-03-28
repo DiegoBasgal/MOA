@@ -10,13 +10,12 @@ from time import sleep
 from datetime import timedelta
 
 from usina import *
-from dicionarios.const import *
 
 logger = logging.getLogger("__main__")
 
 class Agendamentos(Usina):
-    def __init__(self, config, dicionario, banco_dados):
-        super().__init__(config, dicionario, banco_dados)
+    def __init__(self):
+        super().__init__(self)
 
     def verificar_agendamentos(self) -> bool:
         agora = self.get_time()

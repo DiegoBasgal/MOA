@@ -12,11 +12,7 @@ from time import sleep, time
 from datetime import datetime
 
 from usina import *
-from leitura import *
-from condicionador import *
-from metadados.reg import *
-from metadados.dict import *
-from metadados.const import *
+from setores.tomada_agua import *
 from maquinas_estado.ug_sm import *
 
 logger = logging.getLogger("__main__")
@@ -29,8 +25,7 @@ class UnidadeGeracao:
             id: int | None = ...,
             config : dict | None = ...,
             comporta: Comporta | None = ...,
-            escrita: list[EscritaBase] | None = ...,
-            clients: list[OpcClient | ModbusClient] | None = ...
+            clients_mb: ClientsUsn | None = ...
         ) -> ...:
 
         # VERIFICAÇÃO DE ARGUMENTOS
@@ -43,15 +38,12 @@ class UnidadeGeracao:
         # ATRIBUIÇÃO DE VARIÁVEIS COM ARGUMENTOS PASSADOS PELA USINA
         self.cfg: dict = config
 
-        self.opc: OpcClient = clients[0]
-        self.clp: ModbusClient = clients[1]
+        self.clp: ModbusClient = clients_mb
         self.clp_moa: ModbusClient = clients[2]
 
         self.cp: Comporta = comporta
 
-        self.e_op: EscritaOpc = escrita[0]
-        self.e_opc_bit: EscritaOpcBit = escrita[1]
-
+        self.e_op: EscritaOpc = EscritaOpc
 
         # ATRIBUIÇÃO DE VAIRÁVEIS PRIVADAS
         # Numéricas
@@ -59,10 +51,11 @@ class UnidadeGeracao:
         self.__limite_tentativas_de_normalizacao: int = 3
 
         # Leituras
-        self.__leitura_potencia: LeituraOpc = LeituraOpc(self.opc, OPC_UA["UG"][f"UG{self.id}_UG_P"])
         self.__etapa_atual: LeituraModbus = LeituraModbus(self.clp, MB["UG"][f"UG{self.id}_RV_ESTADO_OPERACAO"])
-        self.__leitura_horimetro: LeituraOpc = LeituraOpc(self.opc, OPC_UA["UG"][f"UG{self.id}_UG_HORIMETRO"])
-        self.__leitura_dj52l: LeituraOpcBit = LeituraOpcBit(self.opc, OPC_UA["SE"]["CMD_SE_FECHA_52L"], 4, True)
+
+        self.__leitura_potencia: LeituraOpc = LeituraOpc(OPC_UA["UG"][f"UG{self.id}_UG_P"])
+        self.__leitura_horimetro: LeituraOpc = LeituraOpc(OPC_UA["UG"][f"UG{self.id}_UG_HORIMETRO"])
+        self.__leitura_dj52l: LeituraOpcBit = LeituraOpcBit(OPC_UA["SE"]["CMD_SE_FECHA_52L"], 4, True)
 
         # Estado inicial máquina de estados UG
         self.__next_state: State = StateDisponivel(self)
@@ -850,7 +843,7 @@ class UnidadeGeracao:
 
         self.leitura_saidas_digitais_rt_b0 = LeituraModbusBit(self.clp, MB["UG"][f"UG{self.id}_RT_SAIDAS_DIGITAIS"], 0, True)
         x = self.leitura_saidas_digitais_rt_b0
-        self.condicionadores_essenciais.aapend(CondicionadorBase(f"UG{self.id}_RT_SAIDAS_DIGITAIS - bit 00", CONDIC_NORMALIZAR, x))
+        self.condicionadores_essenciais.append(CondicionadorBase(f"UG{self.id}_RT_SAIDAS_DIGITAIS - bit 00", CONDIC_NORMALIZAR, x))
 
         self.leitura_trip_rele700G_atuado = LeituraOpcBit(self.opc, OPC_UA["UG"][f"UG{self.id}_RELE_700G_TRIP_ATUADO"], 31)
         x = self.leitura_trip_rele700G_atuado

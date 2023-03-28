@@ -5,7 +5,7 @@ __description__ = "Este módulo corresponde a implementação da lógica de Cond
 
 
 from leitura import *
-from dicionarios.const import *
+from metadados.const import *
 
 from unidade_geracao import UnidadeGeracao
 

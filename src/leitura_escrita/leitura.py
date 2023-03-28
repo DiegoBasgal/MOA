@@ -3,54 +3,21 @@ __author__ = "Lucas Lavratti", " Henrique Pfeifer"
 __credits__ = ["Diego Basgal" , ...]
 __description__ = "Este módulo corresponde a implementação de leituras de registradores."
 
-
 from opcua import Client as OpcClient
 from pyModbusTCP.client import ModbusClient
 
-from dicionarios.reg import *
-
-# Classe de Leitura Base
-class LeituraBase:
-    def __init__(
-            self,
-            client: OpcClient | ModbusClient = ...,
-            registrador: str | int = ...,
-            escala: int | float = ...
-        ) -> ...:
-
-        if client is None:
-            raise ValueError(f"[LEI] Não foi possível carregar a conexão com o cliente (\"{type(client).__name__}\").")
-        elif not isinstance(client, OpcClient | ModbusClient):
-            raise TypeError(f"[LEI] Tipagem de argumento inválida. O argumento \"cliente\" deve ser \"OpcClient\" ou \"ModbusClient\".")
-        else:
-            self.__client = client
-
-        if registrador is None:
-            raise ValueError("[LEI] A Leitura precisa de um valor para o argumento \"registrador\".")
-        elif not isinstance(registrador, str | int):
-            raise TypeError(f"[LEI] Tipagem de argumento inválida. O argumento \"registrador\" deve ser \"Opc: str\" ou \"ModBus: int\".")
-        else:
-            self.__registrador = registrador
-        
-        if not isinstance(escala, int | float):
-            raise TypeError(f"[LEI] Tipagem de argumento inválida. O argumento \"escala\" deve ser \"int\" ou \"float\".")
-        else:
-            self.__escala = 1 if escala is None else escala
-
-    @property
-    def valor(self):
-        raise NotImplementedError("[LEI] O método deve ser implementado na classe filho.")
-
-    @property
-    def raw(self):
-        raise NotImplementedError("[LEI] O método deve ser implementado na classe filho.")
-
-
+from metadados.reg import *
 
 # Classes de Leitura Opc UA
-class LeituraOpc(LeituraBase):
-    def __init__(self, client, registrador: str, escala) -> ...:
-        LeituraBase.__init__(self, client, registrador, escala)
+class LeituraOpc:
+    def __init__(self, registrador: str | None = ..., escala: int | float = ...) -> ...:
+        if registrador is None:
+            raise ValueError("[LEI] A Leitura precisa de um valor para o argumento \"registrador\".")
+        else:
+            self.__registrador = registrador
+
+            self.__client: OpcClient = None
+            self.__escala = 1 if escala is None else escala
 
     @property
     def raw(self) -> int:
@@ -64,20 +31,24 @@ class LeituraOpc(LeituraBase):
     def valor(self) -> float:
         return self.raw * self.__escala
 
+    @property
+    def client(self) -> OpcClient:
+        return self.__client
+
+    @client.setter
+    def client(self, cln: OpcClient) -> None:
+        self.__client = cln
+
+
 class LeituraOpcBit(LeituraOpc):
-    def __init__(self, client, registrador, bit: int = ..., invertido: bool = ...) -> ...:
-        LeituraOpc.__init__(self, client, registrador)
+    def __init__(self, registrador, bit: int = ..., invertido: bool = ...) -> ...:
+        LeituraOpc.__init__(self, registrador)
         if bit is None:
             raise ValueError("[LEI-OPC] A Leitura Opc Bit precisa de um valor para o argumento \"bit\".")
-        elif not isinstance(bit, int):
-            raise TypeError("[LEI-OPC] Tipagem de argumento inválida. O argumento \"bit\" deve ser \"int\".")
         else:
             self.__bit = bit
 
-        if not isinstance(invertido, bool):
-            raise TypeError("[LEI-OPC] Tipagem de argumento inválida. O argumento \"invertido\" deve ser \"bool\".")
-        else:
-            self.__invertido = False if invertido is not None else invertido
+        self.__invertido = False if invertido is not None else invertido
 
     @property
     def valor(self) -> bool:
@@ -87,9 +58,19 @@ class LeituraOpcBit(LeituraOpc):
 
 
 # Classes de Leitura ModBus
-class LeituraModbus(LeituraBase):
-    def __init__(self, client, registrador: int, escala, fundo_de_escala: int | float = ..., op: int = ...):
-        LeituraBase.__init__(client, registrador, escala)
+class LeituraModbus:
+    def __init__(self, client: ModbusClient, registrador: int, escala: int | float = ..., fundo_de_escala: int | float = ..., op: int = ...):
+        if client is None:
+            raise ValueError(f"[LEI] Não foi possível carregar a conexão com o cliente (\"{type(client).__name__}\").")
+        else:
+            self.__client = client
+
+        if registrador is None:
+            raise ValueError("[LEI] A Leitura precisa de um valor para o argumento \"registrador\".")
+        else:
+            self.__registrador = registrador
+
+            self.__escala = 1 if escala is None else escala
 
         if not isinstance(fundo_de_escala, int | float):
             raise TypeError("[LEI-MB] Tipagem de argumento inválida. O argumento \"fundo de escala\" deve ser \"int\" ou \"float\".")

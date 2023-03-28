@@ -1,20 +1,160 @@
 __version__ = "0.1"
 __author__ = "Diego Basgal"
-__description__ = "Este módulo corresponde a implementação da operação de comportas."
+__description__ = "Este módulo corresponde a implementação da operação da Tomada da Água."
 
 import logging
-import traceback
 
-from time import  time
+from time import time
 
-from leitura import *
-from dicionarios.reg import *
-from dicionarios.const import *
-
-from comporta import Comporta
-from setor import TomadaAgua
+from usina import *
+from setores.tomada_agua import Comporta
 
 logger = logging.getLogger("__main__")
+
+class TomadaAgua:
+    def __init__(self, dicionario: dict | None = ...,) -> ...:
+
+        self.__nv_montante = LeituraOpc(OPC_UA["TDA"]["NIVEL_MONTANTE"])
+        self.__status_lp = LeituraOpc(OPC_UA["TDA"]["LG_OPERACAO_MANUAL"])
+        self.__status_vb = LeituraOpc(OPC_UA["TDA"]["VB_FECHANDO"])
+        self.__status_uh = LeituraOpcBit(OPC_UA["TDA"]["UH_UNIDADE_HIDRAULICA_DISPONIVEL"], 1)
+
+        self._condicionadores = []
+        self._condicionadores_essenciais = []
+
+        self.dct = dicionario
+        self.cp1: Comporta = Comporta(1)
+        self.cp2: Comporta = Comporta(2)
+        self.escrita_opc: EscritaOpc | EscritaOpcBit = EscritaOpc()
+
+        self.cps = [self.cp1, self.cp2]
+        self.cp1.lista_comportas = self.cps
+        self.cp2.lista_comportas = self.cps
+
+    @property
+    def nv_montante(self) -> int | float:
+        return self.__nv_montante.valor
+
+    @property
+    def limpa_grades(self) -> int:
+        try:
+            return self.__status_lp.valor
+        except ValueError(f"[TDA] O limpa grades retornou valor de status inválido.") \
+            or ConnectionError(f"[TDA] Falha na comunicação com o limpa grades."):
+            return 99
+
+    @property
+    def valvula_borboleta(self) -> int:
+        try:
+            return self.__status_vb.valor
+        except ValueError(f"[TDA] O limpa grades retornou valor de status inválido.") \
+            or ConnectionError(f"[TDA] Falha na comunicação com o limpa grades."):
+            return 99
+
+    @property
+    def unidade_hidraulica(self) -> int:
+        try:
+            return self.__status_uh.valor
+        except ValueError(f"[TDA] A unidade hidráulica retornou valor de status inválido.") \
+            or ConnectionError(f"[TDA] Falha na comunicação com a unidade hidráulica."):
+            return 99
+
+    @property
+    def condicionadores(self) -> list[CondicionadorBase]:
+        return self._condicionadores
+
+    @condicionadores.setter
+    def condicionadores(self, var: list[CondicionadorBase]) -> None:
+        self._condicionadores = var
+
+    @property
+    def condicionadores_essenciais(self) -> list[CondicionadorBase]:
+        return self._condicionadores_essenciais
+
+    @condicionadores_essenciais.setter
+    def condicionadores_essenciais(self, var: list[CondicionadorBase]) -> None:
+        self._condicionadores_essenciais = var
+
+
+    def resetar_emergencia(self):
+        if not self.dct["GLB"]["tda_offline"]:
+            [self.e_opc_bit.escrever(OPC_UA["TDA"][f"CP{cp.id}_CMD_REARME_FALHAS"], valor=1, bit=0) for cp in self.cps]
+        else:
+            logger.debug("[TDA] Não é possível resetar a emergência pois o CLP da TDA se encontra offline")
+
+    def leitura_periodica(self) -> None:
+        if not self.leitura_filtro_limpo_uh:
+            logger.warning("[TDA] O filtro da UH da TDA está sujo. Favor realizar limpeza/troca.")
+
+        if self.leitura_nivel_jusante_comporta_1:
+            logger.warning("[TDA] Houve uma falha no sensor de nível jusante da comporta 1. Favor verificar.")
+
+        if self.leitura_nivel_jusante_comporta_2:
+            logger.warning("[TDA] Houve uma falha no sensor de nível jusante da comporta 2. Favor verificar.")
+
+        if not self.leitura_ca_com_tensao:
+            logger.warning("[TDA] Foi dentificado que o CA da tomada da água está sem tensão. Favor verificar.")
+
+        if self.leitura_lg_operacao_manual:
+            logger.warning("[TDA] Foi identificado que o Limpa Grades entrou em operação manual. Favor verificar.")
+
+        if self.leitura_nivel_jusante_grade_comporta_1:
+            logger.warning("[TDA] Houve uma falha no sensor de nível jusante grade da comporta 1. Favor verificar.")
+
+        if self.leitura_nivel_jusante_grade_comporta_2:
+            logger.warning("[TDA] Houve uma falha no sensor de nível jusante grade da comporta 2. Favor verificar.")
+
+
+        if self.leitura_falha_atuada_lg and not self.dct["VOIP"]["LG_FALHA_ATUADA"]:
+            logger.warning("[TDA] Foi identificado que o limpa grades está em falha. Favor verificar.")
+            self.dct["VOIP"]["LG_FALHA_ATUADA"] = True
+            self.acionar_voip = True
+        elif not self.leitura_falha_atuada_lg and self.dct["VOIP"]["LG_FALHA_ATUADA"]:
+            self.dct["VOIP"]["LG_FALHA_ATUADA"] = False
+
+        if self.leitura_falha_nivel_montante and not self.dct["VOIP"]["FALHA_NIVEL_MONTANTE"]:
+            logger.warning("[TDA] Houve uma falha na leitura de nível montante. Favor verificar.")
+            self.dct["VOIP"]["FALHA_NIVEL_MONTANTE"] = True
+            self.acionar_voip = True
+        elif not self.leitura_falha_nivel_montante and self.dct["VOIP"]["FALHA_NIVEL_MONTANTE"]:
+            self.dct["VOIP"]["FALHA_NIVEL_MONTANTE"] = False
+
+    def iniciar_leituras_condicionadores(self) -> None:
+        # CONDICIONADORES ESSENCIAIS
+        # Normalizar
+            # Bit Invertido
+        self.leitura_sem_emergencia_tda = LeituraOpcBit(self.opc, OPC_UA["TDA"]["SEM_EMERGENCIA"], 24, True)
+        self.condicionadores_essenciais.append(CondicionadorBase(self.leitura_sem_emergencia_tda, CONDIC_NORMALIZAR))
+
+        # CONDICIONADORES
+        # Normalizar
+            # Bit Invertido
+        self.leitura_ca_com_tensao = LeituraOpcBit(self.opc, OPC_UA["TDA"]["COM_TENSAO_CA"], 11, True)
+        self.condicionadores.append(CondicionadorBase(self.leitura_ca_com_tensao, CONDIC_NORMALIZAR))
+
+            # Bit Normal
+        self.leitura_falha_ligar_bomba_uh = LeituraOpcBit(self.opc, OPC_UA["TDA"]["UH_FALHA_LIGAR_BOMBA"], 2)
+        self.condicionadores.append(CondicionadorBase(self.leitura_falha_ligar_bomba_uh, CONDIC_NORMALIZAR))
+
+
+        # LEITURAS PARA LEITURA PERIÓDICA
+        # Telegram
+            # Bit Invertido
+        self.leitura_ca_com_tensao = LeituraOpcBit(self.opc, OPC_UA["TDA"]["COM_TENSAO_CA"], 11, True)
+        self.leitura_filtro_limpo_uh = LeituraOpcBit(self.opc, OPC_UA["TDA"]["UH_FILTRO_LIMPO"], 13, True)
+
+            # Bit Normal
+        self.leitura_lg_operacao_manual = LeituraOpcBit(self.opc, OPC_UA["TDA"]["LG_OPERACAO_MANUAL"], 0)
+        self.leitura_nivel_jusante_comporta_1 = LeituraOpcBit(self.opc, OPC_UA["TDA"]["NIVEL_JUSANTE_COMPORTA_1"], 2)
+        self.leitura_nivel_jusante_comporta_2 = LeituraOpcBit(self.opc, OPC_UA["TDA"]["NIVEL_JUSANTE_COMPORTA_2"], 4)
+        self.leitura_nivel_jusante_grade_comporta_1 = LeituraOpcBit(self.opc, OPC_UA["TDA"]["FALHA_NIVEL_JUSANTE_GRADE_COMPORTA_1"], 1)
+        self.leitura_nivel_jusante_grade_comporta_2 = LeituraOpcBit(self.opc, OPC_UA["TDA"]["FALHA_NIVEL_JUSANTE_GRADE_COMPORTA_2"], 3)
+
+        # Telegram + Voip
+            # Bit Normal
+        self.leitura_falha_atuada_lg = LeituraOpcBit(self.opc, OPC_UA["TDA"]["LG_FALHA_ATUADA"], 31)
+        self.leitura_falha_nivel_montante = LeituraOpcBit(self.opc, OPC_UA["TDA"]["FALHA_NIVEL_MONTANTE"], 0)
+
 
 class Comporta(TomadaAgua):
     def __init__(self, id: int | None = ...) -> ...:
@@ -31,7 +171,7 @@ class Comporta(TomadaAgua):
         self.__cracking = LeituraOpcBit(self.opc, OPC_UA["TDA"][f"CP{self.id}_CRACKING"], 25)
         self.__remoto = LeituraOpcBit(self.opc, OPC_UA["TDA"][f"CP{self.id}_REMOTO"], 22)
 
-        self.__status = LeituraOpc(self.opc, OPC_UA["TDA"][f"CP{self.id}_COMPORTA_OPERANDO"])
+        self.__status = LeituraOpc( OPC_UA["TDA"][f"CP{self.id}_COMPORTA_OPERANDO"])
         self.__permissao = LeituraOpcBit(self.opc, OPC_UA["TDA"][f"CP{self.id}_PERMISSIVOS_OK"], 31, True)
         self.__bloqueio = LeituraOpcBit(self.opc, OPC_UA["TDA"][f"CP{self.id}_BLOQUEIO_ATUADO"], 31, True)
 
