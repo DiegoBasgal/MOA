@@ -20,20 +20,16 @@ import threading
 import traceback
 
 import usina as usina
-import metadados.dict as dicionarios
 
 from time import sleep, time
-from datetime import datetime
 
+from src.metadados.dict import *
 from src.metadados.const import *
 from src.maquinas_estado.moa_sm import *
 
-from conector import ClientsUsn
+from conector import ClientesUsina
 from src.banco_dados import BancoDados
-from conversor.conversor import NativoParaExterno
-from src.mensageiro.mensageiro_log_handler import MensageiroHandler
-
-
+from conversor_protocolo.conversor import NativoParaExterno
 
 # Método de leitura do arquivo de dados json
 def leitura_json(nome: str) -> dict:
@@ -68,9 +64,10 @@ if __name__ == "__main__":
             try:
                 logger.info("Carregando arquivos de configuração, dicionário compartilhado e dados de conversão")
 
-                dct = dicionarios.compartilhado
                 cfg = leitura_json("cfg.json")
-                dcv = leitura_json("dados.json")
+                cvd = leitura_json("dados.json")
+                dct = dict_compartilhado
+
                 escrita_json(cfg, "cfg.json.bkp")
 
             except Exception:
@@ -80,41 +77,21 @@ if __name__ == "__main__":
                 continue
 
             try:
-                logger.info("Iniciando classe de conexão com o servidor OPC e CLPs da usina.")
+                logger.info("Iniciando classe de conexão com o servidores de Banco de Dados, OPC e CLPs.")
 
-                cln = ClientsUsn(dct)
-                cln.open_all()
-
-            except Exception:
-                logger.exception(f"Erro ao iniciar conexão com os CLPs da usina. Tentando novamente em \"{timeout}s\" (Tentativa: {n_tentativa}/3).")
-                logger.exception(f"Traceback: {traceback.print_stack}")
-                sleep(timeout)
-                continue
-
-            try:
-                logger.info("Inicando classe de conversão de dados OPC DA / OPC UA.")
-                cnv = NativoParaExterno(dcv)
+                bds: BancoDados = BancoDados()
+                cli: ClientesUsina = ClientesUsina(dct)
+                cli.open_all()
 
             except Exception:
-                logger.exception(f"Erro ao instanciar a classe de conversão de protocolo. Tentando novamente em \"{timeout}s\" (Tentativa: {n_tentativa}/3).")
-                logger.exception(f"Traceback: {traceback.print_stack}")
-                sleep(timeout)
-                continue
-            
-            try:
-                logger.info("Iniciando classe de conexão com banco de dados.")
-
-                bds = BancoDados()
-
-            except Exception:
-                logger.exception(f"Erro ao instanciar a classe do banco de dados. Tentando novamente em \"{timeout}s\" (Tentativa: {n_tentativa}/3).")
+                logger.exception(f"Erro ao iniciar classes de conexão com servidores. Tentando novamente em \"{timeout}s\" (Tentativa: {n_tentativa}/3).")
                 logger.exception(f"Traceback: {traceback.print_stack}")
                 sleep(timeout)
                 continue
 
             try:
                 logger.info("Iniciando instância da classe Usina.")
-                usn = Usina(cfg, dct, cln, cnv, bds)
+                usn: Usina = Usina(cfg, dct, cli, bds)
 
             except Exception:
                 logger.exception(f"Erro ao instanciar a classe Usina. Tentando novamente em \"{timeout}s\" (Tentativa: {n_tentativa}/3).")
@@ -125,7 +102,7 @@ if __name__ == "__main__":
             try:
                 logger.info("Finalizando inicialização com intâncias da máquina de estados e Threads paralelas.")
 
-                sm = StateMachine(initial_state=Pronto(cfg, dct, usn, bds))
+                sm: StateMachine = StateMachine(initial_state=Pronto(cfg, dct, usn, bds))
 
                 threading.Thread(target=lambda: usn.leitura_temporizada()).start()
 
@@ -155,10 +132,10 @@ if __name__ == "__main__":
         except Exception as e:
             logger.exception(f"Houve um erro na execução do loop principal da main do MOA. Exception: {repr(e)}")
             logger.exception(f"Traceback: {traceback.print_stack}")
-            cln.close_all()
+            cli.close_all()
             break
 
         except KeyboardInterrupt:
             logger.warning("Execução do loop principal da main do MOA interrompido por comando de teclado.")
-            cln.close_all()
+            cli.close_all()
             break

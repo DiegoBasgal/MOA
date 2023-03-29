@@ -1,4 +1,4 @@
-dct_compartilhado = {
+dict_compartilhado: dict[str, dict[str, any]] = {
     "CFG": {
         "UG1_slave_ip": "10.101.2.215",
         "UG1_slave_porta": 5003,
@@ -10,12 +10,11 @@ dct_compartilhado = {
     },
 
     "GLB": {
-        "tda_offline": False,
         "avisado_eletrica": False
     }
 }
 
-dct_voip = {
+dict_voip: dict[str, list[bool | str]] = {
     "LG_FALHA_ATUADA": [False, "Atenção! Houve uma falha com o Limpa Grades na PCH Xavantina, favor analisar a situação. Atenção! Houve uma falha com o Limpa Grades na PCH Xavantina, favor analisar a situação."],
     "FALHA_NIVEL_MONTANTE": [False, "Atenção! Houve uma falha na leitura de nível montante na PCH Xavantina, favor analisar a situação. Atenção! Houve uma falha na leitura de nível montante na PCH Xavantina, favor analisar a situação."],
     "FILTRAGEM_BOMBA_FALHA": [False, "Atenção! Houve uma falha com a bomba de filtragem na PCH Xavantina, favor analisar a situação. Atenção! Houve uma falha com a bomba de filtragem na PCH Xavantina, favor analisar a situação."],
@@ -39,11 +38,11 @@ dct_voip = {
     "TE_NIVEL_OLEO_MUITO_BAIXO": [False, "Atenção! O nível do óleo do transformador elevador a PCH Xavantina está muito baixo, favor analisar a situação. Atenção! O nível do óleo do transformador elevador a PCH Xavantina está muito baixo, favor analisar a situação."]
 }
 
-dct_telegram = {
+dict_telegram = {
 
 }
 
-dct_watchdog = {
+dict_watchdog: dict[str, any] = {
     "unit_id": 1,
     "ip_slave": "172.21.15.12",
     "port_slave": 5002,

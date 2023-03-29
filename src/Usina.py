@@ -3,6 +3,7 @@ __authors__ = "Lucas Lavratti", " Henrique Pfeifer"
 __credits__ = ["Diego Basgal", ...]
 __description__ = "Este módulo corresponde a implementação da operação da Usina."
 
+
 import pytz
 import logging
 import traceback
@@ -18,7 +19,7 @@ from metadados.reg import *
 from metadados.dict import *
 from metadados.const import *
 
-from conector import ClientsUsn
+from conector import ClientesUsina
 from banco_dados import BancoDados
 from agendamentos import Agendamentos
 from unidade_geracao import UnidadeGeracao
@@ -27,39 +28,34 @@ from leitura_escrita.leitura import *
 from leitura_escrita.escrita import *
 from conversor_protocolo.conversor import *
 
+from setores.bay import Bay
 from setores.subestacao import Subestacao
 from setores.tomada_agua import TomadaAgua
 from setores.servico_auxiliar import ServicoAuxiliar
 
 logger = logging.getLogger("__main__")
 
-class Usina(UnidadeGeracao, ServicoAuxiliar, TomadaAgua, Subestacao):
-    def __init__(
-            self,
-            config: dict | None = ...,
-            dicionario: dict | None = ...,
-            clients: ClientsUsn | None = ...,
-            conversor: Conversor | None = ...,
-            banco_dados: BancoDados | None = ...
+class Usina:
+    def __init__(self,
+            cfg: dict | None = ...,
+            dict_comp: dict | None = ...,
+            banco_dados: BancoDados | None = ...,
+            clientes: ClientesUsina | None = ...,
         ):
 
         # VERIFICAÇÃO DE ARGUMENTOS
-        if None in (config, dicionario):
+        if None in (cfg, dict_comp):
             raise ValueError("[USN] Não foi possível carregar os arquivos de configuração (\"cfg.json\") e(ou) dicionário compartilhado (\"dicionário\").")
         else:
-            self.cfg = config
-            self.dct - dicionario
+            self.cfg = cfg
+            self.dict = dict_comp
 
-        if None in (clients, banco_dados):
+        if None in (clientes, banco_dados):
             raise ConnectionError("[USN] Não foi possível carregar as classes de conexão com Clients e banco de dados.")
         else:
             self.bd = banco_dados
-            self.cln = clients
-            self.opc = clients.opc_client
-            self.clp_moa = clients.clp_moa
-
-        if not conversor:
-            raise ValueError("[USN] Não foi possível carregar o conversor de dados \"Opc UA\" -> \"Opc DA\".")
+            self.clp = clientes.clp
+            self.opc = clientes.cliente_opc
 
         # INCIALIZAÇÃO DE OBJETOS DA USINA
         # Setter para o client base da leitura e escrita opc (Caso de XAV pois há apenas 1 servidor opc na IHM)
@@ -67,14 +63,13 @@ class Usina(UnidadeGeracao, ServicoAuxiliar, TomadaAgua, Subestacao):
         EscritaOpc.client = self.opc
 
         # Setores da Usina
-        self.tda: TomadaAgua = TomadaAgua.__init__(self, self.dct)
-        self.sa: ServicoAuxiliar = ServicoAuxiliar.__init__(self, self.dct)
-        self.se: Subestacao = Subestacao.__init__(self, self.dct, conversor)
-        self.setores = [self.tda, self.se, self.sa]
+        self.se: Subestacao = Subestacao.__init__(self)
+        self.tda: TomadaAgua = TomadaAgua.__init__(self)
+        self.sa: ServicoAuxiliar = ServicoAuxiliar.__init__(self)
 
         # Unidades de Geração
-        self.ug1: UnidadeGeracao = UnidadeGeracao.__init__(self, 1, self.cfg, self.bd, clients)
-        self.ug2: UnidadeGeracao = UnidadeGeracao.__init__(self, 2, self.cfg, self.bd, clients)
+        self.ug1: UnidadeGeracao = UnidadeGeracao.__init__(self, 1)
+        self.ug2: UnidadeGeracao = UnidadeGeracao.__init__(self, 2)
 
         self.ugs = [self.ug1, self.ug2]
         self.ug1.lista_ugs = self.ugs
@@ -124,9 +119,9 @@ class Usina(UnidadeGeracao, ServicoAuxiliar, TomadaAgua, Subestacao):
         self.nv_montante_anterior: int | float = 0
 
         # Booleanas
+        self.clp_emerg: bool = False
+        self.voip_emerg: bool = False
         self.borda_emerg: bool = False
-        self.acionar_voip: bool = False
-        self.clp_emergencia: bool = False
         self.normalizar_forcado: bool = False
 
 
@@ -185,7 +180,7 @@ class Usina(UnidadeGeracao, ServicoAuxiliar, TomadaAgua, Subestacao):
         self.controle_ie = self.ajustar_ie_padrao()
 
     def verificar_condicionadores(self) -> int:
-        if self.dct["GLB"]["avisado_eletrica"] or [condic.ativo for condic in self.condicionadores_essenciais]:
+        if self.dict["GLB"]["avisado_eletrica"] or [condic.ativo for condic in self.condicionadores_essenciais]:
             condics_ativos = [condic for condics in [self.condicionadores_essenciais, self.condicionadores] for condic in condics if condic.ativo]
             condic_flag = [CONDIC_NORMALIZAR for condic in condics_ativos if condic.gravidade == CONDIC_NORMALIZAR]
             condic_flag = [CONDIC_INDISPONIBILIZAR for condic in condics_ativos if condic.gravidade == CONDIC_INDISPONIBILIZAR]
@@ -248,11 +243,11 @@ class Usina(UnidadeGeracao, ServicoAuxiliar, TomadaAgua, Subestacao):
 
     def acionar_voip(self) -> None:
         try:
-            if self.dct["GLB"]["avisado_eletrica"]:
+            if self.dict["GLB"]["avisado_eletrica"]:
                 voip.enviar_voz_emergencia()
-                self.dct["GLB"]["avisado_eletrica"] = False
+                self.dict["GLB"]["avisado_eletrica"] = False
             else:
-                for _, v in dct_voip.items():
+                for _, v in dict_voip.items():
                     if v[0]:
                         voip.enviar_voz_auxiliar()
                         break
@@ -261,7 +256,7 @@ class Usina(UnidadeGeracao, ServicoAuxiliar, TomadaAgua, Subestacao):
             logger.exception(f"Traceback: {traceback.print_stack}")
 
     def atualizar_montante_recente(self) -> None:
-        if not self.dct["GLB"]["tda_offline"]:
+        if not self.dict["GLB"]["tda_offline"]:
             self.nv_montante_recente = self.nv_montante
             self.erro_nv_anterior = self.erro_nv
             self.erro_nv = self.nv_montante_recente - self.cfg["nv_alvo"]
@@ -324,11 +319,11 @@ class Usina(UnidadeGeracao, ServicoAuxiliar, TomadaAgua, Subestacao):
                 self.clp_moa.write_multiple_registers(MB["MOA"]["OUT_SETPOINT"], [int(sum(ug.setpoint)) for ug in self.ugs])
                 self.clp_moa.write_multiple_registers(MB["MOA"]["OUT_TARGET_LEVEL"], [int((self.cfg["nv_alvo"] - 800) * 1000)])
 
-                if self.dct["GLB"]["avisado_eletrica"] and not self.borda_emerg:
+                if self.dict["GLB"]["avisado_eletrica"] and not self.borda_emerg:
                     [self.clp_moa.write_single_coil(MB["MOA"][f"OUT_BLOCK_UG{ug.id}"], [1]) for ug in self.ugs]
                     self.borda_emerg = True
 
-                elif not self.dct["GLB"]["avisado_eletrica"] and self.borda_emerg:
+                elif not self.dict["GLB"]["avisado_eletrica"] and self.borda_emerg:
                     [self.clp_moa.write_single_coil(MB["MOA"][f"OUT_BLOCK_UG{ug.id}"], [0]) for ug in self.ugs]
                     self.borda_emerg = False
 
@@ -361,13 +356,13 @@ class Usina(UnidadeGeracao, ServicoAuxiliar, TomadaAgua, Subestacao):
     def ler_valores(self) -> None:
         self.cln.ping_clients()
         try:
-            if self.clp_moa.read_coils(MB["MOA"]["IN_EMERG"])[0] == 1 and not self.dct["GLB"]["avisado_eletrica"]:
-                self.dct["GLB"]["avisado_eletrica"] = True
+            if self.clp_moa.read_coils(MB["MOA"]["IN_EMERG"])[0] == 1 and not self.dict["GLB"]["avisado_eletrica"]:
+                self.dict["GLB"]["avisado_eletrica"] = True
                 for ug in self.ugs:
                     ug.deve_ler_condicionadores = True
 
-            elif self.clp_moa.read_coils(MB["MOA"]["IN_EMERG"])[0] == 0 and self.dct["GLB"]["avisado_eletrica"]:
-                self.dct["GLB"]["avisado_eletrica"] = True
+            elif self.clp_moa.read_coils(MB["MOA"]["IN_EMERG"])[0] == 0 and self.dict["GLB"]["avisado_eletrica"]:
+                self.dict["GLB"]["avisado_eletrica"] = True
 
             if self.clp_moa.read_coils(MB["MOA"]["IN_EMERG_UG1"])[0] == 1:
                 self.ug1.deve_ler_condicionadores = True

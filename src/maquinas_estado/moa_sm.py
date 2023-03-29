@@ -11,10 +11,7 @@ import traceback
 from time import sleep
 from datetime import datetime
 
-from src.usina import *
-from src.dicionarios.reg import *
-from src.dicionarios.const import *
-
+from usina import *
 
 class StateMachine:
     def __init__(self, initial_state):

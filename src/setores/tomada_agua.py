@@ -11,8 +11,9 @@ from setores.tomada_agua import Comporta
 
 logger = logging.getLogger("__main__")
 
-class TomadaAgua:
-    def __init__(self, dicionario: dict | None = ...,) -> ...:
+class TomadaAgua(Usina):
+    def __init__(self) -> ...:
+        super().__init__(self)
 
         self.__nv_montante = LeituraOpc(OPC_UA["TDA"]["NIVEL_MONTANTE"])
         self.__status_lp = LeituraOpc(OPC_UA["TDA"]["LG_OPERACAO_MANUAL"])
@@ -22,7 +23,6 @@ class TomadaAgua:
         self._condicionadores = []
         self._condicionadores_essenciais = []
 
-        self.dct = dicionario
         self.cp1: Comporta = Comporta(1)
         self.cp2: Comporta = Comporta(2)
         self.escrita_opc: EscritaOpc | EscritaOpcBit = EscritaOpc()

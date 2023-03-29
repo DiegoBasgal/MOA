@@ -3,47 +3,23 @@ __authors__ = "Lucas Lavratti", " Henrique Pfeifer"
 __credits__ = ["Diego Basgal" , ...]
 __description__ = "Este módulo corresponde a implementação das Unidades de Geração."
 
-
-import pytz
-import logging
-import traceback
-
-from time import sleep, time
-from datetime import datetime
-
 from usina import *
-from setores.tomada_agua import *
 from maquinas_estado.ug_sm import *
 
 logger = logging.getLogger("__main__")
 
-__annotations__
+class UnidadeGeracao(Usina):
+    def __init__(self, id: int | None = ...) -> ...:
+        super(Usina).__init__(self)
 
-class UnidadeGeracao:
-    def __init__(
-            self,
-            id: int | None = ...,
-            config : dict | None = ...,
-            comporta: Comporta | None = ...,
-            clients_mb: ClientsUsn | None = ...
-        ) -> ...:
+        self.tda.resetar_emergencia()
 
         # VERIFICAÇÃO DE ARGUMENTOS
         if not id or id < 1:
-            logger.exception(f"[UG{self.id}] A Unidade deve ser instanciada com um valor maior que \"0\".")
-            raise ValueError
+            raise ValueError(f"[UG{self.id}] A Unidade deve ser instanciada com um valor maior que \"0\".")
         else:
             self.__id: int = id
 
-        # ATRIBUIÇÃO DE VARIÁVEIS COM ARGUMENTOS PASSADOS PELA USINA
-        self.cfg: dict = config
-
-        self.clp: ModbusClient = clients_mb
-        self.clp_moa: ModbusClient = clients[2]
-
-        self.cp: Comporta = comporta
-
-        self.e_op: EscritaOpc = EscritaOpc
 
         # ATRIBUIÇÃO DE VAIRÁVEIS PRIVADAS
         # Numéricas

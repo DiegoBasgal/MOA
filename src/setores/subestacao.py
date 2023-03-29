@@ -12,7 +12,7 @@ from setores.bay import Bay
 
 logger = logging.getLogger("__main__")
 
-class Subestacao(Bay):
+class Subestacao(Usina):
     def __init__(self, dicionario: dict | None = ..., conversor : NativoParaExterno | None = ...) -> ...:
         self.bay = Bay.__init__(self, conversor)
 

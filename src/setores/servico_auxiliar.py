@@ -11,12 +11,13 @@ from conversor_protocolo.conversor import *
 
 logger = logging.getLogger("__main__")
 
-class ServicoAuxiliar:
-    def __init__(self, dicionario: dict | None = ...) -> ...:
-        self.dct = dicionario
+class ServicoAuxiliar(Usina):
+    def __init__(self, c_dict) -> ...:
+        super().__init__(self, c_dict)
+
         self.escrita_opc: EscritaOpc = EscritaOpc()
 
-        self._condicionadores = []
+        self._condicionadores: list[CondicionadorBase]
         self._condicionadores_essenciais = []
 
     @property
