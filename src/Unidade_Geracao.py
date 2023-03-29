@@ -3,23 +3,20 @@ __authors__ = "Lucas Lavratti", " Henrique Pfeifer"
 __credits__ = ["Diego Basgal" , ...]
 __description__ = "Este módulo corresponde a implementação das Unidades de Geração."
 
-from usina import *
+from Usina import *
 from maquinas_estado.ug_sm import *
 
 logger = logging.getLogger("__main__")
 
 class UnidadeGeracao(Usina):
     def __init__(self, id: int | None = ...) -> ...:
-        super(Usina).__init__(self)
-
-        self.tda.resetar_emergencia()
+        super().__init__(self)
 
         # VERIFICAÇÃO DE ARGUMENTOS
         if not id or id < 1:
             raise ValueError(f"[UG{self.id}] A Unidade deve ser instanciada com um valor maior que \"0\".")
         else:
             self.__id: int = id
-
 
         # ATRIBUIÇÃO DE VAIRÁVEIS PRIVADAS
         # Numéricas

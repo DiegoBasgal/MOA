@@ -11,7 +11,7 @@ import traceback
 import mensageiro.voip as voip
 
 from time import sleep, time
-from datetime import  datetime
+from datetime import  datetime, timedelta
 from opcua import Client as OpcClient
 
 from condicionador import *
@@ -22,7 +22,7 @@ from metadados.const import *
 from conector import ClientesUsina
 from banco_dados import BancoDados
 from agendamentos import Agendamentos
-from unidade_geracao import UnidadeGeracao
+from Unidade_Geracao import UnidadeGeracao
 
 from leitura_escrita.leitura import *
 from leitura_escrita.escrita import *
@@ -60,16 +60,19 @@ class Usina:
         # INCIALIZAÇÃO DE OBJETOS DA USINA
         # Setter para o client base da leitura e escrita opc (Caso de XAV pois há apenas 1 servidor opc na IHM)
         LeituraOpc.client = self.opc
+
+        self.escrita_opc: EscritaOpc | EscritaOpcBit = EscritaOpc()
         EscritaOpc.client = self.opc
 
+
         # Setores da Usina
-        self.se: Subestacao = Subestacao.__init__(self)
-        self.tda: TomadaAgua = TomadaAgua.__init__(self)
-        self.sa: ServicoAuxiliar = ServicoAuxiliar.__init__(self)
+        self.se: Subestacao = Subestacao(self)
+        self.tda: TomadaAgua = TomadaAgua(self)
+        self.sa: ServicoAuxiliar = ServicoAuxiliar(self)
 
         # Unidades de Geração
-        self.ug1: UnidadeGeracao = UnidadeGeracao.__init__(self, 1)
-        self.ug2: UnidadeGeracao = UnidadeGeracao.__init__(self, 2)
+        self.ug1: UnidadeGeracao = UnidadeGeracao(self, 1)
+        self.ug2: UnidadeGeracao = UnidadeGeracao(self, 2)
 
         self.ugs = [self.ug1, self.ug2]
         self.ug1.lista_ugs = self.ugs

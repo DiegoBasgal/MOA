@@ -2,7 +2,7 @@ __version__ = "0.1"
 __author__ = "Diego Basgal"
 __description__ = "Este módulo corresponde a implementação da operação do Bay."
 
-from usina import *
+from Usina import *
 
 logger = logging.getLogger("__main__")
 

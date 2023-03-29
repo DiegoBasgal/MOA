@@ -50,24 +50,22 @@ class ClientesUsina:
             auto_close=True
         )
 
-        self.lista_clps = [self.clp_moa, self.clp_ug1, self.clp_ug2]
-
     def ping(self, host) -> bool:
         return [True if subprocess.call(["ping", "-c", "1", "-w", "1", host], stdout=subprocess.PIPE) == 0 else False for _ in range(2)]
 
     def open_all(self) -> None:
         logger.debug("[CLI] Iniciando conexões OPC e ModBus...")
-        if not self.opc_client.connect():
-            raise OpcClientFail(self.opc_client)
+        if not self.cliente_opc.connect():
+            raise OpcClientFail(self.cliente_opc)
 
-        for clp in self.lista_clps:
+        for _ , clp in self.clp.items():
             raise ModBusClientFail(clp) if not clp.open() else ...
         logger.info("[CLI] Conexões inciadas.")
 
     def close_all(self) -> None:
         logger.debug("[CLI] Encerrando conexões...")
-        self.opc_client.disconnect()
-        [clp.close() for clp in self.lista_clps]
+        self.cliente_opc.disconnect()
+        [clp.close() for _ , clp in self.clp.items()]
         logger.debug("[CLI] Conexões encerradas.")
 
     def ping_clients(self) -> None:

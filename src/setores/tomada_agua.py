@@ -6,14 +6,14 @@ import logging
 
 from time import time
 
-from usina import *
+from Usina import *
 from setores.tomada_agua import Comporta
 
 logger = logging.getLogger("__main__")
 
 class TomadaAgua(Usina):
-    def __init__(self) -> ...:
-        super().__init__(self)
+    def __init__(self, *args, **kwargs) -> ...:
+        super().__init__(self, *args, **kwargs)
 
         self.__nv_montante = LeituraOpc(OPC_UA["TDA"]["NIVEL_MONTANTE"])
         self.__status_lp = LeituraOpc(OPC_UA["TDA"]["LG_OPERACAO_MANUAL"])
@@ -23,9 +23,10 @@ class TomadaAgua(Usina):
         self._condicionadores = []
         self._condicionadores_essenciais = []
 
-        self.cp1: Comporta = Comporta(1)
-        self.cp2: Comporta = Comporta(2)
-        self.escrita_opc: EscritaOpc | EscritaOpcBit = EscritaOpc()
+        self.cp: dict[str, Comporta] = {}
+
+        self.cp["cp1"]: Comporta = Comporta(self, 1)
+        self.cp["cp2"]: Comporta = Comporta(self, 2)
 
         self.cps = [self.cp1, self.cp2]
         self.cp1.lista_comportas = self.cps
@@ -77,8 +78,8 @@ class TomadaAgua(Usina):
 
 
     def resetar_emergencia(self):
-        if not self.dct["GLB"]["tda_offline"]:
-            [self.e_opc_bit.escrever(OPC_UA["TDA"][f"CP{cp.id}_CMD_REARME_FALHAS"], valor=1, bit=0) for cp in self.cps]
+        if not self.dict["GLB"]["tda_offline"]:
+            [self.escrita_opc.escrever_bit(OPC_UA["TDA"][f"CP{cp.id}_CMD_REARME_FALHAS"], valor=1, bit=0) for cp in self.cps]
         else:
             logger.debug("[TDA] Não é possível resetar a emergência pois o CLP da TDA se encontra offline")
 
@@ -105,19 +106,19 @@ class TomadaAgua(Usina):
             logger.warning("[TDA] Houve uma falha no sensor de nível jusante grade da comporta 2. Favor verificar.")
 
 
-        if self.leitura_falha_atuada_lg and not self.dct["VOIP"]["LG_FALHA_ATUADA"]:
+        if self.leitura_falha_atuada_lg and not self.dict["VOIP"]["LG_FALHA_ATUADA"]:
             logger.warning("[TDA] Foi identificado que o limpa grades está em falha. Favor verificar.")
-            self.dct["VOIP"]["LG_FALHA_ATUADA"] = True
+            self.dict["VOIP"]["LG_FALHA_ATUADA"] = True
             self.acionar_voip = True
-        elif not self.leitura_falha_atuada_lg and self.dct["VOIP"]["LG_FALHA_ATUADA"]:
-            self.dct["VOIP"]["LG_FALHA_ATUADA"] = False
+        elif not self.leitura_falha_atuada_lg and self.dict["VOIP"]["LG_FALHA_ATUADA"]:
+            self.dict["VOIP"]["LG_FALHA_ATUADA"] = False
 
-        if self.leitura_falha_nivel_montante and not self.dct["VOIP"]["FALHA_NIVEL_MONTANTE"]:
+        if self.leitura_falha_nivel_montante and not self.dict["VOIP"]["FALHA_NIVEL_MONTANTE"]:
             logger.warning("[TDA] Houve uma falha na leitura de nível montante. Favor verificar.")
-            self.dct["VOIP"]["FALHA_NIVEL_MONTANTE"] = True
+            self.dict["VOIP"]["FALHA_NIVEL_MONTANTE"] = True
             self.acionar_voip = True
-        elif not self.leitura_falha_nivel_montante and self.dct["VOIP"]["FALHA_NIVEL_MONTANTE"]:
-            self.dct["VOIP"]["FALHA_NIVEL_MONTANTE"] = False
+        elif not self.leitura_falha_nivel_montante and self.dict["VOIP"]["FALHA_NIVEL_MONTANTE"]:
+            self.dict["VOIP"]["FALHA_NIVEL_MONTANTE"] = False
 
     def iniciar_leituras_condicionadores(self) -> None:
         # CONDICIONADORES ESSENCIAIS
@@ -244,7 +245,7 @@ class Comporta(TomadaAgua):
 
     def rearme_falhas_comporta(self) -> bool:
         try:
-            return self.e_opc_bit.escrever(self.opc, OPC_UA["TDA"][f"CP{self.id}_CMD_REARME_FALHAS"], 0, 1)
+            return self.escrita_opc.escrever(self.opc, OPC_UA["TDA"][f"CP{self.id}_CMD_REARME_FALHAS"], 0, 1)
         except Exception as e:
             raise(e)
 
@@ -257,7 +258,7 @@ class Comporta(TomadaAgua):
             elif self.verificar_precondicoes_comporta():
                 if self.press_equalizada.valor and self.aguardando_cmd_abert.valor:
                     logger.debug(f"[TDA][CP{self.id}] Enviando comando de abertura para a comporta {self.id}")
-                    self.e_opc_bit.escrever(self.opc, OPC_UA["TDA"][f"CP{self.id}_CMD_ABERTURA_TOTAL"], 1, 1)
+                    self.escrita_opc.escrever(self.opc, OPC_UA["TDA"][f"CP{self.id}_CMD_ABERTURA_TOTAL"], 1, 1)
                     return
         except Exception as e:
             logger.exception(f"[TDA][CP{self.id}] Houve um erro ao abrir a comporta. Exception: \"{repr(e)}\"")
@@ -269,7 +270,7 @@ class Comporta(TomadaAgua):
                 logger.debug(f"[TDA][CP{self.id}] A comporta {self.id} já está fechada")
                 return
             else:
-                self.e_opc_bit.escrever(self.opc, OPC_UA["TDA"][f"CP{self.id}_CMD_FECHAMENTO"], 3, 1)
+                self.escrita_opc.escrever(self.opc, OPC_UA["TDA"][f"CP{self.id}_CMD_FECHAMENTO"], 3, 1)
                 return
 
         except Exception as e:
@@ -283,7 +284,7 @@ class Comporta(TomadaAgua):
                 return
             elif self.verificar_precondicoes_comporta():
                 logger.debug(f"[TDA][CP{self.id}] Enviando comando de cracking para a comporta {self.id}")
-                self.e_opc_bit.escrever(self.opc, OPC_UA["TDA"][f"CP{self.id}_CMD_ABERTURA_CRACKING"], 1, 1)
+                self.escrita_opc.escrever(self.opc, OPC_UA["TDA"][f"CP{self.id}_CMD_ABERTURA_CRACKING"], 1, 1)
                 return
 
         except Exception as e:

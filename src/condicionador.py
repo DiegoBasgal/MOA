@@ -3,16 +3,12 @@ __authors__ = "Lucas Lavratti", " Henrique Pfeifer"
 __credits__ = ["Diego Basgal" , ...]
 __description__ = "Este módulo corresponde a implementação da lógica de Condicionadores."
 
-
-from leitura import *
-from metadados.const import *
-
-from unidade_geracao import UnidadeGeracao
+from Usina import *
 
 class CondicionadorBase:
     def __init__(
             self, 
-            leitura: LeituraBase | None = ...,
+            leitura: LeituraOpc | LeituraModbus | None = ...,
             gravidade: int | None = ...,
             etapas: list | None = ...,
             id_unidade: int | None = ...,
