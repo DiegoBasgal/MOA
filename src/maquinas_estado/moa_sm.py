@@ -11,7 +11,7 @@ import traceback
 from time import sleep
 from datetime import datetime
 
-from usina import *
+from Usina import *
 
 class StateMachine:
     def __init__(self, initial_state):
@@ -29,22 +29,12 @@ class StateMachine:
             self.state = FalhaCritica()
 
 class State:
-    def __init__(
-            self,
-            config: dict | None = ...,
-            dicionario: dict | None = ...,
-            banco_dados: BancoDados | None = ...,
-            usina: Usina | None = ...
-        ) -> ...:
+    def __init__(self, usina: Usina | None = ...) -> ...:
 
-        if None in (config, dicionario, banco_dados, usina):
-            logger.error(f"Erro ao instanciar o estado base do MOA. Exception: \"{repr(Exception)}\"")
+        if not usina:
+            logger.error(f"Erro ao carregar instância da Usina. Exception: \"{repr(Exception)}\"")
             self.state = FalhaCritica()
         else:
-            self.cfg = config
-            self.dct = dicionario
-            self.bds = banco_dados
-
             self.usn = usina
 
         self.usn.estado_moa = MOA_SM_NAO_INICIALIZADO
@@ -56,16 +46,16 @@ class State:
         return self
 
 class FalhaCritica(State):
-    def __init__(self):
-        super().__init__()
+    def __init__(self, usina):
+        super().__init__(usina)
         self.usn.estado_moa = MOA_SM_FALHA_CRITICA
 
         logger.critical("Falha crítica MOA. Interrompendo execução...")
         sys.exit(1)
 
 class Pronto(State):
-    def __init__(self, config, dicionario, usina):
-        State.__init__(self, config, dicionario, usina)
+    def __init__(self, usina):
+        super().__init__(usina)
         self.usn.estado_moa = MOA_SM_PRONTO
 
     def run(self):
@@ -159,7 +149,7 @@ class ControleManual(State):
             sleep(2)
             return ControleDados()
 
-        return ControleAgendamentos() if len(self.usn.agn.get_agendamentos_pendentes()) > 0 else self
+        return ControleAgendamentos() if len(self.usn.agn.agendamentos_pendentes()) > 0 else self
 
 class ControleEmergencia(State):
     def __init__(self, usina):
@@ -167,6 +157,8 @@ class ControleEmergencia(State):
         self.usn.estado_moa = MOA_SM_CONTROLE_EMERGENCIA
 
         self.tentativas = 0
+        self.usn.distribuir_potencia(0)
+        [ug.step() for ug in self.usn.ugs]
 
         logger.critical(f"ATENÇÃO! Usina entrado em estado de emergência. (Horário: {self.get_time()})")
 

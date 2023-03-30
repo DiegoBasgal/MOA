@@ -10,32 +10,27 @@ logger = logging.getLogger("__main__")
 
 class UnidadeGeracao(Usina):
     def __init__(self, id: int | None = ...) -> ...:
-        super().__init__(self)
-
         # VERIFICAÇÃO DE ARGUMENTOS
         if not id or id < 1:
             raise ValueError(f"[UG{self.id}] A Unidade deve ser instanciada com um valor maior que \"0\".")
         else:
             self.__id: int = id
 
-        # ATRIBUIÇÃO DE VAIRÁVEIS PRIVADAS
-        # Numéricas
+
+        # ATRIBUIÇÃO DE VAIRÁVEIS
+        # Privadas
         self.__tempo_entre_tentativas: int = 0
         self.__limite_tentativas_de_normalizacao: int = 3
 
-        # Leituras
         self.__etapa_atual: LeituraModbus = LeituraModbus(self.clp, MB["UG"][f"UG{self.id}_RV_ESTADO_OPERACAO"])
 
         self.__leitura_potencia: LeituraOpc = LeituraOpc(OPC_UA["UG"][f"UG{self.id}_UG_P"])
         self.__leitura_horimetro: LeituraOpc = LeituraOpc(OPC_UA["UG"][f"UG{self.id}_UG_HORIMETRO"])
         self.__leitura_dj52l: LeituraOpcBit = LeituraOpcBit(OPC_UA["SE"]["CMD_SE_FECHA_52L"], 4, True)
 
-        # Estado inicial máquina de estados UG
         self.__next_state: State = StateDisponivel(self)
 
-
-        # ATRIBUIÇÃO DE VAIRÁVEIS PROTEGIDOS
-        # Numéricas
+        # Protegidas
         self._codigo_state: int = 0
 
         self._prioridade: int = 0
@@ -47,17 +42,13 @@ class UnidadeGeracao(Usina):
 
         self._tentativas_de_normalizacao: int = 0
 
-        # Lista
         self._condicionadores: list[CondicionadorBase] = []
         self._condicionadores_essenciais: list[CondicionadorBase] = []
         self._condicionadores_atenuadores: list[CondicionadorExponencialReverso] = []
 
-
-        # ATRIBUIÇÃO DE VAIRÁVEIS PÚBLICOS
-        # Numéricas
+        # Públicas
         self.tempo_normalizar: int = 0
 
-        # Booleanos
         self.parar_timer: bool = False
         self.timer_press: bool = False
         self.limpeza_grade: bool = False
@@ -65,15 +56,13 @@ class UnidadeGeracao(Usina):
         self.aux_tempo_sincronizada: bool = None
         self.deve_ler_condicionadores: bool = False
 
-        # Datetime
-        self.ts_auxiliar = self.get_time()
+        self.ts_auxiliar: datetime = self.get_time()
 
 
         # FINALIZAÇÃO DO __INIT__
         self.iniciar_leituras_condicionadores()
 
 
-    # GETTERS
     @property
     def id(self) -> int:
         return self.__id
@@ -109,8 +98,7 @@ class UnidadeGeracao(Usina):
     @property
     def etapa_atual(self) -> int:
         try:
-            response = self.__etapa_atual
-            if response > 0:
+            if response := self.__etapa_atual > 0:
                 self._ultima_etapa_atual = response
                 return response
             else:
@@ -121,7 +109,6 @@ class UnidadeGeracao(Usina):
             return 99
 
 
-    # GETTERS + SETTERS
     @property
     def setpoint(self) -> int:
         return self._setpoint
@@ -192,12 +179,10 @@ class UnidadeGeracao(Usina):
     def tentativas_de_normalizacao(self, var: int):
         if 0 <= var and var == int(var) and self.tentativas_de_normalizacao <= self.limite_tentativas_de_normalizacao:
             self.tentativas_de_normalizacao = int(var)
-        elif self.tentativas_de_normalizacao == self.limite_tentativas_de_normalizacao:
-            logger.debug(f"[UG{self.id}]Última tentativa de normalização...")
-        else:
-            raise ValueError(f"[UG{self.id}]Valor deve se um inteiro positivo")
+        if self.tentativas_de_normalizacao == self.limite_tentativas_de_normalizacao:
+            logger.debug(f"[UG{self.id}] Última tentativa de normalização...")
 
-    # FUNÇÕES
+
     def get_time(self) -> datetime:
         return datetime.now(pytz.timezone("Brazil/East")).replace(tzinfo=None)
 
@@ -261,13 +246,13 @@ class UnidadeGeracao(Usina):
         try:
             if self.etapa_atual == UG_PARADA:
                 logger.info(f"[UG{self.id}] Enviando comando de partida.")
-                res = self.e_opc_bit.escrever(self.opc, OPC_UA["UG"][f"UG{self.id}_CMD_RESET_FALHAS_PASSOS"], valor=1, bit=0)
-                res = self.e_opc_bit.escrever(self.opc, OPC_UA["UG"][f"UG{self.id}_CMD_REARME_BLOQUEIO_86M"], valor=1, bit=1)
-                res = self.e_opc_bit.escrever(self.opc, OPC_UA["UG"][f"UG{self.id}_CMD_REARME_BLOQUEIO_86E"], valor=1, bit=2)
-                res = self.e_opc_bit.escrever(self.opc, OPC_UA["UG"][f"UG{self.id}_CMD_REARME_BLOQUEIO_86H"], valor=1, bit=3)
-                res = self.e_opc_bit.escrever(self.opc, OPC_UA["UG"][f"UG{self.id}_CMD_UHRV_REARME_FALHAS"], valor=1, bit=0)
-                res = self.e_opc_bit.escrever(self.opc, OPC_UA["UG"][f"UG{self.id}_CMD_UHLM_REARME_FALHAS"], valor=1, bit=16)
-                res = self.e_opc_bit.escrever(self.opc, OPC_UA["UG"][f"UG{self.id}_CMD_PARTIDA_CMD_SINCRONISMO"], valor=1, bit=10)
+                res = self.escrita_opc.escrever_bit(self.opc, OPC_UA["UG"][f"UG{self.id}_CMD_RESET_FALHAS_PASSOS"], valor=1, bit=0)
+                res = self.escrita_opc.escrever_bit(self.opc, OPC_UA["UG"][f"UG{self.id}_CMD_REARME_BLOQUEIO_86M"], valor=1, bit=1)
+                res = self.escrita_opc.escrever_bit(self.opc, OPC_UA["UG"][f"UG{self.id}_CMD_REARME_BLOQUEIO_86E"], valor=1, bit=2)
+                res = self.escrita_opc.escrever_bit(self.opc, OPC_UA["UG"][f"UG{self.id}_CMD_REARME_BLOQUEIO_86H"], valor=1, bit=3)
+                res = self.escrita_opc.escrever_bit(self.opc, OPC_UA["UG"][f"UG{self.id}_CMD_UHRV_REARME_FALHAS"], valor=1, bit=0)
+                res = self.escrita_opc.escrever_bit(self.opc, OPC_UA["UG"][f"UG{self.id}_CMD_UHLM_REARME_FALHAS"], valor=1, bit=16)
+                res = self.escrita_opc.escrever_bit(self.opc, OPC_UA["UG"][f"UG{self.id}_CMD_PARTIDA_CMD_SINCRONISMO"], valor=1, bit=10)
                 self.enviar_setpoint(self.setpoint)
             else:
                 logger.debug(f"[UG{self.id}] A Unidade já está sincronizada.")
@@ -283,7 +268,7 @@ class UnidadeGeracao(Usina):
             if self.etapa_atual == (UG_SINCRONIZADA or UG_SINCRONIZANDO):
                 logger.info(f"[UG{self.id}] Enviando comando de parada.")
                 self.enviar_setpoint(0)
-                return self.e_opc_bit.escrever(self.opc, OPC_UA["UG"][f"UG{self.id}_CMD_PARADA_CMD_DESABILITA_UHLM"], valor=1, bit=15)
+                return self.escrita_opc.escrever_bit(self.opc, OPC_UA["UG"][f"UG{self.id}_CMD_PARADA_CMD_DESABILITA_UHLM"], valor=1, bit=15)
             else:
                 logger.debug(f"[UG{self.id}] A Unidade já está parada.")
 
@@ -295,14 +280,14 @@ class UnidadeGeracao(Usina):
     def enviar_setpoint(self, setpoint_kw: int) -> bool:
         try:
             logger.debug(f"[UG{self.id}] Enviando setpoint {int(self.setpoint)} kW.")
-            self.setpoint = int(setpoint_kw)
-            if self.setpoint > 1:
-                res = self.e_opc_bit.escrever(self.opc, OPC_UA["UG"][f"UG{self.id}_CMD_RESET_FALHAS_PASSOS"], valor=1, bit=0)
-                res = self.e_opc_bit.escrever(self.opc, OPC_UA["UG"][f"UG{self.id}_CMD_REARME_BLOQUEIO_86M"], valor=1, bit=1)
-                res = self.e_opc_bit.escrever(self.opc, OPC_UA["UG"][f"UG{self.id}_CMD_REARME_BLOQUEIO_86E"], valor=1, bit=2)
-                res = self.e_opc_bit.escrever(self.opc, OPC_UA["UG"][f"UG{self.id}_CMD_REARME_BLOQUEIO_86H"], valor=1, bit=3)
-                res = self.e_opc_bit.escrever(self.opc, OPC_UA["UG"][f"UG{self.id}_CMD_UHRV_REARME_FALHAS"], valor=1, bit=0)
-                res = self.e_opc_bit.escrever(self.opc, OPC_UA["UG"][f"UG{self.id}_CMD_UHLM_REARME_FALHAS"], valor=1, bit=16)
+            if setpoint_kw > 1:
+                self.setpoint = int(setpoint_kw)
+                res = self.escrita_opc.escrever_bit(self.opc, OPC_UA["UG"][f"UG{self.id}_CMD_RESET_FALHAS_PASSOS"], valor=1, bit=0)
+                res = self.escrita_opc.escrever_bit(self.opc, OPC_UA["UG"][f"UG{self.id}_CMD_REARME_BLOQUEIO_86M"], valor=1, bit=1)
+                res = self.escrita_opc.escrever_bit(self.opc, OPC_UA["UG"][f"UG{self.id}_CMD_REARME_BLOQUEIO_86E"], valor=1, bit=2)
+                res = self.escrita_opc.escrever_bit(self.opc, OPC_UA["UG"][f"UG{self.id}_CMD_REARME_BLOQUEIO_86H"], valor=1, bit=3)
+                res = self.escrita_opc.escrever_bit(self.opc, OPC_UA["UG"][f"UG{self.id}_CMD_UHRV_REARME_FALHAS"], valor=1, bit=0)
+                res = self.escrita_opc.escrever_bit(self.opc, OPC_UA["UG"][f"UG{self.id}_CMD_UHLM_REARME_FALHAS"], valor=1, bit=16)
                 res = self.clp.write_single_register(MB["UG"][f"UG{self.id}_RV_SETPOINT_POTENCIA_ATIVA_PU"], self.setpoint)
                 return res
 
@@ -332,7 +317,7 @@ class UnidadeGeracao(Usina):
     def acionar_trip_logico(self) -> bool:
         try:
             logger.debug(f"[UG{self.id}] Acionando TRIP -> Lógico.")
-            return self.e_opc_bit.escrever(self.opc, OPC_UA["UG"][f"UG{self.id}_CMD_PARADA_EMERGENCIA"], 4, 1)
+            return self.escrita_opc.escrever_bit(self.opc, OPC_UA["UG"][f"UG{self.id}_CMD_PARADA_EMERGENCIA"], 4, 1)
 
         except Exception as e:
             logger.exception(f"[UG{self.id}] Não foi possivel acionar o TRIP lógico. Exception: \"{repr(e)}\"")
@@ -342,14 +327,14 @@ class UnidadeGeracao(Usina):
     def remover_trip_logico(self) -> bool:
         try:
             logger.debug(f"[UG{self.id}] Removendo TRIP -> Lógico.")
-            res = self.e_opc_bit.escrever(self.opc, OPC_UA["UG"][f"UG{self.id}_CMD_RESET_FALHAS_PASSOS"], valor=1, bit=0)
-            res = self.e_opc_bit.escrever(self.opc, OPC_UA["UG"][f"UG{self.id}_CMD_REARME_BLOQUEIO_86M"], valor=1, bit=1)
-            res = self.e_opc_bit.escrever(self.opc, OPC_UA["UG"][f"UG{self.id}_CMD_REARME_BLOQUEIO_86E"], valor=1, bit=2)
-            res = self.e_opc_bit.escrever(self.opc, OPC_UA["UG"][f"UG{self.id}_CMD_REARME_BLOQUEIO_86H"], valor=1, bit=3)
-            res = self.e_opc_bit.escrever(self.opc, OPC_UA["UG"][f"UG{self.id}_CMD_UHRV_REARME_FALHAS"], valor=1, bit=0)
-            res = self.e_opc_bit.escrever(self.opc, OPC_UA["UG"][f"UG{self.id}_CMD_UHLM_REARME_FALHAS"], valor=1, bit=16)
-            res = self.e_opc_bit.escrever(self.opc, OPC_UA["UG"][f"UG{self.id}_BLOQUEIO_86H_ATUADO"], valor=0, bit=31)
-            res = self.e_opc_bit.escrever(self.opc, OPC_UA["UG"][f"UG{self.id}_RELE_700G_TRIP_ATUADO"], valor=0, bit=31)
+            res = self.escrita_opc.escrever_bit(self.opc, OPC_UA["UG"][f"UG{self.id}_CMD_RESET_FALHAS_PASSOS"], valor=1, bit=0)
+            res = self.escrita_opc.escrever_bit(self.opc, OPC_UA["UG"][f"UG{self.id}_CMD_REARME_BLOQUEIO_86M"], valor=1, bit=1)
+            res = self.escrita_opc.escrever_bit(self.opc, OPC_UA["UG"][f"UG{self.id}_CMD_REARME_BLOQUEIO_86E"], valor=1, bit=2)
+            res = self.escrita_opc.escrever_bit(self.opc, OPC_UA["UG"][f"UG{self.id}_CMD_REARME_BLOQUEIO_86H"], valor=1, bit=3)
+            res = self.escrita_opc.escrever_bit(self.opc, OPC_UA["UG"][f"UG{self.id}_CMD_UHRV_REARME_FALHAS"], valor=1, bit=0)
+            res = self.escrita_opc.escrever_bit(self.opc, OPC_UA["UG"][f"UG{self.id}_CMD_UHLM_REARME_FALHAS"], valor=1, bit=16)
+            res = self.escrita_opc.escrever_bit(self.opc, OPC_UA["UG"][f"UG{self.id}_BLOQUEIO_86H_ATUADO"], valor=0, bit=31)
+            res = self.escrita_opc.escrever_bit(self.opc, OPC_UA["UG"][f"UG{self.id}_RELE_700G_TRIP_ATUADO"], valor=0, bit=31)
             return res
 
         except Exception as e:
@@ -375,7 +360,7 @@ class UnidadeGeracao(Usina):
 
             if not self.leitura_dj52l:
                 logger.debug(f"[UG{self.id}] Comando recebido - Fechando Dj52L")
-                return self.e_opc_bit.escrever(OPC_UA["SE"]["CMD_SE_FECHA_52L"], valor=1, bit=4)
+                return self.escrita_opc.escrever_bit(OPC_UA["SE"]["CMD_SE_FECHA_52L"], valor=1, bit=4)
 
         except Exception as e:
             logger.exception(f"[UG{self.id}] Não foi possível remover o TRIP elétrico. Exception: \"{repr(e)}\"")
@@ -384,12 +369,12 @@ class UnidadeGeracao(Usina):
 
     def resetar_emergencia(self) -> bool:
         try:
-            res = self.e_opc_bit.escrever(OPC_UA["UG"][f"UG{self.id}_CMD_RESET_FALHAS_PASSOS"], valor=1, bit=0)
-            res = self.e_opc_bit.escrever(OPC_UA["UG"][f"UG{self.id}_CMD_REARME_BLOQUEIO_86M"], valor=1, bit=1)
-            res = self.e_opc_bit.escrever(OPC_UA["UG"][f"UG{self.id}_CMD_REARME_BLOQUEIO_86E"], valor=1, bit=2)
-            res = self.e_opc_bit.escrever(OPC_UA["UG"][f"UG{self.id}_CMD_REARME_BLOQUEIO_86H"], valor=1, bit=3)
-            res = self.e_opc_bit.escrever(OPC_UA["UG"][f"UG{self.id}_CMD_UHRV_REARME_FALHAS"], valor=1, bit=0)
-            res = self.e_opc_bit.escrever(OPC_UA["UG"][f"UG{self.id}_CMD_UHLM_REARME_FALHAS"], valor=1, bit=16)
+            res = self.escrita_opc.escrever_bit(OPC_UA["UG"][f"UG{self.id}_CMD_RESET_FALHAS_PASSOS"], valor=1, bit=0)
+            res = self.escrita_opc.escrever_bit(OPC_UA["UG"][f"UG{self.id}_CMD_REARME_BLOQUEIO_86M"], valor=1, bit=1)
+            res = self.escrita_opc.escrever_bit(OPC_UA["UG"][f"UG{self.id}_CMD_REARME_BLOQUEIO_86E"], valor=1, bit=2)
+            res = self.escrita_opc.escrever_bit(OPC_UA["UG"][f"UG{self.id}_CMD_REARME_BLOQUEIO_86H"], valor=1, bit=3)
+            res = self.escrita_opc.escrever_bit(OPC_UA["UG"][f"UG{self.id}_CMD_UHRV_REARME_FALHAS"], valor=1, bit=0)
+            res = self.escrita_opc.escrever_bit(OPC_UA["UG"][f"UG{self.id}_CMD_UHLM_REARME_FALHAS"], valor=1, bit=16)
             return res
 
         except Exception as e:
@@ -405,7 +390,7 @@ class UnidadeGeracao(Usina):
                 return
 
         logger.debug(f"[UG{self.id}] A Unidade estourou o timer de verificação de partida, adicionando condição para normalizar")
-        self.e_opc_bit.escrever(self.opc, OPC_UA["UG"][f"UG{self.id}_CMD_PARADA_EMERGENCIA"], 4, 1)
+        self.escrita_opc.escrever_bit(self.opc, OPC_UA["UG"][f"UG{self.id}_CMD_PARADA_EMERGENCIA"], 4, 1)
         self.borda_partindo = False
         self.parar_timer = True
 

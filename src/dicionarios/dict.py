@@ -1,20 +1,18 @@
-dict_compartilhado: dict[str, dict[str, any]] = {
-    "CFG": {
-        "UG1_slave_ip": "10.101.2.215",
-        "UG1_slave_porta": 5003,
-        "UG2_slave_ip": "10.101.2.215",
-        "UG2_slave_porta": 5003,
-        "MOA_slave_ip": "0.0.0.0",
-        "MOA_slave_porta": 5002,
-        "opc_server": "opc.tcp://localhost:4840",
-    },
-
-    "GLB": {
-        "avisado_eletrica": False
-    }
+globais: dict[str, any] = {
+    "avisado_eletrica": False
 }
 
-dict_voip: dict[str, list[bool | str]] = {
+ips: dict[str, any] = {
+    "UG1_slave_ip": "10.101.2.215",
+    "UG1_slave_porta": 5003,
+    "UG2_slave_ip": "10.101.2.215",
+    "UG2_slave_porta": 5003,
+    "MOA_slave_ip": "0.0.0.0",
+    "MOA_slave_porta": 5002,
+    "opc_server": "opc.tcp://localhost:4840",
+}
+
+voip: dict[str, list[bool | str]] = {
     "LG_FALHA_ATUADA": [False, "Atenção! Houve uma falha com o Limpa Grades na PCH Xavantina, favor analisar a situação. Atenção! Houve uma falha com o Limpa Grades na PCH Xavantina, favor analisar a situação."],
     "FALHA_NIVEL_MONTANTE": [False, "Atenção! Houve uma falha na leitura de nível montante na PCH Xavantina, favor analisar a situação. Atenção! Houve uma falha na leitura de nível montante na PCH Xavantina, favor analisar a situação."],
     "FILTRAGEM_BOMBA_FALHA": [False, "Atenção! Houve uma falha com a bomba de filtragem na PCH Xavantina, favor analisar a situação. Atenção! Houve uma falha com a bomba de filtragem na PCH Xavantina, favor analisar a situação."],
@@ -38,11 +36,11 @@ dict_voip: dict[str, list[bool | str]] = {
     "TE_NIVEL_OLEO_MUITO_BAIXO": [False, "Atenção! O nível do óleo do transformador elevador a PCH Xavantina está muito baixo, favor analisar a situação. Atenção! O nível do óleo do transformador elevador a PCH Xavantina está muito baixo, favor analisar a situação."]
 }
 
-dict_telegram = {
+telegram = {
 
 }
 
-dict_watchdog: dict[str, any] = {
+watchdog: dict[str, any] = {
     "unit_id": 1,
     "ip_slave": "172.21.15.12",
     "port_slave": 5002,

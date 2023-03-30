@@ -4,6 +4,10 @@ __credits__ = ["Diego Basgal" , ...]
 __description__ = "Este módulo corresponde a implementação da lógica de Condicionadores."
 
 from Usina import *
+from dicionarios.const import *
+from leitura_escrita.leitura import *
+
+from Unidade_Geracao import UnidadeGeracao
 
 class CondicionadorBase:
     def __init__(

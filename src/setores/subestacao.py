@@ -51,6 +51,17 @@ class Subestacao(Usina):
     def condicionadores_essenciais(self, var: list[CondicionadorBase]) -> None:
         self._condicionadores_essenciais = var
 
+
+    def verificar_condicionadores(self) -> int:
+        if [condic.ativo for condic in self.condicionadores_essenciais]:
+            condics_ativos = [condic for condics in [self.condicionadores_essenciais, self.condicionadores] for condic in condics if condic.ativo]
+            condic_flag = [CONDIC_NORMALIZAR for condic in condics_ativos if condic.gravidade == CONDIC_NORMALIZAR]
+            condic_flag = [CONDIC_INDISPONIBILIZAR for condic in condics_ativos if condic.gravidade == CONDIC_INDISPONIBILIZAR]
+
+            if condic_flag in (CONDIC_NORMALIZAR, CONDIC_INDISPONIBILIZAR):
+                logger.info("[SE] Foram detectados condicionadores ativos!")
+                [logger.info(f"[SE] Condicionador: \"{condic.descr}\", Gravidade: \"{condic.gravidade}\".") for condic in condics_ativos]
+
     def fechar_Dj52L(self):
         return self.escrita_opc.escrever_bit(OPC_UA["SE"]["CMD_SE_FECHA_52L"], valor=1, bit=4)
 

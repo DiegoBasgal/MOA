@@ -8,10 +8,12 @@ logger = logging.getLogger("__main__")
 
 class Bay(Usina):
     def __init__(self) -> ...:
-        super(Usina, self).__init__(self)
-
+        super().__init__(self)
 
     def verificar_status_DJs(self) -> bool:
+        return
+
+    def verificar_condicionadores(self) -> int:
         return
 
     def resetar_emergencia(self) -> bool:

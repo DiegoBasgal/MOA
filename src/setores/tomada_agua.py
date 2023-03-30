@@ -2,10 +2,6 @@ __version__ = "0.1"
 __author__ = "Diego Basgal"
 __description__ = "Este módulo corresponde a implementação da operação da Tomada da Água."
 
-import logging
-
-from time import time
-
 from Usina import *
 from setores.tomada_agua import Comporta
 
@@ -23,14 +19,10 @@ class TomadaAgua(Usina):
         self._condicionadores = []
         self._condicionadores_essenciais = []
 
-        self.cp: dict[str, Comporta] = {}
-
-        self.cp["cp1"]: Comporta = Comporta(self, 1)
-        self.cp["cp2"]: Comporta = Comporta(self, 2)
-
-        self.cps = [self.cp1, self.cp2]
-        self.cp1.lista_comportas = self.cps
-        self.cp2.lista_comportas = self.cps
+        self.erro_nv: int | float = 0
+        self.erro_nv_anterior: int | float = 0
+        self.nv_montante_recente: int | float = 0
+        self.nv_montante_anterior: int | float = 0
 
     @property
     def nv_montante(self) -> int | float:
@@ -76,12 +68,59 @@ class TomadaAgua(Usina):
     def condicionadores_essenciais(self, var: list[CondicionadorBase]) -> None:
         self._condicionadores_essenciais = var
 
+    def atualizar_montante_recente(self) -> None:
+        if not self.glb_dict["tda_offline"]:
+            self.nv_montante_recente = self.tda.nv_montante
+            self.erro_nv_anterior = self.erro_nv
+            self.erro_nv = self.nv_montante_recente - self.cfg["nv_alvo"]
 
-    def resetar_emergencia(self):
-        if not self.dict["GLB"]["tda_offline"]:
-            [self.escrita_opc.escrever_bit(OPC_UA["TDA"][f"CP{cp.id}_CMD_REARME_FALHAS"], valor=1, bit=0) for cp in self.cps]
+    def controle_reservatorio(self) -> int:
+        # Reservatório acima do nível máximo
+        if self.tda.nv_montante >= self.cfg["nv_maximo"]:
+            logger.info("[USN] Nível montante acima do máximo.")
+
+            if self.nv_montante_recente >= NIVEL_MAXIMORUM:
+                logger.critical(f"[USN] Nivel montante ({self.nv_montante_recente:3.2f}) atingiu o maximorum!")
+                return NV_FLAG_EMERGENCIA
+
+            else:
+                self.controle_i = 0.5
+                self.controle_ie = 0.5
+                self.distribuir_potencia(self.cfg["pot_maxima_usina"])
+
+        # Reservatório abaixo do nível mínimo
+        elif self.tda.nv_montante <= self.cfg["nv_minimo"] and not self.aguardando_reservatorio:
+            logger.info("[USN] Nível montante abaixo do mínimo.")
+            self.aguardando_reservatorio = True
+            self.distribuir_potencia(0)
+
+            if self.nv_montante_recente <= NIVEL_FUNDO_RESERVATORIO:
+                logger.critical(f"[USN] Nivel montante ({self.nv_montante_recente:3.2f}) atingiu o fundo do reservatorio!")
+                return NV_FLAG_EMERGENCIA
+
+        # Aguardando nível do reservatório
+        elif self.aguardando_reservatorio:
+            if self.tda.nv_montante >= self.cfg["nv_alvo"]:
+                logger.debug("[USN] Nível montante dentro do limite de operação.")
+                self.aguardando_reservatorio = False
+
+        # Reservatório Normal
         else:
-            logger.debug("[TDA] Não é possível resetar a emergência pois o CLP da TDA se encontra offline")
+            self.controle_potencia()
+
+        [ug.step() for ug in self.ugs]
+
+        return NV_FLAG_NORMAL
+
+    def verificar_condicionadores(self) -> int:
+        if [condic.ativo for condic in self.condicionadores_essenciais]:
+            condics_ativos = [condic for condics in [self.condicionadores_essenciais, self.condicionadores] for condic in condics if condic.ativo]
+            condic_flag = [CONDIC_NORMALIZAR for condic in condics_ativos if condic.gravidade == CONDIC_NORMALIZAR]
+            condic_flag = [CONDIC_INDISPONIBILIZAR for condic in condics_ativos if condic.gravidade == CONDIC_INDISPONIBILIZAR]
+
+            if condic_flag in (CONDIC_NORMALIZAR, CONDIC_INDISPONIBILIZAR):
+                logger.info("[SA] Foram detectados condicionadores ativos!")
+                [logger.info(f"[SA] Condicionador: \"{condic.descr}\", Gravidade: \"{condic.gravidade}\".") for condic in condics_ativos]
 
     def leitura_periodica(self) -> None:
         if not self.leitura_filtro_limpo_uh:
@@ -106,19 +145,19 @@ class TomadaAgua(Usina):
             logger.warning("[TDA] Houve uma falha no sensor de nível jusante grade da comporta 2. Favor verificar.")
 
 
-        if self.leitura_falha_atuada_lg and not self.dict["VOIP"]["LG_FALHA_ATUADA"]:
+        if self.leitura_falha_atuada_lg and not self.voip_dict["LG_FALHA_ATUADA"]:
             logger.warning("[TDA] Foi identificado que o limpa grades está em falha. Favor verificar.")
-            self.dict["VOIP"]["LG_FALHA_ATUADA"] = True
+            self.voip_dict["LG_FALHA_ATUADA"] = True
             self.acionar_voip = True
-        elif not self.leitura_falha_atuada_lg and self.dict["VOIP"]["LG_FALHA_ATUADA"]:
-            self.dict["VOIP"]["LG_FALHA_ATUADA"] = False
+        elif not self.leitura_falha_atuada_lg and self.voip_dict["LG_FALHA_ATUADA"]:
+            self.voip_dict["LG_FALHA_ATUADA"] = False
 
-        if self.leitura_falha_nivel_montante and not self.dict["VOIP"]["FALHA_NIVEL_MONTANTE"]:
+        if self.leitura_falha_nivel_montante and not self.voip_dict["FALHA_NIVEL_MONTANTE"]:
             logger.warning("[TDA] Houve uma falha na leitura de nível montante. Favor verificar.")
-            self.dict["VOIP"]["FALHA_NIVEL_MONTANTE"] = True
+            self.voip_dict["FALHA_NIVEL_MONTANTE"] = True
             self.acionar_voip = True
-        elif not self.leitura_falha_nivel_montante and self.dict["VOIP"]["FALHA_NIVEL_MONTANTE"]:
-            self.dict["VOIP"]["FALHA_NIVEL_MONTANTE"] = False
+        elif not self.leitura_falha_nivel_montante and self.voip_dict["FALHA_NIVEL_MONTANTE"]:
+            self.voip_dict["FALHA_NIVEL_MONTANTE"] = False
 
     def iniciar_leituras_condicionadores(self) -> None:
         # CONDICIONADORES ESSENCIAIS
@@ -165,8 +204,8 @@ class Comporta(TomadaAgua):
         else:
             self.__id = id
 
-        # ATRIBUIÇÃO DE VAIRÁVEIS PRIVADAS
-        # Leituras
+        # ATRIBUIÇÃO DE VAIRÁVEIS 
+        # Privadas
         self.__aberta = LeituraOpcBit(self.opc, OPC_UA["TDA"][f"CP{self.id}_ABERTA"], 17)
         self.__fechada = LeituraOpcBit(self.opc, OPC_UA["TDA"][f"CP{self.id}_FECHADA"], 18)
         self.__cracking = LeituraOpcBit(self.opc, OPC_UA["TDA"][f"CP{self.id}_CRACKING"], 25)
@@ -176,15 +215,7 @@ class Comporta(TomadaAgua):
         self.__permissao = LeituraOpcBit(self.opc, OPC_UA["TDA"][f"CP{self.id}_PERMISSIVOS_OK"], 31, True)
         self.__bloqueio = LeituraOpcBit(self.opc, OPC_UA["TDA"][f"CP{self.id}_BLOQUEIO_ATUADO"], 31, True)
 
-        # ATRIBUIÇÃO DE VARIÁVEIS PROTEGIDAS
-        # Instâncias das comportas
-        self._lista_comportas: list[Comporta] = []
-
-        # ATRIBUIÇÃO DE VARIÁVEIS PÚBLICAS
-        # Instância(s) da(s) outra(s) comporta(s)
-        self.cp2 = self.lista_comportas[1]
-
-        # Leituras
+        # PÚBLICAS
         self.press_equalizada = LeituraOpcBit(self.opc, OPC_UA["TDA"][f"CP{self.id}_PRESSAO_EQUALIZADA"], 4)
         self.aguardando_cmd_abert = LeituraOpcBit(self.opc, OPC_UA["TDA"][f"CP{self.id}_AGUARDANDO_COMANDO_ABERTURA"], 3)
 
@@ -242,6 +273,9 @@ class Comporta(TomadaAgua):
     def lista_comportas(self, var: list[Comporta]):
         self._lista_comportas = var
 
+
+    def resetar_emergencia(self) -> bool:
+        return self.escrita_opc.escrever_bit(OPC_UA["TDA"][f"CP{self.id}_CMD_REARME_FALHAS"], valor=1, bit=0)
 
     def rearme_falhas_comporta(self) -> bool:
         try:
@@ -310,7 +344,7 @@ class Comporta(TomadaAgua):
         self.rearme_falhas_comporta()
         try:
             if self.unidade_hidraulica and not self.permissao_comporta and not self.bloqueio_comporta:
-                if self.cp2.status_comporta in (2, 4, 32) or self.valvula_borboleta != 0 or self.limpa_grades != 0:
+                if self.c in (2, 4, 32) or self.valvula_borboleta != 0 or self.limpa_grades != 0:
                     logger.debug(f"[TDA][CP{self.id}] Não há condições para operar a comporta {self.id}")
                     if self.cp2.status_comporta != 0:
                         logger.debug(f"[TDA][CP{self.id}] A comporta {self.cp2.id} está repondo") if self.cp2.status_comporta == 2 else None

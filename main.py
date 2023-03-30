@@ -19,12 +19,12 @@ import json
 import threading
 import traceback
 
-import usina as usina
+import Usina
 
 from time import sleep, time
 
-from src.metadados.dict import *
-from src.metadados.const import *
+from src.dicionarios.dict import *
+from src.dicionarios.const import *
 from src.maquinas_estado.moa_sm import *
 
 from conector import ClientesUsina
@@ -66,7 +66,6 @@ if __name__ == "__main__":
 
                 cfg = leitura_json("cfg.json")
                 cvd = leitura_json("dados.json")
-                dct = dict_compartilhado
 
                 escrita_json(cfg, "cfg.json.bkp")
 
@@ -79,8 +78,7 @@ if __name__ == "__main__":
             try:
                 logger.info("Iniciando classe de conexão com o servidores de Banco de Dados, OPC e CLPs.")
 
-                bds: BancoDados = BancoDados()
-                cli: ClientesUsina = ClientesUsina(dct)
+                cli: ClientesUsina = ClientesUsina()
                 cli.open_all()
 
             except Exception:
@@ -91,7 +89,7 @@ if __name__ == "__main__":
 
             try:
                 logger.info("Iniciando instância da classe Usina.")
-                usn: Usina = Usina(cfg, dct, cli, bds)
+                usn: Usina = Usina(cfg, cli)
 
             except Exception:
                 logger.exception(f"Erro ao instanciar a classe Usina. Tentando novamente em \"{timeout}s\" (Tentativa: {n_tentativa}/3).")
@@ -102,7 +100,7 @@ if __name__ == "__main__":
             try:
                 logger.info("Finalizando inicialização com intâncias da máquina de estados e Threads paralelas.")
 
-                sm: StateMachine = StateMachine(initial_state=Pronto(cfg, dct, usn, bds))
+                sm: StateMachine = StateMachine(initial_state=Pronto(cfg, usn))
 
                 threading.Thread(target=lambda: usn.leitura_temporizada()).start()
 

@@ -8,22 +8,21 @@ import pytz
 import logging
 import traceback
 
-import mensageiro.voip as voip
+import dicionarios.dict as Dicionarios
 
 from time import sleep, time
 from datetime import  datetime, timedelta
-from opcua import Client as OpcClient
 
 from condicionador import *
-from metadados.reg import *
-from metadados.dict import *
-from metadados.const import *
+from dicionarios.reg import *
+from dicionarios.const import *
 
 from conector import ClientesUsina
 from banco_dados import BancoDados
 from agendamentos import Agendamentos
 from Unidade_Geracao import UnidadeGeracao
 
+from mensageiro.voip import Voip
 from leitura_escrita.leitura import *
 from leitura_escrita.escrita import *
 from conversor_protocolo.conversor import *
@@ -36,71 +35,61 @@ from setores.servico_auxiliar import ServicoAuxiliar
 logger = logging.getLogger("__main__")
 
 class Usina:
-    def __init__(self,
-            cfg: dict | None = ...,
-            dict_comp: dict | None = ...,
-            banco_dados: BancoDados | None = ...,
-            clientes: ClientesUsina | None = ...,
-        ):
+    def __init__(self, cfg: dict | None = ..., clientes: ClientesUsina | None = ...):
 
         # VERIFICAÇÃO DE ARGUMENTOS
-        if None in (cfg, dict_comp):
-            raise ValueError("[USN] Não foi possível carregar os arquivos de configuração (\"cfg.json\") e(ou) dicionário compartilhado (\"dicionário\").")
+        if None in (cfg):
+            raise ValueError("[USN] Não foi possível carregar os arquivos de configuração (\"cfg.json\").")
         else:
             self.cfg = cfg
-            self.dict = dict_comp
 
-        if None in (clientes, banco_dados):
+        if None in (clientes):
             raise ConnectionError("[USN] Não foi possível carregar as classes de conexão com Clients e banco de dados.")
         else:
-            self.bd = banco_dados
             self.clp = clientes.clp
             self.opc = clientes.cliente_opc
 
         # INCIALIZAÇÃO DE OBJETOS DA USINA
-        # Setter para o client base da leitura e escrita opc (Caso de XAV pois há apenas 1 servidor opc na IHM)
-        LeituraOpc.client = self.opc
-
-        self.escrita_opc: EscritaOpc | EscritaOpcBit = EscritaOpc()
-        EscritaOpc.client = self.opc
-
+        # Banco de Dados
+        self.bd: BancoDados = BancoDados()
 
         # Setores da Usina
+        self.bay: Bay = Bay(self)
         self.se: Subestacao = Subestacao(self)
         self.tda: TomadaAgua = TomadaAgua(self)
         self.sa: ServicoAuxiliar = ServicoAuxiliar(self)
+
+        self.setores: list[Bay, Subestacao, TomadaAgua, ServicoAuxiliar] = [self.bay, self.se, self.tda, self.sa]
 
         # Unidades de Geração
         self.ug1: UnidadeGeracao = UnidadeGeracao(self, 1)
         self.ug2: UnidadeGeracao = UnidadeGeracao(self, 2)
 
         self.ugs = [self.ug1, self.ug2]
+
         self.ug1.lista_ugs = self.ugs
         self.ug2.lista_ugs = self.ugs
 
         self.agn: Agendamentos = Agendamentos()
 
+        # Setter para o client base da Leitura e Escrita OPC (Caso de XAV pois há apenas 1 servidor opc na IHM)
+        self.escrita_opc: EscritaOpc | EscritaOpcBit = EscritaOpc()
+        EscritaOpc.client = self.opc
 
-        # ATRIBUIÇÃO DE VARIÀVEIS PRIVADAS
+        # ATRIBUIÇÃO DE VARIÀVEIS
+        # PRIVADAS
         self.__split1: bool = False
         self.__split2: bool = False
 
-        # self.__condicionadores = [condic for condics in [self.]]
-
         self.__potencia_ativa_kW = LeituraOpc(self.opc, "...")
 
-
-        # ATRIBUIÇÃO DE VARIÁVEIS PROTEGIDAS
-        # Numéricas
+        # PROTEGIDAS
         self._tentativas_normalizar: int = 0
         self._potencia_alvo_anterior: int = -1
 
-        # Booleanas
         self._modo_autonomo: bool = False
 
-
-        # ATRIBUIÇÃO DE VARIÁVEIS PÚBLICAS
-        # Numéricas
+        # PÚBLICAS
         self.estado_moa: int = 0
 
         self.pot_disp: int = 0
@@ -116,24 +105,19 @@ class Usina:
         self.controle_d: int | float = 0
         self.pot_alvo_anterior: int | float = -1
 
-        self.erro_nv: int | float = 0
-        self.erro_nv_anterior: int | float = 0
-        self.nv_montante_recente: int | float = 0
-        self.nv_montante_anterior: int | float = 0
-
-        # Booleanas
         self.clp_emerg: bool = False
         self.voip_emerg: bool = False
         self.borda_emerg: bool = False
         self.normalizar_forcado: bool = False
 
+        self.voip_dict = Dicionarios.voip
+        self.glb_dict = Dicionarios.globais
 
         # FINALIZAÇÃO DO __INIT__
         self.ler_valores()
-        self.ajustar_unidades_inicializacao()
+        self.ajustar_unidades_init()
         self.normalizar_usina()
         self.escrever_valores()
-
 
     # Getters de variáveis PRIVADAS
     @property
@@ -174,7 +158,7 @@ class Usina:
     def ajustar_ie_padrao(self) -> int:
         return ([sum(ug.leitura_potencia) for ug in self.ugs] / self.cfg["pot_maxima_alvo"]) / self.ug_operando
 
-    def ajustar_unidades_inicializacao(self) -> None:
+    def ajustar_unidades_init(self) -> None:
         self.ug_operando += [1 for ug in self.ugs if ug.etapa_atual == UG_SINCRONIZADA]
 
         self.__split1 = True if self.ug_operando == 1 else False
@@ -183,14 +167,10 @@ class Usina:
         self.controle_ie = self.ajustar_ie_padrao()
 
     def verificar_condicionadores(self) -> int:
-        if self.dict["GLB"]["avisado_eletrica"] or [condic.ativo for condic in self.condicionadores_essenciais]:
-            condics_ativos = [condic for condics in [self.condicionadores_essenciais, self.condicionadores] for condic in condics if condic.ativo]
-            condic_flag = [CONDIC_NORMALIZAR for condic in condics_ativos if condic.gravidade == CONDIC_NORMALIZAR]
-            condic_flag = [CONDIC_INDISPONIBILIZAR for condic in condics_ativos if condic.gravidade == CONDIC_INDISPONIBILIZAR]
-
-            if condic_flag in (CONDIC_NORMALIZAR, CONDIC_INDISPONIBILIZAR):
-                logger.info("[USN] Foram detectados condicionadores ativos!")
-                [logger.info(f"[USN] Condicionador: \"{condic.descr}\", Gravidade: \"{condic.gravidade}\".") for condic in condics_ativos]
+        self.bay.verificar_condicionadores()
+        self.se.verificar_condicionadores()
+        self.tda.verificar_condicionadores()
+        self.sa.verificar_condicionadores()
 
     def reconhecer_emergencia(self) -> None:
         logger.info("[USN] Reconhecendo emergência.")
@@ -206,9 +186,9 @@ class Usina:
     def acionar_emergencia(self):
         try:
             self.clp_emergencia = True
-            [self.e_opc_bit.escrever(OPC_UA["UG"][f"UG{ug.id}_CMD_PARADA_EMERGENCIA"], valor=1, bit=4) for ug in self.ugs]
+            [self.escrita_opc.escrever_bit(OPC_UA["UG"][f"UG{ug.id}_CMD_PARADA_EMERGENCIA"], valor=1, bit=4) for ug in self.ugs]
             sleep(5)
-            [self.e_opc_bit.escrever(OPC_UA["UG"][f"UG{ug.id}_CMD_PARADA_EMERGENCIA"], valor=0, bit=4) for ug in self.ugs]
+            [self.escrita_opc.escrever_bit(OPC_UA["UG"][f"UG{ug.id}_CMD_PARADA_EMERGENCIA"], valor=0, bit=4) for ug in self.ugs]
 
         except Exception as e:
             logger.exception(f"[CON] Houve um erro ao realizar acionar a emergência. Exception: \"{repr(e)}\"")
@@ -217,17 +197,16 @@ class Usina:
 
     def normalizar_usina(self) -> bool:
         logger.debug("[USN] Normalizando...")
-        logger.debug(f"[USN] Última tentativa: {self.ultima_tentativa_norm}. Tensão na linha: RS->{self.tensao_rs:2.1f}kV / ST->{self.tensao_st:2.1f}kV / TR->{self.tensao_tr:2.1f}kV")
+        logger.debug(f"[USN] Última tentativa: {self.ultima_tentativa_norm}. Tensão na linha: RS->{self.se.tensao_rs:2.1f}kV / ST->{self.se.tensao_st:2.1f}kV / TR->{self.se.tensao_tr:2.1f}kV")
 
-        if not self.verificar_tensao():
+        if not self.se.verificar_tensao():
             return False
 
         elif ((self.get_time() - self.ultima_tentativa_norm).seconds >= 60 * self.tentativas_normalizar) or self.normalizar_forcado:
             self.ultima_tentativa_norm = self.get_time()
             self.tentativas_normalizar += 1
-            self.bd_emergencia = False
-            self.clp_emergencia = False
-            self.resetar_emergencia()
+            self.bd_emergencia = self.clp_emergencia = False
+            [setor.resetar_emergencia() for setor in self.setores]
             self.bd.update_remove_emergencia()
             return True
 
@@ -235,34 +214,28 @@ class Usina:
             logger.debug("[USN] A normalização foi executada menos de 1 minuto atrás.")
 
     def leitura_temporizada(self):
-        proxima_leitura = time() + 1800
         logger.debug("Iniciando o timer de leitura periódica. Tempo definido -> \"30 min\".")
         while True:
             for ug in self.ugs: ug.leitura_periodica()
             for setor in self.setores: setor.leitura_periodica()
-            if True in (self.se.acionar_voip, self.tda.acionar_voip, self.sa.acionar_voip):
+            if True in (self.se.voip_emerg, self.tda.voip_emerg, self.sa.voip_emerg):
                 self.acionar_voip()
-            sleep(max(0, proxima_leitura - time()))
+            sleep(max(0, (time() + 1800) - time()))
 
     def acionar_voip(self) -> None:
         try:
-            if self.dict["GLB"]["avisado_eletrica"]:
-                voip.enviar_voz_emergencia()
-                self.dict["GLB"]["avisado_eletrica"] = False
+            if self.glb_dict["avisado_eletrica"]:
+                Voip.enviar_voz_emergencia()
+                self.glb_dict["avisado_eletrica"] = False
             else:
-                for _, v in dict_voip.items():
+                for _, v in self.voip_dict.items():
                     if v[0]:
-                        voip.enviar_voz_auxiliar()
+                        Voip.enviar_voz_auxiliar()
                         break
+
         except Exception as e:
             logger.exception(f"[USN] Houve um erro ao ligar por Voip. Exception: \"{repr(e)}\".")
             logger.exception(f"Traceback: {traceback.print_stack}")
-
-    def atualizar_montante_recente(self) -> None:
-        if not self.dict["GLB"]["tda_offline"]:
-            self.nv_montante_recente = self.nv_montante
-            self.erro_nv_anterior = self.erro_nv
-            self.erro_nv = self.nv_montante_recente - self.cfg["nv_alvo"]
 
     def atualizar_parametros_db(self, parametros) -> None:
         try:
@@ -322,11 +295,11 @@ class Usina:
                 self.clp_moa.write_multiple_registers(MB["MOA"]["OUT_SETPOINT"], [int(sum(ug.setpoint)) for ug in self.ugs])
                 self.clp_moa.write_multiple_registers(MB["MOA"]["OUT_TARGET_LEVEL"], [int((self.cfg["nv_alvo"] - 800) * 1000)])
 
-                if self.dict["GLB"]["avisado_eletrica"] and not self.borda_emerg:
+                if self.glb_dict["avisado_eletrica"] and not self.borda_emerg:
                     [self.clp_moa.write_single_coil(MB["MOA"][f"OUT_BLOCK_UG{ug.id}"], [1]) for ug in self.ugs]
                     self.borda_emerg = True
 
-                elif not self.dict["GLB"]["avisado_eletrica"] and self.borda_emerg:
+                elif not self.glb_dict["avisado_eletrica"] and self.borda_emerg:
                     [self.clp_moa.write_single_coil(MB["MOA"][f"OUT_BLOCK_UG{ug.id}"], [0]) for ug in self.ugs]
                     self.borda_emerg = False
 
@@ -359,13 +332,13 @@ class Usina:
     def ler_valores(self) -> None:
         self.cln.ping_clients()
         try:
-            if self.clp_moa.read_coils(MB["MOA"]["IN_EMERG"])[0] == 1 and not self.dict["GLB"]["avisado_eletrica"]:
-                self.dict["GLB"]["avisado_eletrica"] = True
+            if self.clp_moa.read_coils(MB["MOA"]["IN_EMERG"])[0] == 1 and not self.glb_dict["avisado_eletrica"]:
+                self.glb_dict["avisado_eletrica"] = True
                 for ug in self.ugs:
                     ug.deve_ler_condicionadores = True
 
-            elif self.clp_moa.read_coils(MB["MOA"]["IN_EMERG"])[0] == 0 and self.dict["GLB"]["avisado_eletrica"]:
-                self.dict["GLB"]["avisado_eletrica"] = True
+            elif self.clp_moa.read_coils(MB["MOA"]["IN_EMERG"])[0] == 0 and self.glb_dict["avisado_eletrica"]:
+                self.glb_dict["avisado_eletrica"] = True
 
             if self.clp_moa.read_coils(MB["MOA"]["IN_EMERG_UG1"])[0] == 1:
                 self.ug1.deve_ler_condicionadores = True
@@ -399,7 +372,7 @@ class Usina:
                 self.get_time().strftime("%Y-%m-%d %H:%M:%S"),  # timestamp
                 1 if self.aguardando_reservatorio else 0,  # aguardando_reservatorio
                 True,  # DEPRECATED clp_online
-                self.nv_montante, # nv_montante
+                self.tda.nv_montante, # nv_montante
                 1 if self.ug1.disponivel else 0,  # ug1_disp
                 self.ug1.leitura_potencia,  # ug1_pot
                 self.ug1.setpoint,  # ug1_setpot
@@ -431,8 +404,8 @@ class Usina:
                 self.ug1.leitura_potencia,
                 self.ug2.setpoint,
                 self.ug2.leitura_potencia,
-                self.nv_montante_recente,
-                self.erro_nv,
+                self.tda.nv_montante_recente,
+                self.tda.erro_nv,
                 1 if self.modo_autonomo else 0,
                 self.cfg["cx_kp"],
                 self.cfg["cx_ki"],
@@ -444,51 +417,45 @@ class Usina:
             logger.exception(f"[USN] Houve um erro ao inserir dados DEBUG do controle de potência normal no banco. Exception: \"{repr(e)}\"")
             logger.exception(f"[USN] Traceback: {traceback.print_stack}")
 
-    def distribuir_potencia(self, pot_alvo):
-        if self.potencia_alvo_anterior == -1:
-            self.potencia_alvo_anterior = pot_alvo
+    def ajuste_potencia(self, pot_alvo) -> float:
+        self.pot_alvo_anterior = pot_alvo if self.pot_alvo_anterior == -1 else ...
 
         if pot_alvo < 0.1:
-            for ug in self.ugs:
+            for ug in self.ugs: 
                 ug.setpoint = 0
             return 0
 
-        logger.debug("Pot alvo = {}".format(pot_alvo))
+        logger.debug(f"[USN] Potência no medidor = {self.potencia_ativa_kW:0.3f}")
 
-        pot_medidor = self.potencia_ativa_kW
-        logger.debug("Pot no medidor = {}".format(pot_medidor))
-
-        # implementação nova
         pot_aux = self.cfg["pot_maxima_alvo"] - (self.cfg["pot_maxima_usina"] - self.cfg["pot_maxima_alvo"])
-
-        pot_medidor = max(pot_aux, min(pot_medidor, self.cfg["pot_maxima_usina"]))
+        pot_medidor = max(pot_aux, min(self.potencia_ativa_kW, self.cfg["pot_maxima_usina"]))
 
         try:
             if pot_medidor > self.cfg["pot_maxima_alvo"]:
                 pot_alvo = self.pot_alvo_anterior * (1 - ((pot_medidor - self.cfg["pot_maxima_alvo"]) / self.cfg["pot_maxima_alvo"]))
-
-        except TypeError as e:
-            logger.info("A comunicação com os MFs falharam.")
+        except TypeError as te:
+            logger.exception(f"[USN] A comunicação com os MFs falharam. Exception: \"{repr(te)}\"")
+            logger.exception(f"[USN] Traceback: {traceback.print_stack}")
 
         self.pot_alvo_anterior = pot_alvo
-        
-        logger.debug("Pot alvo após ajuste medidor = {}".format(pot_alvo))
 
-        ugs: list[UnidadeGeracao] = self.controle_ugs_disponiveis()
-        self.pot_disp = 0
+        logger.debug(f"[USN] Pot alvo pós ajuste: {pot_alvo:0.3f}")
+        self.distribuir_potencia(pot_alvo)
+        return pot_alvo
 
-        logger.debug("lista_de_ugs_disponiveis:")
-        for ug in ugs:
-            logger.debug("UG{}".format(ug.id))
-            self.pot_disp += ug.cfg["pot_maxima_ug{}".format(ugs[0].id)]
+    def distribuir_potencia(self, pot_alvo) -> None:
+        ugs = self.controle_ugs_disponiveis()
         if ugs is None:
-            return False
-        elif len(ugs) == 0:
-            return False
+            logger.warning("[USN] Sem UGs disponíveis para realizar a distribuição de potência.")
+            return
 
-        logger.debug("Distribuindo {}".format(pot_alvo))
+        logger.debug(f"[USN] UG{[ug.id for ug in ugs]}")
 
-        sp = pot_alvo / self.cfg["pot_maxima_usina"]
+        self.pot_disp = [sum(self.cfg[f"pot_maxima_ug{ug.id}"]) for ug in self.ugs if ug.disponivel]
+        ajuste_manual = min(max(0, [sum(ug.leitura_potencia) for ug in self.ugs if ug.manual]))
+
+        logger.debug(f"[USN] Distribuindo: {pot_alvo - ajuste_manual:0.3f}")
+        sp = (pot_alvo - ajuste_manual) / self.cfg["pot_maxima_usina"]
 
         self.__split1 = True if sp > (0) else self.__split1
         self.__split2 = (True if sp > (0.5 + self.cfg["margem_pot_critica"]) else self.__split2)
@@ -496,123 +463,63 @@ class Usina:
         self.__split2 = False if sp < (0.5) else self.__split2
         self.__split1 = False if sp < (self.cfg["pot_minima"] / self.cfg["pot_maxima_usina"]) else self.__split1
 
-        logger.debug(f"Sp {sp}")
+        logger.debug(f"[USN] SP<-{sp}")
         if len(ugs) == 2:
-
             if self.__split2:
-                logger.debug("Split 2")
-                ugs[0].setpoint = sp * ugs[0].cfg[f"pot_maxima_ug{self.id}"]
-                ugs[1].setpoint = sp * ugs[1].cfg[f"pot_maxima_ug{self.id}"]
+                logger.debug("[USN] Split 2")
+                ugs[0].setpoint = sp * self.cfg[f"pot_maxima_ug{ugs[0].id}"]
+                ugs[1].setpoint = sp * self.cfg[f"pot_maxima_ug{ugs[1].id}"]
 
             elif self.__split1:
-                logger.debug("Split 1")
-                sp = sp * 2 / 1
-                ugs[0].setpoint = sp * ugs[0].cfg[f"pot_maxima_ug{self.id}"]
+                logger.debug("[USN] Split 1")
+                ugs[0].setpoint = (sp * 2 / 1) * self.cfg[f"pot_maxima_ug{ugs[0].id}"]
                 ugs[1].setpoint = 0
-            else:
-                for ug in ugs:
-                    ug.setpoint = 0
 
         elif len(ugs) == 1:
-            if self.__split1 or self.__split2:
-                logger.debug("Split 1B")
-                sp = sp * 2 / 1
-                ugs[0].setpoint = sp * ugs[0].cfg[f"pot_maxima_ug{self.id}"]
+            logger.debug("[USN] Split 1B")
+            ugs[0].setpoint = (sp * 2 / 1) * self.cfg[f"pot_maxima_ug{ugs[0].id}"] if self.__split1 or self.__split2 else ...
 
-            else:
-                for ug in ugs:
-                    ug.setpoint = 0
+        else:
+            for ug in ugs: 
+                ug.setpoint = 0
 
-        for ug in self.ugs:
-            logger.debug("UG{} SP:{}".format(ug.id, ug.setpoint))
+    def controle_inicial(self) -> None:
+        self.ug_operando += [1 for ug in self.ugs if ug.etapa_atual == UG_SINCRONIZADA]
 
-        return pot_alvo
+        self.__split1 = True if self.ug_operando == 1 else False
+        self.__split2 = True if self.ug_operando == 2 else False
 
-    def controle_ugs_disponiveis(self) -> list:
+        self.controle_ie = self.ajustar_ie_padrao()
+
+    def controle_ugs_disponiveis(self) -> list[UnidadeGeracao]:
         ls = [ug for ug in self.ugs if ug.disponivel and not ug.etapa_atual == UG_PARANDO]
+        logger.debug("")
 
         if self.modo_de_escolha_das_ugs == MODO_ESCOLHA_MANUAL:
-            ls = sorted(ls, key=lambda y: (-1 * y.leitura_potencia.valor, -1 * y.setpoint, y.prioridade,))
-            logger.debug("")
             logger.debug("[USN] UGs disponíveis em ordem (prioridade):")
+            return sorted(ls, key=lambda y: (-1 * y.leitura_potencia, -1 * y.setpoint, y.prioridade))
         else:
-            ls = sorted(ls, key=lambda y: (y.leitura_horimetro.valor, -1 * y.leitura_potencia.valor, -1 * y.setpoint,))
-            logger.debug("")
             logger.debug("[USN] UGs disponíveis em ordem (horas-máquina):")
+            return sorted(ls, key=lambda y: (y.leitura_horimetro, -1 * y.leitura_potencia, -1 * y.setpoint))
 
-        return ls
+    def controle_potencia(self) -> None:
+        logger.debug("-------------------------------------------------------------------------")
+        logger.debug(f"[USN] NÍVEL -> Leitura: {self.tda.nv_montante_recente:0.3f}; Alvo: {self.cfg['nv_alvo']:0.3f}")
 
-    def controle_normal(self):
-        logger.debug("-------------------------------------------------")
-        # Calcula PID
-        logger.debug(f"Alvo: {self.cfg['nv_alvo']:0.3f}, Recente: {self.nv_montante_recente:0.3f}")
-        self.controle_p = self.cfg["kp"] * self.erro_nv
-        self.controle_i = max(min((self.cfg["ki"] * self.erro_nv) + self.controle_i, 0.8), 0)
-        self.controle_d = self.cfg["kd"] * (self.erro_nv - self.erro_nv_anterior)
+        self.controle_p = self.cfg["kp"] * self.tda.erro_nv
+        self.controle_i = max(min((self.cfg["ki"] * self.tda.erro_nv) + self.controle_i, 0.8), 0)
+        self.controle_d = self.cfg["kd"] * (self.tda.erro_nv - self.tda.erro_nv_anterior)
         saida_pid = (self.controle_p + self.controle_i + min(max(-0.3, self.controle_d), 0.3))
-        logger.debug("PID: {:0.3f} <-- P:{:0.3f} + I:{:0.3f} + D:{:0.3f}; ERRO={}".format(
-                saida_pid,
-                self.controle_p,
-                self.controle_i,
-                self.controle_d,
-                self.erro_nv,))
+        logger.debug(f"[USN] PID -> {saida_pid:0.3f} P:{self.controle_p:0.3f} + I:{self.controle_i:0.3f} + D:{self.controle_d:0.3f}; ERRO={self.tda.erro_nv}")
 
-        # Calcula o integrador de estabilidade e limita
         self.controle_ie = max(min(saida_pid + self.controle_ie * self.cfg["kie"], 1), 0)
+        logger.debug(f"[USN] IE: {self.controle_ie:0.3f}")
+        logger.debug("")
 
-        if self.nv_montante_recente >= (self.cfg["nv_maximo"] + 0.03):
-            self.controle_ie = 1
-            self.controle_i = 1 - self.controle_p
+        self.controle_i = 1 - self.controle_p if self.tda.nv_montante_recente >= (self.cfg["nv_maximo"] + 0.03) else 0
+        self.controle_ie = 1 if self.tda.nv_montante_recente <= (self.cfg["nv_minimo"] + 0.03) else min(self.controle_ie, 0.3)
 
-        if self.nv_montante_recente <= (self.cfg["nv_minimo"] + 0.03):
-            self.controle_ie = min(self.controle_ie, 0.3)
-            self.controle_i = 0
-
-        logger.debug("IE: {:0.3f}".format(self.controle_ie))
-
-        # Arredondamento e limitação
         pot_alvo = max(min(round(self.cfg["pot_maxima_usina"] * self.controle_ie, 5), self.cfg["pot_maxima_usina"],), self.cfg["pot_minima"],)
+        logger.debug(f"[USN] Potência alvo: {pot_alvo:0.3f}")
 
-        logger.debug("Pot alvo: {:0.3f}".format(pot_alvo))
-        logger.debug("Nv alvo: {:0.3f}".format(self.cfg["nv_alvo"]))
-
-    def controle_reservatorio(self) -> int:
-        # Reservatório acima do nível máximo
-        if self.nv_montante >= self.cfg["nv_maximo"]:
-            logger.info("[USN] Nível montante acima do máximo.")
-
-            if self.nv_montante_recente >= NIVEL_MAXIMORUM:
-                logger.critical(f"[USN] Nivel montante ({self.nv_montante_recente:3.2f}) atingiu o maximorum!")
-                self.distribuir_potencia(0)
-                for ug in self.ugs: ug.step()
-                return NV_FLAG_EMERGENCIA
-
-            else:
-                self.controle_i = 0.5
-                self.controle_ie = 0.5
-                self.distribuir_potencia(self.cfg["pot_maxima_usina"])
-                for ug in self.ugs: ug.step()
-
-        # Reservatório abaixo do nível mínimo
-        elif self.nv_montante <= self.cfg["nv_minimo"] and not self.aguardando_reservatorio:
-            logger.info("[USN] Nível montante abaixo do mínimo.")
-            self.aguardando_reservatorio = True
-            self.distribuir_potencia(0)
-            for ug in self.ugs: ug.step()
-
-            if self.nv_montante_recente <= NIVEL_FUNDO_RESERVATORIO:
-                logger.critical(f"[USN] Nivel montante ({self.nv_montante_recente:3.2f}) atingiu o fundo do reservatorio!")
-                return NV_FLAG_EMERGENCIA
-
-        # Aguardando nível do reservatório
-        elif self.aguardando_reservatorio:
-            if self.nv_montante >= self.cfg["nv_alvo"]:
-                logger.debug("[USN] Nível montante dentro do limite de operação.")
-                self.aguardando_reservatorio = False
-
-        # Reservatório Normal
-        else:
-            self.controle_normal()
-            for ug in self.ugs: ug.step()
-
-        return NV_FLAG_NORMAL
+        self.ajuste_potencia(pot_alvo)

@@ -68,17 +68,14 @@ class Agendamentos(Usina):
     def agendamentos_iguais(self, agendamentos) -> None:
         limite_entre_agendamentos_iguais = 300
         agendamentos = sorted(agendamentos, key=lambda x:(x[3], x[1]))
-        i = 0
-        j = len(agendamentos)
 
-        while i < j - 1:
+        while (i := 0) < (j := len(agendamentos) - 1):
             if agendamentos[i][3] == agendamentos[i+1][3] and (agendamentos[i+1][1] - agendamentos[i][1]).seconds < limite_entre_agendamentos_iguais:
                 ag_concatenado = agendamentos.pop(i)
                 logger.info("[AGN] O agendamento foi ignorado, pois o mesmo foi agendado à menos de 5 minutos atrás.")
                 self.bd.update_agendamento(ag_concatenado[0], True, obs="Este agendamento foi concatenado ao seguinte por motivos de temporização.")
                 i -= 1
             i += 1
-            j = len(agendamentos)
 
     def agendamentos_atrasados(self, agendamento) -> bool:
         agn_atrasados = 0
