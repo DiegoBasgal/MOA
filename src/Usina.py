@@ -20,7 +20,7 @@ from dicionarios.const import *
 from conector import ClientesUsina
 from banco_dados import BancoDados
 from agendamentos import Agendamentos
-from Unidade_Geracao import UnidadeGeracao
+from unidade_geracao import UnidadeGeracao
 
 from mensageiro.voip import Voip
 from leitura_escrita.leitura import *
@@ -59,7 +59,7 @@ class Usina:
         self.tda: TomadaAgua = TomadaAgua(self)
         self.sa: ServicoAuxiliar = ServicoAuxiliar(self)
 
-        self.setores: list[Bay, Subestacao, TomadaAgua, ServicoAuxiliar] = [self.bay, self.se, self.tda, self.sa]
+        self.setores: list[Bay | Subestacao | TomadaAgua | ServicoAuxiliar] = [self.bay, self.se, self.tda, self.sa]
 
         # Unidades de Geração
         self.ug1: UnidadeGeracao = UnidadeGeracao(self, 1)
@@ -74,7 +74,7 @@ class Usina:
 
         # Setter para o client base da Leitura e Escrita OPC (Caso de XAV pois há apenas 1 servidor opc na IHM)
         self.escrita_opc: EscritaOpc | EscritaOpcBit = EscritaOpc()
-        EscritaOpc.client = self.opc
+        self.escrita_opc.client = self.opc
 
         # ATRIBUIÇÃO DE VARIÀVEIS
         # PRIVADAS
@@ -133,7 +133,7 @@ class Usina:
     @modo_autonomo.setter
     def modo_autonomo(self, var: bool) -> None:
         self._modo_autonomo = var
-        self.bd.update_modo_moa(self._modo_autonomo)
+        self.bd.update_modo_moa(var)
 
     @property
     def tentativas_normalizar(self) -> int:
@@ -216,10 +216,8 @@ class Usina:
     def leitura_temporizada(self):
         logger.debug("Iniciando o timer de leitura periódica. Tempo definido -> \"30 min\".")
         while True:
-            for ug in self.ugs: ug.leitura_periodica()
-            for setor in self.setores: setor.leitura_periodica()
-            if True in (self.se.voip_emerg, self.tda.voip_emerg, self.sa.voip_emerg):
-                self.acionar_voip()
+            [c.leitura_periodica() for cs in [self.setores, self.ugs] for c in cs]
+            self.acionar_voip() if True in [n[0] for n, vl in self.voip_dict.items()] else ...
             sleep(max(0, (time() + 1800) - time()))
 
     def acionar_voip(self) -> None:
@@ -228,8 +226,8 @@ class Usina:
                 Voip.enviar_voz_emergencia()
                 self.glb_dict["avisado_eletrica"] = False
             else:
-                for _, v in self.voip_dict.items():
-                    if v[0]:
+                for _, vl in self.voip_dict.items():
+                    if vl[0]:
                         Voip.enviar_voz_auxiliar()
                         break
 

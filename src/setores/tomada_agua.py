@@ -148,14 +148,12 @@ class TomadaAgua(Usina):
         if self.leitura_falha_atuada_lg and not self.voip_dict["LG_FALHA_ATUADA"]:
             logger.warning("[TDA] Foi identificado que o limpa grades está em falha. Favor verificar.")
             self.voip_dict["LG_FALHA_ATUADA"] = True
-            self.acionar_voip = True
         elif not self.leitura_falha_atuada_lg and self.voip_dict["LG_FALHA_ATUADA"]:
             self.voip_dict["LG_FALHA_ATUADA"] = False
 
         if self.leitura_falha_nivel_montante and not self.voip_dict["FALHA_NIVEL_MONTANTE"]:
             logger.warning("[TDA] Houve uma falha na leitura de nível montante. Favor verificar.")
             self.voip_dict["FALHA_NIVEL_MONTANTE"] = True
-            self.acionar_voip = True
         elif not self.leitura_falha_nivel_montante and self.voip_dict["FALHA_NIVEL_MONTANTE"]:
             self.voip_dict["FALHA_NIVEL_MONTANTE"] = False
 
@@ -163,37 +161,37 @@ class TomadaAgua(Usina):
         # CONDICIONADORES ESSENCIAIS
         # Normalizar
             # Bit Invertido
-        self.leitura_sem_emergencia_tda = LeituraOpcBit(self.opc, OPC_UA["TDA"]["SEM_EMERGENCIA"], 24, True)
+        self.leitura_sem_emergencia_tda = LeituraOpcBit(OPC_UA["TDA"]["SEM_EMERGENCIA"], 24, True)
         self.condicionadores_essenciais.append(CondicionadorBase(self.leitura_sem_emergencia_tda, CONDIC_NORMALIZAR))
 
         # CONDICIONADORES
         # Normalizar
             # Bit Invertido
-        self.leitura_ca_com_tensao = LeituraOpcBit(self.opc, OPC_UA["TDA"]["COM_TENSAO_CA"], 11, True)
+        self.leitura_ca_com_tensao = LeituraOpcBit(OPC_UA["TDA"]["COM_TENSAO_CA"], 11, True)
         self.condicionadores.append(CondicionadorBase(self.leitura_ca_com_tensao, CONDIC_NORMALIZAR))
 
             # Bit Normal
-        self.leitura_falha_ligar_bomba_uh = LeituraOpcBit(self.opc, OPC_UA["TDA"]["UH_FALHA_LIGAR_BOMBA"], 2)
+        self.leitura_falha_ligar_bomba_uh = LeituraOpcBit(OPC_UA["TDA"]["UH_FALHA_LIGAR_BOMBA"], 2)
         self.condicionadores.append(CondicionadorBase(self.leitura_falha_ligar_bomba_uh, CONDIC_NORMALIZAR))
 
 
         # LEITURAS PARA LEITURA PERIÓDICA
         # Telegram
             # Bit Invertido
-        self.leitura_ca_com_tensao = LeituraOpcBit(self.opc, OPC_UA["TDA"]["COM_TENSAO_CA"], 11, True)
-        self.leitura_filtro_limpo_uh = LeituraOpcBit(self.opc, OPC_UA["TDA"]["UH_FILTRO_LIMPO"], 13, True)
+        self.leitura_ca_com_tensao = LeituraOpcBit(OPC_UA["TDA"]["COM_TENSAO_CA"], 11, True)
+        self.leitura_filtro_limpo_uh = LeituraOpcBit(OPC_UA["TDA"]["UH_FILTRO_LIMPO"], 13, True)
 
             # Bit Normal
-        self.leitura_lg_operacao_manual = LeituraOpcBit(self.opc, OPC_UA["TDA"]["LG_OPERACAO_MANUAL"], 0)
-        self.leitura_nivel_jusante_comporta_1 = LeituraOpcBit(self.opc, OPC_UA["TDA"]["NIVEL_JUSANTE_COMPORTA_1"], 2)
-        self.leitura_nivel_jusante_comporta_2 = LeituraOpcBit(self.opc, OPC_UA["TDA"]["NIVEL_JUSANTE_COMPORTA_2"], 4)
-        self.leitura_nivel_jusante_grade_comporta_1 = LeituraOpcBit(self.opc, OPC_UA["TDA"]["FALHA_NIVEL_JUSANTE_GRADE_COMPORTA_1"], 1)
-        self.leitura_nivel_jusante_grade_comporta_2 = LeituraOpcBit(self.opc, OPC_UA["TDA"]["FALHA_NIVEL_JUSANTE_GRADE_COMPORTA_2"], 3)
+        self.leitura_lg_operacao_manual = LeituraOpcBit(OPC_UA["TDA"]["LG_OPERACAO_MANUAL"], 0)
+        self.leitura_nivel_jusante_comporta_1 = LeituraOpcBit(OPC_UA["TDA"]["NIVEL_JUSANTE_COMPORTA_1"], 2)
+        self.leitura_nivel_jusante_comporta_2 = LeituraOpcBit(OPC_UA["TDA"]["NIVEL_JUSANTE_COMPORTA_2"], 4)
+        self.leitura_nivel_jusante_grade_comporta_1 = LeituraOpcBit(OPC_UA["TDA"]["FALHA_NIVEL_JUSANTE_GRADE_COMPORTA_1"], 1)
+        self.leitura_nivel_jusante_grade_comporta_2 = LeituraOpcBit(OPC_UA["TDA"]["FALHA_NIVEL_JUSANTE_GRADE_COMPORTA_2"], 3)
 
         # Telegram + Voip
             # Bit Normal
-        self.leitura_falha_atuada_lg = LeituraOpcBit(self.opc, OPC_UA["TDA"]["LG_FALHA_ATUADA"], 31)
-        self.leitura_falha_nivel_montante = LeituraOpcBit(self.opc, OPC_UA["TDA"]["FALHA_NIVEL_MONTANTE"], 0)
+        self.leitura_falha_atuada_lg = LeituraOpcBit(OPC_UA["TDA"]["LG_FALHA_ATUADA"], 31)
+        self.leitura_falha_nivel_montante = LeituraOpcBit(OPC_UA["TDA"]["FALHA_NIVEL_MONTANTE"], 0)
 
 
 class Comporta(TomadaAgua):
@@ -206,18 +204,18 @@ class Comporta(TomadaAgua):
 
         # ATRIBUIÇÃO DE VAIRÁVEIS 
         # Privadas
-        self.__aberta = LeituraOpcBit(self.opc, OPC_UA["TDA"][f"CP{self.id}_ABERTA"], 17)
-        self.__fechada = LeituraOpcBit(self.opc, OPC_UA["TDA"][f"CP{self.id}_FECHADA"], 18)
-        self.__cracking = LeituraOpcBit(self.opc, OPC_UA["TDA"][f"CP{self.id}_CRACKING"], 25)
-        self.__remoto = LeituraOpcBit(self.opc, OPC_UA["TDA"][f"CP{self.id}_REMOTO"], 22)
+        self.__aberta = LeituraOpcBit(OPC_UA["TDA"][f"CP{self.id}_ABERTA"], 17)
+        self.__fechada = LeituraOpcBit(OPC_UA["TDA"][f"CP{self.id}_FECHADA"], 18)
+        self.__cracking = LeituraOpcBit(OPC_UA["TDA"][f"CP{self.id}_CRACKING"], 25)
+        self.__remoto = LeituraOpcBit(OPC_UA["TDA"][f"CP{self.id}_REMOTO"], 22)
 
         self.__status = LeituraOpc( OPC_UA["TDA"][f"CP{self.id}_COMPORTA_OPERANDO"])
-        self.__permissao = LeituraOpcBit(self.opc, OPC_UA["TDA"][f"CP{self.id}_PERMISSIVOS_OK"], 31, True)
-        self.__bloqueio = LeituraOpcBit(self.opc, OPC_UA["TDA"][f"CP{self.id}_BLOQUEIO_ATUADO"], 31, True)
+        self.__permissao = LeituraOpcBit(OPC_UA["TDA"][f"CP{self.id}_PERMISSIVOS_OK"], 31, True)
+        self.__bloqueio = LeituraOpcBit(OPC_UA["TDA"][f"CP{self.id}_BLOQUEIO_ATUADO"], 31, True)
 
         # PÚBLICAS
-        self.press_equalizada = LeituraOpcBit(self.opc, OPC_UA["TDA"][f"CP{self.id}_PRESSAO_EQUALIZADA"], 4)
-        self.aguardando_cmd_abert = LeituraOpcBit(self.opc, OPC_UA["TDA"][f"CP{self.id}_AGUARDANDO_COMANDO_ABERTURA"], 3)
+        self.press_equalizada = LeituraOpcBit(OPC_UA["TDA"][f"CP{self.id}_PRESSAO_EQUALIZADA"], 4)
+        self.aguardando_cmd_abert = LeituraOpcBit(OPC_UA["TDA"][f"CP{self.id}_AGUARDANDO_COMANDO_ABERTURA"], 3)
 
     @property
     def id(self) -> int:

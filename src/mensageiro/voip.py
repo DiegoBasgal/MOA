@@ -72,7 +72,18 @@ class Voip:
             return None
 
     @classmethod
-    def enviar_voz_emergencia(cls) -> None:
+    def codificar_dados(cls, data, headers) -> None:
+        encoded = str(json.dumps(data)).encode()
+        request = Request(f"https://api.nvoip.com.br/v2/torpedo/voice?napikey={cls.cfg['napikey']}", data=encoded, headers=headers)
+        try:
+            response_body = urlopen(request).read()
+            logger.debug(f"[VOIP] Response Body: {response_body}")
+
+        except Exception as e:
+            logger.exception(f"[VOIP] Não foi possível codificar dados de envio de torpedo. Exception: \"{repr(e)}\".")
+
+    @classmethod
+    def acionar_chamada(cls):
         headers = {"Content-Type": "application/json", "Authorization": cls.carrega_token()}
 
         if cls.cfg["voz_habilitado"]:
@@ -87,62 +98,27 @@ class Voip:
             for contato in lista_contatos:
                 logger.info(f"[VOIP] Disparando torpedo de voz para: {contato[0]} ({contato[1]})")
 
+            if cls.voip_dict["EMERGENCIA"][0]:
                 data = {
                     "caller": f"{cls.cfg['caller_voip']}",
                     "called": f"{contato[1]}",
-                    "audios": [{
-                        "audio": "Atenção! Houve um acionamento de emergência na PCH Xavantina, por favor analisar a situação. Atenção! Houve um acionamento de emergência na PCH Xavantina, por favor analisar a situação.",
-                        "positionAudio": 1,
-                    }],
+                    "audios": [{"audio": f"{cls.voip_dict['EMERGENCIA'][1]}", "positionAudio": 1,}],
                     "dtmfs": [],
                 }
-                encoded = str(json.dumps(data)).encode()
-                request = Request(f"https://api.nvoip.com.br/v2/torpedo/voice?napikey={cls.cfg['napikey']}", data=encoded, headers=headers)
-                try:
-                    response_body = urlopen(request).read()
-                    logger.debug(f"[VOIP] Response Body: {response_body}")
+                cls.codificar_dados(data, headers)
+                sleep(5)
 
-                except Exception as e:
-                    logger.exception(f"[VOIP] Não foi possível enviar o torpedo de Emergência. Exception: \"{repr(e)}\".")
-
-        else:
-            logger.info("[VOIP] Torpedo de voz desativado. Para habilitar envio, favor alterar valor \"voz_habilitado = true\" no arquivo \"voip_config.json\".")
-
-    @classmethod
-    def enviar_voz_auxiliar(cls):
-        headers = {"Content-Type": "application/json", "Authorization": cls.carrega_token()}
-
-        if cls.cfg["voz_habilitado"]:
-            logger.debug("[VOIP] Enviando voz de Emergencia...")
-
-            if agenda := cls.carrega_contatos() is not None:
-                lista_contatos = cls.verifica_expediente(agenda)
             else:
-                logger.info("[VOIP] Lista de contatos vazia! Carregando lista de contatos padrão.")
-                lista_contatos = cls.lista_padrao
-
-            for contato in lista_contatos:
-                logger.info(f"[VOIP] Disparando torpedo de voz para: {contato[0]} ({contato[1]})")
-
-                for i in cls.voip_dict:
-                    if cls.voip_dict[i][0]:
+                for _, vl in cls.voip_dict.items():
+                    if vl[0]:
                         data = {
                             "caller": f"{cls.cfg['caller_voip']}",
                             "called": f"{contato[1]}",
-                            "audios": [{"audio": f"{cls.voip_dict[i][1]}", "positionAudio": 1,}],
+                            "audios": [{"audio": f"{vl[1]}", "positionAudio": 1,}],
                             "dtmfs": [],
                         }
-                        encoded = str(json.dumps(data)).encode()
-                        request = Request(f"https://api.nvoip.com.br/v2/torpedo/voice?napikey={cls.cfg['napikey']}", data=encoded, headers=headers)
-                        try:
-                            response_body = urlopen(request).read()
-                            logger.debug(f"[VOIP] Response Body: {response_body}")
-                            cls.voip_dict[i][0] = False
-                            sleep(30)
-
-                        except Exception as e:
-                            logger.exception(f"[VOIP] Não foi possível enviar o torpedo de Emergência. Exception: \"{repr(e)}\".")
-                            continue
+                        cls.codificar_dados(data, headers)
+                        sleep(25)
 
         else:
             logger.info("[VOIP] Torpedo de voz desativado. Para habilitar envio, favor alterar valor \"voz_habilitado = true\" no arquivo \"voip_config.json\".")

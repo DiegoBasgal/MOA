@@ -7,7 +7,7 @@ from Usina import *
 from dicionarios.const import *
 from leitura_escrita.leitura import *
 
-from Unidade_Geracao import UnidadeGeracao
+from unidade_geracao import UnidadeGeracao
 
 class CondicionadorBase:
     def __init__(
