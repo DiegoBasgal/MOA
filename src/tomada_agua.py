@@ -3,7 +3,6 @@ __author__ = "Diego Basgal"
 __description__ = "Este módulo corresponde a implementação da operação da Tomada da Água."
 
 from usina import *
-from setores.tomada_agua import Comporta
 
 logger = logging.getLogger("__main__")
 
@@ -121,6 +120,7 @@ class TomadaAgua(Usina):
             if condic_flag in (CONDIC_NORMALIZAR, CONDIC_INDISPONIBILIZAR):
                 logger.info("[SA] Foram detectados condicionadores ativos!")
                 [logger.info(f"[SA] Condicionador: \"{condic.descr}\", Gravidade: \"{condic.gravidade}\".") for condic in condics_ativos]
+        return condic_flag
 
     def leitura_periodica(self) -> None:
         if not self.leitura_filtro_limpo_uh:
@@ -202,7 +202,7 @@ class Comporta(TomadaAgua):
         else:
             self.__id = id
 
-        # ATRIBUIÇÃO DE VAIRÁVEIS 
+        # ATRIBUIÇÃO DE VAIRÁVEIS
         # Privadas
         self.__aberta = LeituraOpcBit(OPC_UA["TDA"][f"CP{self.id}_ABERTA"], 17)
         self.__fechada = LeituraOpcBit(OPC_UA["TDA"][f"CP{self.id}_FECHADA"], 18)
@@ -264,11 +264,11 @@ class Comporta(TomadaAgua):
             return 99
 
     @property
-    def lista_comportas(self) -> list[Comporta]:
+    def lista_comportas(self) -> list["Comporta"]:
         return self._lista_comportas
 
     @lista_comportas.setter
-    def lista_comportas(self, var: list[Comporta]):
+    def lista_comportas(self, var: list["Comporta"]):
         self._lista_comportas = var
 
 
@@ -326,13 +326,12 @@ class Comporta(TomadaAgua):
     def verificar_pressao(self) -> None:
         try:
             logger.info(f"[TDA][CP{self.id}] Iniciando o timer para equilização da pressão da UH")
-            while time() < time() + 120:
+            while time() < (time() + 120):
                 if self.press_equalizada.valor:
                     logger.debug(f"[TDA][CP{self.id}] Pressão equalizada, saindo do timer")
-                    self.timer_press = True
                     return
             logger.warning(f"[TDA][CP{self.id}] Estourou o timer de equalização de pressão da unidade hidráulica")
-            self.timer_press = True
+            self.borda_pressao = True
 
         except Exception as e:
             logger.exception(f"[TDA][CP{self.id}] Houve um erro ao verificar a pressão da UH da comporta. Exception: \"{repr(e)}\"")

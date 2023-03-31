@@ -9,9 +9,11 @@ from usina import *
 logger = logging.getLogger("__main__")
 
 class Voip:
-    arquivo_cfg = os.path.join(os.path.dirname(__file__), "voip_config.json")
-    with open(arquivo_cfg, "r") as file:
+    arquivo = os.path.join(os.path.dirname(__file__), "voip_config.json")
+    with open(arquivo, "r") as file:
         cfg = json.load(file)
+
+    bd = BancoDados()
 
     lista_padrao = [["Diego", "41999111134"], """["Henrique", "41999610053"]"""]
 
@@ -24,7 +26,7 @@ class Voip:
     voip_dict = Dicionarios.voip
 
     @abstractmethod
-    def verifica_expediente(agenda) -> list:
+    def verificar_expediente(agenda) -> list:
         contatos = []
         now = datetime.now(pytz.timezone("Brazil/East")).replace(tzinfo=None)
 
@@ -40,9 +42,10 @@ class Voip:
 
         return contatos
 
-    @abstractmethod
-    def carrega_contatos(parametros) -> list:
+    @classmethod
+    def carregar_contatos(cls) -> list:
         agenda = []
+        parametros = cls.bd.get_contato_emergencia()
 
         for i in range(len(parametros)):
             try:
@@ -60,7 +63,7 @@ class Voip:
         return agenda
 
     @classmethod
-    def carrega_token(cls) -> str:
+    def carregar_token(cls) -> str:
         try:
             request = Request("https://api.nvoip.com.br/v2/oauth/token", data=cls.token_data, headers=cls.token_headers)
             response_body = json.loads(urlopen(request).read())
@@ -84,41 +87,42 @@ class Voip:
 
     @classmethod
     def acionar_chamada(cls):
-        headers = {"Content-Type": "application/json", "Authorization": cls.carrega_token()}
+        headers = {"Content-Type": "application/json", "Authorization": cls.carregar_token()}
 
         if cls.cfg["voz_habilitado"]:
             logger.debug("[VOIP] Enviando voz de Emergencia...")
 
-            if agenda := cls.carrega_contatos() is not None:
-                lista_contatos = cls.verifica_expediente(agenda)
+            if agenda := cls.carregar_contatos() is not None:
+                lista_contatos = cls.verificar_expediente(agenda)
             else:
                 logger.info("[VOIP] Lista de contatos vazia! Carregando lista de contatos padrão.")
                 lista_contatos = cls.lista_padrao
 
-            for contato in lista_contatos:
-                logger.info(f"[VOIP] Disparando torpedo de voz para: {contato[0]} ({contato[1]})")
-
             if cls.voip_dict["EMERGENCIA"][0]:
-                data = {
-                    "caller": f"{cls.cfg['caller_voip']}",
-                    "called": f"{contato[1]}",
-                    "audios": [{"audio": f"{cls.voip_dict['EMERGENCIA'][1]}", "positionAudio": 1,}],
-                    "dtmfs": [],
-                }
-                cls.codificar_dados(data, headers)
-                sleep(5)
-
+                for contato in lista_contatos:
+                    logger.info(f"[VOIP] Disparando torpedo de voz para: {contato[0]} ({contato[1]})")
+                    data = {
+                        "caller": f"{cls.cfg['caller_voip']}",
+                        "called": f"{contato[1]}",
+                        "audios": [{"audio": f"{cls.voip_dict['EMERGENCIA'][1]}", "positionAudio": 1,}],
+                        "dtmfs": [],
+                    }
+                    cls.codificar_dados(data, headers)
+                    sleep(5)
+                cls.voip_dict["EMERGENCIA"][0] = False
             else:
                 for _, vl in cls.voip_dict.items():
                     if vl[0]:
-                        data = {
-                            "caller": f"{cls.cfg['caller_voip']}",
-                            "called": f"{contato[1]}",
-                            "audios": [{"audio": f"{vl[1]}", "positionAudio": 1,}],
-                            "dtmfs": [],
-                        }
-                        cls.codificar_dados(data, headers)
-                        sleep(25)
-
+                        for contato in lista_contatos:
+                            logger.info(f"[VOIP] Disparando torpedo de voz para: {contato[0]} ({contato[1]})")
+                            data = {
+                                "caller": f"{cls.cfg['caller_voip']}",
+                                "called": f"{contato[1]}",
+                                "audios": [{"audio": f"{vl[1]}", "positionAudio": 1,}],
+                                "dtmfs": [],
+                            }
+                            cls.codificar_dados(data, headers)
+                            sleep(25)
+                        vl[0] = False
         else:
             logger.info("[VOIP] Torpedo de voz desativado. Para habilitar envio, favor alterar valor \"voz_habilitado = true\" no arquivo \"voip_config.json\".")

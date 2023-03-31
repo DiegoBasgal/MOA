@@ -3,14 +3,6 @@ __author__ = "Diego Basgal"
 __credits__ = ["Lucas Lavratti", " Henrique Pfeifer", ...]
 __description__ = "Este módulo corresponde a implementação da máquina de estados do Módulo de Operação Autônoma."
 
-
-import sys
-import pytz
-import traceback
-
-from time import sleep
-from datetime import datetime
-
 from usina import *
 
 class StateMachine:
@@ -67,11 +59,10 @@ class ControleNormal(State):
         super().__init__(usina)
         self.usn.estado_moa = MOA_SM_CONTROLE_NORMAL
 
-        self.usn.clp_moa.write_single_coil(MB["MOA"]["PAINEL_LIDO"], [1])
+        self.usn.clp["MOA"].write_single_coil(MB["MOA"]["PAINEL_LIDO"], [1])
 
     def run(self):
         self.usn.ler_valores()
-        condic_flag = CONDIC_IGNORAR
 
         if not self.usn.modo_autonomo:
             logger.info("Comando acionado: Desabilitar modo autônomo.")
@@ -90,7 +81,7 @@ class ControleNormal(State):
 
             elif condic_flag == CONDIC_NORMALIZAR:
                 if self.usn.normalizar_usina() == False:
-                    return ControleEmergencia() if self.usn.aguardar_tensao() == False else ControleDados()
+                    return ControleEmergencia() if self.usn.se.aguardar_tensao() == False else ControleDados()
                 else:
                     return ControleDados()
 
@@ -104,7 +95,7 @@ class ControleReservatorio(State):
 
     def run(self):
         self.usn.ler_valores()
-        return ControleEmergencia() if self.usn.controle_reservatorio() == NV_FLAG_EMERGENCIA else ControleDados()
+        return ControleEmergencia() if self.usn.tda.controle_reservatorio() == NV_FLAG_EMERGENCIA else ControleDados()
 
 class ControleDados(State):
     def __init__(self, usina):
@@ -131,7 +122,7 @@ class ControleManual(State):
         self.usn.estado_moa = MOA_SM_CONTROLE_MANUAL
 
         self.usn.modo_autonomo = False
-        self.usn(MB["MOA"]["PAINEL_LIDO"], [1])
+        self.usn.clp["MOA"].write_single_coil(MB["MOA"]["PAINEL_LIDO"], [1])
 
         for ug in self.usn.ugs: ug.parar_timer = True
 

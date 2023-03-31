@@ -16,3 +16,11 @@ if True in [val[0] for name, val in dict.items()]:
 
 """------------------------------------------------------------------------------------------------------------ """
 
+# teste de if de um linha com dois prints ou dois metodos por condicao
+
+def chamar() -> None:
+    print("2")
+
+a = 1
+
+print("1"), chamar() if a == 1 else ...

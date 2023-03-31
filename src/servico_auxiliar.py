@@ -39,6 +39,7 @@ class ServicoAuxiliar(Usina):
             if condic_flag in (CONDIC_NORMALIZAR, CONDIC_INDISPONIBILIZAR):
                 logger.info("[SA] Foram detectados condicionadores ativos!")
                 [logger.info(f"[SA] Condicionador: \"{condic.descr}\", Gravidade: \"{condic.gravidade}\".") for condic in condics_ativos]
+        return condic_flag
 
     def resetar_emergencia(self) -> bool:
         try:

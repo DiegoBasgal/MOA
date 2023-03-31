@@ -8,7 +8,7 @@ import threading
 from time import time
 
 from usina import *
-from setores.bay import Bay
+from bay import Bay
 
 logger = logging.getLogger("__main__")
 
@@ -61,6 +61,7 @@ class Subestacao(Usina):
             if condic_flag in (CONDIC_NORMALIZAR, CONDIC_INDISPONIBILIZAR):
                 logger.info("[SE] Foram detectados condicionadores ativos!")
                 [logger.info(f"[SE] Condicionador: \"{condic.descr}\", Gravidade: \"{condic.gravidade}\".") for condic in condics_ativos]
+        return condic_flag
 
     def fechar_Dj52L(self):
         return self.escrita_opc.escrever_bit(OPC_UA["SE"]["CMD_SE_FECHA_52L"], valor=1, bit=4)

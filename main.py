@@ -19,9 +19,7 @@ import json
 import threading
 import traceback
 
-import usina
-
-from time import sleep, time
+from time import time, sleep
 
 from src.dicionarios.dict import *
 from src.dicionarios.const import *
@@ -89,7 +87,7 @@ if __name__ == "__main__":
 
             try:
                 logger.info("Iniciando instância da classe Usina.")
-                usn: usina = usina(cfg, cli)
+                usn: Usina = Usina(cfg, cli)
 
             except Exception:
                 logger.exception(f"Erro ao instanciar a classe Usina. Tentando novamente em \"{timeout}s\" (Tentativa: {n_tentativa}/3).")
@@ -115,12 +113,13 @@ if __name__ == "__main__":
     while True:
         try:
             logger.debug(f"Executando estado: \"{sm.state.__class__.__name__}\"")
-
-            t_i = time()
+            t_inicio = time()
             sm.exec()
-            if usn.estado_moa == MOA_SM_CONTROLE_DADOS:
-                t_restante = max(30 - (time() - t_i), 0) / ESCALA_DE_TEMPO
+            logger.debug(f"\nTempo de ciclo: {float(time() - t_inicio)}s\n")
 
+            if usn.estado_moa == MOA_SM_CONTROLE_DADOS:
+                t_restante = max(30 - (time() - t_inicio), 0) / ESCALA_DE_TEMPO
+                
                 if t_restante == 0:
                     logger.warning("\n\"ATENÇÃO!\"")
                     logger.warning("O ciclo está demorando mais que o permitido!")
