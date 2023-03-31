@@ -144,25 +144,25 @@ class Painel(threading.Thread):
                     elif reg_value == MOA_DEACTIVATED_AUTONOMOUS_MODE:
                         autonomous_mode_activated = False
                     else:
-                        logger.warning("Leitura incorreta do registrador 'REG_MOA_OUT_MODE'({}) => '{}'.".format(self.cfg['REG_MOA_OUT_MODE'], reg_value))
+                        logger.warning(f"Leitura incorreta do registrador 'REG_MOA_OUT_MODE'({self.cfg['REG_MOA_OUT_MODE']}) => '{reg_value}'.")
 
                     reg_value = self.modbus.read_holding_registers(self.cfg['REG_MOA_OUT_BLOCK_UG1'])[0]
                     if reg_value == 0 or reg_value == 1:
                         block_ug1_activated = True if  reg_value == 1 else False
                     else:
-                        logger.warning("Leitura incorreta do registrador 'REG_MOA_OUT_BLOCK_UG1({}) => '{}'.".format(self.cfg['REG_MOA_OUT_BLOCK_UG1'], reg_value))
+                        logger.warning(f"Leitura incorreta do registrador 'REG_MOA_OUT_BLOCK_UG1({self.cfg['REG_MOA_OUT_BLOCK_UG1']}) => '{reg_value}'.")
 
                     reg_value = self.modbus.read_holding_registers(self.cfg['REG_MOA_OUT_BLOCK_UG2'])[0]
                     if reg_value == 0 or reg_value == 1:
                         block_ug2_activated = True if  reg_value == 1 else False
                     else:
-                        logger.warning("Leitura incorreta do registrador 'REG_MOA_OUT_BLOCK_UG2({}) => '{}'.".format(self.cfg['REG_MOA_OUT_BLOCK_UG2'], reg_value))
+                        logger.warning(f"Leitura incorreta do registrador 'REG_MOA_OUT_BLOCK_UG2({self.cfg['REG_MOA_OUT_BLOCK_UG2']}) => '{reg_value}'.")
 
                     reg_value = self.modbus.read_holding_registers(self.cfg['REG_PAINEL_LIDO'])[0]
                     if reg_value == 0 or reg_value == 1:
                         panel_was_updated = True if  reg_value == 1 else False
                     else:
-                        logger.warning("Leitura incorreta do registrador 'REG_PAINEL_LIDO' => '{}'.".format(reg_value))
+                        logger.warning(f"Leitura incorreta do registrador 'REG_PAINEL_LIDO' => '{reg_value}'.")
 
                     # Replicate panel on INPUTS
                     if gpio.input(IN_01):
@@ -212,7 +212,7 @@ class Painel(threading.Thread):
 
             except Exception as e:
                 self.blink(t=1, pin=[SAIDA_PRONTO,SAIDA_MODO_AUTO])
-                logger.error("Comunicação com o MOA falhou... {}".format(tentativas, repr(e)))
+                logger.error(f"Comunicação com o MOA falhou... {tentativas} | Exception: {repr(e)}")
                 tentativas += 1
                 if tentativas > 3:
                     logger.error("Esse erro não será mais exibito até que a situação seja normalizada")

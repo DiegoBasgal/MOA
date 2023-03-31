@@ -29,9 +29,7 @@ class LeituraBase:
         self.logger = logging.getLogger("__main__")
 
     def __str__(self):
-        return "Leitura {}, Valor: {}, Raw: {}".format(
-            self.__descr, self.valor, self.raw
-        )
+        return f"Leitura {self.__descr}, Valor: {self.valor}, Raw: {self.raw}"
 
     @property
     def valor(self):

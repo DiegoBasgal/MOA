@@ -23,12 +23,12 @@ class UnidadeDeGeracao2(UnidadeDeGeracao):
         else:
             self.cfg = cfg
             self.leituras_usina = leituras_usina
-        
+
         from src.field_connector import FieldConnector
         self.con = FieldConnector(self.cfg)
-        
+
         self.setpoint_minimo = self.cfg["pot_minima"]
-        self.setpoint_maximo = self.cfg["pot_maxima_ug{}".format(self.id)]
+        self.setpoint_maximo = self.cfg[f"pot_maxima_ug{self.id}"]
 
         self.clp_ip = self.cfg["UG2_slave_ip"]
         self.clp_port = self.cfg["UG2_slave_porta"]
@@ -46,348 +46,348 @@ class UnidadeDeGeracao2(UnidadeDeGeracao):
         self.enviar_trip_eletrico = False
 
         self.leitura_Operacao_EmergenciaLigar = LeituraModbus('Operacao_EmergenciaLigar', self.clp, REG_UG2_Operacao_EmergenciaLigar)
-        x = self.leitura_Operacao_EmergenciaLigar 
+        x = self.leitura_Operacao_EmergenciaLigar
         self.condicionadores.append(CondicionadorBase(x.descr, DEVE_NORMALIZAR, x))
 
         self.uhct_filtro_de_óleo_linha_de_pressão_01_sujo = LeituraModbusBit('03.02 - UHCT - Filtro de Óleo Linha de Pressão 01 Sujo', self.clp, REG_UG2_Alarme03, 2)
-        x = self.uhct_filtro_de_óleo_linha_de_pressão_01_sujo 
+        x = self.uhct_filtro_de_óleo_linha_de_pressão_01_sujo
         self.condicionadores.append(CondicionadorBase(x.descr, DEVE_INDISPONIBILIZAR, x))
-        
+
         self.uhct_filtro_de_óleo_linha_de_pressão_02_sujo = LeituraModbusBit('03.03 - UHCT - Filtro de Óleo Linha de Pressão 02 Sujo', self.clp, REG_UG2_Alarme03, 3)
-        x = self.uhct_filtro_de_óleo_linha_de_pressão_02_sujo 
+        x = self.uhct_filtro_de_óleo_linha_de_pressão_02_sujo
         self.condicionadores.append(CondicionadorBase(x.descr, DEVE_INDISPONIBILIZAR, x))
-        
+
         self.uhct_nível_de_óleo_crítico = LeituraModbusBit('03.04 - UHCT - Nível de Óleo Crítico', self.clp, REG_UG2_Alarme03, 4)
-        x = self.uhct_nível_de_óleo_crítico 
+        x = self.uhct_nível_de_óleo_crítico
         self.condicionadores.append(CondicionadorBase(x.descr, DEVE_INDISPONIBILIZAR, x))
-        
+
         self.dispositivo_de_sobrevelocidade_mecânico_atuado = LeituraModbusBit('04.05 - Dispositivo de SobreVelocidade Mecânico Atuado', self.clp, REG_UG2_Alarme04, 5)
-        x = self.dispositivo_de_sobrevelocidade_mecânico_atuado 
+        x = self.dispositivo_de_sobrevelocidade_mecânico_atuado
         self.condicionadores.append(CondicionadorBase(x.descr, DEVE_INDISPONIBILIZAR, x))
-        
+
         self.turbina_falha_no_fechamento_do_distribuidor = LeituraModbusBit('04.09 - Turbina - Falha no Fechamento do Distribuidor', self.clp, REG_UG2_Alarme04, 9)
-        x = self.turbina_falha_no_fechamento_do_distribuidor 
+        x = self.turbina_falha_no_fechamento_do_distribuidor
         self.condicionadores.append(CondicionadorBase(x.descr, DEVE_INDISPONIBILIZAR, x))
-        
+
         self.reg_tensão_fusível_da_ponte_retificadora_queimado = LeituraModbusBit('04.13 - Reg Tensão - Fusível da Ponte Retificadora Queimado', self.clp, REG_UG2_Alarme04, 13)
-        x = self.reg_tensão_fusível_da_ponte_retificadora_queimado 
+        x = self.reg_tensão_fusível_da_ponte_retificadora_queimado
         self.condicionadores.append(CondicionadorBase(x.descr, DEVE_INDISPONIBILIZAR, x))
-        
+
         self.relé_de_bloqueio_86m_trip_atuado = LeituraModbusBit('05.06 - Relé de Bloqueio 86M Trip Atuado', self.clp, REG_UG2_Alarme05, 6)
-        x = self.relé_de_bloqueio_86m_trip_atuado 
+        x = self.relé_de_bloqueio_86m_trip_atuado
         self.condicionadores.append(CondicionadorBase(x.descr, DEVE_INDISPONIBILIZAR, x))
-        
+
         self.relé_de_bloqueio_86m_trip_atuado_temporizado = LeituraModbusBit('05.07 - Relé de Bloqueio 86M Trip Atuado Temporizado', self.clp, REG_UG2_Alarme05, 7)
-        x = self.relé_de_bloqueio_86m_trip_atuado_temporizado 
+        x = self.relé_de_bloqueio_86m_trip_atuado_temporizado
         self.condicionadores.append(CondicionadorBase(x.descr, DEVE_INDISPONIBILIZAR, x))
-        
+
         self.relé_de_bloqueio_86m_trip_atuado_pelo_clp = LeituraModbusBit('05.08 - Relé de Bloqueio 86M Trip Atuado pelo CLP', self.clp, REG_UG2_Alarme05, 8)
-        x = self.relé_de_bloqueio_86m_trip_atuado_pelo_clp 
+        x = self.relé_de_bloqueio_86m_trip_atuado_pelo_clp
         self.condicionadores.append(CondicionadorBase(x.descr, DEVE_INDISPONIBILIZAR, x))
-        
+
         self.relé_de_bloqueio_86h_trip_atuado = LeituraModbusBit('05.12 - Relé de Bloqueio 86H Trip Atuado', self.clp, REG_UG2_Alarme05, 12)
-        x = self.relé_de_bloqueio_86h_trip_atuado 
+        x = self.relé_de_bloqueio_86h_trip_atuado
         self.condicionadores.append(CondicionadorBase(x.descr, DEVE_NORMALIZAR, x))
-        
+
         self.relé_de_bloqueio_86h_trip_atuado_pelo_clp = LeituraModbusBit('05.13 - Relé de Bloqueio 86H Trip Atuado pelo CLP', self.clp, REG_UG2_Alarme05, 13)
-        x = self.relé_de_bloqueio_86h_trip_atuado_pelo_clp 
+        x = self.relé_de_bloqueio_86h_trip_atuado_pelo_clp
         self.condicionadores.append(CondicionadorBase(x.descr, DEVE_INDISPONIBILIZAR, x))
-        
+
         self.relé_de_proteção_do_gerador_falha_no_disjuntor_50_62bf = LeituraModbusBit('06.01 - Relé de Proteção do Gerador - Falha no Disjuntor 50_62BF', self.clp, REG_UG2_Alarme06, 1)
-        x = self.relé_de_proteção_do_gerador_falha_no_disjuntor_50_62bf 
+        x = self.relé_de_proteção_do_gerador_falha_no_disjuntor_50_62bf
         self.condicionadores.append(CondicionadorBase(x.descr, DEVE_INDISPONIBILIZAR, x))
-        
+
         self.relé_de_proteção_do_gerador_falha_de_hardware = LeituraModbusBit('06.02 - Relé de Proteção do Gerador - Falha de Hardware', self.clp, REG_UG2_Alarme06, 2)
-        x = self.relé_de_proteção_do_gerador_falha_de_hardware 
+        x = self.relé_de_proteção_do_gerador_falha_de_hardware
         self.condicionadores.append(CondicionadorBase(x.descr, DEVE_INDISPONIBILIZAR, x))
-        
+
         self.disjuntor_52g_atenção_disjuntor_não_inserido_ou_extraído = LeituraModbusBit('06.04 - Disjuntor 52G - ATENÇÃO! Disjuntor Não Inserido ou Extraído', self.clp, REG_UG2_Alarme06, 4)
-        x = self.disjuntor_52g_atenção_disjuntor_não_inserido_ou_extraído 
+        x = self.disjuntor_52g_atenção_disjuntor_não_inserido_ou_extraído
         self.condicionadores.append(CondicionadorBase(x.descr, DEVE_INDISPONIBILIZAR, x))
-        
+
         self.disjuntor_52g_falha_na_abertura = LeituraModbusBit('06.07 - Disjuntor 52G - Falha na Abertura', self.clp, REG_UG2_Alarme06, 7)
-        x = self.disjuntor_52g_falha_na_abertura 
+        x = self.disjuntor_52g_falha_na_abertura
         self.condicionadores.append(CondicionadorBase(x.descr, DEVE_INDISPONIBILIZAR, x))
-        
+
         self.relé_de_proteção_sobretemperatura_do_enrolamento_da_fase_r_do_gerador_trip_86m_= LeituraModbusBit('08.14 - Relé de Proteção - Sobretemperatura do Enrolamento da Fase R do Gerador (Trip 86M)', self.clp, REG_UG2_Alarme08, 14)
         x = self.relé_de_proteção_sobretemperatura_do_enrolamento_da_fase_r_do_gerador_trip_86m_
         self.condicionadores.append(CondicionadorBase(x.descr, DEVE_INDISPONIBILIZAR, x))
-        
+
         self.relé_de_proteção_sobretemperatura_do_enrolamento_da_fase_s_do_gerador_trip_86m_= LeituraModbusBit('08.15 - Relé de Proteção - Sobretemperatura do Enrolamento da Fase S do Gerador (Trip 86M)', self.clp, REG_UG2_Alarme08, 15)
         x = self.relé_de_proteção_sobretemperatura_do_enrolamento_da_fase_s_do_gerador_trip_86m_
         self.condicionadores.append(CondicionadorBase(x.descr, DEVE_INDISPONIBILIZAR, x))
-        
+
         self.relé_de_proteção_sobretemperatura_do_enrolamento_da_fase_t_do_gerador_trip_86m_= LeituraModbusBit('09.00 - Relé de Proteção - Sobretemperatura do Enrolamento da Fase T do Gerador (Trip 86M)', self.clp, REG_UG2_Alarme09, 0)
         x = self.relé_de_proteção_sobretemperatura_do_enrolamento_da_fase_t_do_gerador_trip_86m_
         self.condicionadores.append(CondicionadorBase(x.descr, DEVE_INDISPONIBILIZAR, x))
-        
+
         self.relé_de_proteção_sobretemperatura_do_mancal_la_do_gerador_escora_1_trip_86m_= LeituraModbusBit('09.01 - Relé de Proteção - Sobretemperatura do Mancal LA do Gerador (Escora 1_(Trip 86M)', self.clp, REG_UG2_Alarme09, 1)
         x = self.relé_de_proteção_sobretemperatura_do_mancal_la_do_gerador_escora_1_trip_86m_
         self.condicionadores.append(CondicionadorBase(x.descr, DEVE_INDISPONIBILIZAR, x))
-        
+
         self.relé_de_proteção_sobretemperatura_do_mancal_la_do_gerador_escora_2_trip_86m_= LeituraModbusBit('09.02 - Relé de Proteção - Sobretemperatura do Mancal LA do Gerador (Escora 2_(Trip 86M)', self.clp, REG_UG2_Alarme09, 2)
         x = self.relé_de_proteção_sobretemperatura_do_mancal_la_do_gerador_escora_2_trip_86m_
         self.condicionadores.append(CondicionadorBase(x.descr, DEVE_INDISPONIBILIZAR, x))
-        
+
         self.relé_de_proteção_sobretemperatura_do_mancal_la_do_gerador_casquilho_trip_86m_= LeituraModbusBit('09.03 - Relé de Proteção - Sobretemperatura do Mancal LA do Gerador (Casquilho_(Trip 86M)', self.clp, REG_UG2_Alarme09, 3)
         x = self.relé_de_proteção_sobretemperatura_do_mancal_la_do_gerador_casquilho_trip_86m_
         self.condicionadores.append(CondicionadorBase(x.descr, DEVE_INDISPONIBILIZAR, x))
-        
+
         self.relé_de_proteção_sobretemperatura_do_mancal_la_do_gerador_contra_escora_1_trip_86m_= LeituraModbusBit('09.04 - Relé de Proteção - Sobretemperatura do Mancal LA do Gerador (Contra-Escora 1_(Trip 86M)', self.clp, REG_UG2_Alarme09, 4)
         x = self.relé_de_proteção_sobretemperatura_do_mancal_la_do_gerador_contra_escora_1_trip_86m_
         self.condicionadores.append(CondicionadorBase(x.descr, DEVE_INDISPONIBILIZAR, x))
-        
+
         self.relé_de_proteção_sobretemperatura_do_mancal_lna_do_gerador_casquilho_trip_86m_= LeituraModbusBit('09.05 - Relé de Proteção - Sobretemperatura do Mancal LNA do Gerador (Casquilho_(Trip 86M)', self.clp, REG_UG2_Alarme09, 5)
         x = self.relé_de_proteção_sobretemperatura_do_mancal_lna_do_gerador_casquilho_trip_86m_
         self.condicionadores.append(CondicionadorBase(x.descr, DEVE_INDISPONIBILIZAR, x))
-        
+
         self.relé_de_proteção_sobretemperatura_do_mancal_la_do_gerador_contra_escora_2_trip_86m_= LeituraModbusBit('09.06 - Relé de Proteção - Sobretemperatura do Mancal LA do Gerador (Contra-Escora 2_(Trip 86M)', self.clp, REG_UG2_Alarme09, 6)
         x = self.relé_de_proteção_sobretemperatura_do_mancal_la_do_gerador_contra_escora_2_trip_86m_
         self.condicionadores.append(CondicionadorBase(x.descr, DEVE_INDISPONIBILIZAR, x))
-        
+
         self.relé_de_proteção_sobretemperatura_do_óleo_do_reservatório_da_uhlm_trip_86m_= LeituraModbusBit('09.08 - Relé de Proteção - Sobretemperatura do Óleo do Reservatório da UHLM (Trip 86M)', self.clp, REG_UG2_Alarme09, 8)
         x = self.relé_de_proteção_sobretemperatura_do_óleo_do_reservatório_da_uhlm_trip_86m_
         self.condicionadores.append(CondicionadorBase(x.descr, DEVE_INDISPONIBILIZAR, x))
-        
+
         self.relé_de_proteção_sobretemperatura_do_óleo_na_saída_do_trocador_de_calor_da_uhlm_trip_86m_= LeituraModbusBit('09.09 - Relé de Proteção - Sobretemperatura do Óleo na Saída do Trocador de Calor da UHLM (Trip 86M)', self.clp, REG_UG2_Alarme09, 9)
         x = self.relé_de_proteção_sobretemperatura_do_óleo_na_saída_do_trocador_de_calor_da_uhlm_trip_86m_
         self.condicionadores.append(CondicionadorBase(x.descr, DEVE_INDISPONIBILIZAR, x))
-        
+
         self.sobretemperatura_da_água_na_entrada_do_trocador_de_calor_da_uhlm_trip_86m_= LeituraModbusBit('09.10 - Sobretemperatura da Água na Entrada do Trocador de Calor da UHLM (Trip 86M)', self.clp, REG_UG2_Alarme09, 10)
         x = self.sobretemperatura_da_água_na_entrada_do_trocador_de_calor_da_uhlm_trip_86m_
         self.condicionadores.append(CondicionadorBase(x.descr, DEVE_INDISPONIBILIZAR, x))
-        
+
         self.sobretemperatura_da_água_na_saída_do_trocador_de_calor_da_uhlm_trip_86m_= LeituraModbusBit('09.11 - Sobretemperatura da Água na Saída do Trocador de Calor da UHLM (Trip 86M)', self.clp, REG_UG2_Alarme09, 11)
         x = self.sobretemperatura_da_água_na_saída_do_trocador_de_calor_da_uhlm_trip_86m_
         self.condicionadores.append(CondicionadorBase(x.descr, DEVE_INDISPONIBILIZAR, x))
-        
+
         self.sobretemperatura_do_óleo_do_reservatório_da_uhct_trip_86m_= LeituraModbusBit('09.12 - Sobretemperatura do Óleo do Reservatório da UHCT (Trip 86M)', self.clp, REG_UG2_Alarme09, 12)
         x = self.sobretemperatura_do_óleo_do_reservatório_da_uhct_trip_86m_
         self.condicionadores.append(CondicionadorBase(x.descr, DEVE_INDISPONIBILIZAR, x))
-        
+
         self.relé_de_proteção_sobretemperatura_do_enrolamento_da_fase_r_do_gerador_trip_86e_= LeituraModbusBit('09.14 - Relé de Proteção - Sobretemperatura do Enrolamento da Fase R do Gerador (Trip 86E)', self.clp, REG_UG2_Alarme09, 14)
         x = self.relé_de_proteção_sobretemperatura_do_enrolamento_da_fase_r_do_gerador_trip_86e_
         self.condicionadores.append(CondicionadorBase(x.descr, DEVE_INDISPONIBILIZAR, x))
-        
+
         self.relé_de_proteção_sobretemperatura_do_enrolamento_da_fase_s_do_gerador_trip_86e_= LeituraModbusBit('09.15 - Relé de Proteção - Sobretemperatura do Enrolamento da Fase S do Gerador (Trip 86E)', self.clp, REG_UG2_Alarme09, 15)
         x = self.relé_de_proteção_sobretemperatura_do_enrolamento_da_fase_s_do_gerador_trip_86e_
         self.condicionadores.append(CondicionadorBase(x.descr, DEVE_INDISPONIBILIZAR, x))
-        
+
         self.relé_de_proteção_sobretemperatura_do_enrolamento_da_fase_t_do_gerador_trip_86e_= LeituraModbusBit('10.00 - Relé de Proteção - Sobretemperatura do Enrolamento da Fase T do Gerador (Trip 86E)', self.clp, REG_UG2_Alarme10, 0)
         x = self.relé_de_proteção_sobretemperatura_do_enrolamento_da_fase_t_do_gerador_trip_86e_
         self.condicionadores.append(CondicionadorBase(x.descr, DEVE_INDISPONIBILIZAR, x))
-        
+
         self.relé_de_proteção_sobretemperatura_do_mancal_la_do_gerador_escora_1_trip_86h_= LeituraModbusBit('10.01 - Relé de Proteção - Sobretemperatura do Mancal LA do Gerador (Escora 1_(Trip 86H)', self.clp, REG_UG2_Alarme10, 1)
         x = self.relé_de_proteção_sobretemperatura_do_mancal_la_do_gerador_escora_1_trip_86h_
         self.condicionadores.append(CondicionadorBase(x.descr, DEVE_INDISPONIBILIZAR, x))
-        
+
         self.relé_de_proteção_sobretemperatura_do_mancal_la_do_gerador_escora_2_trip_86h_= LeituraModbusBit('10.02 - Relé de Proteção - Sobretemperatura do Mancal LA do Gerador (Escora 2_(Trip 86H)', self.clp, REG_UG2_Alarme10, 2)
         x = self.relé_de_proteção_sobretemperatura_do_mancal_la_do_gerador_escora_2_trip_86h_
         self.condicionadores.append(CondicionadorBase(x.descr, DEVE_INDISPONIBILIZAR, x))
-        
+
         self.relé_de_proteção_sobretemperatura_do_mancal_la_do_gerador_casquilho_trip_86h_= LeituraModbusBit('10.03 - Relé de Proteção - Sobretemperatura do Mancal LA do Gerador (Casquilho_(Trip 86H)', self.clp, REG_UG2_Alarme10, 3)
         x = self.relé_de_proteção_sobretemperatura_do_mancal_la_do_gerador_casquilho_trip_86h_
         self.condicionadores.append(CondicionadorBase(x.descr, DEVE_INDISPONIBILIZAR, x))
-        
+
         self.relé_de_proteção_sobretemperatura_do_mancal_la_do_gerador_contra_escora_1_trip_86h_= LeituraModbusBit('10.04 - Relé de Proteção - Sobretemperatura do Mancal LA do Gerador (Contra-Escora 1_(Trip 86H)', self.clp, REG_UG2_Alarme10, 4)
         x = self.relé_de_proteção_sobretemperatura_do_mancal_la_do_gerador_contra_escora_1_trip_86h_
         self.condicionadores.append(CondicionadorBase(x.descr, DEVE_INDISPONIBILIZAR, x))
-        
+
         self.relé_de_proteção_sobretemperatura_do_mancal_lna_do_gerador_casquilho_trip_86h_= LeituraModbusBit('10.05 - Relé de Proteção - Sobretemperatura do Mancal LNA do Gerador (Casquilho_(Trip 86H)', self.clp, REG_UG2_Alarme10, 5)
         x = self.relé_de_proteção_sobretemperatura_do_mancal_lna_do_gerador_casquilho_trip_86h_
         self.condicionadores.append(CondicionadorBase(x.descr, DEVE_INDISPONIBILIZAR, x))
-        
+
         self.relé_de_proteção_sobretemperatura_do_mancal_la_do_gerador_contra_escora_2_trip_86h_= LeituraModbusBit('10.06 - Relé de Proteção - Sobretemperatura do Mancal LA do Gerador (Contra-Escora 2_(Trip 86H)', self.clp, REG_UG2_Alarme10, 6)
         x = self.relé_de_proteção_sobretemperatura_do_mancal_la_do_gerador_contra_escora_2_trip_86h_
         self.condicionadores.append(CondicionadorBase(x.descr, DEVE_INDISPONIBILIZAR, x))
-        
+
         self.relé_de_proteção_sobretemperatura_da_vedação_do_eixo_da_turbina_trip_86h_= LeituraModbusBit('10.07 - Relé de Proteção - Sobretemperatura da Vedação do Eixo da Turbina (Trip 86H)', self.clp, REG_UG2_Alarme10, 7)
         x = self.relé_de_proteção_sobretemperatura_da_vedação_do_eixo_da_turbina_trip_86h_
         self.condicionadores.append(CondicionadorBase(x.descr, DEVE_INDISPONIBILIZAR, x))
-        
+
         self.relé_de_proteção_sobretemperatura_do_óleo_do_reservatório_da_uhlm_trip_86h_= LeituraModbusBit('10.08 - Relé de Proteção - Sobretemperatura do Óleo do Reservatório da UHLM (Trip 86H)', self.clp, REG_UG2_Alarme10, 8)
         x = self.relé_de_proteção_sobretemperatura_do_óleo_do_reservatório_da_uhlm_trip_86h_
         self.condicionadores.append(CondicionadorBase(x.descr, DEVE_INDISPONIBILIZAR, x))
-        
+
         self.relé_de_proteção_sobretemperatura_do_óleo_na_saída_do_trocador_de_calor_da_uhlm_trip_86h_= LeituraModbusBit('10.09 - Relé de Proteção - Sobretemperatura do Óleo na Saída do Trocador de Calor da UHLM (Trip 86H)', self.clp, REG_UG2_Alarme10, 9)
         x = self.relé_de_proteção_sobretemperatura_do_óleo_na_saída_do_trocador_de_calor_da_uhlm_trip_86h_
         self.condicionadores.append(CondicionadorBase(x.descr, DEVE_INDISPONIBILIZAR, x))
-        
+
         self.sobretemperatura_da_água_na_entrada_do_trocador_de_calor_da_uhlm_trip_86h_= LeituraModbusBit('10.10 - Sobretemperatura da Água na Entrada do Trocador de Calor da UHLM (Trip 86H)', self.clp, REG_UG2_Alarme10, 10)
         x = self.sobretemperatura_da_água_na_entrada_do_trocador_de_calor_da_uhlm_trip_86h_
         self.condicionadores.append(CondicionadorBase(x.descr, DEVE_INDISPONIBILIZAR, x))
-        
+
         self.sobretemperatura_da_água_na_saída_do_trocador_de_calor_da_uhlm_trip_86h_= LeituraModbusBit('10.11 - Sobretemperatura da Água na Saída do Trocador de Calor da UHLM (Trip 86H)', self.clp, REG_UG2_Alarme10, 11)
         x = self.sobretemperatura_da_água_na_saída_do_trocador_de_calor_da_uhlm_trip_86h_
         self.condicionadores.append(CondicionadorBase(x.descr, DEVE_INDISPONIBILIZAR, x))
-        
+
         self.sobretemperatura_do_óleo_do_reservatório_da_uhct_trip_86h_= LeituraModbusBit('10.12 - Sobretemperatura do Óleo do Reservatório da UHCT (Trip 86H)', self.clp, REG_UG2_Alarme10, 12)
         x = self.sobretemperatura_do_óleo_do_reservatório_da_uhct_trip_86h_
         self.condicionadores.append(CondicionadorBase(x.descr, DEVE_INDISPONIBILIZAR, x))
-        
+
         self.relé_de_proteção_sel700g_proteção_diferencial_do_gerador_87g_= LeituraModbusBit('10.14 - Relé de Proteção SEL700G - Proteção Diferencial do Gerador (87G)', self.clp, REG_UG2_Alarme10, 14)
         x = self.relé_de_proteção_sel700g_proteção_diferencial_do_gerador_87g_
         self.condicionadores.append(CondicionadorBase(x.descr, DEVE_INDISPONIBILIZAR, x))
-        
+
         self.relé_de_proteção_sel700g_sobrecorrente_instantânea_de_fase_50p_= LeituraModbusBit('10.15 - Relé de Proteção SEL700G - Sobrecorrente Instantânea de Fase (50P)', self.clp, REG_UG2_Alarme10, 15)
         x = self.relé_de_proteção_sel700g_sobrecorrente_instantânea_de_fase_50p_
         self.condicionadores.append(CondicionadorBase(x.descr, DEVE_INDISPONIBILIZAR, x))
-        
+
         self.relé_de_proteção_sel700g_sobrecorrente_com_restrição_por_tensão_51v_= LeituraModbusBit('11.00 - Relé de Proteção SEL700G - Sobrecorrente com Restrição por Tensão (51V)', self.clp, REG_UG2_Alarme11, 0)
         x = self.relé_de_proteção_sel700g_sobrecorrente_com_restrição_por_tensão_51v_
         self.condicionadores.append(CondicionadorBase(x.descr, DEVE_INDISPONIBILIZAR, x))
-        
+
         self.relé_de_proteção_sel700g_sobre_corrente_de_sequência_negativa_instantânea_50q_= LeituraModbusBit('11.03 - Relé de Proteção SEL700G - Sobre Corrente de Sequência Negativa Instantânea (50Q)', self.clp, REG_UG2_Alarme11, 3)
         x = self.relé_de_proteção_sel700g_sobre_corrente_de_sequência_negativa_instantânea_50q_
         self.condicionadores.append(CondicionadorBase(x.descr, DEVE_INDISPONIBILIZAR, x))
-        
+
         self.relé_de_proteção_sel700g_desequilíbrio_de_corrente_46q_= LeituraModbusBit('11.04 - Relé de Proteção SEL700G - Desequilíbrio de Corrente (46Q)', self.clp, REG_UG2_Alarme11, 4)
         x = self.relé_de_proteção_sel700g_desequilíbrio_de_corrente_46q_
         self.condicionadores.append(CondicionadorBase(x.descr, DEVE_INDISPONIBILIZAR, x))
-        
+
         self.relé_de_proteção_sel700g_sobretensão_de_sequência_negativa_59q_= LeituraModbusBit('11.05 - Relé de Proteção SEL700G - Sobretensão de Sequência Negativa (59Q)', self.clp, REG_UG2_Alarme11, 5)
         x = self.relé_de_proteção_sel700g_sobretensão_de_sequência_negativa_59q_
         self.condicionadores.append(CondicionadorBase(x.descr, DEVE_INDISPONIBILIZAR, x))
-        
+
         self.relé_de_proteção_sel700g_sobre_corrente_instantânea_de_neutro_50n_= LeituraModbusBit('11.06 - Relé de Proteção SEL700G - Sobre Corrente Instantânea de Neutro (50N)', self.clp, REG_UG2_Alarme11, 6)
         x = self.relé_de_proteção_sel700g_sobre_corrente_instantânea_de_neutro_50n_
         self.condicionadores.append(CondicionadorBase(x.descr, DEVE_INDISPONIBILIZAR, x))
-        
+
         self.relé_de_proteção_sel700g_sobre_corrente_temporizada_de_neutro_51n_= LeituraModbusBit('11.07 - Relé de Proteção SEL700G - Sobre Corrente Temporizada de Neutro (51N)', self.clp, REG_UG2_Alarme11, 7)
         x = self.relé_de_proteção_sel700g_sobre_corrente_temporizada_de_neutro_51n_
         self.condicionadores.append(CondicionadorBase(x.descr, DEVE_INDISPONIBILIZAR, x))
-        
+
         self.relé_de_proteção_sel700g_sobretensão_residual_59g_= LeituraModbusBit('11.08 - Relé de Proteção SEL700G - Sobretensão Residual (59G)', self.clp, REG_UG2_Alarme11, 8)
         x = self.relé_de_proteção_sel700g_sobretensão_residual_59g_
         self.condicionadores.append(CondicionadorBase(x.descr, DEVE_INDISPONIBILIZAR, x))
-        
+
         self.relé_de_proteção_sel700g_potência_reversa_32p_= LeituraModbusBit('11.09 - Relé de Proteção SEL700G - Potência Reversa (32P)', self.clp, REG_UG2_Alarme11, 9)
         x = self.relé_de_proteção_sel700g_potência_reversa_32p_
         self.condicionadores.append(CondicionadorBase(x.descr, DEVE_INDISPONIBILIZAR, x))
-        
+
         self.relé_de_proteção_sel700g_energização_indevida_50m_= LeituraModbusBit('11.12 - Relé de Proteção SEL700G - Energização Indevida (50M)', self.clp, REG_UG2_Alarme11, 12)
         x = self.relé_de_proteção_sel700g_energização_indevida_50m_
         self.condicionadores.append(CondicionadorBase(x.descr, DEVE_INDISPONIBILIZAR, x))
-        
+
         self.relé_de_proteção_sel700g_falha_do_disjuntor_52g_50_62bf_= LeituraModbusBit('11.15 - Relé de Proteção SEL700G - Falha do Disjuntor 52G (50_62BF)', self.clp, REG_UG2_Alarme11, 15)
         x = self.relé_de_proteção_sel700g_falha_do_disjuntor_52g_50_62bf_
         self.condicionadores.append(CondicionadorBase(x.descr, DEVE_INDISPONIBILIZAR, x))
-        
+
         self.grtd_2000_falha_sobrecorrente_de_excitação = LeituraModbusBit('12.04 - GRTD 2000 - Falha Sobrecorrente de Excitação', self.clp, REG_UG2_Alarme12, 4)
-        x = self.grtd_2000_falha_sobrecorrente_de_excitação 
+        x = self.grtd_2000_falha_sobrecorrente_de_excitação
         self.condicionadores.append(CondicionadorBase(x.descr, DEVE_INDISPONIBILIZAR, x))
-        
+
         self.erro_de_leitura_na_entrada_analógica_de_pressão_da_caixa_espiral = LeituraModbusBit('12.11 - Erro de Leitura na Entrada Analógica de Pressão da Caixa Espiral', self.clp, REG_UG2_Alarme12, 11)
-        x = self.erro_de_leitura_na_entrada_analógica_de_pressão_da_caixa_espiral 
+        x = self.erro_de_leitura_na_entrada_analógica_de_pressão_da_caixa_espiral
         self.condicionadores.append(CondicionadorBase(x.descr, DEVE_INDISPONIBILIZAR, x))
-        
+
         self.css_u1_alimentação_motor_carregamento_mola_disjuntor_52g_disjuntor_q220_1_desligado = LeituraModbusBit('13.07 - CSS-U1 - Alimentação Motor Carregamento Mola Disjuntor 52G - Disjuntor Q220.1 Desligado', self.clp, REG_UG2_Alarme13, 7)
-        x = self.css_u1_alimentação_motor_carregamento_mola_disjuntor_52g_disjuntor_q220_1_desligado 
+        x = self.css_u1_alimentação_motor_carregamento_mola_disjuntor_52g_disjuntor_q220_1_desligado
         self.condicionadores.append(CondicionadorBase(x.descr, DEVE_INDISPONIBILIZAR, x))
-        
+
         self.q49_módulo_de_temperatura_sel2600_disjuntor_q125_0_desligado = LeituraModbusBit('13.14 - Q49 - Módulo de Temperatura SEL2600 - Disjuntor Q125.0 Desligado', self.clp, REG_UG2_Alarme13, 14)
-        x = self.q49_módulo_de_temperatura_sel2600_disjuntor_q125_0_desligado 
+        x = self.q49_módulo_de_temperatura_sel2600_disjuntor_q125_0_desligado
         self.condicionadores.append(CondicionadorBase(x.descr, DEVE_INDISPONIBILIZAR, x))
-        
+
         self.trip_vibração_excessiva_no_mancal_la_do_gerador = LeituraModbusBit('15.01 - TRIP - Vibração Excessiva no Mancal LA do Gerador', self.clp, REG_UG2_Alarme15, 1)
-        x = self.trip_vibração_excessiva_no_mancal_la_do_gerador 
+        x = self.trip_vibração_excessiva_no_mancal_la_do_gerador
         self.condicionadores.append(CondicionadorBase(x.descr, DEVE_INDISPONIBILIZAR, x))
-        
+
         self.trip_vibração_excessiva_no_mancal_loa_do_gerador = LeituraModbusBit('15.03 - TRIP - Vibração Excessiva no Mancal LOA do Gerador', self.clp, REG_UG2_Alarme15, 3)
-        x = self.trip_vibração_excessiva_no_mancal_loa_do_gerador 
+        x = self.trip_vibração_excessiva_no_mancal_loa_do_gerador
         self.condicionadores.append(CondicionadorBase(x.descr, DEVE_INDISPONIBILIZAR, x))
 
         self.reg_tensão_trip = LeituraModbusBit('04.12 - Reg Tensão - TRIP', self.clp, REG_UG2_Alarme04, 12)
-        x = self.reg_tensão_trip 
+        x = self.reg_tensão_trip
         self.condicionadores.append(CondicionadorBase(x.descr, DEVE_NORMALIZAR, x))
-        
+
         self.grtd_2000_falha_no_sincronismo = LeituraModbusBit('05.04 - GRTD 2000 - Falha no Sincronismo', self.clp, REG_UG2_Alarme05, 4)
-        x = self.grtd_2000_falha_no_sincronismo 
+        x = self.grtd_2000_falha_no_sincronismo
         self.condicionadores.append(CondicionadorBase(x.descr, DEVE_NORMALIZAR, x))
-        
+
         self.relé_de_proteção_do_gerador_trip_atuado = LeituraModbusBit('06.00 - Relé de Proteção do Gerador - Trip Atuado', self.clp, REG_UG2_Alarme06, 00)
-        x = self.relé_de_proteção_do_gerador_trip_atuado 
+        x = self.relé_de_proteção_do_gerador_trip_atuado
         self.condicionadores.append(CondicionadorBase(x.descr, DEVE_NORMALIZAR, x))
-        
+
         self.relé_de_proteção_sel700g_subtensão_de_fase_27p = LeituraModbusBit('11.01 - Relé de Proteção SEL700G - Subtensão de Fase (27P)', self.clp, REG_UG2_Alarme11, 1)
-        x = self.relé_de_proteção_sel700g_subtensão_de_fase_27p 
+        x = self.relé_de_proteção_sel700g_subtensão_de_fase_27p
         self.condicionadores.append(CondicionadorBase(x.descr, DEVE_NORMALIZAR, x))
-        
+
         self.relé_de_proteção_sel700g_sobretensão_de_fase_59p = LeituraModbusBit('11.02 - Relé de Proteção SEL700G - Sobretensão de Fase (59P)', self.clp, REG_UG2_Alarme11, 2)
-        x = self.relé_de_proteção_sel700g_sobretensão_de_fase_59p 
+        x = self.relé_de_proteção_sel700g_sobretensão_de_fase_59p
         self.condicionadores.append(CondicionadorBase(x.descr, DEVE_NORMALIZAR, x))
-        
+
         self.relé_de_proteção_sel700g_perda_de_excitação_40q = LeituraModbusBit('11.10 - Relé de Proteção SEL700G - Perda de Excitação (40Q)', self.clp, REG_UG2_Alarme11, 10)
-        x = self.relé_de_proteção_sel700g_perda_de_excitação_40q 
+        x = self.relé_de_proteção_sel700g_perda_de_excitação_40q
         self.condicionadores.append(CondicionadorBase(x.descr, DEVE_NORMALIZAR, x))
-        
+
         self.relé_de_proteção_sel700g_volts_hertz_24 = LeituraModbusBit('11.11 - Relé de Proteção SEL700G - Volts/Hertz -24', self.clp, REG_UG2_Alarme11, 11)
         x = self.relé_de_proteção_sel700g_volts_hertz_24
         self.condicionadores.append(CondicionadorBase(x.descr, DEVE_NORMALIZAR, x))
-        
+
         self.relé_de_proteção_sel700g_subfrequência_81u = LeituraModbusBit('11.13 - Relé de Proteção SEL700G - Subfrequência (81U)', self.clp, REG_UG2_Alarme11, 13)
-        x = self.relé_de_proteção_sel700g_subfrequência_81u 
+        x = self.relé_de_proteção_sel700g_subfrequência_81u
         self.condicionadores.append(CondicionadorBase(x.descr, DEVE_NORMALIZAR, x))
-        
+
         self.relé_de_proteção_sel700g_sobrefrequência_81o = LeituraModbusBit('11.14 - Relé de Proteção SEL700G - Sobrefrequência (81O)', self.clp, REG_UG2_Alarme11, 14)
         x = self.relé_de_proteção_sel700g_sobrefrequência_81o
         self.condicionadores.append(CondicionadorBase(x.descr, DEVE_NORMALIZAR, x))
-        
+
         self.grtd_2000_falha_na_ponte_de_excitação = LeituraModbusBit('12.00 - GRTD 2000 - Falha na Ponte de Excitação', self.clp, REG_UG2_Alarme12, 00)
-        x = self.grtd_2000_falha_na_ponte_de_excitação 
+        x = self.grtd_2000_falha_na_ponte_de_excitação
         self.condicionadores.append(CondicionadorBase(x.descr, DEVE_NORMALIZAR, x))
-        
+
         self.grtd_2000_falha_na_saída_analógica_do_distribuidor = LeituraModbusBit('12.01 - GRTD 2000 - Falha na Saída Analógica do Distribuidor', self.clp, REG_UG2_Alarme12, 1)
-        x = self.grtd_2000_falha_na_saída_analógica_do_distribuidor 
+        x = self.grtd_2000_falha_na_saída_analógica_do_distribuidor
         self.condicionadores.append(CondicionadorBase(x.descr, DEVE_NORMALIZAR, x))
-        
+
         self.grtd_2000_falha_realimentação_de_tensão = LeituraModbusBit('12.02 - GRTD 2000 - Falha Realimentação de Tensão', self.clp, REG_UG2_Alarme12, 2)
-        x = self.grtd_2000_falha_realimentação_de_tensão 
+        x = self.grtd_2000_falha_realimentação_de_tensão
         self.condicionadores.append(CondicionadorBase(x.descr, DEVE_NORMALIZAR, x))
-        
+
         self.grtd_2000_falha_sobretensão_de_excitação = LeituraModbusBit('12.03 - GRTD 2000 - Falha Sobretensão de Excitação', self.clp, REG_UG2_Alarme12, 3)
-        x = self.grtd_2000_falha_sobretensão_de_excitação 
+        x = self.grtd_2000_falha_sobretensão_de_excitação
         self.condicionadores.append(CondicionadorBase(x.descr, DEVE_NORMALIZAR, x))
-        
+
         self.grtd_2000_falha_sobrevelocidade_eletrônica = LeituraModbusBit('12.05 - GRTD 2000 - Falha Sobrevelocidade Eletrônica', self.clp, REG_UG2_Alarme12, 5)
-        x = self.grtd_2000_falha_sobrevelocidade_eletrônica 
+        x = self.grtd_2000_falha_sobrevelocidade_eletrônica
         self.condicionadores.append(CondicionadorBase(x.descr, DEVE_NORMALIZAR, x))
-        
+
         self.grtd_2000_falha_na_realimentação_de_velocidade = LeituraModbusBit('12.06 - GRTD 2000 - Falha na Realimentação de velocidade', self.clp, REG_UG2_Alarme12, 6)
-        x = self.grtd_2000_falha_na_realimentação_de_velocidade 
+        x = self.grtd_2000_falha_na_realimentação_de_velocidade
         self.condicionadores.append(CondicionadorBase(x.descr, DEVE_NORMALIZAR, x))
-        
+
         self.grtd_2000_falha_na_realimentação_de_posição_do_distribuidor = LeituraModbusBit('12.07 - GRTD 2000 - Falha na Realimentação de posição do Distribuidor', self.clp, REG_UG2_Alarme12, 7)
-        x = self.grtd_2000_falha_na_realimentação_de_posição_do_distribuidor 
+        x = self.grtd_2000_falha_na_realimentação_de_posição_do_distribuidor
         self.condicionadores.append(CondicionadorBase(x.descr, DEVE_NORMALIZAR, x))
 
         self.leitura_potencia = LeituraModbus(
-            "ug{}_Gerador_PotenciaAtivaMedia".format(self.id),
+            f"ug{self.id}_Gerador_PotenciaAtivaMedia",
             self.clp,
             REG_UG2_Gerador_PotenciaAtivaMedia,
         )
 
         self.leitura_horimetro = LeituraModbus(
-            "ug{}_HorimetroEletrico_Low".format(self.id),
+            f"ug{self.id}_HorimetroEletrico_Low",
             self.clp,
             REG_UG2_HorimetroEletrico_Low,
         )
 
         self.leitura_Operacao_EtapaAtual = LeituraModbus(
-            "ug{}_Operacao_EtapaAtual".format(self.id),
+            f"ug{self.id}_Operacao_EtapaAtual",
             self.clp,
             REG_UG2_Operacao_EtapaAtual,
         )
 
         self.leitura_Operacao_EtapaAlvo = LeituraModbus(
-            "ug{}_Operacao_EtapaAlvo".format(self.id),
+            f"ug{self.id}_Operacao_EtapaAlvo",
             self.clp,
             REG_UG2_Operacao_EtapaAlvo,
         )
 
         # Gerador - Enrolamento fase R
         self.leitura_temperatura_enrolamento_fase_r = LeituraModbus(
-            "Gerador {} - Enrolamento fase R".format(self.id),
+            "Gerador {} - Enrolamento fase R",
             self.clp,
             REG_UG2_Temperatura_01,
         )
@@ -398,7 +398,7 @@ class UnidadeDeGeracao2(UnidadeDeGeracao):
 
         # Gerador - Enrolamento Fase S
         self.leitura_temperatura_enrolamento_fase_s = LeituraModbus(
-            "Gerador {} - Enrolamento Fase S".format(self.id),
+            f"Gerador {self.id} - Enrolamento Fase S",
             self.clp,
             REG_UG2_Temperatura_02,
         )
@@ -409,7 +409,7 @@ class UnidadeDeGeracao2(UnidadeDeGeracao):
 
         # Gerador - Enrolamento fase T
         self.leitura_temperatura_enrolamento_fase_t = LeituraModbus(
-            "Gerador {} - Enrolamento fase T".format(self.id),
+            f"Gerador {self.id} - Enrolamento fase T",
             self.clp,
             REG_UG2_Temperatura_03,
         )
@@ -420,7 +420,7 @@ class UnidadeDeGeracao2(UnidadeDeGeracao):
 
         # Gerador - Mancal L.A. Escora 01
         self.leitura_temperatura_mancal_la_escora_1 = LeituraModbus(
-            "Gerador {} - Mancal L.A. Escora 01".format(self.id),
+            f"Gerador {self.id} - Mancal L.A. Escora 01",
             self.clp,
             REG_UG2_Temperatura_04,
         )
@@ -431,7 +431,7 @@ class UnidadeDeGeracao2(UnidadeDeGeracao):
 
         # Gerador - Mancal L.A. Escora 02
         self.leitura_temperatura_mancal_la_escora_2 = LeituraModbus(
-            "Gerador {} - Mancal L.A. Escora 02".format(self.id),
+            f"Gerador {self.id} - Mancal L.A. Escora 02",
             self.clp,
             REG_UG2_Temperatura_05,
         )
@@ -442,7 +442,7 @@ class UnidadeDeGeracao2(UnidadeDeGeracao):
 
         # Gerador - Mancal L. A. Contra Escora 01
         self.leitura_temperatura_mancal_la_contra_escora_1 = LeituraModbus(
-            "Gerador {} - Mancal L. A. Contra Escora 01".format(self.id),
+            f"Gerador {self.id} - Mancal L. A. Contra Escora 01",
             self.clp,
             REG_UG2_Temperatura_07,
         )
@@ -453,7 +453,7 @@ class UnidadeDeGeracao2(UnidadeDeGeracao):
 
         # Gerador - Mancal L. A. Contra Escora 02
         self.leitura_temperatura_mancal_la_contra_escora_2 = LeituraModbus(
-            "Gerador {} - Mancal L. A. Contra Escora 02".format(self.id),
+            f"Gerador {self.id} - Mancal L. A. Contra Escora 02",
             self.clp,
             REG_UG2_Temperatura_09,
         )
@@ -464,7 +464,7 @@ class UnidadeDeGeracao2(UnidadeDeGeracao):
 
         # Gerador - Mancal L. A. Casquilho
         self.leitura_temperatura_mancal_la_casquilho = LeituraModbus(
-            "Gerador {} - Mancal L. A. Casquilho".format(self.id),
+            f"Gerador {self.id} - Mancal L. A. Casquilho",
             self.clp,
             REG_UG2_Temperatura_06,
         )
@@ -475,7 +475,7 @@ class UnidadeDeGeracao2(UnidadeDeGeracao):
 
         # Gerador - Mancal L.N.A. Casquilho
         self.leitura_temperatura_mancal_lna_casquilho = LeituraModbus(
-            "Gerador {} - Mancal L.N.A. Casquilho".format(self.id),
+            f"Gerador {self.id} - Mancal L.N.A. Casquilho",
             self.clp,
             REG_UG2_Temperatura_08,
         )
@@ -483,10 +483,10 @@ class UnidadeDeGeracao2(UnidadeDeGeracao):
         x = self.leitura_temperatura_mancal_lna_casquilho
         self.condicionador_temperatura_mancal_lna_casquilho = CondicionadorExponencial(x.descr, DEVE_INDISPONIBILIZAR, x, base, limite)
         self.condicionadores.append(self.condicionador_temperatura_mancal_lna_casquilho)
-        
+
         # Perda na garde
         self.leitura_perda_na_grade = LeituraDelta(
-            "Perda na grade ug{}".format(self.id),
+            f"Perda na gradef ug{self.id}",
             self.leituras_usina.nv_montante,
             self.leituras_usina.nv_canal_aducao,
         )
@@ -495,7 +495,7 @@ class UnidadeDeGeracao2(UnidadeDeGeracao):
         self.condicionador_perda_na_grade = CondicionadorExponencial(x.descr, DEVE_INDISPONIBILIZAR, x, base, limite, ordem=1)
         self.condicionadores.append(self.condicionador_perda_na_grade)
 
-        
+
 
         self.condicionador_86h_e_86m_e_nao_temperaturas = CondicionadorCombinadoAND(
             "condicionador_86h_e_86m_e_nao_temperaturas",
@@ -512,7 +512,7 @@ class UnidadeDeGeracao2(UnidadeDeGeracao):
                 [False, self.condicionador_temperatura_mancal_la_contra_escora_2],
                 [False, self.condicionador_temperatura_mancal_la_casquilho],
                 [False, self.condicionador_temperatura_mancal_lna_casquilho],
-            ]        
+            ]
         )
 
     def acionar_trip_logico(self) -> bool:
@@ -523,17 +523,12 @@ class UnidadeDeGeracao2(UnidadeDeGeracao):
             bool: True se sucesso, Falso caso contrário
         """
         try:
-            self.logger.debug(
-                "[UG{}] Acionando sinal (via rede) de TRIP.".format(self.id)
-            )
-            response = self.clp.write_single_register(
-                REG_UG2_Operacao_EmergenciaLigar, 1
-            )
+            self.logger.debug(f"[UG{self.id}] Acionando sinal de TRIP -> Lógico.")
+            response = self.clp.write_single_register(REG_UG2_Operacao_EmergenciaLigar, 1)
+            return response
         except:
             #! TODO Tratar exceptions
             return False
-        else:
-            return response
 
     def remover_trip_logico(self) -> bool:
         """
@@ -543,20 +538,13 @@ class UnidadeDeGeracao2(UnidadeDeGeracao):
             bool: True se sucesso, Falso caso contrário
         """
         try:
-            self.logger.debug(
-                "[UG{}] Removendo sinal (via rede) de TRIP.".format(self.id)
-            )
-            response = self.clp.write_single_register(
-                REG_UG2_Operacao_EmergenciaLigar, 0
-            )
-            response = self.clp.write_single_register(
-                REG_UG2_Operacao_EmergenciaDesligar, 1
-            )
+            self.logger.debug(f"[UG{self.id}] Removendo sinal de TRIP -> Lógico.")
+            response = self.clp.write_single_register(REG_UG2_Operacao_EmergenciaLigar, 0)
+            response = self.clp.write_single_register(REG_UG2_Operacao_EmergenciaDesligar, 1)
+            return response
         except:
             #! TODO Tratar exceptions
             return False
-        else:
-            return response
 
     def acionar_trip_eletrico(self) -> bool:
         """
@@ -567,18 +555,12 @@ class UnidadeDeGeracao2(UnidadeDeGeracao):
         """
         try:
             self.enviar_trip_eletrico = True
-            self.logger.debug(
-                "[UG{}] Acionando sinal (elétrico) de TRIP.".format(self.id)
-            )
-            DataBank.set_words(
-                self.cfg["REG_MOA_OUT_BLOCK_UG{}".format(self.id)],
-                [1],
-            )
+            self.logger.debug(f"[UG{self.id}] Acionando sinal de TRIP -> Elétrico.")
+            DataBank.set_words(self.cfg[f"REG_MOA_OUT_BLOCK_UG{self.id}"], [1],)
+            return True
         except:
             #! TODO Tratar exceptions
             return False
-        else:
-            return True
 
     def remover_trip_eletrico(self) -> bool:
         """
@@ -589,22 +571,13 @@ class UnidadeDeGeracao2(UnidadeDeGeracao):
         """
         try:
             self.enviar_trip_eletrico = False
-            self.logger.debug(
-                "[UG{}] Removendo sinal (elétrico) de TRIP.".format(self.id)
-            )
-            DataBank.set_words(
-                self.cfg["REG_MOA_OUT_BLOCK_UG{}".format(self.id)],
-                [0],
-            )
-            DataBank.set_words(
-                self.cfg['REG_PAINEL_LIDO'],
-                [0],
-            )
-        except Exception as e:
-            self.logger.warning("Exception! Traceback: {}".format(traceback.format_exc()))
-            return False
-        else:
+            self.logger.debug(f"[UG{self.id}] Removendo sinal de TRIP -> Elétrico.")
+            DataBank.set_words(self.cfg[f"REG_MOA_OUT_BLOCK_UG{self.id}"],[0],)
+            DataBank.set_words(self.cfg['REG_PAINEL_LIDO'],[0],)
             return True
+        except Exception as e:
+            self.logger.warning(f"Exception! Traceback: {traceback.format_exc()}")
+            return False
 
     def partir(self) -> bool:
         """
@@ -615,20 +588,15 @@ class UnidadeDeGeracao2(UnidadeDeGeracao):
         """
         try:
             if not self.etapa_alvo == UNIDADE_SINCRONIZADA:
-                self.logger.debug(
-                    "[UG{}] Enviando comando (via rede) de partida.".format(self.id)
-                )
+                self.logger.debug(f"[UG{self.id}] Enviando comando de partida.")
             else:
-                self.logger.debug(
-                    "[UG{}] Enviando comando (via rede) de partida.".format(self.id)
-                ) 
+                self.logger.debug(f"[UG{self.id}] Enviando comando de partida.")
             response = self.clp.write_single_register(REG_UG2_Operacao_US, 1)
             self.enviar_setpoint(self.setpoint)
+            return response
         except:
             #! TODO Tratar exceptions
             return False
-        else:
-            return response
 
     def parar(self) -> bool:
         """
@@ -639,22 +607,16 @@ class UnidadeDeGeracao2(UnidadeDeGeracao):
         """
         try:
             if not self.etapa_alvo == UNIDADE_PARADA:
-                self.logger.debug(
-                    "[UG{}] Enviando comando (via rede) de parada.".format(self.id)
-                )
+                self.logger.debug(f"[UG{self.id}] Enviando comando de parada.")
             else:
-                self.logger.debug(
-                    "[UG{}] Enviando comando (via rede) de parada.".format(self.id)
-                ) 
+                self.logger.debug(f"[UG{self.id}] Enviando comando de parada.")
             response = self.clp.write_single_register(REG_UG2_Operacao_UP, 1)
             self.enviar_setpoint(0)
             response = self.clp.write_single_register(REG_UG2_Operacao_UP, 1)
-
+            return response
         except:
             #! TODO Tratar exceptions
             return False
-        else:
-            return response
 
     def reconhece_reset_alarmes(self) -> bool:
         """
@@ -664,9 +626,7 @@ class UnidadeDeGeracao2(UnidadeDeGeracao):
             bool: True se sucesso, Falso caso contrário
         """
         try:
-            self.logger.info(
-                "[UG{}] Enviando comando de reconhece e reset alarmes. (Vai tomar aprox 10s)".format(self.id)
-            )
+            self.logger.info(f"[UG{self.id}] Enviando comando de reconhece e reset alarmes.")
 
             for _ in range(3):
                 DataBank.set_words(self.cfg['REG_PAINEL_LIDO'],[0])
@@ -674,21 +634,15 @@ class UnidadeDeGeracao2(UnidadeDeGeracao):
                 DataBank.set_words(self.cfg['REG_PAINEL_LIDO'],[0])
                 sleep(1)
                 self.remover_trip_logico()
-                response = self.clp.write_single_register(
-                    REG_UG2_Operacao_PCH_CovoReconheceAlarmes, 1
-                )
+                response = self.clp.write_single_register(REG_UG2_Operacao_PCH_CovoReconheceAlarmes, 1)
                 sleep(1)
-                response = response and self.clp.write_single_register(
-                    REG_UG2_Operacao_PCH_CovoResetAlarmes, 1
-                )
+                response = response and self.clp.write_single_register(REG_UG2_Operacao_PCH_CovoResetAlarmes, 1)
                 DataBank.set_words(self.cfg['REG_PAINEL_LIDO'],[0])
                 sleep(1)
-
+            return response
         except:
             #! TODO Tratar exceptions
             return False
-        else:
-            return response
 
     def enviar_setpoint(self, setpoint_kw: int) -> bool:
         """
@@ -698,51 +652,38 @@ class UnidadeDeGeracao2(UnidadeDeGeracao):
             bool: True se sucesso, Falso caso contrário
         """
         try:
-        
+
             self.setpoint_minimo = self.cfg["pot_minima"]
-            self.setpoint_maximo = self.cfg["pot_maxima_ug{}".format(self.id)]
+            self.setpoint_maximo = self.cfg[f"pot_maxima_ug{self.id}"]
 
             self.setpoint = int(setpoint_kw)
-            self.logger.debug(
-                "[UG{}] Enviando setpoint {} kW.".format(self.id, int(self.setpoint))
-            )
+            self.logger.debug(f"[UG{self.id}] Enviando setpoint {int(self.setpoint)} kW.")
             if self.setpoint > 1:
                 response = self.clp.write_single_register(REG_UG2_Operacao_US, 1)
-            response = response and self.clp.write_single_register(
-                REG_UG2_RegV_ColocarCarga, 1
-            )
-            response = response and self.clp.write_single_register(
-                REG_UG2_CtrlPotencia_ModoNivelDesligar, 1
-            )
-            response = response and self.clp.write_single_register(
-                REG_UG2_CtrlPotencia_ModoPotenciaDesligar, 1
-            )
-            response = response and self.clp.write_single_register(
-                REG_UG2_CtrlPotencia_Alvo, int(self.setpoint)
-            )
+            response = response and self.clp.write_single_register(REG_UG2_RegV_ColocarCarga, 1)
+            response = response and self.clp.write_single_register(REG_UG2_CtrlPotencia_ModoNivelDesligar, 1)
+            response = response and self.clp.write_single_register(REG_UG2_CtrlPotencia_ModoPotenciaDesligar, 1)
+            response = response and self.clp.write_single_register(REG_UG2_CtrlPotencia_Alvo, int(self.setpoint))
+            return response
         except:
             #! TODO Tratar exceptions
             return False
-        else:
-            return response
 
     @property
     def etapa_alvo(self) -> int:
         try:
             response = self.leitura_Operacao_EtapaAlvo.valor
-            
+
             if response > 0 and response < 255:
                 self.__last_EtapaAlvo = response
             else:
                 self.__last_EtapaAlvo = self.etapa_atual
 
             return self.__last_EtapaAlvo
-            
+
         except:
             #! TODO Tratar exceptions
             return False
-        else:
-            return response
 
     @property
     def etapa_atual(self) -> int:
@@ -756,11 +697,9 @@ class UnidadeDeGeracao2(UnidadeDeGeracao):
         except:
             #! TODO Tratar exceptions
             return False
-        else:
-            return response
 
     def modbus_update_state_register(self):
-        DataBank.set_words(self.cfg["REG_MOA_OUT_STATE_UG{}".format(self.id)],[self.etapa_atual],)
+        DataBank.set_words(self.cfg[f"REG_MOA_OUT_STATE_UG{self.id}"],[self.etapa_atual],)
 
     def salvar_estado_anterior(self):
         self.estado_anterior = self.codigo_state
@@ -769,82 +708,82 @@ class UnidadeDeGeracao2(UnidadeDeGeracao):
 
         self.falha_abertura_borboleta = LeituraModbusBit("03.13 - Borboleta - Falha na Abertura ", self.clp, REG_UG2_Alarme03, 13)
         if self.falha_abertura_borboleta.valor != 0:
-            self.logger.warning("[UG2] Houve uma falha na abertura das borboletas do gerador! Favor verificar.")
-        
+            self.logger.warning(f"[UG{self.id}] Houve uma falha na abertura das borboletas do gerador! Favor verificar.")
+
         self.alarme_sobretemperatura_enrol_fase_r = LeituraModbusBit("07.14 - Alarme de Sobretemperatura do Enrolamento da Fase R do Gerador via CLP", self.clp, REG_UG2_Alarme07, 14)
         if self.alarme_sobretemperatura_enrol_fase_r.valor != 0:
-            self.logger.warning("[UG2] O alarme de sobretemperatura do enrolamento de fase R do gerador foi ativado! Favor verificar.")
-        
+            self.logger.warning(f"[UG{self.id}] O alarme de sobretemperatura do enrolamento de fase R do gerador foi ativado! Favor verificar.")
+
         self.alarme_sobretemperatura_enrol_fase_s = LeituraModbusBit("07.15 - Alarme de Sobretemperatura do Enrolamento da Fase S do Gerador via CLP", self.clp, REG_UG2_Alarme07, 15)
         if self.alarme_sobretemperatura_enrol_fase_s.valor != 0:
-            self.logger.warning("[UG2] O alarme de sobretemperatura do enrolamento de fase S do gerador foi ativado! Favor verificar.")
-        
+            self.logger.warning(f"[UG{self.id}] O alarme de sobretemperatura do enrolamento de fase S do gerador foi ativado! Favor verificar.")
+
         self.alarme_sobretemperatura_enrol_fase_t = LeituraModbusBit("08.00 - Alarme de Sobretemperatura do Enrolamento da Fase T do Gerador via CLP", self.clp, REG_UG2_Alarme08, 00)
         if self.alarme_sobretemperatura_enrol_fase_t.valor != 0:
-            self.logger.warning("[UG2] O alarme de sobretemperatura do enrolamento de fase R do gerador foi ativado! Favor verificar.")
+            self.logger.warning(f"[UG{self.id}] O alarme de sobretemperatura do enrolamento de fase R do gerador foi ativado! Favor verificar.")
 
         self.alarme_sobretemperatura_mancal_la_escora_1 = LeituraModbusBit("08.01 - Alarme de Sobretemperatura do Mancal LA do Gerador (Escora 1) via CLP", self.clp, REG_UG2_Alarme08, 1)
         if self.alarme_sobretemperatura_mancal_la_escora_1.valor != 0:
-            self.logger.warning("[UG2] O alarme de sobretemperatura do mancal LA escora 1 do gerador foi ativado! Favor verificar.")
-        
+            self.logger.warning(f"[UG{self.id}] O alarme de sobretemperatura do mancal LA escora 1 do gerador foi ativado! Favor verificar.")
+
         self.alarme_sobretemperatura_mancal_la_escora_2 = LeituraModbusBit("08.02 - Alarme de Sobretemperatura do Mancal LA do Gerador (Escora 2) via CLP", self.clp, REG_UG2_Alarme08, 2)
         if self.alarme_sobretemperatura_mancal_la_escora_2.valor != 0:
-            self.logger.warning("[UG2] O alarme de sobretemperatura do mancal LA escora 2 do gerador foi ativado! Favor verificar.")
-        
+            self.logger.warning(f"[UG{self.id}] O alarme de sobretemperatura do mancal LA escora 2 do gerador foi ativado! Favor verificar.")
+
         self.alarme_sobretemperatura_mancal_la_casquilho = LeituraModbusBit("08.03 - Alarme de Sobretemperatura do Mancal LA do Gerador (Casquilho) via CLP", self.clp, REG_UG2_Alarme08, 3)
         if self.alarme_sobretemperatura_mancal_la_casquilho.valor != 0:
-            self.logger.warning("[UG2] O alarme de sobretemperatura do mancal LA casquilho do gerador foi ativado! Favor verificar.")
-        
+            self.logger.warning(f"[UG{self.id}] O alarme de sobretemperatura do mancal LA casquilho do gerador foi ativado! Favor verificar.")
+
         self.alarme_sobretemperatura_mancal_lna_casquilho = LeituraModbusBit("08.05 - Alarme de Sobretemperatura do Mancal LNA do Gerador (Casquilho) via CLP", self.clp, REG_UG2_Alarme08, 5)
         if self.alarme_sobretemperatura_mancal_lna_casquilho.valor != 0:
-            self.logger.warning("[UG2] O alarme de sobretemperatura do mancal LA casquilho do gerador foi ativado! Favor verificar.")
-        
+            self.logger.warning(f"[UG{self.id}] O alarme de sobretemperatura do mancal LA casquilho do gerador foi ativado! Favor verificar.")
+
         self.alarme_sobretemperatura_mancal_la_contra_escora_1 = LeituraModbusBit("08.04 - Alarme de Sobretemperatura do Mancal LA do Gerador (Contra-Escora 1) via CLP", self.clp, REG_UG2_Alarme08, 4)
         if self.alarme_sobretemperatura_mancal_la_contra_escora_1.valor != 0:
-            self.logger.warning("[UG2] O alarme de sobretemperatura do mancal LA contra escora 1 do gerdaor foi ativado! Favoer verificar.")
-        
+            self.logger.warning(f"[UG{self.id}] O alarme de sobretemperatura do mancal LA contra escora 1 do gerdaor foi ativado! Favoer verificar.")
+
         self.alarme_sobretemperatura_mancal_la_contra_escora_2 = LeituraModbusBit("08.06 - Alarme de Sobretemperatura do Mancal LA do Gerador (Contra-Escora 2) via CLP", self.clp, REG_UG2_Alarme08, 6)
         if self.alarme_sobretemperatura_mancal_la_contra_escora_2.valor != 0:
-            self.logger.warning("[UG2] O alarme de sobretemperatura do mancal LA contra escora 2 do gerdaor foi ativado! Favoer verificar.")
+            self.logger.warning(f"[UG{self.id}] O alarme de sobretemperatura do mancal LA contra escora 2 do gerdaor foi ativado! Favoer verificar.")
 
         self.alarme_sobretemperatura_vedacao_eixo_turb = LeituraModbusBit("08.07 - Alarme de Sobretemperatura da Vedação do Eixo da Turbina via CLP", self.clp, REG_UG2_Alarme08, 7)
         if self.alarme_sobretemperatura_vedacao_eixo_turb.valor != 0:
-            self.logger.warning("[UG2] O alarme de sobretemperatura de vedação do eixo da turbina foi ativado! Favor verificar.")
-        
+            self.logger.warning(f"[UG{self.id}] O alarme de sobretemperatura de vedação do eixo da turbina foi ativado! Favor verificar.")
+
         self.alarme_sobretemperatura_oleo_reser_uhlm = LeituraModbusBit("08.08 - Alarme de Sobretemperatura do Óleo do Reservatório da UHLM via CLP", self.clp, REG_UG2_Alarme08, 8)
         if self.alarme_sobretemperatura_oleo_reser_uhlm.valor != 0:
-            self.logger.warning("[UG2] O alarme de sobretemperatura do óleo do reservatório ULHM foi ativado! Favor verificar.")
-        
+            self.logger.warning(f"[UG{self.id}] O alarme de sobretemperatura do óleo do reservatório ULHM foi ativado! Favor verificar.")
+
         self.alarme_sobretemperatura_oleo_saida_troc_calor = LeituraModbusBit("08.09 - Alarme de Sobretemperatura do Óleo na Saída do Trocador de Calor da UHLM via CLP", self.clp, REG_UG2_Alarme08, 9)
         if self.alarme_sobretemperatura_oleo_saida_troc_calor.valor != 0:
-            self.logger.warning("[UG2] O alarme de sobretemperatura do óleo na saída do trocador de calor da ULHM foi ativado! Favor verificar.")
-        
+            self.logger.warning(f"[UG{self.id}] O alarme de sobretemperatura do óleo na saída do trocador de calor da ULHM foi ativado! Favor verificar.")
+
         self.alarme_sobretemperatura_agua_entrada_troc_calor = LeituraModbusBit("08.10 - Alarme de Sobretemperatura da Água na Entrada do Trocador de Calor da UHLM via CLP", self.clp, REG_UG2_Alarme08, 10)
         if self.alarme_sobretemperatura_agua_entrada_troc_calor.valor != 0:
-            self.logger.warning("[UG2] O alarme de sobretemperatura de água na entrada do trocador de calor da ULHM foi ativado! Favor verificar.")
-        
+            self.logger.warning(f"[UG{self.id}] O alarme de sobretemperatura de água na entrada do trocador de calor da ULHM foi ativado! Favor verificar.")
+
         self.alarme_sobretemperatura_agua_saida_troc_calor = LeituraModbusBit("08.11 - Alarme de Sobretemperatura da Água na Saída do Trocador de Calor da UHLM via CLP", self.clp, REG_UG2_Alarme08, 11)
         if self.alarme_sobretemperatura_agua_saida_troc_calor.valor != 0:
-            self.logger.warning("[UG2] O alarme de sobretemperatura de água no sáida do trocador de calor da ULHM foi ativado! Favor verificar.")
-        
+            self.logger.warning(f"[UG{self.id}] O alarme de sobretemperatura de água no sáida do trocador de calor da ULHM foi ativado! Favor verificar.")
+
         self.alarme_sobretemperatura_oleo_reservatorio_UHCT = LeituraModbusBit("08.12 - Alarme de Sobretemperatura do Óleo do Reservatório da UHCT via CLP", self.clp, REG_UG2_Alarme08, 12)
         if self.alarme_sobretemperatura_oleo_reservatorio_UHCT.valor != 0:
-            self.logger.warning("[UG2] O alarme de sobretemperatura do óleo do reservatório da UHCT foi ativado! Favor verificar.")
+            self.logger.warning(f"[UG{self.id}] O alarme de sobretemperatura do óleo do reservatório da UHCT foi ativado! Favor verificar.")
 
         self.falha_desaplicacao_freio = LeituraModbusBit("14.10 - Freio - Falha na Desaplicação", self.clp, REG_UG2_Alarme14, 10)
         if self.falha_desaplicacao_freio.valor != 0:
-            self.logger.warning("[UG2] Houve uma falha na desaplicação do freio do Gerador! Favor verificar.")
+            self.logger.warning(f"[UG{self.id}] Houve uma falha na desaplicação do freio do Gerador! Favor verificar.")
 
         self.pastilha_freio_gasta = LeituraModbusBit("14.11 - Freio - Pastilha Gasta", self.clp, REG_UG2_Alarme14, 11)
         if self.pastilha_freio_gasta.valor != 0:
-            self.logger.warning("[UG2] O alarme de pastilha de freio gasta do Gerador foi ativado! Favor verificar.")
+            self.logger.warning(f"[UG{self.id}] O alarme de pastilha de freio gasta do Gerador foi ativado! Favor verificar.")
 
         self.alarme_vibracao_excessiva_mancal_la = LeituraModbusBit("15.00 - Alarme - Vibração Excessiva no Mancal LA do Gerador", self.clp, REG_UG2_Alarme15, 00)
         if self.alarme_vibracao_excessiva_mancal_la.valor != 0:
-            self.logger.warning("[UG2] O alarme de vibração excessiva do mancal LA do Gerador foi ativado! Favor verificar.")
-        
+            self.logger.warning(f"[UG{self.id}] O alarme de vibração excessiva do mancal LA do Gerador foi ativado! Favor verificar.")
+
         self.alarme_vibracao_excessiva_mancal_lna = LeituraModbusBit("15.02 - Alarme - Vibração Excessiva no Mancal LNA do Gerador", self.clp, REG_UG2_Alarme15, 2)
         if self.alarme_vibracao_excessiva_mancal_lna.valor != 0:
-            self.logger.warning("[UG2] O alarme de vibração excessiva do mancal LNA do Gerador foi ativado! Favor verificar.")
+            self.logger.warning(f"[UG{self.id}] O alarme de vibração excessiva do mancal LNA do Gerador foi ativado! Favor verificar.")
 
         return True

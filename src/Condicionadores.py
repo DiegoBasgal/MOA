@@ -29,9 +29,7 @@ class CondicionadorBase:
         self.__leitura = leitura
 
     def __str__(self):
-        return "Condicionador {}, Gravidade: {}, Ativo: {}, Valor: {}".format(
-            self.__descr, self.__gravidade, self.ativo, self.valor
-        )
+        return f"Condicionador {self.__descr}, Gravidade: {self.__gravidade}"
 
     @property
     def descr(self):

@@ -81,7 +81,6 @@ INT_TO_AGENDAMENTOS = {
     204: "UG2 Forçar estado INDISPONIVEL",
     205: "UG2 Forçar estado MANUAL",
     206: "UG2 Forçar estado RESTRITO",
-    777: "Disparar mensagens teste",
 }
 
 MODO_ESCOLHA_MANUAL = 2

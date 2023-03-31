@@ -98,9 +98,7 @@ class UnidadeDeGeracao:
             while not key[0:1] == "__":
                 key = "_" + key[:]
             setattr(self, key, val)
-            self.logger.debug(
-                "[UG{}] Variavél carregada: {} = {}.".format(self.id, key, val)
-            )
+            self.logger.debug(f"[UG{self.id}] Variavél carregada: {key} = {val}.")
 
     def step(self) -> None:
         """
@@ -110,16 +108,12 @@ class UnidadeDeGeracao:
             e: Exceptions geradas ao executar um estado
         """
         try:
-            self.logger.debug("[UG{}] Step.".format(self.id))
+            self.logger.debug(f"[UG{self.id}] Step.")
             self.__next_state = self.__next_state.step()
             self.modbus_update_state_register()
 
         except Exception as e:
-            self.logger.error(
-                "[UG{}] Erro na execução da sm. Traceback: {}".format(
-                    self.id, traceback.format_exc()
-                )
-            )
+            self.logger.error(f"[UG{self.id}] Erro na execução da sm. Traceback: {traceback.format_exc()}")
             raise e
 
     def forcar_estado_disponivel(self) -> bool:
@@ -131,23 +125,14 @@ class UnidadeDeGeracao:
         """
         try:
             caller = inspect.getframeinfo(inspect.stack()[1][0])
-            self.logger.debug(
-                "[UG{}] Executando forcar_estado_disponivel. {}:{}:{}".format(
-                    self.id, caller.filename, caller.function, caller.lineno
-                )
-            )
+            self.logger.debug(f"[UG{self.id}] Executando comando de forçar estado -> DISPONÍVEL. {caller.filename}:{caller.function}:{caller.lineno}")
             self.reconhece_reset_alarmes()
             sleep(1)
             self.__next_state = StateDisponivel(self)
-        except Exception as e:
-            self.logger.error(
-                "[UG{}] {} Não foi possivel forcar_estado_disponivel. {}".format(
-                    self.id, traceback.print_stack
-                )
-            )
-            return False
-        else:
             return True
+        except Exception as e:
+            self.logger.error(f"[UG{self.id}] Não foi possivel exectuar comando de forçar estado -> DISPONÍVEL. {traceback.print_stack}")
+            return False
 
     def forcar_estado_indisponivel(self) -> bool:
         """
@@ -158,22 +143,13 @@ class UnidadeDeGeracao:
         """
         try:
             caller = inspect.getframeinfo(inspect.stack()[1][0])
-            self.logger.debug(
-                "[UG{}] Executando forcar_estado_indisponivel. {}:{}:{}".format(
-                    self.id, caller.filename, caller.function, caller.lineno
-                )
-            )
+            self.logger.debug(f"[UG{self.id}] Executando comando de forçar estado -> INDISPONÍVEL. {caller.filename}:{caller.function}:{caller.lineno}")
             self.__next_state = StateIndisponivel(self)
             self.step()
-        except Exception as e:
-            self.logger.error(
-                "[UG{}] {} Não foi possivel forcar_estado_indisponivel. {}".format(
-                    self.id, traceback.print_stack
-                )
-            )
-            return False
-        else:
             return True
+        except Exception as e:
+            self.logger.error(f"[UG{self.id}] Não foi possivel executar comando de forçar estado -> INDISPONÍVEL. {traceback.print_stack}")
+            return False
 
     def forcar_estado_manual(self) -> bool:
         """
@@ -184,21 +160,12 @@ class UnidadeDeGeracao:
         """
         try:
             caller = inspect.getframeinfo(inspect.stack()[1][0])
-            self.logger.debug(
-                "[UG{}] Executando forcar_estado_manual. {}:{}:{}".format(
-                    self.id, caller.filename, caller.function, caller.lineno
-                )
-            )
+            self.logger.debug(f"[UG{self.id}] Executando comando de forçar estado -> MANUAL. {caller.filename}:{caller.function}:{caller.lineno}")
             self.__next_state = StateManual(self)
-        except Exception as e:
-            self.logger.error(
-                "[UG{}] {} Não foi possivel forcar_estado_manual. {}".format(
-                    self.id, traceback.print_stack
-                )
-            )
-            return False
-        else:
             return True
+        except Exception as e:
+            self.logger.error(f"[UG{self.id}] Não foi possivel executar comando de forçar estado -> MANUAL. {traceback.print_stack}")
+            return False
 
     def forcar_estado_restrito(self) -> bool:
         """
@@ -209,21 +176,12 @@ class UnidadeDeGeracao:
         """
         try:
             caller = inspect.getframeinfo(inspect.stack()[1][0])
-            self.logger.debug(
-                "[UG{}] Executando forcar_estado_restrito. {}:{}:{}".format(
-                    self.id, caller.filename, caller.function, caller.lineno
-                )
-            )
+            self.logger.debug(f"[UG{self.id}] Executando comando de forçar estado -> RESTRITO. {caller.filename}:{caller.function}:{caller.lineno}")
             self.__next_state = StateRestrito(self)
-        except Exception as e:
-            self.logger.error(
-                "[UG{}] {} Não foi possivel forcar_estado_restrito. {}".format(
-                    self.id, traceback.print_stack
-                )
-            )
-            return False
-        else:
             return True
+        except Exception as e:
+            self.logger.error(f"[UG{self.id}] Não foi possivel executar comando de forçar estado -> RESTRITO. {traceback.print_stack}")
+            return False
 
     @property
     def id(self) -> int:
@@ -283,11 +241,7 @@ class UnidadeDeGeracao:
         Returns:
             int: ETAPA_ATUAL
         """
-        self.logger.debug(
-            "[UG{}] etapa_atual = __etapa_atual <- {}".format(
-                self.id, self.__etapa_atual
-            )
-        )
+        self.logger.debug(f"[UG{self.id}] etapa_atual = __etapa_atual <- {self.__etapa_atual}")
         return self.__etapa_atual
 
     @property
@@ -336,7 +290,7 @@ class UnidadeDeGeracao:
             self.__setpoint = self.setpoint_maximo
         else:
             self.__setpoint = int(var)
-        self.logger.debug("[UG{}] SP<-{}".format(self.id, var))
+        self.logger.debug(f"[UG{self.id}] SP<-{var}")
 
 
     @property
@@ -401,15 +355,11 @@ class UnidadeDeGeracao:
             bool: True se sucesso, Falso caso contrário
         """
         try:
-            self.logger.info(
-                "[UG{}] Acionando sinal (via rede) de TRIP.".format(self.id)
-            )
+            self.logger.info(f"[UG{self.id}] Acionando sinal TRIP -> Lógico.")
             raise NotImplementedError
         except:
             #! TODO Tratar exceptions
             return False
-        else:
-            return True
 
     def remover_trip_logico(self) -> bool:
         """
@@ -419,15 +369,11 @@ class UnidadeDeGeracao:
             bool: True se sucesso, Falso caso contrário
         """
         try:
-            self.logger.info(
-                "[UG{}] Removendo sinal (via rede) de TRIP.".format(self.id)
-            )
+            self.logger.info(f"[UG{self.id}] Removendo sinal de TRIP -> Lógico.")
             raise NotImplementedError
         except:
             #! TODO Tratar exceptions
             return False
-        else:
-            return True
 
     def acionar_trip_eletrico(self) -> bool:
         """
@@ -437,15 +383,11 @@ class UnidadeDeGeracao:
             bool: True se sucesso, Falso caso contrário
         """
         try:
-            self.logger.info(
-                "[UG{}] Acionando sinal (elétrico) de TRIP.".format(self.id)
-            )
+            self.logger.info(f"[UG{self.id}] Acionando sinal de TRIP -> Elétrico.")
             raise NotImplementedError
         except:
             #! TODO Tratar exceptions
             return False
-        else:
-            return True
 
     def remover_trip_eletrico(self) -> bool:
         """
@@ -455,15 +397,11 @@ class UnidadeDeGeracao:
             bool: True se sucesso, Falso caso contrário
         """
         try:
-            self.logger.info(
-                "[UG{}] Removendo sinal (elétrico) de TRIP.".format(self.id)
-            )
+            self.logger.info(f"[UG{self.id}] Removendo sinal de TRIP -> Elétrico.")
             raise NotImplementedError
         except:
             #! TODO Tratar exceptions
             return False
-        else:
-            return True
 
     def partir(self) -> bool:
         """
@@ -474,14 +412,12 @@ class UnidadeDeGeracao:
         """
         try:
             self.logger.info(
-                "[UG{}] Enviando comando (via rede) de partida.".format(self.id)
+                f"[UG{self.id}] Enviando comando de partida."
             )
             raise NotImplementedError
         except:
             #! TODO Tratar exceptions
             return False
-        else:
-            return True
 
     def parar(self) -> bool:
         """
@@ -491,15 +427,11 @@ class UnidadeDeGeracao:
             bool: True se sucesso, Falso caso contrário
         """
         try:
-            self.logger.info(
-                "[UG{}] Enviando comando (via rede) de parada.".format(self.id)
-            )
+            self.logger.info(f"[UG{self.id}] Enviando comando de parada.")
             raise NotImplementedError
         except:
             #! TODO Tratar exceptions
             return False
-        else:
-            return True
 
     def reconhece_reset_alarmes(self) -> bool:
         """
@@ -509,15 +441,11 @@ class UnidadeDeGeracao:
             bool: True se sucesso, Falso caso contrário
         """
         try:
-            self.logger.info(
-                "[UG{}] Enviando comando de reconhece e reset alarmes.".format(self.id)
-            )
+            self.logger.info(f"[UG{self.id}] Enviando comando de reconhece e reset alarmes.")
             raise NotImplementedError
         except:
             #! TODO Tratar exceptions
             return False
-        else:
-            return True
 
     def enviar_setpoint(self, setpoint_kw: int) -> bool:
         """
@@ -527,15 +455,11 @@ class UnidadeDeGeracao:
             bool: True se sucesso, Falso caso contrário
         """
         try:
-            self.logger.debug(
-                "[UG{}] Enviando setpoint {}kW.".format(self.id, setpoint_kw)
-            )
+            self.logger.debug(f"[UG{self.id}] Enviando setpoint {setpoint_kw}kW.")
             raise NotImplementedError
         except:
             #! TODO Tratar exceptions
             return False
-        else:
-            return True
 
 
 class State:
@@ -564,11 +488,7 @@ class StateManual(State):
         super().__init__(parent_ug)
         self.codigo_state = MOA_UNIDADE_MANUAL
 
-        self.logger.warning(
-            "[UG{}] Entrando no estado manual. Para retornar a operação autônoma da UG é necessário intervenção manual via interface web.".format(
-                self.parent_ug.id
-            )
-        )
+        self.logger.warning(f"[UG{self.parent_ug.id}] Entrando no estado manual. Para retornar a operação autônoma da UG é necessário intervenção manual via interface web.")
 
     def step(self) -> State:
         self.codigo_state = MOA_UNIDADE_MANUAL
@@ -589,21 +509,15 @@ class StateIndisponivel(State):
         self.codigo_state = MOA_UNIDADE_INDISPONIVEL
 
         self.selo = False
-        self.logger.critical(
-            "[UG{}] Entrando no estado indisponível. Para retornar a operação autônoma da UG é necessário intervenção manual via interface web.".format(
-                self.parent_ug.id
-            )
-        )
+        self.logger.critical(f"[UG{self.parent_ug.id}] Entrando no estado indisponível. Para retornar a operação autônoma da UG é necessário intervenção manual via interface web.")
+
         self.parent_ug.__next_state = self
 
     def step(self) -> State:
         self.codigo_state = MOA_UNIDADE_INDISPONIVEL
         # Se as unidades estiverem paradas, ou o selo estiver ativo
-        self.logger.debug(
-            "[UG{}] [INDISP] self.parent_ug.etapa_atual -> {}".format(
-                self.parent_ug.id, self.parent_ug.etapa_atual
-            )
-        )
+        self.logger.debug(f"[UG{self.parent_ug.id}] Unidade indisponível (Etapa atual -> {self.parent_ug.etapa_atual})")
+
         if self.parent_ug.etapa_atual == UNIDADE_PARADA or self.selo:
             # Ativar o selo interno do moa
             self.selo = True
@@ -630,46 +544,39 @@ class StateRestrito(State):
 
         super().__init__(parent_ug)
         self.codigo_state = MOA_UNIDADE_RESTRITA
-        self.logger.info(
-            "[UG{}] Entrando no estado restrito.".format(self.parent_ug.id)
-        )
+        self.logger.info(f"[UG{self.parent_ug.id}] Entrando no estado restrito.")
 
     def step(self) -> State:
         self.codigo_state = MOA_UNIDADE_RESTRITA
         # Ler condiconadores
         deve_indisponibilizar = False
         deve_normalizar = False
-        condicionadores_ativos = []
-        for condicionador in self.parent_ug.condicionadores:
-            if condicionador.ativo:
-                if condicionador.gravidade == DEVE_INDISPONIBILIZAR:
-                    condicionadores_ativos.append(condicionador)
-                    deve_indisponibilizar = True
-                elif condicionador.gravidade == DEVE_NORMALIZAR:
-                    condicionadores_ativos.append(condicionador)
-                    deve_normalizar = True
-                elif condicionador.gravidade == DEVE_SUPER_NORMALIZAR:
-                    condicionadores_ativos.append(condicionador)
-                    deve_super_normalizar = True
 
-        # Se algum condicionador deve gerar uma indisponibilidade
-        if deve_indisponibilizar:
+        if [condic.ativo for condic in self.parent_ug.condicionadores]:
+            condics_ativos = [condic.ativo for condic in self.parent_ug.condicionadores]
+            deve_normalizar = [True for condic in condics_ativos if condic.gravidade == DEVE_NORMALIZAR]
+            deve_super_normalizar = [True for condic in condics_ativos if condic.gravidade == DEVE_SUPER_NORMALIZAR]
+            deve_indisponibilizar = [True for condic in condics_ativos if condic.gravidade == DEVE_INDISPONIBILIZAR]
+
+        if deve_indisponibilizar or deve_normalizar or deve_super_normalizar:
             # Logar os condicionadores ativos
-            self.logger.warning(
-                "[UG{}] UG em modo disponível detectou condicionadores ativos, indisponibilizando UG.\nCondicionadores ativos:\n{}".format(
-                    self.parent_ug.id, [d.descr for d in condicionadores_ativos]
-                )
-            )
-            # Vai para o estado StateIndisponivel
-            return StateIndisponivel(self.parent_ug)
+            self.logger.warning(f"[UG{self.parent_ug.id}] UG em modo restrito detectou condicionadores ativos:\n\n")
+            self.logger.info(f"Descrição: {d.descr};\n Gravidade: {LISTA_GRAVIDADES[d.gravidade]}" for d in condics_ativos)
 
-        # Se a unidade estiver parada, travar a mesma por sinal de TRIP
-        if self.parent_ug.etapa_atual == UNIDADE_PARADA:
-            self.parent_ug.acionar_trip_logico()
-            self.parent_ug.acionar_trip_eletrico()
-        # Caso contrário, deve parar a unidade
-        else:
-            self.parent_ug.parar()
+            # Se algum condicionador deve gerar uma indisponibilidade
+            if deve_indisponibilizar:
+                # Vai para o estado StateIndisponivel
+                return StateIndisponivel(self.parent_ug)
+
+            # Se a unidade estiver parada, travar a mesma por sinal de TRIP
+            if self.parent_ug.etapa_atual == UNIDADE_PARADA:
+                self.parent_ug.acionar_trip_logico()
+                self.parent_ug.acionar_trip_eletrico()
+
+            # Caso contrário, deve parar a unidade
+            else:
+                self.parent_ug.parar()
+
         return self
 
 
@@ -688,116 +595,69 @@ class StateDisponivel(State):
         self.aux = 0
         self.release = False
         self.codigo_state = MOA_UNIDADE_DISPONIVEL
-        self.logger.info(
-            "[UG{}] Entrando no estado disponível.".format(self.parent_ug.id)
-        )
+        self.logger.info(f"[UG{self.parent_ug.id}] Entrando no estado disponível.")
 
     def step(self) -> State:
         self.codigo_state = MOA_UNIDADE_DISPONIVEL
 
-        self.logger.debug(
-            "[UG{}] (tentativas_de_normalizacao atual: {})".format(
-                self.parent_ug.id, self.parent_ug.tentativas_de_normalizacao
-            )
-        )
+        self.logger.debug(f"[UG{self.parent_ug.id}] Step. (Tentativas de normalização: {self.parent_ug.tentativas_de_normalizacao}/{self.parent_ug.limite_tentativas_de_normalizacao})")
 
         # Ler condiconadores, verifica e armazena os ativos
         deve_indisponibilizar = False
         deve_normalizar = False
         deve_super_normalizar = False
-        condicionadores_ativos = []
 
-        for condicionador in self.parent_ug.condicionadores:
-            if condicionador.ativo:
-                if condicionador.gravidade == DEVE_INDISPONIBILIZAR:
-                    condicionadores_ativos.append(condicionador)
-                    deve_indisponibilizar = True
-                elif condicionador.gravidade == DEVE_NORMALIZAR:
-                    condicionadores_ativos.append(condicionador)
-                    deve_normalizar = True
-                elif condicionador.gravidade == DEVE_SUPER_NORMALIZAR:
-                    condicionadores_ativos.append(condicionador)
-                    deve_super_normalizar = True
+        if [condic.ativo for condic in self.parent_ug.condicionadores]:
+            condics_ativos = [condic.ativo for condic in self.parent_ug.condicionadores]
+            deve_normalizar = [True for condic in condics_ativos if condic.gravidade == DEVE_NORMALIZAR]
+            deve_super_normalizar = [True for condic in condics_ativos if condic.gravidade == DEVE_SUPER_NORMALIZAR]
+            deve_indisponibilizar = [True for condic in condics_ativos if condic.gravidade == DEVE_INDISPONIBILIZAR]
 
-        # Logar os condicionadores ativos
         if deve_indisponibilizar or deve_normalizar or deve_super_normalizar:
-            self.logger.info(
-                "[UG{}] UG em modo disponível detectou condicionadores ativos.\n"
-                + "Condicionadores ativos:\n".format(self.parent_ug.id)
-                + "\n".join(
-                    [
-                        "Desc: {}; Ativo: {}; Valor: {}; Gravidade: {}".format(
-                            d.descr, "Sim" if d.ativo else "Não", d.valor, LISTA_GRAVIDADES[d.gravidade]
-                        )
-                        for d in condicionadores_ativos
-                    ]
-                )
-            )
-        
+            # Logar os condicionadores ativos
+            self.logger.warning(f"[UG{self.parent_ug.id}] UG em modo restrito detectou condicionadores ativos:\n\n")
+            self.logger.info(f"Descrição: {d.descr};\n Gravidade: {LISTA_GRAVIDADES[d.gravidade]}" for d in condics_ativos)
 
-        # Se algum condicionador deve gerar uma indisponibilidade
-        if deve_indisponibilizar:
-            # Vai para o estado StateIndisponivel
-            return StateIndisponivel(self.parent_ug)
-
-        # Se algum condicionador deve gerar uma tentativa de normalizacao
-        if deve_normalizar:
-
-            # Se estourou as tentativas de normalização, vai para o estado StateIndisponivel
-            if (
-                self.parent_ug.tentativas_de_normalizacao
-                > self.parent_ug.limite_tentativas_de_normalizacao
-            ):
-                # Logar o ocorrido
-                self.logger.warning(
-                    "[UG{}] A UG estourou as tentativas de normalização, indisponibilizando UG.\n"
-                    + "Condicionadores ativos:\n".format(self.parent_ug.id)
-                    + "\n".join(
-                        [
-                            "Desc: {}; Ativo: {}; Valor: {}; Gravidade: {}".format(
-                                d.descr, "Sim" if d.ativo else "Não", d.valor, LISTA_GRAVIDADES[d.gravidade]
-                            )
-                            for d in condicionadores_ativos
-                        ]
-                    )
-                )
+            # Se algum condicionador deve gerar uma indisponibilidade
+            if deve_indisponibilizar:
                 # Vai para o estado StateIndisponivel
                 return StateIndisponivel(self.parent_ug)
 
-            # Se não estourou as tentativas de normalização, e já se passou tempo suficiente, deve tentar normalizar
-            elif (self.parent_ug.ts_auxiliar - datetime.now()
-            ).seconds > self.parent_ug.tempo_entre_tentativas:
-                # Adciona o contador
-                self.parent_ug.tentativas_de_normalizacao += 1
-                # Atualiza o timestamp
-                self.parent_ug.ts_auxiliar = datetime.now()
-                # Logar o ocorrido
-                self.logger.info(
-                    "[UG{}] Normalizando UG (tentativa {}/{}).".format(
-                        self.parent_ug.id,
-                        self.parent_ug.tentativas_de_normalizacao,
-                        self.parent_ug.limite_tentativas_de_normalizacao,
-                    )
-                )
-                # Reconhece e reset
-                self.parent_ug.reconhece_reset_alarmes()
-                self.parent_ug.con.fechaDj52L()
-                return self
+            # Se algum condicionador deve gerar uma tentativa de normalizacao
+            if deve_normalizar:
 
-            # Caso contrário (se ainda não deu o tempo), não faz nada
-            else:
-                return self
+                # Se estourou as tentativas de normalização, vai para o estado StateIndisponivel
+                if (
+                    self.parent_ug.tentativas_de_normalizacao
+                    > self.parent_ug.limite_tentativas_de_normalizacao
+                ):
+                    # Logar o ocorrido
+                    self.logger.warning(f"[UG{self.parent_ug.id}] A UG estourou as tentativas de normalização, indisponibilizando UG.")
+                    # Vai para o estado StateIndisponivel
+                    return StateIndisponivel(self.parent_ug)
+
+                # Se não estourou as tentativas de normalização, e já se passou tempo suficiente, deve tentar normalizar
+                elif (self.parent_ug.ts_auxiliar - datetime.now()
+                ).seconds > self.parent_ug.tempo_entre_tentativas:
+                    # Adciona o contador
+                    self.parent_ug.tentativas_de_normalizacao += 1
+                    # Atualiza o timestamp
+                    self.parent_ug.ts_auxiliar = datetime.now()
+                    # Logar o ocorrido
+                    self.logger.info(f"[UG{self.parent_ug.id}] Normalizando UG (Tentativa {self.parent_ug.tentativas_de_normalizacao}/{self.parent_ug.limite_tentativas_de_normalizacao}).")
+
+                    # Reconhece e reset
+                    self.parent_ug.reconhece_reset_alarmes()
+                    self.parent_ug.con.fechaDj52L()
+                    return self
+
+                # Caso contrário (se ainda não deu o tempo), não faz nada
+                else:
+                    return self
 
         # Se não detectou nenhum condicionador ativo:
         else:
-
-            self.logger.debug(
-                "[UG{}] Etapa atual: '{}', etapa alvo '{}'".format(
-                    self.parent_ug.id,
-                    self.parent_ug.etapa_atual,
-                    self.parent_ug.etapa_alvo,
-                )
-            )
+            self.logger.debug(f"[UG{self.parent_ug.id}] Etapa atual: \"{self.parent_ug.etapa_atual}\" | Etapa alvo: \"{self.parent_ug.etapa_alvo}\"")
             if self.release == True and self.aux == 1:
                 self.release = False
                 self.aux = 0
@@ -821,14 +681,7 @@ class StateDisponivel(State):
             ) and self.parent_ug.setpoint * ganho > self.parent_ug.setpoint_minimo:
                 self.parent_ug.setpoint = self.parent_ug.setpoint * ganho
 
-            self.logger.debug(
-                "[UG{}] SP {} * GAIN {} = {}".format(
-                    self.parent_ug.id,
-                    self.parent_ug.setpoint,
-                    ganho,
-                    self.parent_ug.setpoint,
-                )
-            )
+            self.logger.debug(f"[UG{self.parent_ug.id}] SP {self.parent_ug.setpoint} * GANHO {ganho} = {self.parent_ug.setpoint}.")
             # O comportamento da UG conforme a etapa em que a mesma se encontra
 
             if (
@@ -836,7 +689,7 @@ class StateDisponivel(State):
                 and not self.parent_ug.etapa_atual == UNIDADE_PARADA
             ):
                 # Unidade parando
-                self.logger.debug("[UG{}] Unidade parando".format(self.parent_ug.id))
+                self.logger.debug(f"[UG{self.parent_ug.id}] Unidade parando")
                 # Se o setpoit for acima do mínimo
                 if self.parent_ug.setpoint >= self.parent_ug.setpoint_minimo:
                     # Deve partir a UG
@@ -849,20 +702,14 @@ class StateDisponivel(State):
                 and not self.parent_ug.etapa_atual == UNIDADE_SINCRONIZADA
             ):
                 # Unidade sincronizando
-                self.logger.debug(
-                    "[UG{}] Unidade sincronizando".format(self.parent_ug.id)
-                )
+                self.logger.debug(f"[UG{self.parent_ug.id}] Unidade sincronizando")
                 if self.release == False and self.aux == 0:
                     Thread(target=lambda: self.verificar_partindo()).start()
                     self.aux = 1
 
                 # Se potência = 0, impedir,
                 if self.parent_ug.setpoint == 0:
-                    self.logger.warning(
-                        "[UG{}] A UG estava sincronizando com SP zerado, parando a UG.".format(
-                            self.parent_ug.id
-                        )
-                    )
+                    self.logger.warning(f"[UG{self.parent_ug.id}] A UG estava sincronizando com SP zerado, parando a UG.")
                     self.parent_ug.parar()
                 else:
                     self.parent_ug.partir()
@@ -870,7 +717,7 @@ class StateDisponivel(State):
 
             elif self.parent_ug.etapa_atual == UNIDADE_PARADA:
                 # Unidade parada
-                self.logger.debug("[UG{}] Unidade parada".format(self.parent_ug.id))
+                self.logger.debug(f"[UG{self.parent_ug.id}] Unidade parada")
                 # Se o setpoit for acima do mínimo
                 if self.parent_ug.setpoint >= self.parent_ug.setpoint_minimo:
                     # Deve partir a UG
@@ -880,10 +727,8 @@ class StateDisponivel(State):
 
             elif self.parent_ug.etapa_atual == UNIDADE_SINCRONIZADA:
                 # Unidade sincronizada
-                self.logger.debug(
-                    "[UG{}] Unidade sincronizada".format(self.parent_ug.id)
-                )
-                
+                self.logger.debug(f"[UG{self.parent_ug.id}] Unidade sincronizada")
+
                 # Unidade sincronizada significa que ela está normalizada, logo zera o contador de tentativas
                 if not self.parent_ug.aux_tempo_sincronizada:
                     self.parent_ug.aux_tempo_sincronizada = datetime.now()
@@ -905,13 +750,7 @@ class StateDisponivel(State):
             ):
                 # Etapa inconsistente
                 # Logar o ocorrido
-                self.logger.warning(
-                    "[UG{}] UG em etapa inconsistente. (etapa_atual:{};  etapa_alvo:{})".format(
-                        self.parent_ug.id,
-                        self.parent_ug.etapa_atual,
-                        self.parent_ug.etapa_alvo,
-                    )
-                )
+                self.logger.warning(f"[UG{self.parent_ug.id}] UG em etapa inconsistente. (Etapa atual: \"{self.parent_ug.etapa_atual}\")")
                 # Vai para o estado StateIndisponivel
                 # return StateIndisponivel(self.parent_ug)
 
@@ -926,11 +765,11 @@ class StateDisponivel(State):
             self.logger.debug("Iniciando o timer de verificação de partida")
             while time() < timer:
                 if self.parent_ug.etapa_atual == UNIDADE_SINCRONIZADA:
-                    self.logger.debug("[UG{}] Unidade sincronizada. Saindo do timer de verificação de partida".format(self.parent_ug.id))
+                    self.logger.debug(f"[UG{self.parent_ug.id}] Unidade sincronizada. Saindo do timer de verificação de partida")
                     self.release = True
                     return True
-            self.logger.debug("[UG{}] A Unidade estourou o timer de verificação de partida, adicionando condição para normalizar".format(self.parent_ug.id))
-            self.parent_ug.clp.write_single_coil(REG_UG1_Operacao_EmergenciaLigar, [1 if self.parent_ug.id==1 else 0]) 
+            self.logger.debug(f"[UG{self.parent_ug.id}] A Unidade estourou o timer de verificação de partida, adicionando condição para normalizar")
+            self.parent_ug.clp.write_single_coil(REG_UG1_Operacao_EmergenciaLigar, [1 if self.parent_ug.id==1 else 0])
             self.parent_ug.clp.write_single_coil(REG_UG2_Operacao_EmergenciaLigar, [1 if self.parent_ug.id==2 else 0])
             self.release = True
 

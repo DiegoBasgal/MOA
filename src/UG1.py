@@ -28,7 +28,7 @@ class UnidadeDeGeracao1(UnidadeDeGeracao):
         
         self.estado_anterior = None
         self.setpoint_minimo = self.cfg["pot_minima"]
-        self.setpoint_maximo = self.cfg["pot_maxima_ug{}".format(self.id)]
+        self.setpoint_maximo = self.cfg[f"pot_maxima_ug{self.id}"]
 
         self.clp_ip = self.cfg["UG1_slave_ip"]
         self.clp_port = self.cfg["UG1_slave_porta"]
@@ -362,32 +362,32 @@ class UnidadeDeGeracao1(UnidadeDeGeracao):
         self.condicionadores.append(CondicionadorBase(x.descr, DEVE_NORMALIZAR, x))
 
         self.leitura_potencia = LeituraModbus(
-            "ug{}_Gerador_PotenciaAtivaMedia".format(self.id),
+            f"ug{self.id}_Gerador_PotenciaAtivaMedia",
             self.clp,
             REG_UG1_Gerador_PotenciaAtivaMedia,
         )
 
         self.leitura_horimetro = LeituraModbus(
-            "ug{}_HorimetroEletrico_Low".format(self.id),
+            f"ug{self.id}_HorimetroEletrico_Low",
             self.clp,
             REG_UG1_HorimetroEletrico_Low,
         )
 
         self.leitura_Operacao_EtapaAtual = LeituraModbus(
-            "ug{}_Operacao_EtapaAtual".format(self.id),
+            f"ug{self.id}_Operacao_EtapaAtual",
             self.clp,
             REG_UG1_Operacao_EtapaAtual,
         )
 
         self.leitura_Operacao_EtapaAlvo = LeituraModbus(
-            "ug{}_Operacao_EtapaAlvo".format(self.id),
+            f"ug{self.id}_Operacao_EtapaAlvo",
             self.clp,
             REG_UG1_Operacao_EtapaAlvo,
         )
 
         # Gerador - Enrolamento fase R
         self.leitura_temperatura_enrolamento_fase_r = LeituraModbus(
-            "Gerador {} - Enrolamento fase R".format(self.id),
+            f"Gerador {self.id} - Enrolamento fase R",
             self.clp,
             REG_UG1_Temperatura_01,
         )
@@ -398,7 +398,7 @@ class UnidadeDeGeracao1(UnidadeDeGeracao):
 
         # Gerador - Enrolamento Fase S
         self.leitura_temperatura_enrolamento_fase_s = LeituraModbus(
-            "Gerador {} - Enrolamento Fase S".format(self.id),
+            f"Gerador {self.id} - Enrolamento Fase S",
             self.clp,
             REG_UG1_Temperatura_02,
         )
@@ -409,7 +409,7 @@ class UnidadeDeGeracao1(UnidadeDeGeracao):
 
         # Gerador - Enrolamento fase T
         self.leitura_temperatura_enrolamento_fase_t = LeituraModbus(
-            "Gerador {} - Enrolamento fase T".format(self.id),
+            f"Gerador {self.id} - Enrolamento fase T",
             self.clp,
             REG_UG1_Temperatura_03,
         )
@@ -420,7 +420,7 @@ class UnidadeDeGeracao1(UnidadeDeGeracao):
 
         # Gerador - Mancal L.A. Escora 01
         self.leitura_temperatura_mancal_la_escora_1 = LeituraModbus(
-            "Gerador {} - Mancal L.A. Escora 01".format(self.id),
+            f"Gerador {self.id} - Mancal L.A. Escora 01",
             self.clp,
             REG_UG1_Temperatura_04,
         )
@@ -431,7 +431,7 @@ class UnidadeDeGeracao1(UnidadeDeGeracao):
 
         # Gerador - Mancal L.A. Escora 02
         self.leitura_temperatura_mancal_la_escora_2 = LeituraModbus(
-            "Gerador {} - Mancal L.A. Escora 02".format(self.id),
+            f"Gerador {self.id} - Mancal L.A. Escora 02",
             self.clp,
             REG_UG1_Temperatura_05,
         )
@@ -442,7 +442,7 @@ class UnidadeDeGeracao1(UnidadeDeGeracao):
 
         # Gerador - Mancal L. A. Contra Escora 01
         self.leitura_temperatura_mancal_la_contra_escora_1 = LeituraModbus(
-            "Gerador {} - Mancal L. A. Contra Escora 01".format(self.id),
+            f"Gerador {self.id} - Mancal L. A. Contra Escora 01",
             self.clp,
             REG_UG1_Temperatura_07,
         )
@@ -453,7 +453,7 @@ class UnidadeDeGeracao1(UnidadeDeGeracao):
 
         # Gerador - Mancal L. A. Contra Escora 02
         self.leitura_temperatura_mancal_la_contra_escora_2 = LeituraModbus(
-            "Gerador {} - Mancal L. A. Contra Escora 02".format(self.id),
+            f"Gerador {self.id} - Mancal L. A. Contra Escora 02",
             self.clp,
             REG_UG1_Temperatura_09,
         )
@@ -464,7 +464,7 @@ class UnidadeDeGeracao1(UnidadeDeGeracao):
 
         # Gerador - Mancal L. A. Casquilho
         self.leitura_temperatura_mancal_la_casquilho = LeituraModbus(
-            "Gerador {} - Mancal L. A. Casquilho".format(self.id),
+            f"Gerador {self.id} - Mancal L. A. Casquilho",
             self.clp,
             REG_UG1_Temperatura_06,
         )
@@ -475,7 +475,7 @@ class UnidadeDeGeracao1(UnidadeDeGeracao):
 
         # Gerador - Mancal L.N.A. Casquilho
         self.leitura_temperatura_mancal_lna_casquilho = LeituraModbus(
-            "Gerador {} - Mancal L.N.A. Casquilho".format(self.id),
+            f"Gerador {self.id} - Mancal L.N.A. Casquilho",
             self.clp,
             REG_UG1_Temperatura_08,
         )
@@ -486,7 +486,7 @@ class UnidadeDeGeracao1(UnidadeDeGeracao):
         
         # Perda na garde
         self.leitura_perda_na_grade = LeituraDelta(
-            "Perda na grade ug{}".format(self.id),
+            f"Perda na gradef ug{self.id}",
             self.leituras_usina.nv_montante,
             self.leituras_usina.nv_canal_aducao,
         )
@@ -523,17 +523,12 @@ class UnidadeDeGeracao1(UnidadeDeGeracao):
             bool: True se sucesso, Falso caso contrário
         """
         try:
-            self.logger.debug(
-                "[UG{}] Acionando sinal (via rede) de TRIP.".format(self.id)
-            )
-            response = self.clp.write_single_register(
-                REG_UG1_Operacao_EmergenciaLigar, 1
-            )
+            self.logger.debug(f"[UG{self.id}] Acionando sinal de TRIP -> Lógico.")
+            response = self.clp.write_single_register(REG_UG1_Operacao_EmergenciaLigar, 1)
+            return response
         except:
             #! TODO Tratar exceptions
             return False
-        else:
-            return response
 
     def remover_trip_logico(self) -> bool:
         """
@@ -543,20 +538,13 @@ class UnidadeDeGeracao1(UnidadeDeGeracao):
             bool: True se sucesso, Falso caso contrário
         """
         try:
-            self.logger.debug(
-                "[UG{}] Removendo sinal (via rede) de TRIP.".format(self.id)
-            )
-            response = self.clp.write_single_register(
-                REG_UG1_Operacao_EmergenciaLigar, 0
-            )
-            response = self.clp.write_single_register(
-                REG_UG1_Operacao_EmergenciaDesligar, 1
-            )
+            self.logger.debug(f"[UG{self.id}] Removendo sinal de TRIP -> Lógico.")
+            response = self.clp.write_single_register(REG_UG1_Operacao_EmergenciaLigar, 0)
+            response = self.clp.write_single_register(REG_UG1_Operacao_EmergenciaDesligar, 1)
+            return response
         except:
             #! TODO Tratar exceptions
             return False
-        else:
-            return response
 
     def acionar_trip_eletrico(self) -> bool:
         """
@@ -567,18 +555,12 @@ class UnidadeDeGeracao1(UnidadeDeGeracao):
         """
         try:
             self.enviar_trip_eletrico = True
-            self.logger.debug(
-                "[UG{}] Acionando sinal (elétrico) de TRIP.".format(self.id)
-            )
-            DataBank.set_words(
-                self.cfg["REG_MOA_OUT_BLOCK_UG{}".format(self.id)],
-                [1],
-            )
+            self.logger.debug(f"[UG{self.id}] Acionando sinal de TRIP -> Elétrico.")
+            DataBank.set_words(self.cfg[f"REG_MOA_OUT_BLOCK_UG{self.id}"],[1],)
+            return True
         except:
             #! TODO Tratar exceptions
             return False
-        else:
-            return True
 
     def remover_trip_eletrico(self) -> bool:
         """
@@ -589,22 +571,13 @@ class UnidadeDeGeracao1(UnidadeDeGeracao):
         """
         try:
             self.enviar_trip_eletrico = False
-            self.logger.debug(
-                "[UG{}] Removendo sinal (elétrico) de TRIP.".format(self.id)
-            )
-            DataBank.set_words(
-                self.cfg["REG_MOA_OUT_BLOCK_UG{}".format(self.id)],
-                [0],
-            )
-            DataBank.set_words(
-                self.cfg['REG_PAINEL_LIDO'],
-                [0],
-            )
-        except Exception as e:
-            self.logger.warning("Exception! Traceback: {}".format(traceback.format_exc()))
-            return False
-        else:
+            self.logger.debug(f"[UG{self.id}] Removendo sinal de TRIP -> Elétrico.")
+            DataBank.set_words(self.cfg[f"REG_MOA_OUT_BLOCK_UG{self.id}"],[0],)
+            DataBank.set_words(self.cfg['REG_PAINEL_LIDO'],[0],)
             return True
+        except Exception as e:
+            self.logger.warning(f"Exception! Traceback: {traceback.format_exc()}")
+            return False
 
     def partir(self) -> bool:
         """
@@ -615,20 +588,15 @@ class UnidadeDeGeracao1(UnidadeDeGeracao):
         """
         try:
             if not self.etapa_alvo == UNIDADE_SINCRONIZADA:
-                self.logger.debug(
-                    "[UG{}] Enviando comando (via rede) de partida.".format(self.id)
-                )
+                self.logger.debug(f"[UG{self.id}] Enviando comando de partida.")
             else:
-                self.logger.debug(
-                    "[UG{}] Enviando comando (via rede) de partida.".format(self.id)
-                ) 
+                self.logger.debug(f"[UG{self.id}] Enviando comando de partida.")
             response = self.clp.write_single_register(REG_UG1_Operacao_US, 1)
             self.enviar_setpoint(self.setpoint)
+            return response
         except:
             #! TODO Tratar exceptions
             return False
-        else:
-            return response
 
     def parar(self) -> bool:
         """
@@ -639,22 +607,16 @@ class UnidadeDeGeracao1(UnidadeDeGeracao):
         """
         try:
             if not self.etapa_alvo == UNIDADE_PARADA:
-                self.logger.debug(
-                    "[UG{}] Enviando comando (via rede) de parada.".format(self.id)
-                )
+                self.logger.debug(f"[UG{self.id}] Enviando comando de parada.")
             else:
-                self.logger.debug(
-                    "[UG{}] Enviando comando (via rede) de parada.".format(self.id)
-                ) 
+                self.logger.debug(f"[UG{self.id}] Enviando comando de parada.")
             response = self.clp.write_single_register(REG_UG1_Operacao_UP, 1)
             self.enviar_setpoint(0)
             response = self.clp.write_single_register(REG_UG1_Operacao_UP, 1)
-
+            return response
         except:
             #! TODO Tratar exceptions
             return False
-        else:
-            return response
 
     def reconhece_reset_alarmes(self) -> bool:
         """
@@ -664,9 +626,7 @@ class UnidadeDeGeracao1(UnidadeDeGeracao):
             bool: True se sucesso, Falso caso contrário
         """
         try:
-            self.logger.info(
-                "[UG{}] Enviando comando de reconhece e reset alarmes. (Vai tomar aprox 10s)".format(self.id)
-            )
+            self.logger.info(f"[UG{self.id}] Enviando comando de reconhece e reset alarmes.")
 
             for _ in range(3):
                 DataBank.set_words(self.cfg['REG_PAINEL_LIDO'],[0])
@@ -674,21 +634,15 @@ class UnidadeDeGeracao1(UnidadeDeGeracao):
                 DataBank.set_words(self.cfg['REG_PAINEL_LIDO'],[0])
                 sleep(1)
                 self.remover_trip_logico()
-                response = self.clp.write_single_register(
-                    REG_UG1_Operacao_PCH_CovoReconheceAlarmes, 1
-                )
+                response = self.clp.write_single_register(REG_UG1_Operacao_PCH_CovoReconheceAlarmes, 1)
                 sleep(1)
-                response = response and self.clp.write_single_register(
-                    REG_UG1_Operacao_PCH_CovoResetAlarmes, 1
-                )
+                response = response and self.clp.write_single_register(REG_UG1_Operacao_PCH_CovoResetAlarmes, 1)
                 DataBank.set_words(self.cfg['REG_PAINEL_LIDO'],[0])
                 sleep(1)
-
+            return response
         except:
             #! TODO Tratar exceptions
             return False
-        else:
-            return response
 
     def enviar_setpoint(self, setpoint_kw: int) -> bool:
         """
@@ -700,31 +654,20 @@ class UnidadeDeGeracao1(UnidadeDeGeracao):
         try:
         
             self.setpoint_minimo = self.cfg["pot_minima"]
-            self.setpoint_maximo = self.cfg["pot_maxima_ug{}".format(self.id)]
+            self.setpoint_maximo = self.cfg["pot_maxima_ug{}"]
 
             self.setpoint = int(setpoint_kw)
-            self.logger.debug(
-                "[UG{}] Enviando setpoint {} kW.".format(self.id, int(self.setpoint))
-            )
+            self.logger.debug(f"[UG{self.id}] Enviando setpoint {int(self.setpoint)} kW.")
             if self.setpoint > 1:
                 response = self.clp.write_single_register(REG_UG1_Operacao_US, 1)
-            response = response and self.clp.write_single_register(
-                REG_UG1_RegV_ColocarCarga, 1
-            )
-            response = response and self.clp.write_single_register(
-                REG_UG1_CtrlPotencia_ModoNivelDesligar, 1
-            )
-            response = response and self.clp.write_single_register(
-                REG_UG1_CtrlPotencia_ModoPotenciaDesligar, 1
-            )
-            response = response and self.clp.write_single_register(
-                REG_UG1_CtrlPotencia_Alvo, int(self.setpoint)
-            )
+            response = response and self.clp.write_single_register(REG_UG1_RegV_ColocarCarga, 1)
+            response = response and self.clp.write_single_register(REG_UG1_CtrlPotencia_ModoNivelDesligar, 1)
+            response = response and self.clp.write_single_register(REG_UG1_CtrlPotencia_ModoPotenciaDesligar, 1)
+            response = response and self.clp.write_single_register(REG_UG1_CtrlPotencia_Alvo, int(self.setpoint))
+            return response
         except:
             #! TODO Tratar exceptions
             return False
-        else:
-            return response
 
     @property
     def etapa_alvo(self) -> int:
@@ -741,8 +684,6 @@ class UnidadeDeGeracao1(UnidadeDeGeracao):
         except:
             #! TODO Tratar exceptions
             return False
-        else:
-            return response
 
     @property
     def etapa_atual(self) -> int:
@@ -756,11 +697,9 @@ class UnidadeDeGeracao1(UnidadeDeGeracao):
         except:
             #! TODO Tratar exceptions
             return False
-        else:
-            return response
 
     def modbus_update_state_register(self):
-        DataBank.set_words(self.cfg["REG_MOA_OUT_STATE_UG{}".format(self.id)],[self.etapa_atual],)
+        DataBank.set_words(self.cfg[f"REG_MOA_OUT_STATE_UG{self.id}"], [self.etapa_atual],)
     
     def salvar_estado_anterior(self):
         self.estado_anterior = self.codigo_state
@@ -769,82 +708,82 @@ class UnidadeDeGeracao1(UnidadeDeGeracao):
 
         self.falha_abertura_borboleta = LeituraModbusBit("03.13 - Borboleta - Falha na Abertura ", self.clp, REG_UG1_Alarme03, 13)
         if self.falha_abertura_borboleta.valor != 0:
-            self.logger.warning("[UG1] Houve uma falha na abertura das borboletas do gerador! Favor verificar.")
+            self.logger.warning(f"[UG{self.id}] Houve uma falha na abertura das borboletas do gerador! Favor verificar.")
         
         self.alarme_sobretemperatura_enrol_fase_r = LeituraModbusBit("07.14 - Alarme de Sobretemperatura do Enrolamento da Fase R do Gerador via CLP", self.clp, REG_UG1_Alarme07, 14)
         if self.alarme_sobretemperatura_enrol_fase_r.valor != 0:
-            self.logger.warning("[UG1] O alarme de sobretemperatura do enrolamento de fase R do gerador foi ativado! Favor verificar.")
+            self.logger.warning(f"[UG{self.id}] O alarme de sobretemperatura do enrolamento de fase R do gerador foi ativado! Favor verificar.")
         
         self.alarme_sobretemperatura_enrol_fase_s = LeituraModbusBit("07.15 - Alarme de Sobretemperatura do Enrolamento da Fase S do Gerador via CLP", self.clp, REG_UG1_Alarme07, 15)
         if self.alarme_sobretemperatura_enrol_fase_s.valor != 0:
-            self.logger.warning("[UG1] O alarme de sobretemperatura do enrolamento de fase S do gerador foi ativado! Favor verificar.")
+            self.logger.warning(f"[UG{self.id}] O alarme de sobretemperatura do enrolamento de fase S do gerador foi ativado! Favor verificar.")
         
         self.alarme_sobretemperatura_enrol_fase_t = LeituraModbusBit("08.00 - Alarme de Sobretemperatura do Enrolamento da Fase T do Gerador via CLP", self.clp, REG_UG1_Alarme08, 00)
         if self.alarme_sobretemperatura_enrol_fase_t.valor != 0:
-            self.logger.warning("[UG1] O alarme de sobretemperatura do enrolamento de fase R do gerador foi ativado! Favor verificar.")
+            self.logger.warning(f"[UG{self.id}] O alarme de sobretemperatura do enrolamento de fase R do gerador foi ativado! Favor verificar.")
 
         self.alarme_sobretemperatura_mancal_la_escora_1 = LeituraModbusBit("08.01 - Alarme de Sobretemperatura do Mancal LA do Gerador (Escora 1) via CLP", self.clp, REG_UG1_Alarme08, 1)
         if self.alarme_sobretemperatura_mancal_la_escora_1.valor != 0:
-            self.logger.warning("[UG1] O alarme de sobretemperatura do mancal LA escora 1 do gerador foi ativado! Favor verificar.")
+            self.logger.warning(f"[UG{self.id}] O alarme de sobretemperatura do mancal LA escora 1 do gerador foi ativado! Favor verificar.")
         
         self.alarme_sobretemperatura_mancal_la_escora_2 = LeituraModbusBit("08.02 - Alarme de Sobretemperatura do Mancal LA do Gerador (Escora 2) via CLP", self.clp, REG_UG1_Alarme08, 2)
         if self.alarme_sobretemperatura_mancal_la_escora_2.valor != 0:
-            self.logger.warning("[UG1] O alarme de sobretemperatura do mancal LA escora 2 do gerador foi ativado! Favor verificar.")
+            self.logger.warning(f"[UG{self.id}] O alarme de sobretemperatura do mancal LA escora 2 do gerador foi ativado! Favor verificar.")
         
         self.alarme_sobretemperatura_mancal_la_casquilho = LeituraModbusBit("08.03 - Alarme de Sobretemperatura do Mancal LA do Gerador (Casquilho) via CLP", self.clp, REG_UG1_Alarme08, 3)
         if self.alarme_sobretemperatura_mancal_la_casquilho.valor != 0:
-            self.logger.warning("[UG1] O alarme de sobretemperatura do mancal LA casquilho do gerador foi ativado! Favor verificar.")
+            self.logger.warning(f"[UG{self.id}] O alarme de sobretemperatura do mancal LA casquilho do gerador foi ativado! Favor verificar.")
         
         self.alarme_sobretemperatura_mancal_lna_casquilho = LeituraModbusBit("08.05 - Alarme de Sobretemperatura do Mancal LNA do Gerador (Casquilho) via CLP", self.clp, REG_UG1_Alarme08, 5)
         if self.alarme_sobretemperatura_mancal_lna_casquilho.valor != 0:
-            self.logger.warning("[UG1] O alarme de sobretemperatura do mancal LA casquilho do gerador foi ativado! Favor verificar.")
+            self.logger.warning(f"[UG{self.id}] O alarme de sobretemperatura do mancal LA casquilho do gerador foi ativado! Favor verificar.")
         
         self.alarme_sobretemperatura_mancal_la_contra_escora_1 = LeituraModbusBit("08.04 - Alarme de Sobretemperatura do Mancal LA do Gerador (Contra-Escora 1) via CLP", self.clp, REG_UG1_Alarme08, 4)
         if self.alarme_sobretemperatura_mancal_la_contra_escora_1.valor != 0:
-            self.logger.warning("[UG1] O alarme de sobretemperatura do mancal LA contra escora 1 do gerdaor foi ativado! Favoer verificar.")
+            self.logger.warning(f"[UG{self.id}] O alarme de sobretemperatura do mancal LA contra escora 1 do gerdaor foi ativado! Favoer verificar.")
         
         self.alarme_sobretemperatura_mancal_la_contra_escora_2 = LeituraModbusBit("08.06 - Alarme de Sobretemperatura do Mancal LA do Gerador (Contra-Escora 2) via CLP", self.clp, REG_UG1_Alarme08, 6)
         if self.alarme_sobretemperatura_mancal_la_contra_escora_2.valor != 0:
-            self.logger.warning("[UG1] O alarme de sobretemperatura do mancal LA contra escora 2 do gerdaor foi ativado! Favoer verificar.")
+            self.logger.warning(f"[UG{self.id}] O alarme de sobretemperatura do mancal LA contra escora 2 do gerdaor foi ativado! Favoer verificar.")
 
         self.alarme_sobretemperatura_vedacao_eixo_turb = LeituraModbusBit("08.07 - Alarme de Sobretemperatura da Vedação do Eixo da Turbina via CLP", self.clp, REG_UG1_Alarme08, 7)
         if self.alarme_sobretemperatura_vedacao_eixo_turb.valor != 0:
-            self.logger.warning("[UG1] O alarme de sobretemperatura de vedação do eixo da turbina foi ativado! Favor verificar.")
+            self.logger.warning(f"[UG{self.id}] O alarme de sobretemperatura de vedação do eixo da turbina foi ativado! Favor verificar.")
         
         self.alarme_sobretemperatura_oleo_reser_uhlm = LeituraModbusBit("08.08 - Alarme de Sobretemperatura do Óleo do Reservatório da UHLM via CLP", self.clp, REG_UG1_Alarme08, 8)
         if self.alarme_sobretemperatura_oleo_reser_uhlm.valor != 0:
-            self.logger.warning("[UG1] O alarme de sobretemperatura do óleo do reservatório ULHM foi ativado! Favor verificar.")
+            self.logger.warning(f"[UG{self.id}] O alarme de sobretemperatura do óleo do reservatório ULHM foi ativado! Favor verificar.")
         
         self.alarme_sobretemperatura_oleo_saida_troc_calor = LeituraModbusBit("08.09 - Alarme de Sobretemperatura do Óleo na Saída do Trocador de Calor da UHLM via CLP", self.clp, REG_UG1_Alarme08, 9)
         if self.alarme_sobretemperatura_oleo_saida_troc_calor.valor != 0:
-            self.logger.warning("[UG1] O alarme de sobretemperatura do óleo na saída do trocador de calor da ULHM foi ativado! Favor verificar.")
+            self.logger.warning(f"[UG{self.id}] O alarme de sobretemperatura do óleo na saída do trocador de calor da ULHM foi ativado! Favor verificar.")
         
         self.alarme_sobretemperatura_agua_entrada_troc_calor = LeituraModbusBit("08.10 - Alarme de Sobretemperatura da Água na Entrada do Trocador de Calor da UHLM via CLP", self.clp, REG_UG1_Alarme08, 10)
         if self.alarme_sobretemperatura_agua_entrada_troc_calor.valor != 0:
-            self.logger.warning("[UG1] O alarme de sobretemperatura de água na entrada do trocador de calor da ULHM foi ativado! Favor verificar.")
+            self.logger.warning(f"[UG{self.id}] O alarme de sobretemperatura de água na entrada do trocador de calor da ULHM foi ativado! Favor verificar.")
         
         self.alarme_sobretemperatura_agua_saida_troc_calor = LeituraModbusBit("08.11 - Alarme de Sobretemperatura da Água na Saída do Trocador de Calor da UHLM via CLP", self.clp, REG_UG1_Alarme08, 11)
         if self.alarme_sobretemperatura_agua_saida_troc_calor.valor != 0:
-            self.logger.warning("[UG1] O alarme de sobretemperatura de água no sáida do trocador de calor da ULHM foi ativado! Favor verificar.")
+            self.logger.warning(f"[UG{self.id}] O alarme de sobretemperatura de água no sáida do trocador de calor da ULHM foi ativado! Favor verificar.")
         
         self.alarme_sobretemperatura_oleo_reservatorio_UHCT = LeituraModbusBit("08.12 - Alarme de Sobretemperatura do Óleo do Reservatório da UHCT via CLP", self.clp, REG_UG1_Alarme08, 12)
         if self.alarme_sobretemperatura_oleo_reservatorio_UHCT.valor != 0:
-            self.logger.warning("[UG1] O alarme de sobretemperatura do óleo do reservatório da UHCT foi ativado! Favor verificar.")
+            self.logger.warning(f"[UG{self.id}] O alarme de sobretemperatura do óleo do reservatório da UHCT foi ativado! Favor verificar.")
 
         self.falha_desaplicacao_freio = LeituraModbusBit("14.10 - Freio - Falha na Desaplicação", self.clp, REG_UG1_Alarme14, 10)
         if self.falha_desaplicacao_freio.valor != 0:
-            self.logger.warning("[UG1] Houve uma falha na desaplicação do freio do Gerador! Favor verificar.")
+            self.logger.warning(f"[UG{self.id}] Houve uma falha na desaplicação do freio do Gerador! Favor verificar.")
 
         self.pastilha_freio_gasta = LeituraModbusBit("14.11 - Freio - Pastilha Gasta", self.clp, REG_UG1_Alarme14, 11)
         if self.pastilha_freio_gasta.valor != 0:
-            self.logger.warning("[UG1] O alarme de pastilha de freio gasta do Gerador foi ativado! Favor verificar.")
+            self.logger.warning(f"[UG{self.id}] O alarme de pastilha de freio gasta do Gerador foi ativado! Favor verificar.")
 
         self.alarme_vibracao_excessiva_mancal_la = LeituraModbusBit("15.00 - Alarme - Vibração Excessiva no Mancal LA do Gerador", self.clp, REG_UG1_Alarme15, 00)
         if self.alarme_vibracao_excessiva_mancal_la.valor != 0:
-            self.logger.warning("[UG1] O alarme de vibração excessiva do mancal LA do Gerador foi ativado! Favor verificar.")
+            self.logger.warning(f"[UG{self.id}] O alarme de vibração excessiva do mancal LA do Gerador foi ativado! Favor verificar.")
         
         self.alarme_vibracao_excessiva_mancal_lna = LeituraModbusBit("15.02 - Alarme - Vibração Excessiva no Mancal LNA do Gerador", self.clp, REG_UG1_Alarme15, 2)
         if self.alarme_vibracao_excessiva_mancal_lna.valor != 0:
-            self.logger.warning("[UG1] O alarme de vibração excessiva do mancal LNA do Gerador foi ativado! Favor verificar.")
+            self.logger.warning(f"[UG{self.id}] O alarme de vibração excessiva do mancal LNA do Gerador foi ativado! Favor verificar.")
 
         return True
