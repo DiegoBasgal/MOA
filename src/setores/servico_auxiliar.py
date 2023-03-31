@@ -3,7 +3,7 @@ __authors__ = "Diego Basgal", "Henrique Pfeifer"
 __credits__ = ["Lucas Lavratti", ...]
 __description__ = "Este módulo corresponde a implementação dos setores da Usina."
 
-from Usina import *
+from usina import *
 
 logger = logging.getLogger("__main__")
 

@@ -3,7 +3,7 @@ __authors__ = "Lucas Lavratti", " Henrique Pfeifer"
 __credits__ = ["Diego Basgal" , ...]
 __description__ = "Este módulo corresponde a implementação da lógica de Condicionadores."
 
-from Usina import *
+from usina import *
 from dicionarios.const import *
 from leitura_escrita.leitura import *
 

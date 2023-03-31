@@ -3,7 +3,7 @@ __authors__ = "Lucas Lavratti", " Henrique Pfeifer"
 __credits__ = ["Diego Basgal" , ...]
 __description__ = "Este módulo corresponde a implementação das Unidades de Geração."
 
-from Usina import *
+from usina1 import *
 from maquinas_estado.ug_sm import *
 
 logger = logging.getLogger("__main__")

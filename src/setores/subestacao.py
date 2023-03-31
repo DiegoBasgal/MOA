@@ -7,7 +7,7 @@ import threading
 
 from time import time
 
-from Usina import *
+from usina import *
 from setores.bay import Bay
 
 logger = logging.getLogger("__main__")

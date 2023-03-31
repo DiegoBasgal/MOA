@@ -4,7 +4,7 @@ import json
 from abc import abstractmethod
 from urllib.request import Request, urlopen
 
-from src.Usina import *
+from usina import *
 
 logger = logging.getLogger("__main__")
 

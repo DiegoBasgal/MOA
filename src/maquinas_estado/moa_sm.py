@@ -11,7 +11,7 @@ import traceback
 from time import sleep
 from datetime import datetime
 
-from Usina import *
+from usina import *
 
 class StateMachine:
     def __init__(self, initial_state):

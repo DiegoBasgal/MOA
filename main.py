@@ -19,7 +19,7 @@ import json
 import threading
 import traceback
 
-import Usina
+import usina
 
 from time import sleep, time
 
@@ -89,7 +89,7 @@ if __name__ == "__main__":
 
             try:
                 logger.info("Iniciando instância da classe Usina.")
-                usn: Usina = Usina(cfg, cli)
+                usn: usina = usina(cfg, cli)
 
             except Exception:
                 logger.exception(f"Erro ao instanciar a classe Usina. Tentando novamente em \"{timeout}s\" (Tentativa: {n_tentativa}/3).")

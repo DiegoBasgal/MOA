@@ -3,7 +3,7 @@ __author__ = "Diego Basgal"
 __credits__ = ["Lucas Lavratti" , ...]
 __description__ = "Este módulo corresponde a implementação de Agendamentos da Interface WEB."
 
-from Usina import *
+from usina import *
 
 logger = logging.getLogger("__main__")
 
