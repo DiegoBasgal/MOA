@@ -6,11 +6,11 @@ __description__ = "Este módulo corresponde a implementação de leituras de reg
 from opcua import Client as OpcClient
 from pyModbusTCP.client import ModbusClient
 
-from metadados.reg import *
+from dicionarios.reg import *
 
 # Classes de Leitura Opc UA
 class LeituraOpc:
-    def __init__(self, registrador: str | None = ..., escala: int | float = ...) -> ...:
+    def __init__(self, registrador: str | None = ..., escala: int | float = ..., descricao: str | None = ...) -> ...:
         if registrador is None:
             raise ValueError("[LEI] A Leitura precisa de um valor para o argumento \"registrador\".")
         else:
@@ -18,6 +18,10 @@ class LeituraOpc:
 
             self.__client: OpcClient = None
             self.__escala = 1 if escala is None else escala
+            self.__descricao = None if descricao is None else descricao
+
+    def __str__(self) -> str:
+        return f"Leitura {self.__descricao}, Valor: {self.valor}"
 
     @property
     def raw(self) -> int:
@@ -35,14 +39,18 @@ class LeituraOpc:
     def client(self) -> OpcClient:
         return self.__client
 
+    @property
+    def descricao(self) -> str:
+        return self.__descricao
+
     @client.setter
     def client(self, cln: OpcClient) -> None:
         self.__client = cln
 
 
 class LeituraOpcBit(LeituraOpc):
-    def __init__(self, registrador, bit: int = ..., invertido: bool = ...) -> ...:
-        LeituraOpc.__init__(self, registrador)
+    def __init__(self, registrador, bit: int = ..., invertido: bool = ..., descricao = ...) -> ...:
+        LeituraOpc.__init__(self, registrador, descricao)
         if bit is None:
             raise ValueError("[LEI-OPC] A Leitura Opc Bit precisa de um valor para o argumento \"bit\".")
         else:
@@ -59,7 +67,7 @@ class LeituraOpcBit(LeituraOpc):
 
 # Classes de Leitura ModBus
 class LeituraModbus:
-    def __init__(self, client: ModbusClient, registrador: int, escala: int | float = ..., fundo_de_escala: int | float = ..., op: int = ...):
+    def __init__(self, client: ModbusClient, registrador: int, escala: int | float = ..., fundo_de_escala: int | float = ..., op: int = ..., descricao: str | None = ...):
         if client is None:
             raise ValueError(f"[LEI] Não foi possível carregar a conexão com o cliente (\"{type(client).__name__}\").")
         else:
@@ -82,6 +90,11 @@ class LeituraModbus:
         else:
             self.__op = 3 if op is None else op
 
+        self.__descricao = None if descricao is None else descricao
+
+    def __str__(self) -> str:
+        return f"Leitura {self.__descricao}, Valor: {self.valor}"
+
     @property
     def valor(self) -> int | float:
         return (self.raw * self.__escala) + self.__fundo_de_escala
@@ -98,10 +111,14 @@ class LeituraModbus:
         except ConnectionError("[LEI-MB] Erro ao conectar ao cliente ModBus.") \
             or ValueError("[LEI-MB] Erro ao carregar o dado \"raw\" do cliente ModBus."):
             return 0
+    
+    @property
+    def descricao(self) -> str:
+        return self.__descricao
 
 class LeituraModbusBit(LeituraModbus):
-    def __init__(self, client, registrador: int, bit: int = ..., invertido: bool = ...):
-        LeituraModbus.__init__(client, registrador)
+    def __init__(self, client, registrador: int, bit: int = ..., invertido: bool = ..., descricao = ...):
+        LeituraModbus.__init__(client, registrador, descricao)
         if bit is None:
             raise ValueError("[LEI-MB] A Leitura ModBus Bit precisa de um valor para o argumento \"bit\".")
         elif not type(bit):
@@ -120,8 +137,8 @@ class LeituraModbusBit(LeituraModbus):
         return not ler_bit if self.__invertido else ler_bit
 
 
-class LeituraSoma(LeituraBase):
-    def __init__(self, leituras: list[LeituraBase] = ..., min_zero: bool = ...):
+class LeituraSoma:
+    def __init__(self, leituras: list[LeituraOpc | LeituraModbus] = ..., min_zero: bool = ...):
         super().__init__()
         if leituras < 2 or leituras is None:
             raise ValueError("[LEI-SOM] A Leitura Soma precisa de \"2 ou mais\" leituras para o argumento \"leituras\".")

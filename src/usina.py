@@ -19,8 +19,8 @@ from dicionarios.const import *
 
 from conector import ClientesUsina
 from banco_dados import BancoDados
-from agendamentos import Agendamentos
 from unidade_geracao import UnidadeGeracao
+from condicionador import CondicionadorBase
 
 from mensageiro.voip import Voip
 from leitura_escrita.leitura import *
@@ -35,26 +35,18 @@ from servico_auxiliar import ServicoAuxiliar
 logger = logging.getLogger("__main__")
 
 class Usina:
-    def __init__(self, cfg: dict | None = ..., clientes: ClientesUsina | None = ...):
-
+    def __init__(self, cfg: dict | None = ...):
         # VERIFICAÇÃO DE ARGUMENTOS
         if None in (cfg):
             raise ValueError("[USN] Não foi possível carregar os arquivos de configuração (\"cfg.json\").")
         else:
             self.cfg = cfg
 
-        if None in (clientes):
-            raise ConnectionError("[USN] Não foi possível carregar as classes de conexão com Clients e banco de dados.")
-        else:
-            self.opc = clientes.cliente_opc
-
-            self.cln = clientes
-            self.clp = clientes.clp
+        self.clientes = ClientesUsina
+        self.opc = self.clientes.opc
+        self.clp = self.clientes.clp
 
         # INCIALIZAÇÃO DE OBJETOS DA USINA
-        # Banco de Dados
-        self.bd: BancoDados = BancoDados()
-
         # Setores da Usina
         self.bay: Bay = Bay(self)
         self.se: Subestacao = Subestacao(self)
@@ -67,12 +59,10 @@ class Usina:
         self.ug1: UnidadeGeracao = UnidadeGeracao(self, 1)
         self.ug2: UnidadeGeracao = UnidadeGeracao(self, 2)
 
-        self.ugs = [self.ug1, self.ug2]
+        self.ugs: list[UnidadeGeracao] = [self.ug1, self.ug2]
 
         self.ug1.lista_ugs = self.ugs
         self.ug2.lista_ugs = self.ugs
-
-        self.agn: Agendamentos = Agendamentos()
 
         # Setter para o client base da Leitura e Escrita OPC (Caso de XAV pois há apenas 1 servidor opc na IHM)
         self.escrita_opc: EscritaOpc | EscritaOpcBit = EscritaOpc()
@@ -135,7 +125,7 @@ class Usina:
     @modo_autonomo.setter
     def modo_autonomo(self, var: bool) -> None:
         self._modo_autonomo = var
-        self.bd.update_modo_moa(var)
+        BancoDados.update_modo_moa(var)
 
     @property
     def tentativas_normalizar(self) -> int:
@@ -153,8 +143,8 @@ class Usina:
     def pot_alvo_anterior(self, var: int | float):
         self._potencia_alvo_anterior = var
 
-
-    def get_time(self) -> datetime:
+    @staticmethod
+    def get_time() -> datetime:
         return datetime.now(pytz.timezone("Brazil/East")).replace(tzinfo=None)
 
     def ajustar_ie_padrao(self) -> int:
@@ -215,7 +205,7 @@ class Usina:
             self.tentativas_normalizar += 1
             self.bd_emergencia = self.clp_emergencia = False
             [setor.resetar_emergencia() for setor in self.setores]
-            self.bd.update_remove_emergencia()
+            BancoDados.update_remove_emergencia()
             return True
 
         else:
@@ -262,17 +252,15 @@ class Usina:
             self.cfg["kd"] = float(parametros["kd"])
             self.cfg["kie"] = float(parametros["kie"])
 
-            self.cfg["pt_kp"] = float(parametros["pt_kp"])
-            self.cfg["pt_ki"] = float(parametros["pt_ki"])
-            self.cfg["pt_kie"] = float(parametros["pt_kie"])
-            self.cfg["press_turbina_alvo"] = float(parametros["press_turbina_alvo"])
-
             self.cfg["nv_alvo"] = float(parametros["nv_alvo"])
             self.cfg["nv_minimo"] = float(parametros["nv_minimo"])
 
             self.cfg["pot_maxima_alvo"] = float(parametros["pot_nominal"])
             self.cfg["pot_maxima_ug"] = float(parametros["pot_nominal_ug"])
             self.cfg["pot_maxima_usina"] = float(parametros["pot_nominal_ug"]) * 2
+
+            with open(os.path.join(os.path.dirname(__file__), 'config.json'), 'w') as file:
+                json.dump(self.cfg, file)
 
         except Exception as e:
             logger.exception(f"[USN] Houve um erro ao atualizar o arquivo de configuração \"cfg.json\". Exception: \"{repr(e)}\"")
@@ -362,14 +350,14 @@ class Usina:
         self.heartbeat()
         self.tda.atualizar_montante_recente()
 
-        parametros = self.bd.get_parametros_usina()
+        parametros = BancoDados.get_parametros_usina()
         self.atualizar_cfg(parametros)
         self.atualizar_parametros_db(parametros)
         [ug.atualizar_limites_condicionadores(parametros) for ug in self.ugs]
 
     def escrever_valores(self) -> None:
         try:
-            self.bd.update_valores_usina(
+            BancoDados.update_valores_usina(
                 self.get_time().strftime("%Y-%m-%d %H:%M:%S"),  # timestamp
                 1 if self.aguardando_reservatorio else 0,  # aguardando_reservatorio
                 True,  # DEPRECATED clp_online
@@ -391,7 +379,7 @@ class Usina:
             logger.exception(f"[USN] Traceback: {traceback.print_stack}")
 
         try:
-            self.bd.insert_debug(
+            BancoDados.insert_debug(
                 self.get_time().timestamp(),
                 self.cfg["kp"],
                 self.cfg["ki"],
@@ -408,10 +396,6 @@ class Usina:
                 self.tda.nv_montante_recente,
                 self.tda.erro_nv,
                 1 if self.modo_autonomo else 0,
-                self.cfg["cx_kp"],
-                self.cfg["cx_ki"],
-                self.cfg["cx_kie"],
-                0,
             )
 
         except Exception as e:

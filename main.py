@@ -21,32 +21,15 @@ import traceback
 
 from time import time, sleep
 
-from src.dicionarios.dict import *
 from src.dicionarios.const import *
 from src.maquinas_estado.moa_sm import *
 
 from conector import ClientesUsina
-from src.banco_dados import BancoDados
-from conversor_protocolo.conversor import NativoParaExterno
-
-# Método de leitura do arquivo de dados json
-def leitura_json(nome: str) -> dict:
-    arquivo = os.path.join(os.path.dirname(__file__), nome)
-    with open(arquivo, "r") as file:
-        return json.load(file)
-
-# Método de escrever no arquivo de dados json após mudanças
-def escrita_json(valor, nome: str) -> None:
-    arquivo = os.path.join(os.path.dirname(__file__), nome)
-    with open(arquivo, "w") as file:
-        json.dump(valor, file, indent=4)
 
 if __name__ == "__main__":
-    ESCALA_DE_TEMPO = 3
     if len(sys.argv) > 1:
         ESCALA_DE_TEMPO = int(sys.argv[1])
 
-    timeout = 10
     prox_estado = 0
     n_tentativa = 0
 
@@ -60,41 +43,43 @@ if __name__ == "__main__":
             prox_estado = FalhaCritica
         else:
             try:
-                logger.info("Carregando arquivos de configuração, dicionário compartilhado e dados de conversão")
+                logger.info("Carregando arquivo de configuração.")
 
-                cfg = leitura_json("cfg.json")
-                cvd = leitura_json("dados.json")
+                arquivo = os.path.join(os.path.dirname(__file__), "cfg.json")
+                with open(arquivo, "r") as file:
+                    cfg = json.load(file)
 
-                escrita_json(cfg, "cfg.json.bkp")
+                arquivo = os.path.join(os.path.dirname(__file__), "cfg.json.bkp")
+                with open(arquivo, "w") as file:
+                    json.dump(cfg, file, indent=4)
 
             except Exception:
-                logger.exception(f"Erro ao carregar arquivo de configuração e dicionário compartilhado. Tentando novamente em \"{timeout}s\" (Tentativa: {n_tentativa}/3).")
-                logger.exception(f"Traceback: {traceback.print_stack}")
-                sleep(timeout)
+                logger.exception(f"Erro ao carregar arquivo de configuração. Tentando novamente em \"{TIMEOUT_MAIN}s\" (Tentativa: {n_tentativa}/3).")
+                logger.debug(f"Traceback: {traceback.print_stack}")
+                sleep(TIMEOUT_MAIN)
                 continue
 
             try:
-                logger.info("Iniciando classe de conexão com o servidores de Banco de Dados, OPC e CLPs.")
+                logger.info("Iniciando conexões com o servidores \"OPC\" e \"ModBus\".")
 
-                cli: ClientesUsina = ClientesUsina()
-                cli.open_all()
+                ClientesUsina.open_all()
 
             except Exception:
-                logger.exception(f"Erro ao iniciar classes de conexão com servidores. Tentando novamente em \"{timeout}s\" (Tentativa: {n_tentativa}/3).")
-                logger.exception(f"Traceback: {traceback.print_stack}")
-                sleep(timeout)
+                logger.exception(f"Erro ao iniciar classes de conexão com servidores. Tentando novamente em \"{TIMEOUT_MAIN}s\" (Tentativa: {n_tentativa}/3).")
+                logger.debug(f"Traceback: {traceback.print_stack}")
+                sleep(TIMEOUT_MAIN)
                 continue
 
             try:
                 logger.info("Iniciando instância da classe Usina.")
-                usn: Usina = Usina(cfg, cli)
+                usn: Usina = Usina(cfg)
 
             except Exception:
-                logger.exception(f"Erro ao instanciar a classe Usina. Tentando novamente em \"{timeout}s\" (Tentativa: {n_tentativa}/3).")
-                logger.exception(f"Traceback: {traceback.print_stack}")
-                sleep(timeout)
+                logger.exception(f"Erro ao instanciar a classe Usina. Tentando novamente em \"{TIMEOUT_MAIN}s\" (Tentativa: {n_tentativa}/3).")
+                logger.debug(f"Traceback: {traceback.print_stack}")
+                sleep(TIMEOUT_MAIN)
                 continue
-            
+
             try:
                 logger.info("Finalizando inicialização com intâncias da máquina de estados e Threads paralelas.")
 
@@ -103,9 +88,9 @@ if __name__ == "__main__":
                 threading.Thread(target=lambda: usn.leitura_temporizada()).start()
 
             except Exception:
-                logger.exception(f"Erro ao finalizar a incialização do MOA. Tentando novamente em \"{timeout}s\" (Tentativa: {n_tentativa}/3).")
-                logger.exception(f"Traceback: {traceback.print_stack}")
-                sleep(timeout)
+                logger.exception(f"Erro ao finalizar a incialização do MOA. Tentando novamente em \"{TIMEOUT_MAIN}s\" (Tentativa: {n_tentativa}/3).")
+                logger.debug(f"Traceback: {traceback.print_stack}")
+                sleep(TIMEOUT_MAIN)
                 continue
 
     logger.info("Inicialização completa, executando o MOA \U0001F916")
@@ -119,7 +104,7 @@ if __name__ == "__main__":
 
             if usn.estado_moa == MOA_SM_CONTROLE_DADOS:
                 t_restante = max(30 - (time() - t_inicio), 0) / ESCALA_DE_TEMPO
-                
+
                 if t_restante == 0:
                     logger.warning("\n\"ATENÇÃO!\"")
                     logger.warning("O ciclo está demorando mais que o permitido!")
@@ -128,11 +113,11 @@ if __name__ == "__main__":
 
         except Exception as e:
             logger.exception(f"Houve um erro na execução do loop principal da main do MOA. Exception: {repr(e)}")
-            logger.exception(f"Traceback: {traceback.print_stack}")
-            cli.close_all()
+            logger.debug(f"Traceback: {traceback.print_stack}")
+            ClientesUsina.close_all()
             break
 
         except KeyboardInterrupt:
             logger.warning("Execução do loop principal da main do MOA interrompido por comando de teclado.")
-            cli.close_all()
+            ClientesUsina.close_all()
             break

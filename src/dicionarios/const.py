@@ -1,6 +1,7 @@
 # Temporizador interno
-ESCALA_DE_TEMPO = 5
+ESCALA_DE_TEMPO = 3
 TIMEOUT_PADRAO = 5
+TIMEOUT_MAIN = 10
 TIMEOUT_NORMALIZACAO = 10
 
 # Valores fixos de nível

@@ -173,50 +173,50 @@ class Subestacao(Usina):
         # CONDICIONADORES ESSENCIAIS
         # Normalizar
             # Bit Normal
-        self.leitura_rele_linha_atuado = LeituraOpcBit(OPC_UA["SE"]["RELE_LINHA_ATUADO"], 14)
+        self.leitura_rele_linha_atuado = LeituraOpcBit(OPC_UA["SE"]["RELE_LINHA_ATUADO"], 14, "SE_RELE_LINHA_ATUADO")
         self.condicionadores_essenciais.append(CondicionadorBase(self.leitura_rele_linha_atuado, CONDIC_NORMALIZAR))
 
         # CONDICIONADORES
         # Indisponibilizar
             # Bit Invertido
-        self.leitura_89l_fechada = LeituraOpcBit(OPC_UA["SE"]["89L_FECHADA"], 12, True)
+        self.leitura_89l_fechada = LeituraOpcBit(OPC_UA["SE"]["89L_FECHADA"], 12, True, "SE_89L_FECHADA")
         self.condicionadores.append(CondicionadorBase(self.leitura_89l_fechada, CONDIC_INDISPONIBILIZAR))
 
             # Bit Normal
-        self.leitura_86t_atuado = LeituraOpcBit(OPC_UA["SE"]["86T_ATUADO"], 20)
+        self.leitura_86t_atuado = LeituraOpcBit(OPC_UA["SE"]["86T_ATUADO"], 20, "SE_86T_ATUADO")
         self.condicionadores.append(CondicionadorBase(self.leitura_86t_atuado, CONDIC_INDISPONIBILIZAR))
         
-        self.leitura_86bf_atuado = LeituraOpcBit(OPC_UA["SE"]["86BF_ATUADO"], 19)
+        self.leitura_86bf_atuado = LeituraOpcBit(OPC_UA["SE"]["86BF_ATUADO"], 19, "SE_86BF_ATUADO")
         self.condicionadores.append(CondicionadorBase(self.leitura_86bf_atuado, CONDIC_INDISPONIBILIZAR))
 
-        self.leitura_rele_te_atuado = LeituraOpcBit(OPC_UA["SE"]["TE_RELE_ATUADO"], 17)
+        self.leitura_rele_te_atuado = LeituraOpcBit(OPC_UA["SE"]["TE_RELE_ATUADO"], 17, "SE_TE_RELE_ATUADO")
         self.condicionadores.append(CondicionadorBase(self.leitura_rele_te_atuado, CONDIC_INDISPONIBILIZAR))
 
-        self.leitura_trip_rele_buchholz = LeituraOpcBit(OPC_UA["SE"]["TE_TRIP_RELE_BUCHHOLZ"], 23)
+        self.leitura_trip_rele_buchholz = LeituraOpcBit(OPC_UA["SE"]["TE_TRIP_RELE_BUCHHOLZ"], 23, "SE_TE_TRIP_RELE_BUCHHOLZ")
         self.condicionadores.append(CondicionadorBase(self.leitura_trip_rele_buchholz, CONDIC_INDISPONIBILIZAR))
 
-        self.leitura_trip_alivio_pressao = LeituraOpcBit(OPC_UA["SE"]["TE_TRIP_ALIVIO_PRESSAO"], 24)
+        self.leitura_trip_alivio_pressao = LeituraOpcBit(OPC_UA["SE"]["TE_TRIP_ALIVIO_PRESSAO"], 24, "SE_TE_TRIP_ALIVIO_PRESSAO")
         self.condicionadores.append(CondicionadorBase(self.leitura_trip_alivio_pressao, CONDIC_INDISPONIBILIZAR))
 
-        self.leitura_trip_temp_oleo_te = LeituraOpcBit(OPC_UA["SE"]["TE_TRIP_TEMPERATURA_OLEO"], 19)
+        self.leitura_trip_temp_oleo_te = LeituraOpcBit(OPC_UA["SE"]["TE_TRIP_TEMPERATURA_OLEO"], 19, "SE_TE_TRIP_TEMPERATURA_OLEO")
         self.condicionadores.append(CondicionadorBase(self.leitura_trip_temp_oleo_te, CONDIC_INDISPONIBILIZAR))
 
-        self.leitura_atuacao_rele_linha_bf = LeituraOpcBit(OPC_UA["SE"]["RELE_LINHA_ATUACAO_BF"], 16)
+        self.leitura_atuacao_rele_linha_bf = LeituraOpcBit(OPC_UA["SE"]["RELE_LINHA_ATUACAO_BF"], 16, "SE_RELE_LINHA_ATUACAO_BF")
         self.condicionadores.append(CondicionadorBase(self.leitura_atuacao_rele_linha_bf, CONDIC_INDISPONIBILIZAR))
 
-        self.leitura_alarme_rele_buchholz = LeituraOpcBit(OPC_UA["SE"]["TE_ALARME_RELE_BUCHHOLZ"], 22)
+        self.leitura_alarme_rele_buchholz = LeituraOpcBit(OPC_UA["SE"]["TE_ALARME_RELE_BUCHHOLZ"], 22, "SE_TE_ALARME_RELE_BUCHHOLZ")
         self.condicionadores.append(CondicionadorBase(self.leitura_alarme_rele_buchholz, CONDIC_INDISPONIBILIZAR))
 
-        self.leitura_trip_temp_enrol_te = LeituraOpcBit(OPC_UA["SE"]["TE_TRIP_TEMPERATURA_ENROLAMENTO"], 20)
+        self.leitura_trip_temp_enrol_te = LeituraOpcBit(OPC_UA["SE"]["TE_TRIP_TEMPERATURA_ENROLAMENTO"], 20, "SE_TE_TRIP_TEMPERATURA_ENROLAMENTO")
         self.condicionadores.append(CondicionadorBase(self.leitura_trip_temp_enrol_te, CONDIC_INDISPONIBILIZAR))
 
-        self.leitura_falha_comando_abertura_52l = LeituraOpcBit(OPC_UA["SE"]["FALHA_COMANDO_ABERTURA_52L"], 1)
+        self.leitura_falha_comando_abertura_52l = LeituraOpcBit(OPC_UA["SE"]["FALHA_COMANDO_ABERTURA_52L"], 1, "SE_FALHA_COMANDO_ABERTURA_52L")
         self.condicionadores.append(CondicionadorBase(self.leitura_falha_comando_abertura_52l, CONDIC_INDISPONIBILIZAR))
 
-        self.leitura_falha_comando_fechamento_52l = LeituraOpcBit(OPC_UA["SE"]["FALHA_COMANDO_FECHAMENTO_52L"], 2)
+        self.leitura_falha_comando_fechamento_52l = LeituraOpcBit(OPC_UA["SE"]["FALHA_COMANDO_FECHAMENTO_52L"], 2, "SE_FALHA_COMANDO_FECHAMENTO_52L")
         self.condicionadores.append(CondicionadorBase(self.leitura_falha_comando_fechamento_52l, CONDIC_INDISPONIBILIZAR))
 
-        self.leitura_super_bobinas_reles_bloq = LeituraOpcBit(OPC_UA["SE"]["SUPERVISAO_BOBINAS_RELES_BLOQUEIOS"], 21)
+        self.leitura_super_bobinas_reles_bloq = LeituraOpcBit(OPC_UA["SE"]["SUPERVISAO_BOBINAS_RELES_BLOQUEIOS"], 21, "SE_SUPERVISAO_BOBINAS_RELES_BLOQUEIOS")
         self.condicionadores.append(CondicionadorBase(self.leitura_super_bobinas_reles_bloq, CONDIC_INDISPONIBILIZAR))
 
         # LEITURAS PARA LEITURA PERIÓDICA

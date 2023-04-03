@@ -6,99 +6,93 @@ __description__ = "Este módulo corresponde a implementação da conexão com ba
 import pytz
 
 from datetime import datetime
-from mysql.connector import pooling
+from mysql.connector import pooling, MySQLConnection
 
 # TODO refatorar banco de dados tanto no moa, quanto no banco mesmo e interface web
 
 class BancoDados:
-    def __init__(self):
-        self.connection_pool = pooling.MySQLConnectionPool(
-            pool_name="my_pool",
-            pool_size=10,
-            pool_reset_session=True,
-            host="localhost",
-            user="moa",
-            password="&264H3$M@&z$",
-            database="django_db",
-        )
+    connection_pool: pooling.MySQLConnectionPool = pooling.MySQLConnectionPool(
+        pool_name="my_pool",
+        pool_size=10,
+        pool_reset_session=True,
+        host="localhost",
+        user="moa",
+        password="&264H3$M@&z$",
+        database="django_db",
+    )
 
-        self.conn = None
-        self.cursor = None
-        self.conn = self.connection_pool.get_connection()
-        self.cursor = self.conn.cursor()
+    cursor = None
+    connect: pooling.MySQLConnectionPool = None
 
-    def get_time(self) -> object:
-        return datetime.now(pytz.timezone("Brazil/East")).replace(tzinfo=None)
+    @classmethod
+    def _open(cls) -> None:
+        cls.connect = cls.connection_pool.get_connection()
+        cls.cursor = cls.connect.cursor()
 
-    def commit(self):
-        self.conn.commit()
-
-    def _open(self):
-        # self.conn = self.connection_pool.get_connection()
-        # self.cursor = self.conn.cursor()
-        pass
-
-    def _close(self, commit=True):
+    @classmethod
+    def _close(cls, commit=True) -> None:
         if commit:
-            self.commit()
-        # self.cursor.close()
-        if commit:
-            self.commit()
-        # self.conn.close()
+            cls.commit()
+        # cls.connect.close()
 
-    def execute(self, sql, params=None):
-        self.cursor.execute(sql, params or ())
+    @classmethod
+    def query(cls, sql, params=None):
+        cls.cursor.execute(sql, params or ())
+        return cls.cursor.fetchall()
 
-    def fetchall(self):
-        return self.cursor.fetchall()
-
-    def fetchone(self):
-        return self.cursor.fetchone()
-
-    def query(self, sql, params=None):
-        self.cursor.execute(sql, params or ())
-        return self.fetchall()
-
-    def get_parametros_usina(self):
-        self._open()
-        cols = self.query("SHOW COLUMNS FROM parametros_moa_parametrosusina")
-        self.execute("SELECT * FROM parametros_moa_parametrosusina WHERE id = 1")
-        parametros_raw = self.fetchone()
-        parametros = {}
-        for i in range(len(cols)):
-            parametros[cols[i][0]] = parametros_raw[i]
-        self._close()
-        return parametros
-
-    def get_agendamentos_pendentes(self):
-        q = (
+    @classmethod
+    def get_agendamentos_pendentes(cls) -> dict:
+        cls._open()
+        result = cls.query(
             "SELECT *"
             "FROM agendamentos_agendamento "
             "WHERE executado = 0 AND data <= ((NOW() + INTERVAL 3 HOUR) + INTERVAL 55 SECOND);"
         )
-        self._open()
-        result = self.query(q)
-        self._close()
+        cls._close()
         return result
 
-    def update_parametros_usina(self, values):
-        q = (
-            "UPDATE parametros_moa_parametrosusina "
-            "SET timestamp = %s, "
-            "kp = %s, "
-            "ki = %s, "
-            "kd = %s, "
-            "kie = %s, "
-            "nv_alvo = %s "
-            "WHERE id = 1"
+    @classmethod
+    def get_executabilidade(cls, id_comando: int) -> dict:
+        cls._open()
+        cls.execute(
+            "SELECT executavel_em_autmoatico, executavel_em_manual FROM parametros_moa_comando WHERE id = %s", 
+            tuple([id_comando])
         )
-        self._open()
-        self.execute(q, tuple(values))
-        self._close()
-        return True
+        parametros_raw = cls.fetchone()
+        cls._close()
+        return {
+            "executavel_em_autmoatico": parametros_raw[0],
+            "executavel_em_manual": parametros_raw[1],
+        }
 
-    def update_valores_usina(self, values):
-        q = (
+    @classmethod
+    def get_parametros_usina(cls) -> dict:
+        cls._open()
+        cols = cls.query("SHOW COLUMNS FROM parametros_moa_parametrosusina")
+        cls.cursor.execute("SELECT * FROM parametros_moa_parametrosusina WHERE id = 1")
+        parametros_raw = cls.cursor.fetchall()
+        parametros = {}
+        for i in range(len(parametros_raw)):
+            parametros[cols[i][0]] = parametros_raw[i]
+        cls._close()
+        return parametros
+
+
+    @classmethod
+    def get_contato_emergencia(cls) -> dict:
+        cls._open()
+        cls.execute("SELECT * FROM parametros_moa_contato")
+        rows = cls.fetchall()
+        parametros = {}
+        for row in range(len(rows)):
+            parametros = rows
+        cls._close()
+        return parametros
+
+    @classmethod
+    def update_valores_usina(cls, values) -> None:
+        cls._open()
+        cls.execute(
             "UPDATE parametros_moa_parametrosusina "
             "SET timestamp = %s, "
             "aguardando_reservatorio = %s, "
@@ -114,35 +108,44 @@ class BancoDados:
             "ug2_setpot = %s, "
             "ug2_sinc = %s, "
             "ug2_tempo = %s "
-            "WHERE id = 1"
+            "WHERE id = 1",
+            tuple(values)
         )
-        self._open()
-        self.execute(q, tuple(values))
-        self._close()
-        return True
+        cls._close()
 
-    def update_modo_moa(self, modo: bool) -> None:
+    @classmethod
+    def update_modo_moa(cls, modo: bool) -> None:
+        cls._open()
         if modo:
-            q = (
+            cls.execute(
                 "UPDATE parametros_moa_parametrosusina "
                 "SET modo_autonomo = 1"
                 "WHERE id = 1;"
             )
         else:
-            q = (
+            cls.execute(
                 "UPDATE parametros_moa_parametrosusina "
                 "SET modo_autonomo = 0"
                 "WHERE id = 1;"
             )
-        self._open()
-        self.execute(q)
-        self._close()
+        cls._close()
 
-    def update_agendamento(self, id_agendamento, executado, obs=""):
+    @classmethod
+    def update_remove_emergencia(cls) -> None:
+        cls._open()
+        cls.execute(
+            "UPDATE parametros_moa_parametrosusina "
+            "SET emergencia_acionada = 0 "
+            "WHERE id = 1;"
+        )
+        cls._close()
+
+    @classmethod
+    def update_agendamento(cls, id_agendamento: int, executado: int=0, obs="") -> None:
         if len(obs) >= 1:
             obs = " - " + obs
-        executado = 1 if executado else 0
-        q = (
+        cls._open()
+        cls.execute(
             "UPDATE agendamentos_agendamento "
             " SET "
             " observacao = if(observacao is null, %s, "
@@ -150,104 +153,43 @@ class BancoDados:
             " executado = %s, "
             " modificado_por = 'MOA', "
             " ts_modificado = %s "
-            " WHERE id = %s;"
+            " WHERE id = %s;",
+            (obs, obs, executado, cls.get_time())
         )
-        self._open()
-        self.execute(q, (obs, obs, executado, self.get_time()))
-        self._close()
+        cls._close()
 
-    def update_remove_emergencia(self) -> None:
-        self._open()
-        self.execute(
-            "UPDATE parametros_moa_parametrosusina "
-            "SET emergencia_acionada = 0 "
-            "WHERE id = 1;"
-        )
-        self._close()
-
+    @classmethod
     def insert_debug(
-        self,
-        ts,
-        kp,
-        ki,
-        kd,
-        kie,
-        cp,
-        ci,
-        cd,
-        cie,
-        sp1,
-        p1,
-        sp2,
-        p2,
-        nv,
-        erro,
-        ma,
-        cx_kp,
-        cx_ki,
-        cx_kie,
-        cx_c_ie,
-    ):
-        q = (
+        cls, ts,
+        kp, ki,
+        kd, kie,
+        cp, ci,
+        cd, cie,
+        sp1, p1,
+        sp2, p2,
+        nv, erro,
+        ma
+    ) -> None:
+        cls._open()
+        cls.execute(
             "INSERT INTO `debug`.`moa_debug` "
             "VALUES (%s,%s, "
-            "%s,%s, "
-            "%s,%s, "
-            "%s,%s, "
-            "%s,%s, "
-            "%s,%s, "
-            "%s,%s, "
-            "%s,%s, "
-            "%s,%s, "
-            "%s,%s);"
+                    "%s,%s, "
+                    "%s,%s, "
+                    "%s,%s, "
+                    "%s,%s, "
+                    "%s,%s, "
+                    "%s,%s, "
+                    "%s,%s);",
+            tuple([
+                ts, kp,
+                ki, kd,
+                kie, cp,
+                ci, cd,
+                cie, sp1,
+                p1, sp2,
+                p2, nv,
+                erro,ma
+                ]),
         )
-        self._open()
-        self.execute(
-            q,
-            tuple(
-                [
-                    ts,
-                    kp,
-                    ki,
-                    kd,
-                    kie,
-                    cp,
-                    ci,
-                    cd,
-                    cie,
-                    sp1,
-                    p1,
-                    sp2,
-                    p2,
-                    nv,
-                    erro,
-                    ma,
-                    cx_kp,
-                    cx_ki,
-                    cx_kie,
-                    cx_c_ie,
-                ]
-            ),
-        )
-        self._close()
-
-    def get_executabilidade(self, id_comando):
-        q = "SELECT executavel_em_autmoatico, executavel_em_manual FROM parametros_moa_comando WHERE id = %s"
-        self._open()
-        self.execute(q, tuple([id_comando]))
-        parametros_raw = self.fetchone()
-        self._close()
-        return {
-            "executavel_em_autmoatico": parametros_raw[0],
-            "executavel_em_manual": parametros_raw[1],
-        }
-
-    def get_contato_emergencia(self):
-        self._open()
-        self.execute("SELECT * FROM parametros_moa_contato")
-        rows = self.fetchall()
-        parametros = {}
-        for row in range(len(rows)):
-            parametros = rows
-        self._close()
-        return parametros
+        cls._close()

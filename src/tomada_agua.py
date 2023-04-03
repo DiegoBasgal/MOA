@@ -119,7 +119,7 @@ class TomadaAgua(Usina):
 
             if condic_flag in (CONDIC_NORMALIZAR, CONDIC_INDISPONIBILIZAR):
                 logger.info("[SA] Foram detectados condicionadores ativos!")
-                [logger.info(f"[SA] Condicionador: \"{condic.descr}\", Gravidade: \"{condic.gravidade}\".") for condic in condics_ativos]
+                [logger.info(f"[SA] Condicionador: \"{condic.descricao}\", Gravidade: \"{condic.gravidade}\".") for condic in condics_ativos]
         return condic_flag
 
     def leitura_periodica(self) -> None:
@@ -161,17 +161,17 @@ class TomadaAgua(Usina):
         # CONDICIONADORES ESSENCIAIS
         # Normalizar
             # Bit Invertido
-        self.leitura_sem_emergencia_tda = LeituraOpcBit(OPC_UA["TDA"]["SEM_EMERGENCIA"], 24, True)
+        self.leitura_sem_emergencia_tda = LeituraOpcBit(OPC_UA["TDA"]["SEM_EMERGENCIA"], 24, True, "TDA_SEM_EMERGENCIA")
         self.condicionadores_essenciais.append(CondicionadorBase(self.leitura_sem_emergencia_tda, CONDIC_NORMALIZAR))
 
         # CONDICIONADORES
         # Normalizar
             # Bit Invertido
-        self.leitura_ca_com_tensao = LeituraOpcBit(OPC_UA["TDA"]["COM_TENSAO_CA"], 11, True)
+        self.leitura_ca_com_tensao = LeituraOpcBit(OPC_UA["TDA"]["COM_TENSAO_CA"], 11, True, "TDA_COM_TENSAO_CA")
         self.condicionadores.append(CondicionadorBase(self.leitura_ca_com_tensao, CONDIC_NORMALIZAR))
 
             # Bit Normal
-        self.leitura_falha_ligar_bomba_uh = LeituraOpcBit(OPC_UA["TDA"]["UH_FALHA_LIGAR_BOMBA"], 2)
+        self.leitura_falha_ligar_bomba_uh = LeituraOpcBit(OPC_UA["TDA"]["UH_FALHA_LIGAR_BOMBA"], 2, "TDA_UH_FALHA_LIGAR_BOMBA")
         self.condicionadores.append(CondicionadorBase(self.leitura_falha_ligar_bomba_uh, CONDIC_NORMALIZAR))
 
 

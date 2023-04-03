@@ -11,18 +11,17 @@ from unidade_geracao import UnidadeGeracao
 
 class CondicionadorBase:
     def __init__(
-            self, 
+            self,
             leitura: LeituraOpc | LeituraModbus | None = ...,
             gravidade: int | None = ...,
             etapas: list | None = ...,
-            id_unidade: int | None = ...,
-            descricao: str | None = ...
+            id_unidade: int | None = ...
         ):
         self.__leitura = leitura
         self.__etapas = [] if etapas is None else etapas
         self.__gravidade = 2 if gravidade is None else gravidade
         self.__id_unidade = None if id_unidade is None else id_unidade
-        self.__descricao = None if descricao is None else descricao
+        self.__descricao = leitura.descricao
 
         self._ugs: list[UnidadeGeracao]
 

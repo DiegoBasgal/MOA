@@ -4,6 +4,7 @@ __credits__ = ["Lucas Lavratti", " Henrique Pfeifer", ...]
 __description__ = "Este módulo corresponde a implementação da máquina de estados do Módulo de Operação Autônoma."
 
 from usina import *
+from agendamentos import Agendamentos
 
 class StateMachine:
     def __init__(self, initial_state):
@@ -113,7 +114,7 @@ class ControleAgendamentos(State):
         self.usn.estado_moa = MOA_SM_CONTROLE_AGENDAMENTOS
 
     def run(self):
-        self.usn.agn.verificar_agendamentos()
+        Agendamentos.verificar_agendamentos()
         return ControleDados() if self.usn.modo_autonomo else ControleManual()
 
 class ControleManual(State):
@@ -166,7 +167,7 @@ class ControleEmergencia(State):
         elif self.usn.bd_emergencia:
             logger.warning("Emergência acionada via página WEB, aguardando reset pela aba emergência.")
             while self.usn.bd_emergencia:
-                self.usn.atualizar_parametros_db(self.usn.bd.get_parametros_usina())
+                self.usn.atualizar_parametros_db(BancoDados.get_parametros_usina())
                 if not self.usn.bd_emergencia:
                     self.usn.bd_emergencia = False
                     return self

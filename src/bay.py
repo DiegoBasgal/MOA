@@ -11,6 +11,7 @@ class Bay(Usina):
         super().__init__(self)
 
     def verificar_status_DJs(self) -> bool:
+        
         return
 
     def verificar_condicionadores(self) -> int:

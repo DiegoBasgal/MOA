@@ -154,10 +154,11 @@ class ServicoAuxiliar(Usina):
         elif not self.leitura_falha_tubo_succao_bomba_recalque and self.voip_dict["BOMBA_RECALQUE_TUBO_SUCCAO_FALHA"]:
             self.voip_dict["BOMBA_RECALQUE_TUBO_SUCCAO_FALHA"] = False
 
+    # TODO adicionar descricao nas variaves de leituras de condicionadores
     def iniciar_leituras_condicionadores(self) -> None:
         # CONDICIONADORES ESSENCIAIS
         # MOA -> Indisponibilizar
-        self.leitura_in_emergencia = self.clp_moa.read_coils(MB["MOA"]["IN_EMERG"])[0]
+        self.leitura_in_emergencia = self.clp["MOA"].read_coils(MB["MOA"]["IN_EMERG"])[0]
         self.condicionadores_essenciais.append(CondicionadorBase(self.leitura_in_emergencia, CONDIC_INDISPONIBILIZAR))
 
         # Normalizar

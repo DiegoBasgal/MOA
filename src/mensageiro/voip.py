@@ -1,7 +1,6 @@
 import os
 import json
 
-from abc import abstractmethod
 from urllib.request import Request, urlopen
 
 from usina import *
@@ -13,8 +12,6 @@ class Voip:
     with open(arquivo, "r") as file:
         cfg = json.load(file)
 
-    bd = BancoDados()
-
     lista_padrao = [["Diego", "41999111134"], """["Henrique", "41999610053"]"""]
 
     token_data = str(f"username={cfg['caller_voip']}&password={cfg['user_token']}&grant_type=password").encode()
@@ -25,7 +22,7 @@ class Voip:
 
     voip_dict = Dicionarios.voip
 
-    @abstractmethod
+    @staticmethod
     def verificar_expediente(agenda) -> list:
         contatos = []
         now = datetime.now(pytz.timezone("Brazil/East")).replace(tzinfo=None)
@@ -45,7 +42,7 @@ class Voip:
     @classmethod
     def carregar_contatos(cls) -> list:
         agenda = []
-        parametros = cls.bd.get_contato_emergencia()
+        parametros = BancoDados.get_contato_emergencia()
 
         for i in range(len(parametros)):
             try:
