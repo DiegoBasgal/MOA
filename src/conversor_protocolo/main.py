@@ -56,17 +56,9 @@ fh.setFormatter(logFormatter)
 fh.setLevel(logging.DEBUG)
 logger.addHandler(fh)
 
-# Método de leitura do arquivo de dados json
-def leitura_json():
-    
+main_conversor: bool = False
 
-# Método de escrever no arquivo de dados json após mudanças
-def escrita_json(valor) -> None:
-    arquivo = os.path.join(os.path.dirname(__file__), "dados.json")
-    with open(arquivo, "w") as file:
-        json.dump(valor, file, indent=4)
-
-if __name__ == "__main__":
+if main_conversor:
     tentativas: int = 0
     pronto: bool = False
 
