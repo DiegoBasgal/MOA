@@ -1,0 +1,11 @@
+uwsgi
+future
+numpy
+Django
+matplotlib
+python-telegram-bot
+pyModbusTCP
+mysqlclient
+pyodbc
+scipy
+python-telegram-bot

@@ -30,7 +30,7 @@ class ParametrosUsina(models.Model):
     pot_nominal_ug = models.DecimalField(max_digits=10, decimal_places=0, default=3600)
     pot_disp = models.DecimalField(max_digits=10, decimal_places=0, default=0)
     timer_erro = models.IntegerField(default=30)
-    valor_ie_inicial = models.DecimalField(max_digits=10, decimal_places=0, default=0.5)
+    valor_ie_inicial = models.DecimalField(max_digits=10, decimal_places=1, default=0.5)
     modo_de_escolha_das_ugs = models.IntegerField(default=2)
 
     ug1_disp = models.DecimalField(max_digits=10, decimal_places=0, default=1)
