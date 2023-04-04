@@ -292,9 +292,10 @@ class Comporta(TomadaAgua):
                     logger.debug(f"[TDA][CP{self.id}] Enviando comando de abertura para a comporta {self.id}")
                     self.escrita_opc.escrever(self.opc, OPC_UA["TDA"][f"CP{self.id}_CMD_ABERTURA_TOTAL"], 1, 1)
                     return
+
         except Exception as e:
             logger.exception(f"[TDA][CP{self.id}] Houve um erro ao abrir a comporta. Exception: \"{repr(e)}\"")
-            logger.exception(f"[TDA][CP{self.id}] Traceback: {traceback.print_stack}")
+            logger.debug(f"[TDA][CP{self.id}] Traceback: {traceback.print_stack}")
 
     def fechar_comporta(self) -> None:
         try:
@@ -307,7 +308,7 @@ class Comporta(TomadaAgua):
 
         except Exception as e:
             logger.exception(f"[TDA][CP{self.id}] Houve um erro ao fechar a comporta. Exception: \"{repr(e)}\"")
-            logger.exception(f"[TDA][CP{self.id}] Traceback: {traceback.print_stack}")
+            logger.debug(f"[TDA][CP{self.id}] Traceback: {traceback.print_stack}")
 
     def cracking_comporta(self) -> None:
         try:
@@ -321,7 +322,7 @@ class Comporta(TomadaAgua):
 
         except Exception as e:
             logger.exception(f"[TDA][CP{self.id}] Houve um erro ao realizar o cracking da comporta. Exception: \"{repr(e)}\"")
-            logger.exception(f"[TDA][CP{self.id}] Traceback: {traceback.print_stack}")
+            logger.debug(f"[TDA][CP{self.id}] Traceback: {traceback.print_stack}")
 
     def verificar_pressao(self) -> None:
         try:
@@ -335,7 +336,7 @@ class Comporta(TomadaAgua):
 
         except Exception as e:
             logger.exception(f"[TDA][CP{self.id}] Houve um erro ao verificar a pressão da UH da comporta. Exception: \"{repr(e)}\"")
-            logger.exception(f"[TDA][CP{self.id}] Traceback: {traceback.print_stack}")
+            logger.debug(f"[TDA][CP{self.id}] Traceback: {traceback.print_stack}")
 
     def verificar_precondicoes_comporta(self) -> bool:
         self.rearme_falhas_comporta()

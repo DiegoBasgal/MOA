@@ -72,7 +72,7 @@ class ControleNormal(State):
         elif self.usn.clp_emergencia or self.usn.bd_emergencia:
             return ControleEmergencia()
 
-        elif len(self.usn.agn.agendamentos_pendentes()) > 0:
+        elif len(Agendamentos.agendamentos_pendentes()) > 0:
             return ControleAgendamentos()
 
         else:
@@ -141,7 +141,7 @@ class ControleManual(State):
             sleep(2)
             return ControleDados()
 
-        return ControleAgendamentos() if len(self.usn.agn.agendamentos_pendentes()) > 0 else self
+        return ControleAgendamentos() if len(Agendamentos.agendamentos_pendentes()) > 0 else self
 
 class ControleEmergencia(State):
     def __init__(self, usina):

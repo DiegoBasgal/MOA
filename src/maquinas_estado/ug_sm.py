@@ -21,7 +21,7 @@ class State:
         self.cfg = parent.cfg
 
     @abstractmethod
-    def step(self) -> object:
+    def step(self) -> "State":
         pass
 
     def normalizar_ug(self) -> bool:
@@ -118,7 +118,7 @@ class StateRestrito(State):
 
         return self
 
-    def espera_normalizar(self, delay: int):
+    def espera_normalizar(self, delay: int) -> None:
         while not self.parar_timer:
             sleep(max(0, time() + delay - time()))
             self.parar_timer = True

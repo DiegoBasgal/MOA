@@ -110,8 +110,8 @@ class UnidadeGeracao(Usina):
             else:
                 return self._ultima_etapa_atual
         except Exception as e:
-            logger.exception(f"[USN] Houve um erro na leitura de etapa atual da UG. Exception: \"{repr(e)}\"")
-            logger.exception(f"[USN] Traceback: {traceback.print_stack}")
+            logger.exception(f"[UG{self.id}] Houve um erro na leitura de etapa atual da UG. Exception: \"{repr(e)}\"")
+            logger.debug(f"[UG{self.id}] Traceback: {traceback.print_stack}")
             return 99
 
 
@@ -215,8 +215,10 @@ class UnidadeGeracao(Usina):
         try:
             self.clp["MOA"].write_single_coil(MB["MOA"][f"OUT_ETAPA_UG{self.id}"], [self.etapa_atual])
             self.clp["MOA"].write_single_coil(MB["MOA"][f"OUT_STATE_UG{self.id}"], [self.codigo_state])
+
         except Exception | ConnectionError | ValueError as e:
-            logger.exception(f"[UG{self.id}] Não foi possível escrever os valores no CLP MOA. Exception: \"{repr(e)}\".\nTraceback: {traceback.print_stack}")
+            logger.exception(f"[UG{self.id}] Não foi possível escrever os valores no CLP MOA. Exception: \"{repr(e)}\".")
+            logger.debug(f"[UG{self.id}] Traceback: {traceback.print_stack}")
 
     def partir(self) -> bool:
         try:
@@ -230,12 +232,14 @@ class UnidadeGeracao(Usina):
                 res = self.escrita_opc.escrever_bit(OPC_UA["UG"][f"UG{self.id}_CMD_UHLM_REARME_FALHAS"], valor=1, bit=16)
                 res = self.escrita_opc.escrever_bit(OPC_UA["UG"][f"UG{self.id}_CMD_PARTIDA_CMD_SINCRONISMO"], valor=1, bit=10)
                 self.enviar_setpoint(self.setpoint)
+            
             else:
                 logger.debug(f"[UG{self.id}] A Unidade já está sincronizada.")
             return res
 
         except Exception | ConnectionError | ValueError as e:
-            logger.exception(f"[UG{self.id}] Não foi possível partir a Unidade. Exception: \"{repr(e)}\".\nTraceback: {traceback.print_stack}")
+            logger.exception(f"[UG{self.id}] Não foi possível partir a Unidade. Exception: \"{repr(e)}\".")
+            logger.debug(f"[UG{self.id}] Traceback: {traceback.print_stack}")
             return False
 
     def parar(self) -> bool:
@@ -244,16 +248,19 @@ class UnidadeGeracao(Usina):
                 logger.info(f"[UG{self.id}] Enviando comando de parada.")
                 self.enviar_setpoint(0)
                 return self.escrita_opc.escrever_bit(OPC_UA["UG"][f"UG{self.id}_CMD_PARADA_CMD_DESABILITA_UHLM"], valor=1, bit=15)
+            
             else:
                 logger.debug(f"[UG{self.id}] A Unidade já está parada.")
 
         except Exception | ConnectionError | ValueError as e:
-            logger.exception(f"[UG{self.id}] Não foi possível parar a Unidade. Exception: \"{repr(e)}\".\nTraceback: {traceback.print_stack}")
+            logger.exception(f"[UG{self.id}] Não foi possível parar a Unidade. Exception: \"{repr(e)}\".")
+            logger.debug(f"[UG{self.id}] Traceback: {traceback.print_stack}")
             return False
 
     def enviar_setpoint(self, setpoint_kw: int) -> bool:
         try:
             logger.debug(f"[UG{self.id}] Enviando setpoint {int(self.setpoint)} kW.")
+
             if setpoint_kw > 1:
                 self.setpoint = int(setpoint_kw)
                 res = self.escrita_opc.escrever_bit(OPC_UA["UG"][f"UG{self.id}_CMD_RESET_FALHAS_PASSOS"], valor=1, bit=0)
@@ -266,12 +273,14 @@ class UnidadeGeracao(Usina):
                 return res
 
         except Exception | ConnectionError | ValueError as e:
-            logger.exception(f"[UG{self.id}] Não foi possivel enviar o setpoint para a Unidade. Exception: \"{repr(e)}\".\nTraceback: {traceback.print_stack}")
+            logger.exception(f"[UG{self.id}] Não foi possivel enviar o setpoint para a Unidade. Exception: \"{repr(e)}\".")
+            logger.debug(f"[UG{self.id}] Traceback: {traceback.print_stack}")
             return False
 
     def reconhece_reset_alarmes(self) -> bool:
         try:
             logger.info(f"[UG{self.id}] Enviando comando de reconhecer e resetar alarmes.")
+            
             for x in range(3):
                 logger.debug(f"[UG{self.id}] Passo: {x}/3")
                 self.remover_trip_eletrico()
@@ -283,7 +292,8 @@ class UnidadeGeracao(Usina):
             return True
 
         except Exception | ConnectionError | ValueError as e:
-            logger.exception(f"[UG{self.id}] Não foi possivel enviar o comando de reconhecer e resetar alarmes. Exception: \"{repr(e)}\".\nTraceback: {traceback.print_stack}")
+            logger.exception(f"[UG{self.id}] Não foi possivel enviar o comando de reconhecer e resetar alarmes. Exception: \"{repr(e)}\".")
+            logger.debug(f"[UG{self.id}] Traceback: {traceback.print_stack}")
             return False
 
     def acionar_trip_logico(self) -> bool:
@@ -292,7 +302,8 @@ class UnidadeGeracao(Usina):
             return self.escrita_opc.escrever_bit(OPC_UA["UG"][f"UG{self.id}_CMD_PARADA_EMERGENCIA"], 4, 1)
 
         except Exception | ConnectionError | ValueError as e:
-            logger.exception(f"[UG{self.id}] Não foi possivel acionar o TRIP lógico. Exception: \"{repr(e)}\".\nTraceback: {traceback.print_stack}")
+            logger.exception(f"[UG{self.id}] Não foi possivel acionar o TRIP lógico. Exception: \"{repr(e)}\".")
+            logger.debug(f"[UG{self.id}] Traceback: {traceback.print_stack}")
             return False
 
     def remover_trip_logico(self) -> bool:
@@ -309,7 +320,8 @@ class UnidadeGeracao(Usina):
             return res
 
         except Exception | ConnectionError | ValueError as e:
-            logger.exception(f"[UG{self.id}] Não foi possível remover o TRIP lógico. Exception: \"{repr(e)}\".\nTraceback: {traceback.print_stack}")
+            logger.exception(f"[UG{self.id}] Não foi possível remover o TRIP lógico. Exception: \"{repr(e)}\".")
+            logger.debug(f"[UG{self.id}] Traceback: {traceback.print_stack}")
             return False
 
     def acionar_trip_eletrico(self) -> bool:
@@ -318,7 +330,8 @@ class UnidadeGeracao(Usina):
             return self.clp["MOA"].write_single_coil(MB["MOA"][f"OUT_BLOCK_UG{self.id}"], [1])
 
         except Exception | ConnectionError | ValueError as e:
-            logger.exception(f"[UG{self.id}] Não foi possível acionar o TRIP elétrico. Exception: \"{repr(e)}\".\nTraceback: {traceback.print_stack}")
+            logger.exception(f"[UG{self.id}] Não foi possível acionar o TRIP elétrico. Exception: \"{repr(e)}\".")
+            logger.debug(f"[UG{self.id}] Traceback: {traceback.print_stack}")
             return False
 
     def remover_trip_eletrico(self) -> bool:
@@ -332,7 +345,8 @@ class UnidadeGeracao(Usina):
                 return self.escrita_opc.escrever_bit(OPC_UA["SE"]["CMD_SE_FECHA_52L"], valor=1, bit=4)
 
         except Exception | ConnectionError | ValueError as e:
-            logger.exception(f"[UG{self.id}] Não foi possível remover o TRIP elétrico. Exception: \"{repr(e)}\".\nTraceback: {traceback.print_stack}")
+            logger.exception(f"[UG{self.id}] Não foi possível remover o TRIP elétrico. Exception: \"{repr(e)}\".")
+            logger.debug(f"[UG{self.id}] Traceback: {traceback.print_stack}")
             return False
 
     def resetar_emergencia(self) -> bool:
@@ -346,7 +360,8 @@ class UnidadeGeracao(Usina):
             return res
 
         except Exception | ConnectionError | ValueError as e:
-            logger.exception(f"[UG{self.id}] Houve um erro ao realizar o reset geral. Exception: \"{repr(e)}\".\nTraceback: {traceback.print_stack}")
+            logger.exception(f"[UG{self.id}] Houve um erro ao realizar o reset geral. Exception: \"{repr(e)}\".")
+            logger.debug(f"[UG{self.id}] Traceback: {traceback.print_stack}")
             return False
 
     def verificar_partindo(self) -> None:
@@ -432,7 +447,7 @@ class UnidadeGeracao(Usina):
 
             if condic_flag in (CONDIC_NORMALIZAR, CONDIC_AGUARDAR, CONDIC_INDISPONIBILIZAR):
                 logger.info(f"[UG{self.id}] Foram detectados condicionadores ativos!")
-                [logger.info(f"[UG{self.id}] Condicionador: \"{condic.descr}\", Gravidade: \"{condic.gravidade}\".") for condic in condics_ativos]
+                [logger.info(f"[UG{self.id}] Condicionador: \"{condic.descricao}\", Gravidade: \"{condic.gravidade}\".") for condic in condics_ativos]
         return condic_flag
 
     def atualizar_limites_condicionadores(self, parametros) -> None:
@@ -464,7 +479,8 @@ class UnidadeGeracao(Usina):
             self.condicionador_pressao_turbina_ug.valor_limite = float(parametros[f"limite_pressao_turbina_ug{self.id}"])
 
         except Exception | ValueError as e:
-            logger.exception(f"[UG{self.id}] Houve um erro ao atualizar os limites de temperaturas dos condicionadores. Exception: \"{repr(e)}\".\nTraceback: {traceback.print_stack}")
+            logger.exception(f"[UG{self.id}] Houve um erro ao atualizar os limites de temperaturas dos condicionadores. Exception: \"{repr(e)}\".")
+            logger.debug(f"[UG{self.id}] Traceback: {traceback.print_stack}")
 
     def controle_limites_operacao(self) -> None:
         if self.leitura_temperatura_fase_R.valor >= self.condicionador_temperatura_fase_r_ug.valor_base:

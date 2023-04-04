@@ -37,7 +37,7 @@ class ClientesUsina:
         auto_open=True,
         auto_close=True
     )
-    clp["UG2"]= ModbusClient(
+    clp["UG2"] = ModbusClient(
         host=dict_ips["UG2_slave_ip"],
         port=dict_ips["UG2_slave_porta"],
         unit_id=1,
@@ -50,6 +50,7 @@ class ClientesUsina:
     def ping(host) -> bool:
         return [True if subprocess.call(["ping", "-c", "1", "-w", "1", host], stdout=subprocess.PIPE) == 0 else False for _ in range(2)]
 
+    @classmethod
     def open_all(cls) -> None:
         logger.debug("[CLI] Iniciando conexões OPC e ModBus...")
         if not cls.opc.connect():
@@ -59,12 +60,14 @@ class ClientesUsina:
             raise ModBusClientFail(clp) if not clp.open() else ...
         logger.info("[CLI] Conexões inciadas.")
 
+    @classmethod
     def close_all(cls) -> None:
         logger.debug("[CLI] Encerrando conexões...")
         cls.opc.disconnect()
         [clp.close() for _ , clp in cls.clp.items()]
         logger.debug("[CLI] Conexões encerradas.")
 
+    @classmethod
     def ping_clients(cls) -> None:
         try:
             if not cls.ping(cls.dict_ips["opc_server"]):

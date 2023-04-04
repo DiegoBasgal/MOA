@@ -58,9 +58,7 @@ logger.addHandler(fh)
 
 # Método de leitura do arquivo de dados json
 def leitura_json():
-    arquivo = os.path.join(os.path.dirname(__file__), "dados.json")
-    with open(arquivo, "r") as file:
-        return json.load(file)
+    
 
 # Método de escrever no arquivo de dados json após mudanças
 def escrita_json(valor) -> None:
@@ -83,11 +81,14 @@ if __name__ == "__main__":
         else:
             try:
                 logger.info("Carregando arquivos de dados (\"dados.json\").")
-                dados = leitura_json()
+
+                arquivo = os.path.join(os.path.dirname(__file__), "dados.json")
+                with open(arquivo, "r") as file:
+                    dados = json.load(file)
 
             except Exception as e:
                 logger.exception(f"Houve um erro ao carregar o arquivo de dados. Exception: \"{repr(e)}\"")
-                logger.exception(f"Traceback: {traceback.print_stack}")
+                logger.debug(f"Traceback: {traceback.print_stack}")
                 sleep(2)
                 continue
 
@@ -98,17 +99,18 @@ if __name__ == "__main__":
 
             except Exception as e:
                 logger.exception(f"Houve um erro ao inciar o servidro OPC DA. Exception: \"{repr(e)}\"")
-                logger.exception(f"Traceback: {traceback.print_stack}")
+                logger.debug(f"Traceback: {traceback.print_stack}")
                 sleep(2)
                 continue
 
             try:
                 logger.info("Inciando classe de comunicação OPC DA / DNP 3.0")
-                com = ExternoParaNativo(opc, dados)
+                com = ExternoParaNativo(dados)
+                com.opc_da = opc
 
             except Exception as e:
                 logger.exception(f"Houve um erro ao instanciar a classe de comunicação. Exception: \"{repr(e)}\"")
-                logger.exception(f"Traceback: {traceback.print_stack}")
+                logger.debug(f"Traceback: {traceback.print_stack}")
                 sleep(2)
                 continue
 

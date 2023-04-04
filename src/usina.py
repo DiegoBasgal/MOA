@@ -42,9 +42,8 @@ class Usina:
         else:
             self.cfg = cfg
 
-        self.clientes = ClientesUsina
-        self.opc = self.clientes.opc
-        self.clp = self.clientes.clp
+        self.opc = ClientesUsina.opc
+        self.clp = ClientesUsina.clp
 
         # INCIALIZAÇÃO DE OBJETOS DA USINA
         # Setores da Usina
@@ -52,14 +51,12 @@ class Usina:
         self.se: Subestacao = Subestacao(self)
         self.tda: TomadaAgua = TomadaAgua(self)
         self.sa: ServicoAuxiliar = ServicoAuxiliar(self)
-
-        self.setores: list[Bay | Subestacao | TomadaAgua | ServicoAuxiliar] = [self.bay, self.se, self.tda, self.sa]
+        self.setores = [self.bay, self.se, self.tda, self.sa]
 
         # Unidades de Geração
         self.ug1: UnidadeGeracao = UnidadeGeracao(self, 1)
         self.ug2: UnidadeGeracao = UnidadeGeracao(self, 2)
-
-        self.ugs: list[UnidadeGeracao] = [self.ug1, self.ug2]
+        self.ugs = [self.ug1, self.ug2]
 
         self.ug1.lista_ugs = self.ugs
         self.ug2.lista_ugs = self.ugs
@@ -67,6 +64,7 @@ class Usina:
         # Setter para o client base da Leitura e Escrita OPC (Caso de XAV pois há apenas 1 servidor opc na IHM)
         self.escrita_opc: EscritaOpc | EscritaOpcBit = EscritaOpc()
         self.escrita_opc.client = self.opc
+        ModbusClient()
 
         # ATRIBUIÇÃO DE VARIÀVEIS
         # PRIVADAS
@@ -189,8 +187,8 @@ class Usina:
             [self.escrita_opc.escrever_bit(OPC_UA["UG"][f"UG{ug.id}_CMD_PARADA_EMERGENCIA"], valor=0, bit=4) for ug in self.ugs]
 
         except Exception as e:
-            logger.exception(f"[CON] Houve um erro ao realizar acionar a emergência. Exception: \"{repr(e)}\"")
-            logger.exception(f"[CON] Traceback: {traceback.print_stack}")
+            logger.exception(f"[USN] Houve um erro ao realizar acionar a emergência. Exception: \"{repr(e)}\"")
+            logger.debug(f"[USN] Traceback: {traceback.print_stack}")
             return False
 
     def normalizar_usina(self) -> bool:
@@ -227,7 +225,7 @@ class Usina:
 
         except Exception as e:
             logger.exception(f"[USN] Houve um erro ao ligar por Voip. Exception: \"{repr(e)}\".")
-            logger.exception(f"Traceback: {traceback.print_stack}")
+            logger.debug(f"[USN] Traceback: {traceback.print_stack}")
 
     def atualizar_parametros_db(self, parametros) -> None:
         try:
@@ -243,7 +241,7 @@ class Usina:
 
         except Exception as e:
             logger.exception(f"[USN] Houve um erro ao ler e atualizar os parâmetros do Banco de Dados. Exception: \"{repr(e)}\"")
-            logger.exception(f"[USN] Traceback: {traceback.print_stack}")
+            logger.debug(f"[USN] Traceback: {traceback.print_stack}")
 
     def atualizar_cfg(self, parametros) -> None:
         try:
@@ -264,7 +262,7 @@ class Usina:
 
         except Exception as e:
             logger.exception(f"[USN] Houve um erro ao atualizar o arquivo de configuração \"cfg.json\". Exception: \"{repr(e)}\"")
-            logger.exception(f"[USN] Traceback: {traceback.print_stack}")
+            logger.debug(f"[USN] Traceback: {traceback.print_stack}")
 
     def heartbeat(self) -> None:
         try:
@@ -317,10 +315,10 @@ class Usina:
 
         except Exception as e:
             logger.exception(f"[USN] Houve um erro ao tentar escrever valores modbus no CLP MOA. Exception: \"{repr(e)}\"")
-            logger.exception(f"[USN] Traceback: {traceback.print_stack}")
+            logger.debug(f"[USN] Traceback: {traceback.print_stack}")
 
     def ler_valores(self) -> None:
-        self.cln.ping_clients()
+        ClientesUsina.ping_clients()
         try:
             if self.clp["MOA"].read_coils(MB["MOA"]["IN_EMERG"])[0] == 1 and not self.glb_dict["avisado_eletrica"]:
                 self.glb_dict["avisado_eletrica"] = True
@@ -345,7 +343,7 @@ class Usina:
 
         except Exception as e:
             logger.exception(f"[USN] Houve um erro ao tentar ler valores modbus no CLP MOA. Exception: \"{repr(e)}\"")
-            logger.exception(f"[USN] Traceback: {traceback.print_stack}")
+            logger.debug(f"[USN] Traceback: {traceback.print_stack}")
 
         self.heartbeat()
         self.tda.atualizar_montante_recente()
@@ -376,7 +374,7 @@ class Usina:
 
         except Exception as e:
             logger.exception(f"[USN] Houve um erro ao inserir os valores no banco. Exception: \"{repr(e)}\"")
-            logger.exception(f"[USN] Traceback: {traceback.print_stack}")
+            logger.debug(f"[USN] Traceback: {traceback.print_stack}")
 
         try:
             BancoDados.insert_debug(
@@ -400,7 +398,7 @@ class Usina:
 
         except Exception as e:
             logger.exception(f"[USN] Houve um erro ao inserir dados DEBUG do controle de potência normal no banco. Exception: \"{repr(e)}\"")
-            logger.exception(f"[USN] Traceback: {traceback.print_stack}")
+            logger.debug(f"[USN] Traceback: {traceback.print_stack}")
 
     def ajuste_potencia(self, pot_alvo) -> float:
         self.pot_alvo_anterior = pot_alvo if self.pot_alvo_anterior == -1 else ...
@@ -420,7 +418,7 @@ class Usina:
                 pot_alvo = self.pot_alvo_anterior * (1 - ((pot_medidor - self.cfg["pot_maxima_alvo"]) / self.cfg["pot_maxima_alvo"]))
         except TypeError as te:
             logger.exception(f"[USN] A comunicação com os MFs falharam. Exception: \"{repr(te)}\"")
-            logger.exception(f"[USN] Traceback: {traceback.print_stack}")
+            logger.debug(f"[USN] Traceback: {traceback.print_stack}")
 
         self.pot_alvo_anterior = pot_alvo
 
