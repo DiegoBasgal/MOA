@@ -30,25 +30,20 @@ def monitoramento_view(request, *args, **kwargs):
 
     context = {
         "usina": usina,
-        "estado": "{}".format(usina.status_moa),
-        "em_acionada": "{}".format(usina.emergencia_acionada),
+        "em_acionada": "Sim" if usina.emergencia_acionada else "Não",
         "timestamp": usina.timestamp.strftime("%d/%m/%Y, %H:%M:%S"),
         "setpot_usina": "{:1.3f}".format(usina.ug1_setpot + usina.ug2_setpot + usina.ug3_setpot),
         "setpot_ug1": "{:1.3f}".format(usina.ug1_setpot),
         "pot_ug1": "{:1.3f}".format(usina.ug1_pot),
-        "tempo_ug1": "{:.2f}".format(usina.ug1_tempo + 45707),
         "setpot_ug2": "{:1.3f}".format(usina.ug2_setpot),
         "pot_ug2": "{:1.3f}".format(usina.ug2_pot),
-        "tempo_ug2": "{:.2f}".format(usina.ug2_tempo + 49393),
         "setpot_ug3": "{:1.3f}".format(usina.ug3_setpot),
         "pot_ug3": "{:1.3f}".format(usina.ug3_pot),
-        "tempo_ug3": "{:.2f}".format(usina.ug3_tempo + 45464),
         "nv_alvo": "{:3.2f}".format(usina.nv_alvo),
         "aguardo": "Sim" if usina.aguardando_reservatorio > 0 else "Não",
         "nv_montante": "{:3.2f}".format(usina.nv_montante),
-        "LOCAL_MODBUS_PORT": usina.modbus_server_porta,
-        "CLP_IP": usina.clp_ip,
-        "CLP_ON": "ONLINE" if usina.clp_online else "ERRO/OFFLINE",
+        "CLP_MOA": usina.clp_moa_ip,
+        "CLP_Status": "ONLINE" if usina.clp_online else "ERRO/OFFLINE",
     }
 
     if 405 <= usina.nv_montante <= 405.15:
@@ -72,6 +67,9 @@ def monitoramento_view(request, *args, **kwargs):
     )
 
     client_sa = ModbusClient("192.168.0.50", 502, unit_id=1, timeout=0.5, auto_close=True)
+    client_ug1 = ModbusClient("192.168.0.51", 5002, unit_id=1, timeout=0.5, auto_close=True)
+    client_ug2 = ModbusClient("192.168.0.52", 5002, unit_id=1, timeout=0.5, auto_close=True)
+    client_ug3 = ModbusClient("192.168.0.53", 503, unit_id=1, timeout=0.5, auto_close=True)
 
     if client_sa.open():
         reg_dj = client_sa.read_coils(17)[0]
@@ -98,18 +96,34 @@ def monitoramento_view(request, *args, **kwargs):
                 regs[0], regs[1], regs[2], regs[3], regs[4], regs[5], regs[6] * 1000
             )
             context["hb_datestring"] = hb_detetime.strftime("%d/%m/%Y, %H:%M:%S")
-        
+
         if context["ug1_etapa"] == 99:
             context["ug1_state"] = 4
-        
+
         if context["ug2_etapa"] == 99:
             context["ug2_state"] = 4
-        
+
         if context["ug3_etapa"] == 99:
             context["ug3_state"] = 4
 
     else:
-        context["modbus_status"] = "Sem comunicação (client.open() falhou)"
+        context["modbus_status"] = "Sem comunicação"
+
+    if client_ug1.open():
+        hora = client_ug1.read_input_registers(51)[0]
+        minuto = (client_ug1.read_input_registers(52)[0] * (1/60))
+        context["tempo_ug1"] = f"{float((hora + 45657.39) + minuto):.2f}"
+
+    if client_ug2.open():
+        hora = client_ug2.read_input_registers(51)[0]
+        minuto = (client_ug2.read_input_registers(52)[0] * (1/60))
+        context["tempo_ug2"] = f"{float((hora + 49376.14) + minuto):.2f}"
+
+    if client_ug3.open():
+        hora = client_ug3.read_input_registers(51)[0]
+        minuto = (client_ug3.read_input_registers(52)[0] * (1/60))
+        context["tempo_ug3"] = f"{float((hora + 49001.22) + minuto):.2f}"
+
 
     tempo_desde_moa_comunicando = (
         datetime.datetime.now(usina.timestamp.tzinfo)

@@ -43,7 +43,7 @@ user_token = config["user_token"]
 caller_voip = config["caller_voip"]
 voz_habilitado = config["voz_habilitado"]
 lista_de_contatos_padrao = [
-    ["Diego", "41999111134"],
+    #["Diego", "41999111134"],
     #["Henrique", "41999610053"]
     #["Alex", "41996319885"],
     #["Escritorio", "41996570004"],

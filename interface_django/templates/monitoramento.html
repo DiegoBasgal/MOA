@@ -16,7 +16,7 @@
         h2 {
             color: white;
         }
-        
+
         h3 {
             color: white;
         }
@@ -258,15 +258,11 @@
             <label>{{ tempo_ug3 | floatformat:2 }} h</label><br><br>
         </div>
         <h3 style="margin-top: 20px; margin-bottom: 5px;">MOA:</h3>
-        <p style="margin-top: 1px; margin-left: 3px;">Estado:  {{ estado }}<br>
+        Heart-beat: {{ hb_datestring }}<br>
         Emergencia:  {{ em_acionada }}<br>
-        Aguardando reservatório? {{ aguardo }}<br>
-        Estado CLP:  {{ CLP_ON }} @ {{ CLP_IP }}</p>
-        
-        <h3 style="margin-top: 40px; margin-bottom: 5px;">Modbus Slave</h3>
-        <p style="margin-top: 1px; margin-left: 3px;">Porta:{{ LOCAL_MODBUS_PORT }}<br>
-        Status: {{ modbus_status}}.<br>
-        Heart-beat: {{ hb_datestring }}</p>
+        Aguardando reservatório: {{ aguardo }}<br>
+        Estado CLP:&ensp;{{ CLP_Status }} @ {{ CLP_MOA }}<br>
+        Servidor Modbus: {{modbus_status }}</p>
     </div>
     <br>
     <br>

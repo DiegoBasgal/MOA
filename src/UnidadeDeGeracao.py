@@ -11,12 +11,16 @@ import pytz
 import logging
 import traceback
 
-from src.codes import *
-from src.Leituras import *
-from time import sleep, time
 from threading import Thread
+from time import sleep, time
 from datetime import datetime
 from abc import abstractmethod
+
+from src.codes import *
+from src.Leituras import *
+from src.abstracao_usina import *
+from src.database_connector import Database
+from src.field_connector import FieldConnector
 from src.Condicionadores import CondicionadorBase
 
 # Class Stubs
@@ -50,11 +54,22 @@ class UnidadeDeGeracao:
     Esse módulo corresponde a implementação das unidades de geração.
     """
 
-    def __init__(self, id: int):
-        """
-        Args:
-            id (int): [description]
-        """
+    def __init__(self, id: int, cfg: dict = None, db: Database = None, con: FieldConnector = None):
+
+        if not cfg:
+            raise ValueError
+        else:
+            self.cfg = cfg
+
+        if None in (db, con):
+            self.logger.error(f"[UG{self.id}] Erro ao carregar parametros de conexão com banco e campo na classe. Reinciando intanciação interna.")
+            self.db = Database()
+            self.con = FieldConnector(cfg)
+        else:
+            self.db = db
+            self.cfg = cfg
+            self.con = con
+
         self.logger = logging.getLogger("__main__")
 
         # Variavéis internas (não são lidas nem escritas diretamente)
@@ -77,6 +92,50 @@ class UnidadeDeGeracao:
         self.deve_ler_condicionadores = False
         self.codigo_state = self.__codigo_state
 
+        self.clp_moa = ModbusClient(
+            host=self.cfg['moa_slave_ip'],
+            port=self.cfg['mos_slave_porta'],
+            timeout=0.5,
+            unit_id=1,
+            auto_open=True
+        )
+        self.clp_ug1 = ModbusClient(
+            host=self.cfg["UG1_slave_ip"],
+            port=self.cfg["UG1_slave_porta"],
+            timeout=0.5,
+            unit_id=1,
+            auto_open=True,
+        )
+        self.clp_ug2 = ModbusClient(
+            host=self.cfg["UG2_slave_ip"],
+            port=self.cfg["UG2_slave_porta"],
+            timeout=0.5,
+            unit_id=1,
+            auto_open=True,
+        )
+        self.clp_ug3 = ModbusClient(
+            host=self.cfg["UG3_slave_ip"],
+            port=self.cfg["UG3_slave_porta"],
+            timeout=0.5,
+            unit_id=1,
+            auto_open=True,
+        )
+        self.clp_sa = ModbusClient(
+            host=self.cfg["USN_slave_ip"],
+            port=self.cfg["USN_slave_porta"],
+            timeout=0.5,
+            unit_id=1,
+            auto_open=True,
+        )
+
+        self.potencia_ativa_kW = LeituraModbus(
+            "REG_SA_RetornosAnalogicos_Medidor_potencia_kw_mp",
+            self.clp_sa,
+            REG_SA_RetornosAnalogicos_MWR_PM_810_Potencia_Ativa,
+            1,
+            op=4,
+        )
+
     def debug_set_etapa_atual(self, var):
         self.__etapa_atual = var
 
@@ -95,9 +154,7 @@ class UnidadeDeGeracao:
             while not key[0:1] == "__":
                 key = "_" + key[:]
             setattr(self, key, val)
-            self.logger.debug(
-                "[UG{}] Variavél carregada: {} = {}.".format(self.id, key, val)
-            )
+            self.logger.debug(f"[UG{self.id}] Variavél carregada: {key} = {val}.")
 
     def interstep(self) -> None:
         raise NotImplementedError
@@ -114,17 +171,13 @@ class UnidadeDeGeracao:
         """
         try:
             self.logger.debug("")
-            self.logger.debug("[UG{}] Step -> (Tentativas de normalização: {}/{})".format(self.id, self.tentativas_de_normalizacao, self.limite_tentativas_de_normalizacao))
+            self.logger.debug(f"[UG{self.id}] Step -> (Tentativas de normalização: {self.tentativas_de_normalizacao}/{self.limite_tentativas_de_normalizacao})")
             self.interstep()
             self.__next_state = self.__next_state.step()
             self.modbus_update_state_register()
 
         except Exception as e:
-            self.logger.error(
-                "[UG{}] Erro na execução da sm. Traceback: {}".format(
-                    self.id, traceback.format_exc()
-                )
-            )
+            self.logger.error(f"[UG{self.id}] Erro na execução da sm. Traceback: {traceback.print_stack}")
             raise e
 
     def forcar_estado_disponivel(self) -> bool:
@@ -139,11 +192,7 @@ class UnidadeDeGeracao:
             sleep(1)
             self.__next_state = StateDisponivel(self)
         except Exception as e:
-            self.logger.error(
-                "[UG{}] {} Não foi possivel forcar_estado_disponivel. {}".format(
-                    self.id, traceback.print_stack
-                )
-            )
+            self.logger.error(f"[UG{self.id}] Não foi possivel forcar_estado_disponivel. Traceback: {traceback.print_stack}")
             return False
         else:
             return True
@@ -158,11 +207,7 @@ class UnidadeDeGeracao:
         try:
             self.__next_state = StateIndisponivel(self)
         except Exception as e:
-            self.logger.error(
-                "[UG{}] {} Não foi possivel forcar_estado_indisponivel. {}".format(
-                    self.id, traceback.print_stack
-                )
-            )
+            self.logger.error(f"[UG{self.id}] Não foi possivel forcar_estado_indisponivel. {traceback.print_stack}")
             return False
         else:
             return True
@@ -177,11 +222,7 @@ class UnidadeDeGeracao:
         try:
             self.__next_state = StateManual(self)
         except Exception as e:
-            self.logger.error(
-                "[UG{}] {} Não foi possivel forcar_estado_manual. {}".format(
-                    self.id, traceback.print_stack
-                )
-            )
+            self.logger.error(f"[UG{self.id}] Não foi possivel forcar_estado_manual. {traceback.print_stack}")
             return False
         else:
             return True
@@ -196,11 +237,7 @@ class UnidadeDeGeracao:
         try:
             self.__next_state = StateRestrito(self)
         except Exception as e:
-            self.logger.error(
-                "[UG{}] {} Não foi possivel forcar_estado_restrito. {}".format(
-                    self.id, traceback.print_stack
-                )
-            )
+            self.logger.error(f"[UG{self.id}] Não foi possivel forcar_estado_restrito. {traceback.print_stack}")
             return False
         else:
             return True
@@ -230,7 +267,7 @@ class UnidadeDeGeracao:
         self.__prioridade = var
 
     @property
-    def condicionadores_essenciais(self) -> list([CondicionadorBase]):
+    def condicionadores_essenciais(self) -> list[CondicionadorBase]:
         """
         Lista de condicionadores (objetos) essenciais que deverão ser lidos SEMPRE
 
@@ -240,11 +277,11 @@ class UnidadeDeGeracao:
         return self.__condicionadores_essenciais
 
     @condicionadores_essenciais.setter
-    def condicionadores_essenciais(self, var: list([CondicionadorBase])):
+    def condicionadores_essenciais(self, var: list[CondicionadorBase]):
         self.__condicionadores_essenciais = var
 
     @property
-    def condicionadores(self) -> list([CondicionadorBase]):
+    def condicionadores(self) -> list[CondicionadorBase]:
         """
         Lista de condicionadores (objetos) que deverão ser lidaos no caso de uma chamada
 
@@ -280,11 +317,7 @@ class UnidadeDeGeracao:
         Returns:
             int: ETAPA_ATUAL
         """
-        self.logger.debug(
-            "[UG{}] etapa_atual = __etapa_atual <- {}".format(
-                self.id, self.__etapa_atual
-            )
-        )
+        self.logger.debug(f"[UG{self.id}] etapa_atual = __etapa_atual <- {self.__etapa_atual}")
         return self.__etapa_atual
 
     @property
@@ -333,7 +366,7 @@ class UnidadeDeGeracao:
             self.__setpoint = self.setpoint_maximo
         else:
             self.__setpoint = int(var)
-        self.logger.debug("[UG{}] SP<-{}".format(self.id, var))
+        self.logger.debug(f"[UG{self.id}] SP<-{var}")
 
     @property
     def setpoint_minimo(self) -> int:
@@ -406,9 +439,7 @@ class UnidadeDeGeracao:
             bool: True se sucesso, Falso caso contrário
         """
         try:
-            self.logger.info(
-                "[UG{}] Enviando comando de partida.".format(self.id)
-            )
+            self.logger.info(f"[UG{self.id}] Enviando comando de partida.")
             raise NotImplementedError
         except:
             #! TODO Tratar exceptions
@@ -424,8 +455,7 @@ class UnidadeDeGeracao:
             bool: True se sucesso, Falso caso contrário
         """
         try:
-            self.logger.info("[UG{}] Enviando comando de parada.".format(self.id))
-
+            self.logger.info(f"[UG{self.id}] Enviando comando de parada.")
             raise NotImplementedError
         except:
             #! TODO Tratar exceptions
@@ -441,9 +471,7 @@ class UnidadeDeGeracao:
             bool: True se sucesso, Falso caso contrário
         """
         try:
-            self.logger.debug(
-                "[UG{}] Enviando comando de reconhecer e resetar alarmes.".format(self.id)
-            )
+            self.logger.debug(f"[UG{self.id}] Enviando comando de reconhecer e resetar alarmes.")
             raise NotImplementedError
         except:
             #! TODO Tratar exceptions
@@ -459,9 +487,7 @@ class UnidadeDeGeracao:
             bool: True se sucesso, Falso caso contrário
         """
         try:
-            self.logger.debug(
-                "[UG{}] Enviando setpoint {}kW.".format(self.id, setpoint_kw)
-            )
+            self.logger.debug(f"[UG{self.id}] Enviando setpoint {setpoint_kw}kW.")
             raise NotImplementedError
         except:
             #! TODO Tratar exceptions
@@ -475,7 +501,7 @@ class State:
     Classe implementa a base para estados. É "Abstrata" assim por se dizer...
     """
 
-    def __init__(self, parent_ug: UnidadeDeGeracao):
+    def __init__(self, parent_ug: UnidadeDeGeracao | UnidadeDeGeracao1 | UnidadeDeGeracao2 | UnidadeDeGeracao3):
         self.parent_ug = parent_ug
         self.logger = logging.getLogger("__main__")
 
@@ -495,7 +521,7 @@ class StateManual(State):
     def __init__(self, parent_ug: UnidadeDeGeracao):
         super().__init__(parent_ug)
         self.parent_ug.codigo_state = MOA_UNIDADE_MANUAL
-        self.logger.info("[UG{}] Entrando no estado: \"Manual\". Para retornar a operação autônoma, favor agendar na interface web".format(self.parent_ug.id))
+        self.logger.info(f"[UG{self.parent_ug.id}] Entrando no estado: \"Manual\". Para retornar a operação autônoma, favor agendar na interface web")
 
     def step(self) -> State:
         self.parent_ug.setpoint = self.parent_ug.leitura_potencia.valor
@@ -517,18 +543,15 @@ class StateIndisponivel(State):
         self.parent_ug.codigo_state = MOA_UNIDADE_INDISPONIVEL
 
         self.selo = False
-        self.logger.info("[UG{}] Entrando no estado: \"Indisponível\". Para retornar a operação autônoma, favor agendar na interface web".format(self.parent_ug.id))
+        self.logger.info(f"[UG{self.parent_ug.id}] Entrando no estado: \"Indisponível\". Para retornar a operação autônoma, favor agendar na interface web")
         self.parent_ug.__next_state = self
         self.parent_ug.release_timer = True
 
     def step(self) -> State:
         self.parent_ug.codigo_state = MOA_UNIDADE_INDISPONIVEL
         # Se as unidades estiverem paradas, ou o selo estiver ativo
-        self.logger.debug(
-            "[UG{}] self.parent_ug.etapa_atual -> {}".format(
-                self.parent_ug.id, self.parent_ug.etapa_atual
-            )
-        )
+        self.logger.debug(f"[UG{self.parent_ug.id}] self.parent_ug.etapa_atual -> {self.parent_ug.etapa_atual}")
+
         if self.parent_ug.etapa_atual == UNIDADE_PARADA or self.selo:
             # Ativar o selo interno do moa
             self.selo = True
@@ -554,7 +577,7 @@ class StateRestrito(State):
 
         super().__init__(parent_ug)
         self.parent_ug.codigo_state = MOA_UNIDADE_RESTRITA
-        self.logger.info("[UG{}] Entrando no estado: \"Restrito\"".format(self.parent_ug.id))
+        self.logger.info(f"[UG{self.parent_ug.id}] Entrando no estado: \"Restrito\"")
 
     def step(self) -> State:
         self.parent_ug.codigo_state = MOA_UNIDADE_RESTRITA
@@ -582,7 +605,7 @@ class StateRestrito(State):
         # Se algum condicionador deve gerar uma indisponibilidade
         if deve_indisponibilizar:
             # Logar os condicionadores ativos
-            self.logger.warning("[UG{}] UG em modo Restrito detectou condicionadores ativos, indisponibilizando UG.\nCondicionadores ativos:\n{}".format(self.parent_ug.id, [d.descr for d in condicionadores_ativos]))
+            self.logger.warning(f"[UG{self.parent_ug.id}] UG em modo Restrito detectou condicionadores ativos, indisponibilizando UG.\nCondicionadores ativos:\n{[d.descr for d in condicionadores_ativos]}")
             # Vai para o estado StateIndisponivel
             return StateIndisponivel(self.parent_ug)
 
@@ -611,7 +634,7 @@ class StateDisponivel(State):
         self.aux = 0
         self.release = False
         self.parent_ug.codigo_state = MOA_UNIDADE_DISPONIVEL
-        self.logger.info("[UG{}] Entrando no estado: \"Disponível\"".format(self.parent_ug.id))
+        self.logger.info(f"[UG{self.parent_ug.id}] Entrando no estado: \"Disponível\"")
         self.parent_ug.tentativas_de_normalizacao = 0
 
     def step(self) -> State:
@@ -645,13 +668,13 @@ class StateDisponivel(State):
                     deve_indisponibilizar = True
 
         if deve_indisponibilizar or deve_normalizar:
-            self.logger.info("[UG{}] UG em modo disponível detectou condicionadores ativos:".format(self.parent_ug.id))
+            self.logger.info(f"[UG{self.parent_ug.id}] UG em modo disponível detectou condicionadores ativos:")
             for d in condicionadores_ativos:
-                self.logger.info("[UG{}] Registrador: {}, Gravidade: {}".format(self.parent_ug.id, d.descr, CONDIC_STR_DCT[d.gravidade] if d.gravidade in CONDIC_STR_DCT else "Desconhecida"))
+                self.logger.info(f"[UG{self.parent_ug.id}] Registrador: {d.descr}, Gravidade: {CONDIC_STR_DCT[d.gravidade] if d.gravidade in CONDIC_STR_DCT else 'Desconhecida'}")
 
         # Se algum condicionador deve gerar uma indisponibilidade
         if deve_indisponibilizar:
-            self.logger.warning("[UG{}] Indisponibilizando UG por gravidade.".format(self.parent_ug.id))
+            self.logger.warning(f"[UG{self.parent_ug.id}] Indisponibilizando UG por gravidade.")
             # Vai para o estado StateIndisponivel
             self.parent_ug.deve_ler_condicionadores = False
             return StateIndisponivel(self.parent_ug)
@@ -667,7 +690,7 @@ class StateDisponivel(State):
                 return StateIndisponivel(self.parent_ug)
 
             elif self.parent_ug.etapa_atual == UNIDADE_PARANDO or self.parent_ug.etapa_atual == UNIDADE_SINCRONIZANDO:
-                self.logger.debug("[UG{}] Esperando para normalizar".format(self.parent_ug.id))
+                self.logger.debug(f"[UG{self.parent_ug.id}] Esperando para normalizar")
                 self.parent_ug.deve_ler_condicionadores = False
                 return self
 
@@ -678,7 +701,7 @@ class StateDisponivel(State):
                 # Atualiza o timestamp
                 self.parent_ug.ts_auxiliar = datetime.now(pytz.timezone("Brazil/East")).replace(tzinfo=None)
                 # Logar o ocorrido
-                self.logger.info("[UG{}] Normalizando UG (tentativa {}/{}).".format(self.parent_ug.id, self.parent_ug.tentativas_de_normalizacao, self.parent_ug.limite_tentativas_de_normalizacao,))
+                self.logger.info(f"[UG{self.parent_ug.id}] Normalizando UG (tentativa {self.parent_ug.tentativas_de_normalizacao}/{self.parent_ug.limite_tentativas_de_normalizacao}).")
                 # Reconhece e reset
                 self.parent_ug.reconhece_reset_alarmes()
                 self.parent_ug.deve_ler_condicionadores = False
@@ -691,7 +714,7 @@ class StateDisponivel(State):
 
         # Se não detectou nenhum condicionador ativo:
         else:
-            self.logger.debug("[UG{}] Etapa atual: \"{}\"".format(self.parent_ug.id, UNIDADE_DICT_ETAPAS[self.parent_ug.etapa_atual]))
+            self.logger.debug(f"[UG{self.parent_ug.id}] Etapa atual: \"{UNIDADE_DICT_ETAPAS[self.parent_ug.etapa_atual]}\"")
 
             if self.release == True and self.aux == 1:
                 self.release = False
@@ -718,14 +741,7 @@ class StateDisponivel(State):
             elif (self.parent_ug.setpoint * ganho < self.parent_ug.setpoint_minimo) and (self.parent_ug.setpoint > self.parent_ug.setpoint_minimo):
                 self.parent_ug.setpoint =  self.parent_ug.setpoint_minimo
 
-            self.logger.debug(
-                "[UG{}] SP {} * GANHO {} = {}".format(
-                    self.parent_ug.id,
-                    aux,
-                    ganho,
-                    self.parent_ug.setpoint,
-                )
-            )
+            self.logger.debug(f"[UG{self.parent_ug.id}] SP {aux} * GANHO {ganho} = {self.parent_ug.setpoint}")
             # O comportamento da UG conforme a etapa em que a mesma se encontra
 
             if self.parent_ug.etapa_atual == UNIDADE_PARANDO:
@@ -742,7 +758,7 @@ class StateDisponivel(State):
                     self.aux = 1
                 # Se potência = 0, impedir,
                 if self.parent_ug.setpoint == 0:
-                    self.logger.warning("[UG{}] A UG estava sincronizando com SP zerado, parando a UG.".format(self.parent_ug.id))
+                    self.logger.warning(f"[UG{self.parent_ug.id}] A UG estava sincronizando com SP zerado, parando a UG.")
                     self.parent_ug.parar()
                 else:
                     self.parent_ug.enviar_setpoint(self.parent_ug.setpoint)
@@ -787,14 +803,14 @@ class StateDisponivel(State):
             self.logger.debug("Iniciando o timer de verificação de partida")
             while time() < timer:
                 if self.parent_ug.etapa_atual == UNIDADE_SINCRONIZADA:
-                    self.logger.debug("[UG{}] Unidade sincronizada. Saindo do timer de verificação de partida".format(self.parent_ug.id))
+                    self.logger.debug(f"[UG{self.parent_ug.id}] Unidade sincronizada. Saindo do timer de verificação de partida")
                     self.release = True
                     return True
                 elif not self.parent_ug.release_timer:
-                    self.logger.debug("[UG{}] MOA em modo manual. Saindo do timer de verificação de partida".format(self.parent_ug.id))
+                    self.logger.debug(f"[UG{self.parent_ug.id}] MOA em modo manual. Saindo do timer de verificação de partida")
                     self.release = True
                     return False
-            self.logger.debug("[UG{}] A Unidade estourou o timer de verificação de partida, adicionando condição para normalizar".format(self.parent_ug.id))
+            self.logger.debug(f"[UG{self.parent_ug.id}] A Unidade estourou o timer de verificação de partida, adicionando condição para normalizar")
             self.parent_ug.clp.write_single_coil(REG_UG1_ComandosDigitais_MXW_EmergenciaViaSuper, [1 if self.parent_ug.id==1 else 0]) 
             self.parent_ug.clp.write_single_coil(REG_UG2_ComandosDigitais_MXW_EmergenciaViaSuper, [1 if self.parent_ug.id==2 else 0])
             self.parent_ug.clp.write_single_coil(REG_UG3_ComandosDigitais_MXW_EmergenciaViaSuper, [1 if self.parent_ug.id==3 else 0])

@@ -116,18 +116,21 @@ class Database:
         self._close()
         return True
 
-    def update_modo_manual(self):
-        q = (
-            "UPDATE parametros_moa_parametrosusina "
-            "SET modo_autonomo = 0 "
-            "WHERE id = 1"
-        )
+    def update_modo_moa(self, modo: bool) -> None:
         self._open()
-        self.execute(
-            q,
-        )
+        if modo:
+            self.execute(
+                "UPDATE parametros_moa_parametrosusina "
+                "SET modo_autonomo = 1"
+                "WHERE id = 1"
+            )
+        else:
+            self.execute(
+                "UPDATE parametros_moa_parametrosusina "
+                "SET modo_autonomo = 0"
+                "WHERE id = 1"
+            )
         self._close()
-        return True
 
     def update_tda_offline(self, status=False):
         q = ("UPDATE parametros_moa_parametrosusina "
