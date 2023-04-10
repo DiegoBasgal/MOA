@@ -62,11 +62,11 @@ class FieldConnector:
 
     def modifica_controles_locais(self):
         if not self.TDA_Offline:
-            self.clp_tda.write_single_coil(REG_TDA_ComandosDigitais_MXW_ResetGeral, 1)
-            self.clp_tda.write_single_coil(REG_TDA_ComandosDigitais_MXW_Hab_Nivel, 0)
-            self.clp_tda.write_single_coil(REG_TDA_ComandosDigitais_MXW_Desab_Nivel, 1)
-            self.clp_tda.write_single_coil(REG_TDA_ComandosDigitais_MXW_Hab_Religamento52L, 0)
-            self.clp_tda.write_single_coil(REG_TDA_ComandosDigitais_MXW_Desab_Religamento52L, 1)
+            self.clp_tda.write_single_coil(REG_TDA_CD_ResetGeral, 1)
+            self.clp_tda.write_single_coil(REG_TDA_CD_Hab_Nivel, 0)
+            self.clp_tda.write_single_coil(REG_TDA_CD_Desab_Nivel, 1)
+            self.clp_tda.write_single_coil(REG_TDA_CD_Hab_Religamento52L, 0)
+            self.clp_tda.write_single_coil(REG_TDA_CD_Desab_Religamento52L, 1)
         else:
             logger.debug("Não é possível modificar os controles locais pois o CLP da TDA se encontra offline")
 
@@ -104,86 +104,86 @@ class FieldConnector:
             return False
         else:
             # utilizar o write_single_coil para o ambiente em produção e write_single_register para a simulação
-            response = self.clp_sa.write_single_coil(REG_SA_ComandosDigitais_MXW_Liga_DJ1, 1)
+            response = self.clp_sa.write_single_coil(REG_SA_CD_Liga_DJ1, 1)
             return response
 
     def normalizar_emergencia(self):
         logger.debug("Reconhecendo alarmes, resetando usina e fechando Dj52L")
         logger.debug("Reconhece/Reset alarmes")
-        self.clp_ug1.write_single_coil(REG_UG1_ComandosDigitais_MXW_ResetGeral, 1)
-        self.clp_ug2.write_single_coil(REG_UG2_ComandosDigitais_MXW_ResetGeral, 1)
-        self.clp_ug3.write_single_coil(REG_UG3_ComandosDigitais_MXW_ResetGeral, 1)
-        self.clp_sa.write_single_coil(REG_SA_ComandosDigitais_MXW_ResetGeral, 1)
-        self.clp_tda.write_single_coil(REG_TDA_ComandosDigitais_MXW_ResetGeral, 1) if not self.TDA_Offline else logger.debug("CLP TDA Offline, não há como realizar o reset geral")
-        self.clp_ug1.write_single_coil(REG_UG1_ComandosDigitais_MXW_Cala_Sirene, 1)
-        self.clp_ug2.write_single_coil(REG_UG2_ComandosDigitais_MXW_Cala_Sirene, 1)
-        self.clp_ug3.write_single_coil(REG_UG3_ComandosDigitais_MXW_Cala_Sirene, 1)
-        self.clp_sa.write_single_coil(REG_SA_ComandosDigitais_MXW_Cala_Sirene, 1)
+        self.clp_ug1.write_single_coil(UG[f"REG_UG1_CD_ResetGeral"], 1)
+        self.clp_ug2.write_single_coil(UG[f"REG_UG2_CD_ResetGeral"], 1)
+        self.clp_ug3.write_single_coil(UG[f"REG_UG3_CD_ResetGeral"], 1)
+        self.clp_sa.write_single_coil(REG_SA_CD_ResetGeral, 1)
+        self.clp_tda.write_single_coil(REG_TDA_CD_ResetGeral, 1) if not self.TDA_Offline else logger.debug("CLP TDA Offline, não há como realizar o reset geral")
+        self.clp_ug1.write_single_coil(REG_UG1_CD_Cala_Sirene, 1)
+        self.clp_ug2.write_single_coil(REG_UG2_CD_Cala_Sirene, 1)
+        self.clp_ug3.write_single_coil(REG_UG3_CD_Cala_Sirene, 1)
+        self.clp_sa.write_single_coil(REG_SA_CD_Cala_Sirene, 1)
         logger.debug("Fecha Dj52L")
         self.fechaDj52L()
 
     def somente_reconhecer_emergencia(self):
         logger.debug("Somente reconhece alarmes não implementado em SEB")
-        self.clp_ug1.write_single_coil(REG_UG1_ComandosDigitais_MXW_Cala_Sirene, 1)
-        self.clp_ug2.write_single_coil(REG_UG2_ComandosDigitais_MXW_Cala_Sirene, 1)
-        self.clp_ug3.write_single_coil(REG_UG3_ComandosDigitais_MXW_Cala_Sirene, 1)
-        self.clp_sa.write_single_coil(REG_SA_ComandosDigitais_MXW_Cala_Sirene, 1)
+        self.clp_ug1.write_single_coil(REG_UG1_CD_Cala_Sirene, 1)
+        self.clp_ug2.write_single_coil(REG_UG2_CD_Cala_Sirene, 1)
+        self.clp_ug3.write_single_coil(REG_UG3_CD_Cala_Sirene, 1)
+        self.clp_sa.write_single_coil(REG_SA_CD_Cala_Sirene, 1)
 
     def acionar_emergencia(self):
         logger.warning("FC: Acionando emergencia")
-        self.clp_ug1.write_single_coil(REG_UG1_ComandosDigitais_MXW_EmergenciaViaSuper, 1)
-        self.clp_ug2.write_single_coil(REG_UG2_ComandosDigitais_MXW_EmergenciaViaSuper, 1)
-        self.clp_ug3.write_single_coil(REG_UG3_ComandosDigitais_MXW_EmergenciaViaSuper, 1)
+        self.clp_ug1.write_single_coil(REG_UG1_CD_EmergenciaViaSuper, 1)
+        self.clp_ug2.write_single_coil(REG_UG2_CD_EmergenciaViaSuper, 1)
+        self.clp_ug3.write_single_coil(REG_UG3_CD_EmergenciaViaSuper, 1)
         sleep(5)
-        self.clp_ug1.write_single_coil(REG_UG1_ComandosDigitais_MXW_EmergenciaViaSuper, 0)
-        self.clp_ug2.write_single_coil(REG_UG2_ComandosDigitais_MXW_EmergenciaViaSuper, 0)
-        self.clp_ug3.write_single_coil(REG_UG3_ComandosDigitais_MXW_EmergenciaViaSuper, 0)
+        self.clp_ug1.write_single_coil(REG_UG1_CD_EmergenciaViaSuper, 0)
+        self.clp_ug2.write_single_coil(REG_UG2_CD_EmergenciaViaSuper, 0)
+        self.clp_ug3.write_single_coil(REG_UG3_CD_EmergenciaViaSuper, 0)
 
     def get_flag_falha52L(self):
         # adicionar estado do disjuntor
         flag = 0
 
-        if self.clp_sa.read_discrete_inputs(REG_SA_EntradasDigitais_MXI_SA_DisjDJ1_SuperBobAbert1)[0] == 0:
+        if self.clp_sa.read_discrete_inputs(REG_SA_ED_SA_DisjDJ1_SuperBobAbert1)[0] == 0:
             logger.debug("DisjDJ1_SuperBobAbert1")
             flag += 1
 
-        if self.clp_sa.read_discrete_inputs(REG_SA_EntradasDigitais_MXI_SA_DisjDJ1_SuperBobAbert2)[0] == 0:
+        if self.clp_sa.read_discrete_inputs(REG_SA_ED_SA_DisjDJ1_SuperBobAbert2)[0] == 0:
             logger.debug("DisjDJ1_SuperBobAbert2")
             flag += 1
 
-        if self.clp_sa.read_discrete_inputs(REG_SA_EntradasDigitais_MXI_SA_DisjDJ1_Super125VccCiMot)[0] == 0:
+        if self.clp_sa.read_discrete_inputs(REG_SA_ED_SA_DisjDJ1_Super125VccCiMot)[0] == 0:
             logger.debug("DisjDJ1_Super125VccCiMot")
             flag += 1
 
-        if self.clp_sa.read_discrete_inputs(REG_SA_EntradasDigitais_MXI_SA_DisjDJ1_Super125VccCiCom)[0] == 0:
+        if self.clp_sa.read_discrete_inputs(REG_SA_ED_SA_DisjDJ1_Super125VccCiCom)[0] == 0:
             logger.debug("DisjDJ1_Super125VccCiCom")
             flag += 1
 
-        if self.clp_sa.read_discrete_inputs(REG_SA_EntradasDigitais_MXI_SA_DisjDJ1_AlPressBaixa)[0] == 1:
+        if self.clp_sa.read_discrete_inputs(REG_SA_ED_SA_DisjDJ1_AlPressBaixa)[0] == 1:
             logger.debug("DisjDJ1_AlPressBaixa")
             flag += 1
 
-        if self.clp_sa.read_discrete_inputs(REG_SA_RetornosDigitais_MXR_DJ1_FalhaInt)[0] == 1:
+        if self.clp_sa.read_discrete_inputs(REG_SA_RD_DJ1_FalhaInt)[0] == 1:
             logger.debug("MXR_DJ1_FalhaInt")
             flag += 1
 
-        if self.clp_sa.read_discrete_inputs(REG_SA_EntradasDigitais_MXI_SA_DisjDJ1_BloqPressBaixa)[0] == 1:
+        if self.clp_sa.read_discrete_inputs(REG_SA_ED_SA_DisjDJ1_BloqPressBaixa)[0] == 1:
             logger.debug("DisjDJ1_BloqPressBaixa")
             flag += 1
 
-        if self.clp_sa.read_discrete_inputs(REG_SA_EntradasDigitais_MXI_SA_DisjDJ1_Sup125VccBoFeAb1)[0] == 0:
+        if self.clp_sa.read_discrete_inputs(REG_SA_ED_SA_DisjDJ1_Sup125VccBoFeAb1)[0] == 0:
             logger.debug("DisjDJ1_Sup125VccBoFeAb1")
             flag += 1
 
-        if self.clp_sa.read_discrete_inputs(REG_SA_EntradasDigitais_MXI_SA_DisjDJ1_Sup125VccBoFeAb2)[0] == 0:
+        if self.clp_sa.read_discrete_inputs(REG_SA_ED_SA_DisjDJ1_Sup125VccBoFeAb2)[0] == 0:
             logger.debug("DisjDJ1_Sup125VccBoFeAb2")
             flag += 1
 
-        if self.clp_sa.read_discrete_inputs(REG_SA_EntradasDigitais_MXI_SA_DisjDJ1_Local)[0] == 1:
+        if self.clp_sa.read_discrete_inputs(REG_SA_ED_SA_DisjDJ1_Local)[0] == 1:
             logger.debug("DisjDJ1_Local")
             flag += 1
 
-        if self.clp_sa.read_discrete_inputs(REG_SA_EntradasDigitais_MXI_SA_DisjDJ1_MolaDescarregada)[0] == 1:
+        if self.clp_sa.read_discrete_inputs(REG_SA_ED_SA_DisjDJ1_MolaDescarregada)[0] == 1:
             logger.debug("DisjDJ1_MolaDescarregada")
             flag += 1
 

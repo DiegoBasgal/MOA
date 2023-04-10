@@ -26,11 +26,8 @@ class ParametrosUsina(models.Model):
     clp_sa_porta = models.IntegerField(default=502)
     clp_tda_ip = models.CharField(max_length=15, default="192.168.0.54")
     clp_tda_porta = models.IntegerField(default=502)
-    clp_moa_ip = models.CharField(max_length=15, default="192.168.0.50")
+    clp_moa_ip = models.CharField(max_length=15, default="192.168.0.116")
     clp_moa_porta = models.IntegerField(default=502)
-
-    modbus_server_ip = models.CharField(max_length=15, default="0.0.0.0")
-    modbus_server_porta = models.IntegerField(default=5002)
 
     # Nível
     nv_alvo = models.DecimalField(max_digits=10, decimal_places=3, default=405)

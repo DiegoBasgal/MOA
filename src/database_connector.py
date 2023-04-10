@@ -92,23 +92,13 @@ class Database:
             "UPDATE parametros_moa_parametrosusina "
             "SET timestamp = %s, "
             "aguardando_reservatorio = %s, "
-            "clp_online = %s, "
             "nv_montante = %s, "
-            "ug1_disp = %s, "
             "ug1_pot = %s, "
             "ug1_setpot = %s, "
-            "ug1_sinc = %s, "
-            "ug1_tempo = %s, "
-            "ug2_disp = %s, "
             "ug2_pot = %s, "
             "ug2_setpot = %s, "
-            "ug2_sinc = %s, "
-            "ug2_tempo = %s, "
-            "ug3_disp = %s, "
             "ug3_pot = %s, "
-            "ug3_setpot = %s, "
-            "ug3_sinc = %s, "
-            "ug3_tempo = %s "
+            "ug3_setpot = %s "
             "WHERE id = 1"
         )
         self._open()
@@ -120,14 +110,14 @@ class Database:
         self._open()
         if modo:
             self.execute(
-                "UPDATE parametros_moa_parametrosusina "
-                "SET modo_autonomo = 1"
+                "UPDATE parametros_moa_parametrosusina " \
+                "SET modo_autonomo = 1 " \
                 "WHERE id = 1"
             )
         else:
             self.execute(
-                "UPDATE parametros_moa_parametrosusina "
-                "SET modo_autonomo = 0"
+                "UPDATE parametros_moa_parametrosusina " \
+                "SET modo_autonomo = 0 " \
                 "WHERE id = 1"
             )
         self._close()
@@ -198,36 +188,20 @@ class Database:
         )
         self._close()
 
-    def insert_debug(
-        self,
-        ts,
-        kp,
-        ki,
-        kd,
-        kie,
-        cp,
-        ci,
-        cd,
-        cie,
-        sp1,
-        p1,
-        sp2,
-        p2,
-        nv,
-        erro,
-        ma,
-        sp3,
-        p3,
-        cx_kp,
-        cx_ki,
-        cx_kie,
-        cx_c_ie,
+    def insert_debug(self,
+        ts, ma,
+        erro, nv,
+        sp1, p1,
+        sp2, p2,
+        sp3, p3,
+        cp, ci,
+        cd, cie,
+        kp, ki,
+        kd, kie
     ):
         q = (
             "INSERT INTO `debug`.`moa_debug` "
             "VALUES (%s,%s, "
-            "%s,%s, "
-            "%s,%s, "
             "%s,%s, "
             "%s,%s, "
             "%s,%s, "
@@ -240,32 +214,26 @@ class Database:
         self._open()
         self.execute(
             q,
-            tuple(
-                [
-                    ts,
-                    kp,
-                    ki,
-                    kd,
-                    kie,
-                    cp,
-                    ci,
-                    cd,
-                    cie,
-                    sp1,
-                    p1,
-                    sp2,
-                    p2,
-                    nv,
-                    erro,
-                    ma,
-                    sp3,
-                    p3,
-                    cx_kp,
-                    cx_ki,
-                    cx_kie,
-                    cx_c_ie,
-                ]
-            ),
+            tuple([
+                ts,
+                ma,
+                erro,
+                nv,
+                sp1,
+                p1,
+                sp2,
+                p2,
+                sp3,
+                p3,
+                cp,
+                ci,
+                cd,
+                cie,
+                kp,
+                ki,
+                kd,
+                kie,
+            ]),
         )
         self._close()
 

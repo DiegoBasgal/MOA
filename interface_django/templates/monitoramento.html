@@ -42,7 +42,7 @@
     <div id="content_container">
         <h1 style="margin-bottom: 5px;">Monitoramento</h1>
         <p style="margin-bottom: 1px;">Página de monitoramento. Atualiza a cada 2 segundos.</p>
-        <p style="margin-top: 5px;">Atualizado em  {{ timestamp }} ({{ tempo_desde_moa_comunicando }} atrás)</p>
+        <p style="margin-top: 5px;">Atualizado em  {{ timestamp }} ({{ moa_ultima_comunicacao }} atrás)</p>
 
         <div style="margin-top: 40px; margin-bottom: 34px;">
             <label style="font-size: 18px;"><b>Disjuntor 52L: </b></label>
@@ -261,8 +261,13 @@
         Heart-beat: {{ hb_datestring }}<br>
         Emergencia:  {{ em_acionada }}<br>
         Aguardando reservatório: {{ aguardo }}<br>
-        Estado CLP:&ensp;{{ CLP_Status }} @ {{ CLP_MOA }}<br>
-        Servidor Modbus: {{modbus_status }}</p>
+        Estado CLP:&ensp;{{ CLP_MOA }}
+        {% if CLP_Status == True %}
+            (<label style="margin-left: 3px; color: green;">On-line</label> )
+        {% endif %}
+        {% if CLP_Status == False %}
+            (<label style="margin-left: 3px; color: red;">Off-line</label> )
+        {% endif %}
     </div>
     <br>
     <br>
