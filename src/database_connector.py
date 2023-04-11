@@ -31,10 +31,6 @@ class Database:
     def _close(self, commit=True):
         if commit:
             self.commit()
-        # self.cursor.close()
-        if commit:
-            self.commit()
-        # self.conn.close()
 
     def execute(self, sql, params=None):
         self.cursor.execute(sql, params or ())
@@ -57,7 +53,7 @@ class Database:
         parametros = {}
         for i in range(len(cols)):
             parametros[cols[i][0]] = parametros_raw[i]
-        self._close()
+        self.conn.commit()
         return parametros
 
     def get_agendamentos_pendentes(self):
@@ -68,7 +64,7 @@ class Database:
         )
         self._open()
         result = self.query(q)
-        self._close()
+        self.conn.commit()
         return result
 
     def update_parametros_usina(self, values):
@@ -84,7 +80,7 @@ class Database:
         )
         self._open()
         self.execute(q, tuple(values))
-        self._close()
+        self.conn.commit()
         return True
 
     def update_valores_usina(self, values):
@@ -103,7 +99,7 @@ class Database:
         )
         self._open()
         self.execute(q, tuple(values))
-        self._close()
+        self.conn.commit()
         return True
 
     def update_modo_moa(self, modo: bool) -> None:
@@ -120,7 +116,7 @@ class Database:
                 "SET modo_autonomo = 0 " \
                 "WHERE id = 1"
             )
-        self._close()
+        self.conn.commit()
 
     def update_tda_offline(self, status=False):
         q = ("UPDATE parametros_moa_parametrosusina "
@@ -131,7 +127,7 @@ class Database:
             "WHERE id = 1")
         self._open()
         self.execute(q)
-        self._close()
+        self.conn.commit()
         return True
 
     def update_agendamento(self, id_agendamento, executado, obs=""):
@@ -150,7 +146,7 @@ class Database:
         )
         self._open()
         self.execute(q, (obs, obs, executado, datetime.now(pytz.timezone("Brazil/East")).replace(tzinfo=None), int(id_agendamento)))
-        self._close()
+        self.conn.commit()
 
     def update_habilitar_autonomo(self):
         q = (
@@ -162,7 +158,7 @@ class Database:
         self.execute(
             q,
         )
-        self._close()
+        self.conn.commit()
 
     def update_desabilitar_autonomo(self):
         q = (
@@ -174,7 +170,7 @@ class Database:
         self.execute(
             q,
         )
-        self._close()
+        self.conn.commit()
 
     def update_remove_emergencia(self):
         q = (
@@ -186,7 +182,7 @@ class Database:
         self.execute(
             q,
         )
-        self._close()
+        self.conn.commit()
 
     def insert_debug(self,
         ts, ma,
@@ -235,14 +231,14 @@ class Database:
                 kie,
             ]),
         )
-        self._close()
+        self.conn.commit()
 
     def get_executabilidade(self, id_comando):
         q = "SELECT executavel_em_autmoatico, executavel_em_manual FROM parametros_moa_comando WHERE id = %s"
         self._open()
         self.execute(q, tuple([id_comando]))
         parametros_raw = self.fetchone()
-        self._close()
+        self.conn.commit()
         return {
             "executavel_em_autmoatico": parametros_raw[0],
             "executavel_em_manual": parametros_raw[1],
@@ -255,5 +251,5 @@ class Database:
         parametros = {}
         for row in range(len(rows)):
             parametros = rows
-        self._close()
+        self.conn.commit()
         return parametros

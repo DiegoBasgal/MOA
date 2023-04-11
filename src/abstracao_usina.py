@@ -293,7 +293,7 @@ class Usina:
             self.con.modifica_controles_locais()
 
         try:
-            self.db.update_valores_usina([
+            valores = [
                 self.get_time().strftime("%Y-%m-%d %H:%M:%S"),  # timestamp
                 1 if self.aguardando_reservatorio else 0,  # aguardando_reservatorio
                 self.nv_montante if not self.TDA_Offline else 0,  # nv_montante
@@ -303,7 +303,8 @@ class Usina:
                 self.ug2.setpoint,  # ug2_setpot
                 self.ug3.leitura_potencia.valor,  # ug3_pot
                 self.ug3.setpoint,  # ug3_setpot
-            ])
+            ]
+            self.db.update_valores_usina(valores)
 
         except Exception as e:
             logger.exception(f"Houve um erro ao gravar os parâmetros da Usina no Banco. Exception: \"{repr(e)}\"")
@@ -456,7 +457,7 @@ class Usina:
         if self.modo_autonomo:
             self.clp_moa.write_single_coil(self.cfg["REG_MOA_OUT_EMERG"], [1 if self.clp_emergencia_acionada else 0],)
             self.clp_moa.write_single_coil(self.cfg["REG_MOA_OUT_TARGET_LEVEL"], [int((self.cfg["nv_alvo"] - 400) * 1000)])
-            self.clp_moa.write_single_coil(self.cfg["REG_MOA_OUT_SETPOINT"], [int([sum(ug.setpoint) for ug in self.ugs])], )
+            self.clp_moa.write_single_coil(self.cfg["REG_MOA_OUT_SETPOINT"], [int(sum(ug.setpoint for ug in self.ugs))], )
 
             if self.avisado_em_eletrica and not self.hb_borda_emerg:
                 self.clp_moa.write_single_coil(self.cfg["REG_MOA_OUT_BLOCK_UG1"], [1],)
@@ -577,10 +578,10 @@ class Usina:
 
             if segundos_adiantados <= 60 and not bool(agendamento[4]):
                 # Está na hora e ainda não foi executado. Executar!
-                logger.info(f"Executando agendamento: {agendamento[0]}\n\n \
-                    Comando: {AGN_STR_DICT[agendamento[3]]}\n\n \
-                    Data: {agendamento[1]}\n\n \
-                    Observação: {agendamento[2]}\n\n \
+                logger.info(f"Executando agendamento: {agendamento[0]}\n \
+                    Comando: {AGN_STR_DICT[agendamento[3]]}\n \
+                    Data: {agendamento[1]}\n \
+                    Observação: {agendamento[2]}\n \
                     {f'Valor: {agendamento[5]}' if agendamento[5] is not None else ...}"
                 )
 
@@ -895,35 +896,6 @@ class Usina:
         pot_alvo = max(min(round(self.cfg["pot_maxima_usina"] * self.controle_ie, 5), self.cfg["pot_maxima_usina"],), self.cfg["pot_minima"],)
 
         logger.debug(f"Potência alvo: {pot_alvo:0.3f}")
-        try:
-            ts = datetime.now(pytz.timezone("Brazil/East")).timestamp()
-            ma = 1 if self.modo_autonomo else 0
-            self.db.insert_debug(
-                ts,
-                self.cfg["kp"],
-                self.cfg["ki"],
-                self.cfg["kd"],
-                self.cfg["kie"],
-                self.controle_p,
-                self.controle_i,
-                self.controle_d,
-                self.controle_ie,
-                self.ug1.setpoint,
-                self.ug1.leitura_potencia.valor,
-                self.ug2.setpoint,
-                self.ug2.leitura_potencia.valor,
-                self.nv_montante_recente,
-                self.erro_nv,
-                ma,
-                self.ug3.setpoint,
-                self.ug3.leitura_potencia.valor,
-                self.cfg["cx_kp"],
-                self.cfg["cx_ki"],
-                self.cfg["cx_kie"],
-                0,
-            )
-        except Exception as e:
-            logger.exception(e)
 
         pot_alvo = self.distribuir_potencia(pot_alvo)
 

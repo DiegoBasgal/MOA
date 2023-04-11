@@ -183,9 +183,10 @@ if __name__ == "__main__":
                 sleep(timeout)
                 continue
 
+            prox_estado = Pronto
+
     logger.info("Inicialização completa, executando o MOA \U0001F916")
 
-    prox_estado = Pronto
     sm = StateMachine(initial_state=prox_estado(usina))
 
     while True:

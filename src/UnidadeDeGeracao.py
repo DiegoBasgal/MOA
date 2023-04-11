@@ -20,34 +20,11 @@ from src.codes import *
 from src.Leituras import *
 from src.Condicionadores import *
 from src.abstracao_usina import *
+from src.maquinas_estado.ug import *
 from src.database_connector import Database
 from src.field_connector import FieldConnector
 
 logger = logging.getLogger("__main__")
-
-# Class Stubs
-class UnidadeDeGeracao:
-    ...
-
-
-class State:
-    ...
-
-
-class StateDisponivel(State):
-    ...
-
-
-class StateIndisponivel(State):
-    ...
-
-
-class StateManual(State):
-    ...
-
-
-class StateRestrito(State):
-    ...
 
 
 class UnidadeDeGeracao:
@@ -85,7 +62,7 @@ class UnidadeDeGeracao:
         self.__setpoint_maximo = 0
         self.__tentativas_de_normalizacao = 0
 
-        self.__next_state = StateDisponivel()
+        self.__next_state = StateDisponivel(self)
 
         self.limpeza_grade = False
         self.aux_tempo_sincronizada = None

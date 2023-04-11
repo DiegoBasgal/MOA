@@ -1,20 +1,27 @@
-from src.UnidadeDeGeracao import *
-from src.UG1 import UnidadeDeGeracao1
-from src.UG2 import UnidadeDeGeracao2
-from src.UG3 import UnidadeDeGeracao3
+import pytz
+import logging
+
+from threading import Thread
+from time import time, sleep
+from datetime import datetime
+from abc import abstractmethod
+
+from src.codes import *
+from src.mapa_modbus import *
 
 logger = logging.getLogger("__main__")
+
 
 class State:
     """
     Classe implementa a base para estados. É "Abstrata" assim por se dizer...
     """
 
-    def __init__(self, parent_ug: UnidadeDeGeracao | UnidadeDeGeracao1 | UnidadeDeGeracao2 | UnidadeDeGeracao3):
+    def __init__(self, parent_ug):
         self.parent_ug = parent_ug
 
     @abstractmethod
-    def step(self) -> State:
+    def step(self) -> "State":
         pass
 
 
@@ -26,7 +33,7 @@ class StateManual(State):
     O estado só será alterado utilizando as funções que forçam o estado.
     """
 
-    def __init__(self, parent_ug: UnidadeDeGeracao):
+    def __init__(self, parent_ug):
         super().__init__(parent_ug)
         self.parent_ug.codigo_state = MOA_UNIDADE_MANUAL
         logger.info(f"[UG{self.parent_ug.id}] Entrando no estado: \"Manual\". Para retornar a operação autônoma, favor agendar na interface web")
@@ -45,7 +52,7 @@ class StateIndisponivel(State):
     O estado só será alterado utilizando as funções que forçam o estado.
     """
 
-    def __init__(self, parent_ug: UnidadeDeGeracao):
+    def __init__(self, parent_ug):
 
         super().__init__(parent_ug)
         self.parent_ug.codigo_state = MOA_UNIDADE_INDISPONIVEL
@@ -81,7 +88,7 @@ class StateRestrito(State):
     O perador não tem controle sobre a UG.
     """
 
-    def __init__(self, parent_ug: UnidadeDeGeracao):
+    def __init__(self, parent_ug):
 
         super().__init__(parent_ug)
         self.parent_ug.codigo_state = MOA_UNIDADE_RESTRITA
@@ -136,7 +143,7 @@ class StateDisponivel(State):
     O perador não tem controle sobre a UG.
     """
 
-    def __init__(self, parent_ug: UnidadeDeGeracao):
+    def __init__(self, parent_ug):
 
         super().__init__(parent_ug)
         self.aux = 0
