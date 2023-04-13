@@ -1,0 +1,14 @@
+[Unit]
+Description=uWSGI
+After=syslog.target
+
+[Service]
+ExecStart=/usr/local/bin/uwsgi --ini /opt/operacao-autonoma/moa_web/moa_web_uwsgi.ini
+
+KillSignal=SIGQUIT
+Type=notify
+StandardError=syslog
+NotifyAccess=all
+
+[Install]
+WantedBy=multi-user.target

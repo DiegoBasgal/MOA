@@ -139,10 +139,6 @@ if __name__ == "__main__":
                 with open(config_file, "r") as file:
                     cfg = json.load(file)
 
-                config_file = os.path.join(os.path.dirname(__file__), "config.json.bkp")
-                with open(config_file, "w") as file:
-                    json.dump(cfg, file, indent=4)
-
             except Exception as e:
                 logger.error(f"Erro ao iniciar carregar arquivo \"config.json\". Tentando novamente em {timeout}s (tentativa {n_tentativa}/2). Exception: \"{repr(e)}\".")
                 logger.debug(f"Traceback: {print(e)}")
