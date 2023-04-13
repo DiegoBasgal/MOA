@@ -2,7 +2,7 @@ import logging
 import unittest
 from unittest.mock import MagicMock, patch
 
-import operador_autonomo_sm
+import MOA
 
 
 class TestComportamentoSM(unittest.TestCase):
@@ -19,11 +19,11 @@ class TestComportamentoSM(unittest.TestCase):
         # Objetivo:         Verificar funcionamento basico da sm
         # Resposta:         SM entra em um estado dado e executa-o, mesmo, devolvendo o proximo estado
 
-        estado = operador_autonomo_sm.State
+        estado = MOA.State
         estado.run = MagicMock()
         estado.run.return_value = "next_state"
         parametros = MagicMock()
-        sm = operador_autonomo_sm.StateMachine(estado(parametros))
+        sm = MOA.StateMachine(estado(parametros))
         sm.exec()
         estado.run.assert_called_once()
         self.assertEqual("next_state", sm.state)
@@ -47,7 +47,7 @@ class TestComportamentoSM(unittest.TestCase):
             def run(self):
                 return EstadoA(self.i + 1)
 
-        sm = operador_autonomo_sm.StateMachine(EstadoA(0))
+        sm = MOA.StateMachine(EstadoA(0))
         for n in range(10):
             sm.exec()
             if n % 2:
@@ -63,7 +63,7 @@ class TestComportamentoSM(unittest.TestCase):
         # Resposta:         SM Falha e chama a Falha critica
         estado = MagicMock()
         estado.run.side_effect = TimeoutError
-        sm = operador_autonomo_sm.StateMachine(estado)
+        sm = MOA.StateMachine(estado)
         sm.exec()
         self.assertTrue(sm.em_falha_critica)
         with self.assertRaises(SystemExit):
@@ -74,7 +74,7 @@ class TestComportamentoSM(unittest.TestCase):
             def run(self):
                 return 1 / 0
 
-        sm = operador_autonomo_sm.StateMachine(EstadoA())
+        sm = MOA.StateMachine(EstadoA())
         sm.exec()
 
         self.assertTrue(sm.em_falha_critica)

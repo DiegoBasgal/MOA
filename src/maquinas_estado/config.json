@@ -41,7 +41,7 @@
     "timeout_padrao": 5,
     "timeout_emergencia": 10,
     "timeout_normalizacao": 10,
-    "nv_alvo": 405.0,
+    "nv_alvo": 404.9,
     "nv_minimo": 404.65,
     "nv_maximo": 405.25,
     "nv_maximorum": 407.5,

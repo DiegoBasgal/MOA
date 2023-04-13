@@ -252,7 +252,7 @@ class UnidadeDeGeracao:
         self.__prioridade = var
 
     @property
-    def condicionadores_essenciais(self) -> list[CondicionadorBase]:
+    def condicionadores_essenciais(self) -> "list[CondicionadorBase]":
         """
         Lista de condicionadores (objetos) essenciais que deverão ser lidos SEMPRE
 
@@ -262,11 +262,11 @@ class UnidadeDeGeracao:
         return self.__condicionadores_essenciais
 
     @condicionadores_essenciais.setter
-    def condicionadores_essenciais(self, var: list[CondicionadorBase]):
+    def condicionadores_essenciais(self, var: "list[CondicionadorBase]"):
         self.__condicionadores_essenciais = var
 
     @property
-    def condicionadores(self) -> list[CondicionadorBase]:
+    def condicionadores(self) -> "list[CondicionadorBase]":
         """
         Lista de condicionadores (objetos) que deverão ser lidaos no caso de uma chamada
 
@@ -276,7 +276,7 @@ class UnidadeDeGeracao:
         return self.__condicionadores
 
     @condicionadores.setter
-    def condicionadores(self, var: list([CondicionadorBase])):
+    def condicionadores(self, var: "list[CondicionadorBase]"):
         self.__condicionadores = var
 
     @property

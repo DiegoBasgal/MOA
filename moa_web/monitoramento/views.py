@@ -173,6 +173,9 @@ def monitoramento_view(request, *args, **kwargs):
         #hb_datetime = datetime.datetime(regs[0], regs[1], regs[2], regs[3], regs[4], regs[5], regs[6] * 1000)
         #context["hb_datestring"] = hb_datetime.strftime("%d/%m/%Y, %H:%M:%S")
     else:
+        context["ug1_state"] = 4
+        context["ug2_state"] = 4
+        context["ug3_state"] = 4
         context["CLP_Status"] = False
 
     moa_ultima_comunicacao = (
