@@ -1,10 +1,4 @@
-TESTE = {
-    "TESTE_COIL1": "Driver1.Pasta1.Coil.Value",
-    "TESTE_COIL2": "Driver1.Pasta1.Coil2.Value",
-    "TESTE_COIL3": "Driver1.Pasta1.Coil3.Value",
-    "TESTE_COIL4": "Driver1.Pasta1.Coil4.Value",
-    "TESTE_COIL5": "Driver1.Pasta1.Coil5.Value",
-}
+
 
 MB = {
    "UG":{
@@ -86,6 +80,9 @@ MB = {
     "OUT_ETAPA_UG4": 38
    }
 }
+
+
+
 
 OPC_DA = {
     "DJ_LINHA_FECHADO": "SE_COMUNICACAO.RELE_BAY.DNP.BI_00", # bit00 IN102
@@ -1644,4 +1641,12 @@ OPC_UA = {
       "FALHA_COMANDO_ABERTURA_52L": "ns=7;s=CLP_SA.SA.DB_STATUS.DIGITAIS.SE", # Bit 01 (%M105.1)
       "FALHA_COMANDO_FECHAMENTO_52L": "ns=7;s=CLP_SA.SA.DB_STATUS.DIGITAIS.SE", # Bit 02 (%M105.2)
     }
+}
+
+TESTE = {
+    "TESTE_COIL1": "Driver1.Pasta1.Coil.Value",
+    "TESTE_COIL2": "Driver1.Pasta1.Coil2.Value",
+    "TESTE_COIL3": "Driver1.Pasta1.Coil3.Value",
+    "TESTE_COIL4": "Driver1.Pasta1.Coil4.Value",
+    "TESTE_COIL5": "Driver1.Pasta1.Coil5.Value",
 }

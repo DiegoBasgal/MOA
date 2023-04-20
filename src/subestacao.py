@@ -16,9 +16,9 @@ class Subestacao(Usina):
     def __init__(self, *args, **kwargs) -> ...:
         super().__init__(self, *args, **kwargs)
 
-        self.__tensao_rs = LeituraOpc(OPC_UA["LT_VAB"])
-        self.__tensao_st = LeituraOpc(OPC_UA["LT_VBC"])
-        self.__tensao_tr = LeituraOpc(OPC_UA["LT_VCA"])
+        self.__tensao_rs = LeituraOpc(OPC_UA["SE"]["LT_VAB"])
+        self.__tensao_st = LeituraOpc(OPC_UA["SE"]["LT_VBC"])
+        self.__tensao_tr = LeituraOpc(OPC_UA["SE"]["LT_VCA"])
 
         self._condicionadores = []
         self._condicionadores_essenciais = []

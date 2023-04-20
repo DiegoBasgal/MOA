@@ -153,8 +153,8 @@ class StateDisponivel(State):
             if self.parent.limpeza_grade:
                 self.parent.setpoint = self.cfg["pot_minima"] = self.parent.cfg["pot_limpeza_grade"]
             else:
-                self.atenuacao_carga()
+                self.parent.atenuacao_carga()
 
-            self.controle_etapas()
+            self.parent.controle_etapas()
 
             return self

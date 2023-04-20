@@ -62,7 +62,7 @@ print(teste.teste2)
 """------------------------------------------------------------------------------------------------------------ """
 
 # teste setter valor dict
-
+"""
 valores: dict[str, bool] = {}
 
 
@@ -70,3 +70,4 @@ for n, v in TESTE.items():
     valores[n] = v
 
 print(valores)
+"""

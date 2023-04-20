@@ -356,7 +356,7 @@ class Usina:
     def escrever_valores(self) -> None:
         try:
             BancoDados.update_valores_usina(
-                self.get_time().strftime("%Y-%m-%d %H:%M:%S"),  # timestamp
+                self.get_time().strftime("%Y-%m-%d %H:%M:%S"), # timestamp
                 1 if self.aguardando_reservatorio else 0,  # aguardando_reservatorio
                 True,  # DEPRECATED clp_online
                 self.tda.nv_montante, # nv_montante
