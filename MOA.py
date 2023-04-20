@@ -135,7 +135,7 @@ if __name__ == "__main__":
             try:
                 logger.info("Carregando arquivo de configuração \"config.json\".")
 
-                config_file = os.path.join(os.path.dirname(__file__), "config.json")
+                config_file = os.path.join(os.path.dirname('/opt/operacao-autonoma/'), "config.json")
                 with open(config_file, "r") as file:
                     cfg = json.load(file)
 
@@ -150,6 +150,7 @@ if __name__ == "__main__":
 
                 db = Database()
                 con = FieldConnector(cfg)
+                con.open()
 
             except Exception as e:
                 logger.error(f"Erro ao iniciar classes de conexão com Banco de Dados e Campo. Tentando novamente em {timeout}s (tentativa {n_tentativa}/2). Exception: \"{repr(e)}\".")
@@ -193,9 +194,10 @@ if __name__ == "__main__":
             sm.exec()
             t_restante = max(30 - (time() - t_i), 0) / ESCALA_DE_TEMPO
             if t_restante == 0:
-                logger.warning("\n\"ATENÇÃO!\"")
+                logger.warning("\"ATENÇÃO!\"\n")
                 logger.warning("O ciclo está demorando mais que o permitido!")
                 logger.warning("\"ATENÇÃO!\"\n")
                 sleep(t_restante)
         except Exception as e:
             logger.debug(f"Houve um erro no loop principal. Exception: \"{repr(e)}\"")
+            con.close()

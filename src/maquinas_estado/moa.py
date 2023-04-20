@@ -58,7 +58,6 @@ class Pronto(State):
     def __init__(self, usina, *args, **kwargs):
         super().__init__(usina, *args, **kwargs)
         self.n_tentativa = 0
-        self.usn._state_moa = 3
 
     def run(self):
         self.usn.heartbeat()
@@ -81,13 +80,14 @@ class Pronto(State):
 class ValoresInternosAtualizados(State):
     def __init__(self, usina, *args, **kwargs):
         super().__init__(usina, *args, **kwargs)
-        self.usn.clp_moa.write_single_coil(self.usn.cfg["REG_PAINEL_LIDO"], [1])
         self.deve_ler_condicionadores=False
         self.habilitar_emerg_condic_e=False
         self.habilitar_emerg_condic_c=False
 
     def run(self):
         self.usn.heartbeat()
+        self.usn.ler_valores()
+        self.usn.clp_moa.write_single_coil(self.usn.cfg['REG_PAINEL_LIDO'], [1])
         """Decidir para qual modo de operação o sistema deve ir"""
 
         """
@@ -99,7 +99,7 @@ class ValoresInternosAtualizados(State):
         global deve_normalizar
         self.usn.TDA_Offline = False
 
-        with open(os.path.join(os.path.dirname(__file__), "config.json"), "w") as file:
+        with open(os.path.join(os.path.dirname('/opt/operacao-autonoma/'), "config.json"), "w") as file:
             json.dump(self.usn.cfg, file, indent=4)
 
         for condicionador_essencial in self.usn.condicionadores_essenciais:
@@ -281,7 +281,7 @@ class ModoManualAtivado(State):
         self.usn.ler_valores()
         for ug in self.usn.ugs:
             ug.release_timer = True
-        self.usn.clp_moa.write_single_coil(self.usn.cfg["REG_PAINEL_LIDO"], [1])
+        
         self.usn.ug1.setpoint = self.usn.ug1.leitura_potencia.valor
         self.usn.ug2.setpoint = self.usn.ug2.leitura_potencia.valor
         self.usn.ug3.setpoint = self.usn.ug3.leitura_potencia.valor
@@ -388,7 +388,7 @@ class OperacaoTDAOffline(State):
         if self.usn.avisado_em_eletrica or self.deve_ler_condicionadores==True:
             for condicionador_essencial in self.usn.condicionadores_essenciais:
                 if condicionador_essencial.ativo and condicionador_essencial.gravidade >= DEVE_INDISPONIBILIZAR:
-                        self.habilitar_emerg_condic_e=True
+                    self.habilitar_emerg_condic_e=True
                 elif condicionador_essencial.ativo and condicionador_essencial.gravidade == DEVE_NORMALIZAR:
                     deve_normalizar=True
                     self.habilitar_emerg_condic_e=False

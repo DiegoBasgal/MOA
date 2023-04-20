@@ -43,20 +43,17 @@ def comandos_manual_view(request, *args, **kwargs):
    context = {
       "setpot_ug1": "{:1.3f}".format(usina.ug1_setpot),
       "pot_ug1": "{:1.3f}".format(usina.ug1_pot),
-      "tempo_ug1": "{:.2f}".format(usina.ug1_tempo + 45362),
       "setpot_ug2": "{:1.3f}".format(usina.ug2_setpot),
       "pot_ug2": "{:1.3f}".format(usina.ug2_pot),
-      "tempo_ug2": "{:.2f}".format(usina.ug2_tempo + 45673),
       "setpot_ug3": "{:1.3f}".format(usina.ug3_setpot),
       "pot_ug3": "{:1.3f}".format(usina.ug3_pot),
-      "tempo_ug3": "{:.2f}".format(usina.ug3_tempo + 45255),
       "comandos_manual": comandos_manual,
       "usina": usina
    }
 
    client = ModbusClient(
-      host=usina.modbus_server_ip,
-      port=usina.modbus_server_porta,
+      host='192.168.0.116',
+      port=502,
       timeout=0.5,
       unit_id=1,
    )

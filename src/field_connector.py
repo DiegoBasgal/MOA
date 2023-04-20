@@ -22,40 +22,41 @@ class FieldConnector:
         else:
             self.cfg = cfg
 
+        self.clp_moa = ModbusClient(
+            host=self.cfg["MOA_slave_ip"],
+            port=self.cfg["MOA_slave_porta"],
+            timeout=0.5,
+            unit_id=1
+        )
         self.clp_sa = ModbusClient(
             host=self.cfg["USN_slave_ip"],
             port=self.cfg["USN_slave_porta"],
             timeout=0.5,
-            unit_id=1,
-            auto_open=True,
+            unit_id=1
         )
         self.clp_tda = ModbusClient(
             host=self.cfg["TDA_slave_ip"],
             port=self.cfg["TDA_slave_porta"],
             timeout=0.5,
-            unit_id=1,
-            auto_open=True,
+            unit_id=1
         )
         self.clp_ug1 = ModbusClient(
             host=self.cfg["UG1_slave_ip"],
             port=self.cfg["UG1_slave_porta"],
             timeout=0.5,
-            unit_id=1,
-            auto_open=True,
+            unit_id=1
         )
         self.clp_ug2 = ModbusClient(
             host=self.cfg["UG2_slave_ip"],
             port=self.cfg["UG2_slave_porta"],
             timeout=0.5,
-            unit_id=1,
-            auto_open=True,
+            unit_id=1
         )
         self.clp_ug3 = ModbusClient(
             host=self.cfg["UG3_slave_ip"],
             port=self.cfg["UG3_slave_porta"],
             timeout=0.5,
-            unit_id=1,
-            auto_open=True,
+            unit_id=1
         )
 
         self.TDA_Offline = False
@@ -86,6 +87,9 @@ class FieldConnector:
 
         if not self.clp_tda.open():
             raise ModbusClientFailedToOpen(f"Modbus client ({self.cfg['TDA_slave_ip']}:{self.cfg['TDA_slave_porta']}) failed to open.")
+        
+        if not self.clp_moa.open():
+            raise ModbusClientFailedToOpen(f"Modbus client ({self.cfg['MOA_slave_ip']}:{self.cfg['MOA_slave_porta']}) failed to open.")
 
         logger.debug("Openned Modbus")
         return self

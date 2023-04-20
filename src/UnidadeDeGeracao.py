@@ -76,45 +76,44 @@ class UnidadeDeGeracao:
 
         self.ts_auxiliar = datetime.now(pytz.timezone("Brazil/East")).replace(tzinfo=None)
 
-        self.clp_moa = ModbusClient(
+        self.clp: dict[str, ModbusClient] = {}
+
+        self.clp["MOA"] = ModbusClient(
             host=self.cfg['MOA_slave_ip'],
             port=self.cfg['MOA_slave_porta'],
             timeout=0.5,
             unit_id=1,
-            auto_open=True
+            auto_open=True,
+            auto_close=True
         )
-        self.clp_ug1 = ModbusClient(
+        self.clp["UG1"] = ModbusClient(
             host=self.cfg["UG1_slave_ip"],
             port=self.cfg["UG1_slave_porta"],
             timeout=0.5,
-            unit_id=1,
-            auto_open=True,
+            unit_id=1
         )
-        self.clp_ug2 = ModbusClient(
+        self.clp["UG2"] = ModbusClient(
             host=self.cfg["UG2_slave_ip"],
             port=self.cfg["UG2_slave_porta"],
             timeout=0.5,
-            unit_id=1,
-            auto_open=True,
+            unit_id=1
         )
-        self.clp_ug3 = ModbusClient(
+        self.clp["UG3"] = ModbusClient(
             host=self.cfg["UG3_slave_ip"],
             port=self.cfg["UG3_slave_porta"],
             timeout=0.5,
-            unit_id=1,
-            auto_open=True,
+            unit_id=1
         )
-        self.clp_sa = ModbusClient(
+        self.clp["SA"] = ModbusClient(
             host=self.cfg["USN_slave_ip"],
             port=self.cfg["USN_slave_porta"],
             timeout=0.5,
-            unit_id=1,
-            auto_open=True,
+            unit_id=1
         )
 
         self.potencia_ativa_kW = LeituraModbus(
             "REG_SA_RetornosAnalogicos_Medidor_potencia_kw_mp",
-            self.clp_sa,
+            self.clp["SA"],
             REG_SA_RA_PM_810_Potencia_Ativa,
             1,
             op=4,
@@ -482,13 +481,12 @@ class UnidadeDeGeracao:
             logger.debug(f"[UG{self.id}] Enviando setpoint {int(self.setpoint)} kW.")
             response = False
             if self.setpoint > 1:
-                response = self.clp_ug3.write_single_coil(UG[f"REG_UG{self.id}_CD_ResetGeral"], 1)
-                response = self.clp_ug3.write_single_coil(UG[f"REG_UG{self.id}_CD_RV_RefRemHabilita"], 1)
-                response = self.clp_ug3.write_single_register(UG[f"REG_UG{self.id}_SA_SPPotAtiva"], self.setpoint)
+                response = self.clp[f"UG{self.id}"].write_single_coil(UG[f"REG_UG{self.id}_CD_ResetGeral"], 1)
+                response = self.clp[f"UG{self.id}"].write_single_coil(UG[f"REG_UG{self.id}_CD_RV_RefRemHabilita"], 1)
+                response = self.clp[f"UG{self.id}"].write_single_register(UG[f"REG_UG{self.id}_SA_SPPotAtiva"], self.setpoint)
 
         except:
             #! TODO Tratar exceptions
             return False
         else:
             return response
-        s

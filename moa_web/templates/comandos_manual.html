@@ -56,7 +56,7 @@
             <p style="margin-top: 5px; margin-bottom: 40px;">Os comandos manuais serão aceitos apenas se a unidade ou usina estiverem em modo MANUAL</p>
             <div>
                 <h2 style="margin-bottom: 20px;"><b>Comandos Gerais: </b></h3>
-                <form method='post' action='/comandos_manual/'>
+                <form method='post' action='/modo_manual/'>
                     {% csrf_token %}
                     <div style="margin-bottom: 1px;">
                         <table>
@@ -82,7 +82,7 @@
                 </form>
             </div>
             <div style="margin-top: 30px;">
-                <form method='post' action='/comandos_manual/disjuntor/'>
+                <form method='post' action='/modo_manual/disjuntor/'>
                     {% csrf_token %}
                     <table>
                         <tr>
@@ -109,7 +109,7 @@
             </div>
             <div style="margin-top: 60px;">
                 <h2><b>Comandos Unidades de Geração: </b></h2>
-                <form method="post" action="/comandos_manual/ug1/">
+                <form method="post" action="/modo_manual/ug1/">
                     {% csrf_token %}
                     <table style="margin-bottom: 1px;">
                         <tr>
@@ -185,7 +185,7 @@
                 </form>
             </div>
             <div style="margin-top: 40px;">
-                <form method="post" action="/comandos_manual/ug2/">
+                <form method="post" action="/modo_manual/ug2/">
                     {% csrf_token %}
                     <table>
                         <tr>
@@ -261,7 +261,7 @@
                 </form>
             </div>
             <div style="margin-top: 40px;">
-                <form method="post" action="/comandos_manual/ug3/">
+                <form method="post" action="/modo_manual/ug3/">
                     {% csrf_token %}
                     <table>
                         <tr>

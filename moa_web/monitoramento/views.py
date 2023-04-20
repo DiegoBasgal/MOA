@@ -70,7 +70,7 @@ def monitoramento_view(request, *args, **kwargs):
             context["tag"] = 2
 
     if clp_ug1.open():
-        setpoint_ug1 = clp_ug1.read_input_registers(44)[0]
+        setpoint_ug1 = clp_ug1.read_holding_registers(1)[0]
         potencia_ug1 = clp_ug1.read_input_registers(45)[0]
         hora = clp_ug1.read_input_registers(51)[0]
         minuto = (clp_ug1.read_input_registers(52)[0] * (1/60))
@@ -101,7 +101,7 @@ def monitoramento_view(request, *args, **kwargs):
         context["tempo_ug1"] = f"{float((hora + 45657.39) + minuto):.2f}"
 
     if clp_ug2.open():
-        setpoint_ug2 = clp_ug2.read_input_registers(44)[0]
+        setpoint_ug2 = clp_ug2.read_holding_registers(1)[0]
         potencia_ug2 = clp_ug2.read_input_registers(45)[0]
         hora = clp_ug2.read_input_registers(51)[0]
         minuto = (clp_ug2.read_input_registers(52)[0] * (1/60))
@@ -132,7 +132,7 @@ def monitoramento_view(request, *args, **kwargs):
         context["tempo_ug2"] = f"{float((hora + 49376.14) + minuto):.2f}"
 
     if clp_ug3.open():
-        setpoint_ug3 = clp_ug3.read_input_registers(44)[0]
+        setpoint_ug3 = clp_ug3.read_holding_registers(1)[0]
         potencia_ug3 = clp_ug3.read_input_registers(45)[0]
         hora = clp_ug3.read_input_registers(51)[0]
         minuto = (clp_ug3.read_input_registers(52)[0] * (1/60))
@@ -164,11 +164,11 @@ def monitoramento_view(request, *args, **kwargs):
 
     if clp_moa.open():
         context["CLP_Status"] = True
-        regs = clp_moa.read_holding_registers(0, 120)
+        regs = clp_moa.read_coils(0, 120)
 
-        context["ug1_state"] = MOA_DICT_DE_STATES[regs[23]] if regs[23] in MOA_DICT_DE_STATES else 4
-        context["ug2_state"] = MOA_DICT_DE_STATES[regs[28]] if regs[28] in MOA_DICT_DE_STATES else 4
-        context["ug3_state"] = MOA_DICT_DE_STATES[regs[33]] if regs[33] in MOA_DICT_DE_STATES else 4
+        context["ug1_state"] = 4 # MOA_DICT_DE_STATES[regs[23]] if regs[23] in MOA_DICT_DE_STATES else 4
+        context["ug2_state"] = 4 # MOA_DICT_DE_STATES[regs[28]] if regs[28] in MOA_DICT_DE_STATES else 4
+        context["ug3_state"] = 4 # MOA_DICT_DE_STATES[regs[33]] if regs[33] in MOA_DICT_DE_STATES else 4
 
         #hb_datetime = datetime.datetime(regs[0], regs[1], regs[2], regs[3], regs[4], regs[5], regs[6] * 1000)
         #context["hb_datestring"] = hb_datetime.strftime("%d/%m/%Y, %H:%M:%S")
