@@ -5,7 +5,7 @@ from time import  time
 from threading import Thread
 from time_handler import TimeHandler
 
-from simulador.src.dicionarios.const import *
+from dicionarios.const import *
 
 logger = logging.getLogger('__main__')
 
@@ -29,22 +29,22 @@ class Ug:
 
     def passo(self):
         # DEBUG VIA GUI
-        self.setpoint = self.dict[f'setpoint_kw_ug{self.id}']
+        self.setpoint = self.dict['UG'][f'setpoint_kw_ug{self.id}']
 
-        if self.dict[f'debug_partir_ug{self.id}']:
-            self.dict[f'debug_partir_ug{self.id}'] = False
+        if self.dict['UG'][f'debug_partir_ug{self.id}']:
+            self.dict['UG'][f'debug_partir_ug{self.id}'] = False
             self.partir()
 
-        if self.dict[f'debug_parar_ug{self.id}']:
-            self.dict[f'debug_parar_ug{self.id}'] = False
+        if self.dict['UG'][f'debug_parar_ug{self.id}']:
+            self.dict['UG'][f'debug_parar_ug{self.id}'] = False
             self.parar()
 
-        if self.dict[f'trip_ug{self.id}']:
+        if self.dict['UG'][f'trip_ug{self.id}']:
             self.tripar(1, 'Trip Elétrico.')
-            self.dict[f'trip_ug{self.id}'] = False
+            self.dict['UG'][f'trip_ug{self.id}'] = False
 
-        if self.dict[f'reconhece_reset_ug{self.id}']:
-            self.dict[f'reconhece_reset_ug{self.id}'] = False
+        if self.dict['UG'][f'reconhece_reset_ug{self.id}']:
+            self.dict['UG'][f'reconhece_reset_ug{self.id}'] = False
             self.reconhece_reset()
 
         self.controle_horimetro()

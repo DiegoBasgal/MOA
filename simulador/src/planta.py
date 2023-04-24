@@ -9,8 +9,8 @@ from datetime import datetime
 from asyncio.log import logger
 from pyModbusTCP.server import ModbusServer, DataBank
 
-from simulador.src.dicionarios.reg import *
-from simulador.src.dicionarios.const import *
+from src.dicionarios.reg import *
+from src.dicionarios.const import *
 
 from ug import Ug
 from dj52L import Dj52L
@@ -102,7 +102,7 @@ class Planta:
 
                     if self.dict['UG'][f'debug_setpoint_kw_ug{ug.id}'] >= 0:
                         self.dict['UG'][f'setpoint_kw_ug{ug.id}'] = self.dict['UG'][f'debug_setpoint_kw_ug{ug.id}']
-                        self.DB.set_words(MB[f'REG_UG{ug.id}_CtrlPotencia_Alvo'], self.dict['UG'][f'setpoint_kw_ug{ug.id}'])
+                        self.DB.set_words(MB[f'REG_UG{ug.id}_CtrlPotencia_Alvo'], [int(self.dict['UG'][f'setpoint_kw_ug{ug.id}'])])
                         self.dict['UG'][f'debug_setpoint_kw_ug{ug.id}'] = -1
 
                     if self.dict['UG'][f'trip_condic_ug{ug.id}'] and self.dict['USN'][f'aux_borda{ug.id + 2}'] == 0:
@@ -246,11 +246,11 @@ class Planta:
                 self.DB.set_words(MB['NIVEL_JUSANTE_GRADE_COMPORTA_1'],[round((self.dict['USN']['nv_jusante_grade']) * 10000)])
                 self.DB.set_words(MB['NIVEL_JUSANTE_GRADE_COMPORTA_2'],[round((self.dict['USN']['nv_jusante_grade']) * 10000)])
                 self.DB.set_words(MB['LT_P'],[round(self.dict['USN']['potencia_kw_se'])])
-                self.DB.set_words(MB['LT_VAB'],[round(self.dict['DJ']['tensao_na_linha'] / 1000)])
-                self.DB.set_words(MB['LT_VBC'],[round(self.dict['DJ']['tensao_na_linha'] / 1000)])
-                self.DB.set_words(MB['LT_VCA'],[round(self.dict['DJ']['tensao_na_linha'] / 1000)])
-                self.DB.set_words(MB['REG_USINA_potencia_kw_mp'], round(max(0, self.dict['USN']['potencia_kw_mp'])))
-                self.DB.set_words(MB['REG_USINA_potencia_kw_mr'], round(max(0, self.dict['USN']['potencia_kw_mr'])))
+                self.DB.set_words(MB['LT_VAB'],[round(self.dict['USN']['tensao_na_linha'] / 1000)])
+                self.DB.set_words(MB['LT_VBC'],[round(self.dict['USN']['tensao_na_linha'] / 1000)])
+                self.DB.set_words(MB['LT_VCA'],[round(self.dict['USN']['tensao_na_linha'] / 1000)])
+                self.DB.set_words(MB['REG_USINA_potencia_kw_mp'], [round(max(0, self.dict['USN']['potencia_kw_mp']))])
+                self.DB.set_words(MB['REG_USINA_potencia_kw_mr'], [round(max(0, self.dict['USN']['potencia_kw_mr']))])
 
                 # FIM COMPORTAMENTO USINA
                 lock.release()

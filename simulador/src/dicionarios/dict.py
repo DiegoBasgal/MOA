@@ -79,6 +79,7 @@ shared_dict = {
         "q_ug2": 0,
         "flags_ug2": 0,
         "etapa_aux_ug2": 5,
+        "progresso_ug2": 0,
         "etapa_alvo_ug2": 0,
         "etapa_atual_ug2": 0,
         "potencia_kw_ug2": 0,

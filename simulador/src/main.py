@@ -4,7 +4,7 @@ import traceback
 from sys import stdout
 from threading import Thread
 
-import simulador.src.dicionarios.dict as d
+import dicionarios.dict as d
 
 from ug import *
 from dj52L import *

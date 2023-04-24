@@ -2,7 +2,7 @@ import logging
 
 from time_handler import TimeHandler
 
-from simulador.src.dicionarios.const import *
+from dicionarios.const import *
 
 logger = logging.getLogger('__main__')
 

@@ -5,7 +5,7 @@ from math import floor
 from PySide6.QtWidgets import QApplication, QMainWindow, QFrame
 from PySide6.QtCore import QTimer
 from PySide6.QtGui import QPixmap
-from .ui_geral import Ui_Form
+from .gui import Ui_Form
 
 lock = threading.Lock()
 
