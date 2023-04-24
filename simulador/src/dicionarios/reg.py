@@ -1,4 +1,4 @@
-REG_OPC = {
+MB = {
     # SE
     # Comandos
     "CMD_SE_FECHA_52L": "ns=7;s=CLP_SA.SA.DB_COMANDOS.DIGITAIS.SE",# Bit 04 # "REG_USINA_Disj52LFechar": False,
@@ -85,9 +85,7 @@ REG_OPC = {
     "UG2_TEMP_CASQ_MANCAL_COMBINADO": "ns=7;s=CLP_UG2.UG2.DB_STATUS.ANALOGICAS.TEMP_CASQ_MANCAL_COMBINADO", # .Value # "REG_UG2_Temperatura_10": 12880 - 1 + 30000,
     "UG2_TEMP_CONTRA_ESCORA_MANCAL_COMBINADO": "ns=7;s=CLP_UG2.UG2.DB_STATUS.ANALOGICAS.TEMP_CONTRA_ESCORA_MANCAL_COMBINADO", # .Value # "REG_UG2_Temperatura_11": 12881 - 1 + 30000,
     "UG2_PRESSAO_ENTRADA_TURBINA": "ns=7;s=CLP_UG2.UG2.DB_STATUS.ANALOGICAS.PRESSAO_ENTRADA_TURBINA", # .Value # "REG_UG2_Pressao_Turbina": 14904 - 1 + 30000,
-}
 
-REG_MB = {
     "REG_USINA_Condicionadores": 14903 - 1 + 20000,
     "REG_USINA_potencia_kw_mp": 14900 - 1 + 10000,
     "REG_USINA_potencia_kw_mr": 14901 - 1 + 10000,
@@ -101,5 +99,5 @@ REG_MB = {
 
     "REG_UG2_Condicionadores": 14903 - 1 + 30000,
     "REG_UG2_CtrlPotencia_Alvo": 13569 + 17 - 1 + 30000,
-}
 
+}
