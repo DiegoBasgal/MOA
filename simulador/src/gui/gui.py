@@ -2358,6 +2358,7 @@ class Ui_Form(object):
         self.pushButton_reset_condicionadores_geral.clicked.connect(Form.reset_geral_condic_usina)
         self.pushButton_set_press_turbina_ug1.clicked.connect(Form.set_press_turbina_ug1)
         self.pushButton_set_press_turbina_ug2.clicked.connect(Form.set_press_turbina_ug2)
+        
         self.pushButton_abrir_comporta_ug1.clicked.connect(Form.set_thread_comp_aberta_ug1)
         self.pushButton_fechar_comporta_ug1.clicked.connect(Form.set_thread_comp_fechada_ug1)
         self.pushButton_cracking_comporta_ug1.clicked.connect(Form.set_thread_comp_cracking_ug1)

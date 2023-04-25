@@ -237,6 +237,7 @@ class Ug:
                     self.etapa_atual = ETAPA_UPS
                     self.tempo_na_transicao = 0
 
+        self.dict['UG'][f'etapa_atual_ug{self.id}'] = self.etapa_atual
         # FIM COMPORTAMENTO self.ETAPAS
     
         if self.dict['UG']['thread_comp_aberta_ug1'] == True:
@@ -291,7 +292,7 @@ class Ug:
         return True
     
     def set_fechamento_comporta_ug1(self):
-        if self.etapa_atual != ETAPA_UP:
+        if self.dict['UG']['etapa_atual_ug1'] != ETAPA_UP:
             logger.warning('[UG1] A Unidade deve estar completamente parada para realizar o fechamento da comporta!')
 
         elif self.dict['UG']['comporta_aberta_ug1'] == True and self.dict['UG']['comporta_cracking_ug1'] == False:
@@ -364,7 +365,7 @@ class Ug:
         return True
     
     def set_fechamento_comporta_ug2(self):
-        if self.etapa_atual != ETAPA_UP:
+        if self.dict['UG']['etapa_atual_ug2'] != ETAPA_UP:
             logger.warning('[UG2] A Unidade deve estar completamente parada para realizar o fechamento da comporta!')
 
         elif self.dict['UG']['comporta_aberta_ug2'] == True and self.dict['UG']['comporta_cracking_ug2'] == False:

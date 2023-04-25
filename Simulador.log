@@ -7,3 +7,116 @@
 2023-04-25 13:09:51,873 [DEBUG] [SIM] Aguardando equalização de pressão da UG.
 2023-04-25 13:09:53,794 [INFO ] [SIM] A unidade foi equalizada, permissão para abrir comporta ativada!
 2023-04-25 13:09:55,727 [INFO ] [SIM] Fim da simulação
+2023-04-25 13:13:55,385 [INFO ] [SIM] Iniciando abstraço e GUI.
+2023-04-25 13:13:55,386 [INFO ] [SIM] Iniciando Thread do controlador de tempo da simulação
+2023-04-25 13:13:55,387 [INFO ] [SIM] Instanciando classes da Usina (Ug, Dj52L, Planta)
+2023-04-25 13:13:55,387 [INFO ] [SIM] Iniciando execução.
+2023-04-25 13:13:55,410 [INFO ] [SIM] [DJ] Abrir.
+2023-04-25 13:13:55,451 [INFO ] [SIM] Rodando simulador
+2023-04-25 13:14:10,184 [INFO ] [SIM] Não é possível realizar o cracking da comporta 1 pois o limpa grades se encontra em operação.
+2023-04-25 13:14:15,544 [INFO ] [SIM] Não é possível realizar a abertura da comporta 1 pois o limpa grades se encontra em operação.
+2023-04-25 13:14:16,114 [INFO ] [SIM] A comporta já está fechada.
+2023-04-25 13:14:21,667 [DEBUG] [SIM] Aguardando equalização de pressão da UG.
+2023-04-25 13:14:25,567 [INFO ] [SIM] A unidade foi equalizada, permissão para abrir comporta ativada!
+2023-04-25 13:14:36,393 [INFO ] [SIM] [UG1] Comando de partida
+2023-04-25 13:14:39,537 [WARNI] [SIM] [UG2] Para partir a ug é necessário abrir a comporta primeiro!
+2023-04-25 13:14:43,113 [INFO ] [SIM] [UG2] Comando de parada
+2023-04-25 13:14:46,826 [INFO ] [SIM] [DJ] Fechar.
+2023-04-25 13:14:57,903 [DEBUG] [SIM] Aguardando equalização de pressão da UG.
+2023-04-25 13:15:00,530 [WARNI] [SIM] [UG2] A Unidade deve estar completamente parada para realizar o fechamento da comporta!
+2023-04-25 13:15:05,180 [WARNI] [SIM] [UG2] A Unidade deve estar completamente parada para realizar o fechamento da comporta!
+2023-04-25 13:15:06,849 [WARNI] [SIM] [UG2] A Unidade deve estar completamente parada para realizar o fechamento da comporta!
+2023-04-25 13:15:06,996 [WARNI] [SIM] [UG2] A Unidade deve estar completamente parada para realizar o fechamento da comporta!
+2023-04-25 13:15:17,922 [WARNI] [SIM] Não foi possível equalizar a unidade! Fechando comporta e adicionando condicionador
+2023-04-25 13:15:17,944 [WARNI] [SIM] [UG2] A Unidade deve estar completamente parada para realizar o fechamento da comporta!
+2023-04-25 13:15:17,950 [WARNI] [SIM] [UG2] Trip!. Trip Elétrico.
+2023-04-25 13:15:26,177 [INFO ] [SIM] [UG2] Reconhece Reset.
+2023-04-25 13:15:28,694 [WARNI] [SIM] [UG2] A Unidade deve estar completamente parada para realizar o fechamento da comporta!
+2023-04-25 13:15:30,484 [WARNI] [SIM] [UG2] A Unidade deve estar completamente parada para realizar o fechamento da comporta!
+2023-04-25 13:16:14,398 [INFO ] [SIM] [UG2] Comando de parada
+2023-04-25 13:16:18,556 [INFO ] [SIM] As permissões de abertura da comporta 2 ainda não foram ativadas.
+2023-04-25 13:16:22,910 [INFO ] [SIM] As permissões de abertura da comporta 2 ainda não foram ativadas.
+2023-04-25 13:16:25,764 [INFO ] [SIM] As permissões de abertura da comporta 2 ainda não foram ativadas.
+2023-04-25 13:16:27,811 [WARNI] [SIM] [UG2] A Unidade deve estar completamente parada para realizar o fechamento da comporta!
+2023-04-25 13:16:30,074 [INFO ] [SIM] [UG2] Comando de parada
+2023-04-25 13:16:30,204 [INFO ] [SIM] [UG2] Comando de parada
+2023-04-25 13:16:30,538 [WARNI] [SIM] [UG2] A Unidade deve estar completamente parada para realizar o fechamento da comporta!
+2023-04-25 13:16:30,643 [WARNI] [SIM] [UG2] A Unidade deve estar completamente parada para realizar o fechamento da comporta!
+2023-04-25 13:16:30,813 [WARNI] [SIM] [UG2] A Unidade deve estar completamente parada para realizar o fechamento da comporta!
+2023-04-25 13:16:32,807 [INFO ] [SIM] A comporta já está na posição de cracking.
+2023-04-25 13:16:54,604 [INFO ] [SIM] [DJ] Reconhece Reset.
+2023-04-25 13:17:06,094 [WARNI] [SIM] [DJ] Trip!.
+2023-04-25 13:17:09,051 [INFO ] [SIM] [UG1] Comando de parada
+2023-04-25 13:17:57,042 [INFO ] [SIM] Não é possível realizar o cracking da comporta 2 pois a comporta 1 está em operação.
+2023-04-25 13:17:57,238 [DEBUG] [SIM] Aguardando equalização de pressão da UG.
+2023-04-25 13:18:06,053 [INFO ] [SIM] A unidade foi equalizada, permissão para abrir comporta ativada!
+2023-04-25 13:18:07,748 [INFO ] [SIM] Não é possível realizar o cracking da comporta 2 pois a comporta 1 está em operação.
+2023-04-25 13:18:13,424 [DEBUG] [SIM] Aguardando equalização de pressão da UG.
+2023-04-25 13:18:13,451 [INFO ] [SIM] A unidade foi equalizada, permissão para abrir comporta ativada!
+2023-04-25 13:39:26,576 [INFO ] [SIM] Fim da simulação
+2023-04-25 14:20:26,588 [INFO ] [SIM] Iniciando abstraço e GUI.
+2023-04-25 14:20:26,590 [INFO ] [SIM] Iniciando Thread do controlador de tempo da simulação
+2023-04-25 14:20:26,590 [INFO ] [SIM] Instanciando classes da Usina (Ug, Dj52L, Planta)
+2023-04-25 14:20:26,591 [INFO ] [SIM] Iniciando execução.
+2023-04-25 14:20:26,604 [INFO ] [SIM] [DJ] Abrir.
+2023-04-25 14:20:26,710 [INFO ] [SIM] Rodando simulador
+2023-04-25 14:20:30,345 [DEBUG] [SIM] Aguardando equalização de pressão da UG.
+2023-04-25 14:20:31,755 [WARNI] [SIM] [UG2] Para partir a ug é necessário abrir a comporta primeiro!
+2023-04-25 14:20:38,408 [DEBUG] [SIM] Aguardando equalização de pressão da UG.
+2023-04-25 14:20:40,095 [INFO ] [SIM] A unidade foi equalizada, permissão para abrir comporta ativada!
+2023-04-25 14:20:41,685 [INFO ] [SIM] A unidade foi equalizada, permissão para abrir comporta ativada!
+2023-04-25 14:21:35,074 [WARNI] [SIM] [UG2] Para partir a ug é necessário abrir a comporta primeiro!
+2023-04-25 14:21:40,505 [INFO ] [SIM] [UG1] Comando de partida
+2023-04-25 14:21:45,527 [INFO ] [SIM] [UG2] Comando de partida
+2023-04-25 14:21:50,025 [WARNI] [SIM] [UG2] A Unidade deve estar completamente parada para realizar o fechamento da comporta!
+2023-04-25 14:21:53,562 [INFO ] [SIM] [UG2] Comando de parada
+2023-04-25 14:21:55,684 [WARNI] [SIM] [UG2] A Unidade deve estar completamente parada para realizar o fechamento da comporta!
+2023-04-25 14:21:58,999 [INFO ] [SIM] [UG1] Comando de parada
+2023-04-25 14:22:00,406 [WARNI] [SIM] [UG2] A Unidade deve estar completamente parada para realizar o fechamento da comporta!
+2023-04-25 14:22:02,674 [WARNI] [SIM] [UG2] A Unidade deve estar completamente parada para realizar o fechamento da comporta!
+2023-04-25 14:22:04,650 [WARNI] [SIM] [UG2] A Unidade deve estar completamente parada para realizar o fechamento da comporta!
+2023-04-25 14:22:05,072 [WARNI] [SIM] [UG2] A Unidade deve estar completamente parada para realizar o fechamento da comporta!
+2023-04-25 14:22:05,246 [WARNI] [SIM] [UG2] A Unidade deve estar completamente parada para realizar o fechamento da comporta!
+2023-04-25 14:22:05,383 [WARNI] [SIM] [UG2] A Unidade deve estar completamente parada para realizar o fechamento da comporta!
+2023-04-25 14:22:05,533 [WARNI] [SIM] [UG2] A Unidade deve estar completamente parada para realizar o fechamento da comporta!
+2023-04-25 14:22:05,783 [WARNI] [SIM] [UG2] A Unidade deve estar completamente parada para realizar o fechamento da comporta!
+2023-04-25 14:22:05,953 [WARNI] [SIM] [UG2] A Unidade deve estar completamente parada para realizar o fechamento da comporta!
+2023-04-25 14:22:06,120 [WARNI] [SIM] [UG2] A Unidade deve estar completamente parada para realizar o fechamento da comporta!
+2023-04-25 14:22:06,260 [WARNI] [SIM] [UG2] A Unidade deve estar completamente parada para realizar o fechamento da comporta!
+2023-04-25 14:22:06,411 [WARNI] [SIM] [UG2] A Unidade deve estar completamente parada para realizar o fechamento da comporta!
+2023-04-25 14:22:07,840 [INFO ] [SIM] [UG1] Comando de parada
+2023-04-25 14:22:10,327 [INFO ] [SIM] [UG1] Reconhece Reset.
+2023-04-25 14:22:12,067 [WARNI] [SIM] [UG1] Trip!. Trip Elétrico.
+2023-04-25 14:22:12,553 [INFO ] [SIM] [UG1] Reconhece Reset.
+2023-04-25 14:22:13,890 [INFO ] [SIM] [UG1] Comando de parada
+2023-04-25 14:22:13,969 [INFO ] [SIM] [UG1] Comando de parada
+2023-04-25 14:22:15,767 [INFO ] [SIM] [UG1] Comando de parada
+2023-04-25 14:22:17,776 [WARNI] [SIM] [UG1] A Unidade deve estar completamente parada para realizar o fechamento da comporta!
+2023-04-25 14:22:27,524 [INFO ] [SIM] Fim da simulação
+2023-04-25 14:26:23,484 [INFO ] [SIM] Iniciando abstraço e GUI.
+2023-04-25 14:26:23,485 [INFO ] [SIM] Iniciando Thread do controlador de tempo da simulação
+2023-04-25 14:26:23,485 [INFO ] [SIM] Instanciando classes da Usina (Ug, Dj52L, Planta)
+2023-04-25 14:26:23,486 [INFO ] [SIM] Iniciando execução.
+2023-04-25 14:26:23,494 [INFO ] [SIM] [DJ] Abrir.
+2023-04-25 14:26:23,532 [INFO ] [SIM] Rodando simulador
+2023-04-25 14:26:27,016 [DEBUG] [SIM] Aguardando equalização de pressão da UG.
+2023-04-25 14:26:28,315 [INFO ] [SIM] A unidade foi equalizada, permissão para abrir comporta ativada!
+2023-04-25 14:26:33,303 [DEBUG] [SIM] Aguardando equalização de pressão da UG.
+2023-04-25 14:26:33,752 [INFO ] [SIM] A unidade foi equalizada, permissão para abrir comporta ativada!
+2023-04-25 14:26:38,464 [INFO ] [SIM] [UG1] Comando de partida
+2023-04-25 14:27:12,976 [DEBUG] [SIM] Aguardando equalização de pressão da UG.
+2023-04-25 14:27:22,007 [INFO ] [SIM] [DJ] Fechar.
+2023-04-25 14:27:33,039 [WARNI] [SIM] Não foi possível equalizar a unidade! Fechando comporta e adicionando condicionador
+2023-04-25 14:27:33,150 [INFO ] [SIM] A comporta já está fechada.
+2023-04-25 14:27:33,150 [WARNI] [SIM] [UG2] Trip!. Trip Elétrico.
+2023-04-25 14:27:37,364 [DEBUG] [SIM] Aguardando equalização de pressão da UG.
+2023-04-25 14:27:38,597 [INFO ] [SIM] A unidade foi equalizada, permissão para abrir comporta ativada!
+2023-04-25 14:27:41,383 [INFO ] [SIM] [UG2] Reconhece Reset.
+2023-04-25 14:28:10,383 [WARNI] [SIM] [UG1] A Unidade deve estar completamente parada para realizar o fechamento da comporta!
+2023-04-25 14:28:11,566 [INFO ] [SIM] [UG1] Comando de parada
+2023-04-25 14:28:53,923 [WARNI] [SIM] [UG2] A Unidade deve estar completamente parada para realizar o fechamento da comporta!
+2023-04-25 14:28:56,489 [INFO ] [SIM] [UG2] Reconhece Reset.
+2023-04-25 14:28:57,512 [WARNI] [SIM] [UG2] A Unidade deve estar completamente parada para realizar o fechamento da comporta!
+2023-04-25 14:28:58,323 [INFO ] [SIM] [UG2] Comando de parada
+2023-04-25 14:28:59,091 [INFO ] [SIM] [UG2] Reconhece Reset.
+2023-04-25 14:29:26,841 [INFO ] [SIM] Fim da simulação
