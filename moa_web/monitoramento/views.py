@@ -13,15 +13,10 @@ MOA_DICT_DE_STATES[1] = 1
 MOA_DICT_DE_STATES[2] = 2
 MOA_DICT_DE_STATES[3] = 3
 
-UNIDADE_PARADA = 1
-UNIDADE_PARANDO = 2
+UNIDADE_PARADA = 2
+UNIDADE_PARANDO = 1
 UNIDADE_SINCRONIZANDO = 3
 UNIDADE_SINCRONIZADA = 4
-UNIDADE_DICT_DE_ETAPAS = {}
-UNIDADE_DICT_DE_ETAPAS[UNIDADE_PARADA] = 1
-UNIDADE_DICT_DE_ETAPAS[UNIDADE_PARANDO] = 2
-UNIDADE_DICT_DE_ETAPAS[UNIDADE_SINCRONIZANDO] = 3
-UNIDADE_DICT_DE_ETAPAS[UNIDADE_SINCRONIZADA] = 4
 
 
 def monitoramento_view(request, *args, **kwargs):
@@ -74,25 +69,25 @@ def monitoramento_view(request, *args, **kwargs):
         potencia_ug1 = clp_ug1.read_input_registers(45)[0]
         hora = clp_ug1.read_input_registers(51)[0]
         minuto = (clp_ug1.read_input_registers(52)[0] * (1/60))
-        
+
         res_ug1 = 0
-        if clp_ug1.read_coils(0) is not None:
+        if clp_ug1.read_discrete_inputs(11)[0]:
             res_ug1 += 2**0
-        elif clp_ug1.read_coils(11) is not None:
+        if clp_ug1.read_discrete_inputs(133)[0]:
             res_ug1 += 2**1
-        elif clp_ug1.read_coils(132) is not None:
+        if clp_ug1.read_discrete_inputs(0)[0]:
             res_ug1 += 2**2
-        elif clp_ug1.read_coils(133) is not None:
+        if clp_ug1.read_discrete_inputs(132)[0]:
             res_ug1 += 2**3
-        
+
         if res_ug1 == 1:
             context["ug1_etapa"] = UNIDADE_SINCRONIZADA
         elif 2 <= res_ug1 <= 3:
-            context["ug1_etapa"] =  UNIDADE_PARANDO
+            context["ug1_etapa"] = UNIDADE_PARANDO
         elif 4 <= res_ug1 <= 7:
-            context["ug1_etapa"] =  UNIDADE_PARADA
+            context["ug1_etapa"] = UNIDADE_PARADA
         elif 8 <= res_ug1 <= 15:
-            context["ug1_etapa"] =  UNIDADE_SINCRONIZANDO
+            context["ug1_etapa"] = UNIDADE_SINCRONIZANDO
         else:
             context["ug1_etapa"] = 99
 
@@ -107,23 +102,23 @@ def monitoramento_view(request, *args, **kwargs):
         minuto = (clp_ug2.read_input_registers(52)[0] * (1/60))
 
         res_ug2 = 0
-        if clp_ug2.read_coils(0) is not None:
+        if clp_ug2.read_discrete_inputs(11)[0]:
             res_ug2 += 2**0
-        elif clp_ug2.read_coils(11) is not None:
+        if clp_ug2.read_discrete_inputs(133)[0]:
             res_ug2 += 2**1
-        elif clp_ug2.read_coils(132) is not None:
+        if clp_ug2.read_discrete_inputs(0)[0]:
             res_ug2 += 2**2
-        elif clp_ug2.read_coils(133) is not None:
+        if clp_ug2.read_discrete_inputs(132)[0]:
             res_ug2 += 2**3
         
         if res_ug2 == 1:
             context["ug2_etapa"] = UNIDADE_SINCRONIZADA
         elif 2 <= res_ug2 <= 3:
-            context["ug2_etapa"] =  UNIDADE_PARANDO
+            context["ug2_etapa"] = UNIDADE_PARANDO
         elif 4 <= res_ug2 <= 7:
-            context["ug2_etapa"] =  UNIDADE_PARADA
+            context["ug2_etapa"] = UNIDADE_PARADA
         elif 8 <= res_ug2 <= 15:
-            context["ug2_etapa"] =  UNIDADE_SINCRONIZANDO
+            context["ug2_etapa"] = UNIDADE_SINCRONIZANDO
         else:
             context["ug2_etapa"] = 99
 
@@ -138,23 +133,23 @@ def monitoramento_view(request, *args, **kwargs):
         minuto = (clp_ug3.read_input_registers(52)[0] * (1/60))
 
         res_ug3 = 0
-        if clp_ug3.read_coils(0) is not None:
+        if clp_ug3.read_discrete_inputs(11)[0]:
             res_ug3 += 2**0
-        elif clp_ug3.read_coils(11) is not None:
+        if clp_ug3.read_discrete_inputs(133)[0]:
             res_ug3 += 2**1
-        elif clp_ug3.read_coils(132) is not None:
+        if clp_ug3.read_discrete_inputs(0)[0]:
             res_ug3 += 2**2
-        elif clp_ug3.read_coils(133) is not None:
+        if clp_ug3.read_discrete_inputs(132)[0]:
             res_ug3 += 2**3
-        
+
         if res_ug3 == 1:
             context["ug3_etapa"] = UNIDADE_SINCRONIZADA
         elif 2 <= res_ug3 <= 3:
-            context["ug3_etapa"] =  UNIDADE_PARANDO
+            context["ug3_etapa"] = UNIDADE_PARANDO
         elif 4 <= res_ug3 <= 7:
-            context["ug3_etapa"] =  UNIDADE_PARADA
+            context["ug3_etapa"] = UNIDADE_PARADA
         elif 8 <= res_ug3 <= 15:
-            context["ug3_etapa"] =  UNIDADE_SINCRONIZANDO
+            context["ug3_etapa"] = UNIDADE_SINCRONIZANDO
         else:
             context["ug3_etapa"] = 99
 
@@ -166,12 +161,10 @@ def monitoramento_view(request, *args, **kwargs):
         context["CLP_Status"] = True
         regs = clp_moa.read_coils(0, 120)
 
-        context["ug1_state"] = 4 # MOA_DICT_DE_STATES[regs[23]] if regs[23] in MOA_DICT_DE_STATES else 4
-        context["ug2_state"] = 4 # MOA_DICT_DE_STATES[regs[28]] if regs[28] in MOA_DICT_DE_STATES else 4
-        context["ug3_state"] = 4 # MOA_DICT_DE_STATES[regs[33]] if regs[33] in MOA_DICT_DE_STATES else 4
+        context["ug1_state"] = MOA_DICT_DE_STATES[regs[23]] if regs[23] in MOA_DICT_DE_STATES else 4
+        context["ug2_state"] = MOA_DICT_DE_STATES[regs[28]] if regs[28] in MOA_DICT_DE_STATES else 4
+        context["ug3_state"] = MOA_DICT_DE_STATES[regs[33]] if regs[33] in MOA_DICT_DE_STATES else 4
 
-        #hb_datetime = datetime.datetime(regs[0], regs[1], regs[2], regs[3], regs[4], regs[5], regs[6] * 1000)
-        #context["hb_datestring"] = hb_datetime.strftime("%d/%m/%Y, %H:%M:%S")
     else:
         context["ug1_state"] = 4
         context["ug2_state"] = 4

@@ -132,6 +132,7 @@ class Usina:
         self.controle_p = 0
         self.controle_i = 0
         self.controle_d = 0
+        self.pid_inicial = -1
 
         self.pot_disp = 0
         self.ug_operando = 0
@@ -846,10 +847,18 @@ class Usina:
 
         # Calcula PID
         logger.debug(f"NÍVEL -> Leitura: {self.nv_montante_recente:0.3f}; Alvo: {self.cfg['nv_alvo']:0.3f}")
+
         self.controle_p = self.cfg["kp"] * self.erro_nv
-        self.controle_i = max(min((self.cfg["ki"] * self.erro_nv) + self.controle_i, 0.8), 0)
-        self.controle_d = self.cfg["kd"] * (self.erro_nv - self.erro_nv_anterior)
+
+        if self.pid_inicial == -1:
+            self.controle_i = max(min(self.controle_ie - self.controle_p, 0.8), 0)
+            self.pid_inicial = 0
+        else:
+            self.controle_i = max(min((self.cfg["ki"] * self.erro_nv) + self.controle_i, 0.8), 0)
+            self.controle_d = self.cfg["kd"] * (self.erro_nv - self.erro_nv_anterior)
+
         saida_pid = (self.controle_p + self.controle_i + min(max(-0.3, self.controle_d), 0.3))
+
         logger.debug(f"PID -> {saida_pid:0.3f} P:{self.controle_p:0.3f} + I:{self.controle_i:0.3f} + D:{self.controle_d:0.3f}; ERRO={self.erro_nv}")
 
         # Calcula o integrador de estabilidade e limita
