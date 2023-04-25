@@ -75,11 +75,11 @@ class Ug:
         self.dict['UG'][f'etapa_alvo_ug{self.id}'] = self.etapa_alvo
         logger.info(f'[UG{self.id}] Comando de parada')
 
-    def tripar(self, desc=None):
+    def tripar(self, flag, desc=None):
         self.potencia = 0
         self.etapa_alvo = ETAPA_UPGM
         self.etapa_atual = ETAPA_UPGM
-        self.dict['UG'][f'flags_ug{self.id}'] = 1
+        self.dict['UG'][f'flags_ug{self.id}'] = flag
         if not self.avisou_trip:
             self.avisou_trip = True
             logger.warning(F'[UG{self.id}] Trip!. {desc}')
@@ -276,7 +276,7 @@ class Ug:
         elif self.dict['UG']['comporta_cracking_ug1'] == True and self.dict['UG']['comporta_fechada_ug1'] == False:
             self.dict['UG']['comporta_operando_ug1'] = True
             while self.dict['UG']['progresso_ug1'] <= 100:
-                self.dict['UG']['progresso_ug1'] += 0.000001
+                self.dict['UG']['progresso_ug1'] += 0.00001
             self.dict['UG']['comporta_operando_ug1'] = False
             self.dict['UG']['comporta_fechada_ug1'] = False
             self.dict['UG']['comporta_aberta_ug1'] = True
@@ -296,14 +296,14 @@ class Ug:
 
         elif self.dict['UG']['comporta_aberta_ug1'] == True and self.dict['UG']['comporta_cracking_ug1'] == False:
             while self.dict['UG']['progresso_ug1'] >= 0:
-                self.dict['UG']['progresso_ug1'] -= 0.000001
+                self.dict['UG']['progresso_ug1'] -= 0.00001
             self.dict['UG']['comporta_fechada_ug1'] = True
             self.dict['UG']['comporta_aberta_ug1'] = False
             self.dict['UG']['comporta_cracking_ug1'] = False
 
         elif self.dict['UG']['comporta_cracking_ug1'] == True and self.dict['UG']['comporta_aberta_ug1'] == False:
             while self.dict['UG']['progresso_ug1'] >= 0:
-                self.dict['UG']['progresso_ug1'] -= 0.000001
+                self.dict['UG']['progresso_ug1'] -= 0.00001
             self.dict['UG']['comporta_fechada_ug1'] = True
             self.dict['UG']['comporta_aberta_ug1'] = False
             self.dict['UG']['comporta_cracking_ug1'] = False
@@ -321,8 +321,8 @@ class Ug:
 
         elif self.dict['UG']['comporta_fechada_ug1'] == True and self.dict['UG']['comporta_aberta_ug1'] == False:
             self.dict['UG']['comporta_operando_ug1'] = True
-            while self.dict['UG']['progresso_ug1'] <= 30:
-                self.dict['UG']['progresso_ug1'] += 0.000001
+            while self.dict['UG']['progresso_ug1'] <= 20:
+                self.dict['UG']['progresso_ug1'] += 0.00001
             self.dict['UG']['comporta_operando_ug1'] = False
             self.dict['UG']['comporta_fechada_ug1'] = False
             self.dict['UG']['comporta_aberta_ug1'] = False
@@ -349,7 +349,7 @@ class Ug:
         elif self.dict['UG']['comporta_cracking_ug2'] == True and self.dict['UG']['comporta_fechada_ug2'] == False:
             self.dict['UG']['comporta_operando_ug2'] = True
             while self.dict['UG']['progresso_ug2'] <= 100:
-                self.dict['UG']['progresso_ug2'] += 0.000001
+                self.dict['UG']['progresso_ug2'] += 0.00001
             self.dict['UG']['comporta_operando_ug2'] = False
             self.dict['UG']['comporta_fechada_ug2'] = False
             self.dict['UG']['comporta_aberta_ug2'] = True
@@ -369,14 +369,14 @@ class Ug:
 
         elif self.dict['UG']['comporta_aberta_ug2'] == True and self.dict['UG']['comporta_cracking_ug2'] == False:
             while self.dict['UG']['progresso_ug2'] >= 0:
-                self.dict['UG']['progresso_ug2'] -= 0.000001
+                self.dict['UG']['progresso_ug2'] -= 0.00001
             self.dict['UG']['comporta_fechada_ug2'] = True
             self.dict['UG']['comporta_aberta_ug2'] = False
             self.dict['UG']['comporta_cracking_ug2'] = False
         
         elif self.dict['UG']['comporta_cracking_ug2'] == True and self.dict['UG']['comporta_aberta_ug2'] == False:
             while self.dict['UG']['progresso_ug2'] >= 0:
-                self.dict['UG']['progresso_ug2'] -= 0.000001
+                self.dict['UG']['progresso_ug2'] -= 0.00001
             self.dict['UG']['comporta_fechada_ug2'] = True
             self.dict['UG']['comporta_aberta_ug2'] = False
             self.dict['UG']['comporta_cracking_ug2'] = False
@@ -394,8 +394,8 @@ class Ug:
 
         elif self.dict['UG']['comporta_fechada_ug2'] == True and self.dict['UG']['comporta_aberta_ug2'] == False:
             self.dict['UG']['comporta_operando_ug2'] = True
-            while self.dict['UG']['progresso_ug2'] <= 30:
-                self.dict['UG']['progresso_ug2'] += 0.000001
+            while self.dict['UG']['progresso_ug2'] <= 20:
+                self.dict['UG']['progresso_ug2'] += 0.00001
             self.dict['UG']['comporta_operando_ug2'] = False
             self.dict['UG']['comporta_fechada_ug2'] = False
             self.dict['UG']['comporta_aberta_ug2'] = False

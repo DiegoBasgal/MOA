@@ -24,11 +24,11 @@ if logger.hasHandlers():
     logger.handlers.clear()
 
 logger.setLevel(logging.NOTSET)
-logFormatter = logging.Formatter('%(asctime)s [%(threadName)-12.12s] [%(levelname)-5.5s] [SIMUL] %(message)s')
+logFormatter = logging.Formatter('%(asctime)s [%(levelname)-5.5s] [SIM] %(message)s')
 
 ch = logging.StreamHandler(stdout)
 ch.setFormatter(logFormatter)
-ch.setLevel(logging.INFO)
+ch.setLevel(logging.DEBUG)
 logger.addHandler(ch)
 
 fh = logging.FileHandler('Simulador.log')

@@ -9,8 +9,8 @@ from datetime import datetime
 from asyncio.log import logger
 from pyModbusTCP.server import ModbusServer, DataBank
 
-from src.dicionarios.reg import *
-from src.dicionarios.const import *
+from dicionarios.reg import *
+from dicionarios.const import *
 
 from ug import Ug
 from dj52L import Dj52L
@@ -56,140 +56,142 @@ class Planta:
                 self.dict['GLB']['tempo_simul'] += self.segundos_por_passo
 
                 # Leitura do dicionário compartilhado
-                if self.dict['USN']['trip_condic_usina'] == True and self.dict['USN'][f'aux_borda{1}'] == 0:
+                if self.dict['USN']['trip_condic_usina'] and self.dict['USN'][f'aux_borda{1}'] == 0:
                     self.dict['USN'][f'aux_borda{1}'] = 1
-                    self.DB.set_words(MB['REG_USINA_Condicionadores'], 1)
+                    self.DB.set_words(MB['USN_CONDICIONADORES'], [1])
 
-                elif self.dict['USN']['trip_condic_usina'] == False and self.dict['USN'][f'aux_borda{1}'] == 1:
+                elif not self.dict['USN']['trip_condic_usina'] and self.dict['USN'][f'aux_borda{1}'] == 1:
                     self.dict['USN'][f'aux_borda{1}'] = 0
-                    self.DB.set_words(MB['REG_USINA_Condicionadores'], 0)
+                    self.DB.set_words(MB['USN_CONDICIONADORES'], [0])
                     self.dj52L.reconhece_reset()
 
-                if self.dict['USN']['reset_geral_condic'] == True:
-                    self.DB.set_words(MB['REG_UG1_Condicionadores'], 0)
-                    self.DB.set_words(MB['REG_UG2_Condicionadores'], 0)
-                    self.DB.set_words(MB['REG_USINA_Condicionadores'], 0)
+                if self.dict['USN']['reset_geral_condic']:
+                    self.DB.set_words(MB['UG1_CONDICIONADORES'], [0])
+                    self.DB.set_words(MB['UG2_CONDICIONADORES'], [0])
+                    self.DB.set_words(MB['USN_CONDICIONADORES'], [0])
 
                 # Leituras de registradores OPC e MB
-                if self.DB.get_words(MB['CMD_SE_FECHA_52L'], 4) == True:
-                    self.DB.set_words(MB['CMD_SE_FECHA_52L'], 4, 1)
+                if self.DB.get_words(MB['CMD_SE_FECHA_52L'])[0] == 1:
+                    self.DB.set_words(MB['CMD_SE_FECHA_52L'], [1])
                     logger.info('Comando OPC recebido, fechando DJ52L')
                     self.dj52L.fechar()
 
-                if self.DB.get_words(MB['RESET_FALHAS_BARRA_CA'], 0) == True:
-                    self.DB.set_words(MB['RESET_FALHAS_BARRA_CA'], 0, 0)
+                if self.DB.get_words(MB['RESET_FALHAS_BARRA_CA'])[0] == 1:
+                    self.DB.set_words(MB['RESET_FALHAS_BARRA_CA'], [0])
                     logger.info('Comando OPC recebido: RESET_FALHAS_BARRA_CA')
                     for ug in self.ugs:
-                        ug.reconhece_reset_ug()
+                        ug.reconhece_reset()
                     self.dj52L.reconhece_reset()
 
-                if self.DB.get_words(MB['REG_USINA_Condicionadores']) == 1 and self.dict['USN'][f'aux_borda{2}'] == 0:
+                if self.DB.get_words(MB['USN_CONDICIONADORES'])[0] == 1 and self.dict['USN'][f'aux_borda{2}'] == 0:
                     self.dict['USN'][f'aux_borda{2}'] = 1
 
-                elif self.DB.get_words(MB['REG_USINA_Condicionadores']) == 0 and self.dict['USN'][f'aux_borda{2}'] == 1:
+                elif self.DB.get_words(MB['USN_CONDICIONADORES']) == 0 and self.dict['USN'][f'aux_borda{2}'] == 1:
                     self.dict['USN'][f'aux_borda{2}'] = 0
-                    self.DB.set_words(MB['REG_USINA_Condicionadores'], 0)
-                    self.dict['trip_condic_usina'] = False
+                    self.DB.set_words(MB['USN_CONDICIONADORES'], [0])
+                    self.dict['USN']['trip_condic_usina'] = False
                     self.dj52L.reconhece_reset()
 
                 # dj52L
                 self.dj52L.passo()
 
+
                 # UGs
                 for ug in self.ugs:
                     # Leitura do dicionário compartilhado
-                    self.dict['UG'][f'setpoint_kw_ug{ug.id}'] = self.DB.get_words(MB[f'REG_UG{ug.id}_CtrlPotencia_Alvo'])
+                    self.dict['UG'][f'setpoint_kw_ug{ug.id}'] = self.DB.get_words(MB[f'UG{ug.id}_POTENCIA_ALVO'])[0]
 
                     if self.dict['UG'][f'debug_setpoint_kw_ug{ug.id}'] >= 0:
                         self.dict['UG'][f'setpoint_kw_ug{ug.id}'] = self.dict['UG'][f'debug_setpoint_kw_ug{ug.id}']
-                        self.DB.set_words(MB[f'REG_UG{ug.id}_CtrlPotencia_Alvo'], [int(self.dict['UG'][f'setpoint_kw_ug{ug.id}'])])
+                        self.DB.set_words(MB[f'UG{ug.id}_POTENCIA_ALVO'], [self.dict['UG'][f'setpoint_kw_ug{ug.id}']])
                         self.dict['UG'][f'debug_setpoint_kw_ug{ug.id}'] = -1
 
                     if self.dict['UG'][f'trip_condic_ug{ug.id}'] and self.dict['USN'][f'aux_borda{ug.id + 2}'] == 0:
                         self.dict['USN'][f'aux_borda{ug.id + 2}'] = 1
-                        self.DB.set_words(MB[f'REG_UG{ug.id}_Condicionadores'], 1)
+                        self.DB.set_words(MB[f'UG{ug.id}_CONDICIONADORES'], [1])
 
-                    elif self.dict['UG'][f'trip_condic_ug{ug.id}'] == False and self.dict['USN'][f'aux_borda{ug.id + 2}'] == 1:
+                    elif not self.dict['UG'][f'trip_condic_ug{ug.id}'] and self.dict['USN'][f'aux_borda{ug.id + 2}'] == 1:
                         self.dict['USN'][f'aux_borda{ug.id + 2}'] = 0
-                        self.DB.set_words(MB[f'REG_UG{ug.id}_Condicionadores'], 0)
+                        self.DB.set_words(MB[f'UG{ug.id}_CONDICIONADORES'], [0])
 
 
-                    if self.dict['UG'][f'permissao_abrir_comporta_ug{ug.id}'] == True and self.dict['USN'][f'aux_borda{ug.id + 4}'] == 0:
-                        self.DB.set_words(MB[f'CP{ug.id}_PERMISSIVOS_OK'], 31, 1)
+                    if self.dict['UG'][f'permissao_abrir_comporta_ug{ug.id}'] and self.dict['USN'][f'aux_borda{ug.id + 4}'] == 0:
+                        self.DB.set_words(MB[f'CP{ug.id}_PERMISSIVOS_OK'], [1])
                         self.dict['USN'][f'aux_borda{ug.id + 4}'] = 1
 
-                    elif self.dict['UG'][f'permissao_abrir_comporta_ug{ug.id}'] == False and self.dict['USN'][f'aux_borda{ug.id + 4}'] == 1:
-                        self.DB.set_words(MB[f'CP{ug.id}_PERMISSIVOS_OK'], 31, 0)
+                    elif not self.dict['UG'][f'permissao_abrir_comporta_ug{ug.id}'] and self.dict['USN'][f'aux_borda{ug.id + 4}'] == 1:
+                        self.DB.set_words(MB[f'CP{ug.id}_PERMISSIVOS_OK'], [0])
                         self.dict['USN'][f'aux_borda{ug.id + 4}'] = 0
 
 
-                    if self.dict['UG'][f'condicao_falha_cracking_ug{ug.id}'] == True and self.dict['USN'][f'aux_borda{ug.id + 6}'] == 0:
-                        self.DB.set_words(MB[f'REG_UG{ug.id}_Condicionadores'], 1)
+                    if self.dict['UG'][f'condicao_falha_cracking_ug{ug.id}'] and self.dict['USN'][f'aux_borda{ug.id + 6}'] == 0:
+                        self.DB.set_words(MB[f'UG{ug.id}_CONDICIONADORES'], [1])
                         self.dict['USN'][f'aux_borda{ug.id + 6}'] = 1
 
-                    elif self.dict['USN']['reset_geral_condic'] == True and self.dict['USN'][f'aux_borda{ug.id + 6}'] == 1:
-                        self.DB.set_words(MB[f'REG_UG{ug.id}_Condicionadores'], 0)
+                    elif self.dict['USN']['reset_geral_condic'] and self.dict['USN'][f'aux_borda{ug.id + 6}'] == 1:
+                        self.DB.set_words(MB[f'UG{ug.id}_CONDICIONADORES'], [0])
                         self.dict['UG'][f'condicao_falha_cracking_ug{ug.id}'] = False
                         self.dict['USN'][f'aux_borda{ug.id + 6}'] = 0
 
                     # Leitura de registradores OPC e MB
-                    if self.DB.get_words(MB[f'UG{ug.id}_CMD_PARTIDA_CMD_SINCRONISMO'], 10) == True:
-                        self.DB.set_words(MB[f'UG{ug.id}_CMD_PARTIDA_CMD_SINCRONISMO'], 10, 0)
+                    if self.DB.get_words(MB[f'UG{ug.id}_CMD_PARTIDA_CMD_SINCRONISMO'])[0] == 1:
+                        self.DB.set_words(MB[f'UG{ug.id}_CMD_PARTIDA_CMD_SINCRONISMO'], [0])
                         ug.partir()
 
-                    elif self.DB.get_words(MB[f'UG{ug.id}_CMD_PARADA_CMD_PARA_RV_APLICA_FREIO'], 13) == True:
-                        self.DB.set_words(MB[f'UG{ug.id}_CMD_PARADA_CMD_PARA_RV_APLICA_FREIO'], 13, 0)
+                    elif self.DB.get_words(MB[f'UG{ug.id}_CMD_PARADA_CMD_PARA_RV_APLICA_FREIO'])[0] == 1:
+                        self.DB.set_words(MB[f'UG{ug.id}_CMD_PARADA_CMD_PARA_RV_APLICA_FREIO'], [0])
                         ug.parar()
 
 
-                    if self.DB.get_words(MB[f'CP{ug.id}_CMD_FECHAMENTO'], 3) == True and self.dict['UG'][f'aux_comp_f_ug{ug.id}'] == 0:
-                        self.DB.set_words(MB[f'CP{ug.id}_CMD_FECHAMENTO'], 3, 0)
-                        self.DB.set_words(MB[f'CP{ug.id}_COMPORTA_OPERANDO'], 0, 1)
+                    if self.DB.get_words(MB[f'CP{ug.id}_CMD_FECHAMENTO'])[0] == 1 and self.dict['UG'][f'aux_comp_f_ug{ug.id}'] == 0:
+                        self.DB.set_words(MB[f'CP{ug.id}_CMD_FECHAMENTO'], [0])
+                        self.DB.set_words(MB[f'CP{ug.id}_COMPORTA_OPERANDO'], [1])
                         self.dict['UG'][f'aux_comp_f_ug{ug.id}'] = 1
                         self.dict['UG'][f'thread_comp_fechada_ug{ug.id}'] = True
                         if self.dict['UG'][f'comporta_fechada_ug{ug.id}'] == True:
-                            self.DB.set_words(MB[f'CP{ug.id}_COMPORTA_OPERANDO'], 0, 0)
+                            self.DB.set_words(MB[f'CP{ug.id}_COMPORTA_OPERANDO'], [0])
 
-                    elif self.DB.get_words(MB[f'CP{ug.id}_CMD_FECHAMENTO'], 3) == False and self.dict['UG'][f'aux_comp_f_ug{ug.id}'] == 1:
+                    elif self.DB.get_words(MB[f'CP{ug.id}_CMD_FECHAMENTO'])[0] == 0 and self.dict['UG'][f'aux_comp_f_ug{ug.id}'] == 1:
                         self.dict['UG'][f'aux_comp_f_ug{ug.id}'] = 0
 
 
-                    if self.DB.get_words(MB[f'CP{ug.id}_CMD_ABERTURA_TOTAL'], 2) == True and self.dict['UG'][f'aux_comp_a_ug{ug.id}'] == 0:
-                        self.DB.set_words(MB[f'CP{ug.id}_CMD_ABERTURA_TOTAL'], 2, 0)
-                        self.DB.set_words(MB[f'CP{ug.id}_COMPORTA_OPERANDO'], 31, 1)
+                    if self.DB.get_words(MB[f'CP{ug.id}_CMD_ABERTURA_TOTAL'])[0] == 1 and self.dict['UG'][f'aux_comp_a_ug{ug.id}'] == 0:
+                        self.DB.set_words(MB[f'CP{ug.id}_CMD_ABERTURA_TOTAL'], [0])
+                        self.DB.set_words(MB[f'CP{ug.id}_COMPORTA_OPERANDO'], [1])
                         self.dict['UG'][f'aux_comp_a_ug{ug.id}'] = 1
                         self.dict['UG'][f'thread_comp_aberta_ug{ug.id}'] = True
-                        if self.dict['UG'][f'comporta_aberta_ug{ug.id}'] == True:
-                            self.DB.set_words(MB[f'CP{ug.id}_COMPORTA_OPERANDO'], 31, 0)
+                        if self.dict['UG'][f'comporta_aberta_ug{ug.id}']:
+                            self.DB.set_words(MB[f'CP{ug.id}_COMPORTA_OPERANDO'], [0])
 
-                    elif self.DB.get_words(MB[f'CP{ug.id}_CMD_ABERTURA_TOTAL'], 2) == False and self.dict['UG'][f'aux_comp_a_ug{ug.id}'] == 1:
+                    elif self.DB.get_words(MB[f'CP{ug.id}_CMD_ABERTURA_TOTAL'])[0] == 0 and self.dict['UG'][f'aux_comp_a_ug{ug.id}'] == 1:
                         self.dict['UG'][f'aux_comp_a_ug{ug.id}'] = 0
 
 
-                    if self.DB.get_words(MB[f'CP{ug.id}_CMD_ABERTURA_CRACKING'], 1) == True and self.dict['UG'][f'aux_comp_c_ug{ug.id}'] == 0:
-                        self.DB.set_words(MB[f'CP{ug.id}_CMD_ABERTURA_CRACKING'], 1, 0)
-                        self.DB.set_words(MB[f'CP{ug.id}_COMPORTA_OPERANDO'], 31, 1)
+                    if self.DB.get_words(MB[f'CP{ug.id}_CMD_ABERTURA_CRACKING'])[0] == 1 and self.dict['UG'][f'aux_comp_c_ug{ug.id}'] == 0:
+                        self.DB.set_words(MB[f'CP{ug.id}_CMD_ABERTURA_CRACKING'], [0])
+                        self.DB.set_words(MB[f'CP{ug.id}_COMPORTA_OPERANDO'], [1])
                         self.dict['UG'][f'aux_comp_c_ug{ug.id}'] = 1
                         self.dict['UG'][f'thread_comp_cracking_ug{ug.id}'] = True
-                        if self.dict['UG'][f'comporta_cracking_ug{ug.id}'] == True:
-                            self.DB.set_words(MB[f'CP{ug.id}_COMPORTA_OPERANDO'], 31, 0)
+                        if self.dict['UG'][f'comporta_cracking_ug{ug.id}']:
+                            self.DB.set_words(MB[f'CP{ug.id}_COMPORTA_OPERANDO'], [0])
 
-                    elif self.DB.get_words(MB[f'CP{ug.id}_CMD_ABERTURA_CRACKING'], 1) == False and self.dict['UG'][f'aux_comp_c_ug{ug.id}'] == 1:
+                    elif self.DB.get_words(MB[f'CP{ug.id}_CMD_ABERTURA_CRACKING'])[0] == 0 and self.dict['UG'][f'aux_comp_c_ug{ug.id}'] == 1:
                         self.dict['UG'][f'aux_comp_c_ug{ug.id}'] = 0
 
 
-                    if self.DB.get_words(MB[f'UG{ug.id}_CMD_PARADA_EMERGENCIA'], 4) == True and self.dict['USN'][f'aux_borda{ug.id + 8}'] == 0:
-                        self.DB.set_words(MB[f'UG{ug.id}_CMD_PARADA_EMERGENCIA'], 4, 1)
+                    if self.DB.get_words(MB[f'UG{ug.id}_CMD_PARADA_EMERGENCIA'])[0] == 1 and self.dict['USN'][f'aux_borda{ug.id + 8}'] == 0:
+                        self.DB.set_words(MB[f'UG{ug.id}_CMD_PARADA_EMERGENCIA'], [1])
                         ug.tripar(1, 'Operacao_EmergenciaLigar via OPC')
                         self.dict['USN'][f'aux_borda{ug.id + 8}'] = 1
 
-                    elif self.DB.get_words(MB[f'UG{ug.id}_CMD_PARADA_EMERGENCIA'], 4) == False and self.dict['USN'][f'aux_borda{ug.id + 8}'] == 1:
-                        self.DB.set_words(MB[f'UG{ug.id}_CMD_PARADA_EMERGENCIA'], 4, 0)
-                        ug.reconhece_reset_ug()
+                    elif self.DB.get_words(MB[f'UG{ug.id}_CMD_PARADA_EMERGENCIA'])[0] == 0 and self.dict['USN'][f'aux_borda{ug.id + 8}'] == 1:
+                        self.DB.set_words(MB[f'UG{ug.id}_CMD_PARADA_EMERGENCIA'], [0])
+                        ug.reconhece_reset()
                         self.dict['USN'][f'aux_borda{ug.id + 8}'] = 0
 
                     # UG passo
-                    ug.passo()
+                    for ug in self.ugs:
+                        ug.passo()
 
                     # Escrita dos registradores UG
                     self.DB.set_words(MB[f'UG{ug.id}_RV_ESTADO_OPERACAO'],[int(ug.etapa_atual)],)
@@ -222,6 +224,8 @@ class Planta:
                 self.dict['USN']['q_sanitaria'] = self.q_sanitaria(self.dict['USN']['nv_montante'])
                 self.dict['USN']['q_vertimento'] = 0
 
+
+
                 for ug in self.ugs:
                     self.dict['USN']['q_liquida'] -= self.dict['UG'][f'q_ug{ug.id}']
 
@@ -241,6 +245,8 @@ class Planta:
 
                 volume += self.dict['USN']['q_liquida'] * self.segundos_por_passo
 
+
+
                 # Escrita de registradores USINA
                 self.DB.set_words(MB['NIVEL_MONTANTE'],[round((self.dict['USN']['nv_montante']) * 10000)])
                 self.DB.set_words(MB['NIVEL_JUSANTE_GRADE_COMPORTA_1'],[round((self.dict['USN']['nv_jusante_grade']) * 10000)])
@@ -249,8 +255,8 @@ class Planta:
                 self.DB.set_words(MB['LT_VAB'],[round(self.dict['USN']['tensao_na_linha'] / 1000)])
                 self.DB.set_words(MB['LT_VBC'],[round(self.dict['USN']['tensao_na_linha'] / 1000)])
                 self.DB.set_words(MB['LT_VCA'],[round(self.dict['USN']['tensao_na_linha'] / 1000)])
-                self.DB.set_words(MB['REG_USINA_potencia_kw_mp'], [round(max(0, self.dict['USN']['potencia_kw_mp']))])
-                self.DB.set_words(MB['REG_USINA_potencia_kw_mr'], [round(max(0, self.dict['USN']['potencia_kw_mr']))])
+                self.DB.set_words(MB['USN_POTENCIA_KW_MP'], [round(max(0, self.dict['USN']['potencia_kw_mp']))])
+                self.DB.set_words(MB['USN_POTENCIA_KW_MR'], [round(max(0, self.dict['USN']['potencia_kw_mr']))])
 
                 # FIM COMPORTAMENTO USINA
                 lock.release()

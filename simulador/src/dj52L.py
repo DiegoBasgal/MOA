@@ -75,7 +75,7 @@ class Dj52L:
             self.dict['DJ']['dj52L_fechado'] = False
             self.dict['DJ']['dj52L_mola_carregada'] = False
             self.dict['DJ']['dj52L_falha_fechamento'] = True
-            logger.warning(f'[DJ] Trip!. {desc}')
+            logger.warning('[DJ] Trip!.')
 
     def reconhece_reset(self) -> None:
         logger.info('[DJ] Reconhece Reset.')

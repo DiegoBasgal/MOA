@@ -11,9 +11,8 @@ lock = threading.Lock()
 
 
 class Window(QMainWindow, Ui_Form):
-    def __init__(self, shared_dict, parent=None):
-
-        super().__init__(parent)
+    def __init__(self, shared_dict):
+        super().__init__()
         self.setupUi(self)
 
         self.shared_dict = shared_dict
@@ -113,28 +112,28 @@ class Window(QMainWindow, Ui_Form):
             self.lcdNumber_temperatura_ug2_mancal_con_esc_comb.display(f"{self.shared_dict['UG']['temperatura_ug2_mancal_contra_esc_comb']:03.1f}")
             self.lcdNumber_perda_na_grade_ug2.display(f"{self.shared_dict['USN']['nv_montante'] - self.shared_dict['USN']['nv_jusante_grade']:3.1f}")
 
-            self.progressBar_comporta_ug1.setValue(self.shared_dict['UG']["progresso_ug1"])
-            self.progressBar_comporta_ug2.setValue(self.shared_dict['UG']["progresso_ug2"])
+            self.progressBar_comporta_ug1.setValue(self.shared_dict['UG']['progresso_ug1'])
+            self.progressBar_comporta_ug2.setValue(self.shared_dict['UG']['progresso_ug2'])
 
-            if self.shared_dict['UG']["limpa_grades_operando"]:
+            if self.shared_dict['UG']['limpa_grades_operando']:
                 self.lcdNumber_status_limpa_grades.display("O")
             else:
                 self.lcdNumber_status_limpa_grades.display("P")
 
-            if self.shared_dict['UG']["comporta_aberta_ug1"]:
+            if self.shared_dict['UG']['comporta_aberta_ug1']:
                 self.lcdNumber_status_comporta_ug1.display("A")
-            elif self.shared_dict['UG']["comporta_fechada_ug1"]:
+            elif self.shared_dict['UG']['comporta_fechada_ug1']:
                 self.lcdNumber_status_comporta_ug1.display("F")
-            elif self.shared_dict['UG']["comporta_cracking_ug1"]:
+            elif self.shared_dict['UG']['comporta_cracking_ug1']:
                 self.lcdNumber_status_comporta_ug1.display("C")
             else:
                 self.lcdNumber_status_comporta_ug1.display("-")
 
-            if self.shared_dict['UG']["comporta_aberta_ug2"]:
+            if self.shared_dict['UG']['comporta_aberta_ug2']:
                 self.lcdNumber_status_comporta_ug2.display("A")
-            elif self.shared_dict['UG']["comporta_fechada_ug2"]:
+            elif self.shared_dict['UG']['comporta_fechada_ug2']:
                 self.lcdNumber_status_comporta_ug2.display("F")
-            elif self.shared_dict['UG']["comporta_cracking_ug2"]:
+            elif self.shared_dict['UG']['comporta_cracking_ug2']:
                 self.lcdNumber_status_comporta_ug2.display("C")
             else:
                 self.lcdNumber_status_comporta_ug2.display("-")
@@ -144,59 +143,59 @@ class Window(QMainWindow, Ui_Form):
             pass
 
     def closeEvent(self, event):
-        self.shared_dict['GLB']["stop_sim"] = True
+        self.shared_dict['GLB']['stop_sim'] = True
         self.sinc_timer.stop()
         return super().closeEvent(event)
 
     def mudar_q_afluente(self):
-        self.shared_dict["q_alfuente"] = (10 ** (self.horizontalSlider_q_afluente.value() / 75) - 1) * 2
+        self.shared_dict['USN']['q_alfuente'] = (10 ** (self.horizontalSlider_q_afluente.value() / 75) - 1) * 2
 
     def mudar_press_turbina(self):
-        if self.shared_dict['UG']["set_press_turbina_ug1"] == True:
-            self.shared_dict['UG']["pressao_turbina_ug1"] = self.horizontalSlider_press_turbina.value() *0.01
-            if self.shared_dict['UG']["pressao_turbina_ug1"] == 15.49:
-                self.shared_dict['UG']["pressao_turbina_ug1"] = 16.2
-        if self.shared_dict['UG']["set_press_turbina_ug2"] == True:
-            self.shared_dict['UG']["pressao_turbina_ug2"] = self.horizontalSlider_press_turbina.value() * 0.01
-            if self.shared_dict['UG']["pressao_turbina_ug2"] == 15.49:
-                self.shared_dict['UG']["pressao_turbina_ug2"] = 16.2
+        if self.shared_dict['UG']['set_press_turbina_ug1'] == True:
+            self.shared_dict['UG']['pressao_turbina_ug1'] = self.horizontalSlider_press_turbina.value() *0.01
+            if self.shared_dict['UG']['pressao_turbina_ug1'] == 15.49:
+                self.shared_dict['UG']['pressao_turbina_ug1'] = 16.2
+        if self.shared_dict['UG']['set_press_turbina_ug2'] == True:
+            self.shared_dict['UG']['pressao_turbina_ug2'] = self.horizontalSlider_press_turbina.value() * 0.01
+            if self.shared_dict['UG']['pressao_turbina_ug2'] == 15.49:
+                self.shared_dict['UG']['pressao_turbina_ug2'] = 16.2
     
     def set_trip_condic_usina(self):
-        self.shared_dict['USN']["trip_condic_usina"] = True
+        self.shared_dict['USN']['trip_condic_usina'] = True
 
     def reset_trip_condic_usina(self):
-        self.shared_dict['USN']["trip_condic_usina"] = False
+        self.shared_dict['USN']['trip_condic_usina'] = False
     
     def reset_geral_condic_usina(self):
-        self.shared_dict['USN']["reset_geral_condic"] = True
-        self.shared_dict['USN']["trip_condic_usina"] = False
-        self.shared_dict['UG']["trip_condic_ug1"] = False
-        self.shared_dict['UG']["trip_condic_ug2"] = False
+        self.shared_dict['USN']['reset_geral_condic'] = True
+        self.shared_dict['USN']['trip_condic_usina'] = False
+        self.shared_dict['UG']['trip_condic_ug1'] = False
+        self.shared_dict['UG']['trip_condic_ug2'] = False
         
         QTimer.singleShot(1000, self.aux_reset_geral_condic_usina)
     
     def aux_reset_geral_condic_usina(self):
-        self.shared_dict['USN']["reset_geral_condic"] = False
+        self.shared_dict['USN']['reset_geral_condic'] = False
 
     def pulse_trip_linha(self):
         self.set_trip_linha()
         QTimer.singleShot(2000, self.reset_trip_linha)
     
     def set_trip_linha(self):
-        self.shared_dict['DJ']["tensao_na_linha"] = 0
+        self.shared_dict['USN']['tensao_na_linha'] = 0
 
     def reset_trip_linha(self):
-        self.shared_dict['DJ']["tensao_na_linha"] = 23100
+        self.shared_dict['USN']['tensao_na_linha'] = 23100
 
     def pulse_trip_52L(self):
         self.set_trip_52L()
         QTimer.singleShot(2000, self.reset_trip_52L)
 
     def set_trip_52L(self):
-        self.shared_dict['DJ']["trip_52L"] = True
+        self.shared_dict['DJ']['trip_52L'] = True
 
     def reset_trip_52L(self):
-        self.shared_dict['DJ']["trip_52L"] = False
+        self.shared_dict['DJ']['trip_52L'] = False
 
     # ug1
     def pulso_trip_ug1(self):
@@ -204,54 +203,53 @@ class Window(QMainWindow, Ui_Form):
         QTimer.singleShot(2000, self.set_trip_low_ug1)
 
     def set_trip_high_ug1(self):
-        self.shared_dict['UG']["trip_ug1"] = True
+        self.shared_dict['UG']['trip_ug1'] = True
 
     def set_trip_low_ug1(self):
-        self.shared_dict['UG']["trip_ug1"] = False
+        self.shared_dict['UG']['trip_ug1'] = False
 
     def set_trip_condic_ug1(self):
-        self.shared_dict['UG']["trip_condic_ug1"] = True
+        self.shared_dict['UG']['trip_condic_ug1'] = True
 
     def reset_trip_condic_ug1(self):
-        self.shared_dict['UG']["trip_condic_ug1"] = False
+        self.shared_dict['UG']['trip_condic_ug1'] = False
 
     def reconhece_reset_ug1(self):
-        self.shared_dict['UG']["reconhece_reset_ug1"] = True
+        self.shared_dict['UG']['reconhece_reset_ug1'] = True
 
     def partir_ug1(self):
-        self.shared_dict['UG']["debug_partir_ug1"] = True
-        print("partir ug1 GUI")
+        self.shared_dict['UG']['debug_partir_ug1'] = True
 
     def parar_ug1(self):
-        self.shared_dict['UG']["debug_parar_ug1"] = True
+        self.shared_dict['UG']['debug_parar_ug1'] = True
 
     def mudar_setpoint_ug1(self):
-        self.shared_dict['UG']["debug_setpoint_kw_ug1"] = self.horizontalSlider_setpoint_ug1.value()
+        self.shared_dict['UG']['debug_setpoint_kw_ug1'] = self.horizontalSlider_setpoint_ug1.value()
 
     def set_press_turbina_ug1(self):
-        if self.shared_dict['UG']["set_press_turbina_ug1"] == False:
+        if self.shared_dict['UG']['set_press_turbina_ug1'] == False:
             self.horizontalSlider_press_turbina.setValue(1549)
-            self.shared_dict['UG']["set_press_turbina_ug1"] = True
+            self.shared_dict['UG']['set_press_turbina_ug1'] = True
             self.lcdNumber_pressao_turbina_ug1.setFrameShadow(QFrame.Plain)
-            self.shared_dict['UG']["set_press_turbina_ug2"] = False
+            self.shared_dict['UG']['set_press_turbina_ug2'] = False
             self.lcdNumber_pressao_turbina_ug2.setFrameShadow(QFrame.Sunken)
-        elif self.shared_dict['UG']["set_press_turbina_ug1"] == True:
-            self.shared_dict['UG']["set_press_turbina_ug1"] = False
+        elif self.shared_dict['UG']['set_press_turbina_ug1'] == True:
+            self.shared_dict['UG']['set_press_turbina_ug1'] = False
             self.horizontalSlider_press_turbina.setValue(1549)
             self.lcdNumber_pressao_turbina_ug1.setFrameShadow(QFrame.Sunken)
     
     def set_thread_comp_aberta_ug1(self):
-        self.shared_dict['UG']["thread_comp_aberta_ug1"] = True
+        self.shared_dict['UG']['thread_comp_aberta_ug1'] = True
     
     def set_thread_comp_fechada_ug1(self):
-        self.shared_dict['UG']["thread_comp_fechada_ug1"] = True
+        self.shared_dict['UG']['thread_comp_fechada_ug1'] = True
     
     def set_thread_comp_cracking_ug1(self):
-        self.shared_dict['UG']["thread_comp_cracking_ug1"] = True
+        self.shared_dict['UG']['thread_comp_cracking_ug1'] = True
     
     def equalizar_cracking_ug1(self):
-        if self.shared_dict['UG']["comporta_cracking_ug1"]:
-            self.shared_dict['UG']["equalizar_ug1"] = True
+        if self.shared_dict['UG']['comporta_cracking_ug1']:
+            self.shared_dict['UG']['equalizar_ug1'] = True
         else:
             print("Não é possível equalizar a unidade pois ela não está na posição de cracking!")
 
@@ -261,86 +259,85 @@ class Window(QMainWindow, Ui_Form):
         QTimer.singleShot(2000, self.set_trip_low_ug2)
 
     def set_trip_high_ug2(self):
-        self.shared_dict['UG']["trip_ug2"] = True
+        self.shared_dict['UG']['trip_ug2'] = True
 
     def set_trip_low_ug2(self):
-        self.shared_dict['UG']["trip_ug2"] = False
+        self.shared_dict['UG']['trip_ug2'] = False
 
     def set_trip_condic_ug2(self):
-        self.shared_dict['UG']["trip_condic_ug2"] = True
+        self.shared_dict['UG']['trip_condic_ug2'] = True
 
     def reset_trip_condic_ug2(self):
-        self.shared_dict['UG']["trip_condic_ug2"] = False
+        self.shared_dict['UG']['trip_condic_ug2'] = False
 
     def reconhece_reset_ug2(self):
-        self.shared_dict['UG']["reconhece_reset_ug2"] = True
+        self.shared_dict['UG']['reconhece_reset_ug2'] = True
 
     def partir_ug2(self):
-        self.shared_dict['UG']["debug_partir_ug2"] = True
-        print("partir ug2 GUI")
+        self.shared_dict['UG']['debug_partir_ug2'] = True
 
     def parar_ug2(self):
-        self.shared_dict['UG']["debug_parar_ug2"] = True
+        self.shared_dict['UG']['debug_parar_ug2'] = True
 
     def mudar_setpoint_ug2(self):
-        self.shared_dict['UG']["debug_setpoint_kw_ug2"] = self.horizontalSlider_setpoint_ug2.value()
+        self.shared_dict['UG']['debug_setpoint_kw_ug2'] = self.horizontalSlider_setpoint_ug2.value()
 
     def set_press_turbina_ug2(self):
-        if self.shared_dict['UG']["set_press_turbina_ug2"] == False:
+        if self.shared_dict['UG']['set_press_turbina_ug2'] == False:
             self.horizontalSlider_press_turbina.setValue(1549)
-            self.shared_dict['UG']["set_press_turbina_ug1"] = False
+            self.shared_dict['UG']['set_press_turbina_ug1'] = False
             self.lcdNumber_pressao_turbina_ug1.setFrameShadow(QFrame.Sunken)
-            self.shared_dict['UG']["set_press_turbina_ug2"] = True
+            self.shared_dict['UG']['set_press_turbina_ug2'] = True
             self.lcdNumber_pressao_turbina_ug2.setFrameShadow(QFrame.Plain)
-        elif self.shared_dict['UG']["set_press_turbina_ug2"] == True:
-            self.shared_dict['UG']["set_press_turbina_ug2"] = False
+        elif self.shared_dict['UG']['set_press_turbina_ug2'] == True:
+            self.shared_dict['UG']['set_press_turbina_ug2'] = False
             self.horizontalSlider_press_turbina.setValue(1549)
             self.lcdNumber_pressao_turbina_ug2.setFrameShadow(QFrame.Sunken)
 
     def set_thread_comp_aberta_ug2(self):
-        self.shared_dict['UG']["thread_comp_aberta_ug2"] = True
+        self.shared_dict['UG']['thread_comp_aberta_ug2'] = True
     
     def set_thread_comp_fechada_ug2(self):
-        self.shared_dict['UG']["thread_comp_fechada_ug2"] = True
+        self.shared_dict['UG']['thread_comp_fechada_ug2'] = True
     
     def set_thread_comp_cracking_ug2(self):
-        self.shared_dict['UG']["thread_comp_cracking_ug2"] = True
+        self.shared_dict['UG']['thread_comp_cracking_ug2'] = True
     
     def equalizar_cracking_ug2(self):
-        if self.shared_dict['UG']["comporta_cracking_ug2"]:
-            self.shared_dict['UG']["equalizar_ug2"] = True
+        if self.shared_dict['UG']['comporta_cracking_ug2']:
+            self.shared_dict['UG']['equalizar_ug2'] = True
         else:
             print("Não é possível equalizar a unidade pois ela não está na posição de cracking!")
 
     # dj52L
     def alternar_estado_dj52L(self):
         if self.shared_dict['DJ']['dj52L_aberto']:
-            self.shared_dict['DJ']["debug_dj52L_fechar"] = True
+            self.shared_dict['DJ']['debug_dj52L_fechar'] = True
         if self.shared_dict['DJ']['dj52L_fechado']:
-            self.shared_dict['DJ']["debug_dj52L_abrir"] = True
+            self.shared_dict['DJ']['debug_dj52L_abrir'] = True
 
     def provocar_inconsistencia_dj52L(self):
-        self.shared_dict['DJ']["debug_dj52L_abrir"] = True
-        self.shared_dict['DJ']["debug_dj52L_fechar"] = True
+        self.shared_dict['DJ']['debug_dj52L_abrir'] = True
+        self.shared_dict['DJ']['debug_dj52L_fechar'] = True
 
     def reconhecer_reset_dj52L(self):
-        self.shared_dict['DJ']["debug_dj52L_reconhece_reset"] = True
+        self.shared_dict['DJ']['debug_dj52L_reconhece_reset'] = True
 
     # limpa grades
 
     def operar_limpa_grades(self):
-        if self.shared_dict['UG']["comporta_operando_ug1"] == True or self.shared_dict['UG']["comporta_operando_ug2"] == True:
+        if self.shared_dict['UG']['comporta_operando_ug1'] == True or self.shared_dict['UG']['comporta_operando_ug2'] == True:
             print("Não é possível operar o limpa grades pois as comportas estão em operação")
-        elif self.shared_dict['UG']["limpa_grades_operando"] == False:
-            self.shared_dict['UG']["limpa_grades_operando"] = True
+        elif self.shared_dict['UG']['limpa_grades_operando'] == False:
+            self.shared_dict['UG']['limpa_grades_operando'] = True
         else:
             print("O limpa grades já está em operação.")
     
     def parar_limpa_grades(self):
-        if self.shared_dict['UG']["comporta_operando_ug1"] == True or self.shared_dict['UG']["comporta_operando_ug2"] == True:
+        if self.shared_dict['UG']['comporta_operando_ug1'] == True or self.shared_dict['UG']['comporta_operando_ug2'] == True:
             print("Não é possível parar o limpa grades pois as comportas estão em operação")
-        elif self.shared_dict['UG']["limpa_grades_operando"] == True:
-            self.shared_dict['UG']["limpa_grades_operando"] = False
+        elif self.shared_dict['UG']['limpa_grades_operando'] == True:
+            self.shared_dict['UG']['limpa_grades_operando'] = False
         else:
             print("O limpa grades já está parado.")
 
