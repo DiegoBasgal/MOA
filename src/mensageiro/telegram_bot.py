@@ -1,19 +1,4 @@
-"""
-telegram_bot.py
 
-Este módulo implementa um bot para a integração com o telegram.
-Existem duas maneiras de utilizar esta integração:
-
-"Server": Uma thread deve ficar ativada para que o bot possa interagir
-com mensagens enviadas a ele. Para utilizar este modo basta usar o main().
-
-"Server-less": A implementação permite que o bot envie mensagens aos
-destinatários mesmo que não esteja trodando continuamente, porém isto
-significa que o bot não atenderá a comandos recebidos no chat.
-A principal maneira de se utilizar o modo server-less é através da
-função enviar_a_todos().
-
-"""
 import os
 import pytz
 import json

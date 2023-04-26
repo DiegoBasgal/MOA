@@ -1,7 +1,0 @@
-[flake8]
-# List of rules that should be ignored
-# ignore = E265, E226
-# List of files that should be ignored
-exclude = .git,*migrations*,*MOA_tester*
-max-line-length = 180
-max-complexity = 15
