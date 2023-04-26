@@ -46,6 +46,7 @@ class FalhaCritica(State):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         logger.critical("Falha crítica MOA. Exiting...")
+        self.usn._state_moa = SM_CRITICAL_FAILURE
         sys.exit(1)
 
 
@@ -58,8 +59,10 @@ class Pronto(State):
     def __init__(self, usina, *args, **kwargs):
         super().__init__(usina, *args, **kwargs)
         self.n_tentativa = 0
+        self.usn._state_moa = SM_READY
 
     def run(self):
+        self.usn._state_moa = SM_READY
         self.usn.heartbeat()
         if self.n_tentativa >= 2:
             return FalhaCritica()
@@ -83,8 +86,10 @@ class ValoresInternosAtualizados(State):
         self.deve_ler_condicionadores=False
         self.habilitar_emerg_condic_e=False
         self.habilitar_emerg_condic_c=False
+        self.usn._state_moa = SM_INTERNAL_VALUES_UPDATED
 
     def run(self):
+        self.usn._state_moa = SM_INTERNAL_VALUES_UPDATED
         self.usn.heartbeat()
         self.usn.ler_valores()
         self.usn.clp_moa.write_single_coil(self.usn.cfg['REG_PAINEL_LIDO'], [1])
@@ -194,8 +199,10 @@ class Emergencia(State):
         self.n_tentativa = 0
         self.usn.escrever_valores()
         self.nao_ligou = True
+        self.usn._state_moa = SM_EMERGENCY
 
     def run(self):
+        self.usn._state_moa = SM_EMERGENCY
         self.usn.heartbeat()
         self.n_tentativa += 1
         if self.n_tentativa > 2:
@@ -272,11 +279,13 @@ class Emergencia(State):
 class ModoManualAtivado(State):
     def __init__(self, usina, *args, **kwargs):
         super().__init__(usina, *args, **kwargs)
+        self.usn._state_moa = SM_MANUAL_MODE_ACTIVE
         self.usn.modo_autonomo = False
         self.usn.escrever_valores()
         logger.info("Usina em modo manual, deve-se alterar via painel ou interface web.")
 
     def run(self):
+        self.usn._state_moa = SM_MANUAL_MODE_ACTIVE
         self.usn.heartbeat()
         self.usn.ler_valores()
         for ug in self.usn.ugs:
@@ -310,8 +319,10 @@ class ModoManualAtivado(State):
 class AgendamentosPendentes(State):
     def __init__(self, usina, *args, **kwargs):
         super().__init__(usina, *args, **kwargs)
+        self.usn._state_moa = SM_SCHEDULE_PENDING
 
     def run(self):
+        self.usn._state_moa = SM_SCHEDULE_PENDING
         logger.debug("Tratando agendamentos")
         self.usn.verificar_agendamentos()
         return ControleRealizado(self.usn)
@@ -320,8 +331,10 @@ class AgendamentosPendentes(State):
 class ReservatorioAbaixoDoMinimo(State):
     def __init__(self, usina, *args, **kwargs):
         super().__init__(usina, *args, **kwargs)
+        self.usn._state_moa = SM_DAM_LEVEL_UNDER_LOW_LIMIT
 
     def run(self):
+        self.usn._state_moa = SM_DAM_LEVEL_UNDER_LOW_LIMIT
         self.usn.heartbeat()
         if self.usn.nv_montante_recente <= self.usn.cfg["nv_fundo_reservatorio"]:
             if not self.usn.ping(self.usn.cfg["TDA_slave_ip"]):
@@ -341,8 +354,10 @@ class ReservatorioAbaixoDoMinimo(State):
 class ReservatorioAcimaDoMaximo(State):
     def __init__(self, usina, *args, **kwargs):
         super().__init__(usina, *args, **kwargs)
+        self.usn._state_moa = SM_DAM_LEVEL_OVER_HIGH_LIMIT
 
     def run(self):
+        self.usn._state_moa = SM_DAM_LEVEL_OVER_HIGH_LIMIT
         self.usn.heartbeat()
         if self.usn.nv_montante_recente >= self.usn.cfg["nv_maximorum"]:
             self.usn.distribuir_potencia(0)
@@ -360,9 +375,10 @@ class ReservatorioAcimaDoMaximo(State):
 class ReservatorioNormal(State):
     def __init__(self, usina, *args, **kwargs):
         super().__init__(usina, *args, **kwargs)
+        self.usn._state_moa = SM_DAM_LEVEL_BETWEEN_LIMITS
 
     def run(self):
-
+        self.usn._state_moa = SM_DAM_LEVEL_BETWEEN_LIMITS
         self.usn.controle_normal()
         for ug in self.usn.ugs:
             ug.step()
@@ -374,8 +390,10 @@ class OperacaoTDAOffline(State):
         self.deve_ler_condicionadores = False
         self.habilitar_emerg_condic_e = False
         self.habilitar_emerg_condic_c = False
+        self.usn._state_moa = SM_DAM_COMMUNICATION_OFFLINE
 
     def run(self):
+        self.usn._state_moa = SM_DAM_COMMUNICATION_OFFLINE
         self.usn.heartbeat()
         global aux
         global deve_normalizar
@@ -445,8 +463,10 @@ class OperacaoTDAOffline(State):
 class ControleRealizado(State):
     def __init__(self, usina, *args, **kwargs):
         super().__init__(usina, *args, **kwargs)
+        self.usn._state_moa = SM_CONTROL_ACTION_SENT
 
     def run(self):
+        self.usn._state_moa = SM_CONTROL_ACTION_SENT
         logger.debug("Heartbeat")
         self.usn.heartbeat()
         self.usn.escrever_valores()

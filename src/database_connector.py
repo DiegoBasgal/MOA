@@ -7,7 +7,7 @@ from datetime import datetime
 class Database:
     def __init__(self):
         self.cnx = mariadb.ConnectionPool(
-            pool_name="my_pool",
+            pool_name="moa_pool",
             pool_size=10,
             pool_validation_interval=250,
             host="localhost",

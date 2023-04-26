@@ -55,6 +55,30 @@ class Usina:
             auto_open=True,
             auto_close=True
         )
+        self.clp_ug1 = ModbusClient(
+            host=self.cfg["UG1_slave_ip"],
+            port=self.cfg["UG1_slave_porta"],
+            timeout=0.5,
+            unit_id=1,
+            auto_open=True,
+            auto_close=True
+        )
+        self.clp_ug2 = ModbusClient(
+            host=self.cfg["UG2_slave_ip"],
+            port=self.cfg["UG2_slave_porta"],
+            timeout=0.5,
+            unit_id=1,
+            auto_open=True,
+            auto_close=True
+        )
+        self.clp_ug3 = ModbusClient(
+            host=self.cfg["UG3_slave_ip"],
+            port=self.cfg["UG3_slave_porta"],
+            timeout=0.5,
+            unit_id=1,
+            auto_open=True,
+            auto_close=True
+        )
 
         self.__potencia_ativa_kW = LeituraModbus(
             "REG_SA_RetornosAnalogicos_Medidor_potencia_kw_mp",
@@ -282,9 +306,8 @@ class Usina:
             logger.debug(f"Traceback: {traceback.print_stack}")
 
         try:
-            ts = self.get_time().timestamp()
             self.db.insert_debug(
-                ts,
+                time(),
                 1 if self.modo_autonomo else 0,
                 self.nv_montante_recente,
                 self.erro_nv,
@@ -410,17 +433,17 @@ class Usina:
 
     def heartbeat(self):
 
-        self.clp_moa.write_single_coil(12, [1])
-        self.clp_moa.write_single_coil(self.cfg["REG_MOA_OUT_STATUS"], self._state_moa)
-        self.clp_moa.write_single_coil(self.cfg["REG_MOA_OUT_MODE"], self.modo_autonomo)
+        self.clp_moa.write_single_coil(self.cfg["REG_PAINEL_LIDO"], [1])
+        self.clp_moa.write_single_coil(self.cfg["REG_MOA_OUT_MODE"], [self.modo_autonomo])
+        self.clp_moa.write_single_register(self.cfg["REG_MOA_OUT_STATUS"], self._state_moa)
 
         for ug in self.ugs:
             ug.modbus_update_state_register()
 
         if self.modo_autonomo:
-            self.clp_moa.write_single_coil(self.cfg["REG_MOA_OUT_EMERG"], [1 if self.clp_emergencia_acionada else 0],)
+            self.clp_moa.write_single_coil(self.cfg["REG_MOA_OUT_EMERG"], [1 if self.clp_emergencia_acionada else 0])
             self.clp_moa.write_single_coil(self.cfg["REG_MOA_OUT_TARGET_LEVEL"], [int((self.cfg["nv_alvo"] - 400) * 1000)])
-            self.clp_moa.write_single_coil(self.cfg["REG_MOA_OUT_SETPOINT"], [int(sum(ug.setpoint for ug in self.ugs))], )
+            self.clp_moa.write_single_coil(self.cfg["REG_MOA_OUT_SETPOINT"], [int(sum(ug.setpoint for ug in self.ugs))])
 
             if self.clp_moa.read_coils(self.cfg["REG_MOA_IN_EMERG"]) == 1 and not self.avisado_em_eletrica:
                 self.avisado_em_eletrica = True
@@ -1169,7 +1192,7 @@ class Usina:
                 self.hb_borda_emerg_ping = 1
                 logger.warning("CLP TDA não respondeu a tentativa de comunicação!")
 
-        elif ping(self.cfg["TDA_slave_ip"]) and self.hb_borda_emerg_ping == 1:
+        if ping(self.cfg["TDA_slave_ip"]) and self.hb_borda_emerg_ping == 1:
             logger.info("Comunicação com o CLP TDA reestabelecida.")
             self.hb_borda_emerg_ping = 0
             self.TDA_Offline = False

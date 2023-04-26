@@ -714,14 +714,8 @@ class UnidadeDeGeracao3(UnidadeDeGeracao):
             return response
 
     def modbus_update_state_register(self):
-        self.clp["MOA"].write_single_coil(
-            self.cfg[f"REG_MOA_OUT_STATE_UG{self.id}"],
-            [self.codigo_state],
-        )
-        self.clp["MOA"].write_single_coil(
-            self.cfg[f"REG_MOA_OUT_ETAPA_UG{self.id}"],
-            [self.etapa_atual],
-        )
+        self.clp["MOA"].write_single_register(self.cfg[f"REG_MOA_OUT_STATE_UG{self.id}"], self.codigo_state)
+        self.clp["MOA"].write_single_register(self.cfg[f"REG_MOA_OUT_ETAPA_UG{self.id}"], self.etapa_atual)
 
     def interstep(self) -> None:
         if (not self.avisou_emerg_voip) and (self.condicionador_caixa_espiral_ug.valor > 0.1):

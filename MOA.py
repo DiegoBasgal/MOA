@@ -115,6 +115,7 @@ if __name__ == "__main__":
     if len(sys.argv) > 1:
         ESCALA_DE_TEMPO = int(sys.argv[1])
 
+    t_i = time()
     aux = 0
     deve_normalizar = None
     usina = None
@@ -141,7 +142,7 @@ if __name__ == "__main__":
 
             except Exception as e:
                 logger.error(f"Erro ao iniciar carregar arquivo \"config.json\". Tentando novamente em {timeout}s (tentativa {n_tentativa}/2). Exception: \"{repr(e)}\".")
-                logger.debug(f"Traceback: {print(e)}")
+                logger.debug(f"Traceback: {traceback.format_exc()}")
                 sleep(timeout)
                 continue
 
@@ -154,7 +155,7 @@ if __name__ == "__main__":
 
             except Exception as e:
                 logger.error(f"Erro ao iniciar classes de conexão com Banco de Dados e Campo. Tentando novamente em {timeout}s (tentativa {n_tentativa}/2). Exception: \"{repr(e)}\".")
-                logger.debug(f"Traceback: {print(e)}")
+                logger.debug(f"Traceback: {traceback.format_exc()}")
                 sleep(timeout)
                 continue
 
@@ -165,7 +166,7 @@ if __name__ == "__main__":
 
             except Exception as e:
                 logger.error(f"Erro ao iniciar classe da Usina. Tentando novamente em {timeout}s (tentativa {n_tentativa}/2). Exception: \"{repr(e)}\".")
-                logger.debug(f"Traceback: {print(e)}")
+                logger.debug(f"Traceback: {traceback.format_exc()}")
                 sleep(timeout)
                 continue
 
@@ -176,7 +177,7 @@ if __name__ == "__main__":
 
             except Exception as e:
                 logger.error(f"Erro ao iniciar Thread de leitura periódica. Tentando novamente em {timeout}s (tentativa {n_tentativa}/2). Exception: \"{repr(e)}\".")
-                logger.debug(f"Traceback: {print(e)}")
+                logger.debug(f"Traceback: {traceback.format_exc()}")
                 sleep(timeout)
                 continue
 
@@ -188,16 +189,23 @@ if __name__ == "__main__":
 
     while True:
         try:
-            t_i = time()
             logger.debug("")
             logger.debug(f"Executando estado: \"{sm.state.__class__.__name__}\"")
             sm.exec()
-            t_restante = max(30 - (time() - t_i), 0) / ESCALA_DE_TEMPO
+            if usina._state_moa == SM_CONTROL_ACTION_SENT:
+                t_restante = max(TEMPO_CICLO_TOTAL - (time() - t_i), 0) / ESCALA_DE_TEMPO
+                t_i = time()
+            else:
+                t_restante = 1
+
             if t_restante == 0:
                 logger.warning("\"ATENÇÃO!\"\n")
                 logger.warning("O ciclo está demorando mais que o permitido!")
                 logger.warning("\"ATENÇÃO!\"\n")
+            else:
                 sleep(t_restante)
+                logger.debug(f"Tempo de ciclo: {time() - t_i}")
+
         except Exception as e:
             logger.debug(f"Houve um erro no loop principal. Exception: \"{repr(e)}\"")
             con.close()
