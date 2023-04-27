@@ -39,10 +39,9 @@ class StateManual(State):
         logger.info(f"[UG{self.parent_ug.id}] Entrando no estado: \"Manual\". Para retornar a operação autônoma, favor agendar na interface web")
 
     def step(self) -> State:
-        self.parent_ug.setpoint = self.parent_ug.leitura_potencia.valor
+        self.parent_ug.setpoint = self.parent_ug.leituras_ug[f"leitura_potencia_ug{self.parent_ug.id}"].valor
         self.parent_ug.codigo_state = MOA_UNIDADE_MANUAL
         return self
-
 
 class StateIndisponivel(State):
     """
@@ -89,7 +88,6 @@ class StateRestrito(State):
     """
 
     def __init__(self, parent_ug):
-
         super().__init__(parent_ug)
         self.parent_ug.codigo_state = MOA_UNIDADE_RESTRITA
         logger.info(f"[UG{self.parent_ug.id}] Entrando no estado: \"Restrito\"")
@@ -321,14 +319,14 @@ class StateDisponivel(State):
                     logger.debug(f"[UG{self.parent_ug.id}] Unidade sincronizada. Saindo do timer de verificação de partida")
                     self.release = True
                     return True
+
                 elif not self.parent_ug.release_timer:
                     logger.debug(f"[UG{self.parent_ug.id}] MOA em modo manual. Saindo do timer de verificação de partida")
                     self.release = True
                     return False
+
             logger.debug(f"[UG{self.parent_ug.id}] A Unidade estourou o timer de verificação de partida, adicionando condição para normalizar")
-            self.parent_ug.clp_ug1.write_single_coil(REG_UG1_CD_EmergenciaViaSuper, [1 if self.parent_ug.id==1 else 0]) 
-            self.parent_ug.clp_ug2.write_single_coil(REG_UG2_CD_EmergenciaViaSuper, [1 if self.parent_ug.id==2 else 0])
-            self.parent_ug.clp_ug3.write_single_coil(REG_UG3_CD_EmergenciaViaSuper, [1 if self.parent_ug.id==3 else 0])
+            self.parent_ug.clp[f"UG{self.parent_ug.id}"].write_single_coil(UG[f"REG_UG{self.parent_ug.id}_CD_EmergenciaViaSuper"], [1])
             self.release = True
 
         except Exception as e:

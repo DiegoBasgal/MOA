@@ -8,20 +8,119 @@
 # SA -> Saídas Analógicas
 
 UG = {}
+# PARTIDA
+UG["REG_UG1_CD_IniciaParada"] = 46  # Op15 (Write multiple coils)
+UG["REG_UG1_CD_AbortaPartida"] = 47  # Op15 (Write multiple coils)
+UG["REG_UG1_CD_AbortaSincronismo"] = 59  # Op15 (Write multiple coils)
+UG["REG_UG2_CD_IniciaParada"] = 46  # Op15 (Write multiple coils)
+UG["REG_UG2_CD_AbortaPartida"] = 47  # Op15 (Write multiple coils)
+UG["REG_UG2_CD_AbortaSincronismo"] = 59  # Op15 (Write multiple coils)
+UG["REG_UG3_CD_IniciaParada"] = 46  # Op15 (Write multiple coils)
+UG["REG_UG3_CD_AbortaPartida"] = 47  # Op15 (Write multiple coils)
+UG["REG_UG3_CD_AbortaSincronismo"] = 59  # Op15 (Write multiple coils)
+UG["REG_UG1_COND_PART"] = 222
+UG["REG_UG2_COND_PART"] = 222
+UG["REG_UG3_COND_PART"] = 222
+
+# ETAPAS
+UG["REG_UG1_ED_RV_MaquinaParada"] = 0  # Op02 (Read Input Status)
+UG["REG_UG1_ED_DisjGeradorFechado"] = 11  # Op02 (Read Input Status)
+UG["REG_UG1_RD_PartindoEmAuto"] = 132  # Op02 (Read Input Status)
+UG["REG_UG1_RD_ParandoEmAuto"] = 133  # Op02 (Read Input Status)
+UG["REG_UG2_ED_RV_MaquinaParada"] = 0  # Op02 (Read Input Status)
+UG["REG_UG2_ED_DisjGeradorFechado"] = 11  # Op02 (Read Input Status)
+UG["REG_UG2_RD_PartindoEmAuto"] = 132  # Op02 (Read Input Status)
+UG["REG_UG2_RD_ParandoEmAuto"] = 133  # Op02 (Read Input Status)
+UG["REG_UG3_ED_RV_MaquinaParada"] = 0  # Op02 (Read Input Status)
+UG["REG_UG3_ED_DisjGeradorFechado"] = 11  # Op02 (Read Input Status)
+UG["REG_UG3_RD_PartindoEmAuto"] = 132  # Op02 (Read Input Status)
+UG["REG_UG3_RD_ParandoEmAuto"] = 133  # Op02 (Read Input Status)
+
+# POTÊNCIA
+UG["REG_UG1_RA_PM_710_Potencia_Ativa"] = 45  # Op04 (Read Input Regs - 3x)
+UG["REG_UG2_RA_PM_710_Potencia_Ativa"] = 45  # Op04 (Read Input Regs - 3x)
+UG["REG_UG3_RA_PM_710_Potencia_Ativa"] = 45  # Op04 (Read Input Regs - 3x)
+
+# SETPOINT
 UG["REG_UG1_CD_ResetGeral"] = 0  # Op15 (Write multiple coils)
 UG["REG_UG1_SA_SPPotAtiva"] = 1  # Scale - Op16 (Preset Multiple Regs - 4x)
 UG["REG_UG1_CD_RV_RefRemHabilita"] = 63  # Op15 (Write multiple coils)
-
 UG["REG_UG2_CD_ResetGeral"] = 0  # Op15 (Write multiple coils)
 UG["REG_UG2_SA_SPPotAtiva"] = 1  # Scale - Op16 (Preset Multiple Regs - 4x)
 UG["REG_UG2_CD_RV_RefRemHabilita"] = 63  # Op15 (Write multiple coils)
-
 UG["REG_UG3_CD_ResetGeral"] = 0  # Op15 (Write multiple coils)
 UG["REG_UG3_SA_SPPotAtiva"] = 1  # Scale - Op16 (Preset Multiple Regs - 4x)
 UG["REG_UG3_CD_RV_RefRemHabilita"] = 63  # Op15 (Write multiple coils)
 
+# HORÍMETRO
+UG["REG_UG1_RA_Horimetro_Gerador"] = 51  # Op04 (Read Input Regs - 3x)
+UG["REG_UG2_RA_Horimetro_Gerador"] = 51  # Op04 (Read Input Regs - 3x)
+UG["REG_UG3_RA_Horimetro_Gerador"] = 51  # Op04 (Read Input Regs - 3x)
+UG["REG_UG1_RA_Horimetro_Gerador_min"] = 52  # Op04 (Read Input Regs - 3x)
+UG["REG_UG2_RA_Horimetro_Gerador_min"] = 52  # Op04 (Read Input Regs - 3x)
+UG["REG_UG3_RA_Horimetro_Gerador_min"] = 52  # Op04 (Read Input Regs - 3x)
 
-REG_UG1_ED_RV_MaquinaParada = 0  # Op02 (Read Input Status)
+# TRIPS
+UG["REG_UG1_CD_EmergenciaViaSuper"] = 4  # Op15 (Write multiple coils)
+UG["REG_UG2_CD_EmergenciaViaSuper"] = 4  # Op15 (Write multiple coils)
+UG["REG_UG3_CD_EmergenciaViaSuper"] = 4  # Op15 (Write multiple coils)
+
+# RESET
+UG["REG_UG1_CD_ResetReleBloq86H"] = 1  # Op15 (Write multiple coils)
+UG["REG_UG1_CD_ResetReleBloq86M"] = 2  # Op15 (Write multiple coils)
+UG["REG_UG1_CD_ResetRele700G"] = 3  # Op15 (Write multiple coils)
+UG["REG_UG1_ED_ReleBloqA86HAtuado"] = 16  # Op02 (Read Input Status)
+UG["REG_UG1_ED_ReleBloqA86MAtuado"] = 17  # Op02 (Read Input Status)
+UG["REG_UG1_CD_Cala_Sirene"] = 61  # Op15 (Write multiple coils)
+UG["REG_UG1_RD_700G_Trip"] = 197  # Op02 (Read Input Status)
+UG["REG_UG2_CD_ResetReleBloq86H"] = 1  # Op15 (Write multiple coils)
+UG["REG_UG2_CD_ResetReleBloq86M"] = 2  # Op15 (Write multiple coils)
+UG["REG_UG2_CD_ResetRele700G"] = 3  # Op15 (Write multiple coils)
+UG["REG_UG2_ED_ReleBloqA86HAtuado"] = 16  # Op02 (Read Input Status)
+UG["REG_UG2_ED_ReleBloqA86MAtuado"] = 17  # Op02 (Read Input Status)
+UG["REG_UG2_CD_Cala_Sirene"] = 61  # Op15 (Write multiple coils)
+UG["REG_UG2_RD_700G_Trip"] = 197  # Op02 (Read Input Status)
+UG["REG_UG3_CD_ResetReleBloq86H"] = 1  # Op15 (Write multiple coils)
+UG["REG_UG3_CD_ResetReleBloq86M"] = 2  # Op15 (Write multiple coils)
+UG["REG_UG3_CD_ResetRele700G"] = 3  # Op15 (Write multiple coils)
+UG["REG_UG3_ED_ReleBloqA86HAtuado"] = 16  # Op02 (Read Input Status)
+UG["REG_UG3_ED_ReleBloqA86MAtuado"] = 17  # Op02 (Read Input Status)
+UG["REG_UG3_CD_Cala_Sirene"] = 61  # Op15 (Write multiple coils)
+UG["REG_UG3_RD_700G_Trip"] = 197  # Op02 (Read Input Status)
+
+# AVISOS VOIP
+UG["REG_UG1_ED_FreioPastilhaGasta"] = 24  # Op02 (Read Input Status)
+UG["REG_UG1_ED_FreioCmdRemoto"] = 29  # Op02 (Read Input Status)
+UG["REG_UG1_ED_FiltroPresSujo75Troc"] = 37  # Op02 (Read Input Status)
+UG["REG_UG1_ED_FiltroRetSujo75Troc"] = 39  # Op02 (Read Input Status)
+UG["REG_UG1_ED_UHLM_Filt1PresSujo75Troc"] = 59  # Op02 (Read Input Status)
+UG["REG_UG1_ED_UHLM_Filt2PresSujo75Troc"] = 61  # Op02 (Read Input Status)
+UG["REG_UG1_ED_FiltroPressaoBbaMecSj75"] = 65  # Op02 (Read Input Status)
+UG["REG_UG1_ED_TripPartRes"] = 82  # Op02 (Read Input Status)
+UG["REG_UG1_ED_QCAUG1_Remoto"] = 88  # Op02 (Read Input Status)
+UG["REG_UG2_ED_FreioPastilhaGasta"] = 24  # Op02 (Read Input Status)
+UG["REG_UG2_ED_FreioCmdRemoto"] = 29  # Op02 (Read Input Status)
+UG["REG_UG2_ED_FiltroPresSujo75Troc"] = 37  # Op02 (Read Input Status)
+UG["REG_UG2_ED_FiltroRetSujo75Troc"] = 39  # Op02 (Read Input Status)
+UG["REG_UG2_ED_UHLM_Filt1PresSujo75Troc"] = 59  # Op02 (Read Input Status)
+UG["REG_UG2_ED_UHLM_Filt2PresSujo75Troc"] = 61  # Op02 (Read Input Status)
+UG["REG_UG2_ED_FiltroPressaoBbaMecSj75"] = 65  # Op02 (Read Input Status)
+UG["REG_UG2_ED_TripPartRes"] = 82  # Op02 (Read Input Status)
+UG["REG_UG2_ED_QCAUG2_Remoto"] = 88  # Op02 (Read Input Status)
+UG["REG_UG3_ED_FreioPastilhaGasta"] = 24  # Op02 (Read Input Status)
+UG["REG_UG3_ED_FreioCmdRemoto"] = 29  # Op02 (Read Input Status)
+UG["REG_UG3_ED_FiltroPresSujo75Troc"] = 37  # Op02 (Read Input Status)
+UG["REG_UG3_ED_FiltroRetSujo75Troc"] = 39  # Op02 (Read Input Status)
+UG["REG_UG3_ED_UHLM_Filt1PresSujo75Troc"] = 59  # Op02 (Read Input Status)
+UG["REG_UG3_ED_UHLM_Filt2PresSujo75Troc"] = 61  # Op02 (Read Input Status)
+UG["REG_UG3_ED_FiltroPressaoBbaMecSj75"] = 65  # Op02 (Read Input Status)
+UG["REG_UG3_ED_TripPartRes"] = 82  # Op02 (Read Input Status)
+UG["REG_UG3_ED_QCAUG3_Remoto"] = 88  # Op02 (Read Input Status)
+
+
+
+
+
 REG_UG1_ED_RV_VeloMenor30 = 1  # Op02 (Read Input Status)
 REG_UG1_ED_RV_VeloMaior90 = 2  # Op02 (Read Input Status)
 REG_UG1_ED_RV_Trip = 3  # Op02 (Read Input Status)
@@ -32,25 +131,24 @@ REG_UG1_ED_PotenciaNula = 7  # Op02 (Read Input Status)
 REG_UG1_ED_Falta125Vcc = 8  # Op02 (Read Input Status)
 REG_UG1_ED_DisjGeradorInserido = 9  # Op02 (Read Input Status)
 REG_UG1_ED_DisjGeradorAberto = 10  # Op02 (Read Input Status)
-REG_UG1_ED_DisjGeradorFechado = 11  # Op02 (Read Input Status)
+
 REG_UG1_ED_EmergPainelAtuada = 12  # Op02 (Read Input Status)
 REG_UG1_ED_Falta125VccCom = 13  # Op02 (Read Input Status)
 REG_UG1_ED_Falta125VccAlimVal = 14  # Op02 (Read Input Status)
 REG_UG1_ED_FalhaDisjTpsProt = 15  # Op02 (Read Input Status)
-REG_UG1_ED_ReleBloqA86HAtuado = 16  # Op02 (Read Input Status)
-REG_UG1_ED_ReleBloqA86MAtuado = 17  # Op02 (Read Input Status)
+
 REG_UG1_ED_SEL700G_Atuado = 18  # Op02 (Read Input Status)
 REG_UG1_ED_SEL700G_FalhaInterna = 19  # Op02 (Read Input Status)
 REG_UG1_ED_Falta125VccQPCUG2 = 20  # Op02 (Read Input Status)
 REG_UG1_ED_Falta125VccQPCUG3 = 21  # Op02 (Read Input Status)
 REG_UG1_ED_NivelMAltoPocoDren = 22  # Op02 (Read Input Status)
 REG_UG1_ED_DijAlimAVRLig = 23  # Op02 (Read Input Status)
-REG_UG1_ED_FreioPastilhaGasta = 24  # Op02 (Read Input Status)
+
 REG_UG1_ED_FreioPressNormal = 25  # Op02 (Read Input Status)
 REG_UG1_ED_FreioDesaplicado = 26  # Op02 (Read Input Status)
 REG_UG1_ED_FreioAplicado = 27  # Op02 (Read Input Status)
 REG_UG1_ED_Reserva254 = 28  # Op02 (Read Input Status)
-REG_UG1_ED_FreioCmdRemoto = 29  # Op02 (Read Input Status)
+
 REG_UG1_ED_FreioFiltroSaturado = 30  # Op02 (Read Input Status)
 REG_UG1_ED_FreioSemEnergia = 31  # Op02 (Read Input Status)
 REG_UG1_ED_UHRV_PressCriticaPos321 = 32  # Op02 (Read Input Status)
@@ -58,9 +156,9 @@ REG_UG1_ED_UHRV_PressMinimaPos322 = 33  # Op02 (Read Input Status)
 REG_UG1_ED_UHRV_PressNominalPos323 = 34  # Op02 (Read Input Status)
 REG_UG1_ED_UHRV_Reserva263 = 35  # Op02 (Read Input Status)
 REG_UG1_ED_UHRV_Reserva264 = 36  # Op02 (Read Input Status)
-REG_UG1_ED_FiltroPresSujo75Troc = 37  # Op02 (Read Input Status)
+
 REG_UG1_ED_FiltroPresSujo100Sujo = 38  # Op02 (Read Input Status)
-REG_UG1_ED_FiltroRetSujo75Troc = 39  # Op02 (Read Input Status)
+
 REG_UG1_ED_FiltroRetSujo100Sujo = 40  # Op02 (Read Input Status)
 REG_UG1_ED_UHRV_NivOleoCriticoPos35 = 41  # Op02 (Read Input Status)
 REG_UG1_ED_UHRV_NivOleominimoPos36 = 42  # Op02 (Read Input Status)
@@ -80,13 +178,13 @@ REG_UG1_ED_FaltaFluxoOleoMc = 55  # Op02 (Read Input Status)
 REG_UG1_ED_PalhetasDesal = 56  # Op02 (Read Input Status)
 REG_UG1_ED_UHLM_FaltaFluxTroc = 57  # Op02 (Read Input Status)
 REG_UG1_ED_UHLM_FaltaPressTroc = 58  # Op02 (Read Input Status)
-REG_UG1_ED_UHLM_Filt1PresSujo75Troc = 59  # Op02 (Read Input Status)
+
 REG_UG1_ED_UHLM_Filt1PresSujo100Sujo = 60  # Op02 (Read Input Status)
-REG_UG1_ED_UHLM_Filt2PresSujo75Troc = 61  # Op02 (Read Input Status)
+
 REG_UG1_ED_UHLM_Filt2PresSujo100Sujo = 62  # Op02 (Read Input Status)
 REG_UG1_ED_UHLM_NivelCritOleo = 63  # Op02 (Read Input Status)
 REG_UG1_ED_UHLM_NivelminOleo = 64  # Op02 (Read Input Status)
-REG_UG1_ED_FiltroPressaoBbaMecSj75 = 65  # Op02 (Read Input Status)
+
 REG_UG1_ED_FiltroPressaoBbaMecSj100 = 66  # Op02 (Read Input Status)
 REG_UG1_ED_FaltaFluxoBbaMec = 67  # Op02 (Read Input Status)
 REG_UG1_ED_UHLM_FluxoMcDianteiro = 68  # Op02 (Read Input Status)
@@ -103,20 +201,19 @@ REG_UG1_ED_QCAUG_Disj52A1Lig = 78  # Op02 (Read Input Status)
 REG_UG1_ED_QCAUG_TripDisj52A1 = 79  # Op02 (Read Input Status)
 REG_UG1_ED_UHLM_TripBomba1 = 80  # Op02 (Read Input Status)
 REG_UG1_ED_UHLM_TripBomba2 = 81  # Op02 (Read Input Status)
-REG_UG1_ED_TripPartRes = 82  # Op02 (Read Input Status)
+
 REG_UG1_ED_UHRV_TripBomba1 = 83  # Op02 (Read Input Status)
 REG_UG1_ED_UHRV_TripBomba2 = 84  # Op02 (Read Input Status)
 REG_UG1_ED_TripAlimPainelFreio = 85  # Op02 (Read Input Status)
 REG_UG1_ED_PainelFreioStatus = 86  # Op02 (Read Input Status)
 REG_UG1_ED_QCAUG_TripDisjAgrup = 87  # Op02 (Read Input Status)
-REG_UG1_ED_QCAUG1_Remoto = 88  # Op02 (Read Input Status)
+
 
 REG_UG1_RD_TensaoEstabilizada = 128  # Op02 (Read Input Status)
 REG_UG1_RD_EmergenciaViaSuper = 129  # Op02 (Read Input Status)
 REG_UG1_RD_SeqManual = 130  # Op02 (Read Input Status)
 REG_UG1_RD_SeqAutomatica = 131  # Op02 (Read Input Status)
-REG_UG1_RD_PartindoEmAuto = 132  # Op02 (Read Input Status)
-REG_UG1_RD_ParandoEmAuto = 133  # Op02 (Read Input Status)
+
 REG_UG1_RD_TripEletrico = 134  # Op02 (Read Input Status)
 REG_UG1_RD_TripMecanico = 135  # Op02 (Read Input Status)
 REG_UG1_RD_ValvSeg_Energizadas = 136  # Op02 (Read Input Status)
@@ -182,7 +279,7 @@ REG_UG1_RD_PassoLigaFreioPara = 193  # Op02 (Read Input Status)
 REG_UG1_RD_PassoDeslFreioPart = 194  # Op02 (Read Input Status)
 REG_UG1_RD_PassoSincroniza = 195  # Op02 (Read Input Status)
 REG_UG1_RD_700G_EN = 196  # Op02 (Read Input Status)
-REG_UG1_RD_700G_Trip = 197  # Op02 (Read Input Status)
+
 REG_UG1_RD_700G_TLED_01 = 198  # Op02 (Read Input Status)
 REG_UG1_RD_700G_TLED_02 = 199  # Op02 (Read Input Status)
 REG_UG1_RD_700G_TLED_03 = 200  # Op02 (Read Input Status)
@@ -203,12 +300,9 @@ REG_UG1_RD_UG1_StsBloqueio = 214  # Op02 (Read Input Status)
 REG_UG1_RD_TripPressaoCaixaEspiral = 215  # Op02 (Read Input Status)
 REG_UG1_RD_Trip_PBCE_Habilitado = 216  # Op02 (Read Input Status)
 """----------------SETPOINT------------------"""
-REG_UG1_CD_ResetReleBloq86H = 1  # Op15 (Write multiple coils)
-REG_UG1_CD_ResetReleBloq86M = 2  # Op15 (Write multiple coils)
-REG_UG1_CD_ResetRele700G = 3  # Op15 (Write multiple coils)
-REG_UG1_CD_EmergenciaViaSuper = 4  # Op15 (Write multiple coils)
-REG_UG1_CD_ResetReleRT = 5  # Op15 (Write multiple coils)
-REG_UG1_CD_ResetRV = 6  # Op15 (Write multiple coils)
+
+
+
 REG_UG1_CD_AumentaTensaoRT = 7  # Op15 (Write multiple coils)
 REG_UG1_CD_DiminuiTensaoRT = 8  # Op15 (Write multiple coils)
 REG_UG1_CD_HabControleFP = 9  # Op15 (Write multiple coils)
@@ -247,9 +341,8 @@ REG_UG1_CD_HabSeqAuto = 41  # Op15 (Write multiple coils)
 REG_UG1_CD_HabSeqManual = 42  # Op15 (Write multiple coils)
 REG_UG1_CD_Freio_Aplica = 43  # Op15 (Write multiple coils)
 REG_UG1_CD_Freio_Desaplica = 44  # Op15 (Write multiple coils)
-REG_UG1_CD_IniciaPartida = 45  # Op15 (Write multiple coils)
-REG_UG1_CD_IniciaParada = 46  # Op15 (Write multiple coils)
-REG_UG1_CD_AbortaPartida = 47  # Op15 (Write multiple coils)
+
+
 REG_UG1_CD_ValvSeg_Liga = 48  # Op15 (Write multiple coils)
 REG_UG1_CD_ValvSeg_Desliga = 49  # Op15 (Write multiple coils)
 REG_UG1_CD_DeslDisj52G = 50  # Op15 (Write multiple coils)
@@ -261,9 +354,9 @@ REG_UG1_CD_SelValvInjRotorManu = 55  # Op15 (Write multiple coils)
 REG_UG1_CD_LigaValvInjArRotor = 56  # Op15 (Write multiple coils)
 REG_UG1_CD_DeslValvInjArRotor = 57  # Op15 (Write multiple coils)
 REG_UG1_CD_Sincroniza = 58  # Op15 (Write multiple coils)
-REG_UG1_CD_AbortaSincronismo = 59  # Op15 (Write multiple coils)
+
 REG_UG1_CD_Reset_Hori_Gerador = 60  # Op15 (Write multiple coils)
-REG_UG1_CD_Cala_Sirene = 61  # Op15 (Write multiple coils)
+
 REG_UG1_CD_RV_RetiraCarga = 62  # Op15 (Write multiple coils)
 """----------------SETPOINT------------------"""
 REG_UG1_CD_RV_RefRemDesabilita = 64  # Op15 (Write multiple coils)
@@ -292,12 +385,11 @@ REG_UG1_RA_PM_710_Fator_Potencia = 43  # Op04 (Read Input Regs - 3x)
 REG_UG1_RA_PM_710_Potencia_Aparente = (
     44  # Op04 (Read Input Regs - 3x)
 )
-REG_UG1_RA_PM_710_Potencia_Ativa = 45  # Op04 (Read Input Regs - 3x)
+
 REG_UG1_RA_PM_710_Potencia_Reativa = (
     46  # Op04 (Read Input Regs - 3x)
 )
-REG_UG1_RA_Horimetro_Gerador = 51  # Op04 (Read Input Regs - 3x)
-REG_UG1_RA_Horimetro_Gerador_min = 52  # Op04 (Read Input Regs - 3x)
+
 REG_UG1_RA_Estabiliz_Tensao = 49  # Op04 (Read Input Regs - 3x)
 REG_UG1_EA_PosicaoDistribuidor = (
     0  # Scale 0.1 - Op04 (Read Input Regs - 3x)
@@ -377,7 +469,6 @@ REG_UG1_EA_PressK1CaixaExpiral_MaisCasas = (
     157 # Scale 0.01 - Op04 (Read Input Regs)
 )
 
-REG_UG2_ED_RV_MaquinaParada = 0  # Op02 (Read Input Status)
 REG_UG2_ED_RV_VeloMenor30 = 1  # Op02 (Read Input Status)
 REG_UG2_ED_RV_VeloMaior90 = 2  # Op02 (Read Input Status)
 REG_UG2_ED_RV_Trip = 3  # Op02 (Read Input Status)
@@ -388,26 +479,24 @@ REG_UG2_ED_PotenciaNula = 7  # Op02 (Read Input Status)
 REG_UG2_ED_Falta125Vcc = 8  # Op02 (Read Input Status)
 REG_UG2_ED_DisjGeradorInserido = 9  # Op02 (Read Input Status)
 REG_UG2_ED_DisjGeradorAberto = 10  # Op02 (Read Input Status)
-REG_UG2_ED_DisjGeradorFechado = 11  # Op02 (Read Input Status)
 REG_UG2_ED_EmergPainelAtuada = 12  # Op02 (Read Input Status)
 REG_UG2_ED_Falta125VccQPCUG1 = 13  # Op02 (Read Input Status)
 REG_UG2_ED_Falta125VccQPCUG3 = 00000  # Op02 (Read Input Status) # verificar
 REG_UG2_ED_Falta125VccAlimVal = 14  # Op02 (Read Input Status)
 REG_UG2_ED_FalhaDisjTpsProt = 15  # Op02 (Read Input Status)
-REG_UG2_ED_ReleBloqA86HAtuado = 16  # Op02 (Read Input Status)
-REG_UG2_ED_ReleBloqA86MAtuado = 17  # Op02 (Read Input Status)
+
 REG_UG2_ED_SEL700G_Atuado = 18  # Op02 (Read Input Status)
 REG_UG2_ED_SEL700G_FalhaInterna = 19  # Op02 (Read Input Status)
 REG_UG2_ED_Reserva244 = 20  # Op02 (Read Input Status)
 REG_UG2_ED_Reserva245 = 21  # Op02 (Read Input Status)
 REG_UG2_ED_NivelMAltoPocoDren = 22  # Op02 (Read Input Status)
 REG_UG2_ED_DijAlimAVRLig = 23  # Op02 (Read Input Status)
-REG_UG2_ED_FreioPastilhaGasta = 24  # Op02 (Read Input Status)
+
 REG_UG2_ED_FreioPressNormal = 25  # Op02 (Read Input Status)
 REG_UG2_ED_FreioDesaplicado = 26  # Op02 (Read Input Status)
 REG_UG2_ED_FreioAplicado = 27  # Op02 (Read Input Status)
 REG_UG2_ED_Reserva254 = 28  # Op02 (Read Input Status)
-REG_UG2_ED_FreioCmdRemoto = 29  # Op02 (Read Input Status)
+
 REG_UG2_ED_FreioFiltroSaturado = 30  # Op02 (Read Input Status)
 REG_UG2_ED_FreioSemEnergia = 31  # Op02 (Read Input Status)
 REG_UG2_ED_UHRV_PressCriticaPos321 = 32  # Op02 (Read Input Status)
@@ -415,9 +504,9 @@ REG_UG2_ED_UHRV_PressMinimaPos322 = 33  # Op02 (Read Input Status)
 REG_UG2_ED_UHRV_PressNominalPos323 = 34  # Op02 (Read Input Status)
 REG_UG2_ED_UHRV_Reserva263 = 35  # Op02 (Read Input Status)
 REG_UG2_ED_UHRV_Reserva264 = 36  # Op02 (Read Input Status)
-REG_UG2_ED_FiltroPresSujo75Troc = 37  # Op02 (Read Input Status)
+
 REG_UG2_ED_FiltroPresSujo100Sujo = 38  # Op02 (Read Input Status)
-REG_UG2_ED_FiltroRetSujo75Troc = 39  # Op02 (Read Input Status)
+
 REG_UG2_ED_FiltroRetSujo100Sujo = 40  # Op02 (Read Input Status)
 REG_UG2_ED_UHRV_NivOleoCriticoPos35 = 41  # Op02 (Read Input Status)
 REG_UG2_ED_UHRV_NivOleominimoPos36 = 42  # Op02 (Read Input Status)
@@ -437,13 +526,13 @@ REG_UG2_ED_FaltaFluxoOleoMc = 55  # Op02 (Read Input Status)
 REG_UG2_ED_PalhetasDesal = 56  # Op02 (Read Input Status)
 REG_UG2_ED_UHLM_FaltaFluxTroc = 57  # Op02 (Read Input Status)
 REG_UG2_ED_UHLM_FaltaPressTroc = 58  # Op02 (Read Input Status)
-REG_UG2_ED_UHLM_Filt1PresSujo75Troc = 59  # Op02 (Read Input Status)
+
 REG_UG2_ED_UHLM_Filt1PresSujo100Sujo = 60  # Op02 (Read Input Status)
-REG_UG2_ED_UHLM_Filt2PresSujo75Troc = 61  # Op02 (Read Input Status)
+
 REG_UG2_ED_UHLM_Filt2PresSujo100Sujo = 62  # Op02 (Read Input Status)
 REG_UG2_ED_UHLM_NivelCritOleo = 63  # Op02 (Read Input Status)
 REG_UG2_ED_UHLM_NivelminOleo = 64  # Op02 (Read Input Status)
-REG_UG2_ED_FiltroPressaoBbaMecSj75 = 65  # Op02 (Read Input Status)
+
 REG_UG2_ED_FiltroPressaoBbaMecSj100 = 66  # Op02 (Read Input Status)
 REG_UG2_ED_FaltaFluxoBbaMec = 67  # Op02 (Read Input Status)
 REG_UG2_ED_UHLM_FluxoMcDianteiro = 68  # Op02 (Read Input Status)
@@ -460,19 +549,18 @@ REG_UG2_ED_QCAUG_Disj52A1Lig = 78  # Op02 (Read Input Status)
 REG_UG2_ED_QCAUG_TripDisj52A1 = 79  # Op02 (Read Input Status)
 REG_UG2_ED_UHLM_TripBomba1 = 80  # Op02 (Read Input Status)
 REG_UG2_ED_UHLM_TripBomba2 = 81  # Op02 (Read Input Status)
-REG_UG2_ED_TripPartRes = 82  # Op02 (Read Input Status)
+
 REG_UG2_ED_UHRV_TripBomba1 = 83  # Op02 (Read Input Status)
 REG_UG2_ED_UHRV_TripBomba2 = 84  # Op02 (Read Input Status)
 REG_UG2_ED_TripAlimPainelFreio = 85  # Op02 (Read Input Status)
 REG_UG2_ED_PainelFreioStatus = 86  # Op02 (Read Input Status)
 REG_UG2_ED_QCAUG_TripDisjAgrup = 87  # Op02 (Read Input Status)
-REG_UG2_ED_QCAUG2_Remoto = 88  # Op02 (Read Input Status)
+
 REG_UG2_RD_TensaoEstabilizada = 128  # Op02 (Read Input Status)
 REG_UG2_RD_EmergenciaViaSuper = 129  # Op02 (Read Input Status)
 REG_UG2_RD_SeqManual = 130  # Op02 (Read Input Status)
 REG_UG2_RD_SeqAutomatica = 131  # Op02 (Read Input Status)
-REG_UG2_RD_PartindoEmAuto = 132  # Op02 (Read Input Status)
-REG_UG2_RD_ParandoEmAuto = 133  # Op02 (Read Input Status)
+
 REG_UG2_RD_TripEletrico = 134  # Op02 (Read Input Status)
 REG_UG2_RD_TripMecanico = 135  # Op02 (Read Input Status)
 REG_UG2_RD_ValvSeg_Energizadas = 136  # Op02 (Read Input Status)
@@ -538,7 +626,7 @@ REG_UG2_RD_PassoLigaFreioPara = 193  # Op02 (Read Input Status)
 REG_UG2_RD_PassoDeslFreioPart = 194  # Op02 (Read Input Status)
 REG_UG2_RD_PassoSincroniza = 195  # Op02 (Read Input Status)
 REG_UG2_RD_700G_EN = 196  # Op02 (Read Input Status)
-REG_UG2_RD_700G_Trip = 197  # Op02 (Read Input Status)
+
 REG_UG2_RD_700G_TLED_01 = 198  # Op02 (Read Input Status)
 REG_UG2_RD_700G_TLED_02 = 199  # Op02 (Read Input Status)
 REG_UG2_RD_700G_TLED_03 = 200  # Op02 (Read Input Status)
@@ -557,10 +645,7 @@ REG_UG2_RD_UG2_StsBloqueio = 212  # Op02 (Read Input Status)
 REG_UG2_RD_TripPressaoCaixaEspiral = 213  # Op02 (Read Input Status)
 REG_UG2_RD_Trip_PBCE_Habilitado = 214  # Op02 (Read Input Status)
 """----------------SETPOINT------------------"""
-REG_UG2_CD_ResetReleBloq86H = 1  # Op15 (Write multiple coils)
-REG_UG2_CD_ResetReleBloq86M = 2  # Op15 (Write multiple coils)
-REG_UG2_CD_ResetRele700G = 3  # Op15 (Write multiple coils)
-REG_UG2_CD_EmergenciaViaSuper = 4  # Op15 (Write multiple coils)
+
 REG_UG2_CD_ResetReleRT = 5  # Op15 (Write multiple coils)
 REG_UG2_CD_ResetRV = 6  # Op15 (Write multiple coils)
 REG_UG2_CD_AumentaTensaoRT = 7  # Op15 (Write multiple coils)
@@ -601,9 +686,7 @@ REG_UG2_CD_HabSeqAuto = 41  # Op15 (Write multiple coils)
 REG_UG2_CD_HabSeqManual = 42  # Op15 (Write multiple coils)
 REG_UG2_CD_Freio_Aplica = 43  # Op15 (Write multiple coils)
 REG_UG2_CD_Freio_Desaplica = 44  # Op15 (Write multiple coils)
-REG_UG2_CD_IniciaPartida = 45  # Op15 (Write multiple coils)
-REG_UG2_CD_IniciaParada = 46  # Op15 (Write multiple coils)
-REG_UG2_CD_AbortaPartida = 47  # Op15 (Write multiple coils)
+
 REG_UG2_CD_ValvSeg_Liga = 48  # Op15 (Write multiple coils)
 REG_UG2_CD_ValvSeg_Desliga = 49  # Op15 (Write multiple coils)
 REG_UG2_CD_DeslDisj52G = 50  # Op15 (Write multiple coils)
@@ -615,9 +698,9 @@ REG_UG2_CD_SelValvInjRotorManu = 55  # Op15 (Write multiple coils)
 REG_UG2_CD_LigaValvInjArRotor = 56  # Op15 (Write multiple coils)
 REG_UG2_CD_DeslValvInjArRotor = 57  # Op15 (Write multiple coils)
 REG_UG2_CD_Sincroniza = 58  # Op15 (Write multiple coils)
-REG_UG2_CD_AbortaSincronismo = 59  # Op15 (Write multiple coils)
+
 REG_UG2_CD_Reset_Hori_Gerador = 60  # Op15 (Write multiple coils)
-REG_UG2_CD_Cala_Sirene = 61  # Op15 (Write multiple coils)
+
 REG_UG2_CD_RetiraCarga = 62  # Op15 (Write multiple coils)
 REG_UG2_CD_RV_RetiraCarga = 63  # Op15 (Write multiple coils)
 """----------------SETPOINT------------------"""
@@ -647,12 +730,10 @@ REG_UG2_RA_PM_710_Fator_Potencia = 43  # Op04 (Read Input Regs - 3x)
 REG_UG2_RA_PM_710_Potencia_Aparente = (
     44  # Op04 (Read Input Regs - 3x)
 )
-REG_UG2_RA_PM_710_Potencia_Ativa = 45  # Op04 (Read Input Regs - 3x)
+
 REG_UG2_RA_PM_710_Potencia_Reativa = (
     46  # Op04 (Read Input Regs - 3x)
 )
-REG_UG2_RA_Horimetro_Gerador = 51  # Op04 (Read Input Regs - 3x)
-REG_UG2_RA_Horimetro_Gerador_min = 52  # Op04 (Read Input Regs - 3x)
 REG_UG2_RA_Estabiliz_Tensao = 49  # Op04 (Read Input Regs - 3x)
 REG_UG2_EA_PosicaoDistribuidor = (
     0  # Scale 0.1 - Op04 (Read Input Regs - 3x)
@@ -730,7 +811,6 @@ REG_UG2_EA_PressK1CaixaExpiral_MaisCasas = (
     157 # Scale 0.01 - Op04 (Read Input Regs)
 )
 
-REG_UG3_ED_RV_MaquinaParada = 0  # Op02 (Read Input Status)
 REG_UG3_ED_RV_VeloMenor30 = 1  # Op02 (Read Input Status)
 REG_UG3_ED_RV_VeloMaior90 = 2  # Op02 (Read Input Status)
 REG_UG3_ED_RV_Trip = 3  # Op02 (Read Input Status)
@@ -741,25 +821,24 @@ REG_UG3_ED_PotenciaNula = 7  # Op02 (Read Input Status)
 REG_UG3_ED_Falta125Vcc = 8  # Op02 (Read Input Status)
 REG_UG3_ED_DisjGeradorInserido = 9  # Op02 (Read Input Status)
 REG_UG3_ED_DisjGeradorAberto = 10  # Op02 (Read Input Status)
-REG_UG3_ED_DisjGeradorFechado = 11  # Op02 (Read Input Status)
+
 REG_UG3_ED_EmergPainelAtuada = 12  # Op02 (Read Input Status)
 REG_UG3_ED_Falta125VccCom = 13  # Op02 (Read Input Status)
 REG_UG3_ED_Falta125VccAlimVal = 14  # Op02 (Read Input Status)
 REG_UG3_ED_FalhaDisjTpsProt = 15  # Op02 (Read Input Status)
-REG_UG3_ED_ReleBloqA86HAtuado = 16  # Op02 (Read Input Status)
-REG_UG3_ED_ReleBloqA86MAtuado = 17  # Op02 (Read Input Status)
+
 REG_UG3_ED_SEL700G_Atuado = 18  # Op02 (Read Input Status)
 REG_UG3_ED_SEL700G_FalhaInterna = 19  # Op02 (Read Input Status)
 REG_UG3_ED_Falta125VccQPCUG2 = 20  # Op02 (Read Input Status)
 REG_UG3_ED_Falta125VccQPCUG1 = 21  # Op02 (Read Input Status)
 REG_UG3_ED_NivelMAltoPocoDren = 22  # Op02 (Read Input Status)
 REG_UG3_ED_DijAlimAVRLig = 23  # Op02 (Read Input Status)
-REG_UG3_ED_FreioPastilhaGasta = 24  # Op02 (Read Input Status)
+
 REG_UG3_ED_FreioPressNormal = 25  # Op02 (Read Input Status)
 REG_UG3_ED_FreioDesaplicado = 26  # Op02 (Read Input Status)
 REG_UG3_ED_FreioAplicado = 27  # Op02 (Read Input Status)
 REG_UG3_ED_Reserva254 = 28  # Op02 (Read Input Status)
-REG_UG3_ED_FreioCmdRemoto = 29  # Op02 (Read Input Status)
+
 REG_UG3_ED_FreioFiltroSaturado = 30  # Op02 (Read Input Status)
 REG_UG3_ED_FreioSemEnergia = 31  # Op02 (Read Input Status)
 REG_UG3_ED_UHRV_PressCriticaPos321 = 32  # Op02 (Read Input Status)
@@ -767,9 +846,9 @@ REG_UG3_ED_UHRV_PressMinimaPos322 = 33  # Op02 (Read Input Status)
 REG_UG3_ED_UHRV_PressNominalPos323 = 34  # Op02 (Read Input Status)
 REG_UG3_ED_UHRV_Reserva263 = 35  # Op02 (Read Input Status)
 REG_UG3_ED_UHRV_Reserva264 = 36  # Op02 (Read Input Status)
-REG_UG3_ED_FiltroPresSujo75Troc = 37  # Op02 (Read Input Status)
+
 REG_UG3_ED_FiltroPresSujo100Sujo = 38  # Op02 (Read Input Status)
-REG_UG3_ED_FiltroRetSujo75Troc = 39  # Op02 (Read Input Status)
+
 REG_UG3_ED_FiltroRetSujo100Sujo = 40  # Op02 (Read Input Status)
 REG_UG3_ED_UHRV_NivOleoCriticoPos35 = 41  # Op02 (Read Input Status)
 REG_UG3_ED_UHRV_NivOleominimoPos36 = 42  # Op02 (Read Input Status)
@@ -789,13 +868,13 @@ REG_UG3_ED_FaltaFluxoOleoMc = 55  # Op02 (Read Input Status)
 REG_UG3_ED_PalhetasDesal = 56  # Op02 (Read Input Status)
 REG_UG3_ED_UHLM_FaltaFluxTroc = 57  # Op02 (Read Input Status)
 REG_UG3_ED_UHLM_FaltaPressTroc = 58  # Op02 (Read Input Status)
-REG_UG3_ED_UHLM_Filt1PresSujo75Troc = 59  # Op02 (Read Input Status)
+
 REG_UG3_ED_UHLM_Filt1PresSujo100Sujo = 60  # Op02 (Read Input Status)
-REG_UG3_ED_UHLM_Filt2PresSujo75Troc = 61  # Op02 (Read Input Status)
+
 REG_UG3_ED_UHLM_Filt2PresSujo100Sujo = 62  # Op02 (Read Input Status)
 REG_UG3_ED_UHLM_NivelCritOleo = 63  # Op02 (Read Input Status)
 REG_UG3_ED_UHLM_NivelminOleo = 64  # Op02 (Read Input Status)
-REG_UG3_ED_FiltroPressaoBbaMecSj75 = 65  # Op02 (Read Input Status)
+
 REG_UG3_ED_FiltroPressaoBbaMecSj100 = 66  # Op02 (Read Input Status)
 REG_UG3_ED_FaltaFluxoBbaMec = 67  # Op02 (Read Input Status)
 REG_UG3_ED_UHLM_FluxoMcDianteiro = 68  # Op02 (Read Input Status)
@@ -812,19 +891,18 @@ REG_UG3_ED_QCAUG_Disj52A1Lig = 78  # Op02 (Read Input Status)
 REG_UG3_ED_QCAUG_TripDisj52A1 = 79  # Op02 (Read Input Status)
 REG_UG3_ED_UHLM_TripBomba1 = 80  # Op02 (Read Input Status)
 REG_UG3_ED_UHLM_TripBomba2 = 81  # Op02 (Read Input Status)
-REG_UG3_ED_TripPartRes = 82  # Op02 (Read Input Status)
+
 REG_UG3_ED_UHRV_TripBomba1 = 83  # Op02 (Read Input Status)
 REG_UG3_ED_UHRV_TripBomba2 = 84  # Op02 (Read Input Status)
 REG_UG3_ED_TripAlimPainelFreio = 85  # Op02 (Read Input Status)
 REG_UG3_ED_PainelFreioStatus = 86  # Op02 (Read Input Status)
 REG_UG3_ED_QCAUG_TripDisjAgrup = 87  # Op02 (Read Input Status)
-REG_UG3_ED_QCAUG3_Remoto = 88  # Op02 (Read Input Status)
+
 REG_UG3_RD_TensaoEstabilizada = 128  # Op02 (Read Input Status)
 REG_UG3_RD_EmergenciaViaSuper = 129  # Op02 (Read Input Status)
 REG_UG3_RD_SeqManual = 130  # Op02 (Read Input Status)
 REG_UG3_RD_SeqAutomatica = 131  # Op02 (Read Input Status)
-REG_UG3_RD_PartindoEmAuto = 132  # Op02 (Read Input Status)
-REG_UG3_RD_ParandoEmAuto = 133  # Op02 (Read Input Status)
+
 REG_UG3_RD_TripEletrico = 134  # Op02 (Read Input Status)
 REG_UG3_RD_TripMecanico = 135  # Op02 (Read Input Status)
 REG_UG3_RD_ValvSeg_Energizadas = 136  # Op02 (Read Input Status)
@@ -890,7 +968,7 @@ REG_UG3_RD_PassoLigaFreioPara = 193  # Op02 (Read Input Status)
 REG_UG3_RD_PassoDeslFreioPart = 194  # Op02 (Read Input Status)
 REG_UG3_RD_PassoSincroniza = 195  # Op02 (Read Input Status)
 REG_UG3_RD_700G_EN = 196  # Op02 (Read Input Status)
-REG_UG3_RD_700G_Trip = 197  # Op02 (Read Input Status)
+
 REG_UG3_RD_700G_TLED_01 = 198  # Op02 (Read Input Status)
 REG_UG3_RD_700G_TLED_02 = 199  # Op02 (Read Input Status)
 REG_UG3_RD_700G_TLED_03 = 200  # Op02 (Read Input Status)
@@ -909,10 +987,7 @@ REG_UG3_RD_UG3_StsBloqueio = 212  # Op02 (Read Input Status)
 REG_UG3_RD_TripPressaoCaixaEspiral = 213  # Op02 (Read Input Status)
 REG_UG3_RD_Trip_PBCE_Habilitado = 214  # Op02 (Read Input Status)
 """----------------SETPOINT------------------"""
-REG_UG3_CD_ResetReleBloq86H = 1  # Op15 (Write multiple coils)
-REG_UG3_CD_ResetReleBloq86M = 2  # Op15 (Write multiple coils)
-REG_UG3_CD_ResetRele700G = 3  # Op15 (Write multiple coils)
-REG_UG3_CD_EmergenciaViaSuper = 4  # Op15 (Write multiple coils)
+
 REG_UG3_CD_ResetReleRT = 5  # Op15 (Write multiple coils)
 REG_UG3_CD_ResetRV = 6  # Op15 (Write multiple coils)
 REG_UG3_CD_AumentaTensaoRT = 7  # Op15 (Write multiple coils)
@@ -953,9 +1028,7 @@ REG_UG3_CD_HabSeqAuto = 41  # Op15 (Write multiple coils)
 REG_UG3_CD_HabSeqManual = 42  # Op15 (Write multiple coils)
 REG_UG3_CD_Freio_Aplica = 43  # Op15 (Write multiple coils)
 REG_UG3_CD_Freio_Desaplica = 44  # Op15 (Write multiple coils)
-REG_UG3_CD_IniciaPartida = 45  # Op15 (Write multiple coils)
-REG_UG3_CD_IniciaParada = 46  # Op15 (Write multiple coils)
-REG_UG3_CD_AbortaPartida = 47  # Op15 (Write multiple coils)
+
 REG_UG3_CD_ValvSeg_Liga = 48  # Op15 (Write multiple coils)
 REG_UG3_CD_ValvSeg_Desliga = 49  # Op15 (Write multiple coils)
 REG_UG3_CD_DeslDisj52G = 50  # Op15 (Write multiple coils)
@@ -966,10 +1039,9 @@ REG_UG3_CD_SelValvInjRotorAuto = 54  # Op15 (Write multiple coils)
 REG_UG3_CD_SelValvInjRotorManu = 55  # Op15 (Write multiple coils)
 REG_UG3_CD_LigaValvInjArRotor = 56  # Op15 (Write multiple coils)
 REG_UG3_CD_DeslValvInjArRotor = 57  # Op15 (Write multiple coils)
-REG_UG3_CD_Sincroniza = 58  # Op15 (Write multiple coils)
-REG_UG3_CD_AbortaSincronismo = 59  # Op15 (Write multiple coils)
+
 REG_UG3_CD_Reset_Hori_Gerador = 60  # Op15 (Write multiple coils)
-REG_UG3_CD_Cala_Sirene = 61  # Op15 (Write multiple coils)
+
 REG_UG3_CD_RV_RetiraCarga = 62  # Op15 (Write multiple coils)
 """----------------SETPOINT------------------"""
 REG_UG3_CD_RV_RefRemDesabilita = 64  # Op15 (Write multiple coils)
@@ -998,12 +1070,10 @@ REG_UG3_RA_PM_710_Fator_Potencia = 43  # Op04 (Read Input Regs - 3x)
 REG_UG3_RA_PM_710_Potencia_Aparente = (
     44  # Op04 (Read Input Regs - 3x)
 )
-REG_UG3_RA_PM_710_Potencia_Ativa = 45  # Op04 (Read Input Regs - 3x)
+
 REG_UG3_RA_PM_710_Potencia_Reativa = (
     46  # Op04 (Read Input Regs - 3x)
 )
-REG_UG3_RA_Horimetro_Gerador = 51  # Op04 (Read Input Regs - 3x)
-REG_UG3_RA_Horimetro_Gerador_min = 52  # Op04 (Read Input Regs - 3x)
 REG_UG3_RA_Estabiliz_Tensao = 49  # Op04 (Read Input Regs - 3x)
 REG_UG3_EA_PosicaoDistribuidor = (
     0  # Scale 0.1 - Op04 (Read Input Regs - 3x)
@@ -1652,9 +1722,7 @@ REG_TDA_SA_Potencia_3_Baixa = (
 )
 REG_TDA_NivelMaisCasasAntes = 12  # Scale 400 + 0.0001 X - Op04 (Read Input Regs - 3x)
 REG_TDA_NivelMaisCasasDepois = 13  # Scale 400 + 0.0001 X - Op04 (Read Input Regs - 3x)
-REG_UG1_COND_PART = 222
-REG_UG2_COND_PART = 222
-REG_UG3_COND_PART = 222
+
 
 
 

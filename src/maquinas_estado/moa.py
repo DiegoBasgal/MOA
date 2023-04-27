@@ -92,7 +92,7 @@ class ValoresInternosAtualizados(State):
         self.usn._state_moa = SM_INTERNAL_VALUES_UPDATED
         self.usn.heartbeat()
         self.usn.ler_valores()
-        self.usn.clp_moa.write_single_coil(self.usn.cfg['REG_PAINEL_LIDO'], [1])
+        self.usn.clp["MOA"].write_single_coil(self.usn.cfg['REG_PAINEL_LIDO'], [1])
         """Decidir para qual modo de operação o sistema deve ir"""
 
         """
@@ -197,8 +197,8 @@ class Emergencia(State):
         self.em_sm_acionada = datetime.now(pytz.timezone("Brazil/East")).replace(tzinfo=None)
         logger.warning(f"Usina entrado em estado de emergência (Timestamp: {self.em_sm_acionada})")
         self.n_tentativa = 0
-        self.usn.escrever_valores()
         self.nao_ligou = True
+        self.usn.escrever_valores()
         self.usn._state_moa = SM_EMERGENCY
 
     def run(self):
@@ -290,10 +290,7 @@ class ModoManualAtivado(State):
         self.usn.ler_valores()
         for ug in self.usn.ugs:
             ug.release_timer = True
-        
-        self.usn.ug1.setpoint = self.usn.ug1.leitura_potencia.valor
-        self.usn.ug2.setpoint = self.usn.ug2.leitura_potencia.valor
-        self.usn.ug3.setpoint = self.usn.ug3.leitura_potencia.valor
+            ug.setpoint = ug.leituras_ug[f"leitura_potencia_ug{ug.id}"].valor
 
         self.usn.controle_ie = (self.usn.ug1.setpoint + self.usn.ug2.setpoint + self.usn.ug3.setpoint) / self.usn.cfg["pot_maxima_alvo"]
         self.usn.controle_i = max(min(self.usn.controle_ie - (self.usn.controle_i * self.usn.cfg["ki"]) - self.usn.cfg["kp"] * self.usn.erro_nv - self.usn.cfg["kd"] * (self.usn.erro_nv - self.usn.erro_nv_anterior), 0.8), 0)
@@ -326,7 +323,6 @@ class AgendamentosPendentes(State):
         logger.debug("Tratando agendamentos")
         self.usn.verificar_agendamentos()
         return ControleRealizado(self.usn)
-
 
 class ReservatorioAbaixoDoMinimo(State):
     def __init__(self, usina, *args, **kwargs):

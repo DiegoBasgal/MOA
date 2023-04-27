@@ -21,10 +21,8 @@ from datetime import datetime
 from src.codes import *
 from src.maquinas_estado.moa import *
 
-from src.mensageiro import voip
 from src.abstracao_usina import Usina
 from src.database_connector import Database
-from src.field_connector import FieldConnector
 from src.mensageiro.mensageiro_log_handler import MensageiroHandler
 
 # Set-up logging
@@ -70,45 +68,6 @@ mh.setFormatter(logFormatterSimples)
 mh.setLevel(logging.INFO)
 logger.addHandler(mh)
 
-
-def leitura_temporizada():
-    delay = 1800
-    proxima_leitura = time() + delay
-    logger.debug("Iniciando o timer de leitura por hora.")
-    while True:
-        logger.debug("Inciando nova leitura...")
-        try:
-            if usina.leituras_por_hora() and usina.acionar_voip:
-                acionar_voip()
-            for ug in usina.ugs:
-                if ug.leituras_por_hora() and ug.acionar_voip:
-                    acionar_voip()
-            sleep(max(0, proxima_leitura - time()))
-
-        except Exception:
-            logger.debug("Houve um problema ao executar a leitura por hora")
-
-        proxima_leitura += (time() - proxima_leitura) // delay * delay + delay
-
-def acionar_voip():
-    try:
-        if usina.acionar_voip:
-            voip.TDA_FalhaComum=[True if usina.TDA_FalhaComum else False]
-            voip.BombasDngRemoto=[True if usina.BombasDngRemoto else False]
-            voip.Disj_GDE_QCAP_Fechado=[True if usina.Disj_GDE_QCAP_Fechado else False]
-            voip.enviar_voz_auxiliar()
-            usina.acionar_voip = False
-        elif usina.avisado_em_eletrica:
-            voip.enviar_voz_emergencia()
-            usina.avisado_em_eletrica = False
-
-        for ug in usina.ugs:
-            if ug.acionar_voip:
-                ug.acionar_voip = False
-
-    except Exception:
-        logger.debug("Houve um problema ao ligar por Voip")
-
 if __name__ == "__main__":
     # A escala de tempo é utilizada para acelerar as simulações do sistema
     # Utilizar 1 para testes sérios e 120 no máximo para testes simples
@@ -147,14 +106,12 @@ if __name__ == "__main__":
                 continue
 
             try:
-                logger.info("Iniciando classes de conexão com Banco de Dados e Campo")
+                logger.info("Iniciando classe de conexão com Banco de Dados")
 
                 db = Database()
-                con = FieldConnector(cfg)
-                con.open()
 
             except Exception as e:
-                logger.error(f"Erro ao iniciar classes de conexão com Banco de Dados e Campo. Tentando novamente em {timeout}s (tentativa {n_tentativa}/2). Exception: \"{repr(e)}\".")
+                logger.error(f"Erro ao iniciar classe de conexão com Banco de Dados. Tentando novamente em {timeout}s (tentativa {n_tentativa}/2). Exception: \"{repr(e)}\".")
                 logger.debug(f"Traceback: {traceback.format_exc()}")
                 sleep(timeout)
                 continue
@@ -173,7 +130,7 @@ if __name__ == "__main__":
             try:
                 logger.info("Iniciando Thread de leitura periódica (30 min).")
 
-                threading.Thread(target=lambda: leitura_temporizada()).start()
+                threading.Thread(target=lambda: usina.leitura_temporizada()).start()
 
             except Exception as e:
                 logger.error(f"Erro ao iniciar Thread de leitura periódica. Tentando novamente em {timeout}s (tentativa {n_tentativa}/2). Exception: \"{repr(e)}\".")
@@ -208,4 +165,4 @@ if __name__ == "__main__":
 
         except Exception as e:
             logger.debug(f"Houve um erro no loop principal. Exception: \"{repr(e)}\"")
-            con.close()
+            usina.close_modbus()
