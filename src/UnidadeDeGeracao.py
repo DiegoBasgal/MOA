@@ -47,7 +47,7 @@ class UnidadeDeGeracao:
         if None in (db, con):
             logger.error(f"[UG{self.id}] Erro ao carregar parametros de conexão com banco e campo na classe. Reinciando intanciação interna.")
             self.db = Database()
-            self.con = FieldConnector(cfg)
+            self.con = FieldConnector(cfg, clp)
         else:
             self.db = db
             self.cfg = cfg

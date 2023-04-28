@@ -40,13 +40,15 @@ class Usina:
             host=self.cfg["USN_slave_ip"],
             port=self.cfg["USN_slave_porta"],
             timeout=0.5,
-            unit_id=1
+            unit_id=1,
+            auto_open=True
         )
         self.clp["TDA"] = ModbusClient(
             host=self.cfg["TDA_slave_ip"],
             port=self.cfg["TDA_slave_porta"],
             timeout=0.5,
-            unit_id=1
+            unit_id=1,
+            auto_open=True
         )
         self.clp["MOA"] = ModbusClient(
             host=self.cfg["MOA_slave_ip"],
@@ -54,7 +56,6 @@ class Usina:
             timeout=0.5,
             unit_id=1,
             auto_open=True,
-            auto_close=True
         )
         self.clp["UG1"] = ModbusClient(
             host=self.cfg["UG1_slave_ip"],
@@ -62,7 +63,6 @@ class Usina:
             timeout=0.5,
             unit_id=1,
             auto_open=True,
-            auto_close=True
         )
         self.clp["UG2"] = ModbusClient(
             host=self.cfg["UG2_slave_ip"],
@@ -70,7 +70,6 @@ class Usina:
             timeout=0.5,
             unit_id=1,
             auto_open=True,
-            auto_close=True
         )
         self.clp["UG3"] = ModbusClient(
             host=self.cfg["UG3_slave_ip"],
@@ -78,7 +77,6 @@ class Usina:
             timeout=0.5,
             unit_id=1,
             auto_open=True,
-            auto_close=True
         )
         self.open_modbus()
 
@@ -258,7 +256,7 @@ class Usina:
         logger.debug("Closed Modbus")
 
     def ler_valores(self):
-        self.ping_clps()
+        self.verificar_clps()
 
         self.clp_emergencia_acionada = 0
 
@@ -931,16 +929,16 @@ class Usina:
 
         pot_alvo = self.distribuir_potencia(pot_alvo)
 
-    def ping_clps(self) -> None:
+    def verificar_clps(self) -> None:
         # -> Verifica conexão com CLP Tomada d'água
         if not ping(self.cfg["TDA_slave_ip"]):
             self.TDA_Offline = True
             self.db.update_tda_offline(True)
             if self.TDA_Offline and self.hb_borda_emerg_ping == 0:
                 self.hb_borda_emerg_ping = 1
-                logger.warning("CLP TDA não respondeu a tentativa de comunicação!")
+                logger.critical("CLP TDA não respondeu a tentativa de comunicação!")
 
-        if ping(self.cfg["TDA_slave_ip"]) and self.hb_borda_emerg_ping == 1:
+        elif ping(self.cfg["TDA_slave_ip"]) and self.hb_borda_emerg_ping == 1:
             logger.info("Comunicação com o CLP TDA reestabelecida.")
             self.hb_borda_emerg_ping = 0
             self.TDA_Offline = False
@@ -948,20 +946,65 @@ class Usina:
 
         # -> Verifica conexão com CLP Sub
         if not ping(self.cfg["USN_slave_ip"]):
-            logger.warning("CLP 'USN' (PACP) não respondeu a tentativa de comunicação!")
+            logger.critical("CLP SA não respondeu a tentativa de ping!")
+        if self.clp["SA"].open():
+            if self.clp["SA"].read_input_registers(173)[0] != 32580:
+                logger.critical("CLP SA inconsistente! Leitura do registrador de verificação CLP On-line retornou um valor diferente do esperado!")
+            else:
+                self.clp["SA"].close()
+        else:
+            logger.critical("CLP SA não respondeu a tentativa de conexão ModBus!")
+            self.clp["SA"].close()
 
         # -> Verifica conexão com CLP UG#
         if not ping(self.cfg["UG1_slave_ip"]):
-            logger.warning("CLP UG1 não respondeu a tentativa de comunicação!")
-            self.ug1.forcar_estado_restrito()
+            logger.critical("CLP UG1 não respondeu a tentativa de ping!")
+            self.ug1.forcar_estado_manual()
+        if self.clp["UG1"].open():
+            if self.clp["UG1"].read_input_registers(158)[0] != 32580:
+                logger.critical("CLP UG1 inconsistente! Leitura do registrador de verificação CLP On-line retornou um valor diferente do esperado!")
+                self.ug1.forcar_estado_manual()
+            else:
+                self.clp["UG1"].close()
+        else:
+            self.ug1.forcar_estado_manual()
+            logger.critical("CLP UG1 não respondeu a tentativa de conexão ModBus!")
 
         if not ping(self.cfg["UG2_slave_ip"]):
-            logger.warning("CLP UG2 não respondeu a tentativa de comunicação!")
-            self.ug2.forcar_estado_restrito()
+            logger.critical("CLP UG2 não respondeu a tentativa de ping!")
+            self.ug2.forcar_estado_manual()
+        if self.clp["UG2"].open():
+            if self.clp["UG2"].read_input_registers(158)[0] != 32580:
+                logger.critical("CLP UG2 inconsistente! Leitura do registrador de verificação CLP On-line retornou um valor diferente do esperado!")
+                self.ug2.forcar_estado_manual()
+            else:
+                self.clp["UG2"].close()
+        else:
+            self.ug2.forcar_estado_manual()
+            logger.critical("CLP UG2 não respondeu a tentativa de conexão ModBus!")
 
         if not ping(self.cfg["UG3_slave_ip"]):
-            logger.warning("CLP UG3 não respondeu a tentativa de comunicação!")
-            self.ug3.forcar_estado_restrito()
+            logger.critical("CLP UG3 não respondeu a tentativa de comunicação!")
+            self.ug3.forcar_estado_manual()
+        if self.clp["UG3"].open():
+            if self.clp["UG3"].read_input_registers(158)[0] != 32580:
+                logger.critical("CLP UG2 inconsistente! Leitura do registrador de verificação CLP On-line retornou um valor diferente do esperado!")
+                self.ug3.forcar_estado_manual()
+            else:
+                self.clp["UG3"].close()
+        else:
+            self.ug3.forcar_estado_manual()
+            logger.critical("CLP UG3 não respondeu a tentativa de conexão ModBus!")
+        
+        if not ping(self.cfg["MOA_slave_ip"]):
+            logger.warning("CLP MOA não respondeu a tentativa de ping!")
+        if self.clp["MOA"].open():
+            if self.clp["MOA"].read_input_registers(528)[0] != 32580:
+                logger.warning("CLP MOA inconsistente! Leitura do registrador de verificação CLP On-line retornou um valor diferente do esperado!")
+            else:
+                self.clp["MOA"].close()
+        else:
+            logger.warning("CLP MOA não respondeu a tentativa de conexão ModBus!")
 
     def leitura_periodica(self, delay: int) -> None:
         logger.debug("Iniciando o timer de leitura periódica.")
