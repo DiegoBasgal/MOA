@@ -8,20 +8,8 @@ class UnidadeDeGeracao3(UnidadeDeGeracao):
 
         # CX Espiral
         self.leitura_caixa_espiral = LeituraModbus("Caixa espiral", self.clp["UG3"], REG_UG3_EA_PressK1CaixaExpiral_MaisCasas, escala=0.01, op=4)
-        self.condicionador_caixa_espiral_ug = CondicionadorExponencialReverso(self.leitura_caixa_espiral.descr, DEVE_INDISPONIBILIZAR, x, 16.5, 15)
+        self.condicionador_caixa_espiral_ug = CondicionadorExponencialReverso(self.leitura_caixa_espiral.descr, DEVE_INDISPONIBILIZAR, self.leitura_caixa_espiral, 16.5, 15)
         self.condicionadores_atenuadores.append(self.condicionador_caixa_espiral_ug)
-
-        # Inicializa as variáveis de controle PI para operação TDA Offline
-        self.cx_controle_p = (self.leitura_caixa_espiral.valor - self.cfg["press_cx_alvo"]) * self.cfg["cx_kp"]
-
-        self.cx_ajuste_ie = (
-            self.leituras_ug["leitura_potencia_ug1"].valor \
-            + self.leituras_ug["leitura_potencia_ug2"].valor \
-            + self.leituras_ug["leitura_potencia_ug3"].valor) \
-            / self.cfg["pot_maxima_alvo"]
-
-        self.cx_controle_i = self.cx_ajuste_ie - self.cx_controle_p
-
 
         ### CONDICIONADORES ESSENCIAIS
         # R
@@ -368,7 +356,20 @@ class UnidadeDeGeracao3(UnidadeDeGeracao):
         self.condicionadores.append(CondicionadorBase(x.descr, DEVE_INDISPONIBILIZAR, x))
 #-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------#
 
+    def ajuste_inicial_cx(self):
+        if self.ajuste_inicial_cx_esp == -1:
+            # Inicializa as variáveis de controle PI para operação TDA Offline
+            self.cx_controle_p = (self.leitura_caixa_espiral.valor - self.cfg["press_cx_alvo"]) * self.cfg["cx_kp"]
+
+            self.cx_ajuste_ie = sum(ug.leituras_ug["leitura_potencia"] for ug in self.lista_ugs) / self.cfg["pot_maxima_alvo"]
+
+            self.cx_controle_i = self.cx_ajuste_ie - self.cx_controle_p
+
+            self.ajuste_inicial_cx_esp = 0
+
     def controle_cx_espiral(self):
+        self.ajuste_inicial_cx()
+
         # Calcula PI
         self.erro_press_cx = 0
         self.erro_press_cx = self.leitura_caixa_espiral.valor - self.cfg["press_cx_alvo"]

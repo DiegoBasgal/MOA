@@ -2,7 +2,7 @@ import os
 import pytz
 import json
 import logging
-import dict as vd
+import src.mensageiro.dict as vd
 
 from time import sleep
 from datetime import datetime
@@ -25,7 +25,7 @@ class Voip:
             "Authorization": "Basic TnZvaXBBcGlWMjpUblp2YVhCQmNHbFdNakl3TWpFPQ==",
         }
 
-    db = Database()
+    db = Database("voip")
 
     @staticmethod
     def verificar_expediente(agenda) -> list:

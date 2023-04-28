@@ -108,7 +108,7 @@ if __name__ == "__main__":
             try:
                 logger.info("Iniciando classe de conexão com Banco de Dados")
 
-                db = Database()
+                db = Database("moa")
 
             except Exception as e:
                 logger.error(f"Erro ao iniciar classe de conexão com Banco de Dados. Tentando novamente em {timeout}s (tentativa {n_tentativa}/2). Exception: \"{repr(e)}\".")
@@ -130,7 +130,7 @@ if __name__ == "__main__":
             try:
                 logger.info("Iniciando Thread de leitura periódica (30 min).")
 
-                threading.Thread(target=lambda: usina.leitura_temporizada()).start()
+                threading.Thread(target=lambda: usina.leitura_periodica()).start()
 
             except Exception as e:
                 logger.error(f"Erro ao iniciar Thread de leitura periódica. Tentando novamente em {timeout}s (tentativa {n_tentativa}/2). Exception: \"{repr(e)}\".")
@@ -161,7 +161,6 @@ if __name__ == "__main__":
                 logger.warning("\"ATENÇÃO!\"\n")
             else:
                 sleep(t_restante)
-                logger.debug(f"Tempo de ciclo: {time() - t_i}")
 
         except Exception as e:
             logger.debug(f"Houve um erro no loop principal. Exception: \"{repr(e)}\"")

@@ -34,8 +34,6 @@ class Usina:
             self.cfg = cfg
             self.db: Database = db
 
-        self.con = FieldConnector(self.cfg)
-
         self.clp: "dict[str, ModbusClient]" = {}
 
         self.clp["SA"] = ModbusClient(
@@ -83,6 +81,8 @@ class Usina:
             auto_close=True
         )
         self.open_modbus()
+
+        self.con = FieldConnector(self.cfg, self.clp)
 
         self.__potencia_ativa_kW = LeituraModbus(
             "REG_SA_RetornosAnalogicos_Medidor_potencia_kw_mp",
@@ -138,6 +138,8 @@ class Usina:
         self.ug3 = UnidadeDeGeracao3(3, self.cfg, self.clp, self.db, self.con)
         self.ugs: list[UnidadeDeGeracao1 or UnidadeDeGeracao2 or UnidadeDeGeracao3] = [self.ug1, self.ug2, self.ug3]
         CondicionadorBase.ugs = self.ugs
+        for ug in self.ugs:
+            ug.lista_ugs = self.ugs
 
         self._state_moa = 1
 
@@ -195,7 +197,7 @@ class Usina:
         self.__split2 = True if self.ug_operando == 2 else False
         self.__split3 = True if self.ug_operando == 3 else False
 
-        self.controle_ie: int = sum(ug.leituras_ug[f"leitura_potencia_ug{ug.id}"].valor for ug in self.ugs) / self.cfg["pot_maxima_alvo"]
+        self.controle_ie: int = sum(ug.leituras_ug[f"leitura_potencia"].valor for ug in self.ugs) / self.cfg["pot_maxima_alvo"]
 
         self.clp["MOA"].write_single_coil(self.cfg["REG_MOA_OUT_BLOCK_UG1"], 0)
         self.clp["MOA"].write_single_coil(self.cfg["REG_MOA_OUT_BLOCK_UG2"], 0)
@@ -314,11 +316,11 @@ class Usina:
                 self.get_time().strftime("%Y-%m-%d %H:%M:%S"),  # timestamp
                 1 if self.aguardando_reservatorio else 0,  # aguardando_reservatorio
                 self.nv_montante if not self.TDA_Offline else 0,  # nv_montante
-                self.ug1.leituras_ug[f"leitura_potencia_ug1"].valor,  # ug1_pot
+                self.ug1.leituras_ug[f"leitura_potencia"].valor,  # ug1_pot
                 self.ug1.setpoint,  # ug1_setpot
-                self.ug2.leituras_ug[f"leitura_potencia_ug2"].valor,  # ug2_pot
+                self.ug2.leituras_ug[f"leitura_potencia"].valor,  # ug2_pot
                 self.ug2.setpoint,  # ug2_setpot
-                self.ug3.leituras_ug[f"leitura_potencia_ug3"].valor,  # ug3_pot
+                self.ug3.leituras_ug[f"leitura_potencia"].valor,  # ug3_pot
                 self.ug3.setpoint,  # ug3_setpot
             ]
             self.db.update_valores_usina(valores)
@@ -334,11 +336,11 @@ class Usina:
                 self.nv_montante_recente,
                 self.erro_nv,
                 self.ug1.setpoint,
-                self.ug1.leituras_ug[f"leitura_potencia_ug1"].valor,
+                self.ug1.leituras_ug[f"leitura_potencia"].valor,
                 self.ug2.setpoint,
-                self.ug2.leituras_ug[f"leitura_potencia_ug2"].valor,
+                self.ug2.leituras_ug[f"leitura_potencia"].valor,
                 self.ug3.setpoint,
-                self.ug3.leituras_ug[f"leitura_potencia_ug3"].valor,
+                self.ug3.leituras_ug[f"leitura_potencia"].valor,
                 self.controle_p,
                 self.controle_i,
                 self.controle_d,
@@ -788,8 +790,8 @@ class Usina:
             logger.debug(f"UG{ug.id}")
             self.pot_disp += ug.cfg[f"pot_maxima_ug{ugs[0].id}"]
             if ug.manual:
-                logger.debug(f"UG{ug.id} Manual -> {ug.leituras_ug[f'leitura_potencia_ug{ug.id}'].valor}")
-                self.ajuste_manual += ug.leituras_ug[f'leitura_potencia_ug{ug.id}'].valor
+                logger.debug(f"UG{ug.id} Manual -> {ug.leituras_ug[f'leitura_potencia'].valor}")
+                self.ajuste_manual += ug.leituras_ug[f'leitura_potencia'].valor
         if ugs is None:
             return False
         elif len(ugs) == 0:
@@ -868,12 +870,12 @@ class Usina:
         if self.modo_de_escolha_das_ugs == MODO_ESCOLHA_MANUAL:
             # escolher por maior prioridade primeiro
             #!!TODO: corrigir etapa_atual
-            ls = sorted(ls, key=lambda y: (-1 * y.etapa_atual, -1 * y.leituras_ug[f'leitura_potencia_ug{y.id}'].valor, -1 * y.setpoint, y.prioridade,),)
+            ls = sorted(ls, key=lambda y: (-1 * y.etapa_atual, -1 * y.leituras_ug[f'leitura_potencia'].valor, -1 * y.setpoint, y.prioridade,),)
             logger.debug("")
             logger.debug("UGs disponíveis em ordem (prioridade):")
         else:
             # escolher por menor horas_maquina primeiro
-            ls = sorted(ls, key=lambda y: (-1 * y.etapa_atual, y.leituras_ug[f"leitura_horimetro_ug{y.id}"].valor, -1 * y.leituras_ug[f'leitura_potencia_ug{ug.id}'].valor, -1 * y.setpoint,),)
+            ls = sorted(ls, key=lambda y: (-1 * y.etapa_atual, y.leituras_ug[f"leitura_horimetro"].valor, -1 * y.leituras_ug[f'leitura_potencia'].valor, -1 * y.setpoint,),)
             # ls = sorted(ls, key=lambda y: (-1 * y.etapa_atual if y.etapa_atual == UNIDADE_SINCRONIZADA else y.leitura_horimetro.valor,
                                             #-1 * y.leitura_potencia.valor,
                                             #-1 * y.setpoint,),)

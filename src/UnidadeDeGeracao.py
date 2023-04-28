@@ -11,7 +11,7 @@ import pytz
 import logging
 import traceback
 
-import mensageiro.dict as vd
+import src.mensageiro.dict as vd
 
 from threading import Thread
 from time import sleep, time
@@ -68,7 +68,7 @@ class UnidadeDeGeracao:
         self.__setpoint_minimo = 0
         self.__setpoint_maximo = 0
         self.__tentativas_de_normalizacao = 0
-
+        
         self.pot_alvo_anterior = -1
 
         self.release_timer = False
@@ -92,6 +92,8 @@ class UnidadeDeGeracao:
 
         vd.voip_dict = vd.voip_dict
 
+        self.ajuste_inicial_cx_esp = -1
+
         self.potencia_ativa_kW = LeituraModbus(
             "Potência Usina",
             self.clp["SA"],
@@ -103,35 +105,35 @@ class UnidadeDeGeracao:
         # Leituras de operação das UGS
         self.leituras_ug: dict[str, LeituraBase] = {}
 
-        self.leituras_ug[f"leitura_potencia_ug{self.id}"] = LeituraModbus(
+        self.leituras_ug[f"leitura_potencia"] = LeituraModbus(
             f"ug{self.id}_Gerador_PotenciaAtivaMedia",
             self.clp[f"UG{self.id}"],
             UG[f"REG_UG{self.id}_RA_PM_710_Potencia_Ativa"],
             op=4,
         )
-        self.leituras_ug[f"leitura_setpoint_ug{self.id}"] = LeituraModbus(
+        self.leituras_ug[f"leitura_setpoint"] = LeituraModbus(
             f"UG{self.id}_Setpoint",
             self.clp[f"UG{self.id}"],
             UG[f"REG_UG{self.id}_SA_SPPotAtiva"],
             op=4
         )
-        self.leituras_ug[f"leitura_horimetro_hora_ug{self.id}"] = LeituraModbus(
+        self.leituras_ug[f"leitura_horimetro_hora"] = LeituraModbus(
             f"UG{self.id}_Horimetro",
             self.clp[f"UG{self.id}"],
             UG[f"REG_UG{self.id}_RA_Horimetro_Gerador"],
             op=4,
         )
-        self.leituras_ug[f"leitura_horimetro_frac_ug{self.id}"] = LeituraModbus(
+        self.leituras_ug[f"leitura_horimetro_frac"] = LeituraModbus(
             f"ug{self.id}_Horimetro_min",
             self.clp[f"UG{self.id}"],
             UG[f"REG_UG{self.id}_RA_Horimetro_Gerador_min"],
             op=4,
             escala=1/60
         )
-        self.leituras_ug[f"leitura_horimetro_u{self.id}"] = LeituraSoma(
+        self.leituras_ug[f"leitura_horimetro"] = LeituraSoma(
             f"ug{self.id} horímetro",
-            self.leituras_ug[f"leitura_horimetro_hora_ug{self.id}"],
-            self.leituras_ug[f"leitura_horimetro_frac_ug{self.id}"]
+            self.leituras_ug[f"leitura_horimetro_hora"],
+            self.leituras_ug[f"leitura_horimetro_frac"]
         )
         C1 = LeituraModbusCoil(
             descr=f"UG{self.id}_Sincronizada",
@@ -153,7 +155,7 @@ class UnidadeDeGeracao:
             modbus_client=self.clp[f"UG{self.id}"],
             registrador=UG[f"REG_UG{self.id}_RD_PartindoEmAuto"],
         )
-        self.leituras_ug[f"leitura_Operacao_EtapaAtual_ug{self.id}"] = LeituraComposta(
+        self.leituras_ug[f"leitura_Operacao_EtapaAtual"] = LeituraComposta(
             f"ug{self.id}_Operacao_EtapaAtual",
             leitura1=C1,
             leitura2=C2,
@@ -224,9 +226,8 @@ class UnidadeDeGeracao:
 
     @property
     def etapa_atual(self) -> int:
-        logger.debug(f"[UG{self.id}] Etapa atual -> \"{self.__etapa_atual}\"")
         try:
-            response = self.leituras_ug[f"leitura_Operacao_EtapaAtual_ug{self.id}"].valor
+            response = self.leituras_ug[f"leitura_Operacao_EtapaAtual"].valor
             if response == 1:
                 return UNIDADE_SINCRONIZADA
             elif 2 <= response <= 3:
@@ -328,6 +329,14 @@ class UnidadeDeGeracao:
     @condicionadores_atenuadores.setter
     def condicionadores_atenuadores(self, var: "list[CondicionadorBase]") -> None:
         self.__condicionadores_atenuadores = var
+
+    @property
+    def lista_ugs(self) -> "list[UnidadeDeGeracao]":
+        return self._lista_ugs
+
+    @lista_ugs.setter
+    def lista_ugs(self, var: "list[UnidadeDeGeracao]") -> None:
+        self._lista_ugs = var
 
 
     @staticmethod
@@ -474,9 +483,9 @@ class UnidadeDeGeracao:
             response = self.clp[f"UG{self.id}"].write_single_coil(UG[f"REG_UG{self.id}_CD_ResetRele700G"], 1)
             response = self.clp["SA"].write_single_coil(REG_SA_CD_ResetRele59N, 1)
             response = self.clp["SA"].write_single_coil(REG_SA_CD_ResetRele787, 1)
-            response = self.clp[f"UG{self.id}"].write_single_coil(UG[f"REG_UG{self.id}ED_ReleBloqA86HAtuado"], 0)
-            response = self.clp[f"UG{self.id}"].write_single_coil(UG[f"REG_UG{self.id}ED_ReleBloqA86MAtuado"], 0)
-            response = self.clp[f"UG{self.id}"].write_single_coil(UG[f"REG_UG{self.id}RD_700G_Trip"], 0)
+            response = self.clp[f"UG{self.id}"].write_single_coil(UG[f"REG_UG{self.id}_ED_ReleBloqA86HAtuado"], 0)
+            response = self.clp[f"UG{self.id}"].write_single_coil(UG[f"REG_UG{self.id}_ED_ReleBloqA86MAtuado"], 0)
+            response = self.clp[f"UG{self.id}"].write_single_coil(UG[f"REG_UG{self.id}_RD_700G_Trip"], 0)
             return response
 
         except Exception:

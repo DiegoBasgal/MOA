@@ -39,7 +39,7 @@ class StateManual(State):
         logger.info(f"[UG{self.parent_ug.id}] Entrando no estado: \"Manual\". Para retornar a operação autônoma, favor agendar na interface web")
 
     def step(self) -> State:
-        self.parent_ug.setpoint = self.parent_ug.leituras_ug[f"leitura_potencia_ug{self.parent_ug.id}"].valor
+        self.parent_ug.setpoint = self.parent_ug.leituras_ug[f"leitura_potencia"].valor
         self.parent_ug.codigo_state = MOA_UNIDADE_MANUAL
         return self
 
@@ -64,7 +64,7 @@ class StateIndisponivel(State):
     def step(self) -> State:
         self.parent_ug.codigo_state = MOA_UNIDADE_INDISPONIVEL
         # Se as unidades estiverem paradas, ou o selo estiver ativo
-        logger.debug(f"[UG{self.parent_ug.id}] Etapa atual -> {UNIDADE_DICT_ETAPAS[self.parent_ug.etapa_atual]}")
+        logger.debug(f"[UG{self.parent_ug.id}] Etapa atual -> \"{UNIDADE_DICT_ETAPAS[self.parent_ug.etapa_atual]}\"")
 
         if self.parent_ug.etapa_atual == UNIDADE_PARADA or self.selo:
             # Ativar o selo interno do moa
