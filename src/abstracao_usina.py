@@ -5,6 +5,8 @@ import threading
 import traceback
 import subprocess
 
+import src.mensageiro.dict as vd
+
 from time import sleep, time
 from datetime import  datetime, timedelta
 from pyModbusTCP.client import ModbusClient
@@ -13,7 +15,7 @@ from src.codes import *
 from src.Leituras import  *
 from src.mapa_modbus import *
 
-from src.mensageiro import voip
+from src.mensageiro.voip import Voip
 from src.UG1 import UnidadeDeGeracao1
 from src.UG2 import UnidadeDeGeracao2
 from src.UG3 import UnidadeDeGeracao3
@@ -169,11 +171,8 @@ class Usina:
         self.timer_tensao = None
         self.TDA_Offline = False
         self.hb_borda_emerg = False
-        self.TDA_FalhaComum = False
-        self.BombasDngRemoto = False
         self.acionar_voip_usn = False
         self.avisado_em_eletrica = False
-        self.Disj_GDE_QCAP_Fechado = False
         self.deve_tentar_normalizar = True
         self.deve_normalizar_forcado = False
         self.deve_ler_condicionadores = False
@@ -958,16 +957,15 @@ class Usina:
             logger.warning("CLP UG3 não respondeu a tentativa de comunicação!")
             self.ug3.forcar_estado_restrito()
 
-# TODO leituras
-# -------------------------------------------------------------------------------------------------------------------- #
-
     def leitura_periodica(self, delay: int) -> None:
         logger.debug("Iniciando o timer de leitura periódica.")
         try:
             proxima_leitura = time() + delay
             while True:
-                if self.leitura_temporizada() or (ug.leitura_periodica() for ug in self.ugs):
-                    self.acionar_voip()
+                self.leituras_temporizadas()
+                for ug in self.ugs: ug.leituras_temporizadas()
+                sleep(1)
+                self.verificar_voip()
                 sleep(max(0, proxima_leitura - time()))
                 proxima_leitura += (time() - proxima_leitura) // delay * delay + delay
 
@@ -975,65 +973,16 @@ class Usina:
             logger.error(f"Houve um problema ao executar a leitura periódica.")
             logger.debug(f"Traceback: {traceback.format_exc()}")
 
-    def acionar_voip(self) -> None:
+    def verificar_voip(self) -> None:
         try:
-            if self.voip_usn or self.voip_ug:
-                for i, j in zip(self.dict["VOIP"], self.voip_dict):
-                    if i == j and self.dict["VOIP"][i]:
-                        self.voip_dict[j][0] = self.dict["VOIP"][i]
-                voip.enviar_voz_auxiliar()
-                self.voip_ug = False
-                self.voip_usn = False
-
-            if self.dict["GLB"]["avisado_em_eletrica"]:
-                voip.enviar_voz_emergencia()
-                self.dict["GLB"]["avisado_em_eletrica"] = False
-
-        except Exception as e:
-            logger.exception(f"Houve um problema ao ligar por Voip.")
-            logger.exception(f"Traceback: {traceback.format_exc()}")
-
-    def leitura_temporizada(self):
-        delay = 1800
-        proxima_leitura = time() + delay
-        logger.debug("Iniciando o timer de leitura por hora.")
-        while True:
-            logger.debug("Inciando nova leitura...")
-            try:
-                if self.leituras_por_hora() and self.acionar_voip_usn:
-                    self.acionar_voip()
-
-                for ug in self.ugs:
-                    if ug.leitura_periodica() and ug.acionar_voip:
-                        self.acionar_voip()
-
-                sleep(max(0, proxima_leitura - time()))
-
-            except Exception:
-                logger.debug("Houve um problema ao executar a leitura por hora")
-
-            proxima_leitura += (time() - proxima_leitura) // delay * delay + delay
-
-    def acionar_voip(self):
-        try:
-            if self.acionar_voip_usn:
-                voip.TDA_FalhaComum = True if self.TDA_FalhaComum else False
-                voip.BombasDngRemoto = True if self.BombasDngRemoto else False
-                voip.Disj_GDE_QCAP_Fechado = True if self.Disj_GDE_QCAP_Fechado else False
-                voip.enviar_voz_auxiliar()
-                self.acionar_voip_usn = False
-
-            elif self.avisado_em_eletrica:
-                voip.enviar_voz_emergencia()
-                self.avisado_em_eletrica = False
-
-            for ug in self.ugs:
-                if ug.acionar_voip:
-                    ug.acionar_voip = False
+            for _, v in vd.voip_dict.items():
+                if v[0]:
+                    Voip.acionar_chamada()
+                    break
 
         except Exception:
-            logger.debug("Houve um problema ao ligar por Voip")
-# -------------------------------------------------------------------------------------------------------------------- #
+            logger.exception(f"Houve um problema ao ligar por Voip.")
+            logger.exception(f"Traceback: {traceback.format_exc()}")
 
     def leitura_condicionadores(self) -> None:
         #Lista de condicionadores essenciais que devem ser lidos a todo momento
@@ -1253,63 +1202,90 @@ class Usina:
         self.leitura_ED_SA_QCAP_Disj52EFechado = LeituraModbusCoil( "ED_SA_QCAP_Disj52EFechado", self.clp["SA"], REG_SA_ED_SA_QCAP_Disj52EFechado)
         self.leitura_ED_SA_QCADE_BombasDng_Auto = LeituraModbusCoil( "ED_SA_QCADE_BombasDng_Auto", self.clp["SA"], REG_SA_ED_SA_QCADE_BombasDng_Auto)
 
-    def leituras_por_hora(self):
-
-        if self.leitura_ED_SA_QLCF_Disj52ETrip.valor != 0:
+    def leituras_temporizadas(self) -> None:
+        if self.leitura_ED_SA_QLCF_Disj52ETrip.valor != 0 and not vd.voip_dict["SA_QLCF_DISJ_52E_TRIP"]:
             logger.warning("O Disjuntor do Gerador Diesel de Emergência QLCF identificou um sinal de TRIP, favor verificar.")
+            vd.voip_dict["SA_QLCF_DISJ_52E_TRIP"] = True
+        elif self.leitura_ED_SA_QLCF_Disj52ETrip.valor == 0 and vd.voip_dict["SA_QLCF_DISJ_52E_TRIP"]:
+            vd.voip_dict["SA_QLCF_DISJ_52E_TRIP"] = False
 
-        if self.leitura_ED_SA_QLCF_TripDisjAgrup.valor != 0:
+        if self.leitura_ED_SA_QLCF_TripDisjAgrup.valor != 0 and not vd.voip_dict["SA_QLCF_TRIP_DISJ_AGRUP"]:
             logger.warning("O sensor do Disjuntor de Agrupamento QLCF identificou um sinal de trip, favor verificar.")
+            vd.voip_dict["SA_QLCF_TRIP_DISJ_AGRUP"] = True
+        elif self.leitura_ED_SA_QLCF_TripDisjAgrup.valor == 0 and vd.voip_dict["SA_QLCF_TRIP_DISJ_AGRUP"]:
+            vd.voip_dict["SA_QLCF_TRIP_DISJ_AGRUP"] = False
 
-        if self.leitura_ED_SA_QCAP_SubtensaoBarraGeral.valor != 0:
+        if self.leitura_ED_SA_QCAP_SubtensaoBarraGeral.valor != 0 and not vd.voip_dict["SA_QCAP_SUBTENSAO_BARRA_GERAL"]:
             logger.warning("O sensor de Subtensão do Barramento Geral QCAP foi acionado, favor verificar.")
+            vd.voip_dict["SA_QCAP_SUBTENSAO_BARRA_GERAL"] = True
+        elif self.leitura_ED_SA_QCAP_SubtensaoBarraGeral.valor == 0 and vd.voip_dict["SA_QCAP_SUBTENSAO_BARRA_GERAL"]:
+            vd.voip_dict["SA_QCAP_SUBTENSAO_BARRA_GERAL"] = False
 
-        if self.leitura_ED_SA_GMG_Alarme.valor != 0:
+        if self.leitura_ED_SA_GMG_Alarme.valor != 0 and not vd.voip_dict["SA_GMG_ALARME"]:
             logger.warning("O alarme do Grupo Motor Gerador foi acionado, favor verificar.")
+            vd.voip_dict["SA_GMG_ALARME"] = True
+        elif self.leitura_ED_SA_GMG_Alarme.valor == 0 and vd.voip_dict["SA_GMG_ALARME"]:
+            vd.voip_dict["SA_GMG_ALARME"] = False
 
-        if self.leitura_ED_SA_GMG_Trip.valor != 0:
+        if self.leitura_ED_SA_GMG_Trip.valor != 0 and not vd.voip_dict["SA_GMG_TRIP"]:
             logger.warning("O sensor de TRIP do Grupo Motor Gerador foi acionado, favor verificar.")
+            vd.voip_dict["SA_GMG_TRIP"] = True
+        elif self.leitura_ED_SA_GMG_Trip.valor == 0 and vd.voip_dict["SA_GMG_TRIP"]:
+            vd.voip_dict["SA_GMG_TRIP"] = False
 
-        if self.leitura_ED_SA_GMG_Operacao.valor != 0:
+        if self.leitura_ED_SA_GMG_Operacao.valor != 0 and not vd.voip_dict["SA_GMG_OPERACAO"]:
             logger.warning("O sensor de operação do Grupo Motor Gerador foi acionado, favor verificar.")
+            vd.voip_dict["SA_GMG_OPERACAO"] = True
+        elif self.leitura_ED_SA_GMG_Operacao.valor == 0 and vd.voip_dict["SA_GMG_OPERACAO"]:
+            vd.voip_dict["SA_GMG_OPERACAO"] = False
 
-        if self.leitura_ED_SA_GMG_BaixoComb.valor != 0:
-            logger.warning("O sensor de de combustível do Grupo Motor Gerador, retornou que o nível está baixo, favor reabastercer o gerador.")
+        if self.leitura_ED_SA_GMG_BaixoComb.valor != 0 and not vd.voip_dict["SA_GMG_BAIXO_COMB"]:
+            logger.warning("O sensor de de combustível do Grupo Motor Gerador retornou que o nível está baixo, favor reabastercer o gerador.")
+            vd.voip_dict["SA_GMG_BAIXO_COMB"] = True
+        elif self.leitura_ED_SA_GMG_BaixoComb.valor == 0 and vd.voip_dict["SA_GMG_BAIXO_COMB"]:
+            vd.voip_dict["SA_GMG_BAIXO_COMB"] = False
 
-        if self.leitura_RD_BbaDren1_FalhaAcion.valor != 0:
+        if self.leitura_RD_BbaDren1_FalhaAcion.valor != 0 and not vd.voip_dict["BBA_DREN_1_FALHA_ACION"]:
             logger.warning("O sensor da Bomba de Drenagem 1 identificou uma falha no acionamento, favor verificar.")
+            vd.voip_dict["BBA_DREN_1_FALHA_ACION"] = True
+        elif self.leitura_RD_BbaDren1_FalhaAcion.valor == 0 and vd.voip_dict["BBA_DREN_1_FALHA_ACION"]:
+            vd.voip_dict["BBA_DREN_1_FALHA_ACION"] = False
 
-        if self.leitura_RD_BbaDren2_FalhaAcion.valor != 0:
+        if self.leitura_RD_BbaDren2_FalhaAcion.valor != 0 and not vd.voip_dict["BBA_DREN_2_FALHA_ACION"]:
             logger.warning("O sensor da Bomba de Drenagem 2 identificou uma falha no acionamento, favor verificar.")
+            vd.voip_dict["BBA_DREN_2_FALHA_ACION"] = True
+        elif self.leitura_RD_BbaDren2_FalhaAcion.valor == 0 and vd.voip_dict["BBA_DREN_2_FALHA_ACION"]:
+            vd.voip_dict["BBA_DREN_2_FALHA_ACION"] = False
 
-        if self.leitura_RD_BbaDren3_FalhaAcion.valor != 0:
+        if self.leitura_RD_BbaDren3_FalhaAcion.valor != 0 and not vd.voip_dict["BBA_DREN_3_FALHA_ACION"]:
             logger.warning("O sensor da Bomba de Drenagem 3 identificou uma falha no acionamento, favor verificar.")
+            vd.voip_dict["BBA_DREN_3_FALHA_ACION"] = True
+        elif self.leitura_RD_BbaDren3_FalhaAcion.valor == 0 and vd.voip_dict["BBA_DREN_3_FALHA_ACION"]:
+            vd.voip_dict["BBA_DREN_3_FALHA_ACION"] = False
 
-        if self.leitura_RD_SA_GMG_FalhaAcion.valor != 0:
+        if self.leitura_RD_SA_GMG_FalhaAcion.valor != 0 and not vd.voip_dict["SA_GMG_FALHA_ACION"]:
             logger.warning("O sensor do Grupo Motor Gerador identificou uma falha no acionamento, favor verificar.")
+            vd.voip_dict["SA_GMG_FALHA_ACION"] = True
+        elif self.leitura_RD_SA_GMG_FalhaAcion.valor == 0 and vd.voip_dict["SA_GMG_FALHA_ACION"]:
+            vd.voip_dict["SA_GMG_FALHA_ACION"] = False
 
-        if self.leitura_RD_FalhaComunSETDA.valor == 1 and self.TDA_FalhaComum == False:
+        if self.leitura_RD_FalhaComunSETDA.valor == 1 and not vd.voip_dict["FALHA_COMUM_SETDA"]:
             logger.warning("Houve uma falha de comunicação com o CLP da Subestação e o CLP da Tomada da Água, favor verificar")
-            self.TDA_FalhaComum = True
-            self.acionar_voip = True
-        elif self.leitura_RD_FalhaComunSETDA.valor == 0 and self.TDA_FalhaComum == True:
-            self.TDA_FalhaComum = False
+            vd.voip_dict["FALHA_COMUM_SETDA"] = True
+        elif self.leitura_RD_FalhaComunSETDA.valor == 0 and vd.voip_dict["FALHA_COMUM_SETDA"]:
+            vd.voip_dict["FALHA_COMUM_SETDA"] = False
 
-        if self.leitura_ED_SA_QCAP_Disj52EFechado.valor == 1 and self.Disj_GDE_QCAP_Fechado==False:
+        if self.leitura_ED_SA_QCAP_Disj52EFechado.valor == 1 and not vd.voip_dict["SA_QCAP_DISJ_52E_FECHADO"]:
             logger.warning("O Disjuntor do Gerador Diesel de Emergência QLCF foi fechado.")
-            self.Disj_GDE_QCAP_Fechado = True
-            self.acionar_voip = True
-        elif self.leitura_ED_SA_QCAP_Disj52EFechado.valor == 0 and self.Disj_GDE_QCAP_Fechado==True:
-            self.Disj_GDE_QCAP_Fechado = False
+            vd.voip_dict["SA_QCAP_DISJ_52E_FECHADO"] = True
+        elif self.leitura_ED_SA_QCAP_Disj52EFechado.valor == 0 and vd.voip_dict["SA_QCAP_DISJ_52E_FECHADO"]:
+            vd.voip_dict["SA_QCAP_DISJ_52E_FECHADO"] = False
 
-        if self.leitura_ED_SA_QCADE_BombasDng_Auto.valor == 0 and self.BombasDngRemoto==False:
+        if self.leitura_ED_SA_QCADE_BombasDng_Auto.valor == 0 and not vd.voip_dict["SA_QCADE_BOMBAS_DNG_AUTO"]:
             logger.warning("O poço de drenagem da Usina entrou em modo remoto, favor verificar.")
-            self.BombasDngRemoto=True
-            self.acionar_voip = True
-        elif self.leitura_ED_SA_QCADE_BombasDng_Auto.valor == 1 and self.BombasDngRemoto==True:
-            self.BombasDngRemoto=False
-
-        return True
+            vd.voip_dict["SA_QCADE_BOMBAS_DNG_AUTO"] = True
+        elif self.leitura_ED_SA_QCADE_BombasDng_Auto.valor == 1 and vd.voip_dict["SA_QCADE_BOMBAS_DNG_AUTO"]:
+            vd.voip_dict["SA_QCADE_BOMBAS_DNG_AUTO"] = False
 
 def ping(host):
     """

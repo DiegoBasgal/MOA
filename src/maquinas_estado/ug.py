@@ -64,7 +64,7 @@ class StateIndisponivel(State):
     def step(self) -> State:
         self.parent_ug.codigo_state = MOA_UNIDADE_INDISPONIVEL
         # Se as unidades estiverem paradas, ou o selo estiver ativo
-        logger.debug(f"[UG{self.parent_ug.id}] self.parent_ug.etapa_atual -> {self.parent_ug.etapa_atual}")
+        logger.debug(f"[UG{self.parent_ug.id}] Etapa atual -> {UNIDADE_DICT_ETAPAS[self.parent_ug.etapa_atual]}")
 
         if self.parent_ug.etapa_atual == UNIDADE_PARADA or self.selo:
             # Ativar o selo interno do moa
