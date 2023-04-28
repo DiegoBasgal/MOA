@@ -285,8 +285,12 @@ class Usina:
             self.modo_de_escolha_das_ugs = int(parametros["modo_de_escolha_das_ugs"])
             logger.debug(f"O modo de prioridade das ugs foi alterado (#{self.modo_de_escolha_das_ugs}).")
 
-        self.modo_autonomo = True if int(parametros["modo_autonomo"]) == 1 else False
-        logger.debug(f"Modo autônomo: \"{'Ativado' if int(parametros['modo_autonomo']) == 1 else 'Desativado'}\"")
+        if int(parametros["modo_autonomo"]) == 1 and not self.modo_autonomo:
+            self.modo_autonomo = True
+            logger.debug(f"Modo autônomo: \"{'Ativado'}\"")
+        elif int(parametros["modo_autonomo"]) == 0 and self.modo_autonomo:
+            self.modo_autonomo = False
+            logger.debug(f"Modo autônomo: \"{'Desativado'}\"")
 
         self.cfg["nv_alvo"] = float(parametros["nv_alvo"])
         self.cfg["kp"] = float(parametros["kp"])

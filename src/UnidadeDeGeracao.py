@@ -350,7 +350,7 @@ class UnidadeDeGeracao:
     def step(self) -> None:
         try:
             logger.debug("")
-            logger.debug(f"[UG{self.id}] Step -> (Tentativas de normalização: {self.tentativas_de_normalizacao}/{self.limite_tentativas_de_normalizacao})")
+            logger.debug(f"[UG{self.id}] Step. (Tentativas de normalização: {self.tentativas_de_normalizacao}/{self.limite_tentativas_de_normalizacao})")
             self.__next_state = self.__next_state.step()
             self.modbus_update_state_register()
 

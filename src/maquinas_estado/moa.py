@@ -165,7 +165,7 @@ class ValoresInternosAtualizados(State):
 
         # Em seguida com o modo manual (não autonomo)
         if not self.usn.modo_autonomo:
-            logger.debug("Comando recebido: desabilitar modo autonomo.")
+            logger.debug("Comando recebido: \"Desabilitar modo autônomo\"")
             sleep(2)
             return ModoManualAtivado(self.usn)
 
@@ -299,7 +299,7 @@ class ModoManualAtivado(State):
         self.usn.escrever_valores()
         sleep(1 / ESCALA_DE_TEMPO)
         if self.usn.modo_autonomo:
-            logger.debug("Comando recebido: habilitar modo autonomo.")
+            logger.debug("Comando recebido: \"Habilitar modo autônomo\"")
             sleep(2)
             logger.info("Usina voltou para o modo Autonomo")
             self.usn.ler_valores()
@@ -443,7 +443,7 @@ class OperacaoTDAOffline(State):
                 return Emergencia(self.usn)
 
         if not self.usn.modo_autonomo:
-            logger.info("Comando recebido: desabilitar modo autonomo.")
+            logger.info("Comando recebido: \"Desabilitar modo autônomo\"")
             sleep(2)
             return ModoManualAtivado(self.usn)
 
@@ -463,7 +463,7 @@ class ControleRealizado(State):
 
     def run(self):
         self.usn._state_moa = SM_CONTROL_ACTION_SENT
-        logger.debug("Heartbeat")
+        logger.debug("Escrevendo valores no Banco")
         self.usn.heartbeat()
         self.usn.escrever_valores()
         return Pronto(self.usn)

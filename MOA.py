@@ -156,9 +156,10 @@ if __name__ == "__main__":
                 t_restante = 1
 
             if t_restante == 0:
-                logger.warning("\"ATENÇÃO!\"\n")
+                """logger.warning("\"ATENÇÃO!\"\n")
                 logger.warning("O ciclo está demorando mais que o permitido!")
-                logger.warning("\"ATENÇÃO!\"\n")
+                logger.warning("\"ATENÇÃO!\"\n")"""
+                pass
             else:
                 sleep(t_restante)
 

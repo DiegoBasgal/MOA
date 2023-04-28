@@ -7,9 +7,13 @@ saparados, um para voip e um para o telegram, mas por motivos de
 praticidade, foi feito em apenas um handler.
 """
 import logging
+
+import src.mensageiro.dict as vd
+
 from logging import Handler
+
+from .voip import Voip
 from . import telegram_bot
-from . import voip
 
 
 class MensageiroHandler(Handler):
@@ -30,14 +34,15 @@ class MensageiroHandler(Handler):
         try:
             telegram_bot.enviar_a_todos(log_entry)
         except Exception as e:
-            print("Erro ao logar no telegram. Exception: {}.".format(repr(e)))
+            print(f"Erro ao logar no telegram. Exception: \"{repr(e)}\".")
 
         # Só dispara torpedos de voz em caso CRITICO (levelno >= 50)
         if record.levelno >= logging.CRITICAL:
             try:
-                telegram_bot.enviar_a_todos("[Acionando VOIP: {}]".format(voip.voz_habilitado))
+                telegram_bot.enviar_a_todos(f"[Acionando VOIP: {Voip.voz_habilitado}]")
                 telegram_bot.enviar_a_todos_emergencia()
-                voip.enviar_voz_emergencia()
+                vd.voip_dict["EMERGENCIA"][0] = True
+                Voip.acionar_chamada()
             except Exception as e:
-                print("Erro ao ligar no voip. Exception: {}.".format(repr(e)))
+                print(f"Erro ao ligar no voip. Exception: {repr(e)}.")
         return True

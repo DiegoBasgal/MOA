@@ -159,11 +159,13 @@ def monitoramento_view(request, *args, **kwargs):
 
     if clp_moa.open():
         context["CLP_Status"] = True
-        regs = clp_moa.read_coils(0, 120)
+        state_ug1 = clp_moa.read_holding_registers(423)[0]
+        state_ug2 = clp_moa.read_holding_registers(428)[0]
+        state_ug3 = clp_moa.read_holding_registers(433)[0]
 
-        context["ug1_state"] = MOA_DICT_DE_STATES[regs[23]] if regs[23] in MOA_DICT_DE_STATES else 4
-        context["ug2_state"] = MOA_DICT_DE_STATES[regs[28]] if regs[28] in MOA_DICT_DE_STATES else 4
-        context["ug3_state"] = MOA_DICT_DE_STATES[regs[33]] if regs[33] in MOA_DICT_DE_STATES else 4
+        context["ug1_state"] = MOA_DICT_DE_STATES[state_ug1]
+        context["ug2_state"] = MOA_DICT_DE_STATES[state_ug2]
+        context["ug3_state"] = MOA_DICT_DE_STATES[state_ug3]
 
     else:
         context["ug1_state"] = 4
