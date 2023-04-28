@@ -12,14 +12,16 @@ UG = {}
 UG["REG_UG1_CD_IniciaParada"] = 46  # Op15 (Write multiple coils)
 UG["REG_UG1_CD_AbortaPartida"] = 47  # Op15 (Write multiple coils)
 UG["REG_UG1_CD_AbortaSincronismo"] = 59  # Op15 (Write multiple coils)
+UG["REG_UG1_COND_PART"] = 222
+
 UG["REG_UG2_CD_IniciaParada"] = 46  # Op15 (Write multiple coils)
 UG["REG_UG2_CD_AbortaPartida"] = 47  # Op15 (Write multiple coils)
 UG["REG_UG2_CD_AbortaSincronismo"] = 59  # Op15 (Write multiple coils)
+UG["REG_UG2_COND_PART"] = 222
+
 UG["REG_UG3_CD_IniciaParada"] = 46  # Op15 (Write multiple coils)
 UG["REG_UG3_CD_AbortaPartida"] = 47  # Op15 (Write multiple coils)
 UG["REG_UG3_CD_AbortaSincronismo"] = 59  # Op15 (Write multiple coils)
-UG["REG_UG1_COND_PART"] = 222
-UG["REG_UG2_COND_PART"] = 222
 UG["REG_UG3_COND_PART"] = 222
 
 # ETAPAS
@@ -27,10 +29,12 @@ UG["REG_UG1_ED_RV_MaquinaParada"] = 0  # Op02 (Read Input Status)
 UG["REG_UG1_ED_DisjGeradorFechado"] = 11  # Op02 (Read Input Status)
 UG["REG_UG1_RD_PartindoEmAuto"] = 132  # Op02 (Read Input Status)
 UG["REG_UG1_RD_ParandoEmAuto"] = 133  # Op02 (Read Input Status)
+
 UG["REG_UG2_ED_RV_MaquinaParada"] = 0  # Op02 (Read Input Status)
 UG["REG_UG2_ED_DisjGeradorFechado"] = 11  # Op02 (Read Input Status)
 UG["REG_UG2_RD_PartindoEmAuto"] = 132  # Op02 (Read Input Status)
 UG["REG_UG2_RD_ParandoEmAuto"] = 133  # Op02 (Read Input Status)
+
 UG["REG_UG3_ED_RV_MaquinaParada"] = 0  # Op02 (Read Input Status)
 UG["REG_UG3_ED_DisjGeradorFechado"] = 11  # Op02 (Read Input Status)
 UG["REG_UG3_RD_PartindoEmAuto"] = 132  # Op02 (Read Input Status)
@@ -45,9 +49,11 @@ UG["REG_UG3_RA_PM_710_Potencia_Ativa"] = 45  # Op04 (Read Input Regs - 3x)
 UG["REG_UG1_CD_ResetGeral"] = 0  # Op15 (Write multiple coils)
 UG["REG_UG1_SA_SPPotAtiva"] = 1  # Scale - Op16 (Preset Multiple Regs - 4x)
 UG["REG_UG1_CD_RV_RefRemHabilita"] = 63  # Op15 (Write multiple coils)
+
 UG["REG_UG2_CD_ResetGeral"] = 0  # Op15 (Write multiple coils)
 UG["REG_UG2_SA_SPPotAtiva"] = 1  # Scale - Op16 (Preset Multiple Regs - 4x)
 UG["REG_UG2_CD_RV_RefRemHabilita"] = 63  # Op15 (Write multiple coils)
+
 UG["REG_UG3_CD_ResetGeral"] = 0  # Op15 (Write multiple coils)
 UG["REG_UG3_SA_SPPotAtiva"] = 1  # Scale - Op16 (Preset Multiple Regs - 4x)
 UG["REG_UG3_CD_RV_RefRemHabilita"] = 63  # Op15 (Write multiple coils)
@@ -61,8 +67,25 @@ UG["REG_UG2_RA_Horimetro_Gerador_min"] = 52  # Op04 (Read Input Regs - 3x)
 UG["REG_UG3_RA_Horimetro_Gerador_min"] = 52  # Op04 (Read Input Regs - 3x)
 
 # TRIPS
+UG["REG_UG1_ED_RV_Trip"] = 3  # Op02 (Read Input Status)
+UG["REG_UG1_ED_AVR_Trip"] = 4  # Op02 (Read Input Status)
+UG["REG_UG1_ED_SEL700G_Atuado"] = 18  # Op02 (Read Input Status)
+UG["REG_UG1_RD_TripEletrico"] = 134  # Op02 (Read Input Status)
+UG["REG_UG1_RD_TripMecanico"] = 135  # Op02 (Read Input Status)
 UG["REG_UG1_CD_EmergenciaViaSuper"] = 4  # Op15 (Write multiple coils)
+
+UG["REG_UG2_ED_RV_Trip"] = 3  # Op02 (Read Input Status)
+UG["REG_UG2_ED_AVR_Trip"] = 4  # Op02 (Read Input Status)
+UG["REG_UG2_ED_SEL700G_Atuado"] = 18  # Op02 (Read Input Status)
+UG["REG_UG2_RD_TripEletrico"] = 134  # Op02 (Read Input Status)
+UG["REG_UG2_RD_TripMecanico"] = 135  # Op02 (Read Input Status)
 UG["REG_UG2_CD_EmergenciaViaSuper"] = 4  # Op15 (Write multiple coils)
+
+UG["REG_UG3_ED_RV_Trip"] = 3  # Op02 (Read Input Status)
+UG["REG_UG3_ED_AVR_Trip"] = 4  # Op02 (Read Input Status)
+UG["REG_UG3_ED_SEL700G_Atuado"] = 18  # Op02 (Read Input Status)
+UG["REG_UG3_RD_TripEletrico"] = 134  # Op02 (Read Input Status)
+UG["REG_UG3_RD_TripMecanico"] = 135  # Op02 (Read Input Status)
 UG["REG_UG3_CD_EmergenciaViaSuper"] = 4  # Op15 (Write multiple coils)
 
 # RESET
@@ -73,6 +96,7 @@ UG["REG_UG1_ED_ReleBloqA86HAtuado"] = 16  # Op02 (Read Input Status)
 UG["REG_UG1_ED_ReleBloqA86MAtuado"] = 17  # Op02 (Read Input Status)
 UG["REG_UG1_CD_Cala_Sirene"] = 61  # Op15 (Write multiple coils)
 UG["REG_UG1_RD_700G_Trip"] = 197  # Op02 (Read Input Status)
+
 UG["REG_UG2_CD_ResetReleBloq86H"] = 1  # Op15 (Write multiple coils)
 UG["REG_UG2_CD_ResetReleBloq86M"] = 2  # Op15 (Write multiple coils)
 UG["REG_UG2_CD_ResetRele700G"] = 3  # Op15 (Write multiple coils)
@@ -80,6 +104,7 @@ UG["REG_UG2_ED_ReleBloqA86HAtuado"] = 16  # Op02 (Read Input Status)
 UG["REG_UG2_ED_ReleBloqA86MAtuado"] = 17  # Op02 (Read Input Status)
 UG["REG_UG2_CD_Cala_Sirene"] = 61  # Op15 (Write multiple coils)
 UG["REG_UG2_RD_700G_Trip"] = 197  # Op02 (Read Input Status)
+
 UG["REG_UG3_CD_ResetReleBloq86H"] = 1  # Op15 (Write multiple coils)
 UG["REG_UG3_CD_ResetReleBloq86M"] = 2  # Op15 (Write multiple coils)
 UG["REG_UG3_CD_ResetRele700G"] = 3  # Op15 (Write multiple coils)
@@ -98,6 +123,7 @@ UG["REG_UG1_ED_UHLM_Filt2PresSujo75Troc"] = 61  # Op02 (Read Input Status)
 UG["REG_UG1_ED_FiltroPressaoBbaMecSj75"] = 65  # Op02 (Read Input Status)
 UG["REG_UG1_ED_TripPartRes"] = 82  # Op02 (Read Input Status)
 UG["REG_UG1_ED_QCAUG1_Remoto"] = 88  # Op02 (Read Input Status)
+
 UG["REG_UG2_ED_FreioPastilhaGasta"] = 24  # Op02 (Read Input Status)
 UG["REG_UG2_ED_FreioCmdRemoto"] = 29  # Op02 (Read Input Status)
 UG["REG_UG2_ED_FiltroPresSujo75Troc"] = 37  # Op02 (Read Input Status)
@@ -106,7 +132,7 @@ UG["REG_UG2_ED_UHLM_Filt1PresSujo75Troc"] = 59  # Op02 (Read Input Status)
 UG["REG_UG2_ED_UHLM_Filt2PresSujo75Troc"] = 61  # Op02 (Read Input Status)
 UG["REG_UG2_ED_FiltroPressaoBbaMecSj75"] = 65  # Op02 (Read Input Status)
 UG["REG_UG2_ED_TripPartRes"] = 82  # Op02 (Read Input Status)
-UG["REG_UG2_ED_QCAUG2_Remoto"] = 88  # Op02 (Read Input Status)
+
 UG["REG_UG3_ED_FreioPastilhaGasta"] = 24  # Op02 (Read Input Status)
 UG["REG_UG3_ED_FreioCmdRemoto"] = 29  # Op02 (Read Input Status)
 UG["REG_UG3_ED_FiltroPresSujo75Troc"] = 37  # Op02 (Read Input Status)
@@ -117,14 +143,60 @@ UG["REG_UG3_ED_FiltroPressaoBbaMecSj75"] = 65  # Op02 (Read Input Status)
 UG["REG_UG3_ED_TripPartRes"] = 82  # Op02 (Read Input Status)
 UG["REG_UG3_ED_QCAUG3_Remoto"] = 88  # Op02 (Read Input Status)
 
+# TEMPERATURAS
+UG["REG_UG1_RA_Temperatura_01"] = 24  # Op04 (Read Input Regs - 3x)
+UG["REG_UG1_RA_Temperatura_02"] = 25  # Op04 (Read Input Regs - 3x)
+UG["REG_UG1_RA_Temperatura_03"] = 26  # Op04 (Read Input Regs - 3x)
+UG["REG_UG1_RA_Temperatura_04"] = 27  # Op04 (Read Input Regs - 3x)
+UG["REG_UG1_RA_Temperatura_05"] = 28  # Op04 (Read Input Regs - 3x)
+UG["REG_UG1_RA_Temperatura_06"] = 29  # Op04 (Read Input Regs - 3x)
+UG["REG_UG1_RA_Temperatura_07"] = 30  # Op04 (Read Input Regs - 3x)
+UG["REG_UG1_RA_Temperatura_08"] = 31  # Op04 (Read Input Regs - 3x)
+UG["REG_UG1_RA_Temperatura_09"] = 32  # Op04 (Read Input Regs - 3x)
+UG["REG_UG1_RA_Temperatura_10"] = 33  # Op04 (Read Input Regs - 3x)
+UG["REG_UG1_EA_TempMcGuiaRadial"] = 9  # Scale 0.1 - Op04 (Read Input Regs - 3x)
+UG["REG_UG1_EA_TempMcGuiaEscora"] = 10  # Scale 0.1 - Op04 (Read Input Regs - 3x)
+UG["REG_UG1_EA_TempMcGuiaContraEscora"] = 11  # Scale 0.1 - Op04 (Read Input Regs - 3x)
 
+UG["REG_UG2_RA_Temperatura_01"] = 24  # Op04 (Read Input Regs - 3x)
+UG["REG_UG2_RA_Temperatura_02"] = 25  # Op04 (Read Input Regs - 3x)
+UG["REG_UG2_RA_Temperatura_03"] = 26  # Op04 (Read Input Regs - 3x)
+UG["REG_UG2_RA_Temperatura_04"] = 27  # Op04 (Read Input Regs - 3x)
+UG["REG_UG2_RA_Temperatura_05"] = 28  # Op04 (Read Input Regs - 3x)
+UG["REG_UG2_RA_Temperatura_06"] = 29  # Op04 (Read Input Regs - 3x)
+UG["REG_UG2_RA_Temperatura_07"] = 30  # Op04 (Read Input Regs - 3x)
+UG["REG_UG2_RA_Temperatura_08"] = 31  # Op04 (Read Input Regs - 3x)
+UG["REG_UG2_RA_Temperatura_09"] = 32  # Op04 (Read Input Regs - 3x)
+UG["REG_UG2_RA_Temperatura_10"] = 33  # Op04 (Read Input Regs - 3x)
+UG["REG_UG2_ED_QCAUG2_Remoto"] = 88  # Op02 (Read Input Status)
+UG["REG_UG2_EA_TempMcGuiaRadial"] = 9  # Scale 0.1 - Op04 (Read Input Regs - 3x)
+UG["REG_UG2_EA_TempMcGuiaEscora"] = 10  # Scale 0.1 - Op04 (Read Input Regs - 3x)
+UG["REG_UG2_EA_TempMcGuiaContraEscora"] = 11  # Scale 0.1 - Op04 (Read Input Regs - 3x)
+
+UG["REG_UG3_RA_Temperatura_01"] = 24  # Op04 (Read Input Regs - 3x)
+UG["REG_UG3_RA_Temperatura_02"] = 25  # Op04 (Read Input Regs - 3x)
+UG["REG_UG3_RA_Temperatura_03"] = 26  # Op04 (Read Input Regs - 3x)
+UG["REG_UG3_RA_Temperatura_04"] = 27  # Op04 (Read Input Regs - 3x)
+UG["REG_UG3_RA_Temperatura_05"] = 28  # Op04 (Read Input Regs - 3x)
+UG["REG_UG3_RA_Temperatura_06"] = 29  # Op04 (Read Input Regs - 3x)
+UG["REG_UG3_RA_Temperatura_07"] = 30  # Op04 (Read Input Regs - 3x)
+UG["REG_UG3_RA_Temperatura_08"] = 31  # Op04 (Read Input Regs - 3x)
+UG["REG_UG3_RA_Temperatura_09"] = 32  # Op04 (Read Input Regs - 3x)
+UG["REG_UG3_RA_Temperatura_10"] = 33  # Op04 (Read Input Regs - 3x)
+UG["REG_UG3_EA_TempMcGuiaRadial"] = 9  # Scale 0.1 - Op04 (Read Input Regs - 3x)
+UG["REG_UG3_EA_TempMcGuiaEscora"] = 10  # Scale 0.1 - Op04 (Read Input Regs - 3x)
+UG["REG_UG3_EA_TempMcGuiaContraEscora"] = 11  # Scale 0.1 - Op04 (Read Input Regs - 3x)
+
+# CAIXA ESPIRAL
+UG["REG_UG1_EA_PressK1CaixaExpiral_MaisCasas"] = 157 # Scale 0.01 - Op04 (Read Input Regs)
+UG["REG_UG2_EA_PressK1CaixaExpiral_MaisCasas"] = 157 # Scale 0.01 - Op04 (Read Input Regs)
+UG["REG_UG3_EA_PressK1CaixaExpiral_MaisCasas"] = 157 # Scale 0.01 - Op04 (Read Input Regs)
 
 
 
 REG_UG1_ED_RV_VeloMenor30 = 1  # Op02 (Read Input Status)
 REG_UG1_ED_RV_VeloMaior90 = 2  # Op02 (Read Input Status)
-REG_UG1_ED_RV_Trip = 3  # Op02 (Read Input Status)
-REG_UG1_ED_AVR_Trip = 4  # Op02 (Read Input Status)
+
 REG_UG1_ED_AVR_FalhaInterna = 5  # Op02 (Read Input Status)
 REG_UG1_ED_AVR_Ligado = 6  # Op02 (Read Input Status)
 REG_UG1_ED_PotenciaNula = 7  # Op02 (Read Input Status)
@@ -137,7 +209,7 @@ REG_UG1_ED_Falta125VccCom = 13  # Op02 (Read Input Status)
 REG_UG1_ED_Falta125VccAlimVal = 14  # Op02 (Read Input Status)
 REG_UG1_ED_FalhaDisjTpsProt = 15  # Op02 (Read Input Status)
 
-REG_UG1_ED_SEL700G_Atuado = 18  # Op02 (Read Input Status)
+
 REG_UG1_ED_SEL700G_FalhaInterna = 19  # Op02 (Read Input Status)
 REG_UG1_ED_Falta125VccQPCUG2 = 20  # Op02 (Read Input Status)
 REG_UG1_ED_Falta125VccQPCUG3 = 21  # Op02 (Read Input Status)
@@ -208,14 +280,11 @@ REG_UG1_ED_TripAlimPainelFreio = 85  # Op02 (Read Input Status)
 REG_UG1_ED_PainelFreioStatus = 86  # Op02 (Read Input Status)
 REG_UG1_ED_QCAUG_TripDisjAgrup = 87  # Op02 (Read Input Status)
 
-
 REG_UG1_RD_TensaoEstabilizada = 128  # Op02 (Read Input Status)
 REG_UG1_RD_EmergenciaViaSuper = 129  # Op02 (Read Input Status)
 REG_UG1_RD_SeqManual = 130  # Op02 (Read Input Status)
 REG_UG1_RD_SeqAutomatica = 131  # Op02 (Read Input Status)
 
-REG_UG1_RD_TripEletrico = 134  # Op02 (Read Input Status)
-REG_UG1_RD_TripMecanico = 135  # Op02 (Read Input Status)
 REG_UG1_RD_ValvSeg_Energizadas = 136  # Op02 (Read Input Status)
 REG_UG1_RD_FalhaAcionAbertValvBorb = 137  # Op02 (Read Input Status)
 REG_UG1_RD_FalhaAcionFechaValvBorb = 138  # Op02 (Read Input Status)
@@ -362,16 +431,7 @@ REG_UG1_CD_RV_RetiraCarga = 62  # Op15 (Write multiple coils)
 REG_UG1_CD_RV_RefRemDesabilita = 64  # Op15 (Write multiple coils)
 REG_UG1_CD_Trip_PBCE_Habilita = 65  # Op15 (Write multiple coils)
 REG_UG1_CD_Trip_PBCE_Desabilita = 66  # Op15 (Write multiple coils)
-REG_UG1_RA_Temperatura_01 = 24  # Op04 (Read Input Regs - 3x)
-REG_UG1_RA_Temperatura_02 = 25  # Op04 (Read Input Regs - 3x)
-REG_UG1_RA_Temperatura_03 = 26  # Op04 (Read Input Regs - 3x)
-REG_UG1_RA_Temperatura_04 = 27  # Op04 (Read Input Regs - 3x)
-REG_UG1_RA_Temperatura_05 = 28  # Op04 (Read Input Regs - 3x)
-REG_UG1_RA_Temperatura_06 = 29  # Op04 (Read Input Regs - 3x)
-REG_UG1_RA_Temperatura_07 = 30  # Op04 (Read Input Regs - 3x)
-REG_UG1_RA_Temperatura_08 = 31  # Op04 (Read Input Regs - 3x)
-REG_UG1_RA_Temperatura_09 = 32  # Op04 (Read Input Regs - 3x)
-REG_UG1_RA_Temperatura_10 = 33  # Op04 (Read Input Regs - 3x)
+
 REG_UG1_RA_Temperatura_11 = 34  # Op04 (Read Input Regs - 3x)
 REG_UG1_RA_Temperatura_12 = 35  # Op04 (Read Input Regs - 3x)
 REG_UG1_RA_PM_710_Tensao_AB = 36  # Op04 (Read Input Regs - 3x)
@@ -412,15 +472,7 @@ REG_UG1_EA_PressK1Succao = (
 REG_UG1_EA_TempGaxetas = (
     8  # Scale 0.1 - Op04 (Read Input Regs - 3x)
 )
-REG_UG1_EA_TempMcGuiaRadial = (
-    9  # Scale 0.1 - Op04 (Read Input Regs - 3x)
-)
-REG_UG1_EA_TempMcGuiaEscora = (
-    10  # Scale 0.1 - Op04 (Read Input Regs - 3x)
-)
-REG_UG1_EA_TempMcGuiaContraEscora = (
-    11  # Scale 0.1 - Op04 (Read Input Regs - 3x)
-)
+
 REG_UG1_EA_VibMcGuiaRadial = (
     12  # Scale 0.1 - Op04 (Read Input Regs - 3x)
 )
@@ -465,14 +517,12 @@ REG_UG1_RA_Float_PM_710_Energia_Reativa_Fornecida = (
 REG_UG1_RA_Float_PM_710_Energia_Ativa_Fornecida = (
     155  # Scale 0.1 - Op04 (Read Input Regs - 3x)
 )
-REG_UG1_EA_PressK1CaixaExpiral_MaisCasas = (
-    157 # Scale 0.01 - Op04 (Read Input Regs)
-)
+
 
 REG_UG2_ED_RV_VeloMenor30 = 1  # Op02 (Read Input Status)
 REG_UG2_ED_RV_VeloMaior90 = 2  # Op02 (Read Input Status)
-REG_UG2_ED_RV_Trip = 3  # Op02 (Read Input Status)
-REG_UG2_ED_AVR_Trip = 4  # Op02 (Read Input Status)
+
+
 REG_UG2_ED_AVR_FalhaInterna = 5  # Op02 (Read Input Status)
 REG_UG2_ED_AVR_Ligado = 6  # Op02 (Read Input Status)
 REG_UG2_ED_PotenciaNula = 7  # Op02 (Read Input Status)
@@ -485,7 +535,7 @@ REG_UG2_ED_Falta125VccQPCUG3 = 00000  # Op02 (Read Input Status) # verificar
 REG_UG2_ED_Falta125VccAlimVal = 14  # Op02 (Read Input Status)
 REG_UG2_ED_FalhaDisjTpsProt = 15  # Op02 (Read Input Status)
 
-REG_UG2_ED_SEL700G_Atuado = 18  # Op02 (Read Input Status)
+
 REG_UG2_ED_SEL700G_FalhaInterna = 19  # Op02 (Read Input Status)
 REG_UG2_ED_Reserva244 = 20  # Op02 (Read Input Status)
 REG_UG2_ED_Reserva245 = 21  # Op02 (Read Input Status)
@@ -561,8 +611,8 @@ REG_UG2_RD_EmergenciaViaSuper = 129  # Op02 (Read Input Status)
 REG_UG2_RD_SeqManual = 130  # Op02 (Read Input Status)
 REG_UG2_RD_SeqAutomatica = 131  # Op02 (Read Input Status)
 
-REG_UG2_RD_TripEletrico = 134  # Op02 (Read Input Status)
-REG_UG2_RD_TripMecanico = 135  # Op02 (Read Input Status)
+
+
 REG_UG2_RD_ValvSeg_Energizadas = 136  # Op02 (Read Input Status)
 REG_UG2_RD_FalhaAcionAbertValvBorb = 137  # Op02 (Read Input Status)
 REG_UG2_RD_FalhaAcionFechaValvBorb = 138  # Op02 (Read Input Status)
@@ -707,16 +757,7 @@ REG_UG2_CD_RV_RetiraCarga = 63  # Op15 (Write multiple coils)
 REG_UG2_CD_RV_RefRemDesabilita = 65  # Op15 (Write multiple coils)
 REG_UG2_CD_Trip_PBCE_Habilita = 66  # Op15 (Write multiple coils)
 REG_UG2_CD_Trip_PBCE_Desabilita = 67  # Op15 (Write multiple coils)
-REG_UG2_RA_Temperatura_01 = 24  # Op04 (Read Input Regs - 3x)
-REG_UG2_RA_Temperatura_02 = 25  # Op04 (Read Input Regs - 3x)
-REG_UG2_RA_Temperatura_03 = 26  # Op04 (Read Input Regs - 3x)
-REG_UG2_RA_Temperatura_04 = 27  # Op04 (Read Input Regs - 3x)
-REG_UG2_RA_Temperatura_05 = 28  # Op04 (Read Input Regs - 3x)
-REG_UG2_RA_Temperatura_06 = 29  # Op04 (Read Input Regs - 3x)
-REG_UG2_RA_Temperatura_07 = 30  # Op04 (Read Input Regs - 3x)
-REG_UG2_RA_Temperatura_08 = 31  # Op04 (Read Input Regs - 3x)
-REG_UG2_RA_Temperatura_09 = 32  # Op04 (Read Input Regs - 3x)
-REG_UG2_RA_Temperatura_10 = 33  # Op04 (Read Input Regs - 3x)
+
 REG_UG2_RA_Temperatura_11 = 34  # Op04 (Read Input Regs - 3x)
 REG_UG2_RA_Temperatura_12 = 35  # Op04 (Read Input Regs - 3x)
 REG_UG2_RA_PM_710_Tensao_AB = 36  # Op04 (Read Input Regs - 3x)
@@ -756,15 +797,8 @@ REG_UG2_EA_PressK1Succao = (
 REG_UG2_EA_TempGaxetas = (
     8  # Scale 0.1 - Op04 (Read Input Regs - 3x)
 )
-REG_UG2_EA_TempMcGuiaRadial = (
-    9  # Scale 0.1 - Op04 (Read Input Regs - 3x)
-)
-REG_UG2_EA_TempMcGuiaEscora = (
-    10  # Scale 0.1 - Op04 (Read Input Regs - 3x)
-)
-REG_UG2_EA_TempMcGuiaContraEscora = (
-    11  # Scale 0.1 - Op04 (Read Input Regs - 3x)
-)
+
+
 REG_UG2_EA_VibMcGuiaRadial = (
     12  # Scale 0.1 - Op04 (Read Input Regs - 3x)
 )
@@ -807,14 +841,10 @@ REG_UG2_RA_Float_PM_710_Energia_Reativa_Fornecida = (
 REG_UG2_RA_Float_PM_710_Energia_Ativa_Fornecida = (
     155  # Scale 0.1 - Op04 (Read Input Regs - 3x)
 )
-REG_UG2_EA_PressK1CaixaExpiral_MaisCasas = (
-    157 # Scale 0.01 - Op04 (Read Input Regs)
-)
 
 REG_UG3_ED_RV_VeloMenor30 = 1  # Op02 (Read Input Status)
 REG_UG3_ED_RV_VeloMaior90 = 2  # Op02 (Read Input Status)
-REG_UG3_ED_RV_Trip = 3  # Op02 (Read Input Status)
-REG_UG3_ED_AVR_Trip = 4  # Op02 (Read Input Status)
+
 REG_UG3_ED_AVR_FalhaInterna = 5  # Op02 (Read Input Status)
 REG_UG3_ED_AVR_Ligado = 6  # Op02 (Read Input Status)
 REG_UG3_ED_PotenciaNula = 7  # Op02 (Read Input Status)
@@ -827,7 +857,7 @@ REG_UG3_ED_Falta125VccCom = 13  # Op02 (Read Input Status)
 REG_UG3_ED_Falta125VccAlimVal = 14  # Op02 (Read Input Status)
 REG_UG3_ED_FalhaDisjTpsProt = 15  # Op02 (Read Input Status)
 
-REG_UG3_ED_SEL700G_Atuado = 18  # Op02 (Read Input Status)
+
 REG_UG3_ED_SEL700G_FalhaInterna = 19  # Op02 (Read Input Status)
 REG_UG3_ED_Falta125VccQPCUG2 = 20  # Op02 (Read Input Status)
 REG_UG3_ED_Falta125VccQPCUG1 = 21  # Op02 (Read Input Status)
@@ -903,8 +933,6 @@ REG_UG3_RD_EmergenciaViaSuper = 129  # Op02 (Read Input Status)
 REG_UG3_RD_SeqManual = 130  # Op02 (Read Input Status)
 REG_UG3_RD_SeqAutomatica = 131  # Op02 (Read Input Status)
 
-REG_UG3_RD_TripEletrico = 134  # Op02 (Read Input Status)
-REG_UG3_RD_TripMecanico = 135  # Op02 (Read Input Status)
 REG_UG3_RD_ValvSeg_Energizadas = 136  # Op02 (Read Input Status)
 REG_UG3_RD_FalhaAcionAbertValvBorb = 137  # Op02 (Read Input Status)
 REG_UG3_RD_FalhaAcionFechaValvBorb = 138  # Op02 (Read Input Status)
@@ -1047,16 +1075,7 @@ REG_UG3_CD_RV_RetiraCarga = 62  # Op15 (Write multiple coils)
 REG_UG3_CD_RV_RefRemDesabilita = 64  # Op15 (Write multiple coils)
 REG_UG3_CD_Trip_PBCE_Habilita = 65  # Op15 (Write multiple coils)
 REG_UG3_CD_Trip_PBCE_Desabilita = 66  # Op15 (Write multiple coils)
-REG_UG3_RA_Temperatura_01 = 24  # Op04 (Read Input Regs - 3x)
-REG_UG3_RA_Temperatura_02 = 25  # Op04 (Read Input Regs - 3x)
-REG_UG3_RA_Temperatura_03 = 26  # Op04 (Read Input Regs - 3x)
-REG_UG3_RA_Temperatura_04 = 27  # Op04 (Read Input Regs - 3x)
-REG_UG3_RA_Temperatura_05 = 28  # Op04 (Read Input Regs - 3x)
-REG_UG3_RA_Temperatura_06 = 29  # Op04 (Read Input Regs - 3x)
-REG_UG3_RA_Temperatura_07 = 30  # Op04 (Read Input Regs - 3x)
-REG_UG3_RA_Temperatura_08 = 31  # Op04 (Read Input Regs - 3x)
-REG_UG3_RA_Temperatura_09 = 32  # Op04 (Read Input Regs - 3x)
-REG_UG3_RA_Temperatura_10 = 33  # Op04 (Read Input Regs - 3x)
+
 REG_UG3_RA_Temperatura_11 = 34  # Op04 (Read Input Regs - 3x)
 REG_UG3_RA_Temperatura_12 = 35  # Op04 (Read Input Regs - 3x)
 REG_UG3_RA_PM_710_Tensao_AB = 36  # Op04 (Read Input Regs - 3x)
@@ -1096,15 +1115,7 @@ REG_UG3_EA_PressK1Succao = (
 REG_UG3_EA_TempGaxetas = (
     8  # Scale 0.1 - Op04 (Read Input Regs - 3x)
 )
-REG_UG3_EA_TempMcGuiaRadial = (
-    9  # Scale 0.1 - Op04 (Read Input Regs - 3x)
-)
-REG_UG3_EA_TempMcGuiaEscora = (
-    10  # Scale 0.1 - Op04 (Read Input Regs - 3x)
-)
-REG_UG3_EA_TempMcGuiaContraEscora = (
-    11  # Scale 0.1 - Op04 (Read Input Regs - 3x)
-)
+
 REG_UG3_EA_VibMcGuiaRadial = (
     12  # Scale 0.1 - Op04 (Read Input Regs - 3x)
 )
@@ -1147,9 +1158,7 @@ REG_UG3_RA_Float_PM_710_Energia_Reativa_Fornecida = (
 REG_UG3_RA_Float_PM_710_Energia_Ativa_Fornecida = (
     155  # Scale 0.1 - Op04 (Read Input Regs - 3x)
 )
-REG_UG3_EA_PressK1CaixaExpiral_MaisCasas = (
-    157 # Scale 0.01 - Op04 (Read Input Regs)
-)
+
 
 
 REG_SA_EA_SA_Reserva07 = 15  # Scale - Op04 (Read Input Regs - 3x)
