@@ -16,12 +16,10 @@ from src.Leituras import  *
 from src.mapa_modbus import *
 
 from src.mensageiro.voip import Voip
-from src.UG1 import UnidadeDeGeracao1
-from src.UG2 import UnidadeDeGeracao2
-from src.UG3 import UnidadeDeGeracao3
 from src.database_connector import Database
 from src.field_connector import FieldConnector
 from src.Condicionadores import CondicionadorBase
+from src.UnidadeDeGeracao import UnidadeDeGeracao
 
 logger = logging.getLogger("__main__")
 
@@ -131,10 +129,10 @@ class Usina:
         """
 
         # Inicializa Objs da usina
-        self.ug1 = UnidadeDeGeracao1(1, self.cfg, self.clp, self.db, self.con)
-        self.ug2 = UnidadeDeGeracao2(2, self.cfg, self.clp, self.db, self.con)
-        self.ug3 = UnidadeDeGeracao3(3, self.cfg, self.clp, self.db, self.con)
-        self.ugs: list[UnidadeDeGeracao1 or UnidadeDeGeracao2 or UnidadeDeGeracao3] = [self.ug1, self.ug2, self.ug3]
+        self.ug1 = UnidadeDeGeracao(1, self.cfg, self.clp, self.db, self.con)
+        self.ug2 = UnidadeDeGeracao(2, self.cfg, self.clp, self.db, self.con)
+        self.ug3 = UnidadeDeGeracao(3, self.cfg, self.clp, self.db, self.con)
+        self.ugs: "list[UnidadeDeGeracao]" = [self.ug1, self.ug2, self.ug3]
         CondicionadorBase.ugs = self.ugs
         for ug in self.ugs:
             ug.lista_ugs = self.ugs

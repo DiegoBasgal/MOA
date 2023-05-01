@@ -320,7 +320,7 @@ class StateDisponivel(State):
                     self.release = True
                     return True
 
-                elif not self.parent_ug.release_timer:
+                elif self.parent_ug.release_timer:
                     logger.debug(f"[UG{self.parent_ug.id}] MOA em modo manual. Saindo do timer de verificação de partida")
                     self.release = True
                     return False
