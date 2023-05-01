@@ -9,6 +9,16 @@
 
 UG = {}
 # PARTIDA
+UG["REG_UG1_CD_ResetReleRT"] = 5  # Op15 (Write multiple coils)
+UG["REG_UG2_CD_ResetReleRT"] = 5  # Op15 (Write multiple coils)
+UG["REG_UG3_CD_ResetReleRT"] = 5  # Op15 (Write multiple coils)
+UG["REG_UG1_CD_ResetRV"] = 6  # Op15 (Write multiple coils)
+UG["REG_UG2_CD_ResetRV"] = 6  # Op15 (Write multiple coils)
+UG["REG_UG2_CD_ResetRV"] = 6  # Op15 (Write multiple coils)
+UG["REG_UG1_CD_IniciaPartida"] = 45
+UG["REG_UG2_CD_IniciaPartida"] = 45
+UG["REG_UG3_CD_IniciaPartida"] = 45
+
 UG["REG_UG1_CD_IniciaParada"] = 46  # Op15 (Write multiple coils)
 UG["REG_UG1_CD_AbortaPartida"] = 47  # Op15 (Write multiple coils)
 UG["REG_UG1_CD_AbortaSincronismo"] = 59  # Op15 (Write multiple coils)
@@ -646,8 +656,7 @@ REG_UG2_RD_TripPressaoCaixaEspiral = 213  # Op02 (Read Input Status)
 REG_UG2_RD_Trip_PBCE_Habilitado = 214  # Op02 (Read Input Status)
 """----------------SETPOINT------------------"""
 
-REG_UG2_CD_ResetReleRT = 5  # Op15 (Write multiple coils)
-REG_UG2_CD_ResetRV = 6  # Op15 (Write multiple coils)
+
 REG_UG2_CD_AumentaTensaoRT = 7  # Op15 (Write multiple coils)
 REG_UG2_CD_DiminuiTensaoRT = 8  # Op15 (Write multiple coils)
 REG_UG2_CD_HabControleFP = 9  # Op15 (Write multiple coils)
@@ -988,8 +997,6 @@ REG_UG3_RD_TripPressaoCaixaEspiral = 213  # Op02 (Read Input Status)
 REG_UG3_RD_Trip_PBCE_Habilitado = 214  # Op02 (Read Input Status)
 """----------------SETPOINT------------------"""
 
-REG_UG3_CD_ResetReleRT = 5  # Op15 (Write multiple coils)
-REG_UG3_CD_ResetRV = 6  # Op15 (Write multiple coils)
 REG_UG3_CD_AumentaTensaoRT = 7  # Op15 (Write multiple coils)
 REG_UG3_CD_DiminuiTensaoRT = 8  # Op15 (Write multiple coils)
 REG_UG3_CD_HabControleFP = 9  # Op15 (Write multiple coils)

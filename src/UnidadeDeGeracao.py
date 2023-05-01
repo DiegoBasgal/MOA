@@ -105,13 +105,13 @@ class UnidadeDeGeracao:
         # Leituras de operação das UGS
         self.leituras_ug: dict[str, LeituraBase] = {}
 
-        self.leituras_ug[f"leitura_potencia"] = LeituraModbus(
+        self.leitura_potencia = LeituraModbus(
             f"ug{self.id}_Gerador_PotenciaAtivaMedia",
             self.clp[f"UG{self.id}"],
             UG[f"REG_UG{self.id}_RA_PM_710_Potencia_Ativa"],
             op=4,
         )
-        self.leituras_ug[f"leitura_setpoint"] = LeituraModbus(
+        self.leitura_setpoint = LeituraModbus(
             f"UG{self.id}_Setpoint",
             self.clp[f"UG{self.id}"],
             UG[f"REG_UG{self.id}_SA_SPPotAtiva"],

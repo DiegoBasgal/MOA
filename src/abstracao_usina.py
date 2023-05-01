@@ -195,7 +195,7 @@ class Usina:
         self.__split2 = True if self.ug_operando == 2 else False
         self.__split3 = True if self.ug_operando == 3 else False
 
-        self.controle_ie: int = sum(ug.leituras_ug[f"leitura_potencia"].valor for ug in self.ugs) / self.cfg["pot_maxima_alvo"]
+        self.controle_ie: int = sum(ug.leitura_potencia.valor for ug in self.ugs) / self.cfg["pot_maxima_alvo"]
 
         self.clp["MOA"].write_single_coil(self.cfg["REG_MOA_OUT_BLOCK_UG1"], 0)
         self.clp["MOA"].write_single_coil(self.cfg["REG_MOA_OUT_BLOCK_UG2"], 0)
@@ -318,11 +318,11 @@ class Usina:
                 self.get_time().strftime("%Y-%m-%d %H:%M:%S"),  # timestamp
                 1 if self.aguardando_reservatorio else 0,  # aguardando_reservatorio
                 self.nv_montante if not self.TDA_Offline else 0,  # nv_montante
-                self.ug1.leituras_ug[f"leitura_potencia"].valor,  # ug1_pot
+                self.ug1.leitura_potencia.valor,  # ug1_pot
                 self.ug1.setpoint,  # ug1_setpot
-                self.ug2.leituras_ug[f"leitura_potencia"].valor,  # ug2_pot
+                self.ug2.leitura_potencia.valor,  # ug2_pot
                 self.ug2.setpoint,  # ug2_setpot
-                self.ug3.leituras_ug[f"leitura_potencia"].valor,  # ug3_pot
+                self.ug3.leitura_potencia.valor,  # ug3_pot
                 self.ug3.setpoint,  # ug3_setpot
             ]
             self.db.update_valores_usina(valores)
@@ -338,11 +338,11 @@ class Usina:
                 self.nv_montante_recente,
                 self.erro_nv,
                 self.ug1.setpoint,
-                self.ug1.leituras_ug[f"leitura_potencia"].valor,
+                self.ug1.leitura_potencia.valor,
                 self.ug2.setpoint,
-                self.ug2.leituras_ug[f"leitura_potencia"].valor,
+                self.ug2.leitura_potencia.valor,
                 self.ug3.setpoint,
-                self.ug3.leituras_ug[f"leitura_potencia"].valor,
+                self.ug3.leitura_potencia.valor,
                 self.controle_p,
                 self.controle_i,
                 self.controle_d,
@@ -948,10 +948,7 @@ class Usina:
         if not ping(self.cfg["USN_slave_ip"]):
             logger.critical("CLP SA não respondeu a tentativa de ping!")
         if self.clp["SA"].open():
-            if self.clp["SA"].read_input_registers(173)[0] != 32580:
-                logger.critical("CLP SA inconsistente! Leitura do registrador de verificação CLP On-line retornou um valor diferente do esperado!")
-            else:
-                self.clp["SA"].close()
+            self.clp["SA"].close()
         else:
             logger.critical("CLP SA não respondeu a tentativa de conexão ModBus!")
             self.clp["SA"].close()
@@ -961,11 +958,7 @@ class Usina:
             logger.critical("CLP UG1 não respondeu a tentativa de ping!")
             self.ug1.forcar_estado_manual()
         if self.clp["UG1"].open():
-            if self.clp["UG1"].read_input_registers(158)[0] != 32580:
-                logger.critical("CLP UG1 inconsistente! Leitura do registrador de verificação CLP On-line retornou um valor diferente do esperado!")
-                self.ug1.forcar_estado_manual()
-            else:
-                self.clp["UG1"].close()
+            self.clp["UG1"].close()
         else:
             self.ug1.forcar_estado_manual()
             logger.critical("CLP UG1 não respondeu a tentativa de conexão ModBus!")
@@ -974,11 +967,7 @@ class Usina:
             logger.critical("CLP UG2 não respondeu a tentativa de ping!")
             self.ug2.forcar_estado_manual()
         if self.clp["UG2"].open():
-            if self.clp["UG2"].read_input_registers(158)[0] != 32580:
-                logger.critical("CLP UG2 inconsistente! Leitura do registrador de verificação CLP On-line retornou um valor diferente do esperado!")
-                self.ug2.forcar_estado_manual()
-            else:
-                self.clp["UG2"].close()
+            self.clp["UG2"].close()
         else:
             self.ug2.forcar_estado_manual()
             logger.critical("CLP UG2 não respondeu a tentativa de conexão ModBus!")
@@ -987,11 +976,7 @@ class Usina:
             logger.critical("CLP UG3 não respondeu a tentativa de comunicação!")
             self.ug3.forcar_estado_manual()
         if self.clp["UG3"].open():
-            if self.clp["UG3"].read_input_registers(158)[0] != 32580:
-                logger.critical("CLP UG2 inconsistente! Leitura do registrador de verificação CLP On-line retornou um valor diferente do esperado!")
-                self.ug3.forcar_estado_manual()
-            else:
-                self.clp["UG3"].close()
+            self.clp["UG3"].close()
         else:
             self.ug3.forcar_estado_manual()
             logger.critical("CLP UG3 não respondeu a tentativa de conexão ModBus!")
@@ -999,10 +984,7 @@ class Usina:
         if not ping(self.cfg["MOA_slave_ip"]):
             logger.warning("CLP MOA não respondeu a tentativa de ping!")
         if self.clp["MOA"].open():
-            if self.clp["MOA"].read_input_registers(528)[0] != 32580:
-                logger.warning("CLP MOA inconsistente! Leitura do registrador de verificação CLP On-line retornou um valor diferente do esperado!")
-            else:
-                self.clp["MOA"].close()
+            self.clp["MOA"].close()
         else:
             logger.warning("CLP MOA não respondeu a tentativa de conexão ModBus!")
 

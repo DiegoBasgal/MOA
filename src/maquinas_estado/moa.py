@@ -290,7 +290,7 @@ class ModoManualAtivado(State):
         self.usn.ler_valores()
         for ug in self.usn.ugs:
             ug.release_timer = True
-            ug.setpoint = ug.leituras_ug[f"leitura_potencia"].valor
+            ug.setpoint = ug.leitura_potencia.valor
 
         self.usn.controle_ie = (self.usn.ug1.setpoint + self.usn.ug2.setpoint + self.usn.ug3.setpoint) / self.usn.cfg["pot_maxima_alvo"]
         self.usn.controle_i = max(min(self.usn.controle_ie - (self.usn.controle_i * self.usn.cfg["ki"]) - self.usn.cfg["kp"] * self.usn.erro_nv - self.usn.cfg["kd"] * (self.usn.erro_nv - self.usn.erro_nv_anterior), 0.8), 0)
