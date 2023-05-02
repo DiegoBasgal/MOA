@@ -145,17 +145,17 @@ class TomadaAgua(Usina):
             logger.warning("[TDA] Houve uma falha no sensor de nível jusante grade da comporta 2. Favor verificar.")
 
 
-        if self.leitura_falha_atuada_lg and not self.voip_dict["LG_FALHA_ATUADA"]:
+        if self.leitura_falha_atuada_lg and not Dicionarios.voip["LG_FALHA_ATUADA"][0]:
             logger.warning("[TDA] Foi identificado que o limpa grades está em falha. Favor verificar.")
-            self.voip_dict["LG_FALHA_ATUADA"] = True
-        elif not self.leitura_falha_atuada_lg and self.voip_dict["LG_FALHA_ATUADA"]:
-            self.voip_dict["LG_FALHA_ATUADA"] = False
+            Dicionarios.voip["LG_FALHA_ATUADA"][0] = True
+        elif not self.leitura_falha_atuada_lg and Dicionarios.voip["LG_FALHA_ATUADA"][0]:
+            Dicionarios.voip["LG_FALHA_ATUADA"][0] = False
 
-        if self.leitura_falha_nivel_montante and not self.voip_dict["FALHA_NIVEL_MONTANTE"]:
+        if self.leitura_falha_nivel_montante and not Dicionarios.voip["FALHA_NIVEL_MONTANTE"][0]:
             logger.warning("[TDA] Houve uma falha na leitura de nível montante. Favor verificar.")
-            self.voip_dict["FALHA_NIVEL_MONTANTE"] = True
-        elif not self.leitura_falha_nivel_montante and self.voip_dict["FALHA_NIVEL_MONTANTE"]:
-            self.voip_dict["FALHA_NIVEL_MONTANTE"] = False
+            Dicionarios.voip["FALHA_NIVEL_MONTANTE"][0] = True
+        elif not self.leitura_falha_nivel_montante and Dicionarios.voip["FALHA_NIVEL_MONTANTE"][0]:
+            Dicionarios.voip["FALHA_NIVEL_MONTANTE"][0] = False
 
     def iniciar_leituras_condicionadores(self) -> None:
         # CONDICIONADORES ESSENCIAIS

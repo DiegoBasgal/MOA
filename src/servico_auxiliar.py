@@ -76,83 +76,83 @@ class ServicoAuxiliar(Usina):
             logger.warning("[SA] Foram identificados sinais inconsistentes nas boias do poço de drenagem. Favor verificar.")
 
 
-        if self.leitura_falha_partir_gmg and not self.voip_dict["GMG_FALHA_PARTIR"]:
+        if self.leitura_falha_partir_gmg and not Dicionarios.voip["GMG_FALHA_PARTIR"][0]:
             logger.warning("[SA] Houve uma falha ao partir o Gerador Diesel. Favor verificar.")
-            self.voip_dict["GMG_FALHA_PARTIR"] = True
-        elif not self.leitura_falha_partir_gmg and self.voip_dict["GMG_FALHA_PARTIR"]:
-            self.voip_dict["GMG_FALHA_PARTIR"] = False
+            Dicionarios.voip["GMG_FALHA_PARTIR"][0] = True
+        elif not self.leitura_falha_partir_gmg and Dicionarios.voip["GMG_FALHA_PARTIR"][0]:
+            Dicionarios.voip["GMG_FALHA_PARTIR"][0] = False
 
-        if self.leitura_falha_parar_gmg and not self.voip_dict["GMG_FALHA_PARAR"]:
+        if self.leitura_falha_parar_gmg and not Dicionarios.voip["GMG_FALHA_PARAR"][0]:
             logger.warning("[SA] Houve uma falha ao parar o Gerador Diesel. Favor verificar.")
-            self.voip_dict["GMG_FALHA_PARAR"] = True
-        elif not self.leitura_falha_parar_gmg and self.voip_dict["GMG_FALHA_PARAR"]:
-            self.voip_dict["GMG_FALHA_PARAR"] = False
+            Dicionarios.voip["GMG_FALHA_PARAR"][0] = True
+        elif not self.leitura_falha_parar_gmg and Dicionarios.voip["GMG_FALHA_PARAR"][0]:
+            Dicionarios.voip["GMG_FALHA_PARAR"][0] = False
 
-        if self.leitura_operacao_manual_gmg and not self.voip_dict["GMG_OPERACAO_MANUAL"]:
+        if self.leitura_operacao_manual_gmg and not Dicionarios.voip["GMG_OPERACAO_MANUAL"][0]:
             logger.warning("[SA] O Gerador Diesel saiu do modo remoto. Favor verificar.")
-            self.voip_dict["GMG_OPERACAO_MANUAL"] = True
-        elif not self.leitura_operacao_manual_gmg and self.voip_dict["GMG_OPERACAO_MANUAL"]:
-            self.voip_dict["GMG_OPERACAO_MANUAL"] = False
+            Dicionarios.voip["GMG_OPERACAO_MANUAL"][0] = True
+        elif not self.leitura_operacao_manual_gmg and Dicionarios.voip["GMG_OPERACAO_MANUAL"][0]:
+            Dicionarios.voip["GMG_OPERACAO_MANUAL"][0] = False
 
-        if not self.leitura_sem_falha_52sa1 and not self.voip_dict["52SA1_SEM_FALHA"]:
+        if not self.leitura_sem_falha_52sa1 and not Dicionarios.voip["52SA1_SEM_FALHA"][0]:
             logger.warning("[SA] Houve uma falha com o disjuntor 52SA1 do transformador do SA. Favor verificar.")
-            self.voip_dict["52SA1_SEM_FALHA"] = True
-        elif self.leitura_sem_falha_52sa1 and self.voip_dict["52SA1_SEM_FALHA"]:
-            self.voip_dict["52SA1_SEM_FALHA"] = False
+            Dicionarios.voip["52SA1_SEM_FALHA"][0] = True
+        elif self.leitura_sem_falha_52sa1 and Dicionarios.voip["52SA1_SEM_FALHA"][0]:
+            Dicionarios.voip["52SA1_SEM_FALHA"][0] = False
 
-        if not self.leitura_sem_falha_52sa2 and not self.voip_dict["52SA2_SEM_FALHA"]:
+        if not self.leitura_sem_falha_52sa2 and not Dicionarios.voip["52SA2_SEM_FALHA"][0]:
             logger.warning("[SA] Houve uma falha com o disjuntor 52SA2 do Gerador Diesel. Favor verificar.")
-            self.voip_dict["52SA2_SEM_FALHA"] = True
-        elif self.leitura_sem_falha_52sa2 and self.voip_dict["52SA2_SEM_FALHA"]:
-            self.voip_dict["52SA2_SEM_FALHA"] = False
+            Dicionarios.voip["52SA2_SEM_FALHA"][0] = True
+        elif self.leitura_sem_falha_52sa2 and Dicionarios.voip["52SA2_SEM_FALHA"][0]:
+            Dicionarios.voip["52SA2_SEM_FALHA"][0] = False
 
-        if not self.leitura_sem_falha_52sa3 and not self.voip_dict["52SA3_SEM_FALHA"]:
+        if not self.leitura_sem_falha_52sa3 and not Dicionarios.voip["52SA3_SEM_FALHA"][0]:
             logger.warning("[SA] Houve uma falha com o disjuntor 52SA3 do barramento de cargas não essenciais. Favor verificar.")
-            self.voip_dict["52SA3_SEM_FALHA"] = True
-        elif self.leitura_sem_falha_52sa3 and self.voip_dict["52SA3_SEM_FALHA"]:
-            self.voip_dict["52SA3_SEM_FALHA"] = False
+            Dicionarios.voip["52SA3_SEM_FALHA"][0] = True
+        elif self.leitura_sem_falha_52sa3 and Dicionarios.voip["52SA3_SEM_FALHA"][0]:
+            Dicionarios.voip["52SA3_SEM_FALHA"][0] = False
 
-        if self.leitura_falha_bomba_filtragem and not self.voip_dict["FILTRAGEM_BOMBA_FALHA"]:
+        if self.leitura_falha_bomba_filtragem and not Dicionarios.voip["FILTRAGEM_BOMBA_FALHA"][0]:
             logger.warning("[SA] Houve uma falha na bomba de filtragem. Favor verificar.")
-            self.voip_dict["FILTRAGEM_BOMBA_FALHA"] = True
-        elif not self.leitura_falha_bomba_filtragem and self.voip_dict["FILTRAGEM_BOMBA_FALHA"]:
-            self.voip_dict["FILTRAGEM_BOMBA_FALHA"] = False
+            Dicionarios.voip["FILTRAGEM_BOMBA_FALHA"][0] = True
+        elif not self.leitura_falha_bomba_filtragem and Dicionarios.voip["FILTRAGEM_BOMBA_FALHA"][0]:
+            Dicionarios.voip["FILTRAGEM_BOMBA_FALHA"][0] = False
 
-        if self.leitura_nivel_alto_poco_drenagem and not self.voip_dict["POCO_DRENAGEM_NIVEL_ALTO"]:
+        if self.leitura_nivel_alto_poco_drenagem and not Dicionarios.voip["POCO_DRENAGEM_NIVEL_ALTO"][0]:
             logger.warning("[SA] Nível do poço de drenagem alto. Favor verificar.")
-            self.voip_dict["POCO_DRENAGEM_NIVEL_ALTO"] = True
-        elif not self.leitura_nivel_alto_poco_drenagem and self.voip_dict["POCO_DRENAGEM_NIVEL_ALTO"]:
-            self.voip_dict["POCO_DRENAGEM_NIVEL_ALTO"] = False
+            Dicionarios.voip["POCO_DRENAGEM_NIVEL_ALTO"][0] = True
+        elif not self.leitura_nivel_alto_poco_drenagem and Dicionarios.voip["POCO_DRENAGEM_NIVEL_ALTO"][0]:
+            Dicionarios.voip["POCO_DRENAGEM_NIVEL_ALTO"][0] = False
 
-        if self.leitura_falha_bomba_drenagem_uni and not self.voip_dict["DRENAGEM_UNIDADES_BOMBA_FALHA"]:
+        if self.leitura_falha_bomba_drenagem_uni and not Dicionarios.voip["DRENAGEM_UNIDADES_BOMBA_FALHA"][0]:
             logger.warning("[SA] Houve uma falha na bomba de drenagem. Favor verificar.")
-            self.voip_dict["DRENAGEM_UNIDADES_BOMBA_FALHA"] = True
-        elif not self.leitura_falha_bomba_drenagem_uni and self.voip_dict["DRENAGEM_UNIDADES_BOMBA_FALHA"]:
-            self.voip_dict["DRENAGEM_UNIDADES_BOMBA_FALHA"] = False
+            Dicionarios.voip["DRENAGEM_UNIDADES_BOMBA_FALHA"][0] = True
+        elif not self.leitura_falha_bomba_drenagem_uni and Dicionarios.voip["DRENAGEM_UNIDADES_BOMBA_FALHA"][0]:
+            Dicionarios.voip["DRENAGEM_UNIDADES_BOMBA_FALHA"][0] = False
 
-        if self.leitura_nivel_muito_alto_poco_drenagem and not self.voip_dict["POCO_DRENAGEM_NIVEL_MUITO_ALTO"]:
+        if self.leitura_nivel_muito_alto_poco_drenagem and not Dicionarios.voip["POCO_DRENAGEM_NIVEL_MUITO_ALTO"][0]:
             logger.warning("[SA] Nível do poço de drenagem está muito alto. Favor verificar.")
-            self.voip_dict["POCO_DRENAGEM_NIVEL_MUITO_ALTO"] = True
-        elif not self.leitura_nivel_muito_alto_poco_drenagem and self.voip_dict["POCO_DRENAGEM_NIVEL_MUITO_ALTO"]:
-            self.voip_dict["POCO_DRENAGEM_NIVEL_MUITO_ALTO"] = False
+            Dicionarios.voip["POCO_DRENAGEM_NIVEL_MUITO_ALTO"][0] = True
+        elif not self.leitura_nivel_muito_alto_poco_drenagem and Dicionarios.voip["POCO_DRENAGEM_NIVEL_MUITO_ALTO"][0]:
+            Dicionarios.voip["POCO_DRENAGEM_NIVEL_MUITO_ALTO"][0] = False
 
-        if self.leitura_alarme_sistema_incendio_atuado and not self.voip_dict["SISTEMA_INCENDIO_ALARME_ATUADO"]:
+        if self.leitura_alarme_sistema_incendio_atuado and not Dicionarios.voip["SISTEMA_INCENDIO_ALARME_ATUADO"][0]:
             logger.warning("[SA] O alarme do sistema de incêndio foi acionado. Favor verificar.")
-            self.voip_dict["SISTEMA_INCENDIO_ALARME_ATUADO"] = True
-        elif not self.leitura_alarme_sistema_incendio_atuado and self.voip_dict["SISTEMA_INCENDIO_ALARME_ATUADO"]:
-            self.voip_dict["SISTEMA_INCENDIO_ALARME_ATUADO"] = False
+            Dicionarios.voip["SISTEMA_INCENDIO_ALARME_ATUADO"][0] = True
+        elif not self.leitura_alarme_sistema_incendio_atuado and Dicionarios.voip["SISTEMA_INCENDIO_ALARME_ATUADO"][0]:
+            Dicionarios.voip["SISTEMA_INCENDIO_ALARME_ATUADO"][0] = False
 
-        if self.leitura_alarme_sistema_seguraca_atuado and not self.voip_dict["SISTEMA_SEGURANCA_ALARME_ATUADO"]:
+        if self.leitura_alarme_sistema_seguraca_atuado and not Dicionarios.voip["SISTEMA_SEGURANCA_ALARME_ATUADO"][0]:
             logger.warning("[SA] O alarme do sistem de seguraça foi acionado. Favor verificar.")
-            self.voip_dict["SISTEMA_SEGURANCA_ALARME_ATUADO"] = True
-        elif not self.leitura_alarme_sistema_seguraca_atuado and self.voip_dict["SISTEMA_SEGURANCA_ALARME_ATUADO"]:
-            self.voip_dict["SISTEMA_SEGURANCA_ALARME_ATUADO"] = False
+            Dicionarios.voip["SISTEMA_SEGURANCA_ALARME_ATUADO"][0] = True
+        elif not self.leitura_alarme_sistema_seguraca_atuado and Dicionarios.voip["SISTEMA_SEGURANCA_ALARME_ATUADO"][0]:
+            Dicionarios.voip["SISTEMA_SEGURANCA_ALARME_ATUADO"][0] = False
             
-        if self.leitura_falha_tubo_succao_bomba_recalque and not self.voip_dict["BOMBA_RECALQUE_TUBO_SUCCAO_FALHA"]:
+        if self.leitura_falha_tubo_succao_bomba_recalque and not Dicionarios.voip["BOMBA_RECALQUE_TUBO_SUCCAO_FALHA"][0]:
             logger.warning("[SA] Houve uma falha na sucção da bomba de recalque. Favor verificar.")
-            self.voip_dict["BOMBA_RECALQUE_TUBO_SUCCAO_FALHA"] = True
-        elif not self.leitura_falha_tubo_succao_bomba_recalque and self.voip_dict["BOMBA_RECALQUE_TUBO_SUCCAO_FALHA"]:
-            self.voip_dict["BOMBA_RECALQUE_TUBO_SUCCAO_FALHA"] = False
+            Dicionarios.voip["BOMBA_RECALQUE_TUBO_SUCCAO_FALHA"][0] = True
+        elif not self.leitura_falha_tubo_succao_bomba_recalque and Dicionarios.voip["BOMBA_RECALQUE_TUBO_SUCCAO_FALHA"][0]:
+            Dicionarios.voip["BOMBA_RECALQUE_TUBO_SUCCAO_FALHA"][0] = False
 
     # TODO adicionar descricao nas variaves de leituras de condicionadores
     def iniciar_leituras_condicionadores(self) -> None:

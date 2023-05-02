@@ -42,7 +42,6 @@ class Usina:
         else:
             self.cfg = cfg
 
-        self.opc = ClientesUsina.opc
         self.clp = ClientesUsina.clp
 
         # INCIALIZAÇÃO DE OBJETOS DA USINA
@@ -51,7 +50,7 @@ class Usina:
         self.se: Subestacao = Subestacao(self)
         self.tda: TomadaAgua = TomadaAgua(self)
         self.sa: ServicoAuxiliar = ServicoAuxiliar(self)
-        self.setores = [self.bay, self.se, self.tda, self.sa]
+        self.setores: list[Bay, Subestacao, TomadaAgua, ServicoAuxiliar] = [self.bay, self.se, self.tda, self.sa]
 
         # Unidades de Geração
         self.ug1: UnidadeGeracao = UnidadeGeracao(self, 1)
@@ -60,11 +59,6 @@ class Usina:
 
         self.ug1.lista_ugs = self.ugs
         self.ug2.lista_ugs = self.ugs
-
-        # Setter para o client base da Leitura e Escrita OPC (Caso de XAV pois há apenas 1 servidor opc na IHM)
-        self.escrita_opc: EscritaOpc | EscritaOpcBit = EscritaOpc()
-        self.escrita_opc.client = self.opc
-        ModbusClient()
 
         # ATRIBUIÇÃO DE VARIÀVEIS
         # PRIVADAS
@@ -99,8 +93,7 @@ class Usina:
         self.voip_emerg: bool = False
         self.borda_emerg: bool = False
         self.normalizar_forcado: bool = False
-
-        self.voip_dict = Dicionarios.voip
+        
         self.glb_dict = Dicionarios.globais
 
         # FINALIZAÇÃO DO __INIT__
@@ -146,7 +139,7 @@ class Usina:
         return datetime.now(pytz.timezone("Brazil/East")).replace(tzinfo=None)
 
     def ajustar_ie_padrao(self) -> int:
-        return ([sum(ug.leitura_potencia) for ug in self.ugs] / self.cfg["pot_maxima_alvo"]) / self.ug_operando
+        return (sum(ug.leitura_potencia for ug in self.ugs) / self.cfg["pot_maxima_alvo"]) / self.ug_operando
 
     def ajustar_unidades_init(self) -> None:
         self.ug_operando += [1 for ug in self.ugs if ug.etapa_atual == UG_SINCRONIZADA]
@@ -202,7 +195,7 @@ class Usina:
             self.ultima_tentativa_norm = self.get_time()
             self.tentativas_normalizar += 1
             self.bd_emergencia = self.clp_emergencia = False
-            [setor.resetar_emergencia() for setor in self.setores]
+            for setor in self.setores: setor.resetar_emergencia()
             BancoDados.update_remove_emergencia()
             return True
 
@@ -212,20 +205,12 @@ class Usina:
     def leitura_temporizada(self):
         logger.debug("Iniciando o timer de leitura periódica. Tempo definido -> \"30 min\".")
         while True:
-            [c.leitura_periodica() for cs in [self.setores, self.ugs] for c in cs]
-            self.acionar_voip() if True in [n[0] for n, vl in self.voip_dict.items()] else ...
+            for ug in self.ugs: ug.leitura_periodica()
+            for setor in self.setores: setor.leitura_periodica()
+            if True in (Dicionarios.voip[r][0] for r in Dicionarios.voip):
+                Voip.acionar_chamada()
+                pass
             sleep(max(0, (time() + 1800) - time()))
-
-    def acionar_voip(self) -> None:
-        try:
-            for _, vl in self.voip_dict.items():
-                if vl[0]:
-                    Voip.acionar_chamada()
-                    break
-
-        except Exception as e:
-            logger.exception(f"[USN] Houve um erro ao ligar por Voip. Exception: \"{repr(e)}\".")
-            logger.debug(f"[USN] Traceback: {traceback.print_stack}")
 
     def atualizar_parametros_db(self, parametros) -> None:
         try:

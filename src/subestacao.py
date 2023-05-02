@@ -132,41 +132,41 @@ class Subestacao(Usina):
         if self.leitura_falha_temp_enrolamento_te:
             logger.warning("[SE] Houve uma falha de leitura de temperatura do enrolamento do transformador elevador. Favor verificar.")
 
-        if self.leitura_alm_temperatura_oleo_te and not self.voip_dict["TE_ALM_TEMPERATURA_OLEO"]:
+        if self.leitura_alm_temperatura_oleo_te and not Dicionarios.voip["TE_ALM_TEMPERATURA_OLEO"][0]:
             logger.warning("[SE] A temperatura do óleo do transformador elevador está alta. Favor verificar.")
-            self.voip_dict["TE_ALM_TEMPERATURA_OLEO"] = True
-        elif not self.leitura_alm_temperatura_oleo_te and self.voip_dict["TE_ALM_TEMPERATURA_OLEO"]:
-            self.voip_dict["TE_ALM_TEMPERATURA_OLEO"] = False
+            Dicionarios.voip["TE_ALM_TEMPERATURA_OLEO"][0] = True
+        elif not self.leitura_alm_temperatura_oleo_te and Dicionarios.voip["TE_ALM_TEMPERATURA_OLEO"][0]:
+            Dicionarios.voip["TE_ALM_TEMPERATURA_OLEO"][0] = False
 
-        if self.leitura_nivel_oleo_muito_alto_te and not self.voip_dict["TE_NIVEL_OLEO_MUITO_ALTO"]:
+        if self.leitura_nivel_oleo_muito_alto_te and not Dicionarios.voip["TE_NIVEL_OLEO_MUITO_ALTO"][0]:
             logger.warning("[SE] O nível do óleo do transformador elevador está muito alto. Favor verificar.")
-            self.voip_dict["TE_NIVEL_OLEO_MUITO_ALTO"] = True
-        elif not self.leitura_nivel_oleo_muito_alto_te and self.voip_dict["TE_NIVEL_OLEO_MUITO_ALTO"]:
-            self.voip_dict["TE_NIVEL_OLEO_MUITO_ALTO"] = False
+            Dicionarios.voip["TE_NIVEL_OLEO_MUITO_ALTO"][0] = True
+        elif not self.leitura_nivel_oleo_muito_alto_te and Dicionarios.voip["TE_NIVEL_OLEO_MUITO_ALTO"][0]:
+            Dicionarios.voip["TE_NIVEL_OLEO_MUITO_ALTO"][0] = False
         
-        if self.leitura_nivel_oleo_muito_baixo_te and not self.voip_dict["TE_NIVEL_OLEO_MUITO_BAIXO"]:
+        if self.leitura_nivel_oleo_muito_baixo_te and not Dicionarios.voip["TE_NIVEL_OLEO_MUITO_BAIXO"][0]:
             logger.warning("[SE] O nível de óleo do tranformador elevador está muito baixo. Favor verificar.")
-            self.voip_dict["TE_NIVEL_OLEO_MUITO_BAIXO"] = True
-        elif not self.leitura_nivel_oleo_muito_baixo_te and self.voip_dict["TE_NIVEL_OLEO_MUITO_BAIXO"]:
-            self.voip_dict["TE_NIVEL_OLEO_MUITO_BAIXO"] = False
+            Dicionarios.voip["TE_NIVEL_OLEO_MUITO_BAIXO"][0] = True
+        elif not self.leitura_nivel_oleo_muito_baixo_te and Dicionarios.voip["TE_NIVEL_OLEO_MUITO_BAIXO"][0]:
+            Dicionarios.voip["TE_NIVEL_OLEO_MUITO_BAIXO"][0] = False
 
-        if self.leitura_alarme_temperatura_oleo_te and not self.voip_dict["TE_ALARME_TEMPERATURA_OLEO"]:
+        if self.leitura_alarme_temperatura_oleo_te and not Dicionarios.voip["TE_ALARME_TEMPERATURA_OLEO"][0]:
             logger.warning("[SE] A temperatura do óleo do transformador elevador está alta. Favor verificar.")
-            self.voip_dict["TE_ALARME_TEMPERATURA_OLEO"] = True
-        elif not self.leitura_alarme_temperatura_oleo_te and self.voip_dict["TE_ALARME_TEMPERATURA_OLEO"]:
-            self.voip_dict["TE_ALARME_TEMPERATURA_OLEO"] = False
+            Dicionarios.voip["TE_ALARME_TEMPERATURA_OLEO"][0] = True
+        elif not self.leitura_alarme_temperatura_oleo_te and Dicionarios.voip["TE_ALARME_TEMPERATURA_OLEO"][0]:
+            Dicionarios.voip["TE_ALARME_TEMPERATURA_OLEO"][0] = False
 
-        if self.leitura_alm_temp_enrolamento_te and not self.voip_dict["TE_ALM_TEMPERATURA_ENROLAMENTO"]:
+        if self.leitura_alm_temp_enrolamento_te and not Dicionarios.voip["TE_ALM_TEMPERATURA_ENROLAMENTO"][0]:
             logger.warning("[SE] A temperatura do enrolamento do transformador elevador está alta. Favor verificar.")
-            self.voip_dict["TE_ALM_TEMPERATURA_ENROLAMENTO"] = True
-        elif not self.leitura_alm_temp_enrolamento_te and self.voip_dict["TE_ALM_TEMPERATURA_ENROLAMENTO"]:
-            self.voip_dict["TE_ALM_TEMPERATURA_ENROLAMENTO"] = False
+            Dicionarios.voip["TE_ALM_TEMPERATURA_ENROLAMENTO"][0] = True
+        elif not self.leitura_alm_temp_enrolamento_te and Dicionarios.voip["TE_ALM_TEMPERATURA_ENROLAMENTO"][0]:
+            Dicionarios.voip["TE_ALM_TEMPERATURA_ENROLAMENTO"][0] = False
         
-        if self.leitura_alarme_temp_enrolamento_te and not self.voip_dict["TE_ALARME_TEMPERATURA_ENROLAMENTO"]:
+        if self.leitura_alarme_temp_enrolamento_te and not Dicionarios.voip["TE_ALARME_TEMPERATURA_ENROLAMENTO"][0]:
             logger.warning("[SE] A temperatura do enrolamento do transformador elevador está alta. Favor verificar.")
-            self.voip_dict["TE_ALARME_TEMPERATURA_ENROLAMENTO"] = True
-        elif not self.leitura_alarme_temp_enrolamento_te and self.voip_dict["TE_ALARME_TEMPERATURA_ENROLAMENTO"]:
-            self.voip_dict["TE_ALARME_TEMPERATURA_ENROLAMENTO"] = False
+            Dicionarios.voip["TE_ALARME_TEMPERATURA_ENROLAMENTO"][0] = True
+        elif not self.leitura_alarme_temp_enrolamento_te and Dicionarios.voip["TE_ALARME_TEMPERATURA_ENROLAMENTO"][0]:
+            Dicionarios.voip["TE_ALARME_TEMPERATURA_ENROLAMENTO"][0] = False
 
 
     def iniciar_leituras_condicionadores(self) -> None:
