@@ -17,7 +17,7 @@ class Voip:
     with open(arquivo, "r") as file:
         cfg = json.load(file)
 
-    lista_padrao = [["Diego", "41999111134"], """["Henrique", "41999610053"]"""]
+    lista_padrao = [["Diego", "41999111134"]]
 
     token_data = str(f"username={cfg['caller_voip']}&password={cfg['user_token']}&grant_type=password").encode()
     token_headers =  {
@@ -25,7 +25,7 @@ class Voip:
             "Authorization": "Basic TnZvaXBBcGlWMjpUblp2YVhCQmNHbFdNakl3TWpFPQ==",
         }
 
-    db = Database("voip")
+    #db = Database("voip")
 
     @staticmethod
     def verificar_expediente(agenda) -> list:
@@ -73,7 +73,7 @@ class Voip:
             return f"Bearer {response_body['access_token']}"
 
         except Exception as e:
-            logger.debug(f"[VOIP] Não foi possível carregar a token de acesso Nvoip. Exception: \"{repr(e)}\" ")
+            logger.debug(f"[VOIP] Não foi possível carregar a token de acesso Nvoip. Exception: \"{repr(e)}\"")
             return None
 
     @classmethod
@@ -110,7 +110,6 @@ class Voip:
                         "dtmfs": [],
                     }
                     cls.codificar_dados(data, headers)
-                    sleep(5)
                 vd.voip_dict["EMERGENCIA"][0] = False
             else:
                 for _, vl in vd.voip_dict.items():
@@ -124,7 +123,7 @@ class Voip:
                                 "dtmfs": [],
                             }
                             cls.codificar_dados(data, headers)
-                            sleep(25)
                         vl[0] = False
+                        sleep(5)
         else:
             logger.info("[VOIP] Torpedo de voz desativado. Para habilitar envio, favor alterar valor \"voz_habilitado = true\" no arquivo \"voip_config.json\".")

@@ -13,10 +13,8 @@ import traceback
 
 import src.mensageiro.dict as vd
 
-from threading import Thread
-from time import sleep, time
+from time import sleep
 from datetime import datetime
-from abc import abstractmethod
 from pyModbusTCP.client import ModbusClient
 
 from src.codes import *
@@ -82,6 +80,7 @@ class UnidadeDeGeracao:
 
         self.ts_auxiliar = self.get_time()
 
+        # Letitura de potência total da Usina
         self.potencia_ativa_kW = LeituraModbus(
             "Potência Usina",
             self.clp["SA"],
@@ -91,10 +90,8 @@ class UnidadeDeGeracao:
         )
 
         # Leituras de operação das UGS
-        self.leituras_ug: dict[str, LeituraBase] = {}
-
         self.leitura_potencia = LeituraModbus(
-            f"ug{self.id}_Gerador_PotenciaAtivaMedia",
+            f"UG{self.id}_Potência",
             self.clp[f"UG{self.id}"],
             UG[f"REG_UG{self.id}_RA_PM_710_Potencia_Ativa"],
             op=4,
@@ -105,23 +102,23 @@ class UnidadeDeGeracao:
             UG[f"REG_UG{self.id}_SA_SPPotAtiva"],
             op=4
         )
-        self.leituras_ug[f"leitura_horimetro_hora"] = LeituraModbus(
-            f"UG{self.id}_Horimetro",
+        self.leitura_horimetro_hora = LeituraModbus(
+            f"UG{self.id}_Horímetro_hora",
             self.clp[f"UG{self.id}"],
             UG[f"REG_UG{self.id}_RA_Horimetro_Gerador"],
             op=4,
         )
-        self.leituras_ug[f"leitura_horimetro_frac"] = LeituraModbus(
-            f"ug{self.id}_Horimetro_min",
+        self.leitura_horimetro_min = LeituraModbus(
+            f"UG{self.id}_Horímetro_min",
             self.clp[f"UG{self.id}"],
             UG[f"REG_UG{self.id}_RA_Horimetro_Gerador_min"],
             op=4,
             escala=1/60
         )
-        self.leituras_ug[f"leitura_horimetro"] = LeituraSoma(
-            f"ug{self.id} horímetro",
-            self.leituras_ug[f"leitura_horimetro_hora"],
-            self.leituras_ug[f"leitura_horimetro_frac"]
+        self.leitura_horimetro = LeituraSoma(
+            f"UG{self.id}_Horímetro",
+            self.leitura_horimetro_hora,
+            self.leitura_horimetro_min
         )
         C1 = LeituraModbusCoil(
             descr=f"UG{self.id}_Sincronizada",
@@ -143,7 +140,7 @@ class UnidadeDeGeracao:
             modbus_client=self.clp[f"UG{self.id}"],
             registrador=UG[f"REG_UG{self.id}_RD_PartindoEmAuto"],
         )
-        self.leituras_ug[f"leitura_Operacao_EtapaAtual"] = LeituraComposta(
+        self.leitura_etapa_atual = LeituraComposta(
             f"ug{self.id}_Operacao_EtapaAtual",
             leitura1=C1,
             leitura2=C2,
@@ -498,7 +495,7 @@ class UnidadeDeGeracao:
     @property
     def etapa_atual(self) -> int:
         try:
-            response = self.leituras_ug[f"leitura_Operacao_EtapaAtual"].valor
+            response = self.leitura_etapa_atual.valor
             if response == 1:
                 return UNIDADE_SINCRONIZADA
             elif 2 <= response <= 3:
@@ -822,7 +819,7 @@ class UnidadeDeGeracao:
         if self.ajuste_inicial_cx_esp == -1:
             # Inicializa as variáveis de controle PI para operação TDA Offline
             self.cx_controle_p = (self.leitura_caixa_espiral.valor - self.cfg["press_cx_alvo"]) * self.cfg["cx_kp"]
-            self.cx_ajuste_ie = sum(ug.leituras_ug["leitura_potencia"] for ug in self.lista_ugs) / self.cfg["pot_maxima_alvo"]
+            self.cx_ajuste_ie = sum(ug.leitura_potencia for ug in self.lista_ugs) / self.cfg["pot_maxima_alvo"]
             self.cx_controle_i = self.cx_ajuste_ie - self.cx_controle_p
             self.ajuste_inicial_cx_esp = 0
 
@@ -879,47 +876,47 @@ class UnidadeDeGeracao:
             self.enviar_setpoint(0)
 
     def leituras_temporizadas(self) -> None:
-        if self.leitura_voip["leitura_ED_FreioPastilhaGasta"].valor != 0 and not vd.voip_dict[f"FREIO_PASTILHA_GASTA_UG{self.id}"]:
+        if self.leitura_voip["leitura_ED_FreioPastilhaGasta"].valor != 0 and not vd.voip_dict[f"FREIO_PASTILHA_GASTA_UG{self.id}"][0]:
             logger.warning(f"[UG{self.id}] O sensor de Freio da UG retornou que a Pastilha está gasta, favor considerar troca.")
-            vd.voip_dict[f"FREIO_PASTILHA_GASTA_UG{self.id}"] = True
-        elif self.leitura_voip["leitura_ED_FreioPastilhaGasta"].valor == 0 and vd.voip_dict[f"FREIO_PASTILHA_GASTA_UG{self.id}"]:
-            vd.voip_dict[f"FREIO_PASTILHA_GASTA_UG{self.id}"] = False
+            vd.voip_dict[f"FREIO_PASTILHA_GASTA_UG{self.id}"][0] = True
+        elif self.leitura_voip["leitura_ED_FreioPastilhaGasta"].valor == 0 and vd.voip_dict[f"FREIO_PASTILHA_GASTA_UG{self.id}"][0]:
+            vd.voip_dict[f"FREIO_PASTILHA_GASTA_UG{self.id}"][0] = False
 
-        if self.leitura_voip["leitura_ED_FiltroPresSujo75Troc"].valor != 0 and not vd.voip_dict[f"FILTRO_PRES_SUJO_75_TROC_UG{self.id}"]:
+        if self.leitura_voip["leitura_ED_FiltroPresSujo75Troc"].valor != 0 and not vd.voip_dict[f"FILTRO_PRES_SUJO_75_TROC_UG{self.id}"][0]:
             logger.warning(f"[UG{self.id}] O sensor do Filtro de Pressão UHRV retornou que o filtro está 75% sujo, favor considerar troca.")
-            vd.voip_dict[f"FILTRO_PRES_SUJO_75_TROC_UG{self.id}"] = True
-        elif self.leitura_voip["leitura_ED_FiltroPresSujo75Troc"].valor == 0 and vd.voip_dict[f"FILTRO_PRES_SUJO_75_TROC_UG{self.id}"]:
-            vd.voip_dict[f"FILTRO_PRES_SUJO_75_TROC_UG{self.id}"] = False
+            vd.voip_dict[f"FILTRO_PRES_SUJO_75_TROC_UG{self.id}"][0] = True
+        elif self.leitura_voip["leitura_ED_FiltroPresSujo75Troc"].valor == 0 and vd.voip_dict[f"FILTRO_PRES_SUJO_75_TROC_UG{self.id}"][0]:
+            vd.voip_dict[f"FILTRO_PRES_SUJO_75_TROC_UG{self.id}"][0] = False
 
-        if self.leitura_voip["leitura_ED_FiltroRetSujo75Troc"].valor != 0 and not vd.voip_dict[f"FILTRO_RET_SUJO_75_TROC_UG{self.id}"]:
+        if self.leitura_voip["leitura_ED_FiltroRetSujo75Troc"].valor != 0 and not vd.voip_dict[f"FILTRO_RET_SUJO_75_TROC_UG{self.id}"][0]:
             logger.warning(f"[UG{self.id}] O sensor do Filtro de Retorno UHRV retornou que o filtro está 75% sujo, favor considerar troca.")
-            vd.voip_dict[f"FILTRO_RET_SUJO_75_TROC_UG{self.id}"] = True
-        elif self.leitura_voip["leitura_ED_FiltroRetSujo75Troc"].valor == 0 and vd.voip_dict[f"FILTRO_RET_SUJO_75_TROC_UG{self.id}"]:
-            vd.voip_dict[f"FILTRO_RET_SUJO_75_TROC_UG{self.id}"] = False
+            vd.voip_dict[f"FILTRO_RET_SUJO_75_TROC_UG{self.id}"][0] = True
+        elif self.leitura_voip["leitura_ED_FiltroRetSujo75Troc"].valor == 0 and vd.voip_dict[f"FILTRO_RET_SUJO_75_TROC_UG{self.id}"][0]:
+            vd.voip_dict[f"FILTRO_RET_SUJO_75_TROC_UG{self.id}"][0] = False
 
-        if self.leitura_voip["leitura_ED_UHLMFilt1PresSujo75Troc"].valor != 0 and not vd.voip_dict[f"UHLM_FILTR_1_PRES_SUJO_75_TROC_UG{self.id}"]:
+        if self.leitura_voip["leitura_ED_UHLMFilt1PresSujo75Troc"].valor != 0 and not vd.voip_dict[f"UHLM_FILTR_1_PRES_SUJO_75_TROC_UG{self.id}"][0]:
             logger.warning(f"[UG{self.id}] O sensor do Filtro 1 de Pressão UHLM retornou que o filtro está 75% sujo, favor considerar troca.")
-            vd.voip_dict[f"UHLM_FILTR_1_PRES_SUJO_75_TROC_UG{self.id}"] = True
-        elif self.leitura_voip["leitura_ED_UHLMFilt1PresSujo75Troc"].valor == 0 and vd.voip_dict[f"UHLM_FILTR_1_PRES_SUJO_75_TROC_UG{self.id}"]:
-            vd.voip_dict[f"UHLM_FILTR_1_PRES_SUJO_75_TROC_UG{self.id}"] = False
+            vd.voip_dict[f"UHLM_FILTR_1_PRES_SUJO_75_TROC_UG{self.id}"][0] = True
+        elif self.leitura_voip["leitura_ED_UHLMFilt1PresSujo75Troc"].valor == 0 and vd.voip_dict[f"UHLM_FILTR_1_PRES_SUJO_75_TROC_UG{self.id}"][0]:
+            vd.voip_dict[f"UHLM_FILTR_1_PRES_SUJO_75_TROC_UG{self.id}"][0] = False
 
-        if self.leitura_voip["leitura_ED_UHLMFilt2PresSujo75Troc"].valor != 0 and not vd.voip_dict[f"UHLM_FILTR_2_PRES_SUJO_75_TROC_UG{self.id}"]:
+        if self.leitura_voip["leitura_ED_UHLMFilt2PresSujo75Troc"].valor != 0 and not vd.voip_dict[f"UHLM_FILTR_2_PRES_SUJO_75_TROC_UG{self.id}"][0]:
             logger.warning(f"[UG{self.id}] O sensor do Filtro 2 de Pressão UHLM retornou que o filtro está 75% sujo, favor considerar troca.")
-            vd.voip_dict[f"UHLM_FILTR_2_PRES_SUJO_75_TROC_UG{self.id}"] = True
-        elif self.leitura_voip["leitura_ED_UHLMFilt2PresSujo75Troc"].valor == 0 and vd.voip_dict[f"UHLM_FILTR_2_PRES_SUJO_75_TROC_UG{self.id}"]:
-            vd.voip_dict[f"UHLM_FILTR_2_PRES_SUJO_75_TROC_UG{self.id}"] = False
+            vd.voip_dict[f"UHLM_FILTR_2_PRES_SUJO_75_TROC_UG{self.id}"][0] = True
+        elif self.leitura_voip["leitura_ED_UHLMFilt2PresSujo75Troc"].valor == 0 and vd.voip_dict[f"UHLM_FILTR_2_PRES_SUJO_75_TROC_UG{self.id}"][0]:
+            vd.voip_dict[f"UHLM_FILTR_2_PRES_SUJO_75_TROC_UG{self.id}"][0] = False
 
-        if self.leitura_voip["leitura_ED_FiltroPressaoBbaMecSj75"].valor != 0 and not vd.voip_dict[f"FILTRO_PRESSAO_BBA_MEC_SJ_75_UG{self.id}"]:
+        if self.leitura_voip["leitura_ED_FiltroPressaoBbaMecSj75"].valor != 0 and not vd.voip_dict[f"FILTRO_PRESSAO_BBA_MEC_SJ_75_UG{self.id}"][0]:
             logger.warning(f"[UG{self.id}] O sensor do Filtro de Pressão da Bomba Mecânica retornou que o filtro está 75% sujo, favor considerar troca.")
-            vd.voip_dict[f"FILTRO_PRESSAO_BBA_MEC_SJ_75_UG{self.id}"] = True
-        elif self.leitura_voip["leitura_ED_FiltroPressaoBbaMecSj75"].valor == 0 and vd.voip_dict[f"FILTRO_PRESSAO_BBA_MEC_SJ_75_UG{self.id}"]:
-            vd.voip_dict[f"FILTRO_PRESSAO_BBA_MEC_SJ_75_UG{self.id}"] = False
+            vd.voip_dict[f"FILTRO_PRESSAO_BBA_MEC_SJ_75_UG{self.id}"][0] = True
+        elif self.leitura_voip["leitura_ED_FiltroPressaoBbaMecSj75"].valor == 0 and vd.voip_dict[f"FILTRO_PRESSAO_BBA_MEC_SJ_75_UG{self.id}"][0]:
+            vd.voip_dict[f"FILTRO_PRESSAO_BBA_MEC_SJ_75_UG{self.id}"][0] = False
 
-        if self.leitura_voip["leitura_ED_TripPartRes"].valor != 0 and not vd.voip_dict[f"TRIP_PART_RES_UG{self.id}"]:
+        if self.leitura_voip["leitura_ED_TripPartRes"].valor != 0 and not vd.voip_dict[f"TRIP_PART_RES_UG{self.id}"][0]:
             logger.warning(f"[UG{self.id}] O sensor TripPartRes retornou valor 1.")
-            vd.voip_dict[f"TRIP_PART_RES_UG{self.id}"] = True
-        elif self.leitura_voip["leitura_ED_TripPartRes"].valor == 0 and vd.voip_dict[f"TRIP_PART_RES_UG{self.id}"]:
-            vd.voip_dict[f"TRIP_PART_RES_UG{self.id}"] = False
+            vd.voip_dict[f"TRIP_PART_RES_UG{self.id}"][0] = True
+        elif self.leitura_voip["leitura_ED_TripPartRes"].valor == 0 and vd.voip_dict[f"TRIP_PART_RES_UG{self.id}"][0]:
+            vd.voip_dict[f"TRIP_PART_RES_UG{self.id}"][0] = False
 
         if self.leitura_voip["leitura_ED_FreioCmdRemoto"].valor != 1:
             logger.debug(f"[UG{self.id}] O freio da UG saiu do modo remoto, favor analisar a situação.")

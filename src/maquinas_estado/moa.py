@@ -38,11 +38,6 @@ class State:
 
 
 class FalhaCritica(State):
-    """
-    Lida com a falha na inicialização do MOA
-    :return: None
-    """
-
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         logger.critical("Falha crítica MOA. Exiting...")
@@ -51,11 +46,6 @@ class FalhaCritica(State):
 
 
 class Pronto(State):
-    """
-    MOA está pronto, agora ele deve atualizar a vars
-    :return: State
-    """
-
     def __init__(self, usina, *args, **kwargs):
         super().__init__(usina, *args, **kwargs)
         self.n_tentativa = 0
@@ -90,18 +80,14 @@ class ValoresInternosAtualizados(State):
 
     def run(self):
         self.usn._state_moa = SM_INTERNAL_VALUES_UPDATED
+
+        global aux
+        global deve_normalizar
+
         self.usn.heartbeat()
         self.usn.ler_valores()
         self.usn.clp["MOA"].write_single_coil(self.usn.cfg['REG_PAINEL_LIDO'], [1])
-        """Decidir para qual modo de operação o sistema deve ir"""
 
-        """
-        Aqui a ordem do checks importa, e muito.
-        """
-
-        # atualizar arquivo das configurações
-        global aux
-        global deve_normalizar
         self.usn.TDA_Offline = False
 
         with open(os.path.join(os.path.dirname('/opt/operacao-autonoma/'), "config.json"), "w") as file:
@@ -159,20 +145,14 @@ class ValoresInternosAtualizados(State):
             sleep(2)
             return Emergencia(self.usn)
 
-        # Verificamos se existem agendamentos
         if len(self.usn.get_agendamentos_pendentes()) > 0:
             return AgendamentosPendentes(self.usn)
 
-        # Em seguida com o modo manual (não autonomo)
         if not self.usn.modo_autonomo:
             logger.debug("Comando recebido: \"Desabilitar modo autônomo\"")
             sleep(2)
             return ModoManualAtivado(self.usn)
 
-        # Se não foi redirecionado ainda,
-        # assume-se que o MOA deve executar de modo autônomo
-
-        # Verifica-se então a situação do reservatório
         if self.usn.aguardando_reservatorio:
             if self.usn.nv_montante > self.usn.cfg["nv_alvo"]:
                 logger.debug("Reservatorio dentro do nivel de trabalho")
@@ -222,7 +202,6 @@ class Emergencia(State):
                         self.usn.db_emergencia_acionada = 0
 
             self.usn.ler_valores()
-            # Ler condiconadores
             deve_indisponibilizar = False
             deve_normalizar = False
             condicionadores_ativos = []
@@ -245,10 +224,7 @@ class Emergencia(State):
 
             if (self.usn.clp_emergencia_acionada or deve_normalizar or deve_indisponibilizar):
                 try:
-
-                    # Se algum condicionador deve gerar uma indisponibilidade
                     if deve_indisponibilizar:
-                        # Logar os condicionadores ativos
                         logger.critical(f"[USN] USN detectou condicionadores ativos, passando USINA para manual e ligando por VOIP.\nCondicionadores ativos:\n{[d.descr for d in condicionadores_ativos]}")
                         return ModoManualAtivado(self.usn)
 

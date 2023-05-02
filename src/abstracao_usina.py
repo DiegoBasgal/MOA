@@ -199,7 +199,7 @@ class Usina:
         self.clp["MOA"].write_single_coil(self.cfg["REG_MOA_OUT_BLOCK_UG2"], 0)
         self.clp["MOA"].write_single_coil(self.cfg["REG_MOA_OUT_BLOCK_UG3"], 0)
 
-        threading.Thread(target=lambda: self.leitura_condicionadores()).start()
+        threading.Thread(target=lambda: self.leituras_iniciais()).start()
         self.ler_valores()
         self.atualizar_limites_operacao(self.db.get_parametros_usina())
         self.escrever_valores()
@@ -237,7 +237,7 @@ class Usina:
 
         if not self.clp["TDA"].open():
             raise ConnectionError(f"Modbus client ({self.cfg['TDA_slave_ip']}:{self.cfg['TDA_slave_porta']}) failed to open.")
-        
+
         if not self.clp["MOA"].open():
             raise ConnectionError(f"Modbus client ({self.cfg['MOA_slave_ip']}:{self.cfg['MOA_slave_porta']}) failed to open.")
 
@@ -875,7 +875,7 @@ class Usina:
             logger.debug("UGs disponíveis em ordem (prioridade):")
         else:
             # escolher por menor horas_maquina primeiro
-            ls = sorted(ls, key=lambda y: (-1 * y.etapa_atual, y.leituras_ug[f"leitura_horimetro"].valor, -1 * y.leitura_potencia.valor, -1 * y.setpoint,),)
+            ls = sorted(ls, key=lambda y: (-1 * y.etapa_atual, y.leitura_horimetro.valor, -1 * y.leitura_potencia.valor, -1 * y.setpoint,),)
             # ls = sorted(ls, key=lambda y: (-1 * y.etapa_atual if y.etapa_atual == UNIDADE_SINCRONIZADA else y.leitura_horimetro.valor,
                                             #-1 * y.leitura_potencia.valor,
                                             #-1 * y.setpoint,),)
@@ -978,7 +978,7 @@ class Usina:
         else:
             self.ug3.forcar_estado_manual()
             logger.critical("CLP UG3 não respondeu a tentativa de conexão ModBus!")
-        
+
         if not ping(self.cfg["MOA_slave_ip"]):
             logger.warning("CLP MOA não respondeu a tentativa de ping!")
         if self.clp["MOA"].open():
@@ -987,334 +987,272 @@ class Usina:
             logger.warning("CLP MOA não respondeu a tentativa de conexão ModBus!")
 
     def leitura_periodica(self, delay: int) -> None:
-        logger.debug("Iniciando o timer de leitura periódica.")
         try:
             proxima_leitura = time() + delay
             while True:
                 self.leituras_temporizadas()
                 for ug in self.ugs: ug.leituras_temporizadas()
-                sleep(1)
-                self.verificar_voip()
+
+                if True in (vd.voip_dict[r][0] for r in vd.voip_dict):
+                    Voip.acionar_chamada()
+                    pass
+
                 sleep(max(0, proxima_leitura - time()))
-                proxima_leitura += (time() - proxima_leitura) // delay * delay + delay
 
         except Exception:
             logger.error(f"Houve um problema ao executar a leitura periódica.")
             logger.debug(f"Traceback: {traceback.format_exc()}")
 
-    def verificar_voip(self) -> None:
-        try:
-            for _, v in vd.voip_dict.items():
-                if v[0]:
-                    Voip.acionar_chamada()
-                    break
+    def leituras_temporizadas(self) -> None:
+        if self.leitura_ED_SA_QLCF_Disj52ETrip.valor != 0 and not vd.voip_dict["SA_QLCF_DISJ_52E_TRIP"][0]:
+            logger.warning("O Disjuntor do Gerador Diesel de Emergência QLCF identificou um sinal de TRIP, favor verificar.")
+            vd.voip_dict["SA_QLCF_DISJ_52E_TRIP"][0] = True
+        elif self.leitura_ED_SA_QLCF_Disj52ETrip.valor == 0 and vd.voip_dict["SA_QLCF_DISJ_52E_TRIP"][0]:
+            vd.voip_dict["SA_QLCF_DISJ_52E_TRIP"][0] = False
 
-        except Exception:
-            logger.exception(f"Houve um problema ao ligar por Voip.")
-            logger.exception(f"Traceback: {traceback.format_exc()}")
+        if self.leitura_ED_SA_QLCF_TripDisjAgrup.valor != 0 and not vd.voip_dict["SA_QLCF_TRIP_DISJ_AGRUP"][0]:
+            logger.warning("O sensor do Disjuntor de Agrupamento QLCF identificou um sinal de trip, favor verificar.")
+            vd.voip_dict["SA_QLCF_TRIP_DISJ_AGRUP"][0] = True
+        elif self.leitura_ED_SA_QLCF_TripDisjAgrup.valor == 0 and vd.voip_dict["SA_QLCF_TRIP_DISJ_AGRUP"][0]:
+            vd.voip_dict["SA_QLCF_TRIP_DISJ_AGRUP"][0] = False
 
-    def leitura_condicionadores(self) -> None:
-        #Lista de condicionadores essenciais que devem ser lidos a todo momento
-        #-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------#
-        self.leitura_ED_SA_QCAP_TensaoPresenteTSA = LeituraModbusCoil("ED_SA_QCAP_TensaoPresenteTSA", self.clp["SA"], REG_SA_ED_SA_QCAP_TensaoPresenteTSA, )
-        x = self.leitura_ED_SA_QCAP_TensaoPresenteTSA
-        self.condicionadores_essenciais.append(CondicionadorBase(x.descr, DEVE_NORMALIZAR, x))
+        if self.leitura_ED_SA_QCAP_SubtensaoBarraGeral.valor != 0 and not vd.voip_dict["SA_QCAP_SUBTENSAO_BARRA_GERAL"][0]:
+            logger.warning("O sensor de Subtensão do Barramento Geral QCAP foi acionado, favor verificar.")
+            vd.voip_dict["SA_QCAP_SUBTENSAO_BARRA_GERAL"][0] = True
+        elif self.leitura_ED_SA_QCAP_SubtensaoBarraGeral.valor == 0 and vd.voip_dict["SA_QCAP_SUBTENSAO_BARRA_GERAL"][0]:
+            vd.voip_dict["SA_QCAP_SUBTENSAO_BARRA_GERAL"][0] = False
 
-        self.leitura_ED_SA_SEL787_Trip = LeituraModbusCoil("ED_SA_SEL787_Trip", self.clp["SA"], REG_SA_ED_SA_SEL787_Trip, )
-        x = self.leitura_ED_SA_SEL787_Trip
-        self.condicionadores_essenciais.append(CondicionadorBase(x.descr, DEVE_INDISPONIBILIZAR, x))
+        if self.leitura_ED_SA_GMG_Alarme.valor != 0 and not vd.voip_dict["SA_GMG_ALARME"][0]:
+            logger.warning("O alarme do Grupo Motor Gerador foi acionado, favor verificar.")
+            vd.voip_dict["SA_GMG_ALARME"][0] = True
+        elif self.leitura_ED_SA_GMG_Alarme.valor == 0 and vd.voip_dict["SA_GMG_ALARME"][0]:
+            vd.voip_dict["SA_GMG_ALARME"][0] = False
 
-        self.leitura_ED_SA_SEL311_Trip = LeituraModbusCoil( "ED_SA_SEL311_Trip", self.clp["SA"], REG_SA_ED_SA_SEL311_Trip, )
-        x = self.leitura_ED_SA_SEL311_Trip
-        self.condicionadores_essenciais.append(CondicionadorBase(x.descr, DEVE_INDISPONIBILIZAR, x))
+        if self.leitura_ED_SA_GMG_Trip.valor != 0 and not vd.voip_dict["SA_GMG_TRIP"][0]:
+            logger.warning("O sensor de TRIP do Grupo Motor Gerador foi acionado, favor verificar.")
+            vd.voip_dict["SA_GMG_TRIP"][0] = True
+        elif self.leitura_ED_SA_GMG_Trip.valor == 0 and vd.voip_dict["SA_GMG_TRIP"][0]:
+            vd.voip_dict["SA_GMG_TRIP"][0] = False
 
-        # MRU3 é o relé de bloqueio 27/59N
-        self.leitura_ED_SA_MRU3_Trip = LeituraModbusCoil("ED_SA_MRU3_Trip", self.clp["SA"], REG_SA_ED_SA_MRU3_Trip, )
-        x = self.leitura_ED_SA_MRU3_Trip
-        self.condicionadores_essenciais.append(CondicionadorBase(x.descr, DEVE_INDISPONIBILIZAR, x))
+        if self.leitura_ED_SA_GMG_Operacao.valor != 0 and not vd.voip_dict["SA_GMG_OPERACAO"][0]:
+            logger.warning("O sensor de operação do Grupo Motor Gerador foi acionado, favor verificar.")
+            vd.voip_dict["SA_GMG_OPERACAO"][0] = True
+        elif self.leitura_ED_SA_GMG_Operacao.valor == 0 and vd.voip_dict["SA_GMG_OPERACAO"][0]:
+            vd.voip_dict["SA_GMG_OPERACAO"][0] = False
 
-        # MRL1 é o relé de bloqueio 86T
-        self.leitura_ED_SA_MRL1_Trip = LeituraModbusCoil("ED_SA_MRL1_Trip", self.clp["SA"], REG_SA_ED_SA_MRL1_Trip, )
-        x = self.leitura_ED_SA_MRL1_Trip
-        self.condicionadores_essenciais.append(CondicionadorBase(x.descr, DEVE_INDISPONIBILIZAR, x))
+        if self.leitura_ED_SA_GMG_BaixoComb.valor != 0 and not vd.voip_dict["SA_GMG_BAIXO_COMB"][0]:
+            logger.warning("O sensor de de combustível do Grupo Motor Gerador retornou que o nível está baixo, favor reabastercer o gerador.")
+            vd.voip_dict["SA_GMG_BAIXO_COMB"][0] = True
+        elif self.leitura_ED_SA_GMG_BaixoComb.valor == 0 and vd.voip_dict["SA_GMG_BAIXO_COMB"][0]:
+            vd.voip_dict["SA_GMG_BAIXO_COMB"][0] = False
 
-        self.leitura_ED_SA_QCADE_Disj52E1Trip = LeituraModbusCoil( "ED_SA_QCADE_Disj52E1Trip", self.clp["SA"], REG_SA_ED_SA_QCADE_Disj52E1Trip, )
-        x = self.leitura_ED_SA_QCADE_Disj52E1Trip
-        self.condicionadores_essenciais.append( CondicionadorBase(x.descr, DEVE_INDISPONIBILIZAR, x) )
-        #-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------#
+        if self.leitura_RD_BbaDren1_FalhaAcion.valor != 0 and not vd.voip_dict["BBA_DREN_1_FALHA_ACION"][0]:
+            logger.warning("O sensor da Bomba de Drenagem 1 identificou uma falha no acionamento, favor verificar.")
+            vd.voip_dict["BBA_DREN_1_FALHA_ACION"][0] = True
+        elif self.leitura_RD_BbaDren1_FalhaAcion.valor == 0 and vd.voip_dict["BBA_DREN_1_FALHA_ACION"][0]:
+            vd.voip_dict["BBA_DREN_1_FALHA_ACION"][0] = False
 
-        #Lista de condiconadores que deverão ser lidos apenas quando houver uma chamada de leitura
-        #-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------#
+        if self.leitura_RD_BbaDren2_FalhaAcion.valor != 0 and not vd.voip_dict["BBA_DREN_2_FALHA_ACION"][0]:
+            logger.warning("O sensor da Bomba de Drenagem 2 identificou uma falha no acionamento, favor verificar.")
+            vd.voip_dict["BBA_DREN_2_FALHA_ACION"][0] = True
+        elif self.leitura_RD_BbaDren2_FalhaAcion.valor == 0 and vd.voip_dict["BBA_DREN_2_FALHA_ACION"][0]:
+            vd.voip_dict["BBA_DREN_2_FALHA_ACION"][0] = False
+
+        if self.leitura_RD_BbaDren3_FalhaAcion.valor != 0 and not vd.voip_dict["BBA_DREN_3_FALHA_ACION"][0]:
+            logger.warning("O sensor da Bomba de Drenagem 3 identificou uma falha no acionamento, favor verificar.")
+            vd.voip_dict["BBA_DREN_3_FALHA_ACION"][0] = True
+        elif self.leitura_RD_BbaDren3_FalhaAcion.valor == 0 and vd.voip_dict["BBA_DREN_3_FALHA_ACION"][0]:
+            vd.voip_dict["BBA_DREN_3_FALHA_ACION"][0] = False
+
+        if self.leitura_RD_SA_GMG_FalhaAcion.valor != 0 and not vd.voip_dict["SA_GMG_FALHA_ACION"][0]:
+            logger.warning("O sensor do Grupo Motor Gerador identificou uma falha no acionamento, favor verificar.")
+            vd.voip_dict["SA_GMG_FALHA_ACION"][0] = True
+        elif self.leitura_RD_SA_GMG_FalhaAcion.valor == 0 and vd.voip_dict["SA_GMG_FALHA_ACION"][0]:
+            vd.voip_dict["SA_GMG_FALHA_ACION"][0] = False
+
+        if self.leitura_RD_FalhaComunSETDA.valor == 1 and not vd.voip_dict["FALHA_COMUM_SETDA"][0]:
+            logger.warning("Houve uma falha de comunicação com o CLP da Subestação e o CLP da Tomada da Água, favor verificar")
+            vd.voip_dict["FALHA_COMUM_SETDA"][0] = True
+        elif self.leitura_RD_FalhaComunSETDA.valor == 0 and vd.voip_dict["FALHA_COMUM_SETDA"][0]:
+            vd.voip_dict["FALHA_COMUM_SETDA"][0] = False
+
+        if self.leitura_ED_SA_QCAP_Disj52EFechado.valor == 1 and not vd.voip_dict["SA_QCAP_DISJ_52E_FECHADO"][0]:
+            logger.warning("O Disjuntor do Gerador Diesel de Emergência QLCF foi fechado.")
+            vd.voip_dict["SA_QCAP_DISJ_52E_FECHADO"][0] = True
+        elif self.leitura_ED_SA_QCAP_Disj52EFechado.valor == 0 and vd.voip_dict["SA_QCAP_DISJ_52E_FECHADO"][0]:
+            vd.voip_dict["SA_QCAP_DISJ_52E_FECHADO"][0] = False
+
+        if self.leitura_ED_SA_QCADE_BombasDng_Auto.valor == 0 and not vd.voip_dict["SA_QCADE_BOMBAS_DNG_AUTO"][0]:
+            logger.warning("O poço de drenagem da Usina entrou em modo remoto, favor verificar.")
+            vd.voip_dict["SA_QCADE_BOMBAS_DNG_AUTO"][0] = True
+        elif self.leitura_ED_SA_QCADE_BombasDng_Auto.valor == 1 and vd.voip_dict["SA_QCADE_BOMBAS_DNG_AUTO"][0]:
+            vd.voip_dict["SA_QCADE_BOMBAS_DNG_AUTO"][0] = False
+
+    def leituras_iniciais(self) -> None:
+        # Leituras para acionamento periódico
+        self.leitura_ED_SA_QLCF_Disj52ETrip = LeituraModbusCoil("ED_SA_QLCF_Disj52ETrip", self.clp["SA"], REG_SA_ED_SA_QLCF_Disj52ETrip)
+        self.leitura_ED_SA_QLCF_TripDisjAgrup = LeituraModbusCoil("ED_SA_QLCF_TripDisjAgrup", self.clp["SA"], REG_SA_ED_SA_QLCF_TripDisjAgrup)
+        self.leitura_ED_SA_QCAP_SubtensaoBarraGeral = LeituraModbusCoil("ED_SA_QCAP_SubtensaoBarraGeral", self.clp["SA"], REG_SA_ED_SA_QCAP_SubtensaoBarraGeral)
+        self.leitura_ED_SA_GMG_Alarme = LeituraModbusCoil("ED_SA_GMG_Alarme", self.clp["SA"], REG_SA_ED_SA_GMG_Alarme)
+        self.leitura_ED_SA_GMG_Trip = LeituraModbusCoil("ED_SA_GMG_Trip", self.clp["SA"], REG_SA_ED_SA_GMG_Trip)
+        self.leitura_ED_SA_GMG_Operacao = LeituraModbusCoil("ED_SA_GMG_Operacao", self.clp["SA"], REG_SA_ED_SA_GMG_Operacao)
+        self.leitura_ED_SA_GMG_BaixoComb = LeituraModbusCoil("ED_SA_GMG_BaixoComb", self.clp["SA"], REG_SA_ED_SA_GMG_BaixoComb)
+        self.leitura_RD_BbaDren1_FalhaAcion = LeituraModbusCoil("RD_BbaDren1_FalhaAcion", self.clp["SA"], REG_SA_RD_BbaDren1_FalhaAcion)
+        self.leitura_RD_BbaDren2_FalhaAcion = LeituraModbusCoil("RD_BbaDren2_FalhaAcion", self.clp["SA"], REG_SA_RD_BbaDren2_FalhaAcion)
+        self.leitura_RD_BbaDren3_FalhaAcion = LeituraModbusCoil("RD_BbaDren3_FalhaAcion", self.clp["SA"], REG_SA_RD_BbaDren3_FalhaAcion)
+        self.leitura_RD_SA_GMG_FalhaAcion = LeituraModbusCoil("RD_SA_GMG_FalhaAcion", self.clp["SA"], REG_SA_RD_SA_GMG_FalhaAcion)
+        self.leitura_RD_FalhaComunSETDA = LeituraModbusCoil("RD_FalhaComunSETDA", self.clp["SA"], REG_SA_RD_FalhaComunSETDA)
+        self.leitura_ED_SA_QCAP_Disj52EFechado = LeituraModbusCoil("ED_SA_QCAP_Disj52EFechado", self.clp["SA"], REG_SA_ED_SA_QCAP_Disj52EFechado)
+        self.leitura_ED_SA_QCADE_BombasDng_Auto = LeituraModbusCoil("ED_SA_QCADE_BombasDng_Auto", self.clp["SA"], REG_SA_ED_SA_QCADE_BombasDng_Auto)
+
+        ### CONDICIONADORES ESSENCIAIS
+        self.leitura_ED_SA_QCAP_TensaoPresenteTSA = LeituraModbusCoil("ED_SA_QCAP_TensaoPresenteTSA", self.clp["SA"], REG_SA_ED_SA_QCAP_TensaoPresenteTSA)
+        self.condicionadores_essenciais.append(CondicionadorBase(self.leitura_ED_SA_QCAP_TensaoPresenteTSA.descr, DEVE_NORMALIZAR, self.leitura_ED_SA_QCAP_TensaoPresenteTSA))
+
+        self.leitura_ED_SA_SEL787_Trip = LeituraModbusCoil("ED_SA_SEL787_Trip", self.clp["SA"], REG_SA_ED_SA_SEL787_Trip)
+        self.condicionadores_essenciais.append(CondicionadorBase(self.leitura_ED_SA_SEL787_Trip.descr, DEVE_INDISPONIBILIZAR, self.leitura_ED_SA_SEL787_Trip))
+
+        self.leitura_ED_SA_SEL311_Trip = LeituraModbusCoil("ED_SA_SEL311_Trip", self.clp["SA"], REG_SA_ED_SA_SEL311_Trip)
+        self.condicionadores_essenciais.append(CondicionadorBase(self.leitura_ED_SA_SEL311_Trip.descr, DEVE_INDISPONIBILIZAR, self.leitura_ED_SA_SEL311_Trip))
+
+        self.leitura_ED_SA_MRU3_Trip = LeituraModbusCoil("ED_SA_MRU3_Trip", self.clp["SA"], REG_SA_ED_SA_MRU3_Trip)
+        self.condicionadores_essenciais.append(CondicionadorBase(self.leitura_ED_SA_MRU3_Trip.descr, DEVE_INDISPONIBILIZAR, self.leitura_ED_SA_MRU3_Trip))
+
+        self.leitura_ED_SA_MRL1_Trip = LeituraModbusCoil("ED_SA_MRL1_Trip", self.clp["SA"], REG_SA_ED_SA_MRL1_Trip)
+        self.condicionadores_essenciais.append(CondicionadorBase(self.leitura_ED_SA_MRL1_Trip.descr, DEVE_INDISPONIBILIZAR, self.leitura_ED_SA_MRL1_Trip))
+
+        self.leitura_ED_SA_QCADE_Disj52E1Trip = LeituraModbusCoil("ED_SA_QCADE_Disj52E1Trip", self.clp["SA"], REG_SA_ED_SA_QCADE_Disj52E1Trip)
+        self.condicionadores_essenciais.append(CondicionadorBase(self.leitura_ED_SA_QCADE_Disj52E1Trip.descr, DEVE_INDISPONIBILIZAR, self.leitura_ED_SA_QCADE_Disj52E1Trip))
+
+        ### CONDICIONADORES NORMAIS
         if not self.TDA_Offline:
-            self.leitura_ED_TDA_QcataDisj52ETrip = LeituraModbusCoil("ED_TDA_QcataDisj52ETrip", self.clp["SA"], REG_TDA_ED_QcataDisj52ETrip, )
-            x = self.leitura_ED_TDA_QcataDisj52ETrip
-            self.condicionadores.append(CondicionadorBase(x.descr, DEVE_INDISPONIBILIZAR, x))
+            self.leitura_ED_TDA_QcataDisj52ETrip = LeituraModbusCoil("ED_TDA_QcataDisj52ETrip", self.clp["SA"], REG_TDA_ED_QcataDisj52ETrip)
+            self.condicionadores.append(CondicionadorBase(self.leitura_ED_TDA_QcataDisj52ETrip.descr, DEVE_INDISPONIBILIZAR, self.leitura_ED_TDA_QcataDisj52ETrip))
 
-            self.leitura_ED_TDA_QcataDisj52ETripDisjSai = LeituraModbusCoil("ED_TDA_QcataDisj52ETripDisjSai", self.clp["SA"], REG_TDA_ED_QcataDisj52ETripDisjSai, )
-            x = self.leitura_ED_TDA_QcataDisj52ETripDisjSai
-            self.condicionadores.append(CondicionadorBase(x.descr, DEVE_INDISPONIBILIZAR, x))
+            self.leitura_ED_TDA_QcataDisj52ETripDisjSai = LeituraModbusCoil("ED_TDA_QcataDisj52ETripDisjSai", self.clp["SA"], REG_TDA_ED_QcataDisj52ETripDisjSai)
+            self.condicionadores.append(CondicionadorBase(self.leitura_ED_TDA_QcataDisj52ETripDisjSai.descr, DEVE_INDISPONIBILIZAR, self.leitura_ED_TDA_QcataDisj52ETripDisjSai))
 
-            self.leitura_ED_TDA_QcataDisj52EFalha380VCA = LeituraModbusCoil("ED_TDA_QcataDisj52EFalha380VCA", self.clp["SA"], REG_TDA_ED_QcataDisj52EFalha380VCA, )
-            x = self.leitura_ED_TDA_QcataDisj52EFalha380VCA
-            self.condicionadores.append(CondicionadorBase(x.descr, DEVE_INDISPONIBILIZAR, x))
+            self.leitura_ED_TDA_QcataDisj52EFalha380VCA = LeituraModbusCoil("ED_TDA_QcataDisj52EFalha380VCA", self.clp["SA"], REG_TDA_ED_QcataDisj52EFalha380VCA)
+            self.condicionadores.append(CondicionadorBase(self.leitura_ED_TDA_QcataDisj52EFalha380VCA.descr, DEVE_INDISPONIBILIZAR, self.leitura_ED_TDA_QcataDisj52EFalha380VCA))
 
-        # MRU3 é o relé de bloqueio 27/59N
-        self.leitura_ED_SA_MRU3_Falha = LeituraModbusCoil("ED_SA_MRU3_Falha", self.clp["SA"], REG_SA_ED_SA_MRU3_Falha, )
-        x = self.leitura_ED_SA_MRU3_Falha
-        self.condicionadores.append(CondicionadorBase(x.descr, DEVE_INDISPONIBILIZAR, x))
+        self.leitura_ED_SA_MRU3_Falha = LeituraModbusCoil("ED_SA_MRU3_Falha", self.clp["SA"], REG_SA_ED_SA_MRU3_Falha)
+        self.condicionadores.append(CondicionadorBase(self.leitura_ED_SA_MRU3_Falha.descr, DEVE_INDISPONIBILIZAR, self.leitura_ED_SA_MRU3_Falha))
 
-        self.leitura_ED_SA_SEL787_FalhaInterna = LeituraModbusCoil( "ED_SA_SEL787_FalhaInterna", self.clp["SA"], REG_SA_ED_SA_SEL787_FalhaInterna, )
-        x = self.leitura_ED_SA_SEL787_FalhaInterna
-        self.condicionadores.append( CondicionadorBase(x.descr, DEVE_INDISPONIBILIZAR, x) )
+        self.leitura_ED_SA_SEL787_FalhaInterna = LeituraModbusCoil("ED_SA_SEL787_FalhaInterna", self.clp["SA"], REG_SA_ED_SA_SEL787_FalhaInterna)
+        self.condicionadores.append(CondicionadorBase(self.leitura_ED_SA_SEL787_FalhaInterna.descr, DEVE_INDISPONIBILIZAR, self.leitura_ED_SA_SEL787_FalhaInterna))
 
-        self.leitura_ED_SA_SEL311_Falha = LeituraModbusCoil( "ED_SA_SEL311_Falha", self.clp["SA"], REG_SA_ED_SA_SEL311_Falha, )
-        x = self.leitura_ED_SA_SEL311_Falha
-        self.condicionadores.append( CondicionadorBase(x.descr, DEVE_INDISPONIBILIZAR, x) )
+        self.leitura_ED_SA_SEL311_Falha = LeituraModbusCoil("ED_SA_SEL311_Falha", self.clp["SA"], REG_SA_ED_SA_SEL311_Falha)
+        self.condicionadores.append(CondicionadorBase(self.leitura_ED_SA_SEL311_Falha.descr, DEVE_INDISPONIBILIZAR, self.leitura_ED_SA_SEL311_Falha))
 
-        self.leitura_ED_SA_CTE_Falta125Vcc = LeituraModbusCoil( "ED_SA_CTE_Falta125Vcc", self.clp["SA"], REG_SA_ED_SA_CTE_Falta125Vcc, )
-        x = self.leitura_ED_SA_CTE_Falta125Vcc
-        self.condicionadores.append( CondicionadorBase(x.descr, DEVE_INDISPONIBILIZAR, x) )
+        self.leitura_ED_SA_CTE_Falta125Vcc = LeituraModbusCoil("ED_SA_CTE_Falta125Vcc", self.clp["SA"], REG_SA_ED_SA_CTE_Falta125Vcc)
+        self.condicionadores.append(CondicionadorBase(self.leitura_ED_SA_CTE_Falta125Vcc.descr, DEVE_INDISPONIBILIZAR, self.leitura_ED_SA_CTE_Falta125Vcc))
 
-        self.leitura_ED_SA_CTE_Secc89TE_Aberta = LeituraModbusCoil( "ED_SA_CTE_Secc89TE_Aberta", self.clp["SA"], REG_SA_ED_SA_CTE_Secc89TE_Aberta, )
-        x = self.leitura_ED_SA_CTE_Secc89TE_Aberta
-        self.condicionadores.append( CondicionadorBase(x.descr, DEVE_INDISPONIBILIZAR, x) )
+        self.leitura_ED_SA_CTE_Secc89TE_Aberta = LeituraModbusCoil("ED_SA_CTE_Secc89TE_Aberta", self.clp["SA"], REG_SA_ED_SA_CTE_Secc89TE_Aberta)
+        self.condicionadores.append(CondicionadorBase(self.leitura_ED_SA_CTE_Secc89TE_Aberta.descr, DEVE_INDISPONIBILIZAR, self.leitura_ED_SA_CTE_Secc89TE_Aberta))
 
-        self.leitura_ED_SA_TE_AlarmeDetectorGas = LeituraModbusCoil( "ED_SA_TE_AlarmeDetectorGas", self.clp["SA"], REG_SA_ED_SA_TE_AlarmeDetectorGas, )
-        x = self.leitura_ED_SA_TE_AlarmeDetectorGas
-        self.condicionadores.append( CondicionadorBase(x.descr, DEVE_INDISPONIBILIZAR, x) )
+        self.leitura_ED_SA_TE_AlarmeDetectorGas = LeituraModbusCoil("ED_SA_TE_AlarmeDetectorGas", self.clp["SA"], REG_SA_ED_SA_TE_AlarmeDetectorGas)
+        self.condicionadores.append(CondicionadorBase(self.leitura_ED_SA_TE_AlarmeDetectorGas.descr, DEVE_INDISPONIBILIZAR, self.leitura_ED_SA_TE_AlarmeDetectorGas))
 
-        self.leitura_ED_SA_TE_AlarmeNivelMaxOleo = LeituraModbusCoil( "ED_SA_TE_AlarmeNivelMaxOleo", self.clp["SA"], REG_SA_ED_SA_TE_AlarmeNivelMaxOleo, )
-        x = self.leitura_ED_SA_TE_AlarmeNivelMaxOleo
-        self.condicionadores.append( CondicionadorBase(x.descr, DEVE_INDISPONIBILIZAR, x) )
+        self.leitura_ED_SA_TE_AlarmeNivelMaxOleo = LeituraModbusCoil("ED_SA_TE_AlarmeNivelMaxOleo", self.clp["SA"], REG_SA_ED_SA_TE_AlarmeNivelMaxOleo)
+        self.condicionadores.append(CondicionadorBase(self.leitura_ED_SA_TE_AlarmeNivelMaxOleo.descr, DEVE_INDISPONIBILIZAR, self.leitura_ED_SA_TE_AlarmeNivelMaxOleo))
 
-        self.leitura_ED_SA_TE_AlarmeAlivioPressao = LeituraModbusCoil( "ED_SA_TE_AlarmeAlivioPressao", self.clp["SA"], REG_SA_ED_SA_TE_AlarmeAlivioPressao, )
-        x = self.leitura_ED_SA_TE_AlarmeAlivioPressao
-        self.condicionadores.append( CondicionadorBase(x.descr, DEVE_INDISPONIBILIZAR, x) )
+        self.leitura_ED_SA_TE_AlarmeAlivioPressao = LeituraModbusCoil("ED_SA_TE_AlarmeAlivioPressao", self.clp["SA"], REG_SA_ED_SA_TE_AlarmeAlivioPressao)
+        self.condicionadores.append(CondicionadorBase(self.leitura_ED_SA_TE_AlarmeAlivioPressao.descr, DEVE_INDISPONIBILIZAR, self.leitura_ED_SA_TE_AlarmeAlivioPressao))
 
-        self.leitura_ED_SA_TE_AlarmeTempOleo = LeituraModbusCoil( "ED_SA_TE_AlarmeTempOleo", self.clp["SA"], REG_SA_ED_SA_TE_AlarmeTempOleo, )
-        x = self.leitura_ED_SA_TE_AlarmeTempOleo
-        self.condicionadores.append( CondicionadorBase(x.descr, DEVE_INDISPONIBILIZAR, x) )
+        self.leitura_ED_SA_TE_AlarmeTempOleo = LeituraModbusCoil("ED_SA_TE_AlarmeTempOleo", self.clp["SA"], REG_SA_ED_SA_TE_AlarmeTempOleo)
+        self.condicionadores.append(CondicionadorBase(self.leitura_ED_SA_TE_AlarmeTempOleo.descr, DEVE_INDISPONIBILIZAR, self.leitura_ED_SA_TE_AlarmeTempOleo))
 
-        self.leitura_ED_SA_TE_AlarmeTempEnrolamento = ( LeituraModbusCoil( "ED_SA_TE_AlarmeTempEnrolamento", self.clp["SA"], REG_SA_ED_SA_TE_AlarmeTempEnrolamento, ) )
-        x = self.leitura_ED_SA_TE_AlarmeTempEnrolamento
-        self.condicionadores.append( CondicionadorBase(x.descr, DEVE_INDISPONIBILIZAR, x) )
+        self.leitura_ED_SA_TE_AlarmeTempEnrolamento = LeituraModbusCoil("ED_SA_TE_AlarmeTempEnrolamento", self.clp["SA"], REG_SA_ED_SA_TE_AlarmeTempEnrolamento)
+        self.condicionadores.append(CondicionadorBase(self.leitura_ED_SA_TE_AlarmeTempEnrolamento.descr, DEVE_INDISPONIBILIZAR, self.leitura_ED_SA_TE_AlarmeTempEnrolamento))
 
-        self.leitura_ED_SA_TE_AlarmeDesligamento = LeituraModbusCoil( "ED_SA_TE_AlarmeDesligamento", self.clp["SA"], REG_SA_ED_SA_TE_AlarmeDesligamento, )
-        x = self.leitura_ED_SA_TE_AlarmeDesligamento
-        self.condicionadores.append( CondicionadorBase(x.descr, DEVE_INDISPONIBILIZAR, x) )
+        self.leitura_ED_SA_TE_AlarmeDesligamento = LeituraModbusCoil("ED_SA_TE_AlarmeDesligamento", self.clp["SA"], REG_SA_ED_SA_TE_AlarmeDesligamento)
+        self.condicionadores.append(CondicionadorBase(self.leitura_ED_SA_TE_AlarmeDesligamento.descr, DEVE_INDISPONIBILIZAR, self.leitura_ED_SA_TE_AlarmeDesligamento))
 
-        self.leitura_ED_SA_TE_Falha = LeituraModbusCoil( "ED_SA_TE_Falha", self.clp["SA"], REG_SA_ED_SA_TE_Falha, )
-        x = self.leitura_ED_SA_TE_Falha
-        self.condicionadores.append( CondicionadorBase(x.descr, DEVE_INDISPONIBILIZAR, x) )
+        self.leitura_ED_SA_TE_Falha = LeituraModbusCoil("ED_SA_TE_Falha", self.clp["SA"], REG_SA_ED_SA_TE_Falha)
+        self.condicionadores.append(CondicionadorBase(self.leitura_ED_SA_TE_Falha.descr, DEVE_INDISPONIBILIZAR, self.leitura_ED_SA_TE_Falha))
 
-        self.leitura_ED_SA_FalhaDisjTPsProt = LeituraModbusCoil( "ED_SA_FalhaDisjTPsProt", self.clp["SA"], REG_SA_ED_SA_FalhaDisjTPsProt, )
-        x = self.leitura_ED_SA_FalhaDisjTPsProt
-        self.condicionadores.append( CondicionadorBase(x.descr, DEVE_INDISPONIBILIZAR, x) )
+        self.leitura_ED_SA_FalhaDisjTPsProt = LeituraModbusCoil("ED_SA_FalhaDisjTPsProt", self.clp["SA"], REG_SA_ED_SA_FalhaDisjTPsProt)
+        self.condicionadores.append(CondicionadorBase(self.leitura_ED_SA_FalhaDisjTPsProt.descr, DEVE_INDISPONIBILIZAR, self.leitura_ED_SA_FalhaDisjTPsProt))
 
-        self.leitura_ED_SA_FalhaDisjTPsSincr = LeituraModbusCoil( "ED_SA_FalhaDisjTPsSincr", self.clp["SA"], REG_SA_ED_SA_FalhaDisjTPsSincr, )
-        x = self.leitura_ED_SA_FalhaDisjTPsSincr
-        self.condicionadores.append( CondicionadorBase(x.descr, DEVE_INDISPONIBILIZAR, x) )
+        self.leitura_ED_SA_FalhaDisjTPsSincr = LeituraModbusCoil("ED_SA_FalhaDisjTPsSincr", self.clp["SA"], REG_SA_ED_SA_FalhaDisjTPsSincr)
+        self.condicionadores.append(CondicionadorBase(self.leitura_ED_SA_FalhaDisjTPsSincr.descr, DEVE_INDISPONIBILIZAR, self.leitura_ED_SA_FalhaDisjTPsSincr))
 
-        self.leitura_ED_SA_CSA1_Secc_Aberta = LeituraModbusCoil( "ED_SA_CSA1_Secc_Aberta", self.clp["SA"], REG_SA_ED_SA_CSA1_Secc_Aberta, )
-        x = self.leitura_ED_SA_CSA1_Secc_Aberta
-        self.condicionadores.append( CondicionadorBase(x.descr, DEVE_INDISPONIBILIZAR, x) )
+        self.leitura_ED_SA_CSA1_Secc_Aberta = LeituraModbusCoil("ED_SA_CSA1_Secc_Aberta", self.clp["SA"], REG_SA_ED_SA_CSA1_Secc_Aberta)
+        self.condicionadores.append(CondicionadorBase(self.leitura_ED_SA_CSA1_Secc_Aberta.descr, DEVE_INDISPONIBILIZAR, self.leitura_ED_SA_CSA1_Secc_Aberta))
 
-        self.leitura_ED_SA_CSA1_FusivelQueimado = LeituraModbusCoil( "ED_SA_CSA1_FusivelQueimado", self.clp["SA"], REG_SA_ED_SA_CSA1_FusivelQueimado, )
-        x = self.leitura_ED_SA_CSA1_FusivelQueimado
-        self.condicionadores.append( CondicionadorBase(x.descr, DEVE_INDISPONIBILIZAR, x) )
+        self.leitura_ED_SA_CSA1_FusivelQueimado = LeituraModbusCoil("ED_SA_CSA1_FusivelQueimado", self.clp["SA"], REG_SA_ED_SA_CSA1_FusivelQueimado)
+        self.condicionadores.append(CondicionadorBase(self.leitura_ED_SA_CSA1_FusivelQueimado.descr, DEVE_INDISPONIBILIZAR, self.leitura_ED_SA_CSA1_FusivelQueimado))
 
-        self.leitura_ED_SA_CSA1_FaltaTensao125Vcc = LeituraModbusCoil( "ED_SA_CSA1_FaltaTensao125Vcc", self.clp["SA"], REG_SA_ED_SA_CSA1_FaltaTensao125Vcc, )
-        x = self.leitura_ED_SA_CSA1_FaltaTensao125Vcc
-        self.condicionadores.append( CondicionadorBase(x.descr, DEVE_INDISPONIBILIZAR, x) )
+        self.leitura_ED_SA_CSA1_FaltaTensao125Vcc = LeituraModbusCoil("ED_SA_CSA1_FaltaTensao125Vcc", self.clp["SA"], REG_SA_ED_SA_CSA1_FaltaTensao125Vcc)
+        self.condicionadores.append(CondicionadorBase(self.leitura_ED_SA_CSA1_FaltaTensao125Vcc.descr, DEVE_INDISPONIBILIZAR, self.leitura_ED_SA_CSA1_FaltaTensao125Vcc))
 
-        self.leitura_ED_SA_QCADE_Nivel4 = LeituraModbusCoil( "ED_SA_QCADE_Nivel4", self.clp["SA"], REG_SA_ED_SA_QCADE_Nivel4, )
-        x = self.leitura_ED_SA_QCADE_Nivel4
-        self.condicionadores.append( CondicionadorBase(x.descr, DEVE_INDISPONIBILIZAR, x) )
+        self.leitura_ED_SA_QCADE_Nivel4 = LeituraModbusCoil("ED_SA_QCADE_Nivel4", self.clp["SA"], REG_SA_ED_SA_QCADE_Nivel4)
+        self.condicionadores.append(CondicionadorBase(self.leitura_ED_SA_QCADE_Nivel4.descr, DEVE_INDISPONIBILIZAR, self.leitura_ED_SA_QCADE_Nivel4))
 
-        self.leitura_ED_SA_QCADE_NivelMuitoAlto = LeituraModbusCoil( "ED_SA_QCADE_NivelMuitoAlto", self.clp["SA"], REG_SA_ED_SA_QCADE_NivelMuitoAlto, )
-        x = self.leitura_ED_SA_QCADE_NivelMuitoAlto
-        self.condicionadores.append( CondicionadorBase(x.descr, DEVE_INDISPONIBILIZAR, x) )
+        self.leitura_ED_SA_QCADE_NivelMuitoAlto = LeituraModbusCoil("ED_SA_QCADE_NivelMuitoAlto", self.clp["SA"], REG_SA_ED_SA_QCADE_NivelMuitoAlto)
+        self.condicionadores.append(CondicionadorBase(self.leitura_ED_SA_QCADE_NivelMuitoAlto.descr, DEVE_INDISPONIBILIZAR, self.leitura_ED_SA_QCADE_NivelMuitoAlto))
 
-        self.leitura_ED_SA_QCADE_Falha220VCA = LeituraModbusCoil( "ED_SA_QCADE_Falha220VCA", self.clp["SA"], REG_SA_ED_SA_QCADE_Falha220VCA, )
-        x = self.leitura_ED_SA_QCADE_Falha220VCA
-        self.condicionadores.append( CondicionadorBase(x.descr, DEVE_INDISPONIBILIZAR, x) )
+        self.leitura_ED_SA_QCADE_Falha220VCA = LeituraModbusCoil("ED_SA_QCADE_Falha220VCA", self.clp["SA"], REG_SA_ED_SA_QCADE_Falha220VCA)
+        self.condicionadores.append(CondicionadorBase(self.leitura_ED_SA_QCADE_Falha220VCA.descr, DEVE_INDISPONIBILIZAR, self.leitura_ED_SA_QCADE_Falha220VCA))
 
         # Verificar
-        self.leitura_ED_SA_QCCP_Disj72ETrip = LeituraModbusCoil( "ED_SA_QCCP_Disj72ETrip", self.clp["SA"], REG_SA_ED_SA_QCCP_Disj72ETrip, )
-        x = self.leitura_ED_SA_QCCP_Disj72ETrip
-        self.condicionadores.append( CondicionadorBase(x.descr, DEVE_INDISPONIBILIZAR, x) )
+        self.leitura_ED_SA_QCCP_Disj72ETrip = LeituraModbusCoil("ED_SA_QCCP_Disj72ETrip", self.clp["SA"], REG_SA_ED_SA_QCCP_Disj72ETrip)
+        self.condicionadores.append(CondicionadorBase(self.leitura_ED_SA_QCCP_Disj72ETrip.descr, DEVE_INDISPONIBILIZAR, self.leitura_ED_SA_QCCP_Disj72ETrip))
 
-        self.leitura_ED_SA_QCCP_Falta125Vcc = LeituraModbusCoil( "ED_SA_QCCP_Falta125Vcc", self.clp["SA"], REG_SA_ED_SA_QCCP_Falta125Vcc, )
-        x = self.leitura_ED_SA_QCCP_Falta125Vcc
-        self.condicionadores.append( CondicionadorBase(x.descr, DEVE_INDISPONIBILIZAR, x) )
+        self.leitura_ED_SA_QCCP_Falta125Vcc = LeituraModbusCoil("ED_SA_QCCP_Falta125Vcc", self.clp["SA"], REG_SA_ED_SA_QCCP_Falta125Vcc)
+        self.condicionadores.append(CondicionadorBase(self.leitura_ED_SA_QCCP_Falta125Vcc.descr, DEVE_INDISPONIBILIZAR, self.leitura_ED_SA_QCCP_Falta125Vcc))
 
-        self.leitura_ED_SA_QCCP_TripDisjAgrup = LeituraModbusCoil( "ED_SA_QCCP_TripDisjAgrup", self.clp["SA"], REG_SA_ED_SA_QCCP_TripDisjAgrup, )
-        x = self.leitura_ED_SA_QCCP_TripDisjAgrup
-        self.condicionadores.append( CondicionadorBase(x.descr, DEVE_INDISPONIBILIZAR, x) )
+        self.leitura_ED_SA_QCCP_TripDisjAgrup = LeituraModbusCoil("ED_SA_QCCP_TripDisjAgrup", self.clp["SA"], REG_SA_ED_SA_QCCP_TripDisjAgrup)
+        self.condicionadores.append(CondicionadorBase(self.leitura_ED_SA_QCCP_TripDisjAgrup.descr, DEVE_INDISPONIBILIZAR, self.leitura_ED_SA_QCCP_TripDisjAgrup))
 
-        self.leitura_ED_SA_QCAP_Falta125Vcc = LeituraModbusCoil( "ED_SA_QCAP_Falta125Vcc", self.clp["SA"], REG_SA_ED_SA_QCAP_Falta125Vcc, )
-        x = self.leitura_ED_SA_QCAP_Falta125Vcc
-        self.condicionadores.append( CondicionadorBase(x.descr, DEVE_INDISPONIBILIZAR, x) )
+        self.leitura_ED_SA_QCAP_Falta125Vcc = LeituraModbusCoil("ED_SA_QCAP_Falta125Vcc", self.clp["SA"], REG_SA_ED_SA_QCAP_Falta125Vcc)
+        self.condicionadores.append(CondicionadorBase(self.leitura_ED_SA_QCAP_Falta125Vcc.descr, DEVE_INDISPONIBILIZAR, self.leitura_ED_SA_QCAP_Falta125Vcc))
 
-        self.leitura_ED_SA_QCAP_TripDisjAgrup = LeituraModbusCoil( "ED_SA_QCAP_TripDisjAgrup", self.clp["SA"], REG_SA_ED_SA_QCAP_TripDisjAgrup, )
-        x = self.leitura_ED_SA_QCAP_TripDisjAgrup
-        self.condicionadores.append( CondicionadorBase(x.descr, DEVE_INDISPONIBILIZAR, x) )
+        self.leitura_ED_SA_QCAP_TripDisjAgrup = LeituraModbusCoil("ED_SA_QCAP_TripDisjAgrup", self.clp["SA"], REG_SA_ED_SA_QCAP_TripDisjAgrup)
+        self.condicionadores.append(CondicionadorBase(self.leitura_ED_SA_QCAP_TripDisjAgrup.descr, DEVE_INDISPONIBILIZAR, self.leitura_ED_SA_QCAP_TripDisjAgrup))
 
-        self.leitura_ED_SA_QCAP_Disj52A1Falha = LeituraModbusCoil( "ED_SA_QCAP_Disj52A1Falha", self.clp["SA"], REG_SA_ED_SA_QCAP_Disj52A1Falha, )
-        x = self.leitura_ED_SA_QCAP_Disj52A1Falha
-        self.condicionadores.append( CondicionadorBase(x.descr, DEVE_INDISPONIBILIZAR, x) )
+        self.leitura_ED_SA_QCAP_Disj52A1Falha = LeituraModbusCoil("ED_SA_QCAP_Disj52A1Falha", self.clp["SA"], REG_SA_ED_SA_QCAP_Disj52A1Falha)
+        self.condicionadores.append(CondicionadorBase(self.leitura_ED_SA_QCAP_Disj52A1Falha.descr, DEVE_INDISPONIBILIZAR, self.leitura_ED_SA_QCAP_Disj52A1Falha))
 
-        self.leitura_ED_SA_QCAP_Disj52EFalha = LeituraModbusCoil( "ED_SA_QCAP_Disj52EFalha", self.clp["SA"], REG_SA_ED_SA_QCAP_Disj52EFalha, )
-        x = self.leitura_ED_SA_QCAP_Disj52EFalha
-        self.condicionadores.append( CondicionadorBase(x.descr, DEVE_INDISPONIBILIZAR, x) )
+        self.leitura_ED_SA_QCAP_Disj52EFalha = LeituraModbusCoil("ED_SA_QCAP_Disj52EFalha", self.clp["SA"], REG_SA_ED_SA_QCAP_Disj52EFalha)
+        self.condicionadores.append(CondicionadorBase(self.leitura_ED_SA_QCAP_Disj52EFalha.descr, DEVE_INDISPONIBILIZAR, self.leitura_ED_SA_QCAP_Disj52EFalha))
 
-        self.leitura_ED_SA_GMG_DisjFechado = LeituraModbusCoil( "ED_SA_GMG_DisjFechado", self.clp["SA"], REG_SA_ED_SA_GMG_DisjFechado, )
-        x = self.leitura_ED_SA_GMG_DisjFechado
-        self.condicionadores.append( CondicionadorBase(x.descr, DEVE_INDISPONIBILIZAR, x) )
+        self.leitura_ED_SA_GMG_DisjFechado = LeituraModbusCoil("ED_SA_GMG_DisjFechado", self.clp["SA"], REG_SA_ED_SA_GMG_DisjFechado)
+        self.condicionadores.append(CondicionadorBase(self.leitura_ED_SA_GMG_DisjFechado.descr, DEVE_INDISPONIBILIZAR, self.leitura_ED_SA_GMG_DisjFechado))
 
-        self.leitura_RA_SEL787_Targets = LeituraModbusCoil( "RA_SEL787_Targets", self.clp["SA"], REG_SA_RA_SEL787_Targets, )
-        x = self.leitura_RA_SEL787_Targets
-        self.condicionadores.append( CondicionadorBase(x.descr, DEVE_INDISPONIBILIZAR, x) )
+        self.leitura_RA_SEL787_Targets = LeituraModbusCoil("RA_SEL787_Targets", self.clp["SA"], REG_SA_RA_SEL787_Targets)
+        self.condicionadores.append(CondicionadorBase(self.leitura_RA_SEL787_Targets.descr, DEVE_INDISPONIBILIZAR, self.leitura_RA_SEL787_Targets))
 
-        self.leitura_RA_SEL787_Targets_Links_Bit00 = ( LeituraModbusCoil( "RA_SEL787_Targets_Links_Bit00", self.clp["SA"], REG_SA_RA_SEL787_Targets_Links_Bit00, ) )
-        x = self.leitura_RA_SEL787_Targets_Links_Bit00
-        self.condicionadores.append( CondicionadorBase(x.descr, DEVE_INDISPONIBILIZAR, x) )
+        self.leitura_RA_SEL787_Targets_Links_Bit00 = LeituraModbusCoil("RA_SEL787_Targets_Links_Bit00", self.clp["SA"], REG_SA_RA_SEL787_Targets_Links_Bit00)
+        self.condicionadores.append(CondicionadorBase(self.leitura_RA_SEL787_Targets_Links_Bit00.descr, DEVE_INDISPONIBILIZAR, self.leitura_RA_SEL787_Targets_Links_Bit00))
 
-        self.leitura_RA_SEL787_Targets_Links_Bit01 = ( LeituraModbusCoil( "RA_SEL787_Targets_Links_Bit01", self.clp["SA"], REG_SA_RA_SEL787_Targets_Links_Bit01, ) )
-        x = self.leitura_RA_SEL787_Targets_Links_Bit01
-        self.condicionadores.append( CondicionadorBase(x.descr, DEVE_INDISPONIBILIZAR, x) )
+        self.leitura_RA_SEL787_Targets_Links_Bit01 = LeituraModbusCoil("RA_SEL787_Targets_Links_Bit01", self.clp["SA"], REG_SA_RA_SEL787_Targets_Links_Bit01)
+        self.condicionadores.append(CondicionadorBase(self.leitura_RA_SEL787_Targets_Links_Bit01.descr, DEVE_INDISPONIBILIZAR, self.leitura_RA_SEL787_Targets_Links_Bit01))
 
-        self.leitura_RA_SEL787_Targets_Links_Bit02 = ( LeituraModbusCoil( "RA_SEL787_Targets_Links_Bit02", self.clp["SA"], REG_SA_RA_SEL787_Targets_Links_Bit02, ) )
-        x = self.leitura_RA_SEL787_Targets_Links_Bit02
-        self.condicionadores.append( CondicionadorBase(x.descr, DEVE_INDISPONIBILIZAR, x) )
+        self.leitura_RA_SEL787_Targets_Links_Bit02 = LeituraModbusCoil("RA_SEL787_Targets_Links_Bit02", self.clp["SA"], REG_SA_RA_SEL787_Targets_Links_Bit02)
+        self.condicionadores.append(CondicionadorBase(self.leitura_RA_SEL787_Targets_Links_Bit02.descr, DEVE_INDISPONIBILIZAR, self.leitura_RA_SEL787_Targets_Links_Bit02))
 
-        self.leitura_RA_SEL787_Targets_Links_Bit03 = ( LeituraModbusCoil( "RA_SEL787_Targets_Links_Bit03", self.clp["SA"], REG_SA_RA_SEL787_Targets_Links_Bit03, ) )
-        x = self.leitura_RA_SEL787_Targets_Links_Bit03
-        self.condicionadores.append( CondicionadorBase(x.descr, DEVE_INDISPONIBILIZAR, x) )
+        self.leitura_RA_SEL787_Targets_Links_Bit03 = LeituraModbusCoil("RA_SEL787_Targets_Links_Bit03", self.clp["SA"], REG_SA_RA_SEL787_Targets_Links_Bit03)
+        self.condicionadores.append(CondicionadorBase(self.leitura_RA_SEL787_Targets_Links_Bit03.descr, DEVE_INDISPONIBILIZAR, self.leitura_RA_SEL787_Targets_Links_Bit03))
 
-        self.leitura_RA_SEL787_Targets_Links_Bit04 = ( LeituraModbusCoil( "RA_SEL787_Targets_Links_Bit04", self.clp["SA"], REG_SA_RA_SEL787_Targets_Links_Bit04, ) )
-        x = self.leitura_RA_SEL787_Targets_Links_Bit04
-        self.condicionadores.append( CondicionadorBase(x.descr, DEVE_INDISPONIBILIZAR, x) )
+        self.leitura_RA_SEL787_Targets_Links_Bit04 = LeituraModbusCoil("RA_SEL787_Targets_Links_Bit04", self.clp["SA"], REG_SA_RA_SEL787_Targets_Links_Bit04)
+        self.condicionadores.append(CondicionadorBase(self.leitura_RA_SEL787_Targets_Links_Bit04.descr, DEVE_INDISPONIBILIZAR, self.leitura_RA_SEL787_Targets_Links_Bit04))
 
-        self.leitura_RA_SEL787_Targets_Links_Bit05 = ( LeituraModbusCoil( "RA_SEL787_Targets_Links_Bit05", self.clp["SA"], REG_SA_RA_SEL787_Targets_Links_Bit05, ) )
-        x = self.leitura_RA_SEL787_Targets_Links_Bit05
-        self.condicionadores.append( CondicionadorBase(x.descr, DEVE_INDISPONIBILIZAR, x) )
+        self.leitura_RA_SEL787_Targets_Links_Bit05 = LeituraModbusCoil("RA_SEL787_Targets_Links_Bit05", self.clp["SA"], REG_SA_RA_SEL787_Targets_Links_Bit05)
+        self.condicionadores.append(CondicionadorBase(self.leitura_RA_SEL787_Targets_Links_Bit05.descr, DEVE_INDISPONIBILIZAR, self.leitura_RA_SEL787_Targets_Links_Bit05))
 
-        self.leitura_RA_SEL787_Targets_Links_Bit06 = ( LeituraModbusCoil( "RA_SEL787_Targets_Links_Bit06", self.clp["SA"], REG_SA_RA_SEL787_Targets_Links_Bit06, ) )
-        x = self.leitura_RA_SEL787_Targets_Links_Bit06
-        self.condicionadores.append( CondicionadorBase(x.descr, DEVE_INDISPONIBILIZAR, x) )
+        self.leitura_RA_SEL787_Targets_Links_Bit06 = LeituraModbusCoil("RA_SEL787_Targets_Links_Bit06", self.clp["SA"], REG_SA_RA_SEL787_Targets_Links_Bit06)
+        self.condicionadores.append(CondicionadorBase(self.leitura_RA_SEL787_Targets_Links_Bit06.descr, DEVE_INDISPONIBILIZAR, self.leitura_RA_SEL787_Targets_Links_Bit06))
 
-        self.leitura_RA_SEL787_Targets_Links_Bit07 = ( LeituraModbusCoil( "RA_SEL787_Targets_Links_Bit07", self.clp["SA"], REG_SA_RA_SEL787_Targets_Links_Bit07, ) )
-        x = self.leitura_RA_SEL787_Targets_Links_Bit07
-        self.condicionadores.append( CondicionadorBase(x.descr, DEVE_INDISPONIBILIZAR, x) )
+        self.leitura_RA_SEL787_Targets_Links_Bit07 = LeituraModbusCoil("RA_SEL787_Targets_Links_Bit07", self.clp["SA"], REG_SA_RA_SEL787_Targets_Links_Bit07)
+        self.condicionadores.append(CondicionadorBase(self.leitura_RA_SEL787_Targets_Links_Bit07.descr, DEVE_INDISPONIBILIZAR, self.leitura_RA_SEL787_Targets_Links_Bit07))
 
-        self.leitura_RD_DJ1_FalhaInt = LeituraModbusCoil( "RD_DJ1_FalhaInt", self.clp["SA"], REG_SA_RD_DJ1_FalhaInt, )
-        x = self.leitura_RD_DJ1_FalhaInt
-        self.condicionadores.append( CondicionadorBase(x.descr, DEVE_INDISPONIBILIZAR, x) )
+        self.leitura_RD_DJ1_FalhaInt = LeituraModbusCoil("RD_DJ1_FalhaInt", self.clp["SA"], REG_SA_RD_DJ1_FalhaInt)
+        self.condicionadores.append(CondicionadorBase(self.leitura_RD_DJ1_FalhaInt.descr, DEVE_INDISPONIBILIZAR, self.leitura_RD_DJ1_FalhaInt))
 
-        self.leitura_RD_CLP_Falha = LeituraModbusCoil( "RD_CLP_Falha", self.clp["SA"], REG_SA_RD_CLP_Falha, )
-        x = self.leitura_RD_CLP_Falha
-        self.condicionadores.append( CondicionadorBase(x.descr, DEVE_INDISPONIBILIZAR, x) )
+        self.leitura_RD_CLP_Falha = LeituraModbusCoil("RD_CLP_Falha", self.clp["SA"], REG_SA_RD_CLP_Falha)
+        self.condicionadores.append(CondicionadorBase(self.leitura_RD_CLP_Falha.descr, DEVE_INDISPONIBILIZAR, self.leitura_RD_CLP_Falha))
 
-        self.leitura_ED_SA_QLCF_Disj52ETrip = LeituraModbusCoil( "ED_SA_QLCF_Disj52ETrip", self.clp["SA"], REG_SA_ED_SA_QLCF_Disj52ETrip)
-        self.leitura_ED_SA_QLCF_TripDisjAgrup = LeituraModbusCoil( "ED_SA_QLCF_TripDisjAgrup", self.clp["SA"], REG_SA_ED_SA_QLCF_TripDisjAgrup)
-        self.leitura_ED_SA_QCAP_SubtensaoBarraGeral = LeituraModbusCoil( "ED_SA_QCAP_SubtensaoBarraGeral", self.clp["SA"], REG_SA_ED_SA_QCAP_SubtensaoBarraGeral)
-        self.leitura_ED_SA_GMG_Alarme = LeituraModbusCoil( "ED_SA_GMG_Alarme", self.clp["SA"], REG_SA_ED_SA_GMG_Alarme)
-        self.leitura_ED_SA_GMG_Trip = LeituraModbusCoil( "ED_SA_GMG_Trip", self.clp["SA"], REG_SA_ED_SA_GMG_Trip)
-        self.leitura_ED_SA_GMG_Operacao = LeituraModbusCoil( "ED_SA_GMG_Operacao", self.clp["SA"], REG_SA_ED_SA_GMG_Operacao)
-        self.leitura_ED_SA_GMG_BaixoComb = LeituraModbusCoil( "ED_SA_GMG_BaixoComb", self.clp["SA"], REG_SA_ED_SA_GMG_BaixoComb)
-        self.leitura_RD_BbaDren1_FalhaAcion = LeituraModbusCoil( "RD_BbaDren1_FalhaAcion", self.clp["SA"], REG_SA_RD_BbaDren1_FalhaAcion)
-        self.leitura_RD_BbaDren2_FalhaAcion = LeituraModbusCoil( "RD_BbaDren2_FalhaAcion", self.clp["SA"], REG_SA_RD_BbaDren2_FalhaAcion)
-        self.leitura_RD_BbaDren3_FalhaAcion = LeituraModbusCoil( "RD_BbaDren3_FalhaAcion", self.clp["SA"], REG_SA_RD_BbaDren3_FalhaAcion)
-        self.leitura_RD_SA_GMG_FalhaAcion = LeituraModbusCoil( "RD_SA_GMG_FalhaAcion", self.clp["SA"], REG_SA_RD_SA_GMG_FalhaAcion)
-        self.leitura_RD_FalhaComunSETDA = LeituraModbusCoil( "RD_FalhaComunSETDA", self.clp["SA"], REG_SA_RD_FalhaComunSETDA)
-        self.leitura_ED_SA_QCAP_Disj52EFechado = LeituraModbusCoil( "ED_SA_QCAP_Disj52EFechado", self.clp["SA"], REG_SA_ED_SA_QCAP_Disj52EFechado)
-        self.leitura_ED_SA_QCADE_BombasDng_Auto = LeituraModbusCoil( "ED_SA_QCADE_BombasDng_Auto", self.clp["SA"], REG_SA_ED_SA_QCADE_BombasDng_Auto)
-
-    def leituras_temporizadas(self) -> None:
-        if self.leitura_ED_SA_QLCF_Disj52ETrip.valor != 0 and not vd.voip_dict["SA_QLCF_DISJ_52E_TRIP"]:
-            logger.warning("O Disjuntor do Gerador Diesel de Emergência QLCF identificou um sinal de TRIP, favor verificar.")
-            vd.voip_dict["SA_QLCF_DISJ_52E_TRIP"] = True
-        elif self.leitura_ED_SA_QLCF_Disj52ETrip.valor == 0 and vd.voip_dict["SA_QLCF_DISJ_52E_TRIP"]:
-            vd.voip_dict["SA_QLCF_DISJ_52E_TRIP"] = False
-
-        if self.leitura_ED_SA_QLCF_TripDisjAgrup.valor != 0 and not vd.voip_dict["SA_QLCF_TRIP_DISJ_AGRUP"]:
-            logger.warning("O sensor do Disjuntor de Agrupamento QLCF identificou um sinal de trip, favor verificar.")
-            vd.voip_dict["SA_QLCF_TRIP_DISJ_AGRUP"] = True
-        elif self.leitura_ED_SA_QLCF_TripDisjAgrup.valor == 0 and vd.voip_dict["SA_QLCF_TRIP_DISJ_AGRUP"]:
-            vd.voip_dict["SA_QLCF_TRIP_DISJ_AGRUP"] = False
-
-        if self.leitura_ED_SA_QCAP_SubtensaoBarraGeral.valor != 0 and not vd.voip_dict["SA_QCAP_SUBTENSAO_BARRA_GERAL"]:
-            logger.warning("O sensor de Subtensão do Barramento Geral QCAP foi acionado, favor verificar.")
-            vd.voip_dict["SA_QCAP_SUBTENSAO_BARRA_GERAL"] = True
-        elif self.leitura_ED_SA_QCAP_SubtensaoBarraGeral.valor == 0 and vd.voip_dict["SA_QCAP_SUBTENSAO_BARRA_GERAL"]:
-            vd.voip_dict["SA_QCAP_SUBTENSAO_BARRA_GERAL"] = False
-
-        if self.leitura_ED_SA_GMG_Alarme.valor != 0 and not vd.voip_dict["SA_GMG_ALARME"]:
-            logger.warning("O alarme do Grupo Motor Gerador foi acionado, favor verificar.")
-            vd.voip_dict["SA_GMG_ALARME"] = True
-        elif self.leitura_ED_SA_GMG_Alarme.valor == 0 and vd.voip_dict["SA_GMG_ALARME"]:
-            vd.voip_dict["SA_GMG_ALARME"] = False
-
-        if self.leitura_ED_SA_GMG_Trip.valor != 0 and not vd.voip_dict["SA_GMG_TRIP"]:
-            logger.warning("O sensor de TRIP do Grupo Motor Gerador foi acionado, favor verificar.")
-            vd.voip_dict["SA_GMG_TRIP"] = True
-        elif self.leitura_ED_SA_GMG_Trip.valor == 0 and vd.voip_dict["SA_GMG_TRIP"]:
-            vd.voip_dict["SA_GMG_TRIP"] = False
-
-        if self.leitura_ED_SA_GMG_Operacao.valor != 0 and not vd.voip_dict["SA_GMG_OPERACAO"]:
-            logger.warning("O sensor de operação do Grupo Motor Gerador foi acionado, favor verificar.")
-            vd.voip_dict["SA_GMG_OPERACAO"] = True
-        elif self.leitura_ED_SA_GMG_Operacao.valor == 0 and vd.voip_dict["SA_GMG_OPERACAO"]:
-            vd.voip_dict["SA_GMG_OPERACAO"] = False
-
-        if self.leitura_ED_SA_GMG_BaixoComb.valor != 0 and not vd.voip_dict["SA_GMG_BAIXO_COMB"]:
-            logger.warning("O sensor de de combustível do Grupo Motor Gerador retornou que o nível está baixo, favor reabastercer o gerador.")
-            vd.voip_dict["SA_GMG_BAIXO_COMB"] = True
-        elif self.leitura_ED_SA_GMG_BaixoComb.valor == 0 and vd.voip_dict["SA_GMG_BAIXO_COMB"]:
-            vd.voip_dict["SA_GMG_BAIXO_COMB"] = False
-
-        if self.leitura_RD_BbaDren1_FalhaAcion.valor != 0 and not vd.voip_dict["BBA_DREN_1_FALHA_ACION"]:
-            logger.warning("O sensor da Bomba de Drenagem 1 identificou uma falha no acionamento, favor verificar.")
-            vd.voip_dict["BBA_DREN_1_FALHA_ACION"] = True
-        elif self.leitura_RD_BbaDren1_FalhaAcion.valor == 0 and vd.voip_dict["BBA_DREN_1_FALHA_ACION"]:
-            vd.voip_dict["BBA_DREN_1_FALHA_ACION"] = False
-
-        if self.leitura_RD_BbaDren2_FalhaAcion.valor != 0 and not vd.voip_dict["BBA_DREN_2_FALHA_ACION"]:
-            logger.warning("O sensor da Bomba de Drenagem 2 identificou uma falha no acionamento, favor verificar.")
-            vd.voip_dict["BBA_DREN_2_FALHA_ACION"] = True
-        elif self.leitura_RD_BbaDren2_FalhaAcion.valor == 0 and vd.voip_dict["BBA_DREN_2_FALHA_ACION"]:
-            vd.voip_dict["BBA_DREN_2_FALHA_ACION"] = False
-
-        if self.leitura_RD_BbaDren3_FalhaAcion.valor != 0 and not vd.voip_dict["BBA_DREN_3_FALHA_ACION"]:
-            logger.warning("O sensor da Bomba de Drenagem 3 identificou uma falha no acionamento, favor verificar.")
-            vd.voip_dict["BBA_DREN_3_FALHA_ACION"] = True
-        elif self.leitura_RD_BbaDren3_FalhaAcion.valor == 0 and vd.voip_dict["BBA_DREN_3_FALHA_ACION"]:
-            vd.voip_dict["BBA_DREN_3_FALHA_ACION"] = False
-
-        if self.leitura_RD_SA_GMG_FalhaAcion.valor != 0 and not vd.voip_dict["SA_GMG_FALHA_ACION"]:
-            logger.warning("O sensor do Grupo Motor Gerador identificou uma falha no acionamento, favor verificar.")
-            vd.voip_dict["SA_GMG_FALHA_ACION"] = True
-        elif self.leitura_RD_SA_GMG_FalhaAcion.valor == 0 and vd.voip_dict["SA_GMG_FALHA_ACION"]:
-            vd.voip_dict["SA_GMG_FALHA_ACION"] = False
-
-        if self.leitura_RD_FalhaComunSETDA.valor == 1 and not vd.voip_dict["FALHA_COMUM_SETDA"]:
-            logger.warning("Houve uma falha de comunicação com o CLP da Subestação e o CLP da Tomada da Água, favor verificar")
-            vd.voip_dict["FALHA_COMUM_SETDA"] = True
-        elif self.leitura_RD_FalhaComunSETDA.valor == 0 and vd.voip_dict["FALHA_COMUM_SETDA"]:
-            vd.voip_dict["FALHA_COMUM_SETDA"] = False
-
-        if self.leitura_ED_SA_QCAP_Disj52EFechado.valor == 1 and not vd.voip_dict["SA_QCAP_DISJ_52E_FECHADO"]:
-            logger.warning("O Disjuntor do Gerador Diesel de Emergência QLCF foi fechado.")
-            vd.voip_dict["SA_QCAP_DISJ_52E_FECHADO"] = True
-        elif self.leitura_ED_SA_QCAP_Disj52EFechado.valor == 0 and vd.voip_dict["SA_QCAP_DISJ_52E_FECHADO"]:
-            vd.voip_dict["SA_QCAP_DISJ_52E_FECHADO"] = False
-
-        if self.leitura_ED_SA_QCADE_BombasDng_Auto.valor == 0 and not vd.voip_dict["SA_QCADE_BOMBAS_DNG_AUTO"]:
-            logger.warning("O poço de drenagem da Usina entrou em modo remoto, favor verificar.")
-            vd.voip_dict["SA_QCADE_BOMBAS_DNG_AUTO"] = True
-        elif self.leitura_ED_SA_QCADE_BombasDng_Auto.valor == 1 and vd.voip_dict["SA_QCADE_BOMBAS_DNG_AUTO"]:
-            vd.voip_dict["SA_QCADE_BOMBAS_DNG_AUTO"] = False
 
 def ping(host):
     """
