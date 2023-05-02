@@ -165,4 +165,5 @@ if __name__ == "__main__":
 
         except Exception as e:
             logger.debug(f"Houve um erro no loop principal. Exception: \"{repr(e)}\"")
+            logger.debug(f"Traceback: {traceback.format_exc()}")
             usina.close_modbus()

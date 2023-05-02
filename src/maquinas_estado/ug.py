@@ -118,7 +118,7 @@ class StateRestrito(State):
         # Se algum condicionador deve gerar uma indisponibilidade
         if deve_indisponibilizar:
             # Logar os condicionadores ativos
-            logger.warning(f"[UG{self.parent_ug.id}] UG em modo Restrito detectou condicionadores ativos, indisponibilizando UG.\nCondicionadores ativos:\n{[d.descr for d in condicionadores_ativos]}")
+            logger.warning(f"[UG{self.parent_ug.id}] UG em modo Restrito detectou condicionadores ativos, indisponibilizando UG.\nCondicionadores ativos:\n\"{[d.descr for d in condicionadores_ativos]}\"")
             # Vai para o estado StateIndisponivel
             return StateIndisponivel(self.parent_ug)
 
@@ -183,7 +183,7 @@ class StateDisponivel(State):
         if deve_indisponibilizar or deve_normalizar:
             logger.info(f"[UG{self.parent_ug.id}] UG em modo disponível detectou condicionadores ativos:")
             for d in condicionadores_ativos:
-                logger.info(f"[UG{self.parent_ug.id}] Registrador: {d.descr}, Gravidade: {CONDIC_STR_DCT[d.gravidade] if d.gravidade in CONDIC_STR_DCT else 'Desconhecida'}")
+                logger.info(f"[UG{self.parent_ug.id}] Registrador: \"{d.descr}\", Gravidade: \"{CONDIC_STR_DCT[d.gravidade] if d.gravidade in CONDIC_STR_DCT else 'Desconhecida'}\"")
 
         # Se algum condicionador deve gerar uma indisponibilidade
         if deve_indisponibilizar:

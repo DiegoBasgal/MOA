@@ -366,8 +366,8 @@ class UnidadeDeGeracao:
         self.leitura_ED_UHLM_FaltaFluxTroc = LeituraModbusCoil("ED_UHLM_FaltaFluxTroc", self.clp[f"UG{self.id}"], UG[f"REG_UG{self.id}_ED_UHLM_FaltaFluxTroc"])
         self.condicionadores.append(CondicionadorBase(self.leitura_ED_UHLM_FaltaFluxTroc.descr, DEVE_INDISPONIBILIZAR, self.leitura_ED_UHLM_FaltaFluxTroc))
 
-        self.leitura_ED_UHLM_FaltaPressTroc = LeituraModbusCoil("ED_UHLM_FaltaPressTroc", self.clp[f"UG{self.id}"], UG[f"REG_UG{self.id}_ED_UHLM_FaltaPressTroc"])
-        self.condicionadores.append(CondicionadorBase(self.leitura_ED_UHLM_FaltaPressTroc.descr, DEVE_INDISPONIBILIZAR, self.leitura_ED_UHLM_FaltaPressTroc))
+        self.leitura_ED_UHLM_FaltaPressTroc = LeituraModbusCoil("ED_UHLM_FaltaPressTroc", self.clp[f"UG{self.id}"], UG[f"REG_UG{self.id}_ED_UHLM_FaltaPressTroc"]) # TODO retornar para DEVE_INDISPONIBILZIAR
+        self.condicionadores.append(CondicionadorBase(self.leitura_ED_UHLM_FaltaPressTroc.descr, DEVE_NORMALIZAR, self.leitura_ED_UHLM_FaltaPressTroc))
 
         # Controle UHRV
         self.leitura_ED_UHRV_NivOleominimoPos36 = LeituraModbusCoil("ED_UHRV_NivOleominimoPos36", self.clp[f"UG{self.id}"], UG[f"REG_UG{self.id}_ED_UHRV_NivOleominimoPos36"])

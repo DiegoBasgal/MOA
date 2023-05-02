@@ -790,8 +790,8 @@ class Usina:
             logger.debug(f"UG{ug.id}")
             self.pot_disp += ug.cfg[f"pot_maxima_ug{ugs[0].id}"]
             if ug.manual:
-                logger.debug(f"UG{ug.id} Manual -> {ug.leituras_ug[f'leitura_potencia'].valor}")
-                self.ajuste_manual += ug.leituras_ug[f'leitura_potencia'].valor
+                logger.debug(f"UG{ug.id} Manual -> {ug.leitura_potencia.valor}")
+                self.ajuste_manual += ug.leitura_potencia.valor
         if ugs is None:
             return False
         elif len(ugs) == 0:
@@ -870,12 +870,12 @@ class Usina:
         if self.modo_de_escolha_das_ugs == MODO_ESCOLHA_MANUAL:
             # escolher por maior prioridade primeiro
             #!!TODO: corrigir etapa_atual
-            ls = sorted(ls, key=lambda y: (-1 * y.etapa_atual, -1 * y.leituras_ug[f'leitura_potencia'].valor, -1 * y.setpoint, y.prioridade,),)
+            ls = sorted(ls, key=lambda y: (-1 * y.etapa_atual, -1 * y.leitura_potencia.valor, -1 * y.setpoint, y.prioridade,),)
             logger.debug("")
             logger.debug("UGs disponíveis em ordem (prioridade):")
         else:
             # escolher por menor horas_maquina primeiro
-            ls = sorted(ls, key=lambda y: (-1 * y.etapa_atual, y.leituras_ug[f"leitura_horimetro"].valor, -1 * y.leituras_ug[f'leitura_potencia'].valor, -1 * y.setpoint,),)
+            ls = sorted(ls, key=lambda y: (-1 * y.etapa_atual, y.leituras_ug[f"leitura_horimetro"].valor, -1 * y.leitura_potencia.valor, -1 * y.setpoint,),)
             # ls = sorted(ls, key=lambda y: (-1 * y.etapa_atual if y.etapa_atual == UNIDADE_SINCRONIZADA else y.leitura_horimetro.valor,
                                             #-1 * y.leitura_potencia.valor,
                                             #-1 * y.setpoint,),)
