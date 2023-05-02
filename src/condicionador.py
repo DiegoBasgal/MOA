@@ -12,7 +12,7 @@ from unidade_geracao import UnidadeGeracao
 class CondicionadorBase:
     def __init__(
             self,
-            leitura: LeituraOpc | LeituraModbus | None = ...,
+            leitura: LeituraModbus | None = ...,
             gravidade: int | None = ...,
             etapas: list | None = ...,
             id_unidade: int | None = ...

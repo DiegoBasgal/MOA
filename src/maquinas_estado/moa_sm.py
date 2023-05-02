@@ -18,7 +18,7 @@ class StateMachine:
 
         except Exception as e:
             logger.exception(f"Estado ({self.state}) levantou uma exception: \"{repr(e)}\"")
-            logger.exception(f"Traceback: {traceback.print_stack}")
+            logger.exception(f"Traceback: {traceback.format_exc()}")
             self.state = FalhaCritica()
 
 class State:

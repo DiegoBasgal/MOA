@@ -55,7 +55,7 @@ if __name__ == "__main__":
 
             except Exception:
                 logger.exception(f"Erro ao carregar arquivo de configuração. Tentando novamente em \"{TIMEOUT_MAIN}s\" (Tentativa: {n_tentativa}/3).")
-                logger.debug(f"Traceback: {traceback.print_stack}")
+                logger.debug(f"Traceback: {traceback.format_exc()}")
                 sleep(TIMEOUT_MAIN)
                 continue
 
@@ -66,7 +66,7 @@ if __name__ == "__main__":
 
             except Exception:
                 logger.exception(f"Erro ao iniciar classes de conexão com servidores. Tentando novamente em \"{TIMEOUT_MAIN}s\" (Tentativa: {n_tentativa}/3).")
-                logger.debug(f"Traceback: {traceback.print_stack}")
+                logger.debug(f"Traceback: {traceback.format_exc()}")
                 sleep(TIMEOUT_MAIN)
                 continue
 
@@ -76,7 +76,7 @@ if __name__ == "__main__":
 
             except Exception:
                 logger.exception(f"Erro ao instanciar a classe Usina. Tentando novamente em \"{TIMEOUT_MAIN}s\" (Tentativa: {n_tentativa}/3).")
-                logger.debug(f"Traceback: {traceback.print_stack}")
+                logger.debug(f"Traceback: {traceback.format_exc()}")
                 sleep(TIMEOUT_MAIN)
                 continue
 
@@ -89,7 +89,7 @@ if __name__ == "__main__":
 
             except Exception:
                 logger.exception(f"Erro ao finalizar a incialização do MOA. Tentando novamente em \"{TIMEOUT_MAIN}s\" (Tentativa: {n_tentativa}/3).")
-                logger.debug(f"Traceback: {traceback.print_stack}")
+                logger.debug(f"Traceback: {traceback.format_exc()}")
                 sleep(TIMEOUT_MAIN)
                 continue
 
@@ -113,7 +113,7 @@ if __name__ == "__main__":
 
         except Exception as e:
             logger.exception(f"Houve um erro na execução do loop principal da main do MOA. Exception: {repr(e)}")
-            logger.debug(f"Traceback: {traceback.print_stack}")
+            logger.debug(f"Traceback: {traceback.format_exc()}")
             ClientesUsina.close_all()
             break
 

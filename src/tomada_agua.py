@@ -10,10 +10,10 @@ class TomadaAgua(Usina):
     def __init__(self, *args, **kwargs) -> ...:
         super().__init__(self, *args, **kwargs)
 
-        self.__nv_montante = LeituraOpc(OPC_UA["TDA"]["NIVEL_MONTANTE"])
-        self.__status_lp = LeituraOpc(OPC_UA["TDA"]["LG_OPERACAO_MANUAL"])
-        self.__status_vb = LeituraOpc(OPC_UA["TDA"]["VB_FECHANDO"])
-        self.__status_uh = LeituraOpcBit(OPC_UA["TDA"]["UH_UNIDADE_HIDRAULICA_DISPONIVEL"], 1)
+        self.__nv_montante = LeituraModbus(OPC_UA["TDA"]["NIVEL_MONTANTE"])
+        self.__status_lp = LeituraModbus(OPC_UA["TDA"]["LG_OPERACAO_MANUAL"])
+        self.__status_vb = LeituraModbus(OPC_UA["TDA"]["VB_FECHANDO"])
+        self.__status_uh = LeituraModbusBit(OPC_UA["TDA"]["UH_UNIDADE_HIDRAULICA_DISPONIVEL"], 1)
 
         self._condicionadores = []
         self._condicionadores_essenciais = []
@@ -161,37 +161,37 @@ class TomadaAgua(Usina):
         # CONDICIONADORES ESSENCIAIS
         # Normalizar
             # Bit Invertido
-        self.leitura_sem_emergencia_tda = LeituraOpcBit(OPC_UA["TDA"]["SEM_EMERGENCIA"], 24, True, "TDA_SEM_EMERGENCIA")
+        self.leitura_sem_emergencia_tda = LeituraModbusBit(OPC_UA["TDA"]["SEM_EMERGENCIA"], 24, True, "TDA_SEM_EMERGENCIA")
         self.condicionadores_essenciais.append(CondicionadorBase(self.leitura_sem_emergencia_tda, CONDIC_NORMALIZAR))
 
         # CONDICIONADORES
         # Normalizar
             # Bit Invertido
-        self.leitura_ca_com_tensao = LeituraOpcBit(OPC_UA["TDA"]["COM_TENSAO_CA"], 11, True, "TDA_COM_TENSAO_CA")
+        self.leitura_ca_com_tensao = LeituraModbusBit(OPC_UA["TDA"]["COM_TENSAO_CA"], 11, True, "TDA_COM_TENSAO_CA")
         self.condicionadores.append(CondicionadorBase(self.leitura_ca_com_tensao, CONDIC_NORMALIZAR))
 
             # Bit Normal
-        self.leitura_falha_ligar_bomba_uh = LeituraOpcBit(OPC_UA["TDA"]["UH_FALHA_LIGAR_BOMBA"], 2, "TDA_UH_FALHA_LIGAR_BOMBA")
+        self.leitura_falha_ligar_bomba_uh = LeituraModbusBit(OPC_UA["TDA"]["UH_FALHA_LIGAR_BOMBA"], 2, "TDA_UH_FALHA_LIGAR_BOMBA")
         self.condicionadores.append(CondicionadorBase(self.leitura_falha_ligar_bomba_uh, CONDIC_NORMALIZAR))
 
 
         # LEITURAS PARA LEITURA PERIÓDICA
         # Telegram
             # Bit Invertido
-        self.leitura_ca_com_tensao = LeituraOpcBit(OPC_UA["TDA"]["COM_TENSAO_CA"], 11, True)
-        self.leitura_filtro_limpo_uh = LeituraOpcBit(OPC_UA["TDA"]["UH_FILTRO_LIMPO"], 13, True)
+        self.leitura_ca_com_tensao = LeituraModbusBit(OPC_UA["TDA"]["COM_TENSAO_CA"], 11, True)
+        self.leitura_filtro_limpo_uh = LeituraModbusBit(OPC_UA["TDA"]["UH_FILTRO_LIMPO"], 13, True)
 
             # Bit Normal
-        self.leitura_lg_operacao_manual = LeituraOpcBit(OPC_UA["TDA"]["LG_OPERACAO_MANUAL"], 0)
-        self.leitura_nivel_jusante_comporta_1 = LeituraOpcBit(OPC_UA["TDA"]["NIVEL_JUSANTE_COMPORTA_1"], 2)
-        self.leitura_nivel_jusante_comporta_2 = LeituraOpcBit(OPC_UA["TDA"]["NIVEL_JUSANTE_COMPORTA_2"], 4)
-        self.leitura_nivel_jusante_grade_comporta_1 = LeituraOpcBit(OPC_UA["TDA"]["FALHA_NIVEL_JUSANTE_GRADE_COMPORTA_1"], 1)
-        self.leitura_nivel_jusante_grade_comporta_2 = LeituraOpcBit(OPC_UA["TDA"]["FALHA_NIVEL_JUSANTE_GRADE_COMPORTA_2"], 3)
+        self.leitura_lg_operacao_manual = LeituraModbusBit(OPC_UA["TDA"]["LG_OPERACAO_MANUAL"], 0)
+        self.leitura_nivel_jusante_comporta_1 = LeituraModbusBit(OPC_UA["TDA"]["NIVEL_JUSANTE_COMPORTA_1"], 2)
+        self.leitura_nivel_jusante_comporta_2 = LeituraModbusBit(OPC_UA["TDA"]["NIVEL_JUSANTE_COMPORTA_2"], 4)
+        self.leitura_nivel_jusante_grade_comporta_1 = LeituraModbusBit(OPC_UA["TDA"]["FALHA_NIVEL_JUSANTE_GRADE_COMPORTA_1"], 1)
+        self.leitura_nivel_jusante_grade_comporta_2 = LeituraModbusBit(OPC_UA["TDA"]["FALHA_NIVEL_JUSANTE_GRADE_COMPORTA_2"], 3)
 
         # Telegram + Voip
             # Bit Normal
-        self.leitura_falha_atuada_lg = LeituraOpcBit(OPC_UA["TDA"]["LG_FALHA_ATUADA"], 31)
-        self.leitura_falha_nivel_montante = LeituraOpcBit(OPC_UA["TDA"]["FALHA_NIVEL_MONTANTE"], 0)
+        self.leitura_falha_atuada_lg = LeituraModbusBit(OPC_UA["TDA"]["LG_FALHA_ATUADA"], 31)
+        self.leitura_falha_nivel_montante = LeituraModbusBit(OPC_UA["TDA"]["FALHA_NIVEL_MONTANTE"], 0)
 
 
 class Comporta(TomadaAgua):
@@ -204,18 +204,18 @@ class Comporta(TomadaAgua):
 
         # ATRIBUIÇÃO DE VAIRÁVEIS
         # Privadas
-        self.__aberta = LeituraOpcBit(OPC_UA["TDA"][f"CP{self.id}_ABERTA"], 17)
-        self.__fechada = LeituraOpcBit(OPC_UA["TDA"][f"CP{self.id}_FECHADA"], 18)
-        self.__cracking = LeituraOpcBit(OPC_UA["TDA"][f"CP{self.id}_CRACKING"], 25)
-        self.__remoto = LeituraOpcBit(OPC_UA["TDA"][f"CP{self.id}_REMOTO"], 22)
+        self.__aberta = LeituraModbusBit(OPC_UA["TDA"][f"CP{self.id}_ABERTA"], 17)
+        self.__fechada = LeituraModbusBit(OPC_UA["TDA"][f"CP{self.id}_FECHADA"], 18)
+        self.__cracking = LeituraModbusBit(OPC_UA["TDA"][f"CP{self.id}_CRACKING"], 25)
+        self.__remoto = LeituraModbusBit(OPC_UA["TDA"][f"CP{self.id}_REMOTO"], 22)
 
-        self.__status = LeituraOpc( OPC_UA["TDA"][f"CP{self.id}_COMPORTA_OPERANDO"])
-        self.__permissao = LeituraOpcBit(OPC_UA["TDA"][f"CP{self.id}_PERMISSIVOS_OK"], 31, True)
-        self.__bloqueio = LeituraOpcBit(OPC_UA["TDA"][f"CP{self.id}_BLOQUEIO_ATUADO"], 31, True)
+        self.__status = LeituraModbus( OPC_UA["TDA"][f"CP{self.id}_COMPORTA_OPERANDO"])
+        self.__permissao = LeituraModbusBit(OPC_UA["TDA"][f"CP{self.id}_PERMISSIVOS_OK"], 31, True)
+        self.__bloqueio = LeituraModbusBit(OPC_UA["TDA"][f"CP{self.id}_BLOQUEIO_ATUADO"], 31, True)
 
         # PÚBLICAS
-        self.press_equalizada = LeituraOpcBit(OPC_UA["TDA"][f"CP{self.id}_PRESSAO_EQUALIZADA"], 4)
-        self.aguardando_cmd_abert = LeituraOpcBit(OPC_UA["TDA"][f"CP{self.id}_AGUARDANDO_COMANDO_ABERTURA"], 3)
+        self.press_equalizada = LeituraModbusBit(OPC_UA["TDA"][f"CP{self.id}_PRESSAO_EQUALIZADA"], 4)
+        self.aguardando_cmd_abert = LeituraModbusBit(OPC_UA["TDA"][f"CP{self.id}_AGUARDANDO_COMANDO_ABERTURA"], 3)
 
     @property
     def id(self) -> int:
@@ -273,11 +273,11 @@ class Comporta(TomadaAgua):
 
 
     def resetar_emergencia(self) -> bool:
-        return self.escrita_opc.escrever_bit(OPC_UA["TDA"][f"CP{self.id}_CMD_REARME_FALHAS"], valor=1, bit=0)
+        return EscritaModBusBit.escrever_bit(self.clp["TDA"], OPC_UA["TDA"][f"CP{self.id}_CMD_REARME_FALHAS"], valor=1, bit=0)
 
     def rearme_falhas_comporta(self) -> bool:
         try:
-            return self.escrita_opc.escrever(self.opc, OPC_UA["TDA"][f"CP{self.id}_CMD_REARME_FALHAS"], 0, 1)
+            return EscritaModBusBit.escrever_bit(self.clp["TDA"], OPC_UA["TDA"][f"CP{self.id}_CMD_REARME_FALHAS"], valor=0, bit=1)
         except Exception as e:
             raise(e)
 
@@ -290,12 +290,12 @@ class Comporta(TomadaAgua):
             elif self.verificar_precondicoes_comporta():
                 if self.press_equalizada.valor and self.aguardando_cmd_abert.valor:
                     logger.debug(f"[TDA][CP{self.id}] Enviando comando de abertura para a comporta {self.id}")
-                    self.escrita_opc.escrever(self.opc, OPC_UA["TDA"][f"CP{self.id}_CMD_ABERTURA_TOTAL"], 1, 1)
+                    EscritaModBusBit.escrever_bit(self.clp["TDA"], OPC_UA["TDA"][f"CP{self.id}_CMD_ABERTURA_TOTAL"], valor=1, bit=1)
                     return
 
         except Exception as e:
-            logger.exception(f"[TDA][CP{self.id}] Houve um erro ao abrir a comporta. Exception: \"{repr(e)}\"")
-            logger.debug(f"[TDA][CP{self.id}] Traceback: {traceback.print_stack}")
+            logger.error(f"[TDA][CP{self.id}] Houve um erro ao abrir a comporta. Exception: \"{repr(e)}\"")
+            logger.debug(f"[TDA][CP{self.id}] Traceback: {traceback.format_exc()}")
 
     def fechar_comporta(self) -> None:
         try:
@@ -303,12 +303,12 @@ class Comporta(TomadaAgua):
                 logger.debug(f"[TDA][CP{self.id}] A comporta {self.id} já está fechada")
                 return
             else:
-                self.escrita_opc.escrever(self.opc, OPC_UA["TDA"][f"CP{self.id}_CMD_FECHAMENTO"], 3, 1)
+                EscritaModBusBit.escrever_bit(self.clp["TDA"], OPC_UA["TDA"][f"CP{self.id}_CMD_FECHAMENTO"], valor=3, bit=1)
                 return
 
         except Exception as e:
-            logger.exception(f"[TDA][CP{self.id}] Houve um erro ao fechar a comporta. Exception: \"{repr(e)}\"")
-            logger.debug(f"[TDA][CP{self.id}] Traceback: {traceback.print_stack}")
+            logger.error(f"[TDA][CP{self.id}] Houve um erro ao fechar a comporta. Exception: \"{repr(e)}\"")
+            logger.debug(f"[TDA][CP{self.id}] Traceback: {traceback.format_exc()}")
 
     def cracking_comporta(self) -> None:
         try:
@@ -317,12 +317,12 @@ class Comporta(TomadaAgua):
                 return
             elif self.verificar_precondicoes_comporta():
                 logger.debug(f"[TDA][CP{self.id}] Enviando comando de cracking para a comporta {self.id}")
-                self.escrita_opc.escrever(self.opc, OPC_UA["TDA"][f"CP{self.id}_CMD_ABERTURA_CRACKING"], 1, 1)
+                EscritaModBusBit.escrever_bit(self.clp["TDA"], OPC_UA["TDA"][f"CP{self.id}_CMD_ABERTURA_CRACKING"], valor=1, bit=1)
                 return
 
         except Exception as e:
-            logger.exception(f"[TDA][CP{self.id}] Houve um erro ao realizar o cracking da comporta. Exception: \"{repr(e)}\"")
-            logger.debug(f"[TDA][CP{self.id}] Traceback: {traceback.print_stack}")
+            logger.error(f"[TDA][CP{self.id}] Houve um erro ao realizar o cracking da comporta. Exception: \"{repr(e)}\"")
+            logger.debug(f"[TDA][CP{self.id}] Traceback: {traceback.format_exc()}")
 
     def verificar_pressao(self) -> None:
         try:
@@ -335,8 +335,8 @@ class Comporta(TomadaAgua):
             self.borda_pressao = True
 
         except Exception as e:
-            logger.exception(f"[TDA][CP{self.id}] Houve um erro ao verificar a pressão da UH da comporta. Exception: \"{repr(e)}\"")
-            logger.debug(f"[TDA][CP{self.id}] Traceback: {traceback.print_stack}")
+            logger.error(f"[TDA][CP{self.id}] Houve um erro ao verificar a pressão da UH da comporta. Exception: \"{repr(e)}\"")
+            logger.debug(f"[TDA][CP{self.id}] Traceback: {traceback.format_exc()}")
 
     def verificar_precondicoes_comporta(self) -> bool:
         self.rearme_falhas_comporta()
@@ -368,6 +368,7 @@ class Comporta(TomadaAgua):
                 logger.debug(f"[TDA][CP{self.id}] A permissão da comporta {self.id} ainda não foi concedida")
                 return False
         except Exception as e:
-            raise(e)
+            logger.error(f"[TDA][CP{self.id}] Houve um erro ao verificar as pré-condições da comporta.")
+            logger.debug(f"[TDA][CP{self.id}] Traceback: {traceback.format_exc()}")
         else:
             return True

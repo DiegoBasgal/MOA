@@ -29,7 +29,7 @@ from conversor_protocolo.conversor import *
 
 from bay import Bay
 from subestacao import Subestacao
-from tomada_agua import TomadaAgua
+from tomada_agua import TomadaAgua, Comporta
 from servico_auxiliar import ServicoAuxiliar
 
 logger = logging.getLogger("__main__")
@@ -50,7 +50,7 @@ class Usina:
         self.se: Subestacao = Subestacao(self)
         self.tda: TomadaAgua = TomadaAgua(self)
         self.sa: ServicoAuxiliar = ServicoAuxiliar(self)
-        self.setores: list[Bay, Subestacao, TomadaAgua, ServicoAuxiliar] = [self.bay, self.se, self.tda, self.sa]
+        self.setores: list[Bay | Subestacao | TomadaAgua | ServicoAuxiliar] = [self.bay, self.se, self.tda, self.sa]
 
         # Unidades de Geração
         self.ug1: UnidadeGeracao = UnidadeGeracao(self, 1)
@@ -60,12 +60,16 @@ class Usina:
         self.ug1.lista_ugs = self.ugs
         self.ug2.lista_ugs = self.ugs
 
+        self.cp: dict[str, Comporta]
+        self.cp["CP1"] = Comporta(1)
+        self.cp["CP2"] = Comporta(2)
+
         # ATRIBUIÇÃO DE VARIÀVEIS
         # PRIVADAS
         self.__split1: bool = False
         self.__split2: bool = False
 
-        self.__potencia_ativa_kW = LeituraOpc(self.opc, "...")
+        self.__potencia_ativa_kW = LeituraModbus(self.clp["SA"], 999, escala=1, op=4)
 
         # PROTEGIDAS
         self._tentativas_normalizar: int = 0
@@ -93,7 +97,7 @@ class Usina:
         self.voip_emerg: bool = False
         self.borda_emerg: bool = False
         self.normalizar_forcado: bool = False
-        
+
         self.glb_dict = Dicionarios.globais
 
         # FINALIZAÇÃO DO __INIT__
@@ -175,13 +179,13 @@ class Usina:
     def acionar_emergencia(self):
         try:
             self.clp_emergencia = True
-            [self.escrita_opc.escrever_bit(OPC_UA["UG"][f"UG{ug.id}_CMD_PARADA_EMERGENCIA"], valor=1, bit=4) for ug in self.ugs]
+            [EscritaModBusBit.escrever_bit(self.clp[f"UG{ug,id}"], OPC_UA["UG"][f"UG{ug.id}_CMD_PARADA_EMERGENCIA"], valor=1, bit=4) for ug in self.ugs]
             sleep(5)
-            [self.escrita_opc.escrever_bit(OPC_UA["UG"][f"UG{ug.id}_CMD_PARADA_EMERGENCIA"], valor=0, bit=4) for ug in self.ugs]
+            [EscritaModBusBit.escrever_bit(self.clp[f"UG{ug,id}"], OPC_UA["UG"][f"UG{ug.id}_CMD_PARADA_EMERGENCIA"], valor=0, bit=4) for ug in self.ugs]
 
         except Exception as e:
             logger.exception(f"[USN] Houve um erro ao realizar acionar a emergência. Exception: \"{repr(e)}\"")
-            logger.debug(f"[USN] Traceback: {traceback.print_stack}")
+            logger.debug(f"[USN] Traceback: {traceback.format_exc()}")
             return False
 
     def normalizar_usina(self) -> bool:
@@ -226,7 +230,7 @@ class Usina:
 
         except Exception as e:
             logger.exception(f"[USN] Houve um erro ao ler e atualizar os parâmetros do Banco de Dados. Exception: \"{repr(e)}\"")
-            logger.debug(f"[USN] Traceback: {traceback.print_stack}")
+            logger.debug(f"[USN] Traceback: {traceback.format_exc()}")
 
     def atualizar_cfg(self, parametros) -> None:
         try:
@@ -247,34 +251,17 @@ class Usina:
 
         except Exception as e:
             logger.exception(f"[USN] Houve um erro ao atualizar o arquivo de configuração \"cfg.json\". Exception: \"{repr(e)}\"")
-            logger.debug(f"[USN] Traceback: {traceback.print_stack}")
+            logger.debug(f"[USN] Traceback: {traceback.format_exc()}")
 
     def heartbeat(self) -> None:
         try:
-            agora = self.get_time()
-            ano = int(agora.year)
-            mes = int(agora.month)
-            dia = int(agora.day)
-            hor = int(agora.hour)
-            mnt = int(agora.minute)
-            seg = int(agora.second)
-            mil = int(agora.microsecond / 1000)
-            self.clp["MOA"].write_multiple_registers(0, [ano, mes, dia, hor, mnt, seg, mil])
-            self.clp["MOA"].write_single_coil(MB["MOA"]["MOA_OUT_STATUS"], [self.estado_moa])
             self.clp["MOA"].write_single_coil(MB["MOA"]["MOA_OUT_MODE"], [self.modo_autonomo])
+            self.clp["MOA"].write_single_register(MB["MOA"]["MOA_OUT_STATUS"], [self.estado_moa])
 
             if self.modo_autonomo:
                 self.clp["MOA"].write_single_coil(MB["MOA"]["OUT_EMERG"], [self.clp_emergencia])
                 self.clp["MOA"].write_multiple_registers(MB["MOA"]["OUT_SETPOINT"], [int(sum(ug.setpoint)) for ug in self.ugs])
                 self.clp["MOA"].write_multiple_registers(MB["MOA"]["OUT_TARGET_LEVEL"], [int((self.cfg["nv_alvo"] - 800) * 1000)])
-
-                if self.glb_dict["avisado_eletrica"] and not self.borda_emerg:
-                    [self.clp["MOA"].write_single_coil(MB["MOA"][f"OUT_BLOCK_UG{ug.id}"], [1]) for ug in self.ugs]
-                    self.borda_emerg = True
-
-                elif not self.glb_dict["avisado_eletrica"] and self.borda_emerg:
-                    [self.clp["MOA"].write_single_coil(MB["MOA"][f"OUT_BLOCK_UG{ug.id}"], [0]) for ug in self.ugs]
-                    self.borda_emerg = False
 
                 if self.clp["MOA"].read_coils(MB["MOA"]["IN_HABILITA_AUTO"])[0] == 1:
                     self.clp["MOA"].write_single_coil(MB["MOA"]["IN_HABILITA_AUTO"], [1])
@@ -286,50 +273,47 @@ class Usina:
                     self.clp["MOA"].write_single_coil(MB["MOA"]["IN_DESABILITA_AUTO"], [1])
                     self.modo_autonomo = False
 
+                if self.clp["MOA"].read_coils(MB["MOA"]["IN_EMERG"])[0] == 1 and not self.glb_dict["avisado_eletrica"]:
+                    self.glb_dict["avisado_eletrica"] = True
+                    [ug.verificar_condicionadores() for ug in self.ugs]
+
+                elif self.clp["MOA"].read_coils(MB["MOA"]["IN_EMERG"])[0] == 0 and self.glb_dict["avisado_eletrica"]:
+                    self.glb_dict["avisado_eletrica"] = True
+
+                if self.glb_dict["avisado_eletrica"] and not self.borda_emerg:
+                    [self.clp["MOA"].write_single_coil(MB["MOA"][f"OUT_BLOCK_UG{ug.id}"], [1]) for ug in self.ugs]
+                    self.borda_emerg = True
+
+                elif not self.glb_dict["avisado_eletrica"] and self.borda_emerg:
+                    [self.clp["MOA"].write_single_coil(MB["MOA"][f"OUT_BLOCK_UG{ug.id}"], [0]) for ug in self.ugs]
+                    self.borda_emerg = False
+
                 for ug in self.ugs:
+                    if self.clp["MOA"].read_coils(MB["MOA"][f"IN_EMERG_UG{ug.id}"])[0] == 1:
+                        ug.verificar_condicionadores()
+
                     if self.clp["MOA"].read_coils(MB["MOA"][f"OUT_BLOCK_UG{ug.id}"])[0] == 1:
                         self.clp["MOA"].write_single_coil(MB["MOA"][f"OUT_BLOCK_UG{ug.id}"], [1])
                     elif self.clp["MOA"].read_coils(MB["MOA"][f"OUT_BLOCK_UG{ug.id}"])[0] == 0:
                         self.clp["MOA"].write_single_coil(MB["MOA"][f"OUT_BLOCK_UG{ug.id}"], [0])
 
             elif not self.modo_autonomo:
+                if self.clp["MOA"].read_coils(MB["MOA"]["IN_HABILITA_AUTO"])[0] == 1:
+                    self.clp["MOA"].write_single_coil(MB["MOA"]["IN_HABILITA_AUTO"], [1])
+                    self.clp["MOA"].write_single_coil(MB["MOA"]["IN_DESABILITA_AUTO"], [0])
+                    self.modo_autonomo = True
+
                 self.clp["MOA"].write_single_coil(MB["MOA"]["OUT_EMERG"], [0])
-                self.clp["MOA"].write_single_coil(MB["MOA"]["OUT_SETPOINT"], [0])
-                self.clp["MOA"].write_single_coil(MB["MOA"]["OUT_TARGET_LEVEL"], [0])
+                self.clp["MOA"].write_single_register(MB["MOA"]["OUT_SETPOINT"], [0])
+                self.clp["MOA"].write_single_register(MB["MOA"]["OUT_TARGET_LEVEL"], [0])
                 [self.clp["MOA"].write_single_coil(MB["MOA"][f"OUT_BLOCK_UG{ug.id}"], [0]) for ug in self.ugs]
 
         except Exception as e:
             logger.exception(f"[USN] Houve um erro ao tentar escrever valores modbus no CLP MOA. Exception: \"{repr(e)}\"")
-            logger.debug(f"[USN] Traceback: {traceback.print_stack}")
+            logger.debug(f"[USN] Traceback: {traceback.format_exc()}")
 
     def ler_valores(self) -> None:
         ClientesUsina.ping_clients()
-        try:
-            if self.clp["MOA"].read_coils(MB["MOA"]["IN_EMERG"])[0] == 1 and not self.glb_dict["avisado_eletrica"]:
-                self.glb_dict["avisado_eletrica"] = True
-                [ug.verificar_condicionadores() for ug in self.ugs]
-
-            elif self.clp["MOA"].read_coils(MB["MOA"]["IN_EMERG"])[0] == 0 and self.glb_dict["avisado_eletrica"]:
-                self.glb_dict["avisado_eletrica"] = True
-
-            if self.clp["MOA"].read_coils(MB["MOA"]["IN_EMERG_UG1"])[0] == 1:
-                self.ug1.verificar_condicionadores()
-
-            if self.clp["MOA"].read_coils(MB["MOA"]["IN_EMERG_UG2"])[0] == 1:
-                self.ug2.verificar_condicionadores()
-
-            if self.clp["MOA"].read_coils(MB["MOA"]["IN_HABILITA_AUTO"])[0] == 1:
-                self.clp["MOA"].write_single_coil(MB["MOA"]["IN_HABILITA_AUTO"], [1])
-                self.clp["MOA"].write_single_coil(MB["MOA"]["IN_DESABILITA_AUTO"], [0])
-
-            if self.clp["MOA"].read_coils(MB["MOA"]["IN_DESABILITA_AUTO"])[0] == 1:
-                self.clp["MOA"].write_single_coil(MB["MOA"]["IN_HABILITA_AUTO"], [0])
-                self.clp["MOA"].write_single_coil(MB["MOA"]["IN_DESABILITA_AUTO"], [1])
-
-        except Exception as e:
-            logger.exception(f"[USN] Houve um erro ao tentar ler valores modbus no CLP MOA. Exception: \"{repr(e)}\"")
-            logger.debug(f"[USN] Traceback: {traceback.print_stack}")
-
         self.heartbeat()
         self.tda.atualizar_montante_recente()
 
@@ -359,7 +343,7 @@ class Usina:
 
         except Exception as e:
             logger.exception(f"[USN] Houve um erro ao inserir os valores no banco. Exception: \"{repr(e)}\"")
-            logger.debug(f"[USN] Traceback: {traceback.print_stack}")
+            logger.debug(f"[USN] Traceback: {traceback.format_exc()}")
 
         try:
             BancoDados.insert_debug(
@@ -383,13 +367,13 @@ class Usina:
 
         except Exception as e:
             logger.exception(f"[USN] Houve um erro ao inserir dados DEBUG do controle de potência normal no banco. Exception: \"{repr(e)}\"")
-            logger.debug(f"[USN] Traceback: {traceback.print_stack}")
+            logger.debug(f"[USN] Traceback: {traceback.format_exc()}")
 
     def ajuste_potencia(self, pot_alvo) -> float:
         self.pot_alvo_anterior = pot_alvo if self.pot_alvo_anterior == -1 else ...
 
         if pot_alvo < 0.1:
-            for ug in self.ugs: 
+            for ug in self.ugs:
                 ug.setpoint = 0
             return 0
 
@@ -403,7 +387,7 @@ class Usina:
                 pot_alvo = self.pot_alvo_anterior * (1 - ((pot_medidor - self.cfg["pot_maxima_alvo"]) / self.cfg["pot_maxima_alvo"]))
         except TypeError as te:
             logger.exception(f"[USN] A comunicação com os MFs falharam. Exception: \"{repr(te)}\"")
-            logger.debug(f"[USN] Traceback: {traceback.print_stack}")
+            logger.debug(f"[USN] Traceback: {traceback.format_exc()}")
 
         self.pot_alvo_anterior = pot_alvo
 
@@ -448,7 +432,7 @@ class Usina:
             ugs[0].setpoint = (sp * 2 / 1) * self.cfg[f"pot_maxima_ug{ugs[0].id}"] if self.__split1 or self.__split2 else ...
 
         else:
-            for ug in ugs: 
+            for ug in ugs:
                 ug.setpoint = 0
 
     def controle_inicial(self) -> None:

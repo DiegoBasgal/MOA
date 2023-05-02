@@ -43,14 +43,14 @@ class ServicoAuxiliar(Usina):
 
     def resetar_emergencia(self) -> bool:
         try:
-            res = self.escrita_opc.escrever_bit(OPC_UA["SA"]["RESET_FALHAS_BARRA_CA"], valor=1, bit=0)
-            res = self.escrita_opc.escrever_bit(OPC_UA["SA"]["RESET_FALHAS_SISTEMA_AGUA"], valor=1, bit=1)
-            res = self.escrita_opc.escrever_bit(OPC_UA["SA"]["REARME_BLOQUEIO_GERAL_E_FALHAS_SA"], valor=1, bit=23)
+            res = EscritaModBusBit.escrever_bit(self.clp["SA"], OPC_UA["SA"]["RESET_FALHAS_BARRA_CA"], valor=1, bit=0)
+            res = EscritaModBusBit.escrever_bit(self.clp["SA"], OPC_UA["SA"]["RESET_FALHAS_SISTEMA_AGUA"], valor=1, bit=1)
+            res = EscritaModBusBit.escrever_bit(self.clp["SA"], OPC_UA["SA"]["REARME_BLOQUEIO_GERAL_E_FALHAS_SA"], valor=1, bit=23)
             return res
 
         except Exception as e:
-            logger.exception(f"[SA] Houve um erro ao realizar o reset geral. Exception: \"{repr(e)}\"")
-            logger.exception(f"[SA] Traceback: {traceback.print_stack}")
+            logger.error(f"[SA] Houve um erro ao realizar o reset geral. Exception: \"{repr(e)}\"")
+            logger.debug(f"[SA] Traceback: {traceback.format_exc()}")
             return False
 
     def leitura_periodica(self) -> None:
@@ -163,114 +163,114 @@ class ServicoAuxiliar(Usina):
 
         # Normalizar
             # Bit Invertido
-        self.leitura_sem_emergencia_sa = LeituraOpc(OPC_UA["SA"]["SEM_EMERGENCIA"], 13, True)
+        self.leitura_sem_emergencia_sa = LeituraModbus(OPC_UA["SA"]["SEM_EMERGENCIA"], 13, True)
         self.condicionadores_essenciais.append(CondicionadorBase(self.leitura_sem_emergencia_sa, CONDIC_NORMALIZAR))
 
         # CONDICIONADORES
         # Normalizar
             # Bit Normal
-        self.leitura_retificador_subtensao = LeituraOpc(OPC_UA["SA"]["RETIFICADOR_SUBTENSAO"], 31)
+        self.leitura_retificador_subtensao = LeituraModbus(OPC_UA["SA"]["RETIFICADOR_SUBTENSAO"], 31)
         self.condicionadores.append(CondicionadorBase(self.leitura_retificador_subtensao, CONDIC_NORMALIZAR))
 
-        self.leitura_retificador_sobretensao = LeituraOpc(OPC_UA["SA"]["RETIFICADOR_SOBRETENSAO"], 30)
+        self.leitura_retificador_sobretensao = LeituraModbus(OPC_UA["SA"]["RETIFICADOR_SOBRETENSAO"], 30)
         self.condicionadores.append(CondicionadorBase(self.leitura_retificador_sobretensao, CONDIC_NORMALIZAR))
 
-        self.leitura_retificador_sobrecorrente_saida = LeituraOpc(OPC_UA["SA"]["RETIFICADOR_SOBRECORRENTE_SAIDA"], 0)
+        self.leitura_retificador_sobrecorrente_saida = LeituraModbus(OPC_UA["SA"]["RETIFICADOR_SOBRECORRENTE_SAIDA"], 0)
         self.condicionadores.append(CondicionadorBase(self.leitura_retificador_sobrecorrente_saida, CONDIC_NORMALIZAR))
 
-        self.leitura_retificador_sobrecorrente_baterias = LeituraOpc(OPC_UA["SA"]["RETIFICADOR_SOBRECORRENTE_BATERIAS"], 1)
+        self.leitura_retificador_sobrecorrente_baterias = LeituraModbus(OPC_UA["SA"]["RETIFICADOR_SOBRECORRENTE_BATERIAS"], 1)
         self.condicionadores.append(CondicionadorBase(self.leitura_retificador_sobrecorrente_baterias, CONDIC_NORMALIZAR))
 
-        self.leitura_falha_sistema_agua_pressurizar_fa = LeituraOpc(OPC_UA["SA"]["SISTEMA_AGUA_FALHA_PRESSURIZAR_FILTRO_A"], 3)
+        self.leitura_falha_sistema_agua_pressurizar_fa = LeituraModbus(OPC_UA["SA"]["SISTEMA_AGUA_FALHA_PRESSURIZAR_FILTRO_A"], 3)
         self.condicionadores.append(CondicionadorBase(self.leitura_falha_sistema_agua_pressurizar_fa, CONDIC_NORMALIZAR))
 
-        self.leitura_falha_sistema_agua_pressostato_fa = LeituraOpc(OPC_UA["SA"]["SISTEMA_AGUA_FALHA_PRESSOSTATO_FILTRO_A"], 4)
+        self.leitura_falha_sistema_agua_pressostato_fa = LeituraModbus(OPC_UA["SA"]["SISTEMA_AGUA_FALHA_PRESSOSTATO_FILTRO_A"], 4)
         self.condicionadores.append(CondicionadorBase(self.leitura_falha_sistema_agua_pressostato_fa, CONDIC_NORMALIZAR))
 
-        self.leitura_falha_sistema_agua_pressurizar_fb = LeituraOpc(OPC_UA["SA"]["SISTEMA_AGUA_FALHA_PRESSURIZAR_FILTRO_B"], 5)
+        self.leitura_falha_sistema_agua_pressurizar_fb = LeituraModbus(OPC_UA["SA"]["SISTEMA_AGUA_FALHA_PRESSURIZAR_FILTRO_B"], 5)
         self.condicionadores.append(CondicionadorBase(self.leitura_falha_sistema_agua_pressurizar_fb, CONDIC_NORMALIZAR))
 
-        self.leitura_falha_sistema_agua_pressostato_fb = LeituraOpc(OPC_UA["SA"]["SISTEMA_AGUA_FALHA_PRESSOSTATO_FILTRO_B"], 6)
+        self.leitura_falha_sistema_agua_pressostato_fb = LeituraModbus(OPC_UA["SA"]["SISTEMA_AGUA_FALHA_PRESSOSTATO_FILTRO_B"], 6)
         self.condicionadores.append(CondicionadorBase(self.leitura_falha_sistema_agua_pressostato_fb, CONDIC_NORMALIZAR))
 
         # Indisponibilizar
             # Bit Invertido
-        self.leitura_52sa1_sem_falha = LeituraOpc(OPC_UA["SA"]["52SA1_SEM_FALHA"], 31, True)
+        self.leitura_52sa1_sem_falha = LeituraModbus(OPC_UA["SA"]["52SA1_SEM_FALHA"], 31, True)
         self.condicionadores.append(CondicionadorBase(self.leitura_52sa1_sem_falha, CONDIC_INDISPONIBILIZAR))
 
-        self.leitura_sa_72sa1_fechado = LeituraOpc(OPC_UA["SA"]["SA_72SA1_FECHADO"], 10, True)
+        self.leitura_sa_72sa1_fechado = LeituraModbus(OPC_UA["SA"]["SA_72SA1_FECHADO"], 10, True)
         self.condicionadores.append(CondicionadorBase(self.leitura_sa_72sa1_fechado, CONDIC_INDISPONIBILIZAR))
 
-        self.leitura_disj_24vcc_fechados = LeituraOpc(OPC_UA["SA"]["DISJUNTORES_24VCC_FECHADOS"], 12, True)
+        self.leitura_disj_24vcc_fechados = LeituraModbus(OPC_UA["SA"]["DISJUNTORES_24VCC_FECHADOS"], 12, True)
         self.condicionadores.append(CondicionadorBase(self.leitura_disj_24vcc_fechados, CONDIC_INDISPONIBILIZAR))
 
-        self.leitura_disj_125vcc_fechados = LeituraOpc(OPC_UA["SA"]["DISJUNTORES_125VCC_FECHADOS"], 11, True)
+        self.leitura_disj_125vcc_fechados = LeituraModbus(OPC_UA["SA"]["DISJUNTORES_125VCC_FECHADOS"], 11, True)
         self.condicionadores.append(CondicionadorBase(self.leitura_disj_125vcc_fechados, CONDIC_INDISPONIBILIZAR))
         
-        self.leitura_comando_24vcc_com_tensao = LeituraOpc(OPC_UA["SA"]["COM_TENSAO_COMANDO_24VCC"], 15, True)
+        self.leitura_comando_24vcc_com_tensao = LeituraModbus(OPC_UA["SA"]["COM_TENSAO_COMANDO_24VCC"], 15, True)
         self.condicionadores.append(CondicionadorBase(self.leitura_comando_24vcc_com_tensao, CONDIC_INDISPONIBILIZAR))
         
-        self.leitura_comando_125vcc_com_tensao = LeituraOpc(OPC_UA["SA"]["COM_TENSAO_COMANDO_125VCC"], 14, True)
+        self.leitura_comando_125vcc_com_tensao = LeituraModbus(OPC_UA["SA"]["COM_TENSAO_COMANDO_125VCC"], 14, True)
         self.condicionadores.append(CondicionadorBase(self.leitura_comando_125vcc_com_tensao, CONDIC_INDISPONIBILIZAR))
         
-        self.leitura_alimentacao_125vcc_com_tensao = LeituraOpc(OPC_UA["SA"]["COM_TENSAO_ALIMENTACAO_125VCC"], 13, True)
+        self.leitura_alimentacao_125vcc_com_tensao = LeituraModbus(OPC_UA["SA"]["COM_TENSAO_ALIMENTACAO_125VCC"], 13, True)
         self.condicionadores.append(CondicionadorBase(self.leitura_alimentacao_125vcc_com_tensao, CONDIC_INDISPONIBILIZAR))
 
             # Bit normal
-        self.leitura_falha_abrir_52sa1 = LeituraOpc(OPC_UA["SA"]["FALHA_ABRIR_52SA1"], 0)
+        self.leitura_falha_abrir_52sa1 = LeituraModbus(OPC_UA["SA"]["FALHA_ABRIR_52SA1"], 0)
         self.condicionadores.append(CondicionadorBase(self.leitura_falha_abrir_52sa1, CONDIC_INDISPONIBILIZAR))
 
-        self.leitura_falha_fechar_52sa1 = LeituraOpc(OPC_UA["SA"]["FALHA_FECHAR_52SA1"], 1)
+        self.leitura_falha_fechar_52sa1 = LeituraModbus(OPC_UA["SA"]["FALHA_FECHAR_52SA1"], 1)
         self.condicionadores.append(CondicionadorBase(self.leitura_falha_fechar_52sa1, CONDIC_INDISPONIBILIZAR))
 
-        self.leitura_falha_abrir_52sa2 = LeituraOpc(OPC_UA["SA"]["FALHA_ABRIR_52SA2"], 3)
+        self.leitura_falha_abrir_52sa2 = LeituraModbus(OPC_UA["SA"]["FALHA_ABRIR_52SA2"], 3)
         self.condicionadores.append(CondicionadorBase(self.leitura_falha_abrir_52sa2, CONDIC_INDISPONIBILIZAR))
 
-        self.leitura_falha_fechar_52sa2 = LeituraOpc(OPC_UA["SA"]["FALHA_FECHAR_52SA2"], 4)
+        self.leitura_falha_fechar_52sa2 = LeituraModbus(OPC_UA["SA"]["FALHA_FECHAR_52SA2"], 4)
         self.condicionadores.append(CondicionadorBase(self.leitura_falha_fechar_52sa2, CONDIC_INDISPONIBILIZAR))
 
-        self.leitura_falha_abrir_52sa3 = LeituraOpc(OPC_UA["SA"]["FALHA_ABRIR_52SA3"], 5)
+        self.leitura_falha_abrir_52sa3 = LeituraModbus(OPC_UA["SA"]["FALHA_ABRIR_52SA3"], 5)
         self.condicionadores.append(CondicionadorBase(self.leitura_falha_abrir_52sa3, CONDIC_INDISPONIBILIZAR))
 
-        self.leitura_falha_fechar_52sa3 = LeituraOpc(OPC_UA["SA"]["FALHA_FECHAR_52SA3"], 6)
+        self.leitura_falha_fechar_52sa3 = LeituraModbus(OPC_UA["SA"]["FALHA_FECHAR_52SA3"], 6)
         self.condicionadores.append(CondicionadorBase(self.leitura_falha_fechar_52sa3, CONDIC_INDISPONIBILIZAR))
 
-        self.leitura_fusivel_queimado_retificador = LeituraOpc(OPC_UA["SA"]["RETIFICADOR_FUSIVEL_QUEIMADO"], 2)
+        self.leitura_fusivel_queimado_retificador = LeituraModbus(OPC_UA["SA"]["RETIFICADOR_FUSIVEL_QUEIMADO"], 2)
         self.condicionadores.append(CondicionadorBase(self.leitura_fusivel_queimado_retificador, CONDIC_INDISPONIBILIZAR))
 
-        self.leitura_fuga_terra_positivo_retificador = LeituraOpc(OPC_UA["SA"]["RETIFICADOR_FUGA_TERRA_POSITIVO"], 5)
+        self.leitura_fuga_terra_positivo_retificador = LeituraModbus(OPC_UA["SA"]["RETIFICADOR_FUGA_TERRA_POSITIVO"], 5)
         self.condicionadores.append(CondicionadorBase(self.leitura_fuga_terra_positivo_retificador, CONDIC_INDISPONIBILIZAR))
 
-        self.leitura_fuga_terra_negativo_retificador = LeituraOpc(OPC_UA["SA"]["RETIFICADOR_FUGA_TERRA_NEGATIVO"], 6)
+        self.leitura_fuga_terra_negativo_retificador = LeituraModbus(OPC_UA["SA"]["RETIFICADOR_FUGA_TERRA_NEGATIVO"], 6)
         self.condicionadores.append(CondicionadorBase(self.leitura_fuga_terra_negativo_retificador, CONDIC_INDISPONIBILIZAR))
 
         # LEITURAS PARA LEITURA PERIODICA
         # Telegram
             # Bit Invertido
-        self.leitura_bomba_sis_agua_disp = LeituraOpc(OPC_UA["SA"]["SISTEMA_AGUA_BOMBA_DISPONIVEL"], 0, True)
+        self.leitura_bomba_sis_agua_disp = LeituraModbus(OPC_UA["SA"]["SISTEMA_AGUA_BOMBA_DISPONIVEL"], 0, True)
 
             # Bit Normal
-        self.leitura_falha_bomba_drenagem_1 = LeituraOpc(OPC_UA["SA"]["DRENAGEM_BOMBA_1_FALHA"], 0)
-        self.leitura_falha_bomba_drenagem_2 = LeituraOpc(OPC_UA["SA"]["DRENAGEM_BOMBA_2_FALHA"], 2)
-        self.leitura_falha_bomba_drenagem_3 = LeituraOpc(OPC_UA["SA"]["DRENAGEM_BOMBA_3_FALHA"], 4)
-        self.leitura_falha_ligar_bomba_sis_agua = LeituraOpc(OPC_UA["SA"]["SISTEMA_AGUA_FALHA_LIGA_BOMBA"], 1)
-        self.leitura_djs_barra_seletora_remoto = LeituraOpc(OPC_UA["SA"]["DISJUNTORES_BARRA_SELETORA_REMOTO"], 9)
-        self.leitura_discrepancia_boia_poco_drenagem = LeituraOpc(OPC_UA["SA"]["DRENAGEM_DISCREPANCIA_BOIAS_POCO"], 9)
+        self.leitura_falha_bomba_drenagem_1 = LeituraModbus(OPC_UA["SA"]["DRENAGEM_BOMBA_1_FALHA"], 0)
+        self.leitura_falha_bomba_drenagem_2 = LeituraModbus(OPC_UA["SA"]["DRENAGEM_BOMBA_2_FALHA"], 2)
+        self.leitura_falha_bomba_drenagem_3 = LeituraModbus(OPC_UA["SA"]["DRENAGEM_BOMBA_3_FALHA"], 4)
+        self.leitura_falha_ligar_bomba_sis_agua = LeituraModbus(OPC_UA["SA"]["SISTEMA_AGUA_FALHA_LIGA_BOMBA"], 1)
+        self.leitura_djs_barra_seletora_remoto = LeituraModbus(OPC_UA["SA"]["DISJUNTORES_BARRA_SELETORA_REMOTO"], 9)
+        self.leitura_discrepancia_boia_poco_drenagem = LeituraModbus(OPC_UA["SA"]["DRENAGEM_DISCREPANCIA_BOIAS_POCO"], 9)
 
         # Telegram + Voip
             # Bit Invertido
-        self.leitura_sem_falha_52sa3 = LeituraOpc(OPC_UA["SA"]["52SA3_SEM_FALHA"], 3, True)
-        self.leitura_sem_falha_52sa2 = LeituraOpc(OPC_UA["SA"]["52SA2_SEM_FALHA"], 1, True)
-        self.leitura_sem_falha_52sa1 = LeituraOpc(OPC_UA["SA"]["52SA1_SEM_FALHA"], 31, True)
+        self.leitura_sem_falha_52sa3 = LeituraModbus(OPC_UA["SA"]["52SA3_SEM_FALHA"], 3, True)
+        self.leitura_sem_falha_52sa2 = LeituraModbus(OPC_UA["SA"]["52SA2_SEM_FALHA"], 1, True)
+        self.leitura_sem_falha_52sa1 = LeituraModbus(OPC_UA["SA"]["52SA1_SEM_FALHA"], 31, True)
 
             # Bit Normal
-        self.leitura_falha_parar_gmg = LeituraOpc(OPC_UA["SA"]["GMG_FALHA_PARAR"], 7)
-        self.leitura_falha_partir_gmg = LeituraOpc(OPC_UA["SA"]["GMG_FALHA_PARTIR"], 6)
-        self.leitura_operacao_manual_gmg = LeituraOpc(OPC_UA["SA"]["GMG_OPERACAO_MANUAL"], 10)
-        self.leitura_falha_bomba_filtragem = LeituraOpc(OPC_UA["SA"]["FILTRAGEM_BOMBA_FALHA"], 6)
-        self.leitura_nivel_alto_poco_drenagem = LeituraOpc(OPC_UA["SA"]["POCO_DRENAGEM_NIVEL_ALTO"], 26)
-        self.leitura_falha_bomba_drenagem_uni = LeituraOpc(OPC_UA["SA"]["DRENAGEM_UNIDADES_BOMBA_FALHA"], 12)
-        self.leitura_alarme_sistema_incendio_atuado = LeituraOpc(OPC_UA["SA"]["SISTEMA_INCENDIO_ALARME_ATUADO"], 6)
-        self.leitura_alarme_sistema_seguraca_atuado = LeituraOpc(OPC_UA["SA"]["SISTEMA_SEGURANCA_ALARME_ATUADO"], 7)
-        self.leitura_nivel_muito_alto_poco_drenagem = LeituraOpc(OPC_UA["SA"]["POCO_DRENAGEM_NIVEL_MUITO_ALTO"], 25)
-        self.leitura_falha_tubo_succao_bomba_recalque = LeituraOpc(OPC_UA["SA"]["BOMBA_RECALQUE_TUBO_SUCCAO_FALHA"], 14)
+        self.leitura_falha_parar_gmg = LeituraModbus(OPC_UA["SA"]["GMG_FALHA_PARAR"], 7)
+        self.leitura_falha_partir_gmg = LeituraModbus(OPC_UA["SA"]["GMG_FALHA_PARTIR"], 6)
+        self.leitura_operacao_manual_gmg = LeituraModbus(OPC_UA["SA"]["GMG_OPERACAO_MANUAL"], 10)
+        self.leitura_falha_bomba_filtragem = LeituraModbus(OPC_UA["SA"]["FILTRAGEM_BOMBA_FALHA"], 6)
+        self.leitura_nivel_alto_poco_drenagem = LeituraModbus(OPC_UA["SA"]["POCO_DRENAGEM_NIVEL_ALTO"], 26)
+        self.leitura_falha_bomba_drenagem_uni = LeituraModbus(OPC_UA["SA"]["DRENAGEM_UNIDADES_BOMBA_FALHA"], 12)
+        self.leitura_alarme_sistema_incendio_atuado = LeituraModbus(OPC_UA["SA"]["SISTEMA_INCENDIO_ALARME_ATUADO"], 6)
+        self.leitura_alarme_sistema_seguraca_atuado = LeituraModbus(OPC_UA["SA"]["SISTEMA_SEGURANCA_ALARME_ATUADO"], 7)
+        self.leitura_nivel_muito_alto_poco_drenagem = LeituraModbus(OPC_UA["SA"]["POCO_DRENAGEM_NIVEL_MUITO_ALTO"], 25)
+        self.leitura_falha_tubo_succao_bomba_recalque = LeituraModbus(OPC_UA["SA"]["BOMBA_RECALQUE_TUBO_SUCCAO_FALHA"], 14)
