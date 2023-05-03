@@ -10,12 +10,10 @@ from abc import abstractmethod
 from src.codes import *
 from src.mapa_modbus import *
 
-from src.UnidadeDeGeracao import UnidadeDeGeracao
-
 logger = logging.getLogger("__main__")
 
 class State:
-    def __init__(self, parent_ug: "UnidadeDeGeracao"):
+    def __init__(self, parent_ug):
         self.parent_ug = parent_ug
 
     @abstractmethod
@@ -69,10 +67,20 @@ class StateRestrito(State):
         deve_indisponibilizar = False
         condicionadores_ativos = []
 
-        if [condic.ativo for condic in self.parent_ug.condicionadores_essenciais] or self.parent_ug.deve_ler_condicionadores:
-            for condic in [self.parent_ug.condicionadores_essenciais, self.parent_ug.condicionadores]:
+        for condic in self.parent_ug.condicionadores_essenciais:
+            if condic.ativo:
+                self.parent_ug.deve_ler_condicionadores = True
+                break
+
+        if self.parent_ug.deve_ler_condicionadores:
+            for condic in self.parent_ug.condicionadores_essenciais:
                 if condic.ativo:
-                    deve_indisponibilizar = True if condic == DEVE_INDISPONIBILIZAR else ...
+                    deve_indisponibilizar = True if condic.gravidade == DEVE_INDISPONIBILIZAR else ...
+                    condicionadores_ativos.append(condic)
+
+            for condic in self.parent_ug.condicionadores:
+                if condic.ativo:
+                    deve_indisponibilizar = True if condic.gravidade == DEVE_INDISPONIBILIZAR else ...
                     condicionadores_ativos.append(condic)
 
         if deve_indisponibilizar:
@@ -110,12 +118,31 @@ class StateDisponivel(State):
         deve_indisponibilizar = False
         condicionadores_ativos = []
 
-        if [condic.ativo for condic in self.parent_ug.condicionadores_essenciais] or self.parent_ug.deve_ler_condicionadores:
-            for condic in [self.parent_ug.condicionadores_essenciais, self.parent_ug.condicionadores]:
-                if condic.ativo:
-                    deve_normalizar = True if condic.gravidade == DEVE_NORMALIZAR else ...
-                    deve_indisponibilizar = True if condic.gravidade == DEVE_INDISPONIBILIZAR else ...
-                    condicionadores_ativos.append(condic)
+        for condic in self.parent_ug.condicionadores_essenciais:
+            if condic.ativo:
+                self.parent_ug.deve_ler_condicionadores = True
+                break
+
+        if self.parent_ug.deve_ler_condicionadores:
+            for condicionador_essencial in self.parent_ug.condicionadores_essenciais:
+                if condicionador_essencial.ativo:
+                    if condicionador_essencial == DEVE_INDISPONIBILIZAR:
+                        condicionadores_ativos.append(condicionador_essencial)
+                        deve_indisponibilizar = True
+                    elif condicionador_essencial.gravidade == DEVE_NORMALIZAR:
+                        condicionadores_ativos.append(condicionador_essencial)
+                        self.parent_ug.deve_ler_condicionadores = False
+                        deve_normalizar = True
+
+            for condicionador in self.parent_ug.condicionadores:
+                if condicionador.ativo: 
+                    if condicionador.gravidade == DEVE_INDISPONIBILIZAR:
+                        condicionadores_ativos.append(condicionador)
+                        deve_indisponibilizar = True
+                    elif condicionador.gravidade == DEVE_NORMALIZAR:
+                        condicionadores_ativos.append(condicionador)
+                        self.parent_ug.deve_ler_condicionadores = False
+                        deve_normalizar = True
 
         if deve_indisponibilizar or deve_normalizar:
             logger.info(f"[UG{self.parent_ug.id}] UG em modo disponível detectou condicionadores ativos:")
@@ -218,7 +245,7 @@ class StateDisponivel(State):
     def verificar_partindo(self) -> None:
         timer = time() + 600
         try:
-            logger.debug(f"[UG{self.parent_ug.id}]Iniciando o timer de verificação de partida")
+            logger.debug(f"[UG{self.parent_ug.id}] Iniciando o timer de verificação de partida")
             while time() < timer:
                 if self.parent_ug.etapa_atual == UNIDADE_SINCRONIZADA or self.parent_ug.release_timer:
                     logger.debug(f"[UG{self.parent_ug.id}] Condição de saída... Saindo do timer de verificação de partida")

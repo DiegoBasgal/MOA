@@ -458,7 +458,7 @@ class Usina:
     def heartbeat(self):
 
         self.clp["MOA"].write_single_coil(self.cfg["REG_PAINEL_LIDO"], [1])
-        self.clp["MOA"].write_single_coil(self.cfg["REG_MOA_OUT_MODE"], [self.modo_autonomo])
+        self.clp["MOA"].write_single_coil(self.cfg["REG_MOA_OUT_MODE"], [1 if self.modo_autonomo else 0])
         self.clp["MOA"].write_single_register(self.cfg["REG_MOA_OUT_STATUS"], self._state_moa)
 
         for ug in self.ugs:

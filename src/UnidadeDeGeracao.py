@@ -672,18 +672,18 @@ class UnidadeDeGeracao:
 
             elif not self.etapa_atual == UNIDADE_SINCRONIZADA:
                 logger.info(f"[UG{self.id}] Enviando comando de partida.")
-                response = self.clp[f"UG{self.id}"].write_single_coil(UG[f"REG_UG{self.id}_CD_ResetGeral"], 1)
-                response = self.clp[f"UG{self.id}"].write_single_coil(UG[f"REG_UG{self.id}_CD_ResetRele700G"], 1)
-                response = self.clp[f"UG{self.id}"].write_single_coil(UG[f"REG_UG{self.id}_CD_ResetReleBloq86H"], 1)
-                response = self.clp[f"UG{self.id}"].write_single_coil(UG[f"REG_UG{self.id}_CD_ResetReleBloq86M"], 1)
-                response = self.clp[f"UG{self.id}"].write_single_coil(UG[f"REG_UG{self.id}_CD_ResetReleRT"], 1)
-                response = self.clp[f"UG{self.id}"].write_single_coil(UG[f"REG_UG{self.id}_CD_ResetRV"], 1)
-                response = self.clp[f"UG{self.id}"].write_single_coil(UG[f"REG_UG{self.id}_CD_IniciaPartida"], 1)
-                response = self.clp[f"UG{self.id}"].write_single_coil(UG[f"REG_UG{self.id}_CD_Cala_Sirene"], 1)
+                response = self.clp[f"UG{self.id}"].write_single_coil(UG[f"REG_UG{self.id}_CD_ResetGeral"], [1])
+                response = self.clp[f"UG{self.id}"].write_single_coil(UG[f"REG_UG{self.id}_CD_ResetRele700G"], [1])
+                response = self.clp[f"UG{self.id}"].write_single_coil(UG[f"REG_UG{self.id}_CD_ResetReleBloq86H"], [1])
+                response = self.clp[f"UG{self.id}"].write_single_coil(UG[f"REG_UG{self.id}_CD_ResetReleBloq86M"], [1])
+                response = self.clp[f"UG{self.id}"].write_single_coil(UG[f"REG_UG{self.id}_CD_ResetReleRT"], [1])
+                response = self.clp[f"UG{self.id}"].write_single_coil(UG[f"REG_UG{self.id}_CD_ResetRV"], [1])
+                response = self.clp[f"UG{self.id}"].write_single_coil(UG[f"REG_UG{self.id}_CD_IniciaPartida"], [1])
+                response = self.clp[f"UG{self.id}"].write_single_coil(UG[f"REG_UG{self.id}_CD_Cala_Sirene"], [1])
 
             else:
                 logger.debug(f"[UG{self.id}] A unidade já está sincronizada.")
-                response = self.clp[f"UG{self.id}"].write_single_coil(UG[f"REG_UG{self.id}_CD_Cala_Sirene"], 1)
+                response = self.clp[f"UG{self.id}"].write_single_coil(UG[f"REG_UG{self.id}_CD_Cala_Sirene"], [1])
             return response
 
         except Exception:
@@ -696,14 +696,14 @@ class UnidadeDeGeracao:
             if not self.etapa_atual == UNIDADE_PARADA:
                 logger.info(f"[UG{self.id}] Enviando comando de parada.")
                 response = False
-                response = self.clp[f"UG{self.id}"].write_single_coil(UG[f"REG_UG{self.id}_CD_AbortaPartida"], 1)
-                response = self.clp[f"UG{self.id}"].write_single_coil(UG[f"REG_UG{self.id}_CD_AbortaSincronismo"], 1)
-                response = self.clp[f"UG{self.id}"].write_single_coil(UG[f"REG_UG{self.id}_CD_IniciaParada"], 1)
-                response = self.clp[f"UG{self.id}"].write_single_coil(UG[f"REG_UG{self.id}_CD_Cala_Sirene"], 1)
+                response = self.clp[f"UG{self.id}"].write_single_coil(UG[f"REG_UG{self.id}_CD_AbortaPartida"], [1])
+                response = self.clp[f"UG{self.id}"].write_single_coil(UG[f"REG_UG{self.id}_CD_AbortaSincronismo"], [1])
+                response = self.clp[f"UG{self.id}"].write_single_coil(UG[f"REG_UG{self.id}_CD_IniciaParada"], [1])
+                response = self.clp[f"UG{self.id}"].write_single_coil(UG[f"REG_UG{self.id}_CD_Cala_Sirene"], [1])
                 self.enviar_setpoint(self.setpoint)
             else:
                 logger.debug(f"[UG{self.id}] A unidade já está parada.")
-                response = self.clp[f"UG{self.id}"].write_single_coil(UG[f"REG_UG{self.id}_CD_Cala_Sirene"], 1)
+                response = self.clp[f"UG{self.id}"].write_single_coil(UG[f"REG_UG{self.id}_CD_Cala_Sirene"], [1])
             return response
 
         except Exception:
@@ -723,8 +723,8 @@ class UnidadeDeGeracao:
             logger.debug(f"[UG{self.id}] Enviando setpoint {int(self.setpoint)} kW.")
 
             if self.setpoint > 1:
-                response = self.clp[f"UG{self.id}"].write_single_coil(UG[f"REG_UG{self.id}_CD_ResetGeral"], 1)
-                response = self.clp[f"UG{self.id}"].write_single_coil(UG[f"REG_UG{self.id}_CD_RV_RefRemHabilita"], 1)
+                response = self.clp[f"UG{self.id}"].write_single_coil(UG[f"REG_UG{self.id}_CD_ResetGeral"], [1])
+                response = self.clp[f"UG{self.id}"].write_single_coil(UG[f"REG_UG{self.id}_CD_RV_RefRemHabilita"], [1])
                 response = self.clp[f"UG{self.id}"].write_single_register(UG[f"REG_UG{self.id}_SA_SPPotAtiva"], self.setpoint)
             return response
 
@@ -779,15 +779,15 @@ class UnidadeDeGeracao:
     def remover_trip_logico(self) -> bool:
         try:
             logger.debug(f"[UG{self.id}] Removendo sinal de TRIP -> Lógico.")
-            response = self.clp[f"UG{self.id}"].write_single_coil(UG[f"REG_UG{self.id}_CD_ResetGeral"], 1)
-            response = self.clp[f"UG{self.id}"].write_single_coil(UG[f"REG_UG{self.id}_CD_ResetReleBloq86H"], 1)
-            response = self.clp[f"UG{self.id}"].write_single_coil(UG[f"REG_UG{self.id}_CD_ResetReleBloq86M"], 1)
-            response = self.clp[f"UG{self.id}"].write_single_coil(UG[f"REG_UG{self.id}_CD_ResetRele700G"], 1)
-            response = self.clp["SA"].write_single_coil(REG_SA_CD_ResetRele59N, 1)
-            response = self.clp["SA"].write_single_coil(REG_SA_CD_ResetRele787, 1)
-            response = self.clp[f"UG{self.id}"].write_single_coil(UG[f"REG_UG{self.id}_ED_ReleBloqA86HAtuado"], 0)
-            response = self.clp[f"UG{self.id}"].write_single_coil(UG[f"REG_UG{self.id}_ED_ReleBloqA86MAtuado"], 0)
-            response = self.clp[f"UG{self.id}"].write_single_coil(UG[f"REG_UG{self.id}_RD_700G_Trip"], 0)
+            response = self.clp[f"UG{self.id}"].write_single_coil(UG[f"REG_UG{self.id}_CD_ResetGeral"], [1])
+            response = self.clp[f"UG{self.id}"].write_single_coil(UG[f"REG_UG{self.id}_CD_ResetReleBloq86H"], [1])
+            response = self.clp[f"UG{self.id}"].write_single_coil(UG[f"REG_UG{self.id}_CD_ResetReleBloq86M"], [1])
+            response = self.clp[f"UG{self.id}"].write_single_coil(UG[f"REG_UG{self.id}_CD_ResetRele700G"], [1])
+            response = self.clp["SA"].write_single_coil(REG_SA_CD_ResetRele59N, [1])
+            response = self.clp["SA"].write_single_coil(REG_SA_CD_ResetRele787, [1])
+            response = self.clp[f"UG{self.id}"].write_single_coil(UG[f"REG_UG{self.id}_ED_ReleBloqA86HAtuado"], [0])
+            response = self.clp[f"UG{self.id}"].write_single_coil(UG[f"REG_UG{self.id}_ED_ReleBloqA86MAtuado"], [0])
+            response = self.clp[f"UG{self.id}"].write_single_coil(UG[f"REG_UG{self.id}_RD_700G_Trip"], [0])
             return response
 
         except Exception:
@@ -805,8 +805,8 @@ class UnidadeDeGeracao:
                 sleep(1)
                 self.remover_trip_logico()
                 sleep(1)
-                response = self.clp[f"UG{self.id}"].write_single_coil(UG[f"REG_UG{self.id}_CD_ResetGeral"], 1)
-                response = self.clp[f"UG{self.id}"].write_single_coil(UG[f"REG_UG{self.id}_CD_Cala_Sirene"], 1)
+                response = self.clp[f"UG{self.id}"].write_single_coil(UG[f"REG_UG{self.id}_CD_ResetGeral"], [1])
+                response = self.clp[f"UG{self.id}"].write_single_coil(UG[f"REG_UG{self.id}_CD_Cala_Sirene"], [1])
                 sleep(1)
                 return response
 

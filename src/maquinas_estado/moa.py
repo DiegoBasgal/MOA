@@ -38,8 +38,8 @@ class State:
 
 
 class FalhaCritica(State):
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
+    def __init__(self, usina, *args, **kwargs):
+        super().__init__(usina, *args, **kwargs)
         logger.critical("Falha crítica MOA. Exiting...")
         self.usn._state_moa = SM_CRITICAL_FAILURE
         sys.exit(1)
