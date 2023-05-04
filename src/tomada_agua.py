@@ -10,10 +10,10 @@ class TomadaAgua(Usina):
     def __init__(self, *args, **kwargs) -> ...:
         super().__init__(self, *args, **kwargs)
 
-        self.__nv_montante = LeituraModbus(OPC_UA["TDA"]["NIVEL_MONTANTE"])
-        self.__status_lp = LeituraModbus(OPC_UA["TDA"]["LG_OPERACAO_MANUAL"])
-        self.__status_vb = LeituraModbus(OPC_UA["TDA"]["VB_FECHANDO"])
-        self.__status_uh = LeituraModbusBit(OPC_UA["TDA"]["UH_UNIDADE_HIDRAULICA_DISPONIVEL"], 1)
+        self.__nv_montante = LeituraModbus(self.clp["TDA"], REG_CLP["TDA"]["NIVEL_MONTANTE"], descricao="TDA_NIVEL_MONTANTE")
+        self.__status_lp = LeituraModbus(self.clp["TDA"], REG_CLP["TDA"]["LG_OPERACAO_MANUAL"], descricao="TDA_LG_OPERACAO_MANUAL")
+        self.__status_vb = LeituraModbus(self.clp["TDA"], REG_CLP["TDA"]["VB_FECHANDO"], descricao="TDA_VB_FECHANDO")
+        self.__status_uh = LeituraModbusBit(self.clp["TDA"], REG_CLP["TDA"]["UH_UNIDADE_HIDRAULICA_DISPONIVEL"], bit=1, descricao="TDA_UH_UNIDADE_HIDRAULICA_DISPONIVEL")
 
         self._condicionadores = []
         self._condicionadores_essenciais = []
@@ -123,75 +123,75 @@ class TomadaAgua(Usina):
         return condic_flag
 
     def leitura_periodica(self) -> None:
-        if not self.leitura_filtro_limpo_uh:
+        if not self.leitura_filtro_limpo_uh.valor:
             logger.warning("[TDA] O filtro da UH da TDA está sujo. Favor realizar limpeza/troca.")
 
-        if self.leitura_nivel_jusante_comporta_1:
+        if self.leitura_nivel_jusante_comporta_1.valor:
             logger.warning("[TDA] Houve uma falha no sensor de nível jusante da comporta 1. Favor verificar.")
 
-        if self.leitura_nivel_jusante_comporta_2:
+        if self.leitura_nivel_jusante_comporta_2.valor:
             logger.warning("[TDA] Houve uma falha no sensor de nível jusante da comporta 2. Favor verificar.")
 
-        if not self.leitura_ca_com_tensao:
+        if not self.leitura_ca_com_tensao.valor:
             logger.warning("[TDA] Foi dentificado que o CA da tomada da água está sem tensão. Favor verificar.")
 
-        if self.leitura_lg_operacao_manual:
+        if self.leitura_lg_operacao_manual.valor:
             logger.warning("[TDA] Foi identificado que o Limpa Grades entrou em operação manual. Favor verificar.")
 
-        if self.leitura_nivel_jusante_grade_comporta_1:
+        if self.leitura_nivel_jusante_grade_comporta_1.valor:
             logger.warning("[TDA] Houve uma falha no sensor de nível jusante grade da comporta 1. Favor verificar.")
 
-        if self.leitura_nivel_jusante_grade_comporta_2:
+        if self.leitura_nivel_jusante_grade_comporta_2.valor:
             logger.warning("[TDA] Houve uma falha no sensor de nível jusante grade da comporta 2. Favor verificar.")
 
 
-        if self.leitura_falha_atuada_lg and not Dicionarios.voip["LG_FALHA_ATUADA"][0]:
+        if self.leitura_falha_atuada_lg.valor and not Dicionarios.voip["LG_FALHA_ATUADA"][0]:
             logger.warning("[TDA] Foi identificado que o limpa grades está em falha. Favor verificar.")
             Dicionarios.voip["LG_FALHA_ATUADA"][0] = True
-        elif not self.leitura_falha_atuada_lg and Dicionarios.voip["LG_FALHA_ATUADA"][0]:
+        elif not self.leitura_falha_atuada_lg.valor and Dicionarios.voip["LG_FALHA_ATUADA"][0]:
             Dicionarios.voip["LG_FALHA_ATUADA"][0] = False
 
-        if self.leitura_falha_nivel_montante and not Dicionarios.voip["FALHA_NIVEL_MONTANTE"][0]:
+        if self.leitura_falha_nivel_montante.valor and not Dicionarios.voip["FALHA_NIVEL_MONTANTE"][0]:
             logger.warning("[TDA] Houve uma falha na leitura de nível montante. Favor verificar.")
             Dicionarios.voip["FALHA_NIVEL_MONTANTE"][0] = True
-        elif not self.leitura_falha_nivel_montante and Dicionarios.voip["FALHA_NIVEL_MONTANTE"][0]:
+        elif not self.leitura_falha_nivel_montante.valor and Dicionarios.voip["FALHA_NIVEL_MONTANTE"][0]:
             Dicionarios.voip["FALHA_NIVEL_MONTANTE"][0] = False
 
     def iniciar_leituras_condicionadores(self) -> None:
         # CONDICIONADORES ESSENCIAIS
         # Normalizar
             # Bit Invertido
-        self.leitura_sem_emergencia_tda = LeituraModbusBit(OPC_UA["TDA"]["SEM_EMERGENCIA"], 24, True, "TDA_SEM_EMERGENCIA")
+        self.leitura_sem_emergencia_tda = LeituraModbusBit(self.clp["TDA"], REG_CLP["TDA"]["SEM_EMERGENCIA"], bit=24, invertido=True, descricao="TDA_SEM_EMERGENCIA")
         self.condicionadores_essenciais.append(CondicionadorBase(self.leitura_sem_emergencia_tda, CONDIC_NORMALIZAR))
 
         # CONDICIONADORES
         # Normalizar
             # Bit Invertido
-        self.leitura_ca_com_tensao = LeituraModbusBit(OPC_UA["TDA"]["COM_TENSAO_CA"], 11, True, "TDA_COM_TENSAO_CA")
+        self.leitura_ca_com_tensao = LeituraModbusBit(self.clp["TDA"], REG_CLP["TDA"]["COM_TENSAO_CA"], bit=11, invertido=True, descricao="TDA_COM_TENSAO_CA")
         self.condicionadores.append(CondicionadorBase(self.leitura_ca_com_tensao, CONDIC_NORMALIZAR))
 
             # Bit Normal
-        self.leitura_falha_ligar_bomba_uh = LeituraModbusBit(OPC_UA["TDA"]["UH_FALHA_LIGAR_BOMBA"], 2, "TDA_UH_FALHA_LIGAR_BOMBA")
+        self.leitura_falha_ligar_bomba_uh = LeituraModbusBit(self.clp["TDA"], REG_CLP["TDA"]["UH_FALHA_LIGAR_BOMBA"], bit=2, descricao="TDA_UH_FALHA_LIGAR_BOMBA")
         self.condicionadores.append(CondicionadorBase(self.leitura_falha_ligar_bomba_uh, CONDIC_NORMALIZAR))
 
 
         # LEITURAS PARA LEITURA PERIÓDICA
         # Telegram
             # Bit Invertido
-        self.leitura_ca_com_tensao = LeituraModbusBit(OPC_UA["TDA"]["COM_TENSAO_CA"], 11, True)
-        self.leitura_filtro_limpo_uh = LeituraModbusBit(OPC_UA["TDA"]["UH_FILTRO_LIMPO"], 13, True)
+        self.leitura_ca_com_tensao = LeituraModbusBit(self.clp["TDA"], REG_CLP["TDA"]["COM_TENSAO_CA"], bit=11, invertido=True, descricao="TDA_COM_TENSAO_CA")
+        self.leitura_filtro_limpo_uh = LeituraModbusBit(self.clp["TDA"], REG_CLP["TDA"]["UH_FILTRO_LIMPO"], bit=13, invertido=True, descricao="TDA_UH_FILTRO_LIMPO")
 
             # Bit Normal
-        self.leitura_lg_operacao_manual = LeituraModbusBit(OPC_UA["TDA"]["LG_OPERACAO_MANUAL"], 0)
-        self.leitura_nivel_jusante_comporta_1 = LeituraModbusBit(OPC_UA["TDA"]["NIVEL_JUSANTE_COMPORTA_1"], 2)
-        self.leitura_nivel_jusante_comporta_2 = LeituraModbusBit(OPC_UA["TDA"]["NIVEL_JUSANTE_COMPORTA_2"], 4)
-        self.leitura_nivel_jusante_grade_comporta_1 = LeituraModbusBit(OPC_UA["TDA"]["FALHA_NIVEL_JUSANTE_GRADE_COMPORTA_1"], 1)
-        self.leitura_nivel_jusante_grade_comporta_2 = LeituraModbusBit(OPC_UA["TDA"]["FALHA_NIVEL_JUSANTE_GRADE_COMPORTA_2"], 3)
+        self.leitura_lg_operacao_manual = LeituraModbusBit(self.clp["TDA"], REG_CLP["TDA"]["LG_OPERACAO_MANUAL"], bit=0, descricao="TDA_LG_OPERACAO_MANUAL")
+        self.leitura_nivel_jusante_comporta_1 = LeituraModbusBit(self.clp["TDA"], REG_CLP["TDA"]["NIVEL_JUSANTE_COMPORTA_1"], bit=2, descricao="TDA_NIVEL_JUSANTE_COMPORTA_1")
+        self.leitura_nivel_jusante_comporta_2 = LeituraModbusBit(self.clp["TDA"], REG_CLP["TDA"]["NIVEL_JUSANTE_COMPORTA_2"], bit=4, descricao="TDA_NIVEL_JUSANTE_COMPORTA_2")
+        self.leitura_nivel_jusante_grade_comporta_1 = LeituraModbusBit(self.clp["TDA"], REG_CLP["TDA"]["FALHA_NIVEL_JUSANTE_GRADE_COMPORTA_1"], bit=1, descricao="TDA_FALHA_NIVEL_JUSANTE_GRADE_COMPORTA_1")
+        self.leitura_nivel_jusante_grade_comporta_2 = LeituraModbusBit(self.clp["TDA"], REG_CLP["TDA"]["FALHA_NIVEL_JUSANTE_GRADE_COMPORTA_2"], bit=3, descricao="TDA_FALHA_NIVEL_JUSANTE_GRADE_COMPORTA_2")
 
         # Telegram + Voip
             # Bit Normal
-        self.leitura_falha_atuada_lg = LeituraModbusBit(OPC_UA["TDA"]["LG_FALHA_ATUADA"], 31)
-        self.leitura_falha_nivel_montante = LeituraModbusBit(OPC_UA["TDA"]["FALHA_NIVEL_MONTANTE"], 0)
+        self.leitura_falha_atuada_lg = LeituraModbusBit(self.clp["TDA"], REG_CLP["TDA"]["LG_FALHA_ATUADA"], bit=31, descricao="TDA_LG_FALHA_ATUADA")
+        self.leitura_falha_nivel_montante = LeituraModbusBit(self.clp["TDA"], REG_CLP["TDA"]["FALHA_NIVEL_MONTANTE"], bit=0, descricao="TDA_FALHA_NIVEL_MONTANTE")
 
 
 class Comporta(TomadaAgua):
@@ -204,18 +204,18 @@ class Comporta(TomadaAgua):
 
         # ATRIBUIÇÃO DE VAIRÁVEIS
         # Privadas
-        self.__aberta = LeituraModbusBit(OPC_UA["TDA"][f"CP{self.id}_ABERTA"], 17)
-        self.__fechada = LeituraModbusBit(OPC_UA["TDA"][f"CP{self.id}_FECHADA"], 18)
-        self.__cracking = LeituraModbusBit(OPC_UA["TDA"][f"CP{self.id}_CRACKING"], 25)
-        self.__remoto = LeituraModbusBit(OPC_UA["TDA"][f"CP{self.id}_REMOTO"], 22)
+        self.__aberta = LeituraModbusBit(self.clp["TDA"], REG_CLP["TDA"][f"CP{self.id}_ABERTA"], 17)
+        self.__fechada = LeituraModbusBit(self.clp["TDA"], REG_CLP["TDA"][f"CP{self.id}_FECHADA"], 18)
+        self.__cracking = LeituraModbusBit(self.clp["TDA"], REG_CLP["TDA"][f"CP{self.id}_CRACKING"], 25)
+        self.__remoto = LeituraModbusBit(self.clp["TDA"], REG_CLP["TDA"][f"CP{self.id}_REMOTO"], 22)
 
-        self.__status = LeituraModbus( OPC_UA["TDA"][f"CP{self.id}_COMPORTA_OPERANDO"])
-        self.__permissao = LeituraModbusBit(OPC_UA["TDA"][f"CP{self.id}_PERMISSIVOS_OK"], 31, True)
-        self.__bloqueio = LeituraModbusBit(OPC_UA["TDA"][f"CP{self.id}_BLOQUEIO_ATUADO"], 31, True)
+        self.__status = LeituraModbus(self.clp["TDA"], REG_CLP["TDA"][f"CP{self.id}_COMPORTA_OPERANDO"])
+        self.__permissao = LeituraModbusBit(self.clp["TDA"], REG_CLP["TDA"][f"CP{self.id}_PERMISSIVOS_OK"], 31, True)
+        self.__bloqueio = LeituraModbusBit(self.clp["TDA"], REG_CLP["TDA"][f"CP{self.id}_BLOQUEIO_ATUADO"], 31, True)
 
         # PÚBLICAS
-        self.press_equalizada = LeituraModbusBit(OPC_UA["TDA"][f"CP{self.id}_PRESSAO_EQUALIZADA"], 4)
-        self.aguardando_cmd_abert = LeituraModbusBit(OPC_UA["TDA"][f"CP{self.id}_AGUARDANDO_COMANDO_ABERTURA"], 3)
+        self.press_equalizada = LeituraModbusBit(self.clp["TDA"], REG_CLP["TDA"][f"CP{self.id}_PRESSAO_EQUALIZADA"], 4)
+        self.aguardando_cmd_abert = LeituraModbusBit(self.clp["TDA"], REG_CLP["TDA"][f"CP{self.id}_AGUARDANDO_COMANDO_ABERTURA"], 3)
 
     @property
     def id(self) -> int:
@@ -273,11 +273,11 @@ class Comporta(TomadaAgua):
 
 
     def resetar_emergencia(self) -> bool:
-        return EscritaModBusBit.escrever_bit(self.clp["TDA"], OPC_UA["TDA"][f"CP{self.id}_CMD_REARME_FALHAS"], valor=1, bit=0)
+        return EscritaModBusBit.escrever_bit(self.clp["TDA"], REG_CLP["TDA"][f"CP{self.id}_CMD_REARME_FALHAS"], bit=0, valor=1)
 
     def rearme_falhas_comporta(self) -> bool:
         try:
-            return EscritaModBusBit.escrever_bit(self.clp["TDA"], OPC_UA["TDA"][f"CP{self.id}_CMD_REARME_FALHAS"], valor=0, bit=1)
+            return EscritaModBusBit.escrever_bit(self.clp["TDA"], REG_CLP["TDA"][f"CP{self.id}_CMD_REARME_FALHAS"], bit=0, valor=1)
         except Exception as e:
             raise(e)
 
@@ -290,7 +290,7 @@ class Comporta(TomadaAgua):
             elif self.verificar_precondicoes_comporta():
                 if self.press_equalizada.valor and self.aguardando_cmd_abert.valor:
                     logger.debug(f"[TDA][CP{self.id}] Enviando comando de abertura para a comporta {self.id}")
-                    EscritaModBusBit.escrever_bit(self.clp["TDA"], OPC_UA["TDA"][f"CP{self.id}_CMD_ABERTURA_TOTAL"], valor=1, bit=1)
+                    EscritaModBusBit.escrever_bit(self.clp["TDA"], REG_CLP["TDA"][f"CP{self.id}_CMD_ABERTURA_TOTAL"], bit=2, valor=1)
                     return
 
         except Exception as e:
@@ -303,7 +303,7 @@ class Comporta(TomadaAgua):
                 logger.debug(f"[TDA][CP{self.id}] A comporta {self.id} já está fechada")
                 return
             else:
-                EscritaModBusBit.escrever_bit(self.clp["TDA"], OPC_UA["TDA"][f"CP{self.id}_CMD_FECHAMENTO"], valor=3, bit=1)
+                EscritaModBusBit.escrever_bit(self.clp["TDA"], REG_CLP["TDA"][f"CP{self.id}_CMD_FECHAMENTO"], bit=3, valor=1)
                 return
 
         except Exception as e:
@@ -317,7 +317,7 @@ class Comporta(TomadaAgua):
                 return
             elif self.verificar_precondicoes_comporta():
                 logger.debug(f"[TDA][CP{self.id}] Enviando comando de cracking para a comporta {self.id}")
-                EscritaModBusBit.escrever_bit(self.clp["TDA"], OPC_UA["TDA"][f"CP{self.id}_CMD_ABERTURA_CRACKING"], valor=1, bit=1)
+                EscritaModBusBit.escrever_bit(self.clp["TDA"], REG_CLP["TDA"][f"CP{self.id}_CMD_ABERTURA_CRACKING"], bit=1, valor=1)
                 return
 
         except Exception as e:

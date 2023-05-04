@@ -3,13 +3,27 @@ globais: dict[str, any] = {
 }
 
 ips: dict[str, any] = {
+    "SA_slave_ip": "10.101.2.215",
+    "SA_slave_porta": 5003,
+    "TDA_slave_ip": "10.101.2.215",
+    "TDA_slave_porta": 5003,
     "UG1_slave_ip": "10.101.2.215",
     "UG1_slave_porta": 5003,
     "UG2_slave_ip": "10.101.2.215",
     "UG2_slave_porta": 5003,
     "MOA_slave_ip": "0.0.0.0",
     "MOA_slave_porta": 5002,
-    "opc_server": "opc.tcp://localhost:4840",
+
+    "RELE_SE_slave_ip": "10.101.2.215",
+    "RELE_SE_slave_porta": 502,
+    "RELE_TE_slave_ip": "10.101.2.215",
+    "RELE_TE_slave_porta": 502,
+    "RELE_BAY_slave_ip": "10.101.2.215",
+    "RELE_BAY_slave_porta": 502,
+    "RELE_UG1_slave_ip": "10.101.2.215",
+    "RELE_UG1_slave_porta": 502,
+    "RELE_UG2_slave_ip": "10.101.2.215",
+    "RELE_UG2_slave_porta": 502,
 }
 
 voip: dict[str, list[bool | str]] = {

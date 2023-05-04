@@ -11,7 +11,7 @@ logger = logging.getLogger("__main__")
 class EscritaModBusBit:
     
     @classmethod
-    def escrever_bit(cls, client: ModbusClient, registrador: str, valor: int, bit: int) -> bool:
+    def escrever_bit(cls, client: ModbusClient, registrador: str, bit: int, valor: int) -> bool:
         try:
             raw = client.read_coils(registrador)[0]
             bin = [int(x) for x in list('{0:0b}'.format(raw))]

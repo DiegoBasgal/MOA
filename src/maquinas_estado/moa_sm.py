@@ -60,7 +60,7 @@ class ControleNormal(State):
         super().__init__(usina)
         self.usn.estado_moa = MOA_SM_CONTROLE_NORMAL
 
-        self.usn.clp["MOA"].write_single_coil(MB["MOA"]["PAINEL_LIDO"], [1])
+        self.usn.clp["MOA"].write_single_coil(REG_CLP["MOA"]["PAINEL_LIDO"], [1])
 
     def run(self):
         self.usn.ler_valores()
@@ -123,7 +123,7 @@ class ControleManual(State):
         self.usn.estado_moa = MOA_SM_CONTROLE_MANUAL
 
         self.usn.modo_autonomo = False
-        self.usn.clp["MOA"].write_single_coil(MB["MOA"]["PAINEL_LIDO"], [1])
+        self.usn.clp["MOA"].write_single_coil(REG_CLP["MOA"]["PAINEL_LIDO"], [1])
 
         for ug in self.usn.ugs: ug.parar_timer = True
 

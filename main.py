@@ -30,6 +30,8 @@ if __name__ == "__main__":
     if len(sys.argv) > 1:
         ESCALA_DE_TEMPO = int(sys.argv[1])
 
+    t_i = time()
+
     prox_estado = 0
     n_tentativa = 0
 
@@ -60,7 +62,7 @@ if __name__ == "__main__":
                 continue
 
             try:
-                logger.info("Iniciando conexões com o servidores \"OPC\" e \"ModBus\".")
+                logger.info("Iniciando conexões com o servidores \"ModBus\".")
 
                 ClientesUsina.open_all()
 
@@ -83,9 +85,9 @@ if __name__ == "__main__":
             try:
                 logger.info("Finalizando inicialização com intâncias da máquina de estados e Threads paralelas.")
 
-                sm: StateMachine = StateMachine(initial_state=Pronto(cfg, usn))
-
                 threading.Thread(target=lambda: usn.leitura_temporizada()).start()
+
+                sm: StateMachine = StateMachine(initial_state=Pronto(cfg, usn))
 
             except Exception:
                 logger.exception(f"Erro ao finalizar a incialização do MOA. Tentando novamente em \"{TIMEOUT_MAIN}s\" (Tentativa: {n_tentativa}/3).")
@@ -97,18 +99,21 @@ if __name__ == "__main__":
 
     while True:
         try:
+            logger.debug("")
             logger.debug(f"Executando estado: \"{sm.state.__class__.__name__}\"")
-            t_inicio = time()
             sm.exec()
-            logger.debug(f"\nTempo de ciclo: {float(time() - t_inicio)}s\n")
 
             if usn.estado_moa == MOA_SM_CONTROLE_DADOS:
-                t_restante = max(30 - (time() - t_inicio), 0) / ESCALA_DE_TEMPO
+                t_restante = max(TEMPO_CICLO_TOTAL - (time() - t_i), 0) / ESCALA_DE_TEMPO
+                t_i = time()
+            else:
+                t_restarnte = 1
 
-                if t_restante == 0:
-                    logger.warning("\n\"ATENÇÃO!\"")
-                    logger.warning("O ciclo está demorando mais que o permitido!")
-                    logger.warning("\"ATENÇÃO!\"\n")
+            if t_restante == 0:
+                """logger.warning("\n\"ATENÇÃO!\"")
+                logger.warning("O ciclo está demorando mais que o permitido!")
+                logger.warning("\"ATENÇÃO!\"\n")"""
+            else:
                 sleep(t_restante)
 
         except Exception as e:

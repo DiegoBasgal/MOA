@@ -70,8 +70,8 @@ class CondicionadorBase:
 
 
 class CondicionadorExponencial(CondicionadorBase):
-    def __init__(self, leitura, gravidade, valor_base: float | None = ..., valor_limite: float | None = ..., ordem: float | None = ..., descricao = ...) -> ...:
-        CondicionadorBase.__init__(leitura, gravidade, descricao)
+    def __init__(self, leitura, gravidade, valor_base: float | None = ..., valor_limite: float | None = ..., ordem: float | None = ...) -> ...:
+        CondicionadorBase.__init__(leitura, gravidade)
         self._ordem = 2 if ordem is None else ordem
         self._valor_base = 0 if valor_base is None else valor_base
         self._valor_limite = 0 if valor_limite is None else valor_limite
@@ -118,8 +118,8 @@ class CondicionadorExponencial(CondicionadorBase):
 
 class CondicionadorExponencialReverso(CondicionadorExponencial):
     # TODO puxar implementacao de offset mais casas decimais
-    def __init__(self,leitura, gravidade, valor_base, valor_limite, ordem, descricao) -> ...:
-        CondicionadorExponencial.__init__(leitura, gravidade, valor_base, valor_limite, ordem, descricao)
+    def __init__(self,leitura, gravidade, valor_base, valor_limite, ordem) -> ...:
+        CondicionadorExponencial.__init__(leitura, gravidade, valor_base, valor_limite, ordem)
 
     @property
     def valor(self) -> int | float:
