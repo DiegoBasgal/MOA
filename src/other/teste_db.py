@@ -1,6 +1,6 @@
-import database_connector
+import banco_dados
 
-db = database_connector.Database()
+db = banco_dados.Database()
 res = db.get_executabilidade(102)
 print(res)
 

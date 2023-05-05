@@ -7,8 +7,8 @@ from threading import Thread
 from datetime import datetime
 from abc import abstractmethod
 
-from src.codes import *
-from src.mapa_modbus import *
+from dicionarios.const import *
+from dicionarios.regs import *
 
 logger = logging.getLogger("__main__")
 
@@ -246,7 +246,7 @@ class StateDisponivel(State):
                     return
 
             logger.debug(f"[UG{self.parent_ug.id}] A Unidade estourou o timer de verificação de partida, adicionando condição para normalizar")
-            self.parent_ug.clp[f"UG{self.parent_ug.id}"].write_single_coil(UG[f"REG_UG{self.parent_ug.id}_CD_EmergenciaViaSuper"], [1])
+            self.parent_ug.clp[f"UG{self.parent_ug.id}"].write_single_coil(REG[f"UG{self.parent_ug.id}_CD_EmergenciaViaSuper"], [1])
             self.borda_partindo = False
             self.release = True
 

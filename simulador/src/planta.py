@@ -9,9 +9,9 @@ from time import sleep
 from pyModbusTCP.server import ModbusServer, DataBank
 from dj52L import Dj52L
 from ug import Ug
-import mapa_modbus
+import dicionarios.regs as regs
 
-REG = mapa_modbus.REG
+REG = regs.REG
 
 lock = threading.Lock()
 

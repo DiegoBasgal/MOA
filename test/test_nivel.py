@@ -5,9 +5,9 @@ from unittest import mock
 from unittest.mock import MagicMock, patch
 from decimal import Decimal
 
-from src.abstracao_usina import Usina
-import MOA
-from src.field_connector import FieldConnector
+from usina import Usina
+import main
+from conector import ConectorCampo
 from src.mensageiro import voip, telegram_bot
 
 
@@ -173,15 +173,15 @@ class TestNivel(unittest.TestCase):
         self.usina.acionar_emergencia = MagicMock()
         self.usina.con.get_nv_montante.return_value = nv_teste
         logging.disable(logging.NOTSET)
-        sm = MOA.StateMachine(
-            initial_state=MOA.Pronto(self.usina)
+        sm = main.StateMachine(
+            initial_state=main.Pronto(self.usina)
         )
         sm.exec()  # Atualiza valroes internos
         self.assertEqual(self.usina.nv_montante, nv_teste)
         sm.exec()  # Deve ter entrado no Reservatorio abaixo do normal
-        self.assertIsInstance(sm.state, MOA.ReservatorioAbaixoDoMinimo)
+        self.assertIsInstance(sm.state, main.ReservatorioAbaixoDoMinimo)
         sm.exec()  # Deve ter entrado no Emergencia
-        self.assertIsInstance(sm.state, MOA.Emergencia)
+        self.assertIsInstance(sm.state, main.Emergencia)
         self.usina.acionar_emergencia.assert_called()
         voip.enviar_voz_teste.assert_called()
 
@@ -190,15 +190,15 @@ class TestNivel(unittest.TestCase):
         self.usina.acionar_emergencia = MagicMock()
         self.usina.con.get_nv_montante.return_value = nv_teste
         logging.disable(logging.NOTSET)
-        sm = MOA.StateMachine(
-            initial_state=MOA.Pronto(self.usina)
+        sm = main.StateMachine(
+            initial_state=main.Pronto(self.usina)
         )
         sm.exec()  # Atualiza valroes internos
         self.assertEqual(self.usina.nv_montante, 647.01)
         sm.exec()  # Deve ter entrado no Reservatorio abaixo do normal
-        self.assertIsInstance(sm.state, MOA.ReservatorioAcimaDoMaximo)
+        self.assertIsInstance(sm.state, main.ReservatorioAcimaDoMaximo)
         sm.exec()  # Deve ter entrado no Emergencia e ligado para os resp.
-        self.assertIsInstance(sm.state, MOA.Emergencia)
+        self.assertIsInstance(sm.state, main.Emergencia)
         self.usina.acionar_emergencia.assert_called()
         voip.enviar_voz_teste.assert_called()
 

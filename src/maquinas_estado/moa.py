@@ -1,8 +1,8 @@
 import os
 import json
 
-from src.codes import *
-from src.abstracao_usina import *
+from dicionarios.const import *
+from usina import *
 
 logger = logging.getLogger("__main__")
 
@@ -63,10 +63,10 @@ class Pronto(State):
 
             except Exception as e:
                 self.n_tentativa += 1
-                logger.error(f"Erro durante a comunicação do MOA com a usina. Tentando novamente em {self.usn.cfg['timeout_padrao'] * self.n_tentativa}s (tentativa{self.n_tentativa}/3). \
+                logger.error(f"Erro durante a comunicação do MOA com a usina. Tentando novamente em {TIMEOUT_PADRAO * self.n_tentativa}s (tentativa{self.n_tentativa}/3). \
                             Exception: \"{repr(e)}\".")
                 logger.debug(f"Traceback: {traceback.print_stack}")
-                sleep(self.usn.cfg["timeout_padrao"] * self.n_tentativa)
+                sleep(TIMEOUT_PADRAO * self.n_tentativa)
                 return self
 
 
@@ -86,11 +86,11 @@ class ValoresInternosAtualizados(State):
 
         self.usn.heartbeat()
         self.usn.ler_valores()
-        self.usn.clp["MOA"].write_single_coil(self.usn.cfg['REG_PAINEL_LIDO'], [1])
+        self.usn.clp["MOA"].write_single_coil(REG['PAINEL_LIDO'], [1])
 
         self.usn.TDA_Offline = False
 
-        with open(os.path.join(os.path.dirname('/opt/operacao-autonoma/'), "config.json"), "w") as file:
+        with open(os.path.join(os.path.dirname('/opt/operacao-autonoma/src/dicionarios/'), "cfg.json"), "w") as file:
             json.dump(self.usn.cfg, file, indent=4)
 
         for condicionador_essencial in self.usn.condicionadores_essenciais:
@@ -167,7 +167,6 @@ class ValoresInternosAtualizados(State):
         if self.usn.nv_montante >= self.usn.cfg["nv_maximo"]:
             return ReservatorioAcimaDoMaximo(self.usn)
 
-        # Se estiver tudo ok:
         return ReservatorioNormal(self.usn)
 
 
@@ -231,7 +230,7 @@ class Emergencia(State):
                     elif deve_normalizar:
                         logger.debug("Aguardando antes de tentar normalizar novamente (5s)")
                         sleep(5)
-                        logger.info(f"Normalizando usina. (tentativa{self.n_tentativa}/2) (limite entre tentaivas: {self.usn.cfg['timeout_normalizacao']}s)")
+                        logger.info(f"Normalizando usina. (tentativa{self.n_tentativa}/2) (limite entre tentaivas: {TIMEOUT_NORMALIZACAO}s)")
                         self.usn.deve_normalizar_forcado=True
                         self.usn.normalizar_emergencia()
                         self.usn.ler_valores()

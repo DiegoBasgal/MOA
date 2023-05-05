@@ -1,6 +1,6 @@
 import logging
 import unittest
-from src.abstracao_usina import Comporta
+from usina import Comporta
 
 
 class TestComportamentoDaComporta(unittest.TestCase):

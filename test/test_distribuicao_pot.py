@@ -5,7 +5,7 @@ from decimal import Decimal
 from unittest import mock
 from unittest.mock import MagicMock, patch
 
-from src.abstracao_usina import Usina
+from usina import Usina
 
 N_CICLOS_CONTROLE = 100
 

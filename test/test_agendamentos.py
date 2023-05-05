@@ -6,8 +6,8 @@ from decimal import Decimal
 from unittest import mock
 from unittest.mock import MagicMock, patch
 
-from src.abstracao_usina import Usina
-import MOA
+from usina import Usina
+import main
 
 
 class TestAgendamentos(unittest.TestCase):
@@ -247,9 +247,9 @@ class TestAgendamentos(unittest.TestCase):
             (1, datetime.utcnow(), 0, 777, 0),
         ]
         self.usina.disparar_mensagem_teste = MagicMock()
-        estado = MOA.ValoresInternosAtualizados(self.usina)
+        estado = main.ValoresInternosAtualizados(self.usina)
         estado = estado.run()
-        self.assertIsInstance(estado, MOA.AgendamentosPendentes)
+        self.assertIsInstance(estado, main.AgendamentosPendentes)
         estado = estado.run()
         self.usina.disparar_mensagem_teste.assert_called_once()
 
@@ -264,9 +264,9 @@ class TestAgendamentos(unittest.TestCase):
         ]
 
         self.usina.acionar_emergencia = MagicMock()
-        estado = MOA.ValoresInternosAtualizados(self.usina)
+        estado = main.ValoresInternosAtualizados(self.usina)
         estado = estado.run()
-        self.assertIsInstance(estado, MOA.AgendamentosPendentes)
+        self.assertIsInstance(estado, main.AgendamentosPendentes)
         estado = estado.run()
         self.usina.acionar_emergencia.assert_called_once()
 
@@ -285,9 +285,9 @@ class TestAgendamentos(unittest.TestCase):
         ]
 
         self.usina.acionar_emergencia = MagicMock()
-        estado = MOA.ValoresInternosAtualizados(self.usina)
+        estado = main.ValoresInternosAtualizados(self.usina)
         estado = estado.run()
-        self.assertIsInstance(estado, MOA.AgendamentosPendentes)
+        self.assertIsInstance(estado, main.AgendamentosPendentes)
         estado = estado.run()
         self.usina.acionar_emergencia.assert_called_once()
 
