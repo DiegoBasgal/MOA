@@ -27,8 +27,6 @@ class StateManual(State):
         logger.info(f"[UG{self.parent_ug.id}] Entrando no estado: \"Manual\". Para retornar a operação autônoma, favor agendar na interface web")
 
     def step(self) -> State:
-        self.parent_ug.codigo_state = MOA_UNIDADE_MANUAL
-
         self.parent_ug.setpoint = self.parent_ug.leitura_potencia.valor
         return self
 
@@ -43,8 +41,6 @@ class StateIndisponivel(State):
         self.parent_ug.release_timer = True
 
     def step(self) -> State:
-        self.parent_ug.codigo_state = MOA_UNIDADE_INDISPONIVEL
-
         logger.debug(f"[UG{self.parent_ug.id}] Etapa atual: \"{UNIDADE_DICT_ETAPAS[self.parent_ug.etapa_atual]}\"")
 
         if self.parent_ug.etapa_atual == UNIDADE_PARADA or self.selo:
@@ -62,8 +58,6 @@ class StateRestrito(State):
         logger.info(f"[UG{self.parent_ug.id}] Entrando no estado: \"Restrito\"")
 
     def step(self) -> State:
-        self.parent_ug.codigo_state = MOA_UNIDADE_RESTRITA
-
         deve_indisponibilizar = False
         condicionadores_ativos = []
 
@@ -110,8 +104,6 @@ class StateDisponivel(State):
         self.parent_ug.tentativas_de_normalizacao = 0
 
     def step(self) -> State:
-        self.parent_ug.codigo_state = MOA_UNIDADE_DISPONIVEL
-
         self.parent_ug.controle_limites_operacao()
 
         deve_normalizar = False
