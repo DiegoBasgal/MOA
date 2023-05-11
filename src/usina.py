@@ -11,15 +11,15 @@ from time import sleep, time
 from datetime import  datetime, timedelta
 from pyModbusTCP.client import ModbusClient
 
-from dicionarios.const import *
-from leituras import  *
+from Leituras import  *
 from dicionarios.regs import *
+from dicionarios.const import *
 
-from src.mensageiro.voip import Voip
 from banco_dados import Database
 from conector import ConectorCampo
-from condicionadores import CondicionadorBase
+from src.mensageiro.voip import Voip
 from unidade_geracao import UnidadeGeracao
+from Condicionadores import CondicionadorBase
 
 logger = logging.getLogger("__main__")
 

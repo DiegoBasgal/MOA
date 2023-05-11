@@ -240,7 +240,7 @@ class StateDisponivel(State):
             logger.debug(f"[UG{self.parent_ug.id}] Iniciando o timer de verificação de partida")
             while time() < timer:
                 if self.parent_ug.etapa_atual == UNIDADE_SINCRONIZADA or self.parent_ug.release_timer:
-                    logger.debug(f"[UG{self.parent_ug.id}] Condição de saída... Saindo do timer de verificação de partida")
+                    logger.debug(f"[UG{self.parent_ug.id}] Condição ativada! Saindo do timer de verificação de partida")
                     self.parent_ug.release_timer = False
                     self.release = True
                     return
