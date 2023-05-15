@@ -152,6 +152,15 @@ class Database:
         )
         self.conn.commit()
 
+    def update_ultimo_estado_ug(self, ug_id, valor):
+        q = (
+            "UPDATE parametros_parametrosusina "
+            f"SET ug{ug_id}_ultimo_estado = {valor} "
+            "WHERE id = 1;"
+        )
+        self.cursor.execute(q)
+        self.conn.commit()
+
     def insert_debug(self,
         ts, ma,
         erro, nv,
@@ -218,3 +227,8 @@ class Database:
             parametros = rows
         self.conn.commit()
         return parametros
+    
+    def get_ultimo_estado_ug(self, ug_id):
+        self.cursor.execute(f"SELECT ug{ug_id}_ultimo_estado FROM parametros_parametrosusina")
+        estado = self.cursor.fetchone()
+        return estado

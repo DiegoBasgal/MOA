@@ -21,12 +21,12 @@ UNIDADE_SINCRONIZADA = 4
 
 def monitoramento_view(request, *args, **kwargs):
 
-    clp_sa = ModbusClient("192.168.0.50", 5002, unit_id=1, timeout=0.5, auto_close=True)
-    clp_tda = ModbusClient("192.168.0.54", 5002, unit_id=1, timeout=0.5, auto_close=True)
-    clp_ug1 = ModbusClient("192.168.0.51", 5002, unit_id=1, timeout=0.5, auto_close=True)
-    clp_ug2 = ModbusClient("192.168.0.52", 5002, unit_id=1, timeout=0.5, auto_close=True)
-    clp_ug3 = ModbusClient("192.168.0.53", 503, unit_id=1, timeout=0.5, auto_close=True)
-    clp_moa = ModbusClient("192.168.0.116", 502, timeout=0.5, unit_id=1, auto_close=True)
+    clp_sa = ModbusClient("192.168.50.50", 5002, unit_id=1, timeout=0.5, auto_close=True)
+    clp_tda = ModbusClient("192.168.50.54", 5002, unit_id=1, timeout=0.5, auto_close=True)
+    clp_ug1 = ModbusClient("192.168.50.51", 5002, unit_id=1, timeout=0.5, auto_close=True)
+    clp_ug2 = ModbusClient("192.168.50.52", 5002, unit_id=1, timeout=0.5, auto_close=True)
+    clp_ug3 = ModbusClient("192.168.50.53", 503, unit_id=1, timeout=0.5, auto_close=True)
+    clp_moa = ModbusClient("192.168.50.116", 502, timeout=0.5, unit_id=1, auto_close=True)
 
     usina = ParametrosUsina.objects.get(id=1)
 

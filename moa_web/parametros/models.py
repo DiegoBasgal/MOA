@@ -57,6 +57,7 @@ class ParametrosUsina(models.Model):
     ug1_pot = models.DecimalField(max_digits=10, decimal_places=0, default=0)
     ug1_setpot = models.DecimalField(max_digits=10, decimal_places=0, default=0)
     ug1_prioridade = models.IntegerField(default=0)
+    ug1_ultimo_estado = models.IntegerField(default=1)
 
     alerta_caixa_espiral_ug1 = models.DecimalField(max_digits=10, decimal_places=2, default=10)
     limite_caixa_espiral_ug1 = models.DecimalField(max_digits=10, decimal_places=2, default=0)
@@ -91,6 +92,7 @@ class ParametrosUsina(models.Model):
     ug2_pot = models.DecimalField(max_digits=10, decimal_places=0, default=0)
     ug2_setpot = models.DecimalField(max_digits=10, decimal_places=0, default=0)
     ug2_prioridade = models.IntegerField(default=0)
+    ug2_ultimo_estado = models.IntegerField(default=1)
 
     alerta_caixa_espiral_ug2 = models.DecimalField(max_digits=10, decimal_places=2, default=10)
     limite_caixa_espiral_ug2 = models.DecimalField(max_digits=10, decimal_places=2, default=0)
@@ -125,6 +127,7 @@ class ParametrosUsina(models.Model):
     ug3_pot = models.DecimalField(max_digits=10, decimal_places=0, default=0)
     ug3_setpot = models.DecimalField(max_digits=10, decimal_places=0, default=0)
     ug3_prioridade = models.IntegerField(default=0)
+    ug3_ultimo_estado = models.IntegerField(default=1)
 
     alerta_caixa_espiral_ug3 = models.DecimalField(max_digits=10, decimal_places=2, default=10)
     limite_caixa_espiral_ug3 = models.DecimalField(max_digits=10, decimal_places=2, default=0)

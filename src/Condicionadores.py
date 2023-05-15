@@ -9,7 +9,7 @@ __author__ = "Lucas Lavratti"
 
 from asyncio.log import logger
 
-from leituras import *
+from src.Leituras import *
 
 class CondicionadorBase:
     ...

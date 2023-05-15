@@ -7,8 +7,8 @@ from threading import Thread
 from datetime import datetime
 from abc import abstractmethod
 
-from dicionarios.const import *
-from dicionarios.regs import *
+from src.dicionarios.const import *
+from src.dicionarios.regs import *
 
 logger = logging.getLogger("__main__")
 

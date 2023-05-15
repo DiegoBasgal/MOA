@@ -11,15 +11,15 @@ from time import sleep, time
 from datetime import  datetime, timedelta
 from pyModbusTCP.client import ModbusClient
 
-from Leituras import  *
-from dicionarios.regs import *
-from dicionarios.const import *
+from src.Leituras import  *
+from src.dicionarios.regs import *
+from src.dicionarios.const import *
 
-from banco_dados import Database
-from conector import ConectorCampo
+from src.banco_dados import Database
+from src.conector import ConectorCampo
 from src.mensageiro.voip import Voip
-from unidade_geracao import UnidadeGeracao
-from Condicionadores import CondicionadorBase
+from src.unidade_geracao import UnidadeGeracao
+from src.Condicionadores import CondicionadorBase
 
 logger = logging.getLogger("__main__")
 
@@ -90,21 +90,21 @@ class Usina:
         self.__tensao_rs = LeituraModbus(
             "SA_EA_PM_810_Tensao_AB",
             self.clp["SA"],
-            REG["SA_EA_PM_810_Tensao_AB"],
+            REG["SA_EA_PM_810_Tensao_Ab"],
             100,
             op=4,
         )
         self.__tensao_st = LeituraModbus(
             "SA_EA_PM_810_Tensao_BC",
             self.clp["SA"],
-            REG["SA_EA_PM_810_Tensao_BC"],
+            REG["SA_EA_PM_810_Tensao_bc"],
             100,
             op=4,
         )
         self.__tensao_tr = LeituraModbus(
             "SA_EA_PM_810_Tensao_CA",
             self.clp["SA"],
-            REG["SA_EA_PM_810_Tensao_CA"],
+            REG["SA_EA_PM_810_Tensao_ca"],
             100,
             op=4,
         )
@@ -292,14 +292,13 @@ class Usina:
         self.cfg["cx_kie"] = float(parametros["cx_kie"])
         self.cfg["press_cx_alvo"] = float(parametros["press_cx_alvo"])
 
-        self.heartbeat()
-
-    def escrever_valores(self):
-
         if self.modo_autonomo:
             self.con.TDA_Offline = True if self.TDA_Offline else False
             self.con.modifica_controles_locais()
 
+        self.heartbeat()
+
+    def escrever_valores(self):
         try:
             valores = [
                 self.get_time().strftime("%Y-%m-%d %H:%M:%S"),  # timestamp
@@ -313,6 +312,9 @@ class Usina:
                 self.ug3.setpoint,  # ug3_setpot
             ]
             self.db.update_valores_usina(valores)
+
+            for ug in self.ugs:
+                ug.atualizar_ultimo_estado_banco()
 
         except Exception as e:
             logger.exception(f"Houve um erro ao gravar os parâmetros da Usina no Banco. Exception: \"{repr(e)}\"")
@@ -344,48 +346,47 @@ class Usina:
             logger.debug(f"Traceback: {traceback.print_stack}")
 
     def atualizar_limites_operacao(self, db):
-        parametros = db
         for ug in self.ugs:
-            ug.prioridade = int(parametros[f"ug{ug.id}_prioridade"])
+            ug.prioridade = int(db[f"ug{ug.id}_prioridade"])
 
-            ug.condicionador_temperatura_fase_r_ug.valor_base = float(parametros[f"alerta_temperatura_fase_r_ug{ug.id}"])
-            ug.condicionador_temperatura_fase_r_ug.valor_limite = float(parametros[f"limite_temperatura_fase_r_ug{ug.id}"])
+            ug.condicionador_temperatura_fase_r_ug.valor_base = float(db[f"alerta_temperatura_fase_r_ug{ug.id}"])
+            ug.condicionador_temperatura_fase_r_ug.valor_limite = float(db[f"limite_temperatura_fase_r_ug{ug.id}"])
 
-            ug.condicionador_temperatura_fase_s_ug.valor_base = float(parametros[f"alerta_temperatura_fase_s_ug{ug.id}"])
-            ug.condicionador_temperatura_fase_s_ug.valor_limite = float(parametros[f"limite_temperatura_fase_s_ug{ug.id}"])
+            ug.condicionador_temperatura_fase_s_ug.valor_base = float(db[f"alerta_temperatura_fase_s_ug{ug.id}"])
+            ug.condicionador_temperatura_fase_s_ug.valor_limite = float(db[f"limite_temperatura_fase_s_ug{ug.id}"])
 
-            ug.condicionador_temperatura_fase_t_ug.valor_base = float(parametros[f"alerta_temperatura_fase_t_ug{ug.id}"])
-            ug.condicionador_temperatura_fase_t_ug.valor_limite = float(parametros[f"limite_temperatura_fase_t_ug{ug.id}"])
+            ug.condicionador_temperatura_fase_t_ug.valor_base = float(db[f"alerta_temperatura_fase_t_ug{ug.id}"])
+            ug.condicionador_temperatura_fase_t_ug.valor_limite = float(db[f"limite_temperatura_fase_t_ug{ug.id}"])
 
-            ug.condicionador_temperatura_nucleo_estator_ug.valor_base = float(parametros[f"alerta_temperatura_nucleo_estator_ug{ug.id}"])
-            ug.condicionador_temperatura_nucleo_estator_ug.valor_limite = float(parametros[f"limite_temperatura_nucleo_estator_ug{ug.id}"])
+            ug.condicionador_temperatura_nucleo_estator_ug.valor_base = float(db[f"alerta_temperatura_nucleo_estator_ug{ug.id}"])
+            ug.condicionador_temperatura_nucleo_estator_ug.valor_limite = float(db[f"limite_temperatura_nucleo_estator_ug{ug.id}"])
 
-            ug.condicionador_temperatura_mancal_rad_dia_1_ug.valor_base = float(parametros[f"alerta_temperatura_mancal_rad_dia_1_ug{ug.id}"])
-            ug.condicionador_temperatura_mancal_rad_dia_1_ug.valor_limite = float(parametros[f"limite_temperatura_mancal_rad_dia_1_ug{ug.id}"])
+            ug.condicionador_temperatura_mancal_rad_dia_1_ug.valor_base = float(db[f"alerta_temperatura_mancal_rad_dia_1_ug{ug.id}"])
+            ug.condicionador_temperatura_mancal_rad_dia_1_ug.valor_limite = float(db[f"limite_temperatura_mancal_rad_dia_1_ug{ug.id}"])
 
-            ug.condicionador_temperatura_mancal_rad_dia_2_ug.valor_base = float(parametros[f"alerta_temperatura_mancal_rad_dia_2_ug{ug.id}"])
-            ug.condicionador_temperatura_mancal_rad_dia_2_ug.valor_limite = float(parametros[f"limite_temperatura_mancal_rad_dia_2_ug{ug.id}"])
+            ug.condicionador_temperatura_mancal_rad_dia_2_ug.valor_base = float(db[f"alerta_temperatura_mancal_rad_dia_2_ug{ug.id}"])
+            ug.condicionador_temperatura_mancal_rad_dia_2_ug.valor_limite = float(db[f"limite_temperatura_mancal_rad_dia_2_ug{ug.id}"])
 
-            ug.condicionador_temperatura_mancal_rad_tra_1_ug.valor_base = float(parametros[f"alerta_temperatura_mancal_rad_tra_1_ug{ug.id}"])
-            ug.condicionador_temperatura_mancal_rad_tra_1_ug.valor_limite = float(parametros[f"limite_temperatura_mancal_rad_tra_1_ug{ug.id}"])
+            ug.condicionador_temperatura_mancal_rad_tra_1_ug.valor_base = float(db[f"alerta_temperatura_mancal_rad_tra_1_ug{ug.id}"])
+            ug.condicionador_temperatura_mancal_rad_tra_1_ug.valor_limite = float(db[f"limite_temperatura_mancal_rad_tra_1_ug{ug.id}"])
 
-            ug.condicionador_temperatura_mancal_rad_tra_2_ug.valor_base = float(parametros[f"alerta_temperatura_mancal_rad_tra_2_ug{ug.id}"])
-            ug.condicionador_temperatura_mancal_rad_tra_2_ug.valor_limite = float(parametros[f"limite_temperatura_mancal_rad_tra_2_ug{ug.id}"])
+            ug.condicionador_temperatura_mancal_rad_tra_2_ug.valor_base = float(db[f"alerta_temperatura_mancal_rad_tra_2_ug{ug.id}"])
+            ug.condicionador_temperatura_mancal_rad_tra_2_ug.valor_limite = float(db[f"limite_temperatura_mancal_rad_tra_2_ug{ug.id}"])
 
-            ug.condicionador_temperatura_saida_de_ar_ug.valor_base = float(parametros[f"alerta_temperatura_saida_de_ar_ug{ug.id}"])
-            ug.condicionador_temperatura_saida_de_ar_ug.valor_limite = float(parametros[f"limite_temperatura_saida_de_ar_ug{ug.id}"])
+            ug.condicionador_temperatura_saida_de_ar_ug.valor_base = float(db[f"alerta_temperatura_saida_de_ar_ug{ug.id}"])
+            ug.condicionador_temperatura_saida_de_ar_ug.valor_limite = float(db[f"limite_temperatura_saida_de_ar_ug{ug.id}"])
 
-            ug.condicionador_temperatura_mancal_guia_escora_ug.valor_base = float(parametros[f"alerta_temperatura_mancal_guia_escora_ug{ug.id}"])
-            ug.condicionador_temperatura_mancal_guia_escora_ug.valor_limite = float(parametros[f"limite_temperatura_mancal_guia_escora_ug{ug.id}"])
+            ug.condicionador_temperatura_mancal_guia_escora_ug.valor_base = float(db[f"alerta_temperatura_mancal_guia_escora_ug{ug.id}"])
+            ug.condicionador_temperatura_mancal_guia_escora_ug.valor_limite = float(db[f"limite_temperatura_mancal_guia_escora_ug{ug.id}"])
 
-            ug.condicionador_temperatura_mancal_guia_radial_ug.valor_base = float(parametros[f"alerta_temperatura_mancal_guia_radial_ug{ug.id}"])
-            ug.condicionador_temperatura_mancal_guia_radial_ug.valor_limite = float(parametros[f"limite_temperatura_mancal_guia_radial_ug{ug.id}"])
+            ug.condicionador_temperatura_mancal_guia_radial_ug.valor_base = float(db[f"alerta_temperatura_mancal_guia_radial_ug{ug.id}"])
+            ug.condicionador_temperatura_mancal_guia_radial_ug.valor_limite = float(db[f"limite_temperatura_mancal_guia_radial_ug{ug.id}"])
 
-            ug.condicionador_temperatura_mancal_guia_contra_ug.valor_base = float(parametros[f"alerta_temperatura_mancal_guia_contra_ug{ug.id}"])
-            ug.condicionador_temperatura_mancal_guia_contra_ug.valor_limite = float(parametros[f"limite_temperatura_mancal_guia_contra_ug{ug.id}"])
+            ug.condicionador_temperatura_mancal_guia_contra_ug.valor_base = float(db[f"alerta_temperatura_mancal_guia_contra_ug{ug.id}"])
+            ug.condicionador_temperatura_mancal_guia_contra_ug.valor_limite = float(db[f"limite_temperatura_mancal_guia_contra_ug{ug.id}"])
 
-            ug.condicionador_caixa_espiral_ug.valor_base = float(parametros[f"alerta_caixa_espiral_ug{ug.id}"])
-            ug.condicionador_caixa_espiral_ug.valor_limite = float(parametros[f"limite_caixa_espiral_ug{ug.id}"])
+            ug.condicionador_caixa_espiral_ug.valor_base = float(db[f"alerta_caixa_espiral_ug{ug.id}"])
+            ug.condicionador_caixa_espiral_ug.valor_limite = float(db[f"limite_caixa_espiral_ug{ug.id}"])
 
     def acionar_emergencia(self):
         self.con.acionar_emergencia()

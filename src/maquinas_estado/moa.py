@@ -1,8 +1,8 @@
 import os
 import json
 
-from dicionarios.const import *
-from usina import *
+from src.dicionarios.const import *
+from src.usina import *
 
 logger = logging.getLogger("__main__")
 

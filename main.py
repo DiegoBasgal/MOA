@@ -18,11 +18,11 @@ from sys import stderr
 from time import sleep, time
 from datetime import datetime
 
-from dicionarios.const import *
+from src.dicionarios.const import *
 from src.maquinas_estado.moa import *
 
-from usina import Usina
-from banco_dados import Database
+from src.usina import Usina
+from src.banco_dados import Database
 from src.mensageiro.mensageiro_log_handler import MensageiroHandler
 
 # Set-up logging
@@ -130,7 +130,7 @@ if __name__ == "__main__":
             try:
                 logger.info("Iniciando Thread de leitura periódica (30 min).")
 
-                threading.Thread(target=lambda: usina.leitura_periodica()).start()
+                threading.Thread(target=lambda: usina.leitura_periodica(delay=1800)).start()
 
             except Exception as e:
                 logger.error(f"Erro ao iniciar Thread de leitura periódica. Tentando novamente em {timeout}s (tentativa {n_tentativa}/2). Exception: \"{repr(e)}\".")
