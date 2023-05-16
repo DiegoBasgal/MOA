@@ -1,9 +1,3 @@
-"""
-operador_autonomo_sm.py
-
-Implementacao teste de uma versao do moa utilizando SM
-"""
-
 import os
 import sys
 import time
@@ -25,7 +19,6 @@ from src.usina import Usina
 from src.banco_dados import Database
 from src.mensageiro.mensageiro_log_handler import MensageiroHandler
 
-# Set-up logging
 rootLogger = logging.getLogger()
 if rootLogger.hasHandlers():
     rootLogger.handlers.clear()
@@ -48,7 +41,7 @@ logFormatter = logging.Formatter("%(asctime)s [%(threadName)-12s] [%(levelname)-
 logFormatterSimples = logging.Formatter("[%(levelname)-5.5s] %(message)s")
 logFormatter.converter = timeConverter
 
-ch = logging.StreamHandler(stderr)  # log para sdtout
+ch = logging.StreamHandler(stderr)
 ch.setFormatter(logFormatter)
 ch.setLevel(logging.DEBUG)
 logger.addHandler(ch)
@@ -69,8 +62,6 @@ mh.setLevel(logging.INFO)
 logger.addHandler(mh)
 
 if __name__ == "__main__":
-    # A escala de tempo é utilizada para acelerar as simulações do sistema
-    # Utilizar 1 para testes sérios e 120 no máximo para testes simples
     if len(sys.argv) > 1:
         ESCALA_DE_TEMPO = int(sys.argv[1])
 

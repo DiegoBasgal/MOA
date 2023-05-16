@@ -1,24 +1,17 @@
 import logging
+
 from time import sleep
-from src.dicionarios.regs import *
 from pyModbusTCP.client import ModbusClient
+from src.banco_dados import Database
+
+from src.usina import *
+from src.dicionarios.regs import *
 
 logger = logging.getLogger("__main__")
 
-class ConectorCampo:
-    def __init__(self, cfg=None, clp: "dict[str, ModbusClient]"=None):
-
-        if not cfg:
-            raise ValueError("Arquivo de configurção \"config.json\" não carregado.")
-        else:
-            self.cfg = cfg
-
-        if not clp:
-            raise ConnectionError("Não foi possível conextar com os CLPs de campo")
-        else:
-            self.clp = clp
-
-        self.TDA_Offline = False
+class ConectorCampo(Usina):
+    def __init__(self, cfg=None, clp:"dict[str, ModbusClient]"=None):
+        super().__init__(cfg, clp)
 
     def modifica_controles_locais(self):
         if not self.TDA_Offline:
@@ -34,7 +27,6 @@ class ConectorCampo:
         if self.get_flag_falha52L():
             return False
         else:
-            # utilizar o write_single_coil para o ambiente em produção e write_single_register para a simulação
             response = self.clp["SA"].write_single_coil(REG["SA_CD_Liga_DJ1"], [1])
             return response
 
@@ -69,9 +61,9 @@ class ConectorCampo:
         self.clp["UG1"].write_single_coil(REG["UG1_CD_EmergenciaViaSuper"], [0])
         self.clp["UG2"].write_single_coil(REG["UG2_CD_EmergenciaViaSuper"], [0])
         self.clp["UG3"].write_single_coil(REG["UG3_CD_EmergenciaViaSuper"], [0])
+        self.clp_emergencia_acionada = 1
 
     def get_flag_falha52L(self):
-        # adicionar estado do disjuntor
         flag = 0
 
         if self.clp["SA"].read_discrete_inputs(REG["SA_ED_DisjDJ1_SuperBobAbert1"])[0] == 0:

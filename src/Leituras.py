@@ -1,11 +1,3 @@
-"""
-Leituras.
-
-Esse módulo corresponde a implementação das leituras, dos valores de campo.
-"""
-__version__ = "0.1"
-__author__ = "Lucas Lavratti"
-
 import socket
 import struct
 import logging
@@ -41,10 +33,6 @@ class LeituraDebug(LeituraBase):
     ...
 
 class LeituraBase:
-    """
-    Classe implementa a base para leituras. É "Abstrata" assim por se dizer...
-    """
-
     def __init__(self, descr: str) -> None:
         self.__descr = descr
         self.__valor = None
@@ -63,19 +51,9 @@ class LeituraBase:
 
     @property
     def descr(self) -> str:
-        """
-        Descrição do limite em questão.
-
-        Returns:
-            str: descr
-        """
         return self.__descr
 
 class LeituraModbus(LeituraBase):
-    """
-    Classe implementa a base para leituras da unidade da geração utilizando modbus.
-    """
-
     def __init__(
         self,
         descr: str,
@@ -95,27 +73,10 @@ class LeituraModbus(LeituraBase):
 
     @property
     def valor(self) -> float:
-        """
-        Valor
-
-        Returns:
-            float: valor já tratado
-        """
         return (self.raw * self.__escala) + self.__fundo_de_escala
 
     @property
     def raw(self) -> int:
-        """
-        Raw Dado Crú
-        Retorna o valor como lido da CLP, o inteiro unsigned contido no registrador
-
-        Raises:
-            ConnectionError: Erro caso a conexão falhe
-            NotImplementedError: [description]
-
-        Returns:
-            int: [description]
-        """
         try:
             if self.__modbus_client.open():
                 if self.__op == 3:
@@ -132,18 +93,10 @@ class LeituraModbus(LeituraBase):
                     return 0
             else:
                 raise ConnectionError("Erro na conexão modbus.")
-        except:
-            # ! TODO Tratar exceptions
-            # O que deve retornar caso não consiga comunicar?
-            # raise NotImplementedError
+        except Exception:
             return 0
-            pass
 
 class LeituraModbusCoil(LeituraBase):
-    """
-    Classe implementa a base para leituras da unidade da geração utilizando modbus.
-    """
-
     def __init__(
         self,
         descr: str,
@@ -159,12 +112,6 @@ class LeituraModbusCoil(LeituraBase):
 
     @property
     def valor(self) -> float:
-        """
-        Valor
-
-        Returns:
-            float: valor já tratado
-        """
         if self.__invertido:
             return False if self.raw else True
         else:
@@ -172,17 +119,6 @@ class LeituraModbusCoil(LeituraBase):
 
     @property
     def raw(self) -> int:
-        """
-        Raw Dado Crú
-        Retorna o valor como lido da CLP, o inteiro unsigned contido no registrador
-
-        Raises:
-            ConnectionError: Erro caso a conexão falhe
-            NotImplementedError: [description]
-
-        Returns:
-            int: [description]
-        """
         try:
             if self.__modbus_client.open():
                 aux = self.__modbus_client.read_discrete_inputs(self.__registrador)[0]
@@ -192,18 +128,10 @@ class LeituraModbusCoil(LeituraBase):
                     return 0
             else:
                 raise ConnectionError("Erro na conexão modbus.")
-        except:
-            # ! TODO Tratar exceptions
-            # O que deve retornar caso não consiga comunicar?
-            # raise NotImplementedError
+        except Exception:
             return 0
-            pass
 
 class LeituraModbusBit(LeituraModbus):
-    """
-    Classe implementa a leituras de bits de registradores da unidade da geração utilizando modbus.
-    """
-
     def __init__(
         self,
         descr: str,
@@ -218,12 +146,6 @@ class LeituraModbusBit(LeituraModbus):
 
     @property
     def valor(self) -> bool:
-        """
-        Valor
-
-        Returns:
-            bool: valor já tratado
-        """
         aux = self.raw & 2**self.__bit
         if self.__invertido:
             aux = not aux
@@ -244,12 +166,6 @@ class LeituraDelta(LeituraBase):
 
     @property
     def valor(self) -> float:
-        """
-        Valor
-
-        Returns:
-            float: leitura_A - leitura_B
-        """
         if self.__min_is_zero:
             return max(0, self.__leitura_A.valor - self.__leitura_B.valor)
         else:
@@ -270,12 +186,6 @@ class LeituraSoma(LeituraBase):
 
     @property
     def valor(self) -> float:
-        """
-        Valor
-
-        Returns:
-            float: leitura_A + leitura_B
-        """
         if self.__min_is_zero:
             return max(0, self.__leitura_A.valor + self.__leitura_B.valor)
         else:
@@ -306,12 +216,6 @@ class LeituraComposta(LeituraBase):
 
     @property
     def valor(self) -> float:
-        """
-        Valor
-
-        Returns:
-            float: 1*leitura1 + 2*leitura2 + 4*leitura3 + 8*leitura4...
-        """
         res = 0
         if self.__leitura1 is not None:
             if self.__leitura1.valor:
@@ -396,6 +300,7 @@ class LeituraNBRPower(LeituraBase):
             sock.close()
             response = response[1:]
             return float(struct.unpack("f", response[64:68])[0])
+
         except Exception:
             self.logger.debug("Socket timed out")
             try:
@@ -411,7 +316,7 @@ class LeituraNBRPower(LeituraBase):
                 sock.close()
                 response = response[1:]
                 return float(struct.unpack("f", response[64:68])[0])
+
             except Exception:
                 self.logger.debug("Socket timed out")
                 return 0
-        return 0

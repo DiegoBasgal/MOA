@@ -1,32 +1,15 @@
-"""
-Condicionadores.
-
-Esse módulo corresponde a implementação dos condicionadores (alarmes/limites)
-dos valores de campo.
-"""
-__version__ = "0.1"
-__author__ = "Lucas Lavratti"
-
-from asyncio.log import logger
-
 from src.Leituras import *
 
 class CondicionadorBase:
     ...
 
-
 class CondicionadorExponencial(CondicionadorBase):
     ...
-
 
 class CondicionadorExponencialReverso(CondicionadorBase):
     ...
 
-
 class CondicionadorBase:
-    """
-    Classe implementa a base para condicionadores. É "Abstrata" assim por se dizer...
-    """
     def __init__(self, descr: str, gravidade: int, leitura: LeituraBase, ug_id: int = None, etapas: list = None):
         self.__descr = descr
         self.__gravidade = gravidade
@@ -48,14 +31,6 @@ class CondicionadorBase:
 
     @property
     def ativo(self) -> bool:
-        """
-        Retorna se o condicionador está ativo ou não.
-        Por padrão retorna ativo para qualquer valor diferente de 0.
-
-        Returns:
-            bool: True se ativo, False caso contrário
-        """
-        
         if self.__ug_id and self.__etapas:
             for ug in self.ugs:
                 if ug.id == self.__ug_id and ug.etapa_atual in self.__etapas:
@@ -68,25 +43,10 @@ class CondicionadorBase:
 
     @property
     def valor(self) -> float:
-        """
-        Valor normalizado, entre 0 e 1 de quão "Ativo" está o condicionador.
-        Por padrão retorna o mesmo que o booleano ativo, mas numéricamente.
-
-        Returns:
-            float: valor normalizado
-        """
         return self.ativo * 1.0
 
     @property
     def gravidade(self) -> int:
-        """
-        Gravidade do condicionador
-        Returns:
-            int: gravidade
-        self.DEVE_INDISPONIBILIZAR = 2
-        self.DEVE_NORMALIZAR = 1
-        self.DEVE_IGNORAR = 0
-        """
         return self.__gravidade
     
     @property
@@ -98,10 +58,6 @@ class CondicionadorBase:
         self.__ugs = ugs
 
 class CondicionadorExponencial(CondicionadorBase):
-    """
-    Implementação básica de limtes operacionais contínuos segundo curva exponencial de decaimento
-    """
-
     def __init__(
         self,
         descr: str,
@@ -148,22 +104,10 @@ class CondicionadorExponencial(CondicionadorBase):
 
     @property
     def ativo(self) -> bool:
-        """
-        Retorna se o condicionador está ativo ou não.
-
-        Returns:
-            bool: True se atenuação >= 100%, False caso contrário
-        """
         return True if self.valor >= 1 else False
     
     @property
     def valor(self) -> float:
-        """
-        Valor relativo a quantidade de atenuação
-
-        Returns:
-            float: Valor de 0 a 1 (inclusivo) relativo a atenuacao após limitação operacional
-        """
         v_temp = float(self.leitura.valor)
         if v_temp > self.valor_base and  v_temp < self.valor_limite:
             aux = (
@@ -187,10 +131,6 @@ class CondicionadorExponencial(CondicionadorBase):
 
 
 class CondicionadorExponencialReverso(CondicionadorBase):
-    """
-    Implementação básica de limtes operacionais contínuos segundo curva exponencial de decaimento
-    """
-
     def __init__(
         self,
         descr: str,
@@ -235,12 +175,6 @@ class CondicionadorExponencialReverso(CondicionadorBase):
 
     @property
     def valor(self) -> float:
-        """
-        Valor relativo a quantidade de atenuação
-
-        Returns:
-            float: Valor de 0 a 1 (inclusivo) relativo a atenuacao após limitação operacional
-        """
         v_temp = float(self.leitura.valor)
         
         if v_temp < 1:

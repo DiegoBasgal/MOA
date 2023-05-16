@@ -239,7 +239,7 @@ REG = {
     "SA_EA_QCAP_TensaoR": 12,                                   # MW_InpReg[13] Scale 0.1           (OP -> 0x04 Read Input Regs - 3x)
     "SA_EA_QCAP_TensaoS": 13,                                   # MW_InpReg[14] Scale 0.1           (OP -> 0x04 Read Input Regs - 3x)
     "SA_EA_QCAP_TensaoT": 14,                                   # MW_InpReg[15] Scale 0.1           (OP -> 0x04 Read Input Regs - 3x)
-    "SA_EA_PM_810_Tensao_Ab": 16,                               # MW_InpReg[17] Scale 0.1           (OP -> 0x04 Read Input Regs - 3x)
+    "SA_EA_PM_810_Tensao_ab": 16,                               # MW_InpReg[17] Scale 0.1           (OP -> 0x04 Read Input Regs - 3x)
     "SA_EA_PM_810_Tensao_bc": 17,                               # MW_InpReg[18] Scale 0.1           (OP -> 0x04 Read Input Regs - 3x)
     "SA_EA_PM_810_Tensao_ca": 18,                               # MW_InpReg[19] Scale 0.1           (OP -> 0x04 Read Input Regs - 3x)
     "SA_EA_PM_810_Corrente_A": 19,                              # MW_InpReg[20] Scale 0.1           (OP -> 0x04 Read Input Regs - 3x)

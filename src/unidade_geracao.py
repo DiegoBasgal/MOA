@@ -1,12 +1,3 @@
-"""
-Unidade de geração.
-
-Esse módulo corresponde a implementação das unidades de geração e
-da máquina de estado que rege a mesma.
-"""
-__version__ = "0.1"
-__author__ = "Lucas Lavratti"
-
 import pytz
 import logging
 import traceback
@@ -30,7 +21,7 @@ logger = logging.getLogger("__main__")
 
 class UnidadeGeracao:
     def __init__(self, id: int = None, cfg: dict = None, clp: "dict[str, ModbusClient]" = None, db: Database = None, con: ConectorCampo = None):
-        
+
         if not id or id < 1:
             logger.error(f"[UG{self.id}] O id não pode ser Nulo ou menor que 1")
             raise ValueError
@@ -78,6 +69,573 @@ class UnidadeGeracao:
 
         self.ts_auxiliar = self.get_time()
 
+        self.leituras_iniciais()
+        self.iniciar_ultimo_estado()
+
+    @property
+    def id(self) -> int:
+        return self.__id
+
+    @property
+    def manual(self) -> bool:
+        return isinstance(self.__next_state, StateManual)
+
+    @property
+    def disponivel(self) -> bool:
+        return isinstance(self.__next_state, StateDisponivel)
+
+    @property
+    def etapa_atual(self) -> int:
+        try:
+            response = self.leitura_etapa_atual.valor
+            if response == 1:
+                return UNIDADE_SINCRONIZADA
+            elif 2 <= response <= 3:
+                return UNIDADE_PARANDO
+            elif 4 <= response <= 7:
+                return UNIDADE_PARADA
+            elif 8 <= response <= 15:
+                return UNIDADE_SINCRONIZANDO
+            else:
+                return self.__last_EtapaAtual
+
+        except Exception:
+            logger.error(f"[UG{self.id}] Não foi possível realizar a leitura de Etapa Atual.")
+            logger.debug(f"Traceback: {traceback.format_exc()}")
+            return self.__last_EtapaAtual
+
+    @property
+    def tempo_entre_tentativas(self) -> int:
+        return self.__tempo_entre_tentativas
+
+    @property
+    def limite_tentativas_de_normalizacao(self) -> int:
+        return self.__limite_tentativas_de_normalizacao
+
+    @property
+    def prioridade(self) -> int:
+        return self.__prioridade
+
+    @prioridade.setter
+    def prioridade(self, var) -> None:
+        self.__prioridade = var
+
+    @property
+    def codigo_state(self) -> int:
+        return self.__codigo_state
+
+    @codigo_state.setter
+    def codigo_state(self, var) -> None:
+        self.__codigo_state = var
+
+    @property
+    def setpoint(self) -> int:
+        return self.__setpoint
+
+    @setpoint.setter
+    def setpoint(self, var: int):
+        if var < self.setpoint_minimo:
+            self.__setpoint = 0
+        elif var > self.setpoint_maximo:
+            self.__setpoint = self.setpoint_maximo
+        else:
+            self.__setpoint = int(var)
+        logger.debug(f"[UG{self.id}] SP<-{var}")
+
+    @property
+    def setpoint_minimo(self) -> int:
+        return self.__setpoint_minimo
+
+    @setpoint_minimo.setter
+    def setpoint_minimo(self, var: int):
+        self.__setpoint_minimo = var
+
+    @property
+    def setpoint_maximo(self) -> int:
+        return self.__setpoint_maximo
+
+    @setpoint_maximo.setter
+    def setpoint_maximo(self, var: int):
+        self.__setpoint_maximo = var
+
+    @property
+    def tentativas_de_normalizacao(self) -> int:
+        return self.__tentativas_de_normalizacao
+
+    @tentativas_de_normalizacao.setter
+    def tentativas_de_normalizacao(self, var: int):
+        self.__tentativas_de_normalizacao = var
+
+    @property
+    def condicionadores(self) -> "list[CondicionadorBase]":
+        return self.__condicionadores
+
+    @condicionadores.setter
+    def condicionadores(self, var: "list[CondicionadorBase]") -> None:
+        self.__condicionadores = var
+
+    @property
+    def condicionadores_essenciais(self) -> "list[CondicionadorBase]":
+        return self.__condicionadores_essenciais
+
+    @condicionadores_essenciais.setter
+    def condicionadores_essenciais(self, var: "list[CondicionadorBase]") -> None:
+        self.__condicionadores_essenciais = var
+
+    @property
+    def condicionadores_atenuadores(self) -> "list[CondicionadorBase]":
+        return self.__condicionadores_atenuadores
+
+    @condicionadores_atenuadores.setter
+    def condicionadores_atenuadores(self, var: "list[CondicionadorBase]") -> None:
+        self.__condicionadores_atenuadores = var
+
+    @property
+    def lista_ugs(self) -> "list[UnidadeGeracao]":
+        return self._lista_ugs
+
+    @lista_ugs.setter
+    def lista_ugs(self, var: "list[UnidadeGeracao]") -> None:
+        self._lista_ugs = var
+
+
+    @staticmethod
+    def get_time() -> datetime:
+        return datetime.now(pytz.timezone("Brazil/East")).replace(tzinfo=None)
+
+    def modbus_update_state_register(self) -> None:
+        self.clp["MOA"].write_single_register(REG[f"MOA_OUT_STATE_UG{self.id}"], self.codigo_state)
+        self.clp["MOA"].write_single_register(REG[f"MOA_OUT_ETAPA_UG{self.id}"], self.etapa_atual)
+
+    def iniciar_ultimo_estado(self) -> None:
+        estado = self.db.get_ultimo_estado_ug(self.id)
+
+        if estado == MOA_UNIDADE_MANUAL:
+            self.__next_state = StateManual(self)
+        elif estado == MOA_UNIDADE_DISPONIVEL:
+            self.__next_state = StateDisponivel(self)
+        elif estado == MOA_UNIDADE_RESTRITA:
+            self.__next_state = StateRestrito(self)
+        elif estado == MOA_UNIDADE_INDISPONIVEL:
+            self.__next_state = StateIndisponivel(self)
+        else:
+            logger.error(f"[UG{self.id}] Não foi possível ler o último estado da Unidade. Entrando em modo Manual.")
+            self.__next_state = StateManual(self)
+
+    def forcar_estado_disponivel(self) -> None:
+        try:
+            self.reconhece_reset_alarmes()
+            sleep(1)
+            self.__next_state = StateDisponivel(self)
+
+        except Exception:
+            logger.error(f"[UG{self.id}] Não foi possível forçar o estado \"Disponível\".")
+            logger.debug(f"Traceback: {traceback.format_exc()}")
+
+    def forcar_estado_indisponivel(self) -> None:
+        try:
+            self.__next_state = StateIndisponivel(self)
+
+        except Exception:
+            logger.error(f"[UG{self.id}] Não foi possível forçar o estado \"Indisponível\".")
+            logger.debug(f"Traceback: {traceback.format_exc()}")
+
+    def forcar_estado_manual(self) -> None:
+        try:
+            self.__next_state = StateManual(self)
+
+        except Exception:
+            logger.error(f"[UG{self.id}] Não foi possível forçar o estado \"Manual\".")
+            logger.debug(f"Traceback: {traceback.format_exc()}")
+
+    def forcar_estado_restrito(self) -> None:
+        try:
+            self.__next_state = StateRestrito(self)
+
+        except Exception:
+            logger.error(f"[UG{self.id}] Não foi possível forçar o estado \"Restrito\".")
+            logger.debug(f"Traceback: {traceback.format_exc()}")
+
+    def step(self) -> None:
+        try:
+            logger.debug("")
+            logger.debug(f"[UG{self.id}] Step. (Tentativas de normalização: {self.tentativas_de_normalizacao}/{self.limite_tentativas_de_normalizacao})")
+            self.__next_state = self.__next_state.step()
+            self.modbus_update_state_register()
+
+        except Exception:
+            logger.error(f"[UG{self.id}] Erro na execução da Máquina de estados da UG.")
+            logger.debug(f"Traceback: {traceback.format_exc()}")
+
+    def partir(self) -> bool:
+        try:
+            if not self.clp[f"UG{self.id}"].read_discrete_inputs(REG[f"UG{self.id}_ED_CondicaoPartida"], 1)[0]:
+                logger.debug(f"[UG{self.id}] Máquina sem condição de partida. Irá partir quando as condições forem reestabelecidas.")
+                return True
+
+            elif self.clp["SA"].read_coils(REG["SA_ED_QCAP_Disj52A1Fechado"])[0] != 0:
+                logger.info(f"[UG{self.id}] O Disjuntor 52A1 está aberto. Para partir a máquina, o mesmo deverá ser fechado.")
+                return True
+
+            elif not self.etapa_atual == UNIDADE_SINCRONIZADA:
+                logger.info(f"[UG{self.id}] Enviando comando de partida.")
+                response = self.clp[f"UG{self.id}"].write_single_coil(REG[f"UG{self.id}_CD_ResetGeral"], [1])
+                response = self.clp[f"UG{self.id}"].write_single_coil(REG[f"UG{self.id}_CD_ResetRele700G"], [1])
+                response = self.clp[f"UG{self.id}"].write_single_coil(REG[f"UG{self.id}_CD_ResetReleBloq86H"], [1])
+                response = self.clp[f"UG{self.id}"].write_single_coil(REG[f"UG{self.id}_CD_ResetReleBloq86M"], [1])
+                response = self.clp[f"UG{self.id}"].write_single_coil(REG[f"UG{self.id}_CD_ResetReleRT"], [1])
+                response = self.clp[f"UG{self.id}"].write_single_coil(REG[f"UG{self.id}_CD_ResetRV"], [1])
+                response = self.clp[f"UG{self.id}"].write_single_coil(REG[f"UG{self.id}_CD_IniciaPartida"], [1])
+                response = self.clp[f"UG{self.id}"].write_single_coil(REG[f"UG{self.id}_CD_Cala_Sirene"], [1])
+
+            else:
+                logger.debug(f"[UG{self.id}] A unidade já está sincronizada.")
+                response = self.clp[f"UG{self.id}"].write_single_coil(REG[f"UG{self.id}_CD_Cala_Sirene"], [1])
+            return response
+
+        except Exception:
+            logger.error(f"[UG{self.id}] Não foi possível enviar o comando de partida.")
+            logger.debug(f"Traceback: {traceback.format_exc()}")
+            return False
+
+    def parar(self) -> bool:
+        try:
+            if not self.etapa_atual == UNIDADE_PARADA:
+                logger.info(f"[UG{self.id}] Enviando comando de parada.")
+                response = False
+                response = self.clp[f"UG{self.id}"].write_single_coil(REG[f"UG{self.id}_CD_AbortaPartida"], [1])
+                response = self.clp[f"UG{self.id}"].write_single_coil(REG[f"UG{self.id}_CD_AbortaSincronismo"], [1])
+                response = self.clp[f"UG{self.id}"].write_single_coil(REG[f"UG{self.id}_CD_IniciaParada"], [1])
+                response = self.clp[f"UG{self.id}"].write_single_coil(REG[f"UG{self.id}_CD_Cala_Sirene"], [1])
+                self.enviar_setpoint(self.setpoint)
+            else:
+                logger.debug(f"[UG{self.id}] A unidade já está parada.")
+                response = self.clp[f"UG{self.id}"].write_single_coil(REG[f"UG{self.id}_CD_Cala_Sirene"], [1])
+            return response
+
+        except Exception:
+            logger.error(f"[UG{self.id}] Não foi possível enviar o comando de parada.")
+            logger.debug(f"Traceback: {traceback.format_exc()}")
+            return False
+
+    def enviar_setpoint(self, setpoint_kw: int) -> bool:
+        try:
+            response = False
+            if self.limpeza_grade:
+                self.setpoint_minimo = self.cfg["pot_limpeza_grade"]
+            else:
+                self.setpoint_minimo = self.cfg["pot_minima"]
+            self.setpoint_maximo = self.cfg[f"pot_maxima_ug{self.id}"]
+
+            logger.debug(f"[UG{self.id}] Enviando setpoint {int(self.setpoint)} kW.")
+
+            if self.setpoint > 1:
+                response = self.clp[f"UG{self.id}"].write_single_coil(REG[f"UG{self.id}_CD_ResetGeral"], [1])
+                response = self.clp[f"UG{self.id}"].write_single_coil(REG[f"UG{self.id}_CD_RV_RefRemHabilita"], [1])
+                response = self.clp[f"UG{self.id}"].write_single_register(REG[f"UG{self.id}_RA_ReferenciaCarga"], self.setpoint)
+            return response
+
+        except Exception:
+            logger.error(f"[UG{self.id}] Não foi possível enviar o setpoint.")
+            logger.debug(f"Traceback: {traceback.format_exc()}")
+            return False
+
+    def acionar_trip_eletrico(self) -> bool:
+        try:
+            self.enviar_trip_eletrico = True
+            logger.debug(f"[UG{self.id}] Acionando sinal de TRIP -> Elétrico.")
+
+            self.clp["MOA"].write_single_coil(REG[f"MOA_OUT_BLOCK_UG{self.id}"], [1])
+            return True
+
+        except Exception:
+            logger.error(f"[UG{self.id}] Não foi possível acionar o TRIP -> Elétrico.")
+            logger.debug(f"Traceback: {traceback.format_exc()}")
+            return False
+
+    def remover_trip_eletrico(self) -> bool:
+        try:
+            self.enviar_trip_eletrico = False
+            logger.debug(f"[UG{self.id}] Removendo sinal de TRIP -> Elétrico.")
+
+            self.clp["MOA"].write_single_coil(REG["PAINEL_LIDO"], [0])
+            self.clp["MOA"].write_single_coil(REG[f"MOA_OUT_BLOCK_UG{self.id}"], [0])
+            self.clp[f"UG{self.id}"].write_single_coil(REG[f"UG{self.id}_CD_Cala_Sirene"], [1])
+
+            if self.clp["SA"].read_coils(REG["SA_CD_Liga_DJ1"])[0] == 0:
+                logger.debug(f"[UG{self.id}] Comando recebido -> Fechar Dj52L")
+                self.con.fechaDj52L()
+            return True
+
+        except Exception:
+            logger.error(f"[UG{self.id}] Não foi possível remover o TRIP -> Elétrico.")
+            logger.debug(f"Traceback: {traceback.format_exc()}")
+            return False
+
+    def acionar_trip_logico(self) -> bool:
+        try:
+            logger.debug(f"[UG{self.id}] Acionando sinal de TRIP -> Lógico.")
+            response = self.clp[f"UG{self.id}"].write_single_coil(REG[f"UG{self.id}_CD_EmergenciaViaSuper"], [1])
+            return response
+
+        except Exception:
+            logger.error(f"[UG{self.id}] Não foi possível acionar o TRIP -> Lógico.")
+            logger.debug(f"Traceback: {traceback.format_exc()}")
+            return False
+
+    def remover_trip_logico(self) -> bool:
+        try:
+            logger.debug(f"[UG{self.id}] Removendo sinal de TRIP -> Lógico.")
+            response = self.clp[f"UG{self.id}"].write_single_coil(REG[f"UG{self.id}_CD_ResetGeral"], [1])
+            response = self.clp[f"UG{self.id}"].write_single_coil(REG[f"UG{self.id}_CD_ResetReleBloq86H"], [1])
+            response = self.clp[f"UG{self.id}"].write_single_coil(REG[f"UG{self.id}_CD_ResetReleBloq86M"], [1])
+            response = self.clp[f"UG{self.id}"].write_single_coil(REG[f"UG{self.id}_CD_ResetRele700G"], [1])
+            response = self.clp["SA"].write_single_coil(REG["SA_CD_ResetRele59N"], [1])
+            response = self.clp["SA"].write_single_coil(REG["SA_CD_ResetRele787"], [1])
+            response = self.clp[f"UG{self.id}"].write_single_coil(REG[f"UG{self.id}_ED_ReleBloqA86HAtuado"], [0])
+            response = self.clp[f"UG{self.id}"].write_single_coil(REG[f"UG{self.id}_ED_ReleBloqA86MAtuado"], [0])
+            response = self.clp[f"UG{self.id}"].write_single_coil(REG[f"UG{self.id}_RD_700G_Trip"], [0])
+            return response
+
+        except Exception:
+            logger.error(f"[UG{self.id}] Não foi possível remover o TRIP -> Lógico.")
+            logger.debug(f"Traceback: {traceback.format_exc()}")
+            return False
+
+    def reconhece_reset_alarmes(self) -> bool:
+        try:
+            logger.debug(f"[UG{self.id}] Enviando comando de reconhece alarmes e reset.")
+            self.clp["MOA"].write_single_coil(REG["PAINEL_LIDO"], [0])
+
+            for _ in range(3):
+                self.remover_trip_eletrico()
+                sleep(1)
+                self.remover_trip_logico()
+                sleep(1)
+                response = self.clp[f"UG{self.id}"].write_single_coil(REG[f"UG{self.id}_CD_ResetGeral"], [1])
+                response = self.clp[f"UG{self.id}"].write_single_coil(REG[f"UG{self.id}_CD_Cala_Sirene"], [1])
+                sleep(1)
+                return response
+
+        except Exception:
+            logger.error(f"[UG{self.id}] Não foi possível enviar o comando de reconhese alarmes e reset.")
+            logger.debug(f"Traceback: {traceback.format_exc()}")
+            return False
+
+    def ajuste_inicial_cx(self):
+        try:
+            self.cx_controle_p = (self.leitura_caixa_espiral.valor - self.cfg["press_cx_alvo"]) * self.cfg["cx_kp"]
+            self.cx_ajuste_ie = sum(ug.leitura_potencia for ug in self.lista_ugs) / self.cfg["pot_maxima_alvo"]
+            self.cx_controle_i = self.cx_ajuste_ie - self.cx_controle_p
+
+        except Exception:
+            logger.error(f"[UG{self.id}] Não foi possível realizar o ajuste incial do PID para pressão de caixa espiral.")
+            logger.debug(f"Traceback: {traceback.format_exc()}")
+
+    def controle_cx_espiral(self):
+        if self.pot_alvo_anterior == -1:
+            self.pot_alvo_anterior = pot_alvo
+
+        if self.ajuste_inicial_cx_esp == -1:
+            self.ajuste_inicial_cx()
+            self.ajuste_inicial_cx_esp = 0
+
+        try:
+            self.erro_press_cx = 0
+            self.erro_press_cx = self.leitura_caixa_espiral.valor - self.cfg["press_cx_alvo"]
+
+            logger.debug(f"[UG{self.id}] Pressão Alvo: {self.cfg['press_cx_alvo']:0.3f}, Recente: {self.leitura_caixa_espiral.valor:0.3f}")
+
+            self.cx_controle_p = self.cfg["cx_kp"] * self.erro_press_cx
+            self.cx_controle_i = max(min((self.cfg["cx_ki"] * self.erro_press_cx) + self.cx_controle_i, 1), 0)
+            saida_pi = self.cx_controle_p + self.cx_controle_i
+
+            logger.debug(f"[UG{self.id}] PI: {saida_pi:0.3f} <-- P:{self.cx_controle_p:0.3f} + I:{self.cx_controle_i:0.3f}; ERRO={self.erro_press_cx}")
+
+            self.cx_controle_ie = max(min(saida_pi + self.cx_ajuste_ie * self.cfg["cx_kie"], 1), 0)
+            pot_alvo = max(min(round(self.cfg[f"pot_maxima_ug{self.id}"] * self.cx_controle_ie, 5), self.cfg[f"pot_maxima_ug{self.id}"],),self.cfg["pot_minima"],)
+
+            logger.debug(f"[UG{self.id}] Pot alvo: {pot_alvo:0.3f}")
+
+            pot_medidor = self.potencia_ativa_kW.valor
+
+            logger.debug(f"Potência alvo = {pot_alvo}")
+            logger.debug(f"Potência no medidor = {pot_medidor}")
+
+            pot_aux = self.cfg["pot_maxima_alvo"] - (self.cfg["pot_maxima_usina"] - self.cfg["pot_maxima_alvo"])
+
+            pot_medidor = max(pot_aux, min(pot_medidor, self.cfg["pot_maxima_usina"]))
+
+            if pot_medidor > self.cfg["pot_maxima_alvo"] * 0.97:
+                pot_alvo = self.pot_alvo_anterior * (1 - 0.5 * ((pot_medidor - self.cfg["pot_maxima_alvo"]) / self.cfg["pot_maxima_alvo"]))
+
+            self.pot_alvo_anterior = pot_alvo
+            self.enviar_setpoint(pot_alvo) if self.leitura_caixa_espiral.valor >= 15.5 else self.enviar_setpoint(0)
+
+        except Exception:
+            logger.error(f"[UG{self.id}] Houve um erro no método de Controle por Caixa Espiral da Unidade.")
+            logger.debug(f"Traceback: {traceback.format_exc()}")
+
+    def leituras_temporizadas(self) -> None:
+        try:
+            if self.leitura_voip["leitura_ED_FreioPastilhaGasta"].valor != 0 and not vd.voip_dict[f"FREIO_PASTILHA_GASTA_UG{self.id}"][0]:
+                logger.warning(f"[UG{self.id}] O sensor de Freio da UG retornou que a Pastilha está gasta, favor considerar troca.")
+                vd.voip_dict[f"FREIO_PASTILHA_GASTA_UG{self.id}"][0] = True
+            elif self.leitura_voip["leitura_ED_FreioPastilhaGasta"].valor == 0 and vd.voip_dict[f"FREIO_PASTILHA_GASTA_UG{self.id}"][0]:
+                vd.voip_dict[f"FREIO_PASTILHA_GASTA_UG{self.id}"][0] = False
+
+            if self.leitura_voip["leitura_ED_FiltroPresSujo75Troc"].valor != 0 and not vd.voip_dict[f"FILTRO_PRES_SUJO_75_TROC_UG{self.id}"][0]:
+                logger.warning(f"[UG{self.id}] O sensor do Filtro de Pressão UHRV retornou que o filtro está 75% sujo, favor considerar troca.")
+                vd.voip_dict[f"FILTRO_PRES_SUJO_75_TROC_UG{self.id}"][0] = True
+            elif self.leitura_voip["leitura_ED_FiltroPresSujo75Troc"].valor == 0 and vd.voip_dict[f"FILTRO_PRES_SUJO_75_TROC_UG{self.id}"][0]:
+                vd.voip_dict[f"FILTRO_PRES_SUJO_75_TROC_UG{self.id}"][0] = False
+
+            if self.leitura_voip["leitura_ED_FiltroRetSujo75Troc"].valor != 0 and not vd.voip_dict[f"FILTRO_RET_SUJO_75_TROC_UG{self.id}"][0]:
+                logger.warning(f"[UG{self.id}] O sensor do Filtro de Retorno UHRV retornou que o filtro está 75% sujo, favor considerar troca.")
+                vd.voip_dict[f"FILTRO_RET_SUJO_75_TROC_UG{self.id}"][0] = True
+            elif self.leitura_voip["leitura_ED_FiltroRetSujo75Troc"].valor == 0 and vd.voip_dict[f"FILTRO_RET_SUJO_75_TROC_UG{self.id}"][0]:
+                vd.voip_dict[f"FILTRO_RET_SUJO_75_TROC_UG{self.id}"][0] = False
+
+            if self.leitura_voip["leitura_ED_UHLMFilt1PresSujo75Troc"].valor != 0 and not vd.voip_dict[f"UHLM_FILTR_1_PRES_SUJO_75_TROC_UG{self.id}"][0]:
+                logger.warning(f"[UG{self.id}] O sensor do Filtro 1 de Pressão UHLM retornou que o filtro está 75% sujo, favor considerar troca.")
+                vd.voip_dict[f"UHLM_FILTR_1_PRES_SUJO_75_TROC_UG{self.id}"][0] = True
+            elif self.leitura_voip["leitura_ED_UHLMFilt1PresSujo75Troc"].valor == 0 and vd.voip_dict[f"UHLM_FILTR_1_PRES_SUJO_75_TROC_UG{self.id}"][0]:
+                vd.voip_dict[f"UHLM_FILTR_1_PRES_SUJO_75_TROC_UG{self.id}"][0] = False
+
+            if self.leitura_voip["leitura_ED_UHLMFilt2PresSujo75Troc"].valor != 0 and not vd.voip_dict[f"UHLM_FILTR_2_PRES_SUJO_75_TROC_UG{self.id}"][0]:
+                logger.warning(f"[UG{self.id}] O sensor do Filtro 2 de Pressão UHLM retornou que o filtro está 75% sujo, favor considerar troca.")
+                vd.voip_dict[f"UHLM_FILTR_2_PRES_SUJO_75_TROC_UG{self.id}"][0] = True
+            elif self.leitura_voip["leitura_ED_UHLMFilt2PresSujo75Troc"].valor == 0 and vd.voip_dict[f"UHLM_FILTR_2_PRES_SUJO_75_TROC_UG{self.id}"][0]:
+                vd.voip_dict[f"UHLM_FILTR_2_PRES_SUJO_75_TROC_UG{self.id}"][0] = False
+
+            if self.leitura_voip["leitura_ED_FiltroPressaoBbaMecSj75"].valor != 0 and not vd.voip_dict[f"FILTRO_PRESSAO_BBA_MEC_SJ_75_UG{self.id}"][0]:
+                logger.warning(f"[UG{self.id}] O sensor do Filtro de Pressão da Bomba Mecânica retornou que o filtro está 75% sujo, favor considerar troca.")
+                vd.voip_dict[f"FILTRO_PRESSAO_BBA_MEC_SJ_75_UG{self.id}"][0] = True
+            elif self.leitura_voip["leitura_ED_FiltroPressaoBbaMecSj75"].valor == 0 and vd.voip_dict[f"FILTRO_PRESSAO_BBA_MEC_SJ_75_UG{self.id}"][0]:
+                vd.voip_dict[f"FILTRO_PRESSAO_BBA_MEC_SJ_75_UG{self.id}"][0] = False
+
+            if self.leitura_voip["leitura_ED_TripPartRes"].valor != 0 and not vd.voip_dict[f"TRIP_PART_RES_UG{self.id}"][0]:
+                logger.warning(f"[UG{self.id}] O sensor TripPartRes retornou valor 1.")
+                vd.voip_dict[f"TRIP_PART_RES_UG{self.id}"][0] = True
+            elif self.leitura_voip["leitura_ED_TripPartRes"].valor == 0 and vd.voip_dict[f"TRIP_PART_RES_UG{self.id}"][0]:
+                vd.voip_dict[f"TRIP_PART_RES_UG{self.id}"][0] = False
+
+            if self.leitura_voip["leitura_ED_FreioCmdRemoto"].valor != 1:
+                logger.debug(f"[UG{self.id}] O freio da UG saiu do modo remoto, favor analisar a situação.")
+
+            if self.leitura_voip[f"leitura_ED_QCAUG{self.id}_Remoto"].valor != 1:
+                logger.debug(f"[UG{self.id}] O compressor da UG saiu do modo remoto, favor analisar a situação.")
+
+        except Exception:
+            logger.error(f"[UG{self.id}] Houve um erro ao realizar o controle de leituras temporizadas.")
+            logger.debug(f"Traceback: {traceback.format_exc()}")
+
+    def atualizar_limites_operacao(self, db):
+        self.prioridade = int(db[f"ug{self.id}_prioridade"])
+        self.condicionador_temperatura_fase_r_ug.valor_base = float(db[f"alerta_temperatura_fase_r_ug{self.id}"])
+        self.condicionador_temperatura_fase_r_ug.valor_limite = float(db[f"limite_temperatura_fase_r_ug{self.id}"])
+        self.condicionador_temperatura_fase_s_ug.valor_base = float(db[f"alerta_temperatura_fase_s_ug{self.id}"])
+        self.condicionador_temperatura_fase_s_ug.valor_limite = float(db[f"limite_temperatura_fase_s_ug{self.id}"])
+        self.condicionador_temperatura_fase_t_ug.valor_base = float(db[f"alerta_temperatura_fase_t_ug{self.id}"])
+        self.condicionador_temperatura_fase_t_ug.valor_limite = float(db[f"limite_temperatura_fase_t_ug{self.id}"])
+        self.condicionador_temperatura_nucleo_estator_ug.valor_base = float(db[f"alerta_temperatura_nucleo_estator_ug{self.id}"])
+        self.condicionador_temperatura_nucleo_estator_ug.valor_limite = float(db[f"limite_temperatura_nucleo_estator_ug{self.id}"])
+        self.condicionador_temperatura_mancal_rad_dia_1_ug.valor_base = float(db[f"alerta_temperatura_mancal_rad_dia_1_ug{self.id}"])
+        self.condicionador_temperatura_mancal_rad_dia_1_ug.valor_limite = float(db[f"limite_temperatura_mancal_rad_dia_1_ug{self.id}"])
+        self.condicionador_temperatura_mancal_rad_dia_2_ug.valor_base = float(db[f"alerta_temperatura_mancal_rad_dia_2_ug{self.id}"])
+        self.condicionador_temperatura_mancal_rad_dia_2_ug.valor_limite = float(db[f"limite_temperatura_mancal_rad_dia_2_ug{self.id}"])
+        self.condicionador_temperatura_mancal_rad_tra_1_ug.valor_base = float(db[f"alerta_temperatura_mancal_rad_tra_1_ug{self.id}"])
+        self.condicionador_temperatura_mancal_rad_tra_1_ug.valor_limite = float(db[f"limite_temperatura_mancal_rad_tra_1_ug{self.id}"])
+        self.condicionador_temperatura_mancal_rad_tra_2_ug.valor_base = float(db[f"alerta_temperatura_mancal_rad_tra_2_ug{self.id}"])
+        self.condicionador_temperatura_mancal_rad_tra_2_ug.valor_limite = float(db[f"limite_temperatura_mancal_rad_tra_2_ug{self.id}"])
+        self.condicionador_temperatura_saida_de_ar_ug.valor_base = float(db[f"alerta_temperatura_saida_de_ar_ug{self.id}"])
+        self.condicionador_temperatura_saida_de_ar_ug.valor_limite = float(db[f"limite_temperatura_saida_de_ar_ug{self.id}"])
+        self.condicionador_temperatura_mancal_guia_escora_ug.valor_base = float(db[f"alerta_temperatura_mancal_guia_escora_ug{self.id}"])
+        self.condicionador_temperatura_mancal_guia_escora_ug.valor_limite = float(db[f"limite_temperatura_mancal_guia_escora_ug{self.id}"])
+        self.condicionador_temperatura_mancal_guia_radial_ug.valor_base = float(db[f"alerta_temperatura_mancal_guia_radial_ug{self.id}"])
+        self.condicionador_temperatura_mancal_guia_radial_ug.valor_limite = float(db[f"limite_temperatura_mancal_guia_radial_ug{self.id}"])
+        self.condicionador_temperatura_mancal_guia_contra_ug.valor_base = float(db[f"alerta_temperatura_mancal_guia_contra_ug{self.id}"])
+        self.condicionador_temperatura_mancal_guia_contra_ug.valor_limite = float(db[f"limite_temperatura_mancal_guia_contra_ug{self.id}"])
+        self.condicionador_caixa_espiral_ug.valor_base = float(db[f"alerta_caixa_espiral_ug{self.id}"])
+        self.condicionador_caixa_espiral_ug.valor_limite = float(db[f"limite_caixa_espiral_ug{self.id}"])
+
+    def controle_limites_operacao(self):
+        try:
+            if self.leitura_temperatura_fase_R.valor >= self.condicionador_temperatura_fase_r_ug.valor_base:
+                logger.warning(f"[UG{self.id}] A temperatura de Fase R da UG passou do valor base! ({self.condicionador_temperatura_fase_r_ug.valor_base}C) | Leitura: {self.leitura_temperatura_fase_R.valor}C")
+            if self.leitura_temperatura_fase_R.valor >= 0.9*(self.condicionador_temperatura_fase_r_ug.valor_limite - self.condicionador_temperatura_fase_r_ug.valor_base) + self.condicionador_temperatura_fase_r_ug.valor_base:
+                logger.critical(f"[UG{self.id}] A temperatura de Fase R da UG está muito próxima do limite! ({self.condicionador_temperatura_fase_r_ug.valor_limite}C) | Leitura: {self.leitura_temperatura_fase_R.valor}C")
+
+            if self.leitura_temperatura_fase_S.valor >= self.condicionador_temperatura_fase_s_ug.valor_base:
+                logger.warning(f"[UG{self.id}] A temperatura de Fase S da UG passou do valor base! ({self.condicionador_temperatura_fase_s_ug.valor_base}C) | Leitura: {self.leitura_temperatura_fase_S.valor}C")
+            if self.leitura_temperatura_fase_S.valor >= 0.9*(self.condicionador_temperatura_fase_s_ug.valor_limite - self.condicionador_temperatura_fase_s_ug.valor_base) + self.condicionador_temperatura_fase_s_ug.valor_base:
+                logger.critical(f"[UG{self.id}] A temperatura de Fase S da UG está muito próxima do limite! ({self.condicionador_temperatura_fase_s_ug.valor_limite}C) | Leitura: {self.leitura_temperatura_fase_S.valor}C")
+
+            if self.leitura_temperatura_fase_T.valor >= self.condicionador_temperatura_fase_t_ug.valor_base:
+                logger.warning(f"[UG{self.id}] A temperatura de Fase T da UG passou do valor base! ({self.condicionador_temperatura_fase_t_ug.valor_base}C) | Leitura: {self.leitura_temperatura_fase_T.valor}C")
+            if self.leitura_temperatura_fase_T.valor >= 0.9*(self.condicionador_temperatura_fase_t_ug.valor_limite - self.condicionador_temperatura_fase_t_ug.valor_base) + self.condicionador_temperatura_fase_t_ug.valor_base:
+                logger.critical(f"[UG{self.id}] A temperatura de Fase T da UG está muito próxima do limite! ({self.condicionador_temperatura_fase_t_ug.valor_limite}C) | Leitura: {self.leitura_temperatura_fase_T.valor}C")
+
+            if self.leitura_temperatura_nucleo.valor >= self.condicionador_temperatura_nucleo_estator_ug.valor_base:
+                logger.warning(f"[UG{self.id}] A temperatura do Núcleo Estator da UG passou do valor base! ({self.condicionador_temperatura_nucleo_estator_ug.valor_base}C) | Leitura: {self.leitura_temperatura_nucleo.valor}C")
+            if self.leitura_temperatura_nucleo.valor >= 0.9*(self.condicionador_temperatura_nucleo_estator_ug.valor_limite - self.condicionador_temperatura_nucleo_estator_ug.valor_base) + self.condicionador_temperatura_nucleo_estator_ug.valor_base:
+                logger.critical(f"[UG{self.id}] A temperatura do Núcleo Estator da UG está muito próxima do limite! ({self.condicionador_temperatura_nucleo_estator_ug.valor_limite}C) | Leitura: {self.leitura_temperatura_nucleo.valor}C")
+
+            if self.leitura_temperatura_mrd1.valor >= self.condicionador_temperatura_mancal_rad_dia_1_ug.valor_base:
+                logger.warning(f"[UG{self.id}] A temperatura do Mancal Radial Dianteiro 1 da UG passou do valor base! ({self.condicionador_temperatura_mancal_rad_dia_1_ug.valor_base}C) | Leitura: {self.leitura_temperatura_mrd1.valor}C")
+            if self.leitura_temperatura_mrd1.valor >= 0.9*(self.condicionador_temperatura_mancal_rad_dia_1_ug.valor_limite - self.condicionador_temperatura_mancal_rad_dia_1_ug.valor_base) + self.condicionador_temperatura_mancal_rad_dia_1_ug.valor_base:
+                logger.critical(f"[UG{self.id}] A temperatura do Mancal Radial Dianteiro 1 da UG está muito próxima do limite! ({self.condicionador_temperatura_mancal_rad_dia_1_ug.valor_limite}C) | Leitura: {self.leitura_temperatura_mrd1.valor}C")
+
+            if self.leitura_temperatura_mrt1.valor >= self.condicionador_temperatura_mancal_rad_tra_1_ug.valor_base:
+                logger.warning(f"[UG{self.id}] A temperatura do Mancal Radial Traseiro 1 da UG passou do valor base! ({self.condicionador_temperatura_mancal_rad_tra_1_ug.valor_base}C) | Leitura: {self.leitura_temperatura_mrt1.valor}C")
+            if self.leitura_temperatura_mrt1.valor >= 0.9*(self.condicionador_temperatura_mancal_rad_tra_1_ug.valor_limite - self.condicionador_temperatura_mancal_rad_tra_1_ug.valor_base) + self.condicionador_temperatura_mancal_rad_tra_1_ug.valor_base:
+                logger.critical(f"[UG{self.id}] A temperatura do Mancal Radial Traseiro 1 da UG está muito próxima do limite! ({self.condicionador_temperatura_mancal_rad_tra_1_ug.valor_limite}C) | Leitura: {self.leitura_temperatura_mrt1.valor}C")
+
+            if self.leitura_temperatura_mrd2.valor >= self.condicionador_temperatura_mancal_rad_dia_2_ug.valor_base:
+                logger.warning(f"[UG{self.id}] A temperatura do Mancal Radial Dianteiro 2 da UG passou do valor base! ({self.condicionador_temperatura_mancal_rad_dia_2_ug.valor_base}C) | Leitura: {self.leitura_temperatura_mrd2.valor}C")
+            if self.leitura_temperatura_mrd2.valor >= 0.9*(self.condicionador_temperatura_mancal_rad_dia_2_ug.valor_limite - self.condicionador_temperatura_mancal_rad_dia_2_ug.valor_base) + self.condicionador_temperatura_mancal_rad_dia_2_ug.valor_base:
+                logger.critical(f"[UG{self.id}] A temperatura do Mancal Radial Dianteiro 2 da UG está muito próxima do limite! ({self.condicionador_temperatura_mancal_rad_dia_2_ug.valor_limite}C) | Leitura: {self.leitura_temperatura_mrd2.valor}C")
+
+            if self.leitura_temperatura_mrt2.valor >= self.condicionador_temperatura_mancal_rad_tra_2_ug.valor_base:
+                logger.warning(f"[UG{self.id}] A temperatura do Mancal Radial Traseiro 2 da UG passou do valor base! ({self.condicionador_temperatura_mancal_rad_tra_2_ug.valor_base}C) | Leitura: {self.leitura_temperatura_mrt2.valor}C")
+            if self.leitura_temperatura_mrt2.valor >= 0.9*(self.condicionador_temperatura_mancal_rad_tra_2_ug.valor_limite - self.condicionador_temperatura_mancal_rad_tra_2_ug.valor_base) + self.condicionador_temperatura_mancal_rad_tra_2_ug.valor_base:
+                logger.critical(f"[UG{self.id}] A temperatura do Mancal Radial Traseiro 2 da UG está muito próxima do limite! ({self.condicionador_temperatura_mancal_rad_tra_2_ug.valor_limite}C) | Leitura: {self.leitura_temperatura_mrt2.valor}C")
+
+            if self.leitura_temperatura_saida_de_ar.valor >= self.condicionador_temperatura_saida_de_ar_ug.valor_base:
+                logger.warning(f"[UG{self.id}] A temperatura da Saída de Ar da UG passou do valor base! ({self.leitura_temperatura_saida_de_ar.valor}C) | Leitura: {self.condicionador_temperatura_saida_de_ar_ug.valor_base}C")
+            if self.leitura_temperatura_saida_de_ar.valor >= 0.9*(self.condicionador_temperatura_saida_de_ar_ug.valor_limite - self.condicionador_temperatura_saida_de_ar_ug.valor_base) + self.condicionador_temperatura_saida_de_ar_ug.valor_base:
+                logger.critical(f"[UG{self.id}] A temperatura da Saída de Ar da UG está muito próxima do limite! ({self.condicionador_temperatura_saida_de_ar_ug.valor_limite}C) | Leitura: {self.leitura_temperatura_saida_de_ar.valor}C")
+
+            if self.leitura_temperatura_guia_radial.valor >= self.condicionador_temperatura_mancal_guia_radial_ug.valor_base:
+                logger.warning(f"[UG{self.id}] A temperatura do Mancal Guia Radial da UG passou do valor base! ({self.condicionador_temperatura_mancal_guia_radial_ug.valor_base}C) | Leitura: {self.leitura_temperatura_guia_radial.valor}C")
+            if self.leitura_temperatura_guia_radial.valor >= 0.9*(self.condicionador_temperatura_mancal_guia_radial_ug.valor_limite - self.condicionador_temperatura_mancal_guia_radial_ug.valor_base) + self.condicionador_temperatura_mancal_guia_radial_ug.valor_base:
+                logger.critical(f"[UG{self.id}] A temperatura do Mancal Guia Radial da UG está muito próxima do limite! ({self.condicionador_temperatura_mancal_guia_radial_ug.valor_limite}C) | Leitura: {self.leitura_temperatura_guia_radial.valor}C")
+
+            if self.leitura_temperatura_guia_escora.valor >= self.condicionador_temperatura_mancal_guia_escora_ug.valor_base:
+                logger.warning(f"[UG{self.id}] A temperatura do Mancal Guia Escora da UG passou do valor base! ({self.condicionador_temperatura_mancal_guia_escora_ug.valor_base}C) | Leitura: {self.leitura_temperatura_guia_escora.valor}C")
+            if self.leitura_temperatura_guia_escora.valor >= 0.9*(self.condicionador_temperatura_mancal_guia_escora_ug.valor_limite - self.condicionador_temperatura_mancal_guia_escora_ug.valor_base) + self.condicionador_temperatura_mancal_guia_escora_ug.valor_base:
+                logger.critical(f"[UG{self.id}] A temperatura do Mancal Guia Escora da UG está muito próxima do limite! ({self.condicionador_temperatura_mancal_guia_escora_ug.valor_limite}C) | Leitura: {self.leitura_temperatura_guia_escora.valor}C")
+
+            if self.leitura_temperatura_guia_contra_escora.valor >= self.condicionador_temperatura_mancal_guia_contra_ug.valor_base:
+                logger.warning(f"[UG{self.id}] A temperatura do Mancal Guia Contra Escora da UG passou do valor base! ({self.condicionador_temperatura_mancal_guia_contra_ug.valor_base}C) | Leitura: {self.leitura_temperatura_guia_contra_escora.valor}C")
+            if self.leitura_temperatura_guia_contra_escora.valor >= 0.9*(self.condicionador_temperatura_mancal_guia_contra_ug.valor_limite - self.condicionador_temperatura_mancal_guia_contra_ug.valor_base) + self.condicionador_temperatura_mancal_guia_contra_ug.valor_base:
+                logger.critical(f"[UG{self.id}] A temperatura do Mancal Guia Contra Escora da UG está muito próxima do limite! ({self.condicionador_temperatura_mancal_guia_contra_ug.valor_limite}C) | Leitura: {self.leitura_temperatura_guia_contra_escora.valor}C")
+
+            if self.leitura_temperatura_oleo_trafo.valor >= self.condicionador_leitura_temperatura_oleo_trafo.valor_base:
+                logger.warning(f"[UG{self.id}] A temperatura do Óleo do Transformador Elevador da UG passou do valor base! ({self.condicionador_leitura_temperatura_oleo_trafo.valor_base}C) | Leitura: {self.leitura_temperatura_oleo_trafo.valor}C")
+            if self.leitura_temperatura_oleo_trafo.valor >= 0.9*(self.condicionador_leitura_temperatura_oleo_trafo.valor_limite - self.condicionador_leitura_temperatura_oleo_trafo.valor_base) + self.condicionador_leitura_temperatura_oleo_trafo.valor_base:
+                logger.critical(f"[UG{self.id}] A temperatura do Óleo do Transformador Elevador da UG está muito próxima do limite! ({self.condicionador_leitura_temperatura_oleo_trafo.valor_limite}C) | Leitura: {self.leitura_temperatura_oleo_trafo.valor}C")
+
+            if self.leitura_caixa_espiral.valor <= self.condicionador_caixa_espiral_ug.valor_base and self.leitura_caixa_espiral.valor != 0 and self.etapa_atual == UNIDADE_SINCRONIZADA:
+                logger.warning(f"[UG{self.id}] A pressão Caixa Espiral da UG passou do valor base! ({self.condicionador_caixa_espiral_ug.valor_base:03.2f} KGf/m2) | Leitura: {self.leitura_caixa_espiral.valor:03.2f}")
+            if self.leitura_caixa_espiral.valor <= 16.1 and self.leitura_caixa_espiral.valor != 0 and self.etapa_atual == UNIDADE_SINCRONIZADA:
+                logger.critical(f"[UG{self.id}] A pressão Caixa Espiral da UG está muito próxima do limite! ({self.condicionador_caixa_espiral_ug.valor_limite:03.2f} KGf/m2) | Leitura: {self.leitura_caixa_espiral.valor:03.2f} KGf/m2")
+
+        except Exception:
+            logger.error(f"[UG{self.id}] Houve um erro ao realizar o controle de limites de temperaturas e caixa espiral.")
+            logger.debug(f"Traceback: {traceback.format_exc()}")
+
+    def leituras_iniciais(self):
         # Letitura de potência total da Usina
         self.potencia_ativa_kW = LeituraModbus(
             "Potência Usina",
@@ -477,544 +1035,3 @@ class UnidadeGeracao:
 
         self.leitura_RD_FalhaAcionFechaValvBorb = LeituraModbusCoil("RD_FalhaAcionFechaValvBorb", self.clp[f"UG{self.id}"], REG[f"UG{self.id}_RD_FalhaAcionFechaValvBorb"])
         self.condicionadores.append(CondicionadorBase(self.leitura_RD_FalhaAcionFechaValvBorb.descr, DEVE_INDISPONIBILIZAR, self.leitura_RD_FalhaAcionFechaValvBorb))
-
-        self.iniciar_ultimo_estado()
-
-
-    @property
-    def id(self) -> int:
-        return self.__id
-
-    @property
-    def manual(self) -> bool:
-        return isinstance(self.__next_state, StateManual)
-
-    @property
-    def disponivel(self) -> bool:
-        return isinstance(self.__next_state, StateDisponivel)
-
-    @property
-    def etapa_atual(self) -> int:
-        try:
-            response = self.leitura_etapa_atual.valor
-            if response == 1:
-                return UNIDADE_SINCRONIZADA
-            elif 2 <= response <= 3:
-                return UNIDADE_PARANDO
-            elif 4 <= response <= 7:
-                return UNIDADE_PARADA
-            elif 8 <= response <= 15:
-                return UNIDADE_SINCRONIZANDO
-            else:
-                return self.__last_EtapaAtual
-
-        except Exception:
-            logger.error(f"[UG{self.id}] Não foi possível realizar a leitura de Etapa Atual.")
-            logger.debug(f"Traceback: {traceback.format_exc()}")
-            return self.__last_EtapaAtual
-
-    @property
-    def tempo_entre_tentativas(self) -> int:
-        return self.__tempo_entre_tentativas
-
-    @property
-    def limite_tentativas_de_normalizacao(self) -> int:
-        return self.__limite_tentativas_de_normalizacao
-
-    @property
-    def prioridade(self) -> int:
-        return self.__prioridade
-
-    @prioridade.setter
-    def prioridade(self, var) -> None:
-        self.__prioridade = var
-
-    @property
-    def codigo_state(self) -> int:
-        return self.__codigo_state
-
-    @codigo_state.setter
-    def codigo_state(self, var) -> None:
-        self.__codigo_state = var
-
-    @property
-    def setpoint(self) -> int:
-        return self.__setpoint
-
-    @setpoint.setter
-    def setpoint(self, var: int):
-        if var < self.setpoint_minimo:
-            self.__setpoint = 0
-        elif var > self.setpoint_maximo:
-            self.__setpoint = self.setpoint_maximo
-        else:
-            self.__setpoint = int(var)
-        logger.debug(f"[UG{self.id}] SP<-{var}")
-
-    @property
-    def setpoint_minimo(self) -> int:
-        return self.__setpoint_minimo
-
-    @setpoint_minimo.setter
-    def setpoint_minimo(self, var: int):
-        self.__setpoint_minimo = var
-
-    @property
-    def setpoint_maximo(self) -> int:
-        return self.__setpoint_maximo
-
-    @setpoint_maximo.setter
-    def setpoint_maximo(self, var: int):
-        self.__setpoint_maximo = var
-
-    @property
-    def tentativas_de_normalizacao(self) -> int:
-        return self.__tentativas_de_normalizacao
-
-    @tentativas_de_normalizacao.setter
-    def tentativas_de_normalizacao(self, var: int):
-        self.__tentativas_de_normalizacao = var
-
-    @property
-    def condicionadores(self) -> "list[CondicionadorBase]":
-        return self.__condicionadores
-
-    @condicionadores.setter
-    def condicionadores(self, var: "list[CondicionadorBase]") -> None:
-        self.__condicionadores = var
-
-    @property
-    def condicionadores_essenciais(self) -> "list[CondicionadorBase]":
-        return self.__condicionadores_essenciais
-
-    @condicionadores_essenciais.setter
-    def condicionadores_essenciais(self, var: "list[CondicionadorBase]") -> None:
-        self.__condicionadores_essenciais = var
-
-    @property
-    def condicionadores_atenuadores(self) -> "list[CondicionadorBase]":
-        return self.__condicionadores_atenuadores
-
-    @condicionadores_atenuadores.setter
-    def condicionadores_atenuadores(self, var: "list[CondicionadorBase]") -> None:
-        self.__condicionadores_atenuadores = var
-
-    @property
-    def lista_ugs(self) -> "list[UnidadeGeracao]":
-        return self._lista_ugs
-
-    @lista_ugs.setter
-    def lista_ugs(self, var: "list[UnidadeGeracao]") -> None:
-        self._lista_ugs = var
-
-
-    @staticmethod
-    def get_time() -> datetime:
-        return datetime.now(pytz.timezone("Brazil/East")).replace(tzinfo=None)
-
-    def modbus_update_state_register(self) -> None:
-        self.clp["MOA"].write_single_register(REG[f"MOA_OUT_STATE_UG{self.id}"], self.codigo_state)
-        self.clp["MOA"].write_single_register(REG[f"MOA_OUT_ETAPA_UG{self.id}"], self.etapa_atual)
-
-    def atualizar_ultimo_estado_banco(self) -> None:
-        try:
-            self.db.update_ultimo_estado_ug(self.id, self.codigo_state)
-
-        except Exception:
-            logger.error(f"[UG{self.id}] Não foi possível inserir o último estado da Unidade no Banco.")
-            logger.debug(f"Traceback: {traceback.format_exc()}")
-
-    def iniciar_ultimo_estado(self) -> None:
-        estado = self.db.get_ultimo_estado_ug(self.id)
-
-        if estado == MOA_UNIDADE_MANUAL:
-            self.__next_state = StateManual(self)
-        elif estado == MOA_UNIDADE_DISPONIVEL:
-            self.__next_state = StateDisponivel(self)
-        elif estado == MOA_UNIDADE_RESTRITA:
-            self.__next_state = StateRestrito(self)
-        elif estado == MOA_UNIDADE_INDISPONIVEL:
-            self.__next_state = StateIndisponivel(self)
-        else:
-            logger.error(f"[UG{self.id}] Não foi possível ler o último estado da Unidade. Entrando em modo Manual.")
-            self.__next_state = StateManual(self)
-
-    def forcar_estado_disponivel(self) -> None:
-        try:
-            self.reconhece_reset_alarmes()
-            sleep(1)
-            self.__next_state = StateDisponivel(self)
-
-        except Exception:
-            logger.error(f"[UG{self.id}] Não foi possível forçar o estado \"Disponível\".")
-            logger.debug(f"Traceback: {traceback.format_exc()}")
-
-    def forcar_estado_indisponivel(self) -> None:
-        try:
-            self.__next_state = StateIndisponivel(self)
-
-        except Exception:
-            logger.error(f"[UG{self.id}] Não foi possível forçar o estado \"Indisponível\".")
-            logger.debug(f"Traceback: {traceback.format_exc()}")
-
-    def forcar_estado_manual(self) -> None:
-        try:
-            self.__next_state = StateManual(self)
-
-        except Exception:
-            logger.error(f"[UG{self.id}] Não foi possível forçar o estado \"Manual\".")
-            logger.debug(f"Traceback: {traceback.format_exc()}")
-
-    def forcar_estado_restrito(self) -> None:
-        try:
-            self.__next_state = StateRestrito(self)
-
-        except Exception:
-            logger.error(f"[UG{self.id}] Não foi possível forçar o estado \"Restrito\".")
-            logger.debug(f"Traceback: {traceback.format_exc()}")
-
-    def step(self) -> None:
-        try:
-            logger.debug("")
-            logger.debug(f"[UG{self.id}] Step. (Tentativas de normalização: {self.tentativas_de_normalizacao}/{self.limite_tentativas_de_normalizacao})")
-            self.__next_state = self.__next_state.step()
-            self.modbus_update_state_register()
-
-        except Exception:
-            logger.error(f"[UG{self.id}] Erro na execução da Máquina de estados da UG.")
-            logger.debug(f"Traceback: {traceback.format_exc()}")
-
-    def partir(self) -> bool:
-        try:
-            if not self.clp[f"UG{self.id}"].read_discrete_inputs(REG[f"UG{self.id}_ED_CondicaoPartida"], 1)[0]:
-                logger.debug(f"[UG{self.id}] Máquina sem condição de partida. Irá partir quando as condições forem reestabelecidas.")
-                return True
-
-            elif self.clp["SA"].read_coils(REG["SA_ED_QCAP_Disj52A1Fechado"])[0] != 0:
-                logger.info(f"[UG{self.id}] O Disjuntor 52A1 está aberto. Para partir a máquina, o mesmo deverá ser fechado.")
-                return True
-
-            elif not self.etapa_atual == UNIDADE_SINCRONIZADA:
-                logger.info(f"[UG{self.id}] Enviando comando de partida.")
-                response = self.clp[f"UG{self.id}"].write_single_coil(REG[f"UG{self.id}_CD_ResetGeral"], [1])
-                response = self.clp[f"UG{self.id}"].write_single_coil(REG[f"UG{self.id}_CD_ResetRele700G"], [1])
-                response = self.clp[f"UG{self.id}"].write_single_coil(REG[f"UG{self.id}_CD_ResetReleBloq86H"], [1])
-                response = self.clp[f"UG{self.id}"].write_single_coil(REG[f"UG{self.id}_CD_ResetReleBloq86M"], [1])
-                response = self.clp[f"UG{self.id}"].write_single_coil(REG[f"UG{self.id}_CD_ResetReleRT"], [1])
-                response = self.clp[f"UG{self.id}"].write_single_coil(REG[f"UG{self.id}_CD_ResetRV"], [1])
-                response = self.clp[f"UG{self.id}"].write_single_coil(REG[f"UG{self.id}_CD_IniciaPartida"], [1])
-                response = self.clp[f"UG{self.id}"].write_single_coil(REG[f"UG{self.id}_CD_Cala_Sirene"], [1])
-
-            else:
-                logger.debug(f"[UG{self.id}] A unidade já está sincronizada.")
-                response = self.clp[f"UG{self.id}"].write_single_coil(REG[f"UG{self.id}_CD_Cala_Sirene"], [1])
-            return response
-
-        except Exception:
-            logger.error(f"[UG{self.id}] Não foi possível enviar o comando de partida.")
-            logger.debug(f"Traceback: {traceback.format_exc()}")
-            return False
-
-    def parar(self) -> bool:
-        try:
-            if not self.etapa_atual == UNIDADE_PARADA:
-                logger.info(f"[UG{self.id}] Enviando comando de parada.")
-                response = False
-                response = self.clp[f"UG{self.id}"].write_single_coil(REG[f"UG{self.id}_CD_AbortaPartida"], [1])
-                response = self.clp[f"UG{self.id}"].write_single_coil(REG[f"UG{self.id}_CD_AbortaSincronismo"], [1])
-                response = self.clp[f"UG{self.id}"].write_single_coil(REG[f"UG{self.id}_CD_IniciaParada"], [1])
-                response = self.clp[f"UG{self.id}"].write_single_coil(REG[f"UG{self.id}_CD_Cala_Sirene"], [1])
-                self.enviar_setpoint(self.setpoint)
-            else:
-                logger.debug(f"[UG{self.id}] A unidade já está parada.")
-                response = self.clp[f"UG{self.id}"].write_single_coil(REG[f"UG{self.id}_CD_Cala_Sirene"], [1])
-            return response
-
-        except Exception:
-            logger.error(f"[UG{self.id}] Não foi possível enviar o comando de parada.")
-            logger.debug(f"Traceback: {traceback.format_exc()}")
-            return False
-
-    def enviar_setpoint(self, setpoint_kw: int) -> bool:
-        try:
-            response = False
-            if self.limpeza_grade:
-                self.setpoint_minimo = self.cfg["pot_limpeza_grade"]
-            else:
-                self.setpoint_minimo = self.cfg["pot_minima"]
-            self.setpoint_maximo = self.cfg[f"pot_maxima_ug{self.id}"]
-
-            logger.debug(f"[UG{self.id}] Enviando setpoint {int(self.setpoint)} kW.")
-
-            if self.setpoint > 1:
-                response = self.clp[f"UG{self.id}"].write_single_coil(REG[f"UG{self.id}_CD_ResetGeral"], [1])
-                response = self.clp[f"UG{self.id}"].write_single_coil(REG[f"UG{self.id}_CD_RV_RefRemHabilita"], [1])
-                response = self.clp[f"UG{self.id}"].write_single_register(REG[f"UG{self.id}_RA_ReferenciaCarga"], self.setpoint)
-            return response
-
-        except Exception:
-            logger.error(f"[UG{self.id}] Não foi possível enviar o setpoint.")
-            logger.debug(f"Traceback: {traceback.format_exc()}")
-            return False
-
-    def acionar_trip_eletrico(self) -> bool:
-        try:
-            self.enviar_trip_eletrico = True
-            logger.debug(f"[UG{self.id}] Acionando sinal de TRIP -> Elétrico.")
-
-            self.clp["MOA"].write_single_coil(REG[f"MOA_OUT_BLOCK_UG{self.id}"], [1])
-            return True
-
-        except Exception:
-            logger.error(f"[UG{self.id}] Não foi possível acionar o TRIP -> Elétrico.")
-            logger.debug(f"Traceback: {traceback.format_exc()}")
-            return False
-
-    def remover_trip_eletrico(self) -> bool:
-        try:
-            self.enviar_trip_eletrico = False
-            logger.debug(f"[UG{self.id}] Removendo sinal de TRIP -> Elétrico.")
-
-            self.clp["MOA"].write_single_coil(REG["PAINEL_LIDO"], [0])
-            self.clp["MOA"].write_single_coil(REG[f"MOA_OUT_BLOCK_UG{self.id}"], [0])
-            self.clp[f"UG{self.id}"].write_single_coil(REG[f"UG{self.id}_CD_Cala_Sirene"], [1])
-
-            if self.clp["SA"].read_coils(REG["SA_CD_Liga_DJ1"])[0] == 0:
-                logger.debug(f"[UG{self.id}] Comando recebido -> Fechar Dj52L")
-                self.con.fechaDj52L()
-            return True
-
-        except Exception:
-            logger.error(f"[UG{self.id}] Não foi possível remover o TRIP -> Elétrico.")
-            logger.debug(f"Traceback: {traceback.format_exc()}")
-            return False
-
-    def acionar_trip_logico(self) -> bool:
-        try:
-            logger.debug(f"[UG{self.id}] Acionando sinal de TRIP -> Lógico.")
-            response = self.clp[f"UG{self.id}"].write_single_coil(REG[f"UG{self.id}_CD_EmergenciaViaSuper"], [1])
-            return response
-
-        except Exception:
-            logger.error(f"[UG{self.id}] Não foi possível acionar o TRIP -> Lógico.")
-            logger.debug(f"Traceback: {traceback.format_exc()}")
-            return False
-
-    def remover_trip_logico(self) -> bool:
-        try:
-            logger.debug(f"[UG{self.id}] Removendo sinal de TRIP -> Lógico.")
-            response = self.clp[f"UG{self.id}"].write_single_coil(REG[f"UG{self.id}_CD_ResetGeral"], [1])
-            response = self.clp[f"UG{self.id}"].write_single_coil(REG[f"UG{self.id}_CD_ResetReleBloq86H"], [1])
-            response = self.clp[f"UG{self.id}"].write_single_coil(REG[f"UG{self.id}_CD_ResetReleBloq86M"], [1])
-            response = self.clp[f"UG{self.id}"].write_single_coil(REG[f"UG{self.id}_CD_ResetRele700G"], [1])
-            response = self.clp["SA"].write_single_coil(REG["SA_CD_ResetRele59N"], [1])
-            response = self.clp["SA"].write_single_coil(REG["SA_CD_ResetRele787"], [1])
-            response = self.clp[f"UG{self.id}"].write_single_coil(REG[f"UG{self.id}_ED_ReleBloqA86HAtuado"], [0])
-            response = self.clp[f"UG{self.id}"].write_single_coil(REG[f"UG{self.id}_ED_ReleBloqA86MAtuado"], [0])
-            response = self.clp[f"UG{self.id}"].write_single_coil(REG[f"UG{self.id}_RD_700G_Trip"], [0])
-            return response
-
-        except Exception:
-            logger.error(f"[UG{self.id}] Não foi possível remover o TRIP -> Lógico.")
-            logger.debug(f"Traceback: {traceback.format_exc()}")
-            return False
-
-    def reconhece_reset_alarmes(self) -> bool:
-        try:
-            logger.debug(f"[UG{self.id}] Enviando comando de reconhece alarmes e reset.")
-            self.clp["MOA"].write_single_coil(REG["PAINEL_LIDO"], [0])
-
-            for _ in range(3):
-                self.remover_trip_eletrico()
-                sleep(1)
-                self.remover_trip_logico()
-                sleep(1)
-                response = self.clp[f"UG{self.id}"].write_single_coil(REG[f"UG{self.id}_CD_ResetGeral"], [1])
-                response = self.clp[f"UG{self.id}"].write_single_coil(REG[f"UG{self.id}_CD_Cala_Sirene"], [1])
-                sleep(1)
-                return response
-
-        except Exception:
-            logger.error(f"[UG{self.id}] Não foi possível enviar o comando de reconhese alarmes e reset.")
-            logger.debug(f"Traceback: {traceback.format_exc()}")
-            return False
-
-    def ajuste_inicial_cx(self):
-        if self.ajuste_inicial_cx_esp == -1:
-            # Inicializa as variáveis de controle PI para operação TDA Offline
-            self.cx_controle_p = (self.leitura_caixa_espiral.valor - self.cfg["press_cx_alvo"]) * self.cfg["cx_kp"]
-            self.cx_ajuste_ie = sum(ug.leitura_potencia for ug in self.lista_ugs) / self.cfg["pot_maxima_alvo"]
-            self.cx_controle_i = self.cx_ajuste_ie - self.cx_controle_p
-            self.ajuste_inicial_cx_esp = 0
-
-    def controle_cx_espiral(self):
-        self.ajuste_inicial_cx()
-
-        # Calcula PI
-        self.erro_press_cx = 0
-        self.erro_press_cx = self.leitura_caixa_espiral.valor - self.cfg["press_cx_alvo"]
-
-        logger.debug(f"[UG{self.id}] Pressão Alvo: {self.cfg['press_cx_alvo']:0.3f}, Recente: {self.leitura_caixa_espiral.valor:0.3f}")
-
-        self.cx_controle_p = self.cfg["cx_kp"] * self.erro_press_cx
-        self.cx_controle_i = max(min((self.cfg["cx_ki"] * self.erro_press_cx) + self.cx_controle_i, 1), 0)
-        saida_pi = self.cx_controle_p + self.cx_controle_i
-
-        logger.debug(f"[UG{self.id}] PI: {saida_pi:0.3f} <-- P:{self.cx_controle_p:0.3f} + I:{self.cx_controle_i:0.3f}; ERRO={self.erro_press_cx}")
-
-        # Calcula o integrador de estabilidade e limita
-        self.cx_controle_ie = max(min(saida_pi + self.cx_ajuste_ie * self.cfg["cx_kie"], 1), 0)
-
-        # Arredondamento e limitação
-        pot_alvo = max(min(round(self.cfg[f"pot_maxima_ug{self.id}"] * self.cx_controle_ie, 5), self.cfg[f"pot_maxima_ug{self.id}"],),self.cfg["pot_minima"],)
-
-        logger.debug(f"[UG{self.id}] Pot alvo: {pot_alvo:0.3f}")
-
-        if self.pot_alvo_anterior == -1:
-            self.pot_alvo_anterior = pot_alvo
-
-        logger.debug(f"Pot alvo = {pot_alvo}")
-
-        pot_medidor = self.potencia_ativa_kW.valor
-
-        logger.debug(f"Pot no medidor = {pot_medidor}")
-
-        # implementação nova
-        pot_aux = self.cfg["pot_maxima_alvo"] - (self.cfg["pot_maxima_usina"] - self.cfg["pot_maxima_alvo"])
-
-        pot_medidor = max(pot_aux, min(pot_medidor, self.cfg["pot_maxima_usina"]))
-
-        try:
-            if pot_medidor > self.cfg["pot_maxima_alvo"] * 0.97:
-                pot_alvo = self.pot_alvo_anterior * (1 - 0.5 * ((pot_medidor - self.cfg["pot_maxima_alvo"]) / self.cfg["pot_maxima_alvo"]))
-
-        except TypeError as e:
-            logger.error(f"[UG{self.id}] Erro de tipo controle CX Espiral.")
-            logger.debug(f"Traceback: {traceback.format_exc()}")
-
-        self.pot_alvo_anterior = pot_alvo
-
-        if self.leitura_caixa_espiral.valor >= 15.5:
-            self.enviar_setpoint(pot_alvo)
-        else:
-            self.enviar_setpoint(0)
-
-    def leituras_temporizadas(self) -> None:
-        if self.leitura_voip["leitura_ED_FreioPastilhaGasta"].valor != 0 and not vd.voip_dict[f"FREIO_PASTILHA_GASTA_UG{self.id}"][0]:
-            logger.warning(f"[UG{self.id}] O sensor de Freio da UG retornou que a Pastilha está gasta, favor considerar troca.")
-            vd.voip_dict[f"FREIO_PASTILHA_GASTA_UG{self.id}"][0] = True
-        elif self.leitura_voip["leitura_ED_FreioPastilhaGasta"].valor == 0 and vd.voip_dict[f"FREIO_PASTILHA_GASTA_UG{self.id}"][0]:
-            vd.voip_dict[f"FREIO_PASTILHA_GASTA_UG{self.id}"][0] = False
-
-        if self.leitura_voip["leitura_ED_FiltroPresSujo75Troc"].valor != 0 and not vd.voip_dict[f"FILTRO_PRES_SUJO_75_TROC_UG{self.id}"][0]:
-            logger.warning(f"[UG{self.id}] O sensor do Filtro de Pressão UHRV retornou que o filtro está 75% sujo, favor considerar troca.")
-            vd.voip_dict[f"FILTRO_PRES_SUJO_75_TROC_UG{self.id}"][0] = True
-        elif self.leitura_voip["leitura_ED_FiltroPresSujo75Troc"].valor == 0 and vd.voip_dict[f"FILTRO_PRES_SUJO_75_TROC_UG{self.id}"][0]:
-            vd.voip_dict[f"FILTRO_PRES_SUJO_75_TROC_UG{self.id}"][0] = False
-
-        if self.leitura_voip["leitura_ED_FiltroRetSujo75Troc"].valor != 0 and not vd.voip_dict[f"FILTRO_RET_SUJO_75_TROC_UG{self.id}"][0]:
-            logger.warning(f"[UG{self.id}] O sensor do Filtro de Retorno UHRV retornou que o filtro está 75% sujo, favor considerar troca.")
-            vd.voip_dict[f"FILTRO_RET_SUJO_75_TROC_UG{self.id}"][0] = True
-        elif self.leitura_voip["leitura_ED_FiltroRetSujo75Troc"].valor == 0 and vd.voip_dict[f"FILTRO_RET_SUJO_75_TROC_UG{self.id}"][0]:
-            vd.voip_dict[f"FILTRO_RET_SUJO_75_TROC_UG{self.id}"][0] = False
-
-        if self.leitura_voip["leitura_ED_UHLMFilt1PresSujo75Troc"].valor != 0 and not vd.voip_dict[f"UHLM_FILTR_1_PRES_SUJO_75_TROC_UG{self.id}"][0]:
-            logger.warning(f"[UG{self.id}] O sensor do Filtro 1 de Pressão UHLM retornou que o filtro está 75% sujo, favor considerar troca.")
-            vd.voip_dict[f"UHLM_FILTR_1_PRES_SUJO_75_TROC_UG{self.id}"][0] = True
-        elif self.leitura_voip["leitura_ED_UHLMFilt1PresSujo75Troc"].valor == 0 and vd.voip_dict[f"UHLM_FILTR_1_PRES_SUJO_75_TROC_UG{self.id}"][0]:
-            vd.voip_dict[f"UHLM_FILTR_1_PRES_SUJO_75_TROC_UG{self.id}"][0] = False
-
-        if self.leitura_voip["leitura_ED_UHLMFilt2PresSujo75Troc"].valor != 0 and not vd.voip_dict[f"UHLM_FILTR_2_PRES_SUJO_75_TROC_UG{self.id}"][0]:
-            logger.warning(f"[UG{self.id}] O sensor do Filtro 2 de Pressão UHLM retornou que o filtro está 75% sujo, favor considerar troca.")
-            vd.voip_dict[f"UHLM_FILTR_2_PRES_SUJO_75_TROC_UG{self.id}"][0] = True
-        elif self.leitura_voip["leitura_ED_UHLMFilt2PresSujo75Troc"].valor == 0 and vd.voip_dict[f"UHLM_FILTR_2_PRES_SUJO_75_TROC_UG{self.id}"][0]:
-            vd.voip_dict[f"UHLM_FILTR_2_PRES_SUJO_75_TROC_UG{self.id}"][0] = False
-
-        if self.leitura_voip["leitura_ED_FiltroPressaoBbaMecSj75"].valor != 0 and not vd.voip_dict[f"FILTRO_PRESSAO_BBA_MEC_SJ_75_UG{self.id}"][0]:
-            logger.warning(f"[UG{self.id}] O sensor do Filtro de Pressão da Bomba Mecânica retornou que o filtro está 75% sujo, favor considerar troca.")
-            vd.voip_dict[f"FILTRO_PRESSAO_BBA_MEC_SJ_75_UG{self.id}"][0] = True
-        elif self.leitura_voip["leitura_ED_FiltroPressaoBbaMecSj75"].valor == 0 and vd.voip_dict[f"FILTRO_PRESSAO_BBA_MEC_SJ_75_UG{self.id}"][0]:
-            vd.voip_dict[f"FILTRO_PRESSAO_BBA_MEC_SJ_75_UG{self.id}"][0] = False
-
-        if self.leitura_voip["leitura_ED_TripPartRes"].valor != 0 and not vd.voip_dict[f"TRIP_PART_RES_UG{self.id}"][0]:
-            logger.warning(f"[UG{self.id}] O sensor TripPartRes retornou valor 1.")
-            vd.voip_dict[f"TRIP_PART_RES_UG{self.id}"][0] = True
-        elif self.leitura_voip["leitura_ED_TripPartRes"].valor == 0 and vd.voip_dict[f"TRIP_PART_RES_UG{self.id}"][0]:
-            vd.voip_dict[f"TRIP_PART_RES_UG{self.id}"][0] = False
-
-        if self.leitura_voip["leitura_ED_FreioCmdRemoto"].valor != 1:
-            logger.debug(f"[UG{self.id}] O freio da UG saiu do modo remoto, favor analisar a situação.")
-
-        if self.leitura_voip[f"leitura_ED_QCAUG{self.id}_Remoto"].valor != 1:
-            logger.debug(f"[UG{self.id}] O compressor da UG saiu do modo remoto, favor analisar a situação.")
-
-    def controle_limites_operacao(self):
-        if self.leitura_temperatura_fase_R.valor >= self.condicionador_temperatura_fase_r_ug.valor_base:
-            logger.warning(f"[UG{self.id}] A temperatura de Fase R da UG passou do valor base! ({self.condicionador_temperatura_fase_r_ug.valor_base}C) | Leitura: {self.leitura_temperatura_fase_R.valor}C")
-        if self.leitura_temperatura_fase_R.valor >= 0.9*(self.condicionador_temperatura_fase_r_ug.valor_limite - self.condicionador_temperatura_fase_r_ug.valor_base) + self.condicionador_temperatura_fase_r_ug.valor_base:
-            logger.critical(f"[UG{self.id}] A temperatura de Fase R da UG está muito próxima do limite! ({self.condicionador_temperatura_fase_r_ug.valor_limite}C) | Leitura: {self.leitura_temperatura_fase_R.valor}C")
-
-        if self.leitura_temperatura_fase_S.valor >= self.condicionador_temperatura_fase_s_ug.valor_base:
-            logger.warning(f"[UG{self.id}] A temperatura de Fase S da UG passou do valor base! ({self.condicionador_temperatura_fase_s_ug.valor_base}C) | Leitura: {self.leitura_temperatura_fase_S.valor}C")
-        if self.leitura_temperatura_fase_S.valor >= 0.9*(self.condicionador_temperatura_fase_s_ug.valor_limite - self.condicionador_temperatura_fase_s_ug.valor_base) + self.condicionador_temperatura_fase_s_ug.valor_base:
-            logger.critical(f"[UG{self.id}] A temperatura de Fase S da UG está muito próxima do limite! ({self.condicionador_temperatura_fase_s_ug.valor_limite}C) | Leitura: {self.leitura_temperatura_fase_S.valor}C")
-
-        if self.leitura_temperatura_fase_T.valor >= self.condicionador_temperatura_fase_t_ug.valor_base:
-            logger.warning(f"[UG{self.id}] A temperatura de Fase T da UG passou do valor base! ({self.condicionador_temperatura_fase_t_ug.valor_base}C) | Leitura: {self.leitura_temperatura_fase_T.valor}C")
-        if self.leitura_temperatura_fase_T.valor >= 0.9*(self.condicionador_temperatura_fase_t_ug.valor_limite - self.condicionador_temperatura_fase_t_ug.valor_base) + self.condicionador_temperatura_fase_t_ug.valor_base:
-            logger.critical(f"[UG{self.id}] A temperatura de Fase T da UG está muito próxima do limite! ({self.condicionador_temperatura_fase_t_ug.valor_limite}C) | Leitura: {self.leitura_temperatura_fase_T.valor}C")
-
-        if self.leitura_temperatura_nucleo.valor >= self.condicionador_temperatura_nucleo_estator_ug.valor_base:
-            logger.warning(f"[UG{self.id}] A temperatura do Núcleo Estator da UG passou do valor base! ({self.condicionador_temperatura_nucleo_estator_ug.valor_base}C) | Leitura: {self.leitura_temperatura_nucleo.valor}C")
-        if self.leitura_temperatura_nucleo.valor >= 0.9*(self.condicionador_temperatura_nucleo_estator_ug.valor_limite - self.condicionador_temperatura_nucleo_estator_ug.valor_base) + self.condicionador_temperatura_nucleo_estator_ug.valor_base:
-            logger.critical(f"[UG{self.id}] A temperatura do Núcleo Estator da UG está muito próxima do limite! ({self.condicionador_temperatura_nucleo_estator_ug.valor_limite}C) | Leitura: {self.leitura_temperatura_nucleo.valor}C")
-
-        if self.leitura_temperatura_mrd1.valor >= self.condicionador_temperatura_mancal_rad_dia_1_ug.valor_base:
-            logger.warning(f"[UG{self.id}] A temperatura do Mancal Radial Dianteiro 1 da UG passou do valor base! ({self.condicionador_temperatura_mancal_rad_dia_1_ug.valor_base}C) | Leitura: {self.leitura_temperatura_mrd1.valor}C")
-        if self.leitura_temperatura_mrd1.valor >= 0.9*(self.condicionador_temperatura_mancal_rad_dia_1_ug.valor_limite - self.condicionador_temperatura_mancal_rad_dia_1_ug.valor_base) + self.condicionador_temperatura_mancal_rad_dia_1_ug.valor_base:
-            logger.critical(f"[UG{self.id}] A temperatura do Mancal Radial Dianteiro 1 da UG está muito próxima do limite! ({self.condicionador_temperatura_mancal_rad_dia_1_ug.valor_limite}C) | Leitura: {self.leitura_temperatura_mrd1.valor}C")
-
-        if self.leitura_temperatura_mrt1.valor >= self.condicionador_temperatura_mancal_rad_tra_1_ug.valor_base:
-            logger.warning(f"[UG{self.id}] A temperatura do Mancal Radial Traseiro 1 da UG passou do valor base! ({self.condicionador_temperatura_mancal_rad_tra_1_ug.valor_base}C) | Leitura: {self.leitura_temperatura_mrt1.valor}C")
-        if self.leitura_temperatura_mrt1.valor >= 0.9*(self.condicionador_temperatura_mancal_rad_tra_1_ug.valor_limite - self.condicionador_temperatura_mancal_rad_tra_1_ug.valor_base) + self.condicionador_temperatura_mancal_rad_tra_1_ug.valor_base:
-            logger.critical(f"[UG{self.id}] A temperatura do Mancal Radial Traseiro 1 da UG está muito próxima do limite! ({self.condicionador_temperatura_mancal_rad_tra_1_ug.valor_limite}C) | Leitura: {self.leitura_temperatura_mrt1.valor}C")
-
-        if self.leitura_temperatura_mrd2.valor >= self.condicionador_temperatura_mancal_rad_dia_2_ug.valor_base:
-            logger.warning(f"[UG{self.id}] A temperatura do Mancal Radial Dianteiro 2 da UG passou do valor base! ({self.condicionador_temperatura_mancal_rad_dia_2_ug.valor_base}C) | Leitura: {self.leitura_temperatura_mrd2.valor}C")
-        if self.leitura_temperatura_mrd2.valor >= 0.9*(self.condicionador_temperatura_mancal_rad_dia_2_ug.valor_limite - self.condicionador_temperatura_mancal_rad_dia_2_ug.valor_base) + self.condicionador_temperatura_mancal_rad_dia_2_ug.valor_base:
-            logger.critical(f"[UG{self.id}] A temperatura do Mancal Radial Dianteiro 2 da UG está muito próxima do limite! ({self.condicionador_temperatura_mancal_rad_dia_2_ug.valor_limite}C) | Leitura: {self.leitura_temperatura_mrd2.valor}C")
-
-        if self.leitura_temperatura_mrt2.valor >= self.condicionador_temperatura_mancal_rad_tra_2_ug.valor_base:
-            logger.warning(f"[UG{self.id}] A temperatura do Mancal Radial Traseiro 2 da UG passou do valor base! ({self.condicionador_temperatura_mancal_rad_tra_2_ug.valor_base}C) | Leitura: {self.leitura_temperatura_mrt2.valor}C")
-        if self.leitura_temperatura_mrt2.valor >= 0.9*(self.condicionador_temperatura_mancal_rad_tra_2_ug.valor_limite - self.condicionador_temperatura_mancal_rad_tra_2_ug.valor_base) + self.condicionador_temperatura_mancal_rad_tra_2_ug.valor_base:
-            logger.critical(f"[UG{self.id}] A temperatura do Mancal Radial Traseiro 2 da UG está muito próxima do limite! ({self.condicionador_temperatura_mancal_rad_tra_2_ug.valor_limite}C) | Leitura: {self.leitura_temperatura_mrt2.valor}C")
-
-        if self.leitura_temperatura_saida_de_ar.valor >= self.condicionador_temperatura_saida_de_ar_ug.valor_base:
-            logger.warning(f"[UG{self.id}] A temperatura da Saída de Ar da UG passou do valor base! ({self.leitura_temperatura_saida_de_ar.valor}C) | Leitura: {self.condicionador_temperatura_saida_de_ar_ug.valor_base}C")
-        if self.leitura_temperatura_saida_de_ar.valor >= 0.9*(self.condicionador_temperatura_saida_de_ar_ug.valor_limite - self.condicionador_temperatura_saida_de_ar_ug.valor_base) + self.condicionador_temperatura_saida_de_ar_ug.valor_base:
-            logger.critical(f"[UG{self.id}] A temperatura da Saída de Ar da UG está muito próxima do limite! ({self.condicionador_temperatura_saida_de_ar_ug.valor_limite}C) | Leitura: {self.leitura_temperatura_saida_de_ar.valor}C")
-
-        if self.leitura_temperatura_guia_radial.valor >= self.condicionador_temperatura_mancal_guia_radial_ug.valor_base:
-            logger.warning(f"[UG{self.id}] A temperatura do Mancal Guia Radial da UG passou do valor base! ({self.condicionador_temperatura_mancal_guia_radial_ug.valor_base}C) | Leitura: {self.leitura_temperatura_guia_radial.valor}C")
-        if self.leitura_temperatura_guia_radial.valor >= 0.9*(self.condicionador_temperatura_mancal_guia_radial_ug.valor_limite - self.condicionador_temperatura_mancal_guia_radial_ug.valor_base) + self.condicionador_temperatura_mancal_guia_radial_ug.valor_base:
-            logger.critical(f"[UG{self.id}] A temperatura do Mancal Guia Radial da UG está muito próxima do limite! ({self.condicionador_temperatura_mancal_guia_radial_ug.valor_limite}C) | Leitura: {self.leitura_temperatura_guia_radial.valor}C")
-
-        if self.leitura_temperatura_guia_escora.valor >= self.condicionador_temperatura_mancal_guia_escora_ug.valor_base:
-            logger.warning(f"[UG{self.id}] A temperatura do Mancal Guia Escora da UG passou do valor base! ({self.condicionador_temperatura_mancal_guia_escora_ug.valor_base}C) | Leitura: {self.leitura_temperatura_guia_escora.valor}C")
-        if self.leitura_temperatura_guia_escora.valor >= 0.9*(self.condicionador_temperatura_mancal_guia_escora_ug.valor_limite - self.condicionador_temperatura_mancal_guia_escora_ug.valor_base) + self.condicionador_temperatura_mancal_guia_escora_ug.valor_base:
-            logger.critical(f"[UG{self.id}] A temperatura do Mancal Guia Escora da UG está muito próxima do limite! ({self.condicionador_temperatura_mancal_guia_escora_ug.valor_limite}C) | Leitura: {self.leitura_temperatura_guia_escora.valor}C")
-
-        if self.leitura_temperatura_guia_contra_escora.valor >= self.condicionador_temperatura_mancal_guia_contra_ug.valor_base:
-            logger.warning(f"[UG{self.id}] A temperatura do Mancal Guia Contra Escora da UG passou do valor base! ({self.condicionador_temperatura_mancal_guia_contra_ug.valor_base}C) | Leitura: {self.leitura_temperatura_guia_contra_escora.valor}C")
-        if self.leitura_temperatura_guia_contra_escora.valor >= 0.9*(self.condicionador_temperatura_mancal_guia_contra_ug.valor_limite - self.condicionador_temperatura_mancal_guia_contra_ug.valor_base) + self.condicionador_temperatura_mancal_guia_contra_ug.valor_base:
-            logger.critical(f"[UG{self.id}] A temperatura do Mancal Guia Contra Escora da UG está muito próxima do limite! ({self.condicionador_temperatura_mancal_guia_contra_ug.valor_limite}C) | Leitura: {self.leitura_temperatura_guia_contra_escora.valor}C")
-
-        if self.leitura_temperatura_oleo_trafo.valor >= self.condicionador_leitura_temperatura_oleo_trafo.valor_base:
-            logger.warning(f"[UG{self.id}] A temperatura do Óleo do Transformador Elevador da UG passou do valor base! ({self.condicionador_leitura_temperatura_oleo_trafo.valor_base}C) | Leitura: {self.leitura_temperatura_oleo_trafo.valor}C")
-        if self.leitura_temperatura_oleo_trafo.valor >= 0.9*(self.condicionador_leitura_temperatura_oleo_trafo.valor_limite - self.condicionador_leitura_temperatura_oleo_trafo.valor_base) + self.condicionador_leitura_temperatura_oleo_trafo.valor_base:
-            logger.critical(f"[UG{self.id}] A temperatura do Óleo do Transformador Elevador da UG está muito próxima do limite! ({self.condicionador_leitura_temperatura_oleo_trafo.valor_limite}C) | Leitura: {self.leitura_temperatura_oleo_trafo.valor}C")
-
-        if self.leitura_caixa_espiral.valor <= self.condicionador_caixa_espiral_ug.valor_base and self.leitura_caixa_espiral.valor != 0 and self.etapa_atual == UNIDADE_SINCRONIZADA:
-            logger.warning(f"[UG{self.id}] A pressão Caixa Espiral da UG passou do valor base! ({self.condicionador_caixa_espiral_ug.valor_base:03.2f} KGf/m2) | Leitura: {self.leitura_caixa_espiral.valor:03.2f}")
-        if self.leitura_caixa_espiral.valor <= 16.1 and self.leitura_caixa_espiral.valor != 0 and self.etapa_atual == UNIDADE_SINCRONIZADA:
-            logger.critical(f"[UG{self.id}] A pressão Caixa Espiral da UG está muito próxima do limite! ({self.condicionador_caixa_espiral_ug.valor_limite:03.2f} KGf/m2) | Leitura: {self.leitura_caixa_espiral.valor:03.2f} KGf/m2")

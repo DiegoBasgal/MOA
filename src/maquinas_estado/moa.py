@@ -1,8 +1,8 @@
 import os
 import json
 
-from src.dicionarios.const import *
 from src.usina import *
+from src.dicionarios.const import *
 
 logger = logging.getLogger("__main__")
 
@@ -145,7 +145,7 @@ class ValoresInternosAtualizados(State):
             sleep(2)
             return Emergencia(self.usn)
 
-        if len(self.usn.get_agendamentos_pendentes()) > 0:
+        if len(self.usn.agn.obter_agendamentos()) > 0:
             return AgendamentosPendentes(self.usn)
 
         if not self.usn.modo_autonomo:
@@ -282,7 +282,7 @@ class ModoManualAtivado(State):
                 self.usn.normalizar_emergencia()
             return ControleRealizado(self.usn)
 
-        if len(self.usn.get_agendamentos_pendentes()) > 0:
+        if len(self.usn.agn.obter_agendamentos()) > 0:
             return AgendamentosPendentes(self.usn)
 
         return self
@@ -296,7 +296,7 @@ class AgendamentosPendentes(State):
     def run(self):
         self.usn._state_moa = SM_SCHEDULE_PENDING
         logger.debug("Tratando agendamentos")
-        self.usn.verificar_agendamentos()
+        self.usn.agn.verificar_agendamentos()
         return ControleRealizado(self.usn)
 
 class ReservatorioAbaixoDoMinimo(State):
@@ -350,7 +350,7 @@ class ReservatorioNormal(State):
 
     def run(self):
         self.usn._state_moa = SM_DAM_LEVEL_BETWEEN_LIMITS
-        self.usn.controle_normal()
+        self.usn.calcular_pid_potencia()
         for ug in self.usn.ugs:
             ug.step()
         return ControleRealizado(self.usn)
@@ -422,7 +422,7 @@ class OperacaoTDAOffline(State):
             sleep(2)
             return ModoManualAtivado(self.usn)
 
-        if len(self.usn.get_agendamentos_pendentes()) > 0:
+        if len(self.usn.agn.obter_agendamentos()) > 0:
             return AgendamentosPendentes(self.usn)
 
         for ug in self.usn.ugs:
