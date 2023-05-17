@@ -2,102 +2,90 @@ import logging
 import traceback
 import subprocess
 
+import dicionarios.dict as Dicionarios
+
 from pyModbusTCP.client import ModbusClient
 
 logger = logging.getLogger("__main__")
 
-class ClpClients:
-    def __init__(self, sd: dict=None) -> None:
-        if not sd:
-            logger.warning("[CLP] Houve um erro ao carregar o dicionário compartilhado.")
-            raise ValueError
-        else:
-            self.dict = sd
+class ClientesUsina:
+    dict_ips = Dicionarios.ips
 
-        self.borda_ping: bool = False
+    clp: "dict[str, ModbusClient]"
+    rele: "dict[str, ModbusClient]"
 
-        self.clp_dict: dict[str, ModbusClient] = {}
+    clp["SA"] = ModbusClient(
+        host=dict_ips["SA_slave_ip"],
+        port=dict_ips["SA_slave_porta"],
+        unit_id=1,
+        timeout=0.5
+    )
+    clp["TDA"] = ModbusClient(
+        host=dict_ips["TDA_slave_ip"],
+        port=dict_ips["TDA_slave_porta"],
+        unit_id=1,
+        timeout=0.5
+    )
+    clp["UG1"] = ModbusClient(
+        host=dict_ips["UG1_slave_ip"],
+        port=dict_ips["UG1_slave_porta"],
+        unit_id=1,
+        timeout=0.5
+    )
+    clp["UG2"] = ModbusClient(
+        host=dict_ips["UG2_slave_ip"],
+        port=dict_ips["UG2_slave_porta"],
+        unit_id=1,
+        timeout=0.5
+    )
+    clp["MOA"] = ModbusClient(
+        host=dict_ips["MOA_slave_ip"],
+        port=dict_ips["MOA_slave_porta"],
+        unit_id=1,
+        timeout=0.5
+    )
 
-        self.clp_dict["clp_moa"] = ModbusClient(
-            host=self.dict["IP"]["MOA_slave_ip"],
-            port=self.dict["IP"]["MOA_slave_porta"],
-            unit_id=1,
-            timeout=0.5,
-            auto_open=True,
-            auto_close=True
-        )
-        self.clp_dict["clp_usn"] = ModbusClient(
-            host=self.dict["IP"]["USN_slave_ip"],
-            port=self.dict["IP"]["USN_slave_porta"],
-            unit_id=1,
-            timeout=0.5,
-            auto_open=True,
-            auto_close=True
-        )
-        self.clp_dict["clp_tda"] = ModbusClient(
-            host=self.dict["IP"]["TDA_slave_ip"],
-            port=self.dict["IP"]["TDA_slave_porta"],
-            unit_id=1,
-            timeout=0.5,
-            auto_open=True,
-            auto_close=True
-        )
-        self.clp_dict["clp_ug1"] = ModbusClient(
-            host=self.dict["IP"]["UG1_slave_ip"],
-            port=self.dict["IP"]["UG1_slave_porta"],
-            unit_id=1,
-            timeout=0.5,
-            auto_open=True,
-            auto_close=True
-        )
-        self.clp_dict["clp_ug2"] = ModbusClient(
-            host=self.dict["IP"]["UG2_slave_ip"],
-            port=self.dict["IP"]["UG2_slave_porta"],
-            unit_id=1,
-            timeout=0.5,
-            auto_open=True,
-            auto_close=True
-        )
-
-    def ping(self, host) -> bool:
+    @staticmethod
+    def ping(host) -> bool:
         return [True if subprocess.call(["ping", "-c", "1", "-w", "1", host], stdout=subprocess.PIPE) == 0 else False for _ in range(2)]
 
-    def open_all(self) -> None:
-        logger.debug("[CLP] Iniciando conexões ModBus...")
-        raise [ModBusClientFail(clp) if not clp.open() else logger.debug("[CLP] Conexão inciada.") for clp in self.clp_dict.values()]
+    @classmethod
+    def open_all(cls) -> None:
+        logger.debug("[CLI] Iniciando conexões ModBus...")
+        for _ , clp in cls.clp.items():
+            raise ModBusClientFail(clp) if not clp.open() else ...
+        logger.info("[CLI] Conexões inciadas.")
 
-    def close_all(self) -> None:
-        logger.debug("[CLP] Encerrando conexões ModBus...")
-        [clp.close() for clp in self.clp_dict.values()]
-        logger.debug("[CLP] Conexão encerrada.")
+    @classmethod
+    def close_all(cls) -> None:
+        logger.debug("[CLI] Encerrando conexões...")
+        [clp.close() for _ , clp in cls.clp.items()]
+        logger.debug("[CLI] Conexões encerradas.")
 
-    def ping_clps(self) -> None:
+    @classmethod
+    def ping_clients(cls) -> None:
         try:
-            if not self.ping(self.dict["IP"]["TDA_slave_ip"]):
-                self.dict["GLB"]["tda_offline"] = True
-                if self.dict["GLB"]["tda_offline"] and not self.borda_ping:
-                    self.borda_ping = True
-                    logger.warning("[CLP] CLP TDA não respondeu a tentativa de comunicação!")
+            if not cls.ping(cls.dict_ips["SA_slave_ip"]):
+                logger.warning("[CLI] CLP UG1 não respondeu a tentativa de comunicação!")
 
-            elif self.ping(self.dict["IP"]["TDA_slave_ip"]) and self.borda_ping:
-                logger.info("[CLP] Comunicação com o CLP TDA reestabelecida.")
-                self.borda_ping = False
-                self.dict["GLB"]["tda_offline"] = False
+            if not cls.ping(cls.dict_ips["TDA_slave_ip"]):
+                logger.warning("[CLI] CLP UG1 não respondeu a tentativa de comunicação!")
 
-            if not self.ping(self.dict["IP"]["USN_slave_ip"]):
-                logger.warning("[CLP] CLP SA não respondeu a tentativa de comunicação!")
+            if not cls.ping(cls.dict_ips["UG1_slave_ip"]):
+                logger.warning("[CLI] CLP UG1 não respondeu a tentativa de comunicação!")
 
-            if not self.ping(self.dict["IP"]["UG1_slave_ip"]):
-                logger.warning("[CLP] CLP UG1 não respondeu a tentativa de comunicação!")
+            if not cls.ping(cls.dict_ips["UG2_slave_ip"]):
+                logger.warning("[CLI] CLP UG2 não respondeu a tentativa de comunicação!")
 
-            if not self.ping(self.dict["IP"]["UG2_slave_ip"]):
-                logger.warning("[CLP] CLP UG2 não respondeu a tentativa de comunicação!")
+            if not cls.ping(cls.dict_ips["MOA_slave_ip"]):
+                logger.warning("[CLI] CLP MOA não respondeu a tentativa de comunicação!")
 
         except Exception as e:
-            logger.exception(f"[CLP] Houve um erro ao executar o ping dos CLPs da usina. Exception: \"{repr(e)}\"")
-            logger.exception(f"[CLP] Traceback: {traceback.print_stack}")
+            logger.error(f"[CLI] Houve um erro ao enviar comando de ping dos clientes da usina.")
+            logger.debug(f"[CLI] Traceback: {traceback.format_exc()}")
+
 
 class ModBusClientFail(Exception):
     def __init__(self, clp: ModbusClient = None, *args: object) -> None:
         super().__init__(*args)
-        raise f"[CLP] Modbus client ({clp.host} : {clp.port}) failed to open."
+        raise f"[CLI] Modbus client ({clp.host} : {clp.port}) failed to open."

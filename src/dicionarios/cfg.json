@@ -5,11 +5,6 @@
     "kie": 0.1,
     "saida_ie_inicial": 0.1,
 
-    "cx_kp": 2.0,
-    "cx_ki": 0.1,
-    "cx_kie": 0.0,
-    "press_cx_alvo": 16.2,
-
     "nv_alvo": 820.9,
     "nv_maximo": 821,
     "nv_minimo": 820.8,
