@@ -140,7 +140,7 @@ if __name__ == "__main__":
             logger.debug("")
             logger.debug(f"Executando estado: \"{sm.state.__class__.__name__}\"")
             sm.exec()
-            if usina._state_moa == SM_CONTROL_ACTION_SENT:
+            if usina._state_moa == MOA_SM_CONTROLE_DADOS:
                 t_restante = max(TEMPO_CICLO_TOTAL - (time() - t_i), 0) / ESCALA_DE_TEMPO
                 t_i = time()
             else:

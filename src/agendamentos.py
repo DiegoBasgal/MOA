@@ -147,6 +147,16 @@ class Agendamentos(Usina):
 
                 if agendamento[3] == AGENDAMENTO_UG1_FORCAR_ESTADO_RESTRITO:
                     self.ug1.forcar_estado_restrito()
+                
+                if agendamento[3] == AGENDAMENTO_UG1_TEMPO_ESPERA_RESTRITO:
+                    try:
+                        ug.norma_agendada = True
+                        novo = agendamento[5].split(":")
+                        tempo = (int(novo[0]) * 3600) + (int(novo[1]) * 60)
+                        ug.tempo_normalizar = tempo
+
+                    except Exception:
+                        logger.exception(f"Valor inválido no agendamento: {agendamento[0]} ({agendamento[3]} é inválido)")
 
                 if agendamento[3] == AGENDAMENTO_UG2_ALTERAR_POT_LIMITE:
                     try:

@@ -14,6 +14,7 @@ from pyModbusTCP.client import ModbusClient
 from src.Leituras import  *
 from src.dicionarios.regs import *
 from src.dicionarios.const import *
+from src.maquinas_estado.ug import *
 
 from src.banco_dados import Database
 from src.mensageiro.voip import Voip
@@ -86,7 +87,10 @@ class Usina:
         self.ug2 = UnidadeGeracao(2, self.cfg, self.clp, self.db, self.con)
         self.ug3 = UnidadeGeracao(3, self.cfg, self.clp, self.db, self.con)
         self.ugs: "list[UnidadeGeracao]" = [self.ug1, self.ug2, self.ug3]
-        for ug in self.ugs: ug.lista_ugs = self.ugs
+
+        for ug in self.ugs:
+            ug.lista_ugs = self.ugs
+            ug.iniciar_ultimo_estado()
 
         CondicionadorBase.ugs = self.ugs
 
@@ -125,7 +129,7 @@ class Usina:
         self.acionar_voip_usn = False
         self.avisado_em_eletrica = False
         self.deve_tentar_normalizar = True
-        self.deve_normalizar_forcado = False
+        self.normalizar_forcado = False
         self.deve_ler_condicionadores = False
 
         self.ts_nv = []
@@ -171,9 +175,9 @@ class Usina:
 
         self.controle_ie: int = sum(ug.leitura_potencia.valor for ug in self.ugs) / self.cfg["pot_maxima_alvo"]
 
-        self.clp["MOA"].write_single_coil(REG["MOA_OUT_BLOCK_UG1"], 0)
-        self.clp["MOA"].write_single_coil(REG["MOA_OUT_BLOCK_UG2"], 0)
-        self.clp["MOA"].write_single_coil(REG["MOA_OUT_BLOCK_UG3"], 0)
+        self.clp["MOA"].write_single_coil(REG["MOA_OUT_BLOCK_UG1"], [0])
+        self.clp["MOA"].write_single_coil(REG["MOA_OUT_BLOCK_UG2"], [0])
+        self.clp["MOA"].write_single_coil(REG["MOA_OUT_BLOCK_UG3"], [0])
 
     def normalizar_emergencia(self) -> bool:
         logger.info("Normalizando Usina...")
@@ -188,7 +192,7 @@ class Usina:
             self.tensao_ok = False
             return False
 
-        elif self.deve_normalizar_forcado or (self.deve_tentar_normalizar and (self.get_time() - self.ts_ultima_tentativa_normalizacao).seconds >= 60 * self.tentativas_de_normalizar):
+        elif self.normalizar_forcado or (self.deve_tentar_normalizar and (self.get_time() - self.ts_ultima_tentativa_normalizacao).seconds >= 60 * self.tentativas_de_normalizar):
             self.tentativas_de_normalizar += 1
             self.ts_ultima_tentativa_normalizacao = self.get_time()
             self.con.TDA_Offline = True if self.TDA_Offline else False
@@ -205,30 +209,45 @@ class Usina:
 
     def verificar_tensao(self) -> bool:
         try:
-            if not(TENSAO_LINHA_BAIXA < self.__tensao_rs.valor < TENSAO_LINHA_ALTA \
-                and TENSAO_LINHA_BAIXA < self.__tensao_st.valor < TENSAO_LINHA_ALTA \
-                and TENSAO_LINHA_BAIXA < self.__tensao_tr.valor < TENSAO_LINHA_ALTA):
-                return False
-            else:
+            if (TENSAO_LINHA_BAIXA < self.__tensao_rs < TENSAO_LINHA_ALTA) \
+                and (TENSAO_LINHA_BAIXA < self.__tensao_st < TENSAO_LINHA_ALTA) \
+                and (TENSAO_LINHA_BAIXA < self.__tensao_tr < TENSAO_LINHA_ALTA):
                 return True
+            else:
+                logger.warning("[SE] Tensão da linha fora do limite.")
+                return False
 
-        except Exception:
-            logger.error(f"Erro ao verificar tensão na linha.")
+        except Exception as e:
+            logger.error(f"Houve um erro ao realizar a verificação da tensão na linha. Exception: \"{repr(e)}\"")
+            logger.debug(f"Traceback: {traceback.format_exc()}")
             return False
 
-    def aguardar_tensao(self, delay) -> bool:
-        temporizador = time() + delay
-        logger.warning("Iniciando o timer para a normalização da tensão na linha")
+    def aguardar_tensao(self) -> bool:
+        if self.status_tensao == TENSAO_VERIFICAR:
+            self.status_tensao = TENSAO_AGUARDO
+            logger.debug("Iniciando o timer para a normalização da tensão na linha.")
+            threading.Thread(target=lambda: self.timeout_tensao(600)).start()
 
-        while time() <= temporizador:
-            sleep(time() - (time() - 15))
+        elif self.status_tensao == TENSAO_REESTABELECIDA:
+            logger.info("Tensão na linha reestabelecida.")
+            self.status_tensao = TENSAO_VERIFICAR
+            return True
+
+        elif self.status_tensao == TENSAO_FORA:
+            logger.critical("Não foi possível reestabelecer a tensão na linha. Acionando emergência")
+            self.status_tensao = TENSAO_VERIFICAR
+            return False
+
+        else:
+            logger.debug("A tensão na linha ainda está fora.")
+
+    def timeout_tensao(self, delay) -> None:
+        while time() <= time() + delay:
             if self.verificar_tensao():
-                self.timer_tensao = True
-                return True
-
-        logger.warning("Não foi possível reestabelecer a tensão na linha")
-        self.timer_tensao = False
-        return False
+                self.status_tensao = TENSAO_REESTABELECIDA
+                return
+            sleep(time() - (time() - 15))
+        self.status_tensao = TENSAO_FORA
 
     def ler_valores(self) -> None:
         self.verificar_clps()
@@ -308,8 +327,8 @@ class Usina:
 
         if self.modo_autonomo:
             self.clp["MOA"].write_single_coil(REG["MOA_OUT_EMERG"], [1 if self.clp_emergencia_acionada else 0])
-            self.clp["MOA"].write_single_coil(REG["MOA_OUT_TARGET_LEVEL"], [int((self.cfg["nv_alvo"] - 400) * 1000)])
-            self.clp["MOA"].write_single_coil(REG["MOA_OUT_SETPOINT"], [int(sum(ug.setpoint for ug in self.ugs))])
+            self.clp["MOA"].write_single_register(REG["MOA_OUT_TARGET_LEVEL"], int((self.cfg["nv_alvo"] - 400) * 1000))
+            self.clp["MOA"].write_single_register(REG["MOA_OUT_SETPOINT"], int(sum(ug.setpoint for ug in self.ugs)))
 
             if self.clp["MOA"].read_coils(REG["MOA_IN_EMERG"]) == 1 and not self.avisado_em_eletrica:
                 self.avisado_em_eletrica = True
@@ -329,45 +348,45 @@ class Usina:
                 self.ug3.deve_ler_condicionadores = True
 
             if self.clp["MOA"].read_coils(REG["MOA_IN_HABILITA_AUTO"]) == 1:
-                self.clp["MOA"].write_single_coil(REG["MOA_IN_HABILITA_AUTO"], 1)
-                self.clp["MOA"].write_single_coil(REG["MOA_IN_DESABILITA_AUTO"], 0)
+                self.clp["MOA"].write_single_coil(REG["MOA_IN_HABILITA_AUTO"], [1])
+                self.clp["MOA"].write_single_coil(REG["MOA_IN_DESABILITA_AUTO"], [0])
                 self.modo_autonomo = True
 
             if self.clp["MOA"].read_coils(REG["MOA_IN_DESABILITA_AUTO"]) == 1:
-                self.clp["MOA"].write_single_coil(REG["MOA_IN_HABILITA_AUTO"], 0)
-                self.clp["MOA"].write_single_coil(REG["MOA_IN_DESABILITA_AUTO"], 1)
+                self.clp["MOA"].write_single_coil(REG["MOA_IN_HABILITA_AUTO"], [0])
+                self.clp["MOA"].write_single_coil(REG["MOA_IN_DESABILITA_AUTO"], [1])
                 self.modo_autonomo = False
 
             if self.clp["MOA"].read_coils(REG["MOA_OUT_BLOCK_UG1"]) == 1:
-                self.clp["MOA"].write_single_coil(REG["MOA_OUT_BLOCK_UG1"], 1)
+                self.clp["MOA"].write_single_coil(REG["MOA_OUT_BLOCK_UG1"], [1])
 
             elif self.clp["MOA"].read_coils(REG["MOA_OUT_BLOCK_UG1"]) == 0:
-                self.clp["MOA"].write_single_coil(REG["MOA_OUT_BLOCK_UG1"], 0)
+                self.clp["MOA"].write_single_coil(REG["MOA_OUT_BLOCK_UG1"], [0])
 
             if self.clp["MOA"].read_coils(REG["MOA_OUT_BLOCK_UG2"]) == 1:
-                self.clp["MOA"].write_single_coil(REG["MOA_OUT_BLOCK_UG2"], 1)
+                self.clp["MOA"].write_single_coil(REG["MOA_OUT_BLOCK_UG2"], [1])
 
             elif self.clp["MOA"].read_coils(REG["MOA_OUT_BLOCK_UG2"]) == 0:
-                self.clp["MOA"].write_single_coil(REG["MOA_OUT_BLOCK_UG2"], 0)
+                self.clp["MOA"].write_single_coil(REG["MOA_OUT_BLOCK_UG2"], [0])
 
             if self.clp["MOA"].read_coils(REG["MOA_OUT_BLOCK_UG3"]) == 1:
-                self.clp["MOA"].write_single_coil(REG["MOA_OUT_BLOCK_UG3"], 1)
+                self.clp["MOA"].write_single_coil(REG["MOA_OUT_BLOCK_UG3"], [1])
 
             elif self.clp["MOA"].read_coils(REG["MOA_OUT_BLOCK_UG3"]) == 0:
-                self.clp["MOA"].write_single_coil(REG["MOA_OUT_BLOCK_UG3"], 0)
+                self.clp["MOA"].write_single_coil(REG["MOA_OUT_BLOCK_UG3"], [0])
 
         elif not self.modo_autonomo:
             if self.clp["MOA"].read_coils(REG["MOA_IN_HABILITA_AUTO"]) == 1:
-                self.clp["MOA"].write_single_coil(REG["MOA_IN_HABILITA_AUTO"], 1)
-                self.clp["MOA"].write_single_coil(REG["MOA_IN_DESABILITA_AUTO"], 0)
+                self.clp["MOA"].write_single_coil(REG["MOA_IN_HABILITA_AUTO"], [1])
+                self.clp["MOA"].write_single_coil(REG["MOA_IN_DESABILITA_AUTO"], [0])
                 self.modo_autonomo = True
 
             self.clp["MOA"].write_single_register(REG["MOA_OUT_TARGET_LEVEL"], int(0))
             self.clp["MOA"].write_single_register(REG["MOA_OUT_SETPOINT"], int(0))
-            self.clp["MOA"].write_single_coil(REG["MOA_OUT_EMERG"], 0)
-            self.clp["MOA"].write_single_coil(REG["MOA_OUT_BLOCK_UG1"], 0)
-            self.clp["MOA"].write_single_coil(REG["MOA_OUT_BLOCK_UG2"], 0)
-            self.clp["MOA"].write_single_coil(REG["MOA_OUT_BLOCK_UG3"], 0)
+            self.clp["MOA"].write_single_coil(REG["MOA_OUT_EMERG"], [0])
+            self.clp["MOA"].write_single_coil(REG["MOA_OUT_BLOCK_UG1"], [0])
+            self.clp["MOA"].write_single_coil(REG["MOA_OUT_BLOCK_UG2"], [0])
+            self.clp["MOA"].write_single_coil(REG["MOA_OUT_BLOCK_UG3"], [0])
 
     def atualizar_parametros_operacao(self) -> None:
         parametros = self.db.get_parametros_usina()
@@ -425,7 +444,7 @@ class Usina:
 
         return ls
 
-    def calcular_pid_potencia(self) -> None:
+    def controle_potencia(self) -> None:
         logger.debug("-------------------------------------------------")
         logger.debug(f"NÍVEL -> Leitura: {self.nv_montante_recente:0.3f}; Alvo: {self.cfg['nv_alvo']:0.3f}")
 
@@ -563,92 +582,67 @@ class Usina:
 
         return pot_alvo
 
-    def open_modbus(self) -> None:
-        logger.debug("Opening Modbus")
-        if not self.clp["UG1"].open():
-            raise ConnectionError(f"Modbus client ({self.cfg['UG1_slave_ip']}:{self.cfg['UG1_slave_porta']}) failed to open.")
+    def controle_reservatorio(self) -> int:
+        # Reservatório acima do nível máximo
+        if self.nv_montante >= self.cfg["nv_maximo"]:
+            logger.info("[USN] Nível montante acima do máximo.")
 
-        if not self.clp["UG2"].open():
-            raise ConnectionError(f"Modbus client ({self.cfg['UG2_slave_ip']}:{self.cfg['UG2_slave_porta']}) failed to open.")
+            if self.nv_montante_recente >= NIVEL_MAXIMORUM:
+                logger.critical(f"[USN] Nivel montante ({self.nv_montante_recente:3.2f}) atingiu o maximorum!")
+                return NV_FLAG_EMERGENCIA
 
-        if not self.clp["UG3"].open():
-            raise ConnectionError(f"Modbus client ({self.cfg['UG3_slave_ip']}:{self.cfg['UG3_slave_porta']}) failed to open.")
-
-        if not self.clp["SA"].open():
-            raise ConnectionError(f"Modbus client ({self.cfg['USN_slave_ip']}:{self.cfg['USN_slave_porta']}) failed to open.")
-
-        if not self.clp["TDA"].open():
-            raise ConnectionError(f"Modbus client ({self.cfg['TDA_slave_ip']}:{self.cfg['TDA_slave_porta']}) failed to open.")
-
-        if not self.clp["MOA"].open():
-            raise ConnectionError(f"Modbus client ({self.cfg['MOA_slave_ip']}:{self.cfg['MOA_slave_porta']}) failed to open.")
-
-        logger.debug("Openned Modbus")
-
-    def close_modbus(self) -> None:
-        logger.debug("Closing Modbus")
-        self.clp["UG1"].close()
-        self.clp["UG2"].close()
-        self.clp["UG3"].close()
-        self.clp["SA"].close()
-        self.clp["TDA"].close()
-        logger.debug("Closed Modbus")
-
-    def verificar_clps(self) -> None:
-        if not ping(self.cfg["TDA_slave_ip"]):
-            self.TDA_Offline = True
-            self.db.update_tda_offline(True)
-            if self.TDA_Offline and self.hb_borda_emerg_ping == 0:
-                self.hb_borda_emerg_ping = 1
-                logger.critical("CLP TDA não respondeu a tentativa de comunicação!")
-
-        elif ping(self.cfg["TDA_slave_ip"]) and self.hb_borda_emerg_ping == 1:
-            logger.info("Comunicação com o CLP TDA reestabelecida.")
-            self.hb_borda_emerg_ping = 0
-            self.TDA_Offline = False
-            self.db.update_tda_offline(False)
-
-        if not ping(self.cfg["USN_slave_ip"]):
-            logger.critical("CLP SA não respondeu a tentativa de ping!")
-        if self.clp["SA"].open():
-            self.clp["SA"].close()
-        else:
-            logger.critical("CLP SA não respondeu a tentativa de conexão ModBus!")
-            self.clp["SA"].close()
-
-        if not ping(self.cfg["MOA_slave_ip"]):
-            logger.warning("CLP MOA não respondeu a tentativa de ping!")
-        if self.clp["MOA"].open():
-            self.clp["MOA"].close()
-        else:
-            logger.warning("CLP MOA não respondeu a tentativa de conexão ModBus!")
-
-        for ug in self.ugs:
-            if not ping(self.cfg[f"UG{ug.id}_slave_ip"]):
-                logger.critical(f"CLP UG{ug.id} não respondeu a tentativa de ping!")
-                self.ug1.forcar_estado_manual()
-            if self.clp[f"UG{ug.id}"].open():
-                self.clp[f"UG{ug.id}"].close()
             else:
-                self.ug1.forcar_estado_manual()
-                logger.critical(f"CLP UG{ug.id} não respondeu a tentativa de conexão ModBus!")
+                self.controle_i = 0.5
+                self.controle_ie = 0.5
+                self.distribuir_potencia(self.cfg["pot_maxima_usina"])
+
+        # Reservatório abaixo do nível mínimo
+        elif self.nv_montante <= self.cfg["nv_minimo"] and not self.aguardando_reservatorio:
+            logger.info("[USN] Nível montante abaixo do mínimo.")
+            self.aguardando_reservatorio = True
+            self.distribuir_potencia(0)
+
+            if self.nv_montante_recente <= NIVEL_FUNDO_RESERVATORIO:
+                logger.critical(f"[USN] Nivel montante ({self.nv_montante_recente:3.2f}) atingiu o fundo do reservatorio!")
+                return NV_FLAG_EMERGENCIA
+
+        # Aguardando nível do reservatório
+        elif self.aguardando_reservatorio:
+            if self.nv_montante >= self.cfg["nv_alvo"]:
+                logger.debug("[USN] Nível montante dentro do limite de operação.")
+                self.aguardando_reservatorio = False
+
+        # Reservatório Normal
+        else:
+            self.controle_potencia()
+
+        [ug.step() for ug in self.ugs]
+
+        return NV_FLAG_NORMAL
+
+    def verificar_condicionadores(self) -> int:
+        if True in (condic.ativo for condic in self.condicionadores_essenciais):
+            condics_ativos = [condic for condics in [self.condicionadores_essenciais, self.condicionadores] for condic in condics if condic.ativo]
+            condic_flag = [DEVE_NORMALIZAR for condic in condics_ativos if condic.gravidade == DEVE_NORMALIZAR]
+            condic_flag = [DEVE_INDISPONIBILIZAR for condic in condics_ativos if condic.gravidade == DEVE_INDISPONIBILIZAR]
+
+        if condic_flag in (DEVE_NORMALIZAR, DEVE_INDISPONIBILIZAR):
+            logger.info("Foram detectados condicionadores ativos!")
+            [logger.info(f"Condicionador: \"{condic.descricao}\", Gravidade: \"{condic.gravidade}\".") for condic in condics_ativos]
+
+        return condic_flag
 
     def leitura_periodica(self, delay: int) -> None:
-        try:
-            proxima_leitura = time() + delay
-            while True:
-                self.leituras_temporizadas()
-                for ug in self.ugs: ug.leituras_temporizadas()
+        proxima_leitura = time() + delay
+        while True:
+            self.leituras_temporizadas()
+            for ug in self.ugs: ug.leituras_temporizadas()
 
-                if True in (vd.voip_dict[r][0] for r in vd.voip_dict):
-                    Voip.acionar_chamada()
-                    pass
+            if True in (vd.voip_dict[r][0] for r in vd.voip_dict):
+                Voip.acionar_chamada()
+                pass
 
-                sleep(max(0, proxima_leitura - time()))
-
-        except Exception:
-            logger.error(f"Houve um problema ao executar a leitura periódica.")
-            logger.debug(f"Traceback: {traceback.format_exc()}")
+            sleep(max(0, proxima_leitura - time()))
 
     def leituras_temporizadas(self) -> None:
         if self.leitura_ED_SA_QLCF_Disj52ETrip.valor != 0 and not vd.voip_dict["SA_QLCF_DISJ_52E_TRIP"][0]:
@@ -734,6 +728,76 @@ class Usina:
             vd.voip_dict["SA_QCADE_BOMBAS_DNG_AUTO"][0] = True
         elif self.leitura_ED_SA_QCADE_BombasDng_Auto.valor == 1 and vd.voip_dict["SA_QCADE_BOMBAS_DNG_AUTO"][0]:
             vd.voip_dict["SA_QCADE_BOMBAS_DNG_AUTO"][0] = False
+
+    def open_modbus(self) -> None:
+        logger.debug("Opening Modbus")
+        if not self.clp["UG1"].open():
+            raise ConnectionError(f"Modbus client ({self.cfg['UG1_slave_ip']}:{self.cfg['UG1_slave_porta']}) failed to open.")
+
+        if not self.clp["UG2"].open():
+            raise ConnectionError(f"Modbus client ({self.cfg['UG2_slave_ip']}:{self.cfg['UG2_slave_porta']}) failed to open.")
+
+        if not self.clp["UG3"].open():
+            raise ConnectionError(f"Modbus client ({self.cfg['UG3_slave_ip']}:{self.cfg['UG3_slave_porta']}) failed to open.")
+
+        if not self.clp["SA"].open():
+            raise ConnectionError(f"Modbus client ({self.cfg['USN_slave_ip']}:{self.cfg['USN_slave_porta']}) failed to open.")
+
+        if not self.clp["TDA"].open():
+            raise ConnectionError(f"Modbus client ({self.cfg['TDA_slave_ip']}:{self.cfg['TDA_slave_porta']}) failed to open.")
+
+        if not self.clp["MOA"].open():
+            raise ConnectionError(f"Modbus client ({self.cfg['MOA_slave_ip']}:{self.cfg['MOA_slave_porta']}) failed to open.")
+
+        logger.debug("Openned Modbus")
+
+    def close_modbus(self) -> None:
+        logger.debug("Closing Modbus")
+        self.clp["UG1"].close()
+        self.clp["UG2"].close()
+        self.clp["UG3"].close()
+        self.clp["SA"].close()
+        self.clp["TDA"].close()
+        logger.debug("Closed Modbus")
+
+    def verificar_clps(self) -> None:
+        if not ping(self.cfg["TDA_slave_ip"]):
+            self.TDA_Offline = True
+            self.db.update_tda_offline(True)
+            if self.TDA_Offline and self.hb_borda_emerg_ping == 0:
+                self.hb_borda_emerg_ping = 1
+                logger.critical("CLP TDA não respondeu a tentativa de comunicação!")
+
+        elif ping(self.cfg["TDA_slave_ip"]) and self.hb_borda_emerg_ping == 1:
+            logger.info("Comunicação com o CLP TDA reestabelecida.")
+            self.hb_borda_emerg_ping = 0
+            self.TDA_Offline = False
+            self.db.update_tda_offline(False)
+
+        if not ping(self.cfg["USN_slave_ip"]):
+            logger.critical("CLP SA não respondeu a tentativa de ping!")
+        if self.clp["SA"].open():
+            self.clp["SA"].close()
+        else:
+            logger.critical("CLP SA não respondeu a tentativa de conexão ModBus!")
+            self.clp["SA"].close()
+
+        if not ping(self.cfg["MOA_slave_ip"]):
+            logger.warning("CLP MOA não respondeu a tentativa de ping!")
+        if self.clp["MOA"].open():
+            self.clp["MOA"].close()
+        else:
+            logger.warning("CLP MOA não respondeu a tentativa de conexão ModBus!")
+
+        for ug in self.ugs:
+            if not ping(self.cfg[f"UG{ug.id}_slave_ip"]):
+                logger.critical(f"CLP UG{ug.id} não respondeu a tentativa de ping!")
+                ug.forcar_estado_manual()
+            if self.clp[f"UG{ug.id}"].open():
+                self.clp[f"UG{ug.id}"].close()
+            else:
+                ug.forcar_estado_manual()
+                logger.critical(f"CLP UG{ug.id} não respondeu a tentativa de conexão ModBus!")
 
     def leituras_iniciais(self) -> None:
         # leituras de sistemas essenciais para a operação

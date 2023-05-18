@@ -55,11 +55,16 @@ class UnidadeGeracao:
         self.__condicionadores_essenciais = []
         self.__condicionadores_atenuadores = []
 
+        self.tempo_normalizar = 0
         self.pot_alvo_anterior = -1
         self.ajuste_inicial_cx_esp = -1
 
-        self.release_timer = False
+        self.release = False
+        self.parar_timer = False
         self.limpeza_grade = False
+        self.borda_partindo = False
+        self.norma_agendada = False
+        self.timer_partindo = False
         self.enviar_trip_eletrico = False
         self.aux_tempo_sincronizada = None
         self.deve_ler_condicionadores = False
@@ -70,7 +75,6 @@ class UnidadeGeracao:
         self.ts_auxiliar = self.get_time()
 
         self.leituras_iniciais()
-        self.iniciar_ultimo_estado()
 
     @property
     def id(self) -> int:
@@ -207,21 +211,6 @@ class UnidadeGeracao:
         self.clp["MOA"].write_single_register(REG[f"MOA_OUT_STATE_UG{self.id}"], self.codigo_state)
         self.clp["MOA"].write_single_register(REG[f"MOA_OUT_ETAPA_UG{self.id}"], self.etapa_atual)
 
-    def iniciar_ultimo_estado(self) -> None:
-        estado = self.db.get_ultimo_estado_ug(self.id)
-
-        if estado == MOA_UNIDADE_MANUAL:
-            self.__next_state = StateManual(self)
-        elif estado == MOA_UNIDADE_DISPONIVEL:
-            self.__next_state = StateDisponivel(self)
-        elif estado == MOA_UNIDADE_RESTRITA:
-            self.__next_state = StateRestrito(self)
-        elif estado == MOA_UNIDADE_INDISPONIVEL:
-            self.__next_state = StateIndisponivel(self)
-        else:
-            logger.error(f"[UG{self.id}] Não foi possível ler o último estado da Unidade. Entrando em modo Manual.")
-            self.__next_state = StateManual(self)
-
     def forcar_estado_disponivel(self) -> None:
         try:
             self.reconhece_reset_alarmes()
@@ -255,6 +244,24 @@ class UnidadeGeracao:
         except Exception:
             logger.error(f"[UG{self.id}] Não foi possível forçar o estado \"Restrito\".")
             logger.debug(f"Traceback: {traceback.format_exc()}")
+
+    def iniciar_ultimo_estado(self) -> None:
+        estado = self.db.get_ultimo_estado_ug(self.id)
+
+        if estado == None:
+            self.__next_state = StateDisponivel(self)
+        else:
+            if estado == MOA_UNIDADE_MANUAL:
+                self.__next_state = StateManual(self)
+            elif estado == MOA_UNIDADE_DISPONIVEL:
+                self.__next_state = StateDisponivel(self)
+            elif estado == MOA_UNIDADE_RESTRITA:
+                self.__next_state = StateRestrito(self)
+            elif estado == MOA_UNIDADE_INDISPONIVEL:
+                self.__next_state = StateIndisponivel(self)
+            else:
+                logger.error(f"[UG{self.id}] Não foi possível ler o último estado da Unidade. Entrando em modo Manual.")
+                self.__next_state = StateManual(self)
 
     def step(self) -> None:
         try:
@@ -340,6 +347,33 @@ class UnidadeGeracao:
             logger.debug(f"Traceback: {traceback.format_exc()}")
             return False
 
+    def bloquear_ug(self) -> None:
+        self.parar_timer = True
+
+        if self.etapa_atual == UNIDADE_PARADA:
+            self.acionar_trip_eletrico()
+            self.acionar_trip_logico()
+        elif not self.borda_parar and self.parar():
+            self.borda_parar = True
+        else:
+            logger.debug(f"[UG{self.id}] Unidade parando.")
+
+    def normalizar_ug(self) -> bool:
+        if (self.tentativas_de_normalizacao > self.limite_tentativas_de_normalizacao):
+            logger.warning(f"[UG{self.id}] Indisponibilizando UG por tentativas de normalização.")
+            return False
+
+        elif self.etapa_atual == UNIDADE_PARANDO or self.etapa_atual == UNIDADE_SINCRONIZANDO:
+            logger.debug(f"[UG{self.id}] Esperando para normalizar")
+            return True
+
+        elif (self.ts_auxiliar - self.get_time()).seconds > self.tempo_entre_tentativas:
+            self.tentativas_de_normalizacao += 1
+            self.ts_auxiliar = self.get_time()
+            logger.info(f"[UG{self.id}] Normalizando UG (Tentativa {self.tentativas_de_normalizacao}/{self.limite_tentativas_de_normalizacao}).")
+            self.reconhece_reset_alarmes()
+            return True
+
     def acionar_trip_eletrico(self) -> bool:
         try:
             self.enviar_trip_eletrico = True
@@ -422,6 +456,55 @@ class UnidadeGeracao:
             logger.debug(f"Traceback: {traceback.format_exc()}")
             return False
 
+    def controle_etapas(self) -> None:
+        if self.etapa_atual == UNIDADE_PARANDO:
+            if self.setpoint >= self.setpoint_minimo:
+                self.enviar_setpoint(self.setpoint)
+
+        elif self.etapa_atual == UNIDADE_SINCRONIZANDO:
+            if not self.borda_partindo:
+                Thread(target=lambda: self.verificar_partida()).start()
+                self.borda_partindo = True
+
+            self.parar() if self.setpoint == 0 else self.enviar_setpoint(self.setpoint)
+
+        elif self.etapa_atual == UNIDADE_PARADA:
+            if self.setpoint >= self.setpoint_minimo:
+                self.partir()
+                self.enviar_setpoint(self.setpoint)
+
+        elif self.etapa_atual == UNIDADE_SINCRONIZADA:
+            self.borda_partindo = False
+            if not self.aux_tempo_sincronizada:
+                self.aux_tempo_sincronizada = self.get_time()
+
+            elif (self.get_time() - self.aux_tempo_sincronizada).seconds >= 300:
+                self.tentativas_de_normalizacao = 0
+
+            self.parar() if self.setpoint == 0 else self.enviar_setpoint(self.setpoint)
+
+        if self.etapa_atual not in UNIDADE_LISTA_DE_ETAPAS:
+            self.inconsistente = True
+
+        if not self.etapa_atual == UNIDADE_SINCRONIZADA:
+            self.aux_tempo_sincronizada = None
+
+    def ajuste_ganho_cx_espiral(self) -> None:
+        atenuacao = 0
+        for condic in self.condicionadores_atenuadores:
+            atenuacao = max(atenuacao, condic.valor)
+            logger.debug(f"[UG{self.id}] Atenuador \"{condic.descr}\" -> Atenuação: {atenuacao} / Leitura: {condic.leitura.valor}")
+
+        ganho = 1 - atenuacao
+        aux = self.setpoint
+        if (self.setpoint > self.setpoint_minimo) and self.setpoint * ganho > self.setpoint_minimo:
+            self.setpoint = self.setpoint * ganho
+
+        elif (self.setpoint * ganho < self.setpoint_minimo) and (self.setpoint > self.setpoint_minimo):
+            self.setpoint =  self.setpoint_minimo
+
+        logger.debug(f"[UG{self.id}] SP {aux} * GANHO {ganho} = {self.setpoint}")
+
     def ajuste_inicial_cx(self):
         try:
             self.cx_controle_p = (self.leitura_caixa_espiral.valor - self.cfg["press_cx_alvo"]) * self.cfg["cx_kp"]
@@ -476,59 +559,33 @@ class UnidadeGeracao:
             logger.error(f"[UG{self.id}] Houve um erro no método de Controle por Caixa Espiral da Unidade.")
             logger.debug(f"Traceback: {traceback.format_exc()}")
 
-    def leituras_temporizadas(self) -> None:
-        try:
-            if self.leitura_voip["leitura_ED_FreioPastilhaGasta"].valor != 0 and not vd.voip_dict[f"FREIO_PASTILHA_GASTA_UG{self.id}"][0]:
-                logger.warning(f"[UG{self.id}] O sensor de Freio da UG retornou que a Pastilha está gasta, favor considerar troca.")
-                vd.voip_dict[f"FREIO_PASTILHA_GASTA_UG{self.id}"][0] = True
-            elif self.leitura_voip["leitura_ED_FreioPastilhaGasta"].valor == 0 and vd.voip_dict[f"FREIO_PASTILHA_GASTA_UG{self.id}"][0]:
-                vd.voip_dict[f"FREIO_PASTILHA_GASTA_UG{self.id}"][0] = False
+    def verificar_partida(self) -> None:
+        timer = time() + 600
+        logger.debug(f"[UG{self.id}] Iniciando o timer de verificação de partida")
+        while time() < timer:
+            if self.etapa_atual == UNIDADE_SINCRONIZADA or self.timer_partindo:
+                logger.debug(f"[UG{self.id}] Condição ativada! Saindo do timer de verificação de partida...")
+                self.timer_partindo = False
+                self.release = True
+                return
 
-            if self.leitura_voip["leitura_ED_FiltroPresSujo75Troc"].valor != 0 and not vd.voip_dict[f"FILTRO_PRES_SUJO_75_TROC_UG{self.id}"][0]:
-                logger.warning(f"[UG{self.id}] O sensor do Filtro de Pressão UHRV retornou que o filtro está 75% sujo, favor considerar troca.")
-                vd.voip_dict[f"FILTRO_PRES_SUJO_75_TROC_UG{self.id}"][0] = True
-            elif self.leitura_voip["leitura_ED_FiltroPresSujo75Troc"].valor == 0 and vd.voip_dict[f"FILTRO_PRES_SUJO_75_TROC_UG{self.id}"][0]:
-                vd.voip_dict[f"FILTRO_PRES_SUJO_75_TROC_UG{self.id}"][0] = False
+        logger.debug(f"[UG{self.id}] A Unidade estourou o timer de verificação de partida, adicionando condição para normalizar")
+        self.clp[f"UG{self.id}"].write_single_coil(REG[f"UG{self.id}_CD_EmergenciaViaSuper"], [1])
+        self.clp[f"UG{self.id}"].write_single_coil(REG[f"UG{self.id}_CD_EmergenciaViaSuper"], [0])
+        self.borda_partindo = False
+        self.release = True
 
-            if self.leitura_voip["leitura_ED_FiltroRetSujo75Troc"].valor != 0 and not vd.voip_dict[f"FILTRO_RET_SUJO_75_TROC_UG{self.id}"][0]:
-                logger.warning(f"[UG{self.id}] O sensor do Filtro de Retorno UHRV retornou que o filtro está 75% sujo, favor considerar troca.")
-                vd.voip_dict[f"FILTRO_RET_SUJO_75_TROC_UG{self.id}"][0] = True
-            elif self.leitura_voip["leitura_ED_FiltroRetSujo75Troc"].valor == 0 and vd.voip_dict[f"FILTRO_RET_SUJO_75_TROC_UG{self.id}"][0]:
-                vd.voip_dict[f"FILTRO_RET_SUJO_75_TROC_UG{self.id}"][0] = False
+    def verificar_condicionadores(self) -> int:
+        if True in (condic.ativo for condic in self.condicionadores_essenciais):
+            condics_ativos = [condic for condics in [self.condicionadores_essenciais, self.condicionadores] for condic in condics if condic.ativo]
+            condic_flag = [DEVE_NORMALIZAR for condic in condics_ativos if condic.gravidade == DEVE_NORMALIZAR] if self.codigo_state != MOA_UNIDADE_RESTRITA else None
+            condic_flag = [DEVE_AGUARDAR for condic in condics_ativos if condic.gravidade == DEVE_AGUARDAR]
+            condic_flag = [DEVE_INDISPONIBILIZAR for condic in condics_ativos if condic.gravidade == DEVE_INDISPONIBILIZAR]
 
-            if self.leitura_voip["leitura_ED_UHLMFilt1PresSujo75Troc"].valor != 0 and not vd.voip_dict[f"UHLM_FILTR_1_PRES_SUJO_75_TROC_UG{self.id}"][0]:
-                logger.warning(f"[UG{self.id}] O sensor do Filtro 1 de Pressão UHLM retornou que o filtro está 75% sujo, favor considerar troca.")
-                vd.voip_dict[f"UHLM_FILTR_1_PRES_SUJO_75_TROC_UG{self.id}"][0] = True
-            elif self.leitura_voip["leitura_ED_UHLMFilt1PresSujo75Troc"].valor == 0 and vd.voip_dict[f"UHLM_FILTR_1_PRES_SUJO_75_TROC_UG{self.id}"][0]:
-                vd.voip_dict[f"UHLM_FILTR_1_PRES_SUJO_75_TROC_UG{self.id}"][0] = False
-
-            if self.leitura_voip["leitura_ED_UHLMFilt2PresSujo75Troc"].valor != 0 and not vd.voip_dict[f"UHLM_FILTR_2_PRES_SUJO_75_TROC_UG{self.id}"][0]:
-                logger.warning(f"[UG{self.id}] O sensor do Filtro 2 de Pressão UHLM retornou que o filtro está 75% sujo, favor considerar troca.")
-                vd.voip_dict[f"UHLM_FILTR_2_PRES_SUJO_75_TROC_UG{self.id}"][0] = True
-            elif self.leitura_voip["leitura_ED_UHLMFilt2PresSujo75Troc"].valor == 0 and vd.voip_dict[f"UHLM_FILTR_2_PRES_SUJO_75_TROC_UG{self.id}"][0]:
-                vd.voip_dict[f"UHLM_FILTR_2_PRES_SUJO_75_TROC_UG{self.id}"][0] = False
-
-            if self.leitura_voip["leitura_ED_FiltroPressaoBbaMecSj75"].valor != 0 and not vd.voip_dict[f"FILTRO_PRESSAO_BBA_MEC_SJ_75_UG{self.id}"][0]:
-                logger.warning(f"[UG{self.id}] O sensor do Filtro de Pressão da Bomba Mecânica retornou que o filtro está 75% sujo, favor considerar troca.")
-                vd.voip_dict[f"FILTRO_PRESSAO_BBA_MEC_SJ_75_UG{self.id}"][0] = True
-            elif self.leitura_voip["leitura_ED_FiltroPressaoBbaMecSj75"].valor == 0 and vd.voip_dict[f"FILTRO_PRESSAO_BBA_MEC_SJ_75_UG{self.id}"][0]:
-                vd.voip_dict[f"FILTRO_PRESSAO_BBA_MEC_SJ_75_UG{self.id}"][0] = False
-
-            if self.leitura_voip["leitura_ED_TripPartRes"].valor != 0 and not vd.voip_dict[f"TRIP_PART_RES_UG{self.id}"][0]:
-                logger.warning(f"[UG{self.id}] O sensor TripPartRes retornou valor 1.")
-                vd.voip_dict[f"TRIP_PART_RES_UG{self.id}"][0] = True
-            elif self.leitura_voip["leitura_ED_TripPartRes"].valor == 0 and vd.voip_dict[f"TRIP_PART_RES_UG{self.id}"][0]:
-                vd.voip_dict[f"TRIP_PART_RES_UG{self.id}"][0] = False
-
-            if self.leitura_voip["leitura_ED_FreioCmdRemoto"].valor != 1:
-                logger.debug(f"[UG{self.id}] O freio da UG saiu do modo remoto, favor analisar a situação.")
-
-            if self.leitura_voip[f"leitura_ED_QCAUG{self.id}_Remoto"].valor != 1:
-                logger.debug(f"[UG{self.id}] O compressor da UG saiu do modo remoto, favor analisar a situação.")
-
-        except Exception:
-            logger.error(f"[UG{self.id}] Houve um erro ao realizar o controle de leituras temporizadas.")
-            logger.debug(f"Traceback: {traceback.format_exc()}")
+        if condic_flag in (DEVE_NORMALIZAR, DEVE_AGUARDAR, DEVE_INDISPONIBILIZAR):
+            logger.info(f"[UG{self.id}] Foram detectados condicionadores ativos!")
+            [logger.info(f"[UG{self.id}] Condicionador: \"{condic.descricao}\", Gravidade: \"{condic.gravidade}\".") for condic in condics_ativos]
+        return condic_flag
 
     def atualizar_limites_operacao(self, db):
         self.prioridade = int(db[f"ug{self.id}_prioridade"])
@@ -633,6 +690,60 @@ class UnidadeGeracao:
 
         except Exception:
             logger.error(f"[UG{self.id}] Houve um erro ao realizar o controle de limites de temperaturas e caixa espiral.")
+            logger.debug(f"Traceback: {traceback.format_exc()}")
+
+    def leituras_temporizadas(self) -> None:
+        try:
+            if self.leitura_voip["leitura_ED_FreioPastilhaGasta"].valor != 0 and not vd.voip_dict[f"FREIO_PASTILHA_GASTA_UG{self.id}"][0]:
+                logger.warning(f"[UG{self.id}] O sensor de Freio da UG retornou que a Pastilha está gasta, favor considerar troca.")
+                vd.voip_dict[f"FREIO_PASTILHA_GASTA_UG{self.id}"][0] = True
+            elif self.leitura_voip["leitura_ED_FreioPastilhaGasta"].valor == 0 and vd.voip_dict[f"FREIO_PASTILHA_GASTA_UG{self.id}"][0]:
+                vd.voip_dict[f"FREIO_PASTILHA_GASTA_UG{self.id}"][0] = False
+
+            if self.leitura_voip["leitura_ED_FiltroPresSujo75Troc"].valor != 0 and not vd.voip_dict[f"FILTRO_PRES_SUJO_75_TROC_UG{self.id}"][0]:
+                logger.warning(f"[UG{self.id}] O sensor do Filtro de Pressão UHRV retornou que o filtro está 75% sujo, favor considerar troca.")
+                vd.voip_dict[f"FILTRO_PRES_SUJO_75_TROC_UG{self.id}"][0] = True
+            elif self.leitura_voip["leitura_ED_FiltroPresSujo75Troc"].valor == 0 and vd.voip_dict[f"FILTRO_PRES_SUJO_75_TROC_UG{self.id}"][0]:
+                vd.voip_dict[f"FILTRO_PRES_SUJO_75_TROC_UG{self.id}"][0] = False
+
+            if self.leitura_voip["leitura_ED_FiltroRetSujo75Troc"].valor != 0 and not vd.voip_dict[f"FILTRO_RET_SUJO_75_TROC_UG{self.id}"][0]:
+                logger.warning(f"[UG{self.id}] O sensor do Filtro de Retorno UHRV retornou que o filtro está 75% sujo, favor considerar troca.")
+                vd.voip_dict[f"FILTRO_RET_SUJO_75_TROC_UG{self.id}"][0] = True
+            elif self.leitura_voip["leitura_ED_FiltroRetSujo75Troc"].valor == 0 and vd.voip_dict[f"FILTRO_RET_SUJO_75_TROC_UG{self.id}"][0]:
+                vd.voip_dict[f"FILTRO_RET_SUJO_75_TROC_UG{self.id}"][0] = False
+
+            if self.leitura_voip["leitura_ED_UHLMFilt1PresSujo75Troc"].valor != 0 and not vd.voip_dict[f"UHLM_FILTR_1_PRES_SUJO_75_TROC_UG{self.id}"][0]:
+                logger.warning(f"[UG{self.id}] O sensor do Filtro 1 de Pressão UHLM retornou que o filtro está 75% sujo, favor considerar troca.")
+                vd.voip_dict[f"UHLM_FILTR_1_PRES_SUJO_75_TROC_UG{self.id}"][0] = True
+            elif self.leitura_voip["leitura_ED_UHLMFilt1PresSujo75Troc"].valor == 0 and vd.voip_dict[f"UHLM_FILTR_1_PRES_SUJO_75_TROC_UG{self.id}"][0]:
+                vd.voip_dict[f"UHLM_FILTR_1_PRES_SUJO_75_TROC_UG{self.id}"][0] = False
+
+            if self.leitura_voip["leitura_ED_UHLMFilt2PresSujo75Troc"].valor != 0 and not vd.voip_dict[f"UHLM_FILTR_2_PRES_SUJO_75_TROC_UG{self.id}"][0]:
+                logger.warning(f"[UG{self.id}] O sensor do Filtro 2 de Pressão UHLM retornou que o filtro está 75% sujo, favor considerar troca.")
+                vd.voip_dict[f"UHLM_FILTR_2_PRES_SUJO_75_TROC_UG{self.id}"][0] = True
+            elif self.leitura_voip["leitura_ED_UHLMFilt2PresSujo75Troc"].valor == 0 and vd.voip_dict[f"UHLM_FILTR_2_PRES_SUJO_75_TROC_UG{self.id}"][0]:
+                vd.voip_dict[f"UHLM_FILTR_2_PRES_SUJO_75_TROC_UG{self.id}"][0] = False
+
+            if self.leitura_voip["leitura_ED_FiltroPressaoBbaMecSj75"].valor != 0 and not vd.voip_dict[f"FILTRO_PRESSAO_BBA_MEC_SJ_75_UG{self.id}"][0]:
+                logger.warning(f"[UG{self.id}] O sensor do Filtro de Pressão da Bomba Mecânica retornou que o filtro está 75% sujo, favor considerar troca.")
+                vd.voip_dict[f"FILTRO_PRESSAO_BBA_MEC_SJ_75_UG{self.id}"][0] = True
+            elif self.leitura_voip["leitura_ED_FiltroPressaoBbaMecSj75"].valor == 0 and vd.voip_dict[f"FILTRO_PRESSAO_BBA_MEC_SJ_75_UG{self.id}"][0]:
+                vd.voip_dict[f"FILTRO_PRESSAO_BBA_MEC_SJ_75_UG{self.id}"][0] = False
+
+            if self.leitura_voip["leitura_ED_TripPartRes"].valor != 0 and not vd.voip_dict[f"TRIP_PART_RES_UG{self.id}"][0]:
+                logger.warning(f"[UG{self.id}] O sensor TripPartRes retornou valor 1.")
+                vd.voip_dict[f"TRIP_PART_RES_UG{self.id}"][0] = True
+            elif self.leitura_voip["leitura_ED_TripPartRes"].valor == 0 and vd.voip_dict[f"TRIP_PART_RES_UG{self.id}"][0]:
+                vd.voip_dict[f"TRIP_PART_RES_UG{self.id}"][0] = False
+
+            if self.leitura_voip["leitura_ED_FreioCmdRemoto"].valor != 1:
+                logger.debug(f"[UG{self.id}] O freio da UG saiu do modo remoto, favor analisar a situação.")
+
+            if self.leitura_voip[f"leitura_ED_QCAUG{self.id}_Remoto"].valor != 1:
+                logger.debug(f"[UG{self.id}] O compressor da UG saiu do modo remoto, favor analisar a situação.")
+
+        except Exception:
+            logger.error(f"[UG{self.id}] Houve um erro ao realizar o controle de leituras temporizadas.")
             logger.debug(f"Traceback: {traceback.format_exc()}")
 
     def leituras_iniciais(self):
