@@ -1,11 +1,4 @@
-import pytz
-import logging
-import threading
-
-from sys import stdout
-from time import sleep
-from datetime import datetime
-from mysql.connector import pooling
+from simulador.main import *
 
 lock = threading.Lock()
 
@@ -40,7 +33,7 @@ class Controlador:
         self.conn = self.connection_pool.get_connection()
         self.cursor = self.conn.cursor()
 
-    def get_time(self) -> object:
+    def get_time(self) -> datetime:
         return datetime.now(pytz.timezone("Brazil/East")).replace(tzinfo=None)
 
     def run(self):
@@ -48,36 +41,36 @@ class Controlador:
         last_log_time = -1
         counter_timed_afluente = 0
 
-        while not self.dict.GLB["stop_sim"]:
+        while not self.dict["GLB"]["stop_sim"]:
             w = 0.5
             qmed = 7
             qdelta = 3
 
-            self.dict.GLB["stop_sim"] = self.dict.GLB["stop_gui"]
+            self.dict["GLB"]["stop_sim"] = self.dict["GLB"]["stop_gui"]
 
             try:
                 t_inicio_passo = self.get_time()
                 lock.acquire()
 
-                if (self.timed_afluente[counter_timed_afluente + 1][1] <= self.dict.GLB["tempo_simul"]):
+                if (self.timed_afluente[counter_timed_afluente + 1][1] <= self.dict["GLB"]["tempo_simul"]):
                     counter_timed_afluente += 1
 
                 if self.timed_afluente[counter_timed_afluente][2] == -1:
-                    self.dict.GLB["stop_sim"] = True
-                    self.dict.GLB["stop_gui"] = True
+                    self.dict["GLB"]["stop_sim"] = True
+                    self.dict["GLB"]["stop_gui"] = True
                     exit()
 
-                self.dict.USN["q_alfuente"] = self.timed_afluente[counter_timed_afluente][2]
+                self.dict["USN"]["q_alfuente"] = self.timed_afluente[counter_timed_afluente][2]
 
-                duty = (((self.dict.GLB["tempo_simul"] *  w) % 3600) / 3600)
-                self.dict.USN["q_alfuente"] = qmed - (qdelta/2) + qdelta * (2 * duty) if duty <= 0.5 else qmed + (qdelta/2) + qdelta * (2 * (0.5-duty))
+                duty = (((self.dict["GLB"]["tempo_simul"] *  w) % 3600) / 3600)
+                self.dict["USN"]["q_alfuente"] = qmed - (qdelta/2) + qdelta * (2 * duty) if duty <= 0.5 else qmed + (qdelta/2) + qdelta * (2 * (0.5-duty))
 
                 lock.release()
 
-                if not int(self.dict.GLB["tempo_simul"] / 60) == int(last_log_time / 60):
-                    last_log_time = self.dict.GLB["tempo_simul"]
+                if not int(self.dict["GLB"]["tempo_simul"] / 60) == int(last_log_time / 60):
+                    last_log_time = self.dict["GLB"]["tempo_simul"]
                     self.cursor.execute(
-                        f"INSERT INTO debug.simul_data VALUES({self.get_time().timestamp()}, \
+                        f"INSERT INTO debug.simul_data VALUES({time()}, \
                         {self.dict['q_alfuente']}, \
                         {self.dict['nv_montante']}, \
                         {self.dict['potencia_kw_ug1']}, \
@@ -93,5 +86,5 @@ class Controlador:
                     sleep(tempo_restante)
 
             except KeyboardInterrupt:
-                self.dict.GLB["stop_gui"] = True
+                self.dict["GLB"]["stop_gui"] = True
                 continue

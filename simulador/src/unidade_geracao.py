@@ -1,13 +1,9 @@
-import logging
-import numpy as np
-
-from const import *
-from time_handler import TimeHandler
+from simulador.main import *
 
 logger = logging.getLogger("__main__")
 
 class Ug:
-    def __init__(self, id, shared_dict, time_handler: TimeHandler) -> None:
+    def __init__(self, id, shared_dict, time_handler: Temporizador) -> None:
         self.id = id
         self.dict = shared_dict
 

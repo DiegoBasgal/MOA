@@ -1,18 +1,16 @@
-import pytz
-import logging
-
-from datetime import datetime
+from simulador.main import *
 
 logger = logging.getLogger("__main__")
 
-class TimeHandler:
+class Temporizador:
     def __init__(self, shared_dict) -> None:
+
         self.dict = shared_dict
 
-        self.speed = 50
+        self.velocidade = 50
         self.escala_ruido = 0.1
         self.passo_simulacao = 0.001
-        self.segundos_por_passo = self.passo_simulacao * self.speed
+        self.segundos_por_passo = self.passo_simulacao * self.velocidade
 
     def get_time(self) -> datetime:
         return datetime.now(pytz.timezone("Brazil/East")).replace(tzinfo=None)

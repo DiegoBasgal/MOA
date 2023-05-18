@@ -1,25 +1,11 @@
-import pytz
-import logging
-import threading
-import traceback
-import numpy as np
-
-from time import sleep
-from datetime import datetime
-from asyncio.log import logger
-from pyModbusTCP.server import ModbusServer, DataBank
-
-from reg import *
-from const import *
-from dj52L import Dj52L
-from unidade_geracao import Ug
-from time_handler import TimeHandler
+from simulador.main import *
 
 lock = threading.Lock()
 logger = logging.getLogger("__main__")
 
 class Planta:
-    def __init__(self, shared_dict, dj52L: Dj52L, ugs: list([Ug]), time_handler: TimeHandler) -> None:
+    def __init__(self, shared_dict, dj52L: Dj52L, ugs: "list[Ug]", time_handler: Temporizador) -> None:
+
         self.ugs = ugs
         self.dj52L = dj52L
         self.dict = shared_dict

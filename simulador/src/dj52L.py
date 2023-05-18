@@ -1,14 +1,9 @@
-import logging
-
-from MySQLdb import Time
-
-from const import *
-from time_handler import TimeHandler
+from simulador.main import *
 
 logger = logging.getLogger("__main__")
 
 class Dj52L:
-    def __init__(self, shared_dict, time_handler: TimeHandler) -> None:
+    def __init__(self, shared_dict, time_handler: Temporizador) -> None:
         self.dict = shared_dict
 
         self.segundos_por_passo = time_handler.segundos_por_passo

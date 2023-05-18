@@ -4,33 +4,19 @@ import src.dicionarios.dict as d
 
 from time import sleep, time
 
-from leituras import *
+from src.funcoes.leitura import *
 from condicionadores import *
 from dicionarios.reg import *
 from dicionarios.const import *
 
 from usina import Usina
-from mensageiro.voip import Voip
 from unidade_geracao import UnidadeDeGeracao
 
 logger = logging.getLogger("__main__")
 
-class Ocorrencias(Usina):
-    def __init__(self, clp: ModbusClient = None) -> None:
+class OcorrenciasUsn(Usina):
+    def __init__(self, clp: "dict[str, ModbusClient]"=None) -> None:
         super().__init__(clp)
-
-    # Property/Setter Protegidos
-    @property
-    def ugs(self) -> "list[UnidadeDeGeracao]":
-        return self._ugs
-
-    @ugs.setter
-    def ugs(self, var: "list[UnidadeDeGeracao]") -> None:
-        self._ugs = var
-
-class OcorrenciasUsn(Ocorrencias):
-    def __init__(self, ugs):
-        super().__init__(ugs)
 
         self._condicionadores: "list[CondicionadorBase]"
         self._condicionadores_essenciais: "list[CondicionadorBase]"
@@ -99,9 +85,9 @@ class OcorrenciasUsn(Ocorrencias):
         self.condicionadores.append(CondicionadorBase(leitura_ED_SEL787_FalhaInterna))
 
 
-class OcorrenciasUg(Ocorrencias):
-    def __init__(self, ugs):
-        super().__init__(ugs)
+class OcorrenciasUg(Usina):
+    def __init__(self, clp: "dict[str, ModbusClient]"=None):
+        super().__init__(clp)
 
         self._temperatura_base: int = 100
         self._temperatura_limite: int = 200

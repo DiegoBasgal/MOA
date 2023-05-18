@@ -1,7 +1,7 @@
 __version__ = "0.1"
 __author__ = "Lucas Lavratti"
 
-from leituras import *
+from src.funcoes.leitura import *
 from unidade_geracao import UnidadeDeGeracao
 
 class CondicionadorBase:

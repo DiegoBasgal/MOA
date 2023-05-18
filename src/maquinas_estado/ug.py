@@ -1,23 +1,20 @@
 import logging
 
-from time import sleep, time
 from threading import Thread
 
-from dicionarios.const import *
-from src.ocorrencias import OcorrenciasUg
+from src.dicionarios.const import *
 from src.unidade_geracao import UnidadeDeGeracao
 
 logger = logging.getLogger("__main__")
 
 class State:
-    def __init__(self, parent: UnidadeDeGeracao=None, ocorrencias: OcorrenciasUg=None):
+    def __init__(self, parent: UnidadeDeGeracao=None):
         # VERIFICAÇÃO DE ARGUENTOS
-        if not parent or not ocorrencias:
-            logger.error("[UG-SM] Houve um erro ao importar as classes Unidade de Geração e Ocorrências")
+        if not parent:
+            logger.error("[UG-SM] Houve um erro ao importar a classe Unidade de Geração")
             raise ImportError
         else:
             self.parent = parent
-            self.oco = ocorrencias
 
     def step(self) -> object:
         pass
@@ -61,8 +58,8 @@ class StateRestrito(State):
 
     def step(self) -> State:
         self.parent.bloquear_unidade()
-        self.oco.controle_limites_operacao(self.parent)
-        flag = self.oco.verificar_condicionadores(self.parent)
+        self.parent.oco_ug.controle_limites_operacao(self.parent)
+        flag = self.parent.oco_ug.verificar_condicionadores(self.parent)
 
         if flag == CONDIC_INDISPONIBILIZAR:
             logger.warning(f"[UG{self.parent.id}] UG detectou condicionadores com gravidade alta, indisponibilizando UG.")
@@ -99,8 +96,8 @@ class StateDisponivel(State):
         self.parent.borda_parar = False
 
     def step(self) -> State:
-        self.oco.controle_limites_operacao(self.parent)
-        flag = self.oco.verificar_condicionadores(self.parent)
+        self.parent.oco_ug.controle_limites_operacao(self.parent)
+        flag = self.parent.oco_ug.verificar_condicionadores(self.parent)
 
         if flag == CONDIC_INDISPONIBILIZAR:
             logger.warning(f"[UG{self.parent.id}] Indisponibilizando UG.")
