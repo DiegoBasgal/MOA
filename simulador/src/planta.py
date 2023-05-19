@@ -1,4 +1,18 @@
-from simulador.main import *
+import pytz
+import logging
+import threading
+import traceback
+import numpy as np
+
+from time import sleep
+from datetime import datetime
+from pyModbusTCP.server import ModbusServer, DataBank
+
+from dicionarios.reg import *
+from dicionarios.const import *
+from unidade_geracao import Ug
+from dj52L import Dj52L
+from temporizador import Temporizador
 
 lock = threading.Lock()
 logger = logging.getLogger("__main__")
@@ -230,4 +244,4 @@ class Planta:
 
         except Exception as e:
             logger.exception(f"[SIM] Houve um erro ao escrever os valores no DataBank interno. Exception: \"{repr(e)}\"")
-            logger.exception(f"[SIM] Traceback: {traceback.print_stack}")
+            logger.exception(f"[SIM] Traceback: {traceback.format_exc()}")

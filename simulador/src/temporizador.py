@@ -1,4 +1,7 @@
-from simulador.main import *
+import pytz
+import logging
+
+from datetime import datetime
 
 logger = logging.getLogger("__main__")
 

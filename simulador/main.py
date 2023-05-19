@@ -1,23 +1,16 @@
-import pytz
 import logging
-import threading
 import traceback
-import numpy as np
 
 import simulador.src.dicionarios.dict as d
 
 from sys import stdout
-from MySQLdb import Time
-from time import sleep, time
 from threading import Thread
-from datetime import datetime
 from asyncio.log import logger
-from mysql.connector import pooling
-from pyModbusTCP.server import ModbusServer, DataBank
 
 from simulador.src.dj52L import *
 from simulador.src.planta import *
 from simulador.src.unidade_geracao import *
+
 from simulador.src.dicionarios.reg import *
 from simulador.src.dicionarios.const import *
 

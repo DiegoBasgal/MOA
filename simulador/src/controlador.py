@@ -1,4 +1,10 @@
-from simulador.main import *
+import pytz
+import logging
+import threading
+
+from time import time, sleep
+from datetime import datetime
+from mysql.connector import pooling
 
 lock = threading.Lock()
 

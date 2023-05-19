@@ -1,4 +1,7 @@
-from simulador.main import *
+import logging
+
+from dicionarios.const import *
+from temporizador import Temporizador
 
 logger = logging.getLogger("__main__")
 
