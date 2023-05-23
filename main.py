@@ -85,7 +85,7 @@ if __name__ == "__main__":
             try:
                 logger.info("Finalizando inicialização com intâncias da máquina de estados e Threads paralelas.")
 
-                threading.Thread(target=lambda: usn.oco.leitura_temporizada()).start()
+                threading.Thread(target=lambda: usn.leitura_periodica()).start()
 
                 sm: StateMachine = StateMachine(initial_state=Pronto(cfg, usn))
 

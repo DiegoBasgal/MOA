@@ -5,7 +5,7 @@ from src.funcoes.leitura import *
 from unidade_geracao import UnidadeDeGeracao
 
 class CondicionadorBase:
-    def __init__(self, leitura: LeituraBase, gravidade: int=2, etapas: list=[], ug_id: int=None, descr: str=None):
+    def __init__(self, leitura: LeituraModbus, gravidade: int=2, etapas: list=[], ug_id: int=None, descr: str=None):
         self.__etapas = etapas
         self.__leitura = leitura
         self.__gravidade = gravidade
@@ -58,7 +58,7 @@ class CondicionadorBase:
         self._ugs = var
 
 class CondicionadorExponencial(CondicionadorBase):
-    def __init__(self, leitura: LeituraBase, gravidade: int=2, valor_base: float=100, valor_limite: float=200, ordem: float=(1/4), descr: str=None):
+    def __init__(self, leitura: LeituraModbus, gravidade: int=2, valor_base: float=100, valor_limite: float=200, ordem: float=(1/4), descr: str=None):
         super().__init__(leitura, gravidade, descr)
         self.__ordem = ordem
         self.__valor_base = valor_base

@@ -8,11 +8,11 @@ from time import sleep, time
 from threading import Thread
 from datetime import  datetime, timedelta
 
-from src.funcoes.leitura import *
 from ocorrencias import *
 from dicionarios.const import *
-from dicionarios.reg import MOA
+from src.funcoes.leitura import *
 
+from mensageiro.voip import Voip
 from clients import ClientesUsina
 from banco_dados import BancoDados
 from unidade_geracao import UnidadeDeGeracao
@@ -47,32 +47,32 @@ class Usina:
 
         # ATRIBUIÇÃO DE VARIÁVEIS PROTEGIDAS
         self._potencia_ativa_kW: LeituraModbus = LeituraModbus(
-            SA["SA_RA_PM_810_Potencia_Ativa"],
+            REG_SA["SA_RA_PM_810_Potencia_Ativa"],
             self.clp["SA"],
             1,
             op=4,
         )
         self._nv_montante: LeituraModbus = LeituraModbus(
-            TDA["TDA_NivelMaisCasasAntes"],
+            REG_SA["TDA_NivelMaisCasasAntes"],
             self.clp["TDA"],
             1 / 10000,
             819.2,
             op=4,
         )
         self._tensao_rs: LeituraModbus = LeituraModbus(
-            SA["SA_RA_PM_810_Tensao_AB"],
+            REG_SA["SA_RA_PM_810_Tensao_AB"],
             self.clp["SA"],
             1000,
             op=4,
         )
         self._tensao_st: LeituraModbus = LeituraModbus(
-            SA["SA_RA_PM_810_Tensao_BC"],
+            REG_SA["SA_RA_PM_810_Tensao_BC"],
             self.clp["SA"],
             1000,
             op=4,
         )
         self._tensao_tr: LeituraModbus = LeituraModbus(
-            SA["SA_RA_PM_810_Tensao_CA"],
+            REG_SA["SA_RA_PM_810_Tensao_CA"],
             self.clp["SA"],
             1000,
             op=4,
@@ -178,11 +178,11 @@ class Usina:
         self.clp_emergencia = True
 
         try:
-            self.clp["UG1"].write_single_coil(UG["UG1_CD_EmergenciaViaSuper"], [1])
-            self.clp["UG2"].write_single_coil(UG["UG2_CD_EmergenciaViaSuper"], [1])
+            self.clp["UG1"].write_single_coil(REG_UG["UG1_CD_EmergenciaViaSuper"], [1])
+            self.clp["UG2"].write_single_coil(REG_UG["UG2_CD_EmergenciaViaSuper"], [1])
             sleep(5)
-            self.clp["UG1"].write_single_coil(UG["UG1_CD_EmergenciaViaSuper"], [0])
-            self.clp["UG2"].write_single_coil(UG["UG2_CD_EmergenciaViaSuper"], [0])
+            self.clp["UG1"].write_single_coil(REG_UG["UG1_CD_EmergenciaViaSuper"], [0])
+            self.clp["UG2"].write_single_coil(REG_UG["UG2_CD_EmergenciaViaSuper"], [0])
 
         except Exception:
             logger.error(f"[CON] Houve um erro ao acionar a emergência.")
@@ -191,10 +191,10 @@ class Usina:
     def resetar_emergencia(self) -> None:
         try:
             logger.debug("[CON] Reset geral.")
-            self.clp["SA"].write_single_coil(SA["SA_CD_ResetGeral"], [1])
-            self.clp["UG1"].write_single_coil(UG["UG1_CD_ResetGeral"], [1])
-            self.clp["UG2"].write_single_coil(UG["UG2_CD_ResetGeral"], [1])
-            self.clp["TDA"].write_single_coil(TDA["TDA_CD_ResetGeral"], [1])
+            self.clp["SA"].write_single_coil(REG_SA["SA_CD_ResetGeral"], [1])
+            self.clp["UG1"].write_single_coil(REG_UG["UG1_CD_ResetGeral"], [1])
+            self.clp["UG2"].write_single_coil(REG_UG["UG2_CD_ResetGeral"], [1])
+            self.clp["TDA"].write_single_coil(REG_SA["TDA_CD_ResetGeral"], [1])
 
         except Exception:
             logger.error(f"[CON] Houve um erro ao realizar o reset geral.")
@@ -203,9 +203,9 @@ class Usina:
     def reconhecer_emergencia(self) -> None:
         try:
             logger.debug("[CON] Cala sirene.")
-            self.clp["SA"].write_single_coil(SA["SA_CD_Cala_Sirene"], [1])
-            self.clp["UG1"].write_single_coil(UG["UG1_CD_Cala_Sirene"], [1])
-            self.clp["UG2"].write_single_coil(UG["UG2_CD_Cala_Sirene"], [1])
+            self.clp["SA"].write_single_coil(REG_SA["SA_CD_Cala_Sirene"], [1])
+            self.clp["UG1"].write_single_coil(REG_UG["UG1_CD_Cala_Sirene"], [1])
+            self.clp["UG2"].write_single_coil(REG_UG["UG2_CD_Cala_Sirene"], [1])
 
         except Exception:
             logger.error(f"[CON] Houve um erro ao reconhecer os alarmes.")
@@ -213,11 +213,11 @@ class Usina:
 
     def resetar_tda(self) -> None:
         try:
-            self.clp["TDA"].write_single_coil(TDA["TDA_CD_ResetGeral"], [1])
-            self.clp["TDA"].write_single_coil(TDA["TDA_CD_Hab_Nivel"], [0])
-            self.clp["TDA"].write_single_coil(TDA["TDA_CD_Desab_Nivel"], [1])
-            self.clp["TDA"].write_single_coil(TDA["TDA_CD_Hab_Religamento52L"], [0])
-            self.clp["TDA"].write_single_coil(TDA["TDA_CD_Desab_Religamento52L"], [1])
+            self.clp["TDA"].write_single_coil(REG_SA["TDA_CD_ResetGeral"], [1])
+            self.clp["TDA"].write_single_coil(REG_SA["TDA_CD_Hab_Nivel"], [0])
+            self.clp["TDA"].write_single_coil(REG_SA["TDA_CD_Desab_Nivel"], [1])
+            self.clp["TDA"].write_single_coil(REG_SA["TDA_CD_Hab_Religamento52L"], [0])
+            self.clp["TDA"].write_single_coil(REG_SA["TDA_CD_Desab_Religamento52L"], [1])
 
         except Exception:
             logger.error(f"[CON] Houve um erro ao modificar os controles locais.")
@@ -247,12 +247,22 @@ class Usina:
 
     ### MÉTODOS DE CONTROLE DE OPERAÇÃO:
 
+    def leitura_periodica(self):
+        logger.debug("Iniciando o timer de leitura periódica. Tempo definido -> \"30 min\".")
+        while True:
+            self.oco_ug.leitura_temporizada()
+            self.oco_usn.leitura_temporizada()
+            if True in (d.voip[r][0] for r in d.voip):
+                Voip.acionar_chamada()
+                pass
+            sleep(max(0, (time() + 1800) - time()))
+
     def fechaDj52L(self) -> bool:
         try:
             if self.verificar_falhas_52l():
                 return False
             else:
-                response = self.clp["SA"].write_single_register(SA["SA_CD_Liga_DJ1"], 1)
+                response = self.clp["SA"].write_single_register(REG_SA["SA_CD_Liga_DJ1"], 1)
                 return response
 
         except Exception:
@@ -262,15 +272,15 @@ class Usina:
 
     def verificar_falhas_52l(self) -> bool:
         dict_flags: "dict[str, int]" = {
-            SA["SA_RD_DJ1_FalhaInt"]: 1,
-            SA["SA_ED_DisjDJ1_Local"]: 1,
-            SA["SA_ED_DisjDJ1_AlPressBaixa"]: 1,
-            SA["SA_ED_DisjDJ1_BloqPressBaixa"]: 1,
-            SA["SA_ED_DisjDJ1_SuperBobAbert2"]: 0,
-            SA["SA_ED_DisjDJ1_Sup125VccBoFeAb1"]: 0,
-            SA["SA_ED_DisjDJ1_Super125VccCiMot"]: 0,
-            SA["SA_ED_DisjDJ1_Super125VccCiCom"]: 0,
-            SA["SA_ED_DisjDJ1_Sup125VccBoFeAb2"]: 0,
+            REG_SA["SA_RD_DJ1_FalhaInt"]: 1,
+            REG_SA["SA_ED_DisjDJ1_Local"]: 1,
+            REG_SA["SA_ED_DisjDJ1_AlPressBaixa"]: 1,
+            REG_SA["SA_ED_DisjDJ1_BloqPressBaixa"]: 1,
+            REG_SA["SA_ED_DisjDJ1_SuperBobAbert2"]: 0,
+            REG_SA["SA_ED_DisjDJ1_Sup125VccBoFeAb1"]: 0,
+            REG_SA["SA_ED_DisjDJ1_Super125VccCiMot"]: 0,
+            REG_SA["SA_ED_DisjDJ1_Super125VccCiCom"]: 0,
+            REG_SA["SA_ED_DisjDJ1_Sup125VccBoFeAb2"]: 0,
         }
 
         try:
