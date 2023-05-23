@@ -55,7 +55,6 @@ shared_dict = {
         "temperatura_ug1_mancal_casq_rad": 25,
         "temperatura_ug1_mancal_casq_comb": 25,
         "temperatura_ug1_mancal_escora_comb": 25,
-        "pressao_caixa_espiral_ug1": 16.2,
 
         "q_ug2": 0,
         "flags_ug2": 0,
@@ -73,7 +72,6 @@ shared_dict = {
         "temperatura_ug2_mancal_casq_rad": 25,
         "temperatura_ug2_mancal_casq_comb": 25,
         "temperatura_ug2_mancal_escora_comb": 25,
-        "pressao_caixa_espiral_ug2": 16.2,
 
         "trip_ug1": False,
         "trip_ug2": False,
@@ -81,8 +79,6 @@ shared_dict = {
         "trip_condic_ug2": False,
         "reconhece_reset_ug1": False,
         "reconhece_reset_ug2": False,
-        "set_press_cx_espiral_ug1": False,
-        "set_press_cx_espiral_ug2": False,
 
         "debug_setpoint_kw_ug1": 0,
         "debug_setpoint_kw_ug2": 0,

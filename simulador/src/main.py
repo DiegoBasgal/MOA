@@ -1,27 +1,28 @@
 import logging
 import traceback
-
-import simulador.src.dicionarios.dict as d
+import dicionarios.dict as d
 
 from sys import stdout
 from threading import Thread
-from asyncio.log import logger
 
-from simulador.src.dj52L import *
-from simulador.src.planta import *
-from simulador.src.unidade_geracao import *
+from dj52L import Dj52L
+from planta import Planta
+from ug import Ug
 
-from simulador.src.dicionarios.reg import *
-from simulador.src.dicionarios.const import *
+from dicionarios.reg import *
+from dicionarios.const import *
 
-from simulador.src.gui.gui import start_gui
-from simulador.src.temporizador import Temporizador
+from gui.gui import start_gui
+from temporizador import Temporizador
+
+rootLogger = logging.getLogger()
+if rootLogger.hasHandlers():
+    rootLogger.handlers.clear()
+rootLogger.setLevel(logging.NOTSET)
 
 logger = logging.getLogger(__name__)
-
 if logger.hasHandlers():
     logger.handlers.clear()
-
 logger.setLevel(logging.NOTSET)
 
 ch = logging.StreamHandler(stdout)
@@ -36,28 +37,27 @@ if __name__ == "__main__":
     try:
         logger.info("Carregando dicionário compartilhado.")
 
-        shared_dict = d.shared_dict
+        sd = d.shared_dict
 
     except Exception as e:
         logger.exception(f"Houve um erro ao abrir o dicionário compartilhado. Exception: \"{repr(e)}\"")
         logger.debug(f"Traceback: {traceback.format_exc()}")
-
     try:
         logger.info("Iniciando Thread do controlador de tempo da simulação.")
 
-        time_handler = Temporizador(shared_dict)
+        time_handler = Temporizador(sd)
 
-    except Exception:
+    except Exception as e:
         logger.exception(f"Houve um erro ao iniciar a classe controladora de tempo. Exception: \"{repr(e)}\"")
         logger.debug(f"Traceback: {traceback.format_exc()}")
 
     try:
         logger.info("Instanciando classes da Usina (Ug, Dj52L, Planta)")
 
-        dj52L = Dj52L(shared_dict, time_handler)
+        dj52L = Dj52L(sd, time_handler)
 
-        ug1 = Ug(1, shared_dict, time_handler)
-        ug2 = Ug(2, shared_dict, time_handler)
+        ug1 = Ug(1, sd, time_handler)
+        ug2 = Ug(2, sd, time_handler)
         ugs = [ug1, ug2]
 
     except Exception as e:
@@ -67,9 +67,9 @@ if __name__ == "__main__":
     try:
         logger.info("Iniciando execução.")
 
-        th_th = Thread(target = time_handler.run)
-        th_usina = Thread(target = Planta(shared_dict, dj52L, ugs, time_handler).run)
-        th_gui = Thread(target = start_gui, args=(shared_dict))
+        th_th = Thread(target = time_handler.run, args=())
+        th_usina = Thread(target = Planta(sd, dj52L, ugs, time_handler).run, args=())
+        th_gui = Thread(target = start_gui, args=(sd,))
 
         # th_ctl = threading.Thread(target=controlador.Controlador(shared_dict).run)
 

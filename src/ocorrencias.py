@@ -4,7 +4,7 @@ import src.dicionarios.dict as d
 
 from time import sleep, time
 
-from src.funcoes.leitura import *
+from funcoes.leitura import *
 from condicionadores import *
 from dicionarios.reg import *
 from dicionarios.const import *

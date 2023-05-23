@@ -10,7 +10,8 @@ from pyModbusTCP.server import ModbusServer, DataBank
 
 from dicionarios.reg import *
 from dicionarios.const import *
-from unidade_geracao import Ug
+
+from ug import Ug
 from dj52L import Dj52L
 from temporizador import Temporizador
 
@@ -32,7 +33,7 @@ class Planta:
         self.borda_db_condic = False
         self.borda_usn_condic = False
 
-        self.server = ModbusServer(host="10.101.2.215", port=5003, no_block=True).start()
+        self.server = ModbusServer(host="localhost", port=5003, no_block=True).start()
         for R in REG: DataBank.set_words(int(REG[R]), [0])
 
     def get_time(self) -> datetime:
@@ -222,7 +223,6 @@ class Planta:
                 DataBank.set_words(REG[f"REG_UG{ug.id}_HorimetroEletrico_Hora"], [np.floor(ug.horimetro_hora)],)
                 DataBank.set_words(REG[f"REG_UG{ug.id}_HorimetroEletrico_Frac"], [round((ug.horimetro_hora - np.floor(ug.horimetro_hora)) * 60, 0)],)
 
-                DataBank.set_words(REG[f"REG_UG{ug.id}_Pressao_CX_Espiral"], [round(10 * self.dict["UG"][f"pressao_caixa_espiral_ug{ug.id}"])],)
                 DataBank.set_words(REG[f"REG_UG{ug.id}_Temperatura_01"], [round(self.dict["UG"][f"temperatura_ug{ug.id}_fase_r"])],)
                 DataBank.set_words(REG[f"REG_UG{ug.id}_Temperatura_02"], [round(self.dict["UG"][f"temperatura_ug{ug.id}_fase_s"])],)
                 DataBank.set_words(REG[f"REG_UG{ug.id}_Temperatura_03"], [round(self.dict["UG"][f"temperatura_ug{ug.id}_fase_t"])],)

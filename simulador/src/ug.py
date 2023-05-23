@@ -34,7 +34,7 @@ class Ug:
             self.parar()
 
         if self.dict["UG"][f"trip_ug{self.id}"]:
-            self.tripar(1, "Trip Elétrico.")
+            self.tripar("Trip Elétrico.")
 
         if self.dict["UG"][f"reconhece_reset_ug{self.id}"]:
             self.dict["UG"][f"trip_ug{self.id}"] = False
