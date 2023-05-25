@@ -583,6 +583,8 @@ REG_UG ={
     "UG1_RV_CONTROLE_SINCRONIZADO_SELECIONADO":         22,         # Input Register                        (OP -> 0x04 Read Input Registers - 3x)
     "UG1_RV_CONTROLE_VAZIO_SELECIONADO":                23,         # Input Register                        (OP -> 0x04 Read Input Registers - 3x)
     "UG1_RV_COMANDO_MODBUS":                            24,         # Input Register                        (OP -> 0x04 Read Input Registers - 3x)
+    "UG1_RV_SETPOINT_POTENCIA_ATIVA_PU":                30,         # Input Register                        (OP -. 0x04 Read Input Registers - 3x)
+
 
     # DIGITAIS
     "UG1_RV_ENTRADAS_DIGITAIS":                         25,         # Input Register                        (OP -> 0x04 Read Input Registers - 3x)
@@ -618,7 +620,7 @@ REG_UG ={
     "UG1_RV_LIMITADOR_INFERIOR_VELOC_ATUADO":           [27, 5],    # Input Register -> Bit 05              (OP -> 0x04 Read Input Registers - 3x)
     "UG1_RV_LIMITADOR_SUPERIOR_POTENCIA_ATUADO":        [27, 6],    # Input Register -> Bit 06              (OP -> 0x04 Read Input Registers - 3x)
     "UG1_RV_LIMITADOR_INFERIOR_POTENCIA_ATUADO":        [27, 7],    # Input Register -> Bit 07              (OP -> 0x04 Read Input Registers - 3x)
-
+    
     # ALARMES
     "UG1_RV_ALARME":                                    66,         # Input Register                        (OP -> 0x04 Read Input Registers - 3x)
     "UG1_RV_ALARME_SOBREFREQUENCIA":                    [66, 0],    # Input Register -> Bit 00              (OP -> 0x04 Read Input Registers - 3x)
@@ -1529,7 +1531,7 @@ REG_GERAL= {
     "GERAL_ED_QCTA_CONVERSOR_FIBRA_FALHA":              [12308, 9], # Holding Register -> Bit 09            (OP -> 0x03 Read Holding Registers)
 }
 
-REG_RELES = {
+REG_RELE = {
     "SE": {
         "RELE_SE_IA":                                   320,        # Input Register                        (OP -> Read Input Registers - 3x)
         "RELE_SE_IB":                                   322,        # Input Register                        (OP -> Read Input Registers - 3x)

@@ -2,85 +2,76 @@ import logging
 import traceback
 import subprocess
 
-import dicionarios.dict as Dicionarios
+import dicionarios.dict as d
 
 from pyModbusTCP.client import ModbusClient
 
 logger = logging.getLogger("__main__")
 
 class ClientesUsina:
-    dict_ips = Dicionarios.ips
 
     clp: "dict[str, ModbusClient]"
-    rele: "dict[str, ModbusClient]"
 
     clp["SA"] = ModbusClient(
-        host=dict_ips["SA_slave_ip"],
-        port=dict_ips["SA_slave_porta"],
-        unit_id=1,
-        timeout=0.5
-    )
-    clp["TDA"] = ModbusClient(
-        host=dict_ips["TDA_slave_ip"],
-        port=dict_ips["TDA_slave_porta"],
+        host=d.ips["SA_ip"],
+        port=d.ips["SA_porta"],
         unit_id=1,
         timeout=0.5
     )
     clp["UG1"] = ModbusClient(
-        host=dict_ips["UG1_slave_ip"],
-        port=dict_ips["UG1_slave_porta"],
+        host=d.ips["UG1_ip"],
+        port=d.ips["UG1_porta"],
         unit_id=1,
         timeout=0.5
     )
     clp["UG2"] = ModbusClient(
-        host=dict_ips["UG2_slave_ip"],
-        port=dict_ips["UG2_slave_porta"],
+        host=d.ips["UG2_ip"],
+        port=d.ips["UG2_porta"],
         unit_id=1,
         timeout=0.5
     )
     clp["MOA"] = ModbusClient(
-        host=dict_ips["MOA_slave_ip"],
-        port=dict_ips["MOA_slave_porta"],
+        host=d.ips["MOA_ip"],
+        port=d.ips["MOA_porta"],
         unit_id=1,
         timeout=0.5
     )
 
     @staticmethod
     def ping(host) -> bool:
-        return [True if subprocess.call(["ping", "-c", "1", "-w", "1", host], stdout=subprocess.PIPE) == 0 else False for _ in range(2)]
+        return True if (subprocess.call(["ping", "-c", "1", "-w", "1", host], stdout=subprocess.PIPE) == 0 for _ in range(2)) else False
 
     @classmethod
     def open_all(cls) -> None:
         logger.debug("[CLI] Iniciando conexões ModBus...")
         for _ , clp in cls.clp.items():
-            raise ModBusClientFail(clp) if not clp.open() else ...
+            if not clp.open():
+                raise ModBusClientFail(clp)
         logger.info("[CLI] Conexões inciadas.")
 
     @classmethod
     def close_all(cls) -> None:
         logger.debug("[CLI] Encerrando conexões...")
-        [clp.close() for _ , clp in cls.clp.items()]
+        for _ , clp in cls.clp.items():
+            clp.close()
         logger.debug("[CLI] Conexões encerradas.")
 
     @classmethod
     def ping_clients(cls) -> None:
         try:
-            if not cls.ping(cls.dict_ips["SA_slave_ip"]):
-                logger.warning("[CLI] CLP UG1 não respondeu a tentativa de comunicação!")
+            if not cls.ping(d.ips["SA_ip"]):
+                logger.warning("[CLI] O CLP do Serviço Auxiliar não respondeu a tentativa de comunicação!")
 
-            if not cls.ping(cls.dict_ips["TDA_slave_ip"]):
-                logger.warning("[CLI] CLP UG1 não respondeu a tentativa de comunicação!")
+            if not cls.ping(d.ips["UG1_ip"]):
+                logger.warning("[CLI] O CLP da Unidade Geradora 1 não respondeu a tentativa de comunicação!")
 
-            if not cls.ping(cls.dict_ips["UG1_slave_ip"]):
-                logger.warning("[CLI] CLP UG1 não respondeu a tentativa de comunicação!")
+            if not cls.ping(d.ips["UG2_ip"]):
+                logger.warning("[CLI] O CLP da Unidade Geradora 2 não respondeu a tentativa de comunicação!")
 
-            if not cls.ping(cls.dict_ips["UG2_slave_ip"]):
-                logger.warning("[CLI] CLP UG2 não respondeu a tentativa de comunicação!")
+            if not cls.ping(d.ips["MOA_ip"]):
+                logger.warning("[CLI] O CLP do MOA não respondeu a tentativa de comunicação!")
 
-            if not cls.ping(cls.dict_ips["MOA_slave_ip"]):
-                logger.warning("[CLI] CLP MOA não respondeu a tentativa de comunicação!")
-
-        except Exception as e:
+        except Exception:
             logger.error(f"[CLI] Houve um erro ao enviar comando de ping dos clientes da usina.")
             logger.debug(f"[CLI] Traceback: {traceback.format_exc()}")
 

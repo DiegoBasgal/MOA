@@ -16,6 +16,7 @@ from mensageiro.voip import Voip
 from clients import ClientesUsina
 from banco_dados import BancoDados
 from unidade_geracao import UnidadeDeGeracao
+from src.funcoes.escrita import EscritaModBusBit as EMB
 
 logger = logging.getLogger("__main__")
 
@@ -46,33 +47,45 @@ class Usina:
         CondicionadorBase.ugs = self.ugs
 
         # ATRIBUIÇÃO DE VARIÁVEIS PROTEGIDAS
-        self._potencia_ativa_kW: LeituraModbus = LeituraModbus(
-            REG_SA["SA_RA_PM_810_Potencia_Ativa"],
+        self._potencia_ativa: LeituraModbus = LeituraModbus(
+            REG_SA["RELE_SE_P"],
+            self.clp["SA"],
+            1,
+            op=4,
+        )
+        self._potencia_reativa: LeituraModbus = LeituraModbus(
+            REG_SA["RELE_SE_Q"],
+            self.clp["SA"],
+            1,
+            op=4,
+        )
+        self._potencia_aparente: LeituraModbus = LeituraModbus(
+            REG_SA["RELE_SE_S"],
             self.clp["SA"],
             1,
             op=4,
         )
         self._nv_montante: LeituraModbus = LeituraModbus(
-            REG_SA["TDA_NivelMaisCasasAntes"],
-            self.clp["TDA"],
+            REG_SA["GERAL_EA_NIVEL_MONTANTE_GRADE"],
+            self.clp["SA"],
             1 / 10000,
             819.2,
             op=4,
         )
         self._tensao_rs: LeituraModbus = LeituraModbus(
-            REG_SA["SA_RA_PM_810_Tensao_AB"],
+            REG_RELE["RELE_SE_VAB"],
             self.clp["SA"],
             1000,
             op=4,
         )
         self._tensao_st: LeituraModbus = LeituraModbus(
-            REG_SA["SA_RA_PM_810_Tensao_BC"],
+            REG_RELE["RELE_SE_VBC"],
             self.clp["SA"],
             1000,
             op=4,
         )
         self._tensao_tr: LeituraModbus = LeituraModbus(
-            REG_SA["SA_RA_PM_810_Tensao_CA"],
+            REG_SA["RELE_SE_VCA"],
             self.clp["SA"],
             1000,
             op=4,
@@ -123,8 +136,16 @@ class Usina:
     ### PROPRIEDADES DA OPERAÇÃO
 
     @property
-    def potencia_ativa_kW(self) -> int:
-        return self._potencia_ativa_kW.valor
+    def potencia_ativa(self) -> int:
+        return self._potencia_ativa.valor
+
+    @property
+    def potencia_reativa(self) -> int:
+        return self._potencia_reativa.valor
+
+    @property
+    def potencia_aparente(self) -> int:
+        return self._potencia_aparente.valor
 
     @property
     def nv_montante(self) -> float:
@@ -178,11 +199,9 @@ class Usina:
         self.clp_emergencia = True
 
         try:
-            self.clp["UG1"].write_single_coil(REG_UG["UG1_CD_EmergenciaViaSuper"], [1])
-            self.clp["UG2"].write_single_coil(REG_UG["UG2_CD_EmergenciaViaSuper"], [1])
+            (self.clp[f"UG{ug.id}"].write_single_coil(REG_UG[f"UG{ug.id}_CD_CMD_REARME_FALHAS"], [1]) for ug in self.ugs)
             sleep(5)
-            self.clp["UG1"].write_single_coil(REG_UG["UG1_CD_EmergenciaViaSuper"], [0])
-            self.clp["UG2"].write_single_coil(REG_UG["UG2_CD_EmergenciaViaSuper"], [0])
+            (self.clp[f"UG{ug.id}"].write_single_coil(REG_UG[f"UG{ug.id}_CD_CMD_REARME_FALHAS"], [0]) for ug in self.ugs)
 
         except Exception:
             logger.error(f"[CON] Houve um erro ao acionar a emergência.")
@@ -191,36 +210,12 @@ class Usina:
     def resetar_emergencia(self) -> None:
         try:
             logger.debug("[CON] Reset geral.")
-            self.clp["SA"].write_single_coil(REG_SA["SA_CD_ResetGeral"], [1])
-            self.clp["UG1"].write_single_coil(REG_UG["UG1_CD_ResetGeral"], [1])
-            self.clp["UG2"].write_single_coil(REG_UG["UG2_CD_ResetGeral"], [1])
-            self.clp["TDA"].write_single_coil(REG_SA["TDA_CD_ResetGeral"], [1])
+            self.clp["SA"].write_single_coil(REG_SA["GERAL_CD_RESET_GERAL"], [1])
+            self.clp["SA"].write_single_coil(REG_SA["SA_CD_REARME_FALHAS"], [1])
+            (self.clp[f"UG{ug.id}"].write_single_coil(REG_UG[f"UG{ug.id}_CD_CMD_REARME_FALHAS"], [1]) for ug in self.ugs)
 
         except Exception:
             logger.error(f"[CON] Houve um erro ao realizar o reset geral.")
-            logger.debug(f"[CON] Traceback: {traceback.format_exc()}")
-
-    def reconhecer_emergencia(self) -> None:
-        try:
-            logger.debug("[CON] Cala sirene.")
-            self.clp["SA"].write_single_coil(REG_SA["SA_CD_Cala_Sirene"], [1])
-            self.clp["UG1"].write_single_coil(REG_UG["UG1_CD_Cala_Sirene"], [1])
-            self.clp["UG2"].write_single_coil(REG_UG["UG2_CD_Cala_Sirene"], [1])
-
-        except Exception:
-            logger.error(f"[CON] Houve um erro ao reconhecer os alarmes.")
-            logger.debug(f"[CON] Traceback: {traceback.format_exc()}")
-
-    def resetar_tda(self) -> None:
-        try:
-            self.clp["TDA"].write_single_coil(REG_SA["TDA_CD_ResetGeral"], [1])
-            self.clp["TDA"].write_single_coil(REG_SA["TDA_CD_Hab_Nivel"], [0])
-            self.clp["TDA"].write_single_coil(REG_SA["TDA_CD_Desab_Nivel"], [1])
-            self.clp["TDA"].write_single_coil(REG_SA["TDA_CD_Hab_Religamento52L"], [0])
-            self.clp["TDA"].write_single_coil(REG_SA["TDA_CD_Desab_Religamento52L"], [1])
-
-        except Exception:
-            logger.error(f"[CON] Houve um erro ao modificar os controles locais.")
             logger.debug(f"[CON] Traceback: {traceback.format_exc()}")
 
     def normalizar_usina(self) -> bool:
@@ -235,9 +230,7 @@ class Usina:
             self.tentativas_normalizar += 1
             self.db_emergencia = False
             self.clp_emergencia = False
-            self.resetar_tda()
             self.resetar_emergencia()
-            self.reconhecer_emergencia()
             self.db.update_remove_emergencia()
             return True
 
@@ -257,46 +250,15 @@ class Usina:
                 pass
             sleep(max(0, (time() + 1800) - time()))
 
-    def fechaDj52L(self) -> bool:
+    def fechar_dj_linha(self) -> bool:
         try:
-            if self.verificar_falhas_52l():
-                return False
-            else:
-                response = self.clp["SA"].write_single_register(REG_SA["SA_CD_Liga_DJ1"], 1)
-                return response
+            res = EMB.escrever_bit(self.clp["SA"], REG_SA["SA_CD_DISJ_LINHA_FECHA"], 1)
+            return res
 
         except Exception:
             logger.error(f"[CON] Houver um erro ao fechar o Dj52L.")
             logger.debug(f"[CON] Traceback: {traceback.format_exc()}")
             return False
-
-    def verificar_falhas_52l(self) -> bool:
-        dict_flags: "dict[str, int]" = {
-            REG_SA["SA_RD_DJ1_FalhaInt"]: 1,
-            REG_SA["SA_ED_DisjDJ1_Local"]: 1,
-            REG_SA["SA_ED_DisjDJ1_AlPressBaixa"]: 1,
-            REG_SA["SA_ED_DisjDJ1_BloqPressBaixa"]: 1,
-            REG_SA["SA_ED_DisjDJ1_SuperBobAbert2"]: 0,
-            REG_SA["SA_ED_DisjDJ1_Sup125VccBoFeAb1"]: 0,
-            REG_SA["SA_ED_DisjDJ1_Super125VccCiMot"]: 0,
-            REG_SA["SA_ED_DisjDJ1_Super125VccCiCom"]: 0,
-            REG_SA["SA_ED_DisjDJ1_Sup125VccBoFeAb2"]: 0,
-        }
-
-        try:
-            flags = 0
-            for nome, valor in zip(dict_flags[0], dict_flags.values()):
-                if self.clp["SA"].read_discrete_inputs(nome)[0] == valor:
-                    logger.debug(f"[CON] Flag -> {nome.keys()}")
-                    flags += 1
-
-            logger.info(f"[CON] Foram detectadas Flags de bloqueio ao abrir o Dj52L. Número de bloqueios ativos: \"{flags}\"") if flags else ...
-            return True if flags >= 1 else False
-
-        except Exception:
-            logger.error(f"[CON] Houve um erro ao ler as flags do Dj52L.")
-            logger.debug(f"[CON] Traceback: {traceback.format_exc()}")
-            return None
 
     def verificar_tensao(self) -> bool:
         try:
@@ -350,9 +312,9 @@ class Usina:
             for ug in self.ugs: ug.setpoint = 0
             return 0
 
-        logger.debug(f"[USN] Potência no medidor = {self.potencia_ativa_kW:0.3f}")
+        logger.debug(f"[USN] Potência no medidor = {self.potencia_ativa:0.3f}")
         pot_aux = self.cfg["pot_maxima_alvo"] - (self.cfg["pot_maxima_usina"] - self.cfg["pot_maxima_alvo"])
-        pot_medidor = max(pot_aux, min(self.potencia_ativa_kW, self.cfg["pot_maxima_usina"]))
+        pot_medidor = max(pot_aux, min(self.potencia_ativa, self.cfg["pot_maxima_usina"]))
 
         try:
             if pot_medidor > self.cfg["pot_maxima_alvo"]:
