@@ -7,8 +7,8 @@ from datetime import datetime
 
 from src.usina import *
 from src.agendamentos import *
+from src.dicionarios.reg import *
 from src.dicionarios.const import *
-from src.dicionarios.reg import MOA
 
 class StateMachine:
     def __init__(self, initial_state):
@@ -66,7 +66,7 @@ class ControleEstados(State):
 
         self.usn.estado_moa = MOA_SM_CONTROLE_ESTADOS
 
-        self.usn.clp["MOA"].write_single_coil(MOA["PAINEL_LIDO"], [1])
+        # self.usn.clp["MOA"].write_single_coil(REG_MOA["PAINEL_LIDO"], [1])
 
     def run(self):
         self.usn.ler_valores()
@@ -78,11 +78,11 @@ class ControleEstados(State):
         elif self.usn.clp_emergencia or self.usn.db_emergencia:
             return Emergencia(self.usn)
 
-        elif len(self.agn.agendamentos_pendentes()) > 0:
+        elif len(Agendamentos.verificar_agendamentos_pendentes()) > 0:
             return ControleAgendamentos(self.usn)
 
         else:
-            flag = self.usn.oco.verificar_condicionadores()
+            flag = self.usn.oco_usn.verificar_condicionadores()
             if flag == CONDIC_INDISPONIBILIZAR:
                 return Emergencia(self.usn)
 
@@ -103,7 +103,7 @@ class ControleReservatorio(State):
 
     def run(self):
         self.usn.ler_valores()
-        flag = self.usn.controle_reservatorio()
+        flag = self.usn.controlar_reservatorio()
 
         return Emergencia(self.usn) if flag == NV_FLAG_EMERGENCIA else ControleDados(self.usn)
 
@@ -127,7 +127,7 @@ class ControleAgendamentos(State):
         logger.info("Tratando agendamentos")
 
     def run(self):
-        self.agn.verificar_agendamentos()
+        Agendamentos.verificar_agendamentos_pendentes()
         return ControleDados(self.usn) if self.usn.modo_autonomo else ModoManual(self.usn)
 
 class ModoManual(State):
@@ -138,7 +138,7 @@ class ModoManual(State):
         logger.info("Usina em modo manual. Para retornar a operação autônoma, acionar via painel ou página WEB")
 
         self.usn.modo_autonomo = False
-        self.usn.clp["MOA"].write_single_coil(MOA["PAINEL_LIDO"], [1])
+        # self.usn.clp["MOA"].write_single_coil(REG_MOA["PAINEL_LIDO"], [1])
 
     def run(self):
         self.usn.ler_valores()
@@ -153,7 +153,7 @@ class ModoManual(State):
             sleep(2)
             return ControleDados(self.usn)
 
-        return ControleAgendamentos(self.usn) if len(self.agn.agendamentos_pendentes()) > 0 else self
+        return ControleAgendamentos(self.usn) if len(Agendamentos.verificar_agendamentos_pendentes()) > 0 else self
 
 class Emergencia(State):
     def __init__(self, usn, *args, **kwargs):
@@ -170,7 +170,7 @@ class Emergencia(State):
         if self.tentativas == 3:
             logger.warning("Tentativas de normalização excedidas, entrando em modo manual.")
 
-            for ug in self.ugs:
+            for ug in self.usn.ugs:
                 ug.forcar_estado_indisponivel()
                 ug.step()
 
@@ -180,7 +180,7 @@ class Emergencia(State):
             logger.warning("Comando acionado via página WEB, aguardando reset pela aba \"Emergência\".")
 
             while self.usn.db_emergencia:
-                self.usn.atualizar_parametros_db(self.usn.db.get_parametros_usina())
+                self.usn.atualizar_valores_banco(self.usn.db.get_parametros_usina())
 
                 if not self.usn.db_emergencia:
                     self.usn.db_emergencia = False
@@ -191,7 +191,7 @@ class Emergencia(State):
                     return ModoManual(self.usn)
 
         else:
-            flag = self.oco.verificar_condicionadores()
+            flag = self.usn.oco_usn.verificar_condicionadores()
 
             if flag == CONDIC_INDISPONIBILIZAR:
                 logger.critical("Acionando VOIP e entrando em modo manual")

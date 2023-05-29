@@ -51,7 +51,7 @@ class StateRestrito(State):
         super().__init__(parent)
 
         self.parent.codigo_state = UG_SM_RESTRITA
-        logger.info(f"[UG{self.parent.id}] Entrando no estado \"restrito\"")
+        logger.info(f"[UG{self.parent.id}] Entrando no estado \"Restrito\"")
 
         self.parent.parar_timer = False
         self.parent.borda_parar = True if self.parent.borda_parar else False

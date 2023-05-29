@@ -237,18 +237,21 @@ class UnidadeDeGeracao(Usina):
                 logger.error(f"[UG{self.id}] Não foi possível ler o último estado da Unidade. Entrando em modo Manual.")
                 self.__next_state = StateManual(self)
 
+    # TODO -> Adicionar após a integração do CLP do MOA no painel do SA, que depende da intervenção da Automatic.
+    """
     def atualizar_modbus_moa(self) -> None:
         self.clp["MOA"].write_single_register(REG_MOA[f"OUT_ETAPA_UG{self.id}"], self.etapa_atual)
         self.clp["MOA"].write_single_register(REG_MOA[f"OUT_STATE_UG{self.id}"], self.codigo_state)
+    """
 
     def desabilitar_manutencao(self) -> None:
         try:
-            EMB.escrever_bit(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}_CD_CMD_RV_MANUTENCAO"], [0])
-            EMB.escrever_bit(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}_CD_CMD_RV_AUTOMATICO"], [1])
-            EMB.escrever_bit(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}_CD_CMD_UHRV_MODO_MANUTENCAO"], [0])
-            EMB.escrever_bit(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}_CD_CMD_UHRV_MODO_AUTOMATICO"], [1])
-            EMB.escrever_bit(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}_CD_CMD_UHLM_MODO_MANUTENCAO"], [0])
-            EMB.escrever_bit(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}_CD_CMD_UHLM_MODO_AUTOMATICO"], [1])
+            EMB.escrever_bit(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}_CD_CMD_RV_MANUTENCAO"], 0)
+            EMB.escrever_bit(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}_CD_CMD_RV_AUTOMATICO"], 1)
+            EMB.escrever_bit(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}_CD_CMD_UHRV_MODO_MANUTENCAO"], 0)
+            EMB.escrever_bit(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}_CD_CMD_UHRV_MODO_AUTOMATICO"], 1)
+            EMB.escrever_bit(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}_CD_CMD_UHLM_MODO_MANUTENCAO"], 0)
+            EMB.escrever_bit(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}_CD_CMD_UHLM_MODO_AUTOMATICO"], 1)
 
         except Exception:
             logger.error(f"[UG{self.id}] Não foi possível desabilitar o modo de manutenção das unidades de operação.")
@@ -288,7 +291,7 @@ class UnidadeDeGeracao(Usina):
         try:
             logger.debug(f"[UG{self.id}] Step -> (Tentativas de normalização: {self.tentativas_de_normalizacao}/{self.limite_tentativas_de_normalizacao}).")
             self.__next_state = self.__next_state.step()
-            self.atualizar_modbus_moa()
+            # self.atualizar_modbus_moa()
 
         except Exception:
             logger.error(f"[UG{self.id}] Erro na execução da máquina de estados da Unidade -> step.")
@@ -308,8 +311,8 @@ class UnidadeDeGeracao(Usina):
 
             elif not self.etapa_atual == UG_SINCRONIZADA:
                 logger.info(f"[UG{self.id}] Enviando comando de partida.")
-                res = EMB.escrever_bit(REG_UG[f"UG{self.id}_CD_CMD_REARME_FALHAS"], [1])
-                res = EMB.escrever_bit(REG_UG[f"UG{self.id}_CD_CMD_SINCRONISMO"], [1])
+                res = EMB.escrever_bit(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}_CD_CMD_REARME_FALHAS"], 1)
+                res = EMB.escrever_bit(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}_CD_CMD_SINCRONISMO"], 1)
                 self.enviar_setpoint(self.setpoint)
 
             else:
@@ -326,7 +329,7 @@ class UnidadeDeGeracao(Usina):
         try:
             if not self.etapa_atual == UG_PARADA:
                 logger.info(f"[UG{self.id}] Enviando comando de parada.")
-                res = EMB.escrever_bit(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}_CD_CMD_PARADA_TOTAL"], [1])
+                res = EMB.escrever_bit(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}_CD_CMD_PARADA_TOTAL"], 1)
                 self.enviar_setpoint(0)
 
             else:
@@ -357,7 +360,7 @@ class UnidadeDeGeracao(Usina):
     def acionar_trip_logico(self) -> bool:
         try:
             logger.debug(f"[UG{self.id}] Acionando TRIP -> Lógico.")
-            res = EMB.escrever_bit(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}_CD_CMD_PARADA_EMERGENCIA"], [1])
+            res = EMB.escrever_bit(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}_CD_CMD_PARADA_EMERGENCIA"], 1)
             return res
 
         except Exception:
@@ -368,7 +371,7 @@ class UnidadeDeGeracao(Usina):
     def remover_trip_logico(self) -> bool:
         try:
             logger.debug(f"[UG{self.id}] Removendo TRIP -> Lógico.")
-            res = EMB.escrever_bit(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}_CD_CMD_REARME_FALHAS"], [1])
+            res = EMB.escrever_bit(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}_CD_CMD_REARME_FALHAS"], 1)
             return res
 
         except Exception:
@@ -379,7 +382,7 @@ class UnidadeDeGeracao(Usina):
     def acionar_trip_eletrico(self) -> bool:
         try:
             logger.debug(f"[UG{self.id}] Acionando TRIP -> Elétrico.")
-            res = self.clp["MOA"].write_single_coil(REG_MOA[f"OUT_BLOCK_UG{self.id}"], [1])
+            res = None # self.clp["MOA"].write_single_coil(REG_MOA[f"OUT_BLOCK_UG{self.id}"], [1])
             return res
 
         except Exception:
@@ -394,7 +397,7 @@ class UnidadeDeGeracao(Usina):
                 self.fechar_dj_linha()
 
             logger.debug(f"[UG{self.id}] Removendo TRIP -> Elétrico.")
-            res = self.clp["MOA"].write_single_coil(REG_MOA[f"OUT_BLOCK_UG{self.id}"], [0])
+            res = None # self.clp["MOA"].write_single_coil(REG_MOA[f"OUT_BLOCK_UG{self.id}"], [0])
             return res
 
         except Exception:
@@ -412,7 +415,7 @@ class UnidadeDeGeracao(Usina):
                 sleep(1)
                 self.remover_trip_logico()
                 sleep(1)
-                self.clp["MOA"].write_single_coil(REG_MOA["PAINEL_LIDO"], [0])
+                # self.clp["MOA"].write_single_coil(REG_MOA["PAINEL_LIDO"], [0])
                 sleep(1)
 
             return True
@@ -467,6 +470,6 @@ class UnidadeDeGeracao(Usina):
 
         logger.debug(f"[UG{self.id}] Verificação de partida estourou o timer, acionando normalização.")
         self.borda_partindo = False
-        EMB.escrever_bit([f"UG{self.id}_CD_CMD_PARADA_EMERGENCIA"], [1])
+        EMB.escrever_bit(self.clp[f"UG{self.id}"], [f"UG{self.id}_CD_CMD_PARADA_EMERGENCIA"], 1)
         sleep(1)
-        EMB.escrever_bit([f"UG{self.id}_CD_CMD_REARME_FALHAS"], [1])
+        EMB.escrever_bit(self.clp[f"UG{self.id}"], [f"UG{self.id}_CD_CMD_REARME_FALHAS"], 1)

@@ -30,12 +30,14 @@ class ClientesUsina:
         unit_id=1,
         timeout=0.5
     )
+    """
     clp["MOA"] = ModbusClient(
         host=d.ips["MOA_ip"],
         port=d.ips["MOA_porta"],
         unit_id=1,
         timeout=0.5
     )
+    """
 
     @staticmethod
     def ping(host) -> bool:

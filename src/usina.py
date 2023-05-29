@@ -199,9 +199,9 @@ class Usina:
         self.clp_emergencia = True
 
         try:
-            (self.clp[f"UG{ug.id}"].write_single_coil(REG_UG[f"UG{ug.id}_CD_CMD_REARME_FALHAS"], [1]) for ug in self.ugs)
+            (EMB.escrever_bit(self.clp[f"UG{ug.id}"], REG_UG[f"UG{ug.id}_CD_CMD_REARME_FALHAS"], 1) for ug in self.ugs)
             sleep(5)
-            (self.clp[f"UG{ug.id}"].write_single_coil(REG_UG[f"UG{ug.id}_CD_CMD_REARME_FALHAS"], [0]) for ug in self.ugs)
+            (EMB.escrever_bit(self.clp[f"UG{ug.id}"], REG_UG[f"UG{ug.id}_CD_CMD_REARME_FALHAS"], 0) for ug in self.ugs)
 
         except Exception:
             logger.error(f"[CON] Houve um erro ao acionar a emergência.")
@@ -210,9 +210,9 @@ class Usina:
     def resetar_emergencia(self) -> None:
         try:
             logger.debug("[CON] Reset geral.")
-            self.clp["SA"].write_single_coil(REG_SA["GERAL_CD_RESET_GERAL"], [1])
-            self.clp["SA"].write_single_coil(REG_SA["SA_CD_REARME_FALHAS"], [1])
-            (self.clp[f"UG{ug.id}"].write_single_coil(REG_UG[f"UG{ug.id}_CD_CMD_REARME_FALHAS"], [1]) for ug in self.ugs)
+            EMB.escrever_bit(self.clp["SA"], REG_SA["GERAL_CD_RESET_GERAL"], 1)
+            EMB.escrever_bit(self.clp["SA"],REG_SA["SA_CD_REARME_FALHAS"], 1)
+            (EMB.escrever_bit(self.clp[f"UG{ug.id}"], REG_UG[f"UG{ug.id}_CD_CMD_REARME_FALHAS"], 1) for ug in self.ugs)
 
         except Exception:
             logger.error(f"[CON] Houve um erro ao realizar o reset geral.")
@@ -469,7 +469,6 @@ class Usina:
         self.heartbeat()
 
     def atualizar_valores_montante(self) -> None:
-        self.resetar_tda()
         self.nv_montante_recente = self.nv_montante
         self.erro_nv_anterior = self.erro_nv
         self.erro_nv = self.nv_montante_recente - self.cfg["nv_alvo"]
@@ -518,12 +517,12 @@ class Usina:
                 self.ug1.leitura_potencia,
                 self.ug1.setpoint,
                 self.ug1.etapa_atual,
-                self.ug1.leitura_horimetro,
+                0, # self.ug1.leitura_horimetro,
                 1 if self.ug2.disponivel else 0,
                 self.ug2.leitura_potencia,
                 self.ug2.setpoint,
                 self.ug2.etapa_atual,
-                self.ug2.leitura_horimetro,
+                0 # self.ug2.leitura_horimetro,
             )
 
         except Exception:
@@ -556,6 +555,9 @@ class Usina:
             logger.error(f"[USN] Houve um erro ao inserir dados DEBUG do controle de potência normal no banco.")
             logger.debug(f"[USN] Traceback: {traceback.format_exc()}")
 
+
+    # TODO -> Adicionar após a integração do CLP do MOA no painel do SA, que depende da intervenção da Automatic.
+    """
     def heartbeat(self) -> None:
         try:
             self.clp["MOA"].write_single_coil(REG_MOA["PAINEL_LIDO"], [1])
@@ -619,3 +621,4 @@ class Usina:
         except Exception:
             logger.error(f"[USN] Houve um erro ao tentar escrever valores modbus no CLP MOA.")
             logger.debug(f"[USN] Traceback: {traceback.format_exc()}")
+    """

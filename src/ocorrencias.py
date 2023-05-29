@@ -69,20 +69,180 @@ class OcorrenciasUsn(Usina):
         self.leitura_QCADE_BombasDng_Auto = LeituraModbusBit(REG_SA["SA_ED_QCADE_BombasDng_Auto"], self.clp["SA"])
 
         # Leituras de Condicionadores
-        leitura_ED_QCAP_TensaoPresenteTSA = LeituraModbusBit(REG_SA["SA_ED_QCAP_TensaoPresenteTSA"], self.clp["SA"])
-        self.condicionadores_essenciais.append(CondicionadorBase(leitura_ED_QCAP_TensaoPresenteTSA, CONDIC_NORMALIZAR))
+        leitura_CD_disj_linha_abre = LeituraModbusBit(REG_SA["SA_CD_DISJ_LINHA_ABRE"], self.clp["SA"], descr="SA_CD_DISJ_LINHA_ABRE")
+        self.condicionadores_essenciais.append(CondicionadorBase(leitura_CD_disj_linha_abre, CONDIC_NORMALIZAR))
 
-        leitura_ED_SEL787_Trip = LeituraModbusBit(REG_SA["SA_ED_SEL787_Trip"], self.clp["SA"])
-        self.condicionadores_essenciais.append(CondicionadorBase(leitura_ED_SEL787_Trip))
+        leitura_ED_disj_linha_aberto = LeituraModbusBit(REG_SA["SA_ED_PSA_SE_DISJ_LINHA_ABERTO"], self.clp["SA"], descr="SA_CD_DISJ_LINHA_ABRE")
+        self.condicionadores_essenciais.append(CondicionadorBase(leitura_ED_disj_linha_aberto, CONDIC_NORMALIZAR))
 
-        leitura_ED_QcataDisj52ETrip = LeituraModbusBit(REG_SA["TDA_ED_QcataDisj52ETrip"], self.clp["TDA"])
-        self.condicionadores.append(CondicionadorBase(leitura_ED_QcataDisj52ETrip))
+        leitura_ED_rele_linha_trip = LeituraModbusBit(REG_SA["SA_ED_PSA_SE_RELE_LINHA_TRIP"], self.clp["SA"], descr="SA_ED_PSA_SE_RELE_LINHA_TRIP")
+        self.condicionadores_essenciais.append(CondicionadorBase(leitura_ED_rele_linha_trip, CONDIC_NORMALIZAR))
 
-        leitura_ED_MRU3_Falha = LeituraModbusBit(REG_SA["SA_ED_MRU3_Falha"], self.clp["SA"])
-        self.condicionadores.append(CondicionadorBase(leitura_ED_MRU3_Falha))
 
-        leitura_ED_SEL787_FalhaInterna = LeituraModbusBit(REG_SA["SA_ED_SEL787_FalhaInterna"], self.clp["SA"])
-        self.condicionadores.append(CondicionadorBase(leitura_ED_SEL787_FalhaInterna))
+        leitura_ED_botao_bloq_86btbf = LeituraModbusBit(REG_SA["SA_ED_PSA_BOTAO_BLOQUEIO_86BTBF"], self.clp["SA"], descr="SA_ED_PSA_BOTAO_BLOQUEIO_86BTBF")
+        self.condicionadores_essenciais.append(CondicionadorBase(leitura_ED_botao_bloq_86btbf, CONDIC_INDISPONIBILIZAR))
+
+        leitura_ED_disj_tsa_trip = LeituraModbusBit(REG_SA["SA_ED_PSA_DISJ_TSA_TRIP"], self.clp["SA"], descr="SA_ED_PSA_DISJ_TSA_TRIP")
+        self.condicionadores_essenciais.append(CondicionadorBase(leitura_ED_disj_tsa_trip, CONDIC_INDISPONIBILIZAR))
+
+        leitura_ED_rele_bloq_86btbf = LeituraModbusBit(REG_SA["SA_ED_PSA_RELE_BLOQUEIO_86BTBF"], self.clp["SA"], descr="SA_ED_PSA_RELE_BLOQUEIO_86BTBF")
+        self.condicionadores_essenciais.append(CondicionadorBase(leitura_ED_rele_bloq_86btbf, CONDIC_INDISPONIBILIZAR))
+
+        leitura_ED_dps_tsa = LeituraModbusBit(REG_SA["SA_ED_PSA_DPS_TSA"], self.clp["SA"], descr="SA_ED_PSA_DPS_TSA")
+        self.condicionadores_essenciais.append(CondicionadorBase(leitura_ED_dps_tsa, CONDIC_INDISPONIBILIZAR))
+
+        leitura_ED_poco_dren_nivel_muito_alto = LeituraModbusBit(REG_SA["SA_ED_PSA_POCO_DRENAGEM_SENSOR_NIVEL_MUITO_ALTO"], self.clp["SA"], descr="SA_ED_PSA_POCO_DRENAGEM_SENSOR_NIVEL_MUITO_ALTO")
+        self.condicionadores_essenciais.append(CondicionadorBase(leitura_ED_poco_dren_nivel_muito_alto, CONDIC_INDISPONIBILIZAR))
+
+        leitura_ED_trafo_eleva_temp_muito_alto = LeituraModbusBit(REG_SA["SA_ED_PSA_TRAFO_ELEVADOR_TEMP_MUITO_ALTA"], self.clp["SA"], descr="SA_ED_PSA_TRAFO_ELEVADOR_TEMP_MUITO_ALTA")
+        self.condicionadores_essenciais.append(CondicionadorBase(leitura_ED_trafo_eleva_temp_muito_alto, CONDIC_INDISPONIBILIZAR))
+
+        leitura_ED_te_temp_muito_alta = LeituraModbusBit(REG_SA["SA_ED_PSA_TE_TEMPERATURA_MUIT_ALTA"], self.clp["SA"], descr="SA_ED_PSA_TE_TEMPERATURA_MUIT_ALTA")
+        self.condicionadores_essenciais.append(CondicionadorBase(leitura_ED_te_temp_muito_alta, CONDIC_INDISPONIBILIZAR))
+
+        leitura_ED_te_press_muito_alta = LeituraModbusBit(REG_SA["SA_ED_PSA_TE_PRESSAO_MUITO_ALTA"], self.clp["SA"], descr="SA_ED_PSA_TE_PRESSAO_MUITO_ALTA")
+        self.condicionadores_essenciais.append(CondicionadorBase(leitura_ED_te_press_muito_alta, CONDIC_INDISPONIBILIZAR))
+
+        leitura_ED_oleo_muito_baixo = LeituraModbusBit(REG_SA["SA_ED_PSA_OLEO_MUITO_BAIXO"], self.clp["SA"], descr="SA_ED_PSA_OLEO_MUITO_BAIXO")
+        self.condicionadores_essenciais.append(CondicionadorBase(leitura_ED_oleo_muito_baixo, CONDIC_INDISPONIBILIZAR))
+
+        leitura_ED_prtva1_50bf = LeituraModbusBit(REG_SA["SA_ED_PSA_PRTVA1_50BF"], self.clp["SA"], descr="SA_ED_PSA_PRTVA1_50BF")
+        self.condicionadores_essenciais.append(CondicionadorBase(leitura_ED_prtva1_50bf, CONDIC_INDISPONIBILIZAR))
+
+        leitura_ED_prtva2_50bf = LeituraModbusBit(REG_SA["SA_ED_PSA_PRTVA2_50BF"], self.clp["SA"], descr="SA_ED_PSA_PRTVA2_50BF")
+        self.condicionadores_essenciais.append(CondicionadorBase(leitura_ED_prtva2_50bf, CONDIC_INDISPONIBILIZAR))
+
+        leitura_ED_se_rele_linha_falha = LeituraModbusBit(REG_SA["SA_ED_PSA_SE_RELE_LINHA_FALHA"], self.clp["SA"], descr="SA_ED_PSA_SE_RELE_LINHA_FALHA")
+        self.condicionadores_essenciais.append(CondicionadorBase(leitura_ED_se_rele_linha_falha, CONDIC_INDISPONIBILIZAR))
+
+        leitura_ED_se_rele_linha_50bf = LeituraModbusBit(REG_SA["SA_ED_PSA_SE_RELE_LINHA_50BF"], self.clp["SA"], descr="SA_ED_PSA_SE_RELE_LINHA_50BF")
+        self.condicionadores_essenciais.append(CondicionadorBase(leitura_ED_se_rele_linha_50bf, CONDIC_INDISPONIBILIZAR))
+
+        leitura_ED_nv_jusnate_muito_alto = LeituraModbusBit(REG_SA["SA_EA_PSA_NIVEL_JUSANTE_MUITO_ALTO"], self.clp["SA"], descr="SA_EA_PSA_NIVEL_JUSANTE_MUITO_ALTO")
+        self.condicionadores_essenciais.append(CondicionadorBase(leitura_ED_nv_jusnate_muito_alto, CONDIC_INDISPONIBILIZAR))
+
+        leitura_ED_disj_gmg_falha_abrir = LeituraModbusBit(REG_SA["SA_ED_PSA_GMG_DISJ_FALHA_ABRIR"], self.clp["SA"], descr="SA_ED_PSA_GMG_DISJ_FALHA_ABRIR")
+        self.condicionadores_essenciais.append(CondicionadorBase(leitura_ED_disj_gmg_falha_abrir, CONDIC_INDISPONIBILIZAR))
+
+        leitura_ED_disj_tsa_falha_fechar = LeituraModbusBit(REG_SA["SA_ED_PSA_TSA_DISJ_FALHA_FECHAR"], self.clp["SA"], descr="SA_ED_PSA_TSA_DISJ_FALHA_FECHAR")
+        self.condicionadores_essenciais.append(CondicionadorBase(leitura_ED_disj_tsa_falha_fechar, CONDIC_INDISPONIBILIZAR))
+
+        leitura_ED_disj_tsa_falha_abrir = LeituraModbusBit(REG_SA["SA_ED_PSA_TSA_DISJ_FALHA_ABRIR"], self.clp["SA"], descr="SA_ED_PSA_TSA_DISJ_FALHA_ABRIR")
+        self.condicionadores_essenciais.append(CondicionadorBase(leitura_ED_disj_tsa_falha_abrir, CONDIC_INDISPONIBILIZAR))
+
+        leitura_ED_disj_se_falha_fechar = LeituraModbusBit(REG_SA["SA_ED_PSA_SE_DISJ_FALHA_FECHAR"], self.clp["SA"], descr="SA_ED_PSA_SE_DISJ_FALHA_FECHAR")
+        self.condicionadores_essenciais.append(CondicionadorBase(leitura_ED_disj_se_falha_fechar, CONDIC_INDISPONIBILIZAR))
+
+        leitura_ED_disj_se_falha_abrir = LeituraModbusBit(REG_SA["SA_ED_PSA_SE_DISJ_FALHA_ABRIR"], self.clp["SA"], descr="SA_ED_PSA_SE_DISJ_FALHA_ABRIR")
+        self.condicionadores_essenciais.append(CondicionadorBase(leitura_ED_disj_se_falha_abrir, CONDIC_INDISPONIBILIZAR))
+
+        leitura_ED_stt_bloqueio_50bf = LeituraModbusBit(REG_SA["SA_ED_STT_BLOQUEIO_50BF"], self.clp["SA"], descr="SA_ED_STT_BLOQUEIO_50BF")
+        self.condicionadores_essenciais.append(CondicionadorBase(leitura_ED_stt_bloqueio_50bf, CONDIC_INDISPONIBILIZAR))
+
+        leitura_ED_bloq_50bf_atuado = LeituraModbusBit(REG_SA["SA_ED_BLOQUEIO_50BF_ATUADO"], self.clp["SA"], descr="SA_ED_BLOQUEIO_50BF_ATUADO")
+        self.condicionadores_essenciais.append(CondicionadorBase(leitura_ED_bloq_50bf_atuado, CONDIC_INDISPONIBILIZAR))
+
+        leitura_ED_stt_bloq_86btlsa = LeituraModbusBit(REG_SA["SA_ED_STT_BLOQUEIO_86BTLSA"], self.clp["SA"], descr="SA_ED_STT_BLOQUEIO_86BTLSA")
+        self.condicionadores_essenciais.append(CondicionadorBase(leitura_ED_stt_bloq_86btlsa, CONDIC_INDISPONIBILIZAR))
+
+        leitura_ED_bloq_86btlsa_atuado = LeituraModbusBit(REG_SA["SA_ED_BLOQUEIO_86BTLSA_ATUADO"], self.clp["SA"], descr="SA_ED_BLOQUEIO_86BTLSA_ATUADO")
+        self.condicionadores_essenciais.append(CondicionadorBase(leitura_ED_bloq_86btlsa_atuado, CONDIC_INDISPONIBILIZAR))
+
+        leitura_CD_disj_gmg_fecha = LeituraModbusBit(REG_SA["SA_CD_DISJ_GMG_FECHA"], self.clp["SA"], descr="SA_CD_DISJ_GMG_FECHA")
+        leitura_CD_disj_linha_abre = LeituraModbusBit(REG_SA["SA_CD_DISJ_LINHA_ABRE"], self.clp["SA"], descr="SA_CD_DISJ_LINHA_ABRE")
+        leitura_CD_sf_manual = LeituraModbusBit(REG_SA["SA_CD_SF_MANUAL"], self.clp["SA"], descr="SA_CD_SF_MANUAL")
+        leitura_ED_bt_bloq_86btbf = LeituraModbusBit(REG_SA["SA_ED_PSA_BOTAO_BLOQUEIO_86BTBF"], self.clp["SA"], descr="SA_ED_PSA_BOTAO_BLOQUEIO_86BTBF") # Telegram + Voip
+        leitura_ED_disjs_modo_remoto = LeituraModbusBit(REG_SA["SA_ED_PSA_DISJUNTORES_MODO_REMOTO"], self.clp["SA"], descr="SA_ED_PSA_DISJUNTORES_MODO_REMOTO")
+        leitura_ED_disj_tsa_trip = LeituraModbusBit(REG_SA["SA_ED_PSA_DISJ_TSA_TRIP"], self.clp["SA"], descr="SA_ED_PSA_DISJ_TSA_TRIP") # Telegram + Voip
+        leitura_ED_disj_gmg_trip = LeituraModbusBit(REG_SA["SA_ED_PSA_DISJ_GMG_TRIP"], self.clp["SA"], descr="SA_ED_PSA_DISJ_GMG_TRIP") # Telegram + Voip
+        leitura_ED_rele_bloq_86btbf = LeituraModbusBit(REG_SA["SA_ED_PSA_RELE_BLOQUEIO_86BTBF"], self.clp["SA"], descr="SA_ED_PSA_RELE_BLOQUEIO_86BTBF") # Telegram + Voip
+        leitura_ED_carreg_baterias_falha = LeituraModbusBit(REG_SA["SA_ED_PSA_CARREGADOR_BATERIAS_FALHA"], self.clp["SA"], descr="SA_ED_PSA_CARREGADOR_BATERIAS_FALHA") # Telegram + Voip
+        leitura_ED_conv_fibra_falha = LeituraModbusBit(REG_SA["SA_ED_PSA_CONVERSOR_FIBRA_FALHA"], self.clp["SA"], descr="SA_ED_PSA_CONVERSOR_FIBRA_FALHA") # Telegram + Voip
+        leitura_ED_sup_tensao_falha = LeituraModbusBit(REG_SA["SA_ED_PSA_SUPERVISOR_TENSAO_FALHA"], self.clp["SA"], descr="SA_ED_PSA_SUPERVISOR_TENSAO_FALHA")
+        leitura_ED_dps_tsa_falha = LeituraModbusBit(REG_SA["SA_ED_PSA_DPS_TSA"], self.clp["SA"], descr="SA_ED_PSA_DPS_TSA") # Telegram + Voip
+        leitura_ED_dps_gmg_falha = LeituraModbusBit(REG_SA["SA_ED_PSA_DPS_GMG"], self.clp["SA"], descr="SA_ED_PSA_DPS_GMG") # Telegram + Voip
+        leitura_ED_poco_dren_bomba_1_defeito = LeituraModbusBit(REG_SA["SA_ED_PSA_POCO_DRENAGEM_BOMBA_1_DEFEITO"], self.clp["SA"], descr="SA_ED_PSA_POCO_DRENAGEM_BOMBA_1_DEFEITO")
+        leitura_ED_poco_dren_bomba_2_defeito = LeituraModbusBit(REG_SA["SA_ED_PSA_POCO_DRENAGEM_BOMBA_2_DEFEITO"], self.clp["SA"], descr="SA_ED_PSA_POCO_DRENAGEM_BOMBA_2_DEFEITO")
+        leitura_ED_poco_esgot_bomba_1_defeito = LeituraModbusBit(REG_SA["SA_ED_PSA_POCO_ESGOTAMENTO_BOMBA_1_DEFEITO"], self.clp["SA"], descr="SA_ED_PSA_POCO_ESGOTAMENTO_BOMBA_1_DEFEITO")
+        leitura_ED_poco_esgot_bomba_2_defeito = LeituraModbusBit(REG_SA["SA_ED_PSA_POCO_ESGOTAMENTO_BOMBA_2_DEFEITO"], self.clp["SA"], descr="SA_ED_PSA_POCO_ESGOTAMENTO_BOMBA_2_DEFEITO")
+        leitura_ED_poco_dren_nv_muito_baixo = LeituraModbusBit(REG_SA["SA_ED_PSA_POCO_DRENAGEM_SENSOR_NIVEL_MUITO_BAIXO"], self.clp["SA"], descr="SA_ED_PSA_POCO_DRENAGEM_SENSOR_NIVEL_MUITO_BAIXO")
+        leitura_ED_poco_dren_nv_alto = LeituraModbusBit(REG_SA["SA_ED_PSA_POCO_DRENAGEM_SENSOR_NIVEL_ALTO"], self.clp["SA"], descr="SA_ED_PSA_POCO_DRENAGEM_SENSOR_NIVEL_ALTO")
+        leitura_ED_poco_dren_nv_muito_alto = LeituraModbusBit(REG_SA["SA_ED_PSA_POCO_DRENAGEM_SENSOR_NIVEL_MUITO_ALTO"], self.clp["SA"], descr="SA_ED_PSA_POCO_DRENAGEM_SENSOR_NIVEL_MUITO_ALTO")
+        leitura_ED_disj_gmg_fechado = LeituraModbusBit(REG_SA["SA_ED_PSA_DIJS_GMG_FECHADO"], self.clp["SA"], descr="SA_ED_PSA_DIJS_GMG_FECHADO")
+        leitura_ED_sup_tensao_tsa_falha = LeituraModbusBit(REG_SA["SA_ED_PSA_SUPERVISOR_TENSAO_TSA_FALHA"], self.clp["SA"], descr="SA_ED_PSA_SUPERVISOR_TENSAO_TSA_FALHA")
+        leitura_ED_sup_tensao_gmg_falha = LeituraModbusBit(REG_SA["SA_ED_PSA_SUPERVISOR_TENSAO_GMG_FALHA"], self.clp["SA"], descr="SA_ED_PSA_SUPERVISOR_TENSAO_GMG_FALHA")
+        leitura_ED_trafo_temp_muito_alta = LeituraModbusBit(REG_SA["SA_ED_PSA_TRAFO_ELEVADOR_TEMP_MUITO_ALTA"], self.clp["SA"], descr="SA_ED_PSA_TRAFO_ELEVADOR_TEMP_MUITO_ALTA")
+        leitura_ED_se_disj_linha_aberto = LeituraModbusBit(REG_SA["SA_ED_PSA_SE_DISJ_LINHA_ABERTO"], self.clp["SA"], descr="SA_ED_PSA_SE_DISJ_LINHA_ABERTO")  # Telegram + Voip
+        leitura_ED_te_temp_muito_alta = LeituraModbusBit(REG_SA["SA_ED_PSA_TE_TEMPERATURA_MUIT_ALTA"], self.clp["SA"], descr="SA_ED_PSA_TE_TEMPERATURA_MUIT_ALTA")
+        leitura_ED_te_press_muito_alta = LeituraModbusBit(REG_SA["SA_ED_PSA_TE_PRESSAO_MUITO_ALTA"], self.clp["SA"], descr="SA_ED_PSA_TE_PRESSAO_MUITO_ALTA")
+        leitura_ED_oleo_muito_baixo = LeituraModbusBit(REG_SA["SA_ED_PSA_OLEO_MUITO_BAIXO"], self.clp["SA"], descr="SA_ED_PSA_OLEO_MUITO_BAIXO")
+        leitura_ED_prtva1_50bf = LeituraModbusBit(REG_SA["SA_ED_PSA_PRTVA1_50BF"], self.clp["SA"], descr="SA_ED_PSA_PRTVA1_50BF")
+        leitura_ED_prtva2_50bf = LeituraModbusBit(REG_SA["SA_ED_PSA_PRTVA2_50BF"], self.clp["SA"], descr="SA_ED_PSA_PRTVA2_50BF")
+        leitura_ED_sfa_entra_elem_1_aberta = LeituraModbusBit(REG_SA["SA_ED_PSA_SFA_ENTRADA_ELEMENTO_1_ABERTA"], self.clp["SA"], descr="SA_ED_PSA_SFA_ENTRADA_ELEMENTO_1_ABERTA")
+        leitura_ED_sfa_entra_elem_2_aberta = LeituraModbusBit(REG_SA["SA_ED_PSA_SFA_ENTRADA_ELEMENTO_2_ABERTA"], self.clp["SA"], descr="SA_ED_PSA_SFA_ENTRADA_ELEMENTO_2_ABERTA")
+        leitura_ED_sfa_limp_elem_1_aberta = LeituraModbusBit(REG_SA["SA_ED_PSA_SFA_LIMPEZA_ELEMENTO_1_ABERTA"], self.clp["SA"], descr="SA_ED_PSA_SFA_LIMPEZA_ELEMENTO_1_ABERTA")
+        leitura_ED_sfa_limp_elem_2_aberta = LeituraModbusBit(REG_SA["SA_ED_PSA_SFA_LIMPEZA_ELEMENTO_2_ABERTA"], self.clp["SA"], descr="SA_ED_PSA_SFA_LIMPEZA_ELEMENTO_2_ABERTA")
+        leitura_ED_sfb_entra_elem_1_aberta = LeituraModbusBit(REG_SA["SA_ED_PSA_SFB_ENTRADA_ELEMENTO_1_ABERTA"], self.clp["SA"], descr="SA_ED_PSA_SFB_ENTRADA_ELEMENTO_1_ABERTA")
+        leitura_ED_sfb_entra_elem_2_aberta = LeituraModbusBit(REG_SA["SA_ED_PSA_SFB_ENTRADA_ELEMENTO_2_ABERTA"], self.clp["SA"], descr="SA_ED_PSA_SFB_ENTRADA_ELEMENTO_2_ABERTA")
+        leitura_ED_sfb_limp_elem_1_aberta = LeituraModbusBit(REG_SA["SA_ED_PSA_SFB_LIMPEZA_ELEMENTO_1_ABERTA"], self.clp["SA"], descr="SA_ED_PSA_SFB_LIMPEZA_ELEMENTO_1_ABERTA")
+        leitura_ED_sfb_limp_elem_2_aberta = LeituraModbusBit(REG_SA["SA_ED_PSA_SFB_LIMPEZA_ELEMENTO_2_ABERTA"], self.clp["SA"], descr="SA_ED_PSA_SFB_LIMPEZA_ELEMENTO_2_ABERTA")
+        leitura_ED_se_rele_linha_trip = LeituraModbusBit(REG_SA["SA_ED_PSA_SE_RELE_LINHA_TRIP"], self.clp["SA"], descr="SA_ED_PSA_SE_RELE_LINHA_TRIP")  # Telegram + Voip
+        leitura_ED_se_rele_linha_falha = LeituraModbusBit(REG_SA["SA_ED_PSA_SE_RELE_LINHA_FALHA"], self.clp["SA"], descr="SA_ED_PSA_SE_RELE_LINHA_FALHA")
+        leitura_EA_nv_jusante_falha_leitura = LeituraModbusBit(REG_SA["SA_EA_PSA_NIVEL_JUSANTE_FALHA_LEITURA"], self.clp["SA"], descr="SA_EA_PSA_NIVEL_JUSANTE_FALHA_LEITURA")
+        leitura_EA_sfa_press_lado_limpo_falha_leitura = LeituraModbusBit(REG_SA["SA_EA_PSA_SFA_PRESSAO_LADO_LIMPO_FALHA_LEITURA"], self.clp["SA"], descr="SA_EA_PSA_SFA_PRESSAO_LADO_LIMPO_FALHA_LEITURA")
+        leitura_EA_sfa_press_lado_sujo_falha_leitura = LeituraModbusBit(REG_SA["SA_EA_PSA_SFA_PRESSAO_LADO_SUJO_FALHA_LEITURA"], self.clp["SA"], descr="SA_EA_PSA_SFA_PRESSAO_LADO_SUJO_FALHA_LEITURA")
+        leitura_EA_sfb_press_lado_limpo_falha_leitura = LeituraModbusBit(REG_SA["SA_EA_PSA_SFB_PRESSAO_LADO_LIMPO_FALHA_LEITURA"], self.clp["SA"], descr="SA_EA_PSA_SFB_PRESSAO_LADO_LIMPO_FALHA_LEITURA")
+        leitura_EA_sfb_press_lado_sujo_falha_leitura = LeituraModbusBit(REG_SA["SA_EA_PSA_SFB_PRESSAO_LADO_SUJO_FALHA_LEITURA"], self.clp["SA"], descr="SA_EA_PSA_SFB_PRESSAO_LADO_SUJO_FALHA_LEITURA")
+        leitura_EA_nv_jusante_2_falha_leitura = LeituraModbusBit(REG_SA["SA_EA_PSA_NIVEL_JUSANTE_2_FALHA_LEITURA"], self.clp["SA"], descr="SA_EA_PSA_NIVEL_JUSANTE_2_FALHA_LEITURA")
+        leitura_EA_sfb_press_lado_sujo_falha_leitura = LeituraModbusBit(REG_SA["SA_EA_PSA_SFB_PRESSAO_LADO_SUJO_FALHA_LEITURA"], self.clp["SA"], descr="SA_EA_PSA_SFB_PRESSAO_LADO_SUJO_FALHA_LEITURA")
+        leitura_EA_nv_jusante_muito_alto = LeituraModbusBit(REG_SA["SA_EA_PSA_NIVEL_JUSANTE_MUITO_ALTO"], self.clp["SA"], descr="SA_EA_PSA_NIVEL_JUSANTE_MUITO_ALTO")  # Telegram + Voip
+        leitura_EA_sfa_press_lado_limpo_alto = LeituraModbusBit(REG_SA["SA_EA_PSA_SFA_PRESSAO_LADO_LIMPO_ALTO"], self.clp["SA"], descr="SA_EA_PSA_SFA_PRESSAO_LADO_LIMPO_ALTO") # Telegram + Voip
+        leitura_EA_sfa_press_lado_sujo_alto = LeituraModbusBit(REG_SA["SA_EA_PSA_SFA_PRESSAO_LADO_SUJO_ALTO"], self.clp["SA"], descr="SA_EA_PSA_SFA_PRESSAO_LADO_SUJO_ALTO") # Telegram + Voip
+        leitura_EA_sfb_press_lado_limpo_alto = LeituraModbusBit(REG_SA["SA_EA_PSA_SFB_PRESSAO_LADO_LIMPO_ALTO"], self.clp["SA"], descr="SA_EA_PSA_SFB_PRESSAO_LADO_LIMPO_ALTO") # Telegram + Voip
+        leitura_EA_sfb_press_lado_sujo_alto = LeituraModbusBit(REG_SA["SA_EA_PSA_SFB_PRESSAO_LADO_SUJO_ALTO"], self.clp["SA"], descr="SA_EA_PSA_SFB_PRESSAO_LADO_SUJO_ALTO") # Telegram + Voip
+        leitura_EA_sfa_press_lado_limpo_muito_alto = LeituraModbusBit(REG_SA["SA_EA_PSA_SFA_PRESSAO_LADO_LIMPO_MUITO_ALTO"], self.clp["SA"], descr="SA_EA_PSA_SFA_PRESSAO_LADO_LIMPO_MUITO_ALTO") # Telegram + Voip
+        leitura_EA_sfa_press_lado_sujo_muito_alto = LeituraModbusBit(REG_SA["SA_EA_PSA_SFA_PRESSAO_LADO_SUJO_MUITO_ALTO"], self.clp["SA"], descr="SA_EA_PSA_SFA_PRESSAO_LADO_SUJO_MUITO_ALTO") # Telegram + Voip
+        leitura_EA_sfb_press_lado_limpo_muito_alto = LeituraModbusBit(REG_SA["SA_EA_PSA_SFB_PRESSAO_LADO_LIMPO_MUITO_ALTO"], self.clp["SA"], descr="SA_EA_PSA_SFB_PRESSAO_LADO_LIMPO_MUITO_ALTO") # Telegram + Voip
+        leitura_EA_sfb_press_lado_sujo_muito_alto = LeituraModbusBit(REG_SA["SA_EA_PSA_SFB_PRESSAO_LADO_SUJO_MUITO_ALTO"], self.clp["SA"], descr="SA_EA_PSA_SFB_PRESSAO_LADO_SUJO_MUITO_ALTO") # Telegram + Voip
+        leitura_EA_nv_jusante_alto = LeituraModbusBit(REG_SA["SA_EA_PSA_NIVEL_JUSANTE_ALTO"], self.clp["SA"], descr="SA_EA_PSA_NIVEL_JUSANTE_ALTO")
+        leitura_EA_nv_montante_baixo = LeituraModbusBit(REG_SA["SA_EA_PSA_NIVEL_MONTANTE_BAIXO"], self.clp["SA"], descr="SA_EA_PSA_NIVEL_MONTANTE_BAIXO")
+        leitura_EA_nv_jusante_2_baixo = LeituraModbusBit(REG_SA["SA_EA_PSA_NIVEL_JUSANTE_2_BAIXO"], self.clp["SA"], descr="SA_EA_PSA_NIVEL_JUSANTE_2_BAIXO")
+        leitura_EA_sfa_press_lado_limpo_baixo = LeituraModbusBit(REG_SA["SA_EA_PSA_SFA_PRESSAO_LADO_LIMPO_BAIXO"], self.clp["SA"], descr="SA_EA_PSA_SFA_PRESSAO_LADO_LIMPO_BAIXO")
+        leitura_EA_sfa_press_lado_limpo_baixo = LeituraModbusBit(REG_SA["SA_EA_PSA_SFA_PRESSAO_LADO_LIMPO_BAIXO"], self.clp["SA"], descr="SA_EA_PSA_SFA_PRESSAO_LADO_LIMPO_BAIXO")
+        leitura_EA_sfa_press_lado_sujo_baixo = LeituraModbusBit(REG_SA["SA_EA_PSA_SFA_PRESSAO_LADO_SUJO_BAIXO"], self.clp["SA"], descr="SA_EA_PSA_SFA_PRESSAO_LADO_SUJO_BAIXO")
+        leitura_EA_sfB_press_lado_limpo_baixo = LeituraModbusBit(REG_SA["SA_EA_PSA_SFB_PRESSAO_LADO_LIMPO_BAIXO"], self.clp["SA"], descr="SA_EA_PSA_SFB_PRESSAO_LADO_LIMPO_BAIXO")
+        leitura_EA_sfB_press_lado_sujo_baixo = LeituraModbusBit(REG_SA["SA_EA_PSA_SFB_PRESSAO_LADO_SUJO_BAIXO"], self.clp["SA"], descr="SA_EA_PSA_SFB_PRESSAO_LADO_SUJO_BAIXO")
+        leitura_EA_sfa_press_lado_limpo_muito_baixo = LeituraModbusBit(REG_SA["SA_EA_PSA_SFA_PRESSAO_LADO_LIMPO_MUITO_BAIXO"], self.clp["SA"], descr="SA_EA_PSA_SFA_PRESSAO_LADO_LIMPO_MUITO_BAIXO")
+        leitura_EA_sfa_press_lado_sujo_muito_baixo = LeituraModbusBit(REG_SA["SA_EA_PSA_SFA_PRESSAO_LADO_SUJO_MUITO_BAIXO"], self.clp["SA"], descr="SA_EA_PSA_SFA_PRESSAO_LADO_SUJO_MUITO_BAIXO")
+        leitura_EA_sfB_press_lado_limpo_muito_baixo = LeituraModbusBit(REG_SA["SA_EA_PSA_SFB_PRESSAO_LADO_LIMPO_MUITO_BAIXO"], self.clp["SA"], descr="SA_EA_PSA_SFB_PRESSAO_LADO_LIMPO_MUITO_BAIXO")
+        leitura_EA_sfB_press_lado_sujo_muito_baixo = LeituraModbusBit(REG_SA["SA_EA_PSA_SFB_PRESSAO_LADO_SUJO_MUITO_BAIXO"], self.clp["SA"], descr="SA_EA_PSA_SFB_PRESSAO_LADO_SUJO_MUITO_BAIXO")
+        leitura_EA_nv_jusante_muito_baixo = LeituraModbusBit(REG_SA["SA_EA_PSA_NIVEL_JUSANTE_MUITO_BAIXO"], self.clp["SA"], descr="SA_EA_PSA_NIVEL_JUSANTE_MUITO_BAIXO")
+        leitura_EA_nv_montante_muito_baixo = LeituraModbusBit(REG_SA["SA_EA_PSA_NIVEL_MONTANTE_MUITO_BAIXO"], self.clp["SA"], descr="SA_EA_PSA_NIVEL_MONTANTE_MUITO_BAIXO") # Telegram + Voip
+        leitura_EA_nv_jusante_2_muito_baixo = LeituraModbusBit(REG_SA["SA_EA_PSA_NIVEL_JUSANTE_2_MUITO_BAIXO"], self.clp["SA"], descr="SA_EA_PSA_NIVEL_JUSANTE_2_MUITO_BAIXO")
+        leitura_ED_dren_bomba_1_indisp = LeituraModbusBit(REG_SA["SA_ED_PSA_DREANGEM_BOMBA_1_INDISP"], self.clp["SA"], descr="SA_ED_PSA_DREANGEM_BOMBA_1_INDISP")
+        leitura_ED_dren_bomba_2_indisp = LeituraModbusBit(REG_SA["SA_ED_PSA_DREANGEM_BOMBA_2_INDISP"], self.clp["SA"], descr="SA_ED_PSA_DREANGEM_BOMBA_2_INDISP")
+        leitura_ED_dren_boias_discrepancia = LeituraModbusBit(REG_SA["SA_ED_PSA_DREANGEM_BOIAS_DISCREPANCIA"], self.clp["SA"], descr="SA_ED_PSA_DREANGEM_BOIAS_DISCREPANCIA")
+        leitura_ED_esgot_bomba_1_indisp = LeituraModbusBit(REG_SA["SA_ED_PSA_ESGOTAMENTO_BOMBA_1_INDISP"], self.clp["SA"], descr="SA_ED_PSA_ESGOTAMENTO_BOMBA_1_INDISP")
+        leitura_ED_esgot_bomba_2_indisp = LeituraModbusBit(REG_SA["SA_ED_PSA_ESGOTAMENTO_BOMBA_2_INDISP"], self.clp["SA"], descr="SA_ED_PSA_ESGOTAMENTO_BOMBA_2_INDISP")
+        leitura_ED_esgot_bomba_1_falha = LeituraModbusBit(REG_SA["SA_ED_PSA_ESGOTAMENTO_BOMBA_1_FALHA"], self.clp["SA"], descr="SA_ED_PSA_ESGOTAMENTO_BOMBA_1_FALHA")
+        leitura_ED_esgot_bomba_2_falha = LeituraModbusBit(REG_SA["SA_ED_PSA_ESGOTAMENTO_BOMBA_2_FALHA"], self.clp["SA"], descr="SA_ED_PSA_ESGOTAMENTO_BOMBA_2_FALHA")
+        leitura_ED_disj_gmg_falha_fechar = LeituraModbusBit(REG_SA["SA_ED_PSA_GMG_DISJ_FALHA_FECHAR"], self.clp["SA"], descr="SA_ED_PSA_GMG_DISJ_FALHA_FECHAR") # Telegram + Voip
+        leitura_ED_disj_gmg_falha_abrir = LeituraModbusBit(REG_SA["SA_ED_PSA_GMG_DISJ_FALHA_ABRIR"], self.clp["SA"], descr="SA_ED_PSA_GMG_DISJ_FALHA_ABRIR") # Telegram + Voip
+        leitura_ED_disj_tsa_falha_fechar = LeituraModbusBit(REG_SA["SA_ED_PSA_TSA_DISJ_FALHA_FECHAR"], self.clp["SA"], descr="SA_ED_PSA_TSA_DISJ_FALHA_FECHAR")
+        leitura_ED_disj_tsa_falha_abrir = LeituraModbusBit(REG_SA["SA_ED_PSA_TSA_DISJ_FALHA_ABRIR"], self.clp["SA"], descr="SA_ED_PSA_TSA_DISJ_FALHA_ABRIR")
+        leitura_ED_sfa_falha_abrir_entra_elem = LeituraModbusBit(REG_SA["SA_ED_PSA_SFA_FALHA_ABRIR_ENTRADA_ELEM"], self.clp["SA"], descr="SA_ED_PSA_SFA_FALHA_ABRIR_ENTRADA_ELEM")
+        leitura_ED_sfa_falha_fechar_entra_elem = LeituraModbusBit(REG_SA["SA_ED_PSA_SFA_FALHA_FECHAR_ENTRADA_ELEM"], self.clp["SA"], descr="SA_ED_PSA_SFA_FALHA_FECHAR_ENTRADA_ELEM")
+        leitura_ED_sfb_falha_abrir_entra_elem = LeituraModbusBit(REG_SA["SA_ED_PSA_SFB_FALHA_ABRIR_ENTRADA_ELEM"], self.clp["SA"], descr="SA_ED_PSA_SFB_FALHA_ABRIR_ENTRADA_ELEM")
+        leitura_ED_sfb_falha_fechar_entra_elem = LeituraModbusBit(REG_SA["SA_ED_PSA_SFB_FALHA_FECHAR_ENTRADA_ELEM"], self.clp["SA"], descr="SA_ED_PSA_SFB_FALHA_FECHAR_ENTRADA_ELEM")
+        leitura_ED_sfa_falha_abrir_retrolavagem = LeituraModbusBit(REG_SA["SA_ED_PSA_SFA_FALHA_ABRIR_RETROLAVAGEM"], self.clp["SA"], descr="SA_ED_PSA_SFA_FALHA_ABRIR_RETROLAVAGEM")
+        leitura_ED_sfa_falha_fechar_retrolavagem = LeituraModbusBit(REG_SA["SA_ED_PSA_SFA_FALHA_FECHAR_RETROLAVAGEM"], self.clp["SA"], descr="SA_ED_PSA_SFA_FALHA_FECHAR_RETROLAVAGEM")
+        leitura_ED_sfb_falha_abrir_retrolavagem = LeituraModbusBit(REG_SA["SA_ED_PSA_SFB_FALHA_ABRIR_RETROLAVAGEM"], self.clp["SA"], descr="SA_ED_PSA_SFB_FALHA_ABRIR_RETROLAVAGEM")
+        leitura_ED_sfb_falha_fechar_retrolavagem = LeituraModbusBit(REG_SA["SA_ED_PSA_SFB_FALHA_FECHAR_RETROLAVAGEM"], self.clp["SA"], descr="SA_ED_PSA_SFB_FALHA_FECHAR_RETROLAVAGEM")
+        leitura_ED_stt_bloq_50bf = LeituraModbusBit(REG_SA["SA_ED_STT_BLOQUEIO_50BF"], self.clp["SA"], descr="SA_ED_STT_BLOQUEIO_50BF")  # Telegram + Voip
+        leitura_ED_stt_bloq_50bf_atuado = LeituraModbusBit(REG_SA["SA_ED_STT_BLOQUEIO_50BF_ATUADO"], self.clp["SA"], descr="SA_ED_STT_BLOQUEIO_50BF_ATUADO")  # Telegram + Voip
+        leitura_ED_stt_bloq_86btlsa = LeituraModbusBit(REG_SA["SA_ED_STT_BLOQUEIO_86BTLSA"], self.clp["SA"], descr="SA_ED_STT_BLOQUEIO_86BTLSA")  # Telegram + Voip
+        leitura_ED_stt_bloq_86btlsa_atuado = LeituraModbusBit(REG_SA["SA_ED_BLOQUEIO_86BTLSA_ATUADO"], self.clp["SA"], descr="SA_ED_BLOQUEIO_86BTLSA_ATUADO")  # Telegram + Voip
+
 
 
 class OcorrenciasUg(Usina):
@@ -100,7 +260,7 @@ class OcorrenciasUg(Usina):
 
         self.flag: int = CONDIC_IGNORAR
 
-        for ug in self.ugs: 
+        for ug in self.ugs:
             self.carregar_leituras(ug)
 
     @property
@@ -126,7 +286,7 @@ class OcorrenciasUg(Usina):
     @condic_dict.setter
     def condic_dict(self, var: "dict[str, CondicionadorExponencial]") -> None:
         self._condic_dict = var
-    
+
     @property
     def leitura_dict(self) -> "dict[str, LeituraModbus]":
         return self._leitura_dict
@@ -367,21 +527,5 @@ class OcorrenciasUg(Usina):
 
 
         # Leituras de condicionadores essenciais que serão lidos a cada ciclo das UGs
-        leitura_CD_EmergenciaViaSuper = LeituraModbusBit(REG_UG[f"UG{ug.id}_CD_EmergenciaViaSuper"], self.clp[f"UG{ug.id}"], descr=f"UG{ug.id}_CD_EmergenciaViaSuper")
-        self.condicionadores_essenciais.append(CondicionadorBase(leitura_CD_EmergenciaViaSuper, CONDIC_NORMALIZAR, [UG_SINCRONIZADA, UG_SINCRONIZANDO], ug.id))
-
-        leitura_RD_TripEletrico = LeituraModbusBit(REG_UG[f"UG{ug.id}_RD_TripEletrico"], self.clp[f"UG{ug.id}"], descr=f"UG{ug.id}_RD_TripEletrico")
-        self.condicionadores_essenciais.append(CondicionadorBase(leitura_RD_TripEletrico, CONDIC_NORMALIZAR, [UG_SINCRONIZADA, UG_SINCRONIZANDO], ug.id))
-
-        leitura_ED_ReleBloqA86HAtuado = LeituraModbusBit(REG_UG[f"UG{ug.id}_ED_ReleBloqA86HAtuado"], self.clp[f"UG{ug.id}"], descr=f"UG{ug.id}_ED_ReleBloqA86HAtuado")
-        self.condicionadores_essenciais.append(CondicionadorBase(leitura_ED_ReleBloqA86HAtuado, CONDIC_NORMALIZAR, [UG_SINCRONIZADA, UG_SINCRONIZANDO], ug.id))
-
-        leitura_ED_FalhaDisjTPsSincrG1 = LeituraModbusBit(REG_SA["SA_ED_FalhaDisjTPsSincrG1"], self.clp["SA"], descr="SA_ED_FalhaDisjTPsSincrG1")
-        self.condicionadores.append(CondicionadorBase(leitura_ED_FalhaDisjTPsSincrG1))
-
-        # Leituras de condicionadores comuns que serão lidos caso haja algum disparo proveniente de um condicionador essencial
-        leitura_ED_DisjDJ1_BloqPressBaixa = LeituraModbusBit(REG_SA["SA_ED_DisjDJ1_BloqPressBaixa"], self.clp["SA"], descr="SA_ED_DisjDJ1_BloqPressBaixa")
-        self.condicionadores.append(CondicionadorBase(leitura_ED_DisjDJ1_BloqPressBaixa))
-
-        leitura_ED_DisjDJ1_AlPressBaixa = LeituraModbusBit(REG_SA["SA_ED_DisjDJ1_AlPressBaixa"], self.clp["SA"], descr="SA_ED_DisjDJ1_AlPressBaixa")
-        self.condicionadores.append(CondicionadorBase(leitura_ED_DisjDJ1_AlPressBaixa))
+        leitura_ED_nv_montante_muito_baixo = LeituraModbusBit(REG_SA["SA_EA_PSA_NIVEL_MONTANTE_MUITO_BAIXO"], self.clp["SA"], descr="SA_EA_PSA_NIVEL_MONTANTE_MUITO_BAIXO")
+        self.condicionadores_essenciais.append(CondicionadorBase(leitura_ED_nv_montante_muito_baixo, CONDIC_AGUARDAR))
