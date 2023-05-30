@@ -8,7 +8,7 @@ from time import sleep
 from datetime import datetime
 from urllib.request import Request, urlopen
 
-from src.banco_dados import Database
+from src.banco_dados import BancoDados
 
 logger = logging.getLogger("__main__")
 

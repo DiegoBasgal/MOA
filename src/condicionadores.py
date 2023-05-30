@@ -2,7 +2,7 @@ __version__ = "0.1"
 __author__ = "Lucas Lavratti"
 
 from src.funcoes.leitura import *
-from unidade_geracao import UnidadeDeGeracao
+from src.unidade_geracao import UnidadeDeGeracao
 
 class CondicionadorBase:
     def __init__(self, leitura: LeituraModbus, gravidade: int=2, etapas: list=[], ug_id: int=None, descr: str=None):
@@ -68,9 +68,17 @@ class CondicionadorExponencial(CondicionadorBase):
     def valor_base(self) -> "int | float":
         return self.__valor_base
 
+    @valor_base.setter
+    def valor_base(self, val: "int | float") -> None:
+        self.__valor_base = val
+
     @property
     def valor_limite(self) -> "int | float":
         return self.__valor_limite
+
+    @valor_limite.setter
+    def valor_limite(self, val: "int | float") -> None:
+        self.__valor_limite = val
 
     @property
     def ordem(self) -> "int | float":

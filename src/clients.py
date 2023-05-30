@@ -2,7 +2,7 @@ import logging
 import traceback
 import subprocess
 
-import dicionarios.dict as d
+import src.dicionarios.dict as d
 
 from pyModbusTCP.client import ModbusClient
 
@@ -10,11 +10,17 @@ logger = logging.getLogger("__main__")
 
 class ClientesUsina:
 
-    clp: "dict[str, ModbusClient]"
+    clp: "dict[str, ModbusClient]" = {}
 
     clp["SA"] = ModbusClient(
         host=d.ips["SA_ip"],
         port=d.ips["SA_porta"],
+        unit_id=1,
+        timeout=0.5
+    )
+    clp["TDA"] = ModbusClient(
+        host=d.ips["TDA_ip"],
+        port=d.ips["TDA_porta"],
         unit_id=1,
         timeout=0.5
     )
@@ -70,8 +76,10 @@ class ClientesUsina:
             if not cls.ping(d.ips["UG2_ip"]):
                 logger.warning("[CLI] O CLP da Unidade Geradora 2 não respondeu a tentativa de comunicação!")
 
+            """
             if not cls.ping(d.ips["MOA_ip"]):
                 logger.warning("[CLI] O CLP do MOA não respondeu a tentativa de comunicação!")
+            """
 
         except Exception:
             logger.error(f"[CLI] Houve um erro ao enviar comando de ping dos clientes da usina.")

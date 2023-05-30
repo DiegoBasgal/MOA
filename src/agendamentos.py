@@ -1,8 +1,16 @@
-from usina import *
+import pytz
+import logging
+
+from time import sleep
+from datetime import datetime, timedelta
+
+from src.dicionarios.const import *
+from src.banco_dados import BancoDados
+
 
 logger = logging.getLogger("__main__")
 
-class Agendamentos(Usina):
+class Agendamentos:
 
     segundos_passados = 0
     segundos_adiantados = 0
@@ -175,7 +183,7 @@ class Agendamentos(Usina):
         return True
 
     @classmethod
-    def verificar_agendamentos_ugs(cls, agendamento, ug: UnidadeDeGeracao) -> bool:
+    def verificar_agendamentos_ugs(cls, agendamento, ug) -> bool:
         if agendamento[3] == AGN_UG_ALTERAR_POT_LIMITE[ug.id]:
             try:
                 novo = float(agendamento[5].replace(",", "."))

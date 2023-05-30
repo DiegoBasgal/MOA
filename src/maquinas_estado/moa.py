@@ -27,9 +27,9 @@ class StateMachine:
 
 class State:
     def __init__(self, usina: Usina=None, *args, **kwargs):
-        if None in (usina):
+        if usina is None:
             logger.error(f"Erro ao carregar a classe da Usina na máquina de estados.")
-            self.state = FalhaCritica()
+            return FalhaCritica()
         else:
             self.usn = usina
 
@@ -45,8 +45,7 @@ class State:
         return self
 
 class FalhaCritica(State):
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
+    def __init__(self):
 
         logger.critical("Falha crítica MOA. Interrompendo execução...")
         sys.exit(1)
@@ -54,7 +53,10 @@ class FalhaCritica(State):
 class Pronto(State):
     def __init__(self, usn, *args, **kwargs):
         super().__init__(usn, *args, **kwargs)
+
         self.usn.estado_moa = MOA_SM_PRONTO
+
+        logger.info(f"MOA Pronto! Entrando no ciclo principal...")
 
     def run(self):
         self.usn.ler_valores()
@@ -82,7 +84,7 @@ class ControleEstados(State):
             return ControleAgendamentos(self.usn)
 
         else:
-            flag = self.usn.oco_usn.verificar_condicionadores()
+            flag = self.usn.oco.verificar_condicionadores()
             if flag == CONDIC_INDISPONIBILIZAR:
                 return Emergencia(self.usn)
 
@@ -112,9 +114,9 @@ class ControleDados(State):
         super().__init__(usn, *args, **kwargs)
 
         self.usn.estado_moa = MOA_SM_CONTROLE_DADOS
-        logger.debug("Escrevendo valores no Banco")
 
     def run(self):
+        logger.debug("Escrevendo valores no Banco")
         self.usn.ler_valores()
         self.usn.escrever_valores()
         return ControleEstados(self.usn)
@@ -145,7 +147,7 @@ class ModoManual(State):
         for ug in self.usn.ugs:
             ug.setpoint = ug.leitura_potencia
 
-        self.usn.controle_ie = [sum(ug.leitura_potencia) for ug in self.usn.ugs] / self.usn.cfg["pot_maxima_alvo"]
+        self.usn.controle_ie = (sum(ug.leitura_potencia) for ug in self.usn.ugs) / self.usn.cfg["pot_maxima_alvo"]
 
         if self.usn.modo_autonomo:
             logger.debug("Comando acionado: Habilitar modo autônomo.")
@@ -191,7 +193,7 @@ class Emergencia(State):
                     return ModoManual(self.usn)
 
         else:
-            flag = self.usn.oco_usn.verificar_condicionadores()
+            flag = self.usn.oco.verificar_condicionadores()
 
             if flag == CONDIC_INDISPONIBILIZAR:
                 logger.critical("Acionando VOIP e entrando em modo manual")

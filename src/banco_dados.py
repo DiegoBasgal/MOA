@@ -1,5 +1,5 @@
 import pytz
-import mariadb.connections
+import mariadb
 
 from datetime import datetime
 
@@ -23,17 +23,17 @@ class BancoDados:
         self.cursor.execute(
             f"SELECT ug{ug_id}_ultimo_estado "
             "FROM `debug`.`moa_debug` "
-            "ORDER BY ts DESC"
+            "ORDER BY ts DESC "
             "LIMIT 1;"
         )
         estado = self.cursor.fetchone()
-        return estado
+        return estado[0]
 
     def get_parametros_usina(self) -> list:
-        self.cursor.execute("SHOW COLUMNS FROM parametros_parametrosusina")
+        self.cursor.execute("SHOW COLUMNS FROM parametros_moa_parametrosusina")
         cols = self.cursor.fetchall()
 
-        self.cursor.execute("SELECT * FROM parametros_parametrosusina WHERE id = 1")
+        self.cursor.execute("SELECT * FROM parametros_moa_parametrosusina WHERE id = 1")
         parametros_raw = self.cursor.fetchone()
         parametros = {}
 
@@ -55,7 +55,7 @@ class BancoDados:
         return result
 
     def get_contato_emergencia(self) -> list:
-        self.cursor.execute("SELECT * FROM parametros_contato")
+        self.cursor.execute("SELECT * FROM parametros_moa_contato")
         rows = self.cursor.fetchall()
         parametros = {}
 
@@ -68,7 +68,7 @@ class BancoDados:
     def get_executabilidade(self, id_comando) -> dict:
         self.cursor.execute(
             "SELECT executavel_em_automatico, executavel_em_manual "
-            "FROM parametros_comando "
+            "FROM parametros_moa_comando "
             "WHERE id = %s", tuple([id_comando])
         )
         parametros_raw = self.cursor.fetchone()
@@ -82,13 +82,13 @@ class BancoDados:
     def update_modo_moa(self, modo: bool) -> None:
         if modo:
             self.cursor.execute(
-                "UPDATE parametros_parametrosusina " \
+                "UPDATE parametros_moa_parametrosusina " \
                 "SET modo_autonomo = 1 " \
                 "WHERE id = 1"
             )
         else:
             self.cursor.execute(
-                "UPDATE parametros_parametrosusina " \
+                "UPDATE parametros_moa_parametrosusina " \
                 "SET modo_autonomo = 0 " \
                 "WHERE id = 1"
             )
@@ -96,22 +96,22 @@ class BancoDados:
 
     def update_remove_emergencia(self) -> None:
         self.cursor.execute(
-            "UPDATE parametros_parametrosusina "
+            "UPDATE parametros_moa_parametrosusina "
             "SET emergencia_acionada = 0 "
-            "WHERE id = 1;",
+            "WHERE id = 1",
         )
         self.conn.commit()
 
     def update_valores_usina(self, values) -> None:
         self.cursor.execute(
-            "UPDATE parametros_parametrosusina "
+            "UPDATE parametros_moa_parametrosusina "
             "SET timestamp = %s, "
             "aguardando_reservatorio = %s, "
             "nv_montante = %s, "
             "ug1_pot = %s, "
             "ug1_setpot = %s, "
             "ug2_pot = %s, "
-            "ug2_setpot = %s, "
+            "ug2_setpot = %s "
             "WHERE id = 1;",
             tuple(values)
         )

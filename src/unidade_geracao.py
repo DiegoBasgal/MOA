@@ -2,34 +2,39 @@ import pytz
 import logging
 import traceback
 
-import dicionarios.dict as d
+import src.dicionarios.dict as d
 
 from time import sleep, time
 from threading import Thread
 from datetime import datetime
 
-from usina import *
-from condicionadores import *
-from dicionarios.const import *
+from src.dicionarios.reg import *
+from src.dicionarios.const import *
+
+import src.ocorrencias as oco_ug
+from src.condicionadores import *
 from src.funcoes.leitura import *
 from src.maquinas_estado.ug import *
 
-from banco_dados import BancoDados
-from funcoes.escrita import EscritaModBusBit as EMB
+from src.banco_dados import BancoDados
+from src.funcoes.escrita import EscritaModBusBit as EMB
 
 
 logger = logging.getLogger("__main__")
 
-class UnidadeDeGeracao(Usina):
+class UnidadeDeGeracao:
     def __init__(self, id: int, cfg=None, clp: "dict[str, ModbusClient]"=None, db: BancoDados=None):
-        super().__init__(cfg, clp, db)
-
         # VERIFICAÇÃO DE ARGUMENTOS
         if id <= 0:
             logger.error(f"[UG{self.id}] A Unidade não pode ser instanciada com o ID <= \"0\" ou vazio.")
             raise ValueError
         else:
             self.__id = id
+
+        self.db = db
+        self.cfg = cfg
+        self.clp = clp
+        self.oco = oco_ug.OcorrenciasUg(self.id, self.clp)
 
         # ATRIBUIÇÃO DE VARIÁVEIS PRIVADAS
         self.__etapa_atual: int = 0
@@ -63,27 +68,27 @@ class UnidadeDeGeracao(Usina):
         self.ts_auxiliar: datetime = self.get_time()
 
         self._leitura_potencia = LeituraModbus(
-            REG_UG[f"RELE_UG{self.id}_P"],
             self.clp[f"UG{self.id}"],
-            op=4,
+            REG_RELE["UG"][f"RELE_UG{self.id}_P"],
+            op=3,
             descr=f"[UG{self.id}] Potência Ativa"
         )
         self._leitura_potencia_reativa = LeituraModbus(
-            REG_UG[f"RELE_UG{self.id}_Q"],
             self.clp[f"UG{self.id}"],
-            op=4,
+            REG_RELE["UG"][f"RELE_UG{self.id}_Q"],
+            op=3,
             descr=f"[UG{self.id}] Potência Reativa"
         )
         self._leitura_potencia_aparente = LeituraModbus(
-            REG_UG[f"RELE_UG{self.id}_S"],
             self.clp[f"UG{self.id}"],
-            op=4,
+            REG_RELE["UG"][f"RELE_UG{self.id}_S"],
+            op=3,
             descr=f"[UG{self.id}] Potência Aparente"
         )
         self._leitura_etapa_atual = LeituraModbus(
-            REG_UG[f"UG{self.id}_ED_STT_PASSO_ATUAL"],
             self.clp[f"UG{self.id}"],
-            op=4,
+            REG_UG[f"UG{self.id}_ED_STT_PASSO_ATUAL"],
+            op=3,
             descr=f"[UG{self.id}] Etapa Atual"
         )
 
@@ -124,12 +129,28 @@ class UnidadeDeGeracao(Usina):
     def etapa_atual(self) -> int:
         try:
             leitura = self._leitura_etapa_atual.valor
-            if 0 < leitura < 255:
-                self.__ultima_etapa_atual = leitura
-                self.__etapa_atual = leitura
-                return self.__etapa_atual
+
+            if leitura == 0:
+                self.__etapa_atual = UG_PARADA
+                self.__ultima_etapa_atual = self.__etapa_atual
+
+            elif 0 < leitura < 10:
+                self.__etapa_atual = UG_SINCRONIZANDO
+                self.__ultima_etapa_atual = self.__etapa_atual
+
+            elif 10 < leitura < 28:
+                self.__etapa_atual = UG_PARANDO
+                self.__ultima_etapa_atual = self.__etapa_atual
+
+            elif leitura == 10:
+                self.__etapa_atual = UG_SINCRONIZADA
+                self.__ultima_etapa_atual = self.__etapa_atual
+            
             else:
+                logger.info(f"[UG{self.id}] Unidade em etapa inconsistente ({self.__etapa_atual}). Mantendo valor anterior -> \"{UG_STR_DCT_ETAPAS[self.__ultima_etapa_atual]}\"")
                 return self.__ultima_etapa_atual
+
+            return self.__etapa_atual
 
         except Exception:
             logger.error(f"[UG{self.id}] Não foi possível realizar a leitura da etapa atual. Mantendo etapa anterior")
@@ -222,7 +243,7 @@ class UnidadeDeGeracao(Usina):
     def iniciar_ultimo_estado(self) -> None:
         estado = self.db.get_ultimo_estado_ug(self.id)
 
-        if estado == None:
+        if not estado:
             self.__next_state = StateDisponivel(self)
         else:
             if estado == UG_SM_MANUAL:
@@ -238,11 +259,10 @@ class UnidadeDeGeracao(Usina):
                 self.__next_state = StateManual(self)
 
     # TODO -> Adicionar após a integração do CLP do MOA no painel do SA, que depende da intervenção da Automatic.
-    """
     def atualizar_modbus_moa(self) -> None:
+        return
         self.clp["MOA"].write_single_register(REG_MOA[f"OUT_ETAPA_UG{self.id}"], self.etapa_atual)
         self.clp["MOA"].write_single_register(REG_MOA[f"OUT_STATE_UG{self.id}"], self.codigo_state)
-    """
 
     def desabilitar_manutencao(self) -> None:
         try:
@@ -291,13 +311,14 @@ class UnidadeDeGeracao(Usina):
         try:
             logger.debug(f"[UG{self.id}] Step -> (Tentativas de normalização: {self.tentativas_de_normalizacao}/{self.limite_tentativas_de_normalizacao}).")
             self.__next_state = self.__next_state.step()
-            # self.atualizar_modbus_moa()
+            self.atualizar_modbus_moa()
 
         except Exception:
             logger.error(f"[UG{self.id}] Erro na execução da máquina de estados da Unidade -> step.")
             logger.debug(f"[UG{self.id}] Traceback: {traceback.format_exc()}")
 
     def partir(self) -> bool:
+        return None
         try:
             if not self.desabilitar_manutencao():
                 logger.info(f"[UG{self.id}] Não foi possível enviar o comando de desativação do modo de manutenção dos equipamentos")
@@ -326,6 +347,7 @@ class UnidadeDeGeracao(Usina):
             return False
 
     def parar(self) -> bool:
+        return None
         try:
             if not self.etapa_atual == UG_PARADA:
                 logger.info(f"[UG{self.id}] Enviando comando de parada.")

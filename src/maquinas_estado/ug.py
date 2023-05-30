@@ -3,12 +3,11 @@ import logging
 from threading import Thread
 
 from src.dicionarios.const import *
-from src.unidade_geracao import UnidadeDeGeracao
 
 logger = logging.getLogger("__main__")
 
 class State:
-    def __init__(self, parent: UnidadeDeGeracao=None):
+    def __init__(self, parent=None):
         # VERIFICAÇÃO DE ARGUENTOS
         if not parent:
             logger.error("[UG-SM] Houve um erro ao importar a classe Unidade de Geração")
@@ -58,8 +57,8 @@ class StateRestrito(State):
 
     def step(self) -> State:
         self.parent.bloquear_unidade()
-        self.parent.oco_ug.controle_limites_operacao(self.parent)
-        flag = self.parent.oco_ug.verificar_condicionadores(self.parent)
+        self.parent.oco.controle_limites_operacao()
+        flag = self.parent.oco.verificar_condicionadores()
 
         if flag == CONDIC_INDISPONIBILIZAR:
             logger.warning(f"[UG{self.parent.id}] UG detectou condicionadores com gravidade alta, indisponibilizando UG.")
@@ -96,8 +95,8 @@ class StateDisponivel(State):
         self.parent.borda_parar = False
 
     def step(self) -> State:
-        self.parent.oco_ug.controle_limites_operacao(self.parent)
-        flag = self.parent.oco_ug.verificar_condicionadores(self.parent)
+        self.parent.oco.controle_limites_operacao()
+        flag = self.parent.oco.verificar_condicionadores()
 
         if flag == CONDIC_INDISPONIBILIZAR:
             logger.warning(f"[UG{self.parent.id}] Indisponibilizando UG.")
@@ -111,7 +110,7 @@ class StateDisponivel(State):
             return self if self.parent.normalizar_unidade() else StateIndisponivel(self.parent)
 
         else:
-            logger.debug(f"[UG{self.parent.id}] Etapa atual: \"{self.parent.etapa_atual}\" / Etapa alvo: \"{self.parent.etapa_alvo}\"")
+            logger.debug(f"[UG{self.parent.id}] Etapa atual: \"{self.parent.etapa_atual}\"")
 
             if self.parent.limpeza_grade:
                 self.parent.setpoint = self.parent.setpoint_minimo = self.parent.cfg["pot_limpeza_grade"]
