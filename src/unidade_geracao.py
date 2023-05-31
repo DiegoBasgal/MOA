@@ -145,7 +145,7 @@ class UnidadeDeGeracao:
             elif leitura == 10:
                 self.__etapa_atual = UG_SINCRONIZADA
                 self.__ultima_etapa_atual = self.__etapa_atual
-            
+
             else:
                 logger.info(f"[UG{self.id}] Unidade em etapa inconsistente ({self.__etapa_atual}). Mantendo valor anterior -> \"{UG_STR_DCT_ETAPAS[self.__ultima_etapa_atual]}\"")
                 return self.__ultima_etapa_atual

@@ -5,9 +5,6 @@ import traceback
 from pyModbusTCP.utils import decode_ieee, word_list_to_long
 from pyModbusTCP.client import ModbusClient
 
-from pymodbus.constants import Endian
-from pymodbus.payload import BinaryPayloadDecoder
-
 logger = logging.getLogger("__main__")
 
 class LeituraModbus:
@@ -28,7 +25,7 @@ class LeituraModbus:
         self.__op = op
         self.__escala = escala
         self.__fundo_escala = fundo_escala
-        self.__decode = decode
+        self.__decode_nv = decode
         self._descr = descr
 
     def __str__(self) -> str:
@@ -41,37 +38,29 @@ class LeituraModbus:
     @property
     def raw(self) -> "int | float":
         try:
-            if self.__decode:
-                reg_raw_1 = self.__clp.read_holding_registers(self.__reg)[0]
-                print(f"\nDecimal REG 12350 -> {reg_raw_1}")
-                reg_raw_2 = self.__clp.read_holding_registers(self.__reg + 1)[0]
-                print(f"Decimal REG 12351 -> {reg_raw_2}")
+            if self.__decode_nv:
+                raw_1 = self.__clp.read_holding_registers(self.__reg)[0]
+                raw_2 = self.__clp.read_holding_registers(self.__reg + 1)[0]
 
                 n = 16
-                aux = (reg_raw_1 / (2 ** n))
+                aux = (raw_1 / (2 ** n))
                 while aux < 1:
                     n = n - 1
-                    aux = (reg_raw_1 / (2 ** n))
-                print(f"Bits -> {n}")
+                    aux = (raw_1 / (2 ** n))
+
                 n = n + 1
-                bin_1 = str('{0:0b}'.format(reg_raw_1))
-                print(f"Binário REG 12350 -> {bin_1} (Sem adição de Bits)")
+                bin_1 = str('{0:0b}'.format(raw_1))
 
                 if (n) < 16:
                     for _ in range(16 - n):
                         aux_b1 = bin_1
                         bin_1 = '0' + aux_b1
-                    print(f"Binário REG 12350 -> {bin_1} (Com todos os Bits)")
 
-                bin_2 = '{0:0b}'.format(reg_raw_2)
+                bin_2 = '{0:0b}'.format(raw_2)
                 bin_conv = int((bin_2 + bin_1), 2)
-                print(f"\nValor BIN soma dos registradores STR -> {bin_2 + bin_1}")
-                print(f"Valor BIN soma dos registradores INT -> {int(bin_2 + bin_1)}")
-                print(f"Valor BIN soma dos registradores TESTE/INT b2 -> {bin_conv}\n")
-                # print(f"Valor BIN soma dos registradores TESTE/INT -> {int(bin_conv)}\n") # Não funciona
-                
+
                 ret = self.ieee_754_conversion(bin_conv, exp_len=8, mant_len=23)
-                print(ret, "\n")
+                print(f"Nível Montatante: {ret}")
                 return None
 
             elif self.__op == 3:
@@ -138,17 +127,6 @@ class LeituraModbusBit(LeituraModbus):
         ler_bit = self.raw & 2**self.__bit
         return not ler_bit if self.__invertido else ler_bit
 
-class LeituraModbusFloat(LeituraModbus):
-    def __init__(self, clp, reg, descr) -> None:
-        super().__init__(clp, reg, descr)
-
-    def get_float(self, num=1):
-        reg_l = self.__clp.read_holding_registers(self.__reg[0], num * 2)
-        if reg_l:
-            return [decode_ieee(f) for f in word_list_to_long(reg_l)]
-        else:
-            return None
-
 class LeituraSoma:
     def __init__(self, leituras: "list[LeituraModbus]"=None, min_zero: bool=False, decode: bool=False) -> None:
 
@@ -158,12 +136,12 @@ class LeituraSoma:
         else:
             self.__leituras = leituras
 
-        self.__decode = decode
+        self.__decode_nv = decode
         self.__min_is_zero = min_zero
 
     @property
     def valor(self) -> int:
         if self.__min_is_zero:
             return max(0, [sum(leitura.valor for leitura in self.__leituras)])
-        elif self.__decode:
+        elif self.__decode_nv:
             return decode_ieee(sum(leitura.valor for leitura in self.__leituras))
