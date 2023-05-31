@@ -23,7 +23,8 @@ class StateManual(State):
         super().__init__(parent)
 
         self.parent.codigo_state = UG_SM_MANUAL
-        logger.info(f"[UG{self.parent.id}] Entrando no estado: \"Manual\". Para retornar a operação autônoma, favor agendar na interface web")
+        logger.info(f"[UG{self.parent.id}] Entrando no estado:                 \"Manual\". Para retornar a operação autônoma, favor agendar na interface web")
+        logger.debug(f"[UG{self.parent.id}] Tentativas de normalização:         {self.parent.tentativas_de_normalizacao}/{self.parent.limite_tentativas_de_normalizacao}")
 
         self.parent.borda_parar = False
 
@@ -36,7 +37,8 @@ class StateIndisponivel(State):
         super().__init__(parent)
 
         self.parent.codigo_state = UG_SM_INDISPONIVEL
-        logger.info(f"[UG{self.parent.id}] Entrando no estado: \"Indisponível\". Para retornar a operação autônoma, favor agendar na interface web")
+        logger.info(f"[UG{self.parent.id}] Entrando no estado:                 \"Indisponível\". Para retornar a operação autônoma, favor agendar na interface web")
+        logger.debug(f"[UG{self.parent.id}] Tentativas de normalização:         {self.parent.tentativas_de_normalizacao}/{self.parent.limite_tentativas_de_normalizacao}")
 
         self.parent.borda_parar = True if self.parent.borda_parar else False
 
@@ -50,7 +52,8 @@ class StateRestrito(State):
         super().__init__(parent)
 
         self.parent.codigo_state = UG_SM_RESTRITA
-        logger.info(f"[UG{self.parent.id}] Entrando no estado \"Restrito\"")
+        logger.info(f"[UG{self.parent.id}] Entrando no estado                  \"Restrito\"")
+        logger.debug(f"[UG{self.parent.id}] Tentativas de normalização:         {self.parent.tentativas_de_normalizacao}/{self.parent.limite_tentativas_de_normalizacao}")
 
         self.parent.parar_timer = False
         self.parent.borda_parar = True if self.parent.borda_parar else False
@@ -88,9 +91,10 @@ class StateDisponivel(State):
         super().__init__(parent)
 
         self.parent.codigo_state = UG_SM_DISPONIVEL
-        logger.info(f"[UG{self.parent.id}] Entrando no estado: \"Disponível\"")
-
+        logger.info(f"[UG{self.parent.id}] Entrando no estado:                 \"Disponível\"")
         self.parent.tentativas_de_normalizacao = 0
+        logger.debug(f"[UG{self.parent.id}] Tentativas de normalização:         {self.parent.tentativas_de_normalizacao}/{self.parent.limite_tentativas_de_normalizacao}")
+        logger.debug("")
 
         self.parent.borda_parar = False
 
@@ -110,8 +114,6 @@ class StateDisponivel(State):
             return self if self.parent.normalizar_unidade() else StateIndisponivel(self.parent)
 
         else:
-            logger.debug(f"[UG{self.parent.id}] Etapa atual: \"{self.parent.etapa_atual}\"")
-
             if self.parent.limpeza_grade:
                 self.parent.setpoint = self.parent.setpoint_minimo = self.parent.cfg["pot_limpeza_grade"]
 

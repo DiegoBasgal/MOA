@@ -56,8 +56,6 @@ class Pronto(State):
 
         self.usn.estado_moa = MOA_SM_PRONTO
 
-        logger.info(f"MOA Pronto! Entrando no ciclo principal...")
-
     def run(self):
         self.usn.ler_valores()
         return ControleEstados(self.usn)

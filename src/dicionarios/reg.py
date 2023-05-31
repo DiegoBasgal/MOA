@@ -166,7 +166,7 @@ REG_SA = {
     "SA_ED_PSA_SFB_LIMPEZA_ELEMENTO_1_ABERTA":          [12310, 16],# Holding Register -> Bit 16            (OP -> 0x03 Read holding Registers)
     "SA_ED_PSA_SE_RELE_LINHA_TRIP":                     [12310, 17],# Holding Register -> Bit 17            (OP -> 0x03 Read holding Registers)
     "SA_ED_PSA_SE_RELE_LINHA_FALHA":                    [12310, 18],# Holding Register -> Bit 18            (OP -> 0x03 Read holding Registers)
-    "SA_ED_PSA_SE_RELE_LINHA_50BF":                    [12310, 19],# Holding Register -> Bit 19            (OP -> 0x03 Read holding Registers)
+    "SA_ED_PSA_SE_RELE_LINHA_50BF":                     [12310, 19],# Holding Register -> Bit 19            (OP -> 0x03 Read holding Registers)
 
 
     "SA_ED_STT_ENTRADAS_DIGITAIS_2":                    12312,      # Holding Register                      (OP -> 0x03 Read holding Registers)
@@ -457,8 +457,11 @@ REG_UG ={
 
     "UG1_ED_STT_ENTRADAS_DIGITAIS_3":                   12314,      # Holding Register                      (OP -> 0x03 Read Holding Registers)
     "UG1_ED_STT_ENTRADAS_DIGITAIS_4":                   12316,      # Holding Register                      (OP -> 0x03 Read Holding Registers)
-
+        
     # PARTIDA E PARADA
+    "UG1_ED_STT_PASSO_SELECIONADO_BIT":                 12390,      # Holding Register                      (OP -> 0x03 Read Holding Registers)
+    "UG1_ED_STT_PASSO_ATUAL_BIT":                       12392,      # Holding Register                      (OP -> 0x03 Read Holding Registers)
+
     "UG1_ED_STT_PASSO_ATUAL":                           12366,      # Holding Register                      (OP -> 0x03 Read Holding Registers)
     "UG1_ED_UHRV_PASSO_ATUAL":                          [12366, 1], # Holding Register -> Bit 01            (OP -> 0x03 Read Holding Registers)
     "UG1_ED_UHLM_PASSO_ATUAL":                          [12366, 2], # Holding Register -> Bit 02            (OP -> 0x03 Read Holding Registers)
@@ -620,7 +623,7 @@ REG_UG ={
     "UG1_RV_LIMITADOR_INFERIOR_VELOC_ATUADO":           [27, 5],    # Input Register -> Bit 05              (OP -> 0x04 Read Input Registers - 3x)
     "UG1_RV_LIMITADOR_SUPERIOR_POTENCIA_ATUADO":        [27, 6],    # Input Register -> Bit 06              (OP -> 0x04 Read Input Registers - 3x)
     "UG1_RV_LIMITADOR_INFERIOR_POTENCIA_ATUADO":        [27, 7],    # Input Register -> Bit 07              (OP -> 0x04 Read Input Registers - 3x)
-    
+
     # ALARMES
     "UG1_RV_ALARME":                                    66,         # Input Register                        (OP -> 0x04 Read Input Registers - 3x)
     "UG1_RV_ALARME_SOBREFREQUENCIA":                    [66, 0],    # Input Register -> Bit 00              (OP -> 0x04 Read Input Registers - 3x)
@@ -1102,6 +1105,9 @@ REG_UG ={
     "UG2_ED_STT_ENTRADAS_DIGITAIS_4":                   12316,      # Holding Register                      (OP -> 0x03 Read Holding Registers)
 
     # PARTIDA E PARADA
+    "UG2_ED_STT_PASSO_SELECIONADO_BIT":                 12390,      # Holding Register                      (OP -> 0x03 Read Holding Registers)
+    "UG2_ED_STT_PASSO_ATUAL_BIT":                       12392,      # Holding Register                      (OP -> 0x03 Read Holding Registers)
+
     "UG2_ED_STT_PASSO_ATUAL":                           12366,      # Holding Register                      (OP -> 0x03 Read Holding Registers)
     "UG2_ED_UHRV_PASSO_ATUAL":                          [12366, 1], # Holding Register -> Bit 01            (OP -> 0x03 Read Holding Registers)
     "UG2_ED_UHLM_PASSO_ATUAL":                          [12366, 2], # Holding Register -> Bit 02            (OP -> 0x03 Read Holding Registers)
@@ -1226,6 +1232,8 @@ REG_UG ={
     "UG2_RV_CONTROLE_SINCRONIZADO_SELECIONADO":         22,         # Input Register                        (OP -> 0x04 Read Input Registers - 3x)
     "UG2_RV_CONTROLE_VAZIO_SELECIONADO":                23,         # Input Register                        (OP -> 0x04 Read Input Registers - 3x)
     "UG2_RV_COMANDO_MODBUS":                            24,         # Input Register                        (OP -> 0x04 Read Input Registers - 3x)
+    "UG2_RV_SETPOINT_POTENCIA_ATIVA_PU":                30,         # Input Register                        (OP -. 0x04 Read Input Registers - 3x)
+
 
     # DIGITAIS
     "UG2_RV_ENTRADAS_DIGITAIS":                         25,         # Input Register                        (OP -> 0x04 Read Input Registers - 3x)

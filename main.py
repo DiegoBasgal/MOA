@@ -2,15 +2,14 @@
     Módulo de Operação Autônoma (MOA)
 """
 __version__ = "2.0"
-__status__ = "Desenvolvimento"
+__status__ = "Produção"
 __description__ = "Módulo de Operação Autônoma"
 
 __maintainers__ = "Diego Basgal", "Henrique Pfeifer"
 __emails__ = "diego.garcia@ritmoenergia.com.br", "henrique@ritmoenergia.com.br"
 
-__authors__ = "Lucas Lavratti", " Henrique Pfeifer", "Diego Basgal"
+__authors__ = "Diego Basgal", "Henrique Pfeifer", "Lucas Lavratti"
 __credits__ = ["Lucas Lavratti", " Henrique Pfeifer", "Diego Basgal", ...]
-
 
 import os
 import sys
@@ -26,7 +25,7 @@ from time import time, sleep
 from src.dicionarios.const import *
 from src.maquinas_estado.moa import *
 
-from src.clients import ClientesUsina
+from src.conector import ClientesUsina
 
 rootLogger = logging.getLogger()
 if rootLogger.hasHandlers():
@@ -46,7 +45,7 @@ def timeConverter(*args):
 
 tz = pytz.timezone("Brazil/East")
 thread_id = threading.get_native_id()
-logFormatter = logging.Formatter("%(asctime)s [%(threadName)-12s] [%(levelname)-5.5s] [MOA] %(message)s")
+logFormatter = logging.Formatter("%(asctime)s [%(levelname)-5.5s] [MOA] %(message)s")
 logFormatterSimples = logging.Formatter("[%(levelname)-5.5s] %(message)s")
 logFormatter.converter = timeConverter
 
@@ -75,17 +74,18 @@ if __name__ == "__main__":
     executar = False
     prox_estado = None
 
-    logger.debug("Debug is ON")
-    logger.info("Iniciando MOA...")
-    logger.debug(f"ESCALA_DE_TEMPO: {ESCALA_DE_TEMPO}")
+    logger.info("Iniciando MOA...                          (DEBUG: \"ON\")")
+    logger.debug(f"ESCALA_DE_TEMPO:                          {ESCALA_DE_TEMPO}")
 
     while not executar:
         n_tentativa += 1
+        logger.info(f"Tentativa:                                {n_tentativa}/3")
         if n_tentativa == 3:
             prox_estado = FalhaCritica
         else:
             try:
-                logger.info("Carregando arquivo de configuração.")
+                logger.debug("")
+                logger.info("Carregando arquivo de configuração...")
 
                 arquivo = os.path.join(os.path.dirname("/opt/operacao-autonoma/src/dicionarios/"), "cfg.json")
                 with open(arquivo, "r") as file:
@@ -96,34 +96,37 @@ if __name__ == "__main__":
                     json.dump(cfg, file, indent=4)
 
             except Exception:
-                logger.exception(f"Erro ao carregar arquivo de configuração. Tentando novamente em \"{TIMEOUT_MAIN}s\" (Tentativa: {n_tentativa}/3).")
+                logger.exception(f"Erro ao carregar arquivo de configuração. Tentando novamente em \"{TIMEOUT_MAIN}s\"")
                 logger.debug(f"Traceback: {traceback.format_exc()}")
                 sleep(TIMEOUT_MAIN)
                 continue
 
             try:
-                logger.info("Iniciando conexões com o servidores \"Modbus\".")
+                logger.debug("")
+                logger.info("Iniciando conexões com Servidores...")
 
                 ClientesUsina.open_all()
 
             except Exception:
-                logger.exception(f"Erro ao iniciar classes de conexão com servidores. Tentando novamente em \"{TIMEOUT_MAIN}s\" (Tentativa: {n_tentativa}/3).")
+                logger.exception(f"Erro ao iniciar classes de conexão com servidores. Tentando novamente em \"{TIMEOUT_MAIN}s\"")
                 logger.debug(f"Traceback: {traceback.format_exc()}")
                 sleep(TIMEOUT_MAIN)
                 continue
 
             try:
-                logger.info("Iniciando instância da classe Usina.")
+                logger.debug("")
+                logger.info("Iniciando instância e objetos da Usina...")
                 usn: Usina = Usina(cfg)
 
             except Exception:
-                logger.exception(f"Erro ao instanciar a classe Usina. Tentando novamente em \"{TIMEOUT_MAIN}s\" (Tentativa: {n_tentativa}/3).")
+                logger.exception(f"Erro ao instanciar a classe Usina. Tentando novamente em \"{TIMEOUT_MAIN}s\"")
                 logger.debug(f"Traceback: {traceback.format_exc()}")
                 sleep(TIMEOUT_MAIN)
                 continue
 
             try:
-                logger.info("Finalizando inicialização com intâncias da máquina de estados e Threads paralelas.")
+                logger.debug("")
+                logger.info("Iniciando intâncias de máquina de estados e Threads...")
 
                 threading.Thread(target=lambda: usn.leitura_periodica()).start()
                 sm = StateMachine(initial_state=Pronto(usn=usn))
@@ -131,17 +134,19 @@ if __name__ == "__main__":
                 executar = True
 
             except Exception:
-                logger.exception(f"Erro ao finalizar a incialização do MOA. Tentando novamente em \"{TIMEOUT_MAIN}s\" (Tentativa: {n_tentativa}/3).")
+                logger.exception(f"Erro ao finalizar a incialização do MOA. Tentando novamente em \"{TIMEOUT_MAIN}s\"")
                 logger.debug(f"Traceback: {traceback.format_exc()}")
                 sleep(TIMEOUT_MAIN)
                 continue
 
-    logger.info("Inicialização completa, executando o MOA \U0001F916")
+    logger.debug("")
+    logger.info("\U0001F916 Inicialização completa! Executando o Módulo de Operação Autônoma (MOA) \U0001F916")
+    logger.debug("")
 
     while True:
         try:
             logger.debug("")
-            logger.debug(f"Executando estado: \"{sm.state.__class__.__name__}\"")
+            logger.debug(f"Executando estado:                        \"{sm.state.__class__.__name__}\"")
             sm.exec()
 
             if usn.estado_moa == MOA_SM_CONTROLE_DADOS:
@@ -151,19 +156,27 @@ if __name__ == "__main__":
                 t_restante = 1
 
             if t_restante == 0:
-                """logger.warning("\n\"ATENÇÃO!\"")
+                """
+                logger.debug("")
+                logger.warning("\"ATENÇÃO!\"")
                 logger.warning("O ciclo está demorando mais que o permitido!")
-                logger.warning("\"ATENÇÃO!\"\n")"""
+                logger.warning("\"ATENÇÃO!\"")
+                logger.debug("")
+                """
             else:
                 sleep(t_restante)
 
         except Exception as e:
-            logger.exception(f"Houve um erro na execução do loop principal da main do MOA. Exception: {repr(e)}")
+            logger.debug("")
+            logger.error(f"[!!!] \"ATENÇÃO!\" Houve um erro na execução do loop principal -> !! \"main.py\" !!")
             logger.debug(f"Traceback: {traceback.format_exc()}")
             ClientesUsina.close_all()
+            logger.debug("MOA encerrado! Até a próxima...")
             break
 
         except KeyboardInterrupt:
-            logger.warning("Execução do loop principal da main do MOA interrompido por comando de teclado.")
+            logger.debug("")
+            logger.warning("[!!!] \"ATENÇÃO!\" Execução do loop principal da main do MOA interrompido por comando de teclado.")
             ClientesUsina.close_all()
+            logger.debug("MOA encerrado! Até a próxima...")
             break

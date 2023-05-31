@@ -1,6 +1,3 @@
-__version__ = "0.1"
-__author__ = "Lucas Lavratti"
-
 from src.funcoes.leitura import *
 from src.unidade_geracao import UnidadeDeGeracao
 

@@ -1,8 +1,5 @@
 import logging
 import traceback
-import src.dicionarios.dict as d
-
-from time import sleep, time
 
 from src.funcoes.leitura import *
 from src.condicionadores import *
