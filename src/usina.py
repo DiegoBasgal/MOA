@@ -34,8 +34,8 @@ class Usina:
         self.clp = ClientesUsina.clp
         self.oco = OcorrenciasUsn(self.clp)
 
-        self.ug1 = UnidadeDeGeracao(1, self.cfg, self.clp, self.db)
-        self.ug2 = UnidadeDeGeracao(2, self.cfg, self.clp, self.db)
+        self.ug1 = UnidadeDeGeracao(1, self.cfg, self.db)
+        self.ug2 = UnidadeDeGeracao(2, self.cfg, self.db)
         self.ugs: "list[UnidadeDeGeracao]" = [self.ug1, self.ug2]
         CondicionadorBase.ugs = self.ugs
 
@@ -307,7 +307,7 @@ class Usina:
 
     def controlar_inicializacao(self) -> None:
         for ug in self.ugs:
-            if ug.etapa_atual == UG_SINCRONIZADA:
+            if ug.etapa == UG_SINCRONIZADA:
                 self.ug_operando += 1
 
         self.__split1 = True if self.ug_operando == 1 else False
@@ -389,8 +389,9 @@ class Usina:
     def controlar_unidades_disponiveis(self) -> list:
         ls = [ug for ug in self.ugs if ug.disponivel and not ug.etapa_atual == UG_PARANDO]
 
-        if self.modo_de_escolha_das_ugs == MODO_ESCOLHA_MANUAL:
+        if self.modo_de_escolha_das_ugs in (UG_PRIORIDADE_1, UG_PRIORIDADE_2):
             ls = sorted(ls, key=lambda y: (-1 * y.leitura_potencia, -1 * y.setpoint, y.prioridade))
+
         else:
             ls = sorted(ls, key=lambda y: (y.leitura_horimetro, -1 * y.leitura_potencia, -1 * y.setpoint))
 
@@ -513,7 +514,7 @@ class Usina:
 
             if not self.modo_de_escolha_das_ugs == int(parametros["modo_de_escolha_das_ugs"]):
                 self.modo_de_escolha_das_ugs = int(parametros["modo_de_escolha_das_ugs"])
-                logger.info(f"[USN] Modo de prioridade das UGs:         \"{self.modo_de_escolha_das_ugs}\"")
+                logger.info(f"[USN] Modo de prioridade das UGs:         \"{UG_STR_DCT_PRIORIDADE[self.modo_de_escolha_das_ugs]}\"")
 
         except Exception:
             logger.error(f"[USN] Houve um erro ao ler e atualizar os parâmetros do Banco de Dados.")

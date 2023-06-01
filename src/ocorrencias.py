@@ -63,10 +63,10 @@ class OcorrenciasUsn:
     def carregar_leituras(self) -> None:
         # Leituras para acionamento temporizado por chamada Voip
         # Leituras de Condicionadores
-        leitura_CD_disj_linha_abre = LeituraModbusBit(self.__clp["SA"], REG_SA["SA_CD_DISJ_LINHA_ABRE"], descr="SA_CD_DISJ_LINHA_ABRE")
-        self.condicionadores_essenciais.append(CondicionadorBase(leitura_CD_disj_linha_abre, CONDIC_NORMALIZAR))
+        # leitura_CD_disj_linha_abre = LeituraModbusBit(self.__clp["SA"], REG_SA["SA_CD_DISJ_LINHA_ABRE"], descr="SA_CD_DISJ_LINHA_ABRE")
+        # self.condicionadores_essenciais.append(CondicionadorBase(leitura_CD_disj_linha_abre, CONDIC_NORMALIZAR))
 
-    """
+        """
         leitura_ED_disj_linha_aberto = LeituraModbusBit(REG_SA["SA_ED_PSA_SE_DISJ_LINHA_ABERTO"], self.__clp["SA"], descr="SA_CD_DISJ_LINHA_ABRE")
         self.condicionadores_essenciais.append(CondicionadorBase(leitura_ED_disj_linha_aberto, CONDIC_NORMALIZAR))
 
@@ -237,7 +237,7 @@ class OcorrenciasUsn:
         leitura_ED_stt_bloq_50bf_atuado = LeituraModbusBit(REG_SA["SA_ED_STT_BLOQUEIO_50BF_ATUADO"], self.__clp["SA"], descr="SA_ED_STT_BLOQUEIO_50BF_ATUADO")  # Telegram + Voip
         leitura_ED_stt_bloq_86btlsa = LeituraModbusBit(REG_SA["SA_ED_STT_BLOQUEIO_86BTLSA"], self.__clp["SA"], descr="SA_ED_STT_BLOQUEIO_86BTLSA")  # Telegram + Voip
         leitura_ED_stt_bloq_86btlsa_atuado = LeituraModbusBit(REG_SA["SA_ED_BLOQUEIO_86BTLSA_ATUADO"], self.__clp["SA"], descr="SA_ED_BLOQUEIO_86BTLSA_ATUADO")  # Telegram + Voip
-    """
+        """
 
 
 class OcorrenciasUg:
@@ -528,5 +528,5 @@ class OcorrenciasUg:
 
 
         # Leituras de condicionadores essenciais que serão lidos a cada ciclo das UGs
-        leitura_ED_nv_montante_muito_baixo = LeituraModbusBit(self.__clp["SA"], REG_SA["SA_EA_PSA_NIVEL_MONTANTE_MUITO_BAIXO"], descr="SA_EA_PSA_NIVEL_MONTANTE_MUITO_BAIXO")
-        self.condicionadores_essenciais.append(CondicionadorBase(leitura_ED_nv_montante_muito_baixo, CONDIC_AGUARDAR))
+        # leitura_ED_nv_montante_muito_baixo = LeituraModbusBit(self.__clp["SA"], REG_SA["SA_EA_PSA_NIVEL_MONTANTE_MUITO_BAIXO"], descr="SA_EA_PSA_NIVEL_MONTANTE_MUITO_BAIXO")
+        # self.condicionadores_essenciais.append(CondicionadorBase(leitura_ED_nv_montante_muito_baixo, CONDIC_AGUARDAR))

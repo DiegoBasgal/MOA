@@ -10,7 +10,35 @@ logger = logging.getLogger("__main__")
 
 class ClientesUsina:
 
+    rv: "dict[str, ModbusClient]" = {}
     clp: "dict[str, ModbusClient]" = {}
+    rele: "dict[str, ModbusClient]" = {}
+
+    rv[f"UG1"] = ModbusClient(
+        host=d.ips["RV_UG1_ip"],
+        port=d.ips["RV_UG1_porta"],
+        unit_id=1,
+        timeout=0.5
+    )
+    rv[f"UG2"] = ModbusClient(
+        host=d.ips["RV_UG2_ip"],
+        port=d.ips["RV_UG2_porta"],
+        unit_id=1,
+        timeout=0.5
+    )
+
+    rele[f"UG1"] = ModbusClient(
+        host=d.ips["RELE_UG1_ip"],
+        port=d.ips["RELE_UG1_porta"],
+        unit_id=1,
+        timeout=0.5
+    )
+    rele[f"UG2"] = ModbusClient(
+        host=d.ips["RELE_UG2_ip"],
+        port=d.ips["RELE_UG2_porta"],
+        unit_id=1,
+        timeout=0.5
+    )
 
     clp["SA"] = ModbusClient(
         host=d.ips["SA_ip"],
@@ -55,6 +83,14 @@ class ClientesUsina:
         for _ , clp in cls.clp.items():
             if not clp.open():
                 raise ModBusClientFail(clp)
+
+        for _ , rv in cls.rv.items():
+            if not rv.open():
+                raise ModBusClientFail(rv)
+
+        for _ , rele in cls.rele.items():
+            if not rele.open():
+                raise ModBusClientFail(rv)
         logger.info("[CLI] Conexões inciadas.")
 
     @classmethod
@@ -62,6 +98,12 @@ class ClientesUsina:
         logger.debug("[CLI] Encerrando conexões...")
         for _ , clp in cls.clp.items():
             clp.close()
+        
+        for _ , rv in cls.rv.items():
+            rv.close()
+        
+        for _ , rele in cls.rele.items():
+            rele.close()
         logger.debug("[CLI] Conexões encerradas.")
 
     @classmethod

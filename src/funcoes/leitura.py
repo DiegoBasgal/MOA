@@ -2,18 +2,19 @@ import logging
 import traceback
 
 from time import sleep
+from pyModbusTCP.utils import *
 from pyModbusTCP.client import ModbusClient
 
 logger = logging.getLogger("__main__")
 
 class LeituraModbus:
-    def __init__(self, clp: "ModbusClient", reg: "int", escala: "float"=1, fundo_escala: "float"=0, op: "int"=3, descr: "str"=None):
+    def __init__(self, cli: "ModbusClient", reg: "int", escala: "float"=1, fundo_escala: "float"=0, op: "int"=3, descr: "str"=None):
 
-        if clp is None:
-            logger.error(f"[LER] Não foi possível carregar a variável do CLP na instância de Leitura: \"{descr}\".")
+        if cli is None:
+            logger.error(f"[LER] Não foi possível carregar a variável do cli na instância de Leitura: \"{descr}\".")
             raise ValueError
         else:
-            self.__clp = clp
+            self.__cli = cli
 
         if reg is None:
             logger.error(f"[LER] Não foi possivel carregar o valor de registrador instância de Leitura: \"{descr}\".")
@@ -46,10 +47,13 @@ class LeituraModbus:
     def raw(self) -> "int":
         try:
             if self.__op == 3:
-                ler = self.__clp.read_holding_registers(self.__reg)[0]
+                if self.__cli.read_holding_registers(self.__reg)[0] is None:
+                    pass
+                else:
+                    ler = self.__cli.read_holding_registers(self.__reg)[0]
 
             elif self.__op == 4:
-                ler = self.__clp.read_input_registers(self.__reg)[0]
+                ler = self.__cli.read_input_registers(self.__reg)[0]
 
             return 0 if ler is None else ler
 
@@ -65,13 +69,13 @@ class LeituraModbus:
         return self._descr
 
 class LeituraModbusCoil:
-    def __init__(self, clp: "ModbusClient", reg: "int | list[int, int]", op: "int"=1, descr: "str"=None) -> None:
+    def __init__(self, cli: "ModbusClient", reg: "int | list[int, int]", op: "int"=1, descr: "str"=None) -> None:
 
-        if clp is None:
-            logger.error(f"[LER] Não foi possível carregar a variável do CLP na instância de Leitura: \"{descr}\"")
+        if cli is None:
+            logger.error(f"[LER] Não foi possível carregar a variável do cli na instância de Leitura: \"{descr}\"")
             raise ValueError
         else:
-            self.__clp = clp
+            self.__cli = cli
 
         if reg is None:
             logger.error(f"[LER] Não foi possivel carregar o valor de registrador instância de Leitura: \"{descr}\"")
@@ -94,10 +98,10 @@ class LeituraModbusCoil:
     def raw(self) -> "int":
         try:
             if self.__op == 1:
-                ler = self.__clp.read_coils(self.__reg)[0]
+                ler = self.__cli.read_coils(self.__reg)[0]
 
             elif self.__op == 2:
-                ler = self.__clp.read_discrete_inputs(self.__reg)[0]
+                ler = self.__cli.read_discrete_inputs(self.__reg)[0]
 
             return 0 if ler is None else ler
 
@@ -114,19 +118,36 @@ class LeituraModbusCoil:
         return self._descr
 
 
-class LeituraModbusBit(LeituraModbus, LeituraModbusCoil):
-    def __init__(self, clp: "ModbusClient", reg: "int | list[int, int]"=None, op: "int"=3, descr: "str"=None, invertido: "bool"=None) -> None:
-        super().__init__(clp, reg, op, descr)
+class LeituraModbusBit(LeituraModbus):
+    def __init__(self, cli: "ModbusClient", reg: "int | list[int, int]"=None, op: "int"=3, descr: "str"=None, invertido: "bool"=None) -> None:
+        super().__init__(cli, reg, op, descr)
 
+        self.__cli = cli
+        self.__reg = reg[0]
         self.__bit = reg[1]
+        self.__descr = descr
         self.__invertido = False if invertido is not None else invertido
 
     @property
     def valor(self) -> "bool | None":
         try:
-            ler_bit = self.raw & 2**self.__bit
+            if self.__bit < 16:
+                self.__reg + 1
+                raw_aux = self.__cli.read_holding_registers(reg_aux)[0]
+                conv = get_bits_from_int(self.raw)
+                conv_aux = get_bits_from_int(raw_aux)
+                lista_total = conv_aux.append(conv)
 
-            return not ler_bit if self.__invertido else ler_bit
+            elif self.__bit > 15:
+                reg_aux = self.__reg - 1
+                raw_aux = self.__cli.read_holding_registers(reg_aux)[0]
+                conv = get_bits_from_int(self.raw)
+                conv_aux = get_bits_from_int(raw_aux)
+                lista_total = conv_aux + conv
+
+            for i in range(len(lista_total)):
+                if self.__bit == i:
+                    return not lista_total[i] if self.__invertido else lista_total[i]
 
         except Exception:
             logger.error(f"[LER] houve um erro ao realizar a conversão do dado Raw para Biário.")
@@ -137,18 +158,18 @@ class LeituraModbusBit(LeituraModbus, LeituraModbusCoil):
             return None
 
 class LeituraModbusFloat(LeituraModbus):
-    def __init__(self, clp: "ModbusClient"=None, reg: "int"=None, op: "int"=3, descr: "str"=None):
-        super().__init__(clp, reg, op, descr)
-        self.__clp = clp
+    def __init__(self, cli: "ModbusClient"=None, reg: "int"=None, op: "int"=3, descr: "str"=None):
+        super().__init__(cli, reg, op, descr)
+        self.__cli = cli
         self.__reg = reg[0] if isinstance(reg, list) else reg
 
     @property
     def raw_1(self) -> "int":
-        return self.__clp.read_holding_registers(self.__reg)[0]
+        return self.__cli.read_holding_registers(self.__reg)[0]
 
     @property
     def raw_2(self) -> "int":
-        return self.__clp.read_holding_registers(self.__reg + 1)[0]
+        return self.__cli.read_holding_registers(self.__reg + 1)[0]
 
     @property
     def valor(self) -> "int | float":

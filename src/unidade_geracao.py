@@ -11,11 +11,12 @@ from datetime import datetime
 from src.dicionarios.reg import *
 from src.dicionarios.const import *
 
-import src.ocorrencias as oco_ug
 from src.condicionadores import *
 from src.funcoes.leitura import *
 from src.maquinas_estado.ug import *
 
+import src.ocorrencias as oco_ug
+from src.conector import ClientesUsina
 from src.banco_dados import BancoDados
 from src.funcoes.escrita import EscritaModBusBit as EMB
 
@@ -23,7 +24,7 @@ from src.funcoes.escrita import EscritaModBusBit as EMB
 logger = logging.getLogger("__main__")
 
 class UnidadeDeGeracao:
-    def __init__(self, id: int, cfg=None, clp: "dict[str, ModbusClient]"=None, db: BancoDados=None):
+    def __init__(self, id: int, cfg=None, db: BancoDados=None):
 
         # VERIFICAÇÃO DE ARGUMENTOS
 
@@ -35,7 +36,9 @@ class UnidadeDeGeracao:
 
         self.db = db
         self.cfg = cfg
-        self.clp = clp
+        self.rv = ClientesUsina.rv
+        self.clp = ClientesUsina.clp
+        self.rele = ClientesUsina.rele
         self.oco = oco_ug.OcorrenciasUg(self.id, self.clp)
 
 
@@ -47,6 +50,22 @@ class UnidadeDeGeracao:
         self.__ultima_etapa_atual: int = 0
         self.__tempo_entre_tentativas: int = 0
         self.__limite_tentativas_de_normalizacao: int = 3
+
+        self.__leitura_dj_tsa = LeituraModbusBit(
+            self.clp["SA"],
+            REG_SA["SA_ED_PSA_DIJS_TSA_FECHADO"],
+            descr=f"[UG{self.id}] Status Disjuntor Serviço Auxiliar"
+        )
+        self.__leitura_dj_gmg = LeituraModbusBit(
+            self.clp["SA"],
+            REG_SA["SA_ED_PSA_DIJS_GMG_FECHADO"],
+            descr=f"[UG{self.id}] Status Disjuntor Grupo Motor Gerador"
+        )
+        self.__leitura_dj_linha = LeituraModbusBit(
+            self.clp["SA"],
+            REG_SA["SA_ED_PSA_SE_DISJ_LINHA_FECHADO"],
+            descr=f"[UG{self.id}] Status Disjuntor Linha"
+        )
 
 
         # ATRIBUIÇÃO DE VARIÁVEIS PROTEGIDAS
@@ -60,11 +79,51 @@ class UnidadeDeGeracao:
 
         self._lista_ugs: "list[UnidadeDeGeracao]" = []
 
+        self._leitura_potencia = LeituraModbus(
+            self.rele[f"UG{self.id}"],
+            REG_RELE["UG"][f"RELE_UG{self.id}_P"],
+            op=3,
+            descr=f"[UG{self.id}] Potência Ativa"
+        )
+        self._leitura_potencia_reativa = LeituraModbus(
+            self.rele[f"UG{self.id}"],
+            REG_RELE["UG"][f"RELE_UG{self.id}_Q"],
+            op=3,
+            descr=f"[UG{self.id}] Potência Reativa"
+        )
+        self._leitura_potencia_aparente = LeituraModbus(
+            self.rele[f"UG{self.id}"],
+            REG_RELE["UG"][f"RELE_UG{self.id}_S"],
+            op=3,
+            descr=f"[UG{self.id}] Potência Aparente"
+        )
+
+        self._leitura_etapa_atual = LeituraModbus(
+            self.clp[f"UG{self.id}"],
+            REG_UG[f"UG{self.id}_ED_STT_PASSO_ATUAL_BIT"],
+            op=3,
+            descr=f"[UG{self.id}] Etapa Atual"
+        )
+        self._leitura_etapa_alvo = LeituraModbus(
+            self.clp[f"UG{self.id}"],
+            REG_UG[f"UG{self.id}_ED_STT_PASSO_SELECIONADO_BIT"],
+            op=3,
+            descr=f"[UG{self.id}] Etapa Alvo"
+        )
+
+        logger.debug(f"[UG{self.id} TESTE] LEITURA DE POTÊNCIA ATIVA: {self._leitura_potencia.valor}")
+        logger.debug(f"[UG{self.id} TESTE] LEITURA DE POTÊNCIA REATIVA: {self._leitura_potencia_reativa.valor}")
+        logger.debug(f"[UG{self.id} TESTE] LEITURA DE POTÊNCIA APARENTE: {self._leitura_potencia_aparente.valor}")
+        logger.debug("")
+
 
         # ATRIBUIÇÃO DE VARIÁVEIS PÚBLICAS
 
         self.tempo_normalizar: int = 0
 
+        self.aguardar_etapa_alvo: int = 0
+        self.aguardar_etapa_atual: int = 0
+        
         self.ug_parando: bool = False
         self.parar_timer: bool = False
         self.borda_parar: bool = False
@@ -79,59 +138,13 @@ class UnidadeDeGeracao:
         self.aux_tempo_sincronizada: datetime = 0
         self.ts_auxiliar: datetime = self.get_time()
 
-        self.__leitura_dj_linha = LeituraModbusBit(
-            self.clp["SA"],
-            REG_SA["SA_ED_PSA_SE_DISJ_LINHA_FECHADO"],
-            descr=f"[UG{self.id}] Status Disjuntor Linha"
-        )
-        self.__leitura_dj_tsa = LeituraModbusBit(
-            self.clp["SA"],
-            REG_SA["SA_ED_PSA_DIJS_TSA_FECHADO"],
-            descr=f"[UG{self.id}] Status Disjuntor Serviço Auxiliar"
-        )
-        self.__leitura_dj_gmg = LeituraModbusBit(
-            self.clp["SA"],
-            REG_SA["SA_ED_PSA_DIJS_GMG_FECHADO"],
-            descr=f"[UG{self.id}] Status Disjuntor Grupo Motor Gerador"
-        )
-
         print("")
         print(f"Leitura Disj LINHA: {self.__leitura_dj_linha.valor}")
         print(f"Leitura Disj TSA:   {self.__leitura_dj_tsa.valor}")
         print(f"Leitura Disj GMG:   {self.__leitura_dj_gmg.valor}")
         print("")
 
-        self._leitura_potencia = LeituraModbus(
-            self.clp[f"UG{self.id}"],
-            REG_RELE["UG"][f"RELE_UG{self.id}_P"],
-            op=3,
-            descr=f"[UG{self.id}] Potência Ativa"
-        )
-        self._leitura_potencia_reativa = LeituraModbus(
-            self.clp[f"UG{self.id}"],
-            REG_RELE["UG"][f"RELE_UG{self.id}_Q"],
-            op=3,
-            descr=f"[UG{self.id}] Potência Reativa"
-        )
-        self._leitura_potencia_aparente = LeituraModbus(
-            self.clp[f"UG{self.id}"],
-            REG_RELE["UG"][f"RELE_UG{self.id}_S"],
-            op=3,
-            descr=f"[UG{self.id}] Potência Aparente"
-        )
-        self._leitura_etapa_atual = LeituraModbus(
-            self.clp[f"UG{self.id}"],
-            REG_UG[f"UG{self.id}_ED_STT_PASSO_ATUAL_BIT"],
-            op=3,
-            descr=f"[UG{self.id}] Etapa Atual"
-        )
-        self._leitura_etapa_alvo = LeituraModbus(
-            self.clp[f"UG{self.id}"],
-            REG_UG[f"UG{self.id}_ED_STT_PASSO_SELECIONADO_BIT"],
-            op=3,
-            descr=f"[UG{self.id}] Etapa Alvo"
-        )
-
+        self.desabilitar_manutencao()
 
     # Property -> VARIÁVEIS PRIVADAS
 
@@ -206,15 +219,19 @@ class UnidadeDeGeracao:
     @property
     def etapa_atual(self) -> int:
         try:
-            leitura = self._leitura_etapa_atual.valor
+            if self.aguardar_etapa_atual == 0:
+                self.aguardar_etapa_atual = 50
+                leitura = self._leitura_etapa_atual.valor
 
-            if leitura is None:
-                self.__etapa_atual = self.__ultima_etapa_atual
-                return self.__etapa_atual
+                if leitura is None:
+                    self.__etapa_atual = self.__ultima_etapa_atual
+                    return self.__etapa_atual
+                else:
+                    self.__etapa_atual = leitura
+                    self.__ultima_etapa_atual = self.__etapa_atual
+                    return self.__etapa_atual
             else:
-                self.__etapa_atual = leitura
-                self.__ultima_etapa_atual = self.__etapa_atual
-                return self.__etapa_atual
+                self.aguardar_etapa_atual -= 1
 
         except Exception:
             logger.error(f"[UG{self.id}] Não foi possível realizar a leitura da \"Etapa Atual\".")
@@ -227,15 +244,19 @@ class UnidadeDeGeracao:
     @property
     def etapa_alvo(self) -> int:
         try:
-            leitura = self._leitura_etapa_alvo.valor
+            if self.aguardar_etapa_alvo == 0:
+                self.aguardar_etapa_alvo = 50
+                leitura = self._leitura_etapa_alvo.valor
 
-            if leitura is None:
-                self.__etapa_alvo = self.__ultima_etapa_alvo
-                return self.__etapa_alvo
+                if leitura is None:
+                    self.__etapa_alvo = self.__ultima_etapa_alvo
+                    return self.__etapa_alvo
+                else:
+                    self.__etapa_alvo = leitura
+                    self.__ultima_etapa_alvo = self.__etapa_alvo
+                    return self.__etapa_alvo
             else:
-                self.__etapa_alvo = leitura
-                self.__ultima_etapa_alvo = self.__etapa_alvo
-                return self.__etapa_alvo
+                self.aguardar_etapa_alvo -= 1
 
         except Exception:
             logger.error(f"[UG{self.id}] Não foi possível realizar a leitura da \"Etapa Alvo\".")
@@ -356,15 +377,15 @@ class UnidadeDeGeracao:
         self.clp["MOA"].write_single_register(REG_MOA[f"OUT_STATE_UG{self.id}"], self.codigo_state)
 
     def desabilitar_manutencao(self) -> bool:
-        return True
         try:
-            EMB.escrever_bit(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}_CD_CMD_RV_MANUTENCAO"], 0, descr=f"UG{self.id}_CD_CMD_RV_MANUTENCAO")
-            EMB.escrever_bit(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}_CD_CMD_RV_AUTOMATICO"], 1, descr=f"UG{self.id}_CD_CMD_RV_AUTOMATICO")
-            EMB.escrever_bit(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}_CD_CMD_UHRV_MODO_MANUTENCAO"], 0, descr=f"UG{self.id}_CD_CMD_UHRV_MODO_MANUTENCAO")
-            EMB.escrever_bit(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}_CD_CMD_UHRV_MODO_AUTOMATICO"], 1, descr=f"UG{self.id}_CD_CMD_UHRV_MODO_AUTOMATICO")
-            EMB.escrever_bit(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}_CD_CMD_UHLM_MODO_MANUTENCAO"], 0, descr=f"UG{self.id}_CD_CMD_UHLM_MODO_MANUTENCAO")
-            EMB.escrever_bit(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}_CD_CMD_UHLM_MODO_AUTOMATICO"], 1, descr=f"UG{self.id}_CD_CMD_UHLM_MODO_AUTOMATICO")
-
+            res = EMB.escrever_bit(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}_CD_CMD_RV_MANUTENCAO"], 0, descr=f"UG{self.id}_CD_CMD_RV_MANUTENCAO")
+            res = EMB.escrever_bit(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}_CD_CMD_RV_AUTOMATICO"], 1, descr=f"UG{self.id}_CD_CMD_RV_AUTOMATICO")
+            res = EMB.escrever_bit(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}_CD_CMD_UHRV_MODO_MANUTENCAO"], 0, descr=f"UG{self.id}_CD_CMD_UHRV_MODO_MANUTENCAO")
+            res = EMB.escrever_bit(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}_CD_CMD_UHRV_MODO_AUTOMATICO"], 1, descr=f"UG{self.id}_CD_CMD_UHRV_MODO_AUTOMATICO")
+            res = EMB.escrever_bit(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}_CD_CMD_UHLM_MODO_MANUTENCAO"], 0, descr=f"UG{self.id}_CD_CMD_UHLM_MODO_MANUTENCAO")
+            res = EMB.escrever_bit(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}_CD_CMD_UHLM_MODO_AUTOMATICO"], 1, descr=f"UG{self.id}_CD_CMD_UHLM_MODO_AUTOMATICO")
+            return res
+            
         except Exception:
             logger.error(f"[UG{self.id}] Não foi possível desabilitar o modo de manutenção da Unidade.")
             logger.debug(f"Traceback: {traceback.format_exc()}")
@@ -420,15 +441,15 @@ class UnidadeDeGeracao:
 
     def partir(self) -> None:
         try:
-            if self.__leitura_dj_linha == 0:
+            if not self.__leitura_dj_linha.valor:
                 logger.info(f"[UG{self.id}] Não foi possível partir a Unidade. Disjuntor de Linha está aberto.")
                 return False
 
-            elif self.__leitura_dj_tsa.valor == 1:
+            elif not self.__leitura_dj_tsa.valor:
                 logger.info(f"[UG{self.id}] Não foi possível partir a Unidade. Disjuntor do Serviço Auxiliar está aberto.")
                 return False
 
-            elif self.__leitura_dj_gmg.valor == 1:
+            elif self.__leitura_dj_gmg.valor:
                 logger.info(f"[UG{self.id}] Não foi possível partir a Unidade. Disjuntor do Grupo Motor Gerador está fechado.")
                 return False
 
@@ -438,7 +459,8 @@ class UnidadeDeGeracao:
             elif not self.etapa == UG_SINCRONIZADA:
                 logger.info(f"[UG{self.id}]          Enviando comando:          \"PARTIDA\"")
                 EMB.escrever_bit(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}_CD_CMD_REARME_FALHAS"], 1, descr=f"UG{self.id}_CD_CMD_REARME_FALHAS")
-                EMB.escrever_bit(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}_CD_CMD_SINCRONISMO"], 1, descr=f"UG{self.id}_CD_CMD_SINCRONISMO")
+                #EMB.escrever_bit(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}_CD_CMD_SINCRONISMO"], 1, descr=f"UG{self.id}_CD_CMD_SINCRONISMO")
+                self.clp[f"UG{self.id}"].write_single_register(12290, 128) # partida
 
             else:
                 logger.debug(f"[UG{self.id}] A Unidade já está sincronizada")
@@ -448,11 +470,12 @@ class UnidadeDeGeracao:
             logger.debug(f"Traceback: {traceback.format_exc()}")
 
     def parar(self) -> None:
-        return None
+        return
         try:
             if not self.etapa == UG_PARADA:
                 logger.info(f"[UG{self.id}]          Enviando comando:          \"PARADA\"")
-                res = EMB.escrever_bit(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}_CD_CMD_PARADA_TOTAL"], 1, descr=f"UG{self.id}_CD_CMD_PARADA_TOTAL")
+                # EMB.escrever_bit(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}_CD_CMD_PARADA_TOTAL"], 1, descr=f"UG{self.id}_CD_CMD_PARADA_TOTAL")
+                self.clp[f"UG{self.id}"].write_single_register(12290, 1) # parada
                 self.enviar_setpoint(0)
 
             else:
@@ -470,8 +493,7 @@ class UnidadeDeGeracao:
 
             if self.setpoint > 1:
                 res = self.clp[f"UG{self.id}"].write_single_register(REG_UG[f"UG{self.id}_RV_SETPOINT_POTENCIA_ATIVA_PU"], int(self.setpoint))
-
-            return res
+                return res
 
         except Exception:
             logger.error(f"[UG{self.id}] Não foi possivel enviar o Setpoint para Unidade.")
