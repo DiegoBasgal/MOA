@@ -27,6 +27,12 @@ class ClientesUsina:
         timeout=0.5
     )
 
+    """rele[f"SE"] = ModbusClient(
+        host=d.ips["RELE_SE_ip"],
+        port=d.ips["RELE_SE_porta"],
+        unit_id=1,
+        timeout=0.5
+    )"""
     rele[f"UG1"] = ModbusClient(
         host=d.ips["RELE_UG1_ip"],
         port=d.ips["RELE_UG1_porta"],
@@ -112,11 +118,29 @@ class ClientesUsina:
             if not cls.ping(d.ips["SA_ip"]):
                 logger.warning("[CLI] O CLP do Serviço Auxiliar não respondeu a tentativa de comunicação!")
 
+            if not cls.ping(d.ips["TDA_ip"]):
+                logger.warning("[CLI] O CLP da Tomada da Água não respondeu a tentativa de comunicação!")
+
+            if not cls.ping(d.ips["RELE_SE_ip"]):
+                logger.warning("[CLI] O Relé da Subestação não respondeu a tentativa de comunicação!")
+
             if not cls.ping(d.ips["UG1_ip"]):
                 logger.warning("[CLI] O CLP da Unidade Geradora 1 não respondeu a tentativa de comunicação!")
+            
+            if not cls.ping(d.ips["RV_UG1_ip"]):
+                logger.warning("[CLI] O Regualdor de Velocidade da Unidade Geradora 1 não respondeu a tentativa de comunicação!")
+            
+            if not cls.ping(d.ips["RELE_UG1_ip"]):
+                logger.warning("[CLI] O Relé da Unidade Geradora 1 não respondeu a tentativa de comunicação!")
 
             if not cls.ping(d.ips["UG2_ip"]):
                 logger.warning("[CLI] O CLP da Unidade Geradora 2 não respondeu a tentativa de comunicação!")
+            
+            if not cls.ping(d.ips["RV_UG2_ip"]):
+                logger.warning("[CLI] O Regulador de Velocidade da Unidade Geradora 2 não respondeu a tentativa de comunicação!")
+            
+            if not cls.ping(d.ips["RELE_UG2_ip"]):
+                logger.warning("[CLI] O Relé da Unidade Geradora 2 não respondeu a tentativa de comunicação!")
 
             """
             if not cls.ping(d.ips["MOA_ip"]):
@@ -125,7 +149,7 @@ class ClientesUsina:
 
         except Exception:
             logger.error(f"[CLI] Houve um erro ao enviar comando de ping dos clientes da usina.")
-            logger.debug(f"[CLI] Traceback: {traceback.format_exc()}")
+            logger.debug(f"{traceback.format_exc()}")
 
 
 class ModBusClientFail(Exception):

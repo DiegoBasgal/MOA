@@ -1,5 +1,5 @@
 # Temporizador interno
-ESCALA_DE_TEMPO = 1
+ESCALA_DE_TEMPO = 1 / 2
 TEMPO_CICLO_TOTAL = 1
 
 TIMEOUT_MAIN = 10

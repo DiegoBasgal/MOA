@@ -50,18 +50,6 @@ class Usina:
             op=3,
             descr="Potência Ativa"
         )
-        self._potencia_reativa: LeituraModbus = LeituraModbus(
-            self.clp["SA"],
-            REG_RELE["SE"]["RELE_SE_Q"],
-            op=3,
-            descr="Potência Reativa"
-        )
-        self._potencia_aparente: LeituraModbus = LeituraModbus(
-            self.clp["SA"],
-            REG_RELE["SE"]["RELE_SE_S"],
-            op=4,
-            descr="Potência Aparente"
-        )
         self._tensao_rs: LeituraModbus = LeituraModbus(
             self.clp["SA"],
             REG_RELE["SE"]["RELE_SE_VAB"],
@@ -136,14 +124,6 @@ class Usina:
         return self._potencia_ativa.valor
 
     @property
-    def potencia_reativa(self) -> int:
-        return self._potencia_reativa.valor
-
-    @property
-    def potencia_aparente(self) -> int:
-        return self._potencia_aparente.valor
-
-    @property
     def nv_montante(self) -> float:
         return self._nv_montante.valor
 
@@ -191,29 +171,30 @@ class Usina:
     ### MÉTODOS DE CONTROLE DE RESET E NORMALIZAÇÃO
 
     def acionar_emergencia(self) -> None:
-        logger.warning("[USN] Acionando emergência.")
+        logger.warning("[USN] Acionando Emergência.")
         self.clp_emergencia = True
 
         try:
-            (EMB.escrever_bit(self.clp[f"UG{ug.id}"], REG_UG[f"UG{ug.id}_CD_CMD_REARME_FALHAS"], 1) for ug in self.ugs)
-            sleep(5)
-            (EMB.escrever_bit(self.clp[f"UG{ug.id}"], REG_UG[f"UG{ug.id}_CD_CMD_REARME_FALHAS"], 0) for ug in self.ugs)
+            for ug in self.ugs:
+                EMB.escrever_bit(self.clp[f"UG{ug.id}"], REG_UG[f"UG{ug.id}_CD_CMD_PARADA_EMERGENCIA"], 1, descr=f"UG{ug.id}_CD_CMD_PARADA_EMERGENCIA")
 
         except Exception:
-            logger.error(f"[USN] Houve um erro ao acionar a emergência.")
-            logger.debug(f"[USN] Traceback: {traceback.format_exc()}")
+            logger.error(f"[USN] Houve um erro ao acionar a Emergência.")
+            logger.debug(f"{traceback.format_exc()}")
 
     def resetar_emergencia(self) -> None:
         try:
             logger.debug("[USN] Reset geral")
-            EMB.escrever_bit(self.clp["SA"], REG_GERAL["GERAL_CD_RESET_GERAL"], 1)
-            EMB.escrever_bit(self.clp["SA"], REG_SA["SA_CD_REARME_FALHAS"], 1)
+
+            EMB.escrever_bit(self.clp["SA"], REG_SA["SA_CD_REARME_FALHAS"], 1, descr="SA_CD_REARME_FALHAS")
+            EMB.escrever_bit(self.clp["SA"], REG_GERAL["GERAL_CD_RESET_GERAL"], 1, descr="GERAL_CD_RESET_GERAL")
+
             for ug in self.ugs:
-                EMB.escrever_bit(self.clp[f"UG{ug.id}"], REG_UG[f"UG{ug.id}_CD_CMD_REARME_FALHAS"], 1)
+                EMB.escrever_bit(self.clp[f"UG{ug.id}"], REG_UG[f"UG{ug.id}_CD_CMD_REARME_FALHAS"], 1, descr=f"UG{ug.id}_CD_CMD_REARME_FALHAS")
 
         except Exception:
-            logger.error(f"[USN] Houve um erro ao realizar o reset geral.")
-            logger.debug(f"[USN] Traceback: {traceback.format_exc()}")
+            logger.error(f"[USN] Houve um erro ao realizar o Reset Geral.")
+            logger.debug(f"{traceback.format_exc()}")
 
     def normalizar_usina(self) -> bool:
         logger.debug("[USN] Normalizando...")
@@ -245,9 +226,11 @@ class Usina:
                 for ug in self.ugs:
                     ug.oco.leitura_temporizada()
                 self.oco.leitura_temporizada()
+
                 if True in (d.voip[r][0] for r in d.voip):
                     Voip.acionar_chamada()
                     pass
+
                 sleep(max(0, (time() + 1800) - time()))
 
         except Exception:
@@ -256,12 +239,12 @@ class Usina:
 
     def fechar_dj_linha(self) -> bool:
         try:
-            res = EMB.escrever_bit(self.clp["SA"], REG_SA["SA_CD_DISJ_LINHA_FECHA"], 1)
+            res = EMB.escrever_bit(self.clp["SA"], REG_SA["SA_CD_DISJ_LINHA_FECHA"], 1, descr="SA_CD_DISJ_LINHA_FECHA")
             return res
 
         except Exception:
             logger.error(f"[USN] Houver um erro ao fechar o Dj52L.")
-            logger.debug(f"[USN] Traceback: {traceback.format_exc()}")
+            logger.debug(f"{traceback.format_exc()}")
             return False
 
     def verificar_tensao(self) -> bool:
@@ -275,8 +258,8 @@ class Usina:
                 return False
 
         except Exception:
-            logger.error(f"[USN] Houve um erro ao realizar a verificação da tensão na linha")
-            logger.debug(f"[USN] Traceback: {traceback.format_exc()}")
+            logger.error(f"[USN] Houve um erro ao realizar a verificação da tensão na linha.")
+            logger.debug(f"{traceback.format_exc()}")
 
     def aguardar_tensao(self) -> bool:
         if self.status_tensao == 0:
@@ -302,6 +285,7 @@ class Usina:
             if self.verificar_tensao():
                 self.status_tensao = 2
                 return
+
             sleep(time() - (time() - 15))
         self.status_tensao = 3
 
@@ -333,6 +317,7 @@ class Usina:
             logger.info("[USN] Nível montante abaixo do mínimo")
             self.aguardando_reservatorio = True
             self.distribuir_potencia(0)
+
             for ug in self.ugs:
                 ug.step()
 
@@ -367,6 +352,7 @@ class Usina:
         self.controle_i = max(min((self.cfg["ki"] * self.erro_nv) + self.controle_i, 0.8), 0)
         self.controle_d = self.cfg["kd"] * (self.erro_nv - self.erro_nv_anterior)
         saida_pid = (self.controle_p + self.controle_i + min(max(-0.3, self.controle_d), 0.3))
+
         logger.debug("")
         logger.debug(f"[USN] PID   -> P + I + D:                 {saida_pid:0.3f}")
         logger.debug(f"[USN] P:                                  {self.controle_p:0.3f}")
@@ -389,11 +375,12 @@ class Usina:
     def controlar_unidades_disponiveis(self) -> list:
         ls = [ug for ug in self.ugs if ug.disponivel and not ug.etapa_atual == UG_PARANDO]
 
-        if self.modo_de_escolha_das_ugs in (UG_PRIORIDADE_1, UG_PRIORIDADE_2):
-            ls = sorted(ls, key=lambda y: (-1 * y.leitura_potencia, -1 * y.setpoint, y.prioridade))
+        # TODO verificar leituras de horímetro das Unidades
+        # if self.modo_de_escolha_das_ugs in (UG_PRIORIDADE_1, UG_PRIORIDADE_2):
+        ls = sorted(ls, key=lambda y: (-1 * y.leitura_potencia, -1 * y.setpoint, y.prioridade))
 
-        else:
-            ls = sorted(ls, key=lambda y: (y.leitura_horimetro, -1 * y.leitura_potencia, -1 * y.setpoint))
+        # else:
+        #     ls = sorted(ls, key=lambda y: (y.leitura_horimetro, -1 * y.leitura_potencia, -1 * y.setpoint))
 
         return ls
 
@@ -447,6 +434,7 @@ class Usina:
         self.__split1 = False if sp < (self.cfg["pot_minima"] / self.cfg["pot_maxima_usina"]) else self.__split1
 
         logger.debug(f"[USN] SP Geral:                           {sp}")
+
         if len(ugs) == 2:
             if self.__split2:
                 logger.debug("[USN] Split:                              2")
@@ -486,6 +474,7 @@ class Usina:
         parametros = self.db.get_parametros_usina()
         self.atualizar_valores_cfg(parametros)
         self.atualizar_valores_banco(parametros)
+
         for ug in self.ugs:
             ug.oco.atualizar_limites_condicionadores(parametros)
 
@@ -518,7 +507,7 @@ class Usina:
 
         except Exception:
             logger.error(f"[USN] Houve um erro ao ler e atualizar os parâmetros do Banco de Dados.")
-            logger.debug(f"[USN] Traceback: {traceback.format_exc()}")
+            logger.debug(f"{traceback.format_exc()}")
 
     def atualizar_valores_cfg(self, parametros) -> None:
         try:
@@ -535,7 +524,7 @@ class Usina:
 
         except Exception:
             logger.error(f"[USN] Houve um erro ao atualizar o arquivo de configuração \"cfg.json\".")
-            logger.debug(f"[USN] Traceback: {traceback.format_exc()}")
+            logger.debug(f"{traceback.format_exc()}")
 
     def escrever_valores(self) -> None:
         try:
@@ -543,15 +532,15 @@ class Usina:
                 self.get_time().strftime("%Y-%m-%d %H:%M:%S"),
                 1 if self.aguardando_reservatorio else 0,
                 self.nv_montante,
-                self.ug1.leitura_potencia,
+                0 if not self.ug1.leitura_potencia else self.ug1.leitura_potencia,
                 self.ug1.setpoint,
-                self.ug2.leitura_potencia,
+                0 if not self.ug2.leitura_potencia else self.ug2.leitura_potencia,
                 self.ug2.setpoint,
             ])
 
         except Exception:
-            logger.error(f"[USN] Houve um erro ao inserir os valores no Banco. {traceback.format_exc()}")
-            logger.debug(f"[USN] Traceback: {traceback.format_exc()}")
+            logger.error(f"[USN] Houve um erro ao inserir os valores no Banco.")
+            logger.debug(f"{traceback.format_exc()}")
 
         try:
             self.db.update_debug([
@@ -560,10 +549,10 @@ class Usina:
                 self.nv_montante_recente,
                 self.erro_nv,
                 self.ug1.setpoint,
-                self.ug1.leitura_potencia,
+                0 if not self.ug1.leitura_potencia else self.ug1.leitura_potencia,
                 self.ug1.codigo_state,
                 self.ug2.setpoint,
-                self.ug2.leitura_potencia,
+                0 if not self.ug2.leitura_potencia else self.ug2.leitura_potencia,
                 self.ug2.codigo_state,
                 self.cfg["kp"],
                 self.cfg["ki"],
@@ -576,8 +565,8 @@ class Usina:
             ])
 
         except Exception:
-            logger.error(f"[USN] Houve um erro ao inserir dados DEBUG no Banco. {traceback.format_exc()}")
-            logger.debug(f"[USN] Traceback: {traceback.format_exc()}")
+            logger.error(f"[USN] Houve um erro ao inserir dados DEBUG no Banco.")
+            logger.debug(f"{traceback.format_exc()}")
 
 
     # TODO -> Adicionar após a integração do CLP do MOA no painel do SA, que depende da intervenção da Automatic.
@@ -645,5 +634,5 @@ class Usina:
 
         except Exception:
             logger.error(f"[USN] Houve um erro ao tentar escrever valores modbus no CLP MOA.")
-            logger.debug(f"[USN] Traceback: {traceback.format_exc()}")
+            logger.debug(f"{traceback.format_exc()}")
     """

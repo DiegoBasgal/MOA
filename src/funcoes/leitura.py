@@ -8,28 +8,22 @@ from pyModbusTCP.client import ModbusClient
 logger = logging.getLogger("__main__")
 
 class LeituraModbus:
-    def __init__(self, cli: "ModbusClient", reg: "int", escala: "float"=1, fundo_escala: "float"=0, op: "int"=3, descr: "str"=None):
-
-        if cli is None:
-            logger.error(f"[LER] Não foi possível carregar a variável do cli na instância de Leitura: \"{descr}\".")
-            raise ValueError
-        else:
-            self.__cli = cli
-
-        if reg is None:
-            logger.error(f"[LER] Não foi possivel carregar o valor de registrador instância de Leitura: \"{descr}\".")
-            raise ValueError
-        else:
-            self.__reg = reg[0] if isinstance(reg, list) else reg
+    def __init__(self, cli: "ModbusClient"=None, reg: "int"=None, op: "int"=3, escala: "float"=1, fundo_escala: "float"=0, descr: "str"=None):
 
         self.__op = op
+        self.__cli = cli
         self.__escala = escala
         self.__fundo_escala = fundo_escala
+        self.__reg = reg[0] if isinstance(reg, list) else reg
 
         self._descr = descr
 
     def __str__(self) -> "str":
         return f"Leitura {self._descr}, Valor: {self.valor}"
+
+    @property
+    def descr(self) -> "str":
+        return self._descr
 
     @property
     def valor(self) -> "int | float":
@@ -47,43 +41,24 @@ class LeituraModbus:
     def raw(self) -> "int":
         try:
             if self.__op == 3:
-                if self.__cli.read_holding_registers(self.__reg)[0] is None:
-                    pass
-                else:
-                    ler = self.__cli.read_holding_registers(self.__reg)[0]
+                ler = self.__cli.read_holding_registers(self.__reg)[0]
 
             elif self.__op == 4:
                 ler = self.__cli.read_input_registers(self.__reg)[0]
 
-            return 0 if ler is None else ler
+            return 0 if ler == None else ler
 
         except Exception:
-            logger.error(f"[LER] Não foi possivel realizar a Leitura do dado RAW no registrador: \"{self._descr}\".")
-            logger.debug(f"[LER] Traceback: {traceback.format_exc()}")
-            logger.debug("")
-            logger.info(f"[LER] Retornando 0...")
+            logger.error(f"[LER] Não foi possivel realizar a Leitura do dado RAW no registrador: \"{self._descr}\". Retornando 0.")
+            logger.debug(f"{traceback.format_exc()}")
             return 0
 
-    @property
-    def descr(self) -> "str":
-        return self._descr
-
 class LeituraModbusCoil:
-    def __init__(self, cli: "ModbusClient", reg: "int | list[int, int]", op: "int"=1, descr: "str"=None) -> None:
-
-        if cli is None:
-            logger.error(f"[LER] Não foi possível carregar a variável do cli na instância de Leitura: \"{descr}\"")
-            raise ValueError
-        else:
-            self.__cli = cli
-
-        if reg is None:
-            logger.error(f"[LER] Não foi possivel carregar o valor de registrador instância de Leitura: \"{descr}\"")
-            raise ValueError
-        else:
-            self.__reg = reg[0] if isinstance(reg, list) else reg
+    def __init__(self, cli: "ModbusClient"=None, reg: "int | list[int, int]"=None, op: "int"=1, descr: "str"=None) -> None:
 
         self.__op = op
+        self.__cli = cli
+        self.__reg = reg[0] if isinstance(reg, list) else reg
 
         self._descr = descr
 
@@ -91,11 +66,11 @@ class LeituraModbusCoil:
         return f"Leitura {self._descr}, Valor: {self.valor}"
 
     @property
-    def valor(self) -> "int":
-        return self.raw
+    def descr(self) -> "str":
+        return self._descr
 
     @property
-    def raw(self) -> "int":
+    def valor(self) -> "int":
         try:
             if self.__op == 1:
                 ler = self.__cli.read_coils(self.__reg)[0]
@@ -106,60 +81,52 @@ class LeituraModbusCoil:
             return 0 if ler is None else ler
 
         except Exception:
-            logger.error(f"[LER] Não foi possivel realizar a Leitura Coil do dado RAW no registrador: \"{self._descr}\"")
-            logger.debug(f"[LER] Traceback: {traceback.format_exc()}")
-            logger.debug("")
-            logger.info(f"[LER] Retornando 0...")
+            logger.error(f"[LER] Não foi possivel realizar a Leitura Coil do dado RAW no registrador: \"{self._descr}\". Retornando 0.")
+            logger.debug(f"{traceback.format_exc()}")
             sleep(1)
             return 0
 
-    @property
-    def descr(self) -> "str":
-        return self._descr
-
 
 class LeituraModbusBit(LeituraModbus):
-    def __init__(self, cli: "ModbusClient", reg: "int | list[int, int]"=None, op: "int"=3, descr: "str"=None, invertido: "bool"=None) -> None:
+    def __init__(self, cli: "ModbusClient"=None, reg: "int | list[int, int]"=None, op: "int"=3, invertido: "bool"=None, descr: "str"=None) -> None:
         super().__init__(cli, reg, op, descr)
 
         self.__cli = cli
         self.__reg = reg[0]
         self.__bit = reg[1]
-        self.__descr = descr
         self.__invertido = False if invertido is not None else invertido
+
+        self._descr = descr
 
     @property
     def valor(self) -> "bool | None":
         try:
             if self.__bit < 16:
-                self.__reg + 1
-                raw_aux = self.__cli.read_holding_registers(reg_aux)[0]
+                raw_aux = self.__cli.read_holding_registers(self.__reg + 1)[0]
                 conv = get_bits_from_int(self.raw)
                 conv_aux = get_bits_from_int(raw_aux)
-                lista_total = conv_aux.append(conv)
+                lista_bits = conv + conv_aux
 
             elif self.__bit > 15:
-                reg_aux = self.__reg - 1
-                raw_aux = self.__cli.read_holding_registers(reg_aux)[0]
+                raw_aux = self.__cli.read_holding_registers(self.__reg - 1)[0]
                 conv = get_bits_from_int(self.raw)
                 conv_aux = get_bits_from_int(raw_aux)
-                lista_total = conv_aux + conv
+                lista_bits = conv_aux + conv
 
-            for i in range(len(lista_total)):
+            for i in range(len(lista_bits)):
                 if self.__bit == i:
-                    return not lista_total[i] if self.__invertido else lista_total[i]
+                    return not lista_bits[i] if self.__invertido else lista_bits[i]
 
         except Exception:
-            logger.error(f"[LER] houve um erro ao realizar a conversão do dado Raw para Biário.")
-            logger.debug(f"[LER] Traceback: {traceback.format_exc()}")
-            logger.debug("")
-            logger.info(f"[LER] Retornando \"None\"...")
+            logger.error(f"[LER] houve um erro ao realizar a conversão do dado Raw para Biário. Retornando \"None\"...")
+            logger.debug(f"{traceback.format_exc()}")
             sleep(0)
             return None
 
 class LeituraModbusFloat(LeituraModbus):
     def __init__(self, cli: "ModbusClient"=None, reg: "int"=None, op: "int"=3, descr: "str"=None):
         super().__init__(cli, reg, op, descr)
+
         self.__cli = cli
         self.__reg = reg[0] if isinstance(reg, list) else reg
 
@@ -197,10 +164,8 @@ class LeituraModbusFloat(LeituraModbus):
             return 0 if ret is None else ret
 
         except Exception:
-            logger.error(f"[LER] Houve um erro ao converter os valores Decimais para Float")
-            logger.debug(f"[LER] Traceback: {traceback.format_exc()}")
-            logger.debug("")
-            logger.info(f"[LER] Retornando 0...")
+            logger.error(f"[LER] Houve um erro ao converter os valores Decimais para Float. Retornando 0.")
+            logger.debug(f"{traceback.format_exc()}")
             sleep(1)
             return 0
 
@@ -237,10 +202,8 @@ class LeituraModbusFloat(LeituraModbus):
             return sign_mult * (2 ** exponent) * mant_mult
 
         except Exception:
-            logger.error(f"[LER] Erro na conversão de binário para Float")
-            logger.debug(f"[LER] Traceback: {traceback.format_exc()}")
-            logger.debug("")
-            logger.info(f"[LER] Retornando 0...")
+            logger.error(f"[LER] Erro na conversão de binário para Float IEEE 754. Retornando 0.")
+            logger.debug(f"{traceback.format_exc()}")
             sleep(1)
             return 0
 
@@ -263,9 +226,7 @@ class LeituraSoma:
                 return max(0, ret)
 
         except Exception:
-            logger.error(f"[LER] Houve um erro ao realizar a soma das Leituras")
-            logger.debug(f"[LER] Traceback: {traceback.format_exc()}")
-            logger.debug("")
-            logger.info(f"[LER] Retornando 0...")
+            logger.error(f"[LER] Houve um erro ao realizar a soma das Leituras. Retornando 0.")
+            logger.debug(f"{traceback.format_exc()}")
             sleep(1)
             return 0
