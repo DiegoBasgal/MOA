@@ -97,16 +97,29 @@ class ParametrosUsina(models.Model):
     limite_temperatura_mancal_escora_comb_ug2 = models.DecimalField(max_digits=10, decimal_places=2, default=200)
 
 class Comando(models.Model):
+
     id = models.IntegerField(primary_key=True)
+
     nome = models.CharField(max_length=255)
     descricao = models.TextField()
+
     executavel_em_manual = models.BooleanField(default=False)
     executavel_em_autmoatico = models.BooleanField(default=True)
 
 class Contato(models.Model):
+
     nome = models.CharField(max_length=250, default="")
     numero = models.CharField(max_length=20, default="")
+
     data_inicio = models.DateField(default=0)
     ts_inicio = models.TimeField(default=0)
+
     data_fim = models.DateField(default=0)
     ts_fim = models.TimeField(default=0)
+
+class ControleEstados(models.Model):
+
+    ts = models.DateTimeField(default=0)
+
+    ultimo_estado_ug1 = models.TextField(default=0, default="")
+    ultimo_estado_ug2 = models.TextField(default=0, default="")

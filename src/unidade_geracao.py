@@ -37,6 +37,7 @@ class UnidadeDeGeracao:
         self.db = db
         self.cfg = cfg
         self.rv = ClientesUsina.rv
+        self.rt = ClientesUsina.rt
         self.clp = ClientesUsina.clp
         self.rele = ClientesUsina.rele
         self.oco = oco_ug.OcorrenciasUg(self.id, self.clp)
@@ -44,14 +45,14 @@ class UnidadeDeGeracao:
 
         # ATRIBUIÇÃO DE VARIÁVEIS PRIVADAS
 
-        self.__etapa_alvo: "int" = 0
-        self.__etapa_atual: "int" = 0
-        self.__ultima_etapa_alvo: "int" = 0
-        self.__ultima_etapa_atual: "int" = 0
+        # self.__etapa_alvo: "int" = 0
+        # self.__etapa_atual: "int" = 0
+        # self.__ultima_etapa_alvo: "int" = 0
+        # self.__ultima_etapa_atual: "int" = 0
         self.__tempo_entre_tentativas: "int" = 0
         self.__limite_tentativas_de_normalizacao: "int" = 3
 
-        self.__leitura_dj_tsa = LeituraModbusBit(
+        self.__leitura_dj_tsa: LeituraModbusBit = LeituraModbusBit(
             self.clp["SA"],
             REG_SA["SA_ED_PSA_DIJS_TSA_FECHADO"],
             descr=f"[UG{self.id}] Status Disjuntor Serviço Auxiliar"
@@ -61,24 +62,44 @@ class UnidadeDeGeracao:
             REG_SA["SA_ED_PSA_DIJS_GMG_FECHADO"],
             descr=f"[UG{self.id}] Status Disjuntor Grupo Motor Gerador"
         )
-        self.__leitura_dj_linha = LeituraModbusBit(
+        self.__leitura_dj_linha: LeituraModbusBit = LeituraModbusBit(
             self.clp["SA"],
             REG_SA["SA_ED_PSA_SE_DISJ_LINHA_FECHADO"],
             descr=f"[UG{self.id}] Status Disjuntor Linha"
         )
 
-        self.__leitura_etapa_atual = LeituraModbus(
+        self.__leitura_status_uhrv: LeituraModbusBit = LeituraModbusBit(
+            self.clp[f"UG{self.id}"],
+            REG_UG[f"UG{self.id}_ED_UHRV_UNIDADE_HABILITADA"],
+            descr=f"[UG{self.id}] Status UHRV"
+        )
+        self.__leitura_corrente_rt: LeituraModbus = LeituraModbus(
+            self.rt[f"UG{self.id}"],
+            REG_UG[f"UG{self.id}_RT_CORRENTE_EXCITACAO"],
+            descr=f"[UG{self.id}] Leitura Corrente Excitação RT"
+        )
+        self.__leitura_dj_maquina: LeituraModbusBit = LeituraModbusBit(
+            self.clp[f"UG{self.id}"],
+            REG_UG[f"UG{self.id}_ED_PRTVA_DISJUNTOR_MAQUINA_FECHADO"],
+            descr=f"[UG{self.id}] Status Disjuntor de Máquina"
+        )
+        """
+        self.__leitura_etapa_atual: LeituraModbus = LeituraModbus(
             self.clp[f"UG{self.id}"],
             REG_UG[f"UG{self.id}_ED_STT_PASSO_ATUAL_BIT"],
             op=3,
             descr=f"[UG{self.id}] Etapa Atual"
         )
-        self.__leitura_etapa_alvo = LeituraModbus(
+        self.__leitura_etapa_alvo: LeituraModbus = LeituraModbus(
             self.clp[f"UG{self.id}"],
             REG_UG[f"UG{self.id}_ED_STT_PASSO_SELECIONADO_BIT"],
             op=3,
             descr=f"[UG{self.id}] Etapa Alvo"
         )
+        """
+
+        self.__ultima_etapa : "int" = 0
+        self.__ultima_etapa_absoluta: "int" = UG_SINCRONIZADA if self.__leitura_dj_maquina.valor == 1 else UG_PARADA
 
 
         # ATRIBUIÇÃO DE VARIÁVEIS PROTEGIDAS
@@ -164,29 +185,34 @@ class UnidadeDeGeracao:
     @property
     def etapa(self) -> "int":
         try:
-            if self.etapa_atual == UG_PARADA and self.etapa_alvo == UG_PARADA:
-                return UG_PARADA
-
-            elif UG_PARADA < self.etapa_atual < UG_SINCRONIZADA and self.etapa_alvo == UG_PARADA:
-                return UG_PARANDO
-
-            elif UG_PARADA < self.etapa_atual < UG_SINCRONIZADA and self.etapa_alvo == UG_SINCRONIZADA:
-                return UG_SINCRONIZANDO
-
-            elif self.etapa_atual == UG_SINCRONIZADA and self.etapa_alvo == UG_SINCRONIZADA:
+            if self.__leitura_dj_maquina.valor:
+                self.__ultima_etapa_absoluta = UG_SINCRONIZADA
+                self.__ultima_etapa = UG_SINCRONIZADA
                 return UG_SINCRONIZADA
 
+            elif not self.__leitura_status_uhrv.valor:
+                self.__ultima_etapa_absoluta = UG_PARADA
+                self.__ultima_etapa = UG_PARADA
+                return UG_PARADA
+
+            elif self.__ultima_etapa_absoluta == UG_PARADA and self.__leitura_status_uhrv:
+                self.__ultima_etapa = UG_SINCRONIZANDO
+                return UG_SINCRONIZANDO
+
+            elif self.__ultima_etapa_absoluta == UG_SINCRONIZADA and not self.__leitura_dj_maquina.valor:
+                self.__ultima_etapa = UG_PARANDO
+                return UG_PARANDO
+
             else:
-                logger.info(f"[UG{self.id}] Controle de Etapas Inconsistente!")
-                logger.debug(f"[UG{self.id}] Leituras -> Etapa Atual: {self.etapa_atual} | Etapa Alvo: {self.etapa_alvo}")
-                logger.info(f"[UG{self.id}] Mantendo etapa anterior...")
-                return self.__ultima_etapa_atual
+                logger.debug(f"[UG{self.id}] Contorle de etapas sem condições. Mantendo etapa anterior.")
+                return self.__ultima_etapa
 
         except Exception:
             logger.error(f"[UG{self.id}] Houve um erro no controle de Etapas da Unidade. Mantendo Etapa anterior.")
             logger.debug(traceback.format_exc())
-            return self.__ultima_etapa_atual
+            return self.__ultima_etapa
 
+    """
     @property
     def etapa_atual(self) -> "int":
         try:
@@ -221,6 +247,7 @@ class UnidadeDeGeracao:
             logger.debug(traceback.format_exc())
             self.__etapa_alvo = self.__ultima_etapa_alvo
             return self.__etapa_alvo
+    """
 
 
     # Property/Setter -> VARIÁVEIS PROTEGIDAS

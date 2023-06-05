@@ -51,7 +51,7 @@ class LeituraModbus:
 
         except Exception:
             logger.error(f"[LER] Não foi possivel realizar a Leitura do dado RAW no registrador: \"{self._descr}\". Retornando 0.")
-            logger.debug(f"{traceback.format_exc()}")
+            logger.debug(traceback.format_exc())
             return 0
 
 class LeituraModbusCoil:
@@ -83,7 +83,7 @@ class LeituraModbusCoil:
 
         except Exception:
             logger.error(f"[LER] Não foi possivel realizar a Leitura Coil do dado RAW no registrador: \"{self._descr}\". Retornando 0.")
-            logger.debug(f"{traceback.format_exc()}")
+            logger.debug(traceback.format_exc())
             sleep(1)
             return 0
 
@@ -120,7 +120,7 @@ class LeituraModbusBit(LeituraModbus):
 
         except Exception:
             logger.error(f"[LER] houve um erro ao realizar a conversão do dado Raw para Biário. Retornando \"None\"...")
-            logger.debug(f"{traceback.format_exc()}")
+            logger.debug(traceback.format_exc())
             sleep(0)
             return None
 
@@ -166,7 +166,7 @@ class LeituraModbusFloat(LeituraModbus):
 
         except Exception:
             logger.error(f"[LER] Houve um erro ao converter os valores Decimais para Float. Retornando 0.")
-            logger.debug(f"{traceback.format_exc()}")
+            logger.debug(traceback.format_exc())
             sleep(1)
             return 0
 
@@ -204,7 +204,7 @@ class LeituraModbusFloat(LeituraModbus):
 
         except Exception:
             logger.error(f"[LER] Erro na conversão de binário para Float IEEE 754. Retornando 0.")
-            logger.debug(f"{traceback.format_exc()}")
+            logger.debug(traceback.format_exc())
             sleep(1)
             return 0
 
@@ -228,6 +228,6 @@ class LeituraSoma:
 
         except Exception:
             logger.error(f"[LER] Houve um erro ao realizar a soma das Leituras. Retornando 0.")
-            logger.debug(f"{traceback.format_exc()}")
+            logger.debug(traceback.format_exc())
             sleep(1)
             return 0

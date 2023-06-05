@@ -513,10 +513,10 @@ REG_UG ={
     "UG1_ED_STT_PRE_CONDICOES_PARTIDA":                 12408,      # Holding Register                      (OP -> 0x03 Read Holding Registers)
 
     # RT
-    "UG1_ED_STT_RT":                                    12362,      # Holding Register                      (OP -> 0x03 Read Holding Registers)
-    "UG1_ED_RT_FALHA_AO_HABILITAR":                     [12362, 0], # Holding Register -> Bit 00            (OP -> 0x03 Read Holding Registers)
-    "UG1_ED_RT_FALHA_AO_PARTIR":                        [12362, 1], # Holding Register -> Bit 01            (OP -> 0x03 Read Holding Registers)
-    "UG1_ED_RT_FALHA_AO_DESABILITAR":                   [12362, 2], # Holding Register -> Bit 02            (OP -> 0x03 Read Holding Registers)
+    "UG1_ED_STT_RT":                                    12350,      # Holding Register                      (OP -> 0x03 Read Holding Registers)
+    "UG1_ED_RT_FALHA_AO_HABILITAR":                     [12350, 0], # Holding Register -> Bit 00            (OP -> 0x03 Read Holding Registers)
+    "UG1_ED_RT_FALHA_AO_PARTIR":                        [12350, 1], # Holding Register -> Bit 01            (OP -> 0x03 Read Holding Registers)
+    "UG1_ED_RT_FALHA_AO_DESABILITAR":                   [12350, 2], # Holding Register -> Bit 02            (OP -> 0x03 Read Holding Registers)
 
     # RV
     "UG1_ED_STT_RV":                                    12360,      # Holding Register                      (OP -> 0x03 Read Holding Registers)
@@ -552,14 +552,14 @@ REG_UG ={
     "UG1_ED_UHLM_FALHA_PRESSOSTATO":                    [12354, 13],# Holding Reggister -> Bit 13           (OP -> 0x03 Read Holding Registers)
 
     # UHRV
-    "UG1_ED_STT_UHRV":                                  12350,      # Holding Reggister                     (OP -> 0x03 Read Holding Registers)
-    "UG1_ED_UHRV_UNIDADE_MANUTENCAO":                   [12350, 0], # Holding Reggister -> Bit 00           (OP -> 0x03 Read Holding Registers)
-    "UG1_ED_UHRV_UNIDADE_HABILITADA":                   [12350, 1], # Holding Reggister -> Bit 01           (OP -> 0x03 Read Holding Registers)
-    "UG1_ED_UHRV_INDISPONIVEL":                         [12350, 2], # Holding Reggister -> Bit 02           (OP -> 0x03 Read Holding Registers)
-    "UG1_ED_UHRV_FALHA_AO_LIGAR":                       [12350, 6], # Holding Reggister -> Bit 06           (OP -> 0x03 Read Holding Registers)
-    "UG1_ED_UHRV_FALHA_AO_DESLIGAR":                    [12350, 7], # Holding Reggister -> Bit 07           (OP -> 0x03 Read Holding Registers)
-    "UG1_ED_UHRV_FALHA_AO_PRESSURIZAR":                 [12350, 10],# Holding Reggister -> Bit 10           (OP -> 0x03 Read Holding Registers)
-    "UG1_ED_UHRV_FILTRO_OLEO_SUJO":                     [12350, 13],# Holding Reggister -> Bit 13           (OP -> 0x03 Read Holding Registers)
+    "UG1_ED_STT_UHRV":                                  12362,      # Holding Reggister                     (OP -> 0x03 Read Holding Registers)
+    "UG1_ED_UHRV_UNIDADE_MANUTENCAO":                   [12362, 0], # Holding Reggister -> Bit 00           (OP -> 0x03 Read Holding Registers)
+    "UG1_ED_UHRV_UNIDADE_HABILITADA":                   [12362, 1], # Holding Reggister -> Bit 01           (OP -> 0x03 Read Holding Registers)
+    "UG1_ED_UHRV_INDISPONIVEL":                         [12362, 2], # Holding Reggister -> Bit 02           (OP -> 0x03 Read Holding Registers)
+    "UG1_ED_UHRV_FALHA_AO_LIGAR":                       [12362, 6], # Holding Reggister -> Bit 06           (OP -> 0x03 Read Holding Registers)
+    "UG1_ED_UHRV_FALHA_AO_DESLIGAR":                    [12362, 7], # Holding Reggister -> Bit 07           (OP -> 0x03 Read Holding Registers)
+    "UG1_ED_UHRV_FALHA_AO_PRESSURIZAR":                 [12362, 10],# Holding Reggister -> Bit 10           (OP -> 0x03 Read Holding Registers)
+    "UG1_ED_UHRV_FILTRO_OLEO_SUJO":                     [12362, 13],# Holding Reggister -> Bit 13           (OP -> 0x03 Read Holding Registers)
 
     ## DRIVER RV
     "UG1_RV_ROTACAO":                                   16,         # Input Register                        (OP -> 0x04 Read Input Registers - 3x)
@@ -1159,10 +1159,10 @@ REG_UG ={
     "UG2_ED_STT_PRE_CONDICOES_PARTIDA":                 12408,      # Holding Register                      (OP -> 0x03 Read Holding Registers)
 
     # RT
-    "UG2_ED_STT_RT":                                    12362,      # Holding Register                      (OP -> 0x03 Read Holding Registers)
-    "UG2_ED_RT_FALHA_AO_HABILITAR":                     [12362, 0], # Holding Register -> Bit 00            (OP -> 0x03 Read Holding Registers)
-    "UG2_ED_RT_FALHA_AO_PARTIR":                        [12362, 1], # Holding Register -> Bit 01            (OP -> 0x03 Read Holding Registers)
-    "UG2_ED_RT_FALHA_AO_DESABILITAR":                   [12362, 2], # Holding Register -> Bit 02            (OP -> 0x03 Read Holding Registers)
+    "UG2_ED_STT_RT":                                    12350,      # Holding Register                      (OP -> 0x03 Read Holding Registers)
+    "UG2_ED_RT_FALHA_AO_HABILITAR":                     [12350, 0], # Holding Register -> Bit 00            (OP -> 0x03 Read Holding Registers)
+    "UG2_ED_RT_FALHA_AO_PARTIR":                        [12350, 1], # Holding Register -> Bit 01            (OP -> 0x03 Read Holding Registers)
+    "UG2_ED_RT_FALHA_AO_DESABILITAR":                   [12350, 2], # Holding Register -> Bit 02            (OP -> 0x03 Read Holding Registers)
 
     # RV
     "UG2_ED_STT_RV":                                    12360,      # Holding Register                      (OP -> 0x03 Read Holding Registers)
@@ -1198,14 +1198,14 @@ REG_UG ={
     "UG2_ED_UHLM_FALHA_PRESSOSTATO":                    [12354, 13],# Holding Reggister -> Bit 13           (OP -> 0x03 Read Holding Registers)
 
     # UHRV
-    "UG2_ED_STT_UHRV":                                  12350,      # Holding Reggister                     (OP -> 0x03 Read Holding Registers)
-    "UG2_ED_UHRV_UNIDADE_MANUTENCAO":                   [12350, 0], # Holding Reggister -> Bit 00           (OP -> 0x03 Read Holding Registers)
-    "UG2_ED_UHRV_UNIDADE_HABILITADA":                   [12350, 1], # Holding Reggister -> Bit 01           (OP -> 0x03 Read Holding Registers)
-    "UG2_ED_UHRV_INDISPONIVEL":                         [12350, 2], # Holding Reggister -> Bit 02           (OP -> 0x03 Read Holding Registers)
-    "UG2_ED_UHRV_FALHA_AO_LIGAR":                       [12350, 6], # Holding Reggister -> Bit 06           (OP -> 0x03 Read Holding Registers)
-    "UG2_ED_UHRV_FALHA_AO_DESLIGAR":                    [12350, 7], # Holding Reggister -> Bit 07           (OP -> 0x03 Read Holding Registers)
-    "UG2_ED_UHRV_FALHA_AO_PRESSURIZAR":                 [12350, 10],# Holding Reggister -> Bit 10           (OP -> 0x03 Read Holding Registers)
-    "UG2_ED_UHRV_FILTRO_OLEO_SUJO":                     [12350, 13],# Holding Reggister -> Bit 13           (OP -> 0x03 Read Holding Registers)
+    "UG2_ED_STT_UHRV":                                  12362,      # Holding Reggister                     (OP -> 0x03 Read Holding Registers)
+    "UG2_ED_UHRV_UNIDADE_MANUTENCAO":                   [12362, 0], # Holding Reggister -> Bit 00           (OP -> 0x03 Read Holding Registers)
+    "UG2_ED_UHRV_UNIDADE_HABILITADA":                   [12362, 1], # Holding Reggister -> Bit 01           (OP -> 0x03 Read Holding Registers)
+    "UG2_ED_UHRV_INDISPONIVEL":                         [12362, 2], # Holding Reggister -> Bit 02           (OP -> 0x03 Read Holding Registers)
+    "UG2_ED_UHRV_FALHA_AO_LIGAR":                       [12362, 6], # Holding Reggister -> Bit 06           (OP -> 0x03 Read Holding Registers)
+    "UG2_ED_UHRV_FALHA_AO_DESLIGAR":                    [12362, 7], # Holding Reggister -> Bit 07           (OP -> 0x03 Read Holding Registers)
+    "UG2_ED_UHRV_FALHA_AO_PRESSURIZAR":                 [12362, 10],# Holding Reggister -> Bit 10           (OP -> 0x03 Read Holding Registers)
+    "UG2_ED_UHRV_FILTRO_OLEO_SUJO":                     [12362, 13],# Holding Reggister -> Bit 13           (OP -> 0x03 Read Holding Registers)
 
     ## DRIVER RV
     "UG2_RV_ROTACAO":                                   16,         # Input Register                        (OP -> 0x04 Read Input Registers - 3x)

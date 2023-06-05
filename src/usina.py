@@ -24,12 +24,15 @@ class Usina:
     def __init__(self, cfg: dict=None):
 
         # VERIFICAÇÃO DE ARGUMENTOS
+
         if None in (cfg):
             raise ValueError("[USN] Não foi possível carregar os arquivos de configuração (\"cfg.json\").")
         else:
             self.cfg = cfg
 
+
         # INCIALIZAÇÃO DE OBJETOS DA USINA
+
         self.db = BancoDados("MOA-PPN")
         self.clp = ClientesUsina.clp
         self.oco = OcorrenciasUsn(self.clp)
@@ -43,35 +46,46 @@ class Usina:
             ug.lista_ugs = self.ugs
             ug.iniciar_ultimo_estado()
 
+
+        # ATRIBUIÇÃO DE VARIÁVEIS PRIVADAS
+
+        self.__leitura_dj_tsa: LeituraModbusBit = LeituraModbusBit(
+            self.clp["SA"],
+            REG_SA["SA_ED_PSA_DIJS_TSA_FECHADO"],
+            descr="[USN] Status Disjuntor SA"
+        )
+
+
         # ATRIBUIÇÃO DE VARIÁVEIS PROTEGIDAS
+
         self._potencia_ativa: LeituraModbus = LeituraModbus(
             self.clp["SA"],
             REG_RELE["SE"]["RELE_SE_P"],
             op=3,
-            descr="Potência Ativa"
+            descr="[USN] Potência Ativa"
         )
         self._tensao_rs: LeituraModbus = LeituraModbus(
             self.clp["SA"],
             REG_RELE["SE"]["RELE_SE_VAB"],
             op=4,
-            descr="Tensão RS"
+            descr="[USN] Tensão RS"
         )
         self._tensao_st: LeituraModbus = LeituraModbus(
             self.clp["SA"],
             REG_RELE["SE"]["RELE_SE_VBC"],
             op=4,
-            descr="Tensão ST"
+            descr="[USN] Tensão ST"
         )
         self._tensao_tr: LeituraModbus = LeituraModbus(
             self.clp["SA"],
             REG_RELE["SE"]["RELE_SE_VCA"],
             op=4,
-            descr="Tensão TR"
+            descr="[USN] Tensão TR"
         )
         self._nv_montante: LeituraModbusFloat = LeituraModbusFloat(
             self.clp["TDA"],
             REG_GERAL["GERAL_EA_NIVEL_MONTANTE_GRADE"],
-            descr="Nível Montante"
+            descr="[USN] Nível Montante"
         )
 
         self._tentativas_normalizar: int = 0
@@ -79,7 +93,9 @@ class Usina:
 
         self._modo_autonomo: bool = False
 
+
         # ATRIBUIÇÃO DE VARIÁVEIS PÚBLICAS
+
         self.estado_moa: int = 0
         self.status_tensao: int = 0
 
@@ -109,7 +125,9 @@ class Usina:
         self.ts_last_ping_tda: datetime = self.get_time()
         self.ultima_tentativa_norm: datetime = self.get_time()
 
+
         # EXECUÇÃO FINAL DA INICIALIZAÇÃO
+
         logger.debug("")
         self.ler_valores()
         self.controlar_inicializacao()
@@ -239,12 +257,15 @@ class Usina:
 
     def fechar_dj_linha(self) -> bool:
         try:
-            # TODO - adicionar verificação do dj TSA
-            res = EMB.escrever_bit(self.clp["SA"], REG_SA["SA_CD_DISJ_LINHA_FECHA"], 1, descr="SA_CD_DISJ_LINHA_FECHA")
-            return res
+            if not self.__leitura_dj_tsa.valor:
+                logger.info("[USN] Não foi possível fechar o Disjuntor de Linha, pois o Disjuntor do SA está aberto")
+                return False
+            else:
+                res = EMB.escrever_bit(self.clp["SA"], REG_SA["SA_CD_DISJ_LINHA_FECHA"], 1, descr="SA_CD_DISJ_LINHA_FECHA")
+                return res
 
         except Exception:
-            logger.error(f"[USN] Houver um erro ao fechar o Dj52L.")
+            logger.error(f"[USN] Houver um erro ao fechar o Disjuntor de Linha.")
             logger.debug(f"{traceback.format_exc()}")
             return False
 

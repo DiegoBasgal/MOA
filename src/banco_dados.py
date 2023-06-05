@@ -79,17 +79,24 @@ class BancoDados:
             "executavel_em_manual": parametros_raw[1],
             }
 
+    def update_estado_ug(self, ts, estado, ug_id) -> None:
+        self.cursor.execute(
+            f"INSERT INTO parametros_moa_controleetapas "
+            f"SET ts = {ts}, "
+            f"ultimo_estado_ug{ug_id} = {estado}"
+        )
+
     def update_modo_moa(self, modo: bool) -> None:
         if modo:
             self.cursor.execute(
-                "UPDATE parametros_moa_parametrosusina " \
-                "SET modo_autonomo = 1 " \
+                "UPDATE parametros_moa_parametrosusina "
+                "SET modo_autonomo = 1 "
                 "WHERE id = 1"
             )
         else:
             self.cursor.execute(
-                "UPDATE parametros_moa_parametrosusina " \
-                "SET modo_autonomo = 0 " \
+                "UPDATE parametros_moa_parametrosusina "
+                "SET modo_autonomo = 0 "
                 "WHERE id = 1"
             )
         self.conn.commit()
