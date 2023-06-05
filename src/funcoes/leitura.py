@@ -4,6 +4,8 @@ import traceback
 from time import sleep
 from pyModbusTCP.client import ModbusClient
 
+from src.dicionarios.const import *
+
 logger = logging.getLogger("__main__")
 
 class LeituraModbus:
@@ -37,9 +39,8 @@ class LeituraModbus:
 
         except Exception:
             logger.error(f"[LER] Error ao calcular o valor da Leitura do registrador: \"{self.descr}\"")
-            logger.debug("")
             logger.info(f"[LER] Retornando dado Raw: {self.raw}...")
-            sleep(1)
+            sleep(TIMEOUT_PADRAO)
             return self.raw
 
     @property
@@ -55,8 +56,7 @@ class LeituraModbus:
 
         except Exception:
             logger.error(f"[LER] Não foi possivel realizar a Leitura do dado RAW no registrador: \"{self._descr}\".")
-            logger.debug(f"[LER] Traceback: {traceback.format_exc()}")
-            logger.debug("")
+            logger.debug(f"Traceback: {traceback.format_exc()}")
             logger.info(f"[LER] Retornando 0...")
             return 0
 
@@ -94,19 +94,18 @@ class LeituraModbusCoil:
     def raw(self) -> "int":
         try:
             if self.__op == 1:
-                ler = self.__clp.read_coils(self.__reg)[0]
+                raw = self.__clp.read_coils(self.__reg)[0]
 
             elif self.__op == 2:
-                ler = self.__clp.read_discrete_inputs(self.__reg)[0]
+                raw = self.__clp.read_discrete_inputs(self.__reg)[0]
 
-            return 0 if ler is None else ler
+            return 0 if raw is None else raw
 
         except Exception:
             logger.error(f"[LER] Não foi possivel realizar a Leitura Coil do dado RAW no registrador: \"{self._descr}\"")
-            logger.debug(f"[LER] Traceback: {traceback.format_exc()}")
-            logger.debug("")
+            logger.debug(f"Traceback: {traceback.format_exc()}")
             logger.info(f"[LER] Retornando 0...")
-            sleep(1)
+            sleep(TIMEOUT_PADRAO)
             return 0
 
     @property
@@ -130,10 +129,9 @@ class LeituraModbusBit(LeituraModbus, LeituraModbusCoil):
 
         except Exception:
             logger.error(f"[LER] houve um erro ao realizar a conversão do dado Raw para Biário.")
-            logger.debug(f"[LER] Traceback: {traceback.format_exc()}")
-            logger.debug("")
+            logger.debug(f"Traceback: {traceback.format_exc()}")
             logger.info(f"[LER] Retornando \"None\"...")
-            sleep(0)
+            sleep(TIMEOUT_PADRAO)
             return None
 
 class LeituraModbusFloat(LeituraModbus):
@@ -177,10 +175,9 @@ class LeituraModbusFloat(LeituraModbus):
 
         except Exception:
             logger.error(f"[LER] Houve um erro ao converter os valores Decimais para Float")
-            logger.debug(f"[LER] Traceback: {traceback.format_exc()}")
-            logger.debug("")
+            logger.debug(f"Traceback: {traceback.format_exc()}")
             logger.info(f"[LER] Retornando 0...")
-            sleep(1)
+            sleep(TIMEOUT_PADRAO)
             return 0
 
     def ieee_754_conversion(self, binary, sgn_len=1, exp_len=8, mant_len=23) -> "int | float":
@@ -217,10 +214,9 @@ class LeituraModbusFloat(LeituraModbus):
 
         except Exception:
             logger.error(f"[LER] Erro na conversão de binário para Float")
-            logger.debug(f"[LER] Traceback: {traceback.format_exc()}")
-            logger.debug("")
+            logger.debug(f"Traceback: {traceback.format_exc()}")
             logger.info(f"[LER] Retornando 0...")
-            sleep(1)
+            sleep(TIMEOUT_PADRAO)
             return 0
 
 class LeituraSoma:
@@ -243,8 +239,7 @@ class LeituraSoma:
 
         except Exception:
             logger.error(f"[LER] Houve um erro ao realizar a soma das Leituras")
-            logger.debug(f"[LER] Traceback: {traceback.format_exc()}")
-            logger.debug("")
+            logger.debug(f"Traceback: {traceback.format_exc()}")
             logger.info(f"[LER] Retornando 0...")
-            sleep(1)
+            sleep(TIMEOUT_PADRAO)
             return 0

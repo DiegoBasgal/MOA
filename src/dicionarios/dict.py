@@ -1,21 +1,21 @@
 ips: "dict[str, any]" = {
-    "UG1_ip": "192.168.10.110",
-    "UG1_porta": 502,
-    "UG2_ip": "192.168.10.120",
-    "UG2_porta": 502,
-    "SA_ip": "192.168.10.109",
-    "SA_porta": 502,
-    "TDA_ip": "192.168.10.105",
-    "TDA_porta": 502
-
-    # "UG1_ip": "localhost",
+    # "UG1_ip": "192.168.10.110",
     # "UG1_porta": 502,
-    # "UG2_ip": "localhost",
+    # "UG2_ip": "192.168.10.120",
     # "UG2_porta": 502,
-    # "SA_ip": "localhost",
+    # "SA_ip": "192.168.10.109",
     # "SA_porta": 502,
-    # "TDA_ip": "localhost",
+    # "TDA_ip": "192.168.10.105",
     # "TDA_porta": 502
+
+    "UG1_ip": "localhost",
+    "UG1_porta": 502,
+    "UG2_ip": "localhost",
+    "UG2_porta": 502,
+    "SA_ip": "localhost",
+    "SA_porta": 502,
+    "TDA_ip": "localhost",
+    "TDA_porta": 502
     # "MOA_ip": "172.21.15.95",
     # "MOA_porta": 502
 }
