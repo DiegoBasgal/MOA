@@ -141,17 +141,6 @@
                 <input style="margin-left: 3px;" id="alvo_txt" name="nv_alvo" size=4 value="{{usina.nv_alvo}}"/>
                 <input style="padding-top: 2px; padding-bottom: 2px;" id="submit" type="submit" name="bnv_alvo" value="Salvar"/>
             </div>
-            <div style="margin-bottom: 30px;">
-                <label style="font-size: 18px; margin-left: 3px;"><b>Pressão Caixa Espiral Alvo: </b></label>
-                <input style="margin-left: 3px;" id="alvo_txt" name="press_cx_alvo" size=4 value="{{usina.press_cx_alvo}}"/></td>
-                <input style="padding-top: 2px; padding-bottom: 2px; margin-right: 3px;" id="submit" type="submit" name="bcx_alvo" value="Salvar"/>
-                {% if usina.tda_offline == 0 %}
-                    <label>(TDA: <a style="color: green;">On-line</a>)</label>
-                {% else %}
-                    <label>(TDA: <a style="color: red;">Off-line</a>)</label>
-                {% endif %}
-                <br>
-            </div>
         </form>
         <form method='post' action='/parametros_moa/'>
             {% csrf_token %}
@@ -237,15 +226,6 @@
                         <td><input id="limite_temperatura_mancal_escora_comb_ug_ug1" name="limite_temperatura_mancal_escora_comb_ug_ug1" size=10 value="{{usina.limite_temperatura_mancal_escora_comb_ug1}}"/></td>
                         <td><input id="alerta_temperatura_mancal_escora_comb_ug_ug2" name="alerta_temperatura_mancal_escora_comb_ug_ug2" size=10 value="{{usina.alerta_temperatura_mancal_escora_comb_ug2}}"/></td>
                         <td><input id="limite_temperatura_mancal_escora_comb_ug_ug2" name="limite_temperatura_mancal_escora_comb_ug_ug2" size=10 value="{{usina.limite_temperatura_mancal_escora_comb_ug2}}"/></td>
-                    </tr>
-
-                    <tr>
-                        <td>Caixa Espiral</td>
-                        <td><input id="alerta_caixa_espiral_ug1" name="alerta_caixa_espiral_ug1" size=10 value="{{usina.alerta_caixa_espiral_ug1}}"/></td>
-                        <td><input id="limite_caixa_espiral_ug1" name="limite_caixa_espiral_ug1" size=10 value="{{usina.limite_caixa_espiral_ug1}}"/></td>
-                        <td><input id="alerta_caixa_espiral_ug2" name="alerta_caixa_espiral_ug2" size=10 value="{{usina.alerta_caixa_espiral_ug2}}"/></td>
-                        <td><input id="limite_caixa_espiral_ug2" name="limite_caixa_espiral_ug2" size=10 value="{{usina.limite_caixa_espiral_ug2}}"/></td>
-                    
                     </tr>
                 </table>
             </div>

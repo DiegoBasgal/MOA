@@ -11,6 +11,7 @@ logger = logging.getLogger("__main__")
 class ClientesUsina:
 
     rv: "dict[str, ModbusClient]" = {}
+    rt: "dict[str, ModbusClient]" = {}
     clp: "dict[str, ModbusClient]" = {}
     rele: "dict[str, ModbusClient]" = {}
 
@@ -24,6 +25,18 @@ class ClientesUsina:
         host=d.ips["RV_UG2_ip"],
         port=d.ips["RV_UG2_porta"],
         unit_id=1,
+        timeout=0.5
+    )
+    rt[f"UG1"] = ModbusClient(
+        host=d.ips["RT_UG1_ip"],
+        port=d.ips["RT_UG1_porta"],
+        unit_id=2,
+        timeout=0.5
+    )
+    rt[f"UG2"] = ModbusClient(
+        host=d.ips["RT_UG2_ip"],
+        port=d.ips["RT_UG2_porta"],
+        unit_id=2,
         timeout=0.5
     )
 
@@ -94,6 +107,10 @@ class ClientesUsina:
             if not rv.open():
                 raise ModBusClientFail(rv)
 
+        for _ , rt in cls.rt.items():
+            if not rt.open():
+                raise ModBusClientFail(rt)
+
         for _ , rele in cls.rele.items():
             if not rele.open():
                 raise ModBusClientFail(rv)
@@ -104,10 +121,13 @@ class ClientesUsina:
         logger.debug("[CLI] Encerrando conexões...")
         for _ , clp in cls.clp.items():
             clp.close()
-        
+
         for _ , rv in cls.rv.items():
             rv.close()
-        
+
+        for _ , rt in cls.rt.items():
+            rt.close()
+
         for _ , rele in cls.rele.items():
             rele.close()
         logger.debug("[CLI] Conexões encerradas.")
@@ -126,19 +146,19 @@ class ClientesUsina:
 
             if not cls.ping(d.ips["UG1_ip"]):
                 logger.warning("[CLI] O CLP da Unidade Geradora 1 não respondeu a tentativa de comunicação!")
-            
+
             if not cls.ping(d.ips["RV_UG1_ip"]):
                 logger.warning("[CLI] O Regualdor de Velocidade da Unidade Geradora 1 não respondeu a tentativa de comunicação!")
-            
+
             if not cls.ping(d.ips["RELE_UG1_ip"]):
                 logger.warning("[CLI] O Relé da Unidade Geradora 1 não respondeu a tentativa de comunicação!")
 
             if not cls.ping(d.ips["UG2_ip"]):
                 logger.warning("[CLI] O CLP da Unidade Geradora 2 não respondeu a tentativa de comunicação!")
-            
+
             if not cls.ping(d.ips["RV_UG2_ip"]):
                 logger.warning("[CLI] O Regulador de Velocidade da Unidade Geradora 2 não respondeu a tentativa de comunicação!")
-            
+
             if not cls.ping(d.ips["RELE_UG2_ip"]):
                 logger.warning("[CLI] O Relé da Unidade Geradora 2 não respondeu a tentativa de comunicação!")
 

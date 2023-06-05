@@ -239,6 +239,7 @@ class Usina:
 
     def fechar_dj_linha(self) -> bool:
         try:
+            # TODO - adicionar verificação do dj TSA
             res = EMB.escrever_bit(self.clp["SA"], REG_SA["SA_CD_DISJ_LINHA_FECHA"], 1, descr="SA_CD_DISJ_LINHA_FECHA")
             return res
 
@@ -464,6 +465,7 @@ class Usina:
         else:
             for ug in ugs:
                 ug.setpoint = 0
+
 
     ### MÉTODOS DE CONTROLE DE DADOS:
 

@@ -63,8 +63,8 @@ class OcorrenciasUsn:
     def carregar_leituras(self) -> None:
         # Leituras para acionamento temporizado por chamada Voip
         # Leituras de Condicionadores
-        # leitura_CD_disj_linha_abre = LeituraModbusBit(self.__clp["SA"], REG_SA["SA_CD_DISJ_LINHA_ABRE"], descr="SA_CD_DISJ_LINHA_ABRE")
-        # self.condicionadores_essenciais.append(CondicionadorBase(leitura_CD_disj_linha_abre, CONDIC_NORMALIZAR))
+        leitura_CD_disj_linha_abre = LeituraModbusBit(self.__clp["SA"], REG_SA["SA_CD_DISJ_LINHA_ABRE"], descr="SA_CD_DISJ_LINHA_ABRE")
+        self.condicionadores_essenciais.append(CondicionadorBase(leitura_CD_disj_linha_abre, CONDIC_NORMALIZAR))
 
         """
         leitura_ED_disj_linha_aberto = LeituraModbusBit(REG_SA["SA_ED_PSA_SE_DISJ_LINHA_ABERTO"], self.__clp["SA"], descr="SA_CD_DISJ_LINHA_ABRE")

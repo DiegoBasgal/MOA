@@ -26,16 +26,16 @@ def monitoramento_view(request, *args, **kwargs):
 
     context = {
         "usina": usina,
-        "em_acionada": "{}".format(usina.emergencia_acionada),
+        "em_acionada": f"{usina.emergencia_acionada}",
         "timestamp": usina.timestamp.strftime("%d/%m/%Y, %H:%M:%S"),
-        "setpot_usina": "{:1.3f}".format(usina.ug1_setpot + usina.ug2_setpot),
-        "setpot_ug1": "{:1.3f}".format(usina.ug1_setpot),
-        "pot_ug1": "{:1.3f}".format(usina.ug1_pot),
-        "setpot_ug2": "{:1.3f}".format(usina.ug2_setpot),
-        "pot_ug2": "{:1.3f}".format(usina.ug2_pot),
-        "nv_alvo": "{:3.2f}".format(usina.nv_alvo),
+        "setpot_usina": f"{(usina.ug1_setpot + usina.ug2_setpot):1.3f}",
+        "setpot_ug1": f"{usina.ug1_setpot:1.3f}",
+        "pot_ug1": f"{usina.ug1_pot:1.3f}",
+        "setpot_ug2": f"{usina.ug2_setpot:1.3f}",
+        "pot_ug2": f"{usina.ug2_pot:1.3f}",
+        "nv_alvo": f"{usina.nv_alvo:3.2f}",
         "aguardo": "Sim" if usina.aguardando_reservatorio > 0 else "Não",
-        "nv_montante": "{:3.2f}".format(usina.nv_montante),
+        "nv_montante": f"{usina.nv_montante:3.2f}",
         "CLP_ON": "ONLINE" if usina.clp_online else "ERRO/OFFLINE",
     }
 
@@ -50,6 +50,7 @@ def monitoramento_view(request, *args, **kwargs):
         if context[key] == "" or context[key] == " ":
             context[key] = "-"
 
+    # TODO - adicionar na interface novamente após determinação da Automatic da integração do CLP do MOA no painel
     """
     # Comunicação modbus para verificar se servidor está on
     client = ModbusClient(
@@ -100,8 +101,6 @@ def monitoramento_view(request, *args, **kwargs):
     mins = int(remainder // 60)
     secs = int(remainder - mins * 60)
 
-    context["tempo_desde_moa_comunicando"] = "{} dias, {:02d}:{:02d}:{:02d}".format(
-        tempo_desde_moa_comunicando.days, hours, mins, secs
-    )
+    context["tempo_desde_moa_comunicando"] = f"{tempo_desde_moa_comunicando.days} dias, {hours:02d}:{mins:02d}:{secs:02d}"
 
     return render(request, "monitoramento.html", context=context)

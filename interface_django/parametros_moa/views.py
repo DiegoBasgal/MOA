@@ -44,11 +44,6 @@ def parametros_moa_view(request, *args, **kwargs):
             usina.nv_alvo = nv_alvo if isinstance(nv_alvo, float) else usina.nv_alvo
             usina.save()
 
-        if request.POST.get("bcx_alvo"):
-            press_cx_alvo = float(request.POST.get("press_cx_alvo").replace(',', '.'))
-            usina.press_cx_alvo = press_cx_alvo if isinstance(press_cx_alvo, float) else usina.press_cx_alvo
-            usina.save()
-
         if request.POST.get("salvar_params"):
             aux = request.POST.get("alerta_temperatura_fase_r_ug1")
             usina.alerta_temperatura_fase_r_ug1 = (float(aux.replace(",", ".")) if aux is not None and float(aux.replace(",", ".")) > 0 else usina.alerta_temperatura_fase_r_ug1)
@@ -104,12 +99,6 @@ def parametros_moa_view(request, *args, **kwargs):
             aux = request.POST.get("limite_temperatura_mancal_escora_comb_ug1")
             usina.limite_temperatura_mancal_escora_comb_ug1 = (float(aux.replace(",", ".")) if aux is not None and float(aux.replace(",", ".")) > 0 else usina.limite_temperatura_mancal_escora_comb_ug1)
 
-            aux = float(request.POST.get("alerta_caixa_espiral_ug1").replace(",", "."))
-            usina.alerta_caixa_espiral_ug1 = aux if isinstance(aux, float) else usina.alerta_caixa_espiral_ug1
-
-            aux = float(request.POST.get("limite_caixa_espiral_ug1").replace(",", "."))
-            usina.limite_caixa_espiral_ug1 = aux if isinstance(aux, float) else usina.limite_caixa_espiral_ug1
-
             aux = request.POST.get("alerta_temperatura_fase_r_ug2")
             usina.alerta_temperatura_fase_r_ug2 = (float(aux.replace(",", ".")) if aux is not None and float(aux.replace(",", ".")) > 0 else usina.alerta_temperatura_fase_r_ug2)
 
@@ -163,12 +152,6 @@ def parametros_moa_view(request, *args, **kwargs):
 
             aux = request.POST.get("limite_temperatura_mancal_escora_comb_ug2")
             usina.limite_temperatura_mancal_escora_comb_ug2 = (float(aux.replace(",", ".")) if aux is not None and float(aux.replace(",", ".")) > 0 else usina.limite_temperatura_mancal_escora_comb_ug2)
-
-            aux = float(request.POST.get("alerta_caixa_espiral_ug2").replace(",", "."))
-            usina.alerta_caixa_espiral_ug2 = aux if isinstance(aux, float) else usina.alerta_caixa_espiral_ug2
-
-            aux = float(request.POST.get("limite_caixa_espiral_ug2").replace(",", "."))
-            usina.limite_caixa_espiral_ug2 = aux if isinstance(aux, float) else usina.limite_caixa_espiral_ug2
 
             usina.timestamp = datetime.now()
             usina.save()
