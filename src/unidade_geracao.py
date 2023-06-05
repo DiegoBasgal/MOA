@@ -11,11 +11,12 @@ from datetime import datetime
 from src.dicionarios.reg import *
 from src.dicionarios.const import *
 
-import src.ocorrencias as oco_ug
 from src.condicionadores import *
 from src.funcoes.leitura import *
 from src.maquinas_estado.ug import *
 
+import src.ocorrencias as oco_ug
+from src.conector import ClientesUsina
 from src.banco_dados import BancoDados
 from src.funcoes.escrita import EscritaModBusBit as EMB
 
@@ -23,7 +24,7 @@ from src.funcoes.escrita import EscritaModBusBit as EMB
 logger = logging.getLogger("__main__")
 
 class UnidadeDeGeracao:
-    def __init__(self, id: int, cfg=None, clp: "dict[str, ModbusClient]"=None, db: BancoDados=None):
+    def __init__(self, id: "int", cfg=None, db: "BancoDados"=None):
 
         # VERIFICAÇÃO DE ARGUMENTOS
 
@@ -35,55 +36,21 @@ class UnidadeDeGeracao:
 
         self.db = db
         self.cfg = cfg
-        self.clp = clp
+        self.rv = ClientesUsina.rv
+        self.clp = ClientesUsina.clp
+        self.rele = ClientesUsina.rele
         self.oco = oco_ug.OcorrenciasUg(self.id, self.clp)
 
 
         # ATRIBUIÇÃO DE VARIÁVEIS PRIVADAS
 
-        self.__etapa_alvo: int = 0
-        self.__etapa_atual: int = 0
-        self.__ultima_etapa_alvo: int = 0
-        self.__ultima_etapa_atual: int = 0
-        self.__tempo_entre_tentativas: int = 0
-        self.__limite_tentativas_de_normalizacao: int = 3
+        self.__etapa_alvo: "int" = 0
+        self.__etapa_atual: "int" = 0
+        self.__ultima_etapa_alvo: "int" = 0
+        self.__ultima_etapa_atual: "int" = 0
+        self.__tempo_entre_tentativas: "int" = 0
+        self.__limite_tentativas_de_normalizacao: "int" = 3
 
-
-        # ATRIBUIÇÃO DE VARIÁVEIS PROTEGIDAS
-
-        self._setpoint: int = 0
-        self._prioridade: int = 0
-        self._tentativas_de_normalizacao: int = 0
-
-        self._setpoint_minimo: float = self.cfg["pot_minima"]
-        self._setpoint_maximo: float = self.cfg[f"pot_maxima_ug{self.id}"]
-
-        self._lista_ugs: "list[UnidadeDeGeracao]" = []
-
-
-        # ATRIBUIÇÃO DE VARIÁVEIS PÚBLICAS
-
-        self.tempo_normalizar: int = 0
-
-        self.ug_parando: bool = False
-        self.parar_timer: bool = False
-        self.borda_parar: bool = False
-        self.acionar_voip: bool = False
-        self.limpeza_grade: bool = False
-        self.release_timer: bool = False
-        self.borda_partindo: bool = False
-        self.ug_sincronizando: bool = False
-        self.avisou_emerg_voip: bool = False
-        self.normalizacao_agendada: bool = False
-
-        self.aux_tempo_sincronizada: datetime = 0
-        self.ts_auxiliar: datetime = self.get_time()
-
-        self.__leitura_dj_linha = LeituraModbusBit(
-            self.clp["SA"],
-            REG_SA["SA_ED_PSA_SE_DISJ_LINHA_FECHADO"],
-            descr=f"[UG{self.id}] Status Disjuntor Linha"
-        )
         self.__leitura_dj_tsa = LeituraModbusBit(
             self.clp["SA"],
             REG_SA["SA_ED_PSA_DIJS_TSA_FECHADO"],
@@ -94,38 +61,19 @@ class UnidadeDeGeracao:
             REG_SA["SA_ED_PSA_DIJS_GMG_FECHADO"],
             descr=f"[UG{self.id}] Status Disjuntor Grupo Motor Gerador"
         )
+        self.__leitura_dj_linha = LeituraModbusBit(
+            self.clp["SA"],
+            REG_SA["SA_ED_PSA_SE_DISJ_LINHA_FECHADO"],
+            descr=f"[UG{self.id}] Status Disjuntor Linha"
+        )
 
-        print("")
-        print(f"Leitura Disj LINHA: {self.__leitura_dj_linha.valor}")
-        print(f"Leitura Disj TSA:   {self.__leitura_dj_tsa.valor}")
-        print(f"Leitura Disj GMG:   {self.__leitura_dj_gmg.valor}")
-        print("")
-
-        self._leitura_potencia = LeituraModbus(
-            self.clp[f"UG{self.id}"],
-            REG_RELE["UG"][f"RELE_UG{self.id}_P"],
-            op=3,
-            descr=f"[UG{self.id}] Potência Ativa"
-        )
-        self._leitura_potencia_reativa = LeituraModbus(
-            self.clp[f"UG{self.id}"],
-            REG_RELE["UG"][f"RELE_UG{self.id}_Q"],
-            op=3,
-            descr=f"[UG{self.id}] Potência Reativa"
-        )
-        self._leitura_potencia_aparente = LeituraModbus(
-            self.clp[f"UG{self.id}"],
-            REG_RELE["UG"][f"RELE_UG{self.id}_S"],
-            op=3,
-            descr=f"[UG{self.id}] Potência Aparente"
-        )
-        self._leitura_etapa_atual = LeituraModbus(
+        self.__leitura_etapa_atual = LeituraModbus(
             self.clp[f"UG{self.id}"],
             REG_UG[f"UG{self.id}_ED_STT_PASSO_ATUAL_BIT"],
             op=3,
             descr=f"[UG{self.id}] Etapa Atual"
         )
-        self._leitura_etapa_alvo = LeituraModbus(
+        self.__leitura_etapa_alvo = LeituraModbus(
             self.clp[f"UG{self.id}"],
             REG_UG[f"UG{self.id}_ED_STT_PASSO_SELECIONADO_BIT"],
             op=3,
@@ -133,61 +81,99 @@ class UnidadeDeGeracao:
         )
 
 
+        # ATRIBUIÇÃO DE VARIÁVEIS PROTEGIDAS
+
+        self._setpoint: "int" = 0
+        self._prioridade: "int" = 0
+        self._tentativas_de_normalizacao: "int" = 0
+
+        self._setpoint_minimo: "float" = self.cfg["pot_minima"]
+        self._setpoint_maximo: "float" = self.cfg[f"pot_maxima_ug{self.id}"]
+
+        self._lista_ugs: "list[UnidadeDeGeracao]" = []
+
+        self._leitura_potencia = LeituraModbus(
+            self.rele[f"UG{self.id}"],
+            REG_RELE["UG"][f"RELE_UG{self.id}_P"],
+            op=3,
+            descr=f"[UG{self.id}] Potência Ativa"
+        )
+
+
+        # ATRIBUIÇÃO DE VARIÁVEIS PÚBLICAS
+
+        self.tempo_normalizar: "int" = 0
+
+        self.aguardar_etapa_alvo: "int" = 0
+        self.aguardar_etapa_atual: "int" = 0
+
+        self.ug_parando: "bool" = False
+        self.parar_timer: "bool" = False
+        self.borda_parar: "bool" = False
+        self.acionar_voip: "bool" = False
+        self.limpeza_grade: "bool" = False
+        self.release_timer: "bool" = False
+        self.borda_partindo: "bool" = False
+        self.ug_sincronizando: "bool" = False
+        self.avisou_emerg_voip: "bool" = False
+        self.normalizacao_agendada: "bool" = False
+
+        self.aux_tempo_sincronizada: "datetime" = 0
+        self.ts_auxiliar: "datetime" = self.get_time()
+
+        if not self.desabilitar_manutencao():
+            logger.info(f"[UG{self.id}] Não foi possível enviar comando de \"Desabilitar Manutenção\"")
+
     # Property -> VARIÁVEIS PRIVADAS
 
     @property
-    def id(self) -> int:
+    def id(self) -> "int":
         return self.__id
 
     @property
-    def manual(self) -> bool:
+    def manual(self) -> "bool":
         return isinstance(self.__next_state, StateManual)
 
     @property
-    def restrito(self) -> bool:
+    def restrito(self) -> "bool":
         return isinstance(self.__next_state, StateRestrito)
 
     @property
-    def disponivel(self) -> bool:
+    def disponivel(self) -> "bool":
         return isinstance(self.__next_state, StateDisponivel)
 
     @property
-    def indisponivel(self) -> bool:
+    def indisponivel(self) -> "bool":
         return isinstance(self.__next_state, StateIndisponivel)
 
     @property
-    def tempo_entre_tentativas(self) -> int:
+    def tempo_entre_tentativas(self) -> "int":
         return self.__tempo_entre_tentativas
 
     @property
-    def limite_tentativas_de_normalizacao(self) -> int:
+    def limite_tentativas_de_normalizacao(self) -> "int":
         return self.__limite_tentativas_de_normalizacao
 
     @property
-    def leitura_potencia(self) -> float:
-        return self._leitura_potencia.valor
+    def leitura_potencia(self) -> "int | float":
+        try:
+            return self._leitura_potencia.valor
+        except Exception:
+            logger.error(f"[UG{self.id}] ERRO LEITURA POT: {traceback.format_exc()}")
 
     @property
-    def etapa(self) -> int:
+    def etapa(self) -> "int":
         try:
             if self.etapa_atual == UG_PARADA and self.etapa_alvo == UG_PARADA:
-                self.ug_parando = False
-                self.ug_sincronizando = False
                 return UG_PARADA
 
             elif UG_PARADA < self.etapa_atual < UG_SINCRONIZADA and self.etapa_alvo == UG_PARADA:
-                self.ug_parando = True
-                self.ug_sincronizando = False
                 return UG_PARANDO
 
             elif UG_PARADA < self.etapa_atual < UG_SINCRONIZADA and self.etapa_alvo == UG_SINCRONIZADA:
-                self.ug_parando = False
-                self.ug_sincronizando = True
                 return UG_SINCRONIZANDO
 
             elif self.etapa_atual == UG_SINCRONIZADA and self.etapa_alvo == UG_SINCRONIZADA:
-                self.ug_parando = False
-                self.ug_sincronizando = False
                 return UG_SINCRONIZADA
 
             else:
@@ -197,51 +183,42 @@ class UnidadeDeGeracao:
                 return self.__ultima_etapa_atual
 
         except Exception:
-            logger.error(f"[UG{self.id}] Houve um erro no controle de Etapas da Unidade.")
-            logger.debug(f"Traceback: {traceback.format_exc()}")
-            logger.debug("")
-            logger.info(f"[UG{self.id}] Mantendo etapa anterior...")
+            logger.error(f"[UG{self.id}] Houve um erro no controle de Etapas da Unidade. Mantendo Etapa anterior.")
+            logger.debug(traceback.format_exc())
             return self.__ultima_etapa_atual
 
     @property
-    def etapa_atual(self) -> int:
+    def etapa_atual(self) -> "int":
         try:
-            leitura = self._leitura_etapa_atual.valor
-
-            if leitura is None:
+            if self.__leitura_etapa_atual.valor == None:
                 self.__etapa_atual = self.__ultima_etapa_atual
                 return self.__etapa_atual
             else:
-                self.__etapa_atual = leitura
+                self.__etapa_atual = self.__leitura_etapa_atual.valor
                 self.__ultima_etapa_atual = self.__etapa_atual
                 return self.__etapa_atual
 
         except Exception:
-            logger.error(f"[UG{self.id}] Não foi possível realizar a leitura da \"Etapa Atual\".")
-            logger.debug(f"Traceback: {traceback.format_exc()}")
-            logger.debug("")
-            logger.info(f"[UG{self.id}] Mantendo etapa atual anterior...")
+            logger.error(f"[UG{self.id}] Não foi possível realizar a leitura da \"Etapa Atual\". Mantendo Etapa Atual anteriror.")
+            logger.debug(traceback.format_exc())
             self.__etapa_atual = self.__ultima_etapa_atual
             return self.__etapa_atual
 
     @property
-    def etapa_alvo(self) -> int:
+    def etapa_alvo(self) -> "int":
         try:
-            leitura = self._leitura_etapa_alvo.valor
 
-            if leitura is None:
+            if self.__leitura_etapa_alvo.valor == None:
                 self.__etapa_alvo = self.__ultima_etapa_alvo
                 return self.__etapa_alvo
             else:
-                self.__etapa_alvo = leitura
+                self.__etapa_alvo = self.__leitura_etapa_alvo.valor
                 self.__ultima_etapa_alvo = self.__etapa_alvo
                 return self.__etapa_alvo
 
         except Exception:
-            logger.error(f"[UG{self.id}] Não foi possível realizar a leitura da \"Etapa Alvo\".")
-            logger.debug(f"Traceback: {traceback.format_exc()}")
-            logger.debug("")
-            logger.info(f"[UG{self.id}] Mantendo etapa alvo anterior...")
+            logger.error(f"[UG{self.id}] Não foi possível realizar a leitura da \"Etapa Alvo\". Mantendo etapa alvo anterior.")
+            logger.debug(traceback.format_exc())
             self.__etapa_alvo = self.__ultima_etapa_alvo
             return self.__etapa_alvo
 
@@ -249,27 +226,27 @@ class UnidadeDeGeracao:
     # Property/Setter -> VARIÁVEIS PROTEGIDAS
 
     @property
-    def codigo_state(self) -> int:
+    def codigo_state(self) -> "int":
         return self._codigo_state
 
     @codigo_state.setter
-    def codigo_state(self, var) -> int:
+    def codigo_state(self, var) -> "int":
         self._codigo_state = var
 
     @property
-    def prioridade(self) -> int:
+    def prioridade(self) -> "int":
         return self._prioridade
 
     @prioridade.setter
-    def prioridade(self, var) -> None:
+    def prioridade(self, var) -> "None":
         self._prioridade = var
 
     @property
-    def setpoint(self) -> int:
+    def setpoint(self) -> "int":
         return self._setpoint
 
     @setpoint.setter
-    def setpoint(self, var: int):
+    def setpoint(self, var: "int"):
         if var < self.setpoint_minimo:
             self._setpoint = 0
         elif var > self.setpoint_maximo:
@@ -278,27 +255,27 @@ class UnidadeDeGeracao:
             self._setpoint = int(var)
 
     @property
-    def setpoint_minimo(self) -> int:
+    def setpoint_minimo(self) -> "int":
         return self._setpoint_minimo
 
     @setpoint_minimo.setter
-    def setpoint_minimo(self, var: int):
+    def setpoint_minimo(self, var: "int"):
         self._setpoint_minimo = var
 
     @property
-    def setpoint_maximo(self) -> int:
+    def setpoint_maximo(self) -> "int":
         return self._setpoint_maximo
 
     @setpoint_maximo.setter
-    def setpoint_maximo(self, var: int):
+    def setpoint_maximo(self, var: "int"):
         self._setpoint_maximo = var
 
     @property
-    def tentativas_de_normalizacao(self) -> int:
+    def tentativas_de_normalizacao(self) -> "int":
         return self._tentativas_de_normalizacao
 
     @tentativas_de_normalizacao.setter
-    def tentativas_de_normalizacao(self, var: int):
+    def tentativas_de_normalizacao(self, var: "int"):
         if 0 <= var and var == int(var):
             self._tentativas_de_normalizacao = int(var)
         else:
@@ -309,7 +286,7 @@ class UnidadeDeGeracao:
         return self._lista_ugs
 
     @lista_ugs.setter
-    def lista_ugs(self, var: "list[UnidadeDeGeracao]") -> None:
+    def lista_ugs(self, var: "list[UnidadeDeGeracao]") -> "None":
         self._lista_ugs = var
 
 
@@ -318,20 +295,20 @@ class UnidadeDeGeracao:
     def get_time(self) -> datetime:
         return datetime.now(pytz.timezone("Brazil/East")).replace(tzinfo=None)
 
-    def forcar_estado_manual(self) -> None:
+    def forcar_estado_manual(self) -> "None":
         self.__next_state = StateManual(self)
 
-    def forcar_estado_restrito(self) -> None:
+    def forcar_estado_restrito(self) -> "None":
         self.__next_state = StateRestrito(self)
 
-    def forcar_estado_indisponivel(self) -> None:
+    def forcar_estado_indisponivel(self) -> "None":
         self.__next_state = StateIndisponivel(self)
 
-    def forcar_estado_disponivel(self) -> None:
+    def forcar_estado_disponivel(self) -> "None":
         self.reconhece_reset_alarmes()
         self.__next_state = StateDisponivel(self)
 
-    def iniciar_ultimo_estado(self) -> None:
+    def iniciar_ultimo_estado(self) -> "None":
         estado = self.db.get_ultimo_estado_ug(self.id)
 
         if not estado:
@@ -350,33 +327,35 @@ class UnidadeDeGeracao:
                 self.__next_state = StateManual(self)
 
     # TODO -> Adicionar após a integração do CLP do MOA no painel do SA, que depende da intervenção da Automatic.
-    def atualizar_modbus_moa(self) -> None:
+    def atualizar_modbus_moa(self) -> "None":
         return
         self.clp["MOA"].write_single_register(REG_MOA[f"OUT_ETAPA_UG{self.id}"], self.etapa)
         self.clp["MOA"].write_single_register(REG_MOA[f"OUT_STATE_UG{self.id}"], self.codigo_state)
 
-    def desabilitar_manutencao(self) -> bool:
-        return True
+    def desabilitar_manutencao(self) -> "bool":
         try:
-            EMB.escrever_bit(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}_CD_CMD_RV_MANUTENCAO"], 0, descr=f"UG{self.id}_CD_CMD_RV_MANUTENCAO")
-            EMB.escrever_bit(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}_CD_CMD_RV_AUTOMATICO"], 1, descr=f"UG{self.id}_CD_CMD_RV_AUTOMATICO")
-            EMB.escrever_bit(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}_CD_CMD_UHRV_MODO_MANUTENCAO"], 0, descr=f"UG{self.id}_CD_CMD_UHRV_MODO_MANUTENCAO")
-            EMB.escrever_bit(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}_CD_CMD_UHRV_MODO_AUTOMATICO"], 1, descr=f"UG{self.id}_CD_CMD_UHRV_MODO_AUTOMATICO")
-            EMB.escrever_bit(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}_CD_CMD_UHLM_MODO_MANUTENCAO"], 0, descr=f"UG{self.id}_CD_CMD_UHLM_MODO_MANUTENCAO")
-            EMB.escrever_bit(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}_CD_CMD_UHLM_MODO_AUTOMATICO"], 1, descr=f"UG{self.id}_CD_CMD_UHLM_MODO_AUTOMATICO")
+            res = EMB.escrever_bit(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}_CD_CMD_CONTROLE_POTENCIA_MANUAL"], 1, descr=f"UG{self.id}_CD_CMD_CONTROLE_POTENCIA_MANUAL")
+
+            res = EMB.escrever_bit(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}_CD_CMD_RV_MANUTENCAO"], 0, descr=f"UG{self.id}_CD_CMD_RV_MANUTENCAO")
+            res = EMB.escrever_bit(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}_CD_CMD_RV_AUTOMATICO"], 1, descr=f"UG{self.id}_CD_CMD_RV_AUTOMATICO")
+            res = EMB.escrever_bit(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}_CD_CMD_UHLM_MODO_MANUTENCAO"], 0, descr=f"UG{self.id}_CD_CMD_UHLM_MODO_MANUTENCAO")
+            res = EMB.escrever_bit(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}_CD_CMD_UHLM_MODO_AUTOMATICO"], 1, descr=f"UG{self.id}_CD_CMD_UHLM_MODO_AUTOMATICO")
+            # res = EMB.escrever_bit(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}_CD_CMD_UHRV_MODO_MANUTENCAO"], 0, descr=f"UG{self.id}_CD_CMD_UHRV_MODO_MANUTENCAO") -> Está mandando comando de parada para a máquina | TODO Verificar com a Automatic
+            # res = EMB.escrever_bit(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}_CD_CMD_UHRV_MODO_AUTOMATICO"], 1, descr=f"UG{self.id}_CD_CMD_UHRV_MODO_AUTOMATICO") -> Está mandando comando de parada para a máquina | TODO Verificar com a Automatic
+            return res
 
         except Exception:
             logger.error(f"[UG{self.id}] Não foi possível desabilitar o modo de manutenção da Unidade.")
-            logger.debug(f"Traceback: {traceback.format_exc()}")
+            logger.debug(traceback.format_exc())
             return False
 
-    def espera_normalizar(self, delay: int):
+    def espera_normalizar(self, delay: "int"):
         while not self.parar_timer:
             sleep(max(0, time() + delay - time()))
             self.parar_timer = True
             return
 
-    def normalizar_unidade(self) -> bool:
+    def normalizar_unidade(self) -> "bool":
         if self.tentativas_de_normalizacao > self.limite_tentativas_de_normalizacao:
             logger.warning(f"[UG{self.id}] A UG estourou as tentativas de normalização, indisponibilizando Unidade.")
             return False
@@ -388,7 +367,7 @@ class UnidadeDeGeracao:
             self.reconhece_reset_alarmes()
             return True
 
-    def bloquear_unidade(self) -> None:
+    def bloquear_unidade(self) -> "None":
         if self.etapa == UG_PARADA:
             self.acionar_trip_logico()
             self.acionar_trip_eletrico()
@@ -399,41 +378,32 @@ class UnidadeDeGeracao:
         else:
             logger.debug(f"[UG{self.id}] Unidade Parando")
 
-    def step(self) -> None:
+    def step(self) -> "None":
         try:
             logger.debug("")
             logger.debug(f"[UG{self.id}] Step  -> Unidade:                   \"{UG_SM_STR_DCT[self.codigo_state]}\"")
-
-            if self.ug_parando:
-                logger.debug(f"[UG{self.id}]          Etapa atual:               \"Parando\"")
-            elif self.ug_sincronizando:
-                logger.debug(f"[UG{self.id}]          Etapa atual:               \"Sincronizando\"")
-            else:
-                logger.debug(f"[UG{self.id}]          Etapa atual:               \"{UG_STR_DCT_ETAPAS[self.etapa]}\"")
+            logger.debug(f"[UG{self.id}]          Etapa atual:               \"{UG_STR_DCT_ETAPAS[self.etapa] if self.etapa in (UG_PARADA, UG_SINCRONIZADA) else 'Sincronizando | Parando'}\"")
 
             self.__next_state = self.__next_state.step()
             self.atualizar_modbus_moa()
 
         except Exception:
             logger.error(f"[UG{self.id}] Erro na execução da máquina de estados da Unidade -> \"step\".")
-            logger.debug(f"Traceback: {traceback.format_exc()}")
+            logger.debug(traceback.format_exc())
 
-    def partir(self) -> None:
+    def partir(self) -> "None":
         try:
-            if self.__leitura_dj_linha == 0:
+            if not self.__leitura_dj_linha.valor:
                 logger.info(f"[UG{self.id}] Não foi possível partir a Unidade. Disjuntor de Linha está aberto.")
                 return False
 
-            elif self.__leitura_dj_tsa.valor == 1:
+            elif not self.__leitura_dj_tsa.valor:
                 logger.info(f"[UG{self.id}] Não foi possível partir a Unidade. Disjuntor do Serviço Auxiliar está aberto.")
                 return False
 
-            elif self.__leitura_dj_gmg.valor == 1:
+            elif self.__leitura_dj_gmg.valor:
                 logger.info(f"[UG{self.id}] Não foi possível partir a Unidade. Disjuntor do Grupo Motor Gerador está fechado.")
                 return False
-
-            elif not self.desabilitar_manutencao():
-                logger.info(f"[UG{self.id}] Não foi possível partir a Unidade. Comando de desabilitar manutenção sem efeito.")
 
             elif not self.etapa == UG_SINCRONIZADA:
                 logger.info(f"[UG{self.id}]          Enviando comando:          \"PARTIDA\"")
@@ -445,14 +415,13 @@ class UnidadeDeGeracao:
 
         except Exception:
             logger.error(f"[UG{self.id}] Não foi possível partir a Unidade.")
-            logger.debug(f"Traceback: {traceback.format_exc()}")
+            logger.debug(traceback.format_exc())
 
-    def parar(self) -> None:
-        return None
+    def parar(self) -> "None":
         try:
             if not self.etapa == UG_PARADA:
                 logger.info(f"[UG{self.id}]          Enviando comando:          \"PARADA\"")
-                res = EMB.escrever_bit(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}_CD_CMD_PARADA_TOTAL"], 1, descr=f"UG{self.id}_CD_CMD_PARADA_TOTAL")
+                EMB.escrever_bit(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}_CD_CMD_PARADA_TOTAL"], 1, descr=f"UG{self.id}_CD_CMD_PARADA_TOTAL")
                 self.enviar_setpoint(0)
 
             else:
@@ -460,73 +429,76 @@ class UnidadeDeGeracao:
 
         except Exception:
             logger.error(f"[UG{self.id}] Não foi possível parar a Unidade.")
-            logger.debug(f"Traceback: {traceback.format_exc()}")
+            logger.debug(traceback.format_exc())
 
-    def enviar_setpoint(self, setpoint_kw: int) -> bool:
+    def enviar_setpoint(self, setpoint_kw: int) -> "bool":
         try:
+            sleep(2)
+            if not self.desabilitar_manutencao():
+                logger.info(f"[UG{self.id}] Não foi possível enviar comando de \"Desabilitar Manutenção\"")
+
             self.setpoint = int(setpoint_kw)
-            setpoint_porcento = (int(self.setpoint) / int(self.cfg[f"pot_maxima_ug{self.id}"])) * 100
-            logger.debug(f"[UG{self.id}]          Enviando setpoint:         {int(setpoint_porcento)} %")
+            setpoint_porcento = (setpoint_kw / self.cfg["pot_maxima_ug"]) * 10000
+            logger.debug(f"[UG{self.id}]          Enviando setpoint:         {(setpoint_kw / self.cfg['pot_maxima_ug']) * 100} %")
 
             if self.setpoint > 1:
-                res = self.clp[f"UG{self.id}"].write_single_register(REG_UG[f"UG{self.id}_RV_SETPOINT_POTENCIA_ATIVA_PU"], int(self.setpoint))
-
-            return res
+                res = self.rv[f"UG{self.id}"].write_single_register(REG_UG[f"UG{self.id}_RV_SETPOINT_POTENCIA_ATIVA_PU"], int(setpoint_porcento))
+                return res
 
         except Exception:
             logger.error(f"[UG{self.id}] Não foi possivel enviar o Setpoint para Unidade.")
-            logger.debug(f"Traceback: {traceback.format_exc()}")
+            logger.debug(traceback.format_exc())
             return False
 
-    def acionar_trip_logico(self) -> bool:
+    def acionar_trip_logico(self) -> "bool":
         try:
-            logger.debug(f"[UG{self.id}]          Enviando comando:           \"TRIP LÓGICO\".")
+            logger.debug(f"[UG{self.id}]          Enviando comando:           \"TRIP LÓGICO\"")
             res = EMB.escrever_bit(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}_CD_CMD_PARADA_EMERGENCIA"], 1, descr=f"UG{self.id}_CD_CMD_PARADA_EMERGENCIA")
             return res
 
         except Exception:
             logger.error(f"[UG{self.id}] Não foi possivel acionar o comando de TRIP: \"Lógico\".")
-            logger.debug(f"Traceback: {traceback.format_exc()}")
+            logger.debug(traceback.format_exc())
             return False
 
-    def remover_trip_logico(self) -> bool:
+    def remover_trip_logico(self) -> "bool":
         try:
-            logger.debug(f"[UG{self.id}]          Removendo comando:          \"TRIP LÓGICO\".")
+            logger.debug(f"[UG{self.id}]          Removendo comando:          \"TRIP LÓGICO\"")
             res = EMB.escrever_bit(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}_CD_CMD_REARME_FALHAS"], 1, descr=f"UG{self.id}_CD_CMD_REARME_FALHAS")
             return res
 
         except Exception:
             logger.error(f"[UG{self.id}] Não foi possivel remover o comando de TRIP: \"Lógico\".")
-            logger.debug(f"Traceback: {traceback.format_exc()}")
+            logger.debug(traceback.format_exc())
             return False
 
-    def acionar_trip_eletrico(self) -> bool:
+    def acionar_trip_eletrico(self) -> "bool":
         try:
-            logger.debug(f"[UG{self.id}]          Enviando comando:           \"TRIP ELÉTRICO\".")
+            logger.debug(f"[UG{self.id}]          Enviando comando:           \"TRIP ELÉTRICO\" (SEM EFEITO -> Falta Automatic instalar CLP MOA)")
             res = None # self.clp["MOA"].write_single_coil(REG_MOA[f"OUT_BLOCK_UG{self.id}"], [1])
             return res
 
         except Exception:
             logger.error(f"[UG{self.id}] Não foi possivel acionar o comando de TRIP: \"Elétrico\".")
-            logger.debug(f"Traceback: {traceback.format_exc()}")
+            logger.debug(traceback.format_exc())
             return False
 
-    def remover_trip_eletrico(self) -> bool:
+    def remover_trip_eletrico(self) -> "bool":
         try:
             if self.clp["SA"].read_coils(REG_SA["SA_CD_DISJ_LINHA_FECHA"])[0] == 0:
                 logger.debug(f"[UG{self.id}]          Enviando comando:          \"FECHAR DJ LINHA\".")
-                self.fechar_dj_linha()
+                EMB.escrever_bit(self.clp["SA"], REG_SA["SA_CD_DISJ_LINHA_FECHA"], 1, descr="SA_CD_DISJ_LINHA_FECHA")
 
-            logger.debug(f"[UG{self.id}]          Removendo comando:          \"TRIP ELÉTRICO\".")
+            logger.debug(f"[UG{self.id}]          Removendo comando:          \"TRIP ELÉTRICO\" (SEM EFEITO -> Falta Automatic instalar CLP MOA)")
             res = None # self.clp["MOA"].write_single_coil(REG_MOA[f"OUT_BLOCK_UG{self.id}"], [0])
             return res
 
         except Exception:
             logger.error(f"[UG{self.id}] Não foi possivel remover o comando de TRIP: \"Elétrico\".")
-            logger.debug(f"Traceback: {traceback.format_exc()}")
+            logger.debug(traceback.format_exc())
             return False
 
-    def reconhece_reset_alarmes(self) -> bool:
+    def reconhece_reset_alarmes(self) -> "bool":
         try:
             logger.info(f"[UG{self.id}]           Enviando comando:           \"RECONHECE E RESET\"")
 
@@ -538,15 +510,14 @@ class UnidadeDeGeracao:
                 sleep(1)
                 # self.clp["MOA"].write_single_coil(REG_MOA["PAINEL_LIDO"], [0])
                 sleep(1)
-
             return True
 
         except Exception:
             logger.error(f"[UG{self.id}] Não foi possivel enviar o comando de reconhecer e resetar alarmes.")
-            logger.debug(f"Traceback: {traceback.format_exc()}")
+            logger.debug(traceback.format_exc())
             return False
 
-    def controle_etapas(self) -> None:
+    def controle_etapas(self) -> "None":
         # PARANDO
         if self.etapa == UG_PARANDO:
             if self.setpoint >= self.setpoint_minimo:
@@ -583,7 +554,7 @@ class UnidadeDeGeracao:
         if not self.etapa == UG_SINCRONIZADA:
             self.aux_tempo_sincronizada = None
 
-    def verificar_partida(self) -> None:
+    def verificar_partida(self) -> "None":
         while time() < (time() + 600):
             if self.etapa == UG_SINCRONIZADA or self.release_timer:
                 logger.debug(f"[UG{self.id}]          Comando MOA:                \"Encerrar timer de verificação de partida por condição verdadeira\"")
