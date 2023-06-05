@@ -81,7 +81,7 @@ class BancoDados:
 
     def update_estado_ug(self, ts, estado, ug_id) -> None:
         self.cursor.execute(
-            f"INSERT INTO parametros_moa_controleetapas "
+            f"INSERT INTO parametros_moa_controleestados "
             f"SET ts = {ts}, "
             f"ultimo_estado_ug{ug_id} = {estado}"
         )

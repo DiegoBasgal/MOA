@@ -409,7 +409,7 @@ class UnidadeDeGeracao:
         try:
             logger.debug("")
             logger.debug(f"[UG{self.id}] Step  -> Unidade:                   \"{UG_SM_STR_DCT[self.codigo_state]}\"")
-            logger.debug(f"[UG{self.id}]          Etapa atual:               \"{UG_STR_DCT_ETAPAS[self.etapa] if self.etapa in (UG_PARADA, UG_SINCRONIZADA) else 'Sincronizando | Parando'}\"")
+            logger.debug(f"[UG{self.id}]          Etapa atual:               \"{UG_STR_DCT_ETAPAS[self.etapa]}\"")
 
             self.__next_state = self.__next_state.step()
             self.atualizar_modbus_moa()

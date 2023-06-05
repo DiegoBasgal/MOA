@@ -498,6 +498,11 @@ class Usina:
         self.atualizar_valores_cfg(parametros)
         self.atualizar_valores_banco(parametros)
 
+        if self.clp["SA"].read_coils(REG_SA["RESERVA_X"])[0] == 1 and not self.modo_autonomo:
+            self.modo_autonomo = True
+        elif self.clp["SA"].read_coils(REG_SA["RESERVA_X"])[0] == 0 and self.modo_autonomo:
+            self.modo_autonomo == False
+
         for ug in self.ugs:
             ug.oco.atualizar_limites_condicionadores(parametros)
 
