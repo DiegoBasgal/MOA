@@ -457,7 +457,7 @@ REG_UG ={
 
     "UG1_ED_STT_ENTRADAS_DIGITAIS_3":                   12314,      # Holding Register                      (OP -> 0x03 Read Holding Registers)
     "UG1_ED_STT_ENTRADAS_DIGITAIS_4":                   12316,      # Holding Register                      (OP -> 0x03 Read Holding Registers)
-        
+
     # PARTIDA E PARADA
     "UG1_ED_STT_PASSO_SELECIONADO_BIT":                 12390,      # Holding Register                      (OP -> 0x03 Read Holding Registers)
     "UG1_ED_STT_PASSO_ATUAL_BIT":                       12392,      # Holding Register                      (OP -> 0x03 Read Holding Registers)
@@ -1587,5 +1587,86 @@ REG_RELE = {
         "RELE_UG2_EA_GERADA":                            423,        # Input Register Scale 1                (OP -> Read Input Registers - 3x)
         "RELE_UG2_CONSUMIDA":                            429,        # Input Register Scale 1                (OP -> Read Input Registers - 3x)
         "RELE_UG2_GERADA":                               427,        # Input Register Scale 1                (OP -> Read Input Registers - 3x)
+    },
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+REG = {
+    "SA": {
+        # Comandos
+        "SA_CD_REARME_FALHAS":                      [12288, 0],     # OK
+        "SA_CD_DISJ_LINHA_FECHA":                   [12288, 17],    # OK
+
+        # Retornos
+        "SA_ED_PSA_DIJS_TSA_FECHADO":               [12309, 26],    # OK
+        "SA_ED_PSA_DIJS_GMG_FECHADO":               [12309, 27],    # OK
+        "SA_ED_PSA_SE_DISJ_LINHA_FECHADO":          [12309, 31],    # OK
+    },
+
+    "UG": {
+        ## UG1
+        # Comandos
+        "UG1_CD_CMD_REARME_FALHAS":                 [12288, 0],     # OK
+        "UG1_CD_CMD_PARADA_EMERGENCIA":             [12288, 1],     # OK
+        "UG1_CD_CMD_RV_MANUTENCAO":                 [12288, 10],    # OK
+        "UG1_CD_CMD_RV_AUTOMATICO":                 [12288, 11],    # OK
+        "UG1_CD_CMD_UHLM_MODO_MANUTENCAO":          [12294, 0],     # OK
+        "UG1_CD_CMD_UHLM_MODO_AUTOMATICO":          [12294, 1],     # OK
+        "UG1_CD_CMD_PARADA_TOTAL":                  [12290, 0],     # OK
+        "UG1_CD_CMD_SINCRONISMO":                   [12290, 9],     # OK
+        "UG1_RV_SETPOINT_POTENCIA_ATIVA_PU":        30,             # OK
+
+        # Retornos
+        "UG1_ED_UHRV_UNIDADE_HABILITADA":           [12362, 1],     # OK
+        "UG1_ED_PRTVA_DISJUNTOR_MAQUINA_FECHADO":   [12310, 25],    # OK
+
+
+        ## UG2
+        # Comandos
+        "UG2_CD_CMD_REARME_FALHAS":                 [12288, 0],     # OK
+        "UG2_CD_CMD_PARADA_EMERGENCIA":             [12288, 1],     # OK
+        "UG2_CD_CMD_RV_MANUTENCAO":                 [12288, 10],    # OK
+        "UG2_CD_CMD_RV_AUTOMATICO":                 [12288, 11],    # OK
+        "UG2_CD_CMD_UHLM_MODO_MANUTENCAO":          [12294, 0],     # OK
+        "UG2_CD_CMD_UHLM_MODO_AUTOMATICO":          [12294, 1],     # OK
+        "UG2_CD_CMD_PARADA_TOTAL":                  [12290, 0],     # OK
+        "UG2_CD_CMD_SINCRONISMO":                   [12290, 9],     # OK
+        "UG2_RV_SETPOINT_POTENCIA_ATIVA_PU":        30,             # OK
+
+        # Retornos
+        "UG2_ED_UHRV_UNIDADE_HABILITADA":           [12362, 1],     # OK
+        "UG2_ED_PRTVA_DISJUNTOR_MAQUINA_FECHADO":   [12310, 25],    # OK
+    },
+
+    "GERAL": {
+        # Comandos
+        "GERAL_CD_RESET_GERAL":                     [12288, 0],     # OK
+
+        # Retornos
+        "GERAL_EA_NIVEL_MONTANTE_GRADE":            12350,          # OK
+    },
+
+    "RELE": {
+        # Retornos
+        "RELE_SE_VAB":                              330,            # OK
+        "RELE_SE_VBC":                              332,            # OK
+        "RELE_SE_VCA":                              334,            # OK
+        "RELE_SE_P":                                353,            # OK
+
+        "RELE_UG1_P":                               353,            # OK
+        "RELE_UG2_P":                               353,            # OK
     },
 }

@@ -67,5 +67,22 @@ ips: "dict[str, any]" = {
 voip: "dict[str, list[bool | str]]" = {
     "EMERGENCIA": [False, "Atenção! Houve um acionamento de emergência na PCH Pampeana, por favor analisar a situação. Atenção! Houve um acionamento de emergência na PCH Pampeana, por favor analisar a situação."],
 
-    "": [False, ""],
+    "SA_ED_PSA_DISJ_GMG_TRIP": [False, "Atenção! Foi identificado um sinal de TRIP do Disjuntor do Grupo Motor Gerador na CGH Pampeana, favor verificar."],
+
+    "SA_ED_PSA_DPS_GMG": [False, "Atenção! Houve uma falha com o Grupo Motor Gerador na CGH Pampeana, favor verificar."],
+    "SA_ED_PSA_CONVERSOR_FIBRA_FALHA": [False, "Atenção! Houve uma falha com o Conversor de Fibra na CGH Pampeana, favor verificar."],
+    "SA_ED_PSA_CARREGADOR_BATERIAS_FALHA": [False, "Atenção! Houve uma falha com o Carregador de Baterias na CGH Pampeana, favor verificar."],
+    "SA_ED_PSA_GMG_DISJ_FALHA_FECHAR": [False, "Atenção! Houve uma falha com o Disjuntor do Grupo Motor Gerador na CGH Pampeana, favor verificar."],
+
+    "SA_EA_PSA_NIVEL_MONTANTE_MUITO_BAIXO": [False, "Atenção! Foi identificado que o Nível Montante está muito baixo na CGH Pampeana, favor verificar."],
+
+    "SA_EA_PSA_SFA_PRESSAO_LADO_SUJO_ALTO": [False, "Atenção! Foi identificado que a pressão do lado sujo do Sistema de Filtragem A está alto na CGH Pampeana, favor verificar."],
+    "SA_EA_PSA_SFA_PRESSAO_LADO_LIMPO_ALTO": [False, "Atenção! Foi identificado que a pressão do lado limpo do Sistema de Filtragem A está alto na CGH Pampeana, favor verificar."],
+    "SA_EA_PSA_SFA_PRESSAO_LADO_SUJO_MUITO_ALTO": [False, "Atenção! Foi identificado que a pressão do lado sujo do Sistema de Filtragem A está muito alto na CGH Pampeana, favor verificar."],
+    "SA_EA_PSA_SFA_PRESSAO_LADO_LIMPO_MUITO_ALTO": [False, "Atenção! Foi identificado que a pressão do lado limpo do Sistema de Filtragem A está muito alto na CGH Pampeana, favor verificar."],
+
+    "SA_EA_PSA_SFB_PRESSAO_LADO_SUJO_ALTO": [False, "Atenção! Foi identificado que a pressão do lado sujo do Sistema de Filtragem B está alto na CGH Pampeana, favor verificar."],
+    "SA_EA_PSA_SFB_PRESSAO_LADO_LIMPO_ALTO": [False, "Atenção! Foi identificado que a pressão do lado limpo do Sistema de Filtragem B está alto na CGH Pampeana, favor verificar."],
+    "SA_EA_PSA_SFB_PRESSAO_LADO_SUJO_MUITO_ALTO": [False, "Atenção! Foi identificado que a pressão do lado sujo do Sistema de Filtragem B está muito alto na CGH Pampeana, favor verificar."],
+    "SA_EA_PSA_SFB_PRESSAO_LADO_LIMPO_MUITO_ALTO": [False, "Atenção! Foi identificado que a pressão do lado limpo do Sistema de Filtragem B está muito alto na CGH Pampeana, favor verificar."],
 }

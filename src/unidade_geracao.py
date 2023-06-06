@@ -73,11 +73,6 @@ class UnidadeDeGeracao:
             REG_UG[f"UG{self.id}_ED_UHRV_UNIDADE_HABILITADA"],
             descr=f"[UG{self.id}] Status UHRV"
         )
-        self.__leitura_corrente_rt: LeituraModbus = LeituraModbus(
-            self.rt[f"UG{self.id}"],
-            REG_UG[f"UG{self.id}_RT_CORRENTE_EXCITACAO"],
-            descr=f"[UG{self.id}] Leitura Corrente Excitação RT"
-        )
         self.__leitura_dj_maquina: LeituraModbusBit = LeituraModbusBit(
             self.clp[f"UG{self.id}"],
             REG_UG[f"UG{self.id}_ED_PRTVA_DISJUNTOR_MAQUINA_FECHADO"],
