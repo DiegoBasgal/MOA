@@ -53,6 +53,7 @@ class OcorrenciasUsn:
 
     def leitura_temporizada(self) -> None:
 
+        # WHATSAPP
         if self.leitura_ED_sup_tensao_falha.valor:
             logger.warning("[OCO-USN] Houve uma falha com a leitura de tensão supervisor, favor verificar.")
 
@@ -66,103 +67,158 @@ class OcorrenciasUsn:
             logger.warning("[OCO-USN] Foi identificado que o Nível Montante está muito baixo, favor verificar.")
 
         if self.leitura_ED_disj_gmg_fechado.valor:
-            logger.warning("[OCO-USN] Foi identificado que o diajuntor d, favor verificar.")
+            logger.warning("[OCO-USN] Foi identificado que o Disjuntor do Grupo Motor Gerador, favor verificar.")
 
         if self.leitura_ED_disjs_modo_remoto.valor:
-            logger.warning("[OCO-USN] , favor verificar.")
+            logger.warning("[OCO-USN] Foi identificado que os Disjuntores entraram em modo remoto, favor verificar.")
 
         if self.leitura_ED_poco_dren_nv_alto.valor:
-            logger.warning("[OCO-USN] , favor verificar.")
+            logger.warning("[OCO-USN] O nível do Poço de Drenagem está alto, favor verificar.")
 
         if self.leitura_ED_dren_boias_discrepancia.valor:
-            logger.warning("[OCO-USN] , favor verificar.")
+            logger.warning("[OCO-USN] Foi identificada uma discrepância nas Boias de Drenagem, favor verificar.")
 
         if self.leitura_ED_poco_dren_nv_muito_baixo.valor:
-            logger.warning("[OCO-USN] , favor verificar.")
+            logger.warning("[OCO-USN] O nível do Poço de Drenagem está muito baixo, favor verificar.")
 
         if self.leitura_ED_dren_bomba_1_indisp.valor:
-            logger.warning("[OCO-USN] , favor verificar.")
+            logger.warning("[OCO-USN] A Bomba de Drenagem 1 entrou em modo indisponível, favor verificar.")
 
         if self.leitura_ED_dren_bomba_2_indisp.valor:
-            logger.warning("[OCO-USN] , favor verificar.")
+            logger.warning("[OCO-USN] A Bomba de Drenagem 2 entrou em modo indisponível, favor verificar.")
 
         if self.leitura_ED_esgot_bomba_1_falha.valor:
-            logger.warning("[OCO-USN] , favor verificar.")
+            logger.warning("[OCO-USN] A Bomba de Esgotamento 1 entrou em modo indisponível, favor verificar.")
 
         if self.leitura_ED_esgot_bomba_2_falha.valor:
-            logger.warning("[OCO-USN] , favor verificar.")
+            logger.warning("[OCO-USN] A Bomba de Esgotamento 2 entrou em modo indisponível, favor verificar.")
 
         if self.leitura_ED_esgot_bomba_1_indisp.valor:
-            logger.warning("[OCO-USN] , favor verificar.")
+            logger.warning("[OCO-USN] A Bomba de Esgotamento 1 entrou em modo indisponível, favor verificar.")
 
         if self.leitura_ED_esgot_bomba_2_indisp.valor:
-            logger.warning("[OCO-USN] , favor verificar.")
+            logger.warning("[OCO-USN] A Bomba de Esgotamento 2 entrou em modo indisponível, favor verificar.")
 
         if self.leitura_ED_poco_dren_bomba_1_defeito.valor:
-            logger.warning("[OCO-USN] , favor verificar.")
+            logger.warning("[OCO-USN] Foi dentificado um defeito na Bomba de Drenagem 1, favor verificar.")
 
         if self.leitura_ED_poco_dren_bomba_2_defeito.valor:
-            logger.warning("[OCO-USN] , favor verificar.")
+            logger.warning("[OCO-USN] Foi dentificado um defeito na Bomba de Drenagem 2, favor verificar.")
 
         if self.leitura_ED_poco_esgot_bomba_1_defeito.valor:
-            logger.warning("[OCO-USN] , favor verificar.")
+            logger.warning("[OCO-USN] Foi dentificado um defeito na Bomba de Esgotamento 1, favor verificar.")
 
         if self.leitura_ED_poco_esgot_bomba_2_defeito.valor:
-            logger.warning("[OCO-USN] , favor verificar.")
+            logger.warning("[OCO-USN] Foi dentificado um defeito na Bomba de Esgotamento 2, favor verificar.")
 
         if self.leitura_ED_sfa_limp_elem_1_aberta.valor:
-            logger.warning("[OCO-USN] , favor verificar.")
+            logger.warning("[OCO-USN] Foi identificado que o Elemento de Limpeza 1 do Sistema de Filtragem A foi aberto, favor verificar.")
 
         if self.leitura_ED_sfa_limp_elem_2_aberta.valor:
-            logger.warning("[OCO-USN] , favor verificar.")
+            logger.warning("[OCO-USN] Foi identificado que o Elemento de Limpeza 2 do Sistema de Filtragem A foi aberto, favor verificar.")
 
         if self.leitura_ED_sfa_entra_elem_1_aberta.valor:
-            logger.warning("[OCO-USN] , favor verificar.")
+            logger.warning("[OCO-USN] Foi identificado que a Entrada do Elemento 1 do Sistema de Filtragem A foi aberto, favor verificar.")
 
         if self.leitura_ED_sfa_entra_elem_2_aberta.valor:
-            logger.warning("[OCO-USN] , favor verificar.")
+            logger.warning("[OCO-USN] Foi identificado que a Entrada do Elemento 2 do Sistema de Filtragem A foi aberto, favor verificar.")
 
         if self.leitura_ED_sfa_falha_abrir_retrolavagem.valor:
-            logger.warning("[OCO-USN] , favor verificar.")
+            logger.warning("[OCO-USN] Houve uma falha ao abrir a Retrolavagem do Sistema de Filtragem A, favor verificar.")
 
         if self.leitura_ED_sfa_falha_fechar_retrolavagem.valor:
-            logger.warning("[OCO-USN] , favor verificar.")
+            logger.warning("[OCO-USN] Houve uma falha ao fechar a Retrolavagem do Sistema de Filtragem A, favor verificar.")
 
         if self.leitura_ED_sfa_falha_abrir_entra_elem.valor:
-            logger.warning("[OCO-USN] , favor verificar.")
+            logger.warning("[OCO-USN] Houve uma falha ao abrir a Entrada do Elemento do Sistema de Filtragem A, favor verificar.")
 
         if self.leitura_ED_sfa_falha_fechar_entra_elem.valor:
-            logger.warning("[OCO-USN] , favor verificar.")
+            logger.warning("[OCO-USN] Houve uma falha ao fechar a Entrada do Elemento do Sistema de Filtragem A, favor verificar.")
 
         if self.leitura_ED_sfb_limp_elem_1_aberta.valor:
-            logger.warning("[OCO-USN] , favor verificar.")
+            logger.warning("[OCO-USN] Foi identificado que o Elemento de Limpeza 1 do Sistema de Filtragem B foi aberto, favor verificar.")
 
         if self.leitura_ED_sfb_limp_elem_2_aberta.valor:
-            logger.warning("[OCO-USN] , favor verificar.")
+            logger.warning("[OCO-USN] Foi identificado que o Elemento de Limpeza 2 do Sistema de Filtragem B foi aberto, favor verificar.")
 
         if self.leitura_ED_sfb_entra_elem_1_aberta.valor:
-            logger.warning("[OCO-USN] , favor verificar.")
+            logger.warning("[OCO-USN] Foi identificado que a Entrada do Elemento 1 do Sistema de Filtragem B foi aberto, favor verificar.")
 
         if self.leitura_ED_sfb_entra_elem_2_aberta.valor:
-            logger.warning("[OCO-USN] , favor verificar.")
+            logger.warning("[OCO-USN] Foi identificado que a Entrada do Elemento 2 do Sistema de Filtragem B foi aberto, favor verificar.")
 
         if self.leitura_ED_sfb_falha_abrir_entra_elem.valor:
-            logger.warning("[OCO-USN] , favor verificar.")
+            logger.warning("[OCO-USN] Houve uma falha ao abrir a Entrada do Elemento do Sistema de Filtragem B, favor verificar.")
 
         if self.leitura_ED_sfb_falha_fechar_entra_elem.valor:
-            logger.warning("[OCO-USN] , favor verificar.")
+            logger.warning("[OCO-USN] Houve uma falha ao fechar a Entrada do Elemento do Sistema de Filtragem A, favor verificar.")
 
         if self.leitura_ED_sfb_falha_abrir_retrolavagem.valor:
-            logger.warning("[OCO-USN] , favor verificar.")
+            logger.warning("[OCO-USN] Houve uma falha ao abrir a Retrolavagem do Sistema de Filtragem B, favor verificar.")
 
         if self.leitura_ED_sfb_falha_fechar_retrolavagem.valor:
-            logger.warning("[OCO-USN] , favor verificar.")
+            logger.warning("[OCO-USN] Houve uma falha ao fechar a Retrolavagem do Sistema de Filtragem B, favor verificar.")
+
+        if self.leitura_EA_nv_montante_baixo.valor:
+            logger.warning("[OCO-USN] Foi identificado que o Nível Montante está baixo, favor verificar.")
+
+        if self.leitura_EA_nv_jusante_alto.valor:
+            logger.warning("[OCO-USN] Foi identificado que o Nível Jusante está alto, favor verificar.")
+
+        if self.leitura_EA_nv_jusante_muito_baixo.valor:
+            logger.warning("[OCO-USN] Foi identificado que o Nível Jusante está muito baixo, favor verificar.")
+
+        if self.leitura_EA_nv_jusante_2_baixo.valor:
+            logger.warning("[OCO-USN] Foi identificado que o Nível Jusante 2 está baixo, favor verificar.")
+
+        if self.leitura_EA_nv_jusante_2_muito_baixo.valor:
+            logger.warning("[OCO-USN] Foi identificado que o Nível Jusante 2 está muito baixo, favor verificar.")
+
+        if self.leitura_EA_nv_jusante_falha_leitura.valor:
+            logger.warning("[OCO-USN] Houve uma falha na leitura de Nível Jusante, favor verificar.")
+
+        if self.leitura_EA_nv_jusante_2_falha_leitura.valor:
+            logger.warning("[OCO-USN] Houve uma falha na leitura de Nível Jusante 2, favor verificar.")
+
+        if self.leitura_EA_sfa_press_lado_sujo_falha_leitura.valor:
+            logger.warning("[OCO-USN] Houve uma falha de leitura no lado sujo do Sistema de Filtragem A, favor verificar.")
+
+        if self.leitura_EA_sfa_press_lado_limpo_falha_leitura.valor:
+            logger.warning("[OCO-USN] Houve uma falha de leitura no lado limpo do Sistema de Filtragem A, favor verificar.")
+
+        if self.leitura_EA_sfb_press_lado_sujo_falha_leitura.valor:
+            logger.warning("[OCO-USN] Houve uma falha de leitura no lado sujo do Sistema de Filtragem B, favor verificar.")
+
+        if self.leitura_EA_sfb_press_lado_limpo_falha_leitura.valor:
+            logger.warning("[OCO-USN] Houve uma falha de leitura no lado limpo do Sistema de Filtragem B, favor verificar.")
+
+        if self.leitura_EA_sfa_press_lado_sujo_baixo.valor:
+            logger.warning("[OCO-USN] Foi identificado que a pressão do lado sujo do Sistema de Filtragem A está baixa, favor verificar.")
+
+        if self.leitura_EA_sfa_press_lado_limpo_baixo.valor:
+            logger.warning("[OCO-USN] Foi identificado que a pressão do lado limpo do Sistema de Filtragem A está baixa, favor verificar.")
+
+        if self.leitura_EA_sfa_press_lado_sujo_muito_baixo.valor:
+            logger.warning("[OCO-USN] Foi identificado que a pressão do lado sujo do Sistema de Filtragem A está muito baixa, favor verificar.")
+
+        if self.leitura_EA_sfa_press_lado_limpo_muito_baixo.valor:
+            logger.warning("[OCO-USN] ,Foi identificado que a pressão do lado limpo do Sistema de Filtragem A está muito baixa favor verificar.")
+
+        if self.leitura_EA_sfb_press_lado_sujo_baixo.valor:
+            logger.warning("[OCO-USN] Foi identificado que a pressão do lado sujo do Sistema de Filtragem B está baixa, favor verificar.")
+
+        if self.leitura_EA_sfb_press_lado_limpo_baixo.valor:
+            logger.warning("[OCO-USN] Foi identificado que a pressão do lado limpo do Sistema de Filtragem B está baixa, favor verificar.")
+
+        if self.leitura_EA_sfb_press_lado_sujo_muito_baixo.valor:
+            logger.warning("[OCO-USN] Foi identificado que a pressão do lado sujo do Sistema de Filtragem B está muito baixa, favor verificar.")
+
+        if self.leitura_EA_sfb_press_lado_limpo_muito_baixo.valor:
+            logger.warning("[OCO-USN] Foi identificado que a pressão do lado limpo do Sistema de Filtragem B está muito baixa, favor verificar.")
 
 
 
-
-
-
+        # wHATSAPP + VOIP
         if self.leitura_ED_disj_gmg_trip.valor and not d.voip["SA_ED_PSA_DISJ_GMG_TRIP"]:
             logger.warning("[OCO-USN] Foi identificado um sinal de Trip do Grupo Motor Gerador, favor verificar.")
             d.voip["SA_ED_PSA_DISJ_GMG_TRIP"] = True
@@ -330,28 +386,28 @@ class OcorrenciasUsn:
 
 
         ### OUTRAS LEITURAS
-        ## TELEGRAM + VOIP
+        ## WHATSAPP + VOIP
         # ENTRADAS DIGITAIS
-        self.leitura_ED_dps_gmg_falha = LeituraModbusBit(self.__clp["SA"], REG_SA["SA_ED_PSA_DPS_GMG"], descr="[OCO-USN] Falha Grupo Motor Gerador") # Telegram + Voip
-        self.leitura_ED_disj_gmg_trip = LeituraModbusBit(self.__clp["SA"], REG_SA["SA_ED_PSA_DISJ_GMG_TRIP"], descr="[OCO-USN] Trip Disjuntor Grupo Motor Gerador") # Telegram + Voip
-        self.leitura_ED_conv_fibra_falha = LeituraModbusBit(self.__clp["SA"], REG_SA["SA_ED_PSA_CONVERSOR_FIBRA_FALHA"], descr="[OCO-USN] Falha Conversor de Fibra") # Telegram + Voip
-        self.leitura_ED_carreg_baterias_falha = LeituraModbusBit(self.__clp["SA"], REG_SA["SA_ED_PSA_CARREGADOR_BATERIAS_FALHA"], descr="[OCO-USN] Falha Carregador de Baterias") # Telegram + Voip
-        self.leitura_ED_disj_gmg_falha_fechar = LeituraModbusBit(self.__clp["SA"], REG_SA["SA_ED_PSA_GMG_DISJ_FALHA_FECHAR"], descr="[OCO-USN] Falha Fechamento Disjuntor Grupo Motor Gerador") # Telegram + Voip
+        self.leitura_ED_dps_gmg_falha = LeituraModbusBit(self.__clp["SA"], REG_SA["SA_ED_PSA_DPS_GMG"], descr="[OCO-USN] Falha Grupo Motor Gerador")
+        self.leitura_ED_disj_gmg_trip = LeituraModbusBit(self.__clp["SA"], REG_SA["SA_ED_PSA_DISJ_GMG_TRIP"], descr="[OCO-USN] Trip Disjuntor Grupo Motor Gerador")
+        self.leitura_ED_conv_fibra_falha = LeituraModbusBit(self.__clp["SA"], REG_SA["SA_ED_PSA_CONVERSOR_FIBRA_FALHA"], descr="[OCO-USN] Falha Conversor de Fibra")
+        self.leitura_ED_carreg_baterias_falha = LeituraModbusBit(self.__clp["SA"], REG_SA["SA_ED_PSA_CARREGADOR_BATERIAS_FALHA"], descr="[OCO-USN] Falha Carregador de Baterias")
+        self.leitura_ED_disj_gmg_falha_fechar = LeituraModbusBit(self.__clp["SA"], REG_SA["SA_ED_PSA_GMG_DISJ_FALHA_FECHAR"], descr="[OCO-USN] Falha Fechamento Disjuntor Grupo Motor Gerador")
 
         # ENTRADAS ANALÓGICAS
-        self.leitura_EA_nv_montante_muito_baixo = LeituraModbusBit(self.__clp["SA"], REG_SA["SA_EA_PSA_NIVEL_MONTANTE_MUITO_BAIXO"], descr="[OCO-USN] Nível Montante Muito Baixo") # Telegram + Voip
+        self.leitura_EA_nv_montante_muito_baixo = LeituraModbusBit(self.__clp["SA"], REG_SA["SA_EA_PSA_NIVEL_MONTANTE_MUITO_BAIXO"], descr="[OCO-USN] Nível Montante Muito Baixo")
 
-        self.leitura_EA_sfa_press_lado_sujo_alto = LeituraModbusBit(self.__clp["SA"], REG_SA["SA_EA_PSA_SFA_PRESSAO_LADO_SUJO_ALTO"], descr="[OCO-USN] Pressão Sistema de Filtragem A Lado Sujo Alta") # Telegram + Voip
-        self.leitura_EA_sfa_press_lado_limpo_alto = LeituraModbusBit(self.__clp["SA"], REG_SA["SA_EA_PSA_SFA_PRESSAO_LADO_LIMPO_ALTO"], descr="[OCO-USN] Pressão Sistema de Filtragem A Lado Limpo Alta") # Telegram + Voip
-        self.leitura_EA_sfa_press_lado_sujo_muito_alto = LeituraModbusBit(self.__clp["SA"], REG_SA["SA_EA_PSA_SFA_PRESSAO_LADO_SUJO_MUITO_ALTO"], descr="[OCO-USN] Pressão Sistema de Filtragem A Lado Sujo Muito Alta") # Telegram + Voip
-        self.leitura_EA_sfa_press_lado_limpo_muito_alto = LeituraModbusBit(self.__clp["SA"], REG_SA["SA_EA_PSA_SFA_PRESSAO_LADO_LIMPO_MUITO_ALTO"], descr="[OCO-USN] Pressão Sistema de Filtragem A Lado Limpo Muito Alta") # Telegram + Voip
+        self.leitura_EA_sfa_press_lado_sujo_alto = LeituraModbusBit(self.__clp["SA"], REG_SA["SA_EA_PSA_SFA_PRESSAO_LADO_SUJO_ALTO"], descr="[OCO-USN] Pressão Sistema de Filtragem A Lado Sujo Alta")
+        self.leitura_EA_sfa_press_lado_limpo_alto = LeituraModbusBit(self.__clp["SA"], REG_SA["SA_EA_PSA_SFA_PRESSAO_LADO_LIMPO_ALTO"], descr="[OCO-USN] Pressão Sistema de Filtragem A Lado Limpo Alta")
+        self.leitura_EA_sfa_press_lado_sujo_muito_alto = LeituraModbusBit(self.__clp["SA"], REG_SA["SA_EA_PSA_SFA_PRESSAO_LADO_SUJO_MUITO_ALTO"], descr="[OCO-USN] Pressão Sistema de Filtragem A Lado Sujo Muito Alta")
+        self.leitura_EA_sfa_press_lado_limpo_muito_alto = LeituraModbusBit(self.__clp["SA"], REG_SA["SA_EA_PSA_SFA_PRESSAO_LADO_LIMPO_MUITO_ALTO"], descr="[OCO-USN] Pressão Sistema de Filtragem A Lado Limpo Muito Alta")
 
-        self.leitura_EA_sfb_press_lado_sujo_alto = LeituraModbusBit(self.__clp["SA"], REG_SA["SA_EA_PSA_SFB_PRESSAO_LADO_SUJO_ALTO"], descr="[OCO-USN] Pressão Sistema de Filtragem B Lado Sujo Alta") # Telegram + Voip
-        self.leitura_EA_sfb_press_lado_limpo_alto = LeituraModbusBit(self.__clp["SA"], REG_SA["SA_EA_PSA_SFB_PRESSAO_LADO_LIMPO_ALTO"], descr="[OCO-USN] Pressão Sistema de Filtragem B Lado Limpo Alta") # Telegram + Voip
-        self.leitura_EA_sfb_press_lado_sujo_muito_alto = LeituraModbusBit(self.__clp["SA"], REG_SA["SA_EA_PSA_SFB_PRESSAO_LADO_SUJO_MUITO_ALTO"], descr="[OCO-USN] Pressão Sistema de Filtragem B Lado Sujo Muito Alta") # Telegram + Voip
-        self.leitura_EA_sfb_press_lado_limpo_muito_alto = LeituraModbusBit(self.__clp["SA"], REG_SA["SA_EA_PSA_SFB_PRESSAO_LADO_LIMPO_MUITO_ALTO"], descr="[OCO-USN] Pressão Sistema de Filtragem B Lado Limpo Muito Alta") # Telegram + Voip
+        self.leitura_EA_sfb_press_lado_sujo_alto = LeituraModbusBit(self.__clp["SA"], REG_SA["SA_EA_PSA_SFB_PRESSAO_LADO_SUJO_ALTO"], descr="[OCO-USN] Pressão Sistema de Filtragem B Lado Sujo Alta")
+        self.leitura_EA_sfb_press_lado_limpo_alto = LeituraModbusBit(self.__clp["SA"], REG_SA["SA_EA_PSA_SFB_PRESSAO_LADO_LIMPO_ALTO"], descr="[OCO-USN] Pressão Sistema de Filtragem B Lado Limpo Alta")
+        self.leitura_EA_sfb_press_lado_sujo_muito_alto = LeituraModbusBit(self.__clp["SA"], REG_SA["SA_EA_PSA_SFB_PRESSAO_LADO_SUJO_MUITO_ALTO"], descr="[OCO-USN] Pressão Sistema de Filtragem B Lado Sujo Muito Alta")
+        self.leitura_EA_sfb_press_lado_limpo_muito_alto = LeituraModbusBit(self.__clp["SA"], REG_SA["SA_EA_PSA_SFB_PRESSAO_LADO_LIMPO_MUITO_ALTO"], descr="[OCO-USN] Pressão Sistema de Filtragem B Lado Limpo Muito Alta")
 
-        ## TELEGRAM
+        ## WHATSAPP
         # ENTRADAS DIGITAIS
         self.leitura_ED_sup_tensao_falha = LeituraModbusBit(self.__clp["SA"], REG_SA["SA_ED_PSA_SUPERVISOR_TENSAO_FALHA"], descr="[OCO-USN] Falha Tensão pelo Supervisório")
         self.leitura_ED_sup_tensao_tsa_falha = LeituraModbusBit(self.__clp["SA"], REG_SA["SA_ED_PSA_SUPERVISOR_TENSAO_TSA_FALHA"], descr="[OCO-USN] Falha Tensão Serviço Auxiliar pelo Supervisório")
@@ -395,7 +451,6 @@ class OcorrenciasUsn:
 
         # ENTRADAS ANALÓGICAS
         self.leitura_EA_nv_montante_baixo = LeituraModbusBit(self.__clp["SA"], REG_SA["SA_EA_PSA_NIVEL_MONTANTE_BAIXO"], descr="[OCO-USN] Nível Montante Baixo")
-
         self.leitura_EA_nv_jusante_alto = LeituraModbusBit(self.__clp["SA"], REG_SA["SA_EA_PSA_NIVEL_JUSANTE_ALTO"], descr="[OCO-USN] Nível Jusante Alto")
         self.leitura_EA_nv_jusante_muito_baixo = LeituraModbusBit(self.__clp["SA"], REG_SA["SA_EA_PSA_NIVEL_JUSANTE_MUITO_BAIXO"], descr="[OCO-USN] Nível Jusante Muito Baixo")
         self.leitura_EA_nv_jusante_2_baixo = LeituraModbusBit(self.__clp["SA"], REG_SA["SA_EA_PSA_NIVEL_JUSANTE_2_BAIXO"], descr="[OCO-USN] Nível Jusante 2 Baixo")
@@ -586,14 +641,6 @@ class OcorrenciasUg:
             logger.critical(f"[UG{self.__ug_id}] A temperatura do Mancal Escora Combinado da UG está muito próxima do limite! ({cd[f'tmp_mancal_escora_comb_ug{self.__ug_id}'].valor_limite} C) | Leitura: {cd[f'tmp_mancal_escora_comb_ug{self.__ug_id}'].valor} C")
 
     def leitura_temporizada(self) -> None:
-        """if self.leitura_ED_FreioPastilhaGasta.valor != 0:
-            logger.warning(f"[OCO-UG{self.__ug_id}] O sensor de Freio da UG retornou que a Pastilha está gasta, favor considerar troca.")
-
-        if self.leitura_ED_FreioCmdRemoto.valor == 0 and not d.voip[f"UG{self.__ug_id}_FreioCmdRemoto"]:
-            logger.warning(f"[OCO-UG{self.__ug_id}] O freio da UG saiu do modo remoto, favor analisar a situação.")
-            d.voip[f"UG{self.__ug_id}_FreioCmdRemoto"] = True
-        elif self.leitura_ED_FreioCmdRemoto.valor == 1 and d.voip[f"UG{self.__ug_id}_FreioCmdRemoto"]:
-            d.voip[f"UG{self.__ug_id}_FreioCmdRemoto"] = False"""
         return
 
     def carregar_leituras(self) -> None:
@@ -708,3 +755,222 @@ class OcorrenciasUg:
 
 
         # Leituras de condicionadores essenciais que serão lidos a cada ciclo das UGs
+
+        ## CONDICIONADORES NORMALIZAR
+        # UG1_ED_BYPASS_FALHA_ABRIR -> Whats + Voip
+        # UG1_ED_BYPASS_FALHA_FECHAR -> Whats + Voip
+        # UG1_RV_ALARME_SOBREFREQUENCIA -> Whats
+        # UG1_RV_ALARME_SUBFREQUENCIA -> Whats
+        # UG1_RV_FALHA_1
+        # UG1_ED_PRTVA_BOTAO_BLOQUEIO_86EH
+        # UG1_ED_PRTVA_RELE_BLOQUEIO_86EH
+        # UG1_ED_BROBOLETA_FALHA_ABRIR
+        # UG1_ED_STT_BLOQUEIO_86E
+        # UG1_ED_STT_BLOQUEIO_86H
+        # "UG1_RT_ESTADO_OPERACAO" -> EMERGENCIA = 16
+        # "UG1_RV_ESTADO_OPERACAO" -> EMERGENCIA = 16
+
+
+        ## CONDICIONADORES INDISPONIBILIZAR
+        # UG1_ED_RV_FALHA_AO_FECHAR_DISTRIBUIDOR -> Whats + Voip
+        # UG1_RV_FALHA_1_GIRANDO_SEM_REG_GIRO_INDEV -> Whats
+        # UG1_RT_ALARMES_1_SOBRETENSAO -> Whats
+        # UG1_RT_ALARMES_1_SUBTENSAO -> Whats
+        # UG1_RT_ALARMES_1_SOBREFREQUENCIA -> Whats
+        # UG1_RT_ALARMES_1_SUBFREQUENCIA -> Whats
+        # UG1_RT_ALARMES_1_LIMITE_SUP_POT_REATICA -> Whats
+        # UG1_RT_ALARMES_1_LIMITE_INF_POT_REATIAVA -> Whats
+        # UG1_RT_ALARMES_1_LIMITE_SUP_FATOR_POTENCIA -> Whats
+        # UG1_RT_ALARMES_1_LIMITE_INF_FATOR_POTENCIA -> Whats
+        # UG1_RT_ALARMES_1_VARIACAO_TENSAO -> Whats
+        # UG1_RT_ALARMES_1_POTENCIA_ATIVA_REVERSA -> Whats
+        # UG1_RT_ALARMES_1_SOBRECORRENTE_TERMINAL -> Whats
+        # UG1_RT_ALARMES_1_LIMITE_SUP_CORRENTE_EXCITACAO -> Whats
+        # UG1_RT_ALARMES_1_LIMITE_INF_CORRENTE_EXCITACAO -> Whats
+        # UG1_RT_ALARMES_1_TEMP_MUITO_ALTA_ROTOR -> Whats
+        # UG1_RT_ALARMES_1_PRES_TENS_TERM_AUSEN_CORR_EXCI -> Whats
+        # UG1_RT_ALARMES_1_PRES_CORR_EXCI_AUSEN_TENS_TERM -> Whats
+        # UG1_RT_ALARMES_2_FALHA_CONTROLE_CORRENTE_EXCI -> Whats
+        # UG1_RT_ALARMES_2_FALHA_CONTROLE_TENSAO_TERM -> Whats
+        # UG1_ED_PRTVA_UHRV_OLEO_NIVEL_MUITO_BAIXO -> Whats
+        # UG1_ED_PRTVA_UHRV_FILTRO_OLEO_SUJO -> Whats
+        # UG1_ED_PRTVA_UHRV_PRESSAO_CRITICA -> Whats
+        # UG1_ED_PRTVA_UHLM_OLEO_NIVEL_MUITO_ALTO -> Whats
+        # UG1_ED_PRTVA_UHLM_OLEO_NIVEL_MUITO_BAIXO -> Whats
+        # UG1_ED_PRTVA_UHLM_PRESSAO_LINHA_LUBRIFICACAO -> Whats
+        # UG1_ED_PRTVA_UHLM_FILTRO_OLEO_SUJO -> Whats
+        # UG1_ED_PRTVA_UHLM_FLUXO_TROCADOR_CALOR -> Whats
+        # UG1_ED_PRTVA_QBAG_ESCOVA_POLO_POSITIVO_DESGASTADA -> Whats
+        # UG1_ED_PRTVA_QBAG_ESCOVA_POLO_NEGATICO_DESGASTADA -> Whats
+        # UG1_ED_PRTVA_PSA_POCO_DRENAGEM_NIVEL_MUITO_ALTO -> Whats
+        # UG1_EA_TRISTORES_TEMP_MUITO_ALTA -> Whats
+        # UG1_EA_CROWBAR_TEMP_MUITO_ALTA -> Whats
+        # UG1_EA_TRAFO_EXCITACAO_MUITO_ALTA -> Whats
+        # UG1_EA_UHRV_TEMP_OLEO_MUITO_ALTA -> Whats
+        # UG1_EA_GERADOR_FASE_A_TEMP_MUITO_ALTA -> Whats
+        # UG1_EA_GERADOR_FASE_B_TEMP_MUITO_ALTA -> Whats
+        # UG1_EA_GERADOR_FASE_C_TEMP_MUITO_ALTA -> Whats
+        # UG1_EA_GERADOR_NUCLEO_1_TEMP_MUITO_ALTA -> Whats
+        # UG1_EA_GERADOR_NUCLEO_2_MUITO_ALTA -> Whats
+        # UG1_EA_GERADOR_NUCLEO_3_TEMP_MUITO_ALTA -> Whats
+        # UG1_EA_MANCAL_GUIA_CASQUILHO_MUITO_ALTA -> Whats
+        # UG1_EA_MANCAL_COMBINADO_CASQUILHO_MUITO_ALTA -> Whats
+        # UG1_EA_MANCAL_COMBINADO_ESCORA_MUITO_ALTA -> Whats
+        # UG1_EA_UHRV_PRESSAO_OLEO_FALHA_LEITURA -> Whats
+        # UG1_EA_UHRV_PRESSAO_OLEO_MUITO_ALTO -> Whats
+        # UG1_EA_UHRV_PRESSAO_OLEO_ALTO -> Whats
+        # UG1_ED_CONTROLE_TRIP_DIFERENCIAL_GRADE -> Whats
+        # UG1_ED_RESISTENCIA_AQUEC_GERADOR_FALHA_DESLIGAR -> Whats
+        # UG1_ED_UHRV_FALHA_AO_DESLIGAR -> Whats
+        # UG1_ED_UHLM_BOMBA_1_FALHA_LIGAR -> Whats
+        # UG1_ED_UHLM_BOMBA_1_FALHA_DESLIGAR -> Whats
+        # UG1_ED_UHLM_FALHA_PRESSOSTATO -> Whats
+        # UG1_ED_RV_FALHA_AO_PARTIR -> Whats
+        # UG1_ED_RV_FALHA_AO_DESABILITAR -> Whats
+        # UG1_ED_RV_FALHA_AO_PARAR_MAQUINA -> Whats
+        # UG1_ED_RT_FALHA_AO_PARTIR -> Whats
+        # UG1_ED_RT_FALHA_AO_DESABILITAR -> Whats
+        # UG1_ED_BORBOLETA_FALHA_FECHAR -> Whats
+        # UG1_ED_BORBOLETA_DISCREPANCIA_SENSORES -> Whats
+        # UG1_ED_BYPASS_DISCREPANCIA_SENSORES -> Whats
+        # UG1_RT_ED_CROWBAR_INATIVO
+        # UG1_RV_FALHA_1_SOBREFREQ_INSTANT
+        # UG1_RV_FALHA_1_SOBREFREQ_TEMPOR
+        # UG1_RV_FALHA_1_SUBFREQ_TEMPORIZADA
+        # UG1_RV_FALHA_1_LEIT_POS_DISTRIBUIDOR
+        # UG1_RV_FALHA_1_LEIT_POTENCIA_ATIVA
+        # UG1_RV_FALHA_1_LEIT_REFERENCIA_POTENCIA
+        # UG1_RV_FALHA_1_NV_MONTANTE_MUITO_BAIXO
+        # UG1_RV_FALHA_1_CONTROLE_POS_DISTRIBUIDOR
+        # UG1_RV_FALHA_1_RUIDO_MED_VELOC_PRINCIPAL
+        # UG1_RV_FALHA_1_RUIDO_MED_VELOC_RETAGUARDA
+        # UG1_RV_FALHA_2_PERDA_MED_VELOC_RETAGUARDA
+        # UG1_RV_FALHA_2_TEMPO_EXCESSIVO_PARTIDA
+        # UG1_RV_FALHA_2_TEMPO_EXCESSIVO_PARADA
+        # UG1_RV_FALHA_2_DIF_MED_VELO_PRINCIPAL_RETAGUARDA
+        # UG1_RV_FALHA_1_PERDA_MED_VELOC_PRINCIPAL
+        # UG1_RT_ALARMES_2_CROWBAR_ATUADO_REGUL_HABIL
+        # UG1_RT_ALARMES_2_FALHA_HABIL_DRIVE_EXCI
+        # UG1_RT_ALARMES_2_FALHA_FECHAR_CONTATOR_CAMPO
+        # UG1_RT_ALARMES_2_FALHA_CORR_EXCI_PRE_EXCI_ATIVA 
+        # UG1_RT_ALARMES_2_PERDA_MEDICAO_POTENCIA_REATIVA 
+        # UG1_RT_ALARMES_2_PERDA_MEDICAO_TENSAO_TERMINAL
+        # UG1_RT_ALARMES_2_PERDA_MEDICAO_CORRENTE_EXCI
+        # UG1_RT_ALARMES_2_RUIDO_INSTRUMEN_REATIVO
+        # UG1_RT_ALARMES_2_RUIDO_INSTRUMEN_TENSAO
+        # UG1_RT_ALARMES_2_RUIDO_INSTRUMEN_EXCI_PRINCI
+        # UG1_RT_ALARMES_2_RUIDO_INSTRUMEN_EXCI_RETAG
+        # UG1_RT_FALHAS_1_SOBRETENSAO
+        # UG1_RT_FALHAS_1_SUBTENSAO
+        # UG1_RT_FALHAS_1_SOBREFREQUENCIA
+        # UG1_RT_FALHAS_1_SUBFREQUENCIA
+        # UG1_RT_FALHAS_1_LIMITE_SUP_POT_REATIVA
+        # UG1_RT_FALHAS_1_LIMITE_INF_POT_REATIVA
+        # UG1_RT_FALHAS_1_LIMITE_SUP_FATOR_POT
+        # UG1_RT_FALHAS_1_LIMITE_INF_FATOR_POT
+        # UG1_RT_FALHAS_1_SOBRETENSAO_INST
+        # UG1_RT_FALHAS_1_VARIACAO_TENSAO
+        # UG1_RT_FALHAS_1_POT_ATIVA_REVERSA
+        # UG1_RT_FALHAS_1_SOBRECORRENTE_TERMINAL
+        # UG1_RT_FALHAS_1_LIMITE_SUP_CORRENTE_EXCITACAO
+        # UG1_RT_FALHAS_1_LIMITE_INF_CORRENTE_EXCITACAO
+        # UG1_RT_FALHAS_1_LIMITE_SUP_TENSAO_EXCITACAO
+        # UG1_RT_FALHAS_1_LIMITE_INF_TENSAO_EXCITACAO
+        # UG1_RT_FALHAS_2_TEMP_MUITO_ALTA_ROTOR
+        # UG1_RT_FALHAS_2_PRES_TENS_TERM_AUSEN_CORR_EXCI
+        # UG1_RT_FALHAS_2_PRES_CORR_EXCI_AUSEN_TENS_TERM
+        # UG1_RT_FALHAS_2_CONTROLE_CORR_EXCI
+        # UG1_RT_FALHAS_2_TENSAO_TERMINAL
+        # UG1_RT_FALHAS_2_CROWBAR_ATUADO_REGULADOR_HABI
+        # UG1_RT_FALHAS_2_HABI_DRIVE_EXCITACAO
+        # UG1_RT_FALHAS_2_FECHAR_CONTATOR_CAMPO
+        # UG1_RT_FALHAS_2_CORR_EXCITA_PRE_EXCXITA_ATIVA
+        # UG1_RT_FALHAS_2_EXCESSIVO_PRE_EXCITACAO
+        # UG1_RT_FALHAS_2_EXCESSIVO_PARADA
+        # UG1_RT_FALHAS_2_EXCESSIVO_PARTIDA
+        # UG1_RT_FALHAS_2_BLOQ_EXTERNO
+        # UG1_RT_FALHAS_3_PERDA_MED_POT_REATIVA
+        # UG1_RT_FALHAS_3_PERDA_MED_TENSAO_TERM
+        # UG1_RT_FALHAS_3_PERDA_MED_CORR_EXCI_PRINCI
+        # UG1_RT_FALHAS_3_PERDA_MED_CORR_EXCI_RETAG
+        # UG1_RT_FALHAS_3_RUIDO_INSTRUM_REATIVO
+        # UG1_RT_FALHAS_3_RUIDO_INSTRUM_TENSAO
+        # UG1_RT_FALHAS_3_RUIDO_INSTRUM_PRINCI
+        # UG1_RT_FALHAS_3_RUIDO_INSTRUM_RETAG
+        # UG1_ED_PRTVA_RELE_PROT_GERADOR_FALHA
+        # UG1_ED_PRTVA_RELE_PROT_GERADOR_TRIP
+        # UG1_ED_PRTVA_RELE_PROT_GERADOR_50BF
+        # UG1_ED_PRTVA_RV_TRIP
+        # UG1_ED_PRTVA_RT_TRIP
+        # UG1_ED_PRTVA_DISJUNTOR_TPS_PROTECAO
+        # UG1_ED_PRTVA_DISJUNTOR_TPS_SINCRO
+        # UG1_ED_PRTVA_UHRV_PRESSAO_FREIO
+        # UG1_ED_PRTVA_PSA_BLOQUEIO_86BTBF
+        # UG1_ED_UHRV_INDISPONIVEL
+        # UG1_ED_UHRV_FALHA_AO_LIGAR
+        # UG1_ED_UHRV_FALHA_AO_PRESSURIZAR
+        # UG1_ED_UHRV_FILTRO_OLEO_SUJO
+        # UG1_ED_UHLM_BOMBA_1_INDISPONIVEL
+        # UG1_ED_UHLM_BOMBA_1_FALHA_PRESSURIZAR
+        # UG1_ED_UHLM_FILTRO_SUJO
+        # UG1_ED_STT_RV
+        # UG1_ED_RV_FALHA_AO_HABILITAR
+        # UG1_ED_RT_FALHA_AO_HABILITAR
+        # UG1_ED_STT_BLOQUEIO_86M
+
+
+        ## WHATSAPP + VOIP
+        # UG1_CD_CMD_UHRV_MODO_MANUTENCAO
+        # UG1_CD_CMD_UHLM_MODO_MANUTENCAO
+        # UG1_EA_TRISTORES_TEMP_FALHA_LEITURA
+        # UG1_EA_CROWBAR_TEMP_FALHA_LEITURA
+        # UG1_EA_TRAFO_EXCITACAO_FALHA_LEITURA
+        # UG1_EA_UHRV_TEMP_OLEO_FALHA_LEITURA
+        # UG1_EA_GERADOR_FASE_A_TEMP_FALHA_LEITURA
+        # UG1_EA_GERADOR_FASE_B_TEMP_FALHA_LEITURA
+        # UG1_EA_GERADOR_FASE_C_TEMP_FALHA_LEITURA
+        # UG1_EA_GERADOR_NUCLEO_1_TEMP_FALHA_LEITURA
+        # UG1_EA_GERADOR_NUCLEO_2_FALHA_LEITURA
+        # UG1_EA_GERADOR_NUCLEO_3_TEMP_FALHA_LEITURA
+        # UG1_EA_MANCAL_GUIA_CASQUILHO_FALHA_LEITURA
+        # UG1_EA_MANCAL_COMBINADO_CASQUILHO_FALHA_LEITURA 
+        # UG1_EA_MANCAL_COMBINADO_ESCORA_FALHA_LEITURA
+        # UG1_ED_RESISTENCIA_AQUEC_GERADOR_FALHA_LIGAR
+
+
+        ## WHATSAPP
+        # UG1_RT_ED_SELEC_MODO_CONTROLE_ISOLADO
+        # UG1_RT_SD_RELE_ALARME
+        # UG1_ED_PRTVA_RV_ALARME
+        # UG1_ED_PRTVA_RV_POTENCIA_NULA
+        # UG1_ED_PRTVA_RT_ALARME
+        # UG1_ED_PRTVA_DISPOSITIVO_PROTECAO_SURTO
+        # UG1_ED_PRTVA_UHRV_BOMBA_DEFEITO
+        # UG1_ED_PRTVA_UHLM_BOMBA_DEFEITO
+        # UG1_ED_PRTVA_RESISTENCIA_AQUEC_GERADOR_DEFEITO
+        # UG1_EA_TRISTORES_TEMP_ALTA
+        # UG1_EA_CROWBAR_TEMP_ALTA
+        # UG1_EA_TRAFO_EXCITACAO_ALTA
+        # UG1_EA_UHRV_TEMP_OLEO_ALTA
+        # UG1_EA_GERADOR_FASE_A_TEMP_ALTA
+        # UG1_EA_GERADOR_FASE_B_TEMP_ALTA
+        # UG1_EA_GERADOR_FASE_C_TEMP_ALTA
+        # UG1_EA_GERADOR_NUCLEO_1_TEMP_ALTA
+        # UG1_EA_GERADOR_NUCLEO_2_ALTA
+        # UG1_EA_GERADOR_NUCLEO_3_TEMP_ALTA
+        # UG1_EA_MANCAL_GUIA_CASQUILHO_ALTA
+        # UG1_EA_MANCAL_COMBINADO_CASQUILHO_ALTA
+        # UG1_EA_MANCAL_COMBINADO_ESCORA_ALTA
+        # UG1_EA_SINAL_NIVEL_JUSANTE_FALHA_LEITURA
+        # UG1_EA_SINAL_NIVEL_JUSANTE_MUITO_ALTO
+        # UG1_EA_SINAL_NIVEL_JUSANTE_ALTO
+        # UG1_EA_UHRV_PRESSAO_OLEO_BAIXA
+        # UG1_EA_SINAL_NIVEL_JUSANTE_BAIXA
+        # UG1_EA_UHRV_PRESSAO_OLEO_MUITO_BAIXA
+        # UG1_EA_SINAL_NIVEL_JUSANTE_MUITO_BAIXA
+        # UG1_ED_CONTROLE_ALARME_DIFERENCIAL_GRADE
+        # UG1_ED_RESISTENCIA_AQUEC_GERADOR_INDISPONIVEL
+        # UG1_ED_UHLM_UNIDADE_MANUTENCAO
+        # UG1_ED_RV_MODO_MANUTENCAO
+        # "UG1_RV_ESTADO_OPERACAO" -> CONTROLE MANUAL DISTRIBUIDOR = 14
+        # "UG1_RV_ESTADO_OPERACAO" -> CONTROLE MANUAL ROTOR = 15

@@ -14,14 +14,39 @@ class ParametrosUsina(models.Model):
 
     # Servidores
     clp_online = models.IntegerField(default=1)
-    clp_ug1_ip = models.CharField(max_length=15, default="192.168.10.110")
-    clp_ug1_porta = models.IntegerField(default=502)
-    clp_ug2_ip = models.CharField(max_length=15, default="192.168.10.120")
-    clp_ug2_porta = models.IntegerField(default=502)
+
     clp_sa_ip = models.CharField(max_length=15, default="192.168.10.109")
     clp_sa_porta = models.IntegerField(default=502)
+
+    rele_sa_ip = models.IntegerField(default="192.168.10.32")
+
+    clp_ug1_ip = models.CharField(max_length=15, default="192.168.10.110")
+    clp_ug1_porta = models.IntegerField(default=502)
+
+    rele_ug1_ip = models.CharField(max_length=15, default="192.168.10.111")
+    rele_ug1_porta = models.IntegerField(default=502)
+
+    rv_ug1_ip = models.IntegerField(max_lenght= 15, default="192.168.10.112")
+    rv_ug1_porta = models.IntegerField(default=502)
+
+    rt_ug1_ip = models.IntegerField(max_lenght= 15, default="192.168.10.112")
+    rt_ug1_porta = models.IntegerField(default=502)
+
+    clp_ug2_ip = models.CharField(max_length=15, default="192.168.10.120")
+    clp_ug2_porta = models.IntegerField(default=502)
+
+    rele_ug2_ip = models.CharField(max_length=15, default="192.168.10.121")
+    rele_ug2_porta = models.IntegerField(default=502)
+
+    rv_ug2_ip = models.IntegerField(max_lenght= 15, default="192.168.10.122")
+    rv_ug2_porta = models.IntegerField(default=502)
+
+    rt_ug2_ip = models.IntegerField(max_lenght= 15, default="192.168.10.122")
+    rt_ug2_porta = models.IntegerField(default=502)
+
     clp_moa_ip = models.CharField(max_length=15, default="0.0.0.0")
     clp_moa_porta = models.IntegerField(default=502)
+
 
     # Nível
     nv_alvo = models.DecimalField(max_digits=10, decimal_places=3, default=820.90)
