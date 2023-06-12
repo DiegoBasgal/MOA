@@ -219,83 +219,83 @@ class OcorrenciasUsn:
 
 
         # WHATSAPP + VOIP
-        if self.leitura_ED_disj_gmg_trip.valor and not d.voip["SA_ED_PSA_DISJ_GMG_TRIP"]:
+        if self.leitura_ED_disj_gmg_trip.valor and not d.voip["SA_ED_PSA_DISJ_GMG_TRIP"][0]:
             logger.warning("[OCO-USN] Foi identificado um sinal de Trip do Grupo Motor Gerador, favor verificar.")
-            d.voip["SA_ED_PSA_DISJ_GMG_TRIP"] = True
-        elif not self.leitura_ED_disj_gmg_trip.valor and d.voip["SA_ED_PSA_DISJ_GMG_TRIP"]:
-            d.voip["SA_ED_PSA_DISJ_GMG_TRIP"] = False
+            d.voip["SA_ED_PSA_DISJ_GMG_TRIP"][0] = True
+        elif not self.leitura_ED_disj_gmg_trip.valor and d.voip["SA_ED_PSA_DISJ_GMG_TRIP"][0]:
+            d.voip["SA_ED_PSA_DISJ_GMG_TRIP"][0] = False
 
-        if self.leitura_ED_dps_gmg_falha.valor and not d.voip["SA_ED_PSA_DPS_GMG"]:
+        if self.leitura_ED_dps_gmg_falha.valor and not d.voip["SA_ED_PSA_DPS_GMG"][0]:
             logger.warning("[OCO-USN] Houve uma falha com o Grupo Motor Gerador, favor verificar.")
-            d.voip["SA_ED_PSA_DPS_GMG"] = True
-        elif not self.leitura_ED_dps_gmg_falha.valor and d.voip["SA_ED_PSA_DPS_GMG"]:
-            d.voip["SA_ED_PSA_DPS_GMG"] = False
+            d.voip["SA_ED_PSA_DPS_GMG"][0] = True
+        elif not self.leitura_ED_dps_gmg_falha.valor and d.voip["SA_ED_PSA_DPS_GMG"][0]:
+            d.voip["SA_ED_PSA_DPS_GMG"][0] = False
 
-        if self.leitura_ED_conv_fibra_falha.valor and not d.voip["SA_ED_PSA_CONVERSOR_FIBRA_FALHA"]:
+        if self.leitura_ED_conv_fibra_falha.valor and not d.voip["SA_ED_PSA_CONVERSOR_FIBRA_FALHA"][0]:
             logger.warning("[OCO-USN] Houve uma falha com o Conversor de Fibra, favor verificar.")
-            d.voip["SA_ED_PSA_CONVERSOR_FIBRA_FALHA"] = True
-        elif not self.leitura_ED_conv_fibra_falha.valor and d.voip["SA_ED_PSA_CONVERSOR_FIBRA_FALHA"]:
-            d.voip["SA_ED_PSA_CONVERSOR_FIBRA_FALHA"] = False
+            d.voip["SA_ED_PSA_CONVERSOR_FIBRA_FALHA"][0] = True
+        elif not self.leitura_ED_conv_fibra_falha.valor and d.voip["SA_ED_PSA_CONVERSOR_FIBRA_FALHA"][0]:
+            d.voip["SA_ED_PSA_CONVERSOR_FIBRA_FALHA"][0] = False
 
-        if self.leitura_ED_carreg_baterias_falha.valor and not d.voip["SA_ED_PSA_CARREGADOR_BATERIAS_FALHA"]:
+        if self.leitura_ED_carreg_baterias_falha.valor and not d.voip["SA_ED_PSA_CARREGADOR_BATERIAS_FALHA"][0]:
             logger.warning("[OCO-USN] Houve uma falha com o Carregador de Baterias, favor verificar.")
-            d.voip["SA_ED_PSA_CARREGADOR_BATERIAS_FALHA"] = True
-        elif not self.leitura_ED_carreg_baterias_falha.valor and d.voip["SA_ED_PSA_CARREGADOR_BATERIAS_FALHA"]:
-            d.voip["SA_ED_PSA_CARREGADOR_BATERIAS_FALHA"] = False
+            d.voip["SA_ED_PSA_CARREGADOR_BATERIAS_FALHA"][0] = True
+        elif not self.leitura_ED_carreg_baterias_falha.valor and d.voip["SA_ED_PSA_CARREGADOR_BATERIAS_FALHA"][0]:
+            d.voip["SA_ED_PSA_CARREGADOR_BATERIAS_FALHA"][0] = False
 
-        if self.leitura_EA_nv_montante_muito_baixo.valor and not d.voip["SA_EA_PSA_NIVEL_MONTANTE_MUITO_BAIXO"]:
+        if self.leitura_EA_nv_montante_muito_baixo.valor and not d.voip["SA_EA_PSA_NIVEL_MONTANTE_MUITO_BAIXO"][0]:
             logger.warning("[OCO-USN] Foi identificado que o Nível Montante está Muito Baixo, favor verificar.")
-            d.voip["SA_EA_PSA_NIVEL_MONTANTE_MUITO_BAIXO"] = True
-        elif not self.leitura_EA_nv_montante_muito_baixo.valor and d.voip["SA_EA_PSA_NIVEL_MONTANTE_MUITO_BAIXO"]:
-            d.voip["SA_EA_PSA_NIVEL_MONTANTE_MUITO_BAIXO"] = False
+            d.voip["SA_EA_PSA_NIVEL_MONTANTE_MUITO_BAIXO"][0] = True
+        elif not self.leitura_EA_nv_montante_muito_baixo.valor and d.voip["SA_EA_PSA_NIVEL_MONTANTE_MUITO_BAIXO"][0]:
+            d.voip["SA_EA_PSA_NIVEL_MONTANTE_MUITO_BAIXO"][0] = False
 
-        if self.leitura_EA_sfa_press_lado_sujo_alto.valor and not d.voip["SA_EA_PSA_SFA_PRESSAO_LADO_SUJO_ALTO"]:
+        if self.leitura_EA_sfa_press_lado_sujo_alto.valor and not d.voip["SA_EA_PSA_SFA_PRESSAO_LADO_SUJO_ALTO"][0]:
             logger.warning("[OCO-USN] Foi identificado que a pressão do lado sujo do Sistema de Filtragem A está alto, favor verificar.")
-            d.voip["SA_EA_PSA_SFA_PRESSAO_LADO_SUJO_ALTO"] = True
-        elif not self.leitura_EA_sfa_press_lado_sujo_alto.valor and d.voip["SA_EA_PSA_SFA_PRESSAO_LADO_SUJO_ALTO"]:
-            d.voip["SA_EA_PSA_SFA_PRESSAO_LADO_SUJO_ALTO"] = False
+            d.voip["SA_EA_PSA_SFA_PRESSAO_LADO_SUJO_ALTO"][0] = True
+        elif not self.leitura_EA_sfa_press_lado_sujo_alto.valor and d.voip["SA_EA_PSA_SFA_PRESSAO_LADO_SUJO_ALTO"][0]:
+            d.voip["SA_EA_PSA_SFA_PRESSAO_LADO_SUJO_ALTO"][0] = False
 
-        if self.leitura_EA_sfa_press_lado_limpo_alto.valor and not d.voip["SA_EA_PSA_SFA_PRESSAO_LADO_LIMPO_ALTO"]:
+        if self.leitura_EA_sfa_press_lado_limpo_alto.valor and not d.voip["SA_EA_PSA_SFA_PRESSAO_LADO_LIMPO_ALTO"][0]:
             logger.warning("[OCO-USN] Foi identificado que a pressão do lado limpo do Sistema de Filtragem A está alto, favor verificar.")
-            d.voip["SA_EA_PSA_SFA_PRESSAO_LADO_LIMPO_ALTO"] = True
-        elif not self.leitura_EA_sfa_press_lado_limpo_alto.valor and d.voip["SA_EA_PSA_SFA_PRESSAO_LADO_LIMPO_ALTO"]:
-            d.voip["SA_EA_PSA_SFA_PRESSAO_LADO_LIMPO_ALTO"] = False
+            d.voip["SA_EA_PSA_SFA_PRESSAO_LADO_LIMPO_ALTO"][0] = True
+        elif not self.leitura_EA_sfa_press_lado_limpo_alto.valor and d.voip["SA_EA_PSA_SFA_PRESSAO_LADO_LIMPO_ALTO"][0]:
+            d.voip["SA_EA_PSA_SFA_PRESSAO_LADO_LIMPO_ALTO"][0] = False
 
-        if self.leitura_EA_sfa_press_lado_sujo_muito_alto.valor and not d.voip["SA_EA_PSA_SFA_PRESSAO_LADO_SUJO_MUITO_ALTO"]:
+        if self.leitura_EA_sfa_press_lado_sujo_muito_alto.valor and not d.voip["SA_EA_PSA_SFA_PRESSAO_LADO_SUJO_MUITO_ALTO"][0]:
             logger.warning("[OCO-USN] Foi identificado que a pressão do lado sujo do Sistema de Filtragem A está muito alto, favor verificar.")
-            d.voip["SA_EA_PSA_SFA_PRESSAO_LADO_SUJO_MUITO_ALTO"] = True
-        elif not self.leitura_EA_sfa_press_lado_sujo_muito_alto.valor and d.voip["SA_EA_PSA_SFA_PRESSAO_LADO_SUJO_MUITO_ALTO"]:
-            d.voip["SA_EA_PSA_SFA_PRESSAO_LADO_SUJO_MUITO_ALTO"] = False
+            d.voip["SA_EA_PSA_SFA_PRESSAO_LADO_SUJO_MUITO_ALTO"][0] = True
+        elif not self.leitura_EA_sfa_press_lado_sujo_muito_alto.valor and d.voip["SA_EA_PSA_SFA_PRESSAO_LADO_SUJO_MUITO_ALTO"][0]:
+            d.voip["SA_EA_PSA_SFA_PRESSAO_LADO_SUJO_MUITO_ALTO"][0] = False
 
-        if self.leitura_EA_sfa_press_lado_limpo_muito_alto.valor and not d.voip["SA_EA_PSA_SFA_PRESSAO_LADO_LIMPO_ALTO_MUITO_ALTO"]:
+        if self.leitura_EA_sfa_press_lado_limpo_muito_alto.valor and not d.voip["SA_EA_PSA_SFA_PRESSAO_LADO_LIMPO_ALTO_MUITO_ALTO"][0]:
             logger.warning("[OCO-USN] Foi identificado que a pressão do lado limpo do Sistema de Filtragem A está muito alto, favor verificar.")
-            d.voip["SA_EA_PSA_SFA_PRESSAO_LADO_LIMPO_ALTO_MUITO_ALTO"] = True
-        elif not self.leitura_EA_sfa_press_lado_limpo_muito_alto.valor and d.voip["SA_EA_PSA_SFA_PRESSAO_LADO_LIMPO_ALTO_MUITO_ALTO"]:
-            d.voip["SA_EA_PSA_SFA_PRESSAO_LADO_LIMPO_ALTO_MUITO_ALTO"] = False
+            d.voip["SA_EA_PSA_SFA_PRESSAO_LADO_LIMPO_ALTO_MUITO_ALTO"][0] = True
+        elif not self.leitura_EA_sfa_press_lado_limpo_muito_alto.valor and d.voip["SA_EA_PSA_SFA_PRESSAO_LADO_LIMPO_ALTO_MUITO_ALTO"][0]:
+            d.voip["SA_EA_PSA_SFA_PRESSAO_LADO_LIMPO_ALTO_MUITO_ALTO"][0] = False
 
-        if self.leitura_EA_sfb_press_lado_sujo_alto.valor and not d.voip["SA_EA_PSA_SFB_PRESSAO_LADO_SUJO_ALTO"]:
+        if self.leitura_EA_sfb_press_lado_sujo_alto.valor and not d.voip["SA_EA_PSA_SFB_PRESSAO_LADO_SUJO_ALTO"][0]:
             logger.warning("[OCO-USN] Foi identificado que a pressão do lado sujo do Sistema de Filtragem B está alto, favor verificar.")
-            d.voip["SA_EA_PSA_SFB_PRESSAO_LADO_SUJO_ALTO"] = True
-        elif not self.leitura_EA_sfb_press_lado_sujo_alto.valor and d.voip["SA_EA_PSA_SFB_PRESSAO_LADO_SUJO_ALTO"]:
-            d.voip["SA_EA_PSA_SFB_PRESSAO_LADO_SUJO_ALTO"] = False
+            d.voip["SA_EA_PSA_SFB_PRESSAO_LADO_SUJO_ALTO"][0] = True
+        elif not self.leitura_EA_sfb_press_lado_sujo_alto.valor and d.voip["SA_EA_PSA_SFB_PRESSAO_LADO_SUJO_ALTO"][0]:
+            d.voip["SA_EA_PSA_SFB_PRESSAO_LADO_SUJO_ALTO"][0] = False
 
-        if self.leitura_EA_sfb_press_lado_limpo_alto.valor and not d.voip["SA_EA_PSA_SFB_PRESSAO_LADO_LIMPO_ALTO"]:
+        if self.leitura_EA_sfb_press_lado_limpo_alto.valor and not d.voip["SA_EA_PSA_SFB_PRESSAO_LADO_LIMPO_ALTO"][0]:
             logger.warning("[OCO-USN] Foi identificado que a pressão do lado limpo do Sistema de Filtragem B está alto, favor verificar.")
-            d.voip["SA_EA_PSA_SFB_PRESSAO_LADO_LIMPO_ALTO"] = True
-        elif not self.leitura_EA_sfb_press_lado_limpo_alto.valor and d.voip["SA_EA_PSA_SFB_PRESSAO_LADO_LIMPO_ALTO"]:
-            d.voip["SA_EA_PSA_SFB_PRESSAO_LADO_LIMPO_ALTO"] = False
+            d.voip["SA_EA_PSA_SFB_PRESSAO_LADO_LIMPO_ALTO"][0] = True
+        elif not self.leitura_EA_sfb_press_lado_limpo_alto.valor and d.voip["SA_EA_PSA_SFB_PRESSAO_LADO_LIMPO_ALTO"][0]:
+            d.voip["SA_EA_PSA_SFB_PRESSAO_LADO_LIMPO_ALTO"][0] = False
 
-        if self.leitura_EA_sfb_press_lado_sujo_muito_alto.valor and not d.voip["SA_EA_PSA_SFB_PRESSAO_LADO_SUJO_MUITO_ALTO"]:
+        if self.leitura_EA_sfb_press_lado_sujo_muito_alto.valor and not d.voip["SA_EA_PSA_SFB_PRESSAO_LADO_SUJO_MUITO_ALTO"][0]:
             logger.warning("[OCO-USN] Foi identificado que a pressão do lado sujo do Sistema de Filtragem B está muito alto, favor verificar.")
-            d.voip["SA_EA_PSA_SFB_PRESSAO_LADO_SUJO_MUITO_ALTO"] = True
-        elif not self.leitura_EA_sfb_press_lado_sujo_muito_alto.valor and d.voip["SA_EA_PSA_SFB_PRESSAO_LADO_SUJO_MUITO_ALTO"]:
-            d.voip["SA_EA_PSA_SFB_PRESSAO_LADO_SUJO_MUITO_ALTO"] = False
+            d.voip["SA_EA_PSA_SFB_PRESSAO_LADO_SUJO_MUITO_ALTO"][0] = True
+        elif not self.leitura_EA_sfb_press_lado_sujo_muito_alto.valor and d.voip["SA_EA_PSA_SFB_PRESSAO_LADO_SUJO_MUITO_ALTO"][0]:
+            d.voip["SA_EA_PSA_SFB_PRESSAO_LADO_SUJO_MUITO_ALTO"][0] = False
 
-        if self.leitura_EA_sfb_press_lado_limpo_muito_alto.valor and not d.voip["SA_EA_PSA_SFB_PRESSAO_LADO_LIMPO_ALTO_MUITO_ALTO"]:
+        if self.leitura_EA_sfb_press_lado_limpo_muito_alto.valor and not d.voip["SA_EA_PSA_SFB_PRESSAO_LADO_LIMPO_ALTO_MUITO_ALTO"][0]:
             logger.warning("[OCO-USN] Foi identificado que a pressão do lado limpo do Sistema de Filtragem B está muito alto, favor verificar.")
-            d.voip["SA_EA_PSA_SFB_PRESSAO_LADO_LIMPO_ALTO_MUITO_ALTO"] = True
-        elif not self.leitura_EA_sfb_press_lado_limpo_muito_alto.valor and d.voip["SA_EA_PSA_SFB_PRESSAO_LADO_LIMPO_ALTO_MUITO_ALTO"]:
-            d.voip["SA_EA_PSA_SFB_PRESSAO_LADO_LIMPO_ALTO_MUITO_ALTO"] = False
+            d.voip["SA_EA_PSA_SFB_PRESSAO_LADO_LIMPO_ALTO_MUITO_ALTO"][0] = True
+        elif not self.leitura_EA_sfb_press_lado_limpo_muito_alto.valor and d.voip["SA_EA_PSA_SFB_PRESSAO_LADO_LIMPO_ALTO_MUITO_ALTO"][0]:
+            d.voip["SA_EA_PSA_SFB_PRESSAO_LADO_LIMPO_ALTO_MUITO_ALTO"][0] = False
 
         return
 
@@ -644,202 +644,399 @@ class OcorrenciasUg:
 
         # WHATSAPP
         if self.leitura_rt_selec_modo_controle_isol.valor:
-            logger.warning(f"[OCO-UG{self.__ug_id}] Houve um erro   ,favor verificar.")
+            logger.warning(f"[OCO-UG{self.__ug_id}] Foi identificado o comando no RT de seleção de modo de controle isolado, favor verificar.")
 
         if self.leitura_alarme_rele.valor:
-            logger.warning(f"[OCO-UG{self.__ug_id}] Houve um erro   ,favor verificar.")
+            logger.warning(f"[OCO-UG{self.__ug_id}] Foi identificado uma leitura de alarme do relé, favor verificar.")
 
         if self.leitura_rv_alarme.valor:
-            logger.warning(f"[OCO-UG{self.__ug_id}] Houve um erro   ,favor verificar.")
+            logger.warning(f"[OCO-UG{self.__ug_id}] Foi identificado uma leitura de alarme do RV, favor verificar.")
 
         if self.leitura_rv_pot_nula.valor:
-            logger.warning(f"[OCO-UG{self.__ug_id}] Houve um erro   ,favor verificar.")
+            logger.warning(f"[OCO-UG{self.__ug_id}] Foi identificado uma leitura de potência nula no RV, favor verificar.")
 
         if self.leitura_rt_alarme.valor:
-            logger.warning(f"[OCO-UG{self.__ug_id}] Houve um erro   ,favor verificar.")
+            logger.warning(f"[OCO-UG{self.__ug_id}] Foi identificado uma leitura de alarme no RT, favor verificar.")
 
         if self.leitura_dispo_prot_surto.valor:
-            logger.warning(f"[OCO-UG{self.__ug_id}] Houve um erro   ,favor verificar.")
+            logger.warning(f"[OCO-UG{self.__ug_id}] Foi identificado uma leitura do dispositivo de proteção de surto, favor verificar.")
 
         if self.leitura_uhrv_bomba_defeito.valor:
-            logger.warning(f"[OCO-UG{self.__ug_id}] Houve um erro   ,favor verificar.")
+            logger.warning(f"[OCO-UG{self.__ug_id}] Foi identificado um defeito na bomba da UHRV, favor verificar.")
 
         if self.leitura_uhlm_bomba_defeito.valor:
-            logger.warning(f"[OCO-UG{self.__ug_id}] Houve um erro   ,favor verificar.")
+            logger.warning(f"[OCO-UG{self.__ug_id}] Foi identificado um defeito na bomba da UHLM, favor verificar.")
 
         if self.leitura_resis_aquec_gerad_defeito.valor:
-            logger.warning(f"[OCO-UG{self.__ug_id}] Houve um erro   ,favor verificar.")
+            logger.warning(f"[OCO-UG{self.__ug_id}] Foi identificado um defeito com a resistência do aquecedor do Gerador, favor verificar.")
 
         if self.leitura_tristores_temp_alta.valor:
-            logger.warning(f"[OCO-UG{self.__ug_id}] Houve um erro   ,favor verificar.")
+            logger.warning(f"[OCO-UG{self.__ug_id}] Foi identificado que a temperatura de Tristores está alta, favor verificar.")
 
         if self.leitura_crowbar_temp_alta.valor:
-            logger.warning(f"[OCO-UG{self.__ug_id}] Houve um erro   ,favor verificar.")
+            logger.warning(f"[OCO-UG{self.__ug_id}] Foi identificado que a temperatura do Crowbar está alta, favor verificar.")
 
         if self.leitura_trafo_exci_temp_alta.valor:
-            logger.warning(f"[OCO-UG{self.__ug_id}] Houve um erro   ,favor verificar.")
+            logger.warning(f"[OCO-UG{self.__ug_id}] Foi identificado que a temperatura do Transformador de Excitação está alta, favor verificar.")
 
         if self.leitura_uhrv_oleo_temp_alta.valor:
-            logger.warning(f"[OCO-UG{self.__ug_id}] Houve um erro   ,favor verificar.")
+            logger.warning(f"[OCO-UG{self.__ug_id}] Foi identificado que a temperatura do Óleo da UHRV está alta, favor verificar.")
 
         if self.leitura_gerad_fase_a_temp_alta.valor:
-            logger.warning(f"[OCO-UG{self.__ug_id}] Houve um erro   ,favor verificar.")
+            logger.warning(f"[OCO-UG{self.__ug_id}] Foi identificado que a temperatura de Fase A do Gerador está alta, favor verificar.")
 
         if self.leitura_gerad_fase_b_temp_alta.valor:
-            logger.warning(f"[OCO-UG{self.__ug_id}] Houve um erro   ,favor verificar.")
+            logger.warning(f"[OCO-UG{self.__ug_id}] Foi identificado que a temperatura de Fase B do Gerador está alta, favor verificar.")
 
         if self.leitura_gerad_fase_c_temp_alta.valor:
-            logger.warning(f"[OCO-UG{self.__ug_id}] Houve um erro   ,favor verificar.")
+            logger.warning(f"[OCO-UG{self.__ug_id}] Foi identificado que a temperatura de Fase C do Gerador está alta, favor verificar.")
 
         if self.leitura_gerad_nucleo_1_temp_alta.valor:
-            logger.warning(f"[OCO-UG{self.__ug_id}] Houve um erro   ,favor verificar.")
+            logger.warning(f"[OCO-UG{self.__ug_id}] Foi identificado que a temperatura do Núcleo 1 do Gerador está alta, favor verificar.")
 
         if self.leitura_gerad_nucleo_2_temp_alta.valor:
-            logger.warning(f"[OCO-UG{self.__ug_id}] Houve um erro   ,favor verificar.")
+            logger.warning(f"[OCO-UG{self.__ug_id}] Foi identificado que a temperatura do Núcleo 2 do Gerador está alta, favor verificar.")
 
         if self.leitura_gerad_nucleo_3_temp_alta.valor:
-            logger.warning(f"[OCO-UG{self.__ug_id}] Houve um erro   ,favor verificar.")
+            logger.warning(f"[OCO-UG{self.__ug_id}] Foi identificado que a temperatura do Núcleo 3 do Gerador está alta, favor verificar.")
 
         if self.leitura_mancal_guia_casq_temp_alta.valor:
-            logger.warning(f"[OCO-UG{self.__ug_id}] Houve um erro   ,favor verificar.")
+            logger.warning(f"[OCO-UG{self.__ug_id}] Foi identificado que a temperatura do Mancal Guia Casquilho está alta, favor verificar.")
 
         if self.leitura_mancal_comb_casq_temp_alta.valor:
-            logger.warning(f"[OCO-UG{self.__ug_id}] Houve um erro   ,favor verificar.")
+            logger.warning(f"[OCO-UG{self.__ug_id}] Foi identificado que a temperatura do Mancal Combinado Casquilho está alta, favor verificar.")
 
         if self.leitura_mancal_comb_esc_temp_alta.valor:
-            logger.warning(f"[OCO-UG{self.__ug_id}] Houve um erro   ,favor verificar.")
+            logger.warning(f"[OCO-UG{self.__ug_id}] Foi identificado que a temperatura do Mancal Combinado Escora está alta, favor verificar.")
 
         if self.leitura_falha_leit_nv_jusante.valor:
-            logger.warning(f"[OCO-UG{self.__ug_id}] Houve um erro   ,favor verificar.")
+            logger.warning(f"[OCO-UG{self.__ug_id}] Foi identificado uma falha na leitura do Nível Jusante, favor verificar.")
 
         if self.leitura_sinal_nv_jusante_muito_alto.valor:
-            logger.warning(f"[OCO-UG{self.__ug_id}] Houve um erro   ,favor verificar.")
+            logger.warning(f"[OCO-UG{self.__ug_id}] Foi identificado que o Nível Jusante está muito alto, favor verificar.")
 
         if self.leitura_sinal_nv_jusante_alto.valor:
-            logger.warning(f"[OCO-UG{self.__ug_id}] Houve um erro   ,favor verificar.")
+            logger.warning(f"[OCO-UG{self.__ug_id}] Foi identificado que o Nível Jusante está alto, favor verificar.")
 
         if self.leitura_uhrv_pressao_oleo_baixa.valor:
-            logger.warning(f"[OCO-UG{self.__ug_id}] Houve um erro   ,favor verificar.")
+            logger.warning(f"[OCO-UG{self.__ug_id}] Foi identificado que a pressão do óleo da UHRV está baixa, favor verificar.")
 
         if self.leitura_sinal_nv_jusante_baixo.valor:
-            logger.warning(f"[OCO-UG{self.__ug_id}] Houve um erro   ,favor verificar.")
+            logger.warning(f"[OCO-UG{self.__ug_id}] Foi identificado que o Nível Jusante está baixo, favor verificar.")
 
         if self.leitura_uhrv_pressao_oleo_muito_baixa.valor:
-            logger.warning(f"[OCO-UG{self.__ug_id}] Houve um erro   ,favor verificar.")
+            logger.warning(f"[OCO-UG{self.__ug_id}] Foi identificado que a pressão do óleo da UHRV está muito baixa, favor verificar.")
 
         if self.leitura_sinal_nv_jusante_muito_baixo.valor:
-            logger.warning(f"[OCO-UG{self.__ug_id}] Houve um erro   ,favor verificar.")
+            logger.warning(f"[OCO-UG{self.__ug_id}] Foi identificado que o Nível Jusante está muito baixo, favor verificar.")
 
         if self.leitura_alarme_contro_dif_grade.valor:
-            logger.warning(f"[OCO-UG{self.__ug_id}] Houve um erro   ,favor verificar.")
+            logger.warning(f"[OCO-UG{self.__ug_id}] Foi identificado uma leitura de alarme do controle de diferencial de grade, favor verificar.")
 
         if self.leitura_resis_aquec_gerad_indisp.valor:
-            logger.warning(f"[OCO-UG{self.__ug_id}] Houve um erro   ,favor verificar.")
+            logger.warning(f"[OCO-UG{self.__ug_id}] Foi identificado que a resistência do aquecedor do gerador está indisponível, favor verificar.")
 
         if self.leitura_uhlm_unidade_manut.valor:
-            logger.warning(f"[OCO-UG{self.__ug_id}] Houve um erro   ,favor verificar.")
+            logger.warning(f"[OCO-UG{self.__ug_id}] Foi identificado que a UHLM entrou em modo de manutenção, favor verificar.")
 
         if self.leitura_rv_modo_manut.valor:
-            logger.warning(f"[OCO-UG{self.__ug_id}] Houve um erro   ,favor verificar.")
+            logger.warning(f"[OCO-UG{self.__ug_id}] Foi identificado que o RV entrou em modo de manutenção, favor verificar.")
 
+        if self.leitura_rv_girando_gir_indev.valor:
+            logger.warning(f"[OCO-UG{self.__ug_id}] Foi identificado que o Rv está girando com giro indevido, favor verificar.")
+
+        if self.leitura_rt_alar_1_sobretensao.valor:
+            logger.warning(f"[OCO-UG{self.__ug_id}] Foi identificado o acionamento do alarme 1 de sobretensão do RT, favor verificar.")
+
+        if self.leitura_rt_alar_1_subtensao.valor:
+            logger.warning(f"[OCO-UG{self.__ug_id}] Foi identificado o acionamento do alarme 1 de subtensão do RT, favor verificar.")
+
+        if self.leitura_rt_alar_1_sobrefrequencia.valor:
+            logger.warning(f"[OCO-UG{self.__ug_id}] Foi identificado o acionamento do alarme 1 de sobrefrequência do RT, favor verificar.")
+
+        if self.leitura_rt_alar_1_subfrequencia.valor:
+            logger.warning(f"[OCO-UG{self.__ug_id}] Foi identificado o acionamento do alarme 1 de subfrequência do RT, favor verificar.")
+
+        if self.leitura_rt_alar_1_lim_sup_pot_reativa.valor:
+            logger.warning(f"[OCO-UG{self.__ug_id}] Foi identificado o acionamento do alarme 1 limite superior de potência reativa do RT, favor verificar.")
+
+        if self.leitura_rt_alar_1_lim_inf_pot_reativa.valor:
+            logger.warning(f"[OCO-UG{self.__ug_id}] Foi identificado o acionamento do alarme 1 limite inferior de potência reativa do RT, favor verificar.")
+
+        if self.leitura_rt_alar_1_lim_sup_fator_pot.valor:
+            logger.warning(f"[OCO-UG{self.__ug_id}] Foi identificado o acionamento do alarme 1 limite superior de fator de potência do RT, favor verificar.")
+
+        if self.leitura_rt_alar_1_lim_inf_fator_pot.valor:
+            logger.warning(f"[OCO-UG{self.__ug_id}] Foi identificado o acionamento do alarme 1 limite inferior de fator de potência do RT, favor verificar.")
+
+        if self.leitura_rt_alar_1_variacao_tensao.valor:
+            logger.warning(f"[OCO-UG{self.__ug_id}] Foi identificado o acionamento do alarme 1 variação de tensao do RT, favor verificar.")
+
+        if self.leitura_rt_alar_1_pot_ativa_reversa.valor:
+            logger.warning(f"[OCO-UG{self.__ug_id}] Foi identificado o acionamento do alarme 1 potência ativa reversa do RT, favor verificar.")
+
+        if self.leitura_rt_alar_1_sobrecorr_term.valor:
+            logger.warning(f"[OCO-UG{self.__ug_id}] Foi identificado o acionamento do alarme 1 sobrecorrente terminal do RT, favor verificar.")
+
+        if self.leitura_rt_alar_1_lim_sup_corr_excitacao.valor:
+            logger.warning(f"[OCO-UG{self.__ug_id}] Foi identificado o acionamento do alarme 1 limite superior corrente de excitação do RT, favor verificar.")
+
+        if self.leitura_rt_alar_1_lim_inf_corr_exci.valor:
+            logger.warning(f"[OCO-UG{self.__ug_id}] Foi identificado o acionamento do alarme 1 limite inferior corrente de excitação do RT, favor verificar.")
+
+        if self.leitura_rt_alar_1_temp_muito_alta_rotor.valor:
+            logger.warning(f"[OCO-UG{self.__ug_id}] Foi identificado o acionamento do alarme 1 temperatura muito alta do rotor do RT, favor verificar.")
+
+        if self.leitura_rt_alar_1_pres_tens_term_aus_corr_exci.valor:
+            logger.warning(f"[OCO-UG{self.__ug_id}] Foi identificado o acionamento do alarme 1 presença de tensão terminal e ausência de corrente de excitação no RT, favor verificar.")
+
+        if self.leitura_rt_alar_1_pres_corr_exci_aus_tens_term.valor:
+            logger.warning(f"[OCO-UG{self.__ug_id}] Foi identificado o acionamento do alarme 1 presença de corrente de excitação e ausenência de tensão terminal no RT, favor verificar.")
+
+        if self.leitura_rt_alar_2_falha_contro_corr_exci.valor:
+            logger.warning(f"[OCO-UG{self.__ug_id}] Foi identificado o acionamento do alarme 2 falha de controle de corrente de excitação do RT, favor verificar.")
+
+        if self.leitura_rt_alar_2_falha_contro_tens_term.valor:
+            logger.warning(f"[OCO-UG{self.__ug_id}] Foi identificado o acionamento do alarme 2 falha de controle de tensão terminal do RT, favor verificar.")
+
+        if self.leitura_uhrv_oleo_nv_muito_baixo.valor:
+            logger.warning(f"[OCO-UG{self.__ug_id}] Foi identificado que o óleo da UHRV está com o nível muito baixo, favor verificar.")
+
+        if self.leitura_uhrv_filtro_oleo_sujo.valor:
+            logger.warning(f"[OCO-UG{self.__ug_id}] Foi identificado que o filtro de óleo da UHRV está sujo, favor verificar.")
+
+        if self.leitura_urhv_press_crit.valor:
+            logger.warning(f"[OCO-UG{self.__ug_id}] Foi identificado que a pressão da UHRV está em nível crítico, favor verificar.")
+
+        if self.leitura_uhrv_oleo_nv_muito_alto.valor:
+            logger.warning(f"[OCO-UG{self.__ug_id}] Foi identificado que o óleo da UHRV está com o nível muito alto, favor verificar.")
+
+        if self.leitura_uhlm_oleo_nv_muito_baixo.valor:
+            logger.warning(f"[OCO-UG{self.__ug_id}] Foi identificado que o óleo da UHLM está com o nível muito baixo, favor verificar.")
+
+        if self.leitura_uhlm_press_linha_lubrifi.valor:
+            logger.warning(f"[OCO-UG{self.__ug_id}] Foi identificado a falta de pressão de lubrificação de linha da UHLM, favor verificar.")
+
+        if self.leitura_uhlm_filtro_oleo_sujo.valor:
+            logger.warning(f"[OCO-UG{self.__ug_id}] Foi identificado que o filtro de óleo da UHLM está sujo, favor verificar.")
+
+        if self.leitura_uhlm_fluxo_troc_calor.valor:
+            logger.warning(f"[OCO-UG{self.__ug_id}] Foi identificado a falta de fluxo do trocador de calor da UHLM, favor verificar.")
+
+        if self.leitura_qbag_escova_polo_pos_desgas.valor:
+            logger.warning(f"[OCO-UG{self.__ug_id}] Foi identificado que a escova do polo positivo QBAG está desgastada, favor verificar.")
+
+        if self.leitura_qbag_escova_polo_neg_desgas.valor:
+            logger.warning(f"[OCO-UG{self.__ug_id}] Foi identificado que a escova do polo negativo QBAG está desgastada, favor verificar.")
+
+        if self.leitura_psa_poco_dren_nv_muito_alto.valor:
+            logger.warning(f"[OCO-UG{self.__ug_id}] Foi identificado que o poço de drenagem está com o nível muito alto, favor verificar.")
+
+        if self.leitura_tristor_temp_muito_alta.valor:
+            logger.warning(f"[OCO-UG{self.__ug_id}] Foi identificado que a temperatura de Tristores está muito alta, favor verificar.")
+
+        if self.leitura_crowbar_temp_muito_alta.valor:
+            logger.warning(f"[OCO-UG{self.__ug_id}] Foi identificado que a temperatura do Crowbar está muito alta, favor verificar.")
+
+        if self.leitura_trafo_exci_temp_muito_alta.valor:
+            logger.warning(f"[OCO-UG{self.__ug_id}] Foi identificado que a temperatura do Transformado de excitação está muito alta, favor verificar.")
+
+        if self.leitura_uhrv_temp_oleo_muito_alta.valor:
+            logger.warning(f"[OCO-UG{self.__ug_id}] Foi identificado que a temperatura do óleo da UHRV está muito alta, favor verificar.")
+
+        if self.leitura_gera_fase_a_temp_muito_alta.valor:
+            logger.warning(f"[OCO-UG{self.__ug_id}] Foi identificado que a temperatura de Fase A do Gerador está muito alta, favor verificar.")
+
+        if self.leitura_gera_fase_b_temp_muito_alta.valor:
+            logger.warning(f"[OCO-UG{self.__ug_id}] Foi identificado que a temperatura de Fase B do Gerador está muito alta, favor verificar.")
+
+        if self.leitura_gera_fase_c_temp_muito_alta.valor:
+            logger.warning(f"[OCO-UG{self.__ug_id}] Foi identificado que a temperatura de Fase C do Gerador está muito alta, favor verificar.")
+
+        if self.leitura_gera_nucleo_1_temp_muito_alta.valor:
+            logger.warning(f"[OCO-UG{self.__ug_id}] Foi identificado que a temperatura do Núcleo 1 do Gerador está muito alta, favor verificar.")
+
+        if self.leitura_gera_nucleo_2_temp_muito_alta.valor:
+            logger.warning(f"[OCO-UG{self.__ug_id}] Foi identificado que a temperatura do Núcleo 2 do Gerador está muito alta, favor verificar.")
+
+        if self.leitura_gera_nucleo_3_temp_muito_alta.valor:
+            logger.warning(f"[OCO-UG{self.__ug_id}] Foi identificado que a temperatura do Núcleo 3 do Gerador está muito alta, favor verificar.")
+
+        if self.leitura_mancal_guia_casq_temp_muito_alta.valor:
+            logger.warning(f"[OCO-UG{self.__ug_id}] Foi identificado que a temperatura do Mancal Guia Casquilho está muito alta, favor verificar.")
+
+        if self.leitura_mancal_comb_casq_temp_muito_alta.valor:
+            logger.warning(f"[OCO-UG{self.__ug_id}] Foi identificado que a temperatura do Mancal Combinado Casquilho está muito alta, favor verificar.")
+
+        if self.leitura_mancal_comb_esc_temp_muito_alta.valor:
+            logger.warning(f"[OCO-UG{self.__ug_id}] Foi identificado que a temperatura do Mancal Combinado Escora está muito alta, favor verificar.")
+
+        if self.leitura_uhrv_press_oleo_falha_leitura.valor:
+            logger.warning(f"[OCO-UG{self.__ug_id}] Foi identificado uma falha na leitura de pressão do óleo da UHRV, favor verificar.")
+
+        if self.leitura_uhrv_press_oleo_muito_alta.valor:
+            logger.warning(f"[OCO-UG{self.__ug_id}] Foi identificado que a pressão do óleo da UHRV está muito alta, favor verificar.")
+
+        if self.leitura_uhrv_press_oleo_alta.valor:
+            logger.warning(f"[OCO-UG{self.__ug_id}] Foi identificado que a pressão do óleo da UHRV está alta, favor verificar.")
+
+        if self.leitura_contro_trip_dif_grade.valor:
+            logger.warning(f"[OCO-UG{self.__ug_id}] Foi identificado um acionamento de Trip do Controle de Diferencial de Grade, favor verificar.")
+
+        if self.leitura_resis_aquec_gera_falha_deslig.valor:
+            logger.warning(f"[OCO-UG{self.__ug_id}] Foi identificado uma falha no desligamento da resistência do aquecedor do gerador, favor verificar.")
+
+        if self.leitura_uhrv_falha_deslig.valor:
+            logger.warning(f"[OCO-UG{self.__ug_id}] Foi identificado uma falha no desligamento da UHRV, favor verificar.")
+
+        if self.leitura_uhlm_bomba_1_falha_ligar.valor:
+            logger.warning(f"[OCO-UG{self.__ug_id}] Foi identificado uma falha ao ligar a Bomba 1 da UHLM, favor verificar.")
+
+        if self.leitura_uhlm_bomba_1_falha_deslig.valor:
+            logger.warning(f"[OCO-UG{self.__ug_id}] Foi identificado uma falha no desligamento da Bomba 1 da UHLM, favor verificar.")
+
+        if self.leitura_ulhm_falha_pressos.valor:
+            logger.warning(f"[OCO-UG{self.__ug_id}] Foi identificado uma falha no pressostato da UHLM, favor verificar.")
+
+        if self.leitura_rv_falha_partir.valor:
+            logger.warning(f"[OCO-UG{self.__ug_id}] Foi identificado uma falha ao partir o RV, favor verificar.")
+
+        if self.leitura_rv_falha_desab.valor:
+            logger.warning(f"[OCO-UG{self.__ug_id}] Foi identificado uma falha ao desabilitar o RV, favor verificar.")
+
+        if self.leitura_rv_falha_parar_maqu.valor:
+            logger.warning(f"[OCO-UG{self.__ug_id}] Foi identificado uma falha ao parar a máquina pelo RV, favor verificar.")
+
+        if self.leitura_rt_falha_partir.valor:
+            logger.warning(f"[OCO-UG{self.__ug_id}] Foi identificado uma falha ao partir a máquina pelo RT, favor verificar.")
+
+        if self.leitura_rt_falha_desab.valor:
+            logger.warning(f"[OCO-UG{self.__ug_id}] Foi identificado uma falha ao desabilitar o RT, favor verificar.")
+
+        if self.leitura_valv_borb_falha_fechar.valor:
+            logger.warning(f"[OCO-UG{self.__ug_id}] Foi identificado uma falha no fechamento da válvula borboleta, favor verificar.")
+
+        if self.leitura_valv_borb_dicrep_senso.valor:
+            logger.warning(f"[OCO-UG{self.__ug_id}] Foi identificado uma discrepância no sensor da válvula borboleta, favor verificar.")
+
+        if self.leitura_vavl_bypass_discrep_senso.valor:
+            logger.warning(f"[OCO-UG{self.__ug_id}] Foi identificado uma discrepância no sensor da válvula bypass, favor verificar.")
 
 
         # WHATSAPP + VOIP
-        if self.leitura_cmd_uhrv_modo_manuten.valor and not d.voip[""]:
-            logger.warning(f"[OCO-UG{self.__ug_id}] Houve um erro   ,favor verificar.")
-            d.voip[""] = True
-        elif not self.leitura_cmd_uhrv_modo_manuten.valor and d.voip[""]:
-            d.voip[""] = False
+        if self.leitura_val_bypass_falha_abrir.valor and not d.voip[f"UG{self.__ug_id}_ED_BYPASS_FALHA_ABRIR"][0]:
+            logger.warning(f"[OCO-UG{self.__ug_id}] Foi identificado uma falha ao abrir a Válvula Bypass, favor verificar.")
+            d.voip[f"UG{self.__ug_id}_ED_BYPASS_FALHA_ABRIR"][0] = True
+        elif not self.leitura_val_bypass_falha_abrir.valor and d.voip[f"UG{self.__ug_id}_ED_BYPASS_FALHA_ABRIR"][0]:
+            d.voip[f"UG{self.__ug_id}_ED_BYPASS_FALHA_ABRIR"][0] = False
 
-        if self.leitura_cmd_uhlm_modo_manuten.valor and not d.voip[""]:
-            logger.warning(f"[OCO-UG{self.__ug_id}] Houve um erro   ,favor verificar.")
-            d.voip[""] = True
-        elif not self.leitura_cmd_uhlm_modo_manuten.valor and d.voip[""]:
-            d.voip[""] = False
+        if self.leitura_val_bypass_falha_fechar.valor and not d.voip[f"UG{self.__ug_id}_ED_BYPASS_FALHA_FECHAR"][0]:
+            logger.warning(f"[OCO-UG{self.__ug_id}] Foi identificado uma falha ao fechar a Válvula Bypass, favor verificar.")
+            d.voip[f"UG{self.__ug_id}_ED_BYPASS_FALHA_FECHAR"][0] = True
+        elif not self.leitura_val_bypass_falha_fechar.valor and d.voip[f"UG{self.__ug_id}_ED_BYPASS_FALHA_FECHAR"][0]:
+            d.voip[f"UG{self.__ug_id}_ED_BYPASS_FALHA_FECHAR"][0] = False
 
-        if self.leitura_falha_leit_temp_tristores.valor and not d.voip[""]:
-            logger.warning(f"[OCO-UG{self.__ug_id}] Houve um erro   ,favor verificar.")
-            d.voip[""] = True
-        elif not self.leitura_falha_leit_temp_tristores.valor and d.voip[""]:
-            d.voip[""] = False
+        if self.leitura_falha_fechar_distrib.valor and not d.voip[f"UG{self.__ug_id}_ED_RV_FALHA_AO_FECHAR_DISTRIBUIDOR"][0]:
+            logger.warning(f"[OCO-UG{self.__ug_id}] Foi identificado uma falha ao fechar o Distribuidor, favor verificar.")
+            d.voip[f"UG{self.__ug_id}_ED_RV_FALHA_AO_FECHAR_DISTRIBUIDOR"][0] = True
+        elif not self.leitura_falha_fechar_distrib.valor and d.voip[f"UG{self.__ug_id}_ED_RV_FALHA_AO_FECHAR_DISTRIBUIDOR"][0]:
+            d.voip[f"UG{self.__ug_id}_ED_RV_FALHA_AO_FECHAR_DISTRIBUIDOR"][0] = False
 
-        if self.leitura_falha_leit_temp_crowbar.valor and not d.voip[""]:
-            logger.warning(f"[OCO-UG{self.__ug_id}] Houve um erro   ,favor verificar.")
-            d.voip[""] = True
-        elif not self.leitura_falha_leit_temp_crowbar.valor and d.voip[""]:
-            d.voip[""] = False
+        if self.leitura_cmd_uhrv_modo_manuten.valor and not d.voip[f"UG{self.__ug_id}_CD_CMD_UHRV_MODO_MANUTENCAO"][0]:
+            logger.warning(f"[OCO-UG{self.__ug_id}] Foi identificado o acionamento do comando do modo de manutenção da UHRV, favor verificar.")
+            d.voip[f"UG{self.__ug_id}_CD_CMD_UHRV_MODO_MANUTENCAO"][0] = True
+        elif not self.leitura_cmd_uhrv_modo_manuten.valor and d.voip[f"UG{self.__ug_id}_CD_CMD_UHRV_MODO_MANUTENCAO"][0]:
+            d.voip[f"UG{self.__ug_id}_CD_CMD_UHRV_MODO_MANUTENCAO"][0] = False
 
-        if self.leitura_falha_leit_temp_trafo_exci.valor and not d.voip[""]:
-            logger.warning(f"[OCO-UG{self.__ug_id}] Houve um erro   ,favor verificar.")
-            d.voip[""] = True
-        elif not self.leitura_falha_leit_temp_trafo_exci.valor and d.voip[""]:
-            d.voip[""] = False
+        if self.leitura_cmd_uhlm_modo_manuten.valor and not d.voip[f"UG{self.__ug_id}_CD_CMD_UHLM_MODO_MANUTENCAO"][0]:
+            logger.warning(f"[OCO-UG{self.__ug_id}] Foi identificado o acionamento do comando do modo de manutenção da UHLM, favor verificar.")
+            d.voip[f"UG{self.__ug_id}_CD_CMD_UHLM_MODO_MANUTENCAO"][0] = True
+        elif not self.leitura_cmd_uhlm_modo_manuten.valor and d.voip[f"UG{self.__ug_id}_CD_CMD_UHLM_MODO_MANUTENCAO"][0]:
+            d.voip[f"UG{self.__ug_id}_CD_CMD_UHLM_MODO_MANUTENCAO"][0] = False
 
-        if self.leitura_falha_leit_temp_uhrv_temp_oleo.valor and not d.voip[""]:
-            logger.warning(f"[OCO-UG{self.__ug_id}] Houve um erro   ,favor verificar.")
-            d.voip[""] = True
-        elif not self.leitura_falha_leit_temp_uhrv_temp_oleo.valor and d.voip[""]:
-            d.voip[""] = False
+        if self.leitura_falha_leit_temp_tristores.valor and not d.voip[f"UG{self.__ug_id}_EA_TRISTORES_TEMP_FALHA_LEITURA"][0]:
+            logger.warning(f"[OCO-UG{self.__ug_id}] Foi identificado uma falha na leitura de temperatura de Tristores, favor verificar.")
+            d.voip[f"UG{self.__ug_id}_EA_TRISTORES_TEMP_FALHA_LEITURA"][0] = True
+        elif not self.leitura_falha_leit_temp_tristores.valor and d.voip[f"UG{self.__ug_id}_EA_TRISTORES_TEMP_FALHA_LEITURA"][0]:
+            d.voip[f"UG{self.__ug_id}_EA_TRISTORES_TEMP_FALHA_LEITURA"][0] = False
 
-        if self.leitura_falha_leit_temp_gerad_fase_a.valor and not d.voip[""]:
-            logger.warning(f"[OCO-UG{self.__ug_id}] Houve um erro   ,favor verificar.")
-            d.voip[""] = True
-        elif not self.leitura_falha_leit_temp_gerad_fase_a.valor and d.voip[""]:
-            d.voip[""] = False
+        if self.leitura_falha_leit_temp_crowbar.valor and not d.voip[f"UG{self.__ug_id}_EA_CROWBAR_TEMP_FALHA_LEITURA"][0]:
+            logger.warning(f"[OCO-UG{self.__ug_id}] Foi identificado uma falha na leitura de temperatura do Crowbar, favor verificar.")
+            d.voip[f"UG{self.__ug_id}_EA_CROWBAR_TEMP_FALHA_LEITURA"][0] = True
+        elif not self.leitura_falha_leit_temp_crowbar.valor and d.voip[f"UG{self.__ug_id}_EA_CROWBAR_TEMP_FALHA_LEITURA"][0]:
+            d.voip[f"UG{self.__ug_id}_EA_CROWBAR_TEMP_FALHA_LEITURA"][0] = False
 
-        if self.leitura_falha_leit_temp_gerad_fase_b.valor and not d.voip[""]:
-            logger.warning(f"[OCO-UG{self.__ug_id}] Houve um erro   ,favor verificar.")
-            d.voip[""] = True
-        elif not self.leitura_falha_leit_temp_gerad_fase_b.valor and d.voip[""]:
-            d.voip[""] = False
+        if self.leitura_falha_leit_temp_trafo_exci.valor and not d.voip[f"UG{self.__ug_id}_EA_TRAFO_EXCITACAO_FALHA_LEITURA"][0]:
+            logger.warning(f"[OCO-UG{self.__ug_id}] Foi identificado uma falha na leitura de temperatura do Transformador de Excitação, favor verificar.")
+            d.voip[f"UG{self.__ug_id}_EA_TRAFO_EXCITACAO_FALHA_LEITURA"][0] = True
+        elif not self.leitura_falha_leit_temp_trafo_exci.valor and d.voip[f"UG{self.__ug_id}_EA_TRAFO_EXCITACAO_FALHA_LEITURA"][0]:
+            d.voip[f"UG{self.__ug_id}_EA_TRAFO_EXCITACAO_FALHA_LEITURA"][0] = False
 
-        if self.leitura_falha_leit_temp_gerad_fase_c.valor and not d.voip[""]:
-            logger.warning(f"[OCO-UG{self.__ug_id}] Houve um erro   ,favor verificar.")
-            d.voip[""] = True
-        elif not self.leitura_falha_leit_temp_gerad_fase_c.valor and d.voip[""]:
-            d.voip[""] = False
+        if self.leitura_falha_leit_temp_uhrv_temp_oleo.valor and not d.voip[f"UG{self.__ug_id}_EA_UHRV_TEMP_OLEO_FALHA_LEITURA"][0]:
+            logger.warning(f"[OCO-UG{self.__ug_id}] Foi identificado uma falha na leitura de temperatura do Óleo da UHRV, favor verificar.")
+            d.voip[f"UG{self.__ug_id}_EA_UHRV_TEMP_OLEO_FALHA_LEITURA"][0] = True
+        elif not self.leitura_falha_leit_temp_uhrv_temp_oleo.valor and d.voip[f"UG{self.__ug_id}_EA_UHRV_TEMP_OLEO_FALHA_LEITURA"][0]:
+            d.voip[f"UG{self.__ug_id}_EA_UHRV_TEMP_OLEO_FALHA_LEITURA"][0] = False
 
-        if self.leitura_falha_leit_temp_gerad_nucleo_1.valor and not d.voip[""]:
-            logger.warning(f"[OCO-UG{self.__ug_id}] Houve um erro   ,favor verificar.")
-            d.voip[""] = True
-        elif not self.leitura_falha_leit_temp_gerad_nucleo_1.valor and d.voip[""]:
-            d.voip[""] = False
+        if self.leitura_falha_leit_temp_gerad_fase_a.valor and not d.voip[f"UG{self.__ug_id}_EA_GERADOR_FASE_A_TEMP_FALHA_LEITURA"][0]:
+            logger.warning(f"[OCO-UG{self.__ug_id}] Foi identificado uma falha na leitura de temperatura de Fase A do gerador, favor verificar.")
+            d.voip[f"UG{self.__ug_id}_EA_GERADOR_FASE_A_TEMP_FALHA_LEITURA"][0] = True
+        elif not self.leitura_falha_leit_temp_gerad_fase_a.valor and d.voip[f"UG{self.__ug_id}_EA_GERADOR_FASE_A_TEMP_FALHA_LEITURA"][0]:
+            d.voip[f"UG{self.__ug_id}_EA_GERADOR_FASE_A_TEMP_FALHA_LEITURA"][0] = False
 
-        if self.leitura_falha_leit_temp_gerad_nucleo_2.valor and not d.voip[""]:
-            logger.warning(f"[OCO-UG{self.__ug_id}] Houve um erro   ,favor verificar.")
-            d.voip[""] = True
-        elif not self.leitura_falha_leit_temp_gerad_nucleo_2.valor and d.voip[""]:
-            d.voip[""] = False
+        if self.leitura_falha_leit_temp_gerad_fase_b.valor and not d.voip[f"UG{self.__ug_id}_EA_GERADOR_FASE_B_TEMP_FALHA_LEITURA"][0]:
+            logger.warning(f"[OCO-UG{self.__ug_id}] Foi identificado uma falha na leitura de temperatura de Fase B do gerador, favor verificar.")
+            d.voip[f"UG{self.__ug_id}_EA_GERADOR_FASE_B_TEMP_FALHA_LEITURA"][0] = True
+        elif not self.leitura_falha_leit_temp_gerad_fase_b.valor and d.voip[f"UG{self.__ug_id}_EA_GERADOR_FASE_B_TEMP_FALHA_LEITURA"][0]:
+            d.voip[f"UG{self.__ug_id}_EA_GERADOR_FASE_B_TEMP_FALHA_LEITURA"][0] = False
 
-        if self.leitura_falha_leit_temp_gerad_nucleo_3.valor and not d.voip[""]:
-            logger.warning(f"[OCO-UG{self.__ug_id}] Houve um erro   ,favor verificar.")
-            d.voip[""] = True
-        elif not self.leitura_falha_leit_temp_gerad_nucleo_3.valor and d.voip[""]:
-            d.voip[""] = False
+        if self.leitura_falha_leit_temp_gerad_fase_c.valor and not d.voip[f"UG{self.__ug_id}_EA_GERADOR_FASE_C_TEMP_FALHA_LEITURA"][0]:
+            logger.warning(f"[OCO-UG{self.__ug_id}] Foi identificado uma falha na leitura de temperatura de Fase C do gerador, favor verificar.")
+            d.voip[f"UG{self.__ug_id}_EA_GERADOR_FASE_C_TEMP_FALHA_LEITURA"][0] = True
+        elif not self.leitura_falha_leit_temp_gerad_fase_c.valor and d.voip[f"UG{self.__ug_id}_EA_GERADOR_FASE_C_TEMP_FALHA_LEITURA"][0]:
+            d.voip[f"UG{self.__ug_id}_EA_GERADOR_FASE_C_TEMP_FALHA_LEITURA"][0] = False
 
-        if self.leitura_falha_leit_temp_mancal_guia_casq.valor and not d.voip[""]:
-            logger.warning(f"[OCO-UG{self.__ug_id}] Houve um erro   ,favor verificar.")
-            d.voip[""] = True
-        elif not self.leitura_falha_leit_temp_mancal_guia_casq.valor and d.voip[""]:
-            d.voip[""] = False
+        if self.leitura_falha_leit_temp_gerad_nucleo_1.valor and not d.voip[f"UG{self.__ug_id}_EA_GERADOR_NUCLEO_1_TEMP_FALHA_LEITURA"][0]:
+            logger.warning(f"[OCO-UG{self.__ug_id}] Foi identificado uma falha na leitura de temperatura do Núcleo 1 do Gerador, favor verificar.")
+            d.voip[f"UG{self.__ug_id}_EA_GERADOR_NUCLEO_1_TEMP_FALHA_LEITURA"][0] = True
+        elif not self.leitura_falha_leit_temp_gerad_nucleo_1.valor and d.voip[f"UG{self.__ug_id}_EA_GERADOR_NUCLEO_1_TEMP_FALHA_LEITURA"][0]:
+            d.voip[f"UG{self.__ug_id}_EA_GERADOR_NUCLEO_1_TEMP_FALHA_LEITURA"][0] = False
 
-        if self.leitura_falha_leit_temp_mancal_comb_casq.valor and not d.voip[""]:
-            logger.warning(f"[OCO-UG{self.__ug_id}] Houve um erro   ,favor verificar.")
-            d.voip[""] = True
-        elif not self.leitura_falha_leit_temp_mancal_comb_casq.valor and d.voip[""]:
-            d.voip[""] = False
+        if self.leitura_falha_leit_temp_gerad_nucleo_2.valor and not d.voip[f"UG{self.__ug_id}_EA_GERADOR_NUCLEO_2_FALHA_LEITURA"][0]:
+            logger.warning(f"[OCO-UG{self.__ug_id}] Foi identificado uma falha na leitura de temperatura do Núcleo 2 do Gerador, favor verificar.")
+            d.voip[f"UG{self.__ug_id}_EA_GERADOR_NUCLEO_2_FALHA_LEITURA"][0] = True
+        elif not self.leitura_falha_leit_temp_gerad_nucleo_2.valor and d.voip[f"UG{self.__ug_id}_EA_GERADOR_NUCLEO_2_FALHA_LEITURA"][0]:
+            d.voip[f"UG{self.__ug_id}_EA_GERADOR_NUCLEO_2_FALHA_LEITURA"][0] = False
 
-        if self.leitura_falha_leit_temp_mancal_comb_esc.valor and not d.voip[""]:
-            logger.warning(f"[OCO-UG{self.__ug_id}] Houve um erro   ,favor verificar.")
-            d.voip[""] = True
-        elif not self.leitura_falha_leit_temp_mancal_comb_esc.valor and d.voip[""]:
-            d.voip[""] = False
+        if self.leitura_falha_leit_temp_gerad_nucleo_3.valor and not d.voip[f"UG{self.__ug_id}_EA_GERADOR_NUCLEO_3_TEMP_FALHA_LEITURA"][0]:
+            logger.warning(f"[OCO-UG{self.__ug_id}] Foi identificado uma falha na leitura de temperatura do Núcleo 3 do Gerador, favor verificar.")
+            d.voip[f"UG{self.__ug_id}_EA_GERADOR_NUCLEO_3_TEMP_FALHA_LEITURA"][0] = True
+        elif not self.leitura_falha_leit_temp_gerad_nucleo_3.valor and d.voip[f"UG{self.__ug_id}_EA_GERADOR_NUCLEO_3_TEMP_FALHA_LEITURA"][0]:
+            d.voip[f"UG{self.__ug_id}_EA_GERADOR_NUCLEO_3_TEMP_FALHA_LEITURA"][0] = False
 
-        if self.leitura_resis_quec_gerador_falha_ligar.valor and not d.voip[""]:
-            logger.warning(f"[OCO-UG{self.__ug_id}] Houve um erro   ,favor verificar.")
-            d.voip[""] = True
-        elif not self.leitura_resis_quec_gerador_falha_ligar.valor and d.voip[""]:
-            d.voip[""] = False
+        if self.leitura_falha_leit_temp_mancal_guia_casq.valor and not d.voip[f"UG{self.__ug_id}_EA_MANCAL_GUIA_CASQUILHO_FALHA_LEITURA"][0]:
+            logger.warning(f"[OCO-UG{self.__ug_id}] Foi identificado uma falha na leitura de temperatura do Mancal Guia Casquilho, favor verificar.")
+            d.voip[f"UG{self.__ug_id}_EA_MANCAL_GUIA_CASQUILHO_FALHA_LEITURA"][0] = True
+        elif not self.leitura_falha_leit_temp_mancal_guia_casq.valor and d.voip[f"UG{self.__ug_id}_EA_MANCAL_GUIA_CASQUILHO_FALHA_LEITURA"][0]:
+            d.voip[f"UG{self.__ug_id}_EA_MANCAL_GUIA_CASQUILHO_FALHA_LEITURA"][0] = False
+
+        if self.leitura_falha_leit_temp_mancal_comb_casq.valor and not d.voip[f"UG{self.__ug_id}_EA_MANCAL_COMBINADO_CASQUILHO_FALHA_LEITURA"][0]:
+            logger.warning(f"[OCO-UG{self.__ug_id}] Foi identificado uma falha na leitura de temperatura do Mancal Combinado Casquilho, favor verificar.")
+            d.voip[f"UG{self.__ug_id}_EA_MANCAL_COMBINADO_CASQUILHO_FALHA_LEITURA"][0] = True
+        elif not self.leitura_falha_leit_temp_mancal_comb_casq.valor and d.voip[f"UG{self.__ug_id}_EA_MANCAL_COMBINADO_CASQUILHO_FALHA_LEITURA"][0]:
+            d.voip[f"UG{self.__ug_id}_EA_MANCAL_COMBINADO_CASQUILHO_FALHA_LEITURA"][0] = False
+
+        if self.leitura_falha_leit_temp_mancal_comb_esc.valor and not d.voip[f"UG{self.__ug_id}_EA_MANCAL_COMBINADO_ESCORA_FALHA_LEITURA"][0]:
+            logger.warning(f"[OCO-UG{self.__ug_id}] Foi identificado uma falha na leitura de temperatura do Mancal Combinado Escora, favor verificar.")
+            d.voip[f"UG{self.__ug_id}_EA_MANCAL_COMBINADO_ESCORA_FALHA_LEITURA"][0] = True
+        elif not self.leitura_falha_leit_temp_mancal_comb_esc.valor and d.voip[f"UG{self.__ug_id}_EA_MANCAL_COMBINADO_ESCORA_FALHA_LEITURA"][0]:
+            d.voip[f"UG{self.__ug_id}_EA_MANCAL_COMBINADO_ESCORA_FALHA_LEITURA"][0] = False
+
+        if self.leitura_resis_quec_gerador_falha_ligar.valor and not d.voip[f"UG{self.__ug_id}_ED_RESISTENCIA_AQUEC_GERADOR_FALHA_LIGAR"][0]:
+            logger.warning(f"[OCO-UG{self.__ug_id}] Foi identificado uma falha ao ligar a resistência do aquecedor do gerador, favor verificar.")
+            d.voip[f"UG{self.__ug_id}_ED_RESISTENCIA_AQUEC_GERADOR_FALHA_LIGAR"][0] = True
+        elif not self.leitura_resis_quec_gerador_falha_ligar.valor and d.voip[f"UG{self.__ug_id}_ED_RESISTENCIA_AQUEC_GERADOR_FALHA_LIGAR"][0]:
+            d.voip[f"UG{self.__ug_id}_ED_RESISTENCIA_AQUEC_GERADOR_FALHA_LIGAR"][0] = False
 
         return
 
