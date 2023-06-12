@@ -1,4 +1,4 @@
-from src.Leituras import *
+from src.funcoes.leitura import *
 
 class CondicionadorBase:
     ...

@@ -16,11 +16,13 @@
     "MR_ip": "172.25.93.82",
     "MR_port": 8002,
     "MPMR_scale": -7,
+
     "nv_alvo": 405.0,
     "nv_minimo": 404.65,
     "nv_maximo": 405.25,
     "nv_maximorum": 407.5,
     "nv_fundo_reservatorio": 404.6,
+
     "pot_minima": 1360,
     "pot_maxima_ug": 3600.0,
     "pot_maxima_ug1": 500.0,
@@ -30,6 +32,7 @@
     "pot_maxima_usina": 10800.0,
     "pot_limpeza_grade": 500.0,
     "margem_pot_critica": 0.055,
+
     "kp": 1.8,
     "ki": 0.1,
     "kd": 0.0,

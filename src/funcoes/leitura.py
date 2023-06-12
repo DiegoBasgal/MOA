@@ -1,21 +1,9 @@
 import socket
 import struct
 import logging
-from src.dicionarios.regs import *
+from src.dicionarios.reg import *
 from pyModbusTCP.utils import crc16
 from pyModbusTCP.client import ModbusClient
-
-def bcd_to_i(i):
-    value = i & 0xF
-    value += ((i >> 4) & 0xF) * 10
-    value += ((i >> 8) & 0xF) * 100
-    value += ((i >> 12) & 0xF) * 1000
-    return value
-
-def add_crc(data):
-    crc = hex(crc16(data))
-    crc = bytes.fromhex(crc[4] + crc[5] + crc[2] + crc[3])
-    return data + crc
 
 class LeituraBase:
     ...
@@ -294,7 +282,7 @@ class LeituraNBRPower(LeituraBase):
             data = bytes.fromhex(
                 "019914000001020000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000"
             )
-            data = add_crc(data)
+            data = self.add_crc(data)
             sock.send(data)
             response = sock.recv(1024)
             sock.close()
@@ -310,7 +298,7 @@ class LeituraNBRPower(LeituraBase):
                 data = bytes.fromhex(
                     "019914000001020000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000"
                 )
-                data = add_crc(data)
+                data = self.add_crc(data)
                 sock.send(data)
                 response = sock.recv(1024)
                 sock.close()
@@ -320,3 +308,15 @@ class LeituraNBRPower(LeituraBase):
             except Exception:
                 self.logger.debug("Socket timed out")
                 return 0
+    
+    def bcd_to_i(self, i):
+        value = i & 0xF
+        value += ((i >> 4) & 0xF) * 10
+        value += ((i >> 8) & 0xF) * 100
+        value += ((i >> 12) & 0xF) * 1000
+        return value
+
+    def add_crc(self, data):
+        crc = hex(crc16(data))
+        crc = bytes.fromhex(crc[4] + crc[5] + crc[2] + crc[3])
+        return data + crc

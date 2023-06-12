@@ -3,7 +3,7 @@ import mariadb.connections
 
 from datetime import datetime
 
-class Database:
+class BancoDados:
     def __init__(self, pool_name: str):
         self.cnx = mariadb.ConnectionPool(
             host="localhost",
