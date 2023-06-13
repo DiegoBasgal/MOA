@@ -1,4 +1,5 @@
 from src.funcoes.leitura import *
+from src.funcoes.leitura import LeituraModbus
 from src.unidade_geracao import UnidadeDeGeracao
 
 class CondicionadorBase:
@@ -96,3 +97,41 @@ class CondicionadorExponencial(CondicionadorBase):
             return max(min(aux, 1), 0)
         else:
             return 1 if self.leitura > self.valor_limite else 0
+
+
+class CondicionadorPotenciaReativa(CondicionadorBase):
+    def __init__(self, leitura: LeituraModbus, valor_base: float = 1, valor_limite: float = 1.05, descr: str = None):
+        super().__init__(leitura, descr)
+
+        self.__valor_base = valor_base
+        self.__valor_limite = valor_limite
+
+    @property
+    def valor_base(self) -> "int | float":
+        return self.__valor_base
+
+    @valor_base.setter
+    def valor_base(self, val: "int | float") -> None:
+        self.__valor_base = val
+
+    @property
+    def valor_limite(self) -> "int | float":
+        return self.__valor_limite
+
+    @valor_limite.setter
+    def valor_limite(self, val: "int | float") -> None:
+        self.__valor_limite = val
+
+    @property
+    def valor(self) -> float:
+        v_temp = float(self.leitura)
+
+        if v_temp < self.valor_base:
+            return 0
+
+        # elif self.valor_limite < v_temp < self.valor_base:
+        #     aux = (1 - (((self.valor_limite - v_temp) / (self.valor_limite - self.valor_base))** (self.ordem)).real)
+        #     return max(min(aux, 1), 0,)
+
+        elif v_temp < self.valor_limite:
+            return 1

@@ -103,6 +103,8 @@ class Usina:
         self.controle_i: float = 0
         self.controle_d: float = 0
 
+        self.fator_pot: float = 0
+
         self.pot_disp: int = 0
         self.ug_operando: int = 0
         self.modo_de_escolha_das_ugs: int = 0
@@ -122,7 +124,6 @@ class Usina:
 
         self.aguardando_reservatorio: bool = False
 
-        self.ts_last_ping_tda: datetime = self.get_time()
         self.ultima_tentativa_norm: datetime = self.get_time()
 
 

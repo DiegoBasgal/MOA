@@ -67,7 +67,6 @@ class UnidadeDeGeracao:
             REG_SA["SA_ED_PSA_SE_DISJ_LINHA_FECHADO"],
             descr=f"[UG{self.id}] Status Disjuntor Linha"
         )
-
         self.__leitura_status_uhrv: LeituraModbusBit = LeituraModbusBit(
             self.clp[f"UG{self.id}"],
             REG_UG[f"UG{self.id}_ED_UHRV_UNIDADE_HABILITADA"],
@@ -77,6 +76,12 @@ class UnidadeDeGeracao:
             self.clp[f"UG{self.id}"],
             REG_UG[f"UG{self.id}_ED_PRTVA_DISJUNTOR_MAQUINA_FECHADO"],
             descr=f"[UG{self.id}] Status Disjuntor de Máquina"
+        )
+        self.__tensao: LeituraModbus = LeituraModbus(
+            self.clp[f"UG{self.id}"],
+            REG_RELE["UG"][f"RELE_UG{self.id}_VAB"],
+            op=3,
+            descr="[USN] Tensão Unidade"
         )
         """
         self.__leitura_etapa_atual: LeituraModbus = LeituraModbus(
@@ -111,6 +116,19 @@ class UnidadeDeGeracao:
         self._leitura_potencia = LeituraModbus(
             self.rele[f"UG{self.id}"],
             REG_RELE["UG"][f"RELE_UG{self.id}_P"],
+            op=3,
+            descr=f"[UG{self.id}] Potência Ativa"
+        )
+
+        # self._leitura_potencia_reativa = LeituraModbus(
+        #     self.rele[f"UG{self.id}"],
+        #     REG_RELE["UG"][f"RELE_UG{self.id}_Q"],
+        #     op=3,
+        #     descr=f"[UG{self.id}] Potência Ativa"
+        # )
+        self._leitura_potencia_aparente = LeituraModbus(
+            self.rele[f"UG{self.id}"],
+            REG_RELE["UG"][f"RELE_UG{self.id}_S"],
             op=3,
             descr=f"[UG{self.id}] Potência Ativa"
         )
@@ -172,10 +190,15 @@ class UnidadeDeGeracao:
 
     @property
     def leitura_potencia(self) -> "int | float":
-        try:
-            return self._leitura_potencia.valor
-        except Exception:
-            logger.error(f"[UG{self.id}] ERRO LEITURA POT: {traceback.format_exc()}")
+        return self._leitura_potencia.valor
+
+    # @property
+    # def leitura_potencia_reativa(self) -> "int | float":
+    #     return self._leitura_potencia_reativa.valor
+
+    @property
+    def leitura_potencia_aparente(self) -> "int | float":
+        return self._leitura_potencia_aparente.valor
 
     @property
     def etapa(self) -> "int":
@@ -453,19 +476,33 @@ class UnidadeDeGeracao:
             logger.error(f"[UG{self.id}] Não foi possível parar a Unidade.")
             logger.debug(traceback.format_exc())
 
+    def controlar_potencia_reativa(self) -> None:
+        if self.__tensao.valor > TENSAO_UG_MAXIMA:
+            tensao = self.__tensao.valor
+
+            # v = tensao
+            pot_reativa = ((0.426 * 500) / ((1.05 - 1) * 380)) * (tensao - 380) # ((lim_definido * pot_máx)/((v_lim - v_base) * tensao_nominal)) * (leitura_v - v_base)
+
+            if pot_reativa > (0.426 * self.leitura_potencia):
+                pot_reativa = (0.426 * self.leitura_potencia)
+                self.rt[f"UG{self.id}"].write_single_register(REG_UG[f"UG{self.id}_RT_SETPOINT_POTENCIA_REATIVA_PU"], -pot_reativa)
+
+
     def enviar_setpoint(self, setpoint_kw: int) -> "bool":
         try:
             sleep(2)
             if not self.desabilitar_manutencao():
                 logger.info(f"[UG{self.id}] Não foi possível enviar comando de \"Desabilitar Manutenção\"")
 
-            self.setpoint = int(setpoint_kw)
-            setpoint_porcento = (setpoint_kw / self.cfg["pot_maxima_ug"]) * 10000
-            logger.debug(f"[UG{self.id}]          Enviando setpoint:         {(setpoint_kw / self.cfg['pot_maxima_ug']) * 100} %")
+            else:
 
-            if self.setpoint > 1:
-                res = self.rv[f"UG{self.id}"].write_single_register(REG_UG[f"UG{self.id}_RV_SETPOINT_POTENCIA_ATIVA_PU"], int(setpoint_porcento))
-                return res
+                self.setpoint = int(setpoint_kw)
+                setpoint_porcento = (setpoint_kw / self.cfg["pot_maxima_ug"]) * 10000
+                logger.debug(f"[UG{self.id}]          Enviando setpoint:         {(setpoint_kw / self.cfg['pot_maxima_ug']) * 100} %")
+
+                if self.setpoint > 1:
+                    res = self.rv[f"UG{self.id}"].write_single_register(REG_UG[f"UG{self.id}_RV_SETPOINT_POTENCIA_ATIVA_PU"], int(setpoint_porcento))
+                    return res
 
         except Exception:
             logger.error(f"[UG{self.id}] Não foi possivel enviar o Setpoint para Unidade.")
@@ -501,7 +538,7 @@ class UnidadeDeGeracao:
             return res
 
         except Exception:
-            logger.error(f"[UG{self.id}] Não foi possivel acionar o comando de TRIP: \"Elétrico\".")
+            logger.error(f"[UG{self.id}] Não foi possivel remover o comando de TRIP: \"Elétrico\".")
             logger.debug(traceback.format_exc())
             return False
 

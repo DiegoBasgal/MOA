@@ -148,7 +148,7 @@ class ModoManual(State):
         self.usn.controle_ie = (sum(ug.leitura_potencia) for ug in self.usn.ugs) / self.usn.cfg["pot_maxima_alvo"]
 
         if self.usn.modo_autonomo:
-            logger.debug("Comando acionado: Habilitar modo autônomo.")
+            logger.debug("Comando acionado: \"Habilitar modo autônomo\".")
             self.usn.ler_valores()
             sleep(2)
             return ControleDados(self.usn)
