@@ -8,7 +8,9 @@ logger = logging.getLogger("__main__")
 
 class State:
     def __init__(self, parent=None):
+
         # VERIFICAÇÃO DE ARGUENTOS
+
         if not parent:
             logger.error("[UG-SM] Houve um erro ao importar a classe Unidade de Geração")
             raise ImportError
@@ -113,9 +115,11 @@ class StateDisponivel(State):
         elif flag == CONDIC_NORMALIZAR:
             return self if self.parent.normalizar_unidade() else StateIndisponivel(self.parent)
 
+        elif self.parent.limpeza_grade:
+                self.parent.setpoint_minimo = self.parent.cfg["pot_limpeza_grade"]
+                self.parent.setpoint = self.parent.setpoint_minimo
         else:
-            if self.parent.limpeza_grade:
-                self.parent.setpoint = self.parent.setpoint_minimo = self.parent.cfg["pot_limpeza_grade"]
+            self.parent.ajuste_ganho_cx_espiral()
 
             self.parent.controle_etapas()
 

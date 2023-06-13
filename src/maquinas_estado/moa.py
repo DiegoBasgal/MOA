@@ -78,7 +78,7 @@ class ControleEstados(State):
         elif self.usn.clp_emergencia or self.usn.db_emergencia:
             return Emergencia(self.usn)
 
-        elif len(Agendamentos.verificar_agendamentos_pendentes()) > 0:
+        elif len(self.usn.agn.verificar_agendamentos_pendentes()) > 0:
             return ControleAgendamentos(self.usn)
 
         else:
@@ -127,7 +127,7 @@ class ControleAgendamentos(State):
         logger.info("Tratando agendamentos")
 
     def run(self):
-        Agendamentos.verificar_agendamentos_pendentes()
+        self.usn.agn.verificar_agendamentos_pendentes()
         return ControleDados(self.usn) if self.usn.modo_autonomo else ModoManual(self.usn)
 
 class ModoManual(State):
@@ -148,12 +148,12 @@ class ModoManual(State):
         self.usn.controle_ie = (sum(ug.leitura_potencia) for ug in self.usn.ugs) / self.usn.cfg["pot_maxima_alvo"]
 
         if self.usn.modo_autonomo:
-            logger.debug("Comando acionado: Habilitar modo autônomo.")
+            logger.debug("Comando acionado:\" Habilitar modo autônomo\".")
             self.usn.ler_valores()
             sleep(2)
             return ControleDados(self.usn)
 
-        return ControleAgendamentos(self.usn) if len(Agendamentos.verificar_agendamentos_pendentes()) > 0 else self
+        return ControleAgendamentos(self.usn) if len(self.usn.agn.verificar_agendamentos_pendentes()) > 0 else self
 
 class Emergencia(State):
     def __init__(self, usn, *args, **kwargs):
@@ -227,7 +227,7 @@ class ControleTDAOffline(State):
         elif self.usn.clp_emergencia or self.usn.db_emergencia:
             return Emergencia(self.usn)
 
-        elif len(Agendamentos.verificar_agendamentos_pendentes()) > 0:
+        elif len(self.usn.agn.verificar_agendamentos_pendentes()) > 0:
             return ControleAgendamentos(self.usn)
 
         else:

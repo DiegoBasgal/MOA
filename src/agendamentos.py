@@ -2,7 +2,7 @@ from usina import *
 from src.banco_dados import Database
 
 class Agendamentos(Usina):
-    def __init__(self, cfg=None, db: Database=None):
+    def __init__(self, cfg=None, db: BancoDados=None):
         super().__init__(cfg, db)
 
     def obter_agendamentos(self):
@@ -87,7 +87,7 @@ class Agendamentos(Usina):
                     logger.info("Indisponibilizando a usina (comando via agendamento).")
                     for ug in self.ugs:
                         ug.forcar_estado_indisponivel()
-                    while (not self.ugs[0].etapa_atual == UNIDADE_PARADA and not self.ugs[1].etapa_atual == UNIDADE_PARADA):
+                    while (not self.ugs[0].etapa_atual == UG_PARADA and not self.ugs[1].etapa_atual == UG_PARADA):
                         self.ler_valores()
                         logger.debug("Indisponibilizando Usina... \n(freezing for 10 seconds)")
                         sleep(10)
@@ -108,7 +108,7 @@ class Agendamentos(Usina):
                         for ug in self.ugs:
                             self.cfg[f"pot_maxima_ug{ug.id}"] = self.cfg["pot_limpeza_grade"]
 
-                            if ug.etapa_atual == UNIDADE_PARADA or ug.etapa_atual == UNIDADE_PARANDO:
+                            if ug.etapa_atual == UG_PARADA or ug.etapa_atual == UG_PARANDO:
                                 logger.debug(f"A UG{ug.id} já está no estado parada/parando.")
                             else:
                                 ug.limpeza_grade = True
@@ -150,7 +150,7 @@ class Agendamentos(Usina):
                 
                 if agendamento[3] == AGENDAMENTO_UG1_TEMPO_ESPERA_RESTRITO:
                     try:
-                        ug.norma_agendada = True
+                        ug.normalizacao_agendada = True
                         novo = agendamento[5].split(":")
                         tempo = (int(novo[0]) * 3600) + (int(novo[1]) * 60)
                         ug.tempo_normalizar = tempo

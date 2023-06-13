@@ -97,7 +97,7 @@ if __name__ == "__main__":
 
             except Exception:
                 logger.exception(f"Erro ao carregar arquivo de configuração. Tentando novamente em \"{TIMEOUT_MAIN}s\"")
-                logger.debug(f"Traceback: {traceback.format_exc()}")
+                logger.debug(traceback.format_exc())
                 sleep(TIMEOUT_MAIN)
                 continue
 
@@ -109,7 +109,7 @@ if __name__ == "__main__":
 
             except Exception:
                 logger.exception(f"Erro ao iniciar classes de conexão com servidores. Tentando novamente em \"{TIMEOUT_MAIN}s\"")
-                logger.debug(f"Traceback: {traceback.format_exc()}")
+                logger.debug(traceback.format_exc())
                 sleep(TIMEOUT_MAIN)
                 continue
 
@@ -120,7 +120,7 @@ if __name__ == "__main__":
 
             except Exception:
                 logger.exception(f"Erro ao instanciar a classe Usina. Tentando novamente em \"{TIMEOUT_MAIN}s\"")
-                logger.debug(f"Traceback: {traceback.format_exc()}")
+                logger.debug(traceback.format_exc())
                 sleep(TIMEOUT_MAIN)
                 continue
 
@@ -135,7 +135,7 @@ if __name__ == "__main__":
 
             except Exception:
                 logger.exception(f"Erro ao finalizar a incialização do MOA. Tentando novamente em \"{TIMEOUT_MAIN}s\"")
-                logger.debug(f"Traceback: {traceback.format_exc()}")
+                logger.debug(traceback.format_exc())
                 sleep(TIMEOUT_MAIN)
                 continue
 
@@ -148,7 +148,7 @@ if __name__ == "__main__":
             logger.debug("")
             logger.debug(f"Executando estado:                        \"{sm.state.__class__.__name__}\"")
             sm.exec()
-            if usn._state_moa == MOA_SM_CONTROLE_DADOS:
+            if usn.estado_moa == MOA_SM_CONTROLE_DADOS:
                 t_restante = max(TEMPO_CICLO_TOTAL - (time() - t_i), 0) / ESCALA_DE_TEMPO
                 t_i = time()
             else:
@@ -165,7 +165,7 @@ if __name__ == "__main__":
         except Exception as e:
             logger.debug("")
             logger.error(f"[!!!] \"ATENÇÃO!\" Houve um erro na execução do loop principal -> !! \"main.py\" !!")
-            logger.debug(f"Traceback: {traceback.format_exc()}")
+            logger.debug(traceback.format_exc())
             ClientesUsina.close_all()
             logger.debug("MOA encerrado! Até a próxima...")
             break
