@@ -30,10 +30,10 @@ class BancoDados:
         return estado[0]
 
     def get_parametros_usina(self) -> list:
-        self.cursor.execute("SHOW COLUMNS FROM parametros_moa_parametrosusina")
+        self.cursor.execute("SHOW COLUMNS FROM parametros_parametrosusina")
         cols = self.cursor.fetchall()
 
-        self.cursor.execute("SELECT * FROM parametros_moa_parametrosusina WHERE id = 1")
+        self.cursor.execute("SELECT * FROM parametros_parametrosusina WHERE id = 1")
         parametros_raw = self.cursor.fetchone()
         parametros = {}
 
@@ -55,7 +55,7 @@ class BancoDados:
         return result
 
     def get_contato_emergencia(self) -> list:
-        self.cursor.execute("SELECT * FROM parametros_moa_contato")
+        self.cursor.execute("SELECT * FROM parametros_contato")
         rows = self.cursor.fetchall()
         parametros = {}
 
@@ -68,7 +68,7 @@ class BancoDados:
     def get_executabilidade(self, id_comando) -> dict:
         self.cursor.execute(
             "SELECT executavel_em_automatico, executavel_em_manual "
-            "FROM parametros_moa_comando "
+            "FROM parametros_comando "
             "WHERE id = %s", tuple([id_comando])
         )
         parametros_raw = self.cursor.fetchone()
@@ -81,7 +81,7 @@ class BancoDados:
 
     def update_estado_ug(self, ts, estado, ug_id) -> None:
         self.cursor.execute(
-            f"INSERT INTO parametros_moa_controleestados "
+            f"INSERT INTO parametros_controleestados "
             f"SET ts = {ts}, "
             f"ultimo_estado_ug{ug_id} = {estado}"
         )
@@ -89,13 +89,13 @@ class BancoDados:
     def update_modo_moa(self, modo: bool) -> None:
         if modo:
             self.cursor.execute(
-                "UPDATE parametros_moa_parametrosusina "
+                "UPDATE parametros_parametrosusina "
                 "SET modo_autonomo = 1 "
                 "WHERE id = 1"
             )
         else:
             self.cursor.execute(
-                "UPDATE parametros_moa_parametrosusina "
+                "UPDATE parametros_parametrosusina "
                 "SET modo_autonomo = 0 "
                 "WHERE id = 1"
             )
@@ -103,7 +103,7 @@ class BancoDados:
 
     def update_remove_emergencia(self) -> None:
         self.cursor.execute(
-            "UPDATE parametros_moa_parametrosusina "
+            "UPDATE parametros_parametrosusina "
             "SET emergencia_acionada = 0 "
             "WHERE id = 1",
         )
@@ -111,7 +111,7 @@ class BancoDados:
 
     def update_valores_usina(self, values) -> None:
         self.cursor.execute(
-            "UPDATE parametros_moa_parametrosusina "
+            "UPDATE parametros_parametrosusina "
             "SET timestamp = %s, "
             "aguardando_reservatorio = %s, "
             "nv_montante = %s, "

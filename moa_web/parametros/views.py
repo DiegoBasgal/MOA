@@ -163,7 +163,7 @@ def parametros_moa_view(request, *args, **kwargs):
         escolha_ugs = 2
 
     context = {"escolha_ugs": escolha_ugs, "usina": usina}
-    return render(request, "parametros.html", context=context)
+    return render(request, "parametros_moa.html", context=context)
 
 
 @login_required

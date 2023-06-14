@@ -145,7 +145,7 @@ class ModoManual(State):
         for ug in self.usn.ugs:
             ug.setpoint = ug.leitura_potencia
 
-        self.usn.controle_ie = (sum(ug.leitura_potencia) for ug in self.usn.ugs) / self.usn.cfg["pot_maxima_alvo"]
+        self.usn.controle_ie = sum(ug.leitura_potencia for ug in self.usn.ugs) / self.usn.cfg["pot_maxima_alvo"]
 
         if self.usn.modo_autonomo:
             logger.debug("Comando acionado: \"Habilitar modo autônomo\".")

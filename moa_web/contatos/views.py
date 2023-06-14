@@ -4,7 +4,7 @@ from django.shortcuts import render
 from django.contrib import messages
 from django.http import HttpResponseRedirect
 from django.contrib.auth.decorators import login_required
-from models import Contato
+from .models import Contato
 
 # Create your views here.
 

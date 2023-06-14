@@ -396,7 +396,7 @@ class Usina:
         pot_alvo = self.ajustar_potencia(pot_alvo)
 
     def controlar_unidades_disponiveis(self) -> list:
-        ls = [ug for ug in self.ugs if ug.disponivel and not ug.etapa_atual == UG_PARANDO]
+        ls = [ug for ug in self.ugs if ug.disponivel and not ug.etapa == UG_PARANDO]
 
         # TODO verificar leituras de horímetro das Unidades
         # if self.modo_de_escolha_das_ugs in (UG_PRIORIDADE_1, UG_PRIORIDADE_2):
@@ -499,10 +499,10 @@ class Usina:
         self.atualizar_valores_cfg(parametros)
         self.atualizar_valores_banco(parametros)
 
-        if self.clp["SA"].read_coils(REG_SA["RESERVA_X"])[0] == 1 and not self.modo_autonomo:
-            self.modo_autonomo = True
-        elif self.clp["SA"].read_coils(REG_SA["RESERVA_X"])[0] == 0 and self.modo_autonomo:
-            self.modo_autonomo == False
+        # if self.clp["SA"].read_coils(REG_SA["RESERVA_X"])[0] == 1 and not self.modo_autonomo:
+        #     self.modo_autonomo = True
+        # elif self.clp["SA"].read_coils(REG_SA["RESERVA_X"])[0] == 0 and self.modo_autonomo:
+        #     self.modo_autonomo == False
 
         for ug in self.ugs:
             ug.oco.atualizar_limites_condicionadores(parametros)

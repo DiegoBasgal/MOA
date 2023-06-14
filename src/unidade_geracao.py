@@ -452,8 +452,8 @@ class UnidadeDeGeracao:
 
             elif not self.etapa == UG_SINCRONIZADA:
                 logger.info(f"[UG{self.id}]          Enviando comando:          \"PARTIDA\"")
-                EMB.escrever_bit(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}_CD_CMD_REARME_FALHAS"], 1, descr=f"UG{self.id}_CD_CMD_REARME_FALHAS")
                 EMB.escrever_bit(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}_CD_CMD_SINCRONISMO"], 1, descr=f"UG{self.id}_CD_CMD_SINCRONISMO")
+                EMB.escrever_bit(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}_CD_CMD_REARME_FALHAS"], 1, descr=f"UG{self.id}_CD_CMD_REARME_FALHAS")
 
             else:
                 logger.debug(f"[UG{self.id}] A Unidade já está sincronizada")
@@ -493,9 +493,7 @@ class UnidadeDeGeracao:
             sleep(2)
             if not self.desabilitar_manutencao():
                 logger.info(f"[UG{self.id}] Não foi possível enviar comando de \"Desabilitar Manutenção\"")
-
             else:
-
                 self.setpoint = int(setpoint_kw)
                 setpoint_porcento = (setpoint_kw / self.cfg["pot_maxima_ug"]) * 10000
                 logger.debug(f"[UG{self.id}]          Enviando setpoint:         {(setpoint_kw / self.cfg['pot_maxima_ug']) * 100} %")
@@ -585,7 +583,6 @@ class UnidadeDeGeracao:
         # SINCRONIZANDO
         elif self.etapa == UG_SINCRONIZANDO:
             if not self.borda_partindo:
-                logger.debug(f"[UG{self.id}]          Comando MOA:                \"Iniciar timer de verificação de partida\"")
                 Thread(target=lambda: self.verificar_partida()).start()
                 self.borda_partindo = True
 
@@ -614,6 +611,8 @@ class UnidadeDeGeracao:
             self.aux_tempo_sincronizada = None
 
     def verificar_partida(self) -> "None":
+        return
+        logger.debug(f"[UG{self.id}]          Comando MOA:                \"Iniciar timer de verificação de partida\"")
         while time() < (time() + 600):
             if self.etapa == UG_SINCRONIZADA or self.release_timer:
                 logger.debug(f"[UG{self.id}]          Comando MOA:                \"Encerrar timer de verificação de partida por condição verdadeira\"")

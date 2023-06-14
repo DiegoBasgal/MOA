@@ -82,7 +82,7 @@
     <div id="content_container">
         <h1 style="margin-bottom: 5px;">Contatos</h1>
         <p style="margin-bottom: 1px; margin-bottom: 40px;">Página para adicionar contatos sobreaviso</p>
-        <form method='post' action='/parametros_moa/contatos/adicionar/'>
+        <form method='post' action='/contatos/adicionar/'>
            {% csrf_token %}
            <div style="margin-bottom: 20px;">
                <label><b>Nome:</b> &nbsp;&nbsp;&nbsp;</label>
@@ -107,7 +107,7 @@
                <input id="input" type="submit" value="Adicionar"/>
            </div>
         </form>
-        <form action='/parametros_moa/contatos/'>
+        <form action='/contatos/'>
            <div style="margin-top: 40px;">
                <p style="margin-bottom: 8px;"><b>Lista de contatos cadastrados</b></p>
                <table style="text-align:center" border="solid 1px black">
