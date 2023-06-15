@@ -15,6 +15,7 @@ from src.dicionarios.const import *
 from src.mensageiro.voip import Voip
 from src.conector import ClientesUsina
 from src.banco_dados import BancoDados
+from src.agendamentos import Agendamentos
 from src.unidade_geracao import UnidadeDeGeracao
 from src.funcoes.escrita import EscritaModBusBit as EMB
 
@@ -37,11 +38,13 @@ class Usina:
         self.clp = ClientesUsina.clp
         self.oco = OcorrenciasUsn(self.clp)
 
-        self.ug1 = UnidadeDeGeracao(1, self.cfg, self.db)
-        self.ug2 = UnidadeDeGeracao(2, self.cfg, self.db)
+        self.ug1: UnidadeDeGeracao = UnidadeDeGeracao(1, self.cfg, self.db)
+        self.ug2: UnidadeDeGeracao = UnidadeDeGeracao(2, self.cfg, self.db)
         self.ugs: "list[UnidadeDeGeracao]" = [self.ug1, self.ug2]
         CondicionadorBase.ugs = self.ugs
 
+        self.agn = Agendamentos(self.cfg, self.db, self)
+        
         for ug in self.ugs:
             ug.lista_ugs = self.ugs
             ug.iniciar_ultimo_estado()
@@ -88,6 +91,7 @@ class Usina:
             descr="[USN] Nível Montante"
         )
 
+        self._pid_inicial: int = -1
         self._tentativas_normalizar: int = 0
         self._potencia_alvo_anterior: int = -1
 
@@ -320,10 +324,11 @@ class Usina:
         self.__split1 = True if self.ug_operando == 1 else False
         self.__split2 = True if self.ug_operando == 2 else False
 
-        self.controle_ie = self.ajustar_ie_padrao() if self.cfg["saida_ie_inicial"] == "auto" else self.cfg["saida_ie_inicial"]
+        self.controle_ie = self.ajustar_ie_padrao()
 
     def controlar_reservatorio(self) -> int:
         if self.nv_montante >= self.cfg["nv_maximo"]:
+            logger.debug("-----------------------------------------------------------------")
             logger.info("[USN] Nível montante acima do máximo")
 
             if self.nv_montante_recente >= NIVEL_MAXIMORUM:
@@ -337,6 +342,7 @@ class Usina:
                     ug.step()
 
         elif self.nv_montante <= self.cfg["nv_minimo"] and not self.aguardando_reservatorio:
+            logger.debug("-----------------------------------------------------------------")
             logger.info("[USN] Nível montante abaixo do mínimo")
             self.aguardando_reservatorio = True
             self.distribuir_potencia(0)
@@ -345,20 +351,18 @@ class Usina:
                 ug.step()
 
             if self.nv_montante_recente <= NIVEL_FUNDO_RESERVATORIO:
-                if not ClientesUsina.ping(d.ips["TDA_ip"]):
-                    logger.warning("[USN] A comunicação com a TDA falhou. Entrando em modo manual")
-                    self.modo_autonomo = False
-                    return NV_FLAG_EMERGENCIA
-                else:
-                    logger.critical(f"[USN] Nível montante ({self.nv_montante_recente:3.2f}) atingiu o fundo do reservatorio!")
-                    return NV_FLAG_EMERGENCIA
+                logger.debug("-----------------------------------------------------------------")
+                logger.critical(f"[USN] Nível montante ({self.nv_montante_recente:3.2f}) atingiu o fundo do reservatorio!")
+                return NV_FLAG_EMERGENCIA
 
         elif self.aguardando_reservatorio:
+            logger.debug("-----------------------------------------------------------------")
             if self.nv_montante >= self.cfg["nv_alvo"]:
                 logger.debug("[USN] Nível montante dentro do limite de operação")
                 self.aguardando_reservatorio = False
 
         else:
+            logger.debug("-----------------------------------------------------------------")
             self.controlar_potencia()
 
             for ug in self.ugs:
@@ -367,13 +371,18 @@ class Usina:
         return NV_FLAG_NORMAL
 
     def controlar_potencia(self) -> None:
-        logger.debug("-----------------------------------------------------------------")
         logger.debug(f"[USN] NÍVEL -> Alvo:                      {self.cfg['nv_alvo']:0.3f}")
         logger.debug(f"[USN]          Leitura:                   {self.nv_montante_recente:0.3f}")
 
         self.controle_p = self.cfg["kp"] * self.erro_nv
-        self.controle_i = max(min((self.cfg["ki"] * self.erro_nv) + self.controle_i, 0.8), 0)
-        self.controle_d = self.cfg["kd"] * (self.erro_nv - self.erro_nv_anterior)
+
+        if self._pid_inicial == -1:
+            self.controle_i = max(min(self.controle_ie - self.controle_p, 0.8), 0)
+            self._pid_inicial = 0
+        else:
+            self.controle_i = max(min((self.cfg["ki"] * self.erro_nv) + self.controle_i, 0.8), 0)
+            self.controle_d = self.cfg["kd"] * (self.erro_nv - self.erro_nv_anterior)
+
         saida_pid = (self.controle_p + self.controle_i + min(max(-0.3, self.controle_d), 0.3))
 
         logger.debug("")
@@ -387,8 +396,13 @@ class Usina:
         logger.debug(f"[USN] ERRO:                               {self.erro_nv}")
         logger.debug("")
 
-        self.controle_i = 1 - self.controle_p if self.nv_montante_recente >= (self.cfg["nv_maximo"] + 0.03) else 0
-        self.controle_ie = 1 if self.nv_montante_recente <= (self.cfg["nv_minimo"] + 0.03) else min(self.controle_ie, 0.3)
+        if self.nv_montante_recente >= (self.cfg["nv_maximo"] + 0.03):
+            self.controle_ie = 1
+            self.controle_i = 1 - self.controle_p
+
+        if self.nv_montante_recente <= (self.cfg["nv_minimo"] + 0.03):
+            self.controle_ie = min(self.controle_ie, 0.3)
+            self.controle_i = 0
 
         pot_alvo = max(min(round(self.cfg["pot_maxima_usina"] * self.controle_ie, 5), self.cfg["pot_maxima_usina"],), self.cfg["pot_minima"],)
         logger.debug(f"[USN] Potência alvo:                      {pot_alvo:0.3f}")
@@ -557,13 +571,16 @@ class Usina:
 
     def escrever_valores(self) -> None:
         try:
+            pot_ug1 = self.ug1.leitura_potencia
+            pot_ug2 = self.ug2.leitura_potencia
+
             self.db.update_valores_usina([
                 self.get_time().strftime("%Y-%m-%d %H:%M:%S"),
                 1 if self.aguardando_reservatorio else 0,
                 self.nv_montante,
-                0 if not self.ug1.leitura_potencia else self.ug1.leitura_potencia,
+                pot_ug1,
                 self.ug1.setpoint,
-                0 if not self.ug2.leitura_potencia else self.ug2.leitura_potencia,
+                pot_ug2,
                 self.ug2.setpoint,
             ])
 
@@ -578,10 +595,10 @@ class Usina:
                 self.nv_montante_recente,
                 self.erro_nv,
                 self.ug1.setpoint,
-                0 if not self.ug1.leitura_potencia else self.ug1.leitura_potencia,
+                pot_ug1,
                 self.ug1.codigo_state,
                 self.ug2.setpoint,
-                0 if not self.ug2.leitura_potencia else self.ug2.leitura_potencia,
+                pot_ug2,
                 self.ug2.codigo_state,
                 self.cfg["kp"],
                 self.cfg["ki"],

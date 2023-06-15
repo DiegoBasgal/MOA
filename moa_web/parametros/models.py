@@ -128,7 +128,7 @@ class Comando(models.Model):
     descricao = models.TextField()
 
     executavel_em_manual = models.BooleanField(default=False)
-    executavel_em_autmoatico = models.BooleanField(default=True)
+    executavel_em_automatico = models.BooleanField(default=True)
 
 class ControleEstados(models.Model):
 

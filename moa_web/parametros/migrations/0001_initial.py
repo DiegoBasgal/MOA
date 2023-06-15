@@ -18,7 +18,7 @@ class Migration(migrations.Migration):
                 ('nome', models.CharField(max_length=255)),
                 ('descricao', models.TextField()),
                 ('executavel_em_manual', models.BooleanField(default=False)),
-                ('executavel_em_autmoatico', models.BooleanField(default=True)),
+                ('executavel_em_automatico', models.BooleanField(default=True)),
             ],
         ),
         migrations.CreateModel(

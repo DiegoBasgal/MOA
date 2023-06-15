@@ -44,7 +44,6 @@ class StateIndisponivel(State):
 
     def step(self) -> State:
         self.parent.bloquear_unidade()
-        logger.debug(f"[UG{self.parent.id}] Unidade Indisponível.")
         return self
 
 class StateRestrito(State):

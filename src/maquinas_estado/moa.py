@@ -78,7 +78,7 @@ class ControleEstados(State):
         elif self.usn.clp_emergencia or self.usn.db_emergencia:
             return Emergencia(self.usn)
 
-        elif len(Agendamentos.verificar_agendamentos_pendentes()) > 0:
+        elif len(self.usn.agn.verificar_agendamentos_pendentes()) > 0:
             return ControleAgendamentos(self.usn)
 
         else:
@@ -127,8 +127,8 @@ class ControleAgendamentos(State):
         logger.info("Tratando agendamentos")
 
     def run(self):
-        Agendamentos.verificar_agendamentos_pendentes()
-        return ControleDados(self.usn) if self.usn.modo_autonomo else ModoManual(self.usn)
+        self.usn.agn.verificar_agendamentos()
+        return ControleEstados(self.usn) if self.usn.modo_autonomo else ModoManual(self.usn)
 
 class ModoManual(State):
     def __init__(self, usn, *args, **kwargs):
@@ -153,7 +153,7 @@ class ModoManual(State):
             sleep(2)
             return ControleDados(self.usn)
 
-        return ControleAgendamentos(self.usn) if len(Agendamentos.verificar_agendamentos_pendentes()) > 0 else self
+        return ControleAgendamentos(self.usn) if len(self.usn.agn.verificar_agendamentos_pendentes()) > 0 else self
 
 class Emergencia(State):
     def __init__(self, usn, *args, **kwargs):

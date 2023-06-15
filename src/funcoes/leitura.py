@@ -39,7 +39,7 @@ class LeituraModbus:
             return self.raw
 
     @property
-    def raw(self) -> "int":
+    def raw(self) -> int:
         try:
             if self.__op == 3:
                 ler = self.__cli.read_holding_registers(self.__reg)[0]
@@ -52,6 +52,8 @@ class LeituraModbus:
         except Exception:
             logger.error(f"[LER] Não foi possivel realizar a Leitura do dado RAW no registrador: \"{self._descr}\". Retornando 0.")
             logger.debug(traceback.format_exc())
+            logger.debug("")
+            logger.debug(traceback.print_stack())
             return 0
 
 class LeituraModbusCoil:

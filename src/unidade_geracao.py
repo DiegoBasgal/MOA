@@ -73,8 +73,8 @@ class UnidadeDeGeracao:
             descr=f"[UG{self.id}] Status UHRV"
         )
         self.__leitura_dj_maquina: LeituraModbusBit = LeituraModbusBit(
-            self.clp[f"UG{self.id}"],
-            REG_UG[f"UG{self.id}_ED_PRTVA_DISJUNTOR_MAQUINA_FECHADO"],
+            self.rele[f"UG{self.id}"],
+            REG["RELE"][f"UG{self.id}_ED_PRTVA_DISJUNTOR_MAQUINA_FECHADO"],
             descr=f"[UG{self.id}] Status Disjuntor de Máquina"
         )
         self.__tensao: LeituraModbus = LeituraModbus(
@@ -440,20 +440,20 @@ class UnidadeDeGeracao:
         try:
             if not self.__leitura_dj_linha.valor:
                 logger.info(f"[UG{self.id}] Não foi possível partir a Unidade. Disjuntor de Linha está aberto.")
-                return False
+                return
 
             elif not self.__leitura_dj_tsa.valor:
                 logger.info(f"[UG{self.id}] Não foi possível partir a Unidade. Disjuntor do Serviço Auxiliar está aberto.")
-                return False
+                return
 
             elif self.__leitura_dj_gmg.valor:
                 logger.info(f"[UG{self.id}] Não foi possível partir a Unidade. Disjuntor do Grupo Motor Gerador está fechado.")
-                return False
+                return
 
             elif not self.etapa == UG_SINCRONIZADA:
                 logger.info(f"[UG{self.id}]          Enviando comando:          \"PARTIDA\"")
-                EMB.escrever_bit(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}_CD_CMD_SINCRONISMO"], 1, descr=f"UG{self.id}_CD_CMD_SINCRONISMO")
                 EMB.escrever_bit(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}_CD_CMD_REARME_FALHAS"], 1, descr=f"UG{self.id}_CD_CMD_REARME_FALHAS")
+                EMB.escrever_bit(self.clp[f"UG{self.id}"], REG["UG"][f"UG{self.id}_CD_CMD_SINCRONISMO"], 1, descr=f"UG{self.id}_CD_CMD_SINCRONISMO")
 
             else:
                 logger.debug(f"[UG{self.id}] A Unidade já está sincronizada")
@@ -509,7 +509,7 @@ class UnidadeDeGeracao:
 
     def acionar_trip_logico(self) -> "bool":
         try:
-            logger.debug(f"[UG{self.id}]          Enviando comando:           \"TRIP LÓGICO\"")
+            logger.debug(f"[UG{self.id}]          Enviando comando:          \"TRIP LÓGICO\"")
             res = EMB.escrever_bit(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}_CD_CMD_PARADA_EMERGENCIA"], 1, descr=f"UG{self.id}_CD_CMD_PARADA_EMERGENCIA")
             return res
 
@@ -531,7 +531,7 @@ class UnidadeDeGeracao:
 
     def acionar_trip_eletrico(self) -> "bool":
         try:
-            logger.debug(f"[UG{self.id}]          Enviando comando:           \"TRIP ELÉTRICO\" (SEM EFEITO -> Falta Automatic instalar CLP MOA)")
+            logger.debug(f"[UG{self.id}]          Enviando comando:          \"TRIP ELÉTRICO\" (SEM EFEITO -> Falta Automatic instalar CLP MOA)")
             res = None # self.clp["MOA"].write_single_coil(REG_MOA[f"OUT_BLOCK_UG{self.id}"], [1])
             return res
 

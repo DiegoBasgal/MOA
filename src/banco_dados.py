@@ -75,7 +75,7 @@ class BancoDados:
 
         self.conn.commit()
         return {
-            "executavel_em_autmoatico": parametros_raw[0],
+            "executavel_em_automatico": parametros_raw[0],
             "executavel_em_manual": parametros_raw[1],
             }
 
@@ -148,7 +148,7 @@ class BancoDados:
             "UPDATE agendamentos_agendamento "
             "SET "
             "observacao = if(observacao is null,%s, "
-            "oncat(observacao, %s)), "
+            "concat(observacao, %s)), "
             "executado = %s, "
             "modificado_por = 'MOA', "
             "ts_modificado = %s "

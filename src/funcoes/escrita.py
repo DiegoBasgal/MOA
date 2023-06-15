@@ -39,7 +39,7 @@ class EscritaModBusBit:
                     lista_int[i] = valor
                     break
 
-            v = sum(val*(2**x) for x, val in enumerate(lista_int))
+            v = sum(val*(2**x) for x, val in enumerate(reversed(lista_int)))
             # logger.debug("")
             # logger.debug(f"[ESCRITA TESTE] DESCRIÇÃO: \"{descr}\" | VALOR RAW: {raw}")
             # logger.debug(f"[ESCRITA TESTE] BITS (ALTERADA):                     {lista_int}")

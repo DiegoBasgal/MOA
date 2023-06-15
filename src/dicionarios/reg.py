@@ -1631,7 +1631,7 @@ REG = {
 
         # Retornos
         "UG1_ED_UHRV_UNIDADE_HABILITADA":           [12362, 1],     # OK
-        "UG1_ED_PRTVA_DISJUNTOR_MAQUINA_FECHADO":   [12310, 25],    # OK
+
 
 
         ## UG2
@@ -1648,7 +1648,6 @@ REG = {
 
         # Retornos
         "UG2_ED_UHRV_UNIDADE_HABILITADA":           [12362, 1],     # OK
-        "UG2_ED_PRTVA_DISJUNTOR_MAQUINA_FECHADO":   [12310, 25],    # OK
     },
 
     "GERAL": {
@@ -1667,6 +1666,9 @@ REG = {
         "RELE_SE_P":                                353,            # OK
 
         "RELE_UG1_P":                               353,            # OK
+        "UG1_ED_PRTVA_DISJUNTOR_MAQUINA_FECHADO":   [8464, 0],      # OK
+
         "RELE_UG2_P":                               353,            # OK
+        "UG2_ED_PRTVA_DISJUNTOR_MAQUINA_FECHADO":   [8464, 0],      # OK
     },
 }
