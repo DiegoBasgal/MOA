@@ -377,10 +377,10 @@ class Usina:
         self.controle_p = self.cfg["kp"] * self.erro_nv
 
         if self._pid_inicial == -1:
-            self.controle_i = max(min(self.controle_ie - self.controle_p, 0.8), 0)
+            self.controle_i = max(min(self.controle_ie - self.controle_p, 0.9), 0)
             self._pid_inicial = 0
         else:
-            self.controle_i = max(min((self.cfg["ki"] * self.erro_nv) + self.controle_i, 0.8), 0)
+            self.controle_i = max(min((self.cfg["ki"] * self.erro_nv) + self.controle_i, 0.9), 0)
             self.controle_d = self.cfg["kd"] * (self.erro_nv - self.erro_nv_anterior)
 
         saida_pid = (self.controle_p + self.controle_i + min(max(-0.3, self.controle_d), 0.3))

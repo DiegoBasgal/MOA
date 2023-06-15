@@ -10,7 +10,7 @@ logger = logging.getLogger("__main__")
 class EscritaModBusBit:
 
     @classmethod
-    def escrever_bit(cls, clp: "ModbusClient", reg: "int | list[int, int]", valor: "int", tamanho: int= 16, descr: "str"=None) -> "bool":
+    def escrever_bit(cls, clp: "ModbusClient", reg: "int | list[int, int]", valor: "int", tamanho: int= 16, invertido: bool=False, descr: "str"=None) -> "bool":
         try:
             lista_int = []
             raw = clp.read_holding_registers(reg[0])[0]
@@ -38,14 +38,12 @@ class EscritaModBusBit:
                 if reg[1] == i:
                     lista_int[i] = valor
                     break
+            if invertido:
+                v = sum(val*(2**x) for x, val in enumerate(reversed(lista_int)))
+            else:
+                v = sum(val*(2**x) for x, val in enumerate(lista_int))
 
-            v = sum(val*(2**x) for x, val in enumerate(reversed(lista_int)))
-            # logger.debug("")
-            # logger.debug(f"[ESCRITA TESTE] DESCRIÇÃO: \"{descr}\" | VALOR RAW: {raw}")
-            # logger.debug(f"[ESCRITA TESTE] BITS (ALTERADA):                     {lista_int}")
-            # logger.debug(f"[ESCRITA TESTE] CONVERSÃO (DECIMAL):                 {v}")
             res = clp.write_single_register(reg[0], v)
-            # sleep(1)
             return res
 
         except Exception:
