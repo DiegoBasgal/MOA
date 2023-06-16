@@ -146,7 +146,9 @@ if __name__ == "__main__":
     while True:
         try:
             logger.debug("")
+            logger.debug("")
             logger.debug(f"Executando estado:                        \"{sm.state.__class__.__name__}\"")
+            logger.debug("-----------------------------------------------------------------")
             sm.exec()
             if usn.estado_moa == MOA_SM_CONTROLE_DADOS:
                 t_restante = max(TEMPO_CICLO_TOTAL - (time() - t_i), 0) / ESCALA_DE_TEMPO

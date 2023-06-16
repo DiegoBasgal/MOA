@@ -21,10 +21,10 @@ class BancoDados:
 
     def get_ultimo_estado_ug(self, ug_id) -> int:
         self.cursor.execute(
-            f"SELECT ug{ug_id}_ultimo_estado "
+            "SELECT ug%s_ultimo_estado "
             "FROM `debug`.`moa_debug` "
-            "ORDER BY ts DESC"
-            "LIMIT 1;"
+            "ORDER BY ts DESC "
+            "LIMIT 1;", tuple([ug_id])
         )
         estado = self.cursor.fetchone()
         return estado
@@ -67,7 +67,7 @@ class BancoDados:
 
     def get_executabilidade(self, id_comando) -> dict:
         self.cursor.execute(
-            "SELECT executavel_em_autmoatico, executavel_em_manual "
+            "SELECT executavel_em_automatico, executavel_em_manual "
             "FROM parametros_comando "
             "WHERE id = %s", tuple([id_comando])
         )
@@ -75,7 +75,7 @@ class BancoDados:
 
         self.conn.commit()
         return {
-            "executavel_em_autmoatico": parametros_raw[0],
+            "executavel_em_automatico": parametros_raw[0],
             "executavel_em_manual": parametros_raw[1],
             }
 
@@ -160,7 +160,7 @@ class BancoDados:
             "UPDATE agendamentos_agendamento "
             "SET "
             "observacao = if(observacao is null,%s, "
-            "oncat(observacao, %s)), "
+            "concat(observacao, %s)), "
             "executado = %s, "
             "modificado_por = 'MOA', "
             "ts_modificado = %s "

@@ -33,6 +33,11 @@ REG = {
     "MOA_OUT_ETAPA_UG2":                                427,        # Holding Register                      (OP -> 0x06 Write Single Register)
     "MOA_OUT_STATE_UG2":                                428,        # Holding Register                      (OP -> 0x06 Write Single Register)
 
+    "MOA_IN_EMERG_UG3":                                 25,         # Coil                                  (OP -> 0x02 Read Input Status)
+    "MOA_OUT_BLOCK_UG3":                                26,         # Coil                                  (OP -> 0x05 Write Single Coil)
+    "MOA_OUT_ETAPA_UG3":                                427,        # Holding Register                      (OP -> 0x06 Write Single Register)
+    "MOA_OUT_STATE_UG3":                                428,        # Holding Register                      (OP -> 0x06 Write Single Register)
+
 
     ### SA
 
@@ -491,6 +496,7 @@ REG = {
     "UG1_ED_QCAUG_TripDisjAgrup":                       87,         # MX_Input[11].7                        (OP -> 0x02 Read Input Status)
     "UG1_ED_QCAUG1_Remoto":                             88,         # MX_Input[12].0                        (OP -> 0x02 Read Input Status)
     "UG1_ED_CondicaoPartida":                           222,        #                                       (OP -> 0x02 Read Input Status)
+    "UG1_ED_Falta125VccCom":                            13,          # MX_Input[2].5                        (OP -> 0x02 Read Input Status)
 
     ## RETORNOS DIGITAIS
     "UG1_RD_TensaoEstabilizada":                        128,        # MX_Input[17].0                        (OP -> 0x02 Read Input Status)
@@ -1099,7 +1105,8 @@ REG = {
     "UG2_RD_TripPressaoCaixaEspiral":                   220,        # MX_Input[28].4                        (OP -> 0x02 Read Input Status)
     "UG2_RD_Trip_PBCE_Habilitado":                      221,        # MX_Input[28].5                        (OP -> 0x02 Read Input Status)
     "UG2_RD_UG2_StsMaqParada":                          222,        # MX_Input[28].6                        (OP -> 0x02 Read Input Status)
-
+    "UG2_ED_Falta125VccCom":                            13,          # MX_Input[2].5                        (OP -> 0x02 Read Input Status)
+    
     ## RETORNOS ANALÓGICOS
     "UG2_RA_PosicaoDistribuidor":                       0,          # MW_InpReg[1]   Scale 0.1              (OP -> 0x04 Read Input Regs - 3x)
     "UG2_RA_ReferenciaCarga":                           1,          # MW_InpReg[2]   Scale 0.1              (OP -> 0x04 Read Input Regs - 3x)
@@ -1441,7 +1448,7 @@ REG = {
     "UG3_ED_TripAlimPainelFreio":                       85,          # MX_Input[11].5                       (OP -> 0x02 Read Input Status)
     "UG3_ED_PainelFreioStatus":                         86,          # MX_Input[11].6                       (OP -> 0x02 Read Input Status)
     "UG3_ED_QCAUG_TripDisjAgrup":                       87,          # MX_Input[11].7                       (OP -> 0x02 Read Input Status)
-    "UG3_ED_QCAUG_Remoto":                              88,          # MX_Input[12].0                       (OP -> 0x02 Read Input Status)
+    "UG3_ED_QCAUG3_Remoto":                              88,          # MX_Input[12].0                       (OP -> 0x02 Read Input Status)
     "UG3_ED_CondicaoPartida":                           222,         #                                      (OP -> 0x02 Read Input Status)
 
     ## RETORNOS DIGITAIS

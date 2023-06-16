@@ -10,7 +10,7 @@ logger = logging.getLogger("__main__")
 
 class ClientesUsina:
 
-    TDA_Offline = False
+    borda_ping = 0
 
     clp: "dict[str, ModbusClient]" = {}
 
@@ -72,18 +72,18 @@ class ClientesUsina:
 
     @classmethod
     def ping_clients(cls) -> None:
-        if not cls.ping(d.ips["TDA_slave_ip"]):
-            cls.TDA_Offline = True
-            if cls.TDA_Offline and cls.hb_borda_emerg_ping == 0:
-                cls.hb_borda_emerg_ping = 1
+        if not cls.ping(d.ips["TDA_ip"]):
+            d.glb["TDA_Offline"] = True
+            if d.glb["TDA_Offline"] and cls.borda_ping == 0:
+                cls.borda_ping = 1
                 logger.critical("CLP TDA não respondeu a tentativa de comunicação!")
 
-        elif cls.ping(d.ips["TDA_slave_ip"]) and cls.hb_borda_emerg_ping == 1:
+        elif cls.ping(d.ips["TDA_ip"]) and cls.borda_ping == 1:
             logger.info("Comunicação com o CLP TDA reestabelecida.")
-            cls.hb_borda_emerg_ping = 0
-            cls.TDA_Offline = False
+            cls.borda_ping = 0
+            d.glb["TDA_Offline"] = False
 
-        if not cls.ping(d.ips["USN_slave_ip"]):
+        if not cls.ping(d.ips["SA_ip"]):
             logger.critical("CLP SA não respondeu a tentativa de ping!")
         if cls.clp["SA"].open():
             cls.clp["SA"].close()
@@ -91,7 +91,7 @@ class ClientesUsina:
             logger.critical("CLP SA não respondeu a tentativa de conexão ModBus!")
             cls.clp["SA"].close()
 
-        if not cls.ping(d.ips["MOA_slave_ip"]):
+        if not cls.ping(d.ips["MOA_ip"]):
             logger.warning("CLP MOA não respondeu a tentativa de ping!")
         if cls.clp["MOA"].open():
             cls.clp["MOA"].close()

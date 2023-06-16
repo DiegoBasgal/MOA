@@ -160,12 +160,12 @@ class Comando(models.Model):
     nome = models.CharField(max_length=255)
     descricao = models.TextField()
     executavel_em_manual = models.BooleanField(default=False)
-    executavel_em_autmoatico = models.BooleanField(default=True)
+    executavel_em_automatico = models.BooleanField(default=True)
 
 
 class ControleEstados(models.Model):
 
     ts = models.DateTimeField(default=0)
 
-    ultimo_estado_ug1 = models.TextField(default=0, default="")
-    ultimo_estado_ug2 = models.TextField(default=0, default="")
+    ultimo_estado_ug1 = models.TextField(default="")
+    ultimo_estado_ug2 = models.TextField(default="")

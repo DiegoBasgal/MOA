@@ -9,7 +9,7 @@ from src.dicionarios.const import *
 
 from src.usina import *
 from src.funcoes.leitura import *
-from src.condicionadores import *
+from src.Condicionadores import *
 from src.maquinas_estado.ug import *
 
 from src.banco_dados import BancoDados
@@ -248,7 +248,6 @@ class UnidadeGeracao:
             self.__setpoint = self.setpoint_maximo
         else:
             self.__setpoint = int(var)
-        logger.debug(f"[UG{self.id}] SP<-{var}")
 
     @property
     def setpoint_minimo(self) -> int:
@@ -325,7 +324,9 @@ class UnidadeGeracao:
             elif estado == UG_SM_INDISPONIVEL:
                 self.__next_state = StateIndisponivel(self)
             else:
-                logger.error(f"[UG{self.id}] Não foi possível ler o último estado da Unidade. Entrando no estado \"Manual\".")
+                logger.debug("")
+                logger.error(f"[UG{self.id}] Não foi possível ler o último estado da Unidade")
+                logger.info(f"[UG{self.id}] Acionando estado \"Manual\".")
                 self.__next_state = StateManual(self)
 
     def atualizar_modbus_moa(self) -> "None":
@@ -439,7 +440,7 @@ class UnidadeGeracao:
                 response = self.clp[f"UG{self.id}"].write_single_coil(REG[f"UG{self.id}_CD_ResetGeral"], [1])
                 response = self.clp[f"UG{self.id}"].write_single_coil(REG[f"UG{self.id}_CD_RV_RefRemHabilita"], [1])
                 response = self.clp[f"UG{self.id}"].write_single_register(REG[f"UG{self.id}_RA_ReferenciaCarga"], self.setpoint)
-            return response
+                return response
 
         except Exception:
             logger.error(f"[UG{self.id}] Não foi possível enviar o setpoint.")
@@ -448,7 +449,7 @@ class UnidadeGeracao:
 
     def acionar_trip_eletrico(self) -> "None":
         try:
-            logger.debug(f"[UG{self.id}]          Enviando comando:           \"TRIP ELÉTRICO\"")
+            logger.debug(f"[UG{self.id}]          Enviando comando:          \"TRIP ELÉTRICO\"")
             self.clp["MOA"].write_single_coil(REG[f"MOA_OUT_BLOCK_UG{self.id}"], [1])
 
         except Exception:
@@ -457,7 +458,7 @@ class UnidadeGeracao:
 
     def remover_trip_eletrico(self) -> "None":
         try:
-            logger.debug(f"[UG{self.id}]          Removendo comando:          \"TRIP ELÉTRICO\"")
+            logger.debug(f"[UG{self.id}]          Removendo comando:         \"TRIP ELÉTRICO\"")
 
             self.clp["MOA"].write_single_coil(REG["PAINEL_LIDO"], [0])
             self.clp["MOA"].write_single_coil(REG[f"MOA_OUT_BLOCK_UG{self.id}"], [0])
@@ -473,7 +474,7 @@ class UnidadeGeracao:
 
     def acionar_trip_logico(self) -> "None":
         try:
-            logger.debug(f"[UG{self.id}]          Enviando comando:           \"TRIP LÓGICO\"")
+            logger.debug(f"[UG{self.id}]          Enviando comando:          \"TRIP LÓGICO\"")
             self.clp[f"UG{self.id}"].write_single_coil(REG[f"UG{self.id}_CD_EmergenciaViaSuper"], [1])
 
         except Exception:
@@ -482,7 +483,7 @@ class UnidadeGeracao:
 
     def remover_trip_logico(self) -> "None":
         try:
-            logger.debug(f"[UG{self.id}]          Removendo comando:          \"TRIP LÓGICO\"")
+            logger.debug(f"[UG{self.id}]          Removendo comando:         \"TRIP LÓGICO\"")
             self.clp[f"UG{self.id}"].write_single_coil(REG[f"UG{self.id}_CD_ResetGeral"], [1])
             self.clp[f"UG{self.id}"].write_single_coil(REG[f"UG{self.id}_CD_ResetReleBloq86H"], [1])
             self.clp[f"UG{self.id}"].write_single_coil(REG[f"UG{self.id}_CD_ResetReleBloq86M"], [1])
@@ -500,11 +501,15 @@ class UnidadeGeracao:
 
     def reconhece_reset_alarmes(self) -> "None":
         try:
-            logger.info(f"[UG{self.id}]           Enviando comando:           \"RECONHECE E RESET\"")
+            logger.debug("")
+            logger.info(f"[UG{self.id}]          Enviando comando:          \"RECONHECE E RESET\"")
             self.clp["MOA"].write_single_coil(REG["PAINEL_LIDO"], [0])
 
+            passo = 0
             for x in range(3):
-                logger.debug(f"[UG{self.id}] Passo: {x}/3")
+                passo += 1
+                logger.debug("")
+                logger.debug(f"[UG{self.id}]          Passo: {passo}/3")
                 self.remover_trip_eletrico()
                 sleep(1)
                 self.remover_trip_logico()
@@ -526,7 +531,7 @@ class UnidadeGeracao:
         # SINCRONIZANDO
         elif self.etapa_atual == UG_SINCRONIZANDO:
             if not self.borda_partindo:
-                logger.debug(f"[UG{self.id}]          Comando MOA:                \"Iniciar timer de verificação de partida\"")
+                logger.debug(f"[UG{self.id}]          Comando MOA:               \"Iniciar timer de verificação de partida\"")
                 Thread(target=lambda: self.verificar_partida()).start()
                 self.borda_partindo = True
 
@@ -574,7 +579,8 @@ class UnidadeGeracao:
         atenuacao = 0
         for condic in self.condicionadores_atenuadores:
             atenuacao = max(atenuacao, condic.valor)
-            logger.debug(f"[UG{self.id}] Atenuador \"{condic.descr}\" -> Atenuação: {atenuacao} / Leitura: {condic.leitura.valor}")
+            logger.debug(f"[UG{self.id}]          Verificando Atenuadores:")
+            logger.debug(f"[UG{self.id}]          - \"{condic.descr}\":         Leitura: {condic.leitura.valor} | Atenuação: {atenuacao}")
 
         ganho = 1 - atenuacao
         aux = self.setpoint
@@ -584,7 +590,7 @@ class UnidadeGeracao:
         elif (self.setpoint * ganho < self.setpoint_minimo) and (self.setpoint > self.setpoint_minimo):
             self.setpoint =  self.setpoint_minimo
 
-        logger.debug(f"[UG{self.id}] SP {aux} * GANHO {ganho} = {self.setpoint}")
+        logger.debug(f"[UG{self.id}]                                     SP {aux} * GANHO {ganho} = {self.setpoint} kW")
 
     def ajuste_inicial_cx(self) -> "None":
         try:

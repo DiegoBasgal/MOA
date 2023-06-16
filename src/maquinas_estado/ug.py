@@ -25,6 +25,7 @@ class StateManual(State):
         super().__init__(parent)
 
         self.parent.codigo_state = UG_SM_MANUAL
+        logger.debug("")
         logger.info(f"[UG{self.parent.id}] Entrando no estado:                 \"Manual\". Para retornar a operação autônoma, favor agendar na interface web")
         logger.debug(f"[UG{self.parent.id}] Tentativas de normalização:         {self.parent.tentativas_de_normalizacao}/{self.parent.limite_tentativas_de_normalizacao}")
 
@@ -39,6 +40,7 @@ class StateIndisponivel(State):
         super().__init__(parent)
 
         self.parent.codigo_state = UG_SM_INDISPONIVEL
+        logger.debug("")
         logger.info(f"[UG{self.parent.id}] Entrando no estado:                 \"Indisponível\". Para retornar a operação autônoma, favor agendar na interface web")
         logger.debug(f"[UG{self.parent.id}] Tentativas de normalização:         {self.parent.tentativas_de_normalizacao}/{self.parent.limite_tentativas_de_normalizacao}")
 
@@ -54,6 +56,7 @@ class StateRestrito(State):
         super().__init__(parent)
 
         self.parent.codigo_state = UG_SM_RESTRITA
+        logger.debug("")
         logger.info(f"[UG{self.parent.id}] Entrando no estado                  \"Restrito\"")
         logger.debug(f"[UG{self.parent.id}] Tentativas de normalização:         {self.parent.tentativas_de_normalizacao}/{self.parent.limite_tentativas_de_normalizacao}")
 
@@ -93,6 +96,7 @@ class StateDisponivel(State):
         super().__init__(parent)
 
         self.parent.codigo_state = UG_SM_DISPONIVEL
+        logger.debug("")
         logger.info(f"[UG{self.parent.id}] Entrando no estado:                 \"Disponível\"")
         self.parent.tentativas_de_normalizacao = 0
         logger.debug(f"[UG{self.parent.id}] Tentativas de normalização:         {self.parent.tentativas_de_normalizacao}/{self.parent.limite_tentativas_de_normalizacao}")
