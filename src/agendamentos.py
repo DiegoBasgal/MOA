@@ -25,32 +25,30 @@ class Agendamentos:
 
     def verificar_agendamentos_pendentes(self) -> list:
         pendentes = []
-        try:
-            agendamentos = self.db.get_agendamentos_pendentes()
+        agendamentos = self.db.get_agendamentos_pendentes()
 
-        except Exception:
-            logger.error(f"[AGN] Não foi possível extrair lista de agendamentos pendentes do banco.")
-            return None
+        for agendamento in agendamentos:
+            ag = list(agendamento)
+            ag[1] = ag[1] - timedelta(0, 60 * 60 * 3)
+            pendentes.append(ag)
 
-        else:
-            for agendamento in agendamentos:
-                ag = list(agendamento)
-                ag[1] = ag[1] - timedelta(0, 60 * 60 * 3)
-                pendentes.append(ag)
-
-            return pendentes
+        return pendentes
 
     def verificar_agendamentos_iguais(self, agendamentos) -> None:
         limite_entre_agendamentos_iguais = 300
         agendamentos = sorted(agendamentos, key=lambda x:(x[3], x[1]))
-
-        while (i := 0) < (j := len(agendamentos) - 1):
+        i = 0
+        j = len(agendamentos)
+        while i < j - 1:
             if agendamentos[i][3] == agendamentos[i+1][3] and (agendamentos[i+1][1] - agendamentos[i][1]).seconds < limite_entre_agendamentos_iguais:
                 ag_concatenado = agendamentos.pop(i)
-                logger.info("[AGN] O agendamento foi ignorado, pois o mesmo foi agendado à menos de 5 minutos atrás.")
-                self.db.update_agendamento(ag_concatenado[0], True, obs="Este agendamento foi concatenado ao seguinte por motivos de temporização.")
+                obs = "Este agendamento foi concatenado ao seguinte por motivos de temporização."
+                logger.warning(obs)
+                self.db.update_agendamento(ag_concatenado[0], True, obs)
                 i -= 1
+
             i += 1
+            j = len(agendamentos)
 
     def verificar_agendamentos(self) -> bool:
         agora = datetime.now(pytz.timezone("Brazil/East")).replace(tzinfo=None)

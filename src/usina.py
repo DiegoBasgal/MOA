@@ -116,7 +116,7 @@ class Usina:
 
         self.pot_disp: "int" = 0
         self.ug_operando: "int" = 0
-        self.modo_de_escolha_das_ugs: "int" = 0
+        self.modo_de_escolha_das_ugs: "int" = -1
 
         self.erro_nv: "int" = 0
         self.erro_nv_anterior: "int" = 0
@@ -234,9 +234,9 @@ class Usina:
     def resetar_tda(self) -> None:
         if not d.glb["TDA_Offline"]:
             self.clp["TDA"].write_single_coil(REG["TDA_CD_ResetGeral"], [1])
-            self.clp["TDA"].write_single_coil(REG["TDA_CD_Hab_Nivel"], [0])
+            # self.clp["TDA"].write_single_coil(REG["TDA_CD_Hab_Nivel"], [0])
             self.clp["TDA"].write_single_coil(REG["TDA_CD_Desab_Nivel"], [1])
-            self.clp["TDA"].write_single_coil(REG["TDA_CD_Hab_Religamento52L"], [0])
+            # self.clp["TDA"].write_single_coil(REG["TDA_CD_Hab_Religamento52L"], [0])
             self.clp["TDA"].write_single_coil(REG["TDA_CD_Desab_Religamento52L"], [1])
         else:
             logger.debug("[USN] Não é possível resetar a TDA pois o CLP da TDA se encontra offline")
@@ -406,6 +406,7 @@ class Usina:
         self.clp["MOA"].write_single_coil(REG["MOA_OUT_BLOCK_UG3"], [0])
 
     def controlar_reservatorio(self) -> int:
+        self.resetar_tda()
         if self.nv_montante >= self.cfg["nv_maximo"]:
             logger.info("[USN] Nível montante acima do máximo")
 
@@ -489,7 +490,7 @@ class Usina:
     def controlar_unidades_disponiveis(self) -> list:
         ls = [ug for ug in self.ugs if ug.disponivel and not ug.etapa_atual == UG_PARANDO]
 
-        if self.modo_de_escolha_das_ugs in (UG_PRIORIDADE_1, UG_PRIORIDADE_2):
+        if self.modo_de_escolha_das_ugs in (UG_PRIORIDADE_1, UG_PRIORIDADE_2, UG_PRIORIDADE_3):
             ls = sorted(ls, key=lambda y: (-1 * y.etapa_atual, -1 * y.leitura_potencia, -1 * y.setpoint, y.prioridade))
 
         else:
@@ -660,7 +661,6 @@ class Usina:
                 self.modo_autonomo = False
                 logger.debug(f"[USN] Modo autônomo:                      \"{'Desativado'}\"")
 
-
             if not self.modo_de_escolha_das_ugs == int(parametros["modo_de_escolha_das_ugs"]):
                 self.modo_de_escolha_das_ugs = int(parametros["modo_de_escolha_das_ugs"])
                 logger.info(f"[USN] Modo de prioridade das UGs:         \"{UG_STR_DCT_PRIORIDADE[self.modo_de_escolha_das_ugs]}\"")
@@ -698,15 +698,31 @@ class Usina:
                 self.nv_montante if not d.glb["TDA_Offline"] else 0,
                 self.ug1.leitura_potencia,
                 self.ug1.setpoint,
+                self.ug1.codigo_state,
                 self.ug2.leitura_potencia,
                 self.ug2.setpoint,
+                self.ug2.codigo_state,
                 self.ug3.leitura_potencia,
                 self.ug3.setpoint,
+                self.ug3.codigo_state,
             ]
             self.db.update_valores_usina(v_params)
 
         except Exception:
             logger.error(f"[USN] Houve um erro ao gravar os parâmetros da Usina no Banco.")
+            logger.debug(traceback.format_exc())
+
+        try:
+            v_params = [
+                time(),
+                self.ug1.codigo_state,
+                self.ug2.codigo_state,
+                self.ug3.codigo_state,
+            ]
+            self.db.update_controle_estados(v_params)
+
+        except Exception:
+            logger.error(f"[USN] Houve um erro ao gravar os estados das Unidades no Banco.")
             logger.debug(traceback.format_exc())
 
         try:

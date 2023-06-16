@@ -35,6 +35,9 @@ def monitoramento_view(request, *args, **kwargs):
         "em_acionada": "Sim" if usina.emergencia_acionada else "Não",
         "timestamp": usina.timestamp.strftime("%d/%m/%Y, %H:%M:%S"),
         "nv_alvo": f"{usina.nv_alvo:3.2f}",
+        "ug1_state": usina.ug1_ultimo_estado,
+        "ug2_state": usina.ug2_ultimo_estado,
+        "ug3_state": usina.ug3_ultimo_estado,
         "aguardo": "Sim" if usina.aguardando_reservatorio > 0 else "Não",
         "CLP_MOA": usina.clp_moa_ip,
     }
@@ -159,19 +162,9 @@ def monitoramento_view(request, *args, **kwargs):
 
     if clp_moa.open():
         context["CLP_Status"] = True
-        state_ug1 = 4 # clp_moa.read_holding_registers(423)[0]
-        state_ug2 = 4 # clp_moa.read_holding_registers(428)[0]
-        state_ug3 = 4 # clp_moa.read_holding_registers(433)[0]
         clp_moa.close()
 
-        context["ug1_state"] = 4 # MOA_DICT_DE_STATES[state_ug1]
-        context["ug2_state"] = 4 # MOA_DICT_DE_STATES[state_ug2]
-        context["ug3_state"] = 4 # MOA_DICT_DE_STATES[state_ug3]
-
     else:
-        context["ug1_state"] = 4
-        context["ug2_state"] = 4
-        context["ug3_state"] = 4
         context["CLP_Status"] = False
 
     moa_ultima_comunicacao = (

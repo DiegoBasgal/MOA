@@ -19,14 +19,14 @@ def parametros_moa_view(request, *args, **kwargs):
             usina.save()
 
         if request.POST.get("escolha_ugs0"):
-            usina.modo_de_escolha_das_ugs = 1
+            usina.modo_de_escolha_das_ugs = 0
             usina.ug1_prioridade = 0
             usina.ug2_prioridade = 0
             usina.ug3_prioridade = 0
             usina.save()
 
         if request.POST.get("escolha_ugs1"):
-            usina.modo_de_escolha_das_ugs = 2
+            usina.modo_de_escolha_das_ugs = 1
             usina.ug1_prioridade = 100
             usina.ug2_prioridade = 0
             usina.ug3_prioridade = 0
@@ -40,7 +40,7 @@ def parametros_moa_view(request, *args, **kwargs):
             usina.save()
 
         if request.POST.get("escolha_ugs3"):
-            usina.modo_de_escolha_das_ugs = 2
+            usina.modo_de_escolha_das_ugs = 3
             usina.ug1_prioridade = 0
             usina.ug2_prioridade = 0
             usina.ug3_prioridade = 100

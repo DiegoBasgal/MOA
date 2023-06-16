@@ -310,9 +310,9 @@ class UnidadeGeracao:
         self.__next_state = StateDisponivel(self)
 
     def iniciar_ultimo_estado(self) -> "None":
-        estado = self.db.get_ultimo_estado_ug(self.id)
+        estado = self.db.get_ultimo_estado_ug(self.id)[0]
 
-        if not estado:
+        if estado == None:
             self.__next_state = StateDisponivel(self)
         else:
             if estado == UG_SM_MANUAL:

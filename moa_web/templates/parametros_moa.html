@@ -114,16 +114,16 @@
                             <label style="font-size: 18px;"><b>Priorização Unidades de Geração: </b></label>
                         </td>
                         <td>
-                            {% if usina.modo_de_escolha_das_ugs == 1 %}
+                            {% if usina.modo_de_escolha_das_ugs == 0 %}
                                 <label style="font-size: 17px; margin-left: 5px; color: blue">Horas-Máquina</label>
                             {% endif %}
-                            {% if usina.modo_de_escolha_das_ugs == 2 and usina.ug1_prioridade == 100 %}
+                            {% if usina.modo_de_escolha_das_ugs == 1 and usina.ug1_prioridade == 100 %}
                                 <label style="font-size: 17px; margin-left: 5px; color: orange">UG1</label>
                             {% endif %}
                             {% if usina.modo_de_escolha_das_ugs == 2 and usina.ug2_prioridade == 100 %}
                                 <label style="font-size: 17px; margin-left: 5px; color: orange">UG2</label>
                             {% endif %}
-                            {% if usina.modo_de_escolha_das_ugs == 2 and usina.ug3_prioridade == 100 %}
+                            {% if usina.modo_de_escolha_das_ugs == 3 and usina.ug3_prioridade == 100 %}
                                 <label style="font-size: 17px; margin-left: 5px; color: orange">UG3</label>
                             {% endif %}
                         </td>
@@ -310,9 +310,6 @@
         <br>
         <br>
     </div>
-    <script type = "text/JavaScript">
-        setTimeout("location.reload(true);", 10000);
-    </script>
 </body>
 </html>
 {% endblock content %}

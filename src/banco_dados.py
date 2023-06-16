@@ -21,10 +21,9 @@ class BancoDados:
 
     def get_ultimo_estado_ug(self, ug_id) -> int:
         self.cursor.execute(
-            "SELECT ug%s_ultimo_estado "
-            "FROM `debug`.`moa_debug` "
-            "ORDER BY ts DESC "
-            "LIMIT 1;", tuple([ug_id])
+            f"SELECT ug{ug_id}_ultimo_estado "
+            "FROM parametros_parametrosusina "
+            "WHERE id = 1;"
         )
         estado = self.cursor.fetchone()
         return estado
@@ -117,7 +116,7 @@ class BancoDados:
             )
         self.conn.commit()
 
-    def update_valores_usina(self, values) -> None:
+    def update_valores_usina(self, valores) -> None:
         self.cursor.execute(
             "UPDATE parametros_parametrosusina "
             "SET timestamp = %s, "
@@ -125,12 +124,15 @@ class BancoDados:
             "nv_montante = %s, "
             "ug1_pot = %s, "
             "ug1_setpot = %s, "
+            "ug1_ultimo_estado = %s, "
             "ug2_pot = %s, "
             "ug2_setpot = %s, "
+            "ug2_ultimo_estado = %s, "
             "ug3_pot = %s, "
-            "ug3_setpot = %s "
+            "ug3_setpot = %s, "
+            "ug3_ultimo_estado = %s "
             "WHERE id = 1;",
-            tuple(values)
+            tuple(valores)
         )
         self.conn.commit()
 
@@ -148,6 +150,15 @@ class BancoDados:
                     "%s,%s, "
                     "%s,%s, "
                     "%s);",
+                    tuple(valores)
+        )
+        self.conn.commit()
+
+    def update_controle_estados(self, valores) -> None:
+        self.cursor.execute(
+            "INSERT INTO parametros_controleestados "
+            "VALUES (%s,%s, "
+                    "%s,%s);",
                     tuple(valores)
         )
         self.conn.commit()

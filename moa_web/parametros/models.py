@@ -15,17 +15,17 @@ class ParametrosUsina(models.Model):
 
     # Servidores
     clp_online = models.IntegerField(default=1)
-    clp_ug1_ip = models.CharField(max_length=15, default="192.168.0.51")
-    clp_ug1_porta = models.IntegerField(default=502)
-    clp_ug2_ip = models.CharField(max_length=15, default="192.168.0.52")
-    clp_ug2_porta = models.IntegerField(default=502)
-    clp_ug3_ip = models.CharField(max_length=15, default="192.168.0.53")
-    clp_ug3_porta = models.IntegerField(default=502)
-    clp_sa_ip = models.CharField(max_length=15, default="192.168.0.50")
-    clp_sa_porta = models.IntegerField(default=502)
-    clp_tda_ip = models.CharField(max_length=15, default="192.168.0.54")
-    clp_tda_porta = models.IntegerField(default=502)
-    clp_moa_ip = models.CharField(max_length=15, default="192.168.0.116")
+    clp_ug1_ip = models.CharField(max_length=15, default="192.168.50.51")
+    clp_ug1_porta = models.IntegerField(default=5002)
+    clp_ug2_ip = models.CharField(max_length=15, default="192.168.50.52")
+    clp_ug2_porta = models.IntegerField(default=5002)
+    clp_ug3_ip = models.CharField(max_length=15, default="192.168.50.53")
+    clp_ug3_porta = models.IntegerField(default=503)
+    clp_sa_ip = models.CharField(max_length=15, default="192.168.50.50")
+    clp_sa_porta = models.IntegerField(default=5002)
+    clp_tda_ip = models.CharField(max_length=15, default="192.168.50.54")
+    clp_tda_porta = models.IntegerField(default=5002)
+    clp_moa_ip = models.CharField(max_length=15, default="192.168.50.116")
     clp_moa_porta = models.IntegerField(default=502)
 
     # Nível
@@ -57,6 +57,7 @@ class ParametrosUsina(models.Model):
     ug1_pot = models.DecimalField(max_digits=10, decimal_places=0, default=0)
     ug1_setpot = models.DecimalField(max_digits=10, decimal_places=0, default=0)
     ug1_prioridade = models.IntegerField(default=0)
+    ug1_ultimo_estado = models.IntegerField(default=0)
 
     alerta_caixa_espiral_ug1 = models.DecimalField(max_digits=10, decimal_places=2, default=10)
     limite_caixa_espiral_ug1 = models.DecimalField(max_digits=10, decimal_places=2, default=0)
@@ -91,6 +92,7 @@ class ParametrosUsina(models.Model):
     ug2_pot = models.DecimalField(max_digits=10, decimal_places=0, default=0)
     ug2_setpot = models.DecimalField(max_digits=10, decimal_places=0, default=0)
     ug2_prioridade = models.IntegerField(default=0)
+    ug2_ultimo_estado = models.IntegerField(default=0)
 
     alerta_caixa_espiral_ug2 = models.DecimalField(max_digits=10, decimal_places=2, default=10)
     limite_caixa_espiral_ug2 = models.DecimalField(max_digits=10, decimal_places=2, default=0)
@@ -125,6 +127,7 @@ class ParametrosUsina(models.Model):
     ug3_pot = models.DecimalField(max_digits=10, decimal_places=0, default=0)
     ug3_setpot = models.DecimalField(max_digits=10, decimal_places=0, default=0)
     ug3_prioridade = models.IntegerField(default=0)
+    ug3_ultimo_estado = models.IntegerField(default=0)
 
     alerta_caixa_espiral_ug3 = models.DecimalField(max_digits=10, decimal_places=2, default=10)
     limite_caixa_espiral_ug3 = models.DecimalField(max_digits=10, decimal_places=2, default=0)
@@ -141,6 +144,7 @@ class ParametrosUsina(models.Model):
     alerta_temperatura_mancal_guia_escora_ug3 = models.DecimalField(max_digits=10, decimal_places=2, default=100)
     alerta_temperatura_mancal_guia_radial_ug3 = models.DecimalField(max_digits=10, decimal_places=2, default=100)
     alerta_temperatura_mancal_guia_contra_ug3 = models.DecimalField(max_digits=10, decimal_places=2, default=100)
+
     limite_temperatura_fase_r_ug3 = models.DecimalField(max_digits=10, decimal_places=2, default=200)
     limite_temperatura_fase_s_ug3 = models.DecimalField(max_digits=10, decimal_places=2, default=200)
     limite_temperatura_fase_t_ug3 = models.DecimalField(max_digits=10, decimal_places=2, default=200)
@@ -165,7 +169,8 @@ class Comando(models.Model):
 
 class ControleEstados(models.Model):
 
-    ts = models.DateTimeField(default=0)
+    ts = models.DateTimeField(primary_key=True, default=0)
 
-    ultimo_estado_ug1 = models.TextField(default="")
-    ultimo_estado_ug2 = models.TextField(default="")
+    ultimo_estado_ug1 = models.IntegerField(default=0)
+    ultimo_estado_ug2 = models.IntegerField(default=0)
+    ultimo_estado_ug3 = models.IntegerField(default=0)
