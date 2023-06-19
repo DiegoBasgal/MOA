@@ -86,7 +86,7 @@ class UnidadeGeracao:
         )
 
         self.__tempo_entre_tentativas: "int" = 0
-        self.__limite_tentativas_de_normalizacao: "int" = 3
+        self.__limite_tentativas_de_normalizacao: "int" = 2
 
         self.__prioridade: "int" = 0
         self.__codigo_state: "int" = 0
@@ -138,6 +138,7 @@ class UnidadeGeracao:
 
         self.release: "bool" = False
         self.parar_timer: "bool" = False
+        self.borda_parar: "bool" = False
         self.limpeza_grade: "bool" = False
         self.borda_partindo: "bool" = False
         self.timer_partindo: "bool" = False
@@ -488,12 +489,12 @@ class UnidadeGeracao:
             self.clp[f"UG{self.id}"].write_single_coil(REG[f"UG{self.id}_CD_ResetReleBloq86H"], [1])
             self.clp[f"UG{self.id}"].write_single_coil(REG[f"UG{self.id}_CD_ResetReleBloq86M"], [1])
             self.clp[f"UG{self.id}"].write_single_coil(REG[f"UG{self.id}_CD_ResetRele700G"], [1])
+            self.clp["SA"].write_single_coil(REG["SA_CD_ResetRele59N"], [1])
+            self.clp["SA"].write_single_coil(REG["SA_CD_ResetRele787"], [1])
             self.clp[f"UG{self.id}"].write_single_coil(REG[f"UG{self.id}_ED_ReleBloqA86HAtuado"], [0])
             self.clp[f"UG{self.id}"].write_single_coil(REG[f"UG{self.id}_ED_ReleBloqA86MAtuado"], [0])
             self.clp[f"UG{self.id}"].write_single_coil(REG[f"UG{self.id}_RD_700G_Trip"], [0])
 
-            self.clp["SA"].write_single_coil(REG["SA_CD_ResetRele59N"], [1])
-            self.clp["SA"].write_single_coil(REG["SA_CD_ResetRele787"], [1])
 
         except Exception:
             logger.error(f"[UG{self.id}] Não foi possivel remover o comando de TRIP: \"Elétrico\".")
@@ -531,7 +532,6 @@ class UnidadeGeracao:
         # SINCRONIZANDO
         elif self.etapa_atual == UG_SINCRONIZANDO:
             if not self.borda_partindo:
-                logger.debug(f"[UG{self.id}]          Comando MOA:               \"Iniciar timer de verificação de partida\"")
                 Thread(target=lambda: self.verificar_partida()).start()
                 self.borda_partindo = True
 
@@ -560,15 +560,16 @@ class UnidadeGeracao:
             self.aux_tempo_sincronizada = None
 
     def verificar_partida(self) -> "None":
+        logger.debug(f"[UG{self.id}]          Comando MOA:               \"Iniciar timer de verificação de partida\"")
         timer = time() + 600
         while time() < timer:
             if self.etapa_atual == UG_SINCRONIZADA or self.timer_partindo:
-                logger.debug(f"[UG{self.id}]          Comando MOA:                \"Encerrar timer de verificação de partida por condição verdadeira\"")
+                logger.debug(f"[UG{self.id}]          Comando MOA:               \"Encerrar timer de verificação de partida por condição verdadeira\"")
                 self.timer_partindo = False
                 self.release = True
                 return
 
-        logger.debug(f"[UG{self.id}]          Comando MOA:                \"Encerrar timer de verificação de partida por timeout\"")
+        logger.debug(f"[UG{self.id}]          Comando MOA:               \"Encerrar timer de verificação de partida por timeout\"")
         self.clp[f"UG{self.id}"].write_single_coil(REG[f"UG{self.id}_CD_EmergenciaViaSuper"], [1])
         self.clp[f"UG{self.id}"].write_single_coil(REG[f"UG{self.id}_CD_EmergenciaViaSuper"], [0])
         self.borda_partindo = False

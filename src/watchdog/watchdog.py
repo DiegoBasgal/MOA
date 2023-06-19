@@ -13,7 +13,7 @@ from time import sleep
 from mariadb.connectionpool import *
 from datetime import datetime, timedelta
 
-from src.mensageiro.mensageiro_log_handler import MensageiroHandler
+from src.mensageiro.msg_log_handler import MensageiroHandler
 
 if not os.path.exists(os.path.join(os.path.dirname(__file__), "logs")):
     os.mkdir(os.path.join(os.path.dirname(__file__), "logs"))

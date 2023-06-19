@@ -16,6 +16,24 @@ ips: "dict[str, any]" = {
 
     "MOA_ip": "192.168.50.116",
     "MOA_porta": 502
+
+    # "SA_ip": "0.0.0.0",
+    # "SA_porta": 5002,
+
+    # "UG1_ip": "0.0.0.0",
+    # "UG1_porta": 5002,
+
+    # "UG2_ip": "0.0.0.0",
+    # "UG2_porta": 5002,
+
+    # "UG3_ip": "0.0.0.0",
+    # "UG3_porta": 503,
+
+    # "TDA_ip": "0.0.0.0",
+    # "TDA_porta": 5002,
+
+    # "MOA_ip": "0.0.0.0",
+    # "MOA_porta": 502
 }
 
 glb = {

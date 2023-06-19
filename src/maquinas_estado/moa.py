@@ -99,9 +99,9 @@ class ControleEstados(State):
 
             elif flag == CONDIC_NORMALIZAR:
                 if self.usn.normalizar_usina() == False:
-                    return Emergencia(self.usn) if self.usn.aguardar_tensao() == False else ControleDados(self.usn)
+                    return Emergencia(self.usn) if self.usn.aguardar_tensao() == False else self
                 else:
-                    return ControleDados(self.usn)
+                    return self
 
             else:
                 return ControleReservatorio(self.usn)
@@ -135,12 +135,11 @@ class ControleAgendamentos(State):
         super().__init__(*args, **kwargs)
 
         self.usn.estado_moa = MOA_SM_CONTROLE_AGENDAMENTOS
-        
 
     def run(self):
         logger.info("Tratando agendamentos...")
         self.usn.agn.verificar_agendamentos()
-        return ControleEstados(self.usn) if self.usn.modo_autonomo else ModoManual(self.usn)
+        return self if len(self.usn.agn.verificar_agendamentos_pendentes()) > 0 else ControleEstados(self.usn) if self.usn.modo_autonomo else ModoManual(self.usn)
 
 class ModoManual(State):
     def __init__(self, usn, *args, **kwargs):
@@ -159,6 +158,7 @@ class ModoManual(State):
 
         self.usn.controle_ie = sum(ug.leitura_potencia for ug in self.usn.ugs) / self.usn.cfg["pot_maxima_alvo"]
 
+        self.usn.escrever_valores()
         if self.usn.modo_autonomo:
             logger.debug("Comando acionado:\" Habilitar modo autônomo\".")
             self.usn.ler_valores()

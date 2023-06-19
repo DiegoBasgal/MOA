@@ -18,7 +18,6 @@ class OcorrenciasUsn:
         self._condicionadores_essenciais: "list[CondicionadorBase]" = []
 
         self.__clp = clp
-        self.flag: int = CONDIC_IGNORAR
 
         self.carregar_leituras()
 
@@ -39,16 +38,24 @@ class OcorrenciasUsn:
         self._condicionadores_essenciais = var
 
     def verificar_condicionadores(self) -> int:
+        flag = CONDIC_IGNORAR
+
         if True in (condic.ativo for condic in self.condicionadores_essenciais):
             condicionadores_ativos = [condic for condics in [self.condicionadores_essenciais, self.condicionadores] for condic in condics if condic.ativo]
 
-            self.flag = [CONDIC_NORMALIZAR for condic in condicionadores_ativos if condic.gravidade == CONDIC_NORMALIZAR]
-            self.flag = [CONDIC_INDISPONIBILIZAR for condic in condicionadores_ativos if condic.gravidade == CONDIC_INDISPONIBILIZAR]
+            for condic in condicionadores_ativos:
+                if condic.gravidade == CONDIC_NORMALIZAR:
+                    flag = CONDIC_NORMALIZAR
+                elif condic.gravidade == CONDIC_INDISPONIBILIZAR:
+                    flag = CONDIC_INDISPONIBILIZAR
 
+            logger.debug("")
             logger.warning(f"[OCO-USN] Foram detectados condicionadores ativos na Usina:")
-            [logger.warning(f"[OCO-USN] Descrição: \"{condic.descr}\", Gravidade: {CONDIC_STR_DCT[condic.gravidade] if condic.gravidade in CONDIC_STR_DCT else 'Desconhecida'}") for condic in condicionadores_ativos]
+            [logger.warning(f"[OCO-USN] Descrição: \"{condic.descr}\", Gravidade: \"{CONDIC_STR_DCT[condic.gravidade] if condic.gravidade in CONDIC_STR_DCT else 'Desconhecida'}\"") for condic in condicionadores_ativos]
+            logger.debug("")
 
-        return self.flag
+            return flag
+        return flag
 
     def leitura_temporizada(self) -> None:
         if self.leitura_ED_SA_QLCF_Disj52ETrip.valor != 0 and not vd.voip_dict["SA_QLCF_DISJ_52E_TRIP"][0]:
@@ -322,8 +329,6 @@ class OcorrenciasUg:
         self._leitura_dict: "dict[str, LeituraModbus]" = {}
         self._condic_dict: "dict[str, CondicionadorBase]" = {}
 
-        self.flag: int = CONDIC_IGNORAR
-
         self.leitura_voip: "dict[str, LeituraModbus]" = {}
 
         self.carregar_leituras()
@@ -377,17 +382,26 @@ class OcorrenciasUg:
         self._condicionadores_essenciais = var
 
     def verificar_condicionadores(self) -> int:
+        flag = CONDIC_IGNORAR
+
         if True in (condic.ativo for condic in self.condicionadores_essenciais):
             condicionadores_ativos = [x for y in [self.condicionadores_essenciais, self.condicionadores] for x in y if x.ativo]
 
-            self.flag = [CONDIC_NORMALIZAR for condic in condicionadores_ativos if condic.gravidade == CONDIC_NORMALIZAR]
-            self.flag = [CONDIC_AGUARDAR for condic in condicionadores_ativos if condic.gravidade == CONDIC_AGUARDAR]
-            self.flag = [CONDIC_INDISPONIBILIZAR for condic in condicionadores_ativos if condic.gravidade == CONDIC_INDISPONIBILIZAR]
+            for condic in condicionadores_ativos:
+                if condic.gravidade == CONDIC_NORMALIZAR:
+                    flag = CONDIC_NORMALIZAR
+                elif condic.gravidade == CONDIC_AGUARDAR:
+                    flag = CONDIC_AGUARDAR
+                elif condic.gravidade == CONDIC_INDISPONIBILIZAR:
+                    flag = CONDIC_INDISPONIBILIZAR
 
+            logger.debug("")
             logger.warning(f"[OCO-UG{self.__ug_id}] Foram detectados condicionadores ativos na UG:")
-            [logger.warning(f"[OCO-UG{self.__ug_id}] Descrição: \"{condic.descr}\", Gravidade: {CONDIC_STR_DCT[condic.gravidade] if condic.gravidade in CONDIC_STR_DCT else 'Desconhecida'}") for condic in condicionadores_ativos]
+            [logger.warning(f"[OCO-UG{self.__ug_id}] Descrição: \"{condic.descr}\", Gravidade: \"{CONDIC_STR_DCT[condic.gravidade] if condic.gravidade in CONDIC_STR_DCT else 'Desconhecida'}\"") for condic in condicionadores_ativos]
+            logger.debug("")
 
-        return self.flag
+            return flag
+        return flag
 
     def atualizar_limites_condicionadores(self, parametros) -> None:
         try:
@@ -726,10 +740,10 @@ class OcorrenciasUg:
         ## Retornos Digitais
         # TRIPS
         self.leitura_RD_TripEletrico = LeituraModbusCoil("RD_TripEletrico", self.__clp[f"UG{self.__ug_id}"], REG[f"UG{self.__ug_id}_RD_TripEletrico"])
-        self.condicionadores_essenciais.append(CondicionadorBase(self.leitura_RD_TripEletrico.descr, CONDIC_NORMALIZAR, self.leitura_RD_TripEletrico))
+        self.condicionadores_essenciais.append(CondicionadorBase(self.leitura_RD_TripEletrico.descr, CONDIC_NORMALIZAR, self.leitura_RD_TripEletrico, self.__ug_id, [UG_PARANDO, UG_PARADA]))
 
         self.leitura_RD_700G_Trip = LeituraModbusCoil("RD_700G_Trip", self.__clp[f"UG{self.__ug_id}"], REG[f"UG{self.__ug_id}_RD_700G_Trip"])
-        self.condicionadores_essenciais.append(CondicionadorBase(self.leitura_RD_700G_Trip.descr, CONDIC_NORMALIZAR, self.leitura_RD_700G_Trip, self.__ug_id))
+        self.condicionadores_essenciais.append(CondicionadorBase(self.leitura_RD_700G_Trip.descr, CONDIC_NORMALIZAR, self.leitura_RD_700G_Trip, self.__ug_id, [UG_PARANDO, UG_PARADA]))
 
         self.leitura_RD_TripMecanico = LeituraModbusCoil("RD_TripMecanico", self.__clp[f"UG{self.__ug_id}"], REG[f"UG{self.__ug_id}_RD_TripMecanico"])
         self.condicionadores_essenciais.append(CondicionadorBase(self.leitura_RD_TripMecanico.descr, CONDIC_INDISPONIBILIZAR, self.leitura_RD_TripMecanico))

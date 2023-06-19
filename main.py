@@ -26,6 +26,7 @@ from src.dicionarios.const import *
 from src.maquinas_estado.moa import *
 
 from src.conector import ClientesUsina
+from src.mensageiro.msg_log_handler import MensageiroHandler
 
 rootLogger = logging.getLogger()
 if rootLogger.hasHandlers():
@@ -46,7 +47,7 @@ def timeConverter(*args):
 tz = pytz.timezone("Brazil/East")
 thread_id = threading.get_native_id()
 logFormatter = logging.Formatter("%(asctime)s [%(levelname)-5.5s] [MOA] %(message)s")
-logFormatterSimples = logging.Formatter("[%(levelname)-5.5s] %(message)s")
+logFormatterSimples = logging.Formatter("[%(levelname)-5.5s] [MOA] %(message)s")
 logFormatter.converter = timeConverter
 
 ch = logging.StreamHandler(stderr)
@@ -63,6 +64,12 @@ fh = handlers.TimedRotatingFileHandler(
 fh.setFormatter(logFormatter)
 fh.setLevel(logging.DEBUG)
 logger.addHandler(fh)
+
+mh = MensageiroHandler()
+mh.setFormatter(logFormatterSimples)
+mh.setLevel(logging.INFO)
+logger.addHandler(mh)
+
 
 if __name__ == "__main__":
     if len(sys.argv) > 1:
