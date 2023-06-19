@@ -453,6 +453,8 @@ class Usina:
     def controlar_potencia(self) -> None:
         logger.debug(f"[USN] NÍVEL -> Alvo:                      {self.cfg['nv_alvo']:0.3f}")
         logger.debug(f"[USN]          Leitura:                   {self.nv_montante_recente:0.3f}")
+        
+        self.controle_p = self.cfg["kp"] * self.erro_nv
 
         if self._pid_inicial == -1:
             self.controle_i = max(min(self.controle_ie - self.controle_p, 0.8), 0)
@@ -527,6 +529,7 @@ class Usina:
         logger.debug(f"[USN] Ordem das UGs (Prioridade):         {[ug.id for ug in ugs]}")
         logger.debug("")
 
+        ug_sinc = 0
         pot_disp = 0
         ajuste_manual = 0
 
@@ -534,6 +537,9 @@ class Usina:
             pot_disp += ug.cfg[f"pot_maxima_ug{ug.id}"]
             if ug.manual:
                 ajuste_manual += ug.leitura_potencia
+
+            if ug.etapa_atual == UG_SINCRONIZANDO:
+                ug_sinc += 1
 
         if ugs is None or not len(ugs):
             return
@@ -543,8 +549,8 @@ class Usina:
         sp = (pot_alvo - ajuste_manual) / self.cfg["pot_maxima_usina"]
 
         self.__split1 = True if sp > (0) else self.__split1
-        self.__split2 = (True if sp > ((self.cfg["pot_maxima_ug"] / self.cfg["pot_maxima_usina"]) + self.cfg["margem_pot_critica"]) else self.__split2)
-        self.__split3 = (True if sp > (2 * (self.cfg["pot_maxima_ug"] / self.cfg["pot_maxima_usina"]) + self.cfg["margem_pot_critica"]) else self.__split3)
+        self.__split2 = True if sp > ((self.cfg["pot_maxima_ug"] / self.cfg["pot_maxima_usina"]) + self.cfg["margem_pot_critica"]) else self.__split2
+        self.__split3 = True if sp > (2 * (self.cfg["pot_maxima_ug"] / self.cfg["pot_maxima_usina"]) + self.cfg["margem_pot_critica"]) else self.__split3
 
         self.__split3 = False if sp < (2 * (self.cfg["pot_maxima_ug"] / self.cfg["pot_maxima_usina"]) - self.cfg["margem_pot_critica"]) else self.__split3
         self.__split2 = False if sp < ((self.cfg["pot_maxima_ug"] / self.cfg["pot_maxima_usina"]) - self.cfg["margem_pot_critica"]) else self.__split2
@@ -556,9 +562,13 @@ class Usina:
             if self.__split3:
                 logger.debug("[USN] Split:                              3")
                 logger.debug("")
-                ugs[0].setpoint = sp * ugs[0].setpoint_maximo
-                ugs[1].setpoint = sp * ugs[1].setpoint_maximo
-                ugs[2].setpoint = sp * ugs[2].setpoint_maximo
+                sp * 3 / (3 - ug_sinc)
+                for ug in ugs:
+                    if ug.etapa_atual == UG_SINCRONIZANDO:
+                        ug.setpoint = sp * ug.setpoint_maximo
+                    else:
+                        ug.setpoint = sp * ug.setpoint_maximo
+
                 logger.debug(f"[UG{ugs[0].id}] SP    <-                            {int(ugs[0].setpoint)}")
                 logger.debug(f"[UG{ugs[1].id}] SP    <-                            {int(ugs[1].setpoint)}")
                 logger.debug(f"[UG{ugs[2].id}] SP    <-                            {int(ugs[2].setpoint)}")
@@ -566,9 +576,13 @@ class Usina:
             elif self.__split2:
                 logger.debug("[USN] Split:                              2")
                 logger.debug("")
-                sp = sp * 3 / 2
-                ugs[0].setpoint = sp * ugs[0].setpoint_maximo
-                ugs[1].setpoint = sp * ugs[1].setpoint_maximo
+                sp = sp * 3 / (2 - ug_sinc)
+                for ug in ugs:
+                    if ug.etapa_atual == UG_SINCRONIZANDO:
+                        ug.setpoint = sp * ug.setpoint_minimo
+                    else:
+                        ug.setpoint = sp * ug.setpoint_maximo
+
                 ugs[2].setpoint = 0
                 logger.debug(f"[UG{ugs[0].id}] SP    <-                            {int(ugs[0].setpoint)}")
                 logger.debug(f"[UG{ugs[1].id}] SP    <-                            {int(ugs[1].setpoint)}")
@@ -577,8 +591,13 @@ class Usina:
             elif self.__split1:
                 logger.debug("[USN] Split:                              1")
                 logger.debug("")
-                sp = sp * 3 / 1
-                ugs[0].setpoint = sp * ugs[0].setpoint_maximo
+                sp = sp * 3 / (1 - ug_sinc)
+                for ug in ugs:
+                    if ug.etapa_atual == UG_SINCRONIZANDO:
+                        ug.setpoint = ug.setpoint_minimo
+                    else:
+                        ug.setpoint = sp * ug.setpoint_maximo
+
                 ugs[1].setpoint = 0
                 ugs[2].setpoint = 0
                 logger.debug(f"[UG{ugs[0].id}] SP    <-                            {int(ugs[0].setpoint)}")
@@ -595,17 +614,26 @@ class Usina:
             if self.__split2:
                 logger.debug("[USN] Split:                              2B")
                 logger.debug("")
-                sp = sp * 3 / 2
-                ugs[0].setpoint = sp * ugs[0].setpoint_maximo
-                ugs[1].setpoint = sp * ugs[1].setpoint_maximo
+                sp = sp * 3 / (2 - ug_sinc)
+                for ug in ugs:
+                    if ug.etapa_atual == UG_SINCRONIZANDO:
+                        ug.setpoint = sp * ug.setpoint_minimo
+                    else:
+                        ug.setpoint = sp * ug.setpoint_maximo
+
                 logger.debug(f"[UG{ugs[0].id}] SP    <-                            {int(ugs[0].setpoint)}")
                 logger.debug(f"[UG{ugs[1].id}] SP    <-                            {int(ugs[1].setpoint)}")
 
             elif self.__split1:
                 logger.debug("[USN] Split:                              1")
                 logger.debug("")
-                sp = sp * 3 / 1
-                ugs[0].setpoint = sp * ugs[0].setpoint_maximo
+                sp = sp * 3 / (1 - ug_sinc)
+                for ug in ugs:
+                    if ug.etapa_atual == UG_SINCRONIZANDO:
+                        ug.setpoint = ug.setpoint_minimo
+                    else:
+                        ug.setpoint = sp * ug.setpoint_maximo
+
                 ugs[1].setpoint = 0
                 logger.debug(f"[UG{ugs[0].id}] SP    <-                            {int(ugs[0].setpoint)}")
                 logger.debug(f"[UG{ugs[1].id}] SP    <-                            {int(ugs[1].setpoint)}")

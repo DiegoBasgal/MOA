@@ -75,7 +75,7 @@ class ControleEstados(State):
 
         logger.debug("Verificando modo do MOA...")
         if not self.usn.modo_autonomo:
-            logger.info("")
+            logger.debug("")
             logger.info("Comando acionado: \"Desabilitar Modo Autônomo\"")
             return ModoManual(self.usn)
 
@@ -153,7 +153,15 @@ class ModoManual(State):
 
     def run(self):
         self.usn.ler_valores()
+        logger.debug(f"[USN] Leitura de Nível:                   {self.usn.nv_montante_recente:0.3f}")
+        logger.debug(f"[USN] Potência no medidor:                {self.usn.potencia_ativa:0.3f}")
+        logger.debug("")
+
         for ug in self.usn.ugs:
+            logger.debug(f"[UG{ug.id}] Unidade:                            \"{UG_SM_STR_DCT[ug.codigo_state]}\"")
+            logger.debug(f"[UG{ug.id}] Etapa atual:                        \"{UG_STR_DCT_ETAPAS[ug.etapa_atual]}\"")
+            logger.debug(f"[UG{ug.id}] Leitura de Potência:                {ug.leitura_potencia}")
+            logger.debug("")
             ug.setpoint = ug.leitura_potencia
 
         self.usn.controle_ie = sum(ug.leitura_potencia for ug in self.usn.ugs) / self.usn.cfg["pot_maxima_alvo"]
