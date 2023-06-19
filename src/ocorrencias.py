@@ -1156,479 +1156,479 @@ class OcorrenciasUg:
 
         ## CONDICIONADORES NORMALIZAR
         # WHATS + VOIP
-        # self.leitura_val_bypass_falha_abrir = LeituraModbusBit(self.__clp[f"UG{self.__ug_id}"], REG_UG[f"UG{self.__ug_id}_ED_BYPASS_FALHA_ABRIR"], descr=f"[UG{self.__ug_id}] Válvula Bypass Falha Abrir")
-        # self.condicionadores_essenciais.append(self.leitura_val_bypass_falha_abrir, CONDIC_NORMALIZAR)
+        self.leitura_val_bypass_falha_abrir = LeituraModbusBit(self.__clp[f"UG{self.__ug_id}"], REG_UG[f"UG{self.__ug_id}_ED_BYPASS_FALHA_ABRIR"], descr=f"[UG{self.__ug_id}] Válvula Bypass Falha Abrir") # TODO REG 12366 -> Bit 6
+        self.condicionadores_essenciais.append(self.leitura_val_bypass_falha_abrir, CONDIC_NORMALIZAR)
 
-        # self.leitura_val_bypass_falha_fechar = LeituraModbusBit(self.__clp[f"UG{self.__ug_id}"], REG_UG[f"UG{self.__ug_id}_ED_BYPASS_FALHA_FECHAR"], descr=f"[UG{self.__ug_id}] Válvula Bypass Falha Fechar")
-        # self.condicionadores_essenciais.append(self.leitura_val_bypass_falha_fechar, CONDIC_NORMALIZAR)
+        self.leitura_val_bypass_falha_fechar = LeituraModbusBit(self.__clp[f"UG{self.__ug_id}"], REG_UG[f"UG{self.__ug_id}_ED_BYPASS_FALHA_FECHAR"], descr=f"[UG{self.__ug_id}] Válvula Bypass Falha Fechar") # TODO REG 12366 -> Bit 7
+        self.condicionadores_essenciais.append(self.leitura_val_bypass_falha_fechar, CONDIC_NORMALIZAR)
 
-        # # WHATS
-        # self.leitura_rv_alarme_sobrefrequncia = LeituraModbusBit(self.__clp[f"UG{self.__ug_id}"], REG_UG[f"UG{self.__ug_id}_RV_ALARME_SOBREFREQUENCIA"], descr=f"[UG{self.__ug_id}] RV Alarme Sobrefrequência")
-        # self.condicionadores_essenciais.append(self.leitura_rv_alarme_sobrefrequncia, CONDIC_NORMALIZAR)
+        # WHATS
+        self.leitura_rv_alarme_sobrefrequncia = LeituraModbusBit(self.__clp[f"UG{self.__ug_id}"], REG_UG[f"UG{self.__ug_id}_RV_ALARME_SOBREFREQUENCIA"], descr=f"[UG{self.__ug_id}] RV Alarme Sobrefrequência") # OK
+        self.condicionadores_essenciais.append(self.leitura_rv_alarme_sobrefrequncia, CONDIC_NORMALIZAR)
 
-        # self.leitura_rv_alarme_subfrequencia = LeituraModbusBit(self.__clp[f"UG{self.__ug_id}"], REG_UG[f"UG{self.__ug_id}_RV_ALARME_SUBFREQUENCIA"], descr=f"[UG{self.__ug_id}] RV Alarme Subfrequência")
-        # self.condicionadores_essenciais.append(self.leitura_rv_alarme_subfrequencia, CONDIC_NORMALIZAR)
+        self.leitura_rv_alarme_subfrequencia = LeituraModbusBit(self.__clp[f"UG{self.__ug_id}"], REG_UG[f"UG{self.__ug_id}_RV_ALARME_SUBFREQUENCIA"], descr=f"[UG{self.__ug_id}] RV Alarme Subfrequência") # OK
+        self.condicionadores_essenciais.append(self.leitura_rv_alarme_subfrequencia, CONDIC_NORMALIZAR)
 
-        # self.leitura_rv_falha_1 = LeituraModbusBit(self.__clp[f"UG{self.__ug_id}"], REG_UG[f"UG{self.__ug_id}_RV_FALHA_1"], descr=f"[UG{self.__ug_id}] RV Falha 1")
-        # self.condicionadores_essenciais.append(self.leitura_rv_falha_1, CONDIC_NORMALIZAR)
+        self.leitura_rv_falha_1 = LeituraModbusBit(self.__clp[f"UG{self.__ug_id}"], REG_UG[f"UG{self.__ug_id}_RV_FALHA_1"], descr=f"[UG{self.__ug_id}] RV Falha 1") # OK
+        self.condicionadores_essenciais.append(self.leitura_rv_falha_1, CONDIC_NORMALIZAR)
 
-        # self.leitura_botao_bloq_86eh = LeituraModbusBit(self.__clp[f"UG{self.__ug_id}"], REG_UG[f"UG{self.__ug_id}_ED_PRTVA_BOTAO_BLOQUEIO_86EH"], descr=f"[UG{self.__ug_id}] Botão Bloqueio 86EH")
-        # self.condicionadores_essenciais.append(self.leitura_botao_bloq_86eh, CONDIC_NORMALIZAR)
+        self.leitura_botao_bloq_86eh = LeituraModbusBit(self.__clp[f"UG{self.__ug_id}"], REG_UG[f"UG{self.__ug_id}_ED_PRTVA_BOTAO_BLOQUEIO_86EH"], descr=f"[UG{self.__ug_id}] Botão Bloqueio 86EH") # OK
+        self.condicionadores_essenciais.append(self.leitura_botao_bloq_86eh, CONDIC_NORMALIZAR)
 
-        # self.leitura_rele_bloq_86eh = LeituraModbusBit(self.__clp[f"UG{self.__ug_id}"], REG_UG[f"UG{self.__ug_id}_ED_PRTVA_RELE_BLOQUEIO_86EH"], descr=f"[UG{self.__ug_id}] Relé Bloqueio 86EH")
-        # self.condicionadores_essenciais.append(self.leitura_rele_bloq_86eh, CONDIC_NORMALIZAR)
+        self.leitura_rele_bloq_86eh = LeituraModbusBit(self.__clp[f"UG{self.__ug_id}"], REG_UG[f"UG{self.__ug_id}_ED_PRTVA_RELE_BLOQUEIO_86EH"], descr=f"[UG{self.__ug_id}] Relé Bloqueio 86EH") # OK
+        self.condicionadores_essenciais.append(self.leitura_rele_bloq_86eh, CONDIC_NORMALIZAR)
 
-        # self.leitura_valv_borb_falha_abertura = LeituraModbusBit(self.__clp[f"UG{self.__ug_id}"], REG_UG[f"UG{self.__ug_id}_ED_BROBOLETA_FALHA_ABRIR"], descr=f"[UG{self.__ug_id}] Válvula Borboleta Falha Abertura")
-        # self.condicionadores_essenciais.append(self.leitura_valv_borb_falha_abertura, CONDIC_NORMALIZAR)
+        self.leitura_valv_borb_falha_abertura = LeituraModbusBit(self.__clp[f"UG{self.__ug_id}"], REG_UG[f"UG{self.__ug_id}_ED_BROBOLETA_FALHA_ABRIR"], descr=f"[UG{self.__ug_id}] Válvula Borboleta Falha Abertura") # TODO REG 12366 -> Bit 1
+        self.condicionadores_essenciais.append(self.leitura_valv_borb_falha_abertura, CONDIC_NORMALIZAR)
 
-        # self.leitura_bloq_86e = LeituraModbusBit(self.__clp[f"UG{self.__ug_id}"], REG_UG[f"UG{self.__ug_id}_ED_STT_BLOQUEIO_86E"], descr=f"[UG{self.__ug_id}] Bloqueio 86E")
-        # self.condicionadores_essenciais.append(self.leitura_bloq_86e, CONDIC_NORMALIZAR)
+        self.leitura_bloq_86e = LeituraModbusBit(self.__clp[f"UG{self.__ug_id}"], REG_UG[f"UG{self.__ug_id}_ED_STT_BLOQUEIO_86E"], descr=f"[UG{self.__ug_id}] Bloqueio 86E") # OK
+        self.condicionadores_essenciais.append(self.leitura_bloq_86e, CONDIC_NORMALIZAR)
 
-        # self.leitura_bloq_86h = LeituraModbusBit(self.__clp[f"UG{self.__ug_id}"], REG_UG[f"UG{self.__ug_id}_ED_STT_BLOQUEIO_86H"], descr=f"[UG{self.__ug_id}] Bloqueio 86H")
-        # self.condicionadores_essenciais.append(self.leitura_bloq_86h, CONDIC_NORMALIZAR)
+        self.leitura_bloq_86h = LeituraModbusBit(self.__clp[f"UG{self.__ug_id}"], REG_UG[f"UG{self.__ug_id}_ED_STT_BLOQUEIO_86H"], descr=f"[UG{self.__ug_id}] Bloqueio 86H") # OK
+        self.condicionadores_essenciais.append(self.leitura_bloq_86h, CONDIC_NORMALIZAR)
         # # "UG1_RT_ESTADO_OPERACAO" -> EMERGENCIA = 16
         # # "UG1_RV_ESTADO_OPERACAO" -> EMERGENCIA = 16
 
 
         # ## CONDICIONADORES INDISPONIBILIZAR
         # # WHATS + VOIP
-        # self.leitura_falha_fechar_distrib = LeituraModbusBit(self.__clp[f"UG{self.__ug_id}"], REG_UG[f"UG{self.__ug_id}_ED_RV_FALHA_AO_FECHAR_DISTRIBUIDOR"], descr=f"[UG{self.__ug_id}] Falha Fechamento Distribuidor")
-        # self.condicionadores_essenciais.append(self.leitura_falha_fechar_distrib, CONDIC_INDISPONIBILIZAR)
+        self.leitura_falha_fechar_distrib = LeituraModbusBit(self.__clp[f"UG{self.__ug_id}"], REG_UG[f"UG{self.__ug_id}_ED_RV_FALHA_AO_FECHAR_DISTRIBUIDOR"], descr=f"[UG{self.__ug_id}] Falha Fechamento Distribuidor") # TODO REG 12372 -> Bit 4
+        self.condicionadores_essenciais.append(self.leitura_falha_fechar_distrib, CONDIC_INDISPONIBILIZAR)
 
         # # WHATS
-        # self.leitura_rv_girando_gir_indev = LeituraModbusBit(self.__clp[f"UG{self.__ug_id}"], REG_UG[f"UG{self.__ug_id}_RV_FALHA_1_GIRANDO_SEM_REG_GIRO_INDEV"], descr=f"[UG{self.__ug_id}] Falha RV Girando Sem Registro de Giro Indevido")
-        # self.condicionadores_essenciais.append(self.leitura_rv_girando_gir_indev, CONDIC_INDISPONIBILIZAR)
+        self.leitura_rv_girando_gir_indev = LeituraModbusBit(self.__clp[f"UG{self.__ug_id}"], REG_UG[f"UG{self.__ug_id}_RV_FALHA_1_GIRANDO_SEM_REG_GIRO_INDEV"], descr=f"[UG{self.__ug_id}] Falha RV Girando Sem Registro de Giro Indevido") # OK
+        self.condicionadores_essenciais.append(self.leitura_rv_girando_gir_indev, CONDIC_INDISPONIBILIZAR)
 
-        # self.leitura_rt_alar_1_sobretensao = LeituraModbusBit(self.__clp[f"UG{self.__ug_id}"], REG_UG[f"UG{self.__ug_id}_RT_ALARMES_1_SOBRETENSAO"], descr=f"[UG{self.__ug_id}] RT Alarmes 1 Sobretensão")
-        # self.condicionadores_essenciais.append(self.leitura_rt_alar_1_sobretensao, CONDIC_INDISPONIBILIZAR)
+        self.leitura_rt_alar_1_sobretensao = LeituraModbusBit(self.__clp[f"UG{self.__ug_id}"], REG_UG[f"UG{self.__ug_id}_RT_ALARMES_1_SOBRETENSAO"], descr=f"[UG{self.__ug_id}] RT Alarmes 1 Sobretensão") # OK
+        self.condicionadores_essenciais.append(self.leitura_rt_alar_1_sobretensao, CONDIC_INDISPONIBILIZAR)
 
-        # self.leitura_rt_alar_1_subtensao = LeituraModbusBit(self.__clp[f"UG{self.__ug_id}"], REG_UG[f"UG{self.__ug_id}_RT_ALARMES_1_SUBTENSAO"], descr=f"[UG{self.__ug_id}] RT Alarmes 1 Subtensão")
-        # self.condicionadores_essenciais.append(self.leitura_rt_alar_1_subtensao, CONDIC_INDISPONIBILIZAR)
+        self.leitura_rt_alar_1_subtensao = LeituraModbusBit(self.__clp[f"UG{self.__ug_id}"], REG_UG[f"UG{self.__ug_id}_RT_ALARMES_1_SUBTENSAO"], descr=f"[UG{self.__ug_id}] RT Alarmes 1 Subtensão") # OK
+        self.condicionadores_essenciais.append(self.leitura_rt_alar_1_subtensao, CONDIC_INDISPONIBILIZAR)
 
-        # self.leitura_rt_alar_1_sobrefrequencia = LeituraModbusBit(self.__clp[f"UG{self.__ug_id}"], REG_UG[f"UG{self.__ug_id}_RT_ALARMES_1_SOBREFREQUENCIA"], descr=f"[UG{self.__ug_id}] RT Alarmes 1 Sobrefrequência")
-        # self.condicionadores_essenciais.append(self.leitura_rt_alar_1_sobrefrequencia, CONDIC_INDISPONIBILIZAR)
+        self.leitura_rt_alar_1_sobrefrequencia = LeituraModbusBit(self.__clp[f"UG{self.__ug_id}"], REG_UG[f"UG{self.__ug_id}_RT_ALARMES_1_SOBREFREQUENCIA"], descr=f"[UG{self.__ug_id}] RT Alarmes 1 Sobrefrequência") # OK
+        self.condicionadores_essenciais.append(self.leitura_rt_alar_1_sobrefrequencia, CONDIC_INDISPONIBILIZAR)
 
-        # self.leitura_rt_alar_1_subfrequencia = LeituraModbusBit(self.__clp[f"UG{self.__ug_id}"], REG_UG[f"UG{self.__ug_id}_RT_ALARMES_1_SUBFREQUENCIA"], descr=f"[UG{self.__ug_id}] RT Alarmes 1 Subfrequência")
-        # self.condicionadores_essenciais.append(self.leitura_rt_alar_1_subfrequencia, CONDIC_INDISPONIBILIZAR)
+        self.leitura_rt_alar_1_subfrequencia = LeituraModbusBit(self.__clp[f"UG{self.__ug_id}"], REG_UG[f"UG{self.__ug_id}_RT_ALARMES_1_SUBFREQUENCIA"], descr=f"[UG{self.__ug_id}] RT Alarmes 1 Subfrequência") # OK
+        self.condicionadores_essenciais.append(self.leitura_rt_alar_1_subfrequencia, CONDIC_INDISPONIBILIZAR)
 
-        # self.leitura_rt_alar_1_lim_sup_pot_reativa = LeituraModbusBit(self.__clp[f"UG{self.__ug_id}"], REG_UG[f"UG{self.__ug_id}_RT_ALARMES_1_LIMITE_SUP_POT_REATICA"], descr=f"[UG{self.__ug_id}] RT Alarmes 1 Limite Superior Potência Reativa")
-        # self.condicionadores_essenciais.append(self.leitura_rt_alar_1_lim_sup_pot_reativa, CONDIC_INDISPONIBILIZAR)
+        self.leitura_rt_alar_1_lim_sup_pot_reativa = LeituraModbusBit(self.__clp[f"UG{self.__ug_id}"], REG_UG[f"UG{self.__ug_id}_RT_ALARMES_1_LIMITE_SUP_POT_REATICA"], descr=f"[UG{self.__ug_id}] RT Alarmes 1 Limite Superior Potência Reativa") # OK
+        self.condicionadores_essenciais.append(self.leitura_rt_alar_1_lim_sup_pot_reativa, CONDIC_INDISPONIBILIZAR)
 
-        # self.leitura_rt_alar_1_lim_inf_pot_reativa = LeituraModbusBit(self.__clp[f"UG{self.__ug_id}"], REG_UG[f"UG{self.__ug_id}_RT_ALARMES_1_LIMITE_INF_POT_REATIAVA"], descr=f"[UG{self.__ug_id}] RT Alarmes 1 Limite Inferior Potência Reativa")
-        # self.condicionadores_essenciais.append(self.leitura_rt_alar_1_lim_inf_pot_reativa, CONDIC_INDISPONIBILIZAR)
+        self.leitura_rt_alar_1_lim_inf_pot_reativa = LeituraModbusBit(self.__clp[f"UG{self.__ug_id}"], REG_UG[f"UG{self.__ug_id}_RT_ALARMES_1_LIMITE_INF_POT_REATIAVA"], descr=f"[UG{self.__ug_id}] RT Alarmes 1 Limite Inferior Potência Reativa") # OK
+        self.condicionadores_essenciais.append(self.leitura_rt_alar_1_lim_inf_pot_reativa, CONDIC_INDISPONIBILIZAR)
 
-        # self.leitura_rt_alar_1_lim_sup_fator_pot = LeituraModbusBit(self.__clp[f"UG{self.__ug_id}"], REG_UG[f"UG{self.__ug_id}_RT_ALARMES_1_LIMITE_SUP_FATOR_POTENCIA"], descr=f"[UG{self.__ug_id}] RT Alarmes 1 Limite Superior Fator Potência")
-        # self.condicionadores_essenciais.append(self.leitura_rt_alar_1_lim_sup_fator_pot, CONDIC_INDISPONIBILIZAR)
+        self.leitura_rt_alar_1_lim_sup_fator_pot = LeituraModbusBit(self.__clp[f"UG{self.__ug_id}"], REG_UG[f"UG{self.__ug_id}_RT_ALARMES_1_LIMITE_SUP_FATOR_POTENCIA"], descr=f"[UG{self.__ug_id}] RT Alarmes 1 Limite Superior Fator Potência") # OK
+        self.condicionadores_essenciais.append(self.leitura_rt_alar_1_lim_sup_fator_pot, CONDIC_INDISPONIBILIZAR)
 
-        # self.leitura_rt_alar_1_lim_inf_fator_pot = LeituraModbusBit(self.__clp[f"UG{self.__ug_id}"], REG_UG[f"UG{self.__ug_id}_RT_ALARMES_1_LIMITE_INF_FATOR_POTENCIA"], descr=f"[UG{self.__ug_id}] RT Alarmes 1 Limite Inferior Fator Potência")
-        # self.condicionadores_essenciais.append(self.leitura_rt_alar_1_lim_inf_fator_pot, CONDIC_INDISPONIBILIZAR)
+        self.leitura_rt_alar_1_lim_inf_fator_pot = LeituraModbusBit(self.__clp[f"UG{self.__ug_id}"], REG_UG[f"UG{self.__ug_id}_RT_ALARMES_1_LIMITE_INF_FATOR_POTENCIA"], descr=f"[UG{self.__ug_id}] RT Alarmes 1 Limite Inferior Fator Potência") # OK
+        self.condicionadores_essenciais.append(self.leitura_rt_alar_1_lim_inf_fator_pot, CONDIC_INDISPONIBILIZAR)
 
-        # self.leitura_rt_alar_1_variacao_tensao = LeituraModbusBit(self.__clp[f"UG{self.__ug_id}"], REG_UG[f"UG{self.__ug_id}_RT_ALARMES_1_VARIACAO_TENSAO"], descr=f"[UG{self.__ug_id}] RT Alarmes 1 Variação de Tensão")
-        # self.condicionadores_essenciais.append(self.leitura_rt_alar_1_variacao_tensao, CONDIC_INDISPONIBILIZAR)
+        self.leitura_rt_alar_1_variacao_tensao = LeituraModbusBit(self.__clp[f"UG{self.__ug_id}"], REG_UG[f"UG{self.__ug_id}_RT_ALARMES_1_VARIACAO_TENSAO"], descr=f"[UG{self.__ug_id}] RT Alarmes 1 Variação de Tensão") # OK
+        self.condicionadores_essenciais.append(self.leitura_rt_alar_1_variacao_tensao, CONDIC_INDISPONIBILIZAR)
 
-        # self.leitura_rt_alar_1_pot_ativa_reversa = LeituraModbusBit(self.__clp[f"UG{self.__ug_id}"], REG_UG[f"UG{self.__ug_id}_RT_ALARMES_1_POTENCIA_ATIVA_REVERSA"], descr=f"[UG{self.__ug_id}] RT Alarmes 1 Potência Ativa Reversa")
-        # self.condicionadores_essenciais.append(self.leitura_rt_alar_1_pot_ativa_reversa, CONDIC_INDISPONIBILIZAR)
+        self.leitura_rt_alar_1_pot_ativa_reversa = LeituraModbusBit(self.__clp[f"UG{self.__ug_id}"], REG_UG[f"UG{self.__ug_id}_RT_ALARMES_1_POTENCIA_ATIVA_REVERSA"], descr=f"[UG{self.__ug_id}] RT Alarmes 1 Potência Ativa Reversa") # OK
+        self.condicionadores_essenciais.append(self.leitura_rt_alar_1_pot_ativa_reversa, CONDIC_INDISPONIBILIZAR)
 
-        # self.leitura_rt_alar_1_sobrecorr_term = LeituraModbusBit(self.__clp[f"UG{self.__ug_id}"], REG_UG[f"UG{self.__ug_id}_RT_ALARMES_1_SOBRECORRENTE_TERMINAL"], descr=f"[UG{self.__ug_id}] RT Alarmes 1 Sobrecorrente Terminal")
-        # self.condicionadores_essenciais.append(self.leitura_rt_alar_1_sobrecorr_term, CONDIC_INDISPONIBILIZAR)
+        self.leitura_rt_alar_1_sobrecorr_term = LeituraModbusBit(self.__clp[f"UG{self.__ug_id}"], REG_UG[f"UG{self.__ug_id}_RT_ALARMES_1_SOBRECORRENTE_TERMINAL"], descr=f"[UG{self.__ug_id}] RT Alarmes 1 Sobrecorrente Terminal") # OK
+        self.condicionadores_essenciais.append(self.leitura_rt_alar_1_sobrecorr_term, CONDIC_INDISPONIBILIZAR)
 
-        # self.leitura_rt_alar_1_lim_sup_corr_excitacao = LeituraModbusBit(self.__clp[f"UG{self.__ug_id}"], REG_UG[f"UG{self.__ug_id}_RT_ALARMES_1_LIMITE_SUP_CORRENTE_EXCITACAO"], descr=f"[UG{self.__ug_id}] RT Alarmes 1 Limite Superior Corrente Excitação")
-        # self.condicionadores_essenciais.append(self.leitura_rt_alar_1_lim_sup_corr_excitacao, CONDIC_INDISPONIBILIZAR)
+        self.leitura_rt_alar_1_lim_sup_corr_excitacao = LeituraModbusBit(self.__clp[f"UG{self.__ug_id}"], REG_UG[f"UG{self.__ug_id}_RT_ALARMES_1_LIMITE_SUP_CORRENTE_EXCITACAO"], descr=f"[UG{self.__ug_id}] RT Alarmes 1 Limite Superior Corrente Excitação") # OK
+        self.condicionadores_essenciais.append(self.leitura_rt_alar_1_lim_sup_corr_excitacao, CONDIC_INDISPONIBILIZAR)
 
-        # self.leitura_rt_alar_1_lim_inf_corr_exci = LeituraModbusBit(self.__clp[f"UG{self.__ug_id}"], REG_UG[f"UG{self.__ug_id}_RT_ALARMES_1_LIMITE_INF_CORRENTE_EXCITACAO"], descr=f"[UG{self.__ug_id}] RT Alarmes 1 Limite Inferior Corrente Excitação")
-        # self.condicionadores_essenciais.append(self.leitura_rt_alar_1_lim_inf_corr_exci, CONDIC_INDISPONIBILIZAR)
+        self.leitura_rt_alar_1_lim_inf_corr_exci = LeituraModbusBit(self.__clp[f"UG{self.__ug_id}"], REG_UG[f"UG{self.__ug_id}_RT_ALARMES_1_LIMITE_INF_CORRENTE_EXCITACAO"], descr=f"[UG{self.__ug_id}] RT Alarmes 1 Limite Inferior Corrente Excitação") # OK
+        self.condicionadores_essenciais.append(self.leitura_rt_alar_1_lim_inf_corr_exci, CONDIC_INDISPONIBILIZAR)
 
-        # self.leitura_rt_alar_1_temp_muito_alta_rotor = LeituraModbusBit(self.__clp[f"UG{self.__ug_id}"], REG_UG[f"UG{self.__ug_id}_RT_ALARMES_1_TEMP_MUITO_ALTA_ROTOR"], descr=f"[UG{self.__ug_id}] RT Alarmes 1 Temperatura Muito Alta Rotor")
-        # self.condicionadores_essenciais.append(self.leitura_rt_alar_1_temp_muito_alta_rotor, CONDIC_INDISPONIBILIZAR)
+        self.leitura_rt_alar_1_temp_muito_alta_rotor = LeituraModbusBit(self.__clp[f"UG{self.__ug_id}"], REG_UG[f"UG{self.__ug_id}_RT_ALARMES_1_TEMP_MUITO_ALTA_ROTOR"], descr=f"[UG{self.__ug_id}] RT Alarmes 1 Temperatura Muito Alta Rotor") # OK
+        self.condicionadores_essenciais.append(self.leitura_rt_alar_1_temp_muito_alta_rotor, CONDIC_INDISPONIBILIZAR)
 
-        # self.leitura_rt_alar_1_pres_tens_term_aus_corr_exci = LeituraModbusBit(self.__clp[f"UG{self.__ug_id}"], REG_UG[f"UG{self.__ug_id}_RT_ALARMES_1_PRES_TENS_TERM_AUSEN_CORR_EXCI"], descr=f"[UG{self.__ug_id}] RT Alarmes 1 Presença Tensão Terminal Ausente Corrente Excitação")
-        # self.condicionadores_essenciais.append(self.leitura_rt_alar_1_pres_tens_term_aus_corr_exci, CONDIC_INDISPONIBILIZAR)
+        self.leitura_rt_alar_1_pres_tens_term_aus_corr_exci = LeituraModbusBit(self.__clp[f"UG{self.__ug_id}"], REG_UG[f"UG{self.__ug_id}_RT_ALARMES_1_PRES_TENS_TERM_AUSEN_CORR_EXCI"], descr=f"[UG{self.__ug_id}] RT Alarmes 1 Presença Tensão Terminal Ausente Corrente Excitação") # OK
+        self.condicionadores_essenciais.append(self.leitura_rt_alar_1_pres_tens_term_aus_corr_exci, CONDIC_INDISPONIBILIZAR)
 
-        # self.leitura_rt_alar_1_pres_corr_exci_aus_tens_term = LeituraModbusBit(self.__clp[f"UG{self.__ug_id}"], REG_UG[f"UG{self.__ug_id}_RT_ALARMES_1_PRES_CORR_EXCI_AUSEN_TENS_TERM"], descr=f"[UG{self.__ug_id}] RT Alarmes 1 Presença Corrente Excitação Ausente Tensão Terminal")
-        # self.condicionadores_essenciais.append(self.leitura_rt_alar_1_pres_corr_exci_aus_tens_term, CONDIC_INDISPONIBILIZAR)
+        self.leitura_rt_alar_1_pres_corr_exci_aus_tens_term = LeituraModbusBit(self.__clp[f"UG{self.__ug_id}"], REG_UG[f"UG{self.__ug_id}_RT_ALARMES_1_PRES_CORR_EXCI_AUSEN_TENS_TERM"], descr=f"[UG{self.__ug_id}] RT Alarmes 1 Presença Corrente Excitação Ausente Tensão Terminal") # OK
+        self.condicionadores_essenciais.append(self.leitura_rt_alar_1_pres_corr_exci_aus_tens_term, CONDIC_INDISPONIBILIZAR)
 
-        # self.leitura_rt_alar_2_falha_contro_corr_exci = LeituraModbusBit(self.__clp[f"UG{self.__ug_id}"], REG_UG[f"UG{self.__ug_id}_RT_ALARMES_2_FALHA_CONTROLE_CORRENTE_EXCI"], descr=f"[UG{self.__ug_id}] RT Alarmes 2 Falha Controle Corrente Excitação")
-        # self.condicionadores_essenciais.append(self.leitura_rt_alar_2_falha_contro_corr_exci, CONDIC_INDISPONIBILIZAR)
+        self.leitura_rt_alar_2_falha_contro_corr_exci = LeituraModbusBit(self.__clp[f"UG{self.__ug_id}"], REG_UG[f"UG{self.__ug_id}_RT_ALARMES_2_FALHA_CONTROLE_CORRENTE_EXCI"], descr=f"[UG{self.__ug_id}] RT Alarmes 2 Falha Controle Corrente Excitação") # OK
+        self.condicionadores_essenciais.append(self.leitura_rt_alar_2_falha_contro_corr_exci, CONDIC_INDISPONIBILIZAR)
 
-        # self.leitura_rt_alar_2_falha_contro_tens_term = LeituraModbusBit(self.__clp[f"UG{self.__ug_id}"], REG_UG[f"UG{self.__ug_id}_RT_ALARMES_2_FALHA_CONTROLE_TENSAO_TERM"], descr=f"[UG{self.__ug_id}] RT Alarmes 2 Falha Controle Tensão Terminal")
-        # self.condicionadores_essenciais.append(self.leitura_rt_alar_2_falha_contro_tens_term, CONDIC_INDISPONIBILIZAR)
+        self.leitura_rt_alar_2_falha_contro_tens_term = LeituraModbusBit(self.__clp[f"UG{self.__ug_id}"], REG_UG[f"UG{self.__ug_id}_RT_ALARMES_2_FALHA_CONTROLE_TENSAO_TERM"], descr=f"[UG{self.__ug_id}] RT Alarmes 2 Falha Controle Tensão Terminal") # OK
+        self.condicionadores_essenciais.append(self.leitura_rt_alar_2_falha_contro_tens_term, CONDIC_INDISPONIBILIZAR)
 
-        # self.leitura_uhrv_oleo_nv_muito_baixo = LeituraModbusBit(self.__clp[f"UG{self.__ug_id}"], REG_UG[f"UG{self.__ug_id}_ED_PRTVA_UHRV_OLEO_NIVEL_MUITO_BAIXO"], descr=f"[UG{self.__ug_id}] UHRV Óleo Nível Muito Baixo")
-        # self.condicionadores_essenciais.append(self.leitura_uhrv_oleo_nv_muito_baixo, CONDIC_INDISPONIBILIZAR)
+        self.leitura_uhrv_oleo_nv_muito_baixo = LeituraModbusBit(self.__clp[f"UG{self.__ug_id}"], REG_UG[f"UG{self.__ug_id}_ED_PRTVA_UHRV_OLEO_NIVEL_MUITO_BAIXO"], descr=f"[UG{self.__ug_id}] UHRV Óleo Nível Muito Baixo") # OK
+        self.condicionadores_essenciais.append(self.leitura_uhrv_oleo_nv_muito_baixo, CONDIC_INDISPONIBILIZAR)
 
-        # self.leitura_uhrv_filtro_oleo_sujo = LeituraModbusBit(self.__clp[f"UG{self.__ug_id}"], REG_UG[f"UG{self.__ug_id}_ED_PRTVA_UHRV_FILTRO_OLEO_SUJO"], descr=f"[UG{self.__ug_id}] UHRV Filtro Óleo Sujo")
-        # self.condicionadores_essenciais.append(self.leitura_uhrv_filtro_oleo_sujo, CONDIC_INDISPONIBILIZAR)
+        self.leitura_uhrv_filtro_oleo_sujo = LeituraModbusBit(self.__clp[f"UG{self.__ug_id}"], REG_UG[f"UG{self.__ug_id}_ED_PRTVA_UHRV_FILTRO_OLEO_SUJO"], descr=f"[UG{self.__ug_id}] UHRV Filtro Óleo Sujo") # OK
+        self.condicionadores_essenciais.append(self.leitura_uhrv_filtro_oleo_sujo, CONDIC_INDISPONIBILIZAR)
 
-        # self.leitura_urhv_press_crit = LeituraModbusBit(self.__clp[f"UG{self.__ug_id}"], REG_UG[f"UG{self.__ug_id}_ED_PRTVA_UHRV_PRESSAO_CRITICA"], descr=f"[UG{self.__ug_id}] UHRV Pressão Crítica")
-        # self.condicionadores_essenciais.append(self.leitura_urhv_press_crit, CONDIC_INDISPONIBILIZAR)
+        self.leitura_urhv_press_crit = LeituraModbusBit(self.__clp[f"UG{self.__ug_id}"], REG_UG[f"UG{self.__ug_id}_ED_PRTVA_UHRV_PRESSAO_CRITICA"], descr=f"[UG{self.__ug_id}] UHRV Pressão Crítica") # OK
+        self.condicionadores_essenciais.append(self.leitura_urhv_press_crit, CONDIC_INDISPONIBILIZAR)
 
-        # self.leitura_uhrv_oleo_nv_muito_alto = LeituraModbusBit(self.__clp[f"UG{self.__ug_id}"], REG_UG[f"UG{self.__ug_id}_ED_PRTVA_UHLM_OLEO_NIVEL_MUITO_ALTO"], descr=f"[UG{self.__ug_id}] UHRV Óleo Nível Muito Alto")
-        # self.condicionadores_essenciais.append(self.leitura_uhrv_oleo_nv_muito_alto, CONDIC_INDISPONIBILIZAR)
+        self.leitura_uhrv_oleo_nv_muito_alto = LeituraModbusBit(self.__clp[f"UG{self.__ug_id}"], REG_UG[f"UG{self.__ug_id}_ED_PRTVA_UHLM_OLEO_NIVEL_MUITO_ALTO"], descr=f"[UG{self.__ug_id}] UHRV Óleo Nível Muito Alto") # OK
+        self.condicionadores_essenciais.append(self.leitura_uhrv_oleo_nv_muito_alto, CONDIC_INDISPONIBILIZAR)
 
-        # self.leitura_uhlm_oleo_nv_muito_baixo = LeituraModbusBit(self.__clp[f"UG{self.__ug_id}"], REG_UG[f"UG{self.__ug_id}_ED_PRTVA_UHLM_OLEO_NIVEL_MUITO_BAIXO"], descr=f"[UG{self.__ug_id}] UHLM Óleo Nível Muito Baixo")
-        # self.condicionadores_essenciais.append(self.leitura_uhlm_oleo_nv_muito_baixo, CONDIC_INDISPONIBILIZAR)
+        self.leitura_uhlm_oleo_nv_muito_baixo = LeituraModbusBit(self.__clp[f"UG{self.__ug_id}"], REG_UG[f"UG{self.__ug_id}_ED_PRTVA_UHLM_OLEO_NIVEL_MUITO_BAIXO"], descr=f"[UG{self.__ug_id}] UHLM Óleo Nível Muito Baixo") # OK
+        self.condicionadores_essenciais.append(self.leitura_uhlm_oleo_nv_muito_baixo, CONDIC_INDISPONIBILIZAR)
 
-        # self.leitura_uhlm_press_linha_lubrifi = LeituraModbusBit(self.__clp[f"UG{self.__ug_id}"], REG_UG[f"UG{self.__ug_id}_ED_PRTVA_UHLM_PRESSAO_LINHA_LUBRIFICACAO"], descr=f"[UG{self.__ug_id}] UHLM Pressão Linha Lubrificação")
-        # self.condicionadores_essenciais.append(self.leitura_uhlm_press_linha_lubrifi, CONDIC_INDISPONIBILIZAR)
+        self.leitura_uhlm_press_linha_lubrifi = LeituraModbusBit(self.__clp[f"UG{self.__ug_id}"], REG_UG[f"UG{self.__ug_id}_ED_PRTVA_UHLM_PRESSAO_LINHA_LUBRIFICACAO"], descr=f"[UG{self.__ug_id}] UHLM Pressão Linha Lubrificação") # OK
+        self.condicionadores_essenciais.append(self.leitura_uhlm_press_linha_lubrifi, CONDIC_INDISPONIBILIZAR)
 
-        # self.leitura_uhlm_filtro_oleo_sujo = LeituraModbusBit(self.__clp[f"UG{self.__ug_id}"], REG_UG[f"UG{self.__ug_id}_ED_PRTVA_UHLM_FILTRO_OLEO_SUJO"], descr=f"[UG{self.__ug_id}] UHLM Filtro Óleo Sujo")
-        # self.condicionadores_essenciais.append(self.leitura_uhlm_filtro_oleo_sujo, CONDIC_INDISPONIBILIZAR)
+        self.leitura_uhlm_filtro_oleo_sujo = LeituraModbusBit(self.__clp[f"UG{self.__ug_id}"], REG_UG[f"UG{self.__ug_id}_ED_PRTVA_UHLM_FILTRO_OLEO_SUJO"], descr=f"[UG{self.__ug_id}] UHLM Filtro Óleo Sujo") # OK
+        self.condicionadores_essenciais.append(self.leitura_uhlm_filtro_oleo_sujo, CONDIC_INDISPONIBILIZAR)
 
-        # self.leitura_uhlm_fluxo_troc_calor = LeituraModbusBit(self.__clp[f"UG{self.__ug_id}"], REG_UG[f"UG{self.__ug_id}_ED_PRTVA_UHLM_FLUXO_TROCADOR_CALOR"], descr=f"[UG{self.__ug_id}] UHLM Fluxo Trocador Calor")
-        # self.condicionadores_essenciais.append(self.leitura_uhlm_fluxo_troc_calor, CONDIC_INDISPONIBILIZAR)
+        self.leitura_uhlm_fluxo_troc_calor = LeituraModbusBit(self.__clp[f"UG{self.__ug_id}"], REG_UG[f"UG{self.__ug_id}_ED_PRTVA_UHLM_FLUXO_TROCADOR_CALOR"], descr=f"[UG{self.__ug_id}] UHLM Fluxo Trocador Calor") # OK
+        self.condicionadores_essenciais.append(self.leitura_uhlm_fluxo_troc_calor, CONDIC_INDISPONIBILIZAR)
 
-        # self.leitura_qbag_escova_polo_pos_desgas = LeituraModbusBit(self.__clp[f"UG{self.__ug_id}"], REG_UG[f"UG{self.__ug_id}_ED_PRTVA_QBAG_ESCOVA_POLO_POSITIVO_DESGASTADA"], descr=f"[UG{self.__ug_id}] QBAG Escova Polo Positivo Desgastada")
-        # self.condicionadores_essenciais.append(self.leitura_qbag_escova_polo_pos_desgas, CONDIC_INDISPONIBILIZAR)
+        self.leitura_qbag_escova_polo_pos_desgas = LeituraModbusBit(self.__clp[f"UG{self.__ug_id}"], REG_UG[f"UG{self.__ug_id}_ED_PRTVA_QBAG_ESCOVA_POLO_POSITIVO_DESGASTADA"], descr=f"[UG{self.__ug_id}] QBAG Escova Polo Positivo Desgastada") # OK
+        self.condicionadores_essenciais.append(self.leitura_qbag_escova_polo_pos_desgas, CONDIC_INDISPONIBILIZAR)
 
-        # self.leitura_qbag_escova_polo_neg_desgas = LeituraModbusBit(self.__clp[f"UG{self.__ug_id}"], REG_UG[f"UG{self.__ug_id}_ED_PRTVA_QBAG_ESCOVA_POLO_NEGATICO_DESGASTADA"], descr=f"[UG{self.__ug_id}] QBAG Escova Polo Negativo Desgastada")
-        # self.condicionadores_essenciais.append(self.leitura_qbag_escova_polo_neg_desgas, CONDIC_INDISPONIBILIZAR)
+        self.leitura_qbag_escova_polo_neg_desgas = LeituraModbusBit(self.__clp[f"UG{self.__ug_id}"], REG_UG[f"UG{self.__ug_id}_ED_PRTVA_QBAG_ESCOVA_POLO_NEGATICO_DESGASTADA"], descr=f"[UG{self.__ug_id}] QBAG Escova Polo Negativo Desgastada") # OK
+        self.condicionadores_essenciais.append(self.leitura_qbag_escova_polo_neg_desgas, CONDIC_INDISPONIBILIZAR)
 
-        # self.leitura_psa_poco_dren_nv_muito_alto = LeituraModbusBit(self.__clp[f"UG{self.__ug_id}"], REG_UG[f"UG{self.__ug_id}_ED_PRTVA_PSA_POCO_DRENAGEM_NIVEL_MUITO_ALTO"], descr=f"[UG{self.__ug_id}] PSA Poço Drenagem Nível Muito Alto")
-        # self.condicionadores_essenciais.append(self.leitura_psa_poco_dren_nv_muito_alto, CONDIC_INDISPONIBILIZAR)
+        self.leitura_psa_poco_dren_nv_muito_alto = LeituraModbusBit(self.__clp[f"UG{self.__ug_id}"], REG_UG[f"UG{self.__ug_id}_ED_PRTVA_PSA_POCO_DRENAGEM_NIVEL_MUITO_ALTO"], descr=f"[UG{self.__ug_id}] PSA Poço Drenagem Nível Muito Alto") # OK
+        self.condicionadores_essenciais.append(self.leitura_psa_poco_dren_nv_muito_alto, CONDIC_INDISPONIBILIZAR)
 
-        # self.leitura_tristor_temp_muito_alta = LeituraModbusBit(self.__clp[f"UG{self.__ug_id}"], REG_UG[f"UG{self.__ug_id}_EA_TRISTORES_TEMP_MUITO_ALTA"], descr=f"[UG{self.__ug_id}] Tristores Temperatura Muito Alta")
-        # self.condicionadores_essenciais.append(self.leitura_tristor_temp_muito_alta, CONDIC_INDISPONIBILIZAR)
+        self.leitura_tristor_temp_muito_alta = LeituraModbusBit(self.__clp[f"UG{self.__ug_id}"], REG_UG[f"UG{self.__ug_id}_EA_TRISTORES_TEMP_MUITO_ALTA"], descr=f"[UG{self.__ug_id}] Tristores Temperatura Muito Alta") # OK
+        self.condicionadores_essenciais.append(self.leitura_tristor_temp_muito_alta, CONDIC_INDISPONIBILIZAR)
 
-        # self.leitura_crowbar_temp_muito_alta = LeituraModbusBit(self.__clp[f"UG{self.__ug_id}"], REG_UG[f"UG{self.__ug_id}_EA_CROWBAR_TEMP_MUITO_ALTA"], descr=f"[UG{self.__ug_id}] Crowbar Temperatura Muito Alta")
-        # self.condicionadores_essenciais.append(self.leitura_crowbar_temp_muito_alta, CONDIC_INDISPONIBILIZAR)
+        self.leitura_crowbar_temp_muito_alta = LeituraModbusBit(self.__clp[f"UG{self.__ug_id}"], REG_UG[f"UG{self.__ug_id}_EA_CROWBAR_TEMP_MUITO_ALTA"], descr=f"[UG{self.__ug_id}] Crowbar Temperatura Muito Alta") # OK
+        self.condicionadores_essenciais.append(self.leitura_crowbar_temp_muito_alta, CONDIC_INDISPONIBILIZAR)
 
-        # self.leitura_trafo_exci_temp_muito_alta = LeituraModbusBit(self.__clp[f"UG{self.__ug_id}"], REG_UG[f"UG{self.__ug_id}_EA_TRAFO_EXCITACAO_MUITO_ALTA"], descr=f"[UG{self.__ug_id}] Transformador Excitação Temperatura Muito Alta")
-        # self.condicionadores_essenciais.append(self.leitura_trafo_exci_temp_muito_alta, CONDIC_INDISPONIBILIZAR)
+        self.leitura_trafo_exci_temp_muito_alta = LeituraModbusBit(self.__clp[f"UG{self.__ug_id}"], REG_UG[f"UG{self.__ug_id}_EA_TRAFO_EXCITACAO_MUITO_ALTA"], descr=f"[UG{self.__ug_id}] Transformador Excitação Temperatura Muito Alta") # OK
+        self.condicionadores_essenciais.append(self.leitura_trafo_exci_temp_muito_alta, CONDIC_INDISPONIBILIZAR)
 
-        # self.leitura_uhrv_temp_oleo_muito_alta = LeituraModbusBit(self.__clp[f"UG{self.__ug_id}"], REG_UG[f"UG{self.__ug_id}_EA_UHRV_TEMP_OLEO_MUITO_ALTA"], descr=f"[UG{self.__ug_id}] UHRV Óleo Temperatura Muito Alta")
-        # self.condicionadores_essenciais.append(self.leitura_uhrv_temp_oleo_muito_alta, CONDIC_INDISPONIBILIZAR)
+        self.leitura_uhrv_temp_oleo_muito_alta = LeituraModbusBit(self.__clp[f"UG{self.__ug_id}"], REG_UG[f"UG{self.__ug_id}_EA_UHRV_TEMP_OLEO_MUITO_ALTA"], descr=f"[UG{self.__ug_id}] UHRV Óleo Temperatura Muito Alta") # OK
+        self.condicionadores_essenciais.append(self.leitura_uhrv_temp_oleo_muito_alta, CONDIC_INDISPONIBILIZAR)
 
-        # self.leitura_gera_fase_a_temp_muito_alta = LeituraModbusBit(self.__clp[f"UG{self.__ug_id}"], REG_UG[f"UG{self.__ug_id}_EA_GERADOR_FASE_A_TEMP_MUITO_ALTA"], descr=f"[UG{self.__ug_id}] Gerador Fase A Temperatura Muito Alta")
-        # self.condicionadores_essenciais.append(self.leitura_gera_fase_a_temp_muito_alta, CONDIC_INDISPONIBILIZAR)
+        self.leitura_gera_fase_a_temp_muito_alta = LeituraModbusBit(self.__clp[f"UG{self.__ug_id}"], REG_UG[f"UG{self.__ug_id}_EA_GERADOR_FASE_A_TEMP_MUITO_ALTA"], descr=f"[UG{self.__ug_id}] Gerador Fase A Temperatura Muito Alta") # OK
+        self.condicionadores_essenciais.append(self.leitura_gera_fase_a_temp_muito_alta, CONDIC_INDISPONIBILIZAR)
 
-        # self.leitura_gera_fase_b_temp_muito_alta = LeituraModbusBit(self.__clp[f"UG{self.__ug_id}"], REG_UG[f"UG{self.__ug_id}_EA_GERADOR_FASE_B_TEMP_MUITO_ALTA"], descr=f"[UG{self.__ug_id}] Gerador Fase B Temperatura Muito Alta")
-        # self.condicionadores_essenciais.append(self.leitura_gera_fase_b_temp_muito_alta, CONDIC_INDISPONIBILIZAR)
+        self.leitura_gera_fase_b_temp_muito_alta = LeituraModbusBit(self.__clp[f"UG{self.__ug_id}"], REG_UG[f"UG{self.__ug_id}_EA_GERADOR_FASE_B_TEMP_MUITO_ALTA"], descr=f"[UG{self.__ug_id}] Gerador Fase B Temperatura Muito Alta") # OK
+        self.condicionadores_essenciais.append(self.leitura_gera_fase_b_temp_muito_alta, CONDIC_INDISPONIBILIZAR)
 
-        # self.leitura_gera_fase_c_temp_muito_alta = LeituraModbusBit(self.__clp[f"UG{self.__ug_id}"], REG_UG[f"UG{self.__ug_id}_EA_GERADOR_FASE_C_TEMP_MUITO_ALTA"], descr=f"[UG{self.__ug_id}] Gerador Fase C Temperatura Muito Alta")
-        # self.condicionadores_essenciais.append(self.leitura_gera_fase_c_temp_muito_alta, CONDIC_INDISPONIBILIZAR)
+        self.leitura_gera_fase_c_temp_muito_alta = LeituraModbusBit(self.__clp[f"UG{self.__ug_id}"], REG_UG[f"UG{self.__ug_id}_EA_GERADOR_FASE_C_TEMP_MUITO_ALTA"], descr=f"[UG{self.__ug_id}] Gerador Fase C Temperatura Muito Alta") # OK
+        self.condicionadores_essenciais.append(self.leitura_gera_fase_c_temp_muito_alta, CONDIC_INDISPONIBILIZAR)
 
-        # self.leitura_gera_nucleo_1_temp_muito_alta = LeituraModbusBit(self.__clp[f"UG{self.__ug_id}"], REG_UG[f"UG{self.__ug_id}_EA_GERADOR_NUCLEO_1_TEMP_MUITO_ALTA"], descr=f"[UG{self.__ug_id}] Gerador Núcleo 1 Temperatura Muito Alta")
-        # self.condicionadores_essenciais.append(self.leitura_gera_nucleo_1_temp_muito_alta, CONDIC_INDISPONIBILIZAR)
+        self.leitura_gera_nucleo_1_temp_muito_alta = LeituraModbusBit(self.__clp[f"UG{self.__ug_id}"], REG_UG[f"UG{self.__ug_id}_EA_GERADOR_NUCLEO_1_TEMP_MUITO_ALTA"], descr=f"[UG{self.__ug_id}] Gerador Núcleo 1 Temperatura Muito Alta") # OK
+        self.condicionadores_essenciais.append(self.leitura_gera_nucleo_1_temp_muito_alta, CONDIC_INDISPONIBILIZAR)
 
-        # self.leitura_gera_nucleo_2_temp_muito_alta = LeituraModbusBit(self.__clp[f"UG{self.__ug_id}"], REG_UG[f"UG{self.__ug_id}_EA_GERADOR_NUCLEO_2_MUITO_ALTA"], descr=f"[UG{self.__ug_id}] Gerador Núcleo 2 Temperatura Muito Alta")
-        # self.condicionadores_essenciais.append(self.leitura_gera_nucleo_2_temp_muito_alta, CONDIC_INDISPONIBILIZAR)
+        self.leitura_gera_nucleo_2_temp_muito_alta = LeituraModbusBit(self.__clp[f"UG{self.__ug_id}"], REG_UG[f"UG{self.__ug_id}_EA_GERADOR_NUCLEO_2_MUITO_ALTA"], descr=f"[UG{self.__ug_id}] Gerador Núcleo 2 Temperatura Muito Alta") # OK
+        self.condicionadores_essenciais.append(self.leitura_gera_nucleo_2_temp_muito_alta, CONDIC_INDISPONIBILIZAR)
 
-        # self.leitura_gera_nucleo_3_temp_muito_alta = LeituraModbusBit(self.__clp[f"UG{self.__ug_id}"], REG_UG[f"UG{self.__ug_id}_EA_GERADOR_NUCLEO_3_TEMP_MUITO_ALTA"], descr=f"[UG{self.__ug_id}] Gerador Núcleo 3 Temperatura Muito Alta")
-        # self.condicionadores_essenciais.append(self.leitura_gera_nucleo_3_temp_muito_alta, CONDIC_INDISPONIBILIZAR)
+        self.leitura_gera_nucleo_3_temp_muito_alta = LeituraModbusBit(self.__clp[f"UG{self.__ug_id}"], REG_UG[f"UG{self.__ug_id}_EA_GERADOR_NUCLEO_3_TEMP_MUITO_ALTA"], descr=f"[UG{self.__ug_id}] Gerador Núcleo 3 Temperatura Muito Alta") # OK
+        self.condicionadores_essenciais.append(self.leitura_gera_nucleo_3_temp_muito_alta, CONDIC_INDISPONIBILIZAR)
 
-        # self.leitura_mancal_guia_casq_temp_muito_alta = LeituraModbusBit(self.__clp[f"UG{self.__ug_id}"], REG_UG[f"UG{self.__ug_id}_EA_MANCAL_GUIA_CASQUILHO_MUITO_ALTA"], descr=f"[UG{self.__ug_id}] Mancal Guia Casquilho Temperatura Muito Alta")
-        # self.condicionadores_essenciais.append(self.leitura_mancal_guia_casq_temp_muito_alta, CONDIC_INDISPONIBILIZAR)
+        self.leitura_mancal_guia_casq_temp_muito_alta = LeituraModbusBit(self.__clp[f"UG{self.__ug_id}"], REG_UG[f"UG{self.__ug_id}_EA_MANCAL_GUIA_CASQUILHO_MUITO_ALTA"], descr=f"[UG{self.__ug_id}] Mancal Guia Casquilho Temperatura Muito Alta") # OK
+        self.condicionadores_essenciais.append(self.leitura_mancal_guia_casq_temp_muito_alta, CONDIC_INDISPONIBILIZAR)
 
-        # self.leitura_mancal_comb_casq_temp_muito_alta = LeituraModbusBit(self.__clp[f"UG{self.__ug_id}"], REG_UG[f"UG{self.__ug_id}_EA_MANCAL_COMBINADO_CASQUILHO_MUITO_ALTA"], descr=f"[UG{self.__ug_id}] Mancal Combinado Casquilho Temperatura Muito Alta")
-        # self.condicionadores_essenciais.append(self.leitura_mancal_comb_casq_temp_muito_alta, CONDIC_INDISPONIBILIZAR)
+        self.leitura_mancal_comb_casq_temp_muito_alta = LeituraModbusBit(self.__clp[f"UG{self.__ug_id}"], REG_UG[f"UG{self.__ug_id}_EA_MANCAL_COMBINADO_CASQUILHO_MUITO_ALTA"], descr=f"[UG{self.__ug_id}] Mancal Combinado Casquilho Temperatura Muito Alta") # OK
+        self.condicionadores_essenciais.append(self.leitura_mancal_comb_casq_temp_muito_alta, CONDIC_INDISPONIBILIZAR)
 
-        # self.leitura_mancal_comb_esc_temp_muito_alta = LeituraModbusBit(self.__clp[f"UG{self.__ug_id}"], REG_UG[f"UG{self.__ug_id}_EA_MANCAL_COMBINADO_ESCORA_MUITO_ALTA"], descr=f"[UG{self.__ug_id}] Mancal Combinado Escora Temperatura Muito Alta")
-        # self.condicionadores_essenciais.append(self.leitura_mancal_comb_esc_temp_muito_alta, CONDIC_INDISPONIBILIZAR)
+        self.leitura_mancal_comb_esc_temp_muito_alta = LeituraModbusBit(self.__clp[f"UG{self.__ug_id}"], REG_UG[f"UG{self.__ug_id}_EA_MANCAL_COMBINADO_ESCORA_MUITO_ALTA"], descr=f"[UG{self.__ug_id}] Mancal Combinado Escora Temperatura Muito Alta") # OK
+        self.condicionadores_essenciais.append(self.leitura_mancal_comb_esc_temp_muito_alta, CONDIC_INDISPONIBILIZAR)
 
-        # self.leitura_uhrv_press_oleo_falha_leitura = LeituraModbusBit(self.__clp[f"UG{self.__ug_id}"], REG_UG[f"UG{self.__ug_id}_EA_UHRV_PRESSAO_OLEO_FALHA_LEITURA"], descr=f"[UG{self.__ug_id}] UHRV Pressão Óleo Falha Leitura")
-        # self.condicionadores_essenciais.append(self.leitura_, CONDIC_INDISPONIBILIZAR)
+        self.leitura_uhrv_press_oleo_falha_leitura = LeituraModbusBit(self.__clp[f"UG{self.__ug_id}"], REG_UG[f"UG{self.__ug_id}_EA_UHRV_PRESSAO_OLEO_FALHA_LEITURA"], descr=f"[UG{self.__ug_id}] UHRV Pressão Óleo Falha Leitura") # TODO REG 12340 -> Bit 0
+        self.condicionadores_essenciais.append(self.leitura_, CONDIC_INDISPONIBILIZAR)
 
-        # self.leitura_uhrv_press_oleo_muito_alta = LeituraModbusBit(self.__clp[f"UG{self.__ug_id}"], REG_UG[f"UG{self.__ug_id}_EA_UHRV_PRESSAO_OLEO_MUITO_ALTO"], descr=f"[UG{self.__ug_id}] UHRV Pressão Óleo Muito Alta")
-        # self.condicionadores_essenciais.append(self.leitura_uhrv_press_oleo_muito_alta, CONDIC_INDISPONIBILIZAR)
+        self.leitura_uhrv_press_oleo_muito_alta = LeituraModbusBit(self.__clp[f"UG{self.__ug_id}"], REG_UG[f"UG{self.__ug_id}_EA_UHRV_PRESSAO_OLEO_MUITO_ALTO"], descr=f"[UG{self.__ug_id}] UHRV Pressão Óleo Muito Alta") # TODO REG 12342 -> Bit 0
+        self.condicionadores_essenciais.append(self.leitura_uhrv_press_oleo_muito_alta, CONDIC_INDISPONIBILIZAR)
 
-        # self.leitura_uhrv_press_oleo_alta = LeituraModbusBit(self.__clp[f"UG{self.__ug_id}"], REG_UG[f"UG{self.__ug_id}_EA_UHRV_PRESSAO_OLEO_ALTO"], descr=f"[UG{self.__ug_id}] UHRV Pressão Óleo Alta")
-        # self.condicionadores_essenciais.append(self.leitura_uhrv_press_oleo_alta, CONDIC_INDISPONIBILIZAR)
+        self.leitura_uhrv_press_oleo_alta = LeituraModbusBit(self.__clp[f"UG{self.__ug_id}"], REG_UG[f"UG{self.__ug_id}_EA_UHRV_PRESSAO_OLEO_ALTO"], descr=f"[UG{self.__ug_id}] UHRV Pressão Óleo Alta") # TODO REG 12344 -> Bit 0
+        self.condicionadores_essenciais.append(self.leitura_uhrv_press_oleo_alta, CONDIC_INDISPONIBILIZAR)
 
-        # self.leitura_contro_trip_dif_grade = LeituraModbusBit(self.__clp[f"UG{self.__ug_id}"], REG_UG[f"UG{self.__ug_id}_ED_CONTROLE_TRIP_DIFERENCIAL_GRADE"], descr=f"[UG{self.__ug_id}] Contorle Trip Diferencial Grade")
-        # self.condicionadores_essenciais.append(self.leitura_contro_trip_dif_grade, CONDIC_INDISPONIBILIZAR)
+        self.leitura_contro_trip_dif_grade = LeituraModbusBit(self.__clp[f"UG{self.__ug_id}"], REG_UG[f"UG{self.__ug_id}_ED_CONTROLE_TRIP_DIFERENCIAL_GRADE"], descr=f"[UG{self.__ug_id}] Contorle Trip Diferencial Grade") # TODO REG 12360 -> Bit 7
+        self.condicionadores_essenciais.append(self.leitura_contro_trip_dif_grade, CONDIC_INDISPONIBILIZAR)
 
-        # self.leitura_resis_aquec_gera_falha_deslig = LeituraModbusBit(self.__clp[f"UG{self.__ug_id}"], REG_UG[f"UG{self.__ug_id}_ED_RESISTENCIA_AQUEC_GERADOR_FALHA_DESLIGAR"], descr=f"[UG{self.__ug_id}] Resistência Aquecedor Gerador Falha Desligar")
-        # self.condicionadores_essenciais.append(self.leitura_resis_aquec_gera_falha_deslig, CONDIC_INDISPONIBILIZAR)
+        self.leitura_resis_aquec_gera_falha_deslig = LeituraModbusBit(self.__clp[f"UG{self.__ug_id}"], REG_UG[f"UG{self.__ug_id}_ED_RESISTENCIA_AQUEC_GERADOR_FALHA_DESLIGAR"], descr=f"[UG{self.__ug_id}] Resistência Aquecedor Gerador Falha Desligar") # TODO REG 12360 -> Bit 10
+        self.condicionadores_essenciais.append(self.leitura_resis_aquec_gera_falha_deslig, CONDIC_INDISPONIBILIZAR)
 
-        # self.leitura_uhrv_falha_deslig = LeituraModbusBit(self.__clp[f"UG{self.__ug_id}"], REG_UG[f"UG{self.__ug_id}_ED_UHRV_FALHA_AO_DESLIGAR"], descr=f"[UG{self.__ug_id}] UHRV Falha Desligar")
-        # self.condicionadores_essenciais.append(self.leitura_uhrv_falha_deslig, CONDIC_INDISPONIBILIZAR)
+        self.leitura_uhrv_falha_deslig = LeituraModbusBit(self.__clp[f"UG{self.__ug_id}"], REG_UG[f"UG{self.__ug_id}_ED_UHRV_FALHA_AO_DESLIGAR"], descr=f"[UG{self.__ug_id}] UHRV Falha Desligar") # OK
+        self.condicionadores_essenciais.append(self.leitura_uhrv_falha_deslig, CONDIC_INDISPONIBILIZAR)
 
-        # self.leitura_uhlm_bomba_1_falha_ligar = LeituraModbusBit(self.__clp[f"UG{self.__ug_id}"], REG_UG[f"UG{self.__ug_id}_ED_UHLM_BOMBA_1_FALHA_LIGAR"], descr=f"[UG{self.__ug_id}] UHLM Bomba 1 Falha Ligar")
-        # self.condicionadores_essenciais.append(self.leitura_uhlm_bomba_1_falha_ligar, CONDIC_INDISPONIBILIZAR)
+        self.leitura_uhlm_bomba_1_falha_ligar = LeituraModbusBit(self.__clp[f"UG{self.__ug_id}"], REG_UG[f"UG{self.__ug_id}_ED_UHLM_BOMBA_1_FALHA_LIGAR"], descr=f"[UG{self.__ug_id}] UHLM Bomba 1 Falha Ligar") # TODO REG 12364 -> Bit 6
+        self.condicionadores_essenciais.append(self.leitura_uhlm_bomba_1_falha_ligar, CONDIC_INDISPONIBILIZAR)
 
-        # self.leitura_uhlm_bomba_1_falha_deslig = LeituraModbusBit(self.__clp[f"UG{self.__ug_id}"], REG_UG[f"UG{self.__ug_id}_ED_UHLM_BOMBA_1_FALHA_DESLIGAR"], descr=f"[UG{self.__ug_id}] UHLM Bomba 1 Falha Desligar")
-        # self.condicionadores_essenciais.append(self.leitura_uhlm_bomba_1_falha_deslig, CONDIC_INDISPONIBILIZAR)
+        self.leitura_uhlm_bomba_1_falha_deslig = LeituraModbusBit(self.__clp[f"UG{self.__ug_id}"], REG_UG[f"UG{self.__ug_id}_ED_UHLM_BOMBA_1_FALHA_DESLIGAR"], descr=f"[UG{self.__ug_id}] UHLM Bomba 1 Falha Desligar") # TODO REG 12364 -> Bit 7
+        self.condicionadores_essenciais.append(self.leitura_uhlm_bomba_1_falha_deslig, CONDIC_INDISPONIBILIZAR)
 
-        # self.leitura_ulhm_falha_pressos = LeituraModbusBit(self.__clp[f"UG{self.__ug_id}"], REG_UG[f"UG{self.__ug_id}_ED_UHLM_FALHA_PRESSOSTATO"], descr=f"[UG{self.__ug_id}] UHLM Falha Pressostato")
-        # self.condicionadores_essenciais.append(self.leitura_ulhm_falha_pressos, CONDIC_INDISPONIBILIZAR)
+        self.leitura_ulhm_falha_pressos = LeituraModbusBit(self.__clp[f"UG{self.__ug_id}"], REG_UG[f"UG{self.__ug_id}_ED_UHLM_FALHA_PRESSOSTATO"], descr=f"[UG{self.__ug_id}] UHLM Falha Pressostato") # TODO REG 12364 -> Bit 14
+        self.condicionadores_essenciais.append(self.leitura_ulhm_falha_pressos, CONDIC_INDISPONIBILIZAR)
 
-        # self.leitura_rv_falha_partir = LeituraModbusBit(self.__clp[f"UG{self.__ug_id}"], REG_UG[f"UG{self.__ug_id}_ED_RV_FALHA_AO_PARTIR"], descr=f"[UG{self.__ug_id}] RV Falha Partir")
-        # self.condicionadores_essenciais.append(self.leitura_rv_falha_partir, CONDIC_INDISPONIBILIZAR)
+        self.leitura_rv_falha_partir = LeituraModbusBit(self.__clp[f"UG{self.__ug_id}"], REG_UG[f"UG{self.__ug_id}_ED_RV_FALHA_AO_PARTIR"], descr=f"[UG{self.__ug_id}] RV Falha Partir") # TODO REG 12372 -> Bit OK
+        self.condicionadores_essenciais.append(self.leitura_rv_falha_partir, CONDIC_INDISPONIBILIZAR)
 
-        # self.leitura_rv_falha_desab = LeituraModbusBit(self.__clp[f"UG{self.__ug_id}"], REG_UG[f"UG{self.__ug_id}_ED_RV_FALHA_AO_DESABILITAR"], descr=f"[UG{self.__ug_id}] RV Falha Desabilitar")
-        # self.condicionadores_essenciais.append(self.leitura_rv_falha_desab, CONDIC_INDISPONIBILIZAR)
+        self.leitura_rv_falha_desab = LeituraModbusBit(self.__clp[f"UG{self.__ug_id}"], REG_UG[f"UG{self.__ug_id}_ED_RV_FALHA_AO_DESABILITAR"], descr=f"[UG{self.__ug_id}] RV Falha Desabilitar") # TODO REG 12372 -> Bit OK
+        self.condicionadores_essenciais.append(self.leitura_rv_falha_desab, CONDIC_INDISPONIBILIZAR)
 
-        # self.leitura_rv_falha_parar_maqu = LeituraModbusBit(self.__clp[f"UG{self.__ug_id}"], REG_UG[f"UG{self.__ug_id}_ED_RV_FALHA_AO_PARAR_MAQUINA"], descr=f"[UG{self.__ug_id}]RV Falha Parar Máquina")
-        # self.condicionadores_essenciais.append(self.leitura_rv_falha_parar_maqu, CONDIC_INDISPONIBILIZAR)
+        self.leitura_rv_falha_parar_maqu = LeituraModbusBit(self.__clp[f"UG{self.__ug_id}"], REG_UG[f"UG{self.__ug_id}_ED_RV_FALHA_AO_PARAR_MAQUINA"], descr=f"[UG{self.__ug_id}] RV Falha Parar Máquina") # TODO REG 12372 -> Bit OK
+        self.condicionadores_essenciais.append(self.leitura_rv_falha_parar_maqu, CONDIC_INDISPONIBILIZAR)
 
-        # self.leitura_rt_falha_partir = LeituraModbusBit(self.__clp[f"UG{self.__ug_id}"], REG_UG[f"UG{self.__ug_id}_ED_RT_FALHA_AO_PARTIR"], descr=f"[UG{self.__ug_id}] RT Falha Partir")
-        # self.condicionadores_essenciais.append(self.leitura_rt_falha_partir, CONDIC_INDISPONIBILIZAR)
+        self.leitura_rt_falha_partir = LeituraModbusBit(self.__clp[f"UG{self.__ug_id}"], REG_UG[f"UG{self.__ug_id}_ED_RT_FALHA_AO_PARTIR"], descr=f"[UG{self.__ug_id}] RT Falha Partir") # TODO REG 12374 -> Bit OK
+        self.condicionadores_essenciais.append(self.leitura_rt_falha_partir, CONDIC_INDISPONIBILIZAR)
 
-        # self.leitura_rt_falha_desab = LeituraModbusBit(self.__clp[f"UG{self.__ug_id}"], REG_UG[f"UG{self.__ug_id}_ED_RT_FALHA_AO_DESABILITAR"], descr=f"[UG{self.__ug_id}] RT Falha Desabilitar")
-        # self.condicionadores_essenciais.append(self.leitura_rt_falha_desab, CONDIC_INDISPONIBILIZAR)
+        self.leitura_rt_falha_desab = LeituraModbusBit(self.__clp[f"UG{self.__ug_id}"], REG_UG[f"UG{self.__ug_id}_ED_RT_FALHA_AO_DESABILITAR"], descr=f"[UG{self.__ug_id}] RT Falha Desabilitar") # TODO REG 12374 -> Bit OK
+        self.condicionadores_essenciais.append(self.leitura_rt_falha_desab, CONDIC_INDISPONIBILIZAR)
 
-        # self.leitura_valv_borb_falha_fechar = LeituraModbusBit(self.__clp[f"UG{self.__ug_id}"], REG_UG[f"UG{self.__ug_id}_ED_BORBOLETA_FALHA_FECHAR"], descr=f"[UG{self.__ug_id}] Válvula Borboleta Falha Fechar")
-        # self.condicionadores_essenciais.append(self.leitura_valv_borb_falha_fechar, CONDIC_INDISPONIBILIZAR)
+        self.leitura_valv_borb_falha_fechar = LeituraModbusBit(self.__clp[f"UG{self.__ug_id}"], REG_UG[f"UG{self.__ug_id}_ED_BORBOLETA_FALHA_FECHAR"], descr=f"[UG{self.__ug_id}] Válvula Borboleta Falha Fechar") # TODO REG 12366 -> Bit OK
+        self.condicionadores_essenciais.append(self.leitura_valv_borb_falha_fechar, CONDIC_INDISPONIBILIZAR)
 
-        # self.leitura_valv_borb_dicrep_senso = LeituraModbusBit(self.__clp[f"UG{self.__ug_id}"], REG_UG[f"UG{self.__ug_id}_ED_BORBOLETA_DISCREPANCIA_SENSORES"], descr=f"[UG{self.__ug_id}] Válvula Borboleta Discrepância Sensores")
-        # self.condicionadores_essenciais.append(self.leitura_valv_borb_dicrep_senso, CONDIC_INDISPONIBILIZAR)
+        self.leitura_valv_borb_dicrep_senso = LeituraModbusBit(self.__clp[f"UG{self.__ug_id}"], REG_UG[f"UG{self.__ug_id}_ED_BORBOLETA_DISCREPANCIA_SENSORES"], descr=f"[UG{self.__ug_id}] Válvula Borboleta Discrepância Sensores") # TODO REG 12366 -> Bit 10
+        self.condicionadores_essenciais.append(self.leitura_valv_borb_dicrep_senso, CONDIC_INDISPONIBILIZAR)
 
-        # self.leitura_vavl_bypass_discrep_senso = LeituraModbusBit(self.__clp[f"UG{self.__ug_id}"], REG_UG[f"UG{self.__ug_id}_ED_BYPASS_DISCREPANCIA_SENSORES"], descr=f"[UG{self.__ug_id}] Válvula Bypass Discrepância Sensores")
-        # self.condicionadores_essenciais.append(self.leitura_vavl_bypass_discrep_senso, CONDIC_INDISPONIBILIZAR)
+        self.leitura_vavl_bypass_discrep_senso = LeituraModbusBit(self.__clp[f"UG{self.__ug_id}"], REG_UG[f"UG{self.__ug_id}_ED_BYPASS_DISCREPANCIA_SENSORES"], descr=f"[UG{self.__ug_id}] Válvula Bypass Discrepância Sensores") # TODO REG 12366 -> Bit 11
+        self.condicionadores_essenciais.append(self.leitura_vavl_bypass_discrep_senso, CONDIC_INDISPONIBILIZAR)
 
 
         # # Demais
-        # self.leitura_rt_crowbar_inativo = LeituraModbusBit(self.__clp[f"UG{self.__ug_id}"], REG_UG[f"UG{self.__ug_id}_RT_ED_CROWBAR_INATIVO"], descr=f"[UG{self.__ug_id}] RT Crowbar Inativo")
-        # self.condicionadores_essenciais.append(self.leitura_rt_crowbar_inativo, CONDIC_INDISPONIBILIZAR)
+        self.leitura_rt_crowbar_inativo = LeituraModbusBit(self.__clp[f"UG{self.__ug_id}"], REG_UG[f"UG{self.__ug_id}_RT_ED_CROWBAR_INATIVO"], descr=f"[UG{self.__ug_id}] RT Crowbar Inativo") # OK
+        self.condicionadores_essenciais.append(self.leitura_rt_crowbar_inativo, CONDIC_INDISPONIBILIZAR)
 
-        # self.leitura_rv_falha_1_sobrefreq_inst = LeituraModbusBit(self.__clp[f"UG{self.__ug_id}"], REG_UG[f"UG{self.__ug_id}_RV_FALHA_1_SOBREFREQ_INSTANT"], descr=f"[UG{self.__ug_id}] RV Falha 1 Sobrefrequência Instantânea")
-        # self.condicionadores_essenciais.append(self.leitura_rv_falha_1_sobrefreq_inst, CONDIC_INDISPONIBILIZAR)
+        self.leitura_rv_falha_1_sobrefreq_inst = LeituraModbusBit(self.__clp[f"UG{self.__ug_id}"], REG_UG[f"UG{self.__ug_id}_RV_FALHA_1_SOBREFREQ_INSTANT"], descr=f"[UG{self.__ug_id}] RV Falha 1 Sobrefrequência Instantânea") # OK
+        self.condicionadores_essenciais.append(self.leitura_rv_falha_1_sobrefreq_inst, CONDIC_INDISPONIBILIZAR)
 
-        # self.leitura_rv_falha_1_sobrefreq_tempor = LeituraModbusBit(self.__clp[f"UG{self.__ug_id}"], REG_UG[f"UG{self.__ug_id}_RV_FALHA_1_SOBREFREQ_TEMPOR"], descr=f"[UG{self.__ug_id}] RV Falha 1 Sobrefrequência Temporizada")
-        # self.condicionadores_essenciais.append(self.leitura_rv_falha_1_sobrefreq_tempor, CONDIC_INDISPONIBILIZAR)
+        self.leitura_rv_falha_1_sobrefreq_tempor = LeituraModbusBit(self.__clp[f"UG{self.__ug_id}"], REG_UG[f"UG{self.__ug_id}_RV_FALHA_1_SOBREFREQ_TEMPOR"], descr=f"[UG{self.__ug_id}] RV Falha 1 Sobrefrequência Temporizada") # OK
+        self.condicionadores_essenciais.append(self.leitura_rv_falha_1_sobrefreq_tempor, CONDIC_INDISPONIBILIZAR)
 
-        # self.leitura_rv_falha_1_subfreq_tempor = LeituraModbusBit(self.__clp[f"UG{self.__ug_id}"], REG_UG[f"UG{self.__ug_id}_RV_FALHA_1_SUBFREQ_TEMPORIZADA"], descr=f"[UG{self.__ug_id}] RV Falha 1 Subfrequência Temporizada")
-        # self.condicionadores_essenciais.append(self.leitura_rv_falha_1_subfreq_tempor, CONDIC_INDISPONIBILIZAR)
+        self.leitura_rv_falha_1_subfreq_tempor = LeituraModbusBit(self.__clp[f"UG{self.__ug_id}"], REG_UG[f"UG{self.__ug_id}_RV_FALHA_1_SUBFREQ_TEMPORIZADA"], descr=f"[UG{self.__ug_id}] RV Falha 1 Subfrequência Temporizada") # OK
+        self.condicionadores_essenciais.append(self.leitura_rv_falha_1_subfreq_tempor, CONDIC_INDISPONIBILIZAR)
 
-        # self.leitura_rv_falha_1_leit_pos_distrib = LeituraModbusBit(self.__clp[f"UG{self.__ug_id}"], REG_UG[f"UG{self.__ug_id}_RV_FALHA_1_LEIT_POS_DISTRIBUIDOR"], descr=f"[UG{self.__ug_id}] RV Falha 1 Leitura Posição Distribuidor")
-        # self.condicionadores_essenciais.append(self.leitura_rv_falha_1_leit_pos_distrib, CONDIC_INDISPONIBILIZAR)
+        self.leitura_rv_falha_1_leit_pos_distrib = LeituraModbusBit(self.__clp[f"UG{self.__ug_id}"], REG_UG[f"UG{self.__ug_id}_RV_FALHA_1_LEIT_POS_DISTRIBUIDOR"], descr=f"[UG{self.__ug_id}] RV Falha 1 Leitura Posição Distribuidor") # OK
+        self.condicionadores_essenciais.append(self.leitura_rv_falha_1_leit_pos_distrib, CONDIC_INDISPONIBILIZAR)
 
-        # self.leitura_rv_falha_1_leit_pot_ativa = LeituraModbusBit(self.__clp[f"UG{self.__ug_id}"], REG_UG[f"UG{self.__ug_id}_RV_FALHA_1_LEIT_POTENCIA_ATIVA"], descr=f"[UG{self.__ug_id}] RV Falha 1 Leitura Potência Ativa")
-        # self.condicionadores_essenciais.append(self.leitura_rv_falha_1_leit_pot_ativa, CONDIC_INDISPONIBILIZAR)
+        self.leitura_rv_falha_1_leit_pot_ativa = LeituraModbusBit(self.__clp[f"UG{self.__ug_id}"], REG_UG[f"UG{self.__ug_id}_RV_FALHA_1_LEIT_POTENCIA_ATIVA"], descr=f"[UG{self.__ug_id}] RV Falha 1 Leitura Potência Ativa") # OK
+        self.condicionadores_essenciais.append(self.leitura_rv_falha_1_leit_pot_ativa, CONDIC_INDISPONIBILIZAR)
 
-        # self.leitura_rv_falha_1_leit_refer_pot = LeituraModbusBit(self.__clp[f"UG{self.__ug_id}"], REG_UG[f"UG{self.__ug_id}_RV_FALHA_1_LEIT_REFERENCIA_POTENCIA"], descr=f"[UG{self.__ug_id}] RV Falha 1 Leitura Referência Potência")
-        # self.condicionadores_essenciais.append(self.leitura_rv_falha_1_leit_refer_pot, CONDIC_INDISPONIBILIZAR)
+        self.leitura_rv_falha_1_leit_refer_pot = LeituraModbusBit(self.__clp[f"UG{self.__ug_id}"], REG_UG[f"UG{self.__ug_id}_RV_FALHA_1_LEIT_REFERENCIA_POTENCIA"], descr=f"[UG{self.__ug_id}] RV Falha 1 Leitura Referência Potência") # OK
+        self.condicionadores_essenciais.append(self.leitura_rv_falha_1_leit_refer_pot, CONDIC_INDISPONIBILIZAR)
 
-        # self.leitura_rv_falha_1_nv_montante_muito_baixo = LeituraModbusBit(self.__clp[f"UG{self.__ug_id}"], REG_UG[f"UG{self.__ug_id}_RV_FALHA_1_NV_MONTANTE_MUITO_BAIXO"], descr=f"[UG{self.__ug_id}] RV Falha 1 Nível Montante Muito Baixo")
-        # self.condicionadores_essenciais.append(self.leitura_rv_falha_1_nv_montante_muito_baixo, CONDIC_INDISPONIBILIZAR)
+        self.leitura_rv_falha_1_nv_montante_muito_baixo = LeituraModbusBit(self.__clp[f"UG{self.__ug_id}"], REG_UG[f"UG{self.__ug_id}_RV_FALHA_1_NV_MONTANTE_MUITO_BAIXO"], descr=f"[UG{self.__ug_id}] RV Falha 1 Nível Montante Muito Baixo") # OK
+        self.condicionadores_essenciais.append(self.leitura_rv_falha_1_nv_montante_muito_baixo, CONDIC_INDISPONIBILIZAR)
 
-        # self.leitura_rv_falha_1_control_pos_distribu = LeituraModbusBit(self.__clp[f"UG{self.__ug_id}"], REG_UG[f"UG{self.__ug_id}_RV_FALHA_1_CONTROLE_POS_DISTRIBUIDOR"], descr=f"[UG{self.__ug_id}] RV Falha 1 Controle Posição Distribuidor")
-        # self.condicionadores_essenciais.append(self.leitura_rv_falha_1_control_pos_distribu, CONDIC_INDISPONIBILIZAR)
+        self.leitura_rv_falha_1_control_pos_distribu = LeituraModbusBit(self.__clp[f"UG{self.__ug_id}"], REG_UG[f"UG{self.__ug_id}_RV_FALHA_1_CONTROLE_POS_DISTRIBUIDOR"], descr=f"[UG{self.__ug_id}] RV Falha 1 Controle Posição Distribuidor") # OK
+        self.condicionadores_essenciais.append(self.leitura_rv_falha_1_control_pos_distribu, CONDIC_INDISPONIBILIZAR)
 
-        # self.leitura_rv_falha_1_ruido_med_veloc_princi = LeituraModbusBit(self.__clp[f"UG{self.__ug_id}"], REG_UG[f"UG{self.__ug_id}_RV_FALHA_1_RUIDO_MED_VELOC_PRINCIPAL"], descr=f"[UG{self.__ug_id}] RV Falha 1 Ruído Medição Velocidade Principal")
-        # self.condicionadores_essenciais.append(self.leitura_rv_falha_1_ruido_med_veloc_princi, CONDIC_INDISPONIBILIZAR)
+        self.leitura_rv_falha_1_ruido_med_veloc_princi = LeituraModbusBit(self.__clp[f"UG{self.__ug_id}"], REG_UG[f"UG{self.__ug_id}_RV_FALHA_1_RUIDO_MED_VELOC_PRINCIPAL"], descr=f"[UG{self.__ug_id}] RV Falha 1 Ruído Medição Velocidade Principal") # OK
+        self.condicionadores_essenciais.append(self.leitura_rv_falha_1_ruido_med_veloc_princi, CONDIC_INDISPONIBILIZAR)
 
-        # self.leitura_rv_falha_1_ruido_med_veloc_retag = LeituraModbusBit(self.__clp[f"UG{self.__ug_id}"], REG_UG[f"UG{self.__ug_id}_RV_FALHA_1_RUIDO_MED_VELOC_RETAGUARDA"], descr=f"[UG{self.__ug_id}] RV Falha 1 Ruído Medição Velocidade Retaguarda")
-        # self.condicionadores_essenciais.append(self.leitura_rv_falha_1_ruido_med_veloc_retag, CONDIC_INDISPONIBILIZAR)
+        self.leitura_rv_falha_1_ruido_med_veloc_retag = LeituraModbusBit(self.__clp[f"UG{self.__ug_id}"], REG_UG[f"UG{self.__ug_id}_RV_FALHA_1_RUIDO_MED_VELOC_RETAGUARDA"], descr=f"[UG{self.__ug_id}] RV Falha 1 Ruído Medição Velocidade Retaguarda") # OK
+        self.condicionadores_essenciais.append(self.leitura_rv_falha_1_ruido_med_veloc_retag, CONDIC_INDISPONIBILIZAR)
 
-        # self.leitura_rv_falha_2_perda_med_veloc_retag = LeituraModbusBit(self.__clp[f"UG{self.__ug_id}"], REG_UG[f"UG{self.__ug_id}_RV_FALHA_2_PERDA_MED_VELOC_RETAGUARDA"], descr=f"[UG{self.__ug_id}] RV Falha 2 Perda Medição Velocidade Retaguarda")
-        # self.condicionadores_essenciais.append(self.leitura_rv_falha_2_perda_med_veloc_retag, CONDIC_INDISPONIBILIZAR)
+        self.leitura_rv_falha_2_perda_med_veloc_retag = LeituraModbusBit(self.__clp[f"UG{self.__ug_id}"], REG_UG[f"UG{self.__ug_id}_RV_FALHA_2_PERDA_MED_VELOC_RETAGUARDA"], descr=f"[UG{self.__ug_id}] RV Falha 2 Perda Medição Velocidade Retaguarda") # OK
+        self.condicionadores_essenciais.append(self.leitura_rv_falha_2_perda_med_veloc_retag, CONDIC_INDISPONIBILIZAR)
 
-        # self.leitura_rv_falha_2_tempo_excess_partida = LeituraModbusBit(self.__clp[f"UG{self.__ug_id}"], REG_UG[f"UG{self.__ug_id}_RV_FALHA_2_TEMPO_EXCESSIVO_PARTIDA"], descr=f"[UG{self.__ug_id}] RV Falha 2 Tempo Excessivo Partida")
-        # self.condicionadores_essenciais.append(self.leitura_rv_falha_2_tempo_excess_partida, CONDIC_INDISPONIBILIZAR)
+        self.leitura_rv_falha_2_tempo_excess_partida = LeituraModbusBit(self.__clp[f"UG{self.__ug_id}"], REG_UG[f"UG{self.__ug_id}_RV_FALHA_2_TEMPO_EXCESSIVO_PARTIDA"], descr=f"[UG{self.__ug_id}] RV Falha 2 Tempo Excessivo Partida") # OK
+        self.condicionadores_essenciais.append(self.leitura_rv_falha_2_tempo_excess_partida, CONDIC_INDISPONIBILIZAR)
 
-        # self.leitura_rv_falha_2_tempo_excess_parada = LeituraModbusBit(self.__clp[f"UG{self.__ug_id}"], REG_UG[f"UG{self.__ug_id}_RV_FALHA_2_TEMPO_EXCESSIVO_PARADA"], descr=f"[UG{self.__ug_id}] RV Falha 2 Tempo Excessivo Parada")
-        # self.condicionadores_essenciais.append(self.leitura_rv_falha_2_tempo_excess_parada, CONDIC_INDISPONIBILIZAR)
+        self.leitura_rv_falha_2_tempo_excess_parada = LeituraModbusBit(self.__clp[f"UG{self.__ug_id}"], REG_UG[f"UG{self.__ug_id}_RV_FALHA_2_TEMPO_EXCESSIVO_PARADA"], descr=f"[UG{self.__ug_id}] RV Falha 2 Tempo Excessivo Parada") # OK
+        self.condicionadores_essenciais.append(self.leitura_rv_falha_2_tempo_excess_parada, CONDIC_INDISPONIBILIZAR)
 
-        # self.leitura_rv_falha_2_dif_med_velo_princ_retag = LeituraModbusBit(self.__clp[f"UG{self.__ug_id}"], REG_UG[f"UG{self.__ug_id}_RV_FALHA_2_DIF_MED_VELO_PRINCIPAL_RETAGUARDA"], descr=f"[UG{self.__ug_id}] RV Falha 2 Diferença Medição Velocidade Principal Retaguarda")
-        # self.condicionadores_essenciais.append(self.leitura_rv_falha_2_dif_med_velo_princ_retag, CONDIC_INDISPONIBILIZAR)
+        self.leitura_rv_falha_2_dif_med_velo_princ_retag = LeituraModbusBit(self.__clp[f"UG{self.__ug_id}"], REG_UG[f"UG{self.__ug_id}_RV_FALHA_2_DIF_MED_VELO_PRINCIPAL_RETAGUARDA"], descr=f"[UG{self.__ug_id}] RV Falha 2 Diferença Medição Velocidade Principal Retaguarda") # OK
+        self.condicionadores_essenciais.append(self.leitura_rv_falha_2_dif_med_velo_princ_retag, CONDIC_INDISPONIBILIZAR)
 
-        # self.leitura_rv_falha_1_perda_med_velo_princ = LeituraModbusBit(self.__clp[f"UG{self.__ug_id}"], REG_UG[f"UG{self.__ug_id}_RV_FALHA_1_PERDA_MED_VELOC_PRINCIPAL"], descr=f"[UG{self.__ug_id}] RV Falha 1 Perda Medição Velocidade Principal")
-        # self.condicionadores_essenciais.append(self.leitura_rv_falha_1_perda_med_velo_princ, CONDIC_INDISPONIBILIZAR)
+        self.leitura_rv_falha_1_perda_med_velo_princ = LeituraModbusBit(self.__clp[f"UG{self.__ug_id}"], REG_UG[f"UG{self.__ug_id}_RV_FALHA_1_PERDA_MED_VELOC_PRINCIPAL"], descr=f"[UG{self.__ug_id}] RV Falha 1 Perda Medição Velocidade Principal") # OK
+        self.condicionadores_essenciais.append(self.leitura_rv_falha_1_perda_med_velo_princ, CONDIC_INDISPONIBILIZAR)
 
-        # self.leitura_rt_alar_2_crowbar_atuado_regul_hab = LeituraModbusBit(self.__clp[f"UG{self.__ug_id}"], REG_UG[f"UG{self.__ug_id}_RT_ALARMES_2_CROWBAR_ATUADO_REGUL_HABIL"], descr=f"[UG{self.__ug_id}] RT Alarme 2 Crowbar Atuado Regulador Habilitado")
-        # self.condicionadores_essenciais.append(self.leitura_rt_alar_2_crowbar_atuado_regul_hab, CONDIC_INDISPONIBILIZAR)
+        self.leitura_rt_alar_2_crowbar_atuado_regul_hab = LeituraModbusBit(self.__clp[f"UG{self.__ug_id}"], REG_UG[f"UG{self.__ug_id}_RT_ALARMES_2_CROWBAR_ATUADO_REGUL_HABIL"], descr=f"[UG{self.__ug_id}] RT Alarme 2 Crowbar Atuado Regulador Habilitado") # OK
+        self.condicionadores_essenciais.append(self.leitura_rt_alar_2_crowbar_atuado_regul_hab, CONDIC_INDISPONIBILIZAR)
 
-        # self.leitura_rt_alar_2_falha_hab_drive_excit = LeituraModbusBit(self.__clp[f"UG{self.__ug_id}"], REG_UG[f"UG{self.__ug_id}_RT_ALARMES_2_FALHA_HABIL_DRIVE_EXCI"], descr=f"[UG{self.__ug_id}] RT Alarme 2 Falha Habilitar Drive Excitação")
-        # self.condicionadores_essenciais.append(self.leitura_rt_alar_2_falha_hab_drive_excit, CONDIC_INDISPONIBILIZAR)
+        self.leitura_rt_alar_2_falha_hab_drive_excit = LeituraModbusBit(self.__clp[f"UG{self.__ug_id}"], REG_UG[f"UG{self.__ug_id}_RT_ALARMES_2_FALHA_HABIL_DRIVE_EXCI"], descr=f"[UG{self.__ug_id}] RT Alarme 2 Falha Habilitar Drive Excitação") # OK
+        self.condicionadores_essenciais.append(self.leitura_rt_alar_2_falha_hab_drive_excit, CONDIC_INDISPONIBILIZAR)
 
-        # self.leitura_rt_alar_2_falha_fechar_contator_campo = LeituraModbusBit(self.__clp[f"UG{self.__ug_id}"], REG_UG[f"UG{self.__ug_id}_RT_ALARMES_2_FALHA_FECHAR_CONTATOR_CAMPO"], descr=f"[UG{self.__ug_id}] RT Alarme 2 Falha Fechar Contator Campo")
-        # self.condicionadores_essenciais.append(self.leitura_rt_alar_2_falha_fechar_contator_campo, CONDIC_INDISPONIBILIZAR)
+        self.leitura_rt_alar_2_falha_fechar_contator_campo = LeituraModbusBit(self.__clp[f"UG{self.__ug_id}"], REG_UG[f"UG{self.__ug_id}_RT_ALARMES_2_FALHA_FECHAR_CONTATOR_CAMPO"], descr=f"[UG{self.__ug_id}] RT Alarme 2 Falha Fechar Contator Campo") # OK
+        self.condicionadores_essenciais.append(self.leitura_rt_alar_2_falha_fechar_contator_campo, CONDIC_INDISPONIBILIZAR)
 
-        # self.leitura_rt_alar_2_falha_corr_exci_pre_exci_ativa = LeituraModbusBit(self.__clp[f"UG{self.__ug_id}"], REG_UG[f"UG{self.__ug_id}_RT_ALARMES_2_FALHA_CORR_EXCI_PRE_EXCI_ATIVA"], descr=f"[UG{self.__ug_id}] RT Alarme 2 Falha Corrente Excitação Pré Excitação Ativa")
-        # self.condicionadores_essenciais.append(self.leitura_rt_alar_2_falha_corr_exci_pre_exci_ativa, CONDIC_INDISPONIBILIZAR)
+        self.leitura_rt_alar_2_falha_corr_exci_pre_exci_ativa = LeituraModbusBit(self.__clp[f"UG{self.__ug_id}"], REG_UG[f"UG{self.__ug_id}_RT_ALARMES_2_FALHA_CORR_EXCI_PRE_EXCI_ATIVA"], descr=f"[UG{self.__ug_id}] RT Alarme 2 Falha Corrente Excitação Pré Excitação Ativa") # OK
+        self.condicionadores_essenciais.append(self.leitura_rt_alar_2_falha_corr_exci_pre_exci_ativa, CONDIC_INDISPONIBILIZAR)
 
-        # self.leitura_rt_alar_2_perda_med_pot_reat = LeituraModbusBit(self.__clp[f"UG{self.__ug_id}"], REG_UG[f"UG{self.__ug_id}_RT_ALARMES_2_PERDA_MEDICAO_POTENCIA_REATIVA"], descr=f"[UG{self.__ug_id}] RT Alarme 2 Perda Medição Potência Reativa")
-        # self.condicionadores_essenciais.append(self.leitura_rt_alar_2_perda_med_pot_reat, CONDIC_INDISPONIBILIZAR)
+        self.leitura_rt_alar_2_perda_med_pot_reat = LeituraModbusBit(self.__clp[f"UG{self.__ug_id}"], REG_UG[f"UG{self.__ug_id}_RT_ALARMES_2_PERDA_MEDICAO_POTENCIA_REATIVA"], descr=f"[UG{self.__ug_id}] RT Alarme 2 Perda Medição Potência Reativa") # OK
+        self.condicionadores_essenciais.append(self.leitura_rt_alar_2_perda_med_pot_reat, CONDIC_INDISPONIBILIZAR)
 
-        # self.leitura_rt_alar_2_perda_med_tens_term = LeituraModbusBit(self.__clp[f"UG{self.__ug_id}"], REG_UG[f"UG{self.__ug_id}_RT_ALARMES_2_PERDA_MEDICAO_TENSAO_TERMINAL"], descr=f"[UG{self.__ug_id}] RT Alarme 2 Perda Medição Tensão Terminal")
-        # self.condicionadores_essenciais.append(self.leitura_rt_alar_2_perda_med_tens_term, CONDIC_INDISPONIBILIZAR)
+        self.leitura_rt_alar_2_perda_med_tens_term = LeituraModbusBit(self.__clp[f"UG{self.__ug_id}"], REG_UG[f"UG{self.__ug_id}_RT_ALARMES_2_PERDA_MEDICAO_TENSAO_TERMINAL"], descr=f"[UG{self.__ug_id}] RT Alarme 2 Perda Medição Tensão Terminal") # OK
+        self.condicionadores_essenciais.append(self.leitura_rt_alar_2_perda_med_tens_term, CONDIC_INDISPONIBILIZAR)
 
-        # self.leitura_rt_alar_2_perda_med_corr_exci = LeituraModbusBit(self.__clp[f"UG{self.__ug_id}"], REG_UG[f"UG{self.__ug_id}_RT_ALARMES_2_PERDA_MEDICAO_CORRENTE_EXCI"], descr=f"[UG{self.__ug_id}] RT Alarme 2 Perda Medição Corrente Excitação")
-        # self.condicionadores_essenciais.append(self.leitura_rt_alar_2_perda_med_corr_exci, CONDIC_INDISPONIBILIZAR)
+        self.leitura_rt_alar_2_perda_med_corr_exci = LeituraModbusBit(self.__clp[f"UG{self.__ug_id}"], REG_UG[f"UG{self.__ug_id}_RT_ALARMES_2_PERDA_MEDICAO_CORRENTE_EXCI"], descr=f"[UG{self.__ug_id}] RT Alarme 2 Perda Medição Corrente Excitação") # OK
+        self.condicionadores_essenciais.append(self.leitura_rt_alar_2_perda_med_corr_exci, CONDIC_INDISPONIBILIZAR)
 
-        # self.leitura_rt_alar_ruido_intrumen_reat = LeituraModbusBit(self.__clp[f"UG{self.__ug_id}"], REG_UG[f"UG{self.__ug_id}_RT_ALARMES_2_RUIDO_INSTRUMEN_REATIVO"], descr=f"[UG{self.__ug_id}] RT Alarme 2 Ruído Leitura Intrumentador Reativo")
-        # self.condicionadores_essenciais.append(self.leitura_rt_alar_ruido_intrumen_reat, CONDIC_INDISPONIBILIZAR)
+        self.leitura_rt_alar_ruido_intrumen_reat = LeituraModbusBit(self.__clp[f"UG{self.__ug_id}"], REG_UG[f"UG{self.__ug_id}_RT_ALARMES_2_RUIDO_INSTRUMEN_REATIVO"], descr=f"[UG{self.__ug_id}] RT Alarme 2 Ruído Leitura Intrumentador Reativo") # OK
+        self.condicionadores_essenciais.append(self.leitura_rt_alar_ruido_intrumen_reat, CONDIC_INDISPONIBILIZAR)
 
-        # self.leitura_rt_alar_ruido_intrumen_tensao = LeituraModbusBit(self.__clp[f"UG{self.__ug_id}"], REG_UG[f"UG{self.__ug_id}_RT_ALARMES_2_RUIDO_INSTRUMEN_TENSAO"], descr=f"[UG{self.__ug_id}] RT Alarme 2 Ruído Leitura Intrumentador Tensão")
-        # self.condicionadores_essenciais.append(self.leitura_rt_alar_ruido_intrumen_tensao, CONDIC_INDISPONIBILIZAR)
+        self.leitura_rt_alar_ruido_intrumen_tensao = LeituraModbusBit(self.__clp[f"UG{self.__ug_id}"], REG_UG[f"UG{self.__ug_id}_RT_ALARMES_2_RUIDO_INSTRUMEN_TENSAO"], descr=f"[UG{self.__ug_id}] RT Alarme 2 Ruído Leitura Intrumentador Tensão") # OK
+        self.condicionadores_essenciais.append(self.leitura_rt_alar_ruido_intrumen_tensao, CONDIC_INDISPONIBILIZAR)
 
-        # self.leitura_rt_alar_ruido_intrumen_exci_princ = LeituraModbusBit(self.__clp[f"UG{self.__ug_id}"], REG_UG[f"UG{self.__ug_id}_RT_ALARMES_2_RUIDO_INSTRUMEN_EXCI_PRINCI"], descr=f"[UG{self.__ug_id}] RT Alarme 2 Ruído Leitura Intrumentador Excitação Principal")
-        # self.condicionadores_essenciais.append(self.leitura_rt_alar_ruido_intrumen_exci_princ, CONDIC_INDISPONIBILIZAR)
+        self.leitura_rt_alar_ruido_intrumen_exci_princ = LeituraModbusBit(self.__clp[f"UG{self.__ug_id}"], REG_UG[f"UG{self.__ug_id}_RT_ALARMES_2_RUIDO_INSTRUMEN_EXCI_PRINCI"], descr=f"[UG{self.__ug_id}] RT Alarme 2 Ruído Leitura Intrumentador Excitação Principal") # OK
+        self.condicionadores_essenciais.append(self.leitura_rt_alar_ruido_intrumen_exci_princ, CONDIC_INDISPONIBILIZAR)
 
-        # self.leitura_rt_alar_ruido_intrumen_exci_retag = LeituraModbusBit(self.__clp[f"UG{self.__ug_id}"], REG_UG[f"UG{self.__ug_id}_RT_ALARMES_2_RUIDO_INSTRUMEN_EXCI_RETAG"], descr=f"[UG{self.__ug_id}] RT Alarme 2 Ruído Leitura Intrumentador Excitação Retaguarda")
-        # self.condicionadores_essenciais.append(self.leitura_rt_alar_ruido_intrumen_exci_retag, CONDIC_INDISPONIBILIZAR)
+        self.leitura_rt_alar_ruido_intrumen_exci_retag = LeituraModbusBit(self.__clp[f"UG{self.__ug_id}"], REG_UG[f"UG{self.__ug_id}_RT_ALARMES_2_RUIDO_INSTRUMEN_EXCI_RETAG"], descr=f"[UG{self.__ug_id}] RT Alarme 2 Ruído Leitura Intrumentador Excitação Retaguarda") # OK
+        self.condicionadores_essenciais.append(self.leitura_rt_alar_ruido_intrumen_exci_retag, CONDIC_INDISPONIBILIZAR)
 
-        # self.leitura_rt_falha_1_sobretensao = LeituraModbusBit(self.__clp[f"UG{self.__ug_id}"], REG_UG[f"UG{self.__ug_id}_RT_FALHAS_1_SOBRETENSAO"], descr=f"[UG{self.__ug_id}] RT Falha 1 Sobretensão")
-        # self.condicionadores_essenciais.append(self.leitura_rt_falha_1_sobretensao, CONDIC_INDISPONIBILIZAR)
+        self.leitura_rt_falha_1_sobretensao = LeituraModbusBit(self.__clp[f"UG{self.__ug_id}"], REG_UG[f"UG{self.__ug_id}_RT_FALHAS_1_SOBRETENSAO"], descr=f"[UG{self.__ug_id}] RT Falha 1 Sobretensão") # OK
+        self.condicionadores_essenciais.append(self.leitura_rt_falha_1_sobretensao, CONDIC_INDISPONIBILIZAR)
 
-        # self.leitura_rt_falha_1_subtensao = LeituraModbusBit(self.__clp[f"UG{self.__ug_id}"], REG_UG[f"UG{self.__ug_id}_RT_FALHAS_1_SUBTENSAO"], descr=f"[UG{self.__ug_id}] RT Falha 1 Subtensão")
-        # self.condicionadores_essenciais.append(self.leitura_rt_falha_1_subtensao, CONDIC_INDISPONIBILIZAR)
+        self.leitura_rt_falha_1_subtensao = LeituraModbusBit(self.__clp[f"UG{self.__ug_id}"], REG_UG[f"UG{self.__ug_id}_RT_FALHAS_1_SUBTENSAO"], descr=f"[UG{self.__ug_id}] RT Falha 1 Subtensão") # OK
+        self.condicionadores_essenciais.append(self.leitura_rt_falha_1_subtensao, CONDIC_INDISPONIBILIZAR)
 
-        # self.leitura_rt_falha_1_sobrefreq = LeituraModbusBit(self.__clp[f"UG{self.__ug_id}"], REG_UG[f"UG{self.__ug_id}_RT_FALHAS_1_SOBREFREQUENCIA"], descr=f"[UG{self.__ug_id}] RT Falha 1 Sobrefrequência")
-        # self.condicionadores_essenciais.append(self.leitura_rt_falha_1_sobrefreq, CONDIC_INDISPONIBILIZAR)
+        self.leitura_rt_falha_1_sobrefreq = LeituraModbusBit(self.__clp[f"UG{self.__ug_id}"], REG_UG[f"UG{self.__ug_id}_RT_FALHAS_1_SOBREFREQUENCIA"], descr=f"[UG{self.__ug_id}] RT Falha 1 Sobrefrequência") # OK
+        self.condicionadores_essenciais.append(self.leitura_rt_falha_1_sobrefreq, CONDIC_INDISPONIBILIZAR)
 
-        # self.leitura_rt_falha_1_subfreq = LeituraModbusBit(self.__clp[f"UG{self.__ug_id}"], REG_UG[f"UG{self.__ug_id}_RT_FALHAS_1_SUBFREQUENCIA"], descr=f"[UG{self.__ug_id}] RT Falha 1 Subfrequência")
-        # self.condicionadores_essenciais.append(self.leitura_rt_falha_1_subfreq, CONDIC_INDISPONIBILIZAR)
+        self.leitura_rt_falha_1_subfreq = LeituraModbusBit(self.__clp[f"UG{self.__ug_id}"], REG_UG[f"UG{self.__ug_id}_RT_FALHAS_1_SUBFREQUENCIA"], descr=f"[UG{self.__ug_id}] RT Falha 1 Subfrequência") # OK
+        self.condicionadores_essenciais.append(self.leitura_rt_falha_1_subfreq, CONDIC_INDISPONIBILIZAR)
 
-        # self.leitura_rt_falha_1_lim_sup_pot_reat = LeituraModbusBit(self.__clp[f"UG{self.__ug_id}"], REG_UG[f"UG{self.__ug_id}_RT_FALHAS_1_LIMITE_SUP_POT_REATIVA"], descr=f"[UG{self.__ug_id}] RT Falha 1 Limite Superior Potência Reativa")
-        # self.condicionadores_essenciais.append(self.leitura_rt_falha_1_lim_sup_pot_reat, CONDIC_INDISPONIBILIZAR)
+        self.leitura_rt_falha_1_lim_sup_pot_reat = LeituraModbusBit(self.__clp[f"UG{self.__ug_id}"], REG_UG[f"UG{self.__ug_id}_RT_FALHAS_1_LIMITE_SUP_POT_REATIVA"], descr=f"[UG{self.__ug_id}] RT Falha 1 Limite Superior Potência Reativa") # OK
+        self.condicionadores_essenciais.append(self.leitura_rt_falha_1_lim_sup_pot_reat, CONDIC_INDISPONIBILIZAR)
 
-        # self.leitura_rt_falha_1_lim_inf_pot_reat = LeituraModbusBit(self.__clp[f"UG{self.__ug_id}"], REG_UG[f"UG{self.__ug_id}_RT_FALHAS_1_LIMITE_INF_POT_REATIVA"], descr=f"[UG{self.__ug_id}] RT Falha 1 Limite Inferior Potência Reativa")
-        # self.condicionadores_essenciais.append(self.leitura_rt_falha_1_lim_inf_pot_reat, CONDIC_INDISPONIBILIZAR)
+        self.leitura_rt_falha_1_lim_inf_pot_reat = LeituraModbusBit(self.__clp[f"UG{self.__ug_id}"], REG_UG[f"UG{self.__ug_id}_RT_FALHAS_1_LIMITE_INF_POT_REATIVA"], descr=f"[UG{self.__ug_id}] RT Falha 1 Limite Inferior Potência Reativa") # OK
+        self.condicionadores_essenciais.append(self.leitura_rt_falha_1_lim_inf_pot_reat, CONDIC_INDISPONIBILIZAR)
 
-        # self.leitura_rt_falha_1_lim_sup_fator_pot = LeituraModbusBit(self.__clp[f"UG{self.__ug_id}"], REG_UG[f"UG{self.__ug_id}_RT_FALHAS_1_LIMITE_SUP_FATOR_POT"], descr=f"[UG{self.__ug_id}] RT Falha 1 Limite Superior Fator Potência")
-        # self.condicionadores_essenciais.append(self.leitura_rt_falha_1_lim_sup_fator_pot, CONDIC_INDISPONIBILIZAR)
+        self.leitura_rt_falha_1_lim_sup_fator_pot = LeituraModbusBit(self.__clp[f"UG{self.__ug_id}"], REG_UG[f"UG{self.__ug_id}_RT_FALHAS_1_LIMITE_SUP_FATOR_POT"], descr=f"[UG{self.__ug_id}] RT Falha 1 Limite Superior Fator Potência") # OK
+        self.condicionadores_essenciais.append(self.leitura_rt_falha_1_lim_sup_fator_pot, CONDIC_INDISPONIBILIZAR)
 
-        # self.leitura_rt_falha_1_lim_inf_fator_pot = LeituraModbusBit(self.__clp[f"UG{self.__ug_id}"], REG_UG[f"UG{self.__ug_id}_RT_FALHAS_1_LIMITE_INF_FATOR_POT"], descr=f"[UG{self.__ug_id}] RT Falha 1 Limite Inferior Fator Potência")
-        # self.condicionadores_essenciais.append(self.leitura_rt_falha_1_lim_inf_fator_pot, CONDIC_INDISPONIBILIZAR)
+        self.leitura_rt_falha_1_lim_inf_fator_pot = LeituraModbusBit(self.__clp[f"UG{self.__ug_id}"], REG_UG[f"UG{self.__ug_id}_RT_FALHAS_1_LIMITE_INF_FATOR_POT"], descr=f"[UG{self.__ug_id}] RT Falha 1 Limite Inferior Fator Potência") # OK
+        self.condicionadores_essenciais.append(self.leitura_rt_falha_1_lim_inf_fator_pot, CONDIC_INDISPONIBILIZAR)
 
-        # self.leitura_rt_falha_1_sobretensao_inst = LeituraModbusBit(self.__clp[f"UG{self.__ug_id}"], REG_UG[f"UG{self.__ug_id}_RT_FALHAS_1_SOBRETENSAO_INST"], descr=f"[UG{self.__ug_id}] RT Falha 1 Sobretensão Instantânea")
-        # self.condicionadores_essenciais.append(self.leitura_rt_falha_1_sobretensao_inst, CONDIC_INDISPONIBILIZAR)
+        self.leitura_rt_falha_1_sobretensao_inst = LeituraModbusBit(self.__clp[f"UG{self.__ug_id}"], REG_UG[f"UG{self.__ug_id}_RT_FALHAS_1_SOBRETENSAO_INST"], descr=f"[UG{self.__ug_id}] RT Falha 1 Sobretensão Instantânea") # OK
+        self.condicionadores_essenciais.append(self.leitura_rt_falha_1_sobretensao_inst, CONDIC_INDISPONIBILIZAR)
 
-        # self.leitura_rt_falha_1_variacao_tensao = LeituraModbusBit(self.__clp[f"UG{self.__ug_id}"], REG_UG[f"UG{self.__ug_id}_RT_FALHAS_1_VARIACAO_TENSAO"], descr=f"[UG{self.__ug_id}] RT Falha 1 Variação Tensão")
-        # self.condicionadores_essenciais.append(self.leitura_rt_falha_1_variacao_tensao, CONDIC_INDISPONIBILIZAR)
+        self.leitura_rt_falha_1_variacao_tensao = LeituraModbusBit(self.__clp[f"UG{self.__ug_id}"], REG_UG[f"UG{self.__ug_id}_RT_FALHAS_1_VARIACAO_TENSAO"], descr=f"[UG{self.__ug_id}] RT Falha 1 Variação Tensão") # OK
+        self.condicionadores_essenciais.append(self.leitura_rt_falha_1_variacao_tensao, CONDIC_INDISPONIBILIZAR)
 
-        # self.leitura_rt_falha_1_pot_ativ_reversa = LeituraModbusBit(self.__clp[f"UG{self.__ug_id}"], REG_UG[f"UG{self.__ug_id}_RT_FALHAS_1_POT_ATIVA_REVERSA"], descr=f"[UG{self.__ug_id}] RT Falha 1 Potência Ativa Reversa")
-        # self.condicionadores_essenciais.append(self.leitura_rt_falha_1_pot_ativ_reversa, CONDIC_INDISPONIBILIZAR)
+        self.leitura_rt_falha_1_pot_ativ_reversa = LeituraModbusBit(self.__clp[f"UG{self.__ug_id}"], REG_UG[f"UG{self.__ug_id}_RT_FALHAS_1_POT_ATIVA_REVERSA"], descr=f"[UG{self.__ug_id}] RT Falha 1 Potência Ativa Reversa") # OK
+        self.condicionadores_essenciais.append(self.leitura_rt_falha_1_pot_ativ_reversa, CONDIC_INDISPONIBILIZAR)
 
-        # self.leitura_rt_falha_1_sobrecorr_term = LeituraModbusBit(self.__clp[f"UG{self.__ug_id}"], REG_UG[f"UG{self.__ug_id}_RT_FALHAS_1_SOBRECORRENTE_TERMINAL"], descr=f"[UG{self.__ug_id}] RT Falha 1 Sobrecorrente Terminal")
-        # self.condicionadores_essenciais.append(self.leitura_rt_falha_1_sobrecorr_term, CONDIC_INDISPONIBILIZAR)
+        self.leitura_rt_falha_1_sobrecorr_term = LeituraModbusBit(self.__clp[f"UG{self.__ug_id}"], REG_UG[f"UG{self.__ug_id}_RT_FALHAS_1_SOBRECORRENTE_TERMINAL"], descr=f"[UG{self.__ug_id}] RT Falha 1 Sobrecorrente Terminal") # OK
+        self.condicionadores_essenciais.append(self.leitura_rt_falha_1_sobrecorr_term, CONDIC_INDISPONIBILIZAR)
 
-        # self.leitura_rt_falha_1_lim_sup_corr_exci = LeituraModbusBit(self.__clp[f"UG{self.__ug_id}"], REG_UG[f"UG{self.__ug_id}_RT_FALHAS_1_LIMITE_SUP_CORRENTE_EXCITACAO"], descr=f"[UG{self.__ug_id}] RT Falha 1 Limite Superior Corrente Excitação")
-        # self.condicionadores_essenciais.append(self.leitura_rt_falha_1_lim_sup_corr_exci, CONDIC_INDISPONIBILIZAR)
+        self.leitura_rt_falha_1_lim_sup_corr_exci = LeituraModbusBit(self.__clp[f"UG{self.__ug_id}"], REG_UG[f"UG{self.__ug_id}_RT_FALHAS_1_LIMITE_SUP_CORRENTE_EXCITACAO"], descr=f"[UG{self.__ug_id}] RT Falha 1 Limite Superior Corrente Excitação") # OK
+        self.condicionadores_essenciais.append(self.leitura_rt_falha_1_lim_sup_corr_exci, CONDIC_INDISPONIBILIZAR)
 
-        # self.leitura_rt_falha_1_lim_inf_corr_exci = LeituraModbusBit(self.__clp[f"UG{self.__ug_id}"], REG_UG[f"UG{self.__ug_id}_RT_FALHAS_1_LIMITE_INF_CORRENTE_EXCITACAO"], descr=f"[UG{self.__ug_id}] RT Falha 1 Limite Inferior Corrente Excitação")
-        # self.condicionadores_essenciais.append(self.leitura_rt_falha_1_lim_inf_corr_exci, CONDIC_INDISPONIBILIZAR)
+        self.leitura_rt_falha_1_lim_inf_corr_exci = LeituraModbusBit(self.__clp[f"UG{self.__ug_id}"], REG_UG[f"UG{self.__ug_id}_RT_FALHAS_1_LIMITE_INF_CORRENTE_EXCITACAO"], descr=f"[UG{self.__ug_id}] RT Falha 1 Limite Inferior Corrente Excitação") # OK
+        self.condicionadores_essenciais.append(self.leitura_rt_falha_1_lim_inf_corr_exci, CONDIC_INDISPONIBILIZAR)
 
-        # self.leitura_rt_falha_1_lim_sup_tensao_exci = LeituraModbusBit(self.__clp[f"UG{self.__ug_id}"], REG_UG[f"UG{self.__ug_id}_RT_FALHAS_1_LIMITE_SUP_TENSAO_EXCITACAO"], descr=f"[UG{self.__ug_id}] RT Falha 1 Limite Superior Tensão Excitação")
-        # self.condicionadores_essenciais.append(self.leitura_rt_falha_1_lim_sup_tensao_exci, CONDIC_INDISPONIBILIZAR)
+        self.leitura_rt_falha_1_lim_sup_tensao_exci = LeituraModbusBit(self.__clp[f"UG{self.__ug_id}"], REG_UG[f"UG{self.__ug_id}_RT_FALHAS_1_LIMITE_SUP_TENSAO_EXCITACAO"], descr=f"[UG{self.__ug_id}] RT Falha 1 Limite Superior Tensão Excitação") # OK
+        self.condicionadores_essenciais.append(self.leitura_rt_falha_1_lim_sup_tensao_exci, CONDIC_INDISPONIBILIZAR)
 
-        # self.leitura_rt_falha_1_lim_inf_tensao_exci = LeituraModbusBit(self.__clp[f"UG{self.__ug_id}"], REG_UG[f"UG{self.__ug_id}_RT_FALHAS_1_LIMITE_INF_TENSAO_EXCITACAO"], descr=f"[UG{self.__ug_id}] RT Falha 1 Limite Inferior Tensão Excitação")
-        # self.condicionadores_essenciais.append(self.leitura_rt_falha_1_lim_inf_tensao_exci, CONDIC_INDISPONIBILIZAR)
+        self.leitura_rt_falha_1_lim_inf_tensao_exci = LeituraModbusBit(self.__clp[f"UG{self.__ug_id}"], REG_UG[f"UG{self.__ug_id}_RT_FALHAS_1_LIMITE_INF_TENSAO_EXCITACAO"], descr=f"[UG{self.__ug_id}] RT Falha 1 Limite Inferior Tensão Excitação") # OK
+        self.condicionadores_essenciais.append(self.leitura_rt_falha_1_lim_inf_tensao_exci, CONDIC_INDISPONIBILIZAR)
 
-        # self.leitura_rt_falha_2_temp_muito_alta_rotor = LeituraModbusBit(self.__clp[f"UG{self.__ug_id}"], REG_UG[f"UG{self.__ug_id}_RT_FALHAS_2_TEMP_MUITO_ALTA_ROTOR"], descr=f"[UG{self.__ug_id}] RT Falha 2 Temperatura Muito Alta Rotor")
-        # self.condicionadores_essenciais.append(self.leitura_rt_falha_2_temp_muito_alta_rotor, CONDIC_INDISPONIBILIZAR)
+        self.leitura_rt_falha_2_temp_muito_alta_rotor = LeituraModbusBit(self.__clp[f"UG{self.__ug_id}"], REG_UG[f"UG{self.__ug_id}_RT_FALHAS_2_TEMP_MUITO_ALTA_ROTOR"], descr=f"[UG{self.__ug_id}] RT Falha 2 Temperatura Muito Alta Rotor") # OK
+        self.condicionadores_essenciais.append(self.leitura_rt_falha_2_temp_muito_alta_rotor, CONDIC_INDISPONIBILIZAR)
 
-        # self.leitura_rt_falha_2_pres_tens_term_aus_corr_exci = LeituraModbusBit(self.__clp[f"UG{self.__ug_id}"], REG_UG[f"UG{self.__ug_id}_RT_FALHAS_2_PRES_TENS_TERM_AUSEN_CORR_EXCI"], descr=f"[UG{self.__ug_id}] RT Falha 2 Presença Tensão Terminal Ausente Corrente Excitação")
-        # self.condicionadores_essenciais.append(self.leitura_rt_falha_2_pres_tens_term_aus_corr_exci, CONDIC_INDISPONIBILIZAR)
+        self.leitura_rt_falha_2_pres_tens_term_aus_corr_exci = LeituraModbusBit(self.__clp[f"UG{self.__ug_id}"], REG_UG[f"UG{self.__ug_id}_RT_FALHAS_2_PRES_TENS_TERM_AUSEN_CORR_EXCI"], descr=f"[UG{self.__ug_id}] RT Falha 2 Presença Tensão Terminal Ausente Corrente Excitação") # OK
+        self.condicionadores_essenciais.append(self.leitura_rt_falha_2_pres_tens_term_aus_corr_exci, CONDIC_INDISPONIBILIZAR)
 
-        # self.leitura_rt_falha_2_pres_corr_exci_aus_tens_term = LeituraModbusBit(self.__clp[f"UG{self.__ug_id}"], REG_UG[f"UG{self.__ug_id}_RT_FALHAS_2_PRES_CORR_EXCI_AUSEN_TENS_TERM"], descr=f"[UG{self.__ug_id}] RT Falha 2 Presença Corrente Excitação Ausente Tensão Terminal")
-        # self.condicionadores_essenciais.append(self.leitura_rt_falha_2_pres_corr_exci_aus_tens_term, CONDIC_INDISPONIBILIZAR)
+        self.leitura_rt_falha_2_pres_corr_exci_aus_tens_term = LeituraModbusBit(self.__clp[f"UG{self.__ug_id}"], REG_UG[f"UG{self.__ug_id}_RT_FALHAS_2_PRES_CORR_EXCI_AUSEN_TENS_TERM"], descr=f"[UG{self.__ug_id}] RT Falha 2 Presença Corrente Excitação Ausente Tensão Terminal") # OK
+        self.condicionadores_essenciais.append(self.leitura_rt_falha_2_pres_corr_exci_aus_tens_term, CONDIC_INDISPONIBILIZAR)
 
-        # self.leitura_rt_falha_2_control_corr_exci = LeituraModbusBit(self.__clp[f"UG{self.__ug_id}"], REG_UG[f"UG{self.__ug_id}_RT_FALHAS_2_CONTROLE_CORR_EXCI"], descr=f"[UG{self.__ug_id}] RT Falha 2 Controle Corrente Excitação")
-        # self.condicionadores_essenciais.append(self.leitura_rt_falha_2_control_corr_exci, CONDIC_INDISPONIBILIZAR)
+        self.leitura_rt_falha_2_control_corr_exci = LeituraModbusBit(self.__clp[f"UG{self.__ug_id}"], REG_UG[f"UG{self.__ug_id}_RT_FALHAS_2_CONTROLE_CORR_EXCI"], descr=f"[UG{self.__ug_id}] RT Falha 2 Controle Corrente Excitação") # OK
+        self.condicionadores_essenciais.append(self.leitura_rt_falha_2_control_corr_exci, CONDIC_INDISPONIBILIZAR)
 
-        # self.leitura_rt_falha_2_tensao_term = LeituraModbusBit(self.__clp[f"UG{self.__ug_id}"], REG_UG[f"UG{self.__ug_id}_RT_FALHAS_2_TENSAO_TERMINAL"], descr=f"[UG{self.__ug_id}] RT Falha 2 Tensão Terminal")
-        # self.condicionadores_essenciais.append(self.leitura_rt_falha_2_tensao_term, CONDIC_INDISPONIBILIZAR)
+        self.leitura_rt_falha_2_tensao_term = LeituraModbusBit(self.__clp[f"UG{self.__ug_id}"], REG_UG[f"UG{self.__ug_id}_RT_FALHAS_2_TENSAO_TERMINAL"], descr=f"[UG{self.__ug_id}] RT Falha 2 Tensão Terminal") # OK
+        self.condicionadores_essenciais.append(self.leitura_rt_falha_2_tensao_term, CONDIC_INDISPONIBILIZAR)
 
-        # self.leitura_rt_falha_2_crowbar_atuado_regu_hab = LeituraModbusBit(self.__clp[f"UG{self.__ug_id}"], REG_UG[f"UG{self.__ug_id}_RT_FALHAS_2_CROWBAR_ATUADO_REGULADOR_HABI"], descr=f"[UG{self.__ug_id}] RT Falha 2 Crowbar Atuado Regulador Habilitado")
-        # self.condicionadores_essenciais.append(self.leitura_rt_falha_2_crowbar_atuado_regu_hab, CONDIC_INDISPONIBILIZAR)
+        self.leitura_rt_falha_2_crowbar_atuado_regu_hab = LeituraModbusBit(self.__clp[f"UG{self.__ug_id}"], REG_UG[f"UG{self.__ug_id}_RT_FALHAS_2_CROWBAR_ATUADO_REGULADOR_HABI"], descr=f"[UG{self.__ug_id}] RT Falha 2 Crowbar Atuado Regulador Habilitado") # OK
+        self.condicionadores_essenciais.append(self.leitura_rt_falha_2_crowbar_atuado_regu_hab, CONDIC_INDISPONIBILIZAR)
 
-        # self.leitura_rt_falha_2_hab_drive_exci = LeituraModbusBit(self.__clp[f"UG{self.__ug_id}"], REG_UG[f"UG{self.__ug_id}_RT_FALHAS_2_HABI_DRIVE_EXCITACAO"], descr=f"[UG{self.__ug_id}] RT Falha 2 Habilitar Drive Excitação")
-        # self.condicionadores_essenciais.append(self.leitura_rt_falha_2_hab_drive_exci, CONDIC_INDISPONIBILIZAR)
+        self.leitura_rt_falha_2_hab_drive_exci = LeituraModbusBit(self.__clp[f"UG{self.__ug_id}"], REG_UG[f"UG{self.__ug_id}_RT_FALHAS_2_HABI_DRIVE_EXCITACAO"], descr=f"[UG{self.__ug_id}] RT Falha 2 Habilitar Drive Excitação") # OK
+        self.condicionadores_essenciais.append(self.leitura_rt_falha_2_hab_drive_exci, CONDIC_INDISPONIBILIZAR)
 
-        # self.leitura_rt_falha_2_fechar_contator_campo = LeituraModbusBit(self.__clp[f"UG{self.__ug_id}"], REG_UG[f"UG{self.__ug_id}_RT_FALHAS_2_FECHAR_CONTATOR_CAMPO"], descr=f"[UG{self.__ug_id}] RT Falha 2 Fechar Contator Campo")
-        # self.condicionadores_essenciais.append(self.leitura_rt_falha_2_fechar_contator_campo, CONDIC_INDISPONIBILIZAR)
+        self.leitura_rt_falha_2_fechar_contator_campo = LeituraModbusBit(self.__clp[f"UG{self.__ug_id}"], REG_UG[f"UG{self.__ug_id}_RT_FALHAS_2_FECHAR_CONTATOR_CAMPO"], descr=f"[UG{self.__ug_id}] RT Falha 2 Fechar Contator Campo") # OK
+        self.condicionadores_essenciais.append(self.leitura_rt_falha_2_fechar_contator_campo, CONDIC_INDISPONIBILIZAR)
 
-        # self.leitura_rt_falha_2_corr_exci_pre_exci_ativa = LeituraModbusBit(self.__clp[f"UG{self.__ug_id}"], REG_UG[f"UG{self.__ug_id}_RT_FALHAS_2_CORR_EXCITA_PRE_EXCXITA_ATIVA"], descr=f"[UG{self.__ug_id}] RT Falha 2 Corrente Excitação Pré Excitada Ativa")
-        # self.condicionadores_essenciais.append(self.leitura_rt_falha_2_corr_exci_pre_exci_ativa, CONDIC_INDISPONIBILIZAR)
+        self.leitura_rt_falha_2_corr_exci_pre_exci_ativa = LeituraModbusBit(self.__clp[f"UG{self.__ug_id}"], REG_UG[f"UG{self.__ug_id}_RT_FALHAS_2_CORR_EXCITA_PRE_EXCXITA_ATIVA"], descr=f"[UG{self.__ug_id}] RT Falha 2 Corrente Excitação Pré Excitada Ativa") # OK
+        self.condicionadores_essenciais.append(self.leitura_rt_falha_2_corr_exci_pre_exci_ativa, CONDIC_INDISPONIBILIZAR)
 
-        # self.leitura_rt_falha_2_excess_pre_exci = LeituraModbusBit(self.__clp[f"UG{self.__ug_id}"], REG_UG[f"UG{self.__ug_id}_RT_FALHAS_2_EXCESSIVO_PRE_EXCITACAO"], descr=f"[UG{self.__ug_id}] RT Falha 2 Excessivo Pré Excitação")
-        # self.condicionadores_essenciais.append(self.leitura_rt_falha_2_excess_pre_exci, CONDIC_INDISPONIBILIZAR)
+        self.leitura_rt_falha_2_excess_pre_exci = LeituraModbusBit(self.__clp[f"UG{self.__ug_id}"], REG_UG[f"UG{self.__ug_id}_RT_FALHAS_2_EXCESSIVO_PRE_EXCITACAO"], descr=f"[UG{self.__ug_id}] RT Falha 2 Excessivo Pré Excitação") # OK
+        self.condicionadores_essenciais.append(self.leitura_rt_falha_2_excess_pre_exci, CONDIC_INDISPONIBILIZAR)
 
-        # self.leitura_rt_falha_2_excess_parada = LeituraModbusBit(self.__clp[f"UG{self.__ug_id}"], REG_UG[f"UG{self.__ug_id}_RT_FALHAS_2_EXCESSIVO_PARADA"], descr=f"[UG{self.__ug_id}] RT Falha 2 Excessivo Parada")
-        # self.condicionadores_essenciais.append(self.leitura_rt_falha_2_excess_parada, CONDIC_INDISPONIBILIZAR)
+        self.leitura_rt_falha_2_excess_parada = LeituraModbusBit(self.__clp[f"UG{self.__ug_id}"], REG_UG[f"UG{self.__ug_id}_RT_FALHAS_2_EXCESSIVO_PARADA"], descr=f"[UG{self.__ug_id}] RT Falha 2 Excessivo Parada") # OK
+        self.condicionadores_essenciais.append(self.leitura_rt_falha_2_excess_parada, CONDIC_INDISPONIBILIZAR)
 
-        # self.leitura_rt_falha_2_excess_partida = LeituraModbusBit(self.__clp[f"UG{self.__ug_id}"], REG_UG[f"UG{self.__ug_id}_RT_FALHAS_2_EXCESSIVO_PARTIDA"], descr=f"[UG{self.__ug_id}] RT Falha 2 Excessivo Partida")
-        # self.condicionadores_essenciais.append(self.leitura_rt_falha_2_excess_partida, CONDIC_INDISPONIBILIZAR)
+        self.leitura_rt_falha_2_excess_partida = LeituraModbusBit(self.__clp[f"UG{self.__ug_id}"], REG_UG[f"UG{self.__ug_id}_RT_FALHAS_2_EXCESSIVO_PARTIDA"], descr=f"[UG{self.__ug_id}] RT Falha 2 Excessivo Partida") # OK
+        self.condicionadores_essenciais.append(self.leitura_rt_falha_2_excess_partida, CONDIC_INDISPONIBILIZAR)
 
-        # self.leitura_rt_falha_2_bloq_externo = LeituraModbusBit(self.__clp[f"UG{self.__ug_id}"], REG_UG[f"UG{self.__ug_id}_RT_FALHAS_2_BLOQ_EXTERNO"], descr=f"[UG{self.__ug_id}] RT Falha 2 Bloqueio Externo")
-        # self.condicionadores_essenciais.append(self.leitura_rt_falha_2_bloq_externo, CONDIC_INDISPONIBILIZAR)
+        self.leitura_rt_falha_2_bloq_externo = LeituraModbusBit(self.__clp[f"UG{self.__ug_id}"], REG_UG[f"UG{self.__ug_id}_RT_FALHAS_2_BLOQ_EXTERNO"], descr=f"[UG{self.__ug_id}] RT Falha 2 Bloqueio Externo") # OK
+        self.condicionadores_essenciais.append(self.leitura_rt_falha_2_bloq_externo, CONDIC_INDISPONIBILIZAR)
 
-        # self.leitura_rt_falha_3_perda_med_pot_reativa = LeituraModbusBit(self.__clp[f"UG{self.__ug_id}"], REG_UG[f"UG{self.__ug_id}_RT_FALHAS_3_PERDA_MED_POT_REATIVA"], descr=f"[UG{self.__ug_id}] RT Falha 3 Perda Medição Potência Reativa")
-        # self.condicionadores_essenciais.append(self.leitura_rt_falha_3_perda_med_pot_reativa, CONDIC_INDISPONIBILIZAR)
+        self.leitura_rt_falha_3_perda_med_pot_reativa = LeituraModbusBit(self.__clp[f"UG{self.__ug_id}"], REG_UG[f"UG{self.__ug_id}_RT_FALHAS_3_PERDA_MED_POT_REATIVA"], descr=f"[UG{self.__ug_id}] RT Falha 3 Perda Medição Potência Reativa") # OK
+        self.condicionadores_essenciais.append(self.leitura_rt_falha_3_perda_med_pot_reativa, CONDIC_INDISPONIBILIZAR)
 
-        # self.leitura_rt_falha_3_perda_med_tensao_term = LeituraModbusBit(self.__clp[f"UG{self.__ug_id}"], REG_UG[f"UG{self.__ug_id}_RT_FALHAS_3_PERDA_MED_TENSAO_TERM"], descr=f"[UG{self.__ug_id}] RT Falha 3 Perda Medição Tensão Terminal")
-        # self.condicionadores_essenciais.append(self.leitura_rt_falha_3_perda_med_tensao_term, CONDIC_INDISPONIBILIZAR)
+        self.leitura_rt_falha_3_perda_med_tensao_term = LeituraModbusBit(self.__clp[f"UG{self.__ug_id}"], REG_UG[f"UG{self.__ug_id}_RT_FALHAS_3_PERDA_MED_TENSAO_TERM"], descr=f"[UG{self.__ug_id}] RT Falha 3 Perda Medição Tensão Terminal") # OK
+        self.condicionadores_essenciais.append(self.leitura_rt_falha_3_perda_med_tensao_term, CONDIC_INDISPONIBILIZAR)
 
-        # self.leitura_rt_falha_3_perda_med_corr_exci_princ = LeituraModbusBit(self.__clp[f"UG{self.__ug_id}"], REG_UG[f"UG{self.__ug_id}_RT_FALHAS_3_PERDA_MED_CORR_EXCI_PRINCI"], descr=f"[UG{self.__ug_id}] RT Falha 3 Perda Medição Corrente Excitação Principal")
-        # self.condicionadores_essenciais.append(self.leitura_rt_falha_3_perda_med_corr_exci_princ, CONDIC_INDISPONIBILIZAR)
+        self.leitura_rt_falha_3_perda_med_corr_exci_princ = LeituraModbusBit(self.__clp[f"UG{self.__ug_id}"], REG_UG[f"UG{self.__ug_id}_RT_FALHAS_3_PERDA_MED_CORR_EXCI_PRINCI"], descr=f"[UG{self.__ug_id}] RT Falha 3 Perda Medição Corrente Excitação Principal") # OK
+        self.condicionadores_essenciais.append(self.leitura_rt_falha_3_perda_med_corr_exci_princ, CONDIC_INDISPONIBILIZAR)
 
-        # self.leitura_rt_falha_3_perda_med_corr_exci_retag = LeituraModbusBit(self.__clp[f"UG{self.__ug_id}"], REG_UG[f"UG{self.__ug_id}_RT_FALHAS_3_PERDA_MED_CORR_EXCI_RETAG"], descr=f"[UG{self.__ug_id}] RT Falha 3 Perda Medição Corrente Excitação Retaguarda")
-        # self.condicionadores_essenciais.append(self.leitura_rt_falha_3_perda_med_corr_exci_retag, CONDIC_INDISPONIBILIZAR)
+        self.leitura_rt_falha_3_perda_med_corr_exci_retag = LeituraModbusBit(self.__clp[f"UG{self.__ug_id}"], REG_UG[f"UG{self.__ug_id}_RT_FALHAS_3_PERDA_MED_CORR_EXCI_RETAG"], descr=f"[UG{self.__ug_id}] RT Falha 3 Perda Medição Corrente Excitação Retaguarda") # OK
+        self.condicionadores_essenciais.append(self.leitura_rt_falha_3_perda_med_corr_exci_retag, CONDIC_INDISPONIBILIZAR)
 
-        # self.leitura_rt_falha_3_ruido_leit_instrum_reativo = LeituraModbusBit(self.__clp[f"UG{self.__ug_id}"], REG_UG[f"UG{self.__ug_id}_RT_FALHAS_3_RUIDO_INSTRUM_REATIVO"], descr=f"[UG{self.__ug_id}] RT Falha 3 Ruído Leitura Instrumentador Reativo")
-        # self.condicionadores_essenciais.append(self.leitura_rt_falha_3_ruido_leit_instrum_reativo, CONDIC_INDISPONIBILIZAR)
+        self.leitura_rt_falha_3_ruido_leit_instrum_reativo = LeituraModbusBit(self.__clp[f"UG{self.__ug_id}"], REG_UG[f"UG{self.__ug_id}_RT_FALHAS_3_RUIDO_INSTRUM_REATIVO"], descr=f"[UG{self.__ug_id}] RT Falha 3 Ruído Leitura Instrumentador Reativo") # OK
+        self.condicionadores_essenciais.append(self.leitura_rt_falha_3_ruido_leit_instrum_reativo, CONDIC_INDISPONIBILIZAR)
 
-        # self.leitura_rt_falha_3_ruido_leit_instrum_tensao = LeituraModbusBit(self.__clp[f"UG{self.__ug_id}"], REG_UG[f"UG{self.__ug_id}_RT_FALHAS_3_RUIDO_INSTRUM_TENSAO"], descr=f"[UG{self.__ug_id}] RT Falha 3 Ruído Leitura Instrumentador Tensão")
-        # self.condicionadores_essenciais.append(self.leitura_rt_falha_3_ruido_leit_instrum_tensao, CONDIC_INDISPONIBILIZAR)
+        self.leitura_rt_falha_3_ruido_leit_instrum_tensao = LeituraModbusBit(self.__clp[f"UG{self.__ug_id}"], REG_UG[f"UG{self.__ug_id}_RT_FALHAS_3_RUIDO_INSTRUM_TENSAO"], descr=f"[UG{self.__ug_id}] RT Falha 3 Ruído Leitura Instrumentador Tensão") # OK
+        self.condicionadores_essenciais.append(self.leitura_rt_falha_3_ruido_leit_instrum_tensao, CONDIC_INDISPONIBILIZAR)
 
-        # self.leitura_rt_falha_3_ruido_leit_instrum_principal = LeituraModbusBit(self.__clp[f"UG{self.__ug_id}"], REG_UG[f"UG{self.__ug_id}_RT_FALHAS_3_RUIDO_INSTRUM_PRINCI"], descr=f"[UG{self.__ug_id}] RT Falha 3 Ruído Leitura Instrumentador Principal")
-        # self.condicionadores_essenciais.append(self.leitura_rt_falha_3_ruido_leit_instrum_principal, CONDIC_INDISPONIBILIZAR)
+        self.leitura_rt_falha_3_ruido_leit_instrum_principal = LeituraModbusBit(self.__clp[f"UG{self.__ug_id}"], REG_UG[f"UG{self.__ug_id}_RT_FALHAS_3_RUIDO_INSTRUM_PRINCI"], descr=f"[UG{self.__ug_id}] RT Falha 3 Ruído Leitura Instrumentador Principal") # OK
+        self.condicionadores_essenciais.append(self.leitura_rt_falha_3_ruido_leit_instrum_principal, CONDIC_INDISPONIBILIZAR)
 
-        # self.leitura_rt_falha_3_ruido_leit_instrum_retag = LeituraModbusBit(self.__clp[f"UG{self.__ug_id}"], REG_UG[f"UG{self.__ug_id}_RT_FALHAS_3_RUIDO_INSTRUM_RETAG"], descr=f"[UG{self.__ug_id}] RT Falha 3 Ruído Leitura Instrumentador Retaguarda")
-        # self.condicionadores_essenciais.append(self.leitura_rt_falha_3_ruido_leit_instrum_retag, CONDIC_INDISPONIBILIZAR)
+        self.leitura_rt_falha_3_ruido_leit_instrum_retag = LeituraModbusBit(self.__clp[f"UG{self.__ug_id}"], REG_UG[f"UG{self.__ug_id}_RT_FALHAS_3_RUIDO_INSTRUM_RETAG"], descr=f"[UG{self.__ug_id}] RT Falha 3 Ruído Leitura Instrumentador Retaguarda") # OK
+        self.condicionadores_essenciais.append(self.leitura_rt_falha_3_ruido_leit_instrum_retag, CONDIC_INDISPONIBILIZAR)
 
-        # self.leitura_rele_falha_prot_gerad = LeituraModbusBit(self.__clp[f"UG{self.__ug_id}"], REG_UG[f"UG{self.__ug_id}_ED_PRTVA_RELE_PROT_GERADOR_FALHA"], descr=f"[UG{self.__ug_id}] Relé Falha Proteção Gerador")
-        # self.condicionadores_essenciais.append(self.leitura_rele_falha_prot_gerad, CONDIC_INDISPONIBILIZAR)
+        self.leitura_rele_falha_prot_gerad = LeituraModbusBit(self.__clp[f"UG{self.__ug_id}"], REG_UG[f"UG{self.__ug_id}_ED_PRTVA_RELE_PROT_GERADOR_FALHA"], descr=f"[UG{self.__ug_id}] Relé Falha Proteção Gerador") # OK
+        self.condicionadores_essenciais.append(self.leitura_rele_falha_prot_gerad, CONDIC_INDISPONIBILIZAR)
 
-        # self.leitura_rele_trip_prot_gerad = LeituraModbusBit(self.__clp[f"UG{self.__ug_id}"], REG_UG[f"UG{self.__ug_id}_ED_PRTVA_RELE_PROT_GERADOR_TRIP"], descr=f"[UG{self.__ug_id}] Relé Trip Proteção Gerador")
-        # self.condicionadores_essenciais.append(self.leitura_rele_trip_prot_gerad, CONDIC_INDISPONIBILIZAR)
+        self.leitura_rele_trip_prot_gerad = LeituraModbusBit(self.__clp[f"UG{self.__ug_id}"], REG_UG[f"UG{self.__ug_id}_ED_PRTVA_RELE_PROT_GERADOR_TRIP"], descr=f"[UG{self.__ug_id}] Relé Trip Proteção Gerador") # OK
+        self.condicionadores_essenciais.append(self.leitura_rele_trip_prot_gerad, CONDIC_INDISPONIBILIZAR)
 
-        # self.leitura_rele_prot_gerad_50bf = LeituraModbusBit(self.__clp[f"UG{self.__ug_id}"], REG_UG[f"UG{self.__ug_id}_ED_PRTVA_RELE_PROT_GERADOR_50BF"], descr=f"[UG{self.__ug_id}] Relé Proteção Gerador 50BF")
-        # self.condicionadores_essenciais.append(self.leitura_rele_prot_gerad_50bf, CONDIC_INDISPONIBILIZAR)
+        self.leitura_rele_prot_gerad_50bf = LeituraModbusBit(self.__clp[f"UG{self.__ug_id}"], REG_UG[f"UG{self.__ug_id}_ED_PRTVA_RELE_PROT_GERADOR_50BF"], descr=f"[UG{self.__ug_id}] Relé Proteção Gerador 50BF") # OK
+        self.condicionadores_essenciais.append(self.leitura_rele_prot_gerad_50bf, CONDIC_INDISPONIBILIZAR)
 
-        # self.leitura_rv_trip = LeituraModbusBit(self.__clp[f"UG{self.__ug_id}"], REG_UG[f"UG{self.__ug_id}_ED_PRTVA_RV_TRIP"], descr=f"[UG{self.__ug_id}] RV Trip")
-        # self.condicionadores_essenciais.append(self.leitura_rv_trip, CONDIC_INDISPONIBILIZAR)
+        self.leitura_rv_trip = LeituraModbusBit(self.__clp[f"UG{self.__ug_id}"], REG_UG[f"UG{self.__ug_id}_ED_PRTVA_RV_TRIP"], descr=f"[UG{self.__ug_id}] RV Trip") # OK
+        self.condicionadores_essenciais.append(self.leitura_rv_trip, CONDIC_INDISPONIBILIZAR)
 
-        # self.leitura_rt_trip = LeituraModbusBit(self.__clp[f"UG{self.__ug_id}"], REG_UG[f"UG{self.__ug_id}_ED_PRTVA_RT_TRIP"], descr=f"[UG{self.__ug_id}] RT Trip")
-        # self.condicionadores_essenciais.append(self.leitura_rt_trip, CONDIC_INDISPONIBILIZAR)
+        self.leitura_rt_trip = LeituraModbusBit(self.__clp[f"UG{self.__ug_id}"], REG_UG[f"UG{self.__ug_id}_ED_PRTVA_RT_TRIP"], descr=f"[UG{self.__ug_id}] RT Trip") # OK
+        self.condicionadores_essenciais.append(self.leitura_rt_trip, CONDIC_INDISPONIBILIZAR)
 
-        # self.leitura_disj_tps_protecao = LeituraModbusBit(self.__clp[f"UG{self.__ug_id}"], REG_UG[f"UG{self.__ug_id}_ED_PRTVA_DISJUNTOR_TPS_PROTECAO"], descr=f"[UG{self.__ug_id}] Disjuntor TPS Proteção")
-        # self.condicionadores_essenciais.append(self.leitura_disj_tps_protecao, CONDIC_INDISPONIBILIZAR)
+        self.leitura_disj_tps_protecao = LeituraModbusBit(self.__clp[f"UG{self.__ug_id}"], REG_UG[f"UG{self.__ug_id}_ED_PRTVA_DISJUNTOR_TPS_PROTECAO"], descr=f"[UG{self.__ug_id}] Disjuntor TPS Proteção") # OK
+        self.condicionadores_essenciais.append(self.leitura_disj_tps_protecao, CONDIC_INDISPONIBILIZAR)
 
-        # self.leitura_disj_tps_sincro = LeituraModbusBit(self.__clp[f"UG{self.__ug_id}"], REG_UG[f"UG{self.__ug_id}_ED_PRTVA_DISJUNTOR_TPS_SINCRO"], descr=f"[UG{self.__ug_id}] Disjuntor TPS Sincronização")
-        # self.condicionadores_essenciais.append(self.leitura_disj_tps_sincro, CONDIC_INDISPONIBILIZAR)
+        self.leitura_disj_tps_sincro = LeituraModbusBit(self.__clp[f"UG{self.__ug_id}"], REG_UG[f"UG{self.__ug_id}_ED_PRTVA_DISJUNTOR_TPS_SINCRO"], descr=f"[UG{self.__ug_id}] Disjuntor TPS Sincronização") # OK
+        self.condicionadores_essenciais.append(self.leitura_disj_tps_sincro, CONDIC_INDISPONIBILIZAR)
 
-        # self.leitura_uhrv_pressao_freio = LeituraModbusBit(self.__clp[f"UG{self.__ug_id}"], REG_UG[f"UG{self.__ug_id}_ED_PRTVA_UHRV_PRESSAO_FREIO"], descr=f"[UG{self.__ug_id}] UHRV Pressão Freio")
-        # self.condicionadores_essenciais.append(self.leitura_uhrv_pressao_freio, CONDIC_INDISPONIBILIZAR)
+        self.leitura_uhrv_pressao_freio = LeituraModbusBit(self.__clp[f"UG{self.__ug_id}"], REG_UG[f"UG{self.__ug_id}_ED_PRTVA_UHRV_PRESSAO_FREIO"], descr=f"[UG{self.__ug_id}] UHRV Pressão Freio") # OK
+        self.condicionadores_essenciais.append(self.leitura_uhrv_pressao_freio, CONDIC_INDISPONIBILIZAR)
 
-        # self.leitura_psa_bloq_86btbf = LeituraModbusBit(self.__clp[f"UG{self.__ug_id}"], REG_UG[f"UG{self.__ug_id}_ED_PRTVA_PSA_BLOQUEIO_86BTBF"], descr=f"[UG{self.__ug_id}] PSA Bloqueio 86BTBF")
-        # self.condicionadores_essenciais.append(self.leitura_psa_bloq_86btbf, CONDIC_INDISPONIBILIZAR)
+        self.leitura_psa_bloq_86btbf = LeituraModbusBit(self.__clp[f"UG{self.__ug_id}"], REG_UG[f"UG{self.__ug_id}_ED_PRTVA_PSA_BLOQUEIO_86BTBF"], descr=f"[UG{self.__ug_id}] PSA Bloqueio 86BTBF") # OK
+        self.condicionadores_essenciais.append(self.leitura_psa_bloq_86btbf, CONDIC_INDISPONIBILIZAR)
 
-        # self.leitura_uhrv_indisp = LeituraModbusBit(self.__clp[f"UG{self.__ug_id}"], REG_UG[f"UG{self.__ug_id}_ED_UHRV_INDISPONIVEL"], descr=f"[UG{self.__ug_id}] UHRV Indisponível")
-        # self.condicionadores_essenciais.append(self.leitura_uhrv_indisp, CONDIC_INDISPONIBILIZAR)
+        self.leitura_uhrv_indisp = LeituraModbusBit(self.__clp[f"UG{self.__ug_id}"], REG_UG[f"UG{self.__ug_id}_ED_UHRV_INDISPONIVEL"], descr=f"[UG{self.__ug_id}] UHRV Indisponível") # OK
+        self.condicionadores_essenciais.append(self.leitura_uhrv_indisp, CONDIC_INDISPONIBILIZAR)
 
-        # self.leitura_uhrv_falha_ligar = LeituraModbusBit(self.__clp[f"UG{self.__ug_id}"], REG_UG[f"UG{self.__ug_id}_ED_UHRV_FALHA_AO_LIGAR"], descr=f"[UG{self.__ug_id}] UHRV Falha Ligar")
-        # self.condicionadores_essenciais.append(self.leitura_uhrv_falha_ligar, CONDIC_INDISPONIBILIZAR)
+        self.leitura_uhrv_falha_ligar = LeituraModbusBit(self.__clp[f"UG{self.__ug_id}"], REG_UG[f"UG{self.__ug_id}_ED_UHRV_FALHA_AO_LIGAR"], descr=f"[UG{self.__ug_id}] UHRV Falha Ligar") # OK
+        self.condicionadores_essenciais.append(self.leitura_uhrv_falha_ligar, CONDIC_INDISPONIBILIZAR)
 
-        # self.leitura_uhrv_falha_pressurizar = LeituraModbusBit(self.__clp[f"UG{self.__ug_id}"], REG_UG[f"UG{self.__ug_id}_ED_UHRV_FALHA_AO_PRESSURIZAR"], descr=f"[UG{self.__ug_id}] UHRV Falha Pressurizar")
-        # self.condicionadores_essenciais.append(self.leitura_uhrv_falha_pressurizar, CONDIC_INDISPONIBILIZAR)
+        self.leitura_uhrv_falha_pressurizar = LeituraModbusBit(self.__clp[f"UG{self.__ug_id}"], REG_UG[f"UG{self.__ug_id}_ED_UHRV_FALHA_AO_PRESSURIZAR"], descr=f"[UG{self.__ug_id}] UHRV Falha Pressurizar") # OK
+        self.condicionadores_essenciais.append(self.leitura_uhrv_falha_pressurizar, CONDIC_INDISPONIBILIZAR)
 
-        # self.leitura_uhrv_filtro_oleo_sujo = LeituraModbusBit(self.__clp[f"UG{self.__ug_id}"], REG_UG[f"UG{self.__ug_id}_ED_UHRV_FILTRO_OLEO_SUJO"], descr=f"[UG{self.__ug_id}] UHRV Filtro Óleo Sujo")
-        # self.condicionadores_essenciais.append(self.leitura_uhrv_filtro_oleo_sujo, CONDIC_INDISPONIBILIZAR)
+        self.leitura_uhrv_filtro_oleo_sujo = LeituraModbusBit(self.__clp[f"UG{self.__ug_id}"], REG_UG[f"UG{self.__ug_id}_ED_UHRV_FILTRO_OLEO_SUJO"], descr=f"[UG{self.__ug_id}] UHRV Filtro Óleo Sujo") # OK
+        self.condicionadores_essenciais.append(self.leitura_uhrv_filtro_oleo_sujo, CONDIC_INDISPONIBILIZAR)
 
-        # self.leitura_uhlm_bomba_1_indisp = LeituraModbusBit(self.__clp[f"UG{self.__ug_id}"], REG_UG[f"UG{self.__ug_id}_ED_UHLM_BOMBA_1_INDISPONIVEL"], descr=f"[UG{self.__ug_id}] UHLM Bomba 1 Indisponível")
-        # self.condicionadores_essenciais.append(self.leitura_uhlm_bomba_1_indisp, CONDIC_INDISPONIBILIZAR)
+        self.leitura_uhlm_bomba_1_indisp = LeituraModbusBit(self.__clp[f"UG{self.__ug_id}"], REG_UG[f"UG{self.__ug_id}_ED_UHLM_BOMBA_1_INDISPONIVEL"], descr=f"[UG{self.__ug_id}] UHLM Bomba 1 Indisponível") # TODO REG 12364 -> Bit OK
+        self.condicionadores_essenciais.append(self.leitura_uhlm_bomba_1_indisp, CONDIC_INDISPONIBILIZAR)
 
-        # self.leitura_uhlm_bomba_1_falha_pressurizar = LeituraModbusBit(self.__clp[f"UG{self.__ug_id}"], REG_UG[f"UG{self.__ug_id}_ED_UHLM_BOMBA_1_FALHA_PRESSURIZAR"], descr=f"[UG{self.__ug_id}] UHLM Bomba 1 Falha Pressurizar")
-        # self.condicionadores_essenciais.append(self.leitura_uhlm_bomba_1_falha_pressurizar, CONDIC_INDISPONIBILIZAR)
+        self.leitura_uhlm_bomba_1_falha_pressurizar = LeituraModbusBit(self.__clp[f"UG{self.__ug_id}"], REG_UG[f"UG{self.__ug_id}_ED_UHLM_BOMBA_1_FALHA_PRESSURIZAR"], descr=f"[UG{self.__ug_id}] UHLM Bomba 1 Falha Pressurizar") # TODO REG 12364 -> Bit OK
+        self.condicionadores_essenciais.append(self.leitura_uhlm_bomba_1_falha_pressurizar, CONDIC_INDISPONIBILIZAR)
 
-        # self.leitura_ulhm_filtro_sujo = LeituraModbusBit(self.__clp[f"UG{self.__ug_id}"], REG_UG[f"UG{self.__ug_id}_ED_UHLM_FILTRO_SUJO"], descr=f"[UG{self.__ug_id}] UHLM Filtro Sujo")
-        # self.condicionadores_essenciais.append(self.leitura_ulhm_filtro_sujo, CONDIC_INDISPONIBILIZAR)
+        self.leitura_ulhm_filtro_sujo = LeituraModbusBit(self.__clp[f"UG{self.__ug_id}"], REG_UG[f"UG{self.__ug_id}_ED_UHLM_FILTRO_SUJO"], descr=f"[UG{self.__ug_id}] UHLM Filtro Sujo") # TODO REG 12364 -> Bit OK
+        self.condicionadores_essenciais.append(self.leitura_ulhm_filtro_sujo, CONDIC_INDISPONIBILIZAR)
 
-        # self.leitura_status_rv = LeituraModbusBit(self.__clp[f"UG{self.__ug_id}"], REG_UG[f"UG{self.__ug_id}_ED_STT_RV"], descr=f"[UG{self.__ug_id}] RV Status")
-        # self.condicionadores_essenciais.append(self.leitura_status_rv, CONDIC_INDISPONIBILIZAR)
+        self.leitura_status_rv = LeituraModbusBit(self.__clp[f"UG{self.__ug_id}"], REG_UG[f"UG{self.__ug_id}_ED_STT_RV"], descr=f"[UG{self.__ug_id}] RV Status") # TODO REG 12372 -> Bit OK
+        self.condicionadores_essenciais.append(self.leitura_status_rv, CONDIC_INDISPONIBILIZAR)
 
-        # self.leitura_rv_falha_hab = LeituraModbusBit(self.__clp[f"UG{self.__ug_id}"], REG_UG[f"UG{self.__ug_id}_ED_RV_FALHA_AO_HABILITAR"], descr=f"[UG{self.__ug_id}] RV Falha Habilitar")
-        # self.condicionadores_essenciais.append(self.leitura_rv_falha_hab, CONDIC_INDISPONIBILIZAR)
+        self.leitura_rv_falha_hab = LeituraModbusBit(self.__clp[f"UG{self.__ug_id}"], REG_UG[f"UG{self.__ug_id}_ED_RV_FALHA_AO_HABILITAR"], descr=f"[UG{self.__ug_id}] RV Falha Habilitar") # TODO REG 12374 -> Bit OK
+        self.condicionadores_essenciais.append(self.leitura_rv_falha_hab, CONDIC_INDISPONIBILIZAR)
 
-        # self.leitura_rt_falha_hab = LeituraModbusBit(self.__clp[f"UG{self.__ug_id}"], REG_UG[f"UG{self.__ug_id}_ED_RT_FALHA_AO_HABILITAR"], descr=f"[UG{self.__ug_id}] RT Falha Habilitar")
-        # self.condicionadores_essenciais.append(self.leitura_rt_falha_hab, CONDIC_INDISPONIBILIZAR)
+        self.leitura_rt_falha_hab = LeituraModbusBit(self.__clp[f"UG{self.__ug_id}"], REG_UG[f"UG{self.__ug_id}_ED_RT_FALHA_AO_HABILITAR"], descr=f"[UG{self.__ug_id}] RT Falha Habilitar") # TODO REG 12374 -> Bit OK
+        self.condicionadores_essenciais.append(self.leitura_rt_falha_hab, CONDIC_INDISPONIBILIZAR)
 
-        # self.leitura_status_bloq_86m = LeituraModbusBit(self.__clp[f"UG{self.__ug_id}"], REG_UG[f"UG{self.__ug_id}_ED_STT_BLOQUEIO_86M"], descr=f"[UG{self.__ug_id}] Status Bloqueio 86M")
-        # self.condicionadores_essenciais.append(self.leitura_status_bloq_86m, CONDIC_INDISPONIBILIZAR)
+        self.leitura_status_bloq_86m = LeituraModbusBit(self.__clp[f"UG{self.__ug_id}"], REG_UG[f"UG{self.__ug_id}_ED_STT_BLOQUEIO_86M"], descr=f"[UG{self.__ug_id}] Status Bloqueio 86M") # OK
+        self.condicionadores_essenciais.append(self.leitura_status_bloq_86m, CONDIC_INDISPONIBILIZAR)
 
 
         # ## WHATSAPP + VOIP
