@@ -74,7 +74,7 @@ class UnidadeDeGeracao:
         )
         self.__leitura_dj_maquina: LeituraModbusBit = LeituraModbusBit(
             self.rele[f"UG{self.id}"],
-            REG["RELE"][f"UG{self.id}_ED_PRTVA_DISJUNTOR_MAQUINA_FECHADO"],
+            REG["RELE"][f"RELE_UG{self.id}_ED_DJ_MAQUINA_FECHADO"],
             descr=f"[UG{self.id}] Status Disjuntor de Máquina"
         )
         self.__tensao: LeituraModbus = LeituraModbus(
