@@ -505,7 +505,8 @@ class Usina:
             self._pot_alvo_anterior = pot_alvo
 
         if pot_alvo < 0.1:
-            for ug in self.ugs: ug.setpoint = 0
+            for ug in self.ugs: 
+                ug.setpoint = 0
             return 0
 
         logger.debug(f"[USN] Potência no medidor:                {self.potencia_ativa:0.3f}")
@@ -538,6 +539,7 @@ class Usina:
             if ug.manual:
                 ajuste_manual += ug.leitura_potencia
 
+        for ug in ugs:
             if ug.etapa_atual == UG_SINCRONIZANDO:
                 ug_sinc += 1
 

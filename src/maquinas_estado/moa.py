@@ -128,7 +128,7 @@ class ControleDados(State):
         logger.debug("Escrevendo valores no Banco...")
         self.usn.ler_valores()
         self.usn.escrever_valores()
-        return ControleEstados(self.usn)
+        return ControleTDAOffline(self.usn) if d.glb["TDA_Offline"] else ControleEstados(self.usn)
 
 class ControleAgendamentos(State):
     def __init__(self, *args, **kwargs):
@@ -139,7 +139,10 @@ class ControleAgendamentos(State):
     def run(self):
         logger.info("Tratando agendamentos...")
         self.usn.agn.verificar_agendamentos()
-        return self if len(self.usn.agn.verificar_agendamentos_pendentes()) > 0 else ControleEstados(self.usn) if self.usn.modo_autonomo else ModoManual(self.usn)
+        if len(self.usn.agn.verificar_agendamentos_pendentes()) > 0:
+            return self
+        else:
+            return ControleEstados(self.usn) if self.usn.modo_autonomo else ModoManual(self.usn)
 
 class ModoManual(State):
     def __init__(self, usn, *args, **kwargs):
@@ -168,7 +171,7 @@ class ModoManual(State):
 
         self.usn.escrever_valores()
         if self.usn.modo_autonomo:
-            logger.debug("Comando acionado:\" Habilitar modo autônomo\".")
+            logger.debug("Comando acionado: \"Habilitar modo autônomo\"")
             self.usn.ler_valores()
             sleep(2)
             return ControleDados(self.usn)
@@ -239,18 +242,27 @@ class ControleTDAOffline(State):
 
     def run(self):
         self.usn.heartbeat()
-
+        
+        logger.debug("Verificando modo do MOA...")
         if not self.usn.modo_autonomo:
-            logger.info("Comando acionado: Desabilitar modo autônomo.")
+            logger.debug("")
+            logger.info("Comando acionado: \"Desabilitar modo autônomo\"")
             return ModoManual(self.usn)
 
-        elif self.usn.clp_emergencia or self.usn.db_emergencia:
+        logger.debug("Verificando status da emergência...")
+        if self.usn.clp_emergencia or self.usn.db_emergencia:
+            logger.debug("")
+            logger.debug("Foi identificado o acinoamento da emergência")
             return Emergencia(self.usn)
 
-        elif len(self.usn.agn.verificar_agendamentos_pendentes()) > 0:
+        logger.debug("Verificando se há agendamentos...")
+        if len(self.usn.agn.verificar_agendamentos_pendentes()) > 0:
+            logger.debug("")
+            logger.debug("Foram identificados agendamentos pendentes!")
             return ControleAgendamentos(self.usn)
 
         else:
+            logger.debug("Verificando condicionadores...")
             condic_flag = self.usn.oco.verificar_condicionadores()
             if condic_flag == CONDIC_INDISPONIBILIZAR:
                 return Emergencia(self.usn)
