@@ -37,13 +37,13 @@ class Usina:
         self.db = BancoDados("MOA-PPN")
         self.clp = ClientesUsina.clp
         self.oco = OcorrenciasUsn(self.clp)
+        self.agn = Agendamentos(self.cfg, self.db, self)
 
         self.ug1: UnidadeDeGeracao = UnidadeDeGeracao(1, self.cfg, self.db)
         self.ug2: UnidadeDeGeracao = UnidadeDeGeracao(2, self.cfg, self.db)
         self.ugs: "list[UnidadeDeGeracao]" = [self.ug1, self.ug2]
         CondicionadorBase.ugs = self.ugs
 
-        self.agn = Agendamentos(self.cfg, self.db, self)
         
         for ug in self.ugs:
             ug.lista_ugs = self.ugs

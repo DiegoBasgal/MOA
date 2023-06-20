@@ -25,32 +25,30 @@ class Agendamentos:
 
     def verificar_agendamentos_pendentes(self) -> list:
         pendentes = []
-        try:
-            agendamentos = self.db.get_agendamentos_pendentes()
+        agendamentos = self.db.get_agendamentos_pendentes()
 
-        except Exception:
-            logger.error(f"[AGN] Não foi possível extrair lista de agendamentos pendentes do banco.")
-            return None
+        for agendamento in agendamentos:
+            ag = list(agendamento)
+            ag[1] = ag[1] - timedelta(0, 60 * 60 * 3)
+            pendentes.append(ag)
 
-        else:
-            for agendamento in agendamentos:
-                ag = list(agendamento)
-                ag[1] = ag[1] - timedelta(0, 60 * 60 * 3)
-                pendentes.append(ag)
-
-            return pendentes
+        return pendentes
 
     def verificar_agendamentos_iguais(self, agendamentos) -> None:
         limite_entre_agendamentos_iguais = 300
         agendamentos = sorted(agendamentos, key=lambda x:(x[3], x[1]))
-
-        while (i := 0) < (j := len(agendamentos) - 1):
+        i = 0
+        j = len(agendamentos)
+        while i < j - 1:
             if agendamentos[i][3] == agendamentos[i+1][3] and (agendamentos[i+1][1] - agendamentos[i][1]).seconds < limite_entre_agendamentos_iguais:
                 ag_concatenado = agendamentos.pop(i)
-                logger.info("[AGN] O agendamento foi ignorado, pois o mesmo foi agendado à menos de 5 minutos atrás.")
-                self.db.update_agendamento(ag_concatenado[0], True, obs="Este agendamento foi concatenado ao seguinte por motivos de temporização.")
+                obs = "Este agendamento foi concatenado ao seguinte por motivos de temporização."
+                logger.warning(obs)
+                self.db.update_agendamento(ag_concatenado[0], True, obs)
                 i -= 1
+
             i += 1
+            j = len(agendamentos)
 
     def verificar_agendamentos(self) -> bool:
         agora = datetime.now(pytz.timezone("Brazil/East")).replace(tzinfo=None)
@@ -64,18 +62,26 @@ class Agendamentos:
         self.verificar_agendamentos_iguais(agendamentos)
 
         for agendamento in agendamentos:
-            self.segundos_passados = (agora - agendamento[1]).seconds if agora > agendamento[1] else 0
-            self.segundos_adiantados = (agendamento[1] - agora).seconds if agora < agendamento[1] else 0
+            if agora > agendamento[1]:
+                self.segundos_adiantados = 0
+                self.segundos_passados = (agora - agendamento[1]).seconds
+            else:
+                self.segundos_adiantados = (agendamento[1] - agora).seconds
+                self.segundos_passados = 0
 
-            logger.debug(f"[AGN] Data: {agendamento[1].strftime('%Y-%m-%d %H:%M:%S')}")
-            logger.debug(f"      Criado por: {agendamento[6]}")
-            logger.debug(f"      Comando: {AGN_STR_DICT[agendamento[3]] if agendamento[3] in AGN_STR_DICT else 'Inexistente'}")
+            logger.debug("")
+            logger.debug(f"[AGN] Data:                               {agendamento[1].strftime('%H:%M:%S %d-%m-%Y')}")
+            logger.debug(f"      Criado por:                         \"{agendamento[6]}\"")
+            logger.debug(f"      Comando:                            \"{AGN_STR_DICT[agendamento[3]] if agendamento[3] in AGN_STR_DICT else 'Inexistente'}\"")
+            logger.debug("")
 
             if self.verificar_agendamentos_atrasados(agendamento):
                 return False
 
             if self.segundos_adiantados <= 60 and not bool(agendamento[4]):
-                logger.info(f"[AGN] Executando agendamento: {agendamento[0]} - Comando: {agendamento[3]} - Data: {agendamento[9]}.")
+                logger.info(f"[AGN] Executando agendamento:             {agendamento[0]}")
+                logger.info(f"      Comando:                            \"{AGN_STR_DICT[agendamento[3]]}\"")
+                logger.info(f"      Data:                               {agendamento[9].strftime('%H:%M:%S %d-%m-%Y')}")
 
                 self.verificar_agendamentos_sem_efeito(agendamento)
 
@@ -86,7 +92,7 @@ class Agendamentos:
                     return False
 
                 self.db.update_agendamento(agendamento[0], executado=1)
-                logger.info(f"[AGN] O agendamento: {AGN_STR_DICT[agendamentos[i-1][3]] if agendamentos[i-1][3] in AGN_STR_DICT else 'Inexistente'} - {agendamento[5]} foi executado.")
+                logger.info(f"[AGN] Agendamento executado:              \"{AGN_STR_DICT[agendamentos[i-1][3]] if agendamentos[i-1][3] in AGN_STR_DICT else 'Inexistente'}\"")
 
     def verificar_agendamentos_atrasados(self, agendamento) -> bool:
         agn_atrasados = 0

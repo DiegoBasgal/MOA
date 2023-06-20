@@ -29,6 +29,7 @@ class StateManual(State):
         self.parent.borda_parar = False
 
     def step(self) -> State:
+        self.parent.oco.verificar_condicionadores()
         self.parent.setpoint = self.parent.leitura_potencia
         return self
 
