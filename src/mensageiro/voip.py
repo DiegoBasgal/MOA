@@ -46,6 +46,7 @@ class Voip:
 
     @classmethod
     def carregar_contatos(cls) -> list:
+        return
         agenda = []
         parametros = cls.db.get_contato_emergencia()
 
