@@ -838,8 +838,6 @@ class Usina:
             i += 1
             j = len(agendamentos)
 
-        logger.debug(agendamentos)
-
         if len(agendamentos) == 0:
             return True
 
@@ -865,10 +863,10 @@ class Usina:
 
             if segundos_adiantados <= 60 and not bool(agendamento[4]):
                 # Está na hora e ainda não foi executado. Executar!
-                logger.info(f"Executando agendamento: {agendamento[0]}\n\n \
-                    Comando: {INT_TO_AGENDAMENTOS[agendamento[3]]}\n\n \
-                    Data: {agendamento[1]}\n\n \
-                    Observação: {agendamento[2]}\n\n \
+                logger.info(f"Executando agendamento: {agendamento[0]}\n \
+                    Comando: {INT_TO_AGENDAMENTOS[agendamento[3]]}\ \
+                    Data: {agendamento[1]}\n \
+                    Observação: {agendamento[2]}\n \
                     {f'Valor: {agendamento[5]}' if agendamento[5] is not None else ...}"
                 )
 

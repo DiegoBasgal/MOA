@@ -108,7 +108,8 @@ class UnidadeDeGeracao:
             e: Exceptions geradas ao executar um estado
         """
         try:
-            self.logger.debug(f"[UG{self.id}] Step.")
+            self.logger.debug("")
+            self.logger.debug(f"[UG{self.id}] Step. (Tentativas de normalização: {self.tentativas_de_normalizacao}/{self.limite_tentativas_de_normalizacao})")
             self.__next_state = self.__next_state.step()
             self.modbus_update_state_register()
 
@@ -208,7 +209,7 @@ class UnidadeDeGeracao:
         self.__prioridade = var
 
     @property
-    def condicionadores(self) -> list([CondicionadorBase]):
+    def condicionadores(self) -> list[CondicionadorBase]:
         """
         Lista de condicionadores (objetos) relacionados com a unidade de geração
 
@@ -218,7 +219,7 @@ class UnidadeDeGeracao:
         return self.__condicionadores
 
     @condicionadores.setter
-    def condicionadores(self, var: list([CondicionadorBase])):
+    def condicionadores(self, var: list[CondicionadorBase]):
         self.__condicionadores = var
 
     @property
@@ -549,22 +550,28 @@ class StateRestrito(State):
     def step(self) -> State:
         self.codigo_state = MOA_UNIDADE_RESTRITA
         # Ler condiconadores
-        deve_indisponibilizar = False
         deve_normalizar = False
+        deve_indisponibilizar = False
+        deve_super_normalizar = False
 
-        if [condic.ativo for condic in self.parent_ug.condicionadores]:
-            condics_ativos = [condic.ativo for condic in self.parent_ug.condicionadores]
-            deve_normalizar = [True for condic in condics_ativos if condic.gravidade == DEVE_NORMALIZAR]
-            deve_super_normalizar = [True for condic in condics_ativos if condic.gravidade == DEVE_SUPER_NORMALIZAR]
-            deve_indisponibilizar = [True for condic in condics_ativos if condic.gravidade == DEVE_INDISPONIBILIZAR]
+        if True in (condic.ativo for condic in self.parent_ug.condicionadores):
+            condicionadores_ativos = [condic for condic in self.parent_ug.condicionadores if condic.ativo]
+
+            for condic in condicionadores_ativos:
+                if condic.gravidade == DEVE_NORMALIZAR:
+                    deve_normalizar = True
+                elif condic.gravidade == DEVE_SUPER_NORMALIZAR:
+                    deve_super_normalizar = True
+                elif condic.gravidade == DEVE_INDISPONIBILIZAR:
+                    deve_indisponibilizar = True
 
         if deve_indisponibilizar or deve_normalizar or deve_super_normalizar:
             # Logar os condicionadores ativos
-            self.logger.warning(f"[UG{self.parent_ug.id}] UG em modo restrito detectou condicionadores ativos:\n\n")
-            self.logger.info(f"Descrição: {d.descr};\n Gravidade: {LISTA_GRAVIDADES[d.gravidade]}" for d in condics_ativos)
+            self.logger.warning(f"[UG{self.parent_ug.id}] UG em modo restrito detectou condicionadores ativos:")
+            [self.logger.info(f"[UG{self.parent_ug.id}] Descrição: {d.descr}; Gravidade: {LISTA_GRAVIDADES[d.gravidade]}") for d in condicionadores_ativos]
 
             # Se algum condicionador deve gerar uma indisponibilidade
-            if deve_indisponibilizar:
+            if deve_indisponibilizar == DEVE_INDISPONIBILIZAR:
                 # Vai para o estado StateIndisponivel
                 return StateIndisponivel(self.parent_ug)
 
@@ -599,25 +606,27 @@ class StateDisponivel(State):
 
     def step(self) -> State:
         self.codigo_state = MOA_UNIDADE_DISPONIVEL
-
-        self.logger.debug(f"[UG{self.parent_ug.id}] Step. (Tentativas de normalização: {self.parent_ug.tentativas_de_normalizacao}/{self.parent_ug.limite_tentativas_de_normalizacao})")
-
         # Ler condiconadores, verifica e armazena os ativos
-        deve_indisponibilizar = False
         deve_normalizar = False
+        deve_indisponibilizar = False
         deve_super_normalizar = False
 
-        if [condic.ativo for condic in self.parent_ug.condicionadores]:
-            condics_ativos = [condic.ativo for condic in self.parent_ug.condicionadores]
-            deve_normalizar = [True for condic in condics_ativos if condic.gravidade == DEVE_NORMALIZAR]
-            deve_super_normalizar = [True for condic in condics_ativos if condic.gravidade == DEVE_SUPER_NORMALIZAR]
-            deve_indisponibilizar = [True for condic in condics_ativos if condic.gravidade == DEVE_INDISPONIBILIZAR]
+        if True in (condic.ativo for condic in self.parent_ug.condicionadores):
+            condicionadores_ativos = [condic for condic in self.parent_ug.condicionadores if condic.ativo]
+
+            for condic in condicionadores_ativos:
+                if condic.gravidade == DEVE_NORMALIZAR:
+                    deve_normalizar = True
+                elif condic.gravidade == DEVE_SUPER_NORMALIZAR:
+                    deve_super_normalizar = True
+                elif condic.gravidade == DEVE_INDISPONIBILIZAR:
+                    deve_indisponibilizar = True
 
         if deve_indisponibilizar or deve_normalizar or deve_super_normalizar:
             # Logar os condicionadores ativos
-            self.logger.warning(f"[UG{self.parent_ug.id}] UG em modo restrito detectou condicionadores ativos:\n\n")
-            self.logger.info(f"Descrição: {d.descr};\n Gravidade: {LISTA_GRAVIDADES[d.gravidade]}" for d in condics_ativos)
-
+            self.logger.warning(f"[UG{self.parent_ug.id}] UG em modo disponível detectou condicionadores ativos:")
+            [self.logger.info(f"[UG{self.parent_ug.id}] Descrição: {d.descr}; Gravidade: {LISTA_GRAVIDADES[d.gravidade]}") for d in condicionadores_ativos]
+ 
             # Se algum condicionador deve gerar uma indisponibilidade
             if deve_indisponibilizar:
                 # Vai para o estado StateIndisponivel
@@ -657,7 +666,7 @@ class StateDisponivel(State):
 
         # Se não detectou nenhum condicionador ativo:
         else:
-            self.logger.debug(f"[UG{self.parent_ug.id}] Etapa atual: \"{self.parent_ug.etapa_atual}\" | Etapa alvo: \"{self.parent_ug.etapa_alvo}\"")
+            self.logger.debug(f"[UG{self.parent_ug.id}] Etapa atual: \"{UNIDADE_DCT_ETAPAS[self.parent_ug.etapa_atual]}\" | Etapa alvo: \"{UNIDADE_DCT_ETAPAS[self.parent_ug.etapa_alvo]}\"")
             if self.release == True and self.aux == 1:
                 self.release = False
                 self.aux = 0
@@ -689,7 +698,7 @@ class StateDisponivel(State):
                 and not self.parent_ug.etapa_atual == UNIDADE_PARADA
             ):
                 # Unidade parando
-                self.logger.debug(f"[UG{self.parent_ug.id}] Unidade parando")
+                self.logger.debug(f"[UG{self.parent_ug.id}] Unidade \"Parando\"")
                 # Se o setpoit for acima do mínimo
                 if self.parent_ug.setpoint >= self.parent_ug.setpoint_minimo:
                     # Deve partir a UG
@@ -702,7 +711,7 @@ class StateDisponivel(State):
                 and not self.parent_ug.etapa_atual == UNIDADE_SINCRONIZADA
             ):
                 # Unidade sincronizando
-                self.logger.debug(f"[UG{self.parent_ug.id}] Unidade sincronizando")
+                self.logger.debug(f"[UG{self.parent_ug.id}] Unidade \"Sincronizando\"")
                 if self.release == False and self.aux == 0:
                     Thread(target=lambda: self.verificar_partindo()).start()
                     self.aux = 1
@@ -717,7 +726,7 @@ class StateDisponivel(State):
 
             elif self.parent_ug.etapa_atual == UNIDADE_PARADA:
                 # Unidade parada
-                self.logger.debug(f"[UG{self.parent_ug.id}] Unidade parada")
+                self.logger.debug(f"[UG{self.parent_ug.id}] Unidade \"Parada\"")
                 # Se o setpoit for acima do mínimo
                 if self.parent_ug.setpoint >= self.parent_ug.setpoint_minimo:
                     # Deve partir a UG
@@ -727,7 +736,7 @@ class StateDisponivel(State):
 
             elif self.parent_ug.etapa_atual == UNIDADE_SINCRONIZADA:
                 # Unidade sincronizada
-                self.logger.debug(f"[UG{self.parent_ug.id}] Unidade sincronizada")
+                self.logger.debug(f"[UG{self.parent_ug.id}] Unidade \"Sincronizada\"")
 
                 # Unidade sincronizada significa que ela está normalizada, logo zera o contador de tentativas
                 if not self.parent_ug.aux_tempo_sincronizada:

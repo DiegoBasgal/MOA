@@ -50,7 +50,7 @@ class FieldConnector:
     def open(self):
         logger.debug("Opening Modbus")
         if not self.ug1_clp.open():
-            raise ModbusClientFailedToOpen(f"Modbus client ({self.ug1_ip}:{self.ug2_port}) failed to open.")
+            raise ModbusClientFailedToOpen(f"Modbus client ({self.ug1_ip}:{self.ug1_port}) failed to open.")
         
         if not self.ug2_clp.open():
             raise ModbusClientFailedToOpen(f"Modbus client ({self.ug2_ip}:{self.ug2_port}) failed to open.")

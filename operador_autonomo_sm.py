@@ -3,25 +3,27 @@ operador_autonomo_sm.py
 
 Implementacao teste de uma versao do moa utilizando SM
 """
-from datetime import datetime
-import logging
-import logging.handlers as handlers
 import os
 import sys
 import time
-from sys import stdout, stderr
-from time import sleep
-import traceback
 import json
-from pyModbusTCP.server import DataBank, ModbusServer
-from src.UnidadeDeGeracao import StateManual
+import traceback
+import logging
+import logging.handlers as handlers
+
+import src.mensageiro.voip as voip
+
+from time import sleep
 from threading import Thread
+from datetime import datetime
+from sys import stdout, stderr
+from pyModbusTCP.server import DataBank, ModbusServer
 
-import src.database_connector as database_connector
-import src.abstracao_usina as abstracao_usina
 from src.codes import *
+import src.abstracao_usina as abstracao_usina
+import src.database_connector as database_connector
 
-import mensageiro.voip as voip
+
 
 # Set-up logging
 from src.mensageiro.mensageiro_log_handler import MensageiroHandler
@@ -75,7 +77,6 @@ class StateMachine:
 
 
 class State:
-
     def __init__(self, *args, **kwargs):
         self.args = args
         self.kwargs = kwargs
@@ -144,23 +145,25 @@ class ValoresInternosAtualizados(State):
         """
         global aux
         global deve_normalizar
+        habilitar_emerg_condic_c=False
 
         # atualizar arquivo das configurações
         with open(os.path.join(os.path.dirname(__file__), 'config.json'), 'w') as file:
             json.dump(self.usina.cfg, file)
-
-        if self.usina.avisado_em_eletrica:
-            for condicionador in self.usina.condicionadores:
-                if condicionador.ativo and condicionador.gravidade >= DEVE_INDISPONIBILIZAR:
-                    self.habilitar_emerg_condic_c=True
-                elif condicionador.ativo and condicionador.gravidade == DEVE_NORMALIZAR:
-                    self.habilitar_emerg_condic_c=False
-                    deve_normalizar=True
-                else:
-                    deve_normalizar=False
-                    self.habilitar_emerg_condic_c=False
             
-            if self.habilitar_emerg_condic_c:
+        if self.usina.avisado_em_eletrica:
+            condicionadores_ativos = [condic for condic in self.usina.condicionadores if condic.ativo]
+
+            for condic in condicionadores_ativos:
+                if condic.gravidade == DEVE_NORMALIZAR:
+                    deve_normalizar = True
+                elif condic.gravidade == DEVE_INDISPONIBILIZAR:
+                    habilitar_emerg_condic_c = True
+            else:
+                deve_normalizar = False
+                habilitar_emerg_condic_c = False
+            
+            if habilitar_emerg_condic_c:
                 logger.info("Condicionadores ativos com gravidade alta!")
                 return Emergencia(self.usina)
 
@@ -199,22 +202,20 @@ class ValoresInternosAtualizados(State):
         # Se não foi redirecionado ainda,
         # assume-se que o MOA deve executar de modo autônomo
 
-        for ug in self.usina.ugs:
-            ug.step()
-
         # Verifica-se então a situação do reservatório
         if self.usina.aguardando_reservatorio:
+            logger.debug("Aguardando reservatório")
             if self.usina.nv_montante > self.usina.cfg["nv_alvo"]:
-                logger.info("Reservatorio dentro do nivel de trabalho")
+                logger.debug("Reservatorio dentro do nivel de trabalho")
                 self.usina.aguardando_reservatorio = 0
             return Pronto(self.usina)
 
         if self.usina.nv_montante < self.usina.cfg["nv_minimo"]:
             self.usina.aguardando_reservatorio = 1
-            logger.info("Reservatorio abaixo do nivel de trabalho")
+            logger.debug("Reservatorio abaixo do nivel de trabalho")
             return ReservatorioAbaixoDoMinimo(self.usina)
 
-        if self.usina.nv_montante >= self.usina.cfg["nv_maximo"]: 
+        if self.usina.nv_montante >= self.usina.cfg["nv_maximo"]:
             return ReservatorioAcimaDoMaximo(self.usina)
 
         # Se estiver tudo ok:
@@ -253,24 +254,20 @@ class Emergencia(State):
                         self.usina.db.update_emergencia(0)
                         self.usina.db_emergencia_acionada = 0
 
-
             self.usina.ler_valores()
             # Ler condiconadores
-            deve_indisponibilizar = False
             deve_normalizar = False
+            deve_indisponibilizar = False
             deve_super_normalizar = False
-            condicionadores_ativos = []
-            for condicionador in self.usina.condicionadores:
-                if condicionador.ativo:
-                    if condicionador.gravidade == DEVE_INDISPONIBILIZAR:
-                        condicionadores_ativos.append(condicionador)
-                        deve_indisponibilizar = True
-                    elif condicionador.gravidade == DEVE_NORMALIZAR:
-                        condicionadores_ativos.append(condicionador)
-                        deve_normalizar = True
-                    elif condicionador.gravidade == DEVE_SUPER_NORMALIZAR:
-                        condicionadores_ativos.append(condicionador)
-                        deve_super_normalizar = True
+            condicionadores_ativos = [condic for condic in self.usina.condicionadores if condic.ativo]
+
+            for condic in condicionadores_ativos:
+                if condic.gravidade == DEVE_NORMALIZAR:
+                    deve_normalizar = True
+                elif condic.gravidade == DEVE_SUPER_NORMALIZAR:
+                    deve_super_normalizar = True
+                elif condic.gravidade == DEVE_INDISPONIBILIZAR:
+                    deve_indisponibilizar = True
                         
             if deve_super_normalizar:
                 deve_indisponibilizar = False
@@ -278,7 +275,6 @@ class Emergencia(State):
                 
             if self.usina.clp_emergencia_acionada or deve_normalizar or deve_indisponibilizar:
                 try:
-                   
                     # Se algum condicionador deve gerar uma indisponibilidade
                     if deve_indisponibilizar:
                         # Logar os condicionadores ativos
@@ -360,6 +356,8 @@ class ReservatorioAbaixoDoMinimo(State):
 
     def run(self):
         self.usina.distribuir_potencia(0)
+        for ug in self.usina.ugs:
+            ug.step()
         if self.usina.nv_montante_recente <= self.usina.cfg["nv_fundo_reservatorio"]:
             logger.critical(f"Nivel montante ({self.usina.nv_montante_recente:3.2f}) atingiu o fundo do reservatorio!")
             return Emergencia(self.usina)
@@ -381,6 +379,8 @@ class ReservatorioAcimaDoMaximo(State):
             self.usina.distribuir_potencia(self.usina.cfg['pot_maxima_usina'])
             self.usina.controle_ie = 0.5
             self.usina.controle_i = 0.5
+            for ug in self.usina.ugs:
+                ug.step()
             return ControleRealizado(self.usina)
 
 
@@ -392,8 +392,9 @@ class ReservatorioNormal(State):
 
 
     def run(self):
-
         self.usina.controle_normal()
+        for ug in self.usina.ugs:
+            ug.step()
         return ControleRealizado(self.usina)
 
 
@@ -405,8 +406,6 @@ class ControleRealizado(State):
 
     def run(self):
         logger.debug("Escrevendo valores")
-        for ug in self.usina.ugs:
-            ug.step()
         self.usina.escrever_valores()
         logger.debug("HB")
         self.usina.heartbeat()
@@ -528,6 +527,7 @@ if __name__ == "__main__":
     sm = StateMachine(initial_state=prox_estado(usina))
     while True:
         t_i = time.time()
+        logger.debug("")
         logger.debug(f"Executando estado: \"{sm.state.__class__.__name__}\"")
         sm.exec()
         t_restante = max(5 - (time.time() - t_i), 0) / ESCALA_DE_TEMPO

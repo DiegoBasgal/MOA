@@ -654,7 +654,7 @@ class UnidadeDeGeracao1(UnidadeDeGeracao):
         try:
         
             self.setpoint_minimo = self.cfg["pot_minima"]
-            self.setpoint_maximo = self.cfg["pot_maxima_ug{}"]
+            self.setpoint_maximo = self.cfg[f"pot_maxima_ug{self.id}"]
 
             self.setpoint = int(setpoint_kw)
             self.logger.debug(f"[UG{self.id}] Enviando setpoint {int(self.setpoint)} kW.")
