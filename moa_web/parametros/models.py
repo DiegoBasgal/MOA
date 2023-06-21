@@ -74,6 +74,7 @@ class ParametrosUsina(models.Model):
     ug1_pot = models.DecimalField(max_digits=10, decimal_places=0, default=0)
     ug1_setpot = models.DecimalField(max_digits=10, decimal_places=0, default=0)
     ug1_prioridade = models.IntegerField(default=0)
+    ug1_ultimo_estado = models.IntegerField(default=0)
 
     alerta_temperatura_fase_r_ug1 = models.DecimalField(max_digits=10, decimal_places=2, default=100)
     alerta_temperatura_fase_s_ug1 = models.DecimalField(max_digits=10, decimal_places=2, default=100)
@@ -99,6 +100,7 @@ class ParametrosUsina(models.Model):
     ug2_pot = models.DecimalField(max_digits=10, decimal_places=0, default=0)
     ug2_setpot = models.DecimalField(max_digits=10, decimal_places=0, default=0)
     ug2_prioridade = models.IntegerField(default=0)
+    ug2_ultimo_estado = models.IntegerField(default=0)
 
     alerta_temperatura_fase_r_ug2 = models.DecimalField(max_digits=10, decimal_places=2, default=100)
     alerta_temperatura_fase_s_ug2 = models.DecimalField(max_digits=10, decimal_places=2, default=100)
@@ -134,5 +136,5 @@ class ControleEstados(models.Model):
 
     ts = models.DateTimeField(default=0)
 
-    ultimo_estado_ug1 = models.TextField(default="")
-    ultimo_estado_ug2 = models.TextField(default="")
+    ultimo_estado_ug1 = models.IntegerField(default=0)
+    ultimo_estado_ug2 = models.IntegerField(default=0)

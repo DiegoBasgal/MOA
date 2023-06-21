@@ -10,12 +10,12 @@ from src.dicionarios.const import *
 logger = logging.getLogger("__main__")
 
 class LeituraModbus:
-    def __init__(self, cli: "ModbusClient"=None, reg: "int"=None, op: "int"=3, escala: "float"=1, fundo_escala: "float"=0, descr: "str"=None):
+    def __init__(self, cli: "ModbusClient"=None, reg: "int"=None, op: "int"=None, escala: "float"=1, fundo_escala: "float"=0, descr: "str"=None):
 
-        self.__op = op
         self.__cli = cli
         self.__escala = escala
         self.__fundo_escala = fundo_escala
+        self.__op = 3 if op is None else op
         self.__reg = reg[0] if isinstance(reg, list) else reg
 
         self._descr = descr
@@ -43,11 +43,12 @@ class LeituraModbus:
         try:
             if self.__op == 3:
                 ler = self.__cli.read_holding_registers(self.__reg)[0]
-
             elif self.__op == 4:
                 ler = self.__cli.read_input_registers(self.__reg)[0]
+            else:
+                return 0
 
-            return 0 if ler == None else ler
+            return 0 if ler is None else ler
 
         except Exception:
             logger.error(f"[LER] Não foi possivel realizar a Leitura do dado RAW no registrador: \"{self._descr}\". Retornando 0.")

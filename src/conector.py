@@ -19,76 +19,100 @@ class ClientesUsina:
         host=d.ips["RV_UG1_ip"],
         port=d.ips["RV_UG1_porta"],
         unit_id=1,
-        timeout=0.5
+        timeout=0.5,
+        auto_close=True,
+        auto_open=True
     )
     rv[f"UG2"] = ModbusClient(
         host=d.ips["RV_UG2_ip"],
         port=d.ips["RV_UG2_porta"],
         unit_id=1,
-        timeout=0.5
+        timeout=0.5,
+        auto_close=True,
+        auto_open=True
     )
     rt[f"UG1"] = ModbusClient(
         host=d.ips["RT_UG1_ip"],
         port=d.ips["RT_UG1_porta"],
         unit_id=2,
-        timeout=0.5
+        timeout=0.5,
+        auto_close=True,
+        auto_open=True
     )
     rt[f"UG2"] = ModbusClient(
         host=d.ips["RT_UG2_ip"],
         port=d.ips["RT_UG2_porta"],
         unit_id=2,
-        timeout=0.5
+        timeout=0.5,
+        auto_close=True,
+        auto_open=True
     )
 
     """rele[f"SE"] = ModbusClient(
         host=d.ips["RELE_SE_ip"],
         port=d.ips["RELE_SE_porta"],
         unit_id=1,
-        timeout=0.5
+        timeout=0.5,
+        auto_close=True,
+        auto_open=True
     )"""
     rele[f"UG1"] = ModbusClient(
         host=d.ips["RELE_UG1_ip"],
         port=d.ips["RELE_UG1_porta"],
         unit_id=1,
-        timeout=0.5
+        timeout=0.5,
+        auto_close=True,
+        auto_open=True
     )
     rele[f"UG2"] = ModbusClient(
         host=d.ips["RELE_UG2_ip"],
         port=d.ips["RELE_UG2_porta"],
         unit_id=1,
-        timeout=0.5
+        timeout=0.5,
+        auto_close=True,
+        auto_open=True
     )
 
     clp["SA"] = ModbusClient(
         host=d.ips["SA_ip"],
         port=d.ips["SA_porta"],
         unit_id=1,
-        timeout=0.5
+        timeout=0.5,
+        auto_close=True,
+        auto_open=True
     )
     clp["TDA"] = ModbusClient(
         host=d.ips["TDA_ip"],
         port=d.ips["TDA_porta"],
         unit_id=1,
-        timeout=0.5
+        timeout=0.5,
+        auto_close=True,
+        auto_open=True
     )
     clp["UG1"] = ModbusClient(
         host=d.ips["UG1_ip"],
         port=d.ips["UG1_porta"],
         unit_id=1,
-        timeout=0.5
+        timeout=0.5,
+        auto_close=True,
+        auto_open=True
     )
     clp["UG2"] = ModbusClient(
         host=d.ips["UG2_ip"],
         port=d.ips["UG2_porta"],
         unit_id=1,
-        timeout=0.5
+        timeout=0.5,
+        auto_close=True,
+        auto_open=True
     )
     """
     clp["MOA"] = ModbusClient(
         host=d.ips["MOA_ip"],
         port=d.ips["MOA_porta"],
         unit_id=1,
-        timeout=0.5
+        timeout=0.5,
+        auto_close=True,
+        auto_open=True
     )
     """
 

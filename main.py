@@ -105,7 +105,7 @@ if __name__ == "__main__":
                 logger.debug("")
                 logger.info("Iniciando conexões com Servidores...")
 
-                ClientesUsina.open_all()
+                # ClientesUsina.open_all()
 
             except Exception:
                 logger.exception(f"Erro ao iniciar classes de conexão com servidores. Tentando novamente em \"{TIMEOUT_MAIN}s\"")
@@ -146,7 +146,9 @@ if __name__ == "__main__":
     while True:
         try:
             logger.debug("")
+            logger.debug("")
             logger.debug(f"Executando estado:                        \"{sm.state.__class__.__name__}\"")
+            logger.debug("-----------------------------------------------------------------")
             sm.exec()
 
             if usn.estado_moa == MOA_SM_CONTROLE_DADOS:

@@ -86,10 +86,11 @@ class OcorrenciasUsn:
             logger.warning("[OCO-USN] A Bomba de Drenagem 2 entrou em modo indisponível, favor verificar.")
 
         if self.leitura_ED_esgot_bomba_1_falha.valor:
-            logger.warning("[OCO-USN] A Bomba de Esgotamento 1 entrou em modo indisponível, favor verificar.")
+            logger.warning("[OCO-USN] Foi identificado uma falha com a Bomba de Esgotamento 1, favor verificar.")
 
-        if self.leitura_ED_esgot_bomba_2_falha.valor:
-            logger.warning("[OCO-USN] A Bomba de Esgotamento 2 entrou em modo indisponível, favor verificar.")
+        # TODO -> Verificar
+        # if self.leitura_ED_esgot_bomba_2_falha.valor:
+        #     logger.warning("[OCO-USN] Foi identificado uma falha com a Bomba de Esgotamento 2, favor verificar.")
 
         if self.leitura_ED_esgot_bomba_1_indisp.valor:
             logger.warning("[OCO-USN] A Bomba de Esgotamento 1 entrou em modo indisponível, favor verificar.")
@@ -109,8 +110,9 @@ class OcorrenciasUsn:
         if self.leitura_ED_sfa_limp_elem_2_aberta.valor:
             logger.warning("[OCO-USN] Foi identificado que o Elemento de Limpeza 2 do Sistema de Filtragem A foi aberto, favor verificar.")
 
-        if self.leitura_ED_sfa_entra_elem_1_aberta.valor:
-            logger.warning("[OCO-USN] Foi identificado que a Entrada do Elemento 1 do Sistema de Filtragem A foi aberto, favor verificar.")
+        # TODO -> Verificar
+        # if self.leitura_ED_sfa_entra_elem_1_aberta.valor:
+        #     logger.warning("[OCO-USN] Foi identificado que a Entrada do Elemento 1 do Sistema de Filtragem A foi aberto, favor verificar.")
 
         if self.leitura_ED_sfa_entra_elem_2_aberta.valor:
             logger.warning("[OCO-USN] Foi identificado que a Entrada do Elemento 2 do Sistema de Filtragem A foi aberto, favor verificar.")
@@ -139,8 +141,9 @@ class OcorrenciasUsn:
         if self.leitura_ED_sfa_falha_fechar_entra_elem_2.valor:
             logger.warning("[OCO-USN] Houve uma falha ao fechar a Entrada do Elemento 2 do Sistema de Filtragem A, favor verificar.")
 
-        if self.leitura_ED_sfb_limp_elem_1_aberta.valor:
-            logger.warning("[OCO-USN] Foi identificado que o Elemento de Limpeza 1 do Sistema de Filtragem B foi aberto, favor verificar.")
+        # TODO -> Verificar
+        # if self.leitura_ED_sfb_limp_elem_1_aberta.valor:
+        #     logger.warning("[OCO-USN] Foi identificado que o Elemento de Limpeza 1 do Sistema de Filtragem B foi aberto, favor verificar.")
 
         if self.leitura_ED_sfb_limp_elem_2_aberta.valor:
             logger.warning("[OCO-USN] Foi identificado que o Elemento de Limpeza 2 do Sistema de Filtragem B foi aberto, favor verificar.")
@@ -163,8 +166,9 @@ class OcorrenciasUsn:
         if self.leitura_ED_sfb_falha_fechar_limpeza_elem_2.valor:
             logger.warning("[OCO-USN] Houve uma falha ao fechar a Limpeza do Elemento 2 do Sistema de Filtragem B, favor verificar.")
 
-        if self.leitura_ED_sfb_falha_abrir_entra_elem_1.valor:
-            logger.warning("[OCO-USN] Houve uma falha ao abrir a Entrada do Elemento 1 do Sistema de Filtragem B, favor verificar.")
+        # TODO -> Verificar
+        # if self.leitura_ED_sfb_falha_abrir_entra_elem_1.valor:
+        #     logger.warning("[OCO-USN] Houve uma falha ao abrir a Entrada do Elemento 1 do Sistema de Filtragem B, favor verificar.")
 
         if self.leitura_ED_sfb_falha_fechar_entra_elem_1.valor:
             logger.warning("[OCO-USN] Houve uma falha ao fechar a Entrada do Elemento 1 do Sistema de Filtragem B, favor verificar.")
@@ -175,8 +179,9 @@ class OcorrenciasUsn:
         if self.leitura_ED_sfb_falha_fechar_entra_elem_2.valor:
             logger.warning("[OCO-USN] Houve uma falha ao fechar a Entrada do Elemento 2 do Sistema de Filtragem B, favor verificar.")
 
-        if self.leitura_EA_nv_montante_baixo.valor:
-            logger.warning("[OCO-USN] Foi identificado que o Nível Montante está baixo, favor verificar.")
+        # # TODO -> Verificar
+        # if self.leitura_EA_nv_montante_baixo.valor:
+        #     logger.warning("[OCO-USN] Foi identificado que o Nível Montante está baixo, favor verificar.")
 
         if self.leitura_EA_nv_jusante_alto.valor:
             logger.warning("[OCO-USN] Foi identificado que o Nível Jusante está alto, favor verificar.")
@@ -238,11 +243,12 @@ class OcorrenciasUsn:
         elif not self.leitura_ED_dps_gmg_falha.valor and d.voip["SA_ED_PSA_DPS_GMG"][0]:
             d.voip["SA_ED_PSA_DPS_GMG"][0] = False
 
-        if self.leitura_ED_conv_fibra_falha.valor and not d.voip["SA_ED_PSA_CONVERSOR_FIBRA_FALHA"][0]:
-            logger.warning("[OCO-USN] Houve uma falha com o Conversor de Fibra, favor verificar.")
-            d.voip["SA_ED_PSA_CONVERSOR_FIBRA_FALHA"][0] = True
-        elif not self.leitura_ED_conv_fibra_falha.valor and d.voip["SA_ED_PSA_CONVERSOR_FIBRA_FALHA"][0]:
-            d.voip["SA_ED_PSA_CONVERSOR_FIBRA_FALHA"][0] = False
+        # TODO -> Verificar
+        # if self.leitura_ED_conv_fibra_falha.valor and not d.voip["SA_ED_PSA_CONVERSOR_FIBRA_FALHA"][0]:
+        #     logger.warning("[OCO-USN] Houve uma falha com o Conversor de Fibra, favor verificar.")
+        #     d.voip["SA_ED_PSA_CONVERSOR_FIBRA_FALHA"][0] = True
+        # elif not self.leitura_ED_conv_fibra_falha.valor and d.voip["SA_ED_PSA_CONVERSOR_FIBRA_FALHA"][0]:
+        #     d.voip["SA_ED_PSA_CONVERSOR_FIBRA_FALHA"][0] = False
 
         if self.leitura_ED_carreg_baterias_falha.valor and not d.voip["SA_ED_PSA_CARREGADOR_BATERIAS_FALHA"][0]:
             logger.warning("[OCO-USN] Houve uma falha com o Carregador de Baterias, favor verificar.")
@@ -337,8 +343,8 @@ class OcorrenciasUsn:
         leitura_ED_oleo_muito_baixo = LeituraModbusBit(self.__clp["SA"], REG["CONDIC_SA"]["SA_ED_PSA_NIVEL_OLEO_MUITO_BAIXO"], descr="[OCO-USN] Trasformador Elevador Óleo Muito Baixo")
         self.condicionadores_essenciais.append(CondicionadorBase(leitura_ED_oleo_muito_baixo, CONDIC_INDISPONIBILIZAR))
 
-        leitura_ED_poco_dren_nivel_muito_alto = LeituraModbusBit(self.__clp["SA"], REG["CONDIC_SA"]["SA_ED_PSA_POCO_DRENAGEM_SENSOR_NIVEL_MUITO_ALTO"], descr="[OCO-USN] Poço de Drenagem Nível Muito Alto")
-        self.condicionadores_essenciais.append(CondicionadorBase(leitura_ED_poco_dren_nivel_muito_alto, CONDIC_INDISPONIBILIZAR))
+        # leitura_ED_poco_dren_nivel_muito_alto = LeituraModbusBit(self.__clp["SA"], REG["CONDIC_SA"]["SA_ED_PSA_POCO_DRENAGEM_SENSOR_NIVEL_MUITO_ALTO"], descr="[OCO-USN] Poço de Drenagem Nível Muito Alto")
+        # self.condicionadores_essenciais.append(CondicionadorBase(leitura_ED_poco_dren_nivel_muito_alto, CONDIC_INDISPONIBILIZAR))
 
         leitura_ED_nv_jusante_muito_alto = LeituraModbusBit(self.__clp["SA"], REG["CONDIC_SA"]["SA_EA_PSA_NIVEL_JUSANTE_MUITO_ALTO"], descr="[OCO-USN] Nível Jusante Muito Alto")
         self.condicionadores_essenciais.append(CondicionadorBase(leitura_ED_nv_jusante_muito_alto, CONDIC_INDISPONIBILIZAR))
@@ -662,8 +668,9 @@ class OcorrenciasUg:
         if self.leitura_dispo_prot_surto.valor:
             logger.warning(f"[OCO-UG{self.__ug_id}] Foi identificado uma leitura do dispositivo de proteção de surto, favor verificar.")
 
-        if self.leitura_uhrv_bomba_defeito.valor:
-            logger.warning(f"[OCO-UG{self.__ug_id}] Foi identificado um defeito na bomba da UHRV, favor verificar.")
+        # TODO -> Verificar UG1
+        # if self.leitura_uhrv_bomba_defeito.valor:
+        #     logger.warning(f"[OCO-UG{self.__ug_id}] Foi identificado um defeito na bomba da UHRV, favor verificar.")
 
         if self.leitura_uhlm_bomba_defeito.valor:
             logger.warning(f"[OCO-UG{self.__ug_id}] Foi identificado um defeito na bomba da UHLM, favor verificar.")
@@ -815,14 +822,17 @@ class OcorrenciasUg:
         if self.leitura_uhlm_oleo_nv_muito_baixo.valor:
             logger.warning(f"[OCO-UG{self.__ug_id}] Foi identificado que o óleo da UHLM está com o nível muito baixo, favor verificar.")
 
-        if self.leitura_uhlm_press_linha_lubrifi.valor:
-            logger.warning(f"[OCO-UG{self.__ug_id}] Foi identificado a falta de pressão de lubrificação de linha da UHLM, favor verificar.")
+        # TODO -> Verificar UG1
+        # if self.leitura_uhlm_press_linha_lubrifi.valor:
+        #     logger.warning(f"[OCO-UG{self.__ug_id}] Foi identificado a falta de pressão de lubrificação de linha da UHLM, favor verificar.")
 
-        if self.leitura_uhlm_fluxo_troc_calor.valor:
-            logger.warning(f"[OCO-UG{self.__ug_id}] Foi identificado a falta de fluxo do trocador de calor da UHLM, favor verificar.")
+        # # TODO -> Verificar UG2
+        # if self.leitura_uhlm_fluxo_troc_calor.valor:
+        #     logger.warning(f"[OCO-UG{self.__ug_id}] Foi identificado a falta de fluxo do trocador de calor da UHLM, favor verificar.")
 
-        if self.leitura_qbag_escova_polo_pos_desgas.valor:
-            logger.warning(f"[OCO-UG{self.__ug_id}] Foi identificado que a escova do polo positivo QBAG está desgastada, favor verificar.")
+        # # TODO -> Verificar UG1 e UG2
+        # if self.leitura_qbag_escova_polo_pos_desgas.valor:
+        #     logger.warning(f"[OCO-UG{self.__ug_id}] Foi identificado que a escova do polo positivo QBAG está desgastada, favor verificar.")
 
         if self.leitura_qbag_escova_polo_neg_desgas.valor:
             logger.warning(f"[OCO-UG{self.__ug_id}] Foi identificado que a escova do polo negativo QBAG está desgastada, favor verificar.")
@@ -1000,11 +1010,12 @@ class OcorrenciasUg:
         elif not self.leitura_falha_leit_temp_gerad_nucleo_2.valor and d.voip[f"UG{self.__ug_id}_EA_GERADOR_NUCLEO_2_TEMP_FALHA_LEITURA"][0]:
             d.voip[f"UG{self.__ug_id}_EA_GERADOR_NUCLEO_2_FALHA_LEITURA"][0] = False
 
-        if self.leitura_falha_leit_temp_gerad_nucleo_3.valor and not d.voip[f"UG{self.__ug_id}_EA_GERADOR_NUCLEO_3_TEMP_FALHA_LEITURA"][0]:
-            logger.warning(f"[OCO-UG{self.__ug_id}] Foi identificado uma falha na leitura de temperatura do Núcleo 3 do Gerador, favor verificar.")
-            d.voip[f"UG{self.__ug_id}_EA_GERADOR_NUCLEO_3_TEMP_FALHA_LEITURA"][0] = True
-        elif not self.leitura_falha_leit_temp_gerad_nucleo_3.valor and d.voip[f"UG{self.__ug_id}_EA_GERADOR_NUCLEO_3_TEMP_FALHA_LEITURA"][0]:
-            d.voip[f"UG{self.__ug_id}_EA_GERADOR_NUCLEO_3_TEMP_FALHA_LEITURA"][0] = False
+        # TODO -> Verificar UG2
+        # if self.leitura_falha_leit_temp_gerad_nucleo_3.valor and not d.voip[f"UG{self.__ug_id}_EA_GERADOR_NUCLEO_3_TEMP_FALHA_LEITURA"][0]:
+        #     logger.warning(f"[OCO-UG{self.__ug_id}] Foi identificado uma falha na leitura de temperatura do Núcleo 3 do Gerador, favor verificar.")
+        #     d.voip[f"UG{self.__ug_id}_EA_GERADOR_NUCLEO_3_TEMP_FALHA_LEITURA"][0] = True
+        # elif not self.leitura_falha_leit_temp_gerad_nucleo_3.valor and d.voip[f"UG{self.__ug_id}_EA_GERADOR_NUCLEO_3_TEMP_FALHA_LEITURA"][0]:
+        #     d.voip[f"UG{self.__ug_id}_EA_GERADOR_NUCLEO_3_TEMP_FALHA_LEITURA"][0] = False
 
         if self.leitura_falha_leit_temp_mancal_guia_casq.valor and not d.voip[f"UG{self.__ug_id}_EA_MANCAL_GUIA_CASQUILHO_FALHA_LEITURA"][0]:
             logger.warning(f"[OCO-UG{self.__ug_id}] Foi identificado uma falha na leitura de temperatura do Mancal Guia Casquilho, favor verificar.")
@@ -1161,8 +1172,9 @@ class OcorrenciasUg:
         self.leitura_rv_falha_1 = LeituraModbusCoil(self.__clp[f"UG{self.__ug_id}"], REG["CONDIC_UG"][f"UG{self.__ug_id}_RV_FALHA_1"], descr=f"[UG{self.__ug_id}] RV Falha 1")
         self.condicionadores_essenciais.append(CondicionadorBase(self.leitura_rv_falha_1, CONDIC_NORMALIZAR))
 
-        self.leitura_botao_bloq_86eh = LeituraModbusBit(self.__clp[f"UG{self.__ug_id}"], REG["CONDIC_UG"][f"UG{self.__ug_id}_ED_PRTVA_BOTAO_BLOQUEIO_86EH"], descr=f"[UG{self.__ug_id}] Botão Bloqueio 86EH")
-        self.condicionadores_essenciais.append(CondicionadorBase(self.leitura_botao_bloq_86eh, CONDIC_NORMALIZAR))
+        # TODO -> Verificar
+        # self.leitura_botao_bloq_86eh = LeituraModbusBit(self.__clp[f"UG{self.__ug_id}"], REG["CONDIC_UG"][f"UG{self.__ug_id}_ED_PRTVA_BOTAO_BLOQUEIO_86EH"], descr=f"[UG{self.__ug_id}] Botão Bloqueio 86EH")
+        # self.condicionadores_essenciais.append(CondicionadorBase(self.leitura_botao_bloq_86eh, CONDIC_NORMALIZAR))
 
         self.leitura_rele_bloq_86eh = LeituraModbusBit(self.__clp[f"UG{self.__ug_id}"], REG["CONDIC_UG"][f"UG{self.__ug_id}_ED_PRTVA_RELE_BLOQUEIO_86EH"], descr=f"[UG{self.__ug_id}] Relé Bloqueio 86EH")
         self.condicionadores_essenciais.append(CondicionadorBase(self.leitura_rele_bloq_86eh, CONDIC_NORMALIZAR))
@@ -1236,14 +1248,17 @@ class OcorrenciasUg:
         self.leitura_uhlm_oleo_nv_muito_baixo = LeituraModbusBit(self.__clp[f"UG{self.__ug_id}"], REG["CONDIC_UG"][f"UG{self.__ug_id}_ED_PRTVA_UHLM_OLEO_NIVEL_MUITO_BAIXO"], descr=f"[UG{self.__ug_id}] UHLM Óleo Nível Muito Baixo")
         self.condicionadores_essenciais.append(CondicionadorBase(self.leitura_uhlm_oleo_nv_muito_baixo, CONDIC_INDISPONIBILIZAR))
 
-        self.leitura_uhlm_press_linha_lubrifi = LeituraModbusBit(self.__clp[f"UG{self.__ug_id}"], REG["CONDIC_UG"][f"UG{self.__ug_id}_ED_PRTVA_UHLM_PRESSAO_LINHA_LUBRIFICACAO"], descr=f"[UG{self.__ug_id}] UHLM Pressão Linha Lubrificação")
-        self.condicionadores_essenciais.append(CondicionadorBase(self.leitura_uhlm_press_linha_lubrifi, CONDIC_INDISPONIBILIZAR))
+        # TODO -> Verificar
+        # self.leitura_uhlm_press_linha_lubrifi = LeituraModbusBit(self.__clp[f"UG{self.__ug_id}"], REG["CONDIC_UG"][f"UG{self.__ug_id}_ED_PRTVA_UHLM_PRESSAO_LINHA_LUBRIFICACAO"], descr=f"[UG{self.__ug_id}] UHLM Pressão Linha Lubrificação")
+        # self.condicionadores_essenciais.append(CondicionadorBase(self.leitura_uhlm_press_linha_lubrifi, CONDIC_INDISPONIBILIZAR))
 
-        self.leitura_uhlm_fluxo_troc_calor = LeituraModbusBit(self.__clp[f"UG{self.__ug_id}"], REG["CONDIC_UG"][f"UG{self.__ug_id}_ED_PRTVA_UHLM_FLUXO_TROCADOR_CALOR"], descr=f"[UG{self.__ug_id}] UHLM Fluxo Trocador Calor")
-        self.condicionadores_essenciais.append(CondicionadorBase(self.leitura_uhlm_fluxo_troc_calor, CONDIC_INDISPONIBILIZAR))
+        # TODO n-> Verificar
+        # self.leitura_uhlm_fluxo_troc_calor = LeituraModbusBit(self.__clp[f"UG{self.__ug_id}"], REG["CONDIC_UG"][f"UG{self.__ug_id}_ED_PRTVA_UHLM_FLUXO_TROCADOR_CALOR"], descr=f"[UG{self.__ug_id}] UHLM Fluxo Trocador Calor")
+        # self.condicionadores_essenciais.append(CondicionadorBase(self.leitura_uhlm_fluxo_troc_calor, CONDIC_INDISPONIBILIZAR))
 
-        self.leitura_qbag_escova_polo_pos_desgas = LeituraModbusBit(self.__clp[f"UG{self.__ug_id}"], REG["CONDIC_UG"][f"UG{self.__ug_id}_ED_PRTVA_QBAG_ESCOVA_POLO_POSITIVO_DESGASTADA"], descr=f"[UG{self.__ug_id}] QBAG Escova Polo Positivo Desgastada")
-        self.condicionadores_essenciais.append(CondicionadorBase(self.leitura_qbag_escova_polo_pos_desgas, CONDIC_INDISPONIBILIZAR))
+        # TODO -> Verificar
+        # self.leitura_qbag_escova_polo_pos_desgas = LeituraModbusBit(self.__clp[f"UG{self.__ug_id}"], REG["CONDIC_UG"][f"UG{self.__ug_id}_ED_PRTVA_QBAG_ESCOVA_POLO_POSITIVO_DESGASTADA"], descr=f"[UG{self.__ug_id}] QBAG Escova Polo Positivo Desgastada")
+        # self.condicionadores_essenciais.append(CondicionadorBase(self.leitura_qbag_escova_polo_pos_desgas, CONDIC_INDISPONIBILIZAR))
 
         self.leitura_qbag_escova_polo_neg_desgas = LeituraModbusBit(self.__clp[f"UG{self.__ug_id}"], REG["CONDIC_UG"][f"UG{self.__ug_id}_ED_PRTVA_QBAG_ESCOVA_POLO_NEGATICO_DESGASTADA"], descr=f"[UG{self.__ug_id}] QBAG Escova Polo Negativo Desgastada")
         self.condicionadores_essenciais.append(CondicionadorBase(self.leitura_qbag_escova_polo_neg_desgas, CONDIC_INDISPONIBILIZAR))
@@ -1263,8 +1278,9 @@ class OcorrenciasUg:
         self.leitura_disj_tps_protecao = LeituraModbusBit(self.__clp[f"UG{self.__ug_id}"], REG["CONDIC_UG"][f"UG{self.__ug_id}_ED_PRTVA_DISJUNTOR_TPS_PROTECAO"], descr=f"[UG{self.__ug_id}] Disjuntor TPS Proteção")
         self.condicionadores_essenciais.append(CondicionadorBase(self.leitura_disj_tps_protecao, CONDIC_INDISPONIBILIZAR))
 
-        self.leitura_uhrv_pressao_freio = LeituraModbusBit(self.__clp[f"UG{self.__ug_id}"], REG["CONDIC_UG"][f"UG{self.__ug_id}_ED_PRTVA_UHRV_PRESSAO_FREIO"], descr=f"[UG{self.__ug_id}] UHRV Pressão Freio")
-        self.condicionadores_essenciais.append(CondicionadorBase(self.leitura_uhrv_pressao_freio, CONDIC_INDISPONIBILIZAR))
+        # TODO -> Verificar
+        # self.leitura_uhrv_pressao_freio = LeituraModbusBit(self.__clp[f"UG{self.__ug_id}"], REG["CONDIC_UG"][f"UG{self.__ug_id}_ED_PRTVA_UHRV_PRESSAO_FREIO"], descr=f"[UG{self.__ug_id}] UHRV Pressão Freio")
+        # self.condicionadores_essenciais.append(CondicionadorBase(self.leitura_uhrv_pressao_freio, CONDIC_INDISPONIBILIZAR))
 
         self.leitura_psa_bloq_86btbf = LeituraModbusBit(self.__clp[f"UG{self.__ug_id}"], REG["CONDIC_UG"][f"UG{self.__ug_id}_ED_PRTVA_PSA_BLOQUEIO_86BTBF"], descr=f"[UG{self.__ug_id}] PSA Bloqueio 86BTBF")
         self.condicionadores_essenciais.append(CondicionadorBase(self.leitura_psa_bloq_86btbf, CONDIC_INDISPONIBILIZAR))
@@ -1276,11 +1292,13 @@ class OcorrenciasUg:
         self.condicionadores_essenciais.append(CondicionadorBase(self.leitura_rt_falha_hab, CONDIC_INDISPONIBILIZAR))
 
         # UHRV
-        self.leitura_uhrv_bomba_1_indisp = LeituraModbusBit(self.__clp[f"UG{self.__ug_id}"], REG["CONDIC_UG"][f"UG{self.__ug_id}_ED_UHRV_BOMBA_1_INDISPONIVEL"], descr=f"[UG{self.__ug_id}] UHRV Indisponível")
-        self.condicionadores_essenciais.append(CondicionadorBase(self.leitura_uhrv_bomba_1_indisp, CONDIC_INDISPONIBILIZAR))
+        # TODO -> Verificar
+        # self.leitura_uhrv_bomba_1_indisp = LeituraModbusBit(self.__clp[f"UG{self.__ug_id}"], REG["CONDIC_UG"][f"UG{self.__ug_id}_ED_UHRV_BOMBA_1_INDISPONIVEL"], descr=f"[UG{self.__ug_id}] UHRV Bomba 1 Indisponível")
+        # self.condicionadores_essenciais.append(CondicionadorBase(self.leitura_uhrv_bomba_1_indisp, CONDIC_INDISPONIBILIZAR))
 
-        self.leitura_uhrv_bomba_2_indisp = LeituraModbusBit(self.__clp[f"UG{self.__ug_id}"], REG["CONDIC_UG"][f"UG{self.__ug_id}_ED_UHRV_BOMBA_2_INDISPONIVEL"], descr=f"[UG{self.__ug_id}] UHRV Indisponível")
-        self.condicionadores_essenciais.append(CondicionadorBase(self.leitura_uhrv_bomba_2_indisp, CONDIC_INDISPONIBILIZAR))
+        # # TODO -> Verificar
+        # self.leitura_uhrv_bomba_2_indisp = LeituraModbusBit(self.__clp[f"UG{self.__ug_id}"], REG["CONDIC_UG"][f"UG{self.__ug_id}_ED_UHRV_BOMBA_2_INDISPONIVEL"], descr=f"[UG{self.__ug_id}] UHRV Bomba 2 Indisponível")
+        # self.condicionadores_essenciais.append(CondicionadorBase(self.leitura_uhrv_bomba_2_indisp, CONDIC_INDISPONIBILIZAR))
 
         self.leitura_uhrv_bomba_1_falha_ligar = LeituraModbusBit(self.__clp[f"UG{self.__ug_id}"], REG["CONDIC_UG"][f"UG{self.__ug_id}_ED_UHRV_BOMBA_1_FALHA_AO_LIGAR"], descr=f"[UG{self.__ug_id}] UHRV Falha Ligar")
         self.condicionadores_essenciais.append(CondicionadorBase(self.leitura_uhrv_bomba_1_falha_ligar, CONDIC_INDISPONIBILIZAR))

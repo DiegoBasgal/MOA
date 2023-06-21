@@ -22,12 +22,11 @@ class BancoDados:
     def get_ultimo_estado_ug(self, ug_id) -> int:
         self.cursor.execute(
             f"SELECT ug{ug_id}_ultimo_estado "
-            "FROM `debug`.`moa_debug` "
-            "ORDER BY ts DESC "
-            "LIMIT 1;"
+            "FROM parametros_parametrosusina "
+            "WHERE id = 1;"
         )
         estado = self.cursor.fetchone()
-        return estado[0]
+        return estado
 
     def get_parametros_usina(self) -> list:
         self.cursor.execute("SHOW COLUMNS FROM parametros_parametrosusina")
@@ -109,7 +108,7 @@ class BancoDados:
         )
         self.conn.commit()
 
-    def update_valores_usina(self, values) -> None:
+    def update_valores_usina(self, valores) -> None:
         self.cursor.execute(
             "UPDATE parametros_parametrosusina "
             "SET timestamp = %s, "
@@ -117,10 +116,12 @@ class BancoDados:
             "nv_montante = %s, "
             "ug1_pot = %s, "
             "ug1_setpot = %s, "
+            "ug1_ultimo_estado = %s, "
             "ug2_pot = %s, "
-            "ug2_setpot = %s "
+            "ug2_setpot = %s, "
+            "ug2_ultimo_estado = %s "
             "WHERE id = 1;",
-            tuple(values)
+            tuple(valores)
         )
         self.conn.commit()
 

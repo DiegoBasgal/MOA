@@ -1,12 +1,14 @@
+import os
+import sys
 import datetime
 
 from django.shortcuts import render
 from parametros.models import ParametrosUsina
 
-
 # Create your views here.
 from pyModbusTCP.client import ModbusClient
 
+sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath("/opt/operacao-autonoma/"))))
 
 MOA_DICT_DE_STATES = {}
 MOA_DICT_DE_STATES[0] = 0
@@ -23,6 +25,17 @@ UNIDADE_DICT_DE_ETAPAS[4] = 4
 
 def monitoramento_view(request, *args, **kwargs):
     usina = ParametrosUsina.objects.get(id=1)
+    
+    clp_sa = ModbusClient(
+        host="192.168.10.109",
+        port=502,
+        unit_id=1,
+        timeout=0.5
+    )
+    # leitura_dj_linha = LeituraModbusBit(
+    #     clp_sa,
+    #     REG_SA["SA_ED_PSA_SE_DISJ_LINHA_FECHADO"]
+    # )
 
     context = {
         "usina": usina,
@@ -30,8 +43,10 @@ def monitoramento_view(request, *args, **kwargs):
         "timestamp": usina.timestamp.strftime("%d/%m/%Y, %H:%M:%S"),
         "setpot_usina": f"{(usina.ug1_setpot + usina.ug2_setpot):1.3f}",
         "setpot_ug1": f"{usina.ug1_setpot:1.3f}",
+        "ug1_state": f"{usina.ug1_ultimo_estado}",
         "pot_ug1": f"{usina.ug1_pot:1.3f}",
         "setpot_ug2": f"{usina.ug2_setpot:1.3f}",
+        "ug2_state": f"{usina.ug2_ultimo_estado}",
         "pot_ug2": f"{usina.ug2_pot:1.3f}",
         "nv_alvo": f"{usina.nv_alvo:3.2f}",
         "aguardo": "Sim" if usina.aguardando_reservatorio > 0 else "Não",
@@ -39,39 +54,30 @@ def monitoramento_view(request, *args, **kwargs):
         "CLP_ON": "ONLINE" if usina.clp_online else "ERRO/OFFLINE",
     }
 
-    if 405 <= usina.nv_montante < 405.15:
+    if 820.9 <= usina.nv_montante < 821:
         context["tag"] = 0
-    elif 404.90 <= usina.nv_montante < 405:
+    elif 820.75 <= usina.nv_montante < 820.9:
         context["tag"] = 1
-    elif usina.nv_montante < 404.90 or usina.nv_montante > 405.15:
+    elif usina.nv_montante < 820.75 or usina.nv_montante > 821:
         context["tag"] = 2
+
+    # if leitura_dj_linha.valor == 0:
+    #     context["status_dj_linha"] = True
+    # elif leitura_dj_linha.valor == 1:
+    #     context["status_dj_linha"] = False
+    # else:
+    #     context["status_dj_linha"] = None
+
 
     for key in context:
         if context[key] == "" or context[key] == " ":
             context[key] = "-"
 
     # TODO - adicionar na interface novamente após determinação da Automatic da integração do CLP do MOA no painel
+
+        
+
     """
-    # Comunicação modbus para verificar se servidor está on
-    client = ModbusClient(
-        host=usina.modbus_server_ip,
-        port=usina.modbus_server_porta,
-        timeout=0.5,
-        unit_id=1,
-    )
-
-    client_sa = ModbusClient("192.168.0.50", 502, unit_id=1, timeout=0.5)
-
-    if client_sa.open():
-        reg_dj = client_sa.read_coils(17)[0]
-        if reg_dj == 0:
-            context["status_dj52l"] = True
-        elif reg_dj == 1:
-            context["status_dj52l"] = False
-        else:
-            context["status_dj52l"] = None
-        client_sa.close()
-
     if client.open():
         regs = client.read_holding_registers(0, 120)
         client.close()

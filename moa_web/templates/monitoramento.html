@@ -46,13 +46,13 @@
 
         <div style="margin-top: 40px; margin-bottom: 34px;">
             <label style="font-size: 18px;"><b>Disjuntor 52L: </b></label>
-            {% if status_dj52l == True %}
+            {% if status_dj_linha == True %}
                 <label style="color: red; font-size: 17px;">Fechado</label>
             {% endif %}
-            {% if status_dj52l == False %}
+            {% if status_dj_linha == False %}
                 <label style="color: green; font-size: 17px;">Aberto</label>
             {% endif %}
-            {% if status_dj52l == None %}
+            {% if status_dj_linha == None %}
                 <label style="color: yellow; font-size: 17px;">Inconsistente</label>
             {% endif %}
         </div>

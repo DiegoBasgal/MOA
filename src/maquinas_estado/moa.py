@@ -71,17 +71,26 @@ class ControleEstados(State):
     def run(self):
         self.usn.ler_valores()
 
+        logger.debug("Verificando modo do MOA...")
         if not self.usn.modo_autonomo:
+            logger.debug("")
             logger.info("Comando acionado: \"Desabilitar Modo Autônomo\"")
             return ModoManual(self.usn)
 
-        elif self.usn.clp_emergencia or self.usn.db_emergencia:
+        logger.debug("Verificando status da emergência...")
+        if self.usn.clp_emergencia or self.usn.db_emergencia:
+            logger.debug("")
+            logger.debug("Foi identificado o acinoamento da emergência")
             return Emergencia(self.usn)
 
-        elif len(self.usn.agn.verificar_agendamentos_pendentes()) > 0:
+        logger.debug("Verificando se há agendamentos...")
+        if len(self.usn.agn.verificar_agendamentos_pendentes()) > 0:
+            logger.debug("")
+            logger.debug("Foram identificados agendamentos pendentes!")
             return ControleAgendamentos(self.usn)
 
         else:
+            logger.debug("Verificando condicionadores...")
             flag = self.usn.oco.verificar_condicionadores()
             if flag == CONDIC_INDISPONIBILIZAR:
                 return Emergencia(self.usn)
@@ -124,11 +133,14 @@ class ControleAgendamentos(State):
         super().__init__(*args, **kwargs)
 
         self.usn.estado_moa = MOA_SM_CONTROLE_AGENDAMENTOS
-        logger.info("Tratando agendamentos")
 
     def run(self):
+        logger.info("Tratando agendamentos...")
         self.usn.agn.verificar_agendamentos()
-        return ControleEstados(self.usn) if self.usn.modo_autonomo else ModoManual(self.usn)
+        if len(self.usn.agn.verificar_agendamentos_pendentes()) > 0:
+            return self
+        else:
+            return ControleEstados(self.usn) if self.usn.modo_autonomo else ModoManual(self.usn)
 
 class ModoManual(State):
     def __init__(self, usn, *args, **kwargs):
@@ -142,11 +154,20 @@ class ModoManual(State):
 
     def run(self):
         self.usn.ler_valores()
+        logger.debug(f"[USN] Leitura de Nível:                   {self.usn.nv_montante_recente:0.3f}")
+        logger.debug(f"[USN] Potência no medidor:                {self.usn.potencia_ativa:0.3f}")
+        logger.debug("")
+
         for ug in self.usn.ugs:
+            logger.debug(f"[UG{ug.id}] Unidade:                            \"{UG_SM_STR_DCT[ug.codigo_state]}\"")
+            logger.debug(f"[UG{ug.id}] Etapa atual:                        \"{UG_STR_DCT_ETAPAS[ug.etapa]}\"")
+            logger.debug(f"[UG{ug.id}] Leitura de Potência:                {ug.leitura_potencia}")
+            logger.debug("")
             ug.setpoint = ug.leitura_potencia
 
         self.usn.controle_ie = sum(ug.leitura_potencia for ug in self.usn.ugs) / self.usn.cfg["pot_maxima_alvo"]
 
+        self.usn.escrever_valores()
         if self.usn.modo_autonomo:
             logger.debug("Comando acionado: \"Habilitar modo autônomo\".")
             self.usn.ler_valores()

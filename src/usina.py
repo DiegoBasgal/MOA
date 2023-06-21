@@ -44,7 +44,7 @@ class Usina:
         self.ugs: "list[UnidadeDeGeracao]" = [self.ug1, self.ug2]
         CondicionadorBase.ugs = self.ugs
 
-        
+
         for ug in self.ugs:
             ug.lista_ugs = self.ugs
             ug.iniciar_ultimo_estado()
@@ -328,7 +328,6 @@ class Usina:
 
     def controlar_reservatorio(self) -> int:
         if self.nv_montante >= self.cfg["nv_maximo"]:
-            logger.debug("-----------------------------------------------------------------")
             logger.info("[USN] Nível montante acima do máximo")
 
             if self.nv_montante_recente >= NIVEL_MAXIMORUM:
@@ -342,7 +341,6 @@ class Usina:
                     ug.step()
 
         elif self.nv_montante <= self.cfg["nv_minimo"] and not self.aguardando_reservatorio:
-            logger.debug("-----------------------------------------------------------------")
             logger.info("[USN] Nível montante abaixo do mínimo")
             self.aguardando_reservatorio = True
             self.distribuir_potencia(0)
@@ -351,18 +349,16 @@ class Usina:
                 ug.step()
 
             if self.nv_montante_recente <= NIVEL_FUNDO_RESERVATORIO:
-                logger.debug("-----------------------------------------------------------------")
+
                 logger.critical(f"[USN] Nível montante ({self.nv_montante_recente:3.2f}) atingiu o fundo do reservatorio!")
                 return NV_FLAG_EMERGENCIA
 
         elif self.aguardando_reservatorio:
-            logger.debug("-----------------------------------------------------------------")
             if self.nv_montante >= self.cfg["nv_alvo"]:
                 logger.debug("[USN] Nível montante dentro do limite de operação")
                 self.aguardando_reservatorio = False
 
         else:
-            logger.debug("-----------------------------------------------------------------")
             self.controlar_potencia()
 
             for ug in self.ugs:
@@ -454,7 +450,7 @@ class Usina:
 
         for ug in self.ugs:
             if ug.manual:
-                ajuste_manual += min(max(0, ug.leitura_potencia))
+                ajuste_manual += ug.leitura_potencia
             else:
                 self.pot_disp += ug.setpoint_maximo
 
@@ -571,34 +567,28 @@ class Usina:
 
     def escrever_valores(self) -> None:
         try:
-            pot_ug1 = self.ug1.leitura_potencia
-            pot_ug2 = self.ug2.leitura_potencia
-
-            self.db.update_valores_usina([
+            v1 = [
                 self.get_time().strftime("%Y-%m-%d %H:%M:%S"),
                 1 if self.aguardando_reservatorio else 0,
                 self.nv_montante,
-                pot_ug1,
+                self.ug1.leitura_potencia,
                 self.ug1.setpoint,
-                pot_ug2,
+                self.ug1.codigo_state,
+                self.ug2.leitura_potencia,
                 self.ug2.setpoint,
-            ])
+                self.ug1.codigo_state,
+            ]
 
-        except Exception:
-            logger.error(f"[USN] Houve um erro ao inserir os valores no Banco.")
-            logger.debug(f"{traceback.format_exc()}")
-
-        try:
-            self.db.update_debug([
+            v2 = [
                 time(),
                 1 if self.modo_autonomo else 0,
                 self.nv_montante_recente,
                 self.erro_nv,
                 self.ug1.setpoint,
-                pot_ug1,
+                self.ug1.leitura_potencia,
                 self.ug1.codigo_state,
                 self.ug2.setpoint,
-                pot_ug2,
+                self.ug2.leitura_potencia,
                 self.ug2.codigo_state,
                 self.cfg["kp"],
                 self.cfg["ki"],
@@ -608,7 +598,15 @@ class Usina:
                 self.controle_i,
                 self.controle_d,
                 self.controle_ie,
-            ])
+            ]
+            self.db.update_valores_usina(v1)
+
+        except Exception:
+            logger.error(f"[USN] Houve um erro ao inserir os valores no Banco.")
+            logger.debug(f"{traceback.format_exc()}")
+
+        try:
+            self.db.update_debug(v2)
 
         except Exception:
             logger.error(f"[USN] Houve um erro ao inserir dados DEBUG no Banco.")

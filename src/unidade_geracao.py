@@ -45,10 +45,10 @@ class UnidadeDeGeracao:
 
         # ATRIBUIÇÃO DE VARIÁVEIS PRIVADAS
 
-        # self.__etapa_alvo: "int" = 0
-        # self.__etapa_atual: "int" = 0
-        # self.__ultima_etapa_alvo: "int" = 0
-        # self.__ultima_etapa_atual: "int" = 0
+        self.__etapa_alvo: "int" = 0
+        self.__etapa_atual: "int" = 0
+        self.__ultima_etapa_alvo: "int" = 0
+        self.__ultima_etapa_atual: "int" = 0
         self.__tempo_entre_tentativas: "int" = 0
         self.__limite_tentativas_de_normalizacao: "int" = 3
 
@@ -67,23 +67,12 @@ class UnidadeDeGeracao:
             REG_SA["SA_ED_PSA_SE_DISJ_LINHA_FECHADO"],
             descr=f"[UG{self.id}] Status Disjuntor Linha"
         )
-        self.__leitura_status_uhrv: LeituraModbusBit = LeituraModbusBit(
-            self.clp[f"UG{self.id}"],
-            REG_UG[f"UG{self.id}_ED_UHRV_UNIDADE_HABILITADA"],
-            descr=f"[UG{self.id}] Status UHRV"
-        )
-        self.__leitura_dj_maquina: LeituraModbusBit = LeituraModbusBit(
-            self.rele[f"UG{self.id}"],
-            REG["RELE"][f"RELE_UG{self.id}_ED_DJ_MAQUINA_FECHADO"],
-            descr=f"[UG{self.id}] Status Disjuntor de Máquina"
-        )
         self.__tensao: LeituraModbus = LeituraModbus(
             self.clp[f"UG{self.id}"],
             REG_RELE["UG"][f"RELE_UG{self.id}_VAB"],
             op=3,
             descr="[USN] Tensão Unidade"
         )
-        """
         self.__leitura_etapa_atual: LeituraModbus = LeituraModbus(
             self.clp[f"UG{self.id}"],
             REG_UG[f"UG{self.id}_ED_STT_PASSO_ATUAL_BIT"],
@@ -96,10 +85,6 @@ class UnidadeDeGeracao:
             op=3,
             descr=f"[UG{self.id}] Etapa Alvo"
         )
-        """
-
-        self.__ultima_etapa : "int" = 0
-        self.__ultima_etapa_absoluta: "int" = UG_SINCRONIZADA if self.__leitura_dj_maquina.valor == 1 else UG_PARADA
 
 
         # ATRIBUIÇÃO DE VARIÁVEIS PROTEGIDAS
@@ -119,13 +104,6 @@ class UnidadeDeGeracao:
             op=3,
             descr=f"[UG{self.id}] Potência Ativa"
         )
-
-        # self._leitura_potencia_reativa = LeituraModbus(
-        #     self.rele[f"UG{self.id}"],
-        #     REG_RELE["UG"][f"RELE_UG{self.id}_Q"],
-        #     op=3,
-        #     descr=f"[UG{self.id}] Potência Ativa"
-        # )
         self._leitura_potencia_aparente = LeituraModbus(
             self.rele[f"UG{self.id}"],
             REG_RELE["UG"][f"RELE_UG{self.id}_S"],
@@ -203,43 +181,55 @@ class UnidadeDeGeracao:
     @property
     def etapa(self) -> "int":
         try:
-            if self.__leitura_dj_maquina.valor:
-                self.__ultima_etapa_absoluta = UG_SINCRONIZADA
-                self.__ultima_etapa = UG_SINCRONIZADA
-                return UG_SINCRONIZADA
-
-            elif not self.__leitura_status_uhrv.valor:
-                self.__ultima_etapa_absoluta = UG_PARADA
-                self.__ultima_etapa = UG_PARADA
+            if self.etapa_atual == UG_PARADA and self.etapa_alvo == UG_PARADA:
+                self.__ultima_etapa_alvo = self.etapa_alvo
+                self.__ultima_etapa_atual = self.etapa_atual
                 return UG_PARADA
 
-            elif self.__ultima_etapa_absoluta == UG_PARADA and self.__leitura_status_uhrv:
-                self.__ultima_etapa = UG_SINCRONIZANDO
-                return UG_SINCRONIZANDO
-
-            elif self.__ultima_etapa_absoluta == UG_SINCRONIZADA and not self.__leitura_dj_maquina.valor:
-                self.__ultima_etapa = UG_PARANDO
+            elif UG_PARADA < self.etapa_atual < UG_SINCRONIZADA and self.etapa_alvo == UG_PARADA:
+                self.__ultima_etapa_alvo = self.etapa_alvo
+                self.__ultima_etapa_atual = self.etapa_atual
                 return UG_PARANDO
 
+            elif UG_PARADA < self.etapa_atual < UG_SINCRONIZADA and self.etapa_alvo == UG_SINCRONIZADA:
+                self.__ultima_etapa_alvo = self.etapa_alvo
+                self.__ultima_etapa_atual = self.etapa_atual
+                return UG_SINCRONIZANDO
+
+            elif self.etapa_atual == UG_SINCRONIZADA and self.etapa_alvo == UG_SINCRONIZADA:
+                self.__ultima_etapa_alvo = self.etapa_alvo
+                self.__ultima_etapa_atual = self.etapa_atual
+                return UG_SINCRONIZADA
+
             else:
-                logger.debug(f"[UG{self.id}] Contorle de etapas sem condições. Mantendo etapa anterior.")
-                return self.__ultima_etapa
+                if self.etapa_atual < self.__ultima_etapa_atual or self.etapa_alvo < self.__ultima_etapa_alvo:
+                    self.__ultima_etapa_alvo = self.etapa_alvo
+                    self.__ultima_etapa_atual = self.etapa_atual
+                    return UG_PARANDO
+                
+                elif self.etapa_atual > self.__ultima_etapa_atual or self.etapa_alvo > self.__ultima_etapa_alvo:
+                    self.__ultima_etapa_alvo = self.etapa_alvo
+                    self.__ultima_etapa_atual = self.etapa_atual
+                    return UG_SINCRONIZANDO
+
+                self.__ultima_etapa_alvo = self.etapa_alvo
+                self.__ultima_etapa_atual = self.etapa_atual
+
+                return self.__ultima_etapa_atual
 
         except Exception:
             logger.error(f"[UG{self.id}] Houve um erro no controle de Etapas da Unidade. Mantendo Etapa anterior.")
             logger.debug(traceback.format_exc())
-            return self.__ultima_etapa
+            return self.__ultima_etapa_atual
 
-    """
+
     @property
     def etapa_atual(self) -> "int":
         try:
             if self.__leitura_etapa_atual.valor == None:
-                self.__etapa_atual = self.__ultima_etapa_atual
                 return self.__etapa_atual
             else:
                 self.__etapa_atual = self.__leitura_etapa_atual.valor
-                self.__ultima_etapa_atual = self.__etapa_atual
                 return self.__etapa_atual
 
         except Exception:
@@ -253,11 +243,9 @@ class UnidadeDeGeracao:
         try:
 
             if self.__leitura_etapa_alvo.valor == None:
-                self.__etapa_alvo = self.__ultima_etapa_alvo
                 return self.__etapa_alvo
             else:
                 self.__etapa_alvo = self.__leitura_etapa_alvo.valor
-                self.__ultima_etapa_alvo = self.__etapa_alvo
                 return self.__etapa_alvo
 
         except Exception:
@@ -265,7 +253,6 @@ class UnidadeDeGeracao:
             logger.debug(traceback.format_exc())
             self.__etapa_alvo = self.__ultima_etapa_alvo
             return self.__etapa_alvo
-    """
 
 
     # Property/Setter -> VARIÁVEIS PROTEGIDAS
@@ -354,9 +341,9 @@ class UnidadeDeGeracao:
         self.__next_state = StateDisponivel(self)
 
     def iniciar_ultimo_estado(self) -> "None":
-        estado = self.db.get_ultimo_estado_ug(self.id)
+        estado = self.db.get_ultimo_estado_ug(self.id)[0]
 
-        if not estado:
+        if estado == None:
             self.__next_state = StateDisponivel(self)
         else:
             if estado == UG_SM_MANUAL:
@@ -368,7 +355,9 @@ class UnidadeDeGeracao:
             elif estado == UG_SM_INDISPONIVEL:
                 self.__next_state = StateIndisponivel(self)
             else:
-                logger.error(f"[UG{self.id}] Não foi possível ler o último estado da Unidade. Entrando no estado \"Manual\".")
+                logger.debug("")
+                logger.error(f"[UG{self.id}] Não foi possível ler o último estado da Unidade")
+                logger.info(f"[UG{self.id}] Acionando estado \"Manual\".")
                 self.__next_state = StateManual(self)
 
     # TODO -> Adicionar após a integração do CLP do MOA no painel do SA, que depende da intervenção da Automatic.
@@ -427,7 +416,9 @@ class UnidadeDeGeracao:
         try:
             logger.debug("")
             logger.debug(f"[UG{self.id}] Step  -> Unidade:                   \"{UG_SM_STR_DCT[self.codigo_state]}\"")
-            logger.debug(f"[UG{self.id}]          Etapa atual:               \"{UG_STR_DCT_ETAPAS[self.etapa]}\"")
+            logger.debug(f"[UG{self.id}]          Etapa:                     \"{self.etapa}\"")
+            logger.debug(f"[UG{self.id}]          Etapa alvo:                \"{self.etapa_alvo}\"")
+            logger.debug(f"[UG{self.id}]          Etapa atual:               \"{self.etapa_atual}\"")
 
             self.__next_state = self.__next_state.step()
             self.atualizar_modbus_moa()
@@ -520,7 +511,7 @@ class UnidadeDeGeracao:
 
     def remover_trip_logico(self) -> "bool":
         try:
-            logger.debug(f"[UG{self.id}]          Removendo comando:          \"TRIP LÓGICO\"")
+            logger.debug(f"[UG{self.id}]          Removendo comando:         \"TRIP LÓGICO\"")
             res = EMB.escrever_bit(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}_CD_CMD_REARME_FALHAS"], 1, descr=f"UG{self.id}_CD_CMD_REARME_FALHAS")
             return res
 
@@ -542,11 +533,11 @@ class UnidadeDeGeracao:
 
     def remover_trip_eletrico(self) -> "bool":
         try:
-            if self.clp["SA"].read_coils(REG_SA["SA_CD_DISJ_LINHA_FECHA"])[0] == 0:
+            if self.__leitura_dj_linha.valor == 0:
                 logger.debug(f"[UG{self.id}]          Enviando comando:          \"FECHAR DJ LINHA\".")
                 EMB.escrever_bit(self.clp["SA"], REG_SA["SA_CD_DISJ_LINHA_FECHA"], 1, descr="SA_CD_DISJ_LINHA_FECHA")
 
-            logger.debug(f"[UG{self.id}]          Removendo comando:          \"TRIP ELÉTRICO\" (SEM EFEITO -> Falta Automatic instalar CLP MOA)")
+            logger.debug(f"[UG{self.id}]          Removendo comando:         \"TRIP ELÉTRICO\" (SEM EFEITO -> Falta Automatic instalar CLP MOA)")
             res = None # self.clp["MOA"].write_single_coil(REG_MOA[f"OUT_BLOCK_UG{self.id}"], [0])
             return res
 
@@ -557,10 +548,14 @@ class UnidadeDeGeracao:
 
     def reconhece_reset_alarmes(self) -> "bool":
         try:
-            logger.info(f"[UG{self.id}]           Enviando comando:           \"RECONHECE E RESET\"")
+            logger.debug("")
+            logger.info(f"[UG{self.id}]          Enviando comando:          \"RECONHECE E RESET\"")
 
+            passo = 0
             for x in range(3):
-                logger.debug(f"[UG{self.id}] Passo: {x}/3")
+                passo += 1
+                logger.debug("")
+                logger.debug(f"[UG{self.id}]          Passo: {passo}/3")
                 self.remover_trip_eletrico()
                 sleep(1)
                 self.remover_trip_logico()
