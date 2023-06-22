@@ -61,7 +61,7 @@ class ClientesUsina:
         for _ , clp in cls.clp.items():
             if not clp.open():
                 raise ModBusClientFail(clp)
-        logger.info("[CLI] Conexões inciadas.")
+        logger.debug("[CLI] Conexões inciadas.")
 
     @classmethod
     def close_all(cls) -> None:

@@ -1,5 +1,7 @@
-import requests
 import json
+import requests
+
+from threading import Thread
 
 class WhatsApp:
 
@@ -44,7 +46,7 @@ class WhatsApp:
             WhatsApp.enviar_mensagem('120363159926062842@g.us', f'Atenção o saldo de mensagens está a baixo de 100! Saldo atual: {saldo}')
 
     @staticmethod
-    def envio_todos(mensagem):
+    def envio_grupo(mensagem):
         #--> Envia uma mensagem para o grupo de LOGS
 
         url = "https://v5.chatpro.com.br/chatpro-ace98c12f9/api/v1/send_message"
@@ -59,3 +61,9 @@ class WhatsApp:
         dict = json.loads(response.text)
 
         return dict['message']
+
+
+    @classmethod
+    def envio_todos(cls, mensagem) -> None:
+        Thread(target=cls.envio_grupo, args=(mensagem, )).start()
+

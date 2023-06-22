@@ -408,7 +408,7 @@ class Usina:
     def controlar_reservatorio(self) -> int:
         self.resetar_tda()
         if self.nv_montante >= self.cfg["nv_maximo"]:
-            logger.info("[USN] Nível montante acima do máximo")
+            logger.debug("[USN] Nível montante acima do máximo")
 
             if self.nv_montante_recente >= NIVEL_MAXIMORUM:
                 logger.critical(f"[USN] Nível montante ({self.nv_montante_recente:3.2f}) atingiu o maximorum!")
@@ -421,7 +421,7 @@ class Usina:
                     ug.step()
 
         elif self.nv_montante <= self.cfg["nv_minimo"] and not self.aguardando_reservatorio:
-            logger.info("[USN] Nível montante abaixo do mínimo")
+            logger.debug("[USN] Nível montante abaixo do mínimo")
             self.aguardando_reservatorio = True
             self.distribuir_potencia(0)
 

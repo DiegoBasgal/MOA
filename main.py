@@ -47,7 +47,7 @@ def timeConverter(*args):
 tz = pytz.timezone("Brazil/East")
 thread_id = threading.get_native_id()
 logFormatter = logging.Formatter("%(asctime)s [%(levelname)-5.5s] [MOA] %(message)s")
-logFormatterSimples = logging.Formatter("[%(levelname)-5.5s] [MOA] %(message)s")
+logFormatterSimples = logging.Formatter("[%(levelname)-5.5s] %(message)s")
 logFormatter.converter = timeConverter
 
 ch = logging.StreamHandler(stderr)

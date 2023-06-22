@@ -43,7 +43,6 @@ class Agendamentos:
             if agendamentos[i][3] == agendamentos[i+1][3] and (agendamentos[i+1][1] - agendamentos[i][1]).seconds < limite_entre_agendamentos_iguais:
                 ag_concatenado = agendamentos.pop(i)
                 obs = "Este agendamento foi concatenado ao seguinte por motivos de temporização."
-                logger.warning(obs)
                 self.db.update_agendamento(ag_concatenado[0], True, obs)
                 i -= 1
 
@@ -92,7 +91,7 @@ class Agendamentos:
                     return False
 
                 self.db.update_agendamento(agendamento[0], executado=1)
-                logger.info(f"[AGN] Agendamento executado:              \"{AGN_STR_DICT[agendamentos[i-1][3]] if agendamentos[i-1][3] in AGN_STR_DICT else 'Inexistente'}\"")
+                logger.debug(f"[AGN] Agendamento executado:              \"{AGN_STR_DICT[agendamentos[i-1][3]] if agendamentos[i-1][3] in AGN_STR_DICT else 'Inexistente'}\"")
 
     def verificar_agendamentos_atrasados(self, agendamento) -> bool:
         agn_atrasados = 0
@@ -102,7 +101,7 @@ class Agendamentos:
             agn_atrasados += 1
 
         if self.segundos_passados > 300 or agn_atrasados > 3:
-            logger.info("[AGN] Os agendamentos estão muito atrasados!")
+            logger.wrning("[AGN] Os agendamentos estão muito atrasados!")
             if agendamento[3] == AGN_INDISPONIBILIZAR:
                 logger.warning("[AGN] Acionando emergência!")
                 self.usn.acionar_emergencia()
@@ -110,7 +109,7 @@ class Agendamentos:
                 agn_atrasados += 1
 
             if agendamento[3] in (AGN_ALTERAR_NV_ALVO, AGN_ALTERAR_POT_LIMITE_TODAS_AS_UGS, AGN_BAIXAR_POT_UGS_MINIMO, AGN_NORMALIZAR_POT_UGS_MINIMO, AGN_AGUARDAR_RESERVATORIO, AGN_NORMALIZAR_ESPERA_RESERVATORIO):
-                logger.info("[AGN] Não foi possível executar o agendamento! Favor re-agendar")
+                logger.warning("[AGN] Não foi possível executar o agendamento! Favor re-agendar")
                 self.db.update_agendamento(int(agendamento[0]), 1, obs="AGENDAMENTO NÃO EXECUTADO POR CONTA DE ATRASO!")
                 agn_atrasados += 1
 
