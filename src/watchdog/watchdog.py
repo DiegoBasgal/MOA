@@ -7,7 +7,7 @@ from time import sleep
 from datetime import datetime, timedelta
 from pyModbusTCP.client import ModbusClient
 
-from src.mensageiro.mensageiro_log_handler import MensageiroHandler
+from src.mensageiro.msg_log_handler import MensageiroHandler
 
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.DEBUG)

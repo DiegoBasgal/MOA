@@ -4,6 +4,8 @@ import traceback
 from time import sleep
 from pyModbusTCP.utils import *
 from pyModbusTCP.client import ModbusClient
+from pymodbus.constants import Endian
+from pymodbus.payload import BinaryPayloadDecoder
 
 from src.dicionarios.const import *
 

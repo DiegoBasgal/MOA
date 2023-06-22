@@ -1,12 +1,15 @@
-from src.conector import ClientesUsina
+from pymodbus.constants import Endian
+from pymodbus.payload import BinaryPayloadDecoder
 
-from src.funcoes.leitura import *
 from src.dicionarios.reg import *
+from src.funcoes.leitura import LeituraModbus, LeituraModbusFloat
 
+from src.conector import ClientesUsina
 
 class Teste:
     def __init__(self) -> None:
 
+        self.clp = ClientesUsina.clp
         self.rele = ClientesUsina.rele
 
         self.leitura_potencia_ug1 = LeituraModbus(
@@ -15,7 +18,16 @@ class Teste:
             op=3,
             descr="[UG1] Potência Ativa"
         )
-    
+
+        self.leitura_nv_montante = LeituraModbusFloat(
+            self.clp["TDA"],
+            REG_GERAL["GERAL_EA_NIVEL_MONTANTE_GRADE"]
+        )
+
+    @property
+    def leitura_nv_montante(self) -> float:
+        return self.leitura_nv_montante.valor
+
     @ property
     def leitura_pot(self) -> int:
         return self.leitura_potencia_ug1.valor

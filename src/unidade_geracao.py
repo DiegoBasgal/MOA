@@ -444,7 +444,8 @@ class UnidadeDeGeracao:
             elif not self.etapa == UG_SINCRONIZADA:
                 logger.info(f"[UG{self.id}]          Enviando comando:          \"PARTIDA\"")
                 EMB.escrever_bit(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}_CD_CMD_REARME_FALHAS"], 1, descr=f"UG{self.id}_CD_CMD_REARME_FALHAS")
-                EMB.escrever_bit(self.clp[f"UG{self.id}"], REG["UG"][f"UG{self.id}_CD_CMD_SINCRONISMO"], 1, invertido=True, descr=f"UG{self.id}_CD_CMD_SINCRONISMO")
+                # EMB.escrever_bit(self.clp[f"UG{self.id}"], REG["UG"][f"UG{self.id}_CD_CMD_SINCRONISMO"], 1, invertido=True, descr=f"UG{self.id}_CD_CMD_SINCRONISMO")
+                self.clp[f"UG{self.id}"].write_single_register(REG["UG"][f"UG{self.id}_CD_CMD_SINCRONISMO"][0], 7)
 
             else:
                 logger.debug(f"[UG{self.id}] A Unidade já está sincronizada")
@@ -571,12 +572,12 @@ class UnidadeDeGeracao:
 
     def controle_etapas(self) -> "None":
         # PARANDO
-        if self.etapa == UG_PARANDO:
+        if self.etapa in (1, 2, UG_PARANDO, 4, 5, 6):
             if self.setpoint >= self.setpoint_minimo:
                 self.enviar_setpoint(self.setpoint)
 
         # SINCRONIZANDO
-        elif self.etapa == UG_SINCRONIZANDO:
+        elif self.etapa in (1, 2, 3, 4, UG_SINCRONIZANDO, 6):
             if not self.borda_partindo:
                 Thread(target=lambda: self.verificar_partida()).start()
                 self.borda_partindo = True

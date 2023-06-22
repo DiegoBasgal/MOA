@@ -35,7 +35,7 @@ def monitoramento_view(request, *args, **kwargs):
     # leitura_dj_linha = LeituraModbusBit(
     #     clp_sa,
     #     REG_SA["SA_ED_PSA_SE_DISJ_LINHA_FECHADO"]
-    # )
+    #)
 
     context = {
         "usina": usina,

@@ -9,7 +9,7 @@ __maintainers__ = "Diego Basgal", "Henrique Pfeifer"
 __emails__ = "diego.garcia@ritmoenergia.com.br", "henrique@ritmoenergia.com.br"
 
 __authors__ = "Diego Basgal", "Henrique Pfeifer", "Lucas Lavratti"
-__credits__ = ["Lucas Lavratti", " Henrique Pfeifer", "Diego Basgal", ...]
+__credits__ = ["Lucas Lavratti", " Henrique Pfeifer", "Diego Basgal", "Lucas Specht", ...]
 
 import os
 import sys
@@ -26,6 +26,7 @@ from src.dicionarios.const import *
 from src.maquinas_estado.moa import *
 
 from src.conector import ClientesUsina
+from src.mensageiro.msg_log_handler import MensageiroHandler
 
 rootLogger = logging.getLogger()
 if rootLogger.hasHandlers():
@@ -63,6 +64,11 @@ fh = handlers.TimedRotatingFileHandler(
 fh.setFormatter(logFormatter)
 fh.setLevel(logging.DEBUG)
 logger.addHandler(fh)
+
+mh = MensageiroHandler()
+mh.setFormatter(logFormatterSimples)
+mh.setLevel(logging.INFO)
+logger.addHandler(mh)
 
 if __name__ == "__main__":
     if len(sys.argv) > 1:
