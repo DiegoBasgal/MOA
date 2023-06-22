@@ -1,8 +1,9 @@
 {
     "nv_alvo": 405.0,
-    "nv_minimo": 404.65,
+    "nv_minimo": 404.75,
     "nv_maximo": 405.25,
     "nv_maximorum": 407.5,
+    
     "nv_fundo_reservatorio": 404.6,
 
     "pot_minima": 1360,

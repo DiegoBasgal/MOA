@@ -163,6 +163,14 @@ class BancoDados:
         )
         self.conn.commit()
 
+    def update_alarmes(self, valores) -> None:
+        self.cursor.execute(
+            "INSERT INTO alarmes_alarmes "
+            "VALUES (%s,%s,%s);",
+            tuple(valores)
+        )
+        self.conn.commit()
+
     def update_agendamento(self, id_agendamento, executado, obs="") -> None:
         if len(obs) >= 1:
             obs = " - " + obs

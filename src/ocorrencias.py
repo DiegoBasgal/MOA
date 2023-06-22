@@ -4,19 +4,25 @@ import traceback
 import src.mensageiro.dict as vd
 import src.dicionarios.dict as d
 
+from time import time
+
 from src.funcoes.leitura import *
 from src.Condicionadores import *
 from src.dicionarios.reg import *
 from src.dicionarios.const import *
 
+from src.banco_dados import BancoDados
+
+
 logger = logging.getLogger("__main__")
 
 class OcorrenciasUsn:
-    def __init__(self, clp: "dict[str, ModbusClient]"=None) -> None:
+    def __init__(self, clp: "dict[str, ModbusClient]"=None, db: BancoDados=None) -> None:
 
         self._condicionadores: "list[CondicionadorBase]" = []
         self._condicionadores_essenciais: "list[CondicionadorBase]" = []
 
+        self.__db = db
         self.__clp = clp
 
         self.carregar_leituras()
@@ -48,6 +54,14 @@ class OcorrenciasUsn:
                     flag = CONDIC_NORMALIZAR
                 elif condic.gravidade == CONDIC_INDISPONIBILIZAR:
                     flag = CONDIC_INDISPONIBILIZAR
+
+                v = [
+                    time(),
+                    condic.gravidade,
+                    condic.descr
+                ]
+                self.__db.update_alarmes(v)
+
 
             logger.debug("")
             logger.warning(f"[OCO-USN] Foram detectados condicionadores ativos na Usina:")
@@ -315,10 +329,11 @@ class OcorrenciasUsn:
 
 
 class OcorrenciasUg:
-    def __init__(self, ug_id: int, clp: "dict[str, ModbusClient]"=None):
+    def __init__(self, ug_id: int, clp: "dict[str, ModbusClient]"=None, db: BancoDados=None):
 
-        self.__ug_id = ug_id
+        self.__db = db
         self.__clp = clp
+        self.__ug_id = ug_id
 
         self._temperatura_base: int = 100
         self._temperatura_limite: int = 200
@@ -394,6 +409,13 @@ class OcorrenciasUg:
                     flag = CONDIC_AGUARDAR
                 elif condic.gravidade == CONDIC_INDISPONIBILIZAR:
                     flag = CONDIC_INDISPONIBILIZAR
+
+                v = [
+                    time(),
+                    condic.gravidade,
+                    condic.descr
+                ]
+                self.__db.update_alarmes(v)
 
             logger.debug("")
             logger.warning(f"[OCO-UG{self.__ug_id}] Foram detectados condicionadores ativos na UG:")

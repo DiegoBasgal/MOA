@@ -157,6 +157,10 @@ if __name__ == "__main__":
             logger.debug(f"Executando estado:                        \"{sm.state.__class__.__name__}\"")
             logger.debug("-----------------------------------------------------------------")
             sm.exec()
+
+            with open(os.path.join(os.path.dirname('/opt/operacao-autonoma/src/dicionarios/'), "cfg.json"), "w") as file:
+                json.dump(usn.cfg, file, indent=4)
+
             if usn.estado_moa in (MOA_SM_CONTROLE_DADOS, MOA_SM_MODO_MANUAL):
                 t_restante = max(TEMPO_CICLO_TOTAL - (time() - t_i), 0) / ESCALA_DE_TEMPO
                 t_i = time()

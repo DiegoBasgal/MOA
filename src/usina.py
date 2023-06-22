@@ -648,12 +648,10 @@ class Usina:
                 logger.debug(f"[UG{ugs[1].id}] SP    <-                            {int(ugs[1].setpoint)}")
 
         elif len(ugs) == 1:
-            if self.__split1 or self.__split2:
-                logger.debug("[USN] Split:                              1B")
-                logger.debug("")
-                sp = sp * 3 / 1
-                ugs[0].setpoint = sp * ugs[0].setpoint_maximo
-                logger.debug(f"[UG{ugs[0].id}] SP    <-                            {int(ugs[0].setpoint)}")
+            logger.debug("[USN] Split:                              1B")
+            logger.debug("")
+            ugs[0].setpoint = 3 * sp * ugs[0].setpoint_maximo
+            logger.debug(f"[UG{ugs[0].id}] SP    <-                            {int(ugs[0].setpoint)}")
 
 
     ### MÉTODOS DE CONTROLE DE DADOS:
