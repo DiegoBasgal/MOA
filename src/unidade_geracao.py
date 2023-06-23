@@ -528,6 +528,10 @@ class UnidadeGeracao:
             logger.error(f"[UG{self.id}] Não foi possivel enviar o comando de reconhecer e resetar alarmes.")
             logger.debug(traceback.format_exc())
 
+    def verificar_pressao_uhrv(self) -> None:
+        return
+
+
     def controle_etapas(self) -> "None":
         # PARANDO
         if self.etapa_atual == UG_PARANDO:
