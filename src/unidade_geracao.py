@@ -38,20 +38,28 @@ class UnidadeGeracao:
         # ATRIBUIÇÃO DE VARIÁVEIS PRIVADAS
 
         self.__potencia_ativa_kW = LeituraModbus(
-            "Potência Usina",
+            "[USN] Potência Usina",
             self.clp["SA"],
             REG["SA_EA_PM_810_Potencia_Ativa"],
             1,
             op=4
         )
+        self.__leitura_pressao_uhrv = LeituraModbus(
+            f"[UG{self.id}] Leitura Pressão UHRV",
+            self.clp[f"UG{self.id}"],
+            REG[f"UG{self.id}_RA_UHRV_Pressao"],
+            escala=0.1,
+            op=4
+        )
+
         self.__leitura_horimetro_hora = LeituraModbus(
-            f"UG{self.id}_Horímetro_hora",
+            f"[UG{self.id}] Horímetro Hora",
             self.clp[f"UG{self.id}"],
             REG[f"UG{self.id}_RA_Horimetro_Gerador"],
             op=4,
         )
         self.__leitura_horimetro_min = LeituraModbus(
-            f"UG{self.id}_Horímetro_min",
+            f"[UG{self.id}] Horímetro Min",
             self.clp[f"UG{self.id}"],
             REG[f"UG{self.id}_RA_Horimetro_Gerador_min"],
             op=4,
@@ -528,9 +536,10 @@ class UnidadeGeracao:
             logger.error(f"[UG{self.id}] Não foi possivel enviar o comando de reconhecer e resetar alarmes.")
             logger.debug(traceback.format_exc())
 
-    def verificar_pressao_uhrv(self) -> None:
-        return
-
+    def verificar_pressao_uhrv(self) -> "None":
+        if self.__leitura_pressao_uhrv.valor <= 120:
+            self.clp[f"UG{self.id}"].write_single_coil(REG[f"UG{self.id}_CD_ResetReleBloq86H"], [1])
+            self.clp[f"UG{self.id}"].write_single_coil(REG[f"UG{self.id}_ED_ReleBloqA86HAtuado"], [0])
 
     def controle_etapas(self) -> "None":
         # PARANDO
@@ -543,6 +552,8 @@ class UnidadeGeracao:
             if not self.borda_partindo:
                 Thread(target=lambda: self.verificar_partida()).start()
                 self.borda_partindo = True
+
+            self.verificar_pressao_uhrv()
 
             self.parar() if self.setpoint == 0 else self.enviar_setpoint(self.setpoint)
 

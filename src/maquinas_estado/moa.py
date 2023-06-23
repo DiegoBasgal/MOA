@@ -174,7 +174,6 @@ class ModoManual(State):
         if self.usn.modo_autonomo:
             logger.debug("Comando acionado: \"Habilitar modo autônomo\"")
             self.usn.ler_valores()
-            sleep(2)
             return ControleDados(self.usn)
 
         return ControleAgendamentos(self.usn) if len(self.usn.agn.verificar_agendamentos_pendentes()) > 0 else self
