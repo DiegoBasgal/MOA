@@ -41,8 +41,8 @@ class Usina:
 
         self.db = BancoDados("MOA-SEB")
         self.clp = ClientesUsina.clp
-        self.oco = OcorrenciasUsn(self.clp)
         self.agn = Agendamentos(self.cfg, self.db)
+        self.oco = OcorrenciasUsn(self.clp, self.db)
 
         self.ug1 = UnidadeGeracao(1, self.cfg, self.db)
         self.ug2 = UnidadeGeracao(2, self.cfg, self.db)

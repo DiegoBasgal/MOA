@@ -5,7 +5,7 @@ from django.db import models
 
 class Alarmes(models.Model):
 
-    ts = models.IntegerField(primary_key=True,default=0, max_length=11)
+    data = models.DateTimeField(primary_key=True)
 
     gravidade = models.IntegerField(default=0)
 

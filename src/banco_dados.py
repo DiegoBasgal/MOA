@@ -166,7 +166,7 @@ class BancoDados:
     def update_alarmes(self, valores) -> None:
         self.cursor.execute(
             "INSERT INTO alarmes_alarmes "
-            "VALUES (%s,%s,%s);",
+            "VALUES (%s, %s, %s);",
             tuple(valores)
         )
         self.conn.commit()
