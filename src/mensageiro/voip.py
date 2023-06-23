@@ -2,7 +2,7 @@ import os
 import pytz
 import json
 import logging
-import src.mensageiro.dict as vd
+import dict as vd
 
 from time import sleep
 from datetime import datetime
@@ -25,7 +25,7 @@ class Voip:
             "Authorization": "Basic TnZvaXBBcGlWMjpUblp2YVhCQmNHbFdNakl3TWpFPQ==",
         }
 
-    #db = Database("voip")
+    db = BancoDados("voip")
 
     @staticmethod
     def verificar_expediente(agenda) -> list:
@@ -112,18 +112,23 @@ class Voip:
                     cls.codificar_dados(data, headers)
                 vd.voip_dict["EMERGENCIA"][0] = False
             else:
+                todos = []
                 for _, vl in vd.voip_dict.items():
                     if vl[0]:
-                        for contato in lista_contatos:
-                            logger.info(f"[VOIP] Disparando torpedo de voz para: {contato[0]} ({contato[1]})")
-                            data = {
-                                "caller": f"{cls.cfg['caller_voip']}",
-                                "called": f"{contato[1]}",
-                                "audios": [{"audio": f"{vl[1]}", "positionAudio": 1,}],
-                                "dtmfs": [],
-                            }
-                            cls.codificar_dados(data, headers)
+                        todos.append(vl[1])
                         vl[0] = False
-                        sleep(5)
+
+                mensagem = "".join(i for i in todos)
+
+                for contato in lista_contatos:
+                    logger.info(f"[VOIP] Disparando torpedo de voz para: {contato[0]} ({contato[1]})")
+                    data = {
+                        "caller": f"{cls.cfg['caller_voip']}",
+                        "called": f"{contato[1]}",
+                        "audios": [{"audio": f"{mensagem}", "positionAudio": 1,}],
+                        "dtmfs": [],
+                    }
+                    cls.codificar_dados(data, headers)
+
         else:
             logger.info("[VOIP] Torpedo de voz desativado. Para habilitar envio, favor alterar valor \"voz_habilitado = true\" no arquivo \"voip_config.json\".")
