@@ -108,16 +108,13 @@
                         <label>Etapa:</label>
                     </td>
                     <td>
-                        {% if ug1_etapa == 1 %}
-                        <label style="font-size: 15px; margin-left: 3px; color: yellow;">Parando</label>
-                        {% endif %}
-                        {% if ug1_etapa == 2 %}
+                        {% if ug1_etapa == 0 %}
                         <label style="font-size: 15px; margin-left: 3px; color: orange;">Parada</label>
                         {% endif %}
-                        {% if ug1_etapa == 3 %}
-                            <label style="font-size: 15px; margin-left: 3px; color: yellow;">Sincronizando</label>
+                        {% if ug1_etapa == 1 or ug1_etapa == 2 or ug1_etapa == 3 or ug1_etapa == 4 or ug1_etapa == 5 or ug1_etapa == 6 %}
+                            <label style="font-size: 15px; margin-left: 3px; color: yellow;">Sincronizando/Parando</label>
                         {% endif %}
-                        {% if ug1_etapa == 4 %}
+                        {% if ug1_etapa == 7 %}
                             <label style="font-size: 15px; margin-left: 3px; color: green;">Sincronizada</label>
                         {% endif %}
                         {% if ug1_etapa == 99 %}
@@ -167,16 +164,13 @@
                         <label>Etapa:</label>
                     </td>
                     <td>
-                        {% if ug2_etapa == 1 %}
-                        <label style="font-size: 15px; margin-left: 3px; color: yellow;">Parando</label>
-                        {% endif %}
-                        {% if ug2_etapa == 2 %}
+                        {% if ug2_etapa == 0 %}
                         <label style="font-size: 15px; margin-left: 3px; color: orange;">Parada</label>
                         {% endif %}
-                        {% if ug2_etapa == 3 %}
-                        <label style="font-size: 15px; margin-left: 3px; color: yellow;">Sincronizando</label>
+                        {% if ug2_etapa == 1 or ug2_etapa == 2 or ug2_etapa == 3 or ug2_etapa == 4 or ug2_etapa == 5 or ug2_etapa == 6 %}
+                            <label style="font-size: 15px; margin-left: 3px; color: yellow;">Sincronizando/Parando</label>
                         {% endif %}
-                        {% if ug2_etapa == 4 %}
+                        {% if ug2_etapa == 7 %}
                             <label style="font-size: 15px; margin-left: 3px; color: green;">Sincronizada</label>
                         {% endif %}
                         {% if ug2_etapa == 99 %}
@@ -192,11 +186,6 @@
             <label style="margin-left: 3px;">Horas máquina:</label>
             <label>{{ tempo_ug2 | floatformat:2 }} h</label><br><br>
         </div>
-        <h3 style="margin-top: 20px; margin-bottom: 5px;">MOA:</h3>
-        <p style="margin-top: 1px;">Estado:  {{ estado }}<br>
-        Emergencia:  {{ em_acionada }}<br>
-        Aguardando reservatório? {{ aguardo }}<br>
-        Estado CLP:  {{ CLP_ON }} @ {{ CLP_IP }}</p>
     </div>
     <br>
     <br>
