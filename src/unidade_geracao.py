@@ -32,7 +32,7 @@ class UnidadeGeracao:
         self.db = db
         self.cfg = cfg
         self.clp = ClientesUsina.clp
-        self.oco = OcorrenciasUg(self.id, self.clp)
+        self.oco = OcorrenciasUg(self.id, self.clp, self.db)
 
 
         # ATRIBUIÇÃO DE VARIÁVEIS PRIVADAS
@@ -393,10 +393,15 @@ class UnidadeGeracao:
 
             elif not self.etapa_atual == UG_SINCRONIZADA:
                 logger.info(f"[UG{self.id}]          Enviando comando:          \"PARTIDA\"")
+                self.clp["SA"].write_single_coil(REG["SA_CD_ResetRele59N"], [1])
+                self.clp["SA"].write_single_coil(REG["SA_CD_ResetRele787"], [1])
                 self.clp[f"UG{self.id}"].write_single_coil(REG[f"UG{self.id}_CD_ResetGeral"], [1])
                 self.clp[f"UG{self.id}"].write_single_coil(REG[f"UG{self.id}_CD_ResetRele700G"], [1])
                 self.clp[f"UG{self.id}"].write_single_coil(REG[f"UG{self.id}_CD_ResetReleBloq86H"], [1])
                 self.clp[f"UG{self.id}"].write_single_coil(REG[f"UG{self.id}_CD_ResetReleBloq86M"], [1])
+                self.clp[f"UG{self.id}"].write_single_coil(REG[f"UG{self.id}_ED_ReleBloqA86HAtuado"], [0])
+                self.clp[f"UG{self.id}"].write_single_coil(REG[f"UG{self.id}_ED_ReleBloqA86MAtuado"], [0])
+                self.clp[f"UG{self.id}"].write_single_coil(REG[f"UG{self.id}_RD_700G_Trip"], [0])
                 self.clp[f"UG{self.id}"].write_single_coil(REG[f"UG{self.id}_CD_ResetReleRT"], [1])
                 self.clp[f"UG{self.id}"].write_single_coil(REG[f"UG{self.id}_CD_ResetRV"], [1])
                 self.clp[f"UG{self.id}"].write_single_coil(REG[f"UG{self.id}_CD_IniciaPartida"], [1])
@@ -522,6 +527,10 @@ class UnidadeGeracao:
         except Exception:
             logger.error(f"[UG{self.id}] Não foi possivel enviar o comando de reconhecer e resetar alarmes.")
             logger.debug(traceback.format_exc())
+
+    def verificar_pressao_uhrv(self) -> None:
+        return
+
 
     def controle_etapas(self) -> "None":
         # PARANDO

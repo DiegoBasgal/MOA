@@ -40,12 +40,13 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     # nossos apps
-    'contatos',
-    'parametros',
-    'ocorrencias',
-    'modo_manual',
     'agendamentos',
+    'alarmes',
+    'contatos',
+    'modo_manual',
     'monitoramento',
+    'ocorrencias',
+    'parametros',
 ]
 
 MIDDLEWARE = [

@@ -18,6 +18,7 @@ from django.contrib import admin
 from django.urls import path, include
 from django.views.generic import RedirectView
 
+from alarmes.views import alarmes_view
 from ocorrencias.views import ocorrencias_view
 from monitoramento.views import monitoramento_view
 from parametros.views import parametros_moa_view, emergencia_view
@@ -28,6 +29,7 @@ from modo_manual.views import comandos_manual_view, comando_dj52l , confirma_com
 urlpatterns = [
     path("", RedirectView.as_view(url="monitoramento/")),
     path("admin/", admin.site.urls),
+    path("alarmes/", alarmes_view, name="alarmes"),
     path("ocorrencias/", ocorrencias_view, name="ocorrencias"),
     path("monitoramento/", monitoramento_view, name="monitoramento"),
 
