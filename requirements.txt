@@ -4,6 +4,7 @@ numpy
 future
 Django
 pyodbc
+mariadb
 matplotlib
 mysqlclient
 pyModbusTCP

@@ -1106,7 +1106,7 @@ REG = {
     "UG2_RD_Trip_PBCE_Habilitado":                      221,        # MX_Input[28].5                        (OP -> 0x02 Read Input Status)
     "UG2_RD_UG2_StsMaqParada":                          222,        # MX_Input[28].6                        (OP -> 0x02 Read Input Status)
     "UG2_ED_Falta125VccCom":                            13,          # MX_Input[2].5                        (OP -> 0x02 Read Input Status)
-    
+
     ## RETORNOS ANALÓGICOS
     "UG2_RA_PosicaoDistribuidor":                       0,          # MW_InpReg[1]   Scale 0.1              (OP -> 0x04 Read Input Regs - 3x)
     "UG2_RA_ReferenciaCarga":                           1,          # MW_InpReg[2]   Scale 0.1              (OP -> 0x04 Read Input Regs - 3x)
@@ -1448,7 +1448,7 @@ REG = {
     "UG3_ED_TripAlimPainelFreio":                       85,          # MX_Input[11].5                       (OP -> 0x02 Read Input Status)
     "UG3_ED_PainelFreioStatus":                         86,          # MX_Input[11].6                       (OP -> 0x02 Read Input Status)
     "UG3_ED_QCAUG_TripDisjAgrup":                       87,          # MX_Input[11].7                       (OP -> 0x02 Read Input Status)
-    "UG3_ED_QCAUG3_Remoto":                              88,          # MX_Input[12].0                       (OP -> 0x02 Read Input Status)
+    "UG3_ED_QCAUG3_Remoto":                             88,          # MX_Input[12].0                       (OP -> 0x02 Read Input Status)
     "UG3_ED_CondicaoPartida":                           222,         #                                      (OP -> 0x02 Read Input Status)
 
     ## RETORNOS DIGITAIS
@@ -1552,3 +1552,33 @@ REG = {
 REG["UG1_EA_PressK1CaixaExpiral_MaisCasas"] = 157 # Scale 0.01 - Op04 (Read Input Regs)
 REG["UG2_EA_PressK1CaixaExpiral_MaisCasas"] = 157 # Scale 0.01 - Op04 (Read Input Regs)
 REG["UG3_EA_PressK1CaixaExpiral_MaisCasas"] = 157 # Scale 0.01 - Op04 (Read Input Regs)
+
+
+
+REG_SIM = {
+    "SA_EA_PM_810_Potencia_Ativa": 22765,
+
+    "SA_CD_Liga_DJ1": 22293,
+
+    "SA_EA_PM_810_Tensao_ab": 22789,
+    "SA_EA_PM_810_Tensao_bc": 22790,
+    "SA_EA_PM_810_Tensao_ca": 22791,
+
+    "TDA_EA_NivelAntesGrade": 22767,
+
+    "UG1_CD_IniciaPartida": 32294,
+    "UG2_CD_IniciaPartida": 43585,
+    "UG3_CD_IniciaPartida": 53585,
+
+    "UG1_CD_IniciaParada": 32294,
+    "UG2_CD_IniciaParada": 42294,
+    "UG3_CD_IniciaParada": 52294,
+
+    "UG1_RA_ReferenciaCarga": 33585,
+    "UG2_RA_ReferenciaCarga": 43585,
+    "UG3_RA_ReferenciaCarga": 53585,
+
+    "UG1_RA_PM_710_Potencia_Ativa": 32836,
+    "UG2_RA_PM_710_Potencia_Ativa": 42836,
+    "UG3_RA_PM_710_Potencia_Ativa": 52836,
+}

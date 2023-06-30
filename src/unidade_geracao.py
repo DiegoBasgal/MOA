@@ -113,7 +113,7 @@ class UnidadeGeracao:
         self._leitura_potencia = LeituraModbus(
             f"UG{self.id}_Potência",
             self.clp[f"UG{self.id}"],
-            REG[f"UG{self.id}_RA_PM_710_Potencia_Ativa"],
+            REG_SIM[f"UG{self.id}_RA_PM_710_Potencia_Ativa"],
             op=4,
         )
         self._leitura_horimetro = LeituraSoma(
@@ -412,7 +412,7 @@ class UnidadeGeracao:
                 self.clp[f"UG{self.id}"].write_single_coil(REG[f"UG{self.id}_RD_700G_Trip"], [0])
                 self.clp[f"UG{self.id}"].write_single_coil(REG[f"UG{self.id}_CD_ResetReleRT"], [1])
                 self.clp[f"UG{self.id}"].write_single_coil(REG[f"UG{self.id}_CD_ResetRV"], [1])
-                self.clp[f"UG{self.id}"].write_single_coil(REG[f"UG{self.id}_CD_IniciaPartida"], [1])
+                self.clp[f"UG{self.id}"].write_single_coil(REG_SIM[f"UG{self.id}_CD_IniciaPartida"], [1])
                 self.clp[f"UG{self.id}"].write_single_coil(REG[f"UG{self.id}_CD_Cala_Sirene"], [1])
 
             else:
@@ -429,7 +429,7 @@ class UnidadeGeracao:
                 logger.info(f"[UG{self.id}]          Enviando comando:          \"PARADA\"")
                 self.clp[f"UG{self.id}"].write_single_coil(REG[f"UG{self.id}_CD_AbortaPartida"], [1])
                 self.clp[f"UG{self.id}"].write_single_coil(REG[f"UG{self.id}_CD_AbortaSincronismo"], [1])
-                self.clp[f"UG{self.id}"].write_single_coil(REG[f"UG{self.id}_CD_IniciaParada"], [1])
+                self.clp[f"UG{self.id}"].write_single_coil(REG_SIM[f"UG{self.id}_CD_IniciaParada"], [1])
                 self.clp[f"UG{self.id}"].write_single_coil(REG[f"UG{self.id}_CD_Cala_Sirene"], [1])
                 self.enviar_setpoint(self.setpoint)
             else:
@@ -453,7 +453,7 @@ class UnidadeGeracao:
             if self.setpoint > 1:
                 response = self.clp[f"UG{self.id}"].write_single_coil(REG[f"UG{self.id}_CD_ResetGeral"], [1])
                 response = self.clp[f"UG{self.id}"].write_single_coil(REG[f"UG{self.id}_CD_RV_RefRemHabilita"], [1])
-                response = self.clp[f"UG{self.id}"].write_single_register(REG[f"UG{self.id}_RA_ReferenciaCarga"], self.setpoint)
+                response = self.clp[f"UG{self.id}"].write_single_register(REG_SIM[f"UG{self.id}_RA_ReferenciaCarga"], self.setpoint)
                 return response
 
         except Exception:
@@ -480,7 +480,7 @@ class UnidadeGeracao:
 
             if self.clp["SA"].read_coils(REG["SA_CD_Liga_DJ1"])[0] == 0:
                 logger.debug(f"[UG{self.id}]          Enviando comando:          \"FECHAR DJ LINHA\".")
-                self.clp["SA"].write_single_coil(REG["SA_CD_Liga_DJ1"], [1])
+                self.clp["SA"].write_single_coil(REG_SIM["SA_CD_Liga_DJ1"], [1])
 
         except Exception:
             logger.error(f"[UG{self.id}] Não foi possivel remover o comando de TRIP: \"Elétrico\".")
@@ -537,6 +537,7 @@ class UnidadeGeracao:
             logger.debug(traceback.format_exc())
 
     def verificar_pressao_uhrv(self) -> "None":
+        return
         if self.__leitura_pressao_uhrv.valor <= 120:
             self.clp[f"UG{self.id}"].write_single_coil(REG[f"UG{self.id}_CD_ResetReleBloq86H"], [1])
             self.clp[f"UG{self.id}"].write_single_coil(REG[f"UG{self.id}_ED_ReleBloqA86HAtuado"], [0])
@@ -553,7 +554,7 @@ class UnidadeGeracao:
                 Thread(target=lambda: self.verificar_partida()).start()
                 self.borda_partindo = True
 
-            self.verificar_pressao_uhrv()
+            # self.verificar_pressao_uhrv()
 
             self.parar() if self.setpoint == 0 else self.enviar_setpoint(self.setpoint)
 

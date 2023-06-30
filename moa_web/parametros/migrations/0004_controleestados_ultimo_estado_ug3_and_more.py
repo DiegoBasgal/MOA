@@ -6,7 +6,7 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('parametros', '0003_remove_controleestados_id_and_more'),
+        ('parametros', '0002_controleestados_and_more'),
     ]
 
     operations = [
