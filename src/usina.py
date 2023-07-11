@@ -64,28 +64,28 @@ class Usina:
         self.__potencia_ativa_kW: LeituraModbus = LeituraModbus(
             "SA_EA_Medidor_potencia_kw_mp",
             self.clp["SA"],
-            REG_SIM["SA_EA_PM_810_Potencia_Ativa"],
+            REG["SA_EA_PM_810_Potencia_Ativa"],
             1,
             op=4,
         )
         self.__tensao_rs: LeituraModbus = LeituraModbus(
             "SA_EA_PM_810_Tensao_AB",
             self.clp["SA"],
-            REG_SIM["SA_EA_PM_810_Tensao_ab"],
+            REG["SA_EA_PM_810_Tensao_ab"],
             100,
             op=4,
         )
         self.__tensao_st: LeituraModbus = LeituraModbus(
             "SA_EA_PM_810_Tensao_BC",
             self.clp["SA"],
-            REG_SIM["SA_EA_PM_810_Tensao_bc"],
+            REG["SA_EA_PM_810_Tensao_bc"],
             100,
             op=4,
         )
         self.__tensao_tr: LeituraModbus = LeituraModbus(
             "SA_EA_PM_810_Tensao_CA",
             self.clp["SA"],
-            REG_SIM["SA_EA_PM_810_Tensao_ca"],
+            REG["SA_EA_PM_810_Tensao_ca"],
             100,
             op=4,
         )
@@ -96,7 +96,7 @@ class Usina:
         self._nv_montante: LeituraModbus = LeituraModbus(
             "TDA_EntradasAnalogicas_MRR_NivelMaisCasasAntes",
             self.clp["TDA"],
-            REG_SIM["TDA_EA_NivelAntesGrade"],
+            REG["TDA_EA_NivelAntesGrade"],
             1 / 10000,
             400,
             op=4,
@@ -263,13 +263,11 @@ class Usina:
             logger.debug("[USN] A normalização foi executada menos de 1 minuto atrás")
 
     def fechar_dj_linha(self) -> bool:
-        response = self.clp["SA"].write_single_coil(REG_SIM["SA_CD_Liga_DJ1"], [1])
-        return response
         try:
             if self.verificar_falha_dj_linha():
                 return False
             else:
-                response = self.clp["SA"].write_single_coil(REG_SIM["SA_CD_Liga_DJ1"], [1])
+                response = self.clp["SA"].write_single_coil(REG["SA_CD_Liga_DJ1"], [1])
                 return response
 
         except Exception:
@@ -797,14 +795,12 @@ class Usina:
                 self.cfg["kie"]
             ]
             self.db.update_debug(v_debug)
-            self.db.update_tunner(v_debug)
 
         except Exception:
             logger.error(f"[USN] Houve um erro ao gravar os parâmetros debug no Banco.")
             logger.debug(traceback.format_exc())
 
     def heartbeat(self) -> None:
-        return
         try:
             self.clp["MOA"].write_single_coil(REG["PAINEL_LIDO"], [1])
             self.clp["MOA"].write_single_coil(REG["MOA_OUT_MODE"], [1 if self._modo_autonomo else 0])

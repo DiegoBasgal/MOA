@@ -187,21 +187,3 @@ class BancoDados:
             (obs, obs, 1 if executado else 0, datetime.now(pytz.timezone("Brazil/East")).replace(tzinfo=None), int(id_agendamento))
         )
         self.conn.commit()
-
-    def update_tunner(self, valores) -> None:
-        self.cursor.execute(
-            "INSERT INTO `pid_tunner`.`moa_debug` "
-            "VALUES (%s,%s, "
-                    "%s,%s, "
-                    "%s,%s, "
-                    "%s,%s, "
-                    "%s,%s, "
-                    "%s,%s, "
-                    "%s,%s, "
-                    "%s,%s, "
-                    "%s,%s, "
-                    "%s,%s, "
-                    "%s);",
-                    tuple(valores)
-        )
-        self.conn.commit()

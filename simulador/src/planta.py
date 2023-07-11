@@ -1,21 +1,20 @@
+from asyncio.log import logger
 import logging
 import numpy as np
 import threading
-
-import mapa_modbus as regs
-
+from datetime import datetime
 from sys import stdout
 from time import sleep
-from datetime import datetime
-from asyncio.log import logger
-from pyModbusTCP.server import ModbusServer, DataBank
 
-from ug import Ug
+from pyModbusTCP.server import ModbusServer, DataBank
 from dj52L import Dj52L
+from ug import Ug
+import dicionarios.regs as regs
 
 REG = regs.REG
 
 lock = threading.Lock()
+
 
 class Planta:
 
@@ -68,7 +67,7 @@ class Planta:
         self.dj52L = Dj52L(self)
 
         self.cust_data_bank = DataBank()
-        self.server = ModbusServer(host="localhost", port=502, no_block=True)
+        self.server = ModbusServer(host="10.101.2.215", port=5003, no_block=True)
         self.server.start()
         for R in REG:
             self.cust_data_bank.set_words(int(REG[R]), [0])

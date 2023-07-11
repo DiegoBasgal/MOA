@@ -51,16 +51,17 @@ class Controlador:
             pool_name="my_pool",
             pool_size=10,
             pool_reset_session=True,
-            host="localhost",
-            user="moa",
+            host="172.21.15.115",
+            user="root",
             password="&264H3$M@&z$",
-            database="pid_tunner",
+            database="django_db",
         )
 
         self.conn = self.connection_pool.get_connection()
         self.cursor = self.conn.cursor()
         
     def run(self):
+
         q_ant = 0
         counter_timed_afluente = 0
         last_log_time = -1
@@ -105,7 +106,7 @@ class Controlador:
                     ts = int(datetime.timestamp(datetime.now()))
 
                     self.cursor.execute(
-                        "INSERT INTO pid_tunner.simul_data VALUES({}, {}, {}, {}, {}, {}, {}, {}, {});".format(
+                        "INSERT INTO debug.simul_data VALUES({}, {}, {}, {}, {}, {}, {}, {}, {});".format(
                             ts,
                             self.shared_dict["q_alfuente"],
                             self.shared_dict["nv_montante"],

@@ -1992,6 +1992,5 @@ REG = {
     "REG_UG3_Emergencia_Condicionadores3": 14905 - 1 + 40000,
     
     "REG_USINA_AUX_CondicionadoresE": 14906 - 1 + 10000,
-    "REG_USINA_AUX_Condicionadores1": 14907 - 1 + 10000,
-    
+    "REG_USINA_AUX_Condicionadores1": 14907 - 1 + 10000, 
 }
