@@ -2,7 +2,7 @@ import os
 import pytz
 import json
 import logging
-import dict as vd
+import src.mensageiro.dict as vd
 
 from time import sleep
 from datetime import datetime
@@ -13,6 +13,9 @@ from src.banco_dados import BancoDados
 logger = logging.getLogger("__main__")
 
 class Voip:
+
+    #ATRIBUIÇÃO DE VARIÁVEIS
+
     arquivo = os.path.join(os.path.dirname(__file__), "voip_config.json")
     with open(arquivo, "r") as file:
         cfg = json.load(file)
@@ -29,6 +32,11 @@ class Voip:
 
     @staticmethod
     def verificar_expediente(agenda) -> list:
+        """
+        Função para verificar se o operador cadastrado na interface, está dentro
+        do período de sobre-aviso.
+        """
+        
         contatos = []
         now = datetime.now(pytz.timezone("Brazil/East")).replace(tzinfo=None)
 
@@ -46,6 +54,10 @@ class Voip:
 
     @classmethod
     def carregar_contatos(cls) -> list:
+        """
+        Função para extrair lista de contatos cadastrados na interface WEB.
+        """
+        
         agenda = []
         parametros = cls.db.get_contato_emergencia()
 
@@ -66,6 +78,10 @@ class Voip:
 
     @classmethod
     def carregar_token(cls) -> str:
+        """
+        Função para carregar token de autenticação NVoip.
+        """
+        
         try:
             request = Request("https://api.nvoip.com.br/v2/oauth/token", data=cls.token_data, headers=cls.token_headers)
             response_body = json.loads(urlopen(request).read())
@@ -78,6 +94,10 @@ class Voip:
 
     @classmethod
     def codificar_dados(cls, data, headers) -> None:
+        """
+        Função para codificação do acionamento, para a plataforma da Nvoip.
+        """
+        
         encoded = str(json.dumps(data)).encode()
         request = Request(f"https://api.nvoip.com.br/v2/torpedo/voice?napikey={cls.cfg['napikey']}", data=encoded, headers=headers)
         try:
@@ -89,6 +109,21 @@ class Voip:
 
     @classmethod
     def acionar_chamada(cls):
+        """
+        Função para envio de tropedos de voz, baseado nas condições de acionamento
+        do dicioário Voip.
+
+        Primeiramente, chama a função de carregar contatos e realiza a verificação
+        de expediente. Caso não haja nenhum contato cadastrado, ou nenhum operador
+        dentro do horário de expediente, passa a chamar a lista de contatos padrão
+        para não deixar de avisar.
+        Caso a condição de emergência estiver ativada, ignora todas as outras condições
+        e passa a disparar o torpedo de emerência para todos os operadores.
+        Caso sejam apenas condições específicas, realiza uma iteração pelo dicionário
+        de condições e concatena todas as mensagens em uma só, para envio aos 
+        operadores.
+        """
+        
         headers = {"Content-Type": "application/json", "Authorization": cls.carregar_token()}
 
         if cls.cfg["voz_habilitado"]:

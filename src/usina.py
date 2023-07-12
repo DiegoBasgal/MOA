@@ -41,22 +41,13 @@ class Usina:
 
         self.db = BancoDados("MOA-SEB")
         self.clp = ClientesUsina.clp
-        self.agn = Agendamentos(self.cfg, self.db)
         self.oco = OcorrenciasUsn(self.clp, self.db)
+        self.agn = Agendamentos(self.cfg, self.db, self)
 
         self.ug1 = UnidadeGeracao(1, self.cfg, self.db)
         self.ug2 = UnidadeGeracao(2, self.cfg, self.db)
         self.ug3 = UnidadeGeracao(3, self.cfg, self.db)
         self.ugs: "list[UnidadeGeracao]" = [self.ug1, self.ug2, self.ug3]
-        CondicionadorBase.ugs = self.ugs
-
-        for ug in self.ugs:
-            ug.lista_ugs = self.ugs
-            ug.iniciar_ultimo_estado()
-
-        CondicionadorBase.ugs = self.ugs
-
-        self.agn = Agendamentos(self.cfg, self.db, self)
 
 
         # ATRIBUIÇÃO DE VARIÁVEIS PRIVADAS
@@ -106,7 +97,7 @@ class Usina:
         self._pot_alvo_anterior: "int" = -1
         self._tentativas_normalizar: "bool" = 0
 
-        self._modo_autonomo: bool = False
+        self._modo_autonomo: "bool" = False
 
 
         # ATRIBUIÇÃO DE VARIÁVEIS PÚBLICAS
@@ -139,7 +130,17 @@ class Usina:
 
         self.ultima_tentativa_norm: "datetime" = self.get_time()
 
+        CondicionadorBase.ugs = self.ugs
+
+
+        # FINALIZAÇÃO DO __INIT__
+
         logger.debug("")
+
+        for ug in self.ugs:
+            ug.lista_ugs = self.ugs
+            ug.iniciar_ultimo_estado()
+
         self.ler_valores()
         self.controlar_inicializacao()
         self.normalizar_usina()
@@ -150,10 +151,14 @@ class Usina:
 
     @property
     def potencia_ativa(self) -> int:
+        # PROPRIEDADE -> Retrona a potência geral atual da Usina.
+
         return self.__potencia_ativa_kW.valor
 
     @property
     def nv_montante(self) -> float:
+        # PROPRIEDADE -> Retrona a leitura de nível montante da Tomada da Água.
+
         return self._nv_montante.valor
 
 
@@ -161,27 +166,39 @@ class Usina:
 
     @property
     def modo_autonomo(self) -> bool:
+        # PROPRIEDADE -> Retrona o modo do MOA.
+
         return self._modo_autonomo
 
     @modo_autonomo.setter
     def modo_autonomo(self, var: bool) -> None:
+        # SETTER -> Atribui o novo valor de modo do MOA e atualiza o Banco.
+
         self._modo_autonomo = var
         self.db.update_modo_moa(self._modo_autonomo)
 
     @property
     def tentativas_normalizar(self) -> int:
+        # PROPRIEDADE -> Retrona o número de tentativas de normalização da Usina.
+
         return self._tentativas_normalizar
 
     @tentativas_normalizar.setter
     def tentativas_normalizar(self, var: int) -> None:
+        # SETTER -> Atribui o novo valor de tentativas de normalização da Usina.
+
         self._tentativas_normalizar = var
 
     @property
     def _pot_alvo_anterior(self) -> float:
+        # PROPRIEDADE -> Retrona o valor de potência alvo anterior da Usina.
+
         return self._potencia_alvo_anterior
 
     @_pot_alvo_anterior.setter
     def _pot_alvo_anterior(self, var):
+        # SETTER -> Atribui o novo valor de de potência alvo anterior da Usina.
+
         self._potencia_alvo_anterior = var
 
 
@@ -189,12 +206,21 @@ class Usina:
 
     @staticmethod
     def get_time() -> datetime:
+        """
+        Função para obter data e hora atual.
+        """
+
         return datetime.now(pytz.timezone("Brazil/East")).replace(tzinfo=None)
 
 
-    ### MÉTODOS DE CONTROLE DE RESET E NORMALIZAÇÃO
+    ### FUNÇÕES DE CONTROLE DE RESET E NORMALIZAÇÃO
 
     def acionar_emergencia(self) -> None:
+        """
+        Função para acionamento de emergência geral da Usina. Envia o comando de
+        emergência via supervisório para todos os CLPs.
+        """
+
         logger.warning("[USN] Acionando Emergência.")
         self.clp_emergencia = True
 
@@ -212,6 +238,11 @@ class Usina:
             logger.debug(traceback.format_exc())
 
     def resetar_emergencia(self) -> None:
+        """
+        Função para reset geral da Usina. Envia o comando de reset para todos os
+        CLPs.
+        """
+
         try:
             logger.debug("[USN] Reset geral")
 
@@ -232,6 +263,11 @@ class Usina:
             logger.debug(traceback.format_exc())
 
     def resetar_tda(self) -> None:
+        """
+        Função para reset da Tomada da Água. Envia o comando de reset para o
+        CLP - TDA.
+        """
+
         if not d.glb["TDA_Offline"]:
             self.clp["TDA"].write_single_coil(REG["TDA_CD_ResetGeral"], [1])
             # self.clp["TDA"].write_single_coil(REG["TDA_CD_Hab_Nivel"], [0])
@@ -242,6 +278,16 @@ class Usina:
             logger.debug("[USN] Não é possível resetar a TDA pois o CLP da TDA se encontra offline")
 
     def normalizar_usina(self) -> bool:
+        """
+        Função para normalização de ocorrências da Usina.
+
+        Verifica primeiramente a tensão da linha.
+        Caso a tenão esteja dentro dos limites, passa a verificar se a
+        normalização foi executada à pouco tempo, se foi, avisa o operador,
+        senão, passa a chamar as funções de reset geral.
+        """
+
+
         logger.debug("[USN] Normalizando...")
         logger.debug(f"[USN] Última tentativa de normalização:   {self.ultima_tentativa_norm.strftime('%d-%m-%Y %H:%M:%S')}")
         logger.debug(f"[USN] Tensão na linha:                    RS -> \"{self.__tensao_rs.valor:2.1f} kV\" | ST -> \"{self.__tensao_st.valor:2.1f} kV\" | TR -> \"{self.__tensao_tr.valor:2.1f} kV\"")
@@ -263,6 +309,13 @@ class Usina:
             logger.debug("[USN] A normalização foi executada menos de 1 minuto atrás")
 
     def fechar_dj_linha(self) -> bool:
+        """
+        Função para acionamento do comando de fechamento do Disjuntor 52L (Linha).
+
+        Primeiramente, chama a função de verificação de bloqueios de fechamento,
+        caso não haja nenhuma condição, envia o comando para o CLP - SA.
+        """
+
         try:
             if self.verificar_falha_dj_linha():
                 return False
@@ -275,6 +328,10 @@ class Usina:
             logger.debug(traceback.format_exc())
 
     def verificar_falha_dj_linha(self):
+        """
+        Função para verificação das condições de fechamento do Disjuntor 52L (Linha).
+        """
+
         flag = 0
 
         if self.clp["SA"].read_discrete_inputs(REG["SA_ED_DisjDJ1_SuperBobAbert1"])[0] == 0:
@@ -328,6 +385,10 @@ class Usina:
             return False
 
     def verificar_tensao(self) -> bool:
+        """
+        Função para verificação de limites de tensão da linha de transmissão.
+        """
+
         try:
             if (TENSAO_LINHA_BAIXA < self.__tensao_rs.valor < TENSAO_LINHA_ALTA) \
                 and (TENSAO_LINHA_BAIXA < self.__tensao_st.valor < TENSAO_LINHA_ALTA) \
@@ -343,6 +404,16 @@ class Usina:
             return False
 
     def aguardar_tensao(self) -> bool:
+        """
+        Função para normalização após a queda de tensão da linha de transmissão.
+
+        Primeiramente, caso haja uma queda, será chamada a função com o timer de
+        espera com tempo pré determinado. Caso a tensão seja reestabelecida
+        dentro do limite de tempo, é chamada a funcão de normalização da Usina.
+        Se o timer passar do tempo, é chamada a função de acionamento de emergência
+        e acionado chamada de emergência por Voip.
+        """
+
         if self.status_tensao == TENSAO_VERIFICAR:
             self.status_tensao = TENSAO_AGUARDO
             logger.debug("[USN] Iniciando o timer para a normalização da tensão na linha.")
@@ -362,6 +433,11 @@ class Usina:
             logger.debug("[USN] A tensão na linha ainda está fora.")
 
     def acionar_temporizador_tensao(self, delay) -> None:
+        """
+        Função de temporizador para espera de normalização de tensão da linha de
+        transmissão.
+        """
+
         while time() <= time() + delay:
             if self.verificar_tensao():
                 self.status_tensao = TENSAO_REESTABELECIDA
@@ -370,9 +446,17 @@ class Usina:
         self.status_tensao = TENSAO_FORA
 
 
-    ### MÉTODOS DE CONTROLE DE OPERAÇÃO:
+    ### FUNÇÕES DE CONTROLE DE OPERAÇÃO:
 
     def leitura_periodica(self):
+        """
+        Função de temporizador com leituras para alertas de manutenção.
+
+        Chama os métodos de leitura de objetos da Usina e Unidades de Geração.
+        Caso haja alguma leitura fora do esperado, é enviado o alerta via
+        WhatsApp ou Voip.
+        """
+
         try:
             logger.debug("[USN] Iniciando o timer de leitura periódica...")
             while True:
@@ -391,6 +475,11 @@ class Usina:
             logger.debug(traceback.format_exc())
 
     def controlar_inicializacao(self) -> None:
+        """
+        Função para ajustes na inicialização do MOA. Essa função é executada apenas
+        uma vez.
+        """
+
         for ug in self.ugs:
             if ug.etapa_atual == UG_SINCRONIZADA:
                 self.ug_operando += 1
@@ -406,6 +495,23 @@ class Usina:
         self.clp["MOA"].write_single_coil(REG["MOA_OUT_BLOCK_UG3"], [0])
 
     def controlar_reservatorio(self) -> int:
+        """
+        Função para controle de níveis do reservatório.
+
+        Primeiramente aciona a função de reset da Tomada da Água (para desabilitar
+        mecanismos como controle de nível e religamento do Dj 52L). Logo em seguida,
+        realiza a leitura de nível montante e determina qual condição entrar. Se
+        o nível estiver acima do máximo, verifica se atingiu o Maximorum. Nesse
+        caso é acionada a emergência da Usina, porém se for apenas vertimento,
+        distribui a potência máxima para as Unidades.
+        Caso a leitura retornar que o nível está abaixo do mínimo, verifica antes
+        se atingiu o fundo do reservatório, nesse caso é acionada a emergência.
+        Se o valor ainda estiver acima do nível de fundo, será distribuída a
+        potência 0 para todas as Unidades e aciona a espera pelo nível.
+        Caso a leitura esteja dentro dos limites normais, é chamada a função para
+        calcular e distribuir a potência para as Unidades.
+        """
+
         self.resetar_tda()
         if self.nv_montante >= self.cfg["nv_maximo"]:
             logger.debug("[USN] Nível montante acima do máximo")
@@ -509,12 +615,16 @@ class Usina:
                 ug.setpoint = 0
             return 0
 
+        pot_medidor = self.potencia_ativa
+
         logger.debug(f"[USN] Potência no medidor:                {self.potencia_ativa:0.3f}")
+
         pot_aux = self.cfg["pot_maxima_alvo"] - (self.cfg["pot_maxima_usina"] - self.cfg["pot_maxima_alvo"])
-        pot_medidor = max(pot_aux, min(self.potencia_ativa, self.cfg["pot_maxima_usina"]))
+
+        pot_medidor = max(pot_aux, min(pot_medidor, self.cfg["pot_maxima_usina"]))
 
         if pot_medidor > self.cfg["pot_maxima_alvo"] * 0.97 and pot_alvo >= self.cfg["pot_maxima_alvo"]:
-            pot_alvo = self._pot_alvo_anterior * (1 - 0.5 * ((pot_medidor - self.cfg["pot_maxima_alvo"]) / self.cfg["pot_maxima_alvo"]))
+            pot_alvo = self._pot_alvo_anterior * (1 - 0.25 * ((pot_medidor - self.cfg["pot_maxima_alvo"]) / self.cfg["pot_maxima_alvo"]))
 
         self._pot_alvo_anterior = pot_alvo
 
@@ -522,6 +632,10 @@ class Usina:
         self.distribuir_potencia(pot_alvo)
 
     def ajustar_ie_padrao(self) -> int:
+        """
+        Função para ajustar o valor do IE.
+        """
+
         return sum(ug.leitura_potencia for ug in self.ugs) / self.cfg["pot_maxima_alvo"]
 
     def distribuir_potencia(self, pot_alvo) -> None:
@@ -572,10 +686,7 @@ class Usina:
                 else:
                     sp * 3 / (3 - ug_sinc)
                     for ug in ugs:
-                        if ug.etapa_atual == UG_SINCRONIZANDO:
-                            ug.setpoint = self.cfg["pot_minima"]
-                        else:
-                            ug.setpoint = sp * ug.setpoint_maximo
+                        ug.setpoint = self.cfg["pot_minima"] if ug.etapa_atual == UG_SINCRONIZANDO else sp * ug.setpoint_maximo
 
                 logger.debug(f"[UG{ugs[0].id}] SP    <-                            {int(ugs[0].setpoint)}")
                 logger.debug(f"[UG{ugs[1].id}] SP    <-                            {int(ugs[1].setpoint)}")
@@ -592,10 +703,7 @@ class Usina:
                 else:
                     sp = sp * 3 / (2 - ug_sinc)
                     for ug in ugs:
-                        if ug.etapa_atual == UG_SINCRONIZANDO:
-                            ug.setpoint = self.cfg["pot_minima"]
-                        else:
-                            ug.setpoint = sp * ug.setpoint_maximo
+                        ug.setpoint = self.cfg["pot_minima"] if ug.etapa_atual == UG_SINCRONIZANDO else sp * ug.setpoint_maximo
 
                 ugs[2].setpoint = 0
 
@@ -634,10 +742,7 @@ class Usina:
                 else:
                     sp = sp * 3 / (2 - ug_sinc)
                     for ug in ugs:
-                        if ug.etapa_atual == UG_SINCRONIZANDO:
-                            ug.setpoint = self.cfg["pot_minima"]
-                        else:
-                            ug.setpoint = sp * ug.setpoint_maximo
+                        ug.setpoint = self.cfg["pot_minima"] if ug.etapa_atual == UG_SINCRONIZANDO else sp * ug.setpoint_maximo
 
                 logger.debug(f"[UG{ugs[0].id}] SP    <-                            {int(ugs[0].setpoint)}")
                 logger.debug(f"[UG{ugs[1].id}] SP    <-                            {int(ugs[1].setpoint)}")
@@ -671,9 +776,14 @@ class Usina:
             logger.debug(f"[UG{ugs[0].id}] SP    <-                            {int(ugs[0].setpoint)}")
 
 
-    ### MÉTODOS DE CONTROLE DE DADOS:
+    ### FUNÇÕES DE CONTROLE DE DADOS:
 
     def ler_valores(self) -> None:
+        """
+        Função para leitura e atualização de parâmetros de operação através de
+        Banco de Dados da Interface WEB.
+        """
+
         ClientesUsina.ping_clients()
         self.atualizar_valores_montante()
 
@@ -687,11 +797,19 @@ class Usina:
         self.heartbeat()
 
     def atualizar_valores_montante(self) -> None:
+        """
+        Função para atualização de valores anteriores e erro de nível montante.
+        """
+
         self.nv_montante_recente = self.nv_montante
         self.erro_nv_anterior = self.erro_nv
         self.erro_nv = self.nv_montante_recente - self.cfg["nv_alvo"]
 
     def atualizar_valores_banco(self, parametros) -> None:
+        """
+        Função para atualização de valores de Banco de Dados.
+        """
+
         try:
             if int(parametros["emergencia_acionada"]) == 1:
                 logger.debug("[USN] Emergência acionada!")
@@ -718,8 +836,13 @@ class Usina:
             logger.debug(traceback.format_exc())
 
     def atualizar_valores_cfg(self, parametros) -> None:
+        """
+        Função para atualização de valores de operação do arquivo cfg.json.
+        """
+
         self.cfg["nv_alvo"] = float(parametros["nv_alvo"])
         self.cfg["nv_minimo"] = float(parametros["nv_minimo"])
+        self.cfg["nv_maximo"] = float(parametros["nv_maximo"])
 
         self.cfg["kp"] = float(parametros["kp"])
         self.cfg["ki"] = float(parametros["ki"])
@@ -736,6 +859,11 @@ class Usina:
         self.cfg["margem_pot_critica"] = float(parametros["margem_pot_critica"])
 
     def escrever_valores(self) -> None:
+        """
+        Função para escrita de valores de operação nos Bancos do módulo do Django
+        e Debug.
+        """
+
         try:
             v_params = [
                 self.get_time().strftime("%Y-%m-%d %H:%M:%S"),
@@ -801,6 +929,14 @@ class Usina:
             logger.debug(traceback.format_exc())
 
     def heartbeat(self) -> None:
+        """
+        Função para controle do CLP - MOA.
+
+        Esta função tem como objetivo enviar comandos de controle/bloqueio para
+        os CLPs da Usina e também, ativação/desativação do MOA através de chaves
+        seletoras no painel do Sistema Auxiliar.
+        """
+
         try:
             self.clp["MOA"].write_single_coil(REG["PAINEL_LIDO"], [1])
             self.clp["MOA"].write_single_coil(REG["MOA_OUT_MODE"], [1 if self._modo_autonomo else 0])

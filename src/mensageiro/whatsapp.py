@@ -7,7 +7,9 @@ class WhatsApp:
 
     @staticmethod
     def enviar_mensagem(num_destino, mensagem):
-        #--> Envia uma mensagem para um numero especifico, ou ID do grupo destino
+        """
+        Envia uma mensagem para um numero especifico, ou ID do grupo destino
+        """
 
         url = "https://v5.chatpro.com.br/chatpro-ace98c12f9/api/v1/send_message"
         headers = {"accept": "application/json",
@@ -24,7 +26,9 @@ class WhatsApp:
 
     @staticmethod
     def saldo_atual():
-        #--> Retorna a quantidade de créditos disponiveis para utilização
+        """
+        Retorna a quantidade de créditos disponiveis para utilização
+        """
 
         url = "https://api.chatpro.com.br/painel/ws/endpoint.php?action=saldo"
         headers = {"accept": "application/json",
@@ -37,8 +41,10 @@ class WhatsApp:
 
     @classmethod
     def verificar_saldo(cls):
-        #--> Caso restem apenas 100 mensagens, um aviso será disparado
-        # para avisar a necessidade de uma recarga
+        """
+        Caso restem apenas 100 mensagens, um aviso será disparado
+        para avisar a necessidade de uma recarga
+        """
 
         saldo = int(cls.saldo_atual())
 
@@ -47,7 +53,9 @@ class WhatsApp:
 
     @staticmethod
     def envio_grupo(mensagem):
-        #--> Envia uma mensagem para o grupo de LOGS
+        """
+        Envia uma mensagem para o grupo de LOGS
+        """
 
         url = "https://v5.chatpro.com.br/chatpro-ace98c12f9/api/v1/send_message"
         headers = {"accept": "application/json",
@@ -65,5 +73,9 @@ class WhatsApp:
 
     @classmethod
     def envio_todos(cls, mensagem) -> None:
+        """
+        função de envio utilizando Threads, para não interromper o ciclo.
+        """
+        
         Thread(target=cls.envio_grupo, args=(mensagem, )).start()
 

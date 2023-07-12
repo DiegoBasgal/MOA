@@ -21,31 +21,57 @@ logger = logging.getLogger("__main__")
 class OcorrenciasUsn:
     def __init__(self, clp: "dict[str, ModbusClient]"=None, db: BancoDados=None) -> None:
 
-        self._condicionadores: "list[CondicionadorBase]" = []
-        self._condicionadores_essenciais: "list[CondicionadorBase]" = []
+        # ATRIBUIÇÃO DE VARIÁVEIS PRIVADAS
 
         self.__db = db
         self.__clp = clp
+
+
+        # ATRIBUIÇÃO DE VARIÁVEIS PROTEGIDAS
+
+        self._condicionadores: "list[CondicionadorBase]" = []
+        self._condicionadores_essenciais: "list[CondicionadorBase]" = []
+
+
+        # FINALIZAÇÃO DO __INIT__
 
         self.carregar_leituras()
 
     @property
     def condicionadores(self) -> "list[CondicionadorBase]":
+        # PROPRIEDADE -> Retrona a lista de condicionadores da Usina.
+
         return self._condicionadores
 
     @condicionadores.setter
     def condicionadores(self, var: "list[CondicionadorBase]") -> None:
+        # SETTER -> Atrubui a nova lista de condicionadores da Usina.
+
         self._condicionadores = var
 
     @property
     def condicionadores_essenciais(self) -> "list[CondicionadorBase]":
+        # PROPRIEDADE -> Retrona a lista de condicionadores essenciais da Usina.
+
         return self._condicionadores_essenciais
 
     @condicionadores_essenciais.setter
     def condicionadores_essenciais(self, var: "list[CondicionadorBase]") -> None:
+        # SETTER -> Atrubui a nova lista de condicionadores essenciais da Usina.
+
         self._condicionadores_essenciais = var
 
     def verificar_condicionadores(self) -> int:
+        """
+        Função para a verificação de acionamento de condicionadores e determinação
+        de gravidade.
+
+        Itera sobre a lista de condicionadores da Usina e verifica se algum está
+        ativo. Caso esteja, verifica o nível de gravidade e retorna o valor para
+        a determinação do passo seguinte.
+        Caso não haja nenhum condicionador ativo, apenas retorna o valor de ignorar.
+        """
+
         flag = CONDIC_IGNORAR
         v = []
 
@@ -71,6 +97,11 @@ class OcorrenciasUsn:
         return flag
 
     def leitura_temporizada(self) -> None:
+        """
+        Função para consulta de acionamentos da usina e avisos através do mecanismo
+        de acionamento temporizado.
+        """
+
         if self.leitura_ED_SA_QLCF_Disj52ETrip.valor != 0 and not vd.voip_dict["SA_QLCF_DISJ_52E_TRIP"][0]:
             logger.warning("O Disjuntor do Gerador Diesel de Emergência QLCF identificou um sinal de TRIP, favor verificar.")
             vd.voip_dict["SA_QLCF_DISJ_52E_TRIP"][0] = True
@@ -158,6 +189,11 @@ class OcorrenciasUsn:
         return
 
     def carregar_leituras(self) -> None:
+        """
+        Função para carregamento de todas as leituras para acionamentos de avisos
+        e emergências da Usina.
+        """
+
         ### Leituras para acionamento temporizado por chamada Voip
         ## CONDICIONADORES ESSENCIAIS
                 # Leituras para acionamento periódico
@@ -330,9 +366,14 @@ class OcorrenciasUsn:
 class OcorrenciasUg:
     def __init__(self, ug_id: int, clp: "dict[str, ModbusClient]"=None, db: BancoDados=None):
 
+        # ATRIBUIÇÃO DE VARIÁVEIS PRIVADAS
+
         self.__db = db
         self.__clp = clp
         self.__ug_id = ug_id
+
+
+        # ATRIBUIÇÃO DE VARIÁVEIS PROTEGIDAS
 
         self._temperatura_base: int = 100
         self._temperatura_limite: int = 200
@@ -343,59 +384,99 @@ class OcorrenciasUg:
         self._leitura_dict: "dict[str, LeituraModbus]" = {}
         self._condic_dict: "dict[str, CondicionadorBase]" = {}
 
+
+        # ATRIBUIÇÃO DE VARIÁVEIS PÚBLICAS
+
         self.leitura_voip: "dict[str, LeituraModbus]" = {}
+
+
+        # FINALIZAÇÃO DO __INIT__
 
         self.carregar_leituras()
 
     @property
     def temperatura_base(self) -> int:
+        # PROPRIEDADE -> Retrona o valor de temperaturas base da Unidade.
+
         return self._temperatura_base
 
     @temperatura_base.setter
     def temperatura_base(self, var: int) -> None:
+        # SETTER -> Atrubui o novo valor de temperaturas base da Unidade.
+
         self._temperatura_base = var
 
     @property
     def temperatura_limite(self) -> int:
+        # PROPRIEDADE -> Retrona o valor de temperaturas limite da Unidade.
+
         return self._temperatura_limite
 
     @temperatura_limite.setter
     def temperatura_limite(self, var: int) -> None:
+        # SETTER -> Atrubui o novo valor de temperaturas limite da Unidade.
+
         self._temperatura_limite = var
 
     @property
     def condic_dict(self) -> "dict[str, CondicionadorExponencial]":
+        # PROPRIEDADE -> Retrona o dicionário de condicionadores da Unidade.
+
         return self._condic_dict
 
     @condic_dict.setter
     def condic_dict(self, var: "dict[str, CondicionadorExponencial]") -> None:
+        # SETTER -> Atrubui o novo dicionário de condicionadores da Unidade.
+
         self._condic_dict = var
 
     @property
     def leitura_dict(self) -> "dict[str, LeituraModbus]":
+        # PROPRIEDADE -> Retrona o dicionário de leituras da Unidade.
+
         return self._leitura_dict
 
     @leitura_dict.setter
     def leitura_dict(self, var: "dict[str, LeituraModbus]") -> None:
+        # SETTER -> Atrubui o novo dicionário de leituras da Unidade.
+
         self._leitura_dict = var
 
     @property
     def condicionadores(self) -> "list[CondicionadorBase]":
+        # PROPRIEDADE -> Retrona a lista de condicionadores da Unidade.
+
         return self._condicionadores
 
     @condicionadores.setter
     def condicionadores(self, var: "list[CondicionadorBase]") -> None:
+        # SETTER -> Atrubui a nova lista de condicionadores da Unidade.
+
         self._condicionadores = var
 
     @property
     def condicionadores_essenciais(self) -> "list[CondicionadorBase]":
+        # PROPRIEDADE -> Retrona a lista de condicionadores essenciais da Unidade.
+
         return self._condicionadores_essenciais
 
     @condicionadores_essenciais.setter
     def condicionadores_essenciais(self, var: "list[CondicionadorBase]") -> None:
+        # SETTER -> Atrubui a nova lista de condicionadores essenciais da Unidade.
+
         self._condicionadores_essenciais = var
 
     def verificar_condicionadores(self) -> int:
+        """
+        Função para a verificação de acionamento de condicionadores e determinação
+        de gravidade.
+
+        Itera sobre a lista de condicionadores da Unidade e verifica se algum está
+        ativo. Caso esteja, verifica o nível de gravidade e retorna o valor para
+        a determinação do passo seguinte.
+        Caso não haja nenhum condicionador ativo, apenas retorna o valor de ignorar.
+        """
+
         flag = CONDIC_IGNORAR
         v = []
 
@@ -423,6 +504,11 @@ class OcorrenciasUg:
         return flag
 
     def atualizar_limites_condicionadores(self, parametros) -> None:
+        """
+        Função para extração de valores do Banco de Dados da Interface WEB e atribuição
+        de novos limites de operação de condicionadores.
+        """
+
         try:
             self.condic_dict[f"tmp_fase_r_ug{self.__ug_id}"].valor_base = float(parametros[f"alerta_temperatura_fase_r_ug{self.__ug_id}"])
             self.condic_dict[f"tmp_fase_s_ug{self.__ug_id}"].valor_base = float(parametros[f"alerta_temperatura_fase_s_ug{self.__ug_id}"])
@@ -455,6 +541,13 @@ class OcorrenciasUg:
             logger.debug(f"[OCO-UG{self.__ug_id}] Traceback: {traceback.format_exc()}")
 
     def controle_limites_operacao(self) -> None:
+        """
+        Função para verificação de limites de operação da Unidade.
+
+        Verifica os valores base e limite da Unidade, pré-determinados na interface
+        WEB, e avisa o operador caso algum valor ultrapasse o estipulado.
+        """
+
         ld = self.leitura_dict
         cd = self.condic_dict
 
@@ -532,6 +625,11 @@ class OcorrenciasUg:
 
 
     def leitura_temporizada(self) -> None:
+        """
+        Função para consulta de acionamentos da Unidade e avisos através do mecanismo
+        de acionamento temporizado.
+        """
+
         if self.leitura_voip["leitura_ED_FreioPastilhaGasta"].valor != 0 and not vd.voip_dict[f"FREIO_PASTILHA_GASTA_UG{self.__ug_id}"][0]:
             logger.warning(f"[UG{self.__ug_id}] O sensor de Freio da UG retornou que a Pastilha está gasta, favor considerar troca.")
             vd.voip_dict[f"FREIO_PASTILHA_GASTA_UG{self.__ug_id}"][0] = True
@@ -583,6 +681,11 @@ class OcorrenciasUg:
         return
 
     def carregar_leituras(self) -> None:
+        """
+        Função para carregamento de todas as leituras para acionamentos de avisos
+        e emergências da Unidade.
+        """
+
         # Leituras de condicionadores com limites de operção checados a cada ciclo
         self.leitura_voip["leitura_ED_FreioPastilhaGasta"] = LeituraModbusCoil(
             f"[UG{self.__ug_id}] Pastilha Freio Gasta",

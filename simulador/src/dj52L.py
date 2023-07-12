@@ -25,7 +25,7 @@ class Dj52L:
         self.tempo_carregamento_mola = 2
 
     def passo(self):
-        if (self.shared_dict["debug_dj52L_fechar"]and self.shared_dict["debug_dj52L_abrir"]):
+        if (self.shared_dict["debug_dj52L_fechar"] and self.shared_dict["debug_dj52L_abrir"]):
             self.shared_dict["debug_dj52L_abrir"] = False
             self.shared_dict["debug_dj52L_fechar"] = False
             self.shared_dict["dj52L_aberto"] = True

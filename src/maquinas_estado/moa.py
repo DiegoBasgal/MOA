@@ -14,9 +14,16 @@ from src.dicionarios.const import *
 
 class StateMachine:
     def __init__(self, initial_state):
+
+        # ATRIBUIÇÃO DE VARIÁVEIS PÚBLICAS
+
         self.state = initial_state
 
     def exec(self):
+        """
+        Função principal de execução da Máquina de Estados do MOA.
+        """
+
         try:
             if self.state is None:
                 raise TypeError
@@ -29,11 +36,16 @@ class StateMachine:
 
 class State:
     def __init__(self, usina: Usina=None, *args, **kwargs):
+
+        # VERIFICAÇÃO DE ARGUMENTOS
+
         if usina is None:
             logger.error(f"Erro ao carregar a classe da Usina na máquina de estados.")
             return FalhaCritica()
         else:
             self.usn = usina
+
+        # ATRIBUIÇÃO DE VARIÁVEIS PÚBLICAS
 
         self.args = args
         self.kwargs = kwargs
@@ -41,13 +53,23 @@ class State:
         self.usn.estado_moa = MOA_SM_NAO_INICIALIZADO
 
     def get_time(self) -> datetime:
+        """
+        Função para obter data e hora atual.
+        """
+
         return datetime.now(pytz.timezone("Brazil/East")).replace(tzinfo=None)
 
     def run(self) -> object:
+        """
+        Função abstrata para execução do passo da Máquina de Estados do MOA.
+        """
+
         return self
 
 class FalhaCritica(State):
     def __init__(self):
+
+        # FINALIZAÇÃO DO __INIT__
 
         logger.critical("Falha crítica MOA. Interrompendo execução...")
         sys.exit(1)
@@ -56,9 +78,18 @@ class Pronto(State):
     def __init__(self, usn, *args, **kwargs):
         super().__init__(usn, *args, **kwargs)
 
+        # ATRIBUIÇÃO DE VARIÁVEIS PÚBLICAS
+
         self.usn.estado_moa = MOA_SM_PRONTO
 
     def run(self):
+        """
+        Função para execução do passo da Máquina de Estados do MOA.
+
+        Apenas chama a função de leitura de valores de operação da classe Pai e
+        depois segue para o estado de Controle de Dados.
+        """
+
         self.usn.ler_valores()
         return ControleEstados(self.usn)
 
@@ -66,11 +97,26 @@ class ControleEstados(State):
     def __init__(self, usn, *args, **kwargs):
         super().__init__(usn, *args, **kwargs)
 
+        # ATRIBUIÇÃO DE VARIÁVEIS PÚBLICAS
+
         self.usn.estado_moa = MOA_SM_CONTROLE_ESTADOS
+
+        # FINALIZAÇÃO DO __INIT__
 
         self.usn.clp["MOA"].write_single_coil(REG["PAINEL_LIDO"], [1])
 
     def run(self):
+        """
+        Função para execução do passo da Máquina de Estados do MOA.
+
+        Primeiramente chama a função de leitura de valores de operação da classe
+        Pai, para depois realizar a verificação de condições de troca de estados.
+        Caso não haja nenhum comando pendente, realiza a verificação de Condicionadores
+        da Usina e determina se deverá indisponibilizar a Usina ou normalizá-la.
+        Caso não haja nenhum acionamento, passa para o estado de Controle de
+        Reservatório.
+        """
+
         self.usn.ler_valores()
 
         logger.debug("Verificando modo do MOA...")
@@ -110,9 +156,20 @@ class ControleReservatorio(State):
     def __init__(self, usn, *args, **kwargs):
         super().__init__(usn, *args, **kwargs)
 
+        # ATRIBUIÇÃO DE VARIÁVEIS PÚBLICAS
+
         self.usn.estado_moa = MOA_SM_CONTROLE_RESERVATORIO
 
     def run(self):
+        """
+        Função para execução do passo da Máquina de Estados do MOA.
+
+        Chama a função de leitura de valores de operação para depois, chamar a função
+        de controle de resrvatório da classe Pai. Caso a função de controle retorne
+        o valor de emergência, passa para o estado de Emergência, senão passa para
+        o Controle de Dados.
+        """
+
         self.usn.ler_valores()
         flag = self.usn.controlar_reservatorio()
 
@@ -122,9 +179,18 @@ class ControleDados(State):
     def __init__(self, usn, *args, **kwargs):
         super().__init__(usn, *args, **kwargs)
 
+        # ATRIBUIÇÃO DE VARIÁVEIS PÚBLICAS
+
         self.usn.estado_moa = MOA_SM_CONTROLE_DADOS
 
     def run(self):
+        """
+        Função para execução do passo da Máquina de Estados do MOA.
+
+        Chama a função de leitura de valores de operação da classe pai, para
+        depois, chamar a função de escrita dos valores no Banco de Dados.
+        """
+
         logger.debug("Escrevendo valores no Banco...")
         self.usn.ler_valores()
         self.usn.escrever_valores()
@@ -134,9 +200,20 @@ class ControleAgendamentos(State):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
+        # ATRIBUIÇÃO DE VARIÁVEIS PÚBLICAS
+
         self.usn.estado_moa = MOA_SM_CONTROLE_AGENDAMENTOS
 
     def run(self):
+        """
+        Função para execução do passo da Máquina de Estados do MOA.
+
+        Chama a função de verificação de agendamentos pendentes do módulo de
+        Agendamentos. Caso haja algum agendamento pendente, retorna ele mesmo após
+        a execução do agendamento, para verificar se há mais pendentes. Caso todos
+        os agendamentos sejam executados, passa para o estado de Controle de Dados.
+        """
+
         logger.info("Tratando agendamentos...")
         self.usn.agn.verificar_agendamentos()
         if len(self.usn.agn.verificar_agendamentos_pendentes()) > 0:
@@ -148,13 +225,30 @@ class ModoManual(State):
     def __init__(self, usn, *args, **kwargs):
         super().__init__(usn, *args, **kwargs)
 
-        self.usn.estado_moa = MOA_SM_MODO_MANUAL
-        logger.info("Usina em modo manual. Para retornar a operação autônoma, acionar via painel ou página WEB")
+        # ATRIBUIÇÃO DE VARIÁVEIS PÚBLICAS
 
+        self.usn.estado_moa = MOA_SM_MODO_MANUAL
         self.usn.modo_autonomo = False
+
+        # FINALIZAÇÃO DO __INIT__
+
+        logger.info("Usina em modo manual. Para retornar a operação autônoma, acionar via painel ou página WEB")
         self.usn.clp["MOA"].write_single_coil(REG["PAINEL_LIDO"], [1])
 
     def run(self):
+        """
+        Função para execução do passo da Máquina de Estados do MOA.
+
+        Primeiramente chama a função de leitura de valores de operação da classe
+        Pai. Logo em seguida, atualiza o Setpoint com a leitura atual de potência
+        da Unidade, para depois re-calcular o I e IE e escrever os valores atualizados
+        no Banco de Dados.
+        Caso o modo autônomo seja ativado, realiza uma nova leitura dos valores de
+        operação e segue para o Controle de Dados (Retorna ao ciclo normal).
+        Se o modo autônomo não foi ativado, segue para o estado de Controle de
+        Agendamentos, caso haja algum pendente, senão retorna ele mesmo.
+        """
+
         self.usn.ler_valores()
         logger.debug(f"[USN] Leitura de Nível:                   {self.usn.nv_montante_recente:0.3f}")
         logger.debug(f"[USN] Potência no medidor:                {self.usn.potencia_ativa:0.3f}")
@@ -182,12 +276,29 @@ class Emergencia(State):
     def __init__(self, usn, *args, **kwargs):
         super().__init__(usn, *args, **kwargs)
 
-        self.usn.estado_moa = MOA_SM_EMERGENCIA
-        logger.critical(f"ATENÇÃO! Usina entrado em estado de emergência. (Horário: {self.get_time()})")
+        # ATRIBUIÇÃO DE VARIÁVEIS PÚBLICAS
 
+        self.usn.estado_moa = MOA_SM_EMERGENCIA
         self.tentativas = 0
 
+        # FINALIZAÇÃO DO __INIT__
+
+        logger.critical(f"ATENÇÃO! Usina entrado em estado de emergência. (Horário: {self.get_time()})")
+
     def run(self):
+        """
+        Função para execução do passo da Máquina de Estados do MOA.
+
+        Primeiramente chama a função de leitura de valores de operação da classe
+        Pai. Logo em seguida, inicia a verificação de tentativas de normalização
+        da Usina. Caso o limite de três tentativas seja ultrapassado, indiponibiliza
+        a Usina entrando no estado de Modo Manual. Caso o comando seja acionado
+        pela interface WEB, entra em um loop de espera até que o comando seja
+        desativado, senão entra em Modo Manual, caso seja desativado.
+        Caso a verificação de condicionadores retorna que não há mais nenuma ocorrência,
+        retorna para o Estado de Controle de Dados para resumir a operação normal.
+        """
+
         self.usn.ler_valores()
 
         if self.tentativas == 3:
@@ -236,13 +347,27 @@ class ControleTDAOffline(State):
     def __init__(self, usina, *args, **kwargs):
         super().__init__(usina, *args, **kwargs)
 
+        # ATRIBUIÇÃO DE VARIÁVEIS PÚBLICAS
+
         self.usn.estado_moa = MOA_SM_CONTROLE_RESERVATORIO
+
+        # ATRIBUIÇÃO DE VARIÁVEIS DICT/GLOBAIS
 
         d.glb["TDA_Offline"] = True
 
     def run(self):
-        self.usn.heartbeat()
-        
+        """
+        Função para execução do passo da Máquina de Estados do MOA.
+
+        O modo de Controle Tomada da Água Offline funciona como o estado de Controle
+        de Estados (Estado principal), porém ao final da execução da função, ao
+        invés de entrar no estado de Controle de Reservatório, chama a função de
+        controle por pressão de caixa espiral, que controla os cálculos de cada 
+        máquina individualmente.
+        """
+
+        self.usn.ler_valores()
+
         logger.debug("Verificando modo do MOA...")
         if not self.usn.modo_autonomo:
             logger.debug("")

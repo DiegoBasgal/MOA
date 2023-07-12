@@ -164,52 +164,65 @@ class UnidadeGeracao:
 
     @property
     def id(self) -> "int":
+        # PROPRIEDADE -> Retrona o ID da Unidade.
+
         return self.__id
 
     @property
     def manual(self) -> "bool":
+        # PROPRIEDADE -> Verifica se a Unidade está em modo Manual.
+
         return isinstance(self.__next_state, StateManual)
 
     @property
     def restrito(self) -> "bool":
+        # PROPRIEDADE -> Verifica se a Unidade está em modo Restrito.
+
         return isinstance(self.__next_state, StateRestrito)
 
     @property
     def disponivel(self) -> "bool":
+        # PROPRIEDADE -> Verifica se a Unidade está em modo Disponível.
+
         return isinstance(self.__next_state, StateDisponivel)
 
     @property
     def indisponivel(self) -> "bool":
+        # PROPRIEDADE -> Verifica se a Unidade está em modo Indisponível.
+
         return isinstance(self.__next_state, StateIndisponivel)
 
     @property
     def tempo_entre_tentativas(self) -> "int":
+        # PROPRIEDADE -> Retorna o tempo pré-dfinido entre tentativas de normalização.
+
         return self.__tempo_entre_tentativas
 
     @property
     def limite_tentativas_de_normalizacao(self) -> "int":
+        # PROPRIEDADE -> Retorna o limite pré-definido entre tentativas de normalização.
+
         return self.__limite_tentativas_de_normalizacao
 
     @property
     def leitura_potencia(self) -> "int | float":
+        # PROPRIEDADE -> Retorna a leitura de potência atual da Unidade.
+
         return self._leitura_potencia.valor
 
     @property
     def leitura_horimetro(self) -> "int | float":
+        # PROPRIEDADE -> Retorna a leitura de horas de geração da Unidade.
+
         return self._leitura_horimetro.valor
 
     @property
-    def tempo_entre_tentativas(self) -> int:
-        return self.__tempo_entre_tentativas
-
-    @property
-    def limite_tentativas_de_normalizacao(self) -> int:
-        return self.__limite_tentativas_de_normalizacao
-
-    @property
     def etapa_atual(self) -> int:
+        # PROPRIEDADE -> Retorna a etapa atual da Unidade.
+
         try:
             response = self.__leitura_etapa_atual.valor
+            # TODO descrever os valores do CLP
             if response == 1:
                 return UG_SINCRONIZADA
             elif 2 <= response <= 3:
@@ -231,27 +244,41 @@ class UnidadeGeracao:
 
     @property
     def prioridade(self) -> int:
+        # PROPRIEDADE -> Retorna a prioridade da Unidade.
+
         return self.__prioridade
 
     @prioridade.setter
     def prioridade(self, var) -> None:
+        # SETTER -> Atribui o novo valor de prioridade da Unidade.
+
         self.__prioridade = var
 
     @property
     def codigo_state(self) -> int:
+        # PROPRIEDADE -> Retorna o valor de estado da Unidade.
+
         return self.__codigo_state
 
     @codigo_state.setter
     def codigo_state(self, var) -> None:
+        # SETTER -> Atribui o novo valor de estado da Unidade.
+
         self.__codigo_state = var
 
     @property
     def setpoint(self) -> int:
+        # PROPRIEDADE -> Retorna o valor de setpoint da Unidade.
+
         return self.__setpoint
 
     @setpoint.setter
     def setpoint(self, var: int):
-        if var < self.setpoint_minimo:
+        # SETTER -> Atribui o novo valor de setpoint da Unidade.
+
+        if self.limpeza_grade:
+            self.__setpoint = self.cfg["pot_limpeza_grade"]
+        elif var < self.setpoint_minimo:
             self.__setpoint = 0
         elif var > self.setpoint_maximo:
             self.__setpoint = self.setpoint_maximo
@@ -260,42 +287,62 @@ class UnidadeGeracao:
 
     @property
     def setpoint_minimo(self) -> int:
+        # PROPRIEDADE -> Retorna o valor de setpoint mínimo da Unidade.
+
         return self.__setpoint_minimo
 
     @setpoint_minimo.setter
     def setpoint_minimo(self, var: int):
+        # SETTER -> Atribui o novo valor de setpoint mínimo da Unidade.
+
         self.__setpoint_minimo = var
 
     @property
     def setpoint_maximo(self) -> int:
+        # PROPRIEDADE -> Retorna o valor de setpoint máximo da Unidade.
+
         return self.__setpoint_maximo
 
     @setpoint_maximo.setter
     def setpoint_maximo(self, var: int):
+        # SETTER -> Atribui o novo valor de setpoint máximo da Unidade.
+
         self.__setpoint_maximo = var
 
     @property
     def tentativas_de_normalizacao(self) -> int:
+        # PROPRIEDADE -> Retorna o valor de tentativas de normalização da Unidade.
+
         return self.__tentativas_de_normalizacao
 
     @tentativas_de_normalizacao.setter
     def tentativas_de_normalizacao(self, var: int):
+        # SETTER -> Atribui o novo valor de tentativas de normalização da Unidade.
+
         self.__tentativas_de_normalizacao = var
 
     @property
     def condicionadores_atenuadores(self) -> "list[CondicionadorBase]":
+        # PROPRIEDADE -> Retorna a lista de atenuadores da Unidade.
+
         return self.__condicionadores_atenuadores
 
     @condicionadores_atenuadores.setter
     def condicionadores_atenuadores(self, var: "list[CondicionadorBase]") -> None:
+        # SETTER -> Atribui a nova lista de atenuadores da Unidade.
+
         self.__condicionadores_atenuadores = var
 
     @property
     def lista_ugs(self) -> "list[UnidadeGeracao]":
+        # PROPRIEDADE -> Retorna a lista com todas as instâncias de Unidades de Geração.
+
         return self._lista_ugs
 
     @lista_ugs.setter
     def lista_ugs(self, var: "list[UnidadeGeracao]") -> None:
+        # SETTER -> Atribui a nova lista com todas as instâncias de Unidades de Geração.
+
         self._lista_ugs = var
 
 
@@ -303,22 +350,50 @@ class UnidadeGeracao:
 
     @staticmethod
     def get_time() -> datetime:
+        """
+        Função para obter data e hora atual.
+        """
+
         return datetime.now(pytz.timezone("Brazil/East")).replace(tzinfo=None)
 
     def forcar_estado_manual(self) -> "None":
+        """
+        Função para forçar o estado manual na Unidade.
+        """
+
         self.__next_state = StateManual(self)
 
     def forcar_estado_restrito(self) -> "None":
+        """
+        Função para forçar o estado restrito na Unidade.
+        """
+
         self.__next_state = StateRestrito(self)
 
     def forcar_estado_indisponivel(self) -> "None":
+        """
+        Função para forçar o estado indisponível na Unidade.
+        """
+
         self.__next_state = StateIndisponivel(self)
 
     def forcar_estado_disponivel(self) -> "None":
+        """
+        Função para forçar o estado disponível na Unidade.
+        """
+
         self.reconhece_reset_alarmes()
         self.__next_state = StateDisponivel(self)
 
     def iniciar_ultimo_estado(self) -> "None":
+        """
+        Função para verificar e atribuir o último estado da Unidade, antes
+        da interrupção da última execução do MOA.
+
+        Realiza a consulta no Banco de Dados e atribui o último estado comparando
+        com o valor das constantes de Estado.
+        """
+
         estado = self.db.get_ultimo_estado_ug(self.id)[0]
 
         if estado == None:
@@ -339,21 +414,43 @@ class UnidadeGeracao:
                 self.__next_state = StateManual(self)
 
     def atualizar_modbus_moa(self) -> "None":
+        """
+        Função para atualização do estado da Unidade no CLP - MOA.
+        """
+
         self.clp["MOA"].write_single_register(REG[f"MOA_OUT_STATE_UG{self.id}"], self.codigo_state)
         self.clp["MOA"].write_single_register(REG[f"MOA_OUT_ETAPA_UG{self.id}"], self.etapa_atual)
 
     def atualizar_limites_operacao(self, db) -> "None":
+        """
+        Função para atualização de limites de equipamentos da Unidade através da
+        consulta do Banco de Dados da Interface WEB.
+        """
+
         self.prioridade = int(db[f"ug{self.id}_prioridade"])
         self.condicionador_caixa_espiral_ug.valor_base = float(db[f"alerta_caixa_espiral_ug{self.id}"])
         self.condicionador_caixa_espiral_ug.valor_limite = float(db[f"limite_caixa_espiral_ug{self.id}"])
 
     def espera_normalizar(self, delay: "int"):
+        """
+        Função de temporizador para espera de normalização da Unidade restrita,
+        por tempo pré-definido por agendamento na Interface.
+        """
+
         while not self.parar_timer:
             sleep(max(0, time() + delay - time()))
             self.parar_timer = True
             return
 
     def normalizar_unidade(self) -> "bool":
+        """
+        Função para normalização de ocorrências da Unidade de Geração.
+
+        Primeiramente verifica se a Unidade passou do número de tentativas. Caso
+        tenha passado, será chamada a função de forçar estado indisponível, senão
+        aciona a função de reconhecimento e reset de alarmes da Unidade.
+        """
+
         if self.tentativas_de_normalizacao > self.limite_tentativas_de_normalizacao:
             logger.warning(f"[UG{self.id}] A UG estourou as tentativas de normalização, indisponibilizando Unidade.")
             return False
@@ -366,6 +463,14 @@ class UnidadeGeracao:
             return True
 
     def bloquear_unidade(self) -> "None":
+        """
+        Função para Bloqueio da Unidade nos estados Restrito e Indisponível.
+
+        Aciona o comando de parada e aguarda a parada total. Logo após, aciona o
+        detector de borda para que o comando de parada não seja acionado todo o
+        ciclo e depois, chama as funções de acionamento de trips lógicos e elétrico.
+        """
+
         if self.etapa_atual == UG_PARADA:
             self.acionar_trip_logico()
             self.acionar_trip_eletrico()
@@ -377,6 +482,12 @@ class UnidadeGeracao:
             logger.debug(f"[UG{self.id}] Unidade Parando")
 
     def step(self) -> "None":
+        """
+        Função principal de passo da Unidade.
+
+        Serve como principal chamada para controle das Unidades da máquina de estados.
+        """
+
         try:
             logger.debug("")
             logger.debug(f"[UG{self.id}] Step  -> Unidade:                   \"{UG_SM_STR_DCT[self.codigo_state]}\"")
@@ -390,6 +501,18 @@ class UnidadeGeracao:
             logger.debug(traceback.format_exc())
 
     def partir(self) -> "None":
+        """
+        Função para acionamento do comando de partida da Unidade.
+
+        Primeiramente verifica se há condição de partida. Caso não haja, avisa o
+        operador e retorna falso, senão passa a verificar o status do Dijuntor
+        52A1 (SA). Caso o disjuntor esteja aberto, avisa o operador e retorna falso.
+        Caso a unidade esteja sincronizada, avisa o operador e retorna, senão,
+        são acionados diversos comandos de reconhece e reset, antes de acionar o
+        comando de partida.
+        """
+
+
         try:
             if not self.clp[f"UG{self.id}"].read_discrete_inputs(REG[f"UG{self.id}_ED_CondicaoPartida"], 1)[0]:
                 logger.debug(f"[UG{self.id}] Máquina sem condição de partida. Irá partir quando as condições forem reestabelecidas.")
@@ -424,6 +547,13 @@ class UnidadeGeracao:
             logger.debug(traceback.format_exc())
 
     def parar(self) -> "None":
+        """
+        Função para acionamento do comando de Parada da Unidade.
+
+        Verifica se a unidade está parada. Caso esteja, avisa o operador e retorna,
+        senão aciona os comandos de parada e reconehcimento de alarmes.
+        """
+
         try:
             if not self.etapa_atual == UG_PARADA:
                 logger.info(f"[UG{self.id}]          Enviando comando:          \"PARADA\"")
@@ -441,19 +571,25 @@ class UnidadeGeracao:
             logger.debug(traceback.format_exc())
 
     def enviar_setpoint(self, setpoint_kw: int) -> "bool":
+        """
+        Função para envio do valor de setpoint para o controle de potência das
+        Unidades.
+
+        Verifica se foi acionado o comando de limpeza de grades. Caso seja verdadeiro,
+        atribui o setpoint mínimo de operação, senão, controla os limites máximo
+        e mínimo e logo em seguida, envia o valor calculado para a Unidade.
+        """
+
         try:
-            if self.limpeza_grade:
-                self.setpoint_minimo = self.cfg["pot_limpeza_grade"]
-            else:
-                self.setpoint_minimo = self.cfg["pot_minima"]
+            self.setpoint_minimo = self.cfg["pot_minima"]
             self.setpoint_maximo = self.cfg[f"pot_maxima_ug{self.id}"]
 
-            logger.debug(f"[UG{self.id}]          Enviando setpoint:         {int(self.setpoint)} kW")
+            logger.debug(f"[UG{self.id}]          Enviando setpoint:         {int(setpoint_kw)} kW")
 
             if self.setpoint > 1:
                 response = self.clp[f"UG{self.id}"].write_single_coil(REG[f"UG{self.id}_CD_ResetGeral"], [1])
                 response = self.clp[f"UG{self.id}"].write_single_coil(REG[f"UG{self.id}_CD_RV_RefRemHabilita"], [1])
-                response = self.clp[f"UG{self.id}"].write_single_register(REG[f"UG{self.id}_RA_ReferenciaCarga"], self.setpoint)
+                response = self.clp[f"UG{self.id}"].write_single_register(REG[f"UG{self.id}_RA_ReferenciaCarga"], int(self.setpoint))
                 return response
 
         except Exception:
@@ -462,6 +598,12 @@ class UnidadeGeracao:
             return False
 
     def acionar_trip_eletrico(self) -> "None":
+        """
+        Função para acionamento de TRIP elétrico.
+
+        Aciona o comando de bloqueio da Unidade através do CLP - MOA.
+        """
+
         try:
             logger.debug(f"[UG{self.id}]          Enviando comando:          \"TRIP ELÉTRICO\"")
             self.clp["MOA"].write_single_coil(REG[f"MOA_OUT_BLOCK_UG{self.id}"], [1])
@@ -471,6 +613,13 @@ class UnidadeGeracao:
             logger.debug(traceback.format_exc())
 
     def remover_trip_eletrico(self) -> "None":
+        """
+        Função para remoção de TRIP elétrico.
+
+        Remove o comando de bloqueio da Unidade através do CLP - MOA e fecha o
+        Disjuntor 52L (Linha) caso esteja aberto.
+        """
+
         try:
             logger.debug(f"[UG{self.id}]          Removendo comando:         \"TRIP ELÉTRICO\"")
 
@@ -487,6 +636,12 @@ class UnidadeGeracao:
             logger.debug(traceback.format_exc())
 
     def acionar_trip_logico(self) -> "None":
+        """
+        Função para acionamento de TRIP lógico.
+
+        Aciona o comando de emergência via superviório.
+        """
+
         try:
             logger.debug(f"[UG{self.id}]          Enviando comando:          \"TRIP LÓGICO\"")
             self.clp[f"UG{self.id}"].write_single_coil(REG[f"UG{self.id}_CD_EmergenciaViaSuper"], [1])
@@ -496,6 +651,12 @@ class UnidadeGeracao:
             logger.debug(traceback.format_exc())
 
     def remover_trip_logico(self) -> "None":
+        """
+        Função para remoção de TRIP lógico.
+
+        Aciona os comandos de reset geral, relés e reconhece.
+        """
+
         try:
             logger.debug(f"[UG{self.id}]          Removendo comando:         \"TRIP LÓGICO\"")
             self.clp[f"UG{self.id}"].write_single_coil(REG[f"UG{self.id}_CD_ResetGeral"], [1])
@@ -514,6 +675,13 @@ class UnidadeGeracao:
             logger.debug(traceback.format_exc())
 
     def reconhece_reset_alarmes(self) -> "None":
+        """
+        Função para reset e reconhecimento de TRIPs.
+
+        Chama três vezes as funções de remoção de TRIP elétrico e lógico, para
+        depois acionar os comandos de reset geral e reconhece da Unidade.
+        """
+
         try:
             logger.debug("")
             logger.info(f"[UG{self.id}]          Enviando comando:          \"RECONHECE E RESET\"")
@@ -537,11 +705,30 @@ class UnidadeGeracao:
             logger.debug(traceback.format_exc())
 
     def verificar_pressao_uhrv(self) -> "None":
+        """
+        Função para verificação dos limites de pressão da UHRV.
+
+        Esta função tem como objetivo evitar TRIPs em etapas específicas da Unidade.
+        """
+
         if self.__leitura_pressao_uhrv.valor <= 120:
             self.clp[f"UG{self.id}"].write_single_coil(REG[f"UG{self.id}_CD_ResetReleBloq86H"], [1])
             self.clp[f"UG{self.id}"].write_single_coil(REG[f"UG{self.id}_ED_ReleBloqA86HAtuado"], [0])
 
     def controle_etapas(self) -> "None":
+        """
+        Função para controle de etapas da Unidade.
+
+        PARADA -> Envia comando de partida caso seja atribuído um valor de setpoint.
+        PARANDO -> Envia setpoint apenas (boa prática)
+        SINCRONIZANDO -> Chama a função de verificação de partida por tempo pré-
+        definido. Caso o timer ultrapasse o tempo estipulado, será chamada a função
+        de forçar estado indisponível, senão, caso a unidade sincronize, para o
+        timer. Caso seja atribuído o valor 0 no setpoint, aciona o comando de parada.
+        SINCRONIZADA -> Controla a variável de tempo sincronizada e envia o comando
+        de parada caso seja atribuído o setpoint 0 para a Unidade.
+        """
+
         # PARANDO
         if self.etapa_atual == UG_PARANDO:
             if self.setpoint >= self.setpoint_minimo:
@@ -580,6 +767,14 @@ class UnidadeGeracao:
             self.aux_tempo_sincronizada = None
 
     def verificar_partida(self) -> "None":
+        """
+        Função de verificação de partida da Unidade.
+
+        Caso a unidade seja totalmente sincronizada, o timer é encerrado e avisado,
+        senão, é chamada a função de forçar estado indisponível e aciona o comando
+        de emergência via supervisório.
+        """
+
         logger.debug(f"[UG{self.id}]          Comando MOA:               \"Iniciar timer de verificação de partida\"")
         timer = time() + 600
         while time() < timer:
@@ -597,6 +792,13 @@ class UnidadeGeracao:
 
 
     def ajuste_ganho_cx_espiral(self) -> "None":
+        """
+        Função para atenuação de carga através de leitura de pressão de caixa espiral.
+
+        Calcula o ganho e verifica os limites máximo e mínimo para deteminar se
+        deve atenuar ou não.
+        """
+
         atenuacao = 0
         for condic in self.condicionadores_atenuadores:
             atenuacao = max(atenuacao, condic.valor)
@@ -614,6 +816,12 @@ class UnidadeGeracao:
         logger.debug(f"[UG{self.id}]                                     SP {aux} * GANHO {ganho} = {self.setpoint} kW")
 
     def ajuste_inicial_cx(self) -> "None":
+        """
+        Função para ajustar valores de P, I e IE da Unidade na inicialização do MOA.
+
+        Esta função é executada apenas uma vez na inicialização do processo.
+        """
+
         try:
             self.cx_controle_p = (self._leitura_caixa_espiral.valor - self.cfg["press_cx_alvo"]) * self.cfg["cx_kp"]
             self.cx_ajuste_ie = sum(ug.leitura_potencia for ug in self.lista_ugs) / self.cfg["pot_maxima_alvo"]

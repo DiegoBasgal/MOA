@@ -9,7 +9,7 @@ __maintainers__ = "Diego Basgal", "Henrique Pfeifer"
 __emails__ = "diego.garcia@ritmoenergia.com.br", "henrique@ritmoenergia.com.br"
 
 __authors__ = "Diego Basgal", "Henrique Pfeifer", "Lucas Lavratti"
-__credits__ = ["Lucas Lavratti", " Henrique Pfeifer", "Diego Basgal", ...]
+__credits__ = ["Lucas Lavratti", " Henrique Pfeifer", "Diego Basgal", "Lucas Specht", ...]
 
 import os
 import sys

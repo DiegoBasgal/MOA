@@ -5,6 +5,9 @@ from datetime import datetime
 
 class BancoDados:
     def __init__(self, pool_name: str):
+
+        # ATRIBUIÇÃO DE VARIÁVEIS PÚBLICAS
+
         self.cnx = mariadb.ConnectionPool(
             host="localhost",
             user="moa",
@@ -20,6 +23,10 @@ class BancoDados:
 
 
     def get_ultimo_estado_ug(self, ug_id) -> int:
+        """
+        Função para extrair o último estado da Unidade de Geração do Banco.
+        """
+
         self.cursor.execute(
             f"SELECT ug{ug_id}_ultimo_estado "
             "FROM parametros_parametrosusina "
@@ -29,6 +36,10 @@ class BancoDados:
         return estado
 
     def get_parametros_usina(self) -> list:
+        """
+        Função para extrair os parâmetros alterados na Interface WEB.
+        """
+
         self.cursor.execute("SHOW COLUMNS FROM parametros_parametrosusina")
         cols = self.cursor.fetchall()
 
@@ -43,6 +54,10 @@ class BancoDados:
         return parametros
 
     def get_agendamentos_pendentes(self) -> list:
+        """
+        Função para extrair a lista de agendamentos pendentes criados na Interface WEB.
+        """
+
         self.cursor.execute(
             "SELECT * "
             "FROM agendamentos_agendamento "
@@ -54,6 +69,11 @@ class BancoDados:
         return result
 
     def get_contato_emergencia(self) -> list:
+        """
+        Função para extrair lista de contatos de sobreaviso adicionados na Interface
+        WEB, para chamada por Voip.
+        """
+
         self.cursor.execute("SELECT * FROM parametros_contato")
         rows = self.cursor.fetchall()
         parametros = {}
@@ -65,6 +85,11 @@ class BancoDados:
         return parametros
 
     def get_executabilidade(self, id_comando) -> dict:
+        """
+        Função para extrair a variável de verificação do modo de execução de
+        agendamentos.
+        """
+
         self.cursor.execute(
             "SELECT executavel_em_automatico, executavel_em_manual "
             "FROM parametros_comando "
@@ -79,6 +104,10 @@ class BancoDados:
             }
 
     def update_modo_moa(self, modo: bool) -> None:
+        """
+        Função para atualizar o modo do MOA no Banco.
+        """
+
         if modo:
             self.cursor.execute(
                 "UPDATE parametros_parametrosusina " \
@@ -94,6 +123,10 @@ class BancoDados:
         self.conn.commit()
 
     def update_remove_emergencia(self) -> None:
+        """
+        Função para atualizar o valor de emergência (desativada) do Banco.
+        """
+
         self.cursor.execute(
             "UPDATE parametros_parametrosusina "
             "SET emergencia_acionada = 0 "
@@ -102,6 +135,11 @@ class BancoDados:
         self.conn.commit()
 
     def update_tda_offline(self, status=False) -> None:
+        """
+        Função para atualizar o status da operação com Tomada da Água Offline no
+        Banco.
+        """
+
         if status:
             self.cursor.execute(
                 "UPDATE parametros_parametrosusina "
@@ -117,6 +155,10 @@ class BancoDados:
         self.conn.commit()
 
     def update_valores_usina(self, valores) -> None:
+        """
+        Função para atualizar os valores de operação do MOA no Banco.
+        """
+
         self.cursor.execute(
             "UPDATE parametros_parametrosusina "
             "SET timestamp = %s, "
@@ -137,6 +179,10 @@ class BancoDados:
         self.conn.commit()
 
     def update_debug(self, valores) -> None:
+        """
+        Função para atualizar os valores de operação DEBUG do MOA no Banco.
+        """
+        
         self.cursor.execute(
             "INSERT INTO `debug`.`moa_debug` "
             "VALUES (%s,%s, "
@@ -155,6 +201,10 @@ class BancoDados:
         self.conn.commit()
 
     def update_controle_estados(self, valores) -> None:
+        """
+        Função para atualizar o último estado das Unidades de Geração no Banco.
+        """
+        
         self.cursor.execute(
             "INSERT INTO parametros_controleestados "
             "VALUES (%s,%s, "
@@ -164,6 +214,11 @@ class BancoDados:
         self.conn.commit()
 
     def update_alarmes(self, valores) -> None:
+        """
+        Função para atualizar a lista de acionamentos/alarmes para visualização
+        na interface WEB.
+        """
+        
         self.cursor.execute(
             "INSERT INTO alarmes_alarmes "
             "VALUES (%s, %s, %s);",
@@ -172,6 +227,11 @@ class BancoDados:
         self.conn.commit()
 
     def update_agendamento(self, id_agendamento, executado, obs="") -> None:
+        """
+        Função para atualizar se o agendamento foi executado no Banco para a interface
+        WEB.
+        """
+        
         if len(obs) >= 1:
             obs = " - " + obs
 
