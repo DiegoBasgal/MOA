@@ -51,6 +51,13 @@ class UnidadeGeracao:
             escala=0.1,
             op=4
         )
+        self.__leitura_rotacao = LeituraModbus(
+            f"[UG{self.id}] Leitura Rotação",
+            self.clp[f"UG{self.id}"],
+            REG[f"UG{self.id}_RA_ReferenciaCarga"],
+            escala=0.1,
+            op=4
+        )
 
         self.__leitura_horimetro_hora = LeituraModbus(
             f"[UG{self.id}] Horímetro Hora",
@@ -140,9 +147,17 @@ class UnidadeGeracao:
 
         # ATRIBUIÇÃO DE VARIÁVEIS PÚBLICAS
 
+        self.pot_alvo_anterior: "int" = -1
+        self.ajuste_inicial_cx_esp: "int" = -1
+
         self.tempo_normalizar: "int" = 0
-        self.pot_alvo_anterior: "int"  = -1
-        self.ajuste_inicial_cx_esp: "int"  = -1
+        self.tentativas_sincronismo: "int" = 0
+        self.tentativas_aguardar_rotacao: "int" = 0
+
+        self.setpoint_minimo: "int" = self.cfg["pot_minima"]
+        self.setpoint_maximo: "int" = self.cfg[f"pot_maxima_ug{self.id}"]
+
+        self.temporizar_rotacao: "bool" = True
 
         self.release: "bool" = False
         self.parar_timer: "bool" = False
@@ -151,9 +166,6 @@ class UnidadeGeracao:
         self.borda_partindo: "bool" = False
         self.timer_partindo: "bool" = False
         self.normalizacao_agendada: "bool" = False
-
-        self.setpoint_minimo: "int" = self.cfg["pot_minima"]
-        self.setpoint_maximo: "int" = self.cfg[f"pot_maxima_ug{self.id}"]
 
         self.aux_tempo_sincronizada: "datetime" = 0
 
@@ -510,8 +522,10 @@ class UnidadeGeracao:
         Caso a unidade esteja sincronizada, avisa o operador e retorna, senão,
         são acionados diversos comandos de reconhece e reset, antes de acionar o
         comando de partida.
+        Caso a Unidade ultrapasse o limite de tentativas de sincronismo, é chamada
+        a função de parada, força o estado restrito para verificar se não há
+        condicionadores ativos e avisa o operador para tentar normalizar a Unidade.
         """
-
 
         try:
             if not self.clp[f"UG{self.id}"].read_discrete_inputs(REG[f"UG{self.id}_ED_CondicaoPartida"], 1)[0]:
@@ -522,8 +536,12 @@ class UnidadeGeracao:
                 logger.info(f"[UG{self.id}] O Disjuntor 52A1 está aberto. Para partir a máquina, o mesmo deverá ser fechado.")
                 return True
 
-            elif not self.etapa_atual == UG_SINCRONIZADA:
+            elif not self.etapa_atual == UG_SINCRONIZADA and self.tentativas_sincronismo <= 3:
+                self.tentativas_sincronismo += 1
+
                 logger.info(f"[UG{self.id}]          Enviando comando:          \"PARTIDA\"")
+                logger.info(f"[UG{self.id}]          Tentativas de Sincronismo:  {self.tentativas_sincronismo}/3")
+
                 self.clp["SA"].write_single_coil(REG["SA_CD_ResetRele59N"], [1])
                 self.clp["SA"].write_single_coil(REG["SA_CD_ResetRele787"], [1])
                 self.clp[f"UG{self.id}"].write_single_coil(REG[f"UG{self.id}_CD_ResetGeral"], [1])
@@ -538,9 +556,13 @@ class UnidadeGeracao:
                 self.clp[f"UG{self.id}"].write_single_coil(REG[f"UG{self.id}_CD_IniciaPartida"], [1])
                 self.clp[f"UG{self.id}"].write_single_coil(REG[f"UG{self.id}_CD_Cala_Sirene"], [1])
 
-            else:
-                logger.debug(f"[UG{self.id}] A unidade já está sincronizada.")
-                self.clp[f"UG{self.id}"].write_single_coil(REG[f"UG{self.id}_CD_Cala_Sirene"], [1])
+            elif self.tentativas_sincronismo > 3:
+                self.tentativas_sincronismo = 0
+
+                logger.critical(f"[UG{self.id}] A Unidade ultrapassou o limite de tentativas de Sinconismo.")
+                logger.info(f"[UG{self.id}] Entrando no estado Restrito e acionando Voip.")
+
+                self.forcar_estado_restrito()
 
         except Exception:
             logger.error(f"[UG{self.id}] Não foi possível enviar o comando de partida.")
@@ -627,7 +649,7 @@ class UnidadeGeracao:
             self.clp["MOA"].write_single_coil(REG[f"MOA_OUT_BLOCK_UG{self.id}"], [0])
             self.clp[f"UG{self.id}"].write_single_coil(REG[f"UG{self.id}_CD_Cala_Sirene"], [1])
 
-            if self.clp["SA"].read_coils(REG["SA_CD_Liga_DJ1"])[0] == 0:
+            if self.clp["SA"].read_coils(REG["SA_ED_DisjDJ1_Fechado"])[0] == 0:
                 logger.debug(f"[UG{self.id}]          Enviando comando:          \"FECHAR DJ LINHA\".")
                 self.clp["SA"].write_single_coil(REG["SA_CD_Liga_DJ1"], [1])
 
@@ -715,6 +737,92 @@ class UnidadeGeracao:
             self.clp[f"UG{self.id}"].write_single_coil(REG[f"UG{self.id}_CD_ResetReleBloq86H"], [1])
             self.clp[f"UG{self.id}"].write_single_coil(REG[f"UG{self.id}_ED_ReleBloqA86HAtuado"], [0])
 
+    def verificar_rotacao(self) -> "None":
+        """
+        Função para verificar a rotação da Unidade, caso haja um atraso no processo
+        de sincronismo.
+
+        Chama a função de aguardar rotação, com um tempo pré-definido de aguardo
+        no momento que a rotação da Unidade atingir a janela pré-definida.
+        Caso o temporizador ultrapasse o tempo, será realizado o Reset Geral, e
+        contabilizada uma tentativa de aguardo de rotação. Caso o número de tentativas
+        ultrapasse seja maior que três, avisa o operador e aborta a pertida para
+        que seja realizada uma nova tentativa do processo de sincronismo do início.
+        """
+
+        try:
+            if 250 <= self.__leitura_rotacao.valor < 300 and not self.temporizar_rotacao:
+                self.temporizar_rotacao = True
+                Thread(target=lambda: self.aguardar_rotacao()).start()
+
+            elif 300 <= self.__leitura_rotacao.valor <= 500 and not self.atraso_rotacao:
+                self.clp[f"UG{self.id}"].write_single_coil(REG[f"UG{self.id}_CD_ResetReleBloq86M"], [1])
+                self.clp[f"UG{self.id}"].write_single_coil(REG[f"UG{self.id}_ED_ReleBloqA86MAtuado"], [0])
+
+            elif self.atraso_rotacao and self.tentativas_aguardar_rotacao <= 3:
+                self.tentativas_aguardar_rotacao += 1
+                logger.debug("")
+                logger.warning(f"[UG{self.id}] A rotação da Unidade está demorando para subir. (Tentativa {self.tentativas_aguardar_rotacao}/3)")
+                logger.debug("")
+
+                self.reconhece_reset_alarmes()
+
+                self.atraso_rotacao = False
+
+            elif self.tentativas_aguardar_rotacao == 4:
+                logger.debug("")
+                logger.critical(f"[UG{self.id}] A Unidade ultrapassou o limite de tentativas de aguardo pela rotação.")
+                logger.info(f"[UG{self.id}] Abortando partida para realizar uma nova tentativa de Sincronismo do início.")
+                logger.debug("")
+
+                self.parar()
+
+            else:
+                return
+
+        except Exception:
+            logger.error(f"[UG{self.id}] Houve um erro com a função de verificação de rotação da Unidade.")
+            logger.debug(f"Traceback: {traceback.format_exc()}")
+
+    def aguardar_rotacao(self) -> "None":
+        """
+        Função com temporizador de aguardo da rotação da máquina com período
+        pré-definido.
+        """
+
+        while time() <= time() + 90:
+            if self.__leitura_rotacao.valor > 500:
+                self.temporizar_rotacao = False
+                return
+            sleep(10)
+
+        self.atraso_rotacao = True
+        self.temporizar_rotacao = False
+
+    def aguardar_sincronismo(self) -> "None":
+        """
+        Função de verificação de partida da Unidade.
+
+        Caso a unidade seja totalmente sincronizada, o timer é encerrado e avisado,
+        senão, é chamada a função de forçar estado indisponível e aciona o comando
+        de emergência via supervisório.
+        """
+
+        logger.debug(f"[UG{self.id}]          Comando MOA:               \"Iniciar timer de verificação de partida\"")
+        timer = time() + 600
+        while time() < timer:
+            if self.etapa_atual == UG_SINCRONIZADA or self.timer_partindo:
+                logger.debug(f"[UG{self.id}]          Comando MOA:               \"Encerrar timer de verificação de partida por condição verdadeira\"")
+                self.timer_partindo = False
+                self.release = True
+                return
+
+        logger.debug(f"[UG{self.id}]          Comando MOA:               \"Encerrar timer de verificação de partida por timeout\"")
+        self.clp[f"UG{self.id}"].write_single_coil(REG[f"UG{self.id}_CD_EmergenciaViaSuper"], [1])
+        self.clp[f"UG{self.id}"].write_single_coil(REG[f"UG{self.id}_CD_EmergenciaViaSuper"], [0])
+        self.borda_partindo = False
+        self.release = True
+
     def controle_etapas(self) -> "None":
         """
         Função para controle de etapas da Unidade.
@@ -737,7 +845,7 @@ class UnidadeGeracao:
         # SINCRONIZANDO
         elif self.etapa_atual == UG_SINCRONIZANDO:
             if not self.borda_partindo:
-                Thread(target=lambda: self.verificar_partida()).start()
+                Thread(target=lambda: self.aguardar_sincronismo()).start()
                 self.borda_partindo = True
 
             self.verificar_pressao_uhrv()
@@ -765,30 +873,6 @@ class UnidadeGeracao:
         # CONTROLE TEMPO SINCRONIZADAS
         if not self.etapa_atual == UG_SINCRONIZADA:
             self.aux_tempo_sincronizada = None
-
-    def verificar_partida(self) -> "None":
-        """
-        Função de verificação de partida da Unidade.
-
-        Caso a unidade seja totalmente sincronizada, o timer é encerrado e avisado,
-        senão, é chamada a função de forçar estado indisponível e aciona o comando
-        de emergência via supervisório.
-        """
-
-        logger.debug(f"[UG{self.id}]          Comando MOA:               \"Iniciar timer de verificação de partida\"")
-        timer = time() + 600
-        while time() < timer:
-            if self.etapa_atual == UG_SINCRONIZADA or self.timer_partindo:
-                logger.debug(f"[UG{self.id}]          Comando MOA:               \"Encerrar timer de verificação de partida por condição verdadeira\"")
-                self.timer_partindo = False
-                self.release = True
-                return
-
-        logger.debug(f"[UG{self.id}]          Comando MOA:               \"Encerrar timer de verificação de partida por timeout\"")
-        self.clp[f"UG{self.id}"].write_single_coil(REG[f"UG{self.id}_CD_EmergenciaViaSuper"], [1])
-        self.clp[f"UG{self.id}"].write_single_coil(REG[f"UG{self.id}_CD_EmergenciaViaSuper"], [0])
-        self.borda_partindo = False
-        self.release = True
 
 
     def ajuste_ganho_cx_espiral(self) -> "None":
