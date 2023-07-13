@@ -53,28 +53,28 @@ class Usina:
         # ATRIBUIÇÃO DE VARIÁVEIS PRIVADAS
 
         self.__potencia_ativa_kW: "LeituraModbus" = LeituraModbus(
-            "SA_EA_Medidor_potencia_kw_mp",
+            "[USN] Leitura Potência Medidor",
             self.clp["SA"],
             REG["SA_EA_PM_810_Potencia_Ativa"],
             1,
             op=4,
         )
         self.__tensao_rs: "LeituraModbus" = LeituraModbus(
-            "SA_EA_PM_810_Tensao_AB",
+            "[USN] Tensão RS",
             self.clp["SA"],
             REG["SA_EA_PM_810_Tensao_ab"],
             100,
             op=4,
         )
         self.__tensao_st: "LeituraModbus" = LeituraModbus(
-            "SA_EA_PM_810_Tensao_BC",
+            "[USN] Tensão ST",
             self.clp["SA"],
             REG["SA_EA_PM_810_Tensao_bc"],
             100,
             op=4,
         )
         self.__tensao_tr: "LeituraModbus" = LeituraModbus(
-            "SA_EA_PM_810_Tensao_CA",
+            "[USN] Tensão TR",
             self.clp["SA"],
             REG["SA_EA_PM_810_Tensao_ca"],
             100,
@@ -85,7 +85,7 @@ class Usina:
         # ATRIBUIÇÃO DE VARIÁVEIS PROTEGIDAS
 
         self._nv_montante: "LeituraModbus" = LeituraModbus(
-            "TDA_EntradasAnalogicas_MRR_NivelMaisCasasAntes",
+            "[USN] Nível Montante",
             self.clp["TDA"],
             REG["TDA_EA_NivelAntesGrade"],
             1 / 10000,
@@ -251,7 +251,7 @@ class Usina:
             self.clp["UG1"].write_single_coil(REG["UG1_CD_ResetGeral"], [1])
             self.clp["UG2"].write_single_coil(REG["UG2_CD_ResetGeral"], [1])
             self.clp["UG3"].write_single_coil(REG["UG3_CD_ResetGeral"], [1])
-            self.clp["TDA"].write_single_coil(REG["TDA_CD_ResetGeral"], [1]) if not self.TDA_Offline else logger.debug("[USN] CLP TDA Offline, não há como realizar o reset geral")
+            self.clp["TDA"].write_single_coil(REG["TDA_CD_ResetGeral"], [1]) if not d.glb["TDA_Offline"] else logger.debug("[USN] CLP TDA Offline, não há como realizar o reset geral")
 
             self.clp["SA"].write_single_coil(REG["SA_CD_Cala_Sirene"], [1])
             self.clp["UG1"].write_single_coil(REG["UG1_CD_Cala_Sirene"], [1])
@@ -301,7 +301,6 @@ class Usina:
             self.tentativas_normalizar += 1
             self.db_emergencia = False
             self.clp_emergencia = False
-            d.glb["TDA_Offline"] = True if d.glb["TDA_Offline"] else False
             self.resetar_emergencia()
             self.db.update_remove_emergencia()
             return True
