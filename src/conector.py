@@ -70,9 +70,9 @@ class ClientesUsina:
         """
 
         logger.debug("[CLI] Iniciando conexões ModBus...")
-        for _ , clp in cls.clp.items():
+        for n , clp in cls.clp.items():
             if not clp.open():
-                raise ModBusClientFail(clp)
+                logger.error(f"[CLI] Erro ao iniciar conexão com o CLP - {n}")
         logger.debug("[CLI] Conexões inciadas.")
 
     @classmethod
@@ -97,56 +97,48 @@ class ClientesUsina:
         avisa o operador, senão fecha a conexão.
         """
 
-
-        if not cls.ping(d.ips["TDA_ip"]):
+        if not cls.ping(d.ips["TDA_ip"]) and not cls.borda_ping:
+            cls.borda_ping = True
             d.glb["TDA_Offline"] = True
-            if d.glb["TDA_Offline"] and not cls.borda_ping:
-                cls.borda_ping = True
-                logger.critical("CLP TDA não respondeu a tentativa de comunicação!")
+            logger.warning("[CLI] CLP TDA não respondeu a tentativa de comunicação!")
 
         elif cls.ping(d.ips["TDA_ip"]) and cls.borda_ping:
-            logger.info("Comunicação com o CLP TDA reestabelecida.")
+            logger.info("[CLI] Comunicação com o CLP TDA reestabelecida.")
             cls.borda_ping = False
             d.glb["TDA_Offline"] = False
 
         if not cls.ping(d.ips["SA_ip"]):
-            logger.warning("CLP SA não respondeu a tentativa de ping!")
+            logger.warning("[CLI] CLP SA não respondeu a tentativa de comunicação!")
         if cls.clp["SA"].open():
             cls.clp["SA"].close()
         else:
-            logger.critical("CLP SA não respondeu a tentativa de conexão ModBus!")
+            logger.critical("[CLI] CLP SA não respondeu a tentativa de conexão ModBus!")
             cls.clp["SA"].close()
 
         if not cls.ping(d.ips["UG1_ip"]):
-            logger.warning("CLP UG1 não respondeu a tentativa de ping!")
+            logger.warning("[CLI] CLP UG1 não respondeu a tentativa de comunicação!")
         if cls.clp["UG1"].open():
             cls.clp["UG1"].close()
         else:
-            logger.warning("CLP UG1 não respondeu a tentativa de conexão ModBus!")
+            logger.warning("[CLI] CLP UG1 não respondeu a tentativa de conexão ModBus!")
 
         if not cls.ping(d.ips["UG2_ip"]):
-            logger.warning("CLP UG2 não respondeu a tentativa de ping!")
+            logger.warning("[CLI] CLP UG2 não respondeu a tentativa de comunicação!")
         if cls.clp["UG2"].open():
             cls.clp["UG2"].close()
         else:
-            logger.warning("CLP UG2 não respondeu a tentativa de conexão ModBus!")
+            logger.warning("[CLI] CLP UG2 não respondeu a tentativa de conexão ModBus!")
 
         if not cls.ping(d.ips["UG3_ip"]):
-            logger.warning("CLP UG3 não respondeu a tentativa de ping!")
+            logger.warning("CLP UG3 não respondeu a tentativa de comunicação!")
         if cls.clp["UG3"].open():
             cls.clp["UG3"].close()
         else:
-            logger.warning("CLP UG3 não respondeu a tentativa de conexão ModBus!")
+            logger.warning("[CLI] CLP UG3 não respondeu a tentativa de conexão ModBus!")
 
         if not cls.ping(d.ips["MOA_ip"]):
-            logger.warning("CLP MOA não respondeu a tentativa de ping!")
+            logger.warning("[CLI] CLP MOA não respondeu a tentativa de comunicação!")
         if cls.clp["MOA"].open():
             cls.clp["MOA"].close()
         else:
-            logger.warning("CLP MOA não respondeu a tentativa de conexão ModBus!")
-
-
-class ModBusClientFail(Exception):
-    def __init__(cls, clp: ModbusClient = None, *args: object) -> None:
-        super().__init__(*args)
-        raise f"[CLI] Modbus client ({clp.host} : {clp.port}) failed to open."
+            logger.warning("[CLI] CLP MOA não respondeu a tentativa de conexão ModBus!")

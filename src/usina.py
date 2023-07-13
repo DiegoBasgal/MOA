@@ -52,28 +52,28 @@ class Usina:
 
         # ATRIBUIÇÃO DE VARIÁVEIS PRIVADAS
 
-        self.__potencia_ativa_kW: LeituraModbus = LeituraModbus(
+        self.__potencia_ativa_kW: "LeituraModbus" = LeituraModbus(
             "SA_EA_Medidor_potencia_kw_mp",
             self.clp["SA"],
             REG["SA_EA_PM_810_Potencia_Ativa"],
             1,
             op=4,
         )
-        self.__tensao_rs: LeituraModbus = LeituraModbus(
+        self.__tensao_rs: "LeituraModbus" = LeituraModbus(
             "SA_EA_PM_810_Tensao_AB",
             self.clp["SA"],
             REG["SA_EA_PM_810_Tensao_ab"],
             100,
             op=4,
         )
-        self.__tensao_st: LeituraModbus = LeituraModbus(
+        self.__tensao_st: "LeituraModbus" = LeituraModbus(
             "SA_EA_PM_810_Tensao_BC",
             self.clp["SA"],
             REG["SA_EA_PM_810_Tensao_bc"],
             100,
             op=4,
         )
-        self.__tensao_tr: LeituraModbus = LeituraModbus(
+        self.__tensao_tr: "LeituraModbus" = LeituraModbus(
             "SA_EA_PM_810_Tensao_CA",
             self.clp["SA"],
             REG["SA_EA_PM_810_Tensao_ca"],
@@ -84,7 +84,7 @@ class Usina:
 
         # ATRIBUIÇÃO DE VARIÁVEIS PROTEGIDAS
 
-        self._nv_montante: LeituraModbus = LeituraModbus(
+        self._nv_montante: "LeituraModbus" = LeituraModbus(
             "TDA_EntradasAnalogicas_MRR_NivelMaisCasasAntes",
             self.clp["TDA"],
             REG["TDA_EA_NivelAntesGrade"],
@@ -95,7 +95,7 @@ class Usina:
 
         self._pid_inicial: "int" = -1
         self._pot_alvo_anterior: "int" = -1
-        self._tentativas_normalizar: "bool" = 0
+        self._tentativas_normalizar: "int" = 0
 
         self._modo_autonomo: "bool" = False
 
@@ -119,14 +119,15 @@ class Usina:
         self.pid_inicial: "float" = -1
 
         self.tentar_normalizar: "bool" = True
-        self.normalizar_forcado: "bool" = False
 
+        self.TDA_Offline: "bool" = False
         self.borda_emerg: "bool" = False
         self.db_emergencia: "bool" = False
         self.clp_emergencia: "bool" = False
-
-        self.TDA_Offline: "bool" = False
+        self.normalizar_forcado: "bool" = False
         self.aguardando_reservatorio: "bool" = False
+
+        self.nv_montante_recentes: "list" = []
 
         self.ultima_tentativa_norm: "datetime" = self.get_time()
 
@@ -522,7 +523,7 @@ class Usina:
             else:
                 self.controle_i = 0.5
                 self.controle_ie = 0.5
-                self.distribuir_potencia(self.cfg["pot_maxima_usina"])
+                self.ajustar_potencia(self.cfg["pot_maxima_usina"])
                 for ug in self.ugs:
                     ug.step()
 
@@ -536,9 +537,8 @@ class Usina:
 
             if self.nv_montante_recente <= NIVEL_FUNDO_RESERVATORIO:
                 if not ClientesUsina.ping(d.ips["TDA_ip"]):
-                    logger.warning("[USN] A comunicação com a TDA falhou. Entrando em modo manual")
-                    self.modo_autonomo = False
-                    return NV_FLAG_EMERGENCIA
+                    d.glb["TDA_Offline"] = True
+                    return NV_FLAG_NORMAL
                 else:
                     logger.critical(f"[USN] Nível montante ({self.nv_montante_recente:3.2f}) atingiu o fundo do reservatorio!")
                     return NV_FLAG_EMERGENCIA
@@ -801,9 +801,22 @@ class Usina:
         Função para atualização de valores anteriores e erro de nível montante.
         """
 
-        self.nv_montante_recente = self.nv_montante
-        self.erro_nv_anterior = self.erro_nv
-        self.erro_nv = self.nv_montante_recente - self.cfg["nv_alvo"]
+        if self.nv_montante_recente < 1:
+            self.nv_montante_recentes = [self.nv_montante] * 240
+
+            self.nv_montante_recentes.append(round(self.nv_montante, 2))
+            self.nv_montante_recentes = self.nv_montante_recentes[1:]
+
+            smoothing = 5
+            ema = [sum(self.nv_montante_recentes) / len(self.nv_montante_recentes)]
+            for nv in self.nv_montante_recentes:
+                ema.append((nv * (smoothing / (1 + len(self.nv_montante_recentes)))) + ema[-1] * (1 - (smoothing / (1 + len(self.nv_montante_recentes)))))
+
+            self.nv_montante_recente = ema[-1]
+
+            self.erro_nv_anterior = self.erro_nv
+            self.erro_nv = self.nv_montante_recente - self.cfg["nv_alvo"]
+
 
     def atualizar_valores_banco(self, parametros) -> None:
         """
@@ -827,9 +840,6 @@ class Usina:
             if not self.modo_de_escolha_das_ugs == int(parametros["modo_de_escolha_das_ugs"]):
                 self.modo_de_escolha_das_ugs = int(parametros["modo_de_escolha_das_ugs"])
                 logger.info(f"[USN] Modo de prioridade das UGs:         \"{UG_STR_DCT_PRIORIDADE[self.modo_de_escolha_das_ugs]}\"")
-
-            for ug in self.ugs:
-                ug.atualizar_limites_operacao(parametros)
 
         except Exception:
             logger.error(f"[USN] Houve um erro ao ler e atualizar os parâmetros do Banco de Dados.")

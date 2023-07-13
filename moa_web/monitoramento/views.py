@@ -50,14 +50,15 @@ def monitoramento_view(request, *args, **kwargs):
         reg_dj = clp_sa.read_coils(17)[0]
         setpot_usina = clp_sa.read_input_registers(26)[0]
         context["setpot_usina"] = setpot_usina
-        if reg_dj == 0:
-            context["status_dj52l"] = True
-        elif reg_dj == 1:
-            context["status_dj52l"] = False
+        if reg_dj == 1:
+            context["status_dj52l"] = 0
+        elif reg_dj == 0:
+            context["status_dj52l"] = 1
         else:
-            context["status_dj52l"] = None
+            context["status_dj52l"] = 2
 
     if clp_tda.open():
+        context["tda_offline"] = 0
         reg_nv = clp_tda.read_input_registers(12)[0]
         context["nv_montante"] = f"{(reg_nv * 1/10000) + 400:0.2f}"
         if 405 <= reg_nv <= 405.15:
@@ -66,6 +67,8 @@ def monitoramento_view(request, *args, **kwargs):
             context["tag"] = 1
         elif reg_nv <= 404.85 or reg_nv > 405.15:
             context["tag"] = 2
+    else:
+        context["tda_offline"] = 1
 
     if clp_ug1.open():
         setpoint_ug1 = clp_ug1.read_holding_registers(1)[0]

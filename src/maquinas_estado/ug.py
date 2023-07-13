@@ -114,21 +114,21 @@ class StateRestrito(State):
 
         if flag == CONDIC_INDISPONIBILIZAR:
             logger.warning(f"[UG{self.parent.id}] UG detectou condicionadores com gravidade alta, indisponibilizando UG.")
-            self.parent.parar_timer = True
+            self.parent.temporizar_normalizacao = False
             return StateIndisponivel(self.parent)
 
         elif flag == CONDIC_IGNORAR:
             logger.info(f"[UG{self.parent.id}] A UG não possui mais condicionadores ativos, normalizando e retornando para o estado disponível")
-            self.parent.parar_timer = True
+            self.parent.temporizar_normalizacao = False
             self.parent.reconhece_reset_alarmes()
             return StateDisponivel(self.parent)
 
         if self.parent.normalizacao_agendada:
             logger.info(f"[UG{self.parent.id}] Normalização por tempo acionada -> Tempo definido: {self.parent.tempo_normalizar}")
             self.parent.normalizacao_agendada = False
-            Thread(target=lambda: self.parent.espera_normalizar(self.parent.tempo_normalizar)).start()
+            Thread(target=lambda: self.parent.aguardar_normalizacao(self.parent.tempo_normalizar)).start()
 
-        elif self.parent.parar_timer:
+        elif self.parent.temporizar_normalizacao:
             return self if self.parent.normalizar_unidade() else StateIndisponivel(self.parent)
 
         else:

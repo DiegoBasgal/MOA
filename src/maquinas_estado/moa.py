@@ -91,7 +91,7 @@ class Pronto(State):
         """
 
         self.usn.ler_valores()
-        return ControleEstados(self.usn)
+        return ControleEstados(self.usn) if not d.glb["TDA_Offline"] else ControleTDAOffline(self.usn)
 
 class ControleEstados(State):
     def __init__(self, usn, *args, **kwargs):
@@ -100,10 +100,6 @@ class ControleEstados(State):
         # ATRIBUIÇÃO DE VARIÁVEIS PÚBLICAS
 
         self.usn.estado_moa = MOA_SM_CONTROLE_ESTADOS
-
-        # FINALIZAÇÃO DO __INIT__
-
-        self.usn.clp["MOA"].write_single_coil(REG["PAINEL_LIDO"], [1])
 
     def run(self):
         """
@@ -124,6 +120,11 @@ class ControleEstados(State):
             logger.debug("")
             logger.info("Comando acionado: \"Desabilitar Modo Autônomo\"")
             return ModoManual(self.usn)
+
+        if d.glb["TDA_Offline"]:
+            logger.debug("")
+            logger.info("Entrando no modo de operação TDA Off-line.")
+            return ControleTDAOffline(self.usn)
 
         logger.debug("Verificando status da emergência...")
         if self.usn.clp_emergencia or self.usn.db_emergencia:
@@ -194,7 +195,7 @@ class ControleDados(State):
         logger.debug("Escrevendo valores no Banco...")
         self.usn.ler_valores()
         self.usn.escrever_valores()
-        return ControleTDAOffline(self.usn) if d.glb["TDA_Offline"] else ControleEstados(self.usn)
+        return ControleEstados(self.usn) if not d.glb["TDA_Offline"] else ControleTDAOffline(self.usn)
 
 class ControleAgendamentos(State):
     def __init__(self, *args, **kwargs):
@@ -219,7 +220,10 @@ class ControleAgendamentos(State):
         if len(self.usn.agn.verificar_agendamentos_pendentes()) > 0:
             return self
         else:
-            return ControleEstados(self.usn) if self.usn.modo_autonomo else ModoManual(self.usn)
+            if self.usn.modo_autonomo:
+                return ControleEstados(self.usn) if not d.glb["TDA_Offline"] else ControleTDAOffline(self.usn)
+            else:
+                return ModoManual(self.usn)
 
 class ModoManual(State):
     def __init__(self, usn, *args, **kwargs):
@@ -232,8 +236,10 @@ class ModoManual(State):
 
         # FINALIZAÇÃO DO __INIT__
 
+        for ug in self.usn.ugs:
+            ug.temporizar_partida = False
+
         logger.info("Usina em modo manual. Para retornar a operação autônoma, acionar via painel ou página WEB")
-        self.usn.clp["MOA"].write_single_coil(REG["PAINEL_LIDO"], [1])
 
     def run(self):
         """

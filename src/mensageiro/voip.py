@@ -48,7 +48,7 @@ class Voip:
                 print(f"O expediente já acabou! ({str(now)} > {contato['fim']})")
                 continue
             else:
-                contatos.append([contato["name"], contato["phone"]])
+                contatos.append([contato["nome"], contato["telefone"]])
 
         return contatos
 
@@ -129,7 +129,8 @@ class Voip:
         if cls.cfg["voz_habilitado"]:
             logger.debug("[VOIP] Enviando voz de Emergencia...")
 
-            if agenda := cls.carregar_contatos() is not None:
+            if cls.carregar_contatos() is not None:
+                agenda = cls.carregar_contatos()
                 lista_contatos = cls.verificar_expediente(agenda)
             else:
                 logger.info("[VOIP] Lista de contatos vazia! Carregando lista de contatos padrão.")
@@ -149,9 +150,9 @@ class Voip:
             else:
                 todos = []
                 for _, vl in vd.voip_dict.items():
-                    if vl[0]:
-                        todos.append(vl[1])
-                        vl[0] = False
+                    if vl[0] and vl[1] == 0:
+                        todos.append(vl[2])
+                        vl[1] = 1
 
                 mensagem = "".join(i for i in todos)
 

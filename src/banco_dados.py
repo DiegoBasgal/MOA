@@ -74,7 +74,7 @@ class BancoDados:
         WEB, para chamada por Voip.
         """
 
-        self.cursor.execute("SELECT * FROM parametros_contato")
+        self.cursor.execute("SELECT * FROM contatos_contato")
         rows = self.cursor.fetchall()
         parametros = {}
 

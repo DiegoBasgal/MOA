@@ -19,7 +19,7 @@ from src.banco_dados import BancoDados
 logger = logging.getLogger("__main__")
 
 class OcorrenciasUsn:
-    def __init__(self, clp: "dict[str, ModbusClient]"=None, db: BancoDados=None) -> None:
+    def __init__(self, clp: "dict[str, ModbusClient]"=None, db: "BancoDados"=None) -> "None":
 
         # ATRIBUIÇÃO DE VARIÁVEIS PRIVADAS
 
@@ -102,89 +102,59 @@ class OcorrenciasUsn:
         de acionamento temporizado.
         """
 
-        if self.leitura_ED_SA_QLCF_Disj52ETrip.valor != 0 and not vd.voip_dict["SA_QLCF_DISJ_52E_TRIP"][0]:
-            logger.warning("O Disjuntor do Gerador Diesel de Emergência QLCF identificou um sinal de TRIP, favor verificar.")
-            vd.voip_dict["SA_QLCF_DISJ_52E_TRIP"][0] = True
-        elif self.leitura_ED_SA_QLCF_Disj52ETrip.valor == 0 and vd.voip_dict["SA_QLCF_DISJ_52E_TRIP"][0]:
-            vd.voip_dict["SA_QLCF_DISJ_52E_TRIP"][0] = False
+        if self.leitura_ED_SA_QLCF_Disj52ETrip.valor != 0:
+            logger.warning("[OCO-USN] O Disjuntor do Gerador Diesel de Emergência QLCF identificou um sinal de TRIP, favor verificar.")
 
-        if self.leitura_ED_SA_QLCF_TripDisjAgrup.valor != 0 and not vd.voip_dict["SA_QLCF_TRIP_DISJ_AGRUP"][0]:
-            logger.warning("O sensor do Disjuntor de Agrupamento QLCF identificou um sinal de trip, favor verificar.")
-            vd.voip_dict["SA_QLCF_TRIP_DISJ_AGRUP"][0] = True
-        elif self.leitura_ED_SA_QLCF_TripDisjAgrup.valor == 0 and vd.voip_dict["SA_QLCF_TRIP_DISJ_AGRUP"][0]:
-            vd.voip_dict["SA_QLCF_TRIP_DISJ_AGRUP"][0] = False
+        if self.leitura_ED_SA_QLCF_TripDisjAgrup.valor != 0:
+            logger.warning("[OCO-USN] O sensor do Disjuntor de Agrupamento QLCF identificou um sinal de trip, favor verificar.")
 
-        if self.leitura_ED_SA_QCAP_SubtensaoBarraGeral.valor != 0 and not vd.voip_dict["SA_QCAP_SUBTENSAO_BARRA_GERAL"][0]:
-            logger.warning("O sensor de Subtensão do Barramento Geral QCAP foi acionado, favor verificar.")
-            vd.voip_dict["SA_QCAP_SUBTENSAO_BARRA_GERAL"][0] = True
-        elif self.leitura_ED_SA_QCAP_SubtensaoBarraGeral.valor == 0 and vd.voip_dict["SA_QCAP_SUBTENSAO_BARRA_GERAL"][0]:
-            vd.voip_dict["SA_QCAP_SUBTENSAO_BARRA_GERAL"][0] = False
+        if self.leitura_ED_SA_QCAP_SubtensaoBarraGeral.valor != 0:
+            logger.warning("[OCO-USN] O sensor de Subtensão do Barramento Geral QCAP foi acionado, favor verificar.")
 
-        if self.leitura_ED_SA_GMG_Alarme.valor != 0 and not vd.voip_dict["SA_GMG_ALARME"][0]:
-            logger.warning("O alarme do Grupo Motor Gerador foi acionado, favor verificar.")
-            vd.voip_dict["SA_GMG_ALARME"][0] = True
-        elif self.leitura_ED_SA_GMG_Alarme.valor == 0 and vd.voip_dict["SA_GMG_ALARME"][0]:
-            vd.voip_dict["SA_GMG_ALARME"][0] = False
+        if self.leitura_ED_SA_GMG_Alarme.valor != 0:
+            logger.warning("[OCO-USN] O alarme do Grupo Motor Gerador foi acionado, favor verificar.")
 
-        if self.leitura_ED_SA_GMG_Trip.valor != 0 and not vd.voip_dict["SA_GMG_TRIP"][0]:
-            logger.warning("O sensor de TRIP do Grupo Motor Gerador foi acionado, favor verificar.")
-            vd.voip_dict["SA_GMG_TRIP"][0] = True
-        elif self.leitura_ED_SA_GMG_Trip.valor == 0 and vd.voip_dict["SA_GMG_TRIP"][0]:
-            vd.voip_dict["SA_GMG_TRIP"][0] = False
+        if self.leitura_ED_SA_GMG_Trip.valor != 0:
+            logger.warning("[OCO-USN] O sensor de TRIP do Grupo Motor Gerador foi acionado, favor verificar.")
 
-        if self.leitura_ED_SA_GMG_Operacao.valor != 0 and not vd.voip_dict["SA_GMG_OPERACAO"][0]:
-            logger.warning("O sensor de operação do Grupo Motor Gerador foi acionado, favor verificar.")
-            vd.voip_dict["SA_GMG_OPERACAO"][0] = True
-        elif self.leitura_ED_SA_GMG_Operacao.valor == 0 and vd.voip_dict["SA_GMG_OPERACAO"][0]:
-            vd.voip_dict["SA_GMG_OPERACAO"][0] = False
+        if self.leitura_ED_SA_GMG_Operacao.valor != 0:
+            logger.warning("[OCO-USN] O sensor de operação do Grupo Motor Gerador foi acionado, favor verificar.")
 
-        if self.leitura_ED_SA_GMG_BaixoComb.valor != 0 and not vd.voip_dict["SA_GMG_BAIXO_COMB"][0]:
-            logger.warning("O sensor de de combustível do Grupo Motor Gerador retornou que o nível está baixo, favor reabastercer o gerador.")
-            vd.voip_dict["SA_GMG_BAIXO_COMB"][0] = True
-        elif self.leitura_ED_SA_GMG_BaixoComb.valor == 0 and vd.voip_dict["SA_GMG_BAIXO_COMB"][0]:
-            vd.voip_dict["SA_GMG_BAIXO_COMB"][0] = False
+        if self.leitura_ED_SA_GMG_BaixoComb.valor != 0:
+            logger.warning("[OCO-USN] O sensor de de combustível do Grupo Motor Gerador retornou que o nível está baixo, favor reabastercer o gerador.")
 
-        if self.leitura_RD_BbaDren1_FalhaAcion.valor != 0 and not vd.voip_dict["BBA_DREN_1_FALHA_ACION"][0]:
-            logger.warning("O sensor da Bomba de Drenagem 1 identificou uma falha no acionamento, favor verificar.")
-            vd.voip_dict["BBA_DREN_1_FALHA_ACION"][0] = True
-        elif self.leitura_RD_BbaDren1_FalhaAcion.valor == 0 and vd.voip_dict["BBA_DREN_1_FALHA_ACION"][0]:
-            vd.voip_dict["BBA_DREN_1_FALHA_ACION"][0] = False
+        if self.leitura_RD_BbaDren1_FalhaAcion.valor != 0:
+            logger.warning("[OCO-USN] O sensor da Bomba de Drenagem 1 identificou uma falha no acionamento, favor verificar.")
 
-        if self.leitura_RD_BbaDren2_FalhaAcion.valor != 0 and not vd.voip_dict["BBA_DREN_2_FALHA_ACION"][0]:
-            logger.warning("O sensor da Bomba de Drenagem 2 identificou uma falha no acionamento, favor verificar.")
-            vd.voip_dict["BBA_DREN_2_FALHA_ACION"][0] = True
-        elif self.leitura_RD_BbaDren2_FalhaAcion.valor == 0 and vd.voip_dict["BBA_DREN_2_FALHA_ACION"][0]:
-            vd.voip_dict["BBA_DREN_2_FALHA_ACION"][0] = False
+        if self.leitura_RD_BbaDren2_FalhaAcion.valor != 0:
+            logger.warning("[OCO-USN] O sensor da Bomba de Drenagem 2 identificou uma falha no acionamento, favor verificar.")
 
-        if self.leitura_RD_BbaDren3_FalhaAcion.valor != 0 and not vd.voip_dict["BBA_DREN_3_FALHA_ACION"][0]:
-            logger.warning("O sensor da Bomba de Drenagem 3 identificou uma falha no acionamento, favor verificar.")
-            vd.voip_dict["BBA_DREN_3_FALHA_ACION"][0] = True
-        elif self.leitura_RD_BbaDren3_FalhaAcion.valor == 0 and vd.voip_dict["BBA_DREN_3_FALHA_ACION"][0]:
-            vd.voip_dict["BBA_DREN_3_FALHA_ACION"][0] = False
+        if self.leitura_RD_BbaDren3_FalhaAcion.valor != 0:
+            logger.warning("[OCO-USN] O sensor da Bomba de Drenagem 3 identificou uma falha no acionamento, favor verificar.")
 
-        if self.leitura_RD_SA_GMG_FalhaAcion.valor != 0 and not vd.voip_dict["SA_GMG_FALHA_ACION"][0]:
-            logger.warning("O sensor do Grupo Motor Gerador identificou uma falha no acionamento, favor verificar.")
-            vd.voip_dict["SA_GMG_FALHA_ACION"][0] = True
-        elif self.leitura_RD_SA_GMG_FalhaAcion.valor == 0 and vd.voip_dict["SA_GMG_FALHA_ACION"][0]:
-            vd.voip_dict["SA_GMG_FALHA_ACION"][0] = False
+        if self.leitura_RD_SA_GMG_FalhaAcion.valor != 0:
+            logger.warning("[OCO-USN] O sensor do Grupo Motor Gerador identificou uma falha no acionamento, favor verificar.")
 
-        if self.leitura_RD_FalhaComunSETDA.valor == 1 and not vd.voip_dict["FALHA_COMUM_SETDA"][0]:
-            logger.warning("Houve uma falha de comunicação com o CLP da Subestação e o CLP da Tomada da Água, favor verificar")
+        if self.leitura_RD_FalhaComunSETDA.valor != 0 and not vd.voip_dict["FALHA_COMUM_SETDA"][0]:
+            logger.warning("[OCO-USN] Houve uma falha de comunicação com o CLP da Subestação e o CLP da Tomada da Água, favor verificar")
             vd.voip_dict["FALHA_COMUM_SETDA"][0] = True
         elif self.leitura_RD_FalhaComunSETDA.valor == 0 and vd.voip_dict["FALHA_COMUM_SETDA"][0]:
             vd.voip_dict["FALHA_COMUM_SETDA"][0] = False
+            vd.voip_dict["FALHA_COMUM_SETDA"][1] = 0
 
-        if self.leitura_ED_SA_QCAP_Disj52EFechado.valor == 1 and not vd.voip_dict["SA_QCAP_DISJ_52E_FECHADO"][0]:
-            logger.warning("O Disjuntor do Gerador Diesel de Emergência QLCF foi fechado.")
+        if self.leitura_ED_SA_QCAP_Disj52EFechado.valor != 0 and not vd.voip_dict["SA_QCAP_DISJ_52E_FECHADO"][0]:
+            logger.warning("[OCO-USN] O Disjuntor do Gerador Diesel de Emergência QLCF foi fechado.")
             vd.voip_dict["SA_QCAP_DISJ_52E_FECHADO"][0] = True
         elif self.leitura_ED_SA_QCAP_Disj52EFechado.valor == 0 and vd.voip_dict["SA_QCAP_DISJ_52E_FECHADO"][0]:
             vd.voip_dict["SA_QCAP_DISJ_52E_FECHADO"][0] = False
+            vd.voip_dict["SA_QCAP_DISJ_52E_FECHADO"][1] = 0
 
-        if self.leitura_ED_SA_QCADE_BombasDng_Auto.valor == 0 and not vd.voip_dict["SA_QCADE_BOMBAS_DNG_AUTO"][0]:
-            logger.warning("O poço de drenagem da Usina entrou em modo remoto, favor verificar.")
+        if self.leitura_ED_SA_QCADE_BombasDng_Auto.valor != 1 and not vd.voip_dict["SA_QCADE_BOMBAS_DNG_AUTO"][0]:
+            logger.warning("[OCO-USN] O poço de drenagem da Usina entrou em modo remoto, favor verificar.")
             vd.voip_dict["SA_QCADE_BOMBAS_DNG_AUTO"][0] = True
         elif self.leitura_ED_SA_QCADE_BombasDng_Auto.valor == 1 and vd.voip_dict["SA_QCADE_BOMBAS_DNG_AUTO"][0]:
             vd.voip_dict["SA_QCADE_BOMBAS_DNG_AUTO"][0] = False
+            vd.voip_dict["SA_QCADE_BOMBAS_DNG_AUTO"][1] = 0
 
         return
 
@@ -364,14 +334,13 @@ class OcorrenciasUsn:
 
 
 class OcorrenciasUg:
-    def __init__(self, ug_id: int, clp: "dict[str, ModbusClient]"=None, db: BancoDados=None):
+    def __init__(self, ug, clp: "dict[str, ModbusClient]"=None, db: BancoDados=None):
 
         # ATRIBUIÇÃO DE VARIÁVEIS PRIVADAS
 
+        self.__ug = ug
         self.__db = db
         self.__clp = clp
-        self.__ug_id = ug_id
-
 
         # ATRIBUIÇÃO DE VARIÁVEIS PROTEGIDAS
 
@@ -395,25 +364,25 @@ class OcorrenciasUg:
         self.carregar_leituras()
 
     @property
-    def temperatura_base(self) -> int:
+    def temperatura_base(self) -> "int":
         # PROPRIEDADE -> Retrona o valor de temperaturas base da Unidade.
 
         return self._temperatura_base
 
     @temperatura_base.setter
-    def temperatura_base(self, var: int) -> None:
+    def temperatura_base(self, var: "int") -> None:
         # SETTER -> Atrubui o novo valor de temperaturas base da Unidade.
 
         self._temperatura_base = var
 
     @property
-    def temperatura_limite(self) -> int:
+    def temperatura_limite(self) -> "int":
         # PROPRIEDADE -> Retrona o valor de temperaturas limite da Unidade.
 
         return self._temperatura_limite
 
     @temperatura_limite.setter
-    def temperatura_limite(self, var: int) -> None:
+    def temperatura_limite(self, var: "int") -> None:
         # SETTER -> Atrubui o novo valor de temperaturas limite da Unidade.
 
         self._temperatura_limite = var
@@ -466,7 +435,7 @@ class OcorrenciasUg:
 
         self._condicionadores_essenciais = var
 
-    def verificar_condicionadores(self) -> int:
+    def verificar_condicionadores(self) -> "int":
         """
         Função para a verificação de acionamento de condicionadores e determinação
         de gravidade.
@@ -492,8 +461,8 @@ class OcorrenciasUg:
                     flag = CONDIC_INDISPONIBILIZAR
 
             logger.debug("")
-            logger.warning(f"[OCO-UG{self.__ug_id}] Foram detectados condicionadores ativos na UG:")
-            [logger.warning(f"[OCO-UG{self.__ug_id}] Descrição: \"{condic.descr}\", Gravidade: \"{CONDIC_STR_DCT[condic.gravidade] if condic.gravidade in CONDIC_STR_DCT else 'Desconhecida'}\"") for condic in condicionadores_ativos]
+            logger.warning(f"[OCO-UG{self.__ug.id}] Foram detectados condicionadores ativos na UG:")
+            [logger.warning(f"[OCO-UG{self.__ug.id}] Descrição: \"{condic.descr}\", Gravidade: \"{CONDIC_STR_DCT[condic.gravidade] if condic.gravidade in CONDIC_STR_DCT else 'Desconhecida'}\"") for condic in condicionadores_ativos]
             logger.debug("")
 
             for condic in condicionadores_ativos:
@@ -503,44 +472,47 @@ class OcorrenciasUg:
             return flag
         return flag
 
-    def atualizar_limites_condicionadores(self, parametros) -> None:
+    def atualizar_limites_condicionadores(self, parametros) -> "None":
         """
         Função para extração de valores do Banco de Dados da Interface WEB e atribuição
         de novos limites de operação de condicionadores.
         """
 
         try:
-            self.condic_dict[f"tmp_fase_r_ug{self.__ug_id}"].valor_base = float(parametros[f"alerta_temperatura_fase_r_ug{self.__ug_id}"])
-            self.condic_dict[f"tmp_fase_s_ug{self.__ug_id}"].valor_base = float(parametros[f"alerta_temperatura_fase_s_ug{self.__ug_id}"])
-            self.condic_dict[f"tmp_fase_t_ug{self.__ug_id}"].valor_base = float(parametros[f"alerta_temperatura_fase_t_ug{self.__ug_id}"])
-            self.condic_dict[f"tmp_nucleo_estator_ug{self.__ug_id}"].valor_base = float(parametros[f"alerta_temperatura_nucleo_estator_ug{self.__ug_id}"])
-            self.condic_dict[f"tmp_mancal_rad_dia_1_ug{self.__ug_id}"].valor_base = float(parametros[f"alerta_temperatura_mancal_rad_dia_1_ug{self.__ug_id}"])
-            self.condic_dict[f"tmp_mancal_rad_dia_2_ug{self.__ug_id}"].valor_base = float(parametros[f"alerta_temperatura_mancal_rad_dia_2_ug{self.__ug_id}"])
-            self.condic_dict[f"tmp_mancal_rad_tra_1_ug{self.__ug_id}"].valor_base = float(parametros[f"alerta_temperatura_mancal_rad_tra_1_ug{self.__ug_id}"])
-            self.condic_dict[f"tmp_mancal_rad_tra_2_ug{self.__ug_id}"].valor_base = float(parametros[f"alerta_temperatura_mancal_rad_tra_2_ug{self.__ug_id}"])
-            self.condic_dict[f"tmp_saida_de_ar_ug{self.__ug_id}"].valor_base = float(parametros[f"alerta_temperatura_saida_de_ar_ug{self.__ug_id}"])
-            self.condic_dict[f"tmp_mancal_guia_escora_ug{self.__ug_id}"].valor_base = float(parametros[f"alerta_temperatura_mancal_guia_escora_ug{self.__ug_id}"])
-            self.condic_dict[f"tmp_mancal_guia_radial_ug{self.__ug_id}"].valor_base = float(parametros[f"alerta_temperatura_mancal_guia_radial_ug{self.__ug_id}"])
-            self.condic_dict[f"tmp_mancal_guia_contra_ug{self.__ug_id}"].valor_base = float(parametros[f"alerta_temperatura_mancal_guia_contra_ug{self.__ug_id}"])
+            self.__ug.prioridade = int(parametros[f"ug{self.__ug.id}_prioridade"])
+            self.condic_dict[f"tmp_fase_r_ug{self.__ug.id}"].valor_base = float(parametros[f"alerta_temperatura_fase_r_ug{self.__ug.id}"])
+            self.condic_dict[f"tmp_fase_s_ug{self.__ug.id}"].valor_base = float(parametros[f"alerta_temperatura_fase_s_ug{self.__ug.id}"])
+            self.condic_dict[f"tmp_fase_t_ug{self.__ug.id}"].valor_base = float(parametros[f"alerta_temperatura_fase_t_ug{self.__ug.id}"])
+            self.condic_dict[f"tmp_nucleo_estator_ug{self.__ug.id}"].valor_base = float(parametros[f"alerta_temperatura_nucleo_estator_ug{self.__ug.id}"])
+            self.condic_dict[f"tmp_mancal_rad_dia_1_ug{self.__ug.id}"].valor_base = float(parametros[f"alerta_temperatura_mancal_rad_dia_1_ug{self.__ug.id}"])
+            self.condic_dict[f"tmp_mancal_rad_dia_2_ug{self.__ug.id}"].valor_base = float(parametros[f"alerta_temperatura_mancal_rad_dia_2_ug{self.__ug.id}"])
+            self.condic_dict[f"tmp_mancal_rad_tra_1_ug{self.__ug.id}"].valor_base = float(parametros[f"alerta_temperatura_mancal_rad_tra_1_ug{self.__ug.id}"])
+            self.condic_dict[f"tmp_mancal_rad_tra_2_ug{self.__ug.id}"].valor_base = float(parametros[f"alerta_temperatura_mancal_rad_tra_2_ug{self.__ug.id}"])
+            self.condic_dict[f"tmp_saida_de_ar_ug{self.__ug.id}"].valor_base = float(parametros[f"alerta_temperatura_saida_de_ar_ug{self.__ug.id}"])
+            self.condic_dict[f"tmp_mancal_guia_escora_ug{self.__ug.id}"].valor_base = float(parametros[f"alerta_temperatura_mancal_guia_escora_ug{self.__ug.id}"])
+            self.condic_dict[f"tmp_mancal_guia_radial_ug{self.__ug.id}"].valor_base = float(parametros[f"alerta_temperatura_mancal_guia_radial_ug{self.__ug.id}"])
+            self.condic_dict[f"tmp_mancal_guia_contra_ug{self.__ug.id}"].valor_base = float(parametros[f"alerta_temperatura_mancal_guia_contra_ug{self.__ug.id}"])
+            self.condic_dict[f"pressao_cx_espiral_ug{self.__ug.id}"].valor_base = float(parametros[f"alerta_caixa_espiral_ug{self.__ug.id}"])
 
-            self.condic_dict[f"tmp_fase_r_ug{self.__ug_id}"].valor_limite = float(parametros[f"limite_temperatura_fase_r_ug{self.__ug_id}"])
-            self.condic_dict[f"tmp_fase_s_ug{self.__ug_id}"].valor_limite = float(parametros[f"limite_temperatura_fase_s_ug{self.__ug_id}"])
-            self.condic_dict[f"tmp_fase_t_ug{self.__ug_id}"].valor_limite = float(parametros[f"limite_temperatura_fase_t_ug{self.__ug_id}"])
-            self.condic_dict[f"tmp_nucleo_estator_ug{self.__ug_id}"].valor_limite = float(parametros[f"limite_temperatura_nucleo_estator_ug{self.__ug_id}"])
-            self.condic_dict[f"tmp_mancal_rad_dia_1_ug{self.__ug_id}"].valor_limite = float(parametros[f"limite_temperatura_mancal_rad_dia_1_ug{self.__ug_id}"])
-            self.condic_dict[f"tmp_mancal_rad_dia_2_ug{self.__ug_id}"].valor_limite = float(parametros[f"limite_temperatura_mancal_rad_dia_2_ug{self.__ug_id}"])
-            self.condic_dict[f"tmp_mancal_rad_tra_1_ug{self.__ug_id}"].valor_limite = float(parametros[f"limite_temperatura_mancal_rad_tra_1_ug{self.__ug_id}"])
-            self.condic_dict[f"tmp_mancal_rad_tra_2_ug{self.__ug_id}"].valor_limite = float(parametros[f"limite_temperatura_mancal_rad_tra_2_ug{self.__ug_id}"])
-            self.condic_dict[f"tmp_saida_de_ar_ug{self.__ug_id}"].valor_limite = float(parametros[f"limite_temperatura_saida_de_ar_ug{self.__ug_id}"])
-            self.condic_dict[f"tmp_mancal_guia_escora_ug{self.__ug_id}"].valor_limite = float(parametros[f"limite_temperatura_mancal_guia_escora_ug{self.__ug_id}"])
-            self.condic_dict[f"tmp_mancal_guia_radial_ug{self.__ug_id}"].valor_limite = float(parametros[f"limite_temperatura_mancal_guia_radial_ug{self.__ug_id}"])
-            self.condic_dict[f"tmp_mancal_guia_contra_ug{self.__ug_id}"].valor_limite = float(parametros[f"limite_temperatura_mancal_guia_contra_ug{self.__ug_id}"])
+            self.condic_dict[f"tmp_fase_r_ug{self.__ug.id}"].valor_limite = float(parametros[f"limite_temperatura_fase_r_ug{self.__ug.id}"])
+            self.condic_dict[f"tmp_fase_s_ug{self.__ug.id}"].valor_limite = float(parametros[f"limite_temperatura_fase_s_ug{self.__ug.id}"])
+            self.condic_dict[f"tmp_fase_t_ug{self.__ug.id}"].valor_limite = float(parametros[f"limite_temperatura_fase_t_ug{self.__ug.id}"])
+            self.condic_dict[f"tmp_nucleo_estator_ug{self.__ug.id}"].valor_limite = float(parametros[f"limite_temperatura_nucleo_estator_ug{self.__ug.id}"])
+            self.condic_dict[f"tmp_mancal_rad_dia_1_ug{self.__ug.id}"].valor_limite = float(parametros[f"limite_temperatura_mancal_rad_dia_1_ug{self.__ug.id}"])
+            self.condic_dict[f"tmp_mancal_rad_dia_2_ug{self.__ug.id}"].valor_limite = float(parametros[f"limite_temperatura_mancal_rad_dia_2_ug{self.__ug.id}"])
+            self.condic_dict[f"tmp_mancal_rad_tra_1_ug{self.__ug.id}"].valor_limite = float(parametros[f"limite_temperatura_mancal_rad_tra_1_ug{self.__ug.id}"])
+            self.condic_dict[f"tmp_mancal_rad_tra_2_ug{self.__ug.id}"].valor_limite = float(parametros[f"limite_temperatura_mancal_rad_tra_2_ug{self.__ug.id}"])
+            self.condic_dict[f"tmp_saida_de_ar_ug{self.__ug.id}"].valor_limite = float(parametros[f"limite_temperatura_saida_de_ar_ug{self.__ug.id}"])
+            self.condic_dict[f"tmp_mancal_guia_escora_ug{self.__ug.id}"].valor_limite = float(parametros[f"limite_temperatura_mancal_guia_escora_ug{self.__ug.id}"])
+            self.condic_dict[f"tmp_mancal_guia_radial_ug{self.__ug.id}"].valor_limite = float(parametros[f"limite_temperatura_mancal_guia_radial_ug{self.__ug.id}"])
+            self.condic_dict[f"tmp_mancal_guia_contra_ug{self.__ug.id}"].valor_limite = float(parametros[f"limite_temperatura_mancal_guia_contra_ug{self.__ug.id}"])
+            self.condic_dict[f"pressao_cx_espiral_ug{self.__ug.id}"].valor_limite = float(parametros[f"limite_caixa_espiral_ug{self.__ug.id}"])
 
         except Exception:
-            logger.error(f"[OCO-UG{self.__ug_id}] Houve um erro ao atualizar os limites de temperaturas dos condicionadores.")
-            logger.debug(f"[OCO-UG{self.__ug_id}] Traceback: {traceback.format_exc()}")
+            logger.error(f"[OCO-UG{self.__ug.id}] Houve um erro ao atualizar os limites de temperaturas dos condicionadores.")
+            logger.debug(f"[OCO-UG{self.__ug.id}] Traceback: {traceback.format_exc()}")
 
-    def controle_limites_operacao(self) -> None:
+    def controle_limites_operacao(self) -> "None":
         """
         Função para verificação de limites de operação da Unidade.
 
@@ -551,136 +523,118 @@ class OcorrenciasUg:
         ld = self.leitura_dict
         cd = self.condic_dict
 
-        if ld[f"tmp_fase_r_ug{self.__ug_id}"].valor >= cd[f"tmp_fase_r_ug{self.__ug_id}"].valor_base:
-            logger.warning(f"[UG{self.__ug_id}] A temperatura de Fase R da UG passou do valor base! ({cd[f'tmp_fase_r_ug{self.__ug_id}'].valor_base} C) | Leitura: {ld[f'tmp_fase_r_ug{self.__ug_id}'].valor} C")
+        if ld[f"tmp_fase_r_ug{self.__ug.id}"].valor >= cd[f"tmp_fase_r_ug{self.__ug.id}"].valor_base:
+            logger.warning(f"[OCO-UG{self.__ug.id}] A temperatura de Fase R da UG passou do valor base! ({cd[f'tmp_fase_r_ug{self.__ug.id}'].valor_base} C) | Leitura: {ld[f'tmp_fase_r_ug{self.__ug.id}'].valor} C")
 
-        if ld[f"tmp_fase_r_ug{self.__ug_id}"].valor >= 0.9*(cd[f"tmp_fase_r_ug{self.__ug_id}"].valor_limite - cd[f"tmp_fase_r_ug{self.__ug_id}"].valor_base) + cd[f"tmp_fase_r_ug{self.__ug_id}"].valor_base:
-            logger.critical(f"[UG{self.__ug_id}] A temperatura de Fase R da UG está muito próxima do limite! ({cd[f'tmp_fase_r_ug{self.__ug_id}'].valor_limite} C) | Leitura: {ld[f'tmp_fase_r_ug{self.__ug_id}'].valor} C")
+        if ld[f"tmp_fase_r_ug{self.__ug.id}"].valor >= 0.9*(cd[f"tmp_fase_r_ug{self.__ug.id}"].valor_limite - cd[f"tmp_fase_r_ug{self.__ug.id}"].valor_base) + cd[f"tmp_fase_r_ug{self.__ug.id}"].valor_base:
+            logger.critical(f"[OCO-UG{self.__ug.id}] A temperatura de Fase R da UG está muito próxima do limite! ({cd[f'tmp_fase_r_ug{self.__ug.id}'].valor_limite} C) | Leitura: {ld[f'tmp_fase_r_ug{self.__ug.id}'].valor} C")
 
-        if ld[f"tmp_fase_s_ug{self.__ug_id}"].valor >= cd[f"tmp_fase_s_ug{self.__ug_id}"].valor_base:
-            logger.warning(f"[UG{self.__ug_id}] A temperatura de Fase S da UG passou do valor base! ({cd[f'tmp_fase_s_ug{self.__ug_id}'].valor_base} C) | Leitura: {ld[f'tmp_fase_s_ug{self.__ug_id}'].valor} C")
+        if ld[f"tmp_fase_s_ug{self.__ug.id}"].valor >= cd[f"tmp_fase_s_ug{self.__ug.id}"].valor_base:
+            logger.warning(f"[OCO-UG{self.__ug.id}] A temperatura de Fase S da UG passou do valor base! ({cd[f'tmp_fase_s_ug{self.__ug.id}'].valor_base} C) | Leitura: {ld[f'tmp_fase_s_ug{self.__ug.id}'].valor} C")
 
-        if ld[f"tmp_fase_s_ug{self.__ug_id}"].valor >= 0.9*(cd[f"tmp_fase_s_ug{self.__ug_id}"].valor_limite - cd[f"tmp_fase_s_ug{self.__ug_id}"].valor_base) + cd[f"tmp_fase_s_ug{self.__ug_id}"].valor_base:
-            logger.critical(f"[UG{self.__ug_id}] A temperatura de Fase S da UG está muito próxima do limite! ({cd[f'tmp_fase_s_ug{self.__ug_id}'].valor_limite} C) | Leitura: {ld[f'tmp_fase_s_ug{self.__ug_id}'].valor} C")
+        if ld[f"tmp_fase_s_ug{self.__ug.id}"].valor >= 0.9*(cd[f"tmp_fase_s_ug{self.__ug.id}"].valor_limite - cd[f"tmp_fase_s_ug{self.__ug.id}"].valor_base) + cd[f"tmp_fase_s_ug{self.__ug.id}"].valor_base:
+            logger.critical(f"[OCO-UG{self.__ug.id}] A temperatura de Fase S da UG está muito próxima do limite! ({cd[f'tmp_fase_s_ug{self.__ug.id}'].valor_limite} C) | Leitura: {ld[f'tmp_fase_s_ug{self.__ug.id}'].valor} C")
 
-        if ld[f"tmp_fase_t_ug{self.__ug_id}"].valor >= cd[f"tmp_fase_t_ug{self.__ug_id}"].valor_base:
-            logger.warning(f"[UG{self.__ug_id}] A temperatura de Fase T da UG passou do valor base! ({cd[f'tmp_fase_t_ug{self.__ug_id}'].valor_base} C) | Leitura: {ld[f'tmp_fase_t_ug{self.__ug_id}'].valor} C")
+        if ld[f"tmp_fase_t_ug{self.__ug.id}"].valor >= cd[f"tmp_fase_t_ug{self.__ug.id}"].valor_base:
+            logger.warning(f"[OCO-UG{self.__ug.id}] A temperatura de Fase T da UG passou do valor base! ({cd[f'tmp_fase_t_ug{self.__ug.id}'].valor_base} C) | Leitura: {ld[f'tmp_fase_t_ug{self.__ug.id}'].valor} C")
 
-        if ld[f"tmp_fase_t_ug{self.__ug_id}"].valor >= 0.9*(cd[f"tmp_fase_t_ug{self.__ug_id}"].valor_limite - cd[f"tmp_fase_t_ug{self.__ug_id}"].valor_base) + cd[f"tmp_fase_t_ug{self.__ug_id}"].valor_base:
-            logger.critical(f"[UG{self.__ug_id}] A temperatura de Fase T da UG está muito próxima do limite! ({cd[f'tmp_fase_t_ug{self.__ug_id}'].valor_limite} C) | Leitura: {ld[f'tmp_fase_t_ug{self.__ug_id}'].valor} C")
+        if ld[f"tmp_fase_t_ug{self.__ug.id}"].valor >= 0.9*(cd[f"tmp_fase_t_ug{self.__ug.id}"].valor_limite - cd[f"tmp_fase_t_ug{self.__ug.id}"].valor_base) + cd[f"tmp_fase_t_ug{self.__ug.id}"].valor_base:
+            logger.critical(f"[OCO-UG{self.__ug.id}] A temperatura de Fase T da UG está muito próxima do limite! ({cd[f'tmp_fase_t_ug{self.__ug.id}'].valor_limite} C) | Leitura: {ld[f'tmp_fase_t_ug{self.__ug.id}'].valor} C")
 
-        if ld[f"tmp_nucleo_estator_ug{self.__ug_id}"].valor >= cd[f"tmp_nucleo_estator_ug{self.__ug_id}"].valor_base:
-            logger.warning(f"[UG{self.__ug_id}] A temperatura do Núcleo Gerador Estator da UG passou do valor base! ({cd[f'tmp_nucleo_estator_ug{self.__ug_id}'].valor_base} C) | Leitura: {cd[f'tmp_nucleo_estator_ug{self.__ug_id}'].valor} C")
+        if ld[f"tmp_nucleo_estator_ug{self.__ug.id}"].valor >= cd[f"tmp_nucleo_estator_ug{self.__ug.id}"].valor_base:
+            logger.warning(f"[OCO-UG{self.__ug.id}] A temperatura do Núcleo Gerador Estator da UG passou do valor base! ({cd[f'tmp_nucleo_estator_ug{self.__ug.id}'].valor_base} C) | Leitura: {cd[f'tmp_nucleo_estator_ug{self.__ug.id}'].valor} C")
 
-        if ld[f"tmp_nucleo_estator_ug{self.__ug_id}"].valor >= 0.9*(cd[f"tmp_nucleo_estator_ug{self.__ug_id}"].valor_limite - cd[f"tmp_nucleo_estator_ug{self.__ug_id}"].valor_base) + cd[f"tmp_nucleo_estator_ug{self.__ug_id}"].valor_base:
-            logger.critical(f"[UG{self.__ug_id}] A temperatura do Núcleo Gerador Estator da UG está muito próxima do limite! ({cd[f'tmp_nucleo_estator_ug{self.__ug_id}'].valor_limite} C) | Leitura: {cd[f'tmp_nucleo_estator_ug{self.__ug_id}'].valor} C")
+        if ld[f"tmp_nucleo_estator_ug{self.__ug.id}"].valor >= 0.9*(cd[f"tmp_nucleo_estator_ug{self.__ug.id}"].valor_limite - cd[f"tmp_nucleo_estator_ug{self.__ug.id}"].valor_base) + cd[f"tmp_nucleo_estator_ug{self.__ug.id}"].valor_base:
+            logger.critical(f"[OCO-UG{self.__ug.id}] A temperatura do Núcleo Gerador Estator da UG está muito próxima do limite! ({cd[f'tmp_nucleo_estator_ug{self.__ug.id}'].valor_limite} C) | Leitura: {cd[f'tmp_nucleo_estator_ug{self.__ug.id}'].valor} C")
 
-        if ld[f"tmp_mancal_rad_dia_1_ug{self.__ug_id}"].valor >= cd[f"tmp_mancal_rad_dia_1_ug{self.__ug_id}"].valor_base:
-            logger.warning(f"[UG{self.__ug_id}] A temperatura do Mancal Radial Dianteiro 1 da UG passou do valor base! ({cd[f'tmp_mancal_rad_dia_1_ug{self.__ug_id}'].valor_base} C) | Leitura: {cd[f'tmp_mancal_rad_dia_1_ug{self.__ug_id}'].valor} C")
+        if ld[f"tmp_mancal_rad_dia_1_ug{self.__ug.id}"].valor >= cd[f"tmp_mancal_rad_dia_1_ug{self.__ug.id}"].valor_base:
+            logger.warning(f"[OCO-UG{self.__ug.id}] A temperatura do Mancal Radial Dianteiro 1 da UG passou do valor base! ({cd[f'tmp_mancal_rad_dia_1_ug{self.__ug.id}'].valor_base} C) | Leitura: {cd[f'tmp_mancal_rad_dia_1_ug{self.__ug.id}'].valor} C")
 
-        if ld[f"tmp_mancal_rad_dia_1_ug{self.__ug_id}"].valor >= 0.9*(cd[f"tmp_mancal_rad_dia_1_ug{self.__ug_id}"].valor_limite - cd[f"tmp_mancal_rad_dia_1_ug{self.__ug_id}"].valor_base) + cd[f"tmp_mancal_rad_dia_1_ug{self.__ug_id}"].valor_base:
-            logger.critical(f"[UG{self.__ug_id}] A temperatura do Mancal Radial Dianteiro 1 da UG está muito próxima do limite! ({cd[f'tmp_mancal_rad_dia_1_ug{self.__ug_id}'].valor_limite} C) | Leitura: {cd[f'tmp_mancal_rad_dia_1_ug{self.__ug_id}'].valor} C")
+        if ld[f"tmp_mancal_rad_dia_1_ug{self.__ug.id}"].valor >= 0.9*(cd[f"tmp_mancal_rad_dia_1_ug{self.__ug.id}"].valor_limite - cd[f"tmp_mancal_rad_dia_1_ug{self.__ug.id}"].valor_base) + cd[f"tmp_mancal_rad_dia_1_ug{self.__ug.id}"].valor_base:
+            logger.critical(f"[OCO-UG{self.__ug.id}] A temperatura do Mancal Radial Dianteiro 1 da UG está muito próxima do limite! ({cd[f'tmp_mancal_rad_dia_1_ug{self.__ug.id}'].valor_limite} C) | Leitura: {cd[f'tmp_mancal_rad_dia_1_ug{self.__ug.id}'].valor} C")
 
-        if ld[f"tmp_mancal_rad_dia_2_ug{self.__ug_id}"].valor >= cd[f"tmp_mancal_rad_dia_2_ug{self.__ug_id}"].valor_base:
-            logger.warning(f"[UG{self.__ug_id}] A temperatura do Mancal Radial Dianteiro 2 da UG passou do valor base! ({cd[f'tmp_mancal_rad_dia_2_ug{self.__ug_id}'].valor_base} C) | Leitura: {cd[f'tmp_mancal_rad_dia_2_ug{self.__ug_id}'].valor} C")
+        if ld[f"tmp_mancal_rad_dia_2_ug{self.__ug.id}"].valor >= cd[f"tmp_mancal_rad_dia_2_ug{self.__ug.id}"].valor_base:
+            logger.warning(f"[OCO-UG{self.__ug.id}] A temperatura do Mancal Radial Dianteiro 2 da UG passou do valor base! ({cd[f'tmp_mancal_rad_dia_2_ug{self.__ug.id}'].valor_base} C) | Leitura: {cd[f'tmp_mancal_rad_dia_2_ug{self.__ug.id}'].valor} C")
 
-        if ld[f"tmp_mancal_rad_dia_2_ug{self.__ug_id}"].valor >= 0.9*(cd[f"tmp_mancal_rad_dia_2_ug{self.__ug_id}"].valor_limite - cd[f"tmp_mancal_rad_dia_2_ug{self.__ug_id}"].valor_base) + cd[f"tmp_mancal_rad_dia_2_ug{self.__ug_id}"].valor_base:
-            logger.critical(f"[UG{self.__ug_id}] A temperatura do Mancal Radial Dianteiro 2 da UG está muito próxima do limite! ({cd[f'tmp_mancal_rad_dia_2_ug{self.__ug_id}'].valor_limite} C) | Leitura: {cd[f'tmp_mancal_rad_dia_2_ug{self.__ug_id}'].valor} C")
+        if ld[f"tmp_mancal_rad_dia_2_ug{self.__ug.id}"].valor >= 0.9*(cd[f"tmp_mancal_rad_dia_2_ug{self.__ug.id}"].valor_limite - cd[f"tmp_mancal_rad_dia_2_ug{self.__ug.id}"].valor_base) + cd[f"tmp_mancal_rad_dia_2_ug{self.__ug.id}"].valor_base:
+            logger.critical(f"[OCO-UG{self.__ug.id}] A temperatura do Mancal Radial Dianteiro 2 da UG está muito próxima do limite! ({cd[f'tmp_mancal_rad_dia_2_ug{self.__ug.id}'].valor_limite} C) | Leitura: {cd[f'tmp_mancal_rad_dia_2_ug{self.__ug.id}'].valor} C")
 
-        if ld[f"tmp_mancal_rad_tra_1_ug{self.__ug_id}"].valor >= cd[f"tmp_mancal_rad_tra_1_ug{self.__ug_id}"].valor_base:
-            logger.warning(f"[UG{self.__ug_id}] A temperatura do Mancal Radial Traseiro 1 da UG passou do valor base! ({cd[f'tmp_mancal_rad_tra_1_ug{self.__ug_id}'].valor_base} C) | Leitura: {cd[f'tmp_mancal_rad_tra_1_ug{self.__ug_id}'].valor} C")
+        if ld[f"tmp_mancal_rad_tra_1_ug{self.__ug.id}"].valor >= cd[f"tmp_mancal_rad_tra_1_ug{self.__ug.id}"].valor_base:
+            logger.warning(f"[OCO-UG{self.__ug.id}] A temperatura do Mancal Radial Traseiro 1 da UG passou do valor base! ({cd[f'tmp_mancal_rad_tra_1_ug{self.__ug.id}'].valor_base} C) | Leitura: {cd[f'tmp_mancal_rad_tra_1_ug{self.__ug.id}'].valor} C")
 
-        if ld[f"tmp_mancal_rad_tra_1_ug{self.__ug_id}"].valor >= 0.9*(cd[f"tmp_mancal_rad_tra_1_ug{self.__ug_id}"].valor_limite - cd[f"tmp_mancal_rad_tra_1_ug{self.__ug_id}"].valor_base) + cd[f"tmp_mancal_rad_tra_1_ug{self.__ug_id}"].valor_base:
-            logger.critical(f"[UG{self.__ug_id}] A temperatura do Mancal Radial Traseiro 1 da UG está muito próxima do limite! ({cd[f'tmp_mancal_rad_tra_1_ug{self.__ug_id}'].valor_limite} C) | Leitura: {cd[f'tmp_mancal_rad_tra_1_ug{self.__ug_id}'].valor} C")
+        if ld[f"tmp_mancal_rad_tra_1_ug{self.__ug.id}"].valor >= 0.9*(cd[f"tmp_mancal_rad_tra_1_ug{self.__ug.id}"].valor_limite - cd[f"tmp_mancal_rad_tra_1_ug{self.__ug.id}"].valor_base) + cd[f"tmp_mancal_rad_tra_1_ug{self.__ug.id}"].valor_base:
+            logger.critical(f"[OCO-UG{self.__ug.id}] A temperatura do Mancal Radial Traseiro 1 da UG está muito próxima do limite! ({cd[f'tmp_mancal_rad_tra_1_ug{self.__ug.id}'].valor_limite} C) | Leitura: {cd[f'tmp_mancal_rad_tra_1_ug{self.__ug.id}'].valor} C")
 
-        if ld[f"tmp_mancal_rad_tra_2_ug{self.__ug_id}"].valor >= cd[f"tmp_mancal_rad_tra_2_ug{self.__ug_id}"].valor_base:
-            logger.warning(f"[UG{self.__ug_id}] A temperatura do Mancal Radial Traseiro 2 da UG passou do valor base! ({cd[f'tmp_mancal_rad_tra_2_ug{self.__ug_id}'].valor_base} C) | Leitura: {cd[f'tmp_mancal_rad_tra_2_ug{self.__ug_id}'].valor} C")
+        if ld[f"tmp_mancal_rad_tra_2_ug{self.__ug.id}"].valor >= cd[f"tmp_mancal_rad_tra_2_ug{self.__ug.id}"].valor_base:
+            logger.warning(f"[OCO-UG{self.__ug.id}] A temperatura do Mancal Radial Traseiro 2 da UG passou do valor base! ({cd[f'tmp_mancal_rad_tra_2_ug{self.__ug.id}'].valor_base} C) | Leitura: {cd[f'tmp_mancal_rad_tra_2_ug{self.__ug.id}'].valor} C")
 
-        if ld[f"tmp_mancal_rad_tra_2_ug{self.__ug_id}"].valor >= 0.9*(cd[f"tmp_mancal_rad_tra_2_ug{self.__ug_id}"].valor_limite - cd[f"tmp_mancal_rad_tra_2_ug{self.__ug_id}"].valor_base) + cd[f"tmp_mancal_rad_tra_2_ug{self.__ug_id}"].valor_base:
-            logger.critical(f"[UG{self.__ug_id}] A temperatura do Mancal Radial Traseiro 2 da UG está muito próxima do limite! ({cd[f'tmp_mancal_rad_tra_2_ug{self.__ug_id}'].valor_limite} C) | Leitura: {cd[f'tmp_mancal_rad_tra_2_ug{self.__ug_id}'].valor} C")
+        if ld[f"tmp_mancal_rad_tra_2_ug{self.__ug.id}"].valor >= 0.9*(cd[f"tmp_mancal_rad_tra_2_ug{self.__ug.id}"].valor_limite - cd[f"tmp_mancal_rad_tra_2_ug{self.__ug.id}"].valor_base) + cd[f"tmp_mancal_rad_tra_2_ug{self.__ug.id}"].valor_base:
+            logger.critical(f"[OCO-UG{self.__ug.id}] A temperatura do Mancal Radial Traseiro 2 da UG está muito próxima do limite! ({cd[f'tmp_mancal_rad_tra_2_ug{self.__ug.id}'].valor_limite} C) | Leitura: {cd[f'tmp_mancal_rad_tra_2_ug{self.__ug.id}'].valor} C")
 
-        if ld[f"tmp_saida_de_ar_ug{self.__ug_id}"].valor >= cd[f"tmp_saida_de_ar_ug{self.__ug_id}"].valor_base:
-            logger.warning(f"[UG{self.__ug_id}] A temperatura da Saída de Ar da UG passou do valor base! ({cd[f'tmp_saida_de_ar_ug{self.__ug_id}'].valor_base} C) | Leitura: {cd[f'tmp_saida_de_ar_ug{self.__ug_id}'].valor} C")
+        if ld[f"tmp_saida_de_ar_ug{self.__ug.id}"].valor >= cd[f"tmp_saida_de_ar_ug{self.__ug.id}"].valor_base:
+            logger.warning(f"[OCO-UG{self.__ug.id}] A temperatura da Saída de Ar da UG passou do valor base! ({cd[f'tmp_saida_de_ar_ug{self.__ug.id}'].valor_base} C) | Leitura: {cd[f'tmp_saida_de_ar_ug{self.__ug.id}'].valor} C")
 
-        if ld[f"tmp_saida_de_ar_ug{self.__ug_id}"].valor >= 0.9*(cd[f"tmp_saida_de_ar_ug{self.__ug_id}"].valor_limite - cd[f"tmp_saida_de_ar_ug{self.__ug_id}"].valor_base) + cd[f"tmp_saida_de_ar_ug{self.__ug_id}"].valor_base:
-            logger.critical(f"[UG{self.__ug_id}] A temperatura da Saída de Ar da UG está muito próxima do limite! ({cd[f'tmp_saida_de_ar_ug{self.__ug_id}'].valor_limite} C) | Leitura: {cd[f'tmp_saida_de_ar_ug{self.__ug_id}'].valor} C")
+        if ld[f"tmp_saida_de_ar_ug{self.__ug.id}"].valor >= 0.9*(cd[f"tmp_saida_de_ar_ug{self.__ug.id}"].valor_limite - cd[f"tmp_saida_de_ar_ug{self.__ug.id}"].valor_base) + cd[f"tmp_saida_de_ar_ug{self.__ug.id}"].valor_base:
+            logger.critical(f"[OCO-UG{self.__ug.id}] A temperatura da Saída de Ar da UG está muito próxima do limite! ({cd[f'tmp_saida_de_ar_ug{self.__ug.id}'].valor_limite} C) | Leitura: {cd[f'tmp_saida_de_ar_ug{self.__ug.id}'].valor} C")
 
-        if ld[f"tmp_mancal_guia_escora_ug{self.__ug_id}"].valor >= cd[f"tmp_mancal_guia_escora_ug{self.__ug_id}"].valor_base:
-            logger.warning(f"[UG{self.__ug_id}] A temperatura do Mancal Guia Escora da UG passou do valor base! ({cd[f'tmp_mancal_guia_escora_ug{self.__ug_id}'].valor_base} C) | Leitura: {cd[f'tmp_mancal_guia_escora_ug{self.__ug_id}'].valor} C")
+        if ld[f"tmp_mancal_guia_escora_ug{self.__ug.id}"].valor >= cd[f"tmp_mancal_guia_escora_ug{self.__ug.id}"].valor_base:
+            logger.warning(f"[OCO-UG{self.__ug.id}] A temperatura do Mancal Guia Escora da UG passou do valor base! ({cd[f'tmp_mancal_guia_escora_ug{self.__ug.id}'].valor_base} C) | Leitura: {cd[f'tmp_mancal_guia_escora_ug{self.__ug.id}'].valor} C")
 
-        if ld[f"tmp_mancal_guia_escora_ug{self.__ug_id}"].valor >= 0.9*(cd[f"tmp_mancal_guia_escora_ug{self.__ug_id}"].valor_limite - cd[f"tmp_mancal_guia_escora_ug{self.__ug_id}"].valor_base) + cd[f"tmp_mancal_guia_escora_ug{self.__ug_id}"].valor_base:
-            logger.critical(f"[UG{self.__ug_id}] A temperatura do Mancal Guia Escora da UG está muito próxima do limite! ({cd[f'tmp_mancal_guia_escora_ug{self.__ug_id}'].valor_limite} C) | Leitura: {cd[f'tmp_mancal_guia_escora_ug{self.__ug_id}'].valor} C")
+        if ld[f"tmp_mancal_guia_escora_ug{self.__ug.id}"].valor >= 0.9*(cd[f"tmp_mancal_guia_escora_ug{self.__ug.id}"].valor_limite - cd[f"tmp_mancal_guia_escora_ug{self.__ug.id}"].valor_base) + cd[f"tmp_mancal_guia_escora_ug{self.__ug.id}"].valor_base:
+            logger.critical(f"[OCO-UG{self.__ug.id}] A temperatura do Mancal Guia Escora da UG está muito próxima do limite! ({cd[f'tmp_mancal_guia_escora_ug{self.__ug.id}'].valor_limite} C) | Leitura: {cd[f'tmp_mancal_guia_escora_ug{self.__ug.id}'].valor} C")
 
-        if ld[f"tmp_mancal_guia_radial_ug{self.__ug_id}"].valor >= cd[f"tmp_mancal_guia_radial_ug{self.__ug_id}"].valor_base:
-            logger.warning(f"[UG{self.__ug_id}] A temperatura do Mancal Guia Radial da UG passou do valor base! ({cd[f'tmp_mancal_guia_radial_ug{self.__ug_id}'].valor_base} C) | Leitura: {cd[f'tmp_mancal_guia_radial_ug{self.__ug_id}'].valor} C")
+        if ld[f"tmp_mancal_guia_radial_ug{self.__ug.id}"].valor >= cd[f"tmp_mancal_guia_radial_ug{self.__ug.id}"].valor_base:
+            logger.warning(f"[OCO-UG{self.__ug.id}] A temperatura do Mancal Guia Radial da UG passou do valor base! ({cd[f'tmp_mancal_guia_radial_ug{self.__ug.id}'].valor_base} C) | Leitura: {cd[f'tmp_mancal_guia_radial_ug{self.__ug.id}'].valor} C")
 
-        if ld[f"tmp_mancal_guia_radial_ug{self.__ug_id}"].valor >= 0.9*(cd[f"tmp_mancal_guia_radial_ug{self.__ug_id}"].valor_limite - cd[f"tmp_mancal_guia_radial_ug{self.__ug_id}"].valor_base) + cd[f"tmp_mancal_guia_radial_ug{self.__ug_id}"].valor_base:
-            logger.critical(f"[UG{self.__ug_id}] A temperatura do Mancal Guia Radial da UG está muito próxima do limite! ({cd[f'tmp_mancal_guia_radial_ug{self.__ug_id}'].valor_limite} C) | Leitura: {cd[f'tmp_mancal_guia_radial_ug{self.__ug_id}'].valor} C")
+        if ld[f"tmp_mancal_guia_radial_ug{self.__ug.id}"].valor >= 0.9*(cd[f"tmp_mancal_guia_radial_ug{self.__ug.id}"].valor_limite - cd[f"tmp_mancal_guia_radial_ug{self.__ug.id}"].valor_base) + cd[f"tmp_mancal_guia_radial_ug{self.__ug.id}"].valor_base:
+            logger.critical(f"[OCO-UG{self.__ug.id}] A temperatura do Mancal Guia Radial da UG está muito próxima do limite! ({cd[f'tmp_mancal_guia_radial_ug{self.__ug.id}'].valor_limite} C) | Leitura: {cd[f'tmp_mancal_guia_radial_ug{self.__ug.id}'].valor} C")
 
-        if ld[f"tmp_mancal_guia_contra_ug{self.__ug_id}"].valor >= cd[f"tmp_mancal_guia_contra_ug{self.__ug_id}"].valor_base:
-            logger.warning(f"[UG{self.__ug_id}] A temperatura do Mancal Guia Contra Escora da UG passou do valor base! ({cd[f'tmp_mancal_guia_contra_ug{self.__ug_id}'].valor_base} C) | Leitura: {cd[f'tmp_mancal_guia_contra_ug{self.__ug_id}'].valor} C")
+        if ld[f"tmp_mancal_guia_contra_ug{self.__ug.id}"].valor >= cd[f"tmp_mancal_guia_contra_ug{self.__ug.id}"].valor_base:
+            logger.warning(f"[OCO-UG{self.__ug.id}] A temperatura do Mancal Guia Contra Escora da UG passou do valor base! ({cd[f'tmp_mancal_guia_contra_ug{self.__ug.id}'].valor_base} C) | Leitura: {cd[f'tmp_mancal_guia_contra_ug{self.__ug.id}'].valor} C")
 
-        if ld[f"tmp_mancal_guia_contra_ug{self.__ug_id}"].valor >= 0.9*(cd[f"tmp_mancal_guia_contra_ug{self.__ug_id}"].valor_limite - cd[f"tmp_mancal_guia_contra_ug{self.__ug_id}"].valor_base) + cd[f"tmp_mancal_guia_contra_ug{self.__ug_id}"].valor_base:
-            logger.critical(f"[UG{self.__ug_id}] A temperatura do Mancal Guia Contra Escora da UG está muito próxima do limite! ({cd[f'tmp_mancal_guia_contra_ug{self.__ug_id}'].valor_limite} C) | Leitura: {cd[f'tmp_mancal_guia_contra_ug{self.__ug_id}'].valor} C")
+        if ld[f"tmp_mancal_guia_contra_ug{self.__ug.id}"].valor >= 0.9*(cd[f"tmp_mancal_guia_contra_ug{self.__ug.id}"].valor_limite - cd[f"tmp_mancal_guia_contra_ug{self.__ug.id}"].valor_base) + cd[f"tmp_mancal_guia_contra_ug{self.__ug.id}"].valor_base:
+            logger.critical(f"[OCO-UG{self.__ug.id}] A temperatura do Mancal Guia Contra Escora da UG está muito próxima do limite! ({cd[f'tmp_mancal_guia_contra_ug{self.__ug.id}'].valor_limite} C) | Leitura: {cd[f'tmp_mancal_guia_contra_ug{self.__ug.id}'].valor} C")
+
+        if ld[f"pressao_cx_espiral_ug{self.__ug.id}"].valor <= cd[f"pressao_cx_espiral_ug{self.__ug.id}"].valor_base and ld[f"pressao_cx_espiral_ug{self.__ug.id}"].valor != 0 and self.__ug.etapa_atual == UG_SINCRONIZADA:
+            logger.warning(f"[OCO-UG{self.__ug.id}] A pressão Caixa Espiral da UG passou do valor base! ({cd[f'pressao_cx_espiral_ug{self.__ug.id}'].valor_base:03.2f} KGf/m2) | Leitura: {ld[f'pressao_cx_espiral_ug{self.__ug.id}'].valor:03.2f}")
+
+        if ld[f"pressao_cx_espiral_ug{self.__ug.id}"].valor <= 16.1 and ld[f"pressao_cx_espiral_ug{self.__ug.id}"].valor != 0 and self.__ug.etapa_atual == UG_SINCRONIZADA:
+            logger.critical(f"[OCO-UG{self.__ug.id}] A pressão Caixa Espiral da UG está muito próxima do limite! ({cd[f'pressao_cx_espiral_ug{self.__ug.id}'].valor_limite:03.2f} KGf/m2) | Leitura: {ld[f'pressao_cx_espiral_ug{self.__ug.id}'].valor:03.2f} KGf/m2")
 
 
-    def leitura_temporizada(self) -> None:
+    def leitura_temporizada(self) -> "None":
         """
         Função para consulta de acionamentos da Unidade e avisos através do mecanismo
         de acionamento temporizado.
         """
 
-        if self.leitura_voip["leitura_ED_FreioPastilhaGasta"].valor != 0 and not vd.voip_dict[f"FREIO_PASTILHA_GASTA_UG{self.__ug_id}"][0]:
-            logger.warning(f"[UG{self.__ug_id}] O sensor de Freio da UG retornou que a Pastilha está gasta, favor considerar troca.")
-            vd.voip_dict[f"FREIO_PASTILHA_GASTA_UG{self.__ug_id}"][0] = True
-        elif self.leitura_voip["leitura_ED_FreioPastilhaGasta"].valor == 0 and vd.voip_dict[f"FREIO_PASTILHA_GASTA_UG{self.__ug_id}"][0]:
-            vd.voip_dict[f"FREIO_PASTILHA_GASTA_UG{self.__ug_id}"][0] = False
+        if self.leitura_voip["leitura_ED_FreioPastilhaGasta"].valor != 0:
+            logger.warning(f"[OCO-UG{self.__ug.id}] O sensor de Freio da UG retornou que a Pastilha está gasta, favor considerar troca.")
 
-        if self.leitura_voip["leitura_ED_FiltroPresSujo75Troc"].valor != 0 and not vd.voip_dict[f"FILTRO_PRES_SUJO_75_TROC_UG{self.__ug_id}"][0]:
-            logger.warning(f"[UG{self.__ug_id}] O sensor do Filtro de Pressão UHRV retornou que o filtro está 75% sujo, favor considerar troca.")
-            vd.voip_dict[f"FILTRO_PRES_SUJO_75_TROC_UG{self.__ug_id}"][0] = True
-        elif self.leitura_voip["leitura_ED_FiltroPresSujo75Troc"].valor == 0 and vd.voip_dict[f"FILTRO_PRES_SUJO_75_TROC_UG{self.__ug_id}"][0]:
-            vd.voip_dict[f"FILTRO_PRES_SUJO_75_TROC_UG{self.__ug_id}"][0] = False
+        if self.leitura_voip["leitura_ED_FiltroPresSujo75Troc"].valor != 0:
+            logger.warning(f"[OCO-UG{self.__ug.id}] O sensor do Filtro de Pressão UHRV retornou que o filtro está 75% sujo, favor considerar troca.")
 
-        if self.leitura_voip["leitura_ED_FiltroRetSujo75Troc"].valor != 0 and not vd.voip_dict[f"FILTRO_RET_SUJO_75_TROC_UG{self.__ug_id}"][0]:
-            logger.warning(f"[UG{self.__ug_id}] O sensor do Filtro de Retorno UHRV retornou que o filtro está 75% sujo, favor considerar troca.")
-            vd.voip_dict[f"FILTRO_RET_SUJO_75_TROC_UG{self.__ug_id}"][0] = True
-        elif self.leitura_voip["leitura_ED_FiltroRetSujo75Troc"].valor == 0 and vd.voip_dict[f"FILTRO_RET_SUJO_75_TROC_UG{self.__ug_id}"][0]:
-            vd.voip_dict[f"FILTRO_RET_SUJO_75_TROC_UG{self.__ug_id}"][0] = False
+        if self.leitura_voip["leitura_ED_FiltroRetSujo75Troc"].valor != 0:
+            logger.warning(f"[OCO-UG{self.__ug.id}] O sensor do Filtro de Retorno UHRV retornou que o filtro está 75% sujo, favor considerar troca.")
 
-        if self.leitura_voip["leitura_ED_UHLMFilt1PresSujo75Troc"].valor != 0 and not vd.voip_dict[f"UHLM_FILTR_1_PRES_SUJO_75_TROC_UG{self.__ug_id}"][0]:
-            logger.warning(f"[UG{self.__ug_id}] O sensor do Filtro 1 de Pressão UHLM retornou que o filtro está 75% sujo, favor considerar troca.")
-            vd.voip_dict[f"UHLM_FILTR_1_PRES_SUJO_75_TROC_UG{self.__ug_id}"][0] = True
-        elif self.leitura_voip["leitura_ED_UHLMFilt1PresSujo75Troc"].valor == 0 and vd.voip_dict[f"UHLM_FILTR_1_PRES_SUJO_75_TROC_UG{self.__ug_id}"][0]:
-            vd.voip_dict[f"UHLM_FILTR_1_PRES_SUJO_75_TROC_UG{self.__ug_id}"][0] = False
+        if self.leitura_voip["leitura_ED_UHLMFilt1PresSujo75Troc"].valor != 0:
+            logger.warning(f"[OCO-UG{self.__ug.id}] O sensor do Filtro 1 de Pressão UHLM retornou que o filtro está 75% sujo, favor considerar troca.")
 
-        if self.leitura_voip["leitura_ED_UHLMFilt2PresSujo75Troc"].valor != 0 and not vd.voip_dict[f"UHLM_FILTR_2_PRES_SUJO_75_TROC_UG{self.__ug_id}"][0]:
-            logger.warning(f"[UG{self.__ug_id}] O sensor do Filtro 2 de Pressão UHLM retornou que o filtro está 75% sujo, favor considerar troca.")
-            vd.voip_dict[f"UHLM_FILTR_2_PRES_SUJO_75_TROC_UG{self.__ug_id}"][0] = True
-        elif self.leitura_voip["leitura_ED_UHLMFilt2PresSujo75Troc"].valor == 0 and vd.voip_dict[f"UHLM_FILTR_2_PRES_SUJO_75_TROC_UG{self.__ug_id}"][0]:
-            vd.voip_dict[f"UHLM_FILTR_2_PRES_SUJO_75_TROC_UG{self.__ug_id}"][0] = False
+        if self.leitura_voip["leitura_ED_UHLMFilt2PresSujo75Troc"].valor != 0:
+            logger.warning(f"[OCO-UG{self.__ug.id}] O sensor do Filtro 2 de Pressão UHLM retornou que o filtro está 75% sujo, favor considerar troca.")
 
-        if self.leitura_voip["leitura_ED_FiltroPressaoBbaMecSj75"].valor != 0 and not vd.voip_dict[f"FILTRO_PRESSAO_BBA_MEC_SJ_75_UG{self.__ug_id}"][0]:
-            logger.warning(f"[UG{self.__ug_id}] O sensor do Filtro de Pressão da Bomba Mecânica retornou que o filtro está 75% sujo, favor considerar troca.")
-            vd.voip_dict[f"FILTRO_PRESSAO_BBA_MEC_SJ_75_UG{self.__ug_id}"][0] = True
-        elif self.leitura_voip["leitura_ED_FiltroPressaoBbaMecSj75"].valor == 0 and vd.voip_dict[f"FILTRO_PRESSAO_BBA_MEC_SJ_75_UG{self.__ug_id}"][0]:
-            vd.voip_dict[f"FILTRO_PRESSAO_BBA_MEC_SJ_75_UG{self.__ug_id}"][0] = False
-
-        if self.leitura_voip["leitura_ED_TripPartRes"].valor != 0 and not vd.voip_dict[f"TRIP_PART_RES_UG{self.__ug_id}"][0]:
-            logger.warning(f"[UG{self.__ug_id}] O sensor TripPartRes retornou valor 1.")
-            vd.voip_dict[f"TRIP_PART_RES_UG{self.__ug_id}"][0] = True
-        elif self.leitura_voip["leitura_ED_TripPartRes"].valor == 0 and vd.voip_dict[f"TRIP_PART_RES_UG{self.__ug_id}"][0]:
-            vd.voip_dict[f"TRIP_PART_RES_UG{self.__ug_id}"][0] = False
+        if self.leitura_voip["leitura_ED_FiltroPressaoBbaMecSj75"].valor != 0:
+            logger.warning(f"[OCO-UG{self.__ug.id}] O sensor do Filtro de Pressão da Bomba Mecânica retornou que o filtro está 75% sujo, favor considerar troca.")
 
         if self.leitura_voip["leitura_ED_FreioCmdRemoto"].valor != 1:
-            logger.debug(f"[UG{self.__ug_id}] O freio da UG saiu do modo remoto, favor analisar a situação.")
+            logger.debug(f"[OCO-UG{self.__ug.id}] O freio da UG saiu do modo remoto, favor analisar a situação.")
 
-        if self.leitura_voip[f"leitura_ED_QCAUG{self.__ug_id}_Remoto"].valor != 1:
-            logger.debug(f"[UG{self.__ug_id}] O compressor da UG saiu do modo remoto, favor analisar a situação.")
+        if self.leitura_voip[f"leitura_ED_QCAUG{self.__ug.id}_Remoto"].valor != 1:
+            logger.debug(f"[OCO-UG{self.__ug.id}] O compressor da UG saiu do modo remoto, favor analisar a situação.")
 
         return
 
-    def carregar_leituras(self) -> None:
+    def carregar_leituras(self) -> "None":
         """
         Função para carregamento de todas as leituras para acionamentos de avisos
         e emergências da Unidade.
@@ -688,322 +642,327 @@ class OcorrenciasUg:
 
         # Leituras de condicionadores com limites de operção checados a cada ciclo
         self.leitura_voip["leitura_ED_FreioPastilhaGasta"] = LeituraModbusCoil(
-            f"[UG{self.__ug_id}] Pastilha Freio Gasta",
-            self.__clp[f"UG{self.__ug_id}"],
-            REG[f"UG{self.__ug_id}_ED_FreioPastilhaGasta"]
+            f"[UG{self.__ug.id}] Pastilha Freio Gasta",
+            self.__clp[f"UG{self.__ug.id}"],
+            REG[f"UG{self.__ug.id}_ED_FreioPastilhaGasta"]
         )
         self.leitura_voip["leitura_ED_FiltroPresSujo75Troc"] = LeituraModbusCoil(
             f"[UG{self}] UHRV Filtro Pressão 75% Sujo",
-            self.__clp[f"UG{self.__ug_id}"],
-            REG[f"UG{self.__ug_id}_ED_FiltroPresSujo75Troc"]
+            self.__clp[f"UG{self.__ug.id}"],
+            REG[f"UG{self.__ug.id}_ED_FiltroPresSujo75Troc"]
         )
         self.leitura_voip["leitura_ED_FiltroRetSujo75Troc"] = LeituraModbusCoil(
-            f"[UG{self.__ug_id}] UHRV Filtro Pressão Retorno 75% Sujo",
-            self.__clp[f"UG{self.__ug_id}"],
-            REG[f"UG{self.__ug_id}_ED_FiltroRetSujo75Troc"]
+            f"[UG{self.__ug.id}] UHRV Filtro Pressão Retorno 75% Sujo",
+            self.__clp[f"UG{self.__ug.id}"],
+            REG[f"UG{self.__ug.id}_ED_FiltroRetSujo75Troc"]
         )
         self.leitura_voip["leitura_ED_UHLMFilt1PresSujo75Troc"] = LeituraModbusCoil(
-            f"[UG{self.__ug_id}] UHLM Filtro Pressão 1 75% Sujo",
-            self.__clp[f"UG{self.__ug_id}"],
-            REG[f"UG{self.__ug_id}_ED_UHLMFilt1PresSujo75Troc"]
+            f"[UG{self.__ug.id}] UHLM Filtro Pressão 1 75% Sujo",
+            self.__clp[f"UG{self.__ug.id}"],
+            REG[f"UG{self.__ug.id}_ED_UHLMFilt1PresSujo75Troc"]
         )
         self.leitura_voip["leitura_ED_UHLMFilt2PresSujo75Troc"] = LeituraModbusCoil(
-            f"[UG{self.__ug_id}] UHLM Filtro Pressão 2 75% Sujo",
-            self.__clp[f"UG{self.__ug_id}"],
-            REG[f"UG{self.__ug_id}_ED_UHLMFilt2PresSujo75Troc"]
+            f"[UG{self.__ug.id}] UHLM Filtro Pressão 2 75% Sujo",
+            self.__clp[f"UG{self.__ug.id}"],
+            REG[f"UG{self.__ug.id}_ED_UHLMFilt2PresSujo75Troc"]
         )
         self.leitura_voip["leitura_ED_FiltroPressaoBbaMecSj75"] = LeituraModbusCoil(
-            f"[UG{self.__ug_id}] Filtro Pressão Bomba Mecância 75% Sujo",
-            self.__clp[f"UG{self.__ug_id}"],
-            REG[f"UG{self.__ug_id}_ED_Filt1PresBbaMecSj75Troc"]
+            f"[UG{self.__ug.id}] Filtro Pressão Bomba Mecância 75% Sujo",
+            self.__clp[f"UG{self.__ug.id}"],
+            REG[f"UG{self.__ug.id}_ED_Filt1PresBbaMecSj75Troc"]
         )
         self.leitura_voip["leitura_ED_TripPartRes"] = LeituraModbusCoil(
-            f"[UG{self.__ug_id}] Trip Part Res",
-            self.__clp[f"UG{self.__ug_id}"],
-            REG[f"UG{self.__ug_id}_ED_TripPartRes"]
+            f"[UG{self.__ug.id}] Trip Part Res",
+            self.__clp[f"UG{self.__ug.id}"],
+            REG[f"UG{self.__ug.id}_ED_TripPartRes"]
         )
         self.leitura_voip["leitura_ED_FreioCmdRemoto"] = LeituraModbusCoil(
-            f"[UG{self.__ug_id}] Freio Modo Remoto",
-            self.__clp[f"UG{self.__ug_id}"],
-            REG[f"UG{self.__ug_id}_ED_FreioCmdRemoto"]
+            f"[UG{self.__ug.id}] Freio Modo Remoto",
+            self.__clp[f"UG{self.__ug.id}"],
+            REG[f"UG{self.__ug.id}_ED_FreioCmdRemoto"]
         )
-        self.leitura_voip[f"leitura_ED_QCAUG{self.__ug_id}_Remoto"] = LeituraModbusCoil(
-            f"[UG{self.__ug_id}] Compressor Modo Remoto",
-            self.__clp[f"UG{self.__ug_id}"],
-            REG[f"UG{self.__ug_id}_ED_QCAUG{self.__ug_id}_Remoto"]
+        self.leitura_voip[f"leitura_ED_QCAUG{self.__ug.id}_Remoto"] = LeituraModbusCoil(
+            f"[UG{self.__ug.id}] Compressor Modo Remoto",
+            self.__clp[f"UG{self.__ug.id}"],
+            REG[f"UG{self.__ug.id}_ED_QCAUG{self.__ug.id}_Remoto"]
         )
 
         ### CONDICIONADORES ESSENCIAIS
         # R
-        self.leitura_dict[f"tmp_fase_r_ug{self.__ug_id}"] = LeituraModbus(f"[UG{self.__ug_id}] Temperatura Fase R", self.__clp[f"UG{self.__ug_id}"], REG[f"UG{self.__ug_id}_RA_Temperatura_01"], op=4)
-        self.condic_dict[f"tmp_fase_r_ug{self.__ug_id}"] = CondicionadorExponencial(self.leitura_dict[f"tmp_fase_r_ug{self.__ug_id}"].descr, CONDIC_INDISPONIBILIZAR, self.leitura_dict[f"tmp_fase_r_ug{self.__ug_id}"], 100, 200)
-        self.condicionadores_essenciais.append(self.condic_dict[f"tmp_fase_r_ug{self.__ug_id}"])
+        self.leitura_dict[f"tmp_fase_r_ug{self.__ug.id}"] = LeituraModbus(f"[UG{self.__ug.id}] Temperatura Fase R", self.__clp[f"UG{self.__ug.id}"], REG[f"UG{self.__ug.id}_RA_Temperatura_01"], op=4)
+        self.condic_dict[f"tmp_fase_r_ug{self.__ug.id}"] = CondicionadorExponencial(self.leitura_dict[f"tmp_fase_r_ug{self.__ug.id}"].descr, CONDIC_INDISPONIBILIZAR, self.leitura_dict[f"tmp_fase_r_ug{self.__ug.id}"], 100, 200)
+        self.condicionadores_essenciais.append(self.condic_dict[f"tmp_fase_r_ug{self.__ug.id}"])
 
         # S
-        self.leitura_dict[f"tmp_fase_s_ug{self.__ug_id}"] = LeituraModbus(f"[UG{self.__ug_id}] Temperatura Fase S", self.__clp[f"UG{self.__ug_id}"], REG[f"UG{self.__ug_id}_RA_Temperatura_02"], op=4)
-        self.condic_dict[f"tmp_fase_s_ug{self.__ug_id}"] = CondicionadorExponencial(self.leitura_dict[f"tmp_fase_s_ug{self.__ug_id}"].descr, CONDIC_INDISPONIBILIZAR, self.leitura_dict[f"tmp_fase_s_ug{self.__ug_id}"], 100, 200)
-        self.condicionadores_essenciais.append(self.condic_dict[f"tmp_fase_s_ug{self.__ug_id}"])
+        self.leitura_dict[f"tmp_fase_s_ug{self.__ug.id}"] = LeituraModbus(f"[UG{self.__ug.id}] Temperatura Fase S", self.__clp[f"UG{self.__ug.id}"], REG[f"UG{self.__ug.id}_RA_Temperatura_02"], op=4)
+        self.condic_dict[f"tmp_fase_s_ug{self.__ug.id}"] = CondicionadorExponencial(self.leitura_dict[f"tmp_fase_s_ug{self.__ug.id}"].descr, CONDIC_INDISPONIBILIZAR, self.leitura_dict[f"tmp_fase_s_ug{self.__ug.id}"], 100, 200)
+        self.condicionadores_essenciais.append(self.condic_dict[f"tmp_fase_s_ug{self.__ug.id}"])
 
         # T
-        self.leitura_dict[f"tmp_fase_t_ug{self.__ug_id}"] = LeituraModbus(f"[UG{self.__ug_id}] Temperatura Fase T", self.__clp[f"UG{self.__ug_id}"], REG[f"UG{self.__ug_id}_RA_Temperatura_03"], op=4)
-        self.condic_dict[f"tmp_fase_t_ug{self.__ug_id}"] = CondicionadorExponencial(self.leitura_dict[f"tmp_fase_t_ug{self.__ug_id}"].descr, CONDIC_INDISPONIBILIZAR, self.leitura_dict[f"tmp_fase_t_ug{self.__ug_id}"], 100, 200)
-        self.condicionadores_essenciais.append(self.condic_dict[f"tmp_fase_t_ug{self.__ug_id}"])
+        self.leitura_dict[f"tmp_fase_t_ug{self.__ug.id}"] = LeituraModbus(f"[UG{self.__ug.id}] Temperatura Fase T", self.__clp[f"UG{self.__ug.id}"], REG[f"UG{self.__ug.id}_RA_Temperatura_03"], op=4)
+        self.condic_dict[f"tmp_fase_t_ug{self.__ug.id}"] = CondicionadorExponencial(self.leitura_dict[f"tmp_fase_t_ug{self.__ug.id}"].descr, CONDIC_INDISPONIBILIZAR, self.leitura_dict[f"tmp_fase_t_ug{self.__ug.id}"], 100, 200)
+        self.condicionadores_essenciais.append(self.condic_dict[f"tmp_fase_t_ug{self.__ug.id}"])
 
         # Nucleo estator
-        self.leitura_dict[f"tmp_nucleo_estator_ug{self.__ug_id}"] = LeituraModbus(f"[UG{self.__ug_id}] Temperatura Núcelo do Estator", self.__clp[f"UG{self.__ug_id}"], REG[f"UG{self.__ug_id}_RA_Temperatura_04"], op=4)
-        self.condic_dict[f"tmp_nucleo_estator_ug{self.__ug_id}"] = CondicionadorExponencial(self.leitura_dict[f"tmp_nucleo_estator_ug{self.__ug_id}"].descr, CONDIC_INDISPONIBILIZAR, self.leitura_dict[f"tmp_nucleo_estator_ug{self.__ug_id}"], 100, 200)
-        self.condicionadores_essenciais.append(self.condic_dict[f"tmp_nucleo_estator_ug{self.__ug_id}"])
+        self.leitura_dict[f"tmp_nucleo_estator_ug{self.__ug.id}"] = LeituraModbus(f"[UG{self.__ug.id}] Temperatura Núcelo do Estator", self.__clp[f"UG{self.__ug.id}"], REG[f"UG{self.__ug.id}_RA_Temperatura_04"], op=4)
+        self.condic_dict[f"tmp_nucleo_estator_ug{self.__ug.id}"] = CondicionadorExponencial(self.leitura_dict[f"tmp_nucleo_estator_ug{self.__ug.id}"].descr, CONDIC_INDISPONIBILIZAR, self.leitura_dict[f"tmp_nucleo_estator_ug{self.__ug.id}"], 100, 200)
+        self.condicionadores_essenciais.append(self.condic_dict[f"tmp_nucleo_estator_ug{self.__ug.id}"])
 
         # MRD 1
-        self.leitura_dict[f"tmp_mancal_rad_dia_1_ug{self.__ug_id}"] = LeituraModbus(f"[UG{self.__ug_id}] Temperatura Mancal Radial Dianteiro", self.__clp[f"UG{self.__ug_id}"], REG[f"UG{self.__ug_id}_RA_Temperatura_05"], op=4)
-        self.condic_dict[f"tmp_mancal_rad_dia_1_ug{self.__ug_id}"] = CondicionadorExponencial(self.leitura_dict[f"tmp_mancal_rad_dia_1_ug{self.__ug_id}"].descr, CONDIC_INDISPONIBILIZAR, self.leitura_dict[f"tmp_mancal_rad_dia_1_ug{self.__ug_id}"], 100, 200)
-        self.condicionadores_essenciais.append(self.condic_dict[f"tmp_mancal_rad_dia_1_ug{self.__ug_id}"])
+        self.leitura_dict[f"tmp_mancal_rad_dia_1_ug{self.__ug.id}"] = LeituraModbus(f"[UG{self.__ug.id}] Temperatura Mancal Radial Dianteiro", self.__clp[f"UG{self.__ug.id}"], REG[f"UG{self.__ug.id}_RA_Temperatura_05"], op=4)
+        self.condic_dict[f"tmp_mancal_rad_dia_1_ug{self.__ug.id}"] = CondicionadorExponencial(self.leitura_dict[f"tmp_mancal_rad_dia_1_ug{self.__ug.id}"].descr, CONDIC_INDISPONIBILIZAR, self.leitura_dict[f"tmp_mancal_rad_dia_1_ug{self.__ug.id}"], 100, 200)
+        self.condicionadores_essenciais.append(self.condic_dict[f"tmp_mancal_rad_dia_1_ug{self.__ug.id}"])
 
         # MRT 1
-        self.leitura_dict[f"tmp_mancal_rad_tra_1_ug{self.__ug_id}"] = LeituraModbus(f"[UG{self.__ug_id}] Temperatura Mancal Radial Traseiro", self.__clp[f"UG{self.__ug_id}"], REG[f"UG{self.__ug_id}_RA_Temperatura_06"], op=4)
-        self.condic_dict[f"tmp_mancal_rad_tra_1_ug{self.__ug_id}"] = CondicionadorExponencial(self.leitura_dict[f"tmp_mancal_rad_tra_1_ug{self.__ug_id}"].descr, CONDIC_INDISPONIBILIZAR, self.leitura_dict[f"tmp_mancal_rad_tra_1_ug{self.__ug_id}"], 100, 200)
-        self.condicionadores_essenciais.append(self.condic_dict[f"tmp_mancal_rad_tra_1_ug{self.__ug_id}"])
+        self.leitura_dict[f"tmp_mancal_rad_tra_1_ug{self.__ug.id}"] = LeituraModbus(f"[UG{self.__ug.id}] Temperatura Mancal Radial Traseiro", self.__clp[f"UG{self.__ug.id}"], REG[f"UG{self.__ug.id}_RA_Temperatura_06"], op=4)
+        self.condic_dict[f"tmp_mancal_rad_tra_1_ug{self.__ug.id}"] = CondicionadorExponencial(self.leitura_dict[f"tmp_mancal_rad_tra_1_ug{self.__ug.id}"].descr, CONDIC_INDISPONIBILIZAR, self.leitura_dict[f"tmp_mancal_rad_tra_1_ug{self.__ug.id}"], 100, 200)
+        self.condicionadores_essenciais.append(self.condic_dict[f"tmp_mancal_rad_tra_1_ug{self.__ug.id}"])
 
         # MRD 2
-        self.leitura_dict[f"tmp_mancal_rad_dia_2_ug{self.__ug_id}"] = LeituraModbus(f"[UG{self.__ug_id}] Temperatura Mancal Radial Dianteiro 2", self.__clp[f"UG{self.__ug_id}"], REG[f"UG{self.__ug_id}_RA_Temperatura_07"], op=4)
-        self.condic_dict[f"tmp_mancal_rad_dia_2_ug{self.__ug_id}"] = CondicionadorExponencial(self.leitura_dict[f"tmp_mancal_rad_dia_2_ug{self.__ug_id}"].descr, CONDIC_INDISPONIBILIZAR, self.leitura_dict[f"tmp_mancal_rad_dia_2_ug{self.__ug_id}"], 100, 200)
-        self.condicionadores_essenciais.append(self.condic_dict[f"tmp_mancal_rad_dia_2_ug{self.__ug_id}"])
+        self.leitura_dict[f"tmp_mancal_rad_dia_2_ug{self.__ug.id}"] = LeituraModbus(f"[UG{self.__ug.id}] Temperatura Mancal Radial Dianteiro 2", self.__clp[f"UG{self.__ug.id}"], REG[f"UG{self.__ug.id}_RA_Temperatura_07"], op=4)
+        self.condic_dict[f"tmp_mancal_rad_dia_2_ug{self.__ug.id}"] = CondicionadorExponencial(self.leitura_dict[f"tmp_mancal_rad_dia_2_ug{self.__ug.id}"].descr, CONDIC_INDISPONIBILIZAR, self.leitura_dict[f"tmp_mancal_rad_dia_2_ug{self.__ug.id}"], 100, 200)
+        self.condicionadores_essenciais.append(self.condic_dict[f"tmp_mancal_rad_dia_2_ug{self.__ug.id}"])
 
         # MRT 2
-        self.leitura_dict[f"tmp_mancal_rad_tra_2_ug{self.__ug_id}"] = LeituraModbus(f"[UG{self.__ug_id}] Temperatura Mancal Radial Traseiro 2", self.__clp[f"UG{self.__ug_id}"], REG[f"UG{self.__ug_id}_RA_Temperatura_08"], op=4)
-        self.condic_dict[f"tmp_mancal_rad_tra_2_ug{self.__ug_id}"] = CondicionadorExponencial(self.leitura_dict[f"tmp_mancal_rad_tra_2_ug{self.__ug_id}"].descr, CONDIC_INDISPONIBILIZAR, self.leitura_dict[f"tmp_mancal_rad_tra_2_ug{self.__ug_id}"], 100, 200)
-        self.condicionadores_essenciais.append(self.condic_dict[f"tmp_mancal_rad_tra_2_ug{self.__ug_id}"])
+        self.leitura_dict[f"tmp_mancal_rad_tra_2_ug{self.__ug.id}"] = LeituraModbus(f"[UG{self.__ug.id}] Temperatura Mancal Radial Traseiro 2", self.__clp[f"UG{self.__ug.id}"], REG[f"UG{self.__ug.id}_RA_Temperatura_08"], op=4)
+        self.condic_dict[f"tmp_mancal_rad_tra_2_ug{self.__ug.id}"] = CondicionadorExponencial(self.leitura_dict[f"tmp_mancal_rad_tra_2_ug{self.__ug.id}"].descr, CONDIC_INDISPONIBILIZAR, self.leitura_dict[f"tmp_mancal_rad_tra_2_ug{self.__ug.id}"], 100, 200)
+        self.condicionadores_essenciais.append(self.condic_dict[f"tmp_mancal_rad_tra_2_ug{self.__ug.id}"])
 
         # Saída de ar
-        self.leitura_dict[f"tmp_saida_de_ar_ug{self.__ug_id}"] = LeituraModbus(f"[UG{self.__ug_id}] Saída de Ar", self.__clp[f"UG{self.__ug_id}"], REG[f"UG{self.__ug_id}_RA_Temperatura_10"], op=4)
-        self.condic_dict[f"tmp_saida_de_ar_ug{self.__ug_id}"] = CondicionadorExponencial(self.leitura_dict[f"tmp_saida_de_ar_ug{self.__ug_id}"].descr, CONDIC_INDISPONIBILIZAR, self.leitura_dict[f"tmp_saida_de_ar_ug{self.__ug_id}"], 100, 200)
-        self.condicionadores_essenciais.append(self.condic_dict[f"tmp_saida_de_ar_ug{self.__ug_id}"])
+        self.leitura_dict[f"tmp_saida_de_ar_ug{self.__ug.id}"] = LeituraModbus(f"[UG{self.__ug.id}] Saída de Ar", self.__clp[f"UG{self.__ug.id}"], REG[f"UG{self.__ug.id}_RA_Temperatura_10"], op=4)
+        self.condic_dict[f"tmp_saida_de_ar_ug{self.__ug.id}"] = CondicionadorExponencial(self.leitura_dict[f"tmp_saida_de_ar_ug{self.__ug.id}"].descr, CONDIC_INDISPONIBILIZAR, self.leitura_dict[f"tmp_saida_de_ar_ug{self.__ug.id}"], 100, 200)
+        self.condicionadores_essenciais.append(self.condic_dict[f"tmp_saida_de_ar_ug{self.__ug.id}"])
 
         # Mancal Guia Radial
-        self.leitura_dict[f"tmp_mancal_guia_radial_ug{self.__ug_id}"] = LeituraModbus(f"[UG{self.__ug_id}] Mancal Guia Radial", self.__clp[f"UG{self.__ug_id}"], REG[f"UG{self.__ug_id}_RA_TempMcGuiaRadial"])
-        self.condic_dict[f"tmp_mancal_guia_radial_ug{self.__ug_id}"] = CondicionadorExponencial(self.leitura_dict[f"tmp_mancal_guia_radial_ug{self.__ug_id}"].descr, CONDIC_INDISPONIBILIZAR, self.leitura_dict[f"tmp_mancal_guia_radial_ug{self.__ug_id}"], 100, 200)
-        self.condicionadores_essenciais.append(self.condic_dict[f"tmp_mancal_guia_radial_ug{self.__ug_id}"])
+        self.leitura_dict[f"tmp_mancal_guia_radial_ug{self.__ug.id}"] = LeituraModbus(f"[UG{self.__ug.id}] Mancal Guia Radial", self.__clp[f"UG{self.__ug.id}"], REG[f"UG{self.__ug.id}_RA_TempMcGuiaRadial"])
+        self.condic_dict[f"tmp_mancal_guia_radial_ug{self.__ug.id}"] = CondicionadorExponencial(self.leitura_dict[f"tmp_mancal_guia_radial_ug{self.__ug.id}"].descr, CONDIC_INDISPONIBILIZAR, self.leitura_dict[f"tmp_mancal_guia_radial_ug{self.__ug.id}"], 100, 200)
+        self.condicionadores_essenciais.append(self.condic_dict[f"tmp_mancal_guia_radial_ug{self.__ug.id}"])
 
         # Mancal Guia escora
-        self.leitura_dict[f"tmp_mancal_guia_escora_ug{self.__ug_id}"] = LeituraModbus(f"[UG{self.__ug_id}] Mancal Guia Escora", self.__clp[f"UG{self.__ug_id}"], REG[f"UG{self.__ug_id}_RA_TempMcGuiaEscora"])
-        self.condic_dict[f"tmp_mancal_guia_escora_ug{self.__ug_id}"] = CondicionadorExponencial(self.leitura_dict[f"tmp_mancal_guia_escora_ug{self.__ug_id}"].descr, CONDIC_INDISPONIBILIZAR, self.leitura_dict[f"tmp_mancal_guia_escora_ug{self.__ug_id}"], 100, 200)
-        self.condicionadores_essenciais.append(self.condic_dict[f"tmp_mancal_guia_escora_ug{self.__ug_id}"])
+        self.leitura_dict[f"tmp_mancal_guia_escora_ug{self.__ug.id}"] = LeituraModbus(f"[UG{self.__ug.id}] Mancal Guia Escora", self.__clp[f"UG{self.__ug.id}"], REG[f"UG{self.__ug.id}_RA_TempMcGuiaEscora"])
+        self.condic_dict[f"tmp_mancal_guia_escora_ug{self.__ug.id}"] = CondicionadorExponencial(self.leitura_dict[f"tmp_mancal_guia_escora_ug{self.__ug.id}"].descr, CONDIC_INDISPONIBILIZAR, self.leitura_dict[f"tmp_mancal_guia_escora_ug{self.__ug.id}"], 100, 200)
+        self.condicionadores_essenciais.append(self.condic_dict[f"tmp_mancal_guia_escora_ug{self.__ug.id}"])
 
         # Mancal Guia contra_escora
-        self.leitura_dict[f"tmp_mancal_guia_contra_ug{self.__ug_id}"] = LeituraModbus(f"[UG{self.__ug_id}] Mancal Guia Contra Escora", self.__clp[f"UG{self.__ug_id}"], REG[f"UG{self.__ug_id}_RA_TempMcGuiaContraEscora"])
-        self.condic_dict[f"tmp_mancal_guia_contra_ug{self.__ug_id}"] = CondicionadorExponencial(self.leitura_dict[f"tmp_mancal_guia_contra_ug{self.__ug_id}"].descr, CONDIC_INDISPONIBILIZAR, self.leitura_dict[f"tmp_mancal_guia_contra_ug{self.__ug_id}"], 100, 200)
-        self.condicionadores_essenciais.append(self.condic_dict[f"tmp_mancal_guia_contra_ug{self.__ug_id}"])
+        self.leitura_dict[f"tmp_mancal_guia_contra_ug{self.__ug.id}"] = LeituraModbus(f"[UG{self.__ug.id}] Mancal Guia Contra Escora", self.__clp[f"UG{self.__ug.id}"], REG[f"UG{self.__ug.id}_RA_TempMcGuiaContraEscora"])
+        self.condic_dict[f"tmp_mancal_guia_contra_ug{self.__ug.id}"] = CondicionadorExponencial(self.leitura_dict[f"tmp_mancal_guia_contra_ug{self.__ug.id}"].descr, CONDIC_INDISPONIBILIZAR, self.leitura_dict[f"tmp_mancal_guia_contra_ug{self.__ug.id}"], 100, 200)
+        self.condicionadores_essenciais.append(self.condic_dict[f"tmp_mancal_guia_contra_ug{self.__ug.id}"])
+
+        self.leitura_dict[f"pressao_cx_espiral_ug{self.__ug.id}"] = LeituraModbus(f"[UG{self.__ug.id}] Pressão Caixa Espiral", self.__clp[f"UG{self.__ug.id}"], REG[f"UG{self.__ug.id}_EA_PressK1CaixaExpiral_MaisCasas"], escala=0.1, op=4)
+        self.condic_dict[f"pressao_cx_espiral_ug{self.__ug.id}"] = CondicionadorExponencial(self.leitura_dict[f"pressao_cx_espiral_ug{self.__ug.id}"].descr, CONDIC_INDISPONIBILIZAR, self.leitura_dict[f"pressao_cx_espiral_ug{self.__ug.id}"], 15.5, 18)
+        self.condicionadores_essenciais.append(self.condic_dict[f"pressao_cx_espiral_ug{self.__ug.id}"])
+
 
         # Óleo do Transformador Elevador
-        self.leitura_temperatura_oleo_trafo = LeituraModbus(f"[UG{self.__ug_id}] Óleo do Transformador Elevador", self.__clp["SA"], REG["SA_EA_TE_TempOleo"], escala=0.1, op=4)
+        self.leitura_temperatura_oleo_trafo = LeituraModbus(f"[UG{self.__ug.id}] Óleo do Transformador Elevador", self.__clp["SA"], REG["SA_EA_TE_TempOleo"], escala=0.1, op=4)
         self.condicionador_leitura_temperatura_oleo_trafo = CondicionadorExponencial(self.leitura_temperatura_oleo_trafo.descr, CONDIC_INDISPONIBILIZAR, self.leitura_temperatura_oleo_trafo, 100, 200)
         self.condicionadores_essenciais.append(self.condicionador_leitura_temperatura_oleo_trafo)
 
         ## Comandos Digitais
         # GERAL
-        self.leitura_CD_EmergenciaViaSuper = LeituraModbusCoil(f"[UG{self.__ug_id}] Emergência Via Supervisório", self.__clp[f"UG{self.__ug_id}"], REG[f"UG{self.__ug_id}_CD_EmergenciaViaSuper"])
+        self.leitura_CD_EmergenciaViaSuper = LeituraModbusCoil(f"[UG{self.__ug.id}] Emergência Via Supervisório", self.__clp[f"UG{self.__ug.id}"], REG[f"UG{self.__ug.id}_CD_EmergenciaViaSuper"])
         self.condicionadores_essenciais.append(CondicionadorBase(self.leitura_CD_EmergenciaViaSuper.descr, CONDIC_NORMALIZAR, self.leitura_CD_EmergenciaViaSuper))
 
         ## Retornos Digitais
         # TRIPS
-        self.leitura_RD_TripEletrico = LeituraModbusCoil(f"[UG{self.__ug_id}] Trip Elétrico", self.__clp[f"UG{self.__ug_id}"], REG[f"UG{self.__ug_id}_RD_TripEletrico"])
-        self.condicionadores_essenciais.append(CondicionadorBase(self.leitura_RD_TripEletrico.descr, CONDIC_NORMALIZAR, self.leitura_RD_TripEletrico, self.__ug_id, [UG_PARANDO, UG_PARADA]))
+        self.leitura_RD_TripEletrico = LeituraModbusCoil(f"[UG{self.__ug.id}] Trip Elétrico", self.__clp[f"UG{self.__ug.id}"], REG[f"UG{self.__ug.id}_RD_TripEletrico"])
+        self.condicionadores_essenciais.append(CondicionadorBase(self.leitura_RD_TripEletrico.descr, CONDIC_NORMALIZAR, self.leitura_RD_TripEletrico, self.__ug.id, [UG_PARANDO, UG_PARADA]))
 
-        self.leitura_RD_700G_Trip = LeituraModbusCoil(f"[UG{self.__ug_id}] SEL 700G Trip", self.__clp[f"UG{self.__ug_id}"], REG[f"UG{self.__ug_id}_RD_700G_Trip"])
-        self.condicionadores_essenciais.append(CondicionadorBase(self.leitura_RD_700G_Trip.descr, CONDIC_NORMALIZAR, self.leitura_RD_700G_Trip, self.__ug_id, [UG_PARANDO, UG_PARADA]))
+        self.leitura_RD_700G_Trip = LeituraModbusCoil(f"[UG{self.__ug.id}] SEL 700G Trip", self.__clp[f"UG{self.__ug.id}"], REG[f"UG{self.__ug.id}_RD_700G_Trip"])
+        self.condicionadores_essenciais.append(CondicionadorBase(self.leitura_RD_700G_Trip.descr, CONDIC_NORMALIZAR, self.leitura_RD_700G_Trip, self.__ug.id, [UG_PARANDO, UG_PARADA]))
 
-        self.leitura_RD_TripMecanico = LeituraModbusCoil(f"[UG{self.__ug_id}] Trip Mecâncio", self.__clp[f"UG{self.__ug_id}"], REG[f"UG{self.__ug_id}_RD_TripMecanico"])
+        self.leitura_RD_TripMecanico = LeituraModbusCoil(f"[UG{self.__ug.id}] Trip Mecâncio", self.__clp[f"UG{self.__ug.id}"], REG[f"UG{self.__ug.id}_RD_TripMecanico"])
         self.condicionadores_essenciais.append(CondicionadorBase(self.leitura_RD_TripMecanico.descr, CONDIC_INDISPONIBILIZAR, self.leitura_RD_TripMecanico))
 
         ## Entradas Digitais
         # TRIPS
-        self.leitura_ED_RV_Trip = LeituraModbusCoil(f"[UG{self.__ug_id}] RV Trip", self.__clp[f"UG{self.__ug_id}"], REG[f"UG{self.__ug_id}_ED_RV_Trip"])
+        self.leitura_ED_RV_Trip = LeituraModbusCoil(f"[UG{self.__ug.id}] RV Trip", self.__clp[f"UG{self.__ug.id}"], REG[f"UG{self.__ug.id}_ED_RV_Trip"])
         self.condicionadores_essenciais.append(CondicionadorBase(self.leitura_ED_RV_Trip.descr, CONDIC_INDISPONIBILIZAR, self.leitura_ED_RV_Trip))
 
-        self.leitura_ED_AVR_Trip = LeituraModbusCoil(f"[UG{self.__ug_id}] AVR Trip", self.__clp[f"UG{self.__ug_id}"], REG[f"UG{self.__ug_id}_ED_AVR_Trip"])
+        self.leitura_ED_AVR_Trip = LeituraModbusCoil(f"[UG{self.__ug.id}] AVR Trip", self.__clp[f"UG{self.__ug.id}"], REG[f"UG{self.__ug.id}_ED_AVR_Trip"])
         self.condicionadores_essenciais.append(CondicionadorBase(self.leitura_ED_AVR_Trip.descr, CONDIC_INDISPONIBILIZAR, self.leitura_ED_AVR_Trip))
 
         # RELÉS
-        self.leitura_ED_SEL700G_Atuado = LeituraModbusCoil(f"[UG{self.__ug_id}] SEL 700G Atuado", self.__clp[f"UG{self.__ug_id}"], REG[f"UG{self.__ug_id}_ED_SEL700G_Atuado"])
+        self.leitura_ED_SEL700G_Atuado = LeituraModbusCoil(f"[UG{self.__ug.id}] SEL 700G Atuado", self.__clp[f"UG{self.__ug.id}"], REG[f"UG{self.__ug.id}_ED_SEL700G_Atuado"])
         self.condicionadores_essenciais.append(CondicionadorBase(self.leitura_ED_SEL700G_Atuado.descr, CONDIC_INDISPONIBILIZAR, self.leitura_ED_SEL700G_Atuado))
 
-        self.leitura_ED_ReleBloqA86MAtuado = LeituraModbusCoil(f"[UG{self.__ug_id}] Bloqueio 86M Atuado", self.__clp[f"UG{self.__ug_id}"], REG[f"UG{self.__ug_id}_ED_ReleBloqA86MAtuado"])
+        self.leitura_ED_ReleBloqA86MAtuado = LeituraModbusCoil(f"[UG{self.__ug.id}] Bloqueio 86M Atuado", self.__clp[f"UG{self.__ug.id}"], REG[f"UG{self.__ug.id}_ED_ReleBloqA86MAtuado"])
         self.condicionadores_essenciais.append(CondicionadorBase(self.leitura_ED_ReleBloqA86MAtuado.descr, CONDIC_INDISPONIBILIZAR, self.leitura_ED_ReleBloqA86MAtuado))
 
-        self.leitura_ED_ReleBloqA86HAtuado = LeituraModbusCoil(f"[UG{self.__ug_id}] Bloqueio 86H Atuado", self.__clp[f"UG{self.__ug_id}"], REG[f"UG{self.__ug_id}_ED_ReleBloqA86HAtuado"])
-        self.condicionadores_essenciais.append(CondicionadorBase(self.leitura_ED_ReleBloqA86HAtuado.descr, CONDIC_NORMALIZAR, self.leitura_ED_ReleBloqA86HAtuado, self.__ug_id, [UG_SINCRONIZADA]))
+        self.leitura_ED_ReleBloqA86HAtuado = LeituraModbusCoil(f"[UG{self.__ug.id}] Bloqueio 86H Atuado", self.__clp[f"UG{self.__ug.id}"], REG[f"UG{self.__ug.id}_ED_ReleBloqA86HAtuado"])
+        self.condicionadores_essenciais.append(CondicionadorBase(self.leitura_ED_ReleBloqA86HAtuado.descr, CONDIC_NORMALIZAR, self.leitura_ED_ReleBloqA86HAtuado, self.__ug.id, [UG_SINCRONIZADA]))
 
 
         ### CONDICIONADORES NORMAIS
         # Entradas Digitais
         # SA -> UG
-        self.leitura_ED_SA_FalhaDisjTPsSincrG2 = LeituraModbusCoil(f"[SA-UG{self.__ug_id}] Trasformador Potencial Disjuntor Sincronização Falha", self.__clp["SA"], REG["SA_ED_FalhaDisjTPsSincrG2"])
+        self.leitura_ED_SA_FalhaDisjTPsSincrG2 = LeituraModbusCoil(f"[SA-UG{self.__ug.id}] Trasformador Potencial Disjuntor Sincronização Falha", self.__clp["SA"], REG["SA_ED_FalhaDisjTPsSincrG2"])
         self.condicionadores.append(CondicionadorBase(self.leitura_ED_SA_FalhaDisjTPsSincrG2.descr, CONDIC_INDISPONIBILIZAR, self.leitura_ED_SA_FalhaDisjTPsSincrG2))
 
-        self.leitura_ED_SA_DisjDJ1_AlPressBaixa = LeituraModbusCoil(f"[SA-UG{self.__ug_id}] Disjutor 1 Alarme Pressão Baixa", self.__clp["SA"], REG["SA_ED_DisjDJ1_AlPressBaixa"])
+        self.leitura_ED_SA_DisjDJ1_AlPressBaixa = LeituraModbusCoil(f"[SA-UG{self.__ug.id}] Disjutor 1 Alarme Pressão Baixa", self.__clp["SA"], REG["SA_ED_DisjDJ1_AlPressBaixa"])
         self.condicionadores.append(CondicionadorBase(self.leitura_ED_SA_DisjDJ1_AlPressBaixa.descr, CONDIC_INDISPONIBILIZAR, self.leitura_ED_SA_DisjDJ1_AlPressBaixa))
 
-        self.leitura_ED_SA_DisjDJ1_BloqPressBaixa = LeituraModbusCoil(f"[SA-UG{self.__ug_id}] Disjuntor 1 Bloqueio Pressão Baixa", self.__clp["SA"], REG["SA_ED_DisjDJ1_BloqPressBaixa"])
+        self.leitura_ED_SA_DisjDJ1_BloqPressBaixa = LeituraModbusCoil(f"[SA-UG{self.__ug.id}] Disjuntor 1 Bloqueio Pressão Baixa", self.__clp["SA"], REG["SA_ED_DisjDJ1_BloqPressBaixa"])
         self.condicionadores.append(CondicionadorBase(self.leitura_ED_SA_DisjDJ1_BloqPressBaixa.descr, CONDIC_INDISPONIBILIZAR, self.leitura_ED_SA_DisjDJ1_BloqPressBaixa))
 
         # TRIPS
-        self.leitura_ED_UHRV_TripBomba1 = LeituraModbusCoil(f"[UG{self.__ug_id}] UHRV Bomba 1 Trip", self.__clp[f"UG{self.__ug_id}"], REG[f"UG{self.__ug_id}_ED_UHRV_TripBomba1"])
+        self.leitura_ED_UHRV_TripBomba1 = LeituraModbusCoil(f"[UG{self.__ug.id}] UHRV Bomba 1 Trip", self.__clp[f"UG{self.__ug.id}"], REG[f"UG{self.__ug.id}_ED_UHRV_TripBomba1"])
         self.condicionadores.append(CondicionadorBase(self.leitura_ED_UHRV_TripBomba1.descr, CONDIC_INDISPONIBILIZAR, self.leitura_ED_UHRV_TripBomba1))
 
-        self.leitura_ED_UHRV_TripBomba2 = LeituraModbusCoil(f"[UG{self.__ug_id}] UHRV Bomba 2 Trip", self.__clp[f"UG{self.__ug_id}"], REG[f"UG{self.__ug_id}_ED_UHRV_TripBomba2"])
+        self.leitura_ED_UHRV_TripBomba2 = LeituraModbusCoil(f"[UG{self.__ug.id}] UHRV Bomba 2 Trip", self.__clp[f"UG{self.__ug.id}"], REG[f"UG{self.__ug.id}_ED_UHRV_TripBomba2"])
         self.condicionadores.append(CondicionadorBase(self.leitura_ED_UHRV_TripBomba2.descr, CONDIC_INDISPONIBILIZAR, self.leitura_ED_UHRV_TripBomba2))
 
-        self.leitura_ED_UHLM_TripBomba1 = LeituraModbusCoil(f"[UG{self.__ug_id}] UHLM Bomba 1 Trip", self.__clp[f"UG{self.__ug_id}"], REG[f"UG{self.__ug_id}_ED_UHLM_TripBomba1"])
+        self.leitura_ED_UHLM_TripBomba1 = LeituraModbusCoil(f"[UG{self.__ug.id}] UHLM Bomba 1 Trip", self.__clp[f"UG{self.__ug.id}"], REG[f"UG{self.__ug.id}_ED_UHLM_TripBomba1"])
         self.condicionadores.append(CondicionadorBase(self.leitura_ED_UHLM_TripBomba1.descr, CONDIC_INDISPONIBILIZAR, self.leitura_ED_UHLM_TripBomba1))
 
-        self.leitura_ED_UHLM_TripBomba2 = LeituraModbusCoil(f"[UG{self.__ug_id}] UHLM Bomba 2 Trip", self.__clp[f"UG{self.__ug_id}"], REG[f"UG{self.__ug_id}_ED_UHLM_TripBomba2"])
+        self.leitura_ED_UHLM_TripBomba2 = LeituraModbusCoil(f"[UG{self.__ug.id}] UHLM Bomba 2 Trip", self.__clp[f"UG{self.__ug.id}"], REG[f"UG{self.__ug.id}_ED_UHLM_TripBomba2"])
         self.condicionadores.append(CondicionadorBase(self.leitura_ED_UHLM_TripBomba2.descr, CONDIC_INDISPONIBILIZAR, self.leitura_ED_UHLM_TripBomba2))
 
-        self.leitura_ED_QCAUG_TripDisj52A1 = LeituraModbusCoil(f"[UG{self.__ug_id}] QCAUG Disjuntor 52A1 Trip", self.__clp[f"UG{self.__ug_id}"], REG[f"UG{self.__ug_id}_ED_QCAUG_TripDisj52A1"])
+        self.leitura_ED_QCAUG_TripDisj52A1 = LeituraModbusCoil(f"[UG{self.__ug.id}] QCAUG Disjuntor 52A1 Trip", self.__clp[f"UG{self.__ug.id}"], REG[f"UG{self.__ug.id}_ED_QCAUG_TripDisj52A1"])
         self.condicionadores.append(CondicionadorBase(self.leitura_ED_QCAUG_TripDisj52A1.descr, CONDIC_INDISPONIBILIZAR, self.leitura_ED_QCAUG_TripDisj52A1))
 
-        self.leitura_ED_TripAlimPainelFreio = LeituraModbusCoil(f"[UG{self.__ug_id}] Alimentação Painel Freio Trip", self.__clp[f"UG{self.__ug_id}"], REG[f"UG{self.__ug_id}_ED_TripAlimPainelFreio"])
+        self.leitura_ED_TripAlimPainelFreio = LeituraModbusCoil(f"[UG{self.__ug.id}] Alimentação Painel Freio Trip", self.__clp[f"UG{self.__ug.id}"], REG[f"UG{self.__ug.id}_ED_TripAlimPainelFreio"])
         self.condicionadores.append(CondicionadorBase(self.leitura_ED_TripAlimPainelFreio.descr, CONDIC_INDISPONIBILIZAR, self.leitura_ED_TripAlimPainelFreio))
 
-        self.leitura_ED_QCAUG_TripDisjAgrup = LeituraModbusCoil(f"[UG{self.__ug_id}] QCAUG Disjuntor Agrupamento Trip", self.__clp[f"UG{self.__ug_id}"], REG[f"UG{self.__ug_id}_ED_QCAUG_TripDisjAgrup"])
+        self.leitura_ED_QCAUG_TripDisjAgrup = LeituraModbusCoil(f"[UG{self.__ug.id}] QCAUG Disjuntor Agrupamento Trip", self.__clp[f"UG{self.__ug.id}"], REG[f"UG{self.__ug.id}_ED_QCAUG_TripDisjAgrup"])
         self.condicionadores.append(CondicionadorBase(self.leitura_ED_QCAUG_TripDisjAgrup.descr, CONDIC_INDISPONIBILIZAR, self.leitura_ED_QCAUG_TripDisjAgrup))
 
         # FALHAS
-        self.leitura_ED_AVR_FalhaInterna = LeituraModbusCoil(f"[UG{self.__ug_id}] AVR Falha Interna", self.__clp[f"UG{self.__ug_id}"], REG[f"UG{self.__ug_id}_ED_AVR_FalhaInterna"])
+        self.leitura_ED_AVR_FalhaInterna = LeituraModbusCoil(f"[UG{self.__ug.id}] AVR Falha Interna", self.__clp[f"UG{self.__ug.id}"], REG[f"UG{self.__ug.id}_ED_AVR_FalhaInterna"])
         self.condicionadores.append(CondicionadorBase(self.leitura_ED_AVR_FalhaInterna.descr, CONDIC_INDISPONIBILIZAR, self.leitura_ED_AVR_FalhaInterna))
 
-        self.leitura_ED_SEL700G_FalhaInterna = LeituraModbusCoil(f"[UG{self.__ug_id}] SEL 700G Falha Interna", self.__clp[f"UG{self.__ug_id}"], REG[f"UG{self.__ug_id}_ED_SEL700G_FalhaInterna"])
+        self.leitura_ED_SEL700G_FalhaInterna = LeituraModbusCoil(f"[UG{self.__ug.id}] SEL 700G Falha Interna", self.__clp[f"UG{self.__ug.id}"], REG[f"UG{self.__ug.id}_ED_SEL700G_FalhaInterna"])
         self.condicionadores.append(CondicionadorBase(self.leitura_ED_SEL700G_FalhaInterna.descr, CONDIC_INDISPONIBILIZAR, self.leitura_ED_SEL700G_FalhaInterna))
 
-        self.leitura_ED_QCAUG_Falha380VcaPainel = LeituraModbusCoil(f"[UG{self.__ug_id}] QCAUG Falha 380 VCA Painel", self.__clp[f"UG{self.__ug_id}"], REG[f"UG{self.__ug_id}_ED_QCAUG_Falha380VcaPainel"])
+        self.leitura_ED_QCAUG_Falha380VcaPainel = LeituraModbusCoil(f"[UG{self.__ug.id}] QCAUG Falha 380 VCA Painel", self.__clp[f"UG{self.__ug.id}"], REG[f"UG{self.__ug.id}_ED_QCAUG_Falha380VcaPainel"])
         self.condicionadores.append(CondicionadorBase(self.leitura_ED_QCAUG_Falha380VcaPainel.descr, CONDIC_NORMALIZAR, self.leitura_ED_QCAUG_Falha380VcaPainel))
 
         # FALTAS
-        self.leitura_ED_Falta125Vcc = LeituraModbusCoil(f"[UG{self.__ug_id}] Falta 125 Vcc", self.__clp[f"UG{self.__ug_id}"], REG[f"UG{self.__ug_id}_ED_Falta125Vcc"])
+        self.leitura_ED_Falta125Vcc = LeituraModbusCoil(f"[UG{self.__ug.id}] Falta 125 Vcc", self.__clp[f"UG{self.__ug.id}"], REG[f"UG{self.__ug.id}_ED_Falta125Vcc"])
         self.condicionadores.append(CondicionadorBase(self.leitura_ED_Falta125Vcc.descr, CONDIC_INDISPONIBILIZAR, self.leitura_ED_Falta125Vcc))
 
-        self.leitura_ED_Falta125VccCom = LeituraModbusCoil(f"[UG{self.__ug_id}] Falta 125 Vcc Com", self.__clp[f"UG{self.__ug_id}"], REG[f"UG{self.__ug_id}_ED_Falta125VccCom"])
+        self.leitura_ED_Falta125VccCom = LeituraModbusCoil(f"[UG{self.__ug.id}] Falta 125 Vcc Com", self.__clp[f"UG{self.__ug.id}"], REG[f"UG{self.__ug.id}_ED_Falta125VccCom"])
         self.condicionadores.append(CondicionadorBase(self.leitura_ED_Falta125VccCom.descr, CONDIC_INDISPONIBILIZAR, self.leitura_ED_Falta125VccCom))
 
-        self.leitura_ED_FaltaFluxoOleoMc = LeituraModbusCoil(f"[UG{self.__ug_id}] Falta Fluxo Óleo MC", self.__clp[f"UG{self.__ug_id}"], REG[f"UG{self.__ug_id}_ED_FaltaFluxoOleoMc"])
+        self.leitura_ED_FaltaFluxoOleoMc = LeituraModbusCoil(f"[UG{self.__ug.id}] Falta Fluxo Óleo MC", self.__clp[f"UG{self.__ug.id}"], REG[f"UG{self.__ug.id}_ED_FaltaFluxoOleoMc"])
         self.condicionadores.append(CondicionadorBase(self.leitura_ED_FaltaFluxoOleoMc.descr, CONDIC_INDISPONIBILIZAR, self.leitura_ED_FaltaFluxoOleoMc))
 
-        self.leitura_ED_Falta125VccAlimVal = LeituraModbusCoil(f"[UG{self.__ug_id}] Falta 125 Vcc Alimentação", self.__clp[f"UG{self.__ug_id}"], REG[f"UG{self.__ug_id}_ED_Falta125VccAlimVal"])
+        self.leitura_ED_Falta125VccAlimVal = LeituraModbusCoil(f"[UG{self.__ug.id}] Falta 125 Vcc Alimentação", self.__clp[f"UG{self.__ug.id}"], REG[f"UG{self.__ug.id}_ED_Falta125VccAlimVal"])
         self.condicionadores.append(CondicionadorBase(self.leitura_ED_Falta125VccAlimVal.descr, CONDIC_INDISPONIBILIZAR, self.leitura_ED_Falta125VccAlimVal))
 
-        self.leitura_ED_UHLM_FaltaFluxTroc = LeituraModbusCoil(f"[UG{self.__ug_id}] UHLM Falta Fluxo", self.__clp[f"UG{self.__ug_id}"], REG[f"UG{self.__ug_id}_ED_UHLM_FaltaFluxTroc"])
+        self.leitura_ED_UHLM_FaltaFluxTroc = LeituraModbusCoil(f"[UG{self.__ug.id}] UHLM Falta Fluxo", self.__clp[f"UG{self.__ug.id}"], REG[f"UG{self.__ug.id}_ED_UHLM_FaltaFluxTroc"])
         self.condicionadores.append(CondicionadorBase(self.leitura_ED_UHLM_FaltaFluxTroc.descr, CONDIC_INDISPONIBILIZAR, self.leitura_ED_UHLM_FaltaFluxTroc))
 
-        self.leitura_ED_UHLM_FaltaPressTroc = LeituraModbusCoil(f"[UG{self.__ug_id}] UHLM Falta Pressão", self.__clp[f"UG{self.__ug_id}"], REG[f"UG{self.__ug_id}_ED_UHLM_FaltaPressTroc"]) # TODO retornar para DEVE_INDISPONIBILZIAR
+        self.leitura_ED_UHLM_FaltaPressTroc = LeituraModbusCoil(f"[UG{self.__ug.id}] UHLM Falta Pressão", self.__clp[f"UG{self.__ug.id}"], REG[f"UG{self.__ug.id}_ED_UHLM_FaltaPressTroc"]) # TODO retornar para DEVE_INDISPONIBILZIAR
         self.condicionadores.append(CondicionadorBase(self.leitura_ED_UHLM_FaltaPressTroc.descr, CONDIC_NORMALIZAR, self.leitura_ED_UHLM_FaltaPressTroc))
 
         # Controle UHRV
-        self.leitura_ED_UHRV_NivOleominimoPos36 = LeituraModbusCoil(f"[UG{self.__ug_id}] UHRV Óleo Nível Mínimo Posição 36", self.__clp[f"UG{self.__ug_id}"], REG[f"UG{self.__ug_id}_ED_UHRV_NivOleominimoPos36"])
+        self.leitura_ED_UHRV_NivOleominimoPos36 = LeituraModbusCoil(f"[UG{self.__ug.id}] UHRV Óleo Nível Mínimo Posição 36", self.__clp[f"UG{self.__ug.id}"], REG[f"UG{self.__ug.id}_ED_UHRV_NivOleominimoPos36"])
         self.condicionadores.append(CondicionadorBase(self.leitura_ED_UHRV_NivOleominimoPos36.descr, CONDIC_INDISPONIBILIZAR, self.leitura_ED_UHRV_NivOleominimoPos36))
 
-        self.leitura_ED_UHRV_NivOleoCriticoPos35 = LeituraModbusCoil(f"[UG{self.__ug_id}] UHRV Óleo Nível Crítico Posição 35", self.__clp[f"UG{self.__ug_id}"], REG[f"UG{self.__ug_id}_ED_UHRV_NivOleoCriticoPos35"])
+        self.leitura_ED_UHRV_NivOleoCriticoPos35 = LeituraModbusCoil(f"[UG{self.__ug.id}] UHRV Óleo Nível Crítico Posição 35", self.__clp[f"UG{self.__ug.id}"], REG[f"UG{self.__ug.id}_ED_UHRV_NivOleoCriticoPos35"])
         self.condicionadores.append(CondicionadorBase(self.leitura_ED_UHRV_NivOleoCriticoPos35.descr, CONDIC_INDISPONIBILIZAR, self.leitura_ED_UHRV_NivOleoCriticoPos35))
 
         # Controle UHLM
-        self.leitura_ED_UHLM_FluxoMcTras = LeituraModbusCoil(f"[UG{self.__ug_id}] UHLM Fluxo Traseiro MC", self.__clp[f"UG{self.__ug_id}"], REG[f"UG{self.__ug_id}_ED_UHLM_FluxoMcTras"])
+        self.leitura_ED_UHLM_FluxoMcTras = LeituraModbusCoil(f"[UG{self.__ug.id}] UHLM Fluxo Traseiro MC", self.__clp[f"UG{self.__ug.id}"], REG[f"UG{self.__ug.id}_ED_UHLM_FluxoMcTras"])
         self.condicionadores.append(CondicionadorBase(self.leitura_ED_UHLM_FluxoMcTras.descr, CONDIC_INDISPONIBILIZAR, self.leitura_ED_UHLM_FluxoMcTras))
 
-        self.leitura_ED_UHLM_NivelminOleo = LeituraModbusCoil(f"[UG{self.__ug_id}] UHLM Óleo Nível Mínimo", self.__clp[f"UG{self.__ug_id}"], REG[f"UG{self.__ug_id}_ED_UHLM_NivelminOleo"])
+        self.leitura_ED_UHLM_NivelminOleo = LeituraModbusCoil(f"[UG{self.__ug.id}] UHLM Óleo Nível Mínimo", self.__clp[f"UG{self.__ug.id}"], REG[f"UG{self.__ug.id}_ED_UHLM_NivelminOleo"])
         self.condicionadores.append(CondicionadorBase(self.leitura_ED_UHLM_NivelminOleo.descr, CONDIC_INDISPONIBILIZAR, self.leitura_ED_UHLM_NivelminOleo))
 
-        self.leitura_ED_UHLM_NivelCritOleo = LeituraModbusCoil(f"[UG{self.__ug_id}] UHLM Óleo Nível Crítico", self.__clp[f"UG{self.__ug_id}"], REG[f"UG{self.__ug_id}_ED_UHLM_NivelCritOleo"])
+        self.leitura_ED_UHLM_NivelCritOleo = LeituraModbusCoil(f"[UG{self.__ug.id}] UHLM Óleo Nível Crítico", self.__clp[f"UG{self.__ug.id}"], REG[f"UG{self.__ug.id}_ED_UHLM_NivelCritOleo"])
         self.condicionadores.append(CondicionadorBase(self.leitura_ED_UHLM_NivelCritOleo.descr, CONDIC_INDISPONIBILIZAR, self.leitura_ED_UHLM_NivelCritOleo))
 
-        self.leitura_ED_UHLM_FluxoMcDianteiro = LeituraModbusCoil(f"[UG{self.__ug_id}] UHLM Fluxo Dianteiro", self.__clp[f"UG{self.__ug_id}"], REG[f"UG{self.__ug_id}_ED_UHLM_FluxoMcDiant"])
+        self.leitura_ED_UHLM_FluxoMcDianteiro = LeituraModbusCoil(f"[UG{self.__ug.id}] UHLM Fluxo Dianteiro", self.__clp[f"UG{self.__ug.id}"], REG[f"UG{self.__ug.id}_ED_UHLM_FluxoMcDiant"])
         self.condicionadores.append(CondicionadorBase(self.leitura_ED_UHLM_FluxoMcDianteiro.descr, CONDIC_INDISPONIBILIZAR, self.leitura_ED_UHLM_FluxoMcDianteiro))
 
-        self.leitura_ED_UHLM_Filt1PresSujo100Sujo = LeituraModbusCoil(f"[UG{self.__ug_id}] UHLM Filtro 1 Pressão 100% Sujo", self.__clp[f"UG{self.__ug_id}"], REG[f"UG{self.__ug_id}_ED_UHLMFilt1PresSujoSujo"])
+        self.leitura_ED_UHLM_Filt1PresSujo100Sujo = LeituraModbusCoil(f"[UG{self.__ug.id}] UHLM Filtro 1 Pressão 100% Sujo", self.__clp[f"UG{self.__ug.id}"], REG[f"UG{self.__ug.id}_ED_UHLMFilt1PresSujoSujo"])
         self.condicionadores.append(CondicionadorBase(self.leitura_ED_UHLM_Filt1PresSujo100Sujo.descr, CONDIC_INDISPONIBILIZAR, self.leitura_ED_UHLM_Filt1PresSujo100Sujo))
 
-        self.leitura_ED_UHLM_Filt2PresSujo100Sujo = LeituraModbusCoil(f"[UG{self.__ug_id}] UHLM Filtro 2 Pressão 100% Sujo", self.__clp[f"UG{self.__ug_id}"], REG[f"UG{self.__ug_id}_ED_UHLMFilt2PresSujoSujo"])
+        self.leitura_ED_UHLM_Filt2PresSujo100Sujo = LeituraModbusCoil(f"[UG{self.__ug.id}] UHLM Filtro 2 Pressão 100% Sujo", self.__clp[f"UG{self.__ug.id}"], REG[f"UG{self.__ug.id}_ED_UHLMFilt2PresSujoSujo"])
         self.condicionadores.append(CondicionadorBase(self.leitura_ED_UHLM_Filt2PresSujo100Sujo.descr, CONDIC_INDISPONIBILIZAR, self.leitura_ED_UHLM_Filt2PresSujo100Sujo))
 
         # Controle Freios
-        self.leitura_ED_FreioSemEnergia = LeituraModbusCoil(f"[UG{self.__ug_id}] Freio Sem Energia", self.__clp[f"UG{self.__ug_id}"], REG[f"UG{self.__ug_id}_ED_FreioSemEnergia"])
+        self.leitura_ED_FreioSemEnergia = LeituraModbusCoil(f"[UG{self.__ug.id}] Freio Sem Energia", self.__clp[f"UG{self.__ug.id}"], REG[f"UG{self.__ug.id}_ED_FreioSemEnergia"])
         self.condicionadores.append(CondicionadorBase(self.leitura_ED_FreioSemEnergia.descr, CONDIC_INDISPONIBILIZAR, self.leitura_ED_FreioSemEnergia))
 
-        self.leitura_ED_FreioFiltroSaturado = LeituraModbusCoil(f"[UG{self.__ug_id}] Freio Filtro Saturado", self.__clp[f"UG{self.__ug_id}"], REG[f"UG{self.__ug_id}_ED_FreioFiltroSaturado"])
+        self.leitura_ED_FreioFiltroSaturado = LeituraModbusCoil(f"[UG{self.__ug.id}] Freio Filtro Saturado", self.__clp[f"UG{self.__ug.id}"], REG[f"UG{self.__ug.id}_ED_FreioFiltroSaturado"])
         self.condicionadores.append(CondicionadorBase(self.leitura_ED_FreioFiltroSaturado.descr, CONDIC_INDISPONIBILIZAR, self.leitura_ED_FreioFiltroSaturado))
 
         # Controle Filtros
-        self.leitura_ED_FiltroRetSujo100Sujo = LeituraModbusCoil(f"[UG{self.__ug_id}] UHRV Filtro Retorno 100% Sujo", self.__clp[f"UG{self.__ug_id}"], REG[f"UG{self.__ug_id}_ED_FiltroRetSujoSujo"])
+        self.leitura_ED_FiltroRetSujo100Sujo = LeituraModbusCoil(f"[UG{self.__ug.id}] UHRV Filtro Retorno 100% Sujo", self.__clp[f"UG{self.__ug.id}"], REG[f"UG{self.__ug.id}_ED_FiltroRetSujoSujo"])
         self.condicionadores.append(CondicionadorBase(self.leitura_ED_FiltroRetSujo100Sujo.descr, CONDIC_INDISPONIBILIZAR, self.leitura_ED_FiltroRetSujo100Sujo))
 
-        self.leitura_ED_FiltroPresSujo100Sujo = LeituraModbusCoil(f"[UG{self.__ug_id}] UHRV Filtro Pressão 100% Sujo", self.__clp[f"UG{self.__ug_id}"], REG[f"UG{self.__ug_id}_ED_FiltroPresSujoSujo"])
+        self.leitura_ED_FiltroPresSujo100Sujo = LeituraModbusCoil(f"[UG{self.__ug.id}] UHRV Filtro Pressão 100% Sujo", self.__clp[f"UG{self.__ug.id}"], REG[f"UG{self.__ug.id}_ED_FiltroPresSujoSujo"])
         self.condicionadores.append(CondicionadorBase(self.leitura_ED_FiltroPresSujo100Sujo.descr, CONDIC_INDISPONIBILIZAR, self.leitura_ED_FiltroPresSujo100Sujo))
 
-        self.leitura_ED_FiltroPressaoBbaMecSj100 = LeituraModbusCoil(f"[UG{self.__ug_id}] UHRV Bomba Filtro Pressão 100% Sujo", self.__clp[f"UG{self.__ug_id}"], REG[f"UG{self.__ug_id}_ED_Filt1PresBbaMecSjSujo"])
+        self.leitura_ED_FiltroPressaoBbaMecSj100 = LeituraModbusCoil(f"[UG{self.__ug.id}] UHRV Bomba Filtro Pressão 100% Sujo", self.__clp[f"UG{self.__ug.id}"], REG[f"UG{self.__ug.id}_ED_Filt1PresBbaMecSjSujo"])
         self.condicionadores.append(CondicionadorBase(self.leitura_ED_FiltroPressaoBbaMecSj100.descr, CONDIC_INDISPONIBILIZAR, self.leitura_ED_FiltroPressaoBbaMecSj100))
 
         # Outros
-        self.leitura_ED_PalhetasDesal = LeituraModbusCoil(f"[UG{self.__ug_id}] Pás Desalinhadas", self.__clp[f"UG{self.__ug_id}"], REG[f"UG{self.__ug_id}_ED_PalhetasDesal"])
+        self.leitura_ED_PalhetasDesal = LeituraModbusCoil(f"[UG{self.__ug.id}] Pás Desalinhadas", self.__clp[f"UG{self.__ug.id}"], REG[f"UG{self.__ug.id}_ED_PalhetasDesal"])
         self.condicionadores.append(CondicionadorBase(self.leitura_ED_PalhetasDesal.descr, CONDIC_INDISPONIBILIZAR, self.leitura_ED_PalhetasDesal))
 
-        self.leitura_ED_ValvBorbTravada = LeituraModbusCoil(f"[UG{self.__ug_id}] Válvula Borboleta Travada", self.__clp[f"UG{self.__ug_id}"], REG[f"UG{self.__ug_id}_ED_ValvBorbTravadaFechada"],)
+        self.leitura_ED_ValvBorbTravada = LeituraModbusCoil(f"[UG{self.__ug.id}] Válvula Borboleta Travada", self.__clp[f"UG{self.__ug.id}"], REG[f"UG{self.__ug.id}_ED_ValvBorbTravadaFechada"],)
         self.condicionadores.append(CondicionadorBase(self.leitura_ED_ValvBorbTravada.descr, CONDIC_INDISPONIBILIZAR, self.leitura_ED_ValvBorbTravada))
 
-        self.leitura_ED_SobreVeloMecPos18 = LeituraModbusCoil(f"[UG{self.__ug_id}] Sobre Velocidade Posição 18", self.__clp[f"UG{self.__ug_id}"], REG[f"UG{self.__ug_id}_ED_SobreVeloMecPos18"])
+        self.leitura_ED_SobreVeloMecPos18 = LeituraModbusCoil(f"[UG{self.__ug.id}] Sobre Velocidade Posição 18", self.__clp[f"UG{self.__ug.id}"], REG[f"UG{self.__ug.id}_ED_SobreVeloMecPos18"])
         self.condicionadores.append(CondicionadorBase(self.leitura_ED_SobreVeloMecPos18.descr, CONDIC_INDISPONIBILIZAR, self.leitura_ED_SobreVeloMecPos18))
 
-        self.leitura_ED_NivelMAltoPocoDren = LeituraModbusCoil(f"[UG{self.__ug_id}] Poço Drenagem Nível Alto", self.__clp[f"UG{self.__ug_id}"], REG[f"UG{self.__ug_id}_ED_NivelMAltoPocoDren"])
+        self.leitura_ED_NivelMAltoPocoDren = LeituraModbusCoil(f"[UG{self.__ug.id}] Poço Drenagem Nível Alto", self.__clp[f"UG{self.__ug.id}"], REG[f"UG{self.__ug.id}_ED_NivelMAltoPocoDren"])
         self.condicionadores.append(CondicionadorBase(self.leitura_ED_NivelMAltoPocoDren.descr, CONDIC_INDISPONIBILIZAR, self.leitura_ED_NivelMAltoPocoDren))
 
 
         ## Retornos Digitais
         # TRIPS
-        self.leitura_RD_TripVibr1 = LeituraModbusCoil(f"[UG{self.__ug_id}] Vibração 1 Trip", self.__clp[f"UG{self.__ug_id}"], REG[f"UG{self.__ug_id}_RD_TripVibr1"])
+        self.leitura_RD_TripVibr1 = LeituraModbusCoil(f"[UG{self.__ug.id}] Vibração 1 Trip", self.__clp[f"UG{self.__ug.id}"], REG[f"UG{self.__ug.id}_RD_TripVibr1"])
         self.condicionadores.append(CondicionadorBase(self.leitura_RD_TripVibr1.descr, CONDIC_INDISPONIBILIZAR, self.leitura_RD_TripVibr1))
 
-        self.leitura_RD_TripVibr2 = LeituraModbusCoil(f"[UG{self.__ug_id}] Vibração 2 Trip", self.__clp[f"UG{self.__ug_id}"], REG[f"UG{self.__ug_id}_RD_TripVibr2"])
+        self.leitura_RD_TripVibr2 = LeituraModbusCoil(f"[UG{self.__ug.id}] Vibração 2 Trip", self.__clp[f"UG{self.__ug.id}"], REG[f"UG{self.__ug.id}_RD_TripVibr2"])
         self.condicionadores.append(CondicionadorBase(self.leitura_RD_TripVibr2.descr, CONDIC_INDISPONIBILIZAR, self.leitura_RD_TripVibr2))
 
-        self.leitura_RD_TripTempUHRV = LeituraModbusCoil(f"[UG{self.__ug_id}] UHRV Trip Temperatura", self.__clp[f"UG{self.__ug_id}"], REG[f"UG{self.__ug_id}_RD_TripTempUHRV"])
+        self.leitura_RD_TripTempUHRV = LeituraModbusCoil(f"[UG{self.__ug.id}] UHRV Trip Temperatura", self.__clp[f"UG{self.__ug.id}"], REG[f"UG{self.__ug.id}_RD_TripTempUHRV"])
         self.condicionadores.append(CondicionadorBase(self.leitura_RD_TripTempUHRV.descr, CONDIC_INDISPONIBILIZAR, self.leitura_RD_TripTempUHRV))
 
-        self.leitura_RD_TripTempUHLM = LeituraModbusCoil(f"[UG{self.__ug_id}] UHLM Trip Temperatura", self.__clp[f"UG{self.__ug_id}"], REG[f"UG{self.__ug_id}_RD_TripTempUHLM"])
+        self.leitura_RD_TripTempUHLM = LeituraModbusCoil(f"[UG{self.__ug.id}] UHLM Trip Temperatura", self.__clp[f"UG{self.__ug.id}"], REG[f"UG{self.__ug.id}_RD_TripTempUHLM"])
         self.condicionadores.append(CondicionadorBase(self.leitura_RD_TripTempUHLM.descr, CONDIC_INDISPONIBILIZAR, self.leitura_RD_TripTempUHLM))
 
-        self.leitura_RD_TripTempGaxeteiro = LeituraModbusCoil(f"[UG{self.__ug_id}] Gaxeteiro Trip Temperatura", self.__clp[f"UG{self.__ug_id}"], REG[f"UG{self.__ug_id}_RD_TripTempGaxeteiro"])
+        self.leitura_RD_TripTempGaxeteiro = LeituraModbusCoil(f"[UG{self.__ug.id}] Gaxeteiro Trip Temperatura", self.__clp[f"UG{self.__ug.id}"], REG[f"UG{self.__ug.id}_RD_TripTempGaxeteiro"])
         self.condicionadores.append(CondicionadorBase(self.leitura_RD_TripTempGaxeteiro.descr, CONDIC_INDISPONIBILIZAR, self.leitura_RD_TripTempGaxeteiro))
 
-        self.leitura_RD_TripTempMcGuiaRadial = LeituraModbusCoil(f"[UG{self.__ug_id}] Mancal Guia Radial Trip Temperatura", self.__clp[f"UG{self.__ug_id}"], REG[f"UG{self.__ug_id}_RD_TripTempMcGuiaRadial"])
+        self.leitura_RD_TripTempMcGuiaRadial = LeituraModbusCoil(f"[UG{self.__ug.id}] Mancal Guia Radial Trip Temperatura", self.__clp[f"UG{self.__ug.id}"], REG[f"UG{self.__ug.id}_RD_TripTempMcGuiaRadial"])
         self.condicionadores.append(CondicionadorBase(self.leitura_RD_TripTempMcGuiaRadial.descr, CONDIC_INDISPONIBILIZAR, self.leitura_RD_TripTempMcGuiaRadial))
 
-        self.leitura_RD_TripTempMcGuiaEscora = LeituraModbusCoil(f"[UG{self.__ug_id}] Mancal Guia Escora Trip Temperatura", self.__clp[f"UG{self.__ug_id}"], REG[f"UG{self.__ug_id}_RD_TripTempMcGuiaEscora"])
+        self.leitura_RD_TripTempMcGuiaEscora = LeituraModbusCoil(f"[UG{self.__ug.id}] Mancal Guia Escora Trip Temperatura", self.__clp[f"UG{self.__ug.id}"], REG[f"UG{self.__ug.id}_RD_TripTempMcGuiaEscora"])
         self.condicionadores.append(CondicionadorBase(self.leitura_RD_TripTempMcGuiaEscora.descr, CONDIC_INDISPONIBILIZAR, self.leitura_RD_TripTempMcGuiaEscora))
 
-        self.leitura_RD_TripTempMcGuiaContraEscora = LeituraModbusCoil(f"[UG{self.__ug_id}] Mancal Guia Contra Escora Trip Temperatura", self.__clp[f"UG{self.__ug_id}"], REG[f"UG{self.__ug_id}_RD_TripTempMcGuiaContraEscora"])
+        self.leitura_RD_TripTempMcGuiaContraEscora = LeituraModbusCoil(f"[UG{self.__ug.id}] Mancal Guia Contra Escora Trip Temperatura", self.__clp[f"UG{self.__ug.id}"], REG[f"UG{self.__ug.id}_RD_TripTempMcGuiaContraEscora"])
         self.condicionadores.append(CondicionadorBase(self.leitura_RD_TripTempMcGuiaContraEscora.descr, CONDIC_INDISPONIBILIZAR, self.leitura_RD_TripTempMcGuiaContraEscora))
 
         # Retornos Digitais - FALHAS
-        self.leitura_RD_CLP_Falha = LeituraModbusCoil(f"[UG{self.__ug_id}] CLP Falha", self.__clp[f"UG{self.__ug_id}"], REG[f"UG{self.__ug_id}_RD_FalhaComuCLP"])
+        self.leitura_RD_CLP_Falha = LeituraModbusCoil(f"[UG{self.__ug.id}] CLP Falha", self.__clp[f"UG{self.__ug.id}"], REG[f"UG{self.__ug.id}_RD_FalhaComuCLP"])
         self.condicionadores.append(CondicionadorBase(self.leitura_RD_CLP_Falha.descr, CONDIC_INDISPONIBILIZAR, self.leitura_RD_CLP_Falha))
 
-        self.leitura_RD_Q_Negativa = LeituraModbusCoil(f"[UG{self.__ug_id}] Q Negativa", self.__clp[f"UG{self.__ug_id}"], REG[f"UG{self.__ug_id}_RD_IHM_Q_Negativa"])
+        self.leitura_RD_Q_Negativa = LeituraModbusCoil(f"[UG{self.__ug.id}] Q Negativa", self.__clp[f"UG{self.__ug.id}"], REG[f"UG{self.__ug.id}_RD_IHM_Q_Negativa"])
         self.condicionadores.append(CondicionadorBase(self.leitura_RD_Q_Negativa.descr, CONDIC_INDISPONIBILIZAR, self.leitura_RD_Q_Negativa))
 
-        self.leitura_RD_Remota_Falha = LeituraModbusCoil(f"[UG{self.__ug_id}] Falha Remota", self.__clp[f"UG{self.__ug_id}"], REG[f"UG{self.__ug_id}_RD_FalhaComuRemota"])
+        self.leitura_RD_Remota_Falha = LeituraModbusCoil(f"[UG{self.__ug.id}] Falha Remota", self.__clp[f"UG{self.__ug.id}"], REG[f"UG{self.__ug.id}_RD_FalhaComuRemota"])
         self.condicionadores.append(CondicionadorBase(self.leitura_RD_Remota_Falha.descr, CONDIC_INDISPONIBILIZAR, self.leitura_RD_Remota_Falha))
 
-        self.leitura_RD_FalhaIbntDisjGer = LeituraModbusCoil(f"[UG{self.__ug_id}] Dijuntor Gerador Falha", self.__clp[f"UG{self.__ug_id}"], REG[f"UG{self.__ug_id}_RD_FalhaIbntDisjGer"])
+        self.leitura_RD_FalhaIbntDisjGer = LeituraModbusCoil(f"[UG{self.__ug.id}] Dijuntor Gerador Falha", self.__clp[f"UG{self.__ug.id}"], REG[f"UG{self.__ug.id}_RD_FalhaIbntDisjGer"])
         self.condicionadores.append(CondicionadorBase(self.leitura_RD_FalhaIbntDisjGer.descr, CONDIC_INDISPONIBILIZAR, self.leitura_RD_FalhaIbntDisjGer))
 
-        self.leitura_RD_UHRV_FalhaAcionBbaM1 = LeituraModbusCoil(f"[UG{self.__ug_id}] UHRV Bomba 1 Falha Acionamento", self.__clp[f"UG{self.__ug_id}"], REG[f"UG{self.__ug_id}_RD_UHRV_FalhaAcionBbaM1"])
+        self.leitura_RD_UHRV_FalhaAcionBbaM1 = LeituraModbusCoil(f"[UG{self.__ug.id}] UHRV Bomba 1 Falha Acionamento", self.__clp[f"UG{self.__ug.id}"], REG[f"UG{self.__ug.id}_RD_UHRV_FalhaAcionBbaM1"])
         self.condicionadores.append(CondicionadorBase(self.leitura_RD_UHRV_FalhaAcionBbaM1.descr, CONDIC_INDISPONIBILIZAR, self.leitura_RD_UHRV_FalhaAcionBbaM1))
 
-        self.leitura_RD_UHRV_FalhaAcionBbaM2 = LeituraModbusCoil(f"[UG{self.__ug_id}] UHRV Bomba 2 Falha Acionamento", self.__clp[f"UG{self.__ug_id}"], REG[f"UG{self.__ug_id}_RD_UHRV_FalhaAcionBbaM2"])
+        self.leitura_RD_UHRV_FalhaAcionBbaM2 = LeituraModbusCoil(f"[UG{self.__ug.id}] UHRV Bomba 2 Falha Acionamento", self.__clp[f"UG{self.__ug.id}"], REG[f"UG{self.__ug.id}_RD_UHRV_FalhaAcionBbaM2"])
         self.condicionadores.append(CondicionadorBase(self.leitura_RD_UHRV_FalhaAcionBbaM2.descr, CONDIC_INDISPONIBILIZAR, self.leitura_RD_UHRV_FalhaAcionBbaM2))
 
-        self.leitura_RD_UHLM_FalhaAcionBbaM1 = LeituraModbusCoil(f"[UG{self.__ug_id}] UHLM Bomba 1 Falha Acionamento", self.__clp[f"UG{self.__ug_id}"], REG[f"UG{self.__ug_id}_RD_UHLM_FalhaAcionBbaM1"])
+        self.leitura_RD_UHLM_FalhaAcionBbaM1 = LeituraModbusCoil(f"[UG{self.__ug.id}] UHLM Bomba 1 Falha Acionamento", self.__clp[f"UG{self.__ug.id}"], REG[f"UG{self.__ug.id}_RD_UHLM_FalhaAcionBbaM1"])
         self.condicionadores.append(CondicionadorBase(self.leitura_RD_UHLM_FalhaAcionBbaM1.descr, CONDIC_INDISPONIBILIZAR, self.leitura_RD_UHLM_FalhaAcionBbaM1))
 
-        self.leitura_RD_UHLM_FalhaAcionBbaM2 = LeituraModbusCoil(f"[UG{self.__ug_id}] UHLM Bomba 2 Falha Acionamento", self.__clp[f"UG{self.__ug_id}"], REG[f"UG{self.__ug_id}_RD_UHLM_FalhaAcionBbaM2"])
+        self.leitura_RD_UHLM_FalhaAcionBbaM2 = LeituraModbusCoil(f"[UG{self.__ug.id}] UHLM Bomba 2 Falha Acionamento", self.__clp[f"UG{self.__ug.id}"], REG[f"UG{self.__ug.id}_RD_UHLM_FalhaAcionBbaM2"])
         self.condicionadores.append(CondicionadorBase(self.leitura_RD_UHLM_FalhaAcionBbaM2.descr, CONDIC_INDISPONIBILIZAR, self.leitura_RD_UHLM_FalhaAcionBbaM2))
 
-        self.leitura_RD_FalhaAcionFechaValvBorb = LeituraModbusCoil(f"[UG{self.__ug_id}] Válvula Borboleta Falha Acionamento Fechamento", self.__clp[f"UG{self.__ug_id}"], REG[f"UG{self.__ug_id}_RD_FalhaAcionFechaValvBorb"])
+        self.leitura_RD_FalhaAcionFechaValvBorb = LeituraModbusCoil(f"[UG{self.__ug.id}] Válvula Borboleta Falha Acionamento Fechamento", self.__clp[f"UG{self.__ug.id}"], REG[f"UG{self.__ug.id}_RD_FalhaAcionFechaValvBorb"])
         self.condicionadores.append(CondicionadorBase(self.leitura_RD_FalhaAcionFechaValvBorb.descr, CONDIC_INDISPONIBILIZAR, self.leitura_RD_FalhaAcionFechaValvBorb))

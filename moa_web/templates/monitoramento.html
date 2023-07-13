@@ -46,17 +46,17 @@
 
         <div style="margin-top: 40px; margin-bottom: 34px;">
             <label style="font-size: 18px;"><b>Disjuntor 52L: </b></label>
-            {% if status_dj52l == True %}
+            {% if status_dj52l == 0 %}
                 <label style="color: red; font-size: 17px;">Fechado</label>
             {% endif %}
-            {% if status_dj52l == False %}
+            {% if status_dj52l == 1 %}
                 <label style="color: green; font-size: 17px;">Aberto</label>
             {% endif %}
-            {% if status_dj52l == None %}
+            {% if status_dj52l == 2 %}
                 <label style="color: orange; font-size: 17px;">Inconsistente</label>
             {% endif %}
         </div>
-        {% if usina.tda_offline == 0 %}
+        {% if tda_offline == 0 %}
             <label style="margin-bottom: 5px; font-size: 18px;"><b>TDA </b>(<a style="color: green">On-line</a>):</label>
         {% else %}
             <label style="margin-bottom: 5px; font-size: 18px;"><b>TDA </b>(<a style="color: red">Off-line</a>):</label>

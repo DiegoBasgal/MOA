@@ -32,7 +32,7 @@ class UnidadeGeracao:
         self.db = db
         self.cfg = cfg
         self.clp = ClientesUsina.clp
-        self.oco = OcorrenciasUg(self.id, self.clp, self.db)
+        self.oco = OcorrenciasUg(self, self.clp, self.db)
 
 
         # ATRIBUIÇÃO DE VARIÁVEIS PRIVADAS
@@ -128,21 +128,6 @@ class UnidadeGeracao:
             self.__leitura_horimetro_hora,
             self.__leitura_horimetro_min
         )
-        self._leitura_caixa_espiral = LeituraModbus(
-            "Caixa espiral",
-            self.clp[f"UG{self.id}"],
-            REG[f"UG{self.id}_EA_PressK1CaixaExpiral_MaisCasas"],
-            escala=0.01,
-            op=4
-        )
-        self.condicionador_caixa_espiral_ug = CondicionadorExponencialReverso(
-            self._leitura_caixa_espiral.descr,
-            CONDIC_INDISPONIBILIZAR,
-            self._leitura_caixa_espiral,
-            16.5,
-            15.5
-        )
-        self.condicionadores_atenuadores.append(self.condicionador_caixa_espiral_ug)
 
 
         # ATRIBUIÇÃO DE VARIÁVEIS PÚBLICAS
@@ -157,19 +142,19 @@ class UnidadeGeracao:
         self.setpoint_minimo: "int" = self.cfg["pot_minima"]
         self.setpoint_maximo: "int" = self.cfg[f"pot_maxima_ug{self.id}"]
 
-        self.temporizar_rotacao: "bool" = True
-
-        self.release: "bool" = False
-        self.parar_timer: "bool" = False
         self.borda_parar: "bool" = False
         self.limpeza_grade: "bool" = False
-        self.borda_partindo: "bool" = False
-        self.timer_partindo: "bool" = False
         self.normalizacao_agendada: "bool" = False
+
+        self.temporizar_rotacao: "bool" = False
+        self.temporizar_partida: "bool" = False
+        self.temporizar_normalizacao: "bool" = False
 
         self.aux_tempo_sincronizada: "datetime" = 0
 
         self.ts_auxiliar: "datetime" = self.get_time()
+
+        self.condicionadores_atenuadores.append(self.oco.condic_dict[f"pressao_cx_espiral_ug{self.id}"])
 
 
     # Property -> VARIÁVEIS PRIVADAS
@@ -433,27 +418,6 @@ class UnidadeGeracao:
         self.clp["MOA"].write_single_register(REG[f"MOA_OUT_STATE_UG{self.id}"], self.codigo_state)
         self.clp["MOA"].write_single_register(REG[f"MOA_OUT_ETAPA_UG{self.id}"], self.etapa_atual)
 
-    def atualizar_limites_operacao(self, db) -> "None":
-        """
-        Função para atualização de limites de equipamentos da Unidade através da
-        consulta do Banco de Dados da Interface WEB.
-        """
-
-        self.prioridade = int(db[f"ug{self.id}_prioridade"])
-        self.condicionador_caixa_espiral_ug.valor_base = float(db[f"alerta_caixa_espiral_ug{self.id}"])
-        self.condicionador_caixa_espiral_ug.valor_limite = float(db[f"limite_caixa_espiral_ug{self.id}"])
-
-    def espera_normalizar(self, delay: "int"):
-        """
-        Função de temporizador para espera de normalização da Unidade restrita,
-        por tempo pré-definido por agendamento na Interface.
-        """
-
-        while not self.parar_timer:
-            sleep(max(0, time() + delay - time()))
-            self.parar_timer = True
-            return
-
     def normalizar_unidade(self) -> "bool":
         """
         Função para normalização de ocorrências da Unidade de Geração.
@@ -530,11 +494,11 @@ class UnidadeGeracao:
         try:
             if not self.clp[f"UG{self.id}"].read_discrete_inputs(REG[f"UG{self.id}_ED_CondicaoPartida"], 1)[0]:
                 logger.debug(f"[UG{self.id}] Máquina sem condição de partida. Irá partir quando as condições forem reestabelecidas.")
-                return True
+                return
 
             elif self.clp["SA"].read_coils(REG["SA_ED_QCAP_Disj52A1Fechado"])[0] != 0:
                 logger.info(f"[UG{self.id}] O Disjuntor 52A1 está aberto. Para partir a máquina, o mesmo deverá ser fechado.")
-                return True
+                return
 
             elif not self.etapa_atual == UG_SINCRONIZADA and self.tentativas_sincronismo <= 3:
                 self.tentativas_sincronismo += 1
@@ -556,13 +520,16 @@ class UnidadeGeracao:
                 self.clp[f"UG{self.id}"].write_single_coil(REG[f"UG{self.id}_CD_IniciaPartida"], [1])
                 self.clp[f"UG{self.id}"].write_single_coil(REG[f"UG{self.id}_CD_Cala_Sirene"], [1])
 
+                return
+
             elif self.tentativas_sincronismo > 3:
+                self.temporizar_partida = False
                 self.tentativas_sincronismo = 0
 
                 logger.critical(f"[UG{self.id}] A Unidade ultrapassou o limite de tentativas de Sinconismo.")
-                logger.info(f"[UG{self.id}] Entrando no estado Restrito e acionando Voip.")
+                logger.info(f"[UG{self.id}] Entrando no estado Indisponível e acionando Voip.")
 
-                self.forcar_estado_restrito()
+                self.forcar_estado_indisponivel()
 
         except Exception:
             logger.error(f"[UG{self.id}] Não foi possível enviar o comando de partida.")
@@ -649,9 +616,9 @@ class UnidadeGeracao:
             self.clp["MOA"].write_single_coil(REG[f"MOA_OUT_BLOCK_UG{self.id}"], [0])
             self.clp[f"UG{self.id}"].write_single_coil(REG[f"UG{self.id}_CD_Cala_Sirene"], [1])
 
-            if self.clp["SA"].read_coils(REG["SA_ED_DisjDJ1_Fechado"])[0] == 0:
+            if self.clp["SA"].read_coils(REG["SA_CD_Liga_DJ1"])[0] == 1:
                 logger.debug(f"[UG{self.id}]          Enviando comando:          \"FECHAR DJ LINHA\".")
-                self.clp["SA"].write_single_coil(REG["SA_CD_Liga_DJ1"], [1])
+                self.clp["SA"].write_single_coil(REG["SA_CD_Liga_DJ1"], [0])
 
         except Exception:
             logger.error(f"[UG{self.id}] Não foi possivel remover o comando de TRIP: \"Elétrico\".")
@@ -690,7 +657,6 @@ class UnidadeGeracao:
             self.clp[f"UG{self.id}"].write_single_coil(REG[f"UG{self.id}_ED_ReleBloqA86HAtuado"], [0])
             self.clp[f"UG{self.id}"].write_single_coil(REG[f"UG{self.id}_ED_ReleBloqA86MAtuado"], [0])
             self.clp[f"UG{self.id}"].write_single_coil(REG[f"UG{self.id}_RD_700G_Trip"], [0])
-
 
         except Exception:
             logger.error(f"[UG{self.id}] Não foi possivel remover o comando de TRIP: \"Elétrico\".")
@@ -751,7 +717,7 @@ class UnidadeGeracao:
         """
 
         try:
-            if 250 <= self.__leitura_rotacao.valor < 300 and not self.temporizar_rotacao:
+            if 250 <= self.__leitura_rotacao.valor < 500 and not self.temporizar_rotacao:
                 self.temporizar_rotacao = True
                 Thread(target=lambda: self.aguardar_rotacao()).start()
 
@@ -777,12 +743,22 @@ class UnidadeGeracao:
 
                 self.parar()
 
-            else:
-                return
+            return
 
         except Exception:
             logger.error(f"[UG{self.id}] Houve um erro com a função de verificação de rotação da Unidade.")
             logger.debug(f"Traceback: {traceback.format_exc()}")
+
+    def aguardar_normalizacao(self, delay: "int") -> "None":
+        """
+        Função de temporizador para espera de normalização da Unidade restrita,
+        por tempo pré-definido por agendamento na Interface.
+        """
+
+        if not self.temporizar_normalizacao:
+            sleep(max(0, time() + delay - time()))
+            self.temporizar_normalizacao = True
+            return
 
     def aguardar_rotacao(self) -> "None":
         """
@@ -808,20 +784,15 @@ class UnidadeGeracao:
         de emergência via supervisório.
         """
 
-        logger.debug(f"[UG{self.id}]          Comando MOA:               \"Iniciar timer de verificação de partida\"")
-        timer = time() + 600
-        while time() < timer:
-            if self.etapa_atual == UG_SINCRONIZADA or self.timer_partindo:
-                logger.debug(f"[UG{self.id}]          Comando MOA:               \"Encerrar timer de verificação de partida por condição verdadeira\"")
-                self.timer_partindo = False
-                self.release = True
+        logger.debug(f"[UG{self.id}]          Comando MOA:               \"Iniciar verificação de partida\"")
+        while time() < time() + 600:
+            if not self.temporizar_partida:
                 return
 
-        logger.debug(f"[UG{self.id}]          Comando MOA:               \"Encerrar timer de verificação de partida por timeout\"")
+        logger.debug(f"[UG{self.id}]          Comando MOA:               \"Acionar emergência por timeout de verificação de partida\"")
         self.clp[f"UG{self.id}"].write_single_coil(REG[f"UG{self.id}_CD_EmergenciaViaSuper"], [1])
         self.clp[f"UG{self.id}"].write_single_coil(REG[f"UG{self.id}_CD_EmergenciaViaSuper"], [0])
-        self.borda_partindo = False
-        self.release = True
+        self.temporizar_partida = False
 
     def controle_etapas(self) -> "None":
         """
@@ -844,11 +815,12 @@ class UnidadeGeracao:
 
         # SINCRONIZANDO
         elif self.etapa_atual == UG_SINCRONIZANDO:
-            if not self.borda_partindo:
+            if not self.temporizar_partida:
+                self.temporizar_partida = True
                 Thread(target=lambda: self.aguardar_sincronismo()).start()
-                self.borda_partindo = True
 
             self.verificar_pressao_uhrv()
+            self.verificar_rotacao()
 
             self.parar() if self.setpoint == 0 else self.enviar_setpoint(self.setpoint)
 
@@ -860,7 +832,8 @@ class UnidadeGeracao:
 
         # SINCRONIZADA
         elif self.etapa_atual == UG_SINCRONIZADA:
-            self.borda_partindo = False
+            self.temporizar_partida = False
+            self.tentativas_sincronismo = 0
 
             if not self.aux_tempo_sincronizada:
                 self.aux_tempo_sincronizada = self.get_time()
@@ -907,7 +880,7 @@ class UnidadeGeracao:
         """
 
         try:
-            self.cx_controle_p = (self._leitura_caixa_espiral.valor - self.cfg["press_cx_alvo"]) * self.cfg["cx_kp"]
+            self.cx_controle_p = (self.oco.leitura_dict[f"pressao_cx_espiral_ug{self.id}"].valor - self.cfg["press_cx_alvo"]) * self.cfg["cx_kp"]
             self.cx_ajuste_ie = sum(ug.leitura_potencia for ug in self.lista_ugs) / self.cfg["pot_maxima_alvo"]
             self.cx_controle_i = self.cx_ajuste_ie - self.cx_controle_p
 
@@ -925,9 +898,9 @@ class UnidadeGeracao:
 
         try:
             self.erro_press_cx = 0
-            self.erro_press_cx = self._leitura_caixa_espiral.valor - self.cfg["press_cx_alvo"]
+            self.erro_press_cx = self.oco.leitura_dict[f"pressao_cx_espiral_ug{self.id}"].valor - self.cfg["press_cx_alvo"]
 
-            logger.debug(f"[UG{self.id}] Pressão Alvo: {self.cfg['press_cx_alvo']:0.3f}, Recente: {self._leitura_caixa_espiral.valor:0.3f}")
+            logger.debug(f"[UG{self.id}] Pressão Alvo: {self.cfg['press_cx_alvo']:0.3f}, Recente: {self.oco.leitura_dict[f'pressao_cx_espiral_ug{self.id}'].valor:0.3f}")
 
             self.cx_controle_p = self.cfg["cx_kp"] * self.erro_press_cx
             self.cx_controle_i = max(min((self.cfg["cx_ki"] * self.erro_press_cx) + self.cx_controle_i, 1), 0)
@@ -953,7 +926,7 @@ class UnidadeGeracao:
                 pot_alvo = self.pot_alvo_anterior * (1 - 0.5 * ((pot_medidor - self.cfg["pot_maxima_alvo"]) / self.cfg["pot_maxima_alvo"]))
 
             self.pot_alvo_anterior = pot_alvo
-            self.enviar_setpoint(pot_alvo) if self._leitura_caixa_espiral.valor >= 15.5 else self.enviar_setpoint(0)
+            self.enviar_setpoint(pot_alvo) if self.oco.leitura_dict[f"pressao_cx_espiral_ug{self.id}"].valor >= 15.5 else self.enviar_setpoint(0)
 
         except Exception:
             logger.error(f"[UG{self.id}] Houve um erro no método de Controle por Caixa Espiral da Unidade.")
