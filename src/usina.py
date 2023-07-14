@@ -57,7 +57,7 @@ class Usina:
         self.ug1 = UnidadeGeracao(self, 1)
         self.ug2 = UnidadeGeracao(self, 2)
 
-        self.ugs = [self.ug1, self.ug2]
+        self.ugs: "list[UnidadeGeracao]" = [self.ug1, self.ug2]
         self.setores = [self.bay, self.se, self.tda, self.sa]
 
         self.ug1.lista_ugs = self.ugs
