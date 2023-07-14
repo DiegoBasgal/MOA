@@ -3,7 +3,6 @@ __author__ = "Diego Basgal"
 __description__ = "Este módulo corresponde a implementação da conexão com servidore(s), CLP(s) e RELÉ(s)."
 
 import logging
-import traceback
 import subprocess
 
 import dicionarios.dict as d
@@ -13,73 +12,79 @@ from pyModbusTCP.client import ModbusClient
 logger = logging.getLogger("__main__")
 
 class ClientesUsina:
+
     clp: "dict[str, ModbusClient]" = {}
     rele: "dict[str, ModbusClient]" = {}
 
-    clp["SA"] = ModbusClient(
+    clp["SA"]: "ModbusClient" = ModbusClient(
         host=d.ips["SA_ip"],
         port=d.ips["SA_porta"],
         unit_id=1,
         timeout=0.5
     )
-    clp["TDA"] = ModbusClient(
+    clp["TDA"]: "ModbusClient" = ModbusClient(
         host=d.ips["TDA_ip"],
         port=d.ips["TDA_porta"],
         unit_id=1,
         timeout=0.5
     )
-    clp["UG1"] = ModbusClient(
+    clp["UG1"]: "ModbusClient" = ModbusClient(
         host=d.ips["UG1_ip"],
         port=d.ips["UG1_porta"],
         unit_id=1,
         timeout=0.5
     )
-    clp["UG2"] = ModbusClient(
+    clp["UG2"]: "ModbusClient" = ModbusClient(
         host=d.ips["UG2_ip"],
         port=d.ips["UG2_porta"],
         unit_id=1,
         timeout=0.5
     )
-    clp["MOA"] = ModbusClient(
+    clp["MOA"]: "ModbusClient" = ModbusClient(
         host=d.ips["MOA_ip"],
         port=d.ips["MOA_porta"],
         unit_id=1,
         timeout=0.5
     )
 
-    rele["SE"] = ModbusClient(
+    rele["SE"]: "ModbusClient" = ModbusClient(
         host=d.ips["RELE_SE_ip"],
         port=d.ips["RELE_SE_porta"],
         unit_id=1,
-        timeout=0.5
+        timeout=0.5,
+        auto_close=True
     )
-    rele["TE"] = ModbusClient(
+    rele["TE"]: "ModbusClient" = ModbusClient(
         host=d.ips["RELE_TE_ip"],
         port=d.ips["RELE_TE_porta"],
         unit_id=1,
-        timeout=0.5
+        timeout=0.5,
+        auto_close=True
     )
-    rele["BAY"] = ModbusClient(
+    rele["BAY"]: "ModbusClient" = ModbusClient(
         host=d.ips["RELE_BAY_ip"],
         port=d.ips["RELE_BAY_porta"],
         unit_id=1,
-        timeout=0.5
+        timeout=0.5,
+        auto_close=True
     )
-    rele["UG1"] = ModbusClient(
+    rele["UG1"]: "ModbusClient" = ModbusClient(
         host=d.ips["RELE_UG1_ip"],
         port=d.ips["RELE_UG1_porta"],
         unit_id=1,
-        timeout=0.5
+        timeout=0.5,
+        auto_close=True
     )
-    rele["UG2"] = ModbusClient(
+    rele["UG2"]: "ModbusClient" = ModbusClient(
         host=d.ips["RELE_UG2_ip"],
         port=d.ips["RELE_UG2_porta"],
         unit_id=1,
-        timeout=0.5
+        timeout=0.5,
+        auto_close=True
     )
 
     @staticmethod
-    def ping(host) -> bool:
+    def ping(host) -> "bool":
         """
         Returns True if host (str) responds to a ping request.
         Remember that a host may not respond to a ping (ICMP) request even if the host name is valid.
@@ -89,7 +94,7 @@ class ClientesUsina:
         return True if (subprocess.call(["ping", "-c", "1", "-w", "1", host], stdout=subprocess.PIPE) == 0 for _ in range(2)) else False
 
     @classmethod
-    def open_all(cls) -> None:
+    def open_all(cls) -> "None":
         """
         Função para abertura das conexões com CLPs da Usina.
         """
@@ -104,7 +109,7 @@ class ClientesUsina:
         logger.debug("[CLI] Conexões inciadas.")
 
     @classmethod
-    def close_all(cls) -> None:
+    def close_all(cls) -> "None":
         """
         Função para fechamento das conexões com os CLPs da Usina.
         """
@@ -117,7 +122,7 @@ class ClientesUsina:
         logger.debug("[CLI] Conexões encerradas.")
 
     @classmethod
-    def ping_clients(cls) -> None:
+    def ping_clients(cls) -> "None":
         """
         Função para verificação de conexão com os CLPs das Usinas.
 
