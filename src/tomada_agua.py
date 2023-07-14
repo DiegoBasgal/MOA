@@ -55,6 +55,48 @@ class TomadaAgua(Usina):
         cls.erro_nv = cls.nv_montante_recente - cls.cfg["nv_alvo"]
 
     @classmethod
+    def controlar_reservatorio(cls) -> "int":
+
+        if cls.nv_montante >= cls.cfg["nv_maximo"]:
+            logger.debug("[TDA] Nível montante acima do máximo.")
+
+            if cls.nv_montante_recente >= NIVEL_MAXIMORUM:
+                logger.critical(f"[TDA] Nivel montante ({cls.nv_montante_recente:3.2f}) atingiu o maximorum!")
+                return NV_FLAG_EMERGENCIA
+            else:
+                cls.controle_i = 0.5
+                cls.controle_ie = 0.5
+                cls.ajuste_potencia(cls.cfg["pot_maxima_usina"])
+
+                for ug in cls.ugs:
+                    ug.step()
+
+        elif cls.nv_montante <= cls.cfg["nv_minimo"] and not cls.aguardando_reservatorio:
+            logger.debug("[TDA] Nível montante abaixo do mínimo.")
+            cls.aguardando_reservatorio = True
+            cls.distribuir_potencia(0)
+
+            for ug in cls.ugs:
+                ug.step()
+
+            if cls.nv_montante_recente <= NIVEL_FUNDO_RESERVATORIO:
+                logger.critical(f"[TDA] Nivel montante ({cls.nv_montante_recente:3.2f}) atingiu o fundo do reservatorio!")
+                return NV_FLAG_EMERGENCIA
+
+        elif cls.aguardando_reservatorio:
+            if cls.nv_montante >= cls.cfg["nv_alvo"]:
+                logger.debug("[TDA] Nível montante dentro do limite de operação.")
+                cls.aguardando_reservatorio = False
+
+        else:
+            cls.controle_potencia()
+
+            for ug in cls.ugs:
+                ug.step()
+
+        return NV_FLAG_NORMAL
+
+    @classmethod
     def verificar_condicionadores(cls) -> "list[CondicionadorBase]":
         if True in (condic.ativo for condic in cls.condicionadores_essenciais):
             condics_ativos = [condic for condics in [cls.condicionadores_essenciais, cls.condicionadores] for condic in condics if condic.ativo]
@@ -102,48 +144,6 @@ class TomadaAgua(Usina):
             dct.voip["FALHA_NIVEL_MONTANTE"][0] = True
         elif not cls.leitura_falha_nivel_montante.valor and dct.voip["FALHA_NIVEL_MONTANTE"][0]:
             dct.voip["FALHA_NIVEL_MONTANTE"][0] = False
-
-    @classmethod
-    def controlar_reservatorio(cls) -> "int":
-
-        if cls.nv_montante >= cls.cfg["nv_maximo"]:
-            logger.debug("[TDA] Nível montante acima do máximo.")
-
-            if cls.nv_montante_recente >= NIVEL_MAXIMORUM:
-                logger.critical(f"[TDA] Nivel montante ({cls.nv_montante_recente:3.2f}) atingiu o maximorum!")
-                return NV_FLAG_EMERGENCIA
-            else:
-                cls.controle_i = 0.5
-                cls.controle_ie = 0.5
-                cls.ajuste_potencia(cls.cfg["pot_maxima_usina"])
-
-                for ug in cls.ugs:
-                    ug.step()
-
-        elif cls.nv_montante <= cls.cfg["nv_minimo"] and not cls.aguardando_reservatorio:
-            logger.debug("[TDA] Nível montante abaixo do mínimo.")
-            cls.aguardando_reservatorio = True
-            cls.distribuir_potencia(0)
-
-            for ug in cls.ugs:
-                ug.step()
-
-            if cls.nv_montante_recente <= NIVEL_FUNDO_RESERVATORIO:
-                logger.critical(f"[TDA] Nivel montante ({cls.nv_montante_recente:3.2f}) atingiu o fundo do reservatorio!")
-                return NV_FLAG_EMERGENCIA
-
-        elif cls.aguardando_reservatorio:
-            if cls.nv_montante >= cls.cfg["nv_alvo"]:
-                logger.debug("[TDA] Nível montante dentro do limite de operação.")
-                cls.aguardando_reservatorio = False
-
-        else:
-            cls.controle_potencia()
-
-            for ug in cls.ugs:
-                ug.step()
-
-        return NV_FLAG_NORMAL
 
     @classmethod
     def carregar_leituras(cls) -> "None":

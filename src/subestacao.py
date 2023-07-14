@@ -3,11 +3,12 @@ __author__ = "Diego Basgal"
 __description__ = "Este módulo corresponde a implementação da operação da Subestação."
 
 import logging
+import traceback
 import threading
 
 import dicionarios.dict as dct
 
-from time import time
+from time import time, sleep
 
 from condicionador import *
 from funcoes.leitura import *
@@ -44,18 +45,19 @@ class Subestacao(Usina):
     condicionadores_essenciais: "list[CondicionadorBase]" = []
 
     @classmethod
-    def verificar_condicionadores(cls) -> "list[CondicionadorBase]":
-        if True in (condic.ativo for condic in cls.condicionadores_essenciais):
-            condics_ativos = [condic for condics in [cls.condicionadores_essenciais, cls.condicionadores] for condic in condics if condic.ativo]
+    def resetar_emergencia(cls) -> "bool":
+        try:
+            res = EMB.escrever_bit(cls.clp["SA"], REG_CLP["SE"]["CMD_SE_REARME_BLOQUEIO_GERAL"], bit=0, valor=1)
+            res = EMB.escrever_bit(cls.clp["SA"], REG_CLP["SE"]["CMD_SE_REARME_86T"], bit=1, valor=1)
+            res = EMB.escrever_bit(cls.clp["SA"], REG_CLP["SE"]["CMD_SE_REARME_86BF"], bit=2, valor=1)
+            res = EMB.escrever_bit(cls.clp["SA"], REG_CLP["SE"]["REARME_86BF_86T"], bit=22, valor=1)
+            res = EMB.escrever_bit(cls.clp["SA"], REG_CLP["SE"]["CMD_SE_RESET_REGISTROS"], bit=5, valor=1)
+            return res
 
-            logger.debug("")
-            logger.info("[SE] Foram detectados condicionadores ativos!")
-            [logger.info(f"[SE] Descrição: \"{condic.descricao}\", Gravidade: \"{CONDIC_STR_DCT[condic.gravidade]}\".") for condic in condics_ativos]
-            logger.debug("")
-
-            return condics_ativos
-        else:
-            return []
+        except Exception:
+            logger.exception(f"[SE] Houve um erro ao realizar o reset geral.")
+            logger.debug(f"[SE] Traceback: {traceback.format_exc()}")
+            return False
 
     @classmethod
     def fechar_dj_linha(cls) -> "bool":
@@ -112,21 +114,6 @@ class Subestacao(Usina):
             return False
 
     @classmethod
-    def resetar_emergencia(cls) -> "bool":
-        try:
-            res = EMB.escrever_bit(cls.clp["SA"], REG_CLP["SE"]["CMD_SE_REARME_BLOQUEIO_GERAL"], bit=0, valor=1)
-            res = EMB.escrever_bit(cls.clp["SA"], REG_CLP["SE"]["CMD_SE_REARME_86T"], bit=1, valor=1)
-            res = EMB.escrever_bit(cls.clp["SA"], REG_CLP["SE"]["CMD_SE_REARME_86BF"], bit=2, valor=1)
-            res = EMB.escrever_bit(cls.clp["SA"], REG_CLP["SE"]["REARME_86BF_86T"], bit=22, valor=1)
-            res = EMB.escrever_bit(cls.clp["SA"], REG_CLP["SE"]["CMD_SE_RESET_REGISTROS"], bit=5, valor=1)
-            return res
-
-        except Exception:
-            logger.exception(f"[SE] Houve um erro ao realizar o reset geral.")
-            logger.debug(f"[SE] Traceback: {traceback.format_exc()}")
-            return False
-
-    @classmethod
     def verificar_tensao(cls) -> "bool":
         try:
             if (TENSAO_LINHA_BAIXA < cls.tensao_rs < TENSAO_LINHA_ALTA) \
@@ -163,13 +150,27 @@ class Subestacao(Usina):
             logger.debug("[SE] A tensão na linha ainda está fora.")
 
     @classmethod
-    def temporizar_tensao(cls, delay) -> "None":
+    def temporizar_tensao(cls, delay: "int") -> "None":
         while time() <= time() + delay:
             if cls.verificar_tensao():
                 cls.status_tensao = TENSAO_REESTABELECIDA
                 return
             sleep(time() - (time() - 15))
         cls.status_tensao = TENSAO_FORA
+
+    @classmethod
+    def verificar_condicionadores(cls) -> "list[CondicionadorBase]":
+        if True in (condic.ativo for condic in cls.condicionadores_essenciais):
+            condics_ativos = [condic for condics in [cls.condicionadores_essenciais, cls.condicionadores] for condic in condics if condic.ativo]
+
+            logger.debug("")
+            logger.info("[SE] Foram detectados condicionadores ativos!")
+            [logger.info(f"[SE] Descrição: \"{condic.descricao}\", Gravidade: \"{CONDIC_STR_DCT[condic.gravidade]}\".") for condic in condics_ativos]
+            logger.debug("")
+
+            return condics_ativos
+        else:
+            return []
 
     @classmethod
     def verificar_leituras(cls) -> "None":
