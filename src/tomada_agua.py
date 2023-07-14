@@ -10,30 +10,30 @@ from condicionador import *
 from funcoes.leitura import *
 
 from usina import Usina
-from conector import ClientesUsina as Cli
+from conector import ClientesUsina as cli
 
 logger = logging.getLogger("__main__")
 
 class TomadaAgua(Usina):
 
-    clp = Cli.clp
+    clp = cli.clp
 
-    nv_montante = LeituraModbus(
+    nv_montante: "LeituraModbus" = LeituraModbus(
         clp["TDA"],
         REG_CLP["TDA"]["NIVEL_MONTANTE"],
         descricao="[TDA] Leitura Nível Montante"
     )
-    status_lp = LeituraModbus(
+    status_lp: "LeituraModbus" = LeituraModbus(
         clp["TDA"],
         REG_CLP["TDA"]["LG_OPERACAO_MANUAL"],
         descricao="[TDA] Status Limpa Grades"
     )
-    status_vb = LeituraModbus(
+    status_vb: "LeituraModbus" = LeituraModbus(
         clp["TDA"],
         REG_CLP["TDA"]["VB_FECHANDO"],
         descricao="[TDA] Status Válvula Borboleta"
     )
-    status_uh = LeituraModbusBit(
+    status_uh: "LeituraModbusBit" = LeituraModbusBit(
         clp["TDA"],
         REG_CLP["TDA"]["UH_UNIDADE_HIDRAULICA_DISPONIVEL"],
         bit=1,
