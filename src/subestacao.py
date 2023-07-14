@@ -25,6 +25,9 @@ class Subestacao(Usina):
 
     clp = cli.clp
 
+    condicionadores: "list[CondicionadorBase]" = []
+    condicionadores_essenciais: "list[CondicionadorBase]" = []
+
     tensao_rs: "LeituraModbus" = LeituraModbus(
         clp["SA"],
         REG_CLP["SE"]["LT_VAB"],
@@ -40,9 +43,6 @@ class Subestacao(Usina):
         REG_CLP["SE"]["LT_VCA"],
         descricao="[SE] Status Tensão VCA"
     )
-
-    condicionadores: "list[CondicionadorBase]" = []
-    condicionadores_essenciais: "list[CondicionadorBase]" = []
 
     @classmethod
     def resetar_emergencia(cls) -> "bool":

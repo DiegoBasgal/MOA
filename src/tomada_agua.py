@@ -18,6 +18,14 @@ class TomadaAgua(Usina):
 
     clp = cli.clp
 
+    erro_nv: "float" = 0
+    erro_nv_anterior: "float" = 0
+    nv_montante_recente: "float" = 0
+    nv_montante_anterior: "float" = 0
+
+    condicionadores: "list[CondicionadorBase]" = []
+    condicionadores_essenciais: "list[CondicionadorBase]" = []
+
     nv_montante: "LeituraModbus" = LeituraModbus(
         clp["TDA"],
         REG_CLP["TDA"]["NIVEL_MONTANTE"],
@@ -39,14 +47,6 @@ class TomadaAgua(Usina):
         bit=1,
         descricao="[TDA] Status Unidade Hidáulica"
     )
-
-    erro_nv: "float" = 0
-    erro_nv_anterior: "float" = 0
-    nv_montante_recente: "float" = 0
-    nv_montante_anterior: "float" = 0
-
-    condicionadores: "list[CondicionadorBase]" = []
-    condicionadores_essenciais: "list[CondicionadorBase]" = []
 
     @classmethod
     def atualizar_montante(cls) -> "None":

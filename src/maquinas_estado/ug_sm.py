@@ -24,32 +24,6 @@ class State:
     def step(self) -> "State":
         pass
 
-    def normalizar_ug(self) -> bool:
-        if self.parent.tentativas_de_normalizacao > self.parent.limite_tentativas_de_normalizacao:
-            logger.warning(f"[UG{self.parent.id}] A UG estourou as tentativas de normalização, indisponibilizando UG.")
-            return False
-
-        elif (self.parent.ts_auxiliar - self.parent.get_time()).seconds > self.parent.tempo_entre_tentativas:
-            self.parent.tentativas_de_normalizacao += 1
-            self.parent.ts_auxiliar = self.parent.get_time()
-            logger.info(f"[UG{self.parent.id}] Normalizando UG (Tentativa {self.parent.tentativas_de_normalizacao}/{self.parent.limite_tentativas_de_normalizacao})")
-            self.parent.reconhece_reset_alarmes()
-            return True
-
-    def bloquear_ug(self) -> None:
-        self.parent.parar_timer = True
-        if self.parent.etapa_atual == UG_PARADA:
-            if self.parent.cp[f"CP{self.parent.id}"].etapa_comporta in (CP_ABERTA, CP_CRACKING):
-                self.parent.cp[f"CP{self.parent.id}"].fechar_comporta()
-            elif self.parent.cp[f"CP{self.parent.id}"].etapa_comporta == CP_FECHADA:
-                self.parent.acionar_trips()
-            else:
-                logger.debug(f"[UG{self.parent.id}] A comporta {self.parent.id} deve estar completamente fechada para acionar o bloqueio da UG")
-        elif not self.borda_parar and self.parent.parar():
-            self.borda_parar = True
-        else:
-            logger.debug(f"[UG{self.parent.id}] Unidade parando.")
-
 class StateManual(State):
     def __init__(self, parent):
         super().__init__(parent)
