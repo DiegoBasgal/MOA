@@ -10,13 +10,8 @@ from leitura_escrita.leitura import *
 from unidade_geracao import UnidadeGeracao
 
 class CondicionadorBase:
-    def __init__(
-            self,
-            leitura: LeituraModbus | None = ...,
-            gravidade: int | None = ...,
-            etapas: list | None = ...,
-            id_unidade: int | None = ...
-        ):
+    def __init__(self, leitura: LeituraModbus = None, gravidade: int = None, etapas: list = None, id_unidade: int = None):
+
         self.__leitura = leitura
         self.__etapas = [] if etapas is None else etapas
         self.__gravidade = 2 if gravidade is None else gravidade
@@ -29,7 +24,7 @@ class CondicionadorBase:
         return f"Condicionador: {self.descricao}, Gravidade: {CONDIC_STR_DCT[self.gravidade]}"
 
     @property
-    def leitura(self) -> int | float:
+    def leitura(self) -> float:
         return self.__leitura.valor
 
     @property
@@ -49,7 +44,7 @@ class CondicionadorBase:
         return self.__descricao
 
     @property
-    def valor(self) -> int | float:
+    def valor(self) -> float:
         return self.ativo * 1.0
 
     @property
@@ -61,17 +56,18 @@ class CondicionadorBase:
             return False if self.leitura == 0 else True
 
     @property
-    def ugs(self) -> list[UnidadeGeracao]:
+    def ugs(self) -> "list[UnidadeGeracao]":
         return self._ugs
 
     @ugs.setter
-    def ugs(self, var: list[UnidadeGeracao]) -> None:
+    def ugs(self, var: "list[UnidadeGeracao]") -> None:
         self._ugs = var
 
 
 class CondicionadorExponencial(CondicionadorBase):
-    def __init__(self, leitura, gravidade, valor_base: float | None = ..., valor_limite: float | None = ..., ordem: float | None = ...) -> ...:
+    def __init__(self, leitura, gravidade, valor_base: float = None, valor_limite: float = None, ordem: float = None) -> ...:
         CondicionadorBase.__init__(leitura, gravidade)
+
         self._ordem = 2 if ordem is None else ordem
         self._valor_base = 0 if valor_base is None else valor_base
         self._valor_limite = 0 if valor_limite is None else valor_limite
@@ -85,35 +81,35 @@ class CondicionadorExponencial(CondicionadorBase):
             return True if self.valor >= 1 else False
 
     @property
-    def valor(self) -> int | float:
+    def valor(self) -> float:
         if self.leitura > self.valor_base and  self.leitura < self.valor_limite:
             aux = (1 - (((self.valor_limite - self.leitura) / (self.valor_limite - self.valor_base)) ** (self.ordem)).real)
             return max(min(aux, 1), 0)
         else:
             return 1 if self.leitura > self.valor_limite else 0
-    
+
     @property
-    def valor_base(self) -> int | float:
+    def valor_base(self) -> float:
         return self._valor_base
 
     @valor_base.setter
-    def valor_base(self, val: int | float) -> None:
+    def valor_base(self, val: float) -> None:
         self._valor_base = val
 
     @property
-    def valor_limite(self) -> int | float:
+    def valor_limite(self) -> float:
         return self._valor_limite
 
     @valor_limite.setter
-    def valor_limite(self, val: int | float) -> None:
+    def valor_limite(self, val: float) -> None:
         self._valor_limite = val
 
     @property
-    def ordem(self) -> int | float:
+    def ordem(self) -> float:
         return self._ordem
 
     @ordem.setter
-    def ordem(self, val: int | float) -> None:
+    def ordem(self, val: float) -> None:
         self._ordem = val
 
 class CondicionadorExponencialReverso(CondicionadorExponencial):
@@ -122,7 +118,7 @@ class CondicionadorExponencialReverso(CondicionadorExponencial):
         CondicionadorExponencial.__init__(leitura, gravidade, valor_base, valor_limite, ordem)
 
     @property
-    def valor(self) -> int | float:
+    def valor(self) -> float:
         if self.valor_limite < self.leitura < self.valor_base:
             aux = (1 - (((self.valor_limite - self.leitura) / (self.valor_limite - self.valor_base))** (self.ordem)).real)
             return max(min(aux, 1), 0)

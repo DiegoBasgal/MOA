@@ -37,19 +37,19 @@ class Bay(Usina):
         return self.__tensao_vs.valor
 
     @property
-    def condicionadores(self) -> list[CondicionadorBase]:
+    def condicionadores(self) -> "list[CondicionadorBase]":
         return self._condicionadores
 
     @condicionadores.setter
-    def condicionadores(self, var: list[CondicionadorBase]) -> None:
+    def condicionadores(self, var: "list[CondicionadorBase]") -> None:
         self._condicionadores = var
 
     @property
-    def condicionadores_essenciais(self) -> list[CondicionadorBase]:
+    def condicionadores_essenciais(self) -> "list[CondicionadorBase]":
         return self._condicionadores_essenciais
 
     @condicionadores_essenciais.setter
-    def condicionadores_essenciais(self, var: list[CondicionadorBase]) -> None:
+    def condicionadores_essenciais(self, var: "list[CondicionadorBase]") -> None:
         self._condicionadores_essenciais = var
 
 

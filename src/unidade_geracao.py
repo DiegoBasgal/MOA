@@ -10,7 +10,8 @@ from maquinas_estado.ug_sm import *
 logger = logging.getLogger("__main__")
 
 class UnidadeGeracao(Usina):
-    def __init__(self, id: int | None = ...) -> ...:
+    def __init__(self, id: int = None):
+
         # VERIFICAÇÃO DE ARGUMENTOS
         if not id or id < 1:
             raise ValueError(f"[UG{self.id}] A Unidade deve ser instanciada com um valor maior que \"0\".")
@@ -140,35 +141,35 @@ class UnidadeGeracao(Usina):
         self._codigo_state = var
 
     @property
-    def lista_ugs(self) -> list["UnidadeGeracao"]:
+    def lista_ugs(self) -> "list[UnidadeGeracao]":
         return self._lista_ugs
 
     @lista_ugs.setter
-    def lista_ugs(self, var: list["UnidadeGeracao"]) -> None:
+    def lista_ugs(self, var: "list[UnidadeGeracao]") -> None:
         self._lista_ugs = var
 
     @property
-    def condicionadores(self) -> list[CondicionadorBase]:
+    def condicionadores(self) -> "list[CondicionadorBase]":
         return self._condicionadores
 
     @condicionadores.setter
-    def condicionadores(self, var: list[CondicionadorBase]):
+    def condicionadores(self, var: "list[CondicionadorBase]"):
         self._condicionadores = var
 
     @property
-    def condicionadores_essenciais(self) -> list[CondicionadorBase]:
+    def condicionadores_essenciais(self) -> "list[CondicionadorBase]":
         return self._condicionadores_essenciais
 
     @condicionadores_essenciais.setter
-    def condicionadores_essenciais(self, var: list[CondicionadorBase]):
+    def condicionadores_essenciais(self, var: "list[CondicionadorBase]"):
         self._condicionadores_essenciais = var
 
     @property
-    def condicionadores_atenuadores(self) -> list[CondicionadorBase]:
+    def condicionadores_atenuadores(self) -> "list[CondicionadorBase]":
         return self._condicionadores_atenuadores
 
     @condicionadores_atenuadores.setter
-    def condicionadores_atenuadores(self, var: list[CondicionadorBase]):
+    def condicionadores_atenuadores(self, var: "list[CondicionadorBase]"):
         self._condicionadores_atenuadores = var
 
     @property
@@ -210,7 +211,7 @@ class UnidadeGeracao(Usina):
             self.clp["MOA"].write_single_coil(REG_CLP["MOA"][f"OUT_ETAPA_UG{self.id}"], [self.etapa_atual])
             self.clp["MOA"].write_single_coil(REG_CLP["MOA"][f"OUT_STATE_UG{self.id}"], [self.codigo_state])
 
-        except Exception | ConnectionError | ValueError as e:
+        except Exception as e:
             logger.exception(f"[UG{self.id}] Não foi possível escrever os valores no CLP MOA. Exception: \"{repr(e)}\".")
             logger.debug(f"[UG{self.id}] Traceback: {traceback.format_exc()}")
 
@@ -226,12 +227,12 @@ class UnidadeGeracao(Usina):
                 res = EscritaModBusBit.escrever_bit(self.clp[f"UG{self.id}"], REG_CLP["UG"][f"UG{self.id}_CMD_UHLM_REARME_FALHAS"], bit=16, valor=1)
                 res = EscritaModBusBit.escrever_bit(self.clp[f"UG{self.id}"], REG_CLP["UG"][f"UG{self.id}_CMD_PARTIDA_CMD_SINCRONISMO"], bit=10, valor=1)
                 self.enviar_setpoint(self.setpoint)
-            
+
             else:
                 logger.debug(f"[UG{self.id}] A Unidade já está sincronizada.")
             return res
 
-        except Exception | ConnectionError | ValueError as e:
+        except Exception as e:
             logger.exception(f"[UG{self.id}] Não foi possível partir a Unidade. Exception: \"{repr(e)}\".")
             logger.debug(f"[UG{self.id}] Traceback: {traceback.format_exc()}")
             return False
@@ -242,11 +243,11 @@ class UnidadeGeracao(Usina):
                 logger.info(f"[UG{self.id}] Enviando comando de parada.")
                 self.enviar_setpoint(0)
                 return EscritaModBusBit.escrever_bit(self.clp[f"UG{self.id}"], REG_CLP["UG"][f"UG{self.id}_CMD_PARADA_CMD_DESABILITA_UHLM"], bit=15, valor=1)
-            
+
             else:
                 logger.debug(f"[UG{self.id}] A Unidade já está parada.")
 
-        except Exception | ConnectionError | ValueError as e:
+        except Exception as e:
             logger.exception(f"[UG{self.id}] Não foi possível parar a Unidade. Exception: \"{repr(e)}\".")
             logger.debug(f"[UG{self.id}] Traceback: {traceback.format_exc()}")
             return False
@@ -266,7 +267,7 @@ class UnidadeGeracao(Usina):
                 res = self.clp[f"UG{self.id}"].write_single_register(REG_CLP["UG"][f"UG{self.id}_RV_SETPOINT_POTENCIA_ATIVA_PU"], self.setpoint)
                 return res
 
-        except Exception | ConnectionError | ValueError as e:
+        except Exception as e:
             logger.exception(f"[UG{self.id}] Não foi possivel enviar o setpoint para a Unidade. Exception: \"{repr(e)}\".")
             logger.debug(f"[UG{self.id}] Traceback: {traceback.format_exc()}")
             return False
@@ -274,7 +275,7 @@ class UnidadeGeracao(Usina):
     def reconhece_reset_alarmes(self) -> bool:
         try:
             logger.info(f"[UG{self.id}] Enviando comando de reconhecer e resetar alarmes.")
-            
+
             for x in range(3):
                 logger.debug(f"[UG{self.id}] Passo: {x}/3")
                 self.remover_trip_eletrico()
@@ -285,7 +286,7 @@ class UnidadeGeracao(Usina):
                 sleep(1)
             return True
 
-        except Exception | ConnectionError | ValueError as e:
+        except Exception as e:
             logger.exception(f"[UG{self.id}] Não foi possivel enviar o comando de reconhecer e resetar alarmes. Exception: \"{repr(e)}\".")
             logger.debug(f"[UG{self.id}] Traceback: {traceback.format_exc()}")
             return False
@@ -295,7 +296,7 @@ class UnidadeGeracao(Usina):
             logger.debug(f"[UG{self.id}] Acionando TRIP -> Lógico.")
             return EscritaModBusBit.escrever_bit(self.clp[f"UG{self.id}"], REG_CLP["UG"][f"UG{self.id}_CMD_PARADA_EMERGENCIA"], bit=4, valor=1)
 
-        except Exception | ConnectionError | ValueError as e:
+        except Exception as e:
             logger.exception(f"[UG{self.id}] Não foi possivel acionar o TRIP lógico. Exception: \"{repr(e)}\".")
             logger.debug(f"[UG{self.id}] Traceback: {traceback.format_exc()}")
             return False
@@ -313,7 +314,7 @@ class UnidadeGeracao(Usina):
             res = EscritaModBusBit.escrever_bit(self.clp[f"UG{self.id}"], REG_CLP["UG"][f"UG{self.id}_RELE_700G_TRIP_ATUADO"], bit=31, valor=0)
             return res
 
-        except Exception | ConnectionError | ValueError as e:
+        except Exception as e:
             logger.exception(f"[UG{self.id}] Não foi possível remover o TRIP lógico. Exception: \"{repr(e)}\".")
             logger.debug(f"[UG{self.id}] Traceback: {traceback.format_exc()}")
             return False
@@ -323,7 +324,7 @@ class UnidadeGeracao(Usina):
             logger.debug(f"[UG{self.id}] Acionando TRIP -> Elétrico.")
             return self.clp["MOA"].write_single_coil(REG_CLP["MOA"][f"OUT_BLOCK_UG{self.id}"], [1])
 
-        except Exception | ConnectionError | ValueError as e:
+        except Exception as e:
             logger.exception(f"[UG{self.id}] Não foi possível acionar o TRIP elétrico. Exception: \"{repr(e)}\".")
             logger.debug(f"[UG{self.id}] Traceback: {traceback.format_exc()}")
             return False
@@ -338,7 +339,7 @@ class UnidadeGeracao(Usina):
                 logger.debug(f"[UG{self.id}] Comando recebido - Fechando Dj52L")
                 return EscritaModBusBit.escrever_bit(self.clp[f"UG{self.id}"], REG_CLP["SE"]["CMD_SE_FECHA_52L"], bit=4, valor=1)
 
-        except Exception | ConnectionError | ValueError as e:
+        except Exception as e:
             logger.exception(f"[UG{self.id}] Não foi possível remover o TRIP elétrico. Exception: \"{repr(e)}\".")
             logger.debug(f"[UG{self.id}] Traceback: {traceback.format_exc()}")
             return False
@@ -353,7 +354,7 @@ class UnidadeGeracao(Usina):
             res = EscritaModBusBit.escrever_bit(self.clp[f"UG{self.id}"], REG_CLP["UG"][f"UG{self.id}_CMD_UHLM_REARME_FALHAS"], bit=16, valor=1)
             return res
 
-        except Exception | ConnectionError | ValueError as e:
+        except Exception as e:
             logger.exception(f"[UG{self.id}] Houve um erro ao realizar o reset geral. Exception: \"{repr(e)}\".")
             logger.debug(f"[UG{self.id}] Traceback: {traceback.format_exc()}")
             return False
@@ -371,7 +372,7 @@ class UnidadeGeracao(Usina):
         sleep(1)
 
     def atenuacao_carga(self) -> None:
-        logger.debug(f"[UG{self.id}] Atenuador \"{condic.descr}\" -> Atenuação: {max(0, condic.valor)} / Leitura: {condic.leitura}" for condic in self.condicionadores_atenuadores) 
+        logger.debug(f"[UG{self.id}] Atenuador \"{condic.descr}\" -> Atenuação: {max(0, condic.valor)} / Leitura: {condic.leitura}" for condic in self.condicionadores_atenuadores)
 
         ganho = 1 - max(0, [sum(condic) for condic in self.condicionadores_atenuadores])
         aux = self.setpoint
@@ -472,7 +473,7 @@ class UnidadeGeracao(Usina):
             self.condicionador_pressao_turbina_ug.valor_base = float(parametros[f"alerta_pressao_turbina_ug{self.id}"])
             self.condicionador_pressao_turbina_ug.valor_limite = float(parametros[f"limite_pressao_turbina_ug{self.id}"])
 
-        except Exception | ValueError as e:
+        except Exception as e:
             logger.exception(f"[UG{self.id}] Houve um erro ao atualizar os limites de temperaturas dos condicionadores. Exception: \"{repr(e)}\".")
             logger.debug(f"[UG{self.id}] Traceback: {traceback.format_exc()}")
 
@@ -1225,80 +1226,80 @@ class UnidadeGeracao(Usina):
         # CONDICIONADORES RELÉS
         self.leitura_trip_rele_protecao1 = LeituraModbusBit(self.rele[f"UG{self.id}"], REG_RELE["UG"][f"UG{self.id}_TRIP_RELE_PROTECAO"], bit=5, descricao=f"RELE_UG{self.id}_TRIP_RELE_PROTECAO")
         self.condicionadores.append(CondicionadorBase(self.leitura_trip_rele_protecao1, CONDIC_NORMALIZAR))
-        
+
         self.leitura_trip_rele_protecao2 = LeituraModbusBit(self.rele[f"UG{self.id}"], REG_RELE["UG"][f"UG{self.id}_TRIP_RELE_PROTECAO"], bit=6, descricao=f"RELE_UG{self.id}_TRIP_RELE_PROTECAO")
         self.condicionadores.append(CondicionadorBase(self.leitura_trip_rele_protecao2, CONDIC_NORMALIZAR))
 
         self.leitura_subtensao_geral = LeituraModbusBit(self.rele[f"UG{self.id}"], REG_RELE["UG"][f"UG{self.id}_SUBTENSAO_GERAL"], bit=0, descricao=f"RELE_UG{self.id}_SUBTENSAO_GERAL")
         self.condicionadores.append(CondicionadorBase(self.leitura_subtensao_geral, CONDIC_NORMALIZAR))
-        
+
         self.leitura_subfreq_ele1 = LeituraModbusBit(self.rele[f"UG{self.id}"], REG_RELE["UG"][f"UG{self.id}_SUBFREQ_ELEMENTO_1"], bit=7, descricao=f"RELE_UG{self.id}_SUBFREQ_ELEMENTO_1")
         self.condicionadores.append(CondicionadorBase(self.leitura_subfreq_ele1, CONDIC_NORMALIZAR))
-        
+
         self.leitura_subfreq_ele2 = LeituraModbusBit(self.rele[f"UG{self.id}"], REG_RELE["UG"][f"UG{self.id}_SUBFREQ_ELEMENTO_2"], bit=6, descricao=f"RELE_UG{self.id}_SUBFREQ_ELEMENTO_2")
         self.condicionadores.append(CondicionadorBase(self.leitura_subfreq_ele2, CONDIC_NORMALIZAR))
-        
+
         self.leitura_sobrefreq_ele1 = LeituraModbusBit(self.rele[f"UG{self.id}"], REG_RELE["UG"][f"UG{self.id}_SOBREFREQ_ELEMENTO_1"], bit=5, descricao=f"RELE_UG{self.id}_SOBREFREQ_ELEMENTO_1")
         self.condicionadores.append(CondicionadorBase(self.leitura_sobrefreq_ele1, CONDIC_NORMALIZAR))
-        
+
         self.leitura_sobrefreq_ele2 = LeituraModbusBit(self.rele[f"UG{self.id}"], REG_RELE["UG"][f"UG{self.id}_SOBREFREQ_ELEMENTO_2"], bit=4, descricao=f"RELE_UG{self.id}_SOBREFREQ_ELEMENTO_2")
         self.condicionadores.append(CondicionadorBase(self.leitura_sobrefreq_ele2, CONDIC_NORMALIZAR))
-        
+
         self.leitura_sobrecorr_instant = LeituraModbusBit(self.rele[f"UG{self.id}"], REG_RELE["UG"][f"UG{self.id}_SOBRECORR_INSTANTANEA"], bit=0, descricao=f"RELE_UG{self.id}_SOBRECORR_INSTANTANEA")
         self.condicionadores.append(CondicionadorBase(self.leitura_sobrecorr_instant, CONDIC_NORMALIZAR))
-        
+
         self.leitura_voltz_hertz = LeituraModbusBit(self.rele[f"UG{self.id}"], REG_RELE["UG"][f"UG{self.id}_VOLTZ_HERTZ"], bit=5, descricao=f"RELE_UG{self.id}_VOLTZ_HERTZ")
         self.condicionadores.append(CondicionadorBase(self.leitura_voltz_hertz, CONDIC_NORMALIZAR))
-        
+
         self.leitura_perda_campo_geral = LeituraModbusBit(self.rele[f"UG{self.id}"], REG_RELE["UG"][f"UG{self.id}_PERDA_CAMPO_GERAL"], bit=11, descricao=f"RELE_UG{self.id}_PERDA_CAMPO_GERAL")
         self.condicionadores.append(CondicionadorBase(self.leitura_perda_campo_geral, CONDIC_NORMALIZAR))
-        
+
         self.leitura_pot_reversa = LeituraModbusBit(self.rele[f"UG{self.id}"], REG_RELE["UG"][f"UG{self.id}_POTENCIA_REVERSA"], bit=3, descricao=f"RELE_UG{self.id}_POTENCIA_REVERSA")
         self.condicionadores.append(CondicionadorBase(self.leitura_pot_reversa, CONDIC_NORMALIZAR))
 
-        
+
         self.leitura_transf_disp_rele_linha_trafo = LeituraModbusBit(self.rele[f"UG{self.id}"], REG_RELE["UG"][f"UG{self.id}_TRASFER_DISPARO_RELE_LINHA_TRAFO"], bit=11, descricao=f"RELE_UG{self.id}_TRASFER_DISPARO_RELE_LINHA_TRAFO")
         self.condicionadores.append(CondicionadorBase(self.leitura_transf_disp_rele_linha_trafo, CONDIC_INDISPONIBILIZAR))
-        
+
         self.leitura_falha_partida_dj_maq = LeituraModbusBit(self.rele[f"UG{self.id}"], REG_RELE["UG"][f"UG{self.id}_FALHA_PARTIDA_DJ_MAQUINA"], bit=6, descricao=f"RELE_UG{self.id}_FALHA_PARTIDA_DJ_MAQUINA")
         self.condicionadores.append(CondicionadorBase(self.leitura_falha_partida_dj_maq, CONDIC_INDISPONIBILIZAR))
-        
+
         self.leitura_atua_rele_86bf = LeituraModbusBit(self.rele[f"UG{self.id}"], REG_RELE[f"UG"][f"UG{self.id}_ATUA_RELE_86BF"], bit=8, descricao=f"RELE_UG{self.id}_ATUA_RELE_86BF")
         self.condicionadores.append(CondicionadorBase(self.leitura_atua_rele_86bf, CONDIC_INDISPONIBILIZAR))
 
         self.leitura_falha_abretura_dj_maq1 = LeituraModbusBit(self.rele[f"UG{self.id}"], REG_RELE["UG"][f"UG{self.id}_FALHA_ABETRUA_DJ_MAQUINA"], bit=7, descricao=f"RELE_UG{self.id}_FALHA_ABETRUA_DJ_MAQUINA")
         self.condicionadores.append(CondicionadorBase(self.leitura_falha_abretura_dj_maq1, CONDIC_INDISPONIBILIZAR))
-        
+
         self.leitura_falha_abretura_dj_maq2 = LeituraModbusBit(self.rele[f"UG{self.id}"], REG_RELE["UG"][f"UG{self.id}_FALHA_ABERTURA_DJ_MAQUINA"], bit=8, descricao=f"RELE_UG{self.id}_FALHA_ABERTURA_DJ_MAQUINA")
         self.condicionadores.append(CondicionadorBase(self.leitura_falha_abretura_dj_maq2, CONDIC_INDISPONIBILIZAR))
-        
+
         self.leitura_recibo_transf_disp = LeituraModbusBit(self.rele[f"UG{self.id}"], REG_RELE["UG"][f"UG{self.id}_RECIBO_TRANSFER_DISPARO"], bit=9, descricao=f"RELE_UG{self.id}_RECIBO_TRANSFER_DISPARO")
         self.condicionadores.append(CondicionadorBase(self.leitura_recibo_transf_disp, CONDIC_INDISPONIBILIZAR))
 
         self.leitura_difer_com_restr = LeituraModbusBit(self.rele[f"UG{self.id}"], REG_RELE["UG"][f"UG{self.id}_DIFERENCIAL_COM_RESTRICAO"], bit=14, descricao=f"RELE_UG{self.id}_DIFERENCIAL_COM_RESTRICAO")
         self.condicionadores.append(CondicionadorBase(self.leitura_difer_com_restr, CONDIC_INDISPONIBILIZAR))
-        
+
         self.leitura_difer_sem_restr = LeituraModbusBit(self.rele[f"UG{self.id}"], REG_RELE["UG"][f"UG{self.id}_DIFERENCIAL_SEM_RESTRICAO"], bit=15, descricao=f"RELE_UG{self.id}_DIFERENCIAL_SEM_RESTRICAO")
         self.condicionadores.append(CondicionadorBase(self.leitura_difer_sem_restr, CONDIC_INDISPONIBILIZAR))
-        
+
         self.leitura_fuga_sobrecorr_geral = LeituraModbusBit(self.rele[f"UG{self.id}"], REG_RELE["UG"][f"UG{self.id}_FUGA_SOBRECORR_GERAL"], bit=12, descricao=f"RELE_UG{self.id}_FUGA_SOBRECORR_GERAL")
         self.condicionadores.append(CondicionadorBase(self.leitura_fuga_sobrecorr_geral, CONDIC_INDISPONIBILIZAR))
-        
+
         self.leitura_sobrecorr_instant_neutro = LeituraModbusBit(self.rele[f"UG{self.id}"], REG_RELE["UG"][f"UG{self.id}_SOBRECORR_INSTANTANEA_NEUTRO"], bit=1, descricao=f"RELE_UG{self.id}_SOBRECORR_INSTANTANEA_NEUTRO")
         self.condicionadores.append(CondicionadorBase(self.leitura_sobrecorr_instant_neutro, CONDIC_INDISPONIBILIZAR))
-        
+
         self.leitura_sobrecorr_restr_tensao = LeituraModbusBit(self.rele[f"UG{self.id}"], REG_RELE["UG"][f"UG{self.id}_SOBRECORR_RESTRICAO_TENSAO"], bit=6, descricao=f"RELE_UG{self.id}_SOBRECORR_RESTRICAO_TENSAO")
         self.condicionadores.append(CondicionadorBase(self.leitura_sobrecorr_restr_tensao, CONDIC_INDISPONIBILIZAR))
-        
+
         self.leitura_sobrecorr_temp_neutro = LeituraModbusBit(self.rele[f"UG{self.id}"], REG_RELE["UG"][f"UG{self.id}_SOBRECORR_TEMPORIZADA_NEUTRO"], bit=4, descricao=f"RELE_UG{self.id}_SOBRECORR_TEMPORIZADA_NEUTRO")
         self.condicionadores.append(CondicionadorBase(self.leitura_sobrecorr_temp_neutro, CONDIC_INDISPONIBILIZAR))
-        
+
         self.leitura_sobrecorr_seq_neg = LeituraModbusBit(self.rele[f"UG{self.id}"], REG_RELE["UG"][f"UG{self.id}_SOBRECORR_SEQUENCIA_NEG"], bit=2, descricao=f"RELE_UG{self.id}_SOBRECORR_SEQUENCIA_NEG")
         self.condicionadores.append(CondicionadorBase(self.leitura_sobrecorr_seq_neg, CONDIC_INDISPONIBILIZAR))
-        
+
         self.leitura_unidade_fora_passo = LeituraModbusBit(self.rele[f"UG{self.id}"], REG_RELE["UG"][f"UG{self.id}_UNIDADE_FORA_PASSO"], bit=14, descricao=f"RELE_UG{self.id}_UNIDADE_FORA_PASSO")
         self.condicionadores.append(CondicionadorBase(self.leitura_unidade_fora_passo, CONDIC_INDISPONIBILIZAR))
-        
+
         self.leitura_unidade_fora_passo = LeituraModbusBit(self.rele[f"UG{self.id}"], REG_RELE["UG"][f"UG{self.id}_UNIDADE_FORA_PASSO"], bit=14, descricao=f"RELE_UG{self.id}_UNIDADE_FORA_PASSO")
         self.condicionadores.append(CondicionadorBase(self.leitura_unidade_fora_passo, CONDIC_INDISPONIBILIZAR))
 

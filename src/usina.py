@@ -28,15 +28,18 @@ from leitura_escrita.escrita import *
 from conversor_protocolo.conversor import *
 
 from bay import Bay
+from comporta import Comporta
 from subestacao import Subestacao
-from tomada_agua import TomadaAgua, Comporta
+from tomada_agua import TomadaAgua
 from servico_auxiliar import ServicoAuxiliar
 
 logger = logging.getLogger("__main__")
 
 class Usina:
-    def __init__(self, cfg: dict | None = ...):
+    def __init__(self, cfg: dict = None):
+
         # VERIFICAÇÃO DE ARGUMENTOS
+
         if None in (cfg):
             raise ValueError("[USN] Não foi possível carregar os arquivos de configuração (\"cfg.json\").")
         else:
@@ -46,22 +49,21 @@ class Usina:
         self.rele = ClientesUsina.rele
 
         # INCIALIZAÇÃO DE OBJETOS DA USINA
-        # Setores da Usina
-        self.bay: Bay = Bay(self)
-        self.se: Subestacao = Subestacao(self)
-        self.tda: TomadaAgua = TomadaAgua(self)
-        self.sa: ServicoAuxiliar = ServicoAuxiliar(self)
-        self.setores: list[Bay | Subestacao | TomadaAgua | ServicoAuxiliar] = [self.bay, self.se, self.tda, self.sa]
 
-        # Unidades de Geração
-        self.ug1: UnidadeGeracao = UnidadeGeracao(self, 1)
-        self.ug2: UnidadeGeracao = UnidadeGeracao(self, 2)
+        self.bay= Bay(self)
+        self.se = Subestacao(self)
+        self.tda = TomadaAgua(self)
+        self.sa = ServicoAuxiliar(self)
+        self.ug1 = UnidadeGeracao(self, 1)
+        self.ug2 = UnidadeGeracao(self, 2)
+
         self.ugs = [self.ug1, self.ug2]
+        self.setores = [self.bay, self.se, self.tda, self.sa]
 
         self.ug1.lista_ugs = self.ugs
         self.ug2.lista_ugs = self.ugs
 
-        self.cp: dict[str, Comporta]
+        self.cp: "dict[str, Comporta]" = {}
         self.cp["CP1"] = Comporta(1)
         self.cp["CP2"] = Comporta(2)
 
@@ -89,10 +91,10 @@ class Usina:
 
         self.aguardando_reservatorio: int = 0
 
-        self.controle_p: int | float = 0
-        self.controle_i: int | float = 0
-        self.controle_d: int | float = 0
-        self.pot_alvo_anterior: int | float = -1
+        self.controle_p: float = 0
+        self.controle_i: float = 0
+        self.controle_d: float = 0
+        self.pot_alvo_anterior: float = -1
 
         self.clp_emerg: bool = False
         self.voip_emerg: bool = False
@@ -109,7 +111,7 @@ class Usina:
 
     # Getters de variáveis PRIVADAS
     @property
-    def potencia_ativa_kW(self) -> int | float:
+    def potencia_ativa_kW(self) -> float:
         return self.__potencia_ativa_kW.valor
 
 
@@ -132,11 +134,11 @@ class Usina:
         self._tentativas_normalizar = var
 
     @property
-    def pot_alvo_anterior(self) -> int | float:
+    def pot_alvo_anterior(self) -> float:
         return self._potencia_alvo_anterior
 
     @pot_alvo_anterior.setter
-    def pot_alvo_anterior(self, var: int | float):
+    def pot_alvo_anterior(self, var: float):
         self._potencia_alvo_anterior = var
 
     @staticmethod
@@ -180,9 +182,9 @@ class Usina:
     def acionar_emergencia(self):
         try:
             self.clp_emergencia = True
-            [EscritaModBusBit.escrever_bit(self.clp[f"UG{ug,id}"], REG_CLP["UG"][f"UG{ug.id}_CMD_PARADA_EMERGENCIA"], bit=4, valor=1) for ug in self.ugs]
+            [EscritaModBusBit.escrever_bit(self.clp[f"UG{ug.id}"], REG_CLP["UG"][f"UG{ug.id}_CMD_PARADA_EMERGENCIA"], bit=4, valor=1) for ug in self.ugs]
             sleep(5)
-            [EscritaModBusBit.escrever_bit(self.clp[f"UG{ug,id}"], REG_CLP["UG"][f"UG{ug.id}_CMD_PARADA_EMERGENCIA"], bit=4, valor=0) for ug in self.ugs]
+            [EscritaModBusBit.escrever_bit(self.clp[f"UG{ug.id}"], REG_CLP["UG"][f"UG{ug.id}_CMD_PARADA_EMERGENCIA"], bit=4, valor=0) for ug in self.ugs]
 
         except Exception as e:
             logger.exception(f"[USN] Houve um erro ao realizar acionar a emergência. Exception: \"{repr(e)}\"")
@@ -455,7 +457,7 @@ class Usina:
 
         self.controle_ie = self.ajustar_ie_padrao()
 
-    def controle_ugs_disponiveis(self) -> list[UnidadeGeracao]:
+    def controle_ugs_disponiveis(self) -> "list[UnidadeGeracao]":
         ls = []
         [ls.append(ug) for ug in self.ugs if ug.disponivel and not ug.etapa_atual == UG_PARANDO]
         logger.debug("")

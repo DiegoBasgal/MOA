@@ -24,31 +24,31 @@ class Subestacao(Usina):
         self._condicionadores_essenciais = []
 
     @property
-    def tensao_rs(self) -> int | float:
+    def tensao_rs(self) -> float:
         return self.__tensao_rs.valor
 
     @property
-    def tensao_st(self) -> int | float:
+    def tensao_st(self) -> float:
         return self.__tensao_st.valor
 
     @property
-    def tensao_tr(self) -> int | float:
+    def tensao_tr(self) -> float:
         return self.__tensao_tr.valor
 
     @property
-    def condicionadores(self) -> list[CondicionadorBase]:
+    def condicionadores(self) -> "list[CondicionadorBase]":
         return self._condicionadores
 
     @condicionadores.setter
-    def condicionadores(self, var: list[CondicionadorBase]) -> None:
+    def condicionadores(self, var: "list[CondicionadorBase]") -> None:
         self._condicionadores = var
 
     @property
-    def condicionadores_essenciais(self) -> list[CondicionadorBase]:
+    def condicionadores_essenciais(self) -> "list[CondicionadorBase]":
         return self._condicionadores_essenciais
 
     @condicionadores_essenciais.setter
-    def condicionadores_essenciais(self, var: list[CondicionadorBase]) -> None:
+    def condicionadores_essenciais(self, var: "list[CondicionadorBase]") -> None:
         self._condicionadores_essenciais = var
 
 

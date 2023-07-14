@@ -1,32 +1,32 @@
-globais: dict[str, any] = {
+globais: "dict[str, any]" = {
     "avisado_eletrica": False
 }
 
-ips: dict[str, any] = {
-    "SA_slave_ip": "10.101.2.215",
-    "SA_slave_porta": 5003,
-    "TDA_slave_ip": "10.101.2.215",
-    "TDA_slave_porta": 5003,
-    "UG1_slave_ip": "10.101.2.215",
-    "UG1_slave_porta": 5003,
-    "UG2_slave_ip": "10.101.2.215",
-    "UG2_slave_porta": 5003,
-    "MOA_slave_ip": "0.0.0.0",
-    "MOA_slave_porta": 5002,
+ips: "dict[str, any]" = {
+    "SA_ip": "10.101.2.215",
+    "SA_porta": 5003,
+    "TDA_ip": "10.101.2.215",
+    "TDA_porta": 5003,
+    "UG1_ip": "10.101.2.215",
+    "UG1_porta": 5003,
+    "UG2_ip": "10.101.2.215",
+    "UG2_porta": 5003,
+    "MOA_ip": "0.0.0.0",
+    "MOA_porta": 5002,
 
-    "RELE_SE_slave_ip": "10.101.2.215",
-    "RELE_SE_slave_porta": 502,
-    "RELE_TE_slave_ip": "10.101.2.215",
-    "RELE_TE_slave_porta": 502,
-    "RELE_BAY_slave_ip": "10.101.2.215",
-    "RELE_BAY_slave_porta": 502,
-    "RELE_UG1_slave_ip": "10.101.2.215",
-    "RELE_UG1_slave_porta": 502,
-    "RELE_UG2_slave_ip": "10.101.2.215",
-    "RELE_UG2_slave_porta": 502,
+    "RELE_SE_ip": "10.101.2.215",
+    "RELE_SE_porta": 502,
+    "RELE_TE_ip": "10.101.2.215",
+    "RELE_TE_porta": 502,
+    "RELE_BAY_ip": "10.101.2.215",
+    "RELE_BAY_porta": 502,
+    "RELE_UG1_ip": "10.101.2.215",
+    "RELE_UG1_porta": 502,
+    "RELE_UG2_ip": "10.101.2.215",
+    "RELE_UG2_porta": 502,
 }
 
-voip: dict[str, list[bool | str]] = {
+voip: "dict[str, list[bool | str]]" = {
     "EMERGENCIA" : [False, "Atenção! Houve um acionamento de emergência na PCH Xavantina, por favor analisar a situação. Atenção! Houve um acionamento de emergência na PCH Xavantina, por favor analisar a situação."],
 
     "LG_FALHA_ATUADA": [False, "Atenção! Houve uma falha com o Limpa Grades na PCH Xavantina, favor analisar a situação. Atenção! Houve uma falha com o Limpa Grades na PCH Xavantina, favor analisar a situação."],
@@ -52,11 +52,7 @@ voip: dict[str, list[bool | str]] = {
     "TE_NIVEL_OLEO_MUITO_BAIXO": [False, "Atenção! O nível do óleo do transformador elevador a PCH Xavantina está muito baixo, favor analisar a situação. Atenção! O nível do óleo do transformador elevador a PCH Xavantina está muito baixo, favor analisar a situação."]
 }
 
-telegram = {
-
-}
-
-watchdog: dict[str, any] = {
+watchdog: "dict[str, any]" = {
     "unit_id": 1,
     "ip_slave": "172.21.15.12",
     "port_slave": 5002,
