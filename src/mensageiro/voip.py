@@ -1,18 +1,26 @@
 import os
+import pytz
 import json
+import logging
+import src.dicionarios.dict as dct
 
+from time import sleep
+from datetime import datetime
 from urllib.request import Request, urlopen
 
-from usina import *
+from src.banco_dados import BancoDados
 
 logger = logging.getLogger("__main__")
 
 class Voip:
+
+    #ATRIBUIÇÃO DE VARIÁVEIS
+
     arquivo = os.path.join(os.path.dirname(__file__), "voip_config.json")
     with open(arquivo, "r") as file:
         cfg = json.load(file)
 
-    lista_padrao = [["Diego", "41999111134"], """["Henrique", "41999610053"]"""]
+    lista_padrao = [["Diego", "41999111134"]]
 
     token_data = str(f"username={cfg['caller_voip']}&password={cfg['user_token']}&grant_type=password").encode()
     token_headers =  {
@@ -20,10 +28,15 @@ class Voip:
             "Authorization": "Basic TnZvaXBBcGlWMjpUblp2YVhCQmNHbFdNakl3TWpFPQ==",
         }
 
-    voip_dict = Dicionarios.voip
+    db = BancoDados("voip")
 
     @staticmethod
     def verificar_expediente(agenda) -> list:
+        """
+        Função para verificar se o operador cadastrado na interface, está dentro
+        do período de sobre-aviso.
+        """
+
         contatos = []
         now = datetime.now(pytz.timezone("Brazil/East")).replace(tzinfo=None)
 
@@ -35,14 +48,18 @@ class Voip:
                 print(f"O expediente já acabou! ({str(now)} > {contato['fim']})")
                 continue
             else:
-                contatos.append([contato["name"], contato["phone"]])
+                contatos.append([contato["nome"], contato["telefone"]])
 
         return contatos
 
     @classmethod
     def carregar_contatos(cls) -> list:
+        """
+        Função para extrair lista de contatos cadastrados na interface WEB.
+        """
+
         agenda = []
-        parametros = BancoDados.get_contato_emergencia()
+        parametros = cls.db.get_contato_emergencia()
 
         for i in range(len(parametros)):
             try:
@@ -61,6 +78,10 @@ class Voip:
 
     @classmethod
     def carregar_token(cls) -> str:
+        """
+        Função para carregar token de autenticação NVoip.
+        """
+
         try:
             request = Request("https://api.nvoip.com.br/v2/oauth/token", data=cls.token_data, headers=cls.token_headers)
             response_body = json.loads(urlopen(request).read())
@@ -68,11 +89,15 @@ class Voip:
             return f"Bearer {response_body['access_token']}"
 
         except Exception as e:
-            logger.debug(f"[VOIP] Não foi possível carregar a token de acesso Nvoip. Exception: \"{repr(e)}\" ")
+            logger.debug(f"[VOIP] Não foi possível carregar a token de acesso Nvoip. Exception: \"{repr(e)}\"")
             return None
 
     @classmethod
     def codificar_dados(cls, data, headers) -> None:
+        """
+        Função para codificação do acionamento, para a plataforma da Nvoip.
+        """
+
         encoded = str(json.dumps(data)).encode()
         request = Request(f"https://api.nvoip.com.br/v2/torpedo/voice?napikey={cls.cfg['napikey']}", data=encoded, headers=headers)
         try:
@@ -84,42 +109,62 @@ class Voip:
 
     @classmethod
     def acionar_chamada(cls):
+        """
+        Função para envio de tropedos de voz, baseado nas condições de acionamento
+        do dicioário Voip.
+
+        Primeiramente, chama a função de carregar contatos e realiza a verificação
+        de expediente. Caso não haja nenhum contato cadastrado, ou nenhum operador
+        dentro do horário de expediente, passa a chamar a lista de contatos padrão
+        para não deixar de avisar.
+        Caso a condição de emergência estiver ativada, ignora todas as outras condições
+        e passa a disparar o torpedo de emerência para todos os operadores.
+        Caso sejam apenas condições específicas, realiza uma iteração pelo dicionário
+        de condições e concatena todas as mensagens em uma só, para envio aos
+        operadores.
+        """
+
         headers = {"Content-Type": "application/json", "Authorization": cls.carregar_token()}
 
         if cls.cfg["voz_habilitado"]:
             logger.debug("[VOIP] Enviando voz de Emergencia...")
 
-            if agenda := cls.carregar_contatos() is not None:
+            if cls.carregar_contatos() is not None:
+                agenda = cls.carregar_contatos()
                 lista_contatos = cls.verificar_expediente(agenda)
             else:
                 logger.info("[VOIP] Lista de contatos vazia! Carregando lista de contatos padrão.")
                 lista_contatos = cls.lista_padrao
 
-            if cls.voip_dict["EMERGENCIA"][0]:
+            if dct.voip["EMERGENCIA"][0]:
                 for contato in lista_contatos:
                     logger.info(f"[VOIP] Disparando torpedo de voz para: {contato[0]} ({contato[1]})")
                     data = {
                         "caller": f"{cls.cfg['caller_voip']}",
                         "called": f"{contato[1]}",
-                        "audios": [{"audio": f"{cls.voip_dict['EMERGENCIA'][1]}", "positionAudio": 1,}],
+                        "audios": [{"audio": f"{dct.voip['EMERGENCIA'][1]}", "positionAudio": 1,}],
                         "dtmfs": [],
                     }
                     cls.codificar_dados(data, headers)
-                    sleep(5)
-                cls.voip_dict["EMERGENCIA"][0] = False
+                dct.voip["EMERGENCIA"][0] = False
             else:
-                for _, vl in cls.voip_dict.items():
-                    if vl[0]:
-                        for contato in lista_contatos:
-                            logger.info(f"[VOIP] Disparando torpedo de voz para: {contato[0]} ({contato[1]})")
-                            data = {
-                                "caller": f"{cls.cfg['caller_voip']}",
-                                "called": f"{contato[1]}",
-                                "audios": [{"audio": f"{vl[1]}", "positionAudio": 1,}],
-                                "dtmfs": [],
-                            }
-                            cls.codificar_dados(data, headers)
-                            sleep(25)
-                        vl[0] = False
+                todos = []
+                for _, vl in dct.voip.items():
+                    if vl[0] and vl[1] == 0:
+                        todos.append(vl[2])
+                        vl[1] = 1
+
+                mensagem = "".join(i for i in todos)
+
+                for contato in lista_contatos:
+                    logger.info(f"[VOIP] Disparando torpedo de voz para: {contato[0]} ({contato[1]})")
+                    data = {
+                        "caller": f"{cls.cfg['caller_voip']}",
+                        "called": f"{contato[1]}",
+                        "audios": [{"audio": f"{mensagem}", "positionAudio": 1,}],
+                        "dtmfs": [],
+                    }
+                    cls.codificar_dados(data, headers)
+
         else:
             logger.info("[VOIP] Torpedo de voz desativado. Para habilitar envio, favor alterar valor \"voz_habilitado = true\" no arquivo \"voip_config.json\".")

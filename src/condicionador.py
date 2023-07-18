@@ -4,8 +4,8 @@ __credits__ = ["Diego Basgal" , ...]
 __description__ = "Este módulo corresponde a implementação da lógica de Condicionadores."
 
 from usina import *
+from funcoes.leitura import *
 from dicionarios.const import *
-from leitura_escrita.leitura import *
 
 from unidade_geracao import UnidadeGeracao
 

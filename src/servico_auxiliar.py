@@ -1,7 +1,6 @@
-__version__ = "0.2"
-__authors__ = "Diego Basgal", "Henrique Pfeifer"
-__credits__ = ["Lucas Lavratti", ...]
-__description__ = "Este módulo corresponde a implementação dos setores da Usina."
+__version__ = "0.1"
+__author__ = "Diego Basgal", "Henrique Pfeifer"
+__description__ = "Este módulo corresponde a implementação da operação do Serviço Auxiliar."
 
 import logging
 import traceback
@@ -19,13 +18,19 @@ from funcoes.escrita import EscritaModBusBit as EMB
 logger = logging.getLogger("__main__")
 
 class ServicoAuxiliar(Usina):
-    
+
+    # ATRIBUIÇÃO DE VARIÁVEIS
+
     clp = cli.clp
 
     condicionadores: "list[CondicionadorBase]" = []
     condicionadores_essenciais: "list[CondicionadorBase]" = []
-    
+
     def resetar_emergencia(cls) -> "bool":
+        """
+        Função para acionar comandos de reset de TRIPS/Alarmes
+        """
+
         try:
             res = EMB.escrever_bit(cls.clp["SA"], REG_CLP["SA"]["RESET_FALHAS_BARRA_CA"], bit=0, valor=1)
             res = EMB.escrever_bit(cls.clp["SA"], REG_CLP["SA"]["RESET_FALHAS_SISTEMA_AGUA"], bit=1, valor=1)
@@ -38,7 +43,14 @@ class ServicoAuxiliar(Usina):
             return False
 
     def verificar_condicionadores(cls) -> "list[CondicionadorBase]":
-        if [condic.ativo for condic in cls.condicionadores_essenciais]:
+        """
+        Função para verificação de TRIPS/Alarmes.
+
+        Verifica os condicionadores ativos e retorna lista com os mesmos para a função de verificação
+        da Classe da Usina determinar as ações necessárias.
+        """
+
+        if True in (condic.ativo for condic in cls.condicionadores_essenciais):
             condics_ativos = [condic for condics in [cls.condicionadores_essenciais, cls.condicionadores] for condic in condics if condic.ativo]
 
             logger.debug("")
@@ -51,9 +63,16 @@ class ServicoAuxiliar(Usina):
             return []
 
     def verificar_leituras(cls) -> "None":
+        """
+        Função para verificação de leituras por acionamento temporizado.
+
+        Verifica leituras específcas para acionamento da manuteção. As leituras são disparadas
+        em períodos separados por um tempo pré-definido.
+        """
+
         if cls.leitura_falha_bomba_drenagem_1.valor:
             logger.warning("[SA] Houve uma falha na bomba 1 do poço de drenagem. Favor verificar.")
-        
+
         if cls.leitura_falha_bomba_drenagem_2.valor:
             logger.warning("[SA] Houve uma falha na bomba 2 do poço de drenagem. Favor verificar.")
 
@@ -143,7 +162,7 @@ class ServicoAuxiliar(Usina):
             dct.voip["SISTEMA_SEGURANCA_ALARME_ATUADO"][0] = True
         elif not cls.leitura_alarme_sistema_seguraca_atuado.valor and dct.voip["SISTEMA_SEGURANCA_ALARME_ATUADO"][0]:
             dct.voip["SISTEMA_SEGURANCA_ALARME_ATUADO"][0] = False
-            
+
         if cls.leitura_falha_tubo_succao_bomba_recalque.valor and not dct.voip["BOMBA_RECALQUE_TUBO_SUCCAO_FALHA"][0]:
             logger.warning("[SA] Houve uma falha na sucção da bomba de recalque. Favor verificar.")
             dct.voip["BOMBA_RECALQUE_TUBO_SUCCAO_FALHA"][0] = True
@@ -151,6 +170,10 @@ class ServicoAuxiliar(Usina):
             dct.voip["BOMBA_RECALQUE_TUBO_SUCCAO_FALHA"][0] = False
 
     def carregar_leituras(cls) -> "None":
+        """
+        Função para carregamento de leituras necessárias para a operação.
+        """
+
         # CONDICIONADORES ESSENCIAIS
         # Normalizar
         cls.leitura_sem_emergencia_sa = LeituraModbusBit(cls.clp["SA"], REG_CLP["SA"]["SEM_EMERGENCIA"], bit=13, invertido=True, descricao="[SA] Emergência")
@@ -194,13 +217,13 @@ class ServicoAuxiliar(Usina):
 
         cls.leitura_disj_125vcc_fechados = LeituraModbusBit(cls.clp["SA"], REG_CLP["SA"]["DISJUNTORES_125VCC_FECHADOS"], bit=11, invertido=True, descricao="[SA] Disjuntores 125Vcc Fechados")
         cls.condicionadores.append(CondicionadorBase(cls.leitura_disj_125vcc_fechados, CONDIC_INDISPONIBILIZAR))
-        
+
         cls.leitura_comando_24vcc_com_tensao = LeituraModbusBit(cls.clp["SA"], REG_CLP["SA"]["COM_TENSAO_COMANDO_24VCC"], bit=15, invertido=True, descricao="[SA] Comando 24Vcc Com Tensão")
         cls.condicionadores.append(CondicionadorBase(cls.leitura_comando_24vcc_com_tensao, CONDIC_INDISPONIBILIZAR))
-        
+
         cls.leitura_comando_125vcc_com_tensao = LeituraModbusBit(cls.clp["SA"], REG_CLP["SA"]["COM_TENSAO_COMANDO_125VCC"], bit=14, invertido=True, descricao="[SA] Comando 125Vcc Com Tensão")
         cls.condicionadores.append(CondicionadorBase(cls.leitura_comando_125vcc_com_tensao, CONDIC_INDISPONIBILIZAR))
-        
+
         cls.leitura_alimentacao_125vcc_com_tensao = LeituraModbusBit(cls.clp["SA"], REG_CLP["SA"]["COM_TENSAO_ALIMENTACAO_125VCC"], bit=13, invertido=True, descricao="[SA] Alimentação 125Vcc Com Tensão")
         cls.condicionadores.append(CondicionadorBase(cls.leitura_alimentacao_125vcc_com_tensao, CONDIC_INDISPONIBILIZAR))
 

@@ -1,5 +1,6 @@
 __version__ = "0.1"
-__author__ = "Diego Basgal"
+__author__ = "Diego Basgal", "Henrique Pfeifer"
+__credits__ = ["Lucas Lavratti", ...]
 __description__ = "Este módulo corresponde a implementação da operação da Subestação."
 
 import logging
@@ -14,8 +15,8 @@ from condicionador import *
 from funcoes.leitura import *
 from dicionarios.const import *
 
-from bay import Bay
 from usina import Usina
+from bay import Bay as BAY
 from conector import ClientesUsina as cli
 from funcoes.escrita import EscritaModBusBit as EMB
 
@@ -23,29 +24,44 @@ logger = logging.getLogger("__main__")
 
 class Subestacao(Usina):
 
+    # ATRIBUIÇÃO DE VARIÁVEIS
+
     clp = cli.clp
+    rele = cli.rele
+
+    dj_bay_aberto: "bool" = False
 
     condicionadores: "list[CondicionadorBase]" = []
     condicionadores_essenciais: "list[CondicionadorBase]" = []
 
+    dj_se: "LeituraModbusBit" = LeituraModbusBit(
+        rele["SE"],
+        REG_RELE["SE"]["DJ_LINHA_FECHADO"],
+        bit=0,
+        descricao="[SE][RELE] Disjuntor Linha Status"
+    )
     tensao_rs: "LeituraModbus" = LeituraModbus(
         clp["SA"],
         REG_CLP["SE"]["LT_VAB"],
-        descricao="[SE] Status Tensão VAB"
+        descricao="[SE] Leitura Tensão VAB"
     )
     tensao_st: "LeituraModbus" = LeituraModbus(
         clp["SA"],
         REG_CLP["SE"]["LT_VBC"],
-        descricao="[SE] Status Tensão VBC"
+        descricao="[SE] Leitura Tensão VBC"
     )
     tensao_tr: "LeituraModbus" = LeituraModbus(
         clp["SA"],
         REG_CLP["SE"]["LT_VCA"],
-        descricao="[SE] Status Tensão VCA"
+        descricao="[SE] Leitura Tensão VCA"
     )
 
     @classmethod
     def resetar_emergencia(cls) -> "bool":
+        """
+        Função para acionar comandos de reset de TRIPS/Alarmes
+        """
+
         try:
             res = EMB.escrever_bit(cls.clp["SA"], REG_CLP["SE"]["CMD_SE_REARME_BLOQUEIO_GERAL"], bit=0, valor=1)
             res = EMB.escrever_bit(cls.clp["SA"], REG_CLP["SE"]["CMD_SE_REARME_86T"], bit=1, valor=1)
@@ -55,39 +71,81 @@ class Subestacao(Usina):
             return res
 
         except Exception:
-            logger.exception(f"[SE] Houve um erro ao realizar o reset geral.")
+            logger.exception(f"[SE] Houve um erro ao realizar o Reset de Emergência.")
             logger.debug(f"[SE] Traceback: {traceback.format_exc()}")
             return False
 
     @classmethod
-    def fechar_dj_linha(cls) -> "bool":
+    def fechar_dj_linha(cls) -> "int":
+        """
+        Função para acionamento do comando de fechamento do Disjuntor de Linha.
+
+        Verifica se o Disjuntor de Linha está fechado e caso não estja, chama a função de verificação
+        de condições de fechamento do Disjuntor. Caso retorne que o Disjuntor do BAY está aberto, sinaliza
+        para a função de normalização da usina, que há a necessidade de realizar o fchamento do Disjuntor
+        do BAY. Caso a verificação retorne que há uma falha com as condições, sinaliza que houve uma falha
+        e impede o fechamento do Disjuntor. Caso o Disjuntor já esteja fechado, avisa o operador e retorna
+        o sinal de fechamento OK.
+        """
+        
         try:
-            if cls.verificar_dj_linha():
-                res = EMB.escrever_bit(cls.clp["SA"], REG_CLP["SE"]["CMD_SE_FECHA_52L"], bit=4, valor=1)
-                return res
+            if not cls.dj_se.valor:
+                if cls.verificar_dj_linha():
+                    EMB.escrever_bit(cls.clp["SA"], REG_CLP["SE"]["CMD_SE_FECHA_52L"], bit=4, valor=1)
+                    return DJL_FECHAMENTO_OK
+            
+                elif cls.dj_bay_aberto:
+                    logger.info("[SE] Foi identificado que o Disjuntor do BAY está aberto. Adicionando condição para fechamento...")
+                    return DJL_DJBAY_ABERTO
+
+                else:
+                    logger.warning("[SE] Não foi possível realizar o fechamento do Disjuntor de Linha.")
+                    return DJL_FALHA_FECHAMENTO
+
+            else:
+                logger.debug("[SE] O Disjuntor de Linha já está fechado")
+                return DJL_FECHAMENTO_OK
 
         except Exception:
             logger.exception(f"[SE] Houve um erro ao realizar o fechamento do Disjuntor de Linha.")
             logger.debug(f"[SE] Traceback: {traceback.format_exc()}")
+            return DJL_FALHA_FECHAMENTO
 
     @classmethod
     def verificar_dj_linha(cls) -> "bool":
-        try:
-            flags = 0
+        """
+        Função para verificação de condições de fechamento do Disjuntor de Linha.
 
-            if not cls.dj_bay_fechado.valor:
-                logger.warning("[SE] O disjuntor do Bay está aberto!")
+        Verifica as seguintes condições:
+        - Se o Disjuntor do BAY está aberto;
+        - Se há algum sinal de trip no Relé do Tranformador Elevador;
+        - Se há qualquer leitura de corrente na barra do BAY (Barra Morta = False & Barra Viva = True);
+        - Se a Seccionadora do BAY está fechada;
+        - Se há algum sinal do alarme no Relé de Buchholz do Transformador Elevador;
+        - Se a mola do Disjuntor está carregada;
+        - Se o Disjuntor está em modo Remoto.
+        Caso qualquer das condições acima retornar diferente do esperado, avisa o operador e impede o
+        comando de fechamento do Disjuntor.
+        """
+
+        flags = 0
+        logger.info("[SE] Verificando condições de fechamento do Disjuntor de Linha...")
+
+        try:
+            if not BAY.dj_bay.valor:
+                logger.warning("[SE] O Disjuntor do Bay está aberto!")
+                cls.dj_bay_aberto = True
                 flags += 1
 
             if cls.trip_rele_te.valor:
                 logger.warning("[SE] O sinal de trip do relé do transformador elevador está ativado!")
                 flags += 1
 
-            if not cls.barra_bay_morta.valor and cls.barra_bay_viva.valor:
+            if not BAY.barra_morta.valor and BAY.barra_viva.valor:
                 logger.warning("[SE] Foi identificada leitura de corrente na barra do Bay!")
                 flags += 1
 
-            if not cls.secc_bay_fechada.valor:
+            if not BAY.secc_fechada.valor:
                 logger.warning("[SE] A seccionadora do Bay está aberta!")
                 flags += 1
 
@@ -115,10 +173,14 @@ class Subestacao(Usina):
 
     @classmethod
     def verificar_tensao(cls) -> "bool":
+        """
+        Função para verificação de Tensão na linha da Subestação.
+        """
+
         try:
-            if (TENSAO_LINHA_BAIXA < cls.tensao_rs < TENSAO_LINHA_ALTA) \
-                and (TENSAO_LINHA_BAIXA < cls.tensao_st < TENSAO_LINHA_ALTA) \
-                and (TENSAO_LINHA_BAIXA < cls.tensao_tr < TENSAO_LINHA_ALTA):
+            if (TENSAO_LINHA_BAIXA < cls.tensao_rs.valor < TENSAO_LINHA_ALTA) \
+                and (TENSAO_LINHA_BAIXA < cls.tensao_st.valor < TENSAO_LINHA_ALTA) \
+                and (TENSAO_LINHA_BAIXA < cls.tensao_tr.valor < TENSAO_LINHA_ALTA):
                 return True
             else:
                 logger.warning("[SE] Tensão da linha fora do limite.")
@@ -129,8 +191,19 @@ class Subestacao(Usina):
             logger.debug(f"[SE] Traceback: {traceback.format_exc()}")
             return False
 
+    # TODO -> Mudar lógica para o bay
     @classmethod
     def aguardar_tensao(cls) -> "bool":
+        """
+        Função para normalização após a queda de tensão da linha de transmissão.
+
+        Primeiramente, caso haja uma queda, será chamada a função com o temporizador de
+        espera com tempo pré-definido. Caso a tensão seja reestabelecida dentro do limite
+        de tempo, é chamada a funcão de normalização da Usina. Se o temporizador passar do
+        tempo, é chamada a função de acionamento de emergência e acionado tropedo de emergência
+        por Voip.
+        """
+
         if cls.status_tensao == TENSAO_VERIFICAR:
             cls.status_tensao = TENSAO_AGUARDO
             logger.debug("[SE] Iniciando o timer para a normalização da tensão na linha.")
@@ -151,6 +224,10 @@ class Subestacao(Usina):
 
     @classmethod
     def temporizar_tensao(cls, delay: "int") -> "None":
+        """
+        Função de temporizador para espera de normalização de tensão da linha de transmissão.
+        """
+
         while time() <= time() + delay:
             if cls.verificar_tensao():
                 cls.status_tensao = TENSAO_REESTABELECIDA
@@ -160,6 +237,13 @@ class Subestacao(Usina):
 
     @classmethod
     def verificar_condicionadores(cls) -> "list[CondicionadorBase]":
+        """
+        Função para verificação de TRIPS/Alarmes.
+
+        Verifica os condicionadores ativos e retorna lista com os mesmos para a função de verificação
+        da Classe da Usina determinar as ações necessárias.
+        """
+
         if True in (condic.ativo for condic in cls.condicionadores_essenciais):
             condics_ativos = [condic for condics in [cls.condicionadores_essenciais, cls.condicionadores] for condic in condics if condic.ativo]
 
@@ -174,6 +258,13 @@ class Subestacao(Usina):
 
     @classmethod
     def verificar_leituras(cls) -> "None":
+        """
+        Função para verificação de leituras por acionamento temporizado.
+
+        Verifica leituras específcas para acionamento da manuteção. As leituras são disparadas
+        em períodos separados por um tempo pré-definido.
+        """
+
         if not cls.leitura_seletora_52l_remoto.valor:
             logger.warning("[SE] O Disjuntor 52L saiu do modo remoto. Favor verificar.")
 
@@ -220,9 +311,10 @@ class Subestacao(Usina):
             dct.voip["TE_ALARME_TEMPERATURA_ENROLAMENTO"][0] = False
 
     @classmethod
-    def carregar_leituras(cls) -> None:
-        # Satatus Disjuntor 52L
-        cls.dj_se = LeituraModbusBit(cls.rele["SE"], REG_RELE["SE"]["DJ_LINHA_FECHADO"], bit=0, descricao="[SE][RELE] Disjuntor Linha Status")
+    def carregar_leituras(cls) -> "None":
+        """
+        Função para carregamento de leituras necessárias para a operação.
+        """
 
         # Pré-condições de fechamento do Dj52L
         cls.trip_rele_te = LeituraModbusBit(cls.rele["TE"], REG_RELE["TE"]["RELE_ESTADO_TRIP"], bit=15, descricao="[TE][RELE] Transformador Elevador Trip")
@@ -230,11 +322,6 @@ class Subestacao(Usina):
         cls.mola_carregada = LeituraModbusBit(cls.clp["SA"], REG_CLP["SE"]["52L_MOLA_CARREGADA"], bit=16, descricao="[SE] Disjuntor Linha Mola Carregada")
         cls.dj52l_remoto = LeituraModbusBit(cls.clp["SA"], REG_CLP["SE"]["52L_SELETORA_REMOTO"], bit=10, descricao="[SE] Disjuntor Linha Seletora Modo Remoto")
         cls.alarme_gas_te = LeituraModbusBit(cls.clp["SA"], REG_CLP["SE"]["TE_ALARME_RELE_BUCHHOLZ"], bit=22, descricao="[SE] Transformador Elevador Alarme Relé Buchholz")
-
-        cls.secc_bay_fechada = LeituraModbusBit(cls.rele["BAY"], REG_RELE["BAY"]["SECC_FECHADA"], bit=4, descricao="[BAY][RELE] Seccionadora Fechada")
-        cls.barra_bay_viva = LeituraModbusBit(cls.rele["BAY"], REG_RELE["BAY"]["ID_BARRA_VIVA"], bit=1, descricao="[BAY][RELE] Identificação Barra Viva")
-        cls.dj_bay_fechado = LeituraModbusBit(cls.rele["BAY"], REG_RELE["BAY"]["DJ_LINHA_FECHADO"], bit=0, descricao="[BAY][RELE] Disjuntor Linha Status")
-        cls.barra_bay_morta = LeituraModbusBit(cls.rele["BAY"], REG_RELE["BAY"]["ID_BARRA_MORTA"], bit=7, descricao="[BAY][RELE] Identificação Barra Morta")
 
         # CONDICIONADORES ESSENCIAIS
         # Normalizar

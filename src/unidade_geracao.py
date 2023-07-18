@@ -24,8 +24,8 @@ class UnidadeGeracao(Usina):
         else:
             self.__id = id
 
-        self.db = db
-        self.cfg = cfg
+        self.__db = db
+        self.__cfg = cfg
 
         # ATRIBUIÇÃO DE VAIRIÁVEIS
 
@@ -104,7 +104,7 @@ class UnidadeGeracao(Usina):
     @property
     def etapa_atual(self) -> "int":
         try:
-            if response := self.__leitura_etapa > 0:
+            if response := self.__leitura_etapa.valor > 0:
                 self._ultima_etapa_atual = response
                 return response
             else:
@@ -123,10 +123,10 @@ class UnidadeGeracao(Usina):
     @setpoint.setter
     def setpoint(self, var: "int"):
 
-        if var < self.cfg["pot_minima"]:
+        if var < self.__cfg["pot_minima"]:
             self._setpoint = 0
-        elif var > self.cfg[f"pot_maxima_ug{self.id}"]:
-            self._setpoint = self.cfg[f"pot_maxima_ug{self.id}"]
+        elif var > self.__cfg[f"pot_maxima_ug{self.id}"]:
+            self._setpoint = self.__cfg[f"pot_maxima_ug{self.id}"]
         else:
             self._setpoint = int(var)
 
@@ -237,7 +237,7 @@ class UnidadeGeracao(Usina):
         com o valor das constantes de Estado.
         """
 
-        estado = self.db.get_ultimo_estado_ug(self.id)[0]
+        estado = self.__db.get_ultimo_estado_ug(self.id)[0]
 
         if estado == None:
             self.__next_state = StateDisponivel(self)
@@ -486,11 +486,11 @@ class UnidadeGeracao(Usina):
 
         ganho = 1 - max(0, [sum(condic) for condic in self.condicionadores_atenuadores])
         aux = self.setpoint
-        if (self.setpoint > self.cfg["pot_minima"]) and (self.setpoint * ganho) > self.cfg["pot_minima"]:
+        if (self.setpoint > self.__cfg["pot_minima"]) and (self.setpoint * ganho) > self.__cfg["pot_minima"]:
             self.setpoint = self.setpoint * ganho
 
-        elif (self.setpoint * ganho < self.cfg["pot_minima"]) and (self.setpoint > self.cfg["pot_minima"]):
-            self.setpoint = self.cfg["pot_minima"]
+        elif (self.setpoint * ganho < self.__cfg["pot_minima"]) and (self.setpoint > self.__cfg["pot_minima"]):
+            self.setpoint = self.__cfg["pot_minima"]
 
         logger.debug(f"[UG{self.id}] SP {aux} * GANHO {ganho} = {self.setpoint}")
 
@@ -498,10 +498,10 @@ class UnidadeGeracao(Usina):
     def controle_etapas(self) -> None:
         if self.etapa_atual == UG_PARANDO:
             self.cp[f"CP{self.id}"].fechar_comporta() if self.leitura_potencia < 300 else ...
-            self.controle_comportas() if self.setpoint >= self.cfg["pot_minima"] else ...
+            self.controle_comportas() if self.setpoint >= self.__cfg["pot_minima"] else ...
 
         elif self.etapa_atual == UG_PARADA:
-            self.controle_comportas() if self.setpoint >= self.cfg["pot_minima"] else ...
+            self.controle_comportas() if self.setpoint >= self.__cfg["pot_minima"] else ...
 
         elif self.etapa_atual == UG_SINCRONIZANDO:
             self.parar(), logger.warning(f"[UG{self.id}] Parando a UG. (SP enviado = 0).") if self.setpoint == 0 else ...

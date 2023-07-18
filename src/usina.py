@@ -17,26 +17,25 @@ from condicionador import *
 from dicionarios.reg import *
 from dicionarios.const import *
 
-from conector import ClientesUsina
+from comporta import Comporta
+from mensageiro.voip import Voip
 from banco_dados import BancoDados
 from unidade_geracao import UnidadeGeracao
 from condicionador import CondicionadorBase
 
-from mensageiro.voip import Voip
-from leitura_escrita.leitura import *
-from leitura_escrita.escrita import *
-from conversor_protocolo.conversor import *
+from funcoes.leitura import *
+from funcoes.escrita import *
 
-from bay import Bay
-from comporta import Comporta
-from subestacao import Subestacao
-from tomada_agua import TomadaAgua
-from servico_auxiliar import ServicoAuxiliar
+from bay import Bay as BAY
+from subestacao import Subestacao as SE
+from tomada_agua import TomadaAgua as TDA
+from conector import ClientesUsina as cli
+from servico_auxiliar import ServicoAuxiliar as SA
 
 logger = logging.getLogger("__main__")
 
 class Usina:
-    def __init__(self, cfg: dict = None):
+    def __init__(self, cfg: "dict" = None):
 
         # VERIFICAÇÃO DE ARGUMENTOS
 
@@ -45,20 +44,15 @@ class Usina:
         else:
             self.cfg = cfg
 
-        self.clp = ClientesUsina.clp
-        self.rele = ClientesUsina.rele
+        self.clp = cli.clp
+        self.rele = cli.rele
 
         # INCIALIZAÇÃO DE OBJETOS DA USINA
 
-        self.bay= Bay(self)
-        self.se = Subestacao(self)
-        self.tda = TomadaAgua(self)
-        self.sa = ServicoAuxiliar(self)
         self.ug1 = UnidadeGeracao(self, 1)
         self.ug2 = UnidadeGeracao(self, 2)
 
         self.ugs: "list[UnidadeGeracao]" = [self.ug1, self.ug2]
-        self.setores = [self.bay, self.se, self.tda, self.sa]
 
         self.ug1.lista_ugs = self.ugs
         self.ug2.lista_ugs = self.ugs
@@ -193,12 +187,11 @@ class Usina:
 
     def normalizar_usina(self) -> bool:
         logger.debug("[USN] Normalizando...")
-        logger.debug(f"[USN] Última tentativa: {self.ultima_tentativa_norm}. Tensão na linha: RS->{self.se.tensao_rs:2.1f}kV / ST->{self.se.tensao_st:2.1f}kV / TR->{self.se.tensao_tr:2.1f}kV")
+        logger.debug(f"[USN] Última tentativa de normalização:   {self.ultima_tentativa_norm.strftime('%d-%m-%Y %H:%M:%S')}")
+        logger.debug(f"[USN] Tensão na linha:                    RS -> \"{SE.tensao_rs.valor:2.1f} kV\" | ST -> \"{SE.tensao_st.valor:2.1f} kV\" | TR -> \"{SE.tensao_tr.valor:2.1f} kV\"")
 
-        if not self.bay.verificar_status_DjBay():
-            logger.warning("[USN] Enviando comando de fechamento de Disjuntor do Bay")
-            if not self.bay.realizar_fechamento_DjBay():
-                return None
+        if not BAY.fechar_dj_bay():
+            return None
 
         if not self.se.dj_se:
             logger.warning("[USN] Enviando comando de fechamento do Disjuntor 52L")

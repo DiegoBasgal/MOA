@@ -1,5 +1,6 @@
 __version__ = "0.1"
-__author__ = "Diego Basgal"
+__author__ = "Diego Basgal", "Henrique Pfeifer"
+__credits__ = ["Lucas Lavratti", ...]
 __description__ = "Este módulo corresponde a implementação da operação da Tomada da Água."
 
 import logging
@@ -16,6 +17,8 @@ logger = logging.getLogger("__main__")
 
 class TomadaAgua(Usina):
 
+    # ATRIBUIÇÃO DE VARIÁVEIS
+
     clp = cli.clp
 
     erro_nv: "float" = 0
@@ -31,7 +34,7 @@ class TomadaAgua(Usina):
         REG_CLP["TDA"]["NIVEL_MONTANTE"],
         descricao="[TDA] Leitura Nível Montante"
     )
-    status_lp: "LeituraModbus" = LeituraModbus(
+    status_lg: "LeituraModbus" = LeituraModbus(
         clp["TDA"],
         REG_CLP["TDA"]["LG_OPERACAO_MANUAL"],
         descricao="[TDA] Status Limpa Grades"
@@ -50,12 +53,31 @@ class TomadaAgua(Usina):
 
     @classmethod
     def atualizar_montante(cls) -> "None":
+        """
+        Função para atualizar valores anteriores de nível montante e erro de cálculo para
+        cálculos futuros de ajuste de potência.
+        """
+
         cls.nv_montante_recente = cls.nv_montante
         cls.erro_nv_anterior = cls.erro_nv
         cls.erro_nv = cls.nv_montante_recente - cls.cfg["nv_alvo"]
 
     @classmethod
     def controlar_reservatorio(cls) -> "int":
+        """
+        Função para controle de níveis do reservatório.
+
+        Realiza a leitura de nível montante e determina qual condição entrar. Se
+        o nível estiver acima do máximo, verifica se atingiu o Maximorum. Nesse
+        caso é acionada a emergência da Usina, porém se for apenas vertimento,
+        distribui a potência máxima para as Unidades.
+        Caso a leitura retornar que o nível está abaixo do mínimo, verifica antes
+        se atingiu o fundo do reservatório, nesse caso é acionada a emergência.
+        Se o valor ainda estiver acima do nível de fundo, será distribuída a
+        potência 0 para todas as Unidades e aciona a espera pelo nível.
+        Caso a leitura esteja dentro dos limites normais, é chamada a função para
+        calcular e distribuir a potência para as Unidades.
+        """
 
         if cls.nv_montante >= cls.cfg["nv_maximo"]:
             logger.debug("[TDA] Nível montante acima do máximo.")
@@ -98,6 +120,13 @@ class TomadaAgua(Usina):
 
     @classmethod
     def verificar_condicionadores(cls) -> "list[CondicionadorBase]":
+        """
+        Função para verificação de TRIPS/Alarmes.
+
+        Verifica os condicionadores ativos e retorna lista com os mesmos para a função de verificação
+        da Classe da Usina determinar as ações necessárias.
+        """
+
         if True in (condic.ativo for condic in cls.condicionadores_essenciais):
             condics_ativos = [condic for condics in [cls.condicionadores_essenciais, cls.condicionadores] for condic in condics if condic.ativo]
 
@@ -112,6 +141,13 @@ class TomadaAgua(Usina):
 
     @classmethod
     def verificar_leituras(cls) -> "None":
+        """
+        Função para verificação de leituras por acionamento temporizado.
+
+        Verifica leituras específcas para acionamento da manuteção. As leituras são disparadas
+        em períodos separados por um tempo pré-definido.
+        """
+
         if not cls.leitura_filtro_limpo_uh.valor:
             logger.warning("[TDA] O filtro da UH da TDA está sujo. Favor realizar limpeza/troca.")
 
@@ -147,6 +183,10 @@ class TomadaAgua(Usina):
 
     @classmethod
     def carregar_leituras(cls) -> "None":
+        """
+        Função para carregamento de leituras necessárias para a operação.
+        """
+
         # CONDICIONADORES ESSENCIAIS
         # Normalizar
         cls.leitura_sem_emergencia_tda = LeituraModbusBit(cls.clp["TDA"], REG_CLP["TDA"]["SEM_EMERGENCIA"], bit=24, invertido=True, descricao="[TDA] Emergência")
