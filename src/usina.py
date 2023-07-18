@@ -54,9 +54,6 @@ class Usina:
 
         self.ugs: "list[UnidadeGeracao]" = [self.ug1, self.ug2]
 
-        self.ug1.lista_ugs = self.ugs
-        self.ug2.lista_ugs = self.ugs
-
         self.cp: "dict[str, Comporta]" = {}
         self.cp["CP1"] = Comporta(1)
         self.cp["CP2"] = Comporta(2)
@@ -151,16 +148,22 @@ class Usina:
         self.controle_ie = self.ajustar_ie_padrao()
 
     def verificar_condicionadores(self) -> int:
-        flag_bay = self.bay.verificar_condicionadores()
-        flag_se = self.se.verificar_condicionadores()
-        flag_tda = self.tda.verificar_condicionadores()
-        flag_sa = self.sa.verificar_condicionadores()
-        if CONDIC_INDISPONIBILIZAR in (flag_bay, flag_se, flag_tda, flag_sa):
-            return CONDIC_INDISPONIBILIZAR
-        elif CONDIC_NORMALIZAR in (flag_bay, flag_se, flag_tda, flag_sa):
-            return CONDIC_NORMALIZAR
-        else:
-            return CONDIC_IGNORAR
+        flag = CONDIC_IGNORAR
+
+        lst_sa = SA.verificar_condicionadores()
+        lst_se = SE.verificar_condicionadores()
+        lst_bay = BAY.verificar_condicionadores()
+        lst_tda = TDA.verificar_condicionadores()
+
+        condics = [condic for condics in [lst_sa, lst_se, lst_bay, lst_tda] for condic in condics]
+
+        for condic in condics:
+            if condic.gravidade == CONDIC_INDISPONIBILIZAR:
+                return CONDIC_INDISPONIBILIZAR
+            elif condic.gravidade == CONDIC_NORMALIZAR:
+                flag = CONDIC_NORMALIZAR
+            
+        return flag
 
     def reconhecer_emergencia(self) -> None:
         logger.info("[USN] Reconhecendo emergência.")
@@ -168,10 +171,10 @@ class Usina:
 
     def resetar_emergencia(self) -> None:
         logger.info("[USN] Acionando reset de emergência.")
-        logger.debug("[USN] Bay resetado.") if self.bay.resetar_emergencia() else logger.info("[USN] Reset de emergência do Bay falhou.")
-        logger.debug("[USN] Subestação resetada.") if self.se.resetar_emergencia() else logger.info("[USN] Reset de emergência da subestação falhou.")
-        logger.debug("[USN] Tomada da Água resetada.") if self.tda.resetar_emergencia else logger.info("[USN] Reset de emergência da Tomada da Água falhou.")
-        logger.debug("[USN] Serviço Auxiliar resetado.") if self.sa.resetar_emergencia() else logger.info("[USN] Reset de emergência do serviço auxiliar falhou.")
+        logger.debug("[USN] Bay resetado.") if BAY.resetar_emergencia() else logger.info("[USN] Reset de emergência do Bay falhou.")
+        logger.debug("[USN] Subestação resetada.") if SE.resetar_emergencia() else logger.info("[USN] Reset de emergência da subestação falhou.")
+        logger.debug("[USN] Tomada da Água resetada.") if TDA.resetar_emergencia else logger.info("[USN] Reset de emergência da Tomada da Água falhou.")
+        logger.debug("[USN] Serviço Auxiliar resetado.") if SA.resetar_emergencia() else logger.info("[USN] Reset de emergência do serviço auxiliar falhou.")
 
     def acionar_emergencia(self):
         try:

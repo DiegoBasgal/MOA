@@ -147,14 +147,6 @@ class UnidadeGeracao(Usina):
         self._codigo_state = var
 
     @property
-    def lista_ugs(self) -> "list[UnidadeGeracao]":
-        return self._lista_ugs
-
-    @lista_ugs.setter
-    def lista_ugs(self, var: "list[UnidadeGeracao]") -> "None":
-        self._lista_ugs = var
-
-    @property
     def condicionadores(self) -> "list[CondicionadorBase]":
         return self._condicionadores
 
