@@ -15,7 +15,7 @@ logger = logging.getLogger("__main__")
 
 class Agendamentos:
     def __init__(self, cfg=None, db: BancoDados=None, usina=None):
-        
+
         # ATRIBUIÇÂO DE VARIÁVEIS PÚBLICAS
 
         self.db = db
@@ -46,6 +46,7 @@ class Agendamentos:
         Verifica se o mesmo agendamento foi criado em um período de tempo pré-definido
         e concatena (marca como executado) para não haver problemas de operação.
         """
+
         limite_entre_agendamentos_iguais = 300
         agendamentos = sorted(agendamentos, key=lambda x:(x[3], x[1]))
         i = 0
@@ -90,18 +91,17 @@ class Agendamentos:
                 self.segundos_passados = 0
 
             logger.debug("")
-            logger.debug(f"[AGN] Data:                               {agendamento[1].strftime('%H:%M:%S %d-%m-%Y')}")
+            logger.debug(f"[AGN] Executar em:                        {agendamento[1].strftime('%H:%M:%S %d-%m-%Y')}")
             logger.debug(f"      Criado por:                         \"{agendamento[6]}\"")
             logger.debug(f"      Comando:                            \"{AGN_STR_DICT[agendamento[3]] if agendamento[3] in AGN_STR_DICT else 'Inexistente'}\"")
             logger.debug("")
 
-            if self.verificar_agendamentos_atrasados(agendamento):
-                return False
+            self.verificar_agendamentos_atrasados(agendamento)
 
             if self.segundos_adiantados <= 60 and not bool(agendamento[4]):
                 logger.info(f"[AGN] Executando agendamento:             {agendamento[0]}")
                 logger.info(f"      Comando:                            \"{AGN_STR_DICT[agendamento[3]]}\"")
-                logger.info(f"      Data:                               {agendamento[9].strftime('%H:%M:%S %d-%m-%Y')}")
+                logger.info(f"      Criado em:                          {agendamento[9].strftime('%H:%M:%S %d-%m-%Y')}")
                 logger.debug("")
 
                 self.verificar_agendamentos_sem_efeito(agendamento)
@@ -227,7 +227,7 @@ class Agendamentos:
         """
         Função para verificar agendamentos das Unidades de Geração.
         """
-        
+
         if agendamento[3] == AGN_UG1_ALTERAR_POT_LIMITE:
             try:
                 novo = float(agendamento[5].replace(",", "."))

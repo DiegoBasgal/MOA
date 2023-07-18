@@ -596,10 +596,10 @@ class OcorrenciasUg:
             logger.critical(f"[OCO-UG{self.__ug.id}] A temperatura do Mancal Guia Contra Escora da UG está muito próxima do limite! ({cd[f'tmp_mancal_guia_contra_ug{self.__ug.id}'].valor_limite} C) | Leitura: {cd[f'tmp_mancal_guia_contra_ug{self.__ug.id}'].valor} C")
 
         if ld[f"pressao_cx_espiral_ug{self.__ug.id}"].valor <= cd[f"pressao_cx_espiral_ug{self.__ug.id}"].valor_base and ld[f"pressao_cx_espiral_ug{self.__ug.id}"].valor != 0 and self.__ug.etapa_atual == UG_SINCRONIZADA:
-            logger.warning(f"[OCO-UG{self.__ug.id}] A pressão Caixa Espiral da UG passou do valor base! ({cd[f'pressao_cx_espiral_ug{self.__ug.id}'].valor_base:03.2f} KGf/m2) | Leitura: {ld[f'pressao_cx_espiral_ug{self.__ug.id}'].valor:03.2f}")
+            logger.debug(f"[OCO-UG{self.__ug.id}] A pressão Caixa Espiral da UG passou do valor base! ({cd[f'pressao_cx_espiral_ug{self.__ug.id}'].valor_base:03.2f} KGf/m2) | Leitura: {ld[f'pressao_cx_espiral_ug{self.__ug.id}'].valor:03.2f}")
 
-        if ld[f"pressao_cx_espiral_ug{self.__ug.id}"].valor <= 16.1 and ld[f"pressao_cx_espiral_ug{self.__ug.id}"].valor != 0 and self.__ug.etapa_atual == UG_SINCRONIZADA:
-            logger.critical(f"[OCO-UG{self.__ug.id}] A pressão Caixa Espiral da UG está muito próxima do limite! ({cd[f'pressao_cx_espiral_ug{self.__ug.id}'].valor_limite:03.2f} KGf/m2) | Leitura: {ld[f'pressao_cx_espiral_ug{self.__ug.id}'].valor:03.2f} KGf/m2")
+        if ld[f"pressao_cx_espiral_ug{self.__ug.id}"].valor <= cd[f"pressao_cx_espiral_ug{self.__ug.id}"].valor_limite and ld[f"pressao_cx_espiral_ug{self.__ug.id}"].valor != 0 and self.__ug.etapa_atual == UG_SINCRONIZADA:
+            logger.debug(f"[OCO-UG{self.__ug.id}] A pressão Caixa Espiral da UG está muito próxima do limite! ({cd[f'pressao_cx_espiral_ug{self.__ug.id}'].valor_limite:03.2f} KGf/m2) | Leitura: {ld[f'pressao_cx_espiral_ug{self.__ug.id}'].valor:03.2f} KGf/m2")
 
 
     def leitura_temporizada(self) -> "None":
@@ -748,9 +748,8 @@ class OcorrenciasUg:
         self.condic_dict[f"tmp_mancal_guia_contra_ug{self.__ug.id}"] = CondicionadorExponencial(self.leitura_dict[f"tmp_mancal_guia_contra_ug{self.__ug.id}"].descr, CONDIC_INDISPONIBILIZAR, self.leitura_dict[f"tmp_mancal_guia_contra_ug{self.__ug.id}"], 100, 200)
         self.condicionadores_essenciais.append(self.condic_dict[f"tmp_mancal_guia_contra_ug{self.__ug.id}"])
 
-        self.leitura_dict[f"pressao_cx_espiral_ug{self.__ug.id}"] = LeituraModbus(f"[UG{self.__ug.id}] Pressão Caixa Espiral", self.__clp[f"UG{self.__ug.id}"], REG[f"UG{self.__ug.id}_EA_PressK1CaixaExpiral_MaisCasas"], escala=0.1, op=4)
-        self.condic_dict[f"pressao_cx_espiral_ug{self.__ug.id}"] = CondicionadorExponencial(self.leitura_dict[f"pressao_cx_espiral_ug{self.__ug.id}"].descr, CONDIC_INDISPONIBILIZAR, self.leitura_dict[f"pressao_cx_espiral_ug{self.__ug.id}"], 15.5, 18)
-        self.condicionadores_essenciais.append(self.condic_dict[f"pressao_cx_espiral_ug{self.__ug.id}"])
+        self.leitura_dict[f"pressao_cx_espiral_ug{self.__ug.id}"] = LeituraModbus(f"[UG{self.__ug.id}] Caixa Espiral", self.__clp[f"UG{self.__ug.id}"], REG[f"UG{self.__ug.id}_EA_PressK1CaixaExpiral_MaisCasas"], escala=0.01, op=4)
+        self.condic_dict[f"pressao_cx_espiral_ug{self.__ug.id}"] = CondicionadorExponencialReverso(self.leitura_dict[f"pressao_cx_espiral_ug{self.__ug.id}"].descr, CONDIC_INDISPONIBILIZAR, self.leitura_dict[f"pressao_cx_espiral_ug{self.__ug.id}"], valor_base=16.5, valor_limite=14)
 
 
         # Óleo do Transformador Elevador

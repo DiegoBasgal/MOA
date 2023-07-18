@@ -61,7 +61,7 @@ class BancoDados:
         self.cursor.execute(
             "SELECT * "
             "FROM agendamentos_agendamento "
-            "WHERE executado = 0 AND data <= ((NOW() + INTERVAL 3 HOUR) + INTERVAL 55 SECOND);"
+            "WHERE executado = 0 AND data <= (NOW() + INTERVAL 30 SECOND);" # - INTERVAL 3 HOUR -> Timezone
         )
         result = self.cursor.fetchall()
 

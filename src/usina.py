@@ -223,6 +223,7 @@ class Usina:
         """
 
         logger.warning("[USN] Acionando Emergência.")
+        self.db_emergencia = True
         self.clp_emergencia = True
 
         try:
@@ -800,21 +801,21 @@ class Usina:
         Função para atualização de valores anteriores e erro de nível montante.
         """
 
-        if self.nv_montante_recente < 1:
-            self.nv_montante_recentes = [self.nv_montante] * 240
+        # if self.nv_montante_recente < 1:
+        #     self.nv_montante_recentes = [self.nv_montante] * 240
 
-            self.nv_montante_recentes.append(round(self.nv_montante, 2))
-            self.nv_montante_recentes = self.nv_montante_recentes[1:]
+        #     self.nv_montante_recentes.append(round(self.nv_montante, 2))
+        #     self.nv_montante_recentes = self.nv_montante_recentes[1:]
 
-            smoothing = 5
-            ema = [sum(self.nv_montante_recentes) / len(self.nv_montante_recentes)]
-            for nv in self.nv_montante_recentes:
-                ema.append((nv * (smoothing / (1 + len(self.nv_montante_recentes)))) + ema[-1] * (1 - (smoothing / (1 + len(self.nv_montante_recentes)))))
+        #     smoothing = 5
+        #     ema = [sum(self.nv_montante_recentes) / len(self.nv_montante_recentes)]
+        #     for nv in self.nv_montante_recentes:
+        #         ema.append((nv * (smoothing / (1 + len(self.nv_montante_recentes)))) + ema[-1] * (1 - (smoothing / (1 + len(self.nv_montante_recentes)))))
 
-            self.nv_montante_recente = ema[-1]
+        self.nv_montante_recente = self.nv_montante # ema[:1]
+        self.erro_nv_anterior = self.erro_nv
+        self.erro_nv = self.nv_montante_recente - self.cfg["nv_alvo"]
 
-            self.erro_nv_anterior = self.erro_nv
-            self.erro_nv = self.nv_montante_recente - self.cfg["nv_alvo"]
 
 
     def atualizar_valores_banco(self, parametros) -> None:

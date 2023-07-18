@@ -256,7 +256,7 @@ class ModoManual(State):
         """
 
         self.usn.ler_valores()
-        logger.debug(f"[USN] Leitura de Nível:                   {self.usn.nv_montante_recente:0.3f}")
+        logger.debug(f"[USN] Leitura de Nível:                   {self.usn.nv_montante:0.3f}")
         logger.debug(f"[USN] Potência no medidor:                {self.usn.potencia_ativa:0.3f}")
         logger.debug("")
 
@@ -317,9 +317,10 @@ class Emergencia(State):
             return ModoManual(self.usn)
 
         elif self.usn.db_emergencia:
-            logger.warning("Comando acionado via página WEB, aguardando reset pela aba \"Emergência\".")
+            logger.warning("Comando acionado/agendado via página WEB, aguardando reset pela aba \"Emergência\".")
 
             while self.usn.db_emergencia:
+                logger.debug("Aguardando reset...")
                 self.usn.atualizar_valores_banco(self.usn.db.get_parametros_usina())
 
                 if not self.usn.db_emergencia:
@@ -329,6 +330,8 @@ class Emergencia(State):
                 if not self.usn.modo_autonomo:
                     self.usn.db_emergencia = False
                     return ModoManual(self.usn)
+
+                sleep(5)
 
         else:
             flag = self.usn.oco.verificar_condicionadores()

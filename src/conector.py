@@ -1,3 +1,7 @@
+__version__ = "0.1"
+__author__ = "Diego Basgal"
+__description__ = "Este módulo corresponde a implementação da conexão com servidore(s), CLP(s) e RELÉ(s)."
+
 import logging
 import traceback
 import subprocess
@@ -136,9 +140,9 @@ class ClientesUsina:
         else:
             logger.warning("[CLI] CLP UG3 não respondeu a tentativa de conexão ModBus!")
 
-        if not cls.ping(d.ips["MOA_ip"]):
-            logger.warning("[CLI] CLP MOA não respondeu a tentativa de comunicação!")
-        if cls.clp["MOA"].open():
-            cls.clp["MOA"].close()
-        else:
-            logger.warning("[CLI] CLP MOA não respondeu a tentativa de conexão ModBus!")
+        # if not cls.ping(d.ips["MOA_ip"]):
+        #     logger.warning("[CLI] CLP MOA não respondeu a tentativa de comunicação!")
+        # if cls.clp["MOA"].open():
+        #     cls.clp["MOA"].close()
+        # else:
+        #     logger.warning("[CLI] CLP MOA não respondeu a tentativa de conexão ModBus!")

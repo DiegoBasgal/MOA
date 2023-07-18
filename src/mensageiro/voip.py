@@ -36,7 +36,7 @@ class Voip:
         Função para verificar se o operador cadastrado na interface, está dentro
         do período de sobre-aviso.
         """
-        
+
         contatos = []
         now = datetime.now(pytz.timezone("Brazil/East")).replace(tzinfo=None)
 
@@ -57,7 +57,7 @@ class Voip:
         """
         Função para extrair lista de contatos cadastrados na interface WEB.
         """
-        
+
         agenda = []
         parametros = cls.db.get_contato_emergencia()
 
@@ -81,7 +81,7 @@ class Voip:
         """
         Função para carregar token de autenticação NVoip.
         """
-        
+
         try:
             request = Request("https://api.nvoip.com.br/v2/oauth/token", data=cls.token_data, headers=cls.token_headers)
             response_body = json.loads(urlopen(request).read())
@@ -97,7 +97,7 @@ class Voip:
         """
         Função para codificação do acionamento, para a plataforma da Nvoip.
         """
-        
+
         encoded = str(json.dumps(data)).encode()
         request = Request(f"https://api.nvoip.com.br/v2/torpedo/voice?napikey={cls.cfg['napikey']}", data=encoded, headers=headers)
         try:
@@ -120,10 +120,10 @@ class Voip:
         Caso a condição de emergência estiver ativada, ignora todas as outras condições
         e passa a disparar o torpedo de emerência para todos os operadores.
         Caso sejam apenas condições específicas, realiza uma iteração pelo dicionário
-        de condições e concatena todas as mensagens em uma só, para envio aos 
+        de condições e concatena todas as mensagens em uma só, para envio aos
         operadores.
         """
-        
+
         headers = {"Content-Type": "application/json", "Authorization": cls.carregar_token()}
 
         if cls.cfg["voz_habilitado"]:
