@@ -13,26 +13,26 @@ import traceback
 import dicionarios.dict as dct
 
 from time import sleep, time
-from datetime import  datetime, timedelta
+from datetime import  datetime
 
 from condicionador import *
 from dicionarios.reg import *
 from dicionarios.const import *
 
-from comporta import Comporta
 from mensageiro.voip import Voip
 from banco_dados import BancoDados
-from unidade_geracao import UnidadeGeracao
-from condicionador import CondicionadorBase
+from agendamentos import Agendamentos
+from funcoes.escrita import EscritaModBusBit as EMB
 
 from funcoes.leitura import *
 
 from bay import Bay as BAY
+from comporta import Comporta as CP
 from subestacao import Subestacao as SE
 from tomada_agua import TomadaAgua as TDA
-from conector import ClientesUsina as cli
+from conector import ClientesUsina as CLI
+from unidade_geracao import UnidadeGeracao as UG
 from servico_auxiliar import ServicoAuxiliar as SA
-from funcoes.escrita import EscritaModBusBit as EMB
 
 logger = logging.getLogger("__main__")
 
@@ -46,21 +46,19 @@ class Usina:
         else:
             self.cfg = cfg
 
-        self.clp = cli.clp
-        self.rele = cli.rele
+        self.clp = CLI.clp
+        self.rele = CLI.rele
 
 
         # INCIALIZAÇÃO DE OBJETOS DA USINA
 
-        self.ug1: "UnidadeGeracao" = UnidadeGeracao(self, 1)
-        self.ug2: "UnidadeGeracao" = UnidadeGeracao(self, 2)
+        self.bd: "BancoDados" = BancoDados("MOA")
+        self.agn: "Agendamentos" = Agendamentos()
 
-        self.ugs: "list[UnidadeGeracao]" = [self.ug1, self.ug2]
+        self.ug1: "UG" = UG(self, 1)
+        self.ug2: "UG" = UG(self, 2)
 
-        self.cp: "dict[str, Comporta]" = {}
-        self.cp["CP1"] = Comporta(1)
-        self.cp["CP2"] = Comporta(2)
-
+        self.ugs: "list[UG]" = [self.ug1, self.ug2]
 
         # ATRIBUIÇÃO DE VARIÀVEIS
         # PRIVADAS
@@ -112,7 +110,7 @@ class Usina:
     @modo_autonomo.setter
     def modo_autonomo(self, var: "bool") -> "None":
         self._modo_autonomo = var
-        BancoDados.update_modo_moa(var)
+        self.bd.update_modo_moa(var)
 
     @property
     def tentativas_normalizar(self) -> "int":
@@ -198,11 +196,12 @@ class Usina:
         logger.debug(f"[USN] Última tentativa de normalização:   {self.ultima_tentativa_norm.strftime('%d-%m-%Y %H:%M:%S')}")
         logger.debug(f"[USN] Tensão na linha:                    RS -> \"{SE.tensao_rs.valor:2.1f} kV\" | ST -> \"{SE.tensao_st.valor:2.1f} kV\" | TR -> \"{SE.tensao_tr.valor:2.1f} kV\"")
 
-        if not BAY.fechar_dj_bay():
+        if not BAY.fechar_dj_linha_bay():
             return NORM_USN_DJBAY_ABERTO
 
-        if not SE.dj_se.valor:
+        if not SE.dj_linha_se.valor:
             logger.info("[USN] Enviando comando de fechamento do Disjuntor 52L")
+
             if not SE.fechar_dj_linha():
                 logger.warning("[USN] Não foi possível realizar o fechameto do Disjuntor 52L")
                 return NORM_USN_DJL_ABERTO
@@ -219,7 +218,7 @@ class Usina:
             SE.resetar_emergencia()
             BAY.resetar_emergencia()
             TDA.resetar_emergencia()
-            BancoDados.update_remove_emergencia()
+            self.bd.update_remove_emergencia()
             return NORM_USN_EXECUTADA
 
         else:
@@ -239,6 +238,7 @@ class Usina:
             SA.verificar_leituras()
             SE.verificar_leituras()
             TDA.verificar_leituras()
+
             for ug in self.ugs:
                 ug.verificar_leituras()
 
@@ -280,7 +280,7 @@ class Usina:
         Função para calcular PID (Proporcional, Integral e Derivativo), para controle de potência
         das Unidades a partir da leitura de Nível Montante.
         """
-        
+
         logger.debug(f"[TDA] NÍVEL -> Alvo:                      {self.cfg['nv_alvo']:0.3f}")
         logger.debug(f"[TDA]          Leitura:                   {TDA.nv_montante_recente:0.3f}")
 
@@ -330,28 +330,31 @@ class Usina:
                 ug.setpoint = 0
             return 0
 
-        pot_medidor = self.potencia_medidor
+        pot_medidor = BAY.potencia_medidor_usina.valor
 
-        logger.debug(f"[USN] Potência no medidor:                {self.potencia_ativa:0.3f}")
+        logger.debug(f"[USN] Potência no medidor:                {pot_medidor:0.3f}")
 
         pot_aux = self.cfg["pot_maxima_alvo"] - (self.cfg["pot_maxima_usina"] - self.cfg["pot_maxima_alvo"])
-        pot_medidor = max(pot_aux, min(self.potencia_medidor, self.cfg["pot_maxima_usina"]))
+        pot_medidor = max(pot_aux, min(pot_medidor, self.cfg["pot_maxima_usina"]))
 
-        try:
-            if pot_medidor > self.cfg["pot_maxima_alvo"]:
-                pot_alvo = self.pot_alvo_anterior * (1 - ((pot_medidor - self.cfg["pot_maxima_alvo"]) / self.cfg["pot_maxima_alvo"]))
-        except TypeError as te:
-            logger.error(f"[USN] A comunicação com os MFs falharam. Exception: \"{repr(te)}\"")
-            logger.debug(f"[USN] Traceback: {traceback.format_exc()}")
+        if pot_medidor > self.cfg["pot_maxima_alvo"]:
+            pot_alvo = self._pot_alvo_anterior * (1 - ((pot_medidor - self.cfg["pot_maxima_alvo"]) / self.cfg["pot_maxima_alvo"]))
 
-        self.pot_alvo_anterior = pot_alvo
+        self._pot_alvo_anterior = pot_alvo
 
-        logger.debug(f"[USN] Pot alvo pós ajuste: {pot_alvo:0.3f}")
+        logger.debug(f"[USN] Potência alvo após ajuste:           {pot_alvo:0.3f}")
+
         self.distribuir_potencia(pot_alvo)
-        return pot_alvo
 
-    def distribuir_potencia(self, pot_alvo) -> None:
-        ugs = self.controle_ugs_disponiveis()
+    def distribuir_potencia(self, pot_alvo) -> "None":
+        """
+        Função para distribuição de potência, após cálculos de controle/ajustes.
+
+        Chama a função de controle de unidades disponíveis e determina através de janelas
+        de potência para entrada ou retirada de uma Unidade.
+        """
+
+        ugs: "list[UG]" = self.controle_ugs_disponiveis()
         if ugs is None:
             logger.warning("[USN] Sem UGs disponíveis para realizar a distribuição de potência.")
             return
@@ -370,7 +373,6 @@ class Usina:
         self.__split2 = False if sp < (0.5) else self.__split2
         self.__split1 = False if sp < (self.cfg["pot_minima"] / self.cfg["pot_maxima_usina"]) else self.__split1
 
-        logger.debug(f"[USN] SP<-{sp}")
         if len(ugs) == 2:
             if self.__split2:
                 logger.debug("[USN] Split 2")
@@ -390,7 +392,11 @@ class Usina:
             for ug in ugs:
                 ug.setpoint = 0
 
-    def controle_ugs_disponiveis(self) -> "list[UnidadeGeracao]":
+    def controle_ugs_disponiveis(self) -> "list[UG]":
+        """
+        Função para verificar leituras/condições específicas e determinar a Prioridade das Unidades.
+        """
+
         ls = []
         [ls.append(ug) for ug in self.ugs if ug.disponivel and not ug.etapa_atual == UG_PARANDO]
         logger.debug("")
@@ -411,10 +417,10 @@ class Usina:
         Banco de Dados da Interface WEB.
         """
 
-        cli.ping_clients()
+        CLI.ping_clients()
         TDA.atualizar_montante()
 
-        parametros = BancoDados.get_parametros_usina()
+        parametros = self.bd.get_parametros_usina()
 
         self.atualizar_valores_cfg(parametros)
         self.atualizar_valores_banco(parametros)
@@ -424,7 +430,7 @@ class Usina:
 
         self.heartbeat()
 
-    def atualizar_valores_banco(self, parametros) -> None:
+    def atualizar_valores_banco(self, parametros) -> "None":
         """
         Função para atualização de valores de Banco de Dados.
         """
@@ -485,7 +491,7 @@ class Usina:
         """
 
         try:
-            BancoDados.update_valores_usina(
+            self.bd.update_valores_usina(
                 self.get_time().strftime("%Y-%m-%d %H:%M:%S"), # timestamp
                 1 if self.aguardando_reservatorio else 0,  # aguardando_reservatorio
                 True,  # DEPRECATED clp_online
@@ -507,8 +513,8 @@ class Usina:
             logger.debug(f"[USN] Traceback: {traceback.format_exc()}")
 
         try:
-            BancoDados.update_debug(
-                self.time(),
+            self.bd.update_debug(
+                time(),
                 self.cfg["kp"],
                 self.cfg["ki"],
                 self.cfg["kd"],

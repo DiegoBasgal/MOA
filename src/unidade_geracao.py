@@ -66,8 +66,9 @@ class UnidadeGeracao(Usina):
         self.tempo_normalizar: "int" = 0
 
         self.borda_pressao: "bool" = False
-        self.norma_agendada: "bool" = False
         self.temporizar_partida: "bool" = False
+        self.normalizacao_agendada: "bool" = False
+        self.temporizar_normalizacao: "bool" = False
 
         self.aux_tempo_sincronizada: "datetime" = 0
         self.ts_auxiliar: "datetime" = self.get_time()
@@ -403,6 +404,12 @@ class UnidadeGeracao(Usina):
         except Exception:
             logger.exception(f"[UG{self.id}] Não foi possivel remover o comando de TRIP: \"Elétrico\".")
             logger.debug(f"[UG{self.id}] Traceback: {traceback.format_exc()}")
+
+    def aguardar_normalizacao(self, delay: "int") -> "None":
+        while not self.parar_timer:
+            sleep(max(0, time() + delay - time()))
+            self.parar_timer = True
+            return
 
     def normalizar_unidade(self) -> "bool":
         """

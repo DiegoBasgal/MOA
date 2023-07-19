@@ -102,7 +102,7 @@ class TomadaAgua(Usina):
 
             if cls.nv_montante_recente >= NIVEL_MAXIMORUM:
                 logger.critical(f"[TDA] Nivel montante ({cls.nv_montante_recente:3.2f}) atingiu o maximorum!")
-                return NV_FLAG_EMERGENCIA
+                return NV_EMERGENCIA
             else:
                 cls.controle_i = 0.5
                 cls.controle_ie = 0.5
@@ -121,7 +121,7 @@ class TomadaAgua(Usina):
 
             if cls.nv_montante_recente <= NIVEL_FUNDO_RESERVATORIO:
                 logger.critical(f"[TDA] Nivel montante ({cls.nv_montante_recente:3.2f}) atingiu o fundo do reservatorio!")
-                return NV_FLAG_EMERGENCIA
+                return NV_EMERGENCIA
 
         elif cls.aguardando_reservatorio:
             if cls.nv_montante >= cls.cfg["nv_alvo"]:
@@ -134,7 +134,7 @@ class TomadaAgua(Usina):
             for ug in cls.ugs:
                 ug.step()
 
-        return NV_FLAG_NORMAL
+        return NV_NORMAL
 
     @classmethod
     def verificar_condicionadores(cls) -> "list[CondicionadorBase]":
