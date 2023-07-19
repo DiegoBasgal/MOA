@@ -1,7 +1,3 @@
-globais: "dict[str, any]" = {
-    "avisado_eletrica": False
-}
-
 ips: "dict[str, any]" = {
     "SA_ip": "10.101.2.215",
     "SA_porta": 5003,

@@ -3,209 +3,292 @@ __author__ = "Diego Basgal"
 __credits__ = ["Lucas Lavratti" , ...]
 __description__ = "Este módulo corresponde a implementação de Agendamentos da Interface WEB."
 
-from usina import *
+import pytz
+import logging
+
+from src.usina import *
+
+from time import sleep
+from datetime import datetime, timedelta
+
+from src.dicionarios.const import *
+
+from src.banco_dados import BancoDados
+
 
 logger = logging.getLogger("__main__")
 
-class Agendamentos(Usina):
+class Agendamentos:
+    def __init__(self, cfg=None, db: BancoDados=None, usina=None):
 
-    segundos_passados = 0
-    segundos_adiantados = 0
+        # ATRIBUIÇÂO DE VARIÁVEIS PÚBLICAS
 
-    @staticmethod
-    def agendamentos_pendentes() -> list:
+        self.db = db
+        self.cfg = cfg
+        self.usn = usina
+
+        self.segundos_passados = 0
+        self.segundos_adiantados = 0
+
+    def verificar_agendamentos_pendentes(self) -> list:
+        """
+        Função para extrair lista de agendamentos não executados do Banco de Dados.
+        """
         pendentes = []
-        try:
-            agendamentos = BancoDados.get_agendamentos_pendentes()
-        except Exception as e:
-            logger.exception(f"[AGN] Não foi possível extrair lista de agendamentos pendentes do banco. Exception: \"{repr(e)}\"")
-            return None
+        agendamentos = self.db.get_agendamentos_pendentes()
 
-        else:
-            for agendamento in agendamentos:
-                ag = list(agendamento)
-                ag[1] = ag[1] - timedelta(0, 60 * 60 * 3)
-                pendentes.append(ag)
+        for agendamento in agendamentos:
+            ag = list(agendamento)
+            ag[1] = ag[1] - timedelta(0, 60 * 60 * 3)
+            pendentes.append(ag)
 
-            return pendentes
+        return pendentes
 
-    @staticmethod
-    def agendamentos_iguais(agendamentos) -> None:
+    def verificar_agendamentos_iguais(self, agendamentos) -> None:
+        """
+        Função para verificar agendamentos iguais.
+
+        Verifica se o mesmo agendamento foi criado em um período de tempo pré-definido
+        e concatena (marca como executado) para não haver problemas de operação.
+        """
+
         limite_entre_agendamentos_iguais = 300
         agendamentos = sorted(agendamentos, key=lambda x:(x[3], x[1]))
-
-        while (i := 0) < (j := len(agendamentos) - 1):
+        i = 0
+        j = len(agendamentos)
+        while i < j - 1:
             if agendamentos[i][3] == agendamentos[i+1][3] and (agendamentos[i+1][1] - agendamentos[i][1]).seconds < limite_entre_agendamentos_iguais:
                 ag_concatenado = agendamentos.pop(i)
-                logger.info("[AGN] O agendamento foi ignorado, pois o mesmo foi agendado à menos de 5 minutos atrás.")
-                BancoDados.update_agendamento(ag_concatenado[0], True, obs="Este agendamento foi concatenado ao seguinte por motivos de temporização.")
+                obs = "Este agendamento foi concatenado ao seguinte por motivos de temporização."
+                self.db.update_agendamento(ag_concatenado[0], True, obs)
                 i -= 1
-            i += 1
 
-    @classmethod
-    def verificar_agendamentos(cls) -> bool:
+            i += 1
+            j = len(agendamentos)
+
+    def verificar_agendamentos(self) -> bool:
+        """
+        Função principal de verificação de agendamentos.
+
+        Chama a função de extração da lista de agendamentos do Banco, e verifica
+        se a lista possui algum item. Caso haja algum agendamento, passa a verificar
+        se o agendamento está adiantado ou atrasado. Logo após, verifica se o
+        agendamento não possui efeito, para depois, caso seja válido, passa a
+        verificar se o agendamento é das Unidades ou de outros setores da Usina.
+        """
+
         agora = datetime.now(pytz.timezone("Brazil/East")).replace(tzinfo=None)
-        agendamentos = BancoDados.get_agendamentos_pendentes()
+        agendamentos = self.db.get_agendamentos_pendentes()
 
         if agendamentos is None:
             return False
         else:
             i = len(agendamentos)
 
-        logger.debug(f"[AGN] Data: {agendamentos[i-1][1].strftime('%Y-%m-%d %H:%M:%S')}")
-        logger.debug(f"      Criado por: {agendamentos[i-1][6]}")
-        logger.debug(f"      Comando: {AGN_STR_DICT[agendamentos[i-1][3]] if agendamentos[i-1][3] in AGN_STR_DICT else 'Inexistente'}")
-
-        cls.agendamentos_iguais(agendamentos)
+        self.verificar_agendamentos_iguais(agendamentos)
 
         for agendamento in agendamentos:
-            cls.segundos_passados = (agora - agendamento[1]).seconds if agora > agendamento[1] else 0
-            cls.segundos_adiantados = (agendamento[1] - agora).seconds if agora < agendamento[1] else 0
+            if agora > agendamento[1]:
+                self.segundos_adiantados = 0
+                self.segundos_passados = (agora - agendamento[1]).seconds
+            else:
+                self.segundos_adiantados = (agendamento[1] - agora).seconds
+                self.segundos_passados = 0
 
-            if cls.agendamentos_atrasados(agendamento):
-                return False
+            logger.debug("")
+            logger.debug(f"[AGN] Executar em:                        {agendamento[1].strftime('%H:%M:%S %d-%m-%Y')}")
+            logger.debug(f"      Criado por:                         \"{agendamento[6]}\"")
+            logger.debug(f"      Comando:                            \"{AGN_STR_DICT[agendamento[3]] if agendamento[3] in AGN_STR_DICT else 'Inexistente'}\"")
+            logger.debug("")
 
-            if cls.segundos_adiantados <= 60 and not bool(agendamento[4]):
-                logger.info(f"[AGN] Executando agendamento: {agendamento[0]} - Comando: {agendamento[3]} - Data: {agendamento[9]}.")
+            self.verificar_agendamentos_atrasados(agendamento)
 
-                cls.agendamentos_sem_efeito(agendamento)
+            if self.segundos_adiantados <= 60 and not bool(agendamento[4]):
+                logger.info(f"[AGN] Executando agendamento:             {agendamento[0]}")
+                logger.info(f"      Comando:                            \"{AGN_STR_DICT[agendamento[3]]}\"")
+                logger.info(f"      Criado em:                          {agendamento[9].strftime('%H:%M:%S %d-%m-%Y')}")
+                logger.debug("")
 
-                if not cls.agendamentos_usina(agendamento):
-                    return False
+                self.verificar_agendamentos_sem_efeito(agendamento)
+                self.verificar_agendamentos_usina(agendamento)
+                self.verificar_agendamentos_ugs(agendamento)
 
-                for ug in cls.ugs:
-                    if not cls.agendamentos_ugs(agendamento, ug):
-                        return False
+                self.db.update_agendamento(agendamento[0], executado=1)
+                logger.debug(f"[AGN] Agendamento executado:              \"{AGN_STR_DICT[agendamentos[i-1][3]] if agendamentos[i-1][3] in AGN_STR_DICT else 'Inexistente'}\"")
 
-                BancoDados.update_agendamento(int(agendamento[0]), 1)
-                logger.info(f"[AGN] O agendamento: {AGN_STR_DICT[agendamentos[i-1][3]] if agendamentos[i-1][3] in AGN_STR_DICT else 'Inexistente'} - {agendamento[5]} foi executado.")
+    def verificar_agendamentos_atrasados(self, agendamento) -> None:
+        """
+        Função para verificar se os agendamentos esão atrasados.
 
-    @classmethod
-    def agendamentos_atrasados(cls, agendamento) -> bool:
+        Verifica se o agendamento ultrapassou o limite de tempo pré-definido para
+        poder determinar como proceder, dependendo da função do agendamento.
+        """
+
         agn_atrasados = 0
 
-        if cls.segundos_passados > 240:
+        if self.segundos_passados > 240:
             logger.warning(f"[AGN] Agendamento: {agendamento[0]} atrasado! ({agendamento[3]}).")
             agn_atrasados += 1
 
-        if cls.segundos_passados > 300 or agn_atrasados > 3:
-            logger.info("[AGN] Os agendamentos estão muito atrasados!")
+        if self.segundos_passados > 300 or agn_atrasados > 3:
+            logger.warning("[AGN] Os agendamentos estão muito atrasados!")
             if agendamento[3] == AGN_INDISPONIBILIZAR:
                 logger.warning("[AGN] Acionando emergência!")
-                cls.acionar_emergencia()
-                BancoDados.update_agendamento(int(agendamento[0]), 1, obs="AGENDAMENTO EXECUTADO POR TRATATIVA DE CÓDIGO!")
+                self.usn.acionar_emergencia()
+                self.db.update_agendamento(int(agendamento[0]), 1, obs="AGENDAMENTO EXECUTADO POR TRATATIVA DE CÓDIGO!")
                 agn_atrasados += 1
 
             if agendamento[3] in (AGN_ALTERAR_NV_ALVO, AGN_ALTERAR_POT_LIMITE_TODAS_AS_UGS, AGN_BAIXAR_POT_UGS_MINIMO, AGN_NORMALIZAR_POT_UGS_MINIMO, AGN_AGUARDAR_RESERVATORIO, AGN_NORMALIZAR_ESPERA_RESERVATORIO):
-                logger.info("[AGN] Não foi possível executar o agendamento! Favor re-agendar")
-                BancoDados.update_agendamento(int(agendamento[0]), 1, obs="AGENDAMENTO NÃO EXECUTADO POR CONTA DE ATRASO!")
+                logger.warning("[AGN] Não foi possível executar o agendamento! Favor re-agendar")
+                self.db.update_agendamento(int(agendamento[0]), 1, obs="AGENDAMENTO NÃO EXECUTADO POR CONTA DE ATRASO!")
                 agn_atrasados += 1
 
-            for ug in cls.ugs:
+            for ug in self.usn.ugs:
                 if agendamento[3] in AGN_LST_BLOQUEIO_UG:
                     logger.info(f"[AGN] Indisponibilizando UG{ug.id}")
                     ug.forcar_estado_indisponivel()
-                    BancoDados.update_agendamento(int(agendamento[0]), 1, obs="AGENDAMENTO NÃO EXECUTADO POR CONTA DE ATRASO!")
+                    self.db.update_agendamento(int(agendamento[0]), 1, obs="AGENDAMENTO NÃO EXECUTADO POR CONTA DE ATRASO!")
                     agn_atrasados += 1
 
-        return True if agn_atrasados > 1 else False
+    def verificar_agendamentos_sem_efeito(self, agendamento) -> None:
+        """
+        Função para verificar se o agendamento possui algum efeito no modo atual
+        do MOA.
 
-    @classmethod
-    def agendamentos_sem_efeito(cls, agendamento) -> None:
-        if cls.modo_autonomo and not BancoDados.get_executabilidade(agendamento[3])["executavel_em_automatico"]:
-            BancoDados.update_agendamento(agendamento[0], True, obs="Este agendamento não tem efeito com o módulo em modo autônomo. Executado sem realizar nenhuma ação")
+        Verifica se o agendamento pode ser executado em modo autônomo ou manual.
+        """
 
-        if not cls.modo_autonomo and not BancoDados.get_executabilidade(agendamento[3])["executavel_em_manual"]:
-            BancoDados.update_agendamento(agendamento[0], True, obs="Este agendamento não tem efeito com o módulo em modo manual. Executado sem realizar nenhuma ação")
+        if self.usn.modo_autonomo and not self.db.get_executabilidade(agendamento[3])["executavel_em_automatico"]:
+            self.db.update_agendamento(agendamento[0], True, obs="Este agendamento não tem efeito com o módulo em modo autônomo. Executado sem realizar nenhuma ação")
 
-    @classmethod
-    def agendamentos_usina(cls, agendamento) -> bool:
+        if not self.usn.modo_autonomo and not self.db.get_executabilidade(agendamento[3])["executavel_em_manual"]:
+            self.db.update_agendamento(agendamento[0], True, obs="Este agendamento não tem efeito com o módulo em modo manual. Executado sem realizar nenhuma ação")
+
+    def verificar_agendamentos_usina(self, agendamento) -> None:
+        """
+        Função para verificar o tipo de comando dos agendamentos da Usina (Serviço
+        Auxiliar, Tomada da Água ou Subestação)
+        """
+
         if agendamento[3] == AGN_INDISPONIBILIZAR:
             logger.info("[AGN] Indisponibilizando a usina via agendamento.")
-            for ug in cls.ugs:
+            for ug in self.usn.ugs:
                 ug.forcar_estado_indisponivel()
+                ug.step()
 
-            while (not cls.ug1.etapa_atual == UG_PARADA and not cls.ug2.etapa_atual == UG_PARADA):
-                cls.ler_valores()
-                logger.debug("[AGN] Indisponibilizando Usina...")
-                sleep(10)
+            while (not self.usn.ug1.etapa_atual == UG_PARADA and not self.usn.ug2.etapa_atual == UG_PARADA and not self.usn.ug3.etapa_atual == UG_PARADA):
+                self.usn.ler_valores()
+                logger.debug("[AGN] Aguardando parada total das Unidades...")
+                sleep(5)
 
-            cls.acionar_emergencia()
-            logger.debug("[AGN] Emergência pressionada após indizponibilização agendada mudando para modo manual para evitar normalização automática.")
-            cls.modo_autonomo = False
+            self.usn.acionar_emergencia()
+            logger.debug("[AGN] Emergência pressionada após indisponibilização agendada mudando para modo manual para evitar normalização automática.")
+            self.usn.modo_autonomo = False
 
         if agendamento[3] == AGN_ALTERAR_NV_ALVO:
             try:
                 novo = float(agendamento[5].replace(",", "."))
-                cls.cfg["nv_alvo"] = novo
+                self.cfg["nv_alvo"] = novo
 
             except Exception:
-                logger.exception(f"[AGN] Valor inválido no agendamento: {agendamento[0]} ({agendamento[3]} é inválido).")
-                return False
+                logger.error(f"[AGN] Valor inválido no agendamento: {agendamento[0]} ({agendamento[3]} é inválido).")
 
         if agendamento[3] == AGN_BAIXAR_POT_UGS_MINIMO:
-            for ug in cls.ugs:
-                cls.cfg[f"pot_maxima_ug{ug.id}"] = cls.cfg["pot_minima"]
-                if ug.etapa_atual == UG_PARADA:
-                    logger.debug(f"[AGN] A UG{ug.id} já está no estado parada/parando.")
+            for ug in self.usn.ugs:
+                self.cfg[f"pot_maxima_ug{ug.id}"] = self.cfg["pot_limpeza_grade"]
+
+                if ug.etapa_atual == UG_PARADA or ug.etapa_atual == UG_PARANDO:
+                    logger.debug(f"[AGN] UG{ug.id} está no estado parada/parando.")
                 else:
-                    logger.debug(f"[AGN] Enviando o setpoint mínimo ({cls.cfg['pot_minima']}) para a UG{ug.id}")
-                    ug.enviar_setpoint(cls.cfg["pot_minima"])
+                    ug.limpeza_grade = True
 
         if agendamento[3] == AGN_NORMALIZAR_POT_UGS_MINIMO:
-            for ug in cls.ugs:
-                cls.cfg[f"pot_maxima_ug{ug.id}"] = cls.cfg["pot_maxima_ug"]
-                ug.enviar_setpoint(cls.cfg["pot_maxima_ug"])
+            for ug in self.usn.ugs:
+                self.cfg[f"pot_maxima_ug{ug.id}"] = self.cfg["pot_maxima_ug"]
+                ug.limpeza_grade = False
+                ug.enviar_setpoint(self.cfg["pot_maxima_ug"])
 
         if agendamento[3] == AGN_AGUARDAR_RESERVATORIO:
             logger.debug("[AGN] Ativando estado de espera de nível do reservatório")
-            cls.aguardando_reservatorio = 1
+            self.aguardando_reservatorio = 1
 
         if agendamento[3] == AGN_NORMALIZAR_ESPERA_RESERVATORIO:
             logger.debug("[AGN] Desativando estado de espera de nível do reservatório")
-            cls.aguardando_reservatorio = 0
+            self.aguardando_reservatorio = 0
 
         if agendamento[3] == AGN_ALTERAR_POT_LIMITE_TODAS_AS_UGS:
             try:
                 novo = float(agendamento[5].replace(",", "."))
-                for ug in cls.ugs:
-                    cls.cfg[f"pot_maxima_ug{ug.id}"] = novo
+
+                self.cfg["pot_maxima_alvo"] = novo
+
+                for ug in self.usn.ugs:
+                    self.cfg[f"pot_maxima_ug{ug.id}"] = novo / 3
+
             except Exception:
-                logger.exception(f"[AGN] Valor inválido no agendamento: {agendamento[0]} ({agendamento[3]} é inválido)")
-                return False
+                logger.error(f"[AGN] Valor inválido no agendamento: {agendamento[0]} ({agendamento[3]} é inválido)")
 
-        return True
+    def verificar_agendamentos_ugs(self, agendamento) -> None:
+        """
+        Função para verificar agendamentos das Unidades de Geração.
+        """
 
-    @classmethod
-    def agendamentos_ugs(cls, agendamento, ug: UnidadeGeracao) -> bool:
-        if agendamento[3] == AGN_UG_ALTERAR_POT_LIMITE[ug.id]:
+        if agendamento[3] == AGN_UG1_ALTERAR_POT_LIMITE:
             try:
                 novo = float(agendamento[5].replace(",", "."))
-                cls.cfg[f"pot_maxima_ug{ug.id}"] = novo
+                self.cfg[f"pot_maxima_ug1"] = novo
 
             except Exception:
-                logger.exception(f"[AGN] Valor inválido no agendamento: {agendamento[0]} ({agendamento[3]} é inválido)")
-                return False
+                logger.error(f"[AGN] Valor inválido no agendamento: {agendamento[0]} ({agendamento[3]} é inválido)")
 
-        if agendamento[3] == AGN_UG_FORCAR_ESTADO_MANUAL[ug.id]:
-            ug.forcar_estado_manual()
+        if agendamento[3] == AGN_UG1_FORCAR_ESTADO_MANUAL:
+            self.usn.ug1.forcar_estado_manual()
 
-        if agendamento[3] == AGN_UG_FORCAR_ESTADO_DISPONIVEL[ug.id]:
-            ug.forcar_estado_disponivel()
+        if agendamento[3] == AGN_UG1_FORCAR_ESTADO_DISPONIVEL:
+            self.usn.ug1.forcar_estado_disponivel()
 
-        if agendamento[3] == AGN_UG_FORCAR_ESTADO_INDISPONIVEL[ug.id]:
-            ug.forcar_estado_indisponivel()
+        if agendamento[3] == AGN_UG1_FORCAR_ESTADO_INDISPONIVEL:
+            self.usn.ug1.forcar_estado_indisponivel()
 
-        if agendamento[3] == AGN_UG_FORCAR_ESTADO_RESTRITO[ug.id]:
-            ug.forcar_estado_restrito()
+        if agendamento[3] == AGN_UG1_FORCAR_ESTADO_RESTRITO:
+            self.usn.ug1.forcar_estado_restrito()
 
-        if agendamento[3] == AGN_UG_TEMPO_ESPERA_RESTRITO[ug.id]:
+        if agendamento[3] == AGN_UG1_TEMPO_ESPERA_RESTRITO:
             try:
-                ug.norma_agendada = True
+                self.usn.ug1.normalizacao_agendada = True
                 novo = agendamento[5].split(":")
                 tempo = (int(novo[0]) * 3600) + (int(novo[1]) * 60)
-                ug.tempo_normalizar = tempo
+                self.usn.ug1.tempo_normalizar = tempo
 
             except Exception:
-                logger.exception(f"[AGN] Valor inválido no agendamento: {agendamento[0]} ({agendamento[3]} é inválido)")
-                return False
+                logger.error(f"[AGN] Valor inválido no agendamento: {agendamento[0]} ({agendamento[3]} é inválido)")
+
+        if agendamento[3] == AGN_UG2_ALTERAR_POT_LIMITE:
+            try:
+                novo = float(agendamento[5].replace(",", "."))
+                self.cfg[f"pot_maxima_ug2"] = novo
+
+            except Exception:
+                logger.error(f"[AGN] Valor inválido no agendamento: {agendamento[0]} ({agendamento[3]} é inválido)")
+
+        if agendamento[3] == AGN_UG2_FORCAR_ESTADO_MANUAL:
+            self.usn.ug2.forcar_estado_manual()
+
+        if agendamento[3] == AGN_UG2_FORCAR_ESTADO_DISPONIVEL:
+            self.usn.ug2.forcar_estado_disponivel()
+
+        if agendamento[3] == AGN_UG2_FORCAR_ESTADO_INDISPONIVEL:
+            self.usn.ug2.forcar_estado_indisponivel()
+
+        if agendamento[3] == AGN_UG2_FORCAR_ESTADO_RESTRITO:
+            self.usn.ug2.forcar_estado_restrito()
+
+        if agendamento[3] == AGN_UG2_TEMPO_ESPERA_RESTRITO:
+            try:
+                self.usn.ug2.normalizacao_agendada = True
+                novo = agendamento[5].split(":")
+                tempo = (int(novo[0]) * 3600) + (int(novo[1]) * 60)
+                self.usn.ug2.tempo_normalizar = tempo
+
+            except Exception:
+                logger.error(f"[AGN] Valor inválido no agendamento: {agendamento[0]} ({agendamento[3]} é inválido)")

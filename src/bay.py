@@ -26,7 +26,13 @@ class Bay(Usina):
     condicionadores: "list[CondicionadorBase]" = []
     condicionadores_essenciais: "list[CondicionadorBase]" = []
 
-    dj_bay: "LeituraModbusBit" = LeituraModbusBit(
+    potencia_medidor_usina: "LeituraModbus" = LeituraModbus(
+        clp["SA"],
+        999,
+        escala=1,
+        op=4
+    )
+    dj_linha_bay: "LeituraModbusBit" = LeituraModbusBit(
         rele["BAY"],
         REG_RELE["BAY"]["DJ_LINHA_FECHADO"],
         bit=0,
@@ -59,10 +65,17 @@ class Bay(Usina):
         Função para acionar comandos de reset de TRIPS/Alarmes
         """
 
-        return
+        try:
+            res = cls.rele["BAY"].write_single_coil(REG_RELE["BAY"]["RESET_TRIP_RELE"], [1])
+            return res
+
+        except Exception:
+            logger.exception(f"[BAY] Houve um erro ao realizar o Reset de Emergência.")
+            logger.debug(f"[BAY] Traceback: {traceback.format_exc()}")
+            return False
 
     @classmethod
-    def fechar_dj_bay(cls) -> "bool":
+    def fechar_dj_linha_bay(cls) -> "bool":
         """
         Função para acionar comando de fechamento do Disjuntor do BAY de comunicação.
 
@@ -73,9 +86,9 @@ class Bay(Usina):
         """
 
         try:
-            if not cls.dj_bay.valor:
+            if not cls.dj_linha_bay.valor:
                 logger.info("[BAY] O Disjuntor do Bay está aberto! Realizando fechamento...")
-                if cls.verificar_dj_bay():
+                if cls.verificar_dj_linha_bay():
                     EMB.escrever_bit(cls.rele["BAY"], REG_RELE["BAY"]["CMD_FECHA_DJ"], bit=2, valor=1)
                     return True
                 else:
@@ -91,7 +104,7 @@ class Bay(Usina):
             return False
 
     @classmethod
-    def verificar_dj_bay(cls) -> "bool":
+    def verificar_dj_linha_bay(cls) -> "bool":
         """
         Função para verificação de condições de fechamento do Disjuntor do BAY.
 
@@ -121,7 +134,7 @@ class Bay(Usina):
             if not cls.verificar_tensao_trifasica():
                 flags += 1
 
-            if cls.tensao_vs.valor == 0:
+            if cls.tensao_vs.valor != 0:
                 logger.warning("[BAY] Foi identificada uma leitura de Tensão VS!")
                 flags += 1
 

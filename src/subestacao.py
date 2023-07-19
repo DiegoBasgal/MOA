@@ -34,7 +34,7 @@ class Subestacao(Usina):
     condicionadores: "list[CondicionadorBase]" = []
     condicionadores_essenciais: "list[CondicionadorBase]" = []
 
-    dj_se: "LeituraModbusBit" = LeituraModbusBit(
+    dj_linha_se: "LeituraModbusBit" = LeituraModbusBit(
         rele["SE"],
         REG_RELE["SE"]["DJ_LINHA_FECHADO"],
         bit=0,
@@ -89,7 +89,7 @@ class Subestacao(Usina):
         """
         
         try:
-            if not cls.dj_se.valor:
+            if not cls.dj_linha_se.valor:
                 if cls.verificar_dj_linha():
                     EMB.escrever_bit(cls.clp["SA"], REG_CLP["SE"]["CMD_SE_FECHA_52L"], bit=4, valor=1)
                     return DJL_FECHAMENTO_OK
@@ -132,7 +132,7 @@ class Subestacao(Usina):
         logger.info("[SE] Verificando condições de fechamento do Disjuntor de Linha...")
 
         try:
-            if not BAY.dj_bay.valor:
+            if not BAY.dj_linha_bay.valor:
                 logger.warning("[SE] O Disjuntor do Bay está aberto!")
                 cls.dj_bay_aberto = True
                 flags += 1

@@ -4,6 +4,7 @@ __credits__ = ["Lucas Lavratti", ...]
 __description__ = "Este módulo corresponde a implementação da operação da Tomada da Água."
 
 import logging
+import traceback
 
 import dicionarios.dict as dct
 
@@ -12,6 +13,7 @@ from funcoes.leitura import *
 
 from usina import Usina
 from conector import ClientesUsina as cli
+from funcoes.escrita import EscritaModBusBit as EMB
 
 logger = logging.getLogger("__main__")
 
@@ -50,6 +52,22 @@ class TomadaAgua(Usina):
         bit=1,
         descricao="[TDA] Status Unidade Hidáulica"
     )
+
+    @classmethod
+    def resetar_emergencia(cls) -> "bool":
+        """
+        Função para acionar comandos de reset de TRIPS/Alarmes
+        """
+
+        try:
+            res = EMB.escrever_bit(cls.clp["TDA"], REG_CLP["TDA"]["VB_CMD_RESET_FALHAS"], bit=0, valor=1)
+            return res
+
+        except Exception:
+            logger.error("[TDA] Houve um erro ao realizar o Reset de Emergência.")
+            logger.debug(f"[TDA] Traceback: {traceback.format_exc()}")
+
+        return False
 
     @classmethod
     def atualizar_montante(cls) -> "None":

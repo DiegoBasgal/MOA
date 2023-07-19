@@ -22,7 +22,7 @@ import traceback
 from time import time, sleep
 
 from src.dicionarios.const import *
-from src.maquinas_estado.moa_sm import *
+from maquinas_estado.moa import *
 
 from conector import ClientesUsina
 
@@ -85,7 +85,7 @@ if __name__ == "__main__":
             try:
                 logger.info("Finalizando inicialização com intâncias da máquina de estados e Threads paralelas.")
 
-                threading.Thread(target=lambda: usn.leitura_temporizada()).start()
+                threading.Thread(target=lambda: usn.verificar_leituras_periodicas()).start()
 
                 sm: StateMachine = StateMachine(initial_state=Pronto(cfg, usn))
 
