@@ -55,8 +55,6 @@ class LeituraModbus:
         except Exception:
             logger.error(f"[LER] Não foi possivel realizar a Leitura do dado RAW no registrador: \"{self._descr}\". Retornando 0.")
             logger.debug(traceback.format_exc())
-            logger.debug("")
-            logger.debug(traceback.print_stack())
             return 0
 
 class LeituraModbusCoil:

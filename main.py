@@ -18,57 +18,19 @@ import json
 import threading
 import traceback
 
-from sys import stderr
-from logging import handlers
 from time import time, sleep
+from logging.config import fileConfig
 
 from src.dicionarios.const import *
 from src.maquinas_estado.moa import *
 
 from src.conector import ClientesUsina
-from src.mensageiro.msg_log_handler import MensageiroHandler
-
-rootLogger = logging.getLogger()
-if rootLogger.hasHandlers():
-    rootLogger.handlers.clear()
-rootLogger.setLevel(logging.NOTSET)
-
-logger = logging.getLogger(__name__)
-if logger.hasHandlers():
-    logger.handlers.clear()
-logger.setLevel(logging.NOTSET)
 
 if not os.path.exists(os.path.join(os.path.dirname(__file__), "logs")):
     os.mkdir(os.path.join(os.path.dirname(__file__), "logs"))
 
-def timeConverter(*args):
-    return datetime.now(tz).timetuple()
-
-tz = pytz.timezone("Brazil/East")
-thread_id = threading.get_native_id()
-logFormatter = logging.Formatter("%(asctime)s [%(levelname)-5.5s] [MOA] %(message)s")
-logFormatterSimples = logging.Formatter("[%(levelname)-5.5s] %(message)s")
-logFormatter.converter = timeConverter
-
-ch = logging.StreamHandler(stderr)
-ch.setFormatter(logFormatter)
-ch.setLevel(logging.DEBUG)
-logger.addHandler(ch)
-
-fh = handlers.TimedRotatingFileHandler(
-    os.path.join(os.path.dirname(__file__), "logs", "MOA.log"),
-    when="midnight",
-    interval=1,
-    backupCount=7,
-)  # log para arquivo
-fh.setFormatter(logFormatter)
-fh.setLevel(logging.DEBUG)
-logger.addHandler(fh)
-
-mh = MensageiroHandler()
-mh.setFormatter(logFormatterSimples)
-mh.setLevel(logging.INFO)
-logger.addHandler(mh)
+fileConfig("/opt/operacao-autonoma/logger_init.ini")
+logger = logging.getLogger("logger")
 
 if __name__ == "__main__":
     if len(sys.argv) > 1:
@@ -103,18 +65,6 @@ if __name__ == "__main__":
 
             except Exception:
                 logger.exception(f"Erro ao carregar arquivo de configuração. Tentando novamente em \"{TIMEOUT_MAIN}s\"")
-                logger.debug(f"Traceback: {traceback.format_exc()}")
-                sleep(TIMEOUT_MAIN)
-                continue
-
-            try:
-                logger.debug("")
-                logger.info("Iniciando conexões com Servidores...")
-
-                # ClientesUsina.open_all()
-
-            except Exception:
-                logger.exception(f"Erro ao iniciar classes de conexão com servidores. Tentando novamente em \"{TIMEOUT_MAIN}s\"")
                 logger.debug(f"Traceback: {traceback.format_exc()}")
                 sleep(TIMEOUT_MAIN)
                 continue
@@ -157,20 +107,14 @@ if __name__ == "__main__":
             logger.debug("-----------------------------------------------------------------")
             sm.exec()
 
-            if usn.estado_moa == MOA_SM_CONTROLE_DADOS:
+            if usn.estado_moa in (MOA_SM_CONTROLE_DADOS, MOA_SM_MODO_MANUAL):
                 t_restante = max(TEMPO_CICLO_TOTAL - (time() - t_i), 0) / ESCALA_DE_TEMPO
                 t_i = time()
             else:
                 t_restante = 1
 
             if t_restante == 0:
-                """
-                logger.debug("")
-                logger.warning("\"ATENÇÃO!\"")
-                logger.warning("O ciclo está demorando mais que o permitido!")
-                logger.warning("\"ATENÇÃO!\"")
-                logger.debug("")
-                """
+                pass
             else:
                 sleep(t_restante)
 

@@ -8,7 +8,7 @@ from src.condicionadores import *
 from src.dicionarios.reg import *
 from src.dicionarios.const import *
 
-logger = logging.getLogger("__main__")
+logger = logging.getLogger("logger")
 
 class OcorrenciasUsn:
     def __init__(self, clp: "dict[str, ModbusClient]"=None) -> None:

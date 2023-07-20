@@ -19,7 +19,7 @@ from src.agendamentos import Agendamentos
 from src.unidade_geracao import UnidadeDeGeracao
 from src.funcoes.escrita import EscritaModBusBit as EMB
 
-logger = logging.getLogger("__main__")
+logger = logging.getLogger("logger")
 
 class Usina:
     def __init__(self, cfg: dict=None):
@@ -43,11 +43,6 @@ class Usina:
         self.ug2: UnidadeDeGeracao = UnidadeDeGeracao(2, self.cfg, self.db)
         self.ugs: "list[UnidadeDeGeracao]" = [self.ug1, self.ug2]
         CondicionadorBase.ugs = self.ugs
-
-
-        for ug in self.ugs:
-            ug.lista_ugs = self.ugs
-            ug.iniciar_ultimo_estado()
 
 
         # ATRIBUIÇÃO DE VARIÁVEIS PRIVADAS
@@ -134,6 +129,10 @@ class Usina:
         # EXECUÇÃO FINAL DA INICIALIZAÇÃO
 
         logger.debug("")
+        for ug in self.ugs:
+            ug.lista_ugs = self.ugs
+            ug.iniciar_ultimo_estado()
+
         self.ler_valores()
         self.controlar_inicializacao()
         self.normalizar_usina()

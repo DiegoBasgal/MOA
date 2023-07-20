@@ -16,12 +16,12 @@ from src.funcoes.leitura import *
 from src.maquinas_estado.ug import *
 
 import src.ocorrencias as oco_ug
-from src.conector import ClientesUsina
+from src.conector import ClientesUsina as cli
 from src.banco_dados import BancoDados
 from src.funcoes.escrita import EscritaModBusBit as EMB
 
 
-logger = logging.getLogger("__main__")
+logger = logging.getLogger("logger")
 
 class UnidadeDeGeracao:
     def __init__(self, id: "int", cfg=None, db: "BancoDados"=None):
@@ -36,10 +36,10 @@ class UnidadeDeGeracao:
 
         self.db = db
         self.cfg = cfg
-        self.rv = ClientesUsina.rv
-        self.rt = ClientesUsina.rt
-        self.clp = ClientesUsina.clp
-        self.rele = ClientesUsina.rele
+        self.rv = cli.rv
+        self.rt = cli.rt
+        self.clp = cli.clp
+        self.rele = cli.rele
         self.oco = oco_ug.OcorrenciasUg(self.id, self.clp)
 
 
