@@ -31,7 +31,7 @@ class LeituraBase:
 
         # ATRIBUIÇÃO DE VARIÁVEIS PÚBLICAS
 
-        self.logger = logging.getLogger("__main__")
+        self.logger = logging.getLogger("logger")
 
     def __str__(self):
         """

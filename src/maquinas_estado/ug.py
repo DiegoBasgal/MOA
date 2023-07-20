@@ -4,7 +4,7 @@ from threading import Thread
 
 from src.dicionarios.const import *
 
-logger = logging.getLogger("__main__")
+logger = logging.getLogger("logger")
 
 class State:
     def __init__(self, parent=None):

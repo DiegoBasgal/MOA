@@ -24,7 +24,7 @@ from src.agendamentos import Agendamentos
 from src.unidade_geracao import UnidadeGeracao
 from src.Condicionadores import CondicionadorBase
 
-logger = logging.getLogger("__main__")
+logger = logging.getLogger("logger")
 
 class Usina:
     def __init__(self, cfg: dict=None):

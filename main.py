@@ -18,58 +18,19 @@ import json
 import threading
 import traceback
 
-from sys import stderr
-from logging import handlers
 from time import time, sleep
+from logging.config import fileConfig
 
 from src.dicionarios.const import *
 from src.maquinas_estado.moa import *
 
 from src.conector import ClientesUsina
-from src.mensageiro.msg_log_handler import MensageiroHandler
-
-rootLogger = logging.getLogger()
-if rootLogger.hasHandlers():
-    rootLogger.handlers.clear()
-rootLogger.setLevel(logging.NOTSET)
-
-logger = logging.getLogger(__name__)
-if logger.hasHandlers():
-    logger.handlers.clear()
-logger.setLevel(logging.NOTSET)
 
 if not os.path.exists(os.path.join(os.path.dirname(__file__), "logs")):
     os.mkdir(os.path.join(os.path.dirname(__file__), "logs"))
 
-def timeConverter(*args):
-    return datetime.now(tz).timetuple()
-
-tz = pytz.timezone("Brazil/East")
-thread_id = threading.get_native_id()
-logFormatter = logging.Formatter("%(asctime)s [%(levelname)-5.5s] [MOA] %(message)s")
-logFormatterSimples = logging.Formatter("[%(levelname)-5.5s] %(message)s")
-logFormatter.converter = timeConverter
-
-ch = logging.StreamHandler(stderr)
-ch.setFormatter(logFormatter)
-ch.setLevel(logging.DEBUG)
-logger.addHandler(ch)
-
-fh = handlers.TimedRotatingFileHandler(
-    os.path.join(os.path.dirname(__file__), "logs", "MOA.log"),
-    when="midnight",
-    interval=1,
-    backupCount=7,
-)  # log para arquivo
-fh.setFormatter(logFormatter)
-fh.setLevel(logging.DEBUG)
-logger.addHandler(fh)
-
-mh = MensageiroHandler()
-mh.setFormatter(logFormatterSimples)
-mh.setLevel(logging.INFO)
-logger.addHandler(mh)
-
+fileConfig("/opt/operacao-autonoma/logger_config.ini")
+logger = logging.getLogger("logger")
 
 if __name__ == "__main__":
     if len(sys.argv) > 1:
@@ -168,9 +129,6 @@ if __name__ == "__main__":
                 t_restante = 1
 
             if t_restante == 0:
-                """logger.warning("\"ATENÇÃO!\"\n")
-                logger.warning("O ciclo está demorando mais que o permitido!")
-                logger.warning("\"ATENÇÃO!\"\n")"""
                 pass
             else:
                 sleep(t_restante)

@@ -10,7 +10,7 @@ from urllib.request import Request, urlopen
 
 from src.banco_dados import BancoDados
 
-logger = logging.getLogger("__main__")
+logger = logging.getLogger("logger")
 
 class Voip:
 

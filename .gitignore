@@ -6,7 +6,7 @@
 **/*.log
 **/*.out
 **/cover/*
-**/log*
+**/logs
 **/venv*
 **/.venv*
 **/__pycache__*

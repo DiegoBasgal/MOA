@@ -16,7 +16,7 @@ from src.banco_dados import BancoDados
 from src.conector import ClientesUsina
 from src.ocorrencias import OcorrenciasUg
 
-logger = logging.getLogger("__main__")
+logger = logging.getLogger("logger")
 
 class UnidadeGeracao:
     def __init__(self, id: "int", cfg=None, db: "BancoDados"=None):
@@ -117,13 +117,13 @@ class UnidadeGeracao:
 
         # ATRIBUIÇÃO DE VARIÁVEIS PROTEGIDAS
 
-        self._leitura_potencia = LeituraModbus(
+        self._leitura_potencia: "LeituraModbus" = LeituraModbus(
             f"UG{self.id}_Potência",
             self.clp[f"UG{self.id}"],
             REG[f"UG{self.id}_RA_PM_710_Potencia_Ativa"],
             op=4,
         )
-        self._leitura_horimetro = LeituraSoma(
+        self._leitura_horimetro: "LeituraSoma" = LeituraSoma(
             f"UG{self.id}_Horímetro",
             self.__leitura_horimetro_hora,
             self.__leitura_horimetro_min
@@ -215,7 +215,7 @@ class UnidadeGeracao:
         return self._leitura_horimetro.valor
 
     @property
-    def etapa_atual(self) -> int:
+    def etapa_atual(self) -> "int":
         # PROPRIEDADE -> Retorna a etapa atual da Unidade.
 
         try:
@@ -241,37 +241,37 @@ class UnidadeGeracao:
     # Property/Setter -> VARIÁVEIS PROTEGIDAS
 
     @property
-    def prioridade(self) -> int:
+    def prioridade(self) -> "int":
         # PROPRIEDADE -> Retorna a prioridade da Unidade.
 
         return self.__prioridade
 
     @prioridade.setter
-    def prioridade(self, var) -> None:
+    def prioridade(self, var: "int") -> "None":
         # SETTER -> Atribui o novo valor de prioridade da Unidade.
 
         self.__prioridade = var
 
     @property
-    def codigo_state(self) -> int:
+    def codigo_state(self) -> "int":
         # PROPRIEDADE -> Retorna o valor de estado da Unidade.
 
         return self.__codigo_state
 
     @codigo_state.setter
-    def codigo_state(self, var) -> None:
+    def codigo_state(self, var: "int") -> "None":
         # SETTER -> Atribui o novo valor de estado da Unidade.
 
         self.__codigo_state = var
 
     @property
-    def setpoint(self) -> int:
+    def setpoint(self) -> "int":
         # PROPRIEDADE -> Retorna o valor de setpoint da Unidade.
 
         return self.__setpoint
 
     @setpoint.setter
-    def setpoint(self, var: int):
+    def setpoint(self, var: "int"):
         # SETTER -> Atribui o novo valor de setpoint da Unidade.
 
         if self.limpeza_grade:
@@ -284,37 +284,37 @@ class UnidadeGeracao:
             self.__setpoint = int(var)
 
     @property
-    def setpoint_minimo(self) -> int:
+    def setpoint_minimo(self) -> "int":
         # PROPRIEDADE -> Retorna o valor de setpoint mínimo da Unidade.
 
         return self.__setpoint_minimo
 
     @setpoint_minimo.setter
-    def setpoint_minimo(self, var: int):
+    def setpoint_minimo(self, var: "int"):
         # SETTER -> Atribui o novo valor de setpoint mínimo da Unidade.
 
         self.__setpoint_minimo = var
 
     @property
-    def setpoint_maximo(self) -> int:
+    def setpoint_maximo(self) -> "int":
         # PROPRIEDADE -> Retorna o valor de setpoint máximo da Unidade.
 
         return self.__setpoint_maximo
 
     @setpoint_maximo.setter
-    def setpoint_maximo(self, var: int):
+    def setpoint_maximo(self, var: "int"):
         # SETTER -> Atribui o novo valor de setpoint máximo da Unidade.
 
         self.__setpoint_maximo = var
 
     @property
-    def tentativas_de_normalizacao(self) -> int:
+    def tentativas_de_normalizacao(self) -> "int":
         # PROPRIEDADE -> Retorna o valor de tentativas de normalização da Unidade.
 
         return self.__tentativas_de_normalizacao
 
     @tentativas_de_normalizacao.setter
-    def tentativas_de_normalizacao(self, var: int):
+    def tentativas_de_normalizacao(self, var: "int"):
         # SETTER -> Atribui o novo valor de tentativas de normalização da Unidade.
 
         self.__tentativas_de_normalizacao = var
@@ -347,7 +347,7 @@ class UnidadeGeracao:
     # FUNÇÕES
 
     @staticmethod
-    def get_time() -> datetime:
+    def get_time() -> "datetime":
         """
         Função para obter data e hora atual.
         """
@@ -455,9 +455,6 @@ class UnidadeGeracao:
         elif not self.borda_parar and self.parar():
             self.borda_parar = True
 
-        else:
-            logger.debug(f"[UG{self.id}] Unidade Parando")
-
     def step(self) -> "None":
         """
         Função principal de passo da Unidade.
@@ -560,7 +557,7 @@ class UnidadeGeracao:
             logger.error(f"[UG{self.id}] Não foi possível enviar o comando de parada.")
             logger.debug(traceback.format_exc())
 
-    def enviar_setpoint(self, setpoint_kw: int) -> "bool":
+    def enviar_setpoint(self, setpoint_kw: "int") -> "bool":
         """
         Função para envio do valor de setpoint para o controle de potência das
         Unidades.

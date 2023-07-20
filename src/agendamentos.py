@@ -10,8 +10,7 @@ from src.dicionarios.const import *
 
 from src.banco_dados import BancoDados
 
-
-logger = logging.getLogger("__main__")
+logger = logging.getLogger("logger")
 
 class Agendamentos:
     def __init__(self, cfg=None, db: BancoDados=None, usina=None):
@@ -169,11 +168,12 @@ class Agendamentos:
             logger.info("[AGN] Indisponibilizando a usina via agendamento.")
             for ug in self.usn.ugs:
                 ug.forcar_estado_indisponivel()
+                ug.step()
 
-            while (not self.usn.ug1.etapa_atual == UG_PARADA and not self.usn.ug2.etapa_atual == UG_PARADA):
+            while (not self.usn.ug1.etapa_atual == UG_PARADA and not self.usn.ug2.etapa_atual == UG_PARADA and not self.usn.ug3.etapa_atual == UG_PARADA):
                 self.usn.ler_valores()
-                logger.debug("[AGN] Indisponibilizando Usina...")
-                sleep(2)
+                logger.debug("[AGN] Aguardando parada total das Unidades...")
+                sleep(5)
 
             self.usn.acionar_emergencia()
             logger.debug("[AGN] Emergência pressionada após indisponibilização agendada mudando para modo manual para evitar normalização automática.")
@@ -192,10 +192,9 @@ class Agendamentos:
                 self.cfg[f"pot_maxima_ug{ug.id}"] = self.cfg["pot_limpeza_grade"]
 
                 if ug.etapa_atual == UG_PARADA or ug.etapa_atual == UG_PARANDO:
-                    logger.debug(f"A UG{ug.id} está no estado parada/parando.")
+                    logger.debug(f"[AGN] UG{ug.id} está no estado parada/parando.")
                 else:
                     ug.limpeza_grade = True
-
 
         if agendamento[3] == AGN_NORMALIZAR_POT_UGS_MINIMO:
             for ug in self.usn.ugs:

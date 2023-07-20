@@ -22,7 +22,7 @@ class BancoDados:
         self.cursor = self.conn.cursor()
 
 
-    def get_ultimo_estado_ug(self, ug_id) -> int:
+    def get_ultimo_estado_ug(self, ug_id) -> "int":
         """
         Função para extrair o último estado da Unidade de Geração do Banco.
         """
@@ -35,7 +35,7 @@ class BancoDados:
         estado = self.cursor.fetchone()
         return estado
 
-    def get_parametros_usina(self) -> list:
+    def get_parametros_usina(self) -> "list":
         """
         Função para extrair os parâmetros alterados na Interface WEB.
         """
@@ -53,7 +53,7 @@ class BancoDados:
         self.conn.commit()
         return parametros
 
-    def get_agendamentos_pendentes(self) -> list:
+    def get_agendamentos_pendentes(self) -> "list":
         """
         Função para extrair a lista de agendamentos pendentes criados na Interface WEB.
         """
@@ -68,7 +68,7 @@ class BancoDados:
         self.conn.commit()
         return result
 
-    def get_contato_emergencia(self) -> list:
+    def get_contato_emergencia(self) -> "list":
         """
         Função para extrair lista de contatos de sobreaviso adicionados na Interface
         WEB, para chamada por Voip.
@@ -84,7 +84,7 @@ class BancoDados:
         self.conn.commit()
         return parametros
 
-    def get_executabilidade(self, id_comando) -> dict:
+    def get_executabilidade(self, id_comando) -> "dict":
         """
         Função para extrair a variável de verificação do modo de execução de
         agendamentos.
@@ -103,7 +103,7 @@ class BancoDados:
             "executavel_em_manual": parametros_raw[1],
             }
 
-    def update_modo_moa(self, modo: bool) -> None:
+    def update_modo_moa(self, modo: bool) -> "None":
         """
         Função para atualizar o modo do MOA no Banco.
         """
@@ -122,7 +122,7 @@ class BancoDados:
             )
         self.conn.commit()
 
-    def update_remove_emergencia(self) -> None:
+    def update_remove_emergencia(self) -> "None":
         """
         Função para atualizar o valor de emergência (desativada) do Banco.
         """
@@ -134,7 +134,7 @@ class BancoDados:
         )
         self.conn.commit()
 
-    def update_tda_offline(self, status=False) -> None:
+    def update_tda_offline(self, status=False) -> "None":
         """
         Função para atualizar o status da operação com Tomada da Água Offline no
         Banco.
@@ -154,7 +154,7 @@ class BancoDados:
             )
         self.conn.commit()
 
-    def update_valores_usina(self, valores) -> None:
+    def update_valores_usina(self, valores) -> "None":
         """
         Função para atualizar os valores de operação do MOA no Banco.
         """
@@ -178,7 +178,7 @@ class BancoDados:
         )
         self.conn.commit()
 
-    def update_debug(self, valores) -> None:
+    def update_debug(self, valores) -> "None":
         """
         Função para atualizar os valores de operação DEBUG do MOA no Banco.
         """
@@ -200,7 +200,7 @@ class BancoDados:
         )
         self.conn.commit()
 
-    def update_controle_estados(self, valores) -> None:
+    def update_controle_estados(self, valores) -> "None":
         """
         Função para atualizar o último estado das Unidades de Geração no Banco.
         """
@@ -213,7 +213,7 @@ class BancoDados:
         )
         self.conn.commit()
 
-    def update_alarmes(self, valores) -> None:
+    def update_alarmes(self, valores) -> "None":
         """
         Função para atualizar a lista de acionamentos/alarmes para visualização
         na interface WEB.
@@ -226,7 +226,7 @@ class BancoDados:
         )
         self.conn.commit()
 
-    def update_agendamento(self, id_agendamento, executado, obs="") -> None:
+    def update_agendamento(self, id_agendamento, executado, obs="") -> "None":
         """
         Função para atualizar se o agendamento foi executado no Banco para a interface
         WEB.

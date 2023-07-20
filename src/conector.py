@@ -10,7 +10,7 @@ import src.dicionarios.dict as d
 
 from pyModbusTCP.client import ModbusClient
 
-logger = logging.getLogger("__main__")
+logger = logging.getLogger("logger")
 
 class ClientesUsina:
 

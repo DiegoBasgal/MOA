@@ -16,7 +16,7 @@ from src.dicionarios.const import *
 from src.banco_dados import BancoDados
 
 
-logger = logging.getLogger("__main__")
+logger = logging.getLogger("logger")
 
 class OcorrenciasUsn:
     def __init__(self, clp: "dict[str, ModbusClient]"=None, db: "BancoDados"=None) -> "None":
