@@ -40,46 +40,42 @@ class UnidadeDeGeracao:
         self.rt = cli.rt
         self.clp = cli.clp
         self.rele = cli.rele
-        self.oco = oco_ug.OcorrenciasUg(self.id, self.clp)
+        self.oco = oco_ug.OcorrenciasUg(self, self.clp)
 
 
         # ATRIBUIÇÃO DE VARIÁVEIS PRIVADAS
 
-        self.__etapa_alvo: "int" = 0
-        self.__etapa_atual: "int" = 0
-        self.__ultima_etapa_alvo: "int" = 0
-        self.__ultima_etapa_atual: "int" = 0
         self.__tempo_entre_tentativas: "int" = 0
         self.__limite_tentativas_de_normalizacao: "int" = 3
 
-        self.__leitura_dj_tsa: LeituraModbusBit = LeituraModbusBit(
+        self.__leitura_dj_tsa: "LeituraModbusBit" = LeituraModbusBit(
             self.clp["SA"],
             REG_SA["SA_ED_PSA_DIJS_TSA_FECHADO"],
             descr=f"[UG{self.id}] Status Disjuntor Serviço Auxiliar"
         )
-        self.__leitura_dj_gmg = LeituraModbusBit(
+        self.__leitura_dj_gmg: "LeituraModbusBit" = LeituraModbusBit(
             self.clp["SA"],
             REG_SA["SA_ED_PSA_DIJS_GMG_FECHADO"],
             descr=f"[UG{self.id}] Status Disjuntor Grupo Motor Gerador"
         )
-        self.__leitura_dj_linha: LeituraModbusBit = LeituraModbusBit(
+        self.__leitura_dj_linha: "LeituraModbusBit" = LeituraModbusBit(
             self.clp["SA"],
             REG_SA["SA_ED_PSA_SE_DISJ_LINHA_FECHADO"],
             descr=f"[UG{self.id}] Status Disjuntor Linha"
         )
-        self.__tensao: LeituraModbus = LeituraModbus(
+        self.__tensao: "LeituraModbus" = LeituraModbus(
             self.clp[f"UG{self.id}"],
             REG_RELE["UG"][f"RELE_UG{self.id}_VAB"],
             op=3,
             descr="[USN] Tensão Unidade"
         )
-        self.__leitura_etapa_atual: LeituraModbus = LeituraModbus(
+        self.__leitura_etapa_atual: "LeituraModbus" = LeituraModbus(
             self.clp[f"UG{self.id}"],
             REG_UG[f"UG{self.id}_ED_STT_PASSO_ATUAL_BIT"],
             op=3,
             descr=f"[UG{self.id}] Etapa Atual"
         )
-        self.__leitura_etapa_alvo: LeituraModbus = LeituraModbus(
+        self.__leitura_etapa_alvo: "LeituraModbus" = LeituraModbus(
             self.clp[f"UG{self.id}"],
             REG_UG[f"UG{self.id}_ED_STT_PASSO_SELECIONADO_BIT"],
             op=3,
@@ -88,6 +84,11 @@ class UnidadeDeGeracao:
 
 
         # ATRIBUIÇÃO DE VARIÁVEIS PROTEGIDAS
+
+        self._etapa_alvo: "int" = 0
+        self._etapa_atual: "int" = 0
+        self._ultima_etapa_alvo: "int" = 0
+        self._ultima_etapa_atual: "int" = 0
 
         self._setpoint: "int" = 0
         self._prioridade: "int" = 0
@@ -98,13 +99,13 @@ class UnidadeDeGeracao:
 
         self._lista_ugs: "list[UnidadeDeGeracao]" = []
 
-        self._leitura_potencia = LeituraModbus(
+        self._leitura_potencia: "LeituraModbus" = LeituraModbus(
             self.rele[f"UG{self.id}"],
             REG_RELE["UG"][f"RELE_UG{self.id}_P"],
             op=3,
             descr=f"[UG{self.id}] Potência Ativa"
         )
-        self._leitura_potencia_aparente = LeituraModbus(
+        self._leitura_potencia_aparente: "LeituraModbus" = LeituraModbus(
             self.rele[f"UG{self.id}"],
             REG_RELE["UG"][f"RELE_UG{self.id}_S"],
             op=3,
@@ -116,14 +117,9 @@ class UnidadeDeGeracao:
 
         self.tempo_normalizar: "int" = 0
 
-        self.aguardar_etapa_alvo: "int" = 0
-        self.aguardar_etapa_atual: "int" = 0
-
         self.ug_parando: "bool" = False
         self.parar_timer: "bool" = False
         self.borda_parar: "bool" = False
-        self.acionar_voip: "bool" = False
-        self.limpeza_grade: "bool" = False
         self.release_timer: "bool" = False
         self.borda_partindo: "bool" = False
         self.ug_sincronizando: "bool" = False
@@ -167,53 +163,88 @@ class UnidadeDeGeracao:
         return self.__limite_tentativas_de_normalizacao
 
     @property
-    def leitura_potencia(self) -> "int | float":
+    def leitura_potencia(self) -> "float":
         return self._leitura_potencia.valor
 
-    # @property
-    # def leitura_potencia_reativa(self) -> "int | float":
-    #     return self._leitura_potencia_reativa.valor
+    @property
+    def leitura_potencia_aparente(self) -> "float":
+        return self._leitura_potencia_aparente.valor
 
     @property
-    def leitura_potencia_aparente(self) -> "int | float":
-        return self._leitura_potencia_aparente.valor
+    def etapa_atual(self) -> "int":
+        try:
+            self._etapa_atual = self.__leitura_etapa_atual.valor
+            self._ultima_etapa_atual = self._etapa_atual
+            return self._etapa_atual
+
+        except Exception:
+            logger.error(f"[UG{self.id}] Erro na leitura de \"Etapa Atual\". Mantendo última etapa.")
+            return self._ultima_etapa_atual
+
+    @property
+    def etapa_alvo(self) -> "int":
+        try:
+            self._etapa_alvo = self.__leitura_etapa_alvo.valor
+            return self._etapa_alvo
+
+        except Exception:
+            logger.error(f"[UG{self.id}] Erro na leitura de \"Etapa Alvo\". Mantendo última etapa.")
+            self._etapa_alvo = self._ultima_etapa_alvo
+            return self._etapa_alvo
 
     @property
     def etapa(self) -> "int":
         try:
             if self.etapa_atual == UG_PARADA and self.etapa_alvo == UG_PARADA:
-                self.__ultima_etapa_alvo = self.etapa_alvo
-                self.__ultima_etapa_atual = self.etapa_atual
+                self._ultima_etapa_alvo = self.etapa_alvo
                 return UG_PARADA
 
-            elif UG_PARADA < self.etapa_atual < UG_SINCRONIZADA and self.etapa_alvo == UG_PARADA:
-                self.__ultima_etapa_alvo = self.etapa_alvo
-                self.__ultima_etapa_atual = self.etapa_atual
-                return UG_PARANDO
-
-            elif UG_PARADA < self.etapa_atual < UG_SINCRONIZADA and self.etapa_alvo == UG_SINCRONIZADA:
-                self.__ultima_etapa_alvo = self.etapa_alvo
-                self.__ultima_etapa_atual = self.etapa_atual
-                return UG_SINCRONIZANDO
-
             elif self.etapa_atual == UG_SINCRONIZADA and self.etapa_alvo == UG_SINCRONIZADA:
-                self.__ultima_etapa_alvo = self.etapa_alvo
-                self.__ultima_etapa_atual = self.etapa_atual
+                self._ultima_etapa_alvo = self.etapa_alvo
                 return UG_SINCRONIZADA
 
-            else:
-                if self.etapa_atual < self.__ultima_etapa_atual or self.etapa_alvo < self.__ultima_etapa_alvo:
-                    self.__ultima_etapa_alvo = self.etapa_alvo
-                    self.__ultima_etapa_atual = self.etapa_atual
-                    return UG_PARANDO
+            elif UG_PARADA < self.etapa_atual < UG_SINCRONIZADA and self.etapa_alvo == UG_PARADA:
                 
-                elif self.etapa_atual > self.__ultima_etapa_atual or self.etapa_alvo > self.__ultima_etapa_alvo:
-                    self.__ultima_etapa_alvo = self.etapa_alvo
-                    self.__ultima_etapa_atual = self.etapa_atual
+                if self._ultima_etapa_alvo != self.etapa_alvo:
+                    if self._ultima_etapa_alvo < self.etapa_alvo:
+                        self._ultima_etapa_alvo = self.etapa_alvo
+                        return UG_SINCRONIZANDO
+
+                    elif self._ultima_etapa_alvo > self.etapa_alvo:
+                        self._ultima_etapa_alvo = self.etapa_alvo
+                        return UG_PARANDO
+
+                else:
+                    self._ultima_etapa_alvo = self.etapa_alvo
+                    return UG_PARANDO
+
+            elif UG_PARADA < self.etapa_atual < UG_SINCRONIZADA and self.etapa_alvo == UG_SINCRONIZADA:
+                if self._ultima_etapa_alvo != self.etapa_alvo:
+                    if self._ultima_etapa_alvo > self.etapa_alvo:
+                        self._ultima_etapa_alvo = self.etapa_alvo
+                        return UG_PARANDO
+
+                    elif self._ultima_etapa_alvo < self.etapa_alvo:
+                        self._ultima_etapa_alvo = self.etapa_alvo
+                        return UG_SINCRONIZANDO
+
+                else:
+                    self._ultima_etapa_alvo = self.etapa_alvo
                     return UG_SINCRONIZANDO
 
-                self.__ultima_etapa_alvo = self.etapa_alvo
-                self.__ultima_etapa_atual = self.etapa_atual
+            # else:
+            #     if self.etapa_atual < self.__ultima_etapa_atual or self.etapa_alvo < self.__ultima_etapa_alvo:
+            #         self.__ultima_etapa_alvo = self.etapa_alvo
+            #         self.__ultima_etapa_atual = self.etapa_atual
+            #         return UG_PARANDO
+
+            #     elif self.etapa_atual > self.__ultima_etapa_atual or self.etapa_alvo > self.__ultima_etapa_alvo:
+            #         self.__ultima_etapa_alvo = self.etapa_alvo
+            #         self.__ultima_etapa_atual = self.etapa_atual
+            #         return UG_SINCRONIZANDO
+
+            #     self.__ultima_etapa_alvo = self.etapa_alvo
+            #     self.__ultima_etapa_atual = self.etapa_atual
 
                 return self.__ultima_etapa_atual
 
@@ -221,38 +252,6 @@ class UnidadeDeGeracao:
             logger.error(f"[UG{self.id}] Houve um erro no controle de Etapas da Unidade. Mantendo Etapa anterior.")
             logger.debug(traceback.format_exc())
             return self.__ultima_etapa_atual
-
-
-    @property
-    def etapa_atual(self) -> "int":
-        try:
-            if self.__leitura_etapa_atual.valor == None:
-                return self.__etapa_atual
-            else:
-                self.__etapa_atual = self.__leitura_etapa_atual.valor
-                return self.__etapa_atual
-
-        except Exception:
-            logger.error(f"[UG{self.id}] Não foi possível realizar a leitura da \"Etapa Atual\". Mantendo Etapa Atual anteriror.")
-            logger.debug(traceback.format_exc())
-            self.__etapa_atual = self.__ultima_etapa_atual
-            return self.__etapa_atual
-
-    @property
-    def etapa_alvo(self) -> "int":
-        try:
-
-            if self.__leitura_etapa_alvo.valor == None:
-                return self.__etapa_alvo
-            else:
-                self.__etapa_alvo = self.__leitura_etapa_alvo.valor
-                return self.__etapa_alvo
-
-        except Exception:
-            logger.error(f"[UG{self.id}] Não foi possível realizar a leitura da \"Etapa Alvo\". Mantendo etapa alvo anterior.")
-            logger.debug(traceback.format_exc())
-            self.__etapa_alvo = self.__ultima_etapa_alvo
-            return self.__etapa_alvo
 
 
     # Property/Setter -> VARIÁVEIS PROTEGIDAS

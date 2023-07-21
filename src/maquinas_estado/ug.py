@@ -59,7 +59,7 @@ class StateRestrito(State):
 
     def step(self) -> State:
         self.parent.bloquear_unidade()
-        self.parent.oco.controle_limites_operacao()
+        self.parent.oco.controlar_limites_operacao()
         flag = self.parent.oco.verificar_condicionadores()
 
         if flag == CONDIC_INDISPONIBILIZAR:
@@ -98,7 +98,7 @@ class StateDisponivel(State):
         self.parent.borda_parar = False
 
     def step(self) -> State:
-        self.parent.oco.controle_limites_operacao()
+        self.parent.oco.controlar_limites_operacao()
         flag = self.parent.oco.verificar_condicionadores()
 
         if flag == CONDIC_INDISPONIBILIZAR:
@@ -113,9 +113,6 @@ class StateDisponivel(State):
             return self if self.parent.normalizar_unidade() else StateIndisponivel(self.parent)
 
         else:
-            if self.parent.limpeza_grade:
-                self.parent.setpoint = self.parent.setpoint_minimo = self.parent.cfg["pot_limpeza_grade"]
-
             self.parent.controle_etapas()
 
             return self

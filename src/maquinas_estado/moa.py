@@ -26,7 +26,7 @@ class StateMachine:
             self.state = FalhaCritica()
 
 class State:
-    def __init__(self, usina: Usina=None, *args, **kwargs):
+    def __init__(self, usina: "Usina"=None, *args, **kwargs):
         if usina is None:
             logger.error(f"Erro ao carregar a classe da Usina na máquina de estados.")
             return FalhaCritica()
@@ -38,10 +38,10 @@ class State:
 
         self.usn.estado_moa = MOA_SM_NAO_INICIALIZADO
 
-    def get_time(self) -> datetime:
+    def get_time(self) -> "datetime":
         return datetime.now(pytz.timezone("Brazil/East")).replace(tzinfo=None)
 
-    def run(self) -> object:
+    def run(self) -> "object":
         return self
 
 class FalhaCritica(State):
@@ -65,8 +65,6 @@ class ControleEstados(State):
         super().__init__(usn, *args, **kwargs)
 
         self.usn.estado_moa = MOA_SM_CONTROLE_ESTADOS
-
-        # self.usn.clp["MOA"].write_single_coil(REG_MOA["PAINEL_LIDO"], [1])
 
     def run(self):
         self.usn.ler_valores()
@@ -96,7 +94,7 @@ class ControleEstados(State):
                 return Emergencia(self.usn)
 
             elif flag == CONDIC_NORMALIZAR:
-                if self.usn.normalizar_usina() == False:
+                if self.usn.normalizar_usina() == NORM_USN_FALTA_TENSAO:
                     return Emergencia(self.usn) if self.usn.aguardar_tensao() == False else ControleDados(self.usn)
                 else:
                     return ControleDados(self.usn)
@@ -154,22 +152,27 @@ class ModoManual(State):
 
     def run(self):
         self.usn.ler_valores()
-        logger.debug(f"[USN] Leitura de Nível:                   {self.usn.nv_montante_recente:0.3f}")
+
+        logger.debug(f"[USN] Leitura de Nível:                   {self.usn.nv_montante:0.3f}")
         logger.debug(f"[USN] Potência no medidor:                {self.usn.potencia_ativa:0.3f}")
         logger.debug("")
 
         for ug in self.usn.ugs:
+            ug.setpoint = ug.leitura_potencia
+
             logger.debug(f"[UG{ug.id}] Unidade:                            \"{UG_SM_STR_DCT[ug.codigo_state]}\"")
             logger.debug(f"[UG{ug.id}] Etapa atual:                        \"{ug.etapa}\"")
             logger.debug(f"[UG{ug.id}] Leitura de Potência:                {ug.leitura_potencia}")
             logger.debug("")
-            ug.setpoint = ug.leitura_potencia
 
         self.usn.controle_ie = sum(ug.leitura_potencia for ug in self.usn.ugs) / self.usn.cfg["pot_maxima_alvo"]
+        self.usn.controle_i = max(min(self.usn.controle_ie - (self.usn.controle_i * self.usn.cfg["ki"]) - self.usn.cfg["kp"] * self.usn.erro_nv - self.usn.cfg["kd"] * (self.usn.erro_nv - self.usn.erro_nv_anterior), 0.8), 0)
 
         self.usn.escrever_valores()
+
         if self.usn.modo_autonomo:
             logger.debug("Comando acionado: \"Habilitar modo autônomo\".")
+
             self.usn.ler_valores()
             sleep(2)
             return ControleDados(self.usn)

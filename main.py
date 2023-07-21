@@ -29,7 +29,7 @@ from src.conector import ClientesUsina
 if not os.path.exists(os.path.join(os.path.dirname(__file__), "logs")):
     os.mkdir(os.path.join(os.path.dirname(__file__), "logs"))
 
-fileConfig("/opt/operacao-autonoma/logger_init.ini")
+fileConfig("/opt/operacao-autonoma/logger_config.ini")
 logger = logging.getLogger("logger")
 
 if __name__ == "__main__":
@@ -48,8 +48,10 @@ if __name__ == "__main__":
     while not executar:
         n_tentativa += 1
         logger.info(f"Tentativa:                                {n_tentativa}/3")
+
         if n_tentativa == 3:
             prox_estado = FalhaCritica
+
         else:
             try:
                 logger.debug("")
