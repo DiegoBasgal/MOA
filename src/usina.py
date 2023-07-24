@@ -55,13 +55,13 @@ class Usina:
         self.ug1 = UG(self, 1)
         self.ug2 = UG(self, 2)
 
-        # ATRIBUIÇÃO DE VARIÀVEIS
+        # ATRIBUIÇÃO DE VARIÁVEIS PRIVADAS
 
-        # PRIVADAS
         self.__split1: "bool" = False
         self.__split2: "bool" = False
 
-        # PROTEGIDAS
+        # ATRIBUIÇÃO DE VARIÁVEIS PROTEGIDAS
+
         self._pid_inicial: "int" = -1
         self._tentativas_normalizar: "int" = 0
 
@@ -69,7 +69,8 @@ class Usina:
 
         self._modo_autonomo: "bool" = False
 
-        # PÚBLICAS
+        # ATRIBUIÇÃO DE VARIÁVEIS PÚBLICAS
+
         self.estado_moa: "int" = 0
 
         self.pot_disp: "int" = 0
@@ -102,19 +103,27 @@ class Usina:
 
     @property
     def modo_autonomo(self) -> "bool":
+        # PROPRIEDADE -> Retorna o modo do MOA.
+
         return self._modo_autonomo
 
     @modo_autonomo.setter
     def modo_autonomo(self, var: "bool") -> "None":
+        # SETTER -> Atribui o novo valor do modo do MOA e atualiza no Banco de Dados.
+
         self._modo_autonomo = var
         self.bd.update_modo_moa(var)
 
     @property
     def tentativas_normalizar(self) -> "int":
+        # PROPRIEDADE -> Retorna o valor de Tentativas de Normalização.
+
         return self._tentativas_normalizar
 
     @tentativas_normalizar.setter
     def tentativas_normalizar(self, var: "int") -> "None":
+        # SETTER -> Atribui o novo valor de Tentativas de Normalização.
+
         self._tentativas_normalizar = var
 
 
@@ -258,6 +267,7 @@ class Usina:
         for condic in condics:
             if condic.gravidade == CONDIC_INDISPONIBILIZAR:
                 return CONDIC_INDISPONIBILIZAR
+
             elif condic.gravidade == CONDIC_NORMALIZAR:
                 flag = CONDIC_NORMALIZAR
 
@@ -320,6 +330,10 @@ class Usina:
         pot_alvo = self.ajustar_potencia(pot_alvo)
 
     def ajustar_potencia(self, pot_alvo: "float") -> "float":
+        """
+        Função para ajustar a potência de controle após do cálculo do PID.
+        """
+
         if self._pot_alvo_anterior == -1:
             self._pot_alvo_anterior = pot_alvo
 
