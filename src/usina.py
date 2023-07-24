@@ -32,7 +32,7 @@ from tomada_agua import TomadaAgua as TDA
 from unidade_geracao import UnidadeGeracao as UG
 from servico_auxiliar import ServicoAuxiliar as SA
 
-logger = logging.getLogger("__main__")
+logger = logging.getLogger("logger")
 
 class Usina:
     def __init__(self, cfg: "dict" = None) -> "None":
@@ -160,25 +160,6 @@ class Usina:
             logger.debug(f"[USN] Traceback: {traceback.format_exc()}")
             return False
 
-    def normalizar_inicializacao(self) -> "None":
-        """
-        Funçao para ajustar variáveis de cálculos de controle de operação, na inicialização
-        da Classe da Usina.
-        """
-
-        for ug in self.ugs:
-            if ug.etapa_atual == UG_SINCRONIZADA:
-                self.ug_operando += 1
-
-        self.__split1 = True if self.ug_operando == 1 else False
-        self.__split2 = True if self.ug_operando == 2 else False
-
-        self.controle_ie = self.ajustar_ie_padrao()
-
-        self.clp["MOA"].write_single_coil(REG_CLP["MOA"]["MOA_OUT_BLOCK_UG1"], [0])
-        self.clp["MOA"].write_single_coil(REG_CLP["MOA"]["MOA_OUT_BLOCK_UG2"], [0])
-        self.clp["MOA"].write_single_coil(REG_CLP["MOA"]["MOA_OUT_BLOCK_UG3"], [0])
-
     def normalizar_usina(self) -> "int":
         """
         Função para normalização de ocorrências da Usina.
@@ -222,6 +203,25 @@ class Usina:
         else:
             logger.debug("[USN] A normalização foi executada menos de 1 minuto atrás.")
             return NORM_USN_JA_EXECUTADA
+
+    def normalizar_inicializacao(self) -> "None":
+        """
+        Funçao para ajustar variáveis de cálculos de controle de operação, na inicialização
+        da Classe da Usina.
+        """
+
+        for ug in self.ugs:
+            if ug.etapa_atual == UG_SINCRONIZADA:
+                self.ug_operando += 1
+
+        self.__split1 = True if self.ug_operando == 1 else False
+        self.__split2 = True if self.ug_operando == 2 else False
+
+        self.controle_ie = self.ajustar_ie_padrao()
+
+        self.clp["MOA"].write_single_coil(REG_CLP["MOA"]["MOA_OUT_BLOCK_UG1"], [0])
+        self.clp["MOA"].write_single_coil(REG_CLP["MOA"]["MOA_OUT_BLOCK_UG2"], [0])
+        self.clp["MOA"].write_single_coil(REG_CLP["MOA"]["MOA_OUT_BLOCK_UG3"], [0])
 
     def verificar_leituras_periodicas(self) -> "None":
         """

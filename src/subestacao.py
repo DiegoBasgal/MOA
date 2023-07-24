@@ -17,7 +17,7 @@ from bay import Bay as BAY
 from conectores.servidores import Servidores
 from funcoes.escrita import EscritaModBusBit as EMB
 
-logger = logging.getLogger("__main__")
+logger = logging.getLogger("logger")
 
 class Subestacao(Usina):
 

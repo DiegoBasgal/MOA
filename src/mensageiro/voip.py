@@ -1,3 +1,7 @@
+__version__ = "0.2"
+__author__ = "Diego Basgal", "Henrique Pfeifer", "Lucas Lavratti"
+__description__ = "Este módulo corresponde a implementação do envio de Torpedos de Voz da plataforma Nvoip."
+
 import os
 import pytz
 import json
@@ -10,13 +14,13 @@ from urllib.request import Request, urlopen
 
 from src.conectores.banco_dados import BancoDados
 
-logger = logging.getLogger("__main__")
+logger = logging.getLogger("logger")
 
 class Voip:
 
     #ATRIBUIÇÃO DE VARIÁVEIS
 
-    arquivo = os.path.join(os.path.dirname(__file__), "voip_config.json")
+    arquivo = os.path.join(os.path.dirname("/opt/operacao-autonoma/src/dicionarios/"), "voip_cfg.json")
     with open(arquivo, "r") as file:
         cfg = json.load(file)
 
@@ -31,7 +35,7 @@ class Voip:
     db = BancoDados("voip")
 
     @staticmethod
-    def verificar_expediente(agenda) -> list:
+    def verificar_expediente(agenda) -> "list":
         """
         Função para verificar se o operador cadastrado na interface, está dentro
         do período de sobre-aviso.
@@ -53,7 +57,7 @@ class Voip:
         return contatos
 
     @classmethod
-    def carregar_contatos(cls) -> list:
+    def carregar_contatos(cls) -> "list":
         """
         Função para extrair lista de contatos cadastrados na interface WEB.
         """
@@ -77,7 +81,7 @@ class Voip:
         return agenda
 
     @classmethod
-    def carregar_token(cls) -> str:
+    def carregar_token(cls) -> "str":
         """
         Função para carregar token de autenticação NVoip.
         """
@@ -93,7 +97,7 @@ class Voip:
             return None
 
     @classmethod
-    def codificar_dados(cls, data, headers) -> None:
+    def codificar_dados(cls, data, headers) -> "None":
         """
         Função para codificação do acionamento, para a plataforma da Nvoip.
         """
@@ -108,7 +112,7 @@ class Voip:
             logger.exception(f"[VOIP] Não foi possível codificar dados de envio de torpedo. Exception: \"{repr(e)}\".")
 
     @classmethod
-    def acionar_chamada(cls):
+    def acionar_chamada(cls) -> "None":
         """
         Função para envio de tropedos de voz, baseado nas condições de acionamento
         do dicioário Voip.

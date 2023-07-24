@@ -1,6 +1,5 @@
 __version__ = "0.2"
-__authors__ = "Diego Basgal", " Henrique Pfeifer"
-__credits__ = ["Lucas Lavratti", ...]
+__author__ = "Diego Basgal", " Henrique Pfeifer", "Lucas Lavratti"
 __description__ = "Este módulo corresponde a implementação da máquina de estados das Unidades de Geração."
 
 import logging
@@ -11,7 +10,7 @@ from dicionarios.const import *
 
 from unidade_geracao import UnidadeGeracao
 
-logger = logging.getLogger("__main__")
+logger = logging.getLogger("logger")
 
 class State:
     def __init__(self, parent: "UnidadeGeracao"=None) -> "None":
@@ -34,7 +33,7 @@ class State:
         pass
 
 class StateManual(State):
-    def __init__(self, parent) -> None:
+    def __init__(self, parent) -> "None":
         super().__init__(parent)
 
         # ATRIBUIÇÃO DE VARIÁVEIS PÚBLICAS
@@ -62,7 +61,7 @@ class StateManual(State):
 
 
 class StateIndisponivel(State):
-    def __init__(self, parent):
+    def __init__(self, parent) -> "None":
         super().__init__(parent)
 
         # ATRIBUIÇÃO DE VARIÁVEIS PÚBLICAS
@@ -77,7 +76,7 @@ class StateIndisponivel(State):
         logger.info(f"[UG{self.parent.id}] Entrando no estado:                 \"Indisponível\". Para retornar a operação autônoma, favor agendar na interface web")
         logger.debug(f"[UG{self.parent.id}] Tentativas de normalização:         {self.parent.tentativas_normalizacao}/{self.parent.limite_tentativas_normalizacao + 1}")
 
-    def step(self) -> State:
+    def step(self) -> "State":
         """
         Função para execução do passo da Máquina de Estados no modo Indisponível.
 
@@ -188,6 +187,6 @@ class StateDisponivel(State):
             return self if self.parent.normalizar_unidade() else StateIndisponivel(self.parent)
 
         else:
-            self.parent.controle_etapas()
+            self.parent.controlar_etapas()
 
             return self

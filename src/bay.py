@@ -17,7 +17,7 @@ from subestacao import Subestacao as SE
 from conectores.servidores import Servidores
 from funcoes.escrita import EscritaModBusBit as EMB
 
-logger = logging.getLogger("__main__")
+logger = logging.getLogger("logger")
 
 class Bay(Usina):
 
@@ -134,7 +134,7 @@ class Bay(Usina):
                     logger.warning("[BAY] Não foi possível realizar a abertura do Disjuntor de Linha da Subestação!")
                     flags += 1
 
-            if not cls.verificar_tensao():
+            if not cls.verificar_tensao_trifasica():
                 flags += 1
 
             if cls.tensao_vs.valor != 0:
@@ -168,7 +168,7 @@ class Bay(Usina):
             return False
 
     @classmethod
-    def verificar_tensao(cls) -> "bool":
+    def verificar_tensao_trifasica(cls) -> "bool":
         """
         Função para verificação de Tensão trifásica na linha do BAY.
         """
@@ -224,7 +224,7 @@ class Bay(Usina):
         """
 
         while time() <= time() + delay:
-            if cls.verificar_tensao():
+            if cls.verificar_tensao_trifasica():
                 cls.status_tensao = TENSAO_REESTABELECIDA
                 return
             sleep(time() - (time() - 15))

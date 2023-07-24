@@ -1,6 +1,5 @@
 __version__ = "0.2"
-__author__ = "Diego Basgal"
-__credits__ = ["Lucas Lavratti", " Henrique Pfeifer", ...]
+__author__ = "Diego Basgal", "Henrique Pfeifer", "Lucas Lavratti"
 __description__ = "Este módulo corresponde a implementação da máquina de estados do Módulo de Operação Autônoma."
 
 import sys
@@ -18,16 +17,16 @@ from bay import Bay as BAY
 from subestacao import Subestacao as SE
 from tomada_agua import TomadaAgua as TDA
 
-logger = logging.getLogger("__main__")
+logger = logging.getLogger("logger")
 
 class StateMachine:
-    def __init__(self, initial_state):
+    def __init__(self, initial_state) -> "None":
 
         # ATRIBUIÇÃO DE VARIÁVEIS PÚBLICAS
 
         self.state = initial_state
 
-    def exec(self):
+    def exec(self) -> "None":
         """
         Função principal de execução da Máquina de Estados do MOA.
         """
@@ -37,14 +36,14 @@ class StateMachine:
                 raise TypeError
             self.state = self.state.run()
 
-        except Exception as e:
-            logger.exception(f"Estado ({self.state}) levantou uma exception: \"{repr(e)}\"")
+        except Exception:
+            logger.exception(f"Erro na execução do Estado: {self.state}")
             logger.exception(f"Traceback: {traceback.format_exc()}")
             self.state = FalhaCritica()
 
 
 class State:
-    def __init__(self, usina: "Usina"=None, *args, **kwargs):
+    def __init__(self, usina: "Usina"=None, *args, **kwargs) -> "None":
 
         # VERIFICAÇÃO DE ARGUMENTOS
 
@@ -76,23 +75,25 @@ class State:
 
         return self
 
+
 class FalhaCritica(State):
-    def __init__(self):
+    def __init__(self) -> "None":
 
         # FINALIZAÇÃO DO __INIT__
 
         logger.critical("Falha crítica MOA. Interrompendo execução...")
         sys.exit(1)
 
+
 class Pronto(State):
-    def __init__(self, usn, *args, **kwargs):
+    def __init__(self, usn, *args, **kwargs)  -> "None":
         super().__init__(usn, *args, **kwargs)
 
         # ATRIBUIÇÃO DE VARIÁVEIS PÚBLICAS
 
         self.usn.estado_moa = MOA_SM_PRONTO
 
-    def run(self):
+    def run(self) -> "State":
         """
         Função para execução do passo da Máquina de Estados do MOA.
 
@@ -105,14 +106,14 @@ class Pronto(State):
 
 
 class ControleEstados(State):
-    def __init__(self, usn, *args, **kwargs):
+    def __init__(self, usn, *args, **kwargs) -> "None":
         super().__init__(usn, *args, **kwargs)
 
         # ATRIBUIÇÃO DE VARIÁVEIS PÚBLICAS
 
         self.usn.estado_moa = MOA_SM_CONTROLE_ESTADOS
 
-    def run(self):
+    def run(self) -> "State":
         """
         Função para execução do passo da Máquina de Estados do MOA.
 
@@ -153,7 +154,7 @@ class ControleEstados(State):
 
             elif flag == CONDIC_NORMALIZAR:
                 if self.usn.normalizar_usina() == NORM_USN_FALTA_TENSAO:
-                    return Emergencia(self.usn) if SE.aguardar_tensao() == TENSAO_FORA else self
+                    return Emergencia(self.usn) if BAY.aguardar_tensao() == TENSAO_FORA else self
 
                 else:
                     return self
@@ -161,15 +162,16 @@ class ControleEstados(State):
             else:
                 return ControleReservatorio(self.usn)
 
+
 class ControleReservatorio(State):
-    def __init__(self, usn, *args, **kwargs):
+    def __init__(self, usn, *args, **kwargs) -> "None":
         super().__init__(usn, *args, **kwargs)
 
         # ATRIBUIÇÃO DE VARIÁVEIS PÚBLICAS
 
         self.usn.estado_moa = MOA_SM_CONTROLE_RESERVATORIO
 
-    def run(self):
+    def run(self) -> "State":
         """
         Função para execução do passo da Máquina de Estados do MOA.
 
@@ -184,15 +186,16 @@ class ControleReservatorio(State):
 
         return Emergencia(self.usn) if flag == NV_EMERGENCIA else ControleDados(self.usn)
 
+
 class ControleDados(State):
-    def __init__(self, usn, *args, **kwargs):
+    def __init__(self, usn, *args, **kwargs) -> "None":
         super().__init__(usn, *args, **kwargs)
 
         # ATRIBUIÇÃO DE VARIÁVEIS PÚBLICAS
 
         self.usn.estado_moa = MOA_SM_CONTROLE_DADOS
 
-    def run(self):
+    def run(self) -> "State":
         """
         Função para execução do passo da Máquina de Estados do MOA.
 
@@ -205,15 +208,16 @@ class ControleDados(State):
         self.usn.escrever_valores()
         return ControleEstados(self.usn)
 
+
 class ControleAgendamentos(State):
-    def __init__(self, *args, **kwargs):
+    def __init__(self, *args, **kwargs) -> "None":
         super().__init__(*args, **kwargs)
 
         # ATRIBUIÇÃO DE VARIÁVEIS PÚBLICAS
 
         self.usn.estado_moa = MOA_SM_CONTROLE_AGENDAMENTOS
 
-    def run(self):
+    def run(self) -> "State":
         """
         Função para execução do passo da Máquina de Estados do MOA.
 
@@ -234,7 +238,7 @@ class ControleAgendamentos(State):
 
 
 class ModoManual(State):
-    def __init__(self, usn, *args, **kwargs):
+    def __init__(self, usn, *args, **kwargs) -> "None":
         super().__init__(usn, *args, **kwargs)
 
         # ATRIBUIÇÃO DE VARIÁVEIS PÚBLICAS
@@ -249,7 +253,7 @@ class ModoManual(State):
 
         logger.info("Usina em modo manual. Para retornar a operação autônoma, acionar via painel ou página WEB")
 
-    def run(self):
+    def run(self) -> "State":
         """
         Função para execução do passo da Máquina de Estados do MOA.
 
@@ -265,7 +269,7 @@ class ModoManual(State):
 
         self.usn.ler_valores()
 
-        logger.debug(f"[USN] Leitura de Nível:                   {TDA.nv_montante.valor:0.3f}")
+        logger.debug(f"[USN] Leitura de Nível:                   {TDA.nivel_montante.valor:0.3f}")
         logger.debug(f"[USN] Potência no medidor:                {BAY.potencia_medidor_usina:0.3f}")
         logger.debug("")
 
@@ -277,7 +281,7 @@ class ModoManual(State):
             ug.setpoint = ug.leitura_potencia
 
         self.usn.controle_ie = (self.usn.ug1.leitura_potencia + self.usn.ug2.leitura_potencia) / self.usn.cfg["pot_maxima_alvo"]
-        self.usn.controle_i = max(min(self.usn.controle_ie - (self.usn.controle_i * self.usn.cfg["ki"]) - self.usn.cfg["kp"] * TDA.erro_nv - self.usn.cfg["kd"] * (TDA.erro_nv - TDA.erro_nv_anterior), 0.8), 0)
+        self.usn.controle_i = max(min(self.usn.controle_ie - (self.usn.controle_i * self.usn.cfg["ki"]) - self.usn.cfg["kp"] * TDA.erro_nivel - self.usn.cfg["kd"] * (TDA.erro_nivel - TDA.erro_nivel_anterior), 0.8), 0)
 
         self.usn.escrever_valores()
 
@@ -288,8 +292,9 @@ class ModoManual(State):
 
         return ControleAgendamentos(self.usn) if len(self.usn.agn.verificar_agendamentos_pendentes()) > 0 else self
 
+
 class Emergencia(State):
-    def __init__(self, usn, *args, **kwargs):
+    def __init__(self, usn, *args, **kwargs) -> "None":
         super().__init__(usn, *args, **kwargs)
 
         # ATRIBUIÇÃO DE VARIÁVEIS PÚBLICAS
@@ -301,7 +306,7 @@ class Emergencia(State):
 
         logger.critical(f"ATENÇÃO! Usina entrado em estado de emergência. (Horário: {self.get_time()})")
 
-    def run(self):
+    def run(self) -> "State":
         """
         Função para execução do passo da Máquina de Estados do MOA.
 
@@ -331,7 +336,7 @@ class Emergencia(State):
 
             while self.usn.db_emergencia:
                 logger.debug("Aguardando reset...")
-                self.usn.atualizar_valores_banco(self.usn.db.get_parametros_usina())
+                self.usn.atualizar_valores_banco(self.usn.bd.get_parametros_usina())
 
                 if not self.usn.db_emergencia:
                     self.usn.db_emergencia = False

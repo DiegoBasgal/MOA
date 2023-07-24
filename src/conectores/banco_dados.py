@@ -1,3 +1,7 @@
+__version__ = "0.2"
+__author__ = "Lucas Lavratti", "Henrique Pfeifer", "Diego Basgal"
+__description__ = "Este módulo corresponde a implementação da conexão e interação com o Banco de Dados MariaDB."
+
 import pytz
 import mariadb.connections
 

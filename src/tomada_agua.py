@@ -12,16 +12,22 @@ from funcoes.leitura import *
 from funcoes.condicionador import *
 
 from usina import Usina
+from comporta import Comporta
 from conectores.servidores import Servidores
 from funcoes.escrita import EscritaModBusBit as EMB
 
-logger = logging.getLogger("__main__")
+logger = logging.getLogger("logger")
 
 class TomadaAgua(Usina):
 
     # ATRIBUIÇÃO DE VARIÁVEIS
 
     clp = Servidores.clp
+
+    cp: "dict[str, Comporta]" = {}
+
+    cp["CP1"] = Comporta(1)
+    cp["CP2"] = Comporta(2)
 
     nivel_montante = LeituraModbus(
         clp["TDA"],
@@ -48,7 +54,6 @@ class TomadaAgua(Usina):
     erro_nivel: "float" = 0
     erro_nivel_anterior: "float" = 0
     nivel_montante_anterior: "float" = 0
-    nv_montante_anterior: "float" = 0
 
     condicionadores: "list[CondicionadorBase]" = []
     condicionadores_essenciais: "list[CondicionadorBase]" = []

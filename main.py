@@ -9,7 +9,7 @@ __maintainers__ = "Diego Basgal", "Henrique Pfeifer"
 __emails__ = "diego.garcia@ritmoenergia.com.br", "henrique@ritmoenergia.com.br"
 
 __author__ = "Diego Basgal", " Henrique Pfeifer", "Lucas Lavratti"
-__credits__ = ["Lucas Lavratti", " Henrique Pfeifer", "Diego Basgal", ...]
+__credits__ = ["Lucas Lavratti", " Henrique Pfeifer", "Diego Basgal", "Lucas Specht", ...]
 
 
 import os
@@ -116,7 +116,6 @@ if __name__ == "__main__":
     logger.debug("")
     logger.info("\U0001F916 Inicialização completa! Executando o Módulo de Operação Autônoma (MOA) \U0001F916")
     logger.debug("")
-
 
     while True:
         try:

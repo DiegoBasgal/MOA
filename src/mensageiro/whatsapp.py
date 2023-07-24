@@ -1,3 +1,7 @@
+__version__ = "0.1"
+__author__ = "Lucas Specht"
+__description__ = "Este módulo corresponde a implementação do Mensageiro do WhatsApp."
+
 import json
 import requests
 
@@ -6,7 +10,7 @@ from threading import Thread
 class WhatsApp:
 
     @staticmethod
-    def enviar_mensagem(num_destino, mensagem):
+    def enviar_mensagem(num_destino: "str", mensagem: "str") -> "dict":
         """
         Envia uma mensagem para um numero especifico, ou ID do grupo destino
         """
@@ -25,7 +29,7 @@ class WhatsApp:
         return dict['message']
 
     @staticmethod
-    def saldo_atual():
+    def saldo_atual() -> "dict":
         """
         Retorna a quantidade de créditos disponiveis para utilização
         """
@@ -40,7 +44,7 @@ class WhatsApp:
         return dict['user']['saldo']
 
     @classmethod
-    def verificar_saldo(cls):
+    def verificar_saldo(cls) -> "dict":
         """
         Caso restem apenas 100 mensagens, um aviso será disparado
         para avisar a necessidade de uma recarga
@@ -52,7 +56,7 @@ class WhatsApp:
             WhatsApp.enviar_mensagem('120363159926062842@g.us', f'Atenção o saldo de mensagens está a baixo de 100! Saldo atual: {saldo}')
 
     @staticmethod
-    def envio_grupo(mensagem):
+    def envio_grupo(mensagem: "str") -> "dict":
         """
         Envia uma mensagem para o grupo de LOGS
         """
@@ -70,12 +74,11 @@ class WhatsApp:
 
         return dict['message']
 
-
     @classmethod
-    def envio_todos(cls, mensagem) -> None:
+    def envio_todos(cls, mensagem: "str") -> "None":
         """
         função de envio utilizando Threads, para não interromper o ciclo.
         """
         
-        Thread(target=cls.envio_grupo, args=(mensagem, )).start()
+        Thread(target=cls.envio_grupo, args=(mensagem,)).start()
 

@@ -16,7 +16,7 @@ from usina import Usina
 from conectores.servidores import Servidores
 from funcoes.escrita import EscritaModBusBit as EMB
 
-logger = logging.getLogger("__main__")
+logger = logging.getLogger("logger")
 
 class ServicoAuxiliar(Usina):
 

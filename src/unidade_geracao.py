@@ -5,12 +5,13 @@ __description__ = "Este módulo corresponde a implementação das Unidades de Ge
 from usina import *
 from funcoes.leitura import *
 from funcoes.condicionador import *
-from maquinas_estado.ug_sm import *
+from maquinas_estado.ug import *
 
 from subestacao import Subestacao as SE
+from tomada_agua import TomadaAgua as TDA
 from funcoes.escrita import EscritaModBusBit as EMB
 
-logger = logging.getLogger("__main__")
+logger = logging.getLogger("logger")
 
 class UnidadeGeracao(Usina):
     def __init__(self, id: "int", cfg: "dict"=None, db: "BancoDados"=None):
@@ -28,29 +29,29 @@ class UnidadeGeracao(Usina):
 
         # ATRIBUIÇÃO DE VAIRIÁVEIS
 
-        # Privadas
-        self.__tempo_entre_tentativas: "int" = 0
-        self.__limite_tentativas_normalizacao: "int" = 3
-
-        self.__leitura_potencia: "LeituraModbus" = LeituraModbus(
+        # PRIVADAS
+        self.__leitura_potencia = LeituraModbus(
             self.clp[f"UG{self.id}"],
             REG_CLP["UG"][f"UG{self.id}_UG_P"],
             descricao=f"[UG{self.id}] Leitura Potência"
         )
-        self.__leitura_etapa: "LeituraModbus" = LeituraModbus(
+        self.__leitura_etapa = LeituraModbus(
             self.clp[f"UG{self.id}"],
             REG_CLP["UG"][f"UG{self.id}_RV_ESTADO_OPERACAO"],
             descricao=f"[UG{self.id}] Leitura Etapa"
         )
-        self.__leitura_horimetro: "LeituraModbus" = LeituraModbus(
+        self.__leitura_horimetro = LeituraModbus(
             self.clp[f"UG{self.id}"],
             REG_CLP["UG"][f"UG{self.id}_UG_HORIMETRO"],
             descricao=f"[UG{self.id}] Leitura Horímetro"
         )
 
+        self.__tempo_entre_tentativas: "int" = 0
+        self.__limite_tentativas_normalizacao: "int" = 3
+
         self.__next_state: "State" = StateDisponivel(self)
 
-        # Protegidas
+        # PROTEGIDAS
         self._setpoint: "int" = 0
         self._prioridade: "int" = 0
         self._codigo_state: "int" = 0
@@ -61,10 +62,8 @@ class UnidadeGeracao(Usina):
         self._condicionadores_essenciais: "list[CondicionadorBase]" = []
         self._condicionadores_atenuadores: "list[CondicionadorExponencialReverso]" = []
 
-        # Públicas
+        # PÚBLICAS
         self.tempo_normalizar: "int" = 0
-
-        self.borda_pressao: "bool" = False
         self.temporizar_partida: "bool" = False
         self.normalizacao_agendada: "bool" = False
         self.temporizar_normalizacao: "bool" = False
@@ -74,114 +73,197 @@ class UnidadeGeracao(Usina):
 
         # FINALIZAÇÃO DO __INIT__
 
-        self.iniciar_leituras_condicionadores()
+        self.carregar_leituras()
 
 
     @property
     def id(self) -> "int":
+        # PROPRIEDADE -> Retrona o ID da Unidade
+
         return self.__id
 
     @property
     def leitura_potencia(self) -> "float":
+        # PROPRIEDADE -> Retorna a leitura de Potência da Unidade.
+
         return self.__leitura_potencia.valor
 
     @property
     def leitura_horimetro(self) -> "float":
+        # PROPRIEDADE -> Retorna a leitura de horas de geração da Unidade.
+
         return self.__leitura_horimetro.valor
 
     @property
     def manual(self) -> "bool":
+        # PROPRIEDADE -> Verifica se a Unidade está em modo Manual.
+
         return isinstance(self.__next_state, StateManual)
 
     @property
+    def restrito(self) -> "bool":
+        # PROPRIEDADE -> Verifica se a Unidade está em modo Restrito.
+
+        return isinstance(self.__next_state, StateRestrito)
+
+    @property
     def disponivel(self) -> "bool":
+        # PROPRIEDADE -> Verifica se a Unidade está em modo Disponível.
+
         return isinstance(self.__next_state, StateDisponivel)
 
     @property
+    def indisponivel(self) -> "bool":
+        # PROPRIEDADE -> Verifica se a Unidade está em modo Indisponível.
+
+        return isinstance(self.__next_state, StateIndisponivel)
+
+    @property
     def limite_tentativas_normalizacao(self) -> "int":
+        # PROPRIEDADE -> Retorna o limite pré-definido entre tentativas de normalização.
+
         return self.__limite_tentativas_normalizacao
 
     @property
     def etapa_atual(self) -> "int":
+        # PROPRIEDADE -> Retorna a etapa atual da Unidade.
+
         try:
-            if response := self.__leitura_etapa.valor > 0:
-                self._ultima_etapa_atual = response
-                return response
+            leitura = self.__leitura_etapa.valor
+
+            if leitura > 0:
+                self._ultima_etapa_atual = leitura
+                return leitura
+
             else:
                 return self._ultima_etapa_atual
 
         except Exception:
-            logger.exception(f"[UG{self.id}] Houve um erro na leitura de etapa atual da UG.")
+            logger.error(f"[UG{self.id}] Houve um erro na leitura de etapa atual da UG.")
             logger.debug(f"[UG{self.id}] Traceback: {traceback.format_exc()}")
-            return 99
+            return self._ultima_etapa_atual
 
-
-    @property
-    def setpoint(self) -> "int":
-        return self._setpoint
-
-    @setpoint.setter
-    def setpoint(self, var: "int"):
-
-        if var < self.__cfg["pot_minima"]:
-            self._setpoint = 0
-        elif var > self.__cfg[f"pot_maxima_ug{self.id}"]:
-            self._setpoint = self.__cfg[f"pot_maxima_ug{self.id}"]
-        else:
-            self._setpoint = int(var)
 
     @property
     def prioridade(self) -> "int":
+        # PROPRIEDADE -> Retorna a prioridade da Unidade.
+
         return self._prioridade
 
     @prioridade.setter
     def prioridade(self, var: "int") -> "None":
+        # SETTER -> Atribui o novo valor de prioridade da Unidade.
+
         self._prioridade = var
 
     @property
     def codigo_state(self) -> "int":
+        # PROPRIEDADE -> Retorna o valor de estado da Unidade.
+
         return self._codigo_state
 
     @codigo_state.setter
     def codigo_state(self, var: "int") -> "None":
+        # SETTER -> Atribui o novo valor de estado da Unidade.
+
         self._codigo_state = var
 
     @property
-    def condicionadores(self) -> "list[CondicionadorBase]":
-        return self._condicionadores
+    def setpoint(self) -> "int":
+        # PROPRIEDADE -> Retorna o valor de setpoint da Unidade.
 
-    @condicionadores.setter
-    def condicionadores(self, var: "list[CondicionadorBase]") -> "None":
-        self._condicionadores = var
+        return self._setpoint
+
+    @setpoint.setter
+    def setpoint(self, var: "int") -> "None":
+        # SETTER -> Atribui o novo valor de setpoint da Unidade.
+
+        if var < self.__cfg["pot_minima"]:
+            self._setpoint = 0
+
+        elif var > self.__cfg[f"pot_maxima_ug{self.id}"]:
+            self._setpoint = self.__cfg[f"pot_maxima_ug{self.id}"]
+
+        else:
+            self._setpoint = int(var)
 
     @property
-    def condicionadores_essenciais(self) -> "list[CondicionadorBase]":
-        return self._condicionadores_essenciais
+    def setpoint_minimo(self) -> "int":
+        # PROPRIEDADE -> Retorna o valor de setpoint mínimo da Unidade.
 
-    @condicionadores_essenciais.setter
-    def condicionadores_essenciais(self, var: "list[CondicionadorBase]") -> "None":
-        self._condicionadores_essenciais = var
+        return self.__setpoint_minimo
+
+    @setpoint_minimo.setter
+    def setpoint_minimo(self, var: "int"):
+        # SETTER -> Atribui o novo valor de setpoint mínimo da Unidade.
+
+        self.__setpoint_minimo = var
 
     @property
-    def condicionadores_atenuadores(self) -> "list[CondicionadorBase]":
-        return self._condicionadores_atenuadores
+    def setpoint_maximo(self) -> "int":
+        # PROPRIEDADE -> Retorna o valor de setpoint máximo da Unidade.
 
-    @condicionadores_atenuadores.setter
-    def condicionadores_atenuadores(self, var: "list[CondicionadorBase]") -> "None":
-        self._condicionadores_atenuadores = var
+        return self.__setpoint_maximo
+
+    @setpoint_maximo.setter
+    def setpoint_maximo(self, var: "int"):
+        # SETTER -> Atribui o novo valor de setpoint máximo da Unidade.
+
+        self.__setpoint_maximo = var
 
     @property
     def tentativas_normalizacao(self) -> "int":
+        # PROPRIEDADE -> Retorna o valor de tentativas de normalização da Unidade.
+
         return self._tentativas_normalizacao
 
     @tentativas_normalizacao.setter
     def tentativas_normalizacao(self, var: "int") -> "None":
+        # SETTER -> Atribui o novo valor de tentativas de normalização da Unidade.
+
         if 0 <= var and var == int(var) and self.tentativas_normalizacao <= self.limite_tentativas_normalizacao:
             self.tentativas_normalizacao = int(var)
 
         if self.tentativas_normalizacao == self.limite_tentativas_normalizacao:
             logger.debug(f"[UG{self.id}] Última tentativa de normalização...")
 
+    @property
+    def condicionadores(self) -> "list[CondicionadorBase]":
+        # PROPRIEDADE -> Retorna a lista de Condicionadores da Unidade.
+
+        return self._condicionadores
+
+    @condicionadores.setter
+    def condicionadores(self, var: "list[CondicionadorBase]") -> "None":
+        # SETTER -> Atribui a nova lista de Condicionadores da Unidade.
+
+        self._condicionadores = var
+
+    @property
+    def condicionadores_essenciais(self) -> "list[CondicionadorBase]":
+        # PROPRIEDADE -> Retorna a lista de Condicionadores Essenciais da Unidade.
+
+        return self._condicionadores_essenciais
+
+    @condicionadores_essenciais.setter
+    def condicionadores_essenciais(self, var: "list[CondicionadorBase]") -> "None":
+        # SETTER -> Atribui a nova lista de Condicionadores Essenciais da Unidade.
+
+        self._condicionadores_essenciais = var
+
+    @property
+    def condicionadores_atenuadores(self) -> "list[CondicionadorBase]":
+        # PROPRIEDADE -> Retorna a lista de Condicionadores Atenuadores da Unidade.
+
+        return self._condicionadores_atenuadores
+
+    @condicionadores_atenuadores.setter
+    def condicionadores_atenuadores(self, var: "list[CondicionadorBase]") -> "None":
+        # SETTER -> Atribui a nova lista de Condicionadores Atenuadores da Unidade.
+
+        self._condicionadores_atenuadores = var
+
+    # FUNÇÕES
 
     @staticmethod
     def get_time() -> "datetime":
@@ -264,7 +346,7 @@ class UnidadeGeracao(Usina):
             self.__next_state = self.__next_state.step()
 
         except Exception:
-            logger.exception(f"[UG{self.id}] Erro na execução da máquina de estados da Unidade -> \"step\".")
+            logger.error(f"[UG{self.id}] Erro na execução da máquina de estados da Unidade -> \"step\".")
             logger.debug(f"[UG{self.id}] Traceback: {traceback.format_exc()}")
 
     def atualizar_modbus_moa(self) -> "None":
@@ -277,10 +359,14 @@ class UnidadeGeracao(Usina):
             self.clp["MOA"].write_single_coil(REG_CLP["MOA"][f"OUT_STATE_UG{self.id}"], [self.codigo_state])
 
         except Exception:
-            logger.exception(f"[UG{self.id}] Não foi possível escrever os valores no CLP MOA.")
+            logger.error(f"[UG{self.id}] Não foi possível escrever os valores no CLP MOA.")
             logger.debug(f"[UG{self.id}] Traceback: {traceback.format_exc()}")
 
     def partir(self) -> "None":
+        """
+        Função para acionamento do comando de partida da Unidade.
+        """
+
         try:
             if self.etapa_atual == UG_PARADA:
                 logger.info(f"[UG{self.id}]          Enviando comando:          \"PARTIDA\"")
@@ -298,10 +384,17 @@ class UnidadeGeracao(Usina):
                 logger.debug(f"[UG{self.id}] A Unidade já está sincronizada.")
 
         except Exception:
-            logger.exception(f"[UG{self.id}] Não foi possível partir a Unidade.")
+            logger.error(f"[UG{self.id}] Não foi possível partir a Unidade.")
             logger.debug(f"[UG{self.id}] Traceback: {traceback.format_exc()}")
 
     def parar(self) -> "None":
+        """
+        Função para acionamento do comando de Parada da Unidade.
+
+        Verifica se a unidade está sincronizada ou sincronizando. Caso esteja, aciona os comandos
+        de parada e reconhecimento de alarmes.
+        """
+
         try:
             if self.etapa_atual in (UG_SINCRONIZADA, UG_SINCRONIZANDO):
                 logger.info(f"[UG{self.id}]          Enviando comando:          \"PARADA\"")
@@ -313,10 +406,18 @@ class UnidadeGeracao(Usina):
                 logger.debug(f"[UG{self.id}] A Unidade já está parada.")
 
         except Exception:
-            logger.exception(f"[UG{self.id}] Não foi possível parar a Unidade.")
+            logger.error(f"[UG{self.id}] Não foi possível parar a Unidade.")
             logger.debug(f"[UG{self.id}] Traceback: {traceback.format_exc()}")
 
     def enviar_setpoint(self, setpoint_kw: "int") -> "bool":
+        """
+        Função para envio do valor de setpoint para o controle de potência das
+        Unidades.
+
+        Controla os limites máximo e mínimo e logo em seguida, envia o valor calculado para a
+        Unidade.
+        """
+
         try:
             logger.debug(f"[UG{self.id}]          Enviando setpoint:         {int(setpoint_kw)} kW")
 
@@ -333,18 +434,24 @@ class UnidadeGeracao(Usina):
                 return res
 
         except Exception:
-            logger.exception(f"[UG{self.id}] Não foi possivel enviar o setpoint para a Unidade.")
+            logger.error(f"[UG{self.id}] Não foi possivel enviar o setpoint para a Unidade.")
             logger.debug(f"[UG{self.id}] Traceback: {traceback.format_exc()}")
             return False
 
     def reconhece_reset_alarmes(self) -> "None":
+        """
+        Função para reset e reconhecimento de TRIPs.
+
+        Realiza três tentativas de executar as funções de remoção de TRIP elétrico e lógico.
+        """
+
         try:
             logger.debug("")
             logger.info(f"[UG{self.id}]          Enviando comando:          \"RECONHECE E RESET\"")
             self.clp["MOA"].write_single_coil(REG_CLP["MOA"]["PAINEL_LIDO"], [0])
 
             passo = 0
-            for x in range(3):
+            for x in range(2):
                 passo += 1
                 logger.debug("")
                 logger.debug(f"[UG{self.id}]          Passo: {passo}/3")
@@ -356,19 +463,31 @@ class UnidadeGeracao(Usina):
             self.clp["MOA"].write_single_coil(REG_CLP["MOA"]["PAINEL_LIDO"], [1])
 
         except Exception:
-            logger.exception(f"[UG{self.id}] Não foi possivel enviar o comando de reconhecer e resetar alarmes.")
+            logger.error(f"[UG{self.id}] Não foi possivel enviar o comando de reconhecer e resetar alarmes.")
             logger.debug(f"[UG{self.id}] Traceback: {traceback.format_exc()}")
 
     def acionar_trip_logico(self) -> "None":
+        """
+        Função para acionamento de TRIP lógico.
+
+        Aciona o comando de parada de emergência da Unidade.
+        """
+
         try:
             logger.debug(f"[UG{self.id}]          Enviando comando:          \"TRIP LÓGICO\"")
             EMB.escrever_bit(self.clp[f"UG{self.id}"], REG_CLP["UG"][f"UG{self.id}_CMD_PARADA_EMERGENCIA"], bit=4, valor=1)
 
         except Exception:
-            logger.exception(f"[UG{self.id}] Não foi possivel acionar o comando de TRIP: \"Lógico\".")
+            logger.error(f"[UG{self.id}] Não foi possivel acionar o comando de TRIP: \"Lógico\".")
             logger.debug(f"[UG{self.id}] Traceback: {traceback.format_exc()}")
 
     def remover_trip_logico(self) -> "None":
+        """
+        Função para remoção de TRIP lógico.
+
+        Aciona os comandos de Reset e Rearmes de Relés, Unidades Hidráulicas, Bloqueios e Falhas.
+        """
+
         try:
             logger.debug(f"[UG{self.id}]          Removendo comando:         \"TRIP LÓGICO\"")
             EMB.escrever_bit(self.clp[f"UG{self.id}"], REG_CLP["UG"][f"UG{self.id}_CMD_RESET_FALHAS_PASSOS"], bit=0, valor=1)
@@ -381,19 +500,32 @@ class UnidadeGeracao(Usina):
             EMB.escrever_bit(self.clp[f"UG{self.id}"], REG_CLP["UG"][f"UG{self.id}_RELE_700G_TRIP_ATUADO"], bit=31, valor=0)
 
         except Exception:
-            logger.exception(f"[UG{self.id}] Não foi possivel remover o comando de TRIP: \"Lógico\".")
+            logger.error(f"[UG{self.id}] Não foi possivel remover o comando de TRIP: \"Lógico\".")
             logger.debug(f"[UG{self.id}] Traceback: {traceback.format_exc()}")
 
     def acionar_trip_eletrico(self) -> "None":
+        """
+        Função para acionamento de TRIP elétrico.
+
+        Aciona o comando de bloqueio da Unidade através do CLP - MOA.
+        """
+
         try:
             logger.debug(f"[UG{self.id}]          Enviando comando:          \"TRIP ELÉTRICO\"")
             self.clp["MOA"].write_single_coil(REG_CLP["MOA"][f"OUT_BLOCK_UG{self.id}"], [1])
 
         except Exception:
-            logger.exception(f"[UG{self.id}] Não foi possivel acionar o comando de TRIP: \"Elétrico\".")
+            logger.error(f"[UG{self.id}] Não foi possivel acionar o comando de TRIP: \"Elétrico\".")
             logger.debug(f"[UG{self.id}] Traceback: {traceback.format_exc()}")
 
     def remover_trip_eletrico(self) -> "None":
+        """
+        Função para remoção de TRIP elétrico.
+
+        Remove o comando de bloqueio da Unidade através do CLP - MOA e fecha o
+        Disjuntor 52L (Linha) caso esteja aberto.
+        """
+
         try:
             logger.debug(f"[UG{self.id}]          Removendo comando:         \"TRIP ELÉTRICO\"")
             self.clp["MOA"].write_single_coil(REG_CLP["MOA"]["PAINEL_LIDO"], [0])
@@ -401,13 +533,18 @@ class UnidadeGeracao(Usina):
             SE.fechar_dj_linha()
 
         except Exception:
-            logger.exception(f"[UG{self.id}] Não foi possivel remover o comando de TRIP: \"Elétrico\".")
+            logger.error(f"[UG{self.id}] Não foi possivel remover o comando de TRIP: \"Elétrico\".")
             logger.debug(f"[UG{self.id}] Traceback: {traceback.format_exc()}")
 
     def aguardar_normalizacao(self, delay: "int") -> "None":
-        while not self.parar_timer:
+        """
+        Função de temporizador para espera de normalização da Unidade restrita,
+        por tempo pré-definido por agendamento na Interface.
+        """
+
+        while not self.temporizar_normalizacao:
             sleep(max(0, time() + delay - time()))
-            self.parar_timer = True
+            self.temporizar_normalizacao = True
             return
 
     def normalizar_unidade(self) -> "bool":
@@ -430,24 +567,24 @@ class UnidadeGeracao(Usina):
             self.reconhece_reset_alarmes()
             return True
 
-    # TODO -> PROBLEMA! Revisar com calma!
     def bloquear_unidade(self) -> "None":
         """
         Função para Bloqueio da Unidade nos estados Restrito e Indisponível.
 
-        # TODO -> Reescrever descrição da função
-        Aciona o comando de parada e aguarda a parada total. Logo após, aciona o
-        detector de borda para que o comando de parada não seja acionado todo o
-        ciclo e depois, chama as funções de acionamento de trips lógicos e elétrico.
+        Verfica se a Unidade está parada e caso não esteja, aciona o comando de parar para logo
+        em seguida verificar a comporta. Após a parada total da Unidade, verifica se a comporta
+        está aberta ou em cracking. Caso esteja, aciona o comando de fechamento da comporta, mas
+        caso já esteja fechada, aciona os comandos de TRIP lógico e elétrico. Caso a comporta
+        esteja operando, avisa o operador e aguarda o fechamento completo.
         """
 
         self.temporizar_partida = False
 
         if self.etapa_atual == UG_PARADA:
-            if self.cp[f"CP{self.id}"].etapa_comporta in (CP_ABERTA, CP_CRACKING):
-                self.cp[f"CP{self.id}"].fechar_comporta()
+            if TDA.cp[f"CP{self.id}"].etapa in (CP_ABERTA, CP_CRACKING):
+                TDA.cp[f"CP{self.id}"].fechar()
 
-            elif self.cp[f"CP{self.id}"].etapa_comporta == CP_FECHADA:
+            elif TDA.cp[f"CP{self.id}"].etapa == CP_FECHADA:
                 self.acionar_trip_eletrico()
                 self.acionar_trip_logico()
 
@@ -457,10 +594,7 @@ class UnidadeGeracao(Usina):
         elif not self.borda_parar and self.parar():
             self.borda_parar = True
 
-        else:
-            logger.debug(f"[UG{self.id}] Unidade parando.")
-
-    def verificar_partindo(self) -> "None":
+    def verificar_sincronismo(self) -> "None":
         """
         Função de verificação de partida da Unidade.
 
@@ -478,70 +612,150 @@ class UnidadeGeracao(Usina):
         self.temporizar_partida = False
         sleep(1)
 
-    # TODO -> PROBLEMA! Revisar com calma!
-    def atenuar_carga(self) -> None:
-        logger.debug(f"[UG{self.id}] Atenuador \"{condic.descr}\" -> Atenuação: {max(0, condic.valor)} / Leitura: {condic.leitura}" for condic in self.condicionadores_atenuadores)
+    def atenuar_carga(self) -> "None":
+        """
+        Função para atenuação de carga através de leitura de Pressão na Entrada da Turbina.
 
-        ganho = 1 - max(0, [sum(condic) for condic in self.condicionadores_atenuadores])
+        Calcula o ganho e verifica os limites máximo e mínimo para deteminar se
+        deve atenuar ou não.
+        """
+
+        atenuacao = 0
+        for condic in self.condicionadores_atenuadores:
+            atenuacao = max(atenuacao, condic.valor)
+            logger.debug(f"[UG{self.id}]          Verificando Atenuadores:")
+            logger.debug(f"[UG{self.id}]          - \"{condic.descr}\":   Leitura: {condic.leitura.valor} | Atenuação: {atenuacao}")
+
+        ganho = 1 - atenuacao
         aux = self.setpoint
-        if (self.setpoint > self.__cfg["pot_minima"]) and (self.setpoint * ganho) > self.__cfg["pot_minima"]:
+        if (self.setpoint > self.setpoint_minimo) and self.setpoint * ganho > self.setpoint_minimo:
             self.setpoint = self.setpoint * ganho
 
-        elif (self.setpoint * ganho < self.__cfg["pot_minima"]) and (self.setpoint > self.__cfg["pot_minima"]):
-            self.setpoint = self.__cfg["pot_minima"]
+        elif (self.setpoint * ganho < self.setpoint_minimo) and (self.setpoint > self.setpoint_minimo):
+            self.setpoint =  self.setpoint_minimo
 
-        logger.debug(f"[UG{self.id}] SP {aux} * GANHO {ganho} = {self.setpoint}")
+        logger.debug(f"[UG{self.id}]                                     SP {aux} * GANHO {ganho} = {self.setpoint} kW")
 
-    # TODO -> PROBLEMA! Revisar com calma!
-    def controle_etapas(self) -> None:
+    def controlar_etapas(self) -> "None":
+        """
+        Função para controle de etapas da Unidade.
+
+        PARANDO -> Chama a função de controle de comporta caso seja atribuído um valor
+        de setpoint, senão aciona o comando de fechamento da Comporta caso o valor da
+        potência caia abaixo de 300 kW.
+        PARADA -> Chama a função de controle de comporta caso seja atribuído um valor
+        de setpoint, senão apenas envia o setpoint (boa prática).
+        SINCRONIZANDO -> Chama o comando de enviar setpoint, senão caiona o comando de
+        parada caso o setpoint retorne 0.
+        SINCRONIZADA -> Controla a variável de tempo sincronizada e envia o comando
+        de parada caso seja atribuído o setpoint 0 para a Unidade.
+        """
+
         if self.etapa_atual == UG_PARANDO:
-            self.cp[f"CP{self.id}"].fechar_comporta() if self.leitura_potencia < 300 else ...
-            self.controle_comportas() if self.setpoint >= self.__cfg["pot_minima"] else ...
+            if self.leitura_potencia < 300:
+                TDA.cp[f"CP{self.id}"].fechar()
+            else:
+                if self.setpoint >= self.__cfg["pot_minima"]:
+                    self.controlar_comporta()
 
         elif self.etapa_atual == UG_PARADA:
-            self.controle_comportas() if self.setpoint >= self.__cfg["pot_minima"] else ...
+            if self.setpoint >= self.__cfg["pot_minima"]:
+                self.controlar_comporta()
+            else:
+                self.enviar_setpoint(self.setpoint)
 
         elif self.etapa_atual == UG_SINCRONIZANDO:
-            self.parar(), logger.warning(f"[UG{self.id}] Parando a UG. (SP enviado = 0).") if self.setpoint == 0 else ...
+            self.parar() if self.setpoint == 0 else None
 
         elif self.etapa_atual == UG_SINCRONIZADA:
             self.temporizar_partida = False
 
-            self.aux_tempo_sincronizada = self.get_time() if not self.aux_tempo_sincronizada else ...
-            self.tentativas_normalizacao = 0 if (self.get_time() - self.aux_tempo_sincronizada).seconds >= 300 else ...
+            if not self.aux_tempo_sincronizada:
+                self.aux_tempo_sincronizada = self.get_time()
+
+            elif (self.get_time() - self.aux_tempo_sincronizada).seconds >= 300:
+                self.tentativas_normalizacao = 0
 
             self.parar() if self.setpoint == 0 else self.enviar_setpoint(self.setpoint)
-
-        elif self.etapa_atual not in UG_LST_ETAPAS:
-            logger.warning(f"[UG{self.id}] UG em etapa inconsistente. (Etapa atual:{self.etapa_atual})")
 
         if not self.etapa_atual == UG_SINCRONIZADA:
             self.aux_tempo_sincronizada = None
 
-    # TODO -> PROBLEMA! Revisar com calma!
-    def controle_comportas(self) -> None:
-        if self.cp[f"CP{self.id}"].etapa_comporta == CP_FECHADA:
-            self.cp[f"CP{self.id}"].cracking_comporta()
+    def controlar_comporta(self) -> "None":
+        """
+        Função para controlar a Comporta equivalente ao ID da Unidade.
 
-        elif self.cp[f"CP{self.id}"].etapa_comporta == CP_CRACKING:
-            if not self.borda_pressao:
-                Thread(target=lambda: self.cp[f"CP{self.id}"].verificar_pressao()).start()
-                self.borda_pressao = True
-            self.cp[f"CP{self.id}"].abrir_comporta() if self.cp[f"CP{self.id}"].press_equalizada.valor else logger.debug(f"[UG{self.id}] Aguardando equalização da pressão da CP{self.id}.")
+        Verifica se a comporta está fechada e caso esteja, aciona o comando de Cracking.
+        Se a comporta estiver em Cracking, aciona o comando de aguardar equalização da
+        pressão da UH, para que no momento da equalização da pressão, acionar o comando
+        de abertura.
+        No momento em que a comporta retorne que está totalmente aberta, aciona o comando
+        de partida da Unidade, para daí acionar o mecanismo de aguardar sincronismo.
+        Caso a comporta esteja em modo Remoto ou Operando, avisa o oeprador e retorna.
+        """
 
-        elif self.cp[f"CP{self.id}"].etapa_comporta == CP_ABERTA:
+        if TDA.cp[f"CP{self.id}"].etapa == CP_FECHADA:
+            TDA.cp[f"CP{self.id}"].operar_cracking()
+
+        elif TDA.cp[f"CP{self.id}"].etapa == CP_CRACKING:
+
+            if not TDA.cp[f"CP{self.id}"].borda_pressao:
+                Thread(target=lambda: TDA.cp[f"CP{self.id}"].aguardar_pressao_uh()).start()
+                TDA.cp[f"CP{self.id}"].borda_pressao = True
+
+            if TDA.cp[f"CP{self.id}"].pressao_equalizada.valor:
+                TDA.cp[f"CP{self.id}"].abrir()
+
+            else:
+                logger.debug(f"[UG{self.id}] Aguardando equalização da pressão da CP{self.id}.")
+
+        elif TDA.cp[f"CP{self.id}"].etapa == CP_ABERTA:
             self.partir()
             self.enviar_setpoint(self.setpoint)
+
             if not self.temporizar_partida:
                 self.temporizar_partida = True
-                Thread(target=lambda: self.verificar_partindo()).start()
+                Thread(target=lambda: self.verificar_sincronismo()).start()
 
-        elif self.cp[f"CP{self.id}"].etapa_comporta == CP_REMOTO:
+        elif TDA.cp[f"CP{self.id}"].etapa == CP_REMOTO:
             logger.debug(f"[UG{self.id}] Comporta {self.id} em modo manual")
             pass
 
         else:
-            logger.debug(f"[UG{self.id}] Comporta {self.id} entre etapas/etapa inconsistente")
+            logger.debug(f"[UG{self.id}] Comporta {self.id} Operando")
+
+    def verificar_condicionadores(self) -> "int":
+        """
+        Função para a verificação de acionamento de condicionadores e determinação
+        de gravidade.
+
+        Itera sobre a lista de condicionadores da Unidade e verifica se algum está
+        ativo. Caso esteja, verifica o nível de gravidade e retorna o valor para
+        a determinação do passo seguinte.
+        Caso não haja nenhum condicionador ativo, apenas retorna o valor de ignorar.
+        """
+
+        flag = CONDIC_IGNORAR
+        v = []
+
+        if True in (condic.ativo for condic in self.condicionadores_essenciais):
+            condics_ativos = [condic for condics in [self.condicionadores_essenciais, self.condicionadores] for condic in condics if condic.ativo]
+
+            for condic in condics_ativos:
+                if condic.gravidade == CONDIC_NORMALIZAR:
+                    flag = CONDIC_NORMALIZAR
+                elif condic.gravidade == CONDIC_AGUARDAR:
+                    flag = CONDIC_AGUARDAR
+                elif condic.gravidade == CONDIC_INDISPONIBILIZAR:
+                    flag = CONDIC_INDISPONIBILIZAR
+
+            logger.debug("")
+            logger.info(f"[UG{self.id}] Foram detectados condicionadores ativos!")
+            [logger.info(f"[UG{self.id}] Descrição: \"{condic.descricao}\", Gravidade: \"{CONDIC_STR_DCT[condic.gravidade]}\"") for condic in condics_ativos]
+            logger.debug("")
+
+            return flag
+        return flag
 
 
     def atualizar_limites(self, parametros: "dict") -> "None":
@@ -552,33 +766,35 @@ class UnidadeGeracao(Usina):
 
         try:
             self.prioridade = int(parametros[f"ug{self.id}_prioridade"])
+
             self.condicionador_temperatura_fase_r_ug.valor_base = float(parametros[f"alerta_temperatura_fase_r_ug{self.id}"])
-            self.condicionador_temperatura_fase_r_ug.valor_limite = float(parametros[f"flimite_temperatura_fase_r_ug{self.id}"])
             self.condicionador_temperatura_fase_s_ug.valor_base = float(parametros[f"alerta_temperatura_fase_s_ug{self.id}"])
-            self.condicionador_temperatura_fase_s_ug.valor_limite = float(parametros[f"limite_temperatura_fase_s_ug{self.id}"])
             self.condicionador_temperatura_fase_t_ug.valor_base = float(parametros[f"alerta_temperatura_fase_t_ug{self.id}"])
-            self.condicionador_temperatura_fase_t_ug.valor_limite = float(parametros[f"limite_temperatura_fase_t_ug{self.id}"])
             self.condicionador_temperatura_nucleo_gerador_1_ug.valor_base = float(parametros[f"alerta_temperatura_nucleo_gerador_1_ug{self.id}"])
-            self.condicionador_temperatura_nucleo_gerador_1_ug.valor_limite = float(parametros[f"limite_temperatura_nucleo_gerador_1_ug{self.id}"])
             self.condicionador_temperatura_mancal_guia_ug.valor_base = float(parametros[f"alerta_temperatura_mancal_guia_ug{self.id}"])
-            self.condicionador_temperatura_mancal_guia_ug.valor_limite = float(parametros[f"limite_temperatura_mancal_guia_ug{self.id}"])
             self.condicionador_temperatura_mancal_guia_interno_1_ug.valor_base = float(parametros[f"alerta_temperatura_mancal_guia_interno_1_ug{self.id}"])
-            self.condicionador_temperatura_mancal_guia_interno_1_ug.valor_limite = float(parametros[f"limite_temperatura_mancal_guia_interno_1_ug{self.id}"])
             self.condicionador_temperatura_mancal_guia_interno_2_ug.valor_base = float(parametros[f"alerta_temperatura_mancal_guia_interno_2_ug{self.id}"])
-            self.condicionador_temperatura_mancal_guia_interno_2_ug.valor_limite = float(parametros[f"limite_temperatura_mancal_guia_interno_2_ug{self.id}"])
             self.condicionador_temperatura_patins_mancal_comb_1_ug.valor_base = float(parametros[f"alerta_temperatura_patins_mancal_comb_1_ug{self.id}"])
-            self.condicionador_temperatura_patins_mancal_comb_1_ug.valor_limite = float(parametros[f"limite_temperatura_patins_mancal_comb_1_ug{self.id}"])
             self.condicionador_temperatura_patins_mancal_comb_2_ug.valor_base = float(parametros[f"alerta_temperatura_patins_mancal_comb_2_ug{self.id}"])
-            self.condicionador_temperatura_patins_mancal_comb_2_ug.valor_limite = float(parametros[f"limite_temperatura_patins_mancal_comb_2_ug{self.id}"])
             self.condicionador_temperatura_mancal_casq_comb_ug.valor_base = float(parametros[f"alerta_temperatura_mancal_casq_comb_ug{self.id}"])
-            self.condicionador_temperatura_mancal_casq_comb_ug.valor_limite = float(parametros[f"limite_temperatura_mancal_casq_comb_ug{self.id}"])
             self.condicionador_temperatura_mancal_contra_esc_comb_ug.valor_base = float(parametros[f"alerta_temperatura_mancal_contra_esc_comb_ug{self.id}"])
-            self.condicionador_temperatura_mancal_contra_esc_comb_ug.valor_limite = float(parametros[f"limite_temperatura_mancal_contra_esc_comb_ug{self.id}"])
             self.condicionador_pressao_turbina_ug.valor_base = float(parametros[f"alerta_pressao_turbina_ug{self.id}"])
+
+            self.condicionador_temperatura_fase_r_ug.valor_limite = float(parametros[f"flimite_temperatura_fase_r_ug{self.id}"])
+            self.condicionador_temperatura_fase_s_ug.valor_limite = float(parametros[f"limite_temperatura_fase_s_ug{self.id}"])
+            self.condicionador_temperatura_fase_t_ug.valor_limite = float(parametros[f"limite_temperatura_fase_t_ug{self.id}"])
+            self.condicionador_temperatura_nucleo_gerador_1_ug.valor_limite = float(parametros[f"limite_temperatura_nucleo_gerador_1_ug{self.id}"])
+            self.condicionador_temperatura_mancal_guia_ug.valor_limite = float(parametros[f"limite_temperatura_mancal_guia_ug{self.id}"])
+            self.condicionador_temperatura_mancal_guia_interno_1_ug.valor_limite = float(parametros[f"limite_temperatura_mancal_guia_interno_1_ug{self.id}"])
+            self.condicionador_temperatura_mancal_guia_interno_2_ug.valor_limite = float(parametros[f"limite_temperatura_mancal_guia_interno_2_ug{self.id}"])
+            self.condicionador_temperatura_patins_mancal_comb_1_ug.valor_limite = float(parametros[f"limite_temperatura_patins_mancal_comb_1_ug{self.id}"])
+            self.condicionador_temperatura_patins_mancal_comb_2_ug.valor_limite = float(parametros[f"limite_temperatura_patins_mancal_comb_2_ug{self.id}"])
+            self.condicionador_temperatura_mancal_casq_comb_ug.valor_limite = float(parametros[f"limite_temperatura_mancal_casq_comb_ug{self.id}"])
+            self.condicionador_temperatura_mancal_contra_esc_comb_ug.valor_limite = float(parametros[f"limite_temperatura_mancal_contra_esc_comb_ug{self.id}"])
             self.condicionador_pressao_turbina_ug.valor_limite = float(parametros[f"limite_pressao_turbina_ug{self.id}"])
 
         except Exception:
-            logger.exception(f"[UG{self.id}] Houve um erro ao atualizar os limites de temperaturas dos condicionadores.")
+            logger.error(f"[UG{self.id}] Houve um erro ao atualizar os limites de temperaturas dos condicionadores.")
             logger.debug(f"[UG{self.id}] Traceback: {traceback.format_exc()}")
 
     def verificar_limites(self) -> "None":
@@ -648,39 +864,6 @@ class UnidadeGeracao(Usina):
             logger.warning(f"[UG{self.id}] A pressão na entrada da turbina da UG passou do valor base! ({self.condicionador_pressao_turbina_ug.valor_base:03.2f} KGf/m2) | Leitura: {self.leitura_pressao_turbina.valor:03.2f}")
         if self.leitura_pressao_turbina.valor <= self.condicionador_pressao_turbina_ug.valor_limite+0.9*(self.condicionador_pressao_turbina_ug.valor_base - self.condicionador_pressao_turbina_ug.valor_limite) and self.leitura_pressao_turbina.valor != 0 and self.etapa_atual == UG_SINCRONIZADA:
             logger.critical(f"[UG{self.id}] A pressão na entrada da turbina da UG está muito próxima do limite! ({self.condicionador_pressao_turbina_ug.valor_limite:03.2f} KGf/m2) | Leitura: {self.leitura_pressao_turbina.valor:03.2f} KGf/m2")
-
-    def verificar_condicionadores(self) -> "int":
-        """
-        Função para a verificação de acionamento de condicionadores e determinação
-        de gravidade.
-
-        Itera sobre a lista de condicionadores da Unidade e verifica se algum está
-        ativo. Caso esteja, verifica o nível de gravidade e retorna o valor para
-        a determinação do passo seguinte.
-        Caso não haja nenhum condicionador ativo, apenas retorna o valor de ignorar.
-        """
-
-        flag = CONDIC_IGNORAR
-        v = []
-
-        if True in (condic.ativo for condic in self.condicionadores_essenciais):
-            condics_ativos = [condic for condics in [self.condicionadores_essenciais, self.condicionadores] for condic in condics if condic.ativo]
-
-            for condic in condics_ativos:
-                if condic.gravidade == CONDIC_NORMALIZAR:
-                    flag = CONDIC_NORMALIZAR
-                elif condic.gravidade == CONDIC_AGUARDAR:
-                    flag = CONDIC_AGUARDAR
-                elif condic.gravidade == CONDIC_INDISPONIBILIZAR:
-                    flag = CONDIC_INDISPONIBILIZAR
-
-            logger.debug("")
-            logger.info(f"[UG{self.id}] Foram detectados condicionadores ativos!")
-            [logger.info(f"[UG{self.id}] Descrição: \"{condic.descricao}\", Gravidade: \"{CONDIC_STR_DCT[condic.gravidade]}\"") for condic in condics_ativos]
-            logger.debug("")
-
-            return flag
-        return flag
 
     def verificar_leituras(self) -> "None":
         """
@@ -842,6 +1025,11 @@ class UnidadeGeracao(Usina):
             logger.warning(f"[UG{self.id}] O alarme de vibração detecção vertical foi acionado. Favor verificar.")
 
     def carregar_leituras(self) -> "None":
+        """
+        Função para carregamento de todas as leituras para acionamentos de avisos
+        e emergências da Usina.
+        """
+
         # LEITURA PERIODICA
         self.leitura_filtro_limpo_uhrv = LeituraModbusBit(self.clp[f"UG{self.id}"], REG_CLP["UG"][f"UG{self.id}_UHRV_FILTRO_LIMPO"], bit=24, invertido=True, descricao=f"[UG{self.id}] UHRV Status Filtro")
         self.leitura_filtro_limpo_uhlm = LeituraModbusBit(self.clp[f"UG{self.id}"], REG_CLP["UG"][f"UG{self.id}_UHLM_FILTRO_LIMPO"], bit=21, invertido=True, descricao=f"[UG{self.id}] UHLM Status Filtro")
@@ -958,7 +1146,7 @@ class UnidadeGeracao(Usina):
         # Essenciais Pressão Turbina
             # Pressão Entrada Turbina
         self.leitura_pressao_turbina = LeituraModbus(self.clp[f"UG{self.id}"], REG_CLP["UG"][f"UG{self.id}_PRESSAO_ENTRADA_TURBINA"], escala=0.1, descricao=f"[UG{self.id}] Pressão Entrada Turbina")
-        self.condicionador_pressao_turbina_ug = CondicionadorExponencialReverso(self.leitura_pressao_turbina, CONDIC_INDISPONIBILIZAR, 16.1, 15.5)
+        self.condicionador_pressao_turbina_ug = CondicionadorExponencialReverso(self.leitura_pressao_turbina, CONDIC_INDISPONIBILIZAR, 1.6, 1.3)
         self.condicionadores_atenuadores.append(self.condicionador_pressao_turbina_ug)
 
         # Essenciais Padrão
