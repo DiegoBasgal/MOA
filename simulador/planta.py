@@ -12,15 +12,15 @@ from pyModbusTCP.server import ModbusServer, DataBank
 from dicionarios.reg import *
 from dicionarios.const import *
 
-from ug import Ug
-from dj52L import Dj52L
-from time_handler import TimeHandler
+from dj_linha import Dj52L
+from ug import Unidade as UG
+from temporizador import Temporizador
 
 lock = threading.Lock()
 logger = logging.getLogger('__main__')
 
 class Planta:
-    def __init__(self, shared_dict, dj52L: Dj52L, ugs: 'list[Ug]', time_handler: TimeHandler) -> None:
+    def __init__(self, shared_dict, dj52L: "Dj52L", ugs: "list[UG]", time_handler: "Temporizador") -> None:
         self.ugs = ugs
         self.dj52L = dj52L
         self.dict = shared_dict

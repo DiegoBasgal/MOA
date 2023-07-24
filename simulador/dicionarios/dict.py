@@ -1,4 +1,4 @@
-shared_dict = {
+compartilhado = {
     "GLB": {
         "tempo_simul": 0,
 

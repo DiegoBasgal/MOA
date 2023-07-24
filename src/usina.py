@@ -1,6 +1,5 @@
 __version__ = "0.2"
-__authors__ = "Lucas Lavratti", " Henrique Pfeifer"
-__credits__ = ["Diego Basgal", ...]
+__author__ = "Lucas Lavratti", " Henrique Pfeifer", "Diego Basgal",
 __description__ = "Este módulo corresponde a implementação da operação da Usina."
 
 import os

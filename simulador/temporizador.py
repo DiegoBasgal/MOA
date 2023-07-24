@@ -5,7 +5,7 @@ from datetime import datetime
 
 logger = logging.getLogger('__main__')
 
-class TimeHandler:
+class Temporizador:
     def __init__(self, shared_dict) -> None:
         self.dict = shared_dict
 

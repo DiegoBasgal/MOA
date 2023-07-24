@@ -3,14 +3,14 @@ import numpy as np
 
 from time import  time
 from threading import Thread
-from time_handler import TimeHandler
+from temporizador import Temporizador
 
 from dicionarios.const import *
 
 logger = logging.getLogger('__main__')
 
-class Ug:
-    def __init__(self, id, shared_dict, time_handler: TimeHandler) -> None:
+class Unidade:
+    def __init__(self, id, shared_dict, time_handler: Temporizador) -> None:
         self.id = id
         self.dict = shared_dict
 
