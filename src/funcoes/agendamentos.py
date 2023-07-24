@@ -13,13 +13,13 @@ from datetime import datetime, timedelta
 
 from src.dicionarios.const import *
 
-from src.banco_dados import BancoDados
+from src.conectores.banco_dados import BancoDados
 
 
 logger = logging.getLogger("__main__")
 
 class Agendamentos:
-    def __init__(self, cfg=None, db: BancoDados=None, usina=None):
+    def __init__(self, cfg: "dict"=None, db: "BancoDados"=None, usina=None) -> "None":
 
         # ATRIBUIÇÂO DE VARIÁVEIS PÚBLICAS
 
@@ -30,7 +30,7 @@ class Agendamentos:
         self.segundos_passados = 0
         self.segundos_adiantados = 0
 
-    def verificar_agendamentos_pendentes(self) -> list:
+    def verificar_agendamentos_pendentes(self) -> "list":
         """
         Função para extrair lista de agendamentos não executados do Banco de Dados.
         """
@@ -44,7 +44,7 @@ class Agendamentos:
 
         return pendentes
 
-    def verificar_agendamentos_iguais(self, agendamentos) -> None:
+    def verificar_agendamentos_iguais(self, agendamentos) -> "None":
         """
         Função para verificar agendamentos iguais.
 
@@ -66,7 +66,7 @@ class Agendamentos:
             i += 1
             j = len(agendamentos)
 
-    def verificar_agendamentos(self) -> bool:
+    def verificar_agendamentos(self) -> "bool":
         """
         Função principal de verificação de agendamentos.
 
@@ -116,7 +116,7 @@ class Agendamentos:
                 self.db.update_agendamento(agendamento[0], executado=1)
                 logger.debug(f"[AGN] Agendamento executado:              \"{AGN_STR_DICT[agendamentos[i-1][3]] if agendamentos[i-1][3] in AGN_STR_DICT else 'Inexistente'}\"")
 
-    def verificar_agendamentos_atrasados(self, agendamento) -> None:
+    def verificar_agendamentos_atrasados(self, agendamento) -> "None":
         """
         Função para verificar se os agendamentos esão atrasados.
 
@@ -150,7 +150,7 @@ class Agendamentos:
                     self.db.update_agendamento(int(agendamento[0]), 1, obs="AGENDAMENTO NÃO EXECUTADO POR CONTA DE ATRASO!")
                     agn_atrasados += 1
 
-    def verificar_agendamentos_sem_efeito(self, agendamento) -> None:
+    def verificar_agendamentos_sem_efeito(self, agendamento) -> "None":
         """
         Função para verificar se o agendamento possui algum efeito no modo atual
         do MOA.

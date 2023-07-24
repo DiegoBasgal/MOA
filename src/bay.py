@@ -4,14 +4,17 @@ __description__ = "Este módulo corresponde a implementação da operação do B
 
 import logging
 import traceback
+import threading
 
-from condicionador import *
+from time import time, sleep
+
 from funcoes.leitura import *
 from dicionarios.const import *
+from funcoes.condicionador import *
 
 from usina import Usina
 from subestacao import Subestacao as SE
-from conector import ClientesUsina as cli
+from conectores.servidores import Servidores
 from funcoes.escrita import EscritaModBusBit as EMB
 
 logger = logging.getLogger("__main__")
@@ -20,44 +23,44 @@ class Bay(Usina):
 
     # ATRIBUIÇÃO DE VARIÁVEIS
 
-    clp = cli.clp
-    rele = cli.rele
+    clp = Servidores.clp
+    rele = Servidores.rele
 
-    condicionadores: "list[CondicionadorBase]" = []
-    condicionadores_essenciais: "list[CondicionadorBase]" = []
-
-    potencia_medidor_usina: "LeituraModbus" = LeituraModbus(
-        clp["SA"],
-        999,
-        escala=1,
-        op=4
+    tensao_vs = LeituraModbus(
+        rele["BAY"],
+        REG_RELE["BAY"]["TENSAO_VS"],
+        descricao="[BAY][RELE] Leitura Tensão VS"
     )
-    dj_linha_bay: "LeituraModbusBit" = LeituraModbusBit(
+    tensao_vab = LeituraModbus(
+        rele["BAY"],
+        REG_RELE["BAY"]["TENSAO_FASE_A"],
+        descricao="[BAY][RELE] Leitura Tensão Fase A"
+    )
+    tensao_vbc = LeituraModbus(
+        rele["BAY"],
+        REG_RELE["BAY"]["TENSAO_FASE_B"],
+        descricao="[BAY][RELE] Leitura Tensão Fase B"
+    )
+    tensao_vca = LeituraModbus(
+        rele["BAY"],
+        REG_RELE["BAY"]["TENSAO_FASE_C"],
+        descricao="[BAY][RELE] Leitura Tensão Fase C"
+    )
+    dj_linha_bay = LeituraModbusBit(
         rele["BAY"],
         REG_RELE["BAY"]["DJ_LINHA_FECHADO"],
         bit=0,
         descricao="[BAY][RELE] Disjuntor Bay Status"
     )
-    tensao_fase_a: "LeituraModbus" = LeituraModbus(
-        rele["BAY"],
-        REG_RELE["BAY"]["TENSAO_FASE_A"],
-        descricao="[BAY][RELE] Leitura Tensão Fase A"
+    potencia_medidor_usina = LeituraModbus(
+        clp["SA"],
+        999,
+        escala=1,
+        op=4
     )
-    tensao_fase_b: "LeituraModbus" = LeituraModbus(
-        rele["BAY"],
-        REG_RELE["BAY"]["TENSAO_FASE_B"],
-        descricao="[BAY][RELE] Leitura Tensão Fase B"
-    )
-    tensao_fase_c: "LeituraModbus" = LeituraModbus(
-        rele["BAY"],
-        REG_RELE["BAY"]["TENSAO_FASE_C"],
-        descricao="[BAY][RELE] Leitura Tensão Fase C"
-    )
-    tensao_vs: "LeituraModbus" = LeituraModbus(
-        rele["BAY"],
-        REG_RELE["BAY"]["TENSAO_VS"],
-        descricao="[BAY][RELE] Leitura Tensão VS"
-    )
+
+    condicionadores: "list[CondicionadorBase]" = []
+    condicionadores_essenciais: "list[CondicionadorBase]" = []
 
     @classmethod
     def resetar_emergencia(cls) -> "bool":
@@ -75,7 +78,7 @@ class Bay(Usina):
             return False
 
     @classmethod
-    def fechar_dj_linha_bay(cls) -> "bool":
+    def fechar_dj_linha(cls) -> "bool":
         """
         Função para acionar comando de fechamento do Disjuntor do BAY de comunicação.
 
@@ -88,7 +91,7 @@ class Bay(Usina):
         try:
             if not cls.dj_linha_bay.valor:
                 logger.info("[BAY] O Disjuntor do Bay está aberto! Realizando fechamento...")
-                if cls.verificar_dj_linha_bay():
+                if cls.verificar_dj_linha():
                     EMB.escrever_bit(cls.rele["BAY"], REG_RELE["BAY"]["CMD_FECHA_DJ"], bit=2, valor=1)
                     return True
                 else:
@@ -104,7 +107,7 @@ class Bay(Usina):
             return False
 
     @classmethod
-    def verificar_dj_linha_bay(cls) -> "bool":
+    def verificar_dj_linha(cls) -> "bool":
         """
         Função para verificação de condições de fechamento do Disjuntor do BAY.
 
@@ -124,14 +127,14 @@ class Bay(Usina):
         logger.info("[BAY] Verificando condições de fechamento do Disjuntor do BAY...")
 
         try:
-            if SE.dj_se.valor:
+            if SE.dj_linha_se.valor:
                 logger.info("[BAY] Disjuntor da Subestação fechado! Acionando comando de abertura...")
 
                 if not EMB.escrever_bit(cls.clp["SA"], REG_CLP["SE"]["CMD_SE_ABRE_52L"], bit=1, valor=0):
                     logger.warning("[BAY] Não foi possível realizar a abertura do Disjuntor de Linha da Subestação!")
                     flags += 1
 
-            if not cls.verificar_tensao_trifasica():
+            if not cls.verificar_tensao():
                 flags += 1
 
             if cls.tensao_vs.valor != 0:
@@ -165,15 +168,15 @@ class Bay(Usina):
             return False
 
     @classmethod
-    def verificar_tensao_trifasica(cls) -> "bool":
+    def verificar_tensao(cls) -> "bool":
         """
         Função para verificação de Tensão trifásica na linha do BAY.
         """
 
         try:
-            if (TENSAO_FASE_BAY_BAIXA < cls.tensao_fase_a.valor < TENSAO_FASE_BAY_ALTA) \
-                and (TENSAO_FASE_BAY_BAIXA < cls.tensao_fase_b.valor < TENSAO_FASE_BAY_ALTA) \
-                and (TENSAO_FASE_BAY_BAIXA < cls.tensao_fase_c.valor < TENSAO_FASE_BAY_ALTA):
+            if (TENSAO_FASE_BAY_BAIXA < cls.tensao_vab.valor < TENSAO_FASE_BAY_ALTA) \
+                and (TENSAO_FASE_BAY_BAIXA < cls.tensao_vbc.valor < TENSAO_FASE_BAY_ALTA) \
+                and (TENSAO_FASE_BAY_BAIXA < cls.tensao_vca.valor < TENSAO_FASE_BAY_ALTA):
                 return True
             else:
                 logger.warning("[BAY] Tensão trifásica fora do limite.")
@@ -183,6 +186,49 @@ class Bay(Usina):
             logger.exception(f"[BAY] Houve um erro ao realizar a verificação da tensão trifásica.")
             logger.debug(f"[BAY] Traceback: {traceback.format_exc()}")
             return False
+
+    @classmethod
+    def aguardar_tensao(cls) -> "bool":
+        """
+        Função para normalização após a queda de tensão da linha de transmissão.
+
+        Primeiramente, caso haja uma queda, será chamada a função com o temporizador de
+        espera com tempo pré-definido. Caso a tensão seja reestabelecida dentro do limite
+        de tempo, é chamada a funcão de normalização da Usina. Se o temporizador passar do
+        tempo, é chamada a função de acionamento de emergência e acionado tropedo de emergência
+        por Voip.
+        """
+
+        if cls.status_tensao == TENSAO_VERIFICAR:
+            cls.status_tensao = TENSAO_AGUARDO
+            logger.debug("[SE] Iniciando o timer para a normalização da tensão na linha.")
+            threading.Thread(target=lambda: cls.temporizar_tensao(600)).start()
+
+        elif cls.status_tensao == TENSAO_REESTABELECIDA:
+            logger.info("[SE] Tensão na linha reestabelecida.")
+            cls.status_tensao = TENSAO_VERIFICAR
+            return True
+
+        elif cls.status_tensao == TENSAO_FORA:
+            logger.critical("[SE] Não foi possível reestabelecer a tensão na linha. Acionando emergência")
+            cls.status_tensao = TENSAO_VERIFICAR
+            return False
+
+        else:
+            logger.debug("[SE] A tensão na linha ainda está fora.")
+
+    @classmethod
+    def temporizar_tensao(cls, delay: "int") -> "None":
+        """
+        Função de temporizador para espera de normalização de tensão da linha de transmissão.
+        """
+
+        while time() <= time() + delay:
+            if cls.verificar_tensao():
+                cls.status_tensao = TENSAO_REESTABELECIDA
+                return
+            sleep(time() - (time() - 15))
+        cls.status_tensao = TENSAO_FORA
 
     @classmethod
     def verificar_condicionadores(cls) -> "list[CondicionadorBase]":

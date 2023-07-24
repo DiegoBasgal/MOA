@@ -11,7 +11,7 @@ from pyModbusTCP.client import ModbusClient
 
 logger = logging.getLogger("__main__")
 
-class ClientesUsina:
+class Servidores:
 
     clp: "dict[str, ModbusClient]" = {}
     rele: "dict[str, ModbusClient]" = {}

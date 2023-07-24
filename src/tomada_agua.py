@@ -8,11 +8,11 @@ import traceback
 
 import dicionarios.dict as dct
 
-from condicionador import *
 from funcoes.leitura import *
+from funcoes.condicionador import *
 
 from usina import Usina
-from conector import ClientesUsina as cli
+from conectores.servidores import Servidores
 from funcoes.escrita import EscritaModBusBit as EMB
 
 logger = logging.getLogger("__main__")
@@ -21,37 +21,37 @@ class TomadaAgua(Usina):
 
     # ATRIBUIÇÃO DE VARIÁVEIS
 
-    clp = cli.clp
+    clp = Servidores.clp
 
-    erro_nv: "float" = 0
-    erro_nv_anterior: "float" = 0
-    nv_montante_recente: "float" = 0
-    nv_montante_anterior: "float" = 0
-
-    condicionadores: "list[CondicionadorBase]" = []
-    condicionadores_essenciais: "list[CondicionadorBase]" = []
-
-    nv_montante: "LeituraModbus" = LeituraModbus(
+    nivel_montante = LeituraModbus(
         clp["TDA"],
         REG_CLP["TDA"]["NIVEL_MONTANTE"],
         descricao="[TDA] Leitura Nível Montante"
     )
-    status_lg: "LeituraModbus" = LeituraModbus(
+    status_limpa_grades = LeituraModbus(
         clp["TDA"],
         REG_CLP["TDA"]["LG_OPERACAO_MANUAL"],
         descricao="[TDA] Status Limpa Grades"
     )
-    status_vb: "LeituraModbus" = LeituraModbus(
+    status_valvula_borboleta = LeituraModbus(
         clp["TDA"],
         REG_CLP["TDA"]["VB_FECHANDO"],
         descricao="[TDA] Status Válvula Borboleta"
     )
-    status_uh: "LeituraModbusBit" = LeituraModbusBit(
+    status_unidade_hidraulica = LeituraModbusBit(
         clp["TDA"],
         REG_CLP["TDA"]["UH_UNIDADE_HIDRAULICA_DISPONIVEL"],
         bit=1,
         descricao="[TDA] Status Unidade Hidáulica"
     )
+
+    erro_nivel: "float" = 0
+    erro_nivel_anterior: "float" = 0
+    nivel_montante_anterior: "float" = 0
+    nv_montante_anterior: "float" = 0
+
+    condicionadores: "list[CondicionadorBase]" = []
+    condicionadores_essenciais: "list[CondicionadorBase]" = []
 
     @classmethod
     def resetar_emergencia(cls) -> "bool":
@@ -76,9 +76,9 @@ class TomadaAgua(Usina):
         cálculos futuros de ajuste de potência.
         """
 
-        cls.nv_montante_recente = cls.nv_montante
-        cls.erro_nv_anterior = cls.erro_nv
-        cls.erro_nv = cls.nv_montante_recente - cls.cfg["nv_alvo"]
+        cls.nivel_montante_anterior = cls.nivel_montante.valor
+        cls.erro_nivel_anterior = cls.erro_nivel
+        cls.erro_nivel = cls.nivel_montante_anterior - cls.cfg["nv_alvo"]
 
     @classmethod
     def controlar_reservatorio(cls) -> "int":
@@ -97,11 +97,11 @@ class TomadaAgua(Usina):
         calcular e distribuir a potência para as Unidades.
         """
 
-        if cls.nv_montante >= cls.cfg["nv_maximo"]:
+        if cls.nivel_montante >= cls.cfg["nv_maximo"]:
             logger.debug("[TDA] Nível montante acima do máximo.")
 
-            if cls.nv_montante_recente >= NIVEL_MAXIMORUM:
-                logger.critical(f"[TDA] Nivel montante ({cls.nv_montante_recente:3.2f}) atingiu o maximorum!")
+            if cls.nivel_montante_anterior >= NIVEL_MAXIMORUM:
+                logger.critical(f"[TDA] Nivel montante ({cls.nivel_montante_anterior:3.2f}) atingiu o maximorum!")
                 return NV_EMERGENCIA
             else:
                 cls.controle_i = 0.5
@@ -111,7 +111,7 @@ class TomadaAgua(Usina):
                 for ug in cls.ugs:
                     ug.step()
 
-        elif cls.nv_montante <= cls.cfg["nv_minimo"] and not cls.aguardando_reservatorio:
+        elif cls.nivel_montante <= cls.cfg["nv_minimo"] and not cls.aguardando_reservatorio:
             logger.debug("[TDA] Nível montante abaixo do mínimo.")
             cls.aguardando_reservatorio = True
             cls.distribuir_potencia(0)
@@ -119,12 +119,12 @@ class TomadaAgua(Usina):
             for ug in cls.ugs:
                 ug.step()
 
-            if cls.nv_montante_recente <= NIVEL_FUNDO_RESERVATORIO:
-                logger.critical(f"[TDA] Nivel montante ({cls.nv_montante_recente:3.2f}) atingiu o fundo do reservatorio!")
+            if cls.nivel_montante_anterior <= NIVEL_FUNDO_RESERVATORIO:
+                logger.critical(f"[TDA] Nivel montante ({cls.nivel_montante_anterior:3.2f}) atingiu o fundo do reservatorio!")
                 return NV_EMERGENCIA
 
         elif cls.aguardando_reservatorio:
-            if cls.nv_montante >= cls.cfg["nv_alvo"]:
+            if cls.nivel_montante >= cls.cfg["nv_alvo"]:
                 logger.debug("[TDA] Nível montante dentro do limite de operação.")
                 cls.aguardando_reservatorio = False
 

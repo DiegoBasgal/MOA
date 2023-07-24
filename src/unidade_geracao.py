@@ -4,8 +4,8 @@ __credits__ = ["Diego Basgal" , ...]
 __description__ = "Este módulo corresponde a implementação das Unidades de Geração."
 
 from usina import *
-from condicionador import *
 from funcoes.leitura import *
+from funcoes.condicionador import *
 from maquinas_estado.ug_sm import *
 
 from subestacao import Subestacao as SE

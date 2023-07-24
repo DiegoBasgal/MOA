@@ -4,7 +4,6 @@ __credits__ = ["Diego Basgal", ...]
 __description__ = "Este módulo corresponde a implementação da operação da Usina."
 
 import os
-import sys
 import json
 import pytz
 import logging
@@ -15,13 +14,14 @@ import dicionarios.dict as dct
 from time import sleep, time
 from datetime import  datetime
 
-from condicionador import *
 from dicionarios.reg import *
 from dicionarios.const import *
+from funcoes.condicionador import *
 
 from mensageiro.voip import Voip
-from banco_dados import BancoDados
-from agendamentos import Agendamentos
+from conectores.servidores import Servidores
+from conectores.banco_dados import BancoDados
+from funcoes.agendamentos import Agendamentos
 from funcoes.escrita import EscritaModBusBit as EMB
 
 from funcoes.leitura import *
@@ -30,14 +30,13 @@ from bay import Bay as BAY
 from comporta import Comporta as CP
 from subestacao import Subestacao as SE
 from tomada_agua import TomadaAgua as TDA
-from conector import ClientesUsina as CLI
 from unidade_geracao import UnidadeGeracao as UG
 from servico_auxiliar import ServicoAuxiliar as SA
 
 logger = logging.getLogger("__main__")
 
 class Usina:
-    def __init__(self, cfg: "dict" = None):
+    def __init__(self, cfg: "dict" = None) -> "None":
 
         # VERIFICAÇÃO DE ARGUMENTOS
 
@@ -46,21 +45,19 @@ class Usina:
         else:
             self.cfg = cfg
 
-        self.clp = CLI.clp
-        self.rele = CLI.rele
-
-
         # INCIALIZAÇÃO DE OBJETOS DA USINA
 
-        self.bd: "BancoDados" = BancoDados("MOA")
-        self.agn: "Agendamentos" = Agendamentos()
+        self.clp = Servidores.clp
+        self.rele  = Servidores.rele
 
-        self.ug1: "UG" = UG(self, 1)
-        self.ug2: "UG" = UG(self, 2)
+        self.agn = Agendamentos()
+        self.bd = BancoDados("MOA")
 
-        self.ugs: "list[UG]" = [self.ug1, self.ug2]
+        self.ug1 = UG(self, 1)
+        self.ug2 = UG(self, 2)
 
         # ATRIBUIÇÃO DE VARIÀVEIS
+
         # PRIVADAS
         self.__split1: "bool" = False
         self.__split2: "bool" = False
@@ -79,7 +76,7 @@ class Usina:
         self.pot_disp: "int" = 0
         self.ug_operando: "int" = 0
 
-        self.modo_de_escolha_das_ugs: "int" = 0
+        self.modo_prioridade_ugs: "int" = 0
 
         self.aguardando_reservatorio: "int" = 0
 
@@ -92,6 +89,7 @@ class Usina:
         self.borda_emergencia: "bool" = False
         self.normalizar_forcado: "bool" = False
 
+        self.ugs: "list[UG]" = [self.ug1, self.ug2]
 
         # FINALIZAÇÃO DO __INIT__
 
@@ -194,9 +192,10 @@ class Usina:
 
         logger.debug("[USN] Normalizando...")
         logger.debug(f"[USN] Última tentativa de normalização:   {self.ultima_tentativa_norm.strftime('%d-%m-%Y %H:%M:%S')}")
-        logger.debug(f"[USN] Tensão na linha:                    RS -> \"{SE.tensao_rs.valor:2.1f} kV\" | ST -> \"{SE.tensao_st.valor:2.1f} kV\" | TR -> \"{SE.tensao_tr.valor:2.1f} kV\"")
+        logger.debug(f"[USN][SE]  Tensão Subestação:             VAB -> \"{SE.tensao_vab.valor:2.1f} kV\" | VBC -> \"{SE.tensao_vbc.valor:2.1f} kV\" | VCA -> \"{SE.tensao_vca.valor:2.1f} kV\"")
+        logger.debug(f"[USN][BAY] Tensão BAY:                    VAB -> \"{BAY.tensao_vab.valor:2.1f} kV\" | VBC -> \"{BAY.tensao_vbc.valor:2.1f} kV\" | VCA -> \"{BAY.tensao_vca.valor:2.1f} kV\"")
 
-        if not BAY.fechar_dj_linha_bay():
+        if not BAY.fechar_dj_linha():
             return NORM_USN_DJBAY_ABERTO
 
         if not SE.dj_linha_se.valor:
@@ -206,7 +205,7 @@ class Usina:
                 logger.warning("[USN] Não foi possível realizar o fechameto do Disjuntor 52L")
                 return NORM_USN_DJL_ABERTO
 
-        if not SE.verificar_tensao():
+        if not SE.verificar_tensao_trifasica():
             return NORM_USN_FALTA_TENSAO
 
         elif ((self.get_time() - self.ultima_tentativa_norm).seconds >= 60 * self.tentativas_normalizar) or self.normalizar_forcado:
@@ -282,16 +281,16 @@ class Usina:
         """
 
         logger.debug(f"[TDA] NÍVEL -> Alvo:                      {self.cfg['nv_alvo']:0.3f}")
-        logger.debug(f"[TDA]          Leitura:                   {TDA.nv_montante_recente:0.3f}")
+        logger.debug(f"[TDA]          Leitura:                   {TDA.nivel_montante_anterior:0.3f}")
 
-        self.controle_p = self.cfg["kp"] * TDA.erro_nv
+        self.controle_p = self.cfg["kp"] * TDA.erro_nivel
 
         if self._pid_inicial == -1:
             self.controle_i = max(min(self.controle_ie - self.controle_p, 0,8), 0)
             self._pid_inicial = 0
         else:
-            self.controle_i = max(min((self.cfg["ki"] * TDA.erro_nv) + self.controle_i, 0.8), 0)
-            self.controle_d = self.cfg["kd"] * (TDA.erro_nv - TDA.erro_nv_anterior)
+            self.controle_i = max(min((self.cfg["ki"] * TDA.erro_nivel) + self.controle_i, 0.8), 0)
+            self.controle_d = self.cfg["kd"] * (TDA.erro_nivel - TDA.erro_nivel_anterior)
 
         saida_pid = (self.controle_p + self.controle_i + min(max(-0.3, self.controle_d), 0.3))
 
@@ -304,14 +303,14 @@ class Usina:
         self.controle_ie = max(min(saida_pid + self.controle_ie * self.cfg["kie"], 1), 0)
 
         logger.debug(f"[USN] IE:                                 {self.controle_ie:0.3f}")
-        logger.debug(f"[USN] ERRO:                               {TDA.erro_nv}")
+        logger.debug(f"[USN] ERRO:                               {TDA.erro_nivel}")
         logger.debug("")
 
-        if TDA.nv_montante_recente >= (self.cfg["nv_maximo"] + 0.03):
+        if TDA.nivel_montante_anterior >= (self.cfg["nv_maximo"] + 0.03):
             self.controle_ie = 1
             self.controle_i = 1 - self.controle_p
 
-        if TDA.nv_montante_recente <= (self.cfg["nv_minimo"] + 0.03):
+        if TDA.nivel_montante_anterior <= (self.cfg["nv_minimo"] + 0.03):
             self.controle_ie = min(self.controle_ie, 0.3)
             self.controle_i = 0
 
@@ -354,7 +353,7 @@ class Usina:
         de potência para entrada ou retirada de uma Unidade.
         """
 
-        ugs: "list[UG]" = self.controle_ugs_disponiveis()
+        ugs: "list[UG]" = self.verificar_ugs_disponiveis()
         if ugs is None:
             logger.warning("[USN] Sem UGs disponíveis para realizar a distribuição de potência.")
             return
@@ -392,7 +391,7 @@ class Usina:
             for ug in ugs:
                 ug.setpoint = 0
 
-    def controle_ugs_disponiveis(self) -> "list[UG]":
+    def verificar_ugs_disponiveis(self) -> "list[UG]":
         """
         Função para verificar leituras/condições específicas e determinar a Prioridade das Unidades.
         """
@@ -401,7 +400,7 @@ class Usina:
         [ls.append(ug) for ug in self.ugs if ug.disponivel and not ug.etapa_atual == UG_PARANDO]
         logger.debug("")
 
-        if self.modo_de_escolha_das_ugs == MODO_ESCOLHA_MANUAL:
+        if self.modo_prioridade_ugs == MODO_ESCOLHA_MANUAL:
             logger.debug("[USN] UGs disponíveis em ordem (prioridade):")
             return sorted(ls, key=lambda y: (-1 * y.leitura_potencia, -1 * y.setpoint, y.prioridade))
         else:
@@ -417,7 +416,7 @@ class Usina:
         Banco de Dados da Interface WEB.
         """
 
-        CLI.ping_clients()
+        Servidores.ping_clients()
         TDA.atualizar_montante()
 
         parametros = self.bd.get_parametros_usina()
@@ -449,9 +448,9 @@ class Usina:
                 self.modo_autonomo = False
                 logger.debug(f"[USN] Modo autônomo:                      \"{'Desativado'}\"")
 
-            if not self.modo_de_escolha_das_ugs == int(parametros["modo_de_escolha_das_ugs"]):
-                self.modo_de_escolha_das_ugs = int(parametros["modo_de_escolha_das_ugs"])
-                logger.info(f"[USN] Modo de prioridade das UGs:         \"{UG_STR_DCT_PRIORIDADE[self.modo_de_escolha_das_ugs]}\"")
+            if not self.modo_prioridade_ugs == int(parametros["modo_prioridade_ugs"]):
+                self.modo_prioridade_ugs = int(parametros["modo_prioridade_ugs"])
+                logger.info(f"[USN] Modo de prioridade das UGs:         \"{UG_STR_DCT_PRIORIDADE[self.modo_prioridade_ugs]}\"")
 
         except Exception:
             logger.error(f"[USN] Houve um erro ao ler e atualizar os parâmetros do Banco de Dados.")
@@ -492,20 +491,20 @@ class Usina:
 
         try:
             self.bd.update_valores_usina(
-                self.get_time().strftime("%Y-%m-%d %H:%M:%S"), # timestamp
-                1 if self.aguardando_reservatorio else 0,  # aguardando_reservatorio
-                True,  # DEPRECATED clp_online
-                TDA.nv_montante.valor, # nv_montante
-                1 if self.ug1.disponivel else 0,  # ug1_disp
-                self.ug1.leitura_potencia,  # ug1_pot
-                self.ug1.setpoint,  # ug1_setpot
-                self.ug1.etapa_atual,  # ug1_sinc
-                self.ug1.leitura_horimetro,  # ug1_tempo
-                1 if self.ug2.disponivel else 0,  # ug2_disp
-                self.ug2.leitura_potencia,  # ug2_pot
-                self.ug2.setpoint,  # ug2_setpot
-                self.ug2.etapa_atual,  # ug2_sinc
-                self.ug2.leitura_horimetro,  # ug2_tempo
+                self.get_time().strftime("%Y-%m-%d %H:%M:%S"),
+                1 if self.aguardando_reservatorio else 0,
+                TDA.aguardando_reservatorio,
+                TDA.nivel_montante.valor,
+                1 if self.ug1.disponivel else 0,
+                self.ug1.leitura_potencia,
+                self.ug1.setpoint,
+                self.ug1.etapa_atual,
+                self.ug1.leitura_horimetro,
+                1 if self.ug2.disponivel else 0,
+                self.ug2.leitura_potencia,
+                self.ug2.setpoint,
+                self.ug2.etapa_atual,
+                self.ug2.leitura_horimetro,
             )
 
         except Exception:
@@ -527,8 +526,8 @@ class Usina:
                 self.ug1.leitura_potencia,
                 self.ug2.setpoint,
                 self.ug2.leitura_potencia,
-                TDA.nv_montante_recente,
-                TDA.erro_nv,
+                TDA.nivel_montante_anterior,
+                TDA.erro_nivel,
                 1 if self.modo_autonomo else 0,
             )
 
