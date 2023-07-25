@@ -1,3 +1,154 @@
+import datetime
+
 from django.shortcuts import render
+from parametros.models import ParametrosUsina
 
 # Create your views here.
+from pyModbusTCP.client import ModbusClient
+
+
+MOA_DICT_DE_STATES = {}
+MOA_DICT_DE_STATES[0] = 0
+MOA_DICT_DE_STATES[1] = 1
+MOA_DICT_DE_STATES[2] = 2
+MOA_DICT_DE_STATES[3] = 3
+
+UNIDADE_PARADA = 2
+UNIDADE_PARANDO = 1
+UNIDADE_SINCRONIZANDO = 3
+UNIDADE_SINCRONIZADA = 4
+
+
+def monitoramento_view(request, *args, **kwargs):
+
+    clp_sa = ModbusClient("192.168.20.130", 502, unit_id=1, timeout=0.5, auto_close=True)
+    clp_tda = ModbusClient("192.168.20.140", 502, unit_id=1, timeout=0.5, auto_close=True)
+    clp_ug1 = ModbusClient("192.168.20.110", 502, unit_id=1, timeout=0.5, auto_close=True)
+    clp_ug2 = ModbusClient("192.168.20.120", 502, unit_id=1, timeout=0.5, auto_close=True)
+    # clp_moa = ModbusClient("192.168.50.116", 502, timeout=0.5, unit_id=1, auto_close=True)
+
+    usina = ParametrosUsina.objects.get(id=1)
+
+    context = {
+        "usina": usina,
+        "em_acionada": "Sim" if usina.emergencia_acionada else "Não",
+        "timestamp": usina.timestamp.strftime("%d/%m/%Y, %H:%M:%S"),
+        "nv_alvo": f"{usina.nv_alvo:3.2f}",
+        "ug1_state": usina.ug1_ultimo_estado,
+        "ug2_state": usina.ug2_ultimo_estado,
+        "aguardo": "Sim" if usina.aguardando_reservatorio > 0 else "Não",
+        "CLP_MOA": usina.clp_moa_ip,
+    }
+
+    for key in context:
+        if context[key] == "" or context[key] == " ":
+            context[key] = "-"
+
+    if clp_sa.open():
+        reg_dj = 0 #clp_sa.read_coils(17)[0]
+        setpot_usina = 0 #clp_sa.read_input_registers(26)[0]
+        context["setpot_usina"] = setpot_usina
+        context["tensao_rs"] = 0.0 # clp_sa.read_input_registers(16)[0] * 100
+        context["tensao_st"] = 0.0 # clp_sa.read_input_registers(17)[0] * 100
+        context["tensao_tr"] = 0.0 # clp_sa.read_input_registers(18)[0] * 100
+
+        if reg_dj == 0:
+            context["status_dj52l"] = 0
+        elif reg_dj == 1:
+            context["status_dj52l"] = 1
+        else:
+            context["status_dj52l"] = 2
+
+    if clp_tda.open():
+        reg_nv = 0 # clp_tda.read_input_registers(12)[0]
+        context["nv_montante"] = f"{(reg_nv * 1/10000) + 400:0.2f}"
+        if 405 <= reg_nv <= 405.15:
+            context["tag"] = 0
+        elif 404.85 < reg_nv < 405:
+            context["tag"] = 1
+        elif reg_nv <= 404.85 or reg_nv > 405.15:
+            context["tag"] = 2
+
+    if clp_ug1.open():
+        setpoint_ug1 = 0 # clp_ug1.read_holding_registers(1)[0]
+        potencia_ug1 = 0 # clp_ug1.read_input_registers(45)[0]
+        hora = 0 # clp_ug1.read_input_registers(51)[0]
+        minuto = 0 # (clp_ug1.read_input_registers(52)[0] * (1/60))
+
+        res_ug1 = 5
+        # if clp_ug1.read_discrete_inputs(11)[0]:
+        #     res_ug1 += 2**0
+        # if clp_ug1.read_discrete_inputs(133)[0]:
+        #     res_ug1 += 2**1
+        # if clp_ug1.read_discrete_inputs(0)[0]:
+        #     res_ug1 += 2**2
+        # if clp_ug1.read_discrete_inputs(132)[0]:
+        #     res_ug1 += 2**3
+
+        if res_ug1 == 1:
+            context["ug1_etapa"] = UNIDADE_SINCRONIZADA
+        elif 2 <= res_ug1 <= 3:
+            context["ug1_etapa"] = UNIDADE_PARANDO
+        elif 4 <= res_ug1 <= 7:
+            context["ug1_etapa"] = UNIDADE_PARADA
+        elif 8 <= res_ug1 <= 15:
+            context["ug1_etapa"] = UNIDADE_SINCRONIZANDO
+        else:
+            context["ug1_etapa"] = 99
+
+        context["setpot_ug1"] = setpoint_ug1
+        context["pot_ug1"] = potencia_ug1
+        context["tempo_ug1"] = 0 # f"{float((hora + 45657.39) + minuto):.2f}"
+
+    if clp_ug2.open():
+        setpoint_ug2 = 0 # clp_ug2.read_holding_registers(1)[0]
+        potencia_ug2 = 0 # clp_ug2.read_input_registers(45)[0]
+        hora = 0 # clp_ug2.read_input_registers(51)[0]
+        minuto = 0 # (clp_ug2.read_input_registers(52)[0] * (1/60))
+
+        res_ug2 = 5
+        # if clp_ug2.read_discrete_inputs(11)[0]:
+        #     res_ug2 += 2**0
+        # if clp_ug2.read_discrete_inputs(133)[0]:
+        #     res_ug2 += 2**1
+        # if clp_ug2.read_discrete_inputs(0)[0]:
+        #     res_ug2 += 2**2
+        # if clp_ug2.read_discrete_inputs(132)[0]:
+        #     res_ug2 += 2**3
+        
+        if res_ug2 == 1:
+            context["ug2_etapa"] = UNIDADE_SINCRONIZADA
+        elif 2 <= res_ug2 <= 3:
+            context["ug2_etapa"] = UNIDADE_PARANDO
+        elif 4 <= res_ug2 <= 7:
+            context["ug2_etapa"] = UNIDADE_PARADA
+        elif 8 <= res_ug2 <= 15:
+            context["ug2_etapa"] = UNIDADE_SINCRONIZANDO
+        else:
+            context["ug2_etapa"] = 99
+
+        context["setpot_ug2"] = setpoint_ug2
+        context["pot_ug2"] = potencia_ug2
+        context["tempo_ug2"] = 0 # f"{float((hora + 49376.14) + minuto):.2f}"
+
+    # if clp_moa.open():
+    #     context["CLP_Status"] = True
+    #     clp_moa.close()
+
+    # else:
+    #     context["CLP_Status"] = False
+
+    moa_ultima_comunicacao = (
+        datetime.datetime.now(usina.timestamp.tzinfo)
+        - usina.timestamp
+        - datetime.timedelta(hours=3)
+    )
+
+    hours = int(moa_ultima_comunicacao.seconds // 3600)
+    remainder = int(moa_ultima_comunicacao.seconds - hours * 3600)
+    mins = int(remainder // 60)
+    secs = int(remainder - mins * 60)
+
+    context ["moa_ultima_comunicacao"] = f"{moa_ultima_comunicacao.days} dias, {hours:02d}:{mins:02d}:{secs:02d}"
+
+    return render(request, "monitoramento.html", context=context)

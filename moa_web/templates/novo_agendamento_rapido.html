@@ -1,0 +1,101 @@
+{% extends "base.html" %}
+{% block content %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <style>
+        #content_container {
+            margin: 10px;
+            font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif
+        }
+
+        h1 {
+            color: white;
+        }
+
+        h2 {
+            color: white;
+        }
+        
+        h3 {
+            color: white;
+        }
+
+        h4 {
+            color: white;
+        }
+
+        label {
+            color: white;
+        }
+
+        a {
+            color: white;
+        }
+
+        p {
+            color: white;
+        }
+    </style>
+</head>
+<body>
+    <div id="content_container">
+        <h1 style="margin-bottom: 1px;">Novo agendamento rápido</h1>
+        <h3 style="margin-bottom: 1px; margin-top: 30px;">Comandos gerais:</h3>
+        {% for comando in comandos %}
+        <form method='post' action='/agendamentos/novo_agendamento_rapido/'>
+            {% csrf_token %}
+            {% if comando.id == 1 or comando.id == 2 or comando.id == 3 or comando.id == 4 or comando.id == 5 or comando.id == 777 %}
+            <hr style="margin: 4px; visibility:hidden;" />
+            <input type="hidden" id="comando" name="comando" value="{{ comando.id }}"/>
+            <a>Agendar agora: </a>
+            <input type="submit" value="{{ comando.nome }}."/>
+            {% endif %}
+        </form>
+        {% endfor %} 
+        <hr style="height:18pt; visibility:hidden;" />
+        <h3 style="margin-bottom: 1px; margin-top: 30px;">UG1:</h3>
+        {% for comando in comandos %}
+        <form method='post' action='/agendamentos/novo_agendamento_rapido/'>
+            {% csrf_token %}
+            {% if comando.id == 102 or comando.id == 103 or comando.id == 104 or comando.id == 105 or comando.id == 106 %}
+            <hr style="margin: 4px; visibility:hidden;" />
+            <input type="hidden" id="comando" name="comando" value="{{ comando.id }}"/>
+            <a>Agendar agora: </a>
+            <input type="submit" value="{{ comando.nome }}."/>
+            {% endif %}
+        </form>
+        {% endfor %}
+        <hr style="height:10pt; visibility:hidden;" />
+        <h3 style="margin-bottom: 1px; margin-top: 30px;">UG2:</h3>
+        {% for comando in comandos %}
+        <form method='post' action='/agendamentos/novo_agendamento_rapido/'>
+            {% csrf_token %}
+            {% if comando.id == 202 or comando.id == 203 or comando.id == 204 or comando.id == 205 or comando.id == 206 %}
+            <hr style="margin: 4px; visibility:hidden;" />
+            <input type="hidden" id="comando" name="comando" value="{{ comando.id }}"/>
+            <a>Agendar agora: </a>
+            <input type="submit" value="{{ comando.nome }}."/>
+            {% endif %}
+        </form>
+        {% endfor %}
+        <hr style="height:10pt; visibility:hidden;" />
+        <h3 style="margin-bottom: 1px; margin-top: 30px;">UG3:</h3>
+        {% for comando in comandos %}
+        <form method='post' action='/agendamentos/novo_agendamento_rapido/'>
+            {% csrf_token %}
+            {% if comando.id == 302 or comando.id == 303 or comando.id == 304 or comando.id == 305 or comando.id == 306 %}
+            <hr style="margin: 4px; visibility:hidden;" />
+            <input type="hidden" id="comando" name="comando" value="{{ comando.id }}"/>
+            <a>Agendar agora: </a>
+            <input type="submit" value="{{ comando.nome }}."/>
+            {% endif %}
+        </form>
+        {% endfor %}
+    </div>
+    <br>
+    <br>
+</body>
+</html>
+{% endblock content %}
+
