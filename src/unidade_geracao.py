@@ -3,6 +3,7 @@ import logging
 import traceback
 
 import src.dicionarios.dict as d
+import src.ocorrencias as oco_ug
 
 from time import sleep, time
 from threading import Thread
@@ -15,9 +16,8 @@ from src.condicionadores import *
 from src.funcoes.leitura import *
 from src.maquinas_estado.ug import *
 
-import src.ocorrencias as oco_ug
-from src.conector import ClientesUsina as cli
 from src.banco_dados import BancoDados
+from src.conector import ClientesUsina as cli
 from src.funcoes.escrita import EscritaModBusBit as EMB
 
 
@@ -204,7 +204,7 @@ class UnidadeDeGeracao:
                 return UG_SINCRONIZADA
 
             elif UG_PARADA < self.etapa_atual < UG_SINCRONIZADA and self.etapa_alvo == UG_PARADA:
-                
+
                 if self._ultima_etapa_alvo != self.etapa_alvo:
                     if self._ultima_etapa_alvo < self.etapa_alvo:
                         self._ultima_etapa_alvo = self.etapa_alvo
@@ -232,26 +232,10 @@ class UnidadeDeGeracao:
                     self._ultima_etapa_alvo = self.etapa_alvo
                     return UG_SINCRONIZANDO
 
-            # else:
-            #     if self.etapa_atual < self.__ultima_etapa_atual or self.etapa_alvo < self.__ultima_etapa_alvo:
-            #         self.__ultima_etapa_alvo = self.etapa_alvo
-            #         self.__ultima_etapa_atual = self.etapa_atual
-            #         return UG_PARANDO
-
-            #     elif self.etapa_atual > self.__ultima_etapa_atual or self.etapa_alvo > self.__ultima_etapa_alvo:
-            #         self.__ultima_etapa_alvo = self.etapa_alvo
-            #         self.__ultima_etapa_atual = self.etapa_atual
-            #         return UG_SINCRONIZANDO
-
-            #     self.__ultima_etapa_alvo = self.etapa_alvo
-            #     self.__ultima_etapa_atual = self.etapa_atual
-
-                return self.__ultima_etapa_atual
-
         except Exception:
             logger.error(f"[UG{self.id}] Houve um erro no controle de Etapas da Unidade. Mantendo Etapa anterior.")
             logger.debug(traceback.format_exc())
-            return self.__ultima_etapa_atual
+            return self._ultima_etapa_atual
 
 
     # Property/Setter -> VARIÁVEIS PROTEGIDAS
@@ -323,7 +307,7 @@ class UnidadeDeGeracao:
 
     # Funções
 
-    def get_time(self) -> datetime:
+    def get_time(self) -> "datetime":
         return datetime.now(pytz.timezone("Brazil/East")).replace(tzinfo=None)
 
     def forcar_estado_manual(self) -> "None":
@@ -415,7 +399,7 @@ class UnidadeDeGeracao:
         try:
             logger.debug("")
             logger.debug(f"[UG{self.id}] Step  -> Unidade:                   \"{UG_SM_STR_DCT[self.codigo_state]}\"")
-            logger.debug(f"[UG{self.id}]          Etapa:                     \"{self.etapa}\"")
+            logger.debug(f"[UG{self.id}]          Etapa:                     \"{UG_STR_DCT_ETAPAS[self.etapa]}\"")
             logger.debug(f"[UG{self.id}]          Etapa alvo:                \"{self.etapa_alvo}\"")
             logger.debug(f"[UG{self.id}]          Etapa atual:               \"{self.etapa_atual}\"")
 
