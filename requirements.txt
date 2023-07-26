@@ -1,11 +1,10 @@
-nginx
-uwsgi
 scipy
+uwsgi
 numpy
-Django
 future
+Django
 pyodbc
 matplotlib
-pyModbusTCP
 mysqlclient
-python-telegram-bot
+pyModbusTCP
+mysql-connector-python

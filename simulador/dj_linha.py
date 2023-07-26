@@ -2,7 +2,7 @@ import logging
 
 from temporizador import Temporizador
 
-from dicionarios.const import *
+from simulador.dicionarios.const import *
 
 logger = logging.getLogger('__main__')
 

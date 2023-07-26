@@ -9,8 +9,8 @@ from datetime import datetime
 from asyncio.log import logger
 from pyModbusTCP.server import ModbusServer, DataBank
 
-from dicionarios.reg import *
-from dicionarios.const import *
+from simulador.dicionarios.reg import *
+from simulador.dicionarios.const import *
 
 from dj_linha import Dj52L
 from ug import Unidade as UG
@@ -33,7 +33,7 @@ class Planta:
         self.borda_db_condic = False
         self.borda_usn_condic = False
 
-        # Intância de servidores OPC e MB
+        # Intância de servidores MB
         self.DB = DataBank()
         self.server_MB = ModbusServer(host='localhost', port=5003, no_block=True)
 
@@ -70,15 +70,15 @@ class Planta:
                     self.DB.set_words(MB['UG2_CONDICIONADORES'], [0])
                     self.DB.set_words(MB['USN_CONDICIONADORES'], [0])
 
-                # Leituras de registradores OPC e MB
+                # Leituras de registradores MB
                 if self.DB.get_words(MB['CMD_SE_FECHA_52L'])[0] == 1:
                     self.DB.set_words(MB['CMD_SE_FECHA_52L'], [1])
-                    logger.info('Comando OPC recebido, fechando DJ52L')
+                    logger.info('Comando recebido, fechando DJ52L')
                     self.dj52L.fechar()
 
                 if self.DB.get_words(MB['RESET_FALHAS_BARRA_CA'])[0] == 1:
                     self.DB.set_words(MB['RESET_FALHAS_BARRA_CA'], [0])
-                    logger.info('Comando OPC recebido: RESET_FALHAS_BARRA_CA')
+                    logger.info('Comando recebido: RESET_FALHAS_BARRA_CA')
                     for ug in self.ugs:
                         ug.reconhece_reset()
                     self.dj52L.reconhece_reset()
@@ -133,7 +133,7 @@ class Planta:
                         self.dict['UG'][f'condicao_falha_cracking_ug{ug.id}'] = False
                         self.dict['USN'][f'aux_borda{ug.id + 6}'] = 0
 
-                    # Leitura de registradores OPC e MB
+                    # Leitura de registradores MB
                     if self.DB.get_words(MB[f'UG{ug.id}_CMD_PARTIDA_CMD_SINCRONISMO'])[0] == 1:
                         self.DB.set_words(MB[f'UG{ug.id}_CMD_PARTIDA_CMD_SINCRONISMO'], [0])
                         ug.partir()
@@ -181,7 +181,7 @@ class Planta:
 
                     if self.DB.get_words(MB[f'UG{ug.id}_CMD_PARADA_EMERGENCIA'])[0] == 1 and self.dict['USN'][f'aux_borda{ug.id + 8}'] == 0:
                         self.DB.set_words(MB[f'UG{ug.id}_CMD_PARADA_EMERGENCIA'], [1])
-                        ug.tripar(1, 'Operacao_EmergenciaLigar via OPC')
+                        ug.tripar(1, 'Operacao_EmergenciaLigar')
                         self.dict['USN'][f'aux_borda{ug.id + 8}'] = 1
 
                     elif self.DB.get_words(MB[f'UG{ug.id}_CMD_PARADA_EMERGENCIA'])[0] == 0 and self.dict['USN'][f'aux_borda{ug.id + 8}'] == 1:

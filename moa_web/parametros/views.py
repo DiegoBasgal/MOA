@@ -118,7 +118,7 @@ def parametros_moa_view(request, *args, **kwargs):
             aux = float(request.POST.get("alerta_perda_grade_ug1").replace(",", "."))
             usina.alerta_perda_grade_ug1 = aux if isinstance(aux, float) else usina.alerta_perda_grade_ug1
 
-            aux = float(request.POST.get("perda_grade_maxima_ug1").replace(",", "."))
+            aux = float(request.POST.get("ug1_perda_grade_maxima").replace(",", "."))
             usina.ug1_perda_grade_maxima = aux if isinstance(aux, float) else usina.ug1_perda_grade_maxima
 
             aux = request.POST.get("alerta_temperatura_fase_r_ug2")
@@ -196,7 +196,7 @@ def parametros_moa_view(request, *args, **kwargs):
             aux = float(request.POST.get("alerta_perda_grade_ug2").replace(",", "."))
             usina.alerta_perda_grade_ug2 = aux if isinstance(aux, float) else usina.alerta_perda_grade_ug2
 
-            aux = float(request.POST.get("perda_grade_maxima_ug2").replace(",", "."))
+            aux = float(request.POST.get("ug2_perda_grade_maxima").replace(",", "."))
             usina.ug2_perda_grade_maxima = aux if isinstance(aux, float) else usina.ug2_perda_grade_maxima
 
             usina.timestamp = datetime.now()

@@ -7,7 +7,7 @@ TEMPO_CICLO_TOTAL = 50
 
 # Valores fixos de nível
 NIVEL_MAXIMORUM = 466.37
-NIVEL_VERTIMENTO = ...
+NIVEL_VERTIMENTO = 462.37
 NIVEL_FUNDO_RESERVATORIO = 460
 
 # Valores fixos de tensão na linha
