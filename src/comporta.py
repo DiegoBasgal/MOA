@@ -49,7 +49,7 @@ class Comporta(TomadaAgua):
         )
         self.__operando = LeituraModbus(
             self.clp["TDA"],
-            REG_CLP["TDA"][f"CP{self.id}_COMPORTA_OPERANDO"],
+            REG_CLP["TDA"][f"CP{self.id}_OPERANDO"],
             bit=14
         )
         self.__permissao = LeituraModbusBit(
@@ -60,7 +60,7 @@ class Comporta(TomadaAgua):
         )
         self.__bloqueio = LeituraModbusBit(
             self.clp["TDA"],
-            REG_CLP["TDA"][f"CP{self.id}_BLOQUEIO_ATUADO"],
+            REG_CLP["TDA"][f"CP{self.id}_BLQ_ATUADO"],
             bit=31,
             invertido=True
         )
@@ -74,7 +74,7 @@ class Comporta(TomadaAgua):
         )
         self.aguardando_cmd_abertura = LeituraModbusBit(
             self.clp["TDA"],
-            REG_CLP["TDA"][f"CP{self.id}_AGUARDANDO_COMANDO_ABERTURA"],
+            REG_CLP["TDA"][f"CP{self.id}_AGUARDANDO_CMD_ABERTURA"],
             bit=3
         )
 
@@ -143,7 +143,7 @@ class Comporta(TomadaAgua):
         """
 
         try:
-            res = EMB.escrever_bit(self.clp["TDA"], REG_CLP["TDA"][f"CP{self.id}_CMD_REARME_FALHAS"], bit=0, valor=1)
+            res = EMB.escrever_bit(self.clp["TDA"], REG_CLP["TDA"][f"CP{self.id}_CMD_REARME_FLH"], bit=0, valor=1)
             return res
 
         except Exception:

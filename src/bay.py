@@ -28,27 +28,27 @@ class Bay(Usina):
 
     tensao_vs = LeituraModbus(
         rele["BAY"],
-        REG_RELE["BAY"]["TENSAO_VS"],
+        REG_RELE["BAY"]["LT_VS"],
         descricao="[BAY][RELE] Leitura Tensão VS"
     )
     tensao_vab = LeituraModbus(
         rele["BAY"],
-        REG_RELE["BAY"]["TENSAO_FASE_A"],
+        REG_RELE["BAY"]["LT_FASE_A"],
         descricao="[BAY][RELE] Leitura Tensão Fase A"
     )
     tensao_vbc = LeituraModbus(
         rele["BAY"],
-        REG_RELE["BAY"]["TENSAO_FASE_B"],
+        REG_RELE["BAY"]["LT_FASE_B"],
         descricao="[BAY][RELE] Leitura Tensão Fase B"
     )
     tensao_vca = LeituraModbus(
         rele["BAY"],
-        REG_RELE["BAY"]["TENSAO_FASE_C"],
+        REG_RELE["BAY"]["LT_FASE_C"],
         descricao="[BAY][RELE] Leitura Tensão Fase C"
     )
     dj_linha_bay = LeituraModbusBit(
-        rele["BAY"],
-        REG_RELE["BAY"]["DJ_LINHA_FECHADO"],
+        rele["SE"],
+        REG_RELE["SE"]["DJL_FECHADO"],
         bit=0,
         descricao="[BAY][RELE] Disjuntor Bay Status"
     )
@@ -69,7 +69,7 @@ class Bay(Usina):
         """
 
         try:
-            res = cls.rele["BAY"].write_single_coil(REG_RELE["BAY"]["RESET_TRIP_RELE"], [1])
+            res = cls.rele["BAY"].write_single_coil(REG_RELE["BAY"]["RELE_RST_TRP"], [1])
             return res
 
         except Exception:
@@ -92,7 +92,7 @@ class Bay(Usina):
             if not cls.dj_linha_bay.valor:
                 logger.info("[BAY] O Disjuntor do Bay está aberto! Realizando fechamento...")
                 if cls.verificar_dj_linha():
-                    EMB.escrever_bit(cls.rele["BAY"], REG_RELE["BAY"]["CMD_FECHA_DJ"], bit=2, valor=1)
+                    EMB.escrever_bit(cls.rele["BAY"], REG_RELE["BAY"]["DJL_CMD_FECHAR"], bit=2, valor=1)
                     return True
                 else:
                     logger.warning("[BAY] Não foi possível realizar o fechamento do Disjuntor do BAY.")
@@ -130,7 +130,7 @@ class Bay(Usina):
             if SE.dj_linha_se.valor:
                 logger.info("[BAY] Disjuntor da Subestação fechado! Acionando comando de abertura...")
 
-                if not EMB.escrever_bit(cls.clp["SA"], REG_CLP["SE"]["CMD_SE_ABRE_52L"], bit=1, valor=0):
+                if not EMB.escrever_bit(cls.clp["SA"], REG_CLP["SE"]["DJL_CMD_ABRIR"], bit=1, valor=0):
                     logger.warning("[BAY] Não foi possível realizar a abertura do Disjuntor de Linha da Subestação!")
                     flags += 1
 
@@ -263,11 +263,11 @@ class Bay(Usina):
         cls.barra_viva = LeituraModbusBit(cls.rele["BAY"], REG_RELE["BAY"]["ID_BARRA_VIVA"], bit=1, descricao="[BAY][RELE] Identificação Barra Viva")
         cls.linha_morta = LeituraModbusBit(cls.rele["BAY"], REG_RELE["BAY"]["ID_LINHA_MORTA"], bit=1, descricao="[BAY][RELE] Identificação Linha Morta")
         cls.barra_morta = LeituraModbusBit(cls.rele["BAY"], REG_RELE["BAY"]["ID_BARRA_MORTA"], bit=7, descricao="[BAY][RELE] Identificação Barra Morta")
-        cls.mola_carregada = LeituraModbusBit(cls.rele["BAY"], REG_RELE["BAY"]["DJ_MOLA_CARREGADA"], bit=1, descricao="[BAY][RELE] Disjuntor Mola Carregada")
+        cls.mola_carregada = LeituraModbusBit(cls.rele["BAY"], REG_RELE["BAY"]["DJL_MOLA_CARREGADA"], bit=1, descricao="[BAY][RELE] Disjuntor Mola Carregada")
 
         ## CONDICIONADORES RELÉS
         cls.leitura_secc_aberta = LeituraModbusBit(cls.rele["BAY"], REG_RELE["BAY"]["SECC_FECHADA"], bit=4, invertido=True, descricao="[BAY][RELE] Seccionadora Aberta")
         cls.condicionadores_essenciais.append(CondicionadorBase(cls.leitura_secc_aberta, CONDIC_INDISPONIBILIZAR))
 
-        cls.leitura_falha_abertura_djl = LeituraModbusBit(cls.rele["BAY"], REG_RELE["BAY"]["FALHA_ABERTURA_DJL"], bit=1, descricao="[BAY][RELE] Disjuntor Linha Falha Abertura")
+        cls.leitura_falha_abertura_djl = LeituraModbusBit(cls.rele["BAY"], REG_RELE["BAY"]["DJL_FLH_ABERTURA"], bit=1, descricao="[BAY][RELE] Disjuntor Linha Falha Abertura")
         cls.condicionadores_essenciais.append(CondicionadorBase(cls.leitura_falha_abertura_djl, CONDIC_INDISPONIBILIZAR))

@@ -1,119 +1,206 @@
+"""
+Documentação do Mapa de Registradores:
+
+## NOMES / NOMES CHAVE:
+
+- Bay: BAY
+- Subestação: SE
+- Tomada da Água: TDA
+- Comporta: CP1 - CP2
+- Serviço Auxiliar: SA
+- Unidade Geração: UG1 - UG2
+
+- Limpa Grades: LG
+- Seccionadora: SECC
+- Válvula Borboleta: VB
+- Grupo Motor Gerador: GMG
+- Transformador Elevador: TE
+- Disjuntor: DJ - DJL - DJA - DJ1 ...
+- Unidade Hidráulica: UH - UHL - UHRV - UHLM ...
+
+- Nível: NV
+- Tensão: LT
+- Potência: POT
+- Elemento: ELE
+- Alimentação: ALIM
+- Enrolamento: ENRO
+- Retificador: RETI
+- Subtensão: SUBTEN
+- Subfrequência: SUBFRE
+- Sobretensão: SOBRETEN
+- Sobrecorrente: SOBRECO
+- Sobrefrequência: SOBREFRE
+
+- Sistema: SIS
+- Leitura: LER
+- Positiva: POS
+- Negativa: NEG
+- Primário: PRI
+- Disparo: DISP
+- Dreangem: DREN
+- Filtragem: FILT
+- Supervisão: SUP
+- Secundário: SEC
+- Sequência: SEQU
+- Diferencial: DIF
+- Instantânea: INST
+- Temporizada: TEMPO
+- Discrepância: DICRE
+- Transferência: TRANS
+
+## FLAGS:
+- Trip: TRP
+- Falha: FLH
+- Reset: RST
+- Alarme: ALM
+- Comando: CMD
+- Operação: OPE
+- Bloqueio: BLQ
+- Temperatura: TMP
+- Identificação: ID
+
+
+-> O Padrão para nomear os registradores segue da seguinte forma (Dependendo do sentido do nome do Registrador, a ordem pode mudar):
+    "Nome / Nome Chave"_"Flag"_"Descrição"
+
+-> Exemplos:
+  - LG_FLH_ATUADA
+  - CP1_NV_JUSANTE
+  - NV_MONTANTE_FLH
+  - DJL_FLH_ABERTURA
+  - DJL_FLH_CMD_ABERTURA
+
+-> Caso o Registrador possua o mesmo nome que outro, porém seu diferencial é o BIT que é acessado,
+será adicionado a letra "B" + o número do BIT no final do nome:
+    "Nome / Nome Chave"_"Flag"_"Descrição"_"BitN"
+
+-> Exemplos:
+    - RELE_PROTECAO_TRP_B5
+    - RELE_PROTECAO_TRP_B6
+"""
+
+
+
 REG_RELE = {
     "BAY": {
-        "TENSAO_FASE_A":                                10,         # RELÉ -> BAY
-        "TENSAO_FASE_B":                                13,         # RELÉ -> BAY
-        "TENSAO_FASE_C":                                16,         # RELÉ -> BAY
-        "TENSAO_VS":                                    19,         # RELÉ -> BAY
+        "LT_FASE_A":                                    10,
+        "LT_FASE_B":                                    13,
+        "LT_FASE_C":                                    16,
+        "LT_VS":                                        19,
 
-        "RESET_TRIP_RELE":                              [40, 2],    # RELÉ -> BAY
+        "RELE_RST_TRP":                                 [40, 2],
 
-        "CMD_FECHA_DJ":                                 [43, 2],    # RELÉ -> BAY
+        "DJL_CMD_FECHAR":                               [43, 2],
+        "DJL_MOLA_CARREGADA":                           [44, 1],
+        "DJL_FLH_ABERTURA":                             [47, 1],
 
-        "DJ_MOLA_CARREGADA":                            [44, 1],    # RELÉ -> BAY
-        "SECC_FECHADA":                                 [44, 4],    # RELÉ -> BAY
+        "SECC_FECHADA":                                 [44, 4],
 
-        "FALHA_ABERTURA_DJL":                           [47, 1],    # RELÉ -> BAY
-
-        "ID_BARRA_VIVA":                                [53, 1],    # RELÉ -> BAY
-        "ID_BARRA_MORTA":                               [53, 7],    # RELÉ -> BAY
-
-        "ID_LINHA_VIVA":                                [54, 0],    # RELÉ -> BAY
-        "ID_LINHA_MORTA":                               [54, 1],    # RELÉ -> BAY
+        "ID_BARRA_VIVA":                                [53, 1],
+        "ID_BARRA_MORTA":                               [53, 7],
+        "ID_LINHA_VIVA":                                [54, 0],
+        "ID_LINHA_MORTA":                               [54, 1],
     },
 
     "SE": {
-        "DJ_LINHA_FECHADO":                             [43, 0],    # RELÉ -> SE
-        "FALHA_PARTIDA_RECE_RELE_TE":                   [43, 2],    # RELÉ -> SE
+        "RELE_TE_FLH_PARTIDA":                          [43, 2],
 
-        "FALHA_ABERTURA_DJ_LINHA_3":                    [44, 3],    # RELÉ -> SE
-        "FALHA_ABERTURA_DJ_LINHA_4":                    [44, 4],    # RELÉ -> SE
+        "DJL_FECHADO":                                  [43, 0],
+        "DJL_FLH_ABERTURA_B3":                          [44, 3],
+        "DJL_FLH_ABERTURA_B4":                          [44, 4],
+        "DJL_FLH_ABERTURA_B1":                          [48, 1],
 
-        "SOBRECORR_INST_SEQUEN_NEG_Z3":                 [46, 1],    # RELÉ -> SE
-        "SOBRECORR_INST_SEQUEN_NEG_Z2":                 [46, 2],    # RELÉ -> SE
-        "SOBRECORR_INST_SEQUEN_NEG_Z1":                 [46, 3],    # RELÉ -> SE
+        "Z3_SOBRECO_INST_SEQU_NEG":                     [46, 1],
+        "Z2_SOBRECO_INST_SEQU_NEG":                     [46, 2],
+        "Z1_SOBRECO_INST_SEQU_NEG":                     [46, 3],
 
-        "FALHA_ABERTURA_DJ_LINHA_1":                    [48, 1],    # RELÉ -> SE
     },
 
     "TE": {
-        "ATUA_86T":                                     [36, 4],
+        "86T_ATUADO":                                   [36, 4],
 
-        "SOBRECORR_TEMP_RESIDUAL_ENROL_SEC":            [37, 1],
-        "SOBRECORR_TEMP_FASE_ENROL_SEC":                [37, 6],
+        "ENROL_SEC_SOBRECO_TEMPO_RES":                  [37, 1],
+        "ENROL_SEC_SOBRECO_TEMPO_FASE":                 [37, 6],
+        "ENROL_PRI_SOBRECO_TEMPO_FASE":                 [1117, 3],
+        "ENROL_PRI_SOBRECO_TEMPO_RES":                  [1117, 4],
 
-        "DIFERENCIAL_COM_RESTRICAO":                    [1117, 14],
+        "DIF_COM_RESTRICAO":                            [1117, 14],
+        "DIF_SEM_RESTRICAO":                            [1117, 15],
 
-        "SOBRECORR_TEMP_FASE_ENROL_PRIM":               [1117, 3],
-        "SOBRECORR_TEMP_RESIDUAL_ENROL_PRIM":           [1117, 4],
-        "DIFERENCIAL_SEM_RESTRICAO":                    [1117, 15],
-
-        "RELE_ESTADO_TRIP":                             [1118, 15],
+        "RELE_ESTADO_TRP":                              [1118, 15],
     },
 
-    "UG": {
-        # UG1
-        "UG1_SOBREFREQ_ELEMENTO_2":                     [1, 4],
-        "UG1_SOBREFREQ_ELEMENTO_1":                     [1, 5],
-        "UG1_SUBFREQ_ELEMENTO_2":                       [1, 6],
-        "UG1_SUBFREQ_ELEMENTO_1":                       [1, 7],
+    "UG1": {
+        "ELE_2_SOBREFRE":                               [1, 4],
+        "ELE_1_SOBREFRE":                               [1, 5],
+        "ELE_2_SUBFRE":                                 [1, 6],
+        "ELE_1_SUBFRE":                                 [1, 7],
 
-        "UG1_TRIP_RELE_PROTECAO_5":                     [2110, 5],
-        "UG1_TRIP_RELE_PROTECAO_6":                     [2110, 6],
+        "RELE_PROTECAO_TRP_B5":                         [2110, 5],
+        "RELE_PROTECAO_TRP_B6":                         [2110, 6],
 
-        "UG1_SOBRECORR_INSTANTANEA":                    [901, 0],
-        "UG1_SOBRECORR_INSTANTANEA_NEUTRO":             [901, 1],
-        "UG1_SOBRECORR_SEQUENCIA_NEG":                  [901, 2],
-        "UG1_SOBRECORR_TEMPORIZADA_NEUTRO":             [901, 4],
-        "UG1_DIFERENCIAL_COM_RESTRICAO":                [901, 14],
-        "UG1_DIFERENCIAL_SEM_RESTRICAO":                [901, 15],
+        "SOBRECO_INST":                                 [901, 0],
+        "SOBRECO_INST_NEUTRO":                          [901, 1],
+        "SOBRECO_SEQU_NEG":                             [901, 2],
+        "SOBRECO_TEMPO_NEUTRO":                         [901, 4],
 
-        "UG1_SUBTENSAO_GERAL":                          [902, 0],
-        "UG1_SOBRETENSAO_GERAL":                        [902, 1],
-        "UG1_POTENCIA_REVERSA":                         [902, 3],
-        "UG1_VOLTZ_HERTZ":                              [902, 5],
-        "UG1_SOBRECORR_RESTRICAO_TENSAO":               [902, 6],
-        "UG1_FALHA_ABERTURA_DJ_MAQUINA":                [902, 8],
-        "UG1_RECIBO_TRANSFER_DISPARO":                  [902, 9],
-        "UG1_PERDA_CAMPO_GERAL":                        [902, 11],
-        "UG1_FUGA_SOBRECORR_GERAL":                     [902, 12],
-        "UG1_UNIDADE_FORA_PASSO":                       [902, 14],
+        "DIF_COM_RESTRICAO":                            [901, 14],
+        "DIF_SEM_RESTRICAO":                            [901, 15],
 
-        "UG1_FALHA_PARTIDA_DJ_MAQUINA":                 [2100, 6],
-        "UG1_FALHA_ABERTURA_DJ_MAQUINA":                [2100, 7],
-        "UG1_TRASFER_DISPARO_RELE_LINHA_TRAFO":         [2100, 11],
+        "SUBTEN_GERAL":                                 [902, 0],
+        "SOBRETEN_GERAL":                               [902, 1],
 
-        # UG2
-        "UG2_SOBREFREQ_ELEMENTO_2":                     [1, 4],
-        "UG2_SOBREFREQ_ELEMENTO_1":                     [1, 5],
-        "UG2_SUBFREQ_ELEMENTO_2":                       [1, 6],
-        "UG2_SUBFREQ_ELEMENTO_1":                       [1, 7],
+        "POT_REVERSA":                                  [902, 3],
+        "VOLTZ_HERTZ":                                  [902, 5],
 
-        "UG2_SOBRECORR_INSTANTANEA":                    [901, 0],
-        "UG2_SOBRECORR_INSTANTANEA_NEUTRO":             [901, 1],
-        "UG2_SOBRECORR_SEQUENCIA_NEG":                  [901, 2],
-        "UG2_SOBRECORR_TEMPORIZADA_NEUTRO":             [901, 4],
-        "UG2_DIFERENCIAL_COM_RESTRICAO":                [901, 14],
-        "UG2_DIFERENCIAL_SEM_RESTRICAO":                [901, 15],
+        "LT_SOBRECO_RESTRICAO":                         [902, 6],
+        "RECIBO_TRANS_DISP":                            [902, 9],
+        "PERDA_CAMPO_GERAL":                            [902, 11],
+        "FUGA_SOBRECO_GERAL":                           [902, 12],
+        "UNIDADE_FORA_PASSO":                           [902, 14],
 
-        "UG2_SUBTENSAO_GERAL":                          [902, 0],
-        "UG2_SOBRETENSAO_GERAL":                        [902, 1],
-        "UG2_POTENCIA_REVERSA":                         [902, 3],
-        "UG2_VOLTZ_HERTZ":                              [902, 5],
-        "UG2_SOBRECORR_RESTRICAO_TENSAO":               [902, 6],
-        "UG2_FALHA_ABERTURA_DJ_MAQUINA":                [902, 8],
-        "UG2_RECIBO_TRANSFER_DISPARO":                  [902, 9],
-        "UG2_PERDA_CAMPO_GERAL":                        [902, 11],
-        "UG2_FUGA_SOBRECORR_GERAL":                     [902, 12],
-        "UG2_UNIDADE_FORA_PASSO":                       [902, 14],
+        "DJ_MAQUINA_FLH_ABERTURA_B8":                   [902, 8],
+        "DJ_MAQUINA_FLH_ABERTURA_B7":                   [2100, 7],
+        "DJ_MAQUINA_FLH_PARTIDA":                       [2100, 6],
 
-        "UG2_FALHA_PARTIDA_DJ_MAQUINA":                 [2100, 6],
-        "UG2_FALHA_ABERTURA_DJ_MAQUINA":                [2100, 7],
-        "UG2_TRASFER_DISPARO_RELE_LINHA_TRAFO":         [2100, 11],
+        "TE_RELE_LINHA_TRANS_DISP":                     [2100, 11],
+    },
 
+    "UG2": {
+        "ELE_2_SOBREFRE":                               [1, 4],
+        "ELE_1_SOBREFRE":                               [1, 5],
+        "ELE_2_SUBFRE":                                 [1, 6],
+        "ELE_1_SUBFRE":                                 [1, 7],
 
-        "UG2_TRIP_RELE_PROTECAO_5":                     [2110, 5],
-        "UG2_TRIP_RELE_PROTECAO_6":                     [2110, 6],
-    }
+        "RELE_PROTECAO_TRP_B5":                         [2110, 5],
+        "RELE_PROTECAO_TRP_B6":                         [2110, 6],
+
+        "SOBRECO_INST":                                 [901, 0],
+        "SOBRECO_INST_NEUTRO":                          [901, 1],
+        "SOBRECO_SEQU_NEG":                             [901, 2],
+        "SOBRECO_TEMPO_NEUTRO":                         [901, 4],
+
+        "DIF_COM_RESTRICAO":                            [901, 14],
+        "DIF_SEM_RESTRICAO":                            [901, 15],
+
+        "SUBTEN_GERAL":                                 [902, 0],
+        "SOBRETEN_GERAL":                               [902, 1],
+
+        "POT_REVERSA":                                  [902, 3],
+        "VOLTZ_HERTZ":                                  [902, 5],
+
+        "LT_SOBRECO_RESTRICAO":                         [902, 6],
+        "RECIBO_TRANS_DISP":                            [902, 9],
+        "PERDA_CAMPO_GERAL":                            [902, 11],
+        "FUGA_SOBRECO_GERAL":                           [902, 12],
+        "UNIDADE_FORA_PASSO":                           [902, 14],
+
+        "DJ_MAQUINA_FLH_ABERTURA_B8":                   [902, 8],
+        "DJ_MAQUINA_FLH_ABERTURA_B7":                   [2100, 7],
+        "DJ_MAQUINA_FLH_PARTIDA":                       [2100, 6],
+
+        "TE_RELE_LINHA_TRANS_DISP":                     [2100, 11],
+    },
 }
 
 REG_CLP = {
@@ -147,145 +234,140 @@ REG_CLP = {
         "LT_VBC":                                       52,
         "LT_VCA":                                       53,
 
-        "CMD_SE_REARME_BLOQUEIO_GERAL":                 [131, 0],
-        "CMD_SE_REARME_86T":                            [131, 1],
-        "CMD_SE_REARME_86BF":                           [131, 2],
-        "CMD_SE_ABRE_52L":                              [131, 3], # CLP -> SA/SE
-        "CMD_SE_FECHA_52L":                             [131, 4],
-        "CMD_SE_RESET_REGISTROS":                       [131, 5],
-
-        "REARME_86BF_86T":                              [, ],
-        "52L_MOLA_CARREGADA":                           [, ],
-        "52L_SELETORA_REMOTO":                          [, ],
-        "52L_SELETORA_REMOTO":                          [, ],
-        "RELE_LINHA_ATUADO":                            [, ],
-        "RELE_LINHA_ATUACAO_BF":                        [, ],
         "89L_FECHADA":                                  [, ],
         "86T_ATUADO":                                   [, ],
         "86BF_ATUADO":                                  [, ],
-        "FALHA_COMANDO_ABERTURA_52L":                   [, ],
-        "FALHA_COMANDO_FECHAMENTO_52L":                 [, ],
-        "SUPERVISAO_BOBINAS_RELES_BLOQUEIOS":           [, ],
+        "86T_CMD_REARME":                               [131, 1],
+        "86BF_CMD_REARME":                              [131, 2],
+        "86BF_86T_CMD_REARME":                          [, ],
 
-        # TRANSFORMADOR ELEVADOR
+        "REGISTROS_CMD_RST":                            [131, 5],
+        "BLQ_GERAL_CMD_REARME":                         [131, 0],
+
+        "DJL_CMD_ABRIR":                                [131, 3],
+        "DJL_CMD_FECHAR":                               [131, 4],
+        "DJL_MOLA_CARREGADA":                           [, ],
+        "DJL_SELETORA_REMOTO":                          [, ],
+        "DJL_FLH_CMD_ABERTURA":                         [, ],
+        "DJL_FLH_CMD_FECHAMENTO":                       [, ],
+
+        "RELE_LINHA_ATUADO":                            [, ],
+        "RELE_LINHA_ATUACAO_BF":                        [, ],
+        "RELE_SUP_BLQ_BOBINAS":                         [, ],
+
         "TE_RELE_ATUADO":                               [, ],
-        "TE_TRIP_RELE_BUCHHOLZ":                        [, ],
-        "TE_ALARME_RELE_BUCHHOLZ":                      [, ],
-        "TE_ALARME_RELE_BUCHHOLZ":                      [, ],
-        "TE_TRIP_ALIVIO_PRESSAO":                       [, ],
-        "TE_TRIP_TEMPERATURA_OLEO":                     [, ],
-        "TE_ALM_TEMPERATURA_OLEO":                      [, ],
-        "TE_NIVEL_OLEO_MUITO_ALTO":                     [, ],
-        "TE_FALHA_TEMPERATURA_OLEO":                    [, ],
-        "TE_NIVEL_OLEO_MUITO_BAIXO":                    [, ],
-        "TE_ALARME_TEMPERATURA_OLEO":                   [, ],
-        "TE_ALM_TEMPERATURA_ENROLAMENTO":               [, ],
-        "TE_TRIP_TEMPERATURA_ENROLAMENTO":              [, ],
-        "TE_ALARME_TEMPERATURA_ENROLAMENTO":            [, ],
-        "TE_FALHA_TEMPERATURA_ENROLAMENTO":             [, ],
+        "TE_RELE_BUCHHOLZ_TRP":                         [, ],
+        "TE_RELE_BUCHHOLZ_ALM":                         [, ],
+
+        "TE_TRP_TMP_OLEO":                              [, ],
+        "TE_TRP_TMP_ENROL":                             [, ],
+        "TE_TRP_ALIVIO_PRESSAO":                        [, ],
+
+        "TE_ALM_TMP_OLEO":                              [, ],
+        "TE_ALM_TMP_OLEO":                              [, ],
+        "TE_ALM_TMP_ENROL":                             [, ],
+        "TE_ALM_TMP_ENROL":                             [, ],
+
+        "TE_FLH_LER_TMP_ENROL":                         [, ],
+        "TE_FLH_LER_TMP_OLEO":                          [, ],
+
+        "TE_NV_OLEO_MUITO_ALTO":                        [, ],
+        "TE_NV_OLEO_MUITO_BAIXO":                       [, ],
     },
 
     "SA": {
-        "POCO_DRENAGEM_NIVEL_ALTO":                     [9, 0],
-        "POCO_DRENAGEM_NIVEL_MUITO_ALTO":               [0, 9],
-        "RETIFICADOR_SOBRETENSAO":                      [0, 14],
-        "RETIFICADOR_SUBTENSAO":                        [0, 15],
+        "POCO_DREN_NV_ALTO":                            [9, 0],
+        "POCO_DREN_NV_MUITO_ALTO":                      [0, 9],
+        "POCO_DREN_DISCRE_BOIAS":                       [13, 9],
 
-        "DRENAGEM_BOMBA_1_FALHA":                       [1, 0],
-        "DRENAGEM_BOMBA_2_FALHA":                       [1, 2],
-        "DRENAGEM_BOMBA_3_FALHA":                       [1, 4],
-        "FILTRAGEM_BOMBA_FALHA":                        [1, 6],
-        "DRENAGEM_UNIDADES_BOMBA_FALHA":                [1, 12],
+        "RETI_SOBRETEN":                                [0, 14],
+        "RETI_SUBTEN":                                  [0, 15],
+        "RETI_SOBRECO_SAIDA":                           [3, 0],
+        "RETI_FUSIVEL_QUEIMADO":                        [3, 2],
+        "RETI_SOBRECO_BATERIAS":                        [3, 1],
+        "RETI_FUGA_TERRA_POSITIVO":                     [3, 5],
+        "RETI_FUGA_TERRA_NEGATIVO":                     [3, 6],
 
-        "52SA1_SEM_FALHA":                              [2, 15],
+        "BOMBA_FILT_FLH":                               [1, 6],
+        "BOMBA_DREN_1_FLH":                             [1, 0],
+        "BOMBA_DREN_2_FLH":                             [1, 2],
+        "BOMBA_DREN_3_FLH":                             [1, 4],
+        "BOMBA_DREN_UNIDADES_FLH":                      [1, 12],
 
-        "RETIFICADOR_SOBRECORRENTE_SAIDA":              [3, 0],
-        "RETIFICADOR_FUSIVEL_QUEIMADO":                 [3, 2],
-        "RETIFICADOR_SOBRECORRENTE_BATERIAS":           [3, 1],
-        "RETIFICADOR_FUGA_TERRA_POSITIVO":              [3, 5],
-        "RETIFICADOR_FUGA_TERRA_NEGATIVO":              [3, 6],
+        "DJ52SA1_SEM_FLH":                              [2, 15],
+        "DJ52SA1_FLH_ABRIR":                            [13, 0],
+        "DJ52SA1_FLH_FECHAR":                           [13, 1],
+        "DJ52SA2_SEM_FLH":                              [5, 1],
+        "DJ52SA2_FLH_ABRIR":                            [13, 2],
+        "DJ52SA2_FLH_FECHAR":                           [13, 3],
+        "DJ52SA3_SEM_FLH":                              [5, 3],
+        "DJ52SA3_FLH_ABRIR":                            [13, 4],
+        "DJ52SA3_FLH_FECHAR":                           [13, 5],
+        "DJ72SA1_FECHADO":                              [7, 10],
+        "DJS_125VCC_FECHADOS":                          [7, 11],
+        "DJS_24VCC_FECHADOS":                           [7, 12],
+        "DJS_BARRA_SELETORA_REMOTO.":                   [5, 9],
 
-        "52SA2_SEM_FALHA":                              [5, 1],
-        "52SA3_SEM_FALHA":                              [5, 3],
-        "DISJUNTORES_BARRA_SELETORA_REMOTO":            [5, 9],
+        "SIS_INCENDIO_ALM_ATUADO":                      [7, 6],
+        "SIS_SEGURANCA_ALM_ATUADO":                     [7, 7],
 
-        "SISTEMA_INCENDIO_ALARME_ATUADO":               [7, 6],
-        "SISTEMA_SEGURANCA_ALARME_ATUADO":              [7, 7],
-        "SA_72SA1_FECHADO":                             [7, 10],
-        "DISJUNTORES_125VCC_FECHADOS":                  [7, 11],
-        "DISJUNTORES_24VCC_FECHADOS":                   [7, 12],
-        "COM_TENSAO_ALIMENTACAO_125VCC":                [7, 13],
-        "COM_TENSAO_COMANDO_125VCC":                    [7, 14],
-        "COM_TENSAO_COMANDO_24VCC":                     [7, 15],
+        "ALIM_125VCC_COM_TENSAO":                       [7, 13],
+        "CMD_125VCC_COM_TENSAO":                        [7, 14],
+        "CMD_24VCC_COM_TENSAO":                         [7, 15],
 
-        "FALHA_ABRIR_52SA1":                            [13, 0],
-        "FALHA_FECHAR_52SA1":                           [13, 1],
-        "FALHA_ABRIR_52SA2":                            [13, 2],
-        "FALHA_FECHAR_52SA2":                           [13, 3],
-        "FALHA_ABRIR_52SA3":                            [13, 4],
-        "FALHA_FECHAR_52SA3":                           [13, 5],
-        "GMG_FALHA_PARTIR":                             [13, 6],
-        "GMG_FALHA_PARAR":                              [13, 7],
-        "DRENAGEM_DISCREPANCIA_BOIAS_POCO":             [13, 9],
+        "GMG_FLH_PARTIR":                               [13, 6],
+        "GMG_FLH_PARAR":                                [13, 7],
         "GMG_OPERACAO_MANUAL":                          [13, 10],
 
-        "SISTEMA_AGUA_BOMBA_DISPONIVEL":                [17, 0],
-        "SISTEMA_AGUA_FALHA_LIGA_BOMBA":                [17, 1],
-        "SISTEMA_AGUA_FALHA_PRESSURIZAR_FILTRO_A":      [17, 3],
-        "SISTEMA_AGUA_FALHA_PRESSOSTATO_FILTRO_A":      [17, 4],
-        "SISTEMA_AGUA_FALHA_PRESSURIZAR_FILTRO_B":      [17, 5],
-        "SISTEMA_AGUA_FALHA_PRESSOSTATO_FILTRO_B":      [17, 6],
+        "SIS_AGUA_BOMBA_DISPONIVEL":                    [17, 0],
+        "SIS_AGUA_FLH_LIGA_BOMBA":                      [17, 1],
+        "SIS_AGUA_FLH_PRESSURIZAR_FILTRO_A":            [17, 3],
+        "SIS_AGUA_FLH_PRESSOSTATO_FILTRO_A":            [17, 4],
+        "SIS_AGUA_FLH_PRESSURIZAR_FILTRO_B":            [17, 5],
+        "SIS_AGUA_FLH_PRESSOSTATO_FILTRO_B":            [17, 6],
+        "SIS_AGUA_RST_FLH":                             [129, 1],
 
-        "RESET_FALHAS_BARRA_CA":                        [129, 0],
-        "RESET_FALHAS_SISTEMA_AGUA":                    [129, 1],
+        "BARRA_CA_RST_FLH":                             [129, 0],
 
-        "REARME_BLOQUEIO_GERAL_E_FALHAS_SA":            [130, 0],
+        "BLQ_GERAL_FLH_SA_REARME":                      [130, 0],
 
         # "BOMBA_RECALQUE_TUBO_SUCCAO_FALHA":             [, ],
         # "SEM_EMERGENCIA":                               [, ],
     },
 
     "TDA": {
-        "NIVEL_MONTANTE":                               3,
-        "FALHA_NIVEL_JUSANTE_GRADE_COMPORTA_2":         32,
-        "FALHA_NIVEL_JUSANTE_GRADE_COMPORTA_1":         34,
-        "NIVEL_JUSANTE_COMPORTA_1":                     36,
-        "NIVEL_JUSANTE_COMPORTA_2":                     38,
-
-        "FALHA_NIVEL_MONTANTE":                         [3, 0],
+        "NV_MONTANTE":                                  3,
+        "NV_JUSANTE_CP1":                               36,
+        "NV_JUSANTE_CP2":                               38,
+        "NV_JUSANTE_GRADE_CP2_LER_FLH":                 32,
+        "NV_JUSANTE_GRADE_CP1_LER_FLH":                 34,
+        "NV_MONTANTE_LER_FLH":                          [3, 0],
 
         "SEM_EMERGENCIA":                               [16, 8],
 
-        "COM_TENSAO_CA":                                [17, 11],
+        "CA_COM_TENSAO":                                [17, 11],
 
-        # LIMPA GRADES
-        "LG_FALHA_ATUADA":                              [26, 15],
+        "LG_FLH_ATUADA":                                [26, 15],
+        "LG_OPE_MANUAL":                                [28, 0],
 
-        "LG_OPERACAO_MANUAL":                           [28, 0],
-
-        # VÁLVULA BORBOLETA
         "VB_FECHANDO":                                  [23, 0],
+        "VB_CMD_RST_FLH":                               [55, 0],
 
-        "VB_CMD_RESET_FALHAS":                          [55, 0],
-
-        # UNIADE HIDRÁULICA
-        "UH_UNIDADE_HIDRAULICA_DISPONIVEL":             [5, 1],
-        "UH_FALHA_LIGAR_BOMBA":                         [5, 2],
-
+        "UH_DISPONIVEL":                                [5, 1],
+        "UH_FLH_LIGAR_BOMBA":                           [5, 2],
         "UH_FILTRO_LIMPO":                              [17, 13],
 
-        # COMPORTA 1
-        "CP1_COMPORTA_OPERANDO":                        [2, 0],
-        "CP1_AGUARDANDO_COMANDO_ABERTURA":              [2, 3],
+        "CP1_OPERANDO":                                 [2, 0],
+        "CP1_AGUARDANDO_CMD_ABERTURA":                  [2, 3],
         "CP1_PRESSAO_EQUALIZADA":                       [2, 4],
 
-        "CP1_CMD_REARME_FALHAS":                        [6, 0],
+        "CP1_CMD_REARME_FLH":                           [6, 0],
         "CP1_CMD_ABERTURA_CRACKING":                    [6, 1],
         "CP1_CMD_ABERTURA_TOTAL":                       [6, 2],
         "CP1_CMD_FECHAMENTO":                           [6, 3],
         "CP1_PERMISSIVOS_OK":                           [6, 15],
 
-        "CP1_BLOQUEIO_ATUADO":                          [8, 15],
+        "CP1_BLQ_ATUADO":                               [8, 15],
 
         "CP1_CRACKING":                                 [16, 0],
         "CP1_REMOTO":                                   [16, 6],
@@ -293,18 +375,17 @@ REG_CLP = {
         "CP1_ABERTA":                                   [17, 14],
         "CP1_FECHADA":                                  [17, 15],
 
-        # COMPORTA 2
-        "CP2_COMPORTA_OPERANDO":                        [2, 0],
-        "CP2_AGUARDANDO_COMANDO_ABERTURA":              [2, 3],
+        "CP2_OPERANDO":                                 [2, 0],
+        "CP2_AGUARDANDO_CMD_ABERTURA":                  [2, 3],
         "CP2_PRESSAO_EQUALIZADA":                       [2, 4],
 
-        "CP2_CMD_REARME_FALHAS":                        [6, 0],
+        "CP2_CMD_REARME_FLH":                           [6, 0],
         "CP2_CMD_ABERTURA_CRACKING":                    [6, 1],
         "CP2_CMD_ABERTURA_TOTAL":                       [6, 2],
         "CP2_CMD_FECHAMENTO":                           [6, 3],
         "CP2_PERMISSIVOS_OK":                           [6, 15],
 
-        "CP2_BLOQUEIO_ATUADO":                          [8, 15],
+        "CP2_BLQ_ATUADO":                               [8, 15],
 
         "CP2_CRACKING":                                 [16, 0],
         "CP2_REMOTO":                                   [16, 6],
@@ -313,232 +394,264 @@ REG_CLP = {
         "CP2_FECHADA":                                  [17, 15],
     },
 
-    "UG": {
-        "UG1_UG_P":                                     130,
+    "UG1": {
+        "P":                                            130,
+        "HORIMETRO":                                    108,
 
-        "UG1_RV_ESTADO_OPERACAO":                       [, ],
-        "UG1_UG_HORIMETRO":                             [, ],
-        "UG1_CMD_RESET_FALHAS_PASSOS":                  [, ],
-        "UG1_CMD_REARME_BLOQUEIO_86M":                  [, ],
-        "UG1_CMD_REARME_BLOQUEIO_86E":                  [, ],
-        "UG1_CMD_REARME_BLOQUEIO_86H":                  [, ],
-        "UG1_CMD_UHRV_REARME_FALHAS":                   [, ],
-        "UG1_CMD_UHLM_REARME_FALHAS":                   [, ],
-        "UG1_CMD_PARTIDA_CMD_SINCRONISMO":              [, ],
-        "UG1_CMD_PARADA_CMD_DESABILITA_UHLM":           [, ],
-        "UG1_CMD_RESET_FALHAS_PASSOS":                  [, ],
-        "UG1_CMD_REARME_BLOQUEIO_86M":                  [, ],
-        "UG1_CMD_REARME_BLOQUEIO_86E":                  [, ],
-        "UG1_CMD_REARME_BLOQUEIO_86H":                  [, ],
-        "UG1_CMD_UHRV_REARME_FALHAS":                   [, ],
-        "UG1_CMD_UHLM_REARME_FALHAS":                   [, ],
-        "UG1_CMD_PARADA_EMERGENCIA":                    [, ],
-        "UG1_CMD_RESET_FALHAS_PASSOS":                  [, ],
-        "UG1_CMD_REARME_BLOQUEIO_86M":                  [, ],
-        "UG1_CMD_REARME_BLOQUEIO_86E":                  [, ],
-        "UG1_CMD_REARME_BLOQUEIO_86H":                  [, ],
-        "UG1_CMD_UHRV_REARME_FALHAS":                   [, ],
-        "UG1_CMD_UHLM_REARME_FALHAS":                   [, ],
-        "UG1_RV_SETPOINT_POTENCIA_ATIVA_PU":            [, ],
-        "UG1_BLOQUEIO_86H_ATUADO":                      [, ],
-        "UG1_RELE_700G_TRIP_ATUADO":                    [, ],
-        "UG1_CMD_PARADA_EMERGENCIA":                    [, ],
-        "UG1_UHRV_FILTRO_LIMPO":                        [, ],
-        "UG1_UHLM_FILTRO_LIMPO":                        [, ],
-        "UG1_RESISTENCIA_SEM_FALHA":                    [, ],
-        "UG1_CPG_UG_PORTA_INTERNA_FECHADA":             [, ],
-        "UG1_CPG_UG_PORTA_TRASEIRA_FECHADA":            [, ],
-        "UG1_RV_FALHA_1":                               [, ],
-        "UG1_RV_FALHA_1":                               [, ],
-        "UG1_RV_FALHA_1":                               [, ],
-        "UG1_RV_FALHA_1":                               [, ],
-        "UG1_RV_FALHA_1":                               [, ],
-        "UG1_RV_FALHA_2":                               [, ],
-        "UG1_RV_FALHA_2":                               [, ],
-        "UG1_RV_FALHA_1":                               [, ],
-        "UG1_RV_FALHA_1":                               [, ],
-        "UG1_RV_FALHA_1":                               [, ],
-        "UG1_RT_FALHAS_3":                              [, ],
-        "UG1_RT_FALHAS_3":                              [, ],
-        "UG1_RT_FALHAS_3":                              [, ],
-        "UG1_RT_FALHAS_3":                              [, ],
-        "UG1_RT_FALHAS_3":                              [, ],
-        "UG1_RT_FALHAS_3":                              [, ],
-        "UG1_RT_FALHAS_3":                              [, ],
-        "UG1_RT_FALHAS_3":                              [, ],
-        "UG1_RV_SAIDAS_DIGITAIS":                       [, ],
-        "UG1_RT_SAIDAS_DIGITAIS":                       [, ],
-        "UG1_ALM_TEMP_OLEO_UHRV":                       [, ],
-        "UG1_ALM_TEMP_OLEO_UHLM":                       [, ],
-        "UG1_ALM_TEMP_MANCAL_GUIA":                     [, ],
-        "UG1_ALM_TEMP_GERADOR_FASE_A":                  [, ],
-        "UG1_ALM_TEMP_GERADOR_FASE_B":                  [, ],
-        "UG1_ALM_TEMP_GERADOR_FASE_C":                  [, ],
-        "UG1_ALM_TEMP_PONTE_FASE_A":                    [, ],
-        "UG1_ALM_TEMP_PONTE_FASE_B":                    [, ],
-        "UG1_ALM_TEMP_PONTE_FASE_C":                    [, ],
-        "UG1_UHRV_UNIDADE_EM_MANUTENCAO":               [, ],
-        "UG1_UHLM_UNIDADE_EM_MANUTENCAO":               [, ],
-        "UG1_ALM_TEMP_TRAFO_EXCITACAO":                 [, ],
-        "UG1_ESCOVAS_GASTAS_POLO_POSITIVO":             [, ],
-        "UG1_ESCOVAS_GASTAS_POLO_NEGATIVO":             [, ],
-        "UG1_ALM_TEMP_CASQ_MANCAL_COMBINADO":           [, ],
-        "UG1_ALM_VIBRACAO_DETECCAO_VERTICAL":           [, ],
-        "UG1_ALM_VIBRACAO_DETECCAO_HORIZONTAL":         [, ],
-        "UG1_ALM_TEMP_1_MANCAL_GUIA_INTERNO":           [, ],
-        "UG1_ALM_TEMP_2_MANCAL_GUIA_INTERNO":           [, ],
-        "UG1_ALM_TEMP_1_PATINS_MANCAL_COMBINADO":       [, ],
-        "UG1_ALM_TEMP_2_PATINS_MANCAL_COMBINADO":       [, ],
-        "UG1_ALM_VIBRACAO_EIXO_X_MANCAL_COMBINADO":     [, ],
-        "UG1_ALM_VIBRACAO_EIXO_Y_MANCAL_COMBINADO":     [, ],
-        "UG1_ALM_VIBRACAO_EIXO_Z_MANCAL_COMBINADO":     [, ],
-        "UG1_ALM_TEMP_CONTRA_ESCORA_MANCAL_COMBINADO":  [, ],
-        "UG1_ALM_TEMP_GERADOR_NUCLEO_ESTATORICO":       [, ],
-        "UG1_TEMP_GERADOR_FASE_A":                      [, ],
-        "UG1_TEMP_GERADOR_FASE_B":                      [, ],
-        "UG1_TEMP_GERADOR_FASE_C":                      [, ],
-        "UG1_TEMP_GERADOR_NUCLEO":                      [, ],
-        "UG1_TEMP_MANCAL_GUIA_GERADOR":                 [, ],
-        "UG1_TEMP_1_MANCAL_GUIA_INTERNO":               [, ],
-        "UG1_TEMP_2_MANCAL_GUIA_INTERNO":               [, ],
-        "UG1_TEMP_1_PATINS_MANCAL_COMBINADO":           [, ],
-        "UG1_TEMP_2_PATINS_MANCAL_COMBINADO":           [, ],
-        "UG1_TEMP_CASQ_MANCAL_COMBINADO":               [, ],
-        "UG1_TEMP_CONTRA_ESCORA_MANCAL_COMBINADO":      [, ],
-        "UG1_PRESSAO_ENTRADA_TURBINA":                  [, ],
-        "UG1_RV_SAIDAS_DIGITAIS":                       [, ],
-        "UG1_RV_FALHA_2":                               [, ],
-        "UG1_RT_SAIDAS_DIGITAIS":                       [, ],
-        "UG1_RELE_700G_TRIP_ATUADO":                    [, ],
-        "UG1_RELE_BLOQUEIO_86EH_DESATUADO":             [, ],
-        "UG1_RV_RELE_TRIP_NAO_ATUADO":                  [, ],
-        "UG1_RT_RELE_TRIP_NAO_ATUADO":                  [, ],
-        "UG1_BT_EMERGENCIA_NAO_ATUADO":                 [, ],
-        "UG1_CLP_GERAL_SEM_BLOQUEIO_EXTERNO":           [, ],
-        "UG1_BLOQUEIO_86M_ATUADO":                      [, ],
-        "UG1_BLOQUEIO_86E_ATUADO":                      [, ],
-        "UG1_BLOQUEIO_86H_ATUADO":                      [, ],
-        "UG1_RV_FALHA_1":                               [, ],
-        "UG1_RV_FALHA_1":                               [, ],
-        "UG1_RV_FALHA_1":                               [, ],
-        "UG1_RV_FALHA_1":                               [, ],
-        "UG1_RV_FALHA_1":                               [, ],
-        "UG1_RV_FALHA_1":                               [, ],
-        "UG1_RV_FALHA_1":                               [, ],
-        "UG1_RV_FALHA_1":                               [, ],
-        "UG1_RV_FALHA_1":                               [, ],
-        "UG1_RV_FALHA_1":                               [, ],
-        "UG1_RT_ALARMES_1":                             [, ],
-        "UG1_RT_FALHAS_1":                              [, ],
-        "UG1_RT_FALHAS_1":                              [, ],
-        "UG1_RT_FALHAS_1":                              [, ],
-        "UG1_RT_FALHAS_2":                              [, ],
-        "UG1_RT_FALHAS_2":                              [, ],
-        "UG1_RT_FALHAS_2":                              [, ],
-        "UG1_RT_FALHAS_2":                              [, ],
-        "UG1_RT_FALHAS_2":                              [, ],
-        "UG1_RT_FALHAS_2":                              [, ],
-        "UG1_RT_FALHAS_2":                              [, ],
-        "UG1_UHRV_BOMBA_1_FALHA":                       [, ],
-        "UG1_UHRV_BOMBA_2_FALHA":                       [, ],
-        "UG1_UHLM_BOMBA_1_FALHA":                       [, ],
-        "UG1_UHLM_BOMBA_2_FALHA":                       [, ],
-        "UG1_RV_RELE_ALARME_ATUADO":                    [, ],
-        "UG1_CLP_GERAL_SISTEMA_AGUA_OK":                [, ],
-        "UG1_CLP_GERAL_COM_TENSAO_BARRA_ESSENCIAIS":    [, ],
-        "UG1_DISPARO_MECANICO_ATUADO":                  [, ],
-        "UG1_DISPARO_MECANICO_DESATUADO":               [, ],
-        "UG1_FALHA_HABILITAR_SISTEMA_AGUA":             [, ],
-        "UG1_TRIP_TEMP_OLEO_UHLM":                      [, ],
-        "UG1_TRIP_TEMP_OLEO_UHRV":                      [, ],
-        "UG1_PARADA_BLOQUEIO_ABERTURA_DISJUNTOR":       [, ],
-        "UG1_PARADA_BLOQUEIO_DESCARGA_POTENCIA":        [, ],
-        "UG1_UHLM_FALHA_PRESSAO_LINHA_B1":              [, ],
-        "UG1_UHLM_FALHA_PRESSAO_LINHA_B2":              [, ],
-        "UG1_UHLM_FALHA_PRESSOSTATO_LINHA":             [, ],
-        "UG1_RV_FALHA_HABILITAR_RV":                    [, ],
-        "UG1_RV_FALHA_PARTIR_RV":                       [, ],
-        "UG1_RV_FALHA_DESABILITAR_RV":                  [, ],
-        "UG1_RT_FALHA_HABILITAR":                       [, ],
-        "UG1_RT_FALHA_PARTIR":                          [, ],
-        "UG1_RT_ALARMES_1":                             [, ],
-        "UG1_RT_ALARMES_1":                             [, ],
-        "UG1_RT_ALARMES_1":                             [, ],
-        "UG1_RT_FALHAS_1":                              [, ],
-        "UG1_RT_FALHAS_1":                              [, ],
-        "UG1_RT_FALHAS_1":                              [, ],
-        "UG1_RT_FALHAS_1":                              [, ],
-        "UG1_RT_FALHAS_1":                              [, ],
-        "UG1_RT_FALHAS_1":                              [, ],
-        "UG1_RT_FALHAS_1":                              [, ],
-        "UG1_RT_FALHAS_1":                              [, ],
-        "UG1_RT_FALHAS_1":                              [, ],
-        "UG1_RT_FALHAS_1":                              [, ],
-        "UG1_RT_FALHAS_1":                              [, ],
-        "UG1_RT_FALHAS_1":                              [, ],
-        "UG1_RT_FALHAS_1":                              [, ],
-        "UG1_RV_FALHAS_2":                              [, ],
-        "UG1_RV_FALHAS_2":                              [, ],
-        "UG1_RV_FALHAS_2":                              [, ],
-        "UG1_RV_FALHAS_2":                              [, ],
-        "UG1_RV_FALHAS_2":                              [, ],
-        "UG1_RV_FALHAS_2":                              [, ],
-        "UG1_RV_FALHAS_2":                              [, ],
-        "UG1_RV_FALHAS_2":                              [, ],
-        "UG1_RELE_700G_BF_ATUADO":                      [, ],
-        "UG1_SUPERVISAO_TENSAO_125VCC":                 [, ],
-        "UG1_SUPERVISAO_TENSAO_24VCC":                  [, ],
-        "UG1_SUPERVISAO_BOBINA_52G":                    [, ],
-        "UG1_SUPERVISAO_BOBINA_86EH":                   [, ],
-        "UG1_DISJUNTORES_125VCC_FECHADOS":              [, ],
-        "UG1_DISJUNTORES_24VCC_FECHADOS":               [, ],
-        "UG1_FALHA_TEMP_PONTE_FASE_A":                  [, ],
-        "UG1_FALHA_TEMP_PONTE_FASE_B":                  [, ],
-        "UG1_FALHA_TEMP_PONTE_FASE_C":                  [, ],
-        "UG1_FALHA_TEMP_TRAFO_EXCITACAO":               [, ],
-        "UG1_FALHA_TEMP_MANCAL_GUIA":                   [, ],
-        "UG1_FALHA_TEMP_OLEO_UHRV":                     [, ],
-        "UG1_FALHA_TEMP_OLEO_UHLM":                     [, ],
-        "UG1_FALHA_TEMP_CASQ_MANCAL_COMBINADO":         [, ],
-        "UG1_FALHA_TEMP_CONTRA_ESCORA_MANCAL_COMBINADO":[, ],
-        "UG1_FALHA_TEMP_1_PATINS_MANCAL_COMBINADO":     [, ],
-        "UG1_FALHA_TEMP_2_PATINS_MANCAL_COMBINADO":     [, ],
-        "UG1_FALHA_TEMP_1_MANCAL_GUIA_INTERNO":         [, ],
-        "UG1_FALHA_TEMP_2_MANCAL_GUIA_INTERNO":         [, ],
-        "UG1_FALHA_TEMP_GERADOR_NUCLEO_ESTATORICO":     [, ],
-        "UG1_FALHA_TEMP_GERADOR_FASE_A":                [, ],
-        "UG1_FALHA_TEMP_GERADOR_FASE_B":                [, ],
-        "UG1_FALHA_TEMP_GERADOR_FASE_C":                [, ],
-        "UG1_FALHA_PRESSAO_ENTRADA_TURBINA":            [, ],
-        "UG1_FALHA_VIBRACAO_EIXO_X_MANCAL_COMBINADO":   [, ],
-        "UG1_FALHA_VIBRACAO_EIXO_Y_MANCAL_COMBINADO":   [, ],
-        "UG1_FALHA_VIBRACAO_EIXO_Z_MANCAL_COMBINADO":   [, ],
-        "UG1_FALHA_VIBRACAO_DETECCAO_HORIZONTAL":       [, ],
-        "UG1_FALHA_VIBRACAO_DETECACAO_VERTICAL":        [, ],
-        "UG1_BLOQUEIO_86M_ATUADO":                      [, ],
-        "UG1_TRIP_VIBRACAO_DETECCAO_HORIZONTAL":        [, ],
-        "UG1_TRIP_VIBRACAO_DETECACAO_VERTICAL":         [, ],
-        "UG1_TRIP_VIBRACAO_EIXO_X_MANCAL_COMBINADO":    [, ],
-        "UG1_TRIP_VIBRACAO_EIXO_Y_MANCAL_COMBINADO":    [, ],
-        "UG1_TRIP_VIBRACAO_EIXO_Z_MANCAL_COMBINADO":    [, ],
-        "UG1_TRIP_TEMP_PONTE_FASE_A":                   [, ],
-        "UG1_TRIP_TEMP_PONTE_FASE_B":                   [, ],
-        "UG1_TRIP_TEMP_PONTE_FASE_C":                   [, ],
-        "UG1_TRIP_TEMP_GERADOR_FASE_A":                 [, ],
-        "UG1_TRIP_TEMP_GERADOR_FASE_B":                 [, ],
-        "UG1_TRIP_TEMP_GERADOR_FASE_C":                 [, ],
-        "UG1_TRIP_TEMP_GERADOR_NUCLEO_ESTATORICO":      [, ],
-        "UG1_TRIP_TEMP_GERADOR_SAIDA_AR":               [, ],
-        "UG1_TRIP_TEMP_TRAFO_ATERRAMENTO":              [, ],
-        "UG1_TRIP_TEMP_TRAFO_EXCITACAO":                [, ],
-        "UG1_TRIP_PRESSAO_ACUMULADOR_UHRV":             [, ],
-        "UG1_TRIP_TEMP_CASQ_MANCAL_COMBINADO":          [, ],
-        "UG1_TRIP_TEMP_CONTRA_ESCORA_MANCAL_COMBINADO": [, ],
-        "UG1_TRIP_TEMP_1_PATINS_MANCAL_COMBINADO":      [, ],
-        "UG1_TRIP_TEMP_2_PATINS_MANCAL_COMBINADO":      [, ],
-        "UG1_TRIP_TEMP_1_MANCAL_GUIA_INTERNO":          [, ],
-        "UG1_TRIP_TEMP_2_MANCAL_GUIA_INTERNO":          [, ],
-        "UG1_RV_FALHA_FECHAR_DISTRIBUIDOR":             [, ],
-        "UG1_RT_FALHA_DESABILITAR":                     [, ],
-    }
+        "SIS_AGUA_FLH_HAB":                             [, ],
+
+        "RESISTENCIA_SEM_FALHA":                        [, ],
+
+        "BT_EMERGENCIA_NAO_ATUADO":                     [, ],
+
+        "DJS_125VCC_FECHADOS":                          [, ],
+        "DJS_24VCC_FECHADOS":                           [, ],
+
+        "CPG_PORTA_INTERNA_FECHADA":                    [, ],
+        "CPG_PORTA_TRASEIRA_FECHADA":                   [, ],
+
+        "CLP_GERAL_SIS_AGUA_OK":                        [, ],
+        "CLP_GERAL_SEM_BLQ_EXTERNO":                    [, ],
+        "CLP_GERAL_COM_TENSAO_BARRA_ESSEN":             [, ],
+
+        "RELE_700G_BF_ATUADO":                          [, ],
+        "RELE_700G_TRP_ATUADO":                         [, ],
+        "RELE_BLQ_86EH_DESATUADO":                      [, ],
+
+        "TRAFO_ATERRAMENTO_TRP_TMP":                    [, ],
+
+        "TRAFO_EXCITACAO_ALM_TMP":                      [, ],
+        "TRAFO_EXCITACAO_TRP_TMP":                      [, ],
+        "TRAFO_EXCITACAO_FLH_LER_TMP":                  [, ],
+
+        "UHRV_MANUTENCAO":                              [, ],
+        "UHRV_BOMBA_1_FLH":                             [, ],
+        "UHRV_BOMBA_2_FLH":                             [, ],
+        "UHRV_FILTRO_LIMPO":                            [, ],
+        "UHRV_ALM_TMP_OLEO":                            [, ],
+        "UHRV_TRP_TMP_OLEO":                            [, ],
+        "UHRV_FLH_LER_TMP_OLEO":                        [, ],
+        "UHRV_ACUMULADOR_PRESSAO_TRP":                  [, ],
+        "UHRV_CMD_REARME_FLH":                          [, ],
+
+        "UHLM_MANUTENCAO":                              [, ],
+        "UHLM_BOMBA_1_FLH":                             [, ],
+        "UHLM_BOMBA_2_FLH":                             [, ],
+        "UHLM_FILTRO_LIMPO":                            [, ],
+        "UHLM_ALM_TMP_OLEO":                            [, ],
+        "UHLM_TRP_TMP_OLEO":                            [, ],
+        "UHLM_FLH_LER_TMP_OLEO":                        [, ],
+        "UHLM_FLH_PRESSAO_LINHA_B1":                    [, ],
+        "UHLM_FLH_PRESSAO_LINHA_B2":                    [, ],
+        "UHLM_FLH_PRESSOSTATO_LINHA":                   [, ],
+        "UHLM_CMD_REARME_FLH":                          [, ],
+
+        "PARTIDA_CMD_SINCRONISMO":                      [, ],
+
+        "PARADA_BLQ_ABERTURA_DJ":                       [, ],
+        "PARADA_BLQ_DESCARGA_POT":                      [, ],
+        "PARADA_CMD_EMERGENCIA":                        [, ],
+        "PARADA_CMD_DESABILITA_UHLM":                   [, ],
+
+        "86M_BLQ_ATUADO":                               [, ],
+        "86M_CMD_REARME_BLQ":                           [, ],
+
+        "86E_BLQ_ATUADO":                               [, ],
+        "86E_CMD_REARME_BLQ":                           [, ],
+
+        "86H_BLQ_ATUADO":                               [, ],
+        "86H_CMD_REARME_BLQ":                           [, ],
+
+        "SUP_TENSAO_24VCC":                             [, ],
+        "SUP_TENSAO_125VCC":                            [, ],
+        "SUP_BOBINA_86EH":                              [, ],
+        "SUP_BOBINA_52G":                               [, ],
+
+        "PASSOS_CMD_RST_FLH":                           [, ],
+
+        "DISP_MECANICO_ATUADO":                         [, ],
+        "DISP_MECANICO_DESATUADO":                      [, ],
+
+        "ESCOVAS_POLO_POS_GASTAS":                      [, ],
+        "ESCOVAS_POLO_NEG_GASTAS":                      [, ],
+
+        "ENTRADA_TURBINA_PRESSAO":                      [, ],
+        "ENTRADA_TURBINA_FLH_LER_PRESSAO":              [, ],
+
+        "GERADOR_SAIDA_AR_TRP_TMP":                     [, ],
+
+        "GERADOR_FASE_A_TMP":                           [, ],
+        "GERADOR_FASE_A_ALM_TMP":                       [, ],
+        "GERADOR_FASE_A_TRP_TMP":                       [, ],
+        "GERADOR_FASE_A_FLH_LER_TMP":                   [, ],
+
+        "GERADOR_FASE_B_TMP":                           [, ],
+        "GERADOR_FASE_B_TRP_TMP":                       [, ],
+        "GERADOR_FASE_B_ALM_TMP":                       [, ],
+        "GERADOR_FASE_B_FLH_LER_TMP":                   [, ],
+
+        "GERADOR_FASE_C_TMP":                           [, ],
+        "GERADOR_FASE_C_ALM_TMP":                       [, ],
+        "GERADOR_FASE_C_TRP_TMP":                       [, ],
+        "GERADOR_FASE_C_FLH_LER_TMP":                   [, ],
+
+        "GERADOR_NUCL_ESTAT_TMP":                       [, ],
+        "GERADOR_NUCL_ESTAT_ALM_TMP":                   [, ],
+        "GERADOR_NUCL_ESTAT_TRP_TMP":                   [, ],
+        "GERADOR_NUCL_ESTAT_FLH_LER_TMP":               [, ],
+
+        "PONTE_FASE_A_ALM_TMP":                         [, ],
+        "PONTE_FASE_A_TRP_TMP":                         [, ],
+        "PONTE_FASE_A_FLH_LER_TMP":                     [, ],
+
+        "PONTE_FASE_B_ALM_TMP":                         [, ],
+        "PONTE_FASE_B_TRP_TMP":                         [, ],
+        "PONTE_FASE_B_FLH_LER_TMP":                     [, ],
+
+        "PONTE_FASE_C_ALM_TMP":                         [, ],
+        "PONTE_FASE_C_TRP_TMP":                         [, ],
+        "PONTE_FASE_C_FLH_LER_TMP":                     [, ],
+
+        "MANCAL_GUIA_TMP":                              [, ],
+        "MANCAL_GUIA_ALM_TMP":                          [, ],
+        "MANCAL_GUIA_FLH_LER_TMP":                      [, ],
+
+        "MANCAL_CASQ_COMB_TMP":                         [, ],
+        "MANCAL_CASQ_COMB_ALM_TMP":                     [, ],
+        "MANCAL_CASQ_COMB_TRP_TMP":                     [, ],
+        "MANCAL_CASQ_COMB_FLH_LER_TMP":                 [, ],
+
+        "MANCAL_GUIA_INTE_1_TMP":                       [, ],
+        "MANCAL_GUIA_INTE_1_ALM_TMP":                   [, ],
+        "MANCAL_GUIA_INTE_1_TRP_TMP":                   [, ],
+        "MANCAL_GUIA_INTE_1_FLH_LER_TMP":               [, ],
+
+        "MANCAL_GUIA_INTE_2_TMP":                       [, ],
+        "MANCAL_GUIA_INTE_2_ALM_TMP":                   [, ],
+        "MANCAL_GUIA_INTE_2_TRP_TMP":                   [, ],
+        "MANCAL_GUIA_INTE_2_FLH_LER_TMP":               [, ],
+
+        "MANCAL_COMB_PATINS_1_TMP":                     [, ],
+        "MANCAL_COMB_PATINS_1_ALM_TMP":                 [, ],
+        "MANCAL_COMB_PATINS_1_TRP_TMP":                 [, ],
+        "MANCAL_COMB_PATINS_1_FLH_LER_TMP":             [, ],
+
+        "MANCAL_COMB_PATINS_2_TMP":                     [, ],
+        "MANCAL_COMB_PATINS_2_ALM_TMP":                 [, ],
+        "MANCAL_COMB_PATINS_2_TRP_TMP":                 [, ],
+        "MANCAL_COMB_PATINS_2_FLH_LER_TMP":             [, ],
+
+        "MANCAL_CONT_ESCO_COMB_TMP":                    [, ],
+        "MANCAL_CONT_ESCO_COMB_ALM_TMP":                [, ],
+        "MANCAL_CONT_ESCO_COMB_TRP_TMP":                [, ],
+        "MANCAL_CONT_ESCO_COMB_FLH_LER_TMP":            [, ],
+
+        "MANCAL_COMB_EIXO_X_ALM_VIBR":                  [, ],
+        "MANCAL_COMB_EIXO_X_TRP_VIBR":                  [, ],
+        "MANCAL_COMB_EIXO_X_FLH_LER_VIBR":              [, ],
+
+        "MANCAL_COMB_EIXO_Y_ALM_VIBR":                  [, ],
+        "MANCAL_COMB_EIXO_Y_TRP_VIBR":                  [, ],
+        "MANCAL_COMB_EIXO_Y_FLH_LER_VIBR":              [, ],
+
+        "MANCAL_COMB_EIXO_Z_ALM_VIBR":                  [, ],
+        "MANCAL_COMB_EIXO_Z_TRP_VIBR":                  [, ],
+        "MANCAL_COMB_EIXO_Z_FLH_LER_VIBR":              [, ],
+
+        "DETECCAO_VERTICAL_ALM_VIBRA":                  [, ],
+        "DETECCAO_VERTICAL_TRP_VIBRA":                  [, ],
+        "DETECCAO_VERTICAL_FLH_LER_VIBRA":              [, ],
+
+        "DETECCAO_HORIZONTAL_ALM_VIBRA":                [, ],
+        "DETECCAO_HORIZONTAL_TRP_VIBRA":                [, ],
+        "DETECCAO_HORIZONTAL_FLH_LER_VIBRA":            [, ],
+
+        # RV
+        "RV_SAIDAS_DIGITAIS":                           [, ],
+        "RV_ESTADO_OPERACAO":                           [, ],
+        "RV_FLH_PARTIR":                                [, ],
+        "RV_FLH_HABILITAR":                             [, ],
+        "RV_FLH_DESABILITAR":                           [, ],
+        "RV_FLH_FECHAR_DISTRIBUIDOR":                   [, ],
+        "RV_RELE_TRP_NAO_ATUADO":                       [, ],
+        "RV_RELE_ALM_ATUADO":                           [, ],
+        "RV_SETPOT_POT_ATIVA_PU":                       [, ],
+
+        # RT
+        "RT_SAIDAS_DIGITAIS":                           [, ],
+        "RT_FLH_PARTIR":                                [, ],
+        "RT_FLH_HABILITAR":                             [, ],
+        "RT_FLH_DESABILITAR":                           [, ],
+        "RT_RELE_TRP_NAO_ATUADO":                       [, ],
+
+        "RV_FLH_1":                                     [, ],
+        "RV_FLH_1":                                     [, ],
+        "RV_FLH_1":                                     [, ],
+        "RV_FLH_1":                                     [, ],
+        "RV_FLH_1":                                     [, ],
+        "RV_FLH_1":                                     [, ],
+        "RV_FLH_1":                                     [, ],
+        "RV_FLH_1":                                     [, ],
+        "RV_FLH_1":                                     [, ],
+        "RV_FLH_1":                                     [, ],
+        "RV_FLH_1":                                     [, ],
+        "RV_FLH_1":                                     [, ],
+        "RV_FLH_1":                                     [, ],
+        "RV_FLH_1":                                     [, ],
+        "RV_FLH_1":                                     [, ],
+        "RV_FLH_1":                                     [, ],
+        "RV_FLH_1":                                     [, ],
+        "RV_FLH_1":                                     [, ],
+
+        "RV_FLH_2":                                     [, ],
+        "RV_FLH_2":                                     [, ],
+        "RV_FLH_2":                                     [, ],
+        "RV_FLH_2":                                     [, ],
+        "RV_FLH_2":                                     [, ],
+        "RV_FLH_2":                                     [, ],
+        "RV_FLH_2":                                     [, ],
+        "RV_FLH_2":                                     [, ],
+        "RV_FLH_2":                                     [, ],
+        "RV_FLH_2":                                     [, ],
+        "RV_FLH_2":                                     [, ],
+
+        "RT_FLH_1":                                     [, ],
+        "RT_FLH_1":                                     [, ],
+        "RT_FLH_1":                                     [, ],
+        "RT_FLH_1":                                     [, ],
+        "RT_FLH_1":                                     [, ],
+        "RT_FLH_1":                                     [, ],
+        "RT_FLH_1":                                     [, ],
+        "RT_FLH_1":                                     [, ],
+        "RT_FLH_1":                                     [, ],
+        "RT_FLH_1":                                     [, ],
+        "RT_FLH_1":                                     [, ],
+        "RT_FLH_1":                                     [, ],
+        "RT_FLH_1":                                     [, ],
+        "RT_FLH_1":                                     [, ],
+        "RT_FLH_1":                                     [, ],
+        "RT_FLH_1":                                     [, ],
+
+        "RT_FLH_2":                                     [, ],
+        "RT_FLH_2":                                     [, ],
+        "RT_FLH_2":                                     [, ],
+        "RT_FLH_2":                                     [, ],
+        "RT_FLH_2":                                     [, ],
+        "RT_FLH_2":                                     [, ],
+        "RT_FLH_2":                                     [, ],
+
+        "RT_FLH_3":                                     [, ],
+        "RT_FLH_3":                                     [, ],
+        "RT_FLH_3":                                     [, ],
+        "RT_FLH_3":                                     [, ],
+        "RT_FLH_3":                                     [, ],
+        "RT_FLH_3":                                     [, ],
+        "RT_FLH_3":                                     [, ],
+        "RT_FLH_3":                                     [, ],
+
+        "RT_ALM_1":                                     [, ],
+        "RT_ALM_1":                                     [, ],
+        "RT_ALM_1":                                     [, ],
+        "RT_ALM_1":                                     [, ],
+    },
 }

@@ -160,9 +160,9 @@ class Usina:
         self.clp_emergencia = True
 
         try:
-            [EMB.escrever_bit(self.clp[f"UG{ug.id}"], REG_CLP["UG"][f"UG{ug.id}_CMD_PARADA_EMERGENCIA"], bit=4, valor=1) for ug in self.ugs]
+            [EMB.escrever_bit(self.clp[f"UG{ug.id}"], REG_CLP[f"UG{ug.id}"][f"PARADA_CMD_EMERGENCIA"], bit=4, valor=1) for ug in self.ugs]
             sleep(5)
-            [EMB.escrever_bit(self.clp[f"UG{ug.id}"], REG_CLP["UG"][f"UG{ug.id}_CMD_PARADA_EMERGENCIA"], bit=4, valor=0) for ug in self.ugs]
+            [EMB.escrever_bit(self.clp[f"UG{ug.id}"], REG_CLP[f"UG{ug.id}"][f"PARADA_CMD_EMERGENCIA"], bit=4, valor=0) for ug in self.ugs]
 
         except Exception:
             logger.error(f"[USN] Houve um erro ao executar o comando de Emergência.")
