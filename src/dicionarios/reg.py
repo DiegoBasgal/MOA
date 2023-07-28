@@ -1,218 +1,764 @@
+"""
+Documentação do Mapa de Registradores:
+
+## NOMES / NOMES CHAVE:
+
+- Bay: BAY
+- Subestação: SE
+- Tomada da Água: TDA
+- Comporta: CP1 - CP2
+- Serviço Auxiliar: SA
+- Unidade Geração: UG1 - UG2
+
+- Limpa Grades: LG
+- Seccionadora: SECC
+- Válvula Borboleta: VB
+- Grupo Motor Gerador: GMG
+- Transformador Elevador: TE
+- Disjuntor: DJ - DJL - DJA - DJ1 ...
+- Unidade Hidráulica: UH - UHL - UHRV - UHLM ...
+
+- Nível: NV
+- Tensão: LT
+- Potência: POT
+- Elemento: ELE
+- Alimentação: ALIM
+- Enrolamento: ENRO
+- Retificador: RETI
+- Subtensão: SUBTEN
+- Subfrequência: SUBFRE
+- Sobretensão: SOBRETEN
+- Sobrecorrente: SOBRECO
+- Sobrefrequência: SOBREFRE
+
+- Sistema: SIS
+- Leitura: LER
+- Positiva: POS
+- Negativa: NEG
+- Primário: PRI
+- Disparo: DISP
+- Dreangem: DREN
+- Filtragem: FILT
+- Supervisão: SUP
+- Secundário: SEC
+- Sequência: SEQU
+- Diferencial: DIF
+- Instantânea: INST
+- Temporizada: TEMPO
+- Discrepância: DICRE
+- Transferência: TRANS
+
+## FLAGS:
+- Trip: TRP
+- Falha: FLH
+- Reset: RST
+- Alarme: ALM
+- Comando: CMD
+- Operação: OPE
+- Bloqueio: BLQ
+- Temperatura: TMP
+- Identificação: ID
+
+
+-> O Padrão para nomear os registradores segue da seguinte forma (Dependendo do sentido do nome do Registrador, a ordem pode mudar):
+    "Nome / Nome Chave"_"Flag"_"Descrição"
+
+-> Exemplos:
+  - LG_FLH_ATUADA
+  - CP1_NV_JUSANTE
+  - NV_MONTANTE_FLH
+  - DJL_FLH_ABERTURA
+  - DJL_FLH_CMD_ABERTURA
+
+-> Caso o Registrador possua o mesmo nome que outro, porém seu diferencial é o BIT que é acessado,
+será adicionado a letra "B" + o número do BIT no final do nome:
+    "Nome / Nome Chave"_"Flag"_"Descrição"_"BitN"
+
+-> Exemplos:
+    - RELE_PROTECAO_TRP_B5
+    - RELE_PROTECAO_TRP_B6
+"""
+
+
+
 REG_RELE = {
-    "UG": {
-        # UG1
-        "UG1_SOBREFREQ_ELEMENTO_2":                         1,    # Bit: 4                              81X4T (MOD 001)
-        "UG1_SOBREFREQ_ELEMENTO_1":                         1,    # Bit: 5                              81X3T (MOD 001)
-        "UG1_SUBFREQ_ELEMENTO_2":                           1,    # Bit: 6                              81X2T (MOD 001)
-        "UG1_SUBFREQ_ELEMENTO_1":                           1,    # Bit: 7                              81X1T (MOD 001)
-
-        "UG1_WATCHDOG_OP_NORMAL":                           313,  #                                     OUT305
-
-        "UG1_SOBRECORR_INSTANTANEA":                        901,  # Bit: 0                              50PX1T
-        "UG1_SOBRECORR_INSTANTANEA_NEUTRO":                 901,  # Bit: 1                              67N1T
-        "UG1_SOBRECORR_SEQUENCIA_NEG":                      901,  # Bit: 2                              46Q2T
-        "UG1_SOBRECORR_TEMPORIZADA_NEUTRO":                 901,  # Bit: 4                              51NT
-        "UG1_DIFERENCIAL_COM_RESTRICAO":                    901,  # Bit: 14                             87R
-        "UG1_DIFERENCIAL_SEM_RESTRICAO":                    901,  # Bit: 15                             87U
-
-        "UG1_SUBTENSAO_GERAL":                              902,  # Bit: 0                              27PX1T, 27PX2T, 27PPX1T, 27PPX2T
-        "UG1_SOBRETENSAO_GERAL":                            902,  # Bit: 1                              59PX1T, 59PX2T, 59PPX1T, 59PPX2T, 59GX1T, 59QX1T
-        "UG1_POTENCIA_REVERSA":                             902,  # Bit: 3                              3PWRX1T
-        "UG1_TRIP_RELACIONADO_FREQ":                        902,  # Bit: 4                              81
-        "UG1_VOLTZ_HERTZ":                                  902,  # Bit: 5                              24C2T
-        "UG1_SOBRECORR_RESTRICAO_TENSAO":                   902,  # Bit: 6                              51VT
-        "UG1_ATUA_RELE_86BF":                               902,  # Bit: 8                              OUT101
-        "UG1_FALHA_ABERTURA_DJ_MAQUINA":                    902,  # Bit: 8                              50BFT
-        "UG1_RECIBO_TRANSFER_DISPARO":                      902,  # Bit: 9                              OUT306
-        "UG1_PERDA_CAMPO_GERAL":                            902,  # Bit: 11                             40Z1T, 40Z2T
-        "UG1_FUGA_SOBRECORR_GERAL":                         902,  # Bit: 12                             64G1T, 64G2T, 64GX1T, 64F1T
-        "UG1_UNIDADE_FORA_PASSO":                           902,  # Bit: 14                             OOST
-        "UG1_RELE_ESTADO_TRIP":                             902,  # Bit: 15                             TRIP STATUS HI  ### PODE SER REG: 2100 BIT 00
-
-        "UG1_RESET_TRIP_RELE":                              2100, # Bit: 0                              RESET COMMAND  ### PODE SER REG: 261 BIT 00
-        "UG1_FALHA_PARTIDA_DJ_MAQUINA":                     2100, # Bit: 6                              IN403
-        "UG1_DJ_MAQUINA_FECHADO":                           2100, # Bit: 10                             IN401
-        "UG1_TRASFER_DISPARO_RELE_LINHA_TRAFO":             2100, # Bit: 11                             IN402
-
-        "UG1_PERMISSAO_SINCRONISMO":                        2110, # Bit: 4                              OUT301
-        "UG1_TRIP_RELE_PROTECAO":                           2110, # Bit: 5                              OUT302
-        "UG1_TRIP_RELE_PROTECAO":                           2110, # Bit: 6                              OUT303
-        "UG1_FALHA_ABERTURA_DJ_MAQUINA":                    2110, # Bit: 7                              OUT304
+    "BAY": {
+        # Leituras Analógicas
+        "LT_FASE_A":                                    10,
+        "LT_FASE_B":                                    13,
+        "LT_FASE_C":                                    16,
+        "LT_VS":                                        19,
 
 
-        # UG2
-        "UG2_SOBREFREQ_ELEMENTO_2":                         1,    # Bit: 4                              81X4T (MOD 001)
-        "UG2_SOBREFREQ_ELEMENTO_1":                         1,    # Bit: 5                              81X3T (MOD 001)
-        "UG2_SUBFREQ_ELEMENTO_2":                           1,    # Bit: 6                              81X2T (MOD 001)
-        "UG2_SUBFREQ_ELEMENTO_1":                           1,    # Bit: 7                              81X1T (MOD 001)
+        # Relé
+        "RELE_RST_TRP":                                 [40, 2],
 
-        "UG2_WATCHDOG_OP_NORMAL":                           313,  #                                     OUT305
 
-        "UG2_SOBRECORR_INSTANTANEA":                        901,  # Bit: 0                              50PX1T
-        "UG2_SOBRECORR_INSTANTANEA_NEUTRO":                 901,  # Bit: 1                              67N1T
-        "UG2_SOBRECORR_SEQUENCIA_NEG":                      901,  # Bit: 2                              46Q2T
-        "UG2_SOBRECORR_TEMPORIZADA_NEUTRO":                 901,  # Bit: 4                              51NT
-        "UG2_DIFERENCIAL_COM_RESTRICAO":                    901,  # Bit: 14                             87R
-        "UG2_DIFERENCIAL_SEM_RESTRICAO":                    901,  # Bit: 15                             87U
+        # DJ
+        "DJL_CMD_FECHAR":                               [43, 2],
 
-        "UG2_SUBTENSAO_GERAL":                              902,  # Bit: 0                              27PX1T, 27PX2T, 27PPX1T, 27PPX2T
-        "UG2_SOBRETENSAO_GERAL":                            902,  # Bit: 1                              59PX1T, 59PX2T, 59PPX1T, 59PPX2T, 59GX1T, 59QX1T
-        "UG2_POTENCIA_REVERSA":                             902,  # Bit: 3                              3PWRX1T
-        "UG2_TRIP_RELACIONADO_FREQ":                        902,  # Bit: 4                              81
-        "UG2_VOLTZ_HERTZ":                                  902,  # Bit: 5                              24C2T
-        "UG2_SOBRECORR_RESTRICAO_TENSAO":                   902,  # Bit: 6                              51VT
-        "UG2_ATUA_RELE_86BF":                               902,  # Bit: 8                              OUT101
-        "UG2_FALHA_ABERTURA_DJ_MAQUINA":                    902,  # Bit: 8                              50BFT
-        "UG2_RECIBO_TRANSFER_DISPARO":                      902,  # Bit: 9                              OUT306
-        "UG2_PERDA_CAMPO_GERAL":                            902,  # Bit: 11                             40Z1T, 40Z2T
-        "UG2_FUGA_SOBRECORR_GERAL":                         902,  # Bit: 12                             64G1T, 64G2T, 64GX1T, 64F1T
-        "UG2_UNIDADE_FORA_PASSO":                           902,  # Bit: 14                             OOST
-        "UG2_RELE_ESTADO_TRIP":                             902,  # Bit: 15                             TRIP STATUS HI  ### PODE SER REG: 2100 BIT 00
 
-        "UG2_RESET_TRIP_RELE":                              2100, # Bit: 0                              RESET COMMAND  ### PODE SER REG: 261 BIT 00
-        "UG2_FALHA_PARTIDA_DJ_MAQUINA":                     2100, # Bit: 6                              IN403
-        "UG2_DJ_MAQUINA_FECHADO":                           2100, # Bit: 10                             IN401
-        "UG2_TRASFER_DISPARO_RELE_LINHA_TRAFO":             2100, # Bit: 11                             IN402
+        # DJ
+        "DJL_MOLA_CARREGADA":                           [44, 1],
+        # Seccionadora
+        "SECC_FECHADA":                                 [44, 4],
 
-        "UG2_PERMISSAO_SINCRONISMO":                        2110, # Bit: 4                              OUT301
-        "UG2_TRIP_RELE_PROTECAO":                           2110, # Bit: 5                              OUT302
-        "UG2_TRIP_RELE_PROTECAO":                           2110, # Bit: 6                              OUT303
-        "UG2_FALHA_ABETRUA_DJ_MAQUINA":                     2110, # Bit: 7                              OUT304
+
+        # DJ
+        "DJL_FLH_ABERTURA":                             [47, 1],
+
+
+        # Barra
+        "ID_BARRA_VIVA":                                [53, 1],
+        "ID_BARRA_MORTA":                               [53, 7],
+
+
+        # Linha
+        "ID_LINHA_VIVA":                                [54, 0],
+        "ID_LINHA_MORTA":                               [54, 1],
     },
 
     "SE": {
-        "RELE_ESTADO_TRIP":                                 39,   # Bit: 6                              TRIP STATUS HI (MOD 40)
-        "RELE_FUNCIONAMENTO":                               39,   # Bit: 7                              ENABLED (MOD 40)
+        # DJ
+        "DJL_FECHADO":                                  [43, 0],
+        # Relé
+        "RELE_TE_FLH_PARTIDA":                          [43, 2],
 
-        "RESET_TRIP_RELE":                                  40,   # Bit: 2                              RESET COMMAND (MOD 41)
 
-        "DJ_LINHA_FECHADO":                                 43,   # Bit: 0                              IN101 (MOD 44)
-        "SECCION_LINHA_FECHADA":                            43,   # Bit: 1                              IN 102 (MOD 44)
-        "FALHA_PARTIDA_RECE_RELE_TE":                       43,   # Bit: 2                              IN 103 (MOD 44)
+        # DJ
+        "DJL_FLH_ABERTURA_B3":                          [44, 3],
+        "DJL_FLH_ABERTURA_B4":                          [44, 4],
 
-        "TRIP_RELE_PROTECAO":                               44,   # Bit: 0                              OUT101 (MOD 45)
-        "TRIP_RELE_PROTECAO":                               44,   # Bit: 1                              OUT102 (MOD 45)
-        "WATCHDOG_OP_NORMAL":                               44,   # Bit: 2                              OUT103 (MOD 45)
-        "FALHA_ABERTURA_DJ_LINHA":                          44,   # Bit: 3                              OUT104 (MOD 45)
-        "FALHA_ABERTURA_DJ_LINHA":                          44,   # Bit: 4                              OUT105 (MOD 45)
-        "ABRE_DJ_LINHA":                                    44,   # Bit: 5                              OUT106 (MOD 45)
 
-        "SOBRECORR_INST_FASE_Z4":                           45,   # Bit: 5                              67P3T (MOD 46)
-        "SOBRECORR_INST_FASE_Z3":                           45,   # Bit: 6                              67P2T (MOD 46)
-        "SOBRECORR_INST_FASE_Z1":                           45,   # Bit: 7                              67P1T (MOD 46)
+        # Zonas
+        "Z3_SOBRECO_INST_SEQU_NEG":                     [46, 1],
+        "Z2_SOBRECO_INST_SEQU_NEG":                     [46, 2],
+        "Z1_SOBRECO_INST_SEQU_NEG":                     [46, 3],
 
-        "SOBRECORR_INST_SEQUEN_NEG_Z3":                     46,   # Bit: 1                              67Q3T (MOD 47)
-        "SOBRECORR_INST_SEQUEN_NEG_Z2":                     46,   # Bit: 2                              67Q2T (MOD 47)
-        "SOBRECORR_INST_SEQUEN_NEG_Z1":                     46,   # Bit: 3                              67Q1T (MOD 47)
 
-        "SOBRECORR_TEMP_FASE":                              47,   # Bit: 2                              51PT (MOD 48)
-
-        "FALHA_ABERTURA_DJ_LINHA":                          48,   # Bit: 1                              BFT (MOD 49)
-
-        "ID_BARRA_VIVA":                                    49,   # Bit: 1                              (MOD 50)
-        "ID_BARRA_MORTA":                                   49,   # Bit: 7                              (MOD 50)
-
-        "ID_LINHA_VIVA":                                    50,   # Bit: 0                              (MOD 51)
-        "ID_LINHA_MORTA":                                   50,   # Bit: 1                              (MOD 51)
-
-        "SOBRETENSAO_NEUTRO":                               51,   # Bit: 4                              59N1T (MOD 52)
-        "SOBRETENSAO_FASE_ELEMENTO_2":                      51,   # Bit: 5                              59P2T (MOD 52)
-        "SUBTENSAO_FASE_ELEMETO_2":                         51,   # Bit: 6                              27P2T (MOD 52)
-        "SUBTENSAO_FASE_ELEMETO_1":                         51,   # Bit: 7                              27P1T (MOD 52)
-
-        "SOBREFREQ_ELEMENTO_6":                             52,   # Bit: 2                              81D6T (MOD 53)
-        "SOBREFREQ_ELEMENTO_2":                             52,   # Bit: 3                              81D5T (MOD 53)
-        "SOBREFREQ_ELEMENTO_1":                             52,   # Bit: 4                              81D4T (MOD 53)
-        "SUBFREQ_ELEMENTO_3":                               52,   # Bit: 5                              81D3T (MOD 53)
-        "SUBFREQ_ELEMENTO_2":                               52,   # Bit: 6                              81D2T (MOD 53)
-        "SUBFREQ_ELEMENTO_1":                               52,   # Bit: 7                              81D1T (MOD 53)
-
-        "ENVIO_TRANS_TRIP_RELE_BAY":                        53,   # Bit: 0                              SV8T (MOD 54)
-        "RECEB_TRANSF_TRIP_RELE_BAY":                       53,   # Bit: 2                              SV6T (MOD 54)
-
-        "RECEB_TRANSF_TRIP_RELE_BAY":                       54,   # Bit: 2                              SV10T (MOD 55)
-        "RECEB_TRANSF_TRIP_RELE_BAY":                       54,   # Bit: 3                              SV9T (MOD 55)
+        # DJ
+        "DJL_FLH_ABERTURA_B1":                          [48, 1],
     },
 
     "TE": {
-        "DJ_LINHA_FECHADO":                                 35,   # Bit: 7                              IN301 (MOD 35)
+        # Bloqueio
+        "86T_ATUADO":                                   [36, 4],
 
-        "TRANSFER_DISPARO_UG2":                             36,   # Bit: 1                              OUT303 (MOD 36)
-        "TRANSFER_DISPARO_SE":                              36,   # Bit: 2                              OUT302 (MOD 36)
-        "WATCHDOG_OP_NORMAL":                               36,   # Bit: 3                              OUT301 (MOD 36)
-        "ATUA_86T":                                         36,   # Bit: 4                              OUT103 (MOD 36)
-        "TRIP_RELE_PROTECAO":                               36,   # Bit: 5                              OUT102 (MOD 36)
-        "FALHA_PARTIDA_RELE_LINHA":                         36,   # Bit: 6                              OUT101 (MOD 36)
 
-        "SOBRECORR_TEMP_RESIDUAL_ENROL_SEC":                37,   # Bit: 1                              51N1T (MOD 37)
-        "SOBRECORR_TEMP_FASE_ENROL_SEC":                    37,   # Bit: 6                              51P2T (MOD 37)
+        # Enrolamento
+        "ENROL_SEC_SOBRECO_TEMPO_RES":                  [37, 1],
+        "ENROL_SEC_SOBRECO_TEMPO_FASE":                 [37, 6],
 
-        "RESET_TRIP_RELE":                                  625,  # Bit: 0                              RESET COMMAND
 
-        "RELE_FUNCIONAMENTO":                               675,  #                                     ENABLED
+        # Enrolamento
+        "ENROL_PRI_SOBRECO_TEMPO_FASE":                 [1117, 3],
+        "ENROL_PRI_SOBRECO_TEMPO_RES":                  [1117, 4],
+        # Diferencial
+        "DIF_COM_RESTRICAO":                            [1117, 14],
+        "DIF_SEM_RESTRICAO":                            [1117, 15],
 
-        "SOBRECORR_INSTAN_FASE":                            1117, # Bit: 0                              50P11T
-        "SOBRECORR_INSTAN_RESIDUAL":                        1117, # Bit: 1                              50G11T
-        "SOBRECORR_TEMP_FASE_ENROL_PRIM":                   1117, # Bit: 3                              51P1T
-        "SOBRECORR_TEMP_RESIDUAL_ENROL_PRIM":               1117, # Bit: 4                              51G1T
-        "DIFERENCIAL_COM_RESTRICAO":                        1117, # Bit: 14                             87R
-        "DIFERENCIAL_SEM_RESTRICAO":                        1117, # Bit: 15                             87U
 
-        "RELE_ESTADO_TRIP":                                 1118, # Bit: 15                             TRIP STATUS HI
+        # Relé
+        "RELE_ESTADO_TRP":                              [1118, 15],
     },
 
-    "BAY": {
-        "TENSAO_FASE_A":                                    10,   # VA                                  (MOD 11)
-        "TENSAO_FASE_B":                                    13,   # VB                                  (MOD 14)
-        "TENSAO_FASE_C":                                    16,   # VC                                  (MOD 17)
-        "TENSAO_VS":                                        19,   # VS                                  (MOD 20)
+    "UG1": {
+        # Elementos
+        "ELE_2_SOBREFRE":                               [1, 4],
+        "ELE_1_SOBREFRE":                               [1, 5],
+        "ELE_2_SUBFRE":                                 [1, 6],
+        "ELE_1_SUBFRE":                                 [1, 7],
 
-        "RELE_ESTADO_TRIP":                                 39,   # Bit: 6                              TRIP STATUS HI (MOD 40)
-        "RELE_FUNCIONAMENTO":                               39,   # Bit: 7                              ENABLED (MOD 40)
 
-        "RESET_TRIP_RELE":                                  40,   # Bit: 2                              RESET COMMAND (MOD 41)
+        # Sobrecorrente
+        "SOBRECO_INST":                                 [901, 0],
+        "SOBRECO_INST_NEUTRO":                          [901, 1],
+        "SOBRECO_SEQU_NEG":                             [901, 2],
+        "SOBRECO_TEMPO_NEUTRO":                         [901, 4],
+        # Diferencial
+        "DIF_COM_RESTRICAO":                            [901, 14],
+        "DIF_SEM_RESTRICAO":                            [901, 15],
 
-        "CMD_FECHA_DJ":                                     43,   # Bit: 2                              CC (MOD 44)
-        "CMD_ABRE_DJ":                                      43,   # Bit: 3                              OC (MOD 44)
 
-        "DJ_LINHA_FECHADO":                                 44,   # Bit: 0                              IN101 (MOD 045)
-        "DJ_MOLA_CARREGADA":                                44,   # Bit: 1                              IN102 (MOD 045)
-        "BT_ABRE_DJ":                                       44,   # Bit: 2                              IN103 (MOD 045)
-        "BT_FECHA_DJ":                                      44,   # Bit: 3                              IN104 (MOD 045)
-        "SECC_FECHADA":                                     44,   # Bit: 4                              IN105 (MOD 045)
+        # Outros
+        "SUBTEN_GERAL":                                 [902, 0],
+        "SOBRETEN_GERAL":                               [902, 1],
+        "POT_REVERSA":                                  [902, 3],
+        "VOLTZ_HERTZ":                                  [902, 5],
+        "LT_SOBRECO_RESTRICAO":                         [902, 6],
+        "DJ_MAQUINA_FLH_ABERTURA_B8":                   [902, 8],
+        "RECIBO_TRANS_DISP":                            [902, 9],
+        "PERDA_CAMPO_GERAL":                            [902, 11],
+        "FUGA_SOBRECO_GERAL":                           [902, 12],
+        "UNIDADE_FORA_PASSO":                           [902, 14],
 
-        "FECHA_DJ":                                         45,   # Bit: 0                              OUT101 (MOD 46)
-        "ABRE_DJ":                                          45,   # Bit: 1                              OUT102 (MOD 46)
 
-        "SOBRECORR_INST_FASE_Z3":                           46,   # Bit: 5                              67P3T (MOD 47)
-        "SOBRECORR_INST_FASE_Z2":                           46,   # Bit: 6                              67P2T (MOD 47)
-        "SOBRECORR_INST_FASE_Z1":                           46,   # Bit: 7                              67P1T (MOD 47)
+        # DJ
+        "DJ_MAQUINA_FLH_ABERTURA_B7":                   [2100, 7],
+        "DJ_MAQUINA_FLH_PARTIDA":                       [2100, 6],
 
-        "FALHA_ABERTURA_DJL":                               47,   # Bit: 1                              50BFX (MOD 48)
 
-        "SOBRECORR_INST_SEQ_NEGATIVA_Z3":                   48,   # Bit: 1                              67Q3T (MOD 49)
-        "SOBRECORR_INST_SEQ_NEGATIVA_Z2":                   48,   # Bit: 2                              67Q2T (MOD 49)
-        "SOBRECORR_INST_SEQ_NEGATIVA_Z1":                   48,   # Bit: 3                              67Q1T (MOD 49)
-        "SOBRECORR_RESID_INST":                             48,   # Bit: 7                              67G1T (MOD 49)
+        # Transformador Elevador
+        "TE_RELE_LINHA_TRANS_DISP":                     [2100, 11],
 
-        "SOBRECORR_TEMP_FASE":                              49,   # Bit: 2                              51PT (MOD 50)
 
-        "SOBRECORR_RESID_TEMP":                             50,   # Bit: 4                              51GT (MOD 51)
+        # Relé
+        "RELE_PROTECAO_TRP_B5":                         [2110, 5],
+        "RELE_PROTECAO_TRP_B6":                         [2110, 6],
+    },
 
-        "ENVIO_TRANSFER_TRIP_RELE_SE":                      51,   # Bit: 0                              50P1 OU 50Q1 (MOD 52)
-        "RECEB_TRANSFER_TRIP_RELE_SE":                      51,   # Bit: 2                              - BF DISJUNTOR (MOD 52)
+    "UG2": {
+        # Elementos
+        "ELE_2_SOBREFRE":                               [1, 4],
+        "ELE_1_SOBREFRE":                               [1, 5],
+        "ELE_2_SUBFRE":                                 [1, 6],
+        "ELE_1_SUBFRE":                                 [1, 7],
 
-        "RECEB_TRANSFER_TRIP_RELE_SE":                      52,   # Bit: 3                              + 67P2 LOCAL (MOD 53)
-        "RECEB_TRANSFER_TRIP_RELE_BAY":                     52,   # Bit: 7                              + 67Q2 LOCAL (MOD 53)
 
-        "ID_BARRA_VIVA":                                    53,   # Bit: 1                              59A1 (MOD 54)
-        "ID_BARRA_MORTA":                                   53,   # Bit: 7                              27A1 (MOD 54)
+        # Sobrecorrente
+        "SOBRECO_INST":                                 [901, 0],
+        "SOBRECO_INST_NEUTRO":                          [901, 1],
+        "SOBRECO_SEQU_NEG":                             [901, 2],
+        "SOBRECO_TEMPO_NEUTRO":                         [901, 4],
+        # Diferencial
+        "DIF_COM_RESTRICAO":                            [901, 14],
+        "DIF_SEM_RESTRICAO":                            [901, 15],
 
-        "ID_LINHA_VIVA":                                    54,   # Bit: 0                              59S1P (MOD 55)
-        "ID_LINHA_MORTA":                                   54,   # Bit: 1                              27SP (MOD 55)
-    }
+
+        # Outros
+        "SUBTEN_GERAL":                                 [902, 0],
+        "SOBRETEN_GERAL":                               [902, 1],
+        "POT_REVERSA":                                  [902, 3],
+        "VOLTZ_HERTZ":                                  [902, 5],
+        "LT_SOBRECO_RESTRICAO":                         [902, 6],
+        "DJ_MAQUINA_FLH_ABERTURA_B8":                   [902, 8],
+        "RECIBO_TRANS_DISP":                            [902, 9],
+        "PERDA_CAMPO_GERAL":                            [902, 11],
+        "FUGA_SOBRECO_GERAL":                           [902, 12],
+        "UNIDADE_FORA_PASSO":                           [902, 14],
+
+
+        # DJ
+        "DJ_MAQUINA_FLH_ABERTURA_B7":                   [2100, 7],
+        "DJ_MAQUINA_FLH_PARTIDA":                       [2100, 6],
+
+
+        # Transformador Elevador
+        "TE_RELE_LINHA_TRANS_DISP":                     [2100, 11],
+
+
+        # Relé
+        "RELE_PROTECAO_TRP_B5":                         [2110, 5],
+        "RELE_PROTECAO_TRP_B6":                         [2110, 6],
+    },
 }
 
 REG_CLP = {
-    
+    "MOA": {
+        "MOA_OUT_STATUS":                               409,
+
+        "MOA_OUT_MODE":                                 11,
+        "SM_STATE":                                     10,
+        "PAINEL_LIDO":                                  12,
+        "IN_EMERG":                                     13,
+        "IN_HABILITA_AUTO":                             14,
+        "IN_DESABILITA_AUTO":                           15,
+        "OUT_EMERG":                                    16,
+
+        "OUT_TARGET_LEVEL":                             417,
+        "OUT_SETPOINT":                                 418,
+
+        "IN_EMERG_UG1":                                 20,
+        "OUT_BLOCK_UG1":                                21,
+        "OUT_ETAPA_UG1":                                422,
+        "OUT_STATE_UG1":                                423,
+
+        "IN_EMERG_UG2":                                 25,
+        "OUT_BLOCK_UG2":                                26,
+        "OUT_STATE_UG2":                                427,
+        "OUT_ETAPA_UG2":                                428,
+    },
+
+    "SE": {
+        # Leituras Analógicas
+        "LT_VAB":                                       50,
+        "LT_VBC":                                       52,
+        "LT_VCA":                                       53,
+
+        # Rearmes
+        "BLQ_GERAL_CMD_REARME":                         [131, 0],
+        "86T_CMD_REARME":                               [131, 1],
+        "86BF_CMD_REARME":                              [131, 2],
+        # DJs
+        "DJL_CMD_ABRIR":                                [131, 3],
+        "DJL_CMD_FECHAR":                               [131, 4],
+        # Registros
+        "REGISTROS_CMD_RST":                            [131, 5],
+    },
+
+    "SA": {
+        # Poço Drenagem
+        "POCO_DREN_NV_MUITO_ALTO":                      [0, 9],
+        # Retificador
+        "RETI_SOBRETEN":                                [0, 14],
+        "RETI_SUBTEN":                                  [0, 15],
+
+
+        # Bomba Drenagem/Filtragem
+        "BOMBA_FILT_FLH":                               [1, 6],
+        "BOMBA_DREN_1_FLH":                             [1, 0],
+        "BOMBA_DREN_2_FLH":                             [1, 2],
+        "BOMBA_DREN_3_FLH":                             [1, 4],
+        "BOMBA_DREN_UNIDADES_FLH":                      [1, 12],
+
+
+        # DJs
+        "DJ52SA1_SEM_FLH":                              [2, 15],
+
+
+        # Retificador
+        "RETI_SOBRECO_SAIDA":                           [3, 0],
+        "RETI_FUSIVEL_QUEIMADO":                        [3, 2],
+        "RETI_SOBRECO_BATERIAS":                        [3, 1],
+        "RETI_FUGA_TERRA_POSITIVO":                     [3, 5],
+        "RETI_FUGA_TERRA_NEGATIVO":                     [3, 6],
+
+
+        # DJs
+        "DJ52SA2_SEM_FLH":                              [5, 1],
+        "DJ52SA3_SEM_FLH":                              [5, 3],
+        "DJS_BARRA_SELETORA_REMOTO.":                   [5, 9],
+
+
+        # Sistemas
+        "SIS_INCENDIO_ALM_ATUADO":                      [7, 6],
+        "SIS_SEGURANCA_ALM_ATUADO":                     [7, 7],
+        # DJs
+        "DJ72SA1_FECHADO":                              [7, 10],
+        "DJS_125VCC_FECHADOS":                          [7, 11],
+        "DJS_24VCC_FECHADOS":                           [7, 12],
+        # 24/125VCC
+        "ALIM_125VCC_COM_TENSAO":                       [7, 13],
+        "CMD_125VCC_COM_TENSAO":                        [7, 14],
+        "CMD_24VCC_COM_TENSAO":                         [7, 15],
+
+
+        # Poço Drenagem
+        "POCO_DREN_NV_ALTO":                            [9, 0],
+
+
+        # DJs
+        "DJ52SA1_FLH_ABRIR":                            [13, 0],
+        "DJ52SA1_FLH_FECHAR":                           [13, 1],
+        "DJ52SA2_FLH_ABRIR":                            [13, 2],
+        "DJ52SA2_FLH_FECHAR":                           [13, 3],
+        "DJ52SA3_FLH_ABRIR":                            [13, 4],
+        "DJ52SA3_FLH_FECHAR":                           [13, 5],
+        # GMG
+        "GMG_FLH_PARTIR":                               [13, 6],
+        "GMG_FLH_PARAR":                                [13, 7],
+        "GMG_OPERACAO_MANUAL":                          [13, 10],
+        # Poço Drenagem
+        "POCO_DREN_DISCRE_BOIAS":                       [13, 9],
+
+
+        # Sistema Água
+        "SIS_AGUA_BOMBA_DISPONIVEL":                    [17, 0],
+        "SIS_AGUA_FLH_LIGA_BOMBA":                      [17, 1],
+        "SIS_AGUA_FLH_PRESSURIZAR_FILTRO_A":            [17, 3],
+        "SIS_AGUA_FLH_PRESSOSTATO_FILTRO_A":            [17, 4],
+        "SIS_AGUA_FLH_PRESSURIZAR_FILTRO_B":            [17, 5],
+        "SIS_AGUA_FLH_PRESSOSTATO_FILTRO_B":            [17, 6],
+        "SIS_AGUA_RST_FLH":                             [129, 1],
+
+
+        # Barra CA
+        "BARRA_CA_RST_FLH":                             [129, 0],
+
+
+        # Rearme
+        "BLQ_GERAL_FLH_SA_REARME":                      [130, 0],
+    },
+
+    "TDA": {
+        "NV_MONTANTE":                                  3,
+        "NV_JUSANTE_CP1":                               36,
+        "NV_JUSANTE_CP2":                               38,
+        "NV_JUSANTE_GRADE_CP2_LER_FLH":                 32,
+        "NV_JUSANTE_GRADE_CP1_LER_FLH":                 34,
+        "NV_MONTANTE_LER_FLH":                          [3, 0],
+
+        "SEM_EMERGENCIA":                               [16, 8],
+
+        "CA_COM_TENSAO":                                [17, 11],
+
+        "LG_FLH_ATUADA":                                [26, 15],
+        "LG_OPE_MANUAL":                                [28, 0],
+
+        "VB_FECHANDO":                                  [23, 0],
+        "VB_CMD_RST_FLH":                               [55, 0],
+
+        "UH_DISPONIVEL":                                [5, 1],
+        "UH_FLH_LIGAR_BOMBA":                           [5, 2],
+        "UH_FILTRO_LIMPO":                              [17, 13],
+
+        "CP1_OPERANDO":                                 [2, 0],
+        "CP1_AGUARDANDO_CMD_ABERTURA":                  [2, 3],
+        "CP1_PRESSAO_EQUALIZADA":                       [2, 4],
+
+        "CP1_CMD_REARME_FLH":                           [6, 0],
+        "CP1_CMD_ABERTURA_CRACKING":                    [6, 1],
+        "CP1_CMD_ABERTURA_TOTAL":                       [6, 2],
+        "CP1_CMD_FECHAMENTO":                           [6, 3],
+        "CP1_PERMISSIVOS_OK":                           [6, 15],
+
+        "CP1_BLQ_ATUADO":                               [8, 15],
+
+        "CP1_CRACKING":                                 [16, 0],
+        "CP1_REMOTO":                                   [16, 6],
+
+        "CP1_ABERTA":                                   [17, 14],
+        "CP1_FECHADA":                                  [17, 15],
+
+        "CP2_OPERANDO":                                 [2, 0],
+        "CP2_AGUARDANDO_CMD_ABERTURA":                  [2, 3],
+        "CP2_PRESSAO_EQUALIZADA":                       [2, 4],
+
+        "CP2_CMD_REARME_FLH":                           [6, 0],
+        "CP2_CMD_ABERTURA_CRACKING":                    [6, 1],
+        "CP2_CMD_ABERTURA_TOTAL":                       [6, 2],
+        "CP2_CMD_FECHAMENTO":                           [6, 3],
+        "CP2_PERMISSIVOS_OK":                           [6, 15],
+
+        "CP2_BLQ_ATUADO":                               [8, 15],
+
+        "CP2_CRACKING":                                 [16, 0],
+        "CP2_REMOTO":                                   [16, 6],
+
+        "CP2_ABERTA":                                   [17, 14],
+        "CP2_FECHADA":                                  [17, 15],
+    },
+
+    "UG1": {
+        # Leituras Anaçógicas
+        "GERADOR_FASE_A_TMP":                           44,
+        "GERADOR_FASE_B_TMP":                           46,
+        "GERADOR_FASE_C_TMP":                           48,
+        "MANCAL_GUIA_TMP":                              54,
+        "MANCAL_CASQ_COMB_TMP":                         60,
+        "MANCAL_CONT_ESCO_COMB_TMP":                    62,
+        "MANCAL_COMB_PATINS_1_TMP":                     64,
+        "MANCAL_COMB_PATINS_2_TMP":                     66,
+        "MANCAL_GUIA_INTE_1_TMP":                       68,
+        "MANCAL_GUIA_INTE_2_TMP":                       70,
+        "GERADOR_NUCL_ESTAT_TMP":                       72,
+        "ENTRADA_TURBINA_PRESSAO":                      84,
+        "GERADOR_SAIDA_AR_TRP_TMP":                     90,
+        "P":                                            130,
+        "HORIMETRO":                                    108,
+
+
+        # UHRV
+        "UHRV_FILTRO_SUJO":                             [0, 5],  # Reg -> 1
+        # UHLM
+        "UHLM_FILTRO_SUJO":                             [0, 8],  # Reg -> 1
+        # Resistência
+        "RESISTENCIA_FALHA":                            [0, 12], # Reg -> 1
+
+
+        # Botão Emergência
+        "BT_EMERGENCIA_ATUADO":                         [2, 11],
+        # Supervisão
+        "SUP_BOBINA_52G":                               [2, 12],
+        "SUP_BOBINA_86EH":                              [2, 13],
+        # Relé
+        "RELE_BLQ_86EH_DESATUADO":                      [2, 12], # Reg -> 3
+        "SUP_TENSAO_125VCC":                            [2, 13], # Reg -> 3
+        "SUP_TENSAO_24VCC":                             [2, 14], # Reg -> 3
+        # DJ
+        "DJS_125VCC_FECHADOS":                          [2, 15], # Reg -> 3
+
+
+        # DJ
+        "DJS_24VCC_FECHADOS":                           [4, 0],
+        # CLPs
+        "CLP_GERAL_SEM_BLQ_EXTERNO":                    [4, 1],
+        "CLP_GERAL_SIS_AGUA_OK":                        [4, 2],
+        # Escovas Polo
+        "ESCOVAS_POLO_POS_GASTAS":                      [4, 5],
+        "ESCOVAS_POLO_NEG_GASTAS":                      [4, 6],
+        # Disparo Mecânico
+        "DISP_MECANICO_DESATUADO":                      [4, 8],
+        "DISP_MECANICO_ATUADO":                         [4, 9],
+
+
+        # Alarmes de Temperatura/Vibração
+        "PONTE_FASE_A_ALM_TMP":                         [6, 0],
+        "PONTE_FASE_B_ALM_TMP":                         [6, 1],
+        "PONTE_FASE_C_ALM_TMP":                         [6, 2],
+        "TRAFO_EXCITACAO_ALM_TMP":                      [6, 4],
+        "MANCAL_GUIA_ALM_TMP":                          [6, 5],
+        "UHRV_ALM_TMP_OLEO":                            [6, 6],
+        "UHLM_ALM_TMP_OLEO":                            [6, 7],
+        "MANCAL_CASQ_COMB_ALM_TMP":                     [6, 8],
+        "MANCAL_CONT_ESCO_COMB_ALM_TMP":                [6, 9],
+        "MANCAL_COMB_PATINS_1_ALM_TMP":                 [6, 10],
+        "MANCAL_COMB_PATINS_2_ALM_TMP":                 [6, 11],
+        "MANCAL_GUIA_INTE_1_ALM_TMP":                   [6, 12],
+        "MANCAL_GUIA_INTE_2_ALM_TMP":                   [6, 13],
+        "GERADOR_NUCL_ESTAT_ALM_TMP":                   [6, 14],
+        "GERADOR_FASE_A_ALM_TMP":                       [6, 15],
+        "GERADOR_FASE_B_ALM_TMP":                       [6, 0],  # Reg -> 7
+        "GERADOR_FASE_C_ALM_TMP":                       [6, 1],  # Reg -> 7
+        "MANCAL_COMB_EIXO_X_ALM_VIBR":                  [6, 8],  # Reg -> 7
+        "MANCAL_COMB_EIXO_Y_ALM_VIBR":                  [6, 9],  # Reg -> 7
+        "MANCAL_COMB_EIXO_Z_ALM_VIBR":                  [6, 10], # Reg -> 7
+        "DETECCAO_HORIZONTAL_ALM_VIBRA":                [6, 12], # Reg -> 7
+        "DETECCAO_VERTICAL_ALM_VIBRA":                  [6, 13], # Reg -> 7
+
+
+        # Falhas de Leitura de Pressão/Vibração
+        "ENTRADA_TURBINA_FLH_LER_PRESSAO":              [8, 4],
+        "MANCAL_COMB_EIXO_X_FLH_LER_VIBR":              [8, 8],
+        "MANCAL_COMB_EIXO_Y_FLH_LER_VIBR":              [8, 9],
+        "MANCAL_COMB_EIXO_Z_FLH_LER_VIBR":              [8, 10],
+        "DETECCAO_HORIZONTAL_FLH_LER_VIBRA":            [8, 12],
+        "DETECCAO_VERTICAL_FLH_LER_VIBRA":              [8, 13],
+
+
+        # Sistema de Água
+        "SIS_AGUA_FLH_HAB":                             [10, 11],
+
+
+        # Trip Temperatura
+        "UHLM_TRP_TMP_OLEO":                            [24, 4],
+        "UHRV_TRP_TMP_OLEO":                            [24, 5],
+        # Falhas de Leitura de Temperaturas
+        "UHLM_FLH_LER_TMP_OLEO":                        [24, 6],
+        "UHRV_FLH_LER_TMP_OLEO":                        [24, 7],
+        "MANCAL_CASQ_COMB_FLH_LER_TMP":                 [24, 8],
+        "MANCAL_CONT_ESCO_COMB_FLH_LER_TMP":            [24, 9],
+        "MANCAL_COMB_PATINS_1_FLH_LER_TMP":             [24, 10],
+        "MANCAL_COMB_PATINS_2_FLH_LER_TMP":             [24, 11],
+        "MANCAL_GUIA_INTE_1_FLH_LER_TMP":               [24, 12],
+        "MANCAL_GUIA_INTE_2_FLH_LER_TMP":               [24, 13],
+        "PONTE_FASE_A_FLH_LER_TMP":                     [24, 14],
+        "PONTE_FASE_B_FLH_LER_TMP":                     [24, 15],
+        "PONTE_FASE_C_FLH_LER_TMP":                     [24, 0],  # Reg -> 25
+        "GERADOR_FASE_A_FLH_LER_TMP":                   [24, 1],  # Reg -> 25
+        "GERADOR_FASE_B_FLH_LER_TMP":                   [24, 2],  # Reg -> 25
+        "GERADOR_FASE_C_FLH_LER_TMP":                   [24, 3],  # Reg -> 25
+        "GERADOR_NUCL_ESTAT_FLH_LER_TMP":               [24, 4],  # Reg -> 25
+        # Trips Vibração
+        "DETECCAO_HORIZONTAL_TRP_VIBRA":                [24, 10], # Reg -> 25
+        "DETECCAO_VERTICAL_TRP_VIBRA":                  [24, 11], # Reg -> 25
+        "MANCAL_COMB_EIXO_X_TRP_VIBR":                  [24, 12], # Reg -> 25
+        "MANCAL_COMB_EIXO_Y_TRP_VIBR":                  [24, 13], # Reg -> 25
+        "MANCAL_COMB_EIXO_Z_TRP_VIBR":                  [24, 14], # Reg -> 25
+        # Bloqueio Atuado
+        "86M_BLQ_ATUADO":                               [24, 15], # Reg -> 25
+
+
+        # Cubiculo Proteção Gerador
+        "CPG_PORTA_INTERNA_FECHADA":                    [26, 2],
+        "CPG_PORTA_TRASEIRA_FECHADA":                   [26, 3],
+        # Relés
+        "RELE_700G_TRP_ATUADO":                         [26, 4],
+        "RELE_700G_BF_ATUADO":                          [26, 6],
+        # Trips por Temperatura
+        "PONTE_FASE_A_TRP_TMP":                         [26, 0],  # Reg -> 27
+        "PONTE_FASE_B_TRP_TMP":                         [26, 1],  # Reg -> 27
+        "PONTE_FASE_C_TRP_TMP":                         [26, 2],  # Reg -> 27
+        "GERADOR_FASE_A_TRP_TMP":                       [26, 3],  # Reg -> 27
+        "GERADOR_FASE_B_TRP_TMP":                       [26, 4],  # Reg -> 27
+        "GERADOR_FASE_C_TRP_TMP":                       [26, 5],  # Reg -> 27
+        "GERADOR_NUCL_ESTAT_TRP_TMP":                   [26, 6],  # Reg -> 27
+        # Trafo Excitação/Aterramento
+        "TRAFO_ATERRAMENTO_TRP_TMP":                    [26, 8],  # Reg -> 27
+        "TRAFO_EXCITACAO_TRP_TMP":                      [26, 9],  # Reg -> 27
+        "TRAFO_EXCITACAO_FLH_LER_TMP":                  [26, 10], # Reg -> 27
+        # Bloqueio Atuado
+        "86E_BLQ_ATUADO":                               [26, 15], # Reg -> 27
+
+
+        # Trips Temperatura/Vibração/Pressão
+        "UHRV_ACUMULADOR_PRESSAO_TRP":                  [28, 5],
+        "MANCAL_CASQ_COMB_TRP_TMP":                     [28, 2],  # Reg -> 29
+        "MANCAL_CONT_ESCO_COMB_TRP_TMP":                [28, 3],  # Reg -> 29
+        "MANCAL_COMB_PATINS_1_TRP_TMP":                 [28, 4],  # Reg -> 29
+        "MANCAL_COMB_PATINS_2_TRP_TMP":                 [28, 5],  # Reg -> 29
+        "MANCAL_GUIA_INTE_1_TRP_TMP":                   [28, 6],  # Reg -> 29
+        "MANCAL_GUIA_INTE_2_TRP_TMP":                   [28, 7],  # Reg -> 29
+        "86H_BLQ_ATUADO":                               [28, 15], # Reg -> 29
+
+
+        # UHRV
+        "UHRV_MANUTENCAO":                              [36, 0],
+        "UHRV_BOMBA_1_FLH":                             [36, 5],
+        "UHRV_BOMBA_2_FLH":                             [36, 7],
+
+
+        # UHLM
+        "UHLM_MANUTENCAO":                              [38, 4],
+        "UHLM_BOMBA_1_FLH":                             [38, 5],
+        "UHLM_BOMBA_2_FLH":                             [38, 7],
+        "UHLM_FLH_PRESSAO_LINHA_B1":                    [38, 9],
+        "UHLM_FLH_PRESSAO_LINHA_B2":                    [38, 10],
+        "UHLM_FLH_PRESSOSTATO_LINHA":                   [38, 11],
+
+
+        # RV
+        "RV_FLH_HABILITAR":                             [42, 0],
+        "RV_FLH_PARTIR":                                [42, 1],
+        "RV_FLH_DESABILITAR":                           [42, 2],
+        "RV_FLH_FECHAR_DISTRIBUIDOR":                   [42, 4],
+
+
+        # RT
+        "RT_FLH_HABILITAR":                             [42, 8],
+        "RT_FLH_PARTIR":                                [42, 9],
+        "RT_FLH_DESABILITAR":                           [42, 10],
+
+
+        # Rearme Bloqueio
+        "PASSOS_CMD_RST_FLH":                           [148, 0],
+        "86M_CMD_REARME_BLQ":                           [148, 1],
+        "86E_CMD_REARME_BLQ":                           [148, 2],
+        "86H_CMD_REARME_BLQ":                           [148, 3],
+        # Parada
+        "PARADA_CMD_EMERGENCIA":                        [148, 4],
+        "PARADA_BLQ_ABERTURA_DJ":                       [148, 11],
+        "PARADA_CMD_DESABILITA_UHLM":                   [148, 15],
+        # Partida
+        "PARTIDA_CMD_SINCRONISMO":                      [148, 10] ,
+
+
+        # UHRV
+        "UHRV_CMD_REARME_FLH":                          [150, 0],
+        "UHLM_CMD_REARME_FLH":                          [150, 0], # Reg -> 151
+
+        # --------------------------------------------------------------------- #
+        ## Comunicação RTV
+
+        # RV
+        "RV_ESTADO_OPERACAO":                           21,
+
+        "RV_SAIDAS_DIGITAIS":                           26,
+        "RV_RELE_TRP_NAO_ATUADO":                       [26, 0],
+        "RV_RELE_ALM_ATUADO":                           [26, 1],
+
+        "RV_SETPOT_POT_ATIVA_PU":                       30,
+
+        "RT_RELE_TRP_NAO_ATUADO":                       [31, 0],
+
+        "RV_FLH_1_B0":                                  [67, 0],
+        "RV_FLH_1_B1":                                  [67, 1],
+        "RV_FLH_1_B2":                                  [67, 2],
+        "RV_FLH_1_B3":                                  [67, 3],
+        "RV_FLH_1_B4":                                  [67, 4],
+        "RV_FLH_1_B5":                                  [67, 5],
+        "RV_FLH_1_B6":                                  [67, 6],
+        "RV_FLH_1_B7":                                  [67, 7],
+        "RV_FLH_1_B8":                                  [67, 8],
+        "RV_FLH_1_B10":                                 [67, 10],
+        "RV_FLH_1_B11":                                 [67, 11],
+        "RV_FLH_1_B12":                                 [67, 12],
+        "RV_FLH_1_B13":                                 [67, 13],
+        "RV_FLH_1_B14":                                 [67, 14],
+        "RV_FLH_1_B15":                                 [67, 15],
+
+        "RV_FLH_2_B0":                                  [68, 0],
+        "RV_FLH_2_B1":                                  [68, 1],
+        "RV_FLH_2_B2":                                  [68, 2],
+        "RV_FLH_2_B3":                                  [68, 3],
+        "RV_FLH_2_B4":                                  [68, 4],
+
+
+        # RT
+        "RT_SAIDAS_DIGITAIS":                           31,
+
+        "RT_ALM_1_B0":                                  [70, 0],
+        "RT_ALM_1_B4":                                  [70, 4],
+        "RT_ALM_1_B5":                                  [70, 5],
+        "RT_ALM_1_B8":                                  [70, 8],
+
+        "RT_FLH_1_B0":                                  [72, 0],
+        "RT_FLH_1_B1":                                  [72, 1],
+        "RT_FLH_1_B2":                                  [72, 2],
+        "RT_FLH_1_B3":                                  [72, 3],
+        "RT_FLH_1_B4":                                  [72, 4],
+        "RT_FLH_1_B5":                                  [72, 5],
+        "RT_FLH_1_B6":                                  [72, 6],
+        "RT_FLH_1_B7":                                  [72, 7],
+        "RT_FLH_1_B8":                                  [72, 8],
+        "RT_FLH_1_B9":                                  [72, 9],
+        "RT_FLH_1_B10":                                 [72, 10],
+        "RT_FLH_1_B11":                                 [72, 11],
+        "RT_FLH_1_B12":                                 [72, 12],
+        "RT_FLH_1_B13":                                 [72, 13],
+        "RT_FLH_1_B14":                                 [72, 14],
+        "RT_FLH_1_B15":                                 [72, 15],
+
+        "RT_FLH_2_B0":                                  [73, 0],
+        "RT_FLH_2_B1":                                  [73, 1],
+        "RT_FLH_2_B2":                                  [73, 2],
+        "RT_FLH_2_B3":                                  [73, 3],
+        "RT_FLH_2_B4":                                  [73, 4],
+        "RT_FLH_2_B5":                                  [73, 5],
+        "RT_FLH_2_B6":                                  [73, 6],
+        "RT_FLH_2_B7":                                  [73, 7],
+        "RT_FLH_2_B8":                                  [73, 8],
+        "RT_FLH_2_B9":                                  [73, 9],
+        "RT_FLH_2_B10":                                 [73, 10],
+        "RT_FLH_2_B11":                                 [73, 11],
+        "RT_FLH_2_B12":                                 [73, 12],
+
+        "RT_FLH_3_B0":                                  [74, 0],
+        "RT_FLH_3_B1":                                  [74, 1],
+        "RT_FLH_3_B2":                                  [74, 2],
+        "RT_FLH_3_B3":                                  [74, 3],
+        "RT_FLH_3_B4":                                  [74, 4],
+        "RT_FLH_3_B5":                                  [74, 5],
+        "RT_FLH_3_B6":                                  [74, 6],
+        "RT_FLH_3_B7":                                  [74, 7],
+    },
 }
+
+
+"""
+Registradores que não achei:
+CLP:
+    SE:
+        "89L_FECHADA"
+        "86T_ATUADO"
+        "86BF_ATUADO"
+        "86BF_86T_CMD_REARME"
+        "DJL_MOLA_CARREGADA"
+        "DJL_SELETORA_REMOTO"
+        "DJL_FLH_CMD_ABERTURA"
+        "DJL_FLH_CMD_FECHAMENTO"
+        "RELE_LINHA_ATUADO"
+        "RELE_LINHA_ATUACAO_BF"
+        "RELE_SUP_BLQ_BOBINAS"
+        "TE_RELE_ATUADO"
+        "TE_RELE_BUCHHOLZ_TRP"
+        "TE_RELE_BUCHHOLZ_ALM"
+        "TE_TRP_TMP_OLEO"
+        "TE_TRP_TMP_ENROL"
+        "TE_TRP_ALIVIO_PRESSAO"
+        "TE_ALM_TMP_OLEO"
+        "TE_ALM_TMP_OLEO"
+        "TE_ALM_TMP_ENROL"
+        "TE_ALM_TMP_ENROL"
+        "TE_FLH_LER_TMP_ENROL"
+        "TE_FLH_LER_TMP_OLEO"
+        "TE_NV_OLEO_MUITO_ALTO"
+        "TE_NV_OLEO_MUITO_BAIXO"
+
+    SA:
+        "SEM_EMERGENCIA"
+        "BOMBA_RECALQUE_TUBO_SUCCAO_FALHA"
+
+    UGs:
+        "CLP_GERAL_COM_TENSAO_BARRA_ESSEN"
+"""

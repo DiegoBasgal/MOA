@@ -1,18 +1,20 @@
 import logging
 import numpy as np
 
+import simulador.dicionarios.dict as dct
+
 from time import  time
 from threading import Thread
-from temporizador import Temporizador
+from simulador.funcoes.temporizador import Temporizador
 
-from dicionarios.const import *
+from simulador.dicionarios.const import *
 
 logger = logging.getLogger('__main__')
 
 class Unidade:
-    def __init__(self, id, shared_dict, time_handler: Temporizador) -> None:
+    def __init__(self, id, time_handler: "Temporizador") -> "None":
         self.id = id
-        self.dict = shared_dict
+        self.dict = dct.compartilhado
 
         # COPIA DE INFORMACOES DA CLASSE SITE
         self.escala_ruido = time_handler.escala_ruido

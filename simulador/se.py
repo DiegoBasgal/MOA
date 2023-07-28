@@ -1,14 +1,16 @@
 import logging
 
-from temporizador import Temporizador
+import simulador.dicionarios.dict as dct
+
+from simulador.funcoes.temporizador import Temporizador
 
 from simulador.dicionarios.const import *
 
 logger = logging.getLogger('__main__')
 
 class Dj52L:
-    def __init__(self, shared_dict: "dict", time_handler: "Temporizador") -> None:
-        self.dict = shared_dict
+    def __init__(self, time_handler: "Temporizador") -> None:
+        self.dict = dct.compartilhado
 
         self.segundos_por_passo = time_handler.segundos_por_passo
 

@@ -2,6 +2,8 @@ import pytz
 import logging
 import threading
 
+import simulador.dicionarios.dict as dct
+
 from sys import stdout
 from time import sleep
 from datetime import datetime
@@ -12,8 +14,8 @@ lock = threading.Lock()
 logger = logging.getLogger("__main__")
 
 class Controlador:
-    def __init__(self, shared_dict):
-        self.dict = shared_dict
+    def __init__(self):
+        self.dict = dct.compartilhado
 
         i = 0
 

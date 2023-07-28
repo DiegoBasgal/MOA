@@ -1,13 +1,15 @@
 import pytz
 import logging
 
+import simulador.dicionarios.dict as dct
+
 from datetime import datetime
 
 logger = logging.getLogger('__main__')
 
 class Temporizador:
-    def __init__(self, shared_dict) -> None:
-        self.dict = shared_dict
+    def __init__(self) -> None:
+        self.dict = dct.compartilhado
 
         self.speed = 50
         self.escala_ruido = 0.1

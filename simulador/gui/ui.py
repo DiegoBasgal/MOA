@@ -1,21 +1,24 @@
-from pathlib import Path
 import sys
 import threading
+
+import simulador.dicionarios.dict as dct
+
 from math import floor
+from pathlib import Path
+from .gui import Ui_Form
 from PySide6.QtWidgets import QApplication, QMainWindow, QFrame
 from PySide6.QtCore import QTimer
 from PySide6.QtGui import QPixmap
-from .gui import Ui_Form
 
 lock = threading.Lock()
 
 
 class Window(QMainWindow, Ui_Form):
-    def __init__(self, shared_dict):
+    def __init__(self):
         super().__init__()
         self.setupUi(self)
 
-        self.shared_dict = shared_dict
+        self.shared_dict = dct.compartilhado
         # Timer de sincronização com o processo de simulação!
         self.sinc_timer = QTimer()
         self.sinc_timer.setInterval(100)
