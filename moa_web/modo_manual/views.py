@@ -44,10 +44,8 @@ def comandos_manual_view(request, *args, **kwargs):
    context = {
       "setpot_ug1": "{:1.3f}".format(usina.ug1_setpot),
       "pot_ug1": "{:1.3f}".format(usina.ug1_pot),
-      "tempo_ug1": "{:.2f}".format(usina.ug1_tempo),
       "setpot_ug2": "{:1.3f}".format(usina.ug2_setpot),
       "pot_ug2": "{:1.3f}".format(usina.ug2_pot),
-      "tempo_ug2": "{:.2f}".format(usina.ug2_tempo),
       "comandos_manual": comando,
       "usina": usina,
    }

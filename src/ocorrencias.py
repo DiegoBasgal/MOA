@@ -88,9 +88,9 @@ class OcorrenciasUsn:
             [logger.warning(f"[OCO-USN] Descrição: \"{condic.descr}\", Gravidade: \"{CONDIC_STR_DCT[condic.gravidade] if condic.gravidade in CONDIC_STR_DCT else 'Desconhecida'}\"") for condic in condicionadores_ativos]
             logger.debug("")
 
-            for condic in condicionadores_ativos:
-                v = [datetime.now(pytz.timezone("Brazil/East")).replace(tzinfo=None), condic.gravidade, condic.descr]
-                self.__db.update_alarmes(v)
+            # for condic in condicionadores_ativos:
+            #     v = [datetime.now(pytz.timezone("Brazil/East")).replace(tzinfo=None), condic.gravidade, condic.descr]
+            #     self.__db.update_alarmes(v)
 
             return flag
         return flag
@@ -384,8 +384,8 @@ class OcorrenciasUsn:
         self.condicionadores_essenciais.append(CondicionadorBase(leitura_ED_disj_tsa_trip, CONDIC_INDISPONIBILIZAR))
 
         # # Temperatura, Nível e Pressão
-        leitura_ED_te_temp_muito_alta = LeituraModbusBit(self.__clp["SA"], REG["CONDIC_SA"]["SA_ED_PSA_TE_TEMPERATURA_MUITO_ALTA"], descr="[USN] Trasformador Elevador Temperatura Alta")
-        self.condicionadores_essenciais.append(CondicionadorBase(leitura_ED_te_temp_muito_alta, CONDIC_INDISPONIBILIZAR))
+        # leitura_ED_te_temp_muito_alta = LeituraModbusBit(self.__clp["SA"], REG["CONDIC_SA"]["SA_ED_PSA_TE_TEMPERATURA_MUITO_ALTA"], descr="[USN] Trasformador Elevador Temperatura Alta")
+        # self.condicionadores_essenciais.append(CondicionadorBase(leitura_ED_te_temp_muito_alta, CONDIC_INDISPONIBILIZAR))
 
         leitura_ED_te_eleva_temp_muito_alta = LeituraModbusBit(self.__clp["SA"], REG["CONDIC_SA"]["SA_ED_PSA_TE_TEMPERATURA_ALTA"], descr="[USN] Trasformador Elevador Temperatura Muito Alta")
         self.condicionadores_essenciais.append(CondicionadorBase(leitura_ED_te_eleva_temp_muito_alta, CONDIC_INDISPONIBILIZAR))
@@ -667,9 +667,9 @@ class OcorrenciasUg:
             [logger.warning(f"[OCO-UG{self.__ug.id}] Descrição: \"{condic.descr}\", Gravidade: \"{CONDIC_STR_DCT[condic.gravidade] if condic.gravidade in CONDIC_STR_DCT else 'Desconhecida'}\"") for condic in condicionadores_ativos]
             logger.debug("")
 
-            for condic in condicionadores_ativos:
-                v = [datetime.now(pytz.timezone("Brazil/East")).replace(tzinfo=None), condic.gravidade, condic.descr]
-                self.__db.update_alarmes(v)
+            # for condic in condicionadores_ativos:
+            #     v = [datetime.now(pytz.timezone("Brazil/East")).replace(tzinfo=None), condic.gravidade, condic.descr]
+            #     self.__db.update_alarmes(v)
 
             return flag
         return flag

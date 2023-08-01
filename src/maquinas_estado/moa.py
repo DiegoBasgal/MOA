@@ -161,7 +161,7 @@ class ModoManual(State):
             ug.setpoint = ug.leitura_potencia
 
             logger.debug(f"[UG{ug.id}] Unidade:                            \"{UG_SM_STR_DCT[ug.codigo_state]}\"")
-            logger.debug(f"[UG{ug.id}] Etapa atual:                        \"{ug.etapa}\"")
+            logger.debug(f"[UG{ug.id}] Etapa :                             \"{ug.etapa}\" (Atual: {ug.etapa_atual} | Alvo: {ug.etapa_alvo})")
             logger.debug(f"[UG{ug.id}] Leitura de Potência:                {ug.leitura_potencia}")
             logger.debug("")
 
@@ -169,6 +169,7 @@ class ModoManual(State):
         self.usn.controle_i = max(min(self.usn.controle_ie - (self.usn.controle_i * self.usn.cfg["ki"]) - self.usn.cfg["kp"] * self.usn.erro_nv - self.usn.cfg["kd"] * (self.usn.erro_nv - self.usn.erro_nv_anterior), 0.8), 0)
 
         self.usn.escrever_valores()
+        sleep(2)
 
         if self.usn.modo_autonomo:
             logger.debug("Comando acionado: \"Habilitar modo autônomo\".")

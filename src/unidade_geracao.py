@@ -105,11 +105,17 @@ class UnidadeDeGeracao:
             op=3,
             descr=f"[UG{self.id}] Potência Ativa"
         )
+        self._leitura_potencia_reativa: "LeituraModbus" = LeituraModbus(
+            self.rele[f"UG{self.id}"],
+            REG_RELE["UG"][f"RELE_UG{self.id}_Q"],
+            op=3,
+            descr=f"[UG{self.id}] Potência Reativa"
+        )
         self._leitura_potencia_aparente: "LeituraModbus" = LeituraModbus(
             self.rele[f"UG{self.id}"],
             REG_RELE["UG"][f"RELE_UG{self.id}_S"],
             op=3,
-            descr=f"[UG{self.id}] Potência Ativa"
+            descr=f"[UG{self.id}] Potência Aparente"
         )
 
 
@@ -399,9 +405,13 @@ class UnidadeDeGeracao:
         try:
             logger.debug("")
             logger.debug(f"[UG{self.id}] Step  -> Unidade:                   \"{UG_SM_STR_DCT[self.codigo_state]}\"")
-            logger.debug(f"[UG{self.id}]          Etapa:                     \"{UG_STR_DCT_ETAPAS[self.etapa]}\"")
-            logger.debug(f"[UG{self.id}]          Etapa alvo:                \"{self.etapa_alvo}\"")
-            logger.debug(f"[UG{self.id}]          Etapa atual:               \"{self.etapa_atual}\"")
+            logger.debug(f"[UG{self.id}]          Etapa:                     \"{UG_STR_DCT_ETAPAS[self.etapa]}\" (Atual: {self.etapa_atual} | Alvo: {self.etapa_alvo})")
+
+            if self.disponivel:
+                logger.debug(f"[UG{self.id}]          Leituras de Potência:")
+                logger.debug(f"[UG{self.id}]          - \"Ativa\":                 {self.leitura_potencia} kW")
+                logger.debug(f"[UG{self.id}]          - \"Reativa\":               {self._leitura_potencia_reativa.valor - 65535 if 65300 < self._leitura_potencia_reativa.valor <= 65535 else self._leitura_potencia_reativa.valor} kVAr")
+                logger.debug(f"[UG{self.id}]          - \"Aparente\":              {self.leitura_potencia_aparente} kVA")
 
             self.__next_state = self.__next_state.step()
             self.atualizar_modbus_moa()
@@ -428,7 +438,7 @@ class UnidadeDeGeracao:
                 logger.info(f"[UG{self.id}]          Enviando comando:          \"PARTIDA\"")
                 EMB.escrever_bit(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}_CD_CMD_REARME_FALHAS"], 1, descr=f"UG{self.id}_CD_CMD_REARME_FALHAS")
                 # EMB.escrever_bit(self.clp[f"UG{self.id}"], REG["UG"][f"UG{self.id}_CD_CMD_SINCRONISMO"], 1, invertido=True, descr=f"UG{self.id}_CD_CMD_SINCRONISMO")
-                self.clp[f"UG{self.id}"].write_single_register(REG["UG"][f"UG{self.id}_CD_CMD_SINCRONISMO"][0], 7)
+                self.clp[f"UG{self.id}"].write_single_register(REG["UG"][f"UG{self.id}_CD_CMD_SINCRONISMO"][0], int(128))
 
             else:
                 logger.debug(f"[UG{self.id}] A Unidade já está sincronizada")
@@ -506,7 +516,7 @@ class UnidadeDeGeracao:
 
     def acionar_trip_eletrico(self) -> "bool":
         try:
-            logger.debug(f"[UG{self.id}]          Enviando comando:          \"TRIP ELÉTRICO\" (SEM EFEITO -> Falta Automatic instalar CLP MOA)")
+            logger.debug(f"[UG{self.id}]          Enviando comando:          \"TRIP ELÉTRICO\"")
             res = None # self.clp["MOA"].write_single_coil(REG_MOA[f"OUT_BLOCK_UG{self.id}"], [1])
             return res
 
@@ -521,7 +531,7 @@ class UnidadeDeGeracao:
                 logger.debug(f"[UG{self.id}]          Enviando comando:          \"FECHAR DJ LINHA\".")
                 EMB.escrever_bit(self.clp["SA"], REG_SA["SA_CD_DISJ_LINHA_FECHA"], 1, descr="SA_CD_DISJ_LINHA_FECHA")
 
-            logger.debug(f"[UG{self.id}]          Removendo comando:         \"TRIP ELÉTRICO\" (SEM EFEITO -> Falta Automatic instalar CLP MOA)")
+            logger.debug(f"[UG{self.id}]          Removendo comando:         \"TRIP ELÉTRICO\"")
             res = None # self.clp["MOA"].write_single_coil(REG_MOA[f"OUT_BLOCK_UG{self.id}"], [0])
             return res
 

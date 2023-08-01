@@ -23,6 +23,17 @@ class WhatsApp:
         return dict['message']
 
     @staticmethod
+    def chats_ativos():
+        #--> Retorna uma lista com todos os chats ativos no whatsapp da Instancia
+
+        url = "https://v5.chatpro.com.br/chatpro-ace98c12f9/api/v1/chats"
+        headers = {"accept": "application/json",
+            "Authorization": "52c5e8171974cd0d780db547d59a3f17"}
+
+        response = requests.get(url, headers=headers)
+        return response.text
+
+    @staticmethod
     def saldo_atual():
         #--> Retorna a quantidade de créditos disponiveis para utilização
 
@@ -61,7 +72,6 @@ class WhatsApp:
         dict = json.loads(response.text)
 
         return dict['message']
-
 
     @classmethod
     def envio_todos(cls, mensagem) -> None:
