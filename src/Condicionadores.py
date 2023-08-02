@@ -10,15 +10,14 @@ class CondicionadorExponencialReverso(CondicionadorBase):
     ...
 
 class CondicionadorBase:
-    def __init__(self, descr: str, gravidade: int, leitura: LeituraBase, ug_id: int = None, etapas: list = None):
+    def __init__(self, descr: str, gravidade: int, leitura: LeituraBase, etapas: list = None):
 
         # ATRIBUIÇÃO DE VARIÁVEIS PRIVADAS
 
         self.__descr = descr
         self.__gravidade = gravidade
         self.__leitura = leitura
-        self.__ugs = []
-        self.__ug_id = ug_id if ug_id is not None else None
+        self.__ug = None
         self.__etapas = etapas if etapas is not None else []
 
     def __str__(self):
@@ -44,10 +43,9 @@ class CondicionadorBase:
     def ativo(self) -> bool:
         # PROPRIEDADE -> Retrona se o condicionaor está ativo.
 
-        if self.__ug_id and self.__etapas:
-            for ug in self.ugs:
-                if ug.id == self.__ug_id and ug.etapa_atual in self.__etapas:
-                    return False if self.leitura.valor == 0 else True
+        if self.__etapas:
+            if self.__ug.etapa_atual in self.__etapas:
+                return False if self.leitura.valor == 0 else True
             else:
                 return False
 
@@ -67,16 +65,16 @@ class CondicionadorBase:
         return self.__gravidade
 
     @property
-    def ugs(self) -> list:
-        # PROPRIEDADE -> Retrona a lista de instâncias das Unidades de Geração.
+    def ug(self) -> list:
+        # PROPRIEDADE -> Retrona a Unidade de Geração.
 
-        return self.__ugs
+        return self.__ug
 
-    @ugs.setter
-    def ugs(self, ugs: list) -> None:
-        # SETTER -> Atribui a nova lista de instâncias das Unidades de Geração.
+    @ug.setter
+    def ug(self, ug: object) -> None:
+        # SETTER -> Atribui a nova Unidade de Geração.
 
-        self.__ugs = ugs
+        self.__ug = ug
 
 class CondicionadorExponencial(CondicionadorBase):
     def __init__(
@@ -86,7 +84,6 @@ class CondicionadorExponencial(CondicionadorBase):
         leitura: LeituraBase,
         valor_base: float,
         valor_limite: float,
-        ug_id: int = None,
         ordem: float = (1 / 4),
         etapas: list = None,
         *args,
@@ -100,7 +97,6 @@ class CondicionadorExponencial(CondicionadorBase):
         self.__valor_base = valor_base
         self.__valor_limite = valor_limite
         self.__ordem = ordem
-        self.__ug_id = ug_id
 
     @property
     def valor_base(self):
@@ -178,7 +174,6 @@ class CondicionadorExponencialReverso(CondicionadorBase):
         leitura: LeituraBase,
         valor_base: float,
         valor_limite: float,
-        ug_id: int = None,
         ordem: float = 2,
         *args,
         **kwargs
@@ -190,7 +185,6 @@ class CondicionadorExponencialReverso(CondicionadorBase):
         self.__valor_base = valor_base
         self.__valor_limite = valor_limite
         self.__ordem = ordem
-        self.__ug_id = ug_id
 
     @property
     def valor_base(self) -> float:

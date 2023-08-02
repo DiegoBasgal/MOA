@@ -105,7 +105,7 @@ class Agendamentos:
 
                 self.verificar_agendamentos_sem_efeito(agendamento)
                 self.verificar_agendamentos_usina(agendamento)
-                self.verificar_agendamentos_ugs(agendamento)
+                self.verificar_agendamentos_ug(agendamento)
 
                 self.db.update_agendamento(agendamento[0], executado=1)
                 logger.debug(f"[AGN] Agendamento executado:              \"{AGN_STR_DICT[agendamentos[i-1][3]] if agendamentos[i-1][3] in AGN_STR_DICT else 'Inexistente'}\"")
@@ -132,17 +132,16 @@ class Agendamentos:
                 self.db.update_agendamento(int(agendamento[0]), 1, obs="AGENDAMENTO EXECUTADO POR TRATATIVA DE CÓDIGO!")
                 agn_atrasados += 1
 
-            if agendamento[3] in (AGN_ALTERAR_NV_ALVO, AGN_ALTERAR_POT_LIMITE_TODAS_AS_UGS, AGN_BAIXAR_POT_UGS_MINIMO, AGN_NORMALIZAR_POT_UGS_MINIMO, AGN_AGUARDAR_RESERVATORIO, AGN_NORMALIZAR_ESPERA_RESERVATORIO):
+            if agendamento[3] in (AGN_ALTERAR_NV_ALVO, AGN_ALTERAR_POT_LIMITE_DA_UG, AGN_AGUARDAR_RESERVATORIO, AGN_NORMALIZAR_ESPERA_RESERVATORIO):
                 logger.warning("[AGN] Não foi possível executar o agendamento! Favor re-agendar")
                 self.db.update_agendamento(int(agendamento[0]), 1, obs="AGENDAMENTO NÃO EXECUTADO POR CONTA DE ATRASO!")
                 agn_atrasados += 1
 
-            for ug in self.usn.ugs:
-                if agendamento[3] in AGN_LST_BLOQUEIO_UG:
-                    logger.info(f"[AGN] Indisponibilizando UG{ug.id}")
-                    ug.forcar_estado_indisponivel()
-                    self.db.update_agendamento(int(agendamento[0]), 1, obs="AGENDAMENTO NÃO EXECUTADO POR CONTA DE ATRASO!")
-                    agn_atrasados += 1
+            if agendamento[3] in AGN_LST_BLOQUEIO_UG:
+                logger.info(f"[AGN] Indisponibilizando UG")
+                self.usn.ug.forcar_estado_indisponivel()
+                self.db.update_agendamento(int(agendamento[0]), 1, obs="AGENDAMENTO NÃO EXECUTADO POR CONTA DE ATRASO!")
+                agn_atrasados += 1
 
     def verificar_agendamentos_sem_efeito(self, agendamento) -> None:
         """
@@ -166,11 +165,10 @@ class Agendamentos:
 
         if agendamento[3] == AGN_INDISPONIBILIZAR:
             logger.info("[AGN] Indisponibilizando a usina via agendamento.")
-            for ug in self.usn.ugs:
-                ug.forcar_estado_indisponivel()
-                ug.step()
+            self.usn.ug.forcar_estado_indisponivel()
+            self.usn.ug.step()
 
-            while (not self.usn.ug1.etapa_atual == UG_PARADA and not self.usn.ug2.etapa_atual == UG_PARADA and not self.usn.ug3.etapa_atual == UG_PARADA):
+            while not self.usn.ug.etapa_atual == UG_PARADA:
                 self.usn.ler_valores()
                 logger.debug("[AGN] Aguardando parada total das Unidades...")
                 sleep(5)
@@ -187,21 +185,6 @@ class Agendamentos:
             except Exception:
                 logger.error(f"[AGN] Valor inválido no agendamento: {agendamento[0]} ({agendamento[3]} é inválido).")
 
-        if agendamento[3] == AGN_BAIXAR_POT_UGS_MINIMO:
-            for ug in self.usn.ugs:
-                self.cfg[f"pot_maxima_ug{ug.id}"] = self.cfg["pot_limpeza_grade"]
-
-                if ug.etapa_atual == UG_PARADA or ug.etapa_atual == UG_PARANDO:
-                    logger.debug(f"[AGN] UG{ug.id} está no estado parada/parando.")
-                else:
-                    ug.limpeza_grade = True
-
-        if agendamento[3] == AGN_NORMALIZAR_POT_UGS_MINIMO:
-            for ug in self.usn.ugs:
-                self.cfg[f"pot_maxima_ug{ug.id}"] = self.cfg["pot_maxima_ug"]
-                ug.limpeza_grade = False
-                ug.enviar_setpoint(self.cfg["pot_maxima_ug"])
-
         if agendamento[3] == AGN_AGUARDAR_RESERVATORIO:
             logger.debug("[AGN] Ativando estado de espera de nível do reservatório")
             self.aguardando_reservatorio = 1
@@ -210,109 +193,47 @@ class Agendamentos:
             logger.debug("[AGN] Desativando estado de espera de nível do reservatório")
             self.aguardando_reservatorio = 0
 
-        if agendamento[3] == AGN_ALTERAR_POT_LIMITE_TODAS_AS_UGS:
+        if agendamento[3] == AGN_ALTERAR_POT_LIMITE_DA_UG:
             try:
                 novo = float(agendamento[5].replace(",", "."))
 
                 self.cfg["pot_maxima_alvo"] = novo
-
-                for ug in self.usn.ugs:
-                    self.cfg[f"pot_maxima_ug{ug.id}"] = novo / 3
+                self.cfg[f"pot_maxima_ug"] = novo
 
             except Exception:
                 logger.error(f"[AGN] Valor inválido no agendamento: {agendamento[0]} ({agendamento[3]} é inválido)")
 
-    def verificar_agendamentos_ugs(self, agendamento) -> None:
+    def verificar_agendamentos_ug(self, agendamento) -> None:
         """
         Função para verificar agendamentos das Unidades de Geração.
         """
 
-        if agendamento[3] == AGN_UG1_ALTERAR_POT_LIMITE:
+        if agendamento[3] == AGN_UG_ALTERAR_POT_LIMITE:
             try:
                 novo = float(agendamento[5].replace(",", "."))
-                self.cfg[f"pot_maxima_ug1"] = novo
+                self.cfg[f"pot_maxima_ug"] = novo
 
             except Exception:
                 logger.error(f"[AGN] Valor inválido no agendamento: {agendamento[0]} ({agendamento[3]} é inválido)")
 
-        if agendamento[3] == AGN_UG1_FORCAR_ESTADO_MANUAL:
-            self.usn.ug1.forcar_estado_manual()
+        if agendamento[3] == AGN_UG_FORCAR_ESTADO_MANUAL:
+            self.usn.ug.forcar_estado_manual()
 
-        if agendamento[3] == AGN_UG1_FORCAR_ESTADO_DISPONIVEL:
-            self.usn.ug1.forcar_estado_disponivel()
+        if agendamento[3] == AGN_UG_FORCAR_ESTADO_DISPONIVEL:
+            self.usn.ug.forcar_estado_disponivel()
 
-        if agendamento[3] == AGN_UG1_FORCAR_ESTADO_INDISPONIVEL:
-            self.usn.ug1.forcar_estado_indisponivel()
+        if agendamento[3] == AGN_UG_FORCAR_ESTADO_INDISPONIVEL:
+            self.usn.ug.forcar_estado_indisponivel()
 
-        if agendamento[3] == AGN_UG1_FORCAR_ESTADO_RESTRITO:
-            self.usn.ug1.forcar_estado_restrito()
+        if agendamento[3] == AGN_UG_FORCAR_ESTADO_RESTRITO:
+            self.usn.ug.forcar_estado_restrito()
 
-        if agendamento[3] == AGN_UG1_TEMPO_ESPERA_RESTRITO:
+        if agendamento[3] == AGN_UG_TEMPO_ESPERA_RESTRITO:
             try:
-                self.usn.ug1.normalizacao_agendada = True
+                self.usn.ug.normalizacao_agendada = True
                 novo = agendamento[5].split(":")
                 tempo = (int(novo[0]) * 3600) + (int(novo[1]) * 60)
-                self.usn.ug1.tempo_normalizar = tempo
-
-            except Exception:
-                logger.error(f"[AGN] Valor inválido no agendamento: {agendamento[0]} ({agendamento[3]} é inválido)")
-
-        if agendamento[3] == AGN_UG2_ALTERAR_POT_LIMITE:
-            try:
-                novo = float(agendamento[5].replace(",", "."))
-                self.cfg[f"pot_maxima_ug2"] = novo
-
-            except Exception:
-                logger.error(f"[AGN] Valor inválido no agendamento: {agendamento[0]} ({agendamento[3]} é inválido)")
-
-        if agendamento[3] == AGN_UG2_FORCAR_ESTADO_MANUAL:
-            self.usn.ug2.forcar_estado_manual()
-
-        if agendamento[3] == AGN_UG2_FORCAR_ESTADO_DISPONIVEL:
-            self.usn.ug2.forcar_estado_disponivel()
-
-        if agendamento[3] == AGN_UG2_FORCAR_ESTADO_INDISPONIVEL:
-            self.usn.ug2.forcar_estado_indisponivel()
-
-        if agendamento[3] == AGN_UG2_FORCAR_ESTADO_RESTRITO:
-            self.usn.ug2.forcar_estado_restrito()
-
-        if agendamento[3] == AGN_UG2_TEMPO_ESPERA_RESTRITO:
-            try:
-                self.usn.ug2.normalizacao_agendada = True
-                novo = agendamento[5].split(":")
-                tempo = (int(novo[0]) * 3600) + (int(novo[1]) * 60)
-                self.usn.ug2.tempo_normalizar = tempo
-
-            except Exception:
-                logger.error(f"[AGN] Valor inválido no agendamento: {agendamento[0]} ({agendamento[3]} é inválido)")
-
-        if agendamento[3] == AGN_UG3_ALTERAR_POT_LIMITE:
-            try:
-                novo = float(agendamento[5].replace(",", "."))
-                self.cfg[f"pot_maxima_ug3"] = novo
-
-            except Exception:
-                logger.error(f"[AGN] Valor inválido no agendamento: {agendamento[0]} ({agendamento[3]} é inválido)")
-
-        if agendamento[3] == AGN_UG3_FORCAR_ESTADO_MANUAL:
-            self.usn.ug3.forcar_estado_manual()
-
-        if agendamento[3] == AGN_UG3_FORCAR_ESTADO_DISPONIVEL:
-            self.usn.ug3.forcar_estado_disponivel()
-
-        if agendamento[3] == AGN_UG3_FORCAR_ESTADO_INDISPONIVEL:
-            self.usn.ug3.forcar_estado_indisponivel()
-
-        if agendamento[3] == AGN_UG3_FORCAR_ESTADO_RESTRITO:
-            self.usn.ug3.forcar_estado_restrito()
-
-        if agendamento[3] == AGN_UG3_TEMPO_ESPERA_RESTRITO:
-            try:
-                self.usn.ug3.normalizacao_agendada = True
-                novo = agendamento[5].split(":")
-                tempo = (int(novo[0]) * 3600) + (int(novo[1]) * 60)
-                self.usn.ug3.tempo_normalizar = tempo
+                self.usn.ug.tempo_normalizar = tempo
 
             except Exception:
                 logger.error(f"[AGN] Valor inválido no agendamento: {agendamento[0]} ({agendamento[3]} é inválido)")

@@ -2,9 +2,9 @@ scipy
 uwsgi
 numpy
 future
-Django
+Django~=4.2
 pyodbc
 matplotlib
 mysqlclient
-pyModbusTCP
+pyModbusTCP~=0.2.0
 mysql-connector-python

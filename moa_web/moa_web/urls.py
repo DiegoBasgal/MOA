@@ -24,7 +24,7 @@ from monitoramento.views import monitoramento_view
 from parametros.views import parametros_moa_view, emergencia_view
 from contatos.views import contatos_view, adicionar, deletar, retornar
 from agendamentos.views import agendamentos_view, novo_agendamento_view, novo_agendamento_rapido_view, agendamento_detalhado_view
-from modo_manual.views import comandos_manual_view, comando_dj52l , confirma_comando_dj, comando_ug1, comando_ug2, comando_ug3, comando_impedido
+from modo_manual.views import comandos_manual_view, comando_dj52l , confirma_comando_dj, comando_ug1
 
 urlpatterns = [
     path("", RedirectView.as_view(url="monitoramento/")),
@@ -50,9 +50,6 @@ urlpatterns = [
     path("modo_manual/disjuntor/", comando_dj52l, name="comandos_disjuntor"),
     path("modo_manual/disjuntor/confirmar/", confirma_comando_dj, name="confirma_comando_dj"),
     path("modo_manual/ug1/", comando_ug1, name="comandos_ug1"),
-    path("modo_manual/ug2/", comando_ug2, name="comandos_ug2"),
-    path("modo_manual/ug3/", comando_ug3, name="comandos_ug3"),
-    path("modo_manual/impedido/", comando_impedido, name="comando_impedido"),
 ]
 
 # Add Django site authentication urls (for login, logout, password management)

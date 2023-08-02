@@ -236,8 +236,7 @@ class ModoManual(State):
 
         # FINALIZAÇÃO DO __INIT__
 
-        for ug in self.usn.ugs:
-            ug.temporizar_partida = False
+        self.usn.ug.temporizar_partida = False
 
         logger.info("Usina em modo manual. Para retornar a operação autônoma, acionar via painel ou página WEB")
 
@@ -260,14 +259,13 @@ class ModoManual(State):
         logger.debug(f"[USN] Potência no medidor:                {self.usn.potencia_ativa:0.3f}")
         logger.debug("")
 
-        for ug in self.usn.ugs:
-            logger.debug(f"[UG{ug.id}] Unidade:                            \"{UG_SM_STR_DCT[ug.codigo_state]}\"")
-            logger.debug(f"[UG{ug.id}] Etapa atual:                        \"{UG_STR_DCT_ETAPAS[ug.etapa_atual]}\"")
-            logger.debug(f"[UG{ug.id}] Leitura de Potência:                {ug.leitura_potencia}")
-            logger.debug("")
-            ug.setpoint = ug.leitura_potencia
+        logger.debug(f"[UG{self.usn.ug.id}] Unidade:                            \"{UG_SM_STR_DCT[self.usn.ug.codigo_state]}\"")
+        logger.debug(f"[UG{self.usn.ug.id}] Etapa atual:                        \"{UG_STR_DCT_ETAPAS[self.usn.ug.etapa_atual]}\"")
+        logger.debug(f"[UG{self.usn.ug.id}] Leitura de Potência:                {self.usn.ug.leitura_potencia}")
+        logger.debug("")
+        self.usn.ug.setpoint = self.usn.ug.leitura_potencia
 
-        self.usn.controle_ie = (self.usn.ug1.leitura_potencia + self.usn.ug2.leitura_potencia + self.usn.ug3.leitura_potencia) / self.usn.cfg["pot_maxima_alvo"]
+        self.usn.controle_ie = self.usn.ug.leitura_potencia / self.usn.cfg["pot_maxima_alvo"]
         self.usn.controle_i = max(min(self.usn.controle_ie - (self.usn.controle_i * self.usn.cfg["ki"]) - self.usn.cfg["kp"] * self.usn.erro_nv - self.usn.cfg["kd"] * (self.usn.erro_nv - self.usn.erro_nv_anterior), 0.8), 0)
 
         self.usn.escrever_valores()
@@ -310,9 +308,8 @@ class Emergencia(State):
         if self.tentativas == 3:
             logger.warning("Tentativas de normalização excedidas, entrando em modo manual.")
 
-            for ug in self.usn.ugs:
-                ug.forcar_estado_indisponivel()
-                ug.step()
+            self.usn.ug.forcar_estado_indisponivel()
+            self.usn.ug.step()
 
             return ModoManual(self.usn)
 
@@ -405,8 +402,7 @@ class ControleTDAOffline(State):
                 if self.usn.normalizar_usina() == False:
                     return Emergencia(self.usn) if self.usn.aguardar_tensao() == False else ControleDados(self.usn)
                 else:
-                    for ug in self.usn.ugs:
-                        ug.controle_cx_espiral()
-                        ug.step()
+                    self.usn.ug.controle_cx_espiral()
+                    self.usn.ug.step()
 
                     return ControleDados(self.usn)

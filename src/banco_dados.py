@@ -166,13 +166,7 @@ class BancoDados:
             "nv_montante = %s, "
             "ug1_pot = %s, "
             "ug1_setpot = %s, "
-            "ug1_ultimo_estado = %s, "
-            "ug2_pot = %s, "
-            "ug2_setpot = %s, "
-            "ug2_ultimo_estado = %s, "
-            "ug3_pot = %s, "
-            "ug3_setpot = %s, "
-            "ug3_ultimo_estado = %s "
+            "ug1_ultimo_estado = %s "
             "WHERE id = 1;",
             tuple(valores)
         )
@@ -192,9 +186,6 @@ class BancoDados:
                     "%s,%s, "
                     "%s,%s, "
                     "%s,%s, "
-                    "%s,%s, "
-                    "%s,%s, "
-                    "%s,%s, "
                     "%s);",
                     tuple(valores)
         )
@@ -207,8 +198,7 @@ class BancoDados:
         
         self.cursor.execute(
             "INSERT INTO parametros_controleestados "
-            "VALUES (%s,%s, "
-                    "%s,%s);",
+            "VALUES (%s, %s);",
                     tuple(valores)
         )
         self.conn.commit()

@@ -38,18 +38,6 @@ class ClientesUsina:
         unit_id=1,
         timeout=0.5
     )
-    clp["UG2"] = ModbusClient(
-        host=d.ips["UG2_ip"],
-        port=d.ips["UG2_porta"],
-        unit_id=1,
-        timeout=0.5
-    )
-    clp["UG3"] = ModbusClient(
-        host=d.ips["UG3_ip"],
-        port=d.ips["UG3_porta"],
-        unit_id=1,
-        timeout=0.5
-    )
     clp["MOA"] = ModbusClient(
         host=d.ips["MOA_ip"],
         port=d.ips["MOA_porta"],
@@ -125,20 +113,6 @@ class ClientesUsina:
             cls.clp["UG1"].close()
         else:
             logger.warning("[CLI] CLP UG1 não respondeu a tentativa de conexão ModBus!")
-
-        if not cls.ping(d.ips["UG2_ip"]):
-            logger.warning("[CLI] CLP UG2 não respondeu a tentativa de comunicação!")
-        if cls.clp["UG2"].open():
-            cls.clp["UG2"].close()
-        else:
-            logger.warning("[CLI] CLP UG2 não respondeu a tentativa de conexão ModBus!")
-
-        if not cls.ping(d.ips["UG3_ip"]):
-            logger.warning("CLP UG3 não respondeu a tentativa de comunicação!")
-        if cls.clp["UG3"].open():
-            cls.clp["UG3"].close()
-        else:
-            logger.warning("[CLI] CLP UG3 não respondeu a tentativa de conexão ModBus!")
 
         # if not cls.ping(d.ips["MOA_ip"]):
         #     logger.warning("[CLI] CLP MOA não respondeu a tentativa de comunicação!")
