@@ -1683,7 +1683,7 @@ REG = {
         "SA_ED_PSA_DISJ_GMG_TRIP":                                  [12308, 6],
         "SA_ED_PSA_RELE_BLOQUEIO_86BTBF":                           [12308, 7],
         "SA_ED_PSA_CARREGADOR_BATERIAS_FALHA":                      [12308, 8],
-        "SA_ED_PSA_CONVERSOR_FIBRA_FALHA":                          [12308, 9],
+        # "SA_ED_PSA_CONVERSOR_FIBRA_FALHA":                          [12308, 9],
         "SA_ED_PSA_SUPERVISOR_TENSAO_FALHA":                        [12308, 10],
         "SA_ED_PSA_DPS_TSA":                                        [12308, 11],
         "SA_ED_PSA_DPS_GMG":                                        [12308, 12],
@@ -1707,10 +1707,10 @@ REG = {
         "SA_ED_PSA_SFA_ENTRADA_ELEMENTO_2_ABERTA":                  [12310, 9],
         "SA_ED_PSA_SFA_LIMPEZA_ELEMENTO_1_ABERTA":                  [12310, 10],
         "SA_ED_PSA_SFA_LIMPEZA_ELEMENTO_2_ABERTA":                  [12310, 11],
-        "SA_ED_PSA_SFB_LIMPEZA_ELEMENTO_1_ABERTA":                  [12310, 13],
-        "SA_ED_PSA_SFB_LIMPEZA_ELEMENTO_2_ABERTA":                  [12310, 14],
-        "SA_ED_PSA_SFB_ENTRADA_ELEMENTO_1_ABERTA":                  [12310, 15],
-        "SA_ED_PSA_SFB_ENTRADA_ELEMENTO_2_ABERTA":                  [12310, 16],
+        "SA_ED_PSA_SFB_ENTRADA_ELEMENTO_1_ABERTA":                  [12310, 13],
+        "SA_ED_PSA_SFB_ENTRADA_ELEMENTO_2_ABERTA":                  [12310, 14],
+        "SA_ED_PSA_SFB_LIMPEZA_ELEMENTO_1_ABERTA":                  [12310, 15],
+        "SA_ED_PSA_SFB_LIMPEZA_ELEMENTO_2_ABERTA":                  [12310, 16],
 
         "SA_ED_PSA_GMG_DISJ_FALHA_FECHAR":                          [12348, 9],
         "SA_ED_PSA_GMG_DISJ_FALHA_ABRIR":                           [12348, 10],
@@ -1840,8 +1840,9 @@ REG = {
         "UG1_ED_PRTVA_UHLM_PRESSAO_LINHA_LUBRIFICACAO":             [12312, 13],
         "UG1_ED_PRTVA_UHLM_PRESSAO_LINHA_LUBRIFICACAO":             [12312, 14],
         "UG1_ED_PRTVA_UHLM_FLUXO_TROCADOR_CALOR":                   [12312, 15],
-        "UG1_ED_PRTVA_QBAG_ESCOVA_POLO_POSITIVO_DESGASTADA":        [12312, 17],
-        "UG1_ED_PRTVA_QBAG_ESCOVA_POLO_NEGATICO_DESGASTADA":        [12312, 18],
+        "UG1_ED_PRTVA_UHLM_FLUXO_TROCADOR_CALOR":                   [12312, 16],
+        "UG1_ED_PRTVA_QBAG_ESCOVA_POLO_NEGATIVO_DESGASTADA":        [12312, 17],
+        "UG1_ED_PRTVA_QBAG_ESCOVA_POLO_POSITIVO_DESGASTADA":        [12312, 18],
         "UG1_ED_PRTVA_PSA_BLOQUEIO_86BTBF":                         [12312, 19],
 
         # RV
@@ -2112,8 +2113,8 @@ REG = {
         "UG2_ED_PRTVA_UHLM_PRESSAO_LINHA_LUBRIFICACAO":             [12312, 13],
         "UG2_ED_PRTVA_UHLM_PRESSAO_LINHA_LUBRIFICACAO":             [12312, 14],
         "UG2_ED_PRTVA_UHLM_FLUXO_TROCADOR_CALOR":                   [12312, 15],
-        "UG2_ED_PRTVA_QBAG_ESCOVA_POLO_POSITIVO_DESGASTADA":        [12312, 17],
-        "UG2_ED_PRTVA_QBAG_ESCOVA_POLO_NEGATICO_DESGASTADA":        [12312, 18],
+        "UG2_ED_PRTVA_QBAG_ESCOVA_POLO_NEGATIVO_DESGASTADA":        [12312, 17],
+        "UG2_ED_PRTVA_QBAG_ESCOVA_POLO_POSITIVO_DESGASTADA":        [12312, 18],
         "UG2_ED_PRTVA_PSA_BLOQUEIO_86BTBF":                         [12312, 19],
 
         # RV

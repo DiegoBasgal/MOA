@@ -227,12 +227,14 @@ class Usina:
         if not self.verificar_tensao():
             return NORM_USN_FALTA_TENSAO
 
-        elif (self.tentar_normalizar and (self.get_time() - self.ultima_tentativa_norm).seconds >= 60 * self.tentativas_normalizar) or self.normalizar_forcado:
+        elif (self.tentar_normalizar and (self.get_time() - self.ultima_tentativa_norm).seconds >= 10 * self.tentativas_normalizar) or self.normalizar_forcado:
             self.ultima_tentativa_norm = self.get_time()
             self.tentativas_normalizar += 1
             self.db_emergencia = False
             self.clp_emergencia = False
             self.resetar_emergencia()
+            sleep(2)
+            self.fechar_dj_linha()
             self.db.update_remove_emergencia()
             return NORM_USN_EXECUTADA
 
@@ -268,7 +270,7 @@ class Usina:
                 return False
 
             else:
-                res = EMB.escrever_bit(self.clp["SA"], REG_SA["SA_CD_DISJ_LINHA_FECHA"], valor=1, descr="SA_CD_DISJ_LINHA_FECHA")
+                res = EMB.escrever_bit(self.clp["SA"], REG_SA["SA_CD_DISJ_LINHA_FECHA"], invertido=True, valor=1)
                 return res
 
         except Exception:
