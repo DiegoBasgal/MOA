@@ -142,12 +142,12 @@ class Planta:
                         self.dict['USN'][f'aux_borda{ug.id + 6}'] = 0
 
                     # Leitura de registradores MB
-                    if self.DB.get_words(MB[f'UG{ug.id}_CMD_PARTIDA_CMD_SINCRONISMO'])[0] == 1:
-                        self.DB.set_words(MB[f'UG{ug.id}_CMD_PARTIDA_CMD_SINCRONISMO'], [0])
+                    if self.DB.get_words(MB[f'UG{ug.id}_PARTIDA_CMD_SINCRONISMO'])[0] == 1:
+                        self.DB.set_words(MB[f'UG{ug.id}_PARTIDA_CMD_SINCRONISMO'], [0])
                         ug.partir()
 
-                    elif self.DB.get_words(MB[f'UG{ug.id}_CMD_PARADA_CMD_PARA_RV_APLICA_FREIO'])[0] == 1:
-                        self.DB.set_words(MB[f'UG{ug.id}_CMD_PARADA_CMD_PARA_RV_APLICA_FREIO'], [0])
+                    elif self.DB.get_words(MB[f'UG{ug.id}_PARADA_CMD_EMERGENCIA'])[0] == 1:
+                        self.DB.set_words(MB[f'UG{ug.id}_PARADA_CMD_EMERGENCIA'], [0])
                         ug.parar()
 
 

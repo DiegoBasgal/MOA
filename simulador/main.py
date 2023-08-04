@@ -8,7 +8,7 @@ from se import *
 from ug import *
 from simulador.cf import *
 
-from gui.ui import start_gui
+from simulador.gui.gui import start_gui
 from simulador.funcoes.temporizador import Temporizador
 
 fileConfig("/opt/operacao-autonoma/logger_cfg.ini")
