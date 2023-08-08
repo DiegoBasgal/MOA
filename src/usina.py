@@ -332,7 +332,8 @@ class Usina:
         self.controle_ie = self.ajustar_ie_padrao()
 
     def controlar_reservatorio(self) -> "int":
-        if self.nv_montante >= self.cfg["nv_maximo"]:
+
+        if self.nv_montante_recente >= self.cfg["nv_maximo"]:
             logger.debug("[USN] Nível montante acima do máximo")
 
             if self.nv_montante_recente >= NIVEL_MAXIMORUM:
@@ -345,7 +346,7 @@ class Usina:
                 for ug in self.ugs:
                     ug.step()
 
-        elif self.nv_montante <= self.cfg["nv_minimo"] and not self.aguardando_reservatorio:
+        elif self.nv_montante_recente <= self.cfg["nv_minimo"] and not self.aguardando_reservatorio:
             logger.debug("[USN] Nível montante abaixo do mínimo")
             self.aguardando_reservatorio = True
             self.distribuir_potencia(0)
@@ -358,7 +359,7 @@ class Usina:
                 return NV_FLAG_EMERGENCIA
 
         elif self.aguardando_reservatorio:
-            if self.nv_montante >= self.cfg["nv_alvo"]:
+            if self.nv_montante_recente >= self.cfg["nv_alvo"]:
                 logger.debug("[USN] Nível montante dentro do limite de operação")
                 self.aguardando_reservatorio = False
 
@@ -524,7 +525,7 @@ class Usina:
         # self.heartbeat()
 
     def atualizar_valores_montante(self) -> "None":
-        self.nv_montante_recente = self.nv_montante
+        self.nv_montante_recente = self.nv_montante if 820 < self.nv_montante < 825 else self.nv_montante_recente
         self.erro_nv_anterior = self.erro_nv
         self.erro_nv = self.nv_montante_recente - self.cfg["nv_alvo"]
 

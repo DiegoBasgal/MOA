@@ -220,6 +220,9 @@ class Emergencia(State):
 
             if flag == CONDIC_INDISPONIBILIZAR:
                 logger.critical("Acionando VOIP e entrando em modo manual")
+                for ug in self.usn.ugs:
+                    ug.forcar_estado_indisponivel()
+                    ug.step()
                 return ModoManual(self.usn)
 
             elif flag == CONDIC_NORMALIZAR:

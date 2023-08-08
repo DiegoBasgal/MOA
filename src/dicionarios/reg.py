@@ -1834,16 +1834,13 @@ REG = {
         "UG1_ED_PRTVA_UHRV_OLEO_NIVEL_MUITO_BAIXO":                 [12312, 6],
         "UG1_ED_PRTVA_UHRV_FILTRO_OLEO_SUJO":                       [12312, 7],
         "UG1_ED_PRTVA_UHRV_PRESSAO_CRITICA":                        [12312, 8],
-        "UG1_ED_PRTVA_UHRV_PRESSAO_FREIO":                          [12312, 9],
+        "UG1_ED_PRTVA_UHRV_PRESSAO_FREIO":                          [12312, 10],
         "UG1_ED_PRTVA_UHLM_OLEO_NIVEL_MUITO_ALTO":                  [12312, 11],
         "UG1_ED_PRTVA_UHLM_OLEO_NIVEL_MUITO_BAIXO":                 [12312, 12],
-        "UG1_ED_PRTVA_UHLM_PRESSAO_LINHA_LUBRIFICACAO":             [12312, 13],
         "UG1_ED_PRTVA_UHLM_PRESSAO_LINHA_LUBRIFICACAO":             [12312, 14],
-        "UG1_ED_PRTVA_UHLM_FLUXO_TROCADOR_CALOR":                   [12312, 15],
         "UG1_ED_PRTVA_UHLM_FLUXO_TROCADOR_CALOR":                   [12312, 16],
-        "UG1_ED_PRTVA_QBAG_ESCOVA_POLO_NEGATIVO_DESGASTADA":        [12312, 17],
         "UG1_ED_PRTVA_QBAG_ESCOVA_POLO_POSITIVO_DESGASTADA":        [12312, 18],
-        "UG1_ED_PRTVA_PSA_BLOQUEIO_86BTBF":                         [12312, 19],
+        "UG1_ED_PRTVA_QBAG_ESCOVA_POLO_NEGATIVO_DESGASTADA":        [12312, 19],
 
         # RV
         "UG1_ED_RV_FALHA_AO_HABILITAR":                             [12372, 0],
@@ -1860,7 +1857,6 @@ REG = {
 
         # UHRV
         "UG1_ED_UHRV_BOMBA_1_INDISPONIVEL":                         [12362, 2],
-        "UG1_ED_UHRV_BOMBA_2_INDISPONIVEL":                         [12362, 3],
         "UG1_ED_UHRV_BOMBA_1_FALHA_AO_LIGAR":                       [12362, 6],
         "UG1_ED_UHRV_BOMBA_1_FALHA_AO_DESLIGAR":                    [12362, 7],
         "UG1_ED_UHRV_BOMBA_2_FALHA_AO_LIGAR":                       [12362, 8],
@@ -2107,15 +2103,13 @@ REG = {
         "UG2_ED_PRTVA_UHRV_OLEO_NIVEL_MUITO_BAIXO":                 [12312, 6],
         "UG2_ED_PRTVA_UHRV_FILTRO_OLEO_SUJO":                       [12312, 7],
         "UG2_ED_PRTVA_UHRV_PRESSAO_CRITICA":                        [12312, 8],
-        "UG2_ED_PRTVA_UHRV_PRESSAO_FREIO":                          [12312, 9],
+        "UG2_ED_PRTVA_UHRV_PRESSAO_FREIO":                          [12312, 10],
         "UG2_ED_PRTVA_UHLM_OLEO_NIVEL_MUITO_ALTO":                  [12312, 11],
         "UG2_ED_PRTVA_UHLM_OLEO_NIVEL_MUITO_BAIXO":                 [12312, 12],
-        "UG2_ED_PRTVA_UHLM_PRESSAO_LINHA_LUBRIFICACAO":             [12312, 13],
         "UG2_ED_PRTVA_UHLM_PRESSAO_LINHA_LUBRIFICACAO":             [12312, 14],
-        "UG2_ED_PRTVA_UHLM_FLUXO_TROCADOR_CALOR":                   [12312, 15],
-        "UG2_ED_PRTVA_QBAG_ESCOVA_POLO_NEGATIVO_DESGASTADA":        [12312, 17],
+        "UG2_ED_PRTVA_UHLM_FLUXO_TROCADOR_CALOR":                   [12312, 16],
         "UG2_ED_PRTVA_QBAG_ESCOVA_POLO_POSITIVO_DESGASTADA":        [12312, 18],
-        "UG2_ED_PRTVA_PSA_BLOQUEIO_86BTBF":                         [12312, 19],
+        "UG2_ED_PRTVA_QBAG_ESCOVA_POLO_NEGATIVO_DESGASTADA":        [12312, 19],
 
         # RV
         "UG2_ED_RV_FALHA_AO_HABILITAR":                             [12372, 0],
@@ -2132,7 +2126,6 @@ REG = {
 
         # UHRV
         "UG2_ED_UHRV_BOMBA_1_INDISPONIVEL":                         [12362, 2],
-        "UG2_ED_UHRV_BOMBA_2_INDISPONIVEL":                         [12362, 3],
         "UG2_ED_UHRV_BOMBA_1_FALHA_AO_LIGAR":                       [12362, 6],
         "UG2_ED_UHRV_BOMBA_1_FALHA_AO_DESLIGAR":                    [12362, 7],
         "UG2_ED_UHRV_BOMBA_2_FALHA_AO_LIGAR":                       [12362, 8],

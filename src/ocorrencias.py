@@ -1286,9 +1286,6 @@ class OcorrenciasUg:
         self.leitura_rt_falha_2_bloq_externo = LeituraModbusBit(self.__clp[f"UG{self.__ug.id}"], REG["CONDIC_UG"][f"UG{self.__ug.id}_RT_FALHAS_2_BLOQ_EXTERNO"], descr=f"[UG{self.__ug.id}] RT Falha 2 Bloqueio Externo")
         self.condicionadores_essenciais.append(CondicionadorBase(self.leitura_rt_falha_2_bloq_externo, CONDIC_NORMALIZAR))
 
-        self.leitura_psa_bloq_86btbf = LeituraModbusBit(self.__clp[f"UG{self.__ug.id}"], REG["CONDIC_UG"][f"UG{self.__ug.id}_ED_PRTVA_PSA_BLOQUEIO_86BTBF"], descr=f"[UG{self.__ug.id}] PSA Bloqueio 86BTBF")
-        self.condicionadores_essenciais.append(CondicionadorBase(self.leitura_psa_bloq_86btbf, CONDIC_NORMALIZAR))
-
         self.leitura_rele_trip_prot_gerad = LeituraModbusBit(self.__clp[f"UG{self.__ug.id}"], REG["CONDIC_UG"][f"UG{self.__ug.id}_ED_PRTVA_RELE_PROT_GERADOR_TRIP"], descr=f"[UG{self.__ug.id}] Relé Trip Proteção Gerador")
         self.condicionadores_essenciais.append(CondicionadorBase(self.leitura_rele_trip_prot_gerad, CONDIC_NORMALIZAR))
 
@@ -1379,11 +1376,11 @@ class OcorrenciasUg:
 
         # TODO -> Verificar
         self.leitura_uhlm_press_linha_lubrifi = LeituraModbusBit(self.__clp[f"UG{self.__ug.id}"], REG["CONDIC_UG"][f"UG{self.__ug.id}_ED_PRTVA_UHLM_PRESSAO_LINHA_LUBRIFICACAO"], descr=f"[UG{self.__ug.id}] UHLM Pressão Linha Lubrificação")
-        self.condicionadores.append(CondicionadorBase(self.leitura_uhlm_press_linha_lubrifi, CONDIC_INDISPONIBILIZAR))
+        self.condicionadores.append(CondicionadorBase(self.leitura_uhlm_press_linha_lubrifi, CONDIC_NORMALIZAR))
 
         # TODO n-> Verificar
         self.leitura_uhlm_fluxo_troc_calor = LeituraModbusBit(self.__clp[f"UG{self.__ug.id}"], REG["CONDIC_UG"][f"UG{self.__ug.id}_ED_PRTVA_UHLM_FLUXO_TROCADOR_CALOR"], descr=f"[UG{self.__ug.id}] UHLM Fluxo Trocador Calor")
-        self.condicionadores.append(CondicionadorBase(self.leitura_uhlm_fluxo_troc_calor, CONDIC_INDISPONIBILIZAR))
+        self.condicionadores.append(CondicionadorBase(self.leitura_uhlm_fluxo_troc_calor, CONDIC_NORMALIZAR))
 
         # TODO -> Verificar
         self.leitura_qbag_escova_polo_pos_desgas = LeituraModbusBit(self.__clp[f"UG{self.__ug.id}"], REG["CONDIC_UG"][f"UG{self.__ug.id}_ED_PRTVA_QBAG_ESCOVA_POLO_POSITIVO_DESGASTADA"], descr=f"[UG{self.__ug.id}] QBAG Escova Polo Positivo Desgastada")
@@ -1400,7 +1397,7 @@ class OcorrenciasUg:
 
         # TODO -> Verificar
         self.leitura_uhrv_pressao_freio = LeituraModbusBit(self.__clp[f"UG{self.__ug.id}"], REG["CONDIC_UG"][f"UG{self.__ug.id}_ED_PRTVA_UHRV_PRESSAO_FREIO"], descr=f"[UG{self.__ug.id}] UHRV Pressão Freio")
-        self.condicionadores.append(CondicionadorBase(self.leitura_uhrv_pressao_freio, CONDIC_INDISPONIBILIZAR))
+        self.condicionadores.append(CondicionadorBase(self.leitura_uhrv_pressao_freio, CONDIC_NORMALIZAR))
 
         self.leitura_rv_falha_hab = LeituraModbusBit(self.__clp[f"UG{self.__ug.id}"], REG["CONDIC_UG"][f"UG{self.__ug.id}_ED_RV_FALHA_AO_HABILITAR"], descr=f"[UG{self.__ug.id}] RV Falha Habilitar")
         self.condicionadores.append(CondicionadorBase(self.leitura_rv_falha_hab, CONDIC_INDISPONIBILIZAR))
@@ -1413,15 +1410,8 @@ class OcorrenciasUg:
         self.leitura_uhrv_bomba_1_indisp = LeituraModbusBit(self.__clp[f"UG{self.__ug.id}"], REG["CONDIC_UG"][f"UG{self.__ug.id}_ED_UHRV_BOMBA_1_INDISPONIVEL"], invertido=True, descr=f"[UG{self.__ug.id}] UHRV Bomba 1 Indisponível") # TODO -> Verificar invertido
         self.condicionadores.append(CondicionadorBase(self.leitura_uhrv_bomba_1_indisp, CONDIC_INDISPONIBILIZAR))
 
-        # TODO -> Verificar
-        self.leitura_uhrv_bomba_2_indisp = LeituraModbusBit(self.__clp[f"UG{self.__ug.id}"], REG["CONDIC_UG"][f"UG{self.__ug.id}_ED_UHRV_BOMBA_2_INDISPONIVEL"], descr=f"[UG{self.__ug.id}] UHRV Bomba 2 Indisponível")
-        self.condicionadores.append(CondicionadorBase(self.leitura_uhrv_bomba_2_indisp, CONDIC_INDISPONIBILIZAR))
-
         self.leitura_uhrv_bomba_1_falha_ligar = LeituraModbusBit(self.__clp[f"UG{self.__ug.id}"], REG["CONDIC_UG"][f"UG{self.__ug.id}_ED_UHRV_BOMBA_1_FALHA_AO_LIGAR"], descr=f"[UG{self.__ug.id}] UHRV Falha Ligar")
         self.condicionadores.append(CondicionadorBase(self.leitura_uhrv_bomba_1_falha_ligar, CONDIC_INDISPONIBILIZAR))
-
-        self.leitura_uhrv_bomba_2_falha_ligar = LeituraModbusBit(self.__clp[f"UG{self.__ug.id}"], REG["CONDIC_UG"][f"UG{self.__ug.id}_ED_UHRV_BOMBA_2_FALHA_AO_LIGAR"], descr=f"[UG{self.__ug.id}] UHRV Falha Ligar")
-        self.condicionadores.append(CondicionadorBase(self.leitura_uhrv_bomba_2_falha_ligar, CONDIC_INDISPONIBILIZAR))
 
         self.leitura_uhrv_filtro_oleo_sujo = LeituraModbusBit(self.__clp[f"UG{self.__ug.id}"], REG["CONDIC_UG"][f"UG{self.__ug.id}_ED_UHRV_FILTRO_OLEO_SUJO"], descr=f"[UG{self.__ug.id}] UHRV Filtro Óleo Sujo")
         self.condicionadores.append(CondicionadorBase(self.leitura_uhrv_filtro_oleo_sujo, CONDIC_INDISPONIBILIZAR))

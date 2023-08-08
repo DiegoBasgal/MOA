@@ -447,19 +447,22 @@ class UnidadeDeGeracao:
             logger.error(f"[UG{self.id}] Não foi possível partir a Unidade.")
             logger.debug(traceback.format_exc())
 
-    def parar(self) -> "None":
+    def parar(self) -> "bool":
         try:
             if not self.etapa == UG_PARADA:
                 logger.info(f"[UG{self.id}]          Enviando comando:          \"PARADA\"")
-                EMB.escrever_bit(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}_CD_CMD_PARADA_TOTAL"], 1, descr=f"UG{self.id}_CD_CMD_PARADA_TOTAL")
                 self.enviar_setpoint(0)
+                res = EMB.escrever_bit(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}_CD_CMD_PARADA_TOTAL"], 1, descr=f"UG{self.id}_CD_CMD_PARADA_TOTAL")
+                return res
 
             else:
                 logger.debug(f"[UG{self.id}] A Unidade já está parada")
+                return False
 
         except Exception:
             logger.error(f"[UG{self.id}] Não foi possível parar a Unidade.")
             logger.debug(traceback.format_exc())
+            return False
 
     def controlar_potencia_reativa(self) -> None:
         if self.__tensao.valor > TENSAO_UG_MAXIMA:
