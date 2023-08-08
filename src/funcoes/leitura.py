@@ -109,7 +109,7 @@ class LeituraModbusBit(LeituraModbus):
             raw_dec_2 = BPD.fromRegisters(raw, byteorder=Endian.Big, wordorder=Endian.Little)
 
             if self.__bit >= 16:
-                raw_aux = self.__cli.read_holding_registers(self.__reg + 1)
+                raw_aux = self.__cli.read_holding_registers(self.__reg)
                 raw_aux_dec_1 = BPD.fromRegisters(raw_aux, byteorder=Endian.Big, wordorder=Endian.Little)
                 raw_aux_dec_2 = BPD.fromRegisters(raw_aux, byteorder=Endian.Big, wordorder=Endian.Little)
                 lista_bits = [bit for bits in [raw_dec_2.decode_bits(2), raw_dec_1.decode_bits(1), raw_aux_dec_2.decode_bits(2), raw_aux_dec_1.decode_bits(1)] for bit in bits]
@@ -137,7 +137,7 @@ class LeituraModbusFloat(LeituraModbus):
     @property
     def valor(self) -> "int | float":
         try:
-            raw = self.__cli.read_holding_registers(self.__reg)
+            raw = self.__cli.read_holding_registers(self.__reg, 2)
 
             decoder = BPD.fromRegisters(raw, byteorder=Endian.Big, wordorder=Endian.Little)
             

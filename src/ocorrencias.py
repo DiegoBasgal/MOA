@@ -381,7 +381,7 @@ class OcorrenciasUsn:
         self.condicionadores.append(CondicionadorBase(leitura_ED_disj_tsa_trip, CONDIC_INDISPONIBILIZAR))
 
         # # Temperatura, Nível e Pressão
-        leitura_ED_te_temp_muito_alta = LeituraModbusBit(self.__clp["SA"], REG["CONDIC_SA"]["SA_ED_PSA_TE_TEMPERATURA_MUITO_ALTA"], invertido=True, descr="[USN] Trasformador Elevador Temperatura Alta") # TODO -> Verificar invertido
+        leitura_ED_te_temp_muito_alta = LeituraModbusBit(self.__clp["SA"], REG["CONDIC_SA"]["SA_ED_PSA_TE_TEMPERATURA_MUITO_ALTA"], descr="[USN] Trasformador Elevador Temperatura Alta") # TODO -> Verificar invertido
         self.condicionadores.append(CondicionadorBase(leitura_ED_te_temp_muito_alta, CONDIC_INDISPONIBILIZAR))
 
         leitura_ED_te_eleva_temp_muito_alta = LeituraModbusBit(self.__clp["SA"], REG["CONDIC_SA"]["SA_ED_PSA_TE_TEMPERATURA_ALTA"], descr="[USN] Trasformador Elevador Temperatura Muito Alta")
@@ -393,7 +393,7 @@ class OcorrenciasUsn:
         leitura_ED_oleo_muito_baixo = LeituraModbusBit(self.__clp["SA"], REG["CONDIC_SA"]["SA_ED_PSA_NIVEL_OLEO_MUITO_BAIXO"], descr="[USN] Trasformador Elevador Óleo Muito Baixo")
         self.condicionadores.append(CondicionadorBase(leitura_ED_oleo_muito_baixo, CONDIC_INDISPONIBILIZAR))
 
-        leitura_ED_poco_dren_nivel_muito_alto = LeituraModbusBit(self.__clp["SA"], REG["CONDIC_SA"]["SA_ED_PSA_POCO_DRENAGEM_SENSOR_NIVEL_MUITO_ALTO"], invertido=True, descr="[USN] Poço de Drenagem Nível Muito Alto")
+        leitura_ED_poco_dren_nivel_muito_alto = LeituraModbusBit(self.__clp["SA"], REG["CONDIC_SA"]["SA_ED_PSA_POCO_DRENAGEM_SENSOR_NIVEL_MUITO_ALTO"], descr="[USN] Poço de Drenagem Nível Muito Alto")
         self.condicionadores.append(CondicionadorBase(leitura_ED_poco_dren_nivel_muito_alto, CONDIC_INDISPONIBILIZAR)) # TODO -> verificar invertido
 
         leitura_ED_nv_jusante_muito_alto = LeituraModbusBit(self.__clp["SA"], REG["CONDIC_SA"]["SA_EA_PSA_NIVEL_JUSANTE_MUITO_ALTO"], descr="[USN] Nível Jusante Muito Alto")
@@ -469,7 +469,7 @@ class OcorrenciasUsn:
         self.leitura_ED_dren_bomba_1_indisp = LeituraModbusBit(self.__clp["SA"], REG["CONDIC_SA"]["SA_ED_PSA_DREANGEM_BOMBA_1_INDISP"], descr="[USN] Bomba de Drenagem 1 Indisponível")
         self.leitura_ED_dren_bomba_2_indisp = LeituraModbusBit(self.__clp["SA"], REG["CONDIC_SA"]["SA_ED_PSA_DREANGEM_BOMBA_2_INDISP"], descr="[USN] Bomba de Drenagem 2 Indisponível")
         self.leitura_ED_esgot_bomba_1_falha = LeituraModbusBit(self.__clp["SA"], REG["CONDIC_SA"]["SA_ED_PSA_ESGOTAMENTO_BOMBA_1_FALHA"], descr="[USN] Falha Bomba de Esgotamento 1")
-        self.leitura_ED_esgot_bomba_2_falha = LeituraModbusBit(self.__clp["SA"], REG["CONDIC_SA"]["SA_ED_PSA_ESGOTAMENTO_BOMBA_2_FALHA"], invertido=True, descr="[USN] Falha Bomba de Esgotamento 2") # TODO -> verificar invertido
+        self.leitura_ED_esgot_bomba_2_falha = LeituraModbusBit(self.__clp["SA"], REG["CONDIC_SA"]["SA_ED_PSA_ESGOTAMENTO_BOMBA_2_FALHA"], descr="[USN] Falha Bomba de Esgotamento 2") # TODO -> verificar invertido
         self.leitura_ED_esgot_bomba_1_indisp = LeituraModbusBit(self.__clp["SA"], REG["CONDIC_SA"]["SA_ED_PSA_ESGOTAMENTO_BOMBA_1_INDISP"], descr="[USN] Bomba de Esgotamento 1 Indisponível")
         self.leitura_ED_esgot_bomba_2_indisp = LeituraModbusBit(self.__clp["SA"], REG["CONDIC_SA"]["SA_ED_PSA_ESGOTAMENTO_BOMBA_2_INDISP"], descr="[USN] Bomba de Esgotamento 2 Indisponível")
         self.leitura_ED_poco_dren_bomba_1_defeito = LeituraModbusBit(self.__clp["SA"], REG["CONDIC_SA"]["SA_ED_PSA_POCO_DRENAGEM_BOMBA_1_DEFEITO"], descr="[USN] Defeito Bomba 1 Poço de Drenagem")
@@ -477,7 +477,7 @@ class OcorrenciasUsn:
 
         self.leitura_ED_sfa_limp_elem_1_aberta = LeituraModbusBit(self.__clp["SA"], REG["CONDIC_SA"]["SA_ED_PSA_SFA_LIMPEZA_ELEMENTO_1_ABERTA"], descr="[USN] Sistema de Filtragem A Elemento 1 Aberto")
         self.leitura_ED_sfa_limp_elem_2_aberta = LeituraModbusBit(self.__clp["SA"], REG["CONDIC_SA"]["SA_ED_PSA_SFA_LIMPEZA_ELEMENTO_2_ABERTA"], descr="[USN] Sistema de Filtragem A Elemento 2 Aberto")
-        self.leitura_ED_sfa_entra_elem_1_aberta = LeituraModbusBit(self.__clp["SA"], REG["CONDIC_SA"]["SA_ED_PSA_SFA_ENTRADA_ELEMENTO_1_ABERTA"], invertido=True, descr="[USN] Sistema de Filtragem A Entrada Elemento 1 Aberto") # TODO -> verificar invertido
+        self.leitura_ED_sfa_entra_elem_1_aberta = LeituraModbusBit(self.__clp["SA"], REG["CONDIC_SA"]["SA_ED_PSA_SFA_ENTRADA_ELEMENTO_1_ABERTA"], descr="[USN] Sistema de Filtragem A Entrada Elemento 1 Aberto") # TODO -> verificar invertido
         self.leitura_ED_sfa_entra_elem_2_aberta = LeituraModbusBit(self.__clp["SA"], REG["CONDIC_SA"]["SA_ED_PSA_SFA_ENTRADA_ELEMENTO_2_ABERTA"], descr="[USN] Sistema de Filtragem A Entrada Elemento 2 Aberto")
         self.leitura_ED_sfa_falha_abrir_limpeza_elem_1 = LeituraModbusBit(self.__clp["SA"], REG["CONDIC_SA"]["SA_ED_PSA_SFA_FALHA_ABRIR_LIMPEZA_ELEM_1"], descr="[USN] Falha Abrir Limpeza do Elemento 1 do Sistema de Filtragem A")
         self.leitura_ED_sfa_falha_fechar_limpeza_elem_1 = LeituraModbusBit(self.__clp["SA"], REG["CONDIC_SA"]["SA_ED_PSA_SFA_FALHA_FECHAR_LIMPEZA_ELEM_1"], descr="[USN] Falha Fechar limpeza do Elemento 1 do Sistema de Filtragem A")
@@ -488,13 +488,13 @@ class OcorrenciasUsn:
         self.leitura_ED_sfa_falha_abrir_entra_elem_2 = LeituraModbusBit(self.__clp["SA"], REG["CONDIC_SA"]["SA_ED_PSA_SFA_FALHA_ABRIR_ENTRADA_ELEM_2"], descr="[USN] Falha Abrir Entrada Elemento 2 do Sistema de Filtragem A")
         self.leitura_ED_sfa_falha_fechar_entra_elem_2 = LeituraModbusBit(self.__clp["SA"], REG["CONDIC_SA"]["SA_ED_PSA_SFA_FALHA_FECHAR_ENTRADA_ELEM_2"], descr="[USN] Falha Fechar Entrada Elemento 2 do Sistema de Filtragem A")
 
-        self.leitura_ED_sfb_limp_elem_1_aberta = LeituraModbusBit(self.__clp["SA"], REG["CONDIC_SA"]["SA_ED_PSA_SFB_LIMPEZA_ELEMENTO_1_ABERTA"], invertido=True, descr="[USN] Sistema de Filtragem B Elemento 1 Aberto") # TODO -> verificar invertido
+        self.leitura_ED_sfb_limp_elem_1_aberta = LeituraModbusBit(self.__clp["SA"], REG["CONDIC_SA"]["SA_ED_PSA_SFB_LIMPEZA_ELEMENTO_1_ABERTA"], descr="[USN] Sistema de Filtragem B Elemento 1 Aberto") # TODO -> verificar invertido
         self.leitura_ED_sfb_limp_elem_2_aberta = LeituraModbusBit(self.__clp["SA"], REG["CONDIC_SA"]["SA_ED_PSA_SFB_LIMPEZA_ELEMENTO_2_ABERTA"], descr="[USN] Sistema de Filtragem B Elemento 2 Aberto")
         self.leitura_ED_sfb_entra_elem_1_aberta = LeituraModbusBit(self.__clp["SA"], REG["CONDIC_SA"]["SA_ED_PSA_SFB_ENTRADA_ELEMENTO_1_ABERTA"], descr="[USN] Sistema de Filtragem B Entrada Elemento 1 Aberto")
         self.leitura_ED_sfb_entra_elem_2_aberta = LeituraModbusBit(self.__clp["SA"], REG["CONDIC_SA"]["SA_ED_PSA_SFB_ENTRADA_ELEMENTO_2_ABERTA"], descr="[USN] Sistema de Filtragem B Entrada Elemento 2 Aberto")
         self.leitura_ED_sfb_falha_abrir_limpeza_elem_1 = LeituraModbusBit(self.__clp["SA"], REG["CONDIC_SA"]["SA_ED_PSA_SFB_FALHA_ABRIR_LIMPEZA_ELEM_1"], descr="[USN] Falha Abrir Limpeza do Elemento 1 do Sistema de Filtragem B")
         self.leitura_ED_sfb_falha_fechar_limpeza_elem_1 = LeituraModbusBit(self.__clp["SA"], REG["CONDIC_SA"]["SA_ED_PSA_SFB_FALHA_FECHAR_LIMPEZA_ELEM_1"], descr="[USN] Falha Fechar limpeza do Elemento 1 do Sistema de Filtragem B")
-        self.leitura_ED_sfb_falha_abrir_entra_elem_1 = LeituraModbusBit(self.__clp["SA"], REG["CONDIC_SA"]["SA_ED_PSA_SFB_FALHA_ABRIR_ENTRADA_ELEM_1"], invertido=True, descr="[USN] Falha Abrir Entrada Elemento 1 do Sistema de Filtragem B") # TODO -> verificar invertido
+        self.leitura_ED_sfb_falha_abrir_entra_elem_1 = LeituraModbusBit(self.__clp["SA"], REG["CONDIC_SA"]["SA_ED_PSA_SFB_FALHA_ABRIR_ENTRADA_ELEM_1"], descr="[USN] Falha Abrir Entrada Elemento 1 do Sistema de Filtragem B") # TODO -> verificar invertido
         self.leitura_ED_sfb_falha_fechar_entra_elem_1 = LeituraModbusBit(self.__clp["SA"], REG["CONDIC_SA"]["SA_ED_PSA_SFB_FALHA_FECHAR_ENTRADA_ELEM_1"], descr="[USN] Falha Fechar Entrada Elemento 1 do Sistema de Filtragem B")
         self.leitura_ED_sfb_falha_abrir_limpeza_elem_2 = LeituraModbusBit(self.__clp["SA"], REG["CONDIC_SA"]["SA_ED_PSA_SFB_FALHA_ABRIR_LIMPEZA_ELEM_2"], descr="[USN] Falha Abrir Limpeza do Elemento 2 do Sistema de Filtragem B")
         self.leitura_ED_sfb_falha_fechar_limpeza_elem_2 = LeituraModbusBit(self.__clp["SA"], REG["CONDIC_SA"]["SA_ED_PSA_SFB_FALHA_FECHAR_LIMPEZA_ELEM_2"], descr="[USN] Falha Fechar limpeza do Elemento 2 do Sistema de Filtragem B")
@@ -1407,7 +1407,7 @@ class OcorrenciasUg:
 
         # UHRV
         # TODO -> Verificar
-        self.leitura_uhrv_bomba_1_indisp = LeituraModbusBit(self.__clp[f"UG{self.__ug.id}"], REG["CONDIC_UG"][f"UG{self.__ug.id}_ED_UHRV_BOMBA_1_INDISPONIVEL"], invertido=True, descr=f"[UG{self.__ug.id}] UHRV Bomba 1 Indisponível") # TODO -> Verificar invertido
+        self.leitura_uhrv_bomba_1_indisp = LeituraModbusBit(self.__clp[f"UG{self.__ug.id}"], REG["CONDIC_UG"][f"UG{self.__ug.id}_ED_UHRV_BOMBA_1_INDISPONIVEL"], descr=f"[UG{self.__ug.id}] UHRV Bomba 1 Indisponível") # TODO -> Verificar invertido
         self.condicionadores.append(CondicionadorBase(self.leitura_uhrv_bomba_1_indisp, CONDIC_INDISPONIBILIZAR))
 
         self.leitura_uhrv_bomba_1_falha_ligar = LeituraModbusBit(self.__clp[f"UG{self.__ug.id}"], REG["CONDIC_UG"][f"UG{self.__ug.id}_ED_UHRV_BOMBA_1_FALHA_AO_LIGAR"], descr=f"[UG{self.__ug.id}] UHRV Falha Ligar")
@@ -1755,7 +1755,7 @@ class OcorrenciasUg:
         self.leitura_rt_alarme = LeituraModbusBit(self.__clp[f"UG{self.__ug.id}"], REG["CONDIC_UG"][f"UG{self.__ug.id}_ED_PRTVA_RT_ALARME"], descr=f"[UG{self.__ug.id}] RT Alarme")
         self.leitura_alarme_rele = LeituraModbusBit(self.__clp[f"UG{self.__ug.id}"], REG["CONDIC_UG"][f"UG{self.__ug.id}_RT_SD_RELE_ALARME"], descr=f"[UG{self.__ug.id}] Alarme Relé")
         self.leitura_rv_pot_nula = LeituraModbusBit(self.__clp[f"UG{self.__ug.id}"], REG["CONDIC_UG"][f"UG{self.__ug.id}_ED_PRTVA_RV_POTENCIA_NULA"], descr=f"[UG{self.__ug.id}] RV Potência Nula")
-        self.leitura_uhrv_bomba_defeito = LeituraModbusBit(self.__clp[f"UG{self.__ug.id}"], REG["CONDIC_UG"][f"UG{self.__ug.id}_ED_PRTVA_UHRV_BOMBA_DEFEITO"], invertido=True, descr=f"[UG{self.__ug.id}] UHRV Bomba Defeito") # TODO -> Verificar invertido
+        self.leitura_uhrv_bomba_defeito = LeituraModbusBit(self.__clp[f"UG{self.__ug.id}"], REG["CONDIC_UG"][f"UG{self.__ug.id}_ED_PRTVA_UHRV_BOMBA_DEFEITO"], descr=f"[UG{self.__ug.id}] UHRV Bomba Defeito") # TODO -> Verificar invertido
         self.leitura_uhlm_bomba_defeito = LeituraModbusBit(self.__clp[f"UG{self.__ug.id}"], REG["CONDIC_UG"][f"UG{self.__ug.id}_ED_PRTVA_UHLM_BOMBA_DEFEITO"], descr=f"[UG{self.__ug.id}] UHLM Bomba Defeito")
         self.leitura_dispo_prot_surto = LeituraModbusBit(self.__clp[f"UG{self.__ug.id}"], REG["CONDIC_UG"][f"UG{self.__ug.id}_ED_PRTVA_DISPOSITIVO_PROTECAO_SURTO"], descr=f"[UG{self.__ug.id}] Dispositivo Proteção Surto")
         self.leitura_rt_selec_modo_controle_isol = LeituraModbusBit(self.__clp[f"UG{self.__ug.id}"], REG["CONDIC_UG"][f"UG{self.__ug.id}_RT_ED_SELEC_MODO_CONTROLE_ISOLADO"], descr=f"[UG{self.__ug.id}] RT Selecionado Modo Controle Isolado")

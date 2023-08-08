@@ -270,7 +270,7 @@ class Usina:
                 return False
 
             else:
-                res = EMB.escrever_bit(self.clp["SA"], REG_SA["SA_CD_DISJ_LINHA_FECHA"], invertido=True, valor=1)
+                res = EMB.escrever_bit(self.clp["SA"], REG_SA["SA_CD_DISJ_LINHA_FECHA"], valor=1)
                 return res
 
         except Exception:
