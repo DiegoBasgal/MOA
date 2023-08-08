@@ -2,6 +2,9 @@
 <ui version="4.0">
  <class>Form</class>
  <widget class="QWidget" name="Form">
+  <property name="windowModality">
+   <enum>Qt::NonModal</enum>
+  </property>
   <property name="geometry">
    <rect>
     <x>0</x>
@@ -9,6 +12,18 @@
     <width>1600</width>
     <height>900</height>
    </rect>
+  </property>
+  <property name="sizePolicy">
+   <sizepolicy hsizetype="Ignored" vsizetype="Ignored">
+    <horstretch>0</horstretch>
+    <verstretch>0</verstretch>
+   </sizepolicy>
+  </property>
+  <property name="maximumSize">
+   <size>
+    <width>1600</width>
+    <height>900</height>
+   </size>
   </property>
   <property name="windowTitle">
    <string>Simulador PCH XAV</string>
@@ -666,9 +681,9 @@
   <widget class="QFrame" name="frame_ug1">
    <property name="geometry">
     <rect>
-     <x>876</x>
+     <x>869</x>
      <y>499</y>
-     <width>228</width>
+     <width>239</width>
      <height>134</height>
     </rect>
    </property>
@@ -698,7 +713,7 @@
      <rect>
       <x>4</x>
       <y>41</y>
-      <width>221</width>
+      <width>231</width>
       <height>89</height>
      </rect>
     </property>
@@ -891,7 +906,7 @@
      <rect>
       <x>4</x>
       <y>3</y>
-      <width>221</width>
+      <width>231</width>
       <height>36</height>
      </rect>
     </property>
@@ -1147,6 +1162,9 @@
          </property>
          <property name="value">
           <number>50</number>
+         </property>
+         <property name="invertedAppearance">
+          <bool>false</bool>
          </property>
         </widget>
        </item>
@@ -1424,7 +1442,7 @@
     <string/>
    </property>
    <property name="pixmap">
-    <pixmap>../../Downloads/Sim_XAV (3).png</pixmap>
+    <pixmap>bg.png</pixmap>
    </property>
    <property name="scaledContents">
     <bool>true</bool>
@@ -1433,9 +1451,9 @@
   <widget class="QFrame" name="frame_ug2">
    <property name="geometry">
     <rect>
-     <x>876</x>
+     <x>869</x>
      <y>680</y>
-     <width>228</width>
+     <width>239</width>
      <height>134</height>
     </rect>
    </property>
@@ -1465,7 +1483,7 @@
      <rect>
       <x>4</x>
       <y>41</y>
-      <width>221</width>
+      <width>231</width>
       <height>89</height>
      </rect>
     </property>
@@ -1652,7 +1670,7 @@
      <rect>
       <x>4</x>
       <y>3</y>
-      <width>221</width>
+      <width>231</width>
       <height>36</height>
      </rect>
     </property>
@@ -1747,7 +1765,7 @@
       </widget>
      </item>
      <item>
-      <widget class="QSlider" name="horizontalSlider_ug2_setpoint">
+      <widget class="QSlider" name="horizontalSlider_setpoint_ug2">
        <property name="sizePolicy">
         <sizepolicy hsizetype="Maximum" vsizetype="Maximum">
          <horstretch>0</horstretch>

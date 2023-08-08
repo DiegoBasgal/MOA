@@ -1,24 +1,26 @@
-import logging
 import numpy as np
 
-import simulador.dicionarios.dict as dct
+import dicts.dict as dct
 
 from time import  time
 from threading import Thread
-from simulador.funcoes.temporizador import Temporizador
+from pyModbusTCP.server import DataBank as DB
 
-from simulador.dicionarios.const import *
+from dicts.reg import *
+from dicts.const import *
 
-logger = logging.getLogger('__main__')
+from funcs.temporizador import Temporizador
 
 class Unidade:
-    def __init__(self, id, time_handler: "Temporizador") -> "None":
+    def __init__(self, id, tempo: "Temporizador") -> "None":
         self.id = id
         self.dict = dct.compartilhado
 
+        self.tempo = tempo
+
         # COPIA DE INFORMACOES DA CLASSE SITE
-        self.escala_ruido = time_handler.escala_ruido
-        self.segundos_por_passo = time_handler.segundos_por_passo
+        self.escala_ruido = self.tempo.escala_ruido
+        self.segundos_por_passo = self.tempo.segundos_por_passo
 
         self.potencia = 0
         self.setpoint = 0
@@ -29,104 +31,106 @@ class Unidade:
 
         self.avisou_trip = False
 
-    def passo(self):
+    def passo(self) -> "None":
         # DEBUG VIA GUI
-        self.setpoint = self.dict['UG'][f'setpoint_kw_ug{self.id}']
+        self.setpoint = self.dict[f'UG{self.id}'][f'setpoint']
 
-        if self.dict['UG'][f'debug_partir_ug{self.id}']:
-            self.dict['UG'][f'debug_partir_ug{self.id}'] = False
+        if self.dict[f'UG{self.id}'][f'debug_partir']:
+            self.dict[f'UG{self.id}'][f'debug_partir'] = False
             self.partir()
 
-        if self.dict['UG'][f'debug_parar_ug{self.id}']:
-            self.dict['UG'][f'debug_parar_ug{self.id}'] = False
+        if self.dict[f'UG{self.id}'][f'debug_parar']:
+            self.dict[f'UG{self.id}'][f'debug_parar'] = False
             self.parar()
-
-        if self.dict['UG'][f'trip_ug{self.id}']:
-            self.tripar(1, 'Trip Elétrico.')
-            self.dict['UG'][f'trip_ug{self.id}'] = False
-
-        if self.dict['UG'][f'reconhece_reset_ug{self.id}']:
-            self.dict['UG'][f'reconhece_reset_ug{self.id}'] = False
-            self.reconhece_reset()
 
         self.controle_horimetro()
         self.controle_reservatorio()
         self.controle_etapas()
         self.controle_temperaturas()
 
-        self.dict['UG'][f'q_ug{self.id}'] = self.q_ug(self.potencia)
+        self.dict[f'UG{self.id}'][f'q'] = self.q_ug(self.potencia)
 
-        self.dict['UG'][f'potencia_kw_ug{self.id}'] = self.potencia
-        self.dict['UG'][f'etapa_atual_ug{self.id}'] = self.etapa_atual
+        self.dict[f'UG{self.id}'][f'potencia'] = self.potencia
+        self.dict[f'UG{self.id}'][f'etapa_atual'] = self.etapa_atual
 
-        # FIM DEBUG VIA GUI
+        self.atualizar_modbus()
 
-    def q_ug(self, potencia_kW):
+    def q_ug(self, potencia_kW) -> "float":
         return 0.005610675 * potencia_kW if potencia_kW > 911 else 0
 
-    def partir(self):
-        if self.dict['UG'][f'comporta_aberta_ug{self.id}']:
+    def partir(self) -> "None":
+        if self.dict['TDA'][f'cp{self.id}_aberta']:
             self.etapa_alvo = ETAPA_US
-            self.dict['UG'][f'etapa_alvo_ug{self.id}'] = self.etapa_alvo
-            logger.info(f'[UG{self.id}] Comando de partida')
+            self.dict[f'UG{self.id}'][f'etapa_alvo'] = self.etapa_alvo
+            print(f'[UG{self.id}] Comando de Partida')
+        
+        elif ETAPA_US in (self.etapa_alvo, self.etapa_atual):
+            print(f'[UG{self.id}] A Unidade já recebeu o comando de Partida!')
+
         else:
-            logger.warning(f'[UG{self.id}] Para partir a ug é necessário abrir a comporta primeiro!')
+            print(f'[UG{self.id}-CP{self.id}] Para partir a Unidade é necessário Abrir a Comporta primeiro!')
 
-    def parar(self):
-        self.etapa_alvo = ETAPA_UP
-        self.dict['UG'][f'etapa_alvo_ug{self.id}'] = self.etapa_alvo
-        logger.info(f'[UG{self.id}] Comando de parada')
+    def parar(self) -> "None":
+        if ETAPA_UP not in (self.etapa_alvo, self.etapa_atual):
+            self.etapa_alvo = ETAPA_UP
+            self.dict[f'UG{self.id}'][f'etapa_alvo'] = self.etapa_alvo
+            print(f'[UG{self.id}] Comando de Parada')
+        else:
+            print(f"[UG{self.id}] A Unidade já está Parada!")
 
-    def tripar(self, flag, desc=None):
-        self.potencia = 0
-        self.etapa_alvo = ETAPA_UPGM
-        self.etapa_atual = ETAPA_UPGM
-        self.dict['UG'][f'flags_ug{self.id}'] = flag
-        if not self.avisou_trip:
-            self.avisou_trip = True
-            logger.warning(F'[UG{self.id}] Trip!. {desc}')
-        self.dict['UG'][f'etapa_alvo_ug{self.id}'] = self.etapa_alvo
-
-    def reconhece_reset(self) -> None:
-        self.avisou_trip = False
-        self.dict['UG'][f'flags_ug{self.id}'] = 0
-        logger.info(f'[UG{self.id}] Reconhece Reset.')
-
-    def controle_horimetro(self) -> None:
+    def controle_horimetro(self) -> "None":
         if self.etapa_atual > ETAPA_UP:
             self.horimetro_hora += self.segundos_por_passo / 3600
-        
-    def controle_reservatorio(self) -> None:
-        if (self.etapa_atual > ETAPA_UP and self.dict['USN']['nv_montante'] < USINA_NV_MINIMO_OPERACAO):
+
+    def controle_reservatorio(self) -> "None":
+        if (self.etapa_atual > ETAPA_UP and self.dict['TDA']['nv_montante'] < USINA_NV_MINIMO_OPERACAO):
             self.potencia = 0
             self.etapa_atual = ETAPA_UPGM
             self.etapa_alvo = ETAPA_UPGM
-    
-    def controle_temperaturas(self) -> None:
-        self.dict['UG'][f'temperatura_ug{self.id}_fase_r'] = np.random.normal(25, 1 * self.escala_ruido)
-        self.dict['UG'][f'temperatura_ug{self.id}_fase_s'] = np.random.normal(25, 1 * self.escala_ruido)
-        self.dict['UG'][f'temperatura_ug{self.id}_fase_t'] = np.random.normal(25, 1 * self.escala_ruido)
-        self.dict['UG'][f'temperatura_ug{self.id}_mancal_guia'] = np.random.normal(25, 1 * self.escala_ruido)
-        self.dict['UG'][f'temperatura_ug{self.id}_mancal_casq_comb'] = np.random.normal(25, 1 * self.escala_ruido)
-        self.dict['UG'][f'temperatura_ug{self.id}_nucleo_gerador_1'] = np.random.normal(25, 1 * self.escala_ruido)
-        self.dict['UG'][f'temperatura_ug{self.id}_patins_mancal_comb_1'] = np.random.normal(25, 1 * self.escala_ruido)
-        self.dict['UG'][f'temperatura_ug{self.id}_patins_mancal_comb_2'] = np.random.normal(25, 1 * self.escala_ruido)
-        self.dict['UG'][f'temperatura_ug{self.id}_mancal_guia_interno_1'] = np.random.normal(25, 1 * self.escala_ruido)
-        self.dict['UG'][f'temperatura_ug{self.id}_mancal_guia_interno_2'] = np.random.normal(25, 1 * self.escala_ruido)
-        self.dict['UG'][f'temperatura_ug{self.id}_mancal_contra_esc_comb'] = np.random.normal(25, 1 * self.escala_ruido)
+
+    def controle_temperaturas(self) -> "None":
+        self.dict[f'UG{self.id}'][f'temp_fase_r'] = np.random.normal(25, 1 * self.escala_ruido)
+        self.dict[f'UG{self.id}'][f'temp_fase_s'] = np.random.normal(25, 1 * self.escala_ruido)
+        self.dict[f'UG{self.id}'][f'temp_fase_t'] = np.random.normal(25, 1 * self.escala_ruido)
+        self.dict[f'UG{self.id}'][f'temp_mancal_guia'] = np.random.normal(25, 1 * self.escala_ruido)
+        self.dict[f'UG{self.id}'][f'temp_mancal_casq_comb'] = np.random.normal(25, 1 * self.escala_ruido)
+        self.dict[f'UG{self.id}'][f'temp_nucleo_gerador_1'] = np.random.normal(25, 1 * self.escala_ruido)
+        self.dict[f'UG{self.id}'][f'temp_patins_mancal_comb_1'] = np.random.normal(25, 1 * self.escala_ruido)
+        self.dict[f'UG{self.id}'][f'temp_patins_mancal_comb_2'] = np.random.normal(25, 1 * self.escala_ruido)
+        self.dict[f'UG{self.id}'][f'temp_mancal_guia_interno_1'] = np.random.normal(25, 1 * self.escala_ruido)
+        self.dict[f'UG{self.id}'][f'temp_mancal_guia_interno_2'] = np.random.normal(25, 1 * self.escala_ruido)
+        self.dict[f'UG{self.id}'][f'temp_mancal_contra_esc_comb'] = np.random.normal(25, 1 * self.escala_ruido)
+
+
+    def atualizar_modbus(self) -> "None":
+        DB.set_words(MB[f'UG{self.id}_RV_ESTADO_OPERACAO'], [int(self.etapa_atual)])
+        DB.set_words(MB[f'UG{self.id}_P'], [round(self.potencia)])
+        DB.set_words(MB[f'UG{self.id}_HORIMETRO'], [np.floor(self.horimetro_hora)])
+        DB.set_words(MB[f'UG{self.id}_GERADOR_FASE_A_TMP'], [round(self.dict[f'UG{self.id}'][f'temp_fase_r'])])
+        DB.set_words(MB[f'UG{self.id}_GERADOR_FASE_B_TMP'], [round(self.dict[f'UG{self.id}'][f'temp_fase_s'])])
+        DB.set_words(MB[f'UG{self.id}_GERADOR_FASE_C_TMP'], [round(self.dict[f'UG{self.id}'][f'temp_fase_t'])])
+        DB.set_words(MB[f'UG{self.id}_GERADOR_NUCL_ESTAT_TMP'], [round(self.dict[f'UG{self.id}'][f'temp_nucleo_gerador_1'])])
+        DB.set_words(MB[f'UG{self.id}_MANCAL_GUIA_TMP'], [round(self.dict[f'UG{self.id}'][f'temp_mancal_guia'])])
+        DB.set_words(MB[f'UG{self.id}_MANCAL_GUIA_INTE_1_TMP'], [round(self.dict[f'UG{self.id}'][f'temp_mancal_guia_interno_1'])])
+        DB.set_words(MB[f'UG{self.id}_MANCAL_GUIA_INTE_2_TMP'], [round(self.dict[f'UG{self.id}'][f'temp_mancal_guia_interno_2'])])
+        DB.set_words(MB[f'UG{self.id}_MANCAL_COMB_PATINS_1_TMP'], [round(self.dict[f'UG{self.id}'][f'temp_patins_mancal_comb_1'])])
+        DB.set_words(MB[f'UG{self.id}_MANCAL_COMB_PATINS_2_TMP'], [round(self.dict[f'UG{self.id}'][f'temp_patins_mancal_comb_2'])])
+        DB.set_words(MB[f'UG{self.id}_MANCAL_CASQ_COMB_TMP'], [round(self.dict[f'UG{self.id}'][f'temp_mancal_casq_comb'])])
+        DB.set_words(MB[f'UG{self.id}_MANCAL_CONT_ESCO_COMB_TMP'], [round(self.dict[f'UG{self.id}'][f'temp_mancal_contra_esc_comb'])])
+        DB.set_words(MB[f'UG{self.id}_ENTRADA_TURBINA_PRESSAO'], [round(10 * self.dict[f'UG{self.id}'][f'pressao_turbina'])])
 
     def controle_etapas(self) -> None:
         # COMPORTAMENTO self.ETAPAS
-        self.etapa_alvo = self.dict['UG'][f'etapa_alvo_ug{self.id}']
+        self.etapa_alvo = self.dict[f'UG{self.id}'][f'etapa_alvo']
 
         # self.ETAPA UP
         if self.etapa_atual == ETAPA_UP:
             self.potencia = 0
-            
+
             if (self.etapa_alvo is None) or (self.etapa_alvo == self.etapa_atual):
                 self.tempo_na_transicao = 0
                 self.etapa_alvo = None
-                self.dict['UG'][f'etapa_alvo_ug{self.id}'] = self.etapa_alvo
+                self.dict[f'UG{self.id}'][f'etapa_alvo'] = self.etapa_alvo
 
             elif self.etapa_alvo > self.etapa_atual:
                 self.tempo_na_transicao += self.segundos_por_passo
@@ -142,7 +146,7 @@ class Unidade:
             if (self.etapa_alvo is None) or (self.etapa_alvo == self.etapa_atual):
                 self.tempo_na_transicao = 0
                 self.etapa_alvo = None
-                self.dict['UG'][f'etapa_alvo_ug{self.id}'] = self.etapa_alvo
+                self.dict[f'UG{self.id}'][f'etapa_alvo'] = self.etapa_alvo
 
             elif self.etapa_alvo > self.etapa_atual:
                 self.tempo_na_transicao += self.segundos_por_passo
@@ -165,7 +169,7 @@ class Unidade:
             if (self.etapa_alvo is None) or (self.etapa_alvo == self.etapa_atual):
                 self.tempo_na_transicao = 0
                 self.etapa_alvo = None
-                self.dict['UG'][f'etapa_alvo_ug{self.id}'] = self.etapa_alvo
+                self.dict[f'UG{self.id}'][f'etapa_alvo'] = self.etapa_alvo
 
             elif self.etapa_alvo > self.etapa_atual:
                 self.tempo_na_transicao += self.segundos_por_passo
@@ -188,12 +192,12 @@ class Unidade:
             if (self.etapa_alvo is None) or (self.etapa_alvo == self.etapa_atual):
                 self.tempo_na_transicao = 0
                 self.etapa_alvo = None
-                self.dict['UG'][f'etapa_alvo_ug{self.id}'] = self.etapa_alvo
+                self.dict[f'UG{self.id}'][f'etapa_alvo'] = self.etapa_alvo
 
             elif self.etapa_alvo > self.etapa_atual:
                 self.tempo_na_transicao += self.segundos_por_passo
 
-                if (self.tempo_na_transicao >= TEMPO_TRANS_UPS_US and self.dict['DJ']['dj52L_fechado']):
+                if (self.tempo_na_transicao >= TEMPO_TRANS_UPS_US and self.dict['SE']['dj_fechado']):
                     self.etapa_atual = ETAPA_US
                     self.tempo_na_transicao = 0
 
@@ -209,9 +213,9 @@ class Unidade:
             if (self.etapa_alvo is None) or (self.etapa_alvo == self.etapa_atual):
                 self.tempo_na_transicao = 0
                 self.etapa_alvo = None
-                self.dict['UG'][f'etapa_alvo_ug{self.id}'] = self.etapa_alvo
+                self.dict[f'UG{self.id}'][f'etapa_alvo'] = self.etapa_alvo
 
-                if (self.dict['DJ']['dj52L_fechado'] and not self.dict['DJ']['dj52L_trip']):
+                if (self.dict['SE']['dj_fechado'] and not self.dict['SE']['dj_trip']):
                     self.potencia = min(self.potencia, POT_MAX)
                     self.potencia = max(self.potencia, POT_MIN)
 
@@ -223,11 +227,11 @@ class Unidade:
 
                     self.potencia = np.random.normal(self.potencia, 1 * self.escala_ruido)
 
-                if self.dict['DJ']['dj52L_aberto'] or self.dict['DJ']['dj52L_trip']:
+                if self.dict['SE']['dj_aberto'] or self.dict['SE']['dj_trip']:
                     self.potencia = 0
                     self.etapa_atual = ETAPA_UVD
                     self.etapa_alvo = ETAPA_US
-                    self.dict['UG'][f'etapa_alvo_ug{self.id}'] = self.etapa_alvo
+                    self.dict[f'UG{self.id}'][f'etapa_alvo'] = self.etapa_alvo
                     self.tempo_na_transicao = 0
 
             elif self.etapa_alvo < self.etapa_atual:
@@ -239,207 +243,101 @@ class Unidade:
                     self.etapa_atual = ETAPA_UPS
                     self.tempo_na_transicao = 0
 
-        self.dict['UG'][f'etapa_atual_ug{self.id}'] = self.etapa_atual
+        self.dict[f'UG{self.id}'][f'etapa_atual'] = self.etapa_atual
         # FIM COMPORTAMENTO self.ETAPAS
-    
-        if self.dict['UG']['thread_comp_aberta_ug1'] == True:
-            Thread(target=lambda: self.set_abertura_comporta_ug1()).start()
-            self.dict['UG']['thread_comp_aberta_ug1'] = False
-    
-        if self.dict['UG']['thread_comp_fechada_ug1'] == True:
-            Thread(target=lambda: self.set_fechamento_comporta_ug1()).start()
-            self.dict['UG']['thread_comp_fechada_ug1'] = False
-    
-        if self.dict['UG']['thread_comp_cracking_ug1'] == True:
-            Thread(target=lambda: self.set_cracking_comporta_ug1()).start()
-            self.dict['UG']['thread_comp_cracking_ug1'] = False
-        
-        if self.dict['UG']['thread_comp_aberta_ug2'] == True:
-            Thread(target=lambda: self.set_abertura_comporta_ug2()).start()
-            self.dict['UG']['thread_comp_aberta_ug2'] = False
-    
-        if self.dict['UG']['thread_comp_fechada_ug2'] == True:
-            Thread(target=lambda: self.set_fechamento_comporta_ug2()).start()
-            self.dict['UG']['thread_comp_fechada_ug2'] = False
-    
-        if self.dict['UG']['thread_comp_cracking_ug2'] == True:
-            Thread(target=lambda: self.set_cracking_comporta_ug2()).start()
-            self.dict['UG']['thread_comp_cracking_ug2'] = False
 
-    def set_abertura_comporta_ug1(self):
-        if self.dict['UG']['comporta_operando_ug2'] == True:
-            logger.info('Não é possível realizar a abertura da comporta 1 pois a comporta 2 está em operação.')
+        if self.dict['TDA'][f'cp{self.id}_thread_aberta']:
+            Thread(target=lambda: self.set_abertura_cp_ug()).start()
+            self.dict['TDA'][f'cp{self.id}_thread_aberta'] = False
 
-        elif self.dict['UG']['limpa_grades_operando'] == True:
-            logger.info('Não é possível realizar a abertura da comporta 1 pois o limpa grades se encontra em operação.')
+        if self.dict['TDA'][f'cp{self.id}_thread_fechada']:
+            Thread(target=lambda: self.set_fechamento_cp_ug()).start()
+            self.dict['TDA'][f'cp{self.id}_thread_fechada'] = False
 
-        elif self.dict['UG']['permissao_abrir_comporta_ug1'] == False:
-            logger.info('As permissões de abertura da comporta 1 ainda não foram ativadas.')
+        if self.dict['TDA'][f'cp{self.id}_thread_cracking']:
+            Thread(target=lambda: self.set_cracking_cp_ug()).start()
+            self.dict['TDA'][f'cp{self.id}_thread_cracking'] = False
 
-        elif self.dict['UG']['comporta_cracking_ug1'] == True and self.dict['UG']['comporta_fechada_ug1'] == False:
-            self.dict['UG']['comporta_operando_ug1'] = True
-            while self.dict['UG']['progresso_ug1'] <= 100:
-                self.dict['UG']['progresso_ug1'] += 0.00001
-            self.dict['UG']['comporta_operando_ug1'] = False
-            self.dict['UG']['comporta_fechada_ug1'] = False
-            self.dict['UG']['comporta_aberta_ug1'] = True
-            self.dict['UG']['comporta_cracking_ug1'] = False
-            self.dict['UG']['equalizar_ug1'] = False
+    def set_abertura_cp_ug(self) -> "None":
+        if self.dict['TDA'][f'cp{2 if self.id == 1 else 1}_operando']:
+            print(f'[UG{self.id}-CP{self.id}] Não é possível realizar a Abertura da Comporta {1 if self.id == 1 else 2}, pois a Comporta {2 if self.id == 1 else 1} está em operação!')
 
-        elif self.dict['UG']['comporta_cracking_ug1'] == False and self.dict['UG']['comporta_fechada_ug1'] == True:
-            logger.info('A comporta está fechada, execute a operação de cracking primeiro!')
-        
+        elif self.dict['TDA']['lg_operando']:
+            print(f'[UG{self.id}-CP{self.id}] Não é possível realizar a Abertura da Comporta {self.id} pois o Limpa Grades se encontra em operação!')
+
+        elif not self.dict['TDA'][f'cp{self.id}_permissao_abertura']:
+            print(f'[UG{self.id}-CP{self.id}] As Permissões de Abertura da Comporta {self.id} ainda não foram ativadas!')
+
+        elif self.dict['TDA'][f'cp{self.id}_cracking'] and not self.dict['TDA'][f'cp{self.id}_fechada']:
+            self.dict['TDA'][f'cp{self.id}_operando'] = True
+
+            while self.dict['TDA'][f'cp{self.id}_progresso'] <= 100:
+                self.dict['TDA'][f'cp{self.id}_progresso'] += 0.00001
+
+            self.dict['TDA'][f'cp{self.id}_operando'] = False
+            self.dict['TDA'][f'cp{self.id}_fechada'] = False
+            self.dict['TDA'][f'cp{self.id}_aberta'] = True
+            self.dict['TDA'][f'cp{self.id}_cracking'] = False
+            self.dict['TDA'][f'cp{self.id}_equalizar'] = False
+
+        elif not self.dict['TDA'][f'cp{self.id}_cracking'] and self.dict['TDA'][f'cp{self.id}_fechada']:
+            print(f'[UG{self.id}-CP{self.id}] A Comporta está Fechada, execute a operação de Cracking primeiro!')
+
         else:
-            logger.info('A comporta já está aberta.')
-        return True
-    
-    def set_fechamento_comporta_ug1(self):
-        if self.dict['UG']['etapa_atual_ug1'] != ETAPA_UP:
-            logger.warning('[UG1] A Unidade deve estar completamente parada para realizar o fechamento da comporta!')
+            print(f'[UG{self.id}-CP{self.id}] A Comporta já está aberta.')
 
-        elif self.dict['UG']['comporta_aberta_ug1'] == True and self.dict['UG']['comporta_cracking_ug1'] == False:
-            while self.dict['UG']['progresso_ug1'] >= 0:
-                self.dict['UG']['progresso_ug1'] -= 0.00001
-            self.dict['UG']['comporta_fechada_ug1'] = True
-            self.dict['UG']['comporta_aberta_ug1'] = False
-            self.dict['UG']['comporta_cracking_ug1'] = False
+    def set_fechamento_cp_ug(self) -> "None":
+        if self.dict[f'UG{self.id}'][f'etapa_atual'] != ETAPA_UP:
+            print(f'[UG{self.id}-CP{self.id}] A Unidade deve estar completamente Parada para realizar o Fechamento da Comporta!')
 
-        elif self.dict['UG']['comporta_cracking_ug1'] == True and self.dict['UG']['comporta_aberta_ug1'] == False:
-            while self.dict['UG']['progresso_ug1'] >= 0:
-                self.dict['UG']['progresso_ug1'] -= 0.00001
-            self.dict['UG']['comporta_fechada_ug1'] = True
-            self.dict['UG']['comporta_aberta_ug1'] = False
-            self.dict['UG']['comporta_cracking_ug1'] = False
-        
+        elif (self.dict['TDA'][f'cp{self.id}_aberta'] and not self.dict['TDA'][f'cp{self.id}_cracking']) \
+            or (self.dict['TDA'][f'cp{self.id}_cracking'] and not self.dict['TDA'][f'cp{self.id}_aberta']):
+
+            while self.dict['TDA'][f'cp{self.id}_progresso'] >= 0:
+                self.dict['TDA'][f'cp{self.id}_progresso'] -= 0.00001
+
+            self.dict['TDA'][f'cp{self.id}_fechada'] = True
+            self.dict['TDA'][f'cp{self.id}_aberta'] = False
+            self.dict['TDA'][f'cp{self.id}_cracking'] = False
+
         else:
-            logger.info('A comporta já está fechada.')
-        return True
+            print(f'[UG{self.id}-CP{self.id}] A comporta já está Fechada!')
 
-    def set_cracking_comporta_ug1(self):
-        if self.dict['UG']['comporta_operando_ug2'] == True:
-            logger.info('Não é possível realizar o cracking da comporta 1 pois a comporta 2 está em operação.')
-        
-        elif self.dict['UG']['limpa_grades_operando'] == True:
-            logger.info('Não é possível realizar o cracking da comporta 1 pois o limpa grades se encontra em operação.')
+    def set_cracking_cp_ug(self) -> "None":
+        if self.dict['TDA'][f'cp{2 if self.id == 1 else 1}_operando']:
+            print(f'[UG{self.id}-CP{self.id}] Não é possível realizar a Abertura da Comporta {1 if self.id == 1 else 2}, pois a Comporta {2 if self.id == 1 else 1} está em operaçã!')
 
-        elif self.dict['UG']['comporta_fechada_ug1'] == True and self.dict['UG']['comporta_aberta_ug1'] == False:
-            self.dict['UG']['comporta_operando_ug1'] = True
-            while self.dict['UG']['progresso_ug1'] <= 20:
-                self.dict['UG']['progresso_ug1'] += 0.00001
-            self.dict['UG']['comporta_operando_ug1'] = False
-            self.dict['UG']['comporta_fechada_ug1'] = False
-            self.dict['UG']['comporta_aberta_ug1'] = False
-            self.dict['UG']['comporta_cracking_ug1'] = True
-            Thread(target=lambda: self.timer_equalizacao_cracking_ug1()).start()
-        
-        elif self.dict['UG']['comporta_aberta_ug1'] == True and self.dict['UG']['comporta_fechada_ug1'] == False:
-            logger.info('A comporta já está aberta.')
-        
+        elif self.dict['TDA']['lg_operando']:
+            print(f'[UG{self.id}-CP{self.id}] Não é possível realizar o Cracking da Comporta {self.id} pois o Limpa Grades se encontra em operação!')
+
+        elif self.dict['TDA'][f'cp{self.id}_fechada'] and not self.dict['TDA'][f'cp{self.id}_aberta']:
+            self.dict['TDA'][f'cp{self.id}_operando'] = True
+
+            while self.dict['TDA'][f'cp{self.id}_progresso'] <= 20:
+                self.dict['TDA'][f'cp{self.id}_progresso'] += 0.00001
+
+            self.dict['TDA'][f'cp{self.id}_operando'] = False
+            self.dict['TDA'][f'cp{self.id}_fechada'] = False
+            self.dict['TDA'][f'cp{self.id}_aberta'] = False
+            self.dict['TDA'][f'cp{self.id}_cracking'] = True
+            Thread(target=lambda: self.equalizar_uh_cp()).start()
+
+        elif self.dict['TDA'][f'cp{self.id}_aberta'] and not self.dict['TDA'][f'cp{self.id}_fechada']:
+            print(f'[UG{self.id}-CP{self.id}] A Comporta já está Aberta!')
+
         else:
-            logger.info('A comporta já está na posição de cracking.')
-        return True
-    
-    def set_abertura_comporta_ug2(self):
-        if self.dict['UG']['comporta_operando_ug1'] == True:
-            logger.info('Não é possível realizar a abertura da comporta 2 pois a comporta 1 está em operação.')
-        
-        elif self.dict['UG']['limpa_grades_operando'] == True:
-            logger.info('Não é possível realizar a abertura da comporta 2 pois o limpa grades se encontra em operação.')
-        
-        elif self.dict['UG']['permissao_abrir_comporta_ug2'] == False:
-            logger.info('As permissões de abertura da comporta 2 ainda não foram ativadas.')
+            print(f'[UG{self.id}-CP{self.id}] A Comporta já está na posição de Cracking!')
 
-        elif self.dict['UG']['comporta_cracking_ug2'] == True and self.dict['UG']['comporta_fechada_ug2'] == False:
-            self.dict['UG']['comporta_operando_ug2'] = True
-            while self.dict['UG']['progresso_ug2'] <= 100:
-                self.dict['UG']['progresso_ug2'] += 0.00001
-            self.dict['UG']['comporta_operando_ug2'] = False
-            self.dict['UG']['comporta_fechada_ug2'] = False
-            self.dict['UG']['comporta_aberta_ug2'] = True
-            self.dict['UG']['comporta_cracking_ug2'] = False
-            self.dict['UG']['equalizar_ug2'] = False
-        
-        elif self.dict['UG']['comporta_cracking_ug2'] == False and self.dict['UG']['comporta_fechada_ug2'] == True:
-            logger.info('A comporta está fechada, execute a operação de cracking primeiro!')
-        
-        else:
-            logger.info('A comporta já está aberta.')
-        return True
-    
-    def set_fechamento_comporta_ug2(self):
-        if self.dict['UG']['etapa_atual_ug2'] != ETAPA_UP:
-            logger.warning('[UG2] A Unidade deve estar completamente parada para realizar o fechamento da comporta!')
+    def equalizar_uh_cp(self) -> "None":
+        print(f'[UG{self.id}-CP{self.id}] Aguardando Equalização de Pressão da Unidade Hidráulica da Comporta...')
 
-        elif self.dict['UG']['comporta_aberta_ug2'] == True and self.dict['UG']['comporta_cracking_ug2'] == False:
-            while self.dict['UG']['progresso_ug2'] >= 0:
-                self.dict['UG']['progresso_ug2'] -= 0.00001
-            self.dict['UG']['comporta_fechada_ug2'] = True
-            self.dict['UG']['comporta_aberta_ug2'] = False
-            self.dict['UG']['comporta_cracking_ug2'] = False
-        
-        elif self.dict['UG']['comporta_cracking_ug2'] == True and self.dict['UG']['comporta_aberta_ug2'] == False:
-            while self.dict['UG']['progresso_ug2'] >= 0:
-                self.dict['UG']['progresso_ug2'] -= 0.00001
-            self.dict['UG']['comporta_fechada_ug2'] = True
-            self.dict['UG']['comporta_aberta_ug2'] = False
-            self.dict['UG']['comporta_cracking_ug2'] = False
-        
-        else:
-            logger.info('A comporta já está fechada.')
-        return True
-    
-    def set_cracking_comporta_ug2(self):
-        if self.dict['UG']['comporta_operando_ug1'] == True:
-            logger.info('Não é possível realizar o cracking da comporta 2 pois a comporta 1 está em operação.')
-        
-        elif self.dict['UG']['limpa_grades_operando'] == True:
-            logger.info('Não é possível realizar o cracking da comporta 2 pois o limpa grades se encontra em operação.')
-
-        elif self.dict['UG']['comporta_fechada_ug2'] == True and self.dict['UG']['comporta_aberta_ug2'] == False:
-            self.dict['UG']['comporta_operando_ug2'] = True
-            while self.dict['UG']['progresso_ug2'] <= 20:
-                self.dict['UG']['progresso_ug2'] += 0.00001
-            self.dict['UG']['comporta_operando_ug2'] = False
-            self.dict['UG']['comporta_fechada_ug2'] = False
-            self.dict['UG']['comporta_aberta_ug2'] = False
-            self.dict['UG']['comporta_cracking_ug2'] = True
-            Thread(target=lambda: self.timer_equalizacao_cracking_ug2()).start()
-        
-        elif self.dict['UG']['comporta_aberta_ug2'] == True and self.dict['UG']['comporta_fechada_ug2'] == False:
-            logger.info('A comporta já está aberta.')
-        
-        else:
-            logger.info('A comporta já está na posição de cracking.')
-        return True
-
-    def timer_equalizacao_cracking_ug1(self):
-        delay = 20
-        logger.debug('Aguardando equalização de pressão da UG.')
-        tempo_equalizacao = time() + delay
+        tempo_equalizacao = time() + 5
         while time() <= tempo_equalizacao:
-            if self.dict['UG']['equalizar_ug1'] == True:
-                logger.info('A unidade foi equalizada, permissão para abrir comporta ativada!')
-                self.dict['UG']['permissao_abrir_comporta_ug1'] = True
-                return True
+            if self.dict['TDA'][f'cp{self.id}_trip']:
+                print(f'[UG{self.id}-CP{self.id}] Não foi possível Equalizar a Unidade Hidráulica! Fechando Comporta...')
+                self.dict['TDA'][f'cp{self.id}_thread_fechada'] = True
+                self.dict['TDA'][f'cp{self.id}_trip'] = False
+                return
 
-        logger.warning('Não foi possível equalizar a unidade! Fechando comporta e adicionando condicionador')
-        self.dict['UG']['trip_ug1'] = True
-        self.dict['UG']['condicao_falha_cracking_ug1'] = True
-        self.dict['UG']['thread_comp_fechada_ug1'] = True
-        return False
-    
-    def timer_equalizacao_cracking_ug2(self):
-        delay = 20
-        logger.debug('Aguardando equalização de pressão da UG.')
-        tempo_equalizacao = time() + delay
-        while time() <= tempo_equalizacao:
-            if self.dict['UG']['equalizar_ug2'] == True:
-                logger.info('A unidade foi equalizada, permissão para abrir comporta ativada!')
-                self.dict['UG']['permissao_abrir_comporta_ug2'] = True
-                return True
-
-        logger.warning('Não foi possível equalizar a unidade! Fechando comporta e adicionando condicionador')
-        self.dict['UG']['trip_ug2'] = True
-        self.dict['UG']['condicao_falha_cracking_ug2'] = True
-        self.dict['UG']['thread_comp_fechada_ug2'] = True
-        return False
+        print(f'[UG{self.id}-CP{self.id}] A Unidade foi Equalizada, Permissão para Abrir comporta ativada!')
+        self.dict['TDA'][f'cp{self.id}_permissao_abertura'] = True

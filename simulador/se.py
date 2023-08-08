@@ -1,121 +1,140 @@
-import logging
+import numpy as np
 
-import simulador.dicionarios.dict as dct
+from pyModbusTCP.server import DataBank as DB
 
-from simulador.funcoes.temporizador import Temporizador
+from funcs.temporizador import Temporizador
 
-from simulador.dicionarios.const import *
+from dicts.reg import *
+from dicts.const import *
+from dicts.dict import compartilhado
 
-logger = logging.getLogger('__main__')
+class Se:
+    def __init__(self, tempo: Temporizador) -> None:
+        self.dict = compartilhado
 
-class Dj52L:
-    def __init__(self, time_handler: "Temporizador") -> None:
-        self.dict = dct.compartilhado
-
-        self.segundos_por_passo = time_handler.segundos_por_passo
+        self.escala_ruido = tempo.escala_ruido
+        self.passo_simulacao = tempo.passo_simulacao
+        self.segundos_por_passo = tempo.segundos_por_passo
 
         self.mola = 0
         self.tempo_carregamento_mola = 2
-
         self.avisou_trip = False
 
-    def passo(self) -> None:
-        self.verificar_inconsistente()
-
-        self.verificar_mola()
-        self.verificar_tensao()
-        self.verificar_condicao()
-
-        if self.dict['DJ']['debug_dj52L_fechar'] and self.dict['DJ']['debug_dj52L_abrir']:
-            self.dict['DJ']['dj52L_aberto'] = True
-            self.dict['DJ']['dj52L_fechado'] = True
-            self.dict['DJ']['debug_dj52L_abrir'] = False
-            self.dict['DJ']['debug_dj52L_fechar'] = False
-            self.tripar()
-
-        elif self.dict['DJ']['debug_dj52L_fechar']:
-            self.dict['DJ']['debug_dj52L_fechar'] = False
-            self.fechar()
-
-        elif self.dict['DJ']['debug_dj52L_abrir']:
-            self.dict['DJ']['debug_dj52L_abrir'] = False
-            self.abrir()
-
-        if self.dict['DJ']['debug_dj52L_reconhece_reset']:
-            self.reconhece_reset()
-
-    def abrir(self) -> None:
-        logger.info('[DJ] Abrir.')
-        if self.dict['DJ']['dj52L_mola_carregada']:
-            self.dict['DJ']['dj52L_aberto'] = True
-            self.dict['DJ']['dj52L_fechado'] = False
-        else:
-            self.tripar('Mandou antes de carregar a mola')
-
-        self.dict['DJ']['dj52L_mola_carregada'] = False
-
-    def fechar(self) -> None:
-        if self.dict['DJ']['dj52L_trip']:
-            self.dict['DJ']['dj52L_falha_fechamento'] = True
-            logger.warning('[DJ] Picou!')
-        else:
-            if not self.dict['DJ']['dj52L_fechado']:
-                logger.info('[DJ] Fechar.')
-                if self.dict['DJ']['dj52L_condicao_de_fechamento']:
-                    self.dict['DJ']['dj52L_aberto'] = False
-                    self.dict['DJ']['dj52L_fechado'] = True
-                    self.dict['DJ']['dj52L_mola_carregada'] = False
-                else:
-                    self.dict['DJ']['dj52L_falha_fechamento'] = True
-                    self.tripar('Mandou antes de ter a condição de fechamento')
-
-    def tripar(self, desc=None) -> None:
-        if not self.avisou_trip:
-            self.avisou_trip = True
-            self.dict['DJ']['dj52L_trip'] = True
-            self.dict['DJ']['dj52L_aberto'] = True
-            self.dict['DJ']['dj52L_fechado'] = False
-            self.dict['DJ']['dj52L_mola_carregada'] = False
-            self.dict['DJ']['dj52L_falha_fechamento'] = True
-            logger.warning('[DJ] Trip!.')
-
-    def reconhece_reset(self) -> None:
-        logger.info('[DJ] Reconhece Reset.')
-        self.dict['DJ']['dj52L_trip'] = False
-        self.dict['DJ']['dj52L_aberto'] = False
-        self.dict['DJ']['dj52L_fechado'] = True
-        self.dict['DJ']['dj52L_inconsistente'] = False
-        self.dict['DJ']['dj52L_falha_fechamento'] = False
-        self.dict['DJ']['debug_dj52L_abrir'] = False
-        self.dict['DJ']['debug_dj52L_fechar'] = False
-        self.dict['DJ']['debug_dj52L_reconhece_reset'] = False
-        self.avisou_trip = False
-
-    def verificar_inconsistente(self) -> None:
-        if self.dict['DJ']['dj52L_aberto'] == self.dict['DJ']['dj52L_fechado']:
-            self.dict['DJ']['dj52L_inconsistente'] = True
-
-    def verificar_mola(self) -> None:
-        if not self.dict['DJ']['dj52L_mola_carregada']:
+    def verificar_mola_dj(self) -> "None":
+        if not self.dict['SE']['dj_mola_carregada']:
             self.mola += self.segundos_por_passo
+
             if self.mola >= self.tempo_carregamento_mola:
                 self.mola = 0
-                self.dict['DJ']['dj52L_mola_carregada'] = True
+                self.dict['SE']['dj_mola_carregada'] = True
 
-    def verificar_tensao(self) -> None:
-        if not (USINA_TENSAO_MINIMA < self.dict['USN']['tensao_na_linha'] < USINA_TENSAO_MAXIMA):
-            self.dict['DJ']['dj52L_falta_vcc'] = True
-            self.tripar('Tensão fora dos limites')
-        else:
-            self.dict['DJ']['dj52L_falta_vcc'] = False
+    def passo(self) -> "None":
+        self.verificar_mola_dj()
+        self.verificar_tensao_dj()
+        self.verificar_condicao_dj()
 
-    def verificar_condicao(self) -> None:
-        if self.dict['DJ']['dj52L_trip'] \
-        or self.dict['DJ']['dj52L_fechado'] \
-        or self.dict['DJ']['dj52L_falta_vcc'] \
-        or self.dict['DJ']['dj52L_inconsistente'] \
-        or not self.dict['DJ']['dj52L_aberto'] \
-        or not self.dict['DJ']['dj52L_mola_carregada']:
-            self.dict['DJ']['dj52L_condicao_de_fechamento'] = False
+        if self.dict['SE']['debug_dj_fechar'] and self.dict['SE']['debug_dj_abrir']:
+            self.dict['SE']['dj_aberto'] = True
+            self.dict['SE']['dj_fechado'] = True
+            self.dict['SE']['debug_dj_abrir'] = False
+            self.dict['SE']['debug_dj_fechar'] = False
+            self.tripar_dj()
+
+        elif self.dict['SE']['debug_dj_fechar']:
+            self.dict['SE']['debug_dj_fechar'] = False
+            self.fechar_dj()
+
+        elif self.dict['SE']['debug_dj_abrir']:
+            self.dict['SE']['debug_dj_abrir'] = False
+            self.abrir_dj()
+
+        if self.dict['SE']['debug_dj_reset']:
+            self.resetar_se()
+
+    def atualizar_modbus(self) -> "None":
+        DB.set_words(MB['LT_P'], [round(self.dict['SE']['potencia_se'])])
+
+    def verificar_tensao_dj(self) -> "None":
+        if not (USINA_TENSAO_MINIMA < self.dict['BAY']['tensao_linha'] < USINA_TENSAO_MAXIMA):
+            self.dict['SE']['dj_falta_vcc'] = True
+            self.tripar_dj(descr='Tensão fora dos limites.')
+
         else:
-            self.dict['DJ']['dj52L_condicao_de_fechamento'] = True
+            self.dict['SE']['dj_falta_vcc'] = False
+
+    def abrir_dj(self) -> "None":
+        print('[SE]  Comando de Abertura do Disjuntor da Subestação acionado')
+
+        if self.dict['SE']['dj_mola_carregada']:
+            self.dict['SE']['dj_aberto'] = True
+            self.dict['SE']['dj_fechado'] = False
+
+        else:
+            self.tripar_dj(descr='Fechou antes de carregar a mola.')
+
+        self.dict['SE']['dj_mola_carregada'] = False
+
+    def fechar_dj(self) -> "None":
+        if self.dict['SE']['dj_trip']:
+            self.dict['SE']['dj_falha'] = True
+            self.tripar_dj(descr='Picou.')
+
+        else:
+            if not self.dict['BAY']['dj_fechado']:
+                print('[SE]  Não foi possível Fechar o Disjuntor da Subestação, pois o Disjuntor do Bay está Aberto!')
+
+            elif not self.dict['SE']['dj_fechado']:
+                print('[SE]  Comando de Fechamento do Disjuntor da Subestação acionado')
+
+                if self.dict['SE']['dj_condicao']:
+                    self.dict['SE']['dj_aberto'] = False
+                    self.dict['SE']['dj_fechado'] = True
+                    self.dict['SE']['dj_mola_carregada'] = False
+                    self.dict['SE']['tensao_linha'] = 23100
+
+                else:
+                    self.dict['SE']['dj_falha'] = True
+                    self.tripar_dj(descr='Fechou antes de ter a condição de fechamento.')
+
+    def tripar_dj(self, descr=None) -> "None":
+        if not self.avisou_trip:
+            self.avisou_trip = True
+            self.dict['SE']['dj_trip'] = True
+            self.dict['SE']['dj_aberto'] = True
+            self.dict['SE']['dj_fechado'] = False
+            self.dict['SE']['dj_mola_carregada'] = False
+            self.dict['SE']['dj_falha'] = True
+            print(f'[SE]  TRIP Disjuntor da Subestação! | Descrição: {descr}')
+
+    def resetar_se(self) -> "None":
+        if self.dict['BAY']['dj_aberto']:
+            print('[SE]  Não é possível acionar o Comando de Reset Geral, pois o Disjuntor do Bay está Aberto!')
+            self.dict['SE']['dj_trip'] = True
+            self.dict['SE']['dj_aberto'] = False
+            self.dict['SE']['dj_fechado'] = False
+            self.dict['SE']['dj_falha'] = True
+            self.dict['SE']['debug_dj_abrir'] = True
+            self.dict['SE']['debug_dj_fechar'] = False
+            self.dict['SE']['debug_dj_reset'] = False
+        else:
+            print('[SE]  Comando de Reset Geral acionado')
+            self.dict['SE']['dj_trip'] = False
+            self.dict['SE']['dj_aberto'] = False
+            self.dict['SE']['dj_fechado'] = False
+            self.dict['SE']['dj_falha'] = False
+            self.dict['SE']['debug_dj_abrir'] = True
+            self.dict['SE']['debug_dj_fechar'] = False
+            self.dict['SE']['debug_dj_reset'] = False
+            self.avisou_trip = False
+
+    def verificar_condicao_dj(self) -> "None":
+        if self.dict['SE']['dj_trip'] \
+        or self.dict['SE']['dj_fechado'] \
+        or self.dict['SE']['dj_falta_vcc'] \
+        or not self.dict['SE']['dj_aberto'] \
+        or not self.dict['SE']['dj_mola_carregada'] \
+        or not self.dict['BAY']['dj_fechado']:
+            self.dict['SE']['dj_condicao'] = False
+
+        else:
+            self.dict['SE']['dj_condicao'] = True

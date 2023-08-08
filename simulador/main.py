@@ -1,71 +1,62 @@
-import logging
 import traceback
 
+import planta as p
+
+import gui.gui as gui
+
 from threading import Thread
-from logging.config import fileConfig
 
-from se import *
-from ug import *
-from simulador.cf import *
+from se import Se
+from tda import Tda
+from bay_c import Bay
+from ug import Unidade as UG
 
-from simulador.gui.gui import start_gui
-from simulador.funcoes.temporizador import Temporizador
+from dicts.dict import compartilhado
+from funcs.temporizador import Temporizador
 
-fileConfig("/opt/operacao-autonoma/logger_cfg.ini")
-logger = logging.getLogger("sim_logger")
 
 if __name__ == '__main__':
 
-    logger.info("Iniciando Simulação...")
+    print("Iniciando Simulação...")
 
     try:
-        logger.info("Iniciando Thread do controlador de tempo da simulação")
+        print("Iniciando Classe controladora de Tempo da Simulação...")
 
         tempo = Temporizador()
 
     except Exception:
-        logger.error(f"Houve um erro ao iniciar a classe controladora de tempo.")
-        logger.error(f"Traceback: {traceback.format_exc()}")
+        print(f"Houve um erro ao iniciar a Classe controladora de Tempo.")
+        print(f"Traceback: {traceback.format_exc()}")
 
     try:
-        logger.debug("Instanciando classes da Usina (UGs, Dj52L, Planta)")
+        print("Iniciando Execução...")
 
-        dj52L = Dj52L(tempo)
+        bay = Bay(tempo)
+        se = Se(tempo)
+        tda = Tda(tempo)
 
         ug1 = UG(1, tempo)
         ug2 = UG(2, tempo)
-
         ugs = [ug1, ug2]
 
-    except Exception:
-        logger.error(f"Houve um erro ao instanciar as classes de UGs, Dj52L.")
-        logger.error(f"Traceback: {traceback.format_exc()}")
-
-    try:
-        logger.info("Iniciando execução.")
-
         thread_temporizador = Thread(target = tempo.run, args=())
+        thread_usina = Thread(target = p.Planta(bay, se, tda, ugs, tempo).run, args=())
+        thread_gui = Thread(target = gui.start_gui, args=(compartilhado,))
+        # thread_controlador = threading.Thread(target=controlador.Controlador(compartilhado).run, args=())
 
-        thread_usina = Thread(target = Planta(dj52L, ugs, tempo).run, args=())
-
-        thread_gui = Thread(target = start_gui, args=())
-
-        # thread_controlador = threading.Thread(target=controlador.Controlador(dct.compartilhado).run, args=())
-
-        logger.info("Rodando simulador...")
+        print("Rodando Simulador...")
         thread_temporizador.start()
         thread_usina.start()
         thread_gui.start()
         # thread_controlador.start()
-
 
         thread_temporizador.join()
         thread_usina.join()
         thread_gui.join()
         # thread_controlador.join()
 
-        logger.info("Fim da simulação.")
+        print("Fim da Simulação.")
 
     except Exception:
-        logger.error(f"Houve um erro ao iniciar as Threads de excução do simulador.")
-        logger.error(f"Traceback: {traceback.format_exc()}")
+        print(f"Houve um erro ao iniciar as Threads de excução do Simulador.")
+        print(f"Traceback: {traceback.format_exc()}")

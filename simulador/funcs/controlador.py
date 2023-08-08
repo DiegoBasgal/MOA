@@ -1,8 +1,7 @@
 import pytz
-import logging
 import threading
 
-import simulador.dicionarios.dict as dct
+import dicts.dict as dct
 
 from sys import stdout
 from time import sleep
@@ -10,8 +9,6 @@ from datetime import datetime
 from mysql.connector import pooling
 
 lock = threading.Lock()
-
-logger = logging.getLogger("__main__")
 
 class Controlador:
     def __init__(self):

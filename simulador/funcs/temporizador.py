@@ -1,14 +1,11 @@
 import pytz
-import logging
 
-import simulador.dicionarios.dict as dct
+import dicts.dict as dct
 
 from datetime import datetime
 
-logger = logging.getLogger('__main__')
-
 class Temporizador:
-    def __init__(self) -> None:
+    def __init__(self) -> "None":
         self.dict = dct.compartilhado
 
         self.speed = 50
@@ -16,13 +13,14 @@ class Temporizador:
         self.passo_simulacao = 0.001
         self.segundos_por_passo = self.passo_simulacao * self.speed
 
-    def get_time(self) -> datetime:
+    def get_time(self) -> "datetime":
         return datetime.now(pytz.timezone('Brazil/East')).replace(tzinfo=None)
 
-    def run(self) -> None:
+    def run(self) -> "None":
         while not self.dict['GLB']['stop_sim']:
             try:
                 self.t_inicio = self.get_time()
+                self.dict['GLB']['tempo_real'] += 20 * 0.00001
                 self.dict['GLB']['tempo_simul'] += self.segundos_por_passo
 
             except KeyboardInterrupt:

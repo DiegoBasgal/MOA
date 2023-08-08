@@ -1,19 +1,19 @@
 MB = {
     # Gerais
-    "USN_CONDICIONADOR":                                      [, ],
+    "USN_CONDICIONADOR":                                        [10, 1],
 
 
     # SE
     "DJL_CMD_FECHAR":                                           [131, 4],
     "BARRA_CA_RST_FLH":                                         [129, 0],
-    # "USN_POTENCIA_KW_MP":                                     10,
-    # "USN_POTENCIA_KW_MR":                                     11,
-
+    "POTENCIA_KW_MP":                                       10,
+    "POTENCIA_KW_MR":                                       11,
+    
     # Bay
     "LT_VAB":                                                   50,
     "LT_VBC":                                                   52,
     "LT_VCA":                                                   53,
-    # "LT_P":                                                   5,
+    "LT_P":                                                     5,
 
     # Tomada da Água
     "NV_MONTANTE":                                              3,
@@ -35,10 +35,10 @@ MB = {
 
     # Unidades Geração
     "UG1_CONDICIONADOR":                                        39 + 10000,
-    "UG1_PASSOS_CMD_RST_FLH":                                   [, ],
+    "UG1_PASSOS_CMD_RST_FLH":                                   [15, 2],
 
-    "UG1_PARTIDA_CMD_SINCRONISMO":                              [, ],
-    "UG1_PARADA_CMD_EMERGENCIA":                                [, ],
+    "UG1_PARTIDA_CMD_SINCRONISMO":                              [15, 3],
+    "UG1_PARADA_CMD_EMERGENCIA":                                [15, 4],
 
     "UG1_P":                                                    130,
     "UG1_HORIMETRO":                                            108,
@@ -58,10 +58,10 @@ MB = {
     "UG1_ENTRADA_TURBINA_PRESSAO":                              37 + 10000,
 
     "UG2_CONDICIONADOR":                                        39 + 10000,
-    "UG2_PASSOS_CMD_RST_FLH":                                   [, ],
+    "UG2_PASSOS_CMD_RST_FLH":                                   [16, 2],
 
-    "UG2_PARADA_CMD_EMERGENCIA":                                [, ],
-    "UG2_PARTIDA_CMD_SINCRONISMO":                              [, ],
+    "UG2_PARADA_CMD_EMERGENCIA":                                [16, 3],
+    "UG2_PARTIDA_CMD_SINCRONISMO":                              [16, 4],
 
     "UG2_P":                                                    130,
     "UG2_HORIMETRO":                                            108,
