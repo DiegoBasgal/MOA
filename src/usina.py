@@ -15,7 +15,7 @@ from datetime import  datetime
 
 from src.dicionarios.reg import *
 from src.dicionarios.const import *
-from src.funcoes.condicionador import *
+from src.funcoes.condicionadores import *
 
 from src.mensageiro.voip import Voip
 from src.conectores.servidores import Servidores
@@ -49,14 +49,11 @@ class Usina:
         self.clp = Servidores.clp
         self.rele  = Servidores.rele
 
-        BAY.iniciar_se()
-        SE.iniciar_bay()
-
         self.agn = Agendamentos()
         self.bd = BancoDados("MOA")
 
-        self.ug1 = UG(self, 1)
-        self.ug2 = UG(self, 2)
+        self.ug1 = UG(1, self.cfg, self.bd)
+        self.ug2 = UG(2, self.cfg, self.bd)
 
         # ATRIBUIÇÃO DE VARIÁVEIS PRIVADAS
 

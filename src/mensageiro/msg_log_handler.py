@@ -9,8 +9,8 @@ import src.dicionarios.dict as dct
 
 from logging import Handler
 
-from voip import Voip
-from whatsapp import WhatsApp
+from src.mensageiro.voip import Voip
+from src.mensageiro.whatsapp import WhatsApp
 
 class MensageiroHandler(Handler):
 

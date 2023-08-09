@@ -8,8 +8,8 @@ from time import time
 from datetime import datetime
 
 from src.funcoes.leitura import *
-from src.funcoes.condicionador import *
 from src.maquinas_estado.ug import *
+from src.funcoes.condicionadores import *
 
 from src.conectores.servidores import Servidores
 from src.conectores.banco_dados import BancoDados
@@ -58,8 +58,6 @@ class UnidadeGeracao:
         self.__tempo_entre_tentativas: "int" = 0
         self.__limite_tentativas_normalizacao: "int" = 3
 
-        self.__next_state: "State" = StateDisponivel(self)
-
         # PROTEGIDAS
         self._setpoint: "int" = 0
         self._prioridade: "int" = 0
@@ -83,6 +81,7 @@ class UnidadeGeracao:
         # FINALIZAÇÃO DO __INIT__
 
         self.carregar_leituras()
+        self.__next_state: "State" = StateDisponivel(self)
 
 
     @property
@@ -230,11 +229,8 @@ class UnidadeGeracao:
     def tentativas_normalizacao(self, var: "int") -> "None":
         # SETTER -> Atribui o novo valor de tentativas de normalização da Unidade.
 
-        if 0 <= var and var == int(var) and self.tentativas_normalizacao <= self.limite_tentativas_normalizacao:
-            self.tentativas_normalizacao = int(var)
-
-        if self.tentativas_normalizacao == self.limite_tentativas_normalizacao:
-            logger.debug(f"[UG{self.id}] Última tentativa de normalização...")
+        if 0 <= var and var == int(var):
+            self._tentativas_de_normalizacao = int(var)
 
     @property
     def condicionadores(self) -> "list[CondicionadorBase]":
@@ -1097,11 +1093,11 @@ class UnidadeGeracao:
         self.leitura_alarme_temp_ponte_fase_c = LeituraModbusBit(self.clp[f"UG{self.id}"], REG_CLP[f"UG{self.id}"]["PONTE_FASE_C_ALM_TMP"], descricao=f"[UG{self.id}] Ponte Fase C Alarme Temperatura")
 
         # Leitura Vibração
-        self.leitura_alarme_vibra_detec_vertical = LeituraModbusBit(self.clp[f"UG{self.id}"], REG_CLP[f"UG{self.id}"]["ALM_VIBRACAO_DETECCAO_VERTICAL"], descricao=f"[UG{self.id}] Detecção Vibração Vertical Alarme")
-        self.leitura_alarme_vibra_detec_horizontal = LeituraModbusBit(self.clp[f"UG{self.id}"], REG_CLP[f"UG{self.id}"]["ALM_VIBRACAO_DETECCAO_HORIZONTAL"], descricao=f"[UG{self.id}] Detecção Vibração Horizontal Alarme")
-        self.leitura_alarme_vibra_eixo_x_mancal_comb = LeituraModbusBit(self.clp[f"UG{self.id}"], REG_CLP[f"UG{self.id}"]["ALM_VIBRACAO_EIXO_X_MANCAL_COMBINADO"], descricao=f"[UG{self.id}] Mancal Combinado Alarme Vibração Eixo X")
-        self.leitura_alarme_vibra_eixo_y_mancal_comb = LeituraModbusBit(self.clp[f"UG{self.id}"], REG_CLP[f"UG{self.id}"]["ALM_VIBRACAO_EIXO_Y_MANCAL_COMBINADO"], descricao=f"[UG{self.id}] Mancal Combinado Alarme Vibração Eixo Y")
-        self.leitura_alarme_vibra_eixo_z_mancal_comb = LeituraModbusBit(self.clp[f"UG{self.id}"], REG_CLP[f"UG{self.id}"]["ALM_VIBRACAO_EIXO_Z_MANCAL_COMBINADO"], descricao=f"[UG{self.id}] Mancal Combinado Alarme Vibração Eixo Z")
+        self.leitura_alarme_vibra_detec_vertical = LeituraModbusBit(self.clp[f"UG{self.id}"], REG_CLP[f"UG{self.id}"]["DETECCAO_VERTICAL_ALM_VIBRA"], descricao=f"[UG{self.id}] Detecção Vibração Vertical Alarme")
+        self.leitura_alarme_vibra_detec_horizontal = LeituraModbusBit(self.clp[f"UG{self.id}"], REG_CLP[f"UG{self.id}"]["DETECCAO_HORIZONTAL_ALM_VIBRA"], descricao=f"[UG{self.id}] Detecção Vibração Horizontal Alarme")
+        self.leitura_alarme_vibra_eixo_x_mancal_comb = LeituraModbusBit(self.clp[f"UG{self.id}"], REG_CLP[f"UG{self.id}"]["MANCAL_COMB_EIXO_X_ALM_VIBR"], descricao=f"[UG{self.id}] Mancal Combinado Alarme Vibração Eixo X")
+        self.leitura_alarme_vibra_eixo_y_mancal_comb = LeituraModbusBit(self.clp[f"UG{self.id}"], REG_CLP[f"UG{self.id}"]["MANCAL_COMB_EIXO_Y_ALM_VIBR"], descricao=f"[UG{self.id}] Mancal Combinado Alarme Vibração Eixo Y")
+        self.leitura_alarme_vibra_eixo_z_mancal_comb = LeituraModbusBit(self.clp[f"UG{self.id}"], REG_CLP[f"UG{self.id}"]["MANCAL_COMB_EIXO_Z_ALM_VIBR"], descricao=f"[UG{self.id}] Mancal Combinado Alarme Vibração Eixo Z")
 
         # Leituras Mancais
         self.leitura_alarme_temp_mancal_guia = LeituraModbusBit(self.clp[f"UG{self.id}"], REG_CLP[f"UG{self.id}"]["MANCAL_GUIA_ALM_TMP"],  descricao=f"[UG{self.id}] Mancal Guia Alarme Temperatura")

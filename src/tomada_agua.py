@@ -9,7 +9,7 @@ import traceback
 import src.dicionarios.dict as dct
 
 from src.funcoes.leitura import *
-from src.funcoes.condicionador import *
+from src.funcoes.condicionadores import *
 
 from src.comporta import Comporta
 from src.conectores.servidores import Servidores
