@@ -6,11 +6,13 @@ import logging
 import traceback
 import threading
 
+import src.subestacao as se
+
 from time import time, sleep
 
 from src.funcoes.leitura import *
 from src.dicionarios.const import *
-from src.funcoes.condicionador import *
+from src.funcoes.condicionadores import *
 
 from src.conectores.servidores import Servidores
 from src.funcoes.escrita import EscritaModBusBit as EMB
@@ -19,12 +21,8 @@ logger = logging.getLogger("logger")
 
 class Bay:
 
-    def iniciar_se(cls):
-        from src.subestacao import Subestacao
-        cls.se = Subestacao
-
     # ATRIBUIÇÃO DE VARIÁVEIS
-    
+
     clp = Servidores.clp
     rele = Servidores.rele
 
@@ -128,7 +126,7 @@ class Bay:
         logger.info("[BAY] Verificando condições de fechamento do Disjuntor do BAY...")
 
         try:
-            if cls.se.dj_linha_se.valor:
+            if se.Subestacao.dj_linha_se.valor:
                 logger.info("[BAY] Disjuntor da Subestação fechado! Acionando comando de abertura...")
 
                 if not EMB.escrever_bit(cls.clp["SA"], REG_CLP["SE"]["DJL_CMD_ABRIR"], valor=0):

@@ -95,11 +95,11 @@ if __name__ == "__main__":
                 logger.debug("")
                 logger.info("Carregando arquivo de configuração...")
 
-                arquivo = os.path.join(os.path.dirname(__file__), "cfg.json")
+                arquivo = os.path.join(os.path.dirname('/opt/operacao-autonoma/src/dicionarios/'), "cfg.json")
                 with open(arquivo, "r") as file:
                     cfg = json.load(file)
 
-                arquivo = os.path.join(os.path.dirname(__file__), "cfg.json.bkp")
+                arquivo = os.path.join(os.path.dirname('/opt/operacao-autonoma/src/dicionarios/'), "cfg.json.bkp")
                 with open(arquivo, "w") as file:
                     json.dump(cfg, file, indent=4)
 

@@ -76,7 +76,6 @@ class CondicionadorBase:
 
         self._ugs = var
 
-
 class CondicionadorExponencial(CondicionadorBase):
     def __init__(self, leitura, gravidade, valor_base: "float"=None, valor_limite: "float"=None, ordem: "float"=None) -> "None":
         super().__init__(leitura, gravidade)
@@ -137,7 +136,6 @@ class CondicionadorExponencial(CondicionadorBase):
         # SETTER -> Atribui o novo Valor Limite do Condicionador.
 
         self._valor_limite = val
-
 
 class CondicionadorExponencialReverso(CondicionadorExponencial):
     def __init__(self ,leitura, gravidade, valor_base, valor_limite, ordem) -> "None":

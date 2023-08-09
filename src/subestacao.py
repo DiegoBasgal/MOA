@@ -6,11 +6,12 @@ __description__ = "Este módulo corresponde a implementação da operação da S
 import logging
 import traceback
 
+import src.bay as bay
 import src.dicionarios.dict as dct
 
 from src.funcoes.leitura import *
 from src.dicionarios.const import *
-from src.funcoes.condicionador import *
+from src.funcoes.condicionadores import *
 
 from src.conectores.servidores import Servidores
 from src.funcoes.escrita import EscritaModBusBit as EMB
@@ -18,10 +19,6 @@ from src.funcoes.escrita import EscritaModBusBit as EMB
 logger = logging.getLogger("logger")
 
 class Subestacao:
-
-    def iniciar_bay(cls):
-        from src.bay import Bay
-        cls.bay = Bay
 
     # ATRIBUIÇÃO DE VARIÁVEIS
 
@@ -134,7 +131,7 @@ class Subestacao:
         logger.info("[SE]  Verificando condições de fechamento do Disjuntor de Linha...")
 
         try:
-            if not cls.bay.dj_linha_bay.valor:
+            if not bay.Bay.dj_linha_bay.valor:
                 logger.warning("[SE]  O Disjuntor do Bay está aberto!")
                 cls.dj_bay_aberto = True
                 flags += 1
@@ -143,11 +140,11 @@ class Subestacao:
                 logger.warning("[SE]  O sinal de trip do relé do transformador elevador está ativado!")
                 flags += 1
 
-            if not cls.bay.barra_morta.valor and cls.bay.barra_viva.valor:
+            if not bay.Bay.barra_morta.valor and bay.Bay.barra_viva.valor:
                 logger.warning("[SE]  Foi identificada leitura de corrente na barra do Bay!")
                 flags += 1
 
-            if not cls.bay.secc_fechada.valor:
+            if not bay.Bay.secc_fechada.valor:
                 logger.warning("[SE]  A seccionadora do Bay está aberta!")
                 flags += 1
 

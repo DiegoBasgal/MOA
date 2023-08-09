@@ -6,19 +6,18 @@ __description__ = "Este módulo corresponde a implementação da operação do S
 import logging
 import traceback
 
-import dicionarios.dict as dct
+import src.dicionarios.dict as dct
 
-from funcoes.leitura import *
-from dicionarios.const import *
-from funcoes.condicionador import *
+from src.funcoes.leitura import *
+from src.dicionarios.const import *
+from src.funcoes.condicionadores import *
 
-from usina import Usina
-from conectores.servidores import Servidores
-from funcoes.escrita import EscritaModBusBit as EMB
+from src.conectores.servidores import Servidores
+from src.funcoes.escrita import EscritaModBusBit as EMB
 
 logger = logging.getLogger("logger")
 
-class ServicoAuxiliar(Usina):
+class ServicoAuxiliar:
 
     # ATRIBUIÇÃO DE VARIÁVEIS
 
