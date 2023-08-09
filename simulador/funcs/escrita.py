@@ -7,7 +7,7 @@ from pyModbusTCP.server import DataBank as DB
 class Escrita:
 
     @classmethod
-    def escrever_bit(cls, reg: "int", valor: "int") -> "None":
+    def escrever_bit(cls, reg: "list[int, int]", valor: "int") -> "None":
 
         try:
             raw = DB.get_words(reg[0])

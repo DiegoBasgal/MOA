@@ -7,7 +7,7 @@ from pyModbusTCP.server import DataBank as DB
 class Leitura:
 
     @classmethod
-    def ler_bit(self, reg: "int", invertido: "bool"=False) -> "int":
+    def ler_bit(self, reg: "list[int, int]", invertido: "bool"=False) -> "int":
 
         try:
             raw = DB.get_words(reg[0])

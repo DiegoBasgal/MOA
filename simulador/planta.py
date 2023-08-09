@@ -43,11 +43,11 @@ class Planta:
         self.server_MB = ModbusServer(host='localhost', port=5002, no_block=True)
         self.server_MB.start()
 
-        for r in MB.values():
-            if isinstance(r, list):
-                DB.set_words(r[0], [0])
+        for n, l in MB.items():
+            if isinstance(l, list):
+                ESC.escrever_bit(l, [0])
             else:
-                DB.set_words(r, [0])
+                DB.set_words(l, [0])
 
     def run(self) -> "None":
 
