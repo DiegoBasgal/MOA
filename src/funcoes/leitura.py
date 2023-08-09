@@ -5,9 +5,12 @@ __description__ = "Este módulo corresponde a implementação de leituras de reg
 import logging
 import traceback
 
+from time import sleep
+from pymodbus.constants import Endian
+from pymodbus.payload import BinaryPayloadDecoder as BPD
 from pyModbusTCP.client import ModbusClient
 
-from dicionarios.reg import *
+from src.dicionarios.reg import *
 
 logger = logging.getLogger("logger")
 
@@ -64,21 +67,61 @@ class LeituraModbus:
 
 
 class LeituraModbusBit(LeituraModbus):
-    def __init__(self, client, registrador, bit: "int"=None, invertido: "bool"=None, descricao: "str"=None) -> "None":
+    def __init__(self, client, registrador, invertido: "bool"=None, descricao: "str"=None) -> "None":
         super().__init__(client, registrador, descricao)
 
         # ATRIBUIÇÃO DE VARIÁVEIS PRIVADAS
 
-        self.__bit = bit
+        self.__reg = registrador[0] if isinstance(registrador, list) else registrador
         self.__invertido = False if invertido is not None else invertido
 
     @property
     def valor(self) -> "bool":
-        # PROPRIEDADE -> Retorna Valor Bit ModBus.
+        # PROPRIEDADE -> Retorna Valor Bit em booleano ModBus.
 
-        ler_bit = self.raw & 2**self.__bit
-        return not ler_bit if self.__invertido else ler_bit
+        try:
+            raw = self.__client.read_holding_registers(self.__reg[0])
+            dec_1 = BPD.fromRegisters(raw, byteorder=Endian.Big, wordorder=Endian.Little)
+            dec_2 = BPD.fromRegisters(raw, byteorder=Endian.Big, wordorder=Endian.Little)
 
+            lbit = [int(bit) for bits in [reversed(dec_1.decode_bits(1)), reversed(dec_2.decode_bits(2))] for bit in bits]
+
+            lbit_r = [b for b in reversed(lbit)]
+
+            for i in range(len(lbit_r)):
+                if self.__reg[1] == i:
+                    return not lbit_r[i] if self.__invertido else lbit_r[i]
+
+        except Exception:
+            logger.error(f"[LEI] Houve um erro ao realizar a Leitura de valores Bit do registrador: {self.__reg}.")
+            logger.debug(traceback.format_exc())
+            sleep(1)
+            return None
+
+
+class LeituraModbusFloat(LeituraModbus):
+    def __init__(self, client: "ModbusClient"=None, registrador: "int"=None, op: "int"=3, descricao: "str"=None):
+        super().__init__(client, registrador, op, descricao)
+
+        # ATRIBUIÇÃO DE VAIRÁVEIS PRIVADAS
+
+        self.__reg = registrador[0] if isinstance(registrador, list) else registrador
+
+    @property
+    def valor(self) -> "float":
+        # PROPRIEDADE -> Retorna o valor tradado de leitura em Float.
+
+        try:
+            raw = self.__client.read_holding_registers(self.__reg, 2)
+            dec = BPD.fromRegisters(raw, byteorder=Endian.Big, wordorder=Endian.Little)
+
+            return dec.decode_32bit_float()
+
+        except Exception:
+            logger.error(f"[LEI] Houve um erro ao realizar a Leitura de valores Float do registrador: {self.__reg}.")
+            logger.debug(traceback.format_exc())
+            sleep(1)
+            return 0
 
 class LeituraSoma:
     def __init__(self, leituras: "list[LeituraModbus]"=None, min_zero: "bool"=None) -> "None":

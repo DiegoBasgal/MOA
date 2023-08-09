@@ -5,6 +5,8 @@ __description__ = "Este módulo corresponde a implementação de escrita em regi
 import logging
 import traceback
 
+from pymodbus.constants import Endian
+from pymodbus.payload import BinaryPayloadDecoder as BPD
 from pyModbusTCP.client import ModbusClient
 
 logger = logging.getLogger("logger")
@@ -12,7 +14,7 @@ logger = logging.getLogger("logger")
 class EscritaModBusBit:
 
     @classmethod
-    def escrever_bit(cls, client: "ModbusClient", registrador: "str", bit: "int", valor: "int") -> "bool":
+    def escrever_bit(cls, client: "ModbusClient", registrador: "list[int, int]", valor: "int") -> "bool":
         """
         Função para escrever novo valor de Bit do Registrador.
 
@@ -23,20 +25,25 @@ class EscritaModBusBit:
         """
 
         try:
-            raw = client.read_coils(registrador)[0]
-            bin = [int(x) for x in list('{0:0b}'.format(raw))]
+            raw = client.read_holding_registers(registrador[0])
+            dec_1 = BPD.fromRegisters(raw, byteorder=Endian.Big, wordorder=Endian.Little)
+            dec_2 = BPD.fromRegisters(raw, byteorder=Endian.Big, wordorder=Endian.Little)
 
-            for i in range(len(bin)):
-                if bit == i:
-                    bin[i] = valor
+            lbit = [int(bit) for bits in [reversed(dec_1.decode_bits(1)), reversed(dec_2.decode_bits(2))] for bit in bits]
+
+            lbit_r = [b for b in reversed(lbit)]
+
+            for i in range(len(lbit_r)):
+                if registrador[1] == i:
+                    lbit_r[i] = valor
                     break
 
-            v = sum(val*(2**x) for x, val in enumerate(reversed(bin)))
+            v = sum(val*(2**x) for x, val in enumerate(lbit_r))
 
-            res = client.write_single_coil(registrador, [v])
+            res = client.write_single_register(registrador[0], v)
             return res
 
         except Exception:
-            logger.error(f"[ESC] Houve um erro ao realizar a Leitura do REG: {registrador}, Bit: {bit} do Servidor: {client}")
+            logger.error(f"[ESC] Houve um erro ao realizar a Escrita no REG: {registrador}")
             logger.debug(f"[ESC] Traceback: {traceback.format_exc()}")
             return False

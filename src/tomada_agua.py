@@ -6,19 +6,18 @@ __description__ = "Este módulo corresponde a implementação da operação da T
 import logging
 import traceback
 
-import dicionarios.dict as dct
+import src.dicionarios.dict as dct
 
-from funcoes.leitura import *
-from funcoes.condicionador import *
+from src.funcoes.leitura import *
+from src.funcoes.condicionador import *
 
-from usina import Usina
-from comporta import Comporta
-from conectores.servidores import Servidores
-from funcoes.escrita import EscritaModBusBit as EMB
+from src.comporta import Comporta
+from src.conectores.servidores import Servidores
+from src.funcoes.escrita import EscritaModBusBit as EMB
 
 logger = logging.getLogger("logger")
 
-class TomadaAgua(Usina):
+class TomadaAgua:
 
     # ATRIBUIÇÃO DE VARIÁVEIS
 
@@ -47,7 +46,6 @@ class TomadaAgua(Usina):
     status_unidade_hidraulica = LeituraModbusBit(
         clp["TDA"],
         REG_CLP["TDA"]["UH_DISPONIVEL"],
-        bit=1,
         descricao="[TDA] Status Unidade Hidáulica"
     )
 
@@ -65,7 +63,7 @@ class TomadaAgua(Usina):
         """
 
         try:
-            res = EMB.escrever_bit(cls.clp["TDA"], REG_CLP["TDA"]["VB_CMD_RST_FLH"], bit=0, valor=1)
+            res = EMB.escrever_bit(cls.clp["TDA"], REG_CLP["TDA"]["VB_CMD_RST_FLH"], valor=1)
             return res
 
         except Exception:
@@ -212,23 +210,23 @@ class TomadaAgua(Usina):
 
         # CONDICIONADORES ESSENCIAIS
         # Normalizar
-        cls.leitura_sem_emergencia_tda = LeituraModbusBit(cls.clp["TDA"], REG_CLP["TDA"]["SEM_EMERGENCIA"], bit=24, invertido=True, descricao="[TDA] Emergência")
+        cls.leitura_sem_emergencia_tda = LeituraModbusBit(cls.clp["TDA"], REG_CLP["TDA"]["SEM_EMERGENCIA"], invertido=True, descricao="[TDA] Emergência")
         cls.condicionadores_essenciais.append(CondicionadorBase(cls.leitura_sem_emergencia_tda, CONDIC_NORMALIZAR))
 
         # CONDICIONADORES
         # Normalizar
-        cls.leitura_ca_com_tensao = LeituraModbusBit(cls.clp["TDA"], REG_CLP["TDA"]["CA_COM_TENSAO"], bit=11, invertido=True, descricao="[TDA] Tensão CA Status ")
+        cls.leitura_ca_com_tensao = LeituraModbusBit(cls.clp["TDA"], REG_CLP["TDA"]["CA_COM_TENSAO"], invertido=True, descricao="[TDA] Tensão CA Status ")
         cls.condicionadores.append(CondicionadorBase(cls.leitura_ca_com_tensao, CONDIC_NORMALIZAR))
 
-        cls.leitura_falha_ligar_bomba_uh = LeituraModbusBit(cls.clp["TDA"], REG_CLP["TDA"]["UH_FLH_LIGAR_BOMBA"], bit=2, descricao="[TDA] UHTDA Falha Ligar Bomba")
+        cls.leitura_falha_ligar_bomba_uh = LeituraModbusBit(cls.clp["TDA"], REG_CLP["TDA"]["UH_FLH_LIGAR_BOMBA"], descricao="[TDA] UHTDA Falha Ligar Bomba")
         cls.condicionadores.append(CondicionadorBase(cls.leitura_falha_ligar_bomba_uh, CONDIC_NORMALIZAR))
 
         # LEITURA PERIÓDICA
-        cls.leitura_falha_atuada_lg = LeituraModbusBit(cls.clp["TDA"], REG_CLP["TDA"]["LG_FLH_ATUADA"], bit=31, descricao="[TDA] Limpa Grades Falha")
-        cls.leitura_falha_nivel_montante = LeituraModbusBit(cls.clp["TDA"], REG_CLP["TDA"]["NV_MONTANTE_LER_FLH"], bit=0, descricao="[TDA] Nível Montante Falha")
-        cls.leitura_filtro_limpo_uh = LeituraModbusBit(cls.clp["TDA"], REG_CLP["TDA"]["UH_FILTRO_LIMPO"], bit=13, invertido=True, descricao="[TDA] UHTDA Filtro Sujo")
-        cls.leitura_lg_operacao_manual = LeituraModbusBit(cls.clp["TDA"], REG_CLP["TDA"]["LG_OPE_MANUAL"], bit=0, descricao="[TDA] Limpa Grades Operação Manual")
-        cls.leitura_nivel_jusante_comporta_1 = LeituraModbusBit(cls.clp["TDA"], REG_CLP["TDA"]["NV_JUSANTE_CP1"], bit=2, descricao="[TDA] Nível Justante Comporta 1")
-        cls.leitura_nivel_jusante_comporta_2 = LeituraModbusBit(cls.clp["TDA"], REG_CLP["TDA"]["NV_JUSANTE_CP2"], bit=4, descricao="[TDA] Nível Justante Comporta 2")
-        cls.leitura_nivel_jusante_grade_comporta_1 = LeituraModbusBit(cls.clp["TDA"], REG_CLP["TDA"]["NV_JUSANTE_GRADE_CP1_LER_FLH"], bit=1, descricao="[TDA] Nível Justante Comporta 1 Falha")
-        cls.leitura_nivel_jusante_grade_comporta_2 = LeituraModbusBit(cls.clp["TDA"], REG_CLP["TDA"]["NV_JUSANTE_GRADE_CP2_LER_FLH"], bit=3, descricao="[TDA] Nível Justante Comporta 2 Falha")
+        cls.leitura_falha_atuada_lg = LeituraModbusBit(cls.clp["TDA"], REG_CLP["TDA"]["LG_FLH_ATUADA"], descricao="[TDA] Limpa Grades Falha")
+        cls.leitura_falha_nivel_montante = LeituraModbusBit(cls.clp["TDA"], REG_CLP["TDA"]["NV_MONTANTE_LER_FLH"], descricao="[TDA] Nível Montante Falha")
+        cls.leitura_filtro_limpo_uh = LeituraModbusBit(cls.clp["TDA"], REG_CLP["TDA"]["UH_FILTRO_LIMPO"], invertido=True, descricao="[TDA] UHTDA Filtro Sujo")
+        cls.leitura_lg_operacao_manual = LeituraModbusBit(cls.clp["TDA"], REG_CLP["TDA"]["LG_OPE_MANUAL"], descricao="[TDA] Limpa Grades Operação Manual")
+        cls.leitura_nivel_jusante_comporta_1 = LeituraModbusBit(cls.clp["TDA"], REG_CLP["TDA"]["NV_JUSANTE_CP1"], descricao="[TDA] Nível Justante Comporta 1")
+        cls.leitura_nivel_jusante_comporta_2 = LeituraModbusBit(cls.clp["TDA"], REG_CLP["TDA"]["NV_JUSANTE_CP2"], descricao="[TDA] Nível Justante Comporta 2")
+        cls.leitura_nivel_jusante_grade_comporta_1 = LeituraModbusBit(cls.clp["TDA"], REG_CLP["TDA"]["NV_JUSANTE_GRADE_CP1_LER_FLH"], descricao="[TDA] Nível Justante Comporta 1 Falha")
+        cls.leitura_nivel_jusante_grade_comporta_2 = LeituraModbusBit(cls.clp["TDA"], REG_CLP["TDA"]["NV_JUSANTE_GRADE_CP2_LER_FLH"], descricao="[TDA] Nível Justante Comporta 2 Falha")

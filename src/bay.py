@@ -8,21 +8,23 @@ import threading
 
 from time import time, sleep
 
-from funcoes.leitura import *
-from dicionarios.const import *
-from funcoes.condicionador import *
+from src.funcoes.leitura import *
+from src.dicionarios.const import *
+from src.funcoes.condicionador import *
 
-from usina import Usina
-from subestacao import Subestacao as SE
-from conectores.servidores import Servidores
-from funcoes.escrita import EscritaModBusBit as EMB
+from src.conectores.servidores import Servidores
+from src.funcoes.escrita import EscritaModBusBit as EMB
 
 logger = logging.getLogger("logger")
 
-class Bay(Usina):
+class Bay:
+
+    def iniciar_se(cls):
+        from src.subestacao import Subestacao
+        cls.se = Subestacao
 
     # ATRIBUIÇÃO DE VARIÁVEIS
-
+    
     clp = Servidores.clp
     rele = Servidores.rele
 
@@ -49,7 +51,6 @@ class Bay(Usina):
     dj_linha_bay = LeituraModbusBit(
         rele["SE"],
         REG_RELE["SE"]["DJL_FECHADO"],
-        bit=0,
         descricao="[BAY][RELE] Disjuntor Bay Status"
     )
     potencia_medidor_usina = LeituraModbus(
@@ -92,7 +93,7 @@ class Bay(Usina):
             if not cls.dj_linha_bay.valor:
                 logger.info("[BAY] O Disjuntor do Bay está aberto! Realizando fechamento...")
                 if cls.verificar_dj_linha():
-                    EMB.escrever_bit(cls.rele["BAY"], REG_RELE["BAY"]["DJL_CMD_FECHAR"], bit=2, valor=1)
+                    EMB.escrever_bit(cls.rele["BAY"], REG_RELE["BAY"]["DJL_CMD_FECHAR"], valor=1)
                     return True
                 else:
                     logger.warning("[BAY] Não foi possível realizar o fechamento do Disjuntor do BAY.")
@@ -127,10 +128,10 @@ class Bay(Usina):
         logger.info("[BAY] Verificando condições de fechamento do Disjuntor do BAY...")
 
         try:
-            if SE.dj_linha_se.valor:
+            if cls.se.dj_linha_se.valor:
                 logger.info("[BAY] Disjuntor da Subestação fechado! Acionando comando de abertura...")
 
-                if not EMB.escrever_bit(cls.clp["SA"], REG_CLP["SE"]["DJL_CMD_ABRIR"], bit=1, valor=0):
+                if not EMB.escrever_bit(cls.clp["SA"], REG_CLP["SE"]["DJL_CMD_ABRIR"], valor=0):
                     logger.warning("[BAY] Não foi possível realizar a abertura do Disjuntor de Linha da Subestação!")
                     flags += 1
 
@@ -258,16 +259,16 @@ class Bay(Usina):
         """
 
         # Pré-condições de fechamento do Disjuntor do Bay
-        cls.secc_fechada = LeituraModbusBit(cls.rele["BAY"], REG_RELE["BAY"]["SECC_FECHADA"], bit=4, descricao="[BAY][RELE] Seccionadora Fechada")
-        cls.linha_viva = LeituraModbusBit(cls.rele["BAY"], REG_RELE["BAY"]["ID_LINHA_VIVA"], bit=0, descricao="[BAY][RELE] Identificação Linha Viva")
-        cls.barra_viva = LeituraModbusBit(cls.rele["BAY"], REG_RELE["BAY"]["ID_BARRA_VIVA"], bit=1, descricao="[BAY][RELE] Identificação Barra Viva")
-        cls.linha_morta = LeituraModbusBit(cls.rele["BAY"], REG_RELE["BAY"]["ID_LINHA_MORTA"], bit=1, descricao="[BAY][RELE] Identificação Linha Morta")
-        cls.barra_morta = LeituraModbusBit(cls.rele["BAY"], REG_RELE["BAY"]["ID_BARRA_MORTA"], bit=7, descricao="[BAY][RELE] Identificação Barra Morta")
-        cls.mola_carregada = LeituraModbusBit(cls.rele["BAY"], REG_RELE["BAY"]["DJL_MOLA_CARREGADA"], bit=1, descricao="[BAY][RELE] Disjuntor Mola Carregada")
+        cls.secc_fechada = LeituraModbusBit(cls.rele["BAY"], REG_RELE["BAY"]["SECC_FECHADA"], descricao="[BAY][RELE] Seccionadora Fechada")
+        cls.linha_viva = LeituraModbusBit(cls.rele["BAY"], REG_RELE["BAY"]["ID_LINHA_VIVA"], descricao="[BAY][RELE] Identificação Linha Viva")
+        cls.barra_viva = LeituraModbusBit(cls.rele["BAY"], REG_RELE["BAY"]["ID_BARRA_VIVA"], descricao="[BAY][RELE] Identificação Barra Viva")
+        cls.linha_morta = LeituraModbusBit(cls.rele["BAY"], REG_RELE["BAY"]["ID_LINHA_MORTA"], descricao="[BAY][RELE] Identificação Linha Morta")
+        cls.barra_morta = LeituraModbusBit(cls.rele["BAY"], REG_RELE["BAY"]["ID_BARRA_MORTA"], descricao="[BAY][RELE] Identificação Barra Morta")
+        cls.mola_carregada = LeituraModbusBit(cls.rele["BAY"], REG_RELE["BAY"]["DJL_MOLA_CARREGADA"], descricao="[BAY][RELE] Disjuntor Mola Carregada")
 
         ## CONDICIONADORES RELÉS
-        cls.leitura_secc_aberta = LeituraModbusBit(cls.rele["BAY"], REG_RELE["BAY"]["SECC_FECHADA"], bit=4, invertido=True, descricao="[BAY][RELE] Seccionadora Aberta")
+        cls.leitura_secc_aberta = LeituraModbusBit(cls.rele["BAY"], REG_RELE["BAY"]["SECC_FECHADA"], invertido=True, descricao="[BAY][RELE] Seccionadora Aberta")
         cls.condicionadores_essenciais.append(CondicionadorBase(cls.leitura_secc_aberta, CONDIC_INDISPONIBILIZAR))
 
-        cls.leitura_falha_abertura_djl = LeituraModbusBit(cls.rele["BAY"], REG_RELE["BAY"]["DJL_FLH_ABERTURA"], bit=1, descricao="[BAY][RELE] Disjuntor Linha Falha Abertura")
+        cls.leitura_falha_abertura_djl = LeituraModbusBit(cls.rele["BAY"], REG_RELE["BAY"]["DJL_FLH_ABERTURA"], descricao="[BAY][RELE] Disjuntor Linha Falha Abertura")
         cls.condicionadores_essenciais.append(CondicionadorBase(cls.leitura_falha_abertura_djl, CONDIC_INDISPONIBILIZAR))

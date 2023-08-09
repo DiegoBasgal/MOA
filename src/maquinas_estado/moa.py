@@ -10,12 +10,12 @@ import traceback
 from time import sleep
 from datetime import datetime
 
-from dicionarios.const import *
+from src.dicionarios.const import *
 
-from usina import Usina
-from bay import Bay as BAY
-from subestacao import Subestacao as SE
-from tomada_agua import TomadaAgua as TDA
+from src.usina import Usina
+from src.bay import Bay as BAY
+from src.subestacao import Subestacao as SE
+from src.tomada_agua import TomadaAgua as TDA
 
 logger = logging.getLogger("logger")
 

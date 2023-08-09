@@ -20,7 +20,7 @@ class Voip:
 
     #ATRIBUIÇÃO DE VARIÁVEIS
 
-    arquivo = os.path.join(os.path.dirname("/opt/operacao-autonoma/src/dicionarios/"), "voip_cfg.json")
+    arquivo = os.path.join(os.path.dirname(__file__), "voip_cfg.json")
     with open(arquivo, "r") as file:
         cfg = json.load(file)
 

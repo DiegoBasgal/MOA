@@ -1,3 +1,5 @@
+import traceback
+
 from pymodbus.constants import Endian
 from pymodbus.payload import BinaryPayloadDecoder as BPD
 from pyModbusTCP.server import DataBank as DB
@@ -5,22 +7,22 @@ from pyModbusTCP.server import DataBank as DB
 class Leitura:
 
     @classmethod
-    def ler_bit(self, reg: "int", invertido: "bool"=False) -> "bool":
+    def ler_bit(self, reg: "int", invertido: "bool"=False) -> "int":
 
-        raw = DB.get_words(reg)
+        try:
+            raw = DB.get_words(reg[0])
+            dec_1 = BPD.fromRegisters(raw, byteorder=Endian.Big, wordorder=Endian.Little)
+            dec_2 = BPD.fromRegisters(raw, byteorder=Endian.Big, wordorder=Endian.Little)
 
-        raw_dec_1 = BPD.fromRegisters(raw, byteorder=Endian.Big, wordorder=Endian.Little)
-        raw_dec_2 = BPD.fromRegisters(raw, byteorder=Endian.Big, wordorder=Endian.Little)
+            lbit = [int(bit) for bits in [reversed(dec_1.decode_bits(1)), reversed(dec_2.decode_bits(2))] for bit in bits]
 
-        if reg[1] >= 16:
-            raw_aux = DB.get_words(reg)
-            raw_aux_dec_1 = BPD.fromRegisters(raw_aux, byteorder=Endian.Big, wordorder=Endian.Little)
-            raw_aux_dec_2 = BPD.fromRegisters(raw_aux, byteorder=Endian.Big, wordorder=Endian.Little)
-            lista_bits = [bit for bits in [raw_dec_2.decode_bits(2), raw_dec_1.decode_bits(1), raw_aux_dec_2.decode_bits(2), raw_aux_dec_1.decode_bits(1)] for bit in bits]
+            lbit_r = [b for b in reversed(lbit)]
 
-        else:
-            lista_bits = [bit for bits in [raw_dec_2.decode_bits(2), raw_dec_1.decode_bits(1)] for bit in bits]
+            for i in range(len(lbit_r)):
+                if reg[1] == i:
+                    return not int(lbit_r[i]) if invertido else int(lbit_r[i])
 
-        for i in range(len(lista_bits)):
-            if reg[1] == i:
-                return not lista_bits[i] if invertido else lista_bits[i]
+        except Exception:
+            print(f"[LEI] Erro ao realizar a Leitura do Bit: {reg[1]} | REG: {reg}")
+            print(traceback.format_exc())
+            return None

@@ -2,10 +2,10 @@ __version__ = "0.2"
 __author__ = "Lucas Lavratti", " Henrique Pfeifer", "Diego Basgal"
 __description__ = "Este módulo corresponde a implementação da lógica de Condicionadores."
 
-from funcoes.leitura import *
-from dicionarios.const import *
+from src.funcoes.leitura import *
+from src.dicionarios.const import *
 
-from unidade_geracao import UnidadeGeracao
+from src.unidade_geracao import UnidadeGeracao
 
 class CondicionadorBase:
     def __init__(self, leitura: "LeituraModbus"=None, gravidade: "int"=None, etapas: "list"=None, id_unidade: "int"=None) -> "None":

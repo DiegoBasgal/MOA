@@ -20,9 +20,12 @@ import logging
 import threading
 import traceback
 
+import regex as re
+
 from time import time, sleep
 from logging.config import fileConfig
 
+from src.dicionarios.reg import *
 from src.dicionarios.const import *
 from src.maquinas_estado.moa import *
 
@@ -33,6 +36,38 @@ if not os.path.exists(os.path.join(os.path.dirname(__file__), "logs")):
 
 fileConfig("/opt/operacao-autonoma/logger_cfg.ini")
 logger = logging.getLogger("logger")
+
+preparar_sim = True
+
+if preparar_sim:
+    for n, d in REG_CLP.items():
+        if n == "TDA":
+            for n, l in d.items():
+                if re.search('^CP1', n):
+                    if isinstance(l, list):
+                        l[0] += 1000
+                    else:
+                        l += 1000
+                elif re.search('^CP2', n):
+                    if isinstance(l, list):
+                        l[0] += 2000
+                    else:
+                        l += 2000
+        elif n == "UG1":
+            for l in d.values():
+                if isinstance(l, list):
+                    l[0] += 10000
+                else:
+                    l += 10000
+        elif n == "UG2":
+            for l in d.values():
+                if isinstance(l, list):
+                    l[0] += 20000
+                else:
+                    l += 20000
+        else:
+            pass
+
 
 if __name__ == "__main__":
 
@@ -60,7 +95,6 @@ if __name__ == "__main__":
                 logger.debug("")
                 logger.info("Carregando arquivo de configuração...")
 
-
                 arquivo = os.path.join(os.path.dirname(__file__), "cfg.json")
                 with open(arquivo, "r") as file:
                     cfg = json.load(file)
@@ -79,7 +113,7 @@ if __name__ == "__main__":
                 logger.debug("")
                 logger.info("Iniciando conexões com Servidores...")
 
-                Servidores.open_all()
+                # Servidores.open_all()
 
             except Exception:
                 logger.error(f"Erro ao iniciar classes de conexão com servidores. Tentando novamente em \"{TIMEOUT_MAIN}s\".")

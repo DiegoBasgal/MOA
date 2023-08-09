@@ -33,9 +33,9 @@ class ServicoAuxiliar(Usina):
         """
 
         try:
-            res = EMB.escrever_bit(cls.clp["SA"], REG_CLP["SA"]["BARRA_CA_RST_FLH"], bit=0, valor=1)
-            res = EMB.escrever_bit(cls.clp["SA"], REG_CLP["SA"]["SIS_AGUA_RST_FLH"], bit=1, valor=1)
-            res = EMB.escrever_bit(cls.clp["SA"], REG_CLP["SA"]["BLQ_GERAL_FLH_SA_REARME"], bit=23, valor=1)
+            res = EMB.escrever_bit(cls.clp["SA"], REG_CLP["SA"]["BARRA_CA_RST_FLH"], valor=1)
+            res = EMB.escrever_bit(cls.clp["SA"], REG_CLP["SA"]["SIS_AGUA_RST_FLH"], valor=1)
+            res = EMB.escrever_bit(cls.clp["SA"], REG_CLP["SA"]["BLQ_GERAL_FLH_SA_REARME"], valor=1)
             return res
 
         except Exception:
@@ -177,105 +177,105 @@ class ServicoAuxiliar(Usina):
 
         # CONDICIONADORES ESSENCIAIS
         # Normalizar
-        # cls.leitura_sem_emergencia_sa = LeituraModbusBit(cls.clp["SA"], REG_CLP["SA"]["SEM_EMERGENCIA"], bit=13, invertido=True, descricao="[SA]  Emergência")
+        # cls.leitura_sem_emergencia_sa = LeituraModbusBit(cls.clp["SA"], REG_CLP["SA"]["SEM_EMERGENCIA"],, invertido=True, descricao="[SA]  Emergência")
         # cls.condicionadores_essenciais.append(CondicionadorBase(cls.leitura_sem_emergencia_sa, CONDIC_NORMALIZAR))
 
         # CONDICIONADORES
         # Normalizar
-        cls.leitura_retificador_subtensao = LeituraModbusBit(cls.clp["SA"], REG_CLP["SA"]["RETI_SUBTEN"], bit=31, descricao="[SA]  Retificador Subtensão")
+        cls.leitura_retificador_subtensao = LeituraModbusBit(cls.clp["SA"], REG_CLP["SA"]["RETI_SUBTEN"], descricao="[SA]  Retificador Subtensão")
         cls.condicionadores.append(CondicionadorBase(cls.leitura_retificador_subtensao, CONDIC_NORMALIZAR))
 
-        cls.leitura_retificador_sobretensao = LeituraModbusBit(cls.clp["SA"], REG_CLP["SA"]["RETI_SOBRETEN"], bit=30, descricao="[SA]  Retificador Sobretensão")
+        cls.leitura_retificador_sobretensao = LeituraModbusBit(cls.clp["SA"], REG_CLP["SA"]["RETI_SOBRETEN"], descricao="[SA]  Retificador Sobretensão")
         cls.condicionadores.append(CondicionadorBase(cls.leitura_retificador_sobretensao, CONDIC_NORMALIZAR))
 
-        cls.leitura_retificador_sobrecorrente_saida = LeituraModbusBit(cls.clp["SA"], REG_CLP["SA"]["RETI_SOBRECO_SAIDA"], bit=0, descricao="[SA]  Retificador Sobrecorrente Saída")
+        cls.leitura_retificador_sobrecorrente_saida = LeituraModbusBit(cls.clp["SA"], REG_CLP["SA"]["RETI_SOBRECO_SAIDA"], descricao="[SA]  Retificador Sobrecorrente Saída")
         cls.condicionadores.append(CondicionadorBase(cls.leitura_retificador_sobrecorrente_saida, CONDIC_NORMALIZAR))
 
-        cls.leitura_retificador_sobrecorrente_baterias = LeituraModbusBit(cls.clp["SA"], REG_CLP["SA"]["RETI_SOBRECO_BATERIAS"], bit=1, descricao="[SA]  Retificador Sobrecorrente Baterias")
+        cls.leitura_retificador_sobrecorrente_baterias = LeituraModbusBit(cls.clp["SA"], REG_CLP["SA"]["RETI_SOBRECO_BATERIAS"], descricao="[SA]  Retificador Sobrecorrente Baterias")
         cls.condicionadores.append(CondicionadorBase(cls.leitura_retificador_sobrecorrente_baterias, CONDIC_NORMALIZAR))
 
-        cls.leitura_falha_sistema_agua_pressurizar_fa = LeituraModbusBit(cls.clp["SA"], REG_CLP["SA"]["SIS_AGUA_FLH_PRESSURIZAR_FILTRO_A"], bit=3, descricao="[SA]  Sistema Água Falha Pressurizar Filtro A")
+        cls.leitura_falha_sistema_agua_pressurizar_fa = LeituraModbusBit(cls.clp["SA"], REG_CLP["SA"]["SIS_AGUA_FLH_PRESSURIZAR_FILTRO_A"], descricao="[SA]  Sistema Água Falha Pressurizar Filtro A")
         cls.condicionadores.append(CondicionadorBase(cls.leitura_falha_sistema_agua_pressurizar_fa, CONDIC_NORMALIZAR))
 
-        cls.leitura_falha_sistema_agua_pressostato_fa = LeituraModbusBit(cls.clp["SA"], REG_CLP["SA"]["SIS_AGUA_FLH_PRESSOSTATO_FILTRO_A"], bit=4, descricao="[SA]  Sistema Água Falha Pressostato Filtro A")
+        cls.leitura_falha_sistema_agua_pressostato_fa = LeituraModbusBit(cls.clp["SA"], REG_CLP["SA"]["SIS_AGUA_FLH_PRESSOSTATO_FILTRO_A"], descricao="[SA]  Sistema Água Falha Pressostato Filtro A")
         cls.condicionadores.append(CondicionadorBase(cls.leitura_falha_sistema_agua_pressostato_fa, CONDIC_NORMALIZAR))
 
-        cls.leitura_falha_sistema_agua_pressurizar_fb = LeituraModbusBit(cls.clp["SA"], REG_CLP["SA"]["SIS_AGUA_FLH_PRESSURIZAR_FILTRO_B"], bit=5, descricao="[SA]  Sistema Água Falha Pressurizar Filtro B")
+        cls.leitura_falha_sistema_agua_pressurizar_fb = LeituraModbusBit(cls.clp["SA"], REG_CLP["SA"]["SIS_AGUA_FLH_PRESSURIZAR_FILTRO_B"], descricao="[SA]  Sistema Água Falha Pressurizar Filtro B")
         cls.condicionadores.append(CondicionadorBase(cls.leitura_falha_sistema_agua_pressurizar_fb, CONDIC_NORMALIZAR))
 
-        cls.leitura_falha_sistema_agua_pressostato_fb = LeituraModbusBit(cls.clp["SA"], REG_CLP["SA"]["SIS_AGUA_FLH_PRESSOSTATO_FILTRO_B"], bit=6, descricao="[SA]  Sistema Água Falha Pressostato Filtro B")
+        cls.leitura_falha_sistema_agua_pressostato_fb = LeituraModbusBit(cls.clp["SA"], REG_CLP["SA"]["SIS_AGUA_FLH_PRESSOSTATO_FILTRO_B"], descricao="[SA]  Sistema Água Falha Pressostato Filtro B")
         cls.condicionadores.append(CondicionadorBase(cls.leitura_falha_sistema_agua_pressostato_fb, CONDIC_NORMALIZAR))
 
         # Indisponibilizar
-        cls.leitura_52sa1_sem_falha = LeituraModbusBit(cls.clp["SA"], REG_CLP["SA"]["DJ52SA1_SEM_FLH"], bit=31, invertido=True, descricao="[SA]  Disjuntor 52SA1 Sem Falha")
+        cls.leitura_52sa1_sem_falha = LeituraModbusBit(cls.clp["SA"], REG_CLP["SA"]["DJ52SA1_SEM_FLH"], invertido=True, descricao="[SA]  Disjuntor 52SA1 Sem Falha")
         cls.condicionadores.append(CondicionadorBase(cls.leitura_52sa1_sem_falha, CONDIC_INDISPONIBILIZAR))
 
-        cls.leitura_sa_72sa1_fechado = LeituraModbusBit(cls.clp["SA"], REG_CLP["SA"]["DJ72SA1_FECHADO"], bit=10, invertido=True, descricao="[SA]  Disjuntor 72SA1 Fechado")
+        cls.leitura_sa_72sa1_fechado = LeituraModbusBit(cls.clp["SA"], REG_CLP["SA"]["DJ72SA1_FECHADO"], invertido=True, descricao="[SA]  Disjuntor 72SA1 Fechado")
         cls.condicionadores.append(CondicionadorBase(cls.leitura_sa_72sa1_fechado, CONDIC_INDISPONIBILIZAR))
 
-        cls.leitura_disj_24vcc_fechados = LeituraModbusBit(cls.clp["SA"], REG_CLP["SA"]["DJS_24VCC_FECHADOS"], bit=12, invertido=True, descricao="[SA]  Disjuntores 24Vcc Fechados")
+        cls.leitura_disj_24vcc_fechados = LeituraModbusBit(cls.clp["SA"], REG_CLP["SA"]["DJS_24VCC_FECHADOS"], invertido=True, descricao="[SA]  Disjuntores 24Vcc Fechados")
         cls.condicionadores.append(CondicionadorBase(cls.leitura_disj_24vcc_fechados, CONDIC_INDISPONIBILIZAR))
 
-        cls.leitura_disj_125vcc_fechados = LeituraModbusBit(cls.clp["SA"], REG_CLP["SA"]["DJS_125VCC_FECHADOS"], bit=11, invertido=True, descricao="[SA]  Disjuntores 125Vcc Fechados")
+        cls.leitura_disj_125vcc_fechados = LeituraModbusBit(cls.clp["SA"], REG_CLP["SA"]["DJS_125VCC_FECHADOS"], invertido=True, descricao="[SA]  Disjuntores 125Vcc Fechados")
         cls.condicionadores.append(CondicionadorBase(cls.leitura_disj_125vcc_fechados, CONDIC_INDISPONIBILIZAR))
 
-        cls.leitura_comando_24vcc_com_tensao = LeituraModbusBit(cls.clp["SA"], REG_CLP["SA"]["CMD_24VCC_COM_TENSAO"], bit=15, invertido=True, descricao="[SA]  Comando 24Vcc Com Tensão")
+        cls.leitura_comando_24vcc_com_tensao = LeituraModbusBit(cls.clp["SA"], REG_CLP["SA"]["CMD_24VCC_COM_TENSAO"], invertido=True, descricao="[SA]  Comando 24Vcc Com Tensão")
         cls.condicionadores.append(CondicionadorBase(cls.leitura_comando_24vcc_com_tensao, CONDIC_INDISPONIBILIZAR))
 
-        cls.leitura_comando_125vcc_com_tensao = LeituraModbusBit(cls.clp["SA"], REG_CLP["SA"]["CMD_125VCC_COM_TENSAO"], bit=14, invertido=True, descricao="[SA]  Comando 125Vcc Com Tensão")
+        cls.leitura_comando_125vcc_com_tensao = LeituraModbusBit(cls.clp["SA"], REG_CLP["SA"]["CMD_125VCC_COM_TENSAO"], invertido=True, descricao="[SA]  Comando 125Vcc Com Tensão")
         cls.condicionadores.append(CondicionadorBase(cls.leitura_comando_125vcc_com_tensao, CONDIC_INDISPONIBILIZAR))
 
-        cls.leitura_alimentacao_125vcc_com_tensao = LeituraModbusBit(cls.clp["SA"], REG_CLP["SA"]["ALIM_125VCC_COM_TENSAO"], bit=13, invertido=True, descricao="[SA]  Alimentação 125Vcc Com Tensão")
+        cls.leitura_alimentacao_125vcc_com_tensao = LeituraModbusBit(cls.clp["SA"], REG_CLP["SA"]["ALIM_125VCC_COM_TENSAO"], invertido=True, descricao="[SA]  Alimentação 125Vcc Com Tensão")
         cls.condicionadores.append(CondicionadorBase(cls.leitura_alimentacao_125vcc_com_tensao, CONDIC_INDISPONIBILIZAR))
 
-        cls.leitura_falha_abrir_52sa1 = LeituraModbusBit(cls.clp["SA"], REG_CLP["SA"]["DJ52SA1_FLH_ABRIR"], bit=0, descricao="[SA]  Disjuntor 52SA1 Falha Abertura")
+        cls.leitura_falha_abrir_52sa1 = LeituraModbusBit(cls.clp["SA"], REG_CLP["SA"]["DJ52SA1_FLH_ABRIR"], descricao="[SA]  Disjuntor 52SA1 Falha Abertura")
         cls.condicionadores.append(CondicionadorBase(cls.leitura_falha_abrir_52sa1, CONDIC_INDISPONIBILIZAR))
 
-        cls.leitura_falha_fechar_52sa1 = LeituraModbusBit(cls.clp["SA"], REG_CLP["SA"]["DJ52SA1_FLH_FECHAR"], bit=1, descricao="[SA]  Disjuntor 52SA1 Falha Fechamento")
+        cls.leitura_falha_fechar_52sa1 = LeituraModbusBit(cls.clp["SA"], REG_CLP["SA"]["DJ52SA1_FLH_FECHAR"], descricao="[SA]  Disjuntor 52SA1 Falha Fechamento")
         cls.condicionadores.append(CondicionadorBase(cls.leitura_falha_fechar_52sa1, CONDIC_INDISPONIBILIZAR))
 
-        cls.leitura_falha_abrir_52sa2 = LeituraModbusBit(cls.clp["SA"], REG_CLP["SA"]["DJ52SA2_FLH_ABRIR"], bit=3, descricao="[SA]  Disjuntor 52SA2 Falha Abertura")
+        cls.leitura_falha_abrir_52sa2 = LeituraModbusBit(cls.clp["SA"], REG_CLP["SA"]["DJ52SA2_FLH_ABRIR"], descricao="[SA]  Disjuntor 52SA2 Falha Abertura")
         cls.condicionadores.append(CondicionadorBase(cls.leitura_falha_abrir_52sa2, CONDIC_INDISPONIBILIZAR))
 
-        cls.leitura_falha_fechar_52sa2 = LeituraModbusBit(cls.clp["SA"], REG_CLP["SA"]["DJ52SA2_FLH_FECHAR"], bit=4, descricao="[SA]  Disjuntor 52SA2 Falha Fechamento")
+        cls.leitura_falha_fechar_52sa2 = LeituraModbusBit(cls.clp["SA"], REG_CLP["SA"]["DJ52SA2_FLH_FECHAR"], descricao="[SA]  Disjuntor 52SA2 Falha Fechamento")
         cls.condicionadores.append(CondicionadorBase(cls.leitura_falha_fechar_52sa2, CONDIC_INDISPONIBILIZAR))
 
-        cls.leitura_falha_abrir_52sa3 = LeituraModbusBit(cls.clp["SA"], REG_CLP["SA"]["DJ52SA3_FLH_ABRIR"], bit=5, descricao="[SA]  Disjuntor 52SA3 Falha Abertura")
+        cls.leitura_falha_abrir_52sa3 = LeituraModbusBit(cls.clp["SA"], REG_CLP["SA"]["DJ52SA3_FLH_ABRIR"], descricao="[SA]  Disjuntor 52SA3 Falha Abertura")
         cls.condicionadores.append(CondicionadorBase(cls.leitura_falha_abrir_52sa3, CONDIC_INDISPONIBILIZAR))
 
-        cls.leitura_falha_fechar_52sa3 = LeituraModbusBit(cls.clp["SA"], REG_CLP["SA"]["DJ52SA3_FLH_FECHAR"], bit=6, descricao="[SA]  Disjuntor 52SA3 Falha Fechamento")
+        cls.leitura_falha_fechar_52sa3 = LeituraModbusBit(cls.clp["SA"], REG_CLP["SA"]["DJ52SA3_FLH_FECHAR"], descricao="[SA]  Disjuntor 52SA3 Falha Fechamento")
         cls.condicionadores.append(CondicionadorBase(cls.leitura_falha_fechar_52sa3, CONDIC_INDISPONIBILIZAR))
 
-        cls.leitura_fusivel_queimado_retificador = LeituraModbusBit(cls.clp["SA"], REG_CLP["SA"]["RETI_FUSIVEL_QUEIMADO"], bit=2, descricao="[SA]  Retificador Fusível Queimado")
+        cls.leitura_fusivel_queimado_retificador = LeituraModbusBit(cls.clp["SA"], REG_CLP["SA"]["RETI_FUSIVEL_QUEIMADO"], descricao="[SA]  Retificador Fusível Queimado")
         cls.condicionadores.append(CondicionadorBase(cls.leitura_fusivel_queimado_retificador, CONDIC_INDISPONIBILIZAR))
 
-        cls.leitura_fuga_terra_positivo_retificador = LeituraModbusBit(cls.clp["SA"], REG_CLP["SA"]["RETI_FUGA_TERRA_POSITIVO"], bit=5, descricao="[SA]  Retificador Fuga Terra Positivo")
+        cls.leitura_fuga_terra_positivo_retificador = LeituraModbusBit(cls.clp["SA"], REG_CLP["SA"]["RETI_FUGA_TERRA_POSITIVO"], descricao="[SA]  Retificador Fuga Terra Positivo")
         cls.condicionadores.append(CondicionadorBase(cls.leitura_fuga_terra_positivo_retificador, CONDIC_INDISPONIBILIZAR))
 
-        cls.leitura_fuga_terra_negativo_retificador = LeituraModbusBit(cls.clp["SA"], REG_CLP["SA"]["RETI_FUGA_TERRA_NEGATIVO"], bit=6, descricao="[SA]  Retificador Fuga Terra Negativo")
+        cls.leitura_fuga_terra_negativo_retificador = LeituraModbusBit(cls.clp["SA"], REG_CLP["SA"]["RETI_FUGA_TERRA_NEGATIVO"], descricao="[SA]  Retificador Fuga Terra Negativo")
         cls.condicionadores.append(CondicionadorBase(cls.leitura_fuga_terra_negativo_retificador, CONDIC_INDISPONIBILIZAR))
 
         # LEITURA PERIODICA
-        cls.leitura_bomba_sis_agua_disp = LeituraModbusBit(cls.clp["SA"], REG_CLP["SA"]["SIS_AGUA_BOMBA_DISPONIVEL"], bit=0, invertido=True, descricao="[SA]  Sistem Água Bomba Disponível")
+        cls.leitura_bomba_sis_agua_disp = LeituraModbusBit(cls.clp["SA"], REG_CLP["SA"]["SIS_AGUA_BOMBA_DISPONIVEL"], invertido=True, descricao="[SA]  Sistem Água Bomba Disponível")
 
-        cls.leitura_falha_bomba_drenagem_1 = LeituraModbusBit(cls.clp["SA"], REG_CLP["SA"]["BOMBA_DREN_1_FLH"], bit=0, descricao="[SA]  Bomba Drenagem 1 Falha")
-        cls.leitura_falha_bomba_drenagem_2 = LeituraModbusBit(cls.clp["SA"], REG_CLP["SA"]["BOMBA_DREN_2_FLH"], bit=2, descricao="[SA]  Bomba Drenagem 2 Falha")
-        cls.leitura_falha_bomba_drenagem_3 = LeituraModbusBit(cls.clp["SA"], REG_CLP["SA"]["BOMBA_DREN_3_FLH"], bit=4, descricao="[SA]  Bomba Drenagem 3 Falha")
-        cls.leitura_falha_ligar_bomba_sis_agua = LeituraModbusBit(cls.clp["SA"], REG_CLP["SA"]["SIS_AGUA_FLH_LIGA_BOMBA"], bit=1, descricao="[SA]  Sistema Água Falha Ligar Bomba")
-        cls.leitura_djs_barra_seletora_remoto = LeituraModbusBit(cls.clp["SA"], REG_CLP["SA"]["DJS_BARRA_SELETORA_REMOTO"], bit=9, descricao="[SA]  Disjuntores Barra Seletora Modo Remoto")
-        cls.leitura_discrepancia_boia_poco_drenagem = LeituraModbusBit(cls.clp["SA"], REG_CLP["SA"]["POCO_DREN_DISCRE_BOIAS"], bit=9, descricao="[SA]  Boias Poço Drenagem Discrepância")
+        cls.leitura_falha_bomba_drenagem_1 = LeituraModbusBit(cls.clp["SA"], REG_CLP["SA"]["BOMBA_DREN_1_FLH"], descricao="[SA]  Bomba Drenagem 1 Falha")
+        cls.leitura_falha_bomba_drenagem_2 = LeituraModbusBit(cls.clp["SA"], REG_CLP["SA"]["BOMBA_DREN_2_FLH"], descricao="[SA]  Bomba Drenagem 2 Falha")
+        cls.leitura_falha_bomba_drenagem_3 = LeituraModbusBit(cls.clp["SA"], REG_CLP["SA"]["BOMBA_DREN_3_FLH"], descricao="[SA]  Bomba Drenagem 3 Falha")
+        cls.leitura_falha_ligar_bomba_sis_agua = LeituraModbusBit(cls.clp["SA"], REG_CLP["SA"]["SIS_AGUA_FLH_LIGA_BOMBA"], descricao="[SA]  Sistema Água Falha Ligar Bomba")
+        cls.leitura_djs_barra_seletora_remoto = LeituraModbusBit(cls.clp["SA"], REG_CLP["SA"]["DJS_BARRA_SELETORA_REMOTO"], descricao="[SA]  Disjuntores Barra Seletora Modo Remoto")
+        cls.leitura_discrepancia_boia_poco_drenagem = LeituraModbusBit(cls.clp["SA"], REG_CLP["SA"]["POCO_DREN_DISCRE_BOIAS"], descricao="[SA]  Boias Poço Drenagem Discrepância")
 
-        cls.leitura_sem_falha_52sa1 = LeituraModbusBit(cls.clp["SA"], REG_CLP["SA"]["DJ52SA1_SEM_FLH"], bit=31, invertido=True, descricao="[SA]  Disjuntor 52SA1 Sem Falha")
-        cls.leitura_sem_falha_52sa2 = LeituraModbusBit(cls.clp["SA"], REG_CLP["SA"]["DJ52SA2_SEM_FLH"], bit=1, invertido=True, descricao="[SA]  Disjuntor 52SA2 Sem Falha")
-        cls.leitura_sem_falha_52sa3 = LeituraModbusBit(cls.clp["SA"], REG_CLP["SA"]["DJ52SA3_SEM_FLH"], bit=3, invertido=True, descricao="[SA]  Disjuntor 52SA3 Sem Falha")
+        cls.leitura_sem_falha_52sa1 = LeituraModbusBit(cls.clp["SA"], REG_CLP["SA"]["DJ52SA1_SEM_FLH"], invertido=True, descricao="[SA]  Disjuntor 52SA1 Sem Falha")
+        cls.leitura_sem_falha_52sa2 = LeituraModbusBit(cls.clp["SA"], REG_CLP["SA"]["DJ52SA2_SEM_FLH"], invertido=True, descricao="[SA]  Disjuntor 52SA2 Sem Falha")
+        cls.leitura_sem_falha_52sa3 = LeituraModbusBit(cls.clp["SA"], REG_CLP["SA"]["DJ52SA3_SEM_FLH"], invertido=True, descricao="[SA]  Disjuntor 52SA3 Sem Falha")
 
-        cls.leitura_falha_parar_gmg = LeituraModbusBit(cls.clp["SA"], REG_CLP["SA"]["GMG_FLH_PARAR"], bit=7, descricao="[SA]  Grupo Motor Gerador Falha Parada")
-        cls.leitura_falha_partir_gmg = LeituraModbusBit(cls.clp["SA"], REG_CLP["SA"]["GMG_FLH_PARTIR"], bit=6, descricao="[SA]  Grupo Motor Gerador Falha Partida")
-        cls.leitura_operacao_manual_gmg = LeituraModbusBit(cls.clp["SA"], REG_CLP["SA"]["GMG_OPERACAO_MANUAL"], bit=10, descricao="[SA]  Grupo Motor Gerador Modo Operação Manual")
-        cls.leitura_falha_bomba_filtragem = LeituraModbusBit(cls.clp["SA"], REG_CLP["SA"]["BOMBA_FILT_FLH"], bit=6, descricao="[SA]  Bomba Filtragem Falha")
-        cls.leitura_nivel_alto_poco_drenagem = LeituraModbusBit(cls.clp["SA"], REG_CLP["SA"]["POCO_DREN_NV_ALTO"], bit=26, descricao="[SA]  Poço Drenagem Nível Alto")
-        cls.leitura_falha_bomba_drenagem_uni = LeituraModbusBit(cls.clp["SA"], REG_CLP["SA"]["BOMBA_DREN_UNIDADES_FLH"], bit=12, descricao="[SA]  Bomba Drenagem Unidades Falha")
-        cls.leitura_alarme_sistema_incendio_atuado = LeituraModbusBit(cls.clp["SA"], REG_CLP["SA"]["SIS_INCENDIO_ALM_ATUADO"], bit=6, descricao="[SA]  Sistem Incêndio Alarme Atuado")
-        cls.leitura_alarme_sistema_seguraca_atuado = LeituraModbusBit(cls.clp["SA"], REG_CLP["SA"]["SIS_SEGURANCA_ALM_ATUADO"], bit=7, descricao="[SA]  Sistema Segurança Alarme Atuado")
-        cls.leitura_nivel_muito_alto_poco_drenagem = LeituraModbusBit(cls.clp["SA"], REG_CLP["SA"]["POCO_DREN_NV_MUITO_ALTO"], bit=25, descricao="[SA]  Poço Drenagem Nível Muito Alto")
-        # cls.leitura_falha_tubo_succao_bomba_recalque = LeituraModbusBit(cls.clp["SA"], REG_CLP["SA"]["BOMBA_RECALQUE_TUBO_SUCCAO_FALHA"], bit=14, descricao="[SA]  Bomba Recalque Falha Tubo Sucção")
+        cls.leitura_falha_parar_gmg = LeituraModbusBit(cls.clp["SA"], REG_CLP["SA"]["GMG_FLH_PARAR"], descricao="[SA]  Grupo Motor Gerador Falha Parada")
+        cls.leitura_falha_partir_gmg = LeituraModbusBit(cls.clp["SA"], REG_CLP["SA"]["GMG_FLH_PARTIR"], descricao="[SA]  Grupo Motor Gerador Falha Partida")
+        cls.leitura_operacao_manual_gmg = LeituraModbusBit(cls.clp["SA"], REG_CLP["SA"]["GMG_OPERACAO_MANUAL"], descricao="[SA]  Grupo Motor Gerador Modo Operação Manual")
+        cls.leitura_falha_bomba_filtragem = LeituraModbusBit(cls.clp["SA"], REG_CLP["SA"]["BOMBA_FILT_FLH"], descricao="[SA]  Bomba Filtragem Falha")
+        cls.leitura_nivel_alto_poco_drenagem = LeituraModbusBit(cls.clp["SA"], REG_CLP["SA"]["POCO_DREN_NV_ALTO"], descricao="[SA]  Poço Drenagem Nível Alto")
+        cls.leitura_falha_bomba_drenagem_uni = LeituraModbusBit(cls.clp["SA"], REG_CLP["SA"]["BOMBA_DREN_UNIDADES_FLH"], descricao="[SA]  Bomba Drenagem Unidades Falha")
+        cls.leitura_alarme_sistema_incendio_atuado = LeituraModbusBit(cls.clp["SA"], REG_CLP["SA"]["SIS_INCENDIO_ALM_ATUADO"], descricao="[SA]  Sistem Incêndio Alarme Atuado")
+        cls.leitura_alarme_sistema_seguraca_atuado = LeituraModbusBit(cls.clp["SA"], REG_CLP["SA"]["SIS_SEGURANCA_ALM_ATUADO"], descricao="[SA]  Sistema Segurança Alarme Atuado")
+        cls.leitura_nivel_muito_alto_poco_drenagem = LeituraModbusBit(cls.clp["SA"], REG_CLP["SA"]["POCO_DREN_NV_MUITO_ALTO"], descricao="[SA]  Poço Drenagem Nível Muito Alto")
+        # cls.leitura_falha_tubo_succao_bomba_recalque = LeituraModbusBit(cls.clp["SA"], REG_CLP["SA"]["BOMBA_RECALQUE_TUBO_SUCCAO_FALHA"],, descricao="[SA]  Bomba Recalque Falha Tubo Sucção")

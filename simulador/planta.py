@@ -12,8 +12,8 @@ from pyModbusTCP.server import ModbusServer
 
 from dicts.reg import *
 from dicts.const import *
-from funcs.escrita import Escrita
-from funcs.leitura import Leitura
+from funcs.escrita import Escrita as ESC
+from funcs.leitura import Leitura as LEI
 
 from se import Se
 from tda import Tda
@@ -40,7 +40,7 @@ class Planta:
         self.volume = 0
 
         # Incia os servidores
-        self.server_MB = ModbusServer(host='localhost', port=502, no_block=True)
+        self.server_MB = ModbusServer(host='localhost', port=5002, no_block=True)
         self.server_MB.start()
 
         for r in MB.values():
@@ -66,13 +66,13 @@ class Planta:
                 self.dict['GLB']['tempo_simul'] += self.segundos_por_passo
 
                 # Leituras de registradores MB
-                if DB.get_words(MB['DJL_CMD_FECHAR'][0])[0] == 1:
-                    DB.set_words(MB['DJL_CMD_FECHAR'][0], [1])
+                if LEI.ler_bit(MB['DJL_CMD_FECHAR']) == 1:
+                    ESC.escrever_bit(MB['DJL_CMD_FECHAR'], valor=1)
                     print('[CF]  Comando de Fechamento do Disjuntor da Subestação acionado via \"MODBUS\"')
                     self.se.fechar_dj()
 
-                if DB.get_words(MB['BARRA_CA_RST_FLH'][0])[0] == 1:
-                    DB.set_words(MB['BARRA_CA_RST_FLH'][0], [0])
+                if LEI.ler_bit(MB['BARRA_CA_RST_FLH']) == 1:
+                    ESC.escrever_bit(MB['BARRA_CA_RST_FLH'], valor=0)
                     print('[CF]  Comando de Reset de Falhas na Barra CA acionado via \"MODBUS\"')
                     self.se.resetar_se()
 
@@ -102,57 +102,57 @@ class Planta:
                         DB.set_words(MB[f'UG{ug.id}_SETPONIT'], [self.dict[f'UG{ug.id}'][f'setpoint']])
 
                     if self.dict['TDA'][f'cp{ug.id}_permissao_abertura'] and self.dict['USN'][f'aux_borda{ug.id + 4}'] == 0:
-                        DB.set_words(MB[f'CP{ug.id}_PERMISSIVOS_OK'][0], [1])
+                        ESC.escrever_bit(MB[f'CP{ug.id}_PERMISSIVOS_OK'], valor=1)
                         self.dict['USN'][f'aux_borda{ug.id + 4}'] = 1
 
                     elif not self.dict['TDA'][f'cp{ug.id}_permissao_abertura'] and self.dict['USN'][f'aux_borda{ug.id + 4}'] == 1:
-                        DB.set_words(MB[f'CP{ug.id}_PERMISSIVOS_OK'][0], [0])
+                        ESC.escrever_bit(MB[f'CP{ug.id}_PERMISSIVOS_OK'], valor=0)
                         self.dict['USN'][f'aux_borda{ug.id + 4}'] = 0
 
                     # Leitura de registradores MB
-                    # if DB.get_words(MB[f'UG{ug.id}_PARTIDA_CMD_SINCRONISMO'][0])[0] == 1:
-                    #     DB.set_words(MB[f'UG{ug.id}_PARTIDA_CMD_SINCRONISMO'][0], [0])
-                    #     ug.partir()
+                    if LEI.ler_bit(MB[f'UG{ug.id}_PARTIDA_CMD_SINCRONISMO']) == 1:
+                        ESC.escrever_bit(MB[f'UG{ug.id}_PARTIDA_CMD_SINCRONISMO'], valor=0)
+                        ug.partir()
 
-                    # elif DB.get_words(MB[f'UG{ug.id}_PARADA_CMD_EMERGENCIA'][0])[0] == 1:
-                    #     DB.set_words(MB[f'UG{ug.id}_PARADA_CMD_EMERGENCIA'][0], [0])
-                    #     ug.parar()
+                    elif LEI.ler_bit(MB[f'UG{ug.id}_PARADA_CMD_DESABILITA_UHLM']) == 1:
+                        ESC.escrever_bit(MB[f'UG{ug.id}_PARADA_CMD_DESABILITA_UHLM'], valor=0)
+                        ug.parar()
 
-                    # if DB.get_words(MB[f'CP{ug.id}_CMD_FECHAMENTO'][0])[0] == 1 and self.dict['TDA'][f'cp{ug.id}_borda_f'] == 0:
-                    #     DB.set_words(MB[f'CP{ug.id}_CMD_FECHAMENTO'][0], [0])
-                    #     DB.set_words(MB[f'CP{ug.id}_OPERANDO'][0], [1])
-                    #     self.dict['TDA'][f'cp{ug.id}_borda_f'] = 1
-                    #     self.dict['TDA'][f'cp{ug.id}_thread_fechada'] = True
+                    if LEI.ler_bit(MB[f'CP{ug.id}_CMD_FECHAMENTO']) == 1 and self.dict['TDA'][f'cp{ug.id}_borda_f'] == 0:
+                        ESC.escrever_bit(MB[f'CP{ug.id}_CMD_FECHAMENTO'], valor=0)
+                        ESC.escrever_bit(MB[f'CP{ug.id}_OPERANDO'], valor=1)
+                        self.dict['TDA'][f'cp{ug.id}_borda_f'] = 1
+                        self.dict['TDA'][f'cp{ug.id}_thread_fechada'] = True
 
-                    #     if self.dict['TDA'][f'cp{ug.id}_fechada']:
-                    #         DB.set_words(MB[f'CP{ug.id}_OPERANDO'][0], [0])
+                        if self.dict['TDA'][f'cp{ug.id}_fechada']:
+                            ESC.escrever_bit(MB[f'CP{ug.id}_OPERANDO'], valor=0)
 
-                    # elif DB.get_words(MB[f'CP{ug.id}_CMD_FECHAMENTO'][0])[0] == 0 and self.dict['TDA'][f'cp{ug.id}_borda_f'] == 1:
-                    #     self.dict['TDA'][f'cp{ug.id}_borda_f'] = 0
+                    elif LEI.ler_bit(MB[f'CP{ug.id}_CMD_FECHAMENTO']) == 0 and self.dict['TDA'][f'cp{ug.id}_borda_f'] == 1:
+                        self.dict['TDA'][f'cp{ug.id}_borda_f'] = 0
 
-                    # if DB.get_words(MB[f'CP{ug.id}_CMD_ABERTURA_TOTAL'][0])[0] == 1 and self.dict['TDA'][f'cp{ug.id}_borda_a'] == 0:
-                    #     DB.set_words(MB[f'CP{ug.id}_CMD_ABERTURA_TOTAL'][0], [0])
-                    #     DB.set_words(MB[f'CP{ug.id}_OPERANDO'][0], [1])
-                    #     self.dict['TDA'][f'cp{ug.id}_borda_a'] = 1
-                    #     self.dict['TDA'][f'cp{ug.id}_thread_aberta'] = True
+                    if LEI.ler_bit(MB[f'CP{ug.id}_CMD_ABERTURA_TOTAL']) == 1 and self.dict['TDA'][f'cp{ug.id}_borda_a'] == 0:
+                        ESC.escrever_bit(MB[f'CP{ug.id}_CMD_ABERTURA_TOTAL'], valor=0)
+                        ESC.escrever_bit(MB[f'CP{ug.id}_OPERANDO'], valor=1)
+                        self.dict['TDA'][f'cp{ug.id}_borda_a'] = 1
+                        self.dict['TDA'][f'cp{ug.id}_thread_aberta'] = True
 
-                    #     if self.dict['TDA'][f'cp{ug.id}_aberta']:
-                    #         DB.set_words(MB[f'CP{ug.id}_OPERANDO'][0], [0])
+                        if self.dict['TDA'][f'cp{ug.id}_aberta']:
+                            ESC.escrever_bit(MB[f'CP{ug.id}_OPERANDO'], valor=0)
 
-                    # elif DB.get_words(MB[f'CP{ug.id}_CMD_ABERTURA_TOTAL'][0])[0] == 0 and self.dict['TDA'][f'cp{ug.id}_borda_a'] == 1:
-                    #     self.dict['TDA'][f'cp{ug.id}_borda_a'] = 0
+                    elif LEI.ler_bit(MB[f'CP{ug.id}_CMD_ABERTURA_TOTAL']) == 0 and self.dict['TDA'][f'cp{ug.id}_borda_a'] == 1:
+                        self.dict['TDA'][f'cp{ug.id}_borda_a'] = 0
 
-                    # if DB.get_words(MB[f'CP{ug.id}_CMD_ABERTURA_CRACKING'][0])[0] == 1 and self.dict['TDA'][f'cp{ug.id}_borda_c'] == 0:
-                    #     DB.set_words(MB[f'CP{ug.id}_CMD_ABERTURA_CRACKING'][0], [0])
-                    #     DB.set_words(MB[f'CP{ug.id}_OPERANDO'][0], [1])
-                    #     self.dict['TDA'][f'cp{ug.id}_borda_c'] = 1
-                    #     self.dict['TDA'][f'cp{ug.id}_thread_cracking'] = True
+                    if LEI.ler_bit(MB[f'CP{ug.id}_CMD_ABERTURA_CRACKING']) == 1 and self.dict['TDA'][f'cp{ug.id}_borda_c'] == 0:
+                        ESC.escrever_bit(MB[f'CP{ug.id}_CMD_ABERTURA_CRACKING'], valor=0)
+                        ESC.escrever_bit(MB[f'CP{ug.id}_OPERANDO'], valor=1)
+                        self.dict['TDA'][f'cp{ug.id}_borda_c'] = 1
+                        self.dict['TDA'][f'cp{ug.id}_thread_cracking'] = True
 
-                    #     if self.dict['TDA'][f'cp{ug.id}_cracking']:
-                    #         DB.set_words(MB[f'CP{ug.id}_OPERANDO'][0], [0])
+                        if self.dict['TDA'][f'cp{ug.id}_cracking']:
+                            ESC.escrever_bit(MB[f'CP{ug.id}_OPERANDO'], valor=0)
 
-                    # elif DB.get_words(MB[f'CP{ug.id}_CMD_ABERTURA_CRACKING'][0])[0] == 0 and self.dict['TDA'][f'cp{ug.id}_borda_c'] == 1:
-                    #     self.dict['TDA'][f'cp{ug.id}_borda_c'] = 0
+                    elif LEI.ler_bit(MB[f'CP{ug.id}_CMD_ABERTURA_CRACKING']) == 0 and self.dict['TDA'][f'cp{ug.id}_borda_c'] == 1:
+                        self.dict['TDA'][f'cp{ug.id}_borda_c'] = 0
 
                 for ug in self.ugs:
                     ug.passo()

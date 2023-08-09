@@ -5,7 +5,7 @@ __description__ = "Este módulo corresponde a implementação da conexão com se
 import logging
 import subprocess
 
-import dicionarios.dict as d
+import src.dicionarios.dict as d
 
 from pyModbusTCP.client import ModbusClient
 
@@ -20,31 +20,41 @@ class Servidores:
         host=d.ips["SA_ip"],
         port=d.ips["SA_porta"],
         unit_id=1,
-        timeout=0.5
+        timeout=0.5,
+        auto_close=True,
+        auto_open=True
     )
     clp["TDA"]: "ModbusClient" = ModbusClient(
         host=d.ips["TDA_ip"],
         port=d.ips["TDA_porta"],
         unit_id=1,
-        timeout=0.5
+        timeout=0.5,
+        auto_close=True,
+        auto_open=True
     )
     clp["UG1"]: "ModbusClient" = ModbusClient(
         host=d.ips["UG1_ip"],
         port=d.ips["UG1_porta"],
         unit_id=1,
-        timeout=0.5
+        timeout=0.5,
+        auto_close=True,
+        auto_open=True
     )
     clp["UG2"]: "ModbusClient" = ModbusClient(
         host=d.ips["UG2_ip"],
         port=d.ips["UG2_porta"],
         unit_id=1,
-        timeout=0.5
+        timeout=0.5,
+        auto_close=True,
+        auto_open=True
     )
     clp["MOA"]: "ModbusClient" = ModbusClient(
         host=d.ips["MOA_ip"],
         port=d.ips["MOA_porta"],
         unit_id=1,
-        timeout=0.5
+        timeout=0.5,
+        auto_close=True,
+        auto_open=True
     )
 
     rele["SE"]: "ModbusClient" = ModbusClient(
@@ -52,35 +62,40 @@ class Servidores:
         port=d.ips["RELE_SE_porta"],
         unit_id=1,
         timeout=0.5,
-        auto_close=True
+        auto_close=True,
+        auto_open=True,
     )
     rele["TE"]: "ModbusClient" = ModbusClient(
         host=d.ips["RELE_TE_ip"],
         port=d.ips["RELE_TE_porta"],
         unit_id=1,
         timeout=0.5,
-        auto_close=True
+        auto_close=True,
+        auto_open=True,
     )
     rele["BAY"]: "ModbusClient" = ModbusClient(
         host=d.ips["RELE_BAY_ip"],
         port=d.ips["RELE_BAY_porta"],
         unit_id=1,
         timeout=0.5,
-        auto_close=True
+        auto_close=True,
+        auto_open=True,
     )
     rele["UG1"]: "ModbusClient" = ModbusClient(
         host=d.ips["RELE_UG1_ip"],
         port=d.ips["RELE_UG1_porta"],
         unit_id=1,
         timeout=0.5,
-        auto_close=True
+        auto_close=True,
+        auto_open=True,
     )
     rele["UG2"]: "ModbusClient" = ModbusClient(
         host=d.ips["RELE_UG2_ip"],
         port=d.ips["RELE_UG2_porta"],
         unit_id=1,
         timeout=0.5,
-        auto_close=True
+        auto_close=True,
+        auto_open=True,
     )
 
     @staticmethod

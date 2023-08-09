@@ -459,11 +459,11 @@ REG_CLP = {
 
 
         # UHRV
-        "UHRV_FILTRO_SUJO":                             [0, 5],  # Reg -> 1
+        "UHRV_FILTRO_SUJO":                             [1, 5],  # Reg -> 1
         # UHLM
-        "UHLM_FILTRO_SUJO":                             [0, 8],  # Reg -> 1
+        "UHLM_FILTRO_SUJO":                             [1, 8],  # Reg -> 1
         # Resistência
-        "RESISTENCIA_FALHA":                            [0, 12], # Reg -> 1
+        "RESISTENCIA_FALHA":                            [1, 12], # Reg -> 1
 
 
         # Botão Emergência
@@ -472,11 +472,11 @@ REG_CLP = {
         "SUP_BOBINA_52G":                               [2, 12],
         "SUP_BOBINA_86EH":                              [2, 13],
         # Relé
-        "RELE_BLQ_86EH_DESATUADO":                      [2, 12], # Reg -> 3
-        "SUP_TENSAO_125VCC":                            [2, 13], # Reg -> 3
-        "SUP_TENSAO_24VCC":                             [2, 14], # Reg -> 3
+        "RELE_BLQ_86EH_DESATUADO":                      [3, 12], # Reg -> 3
+        "SUP_TENSAO_125VCC":                            [3, 13], # Reg -> 3
+        "SUP_TENSAO_24VCC":                             [3, 14], # Reg -> 3
         # DJ
-        "DJS_125VCC_FECHADOS":                          [2, 15], # Reg -> 3
+        "DJS_125VCC_FECHADOS":                          [3, 15], # Reg -> 3
 
 
         # DJ
@@ -508,13 +508,13 @@ REG_CLP = {
         "MANCAL_GUIA_INTE_2_ALM_TMP":                   [6, 13],
         "GERADOR_NUCL_ESTAT_ALM_TMP":                   [6, 14],
         "GERADOR_FASE_A_ALM_TMP":                       [6, 15],
-        "GERADOR_FASE_B_ALM_TMP":                       [6, 0],  # Reg -> 7
-        "GERADOR_FASE_C_ALM_TMP":                       [6, 1],  # Reg -> 7
-        "MANCAL_COMB_EIXO_X_ALM_VIBR":                  [6, 8],  # Reg -> 7
-        "MANCAL_COMB_EIXO_Y_ALM_VIBR":                  [6, 9],  # Reg -> 7
-        "MANCAL_COMB_EIXO_Z_ALM_VIBR":                  [6, 10], # Reg -> 7
-        "DETECCAO_HORIZONTAL_ALM_VIBRA":                [6, 12], # Reg -> 7
-        "DETECCAO_VERTICAL_ALM_VIBRA":                  [6, 13], # Reg -> 7
+        "GERADOR_FASE_B_ALM_TMP":                       [7, 0],  # Reg -> 7
+        "GERADOR_FASE_C_ALM_TMP":                       [7, 1],  # Reg -> 7
+        "MANCAL_COMB_EIXO_X_ALM_VIBR":                  [7, 8],  # Reg -> 7
+        "MANCAL_COMB_EIXO_Y_ALM_VIBR":                  [7, 9],  # Reg -> 7
+        "MANCAL_COMB_EIXO_Z_ALM_VIBR":                  [7, 10], # Reg -> 7
+        "DETECCAO_HORIZONTAL_ALM_VIBRA":                [7, 12], # Reg -> 7
+        "DETECCAO_VERTICAL_ALM_VIBRA":                  [7, 13], # Reg -> 7
 
 
         # Falhas de Leitura de Pressão/Vibração
@@ -544,19 +544,19 @@ REG_CLP = {
         "MANCAL_GUIA_INTE_2_FLH_LER_TMP":               [24, 13],
         "PONTE_FASE_A_FLH_LER_TMP":                     [24, 14],
         "PONTE_FASE_B_FLH_LER_TMP":                     [24, 15],
-        "PONTE_FASE_C_FLH_LER_TMP":                     [24, 0],  # Reg -> 25
-        "GERADOR_FASE_A_FLH_LER_TMP":                   [24, 1],  # Reg -> 25
-        "GERADOR_FASE_B_FLH_LER_TMP":                   [24, 2],  # Reg -> 25
-        "GERADOR_FASE_C_FLH_LER_TMP":                   [24, 3],  # Reg -> 25
-        "GERADOR_NUCL_ESTAT_FLH_LER_TMP":               [24, 4],  # Reg -> 25
+        "PONTE_FASE_C_FLH_LER_TMP":                     [25, 0],  # Reg -> 25
+        "GERADOR_FASE_A_FLH_LER_TMP":                   [25, 1],  # Reg -> 25
+        "GERADOR_FASE_B_FLH_LER_TMP":                   [25, 2],  # Reg -> 25
+        "GERADOR_FASE_C_FLH_LER_TMP":                   [25, 3],  # Reg -> 25
+        "GERADOR_NUCL_ESTAT_FLH_LER_TMP":               [25, 4],  # Reg -> 25
         # Trips Vibração
-        "DETECCAO_HORIZONTAL_TRP_VIBRA":                [24, 10], # Reg -> 25
-        "DETECCAO_VERTICAL_TRP_VIBRA":                  [24, 11], # Reg -> 25
-        "MANCAL_COMB_EIXO_X_TRP_VIBR":                  [24, 12], # Reg -> 25
-        "MANCAL_COMB_EIXO_Y_TRP_VIBR":                  [24, 13], # Reg -> 25
-        "MANCAL_COMB_EIXO_Z_TRP_VIBR":                  [24, 14], # Reg -> 25
+        "DETECCAO_HORIZONTAL_TRP_VIBRA":                [25, 10], # Reg -> 25
+        "DETECCAO_VERTICAL_TRP_VIBRA":                  [25, 11], # Reg -> 25
+        "MANCAL_COMB_EIXO_X_TRP_VIBR":                  [25, 12], # Reg -> 25
+        "MANCAL_COMB_EIXO_Y_TRP_VIBR":                  [25, 13], # Reg -> 25
+        "MANCAL_COMB_EIXO_Z_TRP_VIBR":                  [25, 14], # Reg -> 25
         # Bloqueio Atuado
-        "86M_BLQ_ATUADO":                               [24, 15], # Reg -> 25
+        "86M_BLQ_ATUADO":                               [25, 15], # Reg -> 25
 
 
         # Cubiculo Proteção Gerador
@@ -566,30 +566,30 @@ REG_CLP = {
         "RELE_700G_TRP_ATUADO":                         [26, 4],
         "RELE_700G_BF_ATUADO":                          [26, 6],
         # Trips por Temperatura
-        "PONTE_FASE_A_TRP_TMP":                         [26, 0],  # Reg -> 27
-        "PONTE_FASE_B_TRP_TMP":                         [26, 1],  # Reg -> 27
-        "PONTE_FASE_C_TRP_TMP":                         [26, 2],  # Reg -> 27
-        "GERADOR_FASE_A_TRP_TMP":                       [26, 3],  # Reg -> 27
-        "GERADOR_FASE_B_TRP_TMP":                       [26, 4],  # Reg -> 27
-        "GERADOR_FASE_C_TRP_TMP":                       [26, 5],  # Reg -> 27
-        "GERADOR_NUCL_ESTAT_TRP_TMP":                   [26, 6],  # Reg -> 27
+        "PONTE_FASE_A_TRP_TMP":                         [27, 0],  # Reg -> 27
+        "PONTE_FASE_B_TRP_TMP":                         [27, 1],  # Reg -> 27
+        "PONTE_FASE_C_TRP_TMP":                         [27, 2],  # Reg -> 27
+        "GERADOR_FASE_A_TRP_TMP":                       [27, 3],  # Reg -> 27
+        "GERADOR_FASE_B_TRP_TMP":                       [27, 4],  # Reg -> 27
+        "GERADOR_FASE_C_TRP_TMP":                       [27, 5],  # Reg -> 27
+        "GERADOR_NUCL_ESTAT_TRP_TMP":                   [27, 6],  # Reg -> 27
         # Trafo Excitação/Aterramento
-        "TRAFO_ATERRAMENTO_TRP_TMP":                    [26, 8],  # Reg -> 27
-        "TRAFO_EXCITACAO_TRP_TMP":                      [26, 9],  # Reg -> 27
-        "TRAFO_EXCITACAO_FLH_LER_TMP":                  [26, 10], # Reg -> 27
+        "TRAFO_ATERRAMENTO_TRP_TMP":                    [27, 8],  # Reg -> 27
+        "TRAFO_EXCITACAO_TRP_TMP":                      [27, 9],  # Reg -> 27
+        "TRAFO_EXCITACAO_FLH_LER_TMP":                  [27, 10], # Reg -> 27
         # Bloqueio Atuado
-        "86E_BLQ_ATUADO":                               [26, 15], # Reg -> 27
+        "86E_BLQ_ATUADO":                               [27, 15], # Reg -> 27
 
 
         # Trips Temperatura/Vibração/Pressão
         "UHRV_ACUMULADOR_PRESSAO_TRP":                  [28, 5],
-        "MANCAL_CASQ_COMB_TRP_TMP":                     [28, 2],  # Reg -> 29
-        "MANCAL_CONT_ESCO_COMB_TRP_TMP":                [28, 3],  # Reg -> 29
-        "MANCAL_COMB_PATINS_1_TRP_TMP":                 [28, 4],  # Reg -> 29
-        "MANCAL_COMB_PATINS_2_TRP_TMP":                 [28, 5],  # Reg -> 29
-        "MANCAL_GUIA_INTE_1_TRP_TMP":                   [28, 6],  # Reg -> 29
-        "MANCAL_GUIA_INTE_2_TRP_TMP":                   [28, 7],  # Reg -> 29
-        "86H_BLQ_ATUADO":                               [28, 15], # Reg -> 29
+        "MANCAL_CASQ_COMB_TRP_TMP":                     [29, 2],  # Reg -> 29
+        "MANCAL_CONT_ESCO_COMB_TRP_TMP":                [29, 3],  # Reg -> 29
+        "MANCAL_COMB_PATINS_1_TRP_TMP":                 [29, 4],  # Reg -> 29
+        "MANCAL_COMB_PATINS_2_TRP_TMP":                 [29, 5],  # Reg -> 29
+        "MANCAL_GUIA_INTE_1_TRP_TMP":                   [29, 6],  # Reg -> 29
+        "MANCAL_GUIA_INTE_2_TRP_TMP":                   [29, 7],  # Reg -> 29
+        "86H_BLQ_ATUADO":                               [29, 15], # Reg -> 29
 
 
         # UHRV
@@ -635,7 +635,7 @@ REG_CLP = {
 
         # UHRV
         "UHRV_CMD_REARME_FLH":                          [150, 0],
-        "UHLM_CMD_REARME_FLH":                          [150, 0], # Reg -> 151
+        "UHLM_CMD_REARME_FLH":                          [151, 0], # Reg -> 151
 
         # --------------------------------------------------------------------- #
         ## Comunicação RTV
@@ -722,6 +722,291 @@ REG_CLP = {
         "RT_FLH_3_B6":                                  [74, 6],
         "RT_FLH_3_B7":                                  [74, 7],
     },
+
+    "UG2": {
+        # Leituras Anaçógicas
+        "GERADOR_FASE_A_TMP":                           44,
+        "GERADOR_FASE_B_TMP":                           46,
+        "GERADOR_FASE_C_TMP":                           48,
+        "MANCAL_GUIA_TMP":                              54,
+        "MANCAL_CASQ_COMB_TMP":                         60,
+        "MANCAL_CONT_ESCO_COMB_TMP":                    62,
+        "MANCAL_COMB_PATINS_1_TMP":                     64,
+        "MANCAL_COMB_PATINS_2_TMP":                     66,
+        "MANCAL_GUIA_INTE_1_TMP":                       68,
+        "MANCAL_GUIA_INTE_2_TMP":                       70,
+        "GERADOR_NUCL_ESTAT_TMP":                       72,
+        "ENTRADA_TURBINA_PRESSAO":                      84,
+        "GERADOR_SAIDA_AR_TRP_TMP":                     90,
+        "P":                                            130,
+        "HORIMETRO":                                    108,
+
+
+        # UHRV
+        "UHRV_FILTRO_SUJO":                             [1, 5],  # Reg -> 1
+        # UHLM
+        "UHLM_FILTRO_SUJO":                             [1, 8],  # Reg -> 1
+        # Resistência
+        "RESISTENCIA_FALHA":                            [1, 12], # Reg -> 1
+
+
+        # Botão Emergência
+        "BT_EMERGENCIA_ATUADO":                         [2, 11],
+        # Supervisão
+        "SUP_BOBINA_52G":                               [2, 12],
+        "SUP_BOBINA_86EH":                              [2, 13],
+        # Relé
+        "RELE_BLQ_86EH_DESATUADO":                      [3, 12], # Reg -> 3
+        "SUP_TENSAO_125VCC":                            [3, 13], # Reg -> 3
+        "SUP_TENSAO_24VCC":                             [3, 14], # Reg -> 3
+        # DJ
+        "DJS_125VCC_FECHADOS":                          [3, 15], # Reg -> 3
+
+
+        # DJ
+        "DJS_24VCC_FECHADOS":                           [4, 0],
+        # CLPs
+        "CLP_GERAL_SEM_BLQ_EXTERNO":                    [4, 1],
+        "CLP_GERAL_SIS_AGUA_OK":                        [4, 2],
+        # Escovas Polo
+        "ESCOVAS_POLO_POS_GASTAS":                      [4, 5],
+        "ESCOVAS_POLO_NEG_GASTAS":                      [4, 6],
+        # Disparo Mecânico
+        "DISP_MECANICO_DESATUADO":                      [4, 8],
+        "DISP_MECANICO_ATUADO":                         [4, 9],
+
+
+        # Alarmes de Temperatura/Vibração
+        "PONTE_FASE_A_ALM_TMP":                         [6, 0],
+        "PONTE_FASE_B_ALM_TMP":                         [6, 1],
+        "PONTE_FASE_C_ALM_TMP":                         [6, 2],
+        "TRAFO_EXCITACAO_ALM_TMP":                      [6, 4],
+        "MANCAL_GUIA_ALM_TMP":                          [6, 5],
+        "UHRV_ALM_TMP_OLEO":                            [6, 6],
+        "UHLM_ALM_TMP_OLEO":                            [6, 7],
+        "MANCAL_CASQ_COMB_ALM_TMP":                     [6, 8],
+        "MANCAL_CONT_ESCO_COMB_ALM_TMP":                [6, 9],
+        "MANCAL_COMB_PATINS_1_ALM_TMP":                 [6, 10],
+        "MANCAL_COMB_PATINS_2_ALM_TMP":                 [6, 11],
+        "MANCAL_GUIA_INTE_1_ALM_TMP":                   [6, 12],
+        "MANCAL_GUIA_INTE_2_ALM_TMP":                   [6, 13],
+        "GERADOR_NUCL_ESTAT_ALM_TMP":                   [6, 14],
+        "GERADOR_FASE_A_ALM_TMP":                       [6, 15],
+        "GERADOR_FASE_B_ALM_TMP":                       [7, 0],  # Reg -> 7
+        "GERADOR_FASE_C_ALM_TMP":                       [7, 1],  # Reg -> 7
+        "MANCAL_COMB_EIXO_X_ALM_VIBR":                  [7, 8],  # Reg -> 7
+        "MANCAL_COMB_EIXO_Y_ALM_VIBR":                  [7, 9],  # Reg -> 7
+        "MANCAL_COMB_EIXO_Z_ALM_VIBR":                  [7, 10], # Reg -> 7
+        "DETECCAO_HORIZONTAL_ALM_VIBRA":                [7, 12], # Reg -> 7
+        "DETECCAO_VERTICAL_ALM_VIBRA":                  [7, 13], # Reg -> 7
+
+
+        # Falhas de Leitura de Pressão/Vibração
+        "ENTRADA_TURBINA_FLH_LER_PRESSAO":              [8, 4],
+        "MANCAL_COMB_EIXO_X_FLH_LER_VIBR":              [8, 8],
+        "MANCAL_COMB_EIXO_Y_FLH_LER_VIBR":              [8, 9],
+        "MANCAL_COMB_EIXO_Z_FLH_LER_VIBR":              [8, 10],
+        "DETECCAO_HORIZONTAL_FLH_LER_VIBRA":            [8, 12],
+        "DETECCAO_VERTICAL_FLH_LER_VIBRA":              [8, 13],
+
+
+        # Sistema de Água
+        "SIS_AGUA_FLH_HAB":                             [10, 11],
+
+
+        # Trip Temperatura
+        "UHLM_TRP_TMP_OLEO":                            [24, 4],
+        "UHRV_TRP_TMP_OLEO":                            [24, 5],
+        # Falhas de Leitura de Temperaturas
+        "UHLM_FLH_LER_TMP_OLEO":                        [24, 6],
+        "UHRV_FLH_LER_TMP_OLEO":                        [24, 7],
+        "MANCAL_CASQ_COMB_FLH_LER_TMP":                 [24, 8],
+        "MANCAL_CONT_ESCO_COMB_FLH_LER_TMP":            [24, 9],
+        "MANCAL_COMB_PATINS_1_FLH_LER_TMP":             [24, 10],
+        "MANCAL_COMB_PATINS_2_FLH_LER_TMP":             [24, 11],
+        "MANCAL_GUIA_INTE_1_FLH_LER_TMP":               [24, 12],
+        "MANCAL_GUIA_INTE_2_FLH_LER_TMP":               [24, 13],
+        "PONTE_FASE_A_FLH_LER_TMP":                     [24, 14],
+        "PONTE_FASE_B_FLH_LER_TMP":                     [24, 15],
+        "PONTE_FASE_C_FLH_LER_TMP":                     [25, 0],  # Reg -> 25
+        "GERADOR_FASE_A_FLH_LER_TMP":                   [25, 1],  # Reg -> 25
+        "GERADOR_FASE_B_FLH_LER_TMP":                   [25, 2],  # Reg -> 25
+        "GERADOR_FASE_C_FLH_LER_TMP":                   [25, 3],  # Reg -> 25
+        "GERADOR_NUCL_ESTAT_FLH_LER_TMP":               [25, 4],  # Reg -> 25
+        # Trips Vibração
+        "DETECCAO_HORIZONTAL_TRP_VIBRA":                [25, 10], # Reg -> 25
+        "DETECCAO_VERTICAL_TRP_VIBRA":                  [25, 11], # Reg -> 25
+        "MANCAL_COMB_EIXO_X_TRP_VIBR":                  [25, 12], # Reg -> 25
+        "MANCAL_COMB_EIXO_Y_TRP_VIBR":                  [25, 13], # Reg -> 25
+        "MANCAL_COMB_EIXO_Z_TRP_VIBR":                  [25, 14], # Reg -> 25
+        # Bloqueio Atuado
+        "86M_BLQ_ATUADO":                               [25, 15], # Reg -> 25
+
+
+        # Cubiculo Proteção Gerador
+        "CPG_PORTA_INTERNA_FECHADA":                    [26, 2],
+        "CPG_PORTA_TRASEIRA_FECHADA":                   [26, 3],
+        # Relés
+        "RELE_700G_TRP_ATUADO":                         [26, 4],
+        "RELE_700G_BF_ATUADO":                          [26, 6],
+        # Trips por Temperatura
+        "PONTE_FASE_A_TRP_TMP":                         [27, 0],  # Reg -> 27
+        "PONTE_FASE_B_TRP_TMP":                         [27, 1],  # Reg -> 27
+        "PONTE_FASE_C_TRP_TMP":                         [27, 2],  # Reg -> 27
+        "GERADOR_FASE_A_TRP_TMP":                       [27, 3],  # Reg -> 27
+        "GERADOR_FASE_B_TRP_TMP":                       [27, 4],  # Reg -> 27
+        "GERADOR_FASE_C_TRP_TMP":                       [27, 5],  # Reg -> 27
+        "GERADOR_NUCL_ESTAT_TRP_TMP":                   [27, 6],  # Reg -> 27
+        # Trafo Excitação/Aterramento
+        "TRAFO_ATERRAMENTO_TRP_TMP":                    [27, 8],  # Reg -> 27
+        "TRAFO_EXCITACAO_TRP_TMP":                      [27, 9],  # Reg -> 27
+        "TRAFO_EXCITACAO_FLH_LER_TMP":                  [27, 10], # Reg -> 27
+        # Bloqueio Atuado
+        "86E_BLQ_ATUADO":                               [27, 15], # Reg -> 27
+
+
+        # Trips Temperatura/Vibração/Pressão
+        "UHRV_ACUMULADOR_PRESSAO_TRP":                  [28, 5],
+        "MANCAL_CASQ_COMB_TRP_TMP":                     [29, 2],  # Reg -> 29
+        "MANCAL_CONT_ESCO_COMB_TRP_TMP":                [29, 3],  # Reg -> 29
+        "MANCAL_COMB_PATINS_1_TRP_TMP":                 [29, 4],  # Reg -> 29
+        "MANCAL_COMB_PATINS_2_TRP_TMP":                 [29, 5],  # Reg -> 29
+        "MANCAL_GUIA_INTE_1_TRP_TMP":                   [29, 6],  # Reg -> 29
+        "MANCAL_GUIA_INTE_2_TRP_TMP":                   [29, 7],  # Reg -> 29
+        "86H_BLQ_ATUADO":                               [29, 15], # Reg -> 29
+
+
+        # UHRV
+        "UHRV_MANUTENCAO":                              [36, 0],
+        "UHRV_BOMBA_1_FLH":                             [36, 5],
+        "UHRV_BOMBA_2_FLH":                             [36, 7],
+
+
+        # UHLM
+        "UHLM_MANUTENCAO":                              [38, 4],
+        "UHLM_BOMBA_1_FLH":                             [38, 5],
+        "UHLM_BOMBA_2_FLH":                             [38, 7],
+        "UHLM_FLH_PRESSAO_LINHA_B1":                    [38, 9],
+        "UHLM_FLH_PRESSAO_LINHA_B2":                    [38, 10],
+        "UHLM_FLH_PRESSOSTATO_LINHA":                   [38, 11],
+
+
+        # RV
+        "RV_FLH_HABILITAR":                             [42, 0],
+        "RV_FLH_PARTIR":                                [42, 1],
+        "RV_FLH_DESABILITAR":                           [42, 2],
+        "RV_FLH_FECHAR_DISTRIBUIDOR":                   [42, 4],
+
+
+        # RT
+        "RT_FLH_HABILITAR":                             [42, 8],
+        "RT_FLH_PARTIR":                                [42, 9],
+        "RT_FLH_DESABILITAR":                           [42, 10],
+
+
+        # Rearme Bloqueio
+        "PASSOS_CMD_RST_FLH":                           [148, 0],
+        "86M_CMD_REARME_BLQ":                           [148, 1],
+        "86E_CMD_REARME_BLQ":                           [148, 2],
+        "86H_CMD_REARME_BLQ":                           [148, 3],
+        # Parada
+        "PARADA_CMD_EMERGENCIA":                        [148, 4],
+        "PARADA_BLQ_ABERTURA_DJ":                       [148, 11],
+        "PARADA_CMD_DESABILITA_UHLM":                   [148, 15],
+        # Partida
+        "PARTIDA_CMD_SINCRONISMO":                      [148, 10] ,
+
+
+        # UHRV
+        "UHRV_CMD_REARME_FLH":                          [150, 0],
+        "UHLM_CMD_REARME_FLH":                          [151, 0], # Reg -> 151
+
+        # --------------------------------------------------------------------- #
+        ## Comunicação RTV
+
+        # RV
+        "RV_ESTADO_OPERACAO":                           21,
+
+        "RV_SAIDAS_DIGITAIS":                           26,
+        "RV_RELE_TRP_NAO_ATUADO":                       [26, 0],
+        "RV_RELE_ALM_ATUADO":                           [26, 1],
+
+        "RV_SETPOT_POT_ATIVA_PU":                       30,
+
+        "RT_RELE_TRP_NAO_ATUADO":                       [31, 0],
+
+        "RV_FLH_1_B0":                                  [67, 0],
+        "RV_FLH_1_B1":                                  [67, 1],
+        "RV_FLH_1_B2":                                  [67, 2],
+        "RV_FLH_1_B3":                                  [67, 3],
+        "RV_FLH_1_B4":                                  [67, 4],
+        "RV_FLH_1_B5":                                  [67, 5],
+        "RV_FLH_1_B6":                                  [67, 6],
+        "RV_FLH_1_B7":                                  [67, 7],
+        "RV_FLH_1_B8":                                  [67, 8],
+        "RV_FLH_1_B10":                                 [67, 10],
+        "RV_FLH_1_B11":                                 [67, 11],
+        "RV_FLH_1_B12":                                 [67, 12],
+        "RV_FLH_1_B13":                                 [67, 13],
+        "RV_FLH_1_B14":                                 [67, 14],
+        "RV_FLH_1_B15":                                 [67, 15],
+
+        "RV_FLH_2_B0":                                  [68, 0],
+        "RV_FLH_2_B1":                                  [68, 1],
+        "RV_FLH_2_B2":                                  [68, 2],
+        "RV_FLH_2_B3":                                  [68, 3],
+        "RV_FLH_2_B4":                                  [68, 4],
+
+
+        # RT
+        "RT_SAIDAS_DIGITAIS":                           31,
+
+        "RT_ALM_1_B0":                                  [70, 0],
+        "RT_ALM_1_B4":                                  [70, 4],
+        "RT_ALM_1_B5":                                  [70, 5],
+        "RT_ALM_1_B8":                                  [70, 8],
+
+        "RT_FLH_1_B0":                                  [72, 0],
+        "RT_FLH_1_B1":                                  [72, 1],
+        "RT_FLH_1_B2":                                  [72, 2],
+        "RT_FLH_1_B3":                                  [72, 3],
+        "RT_FLH_1_B4":                                  [72, 4],
+        "RT_FLH_1_B5":                                  [72, 5],
+        "RT_FLH_1_B6":                                  [72, 6],
+        "RT_FLH_1_B7":                                  [72, 7],
+        "RT_FLH_1_B8":                                  [72, 8],
+        "RT_FLH_1_B9":                                  [72, 9],
+        "RT_FLH_1_B10":                                 [72, 10],
+        "RT_FLH_1_B11":                                 [72, 11],
+        "RT_FLH_1_B12":                                 [72, 12],
+        "RT_FLH_1_B13":                                 [72, 13],
+        "RT_FLH_1_B14":                                 [72, 14],
+        "RT_FLH_1_B15":                                 [72, 15],
+
+        "RT_FLH_2_B0":                                  [73, 0],
+        "RT_FLH_2_B1":                                  [73, 1],
+        "RT_FLH_2_B2":                                  [73, 2],
+        "RT_FLH_2_B3":                                  [73, 3],
+        "RT_FLH_2_B4":                                  [73, 4],
+        "RT_FLH_2_B5":                                  [73, 5],
+        "RT_FLH_2_B6":                                  [73, 6],
+        "RT_FLH_2_B7":                                  [73, 7],
+        "RT_FLH_2_B8":                                  [73, 8],
+        "RT_FLH_2_B9":                                  [73, 9],
+        "RT_FLH_2_B10":                                 [73, 10],
+        "RT_FLH_2_B11":                                 [73, 11],
+        "RT_FLH_2_B12":                                 [73, 12],
+
+        "RT_FLH_3_B0":                                  [74, 0],
+        "RT_FLH_3_B1":                                  [74, 1],
+        "RT_FLH_3_B2":                                  [74, 2],
+        "RT_FLH_3_B3":                                  [74, 3],
+        "RT_FLH_3_B4":                                  [74, 4],
+        "RT_FLH_3_B5":                                  [74, 5],
+        "RT_FLH_3_B6":                                  [74, 6],
+        "RT_FLH_3_B7":                                  [74, 7],
+    },
+
 }
 
 

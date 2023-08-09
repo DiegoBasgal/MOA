@@ -8,29 +8,29 @@ import pytz
 import logging
 import traceback
 
-import dicionarios.dict as dct
+import src.dicionarios.dict as dct
 
 from time import sleep, time
 from datetime import  datetime
 
-from dicionarios.reg import *
-from dicionarios.const import *
-from funcoes.condicionador import *
+from src.dicionarios.reg import *
+from src.dicionarios.const import *
+from src.funcoes.condicionador import *
 
-from mensageiro.voip import Voip
-from conectores.servidores import Servidores
-from conectores.banco_dados import BancoDados
-from funcoes.agendamentos import Agendamentos
-from funcoes.escrita import EscritaModBusBit as EMB
+from src.mensageiro.voip import Voip
+from src.conectores.servidores import Servidores
+from src.conectores.banco_dados import BancoDados
+from src.funcoes.agendamentos import Agendamentos
+from src.funcoes.escrita import EscritaModBusBit as EMB
 
-from funcoes.leitura import *
+from src.funcoes.leitura import *
 
-from bay import Bay as BAY
-from comporta import Comporta as CP
-from subestacao import Subestacao as SE
-from tomada_agua import TomadaAgua as TDA
-from unidade_geracao import UnidadeGeracao as UG
-from servico_auxiliar import ServicoAuxiliar as SA
+from src.bay import Bay as BAY
+from src.comporta import Comporta as CP
+from src.subestacao import Subestacao as SE
+from src.tomada_agua import TomadaAgua as TDA
+from src.unidade_geracao import UnidadeGeracao as UG
+from src.servico_auxiliar import ServicoAuxiliar as SA
 
 logger = logging.getLogger("logger")
 
@@ -48,6 +48,9 @@ class Usina:
 
         self.clp = Servidores.clp
         self.rele  = Servidores.rele
+
+        BAY.iniciar_se()
+        SE.iniciar_bay()
 
         self.agn = Agendamentos()
         self.bd = BancoDados("MOA")
@@ -160,9 +163,9 @@ class Usina:
         self.clp_emergencia = True
 
         try:
-            [EMB.escrever_bit(self.clp[f"UG{ug.id}"], REG_CLP[f"UG{ug.id}"][f"PARADA_CMD_EMERGENCIA"], bit=4, valor=1) for ug in self.ugs]
+            [EMB.escrever_bit(self.clp[f"UG{ug.id}"], REG_CLP[f"UG{ug.id}"][f"PARADA_CMD_EMERGENCIA"], valor=1) for ug in self.ugs]
             sleep(5)
-            [EMB.escrever_bit(self.clp[f"UG{ug.id}"], REG_CLP[f"UG{ug.id}"][f"PARADA_CMD_EMERGENCIA"], bit=4, valor=0) for ug in self.ugs]
+            [EMB.escrever_bit(self.clp[f"UG{ug.id}"], REG_CLP[f"UG{ug.id}"][f"PARADA_CMD_EMERGENCIA"], valor=0) for ug in self.ugs]
 
         except Exception:
             logger.error(f"[USN] Houve um erro ao executar o comando de Emergência.")

@@ -7,16 +7,16 @@ import traceback
 
 from time import time
 
-from funcoes.leitura import *
-from dicionarios.const import *
+from src.funcoes.leitura import *
+from src.dicionarios.const import *
+from src.conectores.servidores import Servidores
 
-from tomada_agua import TomadaAgua
-from funcoes.escrita import EscritaModBusBit as EMB
+from src.funcoes.escrita import EscritaModBusBit as EMB
 
 logger = logging.getLogger("logger")
 
-class Comporta(TomadaAgua):
-    def __init__(self, id: "int"=None) -> "None":
+class Comporta:
+    def __init__(self, id: "int"=None, tda=None) -> "None":
 
         # VERIFICAÇÃO DE ARGUMENTOS
 
@@ -25,43 +25,38 @@ class Comporta(TomadaAgua):
         else:
             self.__id = id
 
+        self.clp = Servidores.clp
+
         # ATRIBUIÇÃO DE VAIRÁVEIS PRIVADAS
 
         self.__aberta = LeituraModbusBit(
             self.clp["TDA"],
             REG_CLP["TDA"][f"CP{self.id}_ABERTA"],
-            bit=17
         )
         self.__fechada = LeituraModbusBit(
             self.clp["TDA"],
             REG_CLP["TDA"][f"CP{self.id}_FECHADA"],
-            bit=18
         )
         self.__cracking = LeituraModbusBit(
             self.clp["TDA"],
             REG_CLP["TDA"][f"CP{self.id}_CRACKING"],
-            bit=25
         )
         self.__remoto = LeituraModbusBit(
             self.clp["TDA"],
             REG_CLP["TDA"][f"CP{self.id}_REMOTO"],
-            bit=22
         )
         self.__operando = LeituraModbus(
             self.clp["TDA"],
             REG_CLP["TDA"][f"CP{self.id}_OPERANDO"],
-            bit=14
         )
         self.__permissao = LeituraModbusBit(
             self.clp["TDA"],
             REG_CLP["TDA"][f"CP{self.id}_PERMISSIVOS_OK"],
-            bit=31,
             invertido=True
         )
         self.__bloqueio = LeituraModbusBit(
             self.clp["TDA"],
             REG_CLP["TDA"][f"CP{self.id}_BLQ_ATUADO"],
-            bit=31,
             invertido=True
         )
 
@@ -70,12 +65,10 @@ class Comporta(TomadaAgua):
         self.pressao_equalizada = LeituraModbusBit(
             self.clp["TDA"],
             REG_CLP["TDA"][f"CP{self.id}_PRESSAO_EQUALIZADA"],
-            bit=4
         )
         self.aguardando_cmd_abertura = LeituraModbusBit(
             self.clp["TDA"],
             REG_CLP["TDA"][f"CP{self.id}_AGUARDANDO_CMD_ABERTURA"],
-            bit=3
         )
 
         self.borda_pressao: "bool" = False
@@ -143,7 +136,7 @@ class Comporta(TomadaAgua):
         """
 
         try:
-            res = EMB.escrever_bit(self.clp["TDA"], REG_CLP["TDA"][f"CP{self.id}_CMD_REARME_FLH"], bit=0, valor=1)
+            res = EMB.escrever_bit(self.clp["TDA"], REG_CLP["TDA"][f"CP{self.id}_CMD_REARME_FLH"], valor=1)
             return res
 
         except Exception:
@@ -167,7 +160,7 @@ class Comporta(TomadaAgua):
                 if self.pressao_equalizada.valor and self.aguardando_cmd_abertura.valor:
                     logger.debug(f"[TDA][CP{self.id}] Enviando comando de Abertura para a Comporta {self.id}")
 
-                    EMB.escrever_bit(self.clp["TDA"], REG_CLP["TDA"][f"CP{self.id}_CMD_ABERTURA_TOTAL"], bit=2, valor=1)
+                    EMB.escrever_bit(self.clp["TDA"], REG_CLP["TDA"][f"CP{self.id}_CMD_ABERTURA_TOTAL"], valor=1)
 
         except Exception:
             logger.error(f"[TDA][CP{self.id}] Houve um erro ao acionar o comando de Abertura da Comporta {self.id}.")
@@ -186,7 +179,7 @@ class Comporta(TomadaAgua):
 
             else:
                 logger.debug(f"[TDA][CP{self.id}] Enviando comando de Fechamento para a Comporta {self.id}")
-                EMB.escrever_bit(self.clp["TDA"], REG_CLP["TDA"][f"CP{self.id}_CMD_FECHAMENTO"], bit=3, valor=1)
+                EMB.escrever_bit(self.clp["TDA"], REG_CLP["TDA"][f"CP{self.id}_CMD_FECHAMENTO"], valor=1)
 
         except Exception:
             logger.error(f"[TDA][CP{self.id}] Houve um erro acionar o comando de Fechamento da Comporta {self.id}.")
@@ -208,7 +201,7 @@ class Comporta(TomadaAgua):
             elif self.verificar_condicoes():
                 logger.debug(f"[TDA][CP{self.id}] Enviando comando de Cracking para a Comporta {self.id}")
 
-                EMB.escrever_bit(self.clp["TDA"], REG_CLP["TDA"][f"CP{self.id}_CMD_ABERTURA_CRACKING"], bit=1, valor=1)
+                EMB.escrever_bit(self.clp["TDA"], REG_CLP["TDA"][f"CP{self.id}_CMD_ABERTURA_CRACKING"], valor=1)
 
         except Exception:
             logger.error(f"[TDA][CP{self.id}] Houve um erro ao realizar a Operação de Cracking da Comporta {self.id}.")

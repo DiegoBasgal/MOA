@@ -6,14 +6,12 @@ import logging
 
 from threading import Thread
 
-from dicionarios.const import *
-
-from unidade_geracao import UnidadeGeracao
+from src.dicionarios.const import *
 
 logger = logging.getLogger("logger")
 
 class State:
-    def __init__(self, parent: "UnidadeGeracao"=None) -> "None":
+    def __init__(self, parent=None) -> "None":
 
         # VERIFICAÇÃO DE ARGUENTOS
 
