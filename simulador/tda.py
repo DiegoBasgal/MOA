@@ -2,6 +2,7 @@ import numpy as np
 
 from pyModbusTCP.server import DataBank as DB
 
+from funcs.escrita import Escrita as ESC
 from funcs.temporizador import Temporizador
 
 from dicts.reg import *
@@ -17,6 +18,13 @@ class Tda:
         self.escala_ruido = tempo.escala_ruido
         self.passo_simulacao = tempo.passo_simulacao
         self.segundos_por_passo = tempo.segundos_por_passo
+
+        self.b_cp1_f = False
+        self.b_cp2_f = False
+        self.b_cp1_a = False
+        self.b_cp2_a = False
+        self.b_cp1_c = False
+        self.b_cp2_c = False
 
     def passo(self) -> "None":
         self.calcular_vazao()
@@ -66,3 +74,11 @@ class Tda:
         DB.set_words(MB['TDA']['NV_MONTANTE'], [round((self.dict['TDA']['nv_montante']) * 10000)],)
         DB.set_words(MB['TDA']['NV_JUSANTE_CP1'], [round((self.dict['TDA']['nv_jusante_grade']) * 10000)],)
         DB.set_words(MB['TDA']['NV_JUSANTE_CP2'], [round((self.dict['TDA']['nv_jusante_grade']) * 10000)],)
+
+        if self.dict["TDA"]["cp1_fechada"] and not self.b_cp1_f:
+            self.b_cp1_f = True
+            ESC.escrever_bit(MB["TDA"]["CP1_FECHADA"], valor=1)
+
+        elif not self.dict["TDA"]["cp1_fechada"] and self.b_cp1_f:
+            self.b_cp1_f = False
+            ESC.escrever_bit(MB["TDA"]["CP1_FECHADA"], valor=0)

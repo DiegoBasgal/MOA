@@ -38,11 +38,23 @@ MB = {
         "NV_JUSANTE_CP1":                                           7,
         "NV_JUSANTE_CP2":                                           8,
 
+        "CP1_CRACKING":                                             [1016, 0],
+        "CP1_REMOTO":                                               [1016, 6],
+
+        "CP1_ABERTA":                                               [1017, 14],
+        "CP1_FECHADA":                                              [1017, 15],
+
         "CP1_OPERANDO":                                             [2 + 1000, 0],
         "CP1_PERMISSIVOS_OK":                                       [6 + 1000, 15],
         "CP1_CMD_ABERTURA_CRACKING":                                [6 + 1000, 1],
         "CP1_CMD_ABERTURA_TOTAL":                                   [6 + 1000, 2],
         "CP1_CMD_FECHAMENTO":                                       [6 + 1000, 3],
+
+        "CP2_CRACKING":                                             [2016, 0],
+        "CP2_REMOTO":                                               [2016, 6],
+
+        "CP2_ABERTA":                                               [2017, 14],
+        "CP2_FECHADA":                                              [2017, 15],
 
         "CP2_OPERANDO":                                             [2 + 2000, 0],
         "CP2_PERMISSIVOS_OK":                                       [6 + 2000, 15],
