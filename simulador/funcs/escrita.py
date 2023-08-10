@@ -22,6 +22,8 @@ class Escrita:
                 if reg[1] == i:
                     lbit_r[i] = valor
                     break
+            
+            print(lbit_r)
 
             v = sum(val*(2**x) for x, val in enumerate(lbit_r))
 

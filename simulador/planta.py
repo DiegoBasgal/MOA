@@ -45,7 +45,7 @@ class Planta:
 
         for n, l in MB.items():
             if isinstance(l, list):
-                ESC.escrever_bit(l, [0])
+                ESC.escrever_bit(l, valor=0)
             else:
                 DB.set_words(l, [0])
 
@@ -67,7 +67,7 @@ class Planta:
 
                 # Leituras de registradores MB
                 if LEI.ler_bit(MB['DJL_CMD_FECHAR']) == 1:
-                    ESC.escrever_bit(MB['DJL_CMD_FECHAR'], valor=1)
+                    ESC.escrever_bit(MB['DJL_CMD_FECHAR'], valor=0)
                     print('[CF]  Comando de Fechamento do Disjuntor da Subestação acionado via \"MODBUS\"')
                     self.se.fechar_dj()
 
