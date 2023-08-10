@@ -50,17 +50,17 @@ class UnidadeDeGeracao:
 
         self.__leitura_dj_tsa: "LeituraModbusBit" = LeituraModbusBit(
             self.clp["SA"],
-            REG_SA["SA_ED_PSA_DIJS_TSA_FECHADO"],
+            REG["SA"]["SA_ED_PSA_DIJS_TSA_FECHADO"],
             descr=f"[UG{self.id}] Status Disjuntor Serviço Auxiliar"
         )
         self.__leitura_dj_gmg: "LeituraModbusBit" = LeituraModbusBit(
             self.clp["SA"],
-            REG_SA["SA_ED_PSA_DIJS_GMG_FECHADO"],
+            REG["SA"]["SA_ED_PSA_DIJS_GMG_FECHADO"],
             descr=f"[UG{self.id}] Status Disjuntor Grupo Motor Gerador"
         )
         self.__leitura_dj_linha: "LeituraModbusBit" = LeituraModbusBit(
             self.clp["SA"],
-            REG_SA["SA_ED_PSA_SE_DISJ_LINHA_FECHADO"],
+            REG["SA"]["SA_ED_PSA_SE_DISJ_LINHA_FECHADO"],
             descr=f"[UG{self.id}] Status Disjuntor Linha"
         )
         self.__tensao: "LeituraModbus" = LeituraModbus(
@@ -71,13 +71,13 @@ class UnidadeDeGeracao:
         )
         self.__leitura_etapa_atual: "LeituraModbus" = LeituraModbus(
             self.clp[f"UG{self.id}"],
-            REG_UG[f"UG{self.id}_ED_STT_PASSO_ATUAL_BIT"],
+            REG["UG"][f"UG{self.id}_ED_STT_PASSO_ATUAL_BIT"],
             op=3,
             descr=f"[UG{self.id}] Etapa Atual"
         )
         self.__leitura_etapa_alvo: "LeituraModbus" = LeituraModbus(
             self.clp[f"UG{self.id}"],
-            REG_UG[f"UG{self.id}_ED_STT_PASSO_SELECIONADO_BIT"],
+            REG["UG"][f"UG{self.id}_ED_STT_PASSO_SELECIONADO_BIT"],
             op=3,
             descr=f"[UG{self.id}] Etapa Alvo"
         )
@@ -357,14 +357,13 @@ class UnidadeDeGeracao:
 
     def desabilitar_manutencao(self) -> "bool":
         try:
-            res = EMB.escrever_bit(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}_CD_CMD_CONTROLE_POTENCIA_MANUAL"], 1, descr=f"UG{self.id}_CD_CMD_CONTROLE_POTENCIA_MANUAL")
+            res = EMB.escrever_bit(self.clp[f"UG{self.id}"], REG["UG"][f"UG{self.id}_CD_CMD_CONTROLE_POTENCIA_MANUAL"], valor=1, descr=f"UG{self.id}_CD_CMD_CONTROLE_POTENCIA_MANUAL")
 
-            res = EMB.escrever_bit(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}_CD_CMD_RV_MANUTENCAO"], 0, descr=f"UG{self.id}_CD_CMD_RV_MANUTENCAO")
-            res = EMB.escrever_bit(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}_CD_CMD_RV_AUTOMATICO"], 1, descr=f"UG{self.id}_CD_CMD_RV_AUTOMATICO")
-            res = EMB.escrever_bit(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}_CD_CMD_UHLM_MODO_MANUTENCAO"], 0, descr=f"UG{self.id}_CD_CMD_UHLM_MODO_MANUTENCAO")
-            res = EMB.escrever_bit(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}_CD_CMD_UHLM_MODO_AUTOMATICO"], 1, descr=f"UG{self.id}_CD_CMD_UHLM_MODO_AUTOMATICO")
-            # res = EMB.escrever_bit(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}_CD_CMD_UHRV_MODO_MANUTENCAO"], 0, descr=f"UG{self.id}_CD_CMD_UHRV_MODO_MANUTENCAO") -> Está mandando comando de parada para a máquina | TODO Verificar com a Automatic
-            # res = EMB.escrever_bit(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}_CD_CMD_UHRV_MODO_AUTOMATICO"], 1, descr=f"UG{self.id}_CD_CMD_UHRV_MODO_AUTOMATICO") -> Está mandando comando de parada para a máquina | TODO Verificar com a Automatic
+            res = EMB.escrever_bit(self.clp[f"UG{self.id}"], REG["UG"][f"UG{self.id}_CD_CMD_RV_MANUTENCAO"], valor=0, descr=f"UG{self.id}_CD_CMD_RV_MANUTENCAO")
+            res = EMB.escrever_bit(self.clp[f"UG{self.id}"], REG["UG"][f"UG{self.id}_CD_CMD_RV_AUTOMATICO"], valor=1, descr=f"UG{self.id}_CD_CMD_RV_AUTOMATICO")
+            res = EMB.escrever_bit(self.clp[f"UG{self.id}"], REG["UG"][f"UG{self.id}_CD_CMD_UHLM_MODO_AUTOMATICO"], valor=1, descr=f"UG{self.id}_CD_CMD_UHLM_MODO_AUTOMATICO")
+            # res = EMB.escrever_bit(self.clp[f"UG{self.id}"], REG["UG"][f"UG{self.id}_CD_CMD_UHRV_MODO_MANUTENCAO"], 0, descr=f"UG{self.id}_CD_CMD_UHRV_MODO_MANUTENCAO") -> Está mandando comando de parada para a máquina | TODO Verificar com a Automatic
+            # res = EMB.escrever_bit(self.clp[f"UG{self.id}"], REG["UG"][f"UG{self.id}_CD_CMD_UHRV_MODO_AUTOMATICO"], 1, descr=f"UG{self.id}_CD_CMD_UHRV_MODO_AUTOMATICO") -> Está mandando comando de parada para a máquina | TODO Verificar com a Automatic
             return res
 
         except Exception:
@@ -379,15 +378,21 @@ class UnidadeDeGeracao:
             return
 
     def normalizar_unidade(self) -> "bool":
-        if self.tentativas_de_normalizacao > self.limite_tentativas_de_normalizacao:
-            logger.warning(f"[UG{self.id}] A UG estourou as tentativas de normalização, indisponibilizando Unidade.")
-            return False
+        if self.etapa == UG_PARADA:
+            if self.tentativas_de_normalizacao > self.limite_tentativas_de_normalizacao:
+                logger.warning(f"[UG{self.id}] A UG estourou as tentativas de normalização, indisponibilizando Unidade.")
+                return False
 
-        elif (self.ts_auxiliar - self.get_time()).seconds > self.tempo_entre_tentativas:
-            self.tentativas_de_normalizacao += 1
-            self.ts_auxiliar = self.get_time()
-            logger.info(f"[UG{self.id}] Normalizando Unidade (Tentativa {self.tentativas_de_normalizacao}/{self.limite_tentativas_de_normalizacao})")
-            self.reconhece_reset_alarmes()
+            elif (self.ts_auxiliar - self.get_time()).seconds > self.tempo_entre_tentativas:
+                self.tentativas_de_normalizacao += 1
+                self.ts_auxiliar = self.get_time()
+                logger.info(f"[UG{self.id}] Normalizando Unidade (Tentativa {self.tentativas_de_normalizacao}/{self.limite_tentativas_de_normalizacao})")
+                self.reconhece_reset_alarmes()
+                sleep(1)
+                return True
+
+        else:
+            logger.debug(f"[UG{self.id}] Aguardando parada total da Unidade para executar a Normalização...")
             return True
 
     def bloquear_unidade(self) -> "None":
@@ -436,7 +441,7 @@ class UnidadeDeGeracao:
 
             elif not self.etapa == UG_SINCRONIZADA:
                 logger.info(f"[UG{self.id}]          Enviando comando:          \"PARTIDA\"")
-                EMB.escrever_bit(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}_CD_CMD_REARME_FALHAS"], 1, descr=f"UG{self.id}_CD_CMD_REARME_FALHAS")
+                EMB.escrever_bit(self.clp[f"UG{self.id}"], REG["UG"][f"UG{self.id}_CD_CMD_REARME_FALHAS"], 1, descr=f"UG{self.id}_CD_CMD_REARME_FALHAS")
                 # EMB.escrever_bit(self.clp[f"UG{self.id}"], REG["UG"][f"UG{self.id}_CD_CMD_SINCRONISMO"], valor=1, descr=f"UG{self.id}_CD_CMD_SINCRONISMO")
                 self.clp[f"UG{self.id}"].write_single_register(REG["UG"][f"UG{self.id}_CD_CMD_SINCRONISMO"][0], int(128))
 
@@ -452,7 +457,7 @@ class UnidadeDeGeracao:
             if not self.etapa == UG_PARADA:
                 logger.info(f"[UG{self.id}]          Enviando comando:          \"PARADA\"")
                 self.enviar_setpoint(0)
-                res = EMB.escrever_bit(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}_CD_CMD_PARADA_TOTAL"], 1, descr=f"UG{self.id}_CD_CMD_PARADA_TOTAL")
+                res = EMB.escrever_bit(self.clp[f"UG{self.id}"], REG["UG"][f"UG{self.id}_CD_CMD_PARADA_TOTAL"], 1, descr=f"UG{self.id}_CD_CMD_PARADA_TOTAL")
                 return res
 
             else:
@@ -473,7 +478,7 @@ class UnidadeDeGeracao:
 
             if pot_reativa > (0.426 * self.leitura_potencia):
                 pot_reativa = (0.426 * self.leitura_potencia)
-                self.rt[f"UG{self.id}"].write_single_register(REG_UG[f"UG{self.id}_RT_SETPOINT_POTENCIA_REATIVA_PU"], -pot_reativa)
+                self.rt[f"UG{self.id}"].write_single_register(REG["UG"][f"UG{self.id}_RT_SETPOINT_POTENCIA_REATIVA_PU"], -pot_reativa)
 
 
     def enviar_setpoint(self, setpoint_kw: int) -> "bool":
@@ -483,11 +488,11 @@ class UnidadeDeGeracao:
                 logger.info(f"[UG{self.id}] Não foi possível enviar comando de \"Desabilitar Manutenção\"")
             else:
                 self.setpoint = int(setpoint_kw)
-                setpoint_porcento = (setpoint_kw / self.cfg["pot_maxima_ug"]) * 10000
-                logger.debug(f"[UG{self.id}]          Enviando setpoint:         {(setpoint_kw / self.cfg['pot_maxima_ug']) * 100} %")
+                setpoint_porcento = (setpoint_kw / self.cfg[f"pot_maxima_ug{self.id}"]) * 10000
+                logger.debug(f"[UG{self.id}]          Enviando setpoint:         {(setpoint_kw / self.cfg[f'pot_maxima_ug{self.id}']) * 100} %")
 
                 if self.setpoint > 1:
-                    res = self.rv[f"UG{self.id}"].write_single_register(REG_UG[f"UG{self.id}_RV_SETPOINT_POTENCIA_ATIVA_PU"], int(setpoint_porcento))
+                    res = self.rv[f"UG{self.id}"].write_single_register(REG["UG"][f"UG{self.id}_RV_SETPOINT_POTENCIA_ATIVA_PU"], int(setpoint_porcento))
                     return res
 
         except Exception:
@@ -498,7 +503,7 @@ class UnidadeDeGeracao:
     def acionar_trip_logico(self) -> "bool":
         try:
             logger.debug(f"[UG{self.id}]          Enviando comando:          \"TRIP LÓGICO\"")
-            res = EMB.escrever_bit(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}_CD_CMD_PARADA_EMERGENCIA"], 1, descr=f"UG{self.id}_CD_CMD_PARADA_EMERGENCIA")
+            res = EMB.escrever_bit(self.clp[f"UG{self.id}"], REG["UG"][f"UG{self.id}_CD_CMD_PARADA_EMERGENCIA"], 1, descr=f"UG{self.id}_CD_CMD_PARADA_EMERGENCIA")
             return res
 
         except Exception:
@@ -509,7 +514,7 @@ class UnidadeDeGeracao:
     def remover_trip_logico(self) -> "bool":
         try:
             logger.debug(f"[UG{self.id}]          Removendo comando:         \"TRIP LÓGICO\"")
-            res = EMB.escrever_bit(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}_CD_CMD_REARME_FALHAS"], 1, descr=f"UG{self.id}_CD_CMD_REARME_FALHAS")
+            res = EMB.escrever_bit(self.clp[f"UG{self.id}"], REG["UG"][f"UG{self.id}_CD_CMD_REARME_FALHAS"], 1, descr=f"UG{self.id}_CD_CMD_REARME_FALHAS")
             return res
 
         except Exception:
@@ -532,7 +537,7 @@ class UnidadeDeGeracao:
         try:
             if self.__leitura_dj_linha.valor == 0:
                 logger.debug(f"[UG{self.id}]          Enviando comando:          \"FECHAR DJ LINHA\".")
-                EMB.escrever_bit(self.clp["SA"], REG_SA["SA_CD_DISJ_LINHA_FECHA"], 1, descr="SA_CD_DISJ_LINHA_FECHA")
+                EMB.escrever_bit(self.clp["SA"], REG["SA"]["SA_CD_DISJ_LINHA_FECHA"], 1, descr="SA_CD_DISJ_LINHA_FECHA")
 
             logger.debug(f"[UG{self.id}]          Removendo comando:         \"TRIP ELÉTRICO\"")
             res = None # self.clp["MOA"].write_single_coil(REG_MOA[f"OUT_BLOCK_UG{self.id}"], [0])

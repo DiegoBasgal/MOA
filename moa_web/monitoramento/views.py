@@ -6,22 +6,12 @@ from django.shortcuts import render
 from parametros.models import ParametrosUsina
 
 # Create your views here.
+from pymodbus.constants import Endian
+from pymodbus.payload import BinaryPayloadDecoder as BPD
 from pyModbusTCP.utils import *
 from pyModbusTCP.client import ModbusClient
 
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath("/opt/operacao-autonoma/"))))
-
-MOA_DICT_DE_STATES = {}
-MOA_DICT_DE_STATES[0] = 0
-MOA_DICT_DE_STATES[1] = 1
-MOA_DICT_DE_STATES[2] = 2
-MOA_DICT_DE_STATES[3] = 3
-
-UNIDADE_DICT_DE_ETAPAS = {}
-UNIDADE_DICT_DE_ETAPAS[1] = 1
-UNIDADE_DICT_DE_ETAPAS[2] = 2
-UNIDADE_DICT_DE_ETAPAS[3] = 3
-UNIDADE_DICT_DE_ETAPAS[4] = 4
 
 
 def monitoramento_view(request, *args, **kwargs):
@@ -81,15 +71,6 @@ def monitoramento_view(request, *args, **kwargs):
         auto_open=True
     )
 
-    raw_djl = clp_sa.read_holding_registers(12309)[0]
-    raw_djl_aux = clp_sa.read_holding_registers(12308)[0]
-    conv = get_bits_from_int(raw_djl)
-    conv_aux = get_bits_from_int(raw_djl_aux)
-    lista_bits = conv_aux + conv
-    for i in range(len(lista_bits)):
-        if i == 31:
-            leitura_djl = lista_bits[i]
-
     if 820.9 <= usina.nv_montante < 821:
         context["tag"] = 0
     elif 820.75 <= usina.nv_montante < 820.9:
@@ -97,22 +78,72 @@ def monitoramento_view(request, *args, **kwargs):
     elif usina.nv_montante < 820.75 or usina.nv_montante > 821:
         context["tag"] = 2
 
-    if leitura_djl == 0:
-        context["status_dj_linha"] = True
-    elif leitura_djl == 1:
-        context["status_dj_linha"] = False
-    else:
-        context["status_dj_linha"] = None
-
     for key in context:
         if context[key] == "" or context[key] == " ":
             context[key] = "-"
 
-    context["setpot_usina"] = clp_sa.read_holding_registers(353)[0]
-    context["ug1_etapa"] = clp_ug1.read_holding_registers(12390)[0]
-    context["ug2_etapa"] = clp_ug2.read_holding_registers(12390)[0]
-    context["pot_ug1"] = rele_ug1.read_holding_registers(353)[0]
-    context["pot_ug2"] = rele_ug2.read_holding_registers(353)[0]
+    try:
+        raw_djl = clp_sa.read_holding_registers(12309)
+
+        dec1 = BPD.fromRegisters(raw_djl, byteorder=Endian.Big, wordorder=Endian.Little)
+        dec2 = BPD.fromRegisters(raw_djl, byteorder=Endian.Big, wordorder=Endian.Little)
+
+        dj_lbit = [int(b) for bits in [reversed(dec1.decode_bits(1)), reversed(dec2.decode_bits(2))] for b in bits]
+        dj_lbit_r = [int(b) for b in reversed(dj_lbit)]
+
+        leitura_djl = dj_lbit_r[15]
+
+        if leitura_djl == 1:
+            context["status_dj_linha"] = True
+        elif leitura_djl == 0:
+            context["status_dj_linha"] = False
+        else:
+            context["status_dj_linha"] = None
+
+    except Exception:
+        context["status_dj_linha"] = None
+        pass
+
+    try:
+        setpot_usina = clp_sa.read_holding_registers(353)[0]
+        context["setpot_usina"] = setpot_usina
+
+    except Exception:
+        context["setpot_usina"] = 0
+        pass
+
+    try:
+        ug1_etapa = clp_ug1.read_holding_registers(12390)[0]
+        context["ug1_etapa"] = ug1_etapa
+
+    except Exception:
+        context["ug1_etapa"] = 0
+        pass
+
+    try:
+        ug2_etapa = clp_ug2.read_holding_registers(12390)[0]
+        context["ug2_etapa"] = ug2_etapa
+
+    except Exception:
+        context["ug2_etapa"] = 0
+        pass
+
+    try:
+        ug1_pot = rele_ug1.read_holding_registers(353)[0]
+        context["pot_ug1"] = ug1_pot
+
+    except Exception:
+        context["pot_ug1"] = 0
+        pass
+
+    try:
+        ug2_pot = rele_ug2.read_holding_registers(353)[0]
+        context["pot_ug2"] = ug2_pot
+
+    except Exception:
+        context["pot_ug2"] = 0
+        pass
+
 
     tempo_desde_moa_comunicando = (
         datetime.datetime.now(usina.timestamp.tzinfo)

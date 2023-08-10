@@ -105,21 +105,25 @@ class LeituraModbusBit(LeituraModbus):
     def valor(self) -> "bool | None":
         try:
             raw = self.__cli.read_holding_registers(self.__reg)
-            raw_dec_1 = BPD.fromRegisters(raw, byteorder=Endian.Big, wordorder=Endian.Little)
-            raw_dec_2 = BPD.fromRegisters(raw, byteorder=Endian.Big, wordorder=Endian.Little)
+            dec_1 = BPD.fromRegisters(raw, byteorder=Endian.Big, wordorder=Endian.Little)
+            dec_2 = BPD.fromRegisters(raw, byteorder=Endian.Big, wordorder=Endian.Little)
 
-            if self.__bit >= 16:
-                raw_aux = self.__cli.read_holding_registers(self.__reg)
-                raw_aux_dec_1 = BPD.fromRegisters(raw_aux, byteorder=Endian.Big, wordorder=Endian.Little)
-                raw_aux_dec_2 = BPD.fromRegisters(raw_aux, byteorder=Endian.Big, wordorder=Endian.Little)
-                lista_bits = [bit for bits in [raw_dec_2.decode_bits(2), raw_dec_1.decode_bits(1), raw_aux_dec_2.decode_bits(2), raw_aux_dec_1.decode_bits(1)] for bit in bits]
+            if self.__bit > 15:
+                bit = self.__bit - 16
+                raw_aux = self.__cli.read_holding_registers(self.__reg + 1)
+                aux_dec_1 = BPD.fromRegisters(raw_aux, byteorder=Endian.Big, wordorder=Endian.Little)
+                aux_dec_2 = BPD.fromRegisters(raw_aux, byteorder=Endian.Big, wordorder=Endian.Little)
+                lbit = [int(bit) for bits in [reversed(aux_dec_1.decode_bits(1)), reversed(aux_dec_2.decode_bits(2))] for bit in bits]
 
             else:
-                lista_bits = [bit for bits in [raw_dec_2.decode_bits(2), raw_dec_1.decode_bits(1)] for bit in bits]
+                bit = self.__bit
+                lbit = [int(bit) for bits in [reversed(dec_1.decode_bits(1)), reversed(dec_2.decode_bits(2))] for bit in bits]
 
-            for i in range(len(lista_bits)):
-                if self.__bit == i:
-                    return not lista_bits[i] if self.__invertido else lista_bits[i]
+            lbit_r = [b for b in reversed(lbit)]
+
+            for i in range(len(lbit_r)):
+                if bit == i:
+                    return not lbit_r[i] if self.__invertido else lbit_r[i]
 
         except Exception:
             logger.error(f"[LER] houve um erro ao realizar a conversão do dado Raw para Biário. Retornando \"None\"...")
@@ -140,7 +144,7 @@ class LeituraModbusFloat(LeituraModbus):
             raw = self.__cli.read_holding_registers(self.__reg, 2)
 
             decoder = BPD.fromRegisters(raw, byteorder=Endian.Big, wordorder=Endian.Little)
-            
+
             return decoder.decode_32bit_float()
 
         except Exception:

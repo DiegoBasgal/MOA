@@ -51,7 +51,7 @@ class Usina:
 
         self.__leitura_dj_tsa: "LeituraModbusBit" = LeituraModbusBit(
             self.clp["SA"],
-            REG_SA["SA_ED_PSA_DIJS_TSA_FECHADO"],
+            REG['SA']["SA_ED_PSA_DIJS_TSA_FECHADO"],
             descr="[USN] Status Disjuntor SA"
         )
 
@@ -199,7 +199,7 @@ class Usina:
 
         try:
             for ug in self.ugs:
-                EMB.escrever_bit(self.clp[f"UG{ug.id}"], REG_UG[f"UG{ug.id}_CD_CMD_PARADA_EMERGENCIA"], 1, descr=f"UG{ug.id}_CD_CMD_PARADA_EMERGENCIA")
+                EMB.escrever_bit(self.clp[f"UG{ug.id}"], REG["UG"][f"UG{ug.id}_CD_CMD_PARADA_EMERGENCIA"], 1, descr=f"UG{ug.id}_CD_CMD_PARADA_EMERGENCIA")
 
         except Exception:
             logger.error(f"[USN] Houve um erro ao acionar a Emergência.")
@@ -209,11 +209,11 @@ class Usina:
         try:
             logger.debug("[USN] Reset geral")
 
-            EMB.escrever_bit(self.clp["SA"], REG_SA["SA_CD_REARME_FALHAS"], valor=1, descr="SA_CD_REARME_FALHAS")
-            EMB.escrever_bit(self.clp["SA"], REG_GERAL["GERAL_CD_RESET_GERAL"], valor=1, descr="GERAL_CD_RESET_GERAL")
+            EMB.escrever_bit(self.clp["SA"], REG["SA"]["SA_CD_REARME_FALHAS"], valor=1, descr="SA_CD_REARME_FALHAS")
+            EMB.escrever_bit(self.clp["SA"], REG["GERAL"]["GERAL_CD_RESET_GERAL"], valor=1, descr="GERAL_CD_RESET_GERAL")
 
             for ug in self.ugs:
-                EMB.escrever_bit(self.clp[f"UG{ug.id}"], REG_UG[f"UG{ug.id}_CD_CMD_REARME_FALHAS"], valor=1, descr=f"UG{ug.id}_CD_CMD_REARME_FALHAS")
+                EMB.escrever_bit(self.clp[f"UG{ug.id}"], REG["UG"][f"UG{ug.id}_CD_CMD_REARME_FALHAS"], valor=1, descr=f"UG{ug.id}_CD_CMD_REARME_FALHAS")
 
         except Exception:
             logger.error(f"[USN] Houve um erro ao realizar o Reset Geral.")
@@ -270,7 +270,7 @@ class Usina:
                 return False
 
             else:
-                res = EMB.escrever_bit(self.clp["SA"], REG_SA["SA_CD_DISJ_LINHA_FECHA"], valor=1)
+                res = EMB.escrever_bit(self.clp["SA"], REG["SA"]["SA_CD_DISJ_LINHA_FECHA"], valor=1)
                 return res
 
         except Exception:
@@ -514,9 +514,9 @@ class Usina:
         self.atualizar_valores_cfg(parametros)
         self.atualizar_valores_banco(parametros)
 
-        # if self.clp["SA"].read_coils(REG_SA["RESERVA_X"])[0] == 1 and not self.modo_autonomo:
+        # if self.clp["SA"].read_coils(REG["SA"]["RESERVA_X"])[0] == 1 and not self.modo_autonomo:
         #     self.modo_autonomo = True
-        # elif self.clp["SA"].read_coils(REG_SA["RESERVA_X"])[0] == 0 and self.modo_autonomo:
+        # elif self.clp["SA"].read_coils(REG["SA"]["RESERVA_X"])[0] == 0 and self.modo_autonomo:
         #     self.modo_autonomo == False
 
         for ug in self.ugs:

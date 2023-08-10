@@ -11,6 +11,7 @@ from src.funcoes.leitura import *
 from src.condicionadores import *
 from src.dicionarios.reg import *
 from src.dicionarios.const import *
+from src.dicionarios.reg_old import *
 
 from src.banco_dados import BancoDados
 
