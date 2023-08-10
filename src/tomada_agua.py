@@ -7,9 +7,10 @@ import logging
 import traceback
 
 import src.dicionarios.dict as dct
+import src.funcoes.condicionadores as c
 
 from src.funcoes.leitura import *
-from src.funcoes.condicionadores import *
+from src.dicionarios.const import *
 
 from src.comporta import Comporta
 from src.conectores.servidores import Servidores
@@ -24,15 +25,18 @@ class TomadaAgua:
     clp = Servidores.clp
 
     cfg: "dict" = {}
+    aguardando_reservatorio: "int" = 0
 
     cp: "dict[str, Comporta]" = {}
     cp["CP1"] = Comporta(1)
     cp["CP2"] = Comporta(2)
 
     nivel_montante = LeituraModbus(
-        clp["TDA"],
+        clp['TDA'],
         REG_CLP["TDA"]["NV_MONTANTE"],
-        descricao="[TDA] Leitura Nível Montante"
+        descricao="[TDA] Leitura Nível Montante",
+        escala=1/1000,
+        fundo_escala=429
     )
     status_limpa_grades = LeituraModbus(
         clp["TDA"],
@@ -54,8 +58,8 @@ class TomadaAgua:
     erro_nivel_anterior: "float" = 0
     nivel_montante_anterior: "float" = 0
 
-    condicionadores: "list[CondicionadorBase]" = []
-    condicionadores_essenciais: "list[CondicionadorBase]" = []
+    condicionadores: "list[c.CondicionadorBase]" = []
+    condicionadores_essenciais: "list[c.CondicionadorBase]" = []
 
     @classmethod
     def resetar_emergencia(cls) -> "bool":
@@ -85,63 +89,7 @@ class TomadaAgua:
         cls.erro_nivel = cls.nivel_montante_anterior - cls.cfg["nv_alvo"]
 
     @classmethod
-    def controlar_reservatorio(cls) -> "int":
-        """
-        Função para controle de níveis do reservatório.
-
-        Realiza a leitura de nível montante e determina qual condição entrar. Se
-        o nível estiver acima do máximo, verifica se atingiu o Maximorum. Nesse
-        caso é acionada a emergência da Usina, porém se for apenas vertimento,
-        distribui a potência máxima para as Unidades.
-        Caso a leitura retornar que o nível está abaixo do mínimo, verifica antes
-        se atingiu o fundo do reservatório, nesse caso é acionada a emergência.
-        Se o valor ainda estiver acima do nível de fundo, será distribuída a
-        potência 0 para todas as Unidades e aciona a espera pelo nível.
-        Caso a leitura esteja dentro dos limites normais, é chamada a função para
-        calcular e distribuir a potência para as Unidades.
-        """
-
-        if cls.nivel_montante >= cls.cfg["nv_maximo"]:
-            logger.debug("[TDA] Nível montante acima do máximo.")
-
-            if cls.nivel_montante_anterior >= NIVEL_MAXIMORUM:
-                logger.critical(f"[TDA] Nivel montante ({cls.nivel_montante_anterior:3.2f}) atingiu o maximorum!")
-                return NV_EMERGENCIA
-            else:
-                cls.controle_i = 0.5
-                cls.controle_ie = 0.5
-                cls.ajuste_potencia(cls.cfg["pot_maxima_usina"])
-
-                for ug in cls.ugs:
-                    ug.step()
-
-        elif cls.nivel_montante <= cls.cfg["nv_minimo"] and not cls.aguardando_reservatorio:
-            logger.debug("[TDA] Nível montante abaixo do mínimo.")
-            cls.aguardando_reservatorio = True
-            cls.distribuir_potencia(0)
-
-            for ug in cls.ugs:
-                ug.step()
-
-            if cls.nivel_montante_anterior <= NIVEL_FUNDO_RESERVATORIO:
-                logger.critical(f"[TDA] Nivel montante ({cls.nivel_montante_anterior:3.2f}) atingiu o fundo do reservatorio!")
-                return NV_EMERGENCIA
-
-        elif cls.aguardando_reservatorio:
-            if cls.nivel_montante >= cls.cfg["nv_alvo"]:
-                logger.debug("[TDA] Nível montante dentro do limite de operação.")
-                cls.aguardando_reservatorio = False
-
-        else:
-            cls.controle_potencia()
-
-            for ug in cls.ugs:
-                ug.step()
-
-        return NV_NORMAL
-
-    @classmethod
-    def verificar_condicionadores(cls) -> "list[CondicionadorBase]":
+    def verificar_condicionadores(cls) -> "list[c.CondicionadorBase]":
         """
         Função para verificação de TRIPS/Alarmes.
 
@@ -208,19 +156,19 @@ class TomadaAgua:
         """
         Função para carregamento de leituras necessárias para a operação.
         """
-
+        return
         # CONDICIONADORES ESSENCIAIS
         # Normalizar
         cls.leitura_sem_emergencia_tda = LeituraModbusBit(cls.clp["TDA"], REG_CLP["TDA"]["SEM_EMERGENCIA"], invertido=True, descricao="[TDA] Emergência")
-        cls.condicionadores_essenciais.append(CondicionadorBase(cls.leitura_sem_emergencia_tda, CONDIC_NORMALIZAR))
+        cls.condicionadores_essenciais.append(c.CondicionadorBase(cls.leitura_sem_emergencia_tda, CONDIC_NORMALIZAR))
 
         # CONDICIONADORES
         # Normalizar
         cls.leitura_ca_com_tensao = LeituraModbusBit(cls.clp["TDA"], REG_CLP["TDA"]["CA_COM_TENSAO"], invertido=True, descricao="[TDA] Tensão CA Status ")
-        cls.condicionadores.append(CondicionadorBase(cls.leitura_ca_com_tensao, CONDIC_NORMALIZAR))
+        cls.condicionadores.append(c.CondicionadorBase(cls.leitura_ca_com_tensao, CONDIC_NORMALIZAR))
 
         cls.leitura_falha_ligar_bomba_uh = LeituraModbusBit(cls.clp["TDA"], REG_CLP["TDA"]["UH_FLH_LIGAR_BOMBA"], descricao="[TDA] UHTDA Falha Ligar Bomba")
-        cls.condicionadores.append(CondicionadorBase(cls.leitura_falha_ligar_bomba_uh, CONDIC_NORMALIZAR))
+        cls.condicionadores.append(c.CondicionadorBase(cls.leitura_falha_ligar_bomba_uh, CONDIC_NORMALIZAR))
 
         # LEITURA PERIÓDICA
         cls.leitura_falha_atuada_lg = LeituraModbusBit(cls.clp["TDA"], REG_CLP["TDA"]["LG_FLH_ATUADA"], descricao="[TDA] Limpa Grades Falha")

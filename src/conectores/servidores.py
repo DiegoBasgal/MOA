@@ -16,86 +16,86 @@ class Servidores:
     clp: "dict[str, ModbusClient]" = {}
     rele: "dict[str, ModbusClient]" = {}
 
-    clp["SA"]: "ModbusClient" = ModbusClient(
+    clp["SA"] = ModbusClient(
         host=d.ips["SA_ip"],
         port=d.ips["SA_porta"],
         unit_id=1,
         timeout=0.5,
-        auto_close=True,
-        auto_open=True
+        auto_open=True,
+        auto_close=True
     )
-    clp["TDA"]: "ModbusClient" = ModbusClient(
+    clp["TDA"] = ModbusClient(
         host=d.ips["TDA_ip"],
         port=d.ips["TDA_porta"],
         unit_id=1,
         timeout=0.5,
-        auto_close=True,
-        auto_open=True
+        auto_open=True,
+        auto_close=True
     )
-    clp["UG1"]: "ModbusClient" = ModbusClient(
+    clp["UG1"] = ModbusClient(
         host=d.ips["UG1_ip"],
         port=d.ips["UG1_porta"],
         unit_id=1,
         timeout=0.5,
-        auto_close=True,
-        auto_open=True
+        auto_open=True,
+        auto_close=True
     )
-    clp["UG2"]: "ModbusClient" = ModbusClient(
+    clp["UG2"] = ModbusClient(
         host=d.ips["UG2_ip"],
         port=d.ips["UG2_porta"],
         unit_id=1,
         timeout=0.5,
-        auto_close=True,
-        auto_open=True
+        auto_open=True,
+        auto_close=True
     )
-    clp["MOA"]: "ModbusClient" = ModbusClient(
+    clp["MOA"] = ModbusClient(
         host=d.ips["MOA_ip"],
         port=d.ips["MOA_porta"],
         unit_id=1,
         timeout=0.5,
-        auto_close=True,
-        auto_open=True
+        auto_open=True,
+        auto_close=True
     )
 
-    rele["SE"]: "ModbusClient" = ModbusClient(
+    rele["SE"] = ModbusClient(
         host=d.ips["RELE_SE_ip"],
         port=d.ips["RELE_SE_porta"],
         unit_id=1,
         timeout=0.5,
-        auto_close=True,
         auto_open=True,
+        auto_close=True
     )
-    rele["TE"]: "ModbusClient" = ModbusClient(
+    rele["TE"] = ModbusClient(
         host=d.ips["RELE_TE_ip"],
         port=d.ips["RELE_TE_porta"],
         unit_id=1,
         timeout=0.5,
-        auto_close=True,
         auto_open=True,
+        auto_close=True
     )
-    rele["BAY"]: "ModbusClient" = ModbusClient(
+    rele["BAY"] = ModbusClient(
         host=d.ips["RELE_BAY_ip"],
         port=d.ips["RELE_BAY_porta"],
         unit_id=1,
         timeout=0.5,
-        auto_close=True,
         auto_open=True,
+        auto_close=True
     )
-    rele["UG1"]: "ModbusClient" = ModbusClient(
+    rele["UG1"] = ModbusClient(
         host=d.ips["RELE_UG1_ip"],
         port=d.ips["RELE_UG1_porta"],
         unit_id=1,
         timeout=0.5,
-        auto_close=True,
         auto_open=True,
+        auto_close=True
     )
-    rele["UG2"]: "ModbusClient" = ModbusClient(
+    rele["UG2"] = ModbusClient(
         host=d.ips["RELE_UG2_ip"],
         port=d.ips["RELE_UG2_porta"],
         unit_id=1,
         timeout=0.5,
-        auto_close=True,
         auto_open=True,
+        auto_close=True
     )
 
     @staticmethod

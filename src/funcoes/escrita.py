@@ -25,7 +25,7 @@ class EscritaModBusBit:
         """
 
         try:
-            raw = client.read_holding_registers(registrador[0])
+            raw = client.read_holding_registers(int(registrador[0]), 2)
             dec_1 = BPD.fromRegisters(raw, byteorder=Endian.Big, wordorder=Endian.Little)
             dec_2 = BPD.fromRegisters(raw, byteorder=Endian.Big, wordorder=Endian.Little)
 
@@ -40,7 +40,7 @@ class EscritaModBusBit:
 
             v = sum(val*(2**x) for x, val in enumerate(lbit_r))
 
-            res = client.write_single_register(registrador[0], v)
+            res = client.write_single_register(int(registrador[0]), v)
             return res
 
         except Exception:

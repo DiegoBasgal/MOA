@@ -153,7 +153,7 @@ class BancoDados:
             "ug1_ultimo_estado = %s, "
             "ug2_pot = %s, "
             "ug2_setpot = %s, "
-            "ug2_ultimo_estado = %s, "
+            "ug2_ultimo_estado = %s "
             "WHERE id = 1;",
             tuple(valores)
         )

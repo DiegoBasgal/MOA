@@ -34,28 +34,31 @@ class Bay:
     tensao_vab = LeituraModbus(
         rele["BAY"],
         REG_RELE["BAY"]["LT_FASE_A"],
+        escala=1000,
         descricao="[BAY][RELE] Leitura Tensão Fase A"
     )
     tensao_vbc = LeituraModbus(
         rele["BAY"],
         REG_RELE["BAY"]["LT_FASE_B"],
+        escala=1000,
         descricao="[BAY][RELE] Leitura Tensão Fase B"
     )
     tensao_vca = LeituraModbus(
         rele["BAY"],
         REG_RELE["BAY"]["LT_FASE_C"],
+        escala=1000,
         descricao="[BAY][RELE] Leitura Tensão Fase C"
     )
     dj_linha_bay = LeituraModbusBit(
-        rele["SE"],
-        REG_RELE["SE"]["DJL_FECHADO"],
+        rele["BAY"],
+        REG_RELE["BAY"]["DJL_CMD_FECHAR"],
         descricao="[BAY][RELE] Disjuntor Bay Status"
     )
     potencia_medidor_usina = LeituraModbus(
         clp["SA"],
-        999,
+        30005,
         escala=1,
-        op=4
+        op=3
     )
 
     condicionadores: "list[CondicionadorBase]" = []
@@ -68,7 +71,7 @@ class Bay:
         """
 
         try:
-            res = cls.rele["BAY"].write_single_coil(REG_RELE["BAY"]["RELE_RST_TRP"], [1])
+            res = EMB.escrever_bit(cls.rele["BAY"], REG_RELE["BAY"]["RELE_RST_TRP"], valor=1)
             return res
 
         except Exception:
@@ -263,7 +266,8 @@ class Bay:
         cls.linha_morta = LeituraModbusBit(cls.rele["BAY"], REG_RELE["BAY"]["ID_LINHA_MORTA"], descricao="[BAY][RELE] Identificação Linha Morta")
         cls.barra_morta = LeituraModbusBit(cls.rele["BAY"], REG_RELE["BAY"]["ID_BARRA_MORTA"], descricao="[BAY][RELE] Identificação Barra Morta")
         cls.mola_carregada = LeituraModbusBit(cls.rele["BAY"], REG_RELE["BAY"]["DJL_MOLA_CARREGADA"], descricao="[BAY][RELE] Disjuntor Mola Carregada")
-
+        
+        return
         ## CONDICIONADORES RELÉS
         cls.leitura_secc_aberta = LeituraModbusBit(cls.rele["BAY"], REG_RELE["BAY"]["SECC_FECHADA"], invertido=True, descricao="[BAY][RELE] Seccionadora Aberta")
         cls.condicionadores_essenciais.append(CondicionadorBase(cls.leitura_secc_aberta, CONDIC_INDISPONIBILIZAR))
