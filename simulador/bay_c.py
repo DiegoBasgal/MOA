@@ -3,6 +3,7 @@ import numpy as np
 from pyModbusTCP.server import DataBank as DB
 
 from se import Se
+from funcs.escrita import Escrita as ESC
 from funcs.temporizador import Temporizador
 
 from dicts.reg import *
@@ -20,6 +21,9 @@ class Bay:
         self.mola = 0
         self.tempo_carregamento_mola = 2
         self.avisou_trip = False
+
+        self.b_mola = False
+        self.b_secc = False
 
 
     def passo(self) -> "None":
@@ -129,10 +133,8 @@ class Bay:
     def resetar_bay(self) -> "None":
         print('[BAY] Comando de Reset Geral acionado')
         self.dict['BAY']['dj_trip'] = False
-        self.dict['BAY']['dj_aberto'] = False
-        self.dict['BAY']['dj_fechado'] = False
         self.dict['BAY']['dj_falha'] = False
-        self.dict['BAY']['debug_dj_abrir'] = True
+        self.dict['BAY']['debug_dj_abrir'] = False
         self.dict['BAY']['debug_dj_fechar'] = False
         self.dict['BAY']['debug_dj_reset'] = False
         self.avisou_trip = False
@@ -151,8 +153,24 @@ class Bay:
 
 
     def atualizar_modbus(self) -> "None":
-        DB.set_words(MB['LT_VAB'], [round(self.dict['BAY']['tensao_linha'] / 1000)])
-        DB.set_words(MB['LT_VBC'], [round(self.dict['BAY']['tensao_linha'] / 1000)])
-        DB.set_words(MB['LT_VCA'], [round(self.dict['BAY']['tensao_linha'] / 1000)])
-        DB.set_words(MB['POTENCIA_KW_MP'], [round(max(0, self.dict['BAY']['potencia_mp']))])
-        DB.set_words(MB['POTENCIA_KW_MR'], [round(max(0, self.dict['BAY']['potencia_mr']))])
+        DB.set_words(MB['BAY']['LT_VAB'], [round(self.dict['BAY']['tensao_linha'] / 1000)])
+        DB.set_words(MB['BAY']['LT_VBC'], [round(self.dict['BAY']['tensao_linha'] / 1000)])
+        DB.set_words(MB['BAY']['LT_VCA'], [round(self.dict['BAY']['tensao_linha'] / 1000)])
+        # DB.set_words(MB['BAY']['POTENCIA_KW_MP'], [round(max(0, self.dict['BAY']['potencia_mp']))])
+        # DB.set_words(MB['BAY']['POTENCIA_KW_MR'], [round(max(0, self.dict['BAY']['potencia_mr']))])
+
+        if self.dict['BAY']['dj_secc'] and not self.b_secc:
+            self.b_secc = True
+            ESC.escrever_bit(MB['BAY']['SECC_FECHADA'], valor=1)
+
+        elif not self.dict['BAY']['dj_secc'] and self.b_secc:
+            self.b_secc = False
+            ESC.escrever_bit(MB['BAY']['SECC_FECHADA'], valor=0)
+
+        if self.dict['BAY']['dj_mola_carregada'] and not self.b_mola:
+            self.b_mola = True
+            ESC.escrever_bit(MB['BAY']['DJL_MOLA_CARREGADA'], valor=1)
+
+        elif not self.dict['BAY']['dj_mola_carregada'] and self.b_mola:
+            self.b_mola = False
+            ESC.escrever_bit(MB['BAY']['DJL_MOLA_CARREGADA'], valor=0)

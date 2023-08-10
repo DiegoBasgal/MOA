@@ -38,21 +38,25 @@ class Planta:
         self.segundos_por_passo = temporizador.segundos_por_passo
 
         self.volume = 0
+        self.b_djse = False
+        self.b_djbay = False
 
         # Incia os servidores
-        self.server_MB = ModbusServer(host='localhost', port=5002, no_block=True)
+        self.server_MB = ModbusServer(host='0.0.0.0', port=5002, no_block=True)
         self.server_MB.start()
 
-        for n, l in MB.items():
-            if isinstance(l, list):
-                ESC.escrever_bit(l, valor=0)
-            else:
-                DB.set_words(l, [0])
+        for n, d in MB.items():
+            for l in d.values():
+                if isinstance(l, list):
+                    DB.set_words(l[0], [0])
+                else:
+                    DB.set_words(l, [0])
 
     def run(self) -> "None":
 
         self.tda.volume = self.tda.calcular_montante_volume(self.dict['TDA']['nv_montante'])
         self.se.abrir_dj()
+        self.bay.abrir_dj()
 
         # Loop principal
         while not self.dict['GLB']['stop_sim']:
@@ -66,26 +70,49 @@ class Planta:
                 self.dict['GLB']['tempo_simul'] += self.segundos_por_passo
 
                 # Leituras de registradores MB
-                if LEI.ler_bit(MB['DJL_CMD_FECHAR']) == 1:
-                    ESC.escrever_bit(MB['DJL_CMD_FECHAR'], valor=0)
-                    print('[CF]  Comando de Fechamento do Disjuntor da Subestação acionado via \"MODBUS\"')
-                    self.se.fechar_dj()
 
-                if LEI.ler_bit(MB['BARRA_CA_RST_FLH']) == 1:
-                    ESC.escrever_bit(MB['BARRA_CA_RST_FLH'], valor=0)
-                    print('[CF]  Comando de Reset de Falhas na Barra CA acionado via \"MODBUS\"')
+                if LEI.ler_bit(MB['BAY']['RELE_RST_TRP']):
+                    ESC.escrever_bit(MB['BAY']['RELE_RST_TRP'], valor=0)
+                    print('[CF] [BAY] Comando de Reset de Falhas na Barra CA acionado via \"MODBUS\"')
+                    self.bay.resetar_bay()
+
+                if LEI.ler_bit(MB['SE']['BARRA_CA_RST_FLH']):
+                    ESC.escrever_bit(MB['SE']['BARRA_CA_RST_FLH'], valor=0)
+                    print('[CF] [SE] Comando de Reset de Falhas na Barra CA acionado via \"MODBUS\"')
                     self.se.resetar_se()
 
+                if LEI.ler_bit(MB['SE']['DJL_CMD_FECHAR']) and not self.b_djse:
+                    self.b_djse = True
+                    ESC.escrever_bit(MB['SE']['DJL_CMD_FECHAR'], valor=1)
+                    print('[CF] [SE] Comando de Fechamento do Disjuntor da Subestação acionado via \"MODBUS\"')
+                    self.se.fechar_dj()
+
+                elif not LEI.ler_bit(MB['SE']['DJL_CMD_FECHAR']) and self.b_djse:
+                    self.b_djse = False
+                    ESC.escrever_bit(MB['SE']['DJL_CMD_FECHAR'], valor=0)
+                    print('[CF] [SE] DEBUG DJSE Comando de Reset Fechamento \"MODBUS\"')
+
+                if LEI.ler_bit(MB['BAY']['DJL_CMD_FECHAR']) and not self.b_djbay:
+                    self.b_djbay = True
+                    ESC.escrever_bit(MB['BAY']['DJL_CMD_FECHAR'], valor=1)
+                    print('[CF] [BAY] Comando de Fechamento do Disjuntor do Bay acionado via \"MODBUS\"')
+                    self.bay.fechar_dj()
+
+                elif not LEI.ler_bit(MB['BAY']['DJL_CMD_FECHAR']) and self.b_djbay:
+                    self.b_djbay = False
+                    ESC.escrever_bit(MB['BAY']['DJL_CMD_FECHAR'], valor=0)
+                    print('[CF] [BAY] DEBUG DJBAY Comando de Reset Fechamento \"MODBUS\"')
+
                 if (self.dict['USN']['trip_condic'] and self.dict['USN'][f'aux_borda{1}'] == 0) \
-                    or (DB.get_words(MB['USN_CONDICIONADOR'][0])[0] == 1 and self.dict['USN'][f'aux_borda{1}'] == 0):
+                    or (DB.get_words(MB['GERAL']['USN_CONDICIONADOR'][0])[0] == 1 and self.dict['USN'][f'aux_borda{1}'] == 0):
                     self.dict['USN'][f'aux_borda{1}'] = 1
-                    DB.set_words(MB['USN_CONDICIONADOR'][0], [1])
+                    DB.set_words(MB['GERAL']['USN_CONDICIONADOR'][0], [1])
 
                 elif (not self.dict['USN']['trip_condic'] and self.dict['USN'][f'aux_borda{1}'] == 1) \
-                    or (DB.get_words(MB['USN_CONDICIONADOR'][0]) == 0 and self.dict['USN'][f'aux_borda{1}'] == 1):
+                    or (DB.get_words(MB['GERAL']['USN_CONDICIONADOR'][0]) == 0 and self.dict['USN'][f'aux_borda{1}'] == 1):
                     self.dict['USN'][f'aux_borda{1}'] = 0
                     self.dict['USN']['trip_condic'] = False
-                    DB.set_words(MB['USN_CONDICIONADOR'][0], [0])
+                    DB.set_words(MB['GERAL']['USN_CONDICIONADOR'][0], [0])
                     self.se.resetar_se()
 
                 # Se
@@ -95,63 +122,63 @@ class Planta:
                 # UGs
                 for ug in self.ugs:
                     # Leitura do dicionário compartilhado
-                    self.dict[f'UG{ug.id}'][f'setpoint'] = DB.get_words(MB[f'UG{ug.id}_SETPONIT'])[0]
+                    self.dict[f'UG{ug.id}'][f'setpoint'] = DB.get_words(MB[f'UG{ug.id}']['SETPONIT'])[0]
 
                     if self.dict[f'UG{ug.id}'][f'debug_setpoint'] >= 0:
                         self.dict[f'UG{ug.id}'][f'setpoint'] = self.dict[f'UG{ug.id}'][f'debug_setpoint']
-                        DB.set_words(MB[f'UG{ug.id}_SETPONIT'], [self.dict[f'UG{ug.id}'][f'setpoint']])
+                        DB.set_words(MB[f'UG{ug.id}']['SETPONIT'], [self.dict[f'UG{ug.id}']['setpoint']])
 
                     if self.dict['TDA'][f'cp{ug.id}_permissao_abertura'] and self.dict['USN'][f'aux_borda{ug.id + 4}'] == 0:
-                        ESC.escrever_bit(MB[f'CP{ug.id}_PERMISSIVOS_OK'], valor=1)
+                        ESC.escrever_bit(MB['TDA'][f'CP{ug.id}_PERMISSIVOS_OK'], valor=1)
                         self.dict['USN'][f'aux_borda{ug.id + 4}'] = 1
 
                     elif not self.dict['TDA'][f'cp{ug.id}_permissao_abertura'] and self.dict['USN'][f'aux_borda{ug.id + 4}'] == 1:
-                        ESC.escrever_bit(MB[f'CP{ug.id}_PERMISSIVOS_OK'], valor=0)
+                        ESC.escrever_bit(MB['TDA'][f'CP{ug.id}_PERMISSIVOS_OK'], valor=0)
                         self.dict['USN'][f'aux_borda{ug.id + 4}'] = 0
 
                     # Leitura de registradores MB
-                    if LEI.ler_bit(MB[f'UG{ug.id}_PARTIDA_CMD_SINCRONISMO']) == 1:
-                        ESC.escrever_bit(MB[f'UG{ug.id}_PARTIDA_CMD_SINCRONISMO'], valor=0)
+                    if LEI.ler_bit(MB[f'UG{ug.id}']['PARTIDA_CMD_SINCRONISMO']) == 1:
+                        ESC.escrever_bit(MB[f'UG{ug.id}']['PARTIDA_CMD_SINCRONISMO'], valor=0)
                         ug.partir()
 
-                    elif LEI.ler_bit(MB[f'UG{ug.id}_PARADA_CMD_DESABILITA_UHLM']) == 1:
-                        ESC.escrever_bit(MB[f'UG{ug.id}_PARADA_CMD_DESABILITA_UHLM'], valor=0)
+                    elif LEI.ler_bit(MB[f'UG{ug.id}']['PARADA_CMD_DESABILITA_UHLM']) == 1:
+                        ESC.escrever_bit(MB[f'UG{ug.id}']['PARADA_CMD_DESABILITA_UHLM'], valor=0)
                         ug.parar()
 
-                    if LEI.ler_bit(MB[f'CP{ug.id}_CMD_FECHAMENTO']) == 1 and self.dict['TDA'][f'cp{ug.id}_borda_f'] == 0:
-                        ESC.escrever_bit(MB[f'CP{ug.id}_CMD_FECHAMENTO'], valor=0)
-                        ESC.escrever_bit(MB[f'CP{ug.id}_OPERANDO'], valor=1)
+                    if LEI.ler_bit(MB['TDA'][f'CP{ug.id}_CMD_FECHAMENTO']) == 1 and self.dict['TDA'][f'cp{ug.id}_borda_f'] == 0:
+                        ESC.escrever_bit(MB['TDA'][f'CP{ug.id}_CMD_FECHAMENTO'], valor=0)
+                        ESC.escrever_bit(MB['TDA'][f'CP{ug.id}_OPERANDO'], valor=1)
                         self.dict['TDA'][f'cp{ug.id}_borda_f'] = 1
                         self.dict['TDA'][f'cp{ug.id}_thread_fechada'] = True
 
                         if self.dict['TDA'][f'cp{ug.id}_fechada']:
-                            ESC.escrever_bit(MB[f'CP{ug.id}_OPERANDO'], valor=0)
+                            ESC.escrever_bit(MB['TDA'][f'CP{ug.id}_OPERANDO'], valor=0)
 
-                    elif LEI.ler_bit(MB[f'CP{ug.id}_CMD_FECHAMENTO']) == 0 and self.dict['TDA'][f'cp{ug.id}_borda_f'] == 1:
+                    elif LEI.ler_bit(MB['TDA'][f'CP{ug.id}_CMD_FECHAMENTO']) == 0 and self.dict['TDA'][f'cp{ug.id}_borda_f'] == 1:
                         self.dict['TDA'][f'cp{ug.id}_borda_f'] = 0
 
-                    if LEI.ler_bit(MB[f'CP{ug.id}_CMD_ABERTURA_TOTAL']) == 1 and self.dict['TDA'][f'cp{ug.id}_borda_a'] == 0:
-                        ESC.escrever_bit(MB[f'CP{ug.id}_CMD_ABERTURA_TOTAL'], valor=0)
-                        ESC.escrever_bit(MB[f'CP{ug.id}_OPERANDO'], valor=1)
+                    if LEI.ler_bit(MB['TDA'][f'CP{ug.id}_CMD_ABERTURA_TOTAL']) == 1 and self.dict['TDA'][f'cp{ug.id}_borda_a'] == 0:
+                        ESC.escrever_bit(MB['TDA'][f'CP{ug.id}_CMD_ABERTURA_TOTAL'], valor=0)
+                        ESC.escrever_bit(MB['TDA'][f'CP{ug.id}_OPERANDO'], valor=1)
                         self.dict['TDA'][f'cp{ug.id}_borda_a'] = 1
                         self.dict['TDA'][f'cp{ug.id}_thread_aberta'] = True
 
                         if self.dict['TDA'][f'cp{ug.id}_aberta']:
-                            ESC.escrever_bit(MB[f'CP{ug.id}_OPERANDO'], valor=0)
+                            ESC.escrever_bit(MB['TDA'][f'CP{ug.id}_OPERANDO'], valor=0)
 
-                    elif LEI.ler_bit(MB[f'CP{ug.id}_CMD_ABERTURA_TOTAL']) == 0 and self.dict['TDA'][f'cp{ug.id}_borda_a'] == 1:
+                    elif LEI.ler_bit(MB['TDA'][f'CP{ug.id}_CMD_ABERTURA_TOTAL']) == 0 and self.dict['TDA'][f'cp{ug.id}_borda_a'] == 1:
                         self.dict['TDA'][f'cp{ug.id}_borda_a'] = 0
 
-                    if LEI.ler_bit(MB[f'CP{ug.id}_CMD_ABERTURA_CRACKING']) == 1 and self.dict['TDA'][f'cp{ug.id}_borda_c'] == 0:
-                        ESC.escrever_bit(MB[f'CP{ug.id}_CMD_ABERTURA_CRACKING'], valor=0)
-                        ESC.escrever_bit(MB[f'CP{ug.id}_OPERANDO'], valor=1)
+                    if LEI.ler_bit(MB['TDA'][f'CP{ug.id}_CMD_ABERTURA_CRACKING']) == 1 and self.dict['TDA'][f'cp{ug.id}_borda_c'] == 0:
+                        ESC.escrever_bit(MB['TDA'][f'CP{ug.id}_CMD_ABERTURA_CRACKING'], valor=0)
+                        ESC.escrever_bit(MB['TDA'][f'CP{ug.id}_OPERANDO'], valor=1)
                         self.dict['TDA'][f'cp{ug.id}_borda_c'] = 1
                         self.dict['TDA'][f'cp{ug.id}_thread_cracking'] = True
 
                         if self.dict['TDA'][f'cp{ug.id}_cracking']:
-                            ESC.escrever_bit(MB[f'CP{ug.id}_OPERANDO'], valor=0)
+                            ESC.escrever_bit(MB['TDA'][f'CP{ug.id}_OPERANDO'], valor=0)
 
-                    elif LEI.ler_bit(MB[f'CP{ug.id}_CMD_ABERTURA_CRACKING']) == 0 and self.dict['TDA'][f'cp{ug.id}_borda_c'] == 1:
+                    elif LEI.ler_bit(MB['TDA'][f'CP{ug.id}_CMD_ABERTURA_CRACKING']) == 0 and self.dict['TDA'][f'cp{ug.id}_borda_c'] == 1:
                         self.dict['TDA'][f'cp{ug.id}_borda_c'] = 0
 
                 for ug in self.ugs:
@@ -164,6 +191,8 @@ class Planta:
                 self.tda.passo()
 
                 self.bay.atualizar_modbus()
+                self.se.atualizar_modbus()
+                self.tda.atualizar_modbus()
 
                 # FIM COMPORTAMENTO USINA
                 lock.release()

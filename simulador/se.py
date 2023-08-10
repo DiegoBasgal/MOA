@@ -2,6 +2,7 @@ import numpy as np
 
 from pyModbusTCP.server import DataBank as DB
 
+from funcs.escrita import Escrita as ESC
 from funcs.temporizador import Temporizador
 
 from dicts.reg import *
@@ -19,6 +20,9 @@ class Se:
         self.mola = 0
         self.tempo_carregamento_mola = 2
         self.avisou_trip = False
+
+        self.b_sel = False
+        self.b_mola = False
 
     def verificar_mola_dj(self) -> "None":
         if not self.dict['SE']['dj_mola_carregada']:
@@ -52,7 +56,23 @@ class Se:
             self.resetar_se()
 
     def atualizar_modbus(self) -> "None":
-        DB.set_words(MB['LT_P'], [round(self.dict['SE']['potencia_se'])])
+        DB.set_words(MB['SE']['LT_P'], [round(self.dict['SE']['potencia_se'])])
+        DB.set_words(MB['SE']['LT_VAB'], [round(self.dict['SE']['tensao_linha'] / 1000)])
+        DB.set_words(MB['SE']['LT_VBC'], [round(self.dict['SE']['tensao_linha'] / 1000)])
+        DB.set_words(MB['SE']['LT_VCA'], [round(self.dict['SE']['tensao_linha'] / 1000)])
+
+        if self.dict['SE']['dj_mola_carregada'] and not self.b_mola:
+            self.b_mola = True
+            ESC.escrever_bit(MB['SE']['DJL_MOLA_CARREGADA'], valor=1)
+
+        elif not self.dict['SE']['dj_mola_carregada'] and self.b_mola:
+            self.b_mola = False
+            ESC.escrever_bit(MB['SE']['DJL_MOLA_CARREGADA'], valor=0)
+
+        if not self.b_sel:
+            ESC.escrever_bit(MB['SE']['DJL_SELETORA_REMOTO'], 1)
+            ESC.escrever_bit(MB['SE']['TE_RELE_BUCHHOLZ_ALM'], 0)
+            self.b_sel = True
 
     def verificar_tensao_dj(self) -> "None":
         if not (USINA_TENSAO_MINIMA < self.dict['BAY']['tensao_linha'] < USINA_TENSAO_MAXIMA):
@@ -63,7 +83,7 @@ class Se:
             self.dict['SE']['dj_falta_vcc'] = False
 
     def abrir_dj(self) -> "None":
-        print('[SE]  Comando de Abertura do Disjuntor da Subestação acionado')
+        print('[SE] Comando de Abertura do Disjuntor da Subestação acionado')
 
         if self.dict['SE']['dj_mola_carregada']:
             self.dict['SE']['dj_aberto'] = True
@@ -81,10 +101,10 @@ class Se:
 
         else:
             if not self.dict['BAY']['dj_fechado']:
-                print('[SE]  Não foi possível Fechar o Disjuntor da Subestação, pois o Disjuntor do Bay está Aberto!')
+                print('[SE] Não foi possível Fechar o Disjuntor da Subestação, pois o Disjuntor do Bay está Aberto!')
 
             elif not self.dict['SE']['dj_fechado']:
-                print('[SE]  Comando de Fechamento do Disjuntor da Subestação acionado')
+                print('[SE] Comando de Fechamento do Disjuntor da Subestação acionado')
 
                 if self.dict['SE']['dj_condicao']:
                     self.dict['SE']['dj_aberto'] = False
@@ -119,10 +139,8 @@ class Se:
         else:
             print('[SE]  Comando de Reset Geral acionado')
             self.dict['SE']['dj_trip'] = False
-            self.dict['SE']['dj_aberto'] = False
-            self.dict['SE']['dj_fechado'] = False
             self.dict['SE']['dj_falha'] = False
-            self.dict['SE']['debug_dj_abrir'] = True
+            self.dict['SE']['debug_dj_abrir'] = False
             self.dict['SE']['debug_dj_fechar'] = False
             self.dict['SE']['debug_dj_reset'] = False
             self.avisou_trip = False

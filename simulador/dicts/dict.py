@@ -94,7 +94,7 @@ compartilhado = {
         "dj_trip": False,
         "dj_aberto": False,
         "dj_fechado": True,
-        "dj_secc": False,
+        "dj_secc": True,
         "dj_inconsistente": False,
         "dj_mola_carregada": True,
         "dj_falha": False,

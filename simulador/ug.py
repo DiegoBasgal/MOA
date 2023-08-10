@@ -103,21 +103,21 @@ class Unidade:
 
 
     def atualizar_modbus(self) -> "None":
-        DB.set_words(MB[f'UG{self.id}_RV_ESTADO_OPERACAO'], [int(self.etapa_atual)])
-        DB.set_words(MB[f'UG{self.id}_P'], [round(self.potencia)])
-        DB.set_words(MB[f'UG{self.id}_HORIMETRO'], [np.floor(self.horimetro_hora)])
-        DB.set_words(MB[f'UG{self.id}_GERADOR_FASE_A_TMP'], [round(self.dict[f'UG{self.id}'][f'temp_fase_r'])])
-        DB.set_words(MB[f'UG{self.id}_GERADOR_FASE_B_TMP'], [round(self.dict[f'UG{self.id}'][f'temp_fase_s'])])
-        DB.set_words(MB[f'UG{self.id}_GERADOR_FASE_C_TMP'], [round(self.dict[f'UG{self.id}'][f'temp_fase_t'])])
-        DB.set_words(MB[f'UG{self.id}_GERADOR_NUCL_ESTAT_TMP'], [round(self.dict[f'UG{self.id}'][f'temp_nucleo_gerador_1'])])
-        DB.set_words(MB[f'UG{self.id}_MANCAL_GUIA_TMP'], [round(self.dict[f'UG{self.id}'][f'temp_mancal_guia'])])
-        DB.set_words(MB[f'UG{self.id}_MANCAL_GUIA_INTE_1_TMP'], [round(self.dict[f'UG{self.id}'][f'temp_mancal_guia_interno_1'])])
-        DB.set_words(MB[f'UG{self.id}_MANCAL_GUIA_INTE_2_TMP'], [round(self.dict[f'UG{self.id}'][f'temp_mancal_guia_interno_2'])])
-        DB.set_words(MB[f'UG{self.id}_MANCAL_COMB_PATINS_1_TMP'], [round(self.dict[f'UG{self.id}'][f'temp_patins_mancal_comb_1'])])
-        DB.set_words(MB[f'UG{self.id}_MANCAL_COMB_PATINS_2_TMP'], [round(self.dict[f'UG{self.id}'][f'temp_patins_mancal_comb_2'])])
-        DB.set_words(MB[f'UG{self.id}_MANCAL_CASQ_COMB_TMP'], [round(self.dict[f'UG{self.id}'][f'temp_mancal_casq_comb'])])
-        DB.set_words(MB[f'UG{self.id}_MANCAL_CONT_ESCO_COMB_TMP'], [round(self.dict[f'UG{self.id}'][f'temp_mancal_contra_esc_comb'])])
-        DB.set_words(MB[f'UG{self.id}_ENTRADA_TURBINA_PRESSAO'], [round(10 * self.dict[f'UG{self.id}'][f'pressao_turbina'])])
+        DB.set_words(MB[f'UG{self.id}']['RV_ESTADO_OPERACAO'], [int(self.etapa_atual)])
+        DB.set_words(MB[f'UG{self.id}']['P'], [round(self.potencia)])
+        DB.set_words(MB[f'UG{self.id}']['HORIMETRO'], [np.floor(self.horimetro_hora)])
+        DB.set_words(MB[f'UG{self.id}']['GERADOR_FASE_A_TMP'], [round(self.dict[f'UG{self.id}'][f'temp_fase_r'])])
+        DB.set_words(MB[f'UG{self.id}']['GERADOR_FASE_B_TMP'], [round(self.dict[f'UG{self.id}'][f'temp_fase_s'])])
+        DB.set_words(MB[f'UG{self.id}']['GERADOR_FASE_C_TMP'], [round(self.dict[f'UG{self.id}'][f'temp_fase_t'])])
+        DB.set_words(MB[f'UG{self.id}']['GERADOR_NUCL_ESTAT_TMP'], [round(self.dict[f'UG{self.id}'][f'temp_nucleo_gerador_1'])])
+        DB.set_words(MB[f'UG{self.id}']['MANCAL_GUIA_TMP'], [round(self.dict[f'UG{self.id}'][f'temp_mancal_guia'])])
+        DB.set_words(MB[f'UG{self.id}']['MANCAL_GUIA_INTE_1_TMP'], [round(self.dict[f'UG{self.id}'][f'temp_mancal_guia_interno_1'])])
+        DB.set_words(MB[f'UG{self.id}']['MANCAL_GUIA_INTE_2_TMP'], [round(self.dict[f'UG{self.id}'][f'temp_mancal_guia_interno_2'])])
+        DB.set_words(MB[f'UG{self.id}']['MANCAL_COMB_PATINS_1_TMP'], [round(self.dict[f'UG{self.id}'][f'temp_patins_mancal_comb_1'])])
+        DB.set_words(MB[f'UG{self.id}']['MANCAL_COMB_PATINS_2_TMP'], [round(self.dict[f'UG{self.id}'][f'temp_patins_mancal_comb_2'])])
+        DB.set_words(MB[f'UG{self.id}']['MANCAL_CASQ_COMB_TMP'], [round(self.dict[f'UG{self.id}'][f'temp_mancal_casq_comb'])])
+        DB.set_words(MB[f'UG{self.id}']['MANCAL_CONT_ESCO_COMB_TMP'], [round(self.dict[f'UG{self.id}'][f'temp_mancal_contra_esc_comb'])])
+        DB.set_words(MB[f'UG{self.id}']['ENTRADA_TURBINA_PRESSAO'], [round(10 * self.dict[f'UG{self.id}'][f'pressao_turbina'])])
 
     def controle_etapas(self) -> None:
         # COMPORTAMENTO self.ETAPAS
