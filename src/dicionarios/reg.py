@@ -406,60 +406,60 @@ REG_CLP = {
         "UH_FLH_LIGAR_BOMBA":                           [5, 2],
         "UH_FILTRO_LIMPO":                              [17, 13],
 
-        "CP1_OPERANDO":                                 [2, 0],
+        "CP1_OPERANDO":                                 [1002, 0], # Alterar Simulador
         "CP1_AGUARDANDO_CMD_ABERTURA":                  [2, 3],
         "CP1_PRESSAO_EQUALIZADA":                       [2, 4],
 
         "CP1_CMD_REARME_FLH":                           [6, 0],
-        "CP1_CMD_ABERTURA_CRACKING":                    [6, 1],
-        "CP1_CMD_ABERTURA_TOTAL":                       [6, 2],
-        "CP1_CMD_FECHAMENTO":                           [6, 3],
-        "CP1_PERMISSIVOS_OK":                           [6, 15],
+        "CP1_CMD_ABERTURA_CRACKING":                    [1006, 1], # Alterar Simulador
+        "CP1_CMD_ABERTURA_TOTAL":                       [1006, 2], # Alterar Simulador
+        "CP1_CMD_FECHAMENTO":                           [1006, 3], # Alterar Simulador
+        "CP1_PERMISSIVOS_OK":                           [1006, 15], # Alterar Simulador
 
         "CP1_BLQ_ATUADO":                               [8, 15],
 
-        "CP1_CRACKING":                                 [16, 0],
-        "CP1_REMOTO":                                   [16, 6],
+        "CP1_CRACKING":                                 [1016, 0], # Alterar Simulador
+        "CP1_REMOTO":                                   [1016, 6], # Alterar Simulador
 
-        "CP1_ABERTA":                                   [17, 14],
-        "CP1_FECHADA":                                  [17, 15],
+        "CP1_ABERTA":                                   [1017, 14], # Alterar Simulador
+        "CP1_FECHADA":                                  [1017, 15], # Alterar Simulador
 
-        "CP2_OPERANDO":                                 [2, 0],
+        "CP2_OPERANDO":                                 [2002, 0], # Alterar Simulador
         "CP2_AGUARDANDO_CMD_ABERTURA":                  [2, 3],
         "CP2_PRESSAO_EQUALIZADA":                       [2, 4],
 
         "CP2_CMD_REARME_FLH":                           [6, 0],
-        "CP2_CMD_ABERTURA_CRACKING":                    [6, 1],
-        "CP2_CMD_ABERTURA_TOTAL":                       [6, 2],
-        "CP2_CMD_FECHAMENTO":                           [6, 3],
-        "CP2_PERMISSIVOS_OK":                           [6, 15],
+        "CP2_CMD_ABERTURA_CRACKING":                    [2006, 1], # Alterar Simulador
+        "CP2_CMD_ABERTURA_TOTAL":                       [2006, 2], # Alterar Simulador
+        "CP2_CMD_FECHAMENTO":                           [2006, 3], # Alterar Simulador
+        "CP2_PERMISSIVOS_OK":                           [2006, 15], # Alterar Simulador
 
         "CP2_BLQ_ATUADO":                               [8, 15],
 
-        "CP2_CRACKING":                                 [16, 0],
-        "CP2_REMOTO":                                   [16, 6],
+        "CP2_CRACKING":                                 [2016, 0],  # Alterar Simulador
+        "CP2_REMOTO":                                   [2016, 6], # Alterar Simulador
 
-        "CP2_ABERTA":                                   [17, 14],
-        "CP2_FECHADA":                                  [17, 15],
+        "CP2_ABERTA":                                   [2017, 14], # Alterar Simulador
+        "CP2_FECHADA":                                  [2017, 15], # Alterar Simulador
     },
 
     "UG1": {
         # Leituras Anaçógicas
-        "GERADOR_FASE_A_TMP":                           44,
-        "GERADOR_FASE_B_TMP":                           46,
-        "GERADOR_FASE_C_TMP":                           48,
-        "MANCAL_GUIA_TMP":                              54,
-        "MANCAL_CASQ_COMB_TMP":                         60,
-        "MANCAL_CONT_ESCO_COMB_TMP":                    62,
-        "MANCAL_COMB_PATINS_1_TMP":                     64,
-        "MANCAL_COMB_PATINS_2_TMP":                     66,
-        "MANCAL_GUIA_INTE_1_TMP":                       68,
-        "MANCAL_GUIA_INTE_2_TMP":                       70,
-        "GERADOR_NUCL_ESTAT_TMP":                       72,
-        "ENTRADA_TURBINA_PRESSAO":                      84,
-        "GERADOR_SAIDA_AR_TRP_TMP":                     90,
-        "P":                                            130,
-        "HORIMETRO":                                    108,
+        "GERADOR_FASE_A_TMP":                           10044,
+        "GERADOR_FASE_B_TMP":                           10046,
+        "GERADOR_FASE_C_TMP":                           10048,
+        "MANCAL_GUIA_TMP":                              10054,
+        "MANCAL_CASQ_COMB_TMP":                         10060,
+        "MANCAL_CONT_ESCO_COMB_TMP":                    10062,
+        "MANCAL_COMB_PATINS_1_TMP":                     10064,
+        "MANCAL_COMB_PATINS_2_TMP":                     10066,
+        "MANCAL_GUIA_INTE_1_TMP":                       10068,
+        "MANCAL_GUIA_INTE_2_TMP":                       10070,
+        "GERADOR_NUCL_ESTAT_TMP":                       10072,
+        "ENTRADA_TURBINA_PRESSAO":                      10084,
+        "GERADOR_SAIDA_AR_TRP_TMP":                     10090,
+        "P":                                            10130,
+        "HORIMETRO":                                    10108,
 
 
         # UHRV
@@ -625,16 +625,16 @@ REG_CLP = {
 
 
         # Rearme Bloqueio
-        "PASSOS_CMD_RST_FLH":                           [148, 0],
+        "PASSOS_CMD_RST_FLH":                           [10148, 0], # Alterar Simulador
         "86M_CMD_REARME_BLQ":                           [148, 1],
         "86E_CMD_REARME_BLQ":                           [148, 2],
         "86H_CMD_REARME_BLQ":                           [148, 3],
         # Parada
-        "PARADA_CMD_EMERGENCIA":                        [148, 4],
+        "PARADA_CMD_EMERGENCIA":                        [10148, 4], # Alterar Simulador
         "PARADA_BLQ_ABERTURA_DJ":                       [148, 11],
-        "PARADA_CMD_DESABILITA_UHLM":                   [148, 15],
+        "PARADA_CMD_DESABILITA_UHLM":                   [10148, 15],  # Alterar Simulador
         # Partida
-        "PARTIDA_CMD_SINCRONISMO":                      [148, 10] ,
+        "PARTIDA_CMD_SINCRONISMO":                      [100148, 10] , # Alterar Simulador
 
 
         # UHRV
@@ -729,21 +729,21 @@ REG_CLP = {
 
     "UG2": {
         # Leituras Anaçógicas
-        "GERADOR_FASE_A_TMP":                           44,
-        "GERADOR_FASE_B_TMP":                           46,
-        "GERADOR_FASE_C_TMP":                           48,
-        "MANCAL_GUIA_TMP":                              54,
-        "MANCAL_CASQ_COMB_TMP":                         60,
-        "MANCAL_CONT_ESCO_COMB_TMP":                    62,
-        "MANCAL_COMB_PATINS_1_TMP":                     64,
-        "MANCAL_COMB_PATINS_2_TMP":                     66,
-        "MANCAL_GUIA_INTE_1_TMP":                       68,
-        "MANCAL_GUIA_INTE_2_TMP":                       70,
-        "GERADOR_NUCL_ESTAT_TMP":                       72,
-        "ENTRADA_TURBINA_PRESSAO":                      84,
-        "GERADOR_SAIDA_AR_TRP_TMP":                     90,
-        "P":                                            130,
-        "HORIMETRO":                                    108,
+        "GERADOR_FASE_A_TMP":                           20044,
+        "GERADOR_FASE_B_TMP":                           20046,
+        "GERADOR_FASE_C_TMP":                           20048,
+        "MANCAL_GUIA_TMP":                              20054,
+        "MANCAL_CASQ_COMB_TMP":                         20060,
+        "MANCAL_CONT_ESCO_COMB_TMP":                    20062,
+        "MANCAL_COMB_PATINS_1_TMP":                     20064,
+        "MANCAL_COMB_PATINS_2_TMP":                     20066,
+        "MANCAL_GUIA_INTE_1_TMP":                       20068,
+        "MANCAL_GUIA_INTE_2_TMP":                       20070,
+        "GERADOR_NUCL_ESTAT_TMP":                       20072,
+        "ENTRADA_TURBINA_PRESSAO":                      20084,
+        "GERADOR_SAIDA_AR_TRP_TMP":                     20090,
+        "P":                                            20130,
+        "HORIMETRO":                                    20108,
 
 
         # UHRV
@@ -909,16 +909,16 @@ REG_CLP = {
 
 
         # Rearme Bloqueio
-        "PASSOS_CMD_RST_FLH":                           [148, 0],
+        "PASSOS_CMD_RST_FLH":                           [20148, 0], # Alterar Simulador
         "86M_CMD_REARME_BLQ":                           [148, 1],
         "86E_CMD_REARME_BLQ":                           [148, 2],
         "86H_CMD_REARME_BLQ":                           [148, 3],
         # Parada
-        "PARADA_CMD_EMERGENCIA":                        [148, 4],
+        "PARADA_CMD_EMERGENCIA":                        [20148, 4],  # Alterar Simulador
         "PARADA_BLQ_ABERTURA_DJ":                       [148, 11],
-        "PARADA_CMD_DESABILITA_UHLM":                   [148, 15],
+        "PARADA_CMD_DESABILITA_UHLM":                   [20148, 15],  # Alterar Simulador
         # Partida
-        "PARTIDA_CMD_SINCRONISMO":                      [148, 10] ,
+        "PARTIDA_CMD_SINCRONISMO":                      [20148, 10] , # Alterar Simulador
 
 
         # UHRV
