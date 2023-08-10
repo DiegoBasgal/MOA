@@ -23,8 +23,9 @@ class TomadaAgua:
 
     clp = Servidores.clp
 
-    cp: "dict[str, Comporta]" = {}
+    cfg: "dict" = {}
 
+    cp: "dict[str, Comporta]" = {}
     cp["CP1"] = Comporta(1)
     cp["CP2"] = Comporta(2)
 

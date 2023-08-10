@@ -10,6 +10,11 @@ import traceback
 
 import src.dicionarios.dict as dct
 
+import src.bay as bay
+import src.subestacao as se
+import src.tomada_agua as tda
+import src.servico_auxiliar as sa
+
 from time import sleep, time
 from datetime import  datetime
 
@@ -24,13 +29,9 @@ from src.funcoes.agendamentos import Agendamentos
 from src.funcoes.escrita import EscritaModBusBit as EMB
 
 from src.funcoes.leitura import *
+from src.unidade_geracao import UnidadeGeracao
 
-from src.bay import Bay as BAY
 from src.comporta import Comporta as CP
-from src.subestacao import Subestacao as SE
-from src.tomada_agua import TomadaAgua as TDA
-from src.unidade_geracao import UnidadeGeracao as UG
-from src.servico_auxiliar import ServicoAuxiliar as SA
 
 logger = logging.getLogger("logger")
 
@@ -52,8 +53,12 @@ class Usina:
         self.agn = Agendamentos()
         self.bd = BancoDados("MOA")
 
-        self.ug1 = UG(1, self.cfg, self.bd)
-        self.ug2 = UG(2, self.cfg, self.bd)
+        self.ug1 = UnidadeGeracao(1, self.cfg, self.bd)
+        self.ug2 = UnidadeGeracao(2, self.cfg, self.bd)
+        self.ugs: "list[UnidadeGeracao]" = [self.ug1, self.ug2]
+        CondicionadorBase.ugs = self.ugs
+
+        tda.TomadaAgua.cfg = self.cfg
 
         # ATRIBUIÇÃO DE VARIÁVEIS PRIVADAS
 
@@ -89,7 +94,8 @@ class Usina:
         self.borda_emergencia: "bool" = False
         self.normalizar_forcado: "bool" = False
 
-        self.ugs: "list[UG]" = [self.ug1, self.ug2]
+        self.ultima_tentativa_norm: "datetime" = self.get_time()
+
 
         # FINALIZAÇÃO DO __INIT__
 
@@ -144,10 +150,10 @@ class Usina:
         """
 
         logger.info("[USN] Acionando reset de emergência.")
-        logger.debug("[USN] Bay resetado.") if BAY.resetar_emergencia() else logger.info("[USN] Reset de emergência do Bay falhou.")
-        logger.debug("[USN] Subestação resetada.") if SE.resetar_emergencia() else logger.info("[USN] Reset de emergência da subestação falhou.")
-        logger.debug("[USN] Tomada da Água resetada.") if TDA.resetar_emergencia else logger.info("[USN] Reset de emergência da Tomada da Água falhou.")
-        logger.debug("[USN] Serviço Auxiliar resetado.") if SA.resetar_emergencia() else logger.info("[USN] Reset de emergência do serviço auxiliar falhou.")
+        logger.debug("[USN] Bay resetado.") if bay.Bay.resetar_emergencia() else logger.info("[USN] Reset de emergência do Bay falhou.")
+        logger.debug("[USN] Subestação resetada.") if se.Subestacao.resetar_emergencia() else logger.info("[USN] Reset de emergência da subestação falhou.")
+        logger.debug("[USN] Tomada da Água resetada.") if tda.TomadaAgua.resetar_emergencia else logger.info("[USN] Reset de emergência da Tomada da Água falhou.")
+        logger.debug("[USN] Serviço Auxiliar resetado.") if sa.ServicoAuxiliar.resetar_emergencia() else logger.info("[USN] Reset de emergência do serviço auxiliar falhou.")
 
     def acionar_emergencia(self) -> "bool":
         """
@@ -181,20 +187,20 @@ class Usina:
 
         logger.debug("[USN] Normalizando...")
         logger.debug(f"[USN] Última tentativa de normalização:   {self.ultima_tentativa_norm.strftime('%d-%m-%Y %H:%M:%S')}")
-        logger.debug(f"[USN][SE]  Tensão Subestação:             VAB -> \"{SE.tensao_vab.valor:2.1f} kV\" | VBC -> \"{SE.tensao_vbc.valor:2.1f} kV\" | VCA -> \"{SE.tensao_vca.valor:2.1f} kV\"")
-        logger.debug(f"[USN][BAY] Tensão BAY:                    VAB -> \"{BAY.tensao_vab.valor:2.1f} kV\" | VBC -> \"{BAY.tensao_vbc.valor:2.1f} kV\" | VCA -> \"{BAY.tensao_vca.valor:2.1f} kV\"")
+        logger.debug(f"[USN][SE]  Tensão Subestação:             VAB -> \"{se.Subestacao.tensao_vab.valor:2.1f} kV\" | VBC -> \"{se.Subestacao.tensao_vbc.valor:2.1f} kV\" | VCA -> \"{se.Subestacao.tensao_vca.valor:2.1f} kV\"")
+        logger.debug(f"[USN][BAY] Tensão BAY:                    VAB -> \"{bay.Bay.tensao_vab.valor:2.1f} kV\" | VBC -> \"{bay.Bay.tensao_vbc.valor:2.1f} kV\" | VCA -> \"{bay.Bay.tensao_vca.valor:2.1f} kV\"")
 
-        if not BAY.fechar_dj_linha():
+        if not bay.Bay.fechar_dj_linha():
             return NORM_USN_DJBAY_ABERTO
 
-        if not SE.dj_linha_se.valor:
+        if not se.Subestacao.dj_linha_se.valor:
             logger.info("[USN] Enviando comando de fechamento do Disjuntor 52L")
 
-            if not SE.fechar_dj_linha():
+            if not se.Subestacao.fechar_dj_linha():
                 logger.warning("[USN] Não foi possível realizar o fechameto do Disjuntor 52L")
                 return NORM_USN_DJL_ABERTO
 
-        if not SE.verificar_tensao_trifasica():
+        if not se.Subestacao.verificar_tensao_trifasica():
             return NORM_USN_FALTA_TENSAO
 
         elif ((self.get_time() - self.ultima_tentativa_norm).seconds >= 60 * self.tentativas_normalizar) or self.normalizar_forcado:
@@ -202,10 +208,10 @@ class Usina:
             self.tentativas_normalizar += 1
             self.bd_emergencia = False
             self.clp_emergencia = False
-            SA.resetar_emergencia()
-            SE.resetar_emergencia()
-            BAY.resetar_emergencia()
-            TDA.resetar_emergencia()
+            bay.Bay.resetar_emergencia()
+            se.Subestacao.resetar_emergencia()
+            tda.TomadaAgua.resetar_emergencia()
+            sa.ServicoAuxiliar.resetar_emergencia()
             self.bd.update_remove_emergencia()
             return NORM_USN_EXECUTADA
 
@@ -228,9 +234,8 @@ class Usina:
 
         self.controle_ie = self.ajustar_ie_padrao()
 
-        self.clp["MOA"].write_single_coil(REG_CLP["MOA"]["MOA_OUT_BLOCK_UG1"], [0])
-        self.clp["MOA"].write_single_coil(REG_CLP["MOA"]["MOA_OUT_BLOCK_UG2"], [0])
-        self.clp["MOA"].write_single_coil(REG_CLP["MOA"]["MOA_OUT_BLOCK_UG3"], [0])
+        self.clp["MOA"].write_single_coil(REG_CLP["MOA"]["OUT_BLOCK_UG1"], [0])
+        self.clp["MOA"].write_single_coil(REG_CLP["MOA"]["OUT_BLOCK_UG2"], [0])
 
     def verificar_leituras_periodicas(self) -> "None":
         """
@@ -242,9 +247,9 @@ class Usina:
         """
 
         while True:
-            SA.verificar_leituras()
-            SE.verificar_leituras()
-            TDA.verificar_leituras()
+            se.Subestacao.verificar_leituras()
+            tda.TomadaAgua.verificar_leituras()
+            sa.ServicoAuxiliar.verificar_leituras()
 
             for ug in self.ugs:
                 ug.verificar_leituras()
@@ -257,10 +262,10 @@ class Usina:
     def verificar_condicionadores(self) -> "int":
         flag = CONDIC_IGNORAR
 
-        lst_sa = SA.verificar_condicionadores()
-        lst_se = SE.verificar_condicionadores()
-        lst_bay = BAY.verificar_condicionadores()
-        lst_tda = TDA.verificar_condicionadores()
+        lst_bay = bay.Bay.verificar_condicionadores()
+        lst_se = se.Subestacao.verificar_condicionadores()
+        lst_tda = tda.TomadaAgua.verificar_condicionadores()
+        lst_sa = sa.ServicoAuxiliar.verificar_condicionadores()
 
         condics = [condic for condics in [lst_sa, lst_se, lst_bay, lst_tda] for condic in condics]
 
@@ -281,7 +286,7 @@ class Usina:
         Função para ajustar o valor do IE.
         """
 
-        return (sum(ug.leitura_potencia for ug in self.ugs) / self.cfg["pot_maxima_alvo"]) / self.ug_operando
+        return sum(ug.leitura_potencia for ug in self.ugs) / self.cfg["pot_maxima_alvo"]
 
     def controlar_potencia(self) -> "None":
         """
@@ -290,16 +295,16 @@ class Usina:
         """
 
         logger.debug(f"[TDA] NÍVEL -> Alvo:                      {self.cfg['nv_alvo']:0.3f}")
-        logger.debug(f"[TDA]          Leitura:                   {TDA.nivel_montante_anterior:0.3f}")
+        logger.debug(f"[TDA]          Leitura:                   {tda.TomadaAgua.nivel_montante_anterior:0.3f}")
 
-        self.controle_p = self.cfg["kp"] * TDA.erro_nivel
+        self.controle_p = self.cfg["kp"] * tda.TomadaAgua.erro_nivel
 
         if self._pid_inicial == -1:
             self.controle_i = max(min(self.controle_ie - self.controle_p, 0,8), 0)
             self._pid_inicial = 0
         else:
-            self.controle_i = max(min((self.cfg["ki"] * TDA.erro_nivel) + self.controle_i, 0.8), 0)
-            self.controle_d = self.cfg["kd"] * (TDA.erro_nivel - TDA.erro_nivel_anterior)
+            self.controle_i = max(min((self.cfg["ki"] * tda.TomadaAgua.erro_nivel) + self.controle_i, 0.8), 0)
+            self.controle_d = self.cfg["kd"] * (tda.TomadaAgua.erro_nivel - tda.TomadaAgua.erro_nivel_anterior)
 
         saida_pid = (self.controle_p + self.controle_i + min(max(-0.3, self.controle_d), 0.3))
 
@@ -312,14 +317,14 @@ class Usina:
         self.controle_ie = max(min(saida_pid + self.controle_ie * self.cfg["kie"], 1), 0)
 
         logger.debug(f"[USN] IE:                                 {self.controle_ie:0.3f}")
-        logger.debug(f"[USN] ERRO:                               {TDA.erro_nivel}")
+        logger.debug(f"[USN] ERRO:                               {tda.TomadaAgua.erro_nivel}")
         logger.debug("")
 
-        if TDA.nivel_montante_anterior >= (self.cfg["nv_maximo"] + 0.03):
+        if tda.TomadaAgua.nivel_montante_anterior >= (self.cfg["nv_maximo"] + 0.03):
             self.controle_ie = 1
             self.controle_i = 1 - self.controle_p
 
-        if TDA.nivel_montante_anterior <= (self.cfg["nv_minimo"] + 0.03):
+        if tda.TomadaAgua.nivel_montante_anterior <= (self.cfg["nv_minimo"] + 0.03):
             self.controle_ie = min(self.controle_ie, 0.3)
             self.controle_i = 0
 
@@ -342,7 +347,7 @@ class Usina:
                 ug.setpoint = 0
             return 0
 
-        pot_medidor = BAY.potencia_medidor_usina.valor
+        pot_medidor = bay.Bay.potencia_medidor_usina.valor
 
         logger.debug(f"[USN] Potência no medidor:                {pot_medidor:0.3f}")
 
@@ -366,7 +371,7 @@ class Usina:
         de potência para entrada ou retirada de uma Unidade.
         """
 
-        ugs: "list[UG]" = self.verificar_ugs_disponiveis()
+        ugs: "list[UnidadeGeracao]" = self.verificar_ugs_disponiveis()
         if ugs is None:
             logger.warning("[USN] Sem UGs disponíveis para realizar a distribuição de potência.")
             return
@@ -404,7 +409,7 @@ class Usina:
             for ug in ugs:
                 ug.setpoint = 0
 
-    def verificar_ugs_disponiveis(self) -> "list[UG]":
+    def verificar_ugs_disponiveis(self) -> "list[UnidadeGeracao]":
         """
         Função para verificar leituras/condições específicas e determinar a Prioridade das Unidades.
         """
@@ -430,7 +435,7 @@ class Usina:
         """
 
         Servidores.ping_clients()
-        TDA.atualizar_montante()
+        tda.TomadaAgua.atualizar_montante()
 
         parametros = self.bd.get_parametros_usina()
 
@@ -461,8 +466,8 @@ class Usina:
                 self.modo_autonomo = False
                 logger.debug(f"[USN] Modo autônomo:                      \"{'Desativado'}\"")
 
-            if not self.modo_prioridade_ugs == int(parametros["modo_prioridade_ugs"]):
-                self.modo_prioridade_ugs = int(parametros["modo_prioridade_ugs"])
+            if not self.modo_prioridade_ugs == int(parametros["modo_de_escolha_das_ugs"]):
+                self.modo_prioridade_ugs = int(parametros["modo_de_escolha_das_ugs"])
                 logger.info(f"[USN] Modo de prioridade das UGs:         \"{UG_STR_DCT_PRIORIDADE[self.modo_prioridade_ugs]}\"")
 
         except Exception:
@@ -506,8 +511,8 @@ class Usina:
             self.bd.update_valores_usina(
                 self.get_time().strftime("%Y-%m-%d %H:%M:%S"),
                 1 if self.aguardando_reservatorio else 0,
-                TDA.aguardando_reservatorio,
-                TDA.nivel_montante.valor,
+                tda.TomadaAgua.aguardando_reservatorio,
+                tda.TomadaAgua.nivel_montante.valor,
                 1 if self.ug1.disponivel else 0,
                 self.ug1.leitura_potencia,
                 self.ug1.setpoint,
@@ -539,8 +544,8 @@ class Usina:
                 self.ug1.leitura_potencia,
                 self.ug2.setpoint,
                 self.ug2.leitura_potencia,
-                TDA.nivel_montante_anterior,
-                TDA.erro_nivel,
+                tda.TomadaAgua.nivel_montante_anterior,
+                tda.TomadaAgua.erro_nivel,
                 1 if self.modo_autonomo else 0,
             )
 
@@ -556,6 +561,7 @@ class Usina:
         os CLPs da Usina e também, ativação/desativação do MOA através de chaves
         seletoras no painel do Sistema Auxiliar.
         """
+        return
 
         try:
             self.clp["MOA"].write_single_coil(REG_CLP["MOA"]["PAINEL_LIDO"], [1])

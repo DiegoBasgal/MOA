@@ -52,10 +52,10 @@ class LeituraModbus:
 
         try:
             if self.__op == 3:
-                ler = self.__client.read_input_registers(self.__registrador)[0]
+                ler = self.__client.read_holding_registers(self.__registrador)[0]
 
             elif self.__op == 4:
-                ler = self.__client.read_holding_registers(self.__registrador)[0]
+                ler = self.__client.read_input_registers(self.__registrador)[0]
 
             else:
                 return 0 if ler is None else ler
@@ -67,12 +67,13 @@ class LeituraModbus:
 
 
 class LeituraModbusBit(LeituraModbus):
-    def __init__(self, client, registrador, invertido: "bool"=None, descricao: "str"=None) -> "None":
+    def __init__(self, client: "ModbusClient", registrador: "list[int, int]", invertido: "bool"=None, descricao: "str"=None) -> "None":
         super().__init__(client, registrador, descricao)
 
         # ATRIBUIÇÃO DE VARIÁVEIS PRIVADAS
-
-        self.__reg = registrador[0] if isinstance(registrador, list) else registrador
+        self.__client = client
+        self.__reg = registrador[0]
+        self.__bit = registrador[1]
         self.__invertido = False if invertido is not None else invertido
 
     @property
@@ -80,7 +81,12 @@ class LeituraModbusBit(LeituraModbus):
         # PROPRIEDADE -> Retorna Valor Bit em booleano ModBus.
 
         try:
-            raw = self.__client.read_holding_registers(self.__reg[0])
+            raw = self.__client.read_holding_registers(self.__reg, 2)
+            print('')
+            print('')
+            print(f'RAW: {raw}')
+            print('')
+            print('')
             dec_1 = BPD.fromRegisters(raw, byteorder=Endian.Big, wordorder=Endian.Little)
             dec_2 = BPD.fromRegisters(raw, byteorder=Endian.Big, wordorder=Endian.Little)
 
@@ -89,7 +95,7 @@ class LeituraModbusBit(LeituraModbus):
             lbit_r = [b for b in reversed(lbit)]
 
             for i in range(len(lbit_r)):
-                if self.__reg[1] == i:
+                if self.__bit == i:
                     return not lbit_r[i] if self.__invertido else lbit_r[i]
 
         except Exception:
