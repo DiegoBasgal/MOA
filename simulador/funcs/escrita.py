@@ -10,7 +10,7 @@ class Escrita:
     def escrever_bit(cls, reg: "list[int, int]", valor: "int") -> "None":
 
         try:
-            raw = DB.get_words(reg[0])
+            raw = DB.get_words(int(reg[0]), 2)
             dec_1 = BPD.fromRegisters(raw, byteorder=Endian.Big, wordorder=Endian.Little)
             dec_2 = BPD.fromRegisters(raw, byteorder=Endian.Big, wordorder=Endian.Little)
 
@@ -22,12 +22,10 @@ class Escrita:
                 if reg[1] == i:
                     lbit_r[i] = valor
                     break
-            
-            print(lbit_r)
 
             v = sum(val*(2**x) for x, val in enumerate(lbit_r))
-
-            DB.set_words(reg[0], [v])
+            print(f'REG: {reg[0]} | Bit: {reg[1]} | Valor: {v}')
+            DB.set_words(int(reg[0]), [v])
 
         except Exception:
             print(f"[ESC] Erro ao realizar a Escrita do Bit: {reg[1]} | REG: {reg}")
