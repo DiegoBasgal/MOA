@@ -75,15 +75,16 @@ if __name__ == "__main__":
         ESCALA_DE_TEMPO = int(sys.argv[1])
 
     t_i = time()
-
+    t_restante = 1
     prox_estado = 0
     n_tentativa = 0
+    executar = False
 
     logger.info("Iniciando MOA...                          (DEBUG: \"ON\")")
     logger.debug(f"ESCALA_DE_TEMPO:                          {ESCALA_DE_TEMPO}")
 
 
-    while prox_estado == 0:
+    while not executar:
         n_tentativa += 1
         logger.info(f"Tentativa:                                {n_tentativa}/3")
 
@@ -139,7 +140,9 @@ if __name__ == "__main__":
 
                 threading.Thread(target=lambda: usn.verificar_leituras_periodicas()).start()
 
-                sm: StateMachine = StateMachine(initial_state=Pronto(cfg, usn))
+                sm: StateMachine = StateMachine(initial_state=Pronto(usn=usn))
+
+                executar = True
 
             except Exception:
                 logger.error(f"Erro ao finalizar a incialização do MOA. Tentando novamente em \"{TIMEOUT_MAIN}s\".")

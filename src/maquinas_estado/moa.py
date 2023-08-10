@@ -7,15 +7,15 @@ import pytz
 import logging
 import traceback
 
+import src.bay as bay
+import src.tomada_agua as tda
+
 from time import sleep
 from datetime import datetime
 
 from src.dicionarios.const import *
 
 from src.usina import Usina
-from src.bay import Bay as BAY
-from src.subestacao import Subestacao as SE
-from src.tomada_agua import TomadaAgua as TDA
 
 logger = logging.getLogger("logger")
 
@@ -134,7 +134,7 @@ class ControleEstados(State):
             return ModoManual(self.usn)
 
         logger.debug("Verificando status da emergência...")
-        if self.usn.clp_emergencia or self.usn.db_emergencia:
+        if self.usn.clp_emergencia or self.usn.bd_emergencia:
             logger.debug("")
             logger.debug("Foi identificado o acinoamento da emergência")
             return Emergencia(self.usn)
@@ -154,7 +154,7 @@ class ControleEstados(State):
 
             elif flag == CONDIC_NORMALIZAR:
                 if self.usn.normalizar_usina() == NORM_USN_FALTA_TENSAO:
-                    return Emergencia(self.usn) if BAY.aguardar_tensao() == TENSAO_FORA else self
+                    return Emergencia(self.usn) if bay.Bay.aguardar_tensao() == TENSAO_FORA else self
 
                 else:
                     return self
@@ -182,7 +182,7 @@ class ControleReservatorio(State):
         """
 
         self.usn.ler_valores()
-        flag = TDA.controlar_reservatorio()
+        flag = self.usn.controlar_reservatorio()
 
         return Emergencia(self.usn) if flag == NV_EMERGENCIA else ControleDados(self.usn)
 
@@ -269,8 +269,8 @@ class ModoManual(State):
 
         self.usn.ler_valores()
 
-        logger.debug(f"[USN] Leitura de Nível:                   {TDA.nivel_montante.valor:0.3f}")
-        logger.debug(f"[USN] Potência no medidor:                {BAY.potencia_medidor_usina:0.3f}")
+        logger.debug(f"[USN] Leitura de Nível:                   {tda.TomadaAgua.nivel_montante.valor:0.3f}")
+        logger.debug(f"[USN] Potência no medidor:                {bay.Bay.potencia_medidor_usina.valor:0.3f}")
         logger.debug("")
 
         for ug in self.usn.ugs:
@@ -281,7 +281,7 @@ class ModoManual(State):
             ug.setpoint = ug.leitura_potencia
 
         self.usn.controle_ie = (self.usn.ug1.leitura_potencia + self.usn.ug2.leitura_potencia) / self.usn.cfg["pot_maxima_alvo"]
-        self.usn.controle_i = max(min(self.usn.controle_ie - (self.usn.controle_i * self.usn.cfg["ki"]) - self.usn.cfg["kp"] * TDA.erro_nivel - self.usn.cfg["kd"] * (TDA.erro_nivel - TDA.erro_nivel_anterior), 0.8), 0)
+        self.usn.controle_i = max(min(self.usn.controle_ie - (self.usn.controle_i * self.usn.cfg["ki"]) - self.usn.cfg["kp"] * tda.TomadaAgua.erro_nivel - self.usn.cfg["kd"] * (tda.TomadaAgua.erro_nivel - tda.TomadaAgua.erro_nivel_anterior), 0.8), 0)
 
         self.usn.escrever_valores()
 
@@ -331,19 +331,19 @@ class Emergencia(State):
 
             return ModoManual(self.usn)
 
-        elif self.usn.db_emergencia:
+        elif self.usn.bd_emergencia:
             logger.warning("Comando acionado/agendado via página WEB, aguardando reset pela aba \"Emergência\".")
 
-            while self.usn.db_emergencia:
+            while self.usn.bd_emergencia:
                 logger.debug("Aguardando reset...")
                 self.usn.atualizar_valores_banco(self.usn.bd.get_parametros_usina())
 
-                if not self.usn.db_emergencia:
-                    self.usn.db_emergencia = False
+                if not self.usn.bd_emergencia:
+                    self.usn.bd_emergencia = False
                     return self
 
                 if not self.usn.modo_autonomo:
-                    self.usn.db_emergencia = False
+                    self.usn.bd_emergencia = False
                     return ModoManual(self.usn)
 
                 sleep(5)

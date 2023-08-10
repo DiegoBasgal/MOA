@@ -46,7 +46,7 @@ class UnidadeGeracao:
         # PRIVADAS
         self.__leitura_potencia = LeituraModbus(
             self.clp[f"UG{self.id}"],
-            REG_CLP[f"UG{self.id}"]["P"],
+            int(REG_CLP[f"UG{self.id}"]["P"]),
             descricao=f"[UG{self.id}] Leitura Potência"
         )
         self.__leitura_etapa = LeituraModbus(
@@ -69,6 +69,9 @@ class UnidadeGeracao:
         self._codigo_state: "int" = 0
         self._ultima_etapa_atual: "int" = 0
         self._tentativas_normalizacao: "int" = 0
+
+        self._setpoint_minimo: "float" = self.__cfg["pot_minima"]
+        self._setpoint_maximo: "float" = self.__cfg[f"pot_maxima_ug{self.id}"]
 
         self._condicionadores: "list[c.CondicionadorBase]" = []
         self._condicionadores_essenciais: "list[c.CondicionadorBase]" = []
@@ -205,25 +208,25 @@ class UnidadeGeracao:
     def setpoint_minimo(self) -> "int":
         # PROPRIEDADE -> Retorna o valor de setpoint mínimo da Unidade.
 
-        return self.__setpoint_minimo
+        return self._setpoint_minimo
 
     @setpoint_minimo.setter
     def setpoint_minimo(self, var: "int"):
         # SETTER -> Atribui o novo valor de setpoint mínimo da Unidade.
 
-        self.__setpoint_minimo = var
+        self._setpoint_minimo = var
 
     @property
     def setpoint_maximo(self) -> "int":
         # PROPRIEDADE -> Retorna o valor de setpoint máximo da Unidade.
 
-        return self.__setpoint_maximo
+        return self._setpoint_maximo
 
     @setpoint_maximo.setter
     def setpoint_maximo(self, var: "int"):
         # SETTER -> Atribui o novo valor de setpoint máximo da Unidade.
 
-        self.__setpoint_maximo = var
+        self._setpoint_maximo = var
 
     @property
     def tentativas_normalizacao(self) -> "int":

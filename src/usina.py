@@ -50,8 +50,8 @@ class Usina:
         self.clp = Servidores.clp
         self.rele  = Servidores.rele
 
-        self.agn = Agendamentos()
         self.bd = BancoDados("MOA")
+        self.agn = Agendamentos(self.cfg, self.bd, self)
 
         self.ug1 = UnidadeGeracao(1, self.cfg, self.bd)
         self.ug2 = UnidadeGeracao(2, self.cfg, self.bd)
@@ -83,8 +83,6 @@ class Usina:
 
         self.modo_prioridade_ugs: "int" = 0
 
-        self.aguardando_reservatorio: "int" = 0
-
         self.controle_p: "float" = 0
         self.controle_i: "float" = 0
         self.controle_d: "float" = 0
@@ -96,8 +94,12 @@ class Usina:
 
         self.ultima_tentativa_norm: "datetime" = self.get_time()
 
-
         # FINALIZAÇÃO DO __INIT__
+
+        bay.Bay.carregar_leituras()
+        se.Subestacao.carregar_leituras()
+        tda.TomadaAgua.carregar_leituras()
+        sa.ServicoAuxiliar.carregar_leituras()
 
         self.ler_valores()
         self.normalizar_inicializacao()
@@ -187,17 +189,18 @@ class Usina:
 
         logger.debug("[USN] Normalizando...")
         logger.debug(f"[USN] Última tentativa de normalização:   {self.ultima_tentativa_norm.strftime('%d-%m-%Y %H:%M:%S')}")
-        logger.debug(f"[USN][SE]  Tensão Subestação:             VAB -> \"{se.Subestacao.tensao_vab.valor:2.1f} kV\" | VBC -> \"{se.Subestacao.tensao_vbc.valor:2.1f} kV\" | VCA -> \"{se.Subestacao.tensao_vca.valor:2.1f} kV\"")
-        logger.debug(f"[USN][BAY] Tensão BAY:                    VAB -> \"{bay.Bay.tensao_vab.valor:2.1f} kV\" | VBC -> \"{bay.Bay.tensao_vbc.valor:2.1f} kV\" | VCA -> \"{bay.Bay.tensao_vca.valor:2.1f} kV\"")
+        logger.debug(f"[USN] [SE]  Tensão Subestação:             VAB -> \"{se.Subestacao.tensao_vab.valor:2.1f} kV\" | VBC -> \"{se.Subestacao.tensao_vbc.valor:2.1f} kV\" | VCA -> \"{se.Subestacao.tensao_vca.valor:2.1f} kV\"")
+        logger.debug(f"[USN] [BAY] Tensão BAY:                    VAB -> \"{bay.Bay.tensao_vab.valor:2.1f} kV\" | VBC -> \"{bay.Bay.tensao_vbc.valor:2.1f} kV\" | VCA -> \"{bay.Bay.tensao_vca.valor:2.1f} kV\"")
 
         if not bay.Bay.fechar_dj_linha():
             return NORM_USN_DJBAY_ABERTO
 
         if not se.Subestacao.dj_linha_se.valor:
-            logger.info("[USN] Enviando comando de fechamento do Disjuntor 52L")
+            logger.info("[USN] [SE] Enviando comando de fechamento do Disjuntor da Subestação")
+            sleep(3)
 
             if not se.Subestacao.fechar_dj_linha():
-                logger.warning("[USN] Não foi possível realizar o fechameto do Disjuntor 52L")
+                logger.warning("[USN] [SE] Não foi possível realizar o fechameto do Disjuntor da Subestação")
                 return NORM_USN_DJL_ABERTO
 
         if not se.Subestacao.verificar_tensao_trifasica():
@@ -247,12 +250,12 @@ class Usina:
         """
 
         while True:
-            se.Subestacao.verificar_leituras()
-            tda.TomadaAgua.verificar_leituras()
-            sa.ServicoAuxiliar.verificar_leituras()
+            # se.Subestacao.verificar_leituras()
+            # tda.TomadaAgua.verificar_leituras()
+            # sa.ServicoAuxiliar.verificar_leituras()
 
-            for ug in self.ugs:
-                ug.verificar_leituras()
+            # for ug in self.ugs:
+            #     ug.verificar_leituras()
 
             if True in (dct.voip[r][0] for r in dct.voip):
                 Voip.acionar_chamada()
@@ -287,6 +290,61 @@ class Usina:
         """
 
         return sum(ug.leitura_potencia for ug in self.ugs) / self.cfg["pot_maxima_alvo"]
+
+    def controlar_reservatorio(self) -> "int":
+        """
+        Função para controle de níveis do reservatório.
+
+        Realiza a leitura de nível montante e determina qual condição entrar. Se
+        o nível estiver acima do máximo, verifica se atingiu o Maximorum. Nesse
+        caso é acionada a emergência da Usina, porém se for apenas vertimento,
+        distribui a potência máxima para as Unidades.
+        Caso a leitura retornar que o nível está abaixo do mínimo, verifica antes
+        se atingiu o fundo do reservatório, nesse caso é acionada a emergência.
+        Se o valor ainda estiver acima do nível de fundo, será distribuída a
+        potência 0 para todas as Unidades e aciona a espera pelo nível.
+        Caso a leitura esteja dentro dos limites normais, é chamada a função para
+        calcular e distribuir a potência para as Unidades.
+        """
+
+        if tda.TomadaAgua.nivel_montante.valor >= self.cfg["nv_maximo"]:
+            logger.debug("[TDA] Nível montante acima do máximo.")
+
+            if tda.TomadaAgua.nivel_montante_anterior >= NIVEL_MAXIMORUM:
+                logger.critical(f"[TDA] Nivel montante ({tda.TomadaAgua.nivel_montante_anterior:3.2f}) atingiu o maximorum!")
+                return NV_EMERGENCIA
+            else:
+                self.controle_i = 0.5
+                self.controle_ie = 0.5
+                self.ajustar_potencia(self.cfg["pot_maxima_usina"])
+
+                for ug in self.ugs:
+                    ug.step()
+
+        elif tda.TomadaAgua.nivel_montante.valor <= self.cfg["nv_minimo"] and not tda.TomadaAgua.aguardando_reservatorio:
+            logger.debug("[TDA] Nível montante abaixo do mínimo.")
+            tda.TomadaAgua.aguardando_reservatorio = True
+            self.distribuir_potencia(0)
+
+            for ug in self.ugs:
+                ug.step()
+
+            if tda.TomadaAgua.nivel_montante_anterior <= NIVEL_FUNDO_RESERVATORIO:
+                logger.critical(f"[TDA] Nivel montante ({tda.TomadaAgua.nivel_montante_anterior:3.2f}) atingiu o fundo do reservatorio!")
+                return NV_EMERGENCIA
+
+        elif tda.TomadaAgua.aguardando_reservatorio:
+            if tda.TomadaAgua.nivel_montante.valor >= self.cfg["nv_alvo"]:
+                logger.debug("[TDA] Nível montante dentro do limite de operação.")
+                tda.TomadaAgua.aguardando_reservatorio = False
+
+        else:
+            self.controlar_potencia()
+
+            for ug in self.ugs:
+                ug.step()
+
+        return NV_NORMAL
 
     def controlar_potencia(self) -> "None":
         """
@@ -378,8 +436,13 @@ class Usina:
 
         logger.debug(f"[USN] UG{[ug.id for ug in ugs]}")
 
-        self.pot_disp = [sum(self.cfg[f"pot_maxima_ug{ug.id}"]) for ug in self.ugs if ug.disponivel]
-        ajuste_manual = min(max(0, [sum(ug.leitura_potencia) for ug in self.ugs if ug.manual]))
+        ajuste_manual = 0
+
+        for ug in self.ugs:
+            if ug.manual:
+                ajuste_manual += ug.leitura_potencia
+            else:
+                self.pot_disp += ug.setpoint_maximo
 
         logger.debug(f"[USN] Distribuindo: {pot_alvo - ajuste_manual:0.3f}")
         sp = (pot_alvo - ajuste_manual) / self.cfg["pot_maxima_usina"]
@@ -508,46 +571,43 @@ class Usina:
         """
 
         try:
-            self.bd.update_valores_usina(
+            self.bd.update_valores_usina([
                 self.get_time().strftime("%Y-%m-%d %H:%M:%S"),
-                1 if self.aguardando_reservatorio else 0,
-                tda.TomadaAgua.aguardando_reservatorio,
+                1 if tda.TomadaAgua.aguardando_reservatorio else 0,
                 tda.TomadaAgua.nivel_montante.valor,
-                1 if self.ug1.disponivel else 0,
                 self.ug1.leitura_potencia,
                 self.ug1.setpoint,
                 self.ug1.etapa_atual,
-                self.ug1.leitura_horimetro,
-                1 if self.ug2.disponivel else 0,
                 self.ug2.leitura_potencia,
                 self.ug2.setpoint,
-                self.ug2.etapa_atual,
-                self.ug2.leitura_horimetro,
-            )
+                self.ug2.etapa_atual
+            ])
 
         except Exception:
             logger.error(f"[USN] Houve um erro ao atualizar os valores de controle de operação no Banco de Dados.")
             logger.debug(f"[USN] Traceback: {traceback.format_exc()}")
 
         try:
-            self.bd.update_debug(
+            self.bd.update_debug([
                 time(),
-                self.cfg["kp"],
-                self.cfg["ki"],
-                self.cfg["kd"],
-                self.cfg["kie"],
+                1 if self.modo_autonomo else 0,
+                tda.TomadaAgua.nivel_montante_anterior,
+                tda.TomadaAgua.erro_nivel,
+                self.ug1.setpoint,
+                self.ug1.leitura_potencia,
+                self.ug1.codigo_state,
+                self.ug2.setpoint,
+                self.ug2.leitura_potencia,
+                self.ug2.codigo_state,
                 self.controle_p,
                 self.controle_i,
                 self.controle_d,
                 self.controle_ie,
-                self.ug1.setpoint,
-                self.ug1.leitura_potencia,
-                self.ug2.setpoint,
-                self.ug2.leitura_potencia,
-                tda.TomadaAgua.nivel_montante_anterior,
-                tda.TomadaAgua.erro_nivel,
-                1 if self.modo_autonomo else 0,
-            )
+                self.cfg["kp"],
+                self.cfg["ki"],
+                self.cfg["kd"],
+                self.cfg["kie"],
+            ])
 
         except Exception:
             logger.error(f"[USN] Houve um erro ao atualizar valores DEBUG do controle de potência no Banco de Dados.")

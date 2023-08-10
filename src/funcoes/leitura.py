@@ -15,17 +15,17 @@ from src.dicionarios.reg import *
 logger = logging.getLogger("logger")
 
 class LeituraModbus:
-    def __init__(self, client: "ModbusClient", registrador: "int", escala: "float"=None, fundo_escala: "float"=None, op: "int"=None, descricao: "str"= None) -> "None":
+    def __init__(self, client: "ModbusClient"=None, registrador: "int"=None, escala: "float"=1, fundo_escala: "float"=0, op: "int"=3, descricao: "str"=None) -> "None":
 
         # ATRIBUIÇÃO DE VARIÁVEIS PRIVADAS
 
         self.__client = client
         self.__registrador = registrador
 
-        self.__op = 3 if op is None else op
-        self.__escala = 1 if escala is None else escala
-        self.__fundo_escala = 0 if fundo_escala is None else fundo_escala
-        self.__descricao = None if descricao is None else descricao
+        self.__op = op
+        self.__escala = escala
+        self.__fundo_escala = fundo_escala
+        self.__descricao = descricao
 
     def __str__(self) -> "str":
         """
@@ -33,12 +33,6 @@ class LeituraModbus:
         """
 
         return f"Leitura {self.__descricao}, Valor: {self.valor}"
-
-    @property
-    def valor(self) -> "int":
-        # PROPRIEDADE -> Retorna Valor calculado com escala e fundo de escala.
-
-        return (self.raw * self.__escala) + self.__fundo_escala
 
     @property
     def descricao(self) -> "str":
@@ -52,18 +46,23 @@ class LeituraModbus:
 
         try:
             if self.__op == 3:
-                ler = self.__client.read_holding_registers(self.__registrador)[0]
+                ler = self.__client.read_holding_registers(int(self.__registrador))[0]
+                return ler
 
             elif self.__op == 4:
                 ler = self.__client.read_input_registers(self.__registrador)[0]
-
-            else:
-                return 0 if ler is None else ler
+                return ler
 
         except Exception:
-            logger.error(f"[LEI] Houve um erro ao realizar a leitura do Registrador: {self.__registrador}")
+            logger.error(f"[LEI] Houve um erro na leitura do REG: {self.__descricao} | Endereço: {self.__registrador}")
             logger.debug(f"[LEI] Traceback: {traceback.format_exc()}")
             return 0
+
+    @property
+    def valor(self) -> "int":
+        # PROPRIEDADE -> Retorna Valor calculado com escala e fundo de escala.
+
+        return (self.raw * self.__escala) + self.__fundo_escala
 
 
 class LeituraModbusBit(LeituraModbus):
@@ -81,12 +80,7 @@ class LeituraModbusBit(LeituraModbus):
         # PROPRIEDADE -> Retorna Valor Bit em booleano ModBus.
 
         try:
-            raw = self.__client.read_holding_registers(self.__reg, 2)
-            print('')
-            print('')
-            print(f'RAW: {raw}')
-            print('')
-            print('')
+            raw = self.__client.read_holding_registers(int(self.__reg), 2)
             dec_1 = BPD.fromRegisters(raw, byteorder=Endian.Big, wordorder=Endian.Little)
             dec_2 = BPD.fromRegisters(raw, byteorder=Endian.Big, wordorder=Endian.Little)
 

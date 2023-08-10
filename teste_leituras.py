@@ -79,44 +79,63 @@ Testes de Leituras para ajustes do MOA
 # ------------------------------------------------------------------------------------------------------------------- #
 ### Teste de Incremento de Valores no Dicionário de Registradores para uso na Simulação
 
-import regex as re
-from src.dicionarios.reg import *
+# import regex as re
+# from src.dicionarios.reg import *
 
-for n, d in REG_CLP.items():
-    if n == "TDA":
-        for n, l in d.items():
-            if re.search('^CP1', n):
-                if isinstance(l, list):
-                    l[0] += 1000
-                    print(f'N: {n}, REG: {l[0]}')
-                else:
-                    l += 1000
-                    print(f'N: {n}, REG: {l}')
+# for n, d in REG_CLP.items():
+#     if n == "TDA":
+#         for n, l in d.items():
+#             if re.search('^CP1', n):
+#                 if isinstance(l, list):
+#                     l[0] += 1000
+#                     print(f'N: {n}, REG: {l[0]}')
+#                 else:
+#                     l += 1000
+#                     print(f'N: {n}, REG: {l}')
 
-            elif re.search('^CP2', n):
-                if isinstance(l, list):
-                    l[0] += 2000
-                    print(f'N: {n}, REG: {l[0]}')
-                else:
-                    l += 2000
-                    print(f'N: {n}, REG: {l}')
+#             elif re.search('^CP2', n):
+#                 if isinstance(l, list):
+#                     l[0] += 2000
+#                     print(f'N: {n}, REG: {l[0]}')
+#                 else:
+#                     l += 2000
+#                     print(f'N: {n}, REG: {l}')
 
-    elif n == "UG1":
-        for l in d.values():
-            if isinstance(l, list):
-                l[0] += 10000
-                print(f'REG: {l[0]}')
-            else:
-                l += 10000
-                print(f'REG: {l}')
+#     elif n == "UG1":
+#         for l in d.values():
+#             if isinstance(l, list):
+#                 l[0] += 10000
+#                 print(f'REG: {l[0]}')
+#             else:
+#                 l += 10000
+#                 print(f'REG: {l}')
 
-    elif n == "UG2":
-        for l in d.values():
-            if isinstance(l, list):
-                l[0] += 20000
-                print(f'REG: {l[0]}')
-            else:
-                l += 20000
-                print(f'REG: {l}')
-    else:
-        pass
+#     elif n == "UG2":
+#         for l in d.values():
+#             if isinstance(l, list):
+#                 l[0] += 20000
+#                 print(f'REG: {l[0]}')
+#             else:
+#                 l += 20000
+#                 print(f'REG: {l}')
+#     else:
+#         pass
+
+
+# ------------------------------------------------------------------------------------------------------------------- #
+### Teste de Leituras da Simulação
+
+from pymodbus.constants import Endian
+from pymodbus.payload import BinaryPayloadDecoder
+from pyModbusTCP.client import ModbusClient
+
+sa = ModbusClient(
+    host="10.101.2.215",
+    port=5002,
+    unit_id=1,
+    timeout=0.5,
+    auto_close=True,
+    auto_open=True
+)
+
+print(sa.read_holding_registers(3)[0])

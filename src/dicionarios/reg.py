@@ -84,24 +84,24 @@ será adicionado a letra "B" + o número do BIT no final do nome:
 REG_RELE = {
     "BAY": {
         # Leituras Analógicas
-        "LT_FASE_A":                                    10,
-        "LT_FASE_B":                                    13,
-        "LT_FASE_C":                                    16,
-        "LT_VS":                                        19,
+        "LT_FASE_A":                                    30010, # Mudar para o Simulador
+        "LT_FASE_B":                                    30013, # Mudar para o Simulador
+        "LT_FASE_C":                                    30016, # Mudar para o Simulador
+        "LT_VS":                                        30019, # Mudar para o Simulador
 
 
         # Relé
-        "RELE_RST_TRP":                                 [40, 2],
+        "RELE_RST_TRP":                                 [30040, 2],
 
 
         # DJ
-        "DJL_CMD_FECHAR":                               [43, 2],
+        "DJL_CMD_FECHAR":                               [30043, 2],
 
 
         # DJ
-        "DJL_MOLA_CARREGADA":                           [44, 1],
+        "DJL_MOLA_CARREGADA":                           [30044, 1], # Mudar para o Simulador
         # Seccionadora
-        "SECC_FECHADA":                                 [44, 4],
+        "SECC_FECHADA":                                 [30044, 4], # Mudar para o Simulador
 
 
         # DJ
@@ -109,18 +109,19 @@ REG_RELE = {
 
 
         # Barra
-        "ID_BARRA_VIVA":                                [53, 1],
-        "ID_BARRA_MORTA":                               [53, 7],
+        "ID_BARRA_VIVA":                                [30053, 1], # Mudar para o Simulador
+        "ID_BARRA_MORTA":                               [30053, 7], # Mudar para o Simulador
 
 
         # Linha
-        "ID_LINHA_VIVA":                                [54, 0],
-        "ID_LINHA_MORTA":                               [54, 1],
+        "ID_LINHA_VIVA":                                [30054, 0], # Mudar para o Simulador
+        "ID_LINHA_MORTA":                               [30054, 1], # Mudar para o Simulador
     },
 
     "SE": {
         # DJ
         "DJL_FECHADO":                                  [43, 0],
+        "DJL_MOLA_CARREGADA":                           [43, 1],
         # Relé
         "RELE_TE_FLH_PARTIDA":                          [43, 2],
 
@@ -294,6 +295,9 @@ REG_CLP = {
         "DJL_CMD_FECHAR":                               [131, 4],
         # Registros
         "REGISTROS_CMD_RST":                            [131, 5],
+
+        "DJL_SELETORA_REMOTO":                          [999, 0],
+        "TE_RELE_BUCHHOLZ_ALM":                         [999, 1],
     },
 
     "SA": {

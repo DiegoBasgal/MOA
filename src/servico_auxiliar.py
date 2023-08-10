@@ -26,6 +26,7 @@ class ServicoAuxiliar:
     condicionadores: "list[CondicionadorBase]" = []
     condicionadores_essenciais: "list[CondicionadorBase]" = []
 
+    @classmethod
     def resetar_emergencia(cls) -> "bool":
         """
         Função para acionar comandos de reset de TRIPS/Alarmes
@@ -42,6 +43,7 @@ class ServicoAuxiliar:
             logger.debug(f"[SA]  Traceback: {traceback.format_exc()}")
             return False
 
+    @classmethod
     def verificar_condicionadores(cls) -> "list[CondicionadorBase]":
         """
         Função para verificação de TRIPS/Alarmes.
@@ -62,6 +64,7 @@ class ServicoAuxiliar:
         else:
             return []
 
+    @classmethod
     def verificar_leituras(cls) -> "None":
         """
         Função para verificação de leituras por acionamento temporizado.
@@ -163,17 +166,18 @@ class ServicoAuxiliar:
         elif not cls.leitura_alarme_sistema_seguraca_atuado.valor and dct.voip["SISTEMA_SEGURANCA_ALARME_ATUADO"][0]:
             dct.voip["SISTEMA_SEGURANCA_ALARME_ATUADO"][0] = False
 
-        if cls.leitura_falha_tubo_succao_bomba_recalque.valor and not dct.voip["BOMBA_RECALQUE_TUBO_SUCCAO_FALHA"][0]:
-            logger.warning("[SA]  Houve uma falha na sucção da bomba de recalque. Favor verificar.")
-            dct.voip["BOMBA_RECALQUE_TUBO_SUCCAO_FALHA"][0] = True
-        elif not cls.leitura_falha_tubo_succao_bomba_recalque.valor and dct.voip["BOMBA_RECALQUE_TUBO_SUCCAO_FALHA"][0]:
-            dct.voip["BOMBA_RECALQUE_TUBO_SUCCAO_FALHA"][0] = False
+        # if cls.leitura_falha_tubo_succao_bomba_recalque.valor and not dct.voip["BOMBA_RECALQUE_TUBO_SUCCAO_FALHA"][0]:
+        #     logger.warning("[SA]  Houve uma falha na sucção da bomba de recalque. Favor verificar.")
+        #     dct.voip["BOMBA_RECALQUE_TUBO_SUCCAO_FALHA"][0] = True
+        # elif not cls.leitura_falha_tubo_succao_bomba_recalque.valor and dct.voip["BOMBA_RECALQUE_TUBO_SUCCAO_FALHA"][0]:
+        #     dct.voip["BOMBA_RECALQUE_TUBO_SUCCAO_FALHA"][0] = False
 
+    @classmethod
     def carregar_leituras(cls) -> "None":
         """
         Função para carregamento de leituras necessárias para a operação.
         """
-
+        return
         # CONDICIONADORES ESSENCIAIS
         # Normalizar
         # cls.leitura_sem_emergencia_sa = LeituraModbusBit(cls.clp["SA"], REG_CLP["SA"]["SEM_EMERGENCIA"],, invertido=True, descricao="[SA]  Emergência")
