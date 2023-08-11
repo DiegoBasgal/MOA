@@ -570,7 +570,7 @@ class Ui_Form(object):
         self.backgroundSim = QtWidgets.QLabel(Form)
         self.backgroundSim.setGeometry(QtCore.QRect(0, -5, 1600, 907))
         self.backgroundSim.setText("")
-        self.backgroundSim.setPixmap(QtGui.QPixmap("C:/Users/diego.garcia/Desktop/operacao-autonoma/simulador/gui/bg.png"))
+        self.backgroundSim.setPixmap(QtGui.QPixmap("C:/Users/diego.garcia/Documents/XAV/operacao-autonoma/simulador/gui/bg.png"))
         self.backgroundSim.setScaledContents(True)
         self.backgroundSim.setObjectName("backgroundSim")
         self.frame_ug2 = QtWidgets.QFrame(Form)

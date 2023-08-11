@@ -43,16 +43,16 @@ class Tda:
 
     def calcular_q_sanitaria(self, nv_montante) -> "float":
         if self.dict['UG1']['etapa_atual'] != ETAPA_UP or self.dict['UG2']['etapa_atual'] != ETAPA_UP:
-            while time() < (time() + 5):
-                self.dict["TDA"]["vb_operando"] = True
+            # while time() < (time() + 5):
+            #     self.dict["TDA"]["vb_operando"] = True
             
-            self.dict["TDA"]["vb_operando"] = False
+            # self.dict["TDA"]["vb_operando"] = False
             return 0
         else:
-            while time() < (time() + 5):
-                self.dict["TDA"]["vb_operando"] = True
+            # while time() < (time() + 5):
+            #     self.dict["TDA"]["vb_operando"] = True
             
-            self.dict["TDA"]["vb_operando"] = False
+            # self.dict["TDA"]["vb_operando"] = False
             return 2.33
 
     def calcular_vazao(self) -> "None":

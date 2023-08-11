@@ -42,7 +42,7 @@ class Planta:
         self.b_djbay = False
 
         # Incia os servidores
-        self.server_MB = ModbusServer(host='0.0.0.0', port=5002, no_block=True)
+        self.server_MB = ModbusServer(host='0.0.0.0', port=5000, no_block=True)
         self.server_MB.start()
 
         for n, d in MB.items():
