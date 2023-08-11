@@ -20,61 +20,53 @@ MB = {
     },
 
     "BAY": {
-        "LT_VAB":                                               30010,
-        "LT_VBC":                                               30013,
-        "LT_VCA":                                               30016,
-        "RELE_RST_TRP":                                         [30040, 2],
-        "DJL_CMD_FECHAR":                                       [30043, 2],
-        "DJL_MOLA_CARREGADA":                                   [30044, 1],
-        "SECC_FECHADA":                                         [30044, 4],
-        "ID_BARRA_VIVA":                                        [30053, 1],
-        "ID_BARRA_MORTA":                                       [30053, 7],
-        "ID_LINHA_VIVA":                                        [30054, 0],
-        "ID_LINHA_MORTA":                                       [30054, 1],
+        "LT_VAB":                                               10 + 30000,
+        "LT_VBC":                                               13 + 30000,
+        "LT_VCA":                                               16 + 30000,
+        "RELE_RST_TRP":                                         [40 + 30000, 2],
+        "DJL_CMD_FECHAR":                                       [43 + 30000, 2],
+        "DJL_MOLA_CARREGADA":                                   [44 + 30000, 1],
+        "SECC_FECHADA":                                         [44 + 30000, 4],
+        "ID_BARRA_VIVA":                                        [53 + 30000, 1],
+        "ID_BARRA_MORTA":                                       [53 + 30000, 7],
+        "ID_LINHA_VIVA":                                        [54 + 30000, 0],
+        "ID_LINHA_MORTA":                                       [54 + 30000, 1],
     },
 
     "TDA": {
-        "NV_MONTANTE":                                              3,
-        "NV_JUSANTE_CP1":                                           7,
-        "NV_JUSANTE_CP2":                                           8,
+        "NV_MONTANTE":                                              30,
+        "NV_JUSANTE_CP1":                                           36,
+        "NV_JUSANTE_CP2":                                           38,
 
-        "CP1_CRACKING":                                             [1016, 0],
-        "CP1_REMOTO":                                               [1016, 6],
-
-        "CP1_ABERTA":                                               [1017, 14],
-        "CP1_FECHADA":                                              [1017, 15],
+        "UH_DISPONIVEL":                                            [5 + 500, 1],
+        "VB_FECHANDO":                                              [23 + 500, 0],
+        "LG_OPE_MANUAL":                                            [28 + 500, 0],
 
         "CP1_OPERANDO":                                             [2 + 1000, 0],
+        "CP1_BLQ_ATUADO":                                           [8 + 1000, 15],
         "CP1_PERMISSIVOS_OK":                                       [6 + 1000, 15],
         "CP1_CMD_ABERTURA_CRACKING":                                [6 + 1000, 1],
         "CP1_CMD_ABERTURA_TOTAL":                                   [6 + 1000, 2],
         "CP1_CMD_FECHAMENTO":                                       [6 + 1000, 3],
-
-        "CP2_CRACKING":                                             [2016, 0],
-        "CP2_REMOTO":                                               [2016, 6],
-
-        "CP2_ABERTA":                                               [2017, 14],
-        "CP2_FECHADA":                                              [2017, 15],
+        "CP1_CRACKING":                                             [16 + 1000, 0],
+        "CP1_REMOTO":                                               [16 + 1000, 6],
+        "CP1_ABERTA":                                               [17 + 1000, 14],
+        "CP1_FECHADA":                                              [17 + 1000, 15],
 
         "CP2_OPERANDO":                                             [2 + 2000, 0],
+        "CP2_BLQ_ATUADO":                                           [8 + 2000, 15],
         "CP2_PERMISSIVOS_OK":                                       [6 + 2000, 15],
         "CP2_CMD_ABERTURA_CRACKING":                                [6 + 2000, 1],
         "CP2_CMD_ABERTURA_TOTAL":                                   [6 + 2000, 2],
         "CP2_CMD_FECHAMENTO":                                       [6 + 2000, 3],
+        "CP2_CRACKING":                                             [16 + 2000, 0],
+        "CP2_REMOTO":                                               [16 + 2000, 6],
+        "CP2_ABERTA":                                               [17 + 2000, 14],
+        "CP2_FECHADA":                                              [17 + 2000, 15],
+
     },
 
     "UG1": {
-        "PASSOS_CMD_RST_FLH":                                   [148 + 10000, 0],
-
-        "PARTIDA_CMD_SINCRONISMO":                              [148 + 10000, 10],
-
-        "PARADA_CMD_EMERGENCIA":                                [148 + 10000, 4],
-        "PARADA_CMD_DESABILITA_UHLM":                           [148 + 10000, 15],
-
-        "P":                                                    130 + 10000,
-        "HORIMETRO":                                            108 + 10000,
-        "SETPONIT":                                             40 + 10000,
-        "RV_ESTADO_OPERACAO":                                   38 + 10000,
         "GERADOR_FASE_A_TMP":                                   26 + 10000,
         "GERADOR_FASE_B_TMP":                                   27 + 10000,
         "GERADOR_FASE_C_TMP":                                   28 + 10000,
@@ -87,20 +79,18 @@ MB = {
         "MANCAL_CASQ_COMB_TMP":                                 35 + 10000,
         "MANCAL_CONT_ESCO_COMB_TMP":                            36 + 10000,
         "ENTRADA_TURBINA_PRESSAO":                              37 + 10000,
+        "RV_ESTADO_OPERACAO":                                   38 + 10000,
+        "SETPONIT":                                             40 + 10000,
+        "HORIMETRO":                                            108 + 10000,
+        "P":                                                    130 + 10000,
+
+        "PASSOS_CMD_RST_FLH":                                   [148 + 10000, 0],
+        "PARTIDA_CMD_SINCRONISMO":                              [148 + 10000, 10],
+        "PARADA_CMD_EMERGENCIA":                                [148 + 10000, 4],
+        "PARADA_CMD_DESABILITA_UHLM":                           [148 + 10000, 15],
     },
 
     "UG2": {
-        "PASSOS_CMD_RST_FLH":                                   [148 + 20000, 0],
-
-        "PARTIDA_CMD_SINCRONISMO":                              [148 + 20000, 10],
-
-        "PARADA_CMD_EMERGENCIA":                                [148 + 20000, 4],
-        "PARADA_CMD_DESABILITA_UHLM":                           [148 + 20000, 15],
-
-        "P":                                                    130 + 20000,
-        "HORIMETRO":                                            108 + 20000,
-        "SETPONIT":                                             40 + 20000,
-        "RV_ESTADO_OPERACAO":                                   38 + 20000,
         "GERADOR_FASE_A_TMP":                                   26 + 20000,
         "GERADOR_FASE_B_TMP":                                   27 + 20000,
         "GERADOR_FASE_C_TMP":                                   28 + 20000,
@@ -113,5 +103,14 @@ MB = {
         "MANCAL_CASQ_COMB_TMP":                                 35 + 20000,
         "MANCAL_CONT_ESCO_COMB_TMP":                            36 + 20000,
         "ENTRADA_TURBINA_PRESSAO":                              37 + 20000,
-    }
+        "RV_ESTADO_OPERACAO":                                   38 + 20000,
+        "SETPONIT":                                             40 + 20000,
+        "HORIMETRO":                                            108 + 20000,
+        "P":                                                    130 + 20000,
+
+        "PASSOS_CMD_RST_FLH":                                   [148 + 20000, 0],
+        "PARTIDA_CMD_SINCRONISMO":                              [148 + 20000, 10],
+        "PARADA_CMD_EMERGENCIA":                                [148 + 20000, 4],
+        "PARADA_CMD_DESABILITA_UHLM":                           [148 + 20000, 15],
+    },
 }

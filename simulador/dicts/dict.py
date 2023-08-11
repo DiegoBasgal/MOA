@@ -44,6 +44,8 @@ compartilhado = {
         "cp2_progresso": 0,
 
         "lg_operando": False,
+        "vb_operando": False,
+        "uh_disponivel": True,
 
         "cp1_trip": False,
         "cp1_aberta": False,

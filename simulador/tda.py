@@ -1,5 +1,8 @@
+from tkinter import E
 import numpy as np
 
+
+from time import time
 from pyModbusTCP.server import DataBank as DB
 
 from funcs.escrita import Escrita as ESC
@@ -19,6 +22,8 @@ class Tda:
         self.passo_simulacao = tempo.passo_simulacao
         self.segundos_por_passo = tempo.segundos_por_passo
 
+        self.b_lg = False
+        self.b_vb = False
         self.b_cp1_f = False
         self.b_cp2_f = False
         self.b_cp1_a = False
@@ -38,8 +43,16 @@ class Tda:
 
     def calcular_q_sanitaria(self, nv_montante) -> "float":
         if self.dict['UG1']['etapa_atual'] != ETAPA_UP or self.dict['UG2']['etapa_atual'] != ETAPA_UP:
+            while time() < (time() + 5):
+                self.dict["TDA"]["vb_operando"] = True
+            
+            self.dict["TDA"]["vb_operando"] = False
             return 0
         else:
+            while time() < (time() + 5):
+                self.dict["TDA"]["vb_operando"] = True
+            
+            self.dict["TDA"]["vb_operando"] = False
             return 2.33
 
     def calcular_vazao(self) -> "None":
@@ -75,6 +88,7 @@ class Tda:
         DB.set_words(MB['TDA']['NV_JUSANTE_CP1'], [round((self.dict['TDA']['nv_jusante_grade']) * 10000)],)
         DB.set_words(MB['TDA']['NV_JUSANTE_CP2'], [round((self.dict['TDA']['nv_jusante_grade']) * 10000)],)
 
+        # CP Fechada
         if self.dict["TDA"]["cp1_fechada"] and not self.b_cp1_f:
             self.b_cp1_f = True
             ESC.escrever_bit(MB["TDA"]["CP1_FECHADA"], valor=1)
@@ -82,3 +96,63 @@ class Tda:
         elif not self.dict["TDA"]["cp1_fechada"] and self.b_cp1_f:
             self.b_cp1_f = False
             ESC.escrever_bit(MB["TDA"]["CP1_FECHADA"], valor=0)
+
+        if self.dict["TDA"]["cp2_fechada"] and not self.b_cp1_f:
+            self.b_cp1_f = True
+            ESC.escrever_bit(MB["TDA"]["CP2_FECHADA"], valor=1)
+
+        elif not self.dict["TDA"]["cp2_fechada"] and self.b_cp1_f:
+            self.b_cp1_f = False
+            ESC.escrever_bit(MB["TDA"]["CP2_FECHADA"], valor=0)
+
+        # CP Aberta
+        if self.dict["TDA"]["cp1_aberta"] and not self.b_cp1_a:
+            self.b_cp1_a = True
+            ESC.escrever_bit(MB["TDA"]["CP1_ABERTA"], valor=1)
+
+        elif not self.dict["TDA"]["cp1_aberta"] and self.b_cp1_a:
+            self.b_cp1_a = False
+            ESC.escrever_bit(MB["TDA"]["CP1_ABERTA"], valor=0)
+
+        if self.dict["TDA"]["cp2_aberta"] and not self.b_cp1_a:
+            self.b_cp1_a = True
+            ESC.escrever_bit(MB["TDA"]["CP2_ABERTA"], valor=1)
+
+        elif not self.dict["TDA"]["cp2_aberta"] and self.b_cp1_a:
+            self.b_cp1_a = False
+            ESC.escrever_bit(MB["TDA"]["CP2_ABERTA"], valor=0)
+
+        # CP Aberta
+        if self.dict["TDA"]["cp1_cracking"] and not self.b_cp1_c:
+            self.b_cp1_c = True
+            ESC.escrever_bit(MB["TDA"]["CP1_CRACKING"], valor=1)
+
+        elif not self.dict["TDA"]["cp1_cracking"] and self.b_cp1_c:
+            self.b_cp1_c = False
+            ESC.escrever_bit(MB["TDA"]["CP1_CRACKING"], valor=0)
+
+        if self.dict["TDA"]["cp2_cracking"] and not self.b_cp2_c:
+            self.b_cp2_c = True
+            ESC.escrever_bit(MB["TDA"]["CP2_CRACKING"], valor=1)
+
+        elif not self.dict["TDA"]["cp2_cracking"] and self.b_cp2_c:
+            self.b_cp2_c = False
+            ESC.escrever_bit(MB["TDA"]["CP2_CRACKING"], valor=0)
+
+        # Limpa Grades
+        if self.dict["TDA"]["lg_operando"] and not self.b_lg:
+            self.b_lg = True
+            ESC.escrever_bit(MB["TDA"]["LG_OPE_MANUAL"], valor=1)
+
+        elif not self.dict["TDA"]["lg_operando"] and self.b_lg:
+            self.b_lg = False
+            ESC.escrever_bit(MB["TDA"]["LG_OPE_MANUAL"], valor=0)
+
+        # Válvula Borboleta
+        if self.dict["TDA"]["vb_operando"] and not self.b_vb:
+            self.b_vb = True
+            ESC.escrever_bit(MB["TDA"]["VB_FECHANDO"], valor=1)
+
+        elif not self.dict["TDA"]["vb_operando"] and self.b_vb:
+            self.b_vb = False
+            ESC.escrever_bit(MB["TDA"]["VB_FECHANDO"], valor=0)

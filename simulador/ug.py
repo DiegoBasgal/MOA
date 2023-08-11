@@ -1,3 +1,4 @@
+from asyncio.constants import SENDFILE_FALLBACK_READBUFFER_SIZE
 import numpy as np
 
 import dicts.dict as dct
@@ -9,6 +10,7 @@ from pyModbusTCP.server import DataBank as DB
 from dicts.reg import *
 from dicts.const import *
 
+from funcs.escrita import Escrita as ESC
 from funcs.temporizador import Temporizador
 
 class Unidade:
@@ -30,6 +32,11 @@ class Unidade:
         self.tempo_na_transicao = 0
 
         self.avisou_trip = False
+
+        self.b_cp1_p = False
+        self.b_cp2_p = False
+        self.b_cp1_b = False
+        self.b_cp2_b = False
 
     def passo(self) -> "None":
         # DEBUG VIA GUI
@@ -63,7 +70,7 @@ class Unidade:
             self.etapa_alvo = ETAPA_US
             self.dict[f'UG{self.id}'][f'etapa_alvo'] = self.etapa_alvo
             print(f'[UG{self.id}] Comando de Partida')
-        
+
         elif ETAPA_US in (self.etapa_alvo, self.etapa_atual):
             print(f'[UG{self.id}] A Unidade já recebeu o comando de Partida!')
 
@@ -118,6 +125,42 @@ class Unidade:
         DB.set_words(MB[f'UG{self.id}']['MANCAL_CASQ_COMB_TMP'], [round(self.dict[f'UG{self.id}'][f'temp_mancal_casq_comb'])])
         DB.set_words(MB[f'UG{self.id}']['MANCAL_CONT_ESCO_COMB_TMP'], [round(self.dict[f'UG{self.id}'][f'temp_mancal_contra_esc_comb'])])
         DB.set_words(MB[f'UG{self.id}']['ENTRADA_TURBINA_PRESSAO'], [round(10 * self.dict[f'UG{self.id}'][f'pressao_turbina'])])
+
+        # CP1 Permissão
+        if self.dict['TDA']['cp1_permissao_abertura'] and not self.b_cp1_p:
+            self.b_cp1_p = True
+            ESC.escrever_bit(MB["TDA"][f"CP1_PERMISSIVOS_OK"], valor=1)
+
+        elif self.dict['TDA']['cp1_permissao_abertura'] and self.b_cp1_p:
+            self.b_cp1_p = False
+            ESC.escrever_bit(MB["TDA"][f"CP1_PERMISSIVOS_OK"], valor=0)
+
+        # CP2 Permissão
+        if self.dict['TDA']['cp2_permissao_abertura'] and not self.b_cp2_p:
+            self.b_cp2_p = True
+            ESC.escrever_bit(MB["TDA"][f"CP2_PERMISSIVOS_OK"], valor=1)
+
+        elif self.dict['TDA']['cp2_permissao_abertura'] and self.b_cp2_p:
+            self.b_cp2_p = False
+            ESC.escrever_bit(MB["TDA"][f"CP2_PERMISSIVOS_OK"], valor=0)
+
+        # CP1 Bloqueio
+        if self.dict['TDA']['cp1_trip'] and not self.b_cp1_b:
+            self.b_cp1_b = True
+            ESC.escrever_bit(MB["TDA"][f"CP1_BLQ_ATUADO"], valor=1)
+
+        elif self.dict['TDA']['cp1_trip'] and self.b_cp1_b:
+            self.b_cp1_b = False
+            ESC.escrever_bit(MB["TDA"][f"CP1_BLQ_ATUADO"], valor=0)
+
+        # CP2 Bloqueio
+        if self.dict['TDA']['cp2_trip'] and not self.b_cp2_b:
+            self.b_cp2_b = True
+            ESC.escrever_bit(MB["TDA"][f"CP2_BLQ_ATUADO"], valor=1)
+
+        elif self.dict['TDA']['cp2_trip'] and self.b_cp2_b:
+            self.b_cp2_b = False
+            ESC.escrever_bit(MB["TDA"][f"CP2_BLQ_ATUADO"], valor=0)
 
     def controle_etapas(self) -> None:
         # COMPORTAMENTO self.ETAPAS
@@ -268,20 +311,22 @@ class Unidade:
         elif not self.dict['TDA'][f'cp{self.id}_permissao_abertura']:
             print(f'[UG{self.id}-CP{self.id}] As Permissões de Abertura da Comporta {self.id} ainda não foram ativadas!')
 
+        elif not self.dict['TDA'][f'cp{self.id}_cracking'] and self.dict['TDA'][f'cp{self.id}_fechada']:
+            print(f'[UG{self.id}-CP{self.id}] A Comporta está Fechada, execute a operação de Cracking primeiro!')
+
         elif self.dict['TDA'][f'cp{self.id}_cracking'] and not self.dict['TDA'][f'cp{self.id}_fechada']:
             self.dict['TDA'][f'cp{self.id}_operando'] = True
 
             while self.dict['TDA'][f'cp{self.id}_progresso'] <= 100:
+                self.dict['TDA'][f'uh_disponivel'] = False
                 self.dict['TDA'][f'cp{self.id}_progresso'] += 0.00001
 
+            self.dict['TDA'][f'uh_disponivel'] = True
             self.dict['TDA'][f'cp{self.id}_operando'] = False
             self.dict['TDA'][f'cp{self.id}_fechada'] = False
             self.dict['TDA'][f'cp{self.id}_aberta'] = True
             self.dict['TDA'][f'cp{self.id}_cracking'] = False
             self.dict['TDA'][f'cp{self.id}_equalizar'] = False
-
-        elif not self.dict['TDA'][f'cp{self.id}_cracking'] and self.dict['TDA'][f'cp{self.id}_fechada']:
-            print(f'[UG{self.id}-CP{self.id}] A Comporta está Fechada, execute a operação de Cracking primeiro!')
 
         else:
             print(f'[UG{self.id}-CP{self.id}] A Comporta já está aberta.')
@@ -310,20 +355,23 @@ class Unidade:
         elif self.dict['TDA']['lg_operando']:
             print(f'[UG{self.id}-CP{self.id}] Não é possível realizar o Cracking da Comporta {self.id} pois o Limpa Grades se encontra em operação!')
 
+        elif self.dict['TDA'][f'cp{self.id}_aberta'] and not self.dict['TDA'][f'cp{self.id}_fechada']:
+            print(f'[UG{self.id}-CP{self.id}] A Comporta já está Aberta!')
+
         elif self.dict['TDA'][f'cp{self.id}_fechada'] and not self.dict['TDA'][f'cp{self.id}_aberta']:
             self.dict['TDA'][f'cp{self.id}_operando'] = True
 
             while self.dict['TDA'][f'cp{self.id}_progresso'] <= 20:
+                self.dict['TDA'][f'uh_disponivel'] = False
                 self.dict['TDA'][f'cp{self.id}_progresso'] += 0.00001
 
+            self.dict['TDA'][f'uh_disponivel'] = True
             self.dict['TDA'][f'cp{self.id}_operando'] = False
             self.dict['TDA'][f'cp{self.id}_fechada'] = False
             self.dict['TDA'][f'cp{self.id}_aberta'] = False
             self.dict['TDA'][f'cp{self.id}_cracking'] = True
-            Thread(target=lambda: self.equalizar_uh_cp()).start()
 
-        elif self.dict['TDA'][f'cp{self.id}_aberta'] and not self.dict['TDA'][f'cp{self.id}_fechada']:
-            print(f'[UG{self.id}-CP{self.id}] A Comporta já está Aberta!')
+            Thread(target=lambda: self.equalizar_uh_cp()).start()
 
         else:
             print(f'[UG{self.id}-CP{self.id}] A Comporta já está na posição de Cracking!')
