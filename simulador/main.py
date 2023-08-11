@@ -1,3 +1,4 @@
+import sys
 import traceback
 
 import planta as p
@@ -56,6 +57,8 @@ if __name__ == '__main__':
         # thread_controlador.join()
 
         print("Fim da Simulação.")
+        sys.exit(1)
+
 
     except Exception:
         print(f"Houve um erro ao iniciar as Threads de excução do Simulador.")

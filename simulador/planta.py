@@ -42,7 +42,7 @@ class Planta:
         self.b_djbay = False
 
         # Incia os servidores
-        self.server_MB = ModbusServer(host='0.0.0.0', port=5002, no_block=True)
+        self.server_MB = ModbusServer(host='0.0.0.0', port=5000, no_block=True)
         self.server_MB.start()
 
         for n, d in MB.items():
@@ -69,8 +69,9 @@ class Planta:
                 # Acerto temportal
                 self.dict['GLB']['tempo_simul'] += self.segundos_por_passo
 
-                # Leituras de registradores MB
+                self.atualizar_mb_geral()
 
+                # Leituras de registradores MB
                 if LEI.ler_bit(MB['BAY']['RELE_RST_TRP']):
                     ESC.escrever_bit(MB['BAY']['RELE_RST_TRP'], valor=0)
                     print('[CF] [BAY] Comando de Reset de Falhas na Barra CA acionado via \"MODBUS\"')
@@ -118,6 +119,7 @@ class Planta:
                 # Se
                 self.bay.passo()
                 self.se.passo()
+                self.tda.passo()
 
                 # UGs
                 for ug in self.ugs:
@@ -127,14 +129,7 @@ class Planta:
                     if self.dict[f'UG{ug.id}'][f'debug_setpoint'] >= 0:
                         self.dict[f'UG{ug.id}'][f'setpoint'] = self.dict[f'UG{ug.id}'][f'debug_setpoint']
                         DB.set_words(MB[f'UG{ug.id}']['SETPONIT'], [self.dict[f'UG{ug.id}']['setpoint']])
-
-                    if self.dict['TDA'][f'cp{ug.id}_permissao_abertura'] and self.dict['USN'][f'aux_borda{ug.id + 4}'] == 0:
-                        ESC.escrever_bit(MB['TDA'][f'CP{ug.id}_PERMISSIVOS_OK'], valor=1)
-                        self.dict['USN'][f'aux_borda{ug.id + 4}'] = 1
-
-                    elif not self.dict['TDA'][f'cp{ug.id}_permissao_abertura'] and self.dict['USN'][f'aux_borda{ug.id + 4}'] == 1:
-                        ESC.escrever_bit(MB['TDA'][f'CP{ug.id}_PERMISSIVOS_OK'], valor=0)
-                        self.dict['USN'][f'aux_borda{ug.id + 4}'] = 0
+                        self.dict[f'UG{ug.id}'][f'debug_setpoint'] = -1
 
                     # Leitura de registradores MB
                     if LEI.ler_bit(MB[f'UG{ug.id}']['PARTIDA_CMD_SINCRONISMO']) == 1:
@@ -181,19 +176,45 @@ class Planta:
                     elif LEI.ler_bit(MB['TDA'][f'CP{ug.id}_CMD_ABERTURA_CRACKING']) == 0 and self.dict['TDA'][f'cp{ug.id}_borda_c'] == 1:
                         self.dict['TDA'][f'cp{ug.id}_borda_c'] = 0
 
-                for ug in self.ugs:
                     ug.passo()
+                
+                for ug in self.ugs:
+                    DB.set_words(MB[f'UG{ug.id}']['RV_ESTADO_OPERACAO'], [int(ug.etapa_atual)])
+                    DB.set_words(MB[f'UG{ug.id}']['RV_ESTADO_OPERACAO_2'], [0 if ug.etapa_alvo == None else int(ug.etapa_alvo)])
+                    DB.set_words(MB[f'UG{ug.id}']['P'], [round(ug.potencia)])
+                    DB.set_words(MB[f'UG{ug.id}']['HORIMETRO'], [np.floor(ug.horimetro_hora)])
+                    DB.set_words(MB[f'UG{ug.id}']['GERADOR_FASE_A_TMP'], [round(ug.dict[f'UG{ug.id}'][f'temp_fase_r'])])
+                    DB.set_words(MB[f'UG{ug.id}']['GERADOR_FASE_B_TMP'], [round(ug.dict[f'UG{ug.id}'][f'temp_fase_s'])])
+                    DB.set_words(MB[f'UG{ug.id}']['GERADOR_FASE_C_TMP'], [round(ug.dict[f'UG{ug.id}'][f'temp_fase_t'])])
+                    DB.set_words(MB[f'UG{ug.id}']['GERADOR_NUCL_ESTAT_TMP'], [round(ug.dict[f'UG{ug.id}'][f'temp_nucleo_gerador_1'])])
+                    DB.set_words(MB[f'UG{ug.id}']['MANCAL_GUIA_TMP'], [round(ug.dict[f'UG{ug.id}'][f'temp_mancal_guia'])])
+                    DB.set_words(MB[f'UG{ug.id}']['MANCAL_GUIA_INTE_1_TMP'], [round(ug.dict[f'UG{ug.id}'][f'temp_mancal_guia_interno_1'])])
+                    DB.set_words(MB[f'UG{ug.id}']['MANCAL_GUIA_INTE_2_TMP'], [round(ug.dict[f'UG{ug.id}'][f'temp_mancal_guia_interno_2'])])
+                    DB.set_words(MB[f'UG{ug.id}']['MANCAL_COMB_PATINS_1_TMP'], [round(ug.dict[f'UG{ug.id}'][f'temp_patins_mancal_comb_1'])])
+                    DB.set_words(MB[f'UG{ug.id}']['MANCAL_COMB_PATINS_2_TMP'], [round(ug.dict[f'UG{ug.id}'][f'temp_patins_mancal_comb_2'])])
+                    DB.set_words(MB[f'UG{ug.id}']['MANCAL_CASQ_COMB_TMP'], [round(ug.dict[f'UG{ug.id}'][f'temp_mancal_casq_comb'])])
+                    DB.set_words(MB[f'UG{ug.id}']['MANCAL_CONT_ESCO_COMB_TMP'], [round(ug.dict[f'UG{ug.id}'][f'temp_mancal_contra_esc_comb'])])
+                    DB.set_words(MB[f'UG{ug.id}']['ENTRADA_TURBINA_PRESSAO'], [round(10 * ug.dict[f'UG{ug.id}'][f'pressao_turbina'])])
 
                 self.dict['SE']['potencia_se'] = sum([ug.potencia for ug in self.ugs]) * 0.995 + np.random.normal(0, 0.001 * self.escala_ruido)
 
                 self.bay.atualizar_mp_mr()
 
-                self.tda.passo()
+                DB.set_words(MB['TDA']['NV_MONTANTE'], [self.dict['TDA']['nv_montante'] * 10000],)
+                DB.set_words(MB['TDA']['NV_JUSANTE_CP1'], [round((self.dict['TDA']['nv_jusante_grade']) * 10000)],)
+                DB.set_words(MB['TDA']['NV_JUSANTE_CP2'], [round((self.dict['TDA']['nv_jusante_grade']) * 10000)],)
 
-                self.bay.atualizar_modbus()
-                self.se.atualizar_modbus()
-                self.tda.atualizar_modbus()
+                DB.set_words(MB['BAY']['LT_VAB'], [round(self.dict['BAY']['tensao_linha'] / 1000)])
+                DB.set_words(MB['BAY']['LT_VBC'], [round(self.dict['BAY']['tensao_linha'] / 1000)])
+                DB.set_words(MB['BAY']['LT_VCA'], [round(self.dict['BAY']['tensao_linha'] / 1000)])
 
+                DB.set_words(MB['SE']['LT_P'], [round(self.dict['SE']['potencia_se'])])
+                DB.set_words(MB['SE']['LT_VAB'], [round(self.dict['SE']['tensao_linha'] / 1000)])
+                DB.set_words(MB['SE']['LT_VBC'], [round(self.dict['SE']['tensao_linha'] / 1000)])
+                DB.set_words(MB['SE']['LT_VCA'], [round(self.dict['SE']['tensao_linha'] / 1000)])
+
+                self.atualizar_mb_geral()
+                
                 # FIM COMPORTAMENTO USINA
                 lock.release()
                 tempo_restante = (self.passo_simulacao - (datetime.now() - t_inicio_passo).seconds)
@@ -207,3 +228,8 @@ class Planta:
                 self.server_MB.stop()
                 self.dict['GLB']['stop_gui'] = True
                 continue
+
+    def atualizar_mb_geral(self) -> "None":
+        self.se.atualizar_modbus()
+        self.bay.atualizar_modbus()
+        self.tda.atualizar_modbus()

@@ -56,7 +56,9 @@ compartilhado = {
         "cp1_thread_fechada": False,
         "cp1_thread_cracking": False,
         "cp1_falha_cracking": False,
+        "cp1_pressao_equalizada": False,
         "cp1_permissao_abertura": False,
+        "cp1_aguardando_abertura": False,
 
         "cp2_trip": False,
         "cp2_aberta": False,
@@ -67,7 +69,9 @@ compartilhado = {
         "cp2_thread_fechada": False,
         "cp2_thread_cracking": False,
         "cp2_falha_cracking": False,
+        "cp2_pressao_equalizada": False,
         "cp2_permissao_abertura": False,
+        "cp2_aguardando_abertura": False,
     },
 
     "SE": {

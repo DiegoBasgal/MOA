@@ -33,11 +33,6 @@ class Unidade:
 
         self.avisou_trip = False
 
-        self.b_cp1_p = False
-        self.b_cp2_p = False
-        self.b_cp1_b = False
-        self.b_cp2_b = False
-
     def passo(self) -> "None":
         # DEBUG VIA GUI
         self.setpoint = self.dict[f'UG{self.id}'][f'setpoint']
@@ -60,7 +55,6 @@ class Unidade:
         self.dict[f'UG{self.id}'][f'potencia'] = self.potencia
         self.dict[f'UG{self.id}'][f'etapa_atual'] = self.etapa_atual
 
-        self.atualizar_modbus()
 
     def q_ug(self, potencia_kW) -> "float":
         return 0.005610675 * potencia_kW if potencia_kW > 911 else 0
@@ -107,60 +101,8 @@ class Unidade:
         self.dict[f'UG{self.id}'][f'temp_mancal_guia_interno_1'] = np.random.normal(25, 1 * self.escala_ruido)
         self.dict[f'UG{self.id}'][f'temp_mancal_guia_interno_2'] = np.random.normal(25, 1 * self.escala_ruido)
         self.dict[f'UG{self.id}'][f'temp_mancal_contra_esc_comb'] = np.random.normal(25, 1 * self.escala_ruido)
-
-
-    def atualizar_modbus(self) -> "None":
-        DB.set_words(MB[f'UG{self.id}']['RV_ESTADO_OPERACAO'], [int(self.etapa_atual)])
-        DB.set_words(MB[f'UG{self.id}']['P'], [round(self.potencia)])
-        DB.set_words(MB[f'UG{self.id}']['HORIMETRO'], [np.floor(self.horimetro_hora)])
-        DB.set_words(MB[f'UG{self.id}']['GERADOR_FASE_A_TMP'], [round(self.dict[f'UG{self.id}'][f'temp_fase_r'])])
-        DB.set_words(MB[f'UG{self.id}']['GERADOR_FASE_B_TMP'], [round(self.dict[f'UG{self.id}'][f'temp_fase_s'])])
-        DB.set_words(MB[f'UG{self.id}']['GERADOR_FASE_C_TMP'], [round(self.dict[f'UG{self.id}'][f'temp_fase_t'])])
-        DB.set_words(MB[f'UG{self.id}']['GERADOR_NUCL_ESTAT_TMP'], [round(self.dict[f'UG{self.id}'][f'temp_nucleo_gerador_1'])])
-        DB.set_words(MB[f'UG{self.id}']['MANCAL_GUIA_TMP'], [round(self.dict[f'UG{self.id}'][f'temp_mancal_guia'])])
-        DB.set_words(MB[f'UG{self.id}']['MANCAL_GUIA_INTE_1_TMP'], [round(self.dict[f'UG{self.id}'][f'temp_mancal_guia_interno_1'])])
-        DB.set_words(MB[f'UG{self.id}']['MANCAL_GUIA_INTE_2_TMP'], [round(self.dict[f'UG{self.id}'][f'temp_mancal_guia_interno_2'])])
-        DB.set_words(MB[f'UG{self.id}']['MANCAL_COMB_PATINS_1_TMP'], [round(self.dict[f'UG{self.id}'][f'temp_patins_mancal_comb_1'])])
-        DB.set_words(MB[f'UG{self.id}']['MANCAL_COMB_PATINS_2_TMP'], [round(self.dict[f'UG{self.id}'][f'temp_patins_mancal_comb_2'])])
-        DB.set_words(MB[f'UG{self.id}']['MANCAL_CASQ_COMB_TMP'], [round(self.dict[f'UG{self.id}'][f'temp_mancal_casq_comb'])])
-        DB.set_words(MB[f'UG{self.id}']['MANCAL_CONT_ESCO_COMB_TMP'], [round(self.dict[f'UG{self.id}'][f'temp_mancal_contra_esc_comb'])])
-        DB.set_words(MB[f'UG{self.id}']['ENTRADA_TURBINA_PRESSAO'], [round(10 * self.dict[f'UG{self.id}'][f'pressao_turbina'])])
-
-        # CP1 Permissão
-        if self.dict['TDA']['cp1_permissao_abertura'] and not self.b_cp1_p:
-            self.b_cp1_p = True
-            ESC.escrever_bit(MB["TDA"][f"CP1_PERMISSIVOS_OK"], valor=1)
-
-        elif self.dict['TDA']['cp1_permissao_abertura'] and self.b_cp1_p:
-            self.b_cp1_p = False
-            ESC.escrever_bit(MB["TDA"][f"CP1_PERMISSIVOS_OK"], valor=0)
-
-        # CP2 Permissão
-        if self.dict['TDA']['cp2_permissao_abertura'] and not self.b_cp2_p:
-            self.b_cp2_p = True
-            ESC.escrever_bit(MB["TDA"][f"CP2_PERMISSIVOS_OK"], valor=1)
-
-        elif self.dict['TDA']['cp2_permissao_abertura'] and self.b_cp2_p:
-            self.b_cp2_p = False
-            ESC.escrever_bit(MB["TDA"][f"CP2_PERMISSIVOS_OK"], valor=0)
-
-        # CP1 Bloqueio
-        if self.dict['TDA']['cp1_trip'] and not self.b_cp1_b:
-            self.b_cp1_b = True
-            ESC.escrever_bit(MB["TDA"][f"CP1_BLQ_ATUADO"], valor=1)
-
-        elif self.dict['TDA']['cp1_trip'] and self.b_cp1_b:
-            self.b_cp1_b = False
-            ESC.escrever_bit(MB["TDA"][f"CP1_BLQ_ATUADO"], valor=0)
-
-        # CP2 Bloqueio
-        if self.dict['TDA']['cp2_trip'] and not self.b_cp2_b:
-            self.b_cp2_b = True
-            ESC.escrever_bit(MB["TDA"][f"CP2_BLQ_ATUADO"], valor=1)
-
-        elif self.dict['TDA']['cp2_trip'] and self.b_cp2_b:
-            self.b_cp2_b = False
-            ESC.escrever_bit(MB["TDA"][f"CP2_BLQ_ATUADO"], valor=0)
+        self.dict[f'UG{self.id}'][f'temp_mancal_contra_esc_comb'] = np.random.normal(25, 1 * self.escala_ruido)
+        self.dict[f'UG{self.id}'][f'pressao_turbina'] = np.random.normal(1.6, 1 * self.escala_ruido)
 
     def controle_etapas(self) -> None:
         # COMPORTAMENTO self.ETAPAS
@@ -255,7 +197,6 @@ class Unidade:
         if self.etapa_atual == ETAPA_US:
             if (self.etapa_alvo is None) or (self.etapa_alvo == self.etapa_atual):
                 self.tempo_na_transicao = 0
-                self.etapa_alvo = None
                 self.dict[f'UG{self.id}'][f'etapa_alvo'] = self.etapa_alvo
 
                 if (self.dict['SE']['dj_fechado'] and not self.dict['SE']['dj_trip']):
@@ -311,10 +252,8 @@ class Unidade:
         elif not self.dict['TDA'][f'cp{self.id}_permissao_abertura']:
             print(f'[UG{self.id}-CP{self.id}] As Permissões de Abertura da Comporta {self.id} ainda não foram ativadas!')
 
-        elif not self.dict['TDA'][f'cp{self.id}_cracking'] and self.dict['TDA'][f'cp{self.id}_fechada']:
-            print(f'[UG{self.id}-CP{self.id}] A Comporta está Fechada, execute a operação de Cracking primeiro!')
-
         elif self.dict['TDA'][f'cp{self.id}_cracking'] and not self.dict['TDA'][f'cp{self.id}_fechada']:
+            self.dict['TDA'][f'cp{self.id}_aguardando_abertura'] = False
             self.dict['TDA'][f'cp{self.id}_operando'] = True
 
             while self.dict['TDA'][f'cp{self.id}_progresso'] <= 100:
@@ -327,6 +266,9 @@ class Unidade:
             self.dict['TDA'][f'cp{self.id}_aberta'] = True
             self.dict['TDA'][f'cp{self.id}_cracking'] = False
             self.dict['TDA'][f'cp{self.id}_equalizar'] = False
+
+        elif not self.dict['TDA'][f'cp{self.id}_cracking'] and self.dict['TDA'][f'cp{self.id}_fechada']:
+            print(f'[UG{self.id}-CP{self.id}] A Comporta está Fechada, execute a operação de Cracking primeiro!')
 
         else:
             print(f'[UG{self.id}-CP{self.id}] A Comporta já está aberta.')
@@ -355,9 +297,6 @@ class Unidade:
         elif self.dict['TDA']['lg_operando']:
             print(f'[UG{self.id}-CP{self.id}] Não é possível realizar o Cracking da Comporta {self.id} pois o Limpa Grades se encontra em operação!')
 
-        elif self.dict['TDA'][f'cp{self.id}_aberta'] and not self.dict['TDA'][f'cp{self.id}_fechada']:
-            print(f'[UG{self.id}-CP{self.id}] A Comporta já está Aberta!')
-
         elif self.dict['TDA'][f'cp{self.id}_fechada'] and not self.dict['TDA'][f'cp{self.id}_aberta']:
             self.dict['TDA'][f'cp{self.id}_operando'] = True
 
@@ -373,19 +312,31 @@ class Unidade:
 
             Thread(target=lambda: self.equalizar_uh_cp()).start()
 
+        elif self.dict['TDA'][f'cp{self.id}_aberta'] and not self.dict['TDA'][f'cp{self.id}_fechada']:
+            print(f'[UG{self.id}-CP{self.id}] A Comporta já está Aberta!')
+
         else:
             print(f'[UG{self.id}-CP{self.id}] A Comporta já está na posição de Cracking!')
 
     def equalizar_uh_cp(self) -> "None":
         print(f'[UG{self.id}-CP{self.id}] Aguardando Equalização de Pressão da Unidade Hidráulica da Comporta...')
 
-        tempo_equalizacao = time() + 5
+        tempo_equalizacao = time() + 15
+        self.dict['TDA'][f'cp{self.id}_pressao_equalizada'] = True
         while time() <= tempo_equalizacao:
+            self.dict['TDA']['uh_disponivel'] = True
+            self.dict['TDA'][f'cp{self.id}_pressao_equalizada'] = False
+
             if self.dict['TDA'][f'cp{self.id}_trip']:
                 print(f'[UG{self.id}-CP{self.id}] Não foi possível Equalizar a Unidade Hidráulica! Fechando Comporta...')
                 self.dict['TDA'][f'cp{self.id}_thread_fechada'] = True
                 self.dict['TDA'][f'cp{self.id}_trip'] = False
+                self.dict['TDA']['uh_disponivel'] = True
                 return
 
         print(f'[UG{self.id}-CP{self.id}] A Unidade foi Equalizada, Permissão para Abrir comporta ativada!')
+        self.dict['TDA']['uh_disponivel'] = True
+        self.dict['TDA'][f'cp{self.id}_pressao_equalizada'] = True
         self.dict['TDA'][f'cp{self.id}_permissao_abertura'] = True
+        self.dict['TDA'][f'cp{self.id}_aguardando_abertura'] = True
+    

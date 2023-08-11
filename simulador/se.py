@@ -56,11 +56,6 @@ class Se:
             self.resetar_se()
 
     def atualizar_modbus(self) -> "None":
-        DB.set_words(MB['SE']['LT_P'], [round(self.dict['SE']['potencia_se'])])
-        DB.set_words(MB['SE']['LT_VAB'], [round(self.dict['SE']['tensao_linha'] / 1000)])
-        DB.set_words(MB['SE']['LT_VBC'], [round(self.dict['SE']['tensao_linha'] / 1000)])
-        DB.set_words(MB['SE']['LT_VCA'], [round(self.dict['SE']['tensao_linha'] / 1000)])
-
         if self.dict['SE']['dj_mola_carregada'] and not self.b_mola:
             self.b_mola = True
             ESC.escrever_bit(MB['SE']['DJL_MOLA_CARREGADA'], valor=1)
