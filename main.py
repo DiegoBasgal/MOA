@@ -37,38 +37,6 @@ if not os.path.exists(os.path.join(os.path.dirname(__file__), "logs")):
 fileConfig("/opt/operacao-autonoma/logger_cfg.ini")
 logger = logging.getLogger("logger")
 
-preparar_sim = True
-
-if preparar_sim:
-    for n, d in REG_CLP.items():
-        if n == "TDA":
-            for n, l in d.items():
-                if re.search('^CP1', n):
-                    if isinstance(l, list):
-                        l[0] += 1000
-                    else:
-                        l += 1000
-                elif re.search('^CP2', n):
-                    if isinstance(l, list):
-                        l[0] += 2000
-                    else:
-                        l += 2000
-        elif n == "UG1":
-            for l in d.values():
-                if isinstance(l, list):
-                    l[0] += 10000
-                else:
-                    l += 10000
-        elif n == "UG2":
-            for l in d.values():
-                if isinstance(l, list):
-                    l[0] += 20000
-                else:
-                    l += 20000
-        else:
-            pass
-
-
 if __name__ == "__main__":
 
     if len(sys.argv) > 1:

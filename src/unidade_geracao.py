@@ -1181,7 +1181,7 @@ class UnidadeGeracao:
         self.condicionador_pressao_turbina_ug = c.CondicionadorExponencialReverso(self.leitura_pressao_turbina, CONDIC_INDISPONIBILIZAR, 1.6, 1.3)
         self.condicionadores_atenuadores.append(self.condicionador_pressao_turbina_ug)
 
-
+        return
         # CONDICIONADORES ESSENCIAIS - OUTROS
         # Botões
         self.leitura_bt_emerg_atuado = LeituraModbusBit(self.clp[f"UG{self.id}"], REG_CLP[f"UG{self.id}"]["BT_EMERGENCIA_ATUADO"], invertido=True, descricao=f"[UG{self.id}] Botão Emergência Atuado")
