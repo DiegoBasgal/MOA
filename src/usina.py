@@ -64,10 +64,10 @@ class Usina:
 
         self.__split1: "bool" = False
         self.__split2: "bool" = False
+        self.__pid_inicial: "int" = -1
 
         # ATRIBUIÇÃO DE VARIÁVEIS PROTEGIDAS
 
-        self._pid_inicial: "int" = -1
         self._tentativas_normalizar: "int" = 0
 
         self._pot_alvo_anterior: "float" = -1
@@ -187,17 +187,18 @@ class Usina:
         senão, passa a chamar as funções de reset geral.
         """
 
+        logger.debug("")
         logger.debug("[USN] Normalizando...")
         logger.debug(f"[USN] Última tentativa de normalização:   {self.ultima_tentativa_norm.strftime('%d-%m-%Y %H:%M:%S')}")
-        logger.debug(f"[USN] [SE]  Tensão Subestação:             VAB -> \"{se.Subestacao.tensao_vab.valor:2.1f} kV\" | VBC -> \"{se.Subestacao.tensao_vbc.valor:2.1f} kV\" | VCA -> \"{se.Subestacao.tensao_vca.valor:2.1f} kV\"")
-        logger.debug(f"[USN] [BAY] Tensão BAY:                    VAB -> \"{bay.Bay.tensao_vab.valor:2.1f} kV\" | VBC -> \"{bay.Bay.tensao_vbc.valor:2.1f} kV\" | VCA -> \"{bay.Bay.tensao_vca.valor:2.1f} kV\"")
+        logger.debug(f"[USN] [SE]  Tensão Subestação:            VAB -> \"{se.Subestacao.tensao_vab.valor:2.1f} kV\" | VBC -> \"{se.Subestacao.tensao_vbc.valor:2.1f} kV\" | VCA -> \"{se.Subestacao.tensao_vca.valor:2.1f} kV\"")
+        logger.debug(f"[USN] [BAY] Tensão BAY:                   VAB -> \"{bay.Bay.tensao_vab.valor:2.1f} kV\" | VBC -> \"{bay.Bay.tensao_vbc.valor:2.1f} kV\" | VCA -> \"{bay.Bay.tensao_vca.valor:2.1f} kV\"")
+        logger.debug("")
 
         if not bay.Bay.fechar_dj_linha():
             return NORM_USN_DJBAY_ABERTO
 
         if not se.Subestacao.dj_linha_se.valor:
-            logger.info("[USN] [SE] Enviando comando de fechamento do Disjuntor da Subestação")
-            sleep(3)
+            sleep(2)
 
             if not se.Subestacao.fechar_dj_linha():
                 logger.warning("[USN] [SE] Não foi possível realizar o fechameto do Disjuntor da Subestação")
@@ -353,15 +354,15 @@ class Usina:
         """
 
         logger.debug(f"[TDA] NÍVEL -> Alvo:                      {self.cfg['nv_alvo']:0.3f}")
-        logger.debug(f"[TDA]          Leitura:                   {tda.TomadaAgua.nivel_montante_anterior:0.3f}")
+        logger.debug(f"[TDA]          Leitura:                   {tda.TomadaAgua.nivel_montante.valor:0.3f}")
 
         self.controle_p = self.cfg["kp"] * tda.TomadaAgua.erro_nivel
 
-        if self._pid_inicial == -1:
-            self.controle_i = max(min(self.controle_ie - self.controle_p, 0,8), 0)
-            self._pid_inicial = 0
+        if self.__pid_inicial == -1:
+            self.controle_i = max(min(self.controle_ie - self.controle_p, 0.9), 0)
+            self.__pid_inicial = 0
         else:
-            self.controle_i = max(min((self.cfg["ki"] * tda.TomadaAgua.erro_nivel) + self.controle_i, 0.8), 0)
+            self.controle_i = max(min((self.cfg["ki"] * tda.TomadaAgua.erro_nivel) + self.controle_i, 0.9), 0)
             self.controle_d = self.cfg["kd"] * (tda.TomadaAgua.erro_nivel - tda.TomadaAgua.erro_nivel_anterior)
 
         saida_pid = (self.controle_p + self.controle_i + min(max(-0.3, self.controle_d), 0.3))
@@ -417,7 +418,7 @@ class Usina:
 
         self._pot_alvo_anterior = pot_alvo
 
-        logger.debug(f"[USN] Potência alvo após ajuste:           {pot_alvo:0.3f}")
+        logger.debug(f"[USN] Potência alvo após ajuste:          {pot_alvo:0.3f}")
 
         self.distribuir_potencia(pot_alvo)
 
@@ -430,11 +431,10 @@ class Usina:
         """
 
         ugs: "list[UnidadeGeracao]" = self.verificar_ugs_disponiveis()
-        if ugs is None:
-            logger.warning("[USN] Sem UGs disponíveis para realizar a distribuição de potência.")
-            return
 
-        logger.debug(f"[USN] UG{[ug.id for ug in ugs]}")
+        logger.debug("")
+        logger.debug(f"[USN] Ordem das UGs (Prioridade):         {[ug.id for ug in ugs]}")
+        logger.debug("")
 
         ajuste_manual = 0
 
@@ -444,7 +444,10 @@ class Usina:
             else:
                 self.pot_disp += ug.setpoint_maximo
 
-        logger.debug(f"[USN] Distribuindo: {pot_alvo - ajuste_manual:0.3f}")
+        if ugs is None or not len(ugs):
+            return
+
+        logger.debug(f"[USN] Distribuindo:                       {pot_alvo - ajuste_manual:0.3f}")
         sp = (pot_alvo - ajuste_manual) / self.cfg["pot_maxima_usina"]
 
         self.__split1 = True if sp > (0) else self.__split1
@@ -453,39 +456,60 @@ class Usina:
         self.__split2 = False if sp < (0.5) else self.__split2
         self.__split1 = False if sp < (self.cfg["pot_minima"] / self.cfg["pot_maxima_usina"]) else self.__split1
 
+        logger.debug(f"[USN] SP Geral:                           {sp}")
+
         if len(ugs) == 2:
             if self.__split2:
-                logger.debug("[USN] Split 2")
-                ugs[0].setpoint = sp * self.cfg[f"pot_maxima_ug{ugs[0].id}"]
-                ugs[1].setpoint = sp * self.cfg[f"pot_maxima_ug{ugs[1].id}"]
+                logger.debug("[USN] Split:                              2")
+                logger.debug("")
+                ugs[0].setpoint = sp * ugs[0].setpoint_maximo
+                ugs[1].setpoint = sp * ugs[1].setpoint_maximo
+                logger.debug(f"[UG{ugs[0].id}] SP    <-                            {int(ugs[0].setpoint)}")
+                logger.debug(f"[UG{ugs[1].id}] SP    <-                            {int(ugs[1].setpoint)}")
 
             elif self.__split1:
-                logger.debug("[USN] Split 1")
-                ugs[0].setpoint = (sp * 2 / 1) * self.cfg[f"pot_maxima_ug{ugs[0].id}"]
+                logger.debug("[USN] Split:                              2 -> \"1B\"")
+                logger.debug("")
+                sp = sp * 2 / 1
+                ugs[0].setpoint = sp * ugs[0].setpoint_maximo
+                ugs[1].setpoint = 0
+                logger.debug(f"[UG{ugs[0].id}] SP    <-                            {int(ugs[0].setpoint)}")
+                logger.debug(f"[UG{ugs[1].id}] SP    <-                            {int(ugs[1].setpoint)}")
+
+            else:
+                logger.debug("")
+
+                ugs[0].setpoint = 0
                 ugs[1].setpoint = 0
 
-        elif len(ugs) == 1:
-            logger.debug("[USN] Split 1B")
-            ugs[0].setpoint = (sp * 2 / 1) * self.cfg[f"pot_maxima_ug{ugs[0].id}"] if self.__split1 or self.__split2 else ...
+                logger.debug(f"[UG{ugs[0].id}] SP    <-                            {int(ugs[0].setpoint)}")
+                logger.debug(f"[UG{ugs[1].id}] SP    <-                            {int(ugs[1].setpoint)}")
 
-        else:
-            for ug in ugs:
-                ug.setpoint = 0
+
+        elif len(ugs) == 1:
+            if self.__split1 or self.__split2:
+                logger.debug("[USN] Split:                              1")
+                logger.debug("")
+                sp = sp * 2 / 1
+                ugs[0].setpoint = sp * ugs[0].setpoint_maximo
+                logger.debug(f"[UG{ugs[0].id}] SP    <-                            {int(ugs[0].setpoint)}")
+
+            else:
+                logger.debug("")
+
+                ugs[0].setpoint = 0
+
+                logger.debug(f"[UG{ugs[0].id}] SP    <-                            {int(ugs[0].setpoint)}")
 
     def verificar_ugs_disponiveis(self) -> "list[UnidadeGeracao]":
         """
         Função para verificar leituras/condições específicas e determinar a Prioridade das Unidades.
         """
-
-        ls = []
-        [ls.append(ug) for ug in self.ugs if ug.disponivel and not ug.etapa_atual == UG_PARANDO]
-        logger.debug("")
+        ls = [ug for ug in self.ugs if ug.disponivel and not ug.etapa == UG_PARANDO]
 
         if self.modo_prioridade_ugs == MODO_ESCOLHA_MANUAL:
-            logger.debug("[USN] UGs disponíveis em ordem (prioridade):")
             return sorted(ls, key=lambda y: (-1 * y.leitura_potencia, -1 * y.setpoint, y.prioridade))
         else:
-            logger.debug("[USN] UGs disponíveis em ordem (horas-máquina):")
             return sorted(ls, key=lambda y: (y.leitura_horimetro, -1 * y.leitura_potencia, -1 * y.setpoint))
 
 
@@ -516,20 +540,22 @@ class Usina:
         """
 
         try:
-            if int(parametros["emergencia_acionada"]) == 1:
+            if int(parametros["emergencia_acionada"]) == 1 and not self.bd_emergencia:
                 self.bd_emergencia = True
                 logger.debug("[USN] Emergência acionada!")
-            else:
+
+            elif int(parametros["emergencia_acionada"]) == 0 and self.bd_emergencia:
                 self.bd_emergencia = False
 
-            if int(parametros["modo_autonomo"]) == 1:
+            if int(parametros["modo_autonomo"]) == 1 and not self.modo_autonomo:
                 self.modo_autonomo = True
                 logger.debug(f"[USN] Modo autônomo:                      \"{'Ativado'}\"")
-            else:
+
+            elif int(parametros["modo_autonomo"]) == 0 and self.modo_autonomo:
                 self.modo_autonomo = False
                 logger.debug(f"[USN] Modo autônomo:                      \"{'Desativado'}\"")
 
-            if not self.modo_prioridade_ugs == int(parametros["modo_de_escolha_das_ugs"]):
+            if self.modo_prioridade_ugs != int(parametros["modo_de_escolha_das_ugs"]):
                 self.modo_prioridade_ugs = int(parametros["modo_de_escolha_das_ugs"])
                 logger.info(f"[USN] Modo de prioridade das UGs:         \"{UG_STR_DCT_PRIORIDADE[self.modo_prioridade_ugs]}\"")
 
@@ -557,7 +583,7 @@ class Usina:
             self.cfg["pot_maxima_usina"] = float(parametros["pot_nominal_ug"]) * 2
             self.cfg["margem_pot_critica"] = float(parametros["margem_pot_critica"])
 
-            with open(os.path.join(os.path.dirname(__file__), 'config.json'), 'w') as file:
+            with open(os.path.join(os.path.dirname("/opt/operacao-autonoma/src/dicionarios/"), 'cfg.json'), 'w') as file:
                 json.dump(self.cfg, file)
 
         except Exception:
@@ -591,7 +617,7 @@ class Usina:
             self.bd.update_debug([
                 time(),
                 1 if self.modo_autonomo else 0,
-                tda.TomadaAgua.nivel_montante_anterior,
+                tda.TomadaAgua.nivel_montante.valor,
                 tda.TomadaAgua.erro_nivel,
                 self.ug1.setpoint,
                 self.ug1.leitura_potencia,

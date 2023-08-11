@@ -170,7 +170,7 @@ class StateDisponivel(State):
         de etapas.
         """
 
-        self.parent.verificar_limites()
+        # self.parent.verificar_limites()
         flag = self.parent.verificar_condicionadores()
 
         if flag == CONDIC_INDISPONIBILIZAR:

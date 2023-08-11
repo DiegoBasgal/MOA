@@ -5,6 +5,8 @@ __description__ = "Este módulo corresponde a implementação da operação das 
 import logging
 import traceback
 
+import src.tomada_agua as tda
+
 from time import time
 
 from src.funcoes.leitura import *
@@ -45,7 +47,7 @@ class Comporta:
             self.clp["TDA"],
             REG_CLP["TDA"][f"CP{self.id}_REMOTO"],
         )
-        self.__operando = LeituraModbus(
+        self.__operando = LeituraModbusBit(
             self.clp["TDA"],
             REG_CLP["TDA"][f"CP{self.id}_OPERANDO"],
         )
@@ -115,7 +117,7 @@ class Comporta:
                 return 99
 
         except Exception:
-            logger.error(f"[TDA][CP{self.id}] Houve um erro ao verificar a Etapa da Comporta.")
+            logger.error(f"[TDA] [CP{self.id}] Houve um erro ao verificar a Etapa da Comporta.")
             return 99
 
     @property
@@ -140,8 +142,8 @@ class Comporta:
             return res
 
         except Exception:
-            logger.error(f"[TDA][CP{self.id}] Houve um erro ao realizar o Reset de Emergência da Comporta {self.id}.")
-            logger.debug(f"[TDA][CP{self.id}] Traceback: {traceback.format_exc()}")
+            logger.error(f"[TDA] [CP{self.id}] Houve um erro ao realizar o Reset de Emergência da Comporta {self.id}.")
+            logger.debug(f"[TDA] [CP{self.id}] Traceback: {traceback.format_exc()}")
             return False
 
     def abrir(self) -> "None":
@@ -154,17 +156,22 @@ class Comporta:
 
         try:
             if self.etapa == CP_ABERTA:
-                logger.debug(f"[TDA][CP{self.id}] A comporta {self.id} já está aberta")
+                logger.debug("")
+                logger.debug(f"[TDA] [CP{self.id}]    A comporta {self.id} já está Aberta")
 
             elif self.verificar_condicoes():
                 if self.pressao_equalizada.valor and self.aguardando_cmd_abertura.valor:
-                    logger.debug(f"[TDA][CP{self.id}] Enviando comando de Abertura para a Comporta {self.id}")
+                    logger.debug("")
+                    logger.debug(f"[TDA] [CP{self.id}]    Enviando comando:          \"ABRIR\"")
 
                     EMB.escrever_bit(self.clp["TDA"], REG_CLP["TDA"][f"CP{self.id}_CMD_ABERTURA_TOTAL"], valor=1)
+            else:
+                logger.debug("")
+                logger.debug(f"[TDA] [CP{self.id}]    Não foi possível enviar o Comando de Abertura para a Comporta!")
 
         except Exception:
-            logger.error(f"[TDA][CP{self.id}] Houve um erro ao acionar o comando de Abertura da Comporta {self.id}.")
-            logger.debug(f"[TDA][CP{self.id}] Traceback: {traceback.format_exc()}")
+            logger.error(f"[TDA] [CP{self.id}] Houve um erro ao acionar o comando de Abertura da Comporta {self.id}.")
+            logger.debug(f"[TDA] [CP{self.id}] Traceback: {traceback.format_exc()}")
 
     def fechar(self) -> "None":
         """
@@ -175,15 +182,17 @@ class Comporta:
 
         try:
             if self.etapa == CP_FECHADA:
-                logger.debug(f"[TDA][CP{self.id}] A Comporta {self.id} já está Fechada")
+                logger.debug("")
+                logger.debug(f"[TDA] [CP{self.id}]    A Comporta {self.id} já está Fechada")
 
             else:
-                logger.debug(f"[TDA][CP{self.id}] Enviando comando de Fechamento para a Comporta {self.id}")
+                logger.debug("")
+                logger.debug(f"[TDA] [CP{self.id}]    Enviando comando:          \"FECHAR\"")
                 EMB.escrever_bit(self.clp["TDA"], REG_CLP["TDA"][f"CP{self.id}_CMD_FECHAMENTO"], valor=1)
 
         except Exception:
-            logger.error(f"[TDA][CP{self.id}] Houve um erro acionar o comando de Fechamento da Comporta {self.id}.")
-            logger.debug(f"[TDA][CP{self.id}] Traceback: {traceback.format_exc()}")
+            logger.error(f"[TDA] [CP{self.id}] Houve um erro acionar o comando de Fechamento da Comporta {self.id}.")
+            logger.debug(f"[TDA] [CP{self.id}] Traceback: {traceback.format_exc()}")
 
     def operar_cracking(self) -> "None":
         """
@@ -196,16 +205,18 @@ class Comporta:
 
         try:
             if self.etapa == CP_CRACKING:
-                logger.debug(f"[TDA][CP{self.id}] A Comporta {self.id} já está em Cracking")
+                logger.debug("")
+                logger.debug(f"[TDA] [CP{self.id}]    A Comporta {self.id} já está em Cracking")
 
             elif self.verificar_condicoes():
-                logger.debug(f"[TDA][CP{self.id}] Enviando comando de Cracking para a Comporta {self.id}")
+                logger.debug("")
+                logger.debug(f"[TDA] [CP{self.id}]    Enviando comando:          \"CRACKING\"")
 
                 EMB.escrever_bit(self.clp["TDA"], REG_CLP["TDA"][f"CP{self.id}_CMD_ABERTURA_CRACKING"], valor=1)
 
         except Exception:
-            logger.error(f"[TDA][CP{self.id}] Houve um erro ao realizar a Operação de Cracking da Comporta {self.id}.")
-            logger.debug(f"[TDA][CP{self.id}] Traceback: {traceback.format_exc()}")
+            logger.error(f"[TDA] [CP{self.id}] Houve um erro ao realizar a Operação de Cracking da Comporta {self.id}.")
+            logger.debug(f"[TDA] [CP{self.id}] Traceback: {traceback.format_exc()}")
 
     def aguardar_pressao_uh(self) -> "None":
         """
@@ -214,19 +225,19 @@ class Comporta:
         """
 
         try:
-            logger.debug(f"[TDA][CP{self.id}] Iniciando o timer para equilização da pressão da UH")
+            logger.debug(f"[TDA] [CP{self.id}]    Comando MOA:               \"Iniciar verificação de Equalização de Pressão UH\"")
 
             while time() < (time() + 120):
+                sleep(1)
                 if self.pressao_equalizada.valor:
-                    logger.debug(f"[TDA][CP{self.id}] Pressão equalizada, saindo do timer")
                     return
 
-            logger.warning(f"[TDA][CP{self.id}] Estourou o timer de equalização de pressão da unidade hidráulica")
+            logger.warning(f"[TDA] [CP{self.id}]    Estourou o tempo de Equalização de Pressão da UH")
             self.borda_pressao = True
 
         except Exception:
-            logger.error(f"[TDA][CP{self.id}] Houve um erro ao verificar a Pressão da Unidade Hidráulica das Comportas.")
-            logger.debug(f"[TDA][CP{self.id}] Traceback: {traceback.format_exc()}")
+            logger.error(f"[TDA] [CP{self.id}] Houve um erro ao verificar a Pressão da Unidade Hidráulica das Comportas.")
+            logger.debug(f"[TDA] [CP{self.id}] Traceback: {traceback.format_exc()}")
 
     def verificar_condicoes(self) -> "bool":
         """
@@ -250,31 +261,31 @@ class Comporta:
 
         try:
             if self.bloqueio or self.permissao:
-                logger.debug(f"[TDA][CP{self.id}] Não há condições para operar a Comporta {self.id}")
+                logger.debug(f"[TDA] [CP{self.id}] Não há condições para operar a Comporta {self.id}")
 
-                logger.debug(f"[TDA][CP{self.id}] A Comporta {self.id} ainda possui \"Bloqueios\" ativos") if self.bloqueio else None
-                logger.debug(f"[TDA][CP{self.id}] A Comporta {self.id} ainda possui \"Permissivos\" inválidos") if self.permissao else None
+                logger.debug(f"[TDA] [CP{self.id}] A Comporta {self.id} ainda possui \"Bloqueios\" ativos") if self.bloqueio else None
+                logger.debug(f"[TDA] [CP{self.id}] A Comporta {self.id} ainda possui \"Permissivos\" inválidos") if self.permissao else None
 
-                if self.status_valvula_borboleta != 0 or self.status_limpa_grades != 0 or self.comporta_adjacente.operando in (2, 4, 32):
-                    logger.debug(f"[TDA][CP{self.id}] O Limpa Grades está em operação") if self.status_limpa_grades != 0 else None
-                    logger.debug(f"[TDA][CP{self.id}] A Válvula Borboleta está em operação") if self.status_valvula_borboleta.valor != 0 else None
+                if tda.TomadaAgua.status_valvula_borboleta.valor or tda.TomadaAgua.status_limpa_grades.valor or self.comporta_adjacente.operando in (2, 4, 32):
+                    logger.debug(f"[TDA] [CP{self.id}] O Limpa Grades está em operação") if tda.TomadaAgua.status_limpa_grades != 0 else None
+                    logger.debug(f"[TDA] [CP{self.id}] A Válvula Borboleta está em operação") if tda.TomadaAgua.status_valvula_borboleta.valor != 0 else None
 
-                    logger.debug(f"[TDA][CP{self.id}] A Comporta {self.comporta_adjacente.id} está Repondo") if self.comporta_adjacente.operando == 2 else None
-                    logger.debug(f"[TDA][CP{self.id}] A Comporta {self.comporta_adjacente.id} está Abrindo") if self.comporta_adjacente.operando == 4 else None
-                    logger.debug(f"[TDA][CP{self.id}] A Comporta {self.comporta_adjacente.id} está em Cracking") if self.comporta_adjacente.operando == 32 else None
+                    logger.debug(f"[TDA] [CP{self.id}] A Comporta {self.comporta_adjacente.id} está Repondo") if self.comporta_adjacente.operando == 2 else None
+                    logger.debug(f"[TDA] [CP{self.id}] A Comporta {self.comporta_adjacente.id} está Abrindo") if self.comporta_adjacente.operando == 4 else None
+                    logger.debug(f"[TDA] [CP{self.id}] A Comporta {self.comporta_adjacente.id} está em Cracking") if self.comporta_adjacente.operando == 32 else None
                     return False
 
                 else:
                     return False
 
-            elif not self.status_unidade_hidraulica.valor:
-                logger.debug(f"[TDA][CP{self.id}] A Unidade Hidráulica está Indisponível")
+            elif not tda.TomadaAgua.status_unidade_hidraulica.valor:
+                logger.debug(f"[TDA] [CP{self.id}] A Unidade Hidráulica está Indisponível")
                 return False
 
             else:
                 return True
 
         except Exception:
-            logger.error(f"[TDA][CP{self.id}] Houve um erro ao verificar as Pré-condições de Operação da Comporta {self.id}.")
-            logger.debug(f"[TDA][CP{self.id}] Traceback: {traceback.format_exc()}")
+            logger.error(f"[TDA] [CP{self.id}] Houve um erro ao verificar as Pré-condições de Operação da Comporta {self.id}.")
+            logger.debug(f"[TDA] [CP{self.id}] Traceback: {traceback.format_exc()}")
             return False

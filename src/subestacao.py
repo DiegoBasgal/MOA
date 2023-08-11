@@ -92,20 +92,26 @@ class Subestacao:
 
         try:
             if not cls.dj_linha_se.valor:
+                logger.info("[SE]  O Disjuntor da Subestação está aberto!")
                 if cls.verificar_dj_linha():
+                    logger.debug(f"[SE]  Enviando comando:                   \"FECHAR DISJUNTOR\"")
+                    logger.debug("")
                     EMB.escrever_bit(cls.clp["SA"], REG_CLP["SE"]["DJL_CMD_FECHAR"],  valor=1)
                     return DJL_FECHAMENTO_OK
 
                 elif cls.dj_bay_aberto:
-                    logger.info("[SE]  Foi identificado que o Disjuntor do BAY está aberto. Adicionando condição para fechamento...")
+                    logger.info("[SE]  Foi identificado que o Disjuntor do BAY está aberto.")
+                    logger.debug("")
                     return DJL_DJBAY_ABERTO
 
                 else:
-                    logger.warning("[SE]  Não foi possível realizar o fechamento do Disjuntor de Linha.")
+                    logger.warning("[SE]  Não foi possível realizar o fechamento do Disjuntor.")
+                    logger.debug("")
                     return DJL_FALHA_FECHAMENTO
 
             else:
                 logger.debug("[SE]  O Disjuntor de Linha já está fechado")
+                logger.debug("")
                 return DJL_FECHAMENTO_OK
 
         except Exception:
@@ -164,7 +170,7 @@ class Subestacao:
                 flags += 1
 
             logger.warning(f"[SE]  Foram identificadas \"{flags}\" condições de bloqueio ao realizar fechamento do Disjuntor. Favor normalizar.") \
-                if flags > 0 else logger.debug("[SE]  Condições de fechamento do Disjuntor de Linha OK! Fechando disjuntor...")
+                if flags > 0 else logger.debug("[SE]  Condições de Fechamento Validadas")
 
             return False if flags > 0 else True
 

@@ -385,7 +385,7 @@ REG_CLP = {
     },
 
     "TDA": {
-        "NV_MONTANTE":                                  3,
+        "NV_MONTANTE":                                  30,
         "NV_JUSANTE_CP1":                               36,
         "NV_JUSANTE_CP2":                               38,
         "NV_JUSANTE_GRADE_CP2_LER_FLH":                 32,
@@ -397,50 +397,50 @@ REG_CLP = {
         "CA_COM_TENSAO":                                [17, 11],
 
         "LG_FLH_ATUADA":                                [26, 15],
-        "LG_OPE_MANUAL":                                [28, 0],
+        "LG_OPE_MANUAL":                                [28 + 500, 0],
 
-        "VB_FECHANDO":                                  [23, 0],
+        "VB_FECHANDO":                                  [23 + 500, 0], # Alterar Simulador
         "VB_CMD_RST_FLH":                               [55, 0],
 
-        "UH_DISPONIVEL":                                [5, 1],
+        "UH_DISPONIVEL":                                [5 + 500, 1], # Alterar Simulador
         "UH_FLH_LIGAR_BOMBA":                           [5, 2],
         "UH_FILTRO_LIMPO":                              [17, 13],
 
-        "CP1_OPERANDO":                                 [1002, 0], # Alterar Simulador
-        "CP1_AGUARDANDO_CMD_ABERTURA":                  [2, 3],
-        "CP1_PRESSAO_EQUALIZADA":                       [2, 4],
+        "CP1_OPERANDO":                                 [2 + 1000, 0], # Alterar Simulador
+        "CP1_AGUARDANDO_CMD_ABERTURA":                  [2 + 1000, 3],
+        "CP1_PRESSAO_EQUALIZADA":                       [2 + 1000, 4],
 
         "CP1_CMD_REARME_FLH":                           [6, 0],
-        "CP1_CMD_ABERTURA_CRACKING":                    [1006, 1], # Alterar Simulador
-        "CP1_CMD_ABERTURA_TOTAL":                       [1006, 2], # Alterar Simulador
-        "CP1_CMD_FECHAMENTO":                           [1006, 3], # Alterar Simulador
-        "CP1_PERMISSIVOS_OK":                           [1006, 15], # Alterar Simulador
+        "CP1_CMD_ABERTURA_CRACKING":                    [6 + 1000, 1], # Alterar Simulador
+        "CP1_CMD_ABERTURA_TOTAL":                       [6 + 1000, 2], # Alterar Simulador
+        "CP1_CMD_FECHAMENTO":                           [6 + 1000, 3], # Alterar Simulador
+        "CP1_PERMISSIVOS_OK":                           [6 + 1000, 15], # Alterar Simulador
 
-        "CP1_BLQ_ATUADO":                               [8, 15],
+        "CP1_BLQ_ATUADO":                               [8 + 1000, 15],
 
-        "CP1_CRACKING":                                 [1016, 0], # Alterar Simulador
-        "CP1_REMOTO":                                   [1016, 6], # Alterar Simulador
+        "CP1_CRACKING":                                 [16 + 1000, 0], # Alterar Simulador
+        "CP1_REMOTO":                                   [16 + 1000, 6], # Alterar Simulador
 
-        "CP1_ABERTA":                                   [1017, 14], # Alterar Simulador
-        "CP1_FECHADA":                                  [1017, 15], # Alterar Simulador
+        "CP1_ABERTA":                                   [17 + 1000, 14], # Alterar Simulador
+        "CP1_FECHADA":                                  [17 + 1000, 15], # Alterar Simulador
 
-        "CP2_OPERANDO":                                 [2002, 0], # Alterar Simulador
-        "CP2_AGUARDANDO_CMD_ABERTURA":                  [2, 3],
-        "CP2_PRESSAO_EQUALIZADA":                       [2, 4],
+        "CP2_OPERANDO":                                 [2 + 2000, 0], # Alterar Simulador
+        "CP2_AGUARDANDO_CMD_ABERTURA":                  [2 + 2000, 3],
+        "CP2_PRESSAO_EQUALIZADA":                       [2 + 2000, 4],
 
-        "CP2_CMD_REARME_FLH":                           [6, 0],
-        "CP2_CMD_ABERTURA_CRACKING":                    [2006, 1], # Alterar Simulador
-        "CP2_CMD_ABERTURA_TOTAL":                       [2006, 2], # Alterar Simulador
-        "CP2_CMD_FECHAMENTO":                           [2006, 3], # Alterar Simulador
-        "CP2_PERMISSIVOS_OK":                           [2006, 15], # Alterar Simulador
+        "CP2_CMD_REARME_FLH":                           [6 + 2000, 0],
+        "CP2_CMD_ABERTURA_CRACKING":                    [6 + 2000, 1], # Alterar Simulador
+        "CP2_CMD_ABERTURA_TOTAL":                       [6 + 2000, 2], # Alterar Simulador
+        "CP2_CMD_FECHAMENTO":                           [6 + 2000, 3], # Alterar Simulador
+        "CP2_PERMISSIVOS_OK":                           [6 + 2000, 15], # Alterar Simulador
 
-        "CP2_BLQ_ATUADO":                               [8, 15],
+        "CP2_BLQ_ATUADO":                               [8 + 2000, 15],
 
-        "CP2_CRACKING":                                 [2016, 0],  # Alterar Simulador
-        "CP2_REMOTO":                                   [2016, 6], # Alterar Simulador
+        "CP2_CRACKING":                                 [16 + 2000, 0],  # Alterar Simulador
+        "CP2_REMOTO":                                   [16 + 2000, 6], # Alterar Simulador
 
-        "CP2_ABERTA":                                   [2017, 14], # Alterar Simulador
-        "CP2_FECHADA":                                  [2017, 15], # Alterar Simulador
+        "CP2_ABERTA":                                   [17 + 2000, 14], # Alterar Simulador
+        "CP2_FECHADA":                                  [17 + 2000, 15], # Alterar Simulador
     },
 
     "UG1": {
@@ -458,8 +458,8 @@ REG_CLP = {
         "GERADOR_NUCL_ESTAT_TMP":                       10072,
         "ENTRADA_TURBINA_PRESSAO":                      10084,
         "GERADOR_SAIDA_AR_TRP_TMP":                     10090,
-        "P":                                            10130,
         "HORIMETRO":                                    10108,
+        "P":                                            10130,
 
 
         # UHRV
@@ -634,7 +634,7 @@ REG_CLP = {
         "PARADA_BLQ_ABERTURA_DJ":                       [148, 11],
         "PARADA_CMD_DESABILITA_UHLM":                   [10148, 15],  # Alterar Simulador
         # Partida
-        "PARTIDA_CMD_SINCRONISMO":                      [100148, 10] , # Alterar Simulador
+        "PARTIDA_CMD_SINCRONISMO":                      [10148, 10] , # Alterar Simulador
 
 
         # UHRV
@@ -645,13 +645,14 @@ REG_CLP = {
         ## Comunicação RTV
 
         # RV
-        "RV_ESTADO_OPERACAO":                           21,
+        "RV_ESTADO_OPERACAO":                           21 + 10000,
+        "RV_ESTADO_OPERACAO_2":                         999 + 10000,
 
         "RV_SAIDAS_DIGITAIS":                           26,
         "RV_RELE_TRP_NAO_ATUADO":                       [26, 0],
         "RV_RELE_ALM_ATUADO":                           [26, 1],
 
-        "RV_SETPOT_POT_ATIVA_PU":                       30,
+        "RV_SETPOT_POT_ATIVA_PU":                       30 + 10000,
 
         "RT_RELE_TRP_NAO_ATUADO":                       [31, 0],
 
@@ -742,8 +743,8 @@ REG_CLP = {
         "GERADOR_NUCL_ESTAT_TMP":                       20072,
         "ENTRADA_TURBINA_PRESSAO":                      20084,
         "GERADOR_SAIDA_AR_TRP_TMP":                     20090,
-        "P":                                            20130,
         "HORIMETRO":                                    20108,
+        "P":                                            20130,
 
 
         # UHRV
@@ -929,13 +930,14 @@ REG_CLP = {
         ## Comunicação RTV
 
         # RV
-        "RV_ESTADO_OPERACAO":                           21,
+        "RV_ESTADO_OPERACAO":                           21 + 20000,
+        "RV_ESTADO_OPERACAO_2":                         999 + 20000,
 
         "RV_SAIDAS_DIGITAIS":                           26,
         "RV_RELE_TRP_NAO_ATUADO":                       [26, 0],
         "RV_RELE_ALM_ATUADO":                           [26, 1],
 
-        "RV_SETPOT_POT_ATIVA_PU":                       30,
+        "RV_SETPOT_POT_ATIVA_PU":                       30 + 20000,
 
         "RT_RELE_TRP_NAO_ATUADO":                       [31, 0],
 

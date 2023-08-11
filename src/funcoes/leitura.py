@@ -46,11 +46,15 @@ class LeituraModbus:
 
         try:
             if self.__op == 3:
+                self.__client.open()
                 ler = self.__client.read_holding_registers(int(self.__registrador))[0]
+                self.__client.close()
                 return ler
 
             elif self.__op == 4:
+                self.__client.open()
                 ler = self.__client.read_input_registers(self.__registrador)[0]
+                self.__client.close()
                 return ler
 
         except Exception:
@@ -80,7 +84,9 @@ class LeituraModbusBit(LeituraModbus):
         # PROPRIEDADE -> Retorna Valor Bit em booleano ModBus.
 
         try:
+            self.__client.open()
             raw = self.__client.read_holding_registers(int(self.__reg), 2)
+            self.__client.close()
             dec_1 = BPD.fromRegisters(raw, byteorder=Endian.Big, wordorder=Endian.Little)
             dec_2 = BPD.fromRegisters(raw, byteorder=Endian.Big, wordorder=Endian.Little)
 
@@ -100,26 +106,31 @@ class LeituraModbusBit(LeituraModbus):
 
 
 class LeituraModbusFloat(LeituraModbus):
-    def __init__(self, client: "ModbusClient"=None, registrador: "int"=None, op: "int"=3, descricao: "str"=None):
-        super().__init__(client, registrador, op, descricao)
+    def __init__(self, client: "ModbusClient"=None, registrador: "int"=None, descricao: "str"=None):
+        super().__init__(client, registrador, descricao)
 
         # ATRIBUIÇÃO DE VAIRÁVEIS PRIVADAS
 
-        self.__reg = registrador[0] if isinstance(registrador, list) else registrador
+        self.__client = client
+        self.__reg = registrador
 
     @property
     def valor(self) -> "float":
         # PROPRIEDADE -> Retorna o valor tradado de leitura em Float.
 
         try:
-            raw = self.__client.read_holding_registers(self.__reg, 2)
+            self.__client.open()
+            raw = self.__client.read_holding_registers(self.__reg + 1, 2)
+            self.__client.close()
+            print(f'Raw: {raw}')
+            print('')
             dec = BPD.fromRegisters(raw, byteorder=Endian.Big, wordorder=Endian.Little)
 
             return dec.decode_32bit_float()
 
         except Exception:
+            print(f"{traceback.format_exc()}")
             logger.error(f"[LEI] Houve um erro ao realizar a Leitura de valores Float do registrador: {self.__reg}.")
-            logger.debug(traceback.format_exc())
             sleep(1)
             return 0
 
