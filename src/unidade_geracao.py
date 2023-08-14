@@ -49,9 +49,14 @@ class UnidadeGeracao:
             int(REG_CLP[f"UG{self.id}"]["P"]),
             descricao=f"[UG{self.id}] Leitura Potência"
         )
-        self.__leitura_etapa = LeituraModbus(
+        self.__leitura_etapa_atual = LeituraModbus(
             self.clp[f"UG{self.id}"],
             REG_CLP[f"UG{self.id}"]["RV_ESTADO_OPERACAO"],
+            descricao=f"[UG{self.id}] Leitura Etapa"
+        )
+        self.__leitura_etapa_alvo = LeituraModbus(
+            self.clp[f"UG{self.id}"],
+            REG_CLP[f"UG{self.id}"]["RV_ESTADO_OPERACAO_2"],
             descricao=f"[UG{self.id}] Leitura Etapa"
         )
         self.__leitura_horimetro = LeituraModbus(
@@ -67,6 +72,7 @@ class UnidadeGeracao:
         self._setpoint: "int" = 0
         self._prioridade: "int" = 0
         self._codigo_state: "int" = 0
+        self._ultima_etapa_alvo: "int" = 0
         self._ultima_etapa_atual: "int" = 0
         self._tentativas_normalizacao: "int" = 0
 
@@ -143,22 +149,71 @@ class UnidadeGeracao:
 
     @property
     def etapa_atual(self) -> "int":
-        # PROPRIEDADE -> Retorna a etapa atual da Unidade.
-
         try:
-            leitura = self.__leitura_etapa.valor
-
-            if leitura > 0:
-                self._ultima_etapa_atual = leitura
-                return leitura
-
-            else:
-                return self._ultima_etapa_atual
+            self._etapa_atual = self.__leitura_etapa_atual.valor
+            self._ultima_etapa_atual = self._etapa_atual
+            return self._etapa_atual
 
         except Exception:
-            logger.error(f"[UG{self.id}] Houve um erro na leitura de etapa atual da UG.")
-            logger.debug(f"[UG{self.id}] Traceback: {traceback.format_exc()}")
+            logger.error(f"[UG{self.id}] Erro na leitura de \"Etapa Atual\". Mantendo última etapa.")
             return self._ultima_etapa_atual
+
+    @property
+    def etapa_alvo(self) -> "int":
+        try:
+            self._etapa_alvo = self.__leitura_etapa_alvo.valor
+            return self._etapa_alvo
+
+        except Exception:
+            logger.error(f"[UG{self.id}] Erro na leitura de \"Etapa Alvo\". Mantendo última etapa.")
+            self._etapa_alvo = self._ultima_etapa_alvo
+            return self._etapa_alvo
+
+    @property
+    def etapa(self) -> "int":
+        try:
+            if self.etapa_atual == UG_PARADA and self.etapa_alvo == UG_PARADA:
+                self._ultima_etapa_alvo = self.etapa_alvo
+                return UG_PARADA
+
+            elif self.etapa_atual == UG_SINCRONIZADA and self.etapa_alvo == UG_SINCRONIZADA:
+                self._ultima_etapa_alvo = self.etapa_alvo
+                return UG_SINCRONIZADA
+
+            elif UG_PARADA < self.etapa_atual < UG_SINCRONIZADA and self.etapa_alvo == UG_PARADA:
+
+                if self._ultima_etapa_alvo != self.etapa_alvo:
+                    if self._ultima_etapa_alvo < self.etapa_alvo:
+                        self._ultima_etapa_alvo = self.etapa_alvo
+                        return UG_SINCRONIZANDO
+
+                    elif self._ultima_etapa_alvo > self.etapa_alvo:
+                        self._ultima_etapa_alvo = self.etapa_alvo
+                        return UG_PARANDO
+
+                else:
+                    self._ultima_etapa_alvo = self.etapa_alvo
+                    return UG_PARANDO
+
+            elif UG_PARADA < self.etapa_atual < UG_SINCRONIZADA and self.etapa_alvo == UG_SINCRONIZADA:
+                if self._ultima_etapa_alvo != self.etapa_alvo:
+                    if self._ultima_etapa_alvo > self.etapa_alvo:
+                        self._ultima_etapa_alvo = self.etapa_alvo
+                        return UG_PARANDO
+
+                    elif self._ultima_etapa_alvo < self.etapa_alvo:
+                        self._ultima_etapa_alvo = self.etapa_alvo
+                        return UG_SINCRONIZANDO
+
+                else:
+                    self._ultima_etapa_alvo = self.etapa_alvo
+                    return UG_SINCRONIZANDO
+
+        except Exception:
+            logger.error(f"[UG{self.id}] Houve um erro no controle de Etapas da Unidade. Mantendo Etapa anterior.")
+            logger.debug(traceback.format_exc())
+            return self._ultima_etapa_atual
+
 
 
     @property
@@ -354,7 +409,11 @@ class UnidadeGeracao:
         try:
             logger.debug("")
             logger.debug(f"[UG{self.id}] Step  -> Unidade:                   \"{UG_SM_STR_DCT[self.codigo_state]}\"")
-            logger.debug(f"[UG{self.id}]          Etapa atual:               \"{UG_STR_DCT_ETAPAS[self.etapa_atual]}\"")
+            logger.debug(f"[UG{self.id}]          Etapa:                     \"{UG_STR_DCT_ETAPAS[self.etapa]}\" (Atual: {self.etapa_atual} | Alvo: {self.etapa_alvo})")
+
+            if self.disponivel:
+                logger.debug(f"[UG{self.id}]          Leituras de Potência:")
+                logger.debug(f"[UG{self.id}]          - \"Ativa\":                 {self.leitura_potencia} kW")
 
             self.atualizar_modbus_moa()
             self.__next_state = self.__next_state.step()
@@ -369,7 +428,7 @@ class UnidadeGeracao:
         """
 
         try:
-            self.clp["MOA"].write_single_coil(REG_CLP["MOA"][f"OUT_ETAPA_UG{self.id}"], [self.etapa_atual])
+            self.clp["MOA"].write_single_coil(REG_CLP["MOA"][f"OUT_ETAPA_UG{self.id}"], [self.etapa])
             self.clp["MOA"].write_single_coil(REG_CLP["MOA"][f"OUT_STATE_UG{self.id}"], [self.codigo_state])
 
         except Exception:
@@ -382,7 +441,7 @@ class UnidadeGeracao:
         """
 
         try:
-            if self.etapa_atual == UG_PARADA:
+            if self.etapa == UG_PARADA:
                 logger.info(f"[UG{self.id}]          Enviando comando:          \"PARTIDA\"")
 
                 EMB.escrever_bit(self.clp[f"UG{self.id}"], REG_CLP[f"UG{self.id}"]["PASSOS_CMD_RST_FLH"], valor=1)
@@ -410,7 +469,7 @@ class UnidadeGeracao:
         """
 
         try:
-            if self.etapa_atual in (UG_SINCRONIZADA, UG_SINCRONIZANDO):
+            if self.etapa in (UG_SINCRONIZADA, UG_SINCRONIZANDO):
                 logger.info(f"[UG{self.id}]          Enviando comando:          \"PARADA\"")
 
                 EMB.escrever_bit(self.clp[f"UG{self.id}"], REG_CLP[f"UG{self.id}"]["PARADA_CMD_DESABILITA_UHLM"], valor=1)
@@ -443,7 +502,7 @@ class UnidadeGeracao:
                 res = EMB.escrever_bit(self.clp[f"UG{self.id}"], REG_CLP[f"UG{self.id}"]["86H_CMD_REARME_BLQ"], valor=1)
                 res = EMB.escrever_bit(self.clp[f"UG{self.id}"], REG_CLP[f"UG{self.id}"]["UHRV_CMD_REARME_FLH"], valor=1)
                 res = EMB.escrever_bit(self.clp[f"UG{self.id}"], REG_CLP[f"UG{self.id}"]["UHLM_CMD_REARME_FLH"], valor=1)
-                res = self.clp[f"UG{self.id}"].write_single_register(REG_CLP[f"UG{self.id}"]["RV_SETPOT_POT_ATIVA_PU"], self.setpoint)
+                res = self.clp[f"UG{self.id}"].write_single_register(REG_CLP[f"UG{self.id}"]["RV_SETPOT_POT_ATIVA_PU"], int(self.setpoint))
 
                 return res
 
@@ -594,7 +653,7 @@ class UnidadeGeracao:
 
         self.temporizar_partida = False
 
-        if self.etapa_atual == UG_PARADA:
+        if self.etapa == UG_PARADA:
             if tda.TomadaAgua.cp[f"CP{self.id}"].etapa in (CP_ABERTA, CP_CRACKING):
                 tda.TomadaAgua.cp[f"CP{self.id}"].fechar()
 
@@ -665,23 +724,27 @@ class UnidadeGeracao:
         de parada caso seja atribuído o setpoint 0 para a Unidade.
         """
 
-        if self.etapa_atual == UG_PARANDO:
+        if self.etapa == UG_PARANDO:
             if self.leitura_potencia < 300:
                 tda.TomadaAgua.cp[f"CP{self.id}"].fechar()
             else:
                 if self.setpoint >= self.__cfg["pot_minima"]:
                     self.controlar_comporta()
 
-        elif self.etapa_atual == UG_PARADA:
+        elif self.etapa == UG_PARADA:
             if self.setpoint >= self.__cfg["pot_minima"]:
                 self.controlar_comporta()
+
+            elif tda.TomadaAgua.cp[f"CP{self.id}"].etapa == CP_CRACKING and self.setpoint == 0:
+                tda.TomadaAgua.cp[f"CP{self.id}"].fechar()
+
             else:
                 self.enviar_setpoint(self.setpoint)
 
-        elif self.etapa_atual == UG_SINCRONIZANDO:
-            self.parar() if self.setpoint == 0 else None
+        elif self.etapa == UG_SINCRONIZANDO:
+            self.parar() if self.setpoint == 0 else self.enviar_setpoint(self.setpoint)
 
-        elif self.etapa_atual == UG_SINCRONIZADA:
+        elif self.etapa == UG_SINCRONIZADA:
             self.temporizar_partida = False
 
             if not self.aux_tempo_sincronizada:
@@ -692,7 +755,7 @@ class UnidadeGeracao:
 
             self.parar() if self.setpoint == 0 else self.enviar_setpoint(self.setpoint)
 
-        if not self.etapa_atual == UG_SINCRONIZADA:
+        if not self.etapa == UG_SINCRONIZADA:
             self.aux_tempo_sincronizada = None
 
     def controlar_comporta(self) -> "None":
@@ -717,11 +780,8 @@ class UnidadeGeracao:
                 Thread(target=lambda: tda.TomadaAgua.cp[f"CP{self.id}"].aguardar_pressao_uh()).start()
                 tda.TomadaAgua.cp[f"CP{self.id}"].borda_pressao = True
 
-            if tda.TomadaAgua.cp[f"CP{self.id}"].pressao_equalizada.valor:
+            elif tda.TomadaAgua.cp[f"CP{self.id}"].pressao_equalizada.valor:
                 tda.TomadaAgua.cp[f"CP{self.id}"].abrir()
-
-            else:
-                logger.debug(f"[UG{self.id}] Aguardando equalização da pressão da CP{self.id}.")
 
         elif tda.TomadaAgua.cp[f"CP{self.id}"].etapa == CP_ABERTA:
             self.partir()
@@ -874,9 +934,9 @@ class UnidadeGeracao:
         if self.leitura_temperatura_mancal_contra_esc_comb.valor >= 0.9*(self.condicionador_temperatura_mancal_contra_esc_comb_ug.valor_limite - self.condicionador_temperatura_mancal_contra_esc_comb_ug.valor_base) + self.condicionador_temperatura_mancal_contra_esc_comb_ug.valor_base:
             logger.critical(f"[UG{self.id}] A temperatura do Mancal Contra Escora combinado da UG está muito próxima do limite! ({self.condicionador_temperatura_mancal_contra_esc_comb_ug.valor_limite}C) | Leitura: {self.leitura_temperatura_mancal_contra_esc_comb.valor}C")
 
-        if self.leitura_pressao_turbina.valor <= self.condicionador_pressao_turbina_ug.valor_base and self.leitura_pressao_turbina.valor != 0 and self.etapa_atual == UG_SINCRONIZADA:
+        if self.leitura_pressao_turbina.valor <= self.condicionador_pressao_turbina_ug.valor_base and self.leitura_pressao_turbina.valor != 0 and self.etapa == UG_SINCRONIZADA:
             logger.warning(f"[UG{self.id}] A pressão na entrada da turbina da UG passou do valor base! ({self.condicionador_pressao_turbina_ug.valor_base:03.2f} KGf/m2) | Leitura: {self.leitura_pressao_turbina.valor:03.2f}")
-        if self.leitura_pressao_turbina.valor <= self.condicionador_pressao_turbina_ug.valor_limite+0.9*(self.condicionador_pressao_turbina_ug.valor_base - self.condicionador_pressao_turbina_ug.valor_limite) and self.leitura_pressao_turbina.valor != 0 and self.etapa_atual == UG_SINCRONIZADA:
+        if self.leitura_pressao_turbina.valor <= self.condicionador_pressao_turbina_ug.valor_limite+0.9*(self.condicionador_pressao_turbina_ug.valor_base - self.condicionador_pressao_turbina_ug.valor_limite) and self.leitura_pressao_turbina.valor != 0 and self.etapa == UG_SINCRONIZADA:
             logger.critical(f"[UG{self.id}] A pressão na entrada da turbina da UG está muito próxima do limite! ({self.condicionador_pressao_turbina_ug.valor_limite:03.2f} KGf/m2) | Leitura: {self.leitura_pressao_turbina.valor:03.2f} KGf/m2")
 
     def verificar_leituras(self) -> "None":

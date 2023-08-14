@@ -31,27 +31,30 @@ class TomadaAgua:
     cp["CP1"] = Comporta(1)
     cp["CP2"] = Comporta(2)
 
+    cp["CP1"].comporta_adjacente = cp["CP2"]
+    cp["CP2"].comporta_adjacente = cp["CP1"]
+
     nivel_montante = LeituraModbus(
         clp['TDA'],
         REG_CLP["TDA"]["NV_MONTANTE"],
         descricao="[TDA] Leitura Nível Montante",
         escala=1/1000,
-        fundo_escala=429
+        fundo_escala=430.3
     )
-    status_limpa_grades = LeituraModbus(
+    status_limpa_grades = LeituraModbusBit(
         clp["TDA"],
         REG_CLP["TDA"]["LG_OPE_MANUAL"],
-        descricao="[TDA] Status Limpa Grades"
+        descricao="[TDA] Status Limpa Grades",
     )
-    status_valvula_borboleta = LeituraModbus(
+    status_valvula_borboleta = LeituraModbusBit(
         clp["TDA"],
         REG_CLP["TDA"]["VB_FECHANDO"],
-        descricao="[TDA] Status Válvula Borboleta"
+        descricao="[TDA] Status Válvula Borboleta",
     )
     status_unidade_hidraulica = LeituraModbusBit(
         clp["TDA"],
         REG_CLP["TDA"]["UH_DISPONIVEL"],
-        descricao="[TDA] Status Unidade Hidáulica"
+        descricao="[TDA] Status Unidade Hidáulica",
     )
 
     erro_nivel: "float" = 0

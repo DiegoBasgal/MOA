@@ -92,15 +92,19 @@ class Bay:
 
         try:
             if not cls.dj_linha_bay.valor:
-                logger.info("[BAY] O Disjuntor do Bay está aberto! Realizando fechamento...")
+                logger.info("[BAY] O Disjuntor do Bay está aberto!")
                 if cls.verificar_dj_linha():
+                    logger.debug(f"[BAY] Enviando comando:                   \"FECHAR DISJUNTOR\"")
+                    logger.debug("")
                     EMB.escrever_bit(cls.rele["BAY"], REG_RELE["BAY"]["DJL_CMD_FECHAR"], valor=1)
                     return True
                 else:
-                    logger.warning("[BAY] Não foi possível realizar o fechamento do Disjuntor do BAY.")
+                    logger.warning("[BAY] Não foi possível fechar do Disjuntor do BAY.")
+                    logger.debug("")
                     return False
             else:
                 logger.debug("[BAY] O Disjuntor do BAY já está fechado.")
+                logger.debug("")
                 return True
 
         except Exception:
@@ -126,13 +130,15 @@ class Bay:
         """
 
         flags = 0
-        logger.info("[BAY] Verificando condições de fechamento do Disjuntor do BAY...")
+        logger.info("[BAY] Verificando Condições do Disjuntor do BAY...")
 
         try:
             if se.Subestacao.dj_linha_se.valor:
-                logger.info("[BAY] Disjuntor da Subestação fechado! Acionando comando de abertura...")
+                logger.info("[BAY] Disjuntor da Subestação Fechado!")
+                logger.debug(f"[BAY] Enviando comando:                   \"ABRIR DISJUNTOR SE\"")
+                res = EMB.escrever_bit(cls.clp["SA"], REG_CLP["SE"]["DJL_CMD_ABRIR"], valor=0)
 
-                if not EMB.escrever_bit(cls.clp["SA"], REG_CLP["SE"]["DJL_CMD_ABRIR"], valor=0):
+                if not res:
                     logger.warning("[BAY] Não foi possível realizar a abertura do Disjuntor de Linha da Subestação!")
                     flags += 1
 
@@ -160,7 +166,7 @@ class Bay:
                 flags += 1
 
             logger.warning(f"[BAY] Foram identificadas \"{flags}\" condições de bloqueio ao realizar fechamento do Disjuntor do BAY. Favor normalizar.") \
-                if flags > 0 else logger.debug("[BAY] Condições de fechamento Dj Bay OK! Fechando disjuntor...")
+                if flags > 0 else logger.debug("[BAY] Condições de Fechamento Validadas")
 
             return False if flags > 0 else True
 
