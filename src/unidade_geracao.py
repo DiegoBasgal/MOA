@@ -38,6 +38,8 @@ class UnidadeGeracao:
         self.__db = db
         self.__cfg = cfg
 
+        self.cp = tda.TomadaAgua.cp
+
         self.clp = Servidores.clp
         self.rele = Servidores.rele
 
@@ -85,6 +87,8 @@ class UnidadeGeracao:
 
         # PÚBLICAS
         self.tempo_normalizar: "int" = 0
+
+        self.operar_comporta: "bool" = False
         self.temporizar_partida: "bool" = False
         self.normalizacao_agendada: "bool" = False
         self.temporizar_normalizacao: "bool" = False
@@ -411,7 +415,7 @@ class UnidadeGeracao:
             logger.debug(f"[UG{self.id}] Step  -> Unidade:                   \"{UG_SM_STR_DCT[self.codigo_state]}\"")
             logger.debug(f"[UG{self.id}]          Etapa:                     \"{UG_STR_DCT_ETAPAS[self.etapa]}\" (Atual: {self.etapa_atual} | Alvo: {self.etapa_alvo})")
 
-            if self.disponivel:
+            if self.etapa == UG_SINCRONIZADA:
                 logger.debug(f"[UG{self.id}]          Leituras de Potência:")
                 logger.debug(f"[UG{self.id}]          - \"Ativa\":                 {self.leitura_potencia} kW")
 
@@ -654,10 +658,10 @@ class UnidadeGeracao:
         self.temporizar_partida = False
 
         if self.etapa == UG_PARADA:
-            if tda.TomadaAgua.cp[f"CP{self.id}"].etapa in (CP_ABERTA, CP_CRACKING):
-                tda.TomadaAgua.cp[f"CP{self.id}"].fechar()
+            if self.cp[f"CP{self.id}"].etapa in (CP_ABERTA, CP_CRACKING):
+                self.cp[f"CP{self.id}"].fechar()
 
-            elif tda.TomadaAgua.cp[f"CP{self.id}"].etapa == CP_FECHADA:
+            elif self.cp[f"CP{self.id}"].etapa == CP_FECHADA:
                 self.acionar_trip_eletrico()
                 self.acionar_trip_logico()
 
@@ -675,12 +679,12 @@ class UnidadeGeracao:
         senão, é enviado o comando de parada de emergência para a Unidade.
         """
 
-        logger.debug(f"[UG{self.id}]          Comando MOA:               \"Iniciar verificação de partida\"")
+        logger.debug(f"[UG{self.id}]          Verificação MOA:           \"Temporização de Sincronismo\"")
         while time() < time() + 600:
             if not self.temporizar_partida:
                 return
 
-        logger.warning(f"[UG{self.id}]          Comando MOA:               \"Acionar emergência por timeout de verificação de partida\"")
+        logger.warning(f"[UG{self.id}]          Verificação MOA:          \"Acionar emergência por timeout de Sincronismo\"")
         EMB.escrever_bit(self.clp[f"UG{self.id}"], REG_CLP[f"UG{self.id}"]["PARADA_CMD_EMERGENCIA"], valor=1)
         self.temporizar_partida = False
         sleep(1)
@@ -724,24 +728,24 @@ class UnidadeGeracao:
         de parada caso seja atribuído o setpoint 0 para a Unidade.
         """
 
-        if self.etapa == UG_PARANDO:
-            if self.leitura_potencia < 300:
-                tda.TomadaAgua.cp[f"CP{self.id}"].fechar()
-            else:
-                if self.setpoint >= self.__cfg["pot_minima"]:
-                    self.controlar_comporta()
+        if self.etapa == UG_PARADA:
+            if self.cp[f"CP{self.id}"].etapa == CP_ABERTA:
+                self.partir()
 
-        elif self.etapa == UG_PARADA:
-            if self.setpoint >= self.__cfg["pot_minima"]:
+            elif self.setpoint >= self.__cfg["pot_minima"]:
                 self.controlar_comporta()
 
-            elif tda.TomadaAgua.cp[f"CP{self.id}"].etapa == CP_CRACKING and self.setpoint == 0:
-                tda.TomadaAgua.cp[f"CP{self.id}"].fechar()
-
+        elif self.etapa == UG_PARANDO:
+            if self.setpoint >= self.__cfg["pot_minima"]:
+                self.controlar_comporta()
             else:
                 self.enviar_setpoint(self.setpoint)
 
         elif self.etapa == UG_SINCRONIZANDO:
+            if not self.temporizar_partida:
+                self.temporizar_partida = True
+                Thread(target=lambda: self.verificar_sincronismo()).start()
+
             self.parar() if self.setpoint == 0 else self.enviar_setpoint(self.setpoint)
 
         elif self.etapa == UG_SINCRONIZADA:
@@ -770,28 +774,35 @@ class UnidadeGeracao:
         de partida da Unidade, para daí acionar o mecanismo de aguardar sincronismo.
         Caso a comporta esteja em modo Remoto ou Operando, avisa o oeprador e retorna.
         """
+        logger.debug(f"[UG{self.id}]          Comando MOA:               \"OPERAR COMPORTA\"")
+        logger.debug("")
+        logger.debug(f"[CP{self.id}] Step  -> Comporta:                  \"{'Disponível' if not self.cp[f'CP{self.id}'].operando else 'Operando'}\"")
+        logger.debug(f"[CP{self.id}]          Etapa:                     \"{CP_STR_DCT[self.cp[f'CP{self.id}'].etapa] if not self.cp[f'CP{self.id}'].operando else [CP_STR_DCT[self.cp[f'CP{self.id}'].etapa] + '->' + CP_STR_DCT[self.cp[f'CP{self.id}'].ultima_etapa]]}\"")
 
-        if tda.TomadaAgua.cp[f"CP{self.id}"].etapa == CP_FECHADA:
-            tda.TomadaAgua.cp[f"CP{self.id}"].operar_cracking()
+        if self.cp[f"CP{self.id}"].etapa == CP_FECHADA:
+            self.cp[f"CP{self.id}"].ultima_etapa = CP_FECHADA
+            self.cp[f"CP{self.id}"].operar_cracking()
 
-        elif tda.TomadaAgua.cp[f"CP{self.id}"].etapa == CP_CRACKING:
+        elif self.cp[f"CP{self.id}"].etapa == CP_CRACKING:
+            self.cp[f"CP{self.id}"].ultima_etapa = CP_CRACKING
 
-            if not tda.TomadaAgua.cp[f"CP{self.id}"].borda_pressao:
-                Thread(target=lambda: tda.TomadaAgua.cp[f"CP{self.id}"].aguardar_pressao_uh()).start()
-                tda.TomadaAgua.cp[f"CP{self.id}"].borda_pressao = True
+            if not self.cp[f"CP{self.id}"].borda_pressao:
+                Thread(target=lambda: self.cp[f"CP{self.id}"].aguardar_pressao_uh()).start()
+                self.cp[f"CP{self.id}"].borda_pressao = True
 
-            elif tda.TomadaAgua.cp[f"CP{self.id}"].pressao_equalizada.valor:
-                tda.TomadaAgua.cp[f"CP{self.id}"].abrir()
+            elif self.cp[f"CP{self.id}"].pressao_equalizada.valor:
+                self.cp[f"CP{self.id}"].abrir()
 
-        elif tda.TomadaAgua.cp[f"CP{self.id}"].etapa == CP_ABERTA:
-            self.partir()
-            self.enviar_setpoint(self.setpoint)
+            elif self.setpoint == 0 and self.leitura_potencia == 0:
+                self.cp[f"CP{self.id}"].fechar()
 
-            if not self.temporizar_partida:
-                self.temporizar_partida = True
-                Thread(target=lambda: self.verificar_sincronismo()).start()
+        elif self.cp[f"CP{self.id}"].etapa == CP_ABERTA:
+            self.cp[f"CP{self.id}"].ultima_etapa = CP_ABERTA
 
-        elif tda.TomadaAgua.cp[f"CP{self.id}"].etapa == CP_REMOTO:
+            if self.setpoint == 0 and self.leitura_potencia == 0:
+                self.cp[f"CP{self.id}"].fechar()
+
+        elif self.cp[f"CP{self.id}"].etapa == CP_REMOTO:
             logger.debug(f"[UG{self.id}] Comporta {self.id} em modo manual")
             pass
 

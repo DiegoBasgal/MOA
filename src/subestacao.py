@@ -70,6 +70,7 @@ class Subestacao:
             res = EMB.escrever_bit(cls.clp["SA"], REG_CLP["SE"]["86BF_CMD_REARME"], valor=1)
             # res = EMB.escrever_bit(cls.clp["SA"], REG_CLP["SE"]["86BF_86T_CMD_REARME"], valor=1)
             res = EMB.escrever_bit(cls.clp["SA"], REG_CLP["SE"]["REGISTROS_CMD_RST"], valor=1)
+            res = EMB.escrever_bit(cls.rele["SE"], REG_CLP["SE"]["RELE_LINHA_ATUADO"], valor=0) # SIMULADOR
             return res
 
         except Exception:
@@ -96,28 +97,29 @@ class Subestacao:
                 if cls.verificar_dj_linha():
                     logger.debug(f"[SE]  Enviando comando:                   \"FECHAR DISJUNTOR\"")
                     logger.debug("")
+                    cls.resetar_emergencia()
                     EMB.escrever_bit(cls.clp["SA"], REG_CLP["SE"]["DJL_CMD_FECHAR"],  valor=1)
-                    return DJL_FECHAMENTO_OK
+                    return DJSE_FECHAMENTO_OK
 
                 elif cls.dj_bay_aberto:
                     logger.info("[SE]  Foi identificado que o Disjuntor do BAY está aberto.")
                     logger.debug("")
-                    return DJL_DJBAY_ABERTO
+                    return DJSE_FALHA_FECHAMENTO
 
                 else:
                     logger.warning("[SE]  Não foi possível realizar o fechamento do Disjuntor.")
                     logger.debug("")
-                    return DJL_FALHA_FECHAMENTO
+                    return DJSE_FALHA_FECHAMENTO
 
             else:
-                logger.debug("[SE]  O Disjuntor de Linha já está fechado")
+                logger.debug("[SE]  O Disjuntor da Subestação já está fechado.")
                 logger.debug("")
-                return DJL_FECHAMENTO_OK
+                return DJSE_FECHAMENTO_OK
 
         except Exception:
             logger.exception(f"[SE]  Houve um erro ao realizar o fechamento do Disjuntor de Linha.")
             logger.debug(f"[SE]  Traceback: {traceback.format_exc()}")
-            return DJL_FALHA_FECHAMENTO
+            return DJSE_FALHA_FECHAMENTO
 
     @classmethod
     def verificar_dj_linha(cls) -> "bool":
@@ -151,10 +153,6 @@ class Subestacao:
 
             if not bay.Bay.barra_morta.valor and bay.Bay.barra_viva.valor:
                 logger.warning("[SE]  Foi identificada leitura de corrente na barra do Bay!")
-                flags += 1
-
-            if not bay.Bay.secc_fechada.valor:
-                logger.warning("[SE]  A seccionadora do Bay está aberta!")
                 flags += 1
 
             if cls.alarme_gas_te.valor:
@@ -288,11 +286,11 @@ class Subestacao:
         cls.dj52l_remoto = LeituraModbusBit(cls.clp["SA"], REG_CLP["SE"]["DJL_SELETORA_REMOTO"], descricao="[SE]  Disjuntor Linha Seletora Modo Remoto")
         cls.alarme_gas_te = LeituraModbusBit(cls.clp["SA"], REG_CLP["SE"]["TE_RELE_BUCHHOLZ_ALM"], descricao="[SE]  Transformador Elevador Alarme Relé Buchholz")
 
-        return
         # CONDICIONADORES ESSENCIAIS
         # Normalizar
         cls.leitura_rele_linha_atuado = LeituraModbusBit(cls.clp["SA"], REG_CLP["SE"]["RELE_LINHA_ATUADO"], descricao="[SE]  Relé Linha Atuado")
-        cls.condicionadores_essenciais.append(c.CondicionadorBase(cls.leitura_rele_linha_atuado, CONDIC_NORMALIZAR))
+        cls.condicionadores_essenciais.append(c.CondicionadorBase(cls.leitura_rele_linha_atuado, gravidade=CONDIC_NORMALIZAR))
+        return
 
         # CONDICIONADORES
         # Indisponibilizar

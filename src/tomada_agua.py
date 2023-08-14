@@ -38,8 +38,7 @@ class TomadaAgua:
         clp['TDA'],
         REG_CLP["TDA"]["NV_MONTANTE"],
         descricao="[TDA] Leitura Nível Montante",
-        escala=1/1000,
-        fundo_escala=430.3
+        escala=0.01
     )
     status_limpa_grades = LeituraModbusBit(
         clp["TDA"],

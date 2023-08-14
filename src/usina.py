@@ -87,6 +87,7 @@ class Usina:
         self.controle_i: "float" = 0
         self.controle_d: "float" = 0
 
+        self.status_djs: "bool" = True
         self.bd_emergencia: "bool" = False
         self.clp_emergencia: "bool" = False
         self.borda_emergencia: "bool" = False
@@ -194,24 +195,22 @@ class Usina:
         logger.debug(f"[USN] [BAY] Tensão BAY:                   VAB -> \"{bay.Bay.tensao_vab.valor:2.1f} kV\" | VBC -> \"{bay.Bay.tensao_vbc.valor:2.1f} kV\" | VCA -> \"{bay.Bay.tensao_vca.valor:2.1f} kV\"")
         logger.debug("")
 
-        if not bay.Bay.fechar_dj_linha():
-            return NORM_USN_DJBAY_ABERTO
-
-        if not se.Subestacao.dj_linha_se.valor:
-            sleep(2)
-
-            if not se.Subestacao.fechar_dj_linha():
-                logger.warning("[USN] [SE] Não foi possível realizar o fechameto do Disjuntor da Subestação")
-                return NORM_USN_DJL_ABERTO
-
-        if not se.Subestacao.verificar_tensao_trifasica():
+        if not bay.Bay.verificar_tensao_trifasica():
             return NORM_USN_FALTA_TENSAO
 
-        elif ((self.get_time() - self.ultima_tentativa_norm).seconds >= 60 * self.tentativas_normalizar) or self.normalizar_forcado:
+        elif bay.Bay.fechar_dj_linha() == DJBAY_FALHA_FECHAMENTO or se.Subestacao.fechar_dj_linha() == DJSE_FALHA_FECHAMENTO:
+            self.status_djs = False
+            self.normalizar_forcado = True
+
+        else:
+            self.status_djs = True
+
+        if ((self.get_time() - self.ultima_tentativa_norm).seconds >= 60 * self.tentativas_normalizar) or self.normalizar_forcado:
             self.ultima_tentativa_norm = self.get_time()
             self.tentativas_normalizar += 1
             self.bd_emergencia = False
             self.clp_emergencia = False
+            self.normalizar_forcado = False
             bay.Bay.resetar_emergencia()
             se.Subestacao.resetar_emergencia()
             tda.TomadaAgua.resetar_emergencia()
@@ -312,6 +311,7 @@ class Usina:
             logger.debug("[TDA] Nível montante acima do máximo.")
 
             if tda.TomadaAgua.nivel_montante_anterior >= NIVEL_MAXIMORUM:
+                logger.debug(f"[TDA]          Leitura:                   {tda.TomadaAgua.nivel_montante.valor:0.3f}")
                 logger.critical(f"[TDA] Nivel montante ({tda.TomadaAgua.nivel_montante_anterior:3.2f}) atingiu o maximorum!")
                 return NV_EMERGENCIA
             else:
@@ -323,6 +323,7 @@ class Usina:
                     ug.step()
 
         elif tda.TomadaAgua.nivel_montante.valor <= self.cfg["nv_minimo"] and not tda.TomadaAgua.aguardando_reservatorio:
+            logger.debug(f"[TDA]          Leitura:                   {tda.TomadaAgua.nivel_montante.valor:0.3f}")
             logger.debug("[TDA] Nível montante abaixo do mínimo.")
             tda.TomadaAgua.aguardando_reservatorio = True
             self.distribuir_potencia(0)
@@ -336,6 +337,7 @@ class Usina:
 
         elif tda.TomadaAgua.aguardando_reservatorio:
             if tda.TomadaAgua.nivel_montante.valor >= self.cfg["nv_alvo"]:
+                logger.debug(f"[TDA]          Leitura:                   {tda.TomadaAgua.nivel_montante.valor:0.3f}")
                 logger.debug("[TDA] Nível montante dentro do limite de operação.")
                 tda.TomadaAgua.aguardando_reservatorio = False
 

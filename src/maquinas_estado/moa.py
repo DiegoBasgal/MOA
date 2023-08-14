@@ -146,6 +146,15 @@ class ControleEstados(State):
             return ControleAgendamentos(self.usn)
 
         else:
+            logger.debug("Verificando status da Subestação e Bay...")
+            if not self.usn.status_djs:
+                if self.usn.normalizar_usina() == NORM_USN_FALTA_TENSAO:
+                    sleep(1)
+                    return Emergencia(self.usn) if bay.Bay.aguardar_tensao() == TENSAO_FORA else self
+                else:
+                    sleep(1)
+                    return self
+
             logger.debug("Verificando condicionadores...")
             flag = self.usn.verificar_condicionadores()
 
@@ -154,9 +163,10 @@ class ControleEstados(State):
 
             elif flag == CONDIC_NORMALIZAR:
                 if self.usn.normalizar_usina() == NORM_USN_FALTA_TENSAO:
+                    sleep(1)
                     return Emergencia(self.usn) if bay.Bay.aguardar_tensao() == TENSAO_FORA else self
-
                 else:
+                    sleep(1)
                     return self
 
             else:

@@ -7,19 +7,9 @@ from src.dicionarios.const import *
 
 from src.unidade_geracao import UnidadeGeracao
 
-class CondicionadorBase:
-    ...
-
-class CondicionadorExponencial:
-    ...
-
-class CondicionadorExponencialReverso:
-    ...
-
-
 
 class CondicionadorBase:
-    def __init__(self, leitura: "LeituraModbus", gravidade: "int"=2, etapas: "list"=[], id_unidade: "int"=None) -> "None":
+    def __init__(self, leitura: "LeituraModbus", gravidade: "int"=1, etapas: "list"=[], id_unidade: "int"=None) -> "None":
 
         self.__leitura = leitura
         self.__gravidade = gravidade
@@ -35,7 +25,7 @@ class CondicionadorBase:
         Função que retorna string com detalhes do condicionador para logger.
         """
 
-        return f"Condicionador: {self.descricao}, Gravidade: {CONDIC_STR_DCT[self.gravidade]}"
+        return f"Condicionador: {self.__descricao}, Gravidade: {CONDIC_STR_DCT[self.gravidade]}"
 
     @property
     def leitura(self) -> "float":

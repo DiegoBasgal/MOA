@@ -96,6 +96,7 @@ REG_RELE = {
 
         # DJ
         "DJL_CMD_FECHAR":                               [30043, 2],
+        "DJL_FECHADO":                                  [30999, 0], # Fictício Simulador
 
 
         # DJ
@@ -116,6 +117,7 @@ REG_RELE = {
         # Linha
         "ID_LINHA_VIVA":                                [30054, 0], # Mudar para o Simulador
         "ID_LINHA_MORTA":                               [30054, 1], # Mudar para o Simulador
+
     },
 
     "SE": {
@@ -296,8 +298,10 @@ REG_CLP = {
         # Registros
         "REGISTROS_CMD_RST":                            [131, 5],
 
+        # Simulador Teste
         "DJL_SELETORA_REMOTO":                          [999, 0],
         "TE_RELE_BUCHHOLZ_ALM":                         [999, 1],
+        "RELE_LINHA_ATUADO":                            [999, 10],
     },
 
     "SA": {

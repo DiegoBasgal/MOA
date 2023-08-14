@@ -78,6 +78,13 @@ class LeituraModbusBit(LeituraModbus):
         self.__reg = registrador[0]
         self.__bit = registrador[1]
         self.__invertido = False if invertido is not None else invertido
+        self.__descricao = descricao
+
+    @property
+    def descricao(self) -> "str":
+        # PROPRIEDADE -> Retrona a Descrição da Leitura.
+
+        return self.__descricao
 
     @property
     def valor(self) -> "bool":
