@@ -12,11 +12,13 @@ MB = {
         "LT_VCA":                                                   53,
 
         "DJL_CMD_FECHAR":                                           [131, 4],
-        "BARRA_CA_RST_FLH":                                         [129, 0],
+        "REGISTROS_CMD_RST":                                        [131, 5],
 
+        "DJL_FECHADO":                                              [43, 0],
         "DJL_MOLA_CARREGADA":                                       [43, 1], # Ficticio
         "DJL_SELETORA_REMOTO":                                      [999, 0], # Ficticio
         "TE_RELE_BUCHHOLZ_ALM":                                     [999, 1], # Ficticio
+        "RELE_LINHA_ATUADO":                                        [999, 10],
     },
 
     "BAY": {
@@ -31,6 +33,7 @@ MB = {
         "ID_BARRA_MORTA":                                           [53 + 30000, 7],
         "ID_LINHA_VIVA":                                            [54 + 30000, 0],
         "ID_LINHA_MORTA":                                           [54 + 30000, 1],
+        "DJL_FECHADO":                                              [999 + 30000, 0], # Fictício Simulador
     },
 
     "TDA": {

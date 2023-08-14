@@ -258,7 +258,7 @@ class Unidade:
 
             while self.dict['TDA'][f'cp{self.id}_progresso'] <= 100:
                 self.dict['TDA'][f'uh_disponivel'] = False
-                self.dict['TDA'][f'cp{self.id}_progresso'] += 0.00001
+                self.dict['TDA'][f'cp{self.id}_progresso'] += 0.000001
 
             self.dict['TDA'][f'uh_disponivel'] = True
             self.dict['TDA'][f'cp{self.id}_operando'] = False
@@ -281,7 +281,7 @@ class Unidade:
             or (self.dict['TDA'][f'cp{self.id}_cracking'] and not self.dict['TDA'][f'cp{self.id}_aberta']):
 
             while self.dict['TDA'][f'cp{self.id}_progresso'] >= 0:
-                self.dict['TDA'][f'cp{self.id}_progresso'] -= 0.00001
+                self.dict['TDA'][f'cp{self.id}_progresso'] -= 0.000001
 
             self.dict['TDA'][f'cp{self.id}_fechada'] = True
             self.dict['TDA'][f'cp{self.id}_aberta'] = False
@@ -302,7 +302,7 @@ class Unidade:
 
             while self.dict['TDA'][f'cp{self.id}_progresso'] <= 20:
                 self.dict['TDA'][f'uh_disponivel'] = False
-                self.dict['TDA'][f'cp{self.id}_progresso'] += 0.00001
+                self.dict['TDA'][f'cp{self.id}_progresso'] += 0.000001
 
             self.dict['TDA'][f'uh_disponivel'] = True
             self.dict['TDA'][f'cp{self.id}_operando'] = False

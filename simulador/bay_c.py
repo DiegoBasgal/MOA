@@ -3,6 +3,7 @@ import numpy as np
 from pyModbusTCP.server import DataBank as DB
 
 from se import Se
+from funcs.leitura import Leitura as LEI
 from funcs.escrita import Escrita as ESC
 from funcs.temporizador import Temporizador
 
@@ -24,6 +25,7 @@ class Bay:
 
         self.b_mola = False
         self.b_secc = False
+        self.b_dj_f = False
 
 
     def passo(self) -> "None":
@@ -156,6 +158,16 @@ class Bay:
         # DB.set_words(MB['BAY']['POTENCIA_KW_MP'], [round(max(0, self.dict['BAY']['potencia_mp']))])
         # DB.set_words(MB['BAY']['POTENCIA_KW_MR'], [round(max(0, self.dict['BAY']['potencia_mr']))])
 
+        if LEI.ler_bit(MB['BAY']['DJL_CMD_FECHAR']):
+            ESC.escrever_bit(MB['BAY']['DJL_CMD_FECHAR'], valor=0)
+            print('[BAY] Comando de Fechamento do Disjuntor do Bay acionado via \"MODBUS\"')
+            self.fechar_dj()
+
+        if LEI.ler_bit(MB['BAY']['RELE_RST_TRP']):
+            ESC.escrever_bit(MB['BAY']['RELE_RST_TRP'], valor=0)
+            print('[BAY] Comando de Reset de Falhas acionado via \"MODBUS\"')
+            self.resetar_bay()
+
         if self.dict['BAY']['dj_secc'] and not self.b_secc:
             self.b_secc = True
             ESC.escrever_bit(MB['BAY']['SECC_FECHADA'], valor=1)
@@ -163,6 +175,14 @@ class Bay:
         elif not self.dict['BAY']['dj_secc'] and self.b_secc:
             self.b_secc = False
             ESC.escrever_bit(MB['BAY']['SECC_FECHADA'], valor=0)
+
+        if self.dict['BAY']['dj_fechado'] and not self.b_dj_f:
+            self.b_dj_f = True
+            ESC.escrever_bit(MB['BAY']['DJL_FECHADO'], valor=1)
+
+        elif not self.dict['BAY']['dj_fechado'] and self.b_dj_f:
+            self.b_dj_f = False
+            ESC.escrever_bit(MB['BAY']['DJL_FECHADO'], valor=0)
 
         if self.dict['BAY']['dj_mola_carregada'] and not self.b_mola:
             self.b_mola = True

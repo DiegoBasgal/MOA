@@ -61,20 +61,20 @@ class Tda:
         return 40000 * (min(max(460, nv_montante), 462.37) - 460)
 
     def calcular_q_sanitaria(self, nv_montante) -> "float":
-        if self.dict['UG1']['etapa_atual'] in (0, ETAPA_UP, None) or self.dict['UG2']['etapa_atual'] in (0, ETAPA_UP, None):
+        if self.dict['UG1']['etapa_atual'] in (ETAPA_UP, None) and self.dict['UG2']['etapa_atual'] in (ETAPA_UP, None):
             if self.b_vb_calc:
                 self.b_vb_calc = False
                 Thread(target=lambda: self.operar_vb()).start()
-                return 0
+                return 2.33
             else:
-                return 0
+                return 2.33
         else:
             if not self.b_vb_calc:
                 self.b_vb_calc = True
                 Thread(target=lambda: self.operar_vb()).start()
-                return 2.33
+                return 0
             else:
-                return 2.33
+                return 0
 
     def operar_vb(self) -> "None":
         print('[TDA] Operando Válvula Borboleta de Vazão Sanitária')

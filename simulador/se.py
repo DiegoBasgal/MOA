@@ -3,6 +3,7 @@ import numpy as np
 from pyModbusTCP.server import DataBank as DB
 
 from funcs.escrita import Escrita as ESC
+from funcs.leitura import Leitura as LEI
 from funcs.temporizador import Temporizador
 
 from dicts.reg import *
@@ -23,6 +24,8 @@ class Se:
 
         self.b_sel = False
         self.b_mola = False
+        self.b_dj_f = False
+        self.b_dj_trip = False
 
     def verificar_mola_dj(self) -> "None":
         if not self.dict['SE']['dj_mola_carregada']:
@@ -54,20 +57,6 @@ class Se:
 
         if self.dict['SE']['debug_dj_reset']:
             self.resetar_se()
-
-    def atualizar_modbus(self) -> "None":
-        if self.dict['SE']['dj_mola_carregada'] and not self.b_mola:
-            self.b_mola = True
-            ESC.escrever_bit(MB['SE']['DJL_MOLA_CARREGADA'], valor=1)
-
-        elif not self.dict['SE']['dj_mola_carregada'] and self.b_mola:
-            self.b_mola = False
-            ESC.escrever_bit(MB['SE']['DJL_MOLA_CARREGADA'], valor=0)
-
-        if not self.b_sel:
-            ESC.escrever_bit(MB['SE']['DJL_SELETORA_REMOTO'], 1)
-            ESC.escrever_bit(MB['SE']['TE_RELE_BUCHHOLZ_ALM'], 0)
-            self.b_sel = True
 
     def verificar_tensao_dj(self) -> "None":
         if not (USINA_TENSAO_MINIMA < self.dict['BAY']['tensao_linha'] < USINA_TENSAO_MAXIMA):
@@ -119,26 +108,17 @@ class Se:
             self.dict['SE']['dj_fechado'] = False
             self.dict['SE']['dj_mola_carregada'] = False
             self.dict['SE']['dj_falha'] = True
+            ESC.escrever_bit(MB['SE']['RELE_LINHA_ATUADO'], valor=1)
             print(f'[SE]  TRIP Disjuntor da Subestação! | Descrição: {descr}')
 
     def resetar_se(self) -> "None":
-        if self.dict['BAY']['dj_aberto']:
-            print('[SE]  Não é possível acionar o Comando de Reset Geral, pois o Disjuntor do Bay está Aberto!')
-            self.dict['SE']['dj_trip'] = True
-            self.dict['SE']['dj_aberto'] = False
-            self.dict['SE']['dj_fechado'] = False
-            self.dict['SE']['dj_falha'] = True
-            self.dict['SE']['debug_dj_abrir'] = True
-            self.dict['SE']['debug_dj_fechar'] = False
-            self.dict['SE']['debug_dj_reset'] = False
-        else:
-            print('[SE]  Comando de Reset Geral acionado')
-            self.dict['SE']['dj_trip'] = False
-            self.dict['SE']['dj_falha'] = False
-            self.dict['SE']['debug_dj_abrir'] = False
-            self.dict['SE']['debug_dj_fechar'] = False
-            self.dict['SE']['debug_dj_reset'] = False
-            self.avisou_trip = False
+        print('[SE]  Comando de Reset Geral acionado')
+        self.dict['SE']['dj_trip'] = False
+        self.dict['SE']['dj_falha'] = False
+        self.dict['SE']['debug_dj_abrir'] = False
+        self.dict['SE']['debug_dj_fechar'] = False
+        self.dict['SE']['debug_dj_reset'] = False
+        self.avisou_trip = False
 
     def verificar_condicao_dj(self) -> "None":
         if self.dict['SE']['dj_trip'] \
@@ -151,3 +131,43 @@ class Se:
 
         else:
             self.dict['SE']['dj_condicao'] = True
+
+    def atualizar_modbus(self) -> "None":
+        if not self.b_sel:
+            ESC.escrever_bit(MB['SE']['DJL_SELETORA_REMOTO'], 1)
+            ESC.escrever_bit(MB['SE']['TE_RELE_BUCHHOLZ_ALM'], 0)
+            self.b_sel = True
+
+        if LEI.ler_bit(MB['SE']['REGISTROS_CMD_RST']):
+            ESC.escrever_bit(MB['SE']['REGISTROS_CMD_RST'], valor=0)
+            print('[SE]  Comando de Reset de Falhas acionado via \"MODBUS\"')
+            self.resetar_se()
+
+        if LEI.ler_bit(MB['SE']['DJL_CMD_FECHAR']):
+            ESC.escrever_bit(MB['SE']['DJL_CMD_FECHAR'], valor=0)
+            print('[SE]  Comando de Fechamento do Disjuntor da Subestação acionado via \"MODBUS\"')
+            self.fechar_dj()
+
+        if self.dict['SE']['dj_mola_carregada'] and not self.b_mola:
+            self.b_mola = True
+            ESC.escrever_bit(MB['SE']['DJL_MOLA_CARREGADA'], valor=1)
+
+        elif not self.dict['SE']['dj_mola_carregada'] and self.b_mola:
+            self.b_mola = False
+            ESC.escrever_bit(MB['SE']['DJL_MOLA_CARREGADA'], valor=0)
+
+        if self.dict['SE']['dj_fechado'] and not self.b_dj_f:
+            self.b_dj_f = True
+            ESC.escrever_bit(MB['SE']['DJL_FECHADO'], valor=1)
+
+        elif not self.dict['SE']['dj_fechado'] and self.b_dj_f:
+            self.b_dj_f = False
+            ESC.escrever_bit(MB['SE']['DJL_FECHADO'], valor=0)
+
+        if self.dict['SE']['dj_trip'] and not self.b_dj_trip:
+            self.b_dj_trip = True
+            ESC.escrever_bit(MB['SE']['RELE_LINHA_ATUADO'], valor=1)
+
+        elif not self.dict['SE']['dj_trip'] and self.b_dj_trip:
+            self.b_dj_trip = False
+            ESC.escrever_bit(MB['SE']['RELE_LINHA_ATUADO'], valor=0)

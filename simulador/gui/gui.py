@@ -50,8 +50,14 @@ class Window(QMainWindow, Ui_Form):
             self.checkBox_DjBay_fechado.setChecked(self.shared_dict['BAY']['dj_fechado'])
             self.checkBox_DjBay_trip.setChecked(self.shared_dict['BAY']['dj_trip'])
             self.checkBox_DjBay_mola.setChecked(self.shared_dict['BAY']['dj_mola_carregada'])
-            self.checkBox_DjBay_seccionadora.setChecked(self.shared_dict['BAY']['dj_secc'])
             self.checkBox_DjBay_condicao.setChecked(self.shared_dict['BAY']['dj_condicao'])
+
+            if self.checkBox_DjBay_seccionadora.isChecked() and not self.shared_dict['BAY']['dj_secc']:
+                self.shared_dict['BAY']['dj_secc'] = True
+                print("DEBUG SECC TRUE")
+            elif not self.checkBox_DjBay_seccionadora.isChecked() and self.shared_dict['BAY']['dj_secc']:
+                self.shared_dict['BAY']['dj_secc'] = False
+                print("DEBUG SECC FALSE")
 
             self.lcdNumber_montante.display(f"{self.shared_dict['TDA']['nv_montante']:3.2f}")
             self.lcdNumber_Q_afluente.display(f"{self.shared_dict['TDA']['q_alfuente']:2.3f}")

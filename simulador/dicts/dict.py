@@ -37,11 +37,13 @@ compartilhado = {
         "cp1_borda_c": 0,
         "cp1_borda_f": 0,
         "cp1_progresso": 0,
+        "cp1_borda_o": False,
 
         "cp2_borda_a": 0,
         "cp2_borda_c": 0,
         "cp2_borda_f": 0,
         "cp2_progresso": 0,
+        "cp2_borda_o": False,
 
         "lg_operando": False,
         "vb_operando": False,
