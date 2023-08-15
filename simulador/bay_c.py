@@ -2,18 +2,15 @@ import numpy as np
 
 from pyModbusTCP.server import DataBank as DB
 
-from se import Se
+from dicts.reg import *
+from dicts.const import *
 from funcs.leitura import Leitura as LEI
 from funcs.escrita import Escrita as ESC
 from funcs.temporizador import Temporizador
 
-from dicts.reg import *
-from dicts.const import *
-from dicts.dict import compartilhado
-
 class Bay:
-    def __init__(self, tempo: Temporizador) -> "None":
-        self.dict = compartilhado
+    def __init__(self, dict_comp: 'dict'=None, tempo: 'Temporizador'=None) -> "None":
+        self.dict = dict_comp
 
         self.escala_ruido = tempo.escala_ruido
         self.passo_simulacao = tempo.passo_simulacao
@@ -21,11 +18,8 @@ class Bay:
 
         self.mola = 0
         self.tempo_carregamento_mola = 2
-        self.avisou_trip = False
 
-        self.b_mola = False
-        self.b_secc = False
-        self.b_dj_f = False
+        self.avisou_trip = False
 
 
     def passo(self) -> "None":
@@ -149,26 +143,26 @@ class Bay:
         # DB.set_words(MB['BAY']['POTENCIA_KW_MP'], [round(max(0, self.dict['BAY']['potencia_mp']))])
         # DB.set_words(MB['BAY']['POTENCIA_KW_MR'], [round(max(0, self.dict['BAY']['potencia_mr']))])
 
-        if self.dict['BAY']['dj_secc'] and not self.b_secc:
-            self.b_secc = True
+        if self.dict['BAY']['dj_secc'] and not self.dict['BRD']['djbay_secc']:
+            self.dict['BRD']['djbay_secc'] = True
             ESC.escrever_bit(MB['BAY']['SECC_FECHADA'], valor=1)
 
-        elif not self.dict['BAY']['dj_secc'] and self.b_secc:
-            self.b_secc = False
+        elif not self.dict['BAY']['dj_secc'] and self.dict['BRD']['djbay_secc']:
+            self.dict['BRD']['djbay_secc'] = False
             ESC.escrever_bit(MB['BAY']['SECC_FECHADA'], valor=0)
 
-        if self.dict['BAY']['dj_fechado'] and not self.b_dj_f:
-            self.b_dj_f = True
+        if self.dict['BAY']['dj_fechado'] and not self.dict['BRD']['djbay_fechado']:
+            self.dict['BRD']['djbay_fechado'] = True
             ESC.escrever_bit(MB['BAY']['DJL_FECHADO'], valor=1)
 
-        elif not self.dict['BAY']['dj_fechado'] and self.b_dj_f:
-            self.b_dj_f = False
+        elif not self.dict['BAY']['dj_fechado'] and self.dict['BRD']['djbay_fechado']:
+            self.dict['BRD']['djbay_fechado'] = False
             ESC.escrever_bit(MB['BAY']['DJL_FECHADO'], valor=0)
 
-        if self.dict['BAY']['dj_mola_carregada'] and not self.b_mola:
-            self.b_mola = True
+        if self.dict['BAY']['dj_mola_carregada'] and not self.dict['BRD']['djbay_mola']:
+            self.dict['BRD']['djbay_mola'] = True
             ESC.escrever_bit(MB['BAY']['DJL_MOLA_CARREGADA'], valor=1)
 
-        elif not self.dict['BAY']['dj_mola_carregada'] and self.b_mola:
-            self.b_mola = False
+        elif not self.dict['BAY']['dj_mola_carregada'] and self.dict['BRD']['djbay_mola']:
+            self.dict['BRD']['djbay_mola'] = False
             ESC.escrever_bit(MB['BAY']['DJL_MOLA_CARREGADA'], valor=0)

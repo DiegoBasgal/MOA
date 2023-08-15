@@ -1220,18 +1220,24 @@ class Ui_Form(object):
 
         self.retranslateUi(Form)
 
-        # CF
-        self.pushButton_condics.clicked.connect(Form.set_trip_condic_usina)
+        # GERAL
+        self.pushButton_condics.clicked.connect(Form.set_trip_condic)
 
         # SE
-        self.pushButton_DjSE_reconhece.clicked.connect(Form.reset_djSe)
-        self.pushButton_DjSE_estado.clicked.connect(Form.alternar_estado_djSe)
+        self.pushButton_DjSE_reconhece.clicked.connect(Form.set_trip_djSe)
+        self.pushButton_DjSE_estado.clicked.connect(Form.alterar_estado_djSe)
 
         # BAY
-        self.pushButton_DjBay_reset.clicked.connect(Form.reset_djBay)
-        self.pushButton_DjBay_estado.clicked.connect(Form.alternar_estado_djBay)
+        self.pushButton_DjBay_reset.clicked.connect(Form.set_trip_djBay)
+        self.pushButton_DjBay_estado.clicked.connect(Form.alterar_estado_djBay)
         self.pushButton_tensaoLinha_trip.clicked.connect(Form.set_trip_linha)
         self.pushButton_tensaoLinha_reset.clicked.connect(Form.reset_trip_linha)
+
+        # TDA
+        self.horizontalSlider_Q_afluente.valueChanged['int'].connect(Form.mudar_q_afluente)
+
+        self.pushButton_lg_parar.clicked.connect(Form.parar_lg)
+        self.pushButton_lg_operar.clicked.connect(Form.operar_lg)
 
         # UG1
         self.pushButton_ug1_parar.clicked.connect(Form.parar_ug1)
@@ -1243,21 +1249,17 @@ class Ui_Form(object):
         self.pushButton_ug2_partir.clicked.connect(Form.partir_ug2)
         self.horizontalSlider_setpoint_ug2.valueChanged["int"].connect(Form.mudar_setpoint_ug2)
 
-        # TDA
-        self.horizontalSlider_Q_afluente.valueChanged['int'].connect(Form.mudar_Q_afluente)
+        # CP1
+        self.pushButton_abrir_cp1.clicked.connect(Form.set_abertura_cp1)
+        self.pushButton_fechar_cp1.clicked.connect(Form.set_fechamento_cp1)
+        self.pushButton_cracking_cp1.clicked.connect(Form.set_cracking_cp1)
+        self.pushButton_equalizar_cp1.clicked.connect(Form.trip_cracking_cp1)
 
-        self.pushButton_lg_parar.clicked.connect(Form.parar_limpa_grades)
-        self.pushButton_lg_operar.clicked.connect(Form.operar_limpa_grades)
-
-        self.pushButton_equalizar_cp1.clicked.connect(Form.trip_cp1_cracking)
-        self.pushButton_abrir_cp1.clicked.connect(Form.set_thread_cp1_aberta)
-        self.pushButton_fechar_cp1.clicked.connect(Form.set_thread_cp1_fechada)
-        self.pushButton_cracking_cp1.clicked.connect(Form.set_thread_cp1_cracking)
-
-        self.pushButton_equalizar_cp2.clicked.connect(Form.trip_cp2_cracking)
-        self.pushButton_abrir_cp2.clicked.connect(Form.set_thread_cp2_aberta)
-        self.pushButton_fechar_cp2.clicked.connect(Form.set_thread_cp2_fechada)
-        self.pushButton_cracking_cp2.clicked.connect(Form.set_thread_cp2_cracking)
+        # CP2
+        self.pushButton_abrir_cp2.clicked.connect(Form.set_abertura_cp2)
+        self.pushButton_fechar_cp2.clicked.connect(Form.set_fechamento_cp2)
+        self.pushButton_cracking_cp2.clicked.connect(Form.set_cracking_cp2)
+        self.pushButton_equalizar_cp2.clicked.connect(Form.trip_cracking_cp2)
 
         QtCore.QMetaObject.connectSlotsByName(Form)
 

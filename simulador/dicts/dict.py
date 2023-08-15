@@ -9,7 +9,7 @@ compartilhado = {
 
     "BRD": {
         "condic" : False,
-        
+
         "aux_borda1": 0,
         "aux_borda2": 0,
         "aux_borda3": 0,
@@ -23,10 +23,39 @@ compartilhado = {
         "aux_borda11": 0,
         "aux_borda12": 0,
 
+        # TDA
+        "vb_operando": False,
+        "lg_operando": False,
+        "uh_disponivel": False,
+
+        # SE
+        "djse_trip": False,
+        "djse_mola": False,
+        "djse_fechado": False,
+
+        # BAY
+        "djbay_secc": False,
+        "djbay_mola": False,
+        "djbay_fechado": False,
+
+        # Comportas
         "cp1_aberta": False,
         "cp1_fechada": False,
         "cp1_cracking": False,
+        "cp1_bloqueio": False,
         "cp1_operando": False,
+        "cp1_permissao": False,
+        "cp1_equalizada": False,
+        "cp1_aguardando": False,
+
+        "cp2_aberta": False,
+        "cp2_fechada": False,
+        "cp2_cracking": False,
+        "cp2_bloqueio": False,
+        "cp2_operando": False,
+        "cp2_permissao": False,
+        "cp1_equalizada": False,
+        "cp2_aguardando": False,
 
     },
 
@@ -44,38 +73,11 @@ compartilhado = {
         "nv_jusante_grade": 0,
 
         "cp1_progresso": 0,
-
         "cp2_progresso": 0,
 
         "lg_operando": False,
         "vb_operando": False,
         "uh_disponivel": True,
-
-        "cp1_trip": False,
-        "cp1_aberta": False,
-        "cp1_fechada": True,
-        "cp1_cracking": False,
-        "cp1_operando": False,
-        "cp1_thread_aberta": False,
-        "cp1_thread_fechada": False,
-        "cp1_thread_cracking": False,
-        "cp1_falha_cracking": False,
-        "cp1_pressao_equalizada": False,
-        "cp1_permissao_abertura": False,
-        "cp1_aguardando_abertura": False,
-
-        "cp2_trip": False,
-        "cp2_aberta": False,
-        "cp2_fechada": True,
-        "cp2_cracking": False,
-        "cp2_operando": False,
-        "cp2_thread_aberta": False,
-        "cp2_thread_fechada": False,
-        "cp2_thread_cracking": False,
-        "cp2_falha_cracking": False,
-        "cp2_pressao_equalizada": False,
-        "cp2_permissao_abertura": False,
-        "cp2_aguardando_abertura": False,
     },
 
     "SE": {
@@ -83,13 +85,13 @@ compartilhado = {
         "tensao_linha": 23100,
 
         "dj_trip": False,
+        "dj_falha": False,
         "dj_aberto": False,
         "dj_fechado": True,
+        "dj_condicao": False,
         "dj_falta_vcc": False,
         "dj_inconsistente": False,
         "dj_mola_carregada": True,
-        "dj_falha": False,
-        "dj_condicao": False,
 
         "debug_dj_abrir": False,
         "debug_dj_fechar": False,
@@ -99,20 +101,53 @@ compartilhado = {
     "BAY": {
         "potencia_mp": 0,
         "potencia_mr": 0,
+
         "tensao_linha": 23100,
 
+        "dj_secc": True,
         "dj_trip": False,
+        "dj_falha": False,
         "dj_aberto": False,
         "dj_fechado": True,
-        "dj_secc": True,
+        "dj_condicao": False,
         "dj_inconsistente": False,
         "dj_mola_carregada": True,
-        "dj_falha": False,
-        "dj_condicao": False,
 
         "debug_dj_abrir": False,
         "debug_dj_fechar": False,
         "debug_dj_reset": False
+    },
+
+    "CP1": {
+        "trip": False,
+        "aberta": False,
+        "fechada": True,
+        "cracking": False,
+        "operando": False,
+        "permissao": False,
+        "equalizada": False,
+        "aguardando": False,
+
+        "thread_aberta": False,
+        "thread_fechada": False,
+        "thread_cracking": False,
+        "falha_cracking": False,
+    },
+
+    "CP2": {
+        "trip": False,
+        "aberta": False,
+        "fechada": True,
+        "cracking": False,
+        "operando": False,
+        "permissao": False,
+        "equalizada": False,
+        "aguardando": False,
+
+        "thread_aberta": False,
+        "thread_fechada": False,
+        "thread_cracking": False,
+        "falha_cracking": False,
     },
 
     "UG1": {
@@ -122,6 +157,7 @@ compartilhado = {
         "etapa_alvo": 0,
         "etapa_atual": 0,
         "debug_setpoint": 0,
+
         "pressao_turbina": 1.5,
         "temp_fase_r": 25,
         "temp_fase_s": 25,
@@ -146,6 +182,7 @@ compartilhado = {
         "etapa_alvo": 0,
         "etapa_atual": 0,
         "debug_setpoint": 0,
+
         "pressao_turbina": 1.5,
         "temp_fase_r": 25,
         "temp_fase_s": 25,

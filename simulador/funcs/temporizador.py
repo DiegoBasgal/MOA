@@ -1,20 +1,22 @@
 import pytz
 
-import dicts.dict as dct
-
 from datetime import datetime
+
+from dicts.dict import compartilhado
 
 class Temporizador:
     def __init__(self) -> "None":
-        self.dict = dct.compartilhado
+        self.dict = compartilhado
 
         self.speed = 50
         self.escala_ruido = 0.1
         self.passo_simulacao = 0.001
         self.segundos_por_passo = self.passo_simulacao * self.speed
 
+
     def get_time(self) -> "datetime":
         return datetime.now(pytz.timezone('Brazil/East')).replace(tzinfo=None)
+
 
     def run(self) -> "None":
         while not self.dict['GLB']['stop_sim']:
@@ -26,4 +28,3 @@ class Temporizador:
             except KeyboardInterrupt:
                 self.dict['GLB']['stop_sim'] = True
                 break
-        return
