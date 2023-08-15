@@ -25,9 +25,7 @@ class EscritaModBusBit:
         """
 
         try:
-            client.open()
-            raw = client.read_holding_registers(int(registrador[0]), 2)
-            client.close()
+            raw = client.read_holding_registers(registrador[0], 2)
             dec_1 = BPD.fromRegisters(raw, byteorder=Endian.Big, wordorder=Endian.Little)
             dec_2 = BPD.fromRegisters(raw, byteorder=Endian.Big, wordorder=Endian.Little)
 
@@ -41,12 +39,10 @@ class EscritaModBusBit:
                     break
 
             v = sum(val*(2**x) for x, val in enumerate(lbit_r))
-            client.open()
-            res = client.write_single_register(int(registrador[0]), v)
-            client.close()
+            res = client.write_single_register(registrador[0], v)
             return res
 
         except Exception:
             logger.error(f"[ESC] Houve um erro ao realizar a Escrita no REG: {registrador}")
-            logger.debug(f"[ESC] Traceback: {traceback.format_exc()}")
+            logger.debug(traceback.format_exc())
             return False

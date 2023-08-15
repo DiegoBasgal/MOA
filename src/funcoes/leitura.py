@@ -46,20 +46,16 @@ class LeituraModbus:
 
         try:
             if self.__op == 3:
-                self.__client.open()
-                ler = self.__client.read_holding_registers(int(self.__registrador))[0]
-                self.__client.close()
+                ler = self.__client.read_holding_registers(self.__registrador)[0]
                 return ler
 
             elif self.__op == 4:
-                self.__client.open()
                 ler = self.__client.read_input_registers(self.__registrador)[0]
-                self.__client.close()
                 return ler
 
         except Exception:
             logger.error(f"[LEI] Houve um erro na leitura do REG: {self.__descricao} | Endereço: {self.__registrador}")
-            logger.debug(f"[LEI] Traceback: {traceback.format_exc()}")
+            logger.debug(traceback.format_exc())
             return 0
 
     @property
@@ -91,9 +87,7 @@ class LeituraModbusBit(LeituraModbus):
         # PROPRIEDADE -> Retorna Valor Bit em booleano ModBus.
 
         try:
-            self.__client.open()
-            raw = self.__client.read_holding_registers(int(self.__reg), 2)
-            self.__client.close()
+            raw = self.__client.read_holding_registers(self.__reg, 2)
             dec_1 = BPD.fromRegisters(raw, byteorder=Endian.Big, wordorder=Endian.Little)
             dec_2 = BPD.fromRegisters(raw, byteorder=Endian.Big, wordorder=Endian.Little)
 
@@ -106,7 +100,7 @@ class LeituraModbusBit(LeituraModbus):
                     return not lbit_r[i] if self.__invertido else lbit_r[i]
 
         except Exception:
-            logger.error(f"[LEI] Houve um erro ao realizar a Leitura de valores Bit do registrador: {self.__reg}.")
+            logger.error(f"[LEI] Erro na Leitura do REG: {self.__reg} | Bit: {self.__bit}")
             logger.debug(traceback.format_exc())
             sleep(1)
             return None
@@ -126,11 +120,7 @@ class LeituraModbusFloat(LeituraModbus):
         # PROPRIEDADE -> Retorna o valor tradado de leitura em Float.
 
         try:
-            self.__client.open()
             raw = self.__client.read_holding_registers(self.__reg + 1, 2)
-            self.__client.close()
-            print(f'Raw: {raw}')
-            print('')
             dec = BPD.fromRegisters(raw, byteorder=Endian.Big, wordorder=Endian.Little)
 
             return dec.decode_32bit_float()

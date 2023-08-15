@@ -50,6 +50,12 @@ class Usina:
         self.clp = Servidores.clp
         self.rele  = Servidores.rele
 
+        self.bay = bay.Bay
+        self.se = se.Subestacao
+        self.tda = tda.TomadaAgua
+        self.sa = sa.ServicoAuxiliar
+        self.tda.cfg = self.cfg
+
         self.bd = BancoDados("MOA")
         self.agn = Agendamentos(self.cfg, self.bd, self)
 
@@ -58,7 +64,6 @@ class Usina:
         self.ugs: "list[UnidadeGeracao]" = [self.ug1, self.ug2]
         CondicionadorBase.ugs = self.ugs
 
-        tda.TomadaAgua.cfg = self.cfg
 
         # ATRIBUIÇÃO DE VARIÁVEIS PRIVADAS
 
@@ -97,10 +102,10 @@ class Usina:
 
         # FINALIZAÇÃO DO __INIT__
 
-        bay.Bay.carregar_leituras()
-        se.Subestacao.carregar_leituras()
-        tda.TomadaAgua.carregar_leituras()
-        sa.ServicoAuxiliar.carregar_leituras()
+        self.bay.carregar_leituras()
+        self.se.carregar_leituras()
+        self.tda.carregar_leituras()
+        self.sa.carregar_leituras()
 
         self.ler_valores()
         self.normalizar_inicializacao()
@@ -153,10 +158,10 @@ class Usina:
         """
 
         logger.info("[USN] Acionando reset de emergência.")
-        logger.debug("[USN] Bay resetado.") if bay.Bay.resetar_emergencia() else logger.info("[USN] Reset de emergência do Bay falhou.")
-        logger.debug("[USN] Subestação resetada.") if se.Subestacao.resetar_emergencia() else logger.info("[USN] Reset de emergência da subestação falhou.")
-        logger.debug("[USN] Tomada da Água resetada.") if tda.TomadaAgua.resetar_emergencia else logger.info("[USN] Reset de emergência da Tomada da Água falhou.")
-        logger.debug("[USN] Serviço Auxiliar resetado.") if sa.ServicoAuxiliar.resetar_emergencia() else logger.info("[USN] Reset de emergência do serviço auxiliar falhou.")
+        logger.debug("[USN] Bay resetado.") if self.bay.resetar_emergencia() else logger.info("[USN] Reset de emergência do Bay falhou.")
+        logger.debug("[USN] Subestação resetada.") if self.se.resetar_emergencia() else logger.info("[USN] Reset de emergência da subestação falhou.")
+        logger.debug("[USN] Tomada da Água resetada.") if self.tda.resetar_emergencia else logger.info("[USN] Reset de emergência da Tomada da Água falhou.")
+        logger.debug("[USN] Serviço Auxiliar resetado.") if self.sa.resetar_emergencia() else logger.info("[USN] Reset de emergência do serviço auxiliar falhou.")
 
     def acionar_emergencia(self) -> "bool":
         """
@@ -175,7 +180,7 @@ class Usina:
 
         except Exception:
             logger.error(f"[USN] Houve um erro ao executar o comando de Emergência.")
-            logger.debug(f"[USN] Traceback: {traceback.format_exc()}")
+            logger.debug(traceback.format_exc())
             return False
 
     def normalizar_usina(self) -> "int":
@@ -189,16 +194,16 @@ class Usina:
         """
 
         logger.debug("")
-        logger.debug("[USN] Normalizando...")
-        logger.debug(f"[USN] Última tentativa de normalização:   {self.ultima_tentativa_norm.strftime('%d-%m-%Y %H:%M:%S')}")
-        logger.debug(f"[USN] [SE]  Tensão Subestação:            VAB -> \"{se.Subestacao.tensao_vab.valor:2.1f} kV\" | VBC -> \"{se.Subestacao.tensao_vbc.valor:2.1f} kV\" | VCA -> \"{se.Subestacao.tensao_vca.valor:2.1f} kV\"")
-        logger.debug(f"[USN] [BAY] Tensão BAY:                   VAB -> \"{bay.Bay.tensao_vab.valor:2.1f} kV\" | VBC -> \"{bay.Bay.tensao_vbc.valor:2.1f} kV\" | VCA -> \"{bay.Bay.tensao_vca.valor:2.1f} kV\"")
+        logger.debug(f"[BAY] Tensão BAY:                   VAB -> \"{self.bay.tensao_vab.valor:2.1f} V\" | VBC -> \"{self.bay.tensao_vbc.valor:2.1f} V\" | VCA -> \"{self.bay.tensao_vca.valor:2.1f} V\"")
+        logger.debug(f"[SE]  Tensão Subestação:            VAB -> \"{self.se.tensao_vab.valor:2.1f} V\" | VBC -> \"{self.se.tensao_vbc.valor:2.1f} V\" | VCA -> \"{self.se.tensao_vca.valor:2.1f} V\"")
+        logger.debug("")
+        logger.debug("[USN] Verificando status dos Disjuntores BAY e SE...")
         logger.debug("")
 
-        if not bay.Bay.verificar_tensao_trifasica():
+        if not self.bay.verificar_tensao_trifasica():
             return NORM_USN_FALTA_TENSAO
 
-        elif bay.Bay.fechar_dj_linha() == DJBAY_FALHA_FECHAMENTO or se.Subestacao.fechar_dj_linha() == DJSE_FALHA_FECHAMENTO:
+        elif self.bay.fechar_dj_linha() == DJBAY_FALHA_FECHAMENTO or self.se.fechar_dj_linha() == DJSE_FALHA_FECHAMENTO:
             self.status_djs = False
             self.normalizar_forcado = True
 
@@ -206,15 +211,13 @@ class Usina:
             self.status_djs = True
 
         if ((self.get_time() - self.ultima_tentativa_norm).seconds >= 60 * self.tentativas_normalizar) or self.normalizar_forcado:
+            logger.debug("")
+            logger.debug("[USN] Normalizando...")
+            logger.debug(f"[USN] Última tentativa de normalização:   {self.ultima_tentativa_norm.strftime('%d-%m-%Y %H:%M:%S')}")
             self.ultima_tentativa_norm = self.get_time()
             self.tentativas_normalizar += 1
-            self.bd_emergencia = False
-            self.clp_emergencia = False
-            self.normalizar_forcado = False
-            bay.Bay.resetar_emergencia()
-            se.Subestacao.resetar_emergencia()
-            tda.TomadaAgua.resetar_emergencia()
-            sa.ServicoAuxiliar.resetar_emergencia()
+            self.normalizar_forcado = self.clp_emergencia = self.bd_emergencia = False
+            self.resetar_emergencia()
             self.bd.update_remove_emergencia()
             return NORM_USN_EXECUTADA
 
@@ -250,9 +253,9 @@ class Usina:
         """
 
         while True:
-            # se.Subestacao.verificar_leituras()
-            # tda.TomadaAgua.verificar_leituras()
-            # sa.ServicoAuxiliar.verificar_leituras()
+            # self.se.verificar_leituras()
+            # self.tda.verificar_leituras()
+            # self.sa.verificar_leituras()
 
             # for ug in self.ugs:
             #     ug.verificar_leituras()
@@ -265,10 +268,10 @@ class Usina:
     def verificar_condicionadores(self) -> "int":
         flag = CONDIC_IGNORAR
 
-        lst_bay = bay.Bay.verificar_condicionadores()
-        lst_se = se.Subestacao.verificar_condicionadores()
-        lst_tda = tda.TomadaAgua.verificar_condicionadores()
-        lst_sa = sa.ServicoAuxiliar.verificar_condicionadores()
+        lst_bay = self.bay.verificar_condicionadores()
+        lst_se = self.se.verificar_condicionadores()
+        lst_tda = self.tda.verificar_condicionadores()
+        lst_sa = self.sa.verificar_condicionadores()
 
         condics = [condic for condics in [lst_sa, lst_se, lst_bay, lst_tda] for condic in condics]
 
@@ -307,12 +310,12 @@ class Usina:
         calcular e distribuir a potência para as Unidades.
         """
 
-        if tda.TomadaAgua.nivel_montante.valor >= self.cfg["nv_maximo"]:
+        if self.tda.nivel_montante.valor >= self.cfg["nv_maximo"]:
             logger.debug("[TDA] Nível montante acima do máximo.")
 
-            if tda.TomadaAgua.nivel_montante_anterior >= NIVEL_MAXIMORUM:
-                logger.debug(f"[TDA]          Leitura:                   {tda.TomadaAgua.nivel_montante.valor:0.3f}")
-                logger.critical(f"[TDA] Nivel montante ({tda.TomadaAgua.nivel_montante_anterior:3.2f}) atingiu o maximorum!")
+            if self.tda.nivel_montante_anterior >= NIVEL_MAXIMORUM:
+                logger.debug(f"[TDA]          Leitura:                   {self.tda.nivel_montante.valor:0.3f}")
+                logger.critical(f"[TDA] Nivel montante ({self.tda.nivel_montante_anterior:3.2f}) atingiu o maximorum!")
                 return NV_EMERGENCIA
             else:
                 self.controle_i = 0.5
@@ -322,24 +325,24 @@ class Usina:
                 for ug in self.ugs:
                     ug.step()
 
-        elif tda.TomadaAgua.nivel_montante.valor <= self.cfg["nv_minimo"] and not tda.TomadaAgua.aguardando_reservatorio:
-            logger.debug(f"[TDA]          Leitura:                   {tda.TomadaAgua.nivel_montante.valor:0.3f}")
+        elif self.tda.nivel_montante.valor <= self.cfg["nv_minimo"] and not self.tda.aguardando_reservatorio:
+            logger.debug(f"[TDA]          Leitura:                   {self.tda.nivel_montante.valor:0.3f}")
             logger.debug("[TDA] Nível montante abaixo do mínimo.")
-            tda.TomadaAgua.aguardando_reservatorio = True
+            self.tda.aguardando_reservatorio = True
             self.distribuir_potencia(0)
 
             for ug in self.ugs:
                 ug.step()
 
-            if tda.TomadaAgua.nivel_montante_anterior <= NIVEL_FUNDO_RESERVATORIO:
-                logger.critical(f"[TDA] Nivel montante ({tda.TomadaAgua.nivel_montante_anterior:3.2f}) atingiu o fundo do reservatorio!")
+            if self.tda.nivel_montante_anterior <= NIVEL_FUNDO_RESERVATORIO:
+                logger.critical(f"[TDA] Nivel montante ({self.tda.nivel_montante_anterior:3.2f}) atingiu o fundo do reservatorio!")
                 return NV_EMERGENCIA
 
-        elif tda.TomadaAgua.aguardando_reservatorio:
-            if tda.TomadaAgua.nivel_montante.valor >= self.cfg["nv_alvo"]:
-                logger.debug(f"[TDA]          Leitura:                   {tda.TomadaAgua.nivel_montante.valor:0.3f}")
+        elif self.tda.aguardando_reservatorio:
+            if self.tda.nivel_montante.valor >= self.cfg["nv_alvo"]:
+                logger.debug(f"[TDA]          Leitura:                   {self.tda.nivel_montante.valor:0.3f}")
                 logger.debug("[TDA] Nível montante dentro do limite de operação.")
-                tda.TomadaAgua.aguardando_reservatorio = False
+                self.tda.aguardando_reservatorio = False
 
         else:
             self.controlar_potencia()
@@ -356,16 +359,16 @@ class Usina:
         """
 
         logger.debug(f"[TDA] NÍVEL -> Alvo:                      {self.cfg['nv_alvo']:0.3f}")
-        logger.debug(f"[TDA]          Leitura:                   {tda.TomadaAgua.nivel_montante.valor:0.3f}")
+        logger.debug(f"[TDA]          Leitura:                   {self.tda.nivel_montante.valor:0.3f}")
 
-        self.controle_p = self.cfg["kp"] * tda.TomadaAgua.erro_nivel
+        self.controle_p = self.cfg["kp"] * self.tda.erro_nivel
 
         if self.__pid_inicial == -1:
             self.controle_i = max(min(self.controle_ie - self.controle_p, 0.9), 0)
             self.__pid_inicial = 0
         else:
-            self.controle_i = max(min((self.cfg["ki"] * tda.TomadaAgua.erro_nivel) + self.controle_i, 0.9), 0)
-            self.controle_d = self.cfg["kd"] * (tda.TomadaAgua.erro_nivel - tda.TomadaAgua.erro_nivel_anterior)
+            self.controle_i = max(min((self.cfg["ki"] * self.tda.erro_nivel) + self.controle_i, 0.9), 0)
+            self.controle_d = self.cfg["kd"] * (self.tda.erro_nivel - self.tda.erro_nivel_anterior)
 
         saida_pid = (self.controle_p + self.controle_i + min(max(-0.3, self.controle_d), 0.3))
 
@@ -378,14 +381,14 @@ class Usina:
         self.controle_ie = max(min(saida_pid + self.controle_ie * self.cfg["kie"], 1), 0)
 
         logger.debug(f"[USN] IE:                                 {self.controle_ie:0.3f}")
-        logger.debug(f"[USN] ERRO:                               {tda.TomadaAgua.erro_nivel}")
+        logger.debug(f"[USN] ERRO:                               {self.tda.erro_nivel}")
         logger.debug("")
 
-        if tda.TomadaAgua.nivel_montante_anterior >= (self.cfg["nv_maximo"] + 0.03):
+        if self.tda.nivel_montante_anterior >= (self.cfg["nv_maximo"] + 0.03):
             self.controle_ie = 1
             self.controle_i = 1 - self.controle_p
 
-        if tda.TomadaAgua.nivel_montante_anterior <= (self.cfg["nv_minimo"] + 0.03):
+        if self.tda.nivel_montante_anterior <= (self.cfg["nv_minimo"] + 0.03):
             self.controle_ie = min(self.controle_ie, 0.3)
             self.controle_i = 0
 
@@ -408,7 +411,7 @@ class Usina:
                 ug.setpoint = 0
             return 0
 
-        pot_medidor = bay.Bay.potencia_medidor_usina.valor
+        pot_medidor = self.bay.potencia_medidor_usina.valor
 
         logger.debug(f"[USN] Potência no medidor:                {pot_medidor:0.3f}")
 
@@ -524,7 +527,7 @@ class Usina:
         """
 
         Servidores.ping_clients()
-        tda.TomadaAgua.atualizar_montante()
+        self.tda.atualizar_montante()
 
         parametros = self.bd.get_parametros_usina()
 
@@ -563,7 +566,7 @@ class Usina:
 
         except Exception:
             logger.error(f"[USN] Houve um erro ao ler e atualizar os parâmetros do Banco de Dados.")
-            logger.debug(f"[USN] Traceback: {traceback.format_exc()}")
+            logger.debug(traceback.format_exc())
 
     def atualizar_valores_cfg(self, parametros) -> "None":
         """
@@ -590,7 +593,7 @@ class Usina:
 
         except Exception:
             logger.error(f"[USN] Houve um erro ao atualizar o arquivo de configuração \"cfg.json\".")
-            logger.debug(f"[USN] Traceback: {traceback.format_exc()}")
+            logger.debug(traceback.format_exc())
 
     def escrever_valores(self) -> "None":
         """
@@ -601,8 +604,8 @@ class Usina:
         try:
             self.bd.update_valores_usina([
                 self.get_time().strftime("%Y-%m-%d %H:%M:%S"),
-                1 if tda.TomadaAgua.aguardando_reservatorio else 0,
-                tda.TomadaAgua.nivel_montante.valor,
+                1 if self.tda.aguardando_reservatorio else 0,
+                self.tda.nivel_montante.valor,
                 self.ug1.leitura_potencia,
                 self.ug1.setpoint,
                 self.ug1.etapa_atual,
@@ -613,14 +616,14 @@ class Usina:
 
         except Exception:
             logger.error(f"[USN] Houve um erro ao atualizar os valores de controle de operação no Banco de Dados.")
-            logger.debug(f"[USN] Traceback: {traceback.format_exc()}")
+            logger.debug(traceback.format_exc())
 
         try:
             self.bd.update_debug([
                 time(),
                 1 if self.modo_autonomo else 0,
-                tda.TomadaAgua.nivel_montante.valor,
-                tda.TomadaAgua.erro_nivel,
+                self.tda.nivel_montante.valor,
+                self.tda.erro_nivel,
                 self.ug1.setpoint,
                 self.ug1.leitura_potencia,
                 self.ug1.codigo_state,
@@ -639,7 +642,7 @@ class Usina:
 
         except Exception:
             logger.error(f"[USN] Houve um erro ao atualizar valores DEBUG do controle de potência no Banco de Dados.")
-            logger.debug(f"[USN] Traceback: {traceback.format_exc()}")
+            logger.debug(traceback.format_exc())
 
     def heartbeat(self) -> "None":
         """
@@ -701,4 +704,4 @@ class Usina:
 
         except Exception:
             logger.error(f"[USN] Houve um erro ao tentar escrever valores modbus no CLP MOA.")
-            logger.debug(f"[USN] Traceback: {traceback.format_exc()}")
+            logger.debug(traceback.format_exc())

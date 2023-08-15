@@ -84,25 +84,25 @@ será adicionado a letra "B" + o número do BIT no final do nome:
 REG_RELE = {
     "BAY": {
         # Leituras Analógicas
-        "LT_FASE_A":                                    30010, # Mudar para o Simulador
-        "LT_FASE_B":                                    30013, # Mudar para o Simulador
-        "LT_FASE_C":                                    30016, # Mudar para o Simulador
-        "LT_VS":                                        30019, # Mudar para o Simulador
+        "LT_FASE_A":                                    10 + 30000, # Mudar para o Simulador
+        "LT_FASE_B":                                    13 + 30000, # Mudar para o Simulador
+        "LT_FASE_C":                                    16 + 30000, # Mudar para o Simulador
+        "LT_VS":                                        19 + 30000, # Mudar para o Simulador
 
 
         # Relé
-        "RELE_RST_TRP":                                 [30040, 2],
+        "RELE_RST_TRP":                                 [40 + 30000, 2],
 
 
         # DJ
-        "DJL_CMD_FECHAR":                               [30043, 2],
-        "DJL_FECHADO":                                  [30999, 0], # Fictício Simulador
+        "DJL_CMD_FECHAR":                               [43 + 30000, 2],
+        "DJL_FECHADO":                                  [999 + 30000, 0], # Fictício Simulador
 
 
         # DJ
-        "DJL_MOLA_CARREGADA":                           [30044, 1], # Mudar para o Simulador
+        "DJL_MOLA_CARREGADA":                           [44 + 30000, 1], # Mudar para o Simulador
         # Seccionadora
-        "SECC_FECHADA":                                 [30044, 4], # Mudar para o Simulador
+        "SECC_FECHADA":                                 [44 + 30000, 4], # Mudar para o Simulador
 
 
         # DJ
@@ -110,13 +110,13 @@ REG_RELE = {
 
 
         # Barra
-        "ID_BARRA_VIVA":                                [30053, 1], # Mudar para o Simulador
-        "ID_BARRA_MORTA":                               [30053, 7], # Mudar para o Simulador
+        "ID_BARRA_VIVA":                                [53 + 30000, 1], # Mudar para o Simulador
+        "ID_BARRA_MORTA":                               [53 + 30000, 7], # Mudar para o Simulador
 
 
         # Linha
-        "ID_LINHA_VIVA":                                [30054, 0], # Mudar para o Simulador
-        "ID_LINHA_MORTA":                               [30054, 1], # Mudar para o Simulador
+        "ID_LINHA_VIVA":                                [54 + 30000, 0], # Mudar para o Simulador
+        "ID_LINHA_MORTA":                               [54 + 30000, 1], # Mudar para o Simulador
 
     },
 
@@ -401,7 +401,7 @@ REG_CLP = {
         "CA_COM_TENSAO":                                [17, 11],
 
         "LG_FLH_ATUADA":                                [26, 15],
-        "LG_OPE_MANUAL":                                [28 + 500, 0],
+        "LG_OPE_MANUAL":                                [28 + 500, 0], # Alterar Simulador
 
         "VB_FECHANDO":                                  [23 + 500, 0], # Alterar Simulador
         "VB_CMD_RST_FLH":                               [55, 0],
@@ -411,16 +411,16 @@ REG_CLP = {
         "UH_FILTRO_LIMPO":                              [17, 13],
 
         "CP1_OPERANDO":                                 [2 + 1000, 0], # Alterar Simulador
-        "CP1_AGUARDANDO_CMD_ABERTURA":                  [2 + 1000, 3],
-        "CP1_PRESSAO_EQUALIZADA":                       [2 + 1000, 4],
+        "CP1_AGUARDANDO_CMD_ABERTURA":                  [2 + 1000, 3], # Alterar Simulador
+        "CP1_PRESSAO_EQUALIZADA":                       [2 + 1000, 4], # Alterar Simulador
 
-        "CP1_CMD_REARME_FLH":                           [6, 0],
+        "CP1_CMD_REARME_FLH":                           [6 + 1000, 0],
         "CP1_CMD_ABERTURA_CRACKING":                    [6 + 1000, 1], # Alterar Simulador
         "CP1_CMD_ABERTURA_TOTAL":                       [6 + 1000, 2], # Alterar Simulador
         "CP1_CMD_FECHAMENTO":                           [6 + 1000, 3], # Alterar Simulador
         "CP1_PERMISSIVOS_OK":                           [6 + 1000, 15], # Alterar Simulador
 
-        "CP1_BLQ_ATUADO":                               [8 + 1000, 15],
+        "CP1_BLQ_ATUADO":                               [8 + 1000, 15], # Alterar Simulador
 
         "CP1_CRACKING":                                 [16 + 1000, 0], # Alterar Simulador
         "CP1_REMOTO":                                   [16 + 1000, 6], # Alterar Simulador
@@ -429,8 +429,8 @@ REG_CLP = {
         "CP1_FECHADA":                                  [17 + 1000, 15], # Alterar Simulador
 
         "CP2_OPERANDO":                                 [2 + 2000, 0], # Alterar Simulador
-        "CP2_AGUARDANDO_CMD_ABERTURA":                  [2 + 2000, 3],
-        "CP2_PRESSAO_EQUALIZADA":                       [2 + 2000, 4],
+        "CP2_AGUARDANDO_CMD_ABERTURA":                  [2 + 2000, 3], # Alterar Simulador
+        "CP2_PRESSAO_EQUALIZADA":                       [2 + 2000, 4], # Alterar Simulador
 
         "CP2_CMD_REARME_FLH":                           [6 + 2000, 0],
         "CP2_CMD_ABERTURA_CRACKING":                    [6 + 2000, 1], # Alterar Simulador
@@ -438,9 +438,9 @@ REG_CLP = {
         "CP2_CMD_FECHAMENTO":                           [6 + 2000, 3], # Alterar Simulador
         "CP2_PERMISSIVOS_OK":                           [6 + 2000, 15], # Alterar Simulador
 
-        "CP2_BLQ_ATUADO":                               [8 + 2000, 15],
+        "CP2_BLQ_ATUADO":                               [8 + 2000, 15], # Alterar Simulador
 
-        "CP2_CRACKING":                                 [16 + 2000, 0],  # Alterar Simulador
+        "CP2_CRACKING":                                 [16 + 2000, 0], # Alterar Simulador
         "CP2_REMOTO":                                   [16 + 2000, 6], # Alterar Simulador
 
         "CP2_ABERTA":                                   [17 + 2000, 14], # Alterar Simulador

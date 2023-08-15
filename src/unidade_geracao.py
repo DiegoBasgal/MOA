@@ -424,7 +424,7 @@ class UnidadeGeracao:
 
         except Exception:
             logger.error(f"[UG{self.id}] Erro na execução da máquina de estados da Unidade -> \"step\".")
-            logger.debug(f"[UG{self.id}] Traceback: {traceback.format_exc()}")
+            logger.debug(traceback.format_exc())
 
     def atualizar_modbus_moa(self) -> "None":
         """
@@ -437,7 +437,7 @@ class UnidadeGeracao:
 
         except Exception:
             logger.error(f"[UG{self.id}] Não foi possível escrever os valores no CLP MOA.")
-            logger.debug(f"[UG{self.id}] Traceback: {traceback.format_exc()}")
+            logger.debug(traceback.format_exc())
 
     def partir(self) -> "None":
         """
@@ -462,7 +462,7 @@ class UnidadeGeracao:
 
         except Exception:
             logger.error(f"[UG{self.id}] Não foi possível partir a Unidade.")
-            logger.debug(f"[UG{self.id}] Traceback: {traceback.format_exc()}")
+            logger.debug(traceback.format_exc())
 
     def parar(self) -> "None":
         """
@@ -484,7 +484,7 @@ class UnidadeGeracao:
 
         except Exception:
             logger.error(f"[UG{self.id}] Não foi possível parar a Unidade.")
-            logger.debug(f"[UG{self.id}] Traceback: {traceback.format_exc()}")
+            logger.debug(traceback.format_exc())
 
     def enviar_setpoint(self, setpoint_kw: "int") -> "bool":
         """
@@ -512,7 +512,7 @@ class UnidadeGeracao:
 
         except Exception:
             logger.error(f"[UG{self.id}] Não foi possivel enviar o setpoint para a Unidade.")
-            logger.debug(f"[UG{self.id}] Traceback: {traceback.format_exc()}")
+            logger.debug(traceback.format_exc())
             return False
 
     def reconhece_reset_alarmes(self) -> "None":
@@ -541,7 +541,7 @@ class UnidadeGeracao:
 
         except Exception:
             logger.error(f"[UG{self.id}] Não foi possivel enviar o comando de reconhecer e resetar alarmes.")
-            logger.debug(f"[UG{self.id}] Traceback: {traceback.format_exc()}")
+            logger.debug(traceback.format_exc())
 
     def acionar_trip_logico(self) -> "None":
         """
@@ -556,7 +556,7 @@ class UnidadeGeracao:
 
         except Exception:
             logger.error(f"[UG{self.id}] Não foi possivel acionar o comando de TRIP: \"Lógico\".")
-            logger.debug(f"[UG{self.id}] Traceback: {traceback.format_exc()}")
+            logger.debug(traceback.format_exc())
 
     def remover_trip_logico(self) -> "None":
         """
@@ -578,7 +578,7 @@ class UnidadeGeracao:
 
         except Exception:
             logger.error(f"[UG{self.id}] Não foi possivel remover o comando de TRIP: \"Lógico\".")
-            logger.debug(f"[UG{self.id}] Traceback: {traceback.format_exc()}")
+            logger.debug(traceback.format_exc())
 
     def acionar_trip_eletrico(self) -> "None":
         """
@@ -593,7 +593,7 @@ class UnidadeGeracao:
 
         except Exception:
             logger.error(f"[UG{self.id}] Não foi possivel acionar o comando de TRIP: \"Elétrico\".")
-            logger.debug(f"[UG{self.id}] Traceback: {traceback.format_exc()}")
+            logger.debug(traceback.format_exc())
 
     def remover_trip_eletrico(self) -> "None":
         """
@@ -611,7 +611,7 @@ class UnidadeGeracao:
 
         except Exception:
             logger.error(f"[UG{self.id}] Não foi possivel remover o comando de TRIP: \"Elétrico\".")
-            logger.debug(f"[UG{self.id}] Traceback: {traceback.format_exc()}")
+            logger.debug(traceback.format_exc())
 
     def aguardar_normalizacao(self, delay: "int") -> "None":
         """
@@ -762,7 +762,7 @@ class UnidadeGeracao:
         if not self.etapa == UG_SINCRONIZADA:
             self.aux_tempo_sincronizada = None
 
-    def controlar_comporta(self) -> "None":
+    def controlar_comporta(self):
         """
         Função para controlar a Comporta equivalente ao ID da Unidade.
 
@@ -777,37 +777,39 @@ class UnidadeGeracao:
         logger.debug(f"[UG{self.id}]          Comando MOA:               \"OPERAR COMPORTA\"")
         logger.debug("")
         logger.debug(f"[CP{self.id}] Step  -> Comporta:                  \"{'Disponível' if not self.cp[f'CP{self.id}'].operando else 'Operando'}\"")
-        logger.debug(f"[CP{self.id}]          Etapa:                     \"{CP_STR_DCT[self.cp[f'CP{self.id}'].etapa] if not self.cp[f'CP{self.id}'].operando else [CP_STR_DCT[self.cp[f'CP{self.id}'].etapa] + '->' + CP_STR_DCT[self.cp[f'CP{self.id}'].ultima_etapa]]}\"")
+        logger.debug(f"[CP{self.id}]          Etapa:                     \"{CP_STR_DCT[self.cp[f'CP{self.id}'].etapa]}\"")
 
-        if self.cp[f"CP{self.id}"].etapa == CP_FECHADA:
-            self.cp[f"CP{self.id}"].ultima_etapa = CP_FECHADA
-            self.cp[f"CP{self.id}"].operar_cracking()
+        try:
+            if self.cp[f"CP{self.id}"].etapa == CP_FECHADA:
+                self.cp[f"CP{self.id}"].ultima_etapa = CP_FECHADA
+                self.cp[f"CP{self.id}"].operar_cracking()
 
-        elif self.cp[f"CP{self.id}"].etapa == CP_CRACKING:
-            self.cp[f"CP{self.id}"].ultima_etapa = CP_CRACKING
+            elif self.cp[f"CP{self.id}"].etapa == CP_CRACKING:
+                self.cp[f"CP{self.id}"].ultima_etapa = CP_CRACKING
 
-            if not self.cp[f"CP{self.id}"].borda_pressao:
-                Thread(target=lambda: self.cp[f"CP{self.id}"].aguardar_pressao_uh()).start()
-                self.cp[f"CP{self.id}"].borda_pressao = True
+                if not self.cp[f"CP{self.id}"].borda_pressao:
+                    Thread(target=lambda: self.cp[f"CP{self.id}"].aguardar_pressao_uh()).start()
+                    self.cp[f"CP{self.id}"].borda_pressao = True
 
-            elif self.cp[f"CP{self.id}"].pressao_equalizada.valor:
-                self.cp[f"CP{self.id}"].abrir()
+                elif self.cp[f"CP{self.id}"].pressao_equalizada.valor:
+                    self.cp[f"CP{self.id}"].abrir()
 
-            elif self.setpoint == 0 and self.leitura_potencia == 0:
-                self.cp[f"CP{self.id}"].fechar()
+                elif self.setpoint == 0 and self.leitura_potencia == 0:
+                    self.cp[f"CP{self.id}"].fechar()
 
-        elif self.cp[f"CP{self.id}"].etapa == CP_ABERTA:
-            self.cp[f"CP{self.id}"].ultima_etapa = CP_ABERTA
+            elif self.cp[f"CP{self.id}"].etapa == CP_ABERTA:
+                self.cp[f"CP{self.id}"].ultima_etapa = CP_ABERTA
 
-            if self.setpoint == 0 and self.leitura_potencia == 0:
-                self.cp[f"CP{self.id}"].fechar()
+                if self.setpoint == 0 and self.leitura_potencia == 0:
+                    self.cp[f"CP{self.id}"].fechar()
 
-        elif self.cp[f"CP{self.id}"].etapa == CP_REMOTO:
-            logger.debug(f"[UG{self.id}] Comporta {self.id} em modo manual")
-            pass
+            elif self.cp[f"CP{self.id}"].etapa == CP_REMOTO:
+                logger.debug(f"[CP{self.id}]          Comporta em modo manual")
+                pass
 
-        else:
-            logger.debug(f"[UG{self.id}] Comporta {self.id} Operando")
+        except Exception:
+            logger.error(f"[CP{self.id}] Erro ao operar Comporta.")
+            logger.debug(traceback.format_exc())
 
     def verificar_condicionadores(self) -> "int":
         """
@@ -880,7 +882,7 @@ class UnidadeGeracao:
 
         except Exception:
             logger.error(f"[UG{self.id}] Houve um erro ao atualizar os limites de temperaturas dos condicionadores.")
-            logger.debug(f"[UG{self.id}] Traceback: {traceback.format_exc()}")
+            logger.debug(traceback.format_exc())
 
     def verificar_limites(self) -> "None":
         """

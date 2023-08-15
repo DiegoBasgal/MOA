@@ -20,62 +20,62 @@ class Servidores:
         host=d.ips["SA_ip"],
         port=d.ips["SA_porta"],
         unit_id=1,
-        timeout=3,
+        timeout=5
     )
     clp["TDA"] = ModbusClient(
         host=d.ips["TDA_ip"],
         port=d.ips["TDA_porta"],
         unit_id=1,
-        timeout=3,
+        timeout=5
     )
     clp["UG1"] = ModbusClient(
         host=d.ips["UG1_ip"],
         port=d.ips["UG1_porta"],
         unit_id=1,
-        timeout=3,
+        timeout=5
     )
     clp["UG2"] = ModbusClient(
         host=d.ips["UG2_ip"],
         port=d.ips["UG2_porta"],
         unit_id=1,
-        timeout=3,
+        timeout=5
     )
     clp["MOA"] = ModbusClient(
         host=d.ips["MOA_ip"],
         port=d.ips["MOA_porta"],
         unit_id=1,
-        timeout=3,
+        timeout=5
     )
 
     rele["SE"] = ModbusClient(
         host=d.ips["RELE_SE_ip"],
         port=d.ips["RELE_SE_porta"],
         unit_id=1,
-        timeout=3,
+        timeout=5
     )
     rele["TE"] = ModbusClient(
         host=d.ips["RELE_TE_ip"],
         port=d.ips["RELE_TE_porta"],
         unit_id=1,
-        timeout=3,
+        timeout=5
     )
     rele["BAY"] = ModbusClient(
         host=d.ips["RELE_BAY_ip"],
         port=d.ips["RELE_BAY_porta"],
         unit_id=1,
-        timeout=3,
+        timeout=5
     )
     rele["UG1"] = ModbusClient(
         host=d.ips["RELE_UG1_ip"],
         port=d.ips["RELE_UG1_porta"],
         unit_id=1,
-        timeout=3,
+        timeout=5
     )
     rele["UG2"] = ModbusClient(
         host=d.ips["RELE_UG2_ip"],
         port=d.ips["RELE_UG2_porta"],
         unit_id=1,
-        timeout=3,
+        timeout=5
     )
 
     @staticmethod

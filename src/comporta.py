@@ -147,7 +147,7 @@ class Comporta:
 
         except Exception:
             logger.error(f"[CP{self.id}] Houve um erro ao realizar o Reset de Emergência da Comporta {self.id}.")
-            logger.debug(f"[CP{self.id}] Traceback: {traceback.format_exc()}")
+            logger.debug(traceback.format_exc())
             return False
 
     def abrir(self) -> "None":
@@ -172,7 +172,7 @@ class Comporta:
 
         except Exception:
             logger.error(f"[CP{self.id}] Houve um erro ao acionar o comando de Abertura da Comporta {self.id}.")
-            logger.debug(f"[CP{self.id}] Traceback: {traceback.format_exc()}")
+            logger.debug(traceback.format_exc())
 
     def fechar(self) -> "None":
         """
@@ -193,7 +193,7 @@ class Comporta:
 
         except Exception:
             logger.error(f"[CP{self.id}] Houve um erro acionar o comando de Fechamento da Comporta {self.id}.")
-            logger.debug(f"[CP{self.id}] Traceback: {traceback.format_exc()}")
+            logger.debug(traceback.format_exc())
 
     def operar_cracking(self) -> "None":
         """
@@ -215,7 +215,7 @@ class Comporta:
 
         except Exception:
             logger.error(f"[CP{self.id}] Houve um erro ao realizar a Operação de Cracking da Comporta {self.id}.")
-            logger.debug(f"[CP{self.id}] Traceback: {traceback.format_exc()}")
+            logger.debug(traceback.format_exc())
 
     def aguardar_pressao_uh(self) -> "None":
         """
@@ -225,18 +225,20 @@ class Comporta:
 
         try:
             logger.debug(f"[CP{self.id}]          Verificação MOA:           \"Equalização de Pressão UH\"")
+            delay = time() + 120
 
-            while time() < (time() + 120):
-                sleep(1)
+            while time() < delay:
                 if self.pressao_equalizada.valor:
+                    logger.debug(f"[CP{self.id}]          Verificação MOA:           \"UH Pressão Equalizada\"")
                     return
+                sleep(1)
 
             logger.warning(f"[CP{self.id}]          Estourou o tempo de Equalização de Pressão da UH")
             self.borda_pressao = True
 
         except Exception:
             logger.error(f"[CP{self.id}] Houve um erro ao verificar a Pressão da Unidade Hidráulica das Comportas.")
-            logger.debug(f"[CP{self.id}] Traceback: {traceback.format_exc()}")
+            logger.debug(traceback.format_exc())
 
     def verificar_condicoes(self) -> "bool":
         """
@@ -286,5 +288,5 @@ class Comporta:
 
         except Exception:
             logger.error(f"[CP{self.id}] Houve um erro ao verificar as Pré-condições de Operação da Comporta {self.id}.")
-            logger.debug(f"[CP{self.id}] Traceback: {traceback.format_exc()}")
+            logger.debug(traceback.format_exc())
             return False

@@ -136,7 +136,7 @@ class Bay:
         """
 
         flags = 0
-        logger.info("[BAY] Verificando Condições do Disjuntor do BAY...")
+        logger.info("[BAY] Verificando Condições do Disjuntor BAY...")
 
         try:
             if se.Subestacao.dj_linha_se.valor:
@@ -169,7 +169,7 @@ class Bay:
                 flags += 1
 
             logger.warning(f"[BAY] Foram identificadas \"{flags}\" condições de bloqueio ao realizar fechamento do Disjuntor do BAY. Favor normalizar.") \
-                if flags > 0 else logger.debug("[BAY] Condições de Fechamento Validadas")
+                if flags > 0 else logger.debug("[BAY] Condições de Fechamento Validadas.")
 
             return False if flags > 0 else True
 
