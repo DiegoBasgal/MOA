@@ -108,9 +108,10 @@ class UnidadeGeracao:
         self.__ultima_etapa_atual: "int" = 0
 
         self.__setpoint: "int" = 0
-        self.__setpoint_minimo: "int" = 0
-        self.__setpoint_maximo: "int" = 0
         self.__tentativas_de_normalizacao: "int" = 0
+
+        self.__setpoint_minimo: "int" = self.cfg["pot_minima"]
+        self.__setpoint_maximo: "int" = self.cfg[f"pot_maxima_ug{self.id}"]
 
         self.__condicionadores_atenuadores: "list[CondicionadorBase]" = []
 
@@ -138,9 +139,6 @@ class UnidadeGeracao:
         self.tempo_normalizar: "int" = 0
         self.tentativas_sincronismo: "int" = 0
         self.tentativas_aguardar_rotacao: "int" = 0
-
-        self.setpoint_minimo: "int" = self.cfg["pot_minima"]
-        self.setpoint_maximo: "int" = self.cfg[f"pot_maxima_ug{self.id}"]
 
         self.borda_parar: "bool" = False
         self.limpeza_grade: "bool" = False
@@ -465,7 +463,13 @@ class UnidadeGeracao:
         try:
             logger.debug("")
             logger.debug(f"[UG{self.id}] Step  -> Unidade:                   \"{UG_SM_STR_DCT[self.codigo_state]}\"")
-            logger.debug(f"[UG{self.id}]          Etapa atual:               \"{UG_STR_DCT_ETAPAS[self.etapa_atual]}\"")
+            logger.debug(f"[UG{self.id}]          Etapa Atual:               \"{UG_STR_DCT_ETAPAS[self.etapa_atual]}\"")
+
+            if self.etapa_atual == UG_SINCRONIZADA:
+                logger.debug(f"[UG{self.id}]          Leituras:")
+                logger.debug(f"[UG{self.id}]          - \"Potência Ativa\":        {self.leitura_potencia} kW")
+                logger.debug(f"[UG{self.id}]          - \"Rotação\":               {self.__leitura_rotacao.valor} RPM")
+                logger.debug(f"[UG{self.id}]          - \"Pressão UHRV\":          {self.__leitura_pressao_uhrv.valor} Bar")
 
             self.__next_state = self.__next_state.step()
             self.atualizar_modbus_moa()
@@ -491,32 +495,25 @@ class UnidadeGeracao:
 
         try:
             if not self.clp[f"UG{self.id}"].read_discrete_inputs(REG[f"UG{self.id}_ED_CondicaoPartida"], 1)[0]:
-                logger.debug(f"[UG{self.id}] Máquina sem condição de partida. Irá partir quando as condições forem reestabelecidas.")
+                logger.debug(f"[UG{self.id}]          Máquina sem condição de partida. Irá partir quando as condições forem reestabelecidas.")
                 return
 
             elif self.clp["SA"].read_coils(REG["SA_ED_QCAP_Disj52A1Fechado"])[0] != 0:
-                logger.info(f"[UG{self.id}] O Disjuntor 52A1 está aberto. Para partir a máquina, o mesmo deverá ser fechado.")
+                logger.info(f"[UG{self.id}]           O Disjuntor 52A1 está aberto. Para partir a máquina, o mesmo deverá ser fechado.")
                 return
 
             elif not self.etapa_atual == UG_SINCRONIZADA and self.tentativas_sincronismo <= 3:
                 self.tentativas_sincronismo += 1
 
                 logger.info(f"[UG{self.id}]          Enviando comando:          \"PARTIDA\"")
-                logger.info(f"[UG{self.id}]          Tentativas de Sincronismo:  {self.tentativas_sincronismo}/3")
 
                 self.clp[f"UG{self.id}"].write_single_coil(REG[f"UG{self.id}_CD_ResetRV"], [1])
                 self.clp[f"UG{self.id}"].write_single_coil(REG[f"UG{self.id}_CD_ResetReleRT"], [1])
-                self.clp[f"UG{self.id}"].write_single_coil(REG[f"UG{self.id}_CD_ResetGeral"], [1])
-                self.clp[f"UG{self.id}"].write_single_coil(REG[f"UG{self.id}_CD_ResetRele700G"], [1])
-                self.clp[f"UG{self.id}"].write_single_coil(REG[f"UG{self.id}_CD_ResetReleBloq86H"], [1])
-                self.clp[f"UG{self.id}"].write_single_coil(REG[f"UG{self.id}_CD_ResetReleBloq86M"], [1])
-                self.clp["SA"].write_single_coil(REG["SA_CD_ResetRele59N"], [1])
-                self.clp["SA"].write_single_coil(REG["SA_CD_ResetRele787"], [1])
-                self.clp[f"UG{self.id}"].write_single_coil(REG[f"UG{self.id}_ED_ReleBloqA86HAtuado"], [0])
-                self.clp[f"UG{self.id}"].write_single_coil(REG[f"UG{self.id}_ED_ReleBloqA86MAtuado"], [0])
-                self.clp[f"UG{self.id}"].write_single_coil(REG[f"UG{self.id}_RD_700G_Trip"], [0])
+                self.remover_trip_logico()
                 self.clp[f"UG{self.id}"].write_single_coil(REG[f"UG{self.id}_CD_IniciaPartida"], [1])
                 self.clp[f"UG{self.id}"].write_single_coil(REG[f"UG{self.id}_CD_Cala_Sirene"], [1])
+
+                logger.debug(f"[UG{self.id}]          Tentativas de Sincronismo: {self.tentativas_sincronismo}/3")
 
                 return
 
@@ -591,7 +588,7 @@ class UnidadeGeracao:
         """
 
         try:
-            logger.debug(f"[UG{self.id}]          Enviando comando:          \"TRIP ELÉTRICO\"")
+            logger.debug(f"[UG{self.id}]          Enviando comando:          \"ACIONAR TRIP ELÉTRICO\"")
             self.clp["MOA"].write_single_coil(REG[f"MOA_OUT_BLOCK_UG{self.id}"], [1])
 
         except Exception:
@@ -607,7 +604,7 @@ class UnidadeGeracao:
         """
 
         try:
-            logger.debug(f"[UG{self.id}]          Removendo comando:         \"TRIP ELÉTRICO\"")
+            logger.info(f"[UG{self.id}]          Enviando comando:          \"REMOVER TRIP ELÉTRICO\"")
 
             self.clp["MOA"].write_single_coil(REG["PAINEL_LIDO"], [0])
             self.clp["MOA"].write_single_coil(REG[f"MOA_OUT_BLOCK_UG{self.id}"], [0])
@@ -629,7 +626,7 @@ class UnidadeGeracao:
         """
 
         try:
-            logger.debug(f"[UG{self.id}]          Enviando comando:          \"TRIP LÓGICO\"")
+            logger.debug(f"[UG{self.id}]          Enviando comando:          \"ACIONAR TRIP LÓGICO\"")
             self.clp[f"UG{self.id}"].write_single_coil(REG[f"UG{self.id}_CD_EmergenciaViaSuper"], [1])
 
         except Exception:
@@ -644,11 +641,11 @@ class UnidadeGeracao:
         """
 
         try:
-            logger.debug(f"[UG{self.id}]          Removendo comando:         \"TRIP LÓGICO\"")
+            logger.debug(f"[UG{self.id}]          Enviando comando:          \"REMOVER TRIP LÓGICO\"")
             self.clp[f"UG{self.id}"].write_single_coil(REG[f"UG{self.id}_CD_ResetGeral"], [1])
+            self.clp[f"UG{self.id}"].write_single_coil(REG[f"UG{self.id}_CD_ResetRele700G"], [1])
             self.clp[f"UG{self.id}"].write_single_coil(REG[f"UG{self.id}_CD_ResetReleBloq86H"], [1])
             self.clp[f"UG{self.id}"].write_single_coil(REG[f"UG{self.id}_CD_ResetReleBloq86M"], [1])
-            self.clp[f"UG{self.id}"].write_single_coil(REG[f"UG{self.id}_CD_ResetRele700G"], [1])
             self.clp["SA"].write_single_coil(REG["SA_CD_ResetRele59N"], [1])
             self.clp["SA"].write_single_coil(REG["SA_CD_ResetRele787"], [1])
             self.clp[f"UG{self.id}"].write_single_coil(REG[f"UG{self.id}_ED_ReleBloqA86HAtuado"], [0])
@@ -857,8 +854,9 @@ class UnidadeGeracao:
         atenuacao = 0
         for condic in self.condicionadores_atenuadores:
             atenuacao = max(atenuacao, condic.valor)
-            logger.debug(f"[UG{self.id}]          Verificando Atenuadores:")
-            logger.debug(f"[UG{self.id}]          - \"{condic.descr}\":   Leitura: {condic.leitura.valor} | Atenuação: {atenuacao}")
+            if self.etapa_atual == UG_SINCRONIZADA:
+                logger.debug(f"[UG{self.id}]          Verificando Atenuadores:")
+                logger.debug(f"[UG{self.id}]          - \"{condic.descr}\":   Leitura: {condic.leitura.valor} | Atenuação: {atenuacao}")
 
         ganho = 1 - atenuacao
         aux = self.setpoint
@@ -868,7 +866,8 @@ class UnidadeGeracao:
         elif (self.setpoint * ganho < self.setpoint_minimo) and (self.setpoint > self.setpoint_minimo):
             self.setpoint =  self.setpoint_minimo
 
-        logger.debug(f"[UG{self.id}]                                     SP {aux} * GANHO {ganho} = {self.setpoint} kW")
+        if self.etapa_atual == UG_SINCRONIZADA:
+            logger.debug(f"[UG{self.id}]                                     SP {aux} * GANHO {ganho} = {self.setpoint} kW")
 
     def ajuste_inicial_cx(self) -> "None":
         """

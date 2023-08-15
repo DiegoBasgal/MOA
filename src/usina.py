@@ -4,6 +4,7 @@ import logging
 import threading
 import traceback
 import subprocess
+import numpy as np
 
 import src.mensageiro.dict as vd
 
@@ -107,16 +108,19 @@ class Usina:
 
         self.pot_disp: "int" = 0
         self.ug_operando: "int" = 0
+        self.erro_leitura_montante: "int" = 0
         self.modo_de_escolha_das_ugs: "int" = -1
-
-        self.erro_nv: "int" = 0
-        self.erro_nv_anterior: "int" = 0
-        self.nv_montante_recente: "int" = 0
 
         self.controle_p: "float" = 0
         self.controle_i: "float" = 0
         self.controle_d: "float" = 0
         self.pid_inicial: "float" = -1
+
+        self.erro_nv: "float" = 0
+        self.ema_anterior: "float" = -1
+        self.erro_nv_anterior: "float" = 0
+        self.nv_montante_recente: "float" = 0
+        self.nv_montante_anterior: "float" = 0
 
         self.tentar_normalizar: "bool" = True
 
@@ -127,7 +131,9 @@ class Usina:
         self.normalizar_forcado: "bool" = False
         self.aguardando_reservatorio: "bool" = False
 
-        self.nv_montante_recentes: "list" = []
+        self.niveis_recentes: "list" = []
+        self.niveis_anteriores: "list" = []
+
 
         self.ultima_tentativa_norm: "datetime" = self.get_time()
 
@@ -515,7 +521,9 @@ class Usina:
 
         self.resetar_tda()
         if self.nv_montante >= self.cfg["nv_maximo"]:
+            self.nv_montante_anterior = self.nv_montante_anterior
             logger.debug("[USN] Nível montante acima do máximo")
+            logger.debug(f"[USN]          Leitura:                   {self.nv_montante:0.3f}")
 
             if self.nv_montante_recente >= NIVEL_MAXIMORUM:
                 logger.critical(f"[USN] Nível montante ({self.nv_montante_recente:3.2f}) atingiu o maximorum!")
@@ -529,11 +537,29 @@ class Usina:
 
         elif self.nv_montante <= self.cfg["nv_minimo"] and not self.aguardando_reservatorio:
             logger.debug("[USN] Nível montante abaixo do mínimo")
-            self.aguardando_reservatorio = True
-            self.distribuir_potencia(0)
+            logger.debug(f"[USN]          Leitura:                   {self.nv_montante:0.3f}")
 
-            for ug in self.ugs:
-                ug.step()
+            if self.nv_montante < self.cfg["nv_minimo"] and self.nv_montante_anterior > self.cfg["nv_minimo"]:
+                if self.erro_leitura_montante == 3:
+                    logger.warning(f"[USN] Tentativas de Leitura de Nível Montante ultrapassadas!")
+                    self.erro_leitura_montante = 0
+                    self.distribuir_potencia(0)
+
+                    for ug in self.ugs:
+                        ug.step()
+
+                    return NV_FLAG_EMERGENCIA
+
+                self.erro_leitura_montante += 1
+                logger.info("[USN] Foi identificada uma diferença nas Leituras de Nível Montante anterior e atual")
+                logger.debug(f"[USN] Verificando erros de Leitura... (Tentativa {self.erro_leitura_montante}/3)")
+            else:
+                self.erro_leitura_montante = 0
+                self.aguardando_reservatorio = True
+                self.distribuir_potencia(0)
+
+                for ug in self.ugs:
+                    ug.step()
 
             if self.nv_montante_recente <= NIVEL_FUNDO_RESERVATORIO:
                 if not ClientesUsina.ping(d.ips["TDA_ip"]):
@@ -545,10 +571,12 @@ class Usina:
 
         elif self.aguardando_reservatorio:
             if self.nv_montante >= self.cfg["nv_alvo"]:
+                logger.debug(f"[USN]          Leitura:                   {self.nv_montante:0.3f}")
                 logger.debug("[USN] Nível montante dentro do limite de operação")
                 self.aguardando_reservatorio = False
 
         else:
+            self.nv_montante_anterior = self.nv_montante_anterior
             self.controlar_potencia()
 
             for ug in self.ugs:
@@ -558,7 +586,8 @@ class Usina:
 
     def controlar_potencia(self) -> None:
         logger.debug(f"[USN] NÍVEL -> Alvo:                      {self.cfg['nv_alvo']:0.3f}")
-        logger.debug(f"[USN]          Leitura:                   {self.nv_montante_recente:0.3f}")
+        logger.debug(f"[USN]          Leitura:                   {self.nv_montante:0.3f}")
+        logger.debug(f"[USN]          Filtro EMA:                {self.nv_montante_recente:0.3f}")
 
         self.controle_p = self.cfg["kp"] * self.erro_nv
 
@@ -644,9 +673,9 @@ class Usina:
         logger.debug(f"[USN] Ordem das UGs (Prioridade):         {[ug.id for ug in ugs]}")
         logger.debug("")
 
-        ug_sinc = 0
         pot_disp = 0
         ajuste_manual = 0
+        ug_sincronizando = 0
 
         for ug in self.ugs:
             pot_disp += ug.cfg[f"pot_maxima_ug{ug.id}"]
@@ -655,7 +684,7 @@ class Usina:
 
         for ug in ugs:
             if ug.etapa_atual == UG_SINCRONIZANDO:
-                ug_sinc += 1
+                ug_sincronizando += 1
 
         if ugs is None or not len(ugs):
             return
@@ -679,31 +708,37 @@ class Usina:
                 logger.debug("[USN] Split:                              3")
                 logger.debug("")
 
-                if ug_sinc == 3:
+                if ug_sincronizando != 0:
+                    for ug in ugs:
+                        if ug.etapa_atual == UG_SINCRONIZANDO:
+                            ug.setpoint = self.cfg["pot_minima"]
+                        else:
+                            ug.setpoint = self.cfg["pot_maxima_ug"]
+
+                else:
                     ugs[0].setpoint = sp * ugs[0].setpoint_maximo
                     ugs[1].setpoint = sp * ugs[1].setpoint_maximo
                     ugs[2].setpoint = sp * ugs[2].setpoint_maximo
-                else:
-                    sp * 3 / (3 - ug_sinc)
-                    for ug in ugs:
-                        ug.setpoint = self.cfg["pot_minima"] if ug.etapa_atual == UG_SINCRONIZANDO else sp * ug.setpoint_maximo
 
                 logger.debug(f"[UG{ugs[0].id}] SP    <-                            {int(ugs[0].setpoint)}")
                 logger.debug(f"[UG{ugs[1].id}] SP    <-                            {int(ugs[1].setpoint)}")
                 logger.debug(f"[UG{ugs[2].id}] SP    <-                            {int(ugs[2].setpoint)}")
 
             elif self.__split2:
-                logger.debug("[USN] Split:                              2")
+                logger.debug("[USN] Split:                              3 -> \"2B\"")
                 logger.debug("")
 
-                if ug_sinc == 2:
+                if ug_sincronizando != 0:
+                    for ug in ugs:
+                        if ug.etapa_atual == UG_SINCRONIZANDO:
+                            ug.setpoint = self.cfg["pot_minima"]
+                        else:
+                            ug.setpoint = self.cfg["pot_maxima_ug"]
+
+                else:
                     sp = sp * 3 / 2
                     ugs[0].setpoint = sp * ugs[0].setpoint_maximo
                     ugs[1].setpoint = sp * ugs[1].setpoint_maximo
-                else:
-                    sp = sp * 3 / (2 - ug_sinc)
-                    for ug in ugs:
-                        ug.setpoint = self.cfg["pot_minima"] if ug.etapa_atual == UG_SINCRONIZANDO else sp * ug.setpoint_maximo
 
                 ugs[2].setpoint = 0
 
@@ -712,7 +747,7 @@ class Usina:
                 logger.debug(f"[UG{ugs[2].id}] SP    <-                            {int(ugs[2].setpoint)}")
 
             elif self.__split1:
-                logger.debug("[USN] Split:                              1")
+                logger.debug("[USN] Split:                              3 -> \"1B\"")
                 logger.debug("")
 
                 sp = sp * 3
@@ -732,23 +767,26 @@ class Usina:
 
         if len(ugs) == 2:
             if self.__split2 or self.__split3:
-                logger.debug("[USN] Split:                              2B")
+                logger.debug("[USN] Split:                              2")
                 logger.debug("")
 
-                if ug_sinc == 2:
+                if ug_sincronizando != 0:
+                    for ug in ugs:
+                        if ug.etapa_atual == UG_SINCRONIZANDO:
+                            ug.setpoint = self.cfg["pot_minima"]
+                        else:
+                            ug.setpoint = self.cfg["pot_maxima_ug"]
+
+                else:
                     sp = sp * 3 / 2
                     ugs[0].setpoint = sp * ugs[0].setpoint_maximo
                     ugs[1].setpoint = sp * ugs[1].setpoint_maximo
-                else:
-                    sp = sp * 3 / (2 - ug_sinc)
-                    for ug in ugs:
-                        ug.setpoint = self.cfg["pot_minima"] if ug.etapa_atual == UG_SINCRONIZANDO else sp * ug.setpoint_maximo
 
                 logger.debug(f"[UG{ugs[0].id}] SP    <-                            {int(ugs[0].setpoint)}")
                 logger.debug(f"[UG{ugs[1].id}] SP    <-                            {int(ugs[1].setpoint)}")
 
             elif self.__split1:
-                logger.debug("[USN] Split:                              1")
+                logger.debug("[USN] Split:                              2 -> \"1B\"")
                 logger.debug("")
 
                 sp = sp * 3
@@ -768,13 +806,21 @@ class Usina:
                 logger.debug(f"[UG{ugs[1].id}] SP    <-                            {int(ugs[1].setpoint)}")
 
         elif len(ugs) == 1:
-            logger.debug("[USN] Split:                              1B")
+            logger.debug("[USN] Split:                              1")
             logger.debug("")
 
             ugs[0].setpoint = 3 * sp * ugs[0].setpoint_maximo
 
             logger.debug(f"[UG{ugs[0].id}] SP    <-                            {int(ugs[0].setpoint)}")
 
+    def calcular_ema_montante(self, ema_anterior, periodo=40, smoothing=5, casas_decimais=5) -> float:
+
+        constante = smoothing / (1 + periodo)
+
+        ema = self.nv_montante * constante + ema_anterior * (1 - constante)
+        ema = np.round(ema, casas_decimais)
+
+        return ema
 
     ### FUNÇÕES DE CONTROLE DE DADOS:
 
@@ -800,23 +846,15 @@ class Usina:
         """
         Função para atualização de valores anteriores e erro de nível montante.
         """
+        if self.ema_anterior == -1:
+            self.ema_anterior = 0
+            self.nv_montante_recente = self.nv_montante
+        else:
+            ema = self.calcular_ema_montante(self.nv_montante_recente)
+            self.nv_montante_recente = ema
 
-        # if self.nv_montante_recente < 1:
-        #     self.nv_montante_recentes = [self.nv_montante] * 240
-
-        #     self.nv_montante_recentes.append(round(self.nv_montante, 2))
-        #     self.nv_montante_recentes = self.nv_montante_recentes[1:]
-
-        #     smoothing = 5
-        #     ema = [sum(self.nv_montante_recentes) / len(self.nv_montante_recentes)]
-        #     for nv in self.nv_montante_recentes:
-        #         ema.append((nv * (smoothing / (1 + len(self.nv_montante_recentes)))) + ema[-1] * (1 - (smoothing / (1 + len(self.nv_montante_recentes)))))
-
-        self.nv_montante_recente = self.nv_montante # ema[:1]
         self.erro_nv_anterior = self.erro_nv
         self.erro_nv = self.nv_montante_recente - self.cfg["nv_alvo"]
-
-
 
     def atualizar_valores_banco(self, parametros) -> None:
         """
