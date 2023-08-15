@@ -7,9 +7,9 @@ compartilhado = {
         "stop_gui": False
     },
 
-    "USN": {
-        "trip_condic": False,
-
+    "BRD": {
+        "condic" : False,
+        
         "aux_borda1": 0,
         "aux_borda2": 0,
         "aux_borda3": 0,
@@ -22,6 +22,16 @@ compartilhado = {
         "aux_borda10": 0,
         "aux_borda11": 0,
         "aux_borda12": 0,
+
+        "cp1_aberta": False,
+        "cp1_fechada": False,
+        "cp1_cracking": False,
+        "cp1_operando": False,
+
+    },
+
+    "USN": {
+        "trip_condic": False,
     },
 
     "TDA": {
@@ -33,17 +43,9 @@ compartilhado = {
         "nv_montante": 461.9,
         "nv_jusante_grade": 0,
 
-        "cp1_borda_a": 0,
-        "cp1_borda_c": 0,
-        "cp1_borda_f": 0,
         "cp1_progresso": 0,
-        "cp1_borda_o": False,
 
-        "cp2_borda_a": 0,
-        "cp2_borda_c": 0,
-        "cp2_borda_f": 0,
         "cp2_progresso": 0,
-        "cp2_borda_o": False,
 
         "lg_operando": False,
         "vb_operando": False,

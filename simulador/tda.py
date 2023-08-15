@@ -114,6 +114,10 @@ class Tda:
         self.volume += self.dict['TDA']['q_liquida'] * self.segundos_por_passo
 
     def atualizar_modbus(self) -> "None":
+
+        DB.set_words(MB['TDA']['NV_MONTANTE'], [self.dict['TDA']['nv_montante'] * 100])
+        DB.set_words(MB['TDA']['NV_JUSANTE_CP1'], [round((self.dict['TDA']['nv_jusante_grade']) * 10000)])
+        DB.set_words(MB['TDA']['NV_JUSANTE_CP2'], [round((self.dict['TDA']['nv_jusante_grade']) * 10000)])
         
         # CP1 Permissão
         if self.dict['TDA']['cp1_permissao_abertura'] and not self.b_cp1_permissao:

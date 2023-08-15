@@ -125,36 +125,52 @@ Testes de Leituras para ajustes do MOA
 # ------------------------------------------------------------------------------------------------------------------- #
 ### Teste de Leitura de Nível Montante XAV
 
-from src.funcoes.leitura import *
-from src.dicionarios.reg import *
+# from src.funcoes.leitura import *
+# from src.dicionarios.reg import *
 
-from pymodbus.constants import Endian
-from pymodbus.payload import BinaryPayloadDecoder
-from pyModbusTCP.client import ModbusClient
+# from pymodbus.constants import Endian
+# from pymodbus.payload import BinaryPayloadDecoder
+# from pyModbusTCP.client import ModbusClient
 
-tda = ModbusClient(
-    host="192.168.20.140",
-    port=2000,
-    unit_id=1,
-    timeout=0.5
-)
+# tda = ModbusClient(
+#     host="192.168.20.140",
+#     port=2000,
+#     unit_id=1,
+#     timeout=0.5
+# )
 
-nivel = LeituraModbusFloat(
-    client=tda,
-    registrador=REG_CLP["TDA"]["NV_MONTANTE"]
-)
-
-
-
-raw = tda.read_holding_registers(31, 2)
-
-dec = BPD.fromRegisters(raw, byteorder=Endian.Big, wordorder=Endian.Little)
-
-print('')
-print(f'Leitura Nível Módulo MB: {dec.decode_32bit_float()}')
-print('')
+# nivel = LeituraModbusFloat(
+#     client=tda,
+#     registrador=REG_CLP["TDA"]["NV_MONTANTE"]
+# )
 
 
-print('')
-print(f"Leitura de Nível Classe Python: {nivel.valor}")
-print('')
+
+# raw = tda.read_holding_registers(31, 2)
+
+# dec = BPD.fromRegisters(raw, byteorder=Endian.Big, wordorder=Endian.Little)
+
+# print('')
+# print(f'Leitura Nível Módulo MB: {dec.decode_32bit_float()}')
+# print('')
+
+
+# print('')
+# print(f"Leitura de Nível Classe Python: {nivel.valor}")
+# print('')
+
+ETAPA = 99
+
+dicio = {
+    "T": {
+        "etapa": 0,
+    }
+}
+
+etapa = None
+
+dicio["T"]["etapa"] = etapa = ETAPA
+
+print(dicio["T"]["etapa"])
+
+print(etapa)
