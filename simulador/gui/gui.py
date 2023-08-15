@@ -32,12 +32,12 @@ class Window(QMainWindow, Ui_Form):
             self.checkBox_condics.setChecked(self.dict['USN']['trip_condic'])
 
             # SE
+            self.checkBox_DjSE_trip.setChecked(self.dict['SE']['dj_trip'])
             self.checkBox_DjSE_aberto.setChecked(self.dict['SE']['dj_aberto'])
             self.checkBox_DjSE_fechado.setChecked(self.dict['SE']['dj_fechado'])
-            self.checkBox_DjSE_trip.setChecked(self.dict['SE']['dj_trip'])
-            self.checkBox_DjSE_mola.setChecked(self.dict['SE']['dj_mola_carregada'])
-            self.checkBox_DjSE_falta_vcc.setChecked(self.dict['SE']['dj_falta_vcc'])
             self.checkBox_DjSE_condicao.setChecked(self.dict['SE']['dj_condicao'])
+            self.checkBox_DjSE_falta_vcc.setChecked(self.dict['SE']['dj_falta_vcc'])
+            self.checkBox_DjSE_mola.setChecked(self.dict['SE']['dj_mola_carregada'])
 
             self.lcdNumber_tensaoSE.display(self.dict['SE']['tensao_linha'])
             self.lcdNumber_medidorSE.display(f"{self.dict['SE']['potencia_se']:4.1f}")
@@ -127,10 +127,10 @@ class Window(QMainWindow, Ui_Form):
             self.dict['SE']['dj_trip'] = True
 
     def alterar_estado_djSe(self):
-        if self.dict['SE']['dj_aberto']:
+        if self.dict['SE']['dj_aberto'] and not self.dict['SE']['dj_fechado']:
             self.dict['SE']['debug_dj_fechar'] = True
 
-        if self.dict['SE']['dj_fechado']:
+        elif self.dict['SE']['dj_fechado'] and not self.dict['SE']['dj_aberto']:
             self.dict['SE']['debug_dj_abrir'] = True
 
     # BAY
@@ -150,10 +150,10 @@ class Window(QMainWindow, Ui_Form):
             self.dict['BAY']['dj_trip'] = True
 
     def alterar_estado_djBay(self):
-        if self.dict['BAY']['dj_aberto']:
+        if self.dict['BAY']['dj_aberto'] and not self.dict['BAY']['dj_fechado']:
             self.dict['BAY']['debug_dj_fechar'] = True
 
-        if self.dict['BAY']['dj_fechado']:
+        elif self.dict['BAY']['dj_fechado'] and not self.dict['BAY']['dj_aberto']:
             self.dict['BAY']['debug_dj_abrir'] = True
 
     # TDA

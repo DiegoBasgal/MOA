@@ -8,24 +8,13 @@ compartilhado = {
     },
 
     "BRD": {
+        # GERAL
         "condic" : False,
 
-        "aux_borda1": 0,
-        "aux_borda2": 0,
-        "aux_borda3": 0,
-        "aux_borda4": 0,
-        "aux_borda5": 0,
-        "aux_borda6": 0,
-        "aux_borda7": 0,
-        "aux_borda8": 0,
-        "aux_borda9": 0,
-        "aux_borda10": 0,
-        "aux_borda11": 0,
-        "aux_borda12": 0,
-
         # TDA
-        "vb_operando": False,
         "lg_operando": False,
+        "vb_operando": False,
+        "vb_calculo_q": False,
         "uh_disponivel": False,
 
         # SE
@@ -54,7 +43,7 @@ compartilhado = {
         "cp2_bloqueio": False,
         "cp2_operando": False,
         "cp2_permissao": False,
-        "cp1_equalizada": False,
+        "cp2_equalizada": False,
         "cp2_aguardando": False,
 
     },
@@ -69,11 +58,8 @@ compartilhado = {
         "q_sanitaria": 0,
         "q_vertimento": 0,
 
-        "nv_montante": 461.9,
+        "nv_montante": 461.850,
         "nv_jusante_grade": 0,
-
-        "cp1_progresso": 0,
-        "cp2_progresso": 0,
 
         "lg_operando": False,
         "vb_operando": False,
@@ -86,16 +72,16 @@ compartilhado = {
 
         "dj_trip": False,
         "dj_falha": False,
-        "dj_aberto": False,
-        "dj_fechado": True,
+        "dj_aberto": True,
+        "dj_fechado": False,
         "dj_condicao": False,
         "dj_falta_vcc": False,
         "dj_inconsistente": False,
         "dj_mola_carregada": True,
 
+        "debug_dj_reset": False,
         "debug_dj_abrir": False,
         "debug_dj_fechar": False,
-        "debug_dj_reset": False,
     },
 
     "BAY": {
@@ -107,18 +93,20 @@ compartilhado = {
         "dj_secc": True,
         "dj_trip": False,
         "dj_falha": False,
-        "dj_aberto": False,
-        "dj_fechado": True,
+        "dj_aberto": True,
+        "dj_fechado": False,
         "dj_condicao": False,
         "dj_inconsistente": False,
         "dj_mola_carregada": True,
 
+        "debug_dj_reset": False,
         "debug_dj_abrir": False,
         "debug_dj_fechar": False,
-        "debug_dj_reset": False
     },
 
     "CP1": {
+        "progresso": 0,
+
         "trip": False,
         "aberta": False,
         "fechada": True,
@@ -135,6 +123,8 @@ compartilhado = {
     },
 
     "CP2": {
+        "progresso": 0,
+
         "trip": False,
         "aberta": False,
         "fechada": True,

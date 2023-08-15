@@ -30,24 +30,30 @@ class Se:
 
         self.dict['SE']['potencia_se'] = ((self.dict['UG1']['potencia'] + self.dict['UG2']['potencia']) * 0.995) + np.random.normal(0, 0.001 * self.escala_ruido)
 
+        if LEI.ler_bit(MB['SE']['DJL_CMD_FECHAR']):
+            ESC.escrever_bit(MB['SE']['DJL_CMD_FECHAR'], valor=0)
+            self.fechar_dj()
+
+        if LEI.ler_bit(MB['SE']['REGISTROS_CMD_RST']):
+            ESC.escrever_bit(MB['SE']['REGISTROS_CMD_RST'], valor=0)
+            self.resetar_dj()
+
         if self.dict['SE']['debug_dj_abrir']:
             self.dict['SE']['debug_dj_abrir'] = False
             self.abrir_dj()
 
-        if self.dict['SE']['dj_trip'] or (self.dict['SE']['debug_dj_fechar'] and self.dict['SE']['debug_dj_abrir']):
-            self.dict['SE']['debug_dj_abrir'] = False
+        if self.dict['SE']['debug_dj_fechar']:
             self.dict['SE']['debug_dj_fechar'] = False
-            self.tripar_dj()
+            self.fechar_dj()
 
-        if LEI.ler_bit(MB['SE']['REGISTROS_CMD_RST']) or self.dict['SE']['debug_dj_reset']:
-            ESC.escrever_bit(MB['SE']['REGISTROS_CMD_RST'], valor=0)
+        if self.dict['SE']['debug_dj_reset']:
             self.dict['SE']['debug_dj_reset'] = False
             self.resetar_dj()
 
-        if LEI.ler_bit(MB['SE']['DJL_CMD_FECHAR']) or self.dict['SE']['debug_dj_fechar']:
-            ESC.escrever_bit(MB['SE']['DJL_CMD_FECHAR'], valor=0)
+        if self.dict['SE']['debug_dj_fechar'] and self.dict['SE']['debug_dj_abrir']:
+            self.dict['SE']['debug_dj_abrir'] = False
             self.dict['SE']['debug_dj_fechar'] = False
-            self.fechar_dj()
+            self.tripar_dj()
 
 
     def verificar_tensao_dj(self) -> "None":
@@ -59,10 +65,33 @@ class Se:
             self.dict['SE']['dj_falta_vcc'] = False
 
 
+    def verificar_mola_dj(self) -> "None":
+        if not self.dict['SE']['dj_mola_carregada']:
+            self.mola += self.segundos_por_passo
+
+            if self.mola >= self.tempo_carregamento_mola:
+                self.mola = 0
+                self.dict['SE']['dj_mola_carregada'] = True
+
+
+    def verificar_condicao_dj(self) -> "None":
+        if self.dict['SE']['dj_trip'] \
+        or self.dict['SE']['dj_fechado'] \
+        or self.dict['SE']['dj_falta_vcc'] \
+        or not self.dict['SE']['dj_aberto'] \
+        or not self.dict['SE']['dj_mola_carregada'] \
+        or self.dict['BAY']['dj_aberto']:
+            self.dict['SE']['dj_condicao'] = False
+
+        else:
+            self.dict['SE']['dj_condicao'] = True
+
+
     def abrir_dj(self) -> "None":
         print('[SE] Comando de Abertura do Disjuntor da Subestação acionado')
 
         if self.dict['SE']['dj_mola_carregada']:
+            self.dict['SE']['dj_trip'] = False
             self.dict['SE']['dj_aberto'] = True
             self.dict['SE']['dj_fechado'] = False
 
@@ -77,57 +106,39 @@ class Se:
             self.dict['SE']['dj_falha'] = True
             self.tripar_dj(descr='Picou.')
 
-        else:
-            if not self.dict['BAY']['dj_fechado']:
-                print('[SE] Não foi possível Fechar o Disjuntor da Subestação, pois o Disjuntor do Bay está Aberto!')
+        elif not self.dict['BAY']['dj_fechado']:
+            print('[SE] Não foi possível Fechar o Disjuntor da Subestação, pois o Disjuntor do Bay está Aberto!')
 
-                if self.dict['SE']['dj_condicao']:
-                    self.dict['SE']['dj_aberto'] = False
-                    self.dict['SE']['dj_fechado'] = True
-                    self.dict['SE']['dj_mola_carregada'] = False
-                    self.dict['SE']['tensao_linha'] = 23100
+        elif self.dict['SE']['dj_aberto']:
+            if self.dict['SE']['dj_condicao']:
+                print('[SE] Comando de Fechamento Disjuntor SE')
+                self.dict['SE']['dj_fechado'] = True
+                self.dict['SE']['dj_aberto'] = False
+                self.dict['SE']['tensao_linha'] = 23100
 
-                else:
-                    self.dict['SE']['dj_falha'] = True
-                    self.tripar_dj(descr='Fechou antes de ter a condição de fechamento.')
+            else:
+                self.dict['SE']['dj_falha'] = True
+                self.tripar_dj(descr='Fechou antes de ter a condição de fechamento.')
+
+        self.dict['SE']['dj_mola_carregada'] = False
 
 
-    def verificar_mola_dj(self) -> "None":
-        if not self.dict['SE']['dj_mola_carregada']:
-            self.mola += self.segundos_por_passo
-
-            if self.mola >= self.tempo_carregamento_mola:
-                self.mola = 0
-                self.dict['SE']['dj_mola_carregada'] = True
+    def resetar_dj(self) -> "None":
+        print('[SE]  Comando de Reset.')
+        self.dict['SE']['dj_trip'] = False
+        self.dict['SE']['dj_falha'] = False
+        self.avisou_trip = False
 
 
     def tripar_dj(self, descr=None) -> "None":
         if not self.avisou_trip:
             self.avisou_trip = True
             self.dict['SE']['dj_trip'] = True
+            self.dict['SE']['dj_falha'] = True
             self.dict['SE']['dj_aberto'] = True
             self.dict['SE']['dj_fechado'] = False
             self.dict['SE']['dj_mola_carregada'] = False
-            print(f'[SE]  TRIP Disjuntor da Subestação! | Descrição: {descr}')
-
-
-    def resetar_dj(self) -> "None":
-        print('[SE]  Comando de Reset Geral acionado')
-        self.dict['SE']['dj_trip'] = False
-        self.dict['SE']['dj_falha'] = False
-        self.avisou_trip = False
-
-
-    def verificar_condicao_dj(self) -> "None":
-        if self.dict['SE']['dj_trip'] \
-        or self.dict['SE']['dj_fechado'] \
-        or self.dict['SE']['dj_falta_vcc'] \
-        or not self.dict['SE']['dj_mola_carregada'] \
-        or not self.dict['BAY']['dj_fechado']:
-            self.dict['SE']['dj_condicao'] = False
-
-        else:
-            self.dict['SE']['dj_condicao'] = True
+            print(f'[SE]  TRIP Disjuntor! | Descrição: {descr}')
 
 
     def atualizar_modbus(self) -> "None":

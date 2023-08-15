@@ -44,8 +44,10 @@ if __name__ == '__main__':
         # thread_controlador.join()
 
         print("Fim da Simulação.")
-        sys.exit(1)
+        
+        sys.exit(0)
 
-    except Exception:
+    except Exception or KeyboardInterrupt:
+        sys.exit(1)
         print(f"Houve um erro ao iniciar as Threads de excução do Simulador.")
         print(traceback.format_exc())

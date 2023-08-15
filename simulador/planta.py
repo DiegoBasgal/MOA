@@ -20,11 +20,11 @@ class Planta:
 
         self.dict = dict_comp
 
-        self.se = Se(tempo, dict_comp)
-        self.bay = Bay(tempo, dict_comp)
-        self.tda = Tda(tempo, dict_comp)
-        self.ug1 = Unidade(1, tempo, dict_comp)
-        self.ug2 = Unidade(2, tempo, dict_comp)
+        self.se = Se(dict_comp, tempo)
+        self.bay = Bay(dict_comp, tempo)
+        self.tda = Tda(dict_comp, tempo)
+        self.ug1 = Unidade(1, dict_comp, tempo)
+        self.ug2 = Unidade(2, dict_comp, tempo)
 
         self.ugs = [self.ug1, self.ug2]
 
@@ -44,8 +44,8 @@ class Planta:
         self.se.atualizar_modbus()
         self.bay.atualizar_modbus()
         self.tda.atualizar_modbus()
-        for ug in self.ugs:
-            ug.atualizar_modbus()
+        self.ug1.atualizar_modbus()
+        self.ug2.atualizar_modbus()
 
 
     def run(self) -> 'None':
@@ -61,6 +61,14 @@ class Planta:
                 lock.acquire()
                 self.dict['GLB']['tempo_simul'] += self.segundos_por_passo
 
+                self.atualizar_modbus_geral()
+
+                self.se.passo()
+                self.bay.passo()
+                self.tda.passo()
+                self.ug1.passo()
+                self.ug2.passo()
+
                 if self.dict['USN']['trip_condic'] and not self.dict['BRD']['condic']:
                     self.dict['BRD']['condic'] = True
                     DB.set_words(MB['GERAL']['USN_CONDICIONADOR'][0], [1])
@@ -71,14 +79,6 @@ class Planta:
 
                 self.atualizar_modbus_geral()
 
-                self.bay.passo()
-                self.se.passo()
-                self.tda.passo()
-                for ug in self.ugs:
-                    ug.passo()
-
-                self.atualizar_modbus_geral()
-
                 lock.release()
                 tempo_restante = (self.passo_simulacao - (datetime.now() - t_inicio).seconds)
                 sleep(tempo_restante) if tempo_restante > 0 else print('A Simulação está demorando mais do que o permitido!')
@@ -86,4 +86,4 @@ class Planta:
             except KeyboardInterrupt:
                 self.server_MB.stop()
                 self.dict['GLB']['stop_gui'] = True
-                continue
+                return

@@ -23,34 +23,37 @@ class Bay:
 
 
     def passo(self) -> "None":
-        self.atualizar_mp_mr()
         self.verificar_mola_dj()
         self.verificar_tensao_dj()
         self.verificar_condicao_dj()
+
+        self.dict['BAY']['potencia_mp'] = (np.random.normal(self.dict['SE']['potencia_se'] * 0.98,10 * self.escala_ruido) - 20)
+        self.dict['BAY']['potencia_mr'] = (np.random.normal(self.dict['SE']['potencia_se'] * 0.98,10 * self.escala_ruido) - 20)
+
+        if LEI.ler_bit(MB['BAY']['DJL_CMD_FECHAR']):
+            ESC.escrever_bit(MB['BAY']['DJL_CMD_FECHAR'], valor=0)
+            self.fechar_dj()
+
+        if LEI.ler_bit(MB['BAY']['RELE_RST_TRP']):
+            ESC.escrever_bit(MB['BAY']['RELE_RST_TRP'], valor=0)
+            self.resetar_dj()
 
         if self.dict['BAY']['debug_dj_abrir']:
             self.dict['BAY']['debug_dj_abrir'] = False
             self.abrir_dj()
 
-        elif self.dict['BAY']['debug_dj_fechar'] and self.dict['BAY']['debug_dj_abrir']:
-            self.dict['BAY']['debug_dj_abrir'] = False
-            self.dict['BAY']['debug_dj_fechar'] = False
-            self.tripar_dj()
-
-        if LEI.ler_bit(MB['BAY']['DJL_CMD_FECHAR']) or self.dict['BAY']['debug_dj_fechar']:
-            ESC.escrever_bit(MB['BAY']['DJL_CMD_FECHAR'], valor=0)
+        if self.dict['BAY']['debug_dj_fechar']:
             self.dict['BAY']['debug_dj_fechar'] = False
             self.fechar_dj()
 
-        if LEI.ler_bit(MB['BAY']['RELE_RST_TRP']) or self.dict['BAY']['debug_dj_reset']:
-            ESC.escrever_bit(MB['BAY']['RELE_RST_TRP'], valor=0)
+        if self.dict['BAY']['debug_dj_reset']:
             self.dict['BAY']['debug_dj_reset'] = False
             self.resetar_dj()
 
-
-    def atualizar_mp_mr(self) -> "None":
-        self.dict['BAY']['potencia_mp'] = (np.random.normal(self.dict['SE']['potencia_se'] * 0.98,10 * self.escala_ruido) - 20)
-        self.dict['BAY']['potencia_mr'] = (np.random.normal(self.dict['SE']['potencia_se'] * 0.98,10 * self.escala_ruido) - 20)
+        if self.dict['BAY']['debug_dj_fechar'] and self.dict['BAY']['debug_dj_abrir']:
+            self.dict['BAY']['debug_dj_abrir'] = False
+            self.dict['BAY']['debug_dj_fechar'] = False
+            self.tripar_dj()
 
 
     def verificar_tensao_dj(self) -> "None":
@@ -71,15 +74,27 @@ class Bay:
                 self.dict['BAY']['dj_mola_carregada'] = True
 
 
+    def verificar_condicao_dj(self) -> "None":
+        if self.dict['BAY']['dj_trip'] \
+        or self.dict['BAY']['dj_fechado'] \
+        or self.dict['BAY']['dj_falta_vcc'] \
+        or not self.dict['BAY']['dj_aberto'] \
+        or not self.dict['BAY']['dj_mola_carregada']:
+            self.dict['BAY']['dj_condicao'] = False
+
+        else:
+            self.dict['BAY']['dj_condicao'] = True
+
+
     def abrir_dj(self) -> "None":
         print('[BAY] Comando de Abertura do Disjuntor do Bay acionado')
 
         if self.dict['BAY']['dj_mola_carregada']:
 
-            if self.dict['SE']['dj_fechado']:
-                self.dict['SE']['dj_trip'] = False
-                self.dict['SE']['dj_aberto'] = True
-                self.dict['SE']['dj_fechado'] = False
+            if self.dict['BAY']['dj_fechado']:
+                self.dict['BAY']['dj_trip'] = False
+                self.dict['BAY']['dj_aberto'] = True
+                self.dict['BAY']['dj_fechado'] = False
 
         else:
             self.tripar_dj(descr='Abriu antes de carregar a mola.')
@@ -89,22 +104,27 @@ class Bay:
 
     def fechar_dj(self) -> "None":
         if self.dict['BAY']['dj_trip']:
+            self.dict['BAY']['dj_falha'] = True
             self.tripar_dj(descr='Picou.')
 
-        else:
-            if self.dict['SE']['dj_fechado']:
-                print('[BAY] Realizando Abertura do Disjuntor da Subestação antes de fechar o Disjuntor do BAY')
-                self.dict['SE']['debug_dj_aberto'] = True
+        elif self.dict['BAY']['dj_aberto']:
+            if self.dict['BAY']['dj_condicao']:
+                print('[BAY] Comando de Fechamento Disjuntor BAY')
+                self.dict['BAY']['dj_fechado'] = True
+                self.dict['BAY']['dj_aberto'] = False
 
-            if not self.dict['BAY']['dj_fechado']:
-                if self.dict['BAY']['dj_condicao']:
-                    self.dict['BAY']['dj_aberto'] = False
-                    self.dict['BAY']['dj_fechado'] = True
-
-                else:
-                    self.tripar_dj(descr='Fechou antes de ter a condição de fechamento.')
+            else:
+                self.dict['BAY']['dj_falha'] = True
+                self.tripar_dj(descr='Fechou antes de ter a condição de fechamento.')
 
         self.dict['BAY']['dj_mola_carregada'] = False
+
+
+    def resetar_dj(self) -> "None":
+        print('[BAY] Comando de Reset.')
+        self.dict['BAY']['dj_trip'] = False
+        self.dict['BAY']['dj_falha'] = False
+        self.avisou_trip = False
 
 
     def tripar_dj(self, descr=None) -> "None":
@@ -115,25 +135,7 @@ class Bay:
             self.dict['BAY']['dj_aberto'] = True
             self.dict['BAY']['dj_fechado'] = False
             self.dict['BAY']['dj_mola_carregada'] = False
-            print(f'[BAY] TRIP Disjuntor do Bay! | Descrição: {descr}')
-
-
-    def resetar_dj(self) -> "None":
-        print('[BAY] Comando de Reset Geral acionado')
-        self.dict['BAY']['dj_trip'] = False
-        self.dict['BAY']['dj_falha'] = False
-        self.avisou_trip = False
-
-
-    def verificar_condicao_dj(self) -> "None":
-        if self.dict['BAY']['dj_trip'] \
-        or self.dict['BAY']['dj_fechado'] \
-        or self.dict['BAY']['dj_falta_vcc'] \
-        or not self.dict['BAY']['dj_mola_carregada']:
-            self.dict['BAY']['dj_condicao'] = False
-
-        else:
-            self.dict['BAY']['dj_condicao'] = True
+            print(f'[BAY] TRIP Disjuntor! | Descrição: {descr}')
 
 
     def atualizar_modbus(self) -> "None":
