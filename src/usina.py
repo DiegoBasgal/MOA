@@ -112,6 +112,7 @@ class Usina:
         self.erro_nv: "float" = 0
         self.erro_nv_anterior: "float" = 0
         self.nv_montante_recente: "float" = 0
+        self.nv_montante_anterior: "float" = 0
 
         self.timer_tensao: "bool" = False
 
@@ -203,7 +204,7 @@ class Usina:
 
         except Exception:
             logger.error(f"[USN] Houve um erro ao acionar a Emergência.")
-            logger.debug(f"{traceback.format_exc()}")
+            logger.debug(traceback.format_exc())
 
     def resetar_emergencia(self) -> "None":
         try:
@@ -217,7 +218,7 @@ class Usina:
 
         except Exception:
             logger.error(f"[USN] Houve um erro ao realizar o Reset Geral.")
-            logger.debug(f"{traceback.format_exc()}")
+            logger.debug(traceback.format_exc())
 
     def normalizar_usina(self) -> "int":
         logger.debug("[USN] Normalizando...")
@@ -261,7 +262,7 @@ class Usina:
 
         except Exception:
             logger.error(f"[USN] Houve um erro ao executar o timer de leituras periódicas.")
-            logger.debug(f"{traceback.format_exc()}")
+            logger.debug(traceback.format_exc())
 
     def fechar_dj_linha(self) -> "bool":
         try:
@@ -275,7 +276,7 @@ class Usina:
 
         except Exception:
             logger.error(f"[USN] Houver um erro ao fechar o Disjuntor de Linha.")
-            logger.debug(f"{traceback.format_exc()}")
+            logger.debug(traceback.format_exc())
             return False
 
     def verificar_tensao(self) -> "bool":
@@ -291,7 +292,7 @@ class Usina:
 
         except Exception:
             logger.error(f"[USN] Houve um erro ao realizar a verificação da tensão na linha.")
-            logger.debug(f"{traceback.format_exc()}")
+            logger.debug(traceback.format_exc())
 
     def aguardar_tensao(self) -> "bool":
         if self.status_tensao == TENSAO_VERIFICAR:
@@ -347,16 +348,31 @@ class Usina:
                     ug.step()
 
         elif self.nv_montante_recente <= self.cfg["nv_minimo"] and not self.aguardando_reservatorio:
-            logger.debug("[USN] Nível montante abaixo do mínimo")
-            self.aguardando_reservatorio = True
-            self.distribuir_potencia(0)
+            if self.nv_montante < self.cfg["nv_minimo"] and self.nv_montante_anterior > self.cfg["nv_minimo"]:
+                if self.erro_leitura_montante == 3:
+                    logger.warning(f"[USN] Tentativas de Leitura de Nível Montante ultrapassadas!")
+                    self.erro_leitura_montante = 0
+                    self.distribuir_potencia(0)
 
-            for ug in self.ugs:
-                ug.step()
+                    for ug in self.ugs:
+                        ug.step()
 
-            if self.nv_montante_recente <= NIVEL_FUNDO_RESERVATORIO:
-                logger.critical(f"[USN] Nível montante ({self.nv_montante_recente:3.2f}) atingiu o fundo do reservatorio!")
-                return NV_FLAG_EMERGENCIA
+                    return NV_FLAG_EMERGENCIA
+
+                self.erro_leitura_montante += 1
+                logger.info("[USN] Foi identificada uma diferença nas Leituras de Nível Montante anterior e atual")
+                logger.debug(f"[USN] Verificando erros de Leitura... (Tentativa {self.erro_leitura_montante}/3)")
+            else:
+                self.erro_leitura_montante = 0
+                self.aguardando_reservatorio = True
+                self.distribuir_potencia(0)
+
+                for ug in self.ugs:
+                    ug.step()
+
+                if self.nv_montante_recente <= NIVEL_FUNDO_RESERVATORIO:
+                    logger.critical(f"[USN] Nível montante ({self.nv_montante_recente:3.2f}) atingiu o fundo do reservatorio!")
+                    return NV_FLAG_EMERGENCIA
 
         elif self.aguardando_reservatorio:
             if self.nv_montante_recente >= self.cfg["nv_alvo"]:
@@ -531,27 +547,27 @@ class Usina:
 
     def atualizar_valores_banco(self, parametros) -> "None":
         try:
-            if int(parametros["emergencia_acionada"]) == 1:
-                logger.debug("[USN] Emergência acionada!")
+            if int(parametros["emergencia_acionada"]) == 1 and not self.db_emergencia:
+                logger.info(f"[USN] Emergência:                      \"{'Acionada'}\"")
                 self.db_emergencia = True
-            else:
+            elif int(parametros["emergencia_acionada"]) == 0 and self.db_emergencia:
+                logger.info(f"[USN] Emergência:                      \"{'Desativada'}\"")
                 self.db_emergencia = False
 
             if int(parametros["modo_autonomo"]) == 1 and not self.modo_autonomo:
                 self.modo_autonomo = True
-                logger.debug(f"[USN] Modo autônomo:                      \"{'Ativado'}\"")
+                logger.info(f"[USN] Modo autônomo:                      \"{'Ativado'}\"")
             elif int(parametros["modo_autonomo"]) == 0 and self.modo_autonomo:
                 self.modo_autonomo = False
-                logger.debug(f"[USN] Modo autônomo:                      \"{'Desativado'}\"")
+                logger.info(f"[USN] Modo autônomo:                      \"{'Desativado'}\"")
 
-
-            if not self.modo_de_escolha_das_ugs == int(parametros["modo_de_escolha_das_ugs"]):
+            if self.modo_de_escolha_das_ugs != int(parametros["modo_de_escolha_das_ugs"]):
                 self.modo_de_escolha_das_ugs = int(parametros["modo_de_escolha_das_ugs"])
                 logger.info(f"[USN] Modo de prioridade das UGs:         \"{UG_STR_DCT_PRIORIDADE[self.modo_de_escolha_das_ugs]}\"")
 
         except Exception:
             logger.error(f"[USN] Houve um erro ao ler e atualizar os parâmetros do Banco de Dados.")
-            logger.debug(f"{traceback.format_exc()}")
+            logger.debug(traceback.format_exc())
 
     def atualizar_valores_cfg(self, parametros) -> None:
         try:
@@ -568,7 +584,7 @@ class Usina:
 
         except Exception:
             logger.error(f"[USN] Houve um erro ao atualizar o arquivo de configuração \"cfg.json\".")
-            logger.debug(f"{traceback.format_exc()}")
+            logger.debug(traceback.format_exc())
 
     def escrever_valores(self) -> None:
         try:
@@ -608,14 +624,14 @@ class Usina:
 
         except Exception:
             logger.error(f"[USN] Houve um erro ao inserir os valores no Banco.")
-            logger.debug(f"{traceback.format_exc()}")
+            logger.debug(traceback.format_exc())
 
         try:
             self.db.update_debug(v2)
 
         except Exception:
             logger.error(f"[USN] Houve um erro ao inserir dados DEBUG no Banco.")
-            logger.debug(f"{traceback.format_exc()}")
+            logger.debug(traceback.format_exc())
 
 
     # TODO -> Adicionar após a integração do CLP do MOA no painel do SA, que depende da intervenção da Automatic.
@@ -683,5 +699,5 @@ class Usina:
 
         except Exception:
             logger.error(f"[USN] Houve um erro ao tentar escrever valores modbus no CLP MOA.")
-            logger.debug(f"{traceback.format_exc()}")
+            logger.debug(traceback.format_exc())
     """

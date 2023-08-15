@@ -380,57 +380,61 @@ class OcorrenciasUsn:
         # Trip
         leitura_ED_disj_tsa_trip = LeituraModbusBit(self.__clp["SA"], REG["CONDIC_SA"]["SA_ED_PSA_DISJ_TSA_TRIP"], descr="[USN] Trip Disjuntor Serviço Auxiliar")
         self.condicionadores.append(CondicionadorBase(leitura_ED_disj_tsa_trip, CONDIC_INDISPONIBILIZAR))
-
+        
+        # TODO -> Verificar as seguintes leituras de condicionadores
+        '''
         # # Temperatura, Nível e Pressão
-        leitura_ED_te_temp_muito_alta = LeituraModbusBit(self.__clp["SA"], REG["CONDIC_SA"]["SA_ED_PSA_TE_TEMPERATURA_MUITO_ALTA"], descr="[USN] Trasformador Elevador Temperatura Alta") # TODO -> Verificar invertido
-        self.condicionadores.append(CondicionadorBase(leitura_ED_te_temp_muito_alta, CONDIC_INDISPONIBILIZAR))
+        # leitura_ED_te_temp_muito_alta = LeituraModbusBit(self.__clp["SA"], REG["CONDIC_SA"]["SA_ED_PSA_TE_TEMPERATURA_MUITO_ALTA"], descr="[USN] Trasformador Elevador Temperatura Alta") # TODO -> Verificar invertido
+        # self.condicionadores.append(CondicionadorBase(leitura_ED_te_temp_muito_alta, CONDIC_INDISPONIBILIZAR))
 
-        leitura_ED_te_eleva_temp_muito_alta = LeituraModbusBit(self.__clp["SA"], REG["CONDIC_SA"]["SA_ED_PSA_TE_TEMPERATURA_ALTA"], descr="[USN] Trasformador Elevador Temperatura Muito Alta")
-        self.condicionadores.append(CondicionadorBase(leitura_ED_te_eleva_temp_muito_alta, CONDIC_INDISPONIBILIZAR))
+        # leitura_ED_te_eleva_temp_muito_alta = LeituraModbusBit(self.__clp["SA"], REG["CONDIC_SA"]["SA_ED_PSA_TE_TEMPERATURA_ALTA"], descr="[USN] Trasformador Elevador Temperatura Muito Alta")
+        # self.condicionadores.append(CondicionadorBase(leitura_ED_te_eleva_temp_muito_alta, CONDIC_INDISPONIBILIZAR))
 
-        leitura_ED_te_press_muito_alta = LeituraModbusBit(self.__clp["SA"], REG["CONDIC_SA"]["SA_ED_PSA_TE_PRESSAO_MUITO_ALTA"], descr="[USN] Trasformador Elevador Pressão Muito Alta")
-        self.condicionadores.append(CondicionadorBase(leitura_ED_te_press_muito_alta, CONDIC_INDISPONIBILIZAR))
+        # leitura_ED_te_press_muito_alta = LeituraModbusBit(self.__clp["SA"], REG["CONDIC_SA"]["SA_ED_PSA_TE_PRESSAO_MUITO_ALTA"], descr="[USN] Trasformador Elevador Pressão Muito Alta")
+        # self.condicionadores.append(CondicionadorBase(leitura_ED_te_press_muito_alta, CONDIC_INDISPONIBILIZAR))
 
-        leitura_ED_oleo_muito_baixo = LeituraModbusBit(self.__clp["SA"], REG["CONDIC_SA"]["SA_ED_PSA_NIVEL_OLEO_MUITO_BAIXO"], descr="[USN] Trasformador Elevador Óleo Muito Baixo")
-        self.condicionadores.append(CondicionadorBase(leitura_ED_oleo_muito_baixo, CONDIC_INDISPONIBILIZAR))
+        # leitura_ED_oleo_muito_baixo = LeituraModbusBit(self.__clp["SA"], REG["CONDIC_SA"]["SA_ED_PSA_NIVEL_OLEO_MUITO_BAIXO"], descr="[USN] Trasformador Elevador Óleo Muito Baixo")
+        # self.condicionadores.append(CondicionadorBase(leitura_ED_oleo_muito_baixo, CONDIC_INDISPONIBILIZAR))
 
-        leitura_ED_poco_dren_nivel_muito_alto = LeituraModbusBit(self.__clp["SA"], REG["CONDIC_SA"]["SA_ED_PSA_POCO_DRENAGEM_SENSOR_NIVEL_MUITO_ALTO"], descr="[USN] Poço de Drenagem Nível Muito Alto")
-        self.condicionadores.append(CondicionadorBase(leitura_ED_poco_dren_nivel_muito_alto, CONDIC_INDISPONIBILIZAR)) # TODO -> verificar invertido
+        # leitura_ED_poco_dren_nivel_muito_alto = LeituraModbusBit(self.__clp["SA"], REG["CONDIC_SA"]["SA_ED_PSA_POCO_DRENAGEM_SENSOR_NIVEL_MUITO_ALTO"], descr="[USN] Poço de Drenagem Nível Muito Alto")
+        # self.condicionadores.append(CondicionadorBase(leitura_ED_poco_dren_nivel_muito_alto, CONDIC_INDISPONIBILIZAR))
 
-        leitura_ED_nv_jusante_muito_alto = LeituraModbusBit(self.__clp["SA"], REG["CONDIC_SA"]["SA_EA_PSA_NIVEL_JUSANTE_MUITO_ALTO"], descr="[USN] Nível Jusante Muito Alto")
-        self.condicionadores.append(CondicionadorBase(leitura_ED_nv_jusante_muito_alto, CONDIC_INDISPONIBILIZAR))
+        # leitura_ED_nv_jusante_muito_alto = LeituraModbusBit(self.__clp["SA"], REG["CONDIC_SA"]["SA_EA_PSA_NIVEL_JUSANTE_MUITO_ALTO"], descr="[USN] Nível Jusante Muito Alto")
+        # self.condicionadores.append(CondicionadorBase(leitura_ED_nv_jusante_muito_alto, CONDIC_INDISPONIBILIZAR))
 
         # Falhas
-        leitura_ED_dps_tsa = LeituraModbusBit(self.__clp["SA"], REG["CONDIC_SA"]["SA_ED_PSA_DPS_TSA"], descr="[USN] Falha Disjuntor Serviço Auxiliar")
-        self.condicionadores.append(CondicionadorBase(leitura_ED_dps_tsa, CONDIC_INDISPONIBILIZAR))
+        # leitura_ED_dps_tsa = LeituraModbusBit(self.__clp["SA"], REG["CONDIC_SA"]["SA_ED_PSA_DPS_TSA"], descr="[USN] Falha Disjuntor Serviço Auxiliar")
+        # self.condicionadores.append(CondicionadorBase(leitura_ED_dps_tsa, CONDIC_INDISPONIBILIZAR))
 
-        leitura_ED_disj_gmg_falha_abrir = LeituraModbusBit(self.__clp["SA"], REG["CONDIC_SA"]["SA_ED_PSA_GMG_DISJ_FALHA_ABRIR"], descr="[USN] Falha Abertura Disjuntor Grupo Motor Gerador")
-        self.condicionadores.append(CondicionadorBase(leitura_ED_disj_gmg_falha_abrir, CONDIC_INDISPONIBILIZAR))
+        # leitura_ED_disj_gmg_falha_abrir = LeituraModbusBit(self.__clp["SA"], REG["CONDIC_SA"]["SA_ED_PSA_GMG_DISJ_FALHA_ABRIR"], descr="[USN] Falha Abertura Disjuntor Grupo Motor Gerador")
+        # self.condicionadores.append(CondicionadorBase(leitura_ED_disj_gmg_falha_abrir, CONDIC_INDISPONIBILIZAR))
 
-        leitura_ED_disj_tsa_falha_fechar = LeituraModbusBit(self.__clp["SA"], REG["CONDIC_SA"]["SA_ED_PSA_TSA_DISJ_FALHA_FECHAR"], descr="[USN] Falha Fechamento Disjuntor Serviço Auxiliar")
-        self.condicionadores.append(CondicionadorBase(leitura_ED_disj_tsa_falha_fechar, CONDIC_INDISPONIBILIZAR))
+        # leitura_ED_disj_tsa_falha_fechar = LeituraModbusBit(self.__clp["SA"], REG["CONDIC_SA"]["SA_ED_PSA_TSA_DISJ_FALHA_FECHAR"], descr="[USN] Falha Fechamento Disjuntor Serviço Auxiliar")
+        # self.condicionadores.append(CondicionadorBase(leitura_ED_disj_tsa_falha_fechar, CONDIC_INDISPONIBILIZAR))
 
-        leitura_ED_disj_tsa_falha_abrir = LeituraModbusBit(self.__clp["SA"], REG["CONDIC_SA"]["SA_ED_PSA_TSA_DISJ_FALHA_ABRIR"], descr="[USN] Falha Abertura Disjuntor Serviço Auxiliar")
-        self.condicionadores.append(CondicionadorBase(leitura_ED_disj_tsa_falha_abrir, CONDIC_INDISPONIBILIZAR))
+        # leitura_ED_disj_tsa_falha_abrir = LeituraModbusBit(self.__clp["SA"], REG["CONDIC_SA"]["SA_ED_PSA_TSA_DISJ_FALHA_ABRIR"], descr="[USN] Falha Abertura Disjuntor Serviço Auxiliar")
+        # self.condicionadores.append(CondicionadorBase(leitura_ED_disj_tsa_falha_abrir, CONDIC_INDISPONIBILIZAR))
 
-        leitura_ED_disj_se_falha_fechar = LeituraModbusBit(self.__clp["SA"], REG["CONDIC_SA"]["SA_ED_PSA_SE_DISJ_FALHA_FECHAR"], descr="[USN] Falha Fechamento Disjuntor de Linha")
-        self.condicionadores.append(CondicionadorBase(leitura_ED_disj_se_falha_fechar, CONDIC_INDISPONIBILIZAR))
+        # leitura_ED_disj_se_falha_fechar = LeituraModbusBit(self.__clp["SA"], REG["CONDIC_SA"]["SA_ED_PSA_SE_DISJ_FALHA_FECHAR"], descr="[USN] Falha Fechamento Disjuntor de Linha")
+        # self.condicionadores.append(CondicionadorBase(leitura_ED_disj_se_falha_fechar, CONDIC_INDISPONIBILIZAR))
 
-        leitura_ED_disj_se_falha_abrir = LeituraModbusBit(self.__clp["SA"], REG["CONDIC_SA"]["SA_ED_PSA_SE_DISJ_FALHA_ABRIR"], descr="[USN] Falha Abertura Disjuntor de Linha")
-        self.condicionadores.append(CondicionadorBase(leitura_ED_disj_se_falha_abrir, CONDIC_INDISPONIBILIZAR))
+        # leitura_ED_disj_se_falha_abrir = LeituraModbusBit(self.__clp["SA"], REG["CONDIC_SA"]["SA_ED_PSA_SE_DISJ_FALHA_ABRIR"], descr="[USN] Falha Abertura Disjuntor de Linha")
+        # self.condicionadores.append(CondicionadorBase(leitura_ED_disj_se_falha_abrir, CONDIC_INDISPONIBILIZAR))
 
         # Bloqueios
+        # leitura_ED_bloq_50bf_atuado = LeituraModbusBit(self.__clp["SA"], REG["CONDIC_SA"]["SA_ED_BLOQUEIO_50BF_ATUADO"], descr="[USN] Bloqueio 50BF Relé SA Atuado")
+        # self.condicionadores.append(CondicionadorBase(leitura_ED_bloq_50bf_atuado, CONDIC_INDISPONIBILIZAR))
+
+        # leitura_ED_bloq_86btlsa_atuado = LeituraModbusBit(self.__clp["SA"], REG["CONDIC_SA"]["SA_ED_BLOQUEIO_86BTLSA_ATUADO"], descr="[USN] Bloqueio 86BTLSA Relé SA Atuado")
+        # self.condicionadores.append(CondicionadorBase(leitura_ED_bloq_86btlsa_atuado, CONDIC_INDISPONIBILIZAR))
+        '''
+
         leitura_ED_bloq_stt_50bf = LeituraModbusCoil(self.__clp["SA"], REG["CONDIC_SA"]["SA_ED_STT_BLOQUEIO_50BF"], descr="[USN] Status Bloqueio 50BF Relé SA")
         self.condicionadores.append(CondicionadorBase(leitura_ED_bloq_stt_50bf, CONDIC_INDISPONIBILIZAR))
-
-        leitura_ED_bloq_50bf_atuado = LeituraModbusBit(self.__clp["SA"], REG["CONDIC_SA"]["SA_ED_BLOQUEIO_50BF_ATUADO"], descr="[USN] Bloqueio 50BF Relé SA Atuado")
-        self.condicionadores.append(CondicionadorBase(leitura_ED_bloq_50bf_atuado, CONDIC_INDISPONIBILIZAR))
 
         leitura_ED_bloq_stt_86btlsa = LeituraModbusCoil(self.__clp["SA"], REG["CONDIC_SA"]["SA_ED_STT_BLOQUEIO_86BTLSA"], descr="[USN] Status Bloqueio 86BTLSA Relé SA")
         self.condicionadores.append(CondicionadorBase(leitura_ED_bloq_stt_86btlsa, CONDIC_INDISPONIBILIZAR))
 
-        leitura_ED_bloq_86btlsa_atuado = LeituraModbusBit(self.__clp["SA"], REG["CONDIC_SA"]["SA_ED_BLOQUEIO_86BTLSA_ATUADO"], descr="[USN] Bloqueio 86BTLSA Relé SA Atuado")
-        self.condicionadores.append(CondicionadorBase(leitura_ED_bloq_86btlsa_atuado, CONDIC_INDISPONIBILIZAR))
 
 
         # ### OUTRAS LEITURAS

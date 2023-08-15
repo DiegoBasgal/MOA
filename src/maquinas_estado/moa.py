@@ -71,8 +71,6 @@ class ControleEstados(State):
 
         logger.debug("Verificando modo do MOA...")
         if not self.usn.modo_autonomo:
-            logger.debug("")
-            logger.info("Comando acionado: \"Desabilitar Modo Autônomo\"")
             return ModoManual(self.usn)
 
         logger.debug("Verificando status da emergência...")
@@ -172,8 +170,6 @@ class ModoManual(State):
         sleep(2)
 
         if self.usn.modo_autonomo:
-            logger.debug("Comando acionado: \"Habilitar modo autônomo\".")
-
             self.usn.ler_valores()
             sleep(2)
             return ControleDados(self.usn)
