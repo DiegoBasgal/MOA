@@ -20,6 +20,10 @@ TENSAO_FASE_BAY_ALTA = 23350
 DJBAY_OK = 0
 DJBAY_FALHA_FECHAMENTO = 1
 
+DJS_OK = 0
+DJS_FALHA = 1
+DJS_FALTA_TENSAO = 2
+
 # Sinais da funcção de retomada após queda de tensão
 TENSAO_VERIFICAR = 0
 TENSAO_AGUARDO = 1

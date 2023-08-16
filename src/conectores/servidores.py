@@ -16,6 +16,19 @@ class Servidores:
     clp: "dict[str, ModbusClient]" = {}
     rele: "dict[str, ModbusClient]" = {}
 
+    mp = ModbusClient(
+        host=d.ips["MP_ip"],
+        port=d.ips["MP_porta"],
+        unit_id=1,
+        timeout=5
+    )
+    mr = ModbusClient(
+        host=d.ips["MR_ip"],
+        port=d.ips["MR_porta"],
+        unit_id=1,
+        timeout=5
+    )
+
     clp["SA"] = ModbusClient(
         host=d.ips["SA_ip"],
         port=d.ips["SA_porta"],

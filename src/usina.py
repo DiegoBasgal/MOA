@@ -192,23 +192,13 @@ class Usina:
         normalização foi executada à pouco tempo, se foi, avisa o operador,
         senão, passa a chamar as funções de reset geral.
         """
-
         logger.debug("")
         logger.debug(f"[BAY] Tensão BAY:                   VAB -> \"{self.bay.tensao_vab.valor:2.1f} V\" | VBC -> \"{self.bay.tensao_vbc.valor:2.1f} V\" | VCA -> \"{self.bay.tensao_vca.valor:2.1f} V\"")
         logger.debug(f"[SE]  Tensão Subestação:            VAB -> \"{self.se.tensao_vab.valor:2.1f} V\" | VBC -> \"{self.se.tensao_vbc.valor:2.1f} V\" | VCA -> \"{self.se.tensao_vca.valor:2.1f} V\"")
         logger.debug("")
-        logger.debug("[USN] Verificando status dos Disjuntores BAY e SE...")
-        logger.debug("")
 
-        if not self.bay.verificar_tensao_trifasica():
+        if self.verificar_disjuntores() == DJS_FALTA_TENSAO:
             return NORM_USN_FALTA_TENSAO
-
-        elif self.bay.fechar_dj_linha() == DJBAY_FALHA_FECHAMENTO or self.se.fechar_dj_linha() == DJSE_FALHA_FECHAMENTO:
-            self.status_djs = False
-            self.normalizar_forcado = True
-
-        else:
-            self.status_djs = True
 
         if ((self.get_time() - self.ultima_tentativa_norm).seconds >= 60 * self.tentativas_normalizar) or self.normalizar_forcado:
             logger.debug("")
@@ -242,6 +232,19 @@ class Usina:
 
         self.clp["MOA"].write_single_coil(REG_CLP["MOA"]["OUT_BLOCK_UG1"], [0])
         self.clp["MOA"].write_single_coil(REG_CLP["MOA"]["OUT_BLOCK_UG2"], [0])
+
+    def verificar_disjuntores(self) -> "int":
+        if not self.bay.verificar_tensao_trifasica():
+            return DJS_FALTA_TENSAO
+
+        elif self.bay.fechar_dj_linha() == DJBAY_FALHA_FECHAMENTO or self.se.fechar_dj_linha() == DJSE_FALHA_FECHAMENTO:
+            self.status_djs = False
+            self.normalizar_forcado = True
+            return DJS_FALHA
+
+        else:
+            self.status_djs = True
+            return DJS_OK
 
     def verificar_leituras_periodicas(self) -> "None":
         """
@@ -411,7 +414,7 @@ class Usina:
                 ug.setpoint = 0
             return 0
 
-        pot_medidor = self.bay.potencia_medidor_usina.valor
+        pot_medidor = self.bay.potencia_mp.valor
 
         logger.debug(f"[USN] Potência no medidor:                {pot_medidor:0.3f}")
 

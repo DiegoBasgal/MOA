@@ -5,7 +5,7 @@
     "kie": 0.1,
     "saida_ie_inicial": 0.1,
     "nv_alvo": 462.0,
-    "nv_minimo": 460.0,
+    "nv_minimo": 461.37,
     "nv_maximo": 462.37,
     "pot_minima": 911.0,
     "pot_maxima_ug": 3037.5,

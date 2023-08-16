@@ -83,13 +83,26 @@ class LeituraModbusBit(LeituraModbus):
         return self.__descricao
 
     @property
+    def raw(self) -> "list":
+        # PROPRIEDADE -> Retorna Valor raw baseado no tipo de operação ModBus.
+
+        try:
+            ler = self.__client.read_holding_registers(self.__reg, 2)
+            return ler
+
+        except Exception:
+            logger.error(f"[LEI] Erro na Leitura RAW do REG: {self.__reg} | Bit: {self.__bit}")
+            logger.debug(traceback.format_exc())
+            sleep(1)
+            return None
+
+    @property
     def valor(self) -> "bool":
         # PROPRIEDADE -> Retorna Valor Bit em booleano ModBus.
 
         try:
-            raw = self.__client.read_holding_registers(self.__reg, 2)
-            dec_1 = BPD.fromRegisters(raw, byteorder=Endian.Big, wordorder=Endian.Little)
-            dec_2 = BPD.fromRegisters(raw, byteorder=Endian.Big, wordorder=Endian.Little)
+            dec_1 = BPD.fromRegisters(self.raw, byteorder=Endian.Big, wordorder=Endian.Little)
+            dec_2 = BPD.fromRegisters(self.raw, byteorder=Endian.Big, wordorder=Endian.Little)
 
             lbit = [int(bit) for bits in [reversed(dec_1.decode_bits(1)), reversed(dec_2.decode_bits(2))] for bit in bits]
 

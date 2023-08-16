@@ -112,8 +112,6 @@ class Subestacao:
                     return DJSE_FALHA_FECHAMENTO
 
             else:
-                logger.debug("[SE]  O Disjuntor da Subestação já está fechado.")
-                logger.debug("")
                 return DJSE_FECHAMENTO_OK
 
         except Exception:

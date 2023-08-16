@@ -93,6 +93,8 @@ class UnidadeGeracao:
         self.normalizacao_agendada: "bool" = False
         self.temporizar_normalizacao: "bool" = False
 
+        self.borda_cp_fechar: "bool" = False
+
         self.aux_tempo_sincronizada: "datetime" = 0
         self.ts_auxiliar: "datetime" = self.get_time()
 
@@ -184,7 +186,7 @@ class UnidadeGeracao:
                 self._ultima_etapa_alvo = self.etapa_alvo
                 return UG_SINCRONIZADA
 
-            elif UG_PARADA < self.etapa_atual < UG_SINCRONIZADA and self.etapa_alvo == UG_PARADA:
+            elif UG_PARADA < self.etapa_atual <= UG_SINCRONIZADA and self.etapa_alvo == UG_PARADA:
 
                 if self._ultima_etapa_alvo != self.etapa_alvo:
                     if self._ultima_etapa_alvo < self.etapa_alvo:
@@ -199,7 +201,7 @@ class UnidadeGeracao:
                     self._ultima_etapa_alvo = self.etapa_alvo
                     return UG_PARANDO
 
-            elif UG_PARADA < self.etapa_atual < UG_SINCRONIZADA and self.etapa_alvo == UG_SINCRONIZADA:
+            elif UG_PARADA <= self.etapa_atual < UG_SINCRONIZADA and self.etapa_alvo == UG_SINCRONIZADA:
                 if self._ultima_etapa_alvo != self.etapa_alvo:
                     if self._ultima_etapa_alvo > self.etapa_alvo:
                         self._ultima_etapa_alvo = self.etapa_alvo
@@ -212,6 +214,9 @@ class UnidadeGeracao:
                 else:
                     self._ultima_etapa_alvo = self.etapa_alvo
                     return UG_SINCRONIZANDO
+
+            else:
+                return self._ultima_etapa_atual
 
         except Exception:
             logger.error(f"[UG{self.id}] Houve um erro no controle de Etapas da Unidade. Mantendo Etapa anterior.")
@@ -729,11 +734,14 @@ class UnidadeGeracao:
         """
 
         if self.etapa == UG_PARADA:
-            if self.cp[f"CP{self.id}"].etapa == CP_ABERTA:
-                self.partir()
-
-            elif self.setpoint >= self.__cfg["pot_minima"]:
+            if self.setpoint >= self.__cfg["pot_minima"]:
                 self.controlar_comporta()
+
+            elif self.setpoint == 0 and not self.borda_cp_fechar:
+                self.borda_cp_fechar = True
+                logger.debug(f"[UG{self.id}]          Comando MOA:               \"OPERAR COMPORTA\"")
+                if not self.cp[f"CP{self.id}"].fechar():
+                    self.borda_cp_fechar = False
 
         elif self.etapa == UG_PARANDO:
             if self.setpoint >= self.__cfg["pot_minima"]:
@@ -742,6 +750,7 @@ class UnidadeGeracao:
                 self.enviar_setpoint(self.setpoint)
 
         elif self.etapa == UG_SINCRONIZANDO:
+            self.borda_cp_fechar = False
             if not self.temporizar_partida:
                 self.temporizar_partida = True
                 Thread(target=lambda: self.verificar_sincronismo()).start()
@@ -787,11 +796,7 @@ class UnidadeGeracao:
             elif self.cp[f"CP{self.id}"].etapa == CP_CRACKING:
                 self.cp[f"CP{self.id}"].ultima_etapa = CP_CRACKING
 
-                if not self.cp[f"CP{self.id}"].borda_pressao:
-                    Thread(target=lambda: self.cp[f"CP{self.id}"].aguardar_pressao_uh()).start()
-                    self.cp[f"CP{self.id}"].borda_pressao = True
-
-                elif self.cp[f"CP{self.id}"].pressao_equalizada.valor:
+                if self.cp[f"CP{self.id}"].pressao_equalizada:
                     self.cp[f"CP{self.id}"].abrir()
 
                 elif self.setpoint == 0 and self.leitura_potencia == 0:
@@ -800,8 +805,8 @@ class UnidadeGeracao:
             elif self.cp[f"CP{self.id}"].etapa == CP_ABERTA:
                 self.cp[f"CP{self.id}"].ultima_etapa = CP_ABERTA
 
-                if self.setpoint == 0 and self.leitura_potencia == 0:
-                    self.cp[f"CP{self.id}"].fechar()
+                if self.leitura_potencia == 0 and self.setpoint != 0:
+                    self.partir()
 
             elif self.cp[f"CP{self.id}"].etapa == CP_REMOTO:
                 logger.debug(f"[CP{self.id}]          Comporta em modo manual")

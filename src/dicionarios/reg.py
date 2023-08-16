@@ -79,7 +79,10 @@ será adicionado a letra "B" + o número do BIT no final do nome:
     - RELE_PROTECAO_TRP_B6
 """
 
-
+REG_MEDIDOR = {
+    "LT_P_MP":                                          33 + 30000, # Mudar para o Simulador
+    "LT_P_MR":                                          33 + 30000, # Mudar para o Simulador
+}
 
 REG_RELE = {
     "BAY": {

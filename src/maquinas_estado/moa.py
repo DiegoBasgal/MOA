@@ -147,7 +147,7 @@ class ControleEstados(State):
 
         else:
             logger.debug("Verificando status da Subestação e Bay...")
-            if not self.usn.status_djs:
+            if self.usn.verificar_disjuntores() != DJS_OK:
                 if self.usn.normalizar_usina() == NORM_USN_FALTA_TENSAO:
                     sleep(1)
                     return Emergencia(self.usn) if bay.Bay.aguardar_tensao() == TENSAO_FORA else self

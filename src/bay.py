@@ -23,6 +23,8 @@ class Bay:
 
     # ATRIBUIÇÃO DE VARIÁVEIS
 
+    mp = Servidores.mp
+    mr = Servidores.mr
     clp = Servidores.clp
     rele = Servidores.rele
 
@@ -56,11 +58,19 @@ class Bay:
         REG_RELE["BAY"]["DJL_FECHADO"],
         descricao="[BAY][RELE] Disjuntor Bay Status"
     )
-    potencia_medidor_usina = LeituraModbus(
-        clp["SA"],
-        30005,
+    potencia_mp = LeituraModbus(
+        mp,
+        REG_MEDIDOR["LT_P_MP"],
         escala=1,
-        op=3
+        op=3,
+        descricao="[BAY][MP] Leitura Medidor Principal"
+    )
+    potencia_mr = LeituraModbus(
+        mr,
+        REG_MEDIDOR["LT_P_MR"],
+        escala=0.001,
+        op=3,
+        descricao="[BAY][MP] Leitura Medidor Principal"
     )
 
     condicionadores: "list[CondicionadorBase]" = []
@@ -109,8 +119,6 @@ class Bay:
                     return DJBAY_FALHA_FECHAMENTO
 
             else:
-                logger.debug("[BAY] O Disjuntor do BAY já está fechado.")
-                logger.debug("")
                 return DJBAY_OK
 
         except Exception:
@@ -142,7 +150,7 @@ class Bay:
             if se.Subestacao.dj_linha_se.valor:
                 logger.info("[BAY] Disjuntor da Subestação Fechado!")
                 logger.debug(f"[BAY] Enviando comando:                   \"ABRIR DISJUNTOR SE\"")
-                res = EMB.escrever_bit(cls.clp["SA"], REG_CLP["SE"]["DJL_CMD_ABRIR"], valor=0)
+                res = EMB.escrever_bit(cls.clp["SA"], REG_CLP["SE"]["DJL_CMD_FECHAR"], valor=0) # DJL_CMD_ABRIR
 
                 if not res:
                     logger.warning("[BAY] Não foi possível realizar a abertura do Disjuntor de Linha da Subestação!")
