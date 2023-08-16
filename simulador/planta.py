@@ -9,7 +9,7 @@ from dicts.reg import *
 
 from se import Se
 from tda import Tda
-from bay_c import Bay
+from bc import Bay
 from ug import Unidade
 from funcs.temporizador import Temporizador
 
@@ -60,8 +60,6 @@ class Planta:
                 t_inicio = datetime.now()
                 lock.acquire()
                 self.dict['GLB']['tempo_simul'] += self.segundos_por_passo
-
-                self.atualizar_modbus_geral()
 
                 self.se.passo()
                 self.bay.passo()

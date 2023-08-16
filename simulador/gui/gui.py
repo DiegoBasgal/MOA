@@ -64,16 +64,16 @@ class Window(QMainWindow, Ui_Form):
             self.lcdNumber_lg_status.display("O") if self.dict['TDA']['lg_operando'] else self.lcdNumber_lg_status.display("P")
 
             # UG1
-            self.lcdNumber_ug1_potencia.display(f"{self.dict['UG1']['potencia']}")
-            self.lcdNumber_ug1_setpoint.display(f"{self.dict['UG1']['setpoint']}")
-            self.lcdNumber_ug1_etapa_alvo.display(f"{self.dict['UG1']['etapa_alvo']:d}")
-            self.lcdNumber_ug1_etapa_atual.display(f"{self.dict['UG1']['etapa_atual']:d}")
+            self.lcdNumber_ug1_potencia.display(self.dict['UG1']['potencia'])
+            self.lcdNumber_ug1_setpoint.display(self.dict['UG1']['setpoint'])
+            self.lcdNumber_ug1_etapa_alvo.display(self.dict['UG1']['etapa_alvo'])
+            self.lcdNumber_ug1_etapa_atual.display(self.dict['UG1']['etapa_atual'])
 
             # UG2
-            self.lcdNumber_ug2_potencia.display(f"{self.dict['UG2']['potencia']}")
-            self.lcdNumber_ug2_setpoint.display(f"{self.dict['UG2']['setpoint']}")
-            self.lcdNumber_ug2_etapa_alvo.display(f"{self.dict['UG2']['etapa_alvo']:d}")
-            self.lcdNumber_ug2_etapa_atual.display(f"{self.dict['UG2']['etapa_atual']:d}")
+            self.lcdNumber_ug2_potencia.display(self.dict['UG2']['potencia'])
+            self.lcdNumber_ug2_setpoint.display(self.dict['UG2']['setpoint'])
+            self.lcdNumber_ug2_etapa_alvo.display(self.dict['UG2']['etapa_alvo'])
+            self.lcdNumber_ug2_etapa_atual.display(self.dict['UG2']['etapa_atual'])
 
             # CP1
             self.progressBar_cp1.setValue(int(self.dict['CP1']['progresso']))

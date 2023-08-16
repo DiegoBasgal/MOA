@@ -27,9 +27,6 @@ class Bay:
         self.verificar_tensao_dj()
         self.verificar_condicao_dj()
 
-        self.dict['BAY']['potencia_mp'] = (np.random.normal(self.dict['SE']['potencia_se'] * 0.98,10 * self.escala_ruido) - 20)
-        self.dict['BAY']['potencia_mr'] = (np.random.normal(self.dict['SE']['potencia_se'] * 0.98,10 * self.escala_ruido) - 20)
-
         if LEI.ler_bit(MB['BAY']['DJL_CMD_FECHAR']):
             ESC.escrever_bit(MB['BAY']['DJL_CMD_FECHAR'], valor=0)
             self.fechar_dj()
@@ -54,6 +51,10 @@ class Bay:
             self.dict['BAY']['debug_dj_abrir'] = False
             self.dict['BAY']['debug_dj_fechar'] = False
             self.tripar_dj()
+
+        self.dict['BAY']['tensao_linha'] = np.random.normal(self.dict['BAY']['tensao_linha'], 50 * self.escala_ruido)
+        self.dict['BAY']['potencia_mp'] = max(0, (np.random.normal(self.dict['SE']['potencia_se'] * 0.98, 10 * self.escala_ruido) - 20))
+        self.dict['BAY']['potencia_mr'] = max(0, (np.random.normal(self.dict['SE']['potencia_se'] * 0.98, 10 * self.escala_ruido) - 20))
 
 
     def verificar_tensao_dj(self) -> "None":
@@ -142,8 +143,8 @@ class Bay:
         DB.set_words(MB['BAY']['LT_VAB'], [round(self.dict['BAY']['tensao_linha'] / 1000)])
         DB.set_words(MB['BAY']['LT_VBC'], [round(self.dict['BAY']['tensao_linha'] / 1000)])
         DB.set_words(MB['BAY']['LT_VCA'], [round(self.dict['BAY']['tensao_linha'] / 1000)])
-        # DB.set_words(MB['BAY']['POTENCIA_KW_MP'], [round(max(0, self.dict['BAY']['potencia_mp']))])
-        # DB.set_words(MB['BAY']['POTENCIA_KW_MR'], [round(max(0, self.dict['BAY']['potencia_mr']))])
+        DB.set_words(MB['BAY']['LT_P_MP'], [round(max(0, self.dict['BAY']['potencia_mp']))])
+        # DB.set_words(MB['BAY']['LT_P_MR'], [round(max(0, self.dict['BAY']['potencia_mr']))])
 
         if self.dict['BAY']['dj_secc'] and not self.dict['BRD']['djbay_secc']:
             self.dict['BRD']['djbay_secc'] = True

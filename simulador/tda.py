@@ -27,11 +27,11 @@ class Tda:
 
 
     def calcular_volume_montante(self, volume) -> 'float':
-        return min(max(460, 460 + volume / 40000), 462.37)
+        return min(max(460, 460 + volume / 10000), 466.37)
 
 
     def calcular_montante_volume(self, nv_montante) -> 'float':
-        return 40000 * (min(max(460, nv_montante), 462.37) - 460)
+        return 10000 * (min(max(460, nv_montante), 466.37) - 460)
 
 
     def calcular_q_sanitaria(self) -> 'float':
@@ -39,7 +39,7 @@ class Tda:
             if not self.dict['BRD']['vb_calculo_q']:
                 self.dict['BRD']['vb_calculo_q'] = True
                 Thread(target=lambda: self.operar_vb()).start()
-            return 2.33
+            return np.random.normal(2.33, 0.1 * self.escala_ruido)
 
         else:
             if self.dict['BRD']['vb_calculo_q']:
@@ -52,7 +52,7 @@ class Tda:
         print('[TDA] Operando Válvula Borboleta de Vazão Sanitária')
         self.dict['TDA']['vb_operando'] = True
         self.dict['TDA']['uh_disponivel'] = False
-        delay = time() + 5
+        delay = time() + 10
         while time() < delay:
             None
 
@@ -65,7 +65,7 @@ class Tda:
         self.dict['TDA']['q_liquida'] = 0
         self.dict['TDA']['q_liquida'] += self.dict['TDA']['q_alfuente']
         self.dict['TDA']['q_liquida'] -= self.dict['TDA']['q_sanitaria']
-        self.dict['TDA']['q_sanitaria'] = self.calcular_q_sanitaria() + np.random.normal(0, 1 * self.escala_ruido)
+        self.dict['TDA']['q_sanitaria'] = self.calcular_q_sanitaria()
         self.dict['TDA']['q_vertimento'] = 0
 
         for ug in range(1):
@@ -73,18 +73,16 @@ class Tda:
 
 
     def calcular_enchimento_reservatorio(self) -> 'None':
-        self.dict['TDA']['nv_montante'] = self.calcular_volume_montante(self.volume + self.dict['TDA']['q_liquida'] * self.segundos_por_passo)
-        self.dict['TDA']['nv_jusante_grade'] = self.dict['TDA']['nv_montante'] - max(0, np.random.normal(0.1, 0.1 * self.escala_ruido))
-
         if self.dict['TDA']['nv_montante'] >= USINA_NV_VERTEDOURO:
             self.dict['TDA']['q_vertimento'] = self.dict['TDA']['q_liquida']
             self.dict['TDA']['q_liquida'] = 0
-            self.dict['TDA']['nv_montante'] = (0.0000021411 * self.dict['TDA']['q_vertimento'] ** 3) \
-                                            - (0.00025189 * self.dict['TDA']['q_vertimento'] ** 2) \
-                                            + (0.014859 * self.dict['TDA']['q_vertimento']) \
-                                            + 462.37
+            self.dict['TDA']['nv_montante'] = self.calcular_volume_montante(self.volume + self.dict['TDA']['q_vertimento'] * self.segundos_por_passo)
+            self.volume += self.dict['TDA']['q_vertimento'] * self.segundos_por_passo
 
-        self.volume += self.dict['TDA']['q_liquida'] * self.segundos_por_passo
+        else:
+            self.dict['TDA']['nv_montante'] = self.calcular_volume_montante(self.volume + self.dict['TDA']['q_liquida'] * self.segundos_por_passo)
+            self.dict['TDA']['nv_jusante_grade'] = self.dict['TDA']['nv_montante'] - max(0, np.random.normal(0.1, 0.1 * self.escala_ruido))
+            self.volume += self.dict['TDA']['q_liquida'] * self.segundos_por_passo
 
 
     def atualizar_modbus(self) -> 'None':

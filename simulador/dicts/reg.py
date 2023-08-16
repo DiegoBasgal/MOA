@@ -5,8 +5,6 @@ MB = {
 
     "SE": {
         "LT_P":                                                     5,
-        "POTENCIA_KW_MP":                                           10,
-        "POTENCIA_KW_MR":                                           11,
         "LT_VAB":                                                   50,
         "LT_VBC":                                                   52,
         "LT_VCA":                                                   53,
@@ -25,6 +23,8 @@ MB = {
         "LT_VAB":                                                   10 + 30000,
         "LT_VBC":                                                   13 + 30000,
         "LT_VCA":                                                   16 + 30000,
+        "LT_P_MP":                                                  33 + 30000,
+        "LT_P_MR":                                                  33 + 30000,
         "RELE_RST_TRP":                                             [40 + 30000, 2],
         "DJL_CMD_FECHAR":                                           [43 + 30000, 2],
         "DJL_MOLA_CARREGADA":                                       [44 + 30000, 1],

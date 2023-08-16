@@ -1,3 +1,4 @@
+from calendar import prmonth
 import numpy as np
 
 from time import  time
@@ -28,11 +29,6 @@ class Unidade:
         self.tempo_transicao = 0
 
     def passo(self) -> 'None':
-        self.setpoint = self.dict[f'UG{self.id}'][f'setpoint']
-
-        self.dict[f'UG{self.id}'][f'q'] = self.calcular_q_ug(self.potencia)
-
-        self.dict[f'UG{self.id}'][f'setpoint'] = DB.get_words(MB[f'UG{self.id}']['SETPONIT'])[0]
 
         if self.dict[f'UG{self.id}'][f'debug_setpoint'] >= 0:
             self.dict[f'UG{self.id}'][f'setpoint'] = self.dict[f'UG{self.id}'][f'debug_setpoint']
@@ -62,6 +58,11 @@ class Unidade:
             ESC.escrever_bit(MB['TDA'][f'CP{self.id}_CMD_ABERTURA_CRACKING'], valor=0)
             self.dict[f'CP{self.id}'][f'thread_cracking'] = False
             Thread(target=lambda: self.controlar_cracking_comporta()).start()
+
+        self.setpoint = DB.get_words(MB[f'UG{self.id}']['SETPONIT'])[0]
+        self.dict[f'UG{self.id}'][f'setpoint'] = self.setpoint
+
+        self.dict[f'UG{self.id}'][f'q'] = self.calcular_q_ug(self.potencia)
 
         self.controlar_etapas()
         self.controlar_reservatorio()
@@ -141,18 +142,18 @@ class Unidade:
             print(f'[UG{self.id}-CP{self.id}] Comporta {2 if self.id == 1 else 1} em operação.') if self.dict[f'CP{2 if self.id == 1 else 1}'][f'operando'] else None
 
         elif self.dict[f'CP{self.id}'][f'cracking'] and not self.dict[f'CP{self.id}'][f'fechada']:
-            self.dict['TDA'][f'uh_disponivel'] = False
+            self.dict[f'CP{self.id}'][f'aguardando'] = False
             self.dict[f'CP{self.id}'][f'operando'] = True
 
             while self.dict[f'CP{self.id}'][f'progresso'] <= 100:
-                self.dict[f'CP{self.id}'][f'progresso'] += 0.00001
+                self.dict['TDA'][f'uh_disponivel'] = False
+                self.dict[f'CP{self.id}'][f'progresso'] += 0.0001
 
-            self.dict[f'CP{self.id}'][f'operando'] = False
-            self.dict[f'CP{self.id}'][f'aguardando'] = False
-            self.dict[f'CP{self.id}'][f'cracking'] = False
-            self.dict[f'CP{self.id}'][f'fechada'] = False
-            self.dict[f'CP{self.id}'][f'aberta'] = True
             self.dict['TDA'][f'uh_disponivel'] = True
+            self.dict[f'CP{self.id}'][f'operando'] = False
+            self.dict[f'CP{self.id}'][f'fechada'] = False
+            self.dict[f'CP{self.id}'][f'cracking'] = False
+            self.dict[f'CP{self.id}'][f'aberta'] = True
 
 
     def controlar_cracking_comporta(self) -> 'None':
@@ -165,46 +166,51 @@ class Unidade:
             print(f'[UG{self.id}-CP{self.id}] Comporta {2 if self.id == 1 else 1} em operação.') if self.dict[f'CP{2 if self.id == 1 else 1}'][f'operando'] else None
 
         elif self.dict[f'CP{self.id}'][f'fechada'] and not self.dict[f'CP{self.id}'][f'aberta']:
-            self.dict['TDA'][f'uh_disponivel'] = False
             self.dict[f'CP{self.id}'][f'operando'] = True
 
             while self.dict[f'CP{self.id}'][f'progresso'] <= 30:
+                self.dict['TDA'][f'uh_disponivel'] = False
                 self.dict[f'CP{self.id}'][f'progresso'] += 0.00001
 
+            self.dict['TDA'][f'uh_disponivel'] = True
             self.dict[f'CP{self.id}'][f'operando'] = False
             self.dict[f'CP{self.id}'][f'fechada'] = False
             self.dict[f'CP{self.id}'][f'aberta'] = False
             self.dict[f'CP{self.id}'][f'cracking'] = True
-            self.dict['TDA'][f'uh_disponivel'] = True
 
             Thread(target=lambda: self.equalizar_unidade_hidraulica()).start()
 
 
     def equalizar_unidade_hidraulica(self) -> 'None':
-        delay = time() + 15
+        print(f'[UG{self.id}-CP{self.id}] Equalizando pressao.')
+
+        delay = time() + 5
+        self.dict['TDA']['uh_disponivel'] = True
+        self.dict[f'CP{self.id}']['equalizada'] = True
+
         while time() < delay:
             self.dict['TDA']['uh_disponivel'] = False
-            self.dict[f'CP{self.id}'][f'equalizada'] = False
+            self.dict[f'CP{self.id}']['equalizada'] = False
 
-            if self.dict[f'CP{self.id}'][f'trip']:
-                self.dict[f'CP{self.id}'][f'trip'] = False
-
+            if self.dict[f'CP{self.id}']['trip']:
                 print(f'[UG{self.id}-CP{self.id}] Não foi possível Equalizar a Unidade Hidráulica! Fechando Comporta...')
+
+                self.dict[f'CP{self.id}']['trip'] = False
+                self.dict[f'CP{self.id}']['thread_fechada'] = True
                 self.dict['TDA']['uh_disponivel'] = True
-                self.dict[f'CP{self.id}'][f'thread_fechada'] = True
                 return
 
         print(f'[UG{self.id}-CP{self.id}] A Unidade foi Equalizada, Permissão para Abrir comporta ativada!')
         self.dict['TDA']['uh_disponivel'] = True
-        self.dict[f'CP{self.id}'][f'equalizada'] = True
-        self.dict[f'CP{self.id}'][f'aguardando'] = True
-        self.dict[f'CP{self.id}'][f'permissao'] = True
+        self.dict[f'CP{self.id}']['equalizada'] = True
+        self.dict[f'CP{self.id}']['permissao'] = True
+        self.dict[f'CP{self.id}']['aguardando'] = True
 
 
     def controlar_etapas(self) -> 'None':
         # Unidade Parada
         if self.etapa_atual == ETAPA_UP:
-            self.dict[f'UG{self.id}'][f'potencia'] = self.potencia = 0
+            self.potencia = 0
 
             if self.etapa_alvo == self.etapa_atual:
                 self.tempo_transicao = 0
@@ -219,7 +225,7 @@ class Unidade:
 
         # Unidade Pronta para Giro Mecânico
         if self.etapa_atual == ETAPA_UPGM:
-            self.dict[f'UG{self.id}'][f'potencia'] = self.potencia = 0
+            self.potencia = 0
 
             if self.etapa_alvo == self.etapa_atual:
                 self.tempo_transicao = 0
@@ -241,7 +247,7 @@ class Unidade:
 
         # Unidade Vazio Desescitado
         if self.etapa_atual == ETAPA_UVD:
-            self.dict[f'UG{self.id}'][f'potencia'] = self.potencia = 0
+            self.potencia = 0
 
             if self.etapa_alvo == self.etapa_atual:
                 self.tempo_transicao = 0
@@ -263,7 +269,7 @@ class Unidade:
 
         # Unidade Pronta para Sincronismo
         if self.etapa_atual == ETAPA_UPS:
-            self.dict[f'UG{self.id}'][f'potencia'] = self.potencia = 0
+            self.potencia = 0
 
             if self.etapa_alvo == self.etapa_atual:
                 self.tempo_transicao = 0
@@ -290,29 +296,30 @@ class Unidade:
                 self.dict[f'UG{self.id}'][f'etapa_alvo'] = self.etapa_alvo
 
                 if self.dict['SE']['dj_fechado']:
-                    self.dict[f'UG{self.id}'][f'potencia'] = self.potencia = min(max(self.potencia, POT_MIN), POT_MAX)
+                    self.dict[f'UG{self.id}']['potencia'] = self.potencia = min(max(self.potencia, POT_MIN), POT_MAX)
 
                     if self.setpoint > self.potencia:
-                        self.potencia += 10.4167 * self.segundos_por_passo
+                        self.potencia += 20 * self.segundos_por_passo
 
                     else:
-                        self.potencia -= 10.4167 * self.segundos_por_passo
+                        self.potencia -= 20 * self.segundos_por_passo
 
-                    self.potencia = np.random.normal(self.potencia, 1 * self.escala_ruido)
+                    self.potencia = np.random.normal(self.potencia, 2 * self.escala_ruido)
 
                 if self.dict['SE']['dj_aberto'] or self.dict['SE']['dj_trip']:
-                    self.dict[f'UG{self.id}'][f'setpoint'] = self.setpoint = 0
+                    self.dict[f'UG{self.id}']['potencia'] = self.potencia = 0
                     self.dict[f'UG{self.id}'][f'etapa_atual'] = self.etapa_atual = ETAPA_UVD
                     self.dict[f'UG{self.id}'][f'etapa_alvo'] = self.etapa_alvo = ETAPA_US
                     self.tempo_transicao = 0
 
             elif self.etapa_alvo < self.etapa_atual:
                 self.tempo_transicao -= self.segundos_por_passo
-                self.potencia -= 10.4167 * self.segundos_por_passo
+                self.potencia -= 20.4167 * self.segundos_por_passo
+                self.dict[f'UG{self.id}']['potencia'] = self.potencia
 
                 if self.tempo_transicao <= -TEMPO_TRANS_US_UPS and self.potencia <= 0:
-                    self.dict[f'UG{self.id}'][f'potencia'] = self.potencia = 0
-                    self.dict[f'UG{self.id}'][f'etapa_atual'] =  self.etapa_atual = ETAPA_UPS
+                    self.potencia = 0
+                    self.dict[f'UG{self.id}'][f'etapa_atual'] = self.etapa_atual = ETAPA_UPS
                     self.tempo_transicao = 0
 
 

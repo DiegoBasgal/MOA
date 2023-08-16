@@ -28,8 +28,6 @@ class Se:
         self.verificar_tensao_dj()
         self.verificar_condicao_dj()
 
-        self.dict['SE']['potencia_se'] = ((self.dict['UG1']['potencia'] + self.dict['UG2']['potencia']) * 0.995) + np.random.normal(0, 0.001 * self.escala_ruido)
-
         if LEI.ler_bit(MB['SE']['DJL_CMD_FECHAR']):
             ESC.escrever_bit(MB['SE']['DJL_CMD_FECHAR'], valor=0)
             self.fechar_dj()
@@ -54,6 +52,13 @@ class Se:
             self.dict['SE']['debug_dj_abrir'] = False
             self.dict['SE']['debug_dj_fechar'] = False
             self.tripar_dj()
+
+        if self.dict['BAY']['dj_aberto'] or self.dict['SE']['dj_aberto']:
+            self.dict['SE']['tensao_linha'] = 0
+        else:
+            self.dict['SE']['tensao_linha'] = np.random.normal(self.dict['BAY']['tensao_linha'], 50 * self.escala_ruido)
+
+        self.dict['SE']['potencia_se'] =  max(0, np.random.normal(((self.dict['UG1']['potencia'] + self.dict['UG2']['potencia']) * 0.995), 0.001 * self.escala_ruido))
 
 
     def verificar_tensao_dj(self) -> "None":
@@ -114,7 +119,6 @@ class Se:
                 print('[SE] Comando de Fechamento Disjuntor SE')
                 self.dict['SE']['dj_fechado'] = True
                 self.dict['SE']['dj_aberto'] = False
-                self.dict['SE']['tensao_linha'] = 23100
 
             else:
                 self.dict['SE']['dj_falha'] = True
@@ -142,7 +146,7 @@ class Se:
 
 
     def atualizar_modbus(self) -> "None":
-        DB.set_words(MB['SE']['LT_P'], [round(self.dict['SE']['potencia_se'])])
+        DB.set_words(MB['SE']['LT_P'], [round(self.dict['SE']['potencia_se'] / 1000)])
         DB.set_words(MB['SE']['LT_VAB'], [round(self.dict['SE']['tensao_linha'] / 1000)])
         DB.set_words(MB['SE']['LT_VBC'], [round(self.dict['SE']['tensao_linha'] / 1000)])
         DB.set_words(MB['SE']['LT_VCA'], [round(self.dict['SE']['tensao_linha'] / 1000)])

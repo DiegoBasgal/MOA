@@ -58,7 +58,7 @@ compartilhado = {
         "q_sanitaria": 0,
         "q_vertimento": 0,
 
-        "nv_montante": 461.850,
+        "nv_montante": 462.100,
         "nv_jusante_grade": 0,
 
         "lg_operando": False,
@@ -88,7 +88,7 @@ compartilhado = {
         "potencia_mp": 0,
         "potencia_mr": 0,
 
-        "tensao_linha": 23100,
+        "tensao_linha": 22800,
 
         "dj_secc": True,
         "dj_trip": False,
@@ -113,7 +113,7 @@ compartilhado = {
         "cracking": False,
         "operando": False,
         "permissao": False,
-        "equalizada": False,
+        "equalizada": True,
         "aguardando": False,
 
         "thread_aberta": False,
@@ -131,7 +131,7 @@ compartilhado = {
         "cracking": False,
         "operando": False,
         "permissao": False,
-        "equalizada": False,
+        "equalizada": True,
         "aguardando": False,
 
         "thread_aberta": False,

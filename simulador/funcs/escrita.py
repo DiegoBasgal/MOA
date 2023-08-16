@@ -24,7 +24,10 @@ class Escrita:
                     break
 
             v = sum(val*(2**x) for x, val in enumerate(lbit_r))
-            print(f'REG: {reg[0]} | Bit: {reg[1]} | Valor: {v}')
+            # print("")
+            # print(f'REG: {reg[0]} | Bit: {reg[1]} | Valor: {valor}')
+            # print(f"Lista Bits: {lbit_r}")
+            # print("")
             DB.set_words(int(reg[0]), [v])
 
         except Exception:
