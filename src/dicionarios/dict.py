@@ -39,3 +39,11 @@ ips: "dict[str, any]" = {
 glb = {
     "TDA_Offline": False
 }
+
+WATCHDOG = {
+    "ip": "172.21.15.12",
+    "porta": 502,
+    "timeout_moa": 30,
+    "usina": "São Sebastião (SEB)",
+    "local": "Painel Serviço Auxiliar (PSA)"
+}

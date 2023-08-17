@@ -8,7 +8,7 @@ from time import sleep
 from datetime import datetime
 from urllib.request import Request, urlopen
 
-from src.banco_dados import BancoDados
+from src.conectores.banco_dados import BancoDados
 
 logger = logging.getLogger("logger")
 
@@ -147,6 +147,7 @@ class Voip:
                     }
                     cls.codificar_dados(data, headers)
                 vd.voip_dict["EMERGENCIA"][0] = False
+
             else:
                 todos = []
                 for _, vl in vd.voip_dict.items():

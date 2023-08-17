@@ -33,10 +33,10 @@ REG = {
     "MOA_OUT_ETAPA_UG2":                                427,        # Holding Register                      (OP -> 0x06 Write Single Register)
     "MOA_OUT_STATE_UG2":                                428,        # Holding Register                      (OP -> 0x06 Write Single Register)
 
-    "MOA_IN_EMERG_UG3":                                 25,         # Coil                                  (OP -> 0x02 Read Input Status)
-    "MOA_OUT_BLOCK_UG3":                                26,         # Coil                                  (OP -> 0x05 Write Single Coil)
-    "MOA_OUT_ETAPA_UG3":                                427,        # Holding Register                      (OP -> 0x06 Write Single Register)
-    "MOA_OUT_STATE_UG3":                                428,        # Holding Register                      (OP -> 0x06 Write Single Register)
+    "MOA_IN_EMERG_UG3":                                 30,         # Coil                                  (OP -> 0x02 Read Input Status)
+    "MOA_OUT_BLOCK_UG3":                                31,         # Coil                                  (OP -> 0x05 Write Single Coil)
+    "MOA_OUT_ETAPA_UG3":                                432,        # Holding Register                      (OP -> 0x06 Write Single Register)
+    "MOA_OUT_STATE_UG3":                                433,        # Holding Register                      (OP -> 0x06 Write Single Register)
 
 
     ### SA

@@ -8,7 +8,7 @@ from datetime import datetime, timedelta
 
 from src.dicionarios.const import *
 
-from src.banco_dados import BancoDados
+from src.conectores.banco_dados import BancoDados
 
 logger = logging.getLogger("logger")
 

@@ -8,9 +8,9 @@ from time import sleep
 from datetime import datetime
 
 from src.usina import *
-from src.agendamentos import *
 from src.dicionarios.reg import *
 from src.dicionarios.const import *
+from src.funcoes.agendamentos import *
 
 class StateMachine:
     def __init__(self, initial_state):
@@ -118,7 +118,7 @@ class ControleEstados(State):
         logger.debug("Verificando modo do MOA...")
         if not self.usn.modo_autonomo:
             logger.debug("")
-            logger.info("Comando acionado: \"Desabilitar Modo Autônomo\"")
+            logger.debug("Comando acionado: \"Desabilitar Modo Autônomo\"")
             return ModoManual(self.usn)
 
         if d.glb["TDA_Offline"]:
@@ -272,7 +272,6 @@ class ModoManual(State):
 
         self.usn.escrever_valores()
         if self.usn.modo_autonomo:
-            logger.debug("Comando acionado: \"Habilitar modo autônomo\"")
             self.usn.ler_valores()
             return ControleDados(self.usn)
 
@@ -383,7 +382,7 @@ class ControleTDAOffline(State):
         logger.debug("Verificando modo do MOA...")
         if not self.usn.modo_autonomo:
             logger.debug("")
-            logger.info("Comando acionado: \"Desabilitar modo autônomo\"")
+            logger.debug("Comando acionado: \"Desabilitar modo autônomo\"")
             return ModoManual(self.usn)
 
         logger.debug("Verificando status da emergência...")

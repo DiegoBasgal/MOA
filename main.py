@@ -24,7 +24,7 @@ from logging.config import fileConfig
 from src.dicionarios.const import *
 from src.maquinas_estado.moa import *
 
-from src.conector import ClientesUsina
+from src.conectores.servidores import Servidores
 
 if not os.path.exists(os.path.join(os.path.dirname(__file__), "logs")):
     os.mkdir(os.path.join(os.path.dirname(__file__), "logs"))
@@ -73,7 +73,7 @@ if __name__ == "__main__":
                 logger.debug("")
                 logger.info("Iniciando conexões com Servidores...")
 
-                ClientesUsina.open_all()
+                Servidores.open_all()
 
             except Exception:
                 logger.exception(f"Erro ao iniciar classes de conexão com servidores. Tentando novamente em \"{TIMEOUT_MAIN}s\"")
@@ -137,13 +137,13 @@ if __name__ == "__main__":
             logger.debug("")
             logger.error(f"[!!!] \"ATENÇÃO!\" Houve um erro na execução do loop principal -> !! \"main.py\" !!")
             logger.debug(traceback.format_exc())
-            ClientesUsina.close_all()
+            Servidores.close_all()
             logger.debug("MOA encerrado! Até a próxima...")
             break
 
         except KeyboardInterrupt:
             logger.debug("")
             logger.warning("[!!!] \"ATENÇÃO!\" Execução do loop principal da main do MOA interrompido por comando de teclado.")
-            ClientesUsina.close_all()
+            Servidores.close_all()
             logger.debug("MOA encerrado! Até a próxima...")
             break

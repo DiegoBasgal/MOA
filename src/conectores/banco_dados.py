@@ -103,6 +103,17 @@ class BancoDados:
             "executavel_em_manual": parametros_raw[1],
             }
 
+    def get_timestamp_moa(self) -> "datetime":
+        self.cursor.execute(
+            "SELECT ts "
+            "FROM parametros_parametrosusina "
+            "WHERE id = 1"
+        )
+
+        ts = self.cursor.fetchone()
+        self.conn.commit()
+        return ts
+
     def update_modo_moa(self, modo: bool) -> "None":
         """
         Função para atualizar o modo do MOA no Banco.

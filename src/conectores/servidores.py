@@ -12,7 +12,7 @@ from pyModbusTCP.client import ModbusClient
 
 logger = logging.getLogger("logger")
 
-class ClientesUsina:
+class Servidores:
 
     # ATRIBUIÇÃO DE VARIÁVEIS
 

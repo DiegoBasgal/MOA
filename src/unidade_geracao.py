@@ -2,19 +2,18 @@ import pytz
 import logging
 import traceback
 
-from time import sleep
+from time import sleep, time
 from datetime import datetime
 
 from src.dicionarios.const import *
 
-from src.usina import *
 from src.funcoes.leitura import *
-from src.Condicionadores import *
 from src.maquinas_estado.ug import *
+from src.funcoes.condicionador import *
 
-from src.banco_dados import BancoDados
-from src.conector import ClientesUsina
-from src.ocorrencias import OcorrenciasUg
+import src.ocorrencias as oco
+from src.conectores.servidores import Servidores
+from src.conectores.banco_dados import BancoDados
 
 logger = logging.getLogger("logger")
 
@@ -31,8 +30,8 @@ class UnidadeGeracao:
 
         self.db = db
         self.cfg = cfg
-        self.clp = ClientesUsina.clp
-        self.oco = OcorrenciasUg(self, self.clp, self.db)
+        self.clp = Servidores.clp
+        self.oco = oco.OcorrenciasUnidades(self, self.clp, self.db)
 
 
         # ATRIBUIÇÃO DE VARIÁVEIS PRIVADAS
@@ -589,7 +588,7 @@ class UnidadeGeracao:
 
         try:
             logger.debug(f"[UG{self.id}]          Enviando comando:          \"ACIONAR TRIP ELÉTRICO\"")
-            self.clp["MOA"].write_single_coil(REG[f"MOA_OUT_BLOCK_UG{self.id}"], [1])
+            self.clp["MOA"].write_single_coil(REG[f"MOA_OUT_BLOCK_UG{self.id}"], 1)
 
         except Exception:
             logger.error(f"[UG{self.id}] Não foi possivel acionar o comando de TRIP: \"Elétrico\".")
@@ -606,8 +605,8 @@ class UnidadeGeracao:
         try:
             logger.info(f"[UG{self.id}]          Enviando comando:          \"REMOVER TRIP ELÉTRICO\"")
 
-            self.clp["MOA"].write_single_coil(REG["PAINEL_LIDO"], [0])
-            self.clp["MOA"].write_single_coil(REG[f"MOA_OUT_BLOCK_UG{self.id}"], [0])
+            self.clp["MOA"].write_single_coil(REG["PAINEL_LIDO"], 0)
+            self.clp["MOA"].write_single_coil(REG[f"MOA_OUT_BLOCK_UG{self.id}"], 0)
             self.clp[f"UG{self.id}"].write_single_coil(REG[f"UG{self.id}_CD_Cala_Sirene"], [1])
 
             if self.clp["SA"].read_coils(REG["SA_CD_Liga_DJ1"])[0] == 1:
@@ -667,7 +666,7 @@ class UnidadeGeracao:
         try:
             logger.debug("")
             logger.info(f"[UG{self.id}]          Enviando comando:          \"RECONHECE E RESET\"")
-            self.clp["MOA"].write_single_coil(REG["PAINEL_LIDO"], [0])
+            self.clp["MOA"].write_single_coil(REG["PAINEL_LIDO"], 0)
 
             passo = 0
             for x in range(3):
@@ -856,7 +855,7 @@ class UnidadeGeracao:
             atenuacao = max(atenuacao, condic.valor)
             if self.etapa_atual == UG_SINCRONIZADA:
                 logger.debug(f"[UG{self.id}]          Verificando Atenuadores:")
-                logger.debug(f"[UG{self.id}]          - \"{condic.descr}\":   Leitura: {condic.leitura.valor} | Atenuação: {atenuacao}")
+                logger.debug(f"[UG{self.id}]          - \"{condic.descr}\":   Leitura: {condic.leitura} | Atenuação: {atenuacao}")
 
         ganho = 1 - atenuacao
         aux = self.setpoint
