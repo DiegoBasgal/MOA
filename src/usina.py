@@ -13,8 +13,8 @@ from src.funcoes.leitura import *
 from src.dicionarios.const import *
 
 from src.mensageiro.voip import Voip
-from src.conector import ClientesUsina
-from src.banco_dados import BancoDados
+from src.conectores.servidores import Servidores
+from src.conectores.banco_dados import BancoDados
 from src.agendamentos import Agendamentos
 from src.unidade_geracao import UnidadeDeGeracao
 from src.funcoes.escrita import EscritaModBusBit as EMB
@@ -34,15 +34,14 @@ class Usina:
 
         # INCIALIZAÇÃO DE OBJETOS DA USINA
 
+        self.clp = Servidores.clp
         self.db = BancoDados("MOA-PPN")
-        self.clp = ClientesUsina.clp
-        self.oco = OcorrenciasUsn(self.clp, self.db)
+        self.oco = OcorrenciasGerais(self.clp, self.db)
         self.agn = Agendamentos(self.cfg, self.db, self)
 
         self.ug1: "UnidadeDeGeracao" = UnidadeDeGeracao(1, self.cfg, self.db)
         self.ug2: "UnidadeDeGeracao" = UnidadeDeGeracao(2, self.cfg, self.db)
         self.ugs: "list[UnidadeDeGeracao]" = [self.ug1, self.ug2]
-        CondicionadorBase.ugs = self.ugs
 
 
         # ATRIBUIÇÃO DE VARIÁVEIS PRIVADAS
@@ -523,7 +522,7 @@ class Usina:
     ### MÉTODOS DE CONTROLE DE DADOS:
 
     def ler_valores(self) -> "None":
-        ClientesUsina.ping_clients()
+        Servidores.ping_clients()
         self.atualizar_valores_montante()
 
         parametros = self.db.get_parametros_usina()

@@ -1,91 +1,108 @@
+import pytz
 import json
 import logging
 import os.path
+import traceback
 
-from sys import stdout
 from time import sleep
+from logging.config import fileConfig
 from datetime import datetime, timedelta
 from pyModbusTCP.client import ModbusClient
 
-from src.mensageiro.msg_log_handler import MensageiroHandler
-
-logger = logging.getLogger(__name__)
-logger.setLevel(logging.DEBUG)
+from src.mensageiro.voip import Voip
+from src.dicionarios.dict import WATCHDOG, voip
+from src.conectores.banco_dados import BancoDados
 
 if not os.path.exists(os.path.join(os.path.dirname(__file__), "logs")):
     os.mkdir(os.path.join(os.path.dirname(__file__), "logs"))
 
-fh = logging.FileHandler(os.path.join(os.path.dirname(__file__), "logs", "watchdog.log"))
-ch = logging.StreamHandler(stdout)
-mh = MensageiroHandler()
+fileConfig("/opt/operacao-autonoma/logger_config.ini")
+logger = logging.getLogger("watchdog")
 
-logFormatter = logging.Formatter("%(asctime)s [%(threadName)-12.12s] [%(levelname)-5.5s] [WATCHDOG] %(message)s")
-logFormatterSimples = logging.Formatter("[%(levelname)-5.5s] [WATCHDOG] %(message)s")
+class Watchdog:
+    def __init__(self) -> "None":
 
-fh.setFormatter(logFormatter)
-ch.setFormatter(logFormatter)
-mh.setFormatter(logFormatterSimples)
-fh.setLevel(logging.INFO)
-ch.setLevel(logging.DEBUG)
-mh.setLevel(logging.INFO)
-logger.addHandler(fh)
-logger.addHandler(ch)
-logger.addHandler(mh)
+        self.timestamp: "datetime" = 0
 
-config_file = os.path.join(os.path.dirname(__file__), "watchdog_config.json")
-with open(config_file, "r") as file:
-    config = json.load(file)
-logger.debug(f"Config: {config}")
+        self.moa_interrompido: "bool" = False
 
-timestamp = 0
-moa_halted = False
-modbus_client = ModbusClient(
-    host=config["ip_slave"],
-    port=config["port_slave"],
-    timeout=config["timeout_modbus"],
-    unit_id=config["unit_id"],
-    auto_open=False,
-    auto_close=False,
-)
+        self.db = BancoDados("Watchdog")
 
-while True:
-    logger.debug(f"Pooling HB @ {config['ip_slave']}:{config['port_slave']}")
+        self.cliente = ModbusClient(
+            host=WATCHDOG["ip"],
+            port=WATCHDOG["porta"],
+            timeout=5,
+            unit_id=1
+        )
 
-    try:
-        if modbus_client.open():
-            regs = modbus_client.read_holding_registers(0, 7)
-            modbus_client.close()
-            if regs is None:
-                raise ConnectionError
 
-            year = regs[0]
-            month = regs[1]
-            day = regs[2]
-            hour = regs[3]
-            minute = regs[4]
-            second = regs[5]
-            micros = regs[6]
-            timestamp = datetime(year, month, day, hour, minute, second, micros)
-            logger.debug(f"HB em {timestamp.strftime('%Y-%m-%d, %H:%M:%S')}!")
+    def get_time(self) -> "datetime":
+        return datetime.now(pytz.timezone("Brazil/East")).replace(tzinfo=None)
 
-            if (datetime.now() - timestamp) > timedelta(seconds=config["timeout_moa"]):
-                if not moa_halted:
-                    moa_halted = True
-                    logger.warning(f"Conexão do MOA em {config['nome_usina']} com {config['nome_local']} falhou ({timestamp.strftime('%Y-%m-%d, %H:%M:%S')})! Tentando novamente a cada {config['timeout_moa']}s.")
-                sleep(config["timeout_moa"])
-            else:
-                if moa_halted:
-                    moa_halted = False
-                    logger.info(f"O coração voltou a bater em  {timestamp.strftime('%Y-%m-%d, %H:%M:%S')}.")
-        else:
-            raise ConnectionError("modbus_client.open() failed.")
 
-    except ConnectionError as e:
-        logger.warning(f"Erro de conexão do MOA em {config['nome_usina']} com {config['nome_local']}. A última do atualização do HB foi em {timestamp.strftime('%Y-%m-%d, %H:%M:%S')}. Exception: {e}")
-        continue
-    except Exception as e:
-        logger.warning(f"Exeption durante a conexão do MOA em {config['nome_usina']} com {config['nome_local']}. A última do atualização do HB foi em {timestamp.strftime('%Y-%m-%d, %H:%M:%S')}. Exception: {e}")
-        continue
-    finally:
-        modbus_client.close()
-        sleep(config["timeout_moa"])
+    def exec(self) -> "None":
+
+        while True:
+            try:
+                data = self.db.get_timestamp_moa()
+
+                ano = data.year
+                mes = data.month
+                dia = data.day
+                hora = data.hour
+                minuto = data.minute
+                segundo = data.second
+                microsegundo = data.microsecond
+
+            except Exception:
+                logger.error("Erro na conexão com o Banco de Dados MariaDB do MOA. Executando modo de verificação pelo CLP-MOA...")
+                logger.debug(traceback.format_exc())
+                sleep(5)
+
+            finally:
+                try:
+                    if self.cliente.open():
+                        data = self.cliente.read_holding_registers(0, 7)
+                        self.cliente.close()
+
+                        ano = data[0]
+                        mes = data[1]
+                        dia = data[2]
+                        hora = data[3]
+                        minuto = data[4]
+                        segundo = data[5]
+                        microsegundo = data[6]
+
+                except Exception:
+                    logger.error(f"Erro na conexão com o CLP-MOA. Tentando novamente em \"{WATCHDOG['timeout_moa']}s\"...")
+                    logger.debug(traceback.format_exc())
+                    voip["WATCHDOG"][0] = True
+                    Voip.acionar_chamada()
+
+                    self.cliente.close()
+                    sleep(WATCHDOG["timeout_moa"])
+                    continue
+
+            try:
+                self.timestamp = datetime(ano, mes, dia, hora, minuto, segundo, microsegundo)
+                logger.debug(f"Horário da última verificação de execução do MOA: {self.timestamp.strftime('%d-%m-%Y %H:%M:%S')}")
+
+                if (self.get_time() - self.timestamp) > timedelta(seconds=WATCHDOG["timeout_moa"]):
+                    if not moa_interrompido:
+                        moa_interrompido = True
+
+                        logger.warning(f"Verificação de execução do MOA em \"{WATCHDOG['nome_usina']}\" no \"{WATCHDOG['nome_local']}\" Falhou!")
+                        logger.info(f"Horário: {self.get_time().strftime('%d-%m-%Y %H:%M:%S')}. Tentando novamente em \"{WATCHDOG['timeout_moa']}s\"...")
+
+                    sleep(WATCHDOG["timeout_moa"])
+
+                else:
+                    if moa_interrompido:
+                        moa_interrompido = False
+                        logger.info(f"Verificação de execução do MOA normalizada. Horário: {self.timestamp.strftime('%d-%m-%Y %H:%M:%S')}")
+
+            except Exception:
+                logger.error(f"Erro na verificação de execução do MOA. Tentando novamente em \"{WATCHDOG['timeout_moa']}s\"...")
+                logger.debug(traceback.format_exc())
+                sleep(WATCHDOG["timeout_moa"])
+                continue

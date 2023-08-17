@@ -2,8 +2,7 @@ import pytz
 import logging
 import traceback
 
-import src.dicionarios.dict as d
-import src.ocorrencias as oco_ug
+import src.ocorrencias as oco
 
 from time import sleep, time
 from threading import Thread
@@ -16,8 +15,8 @@ from src.condicionadores import *
 from src.funcoes.leitura import *
 from src.maquinas_estado.ug import *
 
-from src.banco_dados import BancoDados
-from src.conector import ClientesUsina as cli
+from src.conectores.banco_dados import BancoDados
+from src.conectores.servidores import Servidores
 from src.funcoes.escrita import EscritaModBusBit as EMB
 
 
@@ -36,11 +35,11 @@ class UnidadeDeGeracao:
 
         self.db = db
         self.cfg = cfg
-        self.rv = cli.rv
-        self.rt = cli.rt
-        self.clp = cli.clp
-        self.rele = cli.rele
-        self.oco = oco_ug.OcorrenciasUg(self, self.clp)
+        self.rv = Servidores.rv
+        self.rt = Servidores.rt
+        self.clp = Servidores.clp
+        self.rele = Servidores.rele
+        self.oco = oco.OcorrenciasUnidades(self, self.clp)
 
 
         # ATRIBUIÇÃO DE VARIÁVEIS PRIVADAS

@@ -24,8 +24,6 @@ from logging.config import fileConfig
 from src.dicionarios.const import *
 from src.maquinas_estado.moa import *
 
-from src.conector import ClientesUsina
-
 if not os.path.exists(os.path.join(os.path.dirname(__file__), "logs")):
     os.mkdir(os.path.join(os.path.dirname(__file__), "logs"))
 
@@ -86,7 +84,7 @@ if __name__ == "__main__":
                 logger.debug("")
                 logger.info("Iniciando intâncias de máquina de estados e Threads...")
 
-                threading.Thread(target=lambda: usn.leitura_periodica()).start()
+                threading.Thread(target=lambda: usn.verificar_leituras_periodicas()).start()
                 sm = StateMachine(initial_state=Pronto(usn=usn))
 
                 executar = True

@@ -13,12 +13,12 @@ from src.dicionarios.reg import *
 from src.dicionarios.const import *
 from src.dicionarios.reg_old import *
 
-from src.banco_dados import BancoDados
+from src.conectores.banco_dados import BancoDados
 
 
 logger = logging.getLogger("logger")
 
-class OcorrenciasUsn:
+class OcorrenciasGerais:
     def __init__(self, clp: "dict[str, ModbusClient]"=None, db: "BancoDados"=None) -> "None":
 
         # ATRIBUIÇÃO DE VARIÁVEIS PRIVADAS
@@ -73,7 +73,6 @@ class OcorrenciasUsn:
         """
 
         flag = CONDIC_IGNORAR
-        v = []
 
         if True in (condic.ativo for condic in self.condicionadores_essenciais):
             condicionadores_ativos = [condic for condics in [self.condicionadores_essenciais, self.condicionadores] for condic in condics if condic.ativo]
@@ -89,9 +88,8 @@ class OcorrenciasUsn:
             [logger.warning(f"[OCO-USN] Descrição: \"{condic.descr}\", Gravidade: \"{CONDIC_STR_DCT[condic.gravidade] if condic.gravidade in CONDIC_STR_DCT else 'Desconhecida'}\"") for condic in condicionadores_ativos]
             logger.debug("")
 
-            # for condic in condicionadores_ativos:
-            #     v = [datetime.now(pytz.timezone("Brazil/East")).replace(tzinfo=None), condic.gravidade, condic.descr]
-            #     self.__db.update_alarmes(v)
+            for condic in condicionadores_ativos:
+                 self.__db.update_alarmes([datetime.now(pytz.timezone("Brazil/East")).replace(tzinfo=None), condic.gravidade, condic.descr])
 
             return flag
         return flag
@@ -528,7 +526,7 @@ class OcorrenciasUsn:
 
         return
 
-class OcorrenciasUg:
+class OcorrenciasUnidades:
     def __init__(self, ug, clp: "dict[str, ModbusClient]"=None, db: "BancoDados"=None):
 
         # ATRIBUIÇÃO DE VARIÁVEIS PRIVADAS

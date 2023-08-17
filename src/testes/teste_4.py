@@ -4,13 +4,13 @@ from pymodbus.payload import BinaryPayloadDecoder
 from src.dicionarios.reg import *
 from src.funcoes.leitura import LeituraModbus, LeituraModbusFloat
 
-from src.conector import ClientesUsina
+from src.conectores.servidores import Servidores
 
 class Teste:
     def __init__(self) -> None:
 
-        self.clp = ClientesUsina.clp
-        self.rele = ClientesUsina.rele
+        self.clp = Servidores.clp
+        self.rele = Servidores.rele
 
         self.leitura_potencia_ug1 = LeituraModbus(
             self.rele["UG1"],

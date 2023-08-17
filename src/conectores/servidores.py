@@ -2,13 +2,13 @@ import logging
 import traceback
 import subprocess
 
-import src.dicionarios.dict as d
+from src.dicionarios.dict import IP
 
 from pyModbusTCP.client import ModbusClient
 
 logger = logging.getLogger("logger")
 
-class ClientesUsina:
+class Servidores:
 
     # ATRIBUIÇÃO DE VARIÁVEIS
 
@@ -18,32 +18,32 @@ class ClientesUsina:
     rele: "dict[str, ModbusClient]" = {}
 
     rv[f"UG1"] = ModbusClient(
-        host=d.ips["RV_UG1_ip"],
-        port=d.ips["RV_UG1_porta"],
+        host=IP["RV_UG1_ip"],
+        port=IP["RV_UG1_porta"],
         unit_id=1,
         timeout=0.5,
         auto_close=True,
         auto_open=True
     )
     rv[f"UG2"] = ModbusClient(
-        host=d.ips["RV_UG2_ip"],
-        port=d.ips["RV_UG2_porta"],
+        host=IP["RV_UG2_ip"],
+        port=IP["RV_UG2_porta"],
         unit_id=1,
         timeout=0.5,
         auto_close=True,
         auto_open=True
     )
     rt[f"UG1"] = ModbusClient(
-        host=d.ips["RT_UG1_ip"],
-        port=d.ips["RT_UG1_porta"],
+        host=IP["RT_UG1_ip"],
+        port=IP["RT_UG1_porta"],
         unit_id=2,
         timeout=0.5,
         auto_close=True,
         auto_open=True
     )
     rt[f"UG2"] = ModbusClient(
-        host=d.ips["RT_UG2_ip"],
-        port=d.ips["RT_UG2_porta"],
+        host=IP["RT_UG2_ip"],
+        port=IP["RT_UG2_porta"],
         unit_id=2,
         timeout=0.5,
         auto_close=True,
@@ -51,24 +51,24 @@ class ClientesUsina:
     )
 
     """rele[f"SE"] = ModbusClient(
-        host=d.ips["RELE_SE_ip"],
-        port=d.ips["RELE_SE_porta"],
+        host=IP["RELE_SE_ip"],
+        port=IP["RELE_SE_porta"],
         unit_id=1,
         timeout=0.5,
         auto_close=True,
         auto_open=True
     )"""
     rele[f"UG1"] = ModbusClient(
-        host=d.ips["RELE_UG1_ip"],
-        port=d.ips["RELE_UG1_porta"],
+        host=IP["RELE_UG1_ip"],
+        port=IP["RELE_UG1_porta"],
         unit_id=1,
         timeout=0.5,
         auto_close=True,
         auto_open=True
     )
     rele[f"UG2"] = ModbusClient(
-        host=d.ips["RELE_UG2_ip"],
-        port=d.ips["RELE_UG2_porta"],
+        host=IP["RELE_UG2_ip"],
+        port=IP["RELE_UG2_porta"],
         unit_id=1,
         timeout=0.5,
         auto_close=True,
@@ -76,32 +76,32 @@ class ClientesUsina:
     )
 
     clp["SA"] = ModbusClient(
-        host=d.ips["SA_ip"],
-        port=d.ips["SA_porta"],
+        host=IP["SA_ip"],
+        port=IP["SA_porta"],
         unit_id=1,
         timeout=0.5,
         auto_close=True,
         auto_open=True
     )
     clp["TDA"] = ModbusClient(
-        host=d.ips["TDA_ip"],
-        port=d.ips["TDA_porta"],
+        host=IP["TDA_ip"],
+        port=IP["TDA_porta"],
         unit_id=1,
         timeout=0.5,
         auto_close=True,
         auto_open=True
     )
     clp["UG1"] = ModbusClient(
-        host=d.ips["UG1_ip"],
-        port=d.ips["UG1_porta"],
+        host=IP["UG1_ip"],
+        port=IP["UG1_porta"],
         unit_id=1,
         timeout=0.5,
         auto_close=True,
         auto_open=True
     )
     clp["UG2"] = ModbusClient(
-        host=d.ips["UG2_ip"],
-        port=d.ips["UG2_porta"],
+        host=IP["UG2_ip"],
+        port=IP["UG2_porta"],
         unit_id=1,
         timeout=0.5,
         auto_close=True,
@@ -109,8 +109,8 @@ class ClientesUsina:
     )
     """
     clp["MOA"] = ModbusClient(
-        host=d.ips["MOA_ip"],
-        port=d.ips["MOA_porta"],
+        host=IP["MOA_ip"],
+        port=IP["MOA_porta"],
         unit_id=1,
         timeout=0.5,
         auto_close=True,
@@ -184,35 +184,35 @@ class ClientesUsina:
         """
 
         try:
-            if not cls.ping(d.ips["SA_ip"]):
+            if not cls.ping(IP["SA_ip"]):
                 logger.warning("[CLI] O CLP do Serviço Auxiliar não respondeu a tentativa de comunicação!")
 
-            if not cls.ping(d.ips["TDA_ip"]):
+            if not cls.ping(IP["TDA_ip"]):
                 logger.warning("[CLI] O CLP da Tomada da Água não respondeu a tentativa de comunicação!")
 
-            if not cls.ping(d.ips["RELE_SE_ip"]):
+            if not cls.ping(IP["RELE_SE_ip"]):
                 logger.warning("[CLI] O Relé da Subestação não respondeu a tentativa de comunicação!")
 
-            if not cls.ping(d.ips["UG1_ip"]):
+            if not cls.ping(IP["UG1_ip"]):
                 logger.warning("[CLI] O CLP da Unidade Geradora 1 não respondeu a tentativa de comunicação!")
 
-            if not cls.ping(d.ips["RV_UG1_ip"]):
+            if not cls.ping(IP["RV_UG1_ip"]):
                 logger.warning("[CLI] O Regualdor de Velocidade da Unidade Geradora 1 não respondeu a tentativa de comunicação!")
 
-            if not cls.ping(d.ips["RELE_UG1_ip"]):
+            if not cls.ping(IP["RELE_UG1_ip"]):
                 logger.warning("[CLI] O Relé da Unidade Geradora 1 não respondeu a tentativa de comunicação!")
 
-            if not cls.ping(d.ips["UG2_ip"]):
+            if not cls.ping(IP["UG2_ip"]):
                 logger.warning("[CLI] O CLP da Unidade Geradora 2 não respondeu a tentativa de comunicação!")
 
-            if not cls.ping(d.ips["RV_UG2_ip"]):
+            if not cls.ping(IP["RV_UG2_ip"]):
                 logger.warning("[CLI] O Regulador de Velocidade da Unidade Geradora 2 não respondeu a tentativa de comunicação!")
 
-            if not cls.ping(d.ips["RELE_UG2_ip"]):
+            if not cls.ping(IP["RELE_UG2_ip"]):
                 logger.warning("[CLI] O Relé da Unidade Geradora 2 não respondeu a tentativa de comunicação!")
 
             """
-            if not cls.ping(d.ips["MOA_ip"]):
+            if not cls.ping(IP["MOA_ip"]):
                 logger.warning("[CLI] O CLP do MOA não respondeu a tentativa de comunicação!")
             """
 
