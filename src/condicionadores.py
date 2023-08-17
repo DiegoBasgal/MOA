@@ -13,7 +13,7 @@ class CondicionadorBase:
         self.__etapas = etapas
 
     def __str__(self) -> "str":
-        return f"Condicionador: {self.descr}, Gravidade: {self.__gravidade}"
+        return f"Condicionador: {self.descr}, Gravidade: {self.gravidade}"
 
     @property
     def leitura(self) -> "float":
@@ -33,19 +33,25 @@ class CondicionadorBase:
 
     @property
     def ativo(self) -> "bool":
-        if self.__ug:
-            return False if self.__ug.etapa_atual in self.__etapas and self.leitura == 0 else True
+        if self.__ug and self.__etapas:
+            if self.__ug.etapa_atual in self.__etapas:
+                return False if self.leitura == 0 else True
+            else:
+                return False
         else:
             return False if self.leitura == 0 else True
 
 
 class CondicionadorExponencial(CondicionadorBase):
-    def __init__(self, leitura: "LeituraModbus", gravidade: "int"=2, valor_base: "float"=100, valor_limite: "float"=200, ordem: "float"=(1/4), descr: "str"=None):
-        super().__init__(leitura, gravidade, descr)
+    def __init__(self, leitura: "LeituraModbus", gravidade: "int"=2, valor_base: "float"=100, valor_limite: "float"=200, ordem: "float"=(1/4), etapas: "list"=[], ug: "UnidadeDeGeracao"=None, descr: "str"=None):
+        super().__init__(leitura, gravidade, etapas, ug,descr)
 
         self.__ordem = ordem
         self.__valor_base = valor_base
         self.__valor_limite = valor_limite
+
+        self.__ug = ug
+        self.__etapas = etapas
 
     @property
     def valor_base(self) -> "float":
@@ -64,9 +70,20 @@ class CondicionadorExponencial(CondicionadorBase):
         self.__valor_limite = val
 
     @property
+    def ordem(self) -> "float":
+        return self.__ordem
+
+    @ordem.setter
+    def ordem(self, val: "float") -> "None":
+        self.__ordem = val
+
+    @property
     def ativo(self) -> "bool":
-        if self.__ug:
-            return True if self.__ug.etapa_atual in self.__etapas and self.valor >= 1 else False
+        if self.__ug and self.__etapas:
+            if self.__ug.etapa_atual in self.__etapas:
+                return True if self.valor >= 1 else False
+            else:
+                return False
         else:
             return True if self.valor >= 1 else False
 

@@ -208,7 +208,7 @@ class UnidadeDeGeracao:
                 self._ultima_etapa_alvo = self.etapa_alvo
                 return UG_SINCRONIZADA
 
-            elif UG_PARADA < self.etapa_atual < UG_SINCRONIZADA and self.etapa_alvo == UG_PARADA:
+            elif UG_PARADA < self.etapa_atual <= UG_SINCRONIZADA and self.etapa_alvo == UG_PARADA:
 
                 if self._ultima_etapa_alvo != self.etapa_alvo:
                     if self._ultima_etapa_alvo < self.etapa_alvo:
@@ -223,7 +223,7 @@ class UnidadeDeGeracao:
                     self._ultima_etapa_alvo = self.etapa_alvo
                     return UG_PARANDO
 
-            elif UG_PARADA < self.etapa_atual < UG_SINCRONIZADA and self.etapa_alvo == UG_SINCRONIZADA:
+            elif UG_PARADA <= self.etapa_atual < UG_SINCRONIZADA and self.etapa_alvo == UG_SINCRONIZADA:
                 if self._ultima_etapa_alvo != self.etapa_alvo:
                     if self._ultima_etapa_alvo > self.etapa_alvo:
                         self._ultima_etapa_alvo = self.etapa_alvo

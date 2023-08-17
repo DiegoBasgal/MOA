@@ -122,13 +122,13 @@ if __name__ == "__main__":
             logger.debug("")
             logger.error(f"[!!!] \"ATENÇÃO!\" Houve um erro na execução do loop principal -> !! \"main.py\" !!")
             logger.debug(f"Traceback: {traceback.format_exc()}")
-            ClientesUsina.close_all()
+            Servidores.close_all()
             logger.debug("MOA encerrado! Até a próxima...")
             break
 
         except KeyboardInterrupt:
             logger.debug("")
             logger.warning("[!!!] \"ATENÇÃO!\" Execução do loop principal da main do MOA interrompido por comando de teclado.")
-            ClientesUsina.close_all()
+            Servidores.close_all()
             logger.debug("MOA encerrado! Até a próxima...")
             break
