@@ -1253,7 +1253,6 @@ class Ui_Form(object):
         self.pushButton_fechar_cp2.clicked.connect(Form.set_fechamento_cp2)
         self.pushButton_cracking_cp2.clicked.connect(Form.set_cracking_cp2)
         self.pushButton_equalizar_cp2.clicked.connect(Form.trip_cracking_cp2)
-
         QtCore.QMetaObject.connectSlotsByName(Form)
 
     def retranslateUi(self, Form):
