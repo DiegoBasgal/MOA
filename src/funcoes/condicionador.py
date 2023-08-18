@@ -11,7 +11,7 @@ class CondicionadorExponencialReverso(CondicionadorBase):
     ...
 
 class CondicionadorBase:
-    def __init__(self, leitura: "LeituraBase", gravidade: "int"=2, etapas: list=[], ug: "UnidadeGeracao"=None, descr: "str"=None):
+    def __init__(self, leitura: "LeituraBase", gravidade: "int"=2, etapas: list=[], ug_id: "int"=None, descr: "str"=None):
 
         # ATRIBUIÇÃO DE VARIÁVEIS PRIVADAS
 
@@ -19,8 +19,10 @@ class CondicionadorBase:
         self.__gravidade = gravidade
         self.__descr = leitura.descr
 
-        self.__ug = ug
+        self.__ug_id = ug_id
         self.__etapas = etapas
+
+        self.ugs = []
 
     def __str__(self) -> "str":
         """
@@ -57,27 +59,36 @@ class CondicionadorBase:
     def ativo(self) -> "bool":
         # PROPRIEDADE -> Retrona se o condicionaor está ativo.
 
-        if self.__ug and self.__etapas:
-            if self.__ug.etapa_atual in self.__etapas:
+        if self.__ug_id and self.__etapas:
+            ug = [ug for ug in self.ugs if self.__ug_id == ug.id]
+            if ug.etapa_atual in self.__etapas:
                 return False if self.leitura == 0 else True
             else:
                 return False
         else:
             return False if self.leitura == 0 else True
+        
+
+    @property
+    def ugs(self) -> "list[UnidadeGeracao]":
+
+        return self.ugs
+
+    @ugs.setter
+    def ugs(self, var: "list[UnidadeGeracao]") -> "None":
+
+        self.ugs = var
 
 
 class CondicionadorExponencial(CondicionadorBase):
-    def __init__(self, leitura: "LeituraBase", gravidade: "int"=2, valor_base: "float"=100, valor_limite: "float"=200, ordem: float = (1 / 4), etapas: "list"=[], ug: "UnidadeGeracao"=None, descr: "str"=None):
-        super().__init__(leitura, gravidade, etapas, ug,descr)
+    def __init__(self, leitura: "LeituraBase", gravidade: "int"=2, valor_base: "float"=100, valor_limite: "float"=200, ordem: float = (1 / 4), descr: "str"=None):
+        super().__init__(leitura, gravidade, descr)
 
         # ATRIBUIÇÃO DE VARIÁVEIS PRIVADAS
 
         self.__ordem = ordem
         self.__valor_base = valor_base
         self.__valor_limite = valor_limite
-
-        self.__ug = ug
-        self.__etapas = etapas
 
 
     @property
@@ -120,13 +131,7 @@ class CondicionadorExponencial(CondicionadorBase):
     def ativo(self) -> "bool":
         # PROPRIEDADE -> Retrona se o condicionador está ativo.
 
-        if self.__ug and self.__etapas:
-            if self.__ug.etapa_atual in self.__etapas:
-                return True if self.valor >= 1 else False
-            else:
-                return False
-        else:
-            return True if self.valor >= 1 else False
+        return True if self.valor >= 1 else False
 
     @property
     def valor(self) -> "float":

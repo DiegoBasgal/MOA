@@ -20,6 +20,7 @@ from src.unidade_geracao import UnidadeGeracao
 from src.conectores.servidores import Servidores
 from src.conectores.banco_dados import BancoDados
 from src.funcoes.agendamentos import Agendamentos
+from src.funcoes.condicionador import CondicionadorBase
 
 logger = logging.getLogger("logger")
 
@@ -45,6 +46,7 @@ class Usina:
         self.ug2 = UnidadeGeracao(2, self.cfg, self.db)
         self.ug3 = UnidadeGeracao(3, self.cfg, self.db)
         self.ugs: "list[UnidadeGeracao]" = [self.ug1, self.ug2, self.ug3]
+        CondicionadorBase.ugs = self.ugs
 
 
         # ATRIBUIÇÃO DE VARIÁVEIS PRIVADAS
