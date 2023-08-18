@@ -472,7 +472,7 @@ class Usina:
                 sleep(max(0, (time() + 1800) - time()))
 
         except Exception:
-            logger.error(f"[USN] Houve um erro ao executar o timer de leituras periódicas.")
+            logger.error(f"[USN] Houve um erro com a função de Leituras Periódicas.")
             logger.debug(traceback.format_exc())
 
     def controlar_inicializacao(self) -> None:
@@ -1008,7 +1008,7 @@ class Usina:
                     self.ug2.oco.verificar_condicionadores()
 
                 if self.clp["MOA"].read_coils(REG["MOA_IN_EMERG_UG3"])[0] == 1:
-                    self.ug2.oco.verificar_condicionadores()
+                    self.ug3.oco.verificar_condicionadores()
 
                 if self.clp["MOA"].read_coils(REG["MOA_IN_HABILITA_AUTO"])[0] == 1:
                     self.clp["MOA"].write_single_coil(REG["MOA_IN_HABILITA_AUTO"], 1)

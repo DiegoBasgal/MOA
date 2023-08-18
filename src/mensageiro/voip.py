@@ -2,6 +2,8 @@ import os
 import pytz
 import json
 import logging
+import traceback
+
 import src.mensageiro.dict as vd
 
 from time import sleep
@@ -169,3 +171,92 @@ class Voip:
 
         else:
             logger.info("[VOIP] Torpedo de voz desativado. Para habilitar envio, favor alterar valor \"voz_habilitado = true\" no arquivo \"voip_config.json\".")
+
+
+    @classmethod
+    def acionar_teste(cls) -> "None":
+        try:
+            headers = {"Content-Type": "application/json", "Authorization": cls.carregar_token()}
+
+            if cls.cfg["voz_habilitado"]:
+                print("[VOIP] Enviando voz de Emergencia...")
+
+                if cls.carregar_contatos() is not None:
+                    agenda = cls.carregar_contatos()
+                    lista_contatos = cls.verificar_expediente(agenda)
+                    print("[VOIP] Consegui pelo Banco!")
+                else:
+                    print("[VOIP] Lista de contatos vazia! Carregando lista de contatos padrão.")
+                    lista_contatos = cls.lista_padrao
+
+                todos = []
+                for _, vl in vd.voip_dict.items():
+                    if vl[0] and vl[1] == 0:
+                        todos.append(vl[2])
+                        vl[1] = 1
+
+                mensagem = "".join(i for i in todos)
+
+                for contato in lista_contatos:
+                    print(f"[VOIP] Disparando torpedo de voz para: {contato[0]} ({contato[1]})")
+                    data = {
+                        "caller": f"{cls.cfg['caller_voip']}",
+                        "called": f"{contato[1]}",
+                        "audios": [{"audio": f"{mensagem}", "positionAudio": 1,}],
+                        "dtmfs": [],
+                    }
+                    cls.codificar_dados(data, headers)
+
+            else:
+                print("[VOIP] Torpedo de voz desativado. Para habilitar envio, favor alterar valor \"voz_habilitado = true\" no arquivo \"voip_config.json\".")
+
+        except Exception:
+            print(f"[VOIP] Erro ao acionar chamada...")
+            print(traceback.format_exc())
+
+def teste() -> "None":
+
+    ciclo = 0
+    leitura_teste = 1
+
+    while True:
+        try:
+            ciclo += 1
+
+            print(f"Ciclo -> {ciclo}")
+
+            if leitura_teste != 1 and not vd.voip_dict["SA_QCADE_BOMBAS_DNG_AUTO"][0]:
+                logger.warning("[OCO-USN] O poço de drenagem da Usina entrou em modo remoto, favor verificar.")
+                vd.voip_dict["SA_QCADE_BOMBAS_DNG_AUTO"][0] = True
+
+            elif leitura_teste == 1 and vd.voip_dict["SA_QCADE_BOMBAS_DNG_AUTO"][0]:
+                vd.voip_dict["SA_QCADE_BOMBAS_DNG_AUTO"][0] = False
+                vd.voip_dict["SA_QCADE_BOMBAS_DNG_AUTO"][1] = 0
+
+            sleep(2)
+
+            if ciclo == 5:
+                leitura_teste = 0
+                print(f"Lista -> {vd.voip_dict['SA_QCADE_BOMBAS_DNG_AUTO']}")
+                print(f"Zerando variável leitura_teste -> {leitura_teste}...")
+
+            elif ciclo == 6:
+                print(f"Lista -> {vd.voip_dict['SA_QCADE_BOMBAS_DNG_AUTO']}")
+                print(f"Acionando Voip...")
+                Voip.acionar_teste()
+
+            elif ciclo == 8:
+                leitura_teste = 1
+                print(f"Resetando variável leitura_teste -> {leitura_teste}...")
+
+            elif ciclo == 10:
+                print(f"Lista -> {vd.voip_dict['SA_QCADE_BOMBAS_DNG_AUTO']}")
+                print(f"Acionando Voip após reset...")
+                Voip.acionar_teste()
+
+        except Exception:
+            print(f"Erro! {traceback.format_exc()}")
+            continue
+
+
+teste()

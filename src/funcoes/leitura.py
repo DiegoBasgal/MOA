@@ -1,6 +1,7 @@
 import socket
 import struct
 import logging
+import traceback
 
 from src.dicionarios.reg import *
 from pyModbusTCP.utils import crc16
@@ -22,7 +23,7 @@ class LeituraDebug(LeituraBase):
     ...
 
 class LeituraBase:
-    def __init__(self, descr: str) -> None:
+    def __init__(self, descr: "str"=None) -> None:
 
         # ATRIBUIÇÃO DE VARIÁVEIS PRIVADAS
 
@@ -41,92 +42,80 @@ class LeituraBase:
         return f"Leitura {self.__descr}, Valor: {self.valor}, Raw: {self.raw}"
 
     @property
-    def valor(self):
+    def valor(self) -> "None":
         # PROPRIEDADE -> Valor abstrato.
 
         raise NotImplementedError("Deve ser implementado na classe herdeira.")
 
     @property
-    def raw(self):
+    def raw(self) -> "None":
         # PROPRIEDADE -> Valor raw abstrato.
 
         raise NotImplementedError("Deve ser implementado na classe herdeira.")
 
     @property
-    def descr(self) -> str:
+    def descr(self) -> "str":
         # PROPRIEDADE -> Descrição abstrata.
 
         return self.__descr
 
+
 class LeituraModbus(LeituraBase):
-    def __init__(
-        self,
-        descr: str,
-        modbus_client: ModbusClient,
-        registrador: int,
-        escala: float = 1,
-        fundo_de_escala: float = 0,
-        op: int = 3,
-    ):
+    def __init__(self, cliente: "ModbusClient"=None, registrador: "int"=None, escala: "float"=1, fundo_escala: "float"=0, op: "int"=3, descr: "str"=None):
         super().__init__(descr)
 
         # ATRIBUIÇÃO DE VARIÁVEIS PRIVADAS
 
-        self.__descr = descr
-        self.__modbus_client = modbus_client
+        self.__cliente = cliente
         self.__registrador = registrador
-        self.__escala = escala
-        self.__fundo_de_escala = fundo_de_escala
+
         self.__op = op
+        self.__escala = escala
+        self.__fundo_escala = fundo_escala
+        self.__descr = descr
 
     @property
-    def valor(self) -> float:
+    def valor(self) -> "float":
         # PROPRIEDADE -> Retorna Valor calculado com escala e fundo de escala.
 
-        return (self.raw * self.__escala) + self.__fundo_de_escala
+        return (self.raw * self.__escala) + self.__fundo_escala
 
     @property
-    def raw(self) -> int:
+    def raw(self) -> "int":
         # PROPRIEDADE -> Retorna Valor raw baseado no tipo de operação ModBus.
 
         try:
-            if self.__modbus_client.open():
+            if self.__cliente.open():
                 if self.__op == 3:
-                    aux = self.__modbus_client.read_holding_registers(
-                        self.__registrador
-                    )[0]
+                    ler = self.__cliente.read_holding_registers(self.__registrador)[0]
+
                 elif self.__op == 4:
-                    aux = self.__modbus_client.read_input_registers(self.__registrador)[
-                        0
-                    ]
-                if aux is not None:
-                    return aux
-                else:
-                    return 0
+                    ler = self.__cliente.read_input_registers(self.__registrador)[0]
+
+                return ler if ler is not None else 0
+
             else:
                 raise ConnectionError("Erro na conexão modbus.")
+
         except Exception:
+            self.logger.error(f"[LEI] Erro na Leitura Modbus. REG: {self.__descr}")
+            self.logger.debug(traceback.format_exc())
             return 0
 
+
 class LeituraModbusCoil(LeituraBase):
-    def __init__(
-        self,
-        descr: str,
-        modbus_client: ModbusClient,
-        registrador: int,
-        invertido: bool = False,
-    ):
+    def __init__(self, cliente: "ModbusClient"=None, registrador: "int"=None, invertido: "bool"=False, descr: "str"=None):
         super().__init__(descr)
 
         # ATRIBUIÇÃO DE VARIÁVEIS PRIVADAS
 
         self.__descr = descr
-        self.__modbus_client = modbus_client
+        self.__cliente = cliente
         self.__registrador = registrador
         self.__invertido = invertido
 
     @property
-    def valor(self) -> float:
+    def valor(self) -> "float":
         # PROPRIEDADE -> Retorna Valor normal ou invertido.
 
         if self.__invertido:
@@ -135,31 +124,27 @@ class LeituraModbusCoil(LeituraBase):
             return True if self.raw else False
 
     @property
-    def raw(self) -> int:
+    def raw(self) -> "int":
         # PROPRIEDADE -> Retorna Valor raw ModBus.
 
         try:
-            if self.__modbus_client.open():
-                aux = self.__modbus_client.read_discrete_inputs(self.__registrador)[0]
-                if aux is not None:
-                    return aux
-                else:
-                    return 0
+            if self.__cliente.open():
+                ler = self.__cliente.read_discrete_inputs(self.__registrador)[0]
+
+                return ler if ler is not None else 0
+
             else:
                 raise ConnectionError("Erro na conexão modbus.")
+
         except Exception:
+            self.logger.error(f"[LEI] Erro na Leitura Modbus Coil. REG: {self.__descr}")
+            self.logger.debug(traceback.format_exc())
             return 0
 
+
 class LeituraModbusBit(LeituraModbus):
-    def __init__(
-        self,
-        descr: str,
-        modbus_client: ModbusClient,
-        registrador: int,
-        bit: int,
-        invertido: bool = False,
-    ):
-        super().__init__(descr, modbus_client, registrador)
+    def __init__(self, cliente: "ModbusClient"=None, registrador: "int"=None, bit: "int"=None, invertido: "bool"=False, descr: "str"=None):
+        super().__init__(cliente, registrador, descr)
 
         # ATRIBUIÇÃO DE VARIÁVEIS PRIVADAS
 
@@ -167,71 +152,64 @@ class LeituraModbusBit(LeituraModbus):
         self.__invertido = invertido
 
     @property
-    def valor(self) -> bool:
+    def valor(self) -> "bool":
         # PROPRIEDADE -> Retorna Valor Bit ModBus.
 
-        aux = self.raw & 2**self.__bit
-        if self.__invertido:
-            aux = not aux
-        return aux
+        ler = self.raw & 2**self.__bit
+        return not ler if self.__invertido else ler
+
 
 class LeituraDelta(LeituraBase):
-    def __init__(
-        self,
-        descr: str,
-        leitura_A: LeituraBase,
-        leitura_B: LeituraBase,
-        min_is_zero=True,
-    ):
-        super().__init__(descr)
-        self.__leitura_A = leitura_A
-        self.__leitura_B = leitura_B
-        self.__min_is_zero = min_is_zero
-
-    @property
-    def valor(self) -> float:
-        if self.__min_is_zero:
-            return max(0, self.__leitura_A.valor - self.__leitura_B.valor)
-        else:
-            return self.__leitura_A.valor - self.__leitura_B.valor
-
-class LeituraSoma(LeituraBase):
-    def __init__(
-        self,
-        descr: str,
-        leitura_A: LeituraBase,
-        leitura_B: LeituraBase,
-        min_is_zero=True,
-    ):
+    def __init__(self, leitura_A: "LeituraBase"=None, leitura_B: "LeituraBase"=None, min_zero: "bool"=True, descr: "str"=None):
         super().__init__(descr)
 
         # ATRIBUIÇÃO DE VARIÁVEIS PRIVADAS
 
         self.__leitura_A = leitura_A
         self.__leitura_B = leitura_B
-        self.__min_is_zero = min_is_zero
+        self.__min_zero = min_zero
 
     @property
-    def valor(self) -> float:
+    def valor(self) -> "float":
+        # PROPRIEDADE -> Retorna Valor da Soma das Leituras.
+
+        if self.__min_zero:
+            return max(0, self.__leitura_A.valor - self.__leitura_B.valor)
+        else:
+            return self.__leitura_A.valor - self.__leitura_B.valor
+
+
+class LeituraSoma(LeituraBase):
+    def __init__(self, leitura_A: "LeituraBase"=None, leitura_B: "LeituraBase"=None, min_zero: "bool"=True, descr: "str"=None):
+        super().__init__(descr)
+
+        # ATRIBUIÇÃO DE VARIÁVEIS PRIVADAS
+
+        self.__leitura_A = leitura_A
+        self.__leitura_B = leitura_B
+        self.__min_zero = min_zero
+
+    @property
+    def valor(self) -> "float":
         # PROPRIEDADE -> Retorna Valor de soma de duas leituras ModBus.
 
-        if self.__min_is_zero:
+        if self.__min_zero:
             return max(0, self.__leitura_A.valor + self.__leitura_B.valor)
         else:
             return self.__leitura_A.valor + self.__leitura_B.valor
 
+
 class LeituraComposta(LeituraBase):
-    def __init__(
-        self,
-        descr: str,
-        leitura1: LeituraBase,
-        leitura2: LeituraBase = None,
-        leitura3: LeituraBase = None,
-        leitura4: LeituraBase = None,
-        leitura5: LeituraBase = None,
-        leitura6: LeituraBase = None,
-        leitura7: LeituraBase = None,
-        leitura8: LeituraBase = None,
+    def __init__(self,
+        leitura1: "LeituraBase",
+        leitura2: "LeituraBase" = None,
+        leitura3: "LeituraBase" = None,
+        leitura4: "LeituraBase" = None,
+        leitura5: "LeituraBase" = None,
+        leitura6: "LeituraBase" = None,
+        leitura7: "LeituraBase" = None,
+        leitura8: "LeituraBase" = None,
+        descr: "str"=None
     ):
         super().__init__(descr)
 
@@ -247,7 +225,7 @@ class LeituraComposta(LeituraBase):
         self.__leitura8 = leitura8
 
     @property
-    def valor(self) -> float:
+    def valor(self) -> "float":
         # PROPRIEDADE -> Retorna Valor composto de duas ou mais leituras ModBus.
 
         res = 0
@@ -277,6 +255,7 @@ class LeituraComposta(LeituraBase):
                 res += 2**7
         return res
 
+
 class LeituraDebug(LeituraBase):
     def __init__(self, descr: str) -> None:
         super().__init__(descr)
@@ -291,6 +270,7 @@ class LeituraDebug(LeituraBase):
         # SETTER -> Atribui novo Valor.
 
         self.__valor = var
+
 
 class LeituraNBRPower(LeituraBase):
     def __init__(
@@ -323,13 +303,13 @@ class LeituraNBRPower(LeituraBase):
         self.__escala = float(escala)
 
     @property
-    def valor(self) -> float:
+    def valor(self) -> "float":
         # PROPRIEDADE -> Retorna Valor calculado com escala.
 
         return self.raw * self.__escala
 
     @property
-    def raw(self) -> int:
+    def raw(self) -> "int":
         # PROPRIEDADE -> Retorna Valor raw utilizando funções de conversão de valores
         # hexadecimais e funções de utilidade e conversão ModBus.
 

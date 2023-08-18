@@ -740,10 +740,10 @@ class OcorrenciasUnidades:
         ## Retornos Digitais
         # TRIPS
         self.leitura_RD_TripEletrico = LeituraModbusCoil(f"[UG{self.__ug.id}] Trip Elétrico", self.__clp[f"UG{self.__ug.id}"], REG[f"UG{self.__ug.id}_RD_TripEletrico"])
-        self.condicionadores_essenciais.append(CondicionadorBase(self.leitura_RD_TripEletrico, CONDIC_NORMALIZAR, [UG_PARANDO, UG_PARADA], self.__ug))
+        self.condicionadores_essenciais.append(CondicionadorBase(self.leitura_RD_TripEletrico, CONDIC_NORMALIZAR, [UG_PARANDO, UG_PARADA], self.__ug.id))
 
         self.leitura_RD_700G_Trip = LeituraModbusCoil(f"[UG{self.__ug.id}] SEL 700G Trip", self.__clp[f"UG{self.__ug.id}"], REG[f"UG{self.__ug.id}_RD_700G_Trip"])
-        self.condicionadores_essenciais.append(CondicionadorBase(self.leitura_RD_700G_Trip, CONDIC_NORMALIZAR, [UG_PARANDO, UG_PARADA], self.__ug))
+        self.condicionadores_essenciais.append(CondicionadorBase(self.leitura_RD_700G_Trip, CONDIC_NORMALIZAR, [UG_PARANDO, UG_PARADA], self.__ug.id))
 
         self.leitura_RD_TripMecanico = LeituraModbusCoil(f"[UG{self.__ug.id}] Trip Mecâncio", self.__clp[f"UG{self.__ug.id}"], REG[f"UG{self.__ug.id}_RD_TripMecanico"])
         self.condicionadores_essenciais.append(CondicionadorBase(self.leitura_RD_TripMecanico, CONDIC_INDISPONIBILIZAR))
