@@ -130,7 +130,7 @@ class ControleEstados(State):
         logger.debug("Verificando modo do MOA...")
         if not self.usn.modo_autonomo:
             logger.debug("")
-            logger.info("Comando acionado: \"Desabilitar Modo Autônomo\"")
+            logger.debug("Comando acionado: \"Desabilitar Modo Autônomo\"")
             return ModoManual(self.usn)
 
         logger.debug("Verificando status da emergência...")
@@ -145,29 +145,26 @@ class ControleEstados(State):
             logger.debug("Foram identificados agendamentos pendentes!")
             return ControleAgendamentos(self.usn)
 
+        logger.debug("Verificando status da Subestação e Bay...")
+        flag_bay_se = self.usn.verificar_bay_se()
+
+        if flag_bay_se == DJS_FALTA_TENSAO:
+            return Emergencia(self.usn) if bay.Bay.aguardar_tensao() == TENSAO_FORA else self
+
+        elif flag_bay_se != DJS_OK:
+            self.usn.normalizar_usina()
+            return self
+
         else:
-            logger.debug("Verificando status da Subestação e Bay...")
-            if self.usn.verificar_disjuntores() != DJS_OK:
-                if self.usn.normalizar_usina() == NORM_USN_FALTA_TENSAO:
-                    sleep(1)
-                    return Emergencia(self.usn) if bay.Bay.aguardar_tensao() == TENSAO_FORA else self
-                else:
-                    sleep(1)
-                    return self
-
             logger.debug("Verificando condicionadores...")
-            flag = self.usn.verificar_condicionadores()
+            flag_condic= self.usn.verificar_condicionadores()
 
-            if flag == CONDIC_INDISPONIBILIZAR:
+            if flag_condic == CONDIC_INDISPONIBILIZAR:
                 return Emergencia(self.usn)
 
-            elif flag == CONDIC_NORMALIZAR:
-                if self.usn.normalizar_usina() == NORM_USN_FALTA_TENSAO:
-                    sleep(1)
-                    return Emergencia(self.usn) if bay.Bay.aguardar_tensao() == TENSAO_FORA else self
-                else:
-                    sleep(1)
-                    return self
+            elif flag_condic == CONDIC_NORMALIZAR:
+                self.usn.normalizar_usina()
+                return self
 
             else:
                 return ControleReservatorio(self.usn)
@@ -280,7 +277,7 @@ class ModoManual(State):
         self.usn.ler_valores()
 
         logger.debug(f"[USN] Leitura de Nível:                   {tda.TomadaAgua.nivel_montante.valor:0.3f}")
-        logger.debug(f"[USN] Potência no medidor:                {bay.Bay.potencia_medidor_usina.valor:0.3f}")
+        logger.debug(f"[USN] Potência no medidor:                {bay.Bay.potencia_mp.valor:0.3f}")
         logger.debug("")
 
         for ug in self.usn.ugs:
@@ -359,13 +356,13 @@ class Emergencia(State):
                 sleep(5)
 
         else:
-            flag = self.usn.verificar_condicionadores()
+            flag_condic = self.usn.verificar_condicionadores()
 
-            if flag == CONDIC_INDISPONIBILIZAR:
+            if flag_condic == CONDIC_INDISPONIBILIZAR:
                 logger.critical("Acionando VOIP e entrando em modo manual")
                 return ModoManual(self.usn)
 
-            elif flag == CONDIC_NORMALIZAR:
+            elif flag_condic == CONDIC_NORMALIZAR:
                 self.tentativas += 1
                 logger.info(f"Normalizando usina. (Tentativa {self.tentativas}/3) (Limite entre tentativas: {TIMEOUT_NORMALIZACAO}s)")
                 self.usn.normalizar_forcado = True

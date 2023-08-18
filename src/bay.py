@@ -104,27 +104,26 @@ class Bay:
 
         try:
             if not cls.dj_linha_bay.valor:
-                logger.info("[BAY] O Disjuntor do Bay está aberto!")
+                logger.info("[BAY] O Disjuntor do Bay está Aberto!")
 
                 if cls.verificar_dj_linha():
                     logger.debug(f"[BAY] Enviando comando:                   \"FECHAR DISJUNTOR\"")
                     logger.debug("")
-                    cls.resetar_emergencia()
                     EMB.escrever_bit(cls.rele["BAY"], REG_RELE["BAY"]["DJL_CMD_FECHAR"], valor=1)
-                    return DJBAY_OK
+                    return True
 
                 else:
                     logger.warning("[BAY] Não foi possível fechar do Disjuntor do BAY.")
                     logger.debug("")
-                    return DJBAY_FALHA_FECHAMENTO
+                    return False
 
             else:
-                return DJBAY_OK
+                return True
 
         except Exception:
             logger.exception(f"[BAY] Houve um erro ao realizar a leitura do status do Disjuntor do Bay.")
             logger.debug(f"[BAY] Traceback: {traceback.format_exc()}")
-            return DJBAY_FALHA_FECHAMENTO
+            return False
 
     @classmethod
     def verificar_dj_linha(cls) -> "bool":
@@ -147,6 +146,10 @@ class Bay:
         logger.info("[BAY] Verificando Condições do Disjuntor BAY...")
 
         try:
+            if not cls.secc_fechada.valor:
+                logger.warning("[BAY] A Seccionadora está Aberta!")
+                flags += 1
+
             if se.Subestacao.dj_linha_se.valor:
                 logger.info("[BAY] Disjuntor da Subestação Fechado!")
                 logger.debug(f"[BAY] Enviando comando:                   \"ABRIR DISJUNTOR SE\"")
@@ -156,24 +159,16 @@ class Bay:
                     logger.warning("[BAY] Não foi possível realizar a abertura do Disjuntor de Linha da Subestação!")
                     flags += 1
 
-            if cls.tensao_vs.valor != 0:
-                logger.warning("[BAY] Foi identificada uma leitura de Tensão VS!")
-                flags += 1
-
-            if not cls.mola_carregada.valor:
-                logger.warning("[BAY] A mola do Disjuntor está descarregada!")
-                flags += 1
-
-            if not cls.secc_fechada.valor:
-                logger.warning("[BAY] A Seccionadora está aberta!")
-                flags += 1
-
             if not cls.barra_morta.valor and cls.barra_viva.valor:
-                logger.warning("[BAY] Foi identificada uma leitura de corrente na barra!")
+                logger.warning(f"[BAY] Foi identificada uma Leitura de Corrente na Barra! Tensao VS -> {cls.tensao_vs.valor}")
                 flags += 1
 
             if not cls.linha_morta.valor and cls.linha_viva.valor:
                 logger.warning("[BAY] Foi identificada uma leitura de corrente na linha!")
+                flags += 1
+
+            if not cls.mola_carregada.valor:
+                logger.warning("[BAY] A mola do Disjuntor está descarregada!")
                 flags += 1
 
             logger.warning(f"[BAY] Foram identificadas \"{flags}\" condições de bloqueio ao realizar fechamento do Disjuntor do BAY. Favor normalizar.") \
@@ -289,5 +284,5 @@ class Bay:
         cls.secc_aberta = LeituraModbusBit(cls.rele["BAY"], REG_RELE["BAY"]["SECC_FECHADA"], invertido=True, descricao="[BAY][RELE] Seccionadora Aberta")
         cls.condicionadores_essenciais.append(CondicionadorBase(cls.secc_aberta, CONDIC_INDISPONIBILIZAR))
 
-        cls.leitura_falha_abertura_djl = LeituraModbusBit(cls.rele["BAY"], REG_RELE["BAY"]["DJL_FLH_ABERTURA"], descricao="[BAY][RELE] Disjuntor Linha Falha Abertura")
-        cls.condicionadores_essenciais.append(CondicionadorBase(cls.leitura_falha_abertura_djl, CONDIC_INDISPONIBILIZAR))
+        cls.l_falha_abertura_dj = LeituraModbusBit(cls.rele["BAY"], REG_RELE["BAY"]["DJL_FLH_ABERTURA"], descricao="[BAY][RELE] Disjuntor Linha Falha Abertura")
+        cls.condicionadores_essenciais.append(CondicionadorBase(cls.l_falha_abertura_dj, CONDIC_INDISPONIBILIZAR))

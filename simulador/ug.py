@@ -296,6 +296,7 @@ class Unidade:
                 self.dict[f'UG{self.id}'][f'etapa_alvo'] = self.etapa_alvo
 
                 if self.dict['SE']['dj_fechado']:
+                    self.dict['SE']['tensao_vs'] = self.dict['SE']['tensao_vab']
                     self.dict[f'UG{self.id}']['potencia'] = self.potencia = min(max(self.potencia, POT_MIN), POT_MAX)
 
                     if self.setpoint > self.potencia:
@@ -307,6 +308,7 @@ class Unidade:
                     self.potencia = np.random.normal(self.potencia, 2 * self.escala_ruido)
 
                 if self.dict['SE']['dj_aberto'] or self.dict['SE']['dj_trip']:
+                    self.dict['SE']['tensao_vs'] = 0
                     self.dict[f'UG{self.id}']['potencia'] = self.potencia = 0
                     self.dict[f'UG{self.id}'][f'etapa_atual'] = self.etapa_atual = ETAPA_UVD
                     self.dict[f'UG{self.id}'][f'etapa_alvo'] = self.etapa_alvo = ETAPA_US

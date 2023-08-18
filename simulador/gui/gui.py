@@ -39,7 +39,7 @@ class Window(QMainWindow, Ui_Form):
             self.checkBox_DjSE_falta_vcc.setChecked(self.dict['SE']['dj_falta_vcc'])
             self.checkBox_DjSE_mola.setChecked(self.dict['SE']['dj_mola_carregada'])
 
-            self.lcdNumber_tensaoSE.display(self.dict['SE']['tensao_linha'])
+            self.lcdNumber_tensaoSE.display(self.dict['SE']['tensao_vab'])
             self.lcdNumber_medidorSE.display(f"{self.dict['SE']['potencia_se']:4.1f}")
 
             # BAY
@@ -52,7 +52,7 @@ class Window(QMainWindow, Ui_Form):
 
             self.lcdNumber_MP.display(f"{self.dict['BAY']['potencia_mp']:4.1f}")
             self.lcdNumber_MR.display(f"{self.dict['BAY']['potencia_mr']:4.1f}")
-            self.lcdNumber_tensaoLinha.display(self.dict['BAY']['tensao_linha'])
+            self.lcdNumber_tensaoLinha.display(self.dict['BAY']['tensao_vab'])
 
             # TDA
             self.lcdNumber_montante.display(f"{self.dict['TDA']['nv_montante']:3.2f}")

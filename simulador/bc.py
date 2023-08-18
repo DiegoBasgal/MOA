@@ -52,13 +52,23 @@ class Bay:
             self.dict['BAY']['debug_dj_fechar'] = False
             self.tripar_dj()
 
-        self.dict['BAY']['tensao_linha'] = np.random.normal(self.dict['BAY']['tensao_linha'], 50 * self.escala_ruido)
+
+        if self.dict['BAY']['dj_fechado']:
+            self.dict['BAY']['tensao_vs'] = self.dict['BAY']['tensao_vab']
+        
+        elif self.dict['SE']['dj_aberto']:
+            self.dict['BAY']['tensao_vs'] = 0
+
+
+        self.dict['BAY']['tensao_vab'] = np.random.normal(self.dict['BAY']['tensao_vab'], 50 * self.escala_ruido)
+        self.dict['BAY']['tensao_vbc'] = np.random.normal(self.dict['BAY']['tensao_vbc'], 50 * self.escala_ruido)
+        self.dict['BAY']['tensao_vca'] = np.random.normal(self.dict['BAY']['tensao_vca'], 50 * self.escala_ruido)
         self.dict['BAY']['potencia_mp'] = max(0, (np.random.normal(self.dict['SE']['potencia_se'] * 0.98, 10 * self.escala_ruido) - 20))
         self.dict['BAY']['potencia_mr'] = max(0, (np.random.normal(self.dict['SE']['potencia_se'] * 0.98, 10 * self.escala_ruido) - 20))
 
 
     def verificar_tensao_dj(self) -> "None":
-        if not (USINA_TENSAO_MINIMA < self.dict['BAY']['tensao_linha'] < USINA_TENSAO_MAXIMA):
+        if not (USINA_TENSAO_MINIMA < self.dict['BAY']['tensao_vab'] < USINA_TENSAO_MAXIMA):
             self.dict['BAY']['dj_falta_vcc'] = True
             self.tripar_dj(descr='Tensão fora dos limites.')
 
@@ -108,6 +118,9 @@ class Bay:
             self.dict['BAY']['dj_falha'] = True
             self.tripar_dj(descr='Picou.')
 
+        elif self.dict['BAY']['tensao_vs'] != 0:
+            print("[SE] Não há como fechar o Disjuntor do BAY, pois há uma leitura de corrente VS!")
+
         elif self.dict['BAY']['dj_aberto']:
             if self.dict['BAY']['dj_condicao']:
                 print('[BAY] Comando de Fechamento Disjuntor BAY')
@@ -140,9 +153,10 @@ class Bay:
 
 
     def atualizar_modbus(self) -> "None":
-        DB.set_words(MB['BAY']['LT_VAB'], [round(self.dict['BAY']['tensao_linha'] / 1000)])
-        DB.set_words(MB['BAY']['LT_VBC'], [round(self.dict['BAY']['tensao_linha'] / 1000)])
-        DB.set_words(MB['BAY']['LT_VCA'], [round(self.dict['BAY']['tensao_linha'] / 1000)])
+        DB.set_words(MB['BAY']['LT_VS'], [round(self.dict['BAY']['tensao_vs'] / 1000)])
+        DB.set_words(MB['BAY']['LT_VAB'], [round(self.dict['BAY']['tensao_vab'] / 1000)])
+        DB.set_words(MB['BAY']['LT_VBC'], [round(self.dict['BAY']['tensao_vbc'] / 1000)])
+        DB.set_words(MB['BAY']['LT_VCA'], [round(self.dict['BAY']['tensao_vca'] / 1000)])
         DB.set_words(MB['BAY']['LT_P_MP'], [round(max(0, self.dict['BAY']['potencia_mp']))])
         # DB.set_words(MB['BAY']['LT_P_MR'], [round(max(0, self.dict['BAY']['potencia_mr']))])
 

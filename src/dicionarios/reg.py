@@ -144,6 +144,9 @@ REG_RELE = {
 
         # DJ
         "DJL_FLH_ABERTURA_B1":                          [48, 1],
+
+
+        # LEITURA DE BARRA DOS GERADORES
     },
 
     "TE": {

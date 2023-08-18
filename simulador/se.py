@@ -54,15 +54,20 @@ class Se:
             self.tripar_dj()
 
         if self.dict['BAY']['dj_aberto'] or self.dict['SE']['dj_aberto']:
-            self.dict['SE']['tensao_linha'] = 0
+            self.dict['SE']['tensao_vab'] = 0
+            self.dict['SE']['tensao_vbc'] = 0
+            self.dict['SE']['tensao_vca'] = 0
+
         else:
-            self.dict['SE']['tensao_linha'] = np.random.normal(self.dict['BAY']['tensao_linha'], 50 * self.escala_ruido)
+            self.dict['SE']['tensao_vab'] = np.random.normal(self.dict['BAY']['tensao_vab'], 50 * self.escala_ruido)
+            self.dict['SE']['tensao_vbc'] = np.random.normal(self.dict['BAY']['tensao_vbc'], 50 * self.escala_ruido)
+            self.dict['SE']['tensao_vca'] = np.random.normal(self.dict['BAY']['tensao_vca'], 50 * self.escala_ruido)
 
         self.dict['SE']['potencia_se'] =  max(0, np.random.normal(((self.dict['UG1']['potencia'] + self.dict['UG2']['potencia']) * 0.995), 0.001 * self.escala_ruido))
 
 
     def verificar_tensao_dj(self) -> "None":
-        if not (USINA_TENSAO_MINIMA < self.dict['BAY']['tensao_linha'] < USINA_TENSAO_MAXIMA):
+        if not (USINA_TENSAO_MINIMA < self.dict['BAY']['tensao_vab'] < USINA_TENSAO_MAXIMA):
             self.dict['SE']['dj_falta_vcc'] = True
             self.tripar_dj(descr='Tensão fora dos limites.')
 
@@ -111,8 +116,8 @@ class Se:
             self.dict['SE']['dj_falha'] = True
             self.tripar_dj(descr='Picou.')
 
-        elif not self.dict['BAY']['dj_fechado']:
-            print('[SE] Não foi possível Fechar o Disjuntor da Subestação, pois o Disjuntor do Bay está Aberto!')
+        elif self.dict['BAY']['tensao_vab'] != 0:
+            print("[SE] Não há como fechar o Disjuntor da Subestação, pois há uma leitura de tensão na Linha do BAY")
 
         elif self.dict['SE']['dj_aberto']:
             if self.dict['SE']['dj_condicao']:
@@ -147,9 +152,9 @@ class Se:
 
     def atualizar_modbus(self) -> "None":
         DB.set_words(MB['SE']['LT_P'], [round(self.dict['SE']['potencia_se'] / 1000)])
-        DB.set_words(MB['SE']['LT_VAB'], [round(self.dict['SE']['tensao_linha'] / 1000)])
-        DB.set_words(MB['SE']['LT_VBC'], [round(self.dict['SE']['tensao_linha'] / 1000)])
-        DB.set_words(MB['SE']['LT_VCA'], [round(self.dict['SE']['tensao_linha'] / 1000)])
+        DB.set_words(MB['SE']['LT_VAB'], [round(self.dict['SE']['tensao_vab'] / 1000)])
+        DB.set_words(MB['SE']['LT_VBC'], [round(self.dict['SE']['tensao_vbc'] / 1000)])
+        DB.set_words(MB['SE']['LT_VCA'], [round(self.dict['SE']['tensao_vca'] / 1000)])
 
         if not self.aux:
             ESC.escrever_bit(MB['SE']['DJL_SELETORA_REMOTO'], 1)

@@ -16,7 +16,7 @@ import src.tomada_agua as tda
 import src.servico_auxiliar as sa
 
 from time import sleep, time
-from datetime import  datetime
+from datetime import datetime
 
 from src.dicionarios.reg import *
 from src.dicionarios.const import *
@@ -31,12 +31,11 @@ from src.funcoes.escrita import EscritaModBusBit as EMB
 from src.funcoes.leitura import *
 from src.unidade_geracao import UnidadeGeracao
 
-from src.comporta import Comporta as CP
-
 logger = logging.getLogger("logger")
 
 class Usina:
     def __init__(self, cfg: "dict" = None) -> "None":
+
 
         # VERIFICAÇÃO DE ARGUMENTOS
 
@@ -62,7 +61,6 @@ class Usina:
         self.ug1 = UnidadeGeracao(1, self.cfg, self.bd)
         self.ug2 = UnidadeGeracao(2, self.cfg, self.bd)
         self.ugs: "list[UnidadeGeracao]" = [self.ug1, self.ug2]
-        CondicionadorBase.ugs = self.ugs
 
 
         # ATRIBUIÇÃO DE VARIÁVEIS PRIVADAS
@@ -92,7 +90,6 @@ class Usina:
         self.controle_i: "float" = 0
         self.controle_d: "float" = 0
 
-        self.status_djs: "bool" = True
         self.bd_emergencia: "bool" = False
         self.clp_emergencia: "bool" = False
         self.borda_emergencia: "bool" = False
@@ -108,8 +105,9 @@ class Usina:
         self.sa.carregar_leituras()
 
         self.ler_valores()
-        self.normalizar_inicializacao()
         self.normalizar_usina()
+        self.verificar_bay_se()
+        self.ajustar_inicializacao()
         self.escrever_valores()
 
 
@@ -183,7 +181,7 @@ class Usina:
             logger.debug(traceback.format_exc())
             return False
 
-    def normalizar_usina(self) -> "int":
+    def normalizar_usina(self) -> "None":
         """
         Função para normalização de ocorrências da Usina.
 
@@ -193,57 +191,44 @@ class Usina:
         senão, passa a chamar as funções de reset geral.
         """
         logger.debug("")
-        logger.debug(f"[BAY] Tensão BAY:                   VAB -> \"{self.bay.tensao_vab.valor:2.1f} V\" | VBC -> \"{self.bay.tensao_vbc.valor:2.1f} V\" | VCA -> \"{self.bay.tensao_vca.valor:2.1f} V\"")
-        logger.debug(f"[SE]  Tensão Subestação:            VAB -> \"{self.se.tensao_vab.valor:2.1f} V\" | VBC -> \"{self.se.tensao_vbc.valor:2.1f} V\" | VCA -> \"{self.se.tensao_vca.valor:2.1f} V\"")
-        logger.debug("")
-
-        if self.verificar_disjuntores() == DJS_FALTA_TENSAO:
-            return NORM_USN_FALTA_TENSAO
+        logger.debug(f"[USN] Última tentativa de normalização:   {self.ultima_tentativa_norm.strftime('%d-%m-%Y %H:%M:%S')}")
 
         if ((self.get_time() - self.ultima_tentativa_norm).seconds >= 60 * self.tentativas_normalizar) or self.normalizar_forcado:
-            logger.debug("")
             logger.debug("[USN] Normalizando...")
-            logger.debug(f"[USN] Última tentativa de normalização:   {self.ultima_tentativa_norm.strftime('%d-%m-%Y %H:%M:%S')}")
             self.ultima_tentativa_norm = self.get_time()
             self.tentativas_normalizar += 1
             self.normalizar_forcado = self.clp_emergencia = self.bd_emergencia = False
             self.resetar_emergencia()
             self.bd.update_remove_emergencia()
-            return NORM_USN_EXECUTADA
 
         else:
             logger.debug("[USN] A normalização foi executada menos de 1 minuto atrás.")
-            return NORM_USN_JA_EXECUTADA
 
-    def normalizar_inicializacao(self) -> "None":
+    def verificar_bay_se(self) -> "int":
         """
-        Funçao para ajustar variáveis de cálculos de controle de operação, na inicialização
-        da Classe da Usina.
+        Função para verificação do Bay e Subestação.
+
+        Apresenta a leitura de tensão VAB, VBC, VCA do Bay e Subestação.
+        Caso haja uma falta de tensão na linha da subestação, aciona o temporizador
+        para retomada em caso de queda de tensão. Caso a tensão esteja normal, tenta
+        realizar o fechamento dos disjuntores do Bay e depois da Subestação. Caso
+        haja um erro com o fechamento dos disjuntores, aciona a normalização da usina
+        senão, sinaliza que está tudo correto para a máquina de estados do MOA.
         """
 
-        for ug in self.ugs:
-            if ug.etapa_atual == UG_SINCRONIZADA:
-                self.ug_operando += 1
+        logger.debug("")
+        logger.debug(f"[BAY] Tensão BAY:                   VAB -> \"{self.bay.tensao_vab.valor:2.1f} V\" | VBC -> \"{self.bay.tensao_vbc.valor:2.1f} V\" | VCA -> \"{self.bay.tensao_vca.valor:2.1f} V\"")
+        logger.debug(f"[SE]  Tensão Subestação:            VAB -> \"{self.se.tensao_vab.valor:2.1f} V\" | VBC -> \"{self.se.tensao_vbc.valor:2.1f} V\" | VCA -> \"{self.se.tensao_vca.valor:2.1f} V\"")
+        logger.debug("")
 
-        self.__split1 = True if self.ug_operando == 1 else False
-        self.__split2 = True if self.ug_operando == 2 else False
-
-        self.controle_ie = self.ajustar_ie_padrao()
-
-        self.clp["MOA"].write_single_coil(REG_CLP["MOA"]["OUT_BLOCK_UG1"], [0])
-        self.clp["MOA"].write_single_coil(REG_CLP["MOA"]["OUT_BLOCK_UG2"], [0])
-
-    def verificar_disjuntores(self) -> "int":
         if not self.bay.verificar_tensao_trifasica():
             return DJS_FALTA_TENSAO
 
-        elif self.bay.fechar_dj_linha() == DJBAY_FALHA_FECHAMENTO or self.se.fechar_dj_linha() == DJSE_FALHA_FECHAMENTO:
-            self.status_djs = False
+        elif not self.bay.fechar_dj_linha() or not self.se.fechar_dj_linha():
             self.normalizar_forcado = True
             return DJS_FALHA
 
         else:
-            self.status_djs = True
             return DJS_OK
 
     def verificar_leituras_periodicas(self) -> "None":
@@ -297,6 +282,24 @@ class Usina:
 
         return sum(ug.leitura_potencia for ug in self.ugs) / self.cfg["pot_maxima_alvo"]
 
+    def ajustar_inicializacao(self) -> "None":
+        """
+        Funçao para ajustar variáveis de cálculos de controle de operação, na inicialização
+        da Classe da Usina.
+        """
+
+        for ug in self.ugs:
+            if ug.etapa_atual == UG_SINCRONIZADA:
+                self.ug_operando += 1
+
+        self.__split1 = True if self.ug_operando == 1 else False
+        self.__split2 = True if self.ug_operando == 2 else False
+
+        self.controle_ie = self.ajustar_ie_padrao()
+
+        self.clp["MOA"].write_single_coil(REG_CLP["MOA"]["OUT_BLOCK_UG1"], [0])
+        self.clp["MOA"].write_single_coil(REG_CLP["MOA"]["OUT_BLOCK_UG2"], [0])
+
     def controlar_reservatorio(self) -> "int":
         """
         Função para controle de níveis do reservatório.
@@ -315,9 +318,9 @@ class Usina:
 
         if self.tda.nivel_montante.valor >= self.cfg["nv_maximo"]:
             logger.debug("[TDA] Nível montante acima do máximo.")
+            logger.debug(f"[TDA]          Leitura:                   {self.tda.nivel_montante.valor:0.3f}")
 
             if self.tda.nivel_montante_anterior >= NIVEL_MAXIMORUM:
-                logger.debug(f"[TDA]          Leitura:                   {self.tda.nivel_montante.valor:0.3f}")
                 logger.critical(f"[TDA] Nivel montante ({self.tda.nivel_montante_anterior:3.2f}) atingiu o maximorum!")
                 return NV_EMERGENCIA
             else:
@@ -329,8 +332,8 @@ class Usina:
                     ug.step()
 
         elif self.tda.nivel_montante.valor <= self.cfg["nv_minimo"] and not self.tda.aguardando_reservatorio:
-            logger.debug(f"[TDA]          Leitura:                   {self.tda.nivel_montante.valor:0.3f}")
             logger.debug("[TDA] Nível montante abaixo do mínimo.")
+            logger.debug(f"[TDA]          Leitura:                   {self.tda.nivel_montante.valor:0.3f}")
             self.tda.aguardando_reservatorio = True
             self.distribuir_potencia(0)
 
@@ -343,8 +346,8 @@ class Usina:
 
         elif self.tda.aguardando_reservatorio:
             if self.tda.nivel_montante.valor >= self.cfg["nv_alvo"]:
-                logger.debug(f"[TDA]          Leitura:                   {self.tda.nivel_montante.valor:0.3f}")
                 logger.debug("[TDA] Nível montante dentro do limite de operação.")
+                logger.debug(f"[TDA]          Leitura:                   {self.tda.nivel_montante.valor:0.3f}")
                 self.tda.aguardando_reservatorio = False
 
         else:
@@ -557,11 +560,11 @@ class Usina:
 
             if int(parametros["modo_autonomo"]) == 1 and not self.modo_autonomo:
                 self.modo_autonomo = True
-                logger.debug(f"[USN] Modo autônomo:                      \"{'Ativado'}\"")
+                logger.info(f"[USN] Modo autônomo:                      \"{'Ativado'}\"")
 
             elif int(parametros["modo_autonomo"]) == 0 and self.modo_autonomo:
                 self.modo_autonomo = False
-                logger.debug(f"[USN] Modo autônomo:                      \"{'Desativado'}\"")
+                logger.info(f"[USN] Modo autônomo:                      \"{'Desativado'}\"")
 
             if self.modo_prioridade_ugs != int(parametros["modo_de_escolha_das_ugs"]):
                 self.modo_prioridade_ugs = int(parametros["modo_de_escolha_das_ugs"])

@@ -68,7 +68,10 @@ compartilhado = {
 
     "SE": {
         "potencia_se": 0,
-        "tensao_linha": 23100,
+
+        "tensao_vab": 22800,
+        "tensao_vbc": 22800,
+        "tensao_vca": 22800,
 
         "dj_trip": False,
         "dj_falha": False,
@@ -88,7 +91,10 @@ compartilhado = {
         "potencia_mp": 0,
         "potencia_mr": 0,
 
-        "tensao_linha": 22800,
+        "tensao_vs": 0,
+        "tensao_vab": 22800,
+        "tensao_vbc": 22800,
+        "tensao_vca": 22800,
 
         "dj_secc": True,
         "dj_trip": False,
