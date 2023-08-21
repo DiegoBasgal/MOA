@@ -33,6 +33,11 @@ class OcorrenciasGerais:
         self._condicionadores_essenciais: "list[CondicionadorBase]" = []
 
 
+        # ATRIBUIÇÃO DE VARIÁVEIS PRIVADAS
+
+        self.condicionadores_ativos: "list[CondicionadorBase]" = []
+
+
         # FINALIZAÇÃO DO __INIT__
 
         self.carregar_leituras()
@@ -61,6 +66,7 @@ class OcorrenciasGerais:
 
         self._condicionadores_essenciais = var
 
+
     def verificar_condicionadores(self) -> "int":
         """
         Função para a verificação de acionamento de condicionadores e determinação
@@ -77,22 +83,36 @@ class OcorrenciasGerais:
         if True in (condic.ativo for condic in self.condicionadores_essenciais):
             condicionadores_ativos = [condic for condics in [self.condicionadores_essenciais, self.condicionadores] for condic in condics if condic.ativo]
 
+            logger.debug("")
+            if self.condicionadores_ativos == []:
+                logger.warning(f"[OCO-USN] Foram detectados condicionadores ativos na Usina!")
+            else:
+                logger.info(f"[OCO-USN] Ainda há condicionadores ativos na Usina!")
+
             for condic in condicionadores_ativos:
-                if condic.gravidade == CONDIC_NORMALIZAR:
+                if condic in self.condicionadores_ativos:
+                    logger.debug(f"[OCO-USN] Descrição: \"{condic.descr}\", Gravidade: \"{CONDIC_STR_DCT[condic.gravidade] if condic.gravidade in CONDIC_STR_DCT else 'Desconhecida'}\"")
+                    flag = condic.gravidade
+                    continue
+
+                elif condic.gravidade == CONDIC_NORMALIZAR:
+                    logger.warning(f"[OCO-USN] Descrição: \"{condic.descr}\", Gravidade: \"{CONDIC_STR_DCT[condic.gravidade] if condic.gravidade in CONDIC_STR_DCT else 'Desconhecida'}\"")
+                    self.condicionadores_ativos.append(condic)
                     flag = CONDIC_NORMALIZAR
+                    # self.__db.update_alarmes([datetime.now(pytz.timezone("Brazil/East")).replace(tzinfo=None), condic.gravidade, condic.descr])
+
                 elif condic.gravidade == CONDIC_INDISPONIBILIZAR:
+                    logger.warning(f"[OCO-USN] Descrição: \"{condic.descr}\", Gravidade: \"{CONDIC_STR_DCT[condic.gravidade] if condic.gravidade in CONDIC_STR_DCT else 'Desconhecida'}\"")
+                    self.condicionadores_ativos.append(condic)
                     flag = CONDIC_INDISPONIBILIZAR
+                    # self.__db.update_alarmes([datetime.now(pytz.timezone("Brazil/East")).replace(tzinfo=None), condic.gravidade, condic.descr])
 
             logger.debug("")
-            logger.warning(f"[OCO-USN] Foram detectados condicionadores ativos na Usina:")
-            [logger.warning(f"[OCO-USN] Descrição: \"{condic.descr}\", Gravidade: \"{CONDIC_STR_DCT[condic.gravidade] if condic.gravidade in CONDIC_STR_DCT else 'Desconhecida'}\"") for condic in condicionadores_ativos]
-            logger.debug("")
-
-            for condic in condicionadores_ativos:
-                 self.__db.update_alarmes([datetime.now(pytz.timezone("Brazil/East")).replace(tzinfo=None), condic.gravidade, condic.descr])
-
             return flag
-        return flag
+
+        else:
+            self.condicionadores_ativos = []
+            return flag
 
     def verificar_leituras(self) -> "None":
         """
@@ -550,6 +570,7 @@ class OcorrenciasUnidades:
         # ATRIBUIÇÃO DE VARIÁVEIS PÚBLICAS
 
         self.leitura_voip: "dict[str, LeituraModbus]" = {}
+        self.condicionadores_ativos: "list[CondicionadorBase]" = []
 
 
         # FINALIZAÇÃO DO __INIT__
@@ -640,30 +661,46 @@ class OcorrenciasUnidades:
         """
 
         flag = CONDIC_IGNORAR
-        v = []
 
         if True in (condic.ativo for condic in self.condicionadores_essenciais):
-            condicionadores_ativos = [x for y in [self.condicionadores_essenciais, self.condicionadores] for x in y if x.ativo]
+            condicionadores_ativos = [condic for condics in [self.condicionadores_essenciais, self.condicionadores] for condic in condics if condic.ativo]
+
+            logger.debug("")
+            if self.condicionadores_ativos == []:
+                logger.warning(f"[OCO-UG{self.__ug.id}] Foram detectados condicionadores ativos na Usina!")
+            else:
+                logger.info(f"[OCO-UG{self.__ug.id}] Ainda há condicionadores ativos na Usina!")
 
             for condic in condicionadores_ativos:
-                if condic.gravidade == CONDIC_NORMALIZAR:
+                if condic in self.condicionadores_ativos:
+                    logger.debug(f"[OCO-UG{self.__ug.id}] Descrição: \"{condic.descr}\", Gravidade: \"{CONDIC_STR_DCT[condic.gravidade] if condic.gravidade in CONDIC_STR_DCT else 'Desconhecida'}\"")
+                    flag = condic.gravidade
+                    continue
+
+                elif condic.gravidade == CONDIC_NORMALIZAR:
+                    logger.warning(f"[OCO-UG{self.__ug.id}] Descrição: \"{condic.descr}\", Gravidade: \"{CONDIC_STR_DCT[condic.gravidade] if condic.gravidade in CONDIC_STR_DCT else 'Desconhecida'}\"")
+                    self.condicionadores_ativos.append(condic)
                     flag = CONDIC_NORMALIZAR
+                    # self.__db.update_alarmes([datetime.now(pytz.timezone("Brazil/East")).replace(tzinfo=None), condic.gravidade, condic.descr])
+
                 elif condic.gravidade == CONDIC_AGUARDAR:
-                    flag = CONDIC_AGUARDAR
+                    logger.warning(f"[OCO-UG{self.__ug.id}] Descrição: \"{condic.descr}\", Gravidade: \"{CONDIC_STR_DCT[condic.gravidade] if condic.gravidade in CONDIC_STR_DCT else 'Desconhecida'}\"")
+                    self.condicionadores_ativos.append(condic)
+                    flag = CONDIC_NORMALIZAR
+                    # self.__db.update_alarmes([datetime.now(pytz.timezone("Brazil/East")).replace(tzinfo=None), condic.gravidade, condic.descr])
+
                 elif condic.gravidade == CONDIC_INDISPONIBILIZAR:
+                    logger.warning(f"[OCO-UG{self.__ug.id}] Descrição: \"{condic.descr}\", Gravidade: \"{CONDIC_STR_DCT[condic.gravidade] if condic.gravidade in CONDIC_STR_DCT else 'Desconhecida'}\"")
+                    self.condicionadores_ativos.append(condic)
                     flag = CONDIC_INDISPONIBILIZAR
+                    # self.__db.update_alarmes([datetime.now(pytz.timezone("Brazil/East")).replace(tzinfo=None), condic.gravidade, condic.descr])
 
             logger.debug("")
-            logger.warning(f"[OCO-UG{self.__ug.id}] Foram detectados condicionadores ativos na UG:")
-            [logger.warning(f"[OCO-UG{self.__ug.id}] Descrição: \"{condic.descr}\", Gravidade: \"{CONDIC_STR_DCT[condic.gravidade] if condic.gravidade in CONDIC_STR_DCT else 'Desconhecida'}\"") for condic in condicionadores_ativos]
-            logger.debug("")
-
-            # for condic in condicionadores_ativos:
-            #     v = [datetime.now(pytz.timezone("Brazil/East")).replace(tzinfo=None), condic.gravidade, condic.descr]
-            #     self.__db.update_alarmes(v)
-
             return flag
-        return flag
+
+        else:
+            self.condicionadores_ativos = []
+            return flag
 
     def atualizar_limites_condicionadores(self, parametros: "dict") -> "None":
         """

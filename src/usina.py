@@ -226,7 +226,7 @@ class Usina:
         if not self.verificar_tensao():
             return NORM_USN_FALTA_TENSAO
 
-        elif (self.tentar_normalizar and (self.get_time() - self.ultima_tentativa_norm).seconds >= 10 * self.tentativas_normalizar) or self.normalizar_forcado:
+        elif (self.tentar_normalizar < 4 and (self.get_time() - self.ultima_tentativa_norm).seconds >= 10 * self.tentativas_normalizar) or self.normalizar_forcado:
             self.tentativas_normalizar += 1
             logger.debug("")
             logger.debug(f"[USN] Normalizando... (Tentativa {self.tentativas_normalizar}/3)")
