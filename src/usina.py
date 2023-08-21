@@ -52,44 +52,44 @@ class Usina:
         # ATRIBUIÇÃO DE VARIÁVEIS PRIVADAS
 
         self.__potencia_ativa_kW: "LeituraModbus" = LeituraModbus(
-            "[USN] Leitura Potência Medidor",
             self.clp["SA"],
             REG["SA_EA_PM_810_Potencia_Ativa"],
             1,
             op=4,
+            descr="[USN] Leitura Potência Medidor"
         )
         self.__tensao_rs: "LeituraModbus" = LeituraModbus(
-            "[USN] Tensão RS",
             self.clp["SA"],
             REG["SA_EA_PM_810_Tensao_ab"],
             100,
             op=4,
+            descr="[USN] Tensão RS"
         )
         self.__tensao_st: "LeituraModbus" = LeituraModbus(
-            "[USN] Tensão ST",
             self.clp["SA"],
             REG["SA_EA_PM_810_Tensao_bc"],
             100,
             op=4,
+            descr="[USN] Tensão ST"
         )
         self.__tensao_tr: "LeituraModbus" = LeituraModbus(
-            "[USN] Tensão TR",
             self.clp["SA"],
             REG["SA_EA_PM_810_Tensao_ca"],
             100,
             op=4,
+            descr="[USN] Tensão TR"
         )
 
 
         # ATRIBUIÇÃO DE VARIÁVEIS PROTEGIDAS
 
         self._nv_montante: "LeituraModbus" = LeituraModbus(
-            "[USN] Nível Montante",
             self.clp["TDA"],
             REG["TDA_EA_NivelAntesGrade"],
             1 / 10000,
             400,
             op=4,
+            descr="[USN] Nível Montante"
         )
 
         self._pid_inicial: "int" = -1

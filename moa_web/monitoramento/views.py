@@ -47,16 +47,16 @@ def monitoramento_view(request, *args, **kwargs):
             context[key] = "-"
 
     if clp_sa.open():
-        reg_dj = clp_sa.read_coils(17)[0]
+        reg_dj = clp_sa.read_discrete_inputs(15)[0]
         setpot_usina = clp_sa.read_input_registers(26)[0]
         context["setpot_usina"] = setpot_usina
         context["tensao_rs"] = clp_sa.read_input_registers(16)[0] * 100
         context["tensao_st"] = clp_sa.read_input_registers(17)[0] * 100
         context["tensao_tr"] = clp_sa.read_input_registers(18)[0] * 100
 
-        if reg_dj == 0:
+        if reg_dj == 1:
             context["status_dj52l"] = 0
-        elif reg_dj == 1:
+        elif reg_dj == 0:
             context["status_dj52l"] = 1
         else:
             context["status_dj52l"] = 2

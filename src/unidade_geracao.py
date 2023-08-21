@@ -37,66 +37,66 @@ class UnidadeGeracao:
         # ATRIBUIÇÃO DE VARIÁVEIS PRIVADAS
 
         self.__potencia_ativa_kW = LeituraModbus(
-            "[USN] Potência Usina",
             self.clp["SA"],
             REG["SA_EA_PM_810_Potencia_Ativa"],
             1,
-            op=4
+            op=4,
+            descr="[USN] Potência Usina"
         )
         self.__leitura_pressao_uhrv = LeituraModbus(
-            f"[UG{self.id}] Leitura Pressão UHRV",
             self.clp[f"UG{self.id}"],
             REG[f"UG{self.id}_RA_UHRV_Pressao"],
             escala=0.1,
-            op=4
+            op=4,
+            descr=f"[UG{self.id}] Leitura Pressão UHRV"
         )
         self.__leitura_rotacao = LeituraModbus(
-            f"[UG{self.id}] Leitura Rotação",
             self.clp[f"UG{self.id}"],
             REG[f"UG{self.id}_RA_ReferenciaCarga"],
             escala=0.1,
-            op=4
+            op=4,
+            descr=f"[UG{self.id}] Leitura Rotação"
         )
 
         self.__leitura_horimetro_hora = LeituraModbus(
-            f"[UG{self.id}] Horímetro Hora",
             self.clp[f"UG{self.id}"],
             REG[f"UG{self.id}_RA_Horimetro_Gerador"],
             op=4,
+            descr=f"[UG{self.id}] Horímetro Hora"
         )
         self.__leitura_horimetro_min = LeituraModbus(
-            f"[UG{self.id}] Horímetro Min",
             self.clp[f"UG{self.id}"],
             REG[f"UG{self.id}_RA_Horimetro_Gerador_min"],
             op=4,
-            escala=1/60
+            escala=1/60,
+            descr=f"[UG{self.id}] Horímetro Min"
         )
         __C1 = LeituraModbusCoil(
-            descr=f"UG{self.id}_Sincronizada",
-            modbus_client=self.clp[f"UG{self.id}"],
+            cliente=self.clp[f"UG{self.id}"],
             registrador=REG[f"UG{self.id}_ED_DisjGeradorFechado"],
+            descr=f"[UG{self.id}] Sincronizada"
         )
         __C2 = LeituraModbusCoil(
-            descr=f"UG{self.id}_Parando",
-            modbus_client=self.clp[f"UG{self.id}"],
+            cliente=self.clp[f"UG{self.id}"],
             registrador=REG[f"UG{self.id}_RD_ParandoEmAuto"],
+            descr=f"[UG{self.id}] Parando"
         )
         __C3 = LeituraModbusCoil(
-            descr=f"UG{self.id}_Parada",
-            modbus_client=self.clp[f"UG{self.id}"],
+            cliente=self.clp[f"UG{self.id}"],
             registrador=REG[f"UG{self.id}_ED_RV_MaquinaParada"],
+            descr=f"[UG{self.id}] Parada"
         )
         __C4 = LeituraModbusCoil(
-            descr=f"UG{self.id}_Sincronizando",
-            modbus_client=self.clp[f"UG{self.id}"],
+            cliente=self.clp[f"UG{self.id}"],
             registrador=REG[f"UG{self.id}_RD_PartindoEmAuto"],
+            descr=f"[UG{self.id}] Sincronizando"
         )
         self.__leitura_etapa_atual = LeituraComposta(
-            f"ug{self.id}_Operacao_EtapaAtual",
             leitura1=__C1,
             leitura2=__C2,
             leitura3=__C3,
             leitura4=__C4,
+            descr=f"[UG{self.id}] Etapa Atual",
         )
 
         self.__tempo_entre_tentativas: "int" = 0
@@ -118,15 +118,15 @@ class UnidadeGeracao:
         # ATRIBUIÇÃO DE VARIÁVEIS PROTEGIDAS
 
         self._leitura_potencia: "LeituraModbus" = LeituraModbus(
-            f"UG{self.id}_Potência",
             self.clp[f"UG{self.id}"],
             REG[f"UG{self.id}_RA_PM_710_Potencia_Ativa"],
             op=4,
+            descr=f"[UG{self.id}] Leitura Potência",
         )
         self._leitura_horimetro: "LeituraSoma" = LeituraSoma(
-            f"UG{self.id}_Horímetro",
             self.__leitura_horimetro_hora,
-            self.__leitura_horimetro_min
+            self.__leitura_horimetro_min,
+            descr=f"[UG{self.id}] Horímetro",
         )
 
 
@@ -609,9 +609,9 @@ class UnidadeGeracao:
             self.clp["MOA"].write_single_coil(REG[f"MOA_OUT_BLOCK_UG{self.id}"], 0)
             self.clp[f"UG{self.id}"].write_single_coil(REG[f"UG{self.id}_CD_Cala_Sirene"], [1])
 
-            if self.clp["SA"].read_coils(REG["SA_CD_Liga_DJ1"])[0] == 1:
+            if self.clp["SA"].read_discrete_inputs(REG["SA_ED_DisjDJ1_Fechado"])[0] != 1:
                 logger.debug(f"[UG{self.id}]          Enviando comando:          \"FECHAR DJ LINHA\".")
-                self.clp["SA"].write_single_coil(REG["SA_CD_Liga_DJ1"], [0])
+                self.clp["SA"].write_single_coil(REG["SA_CD_Liga_DJ1"], [1])
 
         except Exception:
             logger.error(f"[UG{self.id}] Não foi possivel remover o comando de TRIP: \"Elétrico\".")

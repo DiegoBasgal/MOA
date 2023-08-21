@@ -22,7 +22,7 @@ class CondicionadorBase:
         self.__ug_id = ug_id
         self.__etapas = etapas
 
-        self.ugs = []
+        self.__ugs = []
 
     def __str__(self) -> "str":
         """
@@ -60,24 +60,26 @@ class CondicionadorBase:
         # PROPRIEDADE -> Retrona se o condicionaor está ativo.
 
         if self.__ug_id and self.__etapas:
-            ug = [ug for ug in self.ugs if self.__ug_id == ug.id]
-            if ug.etapa_atual in self.__etapas:
-                return False if self.leitura == 0 else True
+            for ug in self.ugs:
+                if ug.id == self.__ug_id and ug.etapa_atual in self.__etapas:
+                    return False if self.leitura == 0 else True
             else:
                 return False
+
         else:
             return False if self.leitura == 0 else True
-        
+
+
 
     @property
     def ugs(self) -> "list[UnidadeGeracao]":
 
-        return self.ugs
+        return self.__ugs
 
     @ugs.setter
     def ugs(self, var: "list[UnidadeGeracao]") -> "None":
 
-        self.ugs = var
+        self.__ugs = var
 
 
 class CondicionadorExponencial(CondicionadorBase):
