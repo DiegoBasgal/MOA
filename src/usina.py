@@ -220,7 +220,6 @@ class Usina:
             logger.debug(traceback.format_exc())
 
     def normalizar_usina(self) -> "int":
-        logger.debug("[USN] Normalizando...")
         logger.debug(f"[USN] Última tentativa de normalização:   {self.ultima_tentativa_norm.strftime('%d-%m-%Y %H:%M:%S')}")
         logger.debug(f"[USN] Tensão na linha:                    RS -> \"{self.tensao_rs:2.1f} kV\" | ST -> \"{self.tensao_st:2.1f} kV\" | TR -> \"{self.tensao_tr:2.1f} kV\"")
 
@@ -228,8 +227,10 @@ class Usina:
             return NORM_USN_FALTA_TENSAO
 
         elif (self.tentar_normalizar and (self.get_time() - self.ultima_tentativa_norm).seconds >= 10 * self.tentativas_normalizar) or self.normalizar_forcado:
-            self.ultima_tentativa_norm = self.get_time()
             self.tentativas_normalizar += 1
+            logger.debug("")
+            logger.debug(f"[USN] Normalizando... (Tentativa {self.tentativas_normalizar}/3)")
+            self.ultima_tentativa_norm = self.get_time()
             self.db_emergencia = False
             self.clp_emergencia = False
             self.resetar_emergencia()
@@ -239,6 +240,7 @@ class Usina:
             return NORM_USN_EXECUTADA
 
         else:
+            logger.debug("")
             logger.debug("[USN] A normalização foi executada menos de 1 minuto atrás")
             return NORM_USN_JA_EXECUTADA
 
@@ -270,6 +272,7 @@ class Usina:
                 return False
 
             else:
+                logger.debug(f"[USN] Enviando comando:                    \"FECHAR DJ LINHA\"")
                 res = EMB.escrever_bit(self.clp["SA"], REG["SA"]["SA_CD_DISJ_LINHA_FECHA"], valor=1)
                 return res
 
