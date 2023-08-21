@@ -98,7 +98,7 @@ class ControleEstados(State):
                 if flag_norm == NORM_USN_FALTA_TENSAO:
                     return Emergencia(self.usn) if self.usn.aguardar_tensao() == False else ControleDados(self.usn)
 
-                elif flag_norm == NORM_USN_EXECUTADA and self.usn.tentativas_normalizar > 3:
+                elif flag_norm == NORM_USN_EXECUTADA and self.usn.tentativas_normalizar > 2:
                     logger.info("Tentativas de Normalização da Usina excedidas!")
                     self.usn.tentativas_normalizar = 0
                     return Emergencia(self.usn)
@@ -176,11 +176,9 @@ class ModoManual(State):
         self.usn.controle_i = max(min(self.usn.controle_ie - (self.usn.controle_i * self.usn.cfg["ki"]) - self.usn.cfg["kp"] * self.usn.erro_nv - self.usn.cfg["kd"] * (self.usn.erro_nv - self.usn.erro_nv_anterior), 0.8), 0)
 
         self.usn.escrever_valores()
-        sleep(2)
 
         if self.usn.modo_autonomo:
             self.usn.ler_valores()
-            sleep(2)
             return ControleDados(self.usn)
 
         return ControleAgendamentos(self.usn) if len(self.usn.agn.verificar_agendamentos_pendentes()) > 0 else self
@@ -221,16 +219,16 @@ class Emergencia(State):
                     return ModoManual(self.usn)
 
         else:
-            flag = self.usn.oco.verificar_condicionadores()
+            flag_condic = self.usn.oco.verificar_condicionadores()
 
-            if flag == CONDIC_INDISPONIBILIZAR:
+            if flag_condic == CONDIC_INDISPONIBILIZAR:
                 logger.critical("Acionando VOIP e entrando em modo manual")
                 for ug in self.usn.ugs:
                     ug.forcar_estado_indisponivel()
                     ug.step()
                 return ModoManual(self.usn)
 
-            elif flag == CONDIC_NORMALIZAR:
+            elif flag_condic == CONDIC_NORMALIZAR:
                 self.tentativas += 1
                 logger.info(f"Normalizando usina. (Tentativa {self.tentativas}/3) (Limite entre tentativas: {TIMEOUT_NORMALIZACAO}s)")
                 self.usn.normalizar_forcado = True

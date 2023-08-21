@@ -220,13 +220,15 @@ class Usina:
             logger.debug(traceback.format_exc())
 
     def normalizar_usina(self) -> "int":
+        logger.debug("")
         logger.debug(f"[USN] Última tentativa de normalização:   {self.ultima_tentativa_norm.strftime('%d-%m-%Y %H:%M:%S')}")
         logger.debug(f"[USN] Tensão na linha:                    RS -> \"{self.tensao_rs:2.1f} kV\" | ST -> \"{self.tensao_st:2.1f} kV\" | TR -> \"{self.tensao_tr:2.1f} kV\"")
+        logger.debug("")
 
         if not self.verificar_tensao():
             return NORM_USN_FALTA_TENSAO
 
-        elif (self.tentar_normalizar < 4 and (self.get_time() - self.ultima_tentativa_norm).seconds >= 10 * self.tentativas_normalizar) or self.normalizar_forcado:
+        elif (self.tentativas_normalizar < 3 and (self.get_time() - self.ultima_tentativa_norm).seconds >= 10 * self.tentativas_normalizar) or self.normalizar_forcado:
             self.tentativas_normalizar += 1
             logger.debug("")
             logger.debug(f"[USN] Normalizando... (Tentativa {self.tentativas_normalizar}/3)")
