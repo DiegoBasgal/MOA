@@ -621,7 +621,6 @@ class Usina:
             self.controle_i = 0
 
         pot_alvo = max(min(round(self.cfg["pot_maxima_usina"] * self.controle_ie, 5), self.cfg["pot_maxima_usina"],), self.cfg["pot_minima"],)
-        logger.debug(f"[USN] Potência alvo:                      {pot_alvo:0.3f}")
 
         pot_alvo = self.ajustar_potencia(pot_alvo)
 
@@ -658,7 +657,7 @@ class Usina:
 
         self._pot_alvo_anterior = pot_alvo
 
-        logger.debug(f"[USN] Potência alvo pós ajuste:           {pot_alvo:0.3f}")
+        logger.debug(f"[USN] Potência alvo após ajuste:          {pot_alvo:0.3f}")
         self.distribuir_potencia(pot_alvo)
 
     def ajustar_ie_padrao(self) -> int:

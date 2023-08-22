@@ -100,7 +100,7 @@ class UnidadeGeracao:
         )
 
         self.__tempo_entre_tentativas: "int" = 0
-        self.__limite_tentativas_de_normalizacao: "int" = 2
+        self.__limite_tentativas_de_normalizacao: "int" = 3
 
         self.__prioridade: "int" = 0
         self.__codigo_state: "int" = 0
@@ -425,15 +425,21 @@ class UnidadeGeracao:
         aciona a função de reconhecimento e reset de alarmes da Unidade.
         """
 
-        if self.tentativas_de_normalizacao > self.limite_tentativas_de_normalizacao:
-            logger.warning(f"[UG{self.id}] A UG estourou as tentativas de normalização, indisponibilizando Unidade.")
-            return False
+        if self.etapa_atual == UG_PARADA:
+            if self.tentativas_de_normalizacao > self.limite_tentativas_de_normalizacao:
+                logger.warning(f"[UG{self.id}] A UG estourou as tentativas de normalização, indisponibilizando Unidade.")
+                return False
 
-        elif (self.ts_auxiliar - self.get_time()).seconds > self.tempo_entre_tentativas:
-            self.tentativas_de_normalizacao += 1
-            self.ts_auxiliar = self.get_time()
-            logger.info(f"[UG{self.id}] Normalizando Unidade (Tentativa {self.tentativas_de_normalizacao}/{self.limite_tentativas_de_normalizacao})")
-            self.reconhece_reset_alarmes()
+            elif (self.ts_auxiliar - self.get_time()).seconds > self.tempo_entre_tentativas:
+                self.tentativas_de_normalizacao += 1
+                self.ts_auxiliar = self.get_time()
+                logger.info(f"[UG{self.id}] Normalizando Unidade (Tentativa {self.tentativas_de_normalizacao}/{self.limite_tentativas_de_normalizacao})")
+                self.reconhece_reset_alarmes()
+                sleep(1)
+                return True
+
+        else:
+            logger.debug(f"[UG{self.id}] Aguardando parada total da Unidade para executar a Normalização...")
             return True
 
     def bloquear_unidade(self) -> "None":
@@ -467,8 +473,8 @@ class UnidadeGeracao:
             if self.etapa_atual == UG_SINCRONIZADA:
                 logger.debug(f"[UG{self.id}]          Leituras:")
                 logger.debug(f"[UG{self.id}]          - \"Potência Ativa\":        {self.leitura_potencia} kW")
-                logger.debug(f"[UG{self.id}]          - \"Rotação\":               {self.__leitura_rotacao.valor} RPM")
-                logger.debug(f"[UG{self.id}]          - \"Pressão UHRV\":          {self.__leitura_pressao_uhrv.valor} Bar")
+                logger.debug(f"[UG{self.id}]          - \"Rotação\":               {self.__leitura_rotacao.valor:0.1f} RPM")
+                logger.debug(f"[UG{self.id}]          - \"Pressão UHRV\":          {self.__leitura_pressao_uhrv.valor:0.1f} Bar")
 
             self.__next_state = self.__next_state.step()
             self.atualizar_modbus_moa()
