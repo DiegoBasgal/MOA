@@ -144,10 +144,12 @@ class Usina:
             ug.lista_ugs = self.ugs
             ug.iniciar_ultimo_estado()
 
-        self.controlar_inicializacao()
         self.ler_valores()
+        self.ajustar_inicializacao()
         self.normalizar_usina()
         self.escrever_valores()
+
+        self.tentativas_normalizar = 0
 
 
     # Property -> VARIÁVEIS PRIVADAS
@@ -281,7 +283,7 @@ class Usina:
         else:
             logger.debug("[USN] Não é possível resetar a TDA pois o CLP da TDA se encontra offline")
 
-    def normalizar_usina(self) -> bool:
+    def normalizar_usina(self) -> int:
         """
         Função para normalização de ocorrências da Usina.
 
@@ -292,24 +294,27 @@ class Usina:
         """
 
 
-        logger.debug("[USN] Normalizando...")
         logger.debug(f"[USN] Última tentativa de normalização:   {self.ultima_tentativa_norm.strftime('%d-%m-%Y %H:%M:%S')}")
         logger.debug(f"[USN] Tensão na linha:                    RS -> \"{self.__tensao_rs.valor:2.1f} kV\" | ST -> \"{self.__tensao_st.valor:2.1f} kV\" | TR -> \"{self.__tensao_tr.valor:2.1f} kV\"")
 
         if not self.verificar_tensao():
-            return False
+            return NORM_USN_FALTA_TENSAO
 
-        elif (self.tentar_normalizar and (self.get_time() - self.ultima_tentativa_norm).seconds >= 60 * self.tentativas_normalizar) or self.normalizar_forcado:
+        elif (self.tentativas_normalizar < 3 and (self.get_time() - self.ultima_tentativa_norm).seconds >= 60 * self.tentativas_normalizar) or self.normalizar_forcado:
             self.ultima_tentativa_norm = self.get_time()
             self.tentativas_normalizar += 1
+            logger.info(f"[USN] Normalizando Usina... (Tentativa {self.tentativas_normalizar}/3)")
             self.db_emergencia = False
             self.clp_emergencia = False
             self.resetar_emergencia()
+            sleep(2)
+            self.fechar_dj_linha()
             self.db.update_remove_emergencia()
-            return True
+            return NORM_USN_EXECUTADA
 
         else:
             logger.debug("[USN] A normalização foi executada menos de 1 minuto atrás")
+            return NORM_USN_JA_EXECUTADA
 
     def fechar_dj_linha(self) -> bool:
         """
@@ -474,10 +479,10 @@ class Usina:
                 sleep(max(0, (time() + 1800) - time()))
 
         except Exception:
-            logger.error(f"[USN] Houve um erro com a função de Leituras Periódicas.")
+            logger.debug(f"[USN] Houve um erro com a função de Leituras Periódicas.")
             logger.debug(traceback.format_exc())
 
-    def controlar_inicializacao(self) -> None:
+    def ajustar_inicializacao(self) -> None:
         """
         Função para ajustes na inicialização do MOA. Essa função é executada apenas
         uma vez.

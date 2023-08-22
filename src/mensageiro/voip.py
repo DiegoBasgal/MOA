@@ -214,10 +214,15 @@ class Voip:
             print(f"[VOIP] Erro ao acionar chamada...")
             print(traceback.format_exc())
 
+
+
+
+
 # def teste() -> "None":
 
 #     ciclo = 0
-#     leitura_teste = 1
+#     leitura_teste_1 = 0
+#     leitura_teste_2 = 1
 
 #     while True:
 #         try:
@@ -225,32 +230,46 @@ class Voip:
 
 #             print(f"Ciclo -> {ciclo}")
 
-#             if leitura_teste != 1 and not vd.voip_dict["SA_QCADE_BOMBAS_DNG_AUTO"][0]:
+#             if leitura_teste_1 != 0 and not vd.voip_dict["SA_QCAP_DISJ_52E_FECHADO"][0]:
+#                 logger.warning("[OCO-USN] O Disjuntor do Gerador Diesel de Emergência QLCF foi fechado.")
+#                 vd.voip_dict["SA_QCAP_DISJ_52E_FECHADO"][0] = True
+#             elif leitura_teste_1 == 0 and vd.voip_dict["SA_QCAP_DISJ_52E_FECHADO"][0]:
+#                 vd.voip_dict["SA_QCAP_DISJ_52E_FECHADO"][0] = False
+#                 vd.voip_dict["SA_QCAP_DISJ_52E_FECHADO"][1] = 0
+
+#             if leitura_teste_2 != 1 and not vd.voip_dict["SA_QCADE_BOMBAS_DNG_AUTO"][0]:
 #                 logger.warning("[OCO-USN] O poço de drenagem da Usina entrou em modo remoto, favor verificar.")
 #                 vd.voip_dict["SA_QCADE_BOMBAS_DNG_AUTO"][0] = True
-
-#             elif leitura_teste == 1 and vd.voip_dict["SA_QCADE_BOMBAS_DNG_AUTO"][0]:
+#             elif leitura_teste_2 == 1 and vd.voip_dict["SA_QCADE_BOMBAS_DNG_AUTO"][0]:
 #                 vd.voip_dict["SA_QCADE_BOMBAS_DNG_AUTO"][0] = False
 #                 vd.voip_dict["SA_QCADE_BOMBAS_DNG_AUTO"][1] = 0
 
 #             sleep(2)
 
 #             if ciclo == 5:
-#                 leitura_teste = 0
-#                 print(f"Lista -> {vd.voip_dict['SA_QCADE_BOMBAS_DNG_AUTO']}")
-#                 print(f"Zerando variável leitura_teste -> {leitura_teste}...")
+#                 leitura_teste_1 = 1
+#                 leitura_teste_2 = 0
+
+#                 print(f"Lista_1 -> {vd.voip_dict['SA_QCAP_DISJ_52E_FECHADO']}")
+#                 print(f"Lista_2 -> {vd.voip_dict['SA_QCADE_BOMBAS_DNG_AUTO']}")
+#                 print(f"Zerando variável leitura_teste_1 -> {leitura_teste_1}...")
+#                 print(f"Zerando variável leitura_teste_2 -> {leitura_teste_2}...")
 
 #             elif ciclo == 6:
-#                 print(f"Lista -> {vd.voip_dict['SA_QCADE_BOMBAS_DNG_AUTO']}")
+#                 print(f"Lista_1 -> {vd.voip_dict['SA_QCAP_DISJ_52E_FECHADO']}")
+#                 print(f"Lista_2 -> {vd.voip_dict['SA_QCADE_BOMBAS_DNG_AUTO']}")
 #                 print(f"Acionando Voip...")
 #                 Voip.acionar_teste()
 
 #             elif ciclo == 8:
-#                 leitura_teste = 1
-#                 print(f"Resetando variável leitura_teste -> {leitura_teste}...")
+#                 leitura_teste_1 = 0
+#                 leitura_teste_2 = 1
+#                 print(f"Resetando variável leitura_teste_1 -> {leitura_teste_1}...")
+#                 print(f"Resetando variável leitura_teste_2 -> {leitura_teste_2}...")
 
 #             elif ciclo == 10:
-#                 print(f"Lista -> {vd.voip_dict['SA_QCADE_BOMBAS_DNG_AUTO']}")
+#                 print(f"Lista_1 -> {vd.voip_dict['SA_QCAP_DISJ_52E_FECHADO']}")
+#                 print(f"Lista_2 -> {vd.voip_dict['SA_QCADE_BOMBAS_DNG_AUTO']}")
 #                 print(f"Acionando Voip após reset...")
 #                 Voip.acionar_teste()
 

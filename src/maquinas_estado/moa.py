@@ -140,15 +140,24 @@ class ControleEstados(State):
 
         else:
             logger.debug("Verificando condicionadores...")
-            flag = self.usn.oco.verificar_condicionadores()
-            if flag == CONDIC_INDISPONIBILIZAR:
+            flag_condic = self.usn.oco.verificar_condicionadores()
+
+            if flag_condic == CONDIC_INDISPONIBILIZAR:
                 return Emergencia(self.usn)
 
-            elif flag == CONDIC_NORMALIZAR:
-                if self.usn.normalizar_usina() == False:
-                    return Emergencia(self.usn) if self.usn.aguardar_tensao() == False else self
+            elif flag_condic == CONDIC_NORMALIZAR:
+                flag_norm = self.usn.normalizar_usina()
+
+                if flag_norm == NORM_USN_FALTA_TENSAO:
+                    return Emergencia(self.usn) if self.usn.aguardar_tensao() == False else ControleDados(self.usn)
+
+                elif flag_norm == NORM_USN_EXECUTADA and self.usn.tentativas_normalizar > 2:
+                    logger.info("Tentativas de Normalização da Usina excedidas!")
+                    self.usn.tentativas_normalizar = 0
+                    return Emergencia(self.usn)
+
                 else:
-                    return self
+                    return ControleDados(self.usn)
 
             else:
                 return ControleReservatorio(self.usn)
@@ -373,7 +382,7 @@ class ControleTDAOffline(State):
         O modo de Controle Tomada da Água Offline funciona como o estado de Controle
         de Estados (Estado principal), porém ao final da execução da função, ao
         invés de entrar no estado de Controle de Reservatório, chama a função de
-        controle por pressão de caixa espiral, que controla os cálculos de cada 
+        controle por pressão de caixa espiral, que controla os cálculos de cada
         máquina individualmente.
         """
 
@@ -399,16 +408,28 @@ class ControleTDAOffline(State):
 
         else:
             logger.debug("Verificando condicionadores...")
-            condic_flag = self.usn.oco.verificar_condicionadores()
-            if condic_flag == CONDIC_INDISPONIBILIZAR:
+            flag_condic = self.usn.oco.verificar_condicionadores()
+
+            if flag_condic == CONDIC_INDISPONIBILIZAR:
                 return Emergencia(self.usn)
 
-            elif condic_flag == CONDIC_NORMALIZAR:
-                if self.usn.normalizar_usina() == False:
-                    return Emergencia(self.usn) if self.usn.aguardar_tensao() == False else ControleDados(self.usn)
-                else:
-                    for ug in self.usn.ugs:
-                        ug.controle_cx_espiral()
-                        ug.step()
+            elif flag_condic == CONDIC_NORMALIZAR:
+                flag_norm = self.usn.normalizar_usina()
 
+                if flag_norm == NORM_USN_FALTA_TENSAO:
+                    return Emergencia(self.usn) if self.usn.aguardar_tensao() == False else ControleDados(self.usn)
+
+                elif flag_norm == NORM_USN_EXECUTADA and self.usn.tentativas_normalizar > 2:
+                    logger.info("Tentativas de Normalização da Usina excedidas!")
+                    self.usn.tentativas_normalizar = 0
+                    return Emergencia(self.usn)
+
+                else:
                     return ControleDados(self.usn)
+
+            else:
+                for ug in self.usn.ugs:
+                    ug.controle_cx_espiral()
+                    ug.step()
+
+                return ControleDados(self.usn)
