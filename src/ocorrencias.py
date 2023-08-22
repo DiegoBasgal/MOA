@@ -667,9 +667,9 @@ class OcorrenciasUnidades:
 
             logger.debug("")
             if self.condicionadores_ativos == []:
-                logger.warning(f"[OCO-UG{self.__ug.id}] Foram detectados condicionadores ativos na Usina!")
+                logger.warning(f"[OCO-UG{self.__ug.id}] Foram detectados condicionadores ativos na Unidade!")
             else:
-                logger.info(f"[OCO-UG{self.__ug.id}] Ainda há condicionadores ativos na Usina!")
+                logger.info(f"[OCO-UG{self.__ug.id}] Ainda há condicionadores ativos na Unidade!")
 
             for condic in condicionadores_ativos:
                 if condic in self.condicionadores_ativos:

@@ -139,6 +139,8 @@ class Usina:
         self.normalizar_usina()
         self.escrever_valores()
 
+        self.tentativas_normalizar = 0
+
 
     ### PROPRIEDADES DA OPERAÇÃO
 
@@ -228,11 +230,11 @@ class Usina:
         if not self.verificar_tensao():
             return NORM_USN_FALTA_TENSAO
 
-        elif (self.tentativas_normalizar < 3 and (self.get_time() - self.ultima_tentativa_norm).seconds >= 10 * self.tentativas_normalizar) or self.normalizar_forcado:
+        elif (self.tentativas_normalizar < 3 and (self.get_time() - self.ultima_tentativa_norm).seconds >= 300) or self.normalizar_forcado:
+            self.ultima_tentativa_norm = self.get_time()
             self.tentativas_normalizar += 1
             logger.debug("")
-            logger.debug(f"[USN] Normalizando... (Tentativa {self.tentativas_normalizar}/3)")
-            self.ultima_tentativa_norm = self.get_time()
+            logger.info(f"[USN] Normalizando Usina... (Tentativa {self.tentativas_normalizar}/3)")
             self.db_emergencia = False
             self.clp_emergencia = False
             self.resetar_emergencia()
@@ -243,7 +245,7 @@ class Usina:
 
         else:
             logger.debug("")
-            logger.debug("[USN] A normalização foi executada menos de 1 minuto atrás")
+            logger.debug("[USN] A normalização foi executada menos de 5 minutos atrás...")
             return NORM_USN_JA_EXECUTADA
 
 
@@ -253,9 +255,9 @@ class Usina:
         try:
             logger.debug("[USN] Iniciando o timer de leitura periódica...")
             while True:
-                for ug in self.ugs:
-                    ug.oco.verificar_leituras()
-                self.oco.verificar_leituras()
+                # for ug in self.ugs:
+                #     ug.oco.verificar_leituras()
+                # self.oco.verificar_leituras()
 
                 if True in (d.voip[r][0] for r in d.voip):
                     Voip.acionar_chamada()
@@ -264,7 +266,7 @@ class Usina:
                 sleep(max(0, (time() + 1800) - time()))
 
         except Exception:
-            logger.error(f"[USN] Houve um erro ao executar o timer de leituras periódicas.")
+            logger.debug(f"[USN] Houve um erro ao executar o timer de leituras periódicas.")
             logger.debug(traceback.format_exc())
 
     def fechar_dj_linha(self) -> "bool":
@@ -426,7 +428,6 @@ class Usina:
             self.controle_i = 0
 
         pot_alvo = max(min(round(self.cfg["pot_maxima_usina"] * self.controle_ie, 5), self.cfg["pot_maxima_usina"],), self.cfg["pot_minima"],)
-        logger.debug(f"[USN] Potência alvo:                      {pot_alvo:0.3f}")
 
         pot_alvo = self.ajustar_potencia(pot_alvo)
 
@@ -459,7 +460,7 @@ class Usina:
 
         self.pot_alvo_anterior = pot_alvo
 
-        logger.debug(f"[USN] Potência alvo pós ajuste:           {pot_alvo:0.3f}")
+        logger.debug(f"[USN] Potência alvo após ajuste:          {pot_alvo:0.3f}")
         self.distribuir_potencia(pot_alvo)
 
     def ajustar_ie_padrao(self) -> "int":
@@ -503,7 +504,7 @@ class Usina:
                 logger.debug(f"[UG{ugs[1].id}] SP    <-                            {int(ugs[1].setpoint)}")
 
             elif self.__split1:
-                logger.debug("[USN] Split:                              1")
+                logger.debug("[USN] Split:                              2 -> \"1B\"")
                 logger.debug("")
                 sp = sp * 2 / 1
                 ugs[0].setpoint = sp * ugs[0].setpoint_maximo
@@ -513,7 +514,7 @@ class Usina:
 
         elif len(ugs) == 1:
             if self.__split1 or self.__split2:
-                logger.debug("[USN] Split:                              1B")
+                logger.debug("[USN] Split:                              1")
                 logger.debug("")
                 sp = sp * 2 / 1
                 ugs[0].setpoint = sp * ugs[0].setpoint_maximo
