@@ -87,7 +87,7 @@ class OcorrenciasGerais:
             if self.condicionadores_ativos == []:
                 logger.warning(f"[OCO-USN] Foram detectados condicionadores ativos na Usina!")
             else:
-                logger.info(f"[OCO-USN] Ainda há condicionadores ativos na Usina!")
+                logger.debug(f"[OCO-USN] Ainda há condicionadores ativos na Usina!")
 
             for condic in condicionadores_ativos:
                 if condic in self.condicionadores_ativos:
@@ -668,6 +668,9 @@ class OcorrenciasUnidades:
             logger.debug("")
             if self.condicionadores_ativos == []:
                 logger.warning(f"[OCO-UG{self.__ug.id}] Foram detectados condicionadores ativos na Unidade!")
+            elif self.__ug.etapa != UG_PARADA:
+                logger.debug(f"[OCO-UG{self.__ug.id}] Ainda há condicionadores ativos na Unidade!")
+                pass
             else:
                 logger.info(f"[OCO-UG{self.__ug.id}] Ainda há condicionadores ativos na Unidade!")
 

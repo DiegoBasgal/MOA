@@ -50,8 +50,13 @@ class Usina:
 
         self.__leitura_dj_tsa: "LeituraModbusBit" = LeituraModbusBit(
             self.clp["SA"],
-            REG['SA']["SA_ED_PSA_DIJS_TSA_FECHADO"],
+            REG["SA"]["SA_ED_PSA_DIJS_TSA_FECHADO"],
             descr="[USN] Status Disjuntor SA"
+        )
+        self.__leitura_dj_linha: "LeituraModbusBit" = LeituraModbusBit(
+            self.clp["SA"],
+            REG["SA"]["SA_ED_PSA_SE_DISJ_LINHA_FECHADO"],
+            descr="[USN] Status Disjuntor Linha"
         )
 
 
@@ -139,7 +144,7 @@ class Usina:
         self.normalizar_usina()
         self.escrever_valores()
 
-        self.tentativas_normalizar = 0
+        self._tentativas_normalizar = 0
 
 
     ### PROPRIEDADES DA OPERAÇÃO
@@ -209,7 +214,7 @@ class Usina:
 
     def resetar_emergencia(self) -> "None":
         try:
-            logger.debug("[USN] Reset geral")
+            logger.info(f"[USN] Enviando comando:                   \"RESET GERAL\"")
 
             EMB.escrever_bit(self.clp["SA"], REG["SA"]["SA_CD_REARME_FALHAS"], valor=1, descr="SA_CD_REARME_FALHAS")
             EMB.escrever_bit(self.clp["SA"], REG["GERAL"]["GERAL_CD_RESET_GERAL"], valor=1, descr="GERAL_CD_RESET_GERAL")
@@ -230,7 +235,7 @@ class Usina:
         if not self.verificar_tensao():
             return NORM_USN_FALTA_TENSAO
 
-        elif (self.tentativas_normalizar < 3 and (self.get_time() - self.ultima_tentativa_norm).seconds >= 300) or self.normalizar_forcado:
+        elif (self.tentativas_normalizar < 3 and (self.get_time() - self.ultima_tentativa_norm).seconds >= 60 * self.tentativas_normalizar) or self.normalizar_forcado:
             self.ultima_tentativa_norm = self.get_time()
             self.tentativas_normalizar += 1
             logger.debug("")
@@ -271,12 +276,15 @@ class Usina:
 
     def fechar_dj_linha(self) -> "bool":
         try:
-            if not self.__leitura_dj_tsa.valor:
+            if self.__leitura_dj_linha.valor:
+                logger.debug("[USN] O Disjuntor de Linha já está fechado!")
+
+            elif not self.__leitura_dj_tsa.valor:
                 logger.info("[USN] Não foi possível fechar o Disjuntor de Linha, pois o Disjuntor do SA está aberto")
                 return False
 
             else:
-                logger.debug(f"[USN] Enviando comando:                    \"FECHAR DJ LINHA\"")
+                logger.info(f"[USN] Enviando comando:                   \"FECHAR DJ LINHA\"")
                 res = EMB.escrever_bit(self.clp["SA"], REG["SA"]["SA_CD_DISJ_LINHA_FECHA"], valor=1)
                 return res
 

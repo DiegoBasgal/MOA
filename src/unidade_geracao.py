@@ -339,9 +339,15 @@ class UnidadeDeGeracao:
             elif estado == UG_SM_DISPONIVEL:
                 self.__next_state = StateDisponivel(self)
             elif estado == UG_SM_RESTRITA:
-                self.__next_state = StateRestrito(self)
+                if self.etapa == UG_SINCRONIZADA:
+                    self.__next_state = StateDisponivel(self)
+                else:
+                    self.__next_state = StateRestrito(self)
             elif estado == UG_SM_INDISPONIVEL:
-                self.__next_state = StateIndisponivel(self)
+                if self.etapa == UG_SINCRONIZADA:
+                    self.__next_state = StateDisponivel(self)
+                else:
+                    self.__next_state = StateIndisponivel(self)
             else:
                 logger.debug("")
                 logger.error(f"[UG{self.id}] Não foi possível ler o último estado da Unidade")
@@ -479,7 +485,6 @@ class UnidadeDeGeracao:
                 pot_reativa = (0.426 * self.leitura_potencia)
                 self.rt[f"UG{self.id}"].write_single_register(REG["UG"][f"UG{self.id}_RT_SETPOINT_POTENCIA_REATIVA_PU"], -pot_reativa)
 
-
     def enviar_setpoint(self, setpoint_kw: int) -> "bool":
         try:
             sleep(2)
@@ -534,7 +539,7 @@ class UnidadeDeGeracao:
 
     def remover_trip_eletrico(self) -> "bool":
         try:
-            if self.__leitura_dj_linha.valor == 0:
+            if not self.__leitura_dj_linha.valor:
                 logger.debug(f"[UG{self.id}]          Enviando comando:          \"FECHAR DJ LINHA\".")
                 EMB.escrever_bit(self.clp["SA"], REG["SA"]["SA_CD_DISJ_LINHA_FECHA"], 1, descr="SA_CD_DISJ_LINHA_FECHA")
 

@@ -6,6 +6,7 @@ from src.dicionarios.const import *
 
 logger = logging.getLogger("logger")
 
+
 class State:
     def __init__(self, parent=None):
         # VERIFICAÇÃO DE ARGUENTOS
@@ -18,13 +19,16 @@ class State:
     def step(self) -> object:
         pass
 
+
 class StateManual(State):
     def __init__(self, parent):
         super().__init__(parent)
 
         self.parent.codigo_state = UG_SM_MANUAL
+        logger.debug("")
         logger.info(f"[UG{self.parent.id}] Entrando no estado:                 \"Manual\". Para retornar a operação autônoma, favor agendar na interface web")
         logger.debug(f"[UG{self.parent.id}] Tentativas de normalização:         {self.parent.tentativas_de_normalizacao}/{self.parent.limite_tentativas_de_normalizacao}")
+        logger.debug("")
 
         self.parent.borda_parar = False
 
@@ -32,13 +36,16 @@ class StateManual(State):
         self.parent.setpoint = self.parent.leitura_potencia
         return self
 
+
 class StateIndisponivel(State):
     def __init__(self, parent):
         super().__init__(parent)
 
         self.parent.codigo_state = UG_SM_INDISPONIVEL
+        logger.debug("")
         logger.info(f"[UG{self.parent.id}] Entrando no estado:                 \"Indisponível\". Para retornar a operação autônoma, favor agendar na interface web")
         logger.debug(f"[UG{self.parent.id}] Tentativas de normalização:         {self.parent.tentativas_de_normalizacao}/{self.parent.limite_tentativas_de_normalizacao}")
+        logger.debug("")
 
         self.parent.borda_parar = True if self.parent.borda_parar else False
 
@@ -46,13 +53,16 @@ class StateIndisponivel(State):
         self.parent.bloquear_unidade()
         return self
 
+
 class StateRestrito(State):
     def __init__(self, parent):
         super().__init__(parent)
 
         self.parent.codigo_state = UG_SM_RESTRITA
+        logger.debug("")
         logger.info(f"[UG{self.parent.id}] Entrando no estado                  \"Restrito\"")
         logger.debug(f"[UG{self.parent.id}] Tentativas de normalização:         {self.parent.tentativas_de_normalizacao}/{self.parent.limite_tentativas_de_normalizacao}")
+        logger.debug("")
 
         self.parent.parar_timer = False
         self.parent.borda_parar = True if self.parent.borda_parar else False
@@ -85,11 +95,13 @@ class StateRestrito(State):
             logger.debug(f"[UG{self.parent.id}] Aguardando normalização sem tempo pré-definido")
             return self
 
+
 class StateDisponivel(State):
     def __init__(self, parent):
         super().__init__(parent)
 
         self.parent.codigo_state = UG_SM_DISPONIVEL
+        logger.debug("")
         logger.info(f"[UG{self.parent.id}] Entrando no estado:                 \"Disponível\"")
         self.parent.tentativas_de_normalizacao = 0
         logger.debug(f"[UG{self.parent.id}] Tentativas de normalização:         {self.parent.tentativas_de_normalizacao}/{self.parent.limite_tentativas_de_normalizacao}")

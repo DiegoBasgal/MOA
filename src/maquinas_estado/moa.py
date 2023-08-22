@@ -166,10 +166,9 @@ class ModoManual(State):
 
         for ug in self.usn.ugs:
             ug.setpoint = ug.leitura_potencia
-
             logger.debug(f"[UG{ug.id}] Unidade:                            \"{UG_SM_STR_DCT[ug.codigo_state]}\"")
-            logger.debug(f"[UG{ug.id}] Etapa :                             \"{ug.etapa}\" (Atual: {ug.etapa_atual} | Alvo: {ug.etapa_alvo})")
-            logger.debug(f"[UG{ug.id}] Leitura de Potência:                {ug.leitura_potencia}")
+            logger.debug(f"[UG{ug.id}] Etapa :                             \"{UG_STR_DCT_ETAPAS[ug.etapa]}\" (Atual: {ug.etapa_atual} | Alvo: {ug.etapa_alvo})")
+            logger.debug(f"[UG{ug.id}] Leitura de Potência:                {ug.leitura_potencia} kW")
             logger.debug("")
 
         self.usn.controle_ie = sum(ug.leitura_potencia for ug in self.usn.ugs) / self.usn.cfg["pot_maxima_alvo"]
@@ -230,7 +229,6 @@ class Emergencia(State):
 
             elif flag_condic == CONDIC_NORMALIZAR:
                 self.tentativas += 1
-                logger.info(f"Normalizando usina. (Tentativa {self.tentativas}/3) (Limite entre tentativas: {TIMEOUT_NORMALIZACAO}s)")
                 self.usn.normalizar_forcado = True
                 self.usn.normalizar_usina()
                 return self
