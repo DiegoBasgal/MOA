@@ -1,88 +1,80 @@
 import pytz
+import mariadb
 import threading
-
-import dicts.dict as dct
 
 from sys import stdout
 from time import sleep
 from datetime import datetime
-from mysql.connector import pooling
 
 lock = threading.Lock()
 
 class Controlador:
-    def __init__(self):
-        self.dict = dct.compartilhado
+    def __init__(self, compartilhado):
+        self.dict = compartilhado
 
-        i = 0
-
-        self.timed_afluente = []
-
-        with open("simulation_input_data.csv", "r") as fp:
-            rawlines = fp.readlines()
-
-        for line in rawlines:
-            line = line.split(",")
-            self.timed_afluente.append([i, float(line[0]) * 60, float(line[1])])
-            i += 1
-
-        self.connection_pool = pooling.MySQLConnectionPool(
-            pool_name="my_pool",
-            pool_size=10,
-            pool_reset_session=True,
-            host="172.21.15.110",
+        self.cnx = mariadb.ConnectionPool(
+            host="localhost",
             user="moa",
             password="&264H3$M@&z$",
+            pool_name="controlador_sim",
             database="django_db",
+            pool_size=10,
+            pool_reset_session=True,
         )
 
-        self.conn = self.connection_pool.get_connection()
+        self.conn = self.cnx.get_connection()
         self.cursor = self.conn.cursor()
 
-    def get_time(self) -> object:
+        self.tempo_afluente = []
+
+        with open("C:/Users/diego.garcia/Desktop/operacao-autonoma/simulador/entrada_afluente.csv", "r") as fp:
+            rawlines = fp.readlines()
+
+        i = 0
+        for line in rawlines:
+            line = line.split(",")
+            self.tempo_afluente.append([i, float(line[0]) * 60, float(line[1])])
+            i += 1
+
+
+    @staticmethod
+    def get_time() -> "datetime":
         return datetime.now(pytz.timezone("Brazil/East")).replace(tzinfo=None)
+
 
     def run(self):
         q_ant = 0
-        last_log_time = -1
-        counter_timed_afluente = 0
+        ultimo_log = -1
+        contador_afluente = 0
 
-        while not self.dict.GLB["stop_sim"]:
-            w = 0.5
-            qmed = 7
-            qdelta = 3
+        while not self.dict["GLB"]["stop_sim"]:
 
-            self.dict.GLB["stop_sim"] = self.dict.GLB["stop_gui"]
+            self.dict["GLB"]["stop_sim"] = self.dict["GLB"]["stop_gui"]
 
             try:
                 t_inicio_passo = self.get_time()
                 lock.acquire()
 
-                if (self.timed_afluente[counter_timed_afluente + 1][1] <= self.dict.GLB["tempo_simul"]):
-                    counter_timed_afluente += 1
+                if self.tempo_afluente[contador_afluente + 1][1] <= self.dict["GLB"]["tempo_simul"]:
+                    contador_afluente += 1
 
-                if self.timed_afluente[counter_timed_afluente][2] == -1:
-                    self.dict.GLB["stop_sim"] = True
-                    self.dict.GLB["stop_gui"] = True
+                if self.tempo_afluente[contador_afluente][2] == -1:
+                    self.dict["GLB"]["stop_sim"] = self.dict["GLB"]["stop_gui"] = True
                     exit()
-
-                self.dict.USN["q_alfuente"] = self.timed_afluente[counter_timed_afluente][2]
-
-                duty = (((self.dict.GLB["tempo_simul"] *  w) % 3600) / 3600)
-                self.dict.USN["q_alfuente"] = qmed - (qdelta/2) + qdelta * (2 * duty) if duty <= 0.5 else qmed + (qdelta/2) + qdelta * (2 * (0.5-duty))
 
                 lock.release()
 
-                if not int(self.dict.GLB["tempo_simul"] / 60) == int(last_log_time / 60):
-                    last_log_time = self.dict.GLB["tempo_simul"]
+                if not int(self.dict["GLB"]["tempo_simul"] / 60) == int(ultimo_log / 60):
+                    ultimo_log = self.dict["GLB"]["tempo_simul"]
                     self.cursor.execute(
-                        f"INSERT INTO debug.simul_data VALUES({self.get_time().timestamp()}, \
+                        f"INSERT INTO debug.simul_data VALUES( \
+                        {self.get_time().timestamp()}, \
                         {self.dict['q_alfuente']}, \
                         {self.dict['nv_montante']}, \
-                        {self.dict['potencia_kw_ug1']}, \
-                        {self.dict['setpoint_kw_ug1']}, \
-                        {self.dict['potencia_kw_ug2']}, \
-                        {self.dict['setpoint_kw_ug2']});"
+                        {self.dict['UG1']['potencia']}, \
+                        {self.dict['UG1']['setpoint']}, \
+                        {self.dict['UG2']['potencia']}, \
+                        {self.dict['UG2']['setpoint']});"
                     )
                     self.conn.commit()
 
@@ -92,5 +84,5 @@ class Controlador:
                     sleep(tempo_restante)
 
             except KeyboardInterrupt:
-                self.dict.GLB["stop_gui"] = True
+                self.dict["GLB"]["stop_gui"] = True
                 continue

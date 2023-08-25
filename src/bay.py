@@ -74,6 +74,7 @@ class Bay:
     )
 
     condicionadores: "list[CondicionadorBase]" = []
+    condicionadores_ativos: "list[CondicionadorBase]" = []
     condicionadores_essenciais: "list[CondicionadorBase]" = []
 
     @classmethod
@@ -160,11 +161,11 @@ class Bay:
                     flags += 1
 
             if not cls.barra_morta.valor and cls.barra_viva.valor:
-                logger.warning(f"[BAY] Foi identificada uma Leitura de Corrente na Barra! Tensao VS -> {cls.tensao_vs.valor}")
+                logger.warning(f"[BAY] Foi identificada uma Leitura de Tensão na Barra! Tensão VS -> {cls.tensao_vs.valor}")
                 flags += 1
 
             if not cls.linha_morta.valor and cls.linha_viva.valor:
-                logger.warning("[BAY] Foi identificada uma leitura de corrente na linha!")
+                logger.warning("[BAY] Foi identificada uma leitura de Tensão na linha!")
                 flags += 1
 
             if not cls.mola_carregada.valor:
@@ -257,12 +258,25 @@ class Bay:
             condics_ativos = [condic for condics in [cls.condicionadores_essenciais, cls.condicionadores] for condic in condics if condic.ativo]
 
             logger.debug("")
-            logger.info("[BAY] Foram detectados condicionadores ativos!")
-            [logger.info(f"[BAY] Descrição: \"{condic.descricao}\", Gravidade: \"{CONDIC_STR_DCT[condic.gravidade]}\".") for condic in condics_ativos]
-            logger.debug("")
+            if cls.condicionadores_ativos == []:
+                logger.warning(f"[BAY] Foram detectados Condicionadores ativos no Bay!")
 
+            else:
+                logger.info(f"[BAY] Ainda há Condicionadores ativos no Bay!")
+
+            for condic in condics_ativos:
+                if condic in cls.condicionadores_ativos:
+                    logger.debug(f"[BAY] Descrição: \"{condic.descricao}\", Gravidade: \"{CONDIC_STR_DCT[condic.gravidade] if condic.gravidade in CONDIC_STR_DCT else 'Desconhecida'}\"")
+                    continue
+                else:
+                    logger.warning(f"[BAY] Descrição: \"{condic.descricao}\", Gravidade: \"{CONDIC_STR_DCT[condic.gravidade] if condic.gravidade in CONDIC_STR_DCT else 'Desconhecida'}\"")
+                    cls.condicionadores_ativos.append(condic)
+
+            logger.debug("")
             return condics_ativos
+
         else:
+            cls.condicionadores_ativos = []
             return []
 
     @classmethod

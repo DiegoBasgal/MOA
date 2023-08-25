@@ -48,7 +48,7 @@ class UnidadeGeracao:
         # PRIVADAS
         self.__leitura_potencia = LeituraModbus(
             self.clp[f"UG{self.id}"],
-            int(REG_CLP[f"UG{self.id}"]["P"]),
+            REG_CLP[f"UG{self.id}"]["P"],
             descricao=f"[UG{self.id}] Leitura Potência"
         )
         self.__leitura_etapa_atual = LeituraModbus(
@@ -94,6 +94,8 @@ class UnidadeGeracao:
         self.temporizar_normalizacao: "bool" = False
 
         self.borda_cp_fechar: "bool" = False
+
+        self.condicionadores_ativos: "list[c.CondicionadorBase]" = []
 
         self.aux_tempo_sincronizada: "datetime" = 0
         self.ts_auxiliar: "datetime" = self.get_time()
@@ -437,8 +439,8 @@ class UnidadeGeracao:
         """
 
         try:
-            self.clp["MOA"].write_single_coil(REG_CLP["MOA"][f"OUT_ETAPA_UG{self.id}"], [self.etapa])
-            self.clp["MOA"].write_single_coil(REG_CLP["MOA"][f"OUT_STATE_UG{self.id}"], [self.codigo_state])
+            self.clp["MOA"].write_single_coil(REG_CLP["MOA"][f"OUT_ETAPA_UG{self.id}"], self.etapa)
+            self.clp["MOA"].write_single_coil(REG_CLP["MOA"][f"OUT_STATE_UG{self.id}"], self.codigo_state)
 
         except Exception:
             logger.error(f"[UG{self.id}] Não foi possível escrever os valores no CLP MOA.")
@@ -530,7 +532,7 @@ class UnidadeGeracao:
         try:
             logger.debug("")
             logger.info(f"[UG{self.id}]          Enviando comando:          \"RECONHECE E RESET\"")
-            self.clp["MOA"].write_single_coil(REG_CLP["MOA"]["PAINEL_LIDO"], [0])
+            self.clp["MOA"].write_single_coil(REG_CLP["MOA"]["PAINEL_LIDO"], 0)
 
             passo = 0
             for x in range(2):
@@ -542,7 +544,7 @@ class UnidadeGeracao:
                 self.remover_trip_logico()
                 sleep(1)
 
-            self.clp["MOA"].write_single_coil(REG_CLP["MOA"]["PAINEL_LIDO"], [1])
+            self.clp["MOA"].write_single_coil(REG_CLP["MOA"]["PAINEL_LIDO"], 1)
 
         except Exception:
             logger.error(f"[UG{self.id}] Não foi possivel enviar o comando de reconhecer e resetar alarmes.")
@@ -594,7 +596,7 @@ class UnidadeGeracao:
 
         try:
             logger.debug(f"[UG{self.id}]          Enviando comando:          \"TRIP ELÉTRICO\"")
-            self.clp["MOA"].write_single_coil(REG_CLP["MOA"][f"OUT_BLOCK_UG{self.id}"], [1])
+            self.clp["MOA"].write_single_coil(REG_CLP["MOA"][f"OUT_BLOCK_UG{self.id}"], 1)
 
         except Exception:
             logger.error(f"[UG{self.id}] Não foi possivel acionar o comando de TRIP: \"Elétrico\".")
@@ -610,8 +612,8 @@ class UnidadeGeracao:
 
         try:
             logger.debug(f"[UG{self.id}]          Removendo comando:         \"TRIP ELÉTRICO\"")
-            self.clp["MOA"].write_single_coil(REG_CLP["MOA"]["PAINEL_LIDO"], [0])
-            self.clp["MOA"].write_single_coil(REG_CLP["MOA"][f"OUT_BLOCK_UG{self.id}"], [0])
+            self.clp["MOA"].write_single_coil(REG_CLP["MOA"]["PAINEL_LIDO"], 0)
+            self.clp["MOA"].write_single_coil(REG_CLP["MOA"][f"OUT_BLOCK_UG{self.id}"], 0)
             se.Subestacao.fechar_dj_linha()
 
         except Exception:
@@ -828,26 +830,46 @@ class UnidadeGeracao:
         """
 
         flag = CONDIC_IGNORAR
-        v = []
 
         if True in (condic.ativo for condic in self.condicionadores_essenciais):
             condics_ativos = [condic for condics in [self.condicionadores_essenciais, self.condicionadores] for condic in condics if condic.ativo]
 
+            logger.debug("")
+            if self.condicionadores_ativos == []:
+                logger.warning(f"[UG{self.id}] Foram detectados condicionadores ativos na Unidade!")
+            else:
+                logger.info(f"[UG{self.id}] Ainda há condicionadores ativos na Unidade!")
+
             for condic in condics_ativos:
-                if condic.gravidade == CONDIC_NORMALIZAR:
+                if condic in self.condicionadores_ativos:
+                    logger.debug(f"[UG{self.id}] Descrição: \"{condic.descricao}\", Gravidade: \"{CONDIC_STR_DCT[condic.gravidade] if condic.gravidade in CONDIC_STR_DCT else 'Desconhecida'}\"")
+                    flag = condic.gravidade
+                    continue
+
+                elif condic.gravidade == CONDIC_NORMALIZAR:
+                    logger.warning(f"[UG{self.id}] Descrição: \"{condic.descricao}\", Gravidade: \"{CONDIC_STR_DCT[condic.gravidade] if condic.gravidade in CONDIC_STR_DCT else 'Desconhecida'}\"")
+                    self.condicionadores_ativos.append(condic)
                     flag = CONDIC_NORMALIZAR
+                    # self.__db.update_alarmes([datetime.now(pytz.timezone("Brazil/East")).replace(tzinfo=None), condic.gravidade, condic.descr])
+
                 elif condic.gravidade == CONDIC_AGUARDAR:
-                    flag = CONDIC_AGUARDAR
+                    logger.warning(f"[UG{self.id}] Descrição: \"{condic.descricao}\", Gravidade: \"{CONDIC_STR_DCT[condic.gravidade] if condic.gravidade in CONDIC_STR_DCT else 'Desconhecida'}\"")
+                    self.condicionadores_ativos.append(condic)
+                    flag = CONDIC_NORMALIZAR
+                    # self.__db.update_alarmes([datetime.now(pytz.timezone("Brazil/East")).replace(tzinfo=None), condic.gravidade, condic.descr])
+
                 elif condic.gravidade == CONDIC_INDISPONIBILIZAR:
+                    logger.warning(f"[UG{self.id}] Descrição: \"{condic.descricao}\", Gravidade: \"{CONDIC_STR_DCT[condic.gravidade] if condic.gravidade in CONDIC_STR_DCT else 'Desconhecida'}\"")
+                    self.condicionadores_ativos.append(condic)
                     flag = CONDIC_INDISPONIBILIZAR
+                    # self.__db.update_alarmes([datetime.now(pytz.timezone("Brazil/East")).replace(tzinfo=None), condic.gravidade, condic.descr])
 
             logger.debug("")
-            logger.info(f"[UG{self.id}] Foram detectados condicionadores ativos!")
-            [logger.info(f"[UG{self.id}] Descrição: \"{condic.descricao}\", Gravidade: \"{CONDIC_STR_DCT[condic.gravidade]}\"") for condic in condics_ativos]
-            logger.debug("")
-
             return flag
-        return flag
+
+        else:
+            self.condicionadores_ativos = []
+            return flag
 
 
     def atualizar_limites(self, parametros: "dict") -> "None":

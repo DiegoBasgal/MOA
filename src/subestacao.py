@@ -57,6 +57,7 @@ class Subestacao:
 
     condicionadores: "list[c.CondicionadorBase]" = []
     condicionadores_essenciais: "list[c.CondicionadorBase]" = []
+    condicionadores_ativos: "list[c.CondicionadorBase]" = []
 
     @classmethod
     def resetar_emergencia(cls) -> "bool":
@@ -144,8 +145,8 @@ class Subestacao:
                 cls.dj_bay_aberto = True
                 flags += 1
 
-            if not bay.Bay.barra_morta.valor and bay.Bay.barra_viva.valor: # BARRA DOS GERADORES
-                logger.warning("[SE]  Foi identificada leitura de corrente na barra do Bay!")
+            if cls.l_barra_viva.valor:
+                logger.warning("[SE]  Foi identificada leitura de Tensão na barra do Bay!")
                 flags += 1
 
             if cls.l_trip_rele_te.valor:
@@ -203,12 +204,25 @@ class Subestacao:
             condics_ativos = [condic for condics in [cls.condicionadores_essenciais, cls.condicionadores] for condic in condics if condic.ativo]
 
             logger.debug("")
-            logger.info("[SE]  Foram detectados condicionadores ativos!")
-            [logger.info(f"[SE]  Descrição: \"{condic.descricao}\", Gravidade: \"{CONDIC_STR_DCT[condic.gravidade]}\".") for condic in condics_ativos]
-            logger.debug("")
+            if cls.condicionadores_ativos == []:
+                logger.warning(f"[SE]  Foram detectados Condicionadores ativos na Subestação!")
 
+            else:
+                logger.info(f"[SE]  Ainda há Condicionadores ativos na Subestação!")
+
+            for condic in condics_ativos:
+                if condic in cls.condicionadores_ativos:
+                    logger.debug(f"[SE]  Descrição: \"{condic.descricao}\", Gravidade: \"{CONDIC_STR_DCT[condic.gravidade] if condic.gravidade in CONDIC_STR_DCT else 'Desconhecida'}\"")
+                    continue
+                else:
+                    logger.warning(f"[SE]  Descrição: \"{condic.descricao}\", Gravidade: \"{CONDIC_STR_DCT[condic.gravidade] if condic.gravidade in CONDIC_STR_DCT else 'Desconhecida'}\"")
+                    cls.condicionadores_ativos.append(condic)
+
+            logger.debug("")
             return condics_ativos
+
         else:
+            cls.condicionadores_ativos = []
             return []
 
     @classmethod
@@ -276,8 +290,10 @@ class Subestacao:
         cls.l_trip_rele_te = LeituraModbusBit(cls.rele["TE"], REG_RELE["TE"]["RELE_ESTADO_TRP"], descricao="[TE][RELE] Transformador Elevador Trip")
 
         cls.l_mola_carregada = LeituraModbusBit(cls.clp["SA"], REG_RELE["SE"]["DJL_MOLA_CARREGADA"], descricao="[SE]  Disjuntor Linha Mola Carregada")
+        cls.l_barra_viva = LeituraModbusBit(cls.clp["SA"], REG_RELE["SE"]["ID_BARRA_VIVA"], descricao="[SE]  Identificação de Barra Viva")
         cls.l_djL_remoto = LeituraModbusBit(cls.clp["SA"], REG_CLP["SE"]["DJL_SELETORA_REMOTO"], descricao="[SE]  Disjuntor Linha Seletora Modo Remoto")
         cls.l_alarme_gas_te = LeituraModbusBit(cls.clp["SA"], REG_CLP["SE"]["TE_RELE_BUCHHOLZ_ALM"], descricao="[SE]  Transformador Elevador Alarme Relé Buchholz")
+
 
         ### CONDICIONADORES ESSENCIAIS
         ## NORMALIZAR

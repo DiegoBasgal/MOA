@@ -146,7 +146,8 @@ REG_RELE = {
         "DJL_FLH_ABERTURA_B1":                          [48, 1],
 
 
-        # LEITURA DE BARRA DOS GERADORES
+        # Barra
+        "ID_BARRA_VIVA":                                [50, 1],
     },
 
     "TE": {

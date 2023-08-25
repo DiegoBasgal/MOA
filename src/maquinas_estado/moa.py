@@ -163,8 +163,13 @@ class ControleEstados(State):
                 return Emergencia(self.usn)
 
             elif flag_condic == CONDIC_NORMALIZAR:
-                self.usn.normalizar_usina()
-                return self
+                if self.usn.normalizar_usina() and self.usn.tentativas_normalizar > 2:
+                    logger.info("Tentativas de Normalização da Usina excedidas!")
+                    self.usn.tentativas_normalizar = 0
+                    return Emergencia(self.usn)
+
+                else:
+                    return ControleDados(self.usn)
 
             else:
                 return ControleReservatorio(self.usn)

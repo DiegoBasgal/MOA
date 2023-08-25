@@ -56,12 +56,25 @@ class ServicoAuxiliar:
             condics_ativos = [condic for condics in [cls.condicionadores_essenciais, cls.condicionadores] for condic in condics if condic.ativo]
 
             logger.debug("")
-            logger.warning("[SA]  Foram detectados condicionadores ativos!")
-            [logger.info(f"[SA]  Descrição: \"{condic.descricao}\", Gravidade: \"{CONDIC_STR_DCT[condic.gravidade]}\".") for condic in condics_ativos]
-            logger.debug("")
+            if cls.condicionadores_ativos == []:
+                logger.warning(f"[SA]  Foram detectados Condicionadores ativos no Serviço Auxiliar!")
 
+            else:
+                logger.info(f"[SA]  Ainda há Condicionadores ativos no Serviço Auxiliar!")
+
+            for condic in condics_ativos:
+                if condic in cls.condicionadores_ativos:
+                    logger.debug(f"[SA]  Descrição: \"{condic.descricao}\", Gravidade: \"{CONDIC_STR_DCT[condic.gravidade] if condic.gravidade in CONDIC_STR_DCT else 'Desconhecida'}\"")
+                    continue
+                else:
+                    logger.warning(f"[SA]  Descrição: \"{condic.descricao}\", Gravidade: \"{CONDIC_STR_DCT[condic.gravidade] if condic.gravidade in CONDIC_STR_DCT else 'Desconhecida'}\"")
+                    cls.condicionadores_ativos.append(condic)
+
+            logger.debug("")
             return condics_ativos
+
         else:
+            cls.condicionadores_ativos = []
             return []
 
     @classmethod
