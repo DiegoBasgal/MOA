@@ -145,16 +145,6 @@ class ControleEstados(State):
             logger.debug("Foram identificados agendamentos pendentes!")
             return ControleAgendamentos(self.usn)
 
-        logger.debug("Verificando status da Subestação e Bay...")
-        flag_bay_se = self.usn.verificar_bay_se()
-
-        if flag_bay_se == DJS_FALTA_TENSAO:
-            return Emergencia(self.usn) if bay.Bay.aguardar_tensao() == TENSAO_FORA else self
-
-        elif flag_bay_se != DJS_OK:
-            self.usn.normalizar_usina()
-            return self
-
         else:
             logger.debug("Verificando condicionadores...")
             flag_condic= self.usn.verificar_condicionadores()
@@ -170,6 +160,16 @@ class ControleEstados(State):
 
                 else:
                     return ControleDados(self.usn)
+
+            logger.debug("Verificando status da Subestação e Bay...")
+            flag_bay_se = self.usn.verificar_bay_se()
+
+            if flag_bay_se == DJS_FALTA_TENSAO:
+                return Emergencia(self.usn) if bay.Bay.aguardar_tensao() == TENSAO_FORA else self
+
+            elif flag_bay_se != DJS_OK:
+                self.usn.normalizar_usina()
+                return self
 
             else:
                 return ControleReservatorio(self.usn)

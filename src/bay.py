@@ -154,7 +154,7 @@ class Bay:
             if se.Subestacao.dj_linha_se.valor:
                 logger.info("[BAY] Disjuntor da Subestação Fechado!")
                 logger.debug(f"[BAY] Enviando comando:                   \"ABRIR DISJUNTOR SE\"")
-                res = EMB.escrever_bit(cls.clp["SA"], REG_CLP["SE"]["DJL_CMD_FECHAR"], valor=0) # DJL_CMD_ABRIR
+                res = EMB.escrever_bit(cls.clp["SA"], REG_CLP["SE"]["DJL_CMD_ABRIR"], valor=1)
 
                 if not res:
                     logger.warning("[BAY] Não foi possível realizar a abertura do Disjuntor de Linha da Subestação!")

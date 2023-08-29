@@ -105,12 +105,13 @@ class Usina:
         self.sa.carregar_leituras()
 
         self.ler_valores()
-        self.normalizar_usina()
         self.verificar_bay_se()
+        self.normalizar_usina()
         self.ajustar_inicializacao()
         self.escrever_valores()
 
         self._tentativas_normalizar = 0
+        self.tentativas_normalizar = 0
 
 
     # PROPRIEDADES/GETTERS
@@ -192,20 +193,25 @@ class Usina:
         normalização foi executada à pouco tempo, se foi, avisa o operador,
         senão, passa a chamar as funções de reset geral.
         """
-        logger.debug("")
+
         logger.debug(f"[USN] Última tentativa de normalização:   {self.ultima_tentativa_norm.strftime('%d-%m-%Y %H:%M:%S')}")
 
-        if (self.tentativas_normalizar < 3 and (self.get_time() - self.ultima_tentativa_norm).seconds >= 60 * self.tentativas_normalizar) or self.normalizar_forcado:
+        if (self.tentativas_normalizar < 3 and (self.get_time() - self.ultima_tentativa_norm).seconds >= 60) or self.normalizar_forcado:
             self.ultima_tentativa_norm = self.get_time()
             self.tentativas_normalizar += 1
             logger.info(f"[USN] Normalizando... (Tentativa {self.tentativas_normalizar}/3)")
             self.normalizar_forcado = self.clp_emergencia = self.bd_emergencia = False
             self.resetar_emergencia()
+            sleep(1)
+            self.bay.fechar_dj_linha()
+            sleep(1)
+            self.se.fechar_dj_linha()
             self.bd.update_remove_emergencia()
             return True
 
         else:
-            logger.debug("[USN] A normalização foi executada menos de 5 minutos atrás.")
+            logger.debug("[USN] A normalização foi executada menos de 1 minutos atrás.")
+            sleep(1)
             return False
 
     def verificar_bay_se(self) -> "int":
@@ -220,12 +226,11 @@ class Usina:
         senão, sinaliza que está tudo correto para a máquina de estados do MOA.
         """
 
-        logger.debug("")
-        logger.debug(f"[BAY] Tensão BAY:                   VAB -> \"{self.bay.tensao_vab.valor:2.1f} V\" | VBC -> \"{self.bay.tensao_vbc.valor:2.1f} V\" | VCA -> \"{self.bay.tensao_vca.valor:2.1f} V\"")
-        logger.debug(f"[SE]  Tensão Subestação:            VAB -> \"{self.se.tensao_vab.valor:2.1f} V\" | VBC -> \"{self.se.tensao_vbc.valor:2.1f} V\" | VCA -> \"{self.se.tensao_vca.valor:2.1f} V\"")
-        logger.debug("")
-
         if not self.bay.verificar_tensao_trifasica():
+            logger.debug("")
+            logger.debug(f"[BAY] Tensão BAY:                   VAB -> \"{self.bay.tensao_vab.valor:2.1f} V\" | VBC -> \"{self.bay.tensao_vbc.valor:2.1f} V\" | VCA -> \"{self.bay.tensao_vca.valor:2.1f} V\"")
+            logger.debug(f"[SE]  Tensão Subestação:            VAB -> \"{self.se.tensao_vab.valor:2.1f} V\" | VBC -> \"{self.se.tensao_vbc.valor:2.1f} V\" | VCA -> \"{self.se.tensao_vca.valor:2.1f} V\"")
+            logger.debug("")
             return DJS_FALTA_TENSAO
 
         elif not self.bay.fechar_dj_linha() or not self.se.fechar_dj_linha():
