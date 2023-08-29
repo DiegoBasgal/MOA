@@ -33,6 +33,7 @@ class Se:
             self.fechar_dj()
 
         if LEI.ler_bit(MB['SE']['REGISTROS_CMD_RST']):
+            self.dict['SE']['condic'] = False
             ESC.escrever_bit(MB['SE']['REGISTROS_CMD_RST'], valor=0)
             self.resetar_dj()
 
@@ -64,6 +65,18 @@ class Se:
             self.dict['SE']['tensao_vca'] = np.random.normal(self.dict['BAY']['tensao_vca'], 10 * self.escala_ruido)
 
         self.dict['SE']['potencia_se'] =  max(0, np.random.normal(((self.dict['UG1']['potencia'] + self.dict['UG2']['potencia']) * 0.995), 0.001 * self.escala_ruido))
+
+
+    # Lógica Exclusiva para acionamento de condicionadores TESTE:
+
+        if self.dict['SE']['condic'] and not self.dict['BRD']['se_condic']:
+            self.dict['BRD']['se_condic'] = True
+            self.tripar_dj()
+            ESC.escrever_bit(MB['SE']['CONDIC'], valor=1)
+
+        elif not self.dict['SE']['condic'] and self.dict['BRD']['se_condic']:
+            self.dict['BRD']['se_condic'] = False
+            ESC.escrever_bit(MB['SE']['CONDIC'], valor=0)
 
 
     def verificar_tensao_dj(self) -> "None":
@@ -160,14 +173,6 @@ class Se:
             ESC.escrever_bit(MB['SE']['DJL_SELETORA_REMOTO'], 1)
             ESC.escrever_bit(MB['SE']['TE_RELE_BUCHHOLZ_ALM'], 0)
             self.aux = True
-
-        if self.dict['SE']['dj_trip'] and not self.dict['BRD']['djse_trip']:
-            self.dict['BRD']['djse_trip'] = True
-            ESC.escrever_bit(MB['SE']['RELE_LINHA_ATUADO'], valor=1)
-
-        elif not self.dict['SE']['dj_trip'] and self.dict['BRD']['djse_trip']:
-            self.dict['BRD']['djse_trip'] = False
-            ESC.escrever_bit(MB['SE']['RELE_LINHA_ATUADO'], valor=0)
 
         if self.dict['SE']['dj_mola_carregada'] and not self.dict['BRD']['djse_mola']:
             self.dict['BRD']['djse_mola'] = True

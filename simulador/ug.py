@@ -34,6 +34,9 @@ class Unidade:
             self.dict[f'UG{self.id}'][f'setpoint'] = self.dict[f'UG{self.id}'][f'debug_setpoint']
             self.dict[f'UG{self.id}'][f'debug_setpoint'] = -1
 
+        if LEI.ler_bit(MB[f'UG{self.id}']['PASSOS_CMD_RST_FLH']):
+            self.dict[f'UG{self.id}']['condic'] = False
+
         if LEI.ler_bit(MB[f'UG{self.id}']['PARTIDA_CMD_SINCRONISMO']) or self.dict[f'UG{self.id}'][f'debug_partir']:
             ESC.escrever_bit(MB[f'UG{self.id}']['PARTIDA_CMD_SINCRONISMO'], valor=0)
             self.dict[f'UG{self.id}'][f'debug_partir'] = False
@@ -70,10 +73,25 @@ class Unidade:
         self.controlar_horimetro()
 
 
+    # Lógica Exclusiva para acionamento de condicionadores TESTE:
+
+        if self.dict[f'UG{self.id}']['condic'] and not self.dict['BRD'][f'ug{self.id}_condic']:
+            self.dict['BRD'][f'ug{self.id}_condic'] = True
+            self.tripar()
+            ESC.escrever_bit(MB[f'UG{self.id}']['CONDIC'], valor=1)
+
+        elif not self.dict[f'UG{self.id}']['condic'] and self.dict['BRD'][f'ug{self.id}_condic']:
+            self.dict['BRD'][f'ug{self.id}_condic'] = False
+            ESC.escrever_bit(MB[f'UG{self.id}']['CONDIC'], valor=0)
+
+
+
     def partir(self) -> 'None':
-        if self.dict[f'CP{self.id}'][f'aberta']:
+        if self.dict[f'CP{self.id}'][f'aberta'] and not self.dict[f'UG{self.id}']['condic']:
             self.dict[f'UG{self.id}'][f'etapa_alvo'] = self.etapa_alvo = ETAPA_US
             print(f'[UG{self.id}] Comando de Partida')
+        elif self.dict[f'UG{self.id}']['condic']:
+            print(f'[UG{self.id}] Máquina sem condição de partida. Normalizar antes de partir a Unidade.')
         else:
             print(f'[UG{self.id}-CP{self.id}] Para partir a Unidade é necessário Abrir a Comporta primeiro!')
 
@@ -82,6 +100,12 @@ class Unidade:
         if ETAPA_UP not in (self.etapa_alvo, self.etapa_atual):
             self.dict[f'UG{self.id}'][f'etapa_alvo'] = self.etapa_alvo = ETAPA_UP
             print(f'[UG{self.id}] Comando de Parada')
+
+
+    def tripar(self) -> 'None':
+        self.potencia = 0
+        self.dict[f'UG{self.id}'][f"etapa_alvo"] = self.etapa_alvo = 0
+        self.dict[f'UG{self.id}'][f"etapa_atual"] = self.etapa_atual = 0
 
 
     def calcular_q_ug(self, potencia_kW) -> 'float':
@@ -145,9 +169,19 @@ class Unidade:
             self.dict[f'CP{self.id}'][f'aguardando'] = False
             self.dict[f'CP{self.id}'][f'operando'] = True
 
-            while self.dict[f'CP{self.id}'][f'progresso'] <= 100:
+            ta = time() + 89
+            t1 = time()
+            t2 = time()
+
+            while time() < ta:
                 self.dict['TDA'][f'uh_disponivel'] = False
-                self.dict[f'CP{self.id}'][f'progresso'] += 0.0001
+                if t2 - t1 >= 1:
+                    t1 = t2
+                    t2 = time()
+                    self.dict[f'CP{self.id}'][f'progresso'] += (1/87) * 70
+                    print(self.dict[f'CP{self.id}'][f'progresso'])
+                else:
+                    t2 = time()
 
             self.dict['TDA'][f'uh_disponivel'] = True
             self.dict[f'CP{self.id}'][f'operando'] = False
@@ -168,9 +202,19 @@ class Unidade:
         elif self.dict[f'CP{self.id}'][f'fechada'] and not self.dict[f'CP{self.id}'][f'aberta']:
             self.dict[f'CP{self.id}'][f'operando'] = True
 
-            while self.dict[f'CP{self.id}'][f'progresso'] <= 30:
+            tc = time() + 107
+            t1 = time()
+            t2 = time()
+
+            while time() < tc:
                 self.dict['TDA'][f'uh_disponivel'] = False
-                self.dict[f'CP{self.id}'][f'progresso'] += 0.00001
+                if t2 - t1 >= 1:
+                    t1 = t2
+                    t2 = time()
+                    self.dict[f'CP{self.id}'][f'progresso'] += (1 / 106) * 30
+                    print(self.dict[f'CP{self.id}'][f'progresso'])
+                else:
+                    t2 = time()
 
             self.dict['TDA'][f'uh_disponivel'] = True
             self.dict[f'CP{self.id}'][f'operando'] = False

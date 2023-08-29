@@ -10,6 +10,10 @@ compartilhado = {
     "BRD": {
         # GERAL
         "condic" : False,
+        "se_condic" : False,
+        "bay_condic" : False,
+        "ug1_condic" : False,
+        "ug2_condic" : False,
 
         # TDA
         "lg_operando": False,
@@ -23,6 +27,7 @@ compartilhado = {
         "djse_fechado": False,
 
         # BAY
+        "djbay_trip": False,
         "djbay_secc": False,
         "djbay_mola": False,
         "djbay_fechado": False,
@@ -53,6 +58,8 @@ compartilhado = {
     },
 
     "TDA": {
+        "condic": False,
+
         "q_liquida": 0,
         "q_alfuente": 0,
         "q_sanitaria": 0,
@@ -67,6 +74,8 @@ compartilhado = {
     },
 
     "SE": {
+        "condic": False,
+
         "potencia_se": 0,
 
         "tensao_vab": 22800,
@@ -88,6 +97,8 @@ compartilhado = {
     },
 
     "BAY": {
+        "condic": False,
+
         "potencia_mp": 0,
         "potencia_mr": 0,
 
@@ -147,6 +158,8 @@ compartilhado = {
     },
 
     "UG1": {
+        "condic": False,
+
         "q": 1,
         "potencia": 0,
         "setpoint": 0,
@@ -172,6 +185,8 @@ compartilhado = {
     },
 
     "UG2": {
+        "condic": False,
+
         "q": 1,
         "potencia": 0,
         "setpoint": 0,

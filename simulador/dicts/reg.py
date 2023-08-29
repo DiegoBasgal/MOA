@@ -126,3 +126,10 @@ MB = {
         "PARADA_CMD_DESABILITA_UHLM":                               [148 + 20000, 15],
     },
 }
+
+
+
+MB["SE"]["CONDIC"] = [999, 4]
+MB["UG1"]["CONDIC"] = [999 + 10000, 4]
+MB["UG2"]["CONDIC"] = [999 + 20000, 4]
+MB["BAY"]["CONDIC"] = [999 + 30000, 4]

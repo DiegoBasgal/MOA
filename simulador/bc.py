@@ -32,6 +32,7 @@ class Bay:
             self.fechar_dj()
 
         if LEI.ler_bit(MB['BAY']['RELE_RST_TRP']):
+            self.dict['BAY']['condic'] = False
             ESC.escrever_bit(MB['BAY']['RELE_RST_TRP'], valor=0)
             self.resetar_dj()
 
@@ -52,7 +53,6 @@ class Bay:
             self.dict['BAY']['debug_dj_fechar'] = False
             self.tripar_dj()
 
-
         if self.dict['BAY']['dj_fechado'] and self.dict['SE']['dj_fechado']:
             self.dict['BAY']['tensao_vs'] = self.dict['BAY']['tensao_vab']
 
@@ -65,6 +65,18 @@ class Bay:
         self.dict['BAY']['tensao_vca'] = np.random.normal(self.dict['BAY']['tensao_vca'], 10 * self.escala_ruido)
         self.dict['BAY']['potencia_mp'] = max(0, (np.random.normal(self.dict['SE']['potencia_se'] * 0.98, 10 * self.escala_ruido) - 20))
         self.dict['BAY']['potencia_mr'] = max(0, (np.random.normal(self.dict['SE']['potencia_se'] * 0.98, 10 * self.escala_ruido) - 20))
+
+
+        # Lógica Exclusiva para acionamento de condicionadores TESTE:
+
+        if self.dict['BAY']['condic'] and not self.dict['BRD']['bay_condic']:
+            self.dict['BRD']['bay_condic'] = True
+            self.tripar_dj()
+            ESC.escrever_bit(MB['BAY']['CONDIC'], valor=1)
+
+        elif not self.dict['BAY']['condic'] and self.dict['BRD']['bay_condic']:
+            self.dict['BRD']['bay_condic'] = False
+            ESC.escrever_bit(MB['BAY']['CONDIC'], valor=0)
 
 
     def verificar_tensao_dj(self) -> "None":

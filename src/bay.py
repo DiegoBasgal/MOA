@@ -293,8 +293,14 @@ class Bay:
         cls.barra_morta = LeituraModbusBit(cls.rele["BAY"], REG_RELE["BAY"]["ID_BARRA_MORTA"], descricao="[BAY][RELE] Identificação Barra Morta")
         cls.mola_carregada = LeituraModbusBit(cls.rele["BAY"], REG_RELE["BAY"]["DJL_MOLA_CARREGADA"], descricao="[BAY][RELE] Disjuntor Mola Carregada")
 
-        return
+
+        # TODO -> remover após testes do simulador
+        cls.aux_sim = LeituraModbusBit(cls.rele["BAY"], REG_RELE["BAY"]["CONDIC"], descricao="[BAY][SIM] Trip Teste Simulador")
+        cls.condicionadores_essenciais.append(CondicionadorBase(cls.aux_sim, CONDIC_NORMALIZAR))
+
+
         ## CONDICIONADORES RELÉS
+        return
         cls.secc_aberta = LeituraModbusBit(cls.rele["BAY"], REG_RELE["BAY"]["SECC_FECHADA"], invertido=True, descricao="[BAY][RELE] Seccionadora Aberta")
         cls.condicionadores_essenciais.append(CondicionadorBase(cls.secc_aberta, CONDIC_INDISPONIBILIZAR))
 

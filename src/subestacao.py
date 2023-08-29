@@ -294,6 +294,10 @@ class Subestacao:
         cls.l_djL_remoto = LeituraModbusBit(cls.clp["SA"], REG_CLP["SE"]["DJL_SELETORA_REMOTO"], descricao="[SE]  Disjuntor Linha Seletora Modo Remoto")
         cls.l_alarme_gas_te = LeituraModbusBit(cls.clp["SA"], REG_CLP["SE"]["TE_RELE_BUCHHOLZ_ALM"], descricao="[SE]  Transformador Elevador Alarme Relé Buchholz")
 
+        # TODO -> remover após testes do simulador
+        cls.aux_sim = LeituraModbusBit(cls.clp["SA"], REG_CLP["SE"]["CONDIC"], descricao="[SE][SIM] Trip Teste Simulador")
+        cls.condicionadores_essenciais.append(c.CondicionadorBase(cls.aux_sim, CONDIC_NORMALIZAR))
+
 
         ### CONDICIONADORES ESSENCIAIS
         ## NORMALIZAR

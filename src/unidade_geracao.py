@@ -1208,6 +1208,12 @@ class UnidadeGeracao:
         self.condic_pressao_turbina_ug = c.CondicionadorExponencialReverso(self.l_pressao_turbina, CONDIC_INDISPONIBILIZAR, 1.6, 1.3)
         self.condicionadores_atenuadores.append(self.condic_pressao_turbina_ug)
 
+
+        # TODO -> remover após testes do simulador
+        self.aux_sim = LeituraModbusBit(self.clp[f"UG{self.id}"], REG_CLP[f"UG{self.id}"]["CONDIC"], descricao=f"[UG{self.id}][SIM] Trip Teste Simulador")
+        self.condicionadores_essenciais.append(c.CondicionadorBase(self.aux_sim, CONDIC_NORMALIZAR))
+
+
         return
         # CONDICIONADORES ESSENCIAIS - OUTROS
         # Botões

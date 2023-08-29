@@ -17,7 +17,7 @@ class Controlador:
             user="moa",
             password="&264H3$M@&z$",
             pool_name="controlador_sim",
-            database="django_db",
+            database="debug",
             pool_size=10,
             pool_reset_session=True,
         )
@@ -58,6 +58,18 @@ class Controlador:
                 if self.tempo_afluente[contador_afluente + 1][1] <= self.dict["GLB"]["tempo_simul"]:
                     contador_afluente += 1
 
+                if self.tempo_afluente[contador_afluente][2] == 9910:
+                    self.dict['UG1']['condic'] = True
+
+                if self.tempo_afluente[contador_afluente][2] == 9920:
+                    self.dict['UG2']['condic'] = True
+
+                if self.tempo_afluente[contador_afluente][2] == 9930:
+                    self.dict['BAY']['condic'] = True
+
+                if self.tempo_afluente[contador_afluente][2] == 9940:
+                    self.dict['SE']['condic'] = True
+
                 if self.tempo_afluente[contador_afluente][2] == -1:
                     self.dict["GLB"]["stop_sim"] = self.dict["GLB"]["stop_gui"] = True
                     exit()
@@ -69,8 +81,8 @@ class Controlador:
                     self.cursor.execute(
                         f"INSERT INTO debug.simul_data VALUES( \
                         {self.get_time().timestamp()}, \
-                        {self.dict['q_alfuente']}, \
-                        {self.dict['nv_montante']}, \
+                        {self.dict['TDA']['q_alfuente']}, \
+                        {self.dict['TDA']['nv_montante']}, \
                         {self.dict['UG1']['potencia']}, \
                         {self.dict['UG1']['setpoint']}, \
                         {self.dict['UG2']['potencia']}, \
