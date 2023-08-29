@@ -59,9 +59,9 @@ class Se:
             self.dict['SE']['tensao_vca'] = 0
 
         else:
-            self.dict['SE']['tensao_vab'] = np.random.normal(self.dict['BAY']['tensao_vab'], 50 * self.escala_ruido)
-            self.dict['SE']['tensao_vbc'] = np.random.normal(self.dict['BAY']['tensao_vbc'], 50 * self.escala_ruido)
-            self.dict['SE']['tensao_vca'] = np.random.normal(self.dict['BAY']['tensao_vca'], 50 * self.escala_ruido)
+            self.dict['SE']['tensao_vab'] = np.random.normal(self.dict['BAY']['tensao_vab'], 10 * self.escala_ruido)
+            self.dict['SE']['tensao_vbc'] = np.random.normal(self.dict['BAY']['tensao_vbc'], 10 * self.escala_ruido)
+            self.dict['SE']['tensao_vca'] = np.random.normal(self.dict['BAY']['tensao_vca'], 10 * self.escala_ruido)
 
         self.dict['SE']['potencia_se'] =  max(0, np.random.normal(((self.dict['UG1']['potencia'] + self.dict['UG2']['potencia']) * 0.995), 0.001 * self.escala_ruido))
 
@@ -116,7 +116,7 @@ class Se:
             self.dict['SE']['dj_falha'] = True
             self.tripar_dj(descr='Picou.')
 
-        elif self.dict['BAY']['tensao_vab'] != 0:
+        elif self.dict['BAY']['tensao_vs'] != 0:
             print("[SE] Não há como fechar o Disjuntor da Subestação, pois há uma leitura de tensão na Linha do BAY")
 
         elif self.dict['SE']['dj_aberto']:

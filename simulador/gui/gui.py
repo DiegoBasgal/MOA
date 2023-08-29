@@ -23,9 +23,9 @@ class Window(QMainWindow, Ui_Form):
 
     def sincro(self):
         try:
-            segundos = floor(self.dict['GLB']['tempo_real'] % 60)
-            minutos = floor((self.dict['GLB']['tempo_real'] / 60) % 60)
-            horas = floor(self.dict['GLB']['tempo_real'] / 3600)
+            segundos = floor(self.dict['GLB']['tempo_simul'] % 60)
+            minutos = floor((self.dict['GLB']['tempo_simul'] / 60) % 60)
+            horas = floor(self.dict['GLB']['tempo_simul'] / 3600)
             self.label_tempo.setText(f"{horas:02d}:{minutos:02d}:{segundos:02d}")
 
             # GERAL
