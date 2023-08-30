@@ -55,7 +55,7 @@ class CondicionadorBase:
     def ativo(self) -> "bool":
         # PROPRIEDADE -> Retrona se o Condicionaor está Ativo.
 
-        if self.__id_unidade or self.__etapas:
+        if self.__id_unidade and self.__etapas:
             ug: "UnidadeGeracao" = [ug if ug.id == self.__id_unidade else None for ug in self.ugs]
             return False if ug is not None and ug.etapa_atual in self.__etapas and self.leitura == 0 else False
         else:

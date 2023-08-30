@@ -163,6 +163,8 @@ class Usina:
         logger.debug("[USN] Subestação resetada.") if self.se.resetar_emergencia() else logger.info("[USN] Reset de emergência da subestação falhou.")
         logger.debug("[USN] Tomada da Água resetada.") if self.tda.resetar_emergencia else logger.info("[USN] Reset de emergência da Tomada da Água falhou.")
         logger.debug("[USN] Serviço Auxiliar resetado.") if self.sa.resetar_emergencia() else logger.info("[USN] Reset de emergência do serviço auxiliar falhou.")
+        logger.debug("")
+
 
     def acionar_emergencia(self) -> "bool":
         """
@@ -523,7 +525,7 @@ class Usina:
         """
         Função para verificar leituras/condições específicas e determinar a Prioridade das Unidades.
         """
-        ls = [ug for ug in self.ugs if ug.disponivel and not ug.etapa == UG_PARANDO]
+        ls = [ug for ug in self.ugs if ug.disponivel]
 
         if self.modo_prioridade_ugs == MODO_ESCOLHA_MANUAL:
             return sorted(ls, key=lambda y: (-1 * y.leitura_potencia, -1 * y.setpoint, y.prioridade))
