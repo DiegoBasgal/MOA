@@ -32,6 +32,10 @@ class Se:
             ESC.escrever_bit(MB['SE']['DJL_CMD_FECHAR'], valor=0)
             self.fechar_dj()
 
+        if LEI.ler_bit(MB['SE']['DJL_CMD_ABRIR']):
+            ESC.escrever_bit(MB['SE']['DJL_CMD_ABRIR'], valor=0)
+            self.abrir_dj()
+
         if LEI.ler_bit(MB['SE']['REGISTROS_CMD_RST']):
             self.dict['SE']['condic'] = False
             ESC.escrever_bit(MB['SE']['REGISTROS_CMD_RST'], valor=0)

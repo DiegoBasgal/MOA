@@ -13,33 +13,38 @@ class Controlador:
         self.dict = compartilhado
 
         self.cnx = mariadb.ConnectionPool(
-            host="localhost",
-            user="moa",
-            password="&264H3$M@&z$",
-            pool_name="controlador_sim",
-            database="debug",
+            host='172.21.15.108',
+            user='moa',
+            password='&264H3$M@&z$',
+            database='django_db',
+            pool_name='sim_control',
             pool_size=10,
-            pool_reset_session=True,
+            pool_validation_interval=250,
         )
 
         self.conn = self.cnx.get_connection()
         self.cursor = self.conn.cursor()
 
+        self.b_se = False
+        self.b_bay = False
+        self.b_ug1 = False
+        self.b_ug2 = False
+
         self.tempo_afluente = []
 
-        with open("C:/Users/diego.garcia/Desktop/operacao-autonoma/simulador/entrada_afluente.csv", "r") as fp:
+        with open('C:/Users/diego.garcia/Desktop/operacao-autonoma/simulador/dicts/entrada_afluente.csv', 'r') as fp:
             rawlines = fp.readlines()
 
         i = 0
         for line in rawlines:
-            line = line.split(",")
-            self.tempo_afluente.append([i, float(line[0]) * 60, float(line[1])])
+            s = line.split(',')
+            self.tempo_afluente.append([i, float(s[0]) * 60, float(s[1])])
             i += 1
 
 
     @staticmethod
-    def get_time() -> "datetime":
-        return datetime.now(pytz.timezone("Brazil/East")).replace(tzinfo=None)
+    def get_time() -> 'datetime':
+        return datetime.now(pytz.timezone('Brazil/East')).replace(tzinfo=None)
 
 
     def run(self):
@@ -47,46 +52,75 @@ class Controlador:
         ultimo_log = -1
         contador_afluente = 0
 
-        while not self.dict["GLB"]["stop_sim"]:
+        while not self.dict['GLB']['stop_sim']:
 
-            self.dict["GLB"]["stop_sim"] = self.dict["GLB"]["stop_gui"]
+            self.dict['GLB']['stop_sim'] = self.dict['GLB']['stop_gui']
 
             try:
                 t_inicio_passo = self.get_time()
                 lock.acquire()
 
-                if self.tempo_afluente[contador_afluente + 1][1] <= self.dict["GLB"]["tempo_simul"]:
+                if self.tempo_afluente[contador_afluente + 1][1] <= self.dict['GLB']['tempo_simul']:
                     contador_afluente += 1
+                    print(contador_afluente)
 
-                if self.tempo_afluente[contador_afluente][2] == 9910:
-                    self.dict['UG1']['condic'] = True
-
-                if self.tempo_afluente[contador_afluente][2] == 9920:
-                    self.dict['UG2']['condic'] = True
-
-                if self.tempo_afluente[contador_afluente][2] == 9930:
-                    self.dict['BAY']['condic'] = True
-
-                if self.tempo_afluente[contador_afluente][2] == 9940:
-                    self.dict['SE']['condic'] = True
 
                 if self.tempo_afluente[contador_afluente][2] == -1:
-                    self.dict["GLB"]["stop_sim"] = self.dict["GLB"]["stop_gui"] = True
+                    self.dict['GLB']['stop_sim'] = self.dict['GLB']['stop_gui'] = True
                     exit()
+
+                if self.tempo_afluente[contador_afluente][2] in (9910, 9920, 9930, 9940):
+                    pass
+
+                else:
+                    self.dict['TDA']['q_alfuente'] = self.tempo_afluente[contador_afluente][2]
+
+
+                if self.tempo_afluente[contador_afluente][2] == 9910 and not self.b_ug1:
+                    print("[CONTROLE] TRIP UG1")
+                    self.b_ug1 = True
+                    self.dict['UG1']['condic'] = True
+
+                elif self.tempo_afluente[contador_afluente][2] != 9910 and self.b_ug1:
+                    self.b_ug1 = False
+
+                if self.tempo_afluente[contador_afluente][2] == 9920 and not self.b_ug2:
+                    print("[CONTROLE] TRIP UG2")
+                    self.b_ug2 = True
+                    self.dict['UG2']['condic'] = True
+
+                elif self.tempo_afluente[contador_afluente][2] != 9920 and self.b_ug2:
+                    self.b_ug2 = False
+
+                if self.tempo_afluente[contador_afluente][2] == 9930 and not self.b_bay:
+                    print("[CONTROLE] TRIP BAY")
+                    self.b_bay = True
+                    self.dict['BAY']['condic'] = True
+
+                elif self.tempo_afluente[contador_afluente][2] != 9930 and self.b_bay:
+                    self.b_bay = False
+
+                if self.tempo_afluente[contador_afluente][2] == 9940 and not self.b_se:
+                    print("[CONTROLE] TRIP SE")
+                    self.b_se = True
+                    self.dict['SE']['condic'] = True
+
+                elif self.tempo_afluente[contador_afluente][2] != 9940 and self.b_se:
+                    self.b_se = False
 
                 lock.release()
 
-                if not int(self.dict["GLB"]["tempo_simul"] / 60) == int(ultimo_log / 60):
-                    ultimo_log = self.dict["GLB"]["tempo_simul"]
+                if not int(self.dict['GLB']['tempo_simul'] / 60) == int(ultimo_log / 60):
+                    ultimo_log = self.dict['GLB']['tempo_simul']
                     self.cursor.execute(
-                        f"INSERT INTO debug.simul_data VALUES( \
+                        f'INSERT INTO debug.simul_data VALUES( \
                         {self.get_time().timestamp()}, \
-                        {self.dict['TDA']['q_alfuente']}, \
-                        {self.dict['TDA']['nv_montante']}, \
-                        {self.dict['UG1']['potencia']}, \
-                        {self.dict['UG1']['setpoint']}, \
-                        {self.dict['UG2']['potencia']}, \
-                        {self.dict['UG2']['setpoint']});"
+                        {self.dict["TDA"]["q_alfuente"]}, \
+                        {self.dict["TDA"]["nv_montante"]}, \
+                        {self.dict["UG1"]["potencia"]}, \
+                        {self.dict["UG1"]["setpoint"]}, \
+                        {self.dict["UG2"]["potencia"]}, \
+                        {self.dict["UG2"]["setpoint"]});'
                     )
                     self.conn.commit()
 
@@ -96,5 +130,5 @@ class Controlador:
                     sleep(tempo_restante)
 
             except KeyboardInterrupt:
-                self.dict["GLB"]["stop_gui"] = True
+                self.dict['GLB']['stop_gui'] = True
                 continue

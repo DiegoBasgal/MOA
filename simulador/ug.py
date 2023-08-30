@@ -35,7 +35,9 @@ class Unidade:
             self.dict[f'UG{self.id}'][f'debug_setpoint'] = -1
 
         if LEI.ler_bit(MB[f'UG{self.id}']['PASSOS_CMD_RST_FLH']):
+            ESC.escrever_bit(MB[f'UG{self.id}']['PASSOS_CMD_RST_FLH'], valor=0)
             self.dict[f'UG{self.id}']['condic'] = False
+            print(f"[UG{self.id}] Entrei no reset de passos ")
 
         if LEI.ler_bit(MB[f'UG{self.id}']['PARTIDA_CMD_SINCRONISMO']) or self.dict[f'UG{self.id}'][f'debug_partir']:
             ESC.escrever_bit(MB[f'UG{self.id}']['PARTIDA_CMD_SINCRONISMO'], valor=0)
@@ -67,23 +69,20 @@ class Unidade:
 
         self.dict[f'UG{self.id}'][f'q'] = self.calcular_q_ug(self.potencia)
 
+        # Lógica Exclusiva para acionamento de condicionadores TESTE:
+        if self.dict[f'UG{self.id}']['condic'] and not self.dict['BRD'][f'ug{self.id}_condic']:
+            self.dict['BRD'][f'ug{self.id}_condic'] = True
+            self.tripar()
+            ESC.escrever_bit(MB[f'UG1']['CONDIC'], valor=1)
+
+        elif not self.dict[f'UG{self.id}']['condic'] and self.dict['BRD'][f'ug{self.id}_condic']:
+            self.dict['BRD'][f'ug{self.id}_condic'] = False
+            ESC.escrever_bit(MB[f'UG1']['CONDIC'], valor=0)
+
         self.controlar_etapas()
         self.controlar_reservatorio()
         self.controlar_limites()
         self.controlar_horimetro()
-
-
-    # Lógica Exclusiva para acionamento de condicionadores TESTE:
-
-        if self.dict[f'UG{self.id}']['condic'] and not self.dict['BRD'][f'ug{self.id}_condic']:
-            self.dict['BRD'][f'ug{self.id}_condic'] = True
-            self.tripar()
-            ESC.escrever_bit(MB[f'UG{self.id}']['CONDIC'], valor=1)
-
-        elif not self.dict[f'UG{self.id}']['condic'] and self.dict['BRD'][f'ug{self.id}_condic']:
-            self.dict['BRD'][f'ug{self.id}_condic'] = False
-            ESC.escrever_bit(MB[f'UG{self.id}']['CONDIC'], valor=0)
-
 
 
     def partir(self) -> 'None':
@@ -103,9 +102,10 @@ class Unidade:
 
 
     def tripar(self) -> 'None':
+        print(f'[UG{self.id}] TRIP!')
         self.potencia = 0
-        self.dict[f'UG{self.id}'][f"etapa_alvo"] = self.etapa_alvo = 0
-        self.dict[f'UG{self.id}'][f"etapa_atual"] = self.etapa_atual = 0
+        self.etapa_alvo = 0
+        self.dict[f'UG{self.id}'][f"etapa_alvo"] = 0
 
 
     def calcular_q_ug(self, potencia_kW) -> 'float':
@@ -125,18 +125,18 @@ class Unidade:
 
 
     def controlar_limites(self) -> 'None':
-        self.dict[f'UG{self.id}'][f'temp_fase_r'] = 110
-        self.dict[f'UG{self.id}'][f'temp_fase_s'] = 110
-        self.dict[f'UG{self.id}'][f'temp_fase_t'] = 110
-        self.dict[f'UG{self.id}'][f'temp_mancal_guia'] = 110
-        self.dict[f'UG{self.id}'][f'temp_mancal_casq_comb'] = 110
-        self.dict[f'UG{self.id}'][f'temp_nucleo_gerador_1'] = 110
-        self.dict[f'UG{self.id}'][f'temp_patins_mancal_comb_1'] = 110
-        self.dict[f'UG{self.id}'][f'temp_patins_mancal_comb_2'] = 110
-        self.dict[f'UG{self.id}'][f'temp_mancal_guia_interno_1'] = 110
-        self.dict[f'UG{self.id}'][f'temp_mancal_guia_interno_2'] = 110
-        self.dict[f'UG{self.id}'][f'temp_mancal_contra_esc_comb'] = 110
-        self.dict[f'UG{self.id}'][f'temp_mancal_contra_esc_comb'] = 110
+        self.dict[f'UG{self.id}'][f'temp_fase_r'] = 60
+        self.dict[f'UG{self.id}'][f'temp_fase_s'] = 60
+        self.dict[f'UG{self.id}'][f'temp_fase_t'] = 60
+        self.dict[f'UG{self.id}'][f'temp_mancal_guia'] = 60
+        self.dict[f'UG{self.id}'][f'temp_mancal_casq_comb'] = 60
+        self.dict[f'UG{self.id}'][f'temp_nucleo_gerador_1'] = 60
+        self.dict[f'UG{self.id}'][f'temp_patins_mancal_comb_1'] = 60
+        self.dict[f'UG{self.id}'][f'temp_patins_mancal_comb_2'] = 60
+        self.dict[f'UG{self.id}'][f'temp_mancal_guia_interno_1'] = 60
+        self.dict[f'UG{self.id}'][f'temp_mancal_guia_interno_2'] = 60
+        self.dict[f'UG{self.id}'][f'temp_mancal_contra_esc_comb'] = 60
+        self.dict[f'UG{self.id}'][f'temp_mancal_contra_esc_comb'] = 60
         self.dict[f'UG{self.id}'][f'pressao_turbina'] = np.random.normal(1.6, 1 * self.escala_ruido)
 
 
@@ -169,7 +169,7 @@ class Unidade:
             self.dict[f'CP{self.id}'][f'aguardando'] = False
             self.dict[f'CP{self.id}'][f'operando'] = True
 
-            ta = time() + 89
+            ta = time() + 87
             t1 = time()
             t2 = time()
 
@@ -179,9 +179,11 @@ class Unidade:
                     t1 = t2
                     t2 = time()
                     self.dict[f'CP{self.id}'][f'progresso'] += (1/87) * 70
-                    print(self.dict[f'CP{self.id}'][f'progresso'])
                 else:
                     t2 = time()
+
+            if self.dict[f'CP{self.id}'][f'progresso'] < 100:
+                self.dict[f'CP{self.id}'][f'progresso'] = 100
 
             self.dict['TDA'][f'uh_disponivel'] = True
             self.dict[f'CP{self.id}'][f'operando'] = False
@@ -202,7 +204,7 @@ class Unidade:
         elif self.dict[f'CP{self.id}'][f'fechada'] and not self.dict[f'CP{self.id}'][f'aberta']:
             self.dict[f'CP{self.id}'][f'operando'] = True
 
-            tc = time() + 107
+            tc = time() + 106
             t1 = time()
             t2 = time()
 
@@ -212,9 +214,11 @@ class Unidade:
                     t1 = t2
                     t2 = time()
                     self.dict[f'CP{self.id}'][f'progresso'] += (1 / 106) * 30
-                    print(self.dict[f'CP{self.id}'][f'progresso'])
                 else:
                     t2 = time()
+
+            if self.dict[f'CP{self.id}'][f'progresso'] < 30:
+                self.dict[f'CP{self.id}'][f'progresso'] = 30
 
             self.dict['TDA'][f'uh_disponivel'] = True
             self.dict[f'CP{self.id}'][f'operando'] = False

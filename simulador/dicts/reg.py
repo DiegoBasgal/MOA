@@ -9,6 +9,7 @@ MB = {
         "LT_VBC":                                                   52,
         "LT_VCA":                                                   53,
 
+        "DJL_CMD_ABRIR":                                            [131, 3],
         "DJL_CMD_FECHAR":                                           [131, 4],
         "REGISTROS_CMD_RST":                                        [131, 5],
 
@@ -130,6 +131,6 @@ MB = {
 
 
 MB["SE"]["CONDIC"] = [999, 4]
-MB["UG1"]["CONDIC"] = [999 + 10000, 4]
-MB["UG2"]["CONDIC"] = [999 + 20000, 4]
-MB["BAY"]["CONDIC"] = [999 + 30000, 4]
+MB["UG1"]["CONDIC"] = [10995, 4]
+MB["UG2"]["CONDIC"] = [20995, 4]
+MB["BAY"]["CONDIC"] = [30999, 4]
