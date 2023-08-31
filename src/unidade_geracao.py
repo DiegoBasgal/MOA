@@ -121,6 +121,7 @@ class UnidadeDeGeracao:
         # ATRIBUIÇÃO DE VARIÁVEIS PÚBLICAS
 
         self.tempo_normalizar: "int" = 0
+        self.tentativas_norm_etapas: "int" = 0
 
         self.ug_parando: "bool" = False
         self.parar_timer: "bool" = False
@@ -236,6 +237,16 @@ class UnidadeDeGeracao:
                 else:
                     self._ultima_etapa_alvo = self.etapa_alvo
                     return UG_SINCRONIZANDO
+        
+            elif UG_PARADA < self.etapa_atual < UG_SINCRONIZADA \
+                and UG_PARADA < self.etapa_alvo < UG_SINCRONIZADA \
+                and self.etapa_atual == self.etapa_alvo:
+
+                self.tentativas_norm_etapas += 1
+
+                if self.tentativas_norm_etapas > 2:
+                    self.partir()
+
 
         except Exception:
             logger.error(f"[UG{self.id}] Houve um erro no controle de Etapas da Unidade. Mantendo Etapa anterior.")
@@ -445,6 +456,7 @@ class UnidadeDeGeracao:
                 return
 
             elif not self.etapa == UG_SINCRONIZADA:
+                self.tentativas_norm_etapas = 0
                 logger.info(f"[UG{self.id}]          Enviando comando:          \"PARTIDA\"")
                 EMB.escrever_bit(self.clp[f"UG{self.id}"], REG["UG"][f"UG{self.id}_CD_CMD_REARME_FALHAS"], 1, descr=f"UG{self.id}_CD_CMD_REARME_FALHAS")
                 # EMB.escrever_bit(self.clp[f"UG{self.id}"], REG["UG"][f"UG{self.id}_CD_CMD_SINCRONISMO"], valor=1, descr=f"UG{self.id}_CD_CMD_SINCRONISMO")
