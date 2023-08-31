@@ -73,11 +73,11 @@ class Unidade:
         if self.dict[f'UG{self.id}']['condic'] and not self.dict['BRD'][f'ug{self.id}_condic']:
             self.dict['BRD'][f'ug{self.id}_condic'] = True
             self.tripar()
-            ESC.escrever_bit(MB[f'UG1']['CONDIC'], valor=1)
+            ESC.escrever_bit(MB[f'UG{self.id}']['CONDIC'], valor=1)
 
         elif not self.dict[f'UG{self.id}']['condic'] and self.dict['BRD'][f'ug{self.id}_condic']:
             self.dict['BRD'][f'ug{self.id}_condic'] = False
-            ESC.escrever_bit(MB[f'UG1']['CONDIC'], valor=0)
+            ESC.escrever_bit(MB[f'UG{self.id}']['CONDIC'], valor=0)
 
         self.controlar_etapas()
         self.controlar_reservatorio()
@@ -232,13 +232,19 @@ class Unidade:
     def equalizar_unidade_hidraulica(self) -> 'None':
         print(f'[UG{self.id}-CP{self.id}] Equalizando pressao.')
 
-        delay = time() + 5
-        self.dict['TDA']['uh_disponivel'] = True
-        self.dict[f'CP{self.id}']['equalizada'] = True
+        teq = time() + 105
+        t1 = time()
+        t2 = time()
 
-        while time() < delay:
+        while time() < teq:
             self.dict['TDA']['uh_disponivel'] = False
             self.dict[f'CP{self.id}']['equalizada'] = False
+
+            if t2 - t1 >= 1:
+                t1 = t2
+                t2 = time()
+            else:
+                t2 = time()
 
             if self.dict[f'CP{self.id}']['trip']:
                 print(f'[UG{self.id}-CP{self.id}] Não foi possível Equalizar a Unidade Hidráulica! Fechando Comporta...')
@@ -348,10 +354,10 @@ class Unidade:
                     self.dict[f'UG{self.id}']['potencia'] = self.potencia = min(max(self.potencia, POT_MIN), POT_MAX)
 
                     if self.setpoint > self.potencia:
-                        self.potencia += 20 * self.segundos_por_passo
+                        self.potencia += 10.4167 * self.segundos_por_passo
 
                     else:
-                        self.potencia -= 20 * self.segundos_por_passo
+                        self.potencia -= 10.4167 * self.segundos_por_passo
 
                     self.potencia = np.random.normal(self.potencia, 2 * self.escala_ruido)
 
@@ -364,7 +370,7 @@ class Unidade:
 
             elif self.etapa_alvo < self.etapa_atual:
                 self.tempo_transicao -= self.segundos_por_passo
-                self.potencia -= 20.4167 * self.segundos_por_passo
+                self.potencia -= 10.4167 * self.segundos_por_passo
                 self.dict[f'UG{self.id}']['potencia'] = self.potencia
 
                 if self.tempo_transicao <= -TEMPO_TRANS_US_UPS and self.potencia <= 0:

@@ -27,11 +27,11 @@ class Tda:
 
 
     def calcular_volume_montante(self, volume) -> 'float':
-        return min(max(460, 460 + volume / 10000), 466.37)
+        return min(max(460, 460 + volume / 190000), 466.37)
 
 
     def calcular_montante_volume(self, nv_montante) -> 'float':
-        return 10000 * (min(max(460, nv_montante), 466.37) - 460)
+        return 190000 * (min(max(460, nv_montante), 466.37) - 460)
 
 
     def calcular_q_sanitaria(self) -> 'float':
