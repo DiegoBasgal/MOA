@@ -5,13 +5,13 @@ __description__ = "Este módulo corresponde a implementação das Unidades de Ge
 import pytz
 import logging
 import traceback
+import threading
 
 import src.subestacao as se
 import src.tomada_agua as tda
 import src.funcoes.condicionadores as c
 
 from time import time, sleep
-from threading import Thread
 from datetime import datetime
 
 from src.funcoes.leitura import *
@@ -90,6 +90,7 @@ class UnidadeGeracao:
 
         self.operar_comporta: "bool" = False
         self.temporizar_partida: "bool" = False
+        self.aguardar_pressao_cp: "bool" = False
         self.normalizacao_agendada: "bool" = False
         self.temporizar_normalizacao: "bool" = False
 
@@ -755,7 +756,7 @@ class UnidadeGeracao:
             self.borda_cp_fechar = False
             if not self.temporizar_partida:
                 self.temporizar_partida = True
-                Thread(target=lambda: self.verificar_sincronismo()).start()
+                threading.Thread(target=lambda: self.verificar_sincronismo()).start()
 
             self.parar() if self.setpoint == 0 else self.enviar_setpoint(self.setpoint)
 
@@ -792,11 +793,9 @@ class UnidadeGeracao:
 
         try:
             if self.cp[f"CP{self.id}"].etapa == CP_FECHADA:
-                self.cp[f"CP{self.id}"].ultima_etapa = CP_FECHADA
                 self.cp[f"CP{self.id}"].operar_cracking()
 
             elif self.cp[f"CP{self.id}"].etapa == CP_CRACKING:
-                self.cp[f"CP{self.id}"].ultima_etapa = CP_CRACKING
 
                 if self.cp[f"CP{self.id}"].pressao_equalizada:
                     self.cp[f"CP{self.id}"].abrir()
@@ -805,7 +804,6 @@ class UnidadeGeracao:
                     self.cp[f"CP{self.id}"].fechar()
 
             elif self.cp[f"CP{self.id}"].etapa == CP_ABERTA:
-                self.cp[f"CP{self.id}"].ultima_etapa = CP_ABERTA
 
                 if self.setpoint != 0:
                     self.partir()
