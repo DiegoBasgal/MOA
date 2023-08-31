@@ -12,6 +12,8 @@ class ParametrosUsina(models.Model):
     aguardando_reservatorio = models.IntegerField(default=0)
     modo_de_escolha_das_ugs = models.IntegerField(default=2)
 
+    djl_manual = models.BooleanField(default=False)
+
     # Servidores
     clp_online = models.IntegerField(default=1)
 

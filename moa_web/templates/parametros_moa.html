@@ -105,6 +105,30 @@
                 <input id="submit" type="submit" name="desativar_ma" value="Desativar">
             </div>
         </form>
+        <form method='post' action='/parametros_moa/' style="margin-top: 40px;">
+            {% csrf_token %}
+            <div style="margin-bottom: 1px;">
+                <table>
+                    <tr>
+                        <td>
+                            <label style="font-size: 18px;"><b>Disjuntor 52L: </b></label>
+                        </td>
+                        <td>
+                            {% if usina.djl_manual == False %}
+                                <label style="font-size: 17px; margin-left: 5px; color: green">Remoto</label>
+                            {% else %}
+                                <label style="font-size: 17px; margin-left: 5px; color: orange;">Manual</label>
+                            {% endif %}
+                        </td>
+                    </tr>
+                </table>
+            </div>
+            <div style="margin-top: 1px;">
+                <label style="font-size: 17px; margin-left: 3px;">Comando: </label>
+                <input id="submit" type="submit" name="djl_remoto" value="Remoto">
+                <input id="submit" type="submit" name="djl_manual" value="Manual">
+            </div>
+        </form>
         <form method='post' action='/parametros_moa/'>
             {% csrf_token %}
             <div style="margin-top: 30px;">

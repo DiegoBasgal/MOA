@@ -11,7 +11,7 @@ from parametros.models import ParametrosUsina
 @login_required
 def parametros_moa_view(request, *args, **kwargs):
     usina = ParametrosUsina.objects.get(id=1)
-    
+
     if request.method == "POST":
         if request.POST.get("ativar_ma"):
             usina.modo_autonomo = 1
@@ -19,6 +19,16 @@ def parametros_moa_view(request, *args, **kwargs):
         if request.POST.get("desativar_ma"):
             usina.modo_autonomo = 0
             usina.save()
+
+
+        if request.POST.get("djl_remoto"):
+            usina.djl_manual = False
+            usina.save()
+
+        if request.POST.get("djl_manual"):
+            usina.djl_manual = True
+            usina.save()
+
 
         if request.POST.get("escolha_ugs0"):
             usina.modo_de_escolha_das_ugs = 1
@@ -185,5 +195,6 @@ def emergencia_view(request, *args, **kwargs):
         else "Ok",
         "timestamp": usina.timestamp.strftime("%d/%m/%Y, %H:%M:%S"),
     }
+
 
     return render(request, "emergencia.html", context=context)
