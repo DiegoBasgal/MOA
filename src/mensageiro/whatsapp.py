@@ -76,3 +76,6 @@ class WhatsApp:
     @classmethod
     def envio_todos(cls, mensagem) -> None:
         Thread(target=cls.envio_grupo, args=(mensagem, )).start()
+
+
+print(WhatsApp.chats_ativos())

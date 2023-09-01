@@ -92,6 +92,14 @@ class ControleEstados(State):
             if flag_condic == CONDIC_INDISPONIBILIZAR:
                 return Emergencia(self.usn)
 
+            elif flag_condic == CONDIC_AGUARDAR:
+                if self.usn.aguardar_normalizacao_djl():
+                    self.usn.normalizar_usina()
+                    return ControleDados(self.usn)
+                else:
+                    self.usn.normalizar_usina()
+                    return self
+
             elif flag_condic == CONDIC_NORMALIZAR:
                 flag_norm = self.usn.normalizar_usina()
 

@@ -120,6 +120,7 @@ class Usina:
 
         self.timer_tensao: "bool" = False
 
+
         self.borda_emerg: "bool" = False
         self.db_emergencia: "bool" = False
         self.clp_emergencia: "bool" = False
@@ -141,8 +142,10 @@ class Usina:
 
         self.ler_valores()
         self.ajustar_inicializacao()
+        self.djl_manual: "bool" = True
         self.normalizar_usina()
         self.escrever_valores()
+        self.djl_manual = False
 
         self._tentativas_normalizar = 0
 
@@ -244,7 +247,9 @@ class Usina:
             self.clp_emergencia = False
             self.resetar_emergencia()
             sleep(2)
-            self.fechar_dj_linha()
+            if not self.djl_manual:
+                self.fechar_dj_linha()
+
             self.db.update_remove_emergencia()
             return NORM_USN_EXECUTADA
 
@@ -252,6 +257,29 @@ class Usina:
             logger.debug("")
             logger.debug("[USN] A normalização foi executada menos de 5 minutos atrás...")
             return NORM_USN_JA_EXECUTADA
+
+
+    def aguardar_normalizacao_djl(self) -> "bool":
+        """
+        Função com loop, para aguardar normalização manual do Disjuntor 52L
+        por conta de problemas de aberturas.
+        """
+
+        self.djl_manual = self.db.get_status_djl()
+
+        if self.djl_manual:
+            logger.info("[USN] Aguardando fechamento manual do Disjuntor 52L...")
+
+            while not self.__leitura_dj_linha.valor:
+                logger.debug("[USN] Aguardando...")
+                sleep(TEMPO_CICLO_TOTAL)
+                self.escrever_valores()
+
+            logger.info("[USN] Disjuntor Fechado! Retomando operação...")
+            return True
+
+        else:
+            return False
 
 
     ### MÉTODOS DE CONTROLE DE OPERAÇÃO:
@@ -616,7 +644,7 @@ class Usina:
             v2 = [
                 time(),
                 1 if self.modo_autonomo else 0,
-                self.nv_montante_recente,
+                self.nv_montante,
                 self.erro_nv,
                 self.ug1.setpoint,
                 self.ug1.leitura_potencia,

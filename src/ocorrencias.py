@@ -101,6 +101,11 @@ class OcorrenciasGerais:
                     flag = CONDIC_NORMALIZAR
                     # self.__db.update_alarmes([datetime.now(pytz.timezone("Brazil/East")).replace(tzinfo=None), condic.gravidade, condic.descr])
 
+                elif condic.gravidade == CONDIC_AGUARDAR:
+                    logger.warning(f"[OCO-USN] Descrição: \"{condic.descr}\", Gravidade: \"{CONDIC_STR_DCT[condic.gravidade] if condic.gravidade in CONDIC_STR_DCT else 'Desconhecida'}\"")
+                    self.condicionadores_ativos.append(condic)
+                    flag = CONDIC_AGUARDAR
+
                 elif condic.gravidade == CONDIC_INDISPONIBILIZAR:
                     logger.warning(f"[OCO-USN] Descrição: \"{condic.descr}\", Gravidade: \"{CONDIC_STR_DCT[condic.gravidade] if condic.gravidade in CONDIC_STR_DCT else 'Desconhecida'}\"")
                     self.condicionadores_ativos.append(condic)
@@ -391,7 +396,7 @@ class OcorrenciasGerais:
         self.condicionadores_essenciais.append(CondicionadorBase(leitura_ED_prtva2_50bf, CONDIC_NORMALIZAR))
 
         leitura_ED_disj_linha_aberto = LeituraModbusBit(self.__clp["SA"], REG["CONDIC_SA"]["SA_ED_PSA_SE_DISJ_LINHA_ABERTO"], descr="[USN] Disjuntor de Linha Aberto")
-        self.condicionadores_essenciais.append(CondicionadorBase(leitura_ED_disj_linha_aberto, CONDIC_NORMALIZAR))
+        self.condicionadores_essenciais.append(CondicionadorBase(leitura_ED_disj_linha_aberto, CONDIC_AGUARDAR))
 
 
         ## CONDICIONADORES NORMAIS

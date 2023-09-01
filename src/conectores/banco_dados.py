@@ -22,6 +22,23 @@ class BancoDados:
         self.cursor = self.conn.cursor()
 
 
+    def get_status_djl(self) -> "bool":
+        """
+        Função para extrair o modo do Disjuntor 52L
+        """
+
+        self.cursor.execute(
+            "SELECT djl_manual "
+            "FROM parametros_parametrosusina "
+            "WHERE id = 1;"
+        )
+
+        status_dj = self.cursor.fetchone()
+
+        self.conn.commit()
+        return status_dj
+
+
     def get_ultimo_estado_ug(self, ug_id: "int") -> "int":
         """
         Função para extrair o último estado da Unidade de Geração do Banco.
@@ -114,7 +131,7 @@ class BancoDados:
             "executavel_em_automatico": parametros_raw[0],
             "executavel_em_manual": parametros_raw[1],
             }
-    
+
     def get_timestamp_moa(self) -> "datetime":
         self.cursor.execute(
             "SELECT ts "
