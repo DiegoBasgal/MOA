@@ -377,7 +377,9 @@ class Usina:
     def controlar_reservatorio(self) -> "int":
 
         if self.nv_montante_recente >= self.cfg["nv_maximo"]:
-            logger.debug("[USN] Nível montante acima do máximo")
+            logger.debug("[USN] Nível montante acima do limite Máximo!")
+            logger.debug(f"[USN]          Leitura:                   {self.nv_montante_recente:0.3f}")
+            logger.debug("")
 
             if self.nv_montante_recente >= NIVEL_MAXIMORUM:
                 logger.critical(f"[USN] Nível montante ({self.nv_montante_recente:3.2f}) atingiu o maximorum!")
@@ -390,7 +392,8 @@ class Usina:
                     ug.step()
 
         elif self.nv_montante_recente <= self.cfg["nv_minimo"] and not self.aguardando_reservatorio:
-            if self.nv_montante < self.cfg["nv_minimo"] and self.nv_montante_anterior > self.cfg["nv_minimo"]:
+
+            if self.nv_montante < self.cfg["nv_minimo"] and self.nv_montante_recente > self.cfg["nv_minimo"]:
                 if self.erro_leitura_montante == 3:
                     logger.warning(f"[USN] Tentativas de Leitura de Nível Montante ultrapassadas!")
                     self.erro_leitura_montante = 0
@@ -405,6 +408,10 @@ class Usina:
                 logger.info("[USN] Foi identificada uma diferença nas Leituras de Nível Montante anterior e atual")
                 logger.debug(f"[USN] Verificando erros de Leitura... (Tentativa {self.erro_leitura_montante}/3)")
             else:
+                logger.debug("[USN] Nível Montante abaixo do limite Mínimo!")
+                logger.debug(f"[USN]          Leitura:                   {self.nv_montante_recente:0.3f}")
+                logger.debug("")
+
                 self.erro_leitura_montante = 0
                 self.aguardando_reservatorio = True
                 self.distribuir_potencia(0)
@@ -642,7 +649,7 @@ class Usina:
             ]
 
             v2 = [
-                time(),
+                self.get_time().timestamp(),
                 1 if self.modo_autonomo else 0,
                 self.nv_montante,
                 self.erro_nv,
@@ -664,14 +671,14 @@ class Usina:
             self.db.update_valores_usina(v1)
 
         except Exception:
-            logger.error(f"[USN] Houve um erro ao inserir os valores no Banco.")
+            logger.debug(f"[USN] Houve um erro ao inserir os valores no Banco.")
             logger.debug(traceback.format_exc())
 
         try:
             self.db.update_debug(v2)
 
         except Exception:
-            logger.error(f"[USN] Houve um erro ao inserir dados DEBUG no Banco.")
+            logger.debug(f"[USN] Houve um erro ao inserir dados DEBUG no Banco.")
             logger.debug(traceback.format_exc())
 
 

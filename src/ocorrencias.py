@@ -90,6 +90,7 @@ class OcorrenciasGerais:
                 logger.debug(f"[OCO-USN] Ainda há condicionadores ativos na Usina!")
 
             for condic in condicionadores_ativos:
+                sleep(0.5)
                 if condic in self.condicionadores_ativos:
                     logger.debug(f"[OCO-USN] Descrição: \"{condic.descr}\", Gravidade: \"{CONDIC_STR_DCT[condic.gravidade] if condic.gravidade in CONDIC_STR_DCT else 'Desconhecida'}\"")
                     flag = condic.gravidade
@@ -680,6 +681,7 @@ class OcorrenciasUnidades:
                 logger.info(f"[OCO-UG{self.__ug.id}] Ainda há condicionadores ativos na Unidade!")
 
             for condic in condicionadores_ativos:
+                sleep(0.5)
                 if condic in self.condicionadores_ativos:
                     logger.debug(f"[OCO-UG{self.__ug.id}] Descrição: \"{condic.descr}\", Gravidade: \"{CONDIC_STR_DCT[condic.gravidade] if condic.gravidade in CONDIC_STR_DCT else 'Desconhecida'}\"")
                     flag = condic.gravidade

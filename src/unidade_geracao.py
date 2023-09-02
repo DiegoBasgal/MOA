@@ -245,7 +245,8 @@ class UnidadeDeGeracao:
                 self.tentativas_norm_etapas += 1
 
                 if self.tentativas_norm_etapas > 2:
-                    self.partir()
+                    pass
+                    # self.partir()
 
 
         except Exception:
