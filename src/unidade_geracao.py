@@ -453,20 +453,17 @@ class UnidadeGeracao:
         """
 
         try:
-            if self.etapa == UG_PARADA:
+            if self.etapa != UG_SINCRONIZADA:
                 logger.info(f"[UG{self.id}]          Enviando comando:          \"PARTIDA\"")
 
-                # EMB.escrever_bit(self.clp[f"UG{self.id}"], REG_CLP[f"UG{self.id}"]["PASSOS_CMD_RST_FLH"], valor=1)
-                # EMB.escrever_bit(self.clp[f"UG{self.id}"], REG_CLP[f"UG{self.id}"]["86M_CMD_REARME_BLQ"], valor=1)
-                # EMB.escrever_bit(self.clp[f"UG{self.id}"], REG_CLP[f"UG{self.id}"]["86E_CMD_REARME_BLQ"], valor=1)
-                # EMB.escrever_bit(self.clp[f"UG{self.id}"], REG_CLP[f"UG{self.id}"]["86H_CMD_REARME_BLQ"], valor=1)
-                # EMB.escrever_bit(self.clp[f"UG{self.id}"], REG_CLP[f"UG{self.id}"]["UHRV_CMD_REARME_FLH"], valor=1)
-                # EMB.escrever_bit(self.clp[f"UG{self.id}"], REG_CLP[f"UG{self.id}"]["UHLM_CMD_REARME_FLH"], valor=1)
+                EMB.escrever_bit(self.clp[f"UG{self.id}"], REG_CLP[f"UG{self.id}"]["PASSOS_CMD_RST_FLH"], valor=1)
+                EMB.escrever_bit(self.clp[f"UG{self.id}"], REG_CLP[f"UG{self.id}"]["86M_CMD_REARME_BLQ"], valor=1)
+                EMB.escrever_bit(self.clp[f"UG{self.id}"], REG_CLP[f"UG{self.id}"]["86E_CMD_REARME_BLQ"], valor=1)
+                EMB.escrever_bit(self.clp[f"UG{self.id}"], REG_CLP[f"UG{self.id}"]["86H_CMD_REARME_BLQ"], valor=1)
+                EMB.escrever_bit(self.clp[f"UG{self.id}"], REG_CLP[f"UG{self.id}"]["UHRV_CMD_REARME_FLH"], valor=1)
+                EMB.escrever_bit(self.clp[f"UG{self.id}"], REG_CLP[f"UG{self.id}"]["UHLM_CMD_REARME_FLH"], valor=1)
                 EMB.escrever_bit(self.clp[f"UG{self.id}"], REG_CLP[f"UG{self.id}"]["PARTIDA_CMD_SINCRONISMO"], valor=1)
                 self.enviar_setpoint(self.setpoint)
-
-            else:
-                logger.debug(f"[UG{self.id}] A Unidade já está sincronizada.")
 
         except Exception:
             logger.error(f"[UG{self.id}] Não foi possível partir a Unidade.")
@@ -487,9 +484,6 @@ class UnidadeGeracao:
                 EMB.escrever_bit(self.clp[f"UG{self.id}"], REG_CLP[f"UG{self.id}"]["PARADA_CMD_DESABILITA_UHLM"], valor=1)
                 self.enviar_setpoint(0)
 
-            else:
-                logger.debug(f"[UG{self.id}] A Unidade já está parada.")
-
         except Exception:
             logger.error(f"[UG{self.id}] Não foi possível parar a Unidade.")
             logger.debug(traceback.format_exc())
@@ -508,12 +502,12 @@ class UnidadeGeracao:
 
             if setpoint_kw > 1:
                 self.setpoint = int(setpoint_kw)
-                res = EMB.escrever_bit(self.clp[f"UG{self.id}"], REG_CLP[f"UG{self.id}"]["PASSOS_CMD_RST_FLH"], valor=1)
-                res = EMB.escrever_bit(self.clp[f"UG{self.id}"], REG_CLP[f"UG{self.id}"]["86M_CMD_REARME_BLQ"], valor=1)
-                res = EMB.escrever_bit(self.clp[f"UG{self.id}"], REG_CLP[f"UG{self.id}"]["86E_CMD_REARME_BLQ"], valor=1)
-                res = EMB.escrever_bit(self.clp[f"UG{self.id}"], REG_CLP[f"UG{self.id}"]["86H_CMD_REARME_BLQ"], valor=1)
-                res = EMB.escrever_bit(self.clp[f"UG{self.id}"], REG_CLP[f"UG{self.id}"]["UHRV_CMD_REARME_FLH"], valor=1)
-                res = EMB.escrever_bit(self.clp[f"UG{self.id}"], REG_CLP[f"UG{self.id}"]["UHLM_CMD_REARME_FLH"], valor=1)
+                # res = EMB.escrever_bit(self.clp[f"UG{self.id}"], REG_CLP[f"UG{self.id}"]["PASSOS_CMD_RST_FLH"], valor=1)
+                # res = EMB.escrever_bit(self.clp[f"UG{self.id}"], REG_CLP[f"UG{self.id}"]["86M_CMD_REARME_BLQ"], valor=1)
+                # res = EMB.escrever_bit(self.clp[f"UG{self.id}"], REG_CLP[f"UG{self.id}"]["86E_CMD_REARME_BLQ"], valor=1)
+                # res = EMB.escrever_bit(self.clp[f"UG{self.id}"], REG_CLP[f"UG{self.id}"]["86H_CMD_REARME_BLQ"], valor=1)
+                # res = EMB.escrever_bit(self.clp[f"UG{self.id}"], REG_CLP[f"UG{self.id}"]["UHRV_CMD_REARME_FLH"], valor=1)
+                # res = EMB.escrever_bit(self.clp[f"UG{self.id}"], REG_CLP[f"UG{self.id}"]["UHLM_CMD_REARME_FLH"], valor=1)
                 res = self.clp[f"UG{self.id}"].write_single_register(REG_CLP[f"UG{self.id}"]["RV_SETPOT_POT_ATIVA_PU"], int(self.setpoint))
 
                 return res
