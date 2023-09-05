@@ -22,18 +22,40 @@ def parametros_moa_view(request, *args, **kwargs):
             usina.modo_de_escolha_das_ugs = 0
             usina.ug1_prioridade = 0
             usina.ug2_prioridade = 0
+            usina.ug3_prioridade = 0
+            usina.ug4_prioridade = 0
             usina.save()
 
         if request.POST.get("escolha_ugs1"):
             usina.modo_de_escolha_das_ugs = 1
             usina.ug1_prioridade = 100
             usina.ug2_prioridade = 0
+            usina.ug3_prioridade = 0
+            usina.ug4_prioridade = 0
             usina.save()
 
         if request.POST.get("escolha_ugs2"):
             usina.modo_de_escolha_das_ugs = 2
             usina.ug1_prioridade = 0
             usina.ug2_prioridade = 100
+            usina.ug3_prioridade = 0
+            usina.ug4_prioridade = 0
+            usina.save()
+
+        if request.POST.get("escolha_ugs3"):
+            usina.modo_de_escolha_das_ugs = 3
+            usina.ug1_prioridade = 0
+            usina.ug2_prioridade = 0
+            usina.ug3_prioridade = 100
+            usina.ug4_prioridade = 0
+            usina.save()
+
+        if request.POST.get("escolha_ugs4"):
+            usina.modo_de_escolha_das_ugs = 4
+            usina.ug1_prioridade = 0
+            usina.ug2_prioridade = 0
+            usina.ug3_prioridade = 0
+            usina.ug4_prioridade = 100
             usina.save()
 
         if request.POST.get("bnv_alvo"):
@@ -208,6 +230,12 @@ def parametros_moa_view(request, *args, **kwargs):
 
     if ((usina.modo_de_escolha_das_ugs == 2) and (usina.ug2_prioridade > usina.ug1_prioridade)):
         escolha_ugs = 2
+
+    if ((usina.modo_de_escolha_das_ugs == 3) and (usina.ug2_prioridade > usina.ug1_prioridade)):
+        escolha_ugs = 3
+
+    if ((usina.modo_de_escolha_das_ugs == 4) and (usina.ug2_prioridade > usina.ug1_prioridade)):
+        escolha_ugs = 4
 
     context = {"escolha_ugs": escolha_ugs, "usina": usina}
     return render(request, "parametros_moa.html", context=context)
