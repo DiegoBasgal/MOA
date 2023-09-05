@@ -1,17 +1,17 @@
 {
-    "kp": 5.0,
-    "ki": 0.005,
+    "kp": 3.0,
+    "ki": 0.05,
     "kd": 1.0,
     "kie": 0.1,
     "saida_ie_inicial": 0.1,
-    "nv_alvo": 462.0,
+    "nv_alvo": 461.9,
     "nv_minimo": 461.37,
     "nv_maximo": 462.37,
     "pot_minima": 911.0,
     "pot_maxima_ug": 3037.5,
     "pot_maxima_ug1": 3037.5,
     "pot_maxima_ug2": 3037.5,
-    "margem_pot_critica": 0.045,
+    "margem_pot_critica": 0.015,
     "pot_maxima_alvo": 6075.0,
     "pot_maxima_usina": 6075.0
 }

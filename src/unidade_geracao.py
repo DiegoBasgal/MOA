@@ -530,7 +530,7 @@ class UnidadeGeracao:
             self.clp["MOA"].write_single_coil(REG_CLP["MOA"]["PAINEL_LIDO"], 0)
 
             passo = 0
-            for x in range(2):
+            for x in range(3):
                 passo += 1
                 logger.debug("")
                 logger.debug(f"[UG{self.id}]          Passo: {passo}/3")
@@ -742,8 +742,6 @@ class UnidadeGeracao:
 
         elif self.etapa == UG_PARANDO:
             if self.setpoint >= self.__cfg["pot_minima"]:
-                self.controlar_comporta()
-            else:
                 self.enviar_setpoint(self.setpoint)
 
         elif self.etapa == UG_SINCRONIZANDO:
@@ -799,7 +797,7 @@ class UnidadeGeracao:
 
             elif self.cp[f"CP{self.id}"].etapa == CP_ABERTA:
 
-                if self.setpoint != 0:
+                if self.setpoint >= self.__cfg["pot_minima"]:
                     self.partir()
 
             elif self.cp[f"CP{self.id}"].etapa == CP_REMOTO:

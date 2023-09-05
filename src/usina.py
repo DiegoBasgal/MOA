@@ -253,8 +253,8 @@ class Usina:
 
         while True:
             # self.se.verificar_leituras()
-            # self.tda.verificar_leituras()
             # self.sa.verificar_leituras()
+            # self.tda.verificar_leituras()
 
             # for ug in self.ugs:
             #     ug.verificar_leituras()
