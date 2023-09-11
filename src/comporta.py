@@ -4,11 +4,11 @@ __description__ = "Este módulo corresponde a implementação da operação das 
 
 import logging
 import traceback
+import threading
 
 import src.tomada_agua as tda
 
 from time import time
-from threading import Thread
 
 from src.funcoes.leitura import *
 from src.dicionarios.const import *
@@ -81,9 +81,6 @@ class Comporta:
         )
 
         # ATRIBUIÇÃO DE VAIRÁVEIS PÚBLICAS
-
-
-        self.ultima_etapa: "int" = 0
 
         self.borda_pressao: "bool" = False
 
@@ -234,7 +231,7 @@ class Comporta:
 
                 EMB.escrever_bit(self.clp["TDA"], REG_CLP["TDA"][f"CP{self.id}_CMD_ABERTURA_CRACKING"], valor=1)
 
-                Thread(target=lambda: self.aguardar_pressao_uh()).start()
+                # threading.Thread(target=lambda: self.aguardar_pressao_uh()).start()
 
         except Exception:
             logger.error(f"[CP{self.id}] Houve um erro ao realizar a Operação de Cracking da Comporta {self.id}.")
@@ -245,6 +242,8 @@ class Comporta:
         Função de temporização de espera da equalização da pressão da Unidade Hidráulica para
         operação da Comporta.
         """
+
+        sleep(5)
 
         logger.debug(f"[CP{self.id}]          Verificação MOA:           \"Equalização de Pressão UH\"")
         delay = time() + 120
@@ -299,7 +298,7 @@ class Comporta:
                     return False
 
             elif not tda.TomadaAgua.status_unidade_hidraulica.valor:
-                logger.debug(f"[CP{self.id}]          Unidade Hidráulica Indisponível")
+                logger.debug(f"[CP{self.id}]          Unidade Hidráulica:        \"Indisponível\"")
                 return False
 
             else:

@@ -27,11 +27,11 @@ class Tda:
 
 
     def calcular_volume_montante(self, volume) -> 'float':
-        return min(max(460, 460 + volume / 190000), 466.37)
+        return min(max(461.37, 461.37 + volume / 190000), 462.37)
 
 
     def calcular_montante_volume(self, nv_montante) -> 'float':
-        return 190000 * (min(max(460, nv_montante), 466.37) - 460)
+        return 190000 * (min(max(461.37, nv_montante), 462.37) - 461.37)
 
 
     def calcular_q_sanitaria(self) -> 'float':
@@ -73,16 +73,18 @@ class Tda:
 
 
     def calcular_enchimento_reservatorio(self) -> 'None':
+        self.dict['TDA']['nv_montante'] = self.calcular_volume_montante(self.volume + self.dict['TDA']['q_liquida'] * self.segundos_por_passo)
+        self.dict['TDA']['nv_jusante_grade'] = self.dict['TDA']['nv_montante'] - max(0, np.random.normal(0.1, 0.1 * self.escala_ruido))
+    
         if self.dict['TDA']['nv_montante'] >= USINA_NV_VERTEDOURO:
             self.dict['TDA']['q_vertimento'] = self.dict['TDA']['q_liquida']
             self.dict['TDA']['q_liquida'] = 0
-            self.dict['TDA']['nv_montante'] = self.calcular_volume_montante(self.volume + self.dict['TDA']['q_vertimento'] * self.segundos_por_passo)
-            self.volume += self.dict['TDA']['q_vertimento'] * self.segundos_por_passo
+            self.dict['TDA']['nv_montante'] = (0.0000021411 * self.dict["q_vertimento"] ** 3
+                                            - 0.00025189 * self.dict["q_vertimento"] ** 2
+                                            + 0.014859 * self.dict["q_vertimento"]
+                                            + 462.37)
 
-        else:
-            self.dict['TDA']['nv_montante'] = self.calcular_volume_montante(self.volume + self.dict['TDA']['q_liquida'] * self.segundos_por_passo)
-            self.dict['TDA']['nv_jusante_grade'] = self.dict['TDA']['nv_montante'] - max(0, np.random.normal(0.1, 0.1 * self.escala_ruido))
-            self.volume += self.dict['TDA']['q_liquida'] * self.segundos_por_passo
+        self.volume += self.dict['TDA']['q_liquida'] * self.segundos_por_passo
 
 
     def atualizar_modbus(self) -> 'None':

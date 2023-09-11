@@ -37,7 +37,7 @@ class ParametrosUsina(models.Model):
     ki = models.DecimalField(max_digits=15, decimal_places=3, default=0.1)
     kd = models.DecimalField(max_digits=15, decimal_places=3, default=0)
     kie = models.DecimalField(max_digits=15, decimal_places=3, default=0.1)
-    valor_ie_inicial = models.DecimalField(max_digits=10, decimal_places=1, default=0.5)
+    valor_ie_inicial = models.DecimalField(max_digits=10, decimal_places=3, default=0.5)
 
     # Potência
     pot_minima = models.DecimalField(max_digits=10, decimal_places=0, default=911)

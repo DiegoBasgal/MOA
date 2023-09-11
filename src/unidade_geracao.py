@@ -5,13 +5,13 @@ __description__ = "Este módulo corresponde a implementação das Unidades de Ge
 import pytz
 import logging
 import traceback
+import threading
 
 import src.subestacao as se
 import src.tomada_agua as tda
 import src.funcoes.condicionadores as c
 
 from time import time, sleep
-from threading import Thread
 from datetime import datetime
 
 from src.funcoes.leitura import *
@@ -90,6 +90,7 @@ class UnidadeGeracao:
 
         self.operar_comporta: "bool" = False
         self.temporizar_partida: "bool" = False
+        self.aguardar_pressao_cp: "bool" = False
         self.normalizacao_agendada: "bool" = False
         self.temporizar_normalizacao: "bool" = False
 
@@ -452,20 +453,17 @@ class UnidadeGeracao:
         """
 
         try:
-            if self.etapa == UG_PARADA:
+            if self.etapa != UG_SINCRONIZADA:
                 logger.info(f"[UG{self.id}]          Enviando comando:          \"PARTIDA\"")
 
-                # EMB.escrever_bit(self.clp[f"UG{self.id}"], REG_CLP[f"UG{self.id}"]["PASSOS_CMD_RST_FLH"], valor=1)
-                # EMB.escrever_bit(self.clp[f"UG{self.id}"], REG_CLP[f"UG{self.id}"]["86M_CMD_REARME_BLQ"], valor=1)
-                # EMB.escrever_bit(self.clp[f"UG{self.id}"], REG_CLP[f"UG{self.id}"]["86E_CMD_REARME_BLQ"], valor=1)
-                # EMB.escrever_bit(self.clp[f"UG{self.id}"], REG_CLP[f"UG{self.id}"]["86H_CMD_REARME_BLQ"], valor=1)
-                # EMB.escrever_bit(self.clp[f"UG{self.id}"], REG_CLP[f"UG{self.id}"]["UHRV_CMD_REARME_FLH"], valor=1)
-                # EMB.escrever_bit(self.clp[f"UG{self.id}"], REG_CLP[f"UG{self.id}"]["UHLM_CMD_REARME_FLH"], valor=1)
+                EMB.escrever_bit(self.clp[f"UG{self.id}"], REG_CLP[f"UG{self.id}"]["PASSOS_CMD_RST_FLH"], valor=1)
+                EMB.escrever_bit(self.clp[f"UG{self.id}"], REG_CLP[f"UG{self.id}"]["86M_CMD_REARME_BLQ"], valor=1)
+                EMB.escrever_bit(self.clp[f"UG{self.id}"], REG_CLP[f"UG{self.id}"]["86E_CMD_REARME_BLQ"], valor=1)
+                EMB.escrever_bit(self.clp[f"UG{self.id}"], REG_CLP[f"UG{self.id}"]["86H_CMD_REARME_BLQ"], valor=1)
+                EMB.escrever_bit(self.clp[f"UG{self.id}"], REG_CLP[f"UG{self.id}"]["UHRV_CMD_REARME_FLH"], valor=1)
+                EMB.escrever_bit(self.clp[f"UG{self.id}"], REG_CLP[f"UG{self.id}"]["UHLM_CMD_REARME_FLH"], valor=1)
                 EMB.escrever_bit(self.clp[f"UG{self.id}"], REG_CLP[f"UG{self.id}"]["PARTIDA_CMD_SINCRONISMO"], valor=1)
                 self.enviar_setpoint(self.setpoint)
-
-            else:
-                logger.debug(f"[UG{self.id}] A Unidade já está sincronizada.")
 
         except Exception:
             logger.error(f"[UG{self.id}] Não foi possível partir a Unidade.")
@@ -486,9 +484,6 @@ class UnidadeGeracao:
                 EMB.escrever_bit(self.clp[f"UG{self.id}"], REG_CLP[f"UG{self.id}"]["PARADA_CMD_DESABILITA_UHLM"], valor=1)
                 self.enviar_setpoint(0)
 
-            else:
-                logger.debug(f"[UG{self.id}] A Unidade já está parada.")
-
         except Exception:
             logger.error(f"[UG{self.id}] Não foi possível parar a Unidade.")
             logger.debug(traceback.format_exc())
@@ -507,12 +502,12 @@ class UnidadeGeracao:
 
             if setpoint_kw > 1:
                 self.setpoint = int(setpoint_kw)
-                res = EMB.escrever_bit(self.clp[f"UG{self.id}"], REG_CLP[f"UG{self.id}"]["PASSOS_CMD_RST_FLH"], valor=1)
-                res = EMB.escrever_bit(self.clp[f"UG{self.id}"], REG_CLP[f"UG{self.id}"]["86M_CMD_REARME_BLQ"], valor=1)
-                res = EMB.escrever_bit(self.clp[f"UG{self.id}"], REG_CLP[f"UG{self.id}"]["86E_CMD_REARME_BLQ"], valor=1)
-                res = EMB.escrever_bit(self.clp[f"UG{self.id}"], REG_CLP[f"UG{self.id}"]["86H_CMD_REARME_BLQ"], valor=1)
-                res = EMB.escrever_bit(self.clp[f"UG{self.id}"], REG_CLP[f"UG{self.id}"]["UHRV_CMD_REARME_FLH"], valor=1)
-                res = EMB.escrever_bit(self.clp[f"UG{self.id}"], REG_CLP[f"UG{self.id}"]["UHLM_CMD_REARME_FLH"], valor=1)
+                # res = EMB.escrever_bit(self.clp[f"UG{self.id}"], REG_CLP[f"UG{self.id}"]["PASSOS_CMD_RST_FLH"], valor=1)
+                # res = EMB.escrever_bit(self.clp[f"UG{self.id}"], REG_CLP[f"UG{self.id}"]["86M_CMD_REARME_BLQ"], valor=1)
+                # res = EMB.escrever_bit(self.clp[f"UG{self.id}"], REG_CLP[f"UG{self.id}"]["86E_CMD_REARME_BLQ"], valor=1)
+                # res = EMB.escrever_bit(self.clp[f"UG{self.id}"], REG_CLP[f"UG{self.id}"]["86H_CMD_REARME_BLQ"], valor=1)
+                # res = EMB.escrever_bit(self.clp[f"UG{self.id}"], REG_CLP[f"UG{self.id}"]["UHRV_CMD_REARME_FLH"], valor=1)
+                # res = EMB.escrever_bit(self.clp[f"UG{self.id}"], REG_CLP[f"UG{self.id}"]["UHLM_CMD_REARME_FLH"], valor=1)
                 res = self.clp[f"UG{self.id}"].write_single_register(REG_CLP[f"UG{self.id}"]["RV_SETPOT_POT_ATIVA_PU"], int(self.setpoint))
 
                 return res
@@ -535,7 +530,7 @@ class UnidadeGeracao:
             self.clp["MOA"].write_single_coil(REG_CLP["MOA"]["PAINEL_LIDO"], 0)
 
             passo = 0
-            for x in range(2):
+            for x in range(3):
                 passo += 1
                 logger.debug("")
                 logger.debug(f"[UG{self.id}]          Passo: {passo}/3")
@@ -747,15 +742,13 @@ class UnidadeGeracao:
 
         elif self.etapa == UG_PARANDO:
             if self.setpoint >= self.__cfg["pot_minima"]:
-                self.controlar_comporta()
-            else:
                 self.enviar_setpoint(self.setpoint)
 
         elif self.etapa == UG_SINCRONIZANDO:
             self.borda_cp_fechar = False
             if not self.temporizar_partida:
                 self.temporizar_partida = True
-                Thread(target=lambda: self.verificar_sincronismo()).start()
+                threading.Thread(target=lambda: self.verificar_sincronismo()).start()
 
             self.parar() if self.setpoint == 0 else self.enviar_setpoint(self.setpoint)
 
@@ -792,11 +785,9 @@ class UnidadeGeracao:
 
         try:
             if self.cp[f"CP{self.id}"].etapa == CP_FECHADA:
-                self.cp[f"CP{self.id}"].ultima_etapa = CP_FECHADA
                 self.cp[f"CP{self.id}"].operar_cracking()
 
             elif self.cp[f"CP{self.id}"].etapa == CP_CRACKING:
-                self.cp[f"CP{self.id}"].ultima_etapa = CP_CRACKING
 
                 if self.cp[f"CP{self.id}"].pressao_equalizada:
                     self.cp[f"CP{self.id}"].abrir()
@@ -805,9 +796,8 @@ class UnidadeGeracao:
                     self.cp[f"CP{self.id}"].fechar()
 
             elif self.cp[f"CP{self.id}"].etapa == CP_ABERTA:
-                self.cp[f"CP{self.id}"].ultima_etapa = CP_ABERTA
 
-                if self.setpoint != 0:
+                if self.setpoint >= self.__cfg["pot_minima"]:
                     self.partir()
 
             elif self.cp[f"CP{self.id}"].etapa == CP_REMOTO:

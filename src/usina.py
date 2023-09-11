@@ -253,8 +253,8 @@ class Usina:
 
         while True:
             # self.se.verificar_leituras()
-            # self.tda.verificar_leituras()
             # self.sa.verificar_leituras()
+            # self.tda.verificar_leituras()
 
             # for ug in self.ugs:
             #     ug.verificar_leituras()
@@ -330,6 +330,7 @@ class Usina:
         if self.tda.nivel_montante.valor >= self.cfg["nv_maximo"]:
             logger.debug("[TDA] Nível montante acima do máximo.")
             logger.debug(f"[TDA]          Leitura:                   {self.tda.nivel_montante.valor:0.3f}")
+            logger.debug("")
 
             if self.tda.nivel_montante_anterior >= NIVEL_MAXIMORUM:
                 logger.critical(f"[TDA] Nivel montante ({self.tda.nivel_montante_anterior:3.2f}) atingiu o maximorum!")
@@ -345,6 +346,7 @@ class Usina:
         elif self.tda.nivel_montante.valor <= self.cfg["nv_minimo"] and not self.tda.aguardando_reservatorio:
             logger.debug("[TDA] Nível montante abaixo do mínimo.")
             logger.debug(f"[TDA]          Leitura:                   {self.tda.nivel_montante.valor:0.3f}")
+            logger.debug("")
             self.tda.aguardando_reservatorio = True
             self.distribuir_potencia(0)
 
@@ -359,6 +361,7 @@ class Usina:
             if self.tda.nivel_montante.valor >= self.cfg["nv_alvo"]:
                 logger.debug("[TDA] Nível montante dentro do limite de operação.")
                 logger.debug(f"[TDA]          Leitura:                   {self.tda.nivel_montante.valor:0.3f}")
+                logger.debug("")
                 self.tda.aguardando_reservatorio = False
 
         else:
@@ -525,12 +528,14 @@ class Usina:
         """
         Função para verificar leituras/condições específicas e determinar a Prioridade das Unidades.
         """
-        ls = [ug for ug in self.ugs if ug.disponivel]
+        
+        ls = [ug for ug in self.ugs if ug.disponivel and not ug.etapa == UG_PARANDO]
 
-        if self.modo_prioridade_ugs == MODO_ESCOLHA_MANUAL:
-            return sorted(ls, key=lambda y: (-1 * y.leitura_potencia, -1 * y.setpoint, y.prioridade))
+        if self.modo_prioridade_ugs in (UG_PRIORIDADE_1, UG_PRIORIDADE_2):
+            return sorted(ls, key=lambda y: (-1 * y.etapa_atual, -1 * y.leitura_potencia, -1 * y.setpoint, y.prioridade))
+
         else:
-            return sorted(ls, key=lambda y: (y.leitura_horimetro, -1 * y.leitura_potencia, -1 * y.setpoint))
+            return sorted(ls, key=lambda y: (-1 * y.etapa_atual, y.leitura_horimetro, -1 * y.leitura_potencia, -1 * y.setpoint))
 
 
     # FUNÇÕES DE CONTROLE DE DADOS
