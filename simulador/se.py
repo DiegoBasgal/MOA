@@ -37,8 +37,8 @@ class Se:
             self.abrir_dj()
 
         if LEI.ler_bit(MB['SE']['REGISTROS_CMD_RST']):
-            self.dict['SE']['condic'] = False
             ESC.escrever_bit(MB['SE']['REGISTROS_CMD_RST'], valor=0)
+            self.dict['SE']['condic'] = False
             self.resetar_dj()
 
         if self.dict['SE']['debug_dj_abrir']:
@@ -74,13 +74,13 @@ class Se:
     # Lógica Exclusiva para acionamento de condicionadores TESTE:
 
         if self.dict['SE']['condic'] and not self.dict['BRD']['se_condic']:
+            ESC.escrever_bit(MB['SE']['CONDIC'], valor=1)
             self.dict['BRD']['se_condic'] = True
             self.tripar_dj()
-            ESC.escrever_bit(MB['SE']['CONDIC'], valor=1)
 
         elif not self.dict['SE']['condic'] and self.dict['BRD']['se_condic']:
-            self.dict['BRD']['se_condic'] = False
             ESC.escrever_bit(MB['SE']['CONDIC'], valor=0)
+            self.dict['BRD']['se_condic'] = False
 
 
     def verificar_tensao_dj(self) -> "None":
