@@ -173,60 +173,61 @@
                 </div>
             </form>
         </div>
-        <div style="margin-top: 50px;">
+        <div style="margin-top: 50px; justify-content: center; display: flex;">
             <form method='post' action='/parametros_moa/'>
                 {% csrf_token %}
-                <div>
-                    <div style="justify-content: center; display: flex;">
-                        <b style="font-size: 18px;">Limites de Perda na Grade: </b>
-                        <input id="submit" name="salvar_params" type="submit" value="Salvar"/>
-                    </div>
-                    <div style="justify-content: center; display: flex;">
-                        <table id="val_table">
-                            <tr>
-                                <th>Grade</th>
-                                <th>Alerta Perda</th>
-                                <th>Perda Máxima</th>
-                            </tr>
-                            <tr>
-                                <td>UG 1</td>
-                                <td><input id="alerta_perda_grade_ug1" name="alerta_perda_grade_ug1" size=10 value="{{usina.alerta_perda_grade_ug1}}"/></td>
-                                <td><input id="perda_grade_maxima_ug1" name="perda_grade_maxima_ug1" size=10 value="{{usina.ug1_perda_grade_maxima}}"/></td>
-                            </tr>
-                            <tr>
-                                <td>UG 2</td>
-                                <td><input id="alerta_perda_grade_ug2" name="alerta_perda_grade_ug2" size=10 value="{{usina.alerta_perda_grade_ug2}}"/></td>
-                                <td><input id="perda_grade_maxima_ug2" name="perda_grade_maxima_ug2" size=10 value="{{usina.ug2_perda_grade_maxima}}"/></td>
-                            </tr>
-                        </table>
-                    </div>
-                </div>
-                <div>
-                    <div style="justify-content: center; display: flex;">
-                        <b style="font-size: 18px;">Limites de Operação do Transformador Elevador: </b>
-                        <input id="submit" name="salvar_params" type="submit" value="Salvar"/>
-                    </div>
-                    <div style="justify-content: center; display: flex;">
-                        <table id="val_table">
-                            <tr>
-                                <th>Temperaturas</th>
-                                <th>Alerta</th>
-                                <th>Limite</th>
-                            </tr>
-                            <tr>
-                                <td>Óleo</td>
-                                <td><input id="alerta_temperatura_oleo_trafo" name="alerta_temperatura_oleo_trafo" size=10 value="{{usina.alerta_temperatura_oleo_trafo}}"/></td>
-                                <td><input id="limite_temperatura_oleo_trafo" name="limite_temperatura_oleo_trafo" size=10 value="{{usina.limite_temperatura_oleo_trafo}}"/></td>
-                            </tr>
-                            <tr>
-                                <td>Enrolamento</td>
-                                <td><input id="alerta_temperatura_enrolamento_trafo" name="alerta_temperatura_enrolamento_trafo" size=10 value="{{usina.alerta_temperatura_enrolamento_trafo}}"/></td>
-                                <td><input id="limite_temperatura_enrolamento_trafo" name="limite_temperatura_enrolamento_trafo" size=10 value="{{usina.limite_temperatura_enrolamento_trafo}}"/></td>
-                            </tr>
-                        </table>
-                        <br>
-                    </div>
-                </div>
+                <table>
+                    <tr>
+                        <td>
+                            <b style="font-size: 18px;">Limites de Perda na Grade: </b>
+                            <input id="submit" name="salvar_params" type="submit" value="Salvar"/>
+                        </td>
+                        <td style="width: 40%; text-align: center;">
+                            <a style="font-size: 18px;"><b>Limites de Operação do Transformador Elevador: </b></a>
+                            <input id="submit" name="salvar_params" type="submit" value="Salvar"/>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <table id="val_table">
+                                <tr>
+                                    <th>Grade</th>
+                                    <th>Alerta Perda</th>
+                                    <th>Perda Máxima</th>
+                                </tr>
+                                <tr>
+                                    <td>UG 1</td>
+                                    <td><input id="alerta_perda_grade_ug1" name="alerta_perda_grade_ug1" size=10 value="{{usina.alerta_perda_grade_ug1}}"/></td>
+                                    <td><input id="perda_grade_maxima_ug1" name="perda_grade_maxima_ug1" size=10 value="{{usina.ug1_perda_grade_maxima}}"/></td>
+                                </tr>
+                                <tr>
+                                    <td>UG 2</td>
+                                    <td><input id="alerta_perda_grade_ug2" name="alerta_perda_grade_ug2" size=10 value="{{usina.alerta_perda_grade_ug2}}"/></td>
+                                    <td><input id="perda_grade_maxima_ug2" name="perda_grade_maxima_ug2" size=10 value="{{usina.ug2_perda_grade_maxima}}"/></td>
+                                </tr>
+                            </table>
+                        </td>
+                        <td style="justify-content: center; display: flex;">
+                            <table id="val_table">
+                                <tr>
+                                    <th>Temperaturas</th>
+                                    <th>Alerta</th>
+                                    <th>Limite</th>
+                                </tr>
+                                <tr>
+                                    <td>Óleo</td>
+                                    <td><input id="alerta_temperatura_oleo_trafo" name="alerta_temperatura_oleo_trafo" size=10 value="{{usina.alerta_temperatura_oleo_trafo}}"/></td>
+                                    <td><input id="limite_temperatura_oleo_trafo" name="limite_temperatura_oleo_trafo" size=10 value="{{usina.limite_temperatura_oleo_trafo}}"/></td>
+                                </tr>
+                                <tr>
+                                    <td>Enrolamento</td>
+                                    <td><input id="alerta_temperatura_enrolamento_trafo" name="alerta_temperatura_enrolamento_trafo" size=10 value="{{usina.alerta_temperatura_enrolamento_trafo}}"/></td>
+                                    <td><input id="limite_temperatura_enrolamento_trafo" name="limite_temperatura_enrolamento_trafo" size=10 value="{{usina.limite_temperatura_enrolamento_trafo}}"/></td>
+                                </tr>
+                            </table>
+                        </td>
+                    </tr>
+                </table>
                 <br>
                 <div style="margin-top: 30px; justify-content: center; display: flex;">
                     <b style="margin-bottom: 8px; font-size: 18px;">Limites de Operação das Unidades de Geração: </b>

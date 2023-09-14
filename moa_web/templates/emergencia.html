@@ -24,20 +24,22 @@
 </head>
 <body>
     <div id="content_container">
-        <h1 style="margin-bottom: 1px;">Emergência</h1>
-        <p style="margin-top: 15px; margin-bottom: 1px; font-size: 16px;">Página de emergência</p>
-        <p style="margin-top: 5px; margin-bottom: 40px;">Atualizado em  {{ timestamp }}</p>
-        <p style="margin-bottom: 8px;"><b>Estado:</b>  {{ descr }}</p>
-        <form method='post' action='/parametros_moa/emergencia/'>
-            {% csrf_token %}
-            {% if estado > 0 %}
+        <h1 style="margin-bottom: 1px; text-align: center;">Emergência</h1>
+        <p style="margin-top: 15px; margin-bottom: 1px; font-size: 16px; text-align: center;">Página de emergência</p>
+        <p style="margin-top: 5px; margin-bottom: 40px; text-align: center;">Atualizado em  {{ timestamp }}</p>
+        <p style="margin-bottom: 8px; text-align: center;"><b>Estado:</b>  {{ descr }}</p>
+        <div style="justify-content: center; display: flex;">
+            <form method='post' action='/parametros_moa/emergencia/'>
+                {% csrf_token %}
+                {% if estado > 0 %}
                 <input type="hidden" id="codigo_emergencia" name="codigo_emergencia" value="0">
                 <input type="submit" value="Remover Emergência"/>
-            {% else %}
+                {% else %}
                 <input type="hidden" id="codigo_emergencia" name="codigo_emergencia" value="100">
                 <input type="submit" value="Acionar emergência (cod 100)"/>
-            {% endif %}
-        </form>
+                {% endif %}
+            </form>
+        </div>
     </div>
 </body>
 </html>

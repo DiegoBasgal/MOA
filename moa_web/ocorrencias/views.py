@@ -21,19 +21,14 @@ def ocorrencias_view(request, *args, **kwargs):
         try:
             log.append(
                 {
-                    "datahora": datetime.strptime(
-                        " ".join(line.split()[0:2]), "%Y-%m-%d %H:%M:%S,%f"
-                    ).strftime("%d/%m/%Y\n%H:%M:%S"),
-                    "severidade": line.split("] [")[1],
-                    "conteudo": "[" + "] [".join(line.split("] [")[2:]),
+                    "datahora": datetime.strptime(" ".join(line.split()[0:2]), "%Y-%m-%d %H:%M:%S,%f").strftime("%d/%m/%Y\n%H:%M:%S"),
+                    "severidade": line.split(" [")[1],
+                    "conteudo": "".join(line.split("] [")[2:]),
                 }
             )
         except:
-            log.append(
-                {
-                    "conteudo": "".join(line),
-                }
-            )
+            log.append({"conteudo": "".join(line),})
+
     context = {"log": log[-nlinhas:]}
 
     return render(request, "ocorrencias.html", context=context)

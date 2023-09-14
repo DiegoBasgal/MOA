@@ -48,11 +48,11 @@
 <body>
     <div id="content_container">
         <div>
-            <h1 style="margin-bottom: 1px;">Ocorrências</h1>
-            <p style="margin-top: 15px; margin-bottom: 40px; font-size: 16px;">Página de monitoramento de ocorrências.</p>
+            <h1 style="margin-bottom: 1px; text-align: center;">Ocorrências</h1>
+            <p style="margin-top: 15px; margin-bottom: 40px; font-size: 16px; text-align: center;">Página de monitoramento de ocorrências.</p>
         </div>
 
-        <div>
+        <div style="justify-content: center; display: flex;">
             <form action = "">
                 <a>Número de linhas na busca: </a>
                 <select id="nlinhas" name="nlinhas">
@@ -65,7 +65,8 @@
             </form><br>
         </div>
 
-        <div>
+        <br>
+        <div style="justify-content: center; display: flex;">
             <table>
                 <tr>
                     <th>Data</th>
@@ -78,10 +79,10 @@
                         {{ linha.datahora }}
                     </td>
                     <td>
-                        [{{ linha.severidade }}]
+                        [{{ linha.severidade }}
                     </td>
                     <td style="text-align: left;">
-                        {{ linha.conteudo }}
+                        [{{ linha.conteudo }}
                     </td>
                 </tr>
                 {% endfor %}
