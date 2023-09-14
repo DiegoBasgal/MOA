@@ -328,12 +328,13 @@ class Usina:
         """
 
         if self.tda.nivel_montante.valor >= self.cfg["nv_maximo"]:
-            logger.debug("[TDA] Nível montante acima do máximo.")
+            logger.debug("[TDA] Nível Montante acima do Máximo.")
             logger.debug(f"[TDA]          Leitura:                   {self.tda.nivel_montante.valor:0.3f}")
             logger.debug("")
 
             if self.tda.nivel_montante_anterior >= NIVEL_MAXIMORUM:
-                logger.critical(f"[TDA] Nivel montante ({self.tda.nivel_montante_anterior:3.2f}) atingiu o maximorum!")
+                logger.critical(f"[TDA] Nivel Montante ({self.tda.nivel_montante_anterior:3.2f}) atingiu o Maximorum!")
+                logger.debug("")
                 return NV_EMERGENCIA
             else:
                 self.controle_i = 0.5
@@ -344,7 +345,7 @@ class Usina:
                     ug.step()
 
         elif self.tda.nivel_montante.valor <= self.cfg["nv_minimo"] and not self.tda.aguardando_reservatorio:
-            logger.debug("[TDA] Nível montante abaixo do mínimo.")
+            logger.debug("[TDA] Nível Montante abaixo do Mínimo.")
             logger.debug(f"[TDA]          Leitura:                   {self.tda.nivel_montante.valor:0.3f}")
             logger.debug("")
             self.tda.aguardando_reservatorio = True
@@ -354,12 +355,18 @@ class Usina:
                 ug.step()
 
             if self.tda.nivel_montante_anterior <= NIVEL_FUNDO_RESERVATORIO:
-                logger.critical(f"[TDA] Nivel montante ({self.tda.nivel_montante_anterior:3.2f}) atingiu o fundo do reservatorio!")
+                logger.critical(f"[TDA] Nível Montante ({self.tda.nivel_montante_anterior:3.2f}) atingiu o fundo do reservatorio!")
+                logger.debug("")
                 return NV_EMERGENCIA
 
         elif self.tda.aguardando_reservatorio:
-            if self.tda.nivel_montante.valor >= self.cfg["nv_alvo"]:
-                logger.debug("[TDA] Nível montante dentro do limite de operação.")
+            logger.debug("[TDA] Aguardando Nível Montante...")
+            logger.debug(f"[TDA]          Leitura:                   {self.tda.nivel_montante.valor:0.3f}")
+            logger.debug(f"[TDA]          Nível de Religamento:      {self.cfg['nv_religamento']:0.3f}")
+            logger.debug("")
+
+            if self.tda.nivel_montante.valor >= self.cfg["nv_religamento"]:
+                logger.debug("[TDA] Nível Montante dentro do limite de operação.")
                 logger.debug(f"[TDA]          Leitura:                   {self.tda.nivel_montante.valor:0.3f}")
                 logger.debug("")
                 self.tda.aguardando_reservatorio = False
@@ -528,7 +535,7 @@ class Usina:
         """
         Função para verificar leituras/condições específicas e determinar a Prioridade das Unidades.
         """
-        
+
         ls = [ug for ug in self.ugs if ug.disponivel and not ug.etapa == UG_PARANDO]
 
         if self.modo_prioridade_ugs in (UG_PRIORIDADE_1, UG_PRIORIDADE_2):
@@ -557,7 +564,7 @@ class Usina:
         for ug in self.ugs:
             ug.atualizar_limites(parametros)
 
-        self.heartbeat()
+        # self.heartbeat()
 
     def atualizar_valores_banco(self, parametros) -> "None":
         """
@@ -603,6 +610,7 @@ class Usina:
             self.cfg["nv_alvo"] = float(parametros["nv_alvo"])
             self.cfg["nv_minimo"] = float(parametros["nv_minimo"])
             self.cfg["nv_maximo"] = float(parametros["nv_maximo"])
+            self.cfg["nv_religamento"] = float(parametros["nv_religamento"])
 
             self.cfg["pot_maxima_alvo"] = float(parametros["pot_nominal"])
             self.cfg["pot_maxima_ug"] = float(parametros["pot_nominal_ug"])
