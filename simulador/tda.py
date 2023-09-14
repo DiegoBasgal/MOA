@@ -68,7 +68,7 @@ class Tda:
         self.dict['TDA']['q_sanitaria'] = self.calcular_q_sanitaria()
         self.dict['TDA']['q_vertimento'] = 0
 
-        for ug in range(1):
+        for ug in range(2):
             self.dict['TDA']['q_liquida'] -= self.dict[f'UG{ug + 1}'][f'q']
 
 
@@ -79,9 +79,9 @@ class Tda:
         if self.dict['TDA']['nv_montante'] >= USINA_NV_VERTEDOURO:
             self.dict['TDA']['q_vertimento'] = self.dict['TDA']['q_liquida']
             self.dict['TDA']['q_liquida'] = 0
-            self.dict['TDA']['nv_montante'] = (0.0000021411 * self.dict["q_vertimento"] ** 3
-                                            - 0.00025189 * self.dict["q_vertimento"] ** 2
-                                            + 0.014859 * self.dict["q_vertimento"]
+            self.dict['TDA']['nv_montante'] = (0.0000021411 * self.dict['TDA']["q_vertimento"] ** 3
+                                            - 0.00025189 * self.dict['TDA']["q_vertimento"] ** 2
+                                            + 0.014859 * self.dict['TDA']["q_vertimento"]
                                             + 462.37)
 
         self.volume += self.dict['TDA']['q_liquida'] * self.segundos_por_passo
@@ -89,7 +89,7 @@ class Tda:
 
     def atualizar_modbus(self) -> 'None':
 
-        DB.set_words(MB['TDA']['NV_MONTANTE'], [self.dict['TDA']['nv_montante'] * 100])
+        DB.set_words(MB['TDA']['NV_MONTANTE'], [int((self.dict['TDA']['nv_montante'] - 400) * 1000)])
         DB.set_words(MB['TDA']['NV_JUSANTE_CP1'], [round((self.dict['TDA']['nv_jusante_grade']) * 10000)])
         DB.set_words(MB['TDA']['NV_JUSANTE_CP2'], [round((self.dict['TDA']['nv_jusante_grade']) * 10000)])
 

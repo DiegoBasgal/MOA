@@ -174,7 +174,7 @@ class Ui_Form(object):
         self.lcdNumber_montante.setFrameShape(QtWidgets.QFrame.WinPanel)
         self.lcdNumber_montante.setFrameShadow(QtWidgets.QFrame.Sunken)
         self.lcdNumber_montante.setSmallDecimalPoint(True)
-        self.lcdNumber_montante.setDigitCount(5)
+        self.lcdNumber_montante.setDigitCount(6)
         self.lcdNumber_montante.setSegmentStyle(QtWidgets.QLCDNumber.Flat)
         self.lcdNumber_montante.setProperty("value", 0.0)
         self.lcdNumber_montante.setProperty("intValue", 0)
