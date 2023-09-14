@@ -75,12 +75,14 @@ class Se:
 
         if self.dict['SE']['condic'] and not self.dict['BRD']['se_condic']:
             self.dict['BRD']['se_condic'] = True
-            self.tripar_dj()
             ESC.escrever_bit(MB['SE']['CONDIC'], valor=1)
+            print("Tripou a SE.")
+            self.tripar_dj()
 
         elif not self.dict['SE']['condic'] and self.dict['BRD']['se_condic']:
             self.dict['BRD']['se_condic'] = False
             ESC.escrever_bit(MB['SE']['CONDIC'], valor=0)
+            print("Resetou a SE")
 
 
     def verificar_tensao_dj(self) -> "None":

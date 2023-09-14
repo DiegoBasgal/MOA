@@ -32,7 +32,7 @@ class Controlador:
 
         self.tempo_afluente = []
 
-        with open('C:/Users/diego.garcia/Desktop/operacao-autonoma/simulador/dicts/entrada_afluente.csv', 'r') as fp:
+        with open('C:/Users/diego.garcia/Desktop/operacao-autonoma/simulador/dicts/entrada_afluente_2.csv', 'r') as fp:
             rawlines = fp.readlines()
 
         i = 0
@@ -77,7 +77,6 @@ class Controlador:
 
 
                 if self.tempo_afluente[contador_afluente][2] == 9910 and not self.b_ug1:
-                    print("[CONTROLE] TRIP UG1")
                     self.b_ug1 = True
                     self.dict['UG1']['condic'] = True
 
@@ -85,7 +84,6 @@ class Controlador:
                     self.b_ug1 = False
 
                 if self.tempo_afluente[contador_afluente][2] == 9920 and not self.b_ug2:
-                    print("[CONTROLE] TRIP UG2")
                     self.b_ug2 = True
                     self.dict['UG2']['condic'] = True
 
@@ -93,7 +91,6 @@ class Controlador:
                     self.b_ug2 = False
 
                 if self.tempo_afluente[contador_afluente][2] == 9930 and not self.b_bay:
-                    print("[CONTROLE] TRIP BAY")
                     self.b_bay = True
                     self.dict['BAY']['condic'] = True
 
@@ -101,7 +98,6 @@ class Controlador:
                     self.b_bay = False
 
                 if self.tempo_afluente[contador_afluente][2] == 9940 and not self.b_se:
-                    print("[CONTROLE] TRIP SE")
                     self.b_se = True
                     self.dict['SE']['condic'] = True
 

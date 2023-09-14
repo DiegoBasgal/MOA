@@ -130,7 +130,7 @@ MB = {
 
 
 
-MB["SE"]["CONDIC"] = [999, 4]
+MB["SE"]["CONDIC"] = [995, 4]
 MB["UG1"]["CONDIC"] = [10995, 4]
 MB["UG2"]["CONDIC"] = [20995, 4]
 MB["BAY"]["CONDIC"] = [30999, 4]

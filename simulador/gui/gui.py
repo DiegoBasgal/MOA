@@ -55,7 +55,7 @@ class Window(QMainWindow, Ui_Form):
             self.lcdNumber_tensaoLinha.display(self.dict['BAY']['tensao_vab'])
 
             # TDA
-            self.lcdNumber_montante.display(f"{self.dict['TDA']['nv_montante']:3.2f}")
+            self.lcdNumber_montante.display(f"{self.dict['TDA']['nv_montante']:3.4f}")
             self.lcdNumber_Q_afluente.display(f"{self.dict['TDA']['q_alfuente']:2.3f}")
             self.lcdNumber_Q_liquida.display(f"{self.dict['TDA']['q_liquida']:2.3f}")
             self.lcdNumber_Q_sanitaria.display(f"{self.dict['TDA']['q_sanitaria']:2.3f}")
