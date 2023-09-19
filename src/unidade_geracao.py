@@ -71,6 +71,7 @@ class UnidadeGeracao:
             op=4,
             escala=1/60
         )
+        """
         __C1 = LeituraModbusCoil(
             descr=f"UG{self.id}_Sincronizada",
             modbus_client=self.clp[f"UG{self.id}"],
@@ -97,6 +98,14 @@ class UnidadeGeracao:
             leitura2=__C2,
             leitura3=__C3,
             leitura4=__C4,
+        )
+        """
+
+        # Leitura de Etapa Utilizada apenas no Simulador (Remover em Produção!):
+        self.__leitura_etapa_atual = LeituraModbus(
+            f"[UG{self.id}] Leitura Etapa Atual",
+            self.clp[f"UG{self.id}"],
+            REG[f"UG{self.id}_SIM_Etapa_Atual"]
         )
 
         self.__tempo_entre_tentativas: "int" = 0
@@ -215,24 +224,27 @@ class UnidadeGeracao:
     def etapa_atual(self) -> "int":
         # PROPRIEDADE -> Retorna a etapa atual da Unidade.
 
-        try:
-            response = self.__leitura_etapa_atual.valor
-            # TODO descrever os valores do CLP
-            if response == 1:
-                return UG_SINCRONIZADA
-            elif 2 <= response <= 3:
-                return UG_PARANDO
-            elif 4 <= response <= 7:
-                return UG_PARADA
-            elif 8 <= response <= 15:
-                return UG_SINCRONIZANDO
-            else:
-                return self.__ultima_etapa_atual
+        # Retorno apenas para o Simulador (Remover em Produção!):
+        return self.__leitura_etapa_atual.valor
 
-        except Exception:
-            logger.error(f"[UG{self.id}] Não foi possível realizar a leitura de Etapa Atual.")
-            logger.debug(traceback.format_exc())
-            return self.__ultima_etapa_atual
+        # try:
+        #     response = self.__leitura_etapa_atual.valor
+
+        #     if response == 5:
+        #         return UG_SINCRONIZADA
+        #     elif 2 <= response <= 3:
+        #         return UG_PARANDO
+        #     elif 4 <= response <= 7:
+        #         return UG_PARADA
+        #     elif 8 <= response <= 15:
+        #         return UG_SINCRONIZANDO
+        #     else:
+        #         return self.__ultima_etapa_atual
+
+        # except Exception:
+        #     logger.error(f"[UG{self.id}] Não foi possível realizar a leitura de Etapa Atual.")
+        #     logger.debug(traceback.format_exc())
+        #     return self.__ultima_etapa_atual
 
 
     # Property/Setter -> VARIÁVEIS PROTEGIDAS
