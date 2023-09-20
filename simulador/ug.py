@@ -46,7 +46,12 @@ class Ug:
         if self.sim_db.get_words(REG[f"UG{self.id}_CMD_Partida"])[0] == 1 or self.dict[f"UG{self.id}"]["debug_partir"]:
             self.sim_db.set_words(REG[f"UG{self.id}_CMD_Partida"], [0])
             self.dict[f"UG{self.id}"]["debug_partir"] = False
-            self.partir()
+
+            if self.dict[f"UG{self.id}"]["etapa_aux"] == UG_PARANDO:
+                logger.debug(f"[UG{self.id}] Não é possível partir a Unidade em processo de Parada.")
+                pass
+            else:
+                self.partir()
 
         if self.sim_db.get_words(REG[f"UG{self.id}_CMD_Parada"])[0] == 1 or self.dict[f"UG{self.id}"]["debug_parar"]:
             self.sim_db.set_words(REG[f"UG{self.id}_CMD_Parada"], [0])

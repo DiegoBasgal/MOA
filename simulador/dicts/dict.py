@@ -67,6 +67,7 @@ compartilhado = {
 
         "trip": False,
         "condicionador": False,
+        "maquina_parada": False,
         "reconhece_reset": False,
 
         "debug_setpoint": 0,
@@ -101,6 +102,7 @@ compartilhado = {
 
         "trip": False,
         "condicionador": False,
+        "maquina_parada": False,
         "reconhece_reset": False,
 
         "debug_setpoint": 0,
@@ -135,6 +137,7 @@ compartilhado = {
 
         "trip": False,
         "condicionador": False,
+        "maquina_parada": False,
         "reconhece_reset": False,
 
         "debug_setpoint": 0,
