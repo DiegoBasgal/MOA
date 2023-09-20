@@ -40,10 +40,17 @@ class BancoDados:
         Função para extrair os parâmetros alterados na Interface WEB.
         """
 
-        self.cursor.execute("SHOW COLUMNS FROM parametros_parametrosusina")
+        self.cursor.execute(
+            "SHOW COLUMNS "
+            "FROM parametros_parametrosusina"
+        )
         cols = self.cursor.fetchall()
 
-        self.cursor.execute("SELECT * FROM parametros_parametrosusina WHERE id = 1")
+        self.cursor.execute(
+            "SELECT * "
+            "FROM parametros_parametrosusina "
+            "WHERE id = 1"
+        )
         parametros_raw = self.cursor.fetchone()
         parametros = {}
 
@@ -68,13 +75,16 @@ class BancoDados:
         self.conn.commit()
         return result
 
-    def get_contato_emergencia(self) -> "list":
+    def get_contato_emergencia(self) -> "dict":
         """
         Função para extrair lista de contatos de sobreaviso adicionados na Interface
         WEB, para chamada por Voip.
         """
 
-        self.cursor.execute("SELECT * FROM contatos_contato")
+        self.cursor.execute(
+            "SELECT * "
+            "FROM contatos_contato"
+        )
         rows = self.cursor.fetchall()
         parametros = {}
 
@@ -93,7 +103,8 @@ class BancoDados:
         self.cursor.execute(
             "SELECT executavel_em_automatico, executavel_em_manual "
             "FROM parametros_comando "
-            "WHERE id = %s", tuple([id_comando])
+            "WHERE id = %s",
+            tuple([id_comando])
         )
         parametros_raw = self.cursor.fetchone()
 
@@ -193,7 +204,7 @@ class BancoDados:
         """
         Função para atualizar os valores de operação DEBUG do MOA no Banco.
         """
-        
+
         self.cursor.execute(
             "INSERT INTO `debug`.`moa_debug` "
             "VALUES (%s,%s, "
@@ -215,7 +226,7 @@ class BancoDados:
         """
         Função para atualizar o último estado das Unidades de Geração no Banco.
         """
-        
+
         self.cursor.execute(
             "INSERT INTO parametros_controleestados "
             "VALUES (%s,%s, "
@@ -229,7 +240,7 @@ class BancoDados:
         Função para atualizar a lista de acionamentos/alarmes para visualização
         na interface WEB.
         """
-        
+
         self.cursor.execute(
             "INSERT INTO alarmes_alarmes "
             "VALUES (%s, %s, %s);",
@@ -242,7 +253,7 @@ class BancoDados:
         Função para atualizar se o agendamento foi executado no Banco para a interface
         WEB.
         """
-        
+
         if len(obs) >= 1:
             obs = " - " + obs
 
