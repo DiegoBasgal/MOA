@@ -59,10 +59,6 @@ class Bay:
         elif self.dict['SE']['dj_aberto']:
             self.dict['BAY']['tensao_vs'] = 0
 
-
-        self.dict['BAY']['tensao_vab'] = np.random.normal(self.dict['BAY']['tensao_vab'], 10 * self.escala_ruido)
-        self.dict['BAY']['tensao_vbc'] = np.random.normal(self.dict['BAY']['tensao_vbc'], 10 * self.escala_ruido)
-        self.dict['BAY']['tensao_vca'] = np.random.normal(self.dict['BAY']['tensao_vca'], 10 * self.escala_ruido)
         self.dict['BAY']['potencia_mp'] = max(0, (np.random.normal(self.dict['SE']['potencia_se'] * 0.98, 10 * self.escala_ruido) - 20))
         self.dict['BAY']['potencia_mr'] = max(0, (np.random.normal(self.dict['SE']['potencia_se'] * 0.98, 10 * self.escala_ruido) - 20))
 

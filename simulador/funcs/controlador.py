@@ -79,6 +79,9 @@ class Controlador:
                 if self.tempo_afluente[contador_afluente][2] == 9910 and not self.b_ug1:
                     self.b_ug1 = True
                     self.dict['UG1']['condic'] = True
+                    self.dict['UG2']['condic'] = True
+                    self.dict['BAY']['condic'] = True
+                    self.dict['SE']['condic'] = True
 
                 elif self.tempo_afluente[contador_afluente][2] != 9910 and self.b_ug1:
                     self.b_ug1 = False
