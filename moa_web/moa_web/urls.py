@@ -44,7 +44,6 @@ urlpatterns = [
     path("contatos/", contatos_view, name="contatos"),
     path("contatos/adicionar/", adicionar, name="adicionar"),
     path("contatos/deletar/<int:id>", deletar, name="deletar"),
-    path("contatos/adicionar/retornar/", retornar, name="retornar"),
 
     path("modo_manual/", comandos_manual_view, name="comandos_manual"),
     path("modo_manual/disjuntor/", comando_dj52l, name="comandos_disjuntor"),

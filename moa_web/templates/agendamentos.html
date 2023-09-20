@@ -51,57 +51,67 @@
 </head>
 <body>
     <div id="content_container">
-        <h1 style="margin-bottom: 5px;">Agendamentos</h1>
-        <p style="margin-bottom: 1px; margin-bottom: 40px;">Página de agendamentos</p>
-        <a href="novo_agendamento">Novo agendamento</a><br>
-        <a href="novo_agendamento_rapido">Novo agendamento rápido</a>
-        <h3 style="margin-top: 40px ;margin-bottom: 8px;">Lista de Agendamentos</h3>
-        <table style="text-align:center" border="solid 1px black">
-            <tr height="75px">
-               <th width="50px">id</th>
-               <th width="200px">Data e Hora</th>
-               <th width="300px">Código Comando</th>
-               <th width="500px">Observações</th>
-            </tr>
-            {% for ag in agendamentos %}
-            <tr height="50px">
-                <td><a href="{{ ag.id }}/">{{ ag.id}}</a></td>
-                <td>{{ ag.data|date:"d/M/Y - H:i:s" }}</td>
-                <td>{{ ag.comando.id}} - {{ ag.comando.nome }}</td>
-                <td>{{ ag.observacao}}</td>
-            </tr>
-            {% endfor %}
-        </table>
+        <h1 style="margin-bottom: 5px; text-align: center;">Agendamentos</h1>
+        <p style="margin-bottom: 1px; margin-bottom: 40px; text-align: center;">Página de agendamentos</p>
+        <div style="justify-content: center; display: flex;">
+            <a style="border: solid 2px black; padding: 2px; padding-bottom: 4px;" href="novo_agendamento">Novo agendamento</a>
+        </div>
+        <div style="justify-content: center; display: flex;">
+            <a style="margin-top: 10px; border: solid 2px black; padding: 2px; padding-bottom: 4px;" href="novo_agendamento_rapido">Novo agendamento rápido</a>
+        </div>
+        <h3 style="margin-top: 40px; margin-bottom: 8px; text-align: center;">Lista de Agendamentos</h3>
+        <div style="justify-content: center; display: flex;">
+            <table style="text-align:center" border="solid 1px black">
+                <tr height="75px">
+                   <th width="50px">id</th>
+                   <th width="200px">Data e Hora</th>
+                   <th width="300px">Código Comando</th>
+                   <th width="500px">Observações</th>
+                </tr>
+                {% for ag in agendamentos %}
+                <tr height="50px">
+                    <td><a href="{{ ag.id }}/">{{ ag.id}}</a></td>
+                    <td>{{ ag.data|date:"d/M/Y - H:i:s" }}</td>
+                    <td>{{ ag.comando.id}} - {{ ag.comando.nome }}</td>
+                    <td>{{ ag.observacao}}</td>
+                </tr>
+                {% endfor %}
+            </table>
+        </div>
         <br>
-        <h3 style="margin-top: 40px ;margin-bottom: 8px;">Referência dos códigos dos comandos</h3>
-        <table style="text-align:center" border="solid 1px black">
-            <tr>
-               <th width="50px">id</th>
-               <th width="310px">Comando</th>
-               <th width="695px">Descrição</th>
-            </tr>
-            {% for comando in comandos %}
-            <tr><td>{{ comando.id }}</td><td>{{ comando.nome }}</td><td>{{ comando.descricao }}</td></tr>
-            {% endfor %}
-        </table>
+        <h3 style="margin-top: 40px ;margin-bottom: 8px; text-align: center;">Referência dos códigos dos comandos</h3>
+        <div style="justify-content: center; display: flex;">
+            <table style="text-align:center" border="solid 1px black">
+                <tr>
+                    <th width="50px">id</th>
+                    <th width="310px">Comando</th>
+                    <th width="695px">Descrição</th>
+                </tr>
+                {% for comando in comandos %}
+                <tr><td>{{ comando.id }}</td><td>{{ comando.nome }}</td><td>{{ comando.descricao }}</td></tr>
+                {% endfor %}
+            </table>
+        </div>
         <br>
-        <h3 style="margin-top: 40px ;margin-bottom: 8px;">Lista de Agendamentos executados</h3>
-        <table style="text-align:center" border="solid 1px black">
-            <tr height="75px">
-               <th width="50px">id</th>
-               <th width="200px">Data e Hora</th>
-               <th width="300px">Código Comando</th>
-               <th width="500px">Observações</th>
-            </tr>
-            {% for ag in agendamentos_executados %}
-            <tr height="50px">
-                <td><a href="{{ ag.id }}/">{{ ag.id}}</a></td>
-                <td>{{ ag.data|date:"d/M/Y - H:i:s" }}</td>
-                <td width="300px">{{ ag.comando.id}} - {{ ag.comando.nome }}</td>
-                <td>{{ ag.observacao}}</td>
-            </tr>
-            {% endfor %}
-        </table>
+        <h3 style="margin-top: 40px ;margin-bottom: 8px; text-align: center;">Lista de Agendamentos executados</h3>
+        <div style="justify-content: center; display: flex;">
+            <table style="text-align:center" border="solid 1px black">
+                <tr height="75px">
+                    <th width="50px">id</th>
+                    <th width="200px">Data e Hora</th>
+                    <th width="300px">Código Comando</th>
+                    <th width="500px">Observações</th>
+                </tr>
+                {% for ag in agendamentos_executados %}
+                <tr height="50px">
+                    <td><a href="{{ ag.id }}/">{{ ag.id}}</a></td>
+                    <td>{{ ag.data|date:"d/M/Y - H:i:s" }}</td>
+                    <td width="300px">{{ ag.comando.id}} - {{ ag.comando.nome }}</td>
+                    <td>{{ ag.observacao}}</td>
+                </tr>
+                {% endfor %}
+            </table>
+        </div>
         <br>
         <br>
     </div>
