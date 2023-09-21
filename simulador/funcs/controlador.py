@@ -21,10 +21,10 @@ class Controlador:
         self.dict = compartilhado
 
         self.cnx = mariadb.ConnectionPool(
-            host='172.21.15.999',
+            host='172.21.15.228',
             user='moa',
             password='&264H3$M@&z$',
-            database='django_db',
+            database='debug',
             pool_name='sim_control',
             pool_size=10,
             pool_validation_interval=250,
@@ -40,7 +40,7 @@ class Controlador:
 
         self.tempo_afluente = []
 
-        with open('C:/Users/diego.garcia/Desktop/operacao-autonoma/simulador/dicts/entrada_afluente.csv', 'r') as fp:
+        with open('C:/opt/operacao-autonoma/simulador/dicts/entrada_afluente.csv', 'r') as fp:
             rawlines = fp.readlines()
 
         i = 0

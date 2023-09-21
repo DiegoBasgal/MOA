@@ -169,7 +169,7 @@ class Se:
 
 
     def atualizar_modbus(self) -> "None":
-        self.sim_db.set_words(REG["SE_P"],[round(self.dict["SE"]["potencia_se"])])
-        self.sim_db.set_words(REG["SE_R"],[round(self.dict["SE"]["tensao_linha"] / 10)])
-        self.sim_db.set_words(REG["SE_S"],[round(self.dict["SE"]["tensao_linha"] / 10)])
-        self.sim_db.set_words(REG["SE_T"],[round(self.dict["SE"]["tensao_linha"] / 10)])
+        self.sim_db.set_words(REG["SE_P"],[int(self.dict["SE"]["potencia_se"])])
+        self.sim_db.set_words(REG["SE_R"],[int(self.dict["SE"]["tensao_linha"] / 1000)])
+        self.sim_db.set_words(REG["SE_S"],[int(self.dict["SE"]["tensao_linha"] / 1000)])
+        self.sim_db.set_words(REG["SE_T"],[int(self.dict["SE"]["tensao_linha"] / 1000)])

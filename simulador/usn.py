@@ -26,19 +26,17 @@ class Usn:
         self.dict = dict_comp
         self.sim_db = data_bank
 
-        self.speed = tempo.velocidade
-        self.escala_ruido = tempo.escala_ruido
-        self.passo_simulacao = tempo.passo_simulacao
-        self.segundos_por_passo = self.passo_simulacao * self.speed
-
         self.se = Se(dict_comp, tempo, data_bank)
         self.tda = Tda(dict_comp, tempo, data_bank)
 
-        ug1 = Ug(1, dict_comp, tempo, data_bank)
-        ug2 = Ug(2, dict_comp, tempo, data_bank)
-        ug3 = Ug(3, dict_comp, tempo, data_bank)
-        self.ugs = [ug1, ug2, ug3]
+        self.ug1 = Ug(1, dict_comp, tempo, data_bank)
+        self.ug2 = Ug(2, dict_comp, tempo, data_bank)
+        self.ug3 = Ug(3, dict_comp, tempo, data_bank)
+        self.ugs = [self.ug1, self.ug2, self.ug3]
 
+        self.escala_ruido = tempo.escala_ruido
+        self.passo_simulacao = tempo.passo_simulacao
+        self.segundos_por_passo = tempo.segundos_por_passo
 
         self.b_condic = False
 
@@ -78,7 +76,9 @@ class Usn:
 
                 self.se.passo()
                 self.tda.passo()
-                for ug in self.ugs: ug.passo()
+                self.ug1.passo()
+                self.ug2.passo()
+                self.ug3.passo()
 
                 lock.release()
 

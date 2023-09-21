@@ -505,15 +505,16 @@ class UnidadeGeracao:
         """
 
         try:
-            if not self.clp[f"UG{self.id}"].read_discrete_inputs(REG[f"UG{self.id}_ED_CondicaoPartida"], 1)[0]:
-                logger.debug(f"[UG{self.id}]          Máquina sem condição de partida. Irá partir quando as condições forem reestabelecidas.")
-                return
+            # if not self.clp[f"UG{self.id}"].read_discrete_inputs(REG[f"UG{self.id}_ED_CondicaoPartida"], 1)[0]:
+            #     logger.debug(f"[UG{self.id}]          Máquina sem condição de partida. Irá partir quando as condições forem reestabelecidas.")
+            #     return
 
-            elif self.clp["SA"].read_coils(REG["SA_ED_QCAP_Disj52A1Fechado"])[0] != 0:
-                logger.info(f"[UG{self.id}]           O Disjuntor 52A1 está aberto. Para partir a máquina, o mesmo deverá ser fechado.")
-                return
+            # elif self.clp["SA"].read_coils(REG["SA_ED_QCAP_Disj52A1Fechado"])[0] != 0:
+            #     logger.info(f"[UG{self.id}]           O Disjuntor 52A1 está aberto. Para partir a máquina, o mesmo deverá ser fechado.")
+            #     return
 
-            elif not self.etapa_atual == UG_SINCRONIZADA and self.tentativas_sincronismo <= 3:
+            # elif...
+            if not self.etapa_atual == UG_SINCRONIZADA and self.tentativas_sincronismo <= 3:
                 self.tentativas_sincronismo += 1
 
                 logger.info(f"[UG{self.id}]          Enviando comando:          \"PARTIDA\"")
@@ -521,8 +522,8 @@ class UnidadeGeracao:
                 self.clp[f"UG{self.id}"].write_single_coil(REG[f"UG{self.id}_CD_ResetRV"], [1])
                 self.clp[f"UG{self.id}"].write_single_coil(REG[f"UG{self.id}_CD_ResetReleRT"], [1])
                 self.remover_trip_logico()
-                self.clp[f"UG{self.id}"].write_single_coil(REG[f"UG{self.id}_CD_IniciaPartida"], [1])
-                self.clp[f"UG{self.id}"].write_single_coil(REG[f"UG{self.id}_CD_Cala_Sirene"], [1])
+                self.clp[f"UG{self.id}"].write_single_register(REG[f"UG{self.id}_CD_IniciaPartida"], [1]) # write_single_coil
+                self.clp[f"UG{self.id}"].write_single_register(REG[f"UG{self.id}_CD_Cala_Sirene"], [1]) # write_single_coil
 
                 logger.debug(f"[UG{self.id}]          Tentativas de Sincronismo: {self.tentativas_sincronismo}/3")
 
@@ -554,8 +555,8 @@ class UnidadeGeracao:
                 logger.info(f"[UG{self.id}]          Enviando comando:          \"PARADA\"")
                 self.clp[f"UG{self.id}"].write_single_coil(REG[f"UG{self.id}_CD_AbortaPartida"], [1])
                 self.clp[f"UG{self.id}"].write_single_coil(REG[f"UG{self.id}_CD_AbortaSincronismo"], [1])
-                self.clp[f"UG{self.id}"].write_single_coil(REG[f"UG{self.id}_CD_IniciaParada"], [1])
-                self.clp[f"UG{self.id}"].write_single_coil(REG[f"UG{self.id}_CD_Cala_Sirene"], [1])
+                self.clp[f"UG{self.id}"].write_single_register(REG[f"UG{self.id}_CD_IniciaParada"], [1]) # write_single_coil
+                self.clp[f"UG{self.id}"].write_single_register(REG[f"UG{self.id}_CD_Cala_Sirene"], [1]) # write_single_coil
                 self.enviar_setpoint(self.setpoint)
             else:
                 logger.debug(f"[UG{self.id}] A unidade já está parada.")
@@ -582,7 +583,7 @@ class UnidadeGeracao:
             logger.debug(f"[UG{self.id}]          Enviando setpoint:         {int(setpoint_kw)} kW")
 
             if self.setpoint > 1:
-                response = self.clp[f"UG{self.id}"].write_single_coil(REG[f"UG{self.id}_CD_ResetGeral"], [1])
+                response = self.clp[f"UG{self.id}"].write_single_register(REG[f"UG{self.id}_CD_ResetGeral"], [1]) # write_single_coil
                 response = self.clp[f"UG{self.id}"].write_single_register(REG[f"UG{self.id}_RA_ReferenciaCarga"], int(self.setpoint))
                 return response
 

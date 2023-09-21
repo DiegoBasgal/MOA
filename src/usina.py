@@ -318,11 +318,11 @@ class Usina:
         """
 
         try:
-            if self.verificar_falha_dj_linha():
-                return False
-            else:
-                response = self.clp["SA"].write_single_coil(REG["SA_CD_Liga_DJ1"], [1])
-                return response
+            # if self.verificar_falha_dj_linha():
+            #     return False
+            # else:
+            response = self.clp["SA"].write_single_register(REG["SA_CD_Liga_DJ1"], [1]) # write_single_coil
+            return response
 
         except Exception:
             logger.error(f"[USN] Houver um erro ao fechar o Disjuntor de Linha.")

@@ -19,6 +19,7 @@ class Ug:
 
         self.dict = dict_comp
         self.sim_db = data_bank
+
         self.escala_ruido = tempo.escala_ruido
         self.segundos_por_passo = tempo.segundos_por_passo
 
@@ -47,7 +48,7 @@ class Ug:
             self.sim_db.set_words(REG[f"UG{self.id}_CMD_Partida"], [0])
             self.dict[f"UG{self.id}"]["debug_partir"] = False
 
-            if self.dict[f"UG{self.id}"]["etapa_aux"] == UG_PARANDO:
+            if not self.dict[f"UG{self.id}"]["maquina_parada"]:
                 logger.debug(f"[UG{self.id}] Não é possível partir a Unidade em processo de Parada.")
                 pass
             else:
@@ -152,6 +153,7 @@ class Ug:
     def controlar_etapas(self) -> "None":
         # Unidade Parada
         if self.etapa_atual == ETAPA_UP:
+            self.dict[f"UG{self.id}"]["maquina_parada"] = True
             self.potencia = 0
             self.dict[f"UG{self.id}"]["etapa_aux"] = UG_PARADA
 
@@ -160,15 +162,16 @@ class Ug:
                 self.dict[f"UG{self.id}"]["etapa_alvo"] = self.etapa_alvo
 
             elif self.etapa_alvo > self.etapa_atual:
+                self.dict[f"UG{self.id}"]["etapa_aux"] = UG_SINCRONIZANDO
                 self.tempo_na_transicao += self.segundos_por_passo
 
                 if self.tempo_na_transicao >= TEMPO_TRANS_US_UPS:
                     self.dict[f"UG{self.id}"]["etapa_atual"] = self.etapa_atual = ETAPA_UPGM
-                    self.dict[f"UG{self.id}"]["etapa_aux"] = UG_SINCRONIZANDO
                     self.tempo_na_transicao = 0
 
         # Unidade Pronta para Giro Mecânico
         if self.etapa_atual == ETAPA_UPGM:
+            self.dict[f"UG{self.id}"]["maquina_parada"] = False
             self.potencia = 0
 
             if self.etapa_alvo == self.etapa_atual:
@@ -176,23 +179,24 @@ class Ug:
                 self.dict[f"UG{self.id}"]["etapa_alvo"] = self.etapa_alvo
 
             elif self.etapa_alvo > self.etapa_atual:
+                self.dict[f"UG{self.id}"]["etapa_aux"] = UG_SINCRONIZANDO
                 self.tempo_na_transicao += self.segundos_por_passo
 
                 if self.tempo_na_transicao >= TEMPO_TRANS_UPGM_UVD:
                     self.dict[f"UG{self.id}"]["etapa_atual"] = self.etapa_atual = ETAPA_UVD
-                    self.dict[f"UG{self.id}"]["etapa_aux"] = UG_SINCRONIZANDO
                     self.tempo_na_transicao = 0
 
             elif self.etapa_alvo < self.etapa_atual:
+                self.dict[f"UG{self.id}"]["etapa_aux"] = UG_PARANDO
                 self.tempo_na_transicao -= self.segundos_por_passo
 
                 if self.tempo_na_transicao <= -TEMPO_TRANS_UPGM_UP:
                     self.dict[f"UG{self.id}"]["etapa_atual"] = self.etapa_atual = ETAPA_UP
-                    self.dict[f"UG{self.id}"]["etapa_aux"] = UG_PARANDO
                     self.tempo_na_transicao = 0
 
         # Unidade Vazio Desescitado
         if self.etapa_atual == ETAPA_UVD:
+            self.dict[f"UG{self.id}"]["maquina_parada"] = True
             self.potencia = 0
 
             if self.etapa_alvo == self.etapa_atual:
@@ -200,23 +204,24 @@ class Ug:
                 self.dict[f'UG{self.id}']['etapa_alvo'] = self.etapa_alvo
 
             elif self.etapa_alvo > self.etapa_atual:
+                self.dict[f"UG{self.id}"]["etapa_aux"] = UG_SINCRONIZANDO
                 self.tempo_na_transicao += self.segundos_por_passo
 
                 if self.tempo_na_transicao >= TEMPO_TRANS_UVD_UPS:
                     self.dict[f'UG{self.id}']['etapa_atual'] = self.etapa_atual = ETAPA_UPS
-                    self.dict[f"UG{self.id}"]["etapa_aux"] = UG_SINCRONIZANDO
                     self.tempo_na_transicao = 0
 
             elif self.etapa_alvo < self.etapa_atual:
+                self.dict[f"UG{self.id}"]["etapa_aux"] = UG_PARANDO
                 self.tempo_na_transicao -= self.segundos_por_passo
 
                 if self.tempo_na_transicao <= -TEMPO_TRANS_UVD_UPGM:
                     self.dict[f'UG{self.id}']['etapa_atual'] = self.etapa_atual = ETAPA_UPGM
-                    self.dict[f"UG{self.id}"]["etapa_aux"] = UG_PARANDO
                     self.tempo_na_transicao = 0
 
         # Unidade Pronta para Sincronismo
         if self.etapa_atual == ETAPA_UPS:
+            self.dict[f"UG{self.id}"]["maquina_parada"] = True
             self.potencia = 0
 
             if self.etapa_alvo == self.etapa_atual:
@@ -224,23 +229,24 @@ class Ug:
                 self.dict[f'UG{self.id}']['etapa_alvo'] = self.etapa_alvo
 
             elif self.etapa_alvo > self.etapa_atual:
+                self.dict[f"UG{self.id}"]["etapa_aux"] = UG_SINCRONIZANDO
                 self.tempo_na_transicao += self.segundos_por_passo
 
                 if self.tempo_na_transicao >= TEMPO_TRANS_UPS_US and self.dict['SE']['dj_fechado']:
                     self.dict[f'UG{self.id}']['etapa_atual'] = self.etapa_atual = ETAPA_US
-                    self.dict[f"UG{self.id}"]["etapa_aux"] = UG_SINCRONIZANDO
                     self.tempo_na_transicao = 0
 
             elif self.etapa_alvo < self.etapa_atual:
+                self.dict[f"UG{self.id}"]["etapa_aux"] = UG_PARANDO
                 self.tempo_na_transicao -= self.segundos_por_passo
 
                 if self.tempo_na_transicao <= -TEMPO_TRANS_UPS_UVD:
                     self.dict[f'UG{self.id}']['etapa_atual'] = self.etapa_atual = ETAPA_UVD
-                    self.dict[f"UG{self.id}"]["etapa_aux"] = UG_PARANDO
                     self.tempo_na_transicao = 0
 
         # Unidade Sincronizada
         if self.etapa_atual == ETAPA_US:
+            self.dict[f"UG{self.id}"]["maquina_parada"] = True
             if self.etapa_alvo == self.etapa_atual:
                 self.tempo_na_transicao = 0
                 self.dict[f"UG{self.id}"]["etapa_alvo"] = self.etapa_alvo
@@ -261,6 +267,8 @@ class Ug:
                     self.tempo_na_transicao = 0
 
             elif self.etapa_alvo < self.etapa_atual:
+                self.dict[f"UG{self.id}"]["maquina_parada"] = False
+                self.dict[f"UG{self.id}"]["etapa_aux"] = UG_PARANDO
                 self.tempo_na_transicao -= self.segundos_por_passo
                 self.potencia -= 10.4167 * self.segundos_por_passo
                 self.dict[f"UG{self.id}"]["potencia"] = self.potencia
@@ -268,7 +276,6 @@ class Ug:
                 if self.tempo_na_transicao <= -TEMPO_TRANS_US_UPS and self.potencia <= 0:
                     self.potencia = 0
                     self.dict[f"UG{self.id}"]["etapa_atual"] = self.etapa_atual = ETAPA_UPS
-                    self.dict[f"UG{self.id}"]["etapa_aux"] = UG_PARANDO
                     self.tempo_na_transicao = 0
 
 
@@ -292,4 +299,4 @@ class Ug:
         self.sim_db.set_words(REG[f"UG{self.id}_Temperatura_10"], [round(self.dict[f"UG{self.id}"]["tmp_saida_ar"])])
         self.sim_db.set_words(REG[f"UG{self.id}_Temperatura_11"], [round(self.dict[f"UG{self.id}"]["tmp_mancal_guia_escora"])])
         self.sim_db.set_words(REG[f"UG{self.id}_Temperatura_12"], [round(self.dict[f"UG{self.id}"]["tmp_mancal_guia_contra_escora"])])
-        self.sim_db.set_words(REG[f"UG{self.id}_Pressao_CX_Espiral"], [round(10 * self.dict[f"UG{self.id}"]["pressao_cx_espiral"])])
+        self.sim_db.set_words(REG[f"UG{self.id}_Pressao_CX_Espiral"], [round(100 * self.dict[f"UG{self.id}"]["pressao_cx_espiral"])])

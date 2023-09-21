@@ -33,7 +33,7 @@ compartilhado = {
     },
 
     "TDA": {
-        "nv_montante": 405.15,
+        "nv_montante": 404.90,
         "nv_jusante_grade": 0,
 
         "q_liquida": 0,
@@ -67,7 +67,7 @@ compartilhado = {
 
         "trip": False,
         "condicionador": False,
-        "maquina_parada": False,
+        "maquina_parada": True,
         "reconhece_reset": False,
 
         "debug_setpoint": 0,
@@ -102,7 +102,7 @@ compartilhado = {
 
         "trip": False,
         "condicionador": False,
-        "maquina_parada": False,
+        "maquina_parada": True,
         "reconhece_reset": False,
 
         "debug_setpoint": 0,
@@ -137,7 +137,7 @@ compartilhado = {
 
         "trip": False,
         "condicionador": False,
-        "maquina_parada": False,
+        "maquina_parada": True,
         "reconhece_reset": False,
 
         "debug_setpoint": 0,

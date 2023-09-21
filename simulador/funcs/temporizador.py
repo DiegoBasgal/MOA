@@ -22,7 +22,7 @@ class Temporizador:
         while not self.dict["GLB"]["stop_sim"]:
             try:
                 self.t_inicio = self.get_time()
-                self.dict["GLB"]["tempo_simul"] += self.segundos_por_passo
+                # self.dict["GLB"]["tempo_simul"] += self.segundos_por_passo
 
             except KeyboardInterrupt:
                 self.dict["GLB"]["stop_sim"] = True
