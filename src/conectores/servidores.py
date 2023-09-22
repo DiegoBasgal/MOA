@@ -24,37 +24,37 @@ class Servidores:
         host=d.ips["SA_ip"],
         port=d.ips["SA_porta"],
         unit_id=1,
-        timeout=0.5
+        timeout=5
     )
     clp["TDA"] = ModbusClient(
         host=d.ips["TDA_ip"],
         port=d.ips["TDA_porta"],
         unit_id=1,
-        timeout=0.5
+        timeout=5
     )
     clp["UG1"] = ModbusClient(
         host=d.ips["UG1_ip"],
         port=d.ips["UG1_porta"],
         unit_id=1,
-        timeout=0.5
+        timeout=5
     )
     clp["UG2"] = ModbusClient(
         host=d.ips["UG2_ip"],
         port=d.ips["UG2_porta"],
         unit_id=1,
-        timeout=0.5
+        timeout=5
     )
     clp["UG3"] = ModbusClient(
         host=d.ips["UG3_ip"],
         port=d.ips["UG3_porta"],
         unit_id=1,
-        timeout=0.5
+        timeout=5
     )
     clp["MOA"] = ModbusClient(
         host=d.ips["MOA_ip"],
         port=d.ips["MOA_porta"],
         unit_id=1,
-        timeout=0.5
+        timeout=5
     )
 
     @staticmethod

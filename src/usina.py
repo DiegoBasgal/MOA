@@ -52,29 +52,28 @@ class Usina:
         self.__potencia_ativa_kW: "LeituraModbus" = LeituraModbus(
             "[USN] Leitura Potência Medidor",
             self.clp["SA"],
-            REG["SA_EA_PM_810_Potencia_Ativa"],
-            1,
+            REG["SA"]["EA_PM_810_Potencia_Ativa"],
             op=4,
         )
         self.__tensao_rs: "LeituraModbus" = LeituraModbus(
             "[USN] Tensão RS",
             self.clp["SA"],
-            REG["SA_EA_PM_810_Tensao_ab"],
-            100,
+            REG["SA"]["EA_PM_810_Tensao_ab"],
+            1000,
             op=4,
         )
         self.__tensao_st: "LeituraModbus" = LeituraModbus(
             "[USN] Tensão ST",
             self.clp["SA"],
-            REG["SA_EA_PM_810_Tensao_bc"],
-            100,
+            REG["SA"]["EA_PM_810_Tensao_bc"],
+            1000,
             op=4,
         )
         self.__tensao_tr: "LeituraModbus" = LeituraModbus(
             "[USN] Tensão TR",
             self.clp["SA"],
-            REG["SA_EA_PM_810_Tensao_ca"],
-            100,
+            REG["SA"]["EA_PM_810_Tensao_ca"],
+            1000,
             op=4,
         )
 
@@ -84,7 +83,7 @@ class Usina:
         self._nv_montante: "LeituraModbus" = LeituraModbus(
             "[USN] Nível Montante",
             self.clp["TDA"],
-            REG["TDA_EA_NivelAntesGrade"],
+            REG["TDA"]["EA_NivelAntesGrade"],
             1 / 10000,
             400,
             op=4,
@@ -227,13 +226,13 @@ class Usina:
         self.clp_emergencia = True
 
         try:
-            self.clp["UG1"].write_single_coil(REG["UG1_CD_EmergenciaViaSuper"], [1])
-            self.clp["UG2"].write_single_coil(REG["UG2_CD_EmergenciaViaSuper"], [1])
-            self.clp["UG3"].write_single_coil(REG["UG3_CD_EmergenciaViaSuper"], [1])
+            self.clp["UG1"].write_single_register(REG["UG1"]["CD_EmergenciaViaSuper"], 1) # write_single_coil
+            self.clp["UG2"].write_single_register(REG["UG2"]["CD_EmergenciaViaSuper"], 1) # write_single_coil
+            self.clp["UG3"].write_single_register(REG["UG3"]["CD_EmergenciaViaSuper"], 1) # write_single_coil
             sleep(5)
-            self.clp["UG1"].write_single_coil(REG["UG1_CD_EmergenciaViaSuper"], [0])
-            self.clp["UG2"].write_single_coil(REG["UG2_CD_EmergenciaViaSuper"], [0])
-            self.clp["UG3"].write_single_coil(REG["UG3_CD_EmergenciaViaSuper"], [0])
+            self.clp["UG1"].write_single_register(REG["UG1"]["CD_EmergenciaViaSuper"], 0) # write_single_coil
+            self.clp["UG2"].write_single_register(REG["UG2"]["CD_EmergenciaViaSuper"], 0) # write_single_coil
+            self.clp["UG3"].write_single_register(REG["UG3"]["CD_EmergenciaViaSuper"], 0) # write_single_coil
 
         except Exception:
             logger.error(f"[USN] Houve um erro ao acionar a Emergência.")
@@ -248,16 +247,16 @@ class Usina:
         try:
             logger.debug("[USN] Reset geral")
 
-            self.clp["SA"].write_single_coil(REG["SA_CD_ResetGeral"], [1])
-            self.clp["UG1"].write_single_coil(REG["UG1_CD_ResetGeral"], [1])
-            self.clp["UG2"].write_single_coil(REG["UG2_CD_ResetGeral"], [1])
-            self.clp["UG3"].write_single_coil(REG["UG3_CD_ResetGeral"], [1])
-            self.clp["TDA"].write_single_coil(REG["TDA_CD_ResetGeral"], [1]) if not d.glb["TDA_Offline"] else logger.debug("[USN] CLP TDA Offline, não há como realizar o reset geral")
+            self.clp["SA"].write_single_register(REG["SA"]["CD_ResetGeral"], 1) # write_single_coil
+            self.clp["UG1"].write_single_register(REG["UG1"]["CD_ResetGeral"], 1) # write_single_coil
+            self.clp["UG2"].write_single_register(REG["UG2"]["CD_ResetGeral"], 1) # write_single_coil
+            self.clp["UG3"].write_single_register(REG["UG3"]["CD_ResetGeral"], 1) # write_single_coil
+            # self.clp["TDA"].write_single_coil(REG["TDA"]["CD_ResetGeral"], [1]) if not d.glb["TDA_Offline"] else logger.debug("[USN] CLP TDA Offline, não há como realizar o reset geral")
 
-            self.clp["SA"].write_single_coil(REG["SA_CD_Cala_Sirene"], [1])
-            self.clp["UG1"].write_single_coil(REG["UG1_CD_Cala_Sirene"], [1])
-            self.clp["UG2"].write_single_coil(REG["UG2_CD_Cala_Sirene"], [1])
-            self.clp["UG3"].write_single_coil(REG["UG3_CD_Cala_Sirene"], [1])
+            self.clp["SA"].write_single_register(REG["SA"]["CD_Cala_Sirene"], 0) # write_single_coil
+            self.clp["UG1"].write_single_register(REG["UG1"]["CD_Cala_Sirene"], 0) # write_single_coil
+            self.clp["UG2"].write_single_register(REG["UG2"]["CD_Cala_Sirene"], 0) # write_single_coil
+            self.clp["UG3"].write_single_register(REG["UG3"]["CD_Cala_Sirene"], 0) # write_single_coil
             self.fechar_dj_linha()
 
         except Exception:
@@ -269,13 +268,14 @@ class Usina:
         Função para reset da Tomada da Água. Envia o comando de reset para o
         CLP - TDA.
         """
+        return
 
         if not d.glb["TDA_Offline"]:
-            self.clp["TDA"].write_single_coil(REG["TDA_CD_ResetGeral"], [1])
-            # self.clp["TDA"].write_single_coil(REG["TDA_CD_Hab_Nivel"], [0])
-            self.clp["TDA"].write_single_coil(REG["TDA_CD_Desab_Nivel"], [1])
-            # self.clp["TDA"].write_single_coil(REG["TDA_CD_Hab_Religamento52L"], [0])
-            self.clp["TDA"].write_single_coil(REG["TDA_CD_Desab_Religamento52L"], [1])
+            self.clp["TDA"].write_single_coil(REG["TDA"]["CD_ResetGeral"], [1])
+            # self.clp["TDA"].write_single_coil(REG["TDA"]["CD_Hab_Nivel"], [0])
+            self.clp["TDA"].write_single_coil(REG["TDA"]["CD_Desab_Nivel"], [1])
+            # self.clp["TDA"].write_single_coil(REG["TDA"]["CD_Hab_Religamento52L"], [0])
+            self.clp["TDA"].write_single_coil(REG["TDA"]["CD_Desab_Religamento52L"], [1])
         else:
             logger.debug("[USN] Não é possível resetar a TDA pois o CLP da TDA se encontra offline")
 
@@ -321,7 +321,7 @@ class Usina:
             if self.verificar_falha_dj_linha():
                 return False
             else:
-                response = self.clp["SA"].write_single_coil(REG["SA_CD_Liga_DJ1"], [1])
+                response = self.clp["SA"].write_single_register(REG["SA"]["CD_Liga_DJ1"], 1) # write_single_coil
                 return response
 
         except Exception:
@@ -332,50 +332,51 @@ class Usina:
         """
         Função para verificação das condições de fechamento do Disjuntor 52L (Linha).
         """
+        return False
 
         flag = 0
 
-        if self.clp["SA"].read_discrete_inputs(REG["SA_ED_DisjDJ1_SuperBobAbert1"])[0] == 0:
+        if self.clp["SA"].read_discrete_inputs(REG["SA"]["ED_DisjDJ1_SuperBobAbert1"])[0] == 0:
             logger.debug("[USN] DisjDJ1_SuperBobAbert1")
             flag += 1
 
-        if self.clp["SA"].read_discrete_inputs(REG["SA_ED_DisjDJ1_SuperBobAbert2"])[0] == 0:
+        if self.clp["SA"].read_discrete_inputs(REG["SA"]["ED_DisjDJ1_SuperBobAbert2"])[0] == 0:
             logger.debug("[USN] DisjDJ1_SuperBobAbert2")
             flag += 1
 
-        if self.clp["SA"].read_discrete_inputs(REG["SA_ED_DisjDJ1_Super125VccCiMot"])[0] == 0:
+        if self.clp["SA"].read_discrete_inputs(REG["SA"]["ED_DisjDJ1_Super125VccCiMot"])[0] == 0:
             logger.debug("[USN] DisjDJ1_Super125VccCiMot")
             flag += 1
 
-        if self.clp["SA"].read_discrete_inputs(REG["SA_ED_DisjDJ1_Super125VccCiCom"])[0] == 0:
+        if self.clp["SA"].read_discrete_inputs(REG["SA"]["ED_DisjDJ1_Super125VccCiCom"])[0] == 0:
             logger.debug("[USN] DisjDJ1_Super125VccCiCom")
             flag += 1
 
-        if self.clp["SA"].read_discrete_inputs(REG["SA_ED_DisjDJ1_AlPressBaixa"])[0] == 1:
+        if self.clp["SA"].read_discrete_inputs(REG["SA"]["ED_DisjDJ1_AlPressBaixa"])[0] == 1:
             logger.debug("[USN] DisjDJ1_AlPressBaixa")
             flag += 1
 
-        if self.clp["SA"].read_discrete_inputs(REG["SA_RD_DJ1_FalhaInt"])[0] == 1:
+        if self.clp["SA"].read_discrete_inputs(REG["SA"]["RD_DJ1_FalhaInt"])[0] == 1:
             logger.debug("[USN] MXR_DJ1_FalhaInt")
             flag += 1
 
-        if self.clp["SA"].read_discrete_inputs(REG["SA_ED_DisjDJ1_BloqPressBaixa"])[0] == 1:
+        if self.clp["SA"].read_discrete_inputs(REG["SA"]["ED_DisjDJ1_BloqPressBaixa"])[0] == 1:
             logger.debug("[USN] DisjDJ1_BloqPressBaixa")
             flag += 1
 
-        if self.clp["SA"].read_discrete_inputs(REG["SA_ED_DisjDJ1_Sup125VccBoFeAb1"])[0] == 0:
+        if self.clp["SA"].read_discrete_inputs(REG["SA"]["ED_DisjDJ1_Sup125VccBoFeAb1"])[0] == 0:
             logger.debug("[USN] DisjDJ1_Sup125VccBoFeAb1")
             flag += 1
 
-        if self.clp["SA"].read_discrete_inputs(REG["SA_ED_DisjDJ1_Sup125VccBoFeAb2"])[0] == 0:
+        if self.clp["SA"].read_discrete_inputs(REG["SA"]["ED_DisjDJ1_Sup125VccBoFeAb2"])[0] == 0:
             logger.debug("DisjDJ1_Sup125VccBoFeAb2")
             flag += 1
 
-        if self.clp["SA"].read_discrete_inputs(REG["SA_ED_DisjDJ1_Local"])[0] == 1:
+        if self.clp["SA"].read_discrete_inputs(REG["SA"]["ED_DisjDJ1_Local"])[0] == 1:
             logger.debug("[USN] DisjDJ1_Local")
             flag += 1
 
-        if self.clp["SA"].read_discrete_inputs(REG["SA_ED_DisjDJ1_MolaDescarregada"])[0] == 1:
+        if self.clp["SA"].read_discrete_inputs(REG["SA"]["ED_DisjDJ1_MolaDescarregada"])[0] == 1:
             logger.debug("[USN] DisjDJ1_MolaDescarregada")
             flag += 1
 
@@ -461,9 +462,9 @@ class Usina:
         try:
             logger.debug("[USN] Iniciando o timer de leitura periódica...")
             while True:
-                for ug in self.ugs:
-                    ug.oco.leitura_temporizada()
-                self.oco.leitura_temporizada()
+                # for ug in self.ugs:
+                #     ug.oco.leitura_temporizada()
+                # self.oco.leitura_temporizada()
 
                 if True in (vd.voip_dict[r][0] for r in vd.voip_dict):
                     Voip.acionar_chamada()
@@ -491,9 +492,9 @@ class Usina:
 
         self.controle_ie = sum(ug.leitura_potencia for ug in self.ugs) / self.cfg["pot_maxima_alvo"]
 
-        self.clp["MOA"].write_single_coil(REG["MOA_OUT_BLOCK_UG1"], 0)
-        self.clp["MOA"].write_single_coil(REG["MOA_OUT_BLOCK_UG2"], 0)
-        self.clp["MOA"].write_single_coil(REG["MOA_OUT_BLOCK_UG3"], 0)
+        # self.clp["MOA"].write_single_coil(REG["MOA_OUT_BLOCK_UG1"], 0)
+        # self.clp["MOA"].write_single_coil(REG["MOA_OUT_BLOCK_UG2"], 0)
+        # self.clp["MOA"].write_single_coil(REG["MOA_OUT_BLOCK_UG3"], 0)
 
     def controlar_reservatorio(self) -> int:
         """
@@ -834,7 +835,7 @@ class Usina:
         for ug in self.ugs:
             ug.oco.atualizar_limites_condicionadores(parametros)
 
-        self.heartbeat()
+        # self.heartbeat()
 
     def atualizar_valores_montante(self) -> None:
         """
@@ -945,7 +946,7 @@ class Usina:
             v_debug = [
                 time(),
                 1 if self.modo_autonomo else 0,
-                self.nv_montante_recente,
+                self.nv_montante,
                 self.erro_nv,
                 self.ug1.setpoint,
                 self.ug1.leitura_potencia,

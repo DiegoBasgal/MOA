@@ -14,6 +14,7 @@ class MensageiroHandler(Handler):
         Função para captar mensagens de logger e tratamento para disparo via
         WhatsApp ou acionamento NVoip.
         """
+        return 
         
         log_entry = self.format(record)
 

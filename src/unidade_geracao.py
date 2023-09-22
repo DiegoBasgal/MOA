@@ -39,35 +39,37 @@ class UnidadeGeracao:
         self.__potencia_ativa_kW = LeituraModbus(
             "[USN] Potência Usina",
             self.clp["SA"],
-            REG["SA_EA_PM_810_Potencia_Ativa"],
+            REG["SA"]["EA_PM_810_Potencia_Ativa"],
             1,
             op=4
         )
+        """
         self.__leitura_pressao_uhrv = LeituraModbus(
             f"[UG{self.id}] Leitura Pressão UHRV",
             self.clp[f"UG{self.id}"],
-            REG[f"UG{self.id}_RA_UHRV_Pressao"],
+            REG[f"UG{self.id}"]["RA_UHRV_Pressao"],
             escala=0.1,
             op=4
         )
         self.__leitura_rotacao = LeituraModbus(
             f"[UG{self.id}] Leitura Rotação",
             self.clp[f"UG{self.id}"],
-            REG[f"UG{self.id}_RA_ReferenciaCarga"],
+            REG[f"UG{self.id}"]["RA_ReferenciaCarga"],
             escala=0.1,
             op=4
         )
+        """
 
         self.__leitura_horimetro_hora = LeituraModbus(
             f"[UG{self.id}] Horímetro Hora",
             self.clp[f"UG{self.id}"],
-            REG[f"UG{self.id}_RA_Horimetro_Gerador"],
+            REG[f"UG{self.id}"]["RA_Horimetro_Gerador"],
             op=4,
         )
         self.__leitura_horimetro_min = LeituraModbus(
             f"[UG{self.id}] Horímetro Min",
             self.clp[f"UG{self.id}"],
-            REG[f"UG{self.id}_RA_Horimetro_Gerador_min"],
+            REG[f"UG{self.id}"]["RA_Horimetro_Gerador_min"],
             op=4,
             escala=1/60
         )
@@ -75,22 +77,22 @@ class UnidadeGeracao:
         __C1 = LeituraModbusCoil(
             descr=f"UG{self.id}_Sincronizada",
             modbus_client=self.clp[f"UG{self.id}"],
-            registrador=REG[f"UG{self.id}_ED_DisjGeradorFechado"],
+            registrador=REG[f"UG{self.id}"]["ED_DisjGeradorFechado"],
         )
         __C2 = LeituraModbusCoil(
             descr=f"UG{self.id}_Parando",
             modbus_client=self.clp[f"UG{self.id}"],
-            registrador=REG[f"UG{self.id}_RD_ParandoEmAuto"],
+            registrador=REG[f"UG{self.id}"]["RD_ParandoEmAuto"],
         )
         __C3 = LeituraModbusCoil(
             descr=f"UG{self.id}_Parada",
             modbus_client=self.clp[f"UG{self.id}"],
-            registrador=REG[f"UG{self.id}_ED_RV_MaquinaParada"],
+            registrador=REG[f"UG{self.id}"]["ED_RV_MaquinaParada"],
         )
         __C4 = LeituraModbusCoil(
             descr=f"UG{self.id}_Sincronizando",
             modbus_client=self.clp[f"UG{self.id}"],
-            registrador=REG[f"UG{self.id}_RD_PartindoEmAuto"],
+            registrador=REG[f"UG{self.id}"]["RD_PartindoEmAuto"],
         )
         self.__leitura_etapa_atual = LeituraComposta(
             f"ug{self.id}_Operacao_EtapaAtual",
@@ -105,7 +107,7 @@ class UnidadeGeracao:
         self.__leitura_etapa_atual = LeituraModbus(
             f"[UG{self.id}] Leitura Etapa Atual",
             self.clp[f"UG{self.id}"],
-            REG[f"UG{self.id}_SIM_Etapa_Atual"]
+            REG[f"UG{self.id}"]["SIM_Etapa_Atual"]
         )
 
         self.__tempo_entre_tentativas: "int" = 0
@@ -129,7 +131,7 @@ class UnidadeGeracao:
         self._leitura_potencia: "LeituraModbus" = LeituraModbus(
             f"UG{self.id}_Potência",
             self.clp[f"UG{self.id}"],
-            REG[f"UG{self.id}_RA_PM_710_Potencia_Ativa"],
+            REG[f"UG{self.id}"]["RA_PM_710_Potencia_Ativa"],
             op=4,
         )
         self._leitura_horimetro: "LeituraSoma" = LeituraSoma(
@@ -161,7 +163,7 @@ class UnidadeGeracao:
 
         self.ts_auxiliar: "datetime" = self.get_time()
 
-        self.condicionadores_atenuadores.append(self.oco.condic_dict[f"pressao_cx_espiral_ug{self.id}"])
+        self.condicionadores_atenuadores.append(self.oco.c_pressao_cx_espiral)
 
 
     # Property -> VARIÁVEIS PRIVADAS
@@ -425,8 +427,10 @@ class UnidadeGeracao:
         Função para atualização do estado da Unidade no CLP - MOA.
         """
 
-        self.clp["MOA"].write_single_register(REG[f"MOA_OUT_STATE_UG{self.id}"], self.codigo_state)
-        self.clp["MOA"].write_single_register(REG[f"MOA_OUT_ETAPA_UG{self.id}"], self.etapa_atual)
+        return
+
+        self.clp["MOA"].write_single_register(REG["MOA"][f"OUT_STATE_UG{self.id}"], self.codigo_state)
+        self.clp["MOA"].write_single_register(REG["MOA"][f"OUT_ETAPA_UG{self.id}"], self.etapa_atual)
 
     def normalizar_unidade(self) -> "bool":
         """
@@ -479,8 +483,8 @@ class UnidadeGeracao:
             if self.etapa_atual == UG_SINCRONIZADA:
                 logger.debug(f"[UG{self.id}]          Leituras:")
                 logger.debug(f"[UG{self.id}]          - \"Potência Ativa\":        {self.leitura_potencia} kW")
-                logger.debug(f"[UG{self.id}]          - \"Rotação\":               {self.__leitura_rotacao.valor} RPM")
-                logger.debug(f"[UG{self.id}]          - \"Pressão UHRV\":          {self.__leitura_pressao_uhrv.valor} Bar")
+                # logger.debug(f"[UG{self.id}]          - \"Rotação\":               {self.__leitura_rotacao.valor} RPM")
+                # logger.debug(f"[UG{self.id}]          - \"Pressão UHRV\":          {self.__leitura_pressao_uhrv.valor} Bar")
 
             self.__next_state = self.__next_state.step()
             self.atualizar_modbus_moa()
@@ -505,24 +509,25 @@ class UnidadeGeracao:
         """
 
         try:
-            if not self.clp[f"UG{self.id}"].read_discrete_inputs(REG[f"UG{self.id}_ED_CondicaoPartida"], 1)[0]:
-                logger.debug(f"[UG{self.id}]          Máquina sem condição de partida. Irá partir quando as condições forem reestabelecidas.")
-                return
+            # if not self.clp[f"UG{self.id}"].read_discrete_inputs(REG[f"UG{self.id}"]["ED_CondicaoPartida"], 1)[0]:
+            #     logger.debug(f"[UG{self.id}]          Máquina sem condição de partida. Irá partir quando as condições forem reestabelecidas.")
+            #     return
 
-            elif self.clp["SA"].read_coils(REG["SA_ED_QCAP_Disj52A1Fechado"])[0] != 0:
-                logger.info(f"[UG{self.id}]           O Disjuntor 52A1 está aberto. Para partir a máquina, o mesmo deverá ser fechado.")
-                return
+            # elif self.clp["SA"].read_coils(REG["SA"]["ED_QCAP_Disj52A1Fechado"])[0] != 0:
+            #     logger.info(f"[UG{self.id}]           O Disjuntor 52A1 está aberto. Para partir a máquina, o mesmo deverá ser fechado.")
+            #     return
 
-            elif not self.etapa_atual == UG_SINCRONIZADA and self.tentativas_sincronismo <= 3:
+            # el
+            if not self.etapa_atual == UG_SINCRONIZADA and self.tentativas_sincronismo <= 3:
                 self.tentativas_sincronismo += 1
 
                 logger.info(f"[UG{self.id}]          Enviando comando:          \"PARTIDA\"")
 
-                self.clp[f"UG{self.id}"].write_single_coil(REG[f"UG{self.id}_CD_ResetRV"], [1])
-                self.clp[f"UG{self.id}"].write_single_coil(REG[f"UG{self.id}_CD_ResetReleRT"], [1])
+                # self.clp[f"UG{self.id}"].write_single_coil(REG[f"UG{self.id}"]["CD_ResetRV"], [1])
+                # self.clp[f"UG{self.id}"].write_single_coil(REG[f"UG{self.id}"]["CD_ResetReleRT"], [1])
                 self.remover_trip_logico()
-                self.clp[f"UG{self.id}"].write_single_coil(REG[f"UG{self.id}_CD_IniciaPartida"], [1])
-                self.clp[f"UG{self.id}"].write_single_coil(REG[f"UG{self.id}_CD_Cala_Sirene"], [1])
+                self.clp[f"UG{self.id}"].write_single_register(REG[f"UG{self.id}"]["CD_IniciaPartida"], 1) # write_single_coil
+                self.clp[f"UG{self.id}"].write_single_register(REG[f"UG{self.id}"]["CD_Cala_Sirene"], 1) # write_single_coil
 
                 logger.debug(f"[UG{self.id}]          Tentativas de Sincronismo: {self.tentativas_sincronismo}/3")
 
@@ -552,14 +557,14 @@ class UnidadeGeracao:
         try:
             if not self.etapa_atual == UG_PARADA:
                 logger.info(f"[UG{self.id}]          Enviando comando:          \"PARADA\"")
-                self.clp[f"UG{self.id}"].write_single_coil(REG[f"UG{self.id}_CD_AbortaPartida"], [1])
-                self.clp[f"UG{self.id}"].write_single_coil(REG[f"UG{self.id}_CD_AbortaSincronismo"], [1])
-                self.clp[f"UG{self.id}"].write_single_coil(REG[f"UG{self.id}_CD_IniciaParada"], [1])
-                self.clp[f"UG{self.id}"].write_single_coil(REG[f"UG{self.id}_CD_Cala_Sirene"], [1])
+                # self.clp[f"UG{self.id}"].write_single_coil(REG[f"UG{self.id}"]["CD_AbortaPartida"], [1])
+                # self.clp[f"UG{self.id}"].write_single_coil(REG[f"UG{self.id}"]["CD_AbortaSincronismo"], [1])
+                self.clp[f"UG{self.id}"].write_single_register(REG[f"UG{self.id}"]["CD_IniciaParada"], 1) # write_single_coil
+                self.clp[f"UG{self.id}"].write_single_register(REG[f"UG{self.id}"]["CD_Cala_Sirene"], 1) # write_single_coil
                 self.enviar_setpoint(self.setpoint)
             else:
                 logger.debug(f"[UG{self.id}] A unidade já está parada.")
-                self.clp[f"UG{self.id}"].write_single_coil(REG[f"UG{self.id}_CD_Cala_Sirene"], [1])
+                self.clp[f"UG{self.id}"].write_single_register(REG[f"UG{self.id}"]["CD_Cala_Sirene"], 1) # write_single_coil
 
         except Exception:
             logger.error(f"[UG{self.id}] Não foi possível enviar o comando de parada.")
@@ -582,8 +587,8 @@ class UnidadeGeracao:
             logger.debug(f"[UG{self.id}]          Enviando setpoint:         {int(setpoint_kw)} kW")
 
             if self.setpoint > 1:
-                response = self.clp[f"UG{self.id}"].write_single_coil(REG[f"UG{self.id}_CD_ResetGeral"], [1])
-                response = self.clp[f"UG{self.id}"].write_single_register(REG[f"UG{self.id}_RA_ReferenciaCarga"], int(self.setpoint))
+                response = self.clp[f"UG{self.id}"].write_single_register(REG[f"UG{self.id}"]["CD_ResetGeral"], 1) # write_single_coil
+                response = self.clp[f"UG{self.id}"].write_single_register(REG[f"UG{self.id}"]["RA_ReferenciaCarga"], int(self.setpoint))
                 return response
 
         except Exception:
@@ -600,7 +605,7 @@ class UnidadeGeracao:
 
         try:
             logger.debug(f"[UG{self.id}]          Enviando comando:          \"ACIONAR TRIP ELÉTRICO\"")
-            self.clp["MOA"].write_single_coil(REG[f"MOA_OUT_BLOCK_UG{self.id}"], 1)
+            # self.clp["MOA"].write_single_coil(REG["MOA"][f"OUT_BLOCK_UG{self.id}"], 1)
 
         except Exception:
             logger.error(f"[UG{self.id}] Não foi possivel acionar o comando de TRIP: \"Elétrico\".")
@@ -617,13 +622,13 @@ class UnidadeGeracao:
         try:
             logger.info(f"[UG{self.id}]          Enviando comando:          \"REMOVER TRIP ELÉTRICO\"")
 
-            self.clp["MOA"].write_single_coil(REG["PAINEL_LIDO"], 0)
-            self.clp["MOA"].write_single_coil(REG[f"MOA_OUT_BLOCK_UG{self.id}"], 0)
-            self.clp[f"UG{self.id}"].write_single_coil(REG[f"UG{self.id}_CD_Cala_Sirene"], [1])
+            # self.clp["MOA"].write_single_coil(REG["MOA"]["PAINEL_LIDO"], 0)
+            # self.clp["MOA"].write_single_coil(REG["MOA"][f"OUT_BLOCK_UG{self.id}"], 0)
+            self.clp[f"UG{self.id}"].write_single_register(REG[f"UG{self.id}"]["CD_Cala_Sirene"], 1) # write_single_coil
 
-            if self.clp["SA"].read_coils(REG["SA_CD_Liga_DJ1"])[0] == 1:
+            if self.clp["SA"].read_holding_registers(REG["SA"]["CD_Liga_DJ1"])[0] == 1: # read_coils
                 logger.debug(f"[UG{self.id}]          Enviando comando:          \"FECHAR DJ LINHA\".")
-                self.clp["SA"].write_single_coil(REG["SA_CD_Liga_DJ1"], [0])
+                self.clp["SA"].write_single_register(REG["SA"]["CD_Liga_DJ1"], 0) # write_single_coil
 
         except Exception:
             logger.error(f"[UG{self.id}] Não foi possivel remover o comando de TRIP: \"Elétrico\".")
@@ -638,7 +643,7 @@ class UnidadeGeracao:
 
         try:
             logger.debug(f"[UG{self.id}]          Enviando comando:          \"ACIONAR TRIP LÓGICO\"")
-            self.clp[f"UG{self.id}"].write_single_coil(REG[f"UG{self.id}_CD_EmergenciaViaSuper"], [1])
+            self.clp[f"UG{self.id}"].write_single_register(REG[f"UG{self.id}"]["CD_EmergenciaViaSuper"], 1) # write_single_coil
 
         except Exception:
             logger.error(f"[UG{self.id}] Não foi possivel acionar o comando de TRIP: \"Lógico\".")
@@ -653,15 +658,15 @@ class UnidadeGeracao:
 
         try:
             logger.debug(f"[UG{self.id}]          Enviando comando:          \"REMOVER TRIP LÓGICO\"")
-            self.clp[f"UG{self.id}"].write_single_coil(REG[f"UG{self.id}_CD_ResetGeral"], [1])
-            self.clp[f"UG{self.id}"].write_single_coil(REG[f"UG{self.id}_CD_ResetRele700G"], [1])
-            self.clp[f"UG{self.id}"].write_single_coil(REG[f"UG{self.id}_CD_ResetReleBloq86H"], [1])
-            self.clp[f"UG{self.id}"].write_single_coil(REG[f"UG{self.id}_CD_ResetReleBloq86M"], [1])
-            self.clp["SA"].write_single_coil(REG["SA_CD_ResetRele59N"], [1])
-            self.clp["SA"].write_single_coil(REG["SA_CD_ResetRele787"], [1])
-            self.clp[f"UG{self.id}"].write_single_coil(REG[f"UG{self.id}_ED_ReleBloqA86HAtuado"], [0])
-            self.clp[f"UG{self.id}"].write_single_coil(REG[f"UG{self.id}_ED_ReleBloqA86MAtuado"], [0])
-            self.clp[f"UG{self.id}"].write_single_coil(REG[f"UG{self.id}_RD_700G_Trip"], [0])
+            self.clp[f"UG{self.id}"].write_single_register(REG[f"UG{self.id}"]["CD_ResetGeral"], 1) # write_single_coil
+            # self.clp[f"UG{self.id}"].write_single_coil(REG[f"UG{self.id}"]["CD_ResetRele700G"], [1])
+            # self.clp[f"UG{self.id}"].write_single_coil(REG[f"UG{self.id}"]["CD_ResetReleBloq86H"], [1])
+            # self.clp[f"UG{self.id}"].write_single_coil(REG[f"UG{self.id}"]["CD_ResetReleBloq86M"], [1])
+            # self.clp["SA"].write_single_coil(REG["SA"]["CD_ResetRele59N"], [1])
+            # self.clp["SA"].write_single_coil(REG["SA"]["CD_ResetRele787"], [1])
+            # self.clp[f"UG{self.id}"].write_single_coil(REG[f"UG{self.id}"]["ED_ReleBloqA86HAtuado"], [0])
+            # self.clp[f"UG{self.id}"].write_single_coil(REG[f"UG{self.id}"]["ED_ReleBloqA86MAtuado"], [0])
+            # self.clp[f"UG{self.id}"].write_single_coil(REG[f"UG{self.id}"]["RD_700G_Trip"], [0])
 
         except Exception:
             logger.error(f"[UG{self.id}] Não foi possivel remover o comando de TRIP: \"Lógico\".")
@@ -678,7 +683,7 @@ class UnidadeGeracao:
         try:
             logger.debug("")
             logger.info(f"[UG{self.id}]          Enviando comando:          \"RECONHECE E RESET\"")
-            self.clp["MOA"].write_single_coil(REG["PAINEL_LIDO"], 0)
+            # self.clp["MOA"].write_single_coil(REG["MOA"]["PAINEL_LIDO"], 0)
 
             passo = 0
             for x in range(3):
@@ -689,8 +694,8 @@ class UnidadeGeracao:
                 sleep(1)
                 self.remover_trip_logico()
                 sleep(1)
-                self.clp[f"UG{self.id}"].write_single_coil(REG[f"UG{self.id}_CD_ResetGeral"], [1])
-                self.clp[f"UG{self.id}"].write_single_coil(REG[f"UG{self.id}_CD_Cala_Sirene"], [1])
+                self.clp[f"UG{self.id}"].write_single_register(REG[f"UG{self.id}"]["CD_ResetGeral"], 1) # write_single_coil
+                self.clp[f"UG{self.id}"].write_single_register(REG[f"UG{self.id}"]["CD_Cala_Sirene"], 1) # write_single_coil
                 sleep(1)
 
         except Exception:
@@ -713,8 +718,8 @@ class UnidadeGeracao:
                 return
 
         logger.debug(f"[UG{self.id}]          Comando MOA:               \"Acionar emergência por timeout de verificação de partida\"")
-        self.clp[f"UG{self.id}"].write_single_coil(REG[f"UG{self.id}_CD_EmergenciaViaSuper"], [1])
-        self.clp[f"UG{self.id}"].write_single_coil(REG[f"UG{self.id}_CD_EmergenciaViaSuper"], [0])
+        self.clp[f"UG{self.id}"].write_single_register(REG[f"UG{self.id}"]["CD_EmergenciaViaSuper"], 1) # write_single_coil
+        self.clp[f"UG{self.id}"].write_single_register(REG[f"UG{self.id}"]["CD_EmergenciaViaSuper"], 0) # write_single_coil
         self.temporizar_partida = False
 
     def verificar_pressao_uhrv(self) -> "None":
@@ -723,10 +728,11 @@ class UnidadeGeracao:
 
         Esta função tem como objetivo evitar TRIPs em etapas específicas da Unidade.
         """
+        return
 
         if self.__leitura_pressao_uhrv.valor <= 130:
-            self.clp[f"UG{self.id}"].write_single_coil(REG[f"UG{self.id}_CD_ResetReleBloq86H"], [1])
-            self.clp[f"UG{self.id}"].write_single_coil(REG[f"UG{self.id}_ED_ReleBloqA86HAtuado"], [0])
+            self.clp[f"UG{self.id}"].write_single_coil(REG[f"UG{self.id}"]["CD_ResetReleBloq86H"], [1])
+            self.clp[f"UG{self.id}"].write_single_coil(REG[f"UG{self.id}"]["ED_ReleBloqA86HAtuado"], [0])
 
     def verificar_rotacao(self) -> "None":
         """
@@ -740,6 +746,7 @@ class UnidadeGeracao:
         ultrapasse seja maior que três, avisa o operador e aborta a pertida para
         que seja realizada uma nova tentativa do processo de sincronismo do início.
         """
+        return
 
         try:
             if self.__leitura_rotacao.valor < 500 and not self.temporizar_rotacao:
@@ -747,8 +754,8 @@ class UnidadeGeracao:
                 Thread(target=lambda: self.aguardar_rotacao()).start()
 
             elif 300 <= self.__leitura_rotacao.valor <= 500 and not self.atraso_rotacao:
-                self.clp[f"UG{self.id}"].write_single_coil(REG[f"UG{self.id}_CD_ResetReleBloq86M"], [1])
-                self.clp[f"UG{self.id}"].write_single_coil(REG[f"UG{self.id}_ED_ReleBloqA86MAtuado"], [0])
+                self.clp[f"UG{self.id}"].write_single_coil(REG[f"UG{self.id}"]["CD_ResetReleBloq86M"], [1])
+                self.clp[f"UG{self.id}"].write_single_coil(REG[f"UG{self.id}"]["ED_ReleBloqA86MAtuado"], [0])
 
             elif self.atraso_rotacao and self.tentativas_aguardar_rotacao <= 3:
                 self.tentativas_aguardar_rotacao += 1
@@ -790,6 +797,7 @@ class UnidadeGeracao:
         Função com temporizador de aguardo da rotação da máquina com período
         pré-definido.
         """
+        return
 
         while time() <= time() + 90:
             if self.__leitura_rotacao.valor > 500:
@@ -888,7 +896,7 @@ class UnidadeGeracao:
         """
 
         try:
-            self.cx_controle_p = (self.oco.leitura_dict[f"pressao_cx_espiral_ug{self.id}"].valor - self.cfg["press_cx_alvo"]) * self.cfg["cx_kp"]
+            self.cx_controle_p = (self.oco.l_pressao_cx_espiral.valor - self.cfg["press_cx_alvo"]) * self.cfg["cx_kp"]
             self.cx_ajuste_ie = sum(ug.leitura_potencia for ug in self.lista_ugs) / self.cfg["pot_maxima_alvo"]
             self.cx_controle_i = self.cx_ajuste_ie - self.cx_controle_p
 
@@ -906,9 +914,9 @@ class UnidadeGeracao:
 
         try:
             self.erro_press_cx = 0
-            self.erro_press_cx = self.oco.leitura_dict[f"pressao_cx_espiral_ug{self.id}"].valor - self.cfg["press_cx_alvo"]
+            self.erro_press_cx = self.oco.l_pressao_cx_espiral.valor - self.cfg["press_cx_alvo"]
 
-            logger.debug(f"[UG{self.id}] Pressão Alvo: {self.cfg['press_cx_alvo']:0.3f}, Recente: {self.oco.leitura_dict[f'pressao_cx_espiral_ug{self.id}'].valor:0.3f}")
+            logger.debug(f"[UG{self.id}] Pressão Alvo: {self.cfg['press_cx_alvo']:0.3f}, Recente: {self.oco.l_pressao_cx_espiral.valor:0.3f}")
 
             self.cx_controle_p = self.cfg["cx_kp"] * self.erro_press_cx
             self.cx_controle_i = max(min((self.cfg["cx_ki"] * self.erro_press_cx) + self.cx_controle_i, 1), 0)
@@ -934,7 +942,7 @@ class UnidadeGeracao:
                 pot_alvo = self.pot_alvo_anterior * (1 - 0.5 * ((pot_medidor - self.cfg["pot_maxima_alvo"]) / self.cfg["pot_maxima_alvo"]))
 
             self.pot_alvo_anterior = pot_alvo
-            self.enviar_setpoint(pot_alvo) if self.oco.leitura_dict[f"pressao_cx_espiral_ug{self.id}"].valor >= 15.5 else self.enviar_setpoint(0)
+            self.enviar_setpoint(pot_alvo) if self.oco.l_pressao_cx_espiral.valor >= 15.5 else self.enviar_setpoint(0)
 
         except Exception:
             logger.error(f"[UG{self.id}] Houve um erro no método de Controle por Caixa Espiral da Unidade.")

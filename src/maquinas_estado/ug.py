@@ -1,5 +1,7 @@
 import logging
 
+from time import time
+
 from threading import Thread
 
 from src.dicionarios.const import *
@@ -179,7 +181,7 @@ class StateDisponivel(State):
 
         else:
             self.parent.ajuste_ganho_cx_espiral()
-
             self.parent.controle_etapas()
+
 
             return self
