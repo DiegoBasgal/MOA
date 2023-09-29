@@ -19,7 +19,7 @@ from src.funcoes.escrita import EscritaModBusBit as EMB
 logger = logging.getLogger("logger")
 
 class Comporta:
-    def __init__(self, id: "int"=None, serv:"Servidores"=None) -> "None":
+    def __init__(self, id: "int"=None, tda=None) -> "None":
 
         # VERIFICAÇÃO DE ARGUMENTOS
 
@@ -28,7 +28,7 @@ class Comporta:
         else:
             self.__id = id
 
-        self.clp = serv.clp
+        self.clp = Servidores.clp
 
         # ATRIBUIÇÃO DE VAIRÁVEIS PRIVADAS
 

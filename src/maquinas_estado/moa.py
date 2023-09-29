@@ -165,11 +165,11 @@ class ControleEstados(State):
             flag_bay_se = self.usn.verificar_bay_se()
 
             if flag_bay_se == DJS_FALTA_TENSAO:
-                return Emergencia(self.usn) if bay.Bay.aguardar_tensao() == TENSAO_FORA else ControleDados(self.usn)
+                return Emergencia(self.usn) if bay.Bay.aguardar_tensao() == TENSAO_FORA else self
 
             elif flag_bay_se != DJS_OK:
                 self.usn.normalizar_usina()
-                return ControleDados(self.usn)
+                return self
 
             else:
                 return ControleReservatorio(self.usn)
@@ -281,19 +281,19 @@ class ModoManual(State):
 
         self.usn.ler_valores()
 
-        logger.debug(f"[USN] Leitura de Nível:                   {self.usn.tda.nivel_montante.valor:0.3f}")
-        logger.debug(f"[USN] Potência no medidor:                {self.usn.bay.potencia_mp.valor:0.3f}")
+        logger.debug(f"[USN] Leitura de Nível:                   {tda.TomadaAgua.nivel_montante.valor:0.3f}")
+        logger.debug(f"[USN] Potência no medidor:                {bay.Bay.potencia_mp.valor:0.3f}")
         logger.debug("")
 
         for ug in self.usn.ugs:
             logger.debug(f"[UG{ug.id}] Unidade:                            \"{UG_SM_STR_DCT[ug.codigo_state]}\"")
-            logger.debug(f"[UG{ug.id}] Etapa atual:                        \"{UG_STR_DCT_ETAPAS[ug.etapa]}\"")
+            logger.debug(f"[UG{ug.id}] Etapa atual:                        \"{UG_STR_DCT_ETAPAS[ug.etapa_atual]}\"")
             logger.debug(f"[UG{ug.id}] Leitura de Potência:                {ug.leitura_potencia}")
             logger.debug("")
             ug.setpoint = ug.leitura_potencia
 
         self.usn.controle_ie = (self.usn.ug1.leitura_potencia + self.usn.ug2.leitura_potencia) / self.usn.cfg["pot_maxima_alvo"]
-        self.usn.controle_i = max(min(self.usn.controle_ie - (self.usn.controle_i * self.usn.cfg["ki"]) - self.usn.cfg["kp"] * self.usn.tda.erro_nivel - self.usn.cfg["kd"] * (self.usn.tda.erro_nivel - self.usn.tda.erro_nivel_anterior), 0.8), 0)
+        self.usn.controle_i = max(min(self.usn.controle_ie - (self.usn.controle_i * self.usn.cfg["ki"]) - self.usn.cfg["kp"] * tda.TomadaAgua.erro_nivel - self.usn.cfg["kd"] * (tda.TomadaAgua.erro_nivel - tda.TomadaAgua.erro_nivel_anterior), 0.8), 0)
 
         self.usn.escrever_valores()
 

@@ -7,8 +7,8 @@ import logging
 import traceback
 import threading
 
-import src.comporta as cp
 import src.subestacao as se
+import src.tomada_agua as tda
 import src.funcoes.condicionadores as c
 
 from time import time, sleep
@@ -25,7 +25,7 @@ from src.funcoes.escrita import EscritaModBusBit as EMB
 logger = logging.getLogger("logger")
 
 class UnidadeGeracao:
-    def __init__(self, id: "int", cfg: "dict"=None, db: "BancoDados"=None, cp:"cp.Comporta"=None, serv: "Servidores"=None):
+    def __init__(self, id: "int", cfg: "dict"=None, db: "BancoDados"=None):
 
         # VERIFICAÇÃO DE ARGUMENTOS
 
@@ -38,11 +38,10 @@ class UnidadeGeracao:
         self.__db = db
         self.__cfg = cfg
 
-        self.cp = cp
+        self.cp = tda.TomadaAgua.cp
 
-        self.rv = serv.rv
-        self.clp = serv.clp
-        self.rele = serv.rele
+        self.clp = Servidores.clp
+        self.rele = Servidores.rele
 
         # ATRIBUIÇÃO DE VAIRIÁVEIS
 
@@ -53,8 +52,13 @@ class UnidadeGeracao:
             descricao=f"[UG{self.id}] Leitura Potência"
         )
         self.__leitura_etapa_atual = LeituraModbus(
-            self.rv[f"UG{self.id}"],
+            self.clp[f"UG{self.id}"],
             REG_CLP[f"UG{self.id}"]["RV_ESTADO_OPERACAO"],
+            descricao=f"[UG{self.id}] Leitura Etapa"
+        )
+        self.__leitura_etapa_alvo = LeituraModbus(
+            self.clp[f"UG{self.id}"],
+            REG_CLP[f"UG{self.id}"]["RV_ESTADO_OPERACAO_2"],
             descricao=f"[UG{self.id}] Leitura Etapa"
         )
         self.__leitura_horimetro = LeituraModbus(
@@ -164,60 +168,63 @@ class UnidadeGeracao:
             return self._ultima_etapa_atual
 
     @property
+    def etapa_alvo(self) -> "int":
+        try:
+            self._etapa_alvo = self.__leitura_etapa_alvo.valor
+            return self._etapa_alvo
+
+        except Exception:
+            logger.error(f"[UG{self.id}] Erro na leitura de \"Etapa Alvo\". Mantendo última etapa.")
+            self._etapa_alvo = self._ultima_etapa_alvo
+            return self._etapa_alvo
+
+    @property
     def etapa(self) -> "int":
-        if self.etapa_atual == 7:
-            return UG_SINCRONIZADA
-        elif self.etapa_atual == 0:
-            return UG_PARADA
-        else:
-            return self.etapa_atual
+        try:
+            if self.etapa_atual == UG_PARADA and self.etapa_alvo == UG_PARADA:
+                self._ultima_etapa_alvo = self.etapa_alvo
+                return UG_PARADA
 
+            elif self.etapa_atual == UG_SINCRONIZADA and self.etapa_alvo == UG_SINCRONIZADA:
+                self._ultima_etapa_alvo = self.etapa_alvo
+                return UG_SINCRONIZADA
 
-    #     try:
-    #         if self.etapa_atual == UG_PARADA and self.etapa_alvo == UG_PARADA:
-    #             self._ultima_etapa_alvo = self.etapa_alvo
-    #             return UG_PARADA
+            elif UG_PARADA < self.etapa_atual <= UG_SINCRONIZADA and self.etapa_alvo == UG_PARADA:
 
-    #         elif self.etapa_atual == UG_SINCRONIZADA and self.etapa_alvo == UG_SINCRONIZADA:
-    #             self._ultima_etapa_alvo = self.etapa_alvo
-    #             return UG_SINCRONIZADA
+                if self._ultima_etapa_alvo != self.etapa_alvo:
+                    if self._ultima_etapa_alvo < self.etapa_alvo:
+                        self._ultima_etapa_alvo = self.etapa_alvo
+                        return UG_SINCRONIZANDO
 
-    #         elif UG_PARADA < self.etapa_atual <= UG_SINCRONIZADA and self.etapa_alvo == UG_PARADA:
+                    elif self._ultima_etapa_alvo > self.etapa_alvo:
+                        self._ultima_etapa_alvo = self.etapa_alvo
+                        return UG_PARANDO
 
-    #             if self._ultima_etapa_alvo != self.etapa_alvo:
-    #                 if self._ultima_etapa_alvo < self.etapa_alvo:
-    #                     self._ultima_etapa_alvo = self.etapa_alvo
-    #                     return UG_SINCRONIZANDO
+                else:
+                    self._ultima_etapa_alvo = self.etapa_alvo
+                    return UG_PARANDO
 
-    #                 elif self._ultima_etapa_alvo > self.etapa_alvo:
-    #                     self._ultima_etapa_alvo = self.etapa_alvo
-    #                     return UG_PARANDO
+            elif UG_PARADA <= self.etapa_atual < UG_SINCRONIZADA and self.etapa_alvo == UG_SINCRONIZADA:
+                if self._ultima_etapa_alvo != self.etapa_alvo:
+                    if self._ultima_etapa_alvo > self.etapa_alvo:
+                        self._ultima_etapa_alvo = self.etapa_alvo
+                        return UG_PARANDO
 
-    #             else:
-    #                 self._ultima_etapa_alvo = self.etapa_alvo
-    #                 return UG_PARANDO
+                    elif self._ultima_etapa_alvo < self.etapa_alvo:
+                        self._ultima_etapa_alvo = self.etapa_alvo
+                        return UG_SINCRONIZANDO
 
-    #         elif UG_PARADA <= self.etapa_atual < UG_SINCRONIZADA and self.etapa_alvo == UG_SINCRONIZADA:
-    #             if self._ultima_etapa_alvo != self.etapa_alvo:
-    #                 if self._ultima_etapa_alvo > self.etapa_alvo:
-    #                     self._ultima_etapa_alvo = self.etapa_alvo
-    #                     return UG_PARANDO
+                else:
+                    self._ultima_etapa_alvo = self.etapa_alvo
+                    return UG_SINCRONIZANDO
 
-    #                 elif self._ultima_etapa_alvo < self.etapa_alvo:
-    #                     self._ultima_etapa_alvo = self.etapa_alvo
-    #                     return UG_SINCRONIZANDO
+            else:
+                return self._ultima_etapa_atual
 
-    #             else:
-    #                 self._ultima_etapa_alvo = self.etapa_alvo
-    #                 return UG_SINCRONIZANDO
-
-    #         else:
-    #             return self._ultima_etapa_atual
-
-    #     except Exception:
-    #         logger.error(f"[UG{self.id}] Houve um erro no controle de Etapas da Unidade. Mantendo Etapa anterior.")
-    #         logger.debug(traceback.format_exc())
-    #         return self._ultima_etapa_atual
+        except Exception:
+            logger.error(f"[UG{self.id}] Houve um erro no controle de Etapas da Unidade. Mantendo Etapa anterior.")
+            logger.debug(traceback.format_exc())
+            return self._ultima_etapa_atual
 
 
 
@@ -414,7 +421,7 @@ class UnidadeGeracao:
         try:
             logger.debug("")
             logger.debug(f"[UG{self.id}] Step  -> Unidade:                   \"{UG_SM_STR_DCT[self.codigo_state]}\"")
-            logger.debug(f"[UG{self.id}]          Etapa:                     \"{UG_STR_DCT_ETAPAS[self.etapa]}\" (Atual: {self.etapa_atual})")
+            logger.debug(f"[UG{self.id}]          Etapa:                     \"{UG_STR_DCT_ETAPAS[self.etapa]}\" (Atual: {self.etapa_atual} | Alvo: {self.etapa_alvo})")
 
             if self.etapa == UG_SINCRONIZADA:
                 logger.debug(f"[UG{self.id}]          Leituras de Potência:")
@@ -431,7 +438,7 @@ class UnidadeGeracao:
         """
         Função para atualização do estado da Unidade no CLP - MOA.
         """
-        return
+
         try:
             self.clp["MOA"].write_single_coil(REG_CLP["MOA"][f"OUT_ETAPA_UG{self.id}"], self.etapa)
             self.clp["MOA"].write_single_coil(REG_CLP["MOA"][f"OUT_STATE_UG{self.id}"], self.codigo_state)
@@ -967,6 +974,7 @@ class UnidadeGeracao:
         Função para consulta de acionamentos da Unidade e avisos através do mecanismo
         de acionamento temporizado.
         """
+        return
 
         if self.l_saidas_digitais_rv_b0.valor:
             logger.warning(f"[UG{self.id}] O alarme do Regulador de Velocidade da UG foi acionado. Favor verificar.")
@@ -1190,6 +1198,13 @@ class UnidadeGeracao:
         self.condic_pressao_turbina_ug = c.CondicionadorExponencialReverso(self.l_pressao_turbina, CONDIC_INDISPONIBILIZAR, 1.6, 1.3)
         self.condicionadores_atenuadores.append(self.condic_pressao_turbina_ug)
 
+
+        # TODO -> remover após testes do simulador
+        self.aux_sim = LeituraModbusBit(self.clp[f"UG{self.id}"], REG_CLP[f"UG{self.id}"]["CONDIC"], descricao=f"[UG{self.id}][SIM] Trip Teste Simulador")
+        self.condicionadores_essenciais.append(c.CondicionadorBase(self.aux_sim, CONDIC_NORMALIZAR))
+
+
+        return
         # CONDICIONADORES ESSENCIAIS - OUTROS
         # Botões
         self.l_bt_emerg_atuado = LeituraModbusBit(self.clp[f"UG{self.id}"], REG_CLP[f"UG{self.id}"]["BT_EMERGENCIA_ATUADO"], invertido=True, descricao=f"[UG{self.id}] Botão Emergência Atuado")

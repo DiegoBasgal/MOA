@@ -82,7 +82,7 @@ if __name__ == "__main__":
                 logger.debug("")
                 logger.info("Iniciando conexões com Servidores...")
 
-                serv = Servidores()
+                # Servidores.open_all()
 
             except Exception:
                 logger.error(f"Erro ao iniciar classes de conexão com servidores. Tentando novamente em \"{TIMEOUT_MAIN}s\".")
@@ -94,7 +94,7 @@ if __name__ == "__main__":
                 logger.debug("")
                 logger.info("Iniciando instância e objetos da Usina...")
 
-                usn: Usina = Usina(cfg, serv)
+                usn: Usina = Usina(cfg)
 
             except Exception:
                 logger.error(f"Erro ao instanciar a classe Usina. Tentando novamente em \"{TIMEOUT_MAIN}s\".")
