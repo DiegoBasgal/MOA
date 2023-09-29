@@ -78,9 +78,9 @@ compartilhado = {
 
         "potencia_se": 0,
 
-        "tensao_vab": 22800,
-        "tensao_vbc": 22800,
-        "tensao_vca": 22800,
+        "tensao_vab": 23000,
+        "tensao_vbc": 23000,
+        "tensao_vca": 23000,
 
         "dj_trip": False,
         "dj_falha": False,
@@ -103,9 +103,9 @@ compartilhado = {
         "potencia_mr": 0,
 
         "tensao_vs": 0,
-        "tensao_vab": 22800,
-        "tensao_vbc": 22800,
-        "tensao_vca": 22800,
+        "tensao_vab": 23000,
+        "tensao_vbc": 23000,
+        "tensao_vca": 23000,
 
         "dj_secc": True,
         "dj_trip": False,
