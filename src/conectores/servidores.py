@@ -49,8 +49,8 @@ class Servidores:
             port=d.ips["RV_UG2_porta"],
             unit_id=21,
             timeout=0.5,
+            auto_close=True,
             auto_open=True,
-            auto_close=True
         )
 
         self.rt["UG1"] = ModbusClient(
@@ -81,8 +81,6 @@ class Servidores:
             port=d.ips["TDA_porta"],
             unit_id=1,
             timeout=5,
-            auto_close=True,
-            auto_open=True
         )
         self.clp["UG1"] = ModbusClient(
             host=d.ips["UG1_ip"],

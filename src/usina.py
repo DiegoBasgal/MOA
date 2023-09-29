@@ -44,23 +44,26 @@ class Usina:
         else:
             self.cfg = cfg
 
+        if not serv:
+            raise ValueError("[USN] Não foi possível carregar a classe de conxeão com Servidores.")
+        else:
+            self.clp = serv.clp
+            self.rele = serv.rele
+
         # INCIALIZAÇÃO DE OBJETOS DA USINA
 
-        self.clp = serv.clp
-        self.rele = serv.rele
+        self.bd = BancoDados("MOA")
 
         self.bay = bay.Bay(serv)
         self.se = se.Subestacao(serv)
-        self.tda = tda.TomadaAgua(self.cfg, serv)
-        
         self.sa = sa.ServicoAuxiliar(serv)
-
-        self.bd = BancoDados("MOA")
-        self.agn = Agendamentos(self.cfg, self.bd, self)
+        self.tda = tda.TomadaAgua(self.cfg, serv)
 
         self.ug1 = UnidadeGeracao(1, self.cfg, self.bd, self.tda.cp, serv)
         self.ug2 = UnidadeGeracao(2, self.cfg, self.bd, self.tda.cp, serv)
         self.ugs: "list[UnidadeGeracao]" = [self.ug1, self.ug2]
+
+        self.agn = Agendamentos(self.cfg, self.bd, self)
 
         serv.open_all()
 

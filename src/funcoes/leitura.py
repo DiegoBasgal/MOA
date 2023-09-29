@@ -87,12 +87,8 @@ class LeituraModbusBit(LeituraModbus):
         # PROPRIEDADE -> Retorna Valor raw baseado no tipo de operação ModBus.
 
         try:
-            if self.__client.open():
-                ler = self.__client.read_holding_registers(int(self.__reg), 2)
-                self.__client.close()
-                return ler
-            else:
-                raise ConnectionError
+            ler = self.__client.read_holding_registers(int(self.__reg), 2)
+            return ler
 
         except Exception:
             logger.error(f"[LEI] Erro na Leitura RAW do REG: {self.__reg} | Bit: {self.__bit}")
@@ -118,30 +114,39 @@ class LeituraModbusBit(LeituraModbus):
                     return not lbit_r[i] if self.__invertido else lbit_r[i]
 
         except Exception:
-            logger.error(f"[LEI] Erro na Leitura do REG: {self.__reg} | Bit: {self.__bit}")
+            logger.error(f"[LEI] Erro na Leitura BIT do REG: {self.__reg} | Bit: {self.__bit}")
             logger.debug(traceback.format_exc())
             sleep(1)
             return None
 
 
 class LeituraModbusFloat(LeituraModbus):
-    def __init__(self, client: "ModbusClient"=None, registrador: "int"=None, descricao: "str"=None):
+    def __init__(self, client: "ModbusClient"=None, registrador: "int"=None, op: "int"=3, escala: "float"=1, descricao: "str"=None) ->"None":
         super().__init__(client, registrador, descricao)
 
         # ATRIBUIÇÃO DE VAIRÁVEIS PRIVADAS
 
+        self.__op = op
         self.__client = client
         self.__reg = registrador
+        self.__escala = escala
 
     @property
     def valor(self) -> "float":
         # PROPRIEDADE -> Retorna o valor tradado de leitura em Float.
 
         try:
-            raw = self.__client.read_holding_registers(self.__reg + 1, 2)
+            if self.__op == 3:
+                raw = self.__client.read_holding_registers(self.__reg + 1, 2)
+
+            elif self.__op == 4:
+                raw = self.__client.read_input_registers(self.__reg + 1, 2)
+
             dec = BPD.fromRegisters(raw, byteorder=Endian.Big, wordorder=Endian.Little)
 
-            return dec.decode_32bit_float()
+            val = dec.decode_32bit_float()
+
+            return val * self.__escala
 
         except Exception:
             print(f"{traceback.format_exc()}")

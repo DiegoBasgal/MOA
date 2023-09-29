@@ -33,16 +33,19 @@ class Subestacao:
         self.tensao_vab = LeituraModbusFloat(
             self.clp["SA"],
             REG_CLP["SE"]["LT_VAB"],
+            escala=1000,
             descricao="[SE]  Leitura Tensão VAB"
         )
         self.tensao_vbc = LeituraModbusFloat(
             self.clp["SA"],
             REG_CLP["SE"]["LT_VBC"],
+            escala=1000,
             descricao="[SE]  Leitura Tensão VBC"
         )
         self.tensao_vca = LeituraModbusFloat(
             self.clp["SA"],
             REG_CLP["SE"]["LT_VCA"],
+            escala=1000,
             descricao="[SE]  Leitura Tensão VCA"
         )
         self.dj_linha_se = LeituraModbusBit(

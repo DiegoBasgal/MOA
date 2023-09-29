@@ -47,9 +47,10 @@ class UnidadeGeracao:
         # ATRIBUIÇÃO DE VAIRIÁVEIS
 
         # PRIVADAS
-        self.__leitura_potencia = LeituraModbus(
+        self.__leitura_potencia = LeituraModbusFloat(
             self.clp[f"UG{self.id}"],
             REG_CLP[f"UG{self.id}"]["P"],
+            op=3,
             descricao=f"[UG{self.id}] Leitura Potência"
         )
         self.__leitura_etapa_atual = LeituraModbus(
@@ -111,10 +112,10 @@ class UnidadeGeracao:
         return self.__id
 
     @property
-    def leitura_potencia(self) -> "float":
+    def leitura_potencia(self) -> "int":
         # PROPRIEDADE -> Retorna a leitura de Potência da Unidade.
 
-        return self.__leitura_potencia.valor
+        return int(self.__leitura_potencia.valor)
 
     @property
     def leitura_horimetro(self) -> "float":
@@ -167,7 +168,7 @@ class UnidadeGeracao:
     def etapa(self) -> "int":
         if self.etapa_atual == 7:
             return UG_SINCRONIZADA
-        elif self.etapa_atual == 0:
+        elif self.etapa_atual == 17:
             return UG_PARADA
         else:
             return self.etapa_atual

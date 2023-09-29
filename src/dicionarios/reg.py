@@ -87,9 +87,9 @@ REG_MEDIDOR = {
 REG_RELE = {
     "BAY": {
         # Leituras Analógicas
-        "LT_FASE_A":                                    48, # Simulador
-        "LT_FASE_B":                                    50, # Simulador
-        "LT_FASE_C":                                    52, # Simulador
+        "LT_FASE_A":                                    11, # Simulador
+        "LT_FASE_B":                                    14, # Simulador
+        "LT_FASE_C":                                    17, # Simulador
         "LT_VS":                                        19, # Simulador
 
 
@@ -99,13 +99,13 @@ REG_RELE = {
 
         # DJ
         "DJL_CMD_FECHAR":                               [43, 2],
-        "DJL_FECHADO":                                  [45, 0], # Simulador
+        "DJL_FECHADO":                                  [44, 0], # Simulador  # REG Original: 45 -> 44
 
 
         # DJ
         "DJL_MOLA_CARREGADA":                           [44, 1], # Simulador
         # Seccionadora
-        "SECC_FECHADA":                                 [44, 4], # Simulador
+        "SECC_FECHADA":                                 [43, 4], # Simulador
 
 
         # DJ
@@ -294,6 +294,9 @@ REG_CLP = {
         "LT_VAB":                                       48,
         "LT_VBC":                                       50,
         "LT_VCA":                                       52,
+        "P":                                            64,
+
+        "DJL_FECHADO":                                  [2, 7],
 
         "TE_RELE_BUCHHOLZ_ALM":                         [4, 22],
 
@@ -435,7 +438,7 @@ REG_CLP = {
         "CP1_REMOTO":                                   [16, 6], # Simulador
 
         "CP1_ABERTA":                                   [17, 14], # Simulador
-        "CP1_FECHADA":                                  [17, 15], # Simulador
+        "CP1_FECHADA":                                  [16, 15], # Simulador
 
         "CP2_OPERANDO":                                 [2, 0], # Simulador
         "CP2_AGUARDANDO_CMD_ABERTURA":                  [2, 3], # Simulador
@@ -453,7 +456,7 @@ REG_CLP = {
         "CP2_REMOTO":                                   [16, 6], # Simulador
 
         "CP2_ABERTA":                                   [17, 14], # Simulador
-        "CP2_FECHADA":                                  [17, 15], # Simulador
+        "CP2_FECHADA":                                  [16, 15], # Simulador
     },
 
     "UG1": {
@@ -472,7 +475,7 @@ REG_CLP = {
         "ENTRADA_TURBINA_PRESSAO":                      84,
         "GERADOR_SAIDA_AR_TRP_TMP":                     90,
         "HORIMETRO":                                    108,
-        "P":                                            130,
+        "P":                                            132,
 
 
         # UHRV
@@ -756,7 +759,7 @@ REG_CLP = {
         "ENTRADA_TURBINA_PRESSAO":                      84,
         "GERADOR_SAIDA_AR_TRP_TMP":                     90,
         "HORIMETRO":                                    108,
-        "P":                                            130,
+        "P":                                            132,
 
 
         # UHRV

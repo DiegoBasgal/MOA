@@ -34,18 +34,18 @@ class Bay:
             REG_RELE["BAY"]["LT_VS"],
             descricao="[BAY][RELE] Leitura Tensão VS"
         )
-        self.tensao_vab = LeituraModbusFloat(
-            self.clp["SA"],
+        self.tensao_vab = LeituraModbus(
+            self.rele["BAY"],
             REG_RELE["BAY"]["LT_FASE_A"],
             descricao="[BAY][RELE] Leitura Tensão Fase A"
         )
-        self.tensao_vbc = LeituraModbusFloat(
-            self.clp["SA"],
+        self.tensao_vbc = LeituraModbus(
+            self.rele["BAY"],
             REG_RELE["BAY"]["LT_FASE_B"],
             descricao="[BAY][RELE] Leitura Tensão Fase B"
         )
-        self.tensao_vca = LeituraModbusFloat(
-            self.clp["SA"],
+        self.tensao_vca = LeituraModbus(
+            self.rele["BAY"],
             REG_RELE["BAY"]["LT_FASE_C"],
             descricao="[BAY][RELE] Leitura Tensão Fase C"
         )
@@ -59,10 +59,9 @@ class Bay:
             REG_RELE["SE"]["DJL_FECHADO"],
             descricao="[SE][RELE] Disjuntor Linha Status"
         )
-        self.potencia_mp = LeituraModbus(
-            self.mp,
-            REG_MEDIDOR["LT_P_MP"],
-            escala=1,
+        self.potencia_mp = LeituraModbusFloat(
+            self.clp["SA"], # Mudar para -> self.mp
+            REG_CLP["SE"]["P"], # Mudar para -> REG_MEDIDOR["LT_P_MP"]
             op=3,
             descricao="[BAY][MP] Leitura Medidor Principal"
         )
@@ -287,7 +286,7 @@ class Bay:
         """
 
         # Pré-condições de fechamento do Disjuntor do Bay
-        self.secc_fechada = LeituraModbusBit(self.rele["BAY"], REG_RELE["BAY"]["SECC_FECHADA"], descricao="[BAY][RELE] Seccionadora Fechada")
+        self.secc_fechada = LeituraModbusBit(self.rele["BAY"], REG_RELE["BAY"]["SECC_FECHADA"], invertido=True, descricao="[BAY][RELE] Seccionadora Fechada")
         self.linha_viva = LeituraModbusBit(self.rele["BAY"], REG_RELE["BAY"]["ID_LINHA_VIVA"], descricao="[BAY][RELE] Identificação Linha Viva")
         self.barra_viva = LeituraModbusBit(self.rele["BAY"], REG_RELE["BAY"]["ID_BARRA_VIVA"], descricao="[BAY][RELE] Identificação Barra Viva")
         self.linha_morta = LeituraModbusBit(self.rele["BAY"], REG_RELE["BAY"]["ID_LINHA_MORTA"], descricao="[BAY][RELE] Identificação Linha Morta")
