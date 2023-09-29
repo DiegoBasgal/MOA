@@ -80,32 +80,32 @@ será adicionado a letra "B" + o número do BIT no final do nome:
 """
 
 REG_MEDIDOR = {
-    "LT_P_MP":                                          33 + 30000, # Mudar para o Simulador
-    "LT_P_MR":                                          33 + 30000, # Mudar para o Simulador
+    "LT_P_MP":                                          33, # Simulador
+    "LT_P_MR":                                          33, # Simulador
 }
 
 REG_RELE = {
     "BAY": {
         # Leituras Analógicas
-        "LT_FASE_A":                                    10 + 30000, # Mudar para o Simulador
-        "LT_FASE_B":                                    13 + 30000, # Mudar para o Simulador
-        "LT_FASE_C":                                    16 + 30000, # Mudar para o Simulador
-        "LT_VS":                                        19 + 30000, # Mudar para o Simulador
+        "LT_FASE_A":                                    48, # Simulador
+        "LT_FASE_B":                                    50, # Simulador
+        "LT_FASE_C":                                    52, # Simulador
+        "LT_VS":                                        19, # Simulador
 
 
         # Relé
-        "RELE_RST_TRP":                                 [40 + 30000, 2],
+        "RELE_RST_TRP":                                 [40, 2],
 
 
         # DJ
-        "DJL_CMD_FECHAR":                               [43 + 30000, 2],
-        "DJL_FECHADO":                                  [999 + 30000, 0], # Fictício Simulador
+        "DJL_CMD_FECHAR":                               [43, 2],
+        "DJL_FECHADO":                                  [45, 0], # Simulador
 
 
         # DJ
-        "DJL_MOLA_CARREGADA":                           [44 + 30000, 1], # Mudar para o Simulador
+        "DJL_MOLA_CARREGADA":                           [44, 1], # Simulador
         # Seccionadora
-        "SECC_FECHADA":                                 [44 + 30000, 4], # Mudar para o Simulador
+        "SECC_FECHADA":                                 [44, 4], # Simulador
 
 
         # DJ
@@ -113,13 +113,13 @@ REG_RELE = {
 
 
         # Barra
-        "ID_BARRA_VIVA":                                [53 + 30000, 1], # Mudar para o Simulador
-        "ID_BARRA_MORTA":                               [53 + 30000, 7], # Mudar para o Simulador
+        "ID_BARRA_VIVA":                                [53, 1], # Simulador
+        "ID_BARRA_MORTA":                               [53, 7], # Simulador
 
 
         # Linha
-        "ID_LINHA_VIVA":                                [54 + 30000, 0], # Mudar para o Simulador
-        "ID_LINHA_MORTA":                               [54 + 30000, 1], # Mudar para o Simulador
+        "ID_LINHA_VIVA":                                [54, 0], # Simulador
+        "ID_LINHA_MORTA":                               [54, 1], # Simulador
 
     },
 
@@ -291,9 +291,15 @@ REG_CLP = {
 
     "SE": {
         # Leituras Analógicas
-        "LT_VAB":                                       50,
-        "LT_VBC":                                       52,
-        "LT_VCA":                                       53,
+        "LT_VAB":                                       48,
+        "LT_VBC":                                       50,
+        "LT_VCA":                                       52,
+
+        "TE_RELE_BUCHHOLZ_ALM":                         [4, 22],
+
+        "DJL_SELETORA_REMOTO":                          [8, 10],
+
+        "RELE_LINHA_ATUADO":                            [40, 0],
 
         # Rearmes
         "BLQ_GERAL_CMD_REARME":                         [131, 0],
@@ -305,10 +311,6 @@ REG_CLP = {
         # Registros
         "REGISTROS_CMD_RST":                            [131, 5],
 
-        # Simulador Teste
-        "DJL_SELETORA_REMOTO":                          [999, 0],
-        "TE_RELE_BUCHHOLZ_ALM":                         [999, 1],
-        "RELE_LINHA_ATUADO":                            [999, 10],
     },
 
     "SA": {
@@ -408,77 +410,77 @@ REG_CLP = {
         "CA_COM_TENSAO":                                [17, 11],
 
         "LG_FLH_ATUADA":                                [26, 15],
-        "LG_OPE_MANUAL":                                [28 + 500, 0], # Alterar Simulador
+        "LG_OPE_MANUAL":                                [28, 0], # Simulador
 
-        "VB_FECHANDO":                                  [23 + 500, 0], # Alterar Simulador
+        "VB_FECHANDO":                                  [23, 0], # Simulador
         "VB_CMD_RST_FLH":                               [55, 0],
 
-        "UH_DISPONIVEL":                                [5 + 500, 1], # Alterar Simulador
+        "UH_DISPONIVEL":                                [5, 1], # Simulador
         "UH_FLH_LIGAR_BOMBA":                           [5, 2],
         "UH_FILTRO_LIMPO":                              [17, 13],
 
-        "CP1_OPERANDO":                                 [2 + 1000, 0], # Alterar Simulador
-        "CP1_AGUARDANDO_CMD_ABERTURA":                  [2 + 1000, 3], # Alterar Simulador
-        "CP1_PRESSAO_EQUALIZADA":                       [2 + 1000, 4], # Alterar Simulador
+        "CP1_OPERANDO":                                 [2, 0], # Simulador
+        "CP1_AGUARDANDO_CMD_ABERTURA":                  [2, 3], # Simulador
+        "CP1_PRESSAO_EQUALIZADA":                       [2, 4], # Simulador
 
-        "CP1_CMD_REARME_FLH":                           [6 + 1000, 0],
-        "CP1_CMD_ABERTURA_CRACKING":                    [6 + 1000, 1], # Alterar Simulador
-        "CP1_CMD_ABERTURA_TOTAL":                       [6 + 1000, 2], # Alterar Simulador
-        "CP1_CMD_FECHAMENTO":                           [6 + 1000, 3], # Alterar Simulador
-        "CP1_PERMISSIVOS_OK":                           [6 + 1000, 15], # Alterar Simulador
+        "CP1_CMD_REARME_FLH":                           [6, 0],
+        "CP1_CMD_ABERTURA_CRACKING":                    [6, 1], # Simulador
+        "CP1_CMD_ABERTURA_TOTAL":                       [6, 2], # Simulador
+        "CP1_CMD_FECHAMENTO":                           [6, 3], # Simulador
+        "CP1_PERMISSIVOS_OK":                           [6, 15], # Simulador
 
-        "CP1_BLQ_ATUADO":                               [8 + 1000, 15], # Alterar Simulador
+        "CP1_BLQ_ATUADO":                               [8, 15], # Simulador
 
-        "CP1_CRACKING":                                 [16 + 1000, 0], # Alterar Simulador
-        "CP1_REMOTO":                                   [16 + 1000, 6], # Alterar Simulador
+        "CP1_CRACKING":                                 [16, 0], # Simulador
+        "CP1_REMOTO":                                   [16, 6], # Simulador
 
-        "CP1_ABERTA":                                   [17 + 1000, 14], # Alterar Simulador
-        "CP1_FECHADA":                                  [17 + 1000, 15], # Alterar Simulador
+        "CP1_ABERTA":                                   [17, 14], # Simulador
+        "CP1_FECHADA":                                  [17, 15], # Simulador
 
-        "CP2_OPERANDO":                                 [2 + 2000, 0], # Alterar Simulador
-        "CP2_AGUARDANDO_CMD_ABERTURA":                  [2 + 2000, 3], # Alterar Simulador
-        "CP2_PRESSAO_EQUALIZADA":                       [2 + 2000, 4], # Alterar Simulador
+        "CP2_OPERANDO":                                 [2, 0], # Simulador
+        "CP2_AGUARDANDO_CMD_ABERTURA":                  [2, 3], # Simulador
+        "CP2_PRESSAO_EQUALIZADA":                       [2, 4], # Simulador
 
-        "CP2_CMD_REARME_FLH":                           [6 + 2000, 0],
-        "CP2_CMD_ABERTURA_CRACKING":                    [6 + 2000, 1], # Alterar Simulador
-        "CP2_CMD_ABERTURA_TOTAL":                       [6 + 2000, 2], # Alterar Simulador
-        "CP2_CMD_FECHAMENTO":                           [6 + 2000, 3], # Alterar Simulador
-        "CP2_PERMISSIVOS_OK":                           [6 + 2000, 15], # Alterar Simulador
+        "CP2_CMD_REARME_FLH":                           [6, 0],
+        "CP2_CMD_ABERTURA_CRACKING":                    [6, 1], # Simulador
+        "CP2_CMD_ABERTURA_TOTAL":                       [6, 2], # Simulador
+        "CP2_CMD_FECHAMENTO":                           [6, 3], # Simulador
+        "CP2_PERMISSIVOS_OK":                           [6, 15], # Simulador
 
-        "CP2_BLQ_ATUADO":                               [8 + 2000, 15], # Alterar Simulador
+        "CP2_BLQ_ATUADO":                               [8, 15], # Simulador
 
-        "CP2_CRACKING":                                 [16 + 2000, 0], # Alterar Simulador
-        "CP2_REMOTO":                                   [16 + 2000, 6], # Alterar Simulador
+        "CP2_CRACKING":                                 [16, 0], # Simulador
+        "CP2_REMOTO":                                   [16, 6], # Simulador
 
-        "CP2_ABERTA":                                   [17 + 2000, 14], # Alterar Simulador
-        "CP2_FECHADA":                                  [17 + 2000, 15], # Alterar Simulador
+        "CP2_ABERTA":                                   [17, 14], # Simulador
+        "CP2_FECHADA":                                  [17, 15], # Simulador
     },
 
     "UG1": {
         # Leituras Anaçógicas
-        "GERADOR_FASE_A_TMP":                           10044,
-        "GERADOR_FASE_B_TMP":                           10046,
-        "GERADOR_FASE_C_TMP":                           10048,
-        "MANCAL_GUIA_TMP":                              10054,
-        "MANCAL_CASQ_COMB_TMP":                         10060,
-        "MANCAL_CONT_ESCO_COMB_TMP":                    10062,
-        "MANCAL_COMB_PATINS_1_TMP":                     10064,
-        "MANCAL_COMB_PATINS_2_TMP":                     10066,
-        "MANCAL_GUIA_INTE_1_TMP":                       10068,
-        "MANCAL_GUIA_INTE_2_TMP":                       10070,
-        "GERADOR_NUCL_ESTAT_TMP":                       10072,
-        "ENTRADA_TURBINA_PRESSAO":                      10084,
-        "GERADOR_SAIDA_AR_TRP_TMP":                     10090,
-        "HORIMETRO":                                    10108,
-        "P":                                            10130,
+        "GERADOR_FASE_A_TMP":                           44,
+        "GERADOR_FASE_B_TMP":                           46,
+        "GERADOR_FASE_C_TMP":                           48,
+        "MANCAL_GUIA_TMP":                              54,
+        "MANCAL_CASQ_COMB_TMP":                         60,
+        "MANCAL_CONT_ESCO_COMB_TMP":                    62,
+        "MANCAL_COMB_PATINS_1_TMP":                     64,
+        "MANCAL_COMB_PATINS_2_TMP":                     66,
+        "MANCAL_GUIA_INTE_1_TMP":                       68,
+        "MANCAL_GUIA_INTE_2_TMP":                       70,
+        "GERADOR_NUCL_ESTAT_TMP":                       72,
+        "ENTRADA_TURBINA_PRESSAO":                      84,
+        "GERADOR_SAIDA_AR_TRP_TMP":                     90,
+        "HORIMETRO":                                    108,
+        "P":                                            130,
 
 
         # UHRV
-        "UHRV_FILTRO_SUJO":                             [1, 5],  # Reg -> 1
+        "UHRV_FILTRO_SUJO":                             [1, 5],
         # UHLM
-        "UHLM_FILTRO_SUJO":                             [1, 8],  # Reg -> 1
+        "UHLM_FILTRO_SUJO":                             [1, 8],
         # Resistência
-        "RESISTENCIA_FALHA":                            [1, 12], # Reg -> 1
+        "RESISTENCIA_FALHA":                            [1, 12],
 
 
         # Botão Emergência
@@ -487,11 +489,11 @@ REG_CLP = {
         "SUP_BOBINA_52G":                               [2, 12],
         "SUP_BOBINA_86EH":                              [2, 13],
         # Relé
-        "RELE_BLQ_86EH_DESATUADO":                      [3, 12], # Reg -> 3
-        "SUP_TENSAO_125VCC":                            [3, 13], # Reg -> 3
-        "SUP_TENSAO_24VCC":                             [3, 14], # Reg -> 3
+        "RELE_BLQ_86EH_DESATUADO":                      [3, 12],
+        "SUP_TENSAO_125VCC":                            [3, 13],
+        "SUP_TENSAO_24VCC":                             [3, 14],
         # DJ
-        "DJS_125VCC_FECHADOS":                          [3, 15], # Reg -> 3
+        "DJS_125VCC_FECHADOS":                          [3, 15],
 
 
         # DJ
@@ -523,13 +525,13 @@ REG_CLP = {
         "MANCAL_GUIA_INTE_2_ALM_TMP":                   [6, 13],
         "GERADOR_NUCL_ESTAT_ALM_TMP":                   [6, 14],
         "GERADOR_FASE_A_ALM_TMP":                       [6, 15],
-        "GERADOR_FASE_B_ALM_TMP":                       [7, 0],  # Reg -> 7
-        "GERADOR_FASE_C_ALM_TMP":                       [7, 1],  # Reg -> 7
-        "MANCAL_COMB_EIXO_X_ALM_VIBR":                  [7, 8],  # Reg -> 7
-        "MANCAL_COMB_EIXO_Y_ALM_VIBR":                  [7, 9],  # Reg -> 7
-        "MANCAL_COMB_EIXO_Z_ALM_VIBR":                  [7, 10], # Reg -> 7
-        "DETECCAO_HORIZONTAL_ALM_VIBRA":                [7, 12], # Reg -> 7
-        "DETECCAO_VERTICAL_ALM_VIBRA":                  [7, 13], # Reg -> 7
+        "GERADOR_FASE_B_ALM_TMP":                       [7, 0],
+        "GERADOR_FASE_C_ALM_TMP":                       [7, 1],
+        "MANCAL_COMB_EIXO_X_ALM_VIBR":                  [7, 8],
+        "MANCAL_COMB_EIXO_Y_ALM_VIBR":                  [7, 9],
+        "MANCAL_COMB_EIXO_Z_ALM_VIBR":                  [7, 10],
+        "DETECCAO_HORIZONTAL_ALM_VIBRA":                [7, 12],
+        "DETECCAO_VERTICAL_ALM_VIBRA":                  [7, 13],
 
 
         # Falhas de Leitura de Pressão/Vibração
@@ -559,19 +561,19 @@ REG_CLP = {
         "MANCAL_GUIA_INTE_2_FLH_LER_TMP":               [24, 13],
         "PONTE_FASE_A_FLH_LER_TMP":                     [24, 14],
         "PONTE_FASE_B_FLH_LER_TMP":                     [24, 15],
-        "PONTE_FASE_C_FLH_LER_TMP":                     [25, 0],  # Reg -> 25
-        "GERADOR_FASE_A_FLH_LER_TMP":                   [25, 1],  # Reg -> 25
-        "GERADOR_FASE_B_FLH_LER_TMP":                   [25, 2],  # Reg -> 25
-        "GERADOR_FASE_C_FLH_LER_TMP":                   [25, 3],  # Reg -> 25
-        "GERADOR_NUCL_ESTAT_FLH_LER_TMP":               [25, 4],  # Reg -> 25
+        "PONTE_FASE_C_FLH_LER_TMP":                     [25, 0],
+        "GERADOR_FASE_A_FLH_LER_TMP":                   [25, 1],
+        "GERADOR_FASE_B_FLH_LER_TMP":                   [25, 2],
+        "GERADOR_FASE_C_FLH_LER_TMP":                   [25, 3],
+        "GERADOR_NUCL_ESTAT_FLH_LER_TMP":               [25, 4],
         # Trips Vibração
-        "DETECCAO_HORIZONTAL_TRP_VIBRA":                [25, 10], # Reg -> 25
-        "DETECCAO_VERTICAL_TRP_VIBRA":                  [25, 11], # Reg -> 25
-        "MANCAL_COMB_EIXO_X_TRP_VIBR":                  [25, 12], # Reg -> 25
-        "MANCAL_COMB_EIXO_Y_TRP_VIBR":                  [25, 13], # Reg -> 25
-        "MANCAL_COMB_EIXO_Z_TRP_VIBR":                  [25, 14], # Reg -> 25
+        "DETECCAO_HORIZONTAL_TRP_VIBRA":                [25, 10],
+        "DETECCAO_VERTICAL_TRP_VIBRA":                  [25, 11],
+        "MANCAL_COMB_EIXO_X_TRP_VIBR":                  [25, 12],
+        "MANCAL_COMB_EIXO_Y_TRP_VIBR":                  [25, 13],
+        "MANCAL_COMB_EIXO_Z_TRP_VIBR":                  [25, 14],
         # Bloqueio Atuado
-        "86M_BLQ_ATUADO":                               [25, 15], # Reg -> 25
+        "86M_BLQ_ATUADO":                               [25, 15],
 
 
         # Cubiculo Proteção Gerador
@@ -581,30 +583,30 @@ REG_CLP = {
         "RELE_700G_TRP_ATUADO":                         [26, 4],
         "RELE_700G_BF_ATUADO":                          [26, 6],
         # Trips por Temperatura
-        "PONTE_FASE_A_TRP_TMP":                         [27, 0],  # Reg -> 27
-        "PONTE_FASE_B_TRP_TMP":                         [27, 1],  # Reg -> 27
-        "PONTE_FASE_C_TRP_TMP":                         [27, 2],  # Reg -> 27
-        "GERADOR_FASE_A_TRP_TMP":                       [27, 3],  # Reg -> 27
-        "GERADOR_FASE_B_TRP_TMP":                       [27, 4],  # Reg -> 27
-        "GERADOR_FASE_C_TRP_TMP":                       [27, 5],  # Reg -> 27
-        "GERADOR_NUCL_ESTAT_TRP_TMP":                   [27, 6],  # Reg -> 27
+        "PONTE_FASE_A_TRP_TMP":                         [27, 0],
+        "PONTE_FASE_B_TRP_TMP":                         [27, 1],
+        "PONTE_FASE_C_TRP_TMP":                         [27, 2],
+        "GERADOR_FASE_A_TRP_TMP":                       [27, 3],
+        "GERADOR_FASE_B_TRP_TMP":                       [27, 4],
+        "GERADOR_FASE_C_TRP_TMP":                       [27, 5],
+        "GERADOR_NUCL_ESTAT_TRP_TMP":                   [27, 6],
         # Trafo Excitação/Aterramento
-        "TRAFO_ATERRAMENTO_TRP_TMP":                    [27, 8],  # Reg -> 27
-        "TRAFO_EXCITACAO_TRP_TMP":                      [27, 9],  # Reg -> 27
-        "TRAFO_EXCITACAO_FLH_LER_TMP":                  [27, 10], # Reg -> 27
+        "TRAFO_ATERRAMENTO_TRP_TMP":                    [27, 8],
+        "TRAFO_EXCITACAO_TRP_TMP":                      [27, 9],
+        "TRAFO_EXCITACAO_FLH_LER_TMP":                  [27, 10],
         # Bloqueio Atuado
-        "86E_BLQ_ATUADO":                               [27, 15], # Reg -> 27
+        "86E_BLQ_ATUADO":                               [27, 15],
 
 
         # Trips Temperatura/Vibração/Pressão
         "UHRV_ACUMULADOR_PRESSAO_TRP":                  [28, 5],
-        "MANCAL_CASQ_COMB_TRP_TMP":                     [29, 2],  # Reg -> 29
-        "MANCAL_CONT_ESCO_COMB_TRP_TMP":                [29, 3],  # Reg -> 29
-        "MANCAL_COMB_PATINS_1_TRP_TMP":                 [29, 4],  # Reg -> 29
-        "MANCAL_COMB_PATINS_2_TRP_TMP":                 [29, 5],  # Reg -> 29
-        "MANCAL_GUIA_INTE_1_TRP_TMP":                   [29, 6],  # Reg -> 29
-        "MANCAL_GUIA_INTE_2_TRP_TMP":                   [29, 7],  # Reg -> 29
-        "86H_BLQ_ATUADO":                               [29, 15], # Reg -> 29
+        "MANCAL_CASQ_COMB_TRP_TMP":                     [29, 2],
+        "MANCAL_CONT_ESCO_COMB_TRP_TMP":                [29, 3],
+        "MANCAL_COMB_PATINS_1_TRP_TMP":                 [29, 4],
+        "MANCAL_COMB_PATINS_2_TRP_TMP":                 [29, 5],
+        "MANCAL_GUIA_INTE_1_TRP_TMP":                   [29, 6],
+        "MANCAL_GUIA_INTE_2_TRP_TMP":                   [29, 7],
+        "86H_BLQ_ATUADO":                               [29, 15],
 
 
         # UHRV
@@ -636,34 +638,33 @@ REG_CLP = {
 
 
         # Rearme Bloqueio
-        "PASSOS_CMD_RST_FLH":                           [10148, 0], # Alterar Simulador
+        "PASSOS_CMD_RST_FLH":                           [148, 0], # Simulador
         "86M_CMD_REARME_BLQ":                           [148, 1],
         "86E_CMD_REARME_BLQ":                           [148, 2],
         "86H_CMD_REARME_BLQ":                           [148, 3],
         # Parada
-        "PARADA_CMD_EMERGENCIA":                        [10148, 4], # Alterar Simulador
+        "PARADA_CMD_EMERGENCIA":                        [148, 4], # Simulador
         "PARADA_BLQ_ABERTURA_DJ":                       [148, 11],
-        "PARADA_CMD_DESABILITA_UHLM":                   [10148, 15],  # Alterar Simulador
+        "PARADA_CMD_DESABILITA_UHLM":                   [148, 15], # Simulador
         # Partida
-        "PARTIDA_CMD_SINCRONISMO":                      [10148, 10] , # Alterar Simulador
+        "PARTIDA_CMD_SINCRONISMO":                      [148, 10], # Simulador
 
 
         # UHRV
         "UHRV_CMD_REARME_FLH":                          [150, 0],
-        "UHLM_CMD_REARME_FLH":                          [151, 0], # Reg -> 151
+        "UHLM_CMD_REARME_FLH":                          [151, 0],
 
         # --------------------------------------------------------------------- #
         ## Comunicação RTV
 
         # RV
-        "RV_ESTADO_OPERACAO":                           21 + 10000,
-        "RV_ESTADO_OPERACAO_2":                         999 + 10000,
+        "RV_ESTADO_OPERACAO":                           21,
 
         "RV_SAIDAS_DIGITAIS":                           26,
         "RV_RELE_TRP_NAO_ATUADO":                       [26, 0],
         "RV_RELE_ALM_ATUADO":                           [26, 1],
 
-        "RV_SETPOT_POT_ATIVA_PU":                       30 + 10000,
+        "RV_SETPOT_POT_ATIVA_PU":                       30,
 
         "RT_RELE_TRP_NAO_ATUADO":                       [31, 0],
 
@@ -741,29 +742,29 @@ REG_CLP = {
 
     "UG2": {
         # Leituras Anaçógicas
-        "GERADOR_FASE_A_TMP":                           20044,
-        "GERADOR_FASE_B_TMP":                           20046,
-        "GERADOR_FASE_C_TMP":                           20048,
-        "MANCAL_GUIA_TMP":                              20054,
-        "MANCAL_CASQ_COMB_TMP":                         20060,
-        "MANCAL_CONT_ESCO_COMB_TMP":                    20062,
-        "MANCAL_COMB_PATINS_1_TMP":                     20064,
-        "MANCAL_COMB_PATINS_2_TMP":                     20066,
-        "MANCAL_GUIA_INTE_1_TMP":                       20068,
-        "MANCAL_GUIA_INTE_2_TMP":                       20070,
-        "GERADOR_NUCL_ESTAT_TMP":                       20072,
-        "ENTRADA_TURBINA_PRESSAO":                      20084,
-        "GERADOR_SAIDA_AR_TRP_TMP":                     20090,
-        "HORIMETRO":                                    20108,
-        "P":                                            20130,
+        "GERADOR_FASE_A_TMP":                           44,
+        "GERADOR_FASE_B_TMP":                           46,
+        "GERADOR_FASE_C_TMP":                           48,
+        "MANCAL_GUIA_TMP":                              54,
+        "MANCAL_CASQ_COMB_TMP":                         60,
+        "MANCAL_CONT_ESCO_COMB_TMP":                    62,
+        "MANCAL_COMB_PATINS_1_TMP":                     64,
+        "MANCAL_COMB_PATINS_2_TMP":                     66,
+        "MANCAL_GUIA_INTE_1_TMP":                       68,
+        "MANCAL_GUIA_INTE_2_TMP":                       70,
+        "GERADOR_NUCL_ESTAT_TMP":                       72,
+        "ENTRADA_TURBINA_PRESSAO":                      84,
+        "GERADOR_SAIDA_AR_TRP_TMP":                     90,
+        "HORIMETRO":                                    108,
+        "P":                                            130,
 
 
         # UHRV
-        "UHRV_FILTRO_SUJO":                             [1, 5],  # Reg -> 1
+        "UHRV_FILTRO_SUJO":                             [1, 5],
         # UHLM
-        "UHLM_FILTRO_SUJO":                             [1, 8],  # Reg -> 1
+        "UHLM_FILTRO_SUJO":                             [1, 8],
         # Resistência
-        "RESISTENCIA_FALHA":                            [1, 12], # Reg -> 1
+        "RESISTENCIA_FALHA":                            [1, 12],
 
 
         # Botão Emergência
@@ -772,11 +773,11 @@ REG_CLP = {
         "SUP_BOBINA_52G":                               [2, 12],
         "SUP_BOBINA_86EH":                              [2, 13],
         # Relé
-        "RELE_BLQ_86EH_DESATUADO":                      [3, 12], # Reg -> 3
-        "SUP_TENSAO_125VCC":                            [3, 13], # Reg -> 3
-        "SUP_TENSAO_24VCC":                             [3, 14], # Reg -> 3
+        "RELE_BLQ_86EH_DESATUADO":                      [3, 12],
+        "SUP_TENSAO_125VCC":                            [3, 13],
+        "SUP_TENSAO_24VCC":                             [3, 14],
         # DJ
-        "DJS_125VCC_FECHADOS":                          [3, 15], # Reg -> 3
+        "DJS_125VCC_FECHADOS":                          [3, 15],
 
 
         # DJ
@@ -808,13 +809,13 @@ REG_CLP = {
         "MANCAL_GUIA_INTE_2_ALM_TMP":                   [6, 13],
         "GERADOR_NUCL_ESTAT_ALM_TMP":                   [6, 14],
         "GERADOR_FASE_A_ALM_TMP":                       [6, 15],
-        "GERADOR_FASE_B_ALM_TMP":                       [7, 0],  # Reg -> 7
-        "GERADOR_FASE_C_ALM_TMP":                       [7, 1],  # Reg -> 7
-        "MANCAL_COMB_EIXO_X_ALM_VIBR":                  [7, 8],  # Reg -> 7
-        "MANCAL_COMB_EIXO_Y_ALM_VIBR":                  [7, 9],  # Reg -> 7
-        "MANCAL_COMB_EIXO_Z_ALM_VIBR":                  [7, 10], # Reg -> 7
-        "DETECCAO_HORIZONTAL_ALM_VIBRA":                [7, 12], # Reg -> 7
-        "DETECCAO_VERTICAL_ALM_VIBRA":                  [7, 13], # Reg -> 7
+        "GERADOR_FASE_B_ALM_TMP":                       [7, 0],
+        "GERADOR_FASE_C_ALM_TMP":                       [7, 1],
+        "MANCAL_COMB_EIXO_X_ALM_VIBR":                  [7, 8],
+        "MANCAL_COMB_EIXO_Y_ALM_VIBR":                  [7, 9],
+        "MANCAL_COMB_EIXO_Z_ALM_VIBR":                  [7, 10],
+        "DETECCAO_HORIZONTAL_ALM_VIBRA":                [7, 12],
+        "DETECCAO_VERTICAL_ALM_VIBRA":                  [7, 13],
 
 
         # Falhas de Leitura de Pressão/Vibração
@@ -844,19 +845,19 @@ REG_CLP = {
         "MANCAL_GUIA_INTE_2_FLH_LER_TMP":               [24, 13],
         "PONTE_FASE_A_FLH_LER_TMP":                     [24, 14],
         "PONTE_FASE_B_FLH_LER_TMP":                     [24, 15],
-        "PONTE_FASE_C_FLH_LER_TMP":                     [25, 0],  # Reg -> 25
-        "GERADOR_FASE_A_FLH_LER_TMP":                   [25, 1],  # Reg -> 25
-        "GERADOR_FASE_B_FLH_LER_TMP":                   [25, 2],  # Reg -> 25
-        "GERADOR_FASE_C_FLH_LER_TMP":                   [25, 3],  # Reg -> 25
-        "GERADOR_NUCL_ESTAT_FLH_LER_TMP":               [25, 4],  # Reg -> 25
+        "PONTE_FASE_C_FLH_LER_TMP":                     [25, 0],
+        "GERADOR_FASE_A_FLH_LER_TMP":                   [25, 1],
+        "GERADOR_FASE_B_FLH_LER_TMP":                   [25, 2],
+        "GERADOR_FASE_C_FLH_LER_TMP":                   [25, 3],
+        "GERADOR_NUCL_ESTAT_FLH_LER_TMP":               [25, 4],
         # Trips Vibração
-        "DETECCAO_HORIZONTAL_TRP_VIBRA":                [25, 10], # Reg -> 25
-        "DETECCAO_VERTICAL_TRP_VIBRA":                  [25, 11], # Reg -> 25
-        "MANCAL_COMB_EIXO_X_TRP_VIBR":                  [25, 12], # Reg -> 25
-        "MANCAL_COMB_EIXO_Y_TRP_VIBR":                  [25, 13], # Reg -> 25
-        "MANCAL_COMB_EIXO_Z_TRP_VIBR":                  [25, 14], # Reg -> 25
+        "DETECCAO_HORIZONTAL_TRP_VIBRA":                [25, 10],
+        "DETECCAO_VERTICAL_TRP_VIBRA":                  [25, 11],
+        "MANCAL_COMB_EIXO_X_TRP_VIBR":                  [25, 12],
+        "MANCAL_COMB_EIXO_Y_TRP_VIBR":                  [25, 13],
+        "MANCAL_COMB_EIXO_Z_TRP_VIBR":                  [25, 14],
         # Bloqueio Atuado
-        "86M_BLQ_ATUADO":                               [25, 15], # Reg -> 25
+        "86M_BLQ_ATUADO":                               [25, 15],
 
 
         # Cubiculo Proteção Gerador
@@ -866,30 +867,30 @@ REG_CLP = {
         "RELE_700G_TRP_ATUADO":                         [26, 4],
         "RELE_700G_BF_ATUADO":                          [26, 6],
         # Trips por Temperatura
-        "PONTE_FASE_A_TRP_TMP":                         [27, 0],  # Reg -> 27
-        "PONTE_FASE_B_TRP_TMP":                         [27, 1],  # Reg -> 27
-        "PONTE_FASE_C_TRP_TMP":                         [27, 2],  # Reg -> 27
-        "GERADOR_FASE_A_TRP_TMP":                       [27, 3],  # Reg -> 27
-        "GERADOR_FASE_B_TRP_TMP":                       [27, 4],  # Reg -> 27
-        "GERADOR_FASE_C_TRP_TMP":                       [27, 5],  # Reg -> 27
-        "GERADOR_NUCL_ESTAT_TRP_TMP":                   [27, 6],  # Reg -> 27
+        "PONTE_FASE_A_TRP_TMP":                         [27, 0],
+        "PONTE_FASE_B_TRP_TMP":                         [27, 1],
+        "PONTE_FASE_C_TRP_TMP":                         [27, 2],
+        "GERADOR_FASE_A_TRP_TMP":                       [27, 3],
+        "GERADOR_FASE_B_TRP_TMP":                       [27, 4],
+        "GERADOR_FASE_C_TRP_TMP":                       [27, 5],
+        "GERADOR_NUCL_ESTAT_TRP_TMP":                   [27, 6],
         # Trafo Excitação/Aterramento
-        "TRAFO_ATERRAMENTO_TRP_TMP":                    [27, 8],  # Reg -> 27
-        "TRAFO_EXCITACAO_TRP_TMP":                      [27, 9],  # Reg -> 27
-        "TRAFO_EXCITACAO_FLH_LER_TMP":                  [27, 10], # Reg -> 27
+        "TRAFO_ATERRAMENTO_TRP_TMP":                    [27, 8],
+        "TRAFO_EXCITACAO_TRP_TMP":                      [27, 9],
+        "TRAFO_EXCITACAO_FLH_LER_TMP":                  [27, 10],
         # Bloqueio Atuado
-        "86E_BLQ_ATUADO":                               [27, 15], # Reg -> 27
+        "86E_BLQ_ATUADO":                               [27, 15],
 
 
         # Trips Temperatura/Vibração/Pressão
         "UHRV_ACUMULADOR_PRESSAO_TRP":                  [28, 5],
-        "MANCAL_CASQ_COMB_TRP_TMP":                     [29, 2],  # Reg -> 29
-        "MANCAL_CONT_ESCO_COMB_TRP_TMP":                [29, 3],  # Reg -> 29
-        "MANCAL_COMB_PATINS_1_TRP_TMP":                 [29, 4],  # Reg -> 29
-        "MANCAL_COMB_PATINS_2_TRP_TMP":                 [29, 5],  # Reg -> 29
-        "MANCAL_GUIA_INTE_1_TRP_TMP":                   [29, 6],  # Reg -> 29
-        "MANCAL_GUIA_INTE_2_TRP_TMP":                   [29, 7],  # Reg -> 29
-        "86H_BLQ_ATUADO":                               [29, 15], # Reg -> 29
+        "MANCAL_CASQ_COMB_TRP_TMP":                     [29, 2],
+        "MANCAL_CONT_ESCO_COMB_TRP_TMP":                [29, 3],
+        "MANCAL_COMB_PATINS_1_TRP_TMP":                 [29, 4],
+        "MANCAL_COMB_PATINS_2_TRP_TMP":                 [29, 5],
+        "MANCAL_GUIA_INTE_1_TRP_TMP":                   [29, 6],
+        "MANCAL_GUIA_INTE_2_TRP_TMP":                   [29, 7],
+        "86H_BLQ_ATUADO":                               [29, 15],
 
 
         # UHRV
@@ -921,34 +922,33 @@ REG_CLP = {
 
 
         # Rearme Bloqueio
-        "PASSOS_CMD_RST_FLH":                           [20148, 0], # Alterar Simulador
+        "PASSOS_CMD_RST_FLH":                           [148, 0], # Simulador
         "86M_CMD_REARME_BLQ":                           [148, 1],
         "86E_CMD_REARME_BLQ":                           [148, 2],
         "86H_CMD_REARME_BLQ":                           [148, 3],
         # Parada
-        "PARADA_CMD_EMERGENCIA":                        [20148, 4],  # Alterar Simulador
+        "PARADA_CMD_EMERGENCIA":                        [148, 4],  # Simulador
         "PARADA_BLQ_ABERTURA_DJ":                       [148, 11],
-        "PARADA_CMD_DESABILITA_UHLM":                   [20148, 15],  # Alterar Simulador
+        "PARADA_CMD_DESABILITA_UHLM":                   [148, 15],  # Simulador
         # Partida
-        "PARTIDA_CMD_SINCRONISMO":                      [20148, 10] , # Alterar Simulador
+        "PARTIDA_CMD_SINCRONISMO":                      [148, 10] , # Simulador
 
 
         # UHRV
         "UHRV_CMD_REARME_FLH":                          [150, 0],
-        "UHLM_CMD_REARME_FLH":                          [151, 0], # Reg -> 151
+        "UHLM_CMD_REARME_FLH":                          [151, 0],
 
         # --------------------------------------------------------------------- #
         ## Comunicação RTV
 
         # RV
-        "RV_ESTADO_OPERACAO":                           21 + 20000,
-        "RV_ESTADO_OPERACAO_2":                         999 + 20000,
+        "RV_ESTADO_OPERACAO":                           21,
 
         "RV_SAIDAS_DIGITAIS":                           26,
         "RV_RELE_TRP_NAO_ATUADO":                       [26, 0],
         "RV_RELE_ALM_ATUADO":                           [26, 1],
 
-        "RV_SETPOT_POT_ATIVA_PU":                       30 + 20000,
+        "RV_SETPOT_POT_ATIVA_PU":                       30,
 
         "RT_RELE_TRP_NAO_ATUADO":                       [31, 0],
 
@@ -1066,6 +1066,6 @@ CLP:
 """
 
 REG_CLP["SE"]["CONDIC"] = [995, 4]
-REG_CLP["UG1"]["CONDIC"] = [995 + 10000, 4]
-REG_CLP["UG2"]["CONDIC"] = [995 + 20000, 4]
-REG_RELE["BAY"]["CONDIC"] = [999 + 30000, 4]
+REG_CLP["UG1"]["CONDIC"] = [9950, 4]
+REG_CLP["UG2"]["CONDIC"] = [995, 4]
+REG_RELE["BAY"]["CONDIC"] = [999, 4]
