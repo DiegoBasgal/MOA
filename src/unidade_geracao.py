@@ -385,6 +385,9 @@ class UnidadeGeracao:
         Realiza a consulta no Banco de Dados e atribui o último estado comparando
         com o valor das constantes de Estado.
         """
+        
+        self.__next_state = StateManual(self)
+        return
 
         estado = self.__db.get_ultimo_estado_ug(self.id)[0]
 
@@ -492,17 +495,20 @@ class UnidadeGeracao:
         """
 
         try:
-            logger.debug(f"[UG{self.id}]          Enviando setpoint:         {int(setpoint_kw)} kW")
 
             if setpoint_kw > 1:
                 self.setpoint = int(setpoint_kw)
+                setpoint_porcento = ((setpoint_kw / self.__cfg[f"pot_maxima_ug{self.id}"]) * 10000)
+
+                logger.debug(f"[UG{self.id}]          Enviando setpoint:         {self.setpoint} kW")
+
                 # res = EMB.escrever_bit(self.clp[f"UG{self.id}"], REG_CLP[f"UG{self.id}"]["PASSOS_CMD_RST_FLH"], valor=1)
                 # res = EMB.escrever_bit(self.clp[f"UG{self.id}"], REG_CLP[f"UG{self.id}"]["86M_CMD_REARME_BLQ"], valor=1)
                 # res = EMB.escrever_bit(self.clp[f"UG{self.id}"], REG_CLP[f"UG{self.id}"]["86E_CMD_REARME_BLQ"], valor=1)
                 # res = EMB.escrever_bit(self.clp[f"UG{self.id}"], REG_CLP[f"UG{self.id}"]["86H_CMD_REARME_BLQ"], valor=1)
                 # res = EMB.escrever_bit(self.clp[f"UG{self.id}"], REG_CLP[f"UG{self.id}"]["UHRV_CMD_REARME_FLH"], valor=1)
                 # res = EMB.escrever_bit(self.clp[f"UG{self.id}"], REG_CLP[f"UG{self.id}"]["UHLM_CMD_REARME_FLH"], valor=1)
-                res = self.clp[f"UG{self.id}"].write_single_register(REG_CLP[f"UG{self.id}"]["RV_SETPOT_POT_ATIVA_PU"], int(self.setpoint))
+                res = self.rv[f"UG{self.id}"].write_single_register(REG_CLP[f"UG{self.id}"]["RV_SETPOT_POT_ATIVA_PU"], int(setpoint_porcento))
 
                 return res
 
@@ -1131,57 +1137,57 @@ class UnidadeGeracao:
         # CONDICIONADORES ESSENCIAIS
         # Temperaturas
             # Fase R
-        self.l_temp_fase_R = LeituraModbus(self.clp[f"UG{self.id}"], REG_CLP[f"UG{self.id}"]["GERADOR_FASE_A_TMP"], descricao=f"[UG{self.id}] Fase A Temperatura")
+        self.l_temp_fase_R = LeituraModbusFloat(self.clp[f"UG{self.id}"], REG_CLP[f"UG{self.id}"]["GERADOR_FASE_A_TMP"], descricao=f"[UG{self.id}] Fase A Temperatura")
         self.condic_temp_fase_r_ug = c.CondicionadorExponencial(self.l_temp_fase_R)
         self.condicionadores_essenciais.append(self.condic_temp_fase_r_ug)
 
             # Fase S
-        self.l_temp_fase_S = LeituraModbus(self.clp[f"UG{self.id}"], REG_CLP[f"UG{self.id}"]["GERADOR_FASE_B_TMP"], descricao=f"[UG{self.id}] Fase B Temperatura")
+        self.l_temp_fase_S = LeituraModbusFloat(self.clp[f"UG{self.id}"], REG_CLP[f"UG{self.id}"]["GERADOR_FASE_B_TMP"], descricao=f"[UG{self.id}] Fase B Temperatura")
         self.condic_temp_fase_s_ug = c.CondicionadorExponencial(self.l_temp_fase_S)
         self.condicionadores_essenciais.append(self.condic_temp_fase_s_ug)
 
             # Fase T
-        self.l_temp_fase_T = LeituraModbus(self.clp[f"UG{self.id}"], REG_CLP[f"UG{self.id}"]["GERADOR_FASE_C_TMP"], descricao=f"[UG{self.id}] Fase C Temperatura")
+        self.l_temp_fase_T = LeituraModbusFloat(self.clp[f"UG{self.id}"], REG_CLP[f"UG{self.id}"]["GERADOR_FASE_C_TMP"], descricao=f"[UG{self.id}] Fase C Temperatura")
         self.condic_temp_fase_t_ug = c.CondicionadorExponencial(self.l_temp_fase_T)
         self.condicionadores_essenciais.append(self.condic_temp_fase_t_ug)
 
             # Nucleo Gerador 1
-        self.l_temp_nucleo_gerador_1 = LeituraModbus(self.clp[f"UG{self.id}"], REG_CLP[f"UG{self.id}"]["GERADOR_NUCL_ESTAT_TMP"], descricao=f"[UG{self.id}] Núcleo Gerador Temperatura")
+        self.l_temp_nucleo_gerador_1 = LeituraModbusFloat(self.clp[f"UG{self.id}"], REG_CLP[f"UG{self.id}"]["GERADOR_NUCL_ESTAT_TMP"], descricao=f"[UG{self.id}] Núcleo Gerador Temperatura")
         self.condic_temp_nucleo_gerador_1_ug = c.CondicionadorExponencial(self.l_temp_nucleo_gerador_1)
         self.condicionadores_essenciais.append(self.condic_temp_nucleo_gerador_1_ug)
 
             # Mancal Guia
-        self.l_temp_mancal_guia = LeituraModbus(self.clp[f"UG{self.id}"], REG_CLP[f"UG{self.id}"]["MANCAL_GUIA_TMP"], descricao=f"[UG{self.id}] Mancal Guia Temperatura")
+        self.l_temp_mancal_guia = LeituraModbusFloat(self.clp[f"UG{self.id}"], REG_CLP[f"UG{self.id}"]["MANCAL_GUIA_TMP"], descricao=f"[UG{self.id}] Mancal Guia Temperatura")
         self.condic_temp_mancal_guia_ug = c.CondicionadorExponencial(self.l_temp_mancal_guia)
         self.condicionadores_essenciais.append(self.condic_temp_mancal_guia_ug)
 
             # Mancal Guia Interno 1
-        self.l_temp_mancal_guia_interno_1 = LeituraModbus(self.clp[f"UG{self.id}"], REG_CLP[f"UG{self.id}"]["MANCAL_GUIA_INTE_1_TMP"], descricao=f"[UG{self.id}] Mancal Guia Interno 1 Temperatura")
+        self.l_temp_mancal_guia_interno_1 = LeituraModbusFloat(self.clp[f"UG{self.id}"], REG_CLP[f"UG{self.id}"]["MANCAL_GUIA_INTE_1_TMP"], descricao=f"[UG{self.id}] Mancal Guia Interno 1 Temperatura")
         self.condic_temp_mancal_guia_interno_1_ug = c.CondicionadorExponencial(self.l_temp_mancal_guia_interno_1)
         self.condicionadores_essenciais.append(self.condic_temp_mancal_guia_interno_1_ug)
 
             # Mancal Guia Interno 2
-        self.l_temp_mancal_guia_interno_2 = LeituraModbus(self.clp[f"UG{self.id}"], REG_CLP[f"UG{self.id}"]["MANCAL_GUIA_INTE_2_TMP"], descricao=f"[UG{self.id}] Mancal Guia Interno 2 Temperatura")
+        self.l_temp_mancal_guia_interno_2 = LeituraModbusFloat(self.clp[f"UG{self.id}"], REG_CLP[f"UG{self.id}"]["MANCAL_GUIA_INTE_2_TMP"], descricao=f"[UG{self.id}] Mancal Guia Interno 2 Temperatura")
         self.condic_temp_mancal_guia_interno_2_ug = c.CondicionadorExponencial(self.l_temp_mancal_guia_interno_2)
         self.condicionadores_essenciais.append(self.condic_temp_mancal_guia_interno_2_ug)
 
             # Patins Mancal combinado 1
-        self.l_temp_patins_mancal_comb_1 = LeituraModbus(self.clp[f"UG{self.id}"], REG_CLP[f"UG{self.id}"]["MANCAL_COMB_PATINS_1_TMP"], descricao=f"[UG{self.id}] Patins Mancal Combinado 1 Temperatura")
+        self.l_temp_patins_mancal_comb_1 = LeituraModbusFloat(self.clp[f"UG{self.id}"], REG_CLP[f"UG{self.id}"]["MANCAL_COMB_PATINS_1_TMP"], descricao=f"[UG{self.id}] Patins Mancal Combinado 1 Temperatura")
         self.condic_temp_patins_mancal_comb_1_ug = c.CondicionadorExponencial(self.l_temp_patins_mancal_comb_1)
         self.condicionadores_essenciais.append(self.condic_temp_patins_mancal_comb_1_ug)
 
             # Patins Mancal combinado 2
-        self.l_temp_patins_mancal_comb_2 = LeituraModbus(self.clp[f"UG{self.id}"], REG_CLP[f"UG{self.id}"]["MANCAL_COMB_PATINS_2_TMP"], descricao=f"[UG{self.id}] Patins Mancal Combinado 2 Temperatura")
+        self.l_temp_patins_mancal_comb_2 = LeituraModbusFloat(self.clp[f"UG{self.id}"], REG_CLP[f"UG{self.id}"]["MANCAL_COMB_PATINS_2_TMP"], descricao=f"[UG{self.id}] Patins Mancal Combinado 2 Temperatura")
         self.condic_temp_patins_mancal_comb_2_ug = c.CondicionadorExponencial(self.l_temp_patins_mancal_comb_2)
         self.condicionadores_essenciais.append(self.condic_temp_patins_mancal_comb_2_ug)
 
             # Mancal Casquilho combinado
-        self.l_temp_mancal_casq_comb = LeituraModbus(self.clp[f"UG{self.id}"], REG_CLP[f"UG{self.id}"]["MANCAL_CASQ_COMB_TMP"], descricao=f"[UG{self.id}] Mancal Casquilho Combinado Temperatura")
+        self.l_temp_mancal_casq_comb = LeituraModbusFloat(self.clp[f"UG{self.id}"], REG_CLP[f"UG{self.id}"]["MANCAL_CASQ_COMB_TMP"], descricao=f"[UG{self.id}] Mancal Casquilho Combinado Temperatura")
         self.condic_temp_mancal_casq_comb_ug = c.CondicionadorExponencial(self.l_temp_mancal_casq_comb)
         self.condicionadores_essenciais.append(self.condic_temp_mancal_casq_comb_ug)
 
             # Mancal Contra Escora combinado
-        self.l_temp_mancal_contra_esc_comb = LeituraModbus(self.clp[f"UG{self.id}"], REG_CLP[f"UG{self.id}"]["MANCAL_CONT_ESCO_COMB_TMP"], descricao=f"[UG{self.id}] Mancal Contra Escora Combinado Temperatura")
+        self.l_temp_mancal_contra_esc_comb = LeituraModbusFloat(self.clp[f"UG{self.id}"], REG_CLP[f"UG{self.id}"]["MANCAL_CONT_ESCO_COMB_TMP"], descricao=f"[UG{self.id}] Mancal Contra Escora Combinado Temperatura")
         self.condic_temp_mancal_contra_esc_comb_ug = c.CondicionadorExponencial(self.l_temp_mancal_contra_esc_comb)
         self.condicionadores_essenciais.append(self.condic_temp_mancal_contra_esc_comb_ug)
 
@@ -1191,6 +1197,7 @@ class UnidadeGeracao:
         self.condic_pressao_turbina_ug = c.CondicionadorExponencialReverso(self.l_pressao_turbina, CONDIC_INDISPONIBILIZAR, 1.6, 1.3)
         self.condicionadores_atenuadores.append(self.condic_pressao_turbina_ug)
 
+        return
         # CONDICIONADORES ESSENCIAIS - OUTROS
         # Botões
         self.l_bt_emerg_atuado = LeituraModbusBit(self.clp[f"UG{self.id}"], REG_CLP[f"UG{self.id}"]["BT_EMERGENCIA_ATUADO"], invertido=True, descricao=f"[UG{self.id}] Botão Emergência Atuado")

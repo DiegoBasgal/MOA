@@ -105,31 +105,31 @@ class Servidores:
             host=d.ips["RELE_SE_ip"],
             port=d.ips["RELE_SE_porta"],
             unit_id=1,
-            timeout=0.5,
+            timeout=2,
         )
         self.rele["TE"] = ModbusClient(
             host=d.ips["RELE_TE_ip"],
             port=d.ips["RELE_TE_porta"],
             unit_id=1,
-            timeout=0.5,
+            timeout=2,
         )
         self.rele["BAY"] = ModbusClient(
             host=d.ips["RELE_BAY_ip"],
             port=d.ips["RELE_BAY_porta"],
             unit_id=1,
-            timeout=0.5,
+            timeout=2,
         )
         self.rele["UG1"] = ModbusClient(
             host=d.ips["RELE_UG1_ip"],
             port=d.ips["RELE_UG1_porta"],
             unit_id=1,
-            timeout=0.5,
+            timeout=2,
         )
         self.rele["UG2"] = ModbusClient(
             host=d.ips["RELE_UG2_ip"],
             port=d.ips["RELE_UG2_porta"],
             unit_id=1,
-            timeout=0.5,
+            timeout=2,
         )
 
     @staticmethod

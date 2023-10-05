@@ -110,7 +110,7 @@ class Bay:
                 if self.verificar_dj_linha():
                     logger.debug(f"[BAY] Enviando comando:                   \"FECHAR DISJUNTOR\"")
                     logger.debug("")
-                    EMB.escrever_bit(self.rele["BAY"], REG_RELE["BAY"]["DJL_CMD_FECHAR"], valor=1)
+                    # EMB.escrever_bit(self.rele["BAY"], REG_RELE["BAY"]["DJL_CMD_FECHAR"], valor=1)
                     return True
 
                 else:
@@ -154,11 +154,11 @@ class Bay:
             if self.dj_linha_se.valor:
                 logger.info("[BAY] Disjuntor da Subestação Fechado!")
                 logger.debug(f"[BAY] Enviando comando:                   \"ABRIR DISJUNTOR SE\"")
-                res = EMB.escrever_bit(self.clp["SA"], REG_CLP["SE"]["DJL_CMD_ABRIR"], valor=1)
+                # res = EMB.escrever_bit(self.clp["SA"], REG_CLP["SE"]["DJL_CMD_ABRIR"], valor=1)
 
-                if not res:
-                    logger.warning("[BAY] Não foi possível realizar a abertura do Disjuntor de Linha da Subestação!")
-                    flags += 1
+                # if not res:
+                #     logger.warning("[BAY] Não foi possível realizar a abertura do Disjuntor de Linha da Subestação!")
+                #     flags += 1
 
             if not self.barra_morta.valor and self.barra_viva.valor:
                 logger.warning(f"[BAY] Foi identificada uma Leitura de Tensão na Barra! Tensão VS -> {self.tensao_vs.valor}")
@@ -268,6 +268,7 @@ class Bay:
                 if condic in self.condicionadores_ativos:
                     logger.debug(f"[BAY] Descrição: \"{condic.descricao}\", Gravidade: \"{CONDIC_STR_DCT[condic.gravidade] if condic.gravidade in CONDIC_STR_DCT else 'Desconhecida'}\"")
                     continue
+
                 else:
                     logger.warning(f"[BAY] Descrição: \"{condic.descricao}\", Gravidade: \"{CONDIC_STR_DCT[condic.gravidade] if condic.gravidade in CONDIC_STR_DCT else 'Desconhecida'}\"")
                     self.condicionadores_ativos.append(condic)
@@ -295,7 +296,7 @@ class Bay:
 
 
         ## CONDICIONADORES RELÉS
-        self.secc_aberta = LeituraModbusBit(self.rele["BAY"], REG_RELE["BAY"]["SECC_FECHADA"], invertido=True, descricao="[BAY][RELE] Seccionadora Aberta")
+        self.secc_aberta = LeituraModbusBit(self.rele["BAY"], REG_RELE["BAY"]["SECC_FECHADA"], descricao="[BAY][RELE] Seccionadora Aberta")
         self.condicionadores_essenciais.append(CondicionadorBase(self.secc_aberta, CONDIC_INDISPONIBILIZAR))
 
         self.l_falha_abertura_dj = LeituraModbusBit(self.rele["BAY"], REG_RELE["BAY"]["DJL_FLH_ABERTURA"], descricao="[BAY][RELE] Disjuntor Linha Falha Abertura")

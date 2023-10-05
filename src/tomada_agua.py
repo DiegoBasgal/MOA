@@ -30,8 +30,8 @@ class TomadaAgua:
         self.aguardando_reservatorio: "int" = 0
 
         self.cp: "dict[str, cp.Comporta]" = {}
-        self.cp["CP1"] = cp.Comporta(1, serv)
-        self.cp["CP2"] = cp.Comporta(2, serv)
+        self.cp["CP1"] = cp.Comporta(1, serv, self)
+        self.cp["CP2"] = cp.Comporta(2, serv, self)
 
         self.cp["CP1"].comporta_adjacente = self.cp["CP2"]
         self.cp["CP2"].comporta_adjacente = self.cp["CP1"]

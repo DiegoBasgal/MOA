@@ -54,6 +54,7 @@ class Usina:
 
         self.bd = BancoDados("MOA")
 
+
         self.bay = bay.Bay(serv)
         self.se = se.Subestacao(serv)
         self.sa = sa.ServicoAuxiliar(serv)
@@ -64,8 +65,6 @@ class Usina:
         self.ugs: "list[UnidadeGeracao]" = [self.ug1, self.ug2]
 
         self.agn = Agendamentos(self.cfg, self.bd, self)
-
-        serv.open_all()
 
 
         # ATRIBUIÇÃO DE VARIÁVEIS PRIVADAS
@@ -108,6 +107,8 @@ class Usina:
         self.se.carregar_leituras()
         self.tda.carregar_leituras()
         self.sa.carregar_leituras()
+
+        serv.open_all()
 
         self.ler_valores()
         self.verificar_bay_se()
@@ -164,10 +165,10 @@ class Usina:
         """
 
         logger.info("[USN] Acionando reset de emergência.")
-        logger.debug("[USN] Bay resetado.") if self.bay.resetar_emergencia() else logger.info("[USN] Reset de emergência do Bay falhou.")
-        logger.debug("[USN] Subestação resetada.") if self.se.resetar_emergencia() else logger.info("[USN] Reset de emergência da subestação falhou.")
-        logger.debug("[USN] Tomada da Água resetada.") if self.tda.resetar_emergencia else logger.info("[USN] Reset de emergência da Tomada da Água falhou.")
-        logger.debug("[USN] Serviço Auxiliar resetado.") if self.sa.resetar_emergencia() else logger.info("[USN] Reset de emergência do serviço auxiliar falhou.")
+        logger.debug("[USN] Bay resetado.") if self.bay.resetar_emergencia() else logger.info("[USN] Reset de emergência do Bay \"FALHOU\"!.")
+        logger.debug("[USN] Subestação resetada.") if self.se.resetar_emergencia() else logger.info("[USN] Reset de emergência da subestação \"FALHOU\"!.")
+        logger.debug("[USN] Tomada da Água resetada.") if self.tda.resetar_emergencia else logger.info("[USN] Reset de emergência da Tomada da Água \"FALHOU\"!.")
+        logger.debug("[USN] Serviço Auxiliar resetado.") if self.sa.resetar_emergencia() else logger.info("[USN] Reset de emergência do serviço auxiliar \"FALHOU\"!.")
         logger.debug("")
 
 
@@ -272,20 +273,24 @@ class Usina:
     def verificar_condicionadores(self) -> "int":
         flag = CONDIC_IGNORAR
 
+        logger.debug(f"[DEBUG!] {2}")
         lst_bay = self.bay.verificar_condicionadores()
+        logger.debug(f"[DEBUG!] {3}")
         lst_se = self.se.verificar_condicionadores()
+        logger.debug(f"[DEBUG!] {4}")
         lst_tda = self.tda.verificar_condicionadores()
+        logger.debug(f"[DEBUG!] {5}")
         lst_sa = self.sa.verificar_condicionadores()
-
+        logger.debug(f"[DEBUG!] {6}")
         condics = [condic for condics in [lst_sa, lst_se, lst_bay, lst_tda] for condic in condics]
-
+        logger.debug(f"[DEBUG!] {7}")
         for condic in condics:
             if condic.gravidade == CONDIC_INDISPONIBILIZAR:
                 return CONDIC_INDISPONIBILIZAR
 
             elif condic.gravidade == CONDIC_NORMALIZAR:
                 flag = CONDIC_NORMALIZAR
-
+        logger.debug(f"[DEBUG!] {8}")
         return flag
 
 

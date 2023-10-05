@@ -147,6 +147,7 @@ class ControleEstados(State):
 
         else:
             logger.debug("Verificando condicionadores...")
+            logger.debug(f"[DEBUG!] {1}")
             flag_condic= self.usn.verificar_condicionadores()
 
             if flag_condic == CONDIC_INDISPONIBILIZAR:
@@ -300,6 +301,7 @@ class ModoManual(State):
         if self.usn.modo_autonomo:
             logger.debug("Comando acionado: \"Habilitar modo autônomo\"")
             self.usn.ler_valores()
+            sleep(1)
             return ControleDados(self.usn)
 
         return ControleAgendamentos(self.usn) if len(self.usn.agn.verificar_agendamentos_pendentes()) > 0 else self

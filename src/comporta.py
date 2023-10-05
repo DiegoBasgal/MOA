@@ -19,7 +19,7 @@ from src.funcoes.escrita import EscritaModBusBit as EMB
 logger = logging.getLogger("logger")
 
 class Comporta:
-    def __init__(self, id: "int"=None, serv:"Servidores"=None) -> "None":
+    def __init__(self, id: "int"=None, serv:"Servidores"=None, tda:"tda.TomadaAgua"=None) -> "None":
 
         # VERIFICAÇÃO DE ARGUMENTOS
 
@@ -28,6 +28,7 @@ class Comporta:
         else:
             self.__id = id
 
+        self.tda = tda
         self.clp = serv.clp
 
         # ATRIBUIÇÃO DE VAIRÁVEIS PRIVADAS
@@ -285,9 +286,9 @@ class Comporta:
                 logger.debug(f"[CP{self.id}]          Ainda há \"Bloqueios\" Ativos") if self.bloqueio else None
                 logger.debug(f"[CP{self.id}]          Ainda há \"Permissivos\" Inválidos") if self.permissao else None
 
-                if tda.TomadaAgua.status_valvula_borboleta.valor or tda.TomadaAgua.status_limpa_grades.valor or self.comporta_adjacente.operando in (2, 4, 32):
-                    logger.debug(f"[CP{self.id}]          Limpa Grades Operando") if tda.TomadaAgua.status_limpa_grades.valor != 0 else None
-                    logger.debug(f"[CP{self.id}]          Válvula Borboleta Operando") if tda.TomadaAgua.status_valvula_borboleta.valor != 0 else None
+                if self.tda.status_valvula_borboleta.valor or self.tda.status_limpa_grades.valor or self.comporta_adjacente.operando in (2, 4, 32):
+                    logger.debug(f"[CP{self.id}]          Limpa Grades Operando") if self.tda.status_limpa_grades.valor != 0 else None
+                    logger.debug(f"[CP{self.id}]          Válvula Borboleta Operando") if self.tda.status_valvula_borboleta.valor != 0 else None
 
                     logger.debug(f"[CP{self.id}]          Comporta {self.comporta_adjacente.id} Repondo") if self.comporta_adjacente.operando == 2 else None
                     logger.debug(f"[CP{self.id}]          Comporta {self.comporta_adjacente.id} Abrindo") if self.comporta_adjacente.operando == 4 else None
@@ -297,7 +298,7 @@ class Comporta:
                 else:
                     return False
 
-            elif not tda.TomadaAgua.status_unidade_hidraulica.valor:
+            elif not self.tda.status_unidade_hidraulica.valor:
                 logger.debug(f"[CP{self.id}]          Unidade Hidráulica:        \"Indisponível\"")
                 return False
 

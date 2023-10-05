@@ -80,17 +80,17 @@ será adicionado a letra "B" + o número do BIT no final do nome:
 """
 
 REG_MEDIDOR = {
-    "LT_P_MP":                                          33, # Simulador
-    "LT_P_MR":                                          33, # Simulador
+    "LT_P_MP":                                          33,
+    "LT_P_MR":                                          33,
 }
 
 REG_RELE = {
     "BAY": {
         # Leituras Analógicas
-        "LT_FASE_A":                                    11, # Simulador
-        "LT_FASE_B":                                    14, # Simulador
-        "LT_FASE_C":                                    17, # Simulador
-        "LT_VS":                                        19, # Simulador
+        "LT_FASE_A":                                    11,
+        "LT_FASE_B":                                    14,
+        "LT_FASE_C":                                    17,
+        "LT_VS":                                        19,
 
 
         # Relé
@@ -99,13 +99,13 @@ REG_RELE = {
 
         # DJ
         "DJL_CMD_FECHAR":                               [43, 2],
-        "DJL_FECHADO":                                  [44, 0], # Simulador  # REG Original: 45 -> 44
+        "DJL_FECHADO":                                  [44, 0],
 
 
         # DJ
-        "DJL_MOLA_CARREGADA":                           [44, 1], # Simulador
+        "DJL_MOLA_CARREGADA":                           [44, 1],
         # Seccionadora
-        "SECC_FECHADA":                                 [43, 4], # Simulador
+        "SECC_FECHADA":                                 [45, 4],
 
 
         # DJ
@@ -113,13 +113,13 @@ REG_RELE = {
 
 
         # Barra
-        "ID_BARRA_VIVA":                                [53, 1], # Simulador
-        "ID_BARRA_MORTA":                               [53, 7], # Simulador
+        "ID_BARRA_VIVA":                                [53, 1],
+        "ID_BARRA_MORTA":                               [53, 7],
 
 
         # Linha
-        "ID_LINHA_VIVA":                                [54, 0], # Simulador
-        "ID_LINHA_MORTA":                               [54, 1], # Simulador
+        "ID_LINHA_VIVA":                                [54, 0],
+        "ID_LINHA_MORTA":                               [54, 1],
 
     },
 
@@ -147,7 +147,7 @@ REG_RELE = {
 
 
         # Barra
-        "ID_BARRA_VIVA":                                [50, 1],
+        "ID_BARRA_VIVA":                                [49, 1],
     },
 
     "TE": {
@@ -408,55 +408,58 @@ REG_CLP = {
         "NV_JUSANTE_GRADE_CP1_LER_FLH":                 34,
         "NV_MONTANTE_LER_FLH":                          [3, 0],
 
-        "SEM_EMERGENCIA":                               [16, 8],
+        "SEM_EMERGENCIA":                               [0, 8],
 
-        "CA_COM_TENSAO":                                [17, 11],
+        "CA_COM_TENSAO":                                [1, 11],
 
         "LG_FLH_ATUADA":                                [26, 15],
-        "LG_OPE_MANUAL":                                [28, 0], # Simulador
+        "LG_OPE_MANUAL":                                [29, 0],
 
-        "VB_FECHANDO":                                  [23, 0], # Simulador
+        "VB_FECHANDO":                                  [23, 0],
         "VB_CMD_RST_FLH":                               [55, 0],
 
-        "UH_DISPONIVEL":                                [5, 1], # Simulador
+        "UH_DISPONIVEL":                                [5, 1],
         "UH_FLH_LIGAR_BOMBA":                           [5, 2],
-        "UH_FILTRO_LIMPO":                              [17, 13],
+        "UH_FILTRO_LIMPO":                              [1, 13],
 
-        "CP1_OPERANDO":                                 [2, 0], # Simulador
-        "CP1_AGUARDANDO_CMD_ABERTURA":                  [2, 3], # Simulador
-        "CP1_PRESSAO_EQUALIZADA":                       [2, 4], # Simulador
+
+        # Comporta 1
+        "CP1_OPERANDO":                                 [11, 0],
+        "CP1_AGUARDANDO_CMD_ABERTURA":                  [11, 3],
+        "CP1_PRESSAO_EQUALIZADA":                       [11, 4],
 
         "CP1_CMD_REARME_FLH":                           [6, 0],
-        "CP1_CMD_ABERTURA_CRACKING":                    [6, 1], # Simulador
-        "CP1_CMD_ABERTURA_TOTAL":                       [6, 2], # Simulador
-        "CP1_CMD_FECHAMENTO":                           [6, 3], # Simulador
-        "CP1_PERMISSIVOS_OK":                           [6, 15], # Simulador
+        "CP1_CMD_ABERTURA_CRACKING":                    [6, 1],
+        "CP1_CMD_ABERTURA_TOTAL":                       [6, 2],
+        "CP1_CMD_FECHAMENTO":                           [6, 3],
+        "CP1_PERMISSIVOS_OK":                           [0, 10],
 
-        "CP1_BLQ_ATUADO":                               [8, 15], # Simulador
+        "CP1_BLQ_ATUADO":                               [8, 15],
 
-        "CP1_CRACKING":                                 [16, 0], # Simulador
-        "CP1_REMOTO":                                   [16, 6], # Simulador
+        "CP1_CRACKING":                                 [0, 0],
+        "CP1_ABERTA":                                   [1, 14],
+        "CP1_FECHADA":                                  [1, 15],
+        "CP1_REMOTO":                                   [0, 6],
 
-        "CP1_ABERTA":                                   [17, 14], # Simulador
-        "CP1_FECHADA":                                  [16, 15], # Simulador
 
-        "CP2_OPERANDO":                                 [2, 0], # Simulador
-        "CP2_AGUARDANDO_CMD_ABERTURA":                  [2, 3], # Simulador
-        "CP2_PRESSAO_EQUALIZADA":                       [2, 4], # Simulador
+        # Comporta 2
+        "CP2_OPERANDO":                                 [17, 0],
+        "CP2_AGUARDANDO_CMD_ABERTURA":                  [17, 3],
+        "CP2_PRESSAO_EQUALIZADA":                       [17, 4],
 
-        "CP2_CMD_REARME_FLH":                           [6, 0],
-        "CP2_CMD_ABERTURA_CRACKING":                    [6, 1], # Simulador
-        "CP2_CMD_ABERTURA_TOTAL":                       [6, 2], # Simulador
-        "CP2_CMD_FECHAMENTO":                           [6, 3], # Simulador
-        "CP2_PERMISSIVOS_OK":                           [6, 15], # Simulador
+        "CP2_CMD_REARME_FLH":                           [53, 0],
+        "CP2_CMD_ABERTURA_CRACKING":                    [53, 1],
+        "CP2_CMD_ABERTURA_TOTAL":                       [53, 2],
+        "CP2_CMD_FECHAMENTO":                           [53, 3],
+        "CP2_PERMISSIVOS_OK":                           [0, 15],
 
-        "CP2_BLQ_ATUADO":                               [8, 15], # Simulador
+        "CP2_BLQ_ATUADO":                               [15, 15],
 
-        "CP2_CRACKING":                                 [16, 0], # Simulador
-        "CP2_REMOTO":                                   [16, 6], # Simulador
+        "CP2_CRACKING":                                 [0, 3],
+        "CP2_REMOTO":                                   [0, 9],
 
-        "CP2_ABERTA":                                   [17, 14], # Simulador
-        "CP2_FECHADA":                                  [16, 15], # Simulador
+        "CP2_ABERTA":                                   [0, 1],
+        "CP2_FECHADA":                                  [0, 2],
     },
 
     "UG1": {
@@ -641,16 +644,16 @@ REG_CLP = {
 
 
         # Rearme Bloqueio
-        "PASSOS_CMD_RST_FLH":                           [148, 0], # Simulador
+        "PASSOS_CMD_RST_FLH":                           [148, 0],
         "86M_CMD_REARME_BLQ":                           [148, 1],
         "86E_CMD_REARME_BLQ":                           [148, 2],
         "86H_CMD_REARME_BLQ":                           [148, 3],
         # Parada
-        "PARADA_CMD_EMERGENCIA":                        [148, 4], # Simulador
+        "PARADA_CMD_EMERGENCIA":                        [148, 4],
         "PARADA_BLQ_ABERTURA_DJ":                       [148, 11],
-        "PARADA_CMD_DESABILITA_UHLM":                   [148, 15], # Simulador
+        "PARADA_CMD_DESABILITA_UHLM":                   [148, 15],
         # Partida
-        "PARTIDA_CMD_SINCRONISMO":                      [148, 10], # Simulador
+        "PARTIDA_CMD_SINCRONISMO":                      [148, 10],
 
 
         # UHRV
@@ -925,16 +928,16 @@ REG_CLP = {
 
 
         # Rearme Bloqueio
-        "PASSOS_CMD_RST_FLH":                           [148, 0], # Simulador
+        "PASSOS_CMD_RST_FLH":                           [148, 0],
         "86M_CMD_REARME_BLQ":                           [148, 1],
         "86E_CMD_REARME_BLQ":                           [148, 2],
         "86H_CMD_REARME_BLQ":                           [148, 3],
         # Parada
-        "PARADA_CMD_EMERGENCIA":                        [148, 4],  # Simulador
+        "PARADA_CMD_EMERGENCIA":                        [148, 4], 
         "PARADA_BLQ_ABERTURA_DJ":                       [148, 11],
-        "PARADA_CMD_DESABILITA_UHLM":                   [148, 15],  # Simulador
+        "PARADA_CMD_DESABILITA_UHLM":                   [148, 15], 
         # Partida
-        "PARTIDA_CMD_SINCRONISMO":                      [148, 10] , # Simulador
+        "PARTIDA_CMD_SINCRONISMO":                      [148, 10] ,
 
 
         # UHRV

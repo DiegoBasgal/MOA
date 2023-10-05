@@ -24,8 +24,8 @@ class LeituraModbus:
 
         self.__op = op
         self.__escala = escala
-        self.__fundo_escala = fundo_escala
         self.__descricao = descricao
+        self.__fundo_escala = fundo_escala
 
     def __str__(self) -> "str":
         """
@@ -66,14 +66,14 @@ class LeituraModbus:
 
 
 class LeituraModbusBit(LeituraModbus):
-    def __init__(self, client: "ModbusClient", registrador: "list[int, int]", invertido: "bool"=None, descricao: "str"=None) -> "None":
+    def __init__(self, client: "ModbusClient", registrador: "list[int, int]", invertido: "bool"=False, descricao: "str"=None) -> "None":
         super().__init__(client, registrador, descricao)
 
         # ATRIBUIÇÃO DE VARIÁVEIS PRIVADAS
         self.__client = client
         self.__reg = registrador[0]
         self.__bit = registrador[1]
-        self.__invertido = False if invertido is not None else invertido
+        self.__invertido = invertido
         self.__descricao = descricao
 
     @property
@@ -87,11 +87,11 @@ class LeituraModbusBit(LeituraModbus):
         # PROPRIEDADE -> Retorna Valor raw baseado no tipo de operação ModBus.
 
         try:
-            ler = self.__client.read_holding_registers(int(self.__reg), 2)
+            ler = self.__client.read_holding_registers(self.__reg, 1)
             return ler
 
         except Exception:
-            logger.error(f"[LEI] Erro na Leitura RAW do REG: {self.__reg} | Bit: {self.__bit}")
+            logger.error(f"[LEI] Erro na Leitura RAW do REG: {self.__descricao} | Endereço: {self.__reg} | Bit: {self.__bit}")
             logger.debug(traceback.format_exc())
             sleep(1)
 
@@ -102,19 +102,26 @@ class LeituraModbusBit(LeituraModbus):
         try:
             leitura = self.raw
 
-            dec_1 = BPD.fromRegisters(leitura, byteorder=Endian.Big, wordorder=Endian.Little)
-            dec_2 = BPD.fromRegisters(leitura, byteorder=Endian.Big, wordorder=Endian.Little)
+            logger.debug(f"[LEI-TESTE] Descrição: {self.descricao} | Leitura RAW: {self.raw}")
+            sleep(1)
+
+            dec_1 = BPD.fromRegisters(leitura)
+            dec_2 = BPD.fromRegisters(leitura)
 
             lbit = [int(bit) for bits in [reversed(dec_1.decode_bits(1)), reversed(dec_2.decode_bits(2))] for bit in bits]
 
             lbit_r = [b for b in reversed(lbit)]
 
+            logger.debug(f"[LEI-TESTE] Lista de Bits: {lbit_r}")
+
             for i in range(len(lbit_r)):
                 if self.__bit == i:
+                    logger.debug(f"[LEI-TESTE] Valor do Bit da lista: {lbit_r[i]}")
+                    logger.debug("")
                     return not lbit_r[i] if self.__invertido else lbit_r[i]
 
         except Exception:
-            logger.error(f"[LEI] Erro na Leitura BIT do REG: {self.__reg} | Bit: {self.__bit}")
+            logger.error(f"[LEI] Erro na Leitura BIT do REG: {self.__descricao} | Endereço: {self.__reg} | Bit: {self.__bit}")
             logger.debug(traceback.format_exc())
             sleep(1)
             return None
@@ -142,7 +149,7 @@ class LeituraModbusFloat(LeituraModbus):
             elif self.__op == 4:
                 raw = self.__client.read_input_registers(self.__reg + 1, 2)
 
-            dec = BPD.fromRegisters(raw, byteorder=Endian.Big, wordorder=Endian.Little)
+            dec = BPD.fromRegisters(raw, byteorder=Endian.BIG, wordorder=Endian.LITTLE)
 
             val = dec.decode_32bit_float()
 

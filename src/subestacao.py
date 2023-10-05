@@ -53,6 +53,11 @@ class Subestacao:
             REG_RELE["SE"]["DJL_FECHADO"],
             descricao="[SE][RELE] Disjuntor Linha Status"
         )
+        self.dj_linha_bay = LeituraModbusBit(
+            self.rele["BAY"],
+            REG_RELE["BAY"]["DJL_FECHADO"],
+            descricao="[BAY][RELE] Disjuntor Bay Status"
+        )
 
         self.dj_bay_aberto: "bool" = False
 
@@ -70,9 +75,8 @@ class Subestacao:
             res = EMB.escrever_bit(self.clp["SA"], REG_CLP["SE"]["BLQ_GERAL_CMD_REARME"], valor=1)
             res = EMB.escrever_bit(self.clp["SA"], REG_CLP["SE"]["86T_CMD_REARME"], valor=1)
             res = EMB.escrever_bit(self.clp["SA"], REG_CLP["SE"]["86BF_CMD_REARME"], valor=1)
-            # res = EMB.escrever_bit(self.clp["SA"], REG_CLP["SE"]["86BF_86T_CMD_REARME"], valor=1)
             res = EMB.escrever_bit(self.clp["SA"], REG_CLP["SE"]["REGISTROS_CMD_RST"], valor=1)
-            res = EMB.escrever_bit(self.rele["SE"], REG_CLP["SE"]["RELE_LINHA_ATUADO"], valor=0) # SIMULADOR
+            # res = EMB.escrever_bit(self.rele["SE"], REG_CLP["SE"]["RELE_LINHA_ATUADO"], valor=0) # SIMULADOR
             return res
 
         except Exception:
@@ -99,7 +103,7 @@ class Subestacao:
                 if self.verificar_dj_linha():
                     logger.debug(f"[SE]  Enviando comando:                   \"FECHAR DISJUNTOR\"")
                     logger.debug("")
-                    EMB.escrever_bit(self.clp["SA"], REG_CLP["SE"]["DJL_CMD_FECHAR"],  valor=1)
+                    # EMB.escrever_bit(self.clp["SA"], REG_CLP["SE"]["DJL_CMD_FECHAR"],  valor=1)
                     return True
 
                 else:
@@ -141,7 +145,7 @@ class Subestacao:
                 logger.warning("[SE]  O Disjuntor não está em modo remoto!")
                 flags += 1
 
-            if not bay.Bay.dj_linha_bay.valor:
+            if not self.dj_linha_bay.valor:
                 logger.warning("[SE]  O Disjuntor do Bay está aberto!")
                 self.dj_bay_aberto = True
                 flags += 1
@@ -290,15 +294,15 @@ class Subestacao:
         # Pré-condições de fechamento do Dj52L
         self.l_trip_rele_te = LeituraModbusBit(self.rele["TE"], REG_RELE["TE"]["RELE_ESTADO_TRP"], descricao="[TE][RELE] Transformador Elevador Trip")
 
-        self.l_mola_carregada = LeituraModbusBit(self.clp["SA"], REG_RELE["SE"]["DJL_MOLA_CARREGADA"], descricao="[SE]  Disjuntor Linha Mola Carregada")
-        self.l_barra_viva = LeituraModbusBit(self.clp["SA"], REG_RELE["SE"]["ID_BARRA_VIVA"], descricao="[SE]  Identificação de Barra Viva")
-        self.l_djL_remoto = LeituraModbusBit(self.clp["SA"], REG_CLP["SE"]["DJL_SELETORA_REMOTO"], descricao="[SE]  Disjuntor Linha Seletora Modo Remoto")
-        self.l_alarme_gas_te = LeituraModbusBit(self.clp["SA"], REG_CLP["SE"]["TE_RELE_BUCHHOLZ_ALM"], descricao="[SE]  Transformador Elevador Alarme Relé Buchholz")
+        self.l_mola_carregada = LeituraModbusBit(self.rele["SE"], REG_RELE["SE"]["DJL_MOLA_CARREGADA"], descricao="[SE]  Disjuntor Linha Mola Carregada")
+        self.l_barra_viva = LeituraModbusBit(self.rele["SE"], REG_RELE["SE"]["ID_BARRA_VIVA"], descricao="[SE]  Identificação de Barra Viva")
+        self.l_djL_remoto = LeituraModbusBit(self.rele["SE"], REG_CLP["SE"]["DJL_SELETORA_REMOTO"], descricao="[SE]  Disjuntor Linha Seletora Modo Remoto")
+        self.l_alarme_gas_te = LeituraModbusBit(self.rele["SE"], REG_CLP["SE"]["TE_RELE_BUCHHOLZ_ALM"], descricao="[SE]  Transformador Elevador Alarme Relé Buchholz")
 
         ### CONDICIONADORES ESSENCIAIS
         ## NORMALIZAR
 
-        self.l_rele_linha_atuado = LeituraModbusBit(self.clp["SA"], REG_CLP["SE"]["RELE_LINHA_ATUADO"], descricao="[SE]  Relé Linha Atuado")
+        self.l_rele_linha_atuado = LeituraModbusBit(self.rele["SE"], REG_CLP["SE"]["RELE_LINHA_ATUADO"], descricao="[SE]  Relé Linha Atuado")
         self.condicionadores_essenciais.append(c.CondicionadorBase(self.l_rele_linha_atuado, gravidade=CONDIC_NORMALIZAR))
 
         ### CONDICIONADORES
@@ -344,7 +348,7 @@ class Subestacao:
         # self.condicionadores.append(c.CondicionadorBase(self.leitura_super_bobinas_reles_bloq, CONDIC_INDISPONIBILIZAR))
 
         # LEITURA PERIÓDICA
-        self.l_seletora_52L_remoto = LeituraModbusBit(self.clp["SA"], REG_CLP["SE"]["DJL_SELETORA_REMOTO"], invertido=True, descricao="[SE]  Disjuntor Linha Seletora Modo Remoto")
+        self.l_seletora_52L_remoto = LeituraModbusBit(self.rele["SE"], REG_CLP["SE"]["DJL_SELETORA_REMOTO"], invertido=True, descricao="[SE]  Disjuntor Linha Seletora Modo Remoto")
         # self.l_alarme_temp_oleo_te = LeituraModbusBit(self.clp["SA"], REG_CLP["SE"]["TE_ALM_TMP_OLEO"], descricao="[SE]  Transformador Elevador Alarme Temperatura Óleo")
         # self.l_nv_muito_alto_oleo_te = LeituraModbusBit(self.clp["SA"], REG_CLP["SE"]["TE_NV_OLEO_MUITO_ALTO"], descricao="[SE]  Transformador Elevador Nível Óleo Muito Alto")
         # self.l_falha_temp_oleo_te = LeituraModbusBit(self.clp["SA"], REG_CLP["SE"]["TE_FLH_LER_TMP_OLEO"], descricao="[SE]  Transformador Elevador Falha Leitura Temperatura Óleo")
@@ -355,6 +359,7 @@ class Subestacao:
 
 
         # CONDICIONADORES RELÉS
+        return
         self.l_rele_falha_receb_rele_te = LeituraModbusBit(self.rele["SE"], REG_RELE["SE"]["RELE_TE_FLH_PARTIDA"],  descricao="[SE][RELE] Falha Partida Recebida Relé Transformador Elevador")
         self.condicionadores_essenciais.append(c.CondicionadorBase(self.l_rele_falha_receb_rele_te, CONDIC_INDISPONIBILIZAR))
 
