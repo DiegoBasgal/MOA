@@ -36,7 +36,7 @@ class ServicoAuxiliar:
         try:
             res = EMB.escrever_bit(self.clp["SA"], REG_CLP["SA"]["BARRA_CA_RST_FLH"], valor=1)
             res = EMB.escrever_bit(self.clp["SA"], REG_CLP["SA"]["SIS_AGUA_RST_FLH"], valor=1)
-            res = EMB.escrever_bit(self.clp["SA"], REG_CLP["SA"]["BLQ_GERAL_FLH_SA_REARME"], valor=1)
+            res = EMB.escrever_bit(self.clp["SA"], REG_CLP["SE"]["BLQ_GERAL_FLH_SA_REARME"], valor=1)
             return res
 
         except Exception:
@@ -86,6 +86,7 @@ class ServicoAuxiliar:
         Verifica leituras específcas para acionamento da manuteção. As leituras são disparadas
         em períodos separados por um tempo pré-definido.
         """
+
         return
 
         if self.l_falha_bomba_dren_1.valor:
@@ -192,11 +193,12 @@ class ServicoAuxiliar:
         """
         Função para carregamento de leituras necessárias para a operação.
         """
-        return
+
         ### CONDICIONADORES ESSENCIAIS
         ## NORMALIZAR
-        self.l_emergencia = LeituraModbusBit(self.clp["SA"], REG_CLP["SA"]["SEM_EMERGENCIA"], invertido=True, descricao="[SA]  Emergência")
-        self.condicionadores_essenciais.append(CondicionadorBase(self.l_emergencia, CONDIC_NORMALIZAR))
+        # self.l_emergencia = LeituraModbusBit(self.clp["SA"], REG_CLP["SA"]["SEM_EMERGENCIA"], invertido=True, descricao="[SA]  Emergência")
+        # self.condicionadores_essenciais.append(CondicionadorBase(self.l_emergencia, CONDIC_NORMALIZAR))
+
 
         ### CONDICIONADORES
         ## NORMALIZAR

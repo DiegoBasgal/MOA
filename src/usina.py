@@ -32,6 +32,7 @@ from src.funcoes.leitura import *
 from src.unidade_geracao import UnidadeGeracao
 
 logger = logging.getLogger("logger")
+debug_log = logging.getLogger("debug")
 
 class Usina:
     def __init__(self, cfg: "dict"=None, serv: "Servidores"=None) -> "None":
@@ -158,6 +159,7 @@ class Usina:
 
         return datetime.now(pytz.timezone("Brazil/East")).replace(tzinfo=None)
 
+
     def resetar_emergencia(self) -> "None":
         """
         Função para reset geral da Usina. Envia o comando de reset para todos os
@@ -192,6 +194,7 @@ class Usina:
             logger.debug(traceback.format_exc())
             return False
 
+
     def normalizar_usina(self) -> "bool":
         """
         Função para normalização de ocorrências da Usina.
@@ -222,6 +225,7 @@ class Usina:
             sleep(1)
             return False
 
+
     def verificar_bay_se(self) -> "int":
         """
         Função para verificação do Bay e Subestação.
@@ -248,6 +252,7 @@ class Usina:
         else:
             return DJS_OK
 
+
     def verificar_leituras_periodicas(self) -> "None":
         """
         Função de temporizador com leituras para alertas de manutenção.
@@ -270,27 +275,24 @@ class Usina:
                 pass
             sleep(max(0, (time() + 1800) - time()))
 
+
     def verificar_condicionadores(self) -> "int":
         flag = CONDIC_IGNORAR
 
-        logger.debug(f"[DEBUG!] {2}")
         lst_bay = self.bay.verificar_condicionadores()
-        logger.debug(f"[DEBUG!] {3}")
         lst_se = self.se.verificar_condicionadores()
-        logger.debug(f"[DEBUG!] {4}")
         lst_tda = self.tda.verificar_condicionadores()
-        logger.debug(f"[DEBUG!] {5}")
         lst_sa = self.sa.verificar_condicionadores()
-        logger.debug(f"[DEBUG!] {6}")
+
         condics = [condic for condics in [lst_sa, lst_se, lst_bay, lst_tda] for condic in condics]
-        logger.debug(f"[DEBUG!] {7}")
+
         for condic in condics:
             if condic.gravidade == CONDIC_INDISPONIBILIZAR:
                 return CONDIC_INDISPONIBILIZAR
 
             elif condic.gravidade == CONDIC_NORMALIZAR:
                 flag = CONDIC_NORMALIZAR
-        logger.debug(f"[DEBUG!] {8}")
+
         return flag
 
 
@@ -302,6 +304,7 @@ class Usina:
         """
 
         return sum(ug.leitura_potencia for ug in self.ugs) / self.cfg["pot_maxima_alvo"]
+
 
     def ajustar_inicializacao(self) -> "None":
         """
@@ -320,6 +323,7 @@ class Usina:
 
         self.clp["MOA"].write_single_coil(REG_CLP["MOA"]["OUT_BLOCK_UG1"], 0)
         self.clp["MOA"].write_single_coil(REG_CLP["MOA"]["OUT_BLOCK_UG2"], 0)
+
 
     def controlar_reservatorio(self) -> "int":
         """
@@ -389,6 +393,7 @@ class Usina:
 
         return NV_NORMAL
 
+
     def controlar_potencia(self) -> "None":
         """
         Função para calcular PID (Proporcional, Integral e Derivativo), para controle de potência
@@ -433,6 +438,7 @@ class Usina:
 
         pot_alvo = self.ajustar_potencia(pot_alvo)
 
+
     def ajustar_potencia(self, pot_alvo: "float") -> "float":
         """
         Função para ajustar a potência de controle após do cálculo do PID.
@@ -461,6 +467,7 @@ class Usina:
         logger.debug(f"[USN] Potência alvo após ajuste:          {pot_alvo:0.3f}")
 
         self.distribuir_potencia(pot_alvo)
+
 
     def distribuir_potencia(self, pot_alvo) -> "None":
         """
@@ -541,6 +548,7 @@ class Usina:
 
                 logger.debug(f"[UG{ugs[0].id}] SP    <-                            {int(ugs[0].setpoint)}")
 
+
     def verificar_ugs_disponiveis(self) -> "list[UnidadeGeracao]":
         """
         Função para verificar leituras/condições específicas e determinar a Prioridade das Unidades.
@@ -576,6 +584,7 @@ class Usina:
 
         # self.heartbeat()
 
+
     def atualizar_valores_banco(self, parametros) -> "None":
         """
         Função para atualização de valores de Banco de Dados.
@@ -606,6 +615,7 @@ class Usina:
             logger.error(f"[USN] Houve um erro ao ler e atualizar os parâmetros do Banco de Dados.")
             logger.debug(traceback.format_exc())
 
+
     def atualizar_valores_cfg(self, parametros) -> "None":
         """
         Função para atualização de valores de operação do arquivo cfg.json.
@@ -634,6 +644,7 @@ class Usina:
             logger.error(f"[USN] Houve um erro ao atualizar o arquivo de configuração \"cfg.json\".")
             logger.debug(traceback.format_exc())
 
+
     def escrever_valores(self) -> "None":
         """
         Função para escrita de valores de operação nos Bancos do módulo do Django
@@ -647,10 +658,10 @@ class Usina:
                 self.tda.nivel_montante.valor,
                 self.ug1.leitura_potencia,
                 self.ug1.setpoint,
-                self.ug1.etapa_atual,
+                self.ug1.codigo_state,
                 self.ug2.leitura_potencia,
                 self.ug2.setpoint,
-                self.ug2.etapa_atual
+                self.ug2.codigo_state
             ])
 
         except Exception:
@@ -682,6 +693,7 @@ class Usina:
         except Exception:
             logger.error(f"[USN] Houve um erro ao atualizar valores DEBUG do controle de potência no Banco de Dados.")
             logger.debug(traceback.format_exc())
+
 
     def heartbeat(self) -> "None":
         """

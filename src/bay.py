@@ -287,13 +287,12 @@ class Bay:
         """
 
         # Pré-condições de fechamento do Disjuntor do Bay
-        self.secc_fechada = LeituraModbusBit(self.rele["BAY"], REG_RELE["BAY"]["SECC_FECHADA"], invertido=True, descricao="[BAY][RELE] Seccionadora Fechada")
         self.linha_viva = LeituraModbusBit(self.rele["BAY"], REG_RELE["BAY"]["ID_LINHA_VIVA"], descricao="[BAY][RELE] Identificação Linha Viva")
         self.barra_viva = LeituraModbusBit(self.rele["BAY"], REG_RELE["BAY"]["ID_BARRA_VIVA"], descricao="[BAY][RELE] Identificação Barra Viva")
         self.linha_morta = LeituraModbusBit(self.rele["BAY"], REG_RELE["BAY"]["ID_LINHA_MORTA"], descricao="[BAY][RELE] Identificação Linha Morta")
         self.barra_morta = LeituraModbusBit(self.rele["BAY"], REG_RELE["BAY"]["ID_BARRA_MORTA"], descricao="[BAY][RELE] Identificação Barra Morta")
         self.mola_carregada = LeituraModbusBit(self.rele["BAY"], REG_RELE["BAY"]["DJL_MOLA_CARREGADA"], descricao="[BAY][RELE] Disjuntor Mola Carregada")
-
+        self.secc_fechada = LeituraModbusBit(self.rele["BAY"], REG_RELE["BAY"]["SECC_FECHADA"], invertido=True, descricao="[BAY][RELE] Seccionadora Fechada")
 
         ## CONDICIONADORES RELÉS
         self.secc_aberta = LeituraModbusBit(self.rele["BAY"], REG_RELE["BAY"]["SECC_FECHADA"], descricao="[BAY][RELE] Seccionadora Aberta")

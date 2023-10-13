@@ -13,6 +13,7 @@ from pyModbusTCP.client import ModbusClient
 from src.dicionarios.reg import *
 
 logger = logging.getLogger("logger")
+debug_log = logging.getLogger("debug")
 
 class LeituraModbus:
     def __init__(self, client: "ModbusClient"=None, registrador: "int"=None, escala: "float"=1, fundo_escala: "float"=0, op: "int"=3, descricao: "str"=None) -> "None":
@@ -87,8 +88,12 @@ class LeituraModbusBit(LeituraModbus):
         # PROPRIEDADE -> Retorna Valor raw baseado no tipo de operação ModBus.
 
         try:
-            ler = self.__client.read_holding_registers(self.__reg, 1)
-            return ler
+            ler = self.__client.read_holding_registers(self.__reg, 2)
+            if ler is None:
+                ler2 = self.__client.read_holding_registers(self.__reg, 2)
+                return ler2
+            else:
+                return ler
 
         except Exception:
             logger.error(f"[LEI] Erro na Leitura RAW do REG: {self.__descricao} | Endereço: {self.__reg} | Bit: {self.__bit}")
@@ -102,22 +107,20 @@ class LeituraModbusBit(LeituraModbus):
         try:
             leitura = self.raw
 
-            logger.debug(f"[LEI-TESTE] Descrição: {self.descricao} | Leitura RAW: {self.raw}")
-            sleep(1)
+            # debug_log.debug(f"[LEITURA-BIT] Descrição: {self.descricao} | Leitura RAW: {self.raw}")
 
-            dec_1 = BPD.fromRegisters(leitura)
-            dec_2 = BPD.fromRegisters(leitura)
+            dec_1 = BPD.fromRegisters(leitura, byteorder=Endian.LITTLE)
+            dec_2 = BPD.fromRegisters(leitura, byteorder=Endian.LITTLE)
 
             lbit = [int(bit) for bits in [reversed(dec_1.decode_bits(1)), reversed(dec_2.decode_bits(2))] for bit in bits]
 
             lbit_r = [b for b in reversed(lbit)]
 
-            logger.debug(f"[LEI-TESTE] Lista de Bits: {lbit_r}")
+            # debug_log.debug(f"[LEITURA-BIT] Lista de Bits: {lbit_r}")
+            # debug_log.debug("")
 
             for i in range(len(lbit_r)):
                 if self.__bit == i:
-                    logger.debug(f"[LEI-TESTE] Valor do Bit da lista: {lbit_r[i]}")
-                    logger.debug("")
                     return not lbit_r[i] if self.__invertido else lbit_r[i]
 
         except Exception:

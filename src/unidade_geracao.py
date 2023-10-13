@@ -100,7 +100,8 @@ class UnidadeGeracao:
 
         # FINALIZAÇÃO DO __INIT__
 
-        self.__next_state: "State" = StateDisponivel(self)
+        self.__next_state: "State"
+        self.iniciar_ultimo_estado()
 
         self.carregar_leituras()
 
@@ -385,7 +386,6 @@ class UnidadeGeracao:
         Realiza a consulta no Banco de Dados e atribui o último estado comparando
         com o valor das constantes de Estado.
         """
-        
         self.__next_state = StateManual(self)
         return
 
@@ -609,7 +609,6 @@ class UnidadeGeracao:
             logger.debug(f"[UG{self.id}]          Removendo comando:         \"TRIP ELÉTRICO\"")
             self.clp["MOA"].write_single_coil(REG_CLP["MOA"]["PAINEL_LIDO"], 0)
             self.clp["MOA"].write_single_coil(REG_CLP["MOA"][f"OUT_BLOCK_UG{self.id}"], 0)
-            se.Subestacao.fechar_dj_linha()
 
         except Exception:
             logger.error(f"[UG{self.id}] Não foi possivel remover o comando de TRIP: \"Elétrico\".")
@@ -1197,10 +1196,9 @@ class UnidadeGeracao:
         self.condic_pressao_turbina_ug = c.CondicionadorExponencialReverso(self.l_pressao_turbina, CONDIC_INDISPONIBILIZAR, 1.6, 1.3)
         self.condicionadores_atenuadores.append(self.condic_pressao_turbina_ug)
 
-        return
         # CONDICIONADORES ESSENCIAIS - OUTROS
         # Botões
-        self.l_bt_emerg_atuado = LeituraModbusBit(self.clp[f"UG{self.id}"], REG_CLP[f"UG{self.id}"]["BT_EMERGENCIA_ATUADO"], invertido=True, descricao=f"[UG{self.id}] Botão Emergência Atuado")
+        self.l_bt_emerg_atuado = LeituraModbusBit(self.clp[f"UG{self.id}"], REG_CLP[f"UG{self.id}"]["BT_EMERGENCIA_ATUADO"], descricao=f"[UG{self.id}] Botão Emergência Atuado") # Verificar invertido
         self.condicionadores_essenciais.append(c.CondicionadorBase(self.l_bt_emerg_atuado, CONDIC_NORMALIZAR))
 
         # Bloqueios
@@ -1213,32 +1211,33 @@ class UnidadeGeracao:
         self.l_bloq_86H_atuado = LeituraModbusBit(self.clp[f"UG{self.id}"], REG_CLP[f"UG{self.id}"]["86H_BLQ_ATUADO"], descricao=f"[UG{self.id}] Bloqueio 86H Atuado")
         self.condicionadores_essenciais.append(c.CondicionadorBase(self.l_bloq_86H_atuado, CONDIC_NORMALIZAR))
 
+
         # CLP Geral
-        self.l_clp_geral_sem_bloq_exter = LeituraModbusBit(self.clp[f"UG{self.id}"], REG_CLP[f"UG{self.id}"]["CLP_GERAL_SEM_BLQ_EXTERNO"], invertido=True, descricao=f"[UG{self.id}] CLP Geral Sem Bloqueio Externo")
+        self.l_clp_geral_sem_bloq_exter = LeituraModbusBit(self.clp[f"UG{self.id}"], REG_CLP[f"UG{self.id}"]["CLP_GERAL_SEM_BLQ_EXTERNO"], descricao=f"[UG{self.id}] CLP Geral Sem Bloqueio Externo") # Verificar invertido
         self.condicionadores_essenciais.append(c.CondicionadorBase(self.l_clp_geral_sem_bloq_exter, CONDIC_NORMALIZAR))
 
         # Relé
         self.l_trip_rele700G_atuado = LeituraModbusBit(self.clp[f"UG{self.id}"], REG_CLP[f"UG{self.id}"]["RELE_700G_TRP_ATUADO"], descricao=f"[UG{self.id}] Relé 700G Trip Atuado")
         self.condicionadores_essenciais.append(c.CondicionadorBase(self.l_trip_rele700G_atuado, CONDIC_NORMALIZAR))
 
-        self.l_rele_bloq_86EH_desatuado = LeituraModbusBit(self.clp[f"UG{self.id}"], REG_CLP[f"UG{self.id}"]["RELE_BLQ_86EH_DESATUADO"], invertido=True, descricao=f"[UG{self.id}] Relé Bloqueio 86EH Atuado")
+        self.l_rele_bloq_86EH_desatuado = LeituraModbusBit(self.clp[f"UG{self.id}"], REG_CLP[f"UG{self.id}"]["RELE_BLQ_86EH_DESATUADO"], descricao=f"[UG{self.id}] Relé Bloqueio 86EH Atuado")
         self.condicionadores_essenciais.append(c.CondicionadorBase(self.l_rele_bloq_86EH_desatuado, CONDIC_NORMALIZAR))
 
         # RV
         self.l_falha_2_rv_b3 = LeituraModbusBit(self.clp[f"UG{self.id}"], REG_CLP[f"UG{self.id}"]["RV_FLH_2_B3"], descricao=f"[UG{self.id}] RV Falha 2 - Bit 03")
         self.condicionadores_essenciais.append(c.CondicionadorBase(self.l_falha_2_rv_b3, CONDIC_NORMALIZAR))
 
-        self.l_trip_rele_rv_naoatuado = LeituraModbusBit(self.clp[f"UG{self.id}"], REG_CLP[f"UG{self.id}"]["RV_RELE_TRP_NAO_ATUADO"], invertido=True, descricao=f"[UG{self.id}] RV Relé Trip Não Atuado")
+        self.l_trip_rele_rv_naoatuado = LeituraModbusBit(self.clp[f"UG{self.id}"], REG_CLP[f"UG{self.id}"]["RV_RELE_TRP_NAO_ATUADO"], descricao=f"[UG{self.id}] RV Relé Trip Não Atuado")
         self.condicionadores_essenciais.append(c.CondicionadorBase(self.l_trip_rele_rv_naoatuado, CONDIC_NORMALIZAR))
 
         self.l_saidas_digitiais_rv_b0 = LeituraModbus(self.clp[f"UG{self.id}"], REG_CLP[f"UG{self.id}"]["RV_SAIDAS_DIGITAIS"], descricao=f"[UG{self.id}] RV Saídas Digitais - Bit 00")
         self.condicionadores_essenciais.append(c.CondicionadorBase(self.l_saidas_digitiais_rv_b0, CONDIC_NORMALIZAR))
-
+        
         # RT
         self.l_saidas_digitais_rt_b0 = LeituraModbus(self.clp[f"UG{self.id}"], REG_CLP[f"UG{self.id}"]["RT_SAIDAS_DIGITAIS"], descricao=f"[UG{self.id}] RT Saídas Digitais - Bit 00")
         self.condicionadores_essenciais.append(c.CondicionadorBase(self.l_saidas_digitais_rt_b0, CONDIC_NORMALIZAR))
 
-        self.l_trip_rele_rt_naoatuado = LeituraModbusBit(self.clp[f"UG{self.id}"], REG_CLP[f"UG{self.id}"]["RT_RELE_TRP_NAO_ATUADO"], invertido=True, descricao=f"[UG{self.id}] RV Relé Trip Não Atuado")
+        self.l_trip_rele_rt_naoatuado = LeituraModbusBit(self.clp[f"UG{self.id}"], REG_CLP[f"UG{self.id}"]["RT_RELE_TRP_NAO_ATUADO"], descricao=f"[UG{self.id}] RV Relé Trip Não Atuado")
         self.condicionadores_essenciais.append(c.CondicionadorBase(self.l_trip_rele_rt_naoatuado, CONDIC_NORMALIZAR))
 
 
@@ -1255,16 +1254,16 @@ class UnidadeGeracao:
         self.condicionadores.append(c.CondicionadorBase(self.l_parada_bloq_abertura_disj, CONDIC_NORMALIZAR))
 
         # Supervisão
-        self.l_sup_tensao_125vcc = LeituraModbusBit(self.clp[f"UG{self.id}"], REG_CLP[f"UG{self.id}"]["SUP_TENSAO_125VCC"], invertido=True, descricao=f"[UG{self.id}] Tensão 125Vcc Supervisão")
+        self.l_sup_tensao_125vcc = LeituraModbusBit(self.clp[f"UG{self.id}"], REG_CLP[f"UG{self.id}"]["SUP_TENSAO_125VCC"], descricao=f"[UG{self.id}] Tensão 125Vcc Supervisão")
         self.condicionadores.append(c.CondicionadorBase(self.l_sup_tensao_125vcc, CONDIC_INDISPONIBILIZAR))
 
-        self.l_sup_tensao_24vcc = LeituraModbusBit(self.clp[f"UG{self.id}"], REG_CLP[f"UG{self.id}"]["SUP_TENSAO_24VCC"], invertido=True, descricao=f"[UG{self.id}] Tensão 24Vcc Supervisão")
+        self.l_sup_tensao_24vcc = LeituraModbusBit(self.clp[f"UG{self.id}"], REG_CLP[f"UG{self.id}"]["SUP_TENSAO_24VCC"], descricao=f"[UG{self.id}] Tensão 24Vcc Supervisão")
         self.condicionadores.append(c.CondicionadorBase(self.l_sup_tensao_24vcc, CONDIC_INDISPONIBILIZAR))
 
-        self.l_sup_bobina_52g = LeituraModbusBit(self.clp[f"UG{self.id}"], REG_CLP[f"UG{self.id}"]["SUP_BOBINA_52G"], invertido=True, descricao=f"[UG{self.id}] Bobina 52G Supervisão")
+        self.l_sup_bobina_52g = LeituraModbusBit(self.clp[f"UG{self.id}"], REG_CLP[f"UG{self.id}"]["SUP_BOBINA_52G"], descricao=f"[UG{self.id}] Bobina 52G Supervisão")
         self.condicionadores.append(c.CondicionadorBase(self.l_sup_bobina_52g, CONDIC_INDISPONIBILIZAR))
 
-        self.l_sup_bobina_86eh = LeituraModbusBit(self.clp[f"UG{self.id}"], REG_CLP[f"UG{self.id}"]["SUP_BOBINA_86EH"], invertido=True, descricao=f"[UG{self.id}] Bobina 86EH Supervisão")
+        self.l_sup_bobina_86eh = LeituraModbusBit(self.clp[f"UG{self.id}"], REG_CLP[f"UG{self.id}"]["SUP_BOBINA_86EH"], descricao=f"[UG{self.id}] Bobina 86EH Supervisão")
         self.condicionadores.append(c.CondicionadorBase(self.l_sup_bobina_86eh, CONDIC_INDISPONIBILIZAR))
 
         # Leitura Pressão Entrada da Turbina
@@ -1409,10 +1408,10 @@ class UnidadeGeracao:
         self.condicionadores.append(c.CondicionadorBase(self.l_falha_habilitar_sistema_agua, CONDIC_NORMALIZAR))
 
         # Disjuntores
-        self.l_disj_125vcc_fechados = LeituraModbusBit(self.clp[f"UG{self.id}"], REG_CLP[f"UG{self.id}"]["DJS_125VCC_FECHADOS"], invertido=True, descricao=f"[UG{self.id}] Disjuntores 125Vcc Fechados")
+        self.l_disj_125vcc_fechados = LeituraModbusBit(self.clp[f"UG{self.id}"], REG_CLP[f"UG{self.id}"]["DJS_125VCC_FECHADOS"], descricao=f"[UG{self.id}] Disjuntores 125Vcc Fechados")
         self.condicionadores.append(c.CondicionadorBase(self.l_disj_125vcc_fechados, CONDIC_INDISPONIBILIZAR))
 
-        self.l_disj_24vcc_fechados = LeituraModbusBit(self.clp[f"UG{self.id}"], REG_CLP[f"UG{self.id}"]["DJS_24VCC_FECHADOS"], invertido=True, descricao=f"[UG{self.id}] Disjuntores 24Vcc Fechados")
+        self.l_disj_24vcc_fechados = LeituraModbusBit(self.clp[f"UG{self.id}"], REG_CLP[f"UG{self.id}"]["DJS_24VCC_FECHADOS"], descricao=f"[UG{self.id}] Disjuntores 24Vcc Fechados")
         self.condicionadores.append(c.CondicionadorBase(self.l_disj_24vcc_fechados, CONDIC_INDISPONIBILIZAR))
 
         # CLP Geral

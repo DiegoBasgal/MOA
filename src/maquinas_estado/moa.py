@@ -8,9 +8,8 @@ import logging
 import traceback
 
 import src.bay as bay
-import src.tomada_agua as tda
 
-from time import sleep
+from time import sleep, time
 from datetime import datetime
 
 from src.dicionarios.const import *
@@ -18,6 +17,7 @@ from src.dicionarios.const import *
 from src.usina import Usina
 
 logger = logging.getLogger("logger")
+debug_log = logging.getLogger("debug")
 
 class StateMachine:
     def __init__(self, initial_state) -> "None":
@@ -147,8 +147,10 @@ class ControleEstados(State):
 
         else:
             logger.debug("Verificando condicionadores...")
-            logger.debug(f"[DEBUG!] {1}")
-            flag_condic= self.usn.verificar_condicionadores()
+            t = time()
+            flag_condic = self.usn.verificar_condicionadores()
+            t2 = (time() - t)
+            debug_log.debug(f"[TEMPO] Verificar condicionadores moa.py -> {t2}")
 
             if flag_condic == CONDIC_INDISPONIBILIZAR:
                 return Emergencia(self.usn)
@@ -163,7 +165,10 @@ class ControleEstados(State):
                     return ControleDados(self.usn)
 
             logger.debug("Verificando status da Subestação e Bay...")
+            t = time()
             flag_bay_se = self.usn.verificar_bay_se()
+            t2 = (time() - t)
+            debug_log.debug(f"[TEMPO] Verificar status SE e BAY moa.py -> {t2}")
 
             if flag_bay_se == DJS_FALTA_TENSAO:
                 return Emergencia(self.usn) if bay.Bay.aguardar_tensao() == TENSAO_FORA else ControleDados(self.usn)

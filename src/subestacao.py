@@ -294,49 +294,42 @@ class Subestacao:
         # Pré-condições de fechamento do Dj52L
         self.l_trip_rele_te = LeituraModbusBit(self.rele["TE"], REG_RELE["TE"]["RELE_ESTADO_TRP"], descricao="[TE][RELE] Transformador Elevador Trip")
 
-        self.l_mola_carregada = LeituraModbusBit(self.rele["SE"], REG_RELE["SE"]["DJL_MOLA_CARREGADA"], descricao="[SE]  Disjuntor Linha Mola Carregada")
         self.l_barra_viva = LeituraModbusBit(self.rele["SE"], REG_RELE["SE"]["ID_BARRA_VIVA"], descricao="[SE]  Identificação de Barra Viva")
-        self.l_djL_remoto = LeituraModbusBit(self.rele["SE"], REG_CLP["SE"]["DJL_SELETORA_REMOTO"], descricao="[SE]  Disjuntor Linha Seletora Modo Remoto")
+        self.l_mola_carregada = LeituraModbusBit(self.rele["SE"], REG_RELE["SE"]["DJL_MOLA_CARREGADA"], descricao="[SE]  Disjuntor Linha Mola Carregada")
+        self.l_djL_remoto = LeituraModbusBit(self.clp["SA"], REG_CLP["SE"]["DJL_SELETORA_REMOTO"], descricao="[SE]  Disjuntor Linha Seletora Modo Remoto")
         self.l_alarme_gas_te = LeituraModbusBit(self.rele["SE"], REG_CLP["SE"]["TE_RELE_BUCHHOLZ_ALM"], descricao="[SE]  Transformador Elevador Alarme Relé Buchholz")
+        self.condicionadores.append(c.CondicionadorBase(self.l_alarme_gas_te, CONDIC_INDISPONIBILIZAR))
 
         ### CONDICIONADORES ESSENCIAIS
         ## NORMALIZAR
-
-        self.l_rele_linha_atuado = LeituraModbusBit(self.rele["SE"], REG_CLP["SE"]["RELE_LINHA_ATUADO"], descricao="[SE]  Relé Linha Atuado")
-        self.condicionadores_essenciais.append(c.CondicionadorBase(self.l_rele_linha_atuado, gravidade=CONDIC_NORMALIZAR))
+        # self.l_rele_linha_atuado = LeituraModbusBit(self.rele["SE"], REG_CLP["SE"]["RELE_LINHA_ATUADO"], invertido=True, descricao="[SE]  Relé Linha Atuado")
+        # self.condicionadores_essenciais.append(c.CondicionadorBase(self.l_rele_linha_atuado, gravidade=CONDIC_NORMALIZAR))
 
         ### CONDICIONADORES
         ## INDISPONIBILIZAR
+        self.l_89L_fechada = LeituraModbusBit(self.clp["SA"], REG_CLP["SE"]["89L_FECHADA"], invertido=True, descricao="[SE]  89L Fechada")
+        self.condicionadores.append(c.CondicionadorBase(self.l_89L_fechada, CONDIC_INDISPONIBILIZAR))
 
-        # self.l_89L_fechada = LeituraModbusBit(self.clp["SA"], REG_CLP["SE"]["89L_FECHADA"], invertido=True, descricao="[SE]  89L Fechada")
-        # self.condicionadores.append(c.CondicionadorBase(self.l_89L_fechada, CONDIC_INDISPONIBILIZAR))
+        self.l_86T_atuado = LeituraModbusBit(self.clp["SA"], REG_CLP["SE"]["86T_ATUADO"], descricao="[SE]  86T Atuado")
+        self.condicionadores.append(c.CondicionadorBase(self.l_86T_atuado, CONDIC_INDISPONIBILIZAR))
 
-        # self.l_86T_atuado = LeituraModbusBit(self.clp["SA"], REG_CLP["SE"]["86T_ATUADO"], descricao="[SE]  86T Atuado")
-        # self.condicionadores.append(c.CondicionadorBase(self.l_86T_atuado, CONDIC_INDISPONIBILIZAR))
+        self.l_86BF_atuado = LeituraModbusBit(self.clp["SA"], REG_CLP["SE"]["86BF_ATUADO"], descricao="[SE]  86BF Atuado")
+        self.condicionadores.append(c.CondicionadorBase(self.l_86BF_atuado, CONDIC_INDISPONIBILIZAR))
 
-        # self.l_86BF_atuado = LeituraModbusBit(self.clp["SA"], REG_CLP["SE"]["86BF_ATUADO"], descricao="[SE]  86BF Atuado")
-        # self.condicionadores.append(c.CondicionadorBase(self.l_86BF_atuado, CONDIC_INDISPONIBILIZAR))
+        self.l_trip_rele_buchholz = LeituraModbusBit(self.clp["SA"], REG_CLP["SE"]["TE_RELE_BUCHHOLZ_TRP"], descricao="[SE]  Transformador Elevador Trip Relé Buchholz")
+        self.condicionadores.append(c.CondicionadorBase(self.l_trip_rele_buchholz, CONDIC_INDISPONIBILIZAR))
 
-        # self.l_rele_te_atuado = LeituraModbusBit(self.clp["SA"], REG_CLP["SE"]["TE_RELE_ATUADO"], descricao="[SE]  Transformador Elevador Relé Atuado")
-        # self.condicionadores.append(c.CondicionadorBase(self.l_rele_te_atuado, CONDIC_INDISPONIBILIZAR))
+        self.l_trip_alivio_pressao = LeituraModbusBit(self.clp["SA"], REG_CLP["SE"]["TE_TRP_ALIVIO_PRESSAO"], descricao="[SE]  Transformador Elevador Trip Alívio Pressão")
+        self.condicionadores.append(c.CondicionadorBase(self.l_trip_alivio_pressao, CONDIC_INDISPONIBILIZAR))
 
-        # self.l_trip_rele_buchholz = LeituraModbusBit(self.clp["SA"], REG_CLP["SE"]["TE_RELE_BUCHHOLZ_TRP"], descricao="[SE]  Transformador Elevador Trip Relé Buchholz")
-        # self.condicionadores.append(c.CondicionadorBase(self.l_trip_rele_buchholz, CONDIC_INDISPONIBILIZAR))
+        self.l_trip_temp_oleo_te = LeituraModbusBit(self.clp["SA"], REG_CLP["SE"]["TE_TRP_TMP_OLEO"], descricao="[SE]  Transformador Elevador Trip Temperatura Óleo")
+        self.condicionadores.append(c.CondicionadorBase(self.l_trip_temp_oleo_te, CONDIC_INDISPONIBILIZAR))
 
-        # self.l_trip_alivio_pressao = LeituraModbusBit(self.clp["SA"], REG_CLP["SE"]["TE_TRP_ALIVIO_PRESSAO"], descricao="[SE]  Transformador Elevador Trip Alívio Pressão")
-        # self.condicionadores.append(c.CondicionadorBase(self.l_trip_alivio_pressao, CONDIC_INDISPONIBILIZAR))
+        self.l_rele_linha_bf_atuado = LeituraModbusBit(self.clp["SA"], REG_CLP["SE"]["RELE_LINHA_ATUACAO_BF"], descricao="[SE]  Relé Linha Atuação BF")
+        self.condicionadores.append(c.CondicionadorBase(self.l_rele_linha_bf_atuado, CONDIC_INDISPONIBILIZAR))
 
-        # self.l_trip_temp_oleo_te = LeituraModbusBit(self.clp["SA"], REG_CLP["SE"]["TE_TRP_TMP_OLEO"], descricao="[SE]  Transformador Elevador Trip Temperatura Óleo")
-        # self.condicionadores.append(c.CondicionadorBase(self.l_trip_temp_oleo_te, CONDIC_INDISPONIBILIZAR))
-
-        # self.l_rele_linha_bf_atuado = LeituraModbusBit(self.clp["SA"], REG_CLP["SE"]["RELE_LINHA_ATUACAO_BF"], descricao="[SE]  Relé Linha Atuação BF")
-        # self.condicionadores.append(c.CondicionadorBase(self.l_rele_linha_bf_atuado, CONDIC_INDISPONIBILIZAR))
-
-        self.l_alarme_rele_bulchholz_te = LeituraModbusBit(self.clp["SA"], REG_CLP["SE"]["TE_RELE_BUCHHOLZ_ALM"], descricao="[SE]  Transformador Elevador Alarme Relé Buchholz")
-        self.condicionadores.append(c.CondicionadorBase(self.l_alarme_rele_bulchholz_te, CONDIC_INDISPONIBILIZAR))
-
-        # self.l_trip_temp_enrola_te = LeituraModbusBit(self.clp["SA"], REG_CLP["SE"]["TE_TRP_TMP_ENROL"], descricao="[SE]  Transformador Elevador Trip Temperatura Enrolamento")
-        # self.condicionadores.append(c.CondicionadorBase(self.l_trip_temp_enrola_te, CONDIC_INDISPONIBILIZAR))
+        self.l_trip_temp_enrola_te = LeituraModbusBit(self.clp["SA"], REG_CLP["SE"]["TE_TRP_TMP_ENROL"], descricao="[SE]  Transformador Elevador Trip Temperatura Enrolamento")
+        self.condicionadores.append(c.CondicionadorBase(self.l_trip_temp_enrola_te, CONDIC_INDISPONIBILIZAR))
 
         # self.l_falha_cmd_abertura_52L = LeituraModbusBit(self.clp["SA"], REG_CLP["SE"]["DJL_FLH_CMD_ABERTURA"], descricao="[SE]  Disjuntor Linha Falha Comando Abertura")
         # self.condicionadores.append(c.CondicionadorBase(self.l_falha_cmd_abertura_52L, CONDIC_INDISPONIBILIZAR))
