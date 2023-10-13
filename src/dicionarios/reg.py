@@ -174,10 +174,10 @@ REG_RELE = {
 
     "UG1": {
         # Elementos
-        "ELE_2_SOBREFRE":                               [1, 4],
-        "ELE_1_SOBREFRE":                               [1, 5],
-        "ELE_2_SUBFRE":                                 [1, 6],
-        "ELE_1_SUBFRE":                                 [1, 7],
+        "ELE_1_SUBFRE":                                 29,
+        "ELE_2_SUBFRE":                                 31,
+        "ELE_1_SOBREFRE":                               32,
+        "ELE_2_SOBREFRE":                               33,
 
 
         # Sobrecorrente

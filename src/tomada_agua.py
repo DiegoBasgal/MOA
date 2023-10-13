@@ -173,6 +173,7 @@ class TomadaAgua:
         """
         Função para carregamento de leituras necessárias para a operação.
         """
+
         # CONDICIONADORES ESSENCIAIS
         # Normalizar
         self.l_sem_emergencia = LeituraModbusBit(self.clp["TDA"], REG_CLP["TDA"]["SEM_EMERGENCIA"], invertido=True, descricao="[TDA] Emergência")

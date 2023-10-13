@@ -87,8 +87,6 @@ class ServicoAuxiliar:
         em períodos separados por um tempo pré-definido.
         """
 
-        return
-
         if self.l_falha_bomba_dren_1.valor:
             logger.warning("[SA]  Houve uma falha na bomba 1 do poço de drenagem. Favor verificar.")
 
@@ -195,14 +193,14 @@ class ServicoAuxiliar:
         """
 
         ### CONDICIONADORES ESSENCIAIS
-        ## NORMALIZAR
+        # ## NORMALIZAR
         # self.l_emergencia = LeituraModbusBit(self.clp["SA"], REG_CLP["SA"]["SEM_EMERGENCIA"], invertido=True, descricao="[SA]  Emergência")
         # self.condicionadores_essenciais.append(CondicionadorBase(self.l_emergencia, CONDIC_NORMALIZAR))
 
 
         ### CONDICIONADORES
         ## NORMALIZAR
-
+        
         # Retificador
         self.l_reti_subtensao = LeituraModbusBit(self.clp["SA"], REG_CLP["SA"]["RETI_SUBTEN"], descricao="[SA]  Retificador Subtensão")
         self.condicionadores.append(CondicionadorBase(self.l_reti_subtensao, CONDIC_NORMALIZAR))
@@ -304,4 +302,4 @@ class ServicoAuxiliar:
         self.l_alarme_sis_incendio_atuado = LeituraModbusBit(self.clp["SA"], REG_CLP["SA"]["SIS_INCENDIO_ALM_ATUADO"], descricao="[SA]  Sistem Incêndio Alarme Atuado")
         self.l_alarme_sis_seguranca_atuado = LeituraModbusBit(self.clp["SA"], REG_CLP["SA"]["SIS_SEGURANCA_ALM_ATUADO"], descricao="[SA]  Sistema Segurança Alarme Atuado")
         self.l_nivel_muito_alto_poco_dren = LeituraModbusBit(self.clp["SA"], REG_CLP["SA"]["POCO_DREN_NV_MUITO_ALTO"], descricao="[SA]  Poço Drenagem Nível Muito Alto")
-        # self.l_falha_tubo_succao_bomba_recalque = LeituraModbusBit(self.clp["SA"], REG_CLP["SA"]["BOMBA_RECALQUE_TUBO_SUCCAO_FALHA"],, descricao="[SA]  Bomba Recalque Falha Tubo Sucção")
+        # self.l_falha_tubo_succao_bomba_recalque = LeituraModbusBit(self.clp["SA"], REG_CLP["SA"]["BOMBA_RECALQUE_TUBO_SUCCAO_FALHA"], descricao="[SA]  Bomba Recalque Falha Tubo Sucção")

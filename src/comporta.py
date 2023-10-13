@@ -67,7 +67,6 @@ class Comporta:
         self.__bloqueio = LeituraModbusBit(
             self.clp["TDA"],
             REG_CLP["TDA"][f"CP{self.id}_BLQ_ATUADO"],
-            invertido=True,
             descricao=f"[CP{self.id}] Bloqueio Atuado"
         )
         self.__pressao_equalizada = LeituraModbusBit(
@@ -232,7 +231,7 @@ class Comporta:
 
                 EMB.escrever_bit(self.clp["TDA"], REG_CLP["TDA"][f"CP{self.id}_CMD_ABERTURA_CRACKING"], valor=1)
 
-                # threading.Thread(target=lambda: self.aguardar_pressao_uh()).start()
+                threading.Thread(target=lambda: self.aguardar_pressao_uh()).start()
 
         except Exception:
             logger.error(f"[CP{self.id}] Houve um erro ao realizar a Operação de Cracking da Comporta {self.id}.")
@@ -253,6 +252,7 @@ class Comporta:
             if self.pressao_equalizada:
                 logger.debug(f"[CP{self.id}]          Verificação MOA:           \"UH Pressão Equalizada\"")
                 return None
+
             else:
                 sleep(2)
 
