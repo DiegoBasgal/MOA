@@ -53,7 +53,7 @@ class WhatsApp:
         saldo = int(cls.saldo_atual())
 
         if saldo <= 100:
-            WhatsApp.enviar_mensagem('120363159926062842@g.us', f'Atenção o saldo de mensagens está a baixo de 100! Saldo atual: {saldo}')
+            WhatsApp.enviar_mensagem('120363191479197505@g.us', f'Atenção o saldo de mensagens está a baixo de 100! Saldo atual: {saldo}')
 
     @staticmethod
     def envio_grupo(mensagem: "str") -> "dict":
@@ -66,7 +66,7 @@ class WhatsApp:
              "content-type": "application/json",
             "Authorization": "52c5e8171974cd0d780db547d59a3f17"}
 
-        payload = {"number": "120363159926062842@g.us",
+        payload = {"number": "120363191479197505@g.us",
                   "message": f"{mensagem}"}
 
         response = requests.post(url, json=payload, headers=headers)
@@ -82,3 +82,15 @@ class WhatsApp:
         
         Thread(target=cls.envio_grupo, args=(mensagem,)).start()
 
+    
+    @staticmethod
+    def chats_ativos():
+        """
+        Retorna uma lista com todos os chats ativos no whatsapp da Instancia
+        """
+
+        url = "https://v5.chatpro.com.br/chatpro-ace98c12f9/api/v1/chats"
+        headers = {"accept": "application/json", "Authorization": "52c5e8171974cd0d780db547d59a3f17"}
+        response = requests.get(url, headers=headers)
+
+        return response.text

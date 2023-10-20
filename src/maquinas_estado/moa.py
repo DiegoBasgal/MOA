@@ -147,10 +147,7 @@ class ControleEstados(State):
 
         else:
             logger.debug("Verificando condicionadores...")
-            t = time()
             flag_condic = self.usn.verificar_condicionadores()
-            t2 = (time() - t)
-            debug_log.debug(f"[TEMPO] Verificar condicionadores moa.py -> {t2}")
 
             if flag_condic == CONDIC_INDISPONIBILIZAR:
                 return Emergencia(self.usn)
@@ -165,13 +162,11 @@ class ControleEstados(State):
                     return ControleDados(self.usn)
 
             logger.debug("Verificando status da Subestação e Bay...")
-            t = time()
+            logger.debug("")
             flag_bay_se = self.usn.verificar_bay_se()
-            t2 = (time() - t)
-            debug_log.debug(f"[TEMPO] Verificar status SE e BAY moa.py -> {t2}")
 
             if flag_bay_se == DJS_FALTA_TENSAO:
-                return Emergencia(self.usn) if bay.Bay.aguardar_tensao() == TENSAO_FORA else ControleDados(self.usn)
+                return Emergencia(self.usn) if self.usn.bay.aguardar_tensao() == TENSAO_FORA else ControleDados(self.usn)
 
             elif flag_bay_se != DJS_OK:
                 self.usn.normalizar_usina()

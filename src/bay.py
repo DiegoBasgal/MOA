@@ -84,7 +84,8 @@ class Bay:
         """
 
         try:
-            res = EMB.escrever_bit(self.rele["BAY"], REG_RELE["BAY"]["RELE_RST_TRP"], valor=1)
+            res = self.rele["BAY"].write_single_coil(REG_RELE["BAY"]["RELE_RST_TRP"], [1])
+            # res = EMB.escrever_bit(self.rele["BAY"], REG_RELE["BAY"]["RELE_RST_TRP"], valor=1)
             return res
 
         except Exception:
@@ -110,7 +111,8 @@ class Bay:
                 if self.verificar_dj_linha():
                     logger.debug(f"[BAY] Enviando comando:                   \"FECHAR DISJUNTOR\"")
                     logger.debug("")
-                    # EMB.escrever_bit(self.rele["BAY"], REG_RELE["BAY"]["DJL_CMD_FECHAR"], valor=1)
+                    self.rele["BAY"].write_single_coil(REG_RELE["BAY"]["DJL_CMD_FECHAR"], [1])
+                    # EMB.escrever_bit(self.rele["BAY"], REG_RELE["BAY"]["DJL_CMD_ABRIR"], valor=1)
                     return True
 
                 else:
@@ -147,7 +149,7 @@ class Bay:
         logger.info("[BAY] Verificando Condições do Disjuntor BAY...")
 
         try:
-            if not self.secc_fechada.valor:
+            if self.secc_fechada.valor:
                 logger.warning("[BAY] A Seccionadora está Aberta!")
                 flags += 1
 
@@ -164,9 +166,9 @@ class Bay:
                 logger.warning(f"[BAY] Foi identificada uma Leitura de Tensão na Barra! Tensão VS -> {self.tensao_vs.valor}")
                 flags += 1
 
-            if not self.linha_morta.valor and self.linha_viva.valor:
-                logger.warning("[BAY] Foi identificada uma leitura de Tensão na linha!")
-                flags += 1
+            # if not self.linha_morta.valor and self.linha_viva.valor:
+            #     logger.warning("[BAY] Foi identificada uma leitura de Tensão na linha!")
+            #     flags += 1
 
             if not self.mola_carregada.valor:
                 logger.warning("[BAY] A mola do Disjuntor está descarregada!")
@@ -194,7 +196,6 @@ class Bay:
                 and (TENSAO_FASE_BAY_BAIXA < self.tensao_vca.valor < TENSAO_FASE_BAY_ALTA):
                 return True
             else:
-                logger.warning("[BAY] Tensão trifásica fora do limite.")
                 return False
 
         except Exception:
@@ -217,7 +218,7 @@ class Bay:
         if self.status_tensao == TENSAO_VERIFICAR:
             self.status_tensao = TENSAO_AGUARDO
             logger.debug("[BAY] Iniciando o temporizador de normalização da tensão na linha.")
-            threading.Thread(target=lambda: self.temporizar_tensao(600)).start()
+            threading.Thread(target=lambda: self.temporizar_tensao(30)).start()
 
         elif self.status_tensao == TENSAO_REESTABELECIDA:
             logger.info("[BAY] Tensão na linha reestabelecida.")
@@ -233,12 +234,14 @@ class Bay:
             logger.debug("[BAY] A tensão na linha ainda está fora.")
 
 
-    def temporizar_tensao(self, delay: "int") -> "None":
+    def temporizar_tensao(self, seg: "int") -> "None":
         """
         Função de temporizador para espera de normalização de tensão da linha de transmissão.
         """
 
-        while time() <= time() + delay:
+        delay = time() + seg
+
+        while time() <= delay:
             if self.verificar_tensao_trifasica():
                 self.status_tensao = TENSAO_REESTABELECIDA
                 return
@@ -293,10 +296,8 @@ class Bay:
         self.barra_morta = LeituraModbusBit(self.rele["BAY"], REG_RELE["BAY"]["ID_BARRA_MORTA"], descricao="[BAY][RELE] Identificação Barra Morta")
         self.mola_carregada = LeituraModbusBit(self.rele["BAY"], REG_RELE["BAY"]["DJL_MOLA_CARREGADA"], descricao="[BAY][RELE] Disjuntor Mola Carregada")
         self.secc_fechada = LeituraModbusBit(self.rele["BAY"], REG_RELE["BAY"]["SECC_FECHADA"], invertido=True, descricao="[BAY][RELE] Seccionadora Fechada")
+        self.condicionadores_essenciais.append(CondicionadorBase(self.secc_fechada, CONDIC_INDISPONIBILIZAR))
 
         ## CONDICIONADORES RELÉS
-        self.secc_aberta = LeituraModbusBit(self.rele["BAY"], REG_RELE["BAY"]["SECC_FECHADA"], descricao="[BAY][RELE] Seccionadora Aberta")
-        self.condicionadores_essenciais.append(CondicionadorBase(self.secc_aberta, CONDIC_INDISPONIBILIZAR))
-
         self.l_falha_abertura_dj = LeituraModbusBit(self.rele["BAY"], REG_RELE["BAY"]["DJL_FLH_ABERTURA"], descricao="[BAY][RELE] Disjuntor Linha Falha Abertura")
         self.condicionadores_essenciais.append(CondicionadorBase(self.l_falha_abertura_dj, CONDIC_INDISPONIBILIZAR))

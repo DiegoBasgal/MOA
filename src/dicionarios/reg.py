@@ -94,18 +94,19 @@ REG_RELE = {
 
 
         # Relé
-        "RELE_RST_TRP":                                 [40, 2],
+        "RELE_RST_TRP":                                 88,
 
 
         # DJ
-        "DJL_CMD_FECHAR":                               [43, 2],
+        "DJL_CMD_ABRIR":                                84,
+        "DJL_CMD_FECHAR":                               85,
         "DJL_FECHADO":                                  [44, 0],
 
 
         # DJ
         "DJL_MOLA_CARREGADA":                           [44, 1],
         # Seccionadora
-        "SECC_FECHADA":                                 [45, 4],
+        "SECC_FECHADA":                                 [44, 4],
 
 
         # DJ
@@ -129,6 +130,9 @@ REG_RELE = {
         "DJL_MOLA_CARREGADA":                           [43, 1],
         # Relé
         "RELE_TE_FLH_PARTIDA":                          [43, 2],
+
+        # Seccionadora
+        "SECC_FECHADA":                                 [43, 1],
 
 
         # DJ
@@ -832,7 +836,7 @@ REG_CLP = {
         "RV_RELE_TRP_NAO_ATUADO":                       [26, 0],
         "RV_RELE_ALM_ATUADO":                           [26, 1],
 
-        "RV_SETPOT_POT_ATIVA_PU":                       30,
+        "RV_SETPOT_POT_ATIVA_PU":                       29,
 
         "RT_RELE_TRP_NAO_ATUADO":                       [31, 0],
 

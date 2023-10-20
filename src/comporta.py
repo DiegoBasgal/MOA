@@ -48,7 +48,7 @@ class Comporta:
             REG_CLP["TDA"][f"CP{self.id}_CRACKING"],
             descricao=f"[CP{self.id}] Craking"
         )
-        self.__remoto = LeituraModbusBit(
+        self.__manual = LeituraModbusBit(
             self.clp["TDA"],
             REG_CLP["TDA"][f"CP{self.id}_REMOTO"],
             descricao=f"[CP{self.id}] Modo Remoto"
@@ -131,8 +131,8 @@ class Comporta:
                 return CP_ABERTA
             elif self.__cracking.valor:
                 return CP_CRACKING
-            elif self.__remoto.valor:
-                return CP_REMOTO
+            elif self.__manual.valor:
+                return CP_MANUAL
             elif self.operando:
                 return CP_OPERANDO
             else:
@@ -281,10 +281,13 @@ class Comporta:
 
         try:
             if self.bloqueio or self.permissao:
-                logger.debug(f"[CP{self.id}]          Sem condições para operar a Comporta!")
+                if self.aguardando_abertura:
+                    return True
+                else:
+                    logger.debug(f"[CP{self.id}]          Sem condições para operar a Comporta!")
 
-                logger.debug(f"[CP{self.id}]          Ainda há \"Bloqueios\" Ativos") if self.bloqueio else None
-                logger.debug(f"[CP{self.id}]          Ainda há \"Permissivos\" Inválidos") if self.permissao else None
+                    logger.debug(f"[CP{self.id}]          Ainda há \"Bloqueios\" Ativos") if self.bloqueio else None
+                    logger.debug(f"[CP{self.id}]          Ainda há \"Permissivos\" Inválidos") if self.permissao else None
 
                 if self.tda.status_valvula_borboleta.valor or self.tda.status_limpa_grades.valor or self.comporta_adjacente.operando in (2, 4, 32):
                     logger.debug(f"[CP{self.id}]          Limpa Grades Operando") if self.tda.status_limpa_grades.valor != 0 else None

@@ -10,8 +10,8 @@
     "nv_religamento": 461.9,
     "pot_minima": 911.0,
     "pot_maxima_ug": 3037.5,
-    "pot_maxima_ug1": 3037.5,
-    "pot_maxima_ug2": 3037.5,
+    "pot_maxima_ug1": 3037.0,
+    "pot_maxima_ug2": 3037.0,
     "margem_pot_critica": 0.035,
     "pot_maxima_alvo": 6070.0,
     "pot_maxima_usina": 6075.0

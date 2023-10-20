@@ -417,7 +417,7 @@ class UnidadeGeracao:
         try:
             logger.debug("")
             logger.debug(f"[UG{self.id}] Step  -> Unidade:                   \"{UG_SM_STR_DCT[self.codigo_state]}\"")
-            logger.debug(f"[UG{self.id}]          Etapa:                     \"{UG_STR_DCT_ETAPAS[self.etapa]}\" (Atual: {self.etapa_atual})")
+            logger.debug(f"[UG{self.id}]          Etapa:                     \"{'Sincronizada' if self.etapa == 7 else 'Parada' if self.etapa == 0 else 'Partindo/Parando'}\" (Atual: {self.etapa_atual})")
 
             if self.etapa == UG_SINCRONIZADA:
                 logger.debug(f"[UG{self.id}]          Leituras de Potência:")
@@ -458,7 +458,7 @@ class UnidadeGeracao:
                 EMB.escrever_bit(self.clp[f"UG{self.id}"], REG_CLP[f"UG{self.id}"]["86H_CMD_REARME_BLQ"], valor=1)
                 EMB.escrever_bit(self.clp[f"UG{self.id}"], REG_CLP[f"UG{self.id}"]["UHRV_CMD_REARME_FLH"], valor=1)
                 EMB.escrever_bit(self.clp[f"UG{self.id}"], REG_CLP[f"UG{self.id}"]["UHLM_CMD_REARME_FLH"], valor=1)
-                # EMB.escrever_bit(self.clp[f"UG{self.id}"], REG_CLP[f"UG{self.id}"]["PARTIDA_CMD_SINCRONISMO"], valor=1)
+                EMB.escrever_bit(self.clp[f"UG{self.id}"], REG_CLP[f"UG{self.id}"]["PARTIDA_CMD_SINCRONISMO"], valor=1)
                 self.enviar_setpoint(self.setpoint)
 
         except Exception:
@@ -477,7 +477,7 @@ class UnidadeGeracao:
             if self.etapa in (UG_SINCRONIZADA, UG_SINCRONIZANDO):
                 logger.info(f"[UG{self.id}]          Enviando comando:          \"PARADA\"")
 
-                # EMB.escrever_bit(self.clp[f"UG{self.id}"], REG_CLP[f"UG{self.id}"]["PARADA_CMD_DESABILITA_UHLM"], valor=1)
+                EMB.escrever_bit(self.clp[f"UG{self.id}"], REG_CLP[f"UG{self.id}"]["PARADA_CMD_DESABILITA_UHLM"], valor=1)
                 self.enviar_setpoint(0)
 
         except Exception:
@@ -497,9 +497,9 @@ class UnidadeGeracao:
 
             if setpoint_kw > 1:
                 self.setpoint = int(setpoint_kw)
-                setpoint_porcento = ((setpoint_kw / self.__cfg[f"pot_maxima_ug{self.id}"]) * 10000)
+                setpoint_porcento = ((self.setpoint / self.__cfg[f"pot_maxima_ug"]) * 10000)
 
-                logger.debug(f"[UG{self.id}]          Enviando setpoint:         {self.setpoint} kW")
+                logger.debug(f"[UG{self.id}]          Enviando setpoint:         {self.setpoint} kW ({setpoint_porcento / 100:2.2f} %)")
 
                 res = EMB.escrever_bit(self.clp[f"UG{self.id}"], REG_CLP[f"UG{self.id}"]["PASSOS_CMD_RST_FLH"], valor=1)
                 res = EMB.escrever_bit(self.clp[f"UG{self.id}"], REG_CLP[f"UG{self.id}"]["86M_CMD_REARME_BLQ"], valor=1)
@@ -553,7 +553,7 @@ class UnidadeGeracao:
 
         try:
             logger.debug(f"[UG{self.id}]          Enviando comando:          \"TRIP LÓGICO\"")
-            # EMB.escrever_bit(self.clp[f"UG{self.id}"], REG_CLP[f"UG{self.id}"]["PARADA_CMD_EMERGENCIA"], valor=1)
+            EMB.escrever_bit(self.clp[f"UG{self.id}"], REG_CLP[f"UG{self.id}"]["PARADA_CMD_EMERGENCIA"], valor=1)
 
         except Exception:
             logger.error(f"[UG{self.id}] Não foi possivel acionar o comando de TRIP: \"Lógico\".")
@@ -685,7 +685,7 @@ class UnidadeGeracao:
                 return
 
         logger.warning(f"[UG{self.id}]          Verificação MOA:          \"Acionar emergência por timeout de Sincronismo\"")
-        # EMB.escrever_bit(self.clp[f"UG{self.id}"], REG_CLP[f"UG{self.id}"]["PARADA_CMD_EMERGENCIA"], valor=1)
+        EMB.escrever_bit(self.clp[f"UG{self.id}"], REG_CLP[f"UG{self.id}"]["PARADA_CMD_EMERGENCIA"], valor=1)
         self.temporizar_partida = False
         sleep(1)
 
@@ -799,8 +799,8 @@ class UnidadeGeracao:
                 if self.setpoint >= self.__cfg["pot_minima"]:
                     self.partir()
 
-            elif self.cp[f"CP{self.id}"].etapa == CP_REMOTO:
-                logger.debug(f"[CP{self.id}]          Comporta em modo manual")
+            elif self.cp[f"CP{self.id}"].etapa == CP_MANUAL:
+                logger.debug(f"[CP{self.id}]          Comporta em modo Manual")
                 pass
 
         except Exception:
@@ -1196,7 +1196,8 @@ class UnidadeGeracao:
         self.l_pressao_turbina = LeituraModbus(self.clp[f"UG{self.id}"], REG_CLP[f"UG{self.id}"]["ENTRADA_TURBINA_PRESSAO"], escala=0.1, descricao=f"[UG{self.id}] Pressão Entrada Turbina")
         self.condic_pressao_turbina_ug = c.CondicionadorExponencialReverso(self.l_pressao_turbina, CONDIC_INDISPONIBILIZAR, 1.6, 1.3)
         self.condicionadores_atenuadores.append(self.condic_pressao_turbina_ug)
-
+        
+        return
         # CONDICIONADORES ESSENCIAIS - OUTROS
         # Botões
         self.l_bt_emerg_atuado = LeituraModbusBit(self.clp[f"UG{self.id}"], REG_CLP[f"UG{self.id}"]["BT_EMERGENCIA_ATUADO"], descricao=f"[UG{self.id}] Botão Emergência Atuado") # Verificar invertido
