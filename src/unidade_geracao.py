@@ -455,7 +455,8 @@ class UnidadeGeracao:
             self.acionar_trip_logico()
             self.acionar_trip_eletrico()
 
-        elif not self.borda_parar and self.parar():
+        elif not self.borda_parar:
+            self.parar()
             self.borda_parar = True
 
     def step(self) -> "None":

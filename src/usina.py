@@ -521,10 +521,11 @@ class Usina:
         """
 
         self.resetar_tda()
-        if self.nv_montante >= self.cfg["nv_maximo"]:
-            self.nv_montante_anterior = self.nv_montante_anterior
-            logger.debug("[USN] Nível montante acima do máximo")
+        if self.nv_montante_recente >= self.cfg["nv_maximo"]:
+            logger.debug("[USN] Nível montante acima do Máximo.")
             logger.debug(f"[USN]          Leitura:                   {self.nv_montante:0.3f}")
+            logger.debug(f"[USN]          Filtro EMA:                {self.nv_montante_recente:0.3f}")
+            logger.debug("")
 
             if self.nv_montante_recente >= NIVEL_MAXIMORUM:
                 logger.critical(f"[USN] Nível montante ({self.nv_montante_recente:3.2f}) atingiu o maximorum!")
@@ -537,8 +538,9 @@ class Usina:
                     ug.step()
 
         elif self.nv_montante <= self.cfg["nv_minimo"] and not self.aguardando_reservatorio:
-            logger.debug("[USN] Nível montante abaixo do mínimo")
+            logger.debug("[USN] Nível montante abaixo do Mínimo.")
             logger.debug(f"[USN]          Leitura:                   {self.nv_montante:0.3f}")
+            logger.debug(f"[USN]          Filtro EMA:                {self.nv_montante_recente:0.3f}")
 
             if self.nv_montante < self.cfg["nv_minimo"] and self.nv_montante_anterior > self.cfg["nv_minimo"]:
                 if self.erro_leitura_montante == 3:
@@ -669,6 +671,10 @@ class Usina:
 
     def distribuir_potencia(self, pot_alvo) -> None:
         ugs: "list[UnidadeGeracao]" = self.controlar_unidades_disponiveis()
+        
+        if ugs is None or not len(ugs):
+            return
+
         logger.debug("")
         logger.debug(f"[USN] Ordem das UGs (Prioridade):         {[ug.id for ug in ugs]}")
         logger.debug("")
@@ -682,11 +688,10 @@ class Usina:
             if ug.manual:
                 ajuste_manual += ug.leitura_potencia
 
-        for ug in ugs:
             if ug.etapa_atual == UG_SINCRONIZANDO:
                 ug_sincronizando += 1
 
-        if ugs is None or not len(ugs):
+        if (pot_alvo - ajuste_manual) < 0:
             return
 
         logger.debug(f"[USN] Distribuindo:                       {pot_alvo - ajuste_manual:0.3f}")
@@ -840,7 +845,7 @@ class Usina:
         for ug in self.ugs:
             ug.oco.atualizar_limites_condicionadores(parametros)
 
-        self.heartbeat()
+        # self.heartbeat()
 
     def atualizar_valores_montante(self) -> None:
         """
@@ -852,6 +857,8 @@ class Usina:
         else:
             ema = self.calcular_ema_montante(self.nv_montante_recente)
             self.nv_montante_recente = ema
+
+        self.nv_montante_anterior = self.nv_montante
 
         self.erro_nv_anterior = self.erro_nv
         self.erro_nv = self.nv_montante_recente - self.cfg["nv_alvo"]
@@ -1001,20 +1008,23 @@ class Usina:
 
                 if self.clp["MOA"].read_coils(REG["MOA_IN_EMERG"])[0] == 1 and not self.borda_emerg:
                     self.borda_emerg = True
-                    for ug in self.ugs:
-                        ug.oco.verificar_condicionadores(ug)
+                    # for ug in self.ugs:
+                    #     ug.oco.verificar_condicionadores(ug)
 
                 elif self.clp["MOA"].read_coils(REG["MOA_IN_EMERG"])[0] == 0 and self.borda_emerg:
                     self.borda_emerg = False
 
                 if self.clp["MOA"].read_coils(REG["MOA_IN_EMERG_UG1"])[0] == 1:
-                    self.ug1.oco.verificar_condicionadores()
+                    # self.ug1.oco.verificar_condicionadores()
+                    pass
 
                 if self.clp["MOA"].read_coils(REG["MOA_IN_EMERG_UG2"])[0] == 1:
-                    self.ug2.oco.verificar_condicionadores()
+                    # self.ug2.oco.verificar_condicionadores()
+                    pass
 
                 if self.clp["MOA"].read_coils(REG["MOA_IN_EMERG_UG3"])[0] == 1:
-                    self.ug3.oco.verificar_condicionadores()
+                    # self.ug3.oco.verificar_condicionadores()
+                    pass
 
                 if self.clp["MOA"].read_coils(REG["MOA_IN_HABILITA_AUTO"])[0] == 1:
                     self.clp["MOA"].write_single_coil(REG["MOA_IN_HABILITA_AUTO"], 1)
