@@ -43,7 +43,6 @@ class ParametrosUsina(models.Model):
     cx_kp = models.DecimalField(max_digits=5, decimal_places=2, default=2)
     cx_ki = models.DecimalField(max_digits=5, decimal_places=2, default=0.1)
     cx_kie = models.DecimalField(max_digits=5, decimal_places=2, default=0)
-    press_cx_alvo = models.DecimalField(max_digits=10, decimal_places=2, default=16.3)
     valor_ie_inicial = models.DecimalField(max_digits=10, decimal_places=1, default=0.5)
 
     # Potência
@@ -58,6 +57,7 @@ class ParametrosUsina(models.Model):
     ug1_setpot = models.DecimalField(max_digits=10, decimal_places=0, default=0)
     ug1_prioridade = models.IntegerField(default=0)
     ug1_ultimo_estado = models.IntegerField(default=0)
+    ug1_press_cx_alvo = models.DecimalField(max_digits=10, decimal_places=2, default=16.3)
 
     alerta_caixa_espiral_ug1 = models.DecimalField(max_digits=10, decimal_places=2, default=10)
     limite_caixa_espiral_ug1 = models.DecimalField(max_digits=10, decimal_places=2, default=0)
@@ -93,6 +93,7 @@ class ParametrosUsina(models.Model):
     ug2_setpot = models.DecimalField(max_digits=10, decimal_places=0, default=0)
     ug2_prioridade = models.IntegerField(default=0)
     ug2_ultimo_estado = models.IntegerField(default=0)
+    ug2_press_cx_alvo = models.DecimalField(max_digits=10, decimal_places=2, default=16.3)
 
     alerta_caixa_espiral_ug2 = models.DecimalField(max_digits=10, decimal_places=2, default=10)
     limite_caixa_espiral_ug2 = models.DecimalField(max_digits=10, decimal_places=2, default=0)
@@ -128,6 +129,7 @@ class ParametrosUsina(models.Model):
     ug3_setpot = models.DecimalField(max_digits=10, decimal_places=0, default=0)
     ug3_prioridade = models.IntegerField(default=0)
     ug3_ultimo_estado = models.IntegerField(default=0)
+    ug3_press_cx_alvo = models.DecimalField(max_digits=10, decimal_places=2, default=16.3)
 
     alerta_caixa_espiral_ug3 = models.DecimalField(max_digits=10, decimal_places=2, default=10)
     limite_caixa_espiral_ug3 = models.DecimalField(max_digits=10, decimal_places=2, default=0)

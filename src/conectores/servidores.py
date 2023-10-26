@@ -104,14 +104,12 @@ class Servidores:
         """
         
         try:
-            if not cls.ping(d.ips["TDA_ip"]) and not cls.borda_ping:
-                cls.borda_ping = True
+            if cls.ping(d.ips["TDA_ip"]) and not d.glb["TDA_Offline"]:
                 d.glb["TDA_Offline"] = True
                 logger.warning("[CLI] CLP TDA não respondeu a tentativa de comunicação!")
 
-            elif cls.ping(d.ips["TDA_ip"]) and cls.borda_ping:
+            elif not cls.ping(d.ips["TDA_ip"]) and d.glb["TDA_Offline"]:
                 logger.info("[CLI] Comunicação com o CLP TDA reestabelecida.")
-                cls.borda_ping = False
                 d.glb["TDA_Offline"] = False
 
             if not cls.ping(d.ips["SA_ip"]):
@@ -156,3 +154,8 @@ class Servidores:
         except Exception:
             logger.error(f"[CLI] Houve um erro ao executar a verificação de Ping dos equipamentos da Usina.")
             logger.debug(traceback.format_exc())
+
+    
+
+if Servidores.ping(d.ips["TDA_ip"]):
+    print("Erro")

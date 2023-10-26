@@ -430,6 +430,5 @@ class ControleTDAOffline(State):
             else:
                 for ug in self.usn.ugs:
                     ug.controle_cx_espiral()
-                    ug.step()
 
                 return ControleDados(self.usn)

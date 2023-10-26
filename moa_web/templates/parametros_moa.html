@@ -146,14 +146,36 @@
                 <input style="padding-top: 2px; padding-bottom: 2px;" id="submit" type="submit" name="bnv_alvo" value="Salvar"/>
             </div>
             <div style="margin-bottom: 30px;">
-                <label style="font-size: 18px; margin-left: 3px;"><b>Pressão Caixa Espiral Alvo: </b></label>
-                <input style="margin-left: 3px;" id="alvo_txt" name="press_cx_alvo" size=4 value="{{usina.press_cx_alvo}}"/></td>
+                <label style="font-size: 18px; margin-left: 3px;"><b>UG1 - Pressão Caixa Espiral Alvo: </b></label>
+                <input style="margin-left: 3px;" id="alvo_txt" name="press_cx_alvo" size=4 value="{{ usina.press_cx_alvo }}"/></td>
                 <input style="padding-top: 2px; padding-bottom: 2px; margin-right: 3px;" id="submit" type="submit" name="bcx_alvo" value="Salvar"/>
-                {% if usina.tda_offline == 0 %}
+                <!-- {% if usina.tda_offline == 0 %}
                     <label>(TDA: <a style="color: green;">On-line</a>)</label>
                 {% else %}
                     <label>(TDA: <a style="color: red;">Off-line</a>)</label>
-                {% endif %}
+                {% endif %} -->
+                <br>
+            </div>
+            <div style="margin-bottom: 30px;">
+                <label style="font-size: 18px; margin-left: 3px;"><b>UG2 - Pressão CX Espiral Alvo: </b></label>
+                <input style="margin-left: 3px;" id="alvo_txt" name="press_cx_alvo" size=4 value="{{ usina.press_cx_alvo }}"/></td>
+                <input style="padding-top: 2px; padding-bottom: 2px; margin-right: 3px;" id="submit" type="submit" name="bcx_alvo" value="Salvar"/>
+                <!-- {% if usina.tda_offline == 0 %}
+                    <label>(TDA: <a style="color: green;">On-line</a>)</label>
+                {% else %}
+                    <label>(TDA: <a style="color: red;">Off-line</a>)</label>
+                {% endif %} -->
+                <br>
+            </div>
+            <div style="margin-bottom: 30px;">
+                <label style="font-size: 18px; margin-left: 3px;"><b>UG3 - Pressão CX Espiral Alvo: </b></label>
+                <input style="margin-left: 3px;" id="alvo_txt" name="press_cx_alvo" size=4 value="{{ usina.press_cx_alvo }}"/></td>
+                <input style="padding-top: 2px; padding-bottom: 2px; margin-right: 3px;" id="submit" type="submit" name="bcx_alvo" value="Salvar"/>
+                <!-- {% if usina.tda_offline == 0 %}
+                    <label>(TDA: <a style="color: green;">On-line</a>)</label>
+                {% else %}
+                    <label>(TDA: <a style="color: red;">Off-line</a>)</label>
+                {% endif %} -->
                 <br>
             </div>
         </form>

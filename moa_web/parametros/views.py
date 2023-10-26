@@ -9,7 +9,7 @@ from parametros.models import ParametrosUsina
 def parametros_moa_view(request, *args, **kwargs):
 
     usina = ParametrosUsina.objects.get(id=1)
-    
+
     if request.method == "POST":
         if request.POST.get("ativar_ma"):
             usina.modo_autonomo = 1
@@ -51,11 +51,21 @@ def parametros_moa_view(request, *args, **kwargs):
             usina.nv_alvo = nv_alvo if isinstance(nv_alvo, float) else usina.nv_alvo
             usina.save()
 
-        if request.POST.get("bcx_alvo"):
+        if request.POST.get("ug1_pressao_alvo"):
             press_cx_alvo = float(request.POST.get("press_cx_alvo").replace(",", "."))
             usina.press_cx_alvo = press_cx_alvo if isinstance(press_cx_alvo, float) else usina.press_cx_alvo
             usina.save()
-        
+
+        if request.POST.get("ug2_pressao_alvo"):
+            press_cx_alvo = float(request.POST.get("press_cx_alvo").replace(",", "."))
+            usina.press_cx_alvo = press_cx_alvo if isinstance(press_cx_alvo, float) else usina.press_cx_alvo
+            usina.save()
+
+        if request.POST.get("ug3_pressao_alvo"):
+            press_cx_alvo = float(request.POST.get("press_cx_alvo").replace(",", "."))
+            usina.press_cx_alvo = press_cx_alvo if isinstance(press_cx_alvo, float) else usina.press_cx_alvo
+            usina.save()
+
         if request.POST.get("salvar_params"):
 
             aux = request.POST.get("alerta_temperatura_fase_r_ug1")
@@ -296,25 +306,19 @@ def parametros_moa_view(request, *args, **kwargs):
             usina.save()
 
     escolha_ugs = 0
-    if (
-        (usina.modo_de_escolha_das_ugs == 2)
+    if ((usina.modo_de_escolha_das_ugs == 2)
         and (usina.ug1_prioridade > usina.ug2_prioridade)
-        and (usina.ug1_prioridade > usina.ug3_prioridade)
-    ):
+        and (usina.ug1_prioridade > usina.ug3_prioridade)):
         escolha_ugs = 1
 
-    if (
-        (usina.modo_de_escolha_das_ugs == 2)
+    if ((usina.modo_de_escolha_das_ugs == 2)
         and (usina.ug2_prioridade > usina.ug1_prioridade)
-        and (usina.ug2_prioridade > usina.ug3_prioridade)
-    ):
+        and (usina.ug2_prioridade > usina.ug3_prioridade)):
         escolha_ugs = 2
 
-    if (
-        (usina.modo_de_escolha_das_ugs == 2)
+    if ((usina.modo_de_escolha_das_ugs == 2)
         and (usina.ug3_prioridade > usina.ug2_prioridade)
-        and (usina.ug3_prioridade > usina.ug1_prioridade)
-    ):
+        and (usina.ug3_prioridade > usina.ug1_prioridade)):
         escolha_ugs = 3
 
     context = {"escolha_ugs": escolha_ugs, "usina": usina}
