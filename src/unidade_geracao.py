@@ -942,7 +942,7 @@ class UnidadeGeracao:
                 pot_alvo = self.pot_alvo_anterior * (1 - 0.5 * ((pot_medidor - self.cfg["pot_maxima_alvo"]) / self.cfg["pot_maxima_alvo"]))
 
             self.pot_alvo_anterior = pot_alvo
-            
+
             if self.etapa_atual == UG_PARADA and pot_alvo >= 1360:
                 self.partir()
                 self.enviar_setpoint(pot_alvo)

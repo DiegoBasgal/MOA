@@ -141,42 +141,29 @@
         <form method='post' action='/parametros_moa/'>
             {% csrf_token %}
             <div style="margin-bottom: 20px;">
-                <label style="font-size: 18px; margin-left: 3px;"><b>Nível alvo: </b></label>
-                <input style="margin-left: 3px;" id="alvo_txt" name="nv_alvo" size=4 value="{{usina.nv_alvo}}"/>
+                <label style="font-size: 18px; margin-left: 3px;"><b>Nível Alvo: </b></label>
+                <input style="margin-left: 3px;" id="alvo_txt" name="nv_alvo" size=4 value="{{ usina.nv_alvo }}"/>
                 <input style="padding-top: 2px; padding-bottom: 2px;" id="submit" type="submit" name="bnv_alvo" value="Salvar"/>
             </div>
+            <br>
+            <br>
+            <label style="font-size: 22px; margin-left: 3px;"><b>Pressão Caixa Espiral: </b></label>
+            <br>
+            <br>
             <div style="margin-bottom: 30px;">
-                <label style="font-size: 18px; margin-left: 3px;"><b>UG1 - Pressão Caixa Espiral Alvo: </b></label>
-                <input style="margin-left: 3px;" id="alvo_txt" name="press_cx_alvo" size=4 value="{{ usina.press_cx_alvo }}"/></td>
-                <input style="padding-top: 2px; padding-bottom: 2px; margin-right: 3px;" id="submit" type="submit" name="bcx_alvo" value="Salvar"/>
-                <!-- {% if usina.tda_offline == 0 %}
-                    <label>(TDA: <a style="color: green;">On-line</a>)</label>
-                {% else %}
-                    <label>(TDA: <a style="color: red;">Off-line</a>)</label>
-                {% endif %} -->
-                <br>
+                <label style="font-size: 18px; margin-left: 3px;"><b>UG1 Pressão Alvo: </b></label>
+                <input style="margin-left: 3px;" id="alvo_txt" name="ug1_press_cx_alvo" size=4 value="{{ usina.ug1_press_cx_alvo }}"/></td>
+                <input style="padding-top: 2px; padding-bottom: 2px; margin-right: 3px;" id="submit" type="submit" name="ug1_cx_alvo" value="Salvar"/>
             </div>
             <div style="margin-bottom: 30px;">
-                <label style="font-size: 18px; margin-left: 3px;"><b>UG2 - Pressão CX Espiral Alvo: </b></label>
-                <input style="margin-left: 3px;" id="alvo_txt" name="press_cx_alvo" size=4 value="{{ usina.press_cx_alvo }}"/></td>
-                <input style="padding-top: 2px; padding-bottom: 2px; margin-right: 3px;" id="submit" type="submit" name="bcx_alvo" value="Salvar"/>
-                <!-- {% if usina.tda_offline == 0 %}
-                    <label>(TDA: <a style="color: green;">On-line</a>)</label>
-                {% else %}
-                    <label>(TDA: <a style="color: red;">Off-line</a>)</label>
-                {% endif %} -->
-                <br>
+                <label style="font-size: 18px; margin-left: 3px;"><b>UG2 Pressão Alvo: </b></label>
+                <input style="margin-left: 3px;" id="alvo_txt" name="ug2_press_cx_alvo" size=4 value="{{ usina.ug2_press_cx_alvo }}"/></td>
+                <input style="padding-top: 2px; padding-bottom: 2px; margin-right: 3px;" id="submit" type="submit" name="ug2_cx_alvo" value="Salvar"/>
             </div>
             <div style="margin-bottom: 30px;">
-                <label style="font-size: 18px; margin-left: 3px;"><b>UG3 - Pressão CX Espiral Alvo: </b></label>
-                <input style="margin-left: 3px;" id="alvo_txt" name="press_cx_alvo" size=4 value="{{ usina.press_cx_alvo }}"/></td>
-                <input style="padding-top: 2px; padding-bottom: 2px; margin-right: 3px;" id="submit" type="submit" name="bcx_alvo" value="Salvar"/>
-                <!-- {% if usina.tda_offline == 0 %}
-                    <label>(TDA: <a style="color: green;">On-line</a>)</label>
-                {% else %}
-                    <label>(TDA: <a style="color: red;">Off-line</a>)</label>
-                {% endif %} -->
-                <br>
+                <label style="font-size: 18px; margin-left: 3px;"><b>UG3 Pressão Alvo: </b></label>
+                <input style="margin-left: 3px;" id="alvo_txt" name="ug3_press_cx_alvo" size=4 value="{{ usina.ug3_press_cx_alvo }}"/></td>
+                <input style="padding-top: 2px; padding-bottom: 2px; margin-right: 3px;" id="submit" type="submit" name="ug3_cx_alvo" value="Salvar"/>
             </div>
         </form>
         <form method='post' action='/parametros_moa/'>
@@ -194,7 +181,6 @@
                         <th>UG3 alerta</th>
                         <th>UG3 limite</th>
                     </tr>
-                    
                     <tr>
                         <td>Fase R</td>
                         <td><input id="alerta_temperatura_fase_r_ug1" name="alerta_temperatura_fase_r_ug1" size=10 value="{{usina.alerta_temperatura_fase_r_ug1}}"/></td>

@@ -52,22 +52,22 @@ def parametros_moa_view(request, *args, **kwargs):
             usina.save()
 
         if request.POST.get("ug1_pressao_alvo"):
-            press_cx_alvo = float(request.POST.get("press_cx_alvo").replace(",", "."))
-            usina.press_cx_alvo = press_cx_alvo if isinstance(press_cx_alvo, float) else usina.press_cx_alvo
+            ug1_press_cx_alvo = float(request.POST.get("ug1_cx_alvo").replace(",", "."))
+            usina.ug1_press_cx_alvo = ug1_press_cx_alvo if isinstance(ug1_press_cx_alvo, float) else usina.ug1_press_cx_alvo
             usina.save()
 
         if request.POST.get("ug2_pressao_alvo"):
-            press_cx_alvo = float(request.POST.get("press_cx_alvo").replace(",", "."))
-            usina.press_cx_alvo = press_cx_alvo if isinstance(press_cx_alvo, float) else usina.press_cx_alvo
+            ug2_press_cx_alvo = float(request.POST.get("ug2_cx_alvo").replace(",", "."))
+            usina.ug2_press_cx_alvo = ug2_press_cx_alvo if isinstance(ug2_press_cx_alvo, float) else usina.ug2_press_cx_alvo
             usina.save()
 
         if request.POST.get("ug3_pressao_alvo"):
-            press_cx_alvo = float(request.POST.get("press_cx_alvo").replace(",", "."))
-            usina.press_cx_alvo = press_cx_alvo if isinstance(press_cx_alvo, float) else usina.press_cx_alvo
+            ug3_press_cx_alvo = float(request.POST.get("ug3_cx_alvo").replace(",", "."))
+            usina.ug3_press_cx_alvo = ug3_press_cx_alvo if isinstance(ug3_press_cx_alvo, float) else usina.ug3_press_cx_alvo
             usina.save()
 
-        if request.POST.get("salvar_params"):
 
+        if request.POST.get("salvar_params"):
             aux = request.POST.get("alerta_temperatura_fase_r_ug1")
             usina.alerta_temperatura_fase_r_ug1 = (float(aux.replace(",", ".")) if aux is not None and float(aux.replace(",", ".")) > 0 else usina.alerta_temperatura_fase_r_ug1)
 
