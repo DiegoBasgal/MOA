@@ -240,7 +240,7 @@ class ControleAgendamentos(State):
         os agendamentos sejam executados, passa para o estado de Controle de Dados.
         """
 
-        logger.info("Tratando agendamentos...")
+        logger.debug("Tratando agendamentos...")
         self.usn.agn.verificar_agendamentos()
 
         if len(self.usn.agn.verificar_agendamentos_pendentes()) > 0:

@@ -16,7 +16,7 @@ from src.dicionarios.const import *
 from src.conectores.banco_dados import BancoDados
 
 
-logger = logging.getLogger("__main__")
+logger = logging.getLogger("logger")
 
 class Agendamentos:
     def __init__(self, cfg: "dict"=None, db: "BancoDados"=None, usina=None) -> "None":
@@ -96,16 +96,16 @@ class Agendamentos:
                 self.segundos_passados = 0
 
             logger.debug("")
-            logger.debug(f"[AGN] Executar em:                        {agendamento[1].strftime('%H:%M:%S %d-%m-%Y')}")
-            logger.debug(f"      Criado por:                         \"{agendamento[6]}\"")
+            logger.debug(f"[AGN] Criado por:                         \"{agendamento[6]}\"")
             logger.debug(f"      Comando:                            \"{AGN_STR_DICT[agendamento[3]] if agendamento[3] in AGN_STR_DICT else 'Inexistente'}\"")
+            logger.debug(f"      Executar em:                        {agendamento[1].strftime('%H:%M:%S %d-%m-%Y')}")
             logger.debug("")
 
             self.verificar_agendamentos_atrasados(agendamento)
 
             if self.segundos_adiantados <= 60 and not bool(agendamento[4]):
-                logger.info(f"[AGN] Executando agendamento:             {agendamento[0]}")
-                logger.info(f"      Comando:                            \"{AGN_STR_DICT[agendamento[3]]}\"")
+                logger.info(f"[AGN] Executando agendamento:             \"{AGN_STR_DICT[agendamento[3]]}\"")
+                logger.info(f"      Criado por:                         \"{agendamento[6]}\"")
                 logger.info(f"      Criado em:                          {agendamento[9].strftime('%H:%M:%S %d-%m-%Y')}")
                 logger.debug("")
 

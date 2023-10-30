@@ -15,7 +15,9 @@ from src.funcoes.condicionadores import *
 from src.conectores.servidores import Servidores
 from src.funcoes.escrita import EscritaModBusBit as EMB
 
+
 logger = logging.getLogger("logger")
+
 
 class ServicoAuxiliar:
     def __init__(self, serv: "Servidores"=None) -> None:
@@ -26,6 +28,7 @@ class ServicoAuxiliar:
 
         self.condicionadores: "list[CondicionadorBase]" = []
         self.condicionadores_essenciais: "list[CondicionadorBase]" = []
+        self.condicionadores_ativos: "list[CondicionadorBase]" = []
 
 
     def resetar_emergencia(self) -> "bool":
@@ -180,11 +183,11 @@ class ServicoAuxiliar:
         elif not self.l_alarme_sis_seguranca_atuado.valor and dct.voip["SISTEMA_SEGURANCA_ALARME_ATUADO"][0]:
             dct.voip["SISTEMA_SEGURANCA_ALARME_ATUADO"][0] = False
 
-        # if self.l_falha_tubo_succao_bomba_recalque.valor and not dct.voip["BOMBA_RECALQUE_TUBO_SUCCAO_FALHA"][0]:
-        #     logger.warning("[SA]  Houve uma falha na sucção da bomba de recalque. Favor verificar.")
-        #     dct.voip["BOMBA_RECALQUE_TUBO_SUCCAO_FALHA"][0] = True
-        # elif not self.l_falha_tubo_succao_bomba_recalque.valor and dct.voip["BOMBA_RECALQUE_TUBO_SUCCAO_FALHA"][0]:
-        #     dct.voip["BOMBA_RECALQUE_TUBO_SUCCAO_FALHA"][0] = False
+        if self.l_falha_tubo_succao_bomba_recalque.valor and not dct.voip["BOMBA_RECALQUE_TUBO_SUCCAO_FALHA"][0]:
+            logger.warning("[SA]  Houve uma falha na sucção da bomba de recalque. Favor verificar.")
+            dct.voip["BOMBA_RECALQUE_TUBO_SUCCAO_FALHA"][0] = True
+        elif not self.l_falha_tubo_succao_bomba_recalque.valor and dct.voip["BOMBA_RECALQUE_TUBO_SUCCAO_FALHA"][0]:
+            dct.voip["BOMBA_RECALQUE_TUBO_SUCCAO_FALHA"][0] = False
 
 
     def carregar_leituras(self) -> "None":
@@ -192,16 +195,12 @@ class ServicoAuxiliar:
         Função para carregamento de leituras necessárias para a operação.
         """
 
-        ### CONDICIONADORES ESSENCIAIS
-        # ## NORMALIZAR
-        # self.l_emergencia = LeituraModbusBit(self.clp["SA"], REG_CLP["SA"]["SEM_EMERGENCIA"], invertido=True, descricao="[SA]  Emergência")
+        # CONDICIONADORES ESSENCIAIS
+        # self.l_emergencia = LeituraModbusBit(self.clp["SA"], REG_CLP["SA"]["SEM_EMERGENCIA"], descricao="[SA]  Emergência")
         # self.condicionadores_essenciais.append(CondicionadorBase(self.l_emergencia, CONDIC_NORMALIZAR))
 
 
-        ### CONDICIONADORES
-        ## NORMALIZAR
-        
-        # Retificador
+        # CONDICIONADORES
         self.l_reti_subtensao = LeituraModbusBit(self.clp["SA"], REG_CLP["SA"]["RETI_SUBTEN"], descricao="[SA]  Retificador Subtensão")
         self.condicionadores.append(CondicionadorBase(self.l_reti_subtensao, CONDIC_NORMALIZAR))
 
@@ -214,7 +213,6 @@ class ServicoAuxiliar:
         self.l__reti_sobrecorrente_baterias = LeituraModbusBit(self.clp["SA"], REG_CLP["SA"]["RETI_SOBRECO_BATERIAS"], descricao="[SA]  Retificador Sobrecorrente Baterias")
         self.condicionadores.append(CondicionadorBase(self.l__reti_sobrecorrente_baterias, CONDIC_NORMALIZAR))
 
-        # Sistema de Água
         self.l_sis_agua_falha_pressurizar_filtroA = LeituraModbusBit(self.clp["SA"], REG_CLP["SA"]["SIS_AGUA_FLH_PRESSURIZAR_FILTRO_A"], descricao="[SA]  Sistema Água Falha Pressurizar Filtro A")
         self.condicionadores.append(CondicionadorBase(self.l_sis_agua_falha_pressurizar_filtroA, CONDIC_NORMALIZAR))
 
@@ -227,28 +225,25 @@ class ServicoAuxiliar:
         self.l_sis_agua_falha_pressostato_filtroB = LeituraModbusBit(self.clp["SA"], REG_CLP["SA"]["SIS_AGUA_FLH_PRESSOSTATO_FILTRO_B"], descricao="[SA]  Sistema Água Falha Pressostato Filtro B")
         self.condicionadores.append(CondicionadorBase(self.l_sis_agua_falha_pressostato_filtroB, CONDIC_NORMALIZAR))
 
-        ## INDISPONIBILIZAR
-
-        # Disjuntores
-        self.l_falha_52SA1 = LeituraModbusBit(self.clp["SA"], REG_CLP["SA"]["DJ52SA1_SEM_FLH"], invertido=True, descricao="[SA]  Disjuntor 52SA1 Sem Falha")
+        self.l_falha_52SA1 = LeituraModbusBit(self.clp["SA"], REG_CLP["SA"]["DJ52SA1_SEM_FLH"], descricao="[SA]  Disjuntor 52SA1 Falha")
         self.condicionadores.append(CondicionadorBase(self.l_falha_52SA1, CONDIC_INDISPONIBILIZAR))
 
-        self.l_72SA1_fechado = LeituraModbusBit(self.clp["SA"], REG_CLP["SA"]["DJ72SA1_FECHADO"], invertido=True, descricao="[SA]  Disjuntor 72SA1 Fechado")
+        self.l_72SA1_fechado = LeituraModbusBit(self.clp["SA"], REG_CLP["SA"]["DJ72SA1_FECHADO"], invertido=True, descricao="[SA]  Disjuntor 72SA1 Aberto")
         self.condicionadores.append(CondicionadorBase(self.l_72SA1_fechado, CONDIC_INDISPONIBILIZAR))
 
-        self.l_djs24VCC_fechados = LeituraModbusBit(self.clp["SA"], REG_CLP["SA"]["DJS_24VCC_FECHADOS"], invertido=True, descricao="[SA]  Disjuntores 24Vcc Fechados")
+        self.l_djs24VCC_fechados = LeituraModbusBit(self.clp["SA"], REG_CLP["SA"]["DJS_24VCC_FECHADOS"], descricao="[SA]  Disjuntores 24Vcc Abertos")
         self.condicionadores.append(CondicionadorBase(self.l_djs24VCC_fechados, CONDIC_INDISPONIBILIZAR))
 
-        self.l_djs125VCC_fechados = LeituraModbusBit(self.clp["SA"], REG_CLP["SA"]["DJS_125VCC_FECHADOS"], invertido=True, descricao="[SA]  Disjuntores 125Vcc Fechados")
+        self.l_djs125VCC_fechados = LeituraModbusBit(self.clp["SA"], REG_CLP["SA"]["DJS_125VCC_FECHADOS"], descricao="[SA]  Disjuntores 125Vcc Abertos")
         self.condicionadores.append(CondicionadorBase(self.l_djs125VCC_fechados, CONDIC_INDISPONIBILIZAR))
 
-        self.l_cmd_24VCC_tensao = LeituraModbusBit(self.clp["SA"], REG_CLP["SA"]["CMD_24VCC_COM_TENSAO"], invertido=True, descricao="[SA]  Comando 24Vcc Com Tensão")
+        self.l_cmd_24VCC_tensao = LeituraModbusBit(self.clp["SA"], REG_CLP["SA"]["CMD_24VCC_COM_TENSAO"], descricao="[SA]  Comando 24Vcc Sem Tensão")
         self.condicionadores.append(CondicionadorBase(self.l_cmd_24VCC_tensao, CONDIC_INDISPONIBILIZAR))
 
-        self.l_cmd_125VCC_tensao = LeituraModbusBit(self.clp["SA"], REG_CLP["SA"]["CMD_125VCC_COM_TENSAO"], invertido=True, descricao="[SA]  Comando 125Vcc Com Tensão")
+        self.l_cmd_125VCC_tensao = LeituraModbusBit(self.clp["SA"], REG_CLP["SA"]["CMD_125VCC_COM_TENSAO"], descricao="[SA]  Comando 125Vcc Sem Tensão")
         self.condicionadores.append(CondicionadorBase(self.l_cmd_125VCC_tensao, CONDIC_INDISPONIBILIZAR))
 
-        self.l_alimentacao_125VCC_tensao = LeituraModbusBit(self.clp["SA"], REG_CLP["SA"]["ALIM_125VCC_COM_TENSAO"], invertido=True, descricao="[SA]  Alimentação 125Vcc Com Tensão")
+        self.l_alimentacao_125VCC_tensao = LeituraModbusBit(self.clp["SA"], REG_CLP["SA"]["ALIM_125VCC_COM_TENSAO"], descricao="[SA]  Alimentação 125Vcc Sem Tensão")
         self.condicionadores.append(CondicionadorBase(self.l_alimentacao_125VCC_tensao, CONDIC_INDISPONIBILIZAR))
 
         self.l_falha_abertura_52SA1 = LeituraModbusBit(self.clp["SA"], REG_CLP["SA"]["DJ52SA1_FLH_ABRIR"], descricao="[SA]  Disjuntor 52SA1 Falha Abertura")
@@ -269,7 +264,6 @@ class ServicoAuxiliar:
         self.l_falha_fechamento_52SA3 = LeituraModbusBit(self.clp["SA"], REG_CLP["SA"]["DJ52SA3_FLH_FECHAR"], descricao="[SA]  Disjuntor 52SA3 Falha Fechamento")
         self.condicionadores.append(CondicionadorBase(self.l_falha_fechamento_52SA3, CONDIC_INDISPONIBILIZAR))
 
-        # Retificador
         self.l_reti_fusivel_queimado = LeituraModbusBit(self.clp["SA"], REG_CLP["SA"]["RETI_FUSIVEL_QUEIMADO"], descricao="[SA]  Retificador Fusível Queimado")
         self.condicionadores.append(CondicionadorBase(self.l_reti_fusivel_queimado, CONDIC_INDISPONIBILIZAR))
 
@@ -279,7 +273,8 @@ class ServicoAuxiliar:
         self.l_reti_fuga_terra_neg = LeituraModbusBit(self.clp["SA"], REG_CLP["SA"]["RETI_FUGA_TERRA_NEGATIVO"], descricao="[SA]  Retificador Fuga Terra Negativo")
         self.condicionadores.append(CondicionadorBase(self.l_reti_fuga_terra_neg, CONDIC_INDISPONIBILIZAR))
 
-        # LEITURA PERIODICA
+
+        # LEITURA PERIÓDICA
         self.l_sis_agua_bomba_disp = LeituraModbusBit(self.clp["SA"], REG_CLP["SA"]["SIS_AGUA_BOMBA_DISPONIVEL"], invertido=True, descricao="[SA]  Sistem Água Bomba Disponível")
 
         self.l_falha_bomba_dren_1 = LeituraModbusBit(self.clp["SA"], REG_CLP["SA"]["BOMBA_DREN_1_FLH"], descricao="[SA]  Bomba Drenagem 1 Falha")
@@ -302,4 +297,4 @@ class ServicoAuxiliar:
         self.l_alarme_sis_incendio_atuado = LeituraModbusBit(self.clp["SA"], REG_CLP["SA"]["SIS_INCENDIO_ALM_ATUADO"], descricao="[SA]  Sistem Incêndio Alarme Atuado")
         self.l_alarme_sis_seguranca_atuado = LeituraModbusBit(self.clp["SA"], REG_CLP["SA"]["SIS_SEGURANCA_ALM_ATUADO"], descricao="[SA]  Sistema Segurança Alarme Atuado")
         self.l_nivel_muito_alto_poco_dren = LeituraModbusBit(self.clp["SA"], REG_CLP["SA"]["POCO_DREN_NV_MUITO_ALTO"], descricao="[SA]  Poço Drenagem Nível Muito Alto")
-        # self.l_falha_tubo_succao_bomba_recalque = LeituraModbusBit(self.clp["SA"], REG_CLP["SA"]["BOMBA_RECALQUE_TUBO_SUCCAO_FALHA"], descricao="[SA]  Bomba Recalque Falha Tubo Sucção")
+        self.l_falha_tubo_succao_bomba_recalque = LeituraModbusBit(self.clp["SA"], REG_CLP["SA"]["BOMBA_RECALQUE_TUBO_SUCCAO_FALHA"], descricao="[SA]  Bomba Recalque Falha Tubo Sucção")

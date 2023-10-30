@@ -218,7 +218,7 @@ class Usina:
             self.bay.fechar_dj_linha()
             sleep(1)
             self.se.fechar_dj_linha()
-            # self.bd.update_remove_emergencia()
+            self.bd.update_remove_emergencia()
             return True
 
         else:
@@ -661,9 +661,11 @@ class Usina:
                 self.ug1.leitura_potencia,
                 self.ug1.setpoint,
                 self.ug1.codigo_state,
+                self.tda.cp["CP1"].etapa,
                 self.ug2.leitura_potencia,
                 self.ug2.setpoint,
-                self.ug2.codigo_state
+                self.ug2.codigo_state,
+                self.tda.cp["CP2"].etapa
             ])
 
         except Exception:

@@ -16,7 +16,9 @@ from src.dicionarios.const import *
 from src.conectores.servidores import Servidores
 from src.funcoes.escrita import EscritaModBusBit as EMB
 
+
 logger = logging.getLogger("logger")
+
 
 class Subestacao:
     def __init__(self, serv: "Servidores"=None) -> "None":
@@ -76,7 +78,6 @@ class Subestacao:
             res = EMB.escrever_bit(self.clp["SA"], REG_CLP["SE"]["86T_CMD_REARME"], valor=1)
             res = EMB.escrever_bit(self.clp["SA"], REG_CLP["SE"]["86BF_CMD_REARME"], valor=1)
             res = EMB.escrever_bit(self.clp["SA"], REG_CLP["SE"]["REGISTROS_CMD_RST"], valor=1)
-            # res = EMB.escrever_bit(self.rele["SE"], REG_CLP["SE"]["RELE_LINHA_ATUADO"], valor=0) # SIMULADOR
             return res
 
         except Exception:
@@ -153,9 +154,9 @@ class Subestacao:
                 self.dj_bay_aberto = True
                 flags += 1
 
-            # if self.l_barra_viva.valor:
-            #     logger.warning("[SE]  Foi identificada leitura de Tensão na barra do Bay!")
-            #     flags += 1 VERIFICAR
+            if self.l_barra_viva.valor:
+                logger.warning("[SE]  Foi identificada leitura de Tensão na barra do Bay!")
+                flags += 1
 
             if self.l_trip_rele_te.valor:
                 logger.warning("[SE]  O sinal de trip do relé do transformador elevador está ativado!")
@@ -242,7 +243,6 @@ class Subestacao:
         em períodos separados por um tempo pré-definido.
         """
 
-        return
         if not self.l_seletora_52L_remoto.valor:
             logger.warning("[SE]  O Disjuntor 52L saiu do modo remoto. Favor verificar.")
 
@@ -258,12 +258,6 @@ class Subestacao:
         elif not self.l_alarme_temp_oleo_te.valor and dct.voip["TE_ALM_TEMPERATURA_OLEO"][0]:
             dct.voip["TE_ALM_TEMPERATURA_OLEO"][0] = False
 
-        if self.l_nv_muito_alto_oleo_te.valor and not dct.voip["TE_NIVEL_OLEO_MUITO_ALTO"][0]:
-            logger.warning("[SE]  O nível do óleo do transformador elevador está muito alto. Favor verificar.")
-            dct.voip["TE_NIVEL_OLEO_MUITO_ALTO"][0] = True
-        elif not self.l_nv_muito_alto_oleo_te.valor and dct.voip["TE_NIVEL_OLEO_MUITO_ALTO"][0]:
-            dct.voip["TE_NIVEL_OLEO_MUITO_ALTO"][0] = False
-
         if self.l_nv_muito_baixo_oleo_te.valor and not dct.voip["TE_NIVEL_OLEO_MUITO_BAIXO"][0]:
             logger.warning("[SE]  O nível de óleo do tranformador elevador está muito baixo. Favor verificar.")
             dct.voip["TE_NIVEL_OLEO_MUITO_BAIXO"][0] = True
@@ -276,16 +270,10 @@ class Subestacao:
         elif not self.l_alarme_temp_oleo_te.valor and dct.voip["TE_ALARME_TEMPERATURA_OLEO"][0]:
             dct.voip["TE_ALARME_TEMPERATURA_OLEO"][0] = False
 
-        if self.l_alarme_temp_enrola_te.valor and not dct.voip["TE_ALM_TEMPERATURA_ENROLAMENTO"][0]:
-            logger.warning("[SE]  A temperatura do enrolamento do transformador elevador está alta. Favor verificar.")
-            dct.voip["TE_ALM_TEMPERATURA_ENROLAMENTO"][0] = True
-        elif not self.l_alarme_temp_enrola_te.valor and dct.voip["TE_ALM_TEMPERATURA_ENROLAMENTO"][0]:
-            dct.voip["TE_ALM_TEMPERATURA_ENROLAMENTO"][0] = False
-
-        if self.leitura_alarme_temp_enrolamento_te.valor and not dct.voip["TE_ALARME_TEMPERATURA_ENROLAMENTO"][0]:
+        if self.l_alarme_temp_enrola_te.valor and not dct.voip["TE_ALARME_TEMPERATURA_ENROLAMENTO"][0]:
             logger.warning("[SE]  A temperatura do enrolamento do transformador elevador está alta. Favor verificar.")
             dct.voip["TE_ALARME_TEMPERATURA_ENROLAMENTO"][0] = True
-        elif not self.leitura_alarme_temp_enrolamento_te.valor and dct.voip["TE_ALARME_TEMPERATURA_ENROLAMENTO"][0]:
+        elif not self.l_alarme_temp_enrola_te.valor and dct.voip["TE_ALARME_TEMPERATURA_ENROLAMENTO"][0]:
             dct.voip["TE_ALARME_TEMPERATURA_ENROLAMENTO"][0] = False
 
 
@@ -294,28 +282,27 @@ class Subestacao:
         Função para carregamento de leituras necessárias para a operação.
         """
 
-        # Pré-condições de fechamento do Dj52L
+        # CONDIÇÕES DE FECHAMENTO Dj52L
         self.secc_fechada = LeituraModbusBit(self.rele["SE"], REG_RELE["SE"]["SECC_FECHADA"], invertido=True, descricao="[SE][RELE] Seccionadora Fechada")
         self.l_trip_rele_te = LeituraModbusBit(self.rele["TE"], REG_RELE["TE"]["RELE_ESTADO_TRP"], descricao="[TE][RELE] Transformador Elevador Trip")
-
         self.l_barra_viva = LeituraModbusBit(self.rele["SE"], REG_RELE["SE"]["ID_BARRA_VIVA"], descricao="[SE]  Identificação de Barra Viva")
         self.l_mola_carregada = LeituraModbusBit(self.rele["SE"], REG_RELE["SE"]["DJL_MOLA_CARREGADA"], descricao="[SE]  Disjuntor Linha Mola Carregada")
         self.l_djL_remoto = LeituraModbusBit(self.clp["SA"], REG_CLP["SE"]["DJL_SELETORA_REMOTO"], descricao="[SE]  Disjuntor Linha Seletora Modo Remoto")
         self.l_alarme_gas_te = LeituraModbusBit(self.rele["SE"], REG_CLP["SE"]["TE_RELE_BUCHHOLZ_ALM"], descricao="[SE]  Transformador Elevador Alarme Relé Buchholz")
         self.condicionadores.append(c.CondicionadorBase(self.l_alarme_gas_te, CONDIC_INDISPONIBILIZAR))
 
-        ### CONDICIONADORES ESSENCIAIS
-        # ## NORMALIZAR
-        # self.l_rele_linha_atuado = LeituraModbusBit(self.rele["SE"], REG_CLP["SE"]["RELE_LINHA_ATUADO"], invertido=True, descricao="[SE]  Relé Linha Atuado")
-        # self.condicionadores_essenciais.append(c.CondicionadorBase(self.l_rele_linha_atuado, gravidade=CONDIC_NORMALIZAR))
-        
-        ### CONDICIONADORES
-        ## INDISPONIBILIZAR
+
+        # CONDICIONADORES ESSENCIAIS
+        self.l_rele_linha_atuado = LeituraModbusBit(self.rele["SE"], REG_CLP["SE"]["RELE_LINHA_ATUADO"], descricao="[SE]  Relé Linha Atuado")
+        self.condicionadores_essenciais.append(c.CondicionadorBase(self.l_rele_linha_atuado, gravidade=CONDIC_NORMALIZAR))
+
+
+        # CONDICIONADORES
         self.l_89L_fechada = LeituraModbusBit(self.clp["SA"], REG_CLP["SE"]["89L_FECHADA"], invertido=True, descricao="[SE]  89L Fechada")
         self.condicionadores.append(c.CondicionadorBase(self.l_89L_fechada, CONDIC_INDISPONIBILIZAR))
 
-        # self.l_86T_atuado = LeituraModbusBit(self.clp["SA"], REG_CLP["SE"]["86T_ATUADO"], descricao="[SE]  86T Atuado")
-        # self.condicionadores.append(c.CondicionadorBase(self.l_86T_atuado, CONDIC_INDISPONIBILIZAR))
+        self.l_86T_atuado = LeituraModbusBit(self.clp["SA"], REG_CLP["SE"]["86T_ATUADO"], invertido=True, descricao="[SE]  86T Atuado")
+        self.condicionadores.append(c.CondicionadorBase(self.l_86T_atuado, CONDIC_INDISPONIBILIZAR))
 
         self.l_86BF_atuado = LeituraModbusBit(self.clp["SA"], REG_CLP["SE"]["86BF_ATUADO"], descricao="[SE]  86BF Atuado")
         self.condicionadores.append(c.CondicionadorBase(self.l_86BF_atuado, CONDIC_INDISPONIBILIZAR))
@@ -335,24 +322,14 @@ class Subestacao:
         self.l_trip_temp_enrola_te = LeituraModbusBit(self.clp["SA"], REG_CLP["SE"]["TE_TRP_TMP_ENROL"], descricao="[SE]  Transformador Elevador Trip Temperatura Enrolamento")
         self.condicionadores.append(c.CondicionadorBase(self.l_trip_temp_enrola_te, CONDIC_INDISPONIBILIZAR))
 
-        # self.l_falha_cmd_abertura_52L = LeituraModbusBit(self.clp["SA"], REG_CLP["SE"]["DJL_FLH_CMD_ABERTURA"], descricao="[SE]  Disjuntor Linha Falha Comando Abertura")
-        # self.condicionadores.append(c.CondicionadorBase(self.l_falha_cmd_abertura_52L, CONDIC_INDISPONIBILIZAR))
+        self.l_falha_cmd_abertura_52L = LeituraModbusBit(self.clp["SA"], REG_CLP["SE"]["DJL_FLH_CMD_ABERTURA"], descricao="[SE]  Disjuntor Linha Falha Comando Abertura")
+        self.condicionadores.append(c.CondicionadorBase(self.l_falha_cmd_abertura_52L, CONDIC_INDISPONIBILIZAR))
 
-        # self.l_falha_cmd_fechamento_52L = LeituraModbusBit(self.clp["SA"], REG_CLP["SE"]["DJL_FLH_CMD_FECHAMENTO"], descricao="[SE]  Disjuntor Linha Falha Comando Fechamento")
-        # self.condicionadores.append(c.CondicionadorBase(self.l_falha_cmd_fechamento_52L, CONDIC_INDISPONIBILIZAR))
+        self.l_falha_cmd_fechamento_52L = LeituraModbusBit(self.clp["SA"], REG_CLP["SE"]["DJL_FLH_CMD_FECHAMENTO"], descricao="[SE]  Disjuntor Linha Falha Comando Fechamento")
+        self.condicionadores.append(c.CondicionadorBase(self.l_falha_cmd_fechamento_52L, CONDIC_INDISPONIBILIZAR))
 
         # self.leitura_super_bobinas_reles_bloq = LeituraModbusBit(self.clp["SA"], REG_CLP["SE"]["SUPERVISAO_BOBINAS_RELES_BLOQUEIOS"], descricao="[SE]  Supervisão Bobinas, Relés e Bloqueios")
         # self.condicionadores.append(c.CondicionadorBase(self.leitura_super_bobinas_reles_bloq, CONDIC_INDISPONIBILIZAR))
-
-        # LEITURA PERIÓDICA
-        self.l_seletora_52L_remoto = LeituraModbusBit(self.rele["SE"], REG_CLP["SE"]["DJL_SELETORA_REMOTO"], invertido=True, descricao="[SE]  Disjuntor Linha Seletora Modo Remoto")
-        self.l_alarme_temp_oleo_te = LeituraModbusBit(self.clp["SA"], REG_CLP["SE"]["TE_ALM_TMP_OLEO"], descricao="[SE]  Transformador Elevador Alarme Temperatura Óleo")
-        # self.l_nv_muito_alto_oleo_te = LeituraModbusBit(self.clp["SA"], REG_CLP["SE"]["TE_NV_OLEO_MUITO_ALTO"], descricao="[SE]  Transformador Elevador Nível Óleo Muito Alto")
-        self.l_falha_temp_oleo_te = LeituraModbusBit(self.clp["SA"], REG_CLP["SE"]["TE_FLH_LER_TMP_OLEO"], descricao="[SE]  Transformador Elevador Falha Leitura Temperatura Óleo")
-        # self.l_nv_muito_baixo_oleo_te = LeituraModbusBit(self.clp["SA"], REG_CLP["SE"]["TE_NV_OLEO_MUITO_BAIXO"], descricao="[SE]  Transformador Elevador Nível Óleo Muito Baixo")
-        self.l_alarme_temp_oleo_te = LeituraModbusBit(self.clp["SA"], REG_CLP["SE"]["TE_ALM_TMP_OLEO"], descricao="[SE]  Transformador Elevador Alarme Temperatura Óleo")
-        self.l_alarme_temp_enrola_te = LeituraModbusBit(self.clp["SA"], REG_CLP["SE"]["TE_ALM_TMP_ENROL"], descricao="[SE]  Transformador Elevador Alarme Temperatura Enrolamento")
-        self.l_falha_ler_temp_enrola_te = LeituraModbusBit(self.clp["SA"], REG_CLP["SE"]["TE_FLH_LER_TMP_ENROL"], descricao="[SE]  Transformador Elevador Falha Leitura Temperatura Enrolamento")
 
 
         # CONDICIONADORES RELÉS
@@ -392,8 +369,18 @@ class Subestacao:
         self.l_rele_sobrecorr_temp_res_enrola_prim = LeituraModbusBit(self.rele["TE"], REG_RELE["TE"]["ENROL_PRI_SOBRECO_TEMPO_RES"],  descricao="[TE][RELE] Sobrecorrente Temperatura Residual Enrolamento Primário")
         self.condicionadores_essenciais.append(c.CondicionadorBase(self.l_rele_sobrecorr_temp_res_enrola_prim, CONDIC_INDISPONIBILIZAR))
 
-        # self.l_rele_sobrecorr_temp_fase_enrola_sec = LeituraModbusBit(self.rele["TE"], REG_RELE["TE"]["ENRO_SEC_SOBRECO_TEMPO_FASE"],  descricao="[TE][RELE] Sobrecorrente Temperatura Fase Enrolamento Secundário")
-        # self.condicionadores_essenciais.append(c.CondicionadorBase(self.l_rele_sobrecorr_temp_fase_enrola_sec, CONDIC_INDISPONIBILIZAR))
+        self.l_rele_sobrecorr_temp_fase_enrola_sec = LeituraModbusBit(self.rele["TE"], REG_RELE["TE"]["ENROL_SEC_SOBRECO_TEMPO_FASE"], descricao="[TE][RELE] Sobrecorrente Temperatura Fase Enrolamento Secundário")
+        self.condicionadores_essenciais.append(c.CondicionadorBase(self.l_rele_sobrecorr_temp_fase_enrola_sec, CONDIC_INDISPONIBILIZAR))
 
-        # self.l_rele_sobrecorr_temp_res_enrola_sec = LeituraModbusBit(self.rele["TE"], REG_RELE["TE"]["ENRO_SEC_SOBRECO_TEMPO_RES"],  descricao="[TE][RELE] Sobrecorremnte Temperatura Residual Enrolamento Secundário")
-        # self.condicionadores_essenciais.append(c.CondicionadorBase(self.l_rele_sobrecorr_temp_res_enrola_sec, CONDIC_INDISPONIBILIZAR))
+        self.l_rele_sobrecorr_temp_res_enrola_sec = LeituraModbusBit(self.rele["TE"], REG_RELE["TE"]["ENROL_SEC_SOBRECO_TEMPO_RES"], descricao="[TE][RELE] Sobrecorremnte Temperatura Residual Enrolamento Secundário")
+        self.condicionadores_essenciais.append(c.CondicionadorBase(self.l_rele_sobrecorr_temp_res_enrola_sec, CONDIC_INDISPONIBILIZAR))
+
+
+        # LEITURA PERIÓDICA
+        self.l_seletora_52L_remoto = LeituraModbusBit(self.rele["SE"], REG_CLP["SE"]["DJL_SELETORA_REMOTO"], invertido=True, descricao="[SE]  Disjuntor Linha Seletora Modo Remoto")
+        self.l_alarme_temp_oleo_te = LeituraModbusBit(self.clp["SA"], REG_CLP["SE"]["TE_ALM_TMP_OLEO"], descricao="[SE]  Transformador Elevador Alarme Temperatura Óleo")
+        self.l_falha_temp_oleo_te = LeituraModbusBit(self.clp["SA"], REG_CLP["SE"]["TE_FLH_LER_TMP_OLEO"], descricao="[SE]  Transformador Elevador Falha Leitura Temperatura Óleo")
+        self.l_nv_muito_baixo_oleo_te = LeituraModbusBit(self.clp["SA"], REG_CLP["SE"]["TE_NV_OLEO_MUITO_BAIXO"], descricao="[SE]  Transformador Elevador Nível Óleo Muito Baixo")
+        self.l_alarme_temp_oleo_te = LeituraModbusBit(self.clp["SA"], REG_CLP["SE"]["TE_ALM_TMP_OLEO"], descricao="[SE]  Transformador Elevador Alarme Temperatura Óleo")
+        self.l_alarme_temp_enrola_te = LeituraModbusBit(self.clp["SA"], REG_CLP["SE"]["TE_ALM_TMP_ENROL"], descricao="[SE]  Transformador Elevador Alarme Temperatura Enrolamento")
+        self.l_falha_ler_temp_enrola_te = LeituraModbusBit(self.clp["SA"], REG_CLP["SE"]["TE_FLH_LER_TMP_ENROL"], descricao="[SE]  Transformador Elevador Falha Leitura Temperatura Enrolamento")

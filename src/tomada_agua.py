@@ -133,12 +133,11 @@ class TomadaAgua:
         Verifica leituras específcas para acionamento da manuteção. As leituras são disparadas
         em períodos separados por um tempo pré-definido.
         """
-        return
 
         if not self.l_filtro_limpo_uh.valor:
             logger.warning("[TDA] O filtro da UH da TDA está sujo. Favor realizar limpeza/troca.")
 
-        if self.l_nvl_jusante_cp1.valor:
+        if self.l_nv_jusante_cp1.valor:
             logger.warning("[TDA] Houve uma falha no sensor de nível jusante da comporta 1. Favor verificar.")
 
         if self.l_nv_jusante_cp2.valor:
@@ -175,26 +174,24 @@ class TomadaAgua:
         """
 
         # CONDICIONADORES ESSENCIAIS
-        # Normalizar
         self.l_sem_emergencia = LeituraModbusBit(self.clp["TDA"], REG_CLP["TDA"]["SEM_EMERGENCIA"], invertido=True, descricao="[TDA] Emergência")
         self.condicionadores_essenciais.append(c.CondicionadorBase(self.l_sem_emergencia, CONDIC_NORMALIZAR))
 
-        return
 
         # CONDICIONADORES
-        # Normalizar
         self.l_ca_tensao = LeituraModbusBit(self.clp["TDA"], REG_CLP["TDA"]["CA_COM_TENSAO"], invertido=True, descricao="[TDA] Tensão CA Status ")
         self.condicionadores.append(c.CondicionadorBase(self.l_ca_tensao, CONDIC_NORMALIZAR))
 
         self.l_falha_ligar_bomba_uh = LeituraModbusBit(self.clp["TDA"], REG_CLP["TDA"]["UH_FLH_LIGAR_BOMBA"], descricao="[TDA] UHTDA Falha Ligar Bomba")
         self.condicionadores.append(c.CondicionadorBase(self.l_falha_ligar_bomba_uh, CONDIC_NORMALIZAR))
 
+
         # LEITURA PERIÓDICA
         self.l_falha_atuada_lg = LeituraModbusBit(self.clp["TDA"], REG_CLP["TDA"]["LG_FLH_ATUADA"], descricao="[TDA] Limpa Grades Falha")
         self.l_falha_ler_nv_montante = LeituraModbusBit(self.clp["TDA"], REG_CLP["TDA"]["NV_MONTANTE_LER_FLH"], descricao="[TDA] Nível Montante Falha")
         self.l_filtro_limpo_uh = LeituraModbusBit(self.clp["TDA"], REG_CLP["TDA"]["UH_FILTRO_LIMPO"], invertido=True, descricao="[TDA] UHTDA Filtro Sujo")
         self.l_lg_manual = LeituraModbusBit(self.clp["TDA"], REG_CLP["TDA"]["LG_OPE_MANUAL"], descricao="[TDA] Limpa Grades Operação Manual")
-        self.l_nvl_jusante_cp1 = LeituraModbusBit(self.clp["TDA"], REG_CLP["TDA"]["NV_JUSANTE_CP1"], descricao="[TDA] Nível Justante Comporta 1")
-        self.l_nv_jusante_cp2 = LeituraModbusBit(self.clp["TDA"], REG_CLP["TDA"]["NV_JUSANTE_CP2"], descricao="[TDA] Nível Justante Comporta 2")
-        self.l_nv_jusante_grade_cp1 = LeituraModbusBit(self.clp["TDA"], REG_CLP["TDA"]["NV_JUSANTE_GRADE_CP1_LER_FLH"], descricao="[TDA] Nível Justante Comporta 1 Falha")
-        self.l_nv_jusante_grade_cp2 = LeituraModbusBit(self.clp["TDA"], REG_CLP["TDA"]["NV_JUSANTE_GRADE_CP2_LER_FLH"], descricao="[TDA] Nível Justante Comporta 2 Falha")
+        self.l_nv_jusante_cp1 = LeituraModbusBit(self.clp["TDA"], REG_CLP["TDA"]["NV_JUSANTE_CP1_LER_FLH"], descricao="[TDA] Falha Leitura Nível Justante Comporta 1")
+        self.l_nv_jusante_cp2 = LeituraModbusBit(self.clp["TDA"], REG_CLP["TDA"]["NV_JUSANTE_CP2_LER_FLH"], descricao="[TDA] Falha Leitura Nível Justante Comporta 2")
+        self.l_nv_jusante_grade_cp1 = LeituraModbusBit(self.clp["TDA"], REG_CLP["TDA"]["NV_JUSANTE_GRADE_CP1_LER_FLH"], descricao="[TDA] Nível Leitura Justante Grade Comporta 1 Falha")
+        self.l_nv_jusante_grade_cp2 = LeituraModbusBit(self.clp["TDA"], REG_CLP["TDA"]["NV_JUSANTE_GRADE_CP2_LER_FLH"], descricao="[TDA] Nível Leitura Justante Grade Comporta 2 Falha")

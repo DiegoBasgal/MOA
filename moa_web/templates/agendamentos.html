@@ -61,7 +61,7 @@
         </div>
         <h3 style="margin-top: 40px; margin-bottom: 8px; text-align: center;">Lista de Agendamentos</h3>
         <div style="justify-content: center; display: flex;">
-            <table style="text-align:center" border="solid 1px black">
+            <table style="text-align:center">
                 <tr height="75px">
                    <th width="50px">id</th>
                    <th width="200px">Data e Hora</th>
@@ -70,7 +70,7 @@
                 </tr>
                 {% for ag in agendamentos %}
                 <tr height="50px">
-                    <td><a href="{{ ag.id }}/">{{ ag.id}}</a></td>
+                    <td><a href="{{ ag.id }}/">{{ ag.id }}</a></td>
                     <td>{{ ag.data|date:"d/M/Y - H:i:s" }}</td>
                     <td>{{ ag.comando.id}} - {{ ag.comando.nome }}</td>
                     <td>{{ ag.observacao}}</td>
@@ -81,7 +81,7 @@
         <br>
         <h3 style="margin-top: 40px ;margin-bottom: 8px; text-align: center;">Referência dos códigos dos comandos</h3>
         <div style="justify-content: center; display: flex;">
-            <table style="text-align:center" border="solid 1px black">
+            <table style="text-align:center">
                 <tr>
                     <th width="50px">id</th>
                     <th width="310px">Comando</th>
@@ -95,7 +95,7 @@
         <br>
         <h3 style="margin-top: 40px ;margin-bottom: 8px; text-align: center;">Lista de Agendamentos executados</h3>
         <div style="justify-content: center; display: flex;">
-            <table style="text-align:center" border="solid 1px black">
+            <table style="text-align:center">
                 <tr height="75px">
                     <th width="50px">id</th>
                     <th width="200px">Data e Hora</th>

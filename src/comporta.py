@@ -16,7 +16,9 @@ from src.conectores.servidores import Servidores
 
 from src.funcoes.escrita import EscritaModBusBit as EMB
 
+
 logger = logging.getLogger("logger")
+
 
 class Comporta:
     def __init__(self, id: "int"=None, serv:"Servidores"=None, tda:"tda.TomadaAgua"=None) -> "None":
@@ -207,7 +209,7 @@ class Comporta:
                 logger.debug("")
                 logger.debug(f"[CP{self.id}]          Enviando comando:          \"FECHAR\"")
                 res = EMB.escrever_bit(self.clp["TDA"], REG_CLP["TDA"][f"CP{self.id}_CMD_FECHAMENTO"], valor=1)
-                return res
+                return 
 
         except Exception:
             logger.error(f"[CP{self.id}] Houve um erro acionar o comando de Fechamento da Comporta {self.id}.")

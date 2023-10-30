@@ -160,8 +160,8 @@ REG_RELE = {
 
 
         # Enrolamento
-        "ENROL_SEC_SOBRECO_TEMPO_RES":                  [37, 1],
-        "ENROL_SEC_SOBRECO_TEMPO_FASE":                 [37, 6],
+        "ENROL_SEC_SOBRECO_TEMPO_RES":                  [36, 1],
+        "ENROL_SEC_SOBRECO_TEMPO_FASE":                 [36, 6],
 
 
         # Enrolamento
@@ -177,12 +177,12 @@ REG_RELE = {
     },
 
     "UG1": {
-        # Elementos
-        "ELE_1_SUBFRE":                                 29,
-        "ELE_2_SUBFRE":                                 31,
-        "ELE_1_SOBREFRE":                               32,
-        "ELE_2_SOBREFRE":                               33,
 
+        # Elementos
+        "ELE_2_SOBREFRE":                               [1, 4],
+        "ELE_1_SOBREFRE":                               [1, 5],
+        "ELE_2_SUBFRE":                                 [1, 6],
+        "ELE_1_SUBFRE":                                 [1, 7],
 
         # Sobrecorrente
         "SOBRECO_INST":                                 [901, 0],
@@ -316,6 +316,7 @@ REG_CLP = {
         "TE_RELE_BUCHHOLZ_ALM":                         [2, 6],
         "TE_RELE_BUCHHOLZ_TRP":                         [2, 7],
         "TE_TRP_ALIVIO_PRESSAO":                        [2, 9],
+        "TE_NV_OLEO_MUITO_BAIXO":                       [44, 6],
 
 
         ## ENTRADAS_DIGITAIS_3 -> REGS: 5, 4
@@ -329,6 +330,8 @@ REG_CLP = {
 
         # DJ52l
         "DJL_SELETORA_REMOTO":                          [5, 10],
+        "DJL_FLH_CMD_ABERTURA":                         [40, 1],
+        "DJL_FLH_CMD_FECHAMENTO":                       [40, 2],
 
 
         ## FALHAS_ANALOGICAS
@@ -341,7 +344,7 @@ REG_CLP = {
         # STATUS SE
 
         # Relé Linha
-        "RELE_LINHA_ATUADO":                            [20, 0],
+        "RELE_LINHA_ATUADO":                            [44, 1],
 
 
         # COMANDOS
@@ -381,6 +384,7 @@ REG_CLP = {
         "BOMBA_DREN_2_FLH":                             [1, 2],
         "BOMBA_DREN_3_FLH":                             [1, 4],
         "BOMBA_DREN_UNIDADES_FLH":                      [1, 12],
+        "BOMBA_RECALQUE_TUBO_SUCCAO_FALHA":             [1, 12],
 
 
         ## ENTRADAS_DIGITAIS_2 -> REGS: 3, 2
@@ -389,6 +393,7 @@ REG_CLP = {
         "DJ52SA1_SEM_FLH":                              [2, 15],
 
         # Retificador
+        # Poço Drenagem
         "RETI_SOBRECO_SAIDA":                           [3, 0],
         "RETI_SOBRECO_BATERIAS":                        [3, 1],
         "RETI_FUSIVEL_QUEIMADO":                        [3, 2],
@@ -401,7 +406,7 @@ REG_CLP = {
         # DJs
         "DJ52SA2_SEM_FLH":                              [5, 1],
         "DJ52SA3_SEM_FLH":                              [5, 3],
-        "DJS_BARRA_SELETORA_REMOTO":                   [5, 9],
+        "DJS_BARRA_SELETORA_REMOTO":                    [5, 9],
 
 
         ## ENTRADAS_DIGITAIS_4 -> REGS: 7, 6
@@ -436,7 +441,6 @@ REG_CLP = {
         "GMG_FLH_PARAR":                                [13, 7],
         "GMG_OPERACAO_MANUAL":                          [13, 10],
 
-        # Poço Drenagem
         "POCO_DREN_DISCRE_BOIAS":                       [13, 9],
 
 
@@ -449,6 +453,10 @@ REG_CLP = {
         "SIS_AGUA_FLH_PRESSOSTATO_FILTRO_A":            [17, 4],
         "SIS_AGUA_FLH_PRESSURIZAR_FILTRO_B":            [17, 5],
         "SIS_AGUA_FLH_PRESSOSTATO_FILTRO_B":            [17, 6],
+
+        "SEM_EMERGENCIA":                               [28, 6],
+
+
 
 
         ## COMANDOS
@@ -474,6 +482,10 @@ REG_CLP = {
 
         # Nível Montante
         "NV_MONTANTE_LER_FLH":                          [3, 0],
+        "NV_JUSANTE_CP1_LER_FLH":                       [3, 2],
+        "NV_JUSANTE_CP2_LER_FLH":                       [3, 4],
+        "NV_JUSANTE_GRADE_CP1_LER_FLH":                 [3, 1],
+        "NV_JUSANTE_GRADE_CP2_LER_FLH":                 [3, 3],
 
         # Botão Emergência
         "SEM_EMERGENCIA":                               [0, 8],
@@ -728,6 +740,8 @@ REG_CLP = {
         # Bloqueio Atuado
         "86M_BLQ_ATUADO":                               [24, 15],
 
+        "MANCAL_GUIA_1_FLH_LER_TMP":                    [25, 12],
+        "MANCAL_GUIA_2_FLH_LER_TMP":                    [25, 13],
 
         ## BLOQUEIO_86E
 
@@ -800,6 +814,7 @@ REG_CLP = {
         "RT_FLH_HABILITAR":                             [43, 8],
         "RT_FLH_PARTIR":                                [43, 9],
         "RT_FLH_DESABILITAR":                           [43, 10],
+
 
 
         ## COMANDOS_UG
@@ -1248,18 +1263,12 @@ REG_CLP = {
 Registradores que não achei:
 CLP:
     SE:
-        "DJL_SELETORA_REMOTO"
-        "DJL_FLH_CMD_ABERTURA"
-        "DJL_FLH_CMD_FECHAMENTO"
         "RELE_LINHA_ATUADO"
         "RELE_SUP_BLQ_BOBINAS"
 
         "TE_NV_OLEO_MUITO_ALTO"
-        "TE_NV_OLEO_MUITO_BAIXO"
 
-    SA:
-        "SEM_EMERGENCIA"
-        "BOMBA_RECALQUE_TUBO_SUCCAO_FALHA"
+
 
     UGs:
         "CLP_GERAL_COM_TENSAO_BARRA_ESSEN"

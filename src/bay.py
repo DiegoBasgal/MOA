@@ -15,7 +15,9 @@ from src.funcoes.condicionadores import *
 from src.conectores.servidores import Servidores
 from src.funcoes.escrita import EscritaModBusBit as EMB
 
+
 logger = logging.getLogger("logger")
+
 
 class Bay:
     def __init__(self, serv: "Servidores"=None) -> "None":
@@ -85,7 +87,6 @@ class Bay:
 
         try:
             res = self.rele["BAY"].write_single_coil(REG_RELE["BAY"]["RELE_RST_TRP"], [1])
-            # res = EMB.escrever_bit(self.rele["BAY"], REG_RELE["BAY"]["RELE_RST_TRP"], valor=1)
             return res
 
         except Exception:
@@ -112,7 +113,6 @@ class Bay:
                     logger.debug(f"[BAY] Enviando comando:                   \"FECHAR DISJUNTOR\"")
                     logger.debug("")
                     self.rele["BAY"].write_single_coil(REG_RELE["BAY"]["DJL_CMD_FECHAR"], [1])
-                    # EMB.escrever_bit(self.rele["BAY"], REG_RELE["BAY"]["DJL_CMD_ABRIR"], valor=1)
                     return True
 
                 else:
@@ -158,17 +158,17 @@ class Bay:
                 logger.debug(f"[BAY] Enviando comando:                   \"ABRIR DISJUNTOR SE\"")
                 res = EMB.escrever_bit(self.clp["SA"], REG_CLP["SE"]["DJL_CMD_ABRIR"], valor=1)
 
-                # if not res:
-                #     logger.warning("[BAY] Não foi possível realizar a abertura do Disjuntor de Linha da Subestação!")
-                #     flags += 1
+                if not res:
+                    logger.warning("[BAY] Não foi possível realizar a abertura do Disjuntor de Linha da Subestação!")
+                    flags += 1
 
             if not self.barra_morta.valor and self.barra_viva.valor:
                 logger.warning(f"[BAY] Foi identificada uma Leitura de Tensão na Barra! Tensão VS -> {self.tensao_vs.valor}")
                 flags += 1
 
-            # if not self.linha_morta.valor and self.linha_viva.valor:
-            #     logger.warning("[BAY] Foi identificada uma leitura de Tensão na linha!")
-            #     flags += 1
+            if not self.linha_morta.valor and self.linha_viva.valor:
+                logger.warning("[BAY] Foi identificada uma leitura de Tensão na linha!")
+                flags += 1
 
             if not self.mola_carregada.valor:
                 logger.warning("[BAY] A mola do Disjuntor está descarregada!")
@@ -289,7 +289,7 @@ class Bay:
         Função para carregamento de leituras necesárias para a operação.
         """
 
-        # Pré-condições de fechamento do Disjuntor do Bay
+        # CONDIÇÕES DE FECHAMENTO Dj52l
         self.linha_viva = LeituraModbusBit(self.rele["BAY"], REG_RELE["BAY"]["ID_LINHA_VIVA"], descricao="[BAY][RELE] Identificação Linha Viva")
         self.barra_viva = LeituraModbusBit(self.rele["BAY"], REG_RELE["BAY"]["ID_BARRA_VIVA"], descricao="[BAY][RELE] Identificação Barra Viva")
         self.linha_morta = LeituraModbusBit(self.rele["BAY"], REG_RELE["BAY"]["ID_LINHA_MORTA"], descricao="[BAY][RELE] Identificação Linha Morta")
@@ -298,6 +298,5 @@ class Bay:
         self.secc_fechada = LeituraModbusBit(self.rele["BAY"], REG_RELE["BAY"]["SECC_FECHADA"], invertido=True, descricao="[BAY][RELE] Seccionadora Fechada")
         self.condicionadores_essenciais.append(CondicionadorBase(self.secc_fechada, CONDIC_INDISPONIBILIZAR))
 
-        ## CONDICIONADORES RELÉS
         self.l_falha_abertura_dj = LeituraModbusBit(self.rele["BAY"], REG_RELE["BAY"]["DJL_FLH_ABERTURA"], descricao="[BAY][RELE] Disjuntor Linha Falha Abertura")
         self.condicionadores_essenciais.append(CondicionadorBase(self.l_falha_abertura_dj, CONDIC_INDISPONIBILIZAR))

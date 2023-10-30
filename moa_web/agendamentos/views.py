@@ -24,9 +24,7 @@ def agendamentos_view(request, *args, **kwargs):
 
     context = {
         "agendamentos": sorted(agendamentos, key=lambda y: y.data),
-        "agendamentos_executados": sorted(
-            agendamentos_executados, key=lambda y: y.data, reverse=True
-        ),
+        "agendamentos_executados": sorted(agendamentos_executados, key=lambda y: y.data, reverse=True),
         "comandos": comandos,
     }
 
@@ -54,7 +52,6 @@ def agendamento_detalhado_view(request, *args, **kwargs):
             return HttpResponseRedirect("../")
 
     return render(request, "agendamento_detalhado.html", context=context)
-
 
 @login_required
 def novo_agendamento_view(request, *args, **kwargs):
