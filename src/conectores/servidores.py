@@ -104,11 +104,11 @@ class Servidores:
         """
         
         try:
-            if cls.ping(d.ips["TDA_ip"]) and not d.glb["TDA_Offline"]:
+            if not cls.ping(d.ips["TDA_ip"]) and not d.glb["TDA_Offline"]:
                 d.glb["TDA_Offline"] = True
                 logger.warning("[CLI] CLP TDA não respondeu a tentativa de comunicação!")
 
-            elif not cls.ping(d.ips["TDA_ip"]) and d.glb["TDA_Offline"]:
+            elif cls.ping(d.ips["TDA_ip"]) and d.glb["TDA_Offline"]:
                 logger.info("[CLI] Comunicação com o CLP TDA reestabelecida.")
                 d.glb["TDA_Offline"] = False
 

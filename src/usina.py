@@ -685,6 +685,7 @@ class Usina:
 
         for ug in self.ugs:
             pot_disp += ug.cfg[f"pot_maxima_ug{ug.id}"]
+
             if ug.manual:
                 ajuste_manual += ug.leitura_potencia
 
@@ -851,6 +852,7 @@ class Usina:
         """
         Função para atualização de valores anteriores e erro de nível montante.
         """
+
         if self.ema_anterior == -1:
             self.ema_anterior = 0
             self.nv_montante_recente = self.nv_montante
@@ -907,7 +909,9 @@ class Usina:
         self.cfg["cx_kp"] = float(parametros["cx_kp"])
         self.cfg["cx_ki"] = float(parametros["cx_ki"])
         self.cfg["cx_kie"] = float(parametros["cx_kie"])
-        self.cfg["press_cx_alvo"] = float(parametros["press_cx_alvo"])
+        self.cfg["ug1_press_cx_alvo"] = float(parametros["ug1_press_cx_alvo"])
+        self.cfg["ug2_press_cx_alvo"] = float(parametros["ug2_press_cx_alvo"])
+        self.cfg["ug3_press_cx_alvo"] = float(parametros["ug3_press_cx_alvo"])
 
         self.cfg["pot_maxima_alvo"] = float(parametros["pot_nominal"])
         self.cfg["pot_maxima_ug"] = float(parametros["pot_nominal_ug"])

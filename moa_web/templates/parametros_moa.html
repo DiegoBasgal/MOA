@@ -101,8 +101,8 @@
             </div>
             <div style="margin-top: 1px;">
                 <label style="font-size: 17px; margin-left: 3px;">Comando: </label>
-                <input id="submit" type="submit" name="ativar_ma" value="Ativar">
-                <input id="submit" type="submit" name="desativar_ma" value="Desativar">
+                <input id="submit" type="submit" name="ativarma" value="Ativar">
+                <input id="submit" type="submit" name="desativarma" value="Desativar">
             </div>
         </form>
         <form method='post' action='/parametros_moa/'>
@@ -146,30 +146,37 @@
                 <input style="padding-top: 2px; padding-bottom: 2px;" id="submit" type="submit" name="bnv_alvo" value="Salvar"/>
             </div>
             <br>
-            <br>
             <label style="font-size: 22px; margin-left: 3px;"><b>Pressão Caixa Espiral: </b></label>
             <br>
             <br>
-            <div style="margin-bottom: 30px;">
-                <label style="font-size: 18px; margin-left: 3px;"><b>UG1 Pressão Alvo: </b></label>
-                <input style="margin-left: 3px;" id="alvo_txt" name="ug1_press_cx_alvo" size=4 value="{{ usina.ug1_press_cx_alvo }}"/></td>
-                <input style="padding-top: 2px; padding-bottom: 2px; margin-right: 3px;" id="submit" type="submit" name="ug1_cx_alvo" value="Salvar"/>
-            </div>
-            <div style="margin-bottom: 30px;">
-                <label style="font-size: 18px; margin-left: 3px;"><b>UG2 Pressão Alvo: </b></label>
-                <input style="margin-left: 3px;" id="alvo_txt" name="ug2_press_cx_alvo" size=4 value="{{ usina.ug2_press_cx_alvo }}"/></td>
-                <input style="padding-top: 2px; padding-bottom: 2px; margin-right: 3px;" id="submit" type="submit" name="ug2_cx_alvo" value="Salvar"/>
-            </div>
-            <div style="margin-bottom: 30px;">
-                <label style="font-size: 18px; margin-left: 3px;"><b>UG3 Pressão Alvo: </b></label>
-                <input style="margin-left: 3px;" id="alvo_txt" name="ug3_press_cx_alvo" size=4 value="{{ usina.ug3_press_cx_alvo }}"/></td>
-                <input style="padding-top: 2px; padding-bottom: 2px; margin-right: 3px;" id="submit" type="submit" name="ug3_cx_alvo" value="Salvar"/>
-            </div>
+            <table>
+                <tr>
+                    <td>
+                        <label style="font-size: 18px; margin-left: 3px;"><b>UG1 - Pressão Alvo: </b></label>
+                        <input style="margin-left: 3px;" id="alvo_txt" name="ug1_press_cx_alvo" size=4 value="{{ usina.ug1_press_cx_alvo }}"/>
+                        <input style="padding-top: 2px; padding-bottom: 2px; margin-right: 3px;" id="submit" type="submit" name="ug1_cx_alvo" value="Salvar"/>
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        <label style="font-size: 18px; margin-left: 3px;"><b>UG2 - Pressão Alvo: </b></label>
+                        <input style="margin-left: 3px;" id="alvo_txt" name="ug2_press_cx_alvo" size=4 value="{{ usina.ug2_press_cx_alvo }}"/>
+                        <input style="padding-top: 2px; padding-bottom: 2px; margin-right: 3px;" id="submit" type="submit" name="ug2_cx_alvo" value="Salvar"/>
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        <label style="font-size: 18px; margin-left: 3px;"><b>UG3 - Pressão Alvo: </b></label>
+                        <input style="margin-left: 3px;" id="alvo_txt" name="ug3_press_cx_alvo" size=4 value="{{ usina.ug3_press_cx_alvo }}"/>
+                        <input style="padding-top: 2px; padding-bottom: 2px; margin-right: 3px;" id="submit" type="submit" name="ug3_cx_alvo" value="Salvar"/>
+                    </td>
+                </tr>
+            </table>
         </form>
         <form method='post' action='/parametros_moa/'>
             {% csrf_token %}
             <div style="margin-bottom: 20px; margin-top: 50px;">
-                <b style="margin-bottom: 8px; font-size: 18px;">Limites de operação das Unidades de Geração: </b>
+                <b style="margin-bottom: 8px; font-size: 18px;">Limites de Operação das Unidades de Geração: </b>
                 <input id="submit" style="margin-left: 3px; margin-bottom: 7px;" name="salvar_params" type="submit" value="Salvar"/>
                 <table id="val_table">
                     <tr>

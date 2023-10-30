@@ -21,5 +21,8 @@
     "cx_ki": 0.1,
     "cx_kie": 0.0,
     "press_cx_alvo": 16.0,
-    "saida_ie_inicial": 0.1
+    "saida_ie_inicial": 0.1,
+    "ug1_press_cx_alvo": 16.0,
+    "ug2_press_cx_alvo": 16.5,
+    "ug3_press_cx_alvo": 17.2
 }

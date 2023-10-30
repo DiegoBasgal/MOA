@@ -883,7 +883,7 @@ class UnidadeGeracao:
         """
 
         try:
-            self.cx_controle_p = (self.oco.leitura_dict[f"pressao_cx_espiral_ug{self.id}"].valor - self.cfg["press_cx_alvo"]) * self.cfg["cx_kp"]
+            self.cx_controle_p = (self.oco.leitura_dict[f"pressao_cx_espiral_ug{self.id}"].valor - self.cfg[f"ug{self.id}_press_cx_alvo"]) * self.cfg["cx_kp"]
             self.cx_ajuste_ie = sum(ug.leitura_potencia for ug in self.lista_ugs) / self.cfg["pot_maxima_alvo"]
             self.cx_controle_i = self.cx_ajuste_ie - self.cx_controle_p
 
@@ -891,7 +891,7 @@ class UnidadeGeracao:
             logger.error(f"[UG{self.id}] Não foi possível realizar o ajuste incial do PID para pressão de caixa espiral.")
             logger.debug(traceback.format_exc())
 
-    def controle_cx_espiral(self) -> "None":
+    def controle_cx_espiral(self) -> "float":
         if self.pot_alvo_anterior == -1:
             self.pot_alvo_anterior = self.leitura_potencia
 
@@ -900,39 +900,25 @@ class UnidadeGeracao:
             self.ajuste_inicial_cx_esp = 0
 
         try:
-            self.erro_press_cx = 0
-            self.erro_press_cx = self.oco.leitura_dict[f"pressao_cx_espiral_ug{self.id}"].valor - self.cfg["press_cx_alvo"]
-            logger.debug("")
             logger.debug(f"[UG{self.id}] Pressão Caixa Espiral:")
-            logger.debug(f"[UG{self.id}]          Alvo:                      {self.cfg['press_cx_alvo']:0.3f}")
-            logger.debug(f"[UG{self.id}]          Leitura:                   {self.oco.leitura_dict[f'pressao_cx_espiral_ug{self.id}'].valor:0.3f}")
+            logger.debug(f"[UG{self.id}]          Alvo:                   {self.cfg[f'ug{self.id}_press_cx_alvo']:0.3f}")
+            logger.debug(f"[UG{self.id}]          Leitura:                {self.oco.leitura_dict[f'pressao_cx_espiral_ug{self.id}'].valor:0.3f}")
+            logger.debug("")
+
+            self.erro_press_cx = 0
+            self.erro_press_cx = self.oco.leitura_dict[f"pressao_cx_espiral_ug{self.id}"].valor - self.cfg[f"ug{self.id}_press_cx_alvo"]
 
             self.cx_controle_p = self.cfg["cx_kp"] * self.erro_press_cx
             self.cx_controle_i = max(min((self.cfg["cx_ki"] * self.erro_press_cx) + self.cx_controle_i, 1), 0)
             saida_pi = self.cx_controle_p + self.cx_controle_i
-
-            logger.debug("")
-            logger.debug(f"[UG{self.id}] PID   -> P + I:                     {saida_pi:0.3f}")
-            logger.debug(f"[UG{self.id}] P:                                  {self.cx_controle_p:0.3f}")
-            logger.debug(f"[UG{self.id}] I:                                  {self.cx_controle_i:0.3f}")
-            logger.debug(f"[UG{self.id}] ERRO:                               {self.erro_press_cx:0.3f}")
 
             self.cx_controle_ie = max(min(saida_pi + self.cx_ajuste_ie * self.cfg["cx_kie"], 1), 0)
             pot_alvo = max(min(round(self.cfg[f"pot_maxima_ug{self.id}"] * self.cx_controle_ie, 5), self.cfg[f"pot_maxima_ug{self.id}"],),self.cfg["pot_minima"],)
 
             pot_medidor = self.__potencia_ativa_kW.valor
 
-            logger.debug(f"[UG{self.id}] Potência alvo após ajuste:          {pot_alvo:0.3f}")
+            logger.debug(f"[UG{self.id}] Potência calculada:                 {pot_alvo:0.3f}")
             logger.debug("")
-
-            logger.debug(f"[UG{self.id}] Step  -> Unidade:                   \"{UG_SM_STR_DCT[self.codigo_state]}\"")
-            logger.debug(f"[UG{self.id}]          Etapa Atual:               \"{UG_STR_DCT_ETAPAS[self.etapa_atual]}\"")
-
-            if self.etapa_atual == UG_SINCRONIZADA:
-                logger.debug(f"[UG{self.id}]          Leituras:")
-                logger.debug(f"[UG{self.id}]          - \"Potência Ativa\":        {self.leitura_potencia} kW")
-                logger.debug(f"[UG{self.id}]          - \"Rotação\":               {self.__leitura_rotacao.valor:0.1f} RPM")
-                logger.debug(f"[UG{self.id}]          - \"Pressão UHRV\":          {self.__leitura_pressao_uhrv.valor:0.1f} Bar")
 
             pot_aux = self.cfg["pot_maxima_alvo"] - (self.cfg["pot_maxima_usina"] - self.cfg["pot_maxima_alvo"])
 
@@ -943,11 +929,8 @@ class UnidadeGeracao:
 
             self.pot_alvo_anterior = pot_alvo
 
-            if self.etapa_atual == UG_PARADA and pot_alvo >= 1360:
-                self.partir()
-                self.enviar_setpoint(pot_alvo)
-            else:
-                self.enviar_setpoint(pot_alvo)
+            return pot_alvo
+
 
         except Exception:
             logger.error(f"[UG{self.id}] Houve um erro no método de Controle por Caixa Espiral da Unidade.")

@@ -428,7 +428,14 @@ class ControleTDAOffline(State):
                     return ControleDados(self.usn)
 
             else:
+                pot_total_cx = 0
+
                 for ug in self.usn.ugs:
-                    ug.controle_cx_espiral()
+                    pot_total_cx += ug.controle_cx_espiral()
+
+                self.usn.distribuir_potencia(pot_total_cx)
+
+                for ug in self.usn.ugs:
+                    ug.step()
 
                 return ControleDados(self.usn)

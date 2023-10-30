@@ -51,18 +51,18 @@ def parametros_moa_view(request, *args, **kwargs):
             usina.nv_alvo = nv_alvo if isinstance(nv_alvo, float) else usina.nv_alvo
             usina.save()
 
-        if request.POST.get("ug1_pressao_alvo"):
-            ug1_press_cx_alvo = float(request.POST.get("ug1_cx_alvo").replace(",", "."))
+        if request.POST.get("ug1_cx_alvo"):
+            ug1_press_cx_alvo = float(request.POST.get("ug1_press_cx_alvo").replace(",", "."))
             usina.ug1_press_cx_alvo = ug1_press_cx_alvo if isinstance(ug1_press_cx_alvo, float) else usina.ug1_press_cx_alvo
             usina.save()
 
-        if request.POST.get("ug2_pressao_alvo"):
-            ug2_press_cx_alvo = float(request.POST.get("ug2_cx_alvo").replace(",", "."))
+        if request.POST.get("ug2_cx_alvo"):
+            ug2_press_cx_alvo = float(request.POST.get("ug2_press_cx_alvo").replace(",", "."))
             usina.ug2_press_cx_alvo = ug2_press_cx_alvo if isinstance(ug2_press_cx_alvo, float) else usina.ug2_press_cx_alvo
             usina.save()
 
-        if request.POST.get("ug3_pressao_alvo"):
-            ug3_press_cx_alvo = float(request.POST.get("ug3_cx_alvo").replace(",", "."))
+        if request.POST.get("ug3_cx_alvo"):
+            ug3_press_cx_alvo = float(request.POST.get("ug3_press_cx_alvo").replace(",", "."))
             usina.ug3_press_cx_alvo = ug3_press_cx_alvo if isinstance(ug3_press_cx_alvo, float) else usina.ug3_press_cx_alvo
             usina.save()
 
