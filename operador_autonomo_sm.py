@@ -150,7 +150,7 @@ class ValoresInternosAtualizados(State):
         # atualizar arquivo das configurações
         with open(os.path.join(os.path.dirname(__file__), 'config.json'), 'w') as file:
             json.dump(self.usina.cfg, file)
-            
+
         if self.usina.avisado_em_eletrica:
             condicionadores_ativos = [condic for condic in self.usina.condicionadores if condic.ativo]
 
@@ -162,14 +162,17 @@ class ValoresInternosAtualizados(State):
             else:
                 deve_normalizar = False
                 habilitar_emerg_condic_c = False
-            
+
+            logger.info("Foram detectados condicionadores ativos!")
+            [logger.info(f"Descrição: {d.descr}; Gravidade: {LISTA_GRAVIDADES[d.gravidade]}") for d in condicionadores_ativos]
+
             if habilitar_emerg_condic_c:
-                logger.info("Condicionadores ativos com gravidade alta!")
+                logger.info("Foram detectados condicionadores com gravidade Indisponibilizar! Acionando Emergência!")
                 return Emergencia(self.usina)
 
         if deve_normalizar:
             if (not self.usina.normalizar_emergencia()) and self.usina.tensao_ok==False and aux==0:
-                logger.warning("Tensão da linha fora do limite ")
+                logger.warning("Tensão da linha fora do limite")
                 aux = 1
                 Thread(target=lambda: self.usina.aguardar_tensao(600)).start()
 
@@ -268,22 +271,23 @@ class Emergencia(State):
                     deve_super_normalizar = True
                 elif condic.gravidade == DEVE_INDISPONIBILIZAR:
                     deve_indisponibilizar = True
-                        
+
+            logger.info("Foram detectados condicionadores ativos!")
+            [logger.info(f"Descrição: {d.descr}; Gravidade: {LISTA_GRAVIDADES[d.gravidade]}") for d in condicionadores_ativos]
+
             if deve_super_normalizar:
                 deve_indisponibilizar = False
                 deve_normalizar = True
-                
+
             if self.usina.clp_emergencia_acionada or deve_normalizar or deve_indisponibilizar:
                 try:
                     # Se algum condicionador deve gerar uma indisponibilidade
                     if deve_indisponibilizar:
-                        # Logar os condicionadores ativos
-                        logger.critical(f"[USN] USN detectou condicionadores ativos, passando USINA para manual e ligando por VOIP.\n\n \
-                            Condicionadores ativos:\n{d.descr}" for d in condicionadores_ativos)
+                        logger.info("Ainda há Condicionadores ativos com gravidade \"Indisponibilizar\"! Entrando no Modo Manual.")
                         # Vai para o estado StateIndisponivel
                         self.usina.entrar_em_modo_manual()
                         return ModoManualAtivado(self.usina)
-                    
+
                     elif deve_normalizar:
                         logger.debug("Bela adormecida 5s")
                         sleep(5)
@@ -293,10 +297,10 @@ class Emergencia(State):
                         return self
 
                     else:
-                        logger.debug("Nenhum condicionador relevante ativo...")
+                        logger.debug("Não há mais Condicionadores ativos... Retornando à operação normal.")
                         self.usina.ler_valores()
                         return ControleRealizado(self.usina)
-                   
+
                 except Exception as e:
                     logger.error(f"Erro durante a comunicação do MOA com a usina. Exception: {repr(e)}.")
                     logger.critical(f"Traceback: {traceback.format_exc()}")
@@ -332,7 +336,7 @@ class ModoManualAtivado(State):
 
         if len(self.usina.get_agendamentos_pendentes()) > 0:
             return AgendamentosPendentes(self.usina)
-        
+
         return self
 
 
@@ -472,7 +476,7 @@ if __name__ == "__main__":
             config_file = os.path.join(os.path.dirname(__file__), 'config.json')
             with open(config_file, 'r') as file:
                 cfg = json.load(file)
-                
+
             # bkp das configurações
             config_file = os.path.join(os.path.dirname(__file__), 'config.json.bkp')
             with open(config_file, 'w') as file:
