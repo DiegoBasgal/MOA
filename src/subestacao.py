@@ -3,6 +3,7 @@ __author__ = "Diego Basgal", "Henrique Pfeifer"
 __credits__ = ["Lucas Lavratti", ...]
 __description__ = "Este módulo corresponde a implementação da operação da Subestação."
 
+import pytz
 import logging
 import traceback
 
@@ -10,10 +11,13 @@ import src.bay as bay
 import src.dicionarios.dict as dct
 import src.funcoes.condicionadores as c
 
+from datetime import datetime
+
 from src.funcoes.leitura import *
 from src.dicionarios.const import *
 
 from src.conectores.servidores import Servidores
+from src.conectores.banco_dados import BancoDados
 from src.funcoes.escrita import EscritaModBusBit as EMB
 
 
@@ -21,9 +25,11 @@ logger = logging.getLogger("logger")
 
 
 class Subestacao:
-    def __init__(self, serv: "Servidores"=None) -> "None":
+    def __init__(self, serv: "Servidores"=None, bd: "BancoDados"=None) -> "None":
 
         # ATRIBUIÇÃO DE VARIÁVEIS
+
+        self.__bd = bd
 
         self.clp = serv.clp
         self.rele = serv.rele
@@ -226,6 +232,7 @@ class Subestacao:
                 else:
                     logger.warning(f"[SE]  Descrição: \"{condic.descricao}\", Gravidade: \"{CONDIC_STR_DCT[condic.gravidade] if condic.gravidade in CONDIC_STR_DCT else 'Desconhecida'}\"")
                     self.condicionadores_ativos.append(condic)
+                    self.__bd.update_alarmes([datetime.now(pytz.timezone("Brazil/East")).replace(tzinfo=None), condic.gravidade, condic.descricao])
 
             logger.debug("")
             return condics_ativos
@@ -327,9 +334,6 @@ class Subestacao:
 
         self.l_falha_cmd_fechamento_52L = LeituraModbusBit(self.clp["SA"], REG_CLP["SE"]["DJL_FLH_CMD_FECHAMENTO"], descricao="[SE]  Disjuntor Linha Falha Comando Fechamento")
         self.condicionadores.append(c.CondicionadorBase(self.l_falha_cmd_fechamento_52L, CONDIC_INDISPONIBILIZAR))
-
-        # self.leitura_super_bobinas_reles_bloq = LeituraModbusBit(self.clp["SA"], REG_CLP["SE"]["SUPERVISAO_BOBINAS_RELES_BLOQUEIOS"], descricao="[SE]  Supervisão Bobinas, Relés e Bloqueios")
-        # self.condicionadores.append(c.CondicionadorBase(self.leitura_super_bobinas_reles_bloq, CONDIC_INDISPONIBILIZAR))
 
 
         # CONDICIONADORES RELÉS

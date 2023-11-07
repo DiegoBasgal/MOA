@@ -2,17 +2,20 @@ __version__ = "0.1"
 __author__ = "Diego Basgal", "Henrique Pfeifer"
 __description__ = "Este módulo corresponde a implementação da operação do BAY de comunicação."
 
+import pytz
 import logging
 import traceback
 import threading
 
 from time import time, sleep
+from datetime import datetime
 
 from src.funcoes.leitura import *
 from src.dicionarios.const import *
 from src.funcoes.condicionadores import *
 
 from src.conectores.servidores import Servidores
+from src.conectores.banco_dados import BancoDados
 from src.funcoes.escrita import EscritaModBusBit as EMB
 
 
@@ -20,9 +23,11 @@ logger = logging.getLogger("logger")
 
 
 class Bay:
-    def __init__(self, serv: "Servidores"=None) -> "None":
+    def __init__(self, serv: "Servidores"=None, bd: "BancoDados"=None) -> "None":
 
         # ATRIBUIÇÃO DE VARIÁVEIS
+
+        self.__bd = bd
 
         self.mp = serv.mp
         self.mr = serv.mr
@@ -275,6 +280,7 @@ class Bay:
                 else:
                     logger.warning(f"[BAY] Descrição: \"{condic.descricao}\", Gravidade: \"{CONDIC_STR_DCT[condic.gravidade] if condic.gravidade in CONDIC_STR_DCT else 'Desconhecida'}\"")
                     self.condicionadores_ativos.append(condic)
+                    self.__bd.update_alarmes([datetime.now(pytz.timezone("Brazil/East")).replace(tzinfo=None), condic.gravidade, condic.descricao])
 
             logger.debug("")
             return condics_ativos

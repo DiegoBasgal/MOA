@@ -3,16 +3,20 @@ __author__ = "Diego Basgal", "Henrique Pfeifer"
 __credits__ = ["Lucas Lavratti", ...]
 __description__ = "Este módulo corresponde a implementação da operação do Serviço Auxiliar."
 
+import pytz
 import logging
 import traceback
 
 import src.dicionarios.dict as dct
+
+from datetime import datetime
 
 from src.funcoes.leitura import *
 from src.dicionarios.const import *
 from src.funcoes.condicionadores import *
 
 from src.conectores.servidores import Servidores
+from src.conectores.banco_dados import BancoDados
 from src.funcoes.escrita import EscritaModBusBit as EMB
 
 
@@ -20,9 +24,11 @@ logger = logging.getLogger("logger")
 
 
 class ServicoAuxiliar:
-    def __init__(self, serv: "Servidores"=None) -> None:
+    def __init__(self, serv: "Servidores"=None, bd: "BancoDados"=None) -> None:
         pass
         # ATRIBUIÇÃO DE VARIÁVEIS
+
+        self.__bd = bd
 
         self.clp = serv.clp
 
@@ -73,6 +79,7 @@ class ServicoAuxiliar:
                 else:
                     logger.warning(f"[SA]  Descrição: \"{condic.descricao}\", Gravidade: \"{CONDIC_STR_DCT[condic.gravidade] if condic.gravidade in CONDIC_STR_DCT else 'Desconhecida'}\"")
                     self.condicionadores_ativos.append(condic)
+                    self.__bd.update_alarmes([datetime.now(pytz.timezone("Brazil/East")).replace(tzinfo=None), condic.gravidade, condic.descricao])
 
             logger.debug("")
             return condics_ativos
@@ -196,8 +203,8 @@ class ServicoAuxiliar:
         """
 
         # CONDICIONADORES ESSENCIAIS
-        # self.l_emergencia = LeituraModbusBit(self.clp["SA"], REG_CLP["SA"]["SEM_EMERGENCIA"], descricao="[SA]  Emergência")
-        # self.condicionadores_essenciais.append(CondicionadorBase(self.l_emergencia, CONDIC_NORMALIZAR))
+        self.l_bloq_geral = LeituraModbusBit(self.clp["SA"], REG_CLP["SA"]["BLQ_GERAL"], descricao="[SA]  Bloqueio Geral Acionado")
+        self.condicionadores_essenciais.append(CondicionadorBase(self.l_bloq_geral, CONDIC_NORMALIZAR))
 
 
         # CONDICIONADORES

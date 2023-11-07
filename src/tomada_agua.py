@@ -3,6 +3,7 @@ __author__ = "Diego Basgal", "Henrique Pfeifer"
 __credits__ = ["Lucas Lavratti", ...]
 __description__ = "Este módulo corresponde a implementação da operação da Tomada da Água."
 
+import pytz
 import logging
 import traceback
 
@@ -11,18 +12,23 @@ import src.comporta as cp
 import src.dicionarios.dict as dct
 import src.funcoes.condicionadores as c
 
+from datetime import datetime
+
 from src.funcoes.leitura import *
 from src.dicionarios.const import *
 
 from src.conectores.servidores import Servidores
+from src.conectores.banco_dados import BancoDados
 from src.funcoes.escrita import EscritaModBusBit as EMB
 
 logger = logging.getLogger("logger")
 
 class TomadaAgua:
-    def __init__(self, cfg: "dict"=None, serv: "Servidores"=None) -> "None":
+    def __init__(self, cfg: "dict"=None, serv: "Servidores"=None, bd: "BancoDados"=None) -> "None":
 
         # ATRIBUIÇÃO DE VARIÁVEIS
+
+        self.__bd = bd
 
         self.clp = serv.clp
 
@@ -117,6 +123,7 @@ class TomadaAgua:
                 else:
                     logger.warning(f"[TDA] Descrição: \"{condic.descricao}\", Gravidade: \"{CONDIC_STR_DCT[condic.gravidade] if condic.gravidade in CONDIC_STR_DCT else 'Desconhecida'}\"")
                     self.condicionadores_ativos.append(condic)
+                    self.__bd.update_alarmes([datetime.now(pytz.timezone("Brazil/East")).replace(tzinfo=None), condic.gravidade, condic.descricao])
 
             logger.debug("")
             return condics_ativos

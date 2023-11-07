@@ -408,6 +408,8 @@ REG_CLP = {
         "DJ52SA3_SEM_FLH":                              [5, 3],
         "DJS_BARRA_SELETORA_REMOTO":                    [5, 9],
 
+        "SUBTENSAO_CMD_SA_125VCC":                      [6, 14],
+
 
         ## ENTRADAS_DIGITAIS_4 -> REGS: 7, 6
 
@@ -454,7 +456,7 @@ REG_CLP = {
         "SIS_AGUA_FLH_PRESSURIZAR_FILTRO_B":            [17, 5],
         "SIS_AGUA_FLH_PRESSOSTATO_FILTRO_B":            [17, 6],
 
-        "SEM_EMERGENCIA":                               [28, 6],
+        "BLQ_GERAL":                                    [23, 15],
 
 
 

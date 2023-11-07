@@ -56,10 +56,10 @@ class Usina:
         self.bd = BancoDados("MOA")
 
 
-        self.bay = bay.Bay(serv)
-        self.se = se.Subestacao(serv)
-        self.sa = sa.ServicoAuxiliar(serv)
-        self.tda = tda.TomadaAgua(self.cfg, serv)
+        self.bay = bay.Bay(serv, self.bd)
+        self.se = se.Subestacao(serv, self.bd)
+        self.sa = sa.ServicoAuxiliar(serv, self.bd)
+        self.tda = tda.TomadaAgua(self.cfg, serv, self.bd)
 
         self.ug1 = UnidadeGeracao(1, self.cfg, self.bd, self.tda.cp, serv)
         self.ug2 = UnidadeGeracao(2, self.cfg, self.bd, self.tda.cp, serv)
