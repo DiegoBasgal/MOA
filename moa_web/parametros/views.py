@@ -173,6 +173,23 @@ def parametros_moa_view(request, *args, **kwargs):
         escolha_ugs = 2
 
     context = {"escolha_ugs": escolha_ugs, "usina": usina}
+
+
+    if usina.nv_alvo >= 821:
+        context['tag_nv_alvo'] = 3
+    
+    elif 820.85 <= usina.nv_alvo < 821:
+        context['tag_nv_alvo'] = 2
+    
+    elif 820.6 < usina.nv_alvo < 820.85:
+        context['tag_nv_alvo'] = 1
+    
+    elif usina.nv_alvo <= 820.6:
+        context['tag_nv_alvo'] = 0
+
+    else:
+        context['tag_nv_alvo'] = -1
+
     return render(request, "parametros_moa.html", context=context)
 
 

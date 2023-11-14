@@ -47,6 +47,8 @@ class UnidadeDeGeracao:
         self.__tempo_entre_tentativas: "int" = 0
         self.__limite_tentativas_de_normalizacao: "int" = 3
 
+        self.__condicionadores_atenuadores: "list[str, CondicionadorBase]" = []
+
         self.__leitura_dj_tsa: "LeituraModbusBit" = LeituraModbusBit(
             self.clp["SA"],
             REG["SA"]["SA_ED_PSA_DIJS_TSA_FECHADO"],
@@ -134,6 +136,8 @@ class UnidadeDeGeracao:
 
         self.aux_tempo_sincronizada: "datetime" = 0
         self.ts_auxiliar: "datetime" = self.get_time()
+
+        self.carregar_atenuadores()
 
         if not self.desabilitar_manutencao():
             logger.info(f"[UG{self.id}] Não foi possível enviar comando de \"Desabilitar Manutenção\"")
@@ -314,6 +318,18 @@ class UnidadeDeGeracao:
             raise ValueError(f"[UG{self.id}] Valor deve se um inteiro positivo")
 
     @property
+    def condicionadores_atenuadores(self) -> "list[CondicionadorBase]":
+        # PROPRIEDADE -> Retorna a lista de atenuadores da Unidade.
+
+        return self.__condicionadores_atenuadores
+
+    @condicionadores_atenuadores.setter
+    def condicionadores_atenuadores(self, var: "list[CondicionadorBase]") -> None:
+        # SETTER -> Atribui a nova lista de atenuadores da Unidade.
+
+        self.__condicionadores_atenuadores = var
+
+    @property
     def lista_ugs(self) -> "list[UnidadeDeGeracao]":
         return self._lista_ugs
 
@@ -365,6 +381,22 @@ class UnidadeDeGeracao:
                 logger.error(f"[UG{self.id}] Não foi possível ler o último estado da Unidade")
                 logger.info(f"[UG{self.id}] Acionando estado \"Manual\".")
                 self.__next_state = StateManual(self)
+
+    def carregar_atenuadores(self) -> "None":
+        """
+        Função para carregamento de valores para atenuação de carga.
+        """
+
+        self.condicionadores_atenuadores.append(self.condic_dict[f"tmp_fase_s_ug{self.__ug.id}"])
+        self.condicionadores_atenuadores.append(self.condic_dict[f"tmp_fase_r_ug{self.__ug.id}"])
+        self.condicionadores_atenuadores.append(self.condic_dict[f"tmp_fase_t_ug{self.__ug.id}"])
+        self.condicionadores_atenuadores.append(self.condic_dict[f"tmp_nucleo_gerador_1_ug{self.__ug.id}"])
+        self.condicionadores_atenuadores.append(self.condic_dict[f"tmp_nucleo_gerador_2_ug{self.__ug.id}"])
+        self.condicionadores_atenuadores.append(self.condic_dict[f"tmp_nucleo_gerador_3_ug{self.__ug.id}"])
+        self.condicionadores_atenuadores.append(self.condic_dict[f"tmp_mancal_casq_rad_ug{self.__ug.id}"])
+        self.condicionadores_atenuadores.append(self.condic_dict[f"tmp_mancal_casq_comb_ug{self.__ug.id}"])
+        self.condicionadores_atenuadores.append(self.condic_dict[f"tmp_mancal_escora_comb_ug{self.__ug.id}"])
+
 
     # TODO -> Adicionar após a integração do CLP do MOA no painel do SA, que depende da intervenção da Automatic.
     def atualizar_modbus_moa(self) -> "None":
@@ -587,6 +619,38 @@ class UnidadeDeGeracao:
             logger.error(f"[UG{self.id}] Não foi possivel enviar o comando de reconhecer e resetar alarmes.")
             logger.debug(traceback.format_exc())
             return False
+
+    def atenuar_carga(self) -> "None":
+        """
+        Função para atenuação de carga através de leitura de pressão de caixa espiral.
+
+        Calcula o ganho e verifica os limites máximo e mínimo para deteminar se
+        deve atenuar ou não.
+        """
+
+        atenuacao = 0
+        for condic in self.condicionadores_atenuadores:
+            atenuacao = max(atenuacao, condic.valor)
+            if self.etapa_atual == UG_SINCRONIZADA:
+                logger.debug(f"[UG{self.id}]          Verificando Atenuadores...")
+                if atenuacao < 0:
+                    logger.debug(f"[UG{self.id}]          - \"{condic.descr}\":   Leitura: {condic.leitura} | Atenuação: {atenuacao}")
+                else:
+                    logger.debug(f"[UG{self.id}]          Não há necessidade de Atenuação.")
+
+        ganho = 1 - atenuacao
+        aux = self.setpoint
+        if (self.setpoint > self.setpoint_minimo) and self.setpoint * ganho > self.setpoint_minimo:
+            self.setpoint = self.setpoint * ganho
+
+        elif (self.setpoint * ganho < self.setpoint_minimo) and (self.setpoint > self.setpoint_minimo):
+            self.setpoint =  self.setpoint_minimo
+
+        if self.etapa_atual == UG_SINCRONIZADA:
+            if ganho < 1:
+                logger.debug(f"[UG{self.id}]                                     SP {aux} * GANHO {ganho} = {self.setpoint} kW")
+            else:
+                pass
 
     def controle_etapas(self) -> "None":
         # PARANDO
