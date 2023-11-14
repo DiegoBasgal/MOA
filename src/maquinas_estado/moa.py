@@ -288,7 +288,7 @@ class ModoManual(State):
 
         for ug in self.usn.ugs:
             logger.debug(f"[UG{ug.id}] Unidade:                            \"{UG_SM_STR_DCT[ug.codigo_state]}\"")
-            logger.debug(f"[UG{ug.id}] Etapa atual:                        \"{UG_STR_DCT_ETAPAS[ug.etapa]}\"")
+            logger.debug(f"[UG{ug.id}] Etapa atual:                        \"{ug.etapa}\"")
             logger.debug(f"[UG{ug.id}] Leitura de Potência:                {ug.leitura_potencia}")
             logger.debug("")
             ug.setpoint = ug.leitura_potencia

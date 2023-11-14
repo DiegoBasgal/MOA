@@ -9,7 +9,7 @@ from src.unidade_geracao import UnidadeGeracao
 
 
 class CondicionadorBase:
-    def __init__(self, leitura: "LeituraModbus", gravidade: "int"=1, etapas: "list"=[], id_unidade: "int"=None) -> "None":
+    def __init__(self, leitura: "LeituraModbus", gravidade: "int"=1, etapas: "list"=[], id_unidade: "int"=None, teste: "bool"=None) -> "None":
 
         self.__leitura = leitura
         self.__gravidade = gravidade
@@ -17,6 +17,8 @@ class CondicionadorBase:
 
         self.__etapas = etapas
         self.__id_unidade = id_unidade if id_unidade is not None else None
+
+        self.__teste = teste
 
         self._ugs: "list[UnidadeGeracao]" = []
 
@@ -60,6 +62,11 @@ class CondicionadorBase:
             return False if ug is not None and ug.etapa_atual in self.__etapas and self.leitura == 0 else False
         else:
             return False if self.leitura == 0 else True
+        
+    @property
+    def teste(self) -> "bool":
+
+        return self.__teste
 
     @property
     def ugs(self) -> "list[UnidadeGeracao]":
@@ -75,8 +82,8 @@ class CondicionadorBase:
 
 
 class CondicionadorExponencial(CondicionadorBase):
-    def __init__(self, leitura: "LeituraModbus", gravidade: "int"=2, valor_base: "float"=100, valor_limite: "float"=200, ordem: "float"=(1/4)) -> "None":
-        super().__init__(leitura, gravidade)
+    def __init__(self, leitura: "LeituraModbus", gravidade: "int"=2, valor_base: "float"=100, valor_limite: "float"=200, ordem: "float"=(1/4), teste: "bool"=None) -> "None":
+        super().__init__(leitura, gravidade, teste)
 
         self.__ordem = ordem
         self.__valor_base = valor_base
@@ -132,8 +139,8 @@ class CondicionadorExponencial(CondicionadorBase):
 
 
 class CondicionadorExponencialReverso(CondicionadorExponencial):
-    def __init__(self, leitura: "LeituraModbus", gravidade: "int"=2, valor_base: "float"=100, valor_limite: "float"=200, ordem: "float"=(1/4)) -> "None":
-        super().__init__(leitura, gravidade, valor_base, valor_limite, ordem)
+    def __init__(self, leitura: "LeituraModbus", gravidade: "int"=2, valor_base: "float"=100, valor_limite: "float"=200, ordem: "float"=(1/4), teste: "bool"=None) -> "None":
+        super().__init__(leitura, gravidade, valor_base, valor_limite, ordem, teste)
 
     @property
     def valor(self) -> "float":

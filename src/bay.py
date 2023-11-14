@@ -267,16 +267,18 @@ class Bay:
 
             logger.debug("")
             if self.condicionadores_ativos == []:
-                logger.warning(f"[BAY] Foram detectados Condicionadores ativos no Bay!")
+                logger.debug(f"[BAY] Foram detectados Condicionadores ativos no Bay!")
 
             else:
-                logger.info(f"[BAY] Ainda há Condicionadores ativos no Bay!")
+                logger.debug(f"[BAY] Ainda há Condicionadores ativos no Bay!")
 
             for condic in condics_ativos:
-                if condic in self.condicionadores_ativos:
+                if condic.teste:
+                    logger.debug(f"[BAY] Descrição: \"{condic.descricao}\", Gravidade: \"{CONDIC_STR_DCT[condic.gravidade] if condic.gravidade in CONDIC_STR_DCT else 'Desconhecida'}\", Obs.: \"TESTE\"")
+                    continue
+                elif condic in self.condicionadores_ativos:
                     logger.debug(f"[BAY] Descrição: \"{condic.descricao}\", Gravidade: \"{CONDIC_STR_DCT[condic.gravidade] if condic.gravidade in CONDIC_STR_DCT else 'Desconhecida'}\"")
                     continue
-
                 else:
                     logger.warning(f"[BAY] Descrição: \"{condic.descricao}\", Gravidade: \"{CONDIC_STR_DCT[condic.gravidade] if condic.gravidade in CONDIC_STR_DCT else 'Desconhecida'}\"")
                     self.condicionadores_ativos.append(condic)

@@ -220,13 +220,16 @@ class Subestacao:
 
             logger.debug("")
             if self.condicionadores_ativos == []:
-                logger.warning(f"[SE]  Foram detectados Condicionadores ativos na Subestação!")
+                logger.debug(f"[SE]  Foram detectados Condicionadores ativos na Subestação!")
 
             else:
-                logger.info(f"[SE]  Ainda há Condicionadores ativos na Subestação!")
+                logger.debug(f"[SE]  Ainda há Condicionadores ativos na Subestação!")
 
             for condic in condics_ativos:
-                if condic in self.condicionadores_ativos:
+                if condic.teste:
+                    logger.debug(f"[SE]  Descrição: \"{condic.descricao}\", Gravidade: \"{CONDIC_STR_DCT[condic.gravidade] if condic.gravidade in CONDIC_STR_DCT else 'Desconhecida'}\", Obs.: \"TESTE\"")
+                    continue
+                elif condic in self.condicionadores_ativos:
                     logger.debug(f"[SE]  Descrição: \"{condic.descricao}\", Gravidade: \"{CONDIC_STR_DCT[condic.gravidade] if condic.gravidade in CONDIC_STR_DCT else 'Desconhecida'}\"")
                     continue
                 else:

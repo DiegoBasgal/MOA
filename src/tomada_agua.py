@@ -111,13 +111,16 @@ class TomadaAgua:
 
             logger.debug("")
             if self.condicionadores_ativos == []:
-                logger.warning(f"[TDA] Foram detectados Condicionadores ativos na Tomada da Água!")
+                logger.debug(f"[TDA] Foram detectados Condicionadores ativos na Tomada da Água!")
 
             else:
-                logger.info(f"[TDA] Ainda há Condicionadores ativos na Tomada da Água!")
+                logger.debug(f"[TDA] Ainda há Condicionadores ativos na Tomada da Água!")
 
             for condic in condics_ativos:
-                if condic in self.condicionadores_ativos:
+                if condic.teste:
+                    logger.debug(f"[TDA] Descrição: \"{condic.descricao}\", Gravidade: \"{CONDIC_STR_DCT[condic.gravidade] if condic.gravidade in CONDIC_STR_DCT else 'Desconhecida'}\", Obs.: \"TESTE\"")
+                    continue
+                elif condic in self.condicionadores_ativos:
                     logger.debug(f"[TDA] Descrição: \"{condic.descricao}\", Gravidade: \"{CONDIC_STR_DCT[condic.gravidade] if condic.gravidade in CONDIC_STR_DCT else 'Desconhecida'}\"")
                     continue
                 else:
