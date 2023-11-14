@@ -635,7 +635,7 @@ class UnidadeDeGeracao:
         for condic in self.condicionadores_atenuadores:
             atenuacao = max(atenuacao, condic.valor)
             if self.etapa_atual == UG_SINCRONIZADA:
-                if atenuacao < 0:
+                if atenuacao > 0:
                     flags += 1
                     logger.debug(f"[UG{self.id}]          - \"{condic.descr}\":   Leitura: {condic.leitura} | Atenuação: {atenuacao}")
         
