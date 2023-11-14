@@ -186,5 +186,6 @@ class StateDisponivel(State):
 
         else:
             self.parent.controlar_etapas()
+            self.parent.atenuar_carga()
 
             return self

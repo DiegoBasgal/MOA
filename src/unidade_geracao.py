@@ -678,14 +678,17 @@ class UnidadeGeracao:
         """
 
         atenuacao = 0
+        flags = 0
+        logger.debug(f"[UG{self.id}]          Verificando Atenuadores...")
+
         for condic in self.condicionadores_atenuadores:
             atenuacao = max(atenuacao, condic.valor)
-            logger.debug(f"[UG{self.id}]          Verificando Atenuadores...")
             if atenuacao < 0:
+                flags += 1
                 logger.debug(f"[UG{self.id}]          - \"{condic.descr}\":   Leitura: {condic.leitura.valor} | Atenuação: {atenuacao}")
-            else:
-                logger.debug(f"[UG{self.id}]          Não há necessidade de Atenuação.")
 
+        if flags == 0:
+            logger.debug(f"[UG{self.id}]          Não há necessidade de Atenuação.")
 
         ganho = 1 - atenuacao
         aux = self.setpoint
