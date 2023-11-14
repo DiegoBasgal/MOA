@@ -683,7 +683,7 @@ class UnidadeGeracao:
 
         for condic in self.condicionadores_atenuadores:
             atenuacao = max(atenuacao, condic.valor)
-            if atenuacao < 0:
+            if atenuacao > 0:
                 flags += 1
                 logger.debug(f"[UG{self.id}]          - \"{condic.descr}\":   Leitura: {condic.leitura.valor} | Atenuação: {atenuacao}")
 
