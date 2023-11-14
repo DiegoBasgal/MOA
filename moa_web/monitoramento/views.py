@@ -32,13 +32,13 @@ def monitoramento_view(request, *args, **kwargs):
 
     context = {
         "usina": usina,
-        "em_acionada": "Sim" if usina.emergencia_acionada else "Não",
+        "emergencia": "Sim" if usina.emergencia_acionada else "Não",
         "timestamp": usina.timestamp.strftime("%d/%m/%Y, %H:%M:%S"),
         "nv_alvo": f"{usina.nv_alvo:3.2f}",
         "ug1_state": usina.ug1_ultimo_estado,
         "ug2_state": usina.ug2_ultimo_estado,
         "ug3_state": usina.ug3_ultimo_estado,
-        "aguardo": "Sim" if usina.aguardando_reservatorio > 0 else "Não",
+        "aguardando_reservatorio": "Sim" if usina.aguardando_reservatorio > 0 else "Não",
         "CLP_MOA": usina.clp_moa_ip,
     }
 
@@ -50,9 +50,9 @@ def monitoramento_view(request, *args, **kwargs):
         reg_dj = clp_sa.read_discrete_inputs(15)[0]
         setpot_usina = clp_sa.read_input_registers(26)[0]
         context["setpot_usina"] = setpot_usina
-        context["tensao_rs"] = clp_sa.read_input_registers(16)[0] * 100
-        context["tensao_st"] = clp_sa.read_input_registers(17)[0] * 100
-        context["tensao_tr"] = clp_sa.read_input_registers(18)[0] * 100
+        context["tensao_rs"] = f"{(clp_sa.read_input_registers(16)[0] * 100) / 1000:0.1f}"
+        context["tensao_st"] = f"{(clp_sa.read_input_registers(17)[0] * 100) / 1000:0.1f}"
+        context["tensao_tr"] = f"{(clp_sa.read_input_registers(18)[0] * 100) / 1000:0.1f}"
 
         if reg_dj == 1:
             context["status_dj52l"] = 0
@@ -166,6 +166,8 @@ def monitoramento_view(request, *args, **kwargs):
         context["setpot_ug3"] = setpoint_ug3
         context["pot_ug3"] = potencia_ug3
         context["tempo_ug3"] = f"{float((hora + 49001.22) + minuto):.2f}"
+
+    context["pot_usina"] = f"{potencia_ug1 + potencia_ug2 + potencia_ug3:0.1f}"
 
     if clp_moa.open():
         context["CLP_Status"] = True

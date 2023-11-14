@@ -152,7 +152,7 @@ class UnidadeGeracao:
 
         self.ts_auxiliar: "datetime" = self.get_time()
 
-        self.condicionadores_atenuadores.append(self.oco.condic_dict[f"pressao_cx_espiral_ug{self.id}"])
+        self.carregar_atenuadores()
 
 
     # Property -> VARIÁVEIS PRIVADAS
@@ -407,6 +407,27 @@ class UnidadeGeracao:
                 logger.error(f"[UG{self.id}] Não foi possível ler o último estado da Unidade")
                 logger.info(f"[UG{self.id}] Acionando estado \"Manual\".")
                 self.__next_state = StateManual(self)
+
+
+    def carregar_atenuadores(self) -> "None":
+        """
+        Função para carregamento de valores para atenuação de carga.
+        """
+
+        self.condicionadores_atenuadores.append(self.oco.condic_dict[f"tmp_fase_r_ug{self.id}"])
+        self.condicionadores_atenuadores.append(self.oco.condic_dict[f"tmp_fase_s_ug{self.id}"])
+        self.condicionadores_atenuadores.append(self.oco.condic_dict[f"tmp_fase_t_ug{self.id}"])
+        self.condicionadores_atenuadores.append(self.oco.condic_dict[f"tmp_nucleo_estator_ug{self.id}"])
+        self.condicionadores_atenuadores.append(self.oco.condic_dict[f"tmp_mancal_rad_dia_1_ug{self.id}"])
+        self.condicionadores_atenuadores.append(self.oco.condic_dict[f"tmp_mancal_rad_tra_1_ug{self.id}"])
+        self.condicionadores_atenuadores.append(self.oco.condic_dict[f"tmp_mancal_rad_dia_2_ug{self.id}"])
+        self.condicionadores_atenuadores.append(self.oco.condic_dict[f"tmp_mancal_rad_tra_2_ug{self.id}"])
+        self.condicionadores_atenuadores.append(self.oco.condic_dict[f"tmp_saida_de_ar_ug{self.id}"])
+        self.condicionadores_atenuadores.append(self.oco.condic_dict[f"tmp_mancal_guia_radial_ug{self.id}"])
+        self.condicionadores_atenuadores.append(self.oco.condic_dict[f"tmp_mancal_guia_escora_ug{self.id}"])
+        self.condicionadores_atenuadores.append(self.oco.condic_dict[f"tmp_mancal_guia_contra_ug{self.id}"])
+        self.condicionadores_atenuadores.append(self.oco.condic_dict[f"pressao_cx_espiral_ug{self.id}"])
+
 
     def atualizar_modbus_moa(self) -> "None":
         """
@@ -861,8 +882,11 @@ class UnidadeGeracao:
         for condic in self.condicionadores_atenuadores:
             atenuacao = max(atenuacao, condic.valor)
             if self.etapa_atual == UG_SINCRONIZADA:
-                logger.debug(f"[UG{self.id}]          Verificando Atenuadores:")
-                logger.debug(f"[UG{self.id}]          - \"{condic.descr}\":   Leitura: {condic.leitura} | Atenuação: {atenuacao}")
+                logger.debug(f"[UG{self.id}]          Verificando Atenuadores...")
+                if atenuacao < 0:
+                    logger.debug(f"[UG{self.id}]          - \"{condic.descr}\":   Leitura: {condic.leitura} | Atenuação: {atenuacao}")
+                else:
+                    logger.debug(f"[UG{self.id}]          Não há necessidade de Atenuação.")
 
         ganho = 1 - atenuacao
         aux = self.setpoint
@@ -873,7 +897,10 @@ class UnidadeGeracao:
             self.setpoint =  self.setpoint_minimo
 
         if self.etapa_atual == UG_SINCRONIZADA:
-            logger.debug(f"[UG{self.id}]                                     SP {aux} * GANHO {ganho} = {self.setpoint} kW")
+            if ganho < 1:
+                logger.debug(f"[UG{self.id}]                                     SP {aux} * GANHO {ganho} = {self.setpoint} kW")
+            else:
+                pass
 
     def ajuste_inicial_cx(self) -> "None":
         """

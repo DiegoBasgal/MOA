@@ -59,6 +59,7 @@ class ParametrosUsina(models.Model):
     ug1_ultimo_estado = models.IntegerField(default=0)
     ug1_press_cx_alvo = models.DecimalField(max_digits=10, decimal_places=2, default=16.3)
 
+    aviso_caixa_espiral_ug1 = models.DecimalField(max_digits=10, decimal_places=2, default=16.5)
     alerta_caixa_espiral_ug1 = models.DecimalField(max_digits=10, decimal_places=2, default=10)
     limite_caixa_espiral_ug1 = models.DecimalField(max_digits=10, decimal_places=2, default=0)
 
@@ -95,6 +96,7 @@ class ParametrosUsina(models.Model):
     ug2_ultimo_estado = models.IntegerField(default=0)
     ug2_press_cx_alvo = models.DecimalField(max_digits=10, decimal_places=2, default=16.3)
 
+    aviso_caixa_espiral_ug2 = models.DecimalField(max_digits=10, decimal_places=2, default=16.5)
     alerta_caixa_espiral_ug2 = models.DecimalField(max_digits=10, decimal_places=2, default=10)
     limite_caixa_espiral_ug2 = models.DecimalField(max_digits=10, decimal_places=2, default=0)
 
@@ -131,6 +133,7 @@ class ParametrosUsina(models.Model):
     ug3_ultimo_estado = models.IntegerField(default=0)
     ug3_press_cx_alvo = models.DecimalField(max_digits=10, decimal_places=2, default=16.3)
 
+    aviso_caixa_espiral_ug3 = models.DecimalField(max_digits=10, decimal_places=2, default=16.5)
     alerta_caixa_espiral_ug3 = models.DecimalField(max_digits=10, decimal_places=2, default=10)
     limite_caixa_espiral_ug3 = models.DecimalField(max_digits=10, decimal_places=2, default=0)
 

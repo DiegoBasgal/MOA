@@ -106,6 +106,7 @@ class Usina:
 
         self.pot_disp: "int" = 0
         self.ug_operando: "int" = 0
+        self.ver_pot_ant: "int" = 0
         self.erro_leitura_montante: "int" = 0
         self.modo_de_escolha_das_ugs: "int" = -1
 
@@ -537,12 +538,12 @@ class Usina:
                 for ug in self.ugs:
                     ug.step()
 
-        elif self.nv_montante <= self.cfg["nv_minimo"] and not self.aguardando_reservatorio:
+        elif self.nv_montante_recente <= self.cfg["nv_minimo"] and not self.aguardando_reservatorio:
             logger.debug("[USN] Nível montante abaixo do Mínimo.")
             logger.debug(f"[USN]          Leitura:                   {self.nv_montante:0.3f}")
             logger.debug(f"[USN]          Filtro EMA:                {self.nv_montante_recente:0.3f}")
 
-            if self.nv_montante < self.cfg["nv_minimo"] and self.nv_montante_anterior > self.cfg["nv_minimo"]:
+            if self.nv_montante_recente < self.cfg["nv_minimo"] and self.nv_montante_anterior > self.cfg["nv_minimo"]:
                 if self.erro_leitura_montante == 3:
                     logger.warning(f"[USN] Tentativas de Leitura de Nível Montante ultrapassadas!")
                     self.erro_leitura_montante = 0
@@ -639,6 +640,7 @@ class Usina:
 
     def ajustar_potencia(self, pot_alvo) -> None:
         if self._pot_alvo_anterior == -1:
+            self.ver_pot_ant = pot_alvo
             self._pot_alvo_anterior = pot_alvo
 
         if pot_alvo < 0.1:
@@ -660,6 +662,7 @@ class Usina:
         self._pot_alvo_anterior = pot_alvo
 
         logger.debug(f"[USN] Potência alvo após ajuste:          {pot_alvo:0.3f}")
+
         self.distribuir_potencia(pot_alvo)
 
     def ajustar_ie_padrao(self) -> int:
@@ -846,7 +849,7 @@ class Usina:
         for ug in self.ugs:
             ug.oco.atualizar_limites_condicionadores(parametros)
 
-        # self.heartbeat()
+        self.heartbeat()
 
     def atualizar_valores_montante(self) -> None:
         """
