@@ -282,14 +282,14 @@ class ServicoAuxiliar:
 
 
         # LEITURA PERIÓDICA
-        self.l_sis_agua_bomba_disp = LeituraModbusBit(self.clp["SA"], REG_CLP["SA"]["SIS_AGUA_BOMBA_DISPONIVEL"], invertido=True, descricao="[SA]  Sistem Água Bomba Disponível")
+        self.l_sis_agua_bomba_disp = LeituraModbusBit(self.clp["SA"], REG_CLP["SA"]["SIS_AGUA_BOMBA_DISPONIVEL"], descricao="[SA]  Sistem Água Bomba Disponível")
 
         self.l_falha_bomba_dren_1 = LeituraModbusBit(self.clp["SA"], REG_CLP["SA"]["BOMBA_DREN_1_FLH"], descricao="[SA]  Bomba Drenagem 1 Falha")
         self.l_falha_bomba_dren_2 = LeituraModbusBit(self.clp["SA"], REG_CLP["SA"]["BOMBA_DREN_2_FLH"], descricao="[SA]  Bomba Drenagem 2 Falha")
         self.l_falha_bomba_dren_3 = LeituraModbusBit(self.clp["SA"], REG_CLP["SA"]["BOMBA_DREN_3_FLH"], descricao="[SA]  Bomba Drenagem 3 Falha")
         self.l_poco_dren_dicrepancia = LeituraModbusBit(self.clp["SA"], REG_CLP["SA"]["POCO_DREN_DISCRE_BOIAS"], descricao="[SA]  Boias Poço Drenagem Discrepância")
         self.l_sis_agua_falha_ligar_bomba = LeituraModbusBit(self.clp["SA"], REG_CLP["SA"]["SIS_AGUA_FLH_LIGA_BOMBA"], descricao="[SA]  Sistema Água Falha Ligar Bomba")
-        self.l_djs_barra_sel_remoto = LeituraModbusBit(self.clp["SA"], REG_CLP["SA"]["DJS_BARRA_SELETORA_REMOTO"], descricao="[SA]  Disjuntores Barra Seletora Modo Remoto")
+        self.l_djs_barra_sel_remoto = LeituraModbusBit(self.clp["SA"], REG_CLP["SA"]["DJS_BARRA_SELETORA_REMOTO"], invertido=True, descricao="[SA]  Disjuntores Barra Seletora Modo Remoto")
 
         self.l_52SA1_sem_falha = LeituraModbusBit(self.clp["SA"], REG_CLP["SA"]["DJ52SA1_SEM_FLH"], invertido=True, descricao="[SA]  Disjuntor 52SA1 Sem Falha")
         self.l_52SA2_sem_falha = LeituraModbusBit(self.clp["SA"], REG_CLP["SA"]["DJ52SA2_SEM_FLH"], invertido=True, descricao="[SA]  Disjuntor 52SA2 Sem Falha")

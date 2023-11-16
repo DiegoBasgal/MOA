@@ -142,5 +142,5 @@ class ControleEstados(models.Model):
 
     ts = models.DateTimeField(primary_key=True, default=0)
 
-    ultimo_estado_ug1 = models.IntegerField(default=0)
-    ultimo_estado_ug2 = models.IntegerField(default=0)
+    ultimo_estado_ug1 = models.TextField(default="")
+    ultimo_estado_ug2 = models.TextField(default="")

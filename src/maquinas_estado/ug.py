@@ -4,6 +4,8 @@ __description__ = "Este módulo corresponde a implementação da máquina de est
 
 import logging
 
+import src.unidade_geracao as u
+
 from threading import Thread
 
 from src.dicionarios.const import *
@@ -11,7 +13,7 @@ from src.dicionarios.const import *
 logger = logging.getLogger("logger")
 
 class State:
-    def __init__(self, parent=None) -> "None":
+    def __init__(self, parent: "u.UnidadeGeracao"=None) -> "None":
 
         # VERIFICAÇÃO DE ARGUENTOS
 
@@ -42,6 +44,8 @@ class StateManual(State):
 
         # FINALIZAÇÃO DO __INIT__
 
+        self.parent.atualizar_registro_estados()
+
         logger.debug("")
         logger.info(f"[UG{self.parent.id}] Entrando no estado:                 \"Manual\". Para retornar a operação autônoma, favor agendar na interface web")
         logger.debug(f"[UG{self.parent.id}] Tentativas de normalização:         {self.parent.tentativas_normalizacao}/{self.parent.limite_tentativas_normalizacao}")
@@ -70,6 +74,8 @@ class StateIndisponivel(State):
 
         # FINALIZAÇÃO DO __INIT__
 
+        self.parent.atualizar_registro_estados()
+
         logger.debug("")
         logger.info(f"[UG{self.parent.id}] Entrando no estado:                 \"Indisponível\". Para retornar a operação autônoma, favor agendar na interface web")
         logger.debug(f"[UG{self.parent.id}] Tentativas de normalização:         {self.parent.tentativas_normalizacao}/{self.parent.limite_tentativas_normalizacao}")
@@ -97,6 +103,8 @@ class StateRestrito(State):
         self.parent.borda_parar = True if self.parent.borda_parar else False
 
         # FINALIZAÇÃO DO __INIT__
+
+        self.parent.atualizar_registro_estados()
 
         logger.debug("")
         logger.info(f"[UG{self.parent.id}] Entrando no estado                  \"Restrito\"")
@@ -153,6 +161,8 @@ class StateDisponivel(State):
         self.parent.borda_parar = False
 
         # FINALIZAÇÃO DO __INIT__
+
+        self.parent.atualizar_registro_estados()
 
         logger.debug("")
         logger.info(f"[UG{self.parent.id}] Entrando no estado:                 \"Disponível\"")

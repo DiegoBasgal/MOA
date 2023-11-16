@@ -66,6 +66,7 @@ class UnidadeGeracao:
             descricao=f"[UG{self.id}] Leitura Horímetro"
         )
 
+        self.__init_registro_estados: "int" = 0
         self.__tempo_entre_tentativas: "int" = 0
         self.__limite_tentativas_normalizacao: "int" = 3
 
@@ -368,6 +369,28 @@ class UnidadeGeracao:
                 logger.error(f"[UG{self.id}] Não foi possível ler o último estado da Unidade")
                 logger.info(f"[UG{self.id}] Acionando estado \"Manual\".")
                 self.__next_state = StateManual(self)
+
+
+    def atualizar_registro_estados(self) -> "None":
+        """
+        Função para registro de troca de estados no banco de dados.
+
+        A função é chamada na inicialização da classe de estado no momento da troca.
+        """
+
+        if self.__init_registro_estados == 0:
+            self.__init_registro_estados = 1
+        else:
+            try:
+                self.__db.update_controle_estados([
+                    self.get_time().strftime("%Y-%m-%d %H:%M:%S"),
+                    UG_SM_STR_DCT[self.codigo_state] if self.id == 1 else "",
+                    UG_SM_STR_DCT[self.codigo_state] if self.id == 2 else "",
+                ])
+
+            except Exception:
+                logger.error(f"[UG{self.id}] Houve um erro ao inserir os dados para controle de troca de estados no Banco de Dados.")
+                logger.debug(traceback.format_exc())
 
 
     def step(self) -> "None":
@@ -813,6 +836,9 @@ class UnidadeGeracao:
         """
 
         flag = CONDIC_IGNORAR
+        autor_a = 0
+        autor_n = 0
+        autor_i = 0
 
         if True in (condic.ativo for condic in self.condicionadores_essenciais):
             condics_ativos = [condic for condics in [self.condicionadores_essenciais, self.condicionadores] for condic in condics if condic.ativo]
@@ -832,23 +858,41 @@ class UnidadeGeracao:
                     flag = condic.gravidade
                     continue
 
-                elif condic.gravidade == CONDIC_NORMALIZAR:
+                elif condic.gravidade == CONDIC_INDISPONIBILIZAR:
                     logger.warning(f"[UG{self.id}] Descrição: \"{condic.descricao}\", Gravidade: \"{CONDIC_STR_DCT[condic.gravidade] if condic.gravidade in CONDIC_STR_DCT else 'Desconhecida'}\"")
                     self.condicionadores_ativos.append(condic)
-                    flag = CONDIC_NORMALIZAR
-                    self.__db.update_alarmes([datetime.now(pytz.timezone("Brazil/East")).replace(tzinfo=None), condic.gravidade, condic.descricao])
+                    flag = CONDIC_INDISPONIBILIZAR
+                    self.__db.update_alarmes([
+                        self.get_time().strftime("%Y-%m-%d %H:%M:%S"),
+                        condic.gravidade,
+                        condic.descricao,
+                        "X" if autor_i == 0 else ""
+                    ])
+                    autor_i += 1
 
                 elif condic.gravidade == CONDIC_AGUARDAR:
                     logger.warning(f"[UG{self.id}] Descrição: \"{condic.descricao}\", Gravidade: \"{CONDIC_STR_DCT[condic.gravidade] if condic.gravidade in CONDIC_STR_DCT else 'Desconhecida'}\"")
                     self.condicionadores_ativos.append(condic)
                     flag = CONDIC_NORMALIZAR
-                    self.__db.update_alarmes([datetime.now(pytz.timezone("Brazil/East")).replace(tzinfo=None), condic.gravidade, condic.descricao])
+                    self.__db.update_alarmes([
+                        self.get_time().strftime("%Y-%m-%d %H:%M:%S"),
+                        condic.gravidade,
+                        condic.descricao,
+                        "X" if autor_i == 0 and autor_a == 0 else ""
+                    ])
+                    autor_a += 1
 
-                elif condic.gravidade == CONDIC_INDISPONIBILIZAR:
+                elif condic.gravidade == CONDIC_NORMALIZAR:
                     logger.warning(f"[UG{self.id}] Descrição: \"{condic.descricao}\", Gravidade: \"{CONDIC_STR_DCT[condic.gravidade] if condic.gravidade in CONDIC_STR_DCT else 'Desconhecida'}\"")
                     self.condicionadores_ativos.append(condic)
-                    flag = CONDIC_INDISPONIBILIZAR
-                    self.__db.update_alarmes([datetime.now(pytz.timezone("Brazil/East")).replace(tzinfo=None), condic.gravidade, condic.descricao])
+                    flag = CONDIC_NORMALIZAR
+                    self.__db.update_alarmes([
+                        self.get_time().strftime("%Y-%m-%d %H:%M:%S"),
+                        condic.gravidade,
+                        condic.descricao,
+                        "X" if autor_i == 0 and autor_a == 0 and autor_n == 0 else ""
+                    ])
+                    autor_n += 1
 
             logger.debug("")
             return flag
@@ -1699,7 +1743,6 @@ class UnidadeGeracao:
         self.l_falha_1_rv_b15 = LeituraModbusBit(self.rv[f"UG{self.id}"], REG_CLP[f"UG{self.id}"]["RV_FLH_1_B15"], descricao=f"[UG{self.id}][RV] Ruído Medição Velocidade Retaguarda")
         self.l_falha_2_rv_b0 = LeituraModbusBit(self.rv[f"UG{self.id}"], REG_CLP[f"UG{self.id}"]["RV_FLH_2_B0"], descricao=f"[UG{self.id}][RV] Tempo Excessivo Partida")
         self.l_falha_2_rv_b4 = LeituraModbusBit(self.rv[f"UG{self.id}"], REG_CLP[f"UG{self.id}"]["RV_FLH_2_B4"], descricao=f"[UG{self.id}][RV] Diferencial Medição Velocidade Principal e Retaguarda")
-        self.l_saidas_digitais_rv_b0 = LeituraModbus(self.rv[f"UG{self.id}"], REG_CLP[f"UG{self.id}"]["RV_SAIDAS_DIGITAIS"],  descricao=f"[UG{self.id}][RV] Relé Trip Não Atuado")
 
         self.l_falha_3_rt_b0 = LeituraModbusBit(self.rt[f"UG{self.id}"], REG_CLP[f"UG{self.id}"]["RT_FLH_3_B0"], descricao=f"[UG{self.id}][RT] Perda Medição Potência Reativa")
         self.l_falha_3_rt_b1 = LeituraModbusBit(self.rt[f"UG{self.id}"], REG_CLP[f"UG{self.id}"]["RT_FLH_3_B1"], descricao=f"[UG{self.id}][RT] Perda Medição Tensão Terminal")

@@ -181,16 +181,15 @@ class BancoDados:
         )
         self.conn.commit()
 
-    def update_controle_estados(self, valores: "int") -> "None":
+    def update_controle_estados(self, valores: "list") -> "None":
         """
         Função para atualizar o último estado das Unidades de Geração no Banco.
         """
 
         self.cursor.execute(
             "INSERT INTO parametros_controleestados "
-            "VALUES (%s,%s, "
-                    "%s);",
-                    tuple(valores)
+            "VALUES (%s, %s, %s);",
+            tuple(valores)
         )
         self.conn.commit()
 
@@ -202,7 +201,7 @@ class BancoDados:
 
         self.cursor.execute(
             "INSERT INTO alarmes_alarmes "
-            "VALUES (%s, %s, %s);",
+            "VALUES (%s, %s, %s, %s);",
             tuple(valores)
         )
         self.conn.commit()

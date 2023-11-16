@@ -265,12 +265,12 @@ class Usina:
         """
 
         while True:
-            # self.se.verificar_leituras()
-            # self.sa.verificar_leituras()
-            # self.tda.verificar_leituras()
+            self.se.verificar_leituras()
+            self.sa.verificar_leituras()
+            self.tda.verificar_leituras()
 
-            # for ug in self.ugs:
-            #     ug.verificar_leituras()
+            for ug in self.ugs:
+                ug.verificar_leituras()
 
             if True in (dct.voip[r][0] for r in dct.voip):
                 Voip.acionar_chamada()
