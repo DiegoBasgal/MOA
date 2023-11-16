@@ -99,6 +99,7 @@ class UnidadeGeracao:
             descr=f"[UG{self.id}] Etapa Atual",
         )
 
+        self.__init_registro_estados: "int" = 0
         self.__tempo_entre_tentativas: "int" = 0
         self.__limite_tentativas_de_normalizacao: "int" = 3
 
@@ -407,6 +408,29 @@ class UnidadeGeracao:
                 logger.error(f"[UG{self.id}] Não foi possível ler o último estado da Unidade")
                 logger.info(f"[UG{self.id}] Acionando estado \"Manual\".")
                 self.__next_state = StateManual(self)
+
+
+    def atualizar_registro_estados(self) -> "None":
+        """
+        Função para registro de troca de estados no banco de dados.
+
+        A função é chamada na inicialização da classe de estado no momento da troca.
+        """
+
+        if self.__init_registro_estados == 0:
+            self.__init_registro_estados = 1
+        else:
+            try:
+                self.db.update_controle_estados([
+                    self.get_time().strftime("%Y-%m-%d %H:%M:%S"),
+                    UG_SM_STR_DCT[self.codigo_state] if self.id == 1 else "",
+                    UG_SM_STR_DCT[self.codigo_state] if self.id == 2 else "",
+                    UG_SM_STR_DCT[self.codigo_state] if self.id == 3 else "",
+                ])
+
+            except Exception:
+                logger.error(f"[UG{self.id}] Houve um erro ao inserir os dados para controle de troca de estados no Banco de Dados.")
+                logger.debug(traceback.format_exc())
 
 
     def carregar_atenuadores(self) -> "None":

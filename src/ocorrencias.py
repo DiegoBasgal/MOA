@@ -2,6 +2,7 @@ import pytz
 import logging
 import traceback
 
+import src.unidade_geracao as u
 import src.mensageiro.dict as vd
 import src.dicionarios.dict as d
 
@@ -78,6 +79,8 @@ class OcorrenciasGerais:
         """
 
         flag = CONDIC_IGNORAR
+        autor_i = 0
+        autor_n = 0
 
         if True in (condic.ativo for condic in self.condicionadores_essenciais):
             condicionadores_ativos = [condic for condics in [self.condicionadores_essenciais, self.condicionadores] for condic in condics if condic.ativo]
@@ -94,17 +97,29 @@ class OcorrenciasGerais:
                     flag = condic.gravidade
                     continue
 
-                elif condic.gravidade == CONDIC_NORMALIZAR:
-                    logger.warning(f"[OCO-USN] Descrição: \"{condic.descr}\", Gravidade: \"{CONDIC_STR_DCT[condic.gravidade] if condic.gravidade in CONDIC_STR_DCT else 'Desconhecida'}\"")
-                    self.condicionadores_ativos.append(condic)
-                    flag = CONDIC_NORMALIZAR
-                    self.__db.update_alarmes([datetime.now(pytz.timezone("Brazil/East")).replace(tzinfo=None), condic.gravidade, condic.descr])
-
                 elif condic.gravidade == CONDIC_INDISPONIBILIZAR:
                     logger.warning(f"[OCO-USN] Descrição: \"{condic.descr}\", Gravidade: \"{CONDIC_STR_DCT[condic.gravidade] if condic.gravidade in CONDIC_STR_DCT else 'Desconhecida'}\"")
                     self.condicionadores_ativos.append(condic)
                     flag = CONDIC_INDISPONIBILIZAR
-                    self.__db.update_alarmes([datetime.now(pytz.timezone("Brazil/East")).replace(tzinfo=None), condic.gravidade, condic.descr])
+                    self.__db.update_alarmes([
+                        (datetime.now(pytz.timezone("Brazil/East")).replace(tzinfo=None)).strftime("%Y-%m-%d %H:%M:%S"),
+                        condic.gravidade,
+                        condic.descr,
+                        "X" if autor_i == 0 else ""
+                    ])
+                    autor_i += 1
+
+                elif condic.gravidade == CONDIC_NORMALIZAR:
+                    logger.warning(f"[OCO-USN] Descrição: \"{condic.descr}\", Gravidade: \"{CONDIC_STR_DCT[condic.gravidade] if condic.gravidade in CONDIC_STR_DCT else 'Desconhecida'}\"")
+                    self.condicionadores_ativos.append(condic)
+                    flag = CONDIC_NORMALIZAR
+                    self.__db.update_alarmes([
+                        (datetime.now(pytz.timezone("Brazil/East")).replace(tzinfo=None)).strftime("%Y-%m-%d %H:%M:%S"),
+                        condic.gravidade,
+                        condic.descr,
+                        "X" if autor_i == 0 and autor_n == 0 else ""
+                        ])
+                    autor_n += 1
 
             logger.debug("")
             return flag
@@ -351,7 +366,7 @@ class OcorrenciasGerais:
 
 
 class OcorrenciasUnidades:
-    def __init__(self, ug, clp: "dict[str, ModbusClient]"=None, db: BancoDados=None):
+    def __init__(self, ug: "u.UnidadeGeracao", clp: "dict[str, ModbusClient]"=None, db: BancoDados=None):
 
         # ATRIBUIÇÃO DE VARIÁVEIS PRIVADAS
 
@@ -454,6 +469,9 @@ class OcorrenciasUnidades:
         """
 
         flag = CONDIC_IGNORAR
+        autor_i = 0
+        autor_a = 0
+        autor_n = 0
 
         if True in (condic.ativo for condic in self.condicionadores_essenciais):
             condicionadores_ativos = [condic for condics in [self.condicionadores_essenciais, self.condicionadores] for condic in condics if condic.ativo]
@@ -470,23 +488,41 @@ class OcorrenciasUnidades:
                     flag = condic.gravidade
                     continue
 
-                elif condic.gravidade == CONDIC_NORMALIZAR:
+                elif condic.gravidade == CONDIC_INDISPONIBILIZAR:
                     logger.warning(f"[OCO-UG{self.__ug.id}] Descrição: \"{condic.descr}\", Gravidade: \"{CONDIC_STR_DCT[condic.gravidade] if condic.gravidade in CONDIC_STR_DCT else 'Desconhecida'}\"")
                     self.condicionadores_ativos.append(condic)
-                    flag = CONDIC_NORMALIZAR
-                    self.__db.update_alarmes([datetime.now(pytz.timezone("Brazil/East")).replace(tzinfo=None), condic.gravidade, condic.descr])
+                    flag = CONDIC_INDISPONIBILIZAR
+                    self.__db.update_alarmes([
+                        self.__ug.get_time().strftime("%Y-%m-%d %H:%M:%S"),
+                        condic.gravidade,
+                        condic.descr,
+                        "X" if autor_i == 0 else ""
+                    ])
+                    autor_i += 1
 
                 elif condic.gravidade == CONDIC_AGUARDAR:
                     logger.warning(f"[OCO-UG{self.__ug.id}] Descrição: \"{condic.descr}\", Gravidade: \"{CONDIC_STR_DCT[condic.gravidade] if condic.gravidade in CONDIC_STR_DCT else 'Desconhecida'}\"")
                     self.condicionadores_ativos.append(condic)
                     flag = CONDIC_NORMALIZAR
-                    self.__db.update_alarmes([datetime.now(pytz.timezone("Brazil/East")).replace(tzinfo=None), condic.gravidade, condic.descr])
+                    self.__db.update_alarmes([
+                        self.__ug.get_time().strftime("%Y-%m-%d %H:%M:%S"),
+                        condic.gravidade,
+                        condic.descr,
+                        "X" if autor_i == 0 and autor_a == 0 else "",
+                        ])
+                    autor_a += 1
 
-                elif condic.gravidade == CONDIC_INDISPONIBILIZAR:
+                elif condic.gravidade == CONDIC_NORMALIZAR:
                     logger.warning(f"[OCO-UG{self.__ug.id}] Descrição: \"{condic.descr}\", Gravidade: \"{CONDIC_STR_DCT[condic.gravidade] if condic.gravidade in CONDIC_STR_DCT else 'Desconhecida'}\"")
                     self.condicionadores_ativos.append(condic)
-                    flag = CONDIC_INDISPONIBILIZAR
-                    self.__db.update_alarmes([datetime.now(pytz.timezone("Brazil/East")).replace(tzinfo=None), condic.gravidade, condic.descr])
+                    flag = CONDIC_NORMALIZAR
+                    self.__db.update_alarmes([
+                        self.__ug.get_time().strftime("%Y-%m-%d %H:%M:%S"),
+                        condic.gravidade,
+                        condic.descr,
+                        "X" if autor_i == 0 and autor_a == 0 and autor_n == 0 else "",
+                        ])
+                    autor_n += 1
 
             logger.debug("")
             return flag
