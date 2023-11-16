@@ -621,7 +621,7 @@ class OcorrenciasUnidades:
         if ld[f"tmp_mancal_guia_contra_ug{self.__ug.id}"].valor >= 0.9*(cd[f"tmp_mancal_guia_contra_ug{self.__ug.id}"].valor_limite - cd[f"tmp_mancal_guia_contra_ug{self.__ug.id}"].valor_base) + cd[f"tmp_mancal_guia_contra_ug{self.__ug.id}"].valor_base:
             logger.critical(f"[OCO-UG{self.__ug.id}] A temperatura do Mancal Guia Contra Escora da UG está muito próxima do limite! ({cd[f'tmp_mancal_guia_contra_ug{self.__ug.id}'].valor_limite} C) | Leitura: {cd[f'tmp_mancal_guia_contra_ug{self.__ug.id}'].valor} C")
 
-        if ld[f"pressao_cx_espiral_ug{self.__ug.id}"].valor <= ad[f"aviso_caixa_espiral_ug{self.__ug.id}"] and self.__ug.id == UG_SINCRONIZADA and self.__ug.leitura_potencia >= 1360:
+        if ld[f"pressao_cx_espiral_ug{self.__ug.id}"].valor <= ad[f"aviso_caixa_espiral_ug{self.__ug.id}"] and self.__ug.etapa_atual == UG_SINCRONIZADA and self.__ug.leitura_potencia >= 1360:
             logger.warning(f"[OCO-UG{self.__ug.id}] A pressão Caixa Espiral da UG passou do valor estipulado! ({ad[f'aviso_caixa_espiral_ug{self.__ug.id}']:03.2f} KGf/m2) | Leitura: {ld[f'pressao_cx_espiral_ug{self.__ug.id}'].valor:03.2f}")
 
 
