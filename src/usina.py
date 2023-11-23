@@ -10,32 +10,27 @@ import traceback
 
 import src.dicionarios.dict as dct
 
-import src.bay as bay
 import src.subestacao as se
 import src.tomada_agua as tda
+import src.unidade_geracao as ug
+import src.mensageiro.voip as vp
 import src.servico_auxiliar as sa
+import src.funcoes.agendamentos as agn
+import src.conectores.banco_dados as bd
+import src.conectores.servidores as serv
 
 from time import sleep, time
 from datetime import datetime
 
 from src.dicionarios.reg import *
 from src.dicionarios.const import *
-from src.funcoes.condicionadores import *
 
-from src.mensageiro.voip import Voip
-from src.conectores.servidores import Servidores
-from src.conectores.banco_dados import BancoDados
-from src.funcoes.agendamentos import Agendamentos
-from src.funcoes.escrita import EscritaModBusBit as EMB
-
-from src.funcoes.leitura import *
-from src.unidade_geracao import UnidadeGeracao
 
 logger = logging.getLogger("logger")
 
-class Usina:
-    def __init__(self, cfg: "dict" = None) -> "None":
 
+class Usina:
+    def __init__(self, cfg: "dict"=None) -> "None":
 
         # VERIFICAÇÃO DE ARGUMENTOS
 
@@ -46,27 +41,29 @@ class Usina:
 
         # INCIALIZAÇÃO DE OBJETOS DA USINA
 
-        self.clp = Servidores.clp
-        self.rele  = Servidores.rele
+        self.clp = serv.Servidores.clp
 
-        self.bay = bay.Bay
         self.se = se.Subestacao
         self.tda = tda.TomadaAgua
         self.sa = sa.ServicoAuxiliar
         self.tda.cfg = self.cfg
 
-        self.bd = BancoDados("MOA")
-        self.agn = Agendamentos(self.cfg, self.bd, self)
+        self.bd = bd.BancoDados("MOA")
+        self.agn = agn.Agendamentos(self.cfg, self.bd, self)
 
-        self.ug1 = UnidadeGeracao(1, self.cfg, self.bd)
-        self.ug2 = UnidadeGeracao(2, self.cfg, self.bd)
-        self.ugs: "list[UnidadeGeracao]" = [self.ug1, self.ug2]
+        self.ug1 = ug.UnidadeGeracao(1, self.cfg, self.bd)
+        self.ug2 = ug.UnidadeGeracao(2, self.cfg, self.bd)
+        self.ug3 = ug.UnidadeGeracao(3, self.cfg, self.bd)
+        self.ug4 = ug.UnidadeGeracao(4, self.cfg, self.bd)
+        self.ugs: "list[ug.UnidadeGeracao]" = [self.ug1, self.ug2, self.ug3, self.ug4]
 
 
         # ATRIBUIÇÃO DE VARIÁVEIS PRIVADAS
 
         self.__split1: "bool" = False
         self.__split2: "bool" = False
+        self.__split3: "bool" = False
+        self.__split4: "bool" = False
         self.__pid_inicial: "int" = -1
 
         # ATRIBUIÇÃO DE VARIÁVEIS PROTEGIDAS
@@ -99,7 +96,6 @@ class Usina:
 
         # FINALIZAÇÃO DO __INIT__
 
-        self.bay.carregar_leituras()
         self.se.carregar_leituras()
         self.tda.carregar_leituras()
         self.sa.carregar_leituras()
@@ -159,12 +155,16 @@ class Usina:
         """
 
         logger.info("[USN] Acionando reset de emergência.")
-        logger.debug("[USN] Bay resetado.") if self.bay.resetar_emergencia() else logger.info("[USN] Reset de emergência do Bay falhou.")
-        logger.debug("[USN] Subestação resetada.") if self.se.resetar_emergencia() else logger.info("[USN] Reset de emergência da subestação falhou.")
-        logger.debug("[USN] Tomada da Água resetada.") if self.tda.resetar_emergencia else logger.info("[USN] Reset de emergência da Tomada da Água falhou.")
-        logger.debug("[USN] Serviço Auxiliar resetado.") if self.sa.resetar_emergencia() else logger.info("[USN] Reset de emergência do serviço auxiliar falhou.")
-        logger.debug("")
+        try:
+            res = self.clp["SA"].write_single_register(REG_SA["CMD_RESET_ALARMES"], 1)
+            res = self.clp["SA"].write_single_register(REG_SA["CMD_RECONHECE_ALARMES"], 1)
+            res = self.clp["SA"].write_single_register(REG_SA["CMD_EMERGENCIA_DESLIGAR"], 1)
+            return res
 
+        except Exception:
+            logger.exception(f"[USN] Houve um erro ao realizar o Reset de Emergência.")
+            logger.debug(traceback.format_exc)
+            return False
 
     def acionar_emergencia(self) -> "bool":
         """
@@ -177,9 +177,7 @@ class Usina:
         self.clp_emergencia = True
 
         try:
-            [EMB.escrever_bit(self.clp[f"UG{ug.id}"], REG_CLP[f"UG{ug.id}"][f"PARADA_CMD_EMERGENCIA"], valor=1) for ug in self.ugs]
-            sleep(5)
-            [EMB.escrever_bit(self.clp[f"UG{ug.id}"], REG_CLP[f"UG{ug.id}"][f"PARADA_CMD_EMERGENCIA"], valor=0) for ug in self.ugs]
+            self.clp["SA"].write_single_register(REG_SA["CMD_EMERGENCIA_LIGAR"], 1)
 
         except Exception:
             logger.error(f"[USN] Houve um erro ao executar o comando de Emergência.")
@@ -205,8 +203,6 @@ class Usina:
             self.normalizar_forcado = self.clp_emergencia = self.bd_emergencia = False
             self.resetar_emergencia()
             sleep(1)
-            self.bay.fechar_dj_linha()
-            sleep(1)
             self.se.fechar_dj_linha()
             self.bd.update_remove_emergencia()
             return True
@@ -216,7 +212,7 @@ class Usina:
             sleep(1)
             return False
 
-    def verificar_bay_se(self) -> "int":
+    def verificar_se(self) -> "int":
         """
         Função para verificação do Bay e Subestação.
 
@@ -228,14 +224,13 @@ class Usina:
         senão, sinaliza que está tudo correto para a máquina de estados do MOA.
         """
 
-        if not self.bay.verificar_tensao_trifasica():
+        if not self.se.verificar_tensao_trifasica():
             logger.debug("")
-            logger.debug(f"[BAY] Tensão BAY:                   VAB -> \"{self.bay.tensao_vab.valor:2.1f} V\" | VBC -> \"{self.bay.tensao_vbc.valor:2.1f} V\" | VCA -> \"{self.bay.tensao_vca.valor:2.1f} V\"")
             logger.debug(f"[SE]  Tensão Subestação:            VAB -> \"{self.se.tensao_vab.valor:2.1f} V\" | VBC -> \"{self.se.tensao_vbc.valor:2.1f} V\" | VCA -> \"{self.se.tensao_vca.valor:2.1f} V\"")
             logger.debug("")
             return DJS_FALTA_TENSAO
 
-        elif not self.bay.fechar_dj_linha() or not self.se.fechar_dj_linha():
+        elif not self.se.fechar_dj_linha():
             self.normalizar_forcado = True
             return DJS_FALHA
 
@@ -260,19 +255,18 @@ class Usina:
             #     ug.verificar_leituras()
 
             if True in (dct.voip[r][0] for r in dct.voip):
-                Voip.acionar_chamada()
+                vp.Voip.acionar_chamada()
                 pass
             sleep(max(0, (time() + 1800) - time()))
 
     def verificar_condicionadores(self) -> "int":
         flag = CONDIC_IGNORAR
 
-        lst_bay = self.bay.verificar_condicionadores()
         lst_se = self.se.verificar_condicionadores()
         lst_tda = self.tda.verificar_condicionadores()
         lst_sa = self.sa.verificar_condicionadores()
 
-        condics = [condic for condics in [lst_sa, lst_se, lst_bay, lst_tda] for condic in condics]
+        condics = [condic for condics in [lst_sa, lst_se, lst_tda] for condic in condics]
 
         for condic in condics:
             if condic.gravidade == CONDIC_INDISPONIBILIZAR:
@@ -308,8 +302,8 @@ class Usina:
 
         self.controle_ie = self.ajustar_ie_padrao()
 
-        self.clp["MOA"].write_single_coil(REG_CLP["MOA"]["OUT_BLOCK_UG1"], 0)
-        self.clp["MOA"].write_single_coil(REG_CLP["MOA"]["OUT_BLOCK_UG2"], 0)
+        self.clp["MOA"].write_single_coil(REG_MOA["MOA"]["OUT_BLOCK_UG1"], 0)
+        self.clp["MOA"].write_single_coil(REG_MOA["MOA"]["OUT_BLOCK_UG2"], 0)
 
     def controlar_reservatorio(self) -> "int":
         """
@@ -429,7 +423,7 @@ class Usina:
                 ug.setpoint = 0
             return 0
 
-        pot_medidor = self.bay.potencia_mp.valor
+        pot_medidor = self.se.potencia_mp.valor
 
         logger.debug(f"[USN] Potência no medidor:                {pot_medidor:0.3f}")
 
@@ -453,7 +447,7 @@ class Usina:
         de potência para entrada ou retirada de uma Unidade.
         """
 
-        ugs: "list[UnidadeGeracao]" = self.verificar_ugs_disponiveis()
+        ugs: "list[ug.UnidadeGeracao]" = self.verificar_ugs_disponiveis()
 
         logger.debug("")
         logger.debug(f"[USN] Ordem das UGs (Prioridade):         {[ug.id for ug in ugs]}")
@@ -524,14 +518,14 @@ class Usina:
 
                 logger.debug(f"[UG{ugs[0].id}] SP    <-                            {int(ugs[0].setpoint)}")
 
-    def verificar_ugs_disponiveis(self) -> "list[UnidadeGeracao]":
+    def verificar_ugs_disponiveis(self) -> "list[ug.UnidadeGeracao]":
         """
         Função para verificar leituras/condições específicas e determinar a Prioridade das Unidades.
         """
-        
+
         ls = [ug for ug in self.ugs if ug.disponivel and not ug.etapa == UG_PARANDO]
 
-        if self.modo_prioridade_ugs in (UG_PRIORIDADE_1, UG_PRIORIDADE_2):
+        if self.modo_prioridade_ugs in (UG_PRIORIDADE_1, UG_PRIORIDADE_2, UG_PRIORIDADE_3, UG_PRIORIDADE_4):
             return sorted(ls, key=lambda y: (-1 * y.etapa_atual, -1 * y.leitura_potencia, -1 * y.setpoint, y.prioridade))
 
         else:
@@ -546,7 +540,7 @@ class Usina:
         Banco de Dados da Interface WEB.
         """
 
-        Servidores.ping_clients()
+        serv.Servidores.ping_clients()
         self.tda.atualizar_montante()
 
         parametros = self.bd.get_parametros_usina()
@@ -606,7 +600,6 @@ class Usina:
 
             self.cfg["pot_maxima_alvo"] = float(parametros["pot_nominal"])
             self.cfg["pot_maxima_ug"] = float(parametros["pot_nominal_ug"])
-            self.cfg["pot_maxima_usina"] = float(parametros["pot_nominal_ug"]) * 2
             self.cfg["margem_pot_critica"] = float(parametros["margem_pot_critica"])
 
             with open(os.path.join(os.path.dirname("/opt/operacao-autonoma/src/dicionarios/"), 'cfg.json'), 'w') as file:
@@ -632,7 +625,13 @@ class Usina:
                 self.ug1.etapa_atual,
                 self.ug2.leitura_potencia,
                 self.ug2.setpoint,
-                self.ug2.etapa_atual
+                self.ug2.etapa_atual,
+                self.ug3.leitura_potencia,
+                self.ug3.setpoint,
+                self.ug3.etapa_atual,
+                self.ug4.leitura_potencia,
+                self.ug4.setpoint,
+                self.ug4.etapa_atual
             ])
 
         except Exception:
@@ -651,6 +650,12 @@ class Usina:
                 self.ug2.setpoint,
                 self.ug2.leitura_potencia,
                 self.ug2.codigo_state,
+                self.ug3.setpoint,
+                self.ug3.leitura_potencia,
+                self.ug3.codigo_state,
+                self.ug4.setpoint,
+                self.ug4.leitura_potencia,
+                self.ug4.codigo_state,
                 self.controle_p,
                 self.controle_i,
                 self.controle_d,

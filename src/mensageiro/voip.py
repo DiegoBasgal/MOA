@@ -6,15 +6,17 @@ import os
 import pytz
 import json
 import logging
+
 import src.dicionarios.dict as dct
+import src.conectores.banco_dados as bd
 
 from time import sleep
 from datetime import datetime
 from urllib.request import Request, urlopen
 
-from src.conectores.banco_dados import BancoDados
 
 logger = logging.getLogger("logger")
+
 
 class Voip:
 
@@ -32,7 +34,7 @@ class Voip:
             "Authorization": "Basic TnZvaXBBcGlWMjpUblp2YVhCQmNHbFdNakl3TWpFPQ==",
         }
 
-    db = BancoDados("voip")
+    db = bd.BancoDados("voip")
 
     @staticmethod
     def verificar_expediente(agenda) -> "list":

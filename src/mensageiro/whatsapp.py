@@ -7,6 +7,7 @@ import requests
 
 from threading import Thread
 
+
 class WhatsApp:
 
     @staticmethod

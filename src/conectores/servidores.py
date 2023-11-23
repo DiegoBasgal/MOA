@@ -9,29 +9,23 @@ import src.dicionarios.dict as d
 
 from pyModbusTCP.client import ModbusClient
 
-logger = logging.getLogger("__main__")
+
+logger = logging.getLogger("logger")
+
 
 class Servidores:
 
     clp: "dict[str, ModbusClient]" = {}
-    rele: "dict[str, ModbusClient]" = {}
-
-    mp = ModbusClient(
-        host=d.ips["MP_ip"],
-        port=d.ips["MP_porta"],
-        unit_id=1,
-        timeout=5
-    )
-    mr = ModbusClient(
-        host=d.ips["MR_ip"],
-        port=d.ips["MR_porta"],
-        unit_id=1,
-        timeout=5
-    )
 
     clp["SA"] = ModbusClient(
         host=d.ips["SA_ip"],
         port=d.ips["SA_porta"],
+        unit_id=1,
+        timeout=5
+    )
+    clp["AD"] = ModbusClient(
+        host=d.ips["AD_ip"],
+        port=d.ips["AD_porta"],
         unit_id=1,
         timeout=5
     )
@@ -53,6 +47,18 @@ class Servidores:
         unit_id=1,
         timeout=5
     )
+    clp["UG3"] = ModbusClient(
+        host=d.ips["UG3_ip"],
+        port=d.ips["UG3_porta"],
+        unit_id=1,
+        timeout=5
+    )
+    clp["UG4"] = ModbusClient(
+        host=d.ips["UG4_ip"],
+        port=d.ips["UG4_porta"],
+        unit_id=1,
+        timeout=5
+    )
     clp["MOA"] = ModbusClient(
         host=d.ips["MOA_ip"],
         port=d.ips["MOA_porta"],
@@ -60,36 +66,6 @@ class Servidores:
         timeout=5
     )
 
-    rele["SE"] = ModbusClient(
-        host=d.ips["RELE_SE_ip"],
-        port=d.ips["RELE_SE_porta"],
-        unit_id=1,
-        timeout=5
-    )
-    rele["TE"] = ModbusClient(
-        host=d.ips["RELE_TE_ip"],
-        port=d.ips["RELE_TE_porta"],
-        unit_id=1,
-        timeout=5
-    )
-    rele["BAY"] = ModbusClient(
-        host=d.ips["RELE_BAY_ip"],
-        port=d.ips["RELE_BAY_porta"],
-        unit_id=1,
-        timeout=5
-    )
-    rele["UG1"] = ModbusClient(
-        host=d.ips["RELE_UG1_ip"],
-        port=d.ips["RELE_UG1_porta"],
-        unit_id=1,
-        timeout=5
-    )
-    rele["UG2"] = ModbusClient(
-        host=d.ips["RELE_UG2_ip"],
-        port=d.ips["RELE_UG2_porta"],
-        unit_id=1,
-        timeout=5
-    )
 
     @staticmethod
     def ping(host) -> "bool":
@@ -111,9 +87,6 @@ class Servidores:
         for n, clp in cls.clp.items():
             if not clp.open():
                 logger.error(f"[CLI] Erro ao iniciar conexão com o CLP - {n}")
-        for n, rele in cls.rele.items():
-            if not rele.open():
-                logger.error(f"[CLI] Erro ao iniciar conexão com o RELÉ - {n}")
         logger.debug("[CLI] Conexões inciadas.")
 
     @classmethod
@@ -125,8 +98,6 @@ class Servidores:
         logger.debug("[CLI] Encerrando conexões...")
         for _ , clp in cls.clp.items():
             clp.close()
-        for _, rele in cls.rele.items():
-            rele.close()
         logger.debug("[CLI] Conexões encerradas.")
 
     @classmethod
@@ -170,6 +141,20 @@ class Servidores:
             cls.clp["UG2"].close()
         else:
             logger.warning("[CLI] CLP UG2 não respondeu a tentativa de conexão ModBus!")
+
+        if not cls.ping(d.ips["UG3_ip"]):
+            logger.warning("[CLI] CLP UG3 não respondeu a tentativa de comunicação!")
+        if cls.clp["UG3"].open():
+            cls.clp["UG3"].close()
+        else:
+            logger.warning("[CLI] CLP UG3 não respondeu a tentativa de conexão ModBus!")
+
+        if not cls.ping(d.ips["UG4_ip"]):
+            logger.warning("[CLI] CLP UG4 não respondeu a tentativa de comunicação!")
+        if cls.clp["UG4"].open():
+            cls.clp["UG4"].close()
+        else:
+            logger.warning("[CLI] CLP UG4 não respondeu a tentativa de conexão ModBus!")
 
         if not cls.ping(d.ips["MOA_ip"]):
             logger.warning("[CLI] CLP MOA não respondeu a tentativa de comunicação!")

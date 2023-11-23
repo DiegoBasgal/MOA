@@ -1,1071 +1,2915 @@
-"""
-Documentação do Mapa de Registradores:
-
-## NOMES / NOMES CHAVE:
-
-- Bay: BAY
-- Subestação: SE
-- Tomada da Água: TDA
-- Comporta: CP1 - CP2
-- Serviço Auxiliar: SA
-- Unidade Geração: UG1 - UG2
-
-- Limpa Grades: LG
-- Seccionadora: SECC
-- Válvula Borboleta: VB
-- Grupo Motor Gerador: GMG
-- Transformador Elevador: TE
-- Disjuntor: DJ - DJL - DJA - DJ1 ...
-- Unidade Hidráulica: UH - UHL - UHRV - UHLM ...
-
-- Nível: NV
-- Tensão: LT
-- Potência: POT
-- Elemento: ELE
-- Alimentação: ALIM
-- Enrolamento: ENRO
-- Retificador: RETI
-- Subtensão: SUBTEN
-- Subfrequência: SUBFRE
-- Sobretensão: SOBRETEN
-- Sobrecorrente: SOBRECO
-- Sobrefrequência: SOBREFRE
-
-- Sistema: SIS
-- Leitura: LER
-- Positiva: POS
-- Negativa: NEG
-- Primário: PRI
-- Disparo: DISP
-- Dreangem: DREN
-- Filtragem: FILT
-- Supervisão: SUP
-- Secundário: SEC
-- Sequência: SEQU
-- Diferencial: DIF
-- Instantânea: INST
-- Temporizada: TEMPO
-- Discrepância: DICRE
-- Transferência: TRANS
-
-## FLAGS:
-- Trip: TRP
-- Falha: FLH
-- Reset: RST
-- Alarme: ALM
-- Comando: CMD
-- Operação: OPE
-- Bloqueio: BLQ
-- Temperatura: TMP
-- Identificação: ID
-
-
--> O Padrão para nomear os registradores segue da seguinte forma (Dependendo do sentido do nome do Registrador, a ordem pode mudar):
-    "Nome / Nome Chave"_"Flag"_"Descrição"
-
--> Exemplos:
-  - LG_FLH_ATUADA
-  - CP1_NV_JUSANTE
-  - NV_MONTANTE_FLH
-  - DJL_FLH_ABERTURA
-  - DJL_FLH_CMD_ABERTURA
-
--> Caso o Registrador possua o mesmo nome que outro, porém seu diferencial é o BIT que é acessado,
-será adicionado a letra "B" + o número do BIT no final do nome:
-    "Nome / Nome Chave"_"Flag"_"Descrição"_"BitN"
-
--> Exemplos:
-    - RELE_PROTECAO_TRP_B5
-    - RELE_PROTECAO_TRP_B6
-"""
-
-REG_MEDIDOR = {
-    "LT_P_MP":                                          33 + 30000, # Mudar para o Simulador
-    "LT_P_MR":                                          33 + 30000, # Mudar para o Simulador
+REG_MOA = {
+    
 }
 
-REG_RELE = {
-    "BAY": {
-        # Leituras Analógicas
-        "LT_FASE_A":                                    10 + 30000, # Mudar para o Simulador
-        "LT_FASE_B":                                    13 + 30000, # Mudar para o Simulador
-        "LT_FASE_C":                                    16 + 30000, # Mudar para o Simulador
-        "LT_VS":                                        19 + 30000, # Mudar para o Simulador
+REG_SA = {
+    ## COMANDOS
+    # Gerais
+    "CMD_RESET_ALARMES":                        0,
+    "CMD_RECONHECE_ALARMES":                    1,
+    "CMD_EMERGENCIA_LIGAR":                     2,
+    "CMD_EMERGENCIA_DESLIGAR":                  3,
+    "CMD_SEL_MODO_LOCAL":                       6,
+    "CMD_SEL_MODO_REMOTO":                      7,
+    "CMD_SEL_MODO_MANUAL":                      8,
+    "CMD_SEL_MODO_AUTOMATICO":                  9,
+    "CMD_DJ_FONTE_05_LIGAR":                    97,
+    "CMD_DJ_FONTE_05_DESLIGAR":                 98,
+
+    # Disjuntor
+    "CMD_DJ_FONTE_01_LIGAR":                    10,
+    "CMD_DJ_FONTE_01_DESLIGAR":                 11,
+    "CMD_DJ_FONTE_02_LIGAR":                    12,
+    "CMD_DJ_FONTE_02_DESLIGAR":                 13,
+    "CMD_DJ_FONTE_04_LIGAR":                    14,
+    "CMD_DJ_FONTE_04_DESLIGAR":                 15,
+
+    # Gerador Diesel
+    "CMD_GD_PARTIR":                            16,
+    "CMD_GD_PARAR":                             17,
+
+    # Carregador de Baterias
+    "CMD_CB_MODO_FLUTUACAO_LIGAR":              18,
+    "CMD_CB_MODO_EQUALIZACAO_LIGAR":            19,
+
+    # Poço
+    "CMD_POCO_BOMBA_01_LIGAR":                  20,
+    "CMD_POCO_BOMBA_01_DESLIGAR":               21,
+    "CMD_POCO_BOMBA_01_PRINCIPAL":              22,
+    "CMD_POCO_BOMBA_02_LIGAR":                  23,
+    "CMD_POCO_BOMBA_02_DESLIGAR":               24,
+    "CMD_POCO_BOMBA_02_PRINCIPAL":              25,
+    "CMD_POCO_BOMBA_03_LIGAR":                  26,
+    "CMD_POCO_BOMBA_03_DESLIGAR":               27,
+    "CMD_POCO_BOMBA_04_LIGAR":                  28,
+    "CMD_POCO_BOMBA_04_DESLIGAR":               29,
+    "CMD_POCO_SEL_MODO_MANUAL":                 30,
+    "CMD_POCO_SEL_MODO_AUTOMATICO":             31,
+
+    # Sensores
+    "CMD_SENSOR_PRESEN_HABILITAR":              32,
+    "CMD_SENSOR_PRESEN_DESABILITAR":            33,
+    "CMD_SENSOR_FUMACA_RESET":                  34,
+
+    # Injeção Água Selo
+    "CMD_IA_SELO_RODIZIO_AUTO":                 77,
+    "CMD_IA_SELO_RODIZIO_MANUAL":               78,
+    "CMD_IA_SELO_BOMBA_01_LIGAR":               79,
+    "CMD_IA_SELO_BOMBA_01_DESLIGAR":            80,
+    "CMD_IA_SELO_BOMBA_01_PRINCIPAL":           81,
+    "CMD_IA_SELO_BOMBA_02_LIGAR":               82,
+    "CMD_IA_SELO_BOMBA_02_DESLIGAR":            83,
+    "CMD_IA_SELO_BOMBA_02_PRINCIPAL":           84,
+
+    # Água Serviço
+    "CMD_AS_RODIZIO_AUTO":                      85,
+    "CMD_AS_RODIZIO_MANUAL":                    86,
+    "CMD_AS_BOMBA_01_LIGAR":                    87,
+    "CMD_AS_BOMBA_01_DESLIGAR":                 88,
+    "CMD_AS_BOMBA_01_PRINCIPAL":                89,
+    "CMD_AS_BOMBA_02_LIGAR":                    90,
+    "CMD_AS_BOMBA_02_DESLIGAR":                 91,
+    "CMD_AS_BOMBA_02_PRINCIPAL":                92,
+    "CMD_AS_CIRCUITO_ABARTO_SEL":               93,
+    "CMD_AS_CIRCUITO_FECHADO_SEL":              94,
+    "CMD_AS_FILTRO_01_SEL":                     95,
+    "CMD_AS_FILTRO_02_SEL":                     96,
 
 
-        # Relé
-        "RELE_RST_TRP":                                 [40 + 30000, 2],
+    ## SETPOINTS
+    # Poço
+    "POCO_TEMPO_RODIZIO_LIDER":                 8,
+    "POCO_TEMPO_RODIZIO_RETAGUARDA":            9,
+
+    # Injeção Selo
+    "IS_TEMPO_BOMBA_LIDER":                     18,
+    "IS_TEMPO_BOMBA_RETAGUARDA":                19,
+
+    # Agua Serviço
+    "AS_TEMPO_BOMBA_LIDER":                     20,
+    "AS_TEMPO_BOMBA_RETAGUARDA":                21,
 
 
-        # DJ
-        "DJL_CMD_FECHAR":                               [43 + 30000, 2],
-        "DJL_FECHADO":                                  [999 + 30000, 0], # Fictício Simulador
+    ## LEITURAS
+    "RESET_ALARMES":                            6,
+    "RECONHECE_ALARMES":                        7,
+    "EMERGENCIA_USINA":                         8,
+
+    # Carregador de Baterias
+    "CB_INFO":                                  10,
+    "CB_UENTRADA":                              11,
+    "CB_USAIDA":                                12,
+    "CB_IENTRADA":                              13,
+    "CB_ISAIDA":                                14,
+    "CB2_INFO":                                 197,
+    "CB2_UENTRADA":                             198,
+    "CB2_USAIDA":                               199,
+    "CB2_IENTRADA":                             200,
+    "CB2_ISAIDA":                               201,
+
+    # Gerador Diesel
+    "GD_INFO":                                  15,
+    "GD_NIVEL_COMBUS":                          16,
+    "GD_ROTACAO":                               17,
+    "GD_TENSAO_BATERIA":                        18,
+    "GD_TENSAO_ALTERNADOR":                     19,
+    "GD_TENSAO_L1":                             189,
+    "GD_TENSAO_L2":                             190,
+    "GD_TENSAO_L3":                             191,
+    "GD_TENSAO_L1L2":                           192,
+    "GD_TENSAO_L2L3":                           193,
+    "GD_TENSAO_L3L1":                           194,
+    "GD_FREQUANCIA":                            195,
+    "GD_TEMPAGUA":                              196,
+
+    # Vazão
+    "VAZAO_TURBINADA_UG01":                     208,
+    "VAZAO_TURBINADA_UG02":                     209,
+    "VAZAO_TURBINADA_UG03":                     210,
+    "VAZAO_TURBINADA_UG04":                     211,
+    "VAZAO_TURBINADA":                          212,
+    "VAZAO_RIO":                                213,
+    "VAZAO_VERTEDOR":                           214,
+    "VAZAO_ADUFA_01":                           215,
+    "VAZAO_ADUFA_02":                           216,
+    "VAZAO_EFLUENTE":                           217,
+
+    # Tensão
+    "TENSAO_RN":                                67,
+    "TENSAO_SN":                                68,
+    "TENSAO_TN":                                69,
+    "TENSAO_RS":                                70,
+    "TENSAO_ST":                                71,
+    "TENSAO_TR":                                72,
+
+    # Corrente
+    "CORRENTE_R":                               73,
+    "CORRENTE_S":                               74,
+    "CORRENTE_T":                               75,
+    "CORRENTE_MEDIA":                           76,
+
+    # Potência
+    "POTENCIA_ATIVA_1":                         77,
+    "POTENCIA_ATIVA_2":                         78,
+    "POTENCIA_ATIVA_3":                         79,
+    "POTENCIA_ATIVA_MEDIA":                     80,
+    "POTENCIA_REATIVA_1":                       81,
+    "POTENCIA_REATIVA_2":                       82,
+    "POTENCIA_REATIVA_3":                       83,
+    "POTENCIA_REATIVA_MEDIA":                   84,
+    "POTENCIA_APARENTE_1":                      85,
+    "POTENCIA_APARENTE_2":                      86,
+    "POTENCIA_APARENTE_3":                      87,
+    "POTENCIA_APARENTE_MEDIA":                  88,
+
+    # Fator Potência
+    "FATOR_POTENCIA_1":                         89,
+    "FATOR_POTENCIA_2":                         90,
+    "FATOR_POTENCIA_3":                         91,
+    "FATOR_POTENCIA_MEDIA":                     92,
+
+    # Frequência
+    "FREQUENCIA":                               93,
+
+    # Energia Consumida
+    "ENERGIA_CONSUMIDA_GWh":                    94,
+    "ENERGIA_CONSUMIDA_MWh":                    95,
+    "ENERGIA_CONSUMIDA_KWh":                    96,
+    "ENERGIA_CONSUMIDA_Wh":                     97,
+    "ENERGIA_CONSUMIDA_GVArh":                  98,
+    "ENERGIA_CONSUMIDA_MVArh":                  99,
+    "ENERGIA_CONSUMIDA_KVArh":                  100,
+    "ENERGIA_CONSUMIDA_WVArh":                  101,
+    "ENERGIA_FORNECIDA_GVArh":                  102,
+    "ENERGIA_FORNECIDA_MVArh":                  103,
+    "ENERGIA_FORNECIDA_KVArh":                  104,
+    "ENERGIA_FORNECIDA_VArh":                   105,
+
+    # Fuga Terra
+    "FUGA_TERRA_TENSAO_POSITIVA":               106,
+    "FUGA_TERRA_TENSAO_NEGATIVA":               107,
+    "FUGA_TERRA_TENSAO":                        108,
+    "FUGA_TERRA_INFO":                          110,
+
+    # Poço
+    "POCO_INFO":                                111,
+    "POCO_BOMBAS":                              112,
+    "POCO_NIVEL":                               113,
+    "POCO_HORIMETRO_PRINCIPAL":                 114,
+    "POCO_HORIMETRO_RETAGUARDA":                115,
+
+    # Sensores
+    "SENSOR_FUMACA_INFO":                       116,
+    "SENSOR_PRESENCA_INFO":                     117,
+
+    # Temperaturas
+    "USINA_TEMPERATURA_01":                     119,
+    "USINA_TEMPERATURA_02":                     120,
+    "USINA_TEMPERATURA_03":                     121,
+    "USINA_TEMPERATURA_04":                     122,
+    "USINA_TEMPERATURA_05":                     123,
+    "USINA_TEMPERATURA_06":                     124,
+    "USINA_TEMPERATURA_07":                     125,
+    "USINA_TEMPERATURA_08":                     126,
+
+    # Rendimento
+    "RENDIMENTO_UG01":                          203,
+    "RENDIMENTO_UG02":                          204,
+    "RENDIMENTO_UG03":                          205,
+    "RENDIMENTO_UG04":                          206,
+    "RENDIMENTO_GERAL":                         207,
+    "RENDIMENTO_INFO":                          218,
+    "RENDIMENTO_TURBINA_UG01":                  219,
+    "RENDIMENTO_TURBINA_UG02":                  220,
+    "RENDIMENTO_TURBINA_UG03":                  221,
+    "RENDIMENTO_TURBINA_UG04":                  222,
+    "RENDIMENTO_GERADOR_UG01":                  223,
+    "RENDIMENTO_GERADOR_UG02":                  224,
+    "RENDIMENTO_GERADOR_UG03":                  225,
+    "RENDIMENTO_GERADOR_UG04":                  226,
+
+    # Sistema de Água
+    "SA_INFO":                                  181,
+    "SA_BOMBA":                                 182,
+    "SA_VALVULAS":                              183,
+    "SA_VALVULAS2":                             188,
+
+    # Injeção Selo
+    "IS_ACUMULADOR_LIDER":                      184,
+    "IS_ACUMULADOR_RETAGUARDA":                 185,
+
+    # Água Serviço
+    "AS_ACUMULADOR_LIDER":                      186,
+    "AS_ACUMULADOR_RETAGUARDA":                 187,
 
 
-        # DJ
-        "DJL_MOLA_CARREGADA":                           [44 + 30000, 1], # Mudar para o Simulador
-        # Seccionadora
-        "SECC_FECHADA":                                 [44 + 30000, 4], # Mudar para o Simulador
+    ## ALARMES
+    "Alarme01":                                 0,
+    "Alarme02":                                 1,
+    "Alarme03":                                 2,
+    "Alarme04":                                 3,
+    "Alarme05":                                 4,
+    "Alarme06":                                 5,
+    "Alarme07":                                 6,
+    "Alarme08":                                 7,
+    "Alarme09":                                 8,
+    "Alarme10":                                 9,
+    "Alarme11":                                 10,
+    "Alarme12":                                 11,
+    "Alarme13":                                 12,
+    "Alarme14":                                 13,
+    "Alarme15":                                 14,
+    "Alarme16":                                 15,
+    "Alarme17":                                 16,
+    "Alarme18":                                 17,
+    "Alarme19":                                 18,
+    "Alarme20":                                 19,
+    "Alarme21":                                 20,
+    "Alarme22":                                 21,
+    "Alarme23":                                 22,
+    "Alarme24":                                 23,
+    "Alarme25":                                 24,
+    "Alarme26":                                 25,
+    "Alarme27":                                 26,
+    "Alarme28":                                 27,
+    "Alarme29":                                 28,
+    "Alarme30":                                 29,
+    "Alarme31":                                 30,
+    "Alarme32":                                 31,
+}
 
 
-        # DJ
-        "DJL_FLH_ABERTURA":                             [47, 1],
+REG_SE = {
+    ## COMANDOS
+    # Dj52L
+    "CMD_ABRIR_DJ52L":                          4,
+    "CMD_FECHAR_DJ52L":                         5,
+
+    # Secc89L
+    "CMD_SECC89L_ABRIR":                        35,
+    "CMD_SECC89L_FECHAR":                       36,
+
+    # Cargas Não Essenciais
+    "CMD_CARGANAOESSEN_FECHAR":                 37,
+    "CMD_CARGANAOESSEN_ABRIR":                  38,
 
 
-        # Barra
-        "ID_BARRA_VIVA":                                [53 + 30000, 1], # Mudar para o Simulador
-        "ID_BARRA_MORTA":                               [53 + 30000, 7], # Mudar para o Simulador
+    ## LEITURAS
+    # Disjuntores
+    "STATUS_DJ52L":                             21,
+    "STATUS_SECCIONADORAS":                     22,
+
+    # Tensão
+    "TENSAO_RN":                                23,
+    "TENSAO_SN":                                24,
+    "TENSAO_TN":                                25,
+    "TENSAO_RS":                                26,
+    "TENSAO_ST":                                27,
+    "TENSAO_TR":                                28,
+    "TENSAO_SINCRONISMO":                       63,
+    "TENSAO_VCC":                               64,
+
+    # Corrente
+    "CORRENTE_R":                               29,
+    "CORRENTE_S":                               30,
+    "CORRENTE_T":                               31,
+    "CORRENTE_MEDIA":                           32,
+    "CORRENTE_NEUTRO":                          62,
+
+    # Potência
+    "POTENCIA_ATIVA_1":                         33,
+    "POTENCIA_ATIVA_2":                         34,
+    "POTENCIA_ATIVA_3":                         35,
+    "POTENCIA_ATIVA_MEDIA":                     36,
+    "POTENCIA_REATIVA_1":                       37,
+    "POTENCIA_REATIVA_2":                       38,
+    "POTENCIA_REATIVA_3":                       39,
+    "POTENCIA_REATIVA_MEDIA":                   40,
+    "POTENCIA_APARENTE_1":                      41,
+    "POTENCIA_APARENTE_2":                      42,
+    "POTENCIA_APARENTE_3":                      43,
+    "POTENCIA_APARENTE_MEDIA":                  44,
+
+    # Fator Potência
+    "FATOR_POTENCIA_1":                         45,
+    "FATOR_POTENCIA_2":                         46,
+    "FATOR_POTENCIA_3":                         47,
+    "FATOR_POTENCIA_MEDIA":                     48,
+
+    # Frequência
+    "FREQUENCIA":                               49,
+
+    # Energia Forncida
+    "ENERGIA_FORNECIDA_TWh":                    50,
+    "ENERGIA_FORNECIDA_GWh":                    51,
+    "ENERGIA_FORNECIDA_MWh":                    52,
+    "ENERGIA_FORNECIDA_KWh":                    53,
+    "ENERGIA_FORNECIDA_TVArh":                  54,
+    "ENERGIA_FORNECIDA_GVArh":                  55,
+    "ENERGIA_FORNECIDA_MVArh":                  56,
+    "ENERGIA_FORNECIDA_KVArh":                  57,
+    "ENERGIA_FORNECIDA_TVArh":                  58,
+    "ENERGIA_FORNECIDA_GVArh":                  59,
+    "ENERGIA_FORNECIDA_MVArh":                  60,
+    "ENERGIA_FORNECIDA_KVArh":                  61,
+
+    ## DISJUNTORES
+    "DJ_01":                                    0,
+    "DJ_02":                                    1,
+    "DJ_03":                                    2,
+    "DJ_04":                                    3,
+    "DJ_05":                                    4,
+    "DJ_06":                                    5,
+    "DJ_07":                                    6,
+    "DJ_08":                                    7,
+    "DJ_09":                                    8,
+    "DJ_10":                                    9,
+    "DJ_11":                                    10,
+    "DJ_12":                                    11,
+    "DJ_13":                                    12,
+    "DJ_14":                                    13,
+    "DJ_15":                                    14,
+    "DJ_16":                                    15,
+    "DJ_17":                                    16,
+    "DJ_18":                                    17,
+    "DJ_19":                                    18,
+    "DJ_20":                                    19,
+    "DJ_21":                                    20,
+    "DJ_22":                                    21,
+    "DJ_23":                                    22,
+    "DJ_24":                                    23,
+    "DJ_25":                                    24,
+    "DJ_26":                                    25,
+    "DJ_27":                                    26,
+    "DJ_28":                                    27,
+    "DJ_29":                                    28,
+    "DJ_30":                                    29,
+    "DJ_31":                                    30,
+    "DJ_32":                                    31,
+    "DJ_33":                                    32,
+    "DJ_34":                                    33,
+    "DJ_35":                                    34,
+    "DJ_36":                                    35,
+    "DJ_37":                                    36,
+    "DJ_38":                                    37,
+    "DJ_39":                                    38,
+    "DJ_40":                                    39,
+    "DJ_41":                                    40,
+    "DJ_42":                                    41,
+    "DJ_43":                                    42,
+    "DJ_44":                                    43,
+    "DJ_45":                                    44,
+    "DJ_46":                                    45,
+    "DJ_47":                                    46,
+    "DJ_48":                                    47,
+    "DJ_49":                                    48,
+    "DJ_50":                                    49,
+    "DJ_51":                                    50,
+    "DJ_52":                                    51,
+    "DJ_53":                                    52,
+    "DJ_54":                                    53,
+    "DJ_55":                                    54,
+    "DJ_56":                                    55,
+    "DJ_57":                                    56,
+    "DJ_58":                                    57,
+    "DJ_59":                                    58,
+    "DJ_60":                                    59,
+    "DJ_61":                                    60,
+    "DJ_62":                                    61,
+    "DJ_63":                                    62,
+    "DJ_64":                                    63,
+    "DJ_65":                                    64,
+    "DJ_66":                                    65,
+    "DJ_67":                                    66,
+    "DJ_68":                                    67,
+    "DJ_69":                                    68,
+    "DJ_70":                                    69,
+    "DJ_71":                                    70,
+    "DJ_72":                                    71,
+    "DJ_73":                                    72,
+    "DJ_74":                                    73,
+    "DJ_75":                                    74,
+    "DJ_76":                                    75,
+    "DJ_77":                                    76,
+    "DJ_78":                                    77,
+    "DJ_79":                                    78,
+    "DJ_80":                                    79,
+    "DJ_81":                                    80,
+    "DJ_82":                                    81,
+    "DJ_83":                                    82,
+    "DJ_84":                                    83,
+    "DJ_85":                                    84,
+    "DJ_86":                                    85,
+    "DJ_87":                                    86,
+    "DJ_88":                                    87,
+    "DJ_89":                                    88,
+    "DJ_90":                                    89,
+    "DJ_91":                                    90,
+    "DJ_92":                                    91,
+    "DJ_93":                                    92,
+    "DJ_94":                                    93,
+    "DJ_95":                                    94,
+    "DJ_96":                                    95,
+    "DJ_97":                                    96,
+}
 
 
-        # Linha
-        "ID_LINHA_VIVA":                                [54 + 30000, 0], # Mudar para o Simulador
-        "ID_LINHA_MORTA":                               [54 + 30000, 1], # Mudar para o Simulador
+REG_TDA = {
+    ## COMANDOS
+    # UHTA
+    "CMD_UHTA01_RODIZIO_AUTOMATICO":            39,
+    "CMD_UHTA01_RODIZIO_MANUAL":                40,
+    "CMD_UHTA02_RODIZIO_AUTOMATICO":            41,
+    "CMD_UHTA02_RODIZIO_MANUAL":                42,
+    "CMD_UHTA01_BOMBA_01_LIGAR":                43,
+    "CMD_UHTA01_BOMBA_01_DESLIGAR":             44,
+    "CMD_UHTA01_BOMBA_01_PRINCIPAL":            45,
+    "CMD_UHTA01_BOMBA_02_LIGAR":                46,
+    "CMD_UHTA01_BOMBA_02_DESLIGAR":             47,
+    "CMD_UHTA01_BOMBA_02_PRINCIPAL":            48,
+    "CMD_UHTA02_BOMBA_01_LIGAR":                49,
+    "CMD_UHTA02_BOMBA_01_DESLIGAR":             50,
+    "CMD_UHTA02_BOMBA_01_PRINCIPAL":            51,
+    "CMD_UHTA02_BOMBA_02_LIGAR":                52,
+    "CMD_UHTA02_BOMBA_02_DESLIGAR":             53,
+    "CMD_UHTA02_BOMBA_02_PRINCIPAL":            54,
 
-    },
-
-    "SE": {
-        # DJ
-        "DJL_FECHADO":                                  [43, 0],
-        "DJL_MOLA_CARREGADA":                           [43, 1],
-        # Relé
-        "RELE_TE_FLH_PARTIDA":                          [43, 2],
-
-
-        # DJ
-        "DJL_FLH_ABERTURA_B3":                          [44, 3],
-        "DJL_FLH_ABERTURA_B4":                          [44, 4],
-
-
-        # Zonas
-        "Z3_SOBRECO_INST_SEQU_NEG":                     [46, 1],
-        "Z2_SOBRECO_INST_SEQU_NEG":                     [46, 2],
-        "Z1_SOBRECO_INST_SEQU_NEG":                     [46, 3],
-
-
-        # DJ
-        "DJL_FLH_ABERTURA_B1":                          [48, 1],
+    # Sensores
+    "CMD_SENSOR_PRESEN_INIBIR":                 55,
+    "CMD_SENSOR_PRESEN_DESINIBIR":              56,
 
 
-        # Barra
-        "ID_BARRA_VIVA":                                [50, 1],
-    },
+    ## SETPOINTS
+    # Níveis
+    "NV_BARRAGEM_HH":                           0,
+    "NV_BARRAGEM_LL":                           1,
+    "NV_BARRAGEM_TOLERANCIA":                   2,
+    "NV_CAMARA_CARGA_HH":                       3,
+    "NV_CAMARA_CARGA_LL":                       4,
+    "NV_CAMARA_CARGA_TOLERANCIA":               5,
 
-    "TE": {
-        # Bloqueio
-        "86T_ATUADO":                                   [36, 4],
+    # Grade
+    "GRADE_SUJA_DIF_ALARME":                    6,
+    "GRADE_SUJA_DIF_TRIP":                      7,
+
+    # Manobras UHTA
+    "UHTA01_MANO_RODIZIO_LIDER":                10,
+    "UHTA01_MANO_RODIZIO_RETAGUARDA":           11,
+    "UHTA02_MANO_RODIZIO_LIDER":                12,
+    "UHTA02_MANO_RODIZIO_RETAGUARDA":           13,
+
+    # Diferencial de Grade
+    "DIFERENCIAL_GRADE_01":                     22,
+    "DIFERENCIAL_GRADE_02":                     23,
+    "DIFERENCIAL_GRADE_03":                     24,
+    "DIFERENCIAL_GRADE_04":                     25,
 
 
-        # Enrolamento
-        "ENROL_SEC_SOBRECO_TEMPO_RES":                  [37, 1],
-        "ENROL_SEC_SOBRECO_TEMPO_FASE":                 [37, 6],
+    ## LEITURAS
+    # Níveis
+    "NV_JUSANTE":                               2,
+    "NV_BARRAGEM":                              3,
+    "NV_CANALADUCAO":                           4,
+    "NV_CAMARACARGA":                           5,
+    "NV_POS_GRADE_01":                          227,
+    "NV_POS_GRADE_02":                          228,
+    "NV_POS_GRADE_03":                          229,
+    "NV_POS_GRADE_04":                          230,
+    "PLUVIOMETRO":                              9,
+
+    # PCTA
+    "COMPORTA_01_INFO":                         127,
+    "COMPORTA_01_TEMPO_EFETIVO_EQUAL":          128,
+    "COMPORTA_01_POSICAO":                      129,
+    "COMPORTA_02_INFO":                         130,
+    "COMPORTA_02_TEMPO_EFETIVO_EQUAL":          131,
+    "COMPORTA_02_POSICAO":                      132,
+    "COMPORTA_03_INFO":                         133,
+    "COMPORTA_03_TEMPO_EFETIVO_EQUAL":          134,
+    "COMPORTA_03_POSICAO":                      135,
+    "COMPORTA_04_INFO":                         136,
+    "COMPORTA_04_TEMPO_EFETIVO_EQUAL":          137,
+    "COMPORTA_04_POSICAO":                      138,
+
+    # UHTA
+    "UHTA01_INFO":                              139,
+    "UHTA01_BOMBAS":                            140,
+    "UHTA01_RODIZIO":                           141,
+    "UHTA01_ACUMULADOR_BOMBA_LIDER":            142,
+    "UHTA01_ACUMULADOR_BOMBA_RETAGUARDA":       143,
+    "UHTA01_FILTROS":                           144,
+    "UHTA01_NIVEL_OLEO_INFO":                   145,
+    "UHTA01_TEMPERATURA_OLEO_INFO":             146,
+    "UHTA01_VALVULAS":                          147,
+    "UHTA01_PRESSOSTATOS":                      148,
+    "UHTA01_TEMPERATURA_OLEO":                  149,
+    "UHTA01_NIVEL_OLEO":                        150,
+    "UHTA02_INFO":                              151,
+    "UHTA02_BOMBAS":                            152,
+    "UHTA02_RODIZIO":                           153,
+    "UHTA02_ACUMULADOR_BOMBA_LIDER":            154,
+    "UHTA02_ACUMULADOR_BOMBA_RETAGUARDA":       155,
+    "UHTA02_FILTROS":                           156,
+    "UHTA02_NIVEL_OLEO_INFO":                   157,
+    "UHTA02_TEMPERATURA_OLEO_INFO":             158,
+    "UHTA02_VALVULAS":                          159,
+    "UHTA02_PRESSOSTATOS":                      160,
+    "UHTA02_TEMPERATURA_OLEO":                  161,
+    "UHTA02_NIVEL_OLEO":                        162,
+}
 
 
-        # Enrolamento
-        "ENROL_PRI_SOBRECO_TEMPO_FASE":                 [1117, 3],
-        "ENROL_PRI_SOBRECO_TEMPO_RES":                  [1117, 4],
-        # Diferencial
-        "DIF_COM_RESTRICAO":                            [1117, 14],
-        "DIF_SEM_RESTRICAO":                            [1117, 15],
+REG_AD = {
+    ## COMANDOS
+    # Comportas
+    "CMD_CP_01_ABRIR":                          57,
+    "CMD_CP_01_PARAR":                          58,
+    "CMD_CP_01_FECHAR":                         59,
+    "CMD_CP_01_BUSCAR":                         60,
+    "CMD_CP_02_ABRIR":                          61,
+    "CMD_CP_02_PARAR":                          62,
+    "CMD_CP_02_FECHAR":                         63,
+    "CMD_CP_02_BUSCAR":                         64,
+
+    # Modo Setpoint
+    "CMD_MODO_SP_HABILITAR":                    65,
+    "CMD_MODO_SP_DESABILITAR":                  66,
+
+    # UHCD
+    "CMD_UHCD_RODIZIO_AUTO":                    67,
+    "CMD_UHCD_RODIZIO_MANUAL":                  68,
+
+    # Bombas
+    "CMD_BOMBA_01_LIGAR":                       69,
+    "CMD_BOMBA_01_DESLIGAR":                    70,
+    "CMD_BOMBA_01_PRINCIPAL":                   71,
+    "CMD_BOMBA_02_LIGAR":                       72,
+    "CMD_BOMBA_02_DESLIGAR":                    73,
+    "CMD_BOMBA_02_PRINCIPAL":                   74,
+
+    # Sensores
+    "CMD_SENSOR_PRESEN_INIBIR":                 75,
+    "CMD_SENSOR_PRESEN_DESINIBIR":              76,
 
 
-        # Relé
-        "RELE_ESTADO_TRP":                              [1118, 15],
-    },
+    ## SETPOINTS
+    # Comportas
+    "CP_01_SP_POS":                             14,
+    "CP_02_SP_POS":                             15,
 
+    # Manobras UHCD
+    "UHCD_MANO_RODIZIO_LIDER":                  16,
+    "UHCD_MANO_RODIZIO_RETAGUARDA":             17,
+
+
+    ## LEITURAS
+    # Comportas
+    "CP_01_INFO":                               164,
+    "CP_01_POSICAO":                            165,
+    "CP_02_INFO":                               166,
+    "CP_02_POSICAO":                            167,
+
+    # UHCD
+    "UHCD_INFO":                                168,
+    "UHCD_BOMBAS":                              169,
+    "UHCD_RODIZIO":                             170,
+    "UHCD_ACUMULADOR_BOMBA_LIDER":              171,
+    "UHCD_ACUMULADOR_BOMBA_RETAGUARDA":         172,
+    "UHCD_FILTROS":                             173,
+    "UHCD_NIVEL_OLEO_INFO":                     174,
+    "UHCD_TEMPERATURA_OLEO_INFO":               175,
+    "UHCD_VALVULAS":                            176,
+    "UHCD_PRESSOSTATOS":                        177,
+    "UHCD_TEMPERATURA_OLEO":                    178,
+    "UHCD_NIVEL_OLEO":                          179,
+}
+
+REG_UG = {
     "UG1": {
-        # Elementos
-        "ELE_2_SOBREFRE":                               [1, 4],
-        "ELE_1_SOBREFRE":                               [1, 5],
-        "ELE_2_SUBFRE":                                 [1, 6],
-        "ELE_1_SUBFRE":                                 [1, 7],
+        ## COMANDOS
+        # Gerais
+        "CMD_RESET_ALARMES":                    0,
+        "CMD_RECONHECE_ALARMES":                1,
+
+        # Operação
+        "CMD_OPER_UP":                          2,
+        "CMD_OPER_UPGM":                        3,
+        "CMD_OPER_UVD":                         4,
+        "CMD_OPER_UPS":                         5,
+        "CMD_OPER_US":                          6,
+        "CMD_OPER_EMERGENCIA_LIGAR":            7,
+        "CMD_OPER_EMERGENCIA_DESLIGAR":         8,
+        "CMD_OPOR_PARADA_RESET":                72,
+
+        # Turbina
+        "CMD_TURB_BYPASS_ABRIR":                9,
+        "CMD_TURB_BYPASS_FECHAR":               10,
+        "CMD_TURB_BORBOLETA_ABRIR":             11,
+        "CMD_TURB_BORBOLETA_FECHAR":            12,
+        "CMD_TURB_FRENAGEM_APLICAR":            13,
+        "CMD_TURB_FRENAGEM_DESAPLICAR":         14,
+        "CMD_TURB_FRENAGEM_MANUAL":             15,
+        "CMD_TURB_FRENAGEM_AUTO":               16,
+        "CMD_TURB_SENSOR_ATIVAR":               17,
+        "CMD_TURB_SENSOR_DESATIVAR":            18,
+
+        # Reg V
+        "CMD_REG_V_PARTIR":                     19,
+        "CMD_REG_V_PARAR":                      20,
+        "CMD_REG_V_COLOCAR_CARGA":              21,
+        "CMD_REG_V_RETIRAR_CARGA":              22,
+        "CMD_REG_V_INCREMENTA_VELOCIDADE":      23,
+        "CMD_REG_V_DECREMENTA_VELOCIDADE":      24,
+        "CMD_REG_V_SEL_MODO_ESTATISMO":         25,
+        "CMD_REG_V_SEL_MODO_BASECARGA":         26,
+
+        # Reg T
+        "CMD_REG_T_LIGAR":                      27,
+        "CMD_REG_T_DESLIGAR":                   28,
+        "CMD_REG_T_INCREMENTA_TENSAO":          29,
+        "CMD_REG_T_DECREMENTA_TENSAO":          30,
+        "CMD_REG_T_PRE_EXCITACAO":              31,
+
+        # Sinc
+        "CMD_SINC_LIGAR":                       32,
+        "CMD_SINC_DESLIGAR":                    33,
+        "CMD_SINC_MODO_AUTO_LIGAR":             34,
+        "CMD_SINC_MODO_MANUAL_LIGAR":           35,
+        "CMD_SINC_MODO_BMORTA_LIGAR":           36,
+
+        # DJ52G
+        "CMD_DJ52G_ABRIR":                      37,
+
+        # Controle Reativo
+        "CMD_CTRL_REATIVO_MODO_FPLIGAR":        38,
+        "CMD_CTRL_REATIVO_MODO_FPDESLIGAR":     39,
+        "CMD_CTRL_REATIVO_MODO_VArLIGAR":       40,
+        "CMD_CTRL_REATIVO_MODO_VArDESLIGAR":    41,
+
+        # Controle Potência
+        "CMD_CTRL_POT_MODO_POT_LIGAR":          42,
+        "CMD_CTRL_POT_MODO_POT_DESLIGAR":       43,
+        "CMD_CTRL_POT_MODO_NIVEL_LIGAR":        44,
+        "CMD_CTRL_POT_MODO_NIVEL_DESLIGAR":     45,
+        "CMD_CTRL_POT_RELI_AUTO_LIGAR":         46,
+        "CMD_CTRL_POT_RELI_AUTO_DESLIGAR":      47,
+
+        # UHCT
+        "CMD_UHCT_BOMBA_01_LIGAR":              48,
+        "CMD_UHCT_BOMBA_01_DESLIGAR":           49,
+        "CMD_UHCT_BOMBA_01_PRINCIPAL":          50,
+        "CMD_UHCT_BOMBA_02_LIGAR":              51,
+        "CMD_UHCT_BOMBA_02_DESLIGAR":           52,
+        "CMD_UHCT_BOMBA_02_PRINCIPAL":          53,
+        "CMD_UHCT_BOMBA_AGUA_LIGAR":            54,
+        "CMD_UHCT_BOMBA_AGUA_DESLIGAR":         55,
+        "CMD_UHCT_SENSOR_ATIVAR":               56,
+        "CMD_UHCT_SENSOR_DESATIVAR":            57,
+        "CMD_UHCT_RODIZIO_HABILITAR":           58,
+        "CMD_UHCT_RODIZIO_DESABILITAR":         59,
+        "CMD_UHLM_BOMBA_01_LIGAR":              60,
+        "CMD_UHLM_BOMBA_01_DESLIGAR":           61,
+        "CMD_UHLM_BOMBA_01_PRINCIPAL":          62,
+        "CMD_UHLM_BOMBA_02_LIGAR":              63,
+        "CMD_UHLM_BOMBA_02_DESLIGAR":           64,
+        "CMD_UHLM_BOMBA_02_PRINCIPAL":          65,
+        "CMD_UHLM_BOMBA_JACKING_LIGA":          66,
+        "CMD_UHLM_BOMBA_JACKING_DESLIGA":       67,
+        "CMD_UHLM_BOMBA_AGUA_LIGA":             68,
+        "CMD_UHLM_BOMBA_AGUA_DESLIGA":          69,
+        "CMD_UHLM_RODIZIO_HABILITAR":           70,
+        "CMD_UHLM_RODIZIO_DESABILITAR":         71,
+
+        # RT
+        "CMD_RT_MTVC_HABILITAR":                73,
+        "CMD_RT_MECC_HABILITAR":                74,
+        "CMD_RT_ONLINE_HABILITAR":              75,
+        "CMD_RT_ONLINE_DESABILITAR":            76,
+        "CMD_RT_PARALELO_HABILITAR":            77,
+        "CMD_RT_PARALELO_DESABILITAR":          78,
+
+        # RV
+        "CMD_RV_CONJUGADO_AUTO_HABILITAR":      79,
+        "CMD_RV_CONJUGADO_MANUAL_HABILITAR":    80,
+        "CMD_RV_CONJUGADO_01_HABILITAR":        81,
+        "CMD_RV_CONJUGADO_02_HABILITAR":        82,
+        "CMD_RV_CONJUGADO_03_HABILITAR":        83,
+        "CMD_RV_CONJUGADO_04_HABILITAR":        84,
+        "CMD_RV_CONJUGADO_05_HABILITAR":        85,
 
 
-        # Sobrecorrente
-        "SOBRECO_INST":                                 [901, 0],
-        "SOBRECO_INST_NEUTRO":                          [901, 1],
-        "SOBRECO_SEQU_NEG":                             [901, 2],
-        "SOBRECO_TEMPO_NEUTRO":                         [901, 4],
-        # Diferencial
-        "DIF_COM_RESTRICAO":                            [901, 14],
-        "DIF_SEM_RESTRICAO":                            [901, 15],
+        ## SETPOINTS
 
+        # UHCT
+        "UHCT_PRESSAO_MAX":                     0,
+        "UHCT_PRESSAO_MIN":                     1,
+        "UHCT_PRESSAO_DESLIGAMENTO":            2,
+        "UHCT_PRESSAO_CRITICA":                 3,
+
+        # Controle Potência
+        "CRTL_POT_NIVEL_LL1":                   4,
+        "CRTL_POT_NIVEL_LL2":                   5,
+        "CRTL_POT_NIVEL_LL3":                   6,
+        "CRTL_POT_NIVEL_LL4":                   7,
+        "CRTL_POT_NIVEL_LL5":                   8,
+        "CRTL_POT_POT_1":                       9,
+        "CRTL_POT_POT_2":                       10,
+        "CRTL_POT_POT_3":                       11,
+        "CRTL_POT_POT_4":                       12,
+        "CRTL_POT_POT_5":                       13,
+        "CRTL_POT_POT_MIN":                     14,
+        "CRTL_POT_POT_MIN_TEMPO":               15,
+        "CRTL_POT_NIVEL_RELIGAMENTO":           16,
+        "CRTL_POT_ALVO":                        17,
+        "CRTL_POT_TOLERANCIA":                  18,
+        "CRTL_POT_PULSO_TEMPO":                 19,
+        "CRTL_POT_PULSO_INTERVALO":             20,
+        "CRTL_POT_SP_NIVEL":                    21,
+        "CRTL_POT_NIVEL_MIN_ALARME":            22,
+        "CRTL_POT_NIVEL_MIN_TRIP":              23,
+        "CTRL_POT_POT_MAX":                     89,
+
+        # Controle Reativo
+        "CRTL_REATIVO_SP_FP":                   24,
+        "CRTL_REATIVO_SP_REATIVO":              25,
+
+        # Turbina
+        "TURB_VIBRA_01_ALARME":                 26,
+        "TURB_VIBRA_01_TRIP":                   27,
+        "TURB_VIBRA_02_ALARME":                 28,
+        "TURB_VIBRA_02_TRIP":                   29,
+        "TURB_VIBRA_03_ALARME":                 30,
+        "TURB_VIBRA_03_TRIP":                   31,
+        "TURB_VIBRA_04_ALARME":                 32,
+        "TURB_VIBRA_04_TRIP":                   33,
+        "TURB_TEMPO_EQUALI_SP":                 34,
+        "TURB_VIBRA_05_ALARME":                 90,
+        "TURB_VIBRA_05_TRIP":                   91,
+
+        # Freio
+        "FREIO_PULSO_INTERVALO":                35,
+        "FREIO_PULSO_TEMPO":                    36,
+
+        # UHCT
+        "UHCT_RODIZIO_PRINCIPAL":               37,
+        "UHCT_RODIZIO_RETAGUARDA":              38,
+        
+        # UHLM
+        "UHLM_RODIZIO_PRINCIPAL":               39,
+        "UHLM_RODIZIO_RETAGUARDA":              40,
+        "UHLM_SP_VAZAO_01":                     92,
+        "UHLM_SP_VAZAO_02":                     93,
+        "UHLM_SP_VAZAO_03":                     94,
+        "UHLM_SP_VAZAO_04":                     95,
+
+        # Temperaturas
+        "TEMPERATURA_01_ALARME":                41,
+        "TEMPERATURA_02_ALARME":                42,
+        "TEMPERATURA_03_ALARME":                43,
+        "TEMPERATURA_04_ALARME":                44,
+        "TEMPERATURA_05_ALARME":                45,
+        "TEMPERATURA_06_ALARME":                46,
+        "TEMPERATURA_07_ALARME":                47,
+        "TEMPERATURA_08_ALARME":                48,
+        "TEMPERATURA_09_ALARME":                49,
+        "TEMPERATURA_10_ALARME":                50,
+        "TEMPERATURA_11_ALARME":                51,
+        "TEMPERATURA_12_ALARME":                52,
+        "TEMPERATURA_13_ALARME":                53,
+        "TEMPERATURA_14_ALARME":                54,
+        "TEMPERATURA_15_ALARME":                55,
+        "TEMPERATURA_16_ALARME":                56,
+        "TEMPERATURA_01_TRIP01":                57,
+        "TEMPERATURA_02_TRIP01":                58,
+        "TEMPERATURA_03_TRIP01":                59,
+        "TEMPERATURA_04_TRIP01":                60,
+        "TEMPERATURA_05_TRIP01":                61,
+        "TEMPERATURA_06_TRIP01":                62,
+        "TEMPERATURA_07_TRIP01":                63,
+        "TEMPERATURA_08_TRIP01":                64,
+        "TEMPERATURA_09_TRIP01":                65,
+        "TEMPERATURA_10_TRIP01":                66,
+        "TEMPERATURA_11_TRIP01":                67,
+        "TEMPERATURA_12_TRIP01":                68,
+        "TEMPERATURA_13_TRIP01":                69,
+        "TEMPERATURA_14_TRIP01":                70,
+        "TEMPERATURA_15_TRIP01":                71,
+        "TEMPERATURA_16_TRIP01":                72,
+        "TEMPERATURA_01_TRIP02":                73,
+        "TEMPERATURA_02_TRIP02":                74,
+        "TEMPERATURA_03_TRIP02":                75,
+        "TEMPERATURA_04_TRIP02":                76,
+        "TEMPERATURA_05_TRIP02":                77,
+        "TEMPERATURA_06_TRIP02":                78,
+        "TEMPERATURA_07_TRIP02":                79,
+        "TEMPERATURA_08_TRIP02":                80,
+        "TEMPERATURA_09_TRIP02":                81,
+        "TEMPERATURA_10_TRIP02":                82,
+        "TEMPERATURA_11_TRIP02":                83,
+        "TEMPERATURA_12_TRIP02":                84,
+        "TEMPERATURA_13_TRIP02":                85,
+        "TEMPERATURA_14_TRIP02":                86,
+        "TEMPERATURA_15_TRIP02":                87,
+        "TEMPERATURA_16_TRIP02":                88,
+
+        # Grade Suja
+        "GradeSuja_TRIP":                       96,
+
+        # Curva
+        "CURVA_01_DISTRIB_P1":                  97,
+        "CURVA_01_DISTRIB_P2":                  98,
+        "CURVA_01_DISTRIB_P3":                  99,
+        "CURVA_01_DISTRIB_P4":                  100,
+        "CURVA_01_DISTRIB_P5":                  101,
+        "CURVA_01_DISTRIB_P6":                  102,
+        "CURVA_01_DISTRIB_P7":                  103,
+        "CURVA_01_DISTRIB_P8":                  104,
+        "CURVA_01_DISTRIB_P9":                  105,
+        "CURVA_01_DISTRIB_P10":                 106,
+        "CURVA_01_ROTOR_P1":                    107,
+        "CURVA_01_ROTOR_P2":                    108,
+        "CURVA_01_ROTOR_P3":                    109,
+        "CURVA_01_ROTOR_P4":                    110,
+        "CURVA_01_ROTOR_P5":                    111,
+        "CURVA_01_ROTOR_P6":                    112,
+        "CURVA_01_ROTOR_P7":                    113,
+        "CURVA_01_ROTOR_P8":                    114,
+        "CURVA_01_ROTOR_P9":                    115,
+        "CURVA_01_ROTOR_P10":                   116,
+        "CURVA_02_DISTRIB_P1":                  117,
+        "CURVA_02_DISTRIB_P2":                  118,
+        "CURVA_02_DISTRIB_P3":                  119,
+        "CURVA_02_DISTRIB_P4":                  120,
+        "CURVA_02_DISTRIB_P5":                  121,
+        "CURVA_02_DISTRIB_P6":                  122,
+        "CURVA_02_DISTRIB_P7":                  123,
+        "CURVA_02_DISTRIB_P8":                  124,
+        "CURVA_02_DISTRIB_P9":                  125,
+        "CURVA_02_DISTRIB_P10":                 126,
+        "CURVA_02_ROTOR_P1":                    127,
+        "CURVA_02_ROTOR_P2":                    128,
+        "CURVA_02_ROTOR_P3":                    129,
+        "CURVA_02_ROTOR_P4":                    130,
+        "CURVA_02_ROTOR_P5":                    131,
+        "CURVA_02_ROTOR_P6":                    132,
+        "CURVA_02_ROTOR_P7":                    133,
+        "CURVA_02_ROTOR_P8":                    134,
+        "CURVA_02_ROTOR_P9":                    135,
+        "CURVA_02_ROTOR_P10":                   136,
+        "CURVA_03_DISTRIB_P1":                  137,
+        "CURVA_03_DISTRIB_P2":                  138,
+        "CURVA_03_DISTRIB_P3":                  139,
+        "CURVA_03_DISTRIB_P4":                  140,
+        "CURVA_03_DISTRIB_P5":                  141,
+        "CURVA_03_DISTRIB_P6":                  142,
+        "CURVA_03_DISTRIB_P7":                  143,
+        "CURVA_03_DISTRIB_P8":                  144,
+        "CURVA_03_DISTRIB_P9":                  145,
+        "CURVA_03_DISTRIB_P10":                 146,
+        "CURVA_03_ROTOR_P1":                    147,
+        "CURVA_03_ROTOR_P2":                    148,
+        "CURVA_03_ROTOR_P3":                    149,
+        "CURVA_03_ROTOR_P4":                    150,
+        "CURVA_03_ROTOR_P5":                    151,
+        "CURVA_03_ROTOR_P6":                    152,
+        "CURVA_03_ROTOR_P7":                    153,
+        "CURVA_03_ROTOR_P8":                    154,
+        "CURVA_03_ROTOR_P9":                    155,
+        "CURVA_03_ROTOR_P10":                   156,
+        "CURVA_04_DISTRIB_P1":                  157,
+        "CURVA_04_DISTRIB_P2":                  158,
+        "CURVA_04_DISTRIB_P3":                  159,
+        "CURVA_04_DISTRIB_P4":                  160,
+        "CURVA_04_DISTRIB_P5":                  161,
+        "CURVA_04_DISTRIB_P6":                  162,
+        "CURVA_04_DISTRIB_P7":                  163,
+        "CURVA_04_DISTRIB_P8":                  164,
+        "CURVA_04_DISTRIB_P9":                  165,
+        "CURVA_04_DISTRIB_P10":                 166,
+        "CURVA_04_ROTOR_P1":                    167,
+        "CURVA_04_ROTOR_P2":                    168,
+        "CURVA_04_ROTOR_P3":                    169,
+        "CURVA_04_ROTOR_P4":                    170,
+        "CURVA_04_ROTOR_P5":                    171,
+        "CURVA_04_ROTOR_P6":                    172,
+        "CURVA_04_ROTOR_P7":                    173,
+        "CURVA_04_ROTOR_P8":                    174,
+        "CURVA_04_ROTOR_P9":                    175,
+        "CURVA_04_ROTOR_P10":                   176,
+        "CURVA_05_DISTRIB_P1":                  177,
+        "CURVA_05_DISTRIB_P2":                  178,
+        "CURVA_05_DISTRIB_P3":                  179,
+        "CURVA_05_DISTRIB_P4":                  180,
+        "CURVA_05_DISTRIB_P5":                  181,
+        "CURVA_05_DISTRIB_P6":                  182,
+        "CURVA_05_DISTRIB_P7":                  183,
+        "CURVA_05_DISTRIB_P8":                  184,
+        "CURVA_05_DISTRIB_P9":                  185,
+        "CURVA_05_DISTRIB_P10":                 186,
+        "CURVA_05_ROTOR_P1":                    187,
+        "CURVA_05_ROTOR_P2":                    188,
+        "CURVA_05_ROTOR_P3":                    189,
+        "CURVA_05_ROTOR_P4":                    190,
+        "CURVA_05_ROTOR_P5":                    191,
+        "CURVA_05_ROTOR_P6":                    192,
+        "CURVA_05_ROTOR_P7":                    193,
+        "CURVA_05_ROTOR_P8":                    194,
+        "CURVA_05_ROTOR_P9":                    195,
+        "CURVA_05_ROTOR_P10":                   196,
+
+        # Referencia Curva
+        "REFER_CURVA_01":                       197,
+        "REFER_CURVA_02":                       198,
+        "REFER_CURVA_03":                       199,
+        "REFER_CURVA_04":                       200,
+        "REFER_CURVA_05":                       201,
 
         # Outros
-        "SUBTEN_GERAL":                                 [902, 0],
-        "SOBRETEN_GERAL":                               [902, 1],
-        "POT_REVERSA":                                  [902, 3],
-        "VOLTZ_HERTZ":                                  [902, 5],
-        "LT_SOBRECO_RESTRICAO":                         [902, 6],
-        "DJ_MAQUINA_FLH_ABERTURA_B8":                   [902, 8],
-        "RECIBO_TRANS_DISP":                            [902, 9],
-        "PERDA_CAMPO_GERAL":                            [902, 11],
-        "FUGA_SOBRECO_GERAL":                           [902, 12],
-        "UNIDADE_FORA_PASSO":                           [902, 14],
+        "TEMPO_ATUALIZACAO":                    202,
+        "MODO_OPERACAO_RETENTIVO":              203,
+        "CURVA_SEL_RETENTIVO":                  204,
 
+
+        ## ALARMES
+
+        "Alarme01":                             0,
+        "Alarme02":                             1,
+        "Alarme03":                             2,
+        "Alarme04":                             3,
+        "Alarme05":                             4,
+        "Alarme06":                             5,
+        "Alarme07":                             6,
+        "Alarme08":                             7,
+        "Alarme09":                             8,
+        "Alarme10":                             9,
+        "Alarme11":                             10,
+        "Alarme12":                             11,
+        "Alarme13":                             12,
+        "Alarme14":                             13,
+        "Alarme15":                             14,
+        "Alarme16":                             15,
+
+
+        ## LEITURAS
+
+        # Nível
+        "NV_JUSANTE":                           2,
+        "NV_BARRAGEM":                          3,
+        "NV_CANAL":                             4,
+        "NV_CAMARA_CARGA":                      5,
+        "QUEDA_BRUTA":                          131,
+
+        # Operação
+        "OPER_PAINEL_RESET_ALARMES":            6,
+        "OPER_PAINEL_RECONHECE_ALARMES":        7,
+        "OPER_INFO":                            8,
+        "OPER_ETAPA_ALVO":                      9,
+        "OPER_ETAPA_ATUAL":                     10,
+        "OPER_ETAPA_TRANSICAO":                 11,
+        "OPER_INFO_PARADA":                     12,
+
+        # UHCT
+        "UHCT_INFO":                            13,
+        "UHCT_BOMBAS":                          14,
+        "UHCT_RODIZIO":                         15,
+        "UHCT_VALVULAS":                        16,
+        "UHCT_FILTROS":                         17,
+        "UHCT_PRESSOSTATOS":                    18,
+        "UHCT_NIVEL":                           19,
+        "UHCT_PRESSAO_OLEO":                    20,
+        "UHCT_ACUM_RODIZIO_PRINCIPAL":          21,
+        "UHCT_ACUM_RODIZIO_RETAGUARDA":         22,
+
+        # UHLM
+        "UHLM_INFO":                            23,
+        "UHLM_BOMBAS":                          24,
+        "UHLM_RODIZIO":                         25,
+        "UHLM_FILTROS":                         26,
+        "UHLM_PRESSOSTATOS":                    27,
+        "UHLM_FLUXOSTATOS":                     28,
+        "UHLM_NIVEL":                           29,
+        "UHLM_ACUM_RODIZIO_PRINCIPAL":          30,
+        "UHLM_ACUM_RODIZIO_RETAGUARDA":         31,
+        "UHLM_FLUXOSTATO_OLEO_01":              123,
+        "UHLM_FLUXOSTATO_OLEO_02":              124,
+        "UHLM_FLUXOSTATO_OLEO_03":              125,
+        "UHLM_FLUXOSTATO_OLEO_04":              126,
+
+        # Turbina
+        "TURB_INFO":                            32,
+        "TURB_VALVULA_BYPASS":                  33,
+        "TURB_VALVULA_BORBOLETA":               34,
+        "TURB_TEMPO_CRACK_EFETIVO":             35,
+        "TURB_TEMPO_EQUAL_EFETIVO":             36,
+        "TURB_PRESSAO_CONDUTO":                 37,
+        "TURB_PRESSAO_CAIXA_ESPIRAL":           38,
+        "TURB_VAZAO_TURBINADA":                 39,
+        "TURB_VIBRACAO_01":                     40,
+        "TURB_VIBRACAO_02":                     41,
+        "TURB_VIBRACAO_03":                     42,
+        "TURB_VIBRACAO_04":                     43,
+        "TURB_FRENAGEM":                        44,
+        "TURB_VIBRACAO_05":                     127,
+
+        # Reg V
+        "REG_V_INFO":                           45,
+        "REG_V_ESTADO":                         46,
+        "REG_V_VELOCIDADE":                     47,
+        "REG_V_DISTRIBUIDOR":                   48,
+        "REG_V_ROTOR":                          49,
+        "REG_V_POT_ALVO":                       50,
+        "REG_V_CURVA_CONJUG_INFO":              128,
+
+        # Reg T
+        "REG_T_INFO":                           51,
+        "REG_T_UEXCITACAO":                     52,
+        "REG_T_IEXCITACAO":                     53,
+        "REG_T_FPALVO":                         129,
+        "REG_T_REATIVO_ALVO":                   130,
+
+        # Sinc
+        "SINC_INFO":                            54,
+        "SINC_FREQ_GERADOR":                    55,
+        "SINC_FREQ_BARRA":                      56,
+        "SINC_TENSAO_GERADOR":                  57,
+        "SINC_TENSAO_BARRA":                    58,
 
         # DJ
-        "DJ_MAQUINA_FLH_ABERTURA_B7":                   [2100, 7],
-        "DJ_MAQUINA_FLH_PARTIDA":                       [2100, 6],
+        "Dj52G_INFO":                           59,
+
+        # Tensão
+        "TENSAO_RN":                            60,
+        "TENSAO_SN":                            61,
+        "TENSAO_TN":                            62,
+        "TENSAO_RS":                            63,
+        "TENSAO_ST":                            64,
+        "TENSAO_TR":                            65,
+
+        # Corrente
+        "CORRENTE_R":                           66,
+        "CORRENTE_S":                           67,
+        "CORRENTE_T":                           68,
+        "CORRENTE_MEDIA":                       69,
+
+        # Potência Ativa
+        "POT_ATIVA_1":                          70,
+        "POT_ATIVA_2":                          71,
+        "POT_ATIVA_3":                          72,
+        "POT_ATIVA_MEDIA":                      73,
+
+        # Potência Reativa
+        "POT_REATIVA_1":                        74,
+        "POT_REATIVA_2":                        75,
+        "POT_REATIVA_3":                        76,
+        "POT_REATIVA_MEDIA":                    77,
+
+        # Potência Aparente
+        "POT_APARENTE_1":                       78,
+        "POT_APARENTE_2":                       79,
+        "POT_APARENTE_3":                       80,
+        "POT_APARENTE_MEDIA":                   81,
+
+        # Fator Potência
+        "FATOR_POT_1":                          82,
+        "FATOR_POT_2":                          83,
+        "FATOR_POT_3":                          84,
+        "FATOR_POT_MEDIA":                      85,
+
+        # Frequencia
+        "FREQUENCIA":                           86,
+
+        # Energia Fornecida
+        "ENERGIA_FORNECIDA_TWh":                87,
+        "ENERGIA_FORNECIDA_GWh":                88,
+        "ENERGIA_FORNECIDA_MWh":                89,
+        "ENERGIA_FORNECIDA_kWh":                90,
+        "ENERGIA_FORNECIDA_TVarh":              91,
+        "ENERGIA_FORNECIDA_GVarh":              92,
+        "ENERGIA_FORNECIDA_MVarh":              93,
+        "ENERGIA_FORNECIDA_kVarh":              94,
+        "ENERGIA_CORNECIDA_TVarh":              95,
+        "ENERGIA_CORNECIDA_GVarh":              96,
+        "ENERGIA_CORNECIDA_MVarh":              97,
+        "ENERGIA_CORNECIDA_kVarh":              98,
+
+        # Controles
+        "CTRL_REATIVO_INFO":                    100,
+        "CTRL_POTENCIA_INFO":                   101,
+
+        # Horimetros
+        "HORIM_ELETR_LOW":                      102,
+        "HORIM_ELETR_HIGH":                     103,
+        "HORIM_MECAN_LOW":                      104,
+        "HORIM_MECAN_HIGH":                     105,
+
+        # Temperatura
+        "TEMPERATURA_01":                       107,
+        "TEMPERATURA_02":                       108,
+        "TEMPERATURA_03":                       109,
+        "TEMPERATURA_04":                       110,
+        "TEMPERATURA_05":                       111,
+        "TEMPERATURA_06":                       112,
+        "TEMPERATURA_07":                       113,
+        "TEMPERATURA_08":                       114,
+        "TEMPERATURA_09":                       115,
+        "TEMPERATURA_10":                       116,
+        "TEMPERATURA_11":                       117,
+        "TEMPERATURA_12":                       118,
+        "TEMPERATURA_13":                       119,
+        "TEMPERATURA_14":                       120,
+        "TEMPERATURA_15":                       121,
+        "TEMPERATURA_16":                       122,
 
 
-        # Transformador Elevador
-        "TE_RELE_LINHA_TRANS_DISP":                     [2100, 11],
+        ## DISJUNTORES
 
-
-        # Relé
-        "RELE_PROTECAO_TRP_B5":                         [2110, 5],
-        "RELE_PROTECAO_TRP_B6":                         [2110, 6],
+        "DJ_01":                                0,
+        "DJ_02":                                1,
+        "DJ_03":                                2,
+        "DJ_04":                                3,
+        "DJ_05":                                4,
+        "DJ_06":                                5,
+        "DJ_07":                                6,
+        "DJ_08":                                7,
+        "DJ_09":                                8,
+        "DJ_10":                                9,
+        "DJ_11":                                10,
+        "DJ_12":                                11,
+        "DJ_13":                                12,
+        "DJ_14":                                13,
+        "DJ_15":                                14,
+        "DJ_16":                                15,
+        "DJ_17":                                16,
+        "DJ_18":                                17,
+        "DJ_19":                                18,
+        "DJ_20":                                19,
+        "DJ_21":                                20,
+        "DJ_22":                                21,
+        "DJ_23":                                22,
+        "DJ_24":                                23,
+        "DJ_25":                                24,
+        "DJ_26":                                25,
+        "DJ_27":                                26,
+        "DJ_28":                                27,
+        "DJ_29":                                28,
+        "DJ_30":                                29,
+        "DJ_31":                                30,
+        "DJ_32":                                31,
     },
 
     "UG2": {
-        # Elementos
-        "ELE_2_SOBREFRE":                               [1, 4],
-        "ELE_1_SOBREFRE":                               [1, 5],
-        "ELE_2_SUBFRE":                                 [1, 6],
-        "ELE_1_SUBFRE":                                 [1, 7],
+        ## COMANDOS
+        # Gerais
+        "CMD_RESET_ALARMES":                    0,
+        "CMD_RECONHECE_ALARMES":                1,
+
+        # Operação
+        "CMD_OPER_UP":                          2,
+        "CMD_OPER_UPGM":                        3,
+        "CMD_OPER_UVD":                         4,
+        "CMD_OPER_UPS":                         5,
+        "CMD_OPER_US":                          6,
+        "CMD_OPER_EMERGENCIA_LIGAR":            7,
+        "CMD_OPER_EMERGENCIA_DESLIGAR":         8,
+        "CMD_OPOR_PARADA_RESET":                72,
+
+        # Turbina
+        "CMD_TURB_BYPASS_ABRIR":                9,
+        "CMD_TURB_BYPASS_FECHAR":               10,
+        "CMD_TURB_BORBOLETA_ABRIR":             11,
+        "CMD_TURB_BORBOLETA_FECHAR":            12,
+        "CMD_TURB_FRENAGEM_APLICAR":            13,
+        "CMD_TURB_FRENAGEM_DESAPLICAR":         14,
+        "CMD_TURB_FRENAGEM_MANUAL":             15,
+        "CMD_TURB_FRENAGEM_AUTO":               16,
+        "CMD_TURB_SENSOR_ATIVAR":               17,
+        "CMD_TURB_SENSOR_DESATIVAR":            18,
+
+        # Reg V
+        "CMD_REG_V_PARTIR":                     19,
+        "CMD_REG_V_PARAR":                      20,
+        "CMD_REG_V_COLOCAR_CARGA":              21,
+        "CMD_REG_V_RETIRAR_CARGA":              22,
+        "CMD_REG_V_INCREMENTA_VELOCIDADE":      23,
+        "CMD_REG_V_DECREMENTA_VELOCIDADE":      24,
+        "CMD_REG_V_SEL_MODO_ESTATISMO":         25,
+        "CMD_REG_V_SEL_MODO_BASECARGA":         26,
+
+        # Reg T
+        "CMD_REG_T_LIGAR":                      27,
+        "CMD_REG_T_DESLIGAR":                   28,
+        "CMD_REG_T_INCREMENTA_TENSAO":          29,
+        "CMD_REG_T_DECREMENTA_TENSAO":          30,
+        "CMD_REG_T_PRE_EXCITACAO":              31,
+
+        # Sinc
+        "CMD_SINC_LIGAR":                       32,
+        "CMD_SINC_DESLIGAR":                    33,
+        "CMD_SINC_MODO_AUTO_LIGAR":             34,
+        "CMD_SINC_MODO_MANUAL_LIGAR":           35,
+        "CMD_SINC_MODO_BMORTA_LIGAR":           36,
+
+        # DJ52G
+        "CMD_DJ52G_ABRIR":                      37,
+
+        # Controle Reativo
+        "CMD_CTRL_REATIVO_MODO_FPLIGAR":        38,
+        "CMD_CTRL_REATIVO_MODO_FPDESLIGAR":     39,
+        "CMD_CTRL_REATIVO_MODO_VArLIGAR":       40,
+        "CMD_CTRL_REATIVO_MODO_VArDESLIGAR":    41,
+
+        # Controle Potência
+        "CMD_CTRL_POT_MODO_POT_LIGAR":          42,
+        "CMD_CTRL_POT_MODO_POT_DESLIGAR":       43,
+        "CMD_CTRL_POT_MODO_NIVEL_LIGAR":        44,
+        "CMD_CTRL_POT_MODO_NIVEL_DESLIGAR":     45,
+        "CMD_CTRL_POT_RELI_AUTO_LIGAR":         46,
+        "CMD_CTRL_POT_RELI_AUTO_DESLIGAR":      47,
+
+        # UHCT
+        "CMD_UHCT_BOMBA_01_LIGAR":              48,
+        "CMD_UHCT_BOMBA_01_DESLIGAR":           49,
+        "CMD_UHCT_BOMBA_01_PRINCIPAL":          50,
+        "CMD_UHCT_BOMBA_02_LIGAR":              51,
+        "CMD_UHCT_BOMBA_02_DESLIGAR":           52,
+        "CMD_UHCT_BOMBA_02_PRINCIPAL":          53,
+        "CMD_UHCT_BOMBA_AGUA_LIGAR":            54,
+        "CMD_UHCT_BOMBA_AGUA_DESLIGAR":         55,
+        "CMD_UHCT_SENSOR_ATIVAR":               56,
+        "CMD_UHCT_SENSOR_DESATIVAR":            57,
+        "CMD_UHCT_RODIZIO_HABILITAR":           58,
+        "CMD_UHCT_RODIZIO_DESABILITAR":         59,
+        "CMD_UHLM_BOMBA_01_LIGAR":              60,
+        "CMD_UHLM_BOMBA_01_DESLIGAR":           61,
+        "CMD_UHLM_BOMBA_01_PRINCIPAL":          62,
+        "CMD_UHLM_BOMBA_02_LIGAR":              63,
+        "CMD_UHLM_BOMBA_02_DESLIGAR":           64,
+        "CMD_UHLM_BOMBA_02_PRINCIPAL":          65,
+        "CMD_UHLM_BOMBA_JACKING_LIGA":          66,
+        "CMD_UHLM_BOMBA_JACKING_DESLIGA":       67,
+        "CMD_UHLM_BOMBA_AGUA_LIGA":             68,
+        "CMD_UHLM_BOMBA_AGUA_DESLIGA":          69,
+        "CMD_UHLM_RODIZIO_HABILITAR":           70,
+        "CMD_UHLM_RODIZIO_DESABILITAR":         71,
+
+        # RT
+        "CMD_RT_MTVC_HABILITAR":                73,
+        "CMD_RT_MECC_HABILITAR":                74,
+        "CMD_RT_ONLINE_HABILITAR":              75,
+        "CMD_RT_ONLINE_DESABILITAR":            76,
+        "CMD_RT_PARALELO_HABILITAR":            77,
+        "CMD_RT_PARALELO_DESABILITAR":          78,
+
+        # RV
+        "CMD_RV_CONJUGADO_AUTO_HABILITAR":      79,
+        "CMD_RV_CONJUGADO_MANUAL_HABILITAR":    80,
+        "CMD_RV_CONJUGADO_01_HABILITAR":        81,
+        "CMD_RV_CONJUGADO_02_HABILITAR":        82,
+        "CMD_RV_CONJUGADO_03_HABILITAR":        83,
+        "CMD_RV_CONJUGADO_04_HABILITAR":        84,
+        "CMD_RV_CONJUGADO_05_HABILITAR":        85,
 
 
-        # Sobrecorrente
-        "SOBRECO_INST":                                 [901, 0],
-        "SOBRECO_INST_NEUTRO":                          [901, 1],
-        "SOBRECO_SEQU_NEG":                             [901, 2],
-        "SOBRECO_TEMPO_NEUTRO":                         [901, 4],
-        # Diferencial
-        "DIF_COM_RESTRICAO":                            [901, 14],
-        "DIF_SEM_RESTRICAO":                            [901, 15],
+        ## SETPOINTS
 
+        # UHCT
+        "UHCT_PRESSAO_MAX":                     0,
+        "UHCT_PRESSAO_MIN":                     1,
+        "UHCT_PRESSAO_DESLIGAMENTO":            2,
+        "UHCT_PRESSAO_CRITICA":                 3,
+
+        # Controle Potência
+        "CRTL_POT_NIVEL_LL1":                   4,
+        "CRTL_POT_NIVEL_LL2":                   5,
+        "CRTL_POT_NIVEL_LL3":                   6,
+        "CRTL_POT_NIVEL_LL4":                   7,
+        "CRTL_POT_NIVEL_LL5":                   8,
+        "CRTL_POT_POT_1":                       9,
+        "CRTL_POT_POT_2":                       10,
+        "CRTL_POT_POT_3":                       11,
+        "CRTL_POT_POT_4":                       12,
+        "CRTL_POT_POT_5":                       13,
+        "CRTL_POT_POT_MIN":                     14,
+        "CRTL_POT_POT_MIN_TEMPO":               15,
+        "CRTL_POT_NIVEL_RELIGAMENTO":           16,
+        "CRTL_POT_ALVO":                        17,
+        "CRTL_POT_TOLERANCIA":                  18,
+        "CRTL_POT_PULSO_TEMPO":                 19,
+        "CRTL_POT_PULSO_INTERVALO":             20,
+        "CRTL_POT_SP_NIVEL":                    21,
+        "CRTL_POT_NIVEL_MIN_ALARME":            22,
+        "CRTL_POT_NIVEL_MIN_TRIP":              23,
+        "CTRL_POT_POT_MAX":                     89,
+
+        # Controle Reativo
+        "CRTL_REATIVO_SP_FP":                   24,
+        "CRTL_REATIVO_SP_REATIVO":              25,
+
+        # Turbina
+        "TURB_VIBRA_01_ALARME":                 26,
+        "TURB_VIBRA_01_TRIP":                   27,
+        "TURB_VIBRA_02_ALARME":                 28,
+        "TURB_VIBRA_02_TRIP":                   29,
+        "TURB_VIBRA_03_ALARME":                 30,
+        "TURB_VIBRA_03_TRIP":                   31,
+        "TURB_VIBRA_04_ALARME":                 32,
+        "TURB_VIBRA_04_TRIP":                   33,
+        "TURB_TEMPO_EQUALI_SP":                 34,
+        "TURB_VIBRA_05_ALARME":                 90,
+        "TURB_VIBRA_05_TRIP":                   91,
+
+        # Freio
+        "FREIO_PULSO_INTERVALO":                35,
+        "FREIO_PULSO_TEMPO":                    36,
+
+        # UHCT
+        "UHCT_RODIZIO_PRINCIPAL":               37,
+        "UHCT_RODIZIO_RETAGUARDA":              38,
+        
+        # UHLM
+        "UHLM_RODIZIO_PRINCIPAL":               39,
+        "UHLM_RODIZIO_RETAGUARDA":              40,
+        "UHLM_SP_VAZAO_01":                     92,
+        "UHLM_SP_VAZAO_02":                     93,
+        "UHLM_SP_VAZAO_03":                     94,
+        "UHLM_SP_VAZAO_04":                     95,
+
+        # Temperaturas
+        "TEMPERATURA_01_ALARME":                41,
+        "TEMPERATURA_02_ALARME":                42,
+        "TEMPERATURA_03_ALARME":                43,
+        "TEMPERATURA_04_ALARME":                44,
+        "TEMPERATURA_05_ALARME":                45,
+        "TEMPERATURA_06_ALARME":                46,
+        "TEMPERATURA_07_ALARME":                47,
+        "TEMPERATURA_08_ALARME":                48,
+        "TEMPERATURA_09_ALARME":                49,
+        "TEMPERATURA_10_ALARME":                50,
+        "TEMPERATURA_11_ALARME":                51,
+        "TEMPERATURA_12_ALARME":                52,
+        "TEMPERATURA_13_ALARME":                53,
+        "TEMPERATURA_14_ALARME":                54,
+        "TEMPERATURA_15_ALARME":                55,
+        "TEMPERATURA_16_ALARME":                56,
+        "TEMPERATURA_01_TRIP01":                57,
+        "TEMPERATURA_02_TRIP01":                58,
+        "TEMPERATURA_03_TRIP01":                59,
+        "TEMPERATURA_04_TRIP01":                60,
+        "TEMPERATURA_05_TRIP01":                61,
+        "TEMPERATURA_06_TRIP01":                62,
+        "TEMPERATURA_07_TRIP01":                63,
+        "TEMPERATURA_08_TRIP01":                64,
+        "TEMPERATURA_09_TRIP01":                65,
+        "TEMPERATURA_10_TRIP01":                66,
+        "TEMPERATURA_11_TRIP01":                67,
+        "TEMPERATURA_12_TRIP01":                68,
+        "TEMPERATURA_13_TRIP01":                69,
+        "TEMPERATURA_14_TRIP01":                70,
+        "TEMPERATURA_15_TRIP01":                71,
+        "TEMPERATURA_16_TRIP01":                72,
+        "TEMPERATURA_01_TRIP02":                73,
+        "TEMPERATURA_02_TRIP02":                74,
+        "TEMPERATURA_03_TRIP02":                75,
+        "TEMPERATURA_04_TRIP02":                76,
+        "TEMPERATURA_05_TRIP02":                77,
+        "TEMPERATURA_06_TRIP02":                78,
+        "TEMPERATURA_07_TRIP02":                79,
+        "TEMPERATURA_08_TRIP02":                80,
+        "TEMPERATURA_09_TRIP02":                81,
+        "TEMPERATURA_10_TRIP02":                82,
+        "TEMPERATURA_11_TRIP02":                83,
+        "TEMPERATURA_12_TRIP02":                84,
+        "TEMPERATURA_13_TRIP02":                85,
+        "TEMPERATURA_14_TRIP02":                86,
+        "TEMPERATURA_15_TRIP02":                87,
+        "TEMPERATURA_16_TRIP02":                88,
+
+        # Grade Suja
+        "GradeSuja_TRIP":                       96,
+
+        # Curva
+        "CURVA_01_DISTRIB_P1":                  97,
+        "CURVA_01_DISTRIB_P2":                  98,
+        "CURVA_01_DISTRIB_P3":                  99,
+        "CURVA_01_DISTRIB_P4":                  100,
+        "CURVA_01_DISTRIB_P5":                  101,
+        "CURVA_01_DISTRIB_P6":                  102,
+        "CURVA_01_DISTRIB_P7":                  103,
+        "CURVA_01_DISTRIB_P8":                  104,
+        "CURVA_01_DISTRIB_P9":                  105,
+        "CURVA_01_DISTRIB_P10":                 106,
+        "CURVA_01_ROTOR_P1":                    107,
+        "CURVA_01_ROTOR_P2":                    108,
+        "CURVA_01_ROTOR_P3":                    109,
+        "CURVA_01_ROTOR_P4":                    110,
+        "CURVA_01_ROTOR_P5":                    111,
+        "CURVA_01_ROTOR_P6":                    112,
+        "CURVA_01_ROTOR_P7":                    113,
+        "CURVA_01_ROTOR_P8":                    114,
+        "CURVA_01_ROTOR_P9":                    115,
+        "CURVA_01_ROTOR_P10":                   116,
+        "CURVA_02_DISTRIB_P1":                  117,
+        "CURVA_02_DISTRIB_P2":                  118,
+        "CURVA_02_DISTRIB_P3":                  119,
+        "CURVA_02_DISTRIB_P4":                  120,
+        "CURVA_02_DISTRIB_P5":                  121,
+        "CURVA_02_DISTRIB_P6":                  122,
+        "CURVA_02_DISTRIB_P7":                  123,
+        "CURVA_02_DISTRIB_P8":                  124,
+        "CURVA_02_DISTRIB_P9":                  125,
+        "CURVA_02_DISTRIB_P10":                 126,
+        "CURVA_02_ROTOR_P1":                    127,
+        "CURVA_02_ROTOR_P2":                    128,
+        "CURVA_02_ROTOR_P3":                    129,
+        "CURVA_02_ROTOR_P4":                    130,
+        "CURVA_02_ROTOR_P5":                    131,
+        "CURVA_02_ROTOR_P6":                    132,
+        "CURVA_02_ROTOR_P7":                    133,
+        "CURVA_02_ROTOR_P8":                    134,
+        "CURVA_02_ROTOR_P9":                    135,
+        "CURVA_02_ROTOR_P10":                   136,
+        "CURVA_03_DISTRIB_P1":                  137,
+        "CURVA_03_DISTRIB_P2":                  138,
+        "CURVA_03_DISTRIB_P3":                  139,
+        "CURVA_03_DISTRIB_P4":                  140,
+        "CURVA_03_DISTRIB_P5":                  141,
+        "CURVA_03_DISTRIB_P6":                  142,
+        "CURVA_03_DISTRIB_P7":                  143,
+        "CURVA_03_DISTRIB_P8":                  144,
+        "CURVA_03_DISTRIB_P9":                  145,
+        "CURVA_03_DISTRIB_P10":                 146,
+        "CURVA_03_ROTOR_P1":                    147,
+        "CURVA_03_ROTOR_P2":                    148,
+        "CURVA_03_ROTOR_P3":                    149,
+        "CURVA_03_ROTOR_P4":                    150,
+        "CURVA_03_ROTOR_P5":                    151,
+        "CURVA_03_ROTOR_P6":                    152,
+        "CURVA_03_ROTOR_P7":                    153,
+        "CURVA_03_ROTOR_P8":                    154,
+        "CURVA_03_ROTOR_P9":                    155,
+        "CURVA_03_ROTOR_P10":                   156,
+        "CURVA_04_DISTRIB_P1":                  157,
+        "CURVA_04_DISTRIB_P2":                  158,
+        "CURVA_04_DISTRIB_P3":                  159,
+        "CURVA_04_DISTRIB_P4":                  160,
+        "CURVA_04_DISTRIB_P5":                  161,
+        "CURVA_04_DISTRIB_P6":                  162,
+        "CURVA_04_DISTRIB_P7":                  163,
+        "CURVA_04_DISTRIB_P8":                  164,
+        "CURVA_04_DISTRIB_P9":                  165,
+        "CURVA_04_DISTRIB_P10":                 166,
+        "CURVA_04_ROTOR_P1":                    167,
+        "CURVA_04_ROTOR_P2":                    168,
+        "CURVA_04_ROTOR_P3":                    169,
+        "CURVA_04_ROTOR_P4":                    170,
+        "CURVA_04_ROTOR_P5":                    171,
+        "CURVA_04_ROTOR_P6":                    172,
+        "CURVA_04_ROTOR_P7":                    173,
+        "CURVA_04_ROTOR_P8":                    174,
+        "CURVA_04_ROTOR_P9":                    175,
+        "CURVA_04_ROTOR_P10":                   176,
+        "CURVA_05_DISTRIB_P1":                  177,
+        "CURVA_05_DISTRIB_P2":                  178,
+        "CURVA_05_DISTRIB_P3":                  179,
+        "CURVA_05_DISTRIB_P4":                  180,
+        "CURVA_05_DISTRIB_P5":                  181,
+        "CURVA_05_DISTRIB_P6":                  182,
+        "CURVA_05_DISTRIB_P7":                  183,
+        "CURVA_05_DISTRIB_P8":                  184,
+        "CURVA_05_DISTRIB_P9":                  185,
+        "CURVA_05_DISTRIB_P10":                 186,
+        "CURVA_05_ROTOR_P1":                    187,
+        "CURVA_05_ROTOR_P2":                    188,
+        "CURVA_05_ROTOR_P3":                    189,
+        "CURVA_05_ROTOR_P4":                    190,
+        "CURVA_05_ROTOR_P5":                    191,
+        "CURVA_05_ROTOR_P6":                    192,
+        "CURVA_05_ROTOR_P7":                    193,
+        "CURVA_05_ROTOR_P8":                    194,
+        "CURVA_05_ROTOR_P9":                    195,
+        "CURVA_05_ROTOR_P10":                   196,
+
+        # Referencia Curva
+        "REFER_CURVA_01":                       197,
+        "REFER_CURVA_02":                       198,
+        "REFER_CURVA_03":                       199,
+        "REFER_CURVA_04":                       200,
+        "REFER_CURVA_05":                       201,
 
         # Outros
-        "SUBTEN_GERAL":                                 [902, 0],
-        "SOBRETEN_GERAL":                               [902, 1],
-        "POT_REVERSA":                                  [902, 3],
-        "VOLTZ_HERTZ":                                  [902, 5],
-        "LT_SOBRECO_RESTRICAO":                         [902, 6],
-        "DJ_MAQUINA_FLH_ABERTURA_B8":                   [902, 8],
-        "RECIBO_TRANS_DISP":                            [902, 9],
-        "PERDA_CAMPO_GERAL":                            [902, 11],
-        "FUGA_SOBRECO_GERAL":                           [902, 12],
-        "UNIDADE_FORA_PASSO":                           [902, 14],
+        "TEMPO_ATUALIZACAO":                    202,
+        "MODO_OPERACAO_RETENTIVO":              203,
+        "CURVA_SEL_RETENTIVO":                  204,
 
+
+        ## ALARMES
+
+        "Alarme01":                             0,
+        "Alarme02":                             1,
+        "Alarme03":                             2,
+        "Alarme04":                             3,
+        "Alarme05":                             4,
+        "Alarme06":                             5,
+        "Alarme07":                             6,
+        "Alarme08":                             7,
+        "Alarme09":                             8,
+        "Alarme10":                             9,
+        "Alarme11":                             10,
+        "Alarme12":                             11,
+        "Alarme13":                             12,
+        "Alarme14":                             13,
+        "Alarme15":                             14,
+        "Alarme16":                             15,
+
+
+        ## LEITURAS
+
+        # Nível
+        "NV_JUSANTE":                           2,
+        "NV_BARRAGEM":                          3,
+        "NV_CANAL":                             4,
+        "NV_CAMARA_CARGA":                      5,
+        "QUEDA_BRUTA":                          131,
+
+        # Operação
+        "OPER_PAINEL_RESET_ALARMES":            6,
+        "OPER_PAINEL_RECONHECE_ALARMES":        7,
+        "OPER_INFO":                            8,
+        "OPER_ETAPA_ALVO":                      9,
+        "OPER_ETAPA_ATUAL":                     10,
+        "OPER_ETAPA_TRANSICAO":                 11,
+        "OPER_INFO_PARADA":                     12,
+
+        # UHCT
+        "UHCT_INFO":                            13,
+        "UHCT_BOMBAS":                          14,
+        "UHCT_RODIZIO":                         15,
+        "UHCT_VALVULAS":                        16,
+        "UHCT_FILTROS":                         17,
+        "UHCT_PRESSOSTATOS":                    18,
+        "UHCT_NIVEL":                           19,
+        "UHCT_PRESSAO_OLEO":                    20,
+        "UHCT_ACUM_RODIZIO_PRINCIPAL":          21,
+        "UHCT_ACUM_RODIZIO_RETAGUARDA":         22,
+
+        # UHLM
+        "UHLM_INFO":                            23,
+        "UHLM_BOMBAS":                          24,
+        "UHLM_RODIZIO":                         25,
+        "UHLM_FILTROS":                         26,
+        "UHLM_PRESSOSTATOS":                    27,
+        "UHLM_FLUXOSTATOS":                     28,
+        "UHLM_NIVEL":                           29,
+        "UHLM_ACUM_RODIZIO_PRINCIPAL":          30,
+        "UHLM_ACUM_RODIZIO_RETAGUARDA":         31,
+        "UHLM_FLUXOSTATO_OLEO_01":              123,
+        "UHLM_FLUXOSTATO_OLEO_02":              124,
+        "UHLM_FLUXOSTATO_OLEO_03":              125,
+        "UHLM_FLUXOSTATO_OLEO_04":              126,
+
+        # Turbina
+        "TURB_INFO":                            32,
+        "TURB_VALVULA_BYPASS":                  33,
+        "TURB_VALVULA_BORBOLETA":               34,
+        "TURB_TEMPO_CRACK_EFETIVO":             35,
+        "TURB_TEMPO_EQUAL_EFETIVO":             36,
+        "TURB_PRESSAO_CONDUTO":                 37,
+        "TURB_PRESSAO_CAIXA_ESPIRAL":           38,
+        "TURB_VAZAO_TURBINADA":                 39,
+        "TURB_VIBRACAO_01":                     40,
+        "TURB_VIBRACAO_02":                     41,
+        "TURB_VIBRACAO_03":                     42,
+        "TURB_VIBRACAO_04":                     43,
+        "TURB_FRENAGEM":                        44,
+        "TURB_VIBRACAO_05":                     127,
+
+        # Reg V
+        "REG_V_INFO":                           45,
+        "REG_V_ESTADO":                         46,
+        "REG_V_VELOCIDADE":                     47,
+        "REG_V_DISTRIBUIDOR":                   48,
+        "REG_V_ROTOR":                          49,
+        "REG_V_POT_ALVO":                       50,
+        "REG_V_CURVA_CONJUG_INFO":              128,
+
+        # Reg T
+        "REG_T_INFO":                           51,
+        "REG_T_UEXCITACAO":                     52,
+        "REG_T_IEXCITACAO":                     53,
+        "REG_T_FPALVO":                         129,
+        "REG_T_REATIVO_ALVO":                   130,
+
+        # Sinc
+        "SINC_INFO":                            54,
+        "SINC_FREQ_GERADOR":                    55,
+        "SINC_FREQ_BARRA":                      56,
+        "SINC_TENSAO_GERADOR":                  57,
+        "SINC_TENSAO_BARRA":                    58,
 
         # DJ
-        "DJ_MAQUINA_FLH_ABERTURA_B7":                   [2100, 7],
-        "DJ_MAQUINA_FLH_PARTIDA":                       [2100, 6],
+        "Dj52G_INFO":                           59,
+
+        # Tensão
+        "TENSAO_RN":                            60,
+        "TENSAO_SN":                            61,
+        "TENSAO_TN":                            62,
+        "TENSAO_RS":                            63,
+        "TENSAO_ST":                            64,
+        "TENSAO_TR":                            65,
+
+        # Corrente
+        "CORRENTE_R":                           66,
+        "CORRENTE_S":                           67,
+        "CORRENTE_T":                           68,
+        "CORRENTE_MEDIA":                       69,
+
+        # Potência Ativa
+        "POT_ATIVA_1":                          70,
+        "POT_ATIVA_2":                          71,
+        "POT_ATIVA_3":                          72,
+        "POT_ATIVA_MEDIA":                      73,
+
+        # Potência Reativa
+        "POT_REATIVA_1":                        74,
+        "POT_REATIVA_2":                        75,
+        "POT_REATIVA_3":                        76,
+        "POT_REATIVA_MEDIA":                    77,
+
+        # Potência Aparente
+        "POT_APARENTE_1":                       78,
+        "POT_APARENTE_2":                       79,
+        "POT_APARENTE_3":                       80,
+        "POT_APARENTE_MEDIA":                   81,
+
+        # Fator Potência
+        "FATOR_POT_1":                          82,
+        "FATOR_POT_2":                          83,
+        "FATOR_POT_3":                          84,
+        "FATOR_POT_MEDIA":                      85,
+
+        # Frequencia
+        "FREQUENCIA":                           86,
+
+        # Energia Fornecida
+        "ENERGIA_FORNECIDA_TWh":                87,
+        "ENERGIA_FORNECIDA_GWh":                88,
+        "ENERGIA_FORNECIDA_MWh":                89,
+        "ENERGIA_FORNECIDA_kWh":                90,
+        "ENERGIA_FORNECIDA_TVarh":              91,
+        "ENERGIA_FORNECIDA_GVarh":              92,
+        "ENERGIA_FORNECIDA_MVarh":              93,
+        "ENERGIA_FORNECIDA_kVarh":              94,
+        "ENERGIA_CORNECIDA_TVarh":              95,
+        "ENERGIA_CORNECIDA_GVarh":              96,
+        "ENERGIA_CORNECIDA_MVarh":              97,
+        "ENERGIA_CORNECIDA_kVarh":              98,
+
+        # Controles
+        "CTRL_REATIVO_INFO":                    100,
+        "CTRL_POTENCIA_INFO":                   101,
+
+        # Horimetros
+        "HORIM_ELETR_LOW":                      102,
+        "HORIM_ELETR_HIGH":                     103,
+        "HORIM_MECAN_LOW":                      104,
+        "HORIM_MECAN_HIGH":                     105,
+
+        # Temperatura
+        "TEMPERATURA_01":                       107,
+        "TEMPERATURA_02":                       108,
+        "TEMPERATURA_03":                       109,
+        "TEMPERATURA_04":                       110,
+        "TEMPERATURA_05":                       111,
+        "TEMPERATURA_06":                       112,
+        "TEMPERATURA_07":                       113,
+        "TEMPERATURA_08":                       114,
+        "TEMPERATURA_09":                       115,
+        "TEMPERATURA_10":                       116,
+        "TEMPERATURA_11":                       117,
+        "TEMPERATURA_12":                       118,
+        "TEMPERATURA_13":                       119,
+        "TEMPERATURA_14":                       120,
+        "TEMPERATURA_15":                       121,
+        "TEMPERATURA_16":                       122,
 
 
-        # Transformador Elevador
-        "TE_RELE_LINHA_TRANS_DISP":                     [2100, 11],
+        ## DISJUNTORES
 
-
-        # Relé
-        "RELE_PROTECAO_TRP_B5":                         [2110, 5],
-        "RELE_PROTECAO_TRP_B6":                         [2110, 6],
+        "DJ_01":                                0,
+        "DJ_02":                                1,
+        "DJ_03":                                2,
+        "DJ_04":                                3,
+        "DJ_05":                                4,
+        "DJ_06":                                5,
+        "DJ_07":                                6,
+        "DJ_08":                                7,
+        "DJ_09":                                8,
+        "DJ_10":                                9,
+        "DJ_11":                                10,
+        "DJ_12":                                11,
+        "DJ_13":                                12,
+        "DJ_14":                                13,
+        "DJ_15":                                14,
+        "DJ_16":                                15,
+        "DJ_17":                                16,
+        "DJ_18":                                17,
+        "DJ_19":                                18,
+        "DJ_20":                                19,
+        "DJ_21":                                20,
+        "DJ_22":                                21,
+        "DJ_23":                                22,
+        "DJ_24":                                23,
+        "DJ_25":                                24,
+        "DJ_26":                                25,
+        "DJ_27":                                26,
+        "DJ_28":                                27,
+        "DJ_29":                                28,
+        "DJ_30":                                29,
+        "DJ_31":                                30,
+        "DJ_32":                                31,
     },
+
+    "UG3": {
+        ## COMANDOS
+        # Gerais
+        "CMD_RESET_ALARMES":                    0,
+        "CMD_RECONHECE_ALARMES":                1,
+
+        # Operação
+        "CMD_OPER_UP":                          2,
+        "CMD_OPER_UPGM":                        3,
+        "CMD_OPER_UVD":                         4,
+        "CMD_OPER_UPS":                         5,
+        "CMD_OPER_US":                          6,
+        "CMD_OPER_EMERGENCIA_LIGAR":            7,
+        "CMD_OPER_EMERGENCIA_DESLIGAR":         8,
+        "CMD_OPOR_PARADA_RESET":                72,
+
+        # Turbina
+        "CMD_TURB_BYPASS_ABRIR":                9,
+        "CMD_TURB_BYPASS_FECHAR":               10,
+        "CMD_TURB_BORBOLETA_ABRIR":             11,
+        "CMD_TURB_BORBOLETA_FECHAR":            12,
+        "CMD_TURB_FRENAGEM_APLICAR":            13,
+        "CMD_TURB_FRENAGEM_DESAPLICAR":         14,
+        "CMD_TURB_FRENAGEM_MANUAL":             15,
+        "CMD_TURB_FRENAGEM_AUTO":               16,
+        "CMD_TURB_SENSOR_ATIVAR":               17,
+        "CMD_TURB_SENSOR_DESATIVAR":            18,
+
+        # Reg V
+        "CMD_REG_V_PARTIR":                     19,
+        "CMD_REG_V_PARAR":                      20,
+        "CMD_REG_V_COLOCAR_CARGA":              21,
+        "CMD_REG_V_RETIRAR_CARGA":              22,
+        "CMD_REG_V_INCREMENTA_VELOCIDADE":      23,
+        "CMD_REG_V_DECREMENTA_VELOCIDADE":      24,
+        "CMD_REG_V_SEL_MODO_ESTATISMO":         25,
+        "CMD_REG_V_SEL_MODO_BASECARGA":         26,
+
+        # Reg T
+        "CMD_REG_T_LIGAR":                      27,
+        "CMD_REG_T_DESLIGAR":                   28,
+        "CMD_REG_T_INCREMENTA_TENSAO":          29,
+        "CMD_REG_T_DECREMENTA_TENSAO":          30,
+        "CMD_REG_T_PRE_EXCITACAO":              31,
+
+        # Sinc
+        "CMD_SINC_LIGAR":                       32,
+        "CMD_SINC_DESLIGAR":                    33,
+        "CMD_SINC_MODO_AUTO_LIGAR":             34,
+        "CMD_SINC_MODO_MANUAL_LIGAR":           35,
+        "CMD_SINC_MODO_BMORTA_LIGAR":           36,
+
+        # DJ52G
+        "CMD_DJ52G_ABRIR":                      37,
+
+        # Controle Reativo
+        "CMD_CTRL_REATIVO_MODO_FPLIGAR":        38,
+        "CMD_CTRL_REATIVO_MODO_FPDESLIGAR":     39,
+        "CMD_CTRL_REATIVO_MODO_VArLIGAR":       40,
+        "CMD_CTRL_REATIVO_MODO_VArDESLIGAR":    41,
+
+        # Controle Potência
+        "CMD_CTRL_POT_MODO_POT_LIGAR":          42,
+        "CMD_CTRL_POT_MODO_POT_DESLIGAR":       43,
+        "CMD_CTRL_POT_MODO_NIVEL_LIGAR":        44,
+        "CMD_CTRL_POT_MODO_NIVEL_DESLIGAR":     45,
+        "CMD_CTRL_POT_RELI_AUTO_LIGAR":         46,
+        "CMD_CTRL_POT_RELI_AUTO_DESLIGAR":      47,
+
+        # UHCT
+        "CMD_UHCT_BOMBA_01_LIGAR":              48,
+        "CMD_UHCT_BOMBA_01_DESLIGAR":           49,
+        "CMD_UHCT_BOMBA_01_PRINCIPAL":          50,
+        "CMD_UHCT_BOMBA_02_LIGAR":              51,
+        "CMD_UHCT_BOMBA_02_DESLIGAR":           52,
+        "CMD_UHCT_BOMBA_02_PRINCIPAL":          53,
+        "CMD_UHCT_BOMBA_AGUA_LIGAR":            54,
+        "CMD_UHCT_BOMBA_AGUA_DESLIGAR":         55,
+        "CMD_UHCT_SENSOR_ATIVAR":               56,
+        "CMD_UHCT_SENSOR_DESATIVAR":            57,
+        "CMD_UHCT_RODIZIO_HABILITAR":           58,
+        "CMD_UHCT_RODIZIO_DESABILITAR":         59,
+        "CMD_UHLM_BOMBA_01_LIGAR":              60,
+        "CMD_UHLM_BOMBA_01_DESLIGAR":           61,
+        "CMD_UHLM_BOMBA_01_PRINCIPAL":          62,
+        "CMD_UHLM_BOMBA_02_LIGAR":              63,
+        "CMD_UHLM_BOMBA_02_DESLIGAR":           64,
+        "CMD_UHLM_BOMBA_02_PRINCIPAL":          65,
+        "CMD_UHLM_BOMBA_JACKING_LIGA":          66,
+        "CMD_UHLM_BOMBA_JACKING_DESLIGA":       67,
+        "CMD_UHLM_BOMBA_AGUA_LIGA":             68,
+        "CMD_UHLM_BOMBA_AGUA_DESLIGA":          69,
+        "CMD_UHLM_RODIZIO_HABILITAR":           70,
+        "CMD_UHLM_RODIZIO_DESABILITAR":         71,
+
+        # RT
+        "CMD_RT_MTVC_HABILITAR":                73,
+        "CMD_RT_MECC_HABILITAR":                74,
+        "CMD_RT_ONLINE_HABILITAR":              75,
+        "CMD_RT_ONLINE_DESABILITAR":            76,
+        "CMD_RT_PARALELO_HABILITAR":            77,
+        "CMD_RT_PARALELO_DESABILITAR":          78,
+
+        # RV
+        "CMD_RV_CONJUGADO_AUTO_HABILITAR":      79,
+        "CMD_RV_CONJUGADO_MANUAL_HABILITAR":    80,
+        "CMD_RV_CONJUGADO_01_HABILITAR":        81,
+        "CMD_RV_CONJUGADO_02_HABILITAR":        82,
+        "CMD_RV_CONJUGADO_03_HABILITAR":        83,
+        "CMD_RV_CONJUGADO_04_HABILITAR":        84,
+        "CMD_RV_CONJUGADO_05_HABILITAR":        85,
+
+
+        ## SETPOINTS
+
+        # UHCT
+        "UHCT_PRESSAO_MAX":                     0,
+        "UHCT_PRESSAO_MIN":                     1,
+        "UHCT_PRESSAO_DESLIGAMENTO":            2,
+        "UHCT_PRESSAO_CRITICA":                 3,
+
+        # Controle Potência
+        "CRTL_POT_NIVEL_LL1":                   4,
+        "CRTL_POT_NIVEL_LL2":                   5,
+        "CRTL_POT_NIVEL_LL3":                   6,
+        "CRTL_POT_NIVEL_LL4":                   7,
+        "CRTL_POT_NIVEL_LL5":                   8,
+        "CRTL_POT_POT_1":                       9,
+        "CRTL_POT_POT_2":                       10,
+        "CRTL_POT_POT_3":                       11,
+        "CRTL_POT_POT_4":                       12,
+        "CRTL_POT_POT_5":                       13,
+        "CRTL_POT_POT_MIN":                     14,
+        "CRTL_POT_POT_MIN_TEMPO":               15,
+        "CRTL_POT_NIVEL_RELIGAMENTO":           16,
+        "CRTL_POT_ALVO":                        17,
+        "CRTL_POT_TOLERANCIA":                  18,
+        "CRTL_POT_PULSO_TEMPO":                 19,
+        "CRTL_POT_PULSO_INTERVALO":             20,
+        "CRTL_POT_SP_NIVEL":                    21,
+        "CRTL_POT_NIVEL_MIN_ALARME":            22,
+        "CRTL_POT_NIVEL_MIN_TRIP":              23,
+        "CTRL_POT_POT_MAX":                     89,
+
+        # Controle Reativo
+        "CRTL_REATIVO_SP_FP":                   24,
+        "CRTL_REATIVO_SP_REATIVO":              25,
+
+        # Turbina
+        "TURB_VIBRA_01_ALARME":                 26,
+        "TURB_VIBRA_01_TRIP":                   27,
+        "TURB_VIBRA_02_ALARME":                 28,
+        "TURB_VIBRA_02_TRIP":                   29,
+        "TURB_VIBRA_03_ALARME":                 30,
+        "TURB_VIBRA_03_TRIP":                   31,
+        "TURB_VIBRA_04_ALARME":                 32,
+        "TURB_VIBRA_04_TRIP":                   33,
+        "TURB_TEMPO_EQUALI_SP":                 34,
+        "TURB_VIBRA_05_ALARME":                 90,
+        "TURB_VIBRA_05_TRIP":                   91,
+
+        # Freio
+        "FREIO_PULSO_INTERVALO":                35,
+        "FREIO_PULSO_TEMPO":                    36,
+
+        # UHCT
+        "UHCT_RODIZIO_PRINCIPAL":               37,
+        "UHCT_RODIZIO_RETAGUARDA":              38,
+        
+        # UHLM
+        "UHLM_RODIZIO_PRINCIPAL":               39,
+        "UHLM_RODIZIO_RETAGUARDA":              40,
+        "UHLM_SP_VAZAO_01":                     92,
+        "UHLM_SP_VAZAO_02":                     93,
+        "UHLM_SP_VAZAO_03":                     94,
+        "UHLM_SP_VAZAO_04":                     95,
+
+        # Temperaturas
+        "TEMPERATURA_01_ALARME":                41,
+        "TEMPERATURA_02_ALARME":                42,
+        "TEMPERATURA_03_ALARME":                43,
+        "TEMPERATURA_04_ALARME":                44,
+        "TEMPERATURA_05_ALARME":                45,
+        "TEMPERATURA_06_ALARME":                46,
+        "TEMPERATURA_07_ALARME":                47,
+        "TEMPERATURA_08_ALARME":                48,
+        "TEMPERATURA_09_ALARME":                49,
+        "TEMPERATURA_10_ALARME":                50,
+        "TEMPERATURA_11_ALARME":                51,
+        "TEMPERATURA_12_ALARME":                52,
+        "TEMPERATURA_13_ALARME":                53,
+        "TEMPERATURA_14_ALARME":                54,
+        "TEMPERATURA_15_ALARME":                55,
+        "TEMPERATURA_16_ALARME":                56,
+        "TEMPERATURA_01_TRIP01":                57,
+        "TEMPERATURA_02_TRIP01":                58,
+        "TEMPERATURA_03_TRIP01":                59,
+        "TEMPERATURA_04_TRIP01":                60,
+        "TEMPERATURA_05_TRIP01":                61,
+        "TEMPERATURA_06_TRIP01":                62,
+        "TEMPERATURA_07_TRIP01":                63,
+        "TEMPERATURA_08_TRIP01":                64,
+        "TEMPERATURA_09_TRIP01":                65,
+        "TEMPERATURA_10_TRIP01":                66,
+        "TEMPERATURA_11_TRIP01":                67,
+        "TEMPERATURA_12_TRIP01":                68,
+        "TEMPERATURA_13_TRIP01":                69,
+        "TEMPERATURA_14_TRIP01":                70,
+        "TEMPERATURA_15_TRIP01":                71,
+        "TEMPERATURA_16_TRIP01":                72,
+        "TEMPERATURA_01_TRIP02":                73,
+        "TEMPERATURA_02_TRIP02":                74,
+        "TEMPERATURA_03_TRIP02":                75,
+        "TEMPERATURA_04_TRIP02":                76,
+        "TEMPERATURA_05_TRIP02":                77,
+        "TEMPERATURA_06_TRIP02":                78,
+        "TEMPERATURA_07_TRIP02":                79,
+        "TEMPERATURA_08_TRIP02":                80,
+        "TEMPERATURA_09_TRIP02":                81,
+        "TEMPERATURA_10_TRIP02":                82,
+        "TEMPERATURA_11_TRIP02":                83,
+        "TEMPERATURA_12_TRIP02":                84,
+        "TEMPERATURA_13_TRIP02":                85,
+        "TEMPERATURA_14_TRIP02":                86,
+        "TEMPERATURA_15_TRIP02":                87,
+        "TEMPERATURA_16_TRIP02":                88,
+
+        # Grade Suja
+        "GradeSuja_TRIP":                       96,
+
+        # Curva
+        "CURVA_01_DISTRIB_P1":                  97,
+        "CURVA_01_DISTRIB_P2":                  98,
+        "CURVA_01_DISTRIB_P3":                  99,
+        "CURVA_01_DISTRIB_P4":                  100,
+        "CURVA_01_DISTRIB_P5":                  101,
+        "CURVA_01_DISTRIB_P6":                  102,
+        "CURVA_01_DISTRIB_P7":                  103,
+        "CURVA_01_DISTRIB_P8":                  104,
+        "CURVA_01_DISTRIB_P9":                  105,
+        "CURVA_01_DISTRIB_P10":                 106,
+        "CURVA_01_ROTOR_P1":                    107,
+        "CURVA_01_ROTOR_P2":                    108,
+        "CURVA_01_ROTOR_P3":                    109,
+        "CURVA_01_ROTOR_P4":                    110,
+        "CURVA_01_ROTOR_P5":                    111,
+        "CURVA_01_ROTOR_P6":                    112,
+        "CURVA_01_ROTOR_P7":                    113,
+        "CURVA_01_ROTOR_P8":                    114,
+        "CURVA_01_ROTOR_P9":                    115,
+        "CURVA_01_ROTOR_P10":                   116,
+        "CURVA_02_DISTRIB_P1":                  117,
+        "CURVA_02_DISTRIB_P2":                  118,
+        "CURVA_02_DISTRIB_P3":                  119,
+        "CURVA_02_DISTRIB_P4":                  120,
+        "CURVA_02_DISTRIB_P5":                  121,
+        "CURVA_02_DISTRIB_P6":                  122,
+        "CURVA_02_DISTRIB_P7":                  123,
+        "CURVA_02_DISTRIB_P8":                  124,
+        "CURVA_02_DISTRIB_P9":                  125,
+        "CURVA_02_DISTRIB_P10":                 126,
+        "CURVA_02_ROTOR_P1":                    127,
+        "CURVA_02_ROTOR_P2":                    128,
+        "CURVA_02_ROTOR_P3":                    129,
+        "CURVA_02_ROTOR_P4":                    130,
+        "CURVA_02_ROTOR_P5":                    131,
+        "CURVA_02_ROTOR_P6":                    132,
+        "CURVA_02_ROTOR_P7":                    133,
+        "CURVA_02_ROTOR_P8":                    134,
+        "CURVA_02_ROTOR_P9":                    135,
+        "CURVA_02_ROTOR_P10":                   136,
+        "CURVA_03_DISTRIB_P1":                  137,
+        "CURVA_03_DISTRIB_P2":                  138,
+        "CURVA_03_DISTRIB_P3":                  139,
+        "CURVA_03_DISTRIB_P4":                  140,
+        "CURVA_03_DISTRIB_P5":                  141,
+        "CURVA_03_DISTRIB_P6":                  142,
+        "CURVA_03_DISTRIB_P7":                  143,
+        "CURVA_03_DISTRIB_P8":                  144,
+        "CURVA_03_DISTRIB_P9":                  145,
+        "CURVA_03_DISTRIB_P10":                 146,
+        "CURVA_03_ROTOR_P1":                    147,
+        "CURVA_03_ROTOR_P2":                    148,
+        "CURVA_03_ROTOR_P3":                    149,
+        "CURVA_03_ROTOR_P4":                    150,
+        "CURVA_03_ROTOR_P5":                    151,
+        "CURVA_03_ROTOR_P6":                    152,
+        "CURVA_03_ROTOR_P7":                    153,
+        "CURVA_03_ROTOR_P8":                    154,
+        "CURVA_03_ROTOR_P9":                    155,
+        "CURVA_03_ROTOR_P10":                   156,
+        "CURVA_04_DISTRIB_P1":                  157,
+        "CURVA_04_DISTRIB_P2":                  158,
+        "CURVA_04_DISTRIB_P3":                  159,
+        "CURVA_04_DISTRIB_P4":                  160,
+        "CURVA_04_DISTRIB_P5":                  161,
+        "CURVA_04_DISTRIB_P6":                  162,
+        "CURVA_04_DISTRIB_P7":                  163,
+        "CURVA_04_DISTRIB_P8":                  164,
+        "CURVA_04_DISTRIB_P9":                  165,
+        "CURVA_04_DISTRIB_P10":                 166,
+        "CURVA_04_ROTOR_P1":                    167,
+        "CURVA_04_ROTOR_P2":                    168,
+        "CURVA_04_ROTOR_P3":                    169,
+        "CURVA_04_ROTOR_P4":                    170,
+        "CURVA_04_ROTOR_P5":                    171,
+        "CURVA_04_ROTOR_P6":                    172,
+        "CURVA_04_ROTOR_P7":                    173,
+        "CURVA_04_ROTOR_P8":                    174,
+        "CURVA_04_ROTOR_P9":                    175,
+        "CURVA_04_ROTOR_P10":                   176,
+        "CURVA_05_DISTRIB_P1":                  177,
+        "CURVA_05_DISTRIB_P2":                  178,
+        "CURVA_05_DISTRIB_P3":                  179,
+        "CURVA_05_DISTRIB_P4":                  180,
+        "CURVA_05_DISTRIB_P5":                  181,
+        "CURVA_05_DISTRIB_P6":                  182,
+        "CURVA_05_DISTRIB_P7":                  183,
+        "CURVA_05_DISTRIB_P8":                  184,
+        "CURVA_05_DISTRIB_P9":                  185,
+        "CURVA_05_DISTRIB_P10":                 186,
+        "CURVA_05_ROTOR_P1":                    187,
+        "CURVA_05_ROTOR_P2":                    188,
+        "CURVA_05_ROTOR_P3":                    189,
+        "CURVA_05_ROTOR_P4":                    190,
+        "CURVA_05_ROTOR_P5":                    191,
+        "CURVA_05_ROTOR_P6":                    192,
+        "CURVA_05_ROTOR_P7":                    193,
+        "CURVA_05_ROTOR_P8":                    194,
+        "CURVA_05_ROTOR_P9":                    195,
+        "CURVA_05_ROTOR_P10":                   196,
+
+        # Referencia Curva
+        "REFER_CURVA_01":                       197,
+        "REFER_CURVA_02":                       198,
+        "REFER_CURVA_03":                       199,
+        "REFER_CURVA_04":                       200,
+        "REFER_CURVA_05":                       201,
+
+        # Outros
+        "TEMPO_ATUALIZACAO":                    202,
+        "MODO_OPERACAO_RETENTIVO":              203,
+        "CURVA_SEL_RETENTIVO":                  204,
+
+
+        ## ALARMES
+
+        "Alarme01":                             0,
+        "Alarme02":                             1,
+        "Alarme03":                             2,
+        "Alarme04":                             3,
+        "Alarme05":                             4,
+        "Alarme06":                             5,
+        "Alarme07":                             6,
+        "Alarme08":                             7,
+        "Alarme09":                             8,
+        "Alarme10":                             9,
+        "Alarme11":                             10,
+        "Alarme12":                             11,
+        "Alarme13":                             12,
+        "Alarme14":                             13,
+        "Alarme15":                             14,
+        "Alarme16":                             15,
+
+
+        ## LEITURAS
+
+        # Nível
+        "NV_JUSANTE":                           2,
+        "NV_BARRAGEM":                          3,
+        "NV_CANAL":                             4,
+        "NV_CAMARA_CARGA":                      5,
+        "QUEDA_BRUTA":                          131,
+
+        # Operação
+        "OPER_PAINEL_RESET_ALARMES":            6,
+        "OPER_PAINEL_RECONHECE_ALARMES":        7,
+        "OPER_INFO":                            8,
+        "OPER_ETAPA_ALVO":                      9,
+        "OPER_ETAPA_ATUAL":                     10,
+        "OPER_ETAPA_TRANSICAO":                 11,
+        "OPER_INFO_PARADA":                     12,
+
+        # UHCT
+        "UHCT_INFO":                            13,
+        "UHCT_BOMBAS":                          14,
+        "UHCT_RODIZIO":                         15,
+        "UHCT_VALVULAS":                        16,
+        "UHCT_FILTROS":                         17,
+        "UHCT_PRESSOSTATOS":                    18,
+        "UHCT_NIVEL":                           19,
+        "UHCT_PRESSAO_OLEO":                    20,
+        "UHCT_ACUM_RODIZIO_PRINCIPAL":          21,
+        "UHCT_ACUM_RODIZIO_RETAGUARDA":         22,
+
+        # UHLM
+        "UHLM_INFO":                            23,
+        "UHLM_BOMBAS":                          24,
+        "UHLM_RODIZIO":                         25,
+        "UHLM_FILTROS":                         26,
+        "UHLM_PRESSOSTATOS":                    27,
+        "UHLM_FLUXOSTATOS":                     28,
+        "UHLM_NIVEL":                           29,
+        "UHLM_ACUM_RODIZIO_PRINCIPAL":          30,
+        "UHLM_ACUM_RODIZIO_RETAGUARDA":         31,
+        "UHLM_FLUXOSTATO_OLEO_01":              123,
+        "UHLM_FLUXOSTATO_OLEO_02":              124,
+        "UHLM_FLUXOSTATO_OLEO_03":              125,
+        "UHLM_FLUXOSTATO_OLEO_04":              126,
+
+        # Turbina
+        "TURB_INFO":                            32,
+        "TURB_VALVULA_BYPASS":                  33,
+        "TURB_VALVULA_BORBOLETA":               34,
+        "TURB_TEMPO_CRACK_EFETIVO":             35,
+        "TURB_TEMPO_EQUAL_EFETIVO":             36,
+        "TURB_PRESSAO_CONDUTO":                 37,
+        "TURB_PRESSAO_CAIXA_ESPIRAL":           38,
+        "TURB_VAZAO_TURBINADA":                 39,
+        "TURB_VIBRACAO_01":                     40,
+        "TURB_VIBRACAO_02":                     41,
+        "TURB_VIBRACAO_03":                     42,
+        "TURB_VIBRACAO_04":                     43,
+        "TURB_FRENAGEM":                        44,
+        "TURB_VIBRACAO_05":                     127,
+
+        # Reg V
+        "REG_V_INFO":                           45,
+        "REG_V_ESTADO":                         46,
+        "REG_V_VELOCIDADE":                     47,
+        "REG_V_DISTRIBUIDOR":                   48,
+        "REG_V_ROTOR":                          49,
+        "REG_V_POT_ALVO":                       50,
+        "REG_V_CURVA_CONJUG_INFO":              128,
+
+        # Reg T
+        "REG_T_INFO":                           51,
+        "REG_T_UEXCITACAO":                     52,
+        "REG_T_IEXCITACAO":                     53,
+        "REG_T_FPALVO":                         129,
+        "REG_T_REATIVO_ALVO":                   130,
+
+        # Sinc
+        "SINC_INFO":                            54,
+        "SINC_FREQ_GERADOR":                    55,
+        "SINC_FREQ_BARRA":                      56,
+        "SINC_TENSAO_GERADOR":                  57,
+        "SINC_TENSAO_BARRA":                    58,
+
+        # DJ
+        "Dj52G_INFO":                           59,
+
+        # Tensão
+        "TENSAO_RN":                            60,
+        "TENSAO_SN":                            61,
+        "TENSAO_TN":                            62,
+        "TENSAO_RS":                            63,
+        "TENSAO_ST":                            64,
+        "TENSAO_TR":                            65,
+
+        # Corrente
+        "CORRENTE_R":                           66,
+        "CORRENTE_S":                           67,
+        "CORRENTE_T":                           68,
+        "CORRENTE_MEDIA":                       69,
+
+        # Potência Ativa
+        "POT_ATIVA_1":                          70,
+        "POT_ATIVA_2":                          71,
+        "POT_ATIVA_3":                          72,
+        "POT_ATIVA_MEDIA":                      73,
+
+        # Potência Reativa
+        "POT_REATIVA_1":                        74,
+        "POT_REATIVA_2":                        75,
+        "POT_REATIVA_3":                        76,
+        "POT_REATIVA_MEDIA":                    77,
+
+        # Potência Aparente
+        "POT_APARENTE_1":                       78,
+        "POT_APARENTE_2":                       79,
+        "POT_APARENTE_3":                       80,
+        "POT_APARENTE_MEDIA":                   81,
+
+        # Fator Potência
+        "FATOR_POT_1":                          82,
+        "FATOR_POT_2":                          83,
+        "FATOR_POT_3":                          84,
+        "FATOR_POT_MEDIA":                      85,
+
+        # Frequencia
+        "FREQUENCIA":                           86,
+
+        # Energia Fornecida
+        "ENERGIA_FORNECIDA_TWh":                87,
+        "ENERGIA_FORNECIDA_GWh":                88,
+        "ENERGIA_FORNECIDA_MWh":                89,
+        "ENERGIA_FORNECIDA_kWh":                90,
+        "ENERGIA_FORNECIDA_TVarh":              91,
+        "ENERGIA_FORNECIDA_GVarh":              92,
+        "ENERGIA_FORNECIDA_MVarh":              93,
+        "ENERGIA_FORNECIDA_kVarh":              94,
+        "ENERGIA_CORNECIDA_TVarh":              95,
+        "ENERGIA_CORNECIDA_GVarh":              96,
+        "ENERGIA_CORNECIDA_MVarh":              97,
+        "ENERGIA_CORNECIDA_kVarh":              98,
+
+        # Controles
+        "CTRL_REATIVO_INFO":                    100,
+        "CTRL_POTENCIA_INFO":                   101,
+
+        # Horimetros
+        "HORIM_ELETR_LOW":                      102,
+        "HORIM_ELETR_HIGH":                     103,
+        "HORIM_MECAN_LOW":                      104,
+        "HORIM_MECAN_HIGH":                     105,
+
+        # Temperatura
+        "TEMPERATURA_01":                       107,
+        "TEMPERATURA_02":                       108,
+        "TEMPERATURA_03":                       109,
+        "TEMPERATURA_04":                       110,
+        "TEMPERATURA_05":                       111,
+        "TEMPERATURA_06":                       112,
+        "TEMPERATURA_07":                       113,
+        "TEMPERATURA_08":                       114,
+        "TEMPERATURA_09":                       115,
+        "TEMPERATURA_10":                       116,
+        "TEMPERATURA_11":                       117,
+        "TEMPERATURA_12":                       118,
+        "TEMPERATURA_13":                       119,
+        "TEMPERATURA_14":                       120,
+        "TEMPERATURA_15":                       121,
+        "TEMPERATURA_16":                       122,
+
+
+        ## DISJUNTORES
+
+        "DJ_01":                                0,
+        "DJ_02":                                1,
+        "DJ_03":                                2,
+        "DJ_04":                                3,
+        "DJ_05":                                4,
+        "DJ_06":                                5,
+        "DJ_07":                                6,
+        "DJ_08":                                7,
+        "DJ_09":                                8,
+        "DJ_10":                                9,
+        "DJ_11":                                10,
+        "DJ_12":                                11,
+        "DJ_13":                                12,
+        "DJ_14":                                13,
+        "DJ_15":                                14,
+        "DJ_16":                                15,
+        "DJ_17":                                16,
+        "DJ_18":                                17,
+        "DJ_19":                                18,
+        "DJ_20":                                19,
+        "DJ_21":                                20,
+        "DJ_22":                                21,
+        "DJ_23":                                22,
+        "DJ_24":                                23,
+        "DJ_25":                                24,
+        "DJ_26":                                25,
+        "DJ_27":                                26,
+        "DJ_28":                                27,
+        "DJ_29":                                28,
+        "DJ_30":                                29,
+        "DJ_31":                                30,
+        "DJ_32":                                31,
+    },
+
+    "UG4": {
+        ## COMANDOS
+        # Gerais
+        "CMD_RESET_ALARMES":                    0,
+        "CMD_RECONHECE_ALARMES":                1,
+
+        # Operação
+        "CMD_OPER_UP":                          2,
+        "CMD_OPER_UPGM":                        3,
+        "CMD_OPER_UVD":                         4,
+        "CMD_OPER_UPS":                         5,
+        "CMD_OPER_US":                          6,
+        "CMD_OPER_EMERGENCIA_LIGAR":            7,
+        "CMD_OPER_EMERGENCIA_DESLIGAR":         8,
+        "CMD_OPOR_PARADA_RESET":                72,
+
+        # Turbina
+        "CMD_TURB_BYPASS_ABRIR":                9,
+        "CMD_TURB_BYPASS_FECHAR":               10,
+        "CMD_TURB_BORBOLETA_ABRIR":             11,
+        "CMD_TURB_BORBOLETA_FECHAR":            12,
+        "CMD_TURB_FRENAGEM_APLICAR":            13,
+        "CMD_TURB_FRENAGEM_DESAPLICAR":         14,
+        "CMD_TURB_FRENAGEM_MANUAL":             15,
+        "CMD_TURB_FRENAGEM_AUTO":               16,
+        "CMD_TURB_SENSOR_ATIVAR":               17,
+        "CMD_TURB_SENSOR_DESATIVAR":            18,
+
+        # Reg V
+        "CMD_REG_V_PARTIR":                     19,
+        "CMD_REG_V_PARAR":                      20,
+        "CMD_REG_V_COLOCAR_CARGA":              21,
+        "CMD_REG_V_RETIRAR_CARGA":              22,
+        "CMD_REG_V_INCREMENTA_VELOCIDADE":      23,
+        "CMD_REG_V_DECREMENTA_VELOCIDADE":      24,
+        "CMD_REG_V_SEL_MODO_ESTATISMO":         25,
+        "CMD_REG_V_SEL_MODO_BASECARGA":         26,
+
+        # Reg T
+        "CMD_REG_T_LIGAR":                      27,
+        "CMD_REG_T_DESLIGAR":                   28,
+        "CMD_REG_T_INCREMENTA_TENSAO":          29,
+        "CMD_REG_T_DECREMENTA_TENSAO":          30,
+        "CMD_REG_T_PRE_EXCITACAO":              31,
+
+        # Sinc
+        "CMD_SINC_LIGAR":                       32,
+        "CMD_SINC_DESLIGAR":                    33,
+        "CMD_SINC_MODO_AUTO_LIGAR":             34,
+        "CMD_SINC_MODO_MANUAL_LIGAR":           35,
+        "CMD_SINC_MODO_BMORTA_LIGAR":           36,
+
+        # DJ52G
+        "CMD_DJ52G_ABRIR":                      37,
+
+        # Controle Reativo
+        "CMD_CTRL_REATIVO_MODO_FPLIGAR":        38,
+        "CMD_CTRL_REATIVO_MODO_FPDESLIGAR":     39,
+        "CMD_CTRL_REATIVO_MODO_VArLIGAR":       40,
+        "CMD_CTRL_REATIVO_MODO_VArDESLIGAR":    41,
+
+        # Controle Potência
+        "CMD_CTRL_POT_MODO_POT_LIGAR":          42,
+        "CMD_CTRL_POT_MODO_POT_DESLIGAR":       43,
+        "CMD_CTRL_POT_MODO_NIVEL_LIGAR":        44,
+        "CMD_CTRL_POT_MODO_NIVEL_DESLIGAR":     45,
+        "CMD_CTRL_POT_RELI_AUTO_LIGAR":         46,
+        "CMD_CTRL_POT_RELI_AUTO_DESLIGAR":      47,
+
+        # UHCT
+        "CMD_UHCT_BOMBA_01_LIGAR":              48,
+        "CMD_UHCT_BOMBA_01_DESLIGAR":           49,
+        "CMD_UHCT_BOMBA_01_PRINCIPAL":          50,
+        "CMD_UHCT_BOMBA_02_LIGAR":              51,
+        "CMD_UHCT_BOMBA_02_DESLIGAR":           52,
+        "CMD_UHCT_BOMBA_02_PRINCIPAL":          53,
+        "CMD_UHCT_BOMBA_AGUA_LIGAR":            54,
+        "CMD_UHCT_BOMBA_AGUA_DESLIGAR":         55,
+        "CMD_UHCT_SENSOR_ATIVAR":               56,
+        "CMD_UHCT_SENSOR_DESATIVAR":            57,
+        "CMD_UHCT_RODIZIO_HABILITAR":           58,
+        "CMD_UHCT_RODIZIO_DESABILITAR":         59,
+        "CMD_UHLM_BOMBA_01_LIGAR":              60,
+        "CMD_UHLM_BOMBA_01_DESLIGAR":           61,
+        "CMD_UHLM_BOMBA_01_PRINCIPAL":          62,
+        "CMD_UHLM_BOMBA_02_LIGAR":              63,
+        "CMD_UHLM_BOMBA_02_DESLIGAR":           64,
+        "CMD_UHLM_BOMBA_02_PRINCIPAL":          65,
+        "CMD_UHLM_BOMBA_JACKING_LIGA":          66,
+        "CMD_UHLM_BOMBA_JACKING_DESLIGA":       67,
+        "CMD_UHLM_BOMBA_AGUA_LIGA":             68,
+        "CMD_UHLM_BOMBA_AGUA_DESLIGA":          69,
+        "CMD_UHLM_RODIZIO_HABILITAR":           70,
+        "CMD_UHLM_RODIZIO_DESABILITAR":         71,
+
+        # RT
+        "CMD_RT_MTVC_HABILITAR":                73,
+        "CMD_RT_MECC_HABILITAR":                74,
+        "CMD_RT_ONLINE_HABILITAR":              75,
+        "CMD_RT_ONLINE_DESABILITAR":            76,
+        "CMD_RT_PARALELO_HABILITAR":            77,
+        "CMD_RT_PARALELO_DESABILITAR":          78,
+
+        # RV
+        "CMD_RV_CONJUGADO_AUTO_HABILITAR":      79,
+        "CMD_RV_CONJUGADO_MANUAL_HABILITAR":    80,
+        "CMD_RV_CONJUGADO_01_HABILITAR":        81,
+        "CMD_RV_CONJUGADO_02_HABILITAR":        82,
+        "CMD_RV_CONJUGADO_03_HABILITAR":        83,
+        "CMD_RV_CONJUGADO_04_HABILITAR":        84,
+        "CMD_RV_CONJUGADO_05_HABILITAR":        85,
+
+
+        ## SETPOINTS
+
+        # UHCT
+        "UHCT_PRESSAO_MAX":                     0,
+        "UHCT_PRESSAO_MIN":                     1,
+        "UHCT_PRESSAO_DESLIGAMENTO":            2,
+        "UHCT_PRESSAO_CRITICA":                 3,
+
+        # Controle Potência
+        "CRTL_POT_NIVEL_LL1":                   4,
+        "CRTL_POT_NIVEL_LL2":                   5,
+        "CRTL_POT_NIVEL_LL3":                   6,
+        "CRTL_POT_NIVEL_LL4":                   7,
+        "CRTL_POT_NIVEL_LL5":                   8,
+        "CRTL_POT_POT_1":                       9,
+        "CRTL_POT_POT_2":                       10,
+        "CRTL_POT_POT_3":                       11,
+        "CRTL_POT_POT_4":                       12,
+        "CRTL_POT_POT_5":                       13,
+        "CRTL_POT_POT_MIN":                     14,
+        "CRTL_POT_POT_MIN_TEMPO":               15,
+        "CRTL_POT_NIVEL_RELIGAMENTO":           16,
+        "CRTL_POT_ALVO":                        17,
+        "CRTL_POT_TOLERANCIA":                  18,
+        "CRTL_POT_PULSO_TEMPO":                 19,
+        "CRTL_POT_PULSO_INTERVALO":             20,
+        "CRTL_POT_SP_NIVEL":                    21,
+        "CRTL_POT_NIVEL_MIN_ALARME":            22,
+        "CRTL_POT_NIVEL_MIN_TRIP":              23,
+        "CTRL_POT_POT_MAX":                     89,
+
+        # Controle Reativo
+        "CRTL_REATIVO_SP_FP":                   24,
+        "CRTL_REATIVO_SP_REATIVO":              25,
+
+        # Turbina
+        "TURB_VIBRA_01_ALARME":                 26,
+        "TURB_VIBRA_01_TRIP":                   27,
+        "TURB_VIBRA_02_ALARME":                 28,
+        "TURB_VIBRA_02_TRIP":                   29,
+        "TURB_VIBRA_03_ALARME":                 30,
+        "TURB_VIBRA_03_TRIP":                   31,
+        "TURB_VIBRA_04_ALARME":                 32,
+        "TURB_VIBRA_04_TRIP":                   33,
+        "TURB_TEMPO_EQUALI_SP":                 34,
+        "TURB_VIBRA_05_ALARME":                 90,
+        "TURB_VIBRA_05_TRIP":                   91,
+
+        # Freio
+        "FREIO_PULSO_INTERVALO":                35,
+        "FREIO_PULSO_TEMPO":                    36,
+
+        # UHCT
+        "UHCT_RODIZIO_PRINCIPAL":               37,
+        "UHCT_RODIZIO_RETAGUARDA":              38,
+        
+        # UHLM
+        "UHLM_RODIZIO_PRINCIPAL":               39,
+        "UHLM_RODIZIO_RETAGUARDA":              40,
+        "UHLM_SP_VAZAO_01":                     92,
+        "UHLM_SP_VAZAO_02":                     93,
+        "UHLM_SP_VAZAO_03":                     94,
+        "UHLM_SP_VAZAO_04":                     95,
+
+        # Temperaturas
+        "TEMPERATURA_01_ALARME":                41,
+        "TEMPERATURA_02_ALARME":                42,
+        "TEMPERATURA_03_ALARME":                43,
+        "TEMPERATURA_04_ALARME":                44,
+        "TEMPERATURA_05_ALARME":                45,
+        "TEMPERATURA_06_ALARME":                46,
+        "TEMPERATURA_07_ALARME":                47,
+        "TEMPERATURA_08_ALARME":                48,
+        "TEMPERATURA_09_ALARME":                49,
+        "TEMPERATURA_10_ALARME":                50,
+        "TEMPERATURA_11_ALARME":                51,
+        "TEMPERATURA_12_ALARME":                52,
+        "TEMPERATURA_13_ALARME":                53,
+        "TEMPERATURA_14_ALARME":                54,
+        "TEMPERATURA_15_ALARME":                55,
+        "TEMPERATURA_16_ALARME":                56,
+        "TEMPERATURA_01_TRIP01":                57,
+        "TEMPERATURA_02_TRIP01":                58,
+        "TEMPERATURA_03_TRIP01":                59,
+        "TEMPERATURA_04_TRIP01":                60,
+        "TEMPERATURA_05_TRIP01":                61,
+        "TEMPERATURA_06_TRIP01":                62,
+        "TEMPERATURA_07_TRIP01":                63,
+        "TEMPERATURA_08_TRIP01":                64,
+        "TEMPERATURA_09_TRIP01":                65,
+        "TEMPERATURA_10_TRIP01":                66,
+        "TEMPERATURA_11_TRIP01":                67,
+        "TEMPERATURA_12_TRIP01":                68,
+        "TEMPERATURA_13_TRIP01":                69,
+        "TEMPERATURA_14_TRIP01":                70,
+        "TEMPERATURA_15_TRIP01":                71,
+        "TEMPERATURA_16_TRIP01":                72,
+        "TEMPERATURA_01_TRIP02":                73,
+        "TEMPERATURA_02_TRIP02":                74,
+        "TEMPERATURA_03_TRIP02":                75,
+        "TEMPERATURA_04_TRIP02":                76,
+        "TEMPERATURA_05_TRIP02":                77,
+        "TEMPERATURA_06_TRIP02":                78,
+        "TEMPERATURA_07_TRIP02":                79,
+        "TEMPERATURA_08_TRIP02":                80,
+        "TEMPERATURA_09_TRIP02":                81,
+        "TEMPERATURA_10_TRIP02":                82,
+        "TEMPERATURA_11_TRIP02":                83,
+        "TEMPERATURA_12_TRIP02":                84,
+        "TEMPERATURA_13_TRIP02":                85,
+        "TEMPERATURA_14_TRIP02":                86,
+        "TEMPERATURA_15_TRIP02":                87,
+        "TEMPERATURA_16_TRIP02":                88,
+
+        # Grade Suja
+        "GradeSuja_TRIP":                       96,
+
+        # Curva
+        "CURVA_01_DISTRIB_P1":                  97,
+        "CURVA_01_DISTRIB_P2":                  98,
+        "CURVA_01_DISTRIB_P3":                  99,
+        "CURVA_01_DISTRIB_P4":                  100,
+        "CURVA_01_DISTRIB_P5":                  101,
+        "CURVA_01_DISTRIB_P6":                  102,
+        "CURVA_01_DISTRIB_P7":                  103,
+        "CURVA_01_DISTRIB_P8":                  104,
+        "CURVA_01_DISTRIB_P9":                  105,
+        "CURVA_01_DISTRIB_P10":                 106,
+        "CURVA_01_ROTOR_P1":                    107,
+        "CURVA_01_ROTOR_P2":                    108,
+        "CURVA_01_ROTOR_P3":                    109,
+        "CURVA_01_ROTOR_P4":                    110,
+        "CURVA_01_ROTOR_P5":                    111,
+        "CURVA_01_ROTOR_P6":                    112,
+        "CURVA_01_ROTOR_P7":                    113,
+        "CURVA_01_ROTOR_P8":                    114,
+        "CURVA_01_ROTOR_P9":                    115,
+        "CURVA_01_ROTOR_P10":                   116,
+        "CURVA_02_DISTRIB_P1":                  117,
+        "CURVA_02_DISTRIB_P2":                  118,
+        "CURVA_02_DISTRIB_P3":                  119,
+        "CURVA_02_DISTRIB_P4":                  120,
+        "CURVA_02_DISTRIB_P5":                  121,
+        "CURVA_02_DISTRIB_P6":                  122,
+        "CURVA_02_DISTRIB_P7":                  123,
+        "CURVA_02_DISTRIB_P8":                  124,
+        "CURVA_02_DISTRIB_P9":                  125,
+        "CURVA_02_DISTRIB_P10":                 126,
+        "CURVA_02_ROTOR_P1":                    127,
+        "CURVA_02_ROTOR_P2":                    128,
+        "CURVA_02_ROTOR_P3":                    129,
+        "CURVA_02_ROTOR_P4":                    130,
+        "CURVA_02_ROTOR_P5":                    131,
+        "CURVA_02_ROTOR_P6":                    132,
+        "CURVA_02_ROTOR_P7":                    133,
+        "CURVA_02_ROTOR_P8":                    134,
+        "CURVA_02_ROTOR_P9":                    135,
+        "CURVA_02_ROTOR_P10":                   136,
+        "CURVA_03_DISTRIB_P1":                  137,
+        "CURVA_03_DISTRIB_P2":                  138,
+        "CURVA_03_DISTRIB_P3":                  139,
+        "CURVA_03_DISTRIB_P4":                  140,
+        "CURVA_03_DISTRIB_P5":                  141,
+        "CURVA_03_DISTRIB_P6":                  142,
+        "CURVA_03_DISTRIB_P7":                  143,
+        "CURVA_03_DISTRIB_P8":                  144,
+        "CURVA_03_DISTRIB_P9":                  145,
+        "CURVA_03_DISTRIB_P10":                 146,
+        "CURVA_03_ROTOR_P1":                    147,
+        "CURVA_03_ROTOR_P2":                    148,
+        "CURVA_03_ROTOR_P3":                    149,
+        "CURVA_03_ROTOR_P4":                    150,
+        "CURVA_03_ROTOR_P5":                    151,
+        "CURVA_03_ROTOR_P6":                    152,
+        "CURVA_03_ROTOR_P7":                    153,
+        "CURVA_03_ROTOR_P8":                    154,
+        "CURVA_03_ROTOR_P9":                    155,
+        "CURVA_03_ROTOR_P10":                   156,
+        "CURVA_04_DISTRIB_P1":                  157,
+        "CURVA_04_DISTRIB_P2":                  158,
+        "CURVA_04_DISTRIB_P3":                  159,
+        "CURVA_04_DISTRIB_P4":                  160,
+        "CURVA_04_DISTRIB_P5":                  161,
+        "CURVA_04_DISTRIB_P6":                  162,
+        "CURVA_04_DISTRIB_P7":                  163,
+        "CURVA_04_DISTRIB_P8":                  164,
+        "CURVA_04_DISTRIB_P9":                  165,
+        "CURVA_04_DISTRIB_P10":                 166,
+        "CURVA_04_ROTOR_P1":                    167,
+        "CURVA_04_ROTOR_P2":                    168,
+        "CURVA_04_ROTOR_P3":                    169,
+        "CURVA_04_ROTOR_P4":                    170,
+        "CURVA_04_ROTOR_P5":                    171,
+        "CURVA_04_ROTOR_P6":                    172,
+        "CURVA_04_ROTOR_P7":                    173,
+        "CURVA_04_ROTOR_P8":                    174,
+        "CURVA_04_ROTOR_P9":                    175,
+        "CURVA_04_ROTOR_P10":                   176,
+        "CURVA_05_DISTRIB_P1":                  177,
+        "CURVA_05_DISTRIB_P2":                  178,
+        "CURVA_05_DISTRIB_P3":                  179,
+        "CURVA_05_DISTRIB_P4":                  180,
+        "CURVA_05_DISTRIB_P5":                  181,
+        "CURVA_05_DISTRIB_P6":                  182,
+        "CURVA_05_DISTRIB_P7":                  183,
+        "CURVA_05_DISTRIB_P8":                  184,
+        "CURVA_05_DISTRIB_P9":                  185,
+        "CURVA_05_DISTRIB_P10":                 186,
+        "CURVA_05_ROTOR_P1":                    187,
+        "CURVA_05_ROTOR_P2":                    188,
+        "CURVA_05_ROTOR_P3":                    189,
+        "CURVA_05_ROTOR_P4":                    190,
+        "CURVA_05_ROTOR_P5":                    191,
+        "CURVA_05_ROTOR_P6":                    192,
+        "CURVA_05_ROTOR_P7":                    193,
+        "CURVA_05_ROTOR_P8":                    194,
+        "CURVA_05_ROTOR_P9":                    195,
+        "CURVA_05_ROTOR_P10":                   196,
+
+        # Referencia Curva
+        "REFER_CURVA_01":                       197,
+        "REFER_CURVA_02":                       198,
+        "REFER_CURVA_03":                       199,
+        "REFER_CURVA_04":                       200,
+        "REFER_CURVA_05":                       201,
+
+        # Outros
+        "TEMPO_ATUALIZACAO":                    202,
+        "MODO_OPERACAO_RETENTIVO":              203,
+        "CURVA_SEL_RETENTIVO":                  204,
+
+
+        ## ALARMES
+
+        "Alarme01":                             0,
+        "Alarme02":                             1,
+        "Alarme03":                             2,
+        "Alarme04":                             3,
+        "Alarme05":                             4,
+        "Alarme06":                             5,
+        "Alarme07":                             6,
+        "Alarme08":                             7,
+        "Alarme09":                             8,
+        "Alarme10":                             9,
+        "Alarme11":                             10,
+        "Alarme12":                             11,
+        "Alarme13":                             12,
+        "Alarme14":                             13,
+        "Alarme15":                             14,
+        "Alarme16":                             15,
+
+
+        ## LEITURAS
+
+        # Nível
+        "NV_JUSANTE":                           2,
+        "NV_BARRAGEM":                          3,
+        "NV_CANAL":                             4,
+        "NV_CAMARA_CARGA":                      5,
+        "QUEDA_BRUTA":                          131,
+
+        # Operação
+        "OPER_PAINEL_RESET_ALARMES":            6,
+        "OPER_PAINEL_RECONHECE_ALARMES":        7,
+        "OPER_INFO":                            8,
+        "OPER_ETAPA_ALVO":                      9,
+        "OPER_ETAPA_ATUAL":                     10,
+        "OPER_ETAPA_TRANSICAO":                 11,
+        "OPER_INFO_PARADA":                     12,
+
+        # UHCT
+        "UHCT_INFO":                            13,
+        "UHCT_BOMBAS":                          14,
+        "UHCT_RODIZIO":                         15,
+        "UHCT_VALVULAS":                        16,
+        "UHCT_FILTROS":                         17,
+        "UHCT_PRESSOSTATOS":                    18,
+        "UHCT_NIVEL":                           19,
+        "UHCT_PRESSAO_OLEO":                    20,
+        "UHCT_ACUM_RODIZIO_PRINCIPAL":          21,
+        "UHCT_ACUM_RODIZIO_RETAGUARDA":         22,
+
+        # UHLM
+        "UHLM_INFO":                            23,
+        "UHLM_BOMBAS":                          24,
+        "UHLM_RODIZIO":                         25,
+        "UHLM_FILTROS":                         26,
+        "UHLM_PRESSOSTATOS":                    27,
+        "UHLM_FLUXOSTATOS":                     28,
+        "UHLM_NIVEL":                           29,
+        "UHLM_ACUM_RODIZIO_PRINCIPAL":          30,
+        "UHLM_ACUM_RODIZIO_RETAGUARDA":         31,
+        "UHLM_FLUXOSTATO_OLEO_01":              123,
+        "UHLM_FLUXOSTATO_OLEO_02":              124,
+        "UHLM_FLUXOSTATO_OLEO_03":              125,
+        "UHLM_FLUXOSTATO_OLEO_04":              126,
+
+        # Turbina
+        "TURB_INFO":                            32,
+        "TURB_VALVULA_BYPASS":                  33,
+        "TURB_VALVULA_BORBOLETA":               34,
+        "TURB_TEMPO_CRACK_EFETIVO":             35,
+        "TURB_TEMPO_EQUAL_EFETIVO":             36,
+        "TURB_PRESSAO_CONDUTO":                 37,
+        "TURB_PRESSAO_CAIXA_ESPIRAL":           38,
+        "TURB_VAZAO_TURBINADA":                 39,
+        "TURB_VIBRACAO_01":                     40,
+        "TURB_VIBRACAO_02":                     41,
+        "TURB_VIBRACAO_03":                     42,
+        "TURB_VIBRACAO_04":                     43,
+        "TURB_FRENAGEM":                        44,
+        "TURB_VIBRACAO_05":                     127,
+
+        # Reg V
+        "REG_V_INFO":                           45,
+        "REG_V_ESTADO":                         46,
+        "REG_V_VELOCIDADE":                     47,
+        "REG_V_DISTRIBUIDOR":                   48,
+        "REG_V_ROTOR":                          49,
+        "REG_V_POT_ALVO":                       50,
+        "REG_V_CURVA_CONJUG_INFO":              128,
+
+        # Reg T
+        "REG_T_INFO":                           51,
+        "REG_T_UEXCITACAO":                     52,
+        "REG_T_IEXCITACAO":                     53,
+        "REG_T_FPALVO":                         129,
+        "REG_T_REATIVO_ALVO":                   130,
+
+        # Sinc
+        "SINC_INFO":                            54,
+        "SINC_FREQ_GERADOR":                    55,
+        "SINC_FREQ_BARRA":                      56,
+        "SINC_TENSAO_GERADOR":                  57,
+        "SINC_TENSAO_BARRA":                    58,
+
+        # DJ
+        "Dj52G_INFO":                           59,
+
+        # Tensão
+        "TENSAO_RN":                            60,
+        "TENSAO_SN":                            61,
+        "TENSAO_TN":                            62,
+        "TENSAO_RS":                            63,
+        "TENSAO_ST":                            64,
+        "TENSAO_TR":                            65,
+
+        # Corrente
+        "CORRENTE_R":                           66,
+        "CORRENTE_S":                           67,
+        "CORRENTE_T":                           68,
+        "CORRENTE_MEDIA":                       69,
+
+        # Potência Ativa
+        "POT_ATIVA_1":                          70,
+        "POT_ATIVA_2":                          71,
+        "POT_ATIVA_3":                          72,
+        "POT_ATIVA_MEDIA":                      73,
+
+        # Potência Reativa
+        "POT_REATIVA_1":                        74,
+        "POT_REATIVA_2":                        75,
+        "POT_REATIVA_3":                        76,
+        "POT_REATIVA_MEDIA":                    77,
+
+        # Potência Aparente
+        "POT_APARENTE_1":                       78,
+        "POT_APARENTE_2":                       79,
+        "POT_APARENTE_3":                       80,
+        "POT_APARENTE_MEDIA":                   81,
+
+        # Fator Potência
+        "FATOR_POT_1":                          82,
+        "FATOR_POT_2":                          83,
+        "FATOR_POT_3":                          84,
+        "FATOR_POT_MEDIA":                      85,
+
+        # Frequencia
+        "FREQUENCIA":                           86,
+
+        # Energia Fornecida
+        "ENERGIA_FORNECIDA_TWh":                87,
+        "ENERGIA_FORNECIDA_GWh":                88,
+        "ENERGIA_FORNECIDA_MWh":                89,
+        "ENERGIA_FORNECIDA_kWh":                90,
+        "ENERGIA_FORNECIDA_TVarh":              91,
+        "ENERGIA_FORNECIDA_GVarh":              92,
+        "ENERGIA_FORNECIDA_MVarh":              93,
+        "ENERGIA_FORNECIDA_kVarh":              94,
+        "ENERGIA_CORNECIDA_TVarh":              95,
+        "ENERGIA_CORNECIDA_GVarh":              96,
+        "ENERGIA_CORNECIDA_MVarh":              97,
+        "ENERGIA_CORNECIDA_kVarh":              98,
+
+        # Controles
+        "CTRL_REATIVO_INFO":                    100,
+        "CTRL_POTENCIA_INFO":                   101,
+
+        # Horimetros
+        "HORIM_ELETR_LOW":                      102,
+        "HORIM_ELETR_HIGH":                     103,
+        "HORIM_MECAN_LOW":                      104,
+        "HORIM_MECAN_HIGH":                     105,
+
+        # Temperatura
+        "TEMPERATURA_01":                       107,
+        "TEMPERATURA_02":                       108,
+        "TEMPERATURA_03":                       109,
+        "TEMPERATURA_04":                       110,
+        "TEMPERATURA_05":                       111,
+        "TEMPERATURA_06":                       112,
+        "TEMPERATURA_07":                       113,
+        "TEMPERATURA_08":                       114,
+        "TEMPERATURA_09":                       115,
+        "TEMPERATURA_10":                       116,
+        "TEMPERATURA_11":                       117,
+        "TEMPERATURA_12":                       118,
+        "TEMPERATURA_13":                       119,
+        "TEMPERATURA_14":                       120,
+        "TEMPERATURA_15":                       121,
+        "TEMPERATURA_16":                       122,
+
+
+        ## DISJUNTORES
+
+        "DJ_01":                                0,
+        "DJ_02":                                1,
+        "DJ_03":                                2,
+        "DJ_04":                                3,
+        "DJ_05":                                4,
+        "DJ_06":                                5,
+        "DJ_07":                                6,
+        "DJ_08":                                7,
+        "DJ_09":                                8,
+        "DJ_10":                                9,
+        "DJ_11":                                10,
+        "DJ_12":                                11,
+        "DJ_13":                                12,
+        "DJ_14":                                13,
+        "DJ_15":                                14,
+        "DJ_16":                                15,
+        "DJ_17":                                16,
+        "DJ_18":                                17,
+        "DJ_19":                                18,
+        "DJ_20":                                19,
+        "DJ_21":                                20,
+        "DJ_22":                                21,
+        "DJ_23":                                22,
+        "DJ_24":                                23,
+        "DJ_25":                                24,
+        "DJ_26":                                25,
+        "DJ_27":                                26,
+        "DJ_28":                                27,
+        "DJ_29":                                28,
+        "DJ_30":                                29,
+        "DJ_31":                                30,
+        "DJ_32":                                31,
+    }
 }
-
-REG_CLP = {
-    "MOA": {
-        "MOA_OUT_STATUS":                               409,
-
-        "MOA_OUT_MODE":                                 11,
-        "SM_STATE":                                     10,
-        "PAINEL_LIDO":                                  12,
-        "IN_EMERG":                                     13,
-        "IN_HABILITA_AUTO":                             14,
-        "IN_DESABILITA_AUTO":                           15,
-        "OUT_EMERG":                                    16,
-
-        "OUT_TARGET_LEVEL":                             417,
-        "OUT_SETPOINT":                                 418,
-
-        "IN_EMERG_UG1":                                 20,
-        "OUT_BLOCK_UG1":                                21,
-        "OUT_ETAPA_UG1":                                422,
-        "OUT_STATE_UG1":                                423,
-
-        "IN_EMERG_UG2":                                 25,
-        "OUT_BLOCK_UG2":                                26,
-        "OUT_STATE_UG2":                                427,
-        "OUT_ETAPA_UG2":                                428,
-    },
-
-    "SE": {
-        # Leituras Analógicas
-        "LT_VAB":                                       50,
-        "LT_VBC":                                       52,
-        "LT_VCA":                                       53,
-
-        # Rearmes
-        "BLQ_GERAL_CMD_REARME":                         [131, 0],
-        "86T_CMD_REARME":                               [131, 1],
-        "86BF_CMD_REARME":                              [131, 2],
-        # DJs
-        "DJL_CMD_ABRIR":                                [131, 3],
-        "DJL_CMD_FECHAR":                               [131, 4],
-        # Registros
-        "REGISTROS_CMD_RST":                            [131, 5],
-
-        # Simulador Teste
-        "DJL_SELETORA_REMOTO":                          [999, 0],
-        "TE_RELE_BUCHHOLZ_ALM":                         [999, 1],
-        "RELE_LINHA_ATUADO":                            [999, 10],
-    },
-
-    "SA": {
-        # Poço Drenagem
-        "POCO_DREN_NV_MUITO_ALTO":                      [0, 9],
-        # Retificador
-        "RETI_SOBRETEN":                                [0, 14],
-        "RETI_SUBTEN":                                  [0, 15],
-
-
-        # Bomba Drenagem/Filtragem
-        "BOMBA_FILT_FLH":                               [1, 6],
-        "BOMBA_DREN_1_FLH":                             [1, 0],
-        "BOMBA_DREN_2_FLH":                             [1, 2],
-        "BOMBA_DREN_3_FLH":                             [1, 4],
-        "BOMBA_DREN_UNIDADES_FLH":                      [1, 12],
-
-
-        # DJs
-        "DJ52SA1_SEM_FLH":                              [2, 15],
-
-
-        # Retificador
-        "RETI_SOBRECO_SAIDA":                           [3, 0],
-        "RETI_FUSIVEL_QUEIMADO":                        [3, 2],
-        "RETI_SOBRECO_BATERIAS":                        [3, 1],
-        "RETI_FUGA_TERRA_POSITIVO":                     [3, 5],
-        "RETI_FUGA_TERRA_NEGATIVO":                     [3, 6],
-
-
-        # DJs
-        "DJ52SA2_SEM_FLH":                              [5, 1],
-        "DJ52SA3_SEM_FLH":                              [5, 3],
-        "DJS_BARRA_SELETORA_REMOTO.":                   [5, 9],
-
-
-        # Sistemas
-        "SIS_INCENDIO_ALM_ATUADO":                      [7, 6],
-        "SIS_SEGURANCA_ALM_ATUADO":                     [7, 7],
-        # DJs
-        "DJ72SA1_FECHADO":                              [7, 10],
-        "DJS_125VCC_FECHADOS":                          [7, 11],
-        "DJS_24VCC_FECHADOS":                           [7, 12],
-        # 24/125VCC
-        "ALIM_125VCC_COM_TENSAO":                       [7, 13],
-        "CMD_125VCC_COM_TENSAO":                        [7, 14],
-        "CMD_24VCC_COM_TENSAO":                         [7, 15],
-
-
-        # Poço Drenagem
-        "POCO_DREN_NV_ALTO":                            [9, 0],
-
-
-        # DJs
-        "DJ52SA1_FLH_ABRIR":                            [13, 0],
-        "DJ52SA1_FLH_FECHAR":                           [13, 1],
-        "DJ52SA2_FLH_ABRIR":                            [13, 2],
-        "DJ52SA2_FLH_FECHAR":                           [13, 3],
-        "DJ52SA3_FLH_ABRIR":                            [13, 4],
-        "DJ52SA3_FLH_FECHAR":                           [13, 5],
-        # GMG
-        "GMG_FLH_PARTIR":                               [13, 6],
-        "GMG_FLH_PARAR":                                [13, 7],
-        "GMG_OPERACAO_MANUAL":                          [13, 10],
-        # Poço Drenagem
-        "POCO_DREN_DISCRE_BOIAS":                       [13, 9],
-
-
-        # Sistema Água
-        "SIS_AGUA_BOMBA_DISPONIVEL":                    [17, 0],
-        "SIS_AGUA_FLH_LIGA_BOMBA":                      [17, 1],
-        "SIS_AGUA_FLH_PRESSURIZAR_FILTRO_A":            [17, 3],
-        "SIS_AGUA_FLH_PRESSOSTATO_FILTRO_A":            [17, 4],
-        "SIS_AGUA_FLH_PRESSURIZAR_FILTRO_B":            [17, 5],
-        "SIS_AGUA_FLH_PRESSOSTATO_FILTRO_B":            [17, 6],
-        "SIS_AGUA_RST_FLH":                             [129, 1],
-
-
-        # Barra CA
-        "BARRA_CA_RST_FLH":                             [129, 0],
-
-
-        # Rearme
-        "BLQ_GERAL_FLH_SA_REARME":                      [130, 0],
-    },
-
-    "TDA": {
-        "NV_MONTANTE":                                  30,
-        "NV_JUSANTE_CP1":                               36,
-        "NV_JUSANTE_CP2":                               38,
-        "NV_JUSANTE_GRADE_CP2_LER_FLH":                 32,
-        "NV_JUSANTE_GRADE_CP1_LER_FLH":                 34,
-        "NV_MONTANTE_LER_FLH":                          [3, 0],
-
-        "SEM_EMERGENCIA":                               [16, 8],
-
-        "CA_COM_TENSAO":                                [17, 11],
-
-        "LG_FLH_ATUADA":                                [26, 15],
-        "LG_OPE_MANUAL":                                [28 + 500, 0], # Alterar Simulador
-
-        "VB_FECHANDO":                                  [23 + 500, 0], # Alterar Simulador
-        "VB_CMD_RST_FLH":                               [55, 0],
-
-        "UH_DISPONIVEL":                                [5 + 500, 1], # Alterar Simulador
-        "UH_FLH_LIGAR_BOMBA":                           [5, 2],
-        "UH_FILTRO_LIMPO":                              [17, 13],
-
-        "CP1_OPERANDO":                                 [2 + 1000, 0], # Alterar Simulador
-        "CP1_AGUARDANDO_CMD_ABERTURA":                  [2 + 1000, 3], # Alterar Simulador
-        "CP1_PRESSAO_EQUALIZADA":                       [2 + 1000, 4], # Alterar Simulador
-
-        "CP1_CMD_REARME_FLH":                           [6 + 1000, 0],
-        "CP1_CMD_ABERTURA_CRACKING":                    [6 + 1000, 1], # Alterar Simulador
-        "CP1_CMD_ABERTURA_TOTAL":                       [6 + 1000, 2], # Alterar Simulador
-        "CP1_CMD_FECHAMENTO":                           [6 + 1000, 3], # Alterar Simulador
-        "CP1_PERMISSIVOS_OK":                           [6 + 1000, 15], # Alterar Simulador
-
-        "CP1_BLQ_ATUADO":                               [8 + 1000, 15], # Alterar Simulador
-
-        "CP1_CRACKING":                                 [16 + 1000, 0], # Alterar Simulador
-        "CP1_REMOTO":                                   [16 + 1000, 6], # Alterar Simulador
-
-        "CP1_ABERTA":                                   [17 + 1000, 14], # Alterar Simulador
-        "CP1_FECHADA":                                  [17 + 1000, 15], # Alterar Simulador
-
-        "CP2_OPERANDO":                                 [2 + 2000, 0], # Alterar Simulador
-        "CP2_AGUARDANDO_CMD_ABERTURA":                  [2 + 2000, 3], # Alterar Simulador
-        "CP2_PRESSAO_EQUALIZADA":                       [2 + 2000, 4], # Alterar Simulador
-
-        "CP2_CMD_REARME_FLH":                           [6 + 2000, 0],
-        "CP2_CMD_ABERTURA_CRACKING":                    [6 + 2000, 1], # Alterar Simulador
-        "CP2_CMD_ABERTURA_TOTAL":                       [6 + 2000, 2], # Alterar Simulador
-        "CP2_CMD_FECHAMENTO":                           [6 + 2000, 3], # Alterar Simulador
-        "CP2_PERMISSIVOS_OK":                           [6 + 2000, 15], # Alterar Simulador
-
-        "CP2_BLQ_ATUADO":                               [8 + 2000, 15], # Alterar Simulador
-
-        "CP2_CRACKING":                                 [16 + 2000, 0], # Alterar Simulador
-        "CP2_REMOTO":                                   [16 + 2000, 6], # Alterar Simulador
-
-        "CP2_ABERTA":                                   [17 + 2000, 14], # Alterar Simulador
-        "CP2_FECHADA":                                  [17 + 2000, 15], # Alterar Simulador
-    },
-
-    "UG1": {
-        # Leituras Anaçógicas
-        "GERADOR_FASE_A_TMP":                           10044,
-        "GERADOR_FASE_B_TMP":                           10046,
-        "GERADOR_FASE_C_TMP":                           10048,
-        "MANCAL_GUIA_TMP":                              10054,
-        "MANCAL_CASQ_COMB_TMP":                         10060,
-        "MANCAL_CONT_ESCO_COMB_TMP":                    10062,
-        "MANCAL_COMB_PATINS_1_TMP":                     10064,
-        "MANCAL_COMB_PATINS_2_TMP":                     10066,
-        "MANCAL_GUIA_INTE_1_TMP":                       10068,
-        "MANCAL_GUIA_INTE_2_TMP":                       10070,
-        "GERADOR_NUCL_ESTAT_TMP":                       10072,
-        "ENTRADA_TURBINA_PRESSAO":                      10084,
-        "GERADOR_SAIDA_AR_TRP_TMP":                     10090,
-        "HORIMETRO":                                    10108,
-        "P":                                            10130,
-
-
-        # UHRV
-        "UHRV_FILTRO_SUJO":                             [1, 5],  # Reg -> 1
-        # UHLM
-        "UHLM_FILTRO_SUJO":                             [1, 8],  # Reg -> 1
-        # Resistência
-        "RESISTENCIA_FALHA":                            [1, 12], # Reg -> 1
-
-
-        # Botão Emergência
-        "BT_EMERGENCIA_ATUADO":                         [2, 11],
-        # Supervisão
-        "SUP_BOBINA_52G":                               [2, 12],
-        "SUP_BOBINA_86EH":                              [2, 13],
-        # Relé
-        "RELE_BLQ_86EH_DESATUADO":                      [3, 12], # Reg -> 3
-        "SUP_TENSAO_125VCC":                            [3, 13], # Reg -> 3
-        "SUP_TENSAO_24VCC":                             [3, 14], # Reg -> 3
-        # DJ
-        "DJS_125VCC_FECHADOS":                          [3, 15], # Reg -> 3
-
-
-        # DJ
-        "DJS_24VCC_FECHADOS":                           [4, 0],
-        # CLPs
-        "CLP_GERAL_SEM_BLQ_EXTERNO":                    [4, 1],
-        "CLP_GERAL_SIS_AGUA_OK":                        [4, 2],
-        # Escovas Polo
-        "ESCOVAS_POLO_POS_GASTAS":                      [4, 5],
-        "ESCOVAS_POLO_NEG_GASTAS":                      [4, 6],
-        # Disparo Mecânico
-        "DISP_MECANICO_DESATUADO":                      [4, 8],
-        "DISP_MECANICO_ATUADO":                         [4, 9],
-
-
-        # Alarmes de Temperatura/Vibração
-        "PONTE_FASE_A_ALM_TMP":                         [6, 0],
-        "PONTE_FASE_B_ALM_TMP":                         [6, 1],
-        "PONTE_FASE_C_ALM_TMP":                         [6, 2],
-        "TRAFO_EXCITACAO_ALM_TMP":                      [6, 4],
-        "MANCAL_GUIA_ALM_TMP":                          [6, 5],
-        "UHRV_ALM_TMP_OLEO":                            [6, 6],
-        "UHLM_ALM_TMP_OLEO":                            [6, 7],
-        "MANCAL_CASQ_COMB_ALM_TMP":                     [6, 8],
-        "MANCAL_CONT_ESCO_COMB_ALM_TMP":                [6, 9],
-        "MANCAL_COMB_PATINS_1_ALM_TMP":                 [6, 10],
-        "MANCAL_COMB_PATINS_2_ALM_TMP":                 [6, 11],
-        "MANCAL_GUIA_INTE_1_ALM_TMP":                   [6, 12],
-        "MANCAL_GUIA_INTE_2_ALM_TMP":                   [6, 13],
-        "GERADOR_NUCL_ESTAT_ALM_TMP":                   [6, 14],
-        "GERADOR_FASE_A_ALM_TMP":                       [6, 15],
-        "GERADOR_FASE_B_ALM_TMP":                       [7, 0],  # Reg -> 7
-        "GERADOR_FASE_C_ALM_TMP":                       [7, 1],  # Reg -> 7
-        "MANCAL_COMB_EIXO_X_ALM_VIBR":                  [7, 8],  # Reg -> 7
-        "MANCAL_COMB_EIXO_Y_ALM_VIBR":                  [7, 9],  # Reg -> 7
-        "MANCAL_COMB_EIXO_Z_ALM_VIBR":                  [7, 10], # Reg -> 7
-        "DETECCAO_HORIZONTAL_ALM_VIBRA":                [7, 12], # Reg -> 7
-        "DETECCAO_VERTICAL_ALM_VIBRA":                  [7, 13], # Reg -> 7
-
-
-        # Falhas de Leitura de Pressão/Vibração
-        "ENTRADA_TURBINA_FLH_LER_PRESSAO":              [8, 4],
-        "MANCAL_COMB_EIXO_X_FLH_LER_VIBR":              [8, 8],
-        "MANCAL_COMB_EIXO_Y_FLH_LER_VIBR":              [8, 9],
-        "MANCAL_COMB_EIXO_Z_FLH_LER_VIBR":              [8, 10],
-        "DETECCAO_HORIZONTAL_FLH_LER_VIBRA":            [8, 12],
-        "DETECCAO_VERTICAL_FLH_LER_VIBRA":              [8, 13],
-
-
-        # Sistema de Água
-        "SIS_AGUA_FLH_HAB":                             [10, 11],
-
-
-        # Trip Temperatura
-        "UHLM_TRP_TMP_OLEO":                            [24, 4],
-        "UHRV_TRP_TMP_OLEO":                            [24, 5],
-        # Falhas de Leitura de Temperaturas
-        "UHLM_FLH_LER_TMP_OLEO":                        [24, 6],
-        "UHRV_FLH_LER_TMP_OLEO":                        [24, 7],
-        "MANCAL_CASQ_COMB_FLH_LER_TMP":                 [24, 8],
-        "MANCAL_CONT_ESCO_COMB_FLH_LER_TMP":            [24, 9],
-        "MANCAL_COMB_PATINS_1_FLH_LER_TMP":             [24, 10],
-        "MANCAL_COMB_PATINS_2_FLH_LER_TMP":             [24, 11],
-        "MANCAL_GUIA_INTE_1_FLH_LER_TMP":               [24, 12],
-        "MANCAL_GUIA_INTE_2_FLH_LER_TMP":               [24, 13],
-        "PONTE_FASE_A_FLH_LER_TMP":                     [24, 14],
-        "PONTE_FASE_B_FLH_LER_TMP":                     [24, 15],
-        "PONTE_FASE_C_FLH_LER_TMP":                     [25, 0],  # Reg -> 25
-        "GERADOR_FASE_A_FLH_LER_TMP":                   [25, 1],  # Reg -> 25
-        "GERADOR_FASE_B_FLH_LER_TMP":                   [25, 2],  # Reg -> 25
-        "GERADOR_FASE_C_FLH_LER_TMP":                   [25, 3],  # Reg -> 25
-        "GERADOR_NUCL_ESTAT_FLH_LER_TMP":               [25, 4],  # Reg -> 25
-        # Trips Vibração
-        "DETECCAO_HORIZONTAL_TRP_VIBRA":                [25, 10], # Reg -> 25
-        "DETECCAO_VERTICAL_TRP_VIBRA":                  [25, 11], # Reg -> 25
-        "MANCAL_COMB_EIXO_X_TRP_VIBR":                  [25, 12], # Reg -> 25
-        "MANCAL_COMB_EIXO_Y_TRP_VIBR":                  [25, 13], # Reg -> 25
-        "MANCAL_COMB_EIXO_Z_TRP_VIBR":                  [25, 14], # Reg -> 25
-        # Bloqueio Atuado
-        "86M_BLQ_ATUADO":                               [25, 15], # Reg -> 25
-
-
-        # Cubiculo Proteção Gerador
-        "CPG_PORTA_INTERNA_FECHADA":                    [26, 2],
-        "CPG_PORTA_TRASEIRA_FECHADA":                   [26, 3],
-        # Relés
-        "RELE_700G_TRP_ATUADO":                         [26, 4],
-        "RELE_700G_BF_ATUADO":                          [26, 6],
-        # Trips por Temperatura
-        "PONTE_FASE_A_TRP_TMP":                         [27, 0],  # Reg -> 27
-        "PONTE_FASE_B_TRP_TMP":                         [27, 1],  # Reg -> 27
-        "PONTE_FASE_C_TRP_TMP":                         [27, 2],  # Reg -> 27
-        "GERADOR_FASE_A_TRP_TMP":                       [27, 3],  # Reg -> 27
-        "GERADOR_FASE_B_TRP_TMP":                       [27, 4],  # Reg -> 27
-        "GERADOR_FASE_C_TRP_TMP":                       [27, 5],  # Reg -> 27
-        "GERADOR_NUCL_ESTAT_TRP_TMP":                   [27, 6],  # Reg -> 27
-        # Trafo Excitação/Aterramento
-        "TRAFO_ATERRAMENTO_TRP_TMP":                    [27, 8],  # Reg -> 27
-        "TRAFO_EXCITACAO_TRP_TMP":                      [27, 9],  # Reg -> 27
-        "TRAFO_EXCITACAO_FLH_LER_TMP":                  [27, 10], # Reg -> 27
-        # Bloqueio Atuado
-        "86E_BLQ_ATUADO":                               [27, 15], # Reg -> 27
-
-
-        # Trips Temperatura/Vibração/Pressão
-        "UHRV_ACUMULADOR_PRESSAO_TRP":                  [28, 5],
-        "MANCAL_CASQ_COMB_TRP_TMP":                     [29, 2],  # Reg -> 29
-        "MANCAL_CONT_ESCO_COMB_TRP_TMP":                [29, 3],  # Reg -> 29
-        "MANCAL_COMB_PATINS_1_TRP_TMP":                 [29, 4],  # Reg -> 29
-        "MANCAL_COMB_PATINS_2_TRP_TMP":                 [29, 5],  # Reg -> 29
-        "MANCAL_GUIA_INTE_1_TRP_TMP":                   [29, 6],  # Reg -> 29
-        "MANCAL_GUIA_INTE_2_TRP_TMP":                   [29, 7],  # Reg -> 29
-        "86H_BLQ_ATUADO":                               [29, 15], # Reg -> 29
-
-
-        # UHRV
-        "UHRV_MANUTENCAO":                              [36, 0],
-        "UHRV_BOMBA_1_FLH":                             [36, 5],
-        "UHRV_BOMBA_2_FLH":                             [36, 7],
-
-
-        # UHLM
-        "UHLM_MANUTENCAO":                              [38, 4],
-        "UHLM_BOMBA_1_FLH":                             [38, 5],
-        "UHLM_BOMBA_2_FLH":                             [38, 7],
-        "UHLM_FLH_PRESSAO_LINHA_B1":                    [38, 9],
-        "UHLM_FLH_PRESSAO_LINHA_B2":                    [38, 10],
-        "UHLM_FLH_PRESSOSTATO_LINHA":                   [38, 11],
-
-
-        # RV
-        "RV_FLH_HABILITAR":                             [42, 0],
-        "RV_FLH_PARTIR":                                [42, 1],
-        "RV_FLH_DESABILITAR":                           [42, 2],
-        "RV_FLH_FECHAR_DISTRIBUIDOR":                   [42, 4],
-
-
-        # RT
-        "RT_FLH_HABILITAR":                             [42, 8],
-        "RT_FLH_PARTIR":                                [42, 9],
-        "RT_FLH_DESABILITAR":                           [42, 10],
-
-
-        # Rearme Bloqueio
-        "PASSOS_CMD_RST_FLH":                           [10148, 0], # Alterar Simulador
-        "86M_CMD_REARME_BLQ":                           [148, 1],
-        "86E_CMD_REARME_BLQ":                           [148, 2],
-        "86H_CMD_REARME_BLQ":                           [148, 3],
-        # Parada
-        "PARADA_CMD_EMERGENCIA":                        [10148, 4], # Alterar Simulador
-        "PARADA_BLQ_ABERTURA_DJ":                       [148, 11],
-        "PARADA_CMD_DESABILITA_UHLM":                   [10148, 15],  # Alterar Simulador
-        # Partida
-        "PARTIDA_CMD_SINCRONISMO":                      [10148, 10] , # Alterar Simulador
-
-
-        # UHRV
-        "UHRV_CMD_REARME_FLH":                          [150, 0],
-        "UHLM_CMD_REARME_FLH":                          [151, 0], # Reg -> 151
-
-        # --------------------------------------------------------------------- #
-        ## Comunicação RTV
-
-        # RV
-        "RV_ESTADO_OPERACAO":                           21 + 10000,
-        "RV_ESTADO_OPERACAO_2":                         999 + 10000,
-
-        "RV_SAIDAS_DIGITAIS":                           26,
-        "RV_RELE_TRP_NAO_ATUADO":                       [26, 0],
-        "RV_RELE_ALM_ATUADO":                           [26, 1],
-
-        "RV_SETPOT_POT_ATIVA_PU":                       30 + 10000,
-
-        "RT_RELE_TRP_NAO_ATUADO":                       [31, 0],
-
-        "RV_FLH_1_B0":                                  [67, 0],
-        "RV_FLH_1_B1":                                  [67, 1],
-        "RV_FLH_1_B2":                                  [67, 2],
-        "RV_FLH_1_B3":                                  [67, 3],
-        "RV_FLH_1_B4":                                  [67, 4],
-        "RV_FLH_1_B5":                                  [67, 5],
-        "RV_FLH_1_B6":                                  [67, 6],
-        "RV_FLH_1_B7":                                  [67, 7],
-        "RV_FLH_1_B8":                                  [67, 8],
-        "RV_FLH_1_B10":                                 [67, 10],
-        "RV_FLH_1_B11":                                 [67, 11],
-        "RV_FLH_1_B12":                                 [67, 12],
-        "RV_FLH_1_B13":                                 [67, 13],
-        "RV_FLH_1_B14":                                 [67, 14],
-        "RV_FLH_1_B15":                                 [67, 15],
-
-        "RV_FLH_2_B0":                                  [68, 0],
-        "RV_FLH_2_B1":                                  [68, 1],
-        "RV_FLH_2_B2":                                  [68, 2],
-        "RV_FLH_2_B3":                                  [68, 3],
-        "RV_FLH_2_B4":                                  [68, 4],
-
-
-        # RT
-        "RT_SAIDAS_DIGITAIS":                           31,
-
-        "RT_ALM_1_B0":                                  [70, 0],
-        "RT_ALM_1_B4":                                  [70, 4],
-        "RT_ALM_1_B5":                                  [70, 5],
-        "RT_ALM_1_B8":                                  [70, 8],
-
-        "RT_FLH_1_B0":                                  [72, 0],
-        "RT_FLH_1_B1":                                  [72, 1],
-        "RT_FLH_1_B2":                                  [72, 2],
-        "RT_FLH_1_B3":                                  [72, 3],
-        "RT_FLH_1_B4":                                  [72, 4],
-        "RT_FLH_1_B5":                                  [72, 5],
-        "RT_FLH_1_B6":                                  [72, 6],
-        "RT_FLH_1_B7":                                  [72, 7],
-        "RT_FLH_1_B8":                                  [72, 8],
-        "RT_FLH_1_B9":                                  [72, 9],
-        "RT_FLH_1_B10":                                 [72, 10],
-        "RT_FLH_1_B11":                                 [72, 11],
-        "RT_FLH_1_B12":                                 [72, 12],
-        "RT_FLH_1_B13":                                 [72, 13],
-        "RT_FLH_1_B14":                                 [72, 14],
-        "RT_FLH_1_B15":                                 [72, 15],
-
-        "RT_FLH_2_B0":                                  [73, 0],
-        "RT_FLH_2_B1":                                  [73, 1],
-        "RT_FLH_2_B2":                                  [73, 2],
-        "RT_FLH_2_B3":                                  [73, 3],
-        "RT_FLH_2_B4":                                  [73, 4],
-        "RT_FLH_2_B5":                                  [73, 5],
-        "RT_FLH_2_B6":                                  [73, 6],
-        "RT_FLH_2_B7":                                  [73, 7],
-        "RT_FLH_2_B8":                                  [73, 8],
-        "RT_FLH_2_B9":                                  [73, 9],
-        "RT_FLH_2_B10":                                 [73, 10],
-        "RT_FLH_2_B11":                                 [73, 11],
-        "RT_FLH_2_B12":                                 [73, 12],
-
-        "RT_FLH_3_B0":                                  [74, 0],
-        "RT_FLH_3_B1":                                  [74, 1],
-        "RT_FLH_3_B2":                                  [74, 2],
-        "RT_FLH_3_B3":                                  [74, 3],
-        "RT_FLH_3_B4":                                  [74, 4],
-        "RT_FLH_3_B5":                                  [74, 5],
-        "RT_FLH_3_B6":                                  [74, 6],
-        "RT_FLH_3_B7":                                  [74, 7],
-    },
-
-    "UG2": {
-        # Leituras Anaçógicas
-        "GERADOR_FASE_A_TMP":                           20044,
-        "GERADOR_FASE_B_TMP":                           20046,
-        "GERADOR_FASE_C_TMP":                           20048,
-        "MANCAL_GUIA_TMP":                              20054,
-        "MANCAL_CASQ_COMB_TMP":                         20060,
-        "MANCAL_CONT_ESCO_COMB_TMP":                    20062,
-        "MANCAL_COMB_PATINS_1_TMP":                     20064,
-        "MANCAL_COMB_PATINS_2_TMP":                     20066,
-        "MANCAL_GUIA_INTE_1_TMP":                       20068,
-        "MANCAL_GUIA_INTE_2_TMP":                       20070,
-        "GERADOR_NUCL_ESTAT_TMP":                       20072,
-        "ENTRADA_TURBINA_PRESSAO":                      20084,
-        "GERADOR_SAIDA_AR_TRP_TMP":                     20090,
-        "HORIMETRO":                                    20108,
-        "P":                                            20130,
-
-
-        # UHRV
-        "UHRV_FILTRO_SUJO":                             [1, 5],  # Reg -> 1
-        # UHLM
-        "UHLM_FILTRO_SUJO":                             [1, 8],  # Reg -> 1
-        # Resistência
-        "RESISTENCIA_FALHA":                            [1, 12], # Reg -> 1
-
-
-        # Botão Emergência
-        "BT_EMERGENCIA_ATUADO":                         [2, 11],
-        # Supervisão
-        "SUP_BOBINA_52G":                               [2, 12],
-        "SUP_BOBINA_86EH":                              [2, 13],
-        # Relé
-        "RELE_BLQ_86EH_DESATUADO":                      [3, 12], # Reg -> 3
-        "SUP_TENSAO_125VCC":                            [3, 13], # Reg -> 3
-        "SUP_TENSAO_24VCC":                             [3, 14], # Reg -> 3
-        # DJ
-        "DJS_125VCC_FECHADOS":                          [3, 15], # Reg -> 3
-
-
-        # DJ
-        "DJS_24VCC_FECHADOS":                           [4, 0],
-        # CLPs
-        "CLP_GERAL_SEM_BLQ_EXTERNO":                    [4, 1],
-        "CLP_GERAL_SIS_AGUA_OK":                        [4, 2],
-        # Escovas Polo
-        "ESCOVAS_POLO_POS_GASTAS":                      [4, 5],
-        "ESCOVAS_POLO_NEG_GASTAS":                      [4, 6],
-        # Disparo Mecânico
-        "DISP_MECANICO_DESATUADO":                      [4, 8],
-        "DISP_MECANICO_ATUADO":                         [4, 9],
-
-
-        # Alarmes de Temperatura/Vibração
-        "PONTE_FASE_A_ALM_TMP":                         [6, 0],
-        "PONTE_FASE_B_ALM_TMP":                         [6, 1],
-        "PONTE_FASE_C_ALM_TMP":                         [6, 2],
-        "TRAFO_EXCITACAO_ALM_TMP":                      [6, 4],
-        "MANCAL_GUIA_ALM_TMP":                          [6, 5],
-        "UHRV_ALM_TMP_OLEO":                            [6, 6],
-        "UHLM_ALM_TMP_OLEO":                            [6, 7],
-        "MANCAL_CASQ_COMB_ALM_TMP":                     [6, 8],
-        "MANCAL_CONT_ESCO_COMB_ALM_TMP":                [6, 9],
-        "MANCAL_COMB_PATINS_1_ALM_TMP":                 [6, 10],
-        "MANCAL_COMB_PATINS_2_ALM_TMP":                 [6, 11],
-        "MANCAL_GUIA_INTE_1_ALM_TMP":                   [6, 12],
-        "MANCAL_GUIA_INTE_2_ALM_TMP":                   [6, 13],
-        "GERADOR_NUCL_ESTAT_ALM_TMP":                   [6, 14],
-        "GERADOR_FASE_A_ALM_TMP":                       [6, 15],
-        "GERADOR_FASE_B_ALM_TMP":                       [7, 0],  # Reg -> 7
-        "GERADOR_FASE_C_ALM_TMP":                       [7, 1],  # Reg -> 7
-        "MANCAL_COMB_EIXO_X_ALM_VIBR":                  [7, 8],  # Reg -> 7
-        "MANCAL_COMB_EIXO_Y_ALM_VIBR":                  [7, 9],  # Reg -> 7
-        "MANCAL_COMB_EIXO_Z_ALM_VIBR":                  [7, 10], # Reg -> 7
-        "DETECCAO_HORIZONTAL_ALM_VIBRA":                [7, 12], # Reg -> 7
-        "DETECCAO_VERTICAL_ALM_VIBRA":                  [7, 13], # Reg -> 7
-
-
-        # Falhas de Leitura de Pressão/Vibração
-        "ENTRADA_TURBINA_FLH_LER_PRESSAO":              [8, 4],
-        "MANCAL_COMB_EIXO_X_FLH_LER_VIBR":              [8, 8],
-        "MANCAL_COMB_EIXO_Y_FLH_LER_VIBR":              [8, 9],
-        "MANCAL_COMB_EIXO_Z_FLH_LER_VIBR":              [8, 10],
-        "DETECCAO_HORIZONTAL_FLH_LER_VIBRA":            [8, 12],
-        "DETECCAO_VERTICAL_FLH_LER_VIBRA":              [8, 13],
-
-
-        # Sistema de Água
-        "SIS_AGUA_FLH_HAB":                             [10, 11],
-
-
-        # Trip Temperatura
-        "UHLM_TRP_TMP_OLEO":                            [24, 4],
-        "UHRV_TRP_TMP_OLEO":                            [24, 5],
-        # Falhas de Leitura de Temperaturas
-        "UHLM_FLH_LER_TMP_OLEO":                        [24, 6],
-        "UHRV_FLH_LER_TMP_OLEO":                        [24, 7],
-        "MANCAL_CASQ_COMB_FLH_LER_TMP":                 [24, 8],
-        "MANCAL_CONT_ESCO_COMB_FLH_LER_TMP":            [24, 9],
-        "MANCAL_COMB_PATINS_1_FLH_LER_TMP":             [24, 10],
-        "MANCAL_COMB_PATINS_2_FLH_LER_TMP":             [24, 11],
-        "MANCAL_GUIA_INTE_1_FLH_LER_TMP":               [24, 12],
-        "MANCAL_GUIA_INTE_2_FLH_LER_TMP":               [24, 13],
-        "PONTE_FASE_A_FLH_LER_TMP":                     [24, 14],
-        "PONTE_FASE_B_FLH_LER_TMP":                     [24, 15],
-        "PONTE_FASE_C_FLH_LER_TMP":                     [25, 0],  # Reg -> 25
-        "GERADOR_FASE_A_FLH_LER_TMP":                   [25, 1],  # Reg -> 25
-        "GERADOR_FASE_B_FLH_LER_TMP":                   [25, 2],  # Reg -> 25
-        "GERADOR_FASE_C_FLH_LER_TMP":                   [25, 3],  # Reg -> 25
-        "GERADOR_NUCL_ESTAT_FLH_LER_TMP":               [25, 4],  # Reg -> 25
-        # Trips Vibração
-        "DETECCAO_HORIZONTAL_TRP_VIBRA":                [25, 10], # Reg -> 25
-        "DETECCAO_VERTICAL_TRP_VIBRA":                  [25, 11], # Reg -> 25
-        "MANCAL_COMB_EIXO_X_TRP_VIBR":                  [25, 12], # Reg -> 25
-        "MANCAL_COMB_EIXO_Y_TRP_VIBR":                  [25, 13], # Reg -> 25
-        "MANCAL_COMB_EIXO_Z_TRP_VIBR":                  [25, 14], # Reg -> 25
-        # Bloqueio Atuado
-        "86M_BLQ_ATUADO":                               [25, 15], # Reg -> 25
-
-
-        # Cubiculo Proteção Gerador
-        "CPG_PORTA_INTERNA_FECHADA":                    [26, 2],
-        "CPG_PORTA_TRASEIRA_FECHADA":                   [26, 3],
-        # Relés
-        "RELE_700G_TRP_ATUADO":                         [26, 4],
-        "RELE_700G_BF_ATUADO":                          [26, 6],
-        # Trips por Temperatura
-        "PONTE_FASE_A_TRP_TMP":                         [27, 0],  # Reg -> 27
-        "PONTE_FASE_B_TRP_TMP":                         [27, 1],  # Reg -> 27
-        "PONTE_FASE_C_TRP_TMP":                         [27, 2],  # Reg -> 27
-        "GERADOR_FASE_A_TRP_TMP":                       [27, 3],  # Reg -> 27
-        "GERADOR_FASE_B_TRP_TMP":                       [27, 4],  # Reg -> 27
-        "GERADOR_FASE_C_TRP_TMP":                       [27, 5],  # Reg -> 27
-        "GERADOR_NUCL_ESTAT_TRP_TMP":                   [27, 6],  # Reg -> 27
-        # Trafo Excitação/Aterramento
-        "TRAFO_ATERRAMENTO_TRP_TMP":                    [27, 8],  # Reg -> 27
-        "TRAFO_EXCITACAO_TRP_TMP":                      [27, 9],  # Reg -> 27
-        "TRAFO_EXCITACAO_FLH_LER_TMP":                  [27, 10], # Reg -> 27
-        # Bloqueio Atuado
-        "86E_BLQ_ATUADO":                               [27, 15], # Reg -> 27
-
-
-        # Trips Temperatura/Vibração/Pressão
-        "UHRV_ACUMULADOR_PRESSAO_TRP":                  [28, 5],
-        "MANCAL_CASQ_COMB_TRP_TMP":                     [29, 2],  # Reg -> 29
-        "MANCAL_CONT_ESCO_COMB_TRP_TMP":                [29, 3],  # Reg -> 29
-        "MANCAL_COMB_PATINS_1_TRP_TMP":                 [29, 4],  # Reg -> 29
-        "MANCAL_COMB_PATINS_2_TRP_TMP":                 [29, 5],  # Reg -> 29
-        "MANCAL_GUIA_INTE_1_TRP_TMP":                   [29, 6],  # Reg -> 29
-        "MANCAL_GUIA_INTE_2_TRP_TMP":                   [29, 7],  # Reg -> 29
-        "86H_BLQ_ATUADO":                               [29, 15], # Reg -> 29
-
-
-        # UHRV
-        "UHRV_MANUTENCAO":                              [36, 0],
-        "UHRV_BOMBA_1_FLH":                             [36, 5],
-        "UHRV_BOMBA_2_FLH":                             [36, 7],
-
-
-        # UHLM
-        "UHLM_MANUTENCAO":                              [38, 4],
-        "UHLM_BOMBA_1_FLH":                             [38, 5],
-        "UHLM_BOMBA_2_FLH":                             [38, 7],
-        "UHLM_FLH_PRESSAO_LINHA_B1":                    [38, 9],
-        "UHLM_FLH_PRESSAO_LINHA_B2":                    [38, 10],
-        "UHLM_FLH_PRESSOSTATO_LINHA":                   [38, 11],
-
-
-        # RV
-        "RV_FLH_HABILITAR":                             [42, 0],
-        "RV_FLH_PARTIR":                                [42, 1],
-        "RV_FLH_DESABILITAR":                           [42, 2],
-        "RV_FLH_FECHAR_DISTRIBUIDOR":                   [42, 4],
-
-
-        # RT
-        "RT_FLH_HABILITAR":                             [42, 8],
-        "RT_FLH_PARTIR":                                [42, 9],
-        "RT_FLH_DESABILITAR":                           [42, 10],
-
-
-        # Rearme Bloqueio
-        "PASSOS_CMD_RST_FLH":                           [20148, 0], # Alterar Simulador
-        "86M_CMD_REARME_BLQ":                           [148, 1],
-        "86E_CMD_REARME_BLQ":                           [148, 2],
-        "86H_CMD_REARME_BLQ":                           [148, 3],
-        # Parada
-        "PARADA_CMD_EMERGENCIA":                        [20148, 4],  # Alterar Simulador
-        "PARADA_BLQ_ABERTURA_DJ":                       [148, 11],
-        "PARADA_CMD_DESABILITA_UHLM":                   [20148, 15],  # Alterar Simulador
-        # Partida
-        "PARTIDA_CMD_SINCRONISMO":                      [20148, 10] , # Alterar Simulador
-
-
-        # UHRV
-        "UHRV_CMD_REARME_FLH":                          [150, 0],
-        "UHLM_CMD_REARME_FLH":                          [151, 0], # Reg -> 151
-
-        # --------------------------------------------------------------------- #
-        ## Comunicação RTV
-
-        # RV
-        "RV_ESTADO_OPERACAO":                           21 + 20000,
-        "RV_ESTADO_OPERACAO_2":                         999 + 20000,
-
-        "RV_SAIDAS_DIGITAIS":                           26,
-        "RV_RELE_TRP_NAO_ATUADO":                       [26, 0],
-        "RV_RELE_ALM_ATUADO":                           [26, 1],
-
-        "RV_SETPOT_POT_ATIVA_PU":                       30 + 20000,
-
-        "RT_RELE_TRP_NAO_ATUADO":                       [31, 0],
-
-        "RV_FLH_1_B0":                                  [67, 0],
-        "RV_FLH_1_B1":                                  [67, 1],
-        "RV_FLH_1_B2":                                  [67, 2],
-        "RV_FLH_1_B3":                                  [67, 3],
-        "RV_FLH_1_B4":                                  [67, 4],
-        "RV_FLH_1_B5":                                  [67, 5],
-        "RV_FLH_1_B6":                                  [67, 6],
-        "RV_FLH_1_B7":                                  [67, 7],
-        "RV_FLH_1_B8":                                  [67, 8],
-        "RV_FLH_1_B10":                                 [67, 10],
-        "RV_FLH_1_B11":                                 [67, 11],
-        "RV_FLH_1_B12":                                 [67, 12],
-        "RV_FLH_1_B13":                                 [67, 13],
-        "RV_FLH_1_B14":                                 [67, 14],
-        "RV_FLH_1_B15":                                 [67, 15],
-
-        "RV_FLH_2_B0":                                  [68, 0],
-        "RV_FLH_2_B1":                                  [68, 1],
-        "RV_FLH_2_B2":                                  [68, 2],
-        "RV_FLH_2_B3":                                  [68, 3],
-        "RV_FLH_2_B4":                                  [68, 4],
-
-
-        # RT
-        "RT_SAIDAS_DIGITAIS":                           31,
-
-        "RT_ALM_1_B0":                                  [70, 0],
-        "RT_ALM_1_B4":                                  [70, 4],
-        "RT_ALM_1_B5":                                  [70, 5],
-        "RT_ALM_1_B8":                                  [70, 8],
-
-        "RT_FLH_1_B0":                                  [72, 0],
-        "RT_FLH_1_B1":                                  [72, 1],
-        "RT_FLH_1_B2":                                  [72, 2],
-        "RT_FLH_1_B3":                                  [72, 3],
-        "RT_FLH_1_B4":                                  [72, 4],
-        "RT_FLH_1_B5":                                  [72, 5],
-        "RT_FLH_1_B6":                                  [72, 6],
-        "RT_FLH_1_B7":                                  [72, 7],
-        "RT_FLH_1_B8":                                  [72, 8],
-        "RT_FLH_1_B9":                                  [72, 9],
-        "RT_FLH_1_B10":                                 [72, 10],
-        "RT_FLH_1_B11":                                 [72, 11],
-        "RT_FLH_1_B12":                                 [72, 12],
-        "RT_FLH_1_B13":                                 [72, 13],
-        "RT_FLH_1_B14":                                 [72, 14],
-        "RT_FLH_1_B15":                                 [72, 15],
-
-        "RT_FLH_2_B0":                                  [73, 0],
-        "RT_FLH_2_B1":                                  [73, 1],
-        "RT_FLH_2_B2":                                  [73, 2],
-        "RT_FLH_2_B3":                                  [73, 3],
-        "RT_FLH_2_B4":                                  [73, 4],
-        "RT_FLH_2_B5":                                  [73, 5],
-        "RT_FLH_2_B6":                                  [73, 6],
-        "RT_FLH_2_B7":                                  [73, 7],
-        "RT_FLH_2_B8":                                  [73, 8],
-        "RT_FLH_2_B9":                                  [73, 9],
-        "RT_FLH_2_B10":                                 [73, 10],
-        "RT_FLH_2_B11":                                 [73, 11],
-        "RT_FLH_2_B12":                                 [73, 12],
-
-        "RT_FLH_3_B0":                                  [74, 0],
-        "RT_FLH_3_B1":                                  [74, 1],
-        "RT_FLH_3_B2":                                  [74, 2],
-        "RT_FLH_3_B3":                                  [74, 3],
-        "RT_FLH_3_B4":                                  [74, 4],
-        "RT_FLH_3_B5":                                  [74, 5],
-        "RT_FLH_3_B6":                                  [74, 6],
-        "RT_FLH_3_B7":                                  [74, 7],
-    },
-
-}
-
-
-"""
-Registradores que não achei:
-CLP:
-    SE:
-        "89L_FECHADA"
-        "86T_ATUADO"
-        "86BF_ATUADO"
-        "86BF_86T_CMD_REARME"
-        "DJL_MOLA_CARREGADA"
-        "DJL_SELETORA_REMOTO"
-        "DJL_FLH_CMD_ABERTURA"
-        "DJL_FLH_CMD_FECHAMENTO"
-        "RELE_LINHA_ATUADO"
-        "RELE_LINHA_ATUACAO_BF"
-        "RELE_SUP_BLQ_BOBINAS"
-        "TE_RELE_ATUADO"
-        "TE_RELE_BUCHHOLZ_TRP"
-        "TE_RELE_BUCHHOLZ_ALM"
-        "TE_TRP_TMP_OLEO"
-        "TE_TRP_TMP_ENROL"
-        "TE_TRP_ALIVIO_PRESSAO"
-        "TE_ALM_TMP_OLEO"
-        "TE_ALM_TMP_OLEO"
-        "TE_ALM_TMP_ENROL"
-        "TE_ALM_TMP_ENROL"
-        "TE_FLH_LER_TMP_ENROL"
-        "TE_FLH_LER_TMP_OLEO"
-        "TE_NV_OLEO_MUITO_ALTO"
-        "TE_NV_OLEO_MUITO_BAIXO"
-
-    SA:
-        "SEM_EMERGENCIA"
-        "BOMBA_RECALQUE_TUBO_SUCCAO_FALHA"
-
-    UGs:
-        "CLP_GERAL_COM_TENSAO_BARRA_ESSEN"
-"""
-
-REG_CLP["SE"]["CONDIC"] = [999, 4]
-REG_CLP["UG1"]["CONDIC"] = [995 + 10000, 4]
-REG_CLP["UG2"]["CONDIC"] = [995 + 20000, 4]
-REG_RELE["BAY"]["CONDIC"] = [999 + 30000, 4]

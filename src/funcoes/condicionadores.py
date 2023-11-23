@@ -2,14 +2,14 @@ __version__ = "0.2"
 __author__ = "Lucas Lavratti", " Henrique Pfeifer", "Diego Basgal"
 __description__ = "Este módulo corresponde a implementação da lógica de Condicionadores."
 
-from src.funcoes.leitura import *
-from src.dicionarios.const import *
+import src.unidade_geracao as ug
+import src.funcoes.leitura as lei
 
-from src.unidade_geracao import UnidadeGeracao
+from src.dicionarios.const import *
 
 
 class CondicionadorBase:
-    def __init__(self, leitura: "LeituraModbus", gravidade: "int"=1, etapas: "list"=[], id_unidade: "int"=None) -> "None":
+    def __init__(self, leitura: "lei.LeituraModbus", gravidade: "int"=1, etapas: "list"=[], id_unidade: "int"=None) -> "None":
 
         self.__leitura = leitura
         self.__gravidade = gravidade
@@ -18,7 +18,7 @@ class CondicionadorBase:
         self.__etapas = etapas
         self.__id_unidade = id_unidade if id_unidade is not None else None
 
-        self._ugs: "list[UnidadeGeracao]" = []
+        self._ugs: "list[ug.UnidadeGeracao]" = []
 
     def __str__(self) -> "str":
         """
@@ -56,26 +56,26 @@ class CondicionadorBase:
         # PROPRIEDADE -> Retrona se o Condicionaor está Ativo.
 
         if self.__id_unidade and self.__etapas:
-            ug: "UnidadeGeracao" = [ug if ug.id == self.__id_unidade else None for ug in self.ugs]
+            ug: "ug.UnidadeGeracao" = [ug if ug.id == self.__id_unidade else None for ug in self.ugs]
             return False if ug is not None and ug.etapa_atual in self.__etapas and self.leitura == 0 else False
         else:
             return False if self.leitura == 0 else True
 
     @property
-    def ugs(self) -> "list[UnidadeGeracao]":
+    def ugs(self) -> "list[ug.UnidadeGeracao]":
         # PROPRIEDADE -> Retrona a lista de instâncias das Unidades de Geração.
 
         return self._ugs
 
     @ugs.setter
-    def ugs(self, var: "list[UnidadeGeracao]") -> "None":
+    def ugs(self, var: "list[ug.UnidadeGeracao]") -> "None":
         # SETTER -> Atribui a nova lista de instâncias das Unidades de Geração.
 
         self._ugs = var
 
 
 class CondicionadorExponencial(CondicionadorBase):
-    def __init__(self, leitura: "LeituraModbus", gravidade: "int"=2, valor_base: "float"=100, valor_limite: "float"=200, ordem: "float"=(1/4)) -> "None":
+    def __init__(self, leitura: "lei.LeituraModbus", gravidade: "int"=2, valor_base: "float"=100, valor_limite: "float"=200, ordem: "float"=(1/4)) -> "None":
         super().__init__(leitura, gravidade)
 
         self.__ordem = ordem
@@ -132,7 +132,7 @@ class CondicionadorExponencial(CondicionadorBase):
 
 
 class CondicionadorExponencialReverso(CondicionadorExponencial):
-    def __init__(self, leitura: "LeituraModbus", gravidade: "int"=2, valor_base: "float"=100, valor_limite: "float"=200, ordem: "float"=(1/4)) -> "None":
+    def __init__(self, leitura: "lei.LeituraModbus", gravidade: "int"=2, valor_base: "float"=100, valor_limite: "float"=200, ordem: "float"=(1/4)) -> "None":
         super().__init__(leitura, gravidade, valor_base, valor_limite, ordem)
 
     @property

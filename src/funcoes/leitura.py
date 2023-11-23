@@ -6,13 +6,15 @@ import logging
 import traceback
 
 from time import sleep
+from pyModbusTCP.client import ModbusClient
 from pymodbus.constants import Endian
 from pymodbus.payload import BinaryPayloadDecoder as BPD
-from pyModbusTCP.client import ModbusClient
 
 from src.dicionarios.reg import *
 
+
 logger = logging.getLogger("logger")
+
 
 class LeituraModbus:
     def __init__(self, client: "ModbusClient"=None, registrador: "int"=None, escala: "float"=1, fundo_escala: "float"=0, op: "int"=3, descricao: "str"=None) -> "None":

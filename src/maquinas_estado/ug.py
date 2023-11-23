@@ -4,14 +4,18 @@ __description__ = "Este módulo corresponde a implementação da máquina de est
 
 import logging
 
+import src.unidade_geracao as ug
+
 from threading import Thread
 
 from src.dicionarios.const import *
 
+
 logger = logging.getLogger("logger")
 
+
 class State:
-    def __init__(self, parent=None) -> "None":
+    def __init__(self, parent: "ug.UnidadeGeracao"=None) -> "None":
 
         # VERIFICAÇÃO DE ARGUENTOS
 

@@ -5,11 +5,13 @@ __description__ = "Este módulo corresponde a implementação de escrita em regi
 import logging
 import traceback
 
+from pyModbusTCP.client import ModbusClient
 from pymodbus.constants import Endian
 from pymodbus.payload import BinaryPayloadDecoder as BPD
-from pyModbusTCP.client import ModbusClient
+
 
 logger = logging.getLogger("logger")
+
 
 class EscritaModBusBit:
 

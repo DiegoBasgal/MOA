@@ -6,11 +6,11 @@ __description__ = "Este módulo corresponde a implementação da tratativa de lo
 import logging
 
 import src.dicionarios.dict as dct
+import src.mensageiro.voip as vp
+import src.mensageiro.whatsapp as wp
 
 from logging import Handler
 
-from src.mensageiro.voip import Voip
-from src.mensageiro.whatsapp import WhatsApp
 
 class MensageiroHandler(Handler):
 
@@ -23,11 +23,11 @@ class MensageiroHandler(Handler):
 
         log_entry = self.format(record)
 
-        WhatsApp.envio_todos(log_entry)
+        wp.WhatsApp.envio_todos(log_entry)
 
         if record.levelno >= logging.CRITICAL:
-            WhatsApp.envio_todos(f"[MSG] Foi identificado um acionamento Crítico. Acionando VOIP...")
+            wp.WhatsApp.envio_todos(f"[MSG] Foi identificado um acionamento Crítico. Acionando VOIP...")
             dct.voip["EMERGENCIA"][0] = True
-            Voip.acionar_chamada()
+            vp.Voip.acionar_chamada()
 
         return True

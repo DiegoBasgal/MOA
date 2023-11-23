@@ -7,7 +7,9 @@ import pytz
 import logging
 import traceback
 
-import src.bay as bay
+import src.adufas as ad
+import src.usina as usn
+import src.subestacao as se
 import src.tomada_agua as tda
 
 from time import sleep
@@ -15,9 +17,9 @@ from datetime import datetime
 
 from src.dicionarios.const import *
 
-from src.usina import Usina
 
 logger = logging.getLogger("logger")
+
 
 class StateMachine:
     def __init__(self, initial_state) -> "None":
@@ -43,7 +45,7 @@ class StateMachine:
 
 
 class State:
-    def __init__(self, usina: "Usina"=None, *args, **kwargs) -> "None":
+    def __init__(self, usina: "usn.Usina"=None, *args, **kwargs) -> "None":
 
         # VERIFICAÇÃO DE ARGUMENTOS
 
@@ -161,17 +163,17 @@ class ControleEstados(State):
                 else:
                     return ControleDados(self.usn)
 
-            logger.debug("Verificando status da Subestação e Bay...")
-            flag_bay_se = self.usn.verificar_bay_se()
+            logger.debug("Verificando status da Subestação...")
 
             if flag_bay_se == DJS_FALTA_TENSAO:
-                return Emergencia(self.usn) if bay.Bay.aguardar_tensao() == TENSAO_FORA else self
+                return Emergencia(self.usn) if se.Subestacao.aguardar_tensao() == TENSAO_FORA else self
 
             elif flag_bay_se != DJS_OK:
                 self.usn.normalizar_usina()
                 return self
 
             else:
+                ad.Adufas.verificar
                 return ControleReservatorio(self.usn)
 
 
@@ -282,7 +284,7 @@ class ModoManual(State):
         self.usn.ler_valores()
 
         logger.debug(f"[USN] Leitura de Nível:                   {tda.TomadaAgua.nivel_montante.valor:0.3f}")
-        logger.debug(f"[USN] Potência no medidor:                {bay.Bay.potencia_mp.valor:0.3f}")
+        logger.debug(f"[USN] Potência no medidor:                {se.Subestacao:0.3f}")
         logger.debug("")
 
         for ug in self.usn.ugs:

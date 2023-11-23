@@ -92,6 +92,19 @@
             {% endif %}
         </form>
         {% endfor %}
+        <hr style="height:10pt; visibility:hidden;" />
+        <h3 style="margin-bottom: 1px; margin-top: 30px;">UG4:</h3>
+        {% for comando in comandos %}
+        <form method='post' action='/agendamentos/novo_agendamento_rapido/'>
+            {% csrf_token %}
+            {% if comando.id == 402 or comando.id == 403 or comando.id == 404 or comando.id == 405 or comando.id == 406 %}
+            <hr style="margin: 4px; visibility:hidden;" />
+            <input type="hidden" id="comando" name="comando" value="{{ comando.id }}"/>
+            <a>Agendar agora: </a>
+            <input type="submit" value="{{ comando.nome }}."/>
+            {% endif %}
+        </form>
+        {% endfor %}
     </div>
     <br>
     <br>

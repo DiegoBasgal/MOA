@@ -6,20 +6,20 @@ __description__ = "Este módulo corresponde a implementação de Agendamentos da
 import pytz
 import logging
 
-from src.usina import *
+import src.usina as usn
+import src.conectores.banco_dados as bd
 
 from time import sleep
 from datetime import datetime, timedelta
 
 from src.dicionarios.const import *
 
-from src.conectores.banco_dados import BancoDados
-
 
 logger = logging.getLogger("__main__")
 
+
 class Agendamentos:
-    def __init__(self, cfg: "dict"=None, db: "BancoDados"=None, usina=None) -> "None":
+    def __init__(self, cfg: "dict"=None, db: "bd.BancoDados"=None, usina: "usn.Usina"=None) -> "None":
 
         # ATRIBUIÇÂO DE VARIÁVEIS PÚBLICAS
 
@@ -289,6 +289,66 @@ class Agendamentos:
                 novo = agendamento[5].split(":")
                 tempo = (int(novo[0]) * 3600) + (int(novo[1]) * 60)
                 self.usn.ug2.tempo_normalizar = tempo
+
+            except Exception:
+                logger.error(f"[AGN] Valor inválido no agendamento: {agendamento[0]} ({agendamento[3]} é inválido)")
+
+        if agendamento[3] == AGN_UG3_ALTERAR_POT_LIMITE:
+            try:
+                novo = float(agendamento[5].replace(",", "."))
+                self.cfg[f"pot_maxima_ug3"] = novo
+
+            except Exception:
+                logger.error(f"[AGN] Valor inválido no agendamento: {agendamento[0]} ({agendamento[3]} é inválido)")
+
+        if agendamento[3] == AGN_UG3_FORCAR_ESTADO_MANUAL:
+            self.usn.ug3.forcar_estado_manual()
+
+        if agendamento[3] == AGN_UG3_FORCAR_ESTADO_DISPONIVEL:
+            self.usn.ug3.forcar_estado_disponivel()
+
+        if agendamento[3] == AGN_UG3_FORCAR_ESTADO_INDISPONIVEL:
+            self.usn.ug3.forcar_estado_indisponivel()
+
+        if agendamento[3] == AGN_UG3_FORCAR_ESTADO_RESTRITO:
+            self.usn.ug3.forcar_estado_restrito()
+
+        if agendamento[3] == AGN_UG3_TEMPO_ESPERA_RESTRITO:
+            try:
+                self.usn.ug3.normalizacao_agendada = True
+                novo = agendamento[5].split(":")
+                tempo = (int(novo[0]) * 3600) + (int(novo[1]) * 60)
+                self.usn.ug3.tempo_normalizar = tempo
+
+            except Exception:
+                logger.error(f"[AGN] Valor inválido no agendamento: {agendamento[0]} ({agendamento[3]} é inválido)")
+
+        if agendamento[3] == AGN_UG4_ALTERAR_POT_LIMITE:
+            try:
+                novo = float(agendamento[5].replace(",", "."))
+                self.cfg[f"pot_maxima_ug4"] = novo
+
+            except Exception:
+                logger.error(f"[AGN] Valor inválido no agendamento: {agendamento[0]} ({agendamento[3]} é inválido)")
+
+        if agendamento[3] == AGN_UG4_FORCAR_ESTADO_MANUAL:
+            self.usn.ug4.forcar_estado_manual()
+
+        if agendamento[3] == AGN_UG4_FORCAR_ESTADO_DISPONIVEL:
+            self.usn.ug4.forcar_estado_disponivel()
+
+        if agendamento[3] == AGN_UG4_FORCAR_ESTADO_INDISPONIVEL:
+            self.usn.ug4.forcar_estado_indisponivel()
+
+        if agendamento[3] == AGN_UG4_FORCAR_ESTADO_RESTRITO:
+            self.usn.ug4.forcar_estado_restrito()
+
+        if agendamento[3] == AGN_UG4_TEMPO_ESPERA_RESTRITO:
+            try:
+                self.usn.ug4.normalizacao_agendada = True
+                novo = agendamento[5].split(":")
+                tempo = (int(novo[0]) * 3600) + (int(novo[1]) * 60)
+                self.usn.ug4.tempo_normalizar = tempo
 
             except Exception:
                 logger.error(f"[AGN] Valor inválido no agendamento: {agendamento[0]} ({agendamento[3]} é inválido)")

@@ -7,6 +7,7 @@ import mariadb.connections
 
 from datetime import datetime
 
+
 class BancoDados:
     def __init__(self, pool_name: "str"):
 
@@ -153,7 +154,13 @@ class BancoDados:
             "ug1_ultimo_estado = %s, "
             "ug2_pot = %s, "
             "ug2_setpot = %s, "
-            "ug2_ultimo_estado = %s "
+            "ug2_ultimo_estado = %s, "
+            "ug3_pot = %s, "
+            "ug3_setpot = %s, "
+            "ug3_ultimo_estado = %s, "
+            "ug4_pot = %s, "
+            "ug4_setpot = %s, "
+            "ug4_ultimo_estado = %s "
             "WHERE id = 1;",
             tuple(valores)
         )
@@ -174,7 +181,10 @@ class BancoDados:
                     "%s,%s, "
                     "%s,%s, "
                     "%s,%s, "
-                    "%s,%s);",
+                    "%s,%s, "
+                    "%s,%s, "
+                    "%s,%s, "
+                    "%s,%s,);",
                     tuple(valores)
         )
         self.conn.commit()
@@ -187,6 +197,7 @@ class BancoDados:
         self.cursor.execute(
             "INSERT INTO parametros_controleestados "
             "VALUES (%s,%s, "
+                    "%s,%s, "
                     "%s);",
                     tuple(valores)
         )
