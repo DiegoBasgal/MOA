@@ -3,13 +3,17 @@ __author__ = "Diego Basgal", "Henrique Pfeifer"
 __credits__ = ["Lucas Lavratti", ...]
 __description__ = "Este módulo corresponde a implementação da operação do Serviço Auxiliar."
 
+import pytz
 import logging
 import traceback
 
 import src.funcoes.leitura as lei
 import src.dicionarios.dict as dct
+import src.conectores.banco_dados as bd
 import src.funcoes.condicionadores as c
 import src.conectores.servidores as serv
+
+from datetime import datetime
 
 from src.dicionarios.reg import *
 from src.dicionarios.const import *
@@ -21,6 +25,8 @@ logger = logging.getLogger("logger")
 class ServicoAuxiliar:
 
     # ATRIBUIÇÃO DE VARIÁVEIS
+
+    bd: "bd.BancoDados"=None
 
     clp = serv.Servidores.clp
 
@@ -37,6 +43,8 @@ class ServicoAuxiliar:
         da Classe da Usina determinar as ações necessárias.
         """
 
+        autor = 0
+
         if True in (condic.ativo for condic in cls.condicionadores_essenciais):
             condics_ativos = [condic for condics in [cls.condicionadores_essenciais, cls.condicionadores] for condic in condics if condic.ativo]
 
@@ -51,9 +59,16 @@ class ServicoAuxiliar:
                 if condic in cls.condicionadores_ativos:
                     logger.debug(f"[SA]  Descrição: \"{condic.descricao}\", Gravidade: \"{CONDIC_STR_DCT[condic.gravidade] if condic.gravidade in CONDIC_STR_DCT else 'Desconhecida'}\"")
                     continue
+
                 else:
                     logger.warning(f"[SA]  Descrição: \"{condic.descricao}\", Gravidade: \"{CONDIC_STR_DCT[condic.gravidade] if condic.gravidade in CONDIC_STR_DCT else 'Desconhecida'}\"")
                     cls.condicionadores_ativos.append(condic)
+                    cls.bd.update_alarmes([
+                        datetime.now(pytz.timezone("Brazil/East")).replace(tzinfo=None),
+                        condic.gravidade,
+                        condic.descricao,
+                        "X" if autor == 0 else ""
+                    ])
 
             logger.debug("")
             return condics_ativos
@@ -61,6 +76,7 @@ class ServicoAuxiliar:
         else:
             cls.condicionadores_ativos = []
             return []
+
 
     @classmethod
     def verificar_leituras(cls) -> "None":

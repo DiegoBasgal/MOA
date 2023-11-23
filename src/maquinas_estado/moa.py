@@ -39,8 +39,8 @@ class StateMachine:
             self.state = self.state.run()
 
         except Exception:
-            logger.exception(f"Erro na execução do Estado: {self.state}")
-            logger.exception(f"Traceback: {traceback.format_exc()}")
+            logger.error(f"Erro na execução do Estado: {self.state}")
+            logger.debug(traceback.format_exc())
             self.state = FalhaCritica()
 
 
@@ -55,7 +55,6 @@ class State:
         else:
             self.usn = usina
 
-
         # ATRIBUIÇÃO DE VARIÁVEIS PÚBLICAS
 
         self.args = args
@@ -63,12 +62,14 @@ class State:
 
         self.usn.estado_moa = MOA_SM_NAO_INICIALIZADO
 
+
     def get_time(self) -> "datetime":
         """
         Função para obter data e hora atual.
         """
 
         return datetime.now(pytz.timezone("Brazil/East")).replace(tzinfo=None)
+
 
     def run(self) -> "object":
         """
@@ -95,6 +96,7 @@ class Pronto(State):
 
         self.usn.estado_moa = MOA_SM_PRONTO
 
+
     def run(self) -> "State":
         """
         Função para execução do passo da Máquina de Estados do MOA.
@@ -114,6 +116,7 @@ class ControleEstados(State):
         # ATRIBUIÇÃO DE VARIÁVEIS PÚBLICAS
 
         self.usn.estado_moa = MOA_SM_CONTROLE_ESTADOS
+
 
     def run(self) -> "State":
         """
@@ -149,7 +152,7 @@ class ControleEstados(State):
 
         else:
             logger.debug("Verificando condicionadores...")
-            flag_condic= self.usn.verificar_condicionadores()
+            flag_condic = self.usn.verificar_condicionadores()
 
             if flag_condic == CONDIC_INDISPONIBILIZAR:
                 return Emergencia(self.usn)
@@ -165,10 +168,11 @@ class ControleEstados(State):
 
             logger.debug("Verificando status da Subestação...")
 
-            if flag_bay_se == DJS_FALTA_TENSAO:
+            if not se.Subestacao.verificar_tensao_trifasica():
                 return Emergencia(self.usn) if se.Subestacao.aguardar_tensao() == TENSAO_FORA else self
 
-            elif flag_bay_se != DJS_OK:
+            elif not se.Subestacao.fechar_dj_linha():
+                self.usn.normalizar_forcado = True
                 self.usn.normalizar_usina()
                 return self
 
@@ -184,6 +188,7 @@ class ControleReservatorio(State):
         # ATRIBUIÇÃO DE VARIÁVEIS PÚBLICAS
 
         self.usn.estado_moa = MOA_SM_CONTROLE_RESERVATORIO
+
 
     def run(self) -> "State":
         """
@@ -209,6 +214,7 @@ class ControleDados(State):
 
         self.usn.estado_moa = MOA_SM_CONTROLE_DADOS
 
+
     def run(self) -> "State":
         """
         Função para execução do passo da Máquina de Estados do MOA.
@@ -230,6 +236,7 @@ class ControleAgendamentos(State):
         # ATRIBUIÇÃO DE VARIÁVEIS PÚBLICAS
 
         self.usn.estado_moa = MOA_SM_CONTROLE_AGENDAMENTOS
+
 
     def run(self) -> "State":
         """
@@ -267,6 +274,7 @@ class ModoManual(State):
 
         logger.info("Usina em modo manual. Para retornar a operação autônoma, acionar via painel ou página WEB")
 
+
     def run(self) -> "State":
         """
         Função para execução do passo da Máquina de Estados do MOA.
@@ -284,7 +292,7 @@ class ModoManual(State):
         self.usn.ler_valores()
 
         logger.debug(f"[USN] Leitura de Nível:                   {tda.TomadaAgua.nivel_montante.valor:0.3f}")
-        logger.debug(f"[USN] Potência no medidor:                {se.Subestacao:0.3f}")
+        logger.debug(f"[USN] Potência no medidor:                {se.Subestacao.medidor_usina.valor:0.3f}")
         logger.debug("")
 
         for ug in self.usn.ugs:
@@ -294,10 +302,12 @@ class ModoManual(State):
             logger.debug("")
             ug.setpoint = ug.leitura_potencia
 
-        self.usn.controle_ie = (self.usn.ug1.leitura_potencia + self.usn.ug2.leitura_potencia) / self.usn.cfg["pot_maxima_alvo"]
+        self.usn.controle_ie = (self.usn.ug1.leitura_potencia + self.usn.ug2.leitura_potencia + self.usn.ug3.leitura_potencia + self.usn.ug4.leitura_potencia) / self.usn.cfg["pot_maxima_alvo"]
         self.usn.controle_i = max(min(self.usn.controle_ie - (self.usn.controle_i * self.usn.cfg["ki"]) - self.usn.cfg["kp"] * tda.TomadaAgua.erro_nivel - self.usn.cfg["kd"] * (tda.TomadaAgua.erro_nivel - tda.TomadaAgua.erro_nivel_anterior), 0.8), 0)
 
         self.usn.escrever_valores()
+
+        sleep(1)
 
         if self.usn.modo_autonomo:
             logger.debug("Comando acionado: \"Habilitar modo autônomo\"")
@@ -319,6 +329,7 @@ class Emergencia(State):
         # FINALIZAÇÃO DO __INIT__
 
         logger.critical(f"ATENÇÃO! Usina entrado em estado de emergência. (Horário: {self.get_time()})")
+
 
     def run(self) -> "State":
         """

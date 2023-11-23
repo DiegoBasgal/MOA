@@ -3,12 +3,16 @@ __author__ = "Diego Basgal", "Henrique Pfeifer"
 __credits__ = ["Lucas Lavratti", ...]
 __description__ = "Este módulo corresponde a implementação da operação da Tomada da Água."
 
+import pytz
 import logging
 import traceback
 
 import src.funcoes.leitura as lei
+import src.conectores.banco_dados as bd
 import src.funcoes.condicionadores as c
 import src.conectores.servidores as serv
+
+from datetime import datetime
 
 from src.dicionarios.reg import *
 from src.dicionarios.const import *
@@ -24,6 +28,9 @@ class TomadaAgua:
     clp = serv.Servidores.clp
 
     cfg: "dict" = {}
+
+    bd: "bd.BancoDados" = None
+
     aguardando_reservatorio: "int" = 0
 
     nivel_montante = lei.LeituraModbus(
@@ -52,6 +59,7 @@ class TomadaAgua:
         cls.erro_nivel_anterior = cls.erro_nivel
         cls.erro_nivel = cls.nivel_montante_anterior - cls.cfg["nv_alvo"]
 
+
     @classmethod
     def verificar_condicionadores(cls) -> "list[c.CondicionadorBase]":
         """
@@ -60,6 +68,8 @@ class TomadaAgua:
         Verifica os condicionadores ativos e retorna lista com os mesmos para a função de verificação
         da Classe da Usina determinar as ações necessárias.
         """
+
+        autor = 0
 
         if True in (condic.ativo for condic in cls.condicionadores_essenciais):
             condics_ativos = [condic for condics in [cls.condicionadores_essenciais, cls.condicionadores] for condic in condics if condic.ativo]
@@ -75,9 +85,16 @@ class TomadaAgua:
                 if condic in cls.condicionadores_ativos:
                     logger.debug(f"[TDA] Descrição: \"{condic.descricao}\", Gravidade: \"{CONDIC_STR_DCT[condic.gravidade] if condic.gravidade in CONDIC_STR_DCT else 'Desconhecida'}\"")
                     continue
+
                 else:
                     logger.warning(f"[TDA] Descrição: \"{condic.descricao}\", Gravidade: \"{CONDIC_STR_DCT[condic.gravidade] if condic.gravidade in CONDIC_STR_DCT else 'Desconhecida'}\"")
                     cls.condicionadores_ativos.append(condic)
+                    cls.bd.update_alarmes([
+                        datetime.now(pytz.timezone("Brazil/East")).replace(tzinfo=None),
+                        condic.gravidade,
+                        condic.descricao,
+                        "X" if autor == 0 else ""
+                    ])
 
             logger.debug("")
             return condics_ativos
@@ -85,6 +102,7 @@ class TomadaAgua:
         else:
             cls.condicionadores_ativos = []
             return []
+
 
     @classmethod
     def verificar_leituras(cls) -> "None":

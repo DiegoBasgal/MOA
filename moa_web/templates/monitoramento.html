@@ -72,6 +72,29 @@
                 </tr>
             </table>
 
+        <div style="margin-top: 40px; margin-bottom: 20px; justify-content: center; display: flex;">
+            <table>
+                <tr>
+                    <td style="text-align: center;">
+                        <label style="font-size: 22px;"><b>MOA: </b></label>
+                    </td>
+                </tr>
+                <tr>
+                    <td style="text-align: center;">
+                        <a style="margin-left: 3px;">Emergencia:  {{ emergencia }}</a><br>
+                    </td>
+                </tr>
+                <tr>
+                    <td style="text-align: center;">
+                        <a style="margin-left: 3px;">Aguardando Reservatório: {{ aguardando_reservatorio }}</a><br>
+                    </td>
+                </tr>
+                <tr>
+                    <td style="text-align: center;">
+                        <a style="margin-left: 3px;">Estado CLP:&ensp;{{ usina.clp_moa_ip }}</a>
+                    </td>
+                </tr>
+            </table>
             {% if CLP_Status == True %}
                 (<label style="margin-left: 3px; color: green;">On-line</label> )
             {% endif %}
@@ -154,51 +177,193 @@
                 <table style="margin-bottom: 1px;">
                     <tr>
                         <td>
-                            <label style="font-size: 17px;"><b>UG1: </b></label>
+                            <label style="margin-left: 3px; font-size: 18px;"><b>Bay: </b></label>
                         </td>
                         <td>
-                            {% if ug1_state == 0 %}
-                                <label style="font-size: 17px; margin-left: 5px; color: orange;">Manual</label>
-                            {% endif %}
-                            {% if ug1_state == 1 %}
-                                <label style="font-size: 17px; margin-left: 5px; color: green;">Disponível</label>
-                            {% endif %}
-                            {% if ug1_state == 2 %}
-                                <label style="font-size: 17px; margin-left: 5px; color: yellow;">Restrito</label>
-                            {% endif %}
-                            {% if ug1_state == 3 %}
-                                <label style="font-size: 17px; margin-left: 5px; color: red;">Indisponível</label>
-                            {% endif %}
-                            {% if ug1_state == 4 %}
-                                <label style="font-size: 17px; margin-left: 5px; color: red;">Inconsistente</label>
-                            {% endif %}
-                            {% if ug1_state == 99 %}
-                                <label style="font-size: 17px; margin-left: 5px; color: red;">Sem comunicação</label>
-                            {% endif %}
+                            <label style="margin-left: 3px; font-size: 18px;"><b>Subestação: </b></label>
+                        </td>
+                        <td>
+                            <label style="margin-left: 3px; font-size: 18px;"><b>Tomada Água:</b></label>
+                        </td>
+                        <td>
+                            <table>
+                                <tr>
+                                    <td>
+                                        <label style="margin-right: 3px; font-size: 17px;"><b>UG1: </b></label>
+                                    </td>
+                                    <td>
+                                        {% if usina.ug1_ultimo_estado == 0 %}
+                                        <label style="font-size: 17px; color: orange;">Manual</label>
+                                        {% endif %}
+                                        {% if usina.ug1_ultimo_estado == 1 %}
+                                        <label style="font-size: 17px; color: green;">Disponível</label>
+                                        {% endif %}
+                                        {% if usina.ug1_ultimo_estado == 2 %}
+                                        <label style="font-size: 17px; color: yellow;">Restrito</label>
+                                        {% endif %}
+                                        {% if usina.ug1_ultimo_estado == 3 %}
+                                        <label style="font-size: 17px; color: red;">Indisponível</label>
+                                        {% endif %}
+                                        {% if usina.ug1_ultimo_estado == 4 %}
+                                        <label style="font-size: 17px; color: red;">Inconsistente</label>
+                                        {% endif %}
+                                        {% if usina.ug1_ultimo_estado == 99 %}
+                                        <label style="font-size: 17px; color: red;">Sem comunicação</label>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                            </table>
+                        </td>
+                        <td>
+                            <table>
+                                <tr>
+                                    <td>
+                                        <label style="margin-right: 3px; font-size: 17px;"><b>UG2: </b></h3>
+                                    </td>
+                                    <td>
+                                        {% if usina.ug2_ultimo_estado == 0 %}
+                                        <label style="font-size: 17px; color: orange;">Manual</label>
+                                        {% endif %}
+                                        {% if usina.ug2_ultimo_estado == 1 %}
+                                        <label style="font-size: 17px; color: green;">Disponível</label>
+                                        {% endif %}
+                                        {% if usina.ug2_ultimo_estado == 2 %}
+                                        <label style="font-size: 17px; color: yellow;">Restrito</label>
+                                        {% endif %}
+                                        {% if usina.ug2_ultimo_estado == 3 %}
+                                        <label style="font-size: 17px; color: red;">Indisponível</label>
+                                        {% endif %}
+                                        {% if usina.ug2_ultimo_estado == 4 %}
+                                        <label style="font-size: 17px; color: red;">Inconsistente</label>
+                                        {% endif %}
+                                        {% if usina.ug2_ultimo_estado == 99 %}
+                                        <label style="font-size: 17px; color: red;">Sem comunicação</label>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                            </table>
                         </td>
                     </tr>
-                </table>
-                <table>
                     <tr>
-                        <td style="padding-left: 1px;">
-                            <label>Etapa:</label>
+                        <td>
+                            <a style="margin-left: 3px; margin-right: 3px;">Disjuntor 52L:</a>
+                            {% if bay_status_dj == 0 %}
+                            <label style="color: green; font-size: 17px;">Aberto</label>
+                            {% endif %}
+                            {% if bay_status_dj == 1 %}
+                            <label style="color: red; font-size: 17px;">Fechado</label>
+                            {% endif %}
+                            {% if bay_status_dj == 2 %}
+                            <label style="color: orange; font-size: 17px;">Inconsistente</label>
+                            {% endif %}
                         </td>
                         <td>
-                            {% if ug1_etapa == 1 %}
-                            <label style="font-size: 15px; margin-left: 3px; color: yellow;">Parando</label>
+                            <a style="margin-left: 3px; margin-right: 3px;">Disjuntor 52L:</a>
+                            {% if se_status_dj == 0 %}
+                            <label style="color: green; font-size: 17px;">Aberto</label>
                             {% endif %}
-                            {% if ug1_etapa == 2 %}
-                            <label style="font-size: 15px; margin-left: 3px; color: orange;">Parada</label>
+                            {% if se_status_dj == 1 %}
+                            <label style="color: red; font-size: 17px;">Fechado</label>
                             {% endif %}
-                            {% if ug1_etapa == 3 %}
-                                <label style="font-size: 15px; margin-left: 3px; color: yellow;">Sincronizando</label>
+                            {% if se_status_dj == 2 %}
+                            <label style="color: orange; font-size: 17px;">Inconsistente</label>
                             {% endif %}
-                            {% if ug1_etapa == 4 %}
-                                <label style="font-size: 15px; margin-left: 3px; color: green;">Sincronizada</label>
+                        </td>
+                        <td>
+                            <a style="margin-top: 1px; margin-left: 3px; margin-right: 3px;">Nível Alvo: {{ nv_alvo }} m</a>
+                        </td>
+                        <td>
+                            <table>
+                                <tr>
+                                    <td>
+                                        <a style="margin-top: 1px; margin-right: 3px;">Etapa:</a>
+                                    </td>
+                                    <td>
+                                        {% if ug1_etapa == 1 %}
+                                        <label style="font-size: 15px; color: orange;">Parada</label>
+                                        {% endif %}
+                                        {% if ug1_etapa == 2 %}
+                                        <label style="font-size: 15px; color: yellow;">Parando</label>
+                                        {% endif %}
+                                        {% if ug1_etapa == 3 %}
+                                        <label style="font-size: 15px; color: yellow;">Sincronizando</label>
+                                        {% endif %}
+                                        {% if ug1_etapa == 4 %}
+                                        <label style="font-size: 15px; color: green;">Sincronizada</label>
+                                        {% endif %}
+                                        {% if ug1_etapa == 99 %}
+                                        <label style="font-size: 15px; color: red;">Inconsistente</label>
+                                        {% endif %}
+                                        {% if ug1_etapa == 999 %}
+                                        <label style="font-size: 15px; color: red;">???</label>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                            </table>
+                        </td>
+                        <td>
+                            <table>
+                                <tr>
+                                    <td>
+                                        <a style="margin-top: 1px; margin-right: 3px;">Etapa:</a>
+                                    </td>
+                                    <td>
+                                        {% if ug2_etapa == 1 %}
+                                        <label style="font-size: 15px; color: orange;">Parada</label>
+                                        {% endif %}
+                                        {% if ug2_etapa == 2 %}
+                                        <label style="font-size: 15px; color: yellow;">Parando</label>
+                                        {% endif %}
+                                        {% if ug2_etapa == 3 %}
+                                        <label style="font-size: 15px; color: yellow;">Sincronizando</label>
+                                        {% endif %}
+                                        {% if ug2_etapa == 4 %}
+                                        <label style="font-size: 15px; color: green;">Sincronizada</label>
+                                        {% endif %}
+                                        {% if ug2_etapa == 99 %}
+                                        <label style="font-size: 15px; color: red;">Inconsistente</label>
+                                        {% endif %}
+                                        {% if ug2_etapa == 999 %}
+                                        <label style="font-size: 15px; color: red;">???</label>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                            </table>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <a style="margin-top: 1px; margin-left: 3px;">Tensão VAB: {{ bay_lt_a }} kV</a><br>
+                        </td>
+                        <td>
+                            <a style="margin-top: 1px; margin-left: 3px;">Tensão VAB: {{ se_lt_a }} V</a><br>
+                        </td>
+                        <td>
+                            <a style="margin-left: 3px;">Nível Montante:</a>
+                            {% if tag == 0 %}
+                            <label style="color: green">{{ nv_montante }}</label>
+                            <a> m</a>
                             {% endif %}
-                            {% if ug1_etapa == 99 %}
-                                <label style="font-size: 15px; margin-left: 3px; color: red;">Inconsistente</label>
+                            {% if tag == 1 %}
+                                <label style="color: yellow">{{ nv_montante }}</label>
+                                <a> m</a>
                             {% endif %}
+                            {% if tag == 2  %}
+                                <label style="color: red">{{ nv_montante }}</label>
+                                <a> m</a>
+                            {% endif %}
+                            {% if tag == 99  %}
+                                <label style="color: red">???</label>
+                                <a> m</a>
+                            {% endif %}
+                        </td>
+                        <td>
+                            <label style="margin-left: 3px;">Potência:</label>
+                            <label>{{ pot_ug1 | floatformat:0 }} kW</label>
+                        </td>
+                        <td>
+                            <label style="margin-left: 3px;">Potência:</label>
+                            <label>{{ pot_ug2 | floatformat:0 }} kW</label>
                         </td>
                     </tr>
                 </table>
@@ -213,25 +378,97 @@
                 <table>
                     <tr>
                         <td>
-                            <label style="font-size: 17px;"><b>UG2: </b></h3>
+                            <a style="margin-top: 1px; margin-left: 3px;">Tensão VBC: {{ bay_lt_b }} kV</a><br>
                         </td>
                         <td>
-                            {% if ug2_state == 0 %}
+                            <a style="margin-top: 1px; margin-left: 3px;">Tensão VBC: {{ se_lt_b }} V</a><br>
+                        </td>
+                        <td>
+                            <a style="margin-top: 1px; margin-left: 3px;">Comporta 1: </a>
+                            {% if cp1_etapa == 0 %}
+                            <label style="font-size: 15px; color: green;">Fechada</label>
+                            {% endif %}
+                            {% if cp1_etapa == 2 %}
+                            <label style="font-size: 15px; color: yellow;">Cracking</label>
+                            {% endif %}
+                            {% if cp1_etapa == 1 %}
+                            <label style="font-size: 15px; color: red;">Aberta</label>
+                            {% endif %}
+                            {% if cp1_etapa == 5 %}
+                            <label style="font-size: 15px; color: blue;">Remoto</label>
+                            {% endif %}
+                            {% if cp1_etapa == 99 %}
+                            <label style="font-size: 15px; color: red;">???</label>
+                            {% endif %}
+                        </td>
+                        <td>
+                            <label style="margin-left: 3px;">Setpoint:</label>
+                            <label>{{ setpot_ug1 | floatformat:0 }} kW</label>
+                        </td>
+                        <td>
+                            <label style="margin-left: 3px;">Setpoint:</label>
+                            <label>{{ setpot_ug2 | floatformat:0 }} kW</label>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <a style="margin-top: 1px; margin-left: 3px;">Tensão VCA: {{ bay_lt_c }} kV</a>
+                        </td>
+                        <td>
+                            <a style="margin-top: 1px; margin-left: 3px;">Tensão VCA: {{ se_lt_c }} V</a>
+                        </td>
+                        <td>
+                            <a style="margin-top: 1px; margin-left: 3px;">Comporta 2: </a>
+                            {% if cp2_etapa == 0 %}
+                            <label style="font-size: 15px; color: green;">Fechada</label>
+                            {% endif %}
+                            {% if cp2_etapa == 2 %}
+                            <label style="font-size: 15px; color: yellow;">Cracking</label>
+                            {% endif %}
+                            {% if cp2_etapa == 1 %}
+                            <label style="font-size: 15px; color: red;">Aberta</label>
+                            {% endif %}
+                            {% if cp2_etapa == 99 %}
+                            <label style="font-size: 15px; color: red;">???</label>
+                            {% endif %}
+                            {% if cp2_remoto == 5 %}
+                            <label>(<b style="font-size: 15px; color: blue;">R</b>)</label>
+                            {% endif %}
+                        </td>
+                        <td>
+                            <label style="margin-left: 3px;">Horas máquina:</label>
+                            <label>{{ tempo_ug1 | floatformat:2 }} h</label>
+                        </td>
+                        <td>
+                            <label style="margin-left: 3px;">Horas máquina:</label>
+                            <label>{{ tempo_ug2 | floatformat:2 }} h</label>
+                        </td>
+                    </tr>
+                </table>
+            </div>
+            <div style="margin-top: 6px; float: left; margin-left: 35px;">
+                <table>
+                    <tr>
+                        <td>
+                            <label style="font-size: 17px;"><b>UG3: </b></h3>
+                        </td>
+                        <td>
+                            {% if ug3_state == 0 %}
                                 <label style="font-size: 17px; margin-left: 5px; color: orange;">Manual</label>
                             {% endif %}
-                            {% if ug2_state == 1 %}
+                            {% if ug3_state == 1 %}
                                 <label style="font-size: 17px; margin-left: 5px; color: green;">Disponível</label>
                             {% endif %}
-                            {% if ug2_state == 2 %}
+                            {% if ug3_state == 2 %}
                                 <label style="font-size: 17px; margin-left: 5px; color: yellow;">Restrito</label>
                             {% endif %}
-                            {% if ug2_state == 3 %}
+                            {% if ug3_state == 3 %}
                                 <label style="font-size: 17px; margin-left: 5px; color: red;">Indisponível</label>
                             {% endif %}
-                            {% if ug2_state == 4 %}
+                            {% if ug3_state == 4 %}
                                 <label style="font-size: 17px; margin-left: 5px; color: red;">Inconsistente</label>
                             {% endif %}
-                            {% if ug2_state == 99 %}
+                            {% if ug3_state == 99 %}
                                 <label style="font-size: 17px; margin-left: 5px; color: red;">Sem comunicação</label>
                             {% endif %}
                         </td>
@@ -243,30 +480,89 @@
                             <label>Etapa:</label>
                         </td>
                         <td>
-                            {% if ug2_etapa == 1 %}
+                            {% if ug3_etapa == 1 %}
                             <label style="font-size: 15px; margin-left: 3px; color: yellow;">Parando</label>
                             {% endif %}
-                            {% if ug2_etapa == 2 %}
+                            {% if ug3_etapa == 2 %}
                             <label style="font-size: 15px; margin-left: 3px; color: orange;">Parada</label>
                             {% endif %}
-                            {% if ug2_etapa == 3 %}
+                            {% if ug3_etapa == 3 %}
                             <label style="font-size: 15px; margin-left: 3px; color: yellow;">Sincronizando</label>
                             {% endif %}
-                            {% if ug2_etapa == 4 %}
+                            {% if ug3_etapa == 4 %}
                                 <label style="font-size: 15px; margin-left: 3px; color: green;">Sincronizada</label>
                             {% endif %}
-                            {% if ug2_etapa == 99 %}
+                            {% if ug3_etapa == 99 %}
                                 <label style="font-size: 15px; margin-left: 3px; color: red;">Inconsistente</label>
                             {% endif %}
                         </td>
                     </tr>
                 </table>
                 <label style="margin-left: 3px;">Potência:</label>
-                <label>{{ pot_ug2 | floatformat:0 }} kW</label><br>
+                <label>{{ pot_ug3 | floatformat:0 }} kW</label><br>
                 <label style="margin-left: 3px;">Setpoint:</label>
-                <label>{{ setpot_ug2 | floatformat:0 }} kW</label><br>
+                <label>{{ setpot_ug3 | floatformat:0 }} kW</label><br>
                 <label style="margin-left: 3px;">Horas máquina:</label>
-                <label>{{ tempo_ug2 | floatformat:2 }} h</label><br><br>
+                <label>{{ tempo_ug3 | floatformat:2 }} h</label><br><br>
+            </div>
+            <div style="margin-top: 6px; float: left; margin-left: 35px;">
+                <table>
+                    <tr>
+                        <td>
+                            <label style="font-size: 17px;"><b>UG4: </b></h3>
+                        </td>
+                        <td>
+                            {% if ug4_state == 0 %}
+                                <label style="font-size: 17px; margin-left: 5px; color: orange;">Manual</label>
+                            {% endif %}
+                            {% if ug4_state == 1 %}
+                                <label style="font-size: 17px; margin-left: 5px; color: green;">Disponível</label>
+                            {% endif %}
+                            {% if ug4_state == 2 %}
+                                <label style="font-size: 17px; margin-left: 5px; color: yellow;">Restrito</label>
+                            {% endif %}
+                            {% if ug4_state == 3 %}
+                                <label style="font-size: 17px; margin-left: 5px; color: red;">Indisponível</label>
+                            {% endif %}
+                            {% if ug4_state == 4 %}
+                                <label style="font-size: 17px; margin-left: 5px; color: red;">Inconsistente</label>
+                            {% endif %}
+                            {% if ug4_state == 99 %}
+                                <label style="font-size: 17px; margin-left: 5px; color: red;">Sem comunicação</label>
+                            {% endif %}
+                        </td>
+                    </tr>
+                </table>
+                <table>
+                    <tr>
+                        <td style="padding-left: 1px;">
+                            <label>Etapa:</label>
+                        </td>
+                        <td>
+                            {% if ug4_etapa == 1 %}
+                            <label style="font-size: 15px; margin-left: 3px; color: yellow;">Parando</label>
+                            {% endif %}
+                            {% if ug4_etapa == 2 %}
+                            <label style="font-size: 15px; margin-left: 3px; color: orange;">Parada</label>
+                            {% endif %}
+                            {% if ug4_etapa == 3 %}
+                            <label style="font-size: 15px; margin-left: 3px; color: yellow;">Sincronizando</label>
+                            {% endif %}
+                            {% if ug4_etapa == 4 %}
+                                <label style="font-size: 15px; margin-left: 3px; color: green;">Sincronizada</label>
+                            {% endif %}
+                            {% if ug4_etapa == 99 %}
+                                <label style="font-size: 15px; margin-left: 3px; color: red;">Inconsistente</label>
+                            {% endif %}
+                        </td>
+                    </tr>
+                </table>
+                <label style="margin-left: 3px;">Potência:</label>
+                <label>{{ pot_ug4 | floatformat:0 }} kW</label><br>
+                <label style="margin-left: 3px;">Setpoint:</label>
+                <label>{{ setpot_ug4 | floatformat:0 }} kW</label><br>
+                <label style="margin-left: 3px;">Horas máquina:</label>
+                <label>{{ tempo_ug4 | floatformat:2 }} h</label><br><br>
             </div>
             <div style="margin-top: 6px; float: left; margin-left: 35px;">
                 <table>
@@ -387,12 +683,11 @@
                 <label>{{ tempo_ug4 | floatformat:2 }} h</label><br><br>
             </div>
         </div>
+        <br>
     </div>
-    <br>
-    <br>
-    <script type = "text/JavaScript">
+    <!-- <script type = "text/JavaScript">
         setTimeout("location.reload(true);", 2000);
-    </script>
+    </script> -->
 </body>
 {% endblock content %}
 </html>

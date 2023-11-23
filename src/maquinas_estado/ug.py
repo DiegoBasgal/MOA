@@ -34,6 +34,7 @@ class State:
 
         pass
 
+
 class StateManual(State):
     def __init__(self, parent) -> "None":
         super().__init__(parent)
@@ -77,7 +78,7 @@ class StateIndisponivel(State):
         logger.debug("")
         logger.info(f"[UG{self.parent.id}] Entrando no estado:                 \"Indisponível\". Para retornar a operação autônoma, favor agendar na interface web")
         logger.debug(f"[UG{self.parent.id}] Tentativas de normalização:         {self.parent.tentativas_normalizacao}/{self.parent.limite_tentativas_normalizacao}")
-
+ 
     def step(self) -> "State":
         """
         Função para execução do passo da Máquina de Estados no modo Indisponível.
@@ -145,6 +146,7 @@ class StateRestrito(State):
         else:
             logger.debug(f"[UG{self.parent.id}] Aguardando normalização sem tempo pré-definido")
             return self
+
 
 class StateDisponivel(State):
     def __init__(self, parent) -> "None":

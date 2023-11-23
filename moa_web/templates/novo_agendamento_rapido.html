@@ -9,6 +9,18 @@
             font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif
         }
 
+        #input {
+            background-color: white;
+        }
+
+        input {
+            background-color: rgb(168, 168, 168);
+        }
+
+        select {
+            background-color: rgb(168, 168, 168);
+        }
+
         h1 {
             color: white;
         }
@@ -39,58 +51,69 @@
     </style>
 </head>
 <body>
+    <h1>Novo agendamento</h1>
     <div id="content_container">
-        <h1 style="margin-bottom: 1px;">Novo agendamento rápido</h1>
-        <h3 style="margin-bottom: 1px; margin-top: 30px;">Comandos gerais:</h3>
-        {% for comando in comandos %}
-        <form method='post' action='/agendamentos/novo_agendamento_rapido/'>
+        <form method='post' action='/agendamentos/novo_agendamento/'>
             {% csrf_token %}
-            {% if comando.id == 1 or comando.id == 2 or comando.id == 3 or comando.id == 4 or comando.id == 5 or comando.id == 777 %}
-            <hr style="margin: 4px; visibility:hidden;" />
-            <input type="hidden" id="comando" name="comando" value="{{ comando.id }}"/>
-            <a>Agendar agora: </a>
-            <input type="submit" value="{{ comando.nome }}."/>
-            {% endif %}
+            <a>Data:</a>
+            <select id="dia" name="dia">
+                {% for i in range_dias %}
+                    <option value="{{ i }}" {% if i == dia %}selected{% endif %}>{{ i }}</option>
+                {% endfor %}
+            </select>
+            /
+            <select id="mes" name="mes">
+                {% for i in range_mes %}
+                    <option value="{{ i }}" {% if i == mes %}selected{% endif %}>{{ i }}</option>
+                {% endfor %}
+            </select>
+            /
+            <select id="ano" name="ano">
+                {% for i in range_ano %}
+                    <option value="{{ i }}" {% if i == ano %}selected{% endif %}>{{ i }}</option>
+                {% endfor %}
+            </select>
+            </br>
+            </br>
+        
+            <a>Horário:</a>
+            <select id="hora" name="hora">
+                {% for i in range_hora %}
+                    <option value="{{ i }}" {% if i == hora %}selected{% endif %}>{{ i }}</option>
+                {% endfor %}
+            </select>
+            :
+            <select id="minuto" name="minuto">
+                {% for i in range_minuto %}
+                    <option value="{{ i }}" {% if i == prox_minuto %}selected{% endif %}>{{ i }}</option>
+                {% endfor %}
+            </select>
+        
+            </br>
+            </br>
+        
+            <a>Comando:</a>
+            <select id="comando" name="comando">
+                {% for comando in comandos %}
+                    <option value="{{ comando.id }}">{{ comando.nome }}</option>
+                {% endfor %}
+            </select>
+            </br>
+            </br>
+        
+            <a>Campo auxiliar:</a>
+            <input id="campo_auxiliar" name="campo_auxiliar" type="text"/>
+            </br>
+            </br>
+        
+            <a>Observações:</a>
+            <input id="observacao" name="observacao" type="text"/>
+            </br>
+            </br>
+            <a>Criar: </a>
+            <input id="input" type="submit" value="Criar"/>
         </form>
-        {% endfor %} 
-        <hr style="height:18pt; visibility:hidden;" />
-        <h3 style="margin-bottom: 1px; margin-top: 30px;">UG1:</h3>
-        {% for comando in comandos %}
-        <form method='post' action='/agendamentos/novo_agendamento_rapido/'>
-            {% csrf_token %}
-            {% if comando.id == 102 or comando.id == 103 or comando.id == 104 or comando.id == 105 or comando.id == 106 %}
-            <hr style="margin: 4px; visibility:hidden;" />
-            <input type="hidden" id="comando" name="comando" value="{{ comando.id }}"/>
-            <a>Agendar agora: </a>
-            <input type="submit" value="{{ comando.nome }}."/>
-            {% endif %}
-        </form>
-        {% endfor %}
-        <hr style="height:10pt; visibility:hidden;" />
-        <h3 style="margin-bottom: 1px; margin-top: 30px;">UG2:</h3>
-        {% for comando in comandos %}
-        <form method='post' action='/agendamentos/novo_agendamento_rapido/'>
-            {% csrf_token %}
-            {% if comando.id == 202 or comando.id == 203 or comando.id == 204 or comando.id == 205 or comando.id == 206 %}
-            <hr style="margin: 4px; visibility:hidden;" />
-            <input type="hidden" id="comando" name="comando" value="{{ comando.id }}"/>
-            <a>Agendar agora: </a>
-            <input type="submit" value="{{ comando.nome }}."/>
-            {% endif %}
-        </form>
-        {% endfor %}
-        <hr style="height:10pt; visibility:hidden;" />
-        <h3 style="margin-bottom: 1px; margin-top: 30px;">UG3:</h3>
-        {% for comando in comandos %}
-        <form method='post' action='/agendamentos/novo_agendamento_rapido/'>
-            {% csrf_token %}
-            {% if comando.id == 302 or comando.id == 303 or comando.id == 304 or comando.id == 305 or comando.id == 306 %}
-            <hr style="margin: 4px; visibility:hidden;" />
-            <input type="hidden" id="comando" name="comando" value="{{ comando.id }}"/>
-            <a>Agendar agora: </a>
-            <input type="submit" value="{{ comando.nome }}."/>
-            {% endif %}
-        </form>
+<<<<<<< HEAD
         {% endfor %}
         <hr style="height:10pt; visibility:hidden;" />
         <h3 style="margin-bottom: 1px; margin-top: 30px;">UG4:</h3>
@@ -105,10 +128,9 @@
             {% endif %}
         </form>
         {% endfor %}
+=======
+>>>>>>> 1e023b84c2c6bb24b8d54491332f9d917de7798a
     </div>
-    <br>
-    <br>
+    {% endblock content %}
 </body>
 </html>
-{% endblock content %}
-

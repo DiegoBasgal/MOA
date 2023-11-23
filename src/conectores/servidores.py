@@ -50,6 +50,7 @@ class Servidores:
     clp["UG3"] = ModbusClient(
         host=d.ips["UG3_ip"],
         port=d.ips["UG3_porta"],
+<<<<<<< HEAD
         unit_id=1,
         timeout=5
     )
@@ -59,6 +60,17 @@ class Servidores:
         unit_id=1,
         timeout=5
     )
+=======
+        unit_id=1,
+        timeout=5
+    )
+    clp["UG4"] = ModbusClient(
+        host=d.ips["UG4_ip"],
+        port=d.ips["UG4_porta"],
+        unit_id=1,
+        timeout=5
+    )
+>>>>>>> 1e023b84c2c6bb24b8d54491332f9d917de7798a
     clp["MOA"] = ModbusClient(
         host=d.ips["MOA_ip"],
         port=d.ips["MOA_porta"],
@@ -77,6 +89,7 @@ class Servidores:
 
         return True if (subprocess.call(["ping", "-c", "1", "-w", "1", host], stdout=subprocess.PIPE) == 0 for _ in range(2)) else False
 
+
     @classmethod
     def open_all(cls) -> "None":
         """
@@ -89,6 +102,7 @@ class Servidores:
                 logger.error(f"[CLI] Erro ao iniciar conexão com o CLP - {n}")
         logger.debug("[CLI] Conexões inciadas.")
 
+
     @classmethod
     def close_all(cls) -> "None":
         """
@@ -96,9 +110,11 @@ class Servidores:
         """
 
         logger.debug("[CLI] Encerrando conexões...")
+
         for _ , clp in cls.clp.items():
             clp.close()
         logger.debug("[CLI] Conexões encerradas.")
+
 
     @classmethod
     def ping_clients(cls) -> "None":
@@ -110,6 +126,7 @@ class Servidores:
         tenta realizar a abertura de uma nova conexão. Caso não seja possível,
         avisa o operador, senão fecha a conexão.
         """
+        return
 
         if not cls.ping(d.ips["TDA_ip"]):
             logger.warning("[CLI] CLP TDA não respondeu a tentativa de comunicação!")

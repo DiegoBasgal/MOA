@@ -3,12 +3,18 @@ __author__ = "Diego Basgal", "Henrique Pfeifer"
 __credits__ = ["Lucas Lavratti", ...]
 __description__ = "Este módulo corresponde a implementação da operação da Subestação."
 
+import pytz
 import logging
 import traceback
+import threading
 
 import src.funcoes.leitura as lei
+import src.conectores.banco_dados as bd
 import src.funcoes.condicionadores as c
 import src.conectores.servidores as serv
+
+from time import sleep, time
+from datetime import datetime
 
 from src.dicionarios.reg import *
 from src.dicionarios.const import *
@@ -21,21 +27,22 @@ class Subestacao:
 
     # ATRIBUIÇÃO DE VARIÁVEIS
 
+    bd: "bd.BancoDados" = None
     clp = serv.Servidores.clp
 
-    tensao_u = lei.LeituraModbus(
+    tensao_r = lei.LeituraModbus(
         clp["SA"],
         REG_SE["TENSAO_RS"],
         escala=1000,
         descricao="[SE]  Tensão Fase U"
     )
-    tensao_v = lei.LeituraModbus(
+    tensao_s = lei.LeituraModbus(
         clp["SA"],
         REG_SE["TENSAO_ST"],
         escala=1000,
         descricao="[SE]  Tensão Fase V"
     )
-    tensao_w = lei.LeituraModbus(
+    tensao_t = lei.LeituraModbus(
         clp["SA"],
         REG_SE["TENSAO_TR"],
         escala=1000,
@@ -73,10 +80,11 @@ class Subestacao:
         try:
             if not cls.dj_linha.valor:
                 logger.info("[SE]  O Disjuntor da Subestação está aberto!")
+
                 if cls.verificar_dj_linha():
                     logger.debug(f"[SE]  Enviando comando:                   \"FECHAR DISJUNTOR\"")
                     logger.debug("")
-                    cls.clp["SA"].write_single_coil(REG_SE["CMD_FECHAR_DJ52L"], [1])
+                    cls.clp["SA"].write_single_register(REG_SE["CMD_FECHAR_DJ52L"], 1)
                     return True
 
                 else:
@@ -91,6 +99,7 @@ class Subestacao:
             logger.exception(f"[SE]  Houve um erro ao realizar o fechamento do Disjuntor de Linha.")
             logger.debug(traceback.format_exc())
             return False
+
 
     @classmethod
     def verificar_dj_linha(cls) -> "bool":
@@ -119,6 +128,7 @@ class Subestacao:
             logger.debug(traceback.format_exc())
             return False
 
+
     @classmethod
     def verificar_tensao_trifasica(cls) -> "bool":
         """
@@ -126,10 +136,11 @@ class Subestacao:
         """
 
         try:
-            if (TENSAO_LINHA_BAIXA < cls.tensao_u.valor < TENSAO_LINHA_ALTA) \
-                and (TENSAO_LINHA_BAIXA < cls.tensao_v.valor < TENSAO_LINHA_ALTA) \
-                and (TENSAO_LINHA_BAIXA < cls.tensao_w.valor < TENSAO_LINHA_ALTA):
+            if (TENSAO_LINHA_BAIXA < cls.tensao_r.valor < TENSAO_LINHA_ALTA) \
+                and (TENSAO_LINHA_BAIXA < cls.tensao_s.valor < TENSAO_LINHA_ALTA) \
+                and (TENSAO_LINHA_BAIXA < cls.tensao_t.valor < TENSAO_LINHA_ALTA):
                 return True
+
             else:
                 logger.warning("[SE]  Tensão da linha fora do limite.")
                 return False
@@ -139,6 +150,54 @@ class Subestacao:
             logger.debug(traceback.format_exc())
             return False
 
+
+    @classmethod
+    def aguardar_tensao(cls) -> "bool":
+        """
+        Função para normalização após a queda de tensão da linha de transmissão.
+
+        Primeiramente, caso haja uma queda, será chamada a função com o temporizador de
+        espera com tempo pré-definido. Caso a tensão seja reestabelecida dentro do limite
+        de tempo, é chamada a funcão de normalização da Usina. Se o temporizador passar do
+        tempo, é chamada a função de acionamento de emergência e acionado tropedo de emergência
+        por Voip.
+        """
+
+        if cls.status_tensao == TENSAO_VERIFICAR:
+            cls.status_tensao = TENSAO_AGUARDO
+            logger.debug("[BAY] Iniciando o temporizador de normalização da tensão na linha.")
+            threading.Thread(target=lambda: cls.temporizar_tensao(30)).start()
+
+        elif cls.status_tensao == TENSAO_REESTABELECIDA:
+            logger.info("[BAY] Tensão na linha reestabelecida.")
+            cls.status_tensao = TENSAO_VERIFICAR
+            return True
+
+        elif cls.status_tensao == TENSAO_FORA:
+            logger.critical("[BAY] Não foi possível reestabelecer a tensão na linha. Acionando emergência")
+            cls.status_tensao = TENSAO_VERIFICAR
+            return False
+
+        else:
+            logger.debug("[BAY] A tensão na linha ainda está fora.")
+
+
+    @classmethod
+    def temporizar_tensao(cls, seg: "int") -> "None":
+        """
+        Função de temporizador para espera de normalização de tensão da linha de transmissão.
+        """
+
+        delay = time() + seg
+
+        while time() <= delay:
+            if cls.verificar_tensao_trifasica():
+                cls.status_tensao = TENSAO_REESTABELECIDA
+                return
+            sleep(time() - (time() - 15))
+        cls.status_tensao = TENSAO_FORA
+
+
     @classmethod
     def verificar_condicionadores(cls) -> "list[c.CondicionadorBase]":
         """
@@ -147,6 +206,8 @@ class Subestacao:
         Verifica os condicionadores ativos e retorna lista com os mesmos para a função de verificação
         da Classe da Usina determinar as ações necessárias.
         """
+
+        autor = 0
 
         if True in (condic.ativo for condic in cls.condicionadores_essenciais):
             condics_ativos = [condic for condics in [cls.condicionadores_essenciais, cls.condicionadores] for condic in condics if condic.ativo]
@@ -162,9 +223,16 @@ class Subestacao:
                 if condic in cls.condicionadores_ativos:
                     logger.debug(f"[SE]  Descrição: \"{condic.descricao}\", Gravidade: \"{CONDIC_STR_DCT[condic.gravidade] if condic.gravidade in CONDIC_STR_DCT else 'Desconhecida'}\"")
                     continue
+
                 else:
                     logger.warning(f"[SE]  Descrição: \"{condic.descricao}\", Gravidade: \"{CONDIC_STR_DCT[condic.gravidade] if condic.gravidade in CONDIC_STR_DCT else 'Desconhecida'}\"")
                     cls.condicionadores_ativos.append(condic)
+                    cls.bd.update_alarmes([
+                        datetime.now(pytz.timezone("Brazil/East")).replace(tzinfo=None),
+                        condic.gravidade,
+                        condic.descricao,
+                        "X" if autor == 0 else ""
+                    ])
 
             logger.debug("")
             return condics_ativos
@@ -172,6 +240,7 @@ class Subestacao:
         else:
             cls.condicionadores_ativos = []
             return []
+
 
     @classmethod
     def verificar_leituras(cls) -> "None":

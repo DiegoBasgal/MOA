@@ -7,8 +7,6 @@ import traceback
 
 import src.tomada_agua as tda
 import src.funcoes.leitura as lei
-import src.dicionarios.dict as dct
-import src.funcoes.condicionadores as c
 import src.conectores.servidores as serv
 
 from src.dicionarios.reg import *
@@ -67,8 +65,8 @@ class Adufas:
 
         def verificar_operacao(self) -> "bool":
             try:
-                self.clp["AD"].write_single_register(REG_AD[""], 1)
-            
+                self.clp["AD"].write_single_register(REG_AD[f"CP_0{self.id}_POSICAO"], 1)
+
             except Exception:
                 logger.error(f"[AD][CP{self.id}] Não foi possível verificar a operação da Comporta.")
                 logger.debug(traceback.format_exc())
@@ -76,7 +74,6 @@ class Adufas:
 
 
         def enviar_setpoint(self, setpoint: "int") -> "None":
-
             try:
                 logger.debug(f"[AD][CP{self.id}]      Enviando setpoint:         {int(setpoint)}")
 
