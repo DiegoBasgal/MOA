@@ -88,6 +88,7 @@ class ServicoAuxiliar:
         """
         return
 
+
     @classmethod
     def carregar_leituras(cls) -> "None":
         """

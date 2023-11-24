@@ -32,12 +32,14 @@ logger = logging.getLogger("logger")
 class Usina:
     def __init__(self, cfg: "dict"=None) -> "None":
 
+
         # VERIFICAÇÃO DE ARGUMENTOS
 
         if None in (cfg):
             raise ValueError("[USN] Não foi possível carregar os arquivos de configuração (\"cfg.json\").")
         else:
             self.cfg = cfg
+
 
         # INCIALIZAÇÃO DE OBJETOS DA USINA
 
@@ -61,6 +63,7 @@ class Usina:
         self.tda.bd = self.bd
         self.tda.cfg = self.cfg
 
+
         # ATRIBUIÇÃO DE VARIÁVEIS PRIVADAS
 
         self.__split1: "bool" = False
@@ -69,6 +72,7 @@ class Usina:
         self.__split4: "bool" = False
         self.__pid_inicial: "int" = -1
 
+
         # ATRIBUIÇÃO DE VARIÁVEIS PROTEGIDAS
 
         self._tentativas_normalizar: "int" = 0
@@ -76,6 +80,7 @@ class Usina:
         self._pot_alvo_anterior: "float" = -1
 
         self._modo_autonomo: "bool" = False
+
 
         # ATRIBUIÇÃO DE VARIÁVEIS PÚBLICAS
 
@@ -96,6 +101,7 @@ class Usina:
         self.normalizar_forcado: "bool" = False
 
         self.ultima_tentativa_norm: "datetime" = self.get_time()
+
 
         # FINALIZAÇÃO DO __INIT__
 
@@ -158,6 +164,7 @@ class Usina:
         """
 
         logger.info("[USN] Acionando reset de emergência.")
+
         try:
             res = self.clp["SA"].write_single_register(REG_SA["CMD_RESET_ALARMES"], 1)
             res = self.clp["SA"].write_single_register(REG_SA["CMD_RECONHECE_ALARMES"], 1)
@@ -231,9 +238,9 @@ class Usina:
         """
 
         while True:
+            # self.sa.verificar_leituras()
             # self.se.verificar_leituras()
             # self.tda.verificar_leituras()
-            # self.sa.verificar_leituras()
 
             # for ug in self.ugs:
             #     ug.verificar_leituras()
@@ -429,7 +436,7 @@ class Usina:
         self.distribuir_potencia(pot_alvo)
 
 
-    def distribuir_potencia(self, pot_alvo) -> "None":
+    def distribuir_potencia(self, pot_alvo: "float") -> "None":
         """
         Função para distribuição de potência, após cálculos de controle/ajustes.
 
@@ -469,19 +476,17 @@ class Usina:
             if self.__split2:
                 logger.debug("[USN] Split:                              2")
                 logger.debug("")
+
                 ugs[0].setpoint = sp * ugs[0].setpoint_maximo
                 ugs[1].setpoint = sp * ugs[1].setpoint_maximo
-                logger.debug(f"[UG{ugs[0].id}] SP    <-                            {int(ugs[0].setpoint)}")
-                logger.debug(f"[UG{ugs[1].id}] SP    <-                            {int(ugs[1].setpoint)}")
 
             elif self.__split1:
                 logger.debug("[USN] Split:                              2 -> \"1B\"")
                 logger.debug("")
+
                 sp = sp * 2 / 1
                 ugs[0].setpoint = sp * ugs[0].setpoint_maximo
                 ugs[1].setpoint = 0
-                logger.debug(f"[UG{ugs[0].id}] SP    <-                            {int(ugs[0].setpoint)}")
-                logger.debug(f"[UG{ugs[1].id}] SP    <-                            {int(ugs[1].setpoint)}")
 
             else:
                 logger.debug("")
@@ -489,24 +494,24 @@ class Usina:
                 ugs[0].setpoint = 0
                 ugs[1].setpoint = 0
 
-                logger.debug(f"[UG{ugs[0].id}] SP    <-                            {int(ugs[0].setpoint)}")
-                logger.debug(f"[UG{ugs[1].id}] SP    <-                            {int(ugs[1].setpoint)}")
+            logger.debug(f"[UG{ugs[0].id}] SP    <-                            {int(ugs[0].setpoint)}")
+            logger.debug(f"[UG{ugs[1].id}] SP    <-                            {int(ugs[1].setpoint)}")
 
 
         elif len(ugs) == 1:
             if self.__split1 or self.__split2:
                 logger.debug("[USN] Split:                              1")
                 logger.debug("")
+
                 sp = sp * 2 / 1
                 ugs[0].setpoint = sp * ugs[0].setpoint_maximo
-                logger.debug(f"[UG{ugs[0].id}] SP    <-                            {int(ugs[0].setpoint)}")
 
             else:
                 logger.debug("")
 
                 ugs[0].setpoint = 0
 
-                logger.debug(f"[UG{ugs[0].id}] SP    <-                            {int(ugs[0].setpoint)}")
+            logger.debug(f"[UG{ugs[0].id}] SP    <-                            {int(ugs[0].setpoint)}")
 
 
     def verificar_ugs_disponiveis(self) -> "list[ug.UnidadeGeracao]":
@@ -545,7 +550,7 @@ class Usina:
         self.heartbeat()
 
 
-    def atualizar_valores_banco(self, parametros) -> "None":
+    def atualizar_valores_banco(self, parametros: "dict") -> "None":
         """
         Função para atualização de valores de Banco de Dados.
         """
@@ -576,7 +581,7 @@ class Usina:
             logger.debug(traceback.format_exc())
 
 
-    def atualizar_valores_cfg(self, parametros) -> "None":
+    def atualizar_valores_cfg(self, parametros: "dict") -> "None":
         """
         Função para atualização de valores de operação do arquivo cfg.json.
         """

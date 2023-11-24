@@ -67,16 +67,6 @@ class Adufas:
             return self.__leitura_posicao.valor
 
 
-        def verificar_operacao(self) -> "bool":
-            try:
-                self.clp["AD"].write_single_register(REG_AD[f"CP_0{self.id}_POSICAO"], 1)
-
-            except Exception:
-                logger.error(f"[AD][CP{self.id}] Não foi possível verificar a operação da Comporta.")
-                logger.debug(traceback.format_exc())
-                return False
-
-
         def enviar_setpoint(self, setpoint: "int") -> "None":
             try:
                 logger.debug(f"[AD][CP{self.id}]      Enviando setpoint:         {int(setpoint)}")
@@ -97,17 +87,10 @@ class Adufas:
 
     cps: "list[Comporta]" = [cp1, cp2]
 
-
-    @classmethod
-    def verificar_reservatorio(cls) -> "int":
-        tda.TomadaAgua.nivel_montante.valor
-        return
-
-
     @classmethod
     def calcular_setpoint(cls) -> "float":
+        tda.TomadaAgua.nivel_montante.valor
         return
-
 
     @classmethod
     def distribuir_setpoint(cls, sp_alvo: "int") -> "None":
@@ -141,6 +124,7 @@ class Adufas:
             else:
                 cls.cps[0].setpoint = 0
 
+        cls.cps[0].enviar_setpoint()
         return
 
 

@@ -34,19 +34,19 @@ class Subestacao:
         clp["SA"],
         REG_SE["TENSAO_RS"],
         escala=1000,
-        descricao="[SE]  Tensão Fase U"
+        descricao="[SE]  Tensão Fase RS"
     )
     tensao_s = lei.LeituraModbus(
         clp["SA"],
         REG_SE["TENSAO_ST"],
         escala=1000,
-        descricao="[SE]  Tensão Fase V"
+        descricao="[SE]  Tensão Fase ST"
     )
     tensao_t = lei.LeituraModbus(
         clp["SA"],
         REG_SE["TENSAO_TR"],
         escala=1000,
-        descricao="[SE]  Tensão Fase W"
+        descricao="[SE]  Tensão Fase TR"
     )
     medidor_usina = lei.LeituraModbus(
         clp["SA"],
@@ -165,21 +165,21 @@ class Subestacao:
 
         if cls.status_tensao == TENSAO_VERIFICAR:
             cls.status_tensao = TENSAO_AGUARDO
-            logger.debug("[BAY] Iniciando o temporizador de normalização da tensão na linha.")
+            logger.debug("[SE]  Iniciando o temporizador de normalização da tensão na linha.")
             threading.Thread(target=lambda: cls.temporizar_tensao(30)).start()
 
         elif cls.status_tensao == TENSAO_REESTABELECIDA:
-            logger.info("[BAY] Tensão na linha reestabelecida.")
+            logger.info("[SE]  Tensão na linha reestabelecida.")
             cls.status_tensao = TENSAO_VERIFICAR
             return True
 
         elif cls.status_tensao == TENSAO_FORA:
-            logger.critical("[BAY] Não foi possível reestabelecer a tensão na linha. Acionando emergência")
+            logger.critical("[SE]  Não foi possível reestabelecer a tensão na linha. Acionando emergência")
             cls.status_tensao = TENSAO_VERIFICAR
             return False
 
         else:
-            logger.debug("[BAY] A tensão na linha ainda está fora.")
+            logger.debug("[SE]  A tensão na linha ainda está fora.")
 
 
     @classmethod

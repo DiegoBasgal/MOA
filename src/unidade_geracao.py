@@ -28,6 +28,7 @@ logger = logging.getLogger("logger")
 class UnidadeGeracao:
     def __init__(self, id: "int", cfg: "dict"=None, db: "bd.BancoDados"=None):
 
+
         # VERIFICAÇÃO DE ARGUMENTOS
 
         if id <= 0:
@@ -41,9 +42,11 @@ class UnidadeGeracao:
 
         self.clp = serv.Servidores.clp
 
+
         # ATRIBUIÇÃO DE VAIRIÁVEIS
 
         # PRIVADAS
+
         self.__leitura_potencia = lei.LeituraModbus(
             self.clp[f"UG{self.id}"],
             REG_UG[f"UG{self.id}"][""],
@@ -68,7 +71,9 @@ class UnidadeGeracao:
         self.__tempo_entre_tentativas: "int" = 0
         self.__limite_tentativas_normalizacao: "int" = 3
 
+
         # PROTEGIDAS
+
         self._setpoint: "int" = 0
         self._prioridade: "int" = 0
         self._codigo_state: "int" = 0
@@ -83,7 +88,9 @@ class UnidadeGeracao:
         self._condicionadores_essenciais: "list[c.CondicionadorBase]" = []
         self._condicionadores_atenuadores: "list[c.CondicionadorExponencialReverso]" = []
 
+
         # PÚBLICAS
+
         self.tempo_normalizar: "int" = 0
 
         self.operar_comporta: "bool" = False
@@ -98,6 +105,7 @@ class UnidadeGeracao:
 
         self.aux_tempo_sincronizada: "datetime" = 0
         self.ts_auxiliar: "datetime" = self.get_time()
+
 
         # FINALIZAÇÃO DO __INIT__
 
@@ -632,6 +640,7 @@ class UnidadeGeracao:
         self.temporizar_partida = False
         sleep(1)
 
+
     def atenuar_carga(self) -> "None":
         """
         Função para atenuação de carga através de leitura de Pressão na Entrada da Turbina.
@@ -700,6 +709,7 @@ class UnidadeGeracao:
 
         if not self.etapa_atual == UG_SINCRONIZADA:
             self.aux_tempo_sincronizada = None
+
 
     def verificar_condicionadores(self) -> "int":
         """
@@ -1629,6 +1639,7 @@ class UnidadeGeracao:
 
         ## CONDICIONADORES ESPECÍFICOS POR UNIDADE
         # UG1
+
         if self.id == 1:
             self.l_alm_04_b_10 = lei.LeituraModbusBit(self.clp["UG1"], REG_UG["UG1"]["Alarme04_10"], descricao="[UG1] Cubículo CSA-U1 - Fusível Queimado ")
             self.condicionadores.append(c.CondicionadorBase(self.l_alm_04_b_10, CONDIC_NORMALIZAR))
@@ -1677,6 +1688,7 @@ class UnidadeGeracao:
 
 
         # UG2
+
         if self.id == 2:
             self.l_alm_04_b_13 = lei.LeituraModbusBit(self.clp["UG2"], REG_UG["UG2"]["Alarme04_13"], descricao="[UG2] Cubículo CSA-U2 - Fusível Queimado ")
             self.condicionadores.append(c.CondicionadorBase(self.l_alm_04_b_13, CONDIC_NORMALIZAR))
@@ -1725,6 +1737,7 @@ class UnidadeGeracao:
 
 
         # UG3
+
         if self.id == 3:
             self.l_alm_10_b_12 = lei.LeituraModbusBit(self.clp["UG3"], REG_UG["UG3"]["Alarme10_12"], descricao="[UG3] PCP-U3 - Alimentação Fonte 125/24Vcc - Disj. Q125.3 Desligado")
             self.condicionadores.append(c.CondicionadorBase(self.l_alm_10_b_12, CONDIC_NORMALIZAR))
@@ -1761,6 +1774,7 @@ class UnidadeGeracao:
 
 
         # UG4
+
         if self.id == 4:
             self.l_alm_10_b_14 = lei.LeituraModbusBit(self.clp["UG4"], REG_UG["UG4"]["Alarme10_14"], descricao="[UG4] PCP-U4 - Alimentação Fonte 125/24Vcc - Disj. Q125.3 Desligado")
             self.condicionadores.append(c.CondicionadorBase(self.l_alm_10_b_14, CONDIC_NORMALIZAR))
