@@ -35,11 +35,14 @@ def monitoramento_view(request, *args, **kwargs):
         "aguardando_reservatorio": "Sim" if usina.aguardando_reservatorio > 0 else "Não",
     }
 
-    clp_sa = ModbusClient("192.168.68.10", 502, unit_id=1, timeout=0.5)
-    clp_tda = ModbusClient("192.168.68.13", 502, unit_id=1, timeout=0.5)
-    clp_ug1 = ModbusClient("192.168.68.16", 502, unit_id=1, timeout=0.5)
-    clp_ug2 = ModbusClient("192.168.68.19", 502, unit_id=1, timeout=0.5)
-    clp_moa = ModbusClient("192.168.68.30", 502, unit_id=1, timeout=0.5)
+    clp_sa = ModbusClient("192.168.68.22", 502, unit_id=1, timeout=0.5)
+    clp_tda = ModbusClient("192.168.68.29", 502, unit_id=1, timeout=0.5)
+    clp_ad = ModbusClient("192.168.68.30", 502, unit_id=1, timeout=0.5)
+    clp_ug1 = ModbusClient("192.168.68.10", 502, unit_id=1, timeout=0.5)
+    clp_ug2 = ModbusClient("192.168.68.13", 502, unit_id=1, timeout=0.5)
+    clp_ug3 = ModbusClient("192.168.68.16", 502, unit_id=1, timeout=0.5)
+    clp_ug4 = ModbusClient("192.168.68.19", 502, unit_id=1, timeout=0.5)
+    clp_moa = ModbusClient("0.0.0.0", 502, unit_id=1, timeout=0.5)
 
 
     if clp_sa.open():
@@ -71,22 +74,22 @@ def monitoramento_view(request, *args, **kwargs):
 
         context["nv_montante"] = f"{val_l_nv:0.3f}"
 
-        if 462 <= val_l_nv <= 462.37:
+        if 817 <= val_l_nv <= 818.40:
             context["tag"] = 0
-        elif 461.85 < val_l_nv < 462:
+        elif 817 < val_l_nv < 817.6:
             context["tag"] = 1
-        elif val_l_nv <= 461.37 or val_l_nv > 462.37:
+        elif val_l_nv <= 816 or val_l_nv > 818.4:
             context["tag"] = 2
 
     else:
         if usina.modo_autonomo:
             context["nv_montante"] = usina.nv_montante
 
-            if 462 <= usina.nv_montante <= 462.37:
+            if 817 <= usina.nv_montante <= 818.40:
                 context["tag"] = 0
-            elif 461.85 < usina.nv_montante < 462:
+            elif 817 < usina.nv_montante < 817.6:
                 context["tag"] = 1
-            elif usina.nv_montante <= 461.37 or usina.nv_montante > 462.37:
+            elif usina.nv_montante <= 816 or usina.nv_montante > 818.4:
                 context["tag"] = 2
 
 
@@ -136,6 +139,52 @@ def monitoramento_view(request, *args, **kwargs):
             context["tempo_ug2"] = 0
 
 
+    if clp_ug3.open():
+        l_pot_ug3 = clp_ug3.read_holding_registers(133, 2)
+        clp_ug3.close()
+
+        dec_pot_ug3 = BPD.fromRegisters(l_pot_ug3, byteorder=Endian.BIG, wordorder=Endian.LITTLE)
+        pot_ug3 = dec_pot_ug3.decode_32bit_float()
+
+        context["pot_ug3"] = pot_ug3
+        context["setpot_ug3"] = usina.ug3_setpot
+        context["tempo_ug3"] = 0
+
+    else:
+        if usina.modo_autonomo:
+            context["pot_ug3"] = usina.ug3_pot
+            context["setpot_ug3"] = usina.ug3_setpot
+            context["tempo_ug3"] = 0
+
+        else:
+            context["pot_ug3"] = 99
+            context["setpot_ug3"] = usina.ug3_setpot
+            context["tempo_ug3"] = 0
+
+
+    if clp_ug4.open():
+        l_pot_ug4 = clp_ug4.read_holding_registers(133, 2)
+        clp_ug4.close()
+
+        dec_pot_ug4 = BPD.fromRegisters(l_pot_ug4, byteorder=Endian.BIG, wordorder=Endian.LITTLE)
+        pot_ug4 = dec_pot_ug4.decode_32bit_float()
+
+        context["pot_ug4"] = pot_ug4
+        context["setpot_ug4"] = usina.ug4_setpot
+        context["tempo_ug4"] = 0
+
+    else:
+        if usina.modo_autonomo:
+            context["pot_ug4"] = usina.ug4_pot
+            context["setpot_ug4"] = usina.ug4_setpot
+            context["tempo_ug4"] = 0
+
+        else:
+            context["pot_ug4"] = 99
+            context["setpot_ug4"] = usina.ug4_setpot
+            context["tempo_ug4"] = 0
+
+
     # if clp_moa.open():
     #     context["CLP_Status"] = True
     #     clp_moa.close()
@@ -160,11 +209,14 @@ def monitoramento_view(request, *args, **kwargs):
     context ["moa_ultima_comunicacao"] = f"{moa_ultima_comunicacao.days} dias, {hours:02d}:{mins:02d}:{secs:02d}"
 
 
-    if context["pot_ug1"] in (usina.ug1_pot, 99) or context["pot_ug2"] in (usina.ug2_pot, 99):
-        context["pot_usina"] = f"{usina.ug1_pot + usina.ug2_pot:0.1f}"
+    if context["pot_ug1"] in (usina.ug1_pot, 99) \
+    or context["pot_ug2"] in (usina.ug2_pot, 99) \
+    or context["pot_ug3"] in (usina.ug3_pot, 99) \
+    or context["pot_ug4"] in (usina.ug4_pot, 99):
+        context["pot_usina"] = f"{usina.ug1_pot + usina.ug2_pot + usina.ug3_pot + usina.ug4_pot:0.1f}"
 
     else:
-        context["pot_usina"] = f"{pot_ug1 + pot_ug2:0.1f}"
+        context["pot_usina"] = f"{pot_ug1 + pot_ug2 + usina.ug3_pot + usina.ug4_pot:0.1f}"
 
 
     return render(request, "monitoramento.html", context=context)

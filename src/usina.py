@@ -169,10 +169,6 @@ class Usina:
             logger.debug(traceback.format_exc)
             return False
 
-        except Exception:
-            logger.exception(f"[USN] Houve um erro ao realizar o Reset de Emergência.")
-            logger.debug(traceback.format_exc)
-            return False
 
     def acionar_emergencia(self) -> "bool":
         """
@@ -205,7 +201,7 @@ class Usina:
 
         logger.debug(f"[USN] Última tentativa de normalização:   {self.ultima_tentativa_norm.strftime('%d-%m-%Y %H:%M:%S')}")
         logger.debug("")
-        logger.debug(f"[SE]  Tensão Subestação:            VAB -> \"{self.se.tensao_u.valor:2.1f} V\" | VBC -> \"{self.se.tensao_v.valor:2.1f} V\" | VCA -> \"{self.se.tensao_w.valor:2.1f} V\"")
+        logger.debug(f"[SE]  Tensão Subestação:            RS -> \"{self.se.tensao_r.valor:2.1f} V\" | ST -> \"{self.se.tensao_s.valor:2.1f} V\" | TR -> \"{self.se.tensao_t.valor:2.1f} V\"")
         logger.debug("")
 
         if (self.tentativas_normalizar < 3 and (self.get_time() - self.ultima_tentativa_norm).seconds >= 60) or self.normalizar_forcado:
@@ -223,31 +219,6 @@ class Usina:
             logger.debug("[USN] A normalização foi executada menos de 1 minutos atrás.")
             sleep(1)
             return False
-
-    def verificar_se(self) -> "int":
-        """
-        Função para verificação do Bay e Subestação.
-
-        Apresenta a leitura de tensão VAB, VBC, VCA do Bay e Subestação.
-        Caso haja uma falta de tensão na linha da subestação, aciona o temporizador
-        para retomada em caso de queda de tensão. Caso a tensão esteja normal, tenta
-        realizar o fechamento dos disjuntores do Bay e depois da Subestação. Caso
-        haja um erro com o fechamento dos disjuntores, aciona a normalização da usina
-        senão, sinaliza que está tudo correto para a máquina de estados do MOA.
-        """
-
-        if not self.se.verificar_tensao_trifasica():
-            logger.debug("")
-            logger.debug(f"[SE]  Tensão Subestação:            VAB -> \"{self.se.tensao_vab.valor:2.1f} V\" | VBC -> \"{self.se.tensao_vbc.valor:2.1f} V\" | VCA -> \"{self.se.tensao_vca.valor:2.1f} V\"")
-            logger.debug("")
-            return DJS_FALTA_TENSAO
-
-        elif not self.se.fechar_dj_linha():
-            self.normalizar_forcado = True
-            return DJS_FALHA
-
-        else:
-            return DJS_OK
 
 
     def verificar_leituras_periodicas(self) -> "None":
@@ -319,6 +290,7 @@ class Usina:
 
         self.clp["MOA"].write_single_coil(REG_MOA["MOA"]["OUT_BLOCK_UG1"], 0)
         self.clp["MOA"].write_single_coil(REG_MOA["MOA"]["OUT_BLOCK_UG2"], 0)
+
 
     def controlar_reservatorio(self) -> "int":
         """
@@ -440,7 +412,7 @@ class Usina:
                 ug.setpoint = 0
             return 0
 
-        pot_medidor = self.se.potencia_mp.valor
+        pot_medidor = self.se.medidor_usina.valor
 
         logger.debug(f"[USN] Potência no medidor:                {pot_medidor:0.3f}")
 
@@ -535,6 +507,7 @@ class Usina:
                 ugs[0].setpoint = 0
 
                 logger.debug(f"[UG{ugs[0].id}] SP    <-                            {int(ugs[0].setpoint)}")
+
 
     def verificar_ugs_disponiveis(self) -> "list[ug.UnidadeGeracao]":
         """

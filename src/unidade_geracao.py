@@ -962,6 +962,7 @@ class UnidadeGeracao:
         self.condicionadores_atenuadores.append(self.c_pressao_turbina_ug)
 
 
+
         self.l_alm_01_b_00 = lei.LeituraModbusBit(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}"]["Alarme01_00"], descricao=f"[UG{self.id}] Emergência Supervisório Pressionada (Bloqueio 86H Trip)")
         self.condicionadores.append(c.CondicionadorBase(self.l_alm_01_b_00, CONDIC_NORMALIZAR))
 
@@ -1624,5 +1625,174 @@ class UnidadeGeracao:
 
         self.l_alm_16_b_12 = lei.LeituraModbusBit(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}"]["Alarme16_12"], descricao=f"[UG{self.id}] Relé de Proteção SEL700G - Falha RTD's ou Falha de Comunicação com o Módulo SEL-2600 (Bloqueio 86M T)")
         self.condicionadores.append(c.CondicionadorBase(self.l_alm_16_b_12, CONDIC_NORMALIZAR))
+
+
+        ## CONDICIONADORES ESPECÍFICOS POR UNIDADE
+        # UG1
+        if self.id == 1:
+            self.l_alm_04_b_10 = lei.LeituraModbusBit(self.clp["UG1"], REG_UG["UG1"]["Alarme04_10"], descricao="[UG1] Cubículo CSA-U1 - Fusível Queimado ")
+            self.condicionadores.append(c.CondicionadorBase(self.l_alm_04_b_10, CONDIC_NORMALIZAR))
+
+            self.l_alm_04_b_11 = lei.LeituraModbusBit(self.clp["UG1"], REG_UG["UG1"]["Alarme04_11"], descricao="[UG1] Cubículo CSA-U1 - Grade Frontal Aberta  (Abertura 52L- SEL787 - TRIP)")
+            self.condicionadores.append(c.CondicionadorBase(self.l_alm_04_b_11, CONDIC_NORMALIZAR))
+
+            self.l_alm_04_b_12 = lei.LeituraModbusBit(self.clp["UG1"], REG_UG["UG1"]["Alarme04_12"], descricao="[UG1] Cubículo CSA-U1 - Grade Traseira Aberta (Abertura 52L- SEL787 - TRIP)")
+            self.condicionadores.append(c.CondicionadorBase(self.l_alm_04_b_12, CONDIC_NORMALIZAR))
+
+            self.l_alm_10_b_08 = lei.LeituraModbusBit(self.clp["UG1"], REG_UG["UG1"]["Alarme10_08"], descricao="[UG1] PCP-U1 - Alimentação Fonte 125/24Vcc - Disj. Q125.3 Desligado")
+            self.condicionadores.append(c.CondicionadorBase(self.l_alm_10_b_08, CONDIC_NORMALIZAR))
+
+            self.l_alm_10_b_09 = lei.LeituraModbusBit(self.clp["UG1"], REG_UG["UG1"]["Alarme10_09"], descricao="[UG1] PCP-U1 - Alimentação Circuitos de Comando - Disj. Q24.1 Desligado")
+            self.condicionadores.append(c.CondicionadorBase(self.l_alm_10_b_09, CONDIC_NORMALIZAR))
+
+            self.l_alm_12_b_01 = lei.LeituraModbusBit(self.clp["UG1"], REG_UG["UG1"]["Alarme12_01"], descricao="[UG1] PDSA-CC - Alimentação do Cubículo CSA-U1 - Disj. Q125.5 Desligado")
+            self.condicionadores.append(c.CondicionadorBase(self.l_alm_12_b_01, CONDIC_NORMALIZAR))
+
+            self.l_alm_12_b_07 = lei.LeituraModbusBit(self.clp["UG1"], REG_UG["UG1"]["Alarme12_07"], descricao="[UG1] PDSA-CC - Alimentação das Cargas da Disj. 1Q125.0 Desligado")
+            self.condicionadores.append(c.CondicionadorBase(self.l_alm_12_b_07, CONDIC_NORMALIZAR))
+
+            self.l_alm_12_b_08 = lei.LeituraModbusBit(self.clp["UG1"], REG_UG["UG1"]["Alarme12_08"], descricao="[UG1] PDSA-CC - Alimentação do Painel PCP-U1 - Disj. 1Q125.1 Desligado")
+            self.condicionadores.append(c.CondicionadorBase(self.l_alm_12_b_08, CONDIC_NORMALIZAR))
+
+            self.l_alm_12_b_09 = lei.LeituraModbusBit(self.clp["UG1"], REG_UG["UG1"]["Alarme12_09"], descricao="[UG1] PDSA-CC - Alimentação do Quadro Q49-U1 - Disj. 1Q125.2 Desligado")
+            self.condicionadores.append(c.CondicionadorBase(self.l_alm_12_b_09, CONDIC_NORMALIZAR))
+
+            self.l_alm_12_b_10 = lei.LeituraModbusBit(self.clp["UG1"], REG_UG["UG1"]["Alarme12_10"], descricao="[UG1] PDSA-CC - Alimentação do Cubículo CSG-U1 - Disj. 1Q125.3 Desligado")
+            self.condicionadores.append(c.CondicionadorBase(self.l_alm_12_b_10, CONDIC_NORMALIZAR))
+
+            self.l_alm_12_b_11 = lei.LeituraModbusBit(self.clp["UG1"], REG_UG["UG1"]["Alarme12_11"], descricao="[UG1] PDSA-CC - Alimentação Painel do Regulador de Tensão Disj. 1Q125.4 Desligado")
+            self.condicionadores.append(c.CondicionadorBase(self.l_alm_12_b_11, CONDIC_NORMALIZAR))
+
+            self.l_alm_12_b_12 = lei.LeituraModbusBit(self.clp["UG1"], REG_UG["UG1"]["Alarme12_12"], descricao="[UG1] PDSA-CC - Alimentação do Filtro Duplo Disj. 1Q125.5 Desligado")
+            self.condicionadores.append(c.CondicionadorBase(self.l_alm_12_b_12, CONDIC_NORMALIZAR))
+
+            self.l_alm_12_b_13 = lei.LeituraModbusBit(self.clp["UG1"], REG_UG["UG1"]["Alarme12_13"], descricao="[UG1] PDSA-CC - Alimentação Reserva - Disj. 1Q125.6 Desligado")
+            self.condicionadores.append(c.CondicionadorBase(self.l_alm_12_b_13, CONDIC_NORMALIZAR))
+
+            self.l_alm_15_b_12 = lei.LeituraModbusBit(self.clp["UG1"], REG_UG["UG1"]["Alarme15_12"], descricao="[UG1] PDSA-CA - Alimentação das Cargas Essenciais da Disj. 1Q380.0 Desligado")
+            self.condicionadores.append(c.CondicionadorBase(self.l_alm_15_b_12, CONDIC_NORMALIZAR))
+
+            self.l_alm_15_b_13 = lei.LeituraModbusBit(self.clp["UG1"], REG_UG["UG1"]["Alarme15_13"], descricao="[UG1] PDSA-CA - Alimentação das Cargas Não Essenciais da Disj. 1Q380.1 Desligado")
+            self.condicionadores.append(c.CondicionadorBase(self.l_alm_15_b_13, CONDIC_NORMALIZAR))
+
+
+        # UG2
+        if self.id == 2:
+            self.l_alm_04_b_13 = lei.LeituraModbusBit(self.clp["UG2"], REG_UG["UG2"]["Alarme04_13"], descricao="[UG2] Cubículo CSA-U2 - Fusível Queimado ")
+            self.condicionadores.append(c.CondicionadorBase(self.l_alm_04_b_13, CONDIC_NORMALIZAR))
+
+            self.l_alm_04_b_14 = lei.LeituraModbusBit(self.clp["UG2"], REG_UG["UG2"]["Alarme04_14"], descricao="[UG2] Cubículo CSA-U2 - Grade Frontal Aberta  (Abertura 52L- SEL787 - TRIP)")
+            self.condicionadores.append(c.CondicionadorBase(self.l_alm_04_b_14, CONDIC_NORMALIZAR))
+
+            self.l_alm_04_b_15 = lei.LeituraModbusBit(self.clp["UG2"], REG_UG["UG2"]["Alarme04_15"], descricao="[UG2] Cubículo CSA-U2 - Grade Traseira Aberta  (Abertura 52L- SEL787 - TRIP)")
+            self.condicionadores.append(c.CondicionadorBase(self.l_alm_04_b_15, CONDIC_NORMALIZAR))
+
+            self.l_alm_10_b_10 = lei.LeituraModbusBit(self.clp["UG2"], REG_UG["UG2"]["Alarme10_10"], descricao="[UG2] PCP-U2 - Alimentação Fonte 125/24Vcc - Disj. Q125.3 Desligado")
+            self.condicionadores.append(c.CondicionadorBase(self.l_alm_10_b_10, CONDIC_NORMALIZAR))
+
+            self.l_alm_10_b_11 = lei.LeituraModbusBit(self.clp["UG2"], REG_UG["UG2"]["Alarme10_11"], descricao="[UG2] PCP-U2 - Alimentação Circuitos de Comando - Disj. Q24.1 Desligado")
+            self.condicionadores.append(c.CondicionadorBase(self.l_alm_10_b_11, CONDIC_NORMALIZAR))
+
+            self.l_alm_12_b_02 = lei.LeituraModbusBit(self.clp["UG2"], REG_UG["UG2"]["Alarme12_02"], descricao="[UG2] PDSA-CC - Alimentação do Cubículo CSA-U2 - Disj. Q125.6 Desligado")
+            self.condicionadores.append(c.CondicionadorBase(self.l_alm_12_b_02, CONDIC_NORMALIZAR))
+
+            self.l_alm_12_b_14 = lei.LeituraModbusBit(self.clp["UG2"], REG_UG["UG2"]["Alarme12_14"], descricao="[UG2] PDSA-CC - Alimentação das Cargas da Disj. 2Q125.0 Desligado")
+            self.condicionadores.append(c.CondicionadorBase(self.l_alm_12_b_14, CONDIC_NORMALIZAR))
+
+            self.l_alm_12_b_15 = lei.LeituraModbusBit(self.clp["UG2"], REG_UG["UG2"]["Alarme12_15"], descricao="[UG2] PDSA-CC - Alimentação do Painel PCP-U2 - Disj. 2Q125.1 Desligado")
+            self.condicionadores.append(c.CondicionadorBase(self.l_alm_12_b_15, CONDIC_NORMALIZAR))
+
+            self.l_alm_13_b_00 = lei.LeituraModbusBit(self.clp["UG2"], REG_UG["UG2"]["Alarme13_00"], descricao="[UG2] PDSA-CC - Alimentação do Quadro Q49-U2 - Disj. 2Q125.2 Desligado")
+            self.condicionadores.append(c.CondicionadorBase(self.l_alm_13_b_00, CONDIC_NORMALIZAR))
+
+            self.l_alm_13_b_01 = lei.LeituraModbusBit(self.clp["UG2"], REG_UG["UG2"]["Alarme13_01"], descricao="[UG2] PDSA-CC - Alimentação do Cubículo CSG-U2 - Disj. 2Q125.3 Desligado")
+            self.condicionadores.append(c.CondicionadorBase(self.l_alm_13_b_01, CONDIC_NORMALIZAR))
+
+            self.l_alm_13_b_02 = lei.LeituraModbusBit(self.clp["UG2"], REG_UG["UG2"]["Alarme13_02"], descricao="[UG2] PDSA-CC - Alimentação Painel do Regulador de Tensão Disj. 2Q125.4 Desligado")
+            self.condicionadores.append(c.CondicionadorBase(self.l_alm_13_b_02, CONDIC_NORMALIZAR))
+
+            self.l_alm_13_b_03 = lei.LeituraModbusBit(self.clp["UG2"], REG_UG["UG2"]["Alarme13_03"], descricao="[UG2] PDSA-CC - Alimentação do Filtro Duplo Disj. 2Q125.5 Desligado")
+            self.condicionadores.append(c.CondicionadorBase(self.l_alm_13_b_03, CONDIC_NORMALIZAR))
+
+            self.l_alm_13_b_04 = lei.LeituraModbusBit(self.clp["UG2"], REG_UG["UG2"]["Alarme13_04"], descricao="[UG2] PDSA-CC - Alimentação Reserva - Disj. 2Q125.6 Desligado")
+            self.condicionadores.append(c.CondicionadorBase(self.l_alm_13_b_04, CONDIC_NORMALIZAR))
+
+            self.l_alm_15_b_14 = lei.LeituraModbusBit(self.clp["UG2"], REG_UG["UG2"]["Alarme15_14"], descricao="[UG2] PDSA-CA - Alimentação das Cargas Essenciais da Disj. 2Q380.0 Desligado")
+            self.condicionadores.append(c.CondicionadorBase(self.l_alm_15_b_14, CONDIC_NORMALIZAR))
+
+            self.l_alm_15_b_15 = lei.LeituraModbusBit(self.clp["UG2"], REG_UG["UG2"]["Alarme15_15"], descricao="[UG2] PDSA-CA - Alimentação das Cargas Não Essenciais da Disj. 2Q380.1 Desligado")
+            self.condicionadores.append(c.CondicionadorBase(self.l_alm_15_b_15, CONDIC_NORMALIZAR))
+
+
+        # UG3
+        if self.id == 3:
+            self.l_alm_10_b_12 = lei.LeituraModbusBit(self.clp["UG3"], REG_UG["UG3"]["Alarme10_12"], descricao="[UG3] PCP-U3 - Alimentação Fonte 125/24Vcc - Disj. Q125.3 Desligado")
+            self.condicionadores.append(c.CondicionadorBase(self.l_alm_10_b_12, CONDIC_NORMALIZAR))
+
+            self.l_alm_10_b_13 = lei.LeituraModbusBit(self.clp["UG3"], REG_UG["UG3"]["Alarme10_13"], descricao="[UG3] PCP-U3 - Alimentação Circuitos de Comando - Disj. Q24.1 Desligado")
+            self.condicionadores.append(c.CondicionadorBase(self.l_alm_10_b_13, CONDIC_NORMALIZAR))
+
+            self.l_alm_13_b_05 = lei.LeituraModbusBit(self.clp["UG3"], REG_UG["UG3"]["Alarme13_05"], descricao="[UG3] PDSA-CC - Alimentação das Cargas da Disj. 3Q125.0 Desligado")
+            self.condicionadores.append(c.CondicionadorBase(self.l_alm_13_b_05, CONDIC_NORMALIZAR))
+
+            self.l_alm_13_b_06 = lei.LeituraModbusBit(self.clp["UG3"], REG_UG["UG3"]["Alarme13_06"], descricao="[UG3] PDSA-CC - Alimentação do Painel PCP-U3 - Disj. 3Q125.1 Desligado")
+            self.condicionadores.append(c.CondicionadorBase(self.l_alm_13_b_06, CONDIC_NORMALIZAR))
+
+            self.l_alm_13_b_07 = lei.LeituraModbusBit(self.clp["UG3"], REG_UG["UG3"]["Alarme13_07"], descricao="[UG3] PDSA-CC - Alimentação do Quadro Q49-U3 - Disj. 3Q125.2 Desligado")
+            self.condicionadores.append(c.CondicionadorBase(self.l_alm_13_b_07, CONDIC_NORMALIZAR))
+
+            self.l_alm_13_b_08 = lei.LeituraModbusBit(self.clp["UG3"], REG_UG["UG3"]["Alarme13_08"], descricao="[UG3] PDSA-CC - Alimentação do Cubículo CSG-U3 - Disj. 3Q125.3 Desligado")
+            self.condicionadores.append(c.CondicionadorBase(self.l_alm_13_b_08, CONDIC_NORMALIZAR))
+
+            self.l_alm_13_b_09 = lei.LeituraModbusBit(self.clp["UG3"], REG_UG["UG3"]["Alarme13_09"], descricao="[UG3] PDSA-CC - Alimentação Painel do Regulador de Tensão Disj. 3Q125.4 Desligado")
+            self.condicionadores.append(c.CondicionadorBase(self.l_alm_13_b_09, CONDIC_NORMALIZAR))
+
+            self.l_alm_13_b_10 = lei.LeituraModbusBit(self.clp["UG3"], REG_UG["UG3"]["Alarme13_10"], descricao="[UG3] PDSA-CC - Alimentação do Filtro Duplo Disj. 3Q125.5 Desligado")
+            self.condicionadores.append(c.CondicionadorBase(self.l_alm_13_b_10, CONDIC_NORMALIZAR))
+
+            self.l_alm_13_b_11 = lei.LeituraModbusBit(self.clp["UG3"], REG_UG["UG3"]["Alarme13_11"], descricao="[UG3] PDSA-CC - Alimentação Reserva - Disj. 3Q125.6 Desligado")
+            self.condicionadores.append(c.CondicionadorBase(self.l_alm_13_b_11, CONDIC_NORMALIZAR))
+
+            self.l_alm_16_b_00 = lei.LeituraModbusBit(self.clp["UG3"], REG_UG["UG3"]["Alarme16_00"], descricao="[UG3] PDSA-CA - Alimentação das Cargas Essenciais da Disj. 3Q380.0 Desligado")
+            self.condicionadores.append(c.CondicionadorBase(self.l_alm_16_b_00, CONDIC_NORMALIZAR))
+
+            self.l_alm_16_b_01 = lei.LeituraModbusBit(self.clp["UG3"], REG_UG["UG3"]["Alarme16_01"], descricao="[UG3] PDSA-CA - Alimentação das Cargas Não Essenciais da Disj. 3Q380.1 Desligado")
+            self.condicionadores.append(c.CondicionadorBase(self.l_alm_16_b_01, CONDIC_NORMALIZAR))
+
+
+        # UG4
+        if self.id == 4:
+            self.l_alm_10_b_14 = lei.LeituraModbusBit(self.clp["UG4"], REG_UG["UG4"]["Alarme10_14"], descricao="[UG4] PCP-U4 - Alimentação Fonte 125/24Vcc - Disj. Q125.3 Desligado")
+            self.condicionadores.append(c.CondicionadorBase(self.l_alm_10_b_14, CONDIC_NORMALIZAR))
+
+            self.l_alm_13_b_12 = lei.LeituraModbusBit(self.clp["UG4"], REG_UG["UG4"]["Alarme13_12"], descricao="[UG4] PDSA-CC - Alimentação das Cargas da Disj. 4Q125.0 Desligado")
+            self.condicionadores.append(c.CondicionadorBase(self.l_alm_13_b_12, CONDIC_NORMALIZAR))
+
+            self.l_alm_13_b_13 = lei.LeituraModbusBit(self.clp["UG4"], REG_UG["UG4"]["Alarme13_13"], descricao="[UG4] PDSA-CC - Alimentação do Painel PCP-U4 - Disj. 4Q125.1 Desligado")
+            self.condicionadores.append(c.CondicionadorBase(self.l_alm_13_b_13, CONDIC_NORMALIZAR))
+
+            self.l_alm_13_b_14 = lei.LeituraModbusBit(self.clp["UG4"], REG_UG["UG4"]["Alarme13_14"], descricao="[UG4] PDSA-CC - Alimentação do Quadro Q49-U4 - Disj. 4Q125.2 Desligado")
+            self.condicionadores.append(c.CondicionadorBase(self.l_alm_13_b_14, CONDIC_NORMALIZAR))
+
+            self.l_alm_13_b_15 = lei.LeituraModbusBit(self.clp["UG4"], REG_UG["UG4"]["Alarme13_15"], descricao="[UG4] PDSA-CC - Alimentação do Cubículo CSG-U4 - Disj. 4Q125.3 Desligado")
+            self.condicionadores.append(c.CondicionadorBase(self.l_alm_13_b_15, CONDIC_NORMALIZAR))
+
+            self.l_alm_14_b_00 = lei.LeituraModbusBit(self.clp["UG4"], REG_UG["UG4"]["Alarme14_00"], descricao="[UG4] PDSA-CC - Alimentação Painel do Regulador de Tensão Disj. 4Q125.4 Desligado")
+            self.condicionadores.append(c.CondicionadorBase(self.l_alm_14_b_00, CONDIC_NORMALIZAR))
+
+            self.l_alm_14_b_01 = lei.LeituraModbusBit(self.clp["UG4"], REG_UG["UG4"]["Alarme14_01"], descricao="[UG4] PDSA-CC - Alimentação do Filtro Duplo Disj. 4Q125.5 Desligado")
+            self.condicionadores.append(c.CondicionadorBase(self.l_alm_14_b_01, CONDIC_NORMALIZAR))
+
+            self.l_alm_14_b_02 = lei.LeituraModbusBit(self.clp["UG4"], REG_UG["UG4"]["Alarme14_02"], descricao="[UG4] PDSA-CC - Alimentação Reserva - Disj. 4Q125.6 Desligado")
+            self.condicionadores.append(c.CondicionadorBase(self.l_alm_14_b_02, CONDIC_NORMALIZAR))
+
+            self.l_alm_16_b_02 = lei.LeituraModbusBit(self.clp["UG4"], REG_UG["UG4"]["Alarme16_02"], descricao="[UG4] PDSA-CA - Alimentação das Cargas Essenciais da Disj. 4Q380.0 Desligado")
+            self.condicionadores.append(c.CondicionadorBase(self.l_alm_16_b_02, CONDIC_NORMALIZAR))
+
+            self.l_alm_16_b_03 = lei.LeituraModbusBit(self.clp["UG4"], REG_UG["UG4"]["Alarme16_03"], descricao="[UG4] PDSA-CA - Alimentação das Cargas Não Essenciais da Disj. 4Q380.1 Desligado")
+            self.condicionadores.append(c.CondicionadorBase(self.l_alm_16_b_03, CONDIC_NORMALIZAR))
+
+            self.l_alm_10_b_15 = lei.LeituraModbusBit(self.clp["UG4"], REG_UG["UG4"]["Alarme10_15"], descricao="[UG4] PCP-U4 - Alimentação Circuitos de Comando - Disj. Q24.1 Desligado")
+            self.condicionadores.append(c.CondicionadorBase(self.l_alm_10_b_15, CONDIC_NORMALIZAR))
 
         return

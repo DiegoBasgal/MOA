@@ -50,7 +50,6 @@ class Servidores:
     clp["UG3"] = ModbusClient(
         host=d.ips["UG3_ip"],
         port=d.ips["UG3_porta"],
-<<<<<<< HEAD
         unit_id=1,
         timeout=5
     )
@@ -60,17 +59,6 @@ class Servidores:
         unit_id=1,
         timeout=5
     )
-=======
-        unit_id=1,
-        timeout=5
-    )
-    clp["UG4"] = ModbusClient(
-        host=d.ips["UG4_ip"],
-        port=d.ips["UG4_porta"],
-        unit_id=1,
-        timeout=5
-    )
->>>>>>> 1e023b84c2c6bb24b8d54491332f9d917de7798a
     clp["MOA"] = ModbusClient(
         host=d.ips["MOA_ip"],
         port=d.ips["MOA_porta"],

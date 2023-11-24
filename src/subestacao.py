@@ -252,12 +252,215 @@ class Subestacao:
         """
         return
 
+
     @classmethod
     def carregar_leituras(cls) -> "None":
         """
         Função para carregamento de leituras necessárias para a operação.
         """
 
+        cls.l_alm_01_b_00 = lei.LeituraModbusBit(cls.clp["SA"], REG_SE["Alarme01_00"], descricao="[SE]  PACP - Botão de Emergência Pressionado (Abertura 52L)")
+        cls.condicionadores.append(c.CondicionadorBase(cls.l_alm_01_b_00, CONDIC_NORMALIZAR))
 
+        cls.l_alm_01_b_01 = lei.LeituraModbusBit(cls.clp["SA"], REG_SE["Alarme01_01"], descricao="[SE]  Emergência Supervisório Pressionada (Abertura 52L)")
+        cls.condicionadores.append(c.CondicionadorBase(cls.l_alm_01_b_01, CONDIC_NORMALIZAR))
+
+        cls.l_alm_01_b_12 = lei.LeituraModbusBit(cls.clp["SA"], REG_SE["Alarme01_12"], descricao="[SE]  Relé de Proteção SEL787 - TRIP")
+        cls.condicionadores.append(c.CondicionadorBase(cls.l_alm_01_b_12, CONDIC_NORMALIZAR))
+
+        cls.l_alm_01_b_13 = lei.LeituraModbusBit(cls.clp["SA"], REG_SE["Alarme01_13"], descricao="[SE]  Relé de Proteção SEL787 - Falha 50/62BF")
+        cls.condicionadores.append(c.CondicionadorBase(cls.l_alm_01_b_13, CONDIC_NORMALIZAR))
+
+        cls.l_alm_01_b_14 = lei.LeituraModbusBit(cls.clp["SA"], REG_SE["Alarme01_14"], descricao="[SE]  Relé de Proteção SEL787 - Falha de Hardware")
+        cls.condicionadores.append(c.CondicionadorBase(cls.l_alm_01_b_14, CONDIC_NORMALIZAR))
+
+        cls.l_alm_02_b_00 = lei.LeituraModbusBit(cls.clp["SA"], REG_SE["Alarme02_00"], descricao="[SE]  Relé de Proteção SEL311C - TRIP")
+        cls.condicionadores.append(c.CondicionadorBase(cls.l_alm_02_b_00, CONDIC_NORMALIZAR))
+
+        cls.l_alm_02_b_01 = lei.LeituraModbusBit(cls.clp["SA"], REG_SE["Alarme02_01"], descricao="[SE]  Relé de Proteção SEL311C - Falha 50/62BF")
+        cls.condicionadores.append(c.CondicionadorBase(cls.l_alm_02_b_01, CONDIC_NORMALIZAR))
+
+        cls.l_alm_02_b_02 = lei.LeituraModbusBit(cls.clp["SA"], REG_SE["Alarme02_02"], descricao="[SE]  Relé de Proteção SEL311C - Falha de Hardware")
+        cls.condicionadores.append(c.CondicionadorBase(cls.l_alm_02_b_02, CONDIC_NORMALIZAR))
+
+        cls.l_alm_02_b_04 = lei.LeituraModbusBit(cls.clp["SA"], REG_SE["Alarme02_04"], descricao="[SE]  Relé de Proteção 59N - Alarme")
+        cls.condicionadores.append(c.CondicionadorBase(cls.l_alm_02_b_04, CONDIC_NORMALIZAR))
+
+        cls.l_alm_02_b_05 = lei.LeituraModbusBit(cls.clp["SA"], REG_SE["Alarme02_05"], descricao="[SE]  Relé de Proteção 59N - Trip")
+        cls.condicionadores.append(c.CondicionadorBase(cls.l_alm_02_b_05, CONDIC_NORMALIZAR))
+
+        cls.l_alm_02_b_07 = lei.LeituraModbusBit(cls.clp["SA"], REG_SE["Alarme02_07"], descricao="[SE]  Relé de Bloqueio 86BF (Falha Disjuntor) - Atuado")
+        cls.condicionadores.append(c.CondicionadorBase(cls.l_alm_02_b_07, CONDIC_NORMALIZAR))
+
+        cls.l_alm_02_b_08 = lei.LeituraModbusBit(cls.clp["SA"], REG_SE["Alarme02_08"], descricao="[SE]  Relé de Bloqueio 86TE (Proteções do Trafo Elevador) - Atuado")
+        cls.condicionadores.append(c.CondicionadorBase(cls.l_alm_02_b_08, CONDIC_NORMALIZAR))
+
+        cls.l_alm_02_b_11 = lei.LeituraModbusBit(cls.clp["SA"], REG_SE["Alarme02_11"], descricao="[SE]  Seccionadora 89L - Lâmina de Terra Fechada")
+        cls.condicionadores.append(c.CondicionadorBase(cls.l_alm_02_b_11, CONDIC_NORMALIZAR))
+
+        cls.l_alm_02_b_12 = lei.LeituraModbusBit(cls.clp["SA"], REG_SE["Alarme02_12"], descricao="[SE]  Seccionadora 89L - Lâmina de Terra Bloqueada")
+        cls.condicionadores.append(c.CondicionadorBase(cls.l_alm_02_b_12, CONDIC_NORMALIZAR))
+
+        cls.l_alm_02_b_13 = lei.LeituraModbusBit(cls.clp["SA"], REG_SE["Alarme02_13"], descricao="[SE]  Seccionadora 89L - Atenção! Chave em Modo Local")
+        cls.condicionadores.append(c.CondicionadorBase(cls.l_alm_02_b_13, CONDIC_NORMALIZAR))
+
+        cls.l_alm_03_b_00 = lei.LeituraModbusBit(cls.clp["SA"], REG_SE["Alarme03_00"], descricao="[SE]  Disjuntor 52L - Falha na Abertura")
+        cls.condicionadores.append(c.CondicionadorBase(cls.l_alm_03_b_00, CONDIC_NORMALIZAR))
+
+        cls.l_alm_03_b_01 = lei.LeituraModbusBit(cls.clp["SA"], REG_SE["Alarme03_01"], descricao="[SE]  Disjuntor 52L - Falha no Fechamento")
+        cls.condicionadores.append(c.CondicionadorBase(cls.l_alm_03_b_01, CONDIC_NORMALIZAR))
+
+        cls.l_alm_03_b_02 = lei.LeituraModbusBit(cls.clp["SA"], REG_SE["Alarme03_02"], descricao="[SE]  Disjuntor 52L - Inconsistência Status Aberto/Fechado")
+        cls.condicionadores.append(c.CondicionadorBase(cls.l_alm_03_b_02, CONDIC_NORMALIZAR))
+
+        cls.l_alm_03_b_03 = lei.LeituraModbusBit(cls.clp["SA"], REG_SE["Alarme03_03"], descricao="[SE]  Disjuntor 52L - Falta Tensão Vcc")
+        cls.condicionadores.append(c.CondicionadorBase(cls.l_alm_03_b_03, CONDIC_NORMALIZAR))
+
+        cls.l_alm_03_b_04 = lei.LeituraModbusBit(cls.clp["SA"], REG_SE["Alarme03_04"], descricao="[SE]  Disjuntor 52L - Mola Descarregada")
+        cls.condicionadores.append(c.CondicionadorBase(cls.l_alm_03_b_04, CONDIC_NORMALIZAR))
+
+        cls.l_alm_03_b_05 = lei.LeituraModbusBit(cls.clp["SA"], REG_SE["Alarme03_05"], descricao="[SE]  Disjuntor 52L - Alarme Pressão Baixa Gás SF6")
+        cls.condicionadores.append(c.CondicionadorBase(cls.l_alm_03_b_05, CONDIC_NORMALIZAR))
+
+        cls.l_alm_03_b_06 = lei.LeituraModbusBit(cls.clp["SA"], REG_SE["Alarme03_06"], descricao="[SE]  Disjuntor 52L - Trip Pressão Baixa Gás SF6 ( Impedimento do Fechamento 52L)")
+        cls.condicionadores.append(c.CondicionadorBase(cls.l_alm_03_b_06, CONDIC_NORMALIZAR))
+
+        cls.l_alm_03_b_07 = lei.LeituraModbusBit(cls.clp["SA"], REG_SE["Alarme03_07"], descricao="[SE]  Disjuntor 52L - Atenção! Chave em Modo Local")
+        cls.condicionadores.append(c.CondicionadorBase(cls.l_alm_03_b_07, CONDIC_NORMALIZAR))
+
+        cls.l_alm_03_b_08 = lei.LeituraModbusBit(cls.clp["SA"], REG_SE["Alarme03_08"], descricao="[SE]  Disjuntor 52L - Falha no Circuito do Motor de Carregamento da Mola")
+        cls.condicionadores.append(c.CondicionadorBase(cls.l_alm_03_b_08, CONDIC_NORMALIZAR))
+
+        cls.l_alm_05_b_02 = lei.LeituraModbusBit(cls.clp["SA"], REG_SE["Alarme05_02"], descricao="[SE]  Trafo Elevador - Alarme Relé Buchholz")
+        cls.condicionadores.append(c.CondicionadorBase(cls.l_alm_05_b_02, CONDIC_NORMALIZAR))
+
+        cls.l_alm_05_b_03 = lei.LeituraModbusBit(cls.clp["SA"], REG_SE["Alarme05_03"], descricao="[SE]  Trafo Elevador - Trip Relé Buchholz Bloqueio (Bloqueio 86TE)")
+        cls.condicionadores.append(c.CondicionadorBase(cls.l_alm_05_b_03, CONDIC_NORMALIZAR))
+
+        cls.l_alm_05_b_04 = lei.LeituraModbusBit(cls.clp["SA"], REG_SE["Alarme05_04"], descricao="[SE]  Trafo Elevador - Trip Nível de Óleo Baixo (Bloqueio 86TE)")
+        cls.condicionadores.append(c.CondicionadorBase(cls.l_alm_05_b_04, CONDIC_NORMALIZAR))
+
+        cls.l_alm_05_b_05 = lei.LeituraModbusBit(cls.clp["SA"], REG_SE["Alarme05_05"], descricao="[SE]  Trafo Elevador - Alarme Nível de Óleo Alto")
+        cls.condicionadores.append(c.CondicionadorBase(cls.l_alm_05_b_05, CONDIC_NORMALIZAR))
+
+        cls.l_alm_05_b_06 = lei.LeituraModbusBit(cls.clp["SA"], REG_SE["Alarme05_06"], descricao="[SE]  Trafo Elevador - Alarme Sobretemperatura do Óleo")
+        cls.condicionadores.append(c.CondicionadorBase(cls.l_alm_05_b_06, CONDIC_NORMALIZAR))
+
+        cls.l_alm_05_b_07 = lei.LeituraModbusBit(cls.clp["SA"], REG_SE["Alarme05_07"], descricao="[SE]  Trafo Elevador - Trip Sobretemperatura do Óleo (Bloqueio 86TE)")
+        cls.condicionadores.append(c.CondicionadorBase(cls.l_alm_05_b_07, CONDIC_NORMALIZAR))
+
+        cls.l_alm_05_b_08 = lei.LeituraModbusBit(cls.clp["SA"], REG_SE["Alarme05_08"], descricao="[SE]  Trafo Elevador - Alarme Sobretemperatura do Enrolamento")
+        cls.condicionadores.append(c.CondicionadorBase(cls.l_alm_05_b_08, CONDIC_NORMALIZAR))
+
+        cls.l_alm_05_b_09 = lei.LeituraModbusBit(cls.clp["SA"], REG_SE["Alarme05_09"], descricao="[SE]  Trafo Elevador - Trip Sobretemperatura do Enrolamento (Bloqueio 86TE)")
+        cls.condicionadores.append(c.CondicionadorBase(cls.l_alm_05_b_09, CONDIC_NORMALIZAR))
+
+        cls.l_alm_05_b_10 = lei.LeituraModbusBit(cls.clp["SA"], REG_SE["Alarme05_10"], descricao="[SE]  Trafo Elevador - Alarme Válvula de Alívio de Pressão")
+        cls.condicionadores.append(c.CondicionadorBase(cls.l_alm_05_b_10, CONDIC_NORMALIZAR))
+
+        cls.l_alm_05_b_11 = lei.LeituraModbusBit(cls.clp["SA"], REG_SE["Alarme05_11"], descricao="[SE]  Trafo Elevador - Trip Válvula de Alívio de Pressão (Bloqueio 86TE)")
+        cls.condicionadores.append(c.CondicionadorBase(cls.l_alm_05_b_11, CONDIC_NORMALIZAR))
+
+        cls.l_alm_05_b_12 = lei.LeituraModbusBit(cls.clp["SA"], REG_SE["Alarme05_12"], descricao="[SE]  Trafo Elevador - Falha Relé Monitor de Temperatura")
+        cls.condicionadores.append(c.CondicionadorBase(cls.l_alm_05_b_12, CONDIC_NORMALIZAR))
+
+        cls.l_alm_05_b_13 = lei.LeituraModbusBit(cls.clp["SA"], REG_SE["Alarme05_13"], descricao="[SE]  Trafo Elevador - Trip Pressão Súbita (Bloqueio 86TE)")
+        cls.condicionadores.append(c.CondicionadorBase(cls.l_alm_05_b_13, CONDIC_NORMALIZAR))
+
+        cls.l_alm_05_b_14 = lei.LeituraModbusBit(cls.clp["SA"], REG_SE["Alarme05_14"], descricao="[SE]  Trafo Elevador - Falha Ventilação Forçada")
+        cls.condicionadores.append(c.CondicionadorBase(cls.l_alm_05_b_14, CONDIC_NORMALIZAR))
+
+        cls.l_alm_09_b_07 = lei.LeituraModbusBit(cls.clp["SA"], REG_SE["Alarme09_07"], descricao="[SE]  PACP-SE - Sensor de Fumaça Atuado")
+        cls.condicionadores.append(c.CondicionadorBase(cls.l_alm_09_b_07, CONDIC_NORMALIZAR))
+
+        cls.l_alm_09_b_08 = lei.LeituraModbusBit(cls.clp["SA"], REG_SE["Alarme09_08"], descricao="[SE]  PACP-SE - Sensor de Fumaça Desconectado")
+        cls.condicionadores.append(c.CondicionadorBase(cls.l_alm_09_b_08, CONDIC_NORMALIZAR))
+
+        cls.l_alm_12_b_03 = lei.LeituraModbusBit(cls.clp["SA"], REG_SE["Alarme12_03"], descricao="[SE]  PDSA-CC - Alimentação Painel do Trafo Elevador - Disj. Q125.7 Desligado")
+        cls.condicionadores.append(c.CondicionadorBase(cls.l_alm_12_b_03, CONDIC_NORMALIZAR))
+
+        cls.l_alm_14_b_07 = lei.LeituraModbusBit(cls.clp["SA"], REG_SE["Alarme14_07"], descricao="[SE]  PDSA-CA - Alimentação do Painel PACP-SE - Disj. Q220.6 Desligado")
+        cls.condicionadores.append(c.CondicionadorBase(cls.l_alm_14_b_07, CONDIC_NORMALIZAR))
+
+        cls.l_alm_16_b_04 = lei.LeituraModbusBit(cls.clp["SA"], REG_SE["Alarme16_04"], descricao="[SE]  Disjuntor 52L - Alimentação Motor de Carregamento da Mola - Disj. F1 Desligado")
+        cls.condicionadores.append(c.CondicionadorBase(cls.l_alm_16_b_04, CONDIC_NORMALIZAR))
+
+        cls.l_alm_16_b_05 = lei.LeituraModbusBit(cls.clp["SA"], REG_SE["Alarme16_05"], descricao="[SE]  Disjuntor 52L - Alimentação Circuito de Aquecimento - Disj. F2 Desligado")
+        cls.condicionadores.append(c.CondicionadorBase(cls.l_alm_16_b_05, CONDIC_NORMALIZAR))
+
+        cls.l_alm_16_b_06 = lei.LeituraModbusBit(cls.clp["SA"], REG_SE["Alarme16_06"], descricao="[SE]  Seccionadora 89L - Alimentação Circuito de Comando - Disj. F1 Desligado")
+        cls.condicionadores.append(c.CondicionadorBase(cls.l_alm_16_b_06, CONDIC_NORMALIZAR))
+
+        cls.l_alm_16_b_07 = lei.LeituraModbusBit(cls.clp["SA"], REG_SE["Alarme16_07"], descricao="[SE]  Seccionadora 89L - Alimentação Motor de Acionamento - Disj. F3 Desligado")
+        cls.condicionadores.append(c.CondicionadorBase(cls.l_alm_16_b_07, CONDIC_NORMALIZAR))
+
+        cls.l_alm_16_b_08 = lei.LeituraModbusBit(cls.clp["SA"], REG_SE["Alarme16_08"], descricao="[SE]  Seccionadora 89L - Alimentação Motor de Acionamento  - Disj. F3 Inconsistência")
+        cls.condicionadores.append(c.CondicionadorBase(cls.l_alm_16_b_08, CONDIC_NORMALIZAR))
+
+        cls.l_alm_16_b_09 = lei.LeituraModbusBit(cls.clp["SA"], REG_SE["Alarme16_09"], descricao="[SE]  Seccionadora 89L - Alimentação Motor de Acionamento  - Disj. F3 Trip")
+        cls.condicionadores.append(c.CondicionadorBase(cls.l_alm_16_b_09, CONDIC_NORMALIZAR))
+
+        cls.l_alm_18_b_04 = lei.LeituraModbusBit(cls.clp["SA"], REG_SE["Alarme18_04"], descricao="[SE]  PACP-SE - Falha de Comunicação com o Relé de Proteção SEL311C")
+        cls.condicionadores.append(c.CondicionadorBase(cls.l_alm_18_b_04, CONDIC_NORMALIZAR))
+
+        cls.l_alm_18_b_05 = lei.LeituraModbusBit(cls.clp["SA"], REG_SE["Alarme18_05"], descricao="[SE]  PACP-SE - Falha de Comunicação com o Relé de Proteção SEL787")
+        cls.condicionadores.append(c.CondicionadorBase(cls.l_alm_18_b_05, CONDIC_NORMALIZAR))
+
+        cls.l_alm_18_b_13 = lei.LeituraModbusBit(cls.clp["SA"], REG_SE["Alarme18_13"], descricao="[SE]  Relé de Proteção SEL311C - Sobrecorrente Temporizada de Fase (51P) (Abertura 52L)")
+        cls.condicionadores.append(c.CondicionadorBase(cls.l_alm_18_b_13, CONDIC_NORMALIZAR))
+
+        cls.l_alm_18_b_14 = lei.LeituraModbusBit(cls.clp["SA"], REG_SE["Alarme18_14"], descricao="[SE]  Relé de Proteção SEL311C - Sobrecorrente Residual Temporizada (51G) (Abertura 52L)")
+        cls.condicionadores.append(c.CondicionadorBase(cls.l_alm_18_b_14, CONDIC_NORMALIZAR))
+
+        cls.l_alm_18_b_15 = lei.LeituraModbusBit(cls.clp["SA"], REG_SE["Alarme18_15"], descricao="[SE]  Relé de Proteção SEL311C - Proteção de Distância de Fase Zona 01 (21P_Z1) (Abertura 52L)")
+        cls.condicionadores.append(c.CondicionadorBase(cls.l_alm_18_b_15, CONDIC_NORMALIZAR))
+
+        cls.l_alm_19_b_00 = lei.LeituraModbusBit(cls.clp["SA"], REG_SE["Alarme19_00"], descricao="[SE]  Relé de Proteção SEL311C - Proteção de Distância de Fase Zona 02 (21P_Z2) (Abertura 52L)")
+        cls.condicionadores.append(c.CondicionadorBase(cls.l_alm_19_b_00, CONDIC_NORMALIZAR))
+
+        cls.l_alm_19_b_01 = lei.LeituraModbusBit(cls.clp["SA"], REG_SE["Alarme19_01"], descricao="[SE]  Relé de Proteção SEL311C - Proteção de Distância de Fase Zona 03 Reversa (21P_Z3R) (Abertura 52L)")
+        cls.condicionadores.append(c.CondicionadorBase(cls.l_alm_19_b_01, CONDIC_NORMALIZAR))
+
+        cls.l_alm_19_b_02 = lei.LeituraModbusBit(cls.clp["SA"], REG_SE["Alarme19_02"], descricao="[SE]  Relé de Proteção SEL311C - Proteção de Distância de Neutro Zona 01 (21N_Z1) (Abertura 52L)")
+        cls.condicionadores.append(c.CondicionadorBase(cls.l_alm_19_b_02, CONDIC_NORMALIZAR))
+
+        cls.l_alm_19_b_03 = lei.LeituraModbusBit(cls.clp["SA"], REG_SE["Alarme19_03"], descricao="[SE]  Relé de Proteção SEL311C - Proteção de Distância de Neutro Zona 02 (21N_Z2) (Abertura 52L)")
+        cls.condicionadores.append(c.CondicionadorBase(cls.l_alm_19_b_03, CONDIC_NORMALIZAR))
+
+        cls.l_alm_19_b_04 = lei.LeituraModbusBit(cls.clp["SA"], REG_SE["Alarme19_04"], descricao="[SE]  Relé de Proteção SEL311C - Proteção de Distância de Neutro Zona 03 Reversa (21N_Z3R) (Abertura 52L)")
+        cls.condicionadores.append(c.CondicionadorBase(cls.l_alm_19_b_04, CONDIC_NORMALIZAR))
+
+        cls.l_alm_19_b_05 = lei.LeituraModbusBit(cls.clp["SA"], REG_SE["Alarme19_05"], descricao="[SE]  Relé de Proteção SEL311C - Proteção SubTensão (27P) (Abertura 52L)")
+        cls.condicionadores.append(c.CondicionadorBase(cls.l_alm_19_b_05, CONDIC_NORMALIZAR))
+
+        cls.l_alm_19_b_15 = lei.LeituraModbusBit(cls.clp["SA"], REG_SE["Alarme19_15"], descricao="[SE]  Relé de Proteção SEL787 - Proteção Diferencial (87T) (Abertura 52L)")
+        cls.condicionadores.append(c.CondicionadorBase(cls.l_alm_19_b_15, CONDIC_NORMALIZAR))
+
+        cls.l_alm_20_b_00 = lei.LeituraModbusBit(cls.clp["SA"], REG_SE["Alarme20_00"], descricao="[SE]  Relé de Proteção SEL787 - Sobrecorrente Instantânea Lado de Baixa (50P_BT) (Abertura 52L) ")
+        cls.condicionadores.append(c.CondicionadorBase(cls.l_alm_20_b_00, CONDIC_NORMALIZAR))
+
+        cls.l_alm_20_b_01 = lei.LeituraModbusBit(cls.clp["SA"], REG_SE["Alarme20_01"], descricao="[SE]  Relé de Proteção SEL787 - Sobrecorrente Temporizada de Neutro (51N) (Abertura 52L)")
+        cls.condicionadores.append(c.CondicionadorBase(cls.l_alm_20_b_01, CONDIC_NORMALIZAR))
+
+        cls.l_alm_20_b_02 = lei.LeituraModbusBit(cls.clp["SA"], REG_SE["Alarme20_02"], descricao="[SE]  Relé de Proteção SEL787 - Sobrecorrente Temporizada Lado de Baixa (51P_BT) (Abertura 52L)")
+        cls.condicionadores.append(c.CondicionadorBase(cls.l_alm_20_b_02, CONDIC_NORMALIZAR))
+
+        cls.l_alm_20_b_03 = lei.LeituraModbusBit(cls.clp["SA"], REG_SE["Alarme20_03"], descricao="[SE]  Relé de Proteção SEL787 - Sobrecorrente Temporizada Lado de Alta (51P_AT) (Abertura 52L)")
+        cls.condicionadores.append(c.CondicionadorBase(cls.l_alm_20_b_03, CONDIC_NORMALIZAR))
+
+        cls.l_alm_20_b_04 = lei.LeituraModbusBit(cls.clp["SA"], REG_SE["Alarme20_04"], descricao="[SE]  Relé de Proteção SEL787 - Grade de Proteção das Portas CSG-U1 ou CPS-U1 Aberta (Abertura 52L)")
+        cls.condicionadores.append(c.CondicionadorBase(cls.l_alm_20_b_04, CONDIC_NORMALIZAR))
+
+        cls.l_alm_20_b_05 = lei.LeituraModbusBit(cls.clp["SA"], REG_SE["Alarme20_05"], descricao="[SE]  Relé de Proteção SEL787 - Grade de Proteção das Portas CSG-U2 ou CPS-U2 Aberta (Abertura 52L)")
+        cls.condicionadores.append(c.CondicionadorBase(cls.l_alm_20_b_05, CONDIC_NORMALIZAR))
+
+        cls.l_alm_20_b_15 = lei.LeituraModbusBit(cls.clp["SA"], REG_SE["Alarme20_15"], descricao="[SE]  Relé de Proteção SEL787 - Grade de Proteção das Portas CSG-U3 ou CPS-U3 Aberta (Abertura 52L)")
+        cls.condicionadores.append(c.CondicionadorBase(cls.l_alm_20_b_15, CONDIC_NORMALIZAR))
+
+        cls.l_alm_21_b_00 = lei.LeituraModbusBit(cls.clp["SA"], REG_SE["Alarme21_00"], descricao="[SE]  Relé de Proteção SEL787 - Grade de Proteção das Portas CSG-U4 ou CPS-U4 Aberta (Abertura 52L)")
+        cls.condicionadores.append(c.CondicionadorBase(cls.l_alm_21_b_00, CONDIC_NORMALIZAR))
+
+        cls.l_alm_21_b_01 = lei.LeituraModbusBit(cls.clp["SA"], REG_SE["Alarme21_01"], descricao="[SE]  Relé de Proteção SEL787 - Grade de Proteção das Portas CSA-01 ou CSA-02 Aberta (Abertura 52L)")
+        cls.condicionadores.append(c.CondicionadorBase(cls.l_alm_21_b_01, CONDIC_NORMALIZAR))
 
         return
