@@ -258,7 +258,6 @@ class Subestacao:
         Função para carregamento de leituras necessárias para a operação.
         """
 
-        
 
 
         return
