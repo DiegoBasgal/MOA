@@ -372,34 +372,33 @@ def parametros_moa_view(request, *args, **kwargs):
 
 
     escolha_ugs = 0
-    if ((usina.modo_de_escolha_das_ugs == 2) and (usina.ug1_prioridade > usina.ug2_prioridade)):
+
+    if ((usina.modo_de_escolha_das_ugs == 1)
+        and (usina.ug1_prioridade > usina.ug2_prioridade)
+        and (usina.ug1_prioridade > usina.ug3_prioridade)
+        and (usina.ug1_prioridade > usina.ug4_prioridade)):
         escolha_ugs = 1
 
-    if ((usina.modo_de_escolha_das_ugs == 2) and (usina.ug2_prioridade > usina.ug1_prioridade)):
+    if ((usina.modo_de_escolha_das_ugs == 2)
+        and (usina.ug2_prioridade > usina.ug1_prioridade)
+        and (usina.ug2_prioridade > usina.ug3_prioridade)
+        and (usina.ug2_prioridade > usina.ug4_prioridade)):
         escolha_ugs = 2
 
-    if ((usina.modo_de_escolha_das_ugs == 3) and (usina.ug2_prioridade > usina.ug1_prioridade)):
+    if ((usina.modo_de_escolha_das_ugs == 3)
+        and (usina.ug3_prioridade > usina.ug1_prioridade)
+        and (usina.ug3_prioridade > usina.ug2_prioridade)
+        and (usina.ug3_prioridade > usina.ug4_prioridade)):
         escolha_ugs = 3
 
-    if ((usina.modo_de_escolha_das_ugs == 4) and (usina.ug2_prioridade > usina.ug1_prioridade)):
+    if ((usina.modo_de_escolha_das_ugs == 4)
+        and (usina.ug4_prioridade > usina.ug1_prioridade)
+        and (usina.ug4_prioridade > usina.ug2_prioridade)
+        and (usina.ug4_prioridade > usina.ug3_prioridade)):
         escolha_ugs = 4
 
+
     context = {"escolha_ugs": escolha_ugs, "usina": usina}
-
-    if usina.nv_alvo >= 462.37:
-        context["tag_alvo"] = 3
-
-    elif 461.85 <= usina.nv_alvo < 462.37:
-        context["tag_alvo"] = 2
-
-    elif 461.37 < usina.nv_alvo < 461.85:
-        context["tag_alvo"] = 1
-
-    elif usina.nv_alvo <= 461.37:
-        context["tag_alvo"] = 0
-
-    else:
-        context["tag_alvo"] = -1
 
     return render(request, "parametros_moa.html", context=context)
 
