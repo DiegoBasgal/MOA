@@ -7,6 +7,7 @@ import traceback
 
 import src.tomada_agua as tda
 import src.funcoes.leitura as lei
+import src.funcoes.condicionadores as c
 import src.conectores.servidores as serv
 
 from src.dicionarios.reg import *
@@ -22,6 +23,9 @@ class Adufas:
     __split2: "bool" = False
 
     clp = serv.Servidores.clp
+
+    condicionadores: "list[c.CondicionadorBase]" = []
+    condicionadores_essenciais: "list[c.CondicionadorBase]" = []
 
     class Comporta:
         def __init__(self, id: "int") -> "None":
@@ -99,9 +103,11 @@ class Adufas:
         tda.TomadaAgua.nivel_montante.valor
         return
 
+
     @classmethod
     def calcular_setpoint(cls) -> "float":
         return
+
 
     @classmethod
     def distribuir_setpoint(cls, sp_alvo: "int") -> "None":
@@ -134,5 +140,125 @@ class Adufas:
 
             else:
                 cls.cps[0].setpoint = 0
+
+        return
+
+
+    @classmethod
+    def carregar_leituras(cls) -> "None":
+        """
+        Função para carregamento de leituras necessárias para a operação.
+        """
+
+        cls.l_alm_28_00 = lei.LeituraModbusBit(cls.clp["AD"], REG_AD["Alarme28_00"], descricao="[AD]  Botão de Emergência Pressionado")
+        cls.condicionadores.append(c.CondicionadorBase(cls.l_alm_28_00, CONDIC_NORMALIZAR))
+
+        cls.l_alm_28_01 = lei.LeituraModbusBit(cls.clp["AD"], REG_AD["Alarme28_01"], descricao="[AD]  Relé Falta de Fase CA Atuado")
+        cls.condicionadores.append(c.CondicionadorBase(cls.l_alm_28_01, CONDIC_NORMALIZAR))
+
+        cls.l_alm_28_04 = lei.LeituraModbusBit(cls.clp["AD"], REG_AD["Alarme28_04"], descricao="[AD]  UHCD - Pressão de Óleo Baixa")
+        cls.condicionadores.append(c.CondicionadorBase(cls.l_alm_28_04, CONDIC_NORMALIZAR))
+
+        cls.l_alm_28_05 = lei.LeituraModbusBit(cls.clp["AD"], REG_AD["Alarme28_05"], descricao="[AD]  UHCD - Pressão de Óleo Alta na Linha da Comporta 01")
+        cls.condicionadores.append(c.CondicionadorBase(cls.l_alm_28_05, CONDIC_NORMALIZAR))
+
+        cls.l_alm_28_06 = lei.LeituraModbusBit(cls.clp["AD"], REG_AD["Alarme28_06"], descricao="[AD]  UHCD - Pressão de Óleo Alta na Linha da Comporta 02")
+        cls.condicionadores.append(c.CondicionadorBase(cls.l_alm_28_06, CONDIC_NORMALIZAR))
+
+        cls.l_alm_28_07 = lei.LeituraModbusBit(cls.clp["AD"], REG_AD["Alarme28_07"], descricao="[AD]  UHCD - Filtro de Retorno Sujo")
+        cls.condicionadores.append(c.CondicionadorBase(cls.l_alm_28_07, CONDIC_NORMALIZAR))
+
+        cls.l_alm_28_08 = lei.LeituraModbusBit(cls.clp["AD"], REG_AD["Alarme28_08"], descricao="[AD]  UHCD - Nível de Óleo Crítico")
+        cls.condicionadores.append(c.CondicionadorBase(cls.l_alm_28_08, CONDIC_NORMALIZAR))
+
+        cls.l_alm_28_09 = lei.LeituraModbusBit(cls.clp["AD"], REG_AD["Alarme28_09"], descricao="[AD]  UHCD - Nível de Óleo Alto")
+        cls.condicionadores.append(c.CondicionadorBase(cls.l_alm_28_09, CONDIC_NORMALIZAR))
+
+        cls.l_alm_28_10 = lei.LeituraModbusBit(cls.clp["AD"], REG_AD["Alarme28_10"], descricao="[AD]  UHCD - Sobretemperatura do Óleo - Alarme")
+        cls.condicionadores.append(c.CondicionadorBase(cls.l_alm_28_10, CONDIC_NORMALIZAR))
+
+        cls.l_alm_28_11 = lei.LeituraModbusBit(cls.clp["AD"], REG_AD["Alarme28_11"], descricao="[AD]  UHCD - Sobretemperatura do Óleo - Trip")
+        cls.condicionadores.append(c.CondicionadorBase(cls.l_alm_28_11, CONDIC_NORMALIZAR))
+
+        cls.l_alm_28_12 = lei.LeituraModbusBit(cls.clp["AD"], REG_AD["Alarme28_12"], descricao="[AD]  UHCD - Botão de Emergência Pressionado")
+        cls.condicionadores.append(c.CondicionadorBase(cls.l_alm_28_12, CONDIC_NORMALIZAR))
+
+        cls.l_alm_29_00 = lei.LeituraModbusBit(cls.clp["AD"], REG_AD["Alarme29_00"], descricao="[AD]  UHCD - Bomba de Óleo 01 - Falha no Acionamento")
+        cls.condicionadores.append(c.CondicionadorBase(cls.l_alm_29_00, CONDIC_NORMALIZAR))
+
+        cls.l_alm_29_01 = lei.LeituraModbusBit(cls.clp["AD"], REG_AD["Alarme29_01"], descricao="[AD]  UHCD - Bomba de Óleo 01 - Disjuntor QM1 Aberto")
+        cls.condicionadores.append(c.CondicionadorBase(cls.l_alm_29_01, CONDIC_NORMALIZAR))
+
+        cls.l_alm_29_02 = lei.LeituraModbusBit(cls.clp["AD"], REG_AD["Alarme29_02"], descricao="[AD]  UHCD - Bomba de Óleo 02 - Falha no Acionamento")
+        cls.condicionadores.append(c.CondicionadorBase(cls.l_alm_29_02, CONDIC_NORMALIZAR))
+
+        cls.l_alm_29_03 = lei.LeituraModbusBit(cls.clp["AD"], REG_AD["Alarme29_03"], descricao="[AD]  UHCD - Bomba de Óleo 02 - Disjuntor QM2 Aberto")
+        cls.condicionadores.append(c.CondicionadorBase(cls.l_alm_29_03, CONDIC_NORMALIZAR))
+
+        cls.l_alm_29_05 = lei.LeituraModbusBit(cls.clp["AD"], REG_AD["Alarme29_05"], descricao="[AD]  Comporta 01 - Falha na Abertura")
+        cls.condicionadores.append(c.CondicionadorBase(cls.l_alm_29_05, CONDIC_NORMALIZAR))
+
+        cls.l_alm_29_06 = lei.LeituraModbusBit(cls.clp["AD"], REG_AD["Alarme29_06"], descricao="[AD]  Comporta 01 - Falha no Fechamento")
+        cls.condicionadores.append(c.CondicionadorBase(cls.l_alm_29_06, CONDIC_NORMALIZAR))
+
+        cls.l_alm_29_07 = lei.LeituraModbusBit(cls.clp["AD"], REG_AD["Alarme29_07"], descricao="[AD]  Comporta 01 - Falha Tempo Abertura Step Excedido")
+        cls.condicionadores.append(c.CondicionadorBase(cls.l_alm_29_07, CONDIC_NORMALIZAR))
+
+        cls.l_alm_29_09 = lei.LeituraModbusBit(cls.clp["AD"], REG_AD["Alarme29_09"], descricao="[AD]  Comporta 02 - Falha na Abertura")
+        cls.condicionadores.append(c.CondicionadorBase(cls.l_alm_29_09, CONDIC_NORMALIZAR))
+
+        cls.l_alm_29_10 = lei.LeituraModbusBit(cls.clp["AD"], REG_AD["Alarme29_10"], descricao="[AD]  Comporta 02 - Falha no Fechamento")
+        cls.condicionadores.append(c.CondicionadorBase(cls.l_alm_29_10, CONDIC_NORMALIZAR))
+
+        cls.l_alm_29_11 = lei.LeituraModbusBit(cls.clp["AD"], REG_AD["Alarme29_11"], descricao="[AD]  Comporta 02 - Falha Tempo Abertura Step Excedido")
+        cls.condicionadores.append(c.CondicionadorBase(cls.l_alm_29_11, CONDIC_NORMALIZAR))
+
+        cls.l_alm_29_13 = lei.LeituraModbusBit(cls.clp["AD"], REG_AD["Alarme29_13"], descricao="[AD]  Falha no Carregador de Baterias")
+        cls.condicionadores.append(c.CondicionadorBase(cls.l_alm_29_13, CONDIC_NORMALIZAR))
+
+        cls.l_alm_30_00 = lei.LeituraModbusBit(cls.clp["AD"], REG_AD["Alarme30_00"], descricao="[AD]  Sensor de Fumaça Atuado")
+        cls.condicionadores.append(c.CondicionadorBase(cls.l_alm_30_00, CONDIC_NORMALIZAR))
+
+        cls.l_alm_30_01 = lei.LeituraModbusBit(cls.clp["AD"], REG_AD["Alarme30_01"], descricao="[AD]  Sensor de Fumaça Desconectado")
+        cls.condicionadores.append(c.CondicionadorBase(cls.l_alm_30_01, CONDIC_NORMALIZAR))
+
+        cls.l_alm_30_04 = lei.LeituraModbusBit(cls.clp["AD"], REG_AD["Alarme30_04"], descricao="[AD]  Sensor de Presença Atuado")
+        cls.condicionadores.append(c.CondicionadorBase(cls.l_alm_30_04, CONDIC_NORMALIZAR))
+
+        cls.l_alm_30_05 = lei.LeituraModbusBit(cls.clp["AD"], REG_AD["Alarme30_05"], descricao="[AD]  Sensor de Presença Inibido")
+        cls.condicionadores.append(c.CondicionadorBase(cls.l_alm_30_05, CONDIC_NORMALIZAR))
+
+        cls.l_alm_30_08 = lei.LeituraModbusBit(cls.clp["AD"], REG_AD["Alarme30_08"], descricao="[AD]  Erro de Leitura na entrada analógica da temperatura do Óleo da UHCD")
+        cls.condicionadores.append(c.CondicionadorBase(cls.l_alm_30_08, CONDIC_NORMALIZAR))
+
+        cls.l_alm_30_09 = lei.LeituraModbusBit(cls.clp["AD"], REG_AD["Alarme30_09"], descricao="[AD]  Erro de Leitura na entrada analógica do nível de óleo da UHCD")
+        cls.condicionadores.append(c.CondicionadorBase(cls.l_alm_30_09, CONDIC_NORMALIZAR))
+
+        cls.l_alm_30_10 = lei.LeituraModbusBit(cls.clp["AD"], REG_AD["Alarme30_10"], descricao="[AD]  Erro de Leitura na entrada analógica da posição da comporta 01")
+        cls.condicionadores.append(c.CondicionadorBase(cls.l_alm_30_10, CONDIC_NORMALIZAR))
+
+        cls.l_alm_30_11 = lei.LeituraModbusBit(cls.clp["AD"], REG_AD["Alarme30_11"], descricao="[AD]  Erro de Leitura na entrada analógica da posição da comporta 02")
+        cls.condicionadores.append(c.CondicionadorBase(cls.l_alm_30_11, CONDIC_NORMALIZAR))
+
+        cls.l_alm_31_00 = lei.LeituraModbusBit(cls.clp["AD"], REG_AD["Alarme31_00"], descricao="[AD]  Alimentação 380Vca Principal - Disj. Q380.0 Desligado")
+        cls.condicionadores.append(c.CondicionadorBase(cls.l_alm_31_00, CONDIC_NORMALIZAR))
+
+        cls.l_alm_31_01 = lei.LeituraModbusBit(cls.clp["AD"], REG_AD["Alarme31_01"], descricao="[AD]  Alimentação 380Vca Principal - Disj. Q380.0 Inconsistência")
+        cls.condicionadores.append(c.CondicionadorBase(cls.l_alm_31_01, CONDIC_NORMALIZAR))
+
+        cls.l_alm_31_02 = lei.LeituraModbusBit(cls.clp["AD"], REG_AD["Alarme31_02"], descricao="[AD]  Alimentação 380Vca Principal - Disj. Q380.0 Trip")
+        cls.condicionadores.append(c.CondicionadorBase(cls.l_alm_31_02, CONDIC_NORMALIZAR))
+
+        cls.l_alm_31_03 = lei.LeituraModbusBit(cls.clp["AD"], REG_AD["Alarme31_03"], descricao="[AD]  Alimentação Carregador de Baterias - Disj. Q220.0 Desligado")
+        cls.condicionadores.append(c.CondicionadorBase(cls.l_alm_31_03, CONDIC_NORMALIZAR))
+
+        cls.l_alm_31_04 = lei.LeituraModbusBit(cls.clp["AD"], REG_AD["Alarme31_04"], descricao="[AD]  Alimentação Banco de Baterias - Disj. Q24.0 Desligado")
+        cls.condicionadores.append(c.CondicionadorBase(cls.l_alm_31_04, CONDIC_NORMALIZAR))
+
+        cls.l_alm_31_05 = lei.LeituraModbusBit(cls.clp["AD"], REG_AD["Alarme31_05"], descricao="[AD]  Alimentação Circuitos de Comando - Disj. Q24.3 Desligado")
+        cls.condicionadores.append(c.CondicionadorBase(cls.l_alm_31_05, CONDIC_NORMALIZAR))
+
+        cls.l_alm_31_06 = lei.LeituraModbusBit(cls.clp["AD"], REG_AD["Alarme31_06"], descricao="[AD]  Alimentação Inversor 24/220Vca - Disj. Q24.4 Desligado")
+        cls.condicionadores.append(c.CondicionadorBase(cls.l_alm_31_06, CONDIC_NORMALIZAR))
 
         return
