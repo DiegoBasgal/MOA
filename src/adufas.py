@@ -73,22 +73,20 @@ class Adufas:
 
                 if setpoint > 1:
                     self.setpoint = int(setpoint)
-                    res = self.clp["AD"].write_single_register(REG_AD[f"CP_0{self.id}_SP_POS"], int(self.setpoint))
-                    return res
+                    self.clp["AD"].write_single_register(REG_AD[f"CP_0{self.id}_SP_POS"], int(self.setpoint))
 
             except Exception:
                 logger.error(f"[AD][CP{self.id}] Não foi possivel enviar o setpoint para a Comporta.")
                 logger.debug(traceback.format_exc())
-                return False
 
 
     cp1 = Comporta(1)
     cp2 = Comporta(2)
-
     cps: "list[Comporta]" = [cp1, cp2]
 
+
     @classmethod
-    def calcular_setpoint(cls) -> "float":
+    def calcular_setpoint(cls) -> "int":
         tda.TomadaAgua.nivel_montante.valor
         return
 
@@ -103,12 +101,12 @@ class Adufas:
 
         if len(cls.cps) == 2:
             if cls.__split2:
-                cls.cps[0].setpoint = sp * cls.cps[0].setpoint_maximo
-                cls.cps[1].setpoint = sp * cls.cps[1].setpoint_maximo
+                cls.cps[0].setpoint = sp * cls.cps[0]
+                cls.cps[1].setpoint = sp * cls.cps[1]
 
             elif cls.__split1:
                 sp = sp * 2 / 1
-                cls.cps[0].setpoint = sp * cls.cps[0].setpoint_maximo
+                cls.cps[0].setpoint = sp * cls.cps[0]
                 cls.cps[1].setpoint = 0
 
             else:
@@ -116,16 +114,13 @@ class Adufas:
                 cls.cps[1].setpoint = 0
 
         elif len(cls.cps) == 1:
-            if cls.__split1 or cls.__split2:
+            if cls.__split1:
 
                 sp = sp * 2 / 1
-                cls.cps[0].setpoint = sp * cls.cps[0].setpoint_maximo
+                cls.cps[0].setpoint = sp * cls.cps[0]
 
             else:
                 cls.cps[0].setpoint = 0
-
-        cls.cps[0].enviar_setpoint()
-        return
 
 
     @classmethod

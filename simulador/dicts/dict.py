@@ -1,0 +1,169 @@
+compartilhado = {
+    "GLB": {
+        "tempo_real": 0,
+        "tempo_simul": 0,
+
+        "stop_sim": False,
+        "stop_gui": False
+    },
+
+    "BRD": {
+        # GERAL
+        "condic" : False,
+        "sa_condic" : False,
+        "se_condic" : False,
+        "tda_condic" : False,
+        "ug1_condic" : False,
+        "ug2_condic" : False,
+        "ug3_condic" : False,
+        "ug4_condic" : False,
+
+        # SE
+        "djse_trip": False,
+        "djse_mola": False,
+        "djse_fechado": False,
+    },
+
+    "USN": {
+        "trip_condic": False,
+    },
+
+    "TDA": {
+        "condic": False,
+
+        "q_liquida": 0,
+        "q_alfuente": 0,
+        "q_sanitaria": 0,
+        "q_vertimento": 0,
+
+        "nv_montante": 816.3,
+        "nv_jusante_grade": 0,
+    },
+
+    "SE": {
+        "condic": False,
+
+        "potencia_se": 0,
+
+        "tensao_rs": 23000,
+        "tensao_st": 23000,
+        "tensao_tr": 23000,
+
+        "dj_trip": False,
+        "dj_falha": False,
+        "dj_aberto": True,
+        "dj_fechado": False,
+        "dj_condicao": False,
+        "dj_falta_vcc": False,
+        "dj_inconsistente": False,
+        "dj_mola_carregada": True,
+
+        "debug_dj_reset": False,
+        "debug_dj_abrir": False,
+        "debug_dj_fechar": False,
+    },
+
+    "UG1": {
+        "condic": False,
+
+        "q": 1,
+        "potencia": 0,
+        "setpoint": 0,
+        "etapa_alvo": 0,
+        "etapa_atual": 0,
+        "debug_setpoint": 0,
+
+        "pressao_turbina": 1.5,
+        "temp_fase_r": 25,
+        "temp_fase_s": 25,
+        "temp_fase_t": 25,
+        "temp_mancal_gerador_la_1": 25,
+        "temp_mancal_gerador_la_2": 25,
+        "temp_mancal_gerador_lna_1": 25,
+        "temp_mancal_gerador_lna_2": 25,
+        "temp_mancal_turbina_radial": 25,
+        "temp_mancal_turbina_escora": 25,
+        "temp_mancal_turbina_contra_escora": 25,
+
+        "debug_parar": False,
+        "debug_partir": False,
+    },
+
+    "UG2": {
+        "condic": False,
+
+        "q": 1,
+        "potencia": 0,
+        "setpoint": 0,
+        "etapa_alvo": 0,
+        "etapa_atual": 0,
+        "debug_setpoint": 0,
+
+        "pressao_turbina": 1.5,
+        "temp_fase_r": 25,
+        "temp_fase_s": 25,
+        "temp_fase_t": 25,
+        "temp_mancal_gerador_la_1": 25,
+        "temp_mancal_gerador_la_2": 25,
+        "temp_mancal_gerador_lna_1": 25,
+        "temp_mancal_gerador_lna_2": 25,
+        "temp_mancal_turbina_radial": 25,
+        "temp_mancal_turbina_escora": 25,
+        "temp_mancal_turbina_contra_escora": 25,
+
+        "debug_parar": False,
+        "debug_partir": False,
+    },
+
+    "UG3": {
+        "condic": False,
+
+        "q": 1,
+        "potencia": 0,
+        "setpoint": 0,
+        "etapa_alvo": 0,
+        "etapa_atual": 0,
+        "debug_setpoint": 0,
+
+        "pressao_turbina": 1.5,
+        "temp_fase_r": 25,
+        "temp_fase_s": 25,
+        "temp_fase_t": 25,
+        "temp_mancal_gerador_la_1": 25,
+        "temp_mancal_gerador_la_2": 25,
+        "temp_mancal_gerador_lna_1": 25,
+        "temp_mancal_gerador_lna_2": 25,
+        "temp_mancal_turbina_radial": 25,
+        "temp_mancal_turbina_escora": 25,
+        "temp_mancal_turbina_contra_escora": 25,
+
+        "debug_parar": False,
+        "debug_partir": False,
+    },
+
+    "UG4": {
+        "condic": False,
+
+        "q": 1,
+        "potencia": 0,
+        "setpoint": 0,
+        "etapa_alvo": 0,
+        "etapa_atual": 0,
+        "debug_setpoint": 0,
+
+        "pressao_turbina": 1.5,
+        "temp_fase_r": 25,
+        "temp_fase_s": 25,
+        "temp_fase_t": 25,
+        "temp_mancal_gerador_la_1": 25,
+        "temp_mancal_gerador_la_2": 25,
+        "temp_mancal_gerador_lna_1": 25,
+        "temp_mancal_gerador_lna_2": 25,
+        "temp_mancal_turbina_radial": 25,
+        "temp_mancal_turbina_escora": 25,
+        "temp_mancal_turbina_contra_escora": 25,
+
+        "debug_parar": False,
+        "debug_partir": False,
+    },
+}
