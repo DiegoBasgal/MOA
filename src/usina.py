@@ -405,7 +405,7 @@ class Usina:
             self.controle_ie = min(self.controle_ie, 0.3)
             self.controle_i = 0
 
-        pot_alvo = max(min(round(self.cfg["pot_maxima_usina"] * self.controle_ie, 5), self.cfg["pot_maxima_usina"]), self.cfg["pot_minima"])
+        pot_alvo = max(min(round(self.cfg["pot_maxima_usina"] * self.controle_ie, 5), self.cfg["pot_maxima_usina"]), self.cfg["pot_minima_ugs"])
 
         pot_alvo = self.ajustar_potencia(pot_alvo)
 
@@ -459,8 +459,6 @@ class Usina:
         for ug in self.ugs:
             if ug.manual:
                 ajuste_manual += ug.leitura_potencia
-            else:
-                self.pot_disp += ug.setpoint_maximo
 
         if ugs is None or not len(ugs):
             return
@@ -476,7 +474,7 @@ class Usina:
         self.__split4 = False if sp < (3 * (self.cfg["pot_maxima_ugs"] / self.cfg["pot_maxima_usina"]) - self.cfg["margem_pot_critica"]) else self.__split4
         self.__split3 = False if sp < (2 * (self.cfg["pot_maxima_ugs"] / self.cfg["pot_maxima_usina"]) - self.cfg["margem_pot_critica"]) else self.__split3
         self.__split2 = False if sp < ((self.cfg["pot_maxima_ugs"] / self.cfg["pot_maxima_usina"]) - self.cfg["margem_pot_critica"]) else self.__split2
-        self.__split1 = False if sp < (self.cfg["pot_minima"] / self.cfg["pot_maxima_usina"]) else self.__split1
+        self.__split1 = False if sp < (self.cfg["pot_minima_ugs"] / self.cfg["pot_maxima_usina"]) else self.__split1
 
 
         logger.debug(f"[USN] SP Geral:                           {sp}")
@@ -484,7 +482,6 @@ class Usina:
         if len(ugs) == 4:
             if self.__split4:
                 logger.debug("[USN] Split:                              4")
-                logger.debug("")
 
                 ugs[0].setpoint = sp * ugs[0].setpoint_maximo
                 ugs[1].setpoint = sp * ugs[1].setpoint_maximo
@@ -493,112 +490,87 @@ class Usina:
 
             elif self.__split3:
                 logger.debug("[USN] Split:                              4 -> \"3B\"")
-                logger.debug("")
 
-                sp = sp * 4 / 3
-                ugs[0].setpoint = sp * ugs[0].setpoint_maximo
-                ugs[1].setpoint = sp * ugs[1].setpoint_maximo
-                ugs[2].setpoint = sp * ugs[2].setpoint_maximo
+                ugs[0].setpoint = (sp * (4/3)) * ugs[0].setpoint_maximo
+                ugs[1].setpoint = (sp * (4/3)) * ugs[1].setpoint_maximo
+                ugs[2].setpoint = (sp * (4/3)) * ugs[2].setpoint_maximo
                 ugs[3].setpoint = 0
 
             elif self.__split2:
                 logger.debug("[USN] Split:                              4 -> \"2B\"")
-                logger.debug("")
 
-                sp = sp * 4 / 2
-                ugs[0].setpoint = sp * ugs[0].setpoint_maximo
-                ugs[1].setpoint = sp * ugs[1].setpoint_maximo
+                ugs[0].setpoint = (sp * (4/2)) * ugs[0].setpoint_maximo
+                ugs[1].setpoint = (sp * (4/2)) * ugs[1].setpoint_maximo
                 ugs[2].setpoint = 0
                 ugs[3].setpoint = 0
 
             elif self.__split1:
                 logger.debug("[USN] Split:                              4 -> \"1B\"")
-                logger.debug("")
 
-                sp = sp * 4
-                ugs[0].setpoint = sp * ugs[0].setpoint_maximo
+                ugs[0].setpoint = 4 * sp * ugs[0].setpoint_maximo
                 ugs[1].setpoint = 0
                 ugs[2].setpoint = 0
                 ugs[3].setpoint = 0
 
             else:
-                logger.debug("")
-                for ug in self.ugs:
-                    ug.setpoint = 0
+                for ug in ugs: ug.setpoint = 0
 
-            logger.debug(f"[UG{ugs[0].id}] SP    <-                            {int(ugs[0].setpoint)}")
-            logger.debug(f"[UG{ugs[1].id}] SP    <-                            {int(ugs[1].setpoint)}")
-            logger.debug(f"[UG{ugs[2].id}] SP    <-                            {int(ugs[2].setpoint)}")
-            logger.debug(f"[UG{ugs[3].id}] SP    <-                            {int(ugs[3].setpoint)}")
+            logger.debug("")
+            for ug in ugs: logger.debug(f"[UG{ug.id}] SP    <-                            {int(ug.setpoint)}")
 
         elif len(ugs) == 3:
             if self.__split3:
                 logger.debug("[USN] Split:                              3")
-                logger.debug("")
 
-                ugs[0].setpoint = sp * ugs[0].setpoint_maximo
-                ugs[1].setpoint = sp * ugs[1].setpoint_maximo
-                ugs[2].setpoint = sp * ugs[2].setpoint_maximo
+                ugs[0].setpoint = (sp * (4/3)) * ugs[0].setpoint_maximo
+                ugs[1].setpoint = (sp * (4/3)) * ugs[1].setpoint_maximo
+                ugs[2].setpoint = (sp * (4/3)) * ugs[2].setpoint_maximo
 
             elif self.__split2:
                 logger.debug("[USN] Split:                              3 -> \"2B\"")
-                logger.debug("")
 
-                sp = sp * 4 / 2
-                ugs[0].setpoint = sp * ugs[0].setpoint_maximo
-                ugs[1].setpoint = sp * ugs[1].setpoint_maximo
+                ugs[0].setpoint = (sp * (4/2)) * ugs[0].setpoint_maximo
+                ugs[1].setpoint = (sp * (4/2)) * ugs[1].setpoint_maximo
                 ugs[2].setpoint = 0
 
             elif self.__split1:
                 logger.debug("[USN] Split:                              3 -> \"1B\"")
-                logger.debug("")
 
-                sp = sp * 4
-                ugs[0].setpoint = sp * ugs[0].setpoint_maximo
+                ugs[0].setpoint = 4 * sp * ugs[0].setpoint_maximo
                 ugs[1].setpoint = 0
                 ugs[2].setpoint = 0
 
             else:
-                logger.debug("")
-                for ug in self.ugs:
-                    ug.setpoint = 0
+                for ug in ugs: ug.setpoint = 0
 
-            logger.debug(f"[UG{ugs[0].id}] SP    <-                            {int(ugs[0].setpoint)}")
-            logger.debug(f"[UG{ugs[1].id}] SP    <-                            {int(ugs[1].setpoint)}")
-            logger.debug(f"[UG{ugs[2].id}] SP    <-                            {int(ugs[2].setpoint)}")
+            logger.debug("")
+            for ug in ugs: logger.debug(f"[UG{ug.id}] SP    <-                            {int(ug.setpoint)}")
 
         elif len(ugs) == 2:
             if self.__split2:
                 logger.debug("[USN] Split:                              2")
-                logger.debug("")
 
-                sp = sp * 4 / 2
-                ugs[0].setpoint = sp * ugs[0].setpoint_maximo
-                ugs[1].setpoint = sp * ugs[1].setpoint_maximo
+                ugs[0].setpoint = (sp * (4/2)) * ugs[0].setpoint_maximo
+                ugs[1].setpoint = (sp * (4/2)) * ugs[1].setpoint_maximo
 
             elif self.__split1:
                 logger.debug("[USN] Split:                              2 -> \"1B\"")
-                logger.debug("")
 
-                sp = sp * 4
-                ugs[0].setpoint = sp * ugs[0].setpoint_maximo
+                ugs[0].setpoint = 4 * sp * ugs[0].setpoint_maximo
                 ugs[1].setpoint = 0
 
             else:
-                logger.debug("")
+                for ug in ugs: ug.setpoint = 0
 
-                ugs[0].setpoint = 0
-                ugs[1].setpoint = 0
-
-            logger.debug(f"[UG{ugs[0].id}] SP    <-                            {int(ugs[0].setpoint)}")
-            logger.debug(f"[UG{ugs[1].id}] SP    <-                            {int(ugs[1].setpoint)}")
+            logger.debug("")
+            for ug in ugs: logger.debug(f"[UG{ug.id}] SP    <-                            {int(ug.setpoint)}")
 
         elif len(ugs) == 1:
             logger.debug("[USN] Split:                              1")
-            logger.debug("")
 
             ugs[0].setpoint = 4 * sp * ugs[0].setpoint_maximo
 
+            logger.debug("")
             logger.debug(f"[UG{ugs[0].id}] SP    <-                            {int(ugs[0].setpoint)}")
 
 

@@ -49,6 +49,7 @@ class Adufas:
             )
 
             self.setpoint: "int" = 0
+            self.setpoint_maximo: "int" = 0
             self.setpoint_anterior: "int" = 0
 
             self.espera: "bool" = False
@@ -105,23 +106,25 @@ class Adufas:
 
         if len(cls.cps) == 2:
             if cls.__split2:
-                cls.cps[0].setpoint = sp * cls.cps[0]
-                cls.cps[1].setpoint = sp * cls.cps[1]
+                cls.cps[0].setpoint = sp * cls.cps[0].setpoint_maximo
+                cls.cps[1].setpoint = sp * cls.cps[1].setpoint_maximo
 
             elif cls.__split1:
                 sp = sp * 2 / 1
-                cls.cps[0].setpoint = sp * cls.cps[0]
+                cls.cps[0].setpoint = sp * cls.cps[0].setpoint_maximo
                 cls.cps[1].setpoint = 0
 
             else:
                 cls.cps[0].setpoint = 0
                 cls.cps[1].setpoint = 0
 
+            logger.debug(f"[AD][CP{cls.cps[0].id}] SP    <-                       {int(cls.cps[0].setpoint)}")
+            logger.debug(f"[AD][CP{cls.cps[0].id}] SP    <-                       {int(cls.cps[1].setpoint)}")
+
         elif len(cls.cps) == 1:
             if cls.__split1:
 
-                sp = sp * 2 / 1
-                cls.cps[0].setpoint = sp * cls.cps[0]
+                cls.cps[0].setpoint = 2 * sp * cls.cps[0].setpoint_maximo
 
             else:
                 cls.cps[0].setpoint = 0
