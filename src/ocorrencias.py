@@ -2,7 +2,6 @@ import pytz
 import logging
 import traceback
 
-import src.unidade_geracao as u
 import src.mensageiro.dict as vd
 import src.dicionarios.dict as d
 
@@ -102,6 +101,7 @@ class OcorrenciasGerais:
                     self.condicionadores_ativos.append(condic)
                     flag = CONDIC_INDISPONIBILIZAR
                     self.__db.update_alarmes([
+                        None,
                         (datetime.now(pytz.timezone("Brazil/East")).replace(tzinfo=None)).strftime("%Y-%m-%d %H:%M:%S"),
                         condic.gravidade,
                         condic.descr,
@@ -114,6 +114,7 @@ class OcorrenciasGerais:
                     self.condicionadores_ativos.append(condic)
                     flag = CONDIC_NORMALIZAR
                     self.__db.update_alarmes([
+                        None,
                         (datetime.now(pytz.timezone("Brazil/East")).replace(tzinfo=None)).strftime("%Y-%m-%d %H:%M:%S"),
                         condic.gravidade,
                         condic.descr,
@@ -366,7 +367,7 @@ class OcorrenciasGerais:
 
 
 class OcorrenciasUnidades:
-    def __init__(self, ug: "u.UnidadeGeracao", clp: "dict[str, ModbusClient]"=None, db: BancoDados=None):
+    def __init__(self, ug, clp: "dict[str, ModbusClient]"=None, db: BancoDados=None):
 
         # ATRIBUIÇÃO DE VARIÁVEIS PRIVADAS
 
@@ -493,10 +494,11 @@ class OcorrenciasUnidades:
                     self.condicionadores_ativos.append(condic)
                     flag = CONDIC_INDISPONIBILIZAR
                     self.__db.update_alarmes([
+                        None,
                         self.__ug.get_time().strftime("%Y-%m-%d %H:%M:%S"),
                         condic.gravidade,
                         condic.descr,
-                        "X" if autor_i == 0 else ""
+                        "X" if autor_i == 0 else "",
                     ])
                     autor_i += 1
 
@@ -505,11 +507,12 @@ class OcorrenciasUnidades:
                     self.condicionadores_ativos.append(condic)
                     flag = CONDIC_NORMALIZAR
                     self.__db.update_alarmes([
+                        None,
                         self.__ug.get_time().strftime("%Y-%m-%d %H:%M:%S"),
                         condic.gravidade,
                         condic.descr,
                         "X" if autor_i == 0 and autor_a == 0 else "",
-                        ])
+                    ])
                     autor_a += 1
 
                 elif condic.gravidade == CONDIC_NORMALIZAR:
@@ -517,11 +520,12 @@ class OcorrenciasUnidades:
                     self.condicionadores_ativos.append(condic)
                     flag = CONDIC_NORMALIZAR
                     self.__db.update_alarmes([
+                        None,
                         self.__ug.get_time().strftime("%Y-%m-%d %H:%M:%S"),
                         condic.gravidade,
                         condic.descr,
                         "X" if autor_i == 0 and autor_a == 0 and autor_n == 0 else "",
-                        ])
+                    ])
                     autor_n += 1
 
             logger.debug("")
@@ -539,7 +543,7 @@ class OcorrenciasUnidades:
 
         try:
             self.__ug.prioridade = int(parametros[f"ug{self.__ug.id}_prioridade"])
-            self.aviso_dict[f"aviso_caixa_espiral_ug{self.__ug.id}"] = float(parametros[f"aviso_caixa_espiral_ug{self.__ug.id}"])
+            self.aviso_dict[f"aviso_caixa_espiral_ug2"] = float(parametros[f"aviso_caixa_espiral_ug2"])
 
             self.condic_dict[f"tmp_fase_r_ug{self.__ug.id}"].valor_base = float(parametros[f"alerta_temperatura_fase_r_ug{self.__ug.id}"])
             self.condic_dict[f"tmp_fase_s_ug{self.__ug.id}"].valor_base = float(parametros[f"alerta_temperatura_fase_s_ug{self.__ug.id}"])
@@ -553,7 +557,7 @@ class OcorrenciasUnidades:
             self.condic_dict[f"tmp_mancal_guia_escora_ug{self.__ug.id}"].valor_base = float(parametros[f"alerta_temperatura_mancal_guia_escora_ug{self.__ug.id}"])
             self.condic_dict[f"tmp_mancal_guia_radial_ug{self.__ug.id}"].valor_base = float(parametros[f"alerta_temperatura_mancal_guia_radial_ug{self.__ug.id}"])
             self.condic_dict[f"tmp_mancal_guia_contra_ug{self.__ug.id}"].valor_base = float(parametros[f"alerta_temperatura_mancal_guia_contra_ug{self.__ug.id}"])
-            self.condic_dict[f"pressao_cx_espiral_ug{self.__ug.id}"].valor_base = float(parametros[f"alerta_caixa_espiral_ug{self.__ug.id}"])
+            self.condic_dict[f"pressao_cx_espiral_ug2"].valor_base = float(parametros[f"alerta_caixa_espiral_ug2"])
 
             self.condic_dict[f"tmp_fase_r_ug{self.__ug.id}"].valor_limite = float(parametros[f"limite_temperatura_fase_r_ug{self.__ug.id}"])
             self.condic_dict[f"tmp_fase_s_ug{self.__ug.id}"].valor_limite = float(parametros[f"limite_temperatura_fase_s_ug{self.__ug.id}"])
@@ -567,7 +571,7 @@ class OcorrenciasUnidades:
             self.condic_dict[f"tmp_mancal_guia_escora_ug{self.__ug.id}"].valor_limite = float(parametros[f"limite_temperatura_mancal_guia_escora_ug{self.__ug.id}"])
             self.condic_dict[f"tmp_mancal_guia_radial_ug{self.__ug.id}"].valor_limite = float(parametros[f"limite_temperatura_mancal_guia_radial_ug{self.__ug.id}"])
             self.condic_dict[f"tmp_mancal_guia_contra_ug{self.__ug.id}"].valor_limite = float(parametros[f"limite_temperatura_mancal_guia_contra_ug{self.__ug.id}"])
-            self.condic_dict[f"pressao_cx_espiral_ug{self.__ug.id}"].valor_limite = float(parametros[f"limite_caixa_espiral_ug{self.__ug.id}"])
+            self.condic_dict[f"pressao_cx_espiral_ug2"].valor_limite = float(parametros[f"limite_caixa_espiral_ug2"])
 
         except Exception:
             logger.error(f"[OCO-UG{self.__ug.id}] Houve um erro ao atualizar os limites de temperaturas dos condicionadores.")
@@ -657,7 +661,7 @@ class OcorrenciasUnidades:
         if ld[f"tmp_mancal_guia_contra_ug{self.__ug.id}"].valor >= 0.9*(cd[f"tmp_mancal_guia_contra_ug{self.__ug.id}"].valor_limite - cd[f"tmp_mancal_guia_contra_ug{self.__ug.id}"].valor_base) + cd[f"tmp_mancal_guia_contra_ug{self.__ug.id}"].valor_base:
             logger.critical(f"[OCO-UG{self.__ug.id}] A temperatura do Mancal Guia Contra Escora da UG está muito próxima do limite! ({cd[f'tmp_mancal_guia_contra_ug{self.__ug.id}'].valor_limite} C) | Leitura: {cd[f'tmp_mancal_guia_contra_ug{self.__ug.id}'].valor} C")
 
-        if ld[f"pressao_cx_espiral_ug{self.__ug.id}"].valor <= ad[f"aviso_caixa_espiral_ug{self.__ug.id}"] and self.__ug.etapa_atual == UG_SINCRONIZADA and self.__ug.leitura_potencia >= 1360:
+        if ld[f"pressao_cx_espiral_ug2"].valor <= ad[f"aviso_caixa_espiral_ug2"] and self.__ug.etapa_atual == UG_SINCRONIZADA and self.__ug.leitura_potencia >= 1360 and self.__ug.id == 2:
             logger.warning(f"[OCO-UG{self.__ug.id}] A pressão Caixa Espiral da UG passou do valor estipulado! ({ad[f'aviso_caixa_espiral_ug{self.__ug.id}']:03.2f} KGf/m2) | Leitura: {ld[f'pressao_cx_espiral_ug{self.__ug.id}'].valor:03.2f}")
 
 
@@ -807,8 +811,8 @@ class OcorrenciasUnidades:
         self.condic_dict[f"tmp_mancal_guia_contra_ug{self.__ug.id}"] = CondicionadorExponencial(self.leitura_dict[f"tmp_mancal_guia_contra_ug{self.__ug.id}"], CONDIC_INDISPONIBILIZAR, 100, 200)
         self.condicionadores_essenciais.append(self.condic_dict[f"tmp_mancal_guia_contra_ug{self.__ug.id}"])
 
-        self.leitura_dict[f"pressao_cx_espiral_ug{self.__ug.id}"] = LeituraModbus(self.__clp[f"UG{self.__ug.id}"], REG[f"UG{self.__ug.id}_EA_PressK1CaixaExpiral_MaisCasas"], escala=0.01, op=4, descr=f"[UG{self.__ug.id}] Caixa Espiral")
-        self.condic_dict[f"pressao_cx_espiral_ug{self.__ug.id}"] = CondicionadorExponencialReverso(self.leitura_dict[f"pressao_cx_espiral_ug{self.__ug.id}"], CONDIC_INDISPONIBILIZAR)
+        self.leitura_dict[f"pressao_cx_espiral_ug2"] = LeituraModbus(self.__clp[f"UG2"], REG[f"UG2_EA_PressK1CaixaExpiral_MaisCasas"], escala=0.01, op=4, descr=f"[UG2] Caixa Espiral")
+        self.condic_dict[f"pressao_cx_espiral_ug2"] = CondicionadorExponencialReverso(self.leitura_dict[f"pressao_cx_espiral_ug2"], CONDIC_INDISPONIBILIZAR)
 
 
         # Óleo do Transformador Elevador

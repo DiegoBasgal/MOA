@@ -235,7 +235,7 @@ class BancoDados:
         )
         self.conn.commit()
 
-    def update_alarmes(self, valores) -> "None":
+    def update_alarmes(self, valores: "list") -> "None":
         """
         Função para atualizar a lista de acionamentos/alarmes para visualização
         na interface WEB.
@@ -243,7 +243,7 @@ class BancoDados:
 
         self.cursor.execute(
             "INSERT INTO alarmes_alarmes "
-            "VALUES (%s, %s, %s);",
+            "VALUES (%s, %s, %s, %s, %s);",
             tuple(valores)
         )
         self.conn.commit()

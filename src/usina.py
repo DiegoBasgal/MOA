@@ -23,6 +23,7 @@ from src.funcoes.agendamentos import Agendamentos
 from src.funcoes.condicionador import CondicionadorBase
 
 logger = logging.getLogger("logger")
+debug_log = logging.getLogger("debug")
 
 class Usina:
     def __init__(self, cfg: dict=None):
@@ -156,7 +157,7 @@ class Usina:
     # Property -> VARIÁVEIS PRIVADAS
 
     @property
-    def potencia_ativa(self) -> int:
+    def potencia_ativa(self) -> float:
         # PROPRIEDADE -> Retrona a potência geral atual da Usina.
 
         return self.__potencia_ativa_kW.valor
@@ -543,35 +544,20 @@ class Usina:
             logger.debug(f"[USN]          Leitura:                   {self.nv_montante:0.3f}")
             logger.debug(f"[USN]          Filtro EMA:                {self.nv_montante_recente:0.3f}")
 
-            if self.nv_montante_recente < self.cfg["nv_minimo"] and self.nv_montante_anterior > self.cfg["nv_minimo"]:
-                if self.erro_leitura_montante == 3:
-                    logger.warning(f"[USN] Tentativas de Leitura de Nível Montante ultrapassadas!")
-                    self.erro_leitura_montante = 0
-                    self.distribuir_potencia(0)
-
-                    for ug in self.ugs:
-                        ug.step()
-
-                    return NV_FLAG_EMERGENCIA
-
-                self.erro_leitura_montante += 1
-                logger.info("[USN] Foi identificada uma diferença nas Leituras de Nível Montante anterior e atual")
-                logger.debug(f"[USN] Verificando erros de Leitura... (Tentativa {self.erro_leitura_montante}/3)")
-            else:
-                self.erro_leitura_montante = 0
-                self.aguardando_reservatorio = True
-                self.distribuir_potencia(0)
-
-                for ug in self.ugs:
-                    ug.step()
-
             if self.nv_montante_recente <= NIVEL_FUNDO_RESERVATORIO:
-                if not Servidores.ping(d.ips["TDA_ip"]):
+                if not Servidores.ping(d.ips["TDA_ip"]) or not self.clp["TDA"].open():
                     d.glb["TDA_Offline"] = True
                     return NV_FLAG_NORMAL
                 else:
                     logger.critical(f"[USN] Nível montante ({self.nv_montante_recente:3.2f}) atingiu o fundo do reservatorio!")
                     return NV_FLAG_EMERGENCIA
+
+            elif self.nv_montante_recente < self.cfg["nv_minimo"]:
+                self.aguardando_reservatorio = True
+                self.distribuir_potencia(0)
+
+                for ug in self.ugs:
+                    ug.step()
 
         elif self.aguardando_reservatorio:
             if self.nv_montante >= self.cfg["nv_alvo"]:
@@ -650,20 +636,36 @@ class Usina:
 
         pot_medidor = self.potencia_ativa
 
+        debug_log.debug(f"[USN] FUNÇÃO: \"ajustar_potencia\":")
+        debug_log.debug("")
+        debug_log.debug(f"[USN] pot_medidor: {pot_medidor}")
+
         logger.debug(f"[USN] Potência no medidor:                {self.potencia_ativa:0.3f}")
 
         pot_aux = self.cfg["pot_maxima_alvo"] - (self.cfg["pot_maxima_usina"] - self.cfg["pot_maxima_alvo"])
 
+        debug_log.debug("")
+        debug_log.debug(f"[USN] pot_aux: {pot_aux}")
+
         pot_medidor = max(pot_aux, min(pot_medidor, self.cfg["pot_maxima_usina"]))
+
+        debug_log.debug("")
+        debug_log.debug(f"[USN] pot_medidor: {pot_aux}")
 
         if pot_medidor > self.cfg["pot_maxima_alvo"] * 0.97 and pot_alvo >= self.cfg["pot_maxima_alvo"]:
             pot_alvo = self._pot_alvo_anterior * (1 - 0.25 * ((pot_medidor - self.cfg["pot_maxima_alvo"]) / self.cfg["pot_maxima_alvo"]))
+            pot_alvo = min(pot_alvo, self.cfg["pot_maxima_usina"])
 
         self._pot_alvo_anterior = pot_alvo
+
+        debug_log.debug("")
+        debug_log.debug(f"[USN] pot_alvo: {pot_aux}")
+        debug_log.debug(f"[USN] self._pot_alvo_anterior: {self._pot_alvo_anterior}")
 
         logger.debug(f"[USN] Potência alvo após ajuste:          {pot_alvo:0.3f}")
 
         self.distribuir_potencia(pot_alvo)
+
 
     def ajustar_ie_padrao(self) -> int:
         """
@@ -711,6 +713,9 @@ class Usina:
         self.__split1 = False if sp < (self.cfg["pot_minima"] / self.cfg["pot_maxima_usina"]) else self.__split1
 
         logger.debug(f"[USN] SP Geral:                           {sp}")
+
+        for ug in ugs:
+            debug_log.debug(f"[USN] Setpoint Máximo UG{ug}: {ug.setpoint_maximo}")
 
         if len(ugs) == 3:
             if self.__split3:
@@ -823,7 +828,6 @@ class Usina:
             logger.debug(f"[UG{ugs[0].id}] SP    <-                            {int(ugs[0].setpoint)}")
 
     def calcular_ema_montante(self, ema_anterior, periodo=40, smoothing=5, casas_decimais=5) -> float:
-
         constante = smoothing / (1 + periodo)
 
         ema = self.nv_montante * constante + ema_anterior * (1 - constante)
@@ -856,14 +860,15 @@ class Usina:
         Função para atualização de valores anteriores e erro de nível montante.
         """
 
-        if self.ema_anterior == -1:
+        if self.db_emergencia:
+            pass
+
+        elif self.ema_anterior == -1:
             self.ema_anterior = 0
             self.nv_montante_recente = self.nv_montante
         else:
             ema = self.calcular_ema_montante(self.nv_montante_recente)
             self.nv_montante_recente = ema
-
-        self.nv_montante_anterior = self.nv_montante
 
         self.erro_nv_anterior = self.erro_nv
         self.erro_nv = self.nv_montante_recente - self.cfg["nv_alvo"]
@@ -916,9 +921,7 @@ class Usina:
         self.cfg["ug2_press_cx_alvo"] = float(parametros["ug2_press_cx_alvo"])
         self.cfg["ug3_press_cx_alvo"] = float(parametros["ug3_press_cx_alvo"])
 
-        self.cfg["pot_maxima_alvo"] = float(parametros["pot_nominal"])
         self.cfg["pot_maxima_ug"] = float(parametros["pot_nominal_ug"])
-        self.cfg["pot_maxima_usina"] = float(parametros["pot_nominal_ug"]) * 3
         self.cfg["margem_pot_critica"] = float(parametros["margem_pot_critica"])
 
     def escrever_valores(self) -> None:
@@ -946,19 +949,6 @@ class Usina:
 
         except Exception:
             logger.error(f"[USN] Houve um erro ao gravar os parâmetros da Usina no Banco.")
-            logger.debug(traceback.format_exc())
-
-        try:
-            v_params = [
-                time(),
-                self.ug1.codigo_state,
-                self.ug2.codigo_state,
-                self.ug3.codigo_state,
-            ]
-            self.db.update_controle_estados(v_params)
-
-        except Exception:
-            logger.error(f"[USN] Houve um erro ao gravar os estados das Unidades no Banco.")
             logger.debug(traceback.format_exc())
 
         try:

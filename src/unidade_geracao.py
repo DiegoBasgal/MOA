@@ -16,6 +16,7 @@ from src.conectores.servidores import Servidores
 from src.conectores.banco_dados import BancoDados
 
 logger = logging.getLogger("logger")
+debug_log = logging.getLogger("debug")
 
 class UnidadeGeracao:
     def __init__(self, id: "int", cfg=None, db: "BancoDados"=None):
@@ -422,7 +423,7 @@ class UnidadeGeracao:
         else:
             try:
                 self.db.update_controle_estados([
-                    self.get_time().strftime("%Y-%m-%d %H:%M:%S"),
+                    time(),
                     UG_SM_STR_DCT[self.codigo_state] if self.id == 1 else "",
                     UG_SM_STR_DCT[self.codigo_state] if self.id == 2 else "",
                     UG_SM_STR_DCT[self.codigo_state] if self.id == 3 else "",
@@ -450,7 +451,7 @@ class UnidadeGeracao:
         self.condicionadores_atenuadores.append(self.oco.condic_dict[f"tmp_mancal_guia_radial_ug{self.id}"])
         self.condicionadores_atenuadores.append(self.oco.condic_dict[f"tmp_mancal_guia_escora_ug{self.id}"])
         self.condicionadores_atenuadores.append(self.oco.condic_dict[f"tmp_mancal_guia_contra_ug{self.id}"])
-        self.condicionadores_atenuadores.append(self.oco.condic_dict[f"pressao_cx_espiral_ug{self.id}"])
+        self.condicionadores_atenuadores.append(self.oco.condic_dict[f"pressao_cx_espiral_ug2"])
 
 
     def atualizar_modbus_moa(self) -> "None":
@@ -938,7 +939,7 @@ class UnidadeGeracao:
         """
 
         try:
-            self.cx_controle_p = (self.oco.leitura_dict[f"pressao_cx_espiral_ug{self.id}"].valor - self.cfg[f"ug{self.id}_press_cx_alvo"]) * self.cfg["cx_kp"]
+            self.cx_controle_p = (self.oco.leitura_dict[f"pressao_cx_espiral_ug2"].valor - self.cfg[f"ug2_press_cx_alvo"]) * self.cfg["cx_kp"]
             self.cx_ajuste_ie = sum(ug.leitura_potencia for ug in self.lista_ugs) / self.cfg["pot_maxima_alvo"]
             self.cx_controle_i = self.cx_ajuste_ie - self.cx_controle_p
 
@@ -956,28 +957,64 @@ class UnidadeGeracao:
 
         try:
             logger.debug(f"[UG{self.id}] Pressão Caixa Espiral:")
-            logger.debug(f"[UG{self.id}]          Alvo:                   {self.cfg[f'ug{self.id}_press_cx_alvo']:0.3f}")
-            logger.debug(f"[UG{self.id}]          Leitura:                {self.oco.leitura_dict[f'pressao_cx_espiral_ug{self.id}'].valor:0.3f}")
+            logger.debug(f"[UG{self.id}]          Alvo:                      {self.cfg[f'ug2_press_cx_alvo']:0.3f}")
+            logger.debug(f"[UG{self.id}]          Leitura:                   {self.oco.leitura_dict[f'pressao_cx_espiral_ug2'].valor:0.3f}")
             logger.debug("")
 
             self.erro_press_cx = 0
-            self.erro_press_cx = self.oco.leitura_dict[f"pressao_cx_espiral_ug{self.id}"].valor - self.cfg[f"ug{self.id}_press_cx_alvo"]
+            self.erro_press_cx = self.oco.leitura_dict[f"pressao_cx_espiral_ug2"].valor - self.cfg[f"ug2_press_cx_alvo"]
+
+            debug_log.debug("")
+            debug_log.debug(f"[UG{self.id}] CX Erro: {self.erro_press_cx}")
+
 
             self.cx_controle_p = self.cfg["cx_kp"] * self.erro_press_cx
+
+
+            debug_log.debug(f"[UG{self.id}] CX P: {self.cx_controle_p}")
+
+
             self.cx_controle_i = max(min((self.cfg["cx_ki"] * self.erro_press_cx) + self.cx_controle_i, 1), 0)
+
+
+            debug_log.debug(f"[UG{self.id}] CX I: {self.cx_controle_i}")
+
+
             saida_pi = self.cx_controle_p + self.cx_controle_i
 
+
+            debug_log.debug(f"[UG{self.id}] CX Saída PI: {saida_pi}")
+
+
             self.cx_controle_ie = max(min(saida_pi + self.cx_ajuste_ie * self.cfg["cx_kie"], 1), 0)
+
+
+            debug_log.debug(f"[UG{self.id}] CX IE: {self.cx_controle_ie}")
+
+
             pot_alvo = max(min(round(self.cfg[f"pot_maxima_ug{self.id}"] * self.cx_controle_ie, 5), self.cfg[f"pot_maxima_ug{self.id}"],),self.cfg["pot_minima"],)
 
+
+            debug_log.debug(f"[UG{self.id}] CX Potência Alvo: {pot_alvo}")
+
+
             pot_medidor = self.__potencia_ativa_kW.valor
+
 
             logger.debug(f"[UG{self.id}] Potência calculada:                 {pot_alvo:0.3f}")
             logger.debug("")
 
             pot_aux = self.cfg["pot_maxima_alvo"] - (self.cfg["pot_maxima_usina"] - self.cfg["pot_maxima_alvo"])
 
+
+            debug_log.debug(f"[UG{self.id}] CX Potência Auxiliar: {pot_aux}")
+
+
             pot_medidor = max(pot_aux, min(pot_medidor, self.cfg["pot_maxima_usina"]))
+
+
+            debug_log.debug(f"[UG{self.id}] CX Potência Medidor Recalculada: {pot_medidor}")
+
 
             if pot_medidor > self.cfg["pot_maxima_alvo"] * 0.97:
                 pot_alvo = self.pot_alvo_anterior * (1 - 0.5 * ((pot_medidor - self.cfg["pot_maxima_alvo"]) / self.cfg["pot_maxima_alvo"]))

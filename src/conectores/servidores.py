@@ -107,8 +107,13 @@ class Servidores:
             if not cls.ping(d.ips["TDA_ip"]) and not d.glb["TDA_Offline"]:
                 d.glb["TDA_Offline"] = True
                 logger.warning("[CLI] CLP TDA não respondeu a tentativa de comunicação!")
+                if cls.clp["TDA"].open():
+                    cls.clp["TDA"].close()
+                else:
+                    d.glb["TDA_Offline"] = True
+                    logger.critical("[CLI] CLP TDA não respondeu a tentativa de conexão ModBus!")
 
-            elif cls.ping(d.ips["TDA_ip"]) and d.glb["TDA_Offline"]:
+            elif cls.ping(d.ips["TDA_ip"]) and d.glb["TDA_Offline"] and cls.clp["TDA"].open():
                 logger.info("[CLI] Comunicação com o CLP TDA reestabelecida.")
                 d.glb["TDA_Offline"] = False
 

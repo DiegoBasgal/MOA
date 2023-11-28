@@ -165,7 +165,9 @@ class ParametrosUsina(models.Model):
 
 
 class Comando(models.Model):
+
     id = models.IntegerField(primary_key=True)
+
     nome = models.CharField(max_length=255)
     descricao = models.TextField()
     executavel_em_manual = models.BooleanField(default=False)
