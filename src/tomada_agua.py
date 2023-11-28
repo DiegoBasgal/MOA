@@ -45,6 +45,7 @@ class TomadaAgua:
         self.nivel_montante = LeituraModbusFloat(
             self.clp['TDA'],
             REG_CLP["TDA"]["NV_MONTANTE"],
+            wordorder=False,
             descricao="[TDA] Leitura Nível Montante"
         )
         self.status_limpa_grades = LeituraModbusBit(

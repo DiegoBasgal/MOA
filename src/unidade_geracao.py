@@ -91,6 +91,7 @@ class UnidadeGeracao:
         self.tempo_normalizar: "int" = 0
 
         self.borda_parar: "bool" = False
+        self.manter_unidades: "bool" = False
         self.operar_comporta: "bool" = False
         self.temporizar_partida: "bool" = False
         self.aguardar_pressao_cp: "bool" = False
@@ -215,7 +216,10 @@ class UnidadeGeracao:
     def setpoint(self, var: "int") -> "None":
         # SETTER -> Atribui o novo valor de setpoint da Unidade.
 
-        if var < self.__cfg["pot_minima"]:
+        if self.manter_unidades:
+            self._setpoint = self.__cfg["pot_minima"]
+
+        elif var < self.__cfg["pot_minima"]:
             self._setpoint = 0
 
         elif var > self.__cfg[f"pot_maxima_ug{self.id}"]:
@@ -910,7 +914,7 @@ class UnidadeGeracao:
 
         try:
             self.prioridade = int(parametros[f"ug{self.id}_prioridade"])
-
+            self.manter_unidades = bool(parametros["manter_unidades"])
             self.condic_temp_fase_r_ug.valor_base = float(parametros[f"alerta_temperatura_fase_r_ug{self.id}"])
             self.condic_temp_fase_s_ug.valor_base = float(parametros[f"alerta_temperatura_fase_s_ug{self.id}"])
             self.condic_temp_fase_t_ug.valor_base = float(parametros[f"alerta_temperatura_fase_t_ug{self.id}"])
@@ -923,7 +927,6 @@ class UnidadeGeracao:
             self.condic_temp_mancal_casq_comb_ug.valor_base = float(parametros[f"alerta_temperatura_mancal_casq_comb_ug{self.id}"])
             self.condic_temp_mancal_contra_esc_comb_ug.valor_base = float(parametros[f"alerta_temperatura_mancal_contra_esc_comb_ug{self.id}"])
             self.condic_pressao_turbina_ug.valor_base = float(parametros[f"alerta_pressao_turbina_ug{self.id}"])
-
             self.condic_temp_fase_r_ug.valor_limite = float(parametros[f"limite_temperatura_fase_r_ug{self.id}"])
             self.condic_temp_fase_s_ug.valor_limite = float(parametros[f"limite_temperatura_fase_s_ug{self.id}"])
             self.condic_temp_fase_t_ug.valor_limite = float(parametros[f"limite_temperatura_fase_t_ug{self.id}"])
@@ -1275,10 +1278,10 @@ class UnidadeGeracao:
         self.condicionadores_essenciais.append(c.CondicionadorBase(self.l_rele_bloq_86EH_desatuado, CONDIC_NORMALIZAR))
 
         self.l_falha_2_rv_b3 = LeituraModbusBit(self.rv[f"UG{self.id}"], REG_CLP[f"UG{self.id}"]["RV_FLH_2_B3"], descricao=f"[UG{self.id}][RV] Bloqueio Externo")
-        self.condicionadores_essenciais.append(c.CondicionadorBase(self.l_falha_2_rv_b3, CONDIC_NORMALIZAR, teste=True))
+        self.condicionadores_essenciais.append(c.CondicionadorBase(self.l_falha_2_rv_b3, CONDIC_NORMALIZAR))
 
         self.l_trip_rele_rv_naoatuado = LeituraModbusBit(self.rv[f"UG{self.id}"], REG_CLP[f"UG{self.id}"]["RV_RELE_TRP_NAO_ATUADO"], invertido=True, descricao=f"[UG{self.id}][RV] Relé Trip Não Atuado")
-        self.condicionadores_essenciais.append(c.CondicionadorBase(self.l_trip_rele_rv_naoatuado, CONDIC_NORMALIZAR, teste=True))
+        self.condicionadores_essenciais.append(c.CondicionadorBase(self.l_trip_rele_rv_naoatuado, CONDIC_NORMALIZAR))
 
         # self.l_saidas_digitiais_rv_b0 = LeituraModbus(self.rv[f"UG{self.id}"], REG_CLP[f"UG{self.id}"]["RV_SAIDAS_DIGITAIS"], descricao=f"[UG{self.id}][RV] Rele Trip Não Atuado")
         # self.condicionadores_essenciais.append(c.CondicionadorBase(self.l_saidas_digitiais_rv_b0, CONDIC_NORMALIZAR, teste=True))
@@ -1508,7 +1511,7 @@ class UnidadeGeracao:
         self.condicionadores.append(c.CondicionadorBase(self.l_falha_1_rv_b2, CONDIC_NORMALIZAR, teste=True))
 
         self.l_falha_1_rv_b3 = LeituraModbusBit(self.rv[f"UG{self.id}"], REG_CLP[f"UG{self.id}"]["RV_FLH_1_B3"], descricao=f"[UG{self.id}][RV] Girando Sem Regulação ou Giro Indevido")
-        self.condicionadores.append(c.CondicionadorBase(self.l_falha_1_rv_b3, CONDIC_NORMALIZAR, teste=True))
+        self.condicionadores.append(c.CondicionadorBase(self.l_falha_1_rv_b3, CONDIC_NORMALIZAR))
 
         self.l_falha_1_rv_b4 = LeituraModbusBit(self.rv[f"UG{self.id}"], REG_CLP[f"UG{self.id}"]["RV_FLH_1_B4"], descricao=f"[UG{self.id}][RV] Falha Leitura Posição Distribuidor")
         self.condicionadores.append(c.CondicionadorBase(self.l_falha_1_rv_b4, CONDIC_NORMALIZAR, teste=True))
@@ -1640,7 +1643,7 @@ class UnidadeGeracao:
         self.condicionadores.append(c.CondicionadorBase(self.l_falha_2_rt_b11, CONDIC_NORMALIZAR, teste=True))
 
         self.l_falha_2_rt_b12 = LeituraModbusBit(self.rt[f"UG{self.id}"], REG_CLP[f"UG{self.id}"]["RT_FLH_2_B12"], descricao=f"[UG{self.id}][RT] Falha Bloqueio Externo")
-        self.condicionadores.append(c.CondicionadorBase(self.l_falha_2_rt_b12, CONDIC_NORMALIZAR, teste=True))
+        self.condicionadores.append(c.CondicionadorBase(self.l_falha_2_rt_b12, CONDIC_NORMALIZAR))
 
 
         # CONDICIONADORES RELÉS
@@ -1651,19 +1654,19 @@ class UnidadeGeracao:
         self.condicionadores.append(c.CondicionadorBase(self.l_trip_rele_protecao2, CONDIC_NORMALIZAR))
 
         self.l_subtensao_geral = LeituraModbusBit(self.rele[f"UG{self.id}"], REG_RELE[f"UG{self.id}"]["SUBTEN_GERAL"], descricao=f"[UG{self.id}][RELE] Subtensão Geral")
-        self.condicionadores.append(c.CondicionadorBase(self.l_subtensao_geral, CONDIC_NORMALIZAR, teste=True))
+        self.condicionadores.append(c.CondicionadorBase(self.l_subtensao_geral, CONDIC_NORMALIZAR))
 
         self.l_subfreq_ele1 = LeituraModbusBit(self.rele[f"UG{self.id}"], REG_RELE[f"UG{self.id}"]["ELE_1_SOBREFRE"], descricao=f"[UG{self.id}][RELE] Subfrequência Elemento 1")
-        self.condicionadores.append(c.CondicionadorBase(self.l_subfreq_ele1, CONDIC_NORMALIZAR, teste=True))
+        self.condicionadores.append(c.CondicionadorBase(self.l_subfreq_ele1, CONDIC_NORMALIZAR))
 
         self.l_subfreq_ele2 = LeituraModbusBit(self.rele[f"UG{self.id}"], REG_RELE[f"UG{self.id}"]["ELE_2_SOBREFRE"], descricao=f"[UG{self.id}][RELE] Subfrequência Elemento 2")
         self.condicionadores.append(c.CondicionadorBase(self.l_subfreq_ele2, CONDIC_NORMALIZAR))
 
         self.l_sobrefreq_ele1 = LeituraModbusBit(self.rele[f"UG{self.id}"], REG_RELE[f"UG{self.id}"]["ELE_1_SUBFRE"], descricao=f"[UG{self.id}][RELE] Sobrefrequência Elemento 1")
-        self.condicionadores.append(c.CondicionadorBase(self.l_sobrefreq_ele1, CONDIC_NORMALIZAR, teste=True))
+        self.condicionadores.append(c.CondicionadorBase(self.l_sobrefreq_ele1, CONDIC_NORMALIZAR))
 
         self.l_sobrefreq_ele2 = LeituraModbusBit(self.rele[f"UG{self.id}"], REG_RELE[f"UG{self.id}"]["ELE_2_SUBFRE"], descricao=f"[UG{self.id}][RELE] Sobrefrequência Elemento 2")
-        self.condicionadores.append(c.CondicionadorBase(self.l_sobrefreq_ele2, CONDIC_NORMALIZAR, teste=True))
+        self.condicionadores.append(c.CondicionadorBase(self.l_sobrefreq_ele2, CONDIC_NORMALIZAR))
 
         self.l_sobrecorr_instant = LeituraModbusBit(self.rele[f"UG{self.id}"], REG_RELE[f"UG{self.id}"]["SOBRECO_INST"], descricao=f"[UG{self.id}][RELE] Sobrecorrente Instantânea")
         self.condicionadores.append(c.CondicionadorBase(self.l_sobrecorr_instant, CONDIC_NORMALIZAR))
