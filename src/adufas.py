@@ -27,6 +27,7 @@ class Adufas:
     condicionadores: "list[c.CondicionadorBase]" = []
     condicionadores_essenciais: "list[c.CondicionadorBase]" = []
 
+
     class Comporta:
         def __init__(self, id: "int") -> "None":
 
@@ -36,7 +37,7 @@ class Adufas:
 
             self.__leitura_info = lei.LeituraModbus(
                 self.clp["AD"],
-                REG_AD["CP_01_INFO"],
+                REG_AD[f"CP_0{self.id}_INFO"],
                 op=3,
                 descricao=f"[AD][CP{self.id}] Informação"
             )
@@ -87,8 +88,11 @@ class Adufas:
 
     @classmethod
     def calcular_setpoint(cls) -> "int":
+
         tda.TomadaAgua.nivel_montante.valor
+
         return
+
 
     @classmethod
     def distribuir_setpoint(cls, sp_alvo: "int") -> "None":

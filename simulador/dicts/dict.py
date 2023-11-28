@@ -40,6 +40,19 @@ compartilhado = {
         "nv_jusante_grade": 0,
     },
 
+    "AD": {
+        "cp1_condic": False,
+
+        "cp1_posicao": 0,
+        "cp1_setpoint": 0,
+
+        "cp2_condic": False,
+
+        "cp2_posicao": 0,
+        "cp2_setpoint": 0,
+
+    },
+
     "SE": {
         "condic": False,
 

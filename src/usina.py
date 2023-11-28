@@ -105,9 +105,9 @@ class Usina:
 
         # FINALIZAÇÃO DO __INIT__
 
+        self.sa.carregar_leituras()
         self.se.carregar_leituras()
         self.tda.carregar_leituras()
-        self.sa.carregar_leituras()
 
         self.ler_valores()
         self.normalizar_usina()
@@ -254,9 +254,9 @@ class Usina:
     def verificar_condicionadores(self) -> "int":
         flag = CONDIC_IGNORAR
 
+        lst_sa = self.sa.verificar_condicionadores()
         lst_se = self.se.verificar_condicionadores()
         lst_tda = self.tda.verificar_condicionadores()
-        lst_sa = self.sa.verificar_condicionadores()
 
         condics = [condic for condics in [lst_sa, lst_se, lst_tda] for condic in condics]
 
@@ -272,12 +272,12 @@ class Usina:
 
     # FUNÇÕES PARA CÁLCULOS E AJUSTES DE OERAÇÃO
 
-    def ajustar_ie_padrao(self) -> "int":
+    def ajustar_ie_padrao(self) -> "float":
         """
         Função para ajustar o valor do IE.
         """
 
-        return sum(ug.leitura_potencia for ug in self.ugs) / self.cfg["pot_maxima_alvo"]
+        return sum(ug.leitura_potencia for ug in self.ugs) / self.cfg["pot_alvo_usina"]
 
 
     def ajustar_inicializacao(self) -> "None":
@@ -427,11 +427,11 @@ class Usina:
 
         logger.debug(f"[USN] Potência no medidor:                {pot_medidor:0.3f}")
 
-        pot_aux = self.cfg["pot_maxima_alvo"] - (self.cfg["pot_maxima_usina"] - self.cfg["pot_maxima_alvo"])
+        pot_aux = self.cfg["pot_alvo_usina"] - (self.cfg["pot_maxima_usina"] - self.cfg["pot_alvo_usina"])
         pot_medidor = max(pot_aux, min(pot_medidor, self.cfg["pot_maxima_usina"]))
 
-        if pot_medidor > self.cfg["pot_maxima_alvo"]:
-            pot_alvo = self._pot_alvo_anterior * (1 - ((pot_medidor - self.cfg["pot_maxima_alvo"]) / self.cfg["pot_maxima_alvo"]))
+        if pot_medidor > self.cfg["pot_alvo_usina"]:
+            pot_alvo = self._pot_alvo_anterior * (1 - ((pot_medidor - self.cfg["pot_alvo_usina"]) / self.cfg["pot_alvo_usina"]))
 
         self._pot_alvo_anterior = pot_alvo
 
@@ -469,13 +469,13 @@ class Usina:
         sp = (pot_alvo - ajuste_manual) / self.cfg["pot_maxima_usina"]
 
         self.__split1 = True if sp > (0) else self.__split1
-        self.__split2 = True if sp > ((self.cfg["pot_maxima_ug"] / self.cfg["pot_maxima_usina"]) + self.cfg["margem_pot_critica"]) else self.__split2
-        self.__split3 = True if sp > (2 * (self.cfg["pot_maxima_ug"] / self.cfg["pot_maxima_usina"]) + self.cfg["margem_pot_critica"]) else self.__split3
-        self.__split4 = True if sp > (3 * (self.cfg["pot_maxima_ug"] / self.cfg["pot_maxima_usina"]) + self.cfg["margem_pot_critica"]) else self.__split4
+        self.__split2 = True if sp > ((self.cfg["pot_maxima_ugs"] / self.cfg["pot_maxima_usina"]) + self.cfg["margem_pot_critica"]) else self.__split2
+        self.__split3 = True if sp > (2 * (self.cfg["pot_maxima_ugs"] / self.cfg["pot_maxima_usina"]) + self.cfg["margem_pot_critica"]) else self.__split3
+        self.__split4 = True if sp > (3 * (self.cfg["pot_maxima_ugs"] / self.cfg["pot_maxima_usina"]) + self.cfg["margem_pot_critica"]) else self.__split4
 
-        self.__split4 = False if sp < (3 * (self.cfg["pot_maxima_ug"] / self.cfg["pot_maxima_usina"]) - self.cfg["margem_pot_critica"]) else self.__split4
-        self.__split3 = False if sp < (2 * (self.cfg["pot_maxima_ug"] / self.cfg["pot_maxima_usina"]) - self.cfg["margem_pot_critica"]) else self.__split3
-        self.__split2 = False if sp < ((self.cfg["pot_maxima_ug"] / self.cfg["pot_maxima_usina"]) - self.cfg["margem_pot_critica"]) else self.__split2
+        self.__split4 = False if sp < (3 * (self.cfg["pot_maxima_ugs"] / self.cfg["pot_maxima_usina"]) - self.cfg["margem_pot_critica"]) else self.__split4
+        self.__split3 = False if sp < (2 * (self.cfg["pot_maxima_ugs"] / self.cfg["pot_maxima_usina"]) - self.cfg["margem_pot_critica"]) else self.__split3
+        self.__split2 = False if sp < ((self.cfg["pot_maxima_ugs"] / self.cfg["pot_maxima_usina"]) - self.cfg["margem_pot_critica"]) else self.__split2
         self.__split1 = False if sp < (self.cfg["pot_minima"] / self.cfg["pot_maxima_usina"]) else self.__split1
 
 
@@ -684,8 +684,9 @@ class Usina:
             self.cfg["nv_minimo"] = float(parametros["nv_minimo"])
             self.cfg["nv_maximo"] = float(parametros["nv_maximo"])
 
-            self.cfg["pot_maxima_alvo"] = float(parametros["pot_nominal"])
-            self.cfg["pot_maxima_ug"] = float(parametros["pot_nominal_ug"])
+            self.cfg["pot_minima_ugs"] = float(parametros["pot_minima_ugs"])
+            self.cfg["pot_maxima_ugs"] = float(parametros["pot_maxima_ugs"])
+            self.cfg["pot_maxima_usina"] = float(parametros["pot_maxima_usina"])
             self.cfg["margem_pot_critica"] = float(parametros["margem_pot_critica"])
 
             with open(os.path.join(os.path.dirname("/opt/operacao-autonoma/src/dicionarios/"), 'cfg.json'), 'w') as file:

@@ -65,7 +65,7 @@ class Subestacao:
 
 
     @classmethod
-    def fechar_dj_linha(cls) -> "int":
+    def fechar_dj_linha(cls) -> "bool":
         """
         Função para acionamento do comando de fechamento do Disjuntor de Linha.
 

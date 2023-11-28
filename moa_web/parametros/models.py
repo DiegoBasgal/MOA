@@ -35,11 +35,11 @@ class ParametrosUsina(models.Model):
 
 
     # Nível
-    nv_alvo = models.DecimalField(max_digits=10, decimal_places=3, default=816.9)
+    nv_alvo = models.DecimalField(max_digits=10, decimal_places=3, default=817)
     nv_maximo = models.DecimalField(max_digits=10, decimal_places=3, default=818)
-    nv_minimo = models.DecimalField(max_digits=10, decimal_places=3, default=816.8)
-    nv_montante = models.DecimalField(max_digits=10, decimal_places=3, default=816.9)
-    nv_religamento = models.DecimalField(max_digits=10, decimal_places=3, default=816.85)
+    nv_minimo = models.DecimalField(max_digits=10, decimal_places=3, default=816)
+    nv_montante = models.DecimalField(max_digits=10, decimal_places=3, default=817)
+    nv_religamento = models.DecimalField(max_digits=10, decimal_places=3, default=816.3)
 
 
     # PID IE
@@ -47,14 +47,14 @@ class ParametrosUsina(models.Model):
     ki = models.DecimalField(max_digits=15, decimal_places=3, default=0.1)
     kd = models.DecimalField(max_digits=15, decimal_places=3, default=0)
     kie = models.DecimalField(max_digits=15, decimal_places=3, default=0.1)
-    valor_ie_inicial = models.DecimalField(max_digits=10, decimal_places=3, default=0.5)
+    ie_inicial = models.DecimalField(max_digits=10, decimal_places=3, default=0.5)
 
 
     # Potência
-    pot_minima = models.DecimalField(max_digits=10, decimal_places=0, default=1700)
-    pot_nominal = models.DecimalField(max_digits=10, decimal_places=1, default=5600)
-    pot_nominal_ug = models.DecimalField(max_digits=10, decimal_places=1, default=5600)
-    margem_pot_critica = models.DecimalField(max_digits=10, decimal_places=5, default=0.037)
+    pot_minima_ugs = models.DecimalField(max_digits=10, decimal_places=0, default=1700)
+    pot_maxima_ugs = models.DecimalField(max_digits=10, decimal_places=1, default=5650)
+    pot_maxima_usina = models.DecimalField(max_digits=10, decimal_places=1, default=22600)
+    margem_pot_critica = models.DecimalField(max_digits=10, decimal_places=5, default=0.05)
 
 
     # UG1

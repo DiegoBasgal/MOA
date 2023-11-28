@@ -137,28 +137,28 @@ class ServicoAuxiliar:
         cls.l_alm_02_b_15 = lei.LeituraModbusBit(cls.clp["SA"], REG_SA["Alarme02_15"], descricao="[SA]  PINV - Controlador Boost 01 - Falha Acionamento Contator 1K1")
         cls.condicionadores.append(c.CondicionadorBase(cls.l_alm_02_b_15, CONDIC_NORMALIZAR))
 
-        cls.l_alm_03_b_09 = lei.LeituraModbusBit(cls.clp["SA"], REG_SA["Alarme03_09"], descricao="[SA]  ServAuxiliar - Falta de Fase Fonte 01 (TSA-01)")
+        cls.l_alm_03_b_09 = lei.LeituraModbusBit(cls.clp["SA"], REG_SA["Alarme03_09"], descricao="[SA]  Falta de Fase Fonte 01 (TSA-01)")
         cls.condicionadores.append(c.CondicionadorBase(cls.l_alm_03_b_09, CONDIC_NORMALIZAR))
 
-        cls.l_alm_03_b_10 = lei.LeituraModbusBit(cls.clp["SA"], REG_SA["Alarme03_10"], descricao="[SA]  ServAuxiliar - Falta de Fase Fonte 02 (TSA-02 ou Rede Celesc)")
+        cls.l_alm_03_b_10 = lei.LeituraModbusBit(cls.clp["SA"], REG_SA["Alarme03_10"], descricao="[SA]  Falta de Fase Fonte 02 (TSA-02 ou Rede Celesc)")
         cls.condicionadores.append(c.CondicionadorBase(cls.l_alm_03_b_10, CONDIC_NORMALIZAR))
 
-        cls.l_alm_03_b_11 = lei.LeituraModbusBit(cls.clp["SA"], REG_SA["Alarme03_11"], descricao="[SA]  ServAuxiliar - Falta de Fase Fonte 03 (Grupo Diesel)")
+        cls.l_alm_03_b_11 = lei.LeituraModbusBit(cls.clp["SA"], REG_SA["Alarme03_11"], descricao="[SA]  Falta de Fase Fonte 03 (Grupo Diesel)")
         cls.condicionadores.append(c.CondicionadorBase(cls.l_alm_03_b_11, CONDIC_NORMALIZAR))
 
-        cls.l_alm_03_b_12 = lei.LeituraModbusBit(cls.clp["SA"], REG_SA["Alarme03_12"], descricao="[SA]  ServAuxiliar - Falha nas Fontes")
+        cls.l_alm_03_b_12 = lei.LeituraModbusBit(cls.clp["SA"], REG_SA["Alarme03_12"], descricao="[SA]  Falha nas Fontes")
         cls.condicionadores.append(c.CondicionadorBase(cls.l_alm_03_b_12, CONDIC_NORMALIZAR))
 
-        cls.l_alm_03_b_13 = lei.LeituraModbusBit(cls.clp["SA"], REG_SA["Alarme03_13"], descricao="[SA]  ServAuxiliar - Atenção Comandos em Modo Manual")
+        cls.l_alm_03_b_13 = lei.LeituraModbusBit(cls.clp["SA"], REG_SA["Alarme03_13"], descricao="[SA]  Atenção Comandos em Modo Manual")
         cls.condicionadores.append(c.CondicionadorBase(cls.l_alm_03_b_13, CONDIC_NORMALIZAR))
 
-        cls.l_alm_03_b_14 = lei.LeituraModbusBit(cls.clp["SA"], REG_SA["Alarme03_14"], descricao="[SA]  ServAuxiliar - Falta de Fase Fonte 04 (TSA-02)")
+        cls.l_alm_03_b_14 = lei.LeituraModbusBit(cls.clp["SA"], REG_SA["Alarme03_14"], descricao="[SA]  Falta de Fase Fonte 04 (TSA-02)")
         cls.condicionadores.append(c.CondicionadorBase(cls.l_alm_03_b_14, CONDIC_NORMALIZAR))
 
-        cls.l_alm_03_b_15 = lei.LeituraModbusBit(cls.clp["SA"], REG_SA["Alarme03_15"], descricao="[SA]  ServAuxiliar - Falta de Fase Fonte 05 (Rede Celesc)")
+        cls.l_alm_03_b_15 = lei.LeituraModbusBit(cls.clp["SA"], REG_SA["Alarme03_15"], descricao="[SA]  Falta de Fase Fonte 05 (Rede Celesc)")
         cls.condicionadores.append(c.CondicionadorBase(cls.l_alm_03_b_15, CONDIC_NORMALIZAR))
 
-        cls.l_alm_04_b_00 = lei.LeituraModbusBit(cls.clp["SA"], REG_SA["Alarme04_00"], descricao="[SA]  ServAuxiliar - Atenção Quadro de Transferência em Modo Local")
+        cls.l_alm_04_b_00 = lei.LeituraModbusBit(cls.clp["SA"], REG_SA["Alarme04_00"], descricao="[SA]  Atenção Quadro de Transferência em Modo Local")
         cls.condicionadores.append(c.CondicionadorBase(cls.l_alm_04_b_00, CONDIC_NORMALIZAR))
 
         cls.l_alm_04_b_01 = lei.LeituraModbusBit(cls.clp["SA"], REG_SA["Alarme04_01"], descricao="[SA]  Trafo Auxiliar TSA-01 - Alarme Sobretemperatura do Enrolamento")

@@ -81,7 +81,7 @@ class UnidadeGeracao:
         self._ultima_etapa_atual: "int" = 0
         self._tentativas_normalizacao: "int" = 0
 
-        self._setpoint_minimo: "float" = self.__cfg["pot_minima"]
+        self._setpoint_minimo: "float" = self.__cfg["pot_minima_ugs"]
         self._setpoint_maximo: "float" = self.__cfg[f"pot_maxima_ug{self.id}"]
 
         self._condicionadores: "list[c.CondicionadorBase]" = []
@@ -218,7 +218,7 @@ class UnidadeGeracao:
     def setpoint(self, var: "int") -> "None":
         # SETTER -> Atribui o novo valor de setpoint da Unidade.
 
-        if var < self.__cfg["pot_minima"]:
+        if var < self.__cfg["pot_minima_ugs"]:
             self._setpoint = 0
 
         elif var > self.__cfg[f"pot_maxima_ug{self.id}"]:
@@ -682,11 +682,11 @@ class UnidadeGeracao:
         """
 
         if self.etapa_atual == UG_PARADA:
-            if self.setpoint >= self.__cfg["pot_minima"]:
+            if self.setpoint >= self.__cfg["pot_minima_ugs"]:
                 self.partir()
 
         elif self.etapa_atual == UG_PARANDO:
-            if self.setpoint >= self.__cfg["pot_minima"]:
+            if self.setpoint >= self.__cfg["pot_minima_ugs"]:
                 self.enviar_setpoint(self.setpoint)
 
         elif self.etapa_atual == UG_SINCRONIZANDO:
