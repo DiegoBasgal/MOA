@@ -974,13 +974,13 @@ class UnidadeGeracao:
 
 
         self.l_alm_01_b_00 = lei.LeituraModbusBit(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}"]["Alarme01_00"], descricao=f"[UG{self.id}] Emergência Supervisório Pressionada (Bloqueio 86H Trip)")
-        self.condicionadores.append(c.CondicionadorBase(self.l_alm_01_b_00, CONDIC_NORMALIZAR))
+        self.condicionadores.append(c.CondicionadorBase(self.l_alm_01_b_00, CONDIC_INDISPONIBILIZAR))
 
         self.l_alm_01_b_01 = lei.LeituraModbusBit(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}"]["Alarme01_01"], descricao=f"[UG{self.id}] Botão de Emergência Pressionado (Bloqueio 86H Trip)")
-        self.condicionadores.append(c.CondicionadorBase(self.l_alm_01_b_01, CONDIC_NORMALIZAR))
+        self.condicionadores_essenciais.append(c.CondicionadorBase(self.l_alm_01_b_01, CONDIC_INDISPONIBILIZAR))
 
         self.l_alm_01_b_02 = lei.LeituraModbusBit(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}"]["Alarme01_02"], descricao=f"[UG{self.id}] Botão de Emergência Quadro Q49-U1 Pressionado (Bloqueio 86H Trip)")
-        self.condicionadores.append(c.CondicionadorBase(self.l_alm_01_b_02, CONDIC_NORMALIZAR))
+        self.condicionadores.append(c.CondicionadorBase(self.l_alm_01_b_02, CONDIC_INDISPONIBILIZAR))
 
         self.l_alm_01_b_03 = lei.LeituraModbusBit(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}"]["Alarme01_03"], descricao=f"[UG{self.id}] PCP-U1 - Falta de Fase CA Atuado")
         self.condicionadores.append(c.CondicionadorBase(self.l_alm_01_b_03, CONDIC_NORMALIZAR))
@@ -1010,7 +1010,7 @@ class UnidadeGeracao:
         self.condicionadores.append(c.CondicionadorBase(self.l_alm_01_b_13, CONDIC_NORMALIZAR))
 
         self.l_alm_01_b_14 = lei.LeituraModbusBit(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}"]["Alarme01_14"], descricao=f"[UG{self.id}] UHLM - Falha no Inversor da Bomba de Emergência (PINV)")
-        self.condicionadores.append(c.CondicionadorBase(self.l_alm_01_b_14, CONDIC_NORMALIZAR))
+        self.condicionadores.append(c.CondicionadorBase(self.l_alm_01_b_14, CONDIC_INDISPONIBILIZAR))
 
         self.l_alm_01_b_15 = lei.LeituraModbusBit(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}"]["Alarme01_15"], descricao=f"[UG{self.id}] UHLM - Falta Fluxo de Água na Saída do Trocador de Calor")
         self.condicionadores.append(c.CondicionadorBase(self.l_alm_01_b_15, CONDIC_NORMALIZAR))
@@ -1019,28 +1019,28 @@ class UnidadeGeracao:
         self.condicionadores.append(c.CondicionadorBase(self.l_alm_02_b_00, CONDIC_NORMALIZAR))
 
         self.l_alm_02_b_01 = lei.LeituraModbusBit(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}"]["Alarme02_01"], descricao=f"[UG{self.id}] UHLM - Nível de Óleo Crítico (Bloqueio 86H Trip)")
-        self.condicionadores.append(c.CondicionadorBase(self.l_alm_02_b_01, CONDIC_NORMALIZAR))
+        self.condicionadores.append(c.CondicionadorBase(self.l_alm_02_b_01, CONDIC_INDISPONIBILIZAR))
 
         self.l_alm_02_b_02 = lei.LeituraModbusBit(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}"]["Alarme02_02"], descricao=f"[UG{self.id}] UHLM - Filtro de Pressão Sujo")
         self.condicionadores.append(c.CondicionadorBase(self.l_alm_02_b_02, CONDIC_NORMALIZAR))
 
         self.l_alm_02_b_03 = lei.LeituraModbusBit(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}"]["Alarme02_03"], descricao=f"[UG{self.id}] UHLM - Botão de Emergência Pressionado (Bloqueio 86H Trip)")
-        self.condicionadores.append(c.CondicionadorBase(self.l_alm_02_b_03, CONDIC_NORMALIZAR))
+        self.condicionadores_essenciais.append(c.CondicionadorBase(self.l_alm_02_b_03, CONDIC_NORMALIZAR))
 
         self.l_alm_02_b_04 = lei.LeituraModbusBit(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}"]["Alarme02_04"], descricao=f"[UG{self.id}] UHLM - Falta Fluxo de Óleo na Bucha Radial do Mancal Combinado - Analógico")
-        self.condicionadores.append(c.CondicionadorBase(self.l_alm_02_b_04, CONDIC_NORMALIZAR))
+        self.condicionadores.append(c.CondicionadorBase(self.l_alm_02_b_04, CONDIC_INDISPONIBILIZAR))
 
         self.l_alm_02_b_05 = lei.LeituraModbusBit(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}"]["Alarme02_05"], descricao=f"[UG{self.id}] UHLM - Falta Fluxo de Óleo na Bomba Mecânica")
-        self.condicionadores.append(c.CondicionadorBase(self.l_alm_02_b_05, CONDIC_NORMALIZAR))
+        self.condicionadores.append(c.CondicionadorBase(self.l_alm_02_b_05, CONDIC_INDISPONIBILIZAR))
 
         self.l_alm_02_b_06 = lei.LeituraModbusBit(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}"]["Alarme02_06"], descricao=f"[UG{self.id}] UHLM - Pressão de Óleo Baixa na Linha do Mancal Combinado (Bloqueio 86M Trip)")
-        self.condicionadores.append(c.CondicionadorBase(self.l_alm_02_b_06, CONDIC_NORMALIZAR))
+        self.condicionadores.append(c.CondicionadorBase(self.l_alm_02_b_06, CONDIC_INDISPONIBILIZAR))
 
         self.l_alm_02_b_07 = lei.LeituraModbusBit(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}"]["Alarme02_07"], descricao=f"[UG{self.id}] UHLM - Partida da Maquina Bloqueada pelo Filtro Sujo (Bloqueio 86M Trip)")
-        self.condicionadores.append(c.CondicionadorBase(self.l_alm_02_b_07, CONDIC_NORMALIZAR))
+        self.condicionadores.append(c.CondicionadorBase(self.l_alm_02_b_07, CONDIC_INDISPONIBILIZAR))
 
         self.l_alm_02_b_08 = lei.LeituraModbusBit(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}"]["Alarme02_08"], descricao=f"[UG{self.id}] UHLM - Falha no Acionamento da Bomba 01 (CA) de Óleo")
-        self.condicionadores.append(c.CondicionadorBase(self.l_alm_02_b_08, CONDIC_NORMALIZAR))
+        self.condicionadores.append(c.CondicionadorBase(self.l_alm_02_b_08, CONDIC_INDISPONIBILIZAR))
 
         self.l_alm_02_b_09 = lei.LeituraModbusBit(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}"]["Alarme02_09"], descricao=f"[UG{self.id}] UHLM - Falha no Acionamento da Válvula Direcional da Bomba Mecânica")
         self.condicionadores.append(c.CondicionadorBase(self.l_alm_02_b_09, CONDIC_NORMALIZAR))
@@ -1049,31 +1049,31 @@ class UnidadeGeracao:
         self.condicionadores.append(c.CondicionadorBase(self.l_alm_02_b_10, CONDIC_NORMALIZAR))
 
         self.l_alm_02_b_11 = lei.LeituraModbusBit(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}"]["Alarme02_11"], descricao=f"[UG{self.id}] UHLM - Falha no Fechamento da Válvula de Entrada de Água no Trocador de Calor")
-        self.condicionadores.append(c.CondicionadorBase(self.l_alm_02_b_11, CONDIC_NORMALIZAR))
+        self.condicionadores.append(c.CondicionadorBase(self.l_alm_02_b_11, CONDIC_INDISPONIBILIZAR))
 
         self.l_alm_02_b_12 = lei.LeituraModbusBit(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}"]["Alarme02_12"], descricao=f"[UG{self.id}] UHLM - Falha na Abertura da Válvula de Saída de Água no Trocador de Calor")
-        self.condicionadores.append(c.CondicionadorBase(self.l_alm_02_b_12, CONDIC_NORMALIZAR))
+        self.condicionadores.append(c.CondicionadorBase(self.l_alm_02_b_12, CONDIC_INDISPONIBILIZAR))
 
         self.l_alm_02_b_13 = lei.LeituraModbusBit(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}"]["Alarme02_13"], descricao=f"[UG{self.id}] UHLM - Falha no Fechamento da Válvula de Saída de Água no Trocador de Calor")
         self.condicionadores.append(c.CondicionadorBase(self.l_alm_02_b_13, CONDIC_NORMALIZAR))
 
         self.l_alm_02_b_14 = lei.LeituraModbusBit(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}"]["Alarme02_14"], descricao=f"[UG{self.id}] UHLM - Falta Fluxo de Óleo na Bomba 01 (CA) - Analógico")
-        self.condicionadores.append(c.CondicionadorBase(self.l_alm_02_b_14, CONDIC_NORMALIZAR))
+        self.condicionadores.append(c.CondicionadorBase(self.l_alm_02_b_14, CONDIC_INDISPONIBILIZAR))
 
         self.l_alm_02_b_15 = lei.LeituraModbusBit(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}"]["Alarme02_15"], descricao=f"[UG{self.id}] UHLM - Falta Fluxo de Óleo na Bomba 02 (Inversor) - Analógico")
-        self.condicionadores.append(c.CondicionadorBase(self.l_alm_02_b_15, CONDIC_NORMALIZAR))
+        self.condicionadores.append(c.CondicionadorBase(self.l_alm_02_b_15, CONDIC_INDISPONIBILIZAR))
 
         self.l_alm_03_b_00 = lei.LeituraModbusBit(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}"]["Alarme03_00"], descricao=f"[UG{self.id}] UHCT - Falha de Pressurização")
-        self.condicionadores.append(c.CondicionadorBase(self.l_alm_03_b_00, CONDIC_NORMALIZAR))
+        self.condicionadores.append(c.CondicionadorBase(self.l_alm_03_b_00, CONDIC_INDISPONIBILIZAR))
 
         self.l_alm_03_b_01 = lei.LeituraModbusBit(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}"]["Alarme03_01"], descricao=f"[UG{self.id}] UHCT - Pressão de Desligamento (Bloqueio 86M Trip)")
-        self.condicionadores.append(c.CondicionadorBase(self.l_alm_03_b_01, CONDIC_NORMALIZAR))
+        self.condicionadores.append(c.CondicionadorBase(self.l_alm_03_b_01, CONDIC_INDISPONIBILIZAR))
 
         self.l_alm_03_b_02 = lei.LeituraModbusBit(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}"]["Alarme03_02"], descricao=f"[UG{self.id}] UHCT - Nível de Óleo Baixo")
         self.condicionadores.append(c.CondicionadorBase(self.l_alm_03_b_02, CONDIC_NORMALIZAR))
 
         self.l_alm_03_b_03 = lei.LeituraModbusBit(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}"]["Alarme03_03"], descricao=f"[UG{self.id}] UHCT - Nível de Óleo Crítico (Bloqueio 86H Trip)")
-        self.condicionadores.append(c.CondicionadorBase(self.l_alm_03_b_03, CONDIC_NORMALIZAR))
+        self.condicionadores.append(c.CondicionadorBase(self.l_alm_03_b_03, CONDIC_INDISPONIBILIZAR))
 
         self.l_alm_03_b_04 = lei.LeituraModbusBit(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}"]["Alarme03_04"], descricao=f"[UG{self.id}] UHCT - Filtro de Pressão Sujo")
         self.condicionadores.append(c.CondicionadorBase(self.l_alm_03_b_04, CONDIC_NORMALIZAR))
@@ -1082,13 +1082,13 @@ class UnidadeGeracao:
         self.condicionadores.append(c.CondicionadorBase(self.l_alm_03_b_05, CONDIC_NORMALIZAR))
 
         self.l_alm_03_b_06 = lei.LeituraModbusBit(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}"]["Alarme03_06"], descricao=f"[UG{self.id}] UHCT - Pressão Crítica Mecânica (Bloqueio 86H Trip)")
-        self.condicionadores.append(c.CondicionadorBase(self.l_alm_03_b_06, CONDIC_NORMALIZAR))
+        self.condicionadores.append(c.CondicionadorBase(self.l_alm_03_b_06, CONDIC_INDISPONIBILIZAR))
 
         self.l_alm_03_b_07 = lei.LeituraModbusBit(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}"]["Alarme03_07"], descricao=f"[UG{self.id}] UHCT - Pressão Crítica Eletrônica (Bloqueio 86H Trip)")
-        self.condicionadores.append(c.CondicionadorBase(self.l_alm_03_b_07, CONDIC_NORMALIZAR))
+        self.condicionadores.append(c.CondicionadorBase(self.l_alm_03_b_07, CONDIC_INDISPONIBILIZAR))
 
         self.l_alm_03_b_08 = lei.LeituraModbusBit(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}"]["Alarme03_08"], descricao=f"[UG{self.id}] UHCT - Botão de Emergência Pressionado (Bloqueio 86H Trip)")
-        self.condicionadores.append(c.CondicionadorBase(self.l_alm_03_b_08, CONDIC_NORMALIZAR))
+        self.condicionadores_essenciais.append(c.CondicionadorBase(self.l_alm_03_b_08, CONDIC_NORMALIZAR))
 
         self.l_alm_03_b_09 = lei.LeituraModbusBit(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}"]["Alarme03_09"], descricao=f"[UG{self.id}] UHCT - Falha no Acionamento da Bomba de Óleo 01")
         self.condicionadores.append(c.CondicionadorBase(self.l_alm_03_b_09, CONDIC_NORMALIZAR))
@@ -1097,7 +1097,7 @@ class UnidadeGeracao:
         self.condicionadores.append(c.CondicionadorBase(self.l_alm_03_b_10, CONDIC_NORMALIZAR))
 
         self.l_alm_03_b_11 = lei.LeituraModbusBit(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}"]["Alarme03_11"], descricao=f"[UG{self.id}] UHLM - Falha na Energização da Válvula Direcional da Bomba Mecânica com Turbina Rodando")
-        self.condicionadores.append(c.CondicionadorBase(self.l_alm_03_b_11, CONDIC_NORMALIZAR))
+        self.condicionadores.append(c.CondicionadorBase(self.l_alm_03_b_11, CONDIC_INDISPONIBILIZAR))
 
         self.l_alm_03_b_12 = lei.LeituraModbusBit(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}"]["Alarme03_12"], descricao=f"[UG{self.id}] Turbina - Falta Fluxo de Água na Vedação do Eixo - Lado Montante")
         self.condicionadores.append(c.CondicionadorBase(self.l_alm_03_b_12, CONDIC_NORMALIZAR))
@@ -1115,7 +1115,7 @@ class UnidadeGeracao:
         self.condicionadores.append(c.CondicionadorBase(self.l_alm_04_b_00, CONDIC_NORMALIZAR))
 
         self.l_alm_04_b_01 = lei.LeituraModbusBit(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}"]["Alarme04_01"], descricao=f"[UG{self.id}] Turbina - Pás do Distribuidor Desalinhadas (Bloqueio 86H Trip)")
-        self.condicionadores.append(c.CondicionadorBase(self.l_alm_04_b_01, CONDIC_NORMALIZAR))
+        self.condicionadores.append(c.CondicionadorBase(self.l_alm_04_b_01, CONDIC_INDISPONIBILIZAR))
 
         self.l_alm_04_b_02 = lei.LeituraModbusBit(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}"]["Alarme04_02"], descricao=f"[UG{self.id}] Turbina - Falta Fluxo ou Pressão de Água na Vedação do Eixo (Bloqueio 86M Trip)")
         self.condicionadores.append(c.CondicionadorBase(self.l_alm_04_b_02, CONDIC_NORMALIZAR))
@@ -1151,13 +1151,13 @@ class UnidadeGeracao:
         self.condicionadores.append(c.CondicionadorBase(self.l_alm_04_b_14, CONDIC_NORMALIZAR))
 
         self.l_alm_04_b_15 = lei.LeituraModbusBit(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}"]["Alarme04_15"], descricao=f"[UG{self.id}] Dispositivo de SobreVelocidade Mecânico Atuado (Bloqueio 86H Trip)")
-        self.condicionadores.append(c.CondicionadorBase(self.l_alm_04_b_15, CONDIC_NORMALIZAR))
+        self.condicionadores.append(c.CondicionadorBase(self.l_alm_04_b_15, CONDIC_INDISPONIBILIZAR))
 
         self.l_alm_05_b_00 = lei.LeituraModbusBit(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}"]["Alarme05_00"], descricao=f"[UG{self.id}] Reg Velocidade - Falha Sensor de Velocidade (Bloqueio 86H Trip)")
         self.condicionadores.append(c.CondicionadorBase(self.l_alm_05_b_00, CONDIC_NORMALIZAR))
 
         self.l_alm_05_b_02 = lei.LeituraModbusBit(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}"]["Alarme05_02"], descricao=f"[UG{self.id}] Reg Tensão - TRIP (Bloqueio 86E Trip)")
-        self.condicionadores.append(c.CondicionadorBase(self.l_alm_05_b_02, CONDIC_NORMALIZAR))
+        self.condicionadores_essenciais.append(c.CondicionadorBase(self.l_alm_05_b_02, CONDIC_NORMALIZAR))
 
         self.l_alm_05_b_03 = lei.LeituraModbusBit(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}"]["Alarme05_03"], descricao=f"[UG{self.id}] Reg Tensão - Falha Watchdog (Bloqueio 86E Trip)")
         self.condicionadores.append(c.CondicionadorBase(self.l_alm_05_b_03, CONDIC_NORMALIZAR))
@@ -1169,40 +1169,40 @@ class UnidadeGeracao:
         self.condicionadores.append(c.CondicionadorBase(self.l_alm_05_b_05, CONDIC_NORMALIZAR))
 
         self.l_alm_05_b_06 = lei.LeituraModbusBit(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}"]["Alarme05_06"], descricao=f"[UG{self.id}] Reg Tensão - Falha Painel PRT - Disjuntor dos TPs Aberto")
-        self.condicionadores.append(c.CondicionadorBase(self.l_alm_05_b_06, CONDIC_NORMALIZAR))
+        self.condicionadores.append(c.CondicionadorBase(self.l_alm_05_b_06, CONDIC_INDISPONIBILIZAR))
 
         self.l_alm_05_b_07 = lei.LeituraModbusBit(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}"]["Alarme05_07"], descricao=f"[UG{self.id}] GRTD 2000 - Falha no Sincronismo")
         self.condicionadores.append(c.CondicionadorBase(self.l_alm_05_b_07, CONDIC_NORMALIZAR))
 
         self.l_alm_05_b_09 = lei.LeituraModbusBit(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}"]["Alarme05_09"], descricao=f"[UG{self.id}] Relé de Bloqueio 86M Trip Atuado ")
-        self.condicionadores.append(c.CondicionadorBase(self.l_alm_05_b_09, CONDIC_NORMALIZAR))
+        self.condicionadores_essenciais.append(c.CondicionadorBase(self.l_alm_05_b_09, CONDIC_NORMALIZAR))
 
         self.l_alm_05_b_10 = lei.LeituraModbusBit(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}"]["Alarme05_10"], descricao=f"[UG{self.id}] Relé de Bloqueio 86M Trip Atuado Temporizado")
-        self.condicionadores.append(c.CondicionadorBase(self.l_alm_05_b_10, CONDIC_NORMALIZAR))
+        self.condicionadores_essenciais.append(c.CondicionadorBase(self.l_alm_05_b_10, CONDIC_NORMALIZAR))
 
         self.l_alm_05_b_11 = lei.LeituraModbusBit(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}"]["Alarme05_11"], descricao=f"[UG{self.id}] Relé de Bloqueio 86M Trip Atuado pelo CLP")
-        self.condicionadores.append(c.CondicionadorBase(self.l_alm_05_b_11, CONDIC_NORMALIZAR))
+        self.condicionadores_essenciais.append(c.CondicionadorBase(self.l_alm_05_b_11, CONDIC_NORMALIZAR))
 
         self.l_alm_05_b_12 = lei.LeituraModbusBit(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}"]["Alarme05_12"], descricao=f"[UG{self.id}] Relé de Bloqueio 86E Trip Atuado ")
-        self.condicionadores.append(c.CondicionadorBase(self.l_alm_05_b_12, CONDIC_NORMALIZAR))
+        self.condicionadores_essenciais.append(c.CondicionadorBase(self.l_alm_05_b_12, CONDIC_NORMALIZAR))
 
         self.l_alm_05_b_13 = lei.LeituraModbusBit(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}"]["Alarme05_13"], descricao=f"[UG{self.id}] Relé de Bloqueio 86E Trip Atuado Temporizado")
-        self.condicionadores.append(c.CondicionadorBase(self.l_alm_05_b_13, CONDIC_NORMALIZAR))
+        self.condicionadores_essenciais.append(c.CondicionadorBase(self.l_alm_05_b_13, CONDIC_NORMALIZAR))
 
         self.l_alm_05_b_14 = lei.LeituraModbusBit(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}"]["Alarme05_14"], descricao=f"[UG{self.id}] Relé de Bloqueio 86E Trip Atuado pelo CLP")
-        self.condicionadores.append(c.CondicionadorBase(self.l_alm_05_b_14, CONDIC_NORMALIZAR))
+        self.condicionadores_essenciais.append(c.CondicionadorBase(self.l_alm_05_b_14, CONDIC_NORMALIZAR))
 
         self.l_alm_05_b_15 = lei.LeituraModbusBit(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}"]["Alarme05_15"], descricao=f"[UG{self.id}] Relé de Bloqueio 86H Trip Atuado")
-        self.condicionadores.append(c.CondicionadorBase(self.l_alm_05_b_15, CONDIC_NORMALIZAR))
+        self.condicionadores_essenciais.append(c.CondicionadorBase(self.l_alm_05_b_15, CONDIC_NORMALIZAR))
 
         self.l_alm_06_b_00 = lei.LeituraModbusBit(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}"]["Alarme06_00"], descricao=f"[UG{self.id}] Relé de Bloqueio 86H Trip Atuado pelo CLP")
-        self.condicionadores.append(c.CondicionadorBase(self.l_alm_06_b_00, CONDIC_NORMALIZAR))
+        self.condicionadores_essenciais.append(c.CondicionadorBase(self.l_alm_06_b_00, CONDIC_NORMALIZAR))
 
         self.l_alm_06_b_03 = lei.LeituraModbusBit(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}"]["Alarme06_03"], descricao=f"[UG{self.id}] Relé de Proteção SEL700G - TRIP")
-        self.condicionadores.append(c.CondicionadorBase(self.l_alm_06_b_03, CONDIC_NORMALIZAR))
+        self.condicionadores_essenciais.append(c.CondicionadorBase(self.l_alm_06_b_03, CONDIC_NORMALIZAR))
 
         self.l_alm_06_b_04 = lei.LeituraModbusBit(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}"]["Alarme06_04"], descricao=f"[UG{self.id}] Relé de Proteção SEL700G - Falha no Disjuntor 50_62BF")
-        self.condicionadores.append(c.CondicionadorBase(self.l_alm_06_b_04, CONDIC_NORMALIZAR))
+        self.condicionadores.append(c.CondicionadorBase(self.l_alm_06_b_04, CONDIC_INDISPONIBILIZAR))
 
         self.l_alm_06_b_05 = lei.LeituraModbusBit(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}"]["Alarme06_05"], descricao=f"[UG{self.id}] Relé de Proteção SEL700G - Falha de Hardware")
         self.condicionadores.append(c.CondicionadorBase(self.l_alm_06_b_05, CONDIC_NORMALIZAR))
@@ -1217,19 +1217,19 @@ class UnidadeGeracao:
         self.condicionadores.append(c.CondicionadorBase(self.l_alm_06_b_10, CONDIC_NORMALIZAR))
 
         self.l_alm_06_b_11 = lei.LeituraModbusBit(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}"]["Alarme06_11"], descricao=f"[UG{self.id}] Disjuntor 52G - Falha na Abertura")
-        self.condicionadores.append(c.CondicionadorBase(self.l_alm_06_b_11, CONDIC_NORMALIZAR))
+        self.condicionadores.append(c.CondicionadorBase(self.l_alm_06_b_11, CONDIC_INDISPONIBILIZAR))
 
         self.l_alm_06_b_12 = lei.LeituraModbusBit(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}"]["Alarme06_12"], descricao=f"[UG{self.id}] Disjuntor 52G - Grade Frontal do CSG-U1 Aberta (Abertura 52L- SEL787)")
-        self.condicionadores.append(c.CondicionadorBase(self.l_alm_06_b_12, CONDIC_NORMALIZAR))
+        self.condicionadores.append(c.CondicionadorBase(self.l_alm_06_b_12, CONDIC_INDISPONIBILIZAR))
 
         self.l_alm_06_b_13 = lei.LeituraModbusBit(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}"]["Alarme06_13"], descricao=f"[UG{self.id}] Disjuntor 52G - Grade Traseira do CSG-U1 Aberta (Abertura 52L - SEL787)")
-        self.condicionadores.append(c.CondicionadorBase(self.l_alm_06_b_13, CONDIC_NORMALIZAR))
+        self.condicionadores.append(c.CondicionadorBase(self.l_alm_06_b_13, CONDIC_INDISPONIBILIZAR))
 
         self.l_alm_06_b_14 = lei.LeituraModbusBit(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}"]["Alarme06_14"], descricao=f"[UG{self.id}] Disjuntor 52G - Tampa Traseira do CSG-U1 Aberta (Abertura 52L - SEL787)")
-        self.condicionadores.append(c.CondicionadorBase(self.l_alm_06_b_14, CONDIC_NORMALIZAR))
+        self.condicionadores.append(c.CondicionadorBase(self.l_alm_06_b_14, CONDIC_INDISPONIBILIZAR))
 
         self.l_alm_06_b_15 = lei.LeituraModbusBit(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}"]["Alarme06_15"], descricao=f"[UG{self.id}] Disjuntor 52G - Posição de Teste (Extraído)")
-        self.condicionadores.append(c.CondicionadorBase(self.l_alm_06_b_15, CONDIC_NORMALIZAR))
+        self.condicionadores.append(c.CondicionadorBase(self.l_alm_06_b_15, CONDIC_INDISPONIBILIZAR))
 
         self.l_alm_07_b_00 = lei.LeituraModbusBit(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}"]["Alarme07_00"], descricao=f"[UG{self.id}] Controle de Potência - Falha Nível Minimo Alarme")
         self.condicionadores.append(c.CondicionadorBase(self.l_alm_07_b_00, CONDIC_NORMALIZAR))
@@ -1328,67 +1328,67 @@ class UnidadeGeracao:
         self.condicionadores.append(c.CondicionadorBase(self.l_alm_09_b_04, CONDIC_NORMALIZAR))
 
         self.l_alm_09_b_06 = lei.LeituraModbusBit(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}"]["Alarme09_06"], descricao=f"[UG{self.id}] Relé de Proteção - Sobretemperatura da Fase R do Gerador (Trip 86M)")
-        self.condicionadores.append(c.CondicionadorBase(self.l_alm_09_b_06, CONDIC_NORMALIZAR))
+        self.condicionadores.append(c.CondicionadorBase(self.l_alm_09_b_06, CONDIC_INDISPONIBILIZAR))
 
         self.l_alm_09_b_07 = lei.LeituraModbusBit(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}"]["Alarme09_07"], descricao=f"[UG{self.id}] Relé de Proteção - Sobretemperatura da Fase S do Gerador (Trip 86M)")
-        self.condicionadores.append(c.CondicionadorBase(self.l_alm_09_b_07, CONDIC_NORMALIZAR))
+        self.condicionadores.append(c.CondicionadorBase(self.l_alm_09_b_07, CONDIC_INDISPONIBILIZAR))
 
         self.l_alm_09_b_08 = lei.LeituraModbusBit(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}"]["Alarme09_08"], descricao=f"[UG{self.id}] Relé de Proteção - Sobretemperatura da Fase T do Gerador (Trip 86M)")
-        self.condicionadores.append(c.CondicionadorBase(self.l_alm_09_b_08, CONDIC_NORMALIZAR))
+        self.condicionadores.append(c.CondicionadorBase(self.l_alm_09_b_08, CONDIC_INDISPONIBILIZAR))
 
         self.l_alm_09_b_09 = lei.LeituraModbusBit(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}"]["Alarme09_09"], descricao=f"[UG{self.id}] Relé de Proteção - Sobretemperatura do Casquilho 01 do Mancal LA (Trip 86M)")
-        self.condicionadores.append(c.CondicionadorBase(self.l_alm_09_b_09, CONDIC_NORMALIZAR))
+        self.condicionadores.append(c.CondicionadorBase(self.l_alm_09_b_09, CONDIC_INDISPONIBILIZAR))
 
         self.l_alm_09_b_10 = lei.LeituraModbusBit(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}"]["Alarme09_10"], descricao=f"[UG{self.id}] Relé de Proteção - Sobretemperatura do Casquilho 02 do Mancal LA (Trip 86M)")
-        self.condicionadores.append(c.CondicionadorBase(self.l_alm_09_b_10, CONDIC_NORMALIZAR))
+        self.condicionadores.append(c.CondicionadorBase(self.l_alm_09_b_10, CONDIC_INDISPONIBILIZAR))
 
         self.l_alm_09_b_11 = lei.LeituraModbusBit(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}"]["Alarme09_11"], descricao=f"[UG{self.id}] Relé de Proteção - Sobretemperatura do Casquilho 01 do Mancal LNA (Trip 86M)")
-        self.condicionadores.append(c.CondicionadorBase(self.l_alm_09_b_11, CONDIC_NORMALIZAR))
+        self.condicionadores.append(c.CondicionadorBase(self.l_alm_09_b_11, CONDIC_INDISPONIBILIZAR))
 
         self.l_alm_09_b_12 = lei.LeituraModbusBit(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}"]["Alarme09_12"], descricao=f"[UG{self.id}] Relé de Proteção - Sobretemperatura do Casquilho 02 do Mancal LNA (Trip 86M)")
-        self.condicionadores.append(c.CondicionadorBase(self.l_alm_09_b_12, CONDIC_NORMALIZAR))
+        self.condicionadores.append(c.CondicionadorBase(self.l_alm_09_b_12, CONDIC_INDISPONIBILIZAR))
 
         self.l_alm_09_b_13 = lei.LeituraModbusBit(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}"]["Alarme09_13"], descricao=f"[UG{self.id}] Relé de Proteção - Sobretemperatura do Gaxeteiro Lado Montante (Trip 86M)")
-        self.condicionadores.append(c.CondicionadorBase(self.l_alm_09_b_13, CONDIC_NORMALIZAR))
+        self.condicionadores.append(c.CondicionadorBase(self.l_alm_09_b_13, CONDIC_INDISPONIBILIZAR))
 
         self.l_alm_09_b_14 = lei.LeituraModbusBit(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}"]["Alarme09_14"], descricao=f"[UG{self.id}] Relé de Proteção - Sobretemperatura do Gaxeteiro Lado Jusante (Trip 86M)")
-        self.condicionadores.append(c.CondicionadorBase(self.l_alm_09_b_14, CONDIC_NORMALIZAR))
+        self.condicionadores.append(c.CondicionadorBase(self.l_alm_09_b_14, CONDIC_INDISPONIBILIZAR))
 
         self.l_alm_09_b_15 = lei.LeituraModbusBit(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}"]["Alarme09_15"], descricao=f"[UG{self.id}] Relé de Proteção - Sobretemperatura da Bucha Radial do Mancal Combinado (Trip 86M)")
-        self.condicionadores.append(c.CondicionadorBase(self.l_alm_09_b_15, CONDIC_NORMALIZAR))
+        self.condicionadores.append(c.CondicionadorBase(self.l_alm_09_b_15, CONDIC_INDISPONIBILIZAR))
 
         self.l_alm_10_b_00 = lei.LeituraModbusBit(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}"]["Alarme10_00"], descricao=f"[UG{self.id}] Relé de Proteção - Sobretemperatura das Sapatas Axiais Escora do Mancal Combinado (Trip 86M)")
-        self.condicionadores.append(c.CondicionadorBase(self.l_alm_10_b_00, CONDIC_NORMALIZAR))
+        self.condicionadores.append(c.CondicionadorBase(self.l_alm_10_b_00, CONDIC_INDISPONIBILIZAR))
 
         self.l_alm_10_b_01 = lei.LeituraModbusBit(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}"]["Alarme10_01"], descricao=f"[UG{self.id}] Relé de Proteção - Sobretemperatura das Sapatas Axiais Contra Escora do Mancal Combinado (Trip 86M)")
-        self.condicionadores.append(c.CondicionadorBase(self.l_alm_10_b_01, CONDIC_NORMALIZAR))
+        self.condicionadores.append(c.CondicionadorBase(self.l_alm_10_b_01, CONDIC_INDISPONIBILIZAR))
 
         self.l_alm_10_b_02 = lei.LeituraModbusBit(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}"]["Alarme10_02"], descricao=f"[UG{self.id}] Sobretemperatura do Óleo da UHCT (Trip 86M via CLP)")
-        self.condicionadores.append(c.CondicionadorBase(self.l_alm_10_b_02, CONDIC_NORMALIZAR))
+        self.condicionadores.append(c.CondicionadorBase(self.l_alm_10_b_02, CONDIC_INDISPONIBILIZAR))
 
         self.l_alm_10_b_03 = lei.LeituraModbusBit(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}"]["Alarme10_03"], descricao=f"[UG{self.id}] Sobretemperatura do Óleo da UHLM (Trip 86M via CLP)")
-        self.condicionadores.append(c.CondicionadorBase(self.l_alm_10_b_03, CONDIC_NORMALIZAR))
+        self.condicionadores.append(c.CondicionadorBase(self.l_alm_10_b_03, CONDIC_INDISPONIBILIZAR))
 
         self.l_alm_10_b_05 = lei.LeituraModbusBit(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}"]["Alarme10_05"], descricao=f"[UG{self.id}] Relé de Proteção - Sobretemperatura da Fase R do Gerador (Trip 86E)")
-        self.condicionadores.append(c.CondicionadorBase(self.l_alm_10_b_05, CONDIC_NORMALIZAR))
+        self.condicionadores.append(c.CondicionadorBase(self.l_alm_10_b_05, CONDIC_INDISPONIBILIZAR))
 
         self.l_alm_10_b_06 = lei.LeituraModbusBit(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}"]["Alarme10_06"], descricao=f"[UG{self.id}] Relé de Proteção - Sobretemperatura da Fase S do Gerador (Trip 86E)")
-        self.condicionadores.append(c.CondicionadorBase(self.l_alm_10_b_06, CONDIC_NORMALIZAR))
+        self.condicionadores.append(c.CondicionadorBase(self.l_alm_10_b_06, CONDIC_INDISPONIBILIZAR))
 
         self.l_alm_10_b_07 = lei.LeituraModbusBit(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}"]["Alarme10_07"], descricao=f"[UG{self.id}] Relé de Proteção - Sobretemperatura da Fase T do Gerador (Trip 86E)")
-        self.condicionadores.append(c.CondicionadorBase(self.l_alm_10_b_07, CONDIC_NORMALIZAR))
+        self.condicionadores.append(c.CondicionadorBase(self.l_alm_10_b_07, CONDIC_INDISPONIBILIZAR))
 
         self.l_alm_10_b_08 = lei.LeituraModbusBit(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}"]["Alarme10_08"], descricao=f"[UG{self.id}] Relé de Proteção - Sobretemperatura do Casquilho 01 do Mancal LA (Trip 86H)")
-        self.condicionadores.append(c.CondicionadorBase(self.l_alm_10_b_08, CONDIC_NORMALIZAR))
+        self.condicionadores.append(c.CondicionadorBase(self.l_alm_10_b_08, CONDIC_INDISPONIBILIZAR))
 
         self.l_alm_10_b_09 = lei.LeituraModbusBit(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}"]["Alarme10_09"], descricao=f"[UG{self.id}] Relé de Proteção - Sobretemperatura do Casquilho 02 do Mancal LA (Trip 86H)")
-        self.condicionadores.append(c.CondicionadorBase(self.l_alm_10_b_09, CONDIC_NORMALIZAR))
+        self.condicionadores.append(c.CondicionadorBase(self.l_alm_10_b_09, CONDIC_INDISPONIBILIZAR))
 
         self.l_alm_10_b_10 = lei.LeituraModbusBit(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}"]["Alarme10_10"], descricao=f"[UG{self.id}] Relé de Proteção - Sobretemperatura do Casquilho 01 do Mancal LNA (Trip 86H)")
-        self.condicionadores.append(c.CondicionadorBase(self.l_alm_10_b_10, CONDIC_NORMALIZAR))
+        self.condicionadores.append(c.CondicionadorBase(self.l_alm_10_b_10, CONDIC_INDISPONIBILIZAR))
 
         self.l_alm_10_b_11 = lei.LeituraModbusBit(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}"]["Alarme10_11"], descricao=f"[UG{self.id}] Relé de Proteção - Sobretemperatura do Casquilho 02 do Mancal LNA (Trip 86H)")
-        self.condicionadores.append(c.CondicionadorBase(self.l_alm_10_b_11, CONDIC_NORMALIZAR))
+        self.condicionadores.append(c.CondicionadorBase(self.l_alm_10_b_11, CONDIC_INDISPONIBILIZAR))
 
         self.l_alm_10_b_12 = lei.LeituraModbusBit(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}"]["Alarme10_12"], descricao=f"[UG{self.id}] Relé de Proteção - Sobretemperatura do Gaxeteiro Lado Montante (Trip 86H)")
         self.condicionadores.append(c.CondicionadorBase(self.l_alm_10_b_12, CONDIC_NORMALIZAR))
@@ -1397,28 +1397,28 @@ class UnidadeGeracao:
         self.condicionadores.append(c.CondicionadorBase(self.l_alm_10_b_13, CONDIC_NORMALIZAR))
 
         self.l_alm_10_b_14 = lei.LeituraModbusBit(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}"]["Alarme10_14"], descricao=f"[UG{self.id}] Relé de Proteção - Sobretemperatura da Bucha Radial do Mancal Combinado (Trip 86H)")
-        self.condicionadores.append(c.CondicionadorBase(self.l_alm_10_b_14, CONDIC_NORMALIZAR))
+        self.condicionadores.append(c.CondicionadorBase(self.l_alm_10_b_14, CONDIC_INDISPONIBILIZAR))
 
         self.l_alm_10_b_15 = lei.LeituraModbusBit(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}"]["Alarme10_15"], descricao=f"[UG{self.id}] Relé de Proteção - Sobretemperatura das Sapatas Axiais Escora do Mancal Combinado (Trip 86H)")
-        self.condicionadores.append(c.CondicionadorBase(self.l_alm_10_b_15, CONDIC_NORMALIZAR))
+        self.condicionadores.append(c.CondicionadorBase(self.l_alm_10_b_15, CONDIC_INDISPONIBILIZAR))
 
         self.l_alm_11_b_00 = lei.LeituraModbusBit(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}"]["Alarme11_00"], descricao=f"[UG{self.id}] Relé de Proteção - Sobretemperatura das Sapatas Axiais Contra Escora do Mancal Combinado (Trip 86H)")
-        self.condicionadores.append(c.CondicionadorBase(self.l_alm_11_b_00, CONDIC_NORMALIZAR))
+        self.condicionadores.append(c.CondicionadorBase(self.l_alm_11_b_00, CONDIC_INDISPONIBILIZAR))
 
         self.l_alm_11_b_01 = lei.LeituraModbusBit(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}"]["Alarme11_01"], descricao=f"[UG{self.id}] Sobretemperatura do Óleo da UHCT (Trip 86H via CLP)")
-        self.condicionadores.append(c.CondicionadorBase(self.l_alm_11_b_01, CONDIC_NORMALIZAR))
+        self.condicionadores.append(c.CondicionadorBase(self.l_alm_11_b_01, CONDIC_INDISPONIBILIZAR))
 
         self.l_alm_11_b_02 = lei.LeituraModbusBit(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}"]["Alarme11_02"], descricao=f"[UG{self.id}] Sobretemperatura do Óleo da UHLM (Trip 86H via CLP)")
-        self.condicionadores.append(c.CondicionadorBase(self.l_alm_11_b_02, CONDIC_NORMALIZAR))
+        self.condicionadores.append(c.CondicionadorBase(self.l_alm_11_b_02, CONDIC_INDISPONIBILIZAR))
 
         self.l_alm_11_b_06 = lei.LeituraModbusBit(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}"]["Alarme11_06"], descricao=f"[UG{self.id}] GRTD2000 - Falha na Ponte de Excitação (Bloqueio 86H Trip)")
         self.condicionadores.append(c.CondicionadorBase(self.l_alm_11_b_06, CONDIC_NORMALIZAR))
 
         self.l_alm_11_b_07 = lei.LeituraModbusBit(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}"]["Alarme11_07"], descricao=f"[UG{self.id}] GRTD2000 - Falha na Saída Analógica do Distribuidor (Bloqueio 86H Trip)")
-        self.condicionadores.append(c.CondicionadorBase(self.l_alm_11_b_07, CONDIC_NORMALIZAR))
+        self.condicionadores.append(c.CondicionadorBase(self.l_alm_11_b_07, CONDIC_INDISPONIBILIZAR))
 
         self.l_alm_11_b_08 = lei.LeituraModbusBit(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}"]["Alarme11_08"], descricao=f"[UG{self.id}] GRTD2000 - Falha na Saída Analógica do Rotor (Bloqueio 86H Trip)")
-        self.condicionadores.append(c.CondicionadorBase(self.l_alm_11_b_08, CONDIC_NORMALIZAR))
+        self.condicionadores.append(c.CondicionadorBase(self.l_alm_11_b_08, CONDIC_INDISPONIBILIZAR))
 
         self.l_alm_11_b_09 = lei.LeituraModbusBit(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}"]["Alarme11_09"], descricao=f"[UG{self.id}] GRTD2000 - Falha Realimentação de Tensão (Bloqueio 86H Trip)")
         self.condicionadores.append(c.CondicionadorBase(self.l_alm_11_b_09, CONDIC_NORMALIZAR))
@@ -1427,7 +1427,7 @@ class UnidadeGeracao:
         self.condicionadores.append(c.CondicionadorBase(self.l_alm_11_b_10, CONDIC_NORMALIZAR))
 
         self.l_alm_11_b_11 = lei.LeituraModbusBit(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}"]["Alarme11_11"], descricao=f"[UG{self.id}] GRTD2000 - Falha Sobrecorrente de Excitação (Bloqueio 86H Trip)")
-        self.condicionadores.append(c.CondicionadorBase(self.l_alm_11_b_11, CONDIC_NORMALIZAR))
+        self.condicionadores.append(c.CondicionadorBase(self.l_alm_11_b_11, CONDIC_INDISPONIBILIZAR))
 
         self.l_alm_11_b_12 = lei.LeituraModbusBit(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}"]["Alarme11_12"], descricao=f"[UG{self.id}] GRTD2000 - Falha Sobrevelocidade Eletrônica (Bloqueio 86H Trip)")
         self.condicionadores.append(c.CondicionadorBase(self.l_alm_11_b_12, CONDIC_NORMALIZAR))
@@ -1436,22 +1436,22 @@ class UnidadeGeracao:
         self.condicionadores.append(c.CondicionadorBase(self.l_alm_11_b_13, CONDIC_NORMALIZAR))
 
         self.l_alm_11_b_14 = lei.LeituraModbusBit(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}"]["Alarme11_14"], descricao=f"[UG{self.id}] GRTD2000 - Falha na Realimentação do Distribuidor (Bloqueio 86H Trip)")
-        self.condicionadores.append(c.CondicionadorBase(self.l_alm_11_b_14, CONDIC_NORMALIZAR))
+        self.condicionadores.append(c.CondicionadorBase(self.l_alm_11_b_14, CONDIC_INDISPONIBILIZAR))
 
         self.l_alm_11_b_15 = lei.LeituraModbusBit(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}"]["Alarme11_15"], descricao=f"[UG{self.id}] GRTD2000 - Falha na Realimentação do Rotor (Bloqueio 86H Trip)")
-        self.condicionadores.append(c.CondicionadorBase(self.l_alm_11_b_15, CONDIC_NORMALIZAR))
+        self.condicionadores.append(c.CondicionadorBase(self.l_alm_11_b_15, CONDIC_INDISPONIBILIZAR))
 
         self.l_alm_12_b_01 = lei.LeituraModbusBit(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}"]["Alarme12_01"], descricao=f"[UG{self.id}] UHLM - Falta Fluxo de Óleo na Bucha Radial do Mancal Combinado - Digital")
-        self.condicionadores.append(c.CondicionadorBase(self.l_alm_12_b_01, CONDIC_NORMALIZAR))
+        self.condicionadores.append(c.CondicionadorBase(self.l_alm_12_b_01, CONDIC_INDISPONIBILIZAR))
 
         self.l_alm_12_b_02 = lei.LeituraModbusBit(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}"]["Alarme12_02"], descricao=f"[UG{self.id}] UHLM - Falta Fluxo de Óleo na Bomba 01 (CA) - Digital")
-        self.condicionadores.append(c.CondicionadorBase(self.l_alm_12_b_02, CONDIC_NORMALIZAR))
+        self.condicionadores.append(c.CondicionadorBase(self.l_alm_12_b_02, CONDIC_INDISPONIBILIZAR))
 
         self.l_alm_12_b_03 = lei.LeituraModbusBit(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}"]["Alarme12_03"], descricao=f"[UG{self.id}] UHLM - Falta Fluxo de Óleo na Bomba 02 (Inversor) - Digital")
-        self.condicionadores.append(c.CondicionadorBase(self.l_alm_12_b_03, CONDIC_NORMALIZAR))
+        self.condicionadores.append(c.CondicionadorBase(self.l_alm_12_b_03, CONDIC_INDISPONIBILIZAR))
 
         self.l_alm_12_b_04 = lei.LeituraModbusBit(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}"]["Alarme12_04"], descricao=f"[UG{self.id}] UHLM - ATENÇÃO! Tempo Excedido no Teste Bomba Retaguarda Operacional")
-        self.condicionadores.append(c.CondicionadorBase(self.l_alm_12_b_04, CONDIC_NORMALIZAR))
+        self.condicionadores.append(c.CondicionadorBase(self.l_alm_12_b_04, CONDIC_INDISPONIBILIZAR))
 
         self.l_alm_12_b_05 = lei.LeituraModbusBit(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}"]["Alarme12_05"], descricao=f"[UG{self.id}] GRTD2000 - Falha de Comunicação com o CLP")
         self.condicionadores.append(c.CondicionadorBase(self.l_alm_12_b_05, CONDIC_NORMALIZAR))
@@ -1463,58 +1463,58 @@ class UnidadeGeracao:
         self.condicionadores.append(c.CondicionadorBase(self.l_alm_12_b_07, CONDIC_NORMALIZAR))
 
         self.l_alm_12_b_09 = lei.LeituraModbusBit(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}"]["Alarme12_09"], descricao=f"[UG{self.id}] PCP-U1 - Alimentação Circuitos de Comando - Disjuntor Q125.0 Desligado")
-        self.condicionadores.append(c.CondicionadorBase(self.l_alm_12_b_09, CONDIC_NORMALIZAR))
+        self.condicionadores.append(c.CondicionadorBase(self.l_alm_12_b_09, CONDIC_INDISPONIBILIZAR))
 
         self.l_alm_12_b_10 = lei.LeituraModbusBit(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}"]["Alarme12_10"], descricao=f"[UG{self.id}] PCP-U1 - Alimentação Regulador GRTD2000 - Disjuntor Q125.1 Desligado")
-        self.condicionadores.append(c.CondicionadorBase(self.l_alm_12_b_10, CONDIC_NORMALIZAR))
+        self.condicionadores.append(c.CondicionadorBase(self.l_alm_12_b_10, CONDIC_INDISPONIBILIZAR))
 
         self.l_alm_12_b_11 = lei.LeituraModbusBit(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}"]["Alarme12_11"], descricao=f"[UG{self.id}] PCP-U1 - Alimentação Relés de Proteção - Disjuntor Q125.2 Desligado")
-        self.condicionadores.append(c.CondicionadorBase(self.l_alm_12_b_11, CONDIC_NORMALIZAR))
+        self.condicionadores.append(c.CondicionadorBase(self.l_alm_12_b_11, CONDIC_INDISPONIBILIZAR))
 
         self.l_alm_12_b_12 = lei.LeituraModbusBit(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}"]["Alarme12_12"], descricao=f"[UG{self.id}] PCP-U1 - Alimentação Válvulas do Sistema de Água - Disjuntor Q125.4 Desligado")
         self.condicionadores.append(c.CondicionadorBase(self.l_alm_12_b_12, CONDIC_NORMALIZAR))
 
         self.l_alm_12_b_13 = lei.LeituraModbusBit(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}"]["Alarme12_13"], descricao=f"[UG{self.id}] PCP-U1 - Alimentação Válvulas Proporcionais e Transdutores de Posição - Disjuntor Q24.0 Desligado")
-        self.condicionadores.append(c.CondicionadorBase(self.l_alm_12_b_13, CONDIC_NORMALIZAR))
+        self.condicionadores.append(c.CondicionadorBase(self.l_alm_12_b_13, CONDIC_INDISPONIBILIZAR))
 
         self.l_alm_12_b_14 = lei.LeituraModbusBit(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}"]["Alarme12_14"], descricao=f"[UG{self.id}] CSG-U1 - Alimentação Motor Carga Mola Disj 52G - Disjuntor Q220.1 Desligado")
-        self.condicionadores.append(c.CondicionadorBase(self.l_alm_12_b_14, CONDIC_NORMALIZAR))
+        self.condicionadores.append(c.CondicionadorBase(self.l_alm_12_b_14, CONDIC_INDISPONIBILIZAR))
 
         self.l_alm_12_b_15 = lei.LeituraModbusBit(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}"]["Alarme12_15"], descricao=f"[UG{self.id}] CSG-U1 - Alimentação Circuito de Comando Disj 52G - Disjuntor Q125.0 Desligado")
-        self.condicionadores.append(c.CondicionadorBase(self.l_alm_12_b_15, CONDIC_NORMALIZAR))
+        self.condicionadores.append(c.CondicionadorBase(self.l_alm_12_b_15, CONDIC_INDISPONIBILIZAR))
 
         self.l_alm_13_b_00 = lei.LeituraModbusBit(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}"]["Alarme13_00"], descricao=f"[UG{self.id}] Q49-U1 - Alimentação Módulo de Aquisição de Temperaturas SEL2600 - Disjuntor Q125.0 Desligado")
         self.condicionadores.append(c.CondicionadorBase(self.l_alm_13_b_00, CONDIC_NORMALIZAR))
 
         self.l_alm_13_b_01 = lei.LeituraModbusBit(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}"]["Alarme13_01"], descricao=f"[UG{self.id}] PCP-U1 - Bomba de Óleo 01 da UHCT - Disjuntor Motor QM1 Desligado")
-        self.condicionadores.append(c.CondicionadorBase(self.l_alm_13_b_01, CONDIC_NORMALIZAR))
+        self.condicionadores.append(c.CondicionadorBase(self.l_alm_13_b_01, CONDIC_INDISPONIBILIZAR))
 
         self.l_alm_13_b_02 = lei.LeituraModbusBit(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}"]["Alarme13_02"], descricao=f"[UG{self.id}] PCP-U1 - Bomba de Óleo 02 da UHCT - Disjuntor Motor QM2 Desligado")
-        self.condicionadores.append(c.CondicionadorBase(self.l_alm_13_b_02, CONDIC_NORMALIZAR))
+        self.condicionadores.append(c.CondicionadorBase(self.l_alm_13_b_02, CONDIC_INDISPONIBILIZAR))
 
         self.l_alm_13_b_03 = lei.LeituraModbusBit(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}"]["Alarme13_03"], descricao=f"[UG{self.id}] PCP-U1 - Bomba de Óleo da UHLM - Disjuntor Motor QM3 Desligado")
-        self.condicionadores.append(c.CondicionadorBase(self.l_alm_13_b_03, CONDIC_NORMALIZAR))
+        self.condicionadores.append(c.CondicionadorBase(self.l_alm_13_b_03, CONDIC_INDISPONIBILIZAR))
 
         self.l_alm_13_b_09 = lei.LeituraModbusBit(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}"]["Alarme13_09"], descricao=f"[UG{self.id}] Falha na Entrada Analógica de Fluxo de Óleo na Bucha Radial do Mancal Combinado")
-        self.condicionadores.append(c.CondicionadorBase(self.l_alm_13_b_09, CONDIC_NORMALIZAR))
+        self.condicionadores.append(c.CondicionadorBase(self.l_alm_13_b_09, CONDIC_INDISPONIBILIZAR))
 
         self.l_alm_13_b_10 = lei.LeituraModbusBit(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}"]["Alarme13_10"], descricao=f"[UG{self.id}] Falha na Entrada Analógica de Fluxo de Óleo da Bomba 01")
-        self.condicionadores.append(c.CondicionadorBase(self.l_alm_13_b_10, CONDIC_NORMALIZAR))
+        self.condicionadores.append(c.CondicionadorBase(self.l_alm_13_b_10, CONDIC_INDISPONIBILIZAR))
 
         self.l_alm_13_b_11 = lei.LeituraModbusBit(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}"]["Alarme13_11"], descricao=f"[UG{self.id}] Falha na Entrada Analógica de Fluxo de Óleo da Bomba 02")
-        self.condicionadores.append(c.CondicionadorBase(self.l_alm_13_b_11, CONDIC_NORMALIZAR))
+        self.condicionadores.append(c.CondicionadorBase(self.l_alm_13_b_11, CONDIC_INDISPONIBILIZAR))
 
         self.l_alm_13_b_12 = lei.LeituraModbusBit(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}"]["Alarme13_12"], descricao=f"[UG{self.id}] Falha na Entrada Analógica de Fluxo de Óleo na Bomba Mecânica")
-        self.condicionadores.append(c.CondicionadorBase(self.l_alm_13_b_12, CONDIC_NORMALIZAR))
+        self.condicionadores.append(c.CondicionadorBase(self.l_alm_13_b_12, CONDIC_INDISPONIBILIZAR))
 
         self.l_alm_13_b_13 = lei.LeituraModbusBit(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}"]["Alarme13_13"], descricao=f"[UG{self.id}] Falha na Entrada Analógica de Vibração Vertical do Mancal Combinado da Turbina")
-        self.condicionadores.append(c.CondicionadorBase(self.l_alm_13_b_13, CONDIC_NORMALIZAR))
+        self.condicionadores.append(c.CondicionadorBase(self.l_alm_13_b_13, CONDIC_INDISPONIBILIZAR))
 
         self.l_alm_13_b_14 = lei.LeituraModbusBit(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}"]["Alarme13_14"], descricao=f"[UG{self.id}] Falha na Entrada Analógica de Vibração Horizontal do Mancal Combinado da Turbina")
-        self.condicionadores.append(c.CondicionadorBase(self.l_alm_13_b_14, CONDIC_NORMALIZAR))
+        self.condicionadores.append(c.CondicionadorBase(self.l_alm_13_b_14, CONDIC_INDISPONIBILIZAR))
 
         self.l_alm_13_b_15 = lei.LeituraModbusBit(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}"]["Alarme13_15"], descricao=f"[UG{self.id}] Falha na Entrada Analógica de Vibração do Mancal Combinado Axial da Turbina")
-        self.condicionadores.append(c.CondicionadorBase(self.l_alm_13_b_15, CONDIC_NORMALIZAR))
+        self.condicionadores.append(c.CondicionadorBase(self.l_alm_13_b_15, CONDIC_INDISPONIBILIZAR))
 
         self.l_alm_14_b_00 = lei.LeituraModbusBit(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}"]["Alarme14_00"], descricao=f"[UG{self.id}] Falha na Entrada Analógica de Pressão do Conduto")
         self.condicionadores.append(c.CondicionadorBase(self.l_alm_14_b_00, CONDIC_NORMALIZAR))
@@ -1523,10 +1523,10 @@ class UnidadeGeracao:
         self.condicionadores.append(c.CondicionadorBase(self.l_alm_14_b_01, CONDIC_NORMALIZAR))
 
         self.l_alm_14_b_02 = lei.LeituraModbusBit(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}"]["Alarme14_02"], descricao=f"[UG{self.id}] Falha na Entrada Analógica de Vibração do Mancal Lado Acoplado do Gerador")
-        self.condicionadores.append(c.CondicionadorBase(self.l_alm_14_b_02, CONDIC_NORMALIZAR))
+        self.condicionadores.append(c.CondicionadorBase(self.l_alm_14_b_02, CONDIC_INDISPONIBILIZAR))
 
         self.l_alm_14_b_03 = lei.LeituraModbusBit(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}"]["Alarme14_03"], descricao=f"[UG{self.id}] Falha na Entrada Analógica de Vibração do Mancal Lado Não Acoplado do Gerador")
-        self.condicionadores.append(c.CondicionadorBase(self.l_alm_14_b_03, CONDIC_NORMALIZAR))
+        self.condicionadores.append(c.CondicionadorBase(self.l_alm_14_b_03, CONDIC_INDISPONIBILIZAR))
 
         self.l_alm_14_b_04 = lei.LeituraModbusBit(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}"]["Alarme14_04"], descricao=f"[UG{self.id}] Falha na Entrada Analógica de Pressão de Óleo da UHCT")
         self.condicionadores.append(c.CondicionadorBase(self.l_alm_14_b_04, CONDIC_NORMALIZAR))
@@ -1556,82 +1556,82 @@ class UnidadeGeracao:
         self.condicionadores.append(c.CondicionadorBase(self.l_alm_15_b_00, CONDIC_NORMALIZAR))
 
         self.l_alm_15_b_01 = lei.LeituraModbusBit(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}"]["Alarme15_01"], descricao=f"[UG{self.id}] Trip Vibração Vertical Excessiva Mancal Combinado da Turbina (Bloqueio 86M Trip)")
-        self.condicionadores.append(c.CondicionadorBase(self.l_alm_15_b_01, CONDIC_NORMALIZAR))
+        self.condicionadores.append(c.CondicionadorBase(self.l_alm_15_b_01, CONDIC_INDISPONIBILIZAR))
 
         self.l_alm_15_b_02 = lei.LeituraModbusBit(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}"]["Alarme15_02"], descricao=f"[UG{self.id}] Alarme Vibração Horizontal Excessiva Mancal Combinado da Turbina")
         self.condicionadores.append(c.CondicionadorBase(self.l_alm_15_b_02, CONDIC_NORMALIZAR))
 
         self.l_alm_15_b_03 = lei.LeituraModbusBit(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}"]["Alarme15_03"], descricao=f"[UG{self.id}] Trip Vibração Horizontal Excessiva Mancal Combinado da Turbina (Bloqueio 86M Trip)")
-        self.condicionadores.append(c.CondicionadorBase(self.l_alm_15_b_03, CONDIC_NORMALIZAR))
+        self.condicionadores.append(c.CondicionadorBase(self.l_alm_15_b_03, CONDIC_INDISPONIBILIZAR))
 
         self.l_alm_15_b_04 = lei.LeituraModbusBit(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}"]["Alarme15_04"], descricao=f"[UG{self.id}] Alarme Vibração Axial Excessiva Mancal Combinado da Turbina")
         self.condicionadores.append(c.CondicionadorBase(self.l_alm_15_b_04, CONDIC_NORMALIZAR))
 
         self.l_alm_15_b_05 = lei.LeituraModbusBit(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}"]["Alarme15_05"], descricao=f"[UG{self.id}] Trip Vibração Axial Excessiva Mancal Combinado da Turbina (Bloqueio 86M Trip)")
-        self.condicionadores.append(c.CondicionadorBase(self.l_alm_15_b_05, CONDIC_NORMALIZAR))
+        self.condicionadores.append(c.CondicionadorBase(self.l_alm_15_b_05, CONDIC_INDISPONIBILIZAR))
 
         self.l_alm_15_b_06 = lei.LeituraModbusBit(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}"]["Alarme15_06"], descricao=f"[UG{self.id}] Alarme Vibração Excessiva Mancal Lado Acoplado do Gerador ")
         self.condicionadores.append(c.CondicionadorBase(self.l_alm_15_b_06, CONDIC_NORMALIZAR))
 
         self.l_alm_15_b_07 = lei.LeituraModbusBit(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}"]["Alarme15_07"], descricao=f"[UG{self.id}] Trip Vibração Excessiva Mancal Lado Acoplado do Gerador (Bloqueio 86M Trip)")
-        self.condicionadores.append(c.CondicionadorBase(self.l_alm_15_b_07, CONDIC_NORMALIZAR))
+        self.condicionadores.append(c.CondicionadorBase(self.l_alm_15_b_07, CONDIC_INDISPONIBILIZAR))
 
         self.l_alm_15_b_08 = lei.LeituraModbusBit(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}"]["Alarme15_08"], descricao=f"[UG{self.id}] Alarme Vibração Excessiva Mancal Lado Não Acoplado do Gerador")
         self.condicionadores.append(c.CondicionadorBase(self.l_alm_15_b_08, CONDIC_NORMALIZAR))
 
         self.l_alm_15_b_09 = lei.LeituraModbusBit(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}"]["Alarme15_09"], descricao=f"[UG{self.id}] Trip Vibração Excessiva Mancal Lado Não Acoplado do Gerador (Bloqueio 86M Trip)")
-        self.condicionadores.append(c.CondicionadorBase(self.l_alm_15_b_09, CONDIC_NORMALIZAR))
+        self.condicionadores.append(c.CondicionadorBase(self.l_alm_15_b_09, CONDIC_INDISPONIBILIZAR))
 
         self.l_alm_15_b_10 = lei.LeituraModbusBit(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}"]["Alarme15_10"], descricao=f"[UG{self.id}] Diferencial de Nível de Água - Grade Suja TRIP")
         self.condicionadores.append(c.CondicionadorBase(self.l_alm_15_b_10, CONDIC_NORMALIZAR))
 
         self.l_alm_15_b_12 = lei.LeituraModbusBit(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}"]["Alarme15_12"], descricao=f"[UG{self.id}] Relé de Proteção SEL700G - Proteção Diferencial Residual (87G) (Bloqueio 86E Trip)")
-        self.condicionadores.append(c.CondicionadorBase(self.l_alm_15_b_12, CONDIC_NORMALIZAR))
+        self.condicionadores.append(c.CondicionadorBase(self.l_alm_15_b_12, CONDIC_INDISPONIBILIZAR))
 
         self.l_alm_15_b_13 = lei.LeituraModbusBit(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}"]["Alarme15_13"], descricao=f"[UG{self.id}] Relé de Proteção SEL700G - Proteção Diferencial de Neutro (87N) (Bloqueio 86E Trip)")
-        self.condicionadores.append(c.CondicionadorBase(self.l_alm_15_b_13, CONDIC_NORMALIZAR))
+        self.condicionadores.append(c.CondicionadorBase(self.l_alm_15_b_13, CONDIC_INDISPONIBILIZAR))
 
         self.l_alm_15_b_14 = lei.LeituraModbusBit(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}"]["Alarme15_14"], descricao=f"[UG{self.id}] Relé de Proteção SEL700G - Sobrecorrente com Restrição de Tensão (51V) (Bloqueio 86E Trip)")
-        self.condicionadores.append(c.CondicionadorBase(self.l_alm_15_b_14, CONDIC_NORMALIZAR))
+        self.condicionadores.append(c.CondicionadorBase(self.l_alm_15_b_14, CONDIC_INDISPONIBILIZAR))
 
         self.l_alm_15_b_15 = lei.LeituraModbusBit(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}"]["Alarme15_15"], descricao=f"[UG{self.id}] Relé de Proteção SEL700G - Sobrecorrente Instantânea de Fase (50P) (Bloqueio 86E Trip)")
-        self.condicionadores.append(c.CondicionadorBase(self.l_alm_15_b_15, CONDIC_NORMALIZAR))
+        self.condicionadores.append(c.CondicionadorBase(self.l_alm_15_b_15, CONDIC_INDISPONIBILIZAR))
 
         self.l_alm_16_b_00 = lei.LeituraModbusBit(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}"]["Alarme16_00"], descricao=f"[UG{self.id}] Relé de Proteção SEL700G - Energização Indevida (50M) (Bloqueio 86E Trip)")
         self.condicionadores.append(c.CondicionadorBase(self.l_alm_16_b_00, CONDIC_NORMALIZAR))
 
         self.l_alm_16_b_01 = lei.LeituraModbusBit(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}"]["Alarme16_01"], descricao=f"[UG{self.id}] Relé de Proteção SEL700G - Sobrecorrente de Sequência Negativa (46Q) (Bloqueio 86E Trip)")
-        self.condicionadores.append(c.CondicionadorBase(self.l_alm_16_b_01, CONDIC_NORMALIZAR))
+        self.condicionadores.append(c.CondicionadorBase(self.l_alm_16_b_01, CONDIC_INDISPONIBILIZAR))
 
         self.l_alm_16_b_02 = lei.LeituraModbusBit(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}"]["Alarme16_02"], descricao=f"[UG{self.id}] Relé de Proteção SEL700G - Sobrecarga Térmica (49T) (Bloqueio 86E Trip)")
-        self.condicionadores.append(c.CondicionadorBase(self.l_alm_16_b_02, CONDIC_NORMALIZAR))
+        self.condicionadores.append(c.CondicionadorBase(self.l_alm_16_b_02, CONDIC_INDISPONIBILIZAR))
 
         self.l_alm_16_b_03 = lei.LeituraModbusBit(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}"]["Alarme16_03"], descricao=f"[UG{self.id}] Relé de Proteção SEL700G - Sobre Excitação Volts/Hertz (24) (Bloqueio 86E Trip)")
         self.condicionadores.append(c.CondicionadorBase(self.l_alm_16_b_03, CONDIC_NORMALIZAR))
 
         self.l_alm_16_b_04 = lei.LeituraModbusBit(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}"]["Alarme16_04"], descricao=f"[UG{self.id}] Relé de Proteção SEL700G - Sobrecorrente Residual Instantânea (50G) (Bloqueio 86E Trip)")
-        self.condicionadores.append(c.CondicionadorBase(self.l_alm_16_b_04, CONDIC_NORMALIZAR))
+        self.condicionadores.append(c.CondicionadorBase(self.l_alm_16_b_04, CONDIC_INDISPONIBILIZAR))
 
         self.l_alm_16_b_05 = lei.LeituraModbusBit(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}"]["Alarme16_05"], descricao=f"[UG{self.id}] Relé de Proteção SEL700G - Perda de Excitação (40Q) (Bloqueio 86E Trip)")
-        self.condicionadores.append(c.CondicionadorBase(self.l_alm_16_b_05, CONDIC_NORMALIZAR))
+        self.condicionadores.append(c.CondicionadorBase(self.l_alm_16_b_05, CONDIC_INDISPONIBILIZAR))
 
         self.l_alm_16_b_06 = lei.LeituraModbusBit(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}"]["Alarme16_06"], descricao=f"[UG{self.id}] Relé de Proteção SEL700G - Sobrecorrente Instantânea de Neutro (50N) (Bloqueio 86E Trip)")
-        self.condicionadores.append(c.CondicionadorBase(self.l_alm_16_b_06, CONDIC_NORMALIZAR))
+        self.condicionadores.append(c.CondicionadorBase(self.l_alm_16_b_06, CONDIC_INDISPONIBILIZAR))
 
         self.l_alm_16_b_07 = lei.LeituraModbusBit(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}"]["Alarme16_07"], descricao=f"[UG{self.id}] Relé de Proteção SEL700G - Potência Reversa (32P) (Bloqueio 86E Trip)")
-        self.condicionadores.append(c.CondicionadorBase(self.l_alm_16_b_07, CONDIC_NORMALIZAR))
+        self.condicionadores.append(c.CondicionadorBase(self.l_alm_16_b_07, CONDIC_INDISPONIBILIZAR))
 
         self.l_alm_16_b_08 = lei.LeituraModbusBit(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}"]["Alarme16_08"], descricao=f"[UG{self.id}] Relé de Proteção SEL700G - Sobretensão de Fase (59P) (Bloqueio 86E Trip)")
         self.condicionadores.append(c.CondicionadorBase(self.l_alm_16_b_08, CONDIC_NORMALIZAR))
 
         self.l_alm_16_b_09 = lei.LeituraModbusBit(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}"]["Alarme16_09"], descricao=f"[UG{self.id}] Relé de Proteção SEL700G - Sobretensão Residual (59G) (Bloqueio 86E Trip)")
-        self.condicionadores.append(c.CondicionadorBase(self.l_alm_16_b_09, CONDIC_NORMALIZAR))
+        self.condicionadores.append(c.CondicionadorBase(self.l_alm_16_b_09, CONDIC_INDISPONIBILIZAR))
 
         self.l_alm_16_b_10 = lei.LeituraModbusBit(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}"]["Alarme16_10"], descricao=f"[UG{self.id}] Relé de Proteção SEL700G - Sobrefrequência (81O) (Bloqueio 86E Trip)")
         self.condicionadores.append(c.CondicionadorBase(self.l_alm_16_b_10, CONDIC_NORMALIZAR))
 
         self.l_alm_16_b_11 = lei.LeituraModbusBit(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}"]["Alarme16_11"], descricao=f"[UG{self.id}] Relé de Proteção SEL700G - Falha do Disjuntor (50_62BF) (Bloqueio 86H Trip)")
-        self.condicionadores.append(c.CondicionadorBase(self.l_alm_16_b_11, CONDIC_NORMALIZAR))
+        self.condicionadores.append(c.CondicionadorBase(self.l_alm_16_b_11, CONDIC_INDISPONIBILIZAR))
 
         self.l_alm_16_b_12 = lei.LeituraModbusBit(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}"]["Alarme16_12"], descricao=f"[UG{self.id}] Relé de Proteção SEL700G - Falha RTD's ou Falha de Comunicação com o Módulo SEL-2600 (Bloqueio 86M T)")
         self.condicionadores.append(c.CondicionadorBase(self.l_alm_16_b_12, CONDIC_NORMALIZAR))
@@ -1642,171 +1642,195 @@ class UnidadeGeracao:
 
         if self.id == 1:
             self.l_alm_04_b_10 = lei.LeituraModbusBit(self.clp["UG1"], REG_UG["UG1"]["Alarme04_10"], descricao="[UG1] Cubículo CSA-U1 - Fusível Queimado ")
-            self.condicionadores.append(c.CondicionadorBase(self.l_alm_04_b_10, CONDIC_NORMALIZAR))
+            self.condicionadores.append(c.CondicionadorBase(self.l_alm_04_b_10, CONDIC_INDISPONIBILIZAR))
 
             self.l_alm_04_b_11 = lei.LeituraModbusBit(self.clp["UG1"], REG_UG["UG1"]["Alarme04_11"], descricao="[UG1] Cubículo CSA-U1 - Grade Frontal Aberta  (Abertura 52L- SEL787 - TRIP)")
-            self.condicionadores.append(c.CondicionadorBase(self.l_alm_04_b_11, CONDIC_NORMALIZAR))
+            self.condicionadores.append(c.CondicionadorBase(self.l_alm_04_b_11, CONDIC_INDISPONIBILIZAR))
 
             self.l_alm_04_b_12 = lei.LeituraModbusBit(self.clp["UG1"], REG_UG["UG1"]["Alarme04_12"], descricao="[UG1] Cubículo CSA-U1 - Grade Traseira Aberta (Abertura 52L- SEL787 - TRIP)")
-            self.condicionadores.append(c.CondicionadorBase(self.l_alm_04_b_12, CONDIC_NORMALIZAR))
+            self.condicionadores.append(c.CondicionadorBase(self.l_alm_04_b_12, CONDIC_INDISPONIBILIZAR))
 
             self.l_alm_10_b_08 = lei.LeituraModbusBit(self.clp["UG1"], REG_UG["UG1"]["Alarme10_08"], descricao="[UG1] PCP-U1 - Alimentação Fonte 125/24Vcc - Disj. Q125.3 Desligado")
-            self.condicionadores.append(c.CondicionadorBase(self.l_alm_10_b_08, CONDIC_NORMALIZAR))
+            self.condicionadores.append(c.CondicionadorBase(self.l_alm_10_b_08, CONDIC_INDISPONIBILIZAR))
 
             self.l_alm_10_b_09 = lei.LeituraModbusBit(self.clp["UG1"], REG_UG["UG1"]["Alarme10_09"], descricao="[UG1] PCP-U1 - Alimentação Circuitos de Comando - Disj. Q24.1 Desligado")
-            self.condicionadores.append(c.CondicionadorBase(self.l_alm_10_b_09, CONDIC_NORMALIZAR))
+            self.condicionadores.append(c.CondicionadorBase(self.l_alm_10_b_09, CONDIC_INDISPONIBILIZAR))
 
             self.l_alm_12_b_01 = lei.LeituraModbusBit(self.clp["UG1"], REG_UG["UG1"]["Alarme12_01"], descricao="[UG1] PDSA-CC - Alimentação do Cubículo CSA-U1 - Disj. Q125.5 Desligado")
-            self.condicionadores.append(c.CondicionadorBase(self.l_alm_12_b_01, CONDIC_NORMALIZAR))
+            self.condicionadores.append(c.CondicionadorBase(self.l_alm_12_b_01, CONDIC_INDISPONIBILIZAR))
 
             self.l_alm_12_b_07 = lei.LeituraModbusBit(self.clp["UG1"], REG_UG["UG1"]["Alarme12_07"], descricao="[UG1] PDSA-CC - Alimentação das Cargas da Disj. 1Q125.0 Desligado")
-            self.condicionadores.append(c.CondicionadorBase(self.l_alm_12_b_07, CONDIC_NORMALIZAR))
+            self.condicionadores.append(c.CondicionadorBase(self.l_alm_12_b_07, CONDIC_INDISPONIBILIZAR))
 
             self.l_alm_12_b_08 = lei.LeituraModbusBit(self.clp["UG1"], REG_UG["UG1"]["Alarme12_08"], descricao="[UG1] PDSA-CC - Alimentação do Painel PCP-U1 - Disj. 1Q125.1 Desligado")
-            self.condicionadores.append(c.CondicionadorBase(self.l_alm_12_b_08, CONDIC_NORMALIZAR))
+            self.condicionadores.append(c.CondicionadorBase(self.l_alm_12_b_08, CONDIC_INDISPONIBILIZAR))
 
             self.l_alm_12_b_09 = lei.LeituraModbusBit(self.clp["UG1"], REG_UG["UG1"]["Alarme12_09"], descricao="[UG1] PDSA-CC - Alimentação do Quadro Q49-U1 - Disj. 1Q125.2 Desligado")
-            self.condicionadores.append(c.CondicionadorBase(self.l_alm_12_b_09, CONDIC_NORMALIZAR))
+            self.condicionadores.append(c.CondicionadorBase(self.l_alm_12_b_09, CONDIC_INDISPONIBILIZAR))
 
             self.l_alm_12_b_10 = lei.LeituraModbusBit(self.clp["UG1"], REG_UG["UG1"]["Alarme12_10"], descricao="[UG1] PDSA-CC - Alimentação do Cubículo CSG-U1 - Disj. 1Q125.3 Desligado")
-            self.condicionadores.append(c.CondicionadorBase(self.l_alm_12_b_10, CONDIC_NORMALIZAR))
+            self.condicionadores.append(c.CondicionadorBase(self.l_alm_12_b_10, CONDIC_INDISPONIBILIZAR))
 
             self.l_alm_12_b_11 = lei.LeituraModbusBit(self.clp["UG1"], REG_UG["UG1"]["Alarme12_11"], descricao="[UG1] PDSA-CC - Alimentação Painel do Regulador de Tensão Disj. 1Q125.4 Desligado")
-            self.condicionadores.append(c.CondicionadorBase(self.l_alm_12_b_11, CONDIC_NORMALIZAR))
+            self.condicionadores.append(c.CondicionadorBase(self.l_alm_12_b_11, CONDIC_INDISPONIBILIZAR))
 
             self.l_alm_12_b_12 = lei.LeituraModbusBit(self.clp["UG1"], REG_UG["UG1"]["Alarme12_12"], descricao="[UG1] PDSA-CC - Alimentação do Filtro Duplo Disj. 1Q125.5 Desligado")
-            self.condicionadores.append(c.CondicionadorBase(self.l_alm_12_b_12, CONDIC_NORMALIZAR))
+            self.condicionadores.append(c.CondicionadorBase(self.l_alm_12_b_12, CONDIC_INDISPONIBILIZAR))
 
             self.l_alm_12_b_13 = lei.LeituraModbusBit(self.clp["UG1"], REG_UG["UG1"]["Alarme12_13"], descricao="[UG1] PDSA-CC - Alimentação Reserva - Disj. 1Q125.6 Desligado")
             self.condicionadores.append(c.CondicionadorBase(self.l_alm_12_b_13, CONDIC_NORMALIZAR))
 
             self.l_alm_15_b_12 = lei.LeituraModbusBit(self.clp["UG1"], REG_UG["UG1"]["Alarme15_12"], descricao="[UG1] PDSA-CA - Alimentação das Cargas Essenciais da Disj. 1Q380.0 Desligado")
-            self.condicionadores.append(c.CondicionadorBase(self.l_alm_15_b_12, CONDIC_NORMALIZAR))
+            self.condicionadores.append(c.CondicionadorBase(self.l_alm_15_b_12, CONDIC_INDISPONIBILIZAR))
 
             self.l_alm_15_b_13 = lei.LeituraModbusBit(self.clp["UG1"], REG_UG["UG1"]["Alarme15_13"], descricao="[UG1] PDSA-CA - Alimentação das Cargas Não Essenciais da Disj. 1Q380.1 Desligado")
-            self.condicionadores.append(c.CondicionadorBase(self.l_alm_15_b_13, CONDIC_NORMALIZAR))
+            self.condicionadores.append(c.CondicionadorBase(self.l_alm_15_b_13, CONDIC_INDISPONIBILIZAR))
+
+            self.l_alm_22_b_10 = lei.LeituraModbusBit(self.clp["UG1"], REG_TDA["Alarme22_10"], descricao="[TDA] UHTA01 - Sobretemperatura do Óleo - Trip")
+            self.condicionadores.append(c.CondicionadorBase(self.l_alm_22_b_10, CONDIC_INDISPONIBILIZAR))
+
+            self.l_alm_22_b_11 = lei.LeituraModbusBit(self.clp["UG1"], REG_TDA["Alarme22_11"], descricao="[TDA] UHTA01 - Botão de Emergência Acionado")
+            self.condicionadores.append(c.CondicionadorBase(self.l_alm_22_b_11, CONDIC_NORMALIZAR))
 
 
         # UG2
 
         if self.id == 2:
             self.l_alm_04_b_13 = lei.LeituraModbusBit(self.clp["UG2"], REG_UG["UG2"]["Alarme04_13"], descricao="[UG2] Cubículo CSA-U2 - Fusível Queimado ")
-            self.condicionadores.append(c.CondicionadorBase(self.l_alm_04_b_13, CONDIC_NORMALIZAR))
+            self.condicionadores.append(c.CondicionadorBase(self.l_alm_04_b_13, CONDIC_INDISPONIBILIZAR))
 
             self.l_alm_04_b_14 = lei.LeituraModbusBit(self.clp["UG2"], REG_UG["UG2"]["Alarme04_14"], descricao="[UG2] Cubículo CSA-U2 - Grade Frontal Aberta  (Abertura 52L- SEL787 - TRIP)")
-            self.condicionadores.append(c.CondicionadorBase(self.l_alm_04_b_14, CONDIC_NORMALIZAR))
+            self.condicionadores.append(c.CondicionadorBase(self.l_alm_04_b_14, CONDIC_INDISPONIBILIZAR))
 
             self.l_alm_04_b_15 = lei.LeituraModbusBit(self.clp["UG2"], REG_UG["UG2"]["Alarme04_15"], descricao="[UG2] Cubículo CSA-U2 - Grade Traseira Aberta  (Abertura 52L- SEL787 - TRIP)")
-            self.condicionadores.append(c.CondicionadorBase(self.l_alm_04_b_15, CONDIC_NORMALIZAR))
+            self.condicionadores.append(c.CondicionadorBase(self.l_alm_04_b_15, CONDIC_INDISPONIBILIZAR))
 
             self.l_alm_10_b_10 = lei.LeituraModbusBit(self.clp["UG2"], REG_UG["UG2"]["Alarme10_10"], descricao="[UG2] PCP-U2 - Alimentação Fonte 125/24Vcc - Disj. Q125.3 Desligado")
-            self.condicionadores.append(c.CondicionadorBase(self.l_alm_10_b_10, CONDIC_NORMALIZAR))
+            self.condicionadores.append(c.CondicionadorBase(self.l_alm_10_b_10, CONDIC_INDISPONIBILIZAR))
 
             self.l_alm_10_b_11 = lei.LeituraModbusBit(self.clp["UG2"], REG_UG["UG2"]["Alarme10_11"], descricao="[UG2] PCP-U2 - Alimentação Circuitos de Comando - Disj. Q24.1 Desligado")
-            self.condicionadores.append(c.CondicionadorBase(self.l_alm_10_b_11, CONDIC_NORMALIZAR))
+            self.condicionadores.append(c.CondicionadorBase(self.l_alm_10_b_11, CONDIC_INDISPONIBILIZAR))
 
             self.l_alm_12_b_02 = lei.LeituraModbusBit(self.clp["UG2"], REG_UG["UG2"]["Alarme12_02"], descricao="[UG2] PDSA-CC - Alimentação do Cubículo CSA-U2 - Disj. Q125.6 Desligado")
-            self.condicionadores.append(c.CondicionadorBase(self.l_alm_12_b_02, CONDIC_NORMALIZAR))
+            self.condicionadores.append(c.CondicionadorBase(self.l_alm_12_b_02, CONDIC_INDISPONIBILIZAR))
 
             self.l_alm_12_b_14 = lei.LeituraModbusBit(self.clp["UG2"], REG_UG["UG2"]["Alarme12_14"], descricao="[UG2] PDSA-CC - Alimentação das Cargas da Disj. 2Q125.0 Desligado")
-            self.condicionadores.append(c.CondicionadorBase(self.l_alm_12_b_14, CONDIC_NORMALIZAR))
+            self.condicionadores.append(c.CondicionadorBase(self.l_alm_12_b_14, CONDIC_INDISPONIBILIZAR))
 
             self.l_alm_12_b_15 = lei.LeituraModbusBit(self.clp["UG2"], REG_UG["UG2"]["Alarme12_15"], descricao="[UG2] PDSA-CC - Alimentação do Painel PCP-U2 - Disj. 2Q125.1 Desligado")
-            self.condicionadores.append(c.CondicionadorBase(self.l_alm_12_b_15, CONDIC_NORMALIZAR))
+            self.condicionadores.append(c.CondicionadorBase(self.l_alm_12_b_15, CONDIC_INDISPONIBILIZAR))
 
             self.l_alm_13_b_00 = lei.LeituraModbusBit(self.clp["UG2"], REG_UG["UG2"]["Alarme13_00"], descricao="[UG2] PDSA-CC - Alimentação do Quadro Q49-U2 - Disj. 2Q125.2 Desligado")
-            self.condicionadores.append(c.CondicionadorBase(self.l_alm_13_b_00, CONDIC_NORMALIZAR))
+            self.condicionadores.append(c.CondicionadorBase(self.l_alm_13_b_00, CONDIC_INDISPONIBILIZAR))
 
             self.l_alm_13_b_01 = lei.LeituraModbusBit(self.clp["UG2"], REG_UG["UG2"]["Alarme13_01"], descricao="[UG2] PDSA-CC - Alimentação do Cubículo CSG-U2 - Disj. 2Q125.3 Desligado")
-            self.condicionadores.append(c.CondicionadorBase(self.l_alm_13_b_01, CONDIC_NORMALIZAR))
+            self.condicionadores.append(c.CondicionadorBase(self.l_alm_13_b_01, CONDIC_INDISPONIBILIZAR))
 
             self.l_alm_13_b_02 = lei.LeituraModbusBit(self.clp["UG2"], REG_UG["UG2"]["Alarme13_02"], descricao="[UG2] PDSA-CC - Alimentação Painel do Regulador de Tensão Disj. 2Q125.4 Desligado")
-            self.condicionadores.append(c.CondicionadorBase(self.l_alm_13_b_02, CONDIC_NORMALIZAR))
+            self.condicionadores.append(c.CondicionadorBase(self.l_alm_13_b_02, CONDIC_INDISPONIBILIZAR))
 
             self.l_alm_13_b_03 = lei.LeituraModbusBit(self.clp["UG2"], REG_UG["UG2"]["Alarme13_03"], descricao="[UG2] PDSA-CC - Alimentação do Filtro Duplo Disj. 2Q125.5 Desligado")
-            self.condicionadores.append(c.CondicionadorBase(self.l_alm_13_b_03, CONDIC_NORMALIZAR))
+            self.condicionadores.append(c.CondicionadorBase(self.l_alm_13_b_03, CONDIC_INDISPONIBILIZAR))
 
             self.l_alm_13_b_04 = lei.LeituraModbusBit(self.clp["UG2"], REG_UG["UG2"]["Alarme13_04"], descricao="[UG2] PDSA-CC - Alimentação Reserva - Disj. 2Q125.6 Desligado")
             self.condicionadores.append(c.CondicionadorBase(self.l_alm_13_b_04, CONDIC_NORMALIZAR))
 
             self.l_alm_15_b_14 = lei.LeituraModbusBit(self.clp["UG2"], REG_UG["UG2"]["Alarme15_14"], descricao="[UG2] PDSA-CA - Alimentação das Cargas Essenciais da Disj. 2Q380.0 Desligado")
-            self.condicionadores.append(c.CondicionadorBase(self.l_alm_15_b_14, CONDIC_NORMALIZAR))
+            self.condicionadores.append(c.CondicionadorBase(self.l_alm_15_b_14, CONDIC_INDISPONIBILIZAR))
 
             self.l_alm_15_b_15 = lei.LeituraModbusBit(self.clp["UG2"], REG_UG["UG2"]["Alarme15_15"], descricao="[UG2] PDSA-CA - Alimentação das Cargas Não Essenciais da Disj. 2Q380.1 Desligado")
-            self.condicionadores.append(c.CondicionadorBase(self.l_alm_15_b_15, CONDIC_NORMALIZAR))
+            self.condicionadores.append(c.CondicionadorBase(self.l_alm_15_b_15, CONDIC_INDISPONIBILIZAR))
+
+            self.l_alm_22_b_10 = lei.LeituraModbusBit(self.clp["UG2"], REG_TDA["Alarme22_10"], descricao="[TDA] UHTA01 - Sobretemperatura do Óleo - Trip")
+            self.condicionadores.append(c.CondicionadorBase(self.l_alm_22_b_10, CONDIC_INDISPONIBILIZAR))
+
+            self.l_alm_22_b_11 = lei.LeituraModbusBit(self.clp["UG2"], REG_TDA["Alarme22_11"], descricao="[TDA] UHTA01 - Botão de Emergência Acionado")
+            self.condicionadores.append(c.CondicionadorBase(self.l_alm_22_b_11, CONDIC_NORMALIZAR))
 
 
         # UG3
 
         if self.id == 3:
             self.l_alm_10_b_12 = lei.LeituraModbusBit(self.clp["UG3"], REG_UG["UG3"]["Alarme10_12"], descricao="[UG3] PCP-U3 - Alimentação Fonte 125/24Vcc - Disj. Q125.3 Desligado")
-            self.condicionadores.append(c.CondicionadorBase(self.l_alm_10_b_12, CONDIC_NORMALIZAR))
+            self.condicionadores.append(c.CondicionadorBase(self.l_alm_10_b_12, CONDIC_INDISPONIBILIZAR))
 
             self.l_alm_10_b_13 = lei.LeituraModbusBit(self.clp["UG3"], REG_UG["UG3"]["Alarme10_13"], descricao="[UG3] PCP-U3 - Alimentação Circuitos de Comando - Disj. Q24.1 Desligado")
-            self.condicionadores.append(c.CondicionadorBase(self.l_alm_10_b_13, CONDIC_NORMALIZAR))
+            self.condicionadores.append(c.CondicionadorBase(self.l_alm_10_b_13, CONDIC_INDISPONIBILIZAR))
 
             self.l_alm_13_b_05 = lei.LeituraModbusBit(self.clp["UG3"], REG_UG["UG3"]["Alarme13_05"], descricao="[UG3] PDSA-CC - Alimentação das Cargas da Disj. 3Q125.0 Desligado")
-            self.condicionadores.append(c.CondicionadorBase(self.l_alm_13_b_05, CONDIC_NORMALIZAR))
+            self.condicionadores.append(c.CondicionadorBase(self.l_alm_13_b_05, CONDIC_INDISPONIBILIZAR))
 
             self.l_alm_13_b_06 = lei.LeituraModbusBit(self.clp["UG3"], REG_UG["UG3"]["Alarme13_06"], descricao="[UG3] PDSA-CC - Alimentação do Painel PCP-U3 - Disj. 3Q125.1 Desligado")
-            self.condicionadores.append(c.CondicionadorBase(self.l_alm_13_b_06, CONDIC_NORMALIZAR))
+            self.condicionadores.append(c.CondicionadorBase(self.l_alm_13_b_06, CONDIC_INDISPONIBILIZAR))
 
             self.l_alm_13_b_07 = lei.LeituraModbusBit(self.clp["UG3"], REG_UG["UG3"]["Alarme13_07"], descricao="[UG3] PDSA-CC - Alimentação do Quadro Q49-U3 - Disj. 3Q125.2 Desligado")
-            self.condicionadores.append(c.CondicionadorBase(self.l_alm_13_b_07, CONDIC_NORMALIZAR))
+            self.condicionadores.append(c.CondicionadorBase(self.l_alm_13_b_07, CONDIC_INDISPONIBILIZAR))
 
             self.l_alm_13_b_08 = lei.LeituraModbusBit(self.clp["UG3"], REG_UG["UG3"]["Alarme13_08"], descricao="[UG3] PDSA-CC - Alimentação do Cubículo CSG-U3 - Disj. 3Q125.3 Desligado")
-            self.condicionadores.append(c.CondicionadorBase(self.l_alm_13_b_08, CONDIC_NORMALIZAR))
+            self.condicionadores.append(c.CondicionadorBase(self.l_alm_13_b_08, CONDIC_INDISPONIBILIZAR))
 
             self.l_alm_13_b_09 = lei.LeituraModbusBit(self.clp["UG3"], REG_UG["UG3"]["Alarme13_09"], descricao="[UG3] PDSA-CC - Alimentação Painel do Regulador de Tensão Disj. 3Q125.4 Desligado")
-            self.condicionadores.append(c.CondicionadorBase(self.l_alm_13_b_09, CONDIC_NORMALIZAR))
+            self.condicionadores.append(c.CondicionadorBase(self.l_alm_13_b_09, CONDIC_INDISPONIBILIZAR))
 
             self.l_alm_13_b_10 = lei.LeituraModbusBit(self.clp["UG3"], REG_UG["UG3"]["Alarme13_10"], descricao="[UG3] PDSA-CC - Alimentação do Filtro Duplo Disj. 3Q125.5 Desligado")
-            self.condicionadores.append(c.CondicionadorBase(self.l_alm_13_b_10, CONDIC_NORMALIZAR))
+            self.condicionadores.append(c.CondicionadorBase(self.l_alm_13_b_10, CONDIC_INDISPONIBILIZAR))
 
             self.l_alm_13_b_11 = lei.LeituraModbusBit(self.clp["UG3"], REG_UG["UG3"]["Alarme13_11"], descricao="[UG3] PDSA-CC - Alimentação Reserva - Disj. 3Q125.6 Desligado")
             self.condicionadores.append(c.CondicionadorBase(self.l_alm_13_b_11, CONDIC_NORMALIZAR))
 
             self.l_alm_16_b_00 = lei.LeituraModbusBit(self.clp["UG3"], REG_UG["UG3"]["Alarme16_00"], descricao="[UG3] PDSA-CA - Alimentação das Cargas Essenciais da Disj. 3Q380.0 Desligado")
-            self.condicionadores.append(c.CondicionadorBase(self.l_alm_16_b_00, CONDIC_NORMALIZAR))
+            self.condicionadores.append(c.CondicionadorBase(self.l_alm_16_b_00, CONDIC_INDISPONIBILIZAR))
 
             self.l_alm_16_b_01 = lei.LeituraModbusBit(self.clp["UG3"], REG_UG["UG3"]["Alarme16_01"], descricao="[UG3] PDSA-CA - Alimentação das Cargas Não Essenciais da Disj. 3Q380.1 Desligado")
-            self.condicionadores.append(c.CondicionadorBase(self.l_alm_16_b_01, CONDIC_NORMALIZAR))
+            self.condicionadores.append(c.CondicionadorBase(self.l_alm_16_b_01, CONDIC_INDISPONIBILIZAR))
+
+            self.l_alm_24_b_09 = lei.LeituraModbusBit(self.clp["UG3"], REG_TDA["Alarme24_09"], descricao="[TDA] UHTA02 - Sobretemperatura do Óleo - Trip")
+            self.condicionadores.append(c.CondicionadorBase(self.l_alm_24_b_09, CONDIC_NORMALIZAR))
+
+            self.l_alm_24_b_10 = lei.LeituraModbusBit(self.clp["UG3"], REG_TDA["Alarme24_10"], descricao="[TDA] UHTA02 - Botão de Emergência Acionado")
+            self.condicionadores.append(c.CondicionadorBase(self.l_alm_24_b_10, CONDIC_NORMALIZAR))
 
 
         # UG4
 
         if self.id == 4:
             self.l_alm_10_b_14 = lei.LeituraModbusBit(self.clp["UG4"], REG_UG["UG4"]["Alarme10_14"], descricao="[UG4] PCP-U4 - Alimentação Fonte 125/24Vcc - Disj. Q125.3 Desligado")
-            self.condicionadores.append(c.CondicionadorBase(self.l_alm_10_b_14, CONDIC_NORMALIZAR))
+            self.condicionadores.append(c.CondicionadorBase(self.l_alm_10_b_14, CONDIC_INDISPONIBILIZAR))
 
             self.l_alm_13_b_12 = lei.LeituraModbusBit(self.clp["UG4"], REG_UG["UG4"]["Alarme13_12"], descricao="[UG4] PDSA-CC - Alimentação das Cargas da Disj. 4Q125.0 Desligado")
-            self.condicionadores.append(c.CondicionadorBase(self.l_alm_13_b_12, CONDIC_NORMALIZAR))
+            self.condicionadores.append(c.CondicionadorBase(self.l_alm_13_b_12, CONDIC_INDISPONIBILIZAR))
 
             self.l_alm_13_b_13 = lei.LeituraModbusBit(self.clp["UG4"], REG_UG["UG4"]["Alarme13_13"], descricao="[UG4] PDSA-CC - Alimentação do Painel PCP-U4 - Disj. 4Q125.1 Desligado")
-            self.condicionadores.append(c.CondicionadorBase(self.l_alm_13_b_13, CONDIC_NORMALIZAR))
+            self.condicionadores.append(c.CondicionadorBase(self.l_alm_13_b_13, CONDIC_INDISPONIBILIZAR))
 
             self.l_alm_13_b_14 = lei.LeituraModbusBit(self.clp["UG4"], REG_UG["UG4"]["Alarme13_14"], descricao="[UG4] PDSA-CC - Alimentação do Quadro Q49-U4 - Disj. 4Q125.2 Desligado")
-            self.condicionadores.append(c.CondicionadorBase(self.l_alm_13_b_14, CONDIC_NORMALIZAR))
+            self.condicionadores.append(c.CondicionadorBase(self.l_alm_13_b_14, CONDIC_INDISPONIBILIZAR))
 
             self.l_alm_13_b_15 = lei.LeituraModbusBit(self.clp["UG4"], REG_UG["UG4"]["Alarme13_15"], descricao="[UG4] PDSA-CC - Alimentação do Cubículo CSG-U4 - Disj. 4Q125.3 Desligado")
-            self.condicionadores.append(c.CondicionadorBase(self.l_alm_13_b_15, CONDIC_NORMALIZAR))
+            self.condicionadores.append(c.CondicionadorBase(self.l_alm_13_b_15, CONDIC_INDISPONIBILIZAR))
 
             self.l_alm_14_b_00 = lei.LeituraModbusBit(self.clp["UG4"], REG_UG["UG4"]["Alarme14_00"], descricao="[UG4] PDSA-CC - Alimentação Painel do Regulador de Tensão Disj. 4Q125.4 Desligado")
-            self.condicionadores.append(c.CondicionadorBase(self.l_alm_14_b_00, CONDIC_NORMALIZAR))
+            self.condicionadores.append(c.CondicionadorBase(self.l_alm_14_b_00, CONDIC_INDISPONIBILIZAR))
 
             self.l_alm_14_b_01 = lei.LeituraModbusBit(self.clp["UG4"], REG_UG["UG4"]["Alarme14_01"], descricao="[UG4] PDSA-CC - Alimentação do Filtro Duplo Disj. 4Q125.5 Desligado")
-            self.condicionadores.append(c.CondicionadorBase(self.l_alm_14_b_01, CONDIC_NORMALIZAR))
+            self.condicionadores.append(c.CondicionadorBase(self.l_alm_14_b_01, CONDIC_INDISPONIBILIZAR))
 
             self.l_alm_14_b_02 = lei.LeituraModbusBit(self.clp["UG4"], REG_UG["UG4"]["Alarme14_02"], descricao="[UG4] PDSA-CC - Alimentação Reserva - Disj. 4Q125.6 Desligado")
             self.condicionadores.append(c.CondicionadorBase(self.l_alm_14_b_02, CONDIC_NORMALIZAR))
 
             self.l_alm_16_b_02 = lei.LeituraModbusBit(self.clp["UG4"], REG_UG["UG4"]["Alarme16_02"], descricao="[UG4] PDSA-CA - Alimentação das Cargas Essenciais da Disj. 4Q380.0 Desligado")
-            self.condicionadores.append(c.CondicionadorBase(self.l_alm_16_b_02, CONDIC_NORMALIZAR))
+            self.condicionadores.append(c.CondicionadorBase(self.l_alm_16_b_02, CONDIC_INDISPONIBILIZAR))
 
             self.l_alm_16_b_03 = lei.LeituraModbusBit(self.clp["UG4"], REG_UG["UG4"]["Alarme16_03"], descricao="[UG4] PDSA-CA - Alimentação das Cargas Não Essenciais da Disj. 4Q380.1 Desligado")
-            self.condicionadores.append(c.CondicionadorBase(self.l_alm_16_b_03, CONDIC_NORMALIZAR))
+            self.condicionadores.append(c.CondicionadorBase(self.l_alm_16_b_03, CONDIC_INDISPONIBILIZAR))
 
             self.l_alm_10_b_15 = lei.LeituraModbusBit(self.clp["UG4"], REG_UG["UG4"]["Alarme10_15"], descricao="[UG4] PCP-U4 - Alimentação Circuitos de Comando - Disj. Q24.1 Desligado")
-            self.condicionadores.append(c.CondicionadorBase(self.l_alm_10_b_15, CONDIC_NORMALIZAR))
+            self.condicionadores.append(c.CondicionadorBase(self.l_alm_10_b_15, CONDIC_INDISPONIBILIZAR))
+
+            self.l_alm_24_b_09 = lei.LeituraModbusBit(self.clp["UG4"], REG_TDA["Alarme24_09"], descricao="[TDA] UHTA02 - Sobretemperatura do Óleo - Trip")
+            self.condicionadores.append(c.CondicionadorBase(self.l_alm_24_b_09, CONDIC_NORMALIZAR))
+
+            self.l_alm_24_b_10 = lei.LeituraModbusBit(self.clp["UG4"], REG_TDA["Alarme24_10"], descricao="[TDA] UHTA02 - Botão de Emergência Acionado")
+            self.condicionadores.append(c.CondicionadorBase(self.l_alm_24_b_10, CONDIC_NORMALIZAR))
 
         return

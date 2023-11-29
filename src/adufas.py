@@ -137,7 +137,7 @@ class Adufas:
         """
 
         cls.l_alm_28_b_00 = lei.LeituraModbusBit(cls.clp["AD"], REG_AD["Alarme28_00"], descricao="[AD]  Botão de Emergência Pressionado")
-        cls.condicionadores.append(c.CondicionadorBase(cls.l_alm_28_b_00, CONDIC_NORMALIZAR))
+        cls.condicionadores_essenciais.append(c.CondicionadorBase(cls.l_alm_28_b_00, CONDIC_NORMALIZAR))
 
         cls.l_alm_28_b_01 = lei.LeituraModbusBit(cls.clp["AD"], REG_AD["Alarme28_01"], descricao="[AD]  Relé Falta de Fase CA Atuado")
         cls.condicionadores.append(c.CondicionadorBase(cls.l_alm_28_b_01, CONDIC_NORMALIZAR))
@@ -167,7 +167,7 @@ class Adufas:
         cls.condicionadores.append(c.CondicionadorBase(cls.l_alm_28_b_11, CONDIC_NORMALIZAR))
 
         cls.l_alm_28_b_12 = lei.LeituraModbusBit(cls.clp["AD"], REG_AD["Alarme28_12"], descricao="[AD]  UHCD - Botão de Emergência Pressionado")
-        cls.condicionadores.append(c.CondicionadorBase(cls.l_alm_28_b_12, CONDIC_NORMALIZAR))
+        cls.condicionadores_essenciais.append(c.CondicionadorBase(cls.l_alm_28_b_12, CONDIC_NORMALIZAR))
 
         cls.l_alm_29_b_00 = lei.LeituraModbusBit(cls.clp["AD"], REG_AD["Alarme29_00"], descricao="[AD]  UHCD - Bomba de Óleo 01 - Falha no Acionamento")
         cls.condicionadores.append(c.CondicionadorBase(cls.l_alm_29_b_00, CONDIC_NORMALIZAR))

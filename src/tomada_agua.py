@@ -122,13 +122,13 @@ class TomadaAgua:
         """
 
         cls.l_alm_01_b_04 = lei.LeituraModbusBit(cls.clp["TDA"], REG_TDA["Alarme01_04"], descricao="[TDA] Falha no CLP (Trip 86H UGs)")
-        cls.condicionadores.append(c.CondicionadorBase(cls.l_alm_01_b_04, CONDIC_NORMALIZAR))
+        cls.condicionadores_essenciais.append(c.CondicionadorBase(cls.l_alm_01_b_04, CONDIC_NORMALIZAR))
 
         cls.l_alm_01_b_05 = lei.LeituraModbusBit(cls.clp["TDA"], REG_TDA["Alarme01_05"], descricao="[TDA] Falha Alimentação do CLP (Trip 86H UGs)")
-        cls.condicionadores.append(c.CondicionadorBase(cls.l_alm_01_b_05, CONDIC_NORMALIZAR))
+        cls.condicionadores.append(c.CondicionadorBase(cls.l_alm_01_b_05, CONDIC_INDISPONIBILIZAR))
 
         cls.l_alm_01_b_06 = lei.LeituraModbusBit(cls.clp["TDA"], REG_TDA["Alarme01_06"], descricao="[TDA] Falha Alimentação do CLP Temporizada")
-        cls.condicionadores.append(c.CondicionadorBase(cls.l_alm_01_b_06, CONDIC_NORMALIZAR))
+        cls.condicionadores.append(c.CondicionadorBase(cls.l_alm_01_b_06, CONDIC_INDISPONIBILIZAR))
 
         cls.l_alm_22_b_00 = lei.LeituraModbusBit(cls.clp["TDA"], REG_TDA["Alarme22_00"], descricao="[TDA] Relé Falta de Fase CA Atuado")
         cls.condicionadores.append(c.CondicionadorBase(cls.l_alm_22_b_00, CONDIC_NORMALIZAR))
@@ -136,11 +136,13 @@ class TomadaAgua:
         cls.l_alm_22_b_03 = lei.LeituraModbusBit(cls.clp["TDA"], REG_TDA["Alarme22_03"], descricao="[TDA] UHTA01 - Pressão de Óleo Baixa")
         cls.condicionadores.append(c.CondicionadorBase(cls.l_alm_22_b_03, CONDIC_NORMALIZAR))
 
+
+        # OS CONDICIONADORES DESSE BLOCO SÃO RELACIONADOS A UG1 E UG2
         cls.l_alm_22_b_04 = lei.LeituraModbusBit(cls.clp["TDA"], REG_TDA["Alarme22_04"], descricao="[TDA] UHTA01 - Pressão de Óleo Alta na Linha da Comporta 01")
         cls.condicionadores.append(c.CondicionadorBase(cls.l_alm_22_b_04, CONDIC_NORMALIZAR))
 
         cls.l_alm_22_b_05 = lei.LeituraModbusBit(cls.clp["TDA"], REG_TDA["Alarme22_05"], descricao="[TDA] UHTA01 - Pressão de Óleo Alta na Linha da Comporta 02")
-        cls.condicionadores.append(c.CondicionadorBase(cls.l_alm_22_b_05, CONDIC_NORMALIZAR))
+        cls.condicionadores.append(c.CondicionadorBase(cls.l_alm_22_b_05, CONDIC_INDISPONIBILIZAR))
 
         cls.l_alm_22_b_06 = lei.LeituraModbusBit(cls.clp["TDA"], REG_TDA["Alarme22_06"], descricao="[TDA] UHTA01 - Filtro de Retorno Sujo")
         cls.condicionadores.append(c.CondicionadorBase(cls.l_alm_22_b_06, CONDIC_NORMALIZAR))
@@ -150,15 +152,6 @@ class TomadaAgua:
 
         cls.l_alm_22_b_08 = lei.LeituraModbusBit(cls.clp["TDA"], REG_TDA["Alarme22_08"], descricao="[TDA] UHTA01 - Nível de Óleo Alto")
         cls.condicionadores.append(c.CondicionadorBase(cls.l_alm_22_b_08, CONDIC_NORMALIZAR))
-
-        cls.l_alm_22_b_09 = lei.LeituraModbusBit(cls.clp["TDA"], REG_TDA["Alarme22_09"], descricao="[TDA] UHTA01 - Sobretemperatura do Óleo - Alarme")
-        cls.condicionadores.append(c.CondicionadorBase(cls.l_alm_22_b_09, CONDIC_NORMALIZAR))
-
-        cls.l_alm_22_b_10 = lei.LeituraModbusBit(cls.clp["TDA"], REG_TDA["Alarme22_10"], descricao="[TDA] UHTA01 - Sobretemperatura do Óleo - Trip")
-        cls.condicionadores.append(c.CondicionadorBase(cls.l_alm_22_b_10, CONDIC_NORMALIZAR))
-
-        cls.l_alm_22_b_11 = lei.LeituraModbusBit(cls.clp["TDA"], REG_TDA["Alarme22_11"], descricao="[TDA] UHTA01 - Botão de Emergência Acionado")
-        cls.condicionadores.append(c.CondicionadorBase(cls.l_alm_22_b_11, CONDIC_NORMALIZAR))
 
         cls.l_alm_22_b_14 = lei.LeituraModbusBit(cls.clp["TDA"], REG_TDA["Alarme22_14"], descricao="[TDA] UHTA01 - Bomba de Óleo 01 - Falha no Acionamento")
         cls.condicionadores.append(c.CondicionadorBase(cls.l_alm_22_b_14, CONDIC_NORMALIZAR))
@@ -172,11 +165,12 @@ class TomadaAgua:
         cls.l_alm_23_b_02 = lei.LeituraModbusBit(cls.clp["TDA"], REG_TDA["Alarme23_02"], descricao="[TDA] UHTA01 - Bomba de Óleo 02 - Disjuntor QM2 Aberto")
         cls.condicionadores.append(c.CondicionadorBase(cls.l_alm_23_b_02, CONDIC_NORMALIZAR))
 
+        # OS CONDICIONADORES DESSE BLOCO SÃO RELACIONADOS A UG1
         cls.l_alm_23_b_04 = lei.LeituraModbusBit(cls.clp["TDA"], REG_TDA["Alarme23_04"], descricao="[TDA] Comporta 01 - Falha na Abertura")
         cls.condicionadores.append(c.CondicionadorBase(cls.l_alm_23_b_04, CONDIC_NORMALIZAR))
 
         cls.l_alm_23_b_05 = lei.LeituraModbusBit(cls.clp["TDA"], REG_TDA["Alarme23_05"], descricao="[TDA] Comporta 01 - Falha no Fechamento")
-        cls.condicionadores.append(c.CondicionadorBase(cls.l_alm_23_b_05, CONDIC_NORMALIZAR))
+        cls.condicionadores.append(c.CondicionadorBase(cls.l_alm_23_b_05, CONDIC_INDISPONIBILIZAR))
 
         cls.l_alm_23_b_06 = lei.LeituraModbusBit(cls.clp["TDA"], REG_TDA["Alarme23_06"], descricao="[TDA] Comporta 01 - Falha no Cracking")
         cls.condicionadores.append(c.CondicionadorBase(cls.l_alm_23_b_06, CONDIC_NORMALIZAR))
@@ -187,6 +181,7 @@ class TomadaAgua:
         cls.l_alm_23_b_08 = lei.LeituraModbusBit(cls.clp["TDA"], REG_TDA["Alarme23_08"], descricao="[TDA] Comporta 01 - Falha nos Sensores de Posição")
         cls.condicionadores.append(c.CondicionadorBase(cls.l_alm_23_b_08, CONDIC_NORMALIZAR))
 
+        # OS CONDICIONADORES DESSE BLOCO SÃO RELACIONADOS A UG2
         cls.l_alm_23_b_11 = lei.LeituraModbusBit(cls.clp["TDA"], REG_TDA["Alarme23_11"], descricao="[TDA] Comporta 02 - Falha na Abertura")
         cls.condicionadores.append(c.CondicionadorBase(cls.l_alm_23_b_11, CONDIC_NORMALIZAR))
 
@@ -202,6 +197,7 @@ class TomadaAgua:
         cls.l_alm_23_b_15 = lei.LeituraModbusBit(cls.clp["TDA"], REG_TDA["Alarme23_15"], descricao="[TDA] Comporta 02 - Falha nos Sensores de Posição")
         cls.condicionadores.append(c.CondicionadorBase(cls.l_alm_23_b_15, CONDIC_NORMALIZAR))
 
+        # OS CONDICIONADORES DESSE BLOCO SÃO RELACIONADOS A UG3 E UG4
         cls.l_alm_24_b_02 = lei.LeituraModbusBit(cls.clp["TDA"], REG_TDA["Alarme24_02"], descricao="[TDA] UHTA02 - Pressão de Óleo Baixa")
         cls.condicionadores.append(c.CondicionadorBase(cls.l_alm_24_b_02, CONDIC_NORMALIZAR))
 
@@ -223,9 +219,6 @@ class TomadaAgua:
         cls.l_alm_24_b_08 = lei.LeituraModbusBit(cls.clp["TDA"], REG_TDA["Alarme24_08"], descricao="[TDA] UHTA02 - Sobretemperatura do Óleo - Alarme")
         cls.condicionadores.append(c.CondicionadorBase(cls.l_alm_24_b_08, CONDIC_NORMALIZAR))
 
-        cls.l_alm_24_b_09 = lei.LeituraModbusBit(cls.clp["TDA"], REG_TDA["Alarme24_09"], descricao="[TDA] UHTA02 - Sobretemperatura do Óleo - Trip")
-        cls.condicionadores.append(c.CondicionadorBase(cls.l_alm_24_b_09, CONDIC_NORMALIZAR))
-
         cls.l_alm_24_b_10 = lei.LeituraModbusBit(cls.clp["TDA"], REG_TDA["Alarme24_10"], descricao="[TDA] UHTA02 - Botão de Emergência Acionado")
         cls.condicionadores.append(c.CondicionadorBase(cls.l_alm_24_b_10, CONDIC_NORMALIZAR))
 
@@ -241,6 +234,7 @@ class TomadaAgua:
         cls.l_alm_25_b_01 = lei.LeituraModbusBit(cls.clp["TDA"], REG_TDA["Alarme25_01"], descricao="[TDA] UHTA02 - Bomba de Óleo 02 - Disjuntor QM4 Aberto")
         cls.condicionadores.append(c.CondicionadorBase(cls.l_alm_25_b_01, CONDIC_NORMALIZAR))
 
+        # OS CONDICIONADORES DESSE BLOCO SÃO RELACIONADOS A UG3
         cls.l_alm_25_b_03 = lei.LeituraModbusBit(cls.clp["TDA"], REG_TDA["Alarme25_03"], descricao="[TDA] Comporta 03 - Falha na Abertura")
         cls.condicionadores.append(c.CondicionadorBase(cls.l_alm_25_b_03, CONDIC_NORMALIZAR))
 
@@ -256,6 +250,7 @@ class TomadaAgua:
         cls.l_alm_25_b_07 = lei.LeituraModbusBit(cls.clp["TDA"], REG_TDA["Alarme25_07"], descricao="[TDA] Comporta 03 - Falha nos Sensores de Posição")
         cls.condicionadores.append(c.CondicionadorBase(cls.l_alm_25_b_07, CONDIC_NORMALIZAR))
 
+        # OS CONDICIONADORES DESSE BLOCO SÃO RELACIONADOS A UG4
         cls.l_alm_25_b_10 = lei.LeituraModbusBit(cls.clp["TDA"], REG_TDA["Alarme25_10"], descricao="[TDA] Comporta 04 - Falha na Abertura")
         cls.condicionadores.append(c.CondicionadorBase(cls.l_alm_25_b_10, CONDIC_NORMALIZAR))
 
@@ -271,6 +266,8 @@ class TomadaAgua:
         cls.l_alm_25_b_14 = lei.LeituraModbusBit(cls.clp["TDA"], REG_TDA["Alarme25_14"], descricao="[TDA] Comporta 04 - Falha nos Sensores de Posição")
         cls.condicionadores.append(c.CondicionadorBase(cls.l_alm_25_b_14, CONDIC_NORMALIZAR))
 
+
+        
         cls.l_alm_26_b_01 = lei.LeituraModbusBit(cls.clp["TDA"], REG_TDA["Alarme26_01"], descricao="[TDA] Sensor de Fumaça Atuado")
         cls.condicionadores.append(c.CondicionadorBase(cls.l_alm_26_b_01, CONDIC_NORMALIZAR))
 
@@ -282,6 +279,8 @@ class TomadaAgua:
 
         cls.l_alm_26_b_05 = lei.LeituraModbusBit(cls.clp["TDA"], REG_TDA["Alarme26_05"], descricao="[TDA] Sensor de Presença Inibido")
         cls.condicionadores.append(c.CondicionadorBase(cls.l_alm_26_b_05, CONDIC_NORMALIZAR))
+
+        
 
         cls.l_alm_26_b_07 = lei.LeituraModbusBit(cls.clp["TDA"], REG_TDA["Alarme26_07"], descricao="[TDA] Erro de Leitura na entrada analógica da temperatura do Óleo da UHTA01")
         cls.condicionadores.append(c.CondicionadorBase(cls.l_alm_26_b_07, CONDIC_NORMALIZAR))

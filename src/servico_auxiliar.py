@@ -120,7 +120,7 @@ class ServicoAuxiliar:
         cls.condicionadores.append(c.CondicionadorBase(cls.l_alm_01_b_15, CONDIC_NORMALIZAR))
 
         cls.l_alm_02_b_03 = lei.LeituraModbusBit(cls.clp["SA"], REG_SA["Alarme02_03"], descricao="[SA]  PINV - Controlador Boost 01 - Sobrecorrente no Link 125Vcc")
-        cls.condicionadores.append(c.CondicionadorBase(cls.l_alm_02_b_03, CONDIC_NORMALIZAR))
+        cls.condicionadores.append(c.CondicionadorBase(cls.l_alm_02_b_03, CONDIC_INDISPONIBILIZAR))
 
         cls.l_alm_02_b_06 = lei.LeituraModbusBit(cls.clp["SA"], REG_SA["Alarme02_06"], descricao="[SA]  PINV - Controlador Boost 01 - Subcorrente no Link 125Vcc")
         cls.condicionadores.append(c.CondicionadorBase(cls.l_alm_02_b_06, CONDIC_NORMALIZAR))
@@ -195,7 +195,7 @@ class ServicoAuxiliar:
         cls.condicionadores.append(c.CondicionadorBase(cls.l_alm_05_b_01, CONDIC_NORMALIZAR))
 
         cls.l_alm_05_b_15 = lei.LeituraModbusBit(cls.clp["SA"], REG_SA["Alarme05_15"], descricao="[SA]  PINV - Controlador Boost 02 - Sobrecorrente no Link 125Vcc")
-        cls.condicionadores.append(c.CondicionadorBase(cls.l_alm_05_b_15, CONDIC_NORMALIZAR))
+        cls.condicionadores.append(c.CondicionadorBase(cls.l_alm_05_b_15, CONDIC_INDISPONIBILIZAR))
 
         cls.l_alm_06_b_00 = lei.LeituraModbusBit(cls.clp["SA"], REG_SA["Alarme06_00"], descricao="[SA]  PINV - Controlador Boost 02 - Subcorrente no Link 125Vcc")
         cls.condicionadores.append(c.CondicionadorBase(cls.l_alm_06_b_00, CONDIC_NORMALIZAR))
@@ -207,7 +207,7 @@ class ServicoAuxiliar:
         cls.condicionadores.append(c.CondicionadorBase(cls.l_alm_06_b_02, CONDIC_NORMALIZAR))
 
         cls.l_alm_06_b_03 = lei.LeituraModbusBit(cls.clp["SA"], REG_SA["Alarme06_03"], descricao="[SA]  Carregador de Baterias 01 - Fuga Terra Polo Positivo ou Negativo")
-        cls.condicionadores.append(c.CondicionadorBase(cls.l_alm_06_b_03, CONDIC_NORMALIZAR))
+        cls.condicionadores.append(c.CondicionadorBase(cls.l_alm_06_b_03, CONDIC_INDISPONIBILIZAR))
 
         cls.l_alm_06_b_04 = lei.LeituraModbusBit(cls.clp["SA"], REG_SA["Alarme06_04"], descricao="[SA]  Carregador de Baterias 01 - Falha Alarme no Retificador")
         cls.condicionadores.append(c.CondicionadorBase(cls.l_alm_06_b_04, CONDIC_NORMALIZAR))
@@ -246,7 +246,7 @@ class ServicoAuxiliar:
         cls.condicionadores.append(c.CondicionadorBase(cls.l_alm_07_b_02, CONDIC_NORMALIZAR))
 
         cls.l_alm_07_b_03 = lei.LeituraModbusBit(cls.clp["SA"], REG_SA["Alarme07_03"], descricao="[SA]  Drenagem - Nível do Poço Inundação ( Bloquio 86H nas UGs*)")
-        cls.condicionadores.append(c.CondicionadorBase(cls.l_alm_07_b_03, CONDIC_NORMALIZAR))
+        cls.condicionadores.append(c.CondicionadorBase(cls.l_alm_07_b_03, CONDIC_INDISPONIBILIZAR))
 
         cls.l_alm_07_b_04 = lei.LeituraModbusBit(cls.clp["SA"], REG_SA["Alarme07_04"], descricao="[SA]  Drenagem - Falta Alimentação CA nos Relés de Nível")
         cls.condicionadores.append(c.CondicionadorBase(cls.l_alm_07_b_04, CONDIC_NORMALIZAR))
@@ -297,7 +297,7 @@ class ServicoAuxiliar:
         cls.condicionadores.append(c.CondicionadorBase(cls.l_alm_08_b_06, CONDIC_NORMALIZAR))
 
         cls.l_alm_08_b_07 = lei.LeituraModbusBit(cls.clp["SA"], REG_SA["Alarme08_07"], descricao="[SA]  Sistema de Água de Serviço - Botão de Emergência do Filtro 01 Acionado")
-        cls.condicionadores.append(c.CondicionadorBase(cls.l_alm_08_b_07, CONDIC_NORMALIZAR))
+        cls.condicionadores_essenciais.append(c.CondicionadorBase(cls.l_alm_08_b_07, CONDIC_INDISPONIBILIZAR))
 
         cls.l_alm_08_b_08 = lei.LeituraModbusBit(cls.clp["SA"], REG_SA["Alarme08_08"], descricao="[SA]  Sistema de Água de Serviço - Trip Disjuntor Filtro 01")
         cls.condicionadores.append(c.CondicionadorBase(cls.l_alm_08_b_08, CONDIC_NORMALIZAR))
@@ -402,7 +402,7 @@ class ServicoAuxiliar:
         cls.condicionadores.append(c.CondicionadorBase(cls.l_alm_11_b_09, CONDIC_NORMALIZAR))
 
         cls.l_alm_11_b_10 = lei.LeituraModbusBit(cls.clp["SA"], REG_SA["Alarme11_10"], descricao="[SA]  PDSA-CC - Alimentação Principal CB01 - Disj. Q125.E1 Trip")
-        cls.condicionadores.append(c.CondicionadorBase(cls.l_alm_11_b_10, CONDIC_NORMALIZAR))
+        cls.condicionadores.append(c.CondicionadorBase(cls.l_alm_11_b_10, CONDIC_INDISPONIBILIZAR))
 
         cls.l_alm_11_b_11 = lei.LeituraModbusBit(cls.clp["SA"], REG_SA["Alarme11_11"], descricao="[SA]  PDSA-CC - Alimentação Principal CB02 - Disj. Q125.E2 Desligado")
         cls.condicionadores.append(c.CondicionadorBase(cls.l_alm_11_b_11, CONDIC_NORMALIZAR))
@@ -411,13 +411,13 @@ class ServicoAuxiliar:
         cls.condicionadores.append(c.CondicionadorBase(cls.l_alm_11_b_12, CONDIC_NORMALIZAR))
 
         cls.l_alm_11_b_13 = lei.LeituraModbusBit(cls.clp["SA"], REG_SA["Alarme11_13"], descricao="[SA]  PDSA-CC - Alimentação Principal CB02 - Disj. Q125.E2 Trip")
-        cls.condicionadores.append(c.CondicionadorBase(cls.l_alm_11_b_13, CONDIC_NORMALIZAR))
+        cls.condicionadores.append(c.CondicionadorBase(cls.l_alm_11_b_13, CONDIC_INDISPONIBILIZAR))
 
         cls.l_alm_11_b_14 = lei.LeituraModbusBit(cls.clp["SA"], REG_SA["Alarme11_14"], descricao="[SA]  PDSA-CC - Alimentação Inversor 125Vcc/220Vca - Disj. Q125.1 Desligado")
-        cls.condicionadores.append(c.CondicionadorBase(cls.l_alm_11_b_14, CONDIC_NORMALIZAR))
+        cls.condicionadores.append(c.CondicionadorBase(cls.l_alm_11_b_14, CONDIC_INDISPONIBILIZAR))
 
         cls.l_alm_11_b_15 = lei.LeituraModbusBit(cls.clp["SA"], REG_SA["Alarme11_15"], descricao="[SA]  PDSA-CC - Alimentação do Painel PDSA-CA - Disj. Q125.3 Desligado")
-        cls.condicionadores.append(c.CondicionadorBase(cls.l_alm_11_b_15, CONDIC_NORMALIZAR))
+        cls.condicionadores.append(c.CondicionadorBase(cls.l_alm_11_b_15, CONDIC_INDISPONIBILIZAR))
 
         cls.l_alm_12_b_00 = lei.LeituraModbusBit(cls.clp["SA"], REG_SA["Alarme12_00"], descricao="[SA]  PDSA-CC - Alimentação do Rack de Comunicação - Disj. Q125.4 Desligado")
         cls.condicionadores.append(c.CondicionadorBase(cls.l_alm_12_b_00, CONDIC_NORMALIZAR))
@@ -444,16 +444,16 @@ class ServicoAuxiliar:
         cls.condicionadores.append(c.CondicionadorBase(cls.l_alm_14_b_06, CONDIC_NORMALIZAR))
 
         cls.l_alm_14_b_08 = lei.LeituraModbusBit(cls.clp["SA"], REG_SA["Alarme14_08"], descricao="[SA]  PDSA-CA - Alimentação 125Vcc Principal - Disj. Q125.0 Desligado")
-        cls.condicionadores.append(c.CondicionadorBase(cls.l_alm_14_b_08, CONDIC_NORMALIZAR))
+        cls.condicionadores.append(c.CondicionadorBase(cls.l_alm_14_b_08, CONDIC_INDISPONIBILIZAR))
 
         cls.l_alm_14_b_09 = lei.LeituraModbusBit(cls.clp["SA"], REG_SA["Alarme14_09"], descricao="[SA]  PDSA-CA - Alimentação 380Vca Principal - Disj. Q380.0 Desligado")
-        cls.condicionadores.append(c.CondicionadorBase(cls.l_alm_14_b_09, CONDIC_NORMALIZAR))
+        cls.condicionadores.append(c.CondicionadorBase(cls.l_alm_14_b_09, CONDIC_INDISPONIBILIZAR))
 
         cls.l_alm_14_b_10 = lei.LeituraModbusBit(cls.clp["SA"], REG_SA["Alarme14_10"], descricao="[SA]  PDSA-CA - Alimentação 380Vca Principal - Disj. Q380.0 Inconsistência")
         cls.condicionadores.append(c.CondicionadorBase(cls.l_alm_14_b_10, CONDIC_NORMALIZAR))
 
         cls.l_alm_14_b_11 = lei.LeituraModbusBit(cls.clp["SA"], REG_SA["Alarme14_11"], descricao="[SA]  PDSA-CA - Alimentação 380Vca Principal - Disj. Q380.0 Trip")
-        cls.condicionadores.append(c.CondicionadorBase(cls.l_alm_14_b_11, CONDIC_NORMALIZAR))
+        cls.condicionadores.append(c.CondicionadorBase(cls.l_alm_14_b_11, CONDIC_INDISPONIBILIZAR))
 
         cls.l_alm_14_b_12 = lei.LeituraModbusBit(cls.clp["SA"], REG_SA["Alarme14_12"], descricao="[SA]  PDSA-CA - Alimentação do Painel PCTA - Disj. Q380.1 Desligado")
         cls.condicionadores.append(c.CondicionadorBase(cls.l_alm_14_b_12, CONDIC_NORMALIZAR))
@@ -534,7 +534,7 @@ class ServicoAuxiliar:
         cls.condicionadores.append(c.CondicionadorBase(cls.l_alm_17_b_03, CONDIC_NORMALIZAR))
 
         cls.l_alm_17_b_04 = lei.LeituraModbusBit(cls.clp["SA"], REG_SA["Alarme17_04"], descricao="[SA]  PDSA-CC - Alimentação do Painel PINV - Disj. Q125.11 Desligado")
-        cls.condicionadores.append(c.CondicionadorBase(cls.l_alm_17_b_04, CONDIC_NORMALIZAR))
+        cls.condicionadores.append(c.CondicionadorBase(cls.l_alm_17_b_04, CONDIC_INDISPONIBILIZAR))
 
         cls.l_alm_17_b_05 = lei.LeituraModbusBit(cls.clp["SA"], REG_SA["Alarme17_05"], descricao="[SA]  PINV - Alimentação Boost 01 - Disj. Q125.0 Desligado")
         cls.condicionadores.append(c.CondicionadorBase(cls.l_alm_17_b_05, CONDIC_NORMALIZAR))
@@ -561,7 +561,7 @@ class ServicoAuxiliar:
         cls.condicionadores.append(c.CondicionadorBase(cls.l_alm_17_b_13, CONDIC_NORMALIZAR))
 
         cls.l_alm_17_b_14 = lei.LeituraModbusBit(cls.clp["SA"], REG_SA["Alarme17_14"], descricao="[SA]  PINV - Fusível Entrada Link 125Vcc Aberto")
-        cls.condicionadores.append(c.CondicionadorBase(cls.l_alm_17_b_14, CONDIC_NORMALIZAR))
+        cls.condicionadores.append(c.CondicionadorBase(cls.l_alm_17_b_14, CONDIC_INDISPONIBILIZAR))
 
         cls.l_alm_18_b_00 = lei.LeituraModbusBit(cls.clp["SA"], REG_SA["Alarme18_00"], descricao="[SA]  Erro de Leitura na entrada analógica do Nível de Jusante")
         cls.condicionadores.append(c.CondicionadorBase(cls.l_alm_18_b_00, CONDIC_NORMALIZAR))
@@ -615,10 +615,10 @@ class ServicoAuxiliar:
         cls.condicionadores.append(c.CondicionadorBase(cls.l_alm_19_b_12, CONDIC_NORMALIZAR))
 
         cls.l_alm_19_b_13 = lei.LeituraModbusBit(cls.clp["SA"], REG_SA["Alarme19_13"], descricao="[SA]  Carregador de Baterias 01 - Fuga Terra - Positivo à Terra")
-        cls.condicionadores.append(c.CondicionadorBase(cls.l_alm_19_b_13, CONDIC_NORMALIZAR))
+        cls.condicionadores.append(c.CondicionadorBase(cls.l_alm_19_b_13, CONDIC_INDISPONIBILIZAR))
 
         cls.l_alm_19_b_14 = lei.LeituraModbusBit(cls.clp["SA"], REG_SA["Alarme19_14"], descricao="[SA]  Carregador de Baterias 01 - Fuga Terra - Negativo à Terra")
-        cls.condicionadores.append(c.CondicionadorBase(cls.l_alm_19_b_14, CONDIC_NORMALIZAR))
+        cls.condicionadores.append(c.CondicionadorBase(cls.l_alm_19_b_14, CONDIC_INDISPONIBILIZAR))
 
         cls.l_alm_20_b_06 = lei.LeituraModbusBit(cls.clp["SA"], REG_SA["Alarme20_06"], descricao="[SA]  Carregador de Baterias 02 - Sobretensão Vca Entrada do Carregador")
         cls.condicionadores.append(c.CondicionadorBase(cls.l_alm_20_b_06, CONDIC_NORMALIZAR))
@@ -642,13 +642,13 @@ class ServicoAuxiliar:
         cls.condicionadores.append(c.CondicionadorBase(cls.l_alm_20_b_12, CONDIC_NORMALIZAR))
 
         cls.l_alm_20_b_13 = lei.LeituraModbusBit(cls.clp["SA"], REG_SA["Alarme20_13"], descricao="[SA]  Carregador de Baterias 02 - Fuga Terra - Positivo à Terra")
-        cls.condicionadores.append(c.CondicionadorBase(cls.l_alm_20_b_13, CONDIC_NORMALIZAR))
+        cls.condicionadores.append(c.CondicionadorBase(cls.l_alm_20_b_13, CONDIC_INDISPONIBILIZAR))
 
         cls.l_alm_20_b_14 = lei.LeituraModbusBit(cls.clp["SA"], REG_SA["Alarme20_14"], descricao="[SA]  Carregador de Baterias 02 - Fuga Terra - Negativo à Terra")
-        cls.condicionadores.append(c.CondicionadorBase(cls.l_alm_20_b_14, CONDIC_NORMALIZAR))
+        cls.condicionadores.append(c.CondicionadorBase(cls.l_alm_20_b_14, CONDIC_INDISPONIBILIZAR))
 
         cls.l_alm_21_b_02 = lei.LeituraModbusBit(cls.clp["SA"], REG_SA["Alarme21_02"], descricao="[SA]  Torre de Resfriamento - Botão de Emergência Acionado")
-        cls.condicionadores.append(c.CondicionadorBase(cls.l_alm_21_b_02, CONDIC_NORMALIZAR))
+        cls.condicionadores_essenciais.append(c.CondicionadorBase(cls.l_alm_21_b_02, CONDIC_INDISPONIBILIZAR))
 
         cls.l_alm_21_b_03 = lei.LeituraModbusBit(cls.clp["SA"], REG_SA["Alarme21_03"], descricao="[SA]  Torre de Resfriamento - Trip Disjuntor Motor do Ventilador")
         cls.condicionadores.append(c.CondicionadorBase(cls.l_alm_21_b_03, CONDIC_NORMALIZAR))
