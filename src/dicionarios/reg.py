@@ -474,10 +474,10 @@ REG_CLP = {
         ## LEITURAS_ANALOGICAS
 
         "NV_MONTANTE":                                  30,
+        "NV_JUSANTE_GRADE_CP2":                         32,
+        "NV_JUSANTE_GRADE_CP1":                         34,
         "NV_JUSANTE_CP1":                               36,
         "NV_JUSANTE_CP2":                               38,
-        "NV_JUSANTE_GRADE_CP2_LER_FLH":                 32,
-        "NV_JUSANTE_GRADE_CP1_LER_FLH":                 34,
 
 
         ## ENTRADAS_DIGITAIS
@@ -498,11 +498,19 @@ REG_CLP = {
         # Unidade Hidráulica
         "UH_FILTRO_LIMPO":                              [1, 13],
 
+        ## COMANDOS LIMPA GRADES
+
+        "LG_CMD_RST_FLH":                               [7, 0],
+        "LG_CMD_LIMPEZA":                               [7, 2],
+
+        ## LIMPA_GRADES_PERMISSAO
+
+        "LG_PERMISSAO":                                 [24, 15],
+        "LG_PARADO":                                    [25, 3],
 
         ## LIMPA_GRADES_FALHAS
 
         "LG_FLH_ATUADA":                                [26, 15],
-
 
         ## LIMPA_GRADES_STATUS
 

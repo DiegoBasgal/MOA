@@ -173,6 +173,9 @@ class ControleEstados(State):
                 return ControleDados(self.usn)
 
             else:
+                logger.debug("Verificando operação do Limpa Grades...")
+                self.usn.tda.operar_limpa_grades()
+
                 return ControleReservatorio(self.usn)
 
 

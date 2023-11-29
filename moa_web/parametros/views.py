@@ -1,4 +1,6 @@
-from datetime import datetime
+import pytz
+
+from datetime import datetime, timedelta
 from django.shortcuts import render
 from django.contrib.auth.decorators import login_required
 from parametros.models import ParametrosUsina
@@ -11,14 +13,16 @@ def parametros_moa_view(request, *args, **kwargs):
     usina = ParametrosUsina.objects.get(id=1)
     context = {}
 
-
     if request.method == "POST":
         if request.POST.get("ativar_ma"):
             usina.modo_autonomo = 1
             usina.save()
+
+
         if request.POST.get("desativar_ma"):
             usina.modo_autonomo = 0
             usina.save()
+
 
         if request.POST.get("escolha_ugs0"):
             usina.modo_de_escolha_das_ugs = 0
@@ -26,11 +30,13 @@ def parametros_moa_view(request, *args, **kwargs):
             usina.ug2_prioridade = 0
             usina.save()
 
+
         if request.POST.get("escolha_ugs1"):
             usina.modo_de_escolha_das_ugs = 1
             usina.ug1_prioridade = 100
             usina.ug2_prioridade = 0
             usina.save()
+
 
         if request.POST.get("escolha_ugs2"):
             usina.modo_de_escolha_das_ugs = 2
@@ -38,10 +44,12 @@ def parametros_moa_view(request, *args, **kwargs):
             usina.ug2_prioridade = 100
             usina.save()
 
+
         if request.POST.get("bnv_alvo"):
             nv_alvo = float(request.POST.get("nv_alvo").replace(",", "."))
             usina.nv_alvo = nv_alvo if isinstance(nv_alvo, float) else usina.nv_alvo
             usina.save()
+
 
         if request.POST.get("salvar_params"):
 
@@ -118,13 +126,6 @@ def parametros_moa_view(request, *args, **kwargs):
             aux = float(request.POST.get("limite_pressao_turbina_ug1").replace(",", "."))
             usina.limite_pressao_turbina_ug1 = aux if isinstance(aux, float) else usina.limite_pressao_turbina_ug1
 
-            aux = float(request.POST.get("alerta_perda_grade_ug1").replace(",", "."))
-            usina.alerta_perda_grade_ug1 = aux if isinstance(aux, float) else usina.alerta_perda_grade_ug1
-
-            aux = float(request.POST.get("ug1_perda_grade_maxima").replace(",", "."))
-            usina.ug1_perda_grade_maxima = aux if isinstance(aux, float) else usina.ug1_perda_grade_maxima
-
-
 
             # UG2
             aux = request.POST.get("alerta_temperatura_fase_r_ug2")
@@ -199,13 +200,72 @@ def parametros_moa_view(request, *args, **kwargs):
             aux = float(request.POST.get("limite_pressao_turbina_ug2").replace(",", "."))
             usina.limite_pressao_turbina_ug2 = aux if isinstance(aux, float) else usina.limite_pressao_turbina_ug2
 
+            usina.timestamp = datetime.now()
+            usina.save()
+
+
+        if request.POST.get("salvar_perda"):
+
+            aux = float(request.POST.get("alerta_perda_grade_ug1").replace(",", "."))
+            usina.alerta_perda_grade_ug1 = aux if isinstance(aux, float) else usina.alerta_perda_grade_ug1
+
+            aux = float(request.POST.get("ug1_perda_grade_maxima").replace(",", "."))
+            usina.ug1_perda_grade_maxima = aux if isinstance(aux, float) else usina.ug1_perda_grade_maxima
+
             aux = float(request.POST.get("alerta_perda_grade_ug2").replace(",", "."))
             usina.alerta_perda_grade_ug2 = aux if isinstance(aux, float) else usina.alerta_perda_grade_ug2
 
             aux = float(request.POST.get("ug2_perda_grade_maxima").replace(",", "."))
             usina.ug2_perda_grade_maxima = aux if isinstance(aux, float) else usina.ug2_perda_grade_maxima
 
-            usina.timestamp = datetime.now()
+            usina.save()
+
+
+        if request.POST.get("salvar_trafo"):
+
+            aux = float(request.POST.get("alerta_temperatura_oleo_trafo").replace(",", "."))
+            usina.alerta_temperatura_oleo_trafo = aux if isinstance(aux, float) else usina.alerta_temperatura_oleo_trafo
+
+            aux = float(request.POST.get("limite_temperatura_oleo_trafo").replace(",", "."))
+            usina.limite_temperatura_oleo_trafo = aux if isinstance(aux, float) else usina.limite_temperatura_oleo_trafo
+
+            aux = float(request.POST.get("alerta_temperatura_enrolamento_trafo").replace(",", "."))
+            usina.alerta_temperatura_enrolamento_trafo = aux if isinstance(aux, float) else usina.alerta_temperatura_enrolamento_trafo
+
+            aux = float(request.POST.get("limite_temperatura_enrolamento_trafo").replace(",", "."))
+            usina.limite_temperatura_enrolamento_trafo = aux if isinstance(aux, float) else usina.limite_temperatura_enrolamento_trafo
+
+            usina.save()
+
+
+        if request.POST.get("disp_lg_r"):
+            usina.tempo_disparo_lg_d = 0
+            usina.tempo_disparo_lg_h = 0
+
+            usina.hora_disparo_lg = datetime.now(pytz.timezone("Brazil/East")).replace(tzinfo=None) + timedelta(days=usina.tempo_disparo_lg_d, hours=usina.tempo_disparo_lg_h)
+
+        elif request.POST.get("disp_lg_t"):
+            aux_d = int(request.POST.get("lg_d"))
+            usina.tempo_disparo_lg_d = aux_d
+
+            aux_h = int(request.POST.get("lg_h"))
+            usina.tempo_disparo_lg_h = aux_h
+
+            usina.hora_disparo_lg = datetime.now(pytz.timezone("Brazil/East")).replace(tzinfo=None) + timedelta(days=usina.tempo_disparo_lg_d, hours=usina.tempo_disparo_lg_h)
+
+            usina.tempo_disparo_lg_d = 0 if usina.tempo_disparo_lg_d < 0 else usina.tempo_disparo_lg_d
+            usina.tempo_disparo_lg_h = 0 if usina.tempo_disparo_lg_h < 0 else usina.tempo_disparo_lg_h
+
+            usina.save()
+
+
+        if request.POST.get("disp_lg_ug"):
+            aux = float(request.POST.get("lg_ug1"))
+            usina.valor_disparo_lg_perda_ug1 = aux if isinstance(aux, float) else usina.valor_disparo_lg_perda_ug1
+
+            aux = float(request.POST.get("lg_ug2"))
+            usina.valor_disparo_lg_perda_ug2 = aux if isinstance(aux, float) else usina.valor_disparo_lg_perda_ug2
+
             usina.save()
 
 
@@ -216,7 +276,6 @@ def parametros_moa_view(request, *args, **kwargs):
     if ((usina.modo_de_escolha_das_ugs == 2) and (usina.ug2_prioridade > usina.ug1_prioridade)):
         escolha_ugs = 2
 
-    context = {"escolha_ugs": escolha_ugs, "usina": usina}
 
     if usina.nv_alvo >= 462.37:
         context["tag_alvo"] = 3
@@ -232,6 +291,9 @@ def parametros_moa_view(request, *args, **kwargs):
 
     else:
         context["tag_alvo"] = -1
+
+
+    context = {"escolha_ugs": escolha_ugs, "usina": usina}
 
     return render(request, "parametros_moa.html", context=context)
 

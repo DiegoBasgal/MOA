@@ -12,10 +12,11 @@ import src.comporta as cp
 import src.dicionarios.dict as dct
 import src.funcoes.condicionadores as c
 
-from datetime import datetime
+from datetime import datetime, timedelta
 
-from src.funcoes.leitura import *
 from src.dicionarios.const import *
+from src.funcoes.leitura import *
+from src.funcoes.escrita import EscritaModBusBit as ESC
 
 from src.conectores.servidores import Servidores
 from src.conectores.banco_dados import BancoDados
@@ -48,11 +49,17 @@ class TomadaAgua:
             wordorder=False,
             descricao="[TDA] Leitura Nível Montante"
         )
-        self.status_limpa_grades = LeituraModbusBit(
+        self.perda_grade_1 = LeituraModbusFloat(
             self.clp["TDA"],
-            REG_CLP["TDA"]["LG_OPE_MANUAL"],
-            descricao="[TDA] Status Limpa Grades",
+            REG_CLP["TDA"]["NV_JUSANTE_GRADE_CP1"],
+            descricao="[TDA] Leitura Perda Grade CP1"
         )
+        self.perda_grade_2 = LeituraModbusFloat(
+            self.clp["TDA"],
+            REG_CLP["TDA"]["NV_JUSANTE_GRADE_CP2"],
+            descricao="[TDA] Leitura Perda Grade CP2"
+        )
+
         self.status_valvula_borboleta = LeituraModbusBit(
             self.clp["TDA"],
             REG_CLP["TDA"]["VB_FECHANDO"],
@@ -63,6 +70,13 @@ class TomadaAgua:
             REG_CLP["TDA"]["UH_DISPONIVEL"],
             descricao="[TDA] Status Unidade Hidáulica",
         )
+        self.status_limpa_grades = LeituraModbusBit(
+            self.clp["TDA"],
+            REG_CLP["TDA"]["LG_OPE_MANUAL"],
+            descricao="[TDA] Limpa Grades Manual",
+        )
+
+        self._modo_lg: "int" = 1
 
         self.erro_nivel: "float" = 0
         self.erro_nivel_anterior: "float" = 0
@@ -70,6 +84,11 @@ class TomadaAgua:
 
         self.condicionadores: "list[c.CondicionadorBase]" = []
         self.condicionadores_essenciais: "list[c.CondicionadorBase]" = []
+
+
+        # FINALIZAÇÃO DO __INIT__
+
+        self.iniciar_ultimo_estado_lg()
 
 
     def resetar_emergencia(self) -> "bool":
@@ -97,6 +116,89 @@ class TomadaAgua:
         self.nivel_montante_anterior = self.nivel_montante.valor
         self.erro_nivel_anterior = self.erro_nivel
         self.erro_nivel = self.nivel_montante_anterior - self.cfg["nv_alvo"]
+
+
+    def iniciar_ultimo_estado_lg(self) -> "None":
+        """
+        Função para extrair do banco de dados o último estado registrado do Limpa Grades
+        """
+
+        if self.l_lg_manual.valor:
+            return
+        else:
+            self._modo_lg = self.__bd.get_ultimo_estado_lg()[0]
+
+
+    def forcar_estado_disponivel_lg(self) -> "None":
+        """
+        Função para forçar o estado disponível no Limpa Grades.
+        """
+
+        self._modo_lg = LG_DISPONIVEL
+        self.__bd.update_estado_lg(LG_DISPONIVEL)
+
+
+    def forcar_estado_indisponivel_lg(self) -> "None":
+        """
+        Função para forçar o estado indisponível no Limpa Grades.
+        """
+
+        self._modo_lg = LG_INDISPONIVEL
+        self.__bd.update_estado_lg(LG_INDISPONIVEL)
+
+
+    def operar_limpa_grades(self) -> "None":
+        """
+        Função para operar o Limpa Grades.
+
+        Verifica se o Limpa Grades está em modo Manual ou Indisponível e caso esteja,
+        avisa o operador e segue com a operação normal.
+        Se o Limpa Grades estiver Disponível, extrai o dado com período de acionamento
+        do Banco, para comparar com o horário atual. Se a comparação dos horários estiver
+        dentro da faixa, inicia a operação.
+        """
+
+        perda_1 = self.__bd.get_disparo_perda_lg()[0]
+        perda_2 = self.__bd.get_disparo_perda_lg()[1]
+
+        horario = self.__bd.get_horario_operar_lg()
+        agora = datetime.now(pytz.timezone("Brazil/East")).replace(tzinfo=None)
+
+        if perda_1 >= self.perda_grade_1.valor or perda_2 >= self.perda_grade_2.valor:
+            logger.debug("")
+            logger.info(f"[TDA] Atenção! Foi identificado um valor de perda nas grades para disparo de Limpeza!")
+
+        elif agora <= horario[0] <= agora + timedelta(minutes=10):
+            logger.debug("")
+            logger.info(f"[TDA] Atenção! Enviando comando de Limpeza de Grades por período pré definido!")
+
+            prox_horario = agora + timedelta(days=horario[1], hours=horario[2], minutes=horario[3])
+            self.__bd.update_horario_operar_lg(prox_horario.strftime('%Y-%m-%d %H:%M:%S'))
+
+        else:
+            return
+
+        if self.l_lg_manual.valor:
+            logger.debug("[LG]  Não é possível operar o Limpa Grades em modo \"MANUAL\"")
+            return
+
+        elif self._modo_lg == LG_INDISPONIVEL:
+            logger.debug("[LG]  Não é possível operar o Limpa Grades no estado \"INDISPONÍVEL\"")
+            return
+
+        elif not self.l_lg_parado.valor:
+            logger.debug("[LG]  O Limpa Grades já está em operação.")
+            return
+
+        elif not self.l_lg_permissao.valor:
+            logger.debug("[LG]  Sem Permissão para operar o Limpa Grades.")
+            return
+
+        elif self._modo_lg == LG_DISPONIVEL:
+            logger.info(f"[LG]           Enviando comando:          \"OPERAR LIMPA GRADES\"")
+            ESC.escrever_bit(self.clp["TDA"], REG_CLP["TDA"]["LG_CMD_RST_FLH"], valor=1)
+            ESC.escrever_bit(self.clp["TDA"], REG_CLP["TDA"]["LG_CMD_LIMPEZA"], valor=1)
+            return
 
 
     def verificar_condicionadores(self) -> "list[c.CondicionadorBase]":
@@ -201,6 +303,8 @@ class TomadaAgua:
         self.l_falha_atuada_lg = LeituraModbusBit(self.clp["TDA"], REG_CLP["TDA"]["LG_FLH_ATUADA"], descricao="[TDA] Limpa Grades Falha")
         self.l_falha_ler_nv_montante = LeituraModbusBit(self.clp["TDA"], REG_CLP["TDA"]["NV_MONTANTE_LER_FLH"], descricao="[TDA] Nível Montante Falha")
         self.l_filtro_limpo_uh = LeituraModbusBit(self.clp["TDA"], REG_CLP["TDA"]["UH_FILTRO_LIMPO"], invertido=True, descricao="[TDA] UHTDA Filtro Sujo")
+        self.l_lg_parado = LeituraModbusBit(self.clp["TDA"], REG_CLP["TDA"]["LG_PARADO"], descricao="[TDA] Limpa Grades Parado")
+        self.l_lg_permissao = LeituraModbusBit(self.clp["TDA"], REG_CLP["TDA"]["LG_PERMISSAO"], descricao="[TDA] Limpa Grades Permissivos")
         self.l_lg_manual = LeituraModbusBit(self.clp["TDA"], REG_CLP["TDA"]["LG_OPE_MANUAL"], descricao="[TDA] Limpa Grades Operação Manual")
         self.l_nv_jusante_cp1 = LeituraModbusBit(self.clp["TDA"], REG_CLP["TDA"]["NV_JUSANTE_CP1_LER_FLH"], descricao="[TDA] Falha Leitura Nível Justante Comporta 1")
         self.l_nv_jusante_cp2 = LeituraModbusBit(self.clp["TDA"], REG_CLP["TDA"]["NV_JUSANTE_CP2_LER_FLH"], descricao="[TDA] Falha Leitura Nível Justante Comporta 2")
