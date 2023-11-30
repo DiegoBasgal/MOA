@@ -49,7 +49,7 @@ class UnidadeGeracao:
 
         self.__leitura_potencia = lei.LeituraModbus(
             self.clp[f"UG{self.id}"],
-            REG_UG[f"UG{self.id}"][""],
+            REG_UG[f"UG{self.id}"]["POTENCIA_ATIVA_MEDIA"],
             descricao=f"[UG{self.id}] Leitura Potência"
         )
         self.__leitura_etapa_atual = lei.LeituraModbus(
@@ -510,7 +510,7 @@ class UnidadeGeracao:
 
         try:
             logger.debug(f"[UG{self.id}]          Enviando comando:          \"TRIP LÓGICO\"")
-            self.clp[f"UG{self.id}"].write_single_register(REG_UG[f"UG{self.id}"][""], valor=1)
+            self.clp[f"UG{self.id}"].write_single_register(REG_UG[f"UG{self.id}"]["CMD_OPER_EMERGENCIA_LIGAR"], valor=1)
 
         except Exception:
             logger.error(f"[UG{self.id}] Não foi possivel acionar o comando de TRIP: \"Lógico\".")
