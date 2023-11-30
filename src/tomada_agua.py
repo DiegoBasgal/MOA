@@ -183,27 +183,47 @@ class TomadaAgua:
         else:
             return
 
-        if self.l_lg_manual.valor:
-            logger.debug("[LG]  Não é possível operar o Limpa Grades em modo \"MANUAL\"")
-            return
-
-        elif self._modo_lg == LG_INDISPONIVEL:
-            logger.debug("[LG]  Não é possível operar o Limpa Grades no estado \"INDISPONÍVEL\"")
-            return
-
-        elif not self.l_lg_parado.valor:
-            logger.debug("[LG]  O Limpa Grades já está em operação.")
-            return
-
-        elif not self.l_lg_permissao.valor:
-            logger.debug("[LG]  Sem Permissão para operar o Limpa Grades.")
-            return
-
-        elif self._modo_lg == LG_DISPONIVEL:
+        if self.verificar_condicoes_lg() and self._modo_lg == LG_DISPONIVEL:
             logger.debug(f"[LG]           Enviando comando:          \"OPERAR LIMPA GRADES\"")
             # ESC.escrever_bit(self.clp["TDA"], REG_CLP["TDA"]["LG_CMD_RST_FLH"], valor=1)
             # ESC.escrever_bit(self.clp["TDA"], REG_CLP["TDA"]["LG_CMD_LIMPEZA"], valor=1)
             return
+
+
+    def verificar_condicoes_lg(self) -> "bool":
+        """
+        Função para verificar as pré-condições de operação do Limpa Grades.
+        """
+
+        flags = 0
+
+        try:
+            if self.l_lg_manual.valor:
+                logger.debug("[LG]  Não é possível operar o Limpa Grades em modo \"MANUAL\"")
+                flags += 1
+
+            elif self._modo_lg == LG_INDISPONIVEL:
+                logger.debug("[LG]  Não é possível operar o Limpa Grades no estado \"INDISPONÍVEL\"")
+                flags += 1
+
+            elif not self.l_lg_parado.valor:
+                logger.debug("[LG]  O Limpa Grades já está em operação.")
+                flags += 1
+
+            elif not self.l_lg_permissao.valor:
+                logger.debug("[LG]  Sem Permissão para operar o Limpa Grades.")
+                flags += 1
+
+
+            logger.warning(f"[LG]  Foram identificadas \"{flags}\" condições de bloqueio para operação do Limpa Grades. Favor normalizar.") \
+                if flags > 0 else logger.debug("[LG]  Condições de operação validadas.")
+
+            return False if flags > 0 else True
+
+        except Exception:
+            logger.exception(f"[LG]  Houve um erro ao verificar as pré-condições do Limpa Grades.")
+            logger.debug(f"[LG]  Traceback: {traceback.format_exc()}")
+            return False
 
 
     def verificar_condicionadores(self) -> "list[c.CondicionadorBase]":
