@@ -58,7 +58,9 @@ class BancoDados:
         """
 
         self.cursor.execute(
-            f"SELECT hora_disparo_lg, tempo_disparo_lg_d, tempo_disparo_lg_h, tempo_disparo_lg_m "
+            "SELECT horario_disparo_lg, "
+                "t_dias_disparo_lg, "
+                "t_horas_disparo_lg "
             "FROM parametros_parametrosusina "
             "WHERE id = 1;"
         )
@@ -71,7 +73,8 @@ class BancoDados:
         """
 
         self.cursor.execute(
-            f"SELECT valor_disparo_lg_perda_ug1, valor_disparo_lg_perda_ug2"
+            "SELECT valor_disparo_lg_p1, "
+                "valor_disparo_lg_p2 "
             "FROM parametros_parametrosusina "
             "WHERE id = 1;"
         )
@@ -238,21 +241,22 @@ class BancoDados:
         """
 
         self.cursor.execute(
-            "UPADTE parametros_parametrosusina "
+            "UPDATE parametros_parametrosusina "
             f"SET modo_lg = {valor} "
             "WHERE id = 1;",
         )
         self.conn.commit()
 
-    def update_horario_operar_lg(self, valor: "str") -> "None":
+    def update_horario_operar_lg(self, valor: "list") -> "None":
         """
         Função para atualizar o último estado do Limpa Grades no Banco.
         """
 
         self.cursor.execute(
-            "UPADTE parametros_parametrosusina "
-            f"SET hora_disparo_lg = {valor} "
+            "UPDATE parametros_parametrosusina "
+            "SET horario_disparo_lg = %s "
             "WHERE id = 1;",
+            tuple(valor)
         )
         self.conn.commit()
 

@@ -86,11 +86,6 @@ class TomadaAgua:
         self.condicionadores_essenciais: "list[c.CondicionadorBase]" = []
 
 
-        # FINALIZAÇÃO DO __INIT__
-
-        self.iniciar_ultimo_estado_lg()
-
-
     def resetar_emergencia(self) -> "bool":
         """
         Função para acionar comandos de reset de TRIPS/Alarmes
@@ -158,22 +153,32 @@ class TomadaAgua:
         dentro da faixa, inicia a operação.
         """
 
-        perda_1 = self.__bd.get_disparo_perda_lg()[0]
-        perda_2 = self.__bd.get_disparo_perda_lg()[1]
+        perda = self.__bd.get_disparo_perda_lg()
+        perda_1 = perda[0]
+        perda_2 = perda[1]
 
         horario = self.__bd.get_horario_operar_lg()
         agora = datetime.now(pytz.timezone("Brazil/East")).replace(tzinfo=None)
 
         if perda_1 >= self.perda_grade_1.valor or perda_2 >= self.perda_grade_2.valor:
             logger.debug("")
-            logger.info(f"[TDA] Atenção! Foi identificado um valor de perda nas grades para disparo de Limpeza!")
+            logger.debug(f"[TDA] Atenção! Foi identificado um valor de perda nas grades para disparo de Limpeza!")
 
-        elif agora <= horario[0] <= agora + timedelta(minutes=10):
+        elif agora <= horario[0] <= agora + timedelta(minutes=5):
             logger.debug("")
-            logger.info(f"[TDA] Atenção! Enviando comando de Limpeza de Grades por período pré definido!")
+            logger.debug(f"[TDA] Atenção! Enviando comando de Limpeza de Grades por período pré definido!")
 
-            prox_horario = agora + timedelta(days=horario[1], hours=horario[2], minutes=horario[3])
-            self.__bd.update_horario_operar_lg(prox_horario.strftime('%Y-%m-%d %H:%M:%S'))
+            prox_horario = agora + timedelta(days=horario[1], hours=horario[2])
+            self.__bd.update_horario_operar_lg([prox_horario.strftime('%Y-%m-%d %H:%M:%S')])
+
+        elif agora + timedelta(minutes=6) > horario[0]:
+            logger.debug("")
+            logger.debug(f"[TDA] Atenção! Foi identificado que o horário para a limpeza de grades passou do período estipulado.")
+            logger.debug(f"[TDA] Reagendando limpeza para o próximo horário...")
+
+            prox_horario = agora + timedelta(days=horario[1], hours=horario[2])
+            self.__bd.update_horario_operar_lg([prox_horario.strftime('%Y-%m-%d %H:%M:%S')])
+            return
 
         else:
             return
@@ -195,9 +200,9 @@ class TomadaAgua:
             return
 
         elif self._modo_lg == LG_DISPONIVEL:
-            logger.info(f"[LG]           Enviando comando:          \"OPERAR LIMPA GRADES\"")
-            ESC.escrever_bit(self.clp["TDA"], REG_CLP["TDA"]["LG_CMD_RST_FLH"], valor=1)
-            ESC.escrever_bit(self.clp["TDA"], REG_CLP["TDA"]["LG_CMD_LIMPEZA"], valor=1)
+            logger.debug(f"[LG]           Enviando comando:          \"OPERAR LIMPA GRADES\"")
+            # ESC.escrever_bit(self.clp["TDA"], REG_CLP["TDA"]["LG_CMD_RST_FLH"], valor=1)
+            # ESC.escrever_bit(self.clp["TDA"], REG_CLP["TDA"]["LG_CMD_LIMPEZA"], valor=1)
             return
 
 

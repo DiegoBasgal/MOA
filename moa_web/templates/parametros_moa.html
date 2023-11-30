@@ -191,12 +191,12 @@
         <div style="justify-content: center; display: flex; margin-top: 10px;">
             <form method='post' action='/parametros_moa/'>
                 {% csrf_token %}
-                <div style="margin-left: 20px;">
+                <div>
                     <table>
                         <tr>
                             <td  style="text-align: center;">
                                 <label style="font-size: 18px;"><b>Disparo por Período: </b></label>
-                                <label style="font-size: 14px;">{{ usina.hora_disparo_lg|date:"j-n-o H:i:s" }}</label>
+                                <label style="font-size: 14px;">{{ usina.horario_disparo_lg|date:"j-n-o H:i:s" }}</label>
                             </td>
                             <td  style="text-align: center;">
                                 <label style="font-size: 18px; margin-left: 50px;"><b>Disparo por Perda na Grade: </b></label>
@@ -205,17 +205,17 @@
                         <tr style="text-align: center;">
                             <td>
                                 <label style="font-size: 17px;">Dias: </label>
-                                <input id="lg_d_text" name="lg_d" size=1 value="{{usina.tempo_disparo_lg_d}}"/>
+                                <input id="lg_d_text" name="lg_d" size=1 value="{{usina.t_dias_disparo_lg}}"/>
                                 <label style="margin-left: 3px; font-size: 17px;">Horas: </label>
-                                <input id="lg_h_text" name="lg_h" size=1 value="{{usina.tempo_disparo_lg_h}}"/>
+                                <input id="lg_h_text" name="lg_h" size=1 value="{{usina.t_horas_disparo_lg}}"/>
                                 <input style="padding-top: 2px; padding-bottom: 2px;" id="submit" type="submit" name="disp_lg_t" value="Salvar"/>
                                 <input style="padding-top: 2px; padding-bottom: 2px;" id="submit" type="submit" name="disp_lg_r" value="Reset"/>
                             </td>
                             <td>
                                 <label style="margin-left: 51px; font-size: 17px;">UG1: </label>
-                                <input id="lg_ug1_text" name="lg_ug1" size=1 value="{{usina.valor_disparo_lg_perda_ug1}}"/>
+                                <input id="lg_ug1_text" name="lg_ug1" size=1 value="{{usina.valor_disparo_lg_p1}}"/>
                                 <label style="margin-left: 10px; font-size: 17px;">UG2: </label>
-                                <input id="lg_ug2_text" name="lg_ug2" size=1 value="{{usina.valor_disparo_lg_perda_ug2}}"/>
+                                <input id="lg_ug2_text" name="lg_ug2" size=1 value="{{usina.valor_disparo_lg_p2}}"/>
                                 <input style="padding-top: 2px; padding-bottom: 2px;" id="submit" type="submit" name="disp_lg_ug" value="Salvar"/>
                             </td>
                         </tr>

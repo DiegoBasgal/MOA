@@ -239,32 +239,32 @@ def parametros_moa_view(request, *args, **kwargs):
 
 
         if request.POST.get("disp_lg_r"):
-            usina.tempo_disparo_lg_d = 0
-            usina.tempo_disparo_lg_h = 0
+            usina.t_dias_disparo_lg = 0
+            usina.t_horas_disparo_lg = 0
 
-            usina.hora_disparo_lg = datetime.now(pytz.timezone("Brazil/East")).replace(tzinfo=None) + timedelta(days=usina.tempo_disparo_lg_d, hours=usina.tempo_disparo_lg_h)
+            usina.horario_disparo_lg = datetime.now(pytz.timezone("Brazil/East")).replace(tzinfo=None, minute=0, second=0, microsecond=0) + timedelta(days=usina.t_dias_disparo_lg, hours=usina.t_horas_disparo_lg)
 
         elif request.POST.get("disp_lg_t"):
             aux_d = int(request.POST.get("lg_d"))
-            usina.tempo_disparo_lg_d = aux_d
+            usina.t_dias_disparo_lg = aux_d
 
             aux_h = int(request.POST.get("lg_h"))
-            usina.tempo_disparo_lg_h = aux_h
+            usina.t_horas_disparo_lg = aux_h
 
-            usina.hora_disparo_lg = datetime.now(pytz.timezone("Brazil/East")).replace(tzinfo=None) + timedelta(days=usina.tempo_disparo_lg_d, hours=usina.tempo_disparo_lg_h)
+            usina.horario_disparo_lg = datetime.now(pytz.timezone("Brazil/East")).replace(tzinfo=None, minute=0, second=0, microsecond=0) + timedelta(days=usina.t_dias_disparo_lg, hours=usina.t_horas_disparo_lg)
 
-            usina.tempo_disparo_lg_d = 0 if usina.tempo_disparo_lg_d < 0 else usina.tempo_disparo_lg_d
-            usina.tempo_disparo_lg_h = 0 if usina.tempo_disparo_lg_h < 0 else usina.tempo_disparo_lg_h
+            usina.t_dias_disparo_lg = 0 if usina.t_dias_disparo_lg < 0 else usina.t_dias_disparo_lg
+            usina.t_horas_disparo_lg = 0 if usina.t_horas_disparo_lg < 0 else usina.t_horas_disparo_lg
 
             usina.save()
 
 
         if request.POST.get("disp_lg_ug"):
             aux = float(request.POST.get("lg_ug1"))
-            usina.valor_disparo_lg_perda_ug1 = aux if isinstance(aux, float) else usina.valor_disparo_lg_perda_ug1
+            usina.valor_disparo_lg_p1 = aux if isinstance(aux, float) else usina.valor_disparo_lg_p1
 
             aux = float(request.POST.get("lg_ug2"))
-            usina.valor_disparo_lg_perda_ug2 = aux if isinstance(aux, float) else usina.valor_disparo_lg_perda_ug2
+            usina.valor_disparo_lg_p2 = aux if isinstance(aux, float) else usina.valor_disparo_lg_p2
 
             usina.save()
 

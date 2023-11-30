@@ -45,12 +45,11 @@ class ParametrosUsina(models.Model):
 
     # Limpa Grades
     modo_lg = models.IntegerField(default=1)
-    hora_disparo_lg = models.DateTimeField(blank=False, default=datetime.now(pytz.timezone("Brazil/East")).strftime("%Y-%m-%d %H:%M:%S"))
-    tempo_disparo_lg_d = models.IntegerField(default=0)
-    tempo_disparo_lg_h = models.IntegerField(default=0)
-    tempo_disparo_lg_m = models.IntegerField(default=0)
-    valor_disparo_lg_perda_ug1 = models.DecimalField(max_digits=5, decimal_places=2, default=0.3)
-    valor_disparo_lg_perda_ug2 = models.DecimalField(max_digits=5, decimal_places=2, default=0.3)
+    horario_disparo_lg = models.DateTimeField(blank=False, default=datetime.now(pytz.timezone("Brazil/East")).strftime("%Y-%m-%d %H:%M:%S"))
+    t_dias_disparo_lg = models.IntegerField(default=0)
+    t_horas_disparo_lg = models.IntegerField(default=0)
+    valor_disparo_lg_p1 = models.DecimalField(max_digits=5, decimal_places=2, default=0.3)
+    valor_disparo_lg_p2 = models.DecimalField(max_digits=5, decimal_places=2, default=0.3)
 
     # Potência
     pot_minima = models.DecimalField(max_digits=10, decimal_places=0, default=911)

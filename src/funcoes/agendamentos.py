@@ -30,6 +30,7 @@ class Agendamentos:
         self.segundos_passados = 0
         self.segundos_adiantados = 0
 
+
     def verificar_agendamentos_pendentes(self) -> "list":
         """
         Função para extrair lista de agendamentos não executados do Banco de Dados.
@@ -43,6 +44,7 @@ class Agendamentos:
             pendentes.append(ag)
 
         return pendentes
+
 
     def verificar_agendamentos_iguais(self, agendamentos) -> "None":
         """
@@ -65,6 +67,7 @@ class Agendamentos:
 
             i += 1
             j = len(agendamentos)
+
 
     def verificar_agendamentos(self) -> "bool":
         """
@@ -116,6 +119,7 @@ class Agendamentos:
                 self.db.update_agendamento(agendamento[0], executado=1)
                 logger.debug(f"[AGN] Agendamento executado:              \"{AGN_STR_DICT[agendamentos[i-1][3]] if agendamentos[i-1][3] in AGN_STR_DICT else 'Inexistente'}\"")
 
+
     def verificar_agendamentos_atrasados(self, agendamento) -> "None":
         """
         Função para verificar se os agendamentos esão atrasados.
@@ -157,6 +161,7 @@ class Agendamentos:
                     self.db.update_agendamento(int(agendamento[0]), 1, obs="AGENDAMENTO NÃO EXECUTADO POR CONTA DE ATRASO!")
                     agn_atrasados += 1
 
+
     def verificar_agendamentos_sem_efeito(self, agendamento) -> "None":
         """
         Função para verificar se o agendamento possui algum efeito no modo atual
@@ -170,6 +175,7 @@ class Agendamentos:
 
         if not self.usn.modo_autonomo and not self.db.get_executabilidade(agendamento[3])["executavel_em_manual"]:
             self.db.update_agendamento(agendamento[0], True, obs="Este agendamento não tem efeito com o módulo em modo manual. Executado sem realizar nenhuma ação")
+
 
     def verificar_agendamentos_usina(self, agendamento) -> None:
         """
