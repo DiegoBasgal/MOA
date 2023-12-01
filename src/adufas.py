@@ -2,6 +2,7 @@ __version__ = "0.1"
 __author__ = "Diego Basgal", "Henrique Pfeifer"
 __description__ = "Este módulo corresponde a implementação da operação das Adufas."
 
+import pytz
 import logging
 import traceback
 
@@ -9,6 +10,9 @@ import src.tomada_agua as tda
 import src.funcoes.leitura as lei
 import src.funcoes.condicionadores as c
 import src.conectores.servidores as serv
+import src.conectores.banco_dados as bd
+
+from datetime import datetime
 
 from src.dicionarios.reg import *
 from src.dicionarios.const import *
@@ -23,6 +27,7 @@ class Adufas:
     __split2: "bool" = False
 
     clp = serv.Servidores.clp
+    bd: "bd.BancoDados" = None
 
     condicionadores: "list[c.CondicionadorBase]" = []
     condicionadores_essenciais: "list[c.CondicionadorBase]" = []
@@ -48,9 +53,17 @@ class Adufas:
                 descricao=f"[AD][CP{self.id}] Leitura Posição"
             )
 
+
             self.setpoint: "int" = 0
             self.setpoint_maximo: "int" = 0
             self.setpoint_anterior: "int" = 0
+
+            self.k: "float" = 1000
+            self.kp: "float" = 1
+            self.ki: "float" = 0.5
+
+            self.controle_i: "float" = 0.0
+            self.controle_p: "float" = 0.0
 
             self.espera: "bool" = False
             self.operando: "bool" = False
@@ -71,64 +84,75 @@ class Adufas:
 
         def enviar_setpoint(self, setpoint: "int") -> "None":
             try:
-                logger.debug(f"[AD][CP{self.id}]      Enviando setpoint:         {int(setpoint)}")
+                logger.debug(f"[AD][CP{self.id}]      Enviando setpoint:         {int(setpoint)} mm")
 
-                if setpoint > 1:
-                    self.setpoint = int(setpoint)
-                    self.clp["AD"].write_single_register(REG_AD[f"CP_0{self.id}_SP_POS"], int(self.setpoint))
+                self.clp["AD"].write_single_register(REG_AD[f"CP_0{self.id}_SP_POS"], int(self.setpoint))
 
             except Exception:
                 logger.error(f"[AD][CP{self.id}] Não foi possivel enviar o setpoint para a Comporta.")
                 logger.debug(traceback.format_exc())
 
 
+        def controle_comporta(self, valor: "float") -> "int":
+
+            nv_montante = tda.TomadaAgua.nivel_montante.valor
+
+            erro = nv_montante - valor
+            self.controle_p = self.kp * erro
+            self.controle_i = min(max(0, self.ki * erro + self.controle_i), 6000)
+
+            acao_controle = self.k * (self.controle_p + self.controle_i)
+            acao_controle = min(max(0, acao_controle), 6000)
+
+            return acao_controle
+
+
     cp1 = Comporta(1)
     cp2 = Comporta(2)
     cps: "list[Comporta]" = [cp1, cp2]
 
-
     @classmethod
-    def calcular_setpoint(cls) -> "int":
+    def verificar_condicionadores(cls) -> "list[c.CondicionadorBase]":
+        """
+        Função para verificação de TRIPS/Alarmes.
 
-        tda.TomadaAgua.nivel_montante.valor
+        Verifica os condicionadores ativos e retorna lista com os mesmos para a função de verificação
+        da Classe da Usina determinar as ações necessárias.
+        """
 
-        return
+        autor = 0
 
+        if True in (condic.ativo for condic in cls.condicionadores_essenciais):
+            condics_ativos = [condic for condics in [cls.condicionadores_essenciais, cls.condicionadores] for condic in condics if condic.ativo]
 
-    @classmethod
-    def distribuir_setpoint(cls, sp_alvo: "int") -> "None":
-
-        cls.__split1 = True if sp > 0 else cls.__split1
-        cls.__split2 = True if sp > 0.5 else cls.__split2
-
-        cls.__split2 = False if sp < 0.5 else cls.__split2
-        cls.__split1 = False if sp == 0 else cls.__split1
-
-        if len(cls.cps) == 2:
-            if cls.__split2:
-                cls.cps[0].setpoint = sp * cls.cps[0].setpoint_maximo
-                cls.cps[1].setpoint = sp * cls.cps[1].setpoint_maximo
-
-            elif cls.__split1:
-                sp = sp * 2 / 1
-                cls.cps[0].setpoint = sp * cls.cps[0].setpoint_maximo
-                cls.cps[1].setpoint = 0
+            logger.debug("")
+            if cls.condicionadores_ativos == []:
+                logger.warning(f"[AD]  Foram detectados Condicionadores ativos no Serviço Auxiliar!")
 
             else:
-                cls.cps[0].setpoint = 0
-                cls.cps[1].setpoint = 0
+                logger.info(f"[AD]  Ainda há Condicionadores ativos no Serviço Auxiliar!")
 
-            logger.debug(f"[AD][CP{cls.cps[0].id}] SP    <-                       {int(cls.cps[0].setpoint)}")
-            logger.debug(f"[AD][CP{cls.cps[0].id}] SP    <-                       {int(cls.cps[1].setpoint)}")
+            for condic in condics_ativos:
+                if condic in cls.condicionadores_ativos:
+                    logger.debug(f"[AD]  Descrição: \"{condic.descricao}\", Gravidade: \"{CONDIC_STR_DCT[condic.gravidade] if condic.gravidade in CONDIC_STR_DCT else 'Desconhecida'}\"")
+                    continue
 
-        elif len(cls.cps) == 1:
-            if cls.__split1:
+                else:
+                    logger.warning(f"[AD]  Descrição: \"{condic.descricao}\", Gravidade: \"{CONDIC_STR_DCT[condic.gravidade] if condic.gravidade in CONDIC_STR_DCT else 'Desconhecida'}\"")
+                    cls.condicionadores_ativos.append(condic)
+                    cls.bd.update_alarmes([
+                        datetime.now(pytz.timezone("Brazil/East")).replace(tzinfo=None),
+                        condic.gravidade,
+                        condic.descricao,
+                        "X" if autor == 0 else ""
+                    ])
 
-                cls.cps[0].setpoint = 2 * sp * cls.cps[0].setpoint_maximo
+            logger.debug("")
+            return condics_ativos
 
-            else:
-                cls.cps[0].setpoint = 0
-
+        else:
+            cls.condicionadores_ativos = []
+            return []
 
     @classmethod
     def carregar_leituras(cls) -> "None":
