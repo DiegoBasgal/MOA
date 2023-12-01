@@ -266,8 +266,6 @@ class TomadaAgua:
         cls.l_alm_25_b_14 = lei.LeituraModbusBit(cls.clp["TDA"], REG_TDA["Alarme25_14"], descricao="[TDA] Comporta 04 - Falha nos Sensores de Posição")
         cls.condicionadores.append(c.CondicionadorBase(cls.l_alm_25_b_14, CONDIC_NORMALIZAR))
 
-
-        
         cls.l_alm_26_b_01 = lei.LeituraModbusBit(cls.clp["TDA"], REG_TDA["Alarme26_01"], descricao="[TDA] Sensor de Fumaça Atuado")
         cls.condicionadores.append(c.CondicionadorBase(cls.l_alm_26_b_01, CONDIC_NORMALIZAR))
 
@@ -279,8 +277,6 @@ class TomadaAgua:
 
         cls.l_alm_26_b_05 = lei.LeituraModbusBit(cls.clp["TDA"], REG_TDA["Alarme26_05"], descricao="[TDA] Sensor de Presença Inibido")
         cls.condicionadores.append(c.CondicionadorBase(cls.l_alm_26_b_05, CONDIC_NORMALIZAR))
-
-        
 
         cls.l_alm_26_b_07 = lei.LeituraModbusBit(cls.clp["TDA"], REG_TDA["Alarme26_07"], descricao="[TDA] Erro de Leitura na entrada analógica da temperatura do Óleo da UHTA01")
         cls.condicionadores.append(c.CondicionadorBase(cls.l_alm_26_b_07, CONDIC_NORMALIZAR))

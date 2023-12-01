@@ -268,14 +268,14 @@ class Subestacao:
         cls.l_alm_01_b_12 = lei.LeituraModbusBit(cls.clp["SA"], REG_SE["Alarme01_12"], descricao="[SE]  Relé de Proteção SEL787 - TRIP")
         cls.condicionadores_essenciais.append(c.CondicionadorBase(cls.l_alm_01_b_12, CONDIC_NORMALIZAR))
 
+        cls.l_alm_02_b_00 = lei.LeituraModbusBit(cls.clp["SA"], REG_SE["Alarme02_00"], descricao="[SE]  Relé de Proteção SEL311C - TRIP")
+        cls.condicionadores_essenciais.append(c.CondicionadorBase(cls.l_alm_02_b_00, CONDIC_NORMALIZAR))
+
         cls.l_alm_01_b_13 = lei.LeituraModbusBit(cls.clp["SA"], REG_SE["Alarme01_13"], descricao="[SE]  Relé de Proteção SEL787 - Falha 50/62BF")
         cls.condicionadores.append(c.CondicionadorBase(cls.l_alm_01_b_13, CONDIC_INDISPONIBILIZAR))
 
         cls.l_alm_01_b_14 = lei.LeituraModbusBit(cls.clp["SA"], REG_SE["Alarme01_14"], descricao="[SE]  Relé de Proteção SEL787 - Falha de Hardware")
         cls.condicionadores.append(c.CondicionadorBase(cls.l_alm_01_b_14, CONDIC_NORMALIZAR))
-
-        cls.l_alm_02_b_00 = lei.LeituraModbusBit(cls.clp["SA"], REG_SE["Alarme02_00"], descricao="[SE]  Relé de Proteção SEL311C - TRIP")
-        cls.condicionadores_essenciais.append(c.CondicionadorBase(cls.l_alm_02_b_00, CONDIC_NORMALIZAR))
 
         cls.l_alm_02_b_01 = lei.LeituraModbusBit(cls.clp["SA"], REG_SE["Alarme02_01"], descricao="[SE]  Relé de Proteção SEL311C - Falha 50/62BF")
         cls.condicionadores.append(c.CondicionadorBase(cls.l_alm_02_b_01, CONDIC_INDISPONIBILIZAR))
