@@ -93,10 +93,19 @@ REG_SA = {
     ## LEITURAS
     "RESET_ALARMES":                            6 + 12764,                      # Leituras.PainelResetAlarmes
     "RECONHECE_ALARMES":                        7 + 12764,                      # Leituras.PainelReconheceAlarmes
+
     "EMERGENCIA_USINA":                         8 + 12764,                      # Leituras.Usina_Emergencia_Info
+    "EMERGENCIA_ACIONADA":                      [8 + 12764, 0],                 # Usina.Emergencia.Acionada
+    "EMERGENCIA_SIRENE_LIG":                    [8 + 12764, 1],                 # Usina.Emergencia.Sireneligada
+    "EMERGENCIA_MODO_REMOTO":                   [8 + 12764, 2],                 # Usina.Emergencia.Usina_OpercaoModoRemoto
+    "EMERGENCIA_MODO_LOCAL":                    [8 + 12764, 3],                 # Usina.Emergencia.Usina_OpercaoModoLocal
 
     # Carregador de Baterias
     "CB_INFO":                                  10 + 12764,                     # Leituras.CarregadorBateria_Info
+    "CB_EQUALIZACAO":                           [10 + 12764, 0],                # CarregadorBaterias.Info.Equalizacao
+    "CB_ALARME":                                [10 + 12764, 1],                # CarregadorBaterias.Info.Alarme
+    "CB_LIGADO":                                [10 + 12764, 2],                # CarregadorBaterias.Info.Ligado
+
     "CB_UENTRADA":                              11 + 12764,                     # Leituras.CarregadorBateria_UEntrada
     "CB_USAIDA":                                12 + 12764,                     # Leituras.CarregadorBateria_USaida
     "CB_IENTRADA":                              13 + 12764,                     # Leituras.CarregadorBateria_IEntrada
@@ -109,6 +118,13 @@ REG_SA = {
 
     # Gerador Diesel
     "GD_INFO":                                  15 + 12764,                     # Leituras.GrupoDiesel_Info
+    "GD_LIGADO":                                [15 + 12764, 0],                # GrupoDiesel.Info.Ligado
+    "GD_DESLIGADO":                             [15 + 12764, 1],                # GrupoDiesel.Info.Desligado
+    "GD_MANUAL":                                [15 + 12764, 2],                # GrupoDiesel.Info.Manual
+    "GD_AUTOMATICO":                            [15 + 12764, 3],                # GrupoDiesel.Info.Automatico
+    "GD_TESTE":                                 [15 + 12764, 4],                # GrupoDiesel.Info.Teste
+    "GD_COMB_MENOR30":                          [15 + 12764, 5],                # GrupoDiesel.Info.[Comb<30]
+
     "GD_NIVEL_COMBUS":                          16 + 12764,                     # Leituras.GrupoDiesel_NivelCombustivel
     "GD_ROTACAO":                               17 + 12764,                     # Leituras.GrupoDiesel_RotacaoMotor
     "GD_TENSAO_BATERIA":                        18 + 12764,                     # Leituras.GrupoDiesel_TensaoBateria
@@ -121,18 +137,24 @@ REG_SA = {
     "GD_TENSAO_L3L1":                           194 + 12764,                    # Leituras.GD_TensaoL3L1
     "GD_FREQUANCIA":                            195 + 12764,                    # Leituras.GD_Frequencia
     "GD_TEMPAGUA":                              196 + 12764,                    # Leituras.GD_TempAgua
-
-    # Vazão
-    "VAZAO_TURBINADA_UG01":                     208 + 12764,                    # Leituras.VazaoTurbinada_UG01
-    "VAZAO_TURBINADA_UG02":                     209 + 12764,                    # Leituras.VazaoTurbinada_UG02
-    "VAZAO_TURBINADA_UG03":                     210 + 12764,                    # Leituras.VazaoTurbinada_UG03
-    "VAZAO_TURBINADA_UG04":                     211 + 12764,                    # Leituras.VazaoTurbinada_UG04
-    "VAZAO_TURBINADA":                          212 + 12764,                    # Leituras.VazaoTurbinada
-    "VAZAO_RIO":                                213 + 12764,                    # Leituras.VazaoRio
-    "VAZAO_VERTEDOR":                           214 + 12764,                    # Leituras.VazaoVertedor
-    "VAZAO_ADUFA_01":                           215 + 12764,                    # Leituras.VazaoAdufa01
-    "VAZAO_ADUFA_02":                           216 + 12764,                    # Leituras.VazaoAdufa02
-    "VAZAO_EFLUENTE":                           217 + 12764,                    # Leituras.VazaoEfluente
+    
+    # SA
+    "SA_INFO":                                  66 + 12764,                     # Leituras.ServAuxiliar_Info
+    "SA_MODO_LOCAL":                            [66 + 12764, 0],                # ServAuxiliar.Info.Local
+    "SA_MODO_REMOTO":                           [66 + 12764, 1],                # ServAuxiliar.Info.Remoto
+    "SA_MODO_AUTO":                             [66 + 12764, 2],                # ServAuxiliar.Info.Automatico
+    "SA_MODO_MANUAL":                           [66 + 12764, 3],                # ServAuxiliar.Info.Manual
+    "SA_ALIM_FONTE01_ATIVA":                    [66 + 12764, 4],                # ServAuxiliar.Info.Alimentacao_Fonte01Ativa
+    "SA_ALIM_FONTE02_ATIVA":                    [66 + 12764, 5],                # ServAuxiliar.Info.Alimentacao_Fonte02Ativa
+    "SA_ALIM_FONTE03_ATIVA":                    [66 + 12764, 6],                # ServAuxiliar.Info.Alimentacao_Fonte03Ativa
+    "SA_TENSAO_PRES_FONTE01":                   [66 + 12764, 7],                # ServAuxiliar.Info.TensaoPresente_Fonte01
+    "SA_TENSAO_PRES_FONTE02":                   [66 + 12764, 8],                # ServAuxiliar.Info.TensaoPresente_Fonte02
+    "SA_TENSAO_PRES_FONTE03":                   [66 + 12764, 9],                # ServAuxiliar.Info.TensaoPresente_Fonte03
+    "SA_SECC_CSA01_ABERTA":                     [66 + 12764, 10],               # ServAuxiliar.Info.SeccionadoraCSA01_Aberta
+    "SA_SECC_CSA01_FECHADA":                    [66 + 12764, 11],               # ServAuxiliar.Info.SeccionadoraCSA01_Fechada
+    "SA_SECC_CSA02_ABERTA":                     [66 + 12764, 12],               # ServAuxiliar.Info.SeccionadoraCSA02_Aberta
+    "SA_SECC_CSA02_FECHADA":                    [66 + 12764, 13],               # ServAuxiliar.Info.SeccionadoraCSA02_Fechada
+    "SA_CARGAS_NAO_ESSEN":                      [66 + 12764, 14],               # ServAuxiliar.Info.CargasNaoEssenciais
 
     # Tensão
     "TENSAO_RN":                                67 + 12764,                     # Leituras.ServAuxiliar_TensaoRN
@@ -189,18 +211,56 @@ REG_SA = {
     "FUGA_TERRA_TENSAO_POSITIVA":               106 + 12764,                    # Leituras.ServAux_FugaTerra_TensaoPositiva
     "FUGA_TERRA_TENSAO_NEGATIVA":               107 + 12764,                    # Leituras.ServAux_FugaTerra_TensaoNegativa
     "FUGA_TERRA_TENSAO":                        108 + 12764,                    # Leituras.ServAux_FugaTerra_Tensao
+
     "FUGA_TERRA_INFO":                          110 + 12764,                    # Leituras.ServAux_FugaTerra_Info
+    "FUGA_TERRA_POSITIVO":                      [110 + 12764, 0],               # ReleFugaTerra.Info.FugaTerraPositivo
+    "FUGA_TERRA_NEGATIVO":                      [110 + 12764, 1],               # ReleFugaTerra.Info.FugaTerraNegativo
+    "FUGA_TERRA_SUBTENSAO":                     [110 + 12764, 2],               # ReleFugaTerra.Info.Subtensao
+    "FUGA_TERRA_SOBRETENSAO":                   [110 + 12764, 3],               # ReleFugaTerra.Info.Sobretensao
+    "FUGA_TERRA_ALARME":                        [110 + 12764, 4],               # ReleFugaTerra.Info.Alarme
+    "FUGA_TERRA_TRIP":                          [110 + 12764, 5],               # ReleFugaTerra.Info.TRIP
 
     # Poço
     "POCO_INFO":                                111 + 12764,                    # Leituras.Poco_Info
+    "POCO_MODO_LOCAL":                          [111 + 12764, 0],               # Poco.Info.ModoLocal
+    "POCO_MODO_MANUAL":                         [111 + 12764, 1],               # Poco.Info.ModoManual
+    "POCO_MODO_AUTO":                           [111 + 12764, 2],               # Poco.Info.ModoAuto
+    "POCO_BOMBA01_PRINCI":                      [111 + 12764, 3],               # Poco.Info.Bomba01Principal
+    "POCO_BOMBA02_PRINCI":                      [111 + 12764, 4],               # Poco.Info.Bomba02Principal
+    "POCO_RODIZ_BOMBA02_ATIVA":                 [111 + 12764, 5],               # Poco.Info.RodizioBomba02Ativa
+    "POCO_FLUXOSTATO_BOMBA01":                  [111 + 12764, 6],               # Poco.Info.FluxostatoBomba01
+    "POCO_FLUXOSTATO_BOMBA02":                  [111 + 12764, 7],               # Poco.Info.FluxostatoBomba02
+    "POCO_FLUXOSTATO_BOMBA03":                  [111 + 12764, 8],               # Poco.Info.FluxostatoBomba03
+
     "POCO_BOMBAS":                              112 + 12764,                    # Leituras.Poco_Bombas
+    "POCO_BOMBA01":                             [112 + 12764, 0],               # Poco.Bombas.Bomba01
+    "POCO_BOMBA02":                             [112 + 12764, 1],               # Poco.Bombas.Bomba02
+    "POCO_BOMBA03":                             [112 + 12764, 2],               # Poco.Bombas.Bomba03
+    "POCO_BOMBA04":                             [112 + 12764, 3],               # Poco.Bombas.Bomba04
+    "POCO_INJ_SELO_BOMBA01":                    [112 + 12764, 4],               # Poco.Bombas.InjecaoSelo_Bomba01
+    "POCO_INJ_SELO_BOMBA02":                    [112 + 12764, 5],               # Poco.Bombas.InjecaoSelo_Bomba02
+    "POCO_AGUA_SERV_BOMBA01":                   [112 + 12764, 6],               # Poco.Bombas.AguaServico_Bomba01
+    "POCO_AGUA_SERV_BOMBA02":                   [112 + 12764, 7],               # Poco.Bombas.AguaServico_Bomba02
+
     "POCO_NIVEL":                               113 + 12764,                    # Leituras.Poco_Nivel
+    "POCO_NIVEL_LL":                            [113 + 12764, 0],               # Poco.Niveis.NivelLL
+    "POCO_NIVEL_L":                             [113 + 12764, 1],               # Poco.Niveis.NivelL
+    "POCO_NIVEL_H":                             [113 + 12764, 2],               # Poco.Niveis.NivelH
+    "POCO_NIVEL_HH":                            [113 + 12764, 3],               # Poco.Niveis.NivelHH
+
     "POCO_HORIMETRO_PRINCIPAL":                 114 + 12764,                    # Leituras.Poco_HorimetroPrincipal
     "POCO_HORIMETRO_RETAGUARDA":                115 + 12764,                    # Leituras.Poco_HorimetroRetaguarda
 
     # Sensores
     "SENSOR_FUMACA_INFO":                       116 + 12764,                    # Leituras.SensorFumaca_Info
+
     "SENSOR_PRESENCA_INFO":                     117 + 12764,                    # Leituras.SensorPresenca_Info
+    "SENSOR_PRESENCA_HABILITADO":               [117 + 12764, 0],               # SensorPresenca.Habilitado
+    "SENSOR_PRESENCA_SALA_SUP":                 [117 + 12764, 1],               # SensorPresenca.SalaSupervisorio
+    "SENSOR_PRESENCA_SALA_COZI_BANH":           [117 + 12764, 2],               # SensorPresenca.SalaCozinhaBanheiro
+    "SENSOR_PRESENCA_ALMOXARI":                 [117 + 12764, 3],               # SensorPresenca.Almoxarifado
+    "SENSOR_PRESENCA_AREA_MONT":                [117 + 12764, 4],               # SensorPresenca.AreaMontagem
+    "SENSOR_PRESENCA_SALA_CUBI":                [117 + 12764, 5],               # SensorPresenca.SalaCubiculos
 
     # Temperaturas
     "USINA_TEMPERATURA_01":                     119 + 12764,                    # Leituras.Usina_Temperatura_01
@@ -211,6 +271,63 @@ REG_SA = {
     "USINA_TEMPERATURA_06":                     124 + 12764,                    # Leituras.Usina_Temperatura_06
     "USINA_TEMPERATURA_07":                     125 + 12764,                    # Leituras.Usina_Temperatura_07
     "USINA_TEMPERATURA_08":                     126 + 12764,                    # Leituras.Usina_Temperatura_08
+
+    # Sistema de Água
+    "SA_INFO":                                  181 + 12764,                    # Leituras.SistemaAgua_Info
+    "SA_CAIXA_AGUA01_NV100":                    [181 + 12764, 0],               # SistemaAgua.Info.CaixaDAgua01_Nivel100
+    "SA_CIRQUITO_FECHADO":                      [181 + 12764, 1],               # SistemaAgua.Info.CircuitoFechado
+    "SA_CIRQUITO_ABERTO":                       [181 + 12764, 2],               # SistemaAgua.Info.CircuitoAberto
+    "SA_FILTRO01":                              [181 + 12764, 3],               # SistemaAgua.Info.Filtro01
+    "SA_FILTRO02":                              [181 + 12764, 4],               # SistemaAgua.Info.Filtro02
+    "SA_AGUA_SERV_BOMBA01_FLUXOS":              [181 + 12764, 5],               # SistemaAgua.Info.AguaServico_Bomba01_Fluxostato
+    "SA_AGUA_SERV_BOMBA02_FLUXOS":              [181 + 12764, 6],               # SistemaAgua.Info.AguaServico_Bomba02_Fluxostato
+    "SA_INJ_SELO_BOMBA01_FLUXOS":               [181 + 12764, 7],               # SistemaAgua.Info.InjecaoSelo_Bomba01_Fluxostato
+    "SA_INJ_SELO_BOMBA02_FLUXOS":               [181 + 12764, 8],               # SistemaAgua.Info.InjecaoSelo_Bomba02_Fluxostato
+    "SA_CAIXA_AGUA01_NV75":                     [181 + 12764, 9],               # SistemaAgua.Info.CaixaDAgua01_Nivel75
+    "SA_CAIXA_AGUA01_NV50":                     [181 + 12764, 10],              # SistemaAgua.Info.CaixaDAgua01_Nivel50
+    "SA_CAIXA_AGUA02_NV100":                    [181 + 12764, 11],              # SistemaAgua.Info.CaixaDAgua02_Nivel100
+    "SA_CAIXA_AGUA02_NV75":                     [181 + 12764, 12],              # SistemaAgua.Info.CaixaDAgua02_Nivel75
+    "SA_CAIXA_AGUA02_NV50":                     [181 + 12764, 13],              # SistemaAgua.Info.CaixaDAgua02_Nivel50
+
+    "SA_BOMBA":                                 182 + 12764,                    # Leituras.SistemaAgua_Bombas
+    "SA_INJ_SELO_BOMBA01":                      [182 + 12764, 0],               # SistemaAgua.Bombas.InjecaoSelo_Bomba01
+    "SA_INJ_SELO_BOMBA02":                      [182 + 12764, 1],               # SistemaAgua.Bombas.InjecaoSelo_Bomba02
+    "SA_AGUA_SERV_BOMBA01":                     [182 + 12764, 2],               # SistemaAgua.Bombas.AguaServico_Bomba01
+    "SA_AGUA_SERV_BOMBA02":                     [182 + 12764, 3],               # SistemaAgua.Bombas.AguaServico_Bomba02
+    "SA_INJ_SELO_RODIZ_BOMBA01":                [182 + 12764, 4],               # SistemaAgua.Bombas.InjecaoSelo_RodizioBomba01
+    "SA_INJ_SELO_RODIZ_BOMBA02":                [182 + 12764, 5],               # SistemaAgua.Bombas.InjecaoSelo_RodizioBomba02
+    "SA_INJ_SELO_RODIZ_HABILI":                 [182 + 12764, 6],               # SistemaAgua.Bombas.InjecaoSelo_RodizioHabilitado
+    "SA_AGUA_SERV_RODIZ_BOMBA01":               [182 + 12764, 7],               # SistemaAgua.Bombas.AguaServico_RodizioBomba01
+    "SA_AGUA_SERV_RODIZ_BOMBA02":               [182 + 12764, 8],               # SistemaAgua.Bombas.AguaServico_RodizioBomba02
+    "SA_AGUA_SERV_RODIZ_HABILI":                [182 + 12764, 9],               # SistemaAgua.Bombas.AguaServico_RodizioHabilitado
+
+    "SA_VALVULAS":                              183 + 12764,                    # Leituras.SistemaAgua_Valvulas
+    "SA_VALVULAS":                              [183 + 12764, 0],               # Leituras.SistemaAgua_Valvulas
+    "SA_VALVULAS":                              [183 + 12764, 1],               # Leituras.SistemaAgua_Valvulas
+    "SA_VALVULAS":                              [183 + 12764, 2],               # Leituras.SistemaAgua_Valvulas
+    "SA_VALVULAS":                              [183 + 12764, 3],               # Leituras.SistemaAgua_Valvulas
+    "SA_VALVULAS":                              [183 + 12764, 4],               # Leituras.SistemaAgua_Valvulas
+    "SA_VALVULAS":                              [183 + 12764, 5],               # Leituras.SistemaAgua_Valvulas
+    "SA_VALVULAS":                              [183 + 12764, 6],               # Leituras.SistemaAgua_Valvulas
+    "SA_VALVULAS":                              [183 + 12764, 7],               # Leituras.SistemaAgua_Valvulas
+    "SA_VALVULAS":                              [183 + 12764, 8],               # Leituras.SistemaAgua_Valvulas
+    "SA_VALVULAS":                              [183 + 12764, 9],               # Leituras.SistemaAgua_Valvulas
+    "SA_VALVULAS":                              [183 + 12764, 10],              # Leituras.SistemaAgua_Valvulas
+    "SA_VALVULAS":                              [183 + 12764, 11],              # Leituras.SistemaAgua_Valvulas
+    "SA_VALVULAS":                              [183 + 12764, 12],              # Leituras.SistemaAgua_Valvulas
+    "SA_VALVULAS":                              [183 + 12764, 13],              # Leituras.SistemaAgua_Valvulas
+    "SA_VALVULAS":                              [183 + 12764, 14],              # Leituras.SistemaAgua_Valvulas
+    "SA_VALVULAS":                              [183 + 12764, 15],              # Leituras.SistemaAgua_Valvulas
+
+    "SA_VALVULAS2":                             188 + 12764,                    # Leituras.SistemaAgua_Valvulas2
+
+    # Injeção Selo
+    "IS_ACUMULADOR_LIDER":                      184 + 12764,                    # Leituras.InjecaoSelo_AcumuladorLider
+    "IS_ACUMULADOR_RETAGUARDA":                 185 + 12764,                    # Leituras.InjecaoSelo_AcumuladorRetaguarda
+
+    # Água Serviço
+    "AS_ACUMULADOR_LIDER":                      186 + 12764,                    # Leituras.AguaServico_AcumuladorLider
+    "AS_ACUMULADOR_RETAGUARDA":                 187 + 12764,                    # Leituras.AguaServico_AcumuladorRetaguarda
 
     # Rendimento
     "RENDIMENTO_UG01":                          203 + 12764,                    # Leituras.Rendimento_UG01
@@ -228,19 +345,17 @@ REG_SA = {
     "RENDIMENTO_GERADOR_UG03":                  225 + 12764,                    # Leituras.RendimentoGerador_UG03
     "RENDIMENTO_GERADOR_UG04":                  226 + 12764,                    # Leituras.RendimentoGerador_UG04
 
-    # Sistema de Água
-    "SA_INFO":                                  181 + 12764,                    # Leituras.SistemaAgua_Info
-    "SA_BOMBA":                                 182 + 12764,                    # Leituras.SistemaAgua_Bombas
-    "SA_VALVULAS":                              183 + 12764,                    # Leituras.SistemaAgua_Valvulas
-    "SA_VALVULAS2":                             188 + 12764,                    # Leituras.SistemaAgua_Valvulas2
-
-    # Injeção Selo
-    "IS_ACUMULADOR_LIDER":                      184 + 12764,                    # Leituras.InjecaoSelo_AcumuladorLider
-    "IS_ACUMULADOR_RETAGUARDA":                 185 + 12764,                    # Leituras.InjecaoSelo_AcumuladorRetaguarda
-
-    # Água Serviço
-    "AS_ACUMULADOR_LIDER":                      186 + 12764,                    # Leituras.AguaServico_AcumuladorLider
-    "AS_ACUMULADOR_RETAGUARDA":                 187 + 12764,                    # Leituras.AguaServico_AcumuladorRetaguarda
+    # Vazão
+    "VAZAO_TURBINADA_UG01":                     208 + 12764,                    # Leituras.VazaoTurbinada_UG01
+    "VAZAO_TURBINADA_UG02":                     209 + 12764,                    # Leituras.VazaoTurbinada_UG02
+    "VAZAO_TURBINADA_UG03":                     210 + 12764,                    # Leituras.VazaoTurbinada_UG03
+    "VAZAO_TURBINADA_UG04":                     211 + 12764,                    # Leituras.VazaoTurbinada_UG04
+    "VAZAO_TURBINADA":                          212 + 12764,                    # Leituras.VazaoTurbinada
+    "VAZAO_RIO":                                213 + 12764,                    # Leituras.VazaoRio
+    "VAZAO_VERTEDOR":                           214 + 12764,                    # Leituras.VazaoVertedor
+    "VAZAO_ADUFA_01":                           215 + 12764,                    # Leituras.VazaoAdufa01
+    "VAZAO_ADUFA_02":                           216 + 12764,                    # Leituras.VazaoAdufa02
+    "VAZAO_EFLUENTE":                           217 + 12764,                    # Leituras.VazaoEfluente
 
 
     ## ALARMES
@@ -1012,519 +1127,519 @@ REG_UG = {
     "UG1": {
         ## COMANDOS
         # Gerais
-        "CMD_RESET_ALARMES":                    0,                              # Comandos.Operacao_PCH_AdoPopinhakResetAlarmes
-        "CMD_RECONHECE_ALARMES":                1,                              # Comandos.Operacao_PCH_AdoPopinhakReconheceAlarmes
+        "CMD_RESET_ALARMES":                    0 + 12289,                      # Comandos.Operacao_PCH_AdoPopinhakResetAlarmes
+        "CMD_RECONHECE_ALARMES":                1 + 12289,                      # Comandos.Operacao_PCH_AdoPopinhakReconheceAlarmes
 
         # Operação
-        "CMD_OPER_UP":                          2,                              # Comandos.Operacao_UP
-        "CMD_OPER_UPGM":                        3,                              # Comandos.Operacao_UPGM
-        "CMD_OPER_UVD":                         4,                              # Comandos.Operacao_UVD
-        "CMD_OPER_UPS":                         5,                              # Comandos.Operacao_UPS
-        "CMD_OPER_US":                          6,                              # Comandos.Operacao_US
-        "CMD_OPER_EMERGENCIA_LIGAR":            7,                              # Comandos.Operacao_EmergenciaLigar
-        "CMD_OPER_EMERGENCIA_DESLIGAR":         8,                              # Comandos.Operacao_EmergenciaDesligar
-        "CMD_OPER_PARADA_RESET":                72,                             # Comandos.Operacao_ParadaReset
+        "CMD_OPER_UP":                          2 + 12289,                      # Comandos.Operacao_UP
+        "CMD_OPER_UPGM":                        3 + 12289,                      # Comandos.Operacao_UPGM
+        "CMD_OPER_UVD":                         4 + 12289,                      # Comandos.Operacao_UVD
+        "CMD_OPER_UPS":                         5 + 12289,                      # Comandos.Operacao_UPS
+        "CMD_OPER_US":                          6 + 12289,                      # Comandos.Operacao_US
+        "CMD_OPER_EMERGENCIA_LIGAR":            7 + 12289,                      # Comandos.Operacao_EmergenciaLigar
+        "CMD_OPER_EMERGENCIA_DESLIGAR":         8 + 12289,                      # Comandos.Operacao_EmergenciaDesligar
+        "CMD_OPER_PARADA_RESET":                72 + 12289,                     # Comandos.Operacao_ParadaReset
 
         # Turbina
-        "CMD_TURB_BYPASS_ABRIR":                9,                              # Comandos.Turb_ByPassAbrir
-        "CMD_TURB_BYPASS_FECHAR":               10,                             # Comandos.Turb_ByPassFechar
-        "CMD_TURB_BORBOLETA_ABRIR":             11,                             # Comandos.Turb_BorboletaAbrir
-        "CMD_TURB_BORBOLETA_FECHAR":            12,                             # Comandos.Turb_BorboletaFechar
-        "CMD_TURB_FRENAGEM_APLICAR":            13,                             # Comandos.Turb_FrenagemAplicar
-        "CMD_TURB_FRENAGEM_DESAPLICAR":         14,                             # Comandos.Turb_FrenagemDesaplicar
-        "CMD_TURB_FRENAGEM_MANUAL":             15,                             # Comandos.Turb_FrenagemManual
-        "CMD_TURB_FRENAGEM_AUTO":               16,                             # Comandos.Turb_FrenagemAuto
-        "CMD_TURB_SENSOR_ATIVAR":               17,                             # Comandos.Turb_SensorAtivar
-        "CMD_TURB_SENSOR_DESATIVAR":            18,                             # Comandos.Turb_SensorDesativar
+        "CMD_TURB_BYPASS_ABRIR":                9 + 12289,                      # Comandos.Turb_ByPassAbrir
+        "CMD_TURB_BYPASS_FECHAR":               10 + 12289,                     # Comandos.Turb_ByPassFechar
+        "CMD_TURB_BORBOLETA_ABRIR":             11 + 12289,                     # Comandos.Turb_BorboletaAbrir
+        "CMD_TURB_BORBOLETA_FECHAR":            12 + 12289,                     # Comandos.Turb_BorboletaFechar
+        "CMD_TURB_FRENAGEM_APLICAR":            13 + 12289,                     # Comandos.Turb_FrenagemAplicar
+        "CMD_TURB_FRENAGEM_DESAPLICAR":         14 + 12289,                     # Comandos.Turb_FrenagemDesaplicar
+        "CMD_TURB_FRENAGEM_MANUAL":             15 + 12289,                     # Comandos.Turb_FrenagemManual
+        "CMD_TURB_FRENAGEM_AUTO":               16 + 12289,                     # Comandos.Turb_FrenagemAuto
+        "CMD_TURB_SENSOR_ATIVAR":               17 + 12289,                     # Comandos.Turb_SensorAtivar
+        "CMD_TURB_SENSOR_DESATIVAR":            18 + 12289,                     # Comandos.Turb_SensorDesativar
 
         # Reg V
-        "CMD_REG_V_PARTIR":                     19,                             # Comandos.RegV_Partir
-        "CMD_REG_V_PARAR":                      20,                             # Comandos.RegV_Parar
-        "CMD_REG_V_COLOCAR_CARGA":              21,                             # Comandos.RegV_ColocarCarga
-        "CMD_REG_V_RETIRAR_CARGA":              22,                             # Comandos.RegV_RetirarCarga
-        "CMD_REG_V_INCREMENTA_VELOCIDADE":      23,                             # Comandos.RegV_IncrementaVelocidade
-        "CMD_REG_V_DECREMENTA_VELOCIDADE":      24,                             # Comandos.RegV_DecrementaVelocidade
-        "CMD_REG_V_SEL_MODO_ESTATISMO":         25,                             # Comandos.RegV_SelecionaModoEstatismo
-        "CMD_REG_V_SEL_MODO_BASECARGA":         26,                             # Comandos.RegV_SelecionaModoBaseCarga
+        "CMD_REG_V_PARTIR":                     19 + 12289,                     # Comandos.RegV_Partir
+        "CMD_REG_V_PARAR":                      20 + 12289,                     # Comandos.RegV_Parar
+        "CMD_REG_V_COLOCAR_CARGA":              21 + 12289,                     # Comandos.RegV_ColocarCarga
+        "CMD_REG_V_RETIRAR_CARGA":              22 + 12289,                     # Comandos.RegV_RetirarCarga
+        "CMD_REG_V_INCREMENTA_VELOCIDADE":      23 + 12289,                     # Comandos.RegV_IncrementaVelocidade
+        "CMD_REG_V_DECREMENTA_VELOCIDADE":      24 + 12289,                     # Comandos.RegV_DecrementaVelocidade
+        "CMD_REG_V_SEL_MODO_ESTATISMO":         25 + 12289,                     # Comandos.RegV_SelecionaModoEstatismo
+        "CMD_REG_V_SEL_MODO_BASECARGA":         26 + 12289,                     # Comandos.RegV_SelecionaModoBaseCarga
 
         # Reg T
-        "CMD_REG_T_LIGAR":                      27,                             # Comandos.RegT_Ligar
-        "CMD_REG_T_DESLIGAR":                   28,                             # Comandos.RegT_Desligar
-        "CMD_REG_T_INCREMENTA_TENSAO":          29,                             # Comandos.RegT_IncrementaTensao
-        "CMD_REG_T_DECREMENTA_TENSAO":          30,                             # Comandos.RegT_DecrementaTensao
-        "CMD_REG_T_PRE_EXCITACAO":              31,                             # Comandos.RegT_PreExcitacao
+        "CMD_REG_T_LIGAR":                      27 + 12289,                     # Comandos.RegT_Ligar
+        "CMD_REG_T_DESLIGAR":                   28 + 12289,                     # Comandos.RegT_Desligar
+        "CMD_REG_T_INCREMENTA_TENSAO":          29 + 12289,                     # Comandos.RegT_IncrementaTensao
+        "CMD_REG_T_DECREMENTA_TENSAO":          30 + 12289,                     # Comandos.RegT_DecrementaTensao
+        "CMD_REG_T_PRE_EXCITACAO":              31 + 12289,                     # Comandos.RegT_PreExcitacao
 
         # Sinc
-        "CMD_SINC_LIGAR":                       32,                             # Comandos.Sinc_Ligar
-        "CMD_SINC_DESLIGAR":                    33,                             # Comandos.Sinc_Desligar
-        "CMD_SINC_MODO_AUTO_LIGAR":             34,                             # Comandos.Sinc_ModoAutoLigar
-        "CMD_SINC_MODO_MANUAL_LIGAR":           35,                             # Comandos.Sinc_ModoManualLigar
-        "CMD_SINC_MODO_BMORTA_LIGAR":           36,                             # Comandos.Sinc_ModoBMortaLigar
+        "CMD_SINC_LIGAR":                       32 + 12289,                     # Comandos.Sinc_Ligar
+        "CMD_SINC_DESLIGAR":                    33 + 12289,                     # Comandos.Sinc_Desligar
+        "CMD_SINC_MODO_AUTO_LIGAR":             34 + 12289,                     # Comandos.Sinc_ModoAutoLigar
+        "CMD_SINC_MODO_MANUAL_LIGAR":           35 + 12289,                     # Comandos.Sinc_ModoManualLigar
+        "CMD_SINC_MODO_BMORTA_LIGAR":           36 + 12289,                     # Comandos.Sinc_ModoBMortaLigar
 
         # DJ52G
-        "CMD_DJ52G_ABRIR":                      37,                             # Comandos.Disj52G_Abrir
+        "CMD_DJ52G_ABRIR":                      37 + 12289,                     # Comandos.Disj52G_Abrir
 
         # Controle Reativo
-        "CMD_CTRL_REATIVO_MODO_FPLIGAR":        38,                             # Comandos.CtrlReativo_ModoFPLigar
-        "CMD_CTRL_REATIVO_MODO_FPDESLIGAR":     39,                             # Comandos.CtrlReativo_ModoFPDesligar
-        "CMD_CTRL_REATIVO_MODO_VArLIGAR":       40,                             # Comandos.CtrlReativo_ModoVArLigar
-        "CMD_CTRL_REATIVO_MODO_VArDESLIGAR":    41,                             # Comandos.CtrlReativo_ModoVArDesligar
+        "CMD_CTRL_REATIVO_MODO_FPLIGAR":        38 + 12289,                     # Comandos.CtrlReativo_ModoFPLigar
+        "CMD_CTRL_REATIVO_MODO_FPDESLIGAR":     39 + 12289,                     # Comandos.CtrlReativo_ModoFPDesligar
+        "CMD_CTRL_REATIVO_MODO_VArLIGAR":       40 + 12289,                     # Comandos.CtrlReativo_ModoVArLigar
+        "CMD_CTRL_REATIVO_MODO_VArDESLIGAR":    41 + 12289,                     # Comandos.CtrlReativo_ModoVArDesligar
 
         # Controle Potência
-        "CMD_CTRL_POT_MODO_POT_LIGAR":          42,                             # Comandos.CtrlPotencia_ModoPotenciaLigar
-        "CMD_CTRL_POT_MODO_POT_DESLIGAR":       43,                             # Comandos.CtrlPotencia_ModoPotenciaDesligar
-        "CMD_CTRL_POT_MODO_NIVEL_LIGAR":        44,                             # Comandos.CtrlPotencia_ModoNivelLigar
-        "CMD_CTRL_POT_MODO_NIVEL_DESLIGAR":     45,                             # Comandos.CtrlPotencia_ModoNivelDesligar
-        "CMD_CTRL_POT_RELI_AUTO_LIGAR":         46,                             # Comandos.CtrlPotencia_ReligamentoAutomaticoLigar
-        "CMD_CTRL_POT_RELI_AUTO_DESLIGAR":      47,                             # Comandos.CtrlPotencia_ReligamentoAutomaticoDesligar
+        "CMD_CTRL_POT_MODO_POT_LIGAR":          42 + 12289,                     # Comandos.CtrlPotencia_ModoPotenciaLigar
+        "CMD_CTRL_POT_MODO_POT_DESLIGAR":       43 + 12289,                     # Comandos.CtrlPotencia_ModoPotenciaDesligar
+        "CMD_CTRL_POT_MODO_NIVEL_LIGAR":        44 + 12289,                     # Comandos.CtrlPotencia_ModoNivelLigar
+        "CMD_CTRL_POT_MODO_NIVEL_DESLIGAR":     45 + 12289,                     # Comandos.CtrlPotencia_ModoNivelDesligar
+        "CMD_CTRL_POT_RELI_AUTO_LIGAR":         46 + 12289,                     # Comandos.CtrlPotencia_ReligamentoAutomaticoLigar
+        "CMD_CTRL_POT_RELI_AUTO_DESLIGAR":      47 + 12289,                     # Comandos.CtrlPotencia_ReligamentoAutomaticoDesligar
 
         # UHCT
-        "CMD_UHCT_BOMBA_01_LIGAR":              48,                             # Comandos.UHCT_Bomba01Ligar
-        "CMD_UHCT_BOMBA_01_DESLIGAR":           49,                             # Comandos.UHCT_Bomba01Desligar
-        "CMD_UHCT_BOMBA_01_PRINCIPAL":          50,                             # Comandos.UHCT_Bomba01Principal
-        "CMD_UHCT_BOMBA_02_LIGAR":              51,                             # Comandos.UHCT_Bomba02Ligar
-        "CMD_UHCT_BOMBA_02_DESLIGAR":           52,                             # Comandos.UHCT_Bomba02Desligar
-        "CMD_UHCT_BOMBA_02_PRINCIPAL":          53,                             # Comandos.UHCT_Bomba02Principal
-        "CMD_UHCT_BOMBA_AGUA_LIGAR":            54,                             # Comandos.UHCT_BombaAguaLigar
-        "CMD_UHCT_BOMBA_AGUA_DESLIGAR":         55,                             # Comandos.UHCT_BombaAguaDesligar
-        "CMD_UHCT_SENSOR_ATIVAR":               56,                             # Comandos.UHCT_SensorAtivar
-        "CMD_UHCT_SENSOR_DESATIVAR":            57,                             # Comandos.UHCT_SensorDesativar
-        "CMD_UHCT_RODIZIO_HABILITAR":           58,                             # Comandos.UHCT_RodizioHabilitar
-        "CMD_UHCT_RODIZIO_DESABILITAR":         59,                             # Comandos.UHCT_RodizioDesabilitar
+        "CMD_UHCT_BOMBA_01_LIGAR":              48 + 12289,                     # Comandos.UHCT_Bomba01Ligar
+        "CMD_UHCT_BOMBA_01_DESLIGAR":           49 + 12289,                     # Comandos.UHCT_Bomba01Desligar
+        "CMD_UHCT_BOMBA_01_PRINCIPAL":          50 + 12289,                     # Comandos.UHCT_Bomba01Principal
+        "CMD_UHCT_BOMBA_02_LIGAR":              51 + 12289,                     # Comandos.UHCT_Bomba02Ligar
+        "CMD_UHCT_BOMBA_02_DESLIGAR":           52 + 12289,                     # Comandos.UHCT_Bomba02Desligar
+        "CMD_UHCT_BOMBA_02_PRINCIPAL":          53 + 12289,                     # Comandos.UHCT_Bomba02Principal
+        "CMD_UHCT_BOMBA_AGUA_LIGAR":            54 + 12289,                     # Comandos.UHCT_BombaAguaLigar
+        "CMD_UHCT_BOMBA_AGUA_DESLIGAR":         55 + 12289,                     # Comandos.UHCT_BombaAguaDesligar
+        "CMD_UHCT_SENSOR_ATIVAR":               56 + 12289,                     # Comandos.UHCT_SensorAtivar
+        "CMD_UHCT_SENSOR_DESATIVAR":            57 + 12289,                     # Comandos.UHCT_SensorDesativar
+        "CMD_UHCT_RODIZIO_HABILITAR":           58 + 12289,                     # Comandos.UHCT_RodizioHabilitar
+        "CMD_UHCT_RODIZIO_DESABILITAR":         59 + 12289,                     # Comandos.UHCT_RodizioDesabilitar
 
         # UHLM
-        "CMD_UHLM_BOMBA_01_LIGAR":              60,                             # Comandos.UHLM_Bomba01Ligar
-        "CMD_UHLM_BOMBA_01_DESLIGAR":           61,                             # Comandos.UHLM_Bomba01Desligar
-        "CMD_UHLM_BOMBA_01_PRINCIPAL":          62,                             # Comandos.UHLM_Bomba01Principal
-        "CMD_UHLM_BOMBA_02_LIGAR":              63,                             # Comandos.UHLM_Bomba02Ligar
-        "CMD_UHLM_BOMBA_02_DESLIGAR":           64,                             # Comandos.UHLM_Bomba02Desligar
-        "CMD_UHLM_BOMBA_02_PRINCIPAL":          65,                             # Comandos.UHLM_Bomba02Principal
-        "CMD_UHLM_BOMBA_JACKING_LIGA":          66,                             # Comandos.UHLM_BombaJackingLiga
-        "CMD_UHLM_BOMBA_JACKING_DESLIGA":       67,                             # Comandos.UHLM_BombaJackingDesliga
-        "CMD_UHLM_BOMBA_AGUA_LIGA":             68,                             # Comandos.UHLM_BombaAguaLiga
-        "CMD_UHLM_BOMBA_AGUA_DESLIGA":          69,                             # Comandos.UHLM_BombaAguaDesliga
-        "CMD_UHLM_RODIZIO_HABILITAR":           70,                             # Comandos.UHLM_RodizioHabilitar
-        "CMD_UHLM_RODIZIO_DESABILITAR":         71,                             # Comandos.UHLM_RodizioDesabilitar
+        "CMD_UHLM_BOMBA_01_LIGAR":              60 + 12289,                     # Comandos.UHLM_Bomba01Ligar
+        "CMD_UHLM_BOMBA_01_DESLIGAR":           61 + 12289,                     # Comandos.UHLM_Bomba01Desligar
+        "CMD_UHLM_BOMBA_01_PRINCIPAL":          62 + 12289,                     # Comandos.UHLM_Bomba01Principal
+        "CMD_UHLM_BOMBA_02_LIGAR":              63 + 12289,                     # Comandos.UHLM_Bomba02Ligar
+        "CMD_UHLM_BOMBA_02_DESLIGAR":           64 + 12289,                     # Comandos.UHLM_Bomba02Desligar
+        "CMD_UHLM_BOMBA_02_PRINCIPAL":          65 + 12289,                     # Comandos.UHLM_Bomba02Principal
+        "CMD_UHLM_BOMBA_JACKING_LIGA":          66 + 12289,                     # Comandos.UHLM_BombaJackingLiga
+        "CMD_UHLM_BOMBA_JACKING_DESLIGA":       67 + 12289,                     # Comandos.UHLM_BombaJackingDesliga
+        "CMD_UHLM_BOMBA_AGUA_LIGA":             68 + 12289,                     # Comandos.UHLM_BombaAguaLiga
+        "CMD_UHLM_BOMBA_AGUA_DESLIGA":          69 + 12289,                     # Comandos.UHLM_BombaAguaDesliga
+        "CMD_UHLM_RODIZIO_HABILITAR":           70 + 12289,                     # Comandos.UHLM_RodizioHabilitar
+        "CMD_UHLM_RODIZIO_DESABILITAR":         71 + 12289,                     # Comandos.UHLM_RodizioDesabilitar
 
         # RT
-        "CMD_RT_MTVC_HABILITAR":                73,                             # Comandos.RT_MTVC_Habilitar
-        "CMD_RT_MECC_HABILITAR":                74,                             # Comandos.RT_MECC_Habilitar
-        "CMD_RT_ONLINE_HABILITAR":              75,                             # Comandos.RT_Online_habilitar
-        "CMD_RT_ONLINE_DESABILITAR":            76,                             # Comandos.RT_Online_Desabiltar
-        "CMD_RT_PARALELO_HABILITAR":            77,                             # Comandos.RT_Paralelo_habilitar
-        "CMD_RT_PARALELO_DESABILITAR":          78,                             # Comandos.RT_Paralelo_Desabilitar
+        "CMD_RT_MTVC_HABILITAR":                73 + 12289,                     # Comandos.RT_MTVC_Habilitar
+        "CMD_RT_MECC_HABILITAR":                74 + 12289,                     # Comandos.RT_MECC_Habilitar
+        "CMD_RT_ONLINE_HABILITAR":              75 + 12289,                     # Comandos.RT_Online_habilitar
+        "CMD_RT_ONLINE_DESABILITAR":            76 + 12289,                     # Comandos.RT_Online_Desabiltar
+        "CMD_RT_PARALELO_HABILITAR":            77 + 12289,                     # Comandos.RT_Paralelo_habilitar
+        "CMD_RT_PARALELO_DESABILITAR":          78 + 12289,                     # Comandos.RT_Paralelo_Desabilitar
 
         # RV
-        "CMD_RV_CONJUGADO_AUTO_HABILITAR":      79,                             # Comandos.RV_ConjugadoAuto_habilitar
-        "CMD_RV_CONJUGADO_MANUAL_HABILITAR":    80,                             # Comandos.RV_ConjugadoManual_habilitar
-        "CMD_RV_CONJUGADO_01_HABILITAR":        81,                             # Comandos.RV_Conjugado01_habilitar
-        "CMD_RV_CONJUGADO_02_HABILITAR":        82,                             # Comandos.RV_Conjugado02_habilitar
-        "CMD_RV_CONJUGADO_03_HABILITAR":        83,                             # Comandos.RV_Conjugado03_habilitar
-        "CMD_RV_CONJUGADO_04_HABILITAR":        84,                             # Comandos.RV_Conjugado04_habilitar
-        "CMD_RV_CONJUGADO_05_HABILITAR":        85,                             # Comandos.RV_Conjugado05_habilitar
+        "CMD_RV_CONJUGADO_AUTO_HABILITAR":      79 + 12289,                     # Comandos.RV_ConjugadoAuto_habilitar
+        "CMD_RV_CONJUGADO_MANUAL_HABILITAR":    80 + 12289,                     # Comandos.RV_ConjugadoManual_habilitar
+        "CMD_RV_CONJUGADO_01_HABILITAR":        81 + 12289,                     # Comandos.RV_Conjugado01_habilitar
+        "CMD_RV_CONJUGADO_02_HABILITAR":        82 + 12289,                     # Comandos.RV_Conjugado02_habilitar
+        "CMD_RV_CONJUGADO_03_HABILITAR":        83 + 12289,                     # Comandos.RV_Conjugado03_habilitar
+        "CMD_RV_CONJUGADO_04_HABILITAR":        84 + 12289,                     # Comandos.RV_Conjugado04_habilitar
+        "CMD_RV_CONJUGADO_05_HABILITAR":        85 + 12289,                     # Comandos.RV_Conjugado05_habilitar
 
 
         ## SETPOINTS
 
         # UHCT
-        "UHCT_PRESSAO_MAX":                     0,                              # Setpoints.UHCT_PressaoMaxima
-        "UHCT_PRESSAO_MIN":                     1,                              # Setpoints.UHCT_PressaoMinima
-        "UHCT_PRESSAO_DESLIGAMENTO":            2,                              # Setpoints.UHCT_PressaoDesligamento
-        "UHCT_PRESSAO_CRITICA":                 3,                              # Setpoints.UHCT_PressaoCritica
+        "UHCT_PRESSAO_MAX":                     0 + 13569,                      # Setpoints.UHCT_PressaoMaxima
+        "UHCT_PRESSAO_MIN":                     1 + 13569,                      # Setpoints.UHCT_PressaoMinima
+        "UHCT_PRESSAO_DESLIGAMENTO":            2 + 13569,                      # Setpoints.UHCT_PressaoDesligamento
+        "UHCT_PRESSAO_CRITICA":                 3 + 13569,                      # Setpoints.UHCT_PressaoCritica
 
         # Controle Potência
-        "CRTL_POT_NIVEL_LL1":                   4,                              # Setpoints.CtrlPotencia_NivelLL1
-        "CRTL_POT_NIVEL_LL2":                   5,                              # Setpoints.CtrlPotencia_NivelLL2
-        "CRTL_POT_NIVEL_LL3":                   6,                              # Setpoints.CtrlPotencia_NivelLL3
-        "CRTL_POT_NIVEL_LL4":                   7,                              # Setpoints.CtrlPotencia_NivelLL4
-        "CRTL_POT_NIVEL_LL5":                   8,                              # Setpoints.CtrlPotencia_NivelLL5
-        "CRTL_POT_POT_1":                       9,                              # Setpoints.CtrlPotencia_Potencia1
-        "CRTL_POT_POT_2":                       10,                             # Setpoints.CtrlPotencia_Potencia2
-        "CRTL_POT_POT_3":                       11,                             # Setpoints.CtrlPotencia_Potencia3
-        "CRTL_POT_POT_4":                       12,                             # Setpoints.CtrlPotencia_Potencia4
-        "CRTL_POT_POT_5":                       13,                             # Setpoints.CtrlPotencia_Potencia5
-        "CRTL_POT_POT_MIN":                     14,                             # Setpoints.CtrlPotencia_PotenciaMinima
-        "CRTL_POT_POT_MIN_TEMPO":               15,                             # Setpoints.CtrlPotencia_PotenciaMinimaTempo
-        "CRTL_POT_NIVEL_RELIGAMENTO":           16,                             # Setpoints.CtrlPotencia_NivelReligamento
-        "CRTL_POT_ALVO":                        17,                             # Setpoints.CtrlPotencia_Alvo
-        "CRTL_POT_TOLERANCIA":                  18,                             # Setpoints.CtrlPotencia_Tolerancia
-        "CRTL_POT_PULSO_TEMPO":                 19,                             # Setpoints.CtrlPotencia_PulsoTempo
-        "CRTL_POT_PULSO_INTERVALO":             20,                             # Setpoints.CtrlPotencia_PulsoIntervalo
-        "CRTL_POT_SP_NIVEL":                    21,                             # Setpoints.CtrlPotencia_SetpointNivel
-        "CRTL_POT_NIVEL_MIN_ALARME":            22,                             # Setpoints.CtrlPotencia_NivelMinimoAlarme
-        "CRTL_POT_NIVEL_MIN_TRIP":              23,                             # Setpoints.CtrlPotencia_NivelMinimoTRIP
-        "CTRL_POT_POT_MAX":                     89,                             # Setpoints.CtrlPotencia_PotenciaMaxima
+        "CRTL_POT_NIVEL_LL1":                   4 + 13569,                      # Setpoints.CtrlPotencia_NivelLL1
+        "CRTL_POT_NIVEL_LL2":                   5 + 13569,                      # Setpoints.CtrlPotencia_NivelLL2
+        "CRTL_POT_NIVEL_LL3":                   6 + 13569,                      # Setpoints.CtrlPotencia_NivelLL3
+        "CRTL_POT_NIVEL_LL4":                   7 + 13569,                      # Setpoints.CtrlPotencia_NivelLL4
+        "CRTL_POT_NIVEL_LL5":                   8 + 13569,                      # Setpoints.CtrlPotencia_NivelLL5
+        "CRTL_POT_POT_1":                       9 + 13569,                      # Setpoints.CtrlPotencia_Potencia1
+        "CRTL_POT_POT_2":                       10 + 13569,                     # Setpoints.CtrlPotencia_Potencia2
+        "CRTL_POT_POT_3":                       11 + 13569,                     # Setpoints.CtrlPotencia_Potencia3
+        "CRTL_POT_POT_4":                       12 + 13569,                     # Setpoints.CtrlPotencia_Potencia4
+        "CRTL_POT_POT_5":                       13 + 13569,                     # Setpoints.CtrlPotencia_Potencia5
+        "CRTL_POT_POT_MIN":                     14 + 13569,                     # Setpoints.CtrlPotencia_PotenciaMinima
+        "CRTL_POT_POT_MIN_TEMPO":               15 + 13569,                     # Setpoints.CtrlPotencia_PotenciaMinimaTempo
+        "CRTL_POT_NIVEL_RELIGAMENTO":           16 + 13569,                     # Setpoints.CtrlPotencia_NivelReligamento
+        "CRTL_POT_ALVO":                        17 + 13569,                     # Setpoints.CtrlPotencia_Alvo
+        "CRTL_POT_TOLERANCIA":                  18 + 13569,                     # Setpoints.CtrlPotencia_Tolerancia
+        "CRTL_POT_PULSO_TEMPO":                 19 + 13569,                     # Setpoints.CtrlPotencia_PulsoTempo
+        "CRTL_POT_PULSO_INTERVALO":             20 + 13569,                     # Setpoints.CtrlPotencia_PulsoIntervalo
+        "CRTL_POT_SP_NIVEL":                    21 + 13569,                     # Setpoints.CtrlPotencia_SetpointNivel
+        "CRTL_POT_NIVEL_MIN_ALARME":            22 + 13569,                     # Setpoints.CtrlPotencia_NivelMinimoAlarme
+        "CRTL_POT_NIVEL_MIN_TRIP":              23 + 13569,                     # Setpoints.CtrlPotencia_NivelMinimoTRIP
+        "CTRL_POT_POT_MAX":                     89 + 13569,                     # Setpoints.CtrlPotencia_PotenciaMaxima
 
         # Controle Reativo
-        "CRTL_REATIVO_SP_FP":                   24,                             # Setpoints.CtrlReativo_SetpointFP
-        "CRTL_REATIVO_SP_REATIVO":              25,                             # Setpoints.CtrlReativo_SetpointReativo
+        "CRTL_REATIVO_SP_FP":                   24 + 13569,                     # Setpoints.CtrlReativo_SetpointFP
+        "CRTL_REATIVO_SP_REATIVO":              25 + 13569,                     # Setpoints.CtrlReativo_SetpointReativo
 
         # Turbina
-        "TURB_VIBRA_01_ALARME":                 26,                             # Setpoints.Turb_Vibracao01Alarme
-        "TURB_VIBRA_01_TRIP":                   27,                             # Setpoints.Turb_Vibracao01TRIP
-        "TURB_VIBRA_02_ALARME":                 28,                             # Setpoints.Turb_Vibracao02Alarme
-        "TURB_VIBRA_02_TRIP":                   29,                             # Setpoints.Turb_Vibracao02TRIP
-        "TURB_VIBRA_03_ALARME":                 30,                             # Setpoints.Turb_Vibracao03Alarme
-        "TURB_VIBRA_03_TRIP":                   31,                             # Setpoints.Turb_Vibracao03TRIP
-        "TURB_VIBRA_04_ALARME":                 32,                             # Setpoints.Turb_Vibracao04Alarme
-        "TURB_VIBRA_04_TRIP":                   33,                             # Setpoints.Turb_Vibracao04TRIP
-        "TURB_TEMPO_EQUALI_SP":                 34,                             # Setpoints.Turb_TempoEqualizacaoSetpoint
-        "TURB_VIBRA_05_ALARME":                 90,                             # Setpoints.Turb_Vibracao05Alarme
-        "TURB_VIBRA_05_TRIP":                   91,                             # Setpoints.Turb_Vibracao05TRIP
+        "TURB_VIBRA_01_ALARME":                 26 + 13569,                     # Setpoints.Turb_Vibracao01Alarme
+        "TURB_VIBRA_01_TRIP":                   27 + 13569,                     # Setpoints.Turb_Vibracao01TRIP
+        "TURB_VIBRA_02_ALARME":                 28 + 13569,                     # Setpoints.Turb_Vibracao02Alarme
+        "TURB_VIBRA_02_TRIP":                   29 + 13569,                     # Setpoints.Turb_Vibracao02TRIP
+        "TURB_VIBRA_03_ALARME":                 30 + 13569,                     # Setpoints.Turb_Vibracao03Alarme
+        "TURB_VIBRA_03_TRIP":                   31 + 13569,                     # Setpoints.Turb_Vibracao03TRIP
+        "TURB_VIBRA_04_ALARME":                 32 + 13569,                     # Setpoints.Turb_Vibracao04Alarme
+        "TURB_VIBRA_04_TRIP":                   33 + 13569,                     # Setpoints.Turb_Vibracao04TRIP
+        "TURB_TEMPO_EQUALI_SP":                 34 + 13569,                     # Setpoints.Turb_TempoEqualizacaoSetpoint
+        "TURB_VIBRA_05_ALARME":                 90 + 13569,                     # Setpoints.Turb_Vibracao05Alarme
+        "TURB_VIBRA_05_TRIP":                   91 + 13569,                     # Setpoints.Turb_Vibracao05TRIP
 
         # Freio
-        "FREIO_PULSO_INTERVALO":                35,                             # Setpoints.Freio_PulsoIntervalo
-        "FREIO_PULSO_TEMPO":                    36,                             # Setpoints.Freio_PulsoTempo
+        "FREIO_PULSO_INTERVALO":                35 + 13569,                     # Setpoints.Freio_PulsoIntervalo
+        "FREIO_PULSO_TEMPO":                    36 + 13569,                     # Setpoints.Freio_PulsoTempo
 
         # UHCT
-        "UHCT_RODIZIO_PRINCIPAL":               37,                             # Setpoints.UHCT_RodizioPrincipal
-        "UHCT_RODIZIO_RETAGUARDA":              38,                             # Setpoints.UHCT_RodizioRetaguarda
+        "UHCT_RODIZIO_PRINCIPAL":               37 + 13569,                     # Setpoints.UHCT_RodizioPrincipal
+        "UHCT_RODIZIO_RETAGUARDA":              38 + 13569,                     # Setpoints.UHCT_RodizioRetaguarda
 
         # UHLM
-        "UHLM_RODIZIO_PRINCIPAL":               39,                             # Setpoints.UHLM_RodizioPrincipal
-        "UHLM_RODIZIO_RETAGUARDA":              40,                             # Setpoints.UHLM_RodizioRetaguarda
-        "UHLM_SP_VAZAO_01":                     92,                             # Setpoints.UHLM_SetpointVazao01
-        "UHLM_SP_VAZAO_02":                     93,                             # Setpoints.UHLM_SetpointVazao02
-        "UHLM_SP_VAZAO_03":                     94,                             # Setpoints.UHLM_SetpointVazao03
-        "UHLM_SP_VAZAO_04":                     95,                             # Setpoints.UHLM_SetpointVazao04
+        "UHLM_RODIZIO_PRINCIPAL":               39 + 13569,                     # Setpoints.UHLM_RodizioPrincipal
+        "UHLM_RODIZIO_RETAGUARDA":              40 + 13569,                     # Setpoints.UHLM_RodizioRetaguarda
+        "UHLM_SP_VAZAO_01":                     92 + 13569,                     # Setpoints.UHLM_SetpointVazao01
+        "UHLM_SP_VAZAO_02":                     93 + 13569,                     # Setpoints.UHLM_SetpointVazao02
+        "UHLM_SP_VAZAO_03":                     94 + 13569,                     # Setpoints.UHLM_SetpointVazao03
+        "UHLM_SP_VAZAO_04":                     95 + 13569,                     # Setpoints.UHLM_SetpointVazao04
 
         # Temperaturas
-        "TEMPERATURA_01_ALARME":                41,                             # Setpoints.Temperatura01_Alarme
-        "TEMPERATURA_02_ALARME":                42,                             # Setpoints.Temperatura02_Alarme
-        "TEMPERATURA_03_ALARME":                43,                             # Setpoints.Temperatura03_Alarme
-        "TEMPERATURA_04_ALARME":                44,                             # Setpoints.Temperatura04_Alarme
-        "TEMPERATURA_05_ALARME":                45,                             # Setpoints.Temperatura05_Alarme
-        "TEMPERATURA_06_ALARME":                46,                             # Setpoints.Temperatura06_Alarme
-        "TEMPERATURA_07_ALARME":                47,                             # Setpoints.Temperatura07_Alarme
-        "TEMPERATURA_08_ALARME":                48,                             # Setpoints.Temperatura08_Alarme
-        "TEMPERATURA_09_ALARME":                49,                             # Setpoints.Temperatura09_Alarme
-        "TEMPERATURA_10_ALARME":                50,                             # Setpoints.Temperatura10_Alarme
-        "TEMPERATURA_11_ALARME":                51,                             # Setpoints.Temperatura11_Alarme
-        "TEMPERATURA_12_ALARME":                52,                             # Setpoints.Temperatura12_Alarme
-        "TEMPERATURA_13_ALARME":                53,                             # Setpoints.Temperatura13_Alarme
-        "TEMPERATURA_14_ALARME":                54,                             # Setpoints.Temperatura14_Alarme
-        "TEMPERATURA_15_ALARME":                55,                             # Setpoints.Temperatura15_Alarme
-        "TEMPERATURA_16_ALARME":                56,                             # Setpoints.Temperatura16_Alarme
-        "TEMPERATURA_01_TRIP01":                57,                             # Setpoints.Temperatura01_TRIP01
-        "TEMPERATURA_02_TRIP01":                58,                             # Setpoints.Temperatura02_TRIP01
-        "TEMPERATURA_03_TRIP01":                59,                             # Setpoints.Temperatura03_TRIP01
-        "TEMPERATURA_04_TRIP01":                60,                             # Setpoints.Temperatura04_TRIP01
-        "TEMPERATURA_05_TRIP01":                61,                             # Setpoints.Temperatura05_TRIP01
-        "TEMPERATURA_06_TRIP01":                62,                             # Setpoints.Temperatura06_TRIP01
-        "TEMPERATURA_07_TRIP01":                63,                             # Setpoints.Temperatura07_TRIP01
-        "TEMPERATURA_08_TRIP01":                64,                             # Setpoints.Temperatura08_TRIP01
-        "TEMPERATURA_09_TRIP01":                65,                             # Setpoints.Temperatura09_TRIP01
-        "TEMPERATURA_10_TRIP01":                66,                             # Setpoints.Temperatura10_TRIP01
-        "TEMPERATURA_11_TRIP01":                67,                             # Setpoints.Temperatura11_TRIP01
-        "TEMPERATURA_12_TRIP01":                68,                             # Setpoints.Temperatura12_TRIP01
-        "TEMPERATURA_13_TRIP01":                69,                             # Setpoints.Temperatura13_TRIP01
-        "TEMPERATURA_14_TRIP01":                70,                             # Setpoints.Temperatura14_TRIP01
-        "TEMPERATURA_15_TRIP01":                71,                             # Setpoints.Temperatura15_TRIP01
-        "TEMPERATURA_16_TRIP01":                72,                             # Setpoints.Temperatura16_TRIP01
-        "TEMPERATURA_01_TRIP02":                73,                             # Setpoints.Temperatura01_TRIP02
-        "TEMPERATURA_02_TRIP02":                74,                             # Setpoints.Temperatura02_TRIP02
-        "TEMPERATURA_03_TRIP02":                75,                             # Setpoints.Temperatura03_TRIP02
-        "TEMPERATURA_04_TRIP02":                76,                             # Setpoints.Temperatura04_TRIP02
-        "TEMPERATURA_05_TRIP02":                77,                             # Setpoints.Temperatura05_TRIP02
-        "TEMPERATURA_06_TRIP02":                78,                             # Setpoints.Temperatura06_TRIP02
-        "TEMPERATURA_07_TRIP02":                79,                             # Setpoints.Temperatura07_TRIP02
-        "TEMPERATURA_08_TRIP02":                80,                             # Setpoints.Temperatura08_TRIP02
-        "TEMPERATURA_09_TRIP02":                81,                             # Setpoints.Temperatura09_TRIP02
-        "TEMPERATURA_10_TRIP02":                82,                             # Setpoints.Temperatura10_TRIP02
-        "TEMPERATURA_11_TRIP02":                83,                             # Setpoints.Temperatura11_TRIP02
-        "TEMPERATURA_12_TRIP02":                84,                             # Setpoints.Temperatura12_TRIP02
-        "TEMPERATURA_13_TRIP02":                85,                             # Setpoints.Temperatura13_TRIP02
-        "TEMPERATURA_14_TRIP02":                86,                             # Setpoints.Temperatura14_TRIP02
-        "TEMPERATURA_15_TRIP02":                87,                             # Setpoints.Temperatura15_TRIP02
-        "TEMPERATURA_16_TRIP02":                88,                             # Setpoints.Temperatura16_TRIP02
+        "TEMPERATURA_01_ALARME":                41 + 13569,                     # Setpoints.Temperatura01_Alarme
+        "TEMPERATURA_02_ALARME":                42 + 13569,                     # Setpoints.Temperatura02_Alarme
+        "TEMPERATURA_03_ALARME":                43 + 13569,                     # Setpoints.Temperatura03_Alarme
+        "TEMPERATURA_04_ALARME":                44 + 13569,                     # Setpoints.Temperatura04_Alarme
+        "TEMPERATURA_05_ALARME":                45 + 13569,                     # Setpoints.Temperatura05_Alarme
+        "TEMPERATURA_06_ALARME":                46 + 13569,                     # Setpoints.Temperatura06_Alarme
+        "TEMPERATURA_07_ALARME":                47 + 13569,                     # Setpoints.Temperatura07_Alarme
+        "TEMPERATURA_08_ALARME":                48 + 13569,                     # Setpoints.Temperatura08_Alarme
+        "TEMPERATURA_09_ALARME":                49 + 13569,                     # Setpoints.Temperatura09_Alarme
+        "TEMPERATURA_10_ALARME":                50 + 13569,                     # Setpoints.Temperatura10_Alarme
+        "TEMPERATURA_11_ALARME":                51 + 13569,                     # Setpoints.Temperatura11_Alarme
+        "TEMPERATURA_12_ALARME":                52 + 13569,                     # Setpoints.Temperatura12_Alarme
+        "TEMPERATURA_13_ALARME":                53 + 13569,                     # Setpoints.Temperatura13_Alarme
+        "TEMPERATURA_14_ALARME":                54 + 13569,                     # Setpoints.Temperatura14_Alarme
+        "TEMPERATURA_15_ALARME":                55 + 13569,                     # Setpoints.Temperatura15_Alarme
+        "TEMPERATURA_16_ALARME":                56 + 13569,                     # Setpoints.Temperatura16_Alarme
+        "TEMPERATURA_01_TRIP01":                57 + 13569,                     # Setpoints.Temperatura01_TRIP01
+        "TEMPERATURA_02_TRIP01":                58 + 13569,                     # Setpoints.Temperatura02_TRIP01
+        "TEMPERATURA_03_TRIP01":                59 + 13569,                     # Setpoints.Temperatura03_TRIP01
+        "TEMPERATURA_04_TRIP01":                60 + 13569,                     # Setpoints.Temperatura04_TRIP01
+        "TEMPERATURA_05_TRIP01":                61 + 13569,                     # Setpoints.Temperatura05_TRIP01
+        "TEMPERATURA_06_TRIP01":                62 + 13569,                     # Setpoints.Temperatura06_TRIP01
+        "TEMPERATURA_07_TRIP01":                63 + 13569,                     # Setpoints.Temperatura07_TRIP01
+        "TEMPERATURA_08_TRIP01":                64 + 13569,                     # Setpoints.Temperatura08_TRIP01
+        "TEMPERATURA_09_TRIP01":                65 + 13569,                     # Setpoints.Temperatura09_TRIP01
+        "TEMPERATURA_10_TRIP01":                66 + 13569,                     # Setpoints.Temperatura10_TRIP01
+        "TEMPERATURA_11_TRIP01":                67 + 13569,                     # Setpoints.Temperatura11_TRIP01
+        "TEMPERATURA_12_TRIP01":                68 + 13569,                     # Setpoints.Temperatura12_TRIP01
+        "TEMPERATURA_13_TRIP01":                69 + 13569,                     # Setpoints.Temperatura13_TRIP01
+        "TEMPERATURA_14_TRIP01":                70 + 13569,                     # Setpoints.Temperatura14_TRIP01
+        "TEMPERATURA_15_TRIP01":                71 + 13569,                     # Setpoints.Temperatura15_TRIP01
+        "TEMPERATURA_16_TRIP01":                72 + 13569,                     # Setpoints.Temperatura16_TRIP01
+        "TEMPERATURA_01_TRIP02":                73 + 13569,                     # Setpoints.Temperatura01_TRIP02
+        "TEMPERATURA_02_TRIP02":                74 + 13569,                     # Setpoints.Temperatura02_TRIP02
+        "TEMPERATURA_03_TRIP02":                75 + 13569,                     # Setpoints.Temperatura03_TRIP02
+        "TEMPERATURA_04_TRIP02":                76 + 13569,                     # Setpoints.Temperatura04_TRIP02
+        "TEMPERATURA_05_TRIP02":                77 + 13569,                     # Setpoints.Temperatura05_TRIP02
+        "TEMPERATURA_06_TRIP02":                78 + 13569,                     # Setpoints.Temperatura06_TRIP02
+        "TEMPERATURA_07_TRIP02":                79 + 13569,                     # Setpoints.Temperatura07_TRIP02
+        "TEMPERATURA_08_TRIP02":                80 + 13569,                     # Setpoints.Temperatura08_TRIP02
+        "TEMPERATURA_09_TRIP02":                81 + 13569,                     # Setpoints.Temperatura09_TRIP02
+        "TEMPERATURA_10_TRIP02":                82 + 13569,                     # Setpoints.Temperatura10_TRIP02
+        "TEMPERATURA_11_TRIP02":                83 + 13569,                     # Setpoints.Temperatura11_TRIP02
+        "TEMPERATURA_12_TRIP02":                84 + 13569,                     # Setpoints.Temperatura12_TRIP02
+        "TEMPERATURA_13_TRIP02":                85 + 13569,                     # Setpoints.Temperatura13_TRIP02
+        "TEMPERATURA_14_TRIP02":                86 + 13569,                     # Setpoints.Temperatura14_TRIP02
+        "TEMPERATURA_15_TRIP02":                87 + 13569,                     # Setpoints.Temperatura15_TRIP02
+        "TEMPERATURA_16_TRIP02":                88 + 13569,                     # Setpoints.Temperatura16_TRIP02
 
         # Grade Suja
-        "GradeSuja_TRIP":                       96,                             # Setpoints.GradeSuja_TRIP
+        "GradeSuja_TRIP":                       96 + 13569,                     # Setpoints.GradeSuja_TRIP
 
         # Curva
-        "CURVA_01_DISTRIB_P1":                  97,                             # Setpoints.Curva01_DistribuidorP1
-        "CURVA_01_DISTRIB_P2":                  98,                             # Setpoints.Curva01_DistribuidorP2
-        "CURVA_01_DISTRIB_P3":                  99,                             # Setpoints.Curva01_DistribuidorP3
-        "CURVA_01_DISTRIB_P4":                  100,                            # Setpoints.Curva01_DistribuidorP4
-        "CURVA_01_DISTRIB_P5":                  101,                            # Setpoints.Curva01_DistribuidorP5
-        "CURVA_01_DISTRIB_P6":                  102,                            # Setpoints.Curva01_DistribuidorP6
-        "CURVA_01_DISTRIB_P7":                  103,                            # Setpoints.Curva01_DistribuidorP7
-        "CURVA_01_DISTRIB_P8":                  104,                            # Setpoints.Curva01_DistribuidorP8
-        "CURVA_01_DISTRIB_P9":                  105,                            # Setpoints.Curva01_DistribuidorP9
-        "CURVA_01_DISTRIB_P10":                 106,                            # Setpoints.Curva01_DistribuidorP10
-        "CURVA_01_ROTOR_P1":                    107,                            # Setpoints.Curva01_RotorP1
-        "CURVA_01_ROTOR_P2":                    108,                            # Setpoints.Curva01_RotorP2
-        "CURVA_01_ROTOR_P3":                    109,                            # Setpoints.Curva01_RotorP3
-        "CURVA_01_ROTOR_P4":                    110,                            # Setpoints.Curva01_RotorP4
-        "CURVA_01_ROTOR_P5":                    111,                            # Setpoints.Curva01_RotorP5
-        "CURVA_01_ROTOR_P6":                    112,                            # Setpoints.Curva01_RotorP6
-        "CURVA_01_ROTOR_P7":                    113,                            # Setpoints.Curva01_RotorP7
-        "CURVA_01_ROTOR_P8":                    114,                            # Setpoints.Curva01_RotorP8
-        "CURVA_01_ROTOR_P9":                    115,                            # Setpoints.Curva01_RotorP9
-        "CURVA_01_ROTOR_P10":                   116,                            # Setpoints.Curva01_RotorP10
-        "CURVA_02_DISTRIB_P1":                  117,                            # Setpoints.Curva02_DistribuidorP1
-        "CURVA_02_DISTRIB_P2":                  118,                            # Setpoints.Curva02_DistribuidorP2
-        "CURVA_02_DISTRIB_P3":                  119,                            # Setpoints.Curva02_DistribuidorP3
-        "CURVA_02_DISTRIB_P4":                  120,                            # Setpoints.Curva02_DistribuidorP4
-        "CURVA_02_DISTRIB_P5":                  121,                            # Setpoints.Curva02_DistribuidorP5
-        "CURVA_02_DISTRIB_P6":                  122,                            # Setpoints.Curva02_DistribuidorP6
-        "CURVA_02_DISTRIB_P7":                  123,                            # Setpoints.Curva02_DistribuidorP7
-        "CURVA_02_DISTRIB_P8":                  124,                            # Setpoints.Curva02_DistribuidorP8
-        "CURVA_02_DISTRIB_P9":                  125,                            # Setpoints.Curva02_DistribuidorP9
-        "CURVA_02_DISTRIB_P10":                 126,                            # Setpoints.Curva02_DistribuidorP10
-        "CURVA_02_ROTOR_P1":                    127,                            # Setpoints.Curva02_RotorP1
-        "CURVA_02_ROTOR_P2":                    128,                            # Setpoints.Curva02_RotorP2
-        "CURVA_02_ROTOR_P3":                    129,                            # Setpoints.Curva02_RotorP3
-        "CURVA_02_ROTOR_P4":                    130,                            # Setpoints.Curva02_RotorP4
-        "CURVA_02_ROTOR_P5":                    131,                            # Setpoints.Curva02_RotorP5
-        "CURVA_02_ROTOR_P6":                    132,                            # Setpoints.Curva02_RotorP6
-        "CURVA_02_ROTOR_P7":                    133,                            # Setpoints.Curva02_RotorP7
-        "CURVA_02_ROTOR_P8":                    134,                            # Setpoints.Curva02_RotorP8
-        "CURVA_02_ROTOR_P9":                    135,                            # Setpoints.Curva02_RotorP9
-        "CURVA_02_ROTOR_P10":                   136,                            # Setpoints.Curva02_RotorP10
-        "CURVA_03_DISTRIB_P1":                  137,                            # Setpoints.Curva03_DistribuidorP1
-        "CURVA_03_DISTRIB_P2":                  138,                            # Setpoints.Curva03_DistribuidorP2
-        "CURVA_03_DISTRIB_P3":                  139,                            # Setpoints.Curva03_DistribuidorP3
-        "CURVA_03_DISTRIB_P4":                  140,                            # Setpoints.Curva03_DistribuidorP4
-        "CURVA_03_DISTRIB_P5":                  141,                            # Setpoints.Curva03_DistribuidorP5
-        "CURVA_03_DISTRIB_P6":                  142,                            # Setpoints.Curva03_DistribuidorP6
-        "CURVA_03_DISTRIB_P7":                  143,                            # Setpoints.Curva03_DistribuidorP7
-        "CURVA_03_DISTRIB_P8":                  144,                            # Setpoints.Curva03_DistribuidorP8
-        "CURVA_03_DISTRIB_P9":                  145,                            # Setpoints.Curva03_DistribuidorP9
-        "CURVA_03_DISTRIB_P10":                 146,                            # Setpoints.Curva03_DistribuidorP10
-        "CURVA_03_ROTOR_P1":                    147,                            # Setpoints.Curva03_RotorP1
-        "CURVA_03_ROTOR_P2":                    148,                            # Setpoints.Curva03_RotorP2
-        "CURVA_03_ROTOR_P3":                    149,                            # Setpoints.Curva03_RotorP3
-        "CURVA_03_ROTOR_P4":                    150,                            # Setpoints.Curva03_RotorP4
-        "CURVA_03_ROTOR_P5":                    151,                            # Setpoints.Curva03_RotorP5
-        "CURVA_03_ROTOR_P6":                    152,                            # Setpoints.Curva03_RotorP6
-        "CURVA_03_ROTOR_P7":                    153,                            # Setpoints.Curva03_RotorP7
-        "CURVA_03_ROTOR_P8":                    154,                            # Setpoints.Curva03_RotorP8
-        "CURVA_03_ROTOR_P9":                    155,                            # Setpoints.Curva03_RotorP9
-        "CURVA_03_ROTOR_P10":                   156,                            # Setpoints.Curva03_RotorP10
-        "CURVA_04_DISTRIB_P1":                  157,                            # Setpoints.Curva04_DistribuidorP1
-        "CURVA_04_DISTRIB_P2":                  158,                            # Setpoints.Curva04_DistribuidorP2
-        "CURVA_04_DISTRIB_P3":                  159,                            # Setpoints.Curva04_DistribuidorP3
-        "CURVA_04_DISTRIB_P4":                  160,                            # Setpoints.Curva04_DistribuidorP4
-        "CURVA_04_DISTRIB_P5":                  161,                            # Setpoints.Curva04_DistribuidorP5
-        "CURVA_04_DISTRIB_P6":                  162,                            # Setpoints.Curva04_DistribuidorP6
-        "CURVA_04_DISTRIB_P7":                  163,                            # Setpoints.Curva04_DistribuidorP7
-        "CURVA_04_DISTRIB_P8":                  164,                            # Setpoints.Curva04_DistribuidorP8
-        "CURVA_04_DISTRIB_P9":                  165,                            # Setpoints.Curva04_DistribuidorP9
-        "CURVA_04_DISTRIB_P10":                 166,                            # Setpoints.Curva04_DistribuidorP10
-        "CURVA_04_ROTOR_P1":                    167,                            # Setpoints.Curva04_RotorP1
-        "CURVA_04_ROTOR_P2":                    168,                            # Setpoints.Curva04_RotorP2
-        "CURVA_04_ROTOR_P3":                    169,                            # Setpoints.Curva04_RotorP3
-        "CURVA_04_ROTOR_P4":                    170,                            # Setpoints.Curva04_RotorP4
-        "CURVA_04_ROTOR_P5":                    171,                            # Setpoints.Curva04_RotorP5
-        "CURVA_04_ROTOR_P6":                    172,                            # Setpoints.Curva04_RotorP6
-        "CURVA_04_ROTOR_P7":                    173,                            # Setpoints.Curva04_RotorP7
-        "CURVA_04_ROTOR_P8":                    174,                            # Setpoints.Curva04_RotorP8
-        "CURVA_04_ROTOR_P9":                    175,                            # Setpoints.Curva04_RotorP9
-        "CURVA_04_ROTOR_P10":                   176,                            # Setpoints.Curva04_RotorP10
-        "CURVA_05_DISTRIB_P1":                  177,                            # Setpoints.Curva05_DistribuidorP1
-        "CURVA_05_DISTRIB_P2":                  178,                            # Setpoints.Curva05_DistribuidorP2
-        "CURVA_05_DISTRIB_P3":                  179,                            # Setpoints.Curva05_DistribuidorP3
-        "CURVA_05_DISTRIB_P4":                  180,                            # Setpoints.Curva05_DistribuidorP4
-        "CURVA_05_DISTRIB_P5":                  181,                            # Setpoints.Curva05_DistribuidorP5
-        "CURVA_05_DISTRIB_P6":                  182,                            # Setpoints.Curva05_DistribuidorP6
-        "CURVA_05_DISTRIB_P7":                  183,                            # Setpoints.Curva05_DistribuidorP7
-        "CURVA_05_DISTRIB_P8":                  184,                            # Setpoints.Curva05_DistribuidorP8
-        "CURVA_05_DISTRIB_P9":                  185,                            # Setpoints.Curva05_DistribuidorP9
-        "CURVA_05_DISTRIB_P10":                 186,                            # Setpoints.Curva05_DistribuidorP10
-        "CURVA_05_ROTOR_P1":                    187,                            # Setpoints.Curva05_RotorP1
-        "CURVA_05_ROTOR_P2":                    188,                            # Setpoints.Curva05_RotorP2
-        "CURVA_05_ROTOR_P3":                    189,                            # Setpoints.Curva05_RotorP3
-        "CURVA_05_ROTOR_P4":                    190,                            # Setpoints.Curva05_RotorP4
-        "CURVA_05_ROTOR_P5":                    191,                            # Setpoints.Curva05_RotorP5
-        "CURVA_05_ROTOR_P6":                    192,                            # Setpoints.Curva05_RotorP6
-        "CURVA_05_ROTOR_P7":                    193,                            # Setpoints.Curva05_RotorP7
-        "CURVA_05_ROTOR_P8":                    194,                            # Setpoints.Curva05_RotorP8
-        "CURVA_05_ROTOR_P9":                    195,                            # Setpoints.Curva05_RotorP9
-        "CURVA_05_ROTOR_P10":                   196,                            # Setpoints.Curva05_RotorP10
+        "CURVA_01_DISTRIB_P1":                  97 + 13569,                     # Setpoints.Curva01_DistribuidorP1
+        "CURVA_01_DISTRIB_P2":                  98 + 13569,                     # Setpoints.Curva01_DistribuidorP2
+        "CURVA_01_DISTRIB_P3":                  99 + 13569,                     # Setpoints.Curva01_DistribuidorP3
+        "CURVA_01_DISTRIB_P4":                  100 + 13569,                    # Setpoints.Curva01_DistribuidorP4
+        "CURVA_01_DISTRIB_P5":                  101 + 13569,                    # Setpoints.Curva01_DistribuidorP5
+        "CURVA_01_DISTRIB_P6":                  102 + 13569,                    # Setpoints.Curva01_DistribuidorP6
+        "CURVA_01_DISTRIB_P7":                  103 + 13569,                    # Setpoints.Curva01_DistribuidorP7
+        "CURVA_01_DISTRIB_P8":                  104 + 13569,                    # Setpoints.Curva01_DistribuidorP8
+        "CURVA_01_DISTRIB_P9":                  105 + 13569,                    # Setpoints.Curva01_DistribuidorP9
+        "CURVA_01_DISTRIB_P10":                 106 + 13569,                    # Setpoints.Curva01_DistribuidorP10
+        "CURVA_01_ROTOR_P1":                    107 + 13569,                    # Setpoints.Curva01_RotorP1
+        "CURVA_01_ROTOR_P2":                    108 + 13569,                    # Setpoints.Curva01_RotorP2
+        "CURVA_01_ROTOR_P3":                    109 + 13569,                    # Setpoints.Curva01_RotorP3
+        "CURVA_01_ROTOR_P4":                    110 + 13569,                    # Setpoints.Curva01_RotorP4
+        "CURVA_01_ROTOR_P5":                    111 + 13569,                    # Setpoints.Curva01_RotorP5
+        "CURVA_01_ROTOR_P6":                    112 + 13569,                    # Setpoints.Curva01_RotorP6
+        "CURVA_01_ROTOR_P7":                    113 + 13569,                    # Setpoints.Curva01_RotorP7
+        "CURVA_01_ROTOR_P8":                    114 + 13569,                    # Setpoints.Curva01_RotorP8
+        "CURVA_01_ROTOR_P9":                    115 + 13569,                    # Setpoints.Curva01_RotorP9
+        "CURVA_01_ROTOR_P10":                   116 + 13569,                    # Setpoints.Curva01_RotorP10
+        "CURVA_02_DISTRIB_P1":                  117 + 13569,                    # Setpoints.Curva02_DistribuidorP1
+        "CURVA_02_DISTRIB_P2":                  118 + 13569,                    # Setpoints.Curva02_DistribuidorP2
+        "CURVA_02_DISTRIB_P3":                  119 + 13569,                    # Setpoints.Curva02_DistribuidorP3
+        "CURVA_02_DISTRIB_P4":                  120 + 13569,                    # Setpoints.Curva02_DistribuidorP4
+        "CURVA_02_DISTRIB_P5":                  121 + 13569,                    # Setpoints.Curva02_DistribuidorP5
+        "CURVA_02_DISTRIB_P6":                  122 + 13569,                    # Setpoints.Curva02_DistribuidorP6
+        "CURVA_02_DISTRIB_P7":                  123 + 13569,                    # Setpoints.Curva02_DistribuidorP7
+        "CURVA_02_DISTRIB_P8":                  124 + 13569,                    # Setpoints.Curva02_DistribuidorP8
+        "CURVA_02_DISTRIB_P9":                  125 + 13569,                    # Setpoints.Curva02_DistribuidorP9
+        "CURVA_02_DISTRIB_P10":                 126 + 13569,                    # Setpoints.Curva02_DistribuidorP10
+        "CURVA_02_ROTOR_P1":                    127 + 13569,                    # Setpoints.Curva02_RotorP1
+        "CURVA_02_ROTOR_P2":                    128 + 13569,                    # Setpoints.Curva02_RotorP2
+        "CURVA_02_ROTOR_P3":                    129 + 13569,                    # Setpoints.Curva02_RotorP3
+        "CURVA_02_ROTOR_P4":                    130 + 13569,                    # Setpoints.Curva02_RotorP4
+        "CURVA_02_ROTOR_P5":                    131 + 13569,                    # Setpoints.Curva02_RotorP5
+        "CURVA_02_ROTOR_P6":                    132 + 13569,                    # Setpoints.Curva02_RotorP6
+        "CURVA_02_ROTOR_P7":                    133 + 13569,                    # Setpoints.Curva02_RotorP7
+        "CURVA_02_ROTOR_P8":                    134 + 13569,                    # Setpoints.Curva02_RotorP8
+        "CURVA_02_ROTOR_P9":                    135 + 13569,                    # Setpoints.Curva02_RotorP9
+        "CURVA_02_ROTOR_P10":                   136 + 13569,                    # Setpoints.Curva02_RotorP10
+        "CURVA_03_DISTRIB_P1":                  137 + 13569,                    # Setpoints.Curva03_DistribuidorP1
+        "CURVA_03_DISTRIB_P2":                  138 + 13569,                    # Setpoints.Curva03_DistribuidorP2
+        "CURVA_03_DISTRIB_P3":                  139 + 13569,                    # Setpoints.Curva03_DistribuidorP3
+        "CURVA_03_DISTRIB_P4":                  140 + 13569,                    # Setpoints.Curva03_DistribuidorP4
+        "CURVA_03_DISTRIB_P5":                  141 + 13569,                    # Setpoints.Curva03_DistribuidorP5
+        "CURVA_03_DISTRIB_P6":                  142 + 13569,                    # Setpoints.Curva03_DistribuidorP6
+        "CURVA_03_DISTRIB_P7":                  143 + 13569,                    # Setpoints.Curva03_DistribuidorP7
+        "CURVA_03_DISTRIB_P8":                  144 + 13569,                    # Setpoints.Curva03_DistribuidorP8
+        "CURVA_03_DISTRIB_P9":                  145 + 13569,                    # Setpoints.Curva03_DistribuidorP9
+        "CURVA_03_DISTRIB_P10":                 146 + 13569,                    # Setpoints.Curva03_DistribuidorP10
+        "CURVA_03_ROTOR_P1":                    147 + 13569,                    # Setpoints.Curva03_RotorP1
+        "CURVA_03_ROTOR_P2":                    148 + 13569,                    # Setpoints.Curva03_RotorP2
+        "CURVA_03_ROTOR_P3":                    149 + 13569,                    # Setpoints.Curva03_RotorP3
+        "CURVA_03_ROTOR_P4":                    150 + 13569,                    # Setpoints.Curva03_RotorP4
+        "CURVA_03_ROTOR_P5":                    151 + 13569,                    # Setpoints.Curva03_RotorP5
+        "CURVA_03_ROTOR_P6":                    152 + 13569,                    # Setpoints.Curva03_RotorP6
+        "CURVA_03_ROTOR_P7":                    153 + 13569,                    # Setpoints.Curva03_RotorP7
+        "CURVA_03_ROTOR_P8":                    154 + 13569,                    # Setpoints.Curva03_RotorP8
+        "CURVA_03_ROTOR_P9":                    155 + 13569,                    # Setpoints.Curva03_RotorP9
+        "CURVA_03_ROTOR_P10":                   156 + 13569,                    # Setpoints.Curva03_RotorP10
+        "CURVA_04_DISTRIB_P1":                  157 + 13569,                    # Setpoints.Curva04_DistribuidorP1
+        "CURVA_04_DISTRIB_P2":                  158 + 13569,                    # Setpoints.Curva04_DistribuidorP2
+        "CURVA_04_DISTRIB_P3":                  159 + 13569,                    # Setpoints.Curva04_DistribuidorP3
+        "CURVA_04_DISTRIB_P4":                  160 + 13569,                    # Setpoints.Curva04_DistribuidorP4
+        "CURVA_04_DISTRIB_P5":                  161 + 13569,                    # Setpoints.Curva04_DistribuidorP5
+        "CURVA_04_DISTRIB_P6":                  162 + 13569,                    # Setpoints.Curva04_DistribuidorP6
+        "CURVA_04_DISTRIB_P7":                  163 + 13569,                    # Setpoints.Curva04_DistribuidorP7
+        "CURVA_04_DISTRIB_P8":                  164 + 13569,                    # Setpoints.Curva04_DistribuidorP8
+        "CURVA_04_DISTRIB_P9":                  165 + 13569,                    # Setpoints.Curva04_DistribuidorP9
+        "CURVA_04_DISTRIB_P10":                 166 + 13569,                    # Setpoints.Curva04_DistribuidorP10
+        "CURVA_04_ROTOR_P1":                    167 + 13569,                    # Setpoints.Curva04_RotorP1
+        "CURVA_04_ROTOR_P2":                    168 + 13569,                    # Setpoints.Curva04_RotorP2
+        "CURVA_04_ROTOR_P3":                    169 + 13569,                    # Setpoints.Curva04_RotorP3
+        "CURVA_04_ROTOR_P4":                    170 + 13569,                    # Setpoints.Curva04_RotorP4
+        "CURVA_04_ROTOR_P5":                    171 + 13569,                    # Setpoints.Curva04_RotorP5
+        "CURVA_04_ROTOR_P6":                    172 + 13569,                    # Setpoints.Curva04_RotorP6
+        "CURVA_04_ROTOR_P7":                    173 + 13569,                    # Setpoints.Curva04_RotorP7
+        "CURVA_04_ROTOR_P8":                    174 + 13569,                    # Setpoints.Curva04_RotorP8
+        "CURVA_04_ROTOR_P9":                    175 + 13569,                    # Setpoints.Curva04_RotorP9
+        "CURVA_04_ROTOR_P10":                   176 + 13569,                    # Setpoints.Curva04_RotorP10
+        "CURVA_05_DISTRIB_P1":                  177 + 13569,                    # Setpoints.Curva05_DistribuidorP1
+        "CURVA_05_DISTRIB_P2":                  178 + 13569,                    # Setpoints.Curva05_DistribuidorP2
+        "CURVA_05_DISTRIB_P3":                  179 + 13569,                    # Setpoints.Curva05_DistribuidorP3
+        "CURVA_05_DISTRIB_P4":                  180 + 13569,                    # Setpoints.Curva05_DistribuidorP4
+        "CURVA_05_DISTRIB_P5":                  181 + 13569,                    # Setpoints.Curva05_DistribuidorP5
+        "CURVA_05_DISTRIB_P6":                  182 + 13569,                    # Setpoints.Curva05_DistribuidorP6
+        "CURVA_05_DISTRIB_P7":                  183 + 13569,                    # Setpoints.Curva05_DistribuidorP7
+        "CURVA_05_DISTRIB_P8":                  184 + 13569,                    # Setpoints.Curva05_DistribuidorP8
+        "CURVA_05_DISTRIB_P9":                  185 + 13569,                    # Setpoints.Curva05_DistribuidorP9
+        "CURVA_05_DISTRIB_P10":                 186 + 13569,                    # Setpoints.Curva05_DistribuidorP10
+        "CURVA_05_ROTOR_P1":                    187 + 13569,                    # Setpoints.Curva05_RotorP1
+        "CURVA_05_ROTOR_P2":                    188 + 13569,                    # Setpoints.Curva05_RotorP2
+        "CURVA_05_ROTOR_P3":                    189 + 13569,                    # Setpoints.Curva05_RotorP3
+        "CURVA_05_ROTOR_P4":                    190 + 13569,                    # Setpoints.Curva05_RotorP4
+        "CURVA_05_ROTOR_P5":                    191 + 13569,                    # Setpoints.Curva05_RotorP5
+        "CURVA_05_ROTOR_P6":                    192 + 13569,                    # Setpoints.Curva05_RotorP6
+        "CURVA_05_ROTOR_P7":                    193 + 13569,                    # Setpoints.Curva05_RotorP7
+        "CURVA_05_ROTOR_P8":                    194 + 13569,                    # Setpoints.Curva05_RotorP8
+        "CURVA_05_ROTOR_P9":                    195 + 13569,                    # Setpoints.Curva05_RotorP9
+        "CURVA_05_ROTOR_P10":                   196 + 13569,                    # Setpoints.Curva05_RotorP10
 
         # Referencia Curva
-        "REFER_CURVA_01":                       197,                            # Setpoints.ReferenciaCurva01
-        "REFER_CURVA_02":                       198,                            # Setpoints.ReferenciaCurva02
-        "REFER_CURVA_03":                       199,                            # Setpoints.ReferenciaCurva03
-        "REFER_CURVA_04":                       200,                            # Setpoints.ReferenciaCurva04
-        "REFER_CURVA_05":                       201,                            # Setpoints.ReferenciaCurva05
+        "REFER_CURVA_01":                       197 + 13569,                    # Setpoints.ReferenciaCurva01
+        "REFER_CURVA_02":                       198 + 13569,                    # Setpoints.ReferenciaCurva02
+        "REFER_CURVA_03":                       199 + 13569,                    # Setpoints.ReferenciaCurva03
+        "REFER_CURVA_04":                       200 + 13569,                    # Setpoints.ReferenciaCurva04
+        "REFER_CURVA_05":                       201 + 13569,                    # Setpoints.ReferenciaCurva05
 
         # Outros
-        "TEMPO_ATUALIZACAO":                    202,                            # Setpoints.TempoAtualizacao
-        "MODO_OPERACAO_RETENTIVO":              203,                            # Setpoints.ModoOperacao_Retentivo
-        "CURVA_SEL_RETENTIVO":                  204,                            # Setpoints.CurvaSelecionada_Retentivo
+        "TEMPO_ATUALIZACAO":                    202 + 13569,                    # Setpoints.TempoAtualizacao
+        "MODO_OPERACAO_RETENTIVO":              203 + 13569,                    # Setpoints.ModoOperacao_Retentivo
+        "CURVA_SEL_RETENTIVO":                  204 + 13569,                    # Setpoints.CurvaSelecionada_Retentivo
 
 
         ## LEITURAS
 
         # Nível
-        "NV_JUSANTE":                           2,                              # Leituras.NivelJusante
-        "NV_BARRAGEM":                          3,                              # Leituras.NivelBarragem
-        "NV_CANAL":                             4,                              # Leituras.NivelCanal
-        "NV_CAMARA_CARGA":                      5,                              # Leituras.NivelCamaraCarga
-        "QUEDA_BRUTA":                          131,                            # Leituras.QuedaBruta
+        "NV_JUSANTE":                           2 + 12764,                      # Leituras.NivelJusante
+        "NV_BARRAGEM":                          3 + 12764,                      # Leituras.NivelBarragem
+        "NV_CANAL":                             4 + 12764,                      # Leituras.NivelCanal
+        "NV_CAMARA_CARGA":                      5 + 12764,                      # Leituras.NivelCamaraCarga
+        "QUEDA_BRUTA":                          131 + 12764,                    # Leituras.QuedaBruta
 
         # Operação
-        "OPER_PAINEL_RESET_ALARMES":            6,                              # Leituras.Operacao_PainelResetAlarmes
-        "OPER_PAINEL_RECONHECE_ALARMES":        7,                              # Leituras.Operacao_PainelReconheceAlarmes
-        "OPER_INFO":                            8,                              # Leituras.Operacao_Info
-        "OPER_ETAPA_ALVO":                      9,                              # Leituras.Operacao_EtapaAlvo
-        "OPER_ETAPA_ATUAL":                     10,                             # Leituras.Operacao_EtapaAtual
-        "OPER_ETAPA_TRANSICAO":                 11,                             # Leituras.Operacao_EtapaTransicao
-        "OPER_INFO_PARADA":                     12,                             # Leituras.Operacao_InfoParada
+        "OPER_PAINEL_RESET_ALARMES":            6 + 12764,                      # Leituras.Operacao_PainelResetAlarmes
+        "OPER_PAINEL_RECONHECE_ALARMES":        7 + 12764,                      # Leituras.Operacao_PainelReconheceAlarmes
+        "OPER_INFO":                            8 + 12764,                      # Leituras.Operacao_Info
+        "OPER_ETAPA_ALVO":                      9 + 12764,                      # Leituras.Operacao_EtapaAlvo
+        "OPER_ETAPA_ATUAL":                     10 + 12764,                     # Leituras.Operacao_EtapaAtual
+        "OPER_ETAPA_TRANSICAO":                 11 + 12764,                     # Leituras.Operacao_EtapaTransicao
+        "OPER_INFO_PARADA":                     12 + 12764,                     # Leituras.Operacao_InfoParada
 
         # UHCT
-        "UHCT_INFO":                            13,                             # Leituras.UHCT_Info
-        "UHCT_BOMBAS":                          14,                             # Leituras.UHCT_Bombas
-        "UHCT_RODIZIO":                         15,                             # Leituras.UHCT_Rodizio
-        "UHCT_VALVULAS":                        16,                             # Leituras.UHCT_Valvulas
-        "UHCT_FILTROS":                         17,                             # Leituras.UHCT_Filtros
-        "UHCT_PRESSOSTATOS":                    18,                             # Leituras.UHCT_Pressostatos
-        "UHCT_NIVEL":                           19,                             # Leituras.UHCT_Nivel
-        "UHCT_PRESSAO_OLEO":                    20,                             # Leituras.UHCT_PressaoOleo
-        "UHCT_ACUM_RODIZIO_PRINCIPAL":          21,                             # Leituras.UHCT_AcumuladorRodizioPrincipal
-        "UHCT_ACUM_RODIZIO_RETAGUARDA":         22,                             # Leituras.UHCT_AcumuladorRodizioRetaguarda
+        "UHCT_INFO":                            13 + 12764,                     # Leituras.UHCT_Info
+        "UHCT_BOMBAS":                          14 + 12764,                     # Leituras.UHCT_Bombas
+        "UHCT_RODIZIO":                         15 + 12764,                     # Leituras.UHCT_Rodizio
+        "UHCT_VALVULAS":                        16 + 12764,                     # Leituras.UHCT_Valvulas
+        "UHCT_FILTROS":                         17 + 12764,                     # Leituras.UHCT_Filtros
+        "UHCT_PRESSOSTATOS":                    18 + 12764,                     # Leituras.UHCT_Pressostatos
+        "UHCT_NIVEL":                           19 + 12764,                     # Leituras.UHCT_Nivel
+        "UHCT_PRESSAO_OLEO":                    20 + 12764,                     # Leituras.UHCT_PressaoOleo
+        "UHCT_ACUM_RODIZIO_PRINCIPAL":          21 + 12764,                     # Leituras.UHCT_AcumuladorRodizioPrincipal
+        "UHCT_ACUM_RODIZIO_RETAGUARDA":         22 + 12764,                     # Leituras.UHCT_AcumuladorRodizioRetaguarda
 
         # UHLM
-        "UHLM_INFO":                            23,                             # Leituras.UHLM_Info
-        "UHLM_BOMBAS":                          24,                             # Leituras.UHLM_Bombas
-        "UHLM_RODIZIO":                         25,                             # Leituras.UHLM_Rodizio
-        "UHLM_FILTROS":                         26,                             # Leituras.UHLM_Filtros
-        "UHLM_PRESSOSTATOS":                    27,                             # Leituras.UHLM_Pressostatos
-        "UHLM_FLUXOSTATOS":                     28,                             # Leituras.UHLM_Fluxostatos
-        "UHLM_NIVEL":                           29,                             # Leituras.UHLM_Nivel
-        "UHLM_ACUM_RODIZIO_PRINCIPAL":          30,                             # Leituras.UHLM_AcumuladorRodizioPrincipal
-        "UHLM_ACUM_RODIZIO_RETAGUARDA":         31,                             # Leituras.UHLM_AcumuladorRodizioRetaguarda
-        "UHLM_FLUXOSTATO_OLEO_01":              123,                            # Leituras.UHLM_FluxostatoOleo01
-        "UHLM_FLUXOSTATO_OLEO_02":              124,                            # Leituras.UHLM_FluxostatoOleo02
-        "UHLM_FLUXOSTATO_OLEO_03":              125,                            # Leituras.UHLM_FluxostatoOleo03
-        "UHLM_FLUXOSTATO_OLEO_04":              126,                            # Leituras.UHLM_FluxostatoOleo04
+        "UHLM_INFO":                            23 + 12764,                     # Leituras.UHLM_Info
+        "UHLM_BOMBAS":                          24 + 12764,                     # Leituras.UHLM_Bombas
+        "UHLM_RODIZIO":                         25 + 12764,                     # Leituras.UHLM_Rodizio
+        "UHLM_FILTROS":                         26 + 12764,                     # Leituras.UHLM_Filtros
+        "UHLM_PRESSOSTATOS":                    27 + 12764,                     # Leituras.UHLM_Pressostatos
+        "UHLM_FLUXOSTATOS":                     28 + 12764,                     # Leituras.UHLM_Fluxostatos
+        "UHLM_NIVEL":                           29 + 12764,                     # Leituras.UHLM_Nivel
+        "UHLM_ACUM_RODIZIO_PRINCIPAL":          30 + 12764,                     # Leituras.UHLM_AcumuladorRodizioPrincipal
+        "UHLM_ACUM_RODIZIO_RETAGUARDA":         31 + 12764,                     # Leituras.UHLM_AcumuladorRodizioRetaguarda
+        "UHLM_FLUXOSTATO_OLEO_01":              123 + 12764,                    # Leituras.UHLM_FluxostatoOleo01
+        "UHLM_FLUXOSTATO_OLEO_02":              124 + 12764,                    # Leituras.UHLM_FluxostatoOleo02
+        "UHLM_FLUXOSTATO_OLEO_03":              125 + 12764,                    # Leituras.UHLM_FluxostatoOleo03
+        "UHLM_FLUXOSTATO_OLEO_04":              126 + 12764,                    # Leituras.UHLM_FluxostatoOleo04
 
         # Turbina
-        "TURB_INFO":                            32,                             # 
-        "TURB_VALVULA_BYPASS":                  33,                             # 
-        "TURB_VALVULA_BORBOLETA":               34,                             # 
-        "TURB_TEMPO_CRACK_EFETIVO":             35,                             # 
-        "TURB_TEMPO_EQUAL_EFETIVO":             36,                             # 
-        "TURB_PRESSAO_CONDUTO":                 37,                             # 
-        "TURB_PRESSAO_CAIXA_ESPIRAL":           38,                             # 
-        "TURB_VAZAO_TURBINADA":                 39,                             # 
-        "TURB_VIBRACAO_01":                     40,                             # 
-        "TURB_VIBRACAO_02":                     41,                             # 
-        "TURB_VIBRACAO_03":                     42,                             # 
-        "TURB_VIBRACAO_04":                     43,                             # 
-        "TURB_FRENAGEM":                        44,                             # 
-        "TURB_VIBRACAO_05":                     127,                            # 
+        "TURB_INFO":                            32 + 12764,                     # Leituras.Turb_Info
+        "TURB_VALVULA_BYPASS":                  33 + 12764,                     # Leituras.Turb_ValvulaByPass
+        "TURB_VALVULA_BORBOLETA":               34 + 12764,                     # Leituras.Turb_ValvulaBorboleta
+        "TURB_TEMPO_CRACK_EFETIVO":             35 + 12764,                     # Leituras.Turb_TempoCrackEfetivo
+        "TURB_TEMPO_EQUAL_EFETIVO":             36 + 12764,                     # Leituras.Turb_TempoEqualizacaoEfetivo
+        "TURB_PRESSAO_CONDUTO":                 37 + 12764,                     # Leituras.Turb_PressaoConduto
+        "TURB_PRESSAO_CAIXA_ESPIRAL":           38 + 12764,                     # Leituras.Turb_PressaoCaixaEspiral
+        "TURB_VAZAO_TURBINADA":                 39 + 12764,                     # Leituras.Turb_VazaoTurbinada
+        "TURB_VIBRACAO_01":                     40 + 12764,                     # Leituras.Turb_Vibracao01
+        "TURB_VIBRACAO_02":                     41 + 12764,                     # Leituras.Turb_Vibracao02
+        "TURB_VIBRACAO_03":                     42 + 12764,                     # Leituras.Turb_Vibracao03
+        "TURB_VIBRACAO_04":                     43 + 12764,                     # Leituras.Turb_Vibracao04
+        "TURB_FRENAGEM":                        44 + 12764,                     # Leituras.Turb_Frenagem
+        "TURB_VIBRACAO_05":                     127 + 12764,                    # Leituras.Turb_Vibracao05
 
         # Reg V
-        "REG_V_INFO":                           45,                             # 
-        "REG_V_ESTADO":                         46,                             # 
-        "REG_V_VELOCIDADE":                     47,                             # 
-        "REG_V_DISTRIBUIDOR":                   48,                             # 
-        "REG_V_ROTOR":                          49,                             # 
-        "REG_V_POT_ALVO":                       50,                             # 
-        "REG_V_CURVA_CONJUG_INFO":              128,                            # 
+        "REG_V_INFO":                           45 + 12764,                     # Leituras.RegV_Info
+        "REG_V_ESTADO":                         46 + 12764,                     # Leituras.RegV_Estado
+        "REG_V_VELOCIDADE":                     47 + 12764,                     # Leituras.RegV_Velocidade
+        "REG_V_DISTRIBUIDOR":                   48 + 12764,                     # Leituras.RegV_Distribuidor
+        "REG_V_ROTOR":                          49 + 12764,                     # Leituras.RegV_Rotor
+        "REG_V_POT_ALVO":                       50 + 12764,                     # Leituras.RegV_PotenciaAlvo
+        "REG_V_CURVA_CONJUG_INFO":              128 + 12764,                    # Leituras.RegV_CurvaConjugacao_Info
 
         # Reg T
-        "REG_T_INFO":                           51,                             # 
-        "REG_T_UEXCITACAO":                     52,                             # 
-        "REG_T_IEXCITACAO":                     53,                             # 
-        "REG_T_FPALVO":                         129,                                # 
-        "REG_T_REATIVO_ALVO":                   130,                                # 
+        "REG_T_INFO":                           51 + 12764,                     # Leituras.RegT_Info
+        "REG_T_UEXCITACAO":                     52 + 12764,                     # Leituras.RegT_UExcitacao
+        "REG_T_IEXCITACAO":                     53 + 12764,                     # Leituras.RegT_IExcitacao
+        "REG_T_FPALVO":                         129 + 12764,                    # Leituras.RegT_FPAlvo
+        "REG_T_REATIVO_ALVO":                   130 + 12764,                    # Leituras.RegT_ReativoAlvo
 
         # Sinc
-        "SINC_INFO":                            54,                             # 
-        "SINC_FREQ_GERADOR":                    55,                             # 
-        "SINC_FREQ_BARRA":                      56,                             # 
-        "SINC_TENSAO_GERADOR":                  57,                             # 
-        "SINC_TENSAO_BARRA":                    58,                             # 
+        "SINC_INFO":                            54 + 12764,                     # Leituras.Sinc_Info
+        "SINC_FREQ_GERADOR":                    55 + 12764,                     # Leituras.Sinc_FrequenciaGerador
+        "SINC_FREQ_BARRA":                      56 + 12764,                     # Leituras.Sinc_FrequenciaBarra
+        "SINC_TENSAO_GERADOR":                  57 + 12764,                     # Leituras.Sinc_TensaoGerador
+        "SINC_TENSAO_BARRA":                    58 + 12764,                     # Leituras.Sinc_TensaoBarra
 
         # DJ
-        "Dj52G_INFO":                           59,                             # 
+        "Dj52G_INFO":                           59 + 12764,                     # Leituras.Disj52G_Info
 
         # Tensão
-        "TENSAO_RN":                            60,                             # 
-        "TENSAO_SN":                            61,                             # 
-        "TENSAO_TN":                            62,                             # 
-        "TENSAO_RS":                            63,                             # 
-        "TENSAO_ST":                            64,                             # 
-        "TENSAO_TR":                            65,                             # 
+        "TENSAO_RN":                            60 + 12764,                     # Leituras.Gerador_TensaoRN
+        "TENSAO_SN":                            61 + 12764,                     # Leituras.Gerador_TensaoSN
+        "TENSAO_TN":                            62 + 12764,                     # Leituras.Gerador_TensaoTN
+        "TENSAO_RS":                            63 + 12764,                     # Leituras.Gerador_TensaoRS
+        "TENSAO_ST":                            64 + 12764,                     # Leituras.Gerador_TensaoST
+        "TENSAO_TR":                            65 + 12764,                     # Leituras.Gerador_TensaoTR
 
         # Corrente
-        "CORRENTE_R":                           66,                             # 
-        "CORRENTE_S":                           67,                             # 
-        "CORRENTE_T":                           68,                             # 
-        "CORRENTE_MEDIA":                       69,                             # 
+        "CORRENTE_R":                           66 + 12764,                     # Leituras.Gerador_CorrenteR
+        "CORRENTE_S":                           67 + 12764,                     # Leituras.Gerador_CorrenteS
+        "CORRENTE_T":                           68 + 12764,                     # Leituras.Gerador_CorrenteT
+        "CORRENTE_MEDIA":                       69 + 12764,                     # Leituras.Gerador_CorrenteMedia
 
         # Potência Ativa
-        "POT_ATIVA_1":                          70,                             # 
-        "POT_ATIVA_2":                          71,                             # 
-        "POT_ATIVA_3":                          72,                             # 
-        "POT_ATIVA_MEDIA":                      73,                             # 
+        "POT_ATIVA_1":                          70 + 12764,                     # Leituras.Gerador_PotenciaAtiva1
+        "POT_ATIVA_2":                          71 + 12764,                     # Leituras.Gerador_PotenciaAtiva2
+        "POT_ATIVA_3":                          72 + 12764,                     # Leituras.Gerador_PotenciaAtiva3
+        "POT_ATIVA_MEDIA":                      73 + 12764,                     # Leituras.Gerador_PotenciaAtivaMedia
 
         # Potência Reativa
-        "POT_REATIVA_1":                        74,                             # 
-        "POT_REATIVA_2":                        75,                             # 
-        "POT_REATIVA_3":                        76,                             # 
-        "POT_REATIVA_MEDIA":                    77,                             # 
+        "POT_REATIVA_1":                        74 + 12764,                     # Leituras.Gerador_PotenciaReativa1
+        "POT_REATIVA_2":                        75 + 12764,                     # Leituras.Gerador_PotenciaReativa2
+        "POT_REATIVA_3":                        76 + 12764,                     # Leituras.Gerador_PotenciaReativa3
+        "POT_REATIVA_MEDIA":                    77 + 12764,                     # Leituras.Gerador_PotenciaReativaMedia
 
         # Potência Aparente
-        "POT_APARENTE_1":                       78,                             # 
-        "POT_APARENTE_2":                       79,                             # 
-        "POT_APARENTE_3":                       80,                             # 
-        "POT_APARENTE_MEDIA":                   81,                             # 
+        "POT_APARENTE_1":                       78 + 12764,                     # Leituras.Gerador_PotenciaAparente1
+        "POT_APARENTE_2":                       79 + 12764,                     # Leituras.Gerador_PotenciaAparente2
+        "POT_APARENTE_3":                       80 + 12764,                     # Leituras.Gerador_PotenciaAparente3
+        "POT_APARENTE_MEDIA":                   81 + 12764,                     # Leituras.Gerador_PotenciaAparenteMedia
 
         # Fator Potência
-        "FATOR_POT_1":                          82,                             # 
-        "FATOR_POT_2":                          83,                             # 
-        "FATOR_POT_3":                          84,                             # 
-        "FATOR_POT_MEDIA":                      85,                             # 
+        "FATOR_POT_1":                          82 + 12764,                     # Leituras.Gerador_FatorPotencia1
+        "FATOR_POT_2":                          83 + 12764,                     # Leituras.Gerador_FatorPotencia2
+        "FATOR_POT_3":                          84 + 12764,                     # Leituras.Gerador_FatorPotencia3
+        "FATOR_POT_MEDIA":                      85 + 12764,                     # Leituras.Gerador_FatorPotenciaMedia
 
         # Frequencia
-        "FREQUENCIA":                           86,                             # 
+        "FREQUENCIA":                           86 + 12764,                     # Leituras.Gerador_Frequencia
 
         # Energia Fornecida
-        "ENERGIA_FORNECIDA_TWh":                87,                             # 
-        "ENERGIA_FORNECIDA_GWh":                88,                             # 
-        "ENERGIA_FORNECIDA_MWh":                89,                             # 
-        "ENERGIA_FORNECIDA_kWh":                90,                             # 
-        "ENERGIA_FORNECIDA_TVarh":              91,                             # 
-        "ENERGIA_FORNECIDA_GVarh":              92,                             # 
-        "ENERGIA_FORNECIDA_MVarh":              93,                             # 
-        "ENERGIA_FORNECIDA_kVarh":              94,                             # 
-        "ENERGIA_CORNECIDA_TVarh":              95,                             # 
-        "ENERGIA_CORNECIDA_GVarh":              96,                             # 
-        "ENERGIA_CORNECIDA_MVarh":              97,                             # 
-        "ENERGIA_CORNECIDA_kVarh":              98,                             # 
+        "ENERGIA_FORNECIDA_TWh":                87 + 12764,                     # Leituras.Gerador_EnergiaFornecidaTWh
+        "ENERGIA_FORNECIDA_GWh":                88 + 12764,                     # Leituras.Gerador_EnergiaFornecidaGWh
+        "ENERGIA_FORNECIDA_MWh":                89 + 12764,                     # Leituras.Gerador_EnergiaFornecidaMWh
+        "ENERGIA_FORNECIDA_kWh":                90 + 12764,                     # Leituras.Gerador_EnergiaFornecidakWh
+        "ENERGIA_FORNECIDA_TVarh":              91 + 12764,                     # Leituras.Gerador_EnergiaFornecidaTVarh
+        "ENERGIA_FORNECIDA_GVarh":              92 + 12764,                     # Leituras.Gerador_EnergiaFornecidaGVarh
+        "ENERGIA_FORNECIDA_MVarh":              93 + 12764,                     # Leituras.Gerador_EnergiaFornecidaMVarh
+        "ENERGIA_FORNECIDA_kVarh":              94 + 12764,                     # Leituras.Gerador_EnergiaFornecidakVarh
+        "ENERGIA_CORNECIDA_TVarh":              95 + 12764,                     # Leituras.Gerador_EnergiaConsumidaTVarh
+        "ENERGIA_CORNECIDA_GVarh":              96 + 12764,                     # Leituras.Gerador_EnergiaConsumidaGVarh
+        "ENERGIA_CORNECIDA_MVarh":              97 + 12764,                     # Leituras.Gerador_EnergiaConsumidaMVarh
+        "ENERGIA_CORNECIDA_kVarh":              98 + 12764,                     # Leituras.Gerador_EnergiaConsumidakVarh
 
         # Controles
-        "CTRL_REATIVO_INFO":                    100,                                # 
-        "CTRL_POTENCIA_INFO":                   101,                                # 
+        "CTRL_REATIVO_INFO":                    100 + 12764,                    # Leituras.CtrlReativo_Info
+        "CTRL_POTENCIA_INFO":                   101 + 12764,                    # Leituras.CtrlPotencia_Info
 
         # Horimetros
-        "HORIM_ELETR_LOW":                      102,                                # 
-        "HORIM_ELETR_HIGH":                     103,                                # 
-        "HORIM_MECAN_LOW":                      104,                                # 
-        "HORIM_MECAN_HIGH":                     105,                                # 
+        "HORIM_ELETR_LOW":                      102 + 12764,                    # Leituras.HorimetroEletrico_Low
+        "HORIM_ELETR_HIGH":                     103 + 12764,                    # Leituras.HorimetroEletrico_High
+        "HORIM_MECAN_LOW":                      104 + 12764,                    # Leituras.HorimetroMecanico_Low
+        "HORIM_MECAN_HIGH":                     105 + 12764,                    # Leituras.HorimetroMecanico_High
 
         # Temperatura
-        "TEMPERATURA_01":                       107,                                # 
-        "TEMPERATURA_02":                       108,                                # 
-        "TEMPERATURA_03":                       109,                                # 
-        "TEMPERATURA_04":                       110,                                # 
-        "TEMPERATURA_05":                       111,                                # 
-        "TEMPERATURA_06":                       112,                                # 
-        "TEMPERATURA_07":                       113,                                # 
-        "TEMPERATURA_08":                       114,                                # 
-        "TEMPERATURA_09":                       115,                                # 
-        "TEMPERATURA_10":                       116,                                # 
-        "TEMPERATURA_11":                       117,                                # 
-        "TEMPERATURA_12":                       118,                                # 
-        "TEMPERATURA_13":                       119,                                # 
-        "TEMPERATURA_14":                       120,                                # 
-        "TEMPERATURA_15":                       121,                                # 
-        "TEMPERATURA_16":                       122,                                # 
+        "TEMPERATURA_01":                       107 + 12764,                    # Leituras.Temperatura_01
+        "TEMPERATURA_02":                       108 + 12764,                    # Leituras.Temperatura_02
+        "TEMPERATURA_03":                       109 + 12764,                    # Leituras.Temperatura_03
+        "TEMPERATURA_04":                       110 + 12764,                    # Leituras.Temperatura_04
+        "TEMPERATURA_05":                       111 + 12764,                    # Leituras.Temperatura_05
+        "TEMPERATURA_06":                       112 + 12764,                    # Leituras.Temperatura_06
+        "TEMPERATURA_07":                       113 + 12764,                    # Leituras.Temperatura_07
+        "TEMPERATURA_08":                       114 + 12764,                    # Leituras.Temperatura_08
+        "TEMPERATURA_09":                       115 + 12764,                    # Leituras.Temperatura_09
+        "TEMPERATURA_10":                       116 + 12764,                    # Leituras.Temperatura_10
+        "TEMPERATURA_11":                       117 + 12764,                    # Leituras.Temperatura_11
+        "TEMPERATURA_12":                       118 + 12764,                    # Leituras.Temperatura_12
+        "TEMPERATURA_13":                       119 + 12764,                    # Leituras.Temperatura_13
+        "TEMPERATURA_14":                       120 + 12764,                    # Leituras.Temperatura_14
+        "TEMPERATURA_15":                       121 + 12764,                    # Leituras.Temperatura_15
+        "TEMPERATURA_16":                       122 + 12764,                    # Leituras.Temperatura_16
 
 
         ## DISJUNTORES
