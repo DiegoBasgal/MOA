@@ -109,8 +109,8 @@ class LeituraModbusBit(LeituraModbus):
 
             # debug_log.debug(f"[LEITURA-BIT] Descrição: {self.descricao} | Leitura RAW: {self.raw}")
 
-            dec_1 = BPD.fromRegisters(leitura, byteorder=Endian.LITTLE)
-            dec_2 = BPD.fromRegisters(leitura, byteorder=Endian.LITTLE)
+            dec_1 = BPD.fromRegisters(leitura, byteorder=Endian.LITTLE, wordorder=Endian.BIG)
+            dec_2 = BPD.fromRegisters(leitura, byteorder=Endian.LITTLE, wordorder=Endian.BIG)
 
             lbit = [int(bit) for bits in [reversed(dec_1.decode_bits(1)), reversed(dec_2.decode_bits(2))] for bit in bits]
 
