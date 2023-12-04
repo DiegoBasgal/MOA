@@ -8,6 +8,7 @@ class ParametrosUsina(models.Model):
 
     # Params Usina
     modo_autonomo = models.IntegerField(default=1)
+    manter_unidades = models.BooleanField(default=False)
     emergencia_acionada = models.IntegerField(default=0)
     aguardando_reservatorio = models.IntegerField(default=0)
     modo_de_escolha_das_ugs = models.IntegerField(default=2)

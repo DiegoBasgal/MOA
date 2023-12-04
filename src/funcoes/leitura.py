@@ -131,7 +131,7 @@ class LeituraModbusBit(LeituraModbus):
 
 
 class LeituraModbusFloat(LeituraModbus):
-    def __init__(self, client: "ModbusClient"=None, registrador: "int"=None, op: "int"=3, escala: "float"=1, descricao: "str"=None) ->"None":
+    def __init__(self, client: "ModbusClient"=None, registrador: "int"=None, op: "int"=3, escala: "float"=1, wordorder: "bool"=True, descricao: "str"=None) ->"None":
         super().__init__(client, registrador, descricao)
 
         # ATRIBUIÇÃO DE VAIRÁVEIS PRIVADAS
@@ -140,6 +140,7 @@ class LeituraModbusFloat(LeituraModbus):
         self.__client = client
         self.__reg = registrador
         self.__escala = escala
+        self.__wordorder = wordorder
 
     @property
     def valor(self) -> "float":
@@ -147,20 +148,26 @@ class LeituraModbusFloat(LeituraModbus):
 
         try:
             if self.__op == 3:
-                raw = self.__client.read_holding_registers(self.__reg + 1, 2)
+                if self.__wordorder:
+                    raw = self.__client.read_holding_registers(self.__reg + 1, 2)
+                else:
+                    raw = self.__client.read_holding_registers(self.__reg, 2)
 
             elif self.__op == 4:
                 raw = self.__client.read_input_registers(self.__reg + 1, 2)
 
-            dec = BPD.fromRegisters(raw, byteorder=Endian.BIG, wordorder=Endian.LITTLE)
+            if self.__wordorder:
+                dec = BPD.fromRegisters(raw, byteorder=Endian.BIG, wordorder=Endian.LITTLE)
+            else:
+                dec = BPD.fromRegisters(raw, byteorder=Endian.BIG)
 
             val = dec.decode_32bit_float()
 
             return val * self.__escala
 
         except Exception:
-            print(f"{traceback.format_exc()}")
             logger.error(f"[LEI] Houve um erro ao realizar a Leitura de valores Float do registrador: {self.__reg}.")
+            logger.debug(traceback.format_exc())
             sleep(1)
             return 0
 
