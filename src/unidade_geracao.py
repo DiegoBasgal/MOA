@@ -262,8 +262,7 @@ class UnidadeGeracao:
     def tentativas_normalizacao(self, var: "int") -> "None":
         # SETTER -> Atribui o novo valor de tentativas de normalização da Unidade.
 
-        if 0 <= var and var == int(var):
-            self._tentativas_de_normalizacao = int(var)
+        self._tentativas_de_normalizacao = int(var)
 
     @property
     def condicionadores(self) -> "list[c.CondicionadorBase]":
@@ -712,7 +711,7 @@ class UnidadeGeracao:
             atenuacao = max(atenuacao, condic.valor)
             if atenuacao > 0:
                 flags += 1
-                logger.debug(f"[UG{self.id}]          - \"{condic.descr}\":   Leitura: {condic.leitura.valor} | Atenuação: {atenuacao}")
+                logger.debug(f"[UG{self.id}]          - \"{condic.descricao}\":   Leitura: {condic.leitura} | Atenuação: {atenuacao}")
 
         if flags == 0:
             logger.debug(f"[UG{self.id}]          Não há necessidade de Atenuação.")
@@ -840,6 +839,7 @@ class UnidadeGeracao:
         """
 
         flag = CONDIC_IGNORAR
+
         autor_a = 0
         autor_n = 0
         autor_i = 0
@@ -850,6 +850,7 @@ class UnidadeGeracao:
             logger.debug("")
             if self.condicionadores_ativos == []:
                 logger.debug(f"[UG{self.id}] Foram detectados condicionadores ativos na Unidade!")
+
             else:
                 logger.debug(f"[UG{self.id}] Ainda há condicionadores ativos na Unidade!")
 
@@ -857,6 +858,7 @@ class UnidadeGeracao:
                 if condic.teste:
                     logger.debug(f"[UG{self.id}] Descrição: \"{condic.descricao}\", Gravidade: \"{CONDIC_STR_DCT[condic.gravidade] if condic.gravidade in CONDIC_STR_DCT else 'Desconhecida'}\", Obs.: \"TESTE\"")
                     continue
+
                 elif condic in self.condicionadores_ativos:
                     logger.debug(f"[UG{self.id}] Descrição: \"{condic.descricao}\", Gravidade: \"{CONDIC_STR_DCT[condic.gravidade] if condic.gravidade in CONDIC_STR_DCT else 'Desconhecida'}\"")
                     flag = condic.gravidade
@@ -873,11 +875,12 @@ class UnidadeGeracao:
                         "X" if autor_i == 0 else ""
                     ])
                     autor_i += 1
+                    sleep(1)
 
                 elif condic.gravidade == CONDIC_AGUARDAR:
                     logger.warning(f"[UG{self.id}] Descrição: \"{condic.descricao}\", Gravidade: \"{CONDIC_STR_DCT[condic.gravidade] if condic.gravidade in CONDIC_STR_DCT else 'Desconhecida'}\"")
                     self.condicionadores_ativos.append(condic)
-                    flag = CONDIC_NORMALIZAR
+                    flag = CONDIC_AGUARDAR
                     self.__db.update_alarmes([
                         self.get_time().strftime("%Y-%m-%d %H:%M:%S"),
                         condic.gravidade,
@@ -885,6 +888,7 @@ class UnidadeGeracao:
                         "X" if autor_i == 0 and autor_a == 0 else ""
                     ])
                     autor_a += 1
+                    sleep(1)
 
                 elif condic.gravidade == CONDIC_NORMALIZAR:
                     logger.warning(f"[UG{self.id}] Descrição: \"{condic.descricao}\", Gravidade: \"{CONDIC_STR_DCT[condic.gravidade] if condic.gravidade in CONDIC_STR_DCT else 'Desconhecida'}\"")
@@ -897,6 +901,7 @@ class UnidadeGeracao:
                         "X" if autor_i == 0 and autor_a == 0 and autor_n == 0 else ""
                     ])
                     autor_n += 1
+                    sleep(1)
 
             logger.debug("")
             return flag
@@ -1263,7 +1268,7 @@ class UnidadeGeracao:
         self.condicionadores_essenciais.append(c.CondicionadorBase(self.l_bloq_86M_atuado, CONDIC_NORMALIZAR))
 
         self.l_bloq_86E_atuado = LeituraModbusBit(self.clp[f"UG{self.id}"], REG_CLP[f"UG{self.id}"]["86E_BLQ_ATUADO"], descricao=f"[UG{self.id}] Bloqueio 86E Atuado")
-        self.condicionadores_essenciais.append(c.CondicionadorBase(self.l_bloq_86E_atuado, CONDIC_NORMALIZAR))
+        self.condicionadores_essenciais.append(c.CondicionadorBase(self.l_bloq_86E_atuado, CONDIC_NORMALIZAR, teste=True))
 
         self.l_bloq_86H_atuado = LeituraModbusBit(self.clp[f"UG{self.id}"], REG_CLP[f"UG{self.id}"]["86H_BLQ_ATUADO"], descricao=f"[UG{self.id}] Bloqueio 86H Atuado")
         self.condicionadores_essenciais.append(c.CondicionadorBase(self.l_bloq_86H_atuado, CONDIC_NORMALIZAR))
@@ -1272,10 +1277,10 @@ class UnidadeGeracao:
         self.condicionadores_essenciais.append(c.CondicionadorBase(self.l_clp_geral_sem_bloq_exter, CONDIC_NORMALIZAR))
 
         self.l_trip_rele700G_atuado = LeituraModbusBit(self.clp[f"UG{self.id}"], REG_CLP[f"UG{self.id}"]["RELE_700G_TRP_ATUADO"], descricao=f"[UG{self.id}] Relé 700G Trip Atuado")
-        self.condicionadores_essenciais.append(c.CondicionadorBase(self.l_trip_rele700G_atuado, CONDIC_NORMALIZAR))
+        self.condicionadores_essenciais.append(c.CondicionadorBase(self.l_trip_rele700G_atuado, CONDIC_NORMALIZAR, teste=True))
 
         self.l_rele_bloq_86EH_desatuado = LeituraModbusBit(self.clp[f"UG{self.id}"], REG_CLP[f"UG{self.id}"]["RELE_BLQ_86EH_DESATUADO"], descricao=f"[UG{self.id}] Relé Bloqueio 86EH Atuado")
-        self.condicionadores_essenciais.append(c.CondicionadorBase(self.l_rele_bloq_86EH_desatuado, CONDIC_NORMALIZAR))
+        self.condicionadores_essenciais.append(c.CondicionadorBase(self.l_rele_bloq_86EH_desatuado, CONDIC_NORMALIZAR, teste=True))
 
         self.l_falha_2_rv_b3 = LeituraModbusBit(self.rv[f"UG{self.id}"], REG_CLP[f"UG{self.id}"]["RV_FLH_2_B3"], descricao=f"[UG{self.id}][RV] Bloqueio Externo")
         self.condicionadores_essenciais.append(c.CondicionadorBase(self.l_falha_2_rv_b3, CONDIC_NORMALIZAR))
@@ -1678,7 +1683,7 @@ class UnidadeGeracao:
         self.condicionadores.append(c.CondicionadorBase(self.l_perda_campo_geral, CONDIC_NORMALIZAR))
 
         self.l_pot_reversa = LeituraModbusBit(self.rele[f"UG{self.id}"], REG_RELE[f"UG{self.id}"]["POT_REVERSA"], descricao=f"[UG{self.id}][RELE] Potência Reversa")
-        self.condicionadores.append(c.CondicionadorBase(self.l_pot_reversa, CONDIC_NORMALIZAR))
+        self.condicionadores.append(c.CondicionadorBase(self.l_pot_reversa, CONDIC_NORMALIZAR, teste=True))
 
         self.l_transf_disp_rele_linha_trafo = LeituraModbusBit(self.rele[f"UG{self.id}"], REG_RELE[f"UG{self.id}"]["TE_RELE_LINHA_TRANS_DISP"], descricao=f"[UG{self.id}][RELE] Transferência Disparo Relé Linha Transformador Elevador")
         self.condicionadores.append(c.CondicionadorBase(self.l_transf_disp_rele_linha_trafo, CONDIC_INDISPONIBILIZAR))

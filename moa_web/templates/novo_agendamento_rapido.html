@@ -45,7 +45,7 @@
         {% for comando in comandos %}
         <form method='post' action='/agendamentos/novo_agendamento_rapido/'>
             {% csrf_token %}
-            {% if comando.id == 1 or comando.id == 2 or comando.id == 3 or comando.id == 4 or comando.id == 5 or comando.id == 777 %}
+            {% if comando.id == 1 or comando.id == 2 or comando.id == 3 or comando.id == 4 or comando.id == 5 or comando.id == 6 or comando.id == 7 or comando.id == 8 or comando.id == 9 or comando.id == 10 or comando.id == 777 %}
             <hr style="margin: 4px; visibility:hidden;" />
             <input type="hidden" id="comando" name="comando" value="{{ comando.id }}"/>
             <a>Agendar agora: </a>
@@ -72,19 +72,6 @@
         <form method='post' action='/agendamentos/novo_agendamento_rapido/'>
             {% csrf_token %}
             {% if comando.id == 202 or comando.id == 203 or comando.id == 204 or comando.id == 205 or comando.id == 206 %}
-            <hr style="margin: 4px; visibility:hidden;" />
-            <input type="hidden" id="comando" name="comando" value="{{ comando.id }}"/>
-            <a>Agendar agora: </a>
-            <input type="submit" value="{{ comando.nome }}."/>
-            {% endif %}
-        </form>
-        {% endfor %}
-        <hr style="height:10pt; visibility:hidden;" />
-        <h3 style="margin-bottom: 1px; margin-top: 30px;">UG3:</h3>
-        {% for comando in comandos %}
-        <form method='post' action='/agendamentos/novo_agendamento_rapido/'>
-            {% csrf_token %}
-            {% if comando.id == 302 or comando.id == 303 or comando.id == 304 or comando.id == 305 or comando.id == 306 %}
             <hr style="margin: 4px; visibility:hidden;" />
             <input type="hidden" id="comando" name="comando" value="{{ comando.id }}"/>
             <a>Agendar agora: </a>

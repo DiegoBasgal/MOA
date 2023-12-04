@@ -115,6 +115,7 @@ class Usina:
         self.verificar_bay_se()
         self.normalizar_usina()
         self.ajustar_inicializacao()
+        self.tda.iniciar_ultimo_estado_lg()
         self.escrever_valores()
 
         self._tentativas_normalizar = 0

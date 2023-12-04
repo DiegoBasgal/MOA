@@ -1,3 +1,6 @@
+import pytz
+
+from datetime import datetime
 from django.db import models
 
 # Create your models here.
@@ -40,6 +43,14 @@ class ParametrosUsina(models.Model):
     kie = models.DecimalField(max_digits=15, decimal_places=3, default=0.1)
     valor_ie_inicial = models.DecimalField(max_digits=10, decimal_places=3, default=0.5)
 
+    # Limpa Grades
+    modo_lg = models.IntegerField(default=1)
+    horario_disparo_lg = models.DateTimeField(blank=False, default=datetime.now(pytz.timezone("Brazil/East")).strftime("%Y-%m-%d %H:%M:%S"))
+    t_dias_disparo_lg = models.IntegerField(default=0)
+    t_horas_disparo_lg = models.IntegerField(default=0)
+    valor_disparo_lg_p1 = models.DecimalField(max_digits=5, decimal_places=2, default=0.3)
+    valor_disparo_lg_p2 = models.DecimalField(max_digits=5, decimal_places=2, default=0.3)
+
     # Potência
     pot_minima = models.DecimalField(max_digits=10, decimal_places=0, default=911)
     pot_nominal = models.DecimalField(max_digits=10, decimal_places=1, default=3037.5)
@@ -61,9 +72,9 @@ class ParametrosUsina(models.Model):
     ug1_ultimo_estado = models.IntegerField(default=0)
     ug1_pos_comporta = models.IntegerField(default=0)
     ug1_nv_pos_grade = models.DecimalField(max_digits=10, decimal_places=2, default=0)
-    ug1_perda_grade_maxima = models.DecimalField(max_digits=10, decimal_places=3, default=0)
+    ug1_perda_grade_maxima = models.DecimalField(max_digits=10, decimal_places=2, default=0)
 
-    alerta_perda_grade_ug1 = models.DecimalField(max_digits=10, decimal_places=3, default=0)
+    alerta_perda_grade_ug1 = models.DecimalField(max_digits=10, decimal_places=2, default=0)
     alerta_pressao_turbina_ug1 = models.DecimalField(max_digits=10, decimal_places=2, default=1.4)
     alerta_temperatura_fase_r_ug1 = models.DecimalField(max_digits=10, decimal_places=2, default=100)
     alerta_temperatura_fase_s_ug1 = models.DecimalField(max_digits=10, decimal_places=2, default=100)
@@ -77,7 +88,7 @@ class ParametrosUsina(models.Model):
     alerta_temperatura_mancal_casq_comb_ug1 = models.DecimalField(max_digits=10, decimal_places=2, default=100)
     alerta_temperatura_mancal_contra_esc_comb_ug1 = models.DecimalField(max_digits=10, decimal_places=2, default=100)
 
-    limite_perda_grade_ug1 = models.DecimalField(max_digits=10, decimal_places=3, default=0)
+    limite_perda_grade_ug1 = models.DecimalField(max_digits=10, decimal_places=2, default=0)
     limite_pressao_turbina_ug1 = models.DecimalField(max_digits=10, decimal_places=2, default=1)
     limite_temperatura_fase_r_ug1 = models.DecimalField(max_digits=10, decimal_places=2, default=200)
     limite_temperatura_fase_s_ug1 = models.DecimalField(max_digits=10, decimal_places=2, default=200)
@@ -100,9 +111,9 @@ class ParametrosUsina(models.Model):
     ug2_ultimo_estado = models.IntegerField(default=0)
     ug2_pos_comporta = models.IntegerField(default=0)
     ug2_nv_pos_grade = models.DecimalField(max_digits=10, decimal_places=2, default=0)
-    ug2_perda_grade_maxima = models.DecimalField(max_digits=10, decimal_places=3, default=0)
+    ug2_perda_grade_maxima = models.DecimalField(max_digits=10, decimal_places=2, default=0)
 
-    alerta_perda_grade_ug2 = models.DecimalField(max_digits=10, decimal_places=3, default=0)
+    alerta_perda_grade_ug2 = models.DecimalField(max_digits=10, decimal_places=2, default=0)
     alerta_pressao_turbina_ug2 = models.DecimalField(max_digits=10, decimal_places=2, default=1.4)
     alerta_temperatura_fase_r_ug2 = models.DecimalField(max_digits=10, decimal_places=2, default=100)
     alerta_temperatura_fase_s_ug2 = models.DecimalField(max_digits=10, decimal_places=2, default=100)

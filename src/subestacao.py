@@ -229,13 +229,20 @@ class Subestacao:
                 if condic.teste:
                     logger.debug(f"[SE]  Descrição: \"{condic.descricao}\", Gravidade: \"{CONDIC_STR_DCT[condic.gravidade] if condic.gravidade in CONDIC_STR_DCT else 'Desconhecida'}\", Obs.: \"TESTE\"")
                     continue
+
                 elif condic in self.condicionadores_ativos:
                     logger.debug(f"[SE]  Descrição: \"{condic.descricao}\", Gravidade: \"{CONDIC_STR_DCT[condic.gravidade] if condic.gravidade in CONDIC_STR_DCT else 'Desconhecida'}\"")
                     continue
+
                 else:
                     logger.warning(f"[SE]  Descrição: \"{condic.descricao}\", Gravidade: \"{CONDIC_STR_DCT[condic.gravidade] if condic.gravidade in CONDIC_STR_DCT else 'Desconhecida'}\"")
                     self.condicionadores_ativos.append(condic)
-                    self.__bd.update_alarmes([datetime.now(pytz.timezone("Brazil/East")).replace(tzinfo=None), condic.gravidade, condic.descricao])
+                    self.__bd.update_alarmes([
+                        datetime.now(pytz.timezone("Brazil/East")).replace(tzinfo=None),
+                        condic.gravidade,
+                        condic.descricao
+                    ])
+                    sleep(1)
 
             logger.debug("")
             return condics_ativos

@@ -39,6 +39,48 @@ class BancoDados:
         estado = self.cursor.fetchone()
         return estado
 
+    def get_ultimo_estado_lg(self) -> "int":
+        """
+        Função para extrair o último estado do Limpa Grades do Banco.
+        """
+
+        self.cursor.execute(
+            f"SELECT modo_lg "
+            "FROM parametros_parametrosusina "
+            "WHERE id = 1;"
+        )
+        estado = self.cursor.fetchone()
+        return estado
+
+    def get_horario_operar_lg(self) -> "datetime":
+        """
+        Função para extrair o último estado do Limpa Grades do Banco.
+        """
+
+        self.cursor.execute(
+            "SELECT horario_disparo_lg, "
+                "t_dias_disparo_lg, "
+                "t_horas_disparo_lg "
+            "FROM parametros_parametrosusina "
+            "WHERE id = 1;"
+        )
+        estado = self.cursor.fetchone()
+        return estado
+
+    def get_disparo_perda_lg(self) -> "float":
+        """
+        Função para extrair o último estado do Limpa Grades do Banco.
+        """
+
+        self.cursor.execute(
+            "SELECT valor_disparo_lg_p1, "
+                "valor_disparo_lg_p2 "
+            "FROM parametros_parametrosusina "
+            "WHERE id = 1;"
+        )
+        valores = self.cursor.fetchone()
+        return valores
+
     def get_parametros_usina(self) -> "list":
         """
         Função para extrair os parâmetros alterados na Interface WEB.
@@ -190,6 +232,31 @@ class BancoDados:
             "INSERT INTO parametros_controleestados "
             "VALUES (%s, %s, %s);",
             tuple(valores)
+        )
+        self.conn.commit()
+
+    def update_estado_lg(self, valor: "int") -> "None":
+        """
+        Função para atualizar o último estado do Limpa Grades no Banco.
+        """
+
+        self.cursor.execute(
+            "UPDATE parametros_parametrosusina "
+            f"SET modo_lg = {valor} "
+            "WHERE id = 1;",
+        )
+        self.conn.commit()
+
+    def update_horario_operar_lg(self, valor: "list") -> "None":
+        """
+        Função para atualizar o último estado do Limpa Grades no Banco.
+        """
+
+        self.cursor.execute(
+            "UPDATE parametros_parametrosusina "
+            "SET horario_disparo_lg = %s "
+            "WHERE id = 1;",
+            tuple(valor)
         )
         self.conn.commit()
 
