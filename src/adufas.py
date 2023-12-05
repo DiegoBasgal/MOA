@@ -23,22 +23,16 @@ logger = logging.getLogger("logger")
 
 class Adufas:
 
-    __split1: "bool" = False
-    __split2: "bool" = False
-
-    clp = serv.Servidores.clp
     bd: "bd.BancoDados" = None
-
-    condicionadores: "list[c.CondicionadorBase]" = []
-    condicionadores_essenciais: "list[c.CondicionadorBase]" = []
+    clp = serv.Servidores.clp
 
 
     class Comporta:
         def __init__(self, id: "int") -> "None":
 
-            self.__id: "int" = id
-
             self.clp = serv.Servidores.clp
+
+            self.__id = id
 
             self.__leitura_info = lei.LeituraModbus(
                 self.clp["AD"],
@@ -82,17 +76,6 @@ class Adufas:
             return self.__leitura_posicao.valor
 
 
-        def enviar_setpoint(self, setpoint: "int") -> "None":
-            try:
-                logger.debug(f"[AD][CP{self.id}]      Enviando setpoint:         {int(setpoint)} mm")
-
-                self.clp["AD"].write_single_register(REG_AD[f"CP_0{self.id}_SP_POS"], int(self.setpoint))
-
-            except Exception:
-                logger.error(f"[AD][CP{self.id}] Não foi possivel enviar o setpoint para a Comporta.")
-                logger.debug(traceback.format_exc())
-
-
         def controle_comporta(self, valor: "float") -> "int":
 
             nv_montante = tda.TomadaAgua.nivel_montante.valor
@@ -107,9 +90,24 @@ class Adufas:
             return acao_controle
 
 
+        def enviar_setpoint(self, setpoint: "int") -> "None":
+            try:
+                logger.debug(f"[AD][CP{self.id}]      Enviando setpoint:         {int(setpoint)} mm")
+
+                self.clp["AD"].write_single_register(REG_AD[f"CP_0{self.id}_SP_POS"], int(self.setpoint))
+
+            except Exception:
+                logger.error(f"[AD][CP{self.id}] Não foi possivel enviar o setpoint para a Comporta.")
+                logger.debug(traceback.format_exc())
+
+
     cp1 = Comporta(1)
     cp2 = Comporta(2)
     cps: "list[Comporta]" = [cp1, cp2]
+
+    condicionadores: "list[c.CondicionadorBase]" = []
+    condicionadores_essenciais: "list[c.CondicionadorBase]" = []
+
 
     @classmethod
     def verificar_condicionadores(cls) -> "list[c.CondicionadorBase]":
