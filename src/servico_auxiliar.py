@@ -83,8 +83,7 @@ class ServicoAuxiliar:
                     self.__bd.update_alarmes([
                         datetime.now(pytz.timezone("Brazil/East")).replace(tzinfo=None),
                         condic.gravidade,
-                        condic.descricao,
-                        ""
+                        condic.descricao
                     ])
                     sleep(1)
 

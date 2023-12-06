@@ -46,8 +46,7 @@ class TomadaAgua:
         self.nivel_montante = LeituraModbusFloat(
             self.clp['TDA'],
             REG_CLP["TDA"]["NV_MONTANTE"],
-            byteorder=END_BIG,
-            wordorder=END_BIG,
+            wordorder=False,
             descricao="[TDA] Leitura Nível Montante"
         )
         self.perda_grade_1 = LeituraModbusFloat(
@@ -260,8 +259,7 @@ class TomadaAgua:
                     self.__bd.update_alarmes([
                         datetime.now(pytz.timezone("Brazil/East")).replace(tzinfo=None),
                         condic.gravidade,
-                        condic.descricao,
-                        ""
+                        condic.descricao
                     ])
                     sleep(1)
 
