@@ -9,19 +9,24 @@ compartilhado = {
 
     "BRD": {
         # GERAL
-        "condic" : False,
-        "sa_condic" : False,
-        "se_condic" : False,
-        "tda_condic" : False,
-        "ug1_condic" : False,
-        "ug2_condic" : False,
-        "ug3_condic" : False,
-        "ug4_condic" : False,
+        "condic": False,
+        "sa_condic": False,
+        "se_condic": False,
+        "ad_condic": False,
+        "tda_condic": False,
+        "ug1_condic": False,
+        "ug2_condic": False,
+        "ug3_condic": False,
+        "ug4_condic": False,
 
         # SE
         "djse_trip": False,
         "djse_mola": False,
         "djse_fechado": False,
+
+        # AD
+        "cp1ad_manual": False,
+        "cp2ad_manual": False,
     },
 
     "USN": {
@@ -41,15 +46,17 @@ compartilhado = {
     },
 
     "AD": {
-        "cp1_condic": False,
+        "condic": False,
 
-        "cp1_posicao": 0,
+        "cp1_q": 0,
         "cp1_setpoint": 0,
 
-        "cp2_condic": False,
+        "cp1_manual": False,
 
-        "cp2_posicao": 0,
+        "cp2_q": 0,
         "cp2_setpoint": 0,
+
+        "cp2_manual": False,
 
     },
 

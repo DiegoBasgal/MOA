@@ -89,15 +89,11 @@ class Adufas:
 
             logger.debug(f"[AD][CP{self.id}]      Comporta:          \"{ADCP_STR_DCT[self._estado] if not self.manual else 'Manual'}\"")
 
-            if self.manual:
-                return
-
             nv_montante = tda.TomadaAgua.nivel_montante.valor
 
             erro = nv_montante - self.__cfg["ad_nv_alvo"]
 
             self.controle_p = self.__cfg["ad_kp"] * erro
-
             self.controle_i = min(max(0, self.__cfg["ad_ki"] * erro + self.controle_i), 6000)
 
             sp = self.k * (self.controle_p + self.controle_i)
@@ -108,6 +104,9 @@ class Adufas:
             logger.debug(f"[AD][CP{self.id}]      ERRO:              {erro}")
             logger.debug("")
 
+            if self.manual and self.estado == ADCP_INDISPONIVEL:
+                return
+
             self.enviar_setpoint(sp)
 
 
@@ -117,9 +116,10 @@ class Adufas:
             """
 
             try:
-                logger.debug(f"[AD][CP{self.id}]      Enviando setpoint:         {int(setpoint)} mm")
+                logger.debug(f"[AD][CP{self.id}]      Enviando setpoint:         {round(setpoint)} mm")
 
-                self.clp["AD"].write_single_register(REG_AD[f"CP_0{self.id}_SP_POS"], int(self.setpoint))
+                self.clp["AD"].write_single_register(REG_AD[f"CP_0{self.id}_SP_POS"], round(self.setpoint))
+                self.clp["AD"].write_single_register(REG_AD[f"CMD_CP_0{self.id}_BUSCAR"], 1)
 
             except Exception:
                 logger.error(f"[AD][CP{self.id}] Não foi possivel enviar o setpoint para a Comporta.")

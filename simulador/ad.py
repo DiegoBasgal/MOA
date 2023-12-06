@@ -1,3 +1,4 @@
+import math
 import numpy as np
 
 from time import time
@@ -19,6 +20,88 @@ class Ad:
         self.passo_simulacao = tempo.passo_simulacao
         self.segundos_por_passo = tempo.segundos_por_passo
 
+        self.cp1 = Cp(1, self.dict)
+        self.cp2 = Cp(2, self.dict)
+        self.cps: 'list[Cp]' = [self.cp1, self.cp2]
+
+
+        class Cp:
+            def __init__(self, id: 'int', dict_comp: 'dict'=None, tempo: 'Temporizador'=None) -> 'None':
+
+                self.id = id
+
+                self.dict = dict_comp
+
+                self.escala_ruido = tempo.escala_ruido
+                self.passo_simulacao = tempo.passo_simulacao
+                self.segundos_por_passo = tempo.segundos_por_passo
+
+                self.setpoint = 0
+                self.setpoint_anterior = 0
+
+                self.manual = False
+
+
+            def passo(self) -> 'None':
+
+                self.manual = self.dict['AD'][f'cp{self.id}_manual']
+                self.setpoint = DB.get_words(MB['AD'][f'CP_0{self.id}_POSICAO'])[0]
+
+                if DB.get_words(MB['AD'][f'CMD_CP_0{self.id}_BUSCAR'])[0]:
+                    DB.set_words(MB['AD'][f'CMD_CP_0{self.id}_BUSCAR'], [0])
+
+                    if self.setpoint > self.setpoint_anterior and not self.manual:
+                        self.setpoint_anterior = self.setpoint
+                        Thread(target=lambda: self.abrir(self.setpoint)).start()
+
+                    elif self.setpoint < self.setpoint_anterior and not self.manual:
+                        self.setpoint_anterior = self.setpoint
+                        Thread(target=lambda: self.abrir(self.setpoint)).start()
+
+                self.dict['AD'][f'cp{self.id}_q'] = self.calcular_q_cp(self.setpoint)
+
+
+            def abrir(self, setpoint) -> 'None':
+                while self.setpoint < setpoint:
+                    if self.setpoint > setpoint:
+                        break
+                    self.setpoint += setpoint * self.segundos_por_passo
+
+
+            def fechar(self, setpoint) -> 'None':
+                while self.setpoint > setpoint:
+                    if self.setpoint < setpoint:
+                        break
+                    self.setpoint -= setpoint * self.segundos_por_passo
+
+
+            def calcular_q_cp(self, abertura) -> 'int':
+                q = abertura/1000 * ADCP_LARGURA \
+                    * math.sqrt(2 * 9.80665 * ((self.dict['TDA']['nv_montante'] - ADCP_SOLEIRA) - abertura/1000 / 2))
+
+                return max(0, q)
+
+
+            def atualizar_modbus(self) -> 'None':
+                DB.set_words(MB['AD'][f'CP_0{self.id}_POSICAO'], [round(self.setpoint) - 6000])
+
+                if self.dict['AD'][f'cp{self.id}_manual'] and not self.dict['BRD'][f'cp{self.id}ad_manual']:
+                    ESC.escrever_bit(MB['AD'][f'CP_0{self.id}_ACION_LOCAL'], valor=1)
+
+                elif not self.dict['AD'][f'cp{self.id}_manual'] and self.dict['BRD'][f'cp{self.id}ad_manual']:
+                    ESC.escrever_bit(MB['AD'][f'CP_0{self.id}_ACION_LOCAL'], valor=0)
+
 
     def passo(self) -> 'None':
-        return
+        for cp in self.cps:
+            cp.passo()
+
+
+    def atualizar_modbus(self) -> 'None':
+        for cp in self.cps:
+            cp.atualizar_modbus()
+
+        if self.dict['AD']['condic'] and not self.dict['BRD']['ad_condic']:
+            ESC.escrever_bit(MB['AD']['Alarme28_00'], valor=1)
+        elif not self.dict['AD']['condic'] and self.dict['BRD']['ad_condic']:
+            ESC.escrever_bit(MB['AD']['Alarme28_00'], valor=0)
