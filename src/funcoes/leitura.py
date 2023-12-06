@@ -11,6 +11,7 @@ from pymodbus.payload import BinaryPayloadDecoder as BPD
 from pyModbusTCP.client import ModbusClient
 
 from src.dicionarios.reg import *
+from src.dicionarios.const import *
 
 logger = logging.getLogger("logger")
 debug_log = logging.getLogger("debug")
@@ -67,7 +68,7 @@ class LeituraModbus:
 
 
 class LeituraModbusBit(LeituraModbus):
-    def __init__(self, client: "ModbusClient", registrador: "list[int, int]", invertido: "bool"=False, descricao: "str"=None) -> "None":
+    def __init__(self, client: "ModbusClient", registrador: "list[int, int]", invertido: "bool"=False, byteorder: "int"=END_LITTLE, wordorder: "int"=END_BIG, descricao: "str"=None) -> "None":
         super().__init__(client, registrador, descricao)
 
         # ATRIBUIÇÃO DE VARIÁVEIS PRIVADAS
@@ -76,6 +77,8 @@ class LeituraModbusBit(LeituraModbus):
         self.__bit = registrador[1]
         self.__invertido = invertido
         self.__descricao = descricao
+        self.__byteorder = byteorder
+        self.__wordorder = wordorder
 
     @property
     def descricao(self) -> "str":
@@ -107,31 +110,34 @@ class LeituraModbusBit(LeituraModbus):
         try:
             leitura = self.raw
 
-            # debug_log.debug(f"[LEITURA-BIT] Descrição: {self.descricao} | Leitura RAW: {self.raw}")
-
-            dec_1 = BPD.fromRegisters(leitura, byteorder=Endian.LITTLE, wordorder=Endian.BIG)
-            dec_2 = BPD.fromRegisters(leitura, byteorder=Endian.LITTLE, wordorder=Endian.BIG)
+            dec_1 = BPD.fromRegisters(
+                leitura,
+                byteorder=Endian.LITTLE if self.__byteorder == END_LITTLE else Endian.BIG,
+                wordorder=Endian.BIG if self.__wordorder == END_BIG else Endian.LITTLE
+            )
+            dec_2 = BPD.fromRegisters(
+                leitura,
+                byteorder=Endian.LITTLE if self.__byteorder == END_LITTLE else Endian.BIG,
+                wordorder=Endian.BIG if self.__wordorder == END_BIG else Endian.LITTLE
+            )
 
             lbit = [int(bit) for bits in [reversed(dec_1.decode_bits(1)), reversed(dec_2.decode_bits(2))] for bit in bits]
 
             lbit_r = [b for b in reversed(lbit)]
-
-            # debug_log.debug(f"[LEITURA-BIT] Lista de Bits: {lbit_r}")
-            # debug_log.debug("")
 
             for i in range(len(lbit_r)):
                 if self.__bit == i:
                     return not lbit_r[i] if self.__invertido else lbit_r[i]
 
         except Exception:
-            logger.error(f"[LEI] Erro na Leitura BIT do REG: {self.__descricao} | Endereço: {self.__reg} | Bit: {self.__bit}")
+            logger.debug(f"[LEI] Erro na Leitura BIT do REG: {self.__descricao} | Endereço: {self.__reg} | Bit: {self.__bit}")
             logger.debug(traceback.format_exc())
             sleep(1)
             return None
 
 
 class LeituraModbusFloat(LeituraModbus):
-    def __init__(self, client: "ModbusClient"=None, registrador: "int"=None, op: "int"=3, escala: "float"=1, wordorder: "bool"=True, descricao: "str"=None) ->"None":
+    def __init__(self, client: "ModbusClient"=None, registrador: "int"=None, op: "int"=3, escala: "float"=1, byteorder: "int"=END_BIG, wordorder: "int"=END_BIG, descricao: "str"=None) ->"None":
         super().__init__(client, registrador, descricao)
 
         # ATRIBUIÇÃO DE VAIRÁVEIS PRIVADAS
@@ -140,6 +146,7 @@ class LeituraModbusFloat(LeituraModbus):
         self.__client = client
         self.__reg = registrador
         self.__escala = escala
+        self.__byteorder = byteorder
         self.__wordorder = wordorder
 
     @property
@@ -148,18 +155,16 @@ class LeituraModbusFloat(LeituraModbus):
 
         try:
             if self.__op == 3:
-                if self.__wordorder:
-                    raw = self.__client.read_holding_registers(self.__reg + 1, 2)
-                else:
-                    raw = self.__client.read_holding_registers(self.__reg, 2)
+                raw = self.__client.read_holding_registers(self.__reg, 2)
 
             elif self.__op == 4:
-                raw = self.__client.read_input_registers(self.__reg + 1, 2)
+                raw = self.__client.read_input_registers(self.__reg, 2)
 
-            if self.__wordorder:
-                dec = BPD.fromRegisters(raw, byteorder=Endian.BIG, wordorder=Endian.LITTLE)
-            else:
-                dec = BPD.fromRegisters(raw, byteorder=Endian.BIG)
+            dec = BPD.fromRegisters(
+                raw,
+                byteorder=Endian.BIG if self.__byteorder == END_BIG else Endian.LITTLE,
+                wordorder=Endian.LITTLE if self.__wordorder == END_LITTLE else Endian.BIG
+            )
 
             val = dec.decode_32bit_float()
 

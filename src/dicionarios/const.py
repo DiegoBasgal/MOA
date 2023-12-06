@@ -37,9 +37,12 @@ LG_INDISPONIVEL = 0
 LG_DISPONIVEL = 1
 
 # Valor de Disparo do Limpa Grades por Perda na Grade
-
 LG_PERDA_UG1 = 0.3
 LG_PERDA_UG2 = 0.3
+
+# Valores de Endians das leituras
+END_LITTLE = 0
+END_BIG = 1
 
 # Posição das comportas
 CP_FECHADA = 0
