@@ -7,7 +7,7 @@ from django.contrib.auth.decorators import login_required
 @login_required
 def ocorrencias_view(request, *args, **kwargs):
 
-    nlinhas = 1000
+    nlinhas = 15
     if int(request.GET.get("nlinhas", 0)) > 15:
         nlinhas = int(request.GET.get("nlinhas", 0))
 
