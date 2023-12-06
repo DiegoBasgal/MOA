@@ -21,6 +21,7 @@ class Window(QMainWindow, Ui_Form):
         self.sinc_timer.timeout.connect(self.sincro)
         self.sinc_timer.start()
 
+
     def sincro(self):
         try:
             segundos = floor(self.dict['GLB']['tempo_simul'] % 60)

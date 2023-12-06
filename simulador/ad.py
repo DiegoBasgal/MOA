@@ -1,7 +1,5 @@
 import math
-import numpy as np
 
-from time import time
 from threading import Thread
 from pyModbusTCP.server import DataBank as DB
 
@@ -24,7 +22,6 @@ class Ad:
         self.cp2 = Cp(2, self.dict)
         self.cps: 'list[Cp]' = [self.cp1, self.cp2]
 
-
         class Cp:
             def __init__(self, id: 'int', dict_comp: 'dict'=None, tempo: 'Temporizador'=None) -> 'None':
 
@@ -43,7 +40,6 @@ class Ad:
 
 
             def passo(self) -> 'None':
-
                 self.manual = self.dict['AD'][f'cp{self.id}_manual']
                 self.setpoint = DB.get_words(MB['AD'][f'CP_0{self.id}_POSICAO'])[0]
 

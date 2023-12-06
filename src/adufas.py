@@ -53,21 +53,42 @@ class Adufas:
             self.controle_p: "float" = 0.0
 
 
-            # __FINALIZAÇÂO INIT__
+            # FINALIZAÇÃO __INIT__
             self.carregar_leituras()
 
 
         @property
         def id(self) -> "int":
         # PROPRIEDADE -> Retorna o id da Comporta
+
             return self.__id
 
         @property
         def manual(self) -> "bool":
         # PROPRIEDADE -> Retorna se o modo manual da Comporta foi ativado
-    
+
             return self.__manual.valor
-        
+
+        @property
+        def etapa(self) -> "int":
+        # PROPRIEDADE -> Retorna a etapa da Comporta
+
+            if self.parada.valor:
+                return ADCP_PARADA
+            elif self.abrindo.valor:
+                return ADCP_ABRINDO
+            elif self.fechando.valor:
+                return ADCP_FECHANDO
+
+        @property
+        def etapa_parada(self) -> "int":
+        # PROPRIEDADE -> Retorna a etapa da Comporta enquanto está parada
+
+            if self.aberta.valor:
+                return ADCP_P_ABERTA
+            elif self.fechada.valor:
+                return ADCP_P_FECHADA
+
         @property
         def estado(self) -> "int":
         # PROPRIEDADE -> Retorna o estado atual da Comporta
@@ -87,11 +108,10 @@ class Adufas:
             leitura de nível Montante da Tomada da Água
             """
 
-            logger.debug(f"[AD][CP{self.id}]      Comporta:          \"{ADCP_STR_DCT[self._estado] if not self.manual else 'Manual'}\"")
+            logger.debug(f"[AD][CP{self.id}]      Comporta:          \"{ADCP_STR_DCT_ESTADO[self._estado] if not self.manual else 'Manual'}\"")
+            logger.debug(f"[AD][CP{self.id}]      Etapa:             \"{(ADCP_STR_DCT_ETAPA[self.etapa] + '->' + ADCP_STR_DCT_ETAPA_P[self.etapa_parada]) if self.parada.valor else ADCP_STR_DCT_ETAPA[self.etapa]}\"")
 
-            nv_montante = tda.TomadaAgua.nivel_montante.valor
-
-            erro = nv_montante - self.__cfg["ad_nv_alvo"]
+            erro = tda.TomadaAgua.nivel_montante.valor - self.__cfg["ad_nv_alvo"]
 
             self.controle_p = self.__cfg["ad_kp"] * erro
             self.controle_i = min(max(0, self.__cfg["ad_ki"] * erro + self.controle_i), 6000)
@@ -122,7 +142,7 @@ class Adufas:
                 self.clp["AD"].write_single_register(REG_AD[f"CMD_CP_0{self.id}_BUSCAR"], 1)
 
             except Exception:
-                logger.error(f"[AD][CP{self.id}] Não foi possivel enviar o setpoint para a Comporta.")
+                logger.error(f"[AD][CP{self.id}] Não foi possível enviar o setpoint para a Comporta.")
                 logger.debug(traceback.format_exc())
 
 
@@ -131,11 +151,11 @@ class Adufas:
             Função para carregar as leituras de cada Comporta
             """
 
-            self.parada = lei.LeituraModbusBit(self.clp["AD"], REG_AD["CP_01_PARADA"], descricao=f"[AD][CP{self.id}] Comporta Parada")
-            self.aberta = lei.LeituraModbusBit(self.clp["AD"], REG_AD["CP_01_ABERTA"], descricao=f"[AD][CP{self.id}] Comporta Aberta")
-            self.fechada = lei.LeituraModbusBit(self.clp["AD"], REG_AD["CP_01_FECHADA"], descricao=f"[AD][CP{self.id}] Comporta Fechada")
-            self.abrindo = lei.LeituraModbusBit(self.clp["AD"], REG_AD["CP_01_ABRINDO"], descricao=f"[AD][CP{self.id}] Comporta Abrindo")
-            self.fechando = lei.LeituraModbusBit(self.clp["AD"], REG_AD["CP_01_FECHANDO"], descricao=f"[AD][CP{self.id}] Comporta Fechando")
+            self.parada = lei.LeituraModbusBit(self.clp["AD"], REG_AD[f"CP_0{self.id}_PARADA"], descricao=f"[AD][CP{self.id}] Comporta Parada")
+            self.aberta = lei.LeituraModbusBit(self.clp["AD"], REG_AD[f"CP_0{self.id}_ABERTA"], descricao=f"[AD][CP{self.id}] Comporta Aberta")
+            self.fechada = lei.LeituraModbusBit(self.clp["AD"], REG_AD[f"CP_0{self.id}_FECHADA"], descricao=f"[AD][CP{self.id}] Comporta Fechada")
+            self.abrindo = lei.LeituraModbusBit(self.clp["AD"], REG_AD[f"CP_0{self.id}_ABRINDO"], descricao=f"[AD][CP{self.id}] Comporta Abrindo")
+            self.fechando = lei.LeituraModbusBit(self.clp["AD"], REG_AD[f"CP_0{self.id}_FECHANDO"], descricao=f"[AD][CP{self.id}] Comporta Fechando")
 
 
     cp1 = Comporta(1, cfg)
@@ -200,6 +220,7 @@ class Adufas:
         else:
             cls.condicionadores_ativos = []
             return []
+
 
     @classmethod
     def carregar_leituras(cls) -> "None":
@@ -318,5 +339,3 @@ class Adufas:
 
         cls.l_alm_31_b_06 = lei.LeituraModbusBit(cls.clp["AD"], REG_AD["Alarme31_06"], descricao="[AD]  Alimentação Inversor 24/220Vca - Disj. Q24.4 Desligado")
         cls.condicionadores.append(c.CondicionadorBase(cls.l_alm_31_b_06, CONDIC_NORMALIZAR))
-
-        return

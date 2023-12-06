@@ -12,6 +12,8 @@ from funcs.leitura import Leitura as LEI
 from funcs.escrita import Escrita as ESC
 from funcs.temporizador import Temporizador
 
+
+
 class Unidade:
     def __init__(self, id: 'int'=None, dict_comp: 'dict'=None, tempo: 'Temporizador'=None) -> 'None':
 
@@ -27,6 +29,7 @@ class Unidade:
         self.etapa_atual = 0
         self.horimetro_hora = 0
         self.tempo_transicao = 0
+
 
     def passo(self) -> 'None':
 
