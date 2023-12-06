@@ -10,6 +10,7 @@ import traceback
 
 import src.dicionarios.dict as dct
 
+import src.adufas as ad
 import src.subestacao as se
 import src.tomada_agua as tda
 import src.unidade_geracao as ug
@@ -45,6 +46,7 @@ class Usina:
 
         self.clp = serv.Servidores.clp
 
+        self.ad = ad.Adufas
         self.se = se.Subestacao
         self.tda = tda.TomadaAgua
         self.sa = sa.ServicoAuxiliar
@@ -58,9 +60,11 @@ class Usina:
         self.ug4 = ug.UnidadeGeracao(4, self.cfg, self.bd)
         self.ugs: "list[ug.UnidadeGeracao]" = [self.ug1, self.ug2, self.ug3, self.ug4]
 
+        self.ad.bd = self.bd
         self.sa.bd = self.bd
         self.se.bd = self.bd
         self.tda.bd = self.bd
+        self.ad.cfg = self.cfg
         self.tda.cfg = self.cfg
 
 
@@ -652,9 +656,13 @@ class Usina:
             self.cfg["kd"] = float(parametros["kd"])
             self.cfg["kie"] = float(parametros["kie"])
 
+            self.cfg["ad_kp"] = float(parametros["ad_kp"])
+            self.cfg["ad_ki"] = float(parametros["ad_ki"])
+
             self.cfg["nv_alvo"] = float(parametros["nv_alvo"])
             self.cfg["nv_minimo"] = float(parametros["nv_minimo"])
             self.cfg["nv_maximo"] = float(parametros["nv_maximo"])
+            self.cfg["ad_nv_alvo"] = float(parametros["ad_nv_alvo"])
 
             self.cfg["pot_minima_ugs"] = float(parametros["pot_minima_ugs"])
             self.cfg["pot_maxima_ugs"] = float(parametros["pot_maxima_ugs"])

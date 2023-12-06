@@ -112,6 +112,7 @@ class Agendamentos:
                 self.verificar_agendamentos_sem_efeito(agendamento)
                 self.verificar_agendamentos_usina(agendamento)
                 self.verificar_agendamentos_ugs(agendamento)
+                self.verificar_agendamentos_adufas(agendamento)
 
                 self.db.update_agendamento(agendamento[0], executado=1)
                 logger.debug(f"[AGN] Agendamento executado:              \"{AGN_STR_DICT[agendamentos[i-1][3]] if agendamentos[i-1][3] in AGN_STR_DICT else 'Inexistente'}\"")
@@ -352,3 +353,17 @@ class Agendamentos:
 
             except Exception:
                 logger.error(f"[AGN] Valor inválido no agendamento: {agendamento[0]} ({agendamento[3]} é inválido)")
+
+
+    def verificar_agendamentos_adufas(self, agendamento) -> "None":
+        if agendamento[3] == AGN_ADCP1_FORCAR_ESTADO_DISPONIVEL:
+            self.usn.ad.cp1.estado = 0
+
+        if agendamento[3] == AGN_ADCP1_FORCAR_ESTADO_INDISPONIVEL:
+            self.usn.ad.cp1.estado = 1
+
+        if agendamento[3] == AGN_ADCP2_FORCAR_ESTADO_DISPONIVEL:
+            self.usn.ad.cp2.estado = 0
+
+        if agendamento[3] == AGN_ADCP2_FORCAR_ESTADO_INDISPONIVEL:
+            self.usn.ad.cp2.estado = 1

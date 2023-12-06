@@ -9,8 +9,8 @@ import traceback
 import src.tomada_agua as tda
 import src.funcoes.leitura as lei
 import src.funcoes.condicionadores as c
-import src.conectores.servidores as serv
 import src.conectores.banco_dados as bd
+import src.conectores.servidores as serv
 
 from datetime import datetime
 
@@ -23,74 +23,99 @@ logger = logging.getLogger("logger")
 
 class Adufas:
 
-    bd: "bd.BancoDados" = None
     clp = serv.Servidores.clp
-
+    bd: "bd.BancoDados" = None
+    cfg = {}
 
     class Comporta:
-        def __init__(self, id: "int") -> "None":
+        def __init__(self, id: "int", cfg: "dict") -> "None":
 
             self.clp = serv.Servidores.clp
 
             self.__id = id
+            self.__cfg = cfg
 
-            self.__leitura_info = lei.LeituraModbus(
+            self.__manual = lei.LeituraModbusBit(
                 self.clp["AD"],
-                REG_AD[f"CP_0{self.id}_INFO"],
-                op=3,
-                descricao=f"[AD][CP{self.id}] Informação"
-            )
-            self.__leitura_posicao = lei.LeituraModbus(
-                self.clp["AD"],
-                REG_AD[f"CP_0{self.id}_POSICAO"],
-                op=3,
-                descricao=f"[AD][CP{self.id}] Leitura Posição"
+                REG_AD[f"CP_0{self.id}_ACION_LOCAL"],
+                descricao=f"[AD][CP{self.id}] Comporta Manual"
             )
 
+            self._estado: "int" = 1
 
             self.setpoint: "int" = 0
             self.setpoint_maximo: "int" = 0
             self.setpoint_anterior: "int" = 0
 
             self.k: "float" = 1000
-            self.kp: "float" = 1
-            self.ki: "float" = 0.5
 
             self.controle_i: "float" = 0.0
             self.controle_p: "float" = 0.0
 
-            self.espera: "bool" = False
-            self.operando: "bool" = False
+
+            # __FINALIZAÇÂO INIT__
+            self.carregar_leituras()
 
 
         @property
         def id(self) -> "int":
+        # PROPRIEDADE -> Retorna o id da Comporta
             return self.__id
 
         @property
-        def leitura_info(self) -> "float":
-            return self.__leitura_info.valor
-
+        def manual(self) -> "bool":
+        # PROPRIEDADE -> Retorna se o modo manual da Comporta foi ativado
+    
+            return self.__manual.valor
+        
         @property
-        def leitura_posicao(self) -> "int":
-            return self.__leitura_posicao.valor
+        def estado(self) -> "int":
+        # PROPRIEDADE -> Retorna o estado atual da Comporta
+
+            return self._estado
+
+        @estado.setter
+        def estado(self, var: "int") -> "None":
+        # SETTER -> Adiciona o novo calor de estado da Comporta
+
+            self._estado = var
 
 
-        def controle_comporta(self, valor: "float") -> "int":
+        def calcular_setpoint(self) -> "None":
+            """
+            Função para calcular o valor de setpoint por Comporta, a partir da
+            leitura de nível Montante da Tomada da Água
+            """
+
+            logger.debug(f"[AD][CP{self.id}]      Comporta:          \"{ADCP_STR_DCT[self._estado] if not self.manual else 'Manual'}\"")
+
+            if self.manual:
+                return
 
             nv_montante = tda.TomadaAgua.nivel_montante.valor
 
-            erro = nv_montante - valor
-            self.controle_p = self.kp * erro
-            self.controle_i = min(max(0, self.ki * erro + self.controle_i), 6000)
+            erro = nv_montante - self.__cfg["ad_nv_alvo"]
 
-            acao_controle = self.k * (self.controle_p + self.controle_i)
-            acao_controle = min(max(0, acao_controle), 6000)
+            self.controle_p = self.__cfg["ad_kp"] * erro
 
-            return acao_controle
+            self.controle_i = min(max(0, self.__cfg["ad_ki"] * erro + self.controle_i), 6000)
+
+            sp = self.k * (self.controle_p + self.controle_i)
+            sp = min(max(0, sp), 6000)
+
+            logger.debug(f"[AD][CP{self.id}]      P:                 {self.controle_p}")
+            logger.debug(f"[AD][CP{self.id}]      I:                 {self.controle_i}")
+            logger.debug(f"[AD][CP{self.id}]      ERRO:              {erro}")
+            logger.debug("")
+
+            self.enviar_setpoint(sp)
 
 
         def enviar_setpoint(self, setpoint: "int") -> "None":
+            """
+            Função para enviar o setpoint para cada Comporta
+            """
+
             try:
                 logger.debug(f"[AD][CP{self.id}]      Enviando setpoint:         {int(setpoint)} mm")
 
@@ -101,12 +126,36 @@ class Adufas:
                 logger.debug(traceback.format_exc())
 
 
-    cp1 = Comporta(1)
-    cp2 = Comporta(2)
+        def carregar_leituras(self) -> "None":
+            """
+            Função para carregar as leituras de cada Comporta
+            """
+
+            self.parada = lei.LeituraModbusBit(self.clp["AD"], REG_AD["CP_01_PARADA"], descricao=f"[AD][CP{self.id}] Comporta Parada")
+            self.aberta = lei.LeituraModbusBit(self.clp["AD"], REG_AD["CP_01_ABERTA"], descricao=f"[AD][CP{self.id}] Comporta Aberta")
+            self.fechada = lei.LeituraModbusBit(self.clp["AD"], REG_AD["CP_01_FECHADA"], descricao=f"[AD][CP{self.id}] Comporta Fechada")
+            self.abrindo = lei.LeituraModbusBit(self.clp["AD"], REG_AD["CP_01_ABRINDO"], descricao=f"[AD][CP{self.id}] Comporta Abrindo")
+            self.fechando = lei.LeituraModbusBit(self.clp["AD"], REG_AD["CP_01_FECHANDO"], descricao=f"[AD][CP{self.id}] Comporta Fechando")
+
+
+    cp1 = Comporta(1, cfg)
+    cp2 = Comporta(2, cfg)
     cps: "list[Comporta]" = [cp1, cp2]
 
     condicionadores: "list[c.CondicionadorBase]" = []
     condicionadores_essenciais: "list[c.CondicionadorBase]" = []
+
+
+    @classmethod
+    def controlar_comportas(cls) -> "None":
+        logger.debug(f"[AD]  Controlando Comportas...")
+        logger.debug(f"[AD]  NÍVEL -> Alvo:                      {cls.cfg['nv_alvo']:0.3f}")
+        logger.debug(f"[TDA]          Leitura:                   {tda.TomadaAgua.nivel_montante.valor:0.3f}")
+        logger.debug("")
+
+        for cp in cls.cps:
+            cp.calcular_setpoint()
+            logger.debug("")
 
 
     @classmethod
@@ -158,6 +207,7 @@ class Adufas:
         Função para carregamento de leituras necessárias para a operação.
         """
 
+        ## CONDICINOADORES:
         cls.l_alm_28_b_00 = lei.LeituraModbusBit(cls.clp["AD"], REG_AD["Alarme28_00"], descricao="[AD]  Botão de Emergência Pressionado")
         cls.condicionadores_essenciais.append(c.CondicionadorBase(cls.l_alm_28_b_00, CONDIC_NORMALIZAR))
 

@@ -27,8 +27,8 @@ class Subestacao:
 
     # ATRIBUIÇÃO DE VARIÁVEIS
 
-    bd: "bd.BancoDados" = None
     clp = serv.Servidores.clp
+    bd: "bd.BancoDados" = None
 
     tensao_r = lei.LeituraModbus(
         clp["SA"],

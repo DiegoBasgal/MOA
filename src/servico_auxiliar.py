@@ -27,7 +27,6 @@ class ServicoAuxiliar:
     # ATRIBUIÇÃO DE VARIÁVEIS
 
     bd: "bd.BancoDados"=None
-
     clp = serv.Servidores.clp
 
     condicionadores: "list[c.CondicionadorBase]" = []

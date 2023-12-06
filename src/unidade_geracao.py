@@ -47,22 +47,22 @@ class UnidadeGeracao:
 
         # PRIVADAS
 
-        self.__leitura_potencia = lei.LeituraModbus(
+        self.__potencia = lei.LeituraModbus(
             self.clp[f"UG{self.id}"],
             REG_UG[f"UG{self.id}"]["POTENCIA_ATIVA_MEDIA"],
             descricao=f"[UG{self.id}] Leitura Potência"
         )
-        self.__leitura_etapa_atual = lei.LeituraModbus(
+        self.__etapa_atual = lei.LeituraModbus(
             self.clp[f"UG{self.id}"],
             REG_UG[f"UG{self.id}"][""],
             descricao=f"[UG{self.id}] Leitura Etapa"
         )
-        self.__leitura_etapa_alvo = lei.LeituraModbus(
+        self.__etapa_alvo = lei.LeituraModbus(
             self.clp[f"UG{self.id}"],
             REG_UG[f"UG{self.id}"][""],
             descricao=f"[UG{self.id}] Leitura Etapa"
         )
-        self.__leitura_horimetro = lei.LeituraModbus(
+        self.__horimetro = lei.LeituraModbus(
             self.clp[f"UG{self.id}"],
             REG_UG[f"UG{self.id}"][""],
             descricao=f"[UG{self.id}] Leitura Horímetro"
@@ -124,13 +124,13 @@ class UnidadeGeracao:
     def leitura_potencia(self) -> "float":
         # PROPRIEDADE -> Retorna a leitura de Potência da Unidade.
 
-        return self.__leitura_potencia.valor
+        return self.__potencia.valor
 
     @property
     def leitura_horimetro(self) -> "float":
         # PROPRIEDADE -> Retorna a leitura de horas de geração da Unidade.
 
-        return self.__leitura_horimetro.valor
+        return self.__horimetro.valor
 
     @property
     def manual(self) -> "bool":
@@ -165,7 +165,7 @@ class UnidadeGeracao:
     @property
     def etapa_atual(self) -> "int":
         try:
-            self._etapa_atual = self.__leitura_etapa_atual.valor
+            self._etapa_atual = self.__etapa_atual.valor
             self._ultima_etapa_atual = self._etapa_atual
             return self._etapa_atual
 
@@ -176,7 +176,7 @@ class UnidadeGeracao:
     @property
     def etapa_alvo(self) -> "int":
         try:
-            self._etapa_alvo = self.__leitura_etapa_alvo.valor
+            self._etapa_alvo = self.__etapa_alvo.valor
             return self._etapa_alvo
 
         except Exception:

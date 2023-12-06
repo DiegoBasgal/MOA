@@ -25,11 +25,9 @@ class TomadaAgua:
 
     # ATRIBUIÇÃO DE VARIÁVEIS
 
+    bd: "bd.BancoDados"=None
     clp = serv.Servidores.clp
-
     cfg: "dict" = {}
-
-    bd: "bd.BancoDados" = None
 
     aguardando_reservatorio: "int" = 0
 

@@ -40,7 +40,8 @@ class ParametrosUsina(models.Model):
     nv_minimo = models.DecimalField(max_digits=10, decimal_places=3, default=816)
     nv_montante = models.DecimalField(max_digits=10, decimal_places=3, default=817)
     nv_religamento = models.DecimalField(max_digits=10, decimal_places=3, default=816.3)
-
+    
+    ad_nv_alvo = models.DecimalField(max_digits=15, decimal_places=3, default=818.1)
 
     # PID IE
     kp = models.DecimalField(max_digits=15, decimal_places=3, default=2)
@@ -48,6 +49,11 @@ class ParametrosUsina(models.Model):
     kd = models.DecimalField(max_digits=15, decimal_places=3, default=0)
     kie = models.DecimalField(max_digits=15, decimal_places=3, default=0.1)
     ie_inicial = models.DecimalField(max_digits=10, decimal_places=3, default=0.5)
+
+
+    # PI Adufas
+    ad_kp = models.DecimalField(max_digits=15, decimal_places=3, default=1)
+    ad_ki = models.DecimalField(max_digits=15, decimal_places=3, default=0.5)
 
 
     # Potência
