@@ -201,7 +201,6 @@ class ControleReservatorio(State):
 
         self.usn.ler_valores()
         flag = self.usn.controlar_reservatorio()
-        self.usn.ad.controlar_comportas()
 
         return Emergencia(self.usn) if flag == NV_EMERGENCIA else ControleDados(self.usn)
 

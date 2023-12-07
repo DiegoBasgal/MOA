@@ -66,7 +66,6 @@ class Se:
         self.dict['SE']['potencia_se'] = max(0, np.random.normal(((self.dict['UG1']['potencia'] + self.dict['UG2']['potencia'] + self.dict['UG3']['potencia'] + self.dict['UG4']['potencia']) * 0.995), 0.001 * self.escala_ruido))
 
     # Lógica Exclusiva para acionamento de condicionadores TESTE:
-
         if self.dict['SE']['condic'] and not self.dict['BRD']['se_condic']:
             ESC.escrever_bit(MB['SE']['CONDICIONADOR'][0], valor=1)
             self.dict['BRD']['se_condic'] = True
@@ -163,22 +162,20 @@ class Se:
         DB.set_words(MB['SE']['TENSAO_RS'], [round(self.dict['SE']['tensao_rs'] / 1000)])
         DB.set_words(MB['SE']['TENSAO_ST'], [round(self.dict['SE']['tensao_st'] / 1000)])
         DB.set_words(MB['SE']['TENSAO_TR'], [round(self.dict['SE']['tensao_tr'] / 1000)])
-        DB.set_words(MB['SE']['POTENCIA_ATIVA_MEDIA'], [round(self.dict['SE']['potencia_se'] / 1000)])
+        DB.set_words(MB['SE']['POTENCIA_ATIVA_MEDIA'], [round(self.dict['SE']['potencia_se'])])
 
         if self.dict['SE']['dj_mola_carregada'] and not self.dict['BRD']['djse_mola']:
             self.dict['BRD']['djse_mola'] = True
-            DB.set_words(MB['SE']['STATUS_MOLA_DJ'], [1])
+            ESC.escrever_bit(MB['SE']['DJ52L_MOLA_CARREGADA'], valor=1)
 
         elif not self.dict['SE']['dj_mola_carregada'] and self.dict['BRD']['djse_mola']:
             self.dict['BRD']['djse_mola'] = False
-            DB.set_words(MB['SE']['STATUS_MOLA_DJ'], [0])
+            ESC.escrever_bit(MB['SE']['DJ52L_MOLA_CARREGADA'], valor=0)
 
         if self.dict['SE']['dj_fechado'] and not self.dict['BRD']['djse_fechado']:
             self.dict['BRD']['djse_fechado'] = True
-            DB.set_words(MB['SE']['STATUS_DJ52L'], [1])
+            ESC.escrever_bit(MB['SE']['DJ52L_FECHADO'], valor=1)
 
         elif not self.dict['SE']['dj_fechado'] and self.dict['BRD']['djse_fechado']:
             self.dict['BRD']['djse_fechado'] = False
-            DB.set_words(MB['SE']['STATUS_DJ52L'], [0])
-
-
+            ESC.escrever_bit(MB['SE']['DJ52L_FECHADO'], valor=0)

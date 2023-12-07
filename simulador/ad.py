@@ -22,6 +22,7 @@ class Ad:
         self.cp2 = Cp(2, self.dict)
         self.cps: 'list[Cp]' = [self.cp1, self.cp2]
 
+
         class Cp:
             def __init__(self, id: 'int', dict_comp: 'dict'=None, tempo: 'Temporizador'=None) -> 'None':
 
@@ -99,5 +100,6 @@ class Ad:
 
         if self.dict['AD']['condic'] and not self.dict['BRD']['ad_condic']:
             ESC.escrever_bit(MB['AD']['Alarme28_00'], valor=1)
+
         elif not self.dict['AD']['condic'] and self.dict['BRD']['ad_condic']:
             ESC.escrever_bit(MB['AD']['Alarme28_00'], valor=0)

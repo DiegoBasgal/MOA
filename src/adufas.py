@@ -170,7 +170,6 @@ class Adufas:
     def controlar_comportas(cls) -> "None":
         logger.debug(f"[AD]  Controlando Comportas...")
         logger.debug(f"[AD]  NÍVEL -> Alvo:                      {cls.cfg['nv_alvo']:0.3f}")
-        logger.debug(f"[TDA]          Leitura:                   {tda.TomadaAgua.nivel_montante.valor:0.3f}")
         logger.debug("")
 
         for cp in cls.cps:

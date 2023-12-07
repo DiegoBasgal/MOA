@@ -339,6 +339,8 @@ class Usina:
                 for ug in self.ugs:
                     ug.step()
 
+                self.ad.controlar_comportas()
+
         elif self.tda.nivel_montante.valor <= self.cfg["nv_minimo"] and not self.tda.aguardando_reservatorio:
             logger.debug("[TDA] Nível montante abaixo do mínimo.")
             logger.debug(f"[TDA]          Leitura:                   {self.tda.nivel_montante.valor:0.3f}")

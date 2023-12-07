@@ -43,6 +43,27 @@ compartilhado = {
 
         "nv_montante": 816.3,
         "nv_jusante_grade": 0,
+
+        "cp1_posicao": 0,
+        "cp2_posicao": 0,
+        "cp3_posicao": 0,
+        "cp4_posicao": 0,
+
+        "cp1_aberta": False,
+        "cp1_cracking": False,
+        "cp1_fechada": True,
+
+        "cp2_aberta": False,
+        "cp2_cracking": False,
+        "cp2_fechada": True,
+
+        "cp3_aberta": False,
+        "cp3_cracking": False,
+        "cp3_fechada": True,
+
+        "cp4_aberta": False,
+        "cp4_cracking": False,
+        "cp4_fechada": True,
     },
 
     "AD": {
@@ -65,9 +86,9 @@ compartilhado = {
 
         "potencia_se": 0,
 
-        "tensao_rs": 23000,
-        "tensao_st": 23000,
-        "tensao_tr": 23000,
+        "tensao_rs": 138000,
+        "tensao_st": 138000,
+        "tensao_tr": 138000,
 
         "dj_trip": False,
         "dj_falha": False,
@@ -105,6 +126,8 @@ compartilhado = {
         "temp_mancal_turbina_escora": 25,
         "temp_mancal_turbina_contra_escora": 25,
 
+        "set_pressao": False,
+
         "debug_parar": False,
         "debug_partir": False,
     },
@@ -130,6 +153,8 @@ compartilhado = {
         "temp_mancal_turbina_radial": 25,
         "temp_mancal_turbina_escora": 25,
         "temp_mancal_turbina_contra_escora": 25,
+
+        "set_pressao": False,
 
         "debug_parar": False,
         "debug_partir": False,
@@ -157,6 +182,8 @@ compartilhado = {
         "temp_mancal_turbina_escora": 25,
         "temp_mancal_turbina_contra_escora": 25,
 
+        "set_pressao": False,
+
         "debug_parar": False,
         "debug_partir": False,
     },
@@ -182,6 +209,8 @@ compartilhado = {
         "temp_mancal_turbina_radial": 25,
         "temp_mancal_turbina_escora": 25,
         "temp_mancal_turbina_contra_escora": 25,
+
+        "set_pressao": False,
 
         "debug_parar": False,
         "debug_partir": False,

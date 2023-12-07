@@ -8,7 +8,6 @@ from pyModbusTCP.server import DataBank as DB
 from dicts.reg import *
 from dicts.const import *
 from dicts.dict import compartilhado
-from funcs.leitura import Leitura as LEI
 from funcs.escrita import Escrita as ESC
 from funcs.temporizador import Temporizador
 
@@ -32,30 +31,29 @@ class Unidade:
 
 
     def passo(self) -> 'None':
-
-        if self.dict[f'UG{self.id}'][f'debug_setpoint'] >= 0:
-            self.dict[f'UG{self.id}'][f'setpoint'] = self.dict[f'UG{self.id}'][f'debug_setpoint']
-            self.dict[f'UG{self.id}'][f'debug_setpoint'] = -1
+        if self.dict[f'UG{self.id}']['debug_setpoint'] >= 0:
+            self.dict[f'UG{self.id}']['setpoint'] = self.dict[f'UG{self.id}']['debug_setpoint']
+            self.dict[f'UG{self.id}']['debug_setpoint'] = -1
 
         if DB.get_words(MB[f'UG{self.id}']['CMD_RESET_ALARMES'])[0]:
             DB.set_words(MB[f'UG{self.id}']['CMD_RESET_ALARMES'], [0])
             self.dict[f'UG{self.id}']['condic'] = False
-            print(f"[UG{self.id}] Entrei no reset de passos ")
+            print(f"[UG{self.id}] Entrei no reset de passos")
 
-        if DB.get_words(MB[f'UG{self.id}']['CMD_OPER_US']) or self.dict[f'UG{self.id}'][f'debug_partir']:
+        if DB.get_words(MB[f'UG{self.id}']['CMD_OPER_US']) or self.dict[f'UG{self.id}']['debug_partir']:
             DB.set_words(MB[f'UG{self.id}']['CMD_OPER_US'], [0])
-            self.dict[f'UG{self.id}'][f'debug_partir'] = False
+            self.dict[f'UG{self.id}']['debug_partir'] = False
             self.partir()
 
-        if DB.get_words(MB[f'UG{self.id}']['CMD_OPER_UP']) or self.dict[f'UG{self.id}'][f'debug_parar']:
+        if DB.get_words(MB[f'UG{self.id}']['CMD_OPER_UP']) or self.dict[f'UG{self.id}']['debug_parar']:
             DB.set_words(MB[f'UG{self.id}']['CMD_OPER_UP'], [0])
-            self.dict[f'UG{self.id}'][f'debug_parar'] = False
+            self.dict[f'UG{self.id}']['debug_parar'] = False
             self.parar()
 
         self.setpoint = DB.get_words(MB[f'UG{self.id}']['CRTL_POT_ALVO'])[0]
-        self.dict[f'UG{self.id}'][f'setpoint'] = self.setpoint
+        self.dict[f'UG{self.id}']['setpoint'] = self.setpoint
 
-        self.dict[f'UG{self.id}'][f'q'] = self.calcular_q_ug(self.potencia)
+        self.dict[f'UG{self.id}']['q'] = self.calcular_q_ug(self.potencia)
 
         # Lógica Exclusiva para acionamento de condicionadores TESTE:
         if self.dict[f'UG{self.id}']['condic'] and not self.dict['BRD'][f'ug{self.id}_condic']:
@@ -75,15 +73,16 @@ class Unidade:
 
     def partir(self) -> 'None':
         if ETAPA_UP in (self.etapa_alvo, self.etapa_atual) and not self.dict[f'UG{self.id}']['condic']:
-            self.dict[f'UG{self.id}'][f'etapa_alvo'] = self.etapa_alvo = ETAPA_US
+            self.dict[f'UG{self.id}']['etapa_alvo'] = self.etapa_alvo = ETAPA_US
             print(f'[UG{self.id}] Comando de Partida')
+
         elif self.dict[f'UG{self.id}']['condic']:
             print(f'[UG{self.id}] Máquina sem condição de partida.')
 
 
     def parar(self) -> 'None':
         if ETAPA_UP not in (self.etapa_alvo, self.etapa_atual):
-            self.dict[f'UG{self.id}'][f'etapa_alvo'] = self.etapa_alvo = ETAPA_UP
+            self.dict[f'UG{self.id}']['etapa_alvo'] = self.etapa_alvo = ETAPA_UP
             print(f'[UG{self.id}] Comando de Parada')
 
 
@@ -91,7 +90,7 @@ class Unidade:
         print(f'[UG{self.id}] TRIP!')
         self.potencia = 0
         self.etapa_alvo = 0
-        self.dict[f'UG{self.id}'][f"etapa_alvo"] = 0
+        self.dict[f'UG{self.id}']['etapa_alvo'] = 0
 
 
     def calcular_q_ug(self, potencia_kW) -> 'float':
@@ -106,22 +105,37 @@ class Unidade:
     def controlar_reservatorio(self) -> 'None':
         if self.etapa_atual > ETAPA_UP and self.dict['TDA']['nv_montante'] < USINA_NV_MINIMO_OPERACAO:
             self.potencia = 0
-            self.dict[f'UG{self.id}'][f'etapa_atual'] = self.etapa_atual = ETAPA_UPGM
-            self.dict[f'UG{self.id}'][f'etapa_alvo'] = self.etapa_alvo = ETAPA_UPGM
+            self.dict[f'UG{self.id}']['etapa_atual'] = self.etapa_atual = ETAPA_UPGM
+            self.dict[f'UG{self.id}']['etapa_alvo'] = self.etapa_alvo = ETAPA_UPGM
 
 
     def controlar_limites(self) -> 'None':
-        self.dict[f'UG{self.id}'][f'temp_fase_r'] = 60
-        self.dict[f'UG{self.id}'][f'temp_fase_s'] = 60
-        self.dict[f'UG{self.id}'][f'temp_fase_t'] = 60
-        self.dict[f'UG{self.id}'][f'temp_mancal_gerador_la_1'] = 60
-        self.dict[f'UG{self.id}'][f'temp_mancal_gerador_la_2'] = 60
-        self.dict[f'UG{self.id}'][f'temp_mancal_gerador_lna_1'] = 60
-        self.dict[f'UG{self.id}'][f'temp_mancal_gerador_lna_2'] = 60
-        self.dict[f'UG{self.id}'][f'temp_mancal_turbina_radial'] = 60
-        self.dict[f'UG{self.id}'][f'temp_mancal_turbina_escora'] = 60
-        self.dict[f'UG{self.id}'][f'temp_mancal_turbina_contra_escora'] = 60
-        self.dict[f'UG{self.id}'][f'pressao_turbina'] = np.random.normal(1.6, 1 * self.escala_ruido)
+        self.dict[f'UG{self.id}']['temp_fase_r'] = 60
+        self.dict[f'UG{self.id}']['temp_fase_s'] = 60
+        self.dict[f'UG{self.id}']['temp_fase_t'] = 60
+        self.dict[f'UG{self.id}']['temp_mancal_gerador_la_1'] = 60
+        self.dict[f'UG{self.id}']['temp_mancal_gerador_la_2'] = 60
+        self.dict[f'UG{self.id}']['temp_mancal_gerador_lna_1'] = 60
+        self.dict[f'UG{self.id}']['temp_mancal_gerador_lna_2'] = 60
+        self.dict[f'UG{self.id}']['temp_mancal_turbina_radial'] = 60
+        self.dict[f'UG{self.id}']['temp_mancal_turbina_escora'] = 60
+        self.dict[f'UG{self.id}']['temp_mancal_turbina_contra_escora'] = 60
+
+
+    def operar_comporta(self) -> 'None':
+
+        tc = time() + TEMPO_CRACKING_CP_UGS
+        t1 = time()
+        t2 = time()
+
+        while time() < tc:
+            self.dict['TDA']['uh1_disponivel'] = False
+            if t2 - t1 >= 1:
+                t1 = t2
+                t2 = time()
+                self.dict['TDA'][f'cp{self.id}_setpoint'] += (1/106)*30
+            else:
+                t2 = time()
 
 
     def controlar_etapas(self) -> 'None':
@@ -131,13 +145,13 @@ class Unidade:
 
             if self.etapa_alvo == self.etapa_atual:
                 self.tempo_transicao = 0
-                self.dict[f'UG{self.id}'][f'etapa_alvo'] = self.etapa_alvo
+                self.dict[f'UG{self.id}']['etapa_alvo'] = self.etapa_alvo
 
             elif self.etapa_alvo > self.etapa_atual:
                 self.tempo_transicao += self.segundos_por_passo
 
                 if self.tempo_transicao >= TEMPO_TRANS_US_UPS:
-                    self.dict[f'UG{self.id}'][f'etapa_atual'] = self.etapa_atual = ETAPA_UPGM
+                    self.dict[f'UG{self.id}']['etapa_atual'] = self.etapa_atual = ETAPA_UPGM
                     self.tempo_transicao = 0
 
         # Unidade Pronta para Giro Mecânico
@@ -146,20 +160,20 @@ class Unidade:
 
             if self.etapa_alvo == self.etapa_atual:
                 self.tempo_transicao = 0
-                self.dict[f'UG{self.id}'][f'etapa_alvo'] = self.etapa_alvo
+                self.dict[f'UG{self.id}']['etapa_alvo'] = self.etapa_alvo
 
             elif self.etapa_alvo > self.etapa_atual:
                 self.tempo_transicao += self.segundos_por_passo
 
                 if self.tempo_transicao >= TEMPO_TRANS_UPGM_UVD:
-                    self.dict[f'UG{self.id}'][f'etapa_atual'] = self.etapa_atual = ETAPA_UVD
+                    self.dict[f'UG{self.id}']['etapa_atual'] = self.etapa_atual = ETAPA_UVD
                     self.tempo_transicao = 0
 
             elif self.etapa_alvo < self.etapa_atual:
                 self.tempo_transicao -= self.segundos_por_passo
 
                 if self.tempo_transicao <= -TEMPO_TRANS_UPGM_UP:
-                    self.dict[f'UG{self.id}'][f'etapa_atual'] = self.etapa_atual = ETAPA_UP
+                    self.dict[f'UG{self.id}']['etapa_atual'] = self.etapa_atual = ETAPA_UP
                     self.tempo_transicao = 0
 
         # Unidade Vazio Desescitado
@@ -168,20 +182,20 @@ class Unidade:
 
             if self.etapa_alvo == self.etapa_atual:
                 self.tempo_transicao = 0
-                self.dict[f'UG{self.id}'][f'etapa_alvo'] = self.etapa_alvo
+                self.dict[f'UG{self.id}']['etapa_alvo'] = self.etapa_alvo
 
             elif self.etapa_alvo > self.etapa_atual:
                 self.tempo_transicao += self.segundos_por_passo
 
                 if self.tempo_transicao >= TEMPO_TRANS_UVD_UPS:
-                    self.dict[f'UG{self.id}'][f'etapa_atual'] = self.etapa_atual = ETAPA_UPS
+                    self.dict[f'UG{self.id}']['etapa_atual'] = self.etapa_atual = ETAPA_UPS
                     self.tempo_transicao = 0
 
             elif self.etapa_alvo < self.etapa_atual:
                 self.tempo_transicao -= self.segundos_por_passo
 
                 if self.tempo_transicao <= -TEMPO_TRANS_UVD_UPGM:
-                    self.dict[f'UG{self.id}'][f'etapa_atual'] = self.etapa_atual = ETAPA_UPGM
+                    self.dict[f'UG{self.id}']['etapa_atual'] = self.etapa_atual = ETAPA_UPGM
                     self.tempo_transicao = 0
 
         # Unidade Pronta para Sincronismo
@@ -190,27 +204,27 @@ class Unidade:
 
             if self.etapa_alvo == self.etapa_atual:
                 self.tempo_transicao = 0
-                self.dict[f'UG{self.id}'][f'etapa_alvo'] = self.etapa_alvo
+                self.dict[f'UG{self.id}']['etapa_alvo'] = self.etapa_alvo
 
             elif self.etapa_alvo > self.etapa_atual:
                 self.tempo_transicao += self.segundos_por_passo
 
                 if self.tempo_transicao >= TEMPO_TRANS_UPS_US and self.dict['SE']['dj_fechado']:
-                    self.dict[f'UG{self.id}'][f'etapa_atual'] = self.etapa_atual = ETAPA_US
+                    self.dict[f'UG{self.id}']['etapa_atual'] = self.etapa_atual = ETAPA_US
                     self.tempo_transicao = 0
 
             elif self.etapa_alvo < self.etapa_atual:
                 self.tempo_transicao -= self.segundos_por_passo
 
                 if self.tempo_transicao <= -TEMPO_TRANS_UPS_UVD:
-                    self.dict[f'UG{self.id}'][f'etapa_atual'] = self.etapa_atual = ETAPA_UVD
+                    self.dict[f'UG{self.id}']['etapa_atual'] = self.etapa_atual = ETAPA_UVD
                     self.tempo_transicao = 0
 
         # Unidade Sincronizada
         if self.etapa_atual == ETAPA_US:
             if self.etapa_alvo == self.etapa_atual:
                 self.tempo_transicao = 0
-                self.dict[f'UG{self.id}'][f'etapa_alvo'] = self.etapa_alvo
+                self.dict[f'UG{self.id}']['etapa_alvo'] = self.etapa_alvo
 
                 if self.dict['SE']['dj_fechado']:
                     self.dict[f'UG{self.id}']['potencia'] = self.potencia = min(max(self.potencia, POT_MIN), POT_MAX)
@@ -225,8 +239,8 @@ class Unidade:
 
                 if self.dict['SE']['dj_aberto'] or self.dict['SE']['dj_trip']:
                     self.dict[f'UG{self.id}']['potencia'] = self.potencia = 0
-                    self.dict[f'UG{self.id}'][f'etapa_atual'] = self.etapa_atual = ETAPA_UVD
-                    self.dict[f'UG{self.id}'][f'etapa_alvo'] = self.etapa_alvo = ETAPA_US
+                    self.dict[f'UG{self.id}']['etapa_atual'] = self.etapa_atual = ETAPA_UVD
+                    self.dict[f'UG{self.id}']['etapa_alvo'] = self.etapa_alvo = ETAPA_US
                     self.tempo_transicao = 0
 
             elif self.etapa_alvo < self.etapa_atual:
@@ -236,23 +250,23 @@ class Unidade:
 
                 if self.tempo_transicao <= -TEMPO_TRANS_US_UPS and self.potencia <= 0:
                     self.potencia = 0
-                    self.dict[f'UG{self.id}'][f'etapa_atual'] = self.etapa_atual = ETAPA_UPS
+                    self.dict[f'UG{self.id}']['etapa_atual'] = self.etapa_atual = ETAPA_UPS
                     self.tempo_transicao = 0
 
 
     def atualizar_modbus(self) -> 'None':
         DB.set_words(MB[f'UG{self.id}']['POT_ATIVA_MEDIA'], [round(self.potencia)])
         DB.set_words(MB[f'UG{self.id}']['CRTL_POT_ALVO'], [self.setpoint])
-        DB.set_words(MB[f'UG{self.id}']['OPER_ETAPA_ATUAL'], [int(self.dict[f'UG{self.id}'][f'etapa_atual'])])
-        DB.set_words(MB[f'UG{self.id}']['OPER_ETAPA_ALVO'], [int(self.dict[f'UG{self.id}'][f'etapa_alvo'])])
+        DB.set_words(MB[f'UG{self.id}']['OPER_ETAPA_ATUAL'], [int(self.dict[f'UG{self.id}']['etapa_atual'])])
+        DB.set_words(MB[f'UG{self.id}']['OPER_ETAPA_ALVO'], [int(self.dict[f'UG{self.id}']['etapa_alvo'])])
         DB.set_words(MB[f'UG{self.id}']['ENTRADA_TURBINA_PRESSAO'], [round(self.dict[f'UG{self.id}'][f'pressao_turbina'] * 10)])
-        DB.set_words(MB[f'UG{self.id}']['GERADOR_FASE_R_TMP'], [round(self.dict[f'UG{self.id}'][f'temp_fase_r'])])
-        DB.set_words(MB[f'UG{self.id}']['GERADOR_FASE_S_TMP'], [round(self.dict[f'UG{self.id}'][f'temp_fase_s'])])
-        DB.set_words(MB[f'UG{self.id}']['GERADOR_FASE_T_TMP'], [round(self.dict[f'UG{self.id}'][f'temp_fase_t'])])
-        DB.set_words(MB[f'UG{self.id}']['MANCAL_GERADOR_LA_1_TMP'], [round(self.dict[f'UG{self.id}'][f'temp_mancal_gerador_la_1'])])
-        DB.set_words(MB[f'UG{self.id}']['MANCAL_GERADOR_LA_2_TMP'], [round(self.dict[f'UG{self.id}'][f'temp_mancal_gerador_la_2'])])
-        DB.set_words(MB[f'UG{self.id}']['MANCAL_GERADOR_LNA_2_TMP'], [round(self.dict[f'UG{self.id}'][f'temp_mancal_gerador_lna_1'])])
-        DB.set_words(MB[f'UG{self.id}']['MANCAL_GERADOR_LNA_1_TMP'], [round(self.dict[f'UG{self.id}'][f'temp_mancal_gerador_lna_2'])])
+        DB.set_words(MB[f'UG{self.id}']['GERADOR_FASE_R_TMP'], [round(self.dict[f'UG{self.id}']['temp_fase_r'])])
+        DB.set_words(MB[f'UG{self.id}']['GERADOR_FASE_S_TMP'], [round(self.dict[f'UG{self.id}']['temp_fase_s'])])
+        DB.set_words(MB[f'UG{self.id}']['GERADOR_FASE_T_TMP'], [round(self.dict[f'UG{self.id}']['temp_fase_t'])])
+        DB.set_words(MB[f'UG{self.id}']['MANCAL_GERADOR_LA_1_TMP'], [round(self.dict[f'UG{self.id}']['temp_mancal_gerador_la_1'])])
+        DB.set_words(MB[f'UG{self.id}']['MANCAL_GERADOR_LA_2_TMP'], [round(self.dict[f'UG{self.id}']['temp_mancal_gerador_la_2'])])
+        DB.set_words(MB[f'UG{self.id}']['MANCAL_GERADOR_LNA_2_TMP'], [round(self.dict[f'UG{self.id}']['temp_mancal_gerador_lna_1'])])
+        DB.set_words(MB[f'UG{self.id}']['MANCAL_GERADOR_LNA_1_TMP'], [round(self.dict[f'UG{self.id}']['temp_mancal_gerador_lna_2'])])
         DB.set_words(MB[f'UG{self.id}']['MANCAL_TURBINA_RADIAL'], [round(self.dict[f'UG{self.id}'][f'temp_mancal_turbina_radial'])])
         DB.set_words(MB[f'UG{self.id}']['MANCAL_TURBINA_ESCORA'], [round(self.dict[f'UG{self.id}'][f'temp_mancal_turbina_escora'])])
-        DB.set_words(MB[f'UG{self.id}']['MANCAL_TURBINA_CONTRA_ESCORA'], [round(self.dict[f'UG{self.id}'][f'temp_mancal_turbina_contra_escora'])])
+        DB.set_words(MB[f'UG{self.id}']['MANCAL_TURBINA_CONTRA_ESCORA'], [round(self.dict[f'UG{self.id}']['temp_mancal_turbina_contra_escora'])])
