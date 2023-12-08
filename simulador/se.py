@@ -65,7 +65,7 @@ class Se:
 
         self.dict['SE']['potencia_se'] = max(0, np.random.normal(((self.dict['UG1']['potencia'] + self.dict['UG2']['potencia'] + self.dict['UG3']['potencia'] + self.dict['UG4']['potencia']) * 0.995), 0.001 * self.escala_ruido))
 
-    # Lógica Exclusiva para acionamento de condicionadores TESTE:
+        # Lógica Exclusiva para acionamento de condicionadores TESTE:
         if self.dict['SE']['condic'] and not self.dict['BRD']['se_condic']:
             ESC.escrever_bit(MB['SE']['CONDICIONADOR'][0], valor=1)
             self.dict['BRD']['se_condic'] = True

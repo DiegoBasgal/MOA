@@ -50,19 +50,15 @@ compartilhado = {
         "cp4_posicao": 0,
 
         "cp1_aberta": False,
-        "cp1_cracking": False,
         "cp1_fechada": True,
 
         "cp2_aberta": False,
-        "cp2_cracking": False,
         "cp2_fechada": True,
 
         "cp3_aberta": False,
-        "cp3_cracking": False,
         "cp3_fechada": True,
 
         "cp4_aberta": False,
-        "cp4_cracking": False,
         "cp4_fechada": True,
     },
 

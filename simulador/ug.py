@@ -43,7 +43,10 @@ class Unidade:
         if DB.get_words(MB[f'UG{self.id}']['CMD_OPER_US']) or self.dict[f'UG{self.id}']['debug_partir']:
             DB.set_words(MB[f'UG{self.id}']['CMD_OPER_US'], [0])
             self.dict[f'UG{self.id}']['debug_partir'] = False
-            self.partir()
+            if self.dict['TDA'][f'cp{self.id}_fechada'] and not self.dict['TDA'][f'cp{self.id}_aberta']:
+                Thread(target=lambda: self.abrir_comporta()).start()
+            elif self.dict['TDA'][f'cp{self.id}_aberta'] and not self.dict['TDA'][f'cp{self.id}_fechada']:
+                self.partir()
 
         if DB.get_words(MB[f'UG{self.id}']['CMD_OPER_UP']) or self.dict[f'UG{self.id}']['debug_parar']:
             DB.set_words(MB[f'UG{self.id}']['CMD_OPER_UP'], [0])
@@ -52,7 +55,6 @@ class Unidade:
 
         self.setpoint = DB.get_words(MB[f'UG{self.id}']['CRTL_POT_ALVO'])[0]
         self.dict[f'UG{self.id}']['setpoint'] = self.setpoint
-
         self.dict[f'UG{self.id}']['q'] = self.calcular_q_ug(self.potencia)
 
         # Lógica Exclusiva para acionamento de condicionadores TESTE:
@@ -122,20 +124,57 @@ class Unidade:
         self.dict[f'UG{self.id}']['temp_mancal_turbina_contra_escora'] = 60
 
 
-    def operar_comporta(self) -> 'None':
+    def abrir_comporta(self) -> 'None':
+        self.dict['TDA'][f'cp{self.id}_fechada'] = False
 
+        # Temporizador para cracking da comporta
         tc = time() + TEMPO_CRACKING_CP_UGS
-        t1 = time()
-        t2 = time()
+        t1 = t2 = time()
 
         while time() < tc:
-            self.dict['TDA']['uh1_disponivel'] = False
+            self.dict['TDA'][f'uh{1 if self.id in (1,3) else 2}_disponivel'] = False
             if t2 - t1 >= 1:
                 t1 = t2
                 t2 = time()
-                self.dict['TDA'][f'cp{self.id}_setpoint'] += (1/106)*30
+                self.dict['TDA'][f'cp{self.id}_setpoint'] += (1/TEMPO_CRACKING_CP_UGS)*20
             else:
                 t2 = time()
+
+        # Temporizador para enchimento do conduto das unidades
+        ta = time() + TEMPO_ENCH_CONDU_CP_UGS
+        t1 = t2 = time()
+
+        while time() < ta:
+            if t2 - t1 >= 1:
+                t1 = t2
+                t2 = time()
+            else:
+                t2 = time()
+
+        # Temporizador para abertura da comporta
+        ta = time() + TEMPO_ABERTURA_CP_UGS
+        t1 = t2 = time()
+
+        while time() < ta:
+            self.dict['TDA'][f'uh{1 if self.id in (1,3) else 2}_disponivel'] = False
+            if t2 - t1 >= 1:
+                t1 = t2
+                t2 = time()
+                self.dict['TDA'][f'cp{self.id}_setpoint'] += (1/TEMPO_ABERTURA_CP_UGS)*80
+            else:
+                t2 = time()
+
+        self.dict['TDA'][f'cp{self.id}_aberta'] = True
+
+
+    def fechar_comporta(self) -> 'None':
+        if self.dict[f'UG{self.id}']['etapa_atual'] == ETAPA_UP and self.dict['TDA'][f'cp{self.id}_aberta']:
+            self.dict['TDA'][f'cp{self.id}_aberta'] = False
+
+            while self.dict[f'TDA'][f'cp{self.id}_setpoint'] >= 0:
+                self.dict[f'TDA'][f'cp{self.id}_setpoint'] -= 1000
+
+            self.dict['TDA'][f'cp{self.id}_fechada'] = True
 
 
     def controlar_etapas(self) -> 'None':
