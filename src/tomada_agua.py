@@ -22,7 +22,9 @@ from src.conectores.servidores import Servidores
 from src.conectores.banco_dados import BancoDados
 from src.funcoes.escrita import EscritaModBusBit as EMB
 
+
 logger = logging.getLogger("logger")
+
 
 class TomadaAgua:
     def __init__(self, cfg: "dict"=None, serv: "Servidores"=None, bd: "BancoDados"=None) -> "None":
@@ -85,6 +87,10 @@ class TomadaAgua:
         self.condicionadores: "list[c.CondicionadorBase]" = []
         self.condicionadores_essenciais: "list[c.CondicionadorBase]" = []
 
+        # FINALIZAÇÃO __INIT__
+
+        self.iniciar_ultimo_estado_lg()
+
 
     def resetar_emergencia(self) -> "bool":
         """
@@ -98,8 +104,7 @@ class TomadaAgua:
         except Exception:
             logger.error("[TDA] Houve um erro ao realizar o Reset de Emergência.")
             logger.debug(f"[TDA] Traceback: {traceback.format_exc()}")
-
-        return False
+            return False
 
 
     def atualizar_montante(self) -> "None":
@@ -118,10 +123,7 @@ class TomadaAgua:
         Função para extrair do banco de dados o último estado registrado do Limpa Grades
         """
 
-        if self.l_lg_manual.valor:
-            return
-        else:
-            self._modo_lg = self.__bd.get_ultimo_estado_lg()[0]
+        self._modo_lg = self.__bd.get_ultimo_estado_lg()[0]
 
 
     def forcar_estado_disponivel_lg(self) -> "None":
@@ -234,6 +236,8 @@ class TomadaAgua:
         da Classe da Usina determinar as ações necessárias.
         """
 
+        autor = 0
+
         if True in (condic.ativo for condic in self.condicionadores_essenciais):
             condics_ativos = [condic for condics in [self.condicionadores_essenciais, self.condicionadores] for condic in condics if condic.ativo]
 
@@ -259,9 +263,11 @@ class TomadaAgua:
                     self.__bd.update_alarmes([
                         datetime.now(pytz.timezone("Brazil/East")).replace(tzinfo=None),
                         condic.gravidade,
-                        condic.descricao
+                        condic.descricao,
+                        "X" if autor == 0 else ""
                     ])
                     sleep(1)
+                    autor += 1
 
             logger.debug("")
             return condics_ativos

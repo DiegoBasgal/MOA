@@ -36,7 +36,7 @@ def monitoramento_view(request, *args, **kwargs):
     }
 
     clp_sa = ModbusClient("192.168.20.130", 502, unit_id=1, timeout=0.5)
-    clp_tda = ModbusClient("192.168.20.140", 2000, unit_id=1, timeout=0.5)
+    clp_tda = ModbusClient("192.168.20.140", 503, unit_id=1, timeout=0.5)
     clp_ug1 = ModbusClient("192.168.20.110", 502, unit_id=1, timeout=0.5)
     clp_ug2 = ModbusClient("192.168.20.120", 502, unit_id=1, timeout=0.5)
     clp_moa = ModbusClient("192.168.20.210", 502, unit_id=1, timeout=0.5)

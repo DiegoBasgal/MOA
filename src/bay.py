@@ -172,7 +172,7 @@ class Bay:
                 flags += 1
 
             if not self.linha_morta.valor and self.linha_viva.valor:
-                logger.warning("[BAY] Foi identificada uma leitura de Tensão na linha!")
+                logger.warning("[BAY] Foi identificada uma falta de Tensão na linha!")
                 flags += 1
 
             if not self.mola_carregada.valor:
@@ -262,6 +262,8 @@ class Bay:
         da Classe da Usina determinar as ações necessárias.
         """
 
+        autor = 0
+
         if True in (condic.ativo for condic in self.condicionadores_essenciais):
             condics_ativos = [condic for condics in [self.condicionadores_essenciais, self.condicionadores] for condic in condics if condic.ativo]
 
@@ -287,9 +289,11 @@ class Bay:
                     self.__bd.update_alarmes([
                         datetime.now(pytz.timezone("Brazil/East")).replace(tzinfo=None),
                         condic.gravidade,
-                        condic.descricao
+                        condic.descricao,
+                        "X" if autor == 0 else ""
                     ])
                     sleep(1)
+                    autor += 1
 
             logger.debug("")
             return condics_ativos

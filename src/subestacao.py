@@ -215,6 +215,8 @@ class Subestacao:
         da Classe da Usina determinar as ações necessárias.
         """
 
+        autor = 0
+
         if True in (condic.ativo for condic in self.condicionadores_essenciais):
             condics_ativos = [condic for condics in [self.condicionadores_essenciais, self.condicionadores] for condic in condics if condic.ativo]
 
@@ -240,8 +242,10 @@ class Subestacao:
                     self.__bd.update_alarmes([
                         datetime.now(pytz.timezone("Brazil/East")).replace(tzinfo=None),
                         condic.gravidade,
-                        condic.descricao
+                        condic.descricao,
+                        "X" if autor == 0 else ""
                     ])
+                    autor += 1
                     sleep(1)
 
             logger.debug("")

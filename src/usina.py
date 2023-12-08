@@ -31,8 +31,10 @@ from src.funcoes.escrita import EscritaModBusBit as EMB
 from src.funcoes.leitura import *
 from src.unidade_geracao import UnidadeGeracao
 
+
 logger = logging.getLogger("logger")
 debug_log = logging.getLogger("debug")
+
 
 class Usina:
     def __init__(self, cfg: "dict"=None, serv: "Servidores"=None) -> "None":
@@ -102,6 +104,7 @@ class Usina:
 
         self.ultima_tentativa_norm: "datetime" = self.get_time()
 
+
         # FINALIZAÇÃO DO __INIT__
 
         self.bay.carregar_leituras()
@@ -113,9 +116,7 @@ class Usina:
 
         self.ler_valores()
         self.verificar_bay_se()
-        self.normalizar_usina()
         self.ajustar_inicializacao()
-        self.tda.iniciar_ultimo_estado_lg()
         self.escrever_valores()
 
         self._tentativas_normalizar = 0
@@ -280,6 +281,7 @@ class Usina:
 
 
     def verificar_condicionadores(self) -> "int":
+
         flag = CONDIC_IGNORAR
 
         lst_bay = self.bay.verificar_condicionadores()
