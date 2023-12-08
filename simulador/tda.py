@@ -6,6 +6,7 @@ from dicts.reg import *
 from dicts.const import *
 from funcs.temporizador import Temporizador
 
+
 class Tda:
     def __init__(self, dict_comp: 'dict'=None, tempo: 'Temporizador'=None) -> 'None':
         self.dict = dict_comp

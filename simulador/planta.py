@@ -13,7 +13,9 @@ from tda import Tda
 from ug import Unidade
 from funcs.temporizador import Temporizador
 
+
 lock = threading.Lock()
+
 
 class Planta:
     def __init__(self, dict_comp: 'dict'=None, tempo: 'Temporizador'=None) -> 'None':

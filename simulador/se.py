@@ -8,6 +8,7 @@ from funcs.leitura import Leitura as LEI
 from funcs.escrita import Escrita as ESC
 from funcs.temporizador import Temporizador
 
+
 class Se:
     def __init__(self, dict_comp: 'dict'=None, tempo: 'Temporizador'=None) -> "None":
         self.dict = dict_comp

@@ -1,4 +1,3 @@
-from calendar import prmonth
 import numpy as np
 
 from time import  time
@@ -7,10 +6,8 @@ from pyModbusTCP.server import DataBank as DB
 
 from dicts.reg import *
 from dicts.const import *
-from dicts.dict import compartilhado
 from funcs.escrita import Escrita as ESC
 from funcs.temporizador import Temporizador
-
 
 
 class Unidade:
