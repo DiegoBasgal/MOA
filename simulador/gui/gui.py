@@ -8,7 +8,7 @@ from gui.ui import Ui_Form
 from PyQt5.QtCore import QTimer
 from PyQt5.QtWidgets import QApplication, QMainWindow, QFrame
 
-from simulador.dicts.const import *
+from dicts.const import *
 
 
 lock = threading.Lock()
@@ -206,6 +206,12 @@ class Window(QMainWindow, Ui_Form):
         elif self.dict['SE']['dj_fechado'] and not self.dict['SE']['dj_aberto']:
             self.dict['SE']['debug_dj_abrir'] = True
 
+    def set_trip_lt(self):
+        self.dict['SE']['tensao_rs'] = 0
+
+    def reset_trip_lt(self):
+        self.dict['SE']['tensao_rs'] = 138000
+
 
     # UG1
     def partir_ug1(self):
@@ -249,7 +255,7 @@ class Window(QMainWindow, Ui_Form):
 
     def mudar_setpoint_ug2(self):
         self.dict['UG2']['debug_setpoint'] = self.horizontalSlider_sp_ug2.value()
-        
+
     def set_condic_ug2(self):
         self.dict['UG2']['condic'] = True
 

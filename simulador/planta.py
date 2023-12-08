@@ -36,12 +36,12 @@ class Planta:
         self.passo_simulacao = tempo.passo_simulacao
         self.segundos_por_passo = tempo.segundos_por_passo
 
-        self.server_MB = ModbusServer(host='0.0.0.0', port=5000, no_block=True)
+        self.server_MB = ModbusServer(host='localhost', port=502, no_block=True)
         self.server_MB.start()
 
         for n in MB.values():
             for v in n.values():
-                DB.set_words(v[0], [0]) if isinstance(v, list) else DB.set_words(v, [0])
+                DB.set_words(v[0], [int(0)]) if isinstance(v, list) else DB.set_words(v, [int(0)])
 
 
     def atualizar_modbus_geral(self) -> 'None':

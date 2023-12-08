@@ -47,7 +47,7 @@ MB = {
         "CP_01_PARADA":                         [164 + 12764 + 3000, 4],
         "CP_01_ACION_LOCAL":                    [164 + 12764 + 3000, 5],
 
-        "CP_01_POSICAO":                        165 + 12764 + 3000,
+        "CP_01_POSICAO":                        163 + 12764 + 3000,
 
         "CP_02_INFO":                           166 + 12764 + 3000,
         "CP_02_ABRINDO":                        [166 + 12764 + 3000, 0],
@@ -72,12 +72,14 @@ MB = {
 
         "CRTL_POT_ALVO":                        17 + 10000,
 
+        "OPER_ETAPA_ALVO":                      9 + 12764 + 10000,
         "OPER_ETAPA_ALVO_UP":                   [9 + 12764 + 10000, 0],
         "OPER_ETAPA_ALVO_UPGM":                 [9 + 12764 + 10000, 1],
         "OPER_ETAPA_ALVO_UMD":                  [9 + 12764 + 10000, 2],
         "OPER_ETAPA_ALVO_UPS":                  [9 + 12764 + 10000, 3],
         "OPER_ETAPA_ALVO_US":                   [9 + 12764 + 10000, 4],
 
+        "OPER_ETAPA_ATUAL":                     10 + 12764 + 10000,
         "OPER_ETAPA_ATUAL_UP":                  [10 + 12764 + 10000, 0],
         "OPER_ETAPA_ATUAL_UMD":                 [10 + 12764 + 10000, 2],
         "OPER_ETAPA_ATUAL_UPGM":                [10 + 12764 + 10000, 1],
@@ -109,12 +111,14 @@ MB = {
 
         "CRTL_POT_ALVO":                        17 + 20000,
 
+        "OPER_ETAPA_ALVO":                      9 + 12764 + 20000,
         "OPER_ETAPA_ALVO_UP":                   [9 + 12764 + 20000, 0],
         "OPER_ETAPA_ALVO_UPGM":                 [9 + 12764 + 20000, 1],
         "OPER_ETAPA_ALVO_UMD":                  [9 + 12764 + 20000, 2],
         "OPER_ETAPA_ALVO_UPS":                  [9 + 12764 + 20000, 3],
         "OPER_ETAPA_ALVO_US":                   [9 + 12764 + 20000, 4],
 
+        "OPER_ETAPA_ATUAL":                     10 + 12764 + 20000,
         "OPER_ETAPA_ATUAL_UP":                  [10 + 12764 + 20000, 0],
         "OPER_ETAPA_ATUAL_UMD":                 [10 + 12764 + 20000, 2],
         "OPER_ETAPA_ATUAL_UPGM":                [10 + 12764 + 20000, 1],
@@ -146,12 +150,14 @@ MB = {
 
         "CRTL_POT_ALVO":                        17 + 30000,
 
+        "OPER_ETAPA_ALVO":                      9 + 12764 + 30000,
         "OPER_ETAPA_ALVO_UP":                   [9 + 12764 + 30000, 0],
         "OPER_ETAPA_ALVO_UPGM":                 [9 + 12764 + 30000, 1],
         "OPER_ETAPA_ALVO_UMD":                  [9 + 12764 + 30000, 2],
         "OPER_ETAPA_ALVO_UPS":                  [9 + 12764 + 30000, 3],
         "OPER_ETAPA_ALVO_US":                   [9 + 12764 + 30000, 4],
 
+        "OPER_ETAPA_ATUAL":                     10 + 12764 + 30000,
         "OPER_ETAPA_ATUAL_UP":                  [10 + 12764 + 30000, 0],
         "OPER_ETAPA_ATUAL_UMD":                 [10 + 12764 + 30000, 2],
         "OPER_ETAPA_ATUAL_UPGM":                [10 + 12764 + 30000, 1],
@@ -183,12 +189,14 @@ MB = {
 
         "CRTL_POT_ALVO":                        17 + 40000,
 
+        "OPER_ETAPA_ALVO":                      9 + 12764 + 40000,
         "OPER_ETAPA_ALVO_UP":                   [9 + 12764 + 40000, 0],
         "OPER_ETAPA_ALVO_UPGM":                 [9 + 12764 + 40000, 1],
         "OPER_ETAPA_ALVO_UMD":                  [9 + 12764 + 40000, 2],
         "OPER_ETAPA_ALVO_UPS":                  [9 + 12764 + 40000, 3],
         "OPER_ETAPA_ALVO_US":                   [9 + 12764 + 40000, 4],
 
+        "OPER_ETAPA_ATUAL":                     10 + 12764 + 40000,
         "OPER_ETAPA_ATUAL_UP":                  [10 + 12764 + 40000, 0],
         "OPER_ETAPA_ATUAL_UMD":                 [10 + 12764 + 40000, 2],
         "OPER_ETAPA_ATUAL_UPGM":                [10 + 12764 + 40000, 1],

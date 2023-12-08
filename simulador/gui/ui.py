@@ -1560,7 +1560,7 @@ class Ui_Form(object):
         self.lcdNumber_lt.setFrameShape(QtWidgets.QFrame.WinPanel)
         self.lcdNumber_lt.setFrameShadow(QtWidgets.QFrame.Sunken)
         self.lcdNumber_lt.setSmallDecimalPoint(False)
-        self.lcdNumber_lt.setDigitCount(5)
+        self.lcdNumber_lt.setDigitCount(7)
         self.lcdNumber_lt.setSegmentStyle(QtWidgets.QLCDNumber.Flat)
         self.lcdNumber_lt.setProperty("value", 0.0)
         self.lcdNumber_lt.setObjectName("lcdNumber_lt")
@@ -3130,6 +3130,7 @@ class Ui_Form(object):
         self.retranslateUi(Form)
         QtCore.QMetaObject.connectSlotsByName(Form)
 
+
         # GERAL
         self.pushButton_set_condic_usn.clicked.connect(Form.set_trip_condic)
         self.pushButton_reset_condic_usn.clicked.connect(Form.reset_trip_condic)
@@ -3138,6 +3139,8 @@ class Ui_Form(object):
         # SE
         self.pushButton_djl_reset.clicked.connect(Form.set_trip_djl)
         self.pushButton_djl_estado.clicked.connect(Form.alterar_estado_djl)
+        self.pushButton_set_trip_lt.clicked.connect(Form.set_trip_lt)
+        self.pushButton_reset_trip_lt.clicked.connect(Form.reset_trip_lt)
 
 
         # TDA
@@ -3145,8 +3148,8 @@ class Ui_Form(object):
 
 
         # AD
-        self.checkBox_manual_cp1_ad.setChecked.connect(Form.acionar_manual_cp1)
-        self.checkBox_manual_cp2_ad.setChecked.connect(Form.acionar_manual_cp2)
+        self.checkBox_manual_cp1_ad.clicked.connect(Form.acionar_manual_cp1)
+        self.checkBox_manual_cp2_ad.clicked.connect(Form.acionar_manual_cp2)
 
 
         # UG1
@@ -3181,7 +3184,7 @@ class Ui_Form(object):
         self.horizontalSlider_sp_ug4.valueChanged["int"].connect(Form.mudar_setpoint_ug4)
 
         # UGs
-        self.horizontalSlider_pressao_ugs.valueChanged.connect()
+        self.horizontalSlider_pressao_ugs.valueChanged.connect(Form.mudar_pressao_ugs)
 
 
     def retranslateUi(self, Form):

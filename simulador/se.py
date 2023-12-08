@@ -59,11 +59,6 @@ class Se:
             self.dict['SE']['debug_dj_fechar'] = False
             self.tripar_dj()
 
-        if self.dict['SE']['dj_aberto']:
-            self.dict['SE']['tensao_rs'] = 0
-            self.dict['SE']['tensao_st'] = 0
-            self.dict['SE']['tensao_tr'] = 0
-
         self.dict['SE']['potencia_se'] = max(0, np.random.normal(((self.dict['UG1']['potencia'] + self.dict['UG2']['potencia'] + self.dict['UG3']['potencia'] + self.dict['UG4']['potencia']) * 0.995), 0.001 * self.escala_ruido))
 
         # Lógica Exclusiva para acionamento de condicionadores TESTE:

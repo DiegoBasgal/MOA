@@ -133,7 +133,7 @@ class Unidade:
             if t2 - t1 >= 1:
                 t1 = t2
                 t2 = time()
-                self.dict['TDA'][f'cp{self.id}_setpoint'] += (1/TEMPO_CRACKING_CP_UGS)*20
+                self.dict['TDA'][f'cp{self.id}_posicao'] += (1/TEMPO_CRACKING_CP_UGS)*20
             else:
                 t2 = time()
 
@@ -157,7 +157,7 @@ class Unidade:
             if t2 - t1 >= 1:
                 t1 = t2
                 t2 = time()
-                self.dict['TDA'][f'cp{self.id}_setpoint'] += (1/TEMPO_ABERTURA_CP_UGS)*80
+                self.dict['TDA'][f'cp{self.id}_posicao'] += (1/TEMPO_ABERTURA_CP_UGS)*80
             else:
                 t2 = time()
 
@@ -168,8 +168,8 @@ class Unidade:
         if self.dict[f'UG{self.id}']['etapa_atual'] == ETAPA_UP and self.dict['TDA'][f'cp{self.id}_aberta']:
             self.dict['TDA'][f'cp{self.id}_aberta'] = False
 
-            while self.dict[f'TDA'][f'cp{self.id}_setpoint'] >= 0:
-                self.dict[f'TDA'][f'cp{self.id}_setpoint'] -= 1000
+            while self.dict[f'TDA'][f'cp{self.id}_posicao'] >= 0:
+                self.dict[f'TDA'][f'cp{self.id}_posicao'] -= 1000
 
             self.dict['TDA'][f'cp{self.id}_fechada'] = True
 
