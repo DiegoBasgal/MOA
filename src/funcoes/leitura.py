@@ -48,14 +48,22 @@ class LeituraModbus:
         try:
             if self.__op == 3:
                 ler = self.__client.read_holding_registers(self.__registrador)[0]
-                return ler
+                if ler is None:
+                    ler2 = self.__client.read_holding_registers(self.__registrador)[0]
+                    return ler2
+                else:
+                    return ler
 
             elif self.__op == 4:
                 ler = self.__client.read_input_registers(self.__registrador)[0]
                 return ler
 
         except Exception:
-            logger.error(f"[LEI] Houve um erro na leitura do REG: {self.__descricao} | Endereço: {self.__registrador}")
+            if self.__registrador == 21:
+                logger.debug(f"[LEI] Houve um erro na leitura do REG: {self.__descricao} | Endereço: {self.__registrador}")
+            else:
+                logger.error(f"[LEI] Houve um erro na leitura do REG: {self.__descricao} | Endereço: {self.__registrador}")
+
             logger.debug(traceback.format_exc())
             return 0
 

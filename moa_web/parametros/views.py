@@ -54,6 +54,9 @@ def parametros_moa_view(request, *args, **kwargs):
         if request.POST.get("salvar_params"):
 
             # UG1
+            aux = request.POST.get("alerta_temperatura_oleo_uhrv_ug1")
+            usina.alerta_temperatura_oleo_uhrv_ug1 = (float(aux.replace(",", ".")) if aux is not None and float(aux.replace(",", ".")) > 0 else usina.alerta_temperatura_oleo_uhrv_ug1)
+
             aux = request.POST.get("alerta_temperatura_fase_r_ug1")
             usina.alerta_temperatura_fase_r_ug1 = (float(aux.replace(",", ".")) if aux is not None and float(aux.replace(",", ".")) > 0 else usina.alerta_temperatura_fase_r_ug1)
 
@@ -86,6 +89,9 @@ def parametros_moa_view(request, *args, **kwargs):
 
             aux = request.POST.get("alerta_temperatura_mancal_contra_esc_comb_ug1")
             usina.alerta_temperatura_mancal_contra_esc_comb_ug1 = (float(aux.replace(",", ".")) if aux is not None and float(aux.replace(",", ".")) > 0 else usina.alerta_temperatura_mancal_contra_esc_comb_ug1)
+
+            aux = request.POST.get("limite_temperatura_oleo_uhrv_ug1")
+            usina.limite_temperatura_oleo_uhrv_ug1 = (float(aux.replace(",", ".")) if aux is not None and float(aux.replace(",", ".")) > 0 else usina.limite_temperatura_oleo_uhrv_ug1)
 
             aux = request.POST.get("limite_temperatura_fase_r_ug1")
             usina.limite_temperatura_fase_r_ug1 = (float(aux.replace(",", ".")) if aux is not None and float(aux.replace(",", ".")) > 0 else usina.limite_temperatura_fase_r_ug1)
@@ -128,6 +134,9 @@ def parametros_moa_view(request, *args, **kwargs):
 
 
             # UG2
+            aux = request.POST.get("alerta_temperatura_oleo_uhrv_ug2")
+            usina.alerta_temperatura_oleo_uhrv_ug2 = (float(aux.replace(",", ".")) if aux is not None and float(aux.replace(",", ".")) > 0 else usina.alerta_temperatura_oleo_uhrv_ug2)
+
             aux = request.POST.get("alerta_temperatura_fase_r_ug2")
             usina.alerta_temperatura_fase_r_ug2 = (float(aux.replace(",", ".")) if aux is not None and float(aux.replace(",", ".")) > 0 else usina.alerta_temperatura_fase_r_ug2)
 
@@ -160,6 +169,9 @@ def parametros_moa_view(request, *args, **kwargs):
 
             aux = request.POST.get("alerta_temperatura_mancal_contra_esc_comb_ug2")
             usina.alerta_temperatura_mancal_contra_esc_comb_ug2 = (float(aux.replace(",", ".")) if aux is not None and float(aux.replace(",", ".")) > 0 else usina.alerta_temperatura_mancal_contra_esc_comb_ug2)
+
+            aux = request.POST.get("limite_temperatura_oleo_uhrv_ug2")
+            usina.limite_temperatura_oleo_uhrv_ug2 = (float(aux.replace(",", ".")) if aux is not None and float(aux.replace(",", ".")) > 0 else usina.limite_temperatura_oleo_uhrv_ug2)
 
             aux = request.POST.get("limite_temperatura_fase_r_ug2")
             usina.limite_temperatura_fase_r_ug2 = (float(aux.replace(",", ".")) if aux is not None and float(aux.replace(",", ".")) > 0 else usina.limite_temperatura_fase_r_ug2)

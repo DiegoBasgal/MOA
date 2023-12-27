@@ -76,6 +76,7 @@ class ParametrosUsina(models.Model):
 
     alerta_perda_grade_ug1 = models.DecimalField(max_digits=10, decimal_places=2, default=0)
     alerta_pressao_turbina_ug1 = models.DecimalField(max_digits=10, decimal_places=2, default=1.4)
+    alerta_temperatura_oleo_uhrv_ug1 = models.DecimalField(max_digits=10, decimal_places=2, default=100)
     alerta_temperatura_fase_r_ug1 = models.DecimalField(max_digits=10, decimal_places=2, default=100)
     alerta_temperatura_fase_s_ug1 = models.DecimalField(max_digits=10, decimal_places=2, default=100)
     alerta_temperatura_fase_t_ug1 = models.DecimalField(max_digits=10, decimal_places=2, default=100)
@@ -90,6 +91,7 @@ class ParametrosUsina(models.Model):
 
     limite_perda_grade_ug1 = models.DecimalField(max_digits=10, decimal_places=2, default=0)
     limite_pressao_turbina_ug1 = models.DecimalField(max_digits=10, decimal_places=2, default=1)
+    limite_temperatura_oleo_uhrv_ug1 = models.DecimalField(max_digits=10, decimal_places=2, default=200)
     limite_temperatura_fase_r_ug1 = models.DecimalField(max_digits=10, decimal_places=2, default=200)
     limite_temperatura_fase_s_ug1 = models.DecimalField(max_digits=10, decimal_places=2, default=200)
     limite_temperatura_fase_t_ug1 = models.DecimalField(max_digits=10, decimal_places=2, default=200)
@@ -115,6 +117,7 @@ class ParametrosUsina(models.Model):
 
     alerta_perda_grade_ug2 = models.DecimalField(max_digits=10, decimal_places=2, default=0)
     alerta_pressao_turbina_ug2 = models.DecimalField(max_digits=10, decimal_places=2, default=1.4)
+    alerta_temperatura_oleo_uhrv_ug2 = models.DecimalField(max_digits=10, decimal_places=2, default=100)
     alerta_temperatura_fase_r_ug2 = models.DecimalField(max_digits=10, decimal_places=2, default=100)
     alerta_temperatura_fase_s_ug2 = models.DecimalField(max_digits=10, decimal_places=2, default=100)
     alerta_temperatura_fase_t_ug2 = models.DecimalField(max_digits=10, decimal_places=2, default=100)
@@ -129,6 +132,7 @@ class ParametrosUsina(models.Model):
 
     limite_perda_grade_ug2 = models.DecimalField(max_digits=10, decimal_places=3, default=0)
     limite_pressao_turbina_ug2 = models.DecimalField(max_digits=10, decimal_places=2, default=1)
+    limite_temperatura_oleo_uhrv_ug2 = models.DecimalField(max_digits=10, decimal_places=2, default=200)
     limite_temperatura_fase_r_ug2 = models.DecimalField(max_digits=10, decimal_places=2, default=200)
     limite_temperatura_fase_s_ug2 = models.DecimalField(max_digits=10, decimal_places=2, default=200)
     limite_temperatura_fase_t_ug2 = models.DecimalField(max_digits=10, decimal_places=2, default=200)

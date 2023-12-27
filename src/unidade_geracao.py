@@ -923,6 +923,7 @@ class UnidadeGeracao:
             self.condic_temp_fase_r_ug.valor_base = float(parametros[f"alerta_temperatura_fase_r_ug{self.id}"])
             self.condic_temp_fase_s_ug.valor_base = float(parametros[f"alerta_temperatura_fase_s_ug{self.id}"])
             self.condic_temp_fase_t_ug.valor_base = float(parametros[f"alerta_temperatura_fase_t_ug{self.id}"])
+            self.condic_temp_oleo_uhrv.valor_base = float(parametros[f"alerta_temperatura_oleo_uhrv_ug{self.id}"])
             self.condic_temp_nucleo_gerador_1_ug.valor_base = float(parametros[f"alerta_temperatura_nucleo_gerador_1_ug{self.id}"])
             self.condic_temp_mancal_guia_ug.valor_base = float(parametros[f"alerta_temperatura_mancal_guia_ug{self.id}"])
             self.condic_temp_mancal_guia_interno_1_ug.valor_base = float(parametros[f"alerta_temperatura_mancal_guia_interno_1_ug{self.id}"])
@@ -931,10 +932,12 @@ class UnidadeGeracao:
             self.condic_temp_patins_mancal_comb_2_ug.valor_base = float(parametros[f"alerta_temperatura_patins_mancal_comb_2_ug{self.id}"])
             self.condic_temp_mancal_casq_comb_ug.valor_base = float(parametros[f"alerta_temperatura_mancal_casq_comb_ug{self.id}"])
             self.condic_temp_mancal_contra_esc_comb_ug.valor_base = float(parametros[f"alerta_temperatura_mancal_contra_esc_comb_ug{self.id}"])
+
             self.condic_pressao_turbina_ug.valor_base = float(parametros[f"alerta_pressao_turbina_ug{self.id}"])
             self.condic_temp_fase_r_ug.valor_limite = float(parametros[f"limite_temperatura_fase_r_ug{self.id}"])
             self.condic_temp_fase_s_ug.valor_limite = float(parametros[f"limite_temperatura_fase_s_ug{self.id}"])
             self.condic_temp_fase_t_ug.valor_limite = float(parametros[f"limite_temperatura_fase_t_ug{self.id}"])
+            self.condic_temp_oleo_uhrv.valor_limite = float(parametros[f"limite_temperatura_oleo_uhrv_ug{self.id}"])
             self.condic_temp_nucleo_gerador_1_ug.valor_limite = float(parametros[f"limite_temperatura_nucleo_gerador_1_ug{self.id}"])
             self.condic_temp_mancal_guia_ug.valor_limite = float(parametros[f"limite_temperatura_mancal_guia_ug{self.id}"])
             self.condic_temp_mancal_guia_interno_1_ug.valor_limite = float(parametros[f"limite_temperatura_mancal_guia_interno_1_ug{self.id}"])
@@ -957,6 +960,11 @@ class UnidadeGeracao:
         Verifica os valores base e limite da Unidade, pré-determinados na interface
         WEB, e avisa o operador caso algum valor ultrapasse o estipulado.
         """
+
+        if self.l_temp_oleo_uhrv.valor >= self.condic_temp_oleo_uhrv.valor_base:
+            logger.warning(f"[UG{self.id}] A temperatura do Óleo da UHRV da UG passou do valor base! ({self.condic_temp_oleo_uhrv.valor_base}C) | Leitura: {self.l_temp_oleo_uhrv.valor}C")
+        if self.l_temp_oleo_uhrv.valor >= 0.9*(self.condic_temp_oleo_uhrv.valor_limite - self.condic_temp_oleo_uhrv.valor_base) + self.condic_temp_oleo_uhrv.valor_base:
+            logger.critical(f"[UG{self.id}] A temperatura do Óleo da UHRV da UG está muito próxima do limite! ({self.condic_temp_oleo_uhrv.valor_limite}C) | Leitura: {self.l_temp_oleo_uhrv.valor}C")
 
         if self.l_temp_fase_R.valor >= self.condic_temp_fase_r_ug.valor_base:
             logger.warning(f"[UG{self.id}] A temperatura de Fase R da UG passou do valor base! ({self.condic_temp_fase_r_ug.valor_base}C) | Leitura: {self.l_temp_fase_R.valor}C")
@@ -1024,12 +1032,6 @@ class UnidadeGeracao:
         Função para consulta de acionamentos da Unidade e avisos através do mecanismo
         de acionamento temporizado.
         """
-
-        if self.l_saidas_digitais_rv_b0.valor:
-            logger.warning(f"[UG{self.id}] Foi identificada uma falha na atuação do Relé de Trip do RV. Favor verificar.")
-
-        if self.l_saidas_digitais_rt_b0.valor:
-            logger.warning(f"[UG{self.id}] Foi identificada uma falha na atuação do Relé de Trip do RT. Favor verificar.")
 
         if self.l_falha_3_rt_b0.valor:
             logger.warning(f"[UG{self.id}] Foi identificada uma perda de medição de Potência Reativa no RT da Unidade. Favor Verificar.")
@@ -1204,6 +1206,12 @@ class UnidadeGeracao:
         self.condic_temp_fase_t_ug = c.CondicionadorExponencial(self.l_temp_fase_T, CONDIC_INDISPONIBILIZAR)
         self.condicionadores_essenciais.append(self.condic_temp_fase_t_ug)
         self.condicionadores_atenuadores.append(self.condic_temp_fase_t_ug)
+
+            # Óleo UHRV
+        self.l_temp_oleo_uhrv = LeituraModbusFloat(self.clp[f"UG{self.id}"], REG_CLP[f"UG{self.id}"]["OLEO_UHRV_TMP"], descricao=f"[UG{self.id}] Óleo UHRV Temperatura")
+        self.condic_temp_oleo_uhrv = c.CondicionadorExponencial(self.l_temp_oleo_uhrv, CONDIC_INDISPONIBILIZAR)
+        self.condicionadores_essenciais.append(self.condic_temp_oleo_uhrv)
+        self.condicionadores_atenuadores.append(self.condic_temp_oleo_uhrv)
 
             # Nucleo Gerador 1
         self.l_temp_nucleo_gerador_1 = LeituraModbusFloat(self.clp[f"UG{self.id}"], REG_CLP[f"UG{self.id}"]["GERADOR_NUCL_ESTAT_TMP"], descricao=f"[UG{self.id}] Núcleo Gerador Temperatura")

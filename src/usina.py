@@ -240,13 +240,12 @@ class Usina:
         haja um erro com o fechamento dos disjuntores, aciona a normalização da usina
         senão, sinaliza que está tudo correto para a máquina de estados do MOA.
         """
-
+    
         if not self.bay.verificar_tensao_trifasica():
             logger.debug("")
             logger.debug(f"[BAY] Tensão BAY:                   VAB -> \"{self.bay.tensao_vab.valor:2.1f} V\" | VBC -> \"{self.bay.tensao_vbc.valor:2.1f} V\" | VCA -> \"{self.bay.tensao_vca.valor:2.1f} V\"")
             logger.debug(f"[SE]  Tensão Subestação:            VAB -> \"{self.se.tensao_vab.valor:2.1f} V\" | VBC -> \"{self.se.tensao_vbc.valor:2.1f} V\" | VCA -> \"{self.se.tensao_vca.valor:2.1f} V\"")
             logger.debug("")
-            logger.warning("[BAY] Tensão trifásica fora do limite.")
             return DJS_FALTA_TENSAO
 
         elif not self.bay.fechar_dj_linha() or not self.se.fechar_dj_linha():
@@ -655,7 +654,7 @@ class Usina:
         Função para escrita de valores de operação nos Bancos do módulo do Django
         e Debug.
         """
-
+        
         try:
             self.bd.update_valores_usina([
                 self.get_time().strftime("%Y-%m-%d %H:%M:%S"),
@@ -676,6 +675,8 @@ class Usina:
             logger.debug(traceback.format_exc())
 
         try:
+            sleep(3/1000) #espera 3 milisegundo para gravar no banco, dessa forma ele evita problemas de chave primária duplicada
+
             self.bd.update_debug([
                 time(),
                 1 if self.modo_autonomo else 0,
@@ -698,7 +699,7 @@ class Usina:
             ])
 
         except Exception:
-            logger.error(f"[USN] Houve um erro ao atualizar valores DEBUG do controle de potência no Banco de Dados.")
+            logger.debug(f"[USN] Houve um erro ao atualizar valores DEBUG no Banco de Dados.")
             logger.debug(traceback.format_exc())
 
 

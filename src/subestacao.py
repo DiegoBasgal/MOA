@@ -160,8 +160,8 @@ class Subestacao:
                 self.dj_bay_aberto = True
                 flags += 1
 
-            if self.l_barra_viva.valor:
-                logger.warning("[SE]  Foi identificada leitura de Tensão na barra do Bay!")
+            if not self.l_barra_viva.valor:
+                logger.warning("[SE]  Não foi possível identificar uma leitura de Tensão na barra do Bay -> Subestação!")
                 flags += 1
 
             if self.l_trip_rele_te.valor:

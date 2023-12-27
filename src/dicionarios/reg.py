@@ -621,6 +621,7 @@ REG_CLP = {
         "GERADOR_NUCL_ESTAT_TMP":                       72,
         "ENTRADA_TURBINA_PRESSAO":                      84,
         "GERADOR_SAIDA_AR_TRP_TMP":                     90,
+        "OLEO_UHRV_TMP":                                112,
         "HORIMETRO":                                    108,
         "P":                                            132,
 
@@ -954,6 +955,7 @@ REG_CLP = {
         "GERADOR_NUCL_ESTAT_TMP":                       72,
         "ENTRADA_TURBINA_PRESSAO":                      84,
         "GERADOR_SAIDA_AR_TRP_TMP":                     90,
+        "OLEO_UHRV_TMP":                                112,
         "HORIMETRO":                                    108,
         "P":                                            132,
 
