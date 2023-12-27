@@ -462,6 +462,17 @@ class UnidadeGeracao:
 
             if setpoint_kw > 1:
                 self.setpoint = int(setpoint_kw)
+                res = self.clp[f"UG{self.id}"].write_single_register(REG_UG[f"UG{self.id}"]["CMD_SINC_MODO_AUTO_LIGAR"], 1)
+                res = self.clp[f"UG{self.id}"].write_single_register(REG_UG[f"UG{self.id}"]["CTRL_POT_MODO_POT"], 1) # BIT
+                res = self.clp[f"UG{self.id}"].write_single_register(REG_UG[f"UG{self.id}"]["CMD_RT_MTVC_HABILITAR"], 1)
+                res = self.clp[f"UG{self.id}"].write_single_register(REG_UG[f"UG{self.id}"]["CMD_RV_CONJUGADO_AUTO_HABILITAR"], 1)
+                res = self.clp[f"UG{self.id}"].write_single_register(REG_UG[f"UG{self.id}"]["CMD_CTRL_REATIVO_MODO_VArLIGAR"], 1)
+                res = self.clp[f"UG{self.id}"].write_single_register(REG_UG[f"UG{self.id}"]["CMD_CTRL_REATIVO_MODO_FPDESLIGAR"], 1)
+                res = self.clp[f"UG{self.id}"].write_single_register(REG_UG[f"UG{self.id}"]["CMD_CTRL_POT_MODO_NIVEL_LIGAR"], 1)
+                res = self.clp[f"UG{self.id}"].write_single_register(REG_UG[f"UG{self.id}"]["CMD_CTRL_POT_MODO_NIVEL_DESLIGAR"], 1)
+
+                res = self.clp[f"UG{self.id}"].write_single_register(REG_UG[f"UG{self.id}"]["CTRL_REAT_MODO_VAR"], int(0)) # BIT
+                res = self.clp[f"UG{self.id}"].write_single_register(REG_UG[f"UG{self.id}"]["CRTL_REATIVO_SP_REATIVO"], int(0))
                 res = self.clp[f"UG{self.id}"].write_single_register(REG_UG[f"UG{self.id}"]["CRTL_POT_ALVO"], int(self.setpoint))
 
                 return res
@@ -972,8 +983,17 @@ class UnidadeGeracao:
         self.condicionadores_atenuadores.append(self.c_pressao_turbina_ug)
 
 
+        self.l_oper_parada_emerg = lei.LeituraModbusBit(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}"]["OPER_INFO_PARADA_EMERG"], descricao=f"[UG{self.id}] Operação Parada Emergência")
+        self.condicionadores_essenciais.append(c.CondicionadorBase(self.l_oper_parada_emerg, CONDIC_NORMALIZAR))
+
+        self.l_oper_parada_trip_e = lei.LeituraModbusBit(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}"]["OPER_INFO_PARADA_TRIP_E"], descricao=f"[UG{self.id}] Operação Parada TRIP Elétrico")
+        self.condicionadores_essenciais.append(c.CondicionadorBase(self.l_oper_parada_trip_e, CONDIC_NORMALIZAR))
+
+        self.l_oper_parada_trip_h = lei.LeituraModbusBit(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}"]["OPER_INFO_PARADA_TRIP_H"], descricao=f"[UG{self.id}] Operação Parada TRIP Hidráulico")
+        self.condicionadores_essenciais.append(c.CondicionadorBase(self.l_oper_parada_trip_h, CONDIC_NORMALIZAR))
+
         self.l_alm_01_b_01 = lei.LeituraModbusBit(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}"]["Alarme01_01"], descricao=f"[UG{self.id}] Botão de Emergência Pressionado (Bloqueio 86H Trip)")
-        self.condicionadores_essenciais.append(c.CondicionadorBase(self.l_alm_01_b_01, CONDIC_INDISPONIBILIZAR))
+        self.condicionadores_essenciais.append(c.CondicionadorBase(self.l_alm_01_b_01, CONDIC_NORMALIZAR))
         
         self.l_alm_02_b_03 = lei.LeituraModbusBit(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}"]["Alarme02_03"], descricao=f"[UG{self.id}] UHLM - Botão de Emergência Pressionado (Bloqueio 86H Trip)")
         self.condicionadores_essenciais.append(c.CondicionadorBase(self.l_alm_02_b_03, CONDIC_NORMALIZAR))
@@ -1011,6 +1031,27 @@ class UnidadeGeracao:
         self.l_alm_06_b_03 = lei.LeituraModbusBit(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}"]["Alarme06_03"], descricao=f"[UG{self.id}] Relé de Proteção SEL700G - TRIP")
         self.condicionadores_essenciais.append(c.CondicionadorBase(self.l_alm_06_b_03, CONDIC_NORMALIZAR))
 
+
+        self.l_emergencia = lei.LeituraModbusBit(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}"]["OPER_EMERGENCIA"], descricao=f"[UG{self.id}] Operação Emergência Ligada")
+        self.condicionadores.append(c.CondicionadorBase(self.l_emergencia, CONDIC_INDISPONIBILIZAR))
+
+        self.l_oper_parada_trip_agua = lei.LeituraModbusBit(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}"]["OPER_INFO_PARADA_TRIP_AGUA"], descricao=f"[UG{self.id}] Operação Parada TRIP Água")
+        self.condicionadores.append(c.CondicionadorBase(self.l_oper_parada_trip_agua, CONDIC_INDISPONIBILIZAR))
+
+        self.l_oper_parada_trip_m = lei.LeituraModbusBit(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}"]["OPER_INFO_PARADA_TRIP_M"], descricao=f"[UG{self.id}] Operação Parada TRIP Mecânico")
+        self.condicionadores.append(c.CondicionadorBase(self.l_oper_parada_trip_m, CONDIC_INDISPONIBILIZAR))
+
+        self.l_uhct_nv_oleo_ll = lei.LeituraModbusBit(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}"]["UHCT_NIVEL_OLEO_LL"], descricao=f"[UG{self.id}] UHCT Nível Óleo Muito Baixo")
+        self.condicionadores.append(c.CondicionadorBase(self.l_uhct_nv_oleo_ll, CONDIC_INDISPONIBILIZAR))
+
+        self.l_uhlm_nv_oleo_ll = lei.LeituraModbusBit(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}"]["UHLM_NIVEL_OLEO_LL"], descricao=f"[UG{self.id}] UHLM Nível Óleo Muito Baixo")
+        self.condicionadores.append(c.CondicionadorBase(self.l_uhlm_nv_oleo_ll, CONDIC_INDISPONIBILIZAR))
+
+        self.l_dj52G_inserido = lei.LeituraModbusBit(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}"]["Dj52G_INSERIDO"], descricao=f"[UG{self.id}] Disjuntor 52G Inserido")
+        self.condicionadores.append(c.CondicionadorBase(self.l_dj52G_inserido, CONDIC_INDISPONIBILIZAR))
+
+        self.l_dj52G_falta_vcc = lei.LeituraModbusBit(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}"]["Dj52G_FALTA_VCC"], descricao=f"[UG{self.id}] Disjuntor 52G Falta VCC")
+        self.condicionadores.append(c.CondicionadorBase(self.l_dj52G_inserido, CONDIC_INDISPONIBILIZAR))
 
         self.l_alm_01_b_00 = lei.LeituraModbusBit(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}"]["Alarme01_00"], descricao=f"[UG{self.id}] Emergência Supervisório Pressionada (Bloqueio 86H Trip)")
         self.condicionadores.append(c.CondicionadorBase(self.l_alm_01_b_00, CONDIC_INDISPONIBILIZAR))
@@ -1637,10 +1678,44 @@ class UnidadeGeracao:
         self.condicionadores.append(c.CondicionadorBase(self.l_alm_16_b_12, CONDIC_NORMALIZAR))
 
 
+        ## MENSAGEIRO
+        self.l_modo_local = lei.LeituraModbusBit(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}"]["OPER_MODO_LOCAL"], descricao=f"[UG{self.id}] Operação Modo Local Acionado")
+        self.l_dj_07 = lei.LeituraModbus(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}"]["DJ_07"], invertido=True, descricao=f"[UG{self.id}] Q49 - Disjuntor Q125.0 UG1 - Alimentação SEL2600")
+        self.l_uhct_nv_oleo_l = lei.LeituraModbusBit(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}"]["UHCT_NIVEL_OLEO_L"], descricao=f"[UG{self.id}] UHCT Nível Óleo Baixo")
+        self.l_uhct_nv_oleo_h = lei.LeituraModbusBit(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}"]["UHCT_NIVEL_OLEO_H"], descricao=f"[UG{self.id}] UHCT Nível Óleo Alto")
+        self.l_uhct_nv_oleo_hh = lei.LeituraModbusBit(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}"]["UHCT_NIVEL_OLEO_HH"], descricao=f"[UG{self.id}] UHCT Nível Óleo Muito Alto")
+        self.l_uhlm_modo_local = lei.LeituraModbusBit(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}"]["UHLM_MODO_LOCAL"], descricao=f"[UG{self.id}] UHLM Modo Local Acionado")
+        self.l_uhlm_nv_oleo_l = lei.LeituraModbusBit(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}"]["UHLM_NIVEL_OLEO_L"], descricao=f"[UG{self.id}] UHLM Nível Óleo Baixo")
+        self.l_uhlm_nv_oleo_h = lei.LeituraModbusBit(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}"]["UHLM_NIVEL_OLEO_H"], descricao=f"[UG{self.id}] UHLM Nível Óleo Alto")
+        self.l_uhlm_nv_oleo_hh = lei.LeituraModbusBit(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}"]["UHLM_NIVEL_OLEO_HH"], descricao=f"[UG{self.id}] UHLM Nível Óleo Muito Alto")
+        self.l_turb_sens_desati = lei.LeituraModbusBit(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}"]["TURB_SENS_DESATIVADO"], descricao=f"[UG{self.id}] Turbina Sensor Desativado")
+        self.l_turb_fren_manual = lei.LeituraModbusBit(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}"]["TURB_FRENA_MANUAL"], descricao=f"[UG{self.id}] Turbina Frenagem Manual")
+        self.l_rv_ctrl_man_distr = lei.LeituraModbusBit(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}"]["REG_V_CTRL_MANUAL_DISTRI"], descricao=f"[UG{self.id}] RV Controle Manual Distribuidor")
+        self.l_rv_ctrl_man_valv = lei.LeituraModbusBit(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}"]["REG_V_CTRL_MANUAL_VALV"], descricao=f"[UG{self.id}] RV Controle Manual Válvula")
+        self.l_sinc_modo_manual = lei.LeituraModbusBit(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}"]["SINC_MODO_MANUAL"], descricao=f"[UG{self.id}] Sincronoscópio Modo Manual")
+
+
         ## CONDICIONADORES ESPECÍFICOS POR UNIDADE
         # UG1
-
         if self.id == 1:
+            self.l_se_dj_32 = lei.LeituraModbus(self.clp["SA"], REG_SE["DJ_32"], descricao="[UG1][SE] PDSA-CC - Alimentação das Cargas da UG01 - Disj. 1Q125.0")
+            self.condicionadores.append(c.CondicionadorBase(self.l_se_dj_32, CONDIC_INDISPONIBILIZAR))
+
+            self.l_se_dj_33 = lei.LeituraModbus(self.clp["SA"], REG_SE["DJ_33"], descricao="[UG1][SE] PDSA-CC - Alimentação do Painel PCP-U1 - Disj. 1Q125.1")
+            self.condicionadores.append(c.CondicionadorBase(self.l_se_dj_33, CONDIC_INDISPONIBILIZAR))
+
+            self.l_se_dj_35 = lei.LeituraModbus(self.clp["SA"], REG_SE["DJ_35"], descricao="[UG1][SE] PDSA-CC - Alimentação do Cubículo CSG-U1 - Disj. 1Q125.3")
+            self.condicionadores.append(c.CondicionadorBase(self.l_se_dj_35, CONDIC_INDISPONIBILIZAR))
+
+            self.l_se_dj_36 = lei.LeituraModbus(self.clp["SA"], REG_SE["DJ_36"], descricao="[UG1][SE] PDSA-CC - Alimentação Painel do Regulador de Tensão UG01 - Disj. 1Q125.4")
+            self.condicionadores.append(c.CondicionadorBase(self.l_se_dj_36, CONDIC_INDISPONIBILIZAR))
+
+            self.l_se_dj_77 = lei.LeituraModbus(self.clp["SA"], REG_SE["DJ_77"], descricao="[UG1][SE] PDSA-CC - Alimentação Painel do Regulador de Tensão UG01 - Disj. 1Q125.4")
+            self.condicionadores.append(c.CondicionadorBase(self.l_se_dj_77, CONDIC_INDISPONIBILIZAR))
+
+            self.l_se_dj_78 = lei.LeituraModbus(self.clp["SA"], REG_SE["DJ_78"], descricao="[UG1][SE] PDSA-CA - Alimentação das Cargas Não Essenciais da UG01 - Disj. 1Q380.1")
+            self.condicionadores.append(c.CondicionadorBase(self.l_se_dj_78, CONDIC_INDISPONIBILIZAR))
+
             self.l_alm_04_b_10 = lei.LeituraModbusBit(self.clp["UG1"], REG_UG["UG1"]["Alarme04_10"], descricao="[UG1] Cubículo CSA-U1 - Fusível Queimado ")
             self.condicionadores.append(c.CondicionadorBase(self.l_alm_04_b_10, CONDIC_INDISPONIBILIZAR))
 
@@ -1696,6 +1771,24 @@ class UnidadeGeracao:
         # UG2
 
         if self.id == 2:
+            self.l_se_dj_39 = lei.LeituraModbus(self.clp["SA"], REG_SE["DJ_39"], descricao="[UG2][SE] PDSA-CC - Alimentação das Cargas da UG02 - Disj. 2Q125.0")
+            self.condicionadores.append(c.CondicionadorBase(self.l_se_dj_39, CONDIC_INDISPONIBILIZAR))
+
+            self.l_se_dj_40 = lei.LeituraModbus(self.clp["SA"], REG_SE["DJ_40"], descricao="[UG2][SE] PDSA-CC - Alimentação do Painel PCP-U2 - Disj. 2Q125.1")
+            self.condicionadores.append(c.CondicionadorBase(self.l_se_dj_40, CONDIC_INDISPONIBILIZAR))
+
+            self.l_se_dj_42 = lei.LeituraModbus(self.clp["SA"], REG_SE["DJ_42"], descricao="[UG2][SE] PDSA-CC - Alimentação do Cubículo CSG-U2 - Disj. 2Q125.3")
+            self.condicionadores.append(c.CondicionadorBase(self.l_se_dj_42, CONDIC_INDISPONIBILIZAR))
+
+            self.l_se_dj_43 = lei.LeituraModbus(self.clp["SA"], REG_SE["DJ_43"], descricao="[UG2][SE] PDSA-CC - Alimentação Painel do Regulador de Tensão UG02 - Disj. 2Q125.4")
+            self.condicionadores.append(c.CondicionadorBase(self.l_se_dj_43, CONDIC_INDISPONIBILIZAR))
+
+            self.l_se_dj_79 = lei.LeituraModbus(self.clp["SA"], REG_SE["DJ_79"], descricao="[UG2][SE] PDSA-CA - Alimentação das Cargas Essenciais da UG02 - Disj. 2Q380.0")
+            self.condicionadores.append(c.CondicionadorBase(self.l_se_dj_79, CONDIC_INDISPONIBILIZAR))
+
+            self.l_se_dj_80 = lei.LeituraModbus(self.clp["SA"], REG_SE["DJ_80"], descricao="[UG2][SE] PDSA-CA - Alimentação das Cargas Não Essenciais da UG02 - Disj. 2Q380.1")
+            self.condicionadores.append(c.CondicionadorBase(self.l_se_dj_80, CONDIC_INDISPONIBILIZAR))
+
             self.l_alm_04_b_13 = lei.LeituraModbusBit(self.clp["UG2"], REG_UG["UG2"]["Alarme04_13"], descricao="[UG2] Cubículo CSA-U2 - Fusível Queimado ")
             self.condicionadores.append(c.CondicionadorBase(self.l_alm_04_b_13, CONDIC_INDISPONIBILIZAR))
 
@@ -1751,6 +1844,24 @@ class UnidadeGeracao:
         # UG3
 
         if self.id == 3:
+            self.l_se_dj_46 = lei.LeituraModbus(self.clp["SA"], REG_SE["DJ_46"], descricao="[UG3][SE] PDSA-CC - Alimentação das Cargas da UG03 - Disj. 3Q125.0")
+            self.condicionadores.append(c.CondicionadorBase(self.l_se_dj_46, CONDIC_INDISPONIBILIZAR))
+
+            self.l_se_dj_47 = lei.LeituraModbus(self.clp["SA"], REG_SE["DJ_47"], descricao="[UG3][SE] PDSA-CC - Alimentação do Painel PCP-U3 - Disj. 3Q125.1")
+            self.condicionadores.append(c.CondicionadorBase(self.l_se_dj_47, CONDIC_INDISPONIBILIZAR))
+
+            self.l_se_dj_49 = lei.LeituraModbus(self.clp["SA"], REG_SE["DJ_49"], descricao="[UG3][SE] PDSA-CC - Alimentação do Cubículo CSG-U3 - Disj. 3Q125.3")
+            self.condicionadores.append(c.CondicionadorBase(self.l_se_dj_49, CONDIC_INDISPONIBILIZAR))
+
+            self.l_se_dj_50 = lei.LeituraModbus(self.clp["SA"], REG_SE["DJ_50"], descricao="[UG3][SE] PDSA-CC - Alimentação Painel do Regulador de Tensão UG03 - Disj. 3Q125.4")
+            self.condicionadores.append(c.CondicionadorBase(self.l_se_dj_50, CONDIC_INDISPONIBILIZAR))
+
+            self.l_se_dj_81 = lei.LeituraModbus(self.clp["SA"], REG_SE["DJ_81"], descricao="[UG3][SE] PDSA-CA - Alimentação das Cargas Essenciais da UG03 - Disj. 3Q380.0")
+            self.condicionadores.append(c.CondicionadorBase(self.l_se_dj_81, CONDIC_INDISPONIBILIZAR))
+
+            self.l_se_dj_82 = lei.LeituraModbus(self.clp["SA"], REG_SE["DJ_82"], descricao="[UG3][SE] PDSA-CA - Alimentação das Cargas Não Essenciais da UG03 - Disj. 3Q380.1")
+            self.condicionadores.append(c.CondicionadorBase(self.l_se_dj_82, CONDIC_INDISPONIBILIZAR))
+
             self.l_alm_10_b_12 = lei.LeituraModbusBit(self.clp["UG3"], REG_UG["UG3"]["Alarme10_12"], descricao="[UG3] PCP-U3 - Alimentação Fonte 125/24Vcc - Disj. Q125.3 Desligado")
             self.condicionadores.append(c.CondicionadorBase(self.l_alm_10_b_12, CONDIC_INDISPONIBILIZAR))
 
@@ -1792,8 +1903,25 @@ class UnidadeGeracao:
 
 
         # UG4
-
         if self.id == 4:
+            self.l_se_dj_53 = lei.LeituraModbus(self.clp["SA"], REG_SE["DJ_53"], descricao="[UG4][SE] PDSA-CC - Alimentação das Cargas da UG04 - Disj. 4Q125.0")
+            self.condicionadores.append(c.CondicionadorBase(self.l_se_dj_53, CONDIC_INDISPONIBILIZAR))
+
+            self.l_se_dj_54 = lei.LeituraModbus(self.clp["SA"], REG_SE["DJ_54"], descricao="[UG4][SE] PDSA-CC - Alimentação do Painel PCP-U4 - Disj. 4Q125.1")
+            self.condicionadores.append(c.CondicionadorBase(self.l_se_dj_54, CONDIC_INDISPONIBILIZAR))
+
+            self.l_se_dj_56 = lei.LeituraModbus(self.clp["SA"], REG_SE["DJ_56"], descricao="[UG4][SE] PDSA-CC - Alimentação do Cubículo CSG-U4 - Disj. 4Q125.3")
+            self.condicionadores.append(c.CondicionadorBase(self.l_se_dj_56, CONDIC_INDISPONIBILIZAR))
+
+            self.l_se_dj_57 = lei.LeituraModbus(self.clp["SA"], REG_SE["DJ_57"], descricao="[UG4][SE] PDSA-CC - Alimentação Painel do Regulador de Tensão UG04 - Disj. 4Q125.4")
+            self.condicionadores.append(c.CondicionadorBase(self.l_se_dj_57, CONDIC_INDISPONIBILIZAR))
+
+            self.l_se_dj_83 = lei.LeituraModbus(self.clp["SA"], REG_SE["DJ_83"], descricao="[UG4][SE] PDSA-CA - Alimentação das Cargas Essenciais da UG04 - Disj. 4Q380.0")
+            self.condicionadores.append(c.CondicionadorBase(self.l_se_dj_83, CONDIC_INDISPONIBILIZAR))
+
+            self.l_se_dj_84 = lei.LeituraModbus(self.clp["SA"], REG_SE["DJ_84"], descricao="[UG4][SE] PDSA-CA - Alimentação das Cargas Não Essenciais da UG04 - Disj. 4Q380.1")
+            self.condicionadores.append(c.CondicionadorBase(self.l_se_dj_84, CONDIC_INDISPONIBILIZAR))
+
             self.l_alm_10_b_14 = lei.LeituraModbusBit(self.clp["UG4"], REG_UG["UG4"]["Alarme10_14"], descricao="[UG4] PCP-U4 - Alimentação Fonte 125/24Vcc - Disj. Q125.3 Desligado")
             self.condicionadores.append(c.CondicionadorBase(self.l_alm_10_b_14, CONDIC_INDISPONIBILIZAR))
 

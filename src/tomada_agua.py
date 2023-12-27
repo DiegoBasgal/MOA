@@ -312,4 +312,17 @@ class TomadaAgua:
         cls.l_alm_27_b_03 = lei.LeituraModbusBit(cls.clp["TDA"], REG_TDA["Alarme27_03"], descricao="[TDA] Grade 04 Suja")
         cls.condicionadores.append(c.CondicionadorBase(cls.l_alm_27_b_03, CONDIC_NORMALIZAR))
 
+
+        ## MENSAGEIRO
+        cls.l_uhta01_nv_oleo_ll = lei.LeituraModbusBit(cls.clp["TDA"], REG_TDA["UHTA01_NIVEL_OLEO_LL"], descricao="[TDA] UHTA01 Nível do Óleo Muito Baixo")                 # Voip + whats
+        cls.l_uhta01_nv_oleo_hh = lei.LeituraModbusBit(cls.clp["TDA"], REG_TDA["UHTA01_NIVEL_OLEO_HH"], descricao="[TDA] UHTA01 Nível do Óleo Muito Alto")                  # Voip + whats
+        cls.l_uhta01_temp_oleo_h = lei.LeituraModbusBit(cls.clp["TDA"], REG_TDA["UHTA01_TEMP_OLEO_H"], descricao="[TDA] UHTA01 Temperatura do Óleo Alta")                   # Voip + whats
+        cls.l_uhta01_temp_oleo_hh = lei.LeituraModbusBit(cls.clp["TDA"], REG_TDA["UHTA01_TEMP_OLEO_HH"], descricao="[TDA] UHTA01 Temperatura do Óleo Muito Alta")           # Voip + whats
+        cls.l_uhta02_nv_oleo_ll = lei.LeituraModbusBit(cls.clp["TDA"], REG_TDA["UHTA02_NIVEL_OLEO_LL"], descricao="[TDA] UHTA02 Nível do Óleo Muito Baixo")                 # Voip + whats
+        cls.l_uhta02_nv_oleo_hh = lei.LeituraModbusBit(cls.clp["TDA"], REG_TDA["UHTA02_NIVEL_OLEO_HH"], descricao="[TDA] UHTA02 Nível do Óleo Muito Alto")                  # Voip + whats
+        cls.l_uhta02_temp_oleo_h = lei.LeituraModbusBit(cls.clp["TDA"], REG_TDA["UHTA02_TEMP_OLEO_H"], descricao="[TDA] UHTA02 Temperatura do Óleo Alta")                   # Voip + whats
+        cls.l_uhta02_temp_oleo_hh = lei.LeituraModbusBit(cls.clp["TDA"], REG_TDA["UHTA02_TEMP_OLEO_HH"], descricao="[TDA] UHTA02 Temperatura do Óleo Muito Alta")           # Voip + whats
+        cls.l_pcta_falta_fase = lei.LeituraModbusBit(cls.clp["TDA"], REG_TDA["PCTA_FALTA_FASE"], descricao="[TDA] Painel TDA Falta Fase")                                   # Voip + whats
+        cls.l_pcta_modo_remoto = lei.LeituraModbusBit(cls.clp["TDA"], REG_TDA["PCTA_MODO_REMOTO"], descricao="[TDA] Painel TDA Modo Remoto")                                # Voip + whats se o nível estiver abaixo do mínimo
+
         return

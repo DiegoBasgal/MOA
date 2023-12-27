@@ -700,103 +700,108 @@ REG_SE = {
     "ENERGIA_FORNECIDA_KVArh":                  61 + 12764,                     # Leituras.Subestacao_EnergiaConsumidaKVArh
 
     ## DISJUNTORES
-    "DJ_01":                                    0,
-    "DJ_02":                                    1,
-    "DJ_03":                                    2,
-    "DJ_04":                                    3,
-    "DJ_05":                                    4,
-    "DJ_06":                                    5,
-    "DJ_07":                                    6,
-    "DJ_08":                                    7,
-    "DJ_09":                                    8,
-    "DJ_10":                                    9,
-    "DJ_11":                                    10,
-    "DJ_12":                                    11,
-    "DJ_13":                                    12,
-    "DJ_14":                                    13,
-    "DJ_15":                                    14,
-    "DJ_16":                                    15,
-    "DJ_17":                                    16,
-    "DJ_18":                                    17,
-    "DJ_19":                                    18,
-    "DJ_20":                                    19,
-    "DJ_21":                                    20,
-    "DJ_22":                                    21,
-    "DJ_23":                                    22,
-    "DJ_24":                                    23,
-    "DJ_25":                                    24,
-    "DJ_26":                                    25,
-    "DJ_27":                                    26,
-    "DJ_28":                                    27,
-    "DJ_29":                                    28,
-    "DJ_30":                                    29,
-    "DJ_31":                                    30,
-    "DJ_32":                                    31,
-    "DJ_33":                                    32,
-    "DJ_34":                                    33,
-    "DJ_35":                                    34,
-    "DJ_36":                                    35,
-    "DJ_37":                                    36,
-    "DJ_38":                                    37,
-    "DJ_39":                                    38,
-    "DJ_40":                                    39,
-    "DJ_41":                                    40,
-    "DJ_42":                                    41,
-    "DJ_43":                                    42,
-    "DJ_44":                                    43,
-    "DJ_45":                                    44,
-    "DJ_46":                                    45,
-    "DJ_47":                                    46,
-    "DJ_48":                                    47,
-    "DJ_49":                                    48,
-    "DJ_50":                                    49,
-    "DJ_51":                                    50,
-    "DJ_52":                                    51,
-    "DJ_53":                                    52,
-    "DJ_54":                                    53,
-    "DJ_55":                                    54,
-    "DJ_56":                                    55,
-    "DJ_57":                                    56,
-    "DJ_58":                                    57,
-    "DJ_59":                                    58,
-    "DJ_60":                                    59,
-    "DJ_61":                                    60,
-    "DJ_62":                                    61,
-    "DJ_63":                                    62,
-    "DJ_64":                                    63,
-    "DJ_65":                                    64,
-    "DJ_66":                                    65,
-    "DJ_67":                                    66,
-    "DJ_68":                                    67,
-    "DJ_69":                                    68,
-    "DJ_70":                                    69,
-    "DJ_71":                                    70,
-    "DJ_72":                                    71,
-    "DJ_73":                                    72,
-    "DJ_74":                                    73,
-    "DJ_75":                                    74,
-    "DJ_76":                                    75,
-    "DJ_77":                                    76,
-    "DJ_78":                                    77,
-    "DJ_79":                                    78,
-    "DJ_80":                                    79,
-    "DJ_81":                                    80,
-    "DJ_82":                                    81,
-    "DJ_83":                                    82,
-    "DJ_84":                                    83,
-    "DJ_85":                                    84,
-    "DJ_86":                                    85,
-    "DJ_87":                                    86,
-    "DJ_88":                                    87,
-    "DJ_89":                                    88,
-    "DJ_90":                                    89,
-    "DJ_91":                                    90,
-    "DJ_92":                                    91,
-    "DJ_93":                                    92,
-    "DJ_94":                                    93,
-    "DJ_95":                                    94,
-    "DJ_96":                                    95,
-    "DJ_97":                                    96,
+    "DJ_01":                                    0 + 12564,                      # PACP-SE - Alimentação Relés de Nível do Poço de Drenagem - Disj. Q220.1
+    "DJ_02":                                    1 + 12564,                      # PACP-SE - Alimentação Circuitos de Comando - Disj. Q125.0
+    "DJ_03":                                    2 + 12564,                      # PACP-SE - Alimentação Relé de Proteção 59N - Disj. Q125.1
+    "DJ_04":                                    3 + 12564,                      # PACP-SE - Alimentação Relés de Proteção SEL311C e SEL787 -  Disj. Q125.2
+    "DJ_05":                                    4 + 12564,                      # PACP-SE - Alimentação Circuitos de Comando Seccionadora 89L -  Disj. Q125.4
+    "DJ_06":                                    5 + 12564,                      # PACP-SE - Alimentação Circuito de Bloqueio Lâmina de Terra -  Disj. Q125.5
+    "DJ_07":                                    6 + 12564,                      # PACP-SE - Alimentação Circuito de Comando Disjuntor 52L -  Disj. Q125.6
+    "DJ_08":                                    7 + 12564,                      # PACP-SE - Alimentação Motor Carregamento da Mola do Disjuntor 52L -  Disj. Q125.7
+    "DJ_09":                                    8 + 12564,                      # PCP-U1 - Alimentação Fonte 125/24Vcc -  Disj. Q125.3
+    "DJ_10":                                    9 + 12564,                      # PCP-U1 - Alimentação Circuitos de Comando -  Disj. Q24.1
+    "DJ_11":                                    10 + 12564,                     # PCP-U2 - Alimentação Fonte 125/24Vcc -  Disj. Q125.3
+    "DJ_12":                                    11 + 12564,                     # PCP-U2 - Alimentação Circuitos de Comando -  Disj. Q24.1
+    "DJ_13":                                    12 + 12564,                     # PCP-U3 - Alimentação Fonte 125/24Vcc -  Disj. Q125.3
+    "DJ_14":                                    13 + 12564,                     # PCP-U3 - Alimentação Circuitos de Comando -  Disj. Q24.1
+    "DJ_15":                                    14 + 12564,                     # PCP-U4 - Alimentação Fonte 125/24Vcc -  Disj. Q125.3
+    "DJ_16":                                    15 + 12564,                     # PCP-U4 - Alimentação Circuitos de Comando -  Disj. Q24.1
+    "DJ_17":                                    16 + 12564,                     # CSA-U1 - Alimentação Circuitos de Sinalização - Disj. Q125.0
+    "DJ_18":                                    17 + 12564,                     # CSA-U2 - Alimentação Circuitos de Sinalização - Disj. Q125.0
+    "DJ_19":                                    18 + 12564,                     # CB01 - Carregador de Baterias 01 -  Disj. Q1/Q2/Q3
+    "DJ_20":                                    19 + 12564,                     # CB02 - Carregador de Baterias 02 -  Disj. Q1/Q2/Q3
+    "DJ_21":                                    20 + 12564,                     # PDSA-CC - Alimentação Principal CB01 -  Disj. Q125.E1
+    "DJ_22":                                    21 + 12564,                     # PDSA-CC - Alimentação Principal CB02 -  Disj. Q125.E2
+    "DJ_23":                                    22 + 12564,                     # PDSA-CC - Alimentação Inversor 125Vcc/220Vca -  Disj. Q125.1
+    "DJ_24":                                    23 + 12564,                     # PDSA-CC - Alimentação do Painel PDSA-CA -  Disj. Q125.3
+    "DJ_25":                                    24 + 12564,                     # PDSA-CC - Alimentação do Rack de Comunicação -  Disj. Q125.4
+    "DJ_26":                                    25 + 12564,                     # PDSA-CC - Alimentação do Cubículo CSA-U1 -  Disj. Q125.5
+    "DJ_27":                                    26 + 12564,                     # PDSA-CC - Alimentação do Cubículo CSA-U2 -  Disj. Q125.6
+    "DJ_28":                                    27 + 12564,                     # PDSA-CC - Alimentação Painel do Trafo Elevador -  Disj. Q125.7
+    "DJ_29":                                    28 + 12564,                     # PDSA-CC - Alimentação Monitor de Temperatura do TSA-01 -  Disj. Q125.8
+    "DJ_30":                                    29 + 12564,                     # PDSA-CC - Alimentação Monitor de Temperatura do TSA-02 -  Disj. Q125.9
+    "DJ_31":                                    30 + 12564,                     # PDSA-CC - Alimentação Reserva -  Disj. Q125.10
+    "DJ_32":                                    31 + 12564,                     # PDSA-CC - Alimentação das Cargas da UG01 -  Disj. 1Q125.0
+    "DJ_33":                                    32 + 12564,                     # PDSA-CC - Alimentação do Painel PCP-U1 -  Disj. 1Q125.1
+    "DJ_34":                                    33 + 12564,                     # PDSA-CC - Alimentação do Quadro Q49-U1 -  Disj. 1Q125.2
+    "DJ_35":                                    34 + 12564,                     # PDSA-CC - Alimentação do Cubículo CSG-U1 -  Disj. 1Q125.3
+    "DJ_36":                                    35 + 12564,                     # PDSA-CC - Alimentação Painel do Regulador de Tensão UG01 -  Disj. 1Q125.4
+    "DJ_37":                                    36 + 12564,                     # PDSA-CC - Alimentação do Filtro Duplo UG01 -  Disj. 1Q125.5
+    "DJ_38":                                    37 + 12564,                     # PDSA-CC - Alimentação Reserva -  Disj. 1Q125.6
+    "DJ_39":                                    38 + 12564,                     # PDSA-CC - Alimentação das Cargas da UG02 -  Disj. 2Q125.0
+    "DJ_40":                                    39 + 12564,                     # PDSA-CC - Alimentação do Painel PCP-U2 -  Disj. 2Q125.1
+    "DJ_41":                                    40 + 12564,                     # PDSA-CC - Alimentação do Quadro Q49-U2 -  Disj. 2Q125.2
+    "DJ_42":                                    41 + 12564,                     # PDSA-CC - Alimentação do Cubículo CSG-U2 -  Disj. 2Q125.3
+    "DJ_43":                                    42 + 12564,                     # PDSA-CC - Alimentação Painel do Regulador de Tensão UG02 -  Disj. 2Q125.4
+    "DJ_44":                                    43 + 12564,                     # PDSA-CC - Alimentação do Filtro Duplo UG02 -  Disj. 2Q125.5
+    "DJ_45":                                    44 + 12564,                     # PDSA-CC - Alimentação Reserva -  Disj. 2Q125.6
+    "DJ_46":                                    45 + 12564,                     # PDSA-CC - Alimentação das Cargas da UG03 -  Disj. 3Q125.0
+    "DJ_47":                                    46 + 12564,                     # PDSA-CC - Alimentação do Painel PCP-U3 -  Disj. 3Q125.1
+    "DJ_48":                                    47 + 12564,                     # PDSA-CC - Alimentação do Quadro Q49-U3 -  Disj. 3Q125.2
+    "DJ_49":                                    48 + 12564,                     # PDSA-CC - Alimentação do Cubículo CSG-U3 -  Disj. 3Q125.3
+    "DJ_50":                                    49 + 12564,                     # PDSA-CC - Alimentação Painel do Regulador de Tensão UG03 -  Disj. 3Q125.4
+    "DJ_51":                                    50 + 12564,                     # PDSA-CC - Alimentação do Filtro Duplo UG03 -  Disj. 3Q125.5
+    "DJ_52":                                    51 + 12564,                     # PDSA-CC - Alimentação Reserva -  Disj. 3Q125.6
+    "DJ_53":                                    52 + 12564,                     # PDSA-CC - Alimentação das Cargas da UG04 -  Disj. 4Q125.0
+    "DJ_54":                                    53 + 12564,                     # PDSA-CC - Alimentação do Painel PCP-U4 -  Disj. 4Q125.1
+    "DJ_55":                                    54 + 12564,                     # PDSA-CC - Alimentação do Quadro Q49-U4 -  Disj. 4Q125.2
+    "DJ_56":                                    55 + 12564,                     # PDSA-CC - Alimentação do Cubículo CSG-U4 -  Disj. 4Q125.3
+    "DJ_57":                                    56 + 12564,                     # PDSA-CC - Alimentação Painel do Regulador de Tensão UG04 -  Disj. 4Q125.4
+    "DJ_58":                                    57 + 12564,                     # PDSA-CC - Alimentação do Filtro Duplo UG04 -  Disj. 4Q125.5
+    "DJ_59":                                    58 + 12564,                     # PDSA-CC - Alimentação Reserva -  Disj. 4Q125.6
+    "DJ_60":                                    59 + 12564,                     # PDSA-CA - Alimentação Bomba Drenagem 01 -  Disj. QM1
+    "DJ_61":                                    60 + 12564,                     # PDSA-CA - Alimentação Bomba Drenagem 02 -  Disj. QM2
+    "DJ_62":                                    61 + 12564,                     # PDSA-CA - Alimentação Bomba Drenagem 03 -  Disj. QM3
+    "DJ_63":                                    62 + 12564,                     # PDSA-CA - Alimentação do Compressor de AR -  Disj. QM4
+    "DJ_64":                                    63 + 12564,                     # PDSA-CA - Alimentação do Painel PACP-SE -  Disj. Q220.6
+    "DJ_65":                                    64 + 12564,                     # PDSA-CA - Alimentação 125Vcc Principal -  Disj. Q125.0
+    "DJ_66":                                    65 + 12564,                     # PDSA-CA - Alimentação 380Vca Principal -  Disj. Q380.0
+    "DJ_67":                                    66 + 12564,                     # PDSA-CA - Alimentação do Painel PCTA -  Disj. Q380.1
+    "DJ_68":                                    67 + 12564,                     # PDSA-CA - Alimentação da Ponte Rolante -  Disj. Q380.2
+    "DJ_69":                                    68 + 12564,                     # PDSA-CA - Alimentação Monovia de Jusante -  Disj. Q380.3
+    "DJ_70":                                    69 + 12564,                     # PDSA-CA - Alimentação do Quadro QDLCF -  Disj. Q380.4
+    "DJ_71":                                    70 + 12564,                     # PDSA-CA - Alimentação do Elevador da Casa de Força -  Disj. Q380.5
+    "DJ_72":                                    71 + 12564,                     # PDSA-CA - Alimentação do Painel PCAD -  Disj. Q380.6
+    "DJ_73":                                    72 + 12564,                     # PDSA-CA - Alimentação Sistema de Retrolavagem do Filtro 01 -  Disj. Q380.7
+    "DJ_74":                                    73 + 12564,                     # PDSA-CA - Alimentação Sistema de Retrolavagem do Filtro 02 -  Disj. Q380.8
+    "DJ_75":                                    74 + 12564,                     # PDSA-CA - Alimentação do Carregador de Baterias 01 -  Disj. Q380.9
+    "DJ_76":                                    75 + 12564,                     # PDSA-CA - Alimentação do Carregador de Baterias 02 -  Disj. Q380.10
+    "DJ_77":                                    76 + 12564,                     # PDSA-CA - Alimentação das Cargas Essenciais da UG01 -  Disj. 1Q380.0
+    "DJ_78":                                    77 + 12564,                     # PDSA-CA - Alimentação das Cargas Não Essenciais da UG01 -  Disj. 1Q380.1
+    "DJ_79":                                    78 + 12564,                     # PDSA-CA - Alimentação das Cargas Essenciais da UG02 -  Disj. 2Q380.0
+    "DJ_80":                                    79 + 12564,                     # PDSA-CA - Alimentação das Cargas Não Essenciais da UG02 -  Disj. 2Q380.1
+    "DJ_81":                                    80 + 12564,                     # PDSA-CA - Alimentação das Cargas Essenciais da UG03 -  Disj. 3Q380.0
+    "DJ_82":                                    81 + 12564,                     # PDSA-CA - Alimentação das Cargas Não Essenciais da UG03 -  Disj. 3Q380.1
+    "DJ_83":                                    82 + 12564,                     # PDSA-CA - Alimentação das Cargas Essenciais da UG04 -  Disj. 4Q380.0
+    "DJ_84":                                    83 + 12564,                     # PDSA-CA - Alimentação das Cargas Não Essenciais da UG04 -  Disj. 4Q380.1
+    "DJ_85":                                    84 + 12564,                     # Disjuntor 52L - Alimentação Motor de Carregamento da Mola -  Disj. F1
+    "DJ_86":                                    85 + 12564,                     # Disjuntor 52L - Alimentação Circuito de Aquecimento -  Disj. F2
+    "DJ_87":                                    86 + 12564,                     # Seccionadora 89L - Alimentação Circuito de Comando -  Disj. F1
+    "DJ_88":                                    87 + 12564,                     # Seccionadora 89L - Alimentação Motor de Carregamento da Mola -  Disj. F3
+    "DJ_89":                                    88 + 12564,                     # PDSA-CA - Alimentação Bomba 01 Injeção Água Selo Mecânico - Disj. QM5
+    "DJ_90":                                    89 + 12564,                     # PDSA-CA - Alimentação Bomba 02 Injeção Água Selo Mecânico - Disj. QM6
+    "DJ_91":                                    90 + 12564,                     # PDSA-CA - Alimentação Bomba 01 Água Serviço - Disj. QM7
+    "DJ_92":                                    91 + 12564,                     # PDSA-CA - Alimentação Bomba 02 Água Serviço - Disj. QM8
+    "DJ_93":                                    92 + 12564,                     # PDSA-CA - Alimentação UCP Bombas de Drenagem - Disj. Q220.11
+    "DJ_94":                                    93 + 12564,                     # PDSA-CA - Alimentação Torre de Resfriamento - Disj. Q380.11
+    "DJ_95":                                    94 + 12564,                     # PDSA-CA - Alimentação Compressor de Ar - Disj. Q380.12
+    "DJ_96":                                    95 + 12564,                     # PDSA-CA - Alimentação do Guincho da Bomba de Esgotamento - Disj. Q380.13
+    "DJ_97":                                    96 + 12564,                     # PDSA-CA - Alimentação do Quadro QDLSE - Disj. Q380.14
+    "DJ_98":                                    97 + 12564,                     # PACP-SE - Alimentação Válvulas Sistema de Água de Refrigeração -  Disj. Q125.8
+    "DJ_99":                                    98 + 12564,                     # PDSA-CC - Alimentação do Painel PINV -  Disj. Q125.11
+    "DJ_100":                                   99 + 12564,                     # PINV - Alimentação Boost 01 -  Disj. Q125.0
+    "DJ_101":                                   100 + 12564,                    # PINV - Alimentação Boost 02 -  Disj. Q125.1
+    "DJ_102":                                   101 + 12564,                    # PINV - Alimentação Fonte 125/24Vcc (Ventilação Forçada e Switch) -  Disj. Q125.2
 
 
     ## ALARMES
@@ -1052,78 +1057,78 @@ REG_TDA = {
 
     ## ALARMES
 
-    "Alarme01_04":                              [1 + 1, 4],
-    "Alarme01_05":                              [1 + 1, 5],
-    "Alarme01_06":                              [1 + 1, 6],
+    "Alarme01_04":                              [1 + 14089 + 1, 4],
+    "Alarme01_05":                              [1 + 14089 + 1, 5],
+    "Alarme01_06":                              [1 + 14089 + 1, 6],
 
-    "Alarme22_00":                              [22, 0],
-    "Alarme22_03":                              [22, 3],
-    "Alarme22_04":                              [22, 4],
-    "Alarme22_05":                              [22, 5],
-    "Alarme22_06":                              [22, 6],
-    "Alarme22_07":                              [22, 7],
-    "Alarme22_08":                              [22, 8],
-    "Alarme22_09":                              [22, 9],
-    "Alarme22_10":                              [22, 10],
-    "Alarme22_11":                              [22, 11],
-    "Alarme22_14":                              [22, 14],
-    "Alarme22_15":                              [22, 15],
+    "Alarme22_00":                              [22 + 14089, 0],
+    "Alarme22_03":                              [22 + 14089, 3],
+    "Alarme22_04":                              [22 + 14089, 4],
+    "Alarme22_05":                              [22 + 14089, 5],
+    "Alarme22_06":                              [22 + 14089, 6],
+    "Alarme22_07":                              [22 + 14089, 7],
+    "Alarme22_08":                              [22 + 14089, 8],
+    "Alarme22_09":                              [22 + 14089, 9],
+    "Alarme22_10":                              [22 + 14089, 10],
+    "Alarme22_11":                              [22 + 14089, 11],
+    "Alarme22_14":                              [22 + 14089, 14],
+    "Alarme22_15":                              [22 + 14089, 15],
 
-    "Alarme23_01":                              [23, 1],
-    "Alarme23_02":                              [23, 2],
-    "Alarme23_04":                              [23, 4],
-    "Alarme23_05":                              [23, 5],
-    "Alarme23_06":                              [23, 6],
-    "Alarme23_07":                              [23, 7],
-    "Alarme23_08":                              [23, 8],
-    "Alarme23_11":                              [23, 11],
-    "Alarme23_12":                              [23, 12],
-    "Alarme23_13":                              [23, 13],
-    "Alarme23_14":                              [23, 14],
-    "Alarme23_15":                              [23, 15],
+    "Alarme23_01":                              [23 + 14089, 1],
+    "Alarme23_02":                              [23 + 14089, 2],
+    "Alarme23_04":                              [23 + 14089, 4],
+    "Alarme23_05":                              [23 + 14089, 5],
+    "Alarme23_06":                              [23 + 14089, 6],
+    "Alarme23_07":                              [23 + 14089, 7],
+    "Alarme23_08":                              [23 + 14089, 8],
+    "Alarme23_11":                              [23 + 14089, 11],
+    "Alarme23_12":                              [23 + 14089, 12],
+    "Alarme23_13":                              [23 + 14089, 13],
+    "Alarme23_14":                              [23 + 14089, 14],
+    "Alarme23_15":                              [23 + 14089, 15],
 
-    "Alarme24_02":                              [24, 2],
-    "Alarme24_03":                              [24, 3],
-    "Alarme24_04":                              [24, 4],
-    "Alarme24_05":                              [24, 5],
-    "Alarme24_06":                              [24, 6],
-    "Alarme24_07":                              [24, 7],
-    "Alarme24_08":                              [24, 8],
-    "Alarme24_09":                              [24, 9],
-    "Alarme24_10":                              [24, 10],
-    "Alarme24_13":                              [24, 13],
-    "Alarme24_14":                              [24, 14],
+    "Alarme24_02":                              [24 + 14089, 2],
+    "Alarme24_03":                              [24 + 14089, 3],
+    "Alarme24_04":                              [24 + 14089, 4],
+    "Alarme24_05":                              [24 + 14089, 5],
+    "Alarme24_06":                              [24 + 14089, 6],
+    "Alarme24_07":                              [24 + 14089, 7],
+    "Alarme24_08":                              [24 + 14089, 8],
+    "Alarme24_09":                              [24 + 14089, 9],
+    "Alarme24_10":                              [24 + 14089, 10],
+    "Alarme24_13":                              [24 + 14089, 13],
+    "Alarme24_14":                              [24 + 14089, 14],
 
-    "Alarme25_00":                              [25, 0],
-    "Alarme25_01":                              [25, 1],
-    "Alarme25_03":                              [25, 3],
-    "Alarme25_04":                              [25, 4],
-    "Alarme25_05":                              [25, 5],
-    "Alarme25_06":                              [25, 6],
-    "Alarme25_07":                              [25, 7],
-    "Alarme25_10":                              [25, 10],
-    "Alarme25_11":                              [25, 11],
-    "Alarme25_12":                              [25, 12],
-    "Alarme25_13":                              [25, 13],
-    "Alarme25_14":                              [25, 14],
+    "Alarme25_00":                              [25 + 14089, 0],
+    "Alarme25_01":                              [25 + 14089, 1],
+    "Alarme25_03":                              [25 + 14089, 3],
+    "Alarme25_04":                              [25 + 14089, 4],
+    "Alarme25_05":                              [25 + 14089, 5],
+    "Alarme25_06":                              [25 + 14089, 6],
+    "Alarme25_07":                              [25 + 14089, 7],
+    "Alarme25_10":                              [25 + 14089, 10],
+    "Alarme25_11":                              [25 + 14089, 11],
+    "Alarme25_12":                              [25 + 14089, 12],
+    "Alarme25_13":                              [25 + 14089, 13],
+    "Alarme25_14":                              [25 + 14089, 14],
 
-    "Alarme26_01":                              [26, 1],
-    "Alarme26_02":                              [26, 2],
-    "Alarme26_04":                              [26, 4],
-    "Alarme26_05":                              [26, 5],
-    "Alarme26_07":                              [26, 7],
-    "Alarme26_08":                              [26, 8],
-    "Alarme26_09":                              [26, 9],
-    "Alarme26_10":                              [26, 10],
-    "Alarme26_11":                              [26, 11],
-    "Alarme26_12":                              [26, 12],
-    "Alarme26_13":                              [26, 13],
-    "Alarme26_14":                              [26, 14],
+    "Alarme26_01":                              [26 + 14089, 1],
+    "Alarme26_02":                              [26 + 14089, 2],
+    "Alarme26_04":                              [26 + 14089, 4],
+    "Alarme26_05":                              [26 + 14089, 5],
+    "Alarme26_07":                              [26 + 14089, 7],
+    "Alarme26_08":                              [26 + 14089, 8],
+    "Alarme26_09":                              [26 + 14089, 9],
+    "Alarme26_10":                              [26 + 14089, 10],
+    "Alarme26_11":                              [26 + 14089, 11],
+    "Alarme26_12":                              [26 + 14089, 12],
+    "Alarme26_13":                              [26 + 14089, 13],
+    "Alarme26_14":                              [26 + 14089, 14],
 
-    "Alarme27_00":                              [27, 0],
-    "Alarme27_01":                              [27, 1],
-    "Alarme27_02":                              [27, 2],
-    "Alarme27_03":                              [27, 3],
+    "Alarme27_00":                              [27 + 14089, 0],
+    "Alarme27_01":                              [27 + 14089, 1],
+    "Alarme27_02":                              [27 + 14089, 2],
+    "Alarme27_03":                              [27 + 14089, 3],
 }
 
 
@@ -1284,6 +1289,7 @@ REG_AD = {
     "Alarme31_05":                              [31 + 14089, 5],
     "Alarme31_06":                              [31 + 14089, 6],
 }
+
 
 REG_UG = {
     "UG1": {
@@ -1963,7 +1969,7 @@ REG_UG = {
         "ENERGIA_CORNECIDA_GVarh":              96 + 12764,                     # Leituras.Gerador_EnergiaConsumidaGVarh
         "ENERGIA_CORNECIDA_MVarh":              97 + 12764,                     # Leituras.Gerador_EnergiaConsumidaMVarh
         "ENERGIA_CORNECIDA_kVarh":              98 + 12764,                     # Leituras.Gerador_EnergiaConsumidakVarh
-    
+
         "GERADOR_FP_INFO":                      99 + 12764,                     # Leituras.Gerador_FPInfo
         "GERADOR_FP_FASE1_IND":                 [99 + 12764, 0],                # Gerador.FP_Info.Fase1_Ind
         "GERADOR_FP_FASE1_CAP":                 [99 + 12764, 1],                # Gerador.FP_Info.Fase1_Cap
@@ -2011,38 +2017,38 @@ REG_UG = {
 
         ## DISJUNTORES
 
-        "DJ_01":                                0,
-        "DJ_02":                                1,
-        "DJ_03":                                2,
-        "DJ_04":                                3,
-        "DJ_05":                                4,
-        "DJ_06":                                5,
-        "DJ_07":                                6,
-        "DJ_08":                                7,
-        "DJ_09":                                8,
-        "DJ_10":                                9,
-        "DJ_11":                                10,
-        "DJ_12":                                11,
-        "DJ_13":                                12,
-        "DJ_14":                                13,
-        "DJ_15":                                14,
-        "DJ_16":                                15,
-        "DJ_17":                                16,
-        "DJ_18":                                17,
-        "DJ_19":                                18,
-        "DJ_20":                                19,
-        "DJ_21":                                20,
-        "DJ_22":                                21,
-        "DJ_23":                                22,
-        "DJ_24":                                23,
-        "DJ_25":                                24,
-        "DJ_26":                                25,
-        "DJ_27":                                26,
-        "DJ_28":                                27,
-        "DJ_29":                                28,
-        "DJ_30":                                29,
-        "DJ_31":                                30,
-        "DJ_32":                                31,
+        "DJ_01":                                0 + 12564,                      # Disjuntor Q125.0 - Alimentação Circuitos de Comando                                  -> condic_indisponibiliza UG1
+        "DJ_02":                                1 + 12564,                      # Disjuntor Q125.1 - Alimentação GRTD2000                                              -> condic_indisponibiliza UG1
+        "DJ_03":                                2 + 12564,                      # Disjuntor Q125.2 - Alimentação Relés de Proteção                                     -> condic_indisponibiliza UG1
+        "DJ_04":                                3 + 12564,                      # Disjuntor Q24.0 - Alimentação Válvula Proporcional e Transdutor de Posição           -> condic_indisponibiliza UG1
+        "DJ_05":                                4 + 12564,                      # CSG - Disjuntor Q220.1 - Alimentação Carregamento de Mola                            -> condic_indisponibiliza UG1
+        "DJ_06":                                5 + 12564,                      # CSG - Disjuntor Q125.0 - Alimentação Circuito de Comando 52G                         -> condic_indisponibiliza UG1
+        "DJ_07":                                6 + 12564,                      # Q49 - Disjuntor Q125.0 UG1 - Alimentação SEL2600
+        "DJ_08":                                7 + 12564,                      # Disjuntor Motor QM1 - Bomba de Óleo 01 da UHCT                                       -> condic_indisponibiliza UG1
+        "DJ_09":                                8 + 12564,                      # Disjuntor Motor QM2 - Bomba de Óleo 02 da UHCT                                       -> condic_indisponibiliza UG1
+        "DJ_10":                                9 + 12564,                      # Disjuntor Motor QM3 - Bomba de Óleo 01 da UHLM                                       -> condic_indisponibiliza UG1
+        "DJ_11":                                10 + 12564,                     #
+        "DJ_12":                                11 + 12564,                     #
+        "DJ_13":                                12 + 12564,                     #
+        "DJ_14":                                13 + 12564,                     #
+        "DJ_15":                                14 + 12564,                     #
+        "DJ_16":                                15 + 12564,                     #
+        "DJ_17":                                16 + 12564,                     #
+        "DJ_18":                                17 + 12564,                     #
+        "DJ_19":                                18 + 12564,                     #
+        "DJ_20":                                19 + 12564,                     #
+        "DJ_21":                                20 + 12564,                     #
+        "DJ_22":                                21 + 12564,                     #
+        "DJ_23":                                22 + 12564,                     #
+        "DJ_24":                                23 + 12564,                     #
+        "DJ_25":                                24 + 12564,                     #
+        "DJ_26":                                25 + 12564,                     #
+        "DJ_27":                                26 + 12564,                     #
+        "DJ_28":                                27 + 12564,                     #
+        "DJ_29":                                28 + 12564,                     #
+        "DJ_30":                                29 + 12564,                     #
+        "DJ_31":                                30 + 12564,                     #
+        "DJ_32":                                31 + 12564,                     #
 
 
         ## ALARMES
@@ -2305,6 +2311,7 @@ REG_UG = {
         "Alarme16_11":                          [16 + 14199, 11],
         "Alarme16_12":                          [16 + 14199, 12],
     },
+
     "UG2": {
         ## COMANDOS
         # Gerais
@@ -2982,7 +2989,7 @@ REG_UG = {
         "ENERGIA_CORNECIDA_GVarh":              96 + 12764,                     # Leituras.Gerador_EnergiaConsumidaGVarh
         "ENERGIA_CORNECIDA_MVarh":              97 + 12764,                     # Leituras.Gerador_EnergiaConsumidaMVarh
         "ENERGIA_CORNECIDA_kVarh":              98 + 12764,                     # Leituras.Gerador_EnergiaConsumidakVarh
-    
+
         "GERADOR_FP_INFO":                      99 + 12764,                     # Leituras.Gerador_FPInfo
         "GERADOR_FP_FASE1_IND":                 [99 + 12764, 0],                # Gerador.FP_Info.Fase1_Ind
         "GERADOR_FP_FASE1_CAP":                 [99 + 12764, 1],                # Gerador.FP_Info.Fase1_Cap
@@ -3030,38 +3037,38 @@ REG_UG = {
 
         ## DISJUNTORES
 
-        "DJ_01":                                0,
-        "DJ_02":                                1,
-        "DJ_03":                                2,
-        "DJ_04":                                3,
-        "DJ_05":                                4,
-        "DJ_06":                                5,
-        "DJ_07":                                6,
-        "DJ_08":                                7,
-        "DJ_09":                                8,
-        "DJ_10":                                9,
-        "DJ_11":                                10,
-        "DJ_12":                                11,
-        "DJ_13":                                12,
-        "DJ_14":                                13,
-        "DJ_15":                                14,
-        "DJ_16":                                15,
-        "DJ_17":                                16,
-        "DJ_18":                                17,
-        "DJ_19":                                18,
-        "DJ_20":                                19,
-        "DJ_21":                                20,
-        "DJ_22":                                21,
-        "DJ_23":                                22,
-        "DJ_24":                                23,
-        "DJ_25":                                24,
-        "DJ_26":                                25,
-        "DJ_27":                                26,
-        "DJ_28":                                27,
-        "DJ_29":                                28,
-        "DJ_30":                                29,
-        "DJ_31":                                30,
-        "DJ_32":                                31,
+        "DJ_01":                                0 + 12564,                      # Disjuntor Q125.0 - Alimentação Circuitos de Comando                                  -> condic_indisponibiliza UG1
+        "DJ_02":                                1 + 12564,                      # Disjuntor Q125.1 - Alimentação GRTD2000                                              -> condic_indisponibiliza UG1
+        "DJ_03":                                2 + 12564,                      # Disjuntor Q125.2 - Alimentação Relés de Proteção                                     -> condic_indisponibiliza UG1
+        "DJ_04":                                3 + 12564,                      # Disjuntor Q24.0 - Alimentação Válvula Proporcional e Transdutor de Posição           -> condic_indisponibiliza UG1
+        "DJ_05":                                4 + 12564,                      # CSG - Disjuntor Q220.1 - Alimentação Carregamento de Mola                            -> condic_indisponibiliza UG1
+        "DJ_06":                                5 + 12564,                      # CSG - Disjuntor Q125.0 - Alimentação Circuito de Comando 52G                         -> condic_indisponibiliza UG1
+        "DJ_07":                                6 + 12564,                      # Q49 - Disjuntor Q125.0 UG1 - Alimentação SEL2600                                     -> Mensagem + VoIP
+        "DJ_08":                                7 + 12564,                      # Disjuntor Motor QM1 - Bomba de Óleo 01 da UHCT                                       -> condic_indisponibiliza UG1
+        "DJ_09":                                8 + 12564,                      # Disjuntor Motor QM2 - Bomba de Óleo 02 da UHCT                                       -> condic_indisponibiliza UG1
+        "DJ_10":                                9 + 12564,                      # Disjuntor Motor QM3 - Bomba de Óleo 01 da UHLM                                       -> condic_indisponibiliza UG1
+        "DJ_11":                                10 + 12564,                     #
+        "DJ_12":                                11 + 12564,                     #
+        "DJ_13":                                12 + 12564,                     #
+        "DJ_14":                                13 + 12564,                     #
+        "DJ_15":                                14 + 12564,                     #
+        "DJ_16":                                15 + 12564,                     #
+        "DJ_17":                                16 + 12564,                     #
+        "DJ_18":                                17 + 12564,                     #
+        "DJ_19":                                18 + 12564,                     #
+        "DJ_20":                                19 + 12564,                     #
+        "DJ_21":                                20 + 12564,                     #
+        "DJ_22":                                21 + 12564,                     #
+        "DJ_23":                                22 + 12564,                     #
+        "DJ_24":                                23 + 12564,                     #
+        "DJ_25":                                24 + 12564,                     #
+        "DJ_26":                                25 + 12564,                     #
+        "DJ_27":                                26 + 12564,                     #
+        "DJ_28":                                27 + 12564,                     #
+        "DJ_29":                                28 + 12564,                     #
+        "DJ_30":                                29 + 12564,                     #
+        "DJ_31":                                30 + 12564,                     #
+        "DJ_32":                                31 + 12564,                     #
 
 
         ## ALARMES
@@ -3325,6 +3332,7 @@ REG_UG = {
         "Alarme16_11":                          [16 + 14199, 11],
         "Alarme16_12":                          [16 + 14199, 12],
     },
+
     "UG3": {
         ## COMANDOS
         # Gerais
@@ -4002,7 +4010,7 @@ REG_UG = {
         "ENERGIA_CORNECIDA_GVarh":              96 + 12764,                     # Leituras.Gerador_EnergiaConsumidaGVarh
         "ENERGIA_CORNECIDA_MVarh":              97 + 12764,                     # Leituras.Gerador_EnergiaConsumidaMVarh
         "ENERGIA_CORNECIDA_kVarh":              98 + 12764,                     # Leituras.Gerador_EnergiaConsumidakVarh
-    
+
         "GERADOR_FP_INFO":                      99 + 12764,                     # Leituras.Gerador_FPInfo
         "GERADOR_FP_FASE1_IND":                 [99 + 12764, 0],                # Gerador.FP_Info.Fase1_Ind
         "GERADOR_FP_FASE1_CAP":                 [99 + 12764, 1],                # Gerador.FP_Info.Fase1_Cap
@@ -4050,38 +4058,38 @@ REG_UG = {
 
         ## DISJUNTORES
 
-        "DJ_01":                                0,
-        "DJ_02":                                1,
-        "DJ_03":                                2,
-        "DJ_04":                                3,
-        "DJ_05":                                4,
-        "DJ_06":                                5,
-        "DJ_07":                                6,
-        "DJ_08":                                7,
-        "DJ_09":                                8,
-        "DJ_10":                                9,
-        "DJ_11":                                10,
-        "DJ_12":                                11,
-        "DJ_13":                                12,
-        "DJ_14":                                13,
-        "DJ_15":                                14,
-        "DJ_16":                                15,
-        "DJ_17":                                16,
-        "DJ_18":                                17,
-        "DJ_19":                                18,
-        "DJ_20":                                19,
-        "DJ_21":                                20,
-        "DJ_22":                                21,
-        "DJ_23":                                22,
-        "DJ_24":                                23,
-        "DJ_25":                                24,
-        "DJ_26":                                25,
-        "DJ_27":                                26,
-        "DJ_28":                                27,
-        "DJ_29":                                28,
-        "DJ_30":                                29,
-        "DJ_31":                                30,
-        "DJ_32":                                31,
+        "DJ_01":                                0 + 12564,                      # Disjuntor Q125.0 - Alimentação Circuitos de Comando                                  -> condic_indisponibiliza UG1
+        "DJ_02":                                1 + 12564,                      # Disjuntor Q125.1 - Alimentação GRTD2000                                              -> condic_indisponibiliza UG1
+        "DJ_03":                                2 + 12564,                      # Disjuntor Q125.2 - Alimentação Relés de Proteção                                     -> condic_indisponibiliza UG1
+        "DJ_04":                                3 + 12564,                      # Disjuntor Q24.0 - Alimentação Válvula Proporcional e Transdutor de Posição           -> condic_indisponibiliza UG1
+        "DJ_05":                                4 + 12564,                      # CSG - Disjuntor Q220.1 - Alimentação Carregamento de Mola                            -> condic_indisponibiliza UG1
+        "DJ_06":                                5 + 12564,                      # CSG - Disjuntor Q125.0 - Alimentação Circuito de Comando 52G                         -> condic_indisponibiliza UG1
+        "DJ_07":                                6 + 12564,                      # Q49 - Disjuntor Q125.0 UG1 - Alimentação SEL2600                                     -> Mensagem + VoIP
+        "DJ_08":                                7 + 12564,                      # Disjuntor Motor QM1 - Bomba de Óleo 01 da UHCT                                       -> condic_indisponibiliza UG1
+        "DJ_09":                                8 + 12564,                      # Disjuntor Motor QM2 - Bomba de Óleo 02 da UHCT                                       -> condic_indisponibiliza UG1
+        "DJ_10":                                9 + 12564,                      # Disjuntor Motor QM3 - Bomba de Óleo 01 da UHLM                                       -> condic_indisponibiliza UG1
+        "DJ_11":                                10 + 12564,                     #
+        "DJ_12":                                11 + 12564,                     #
+        "DJ_13":                                12 + 12564,                     #
+        "DJ_14":                                13 + 12564,                     #
+        "DJ_15":                                14 + 12564,                     #
+        "DJ_16":                                15 + 12564,                     #
+        "DJ_17":                                16 + 12564,                     #
+        "DJ_18":                                17 + 12564,                     #
+        "DJ_19":                                18 + 12564,                     #
+        "DJ_20":                                19 + 12564,                     #
+        "DJ_21":                                20 + 12564,                     #
+        "DJ_22":                                21 + 12564,                     #
+        "DJ_23":                                22 + 12564,                     #
+        "DJ_24":                                23 + 12564,                     #
+        "DJ_25":                                24 + 12564,                     #
+        "DJ_26":                                25 + 12564,                     #
+        "DJ_27":                                26 + 12564,                     #
+        "DJ_28":                                27 + 12564,                     #
+        "DJ_29":                                28 + 12564,                     #
+        "DJ_30":                                29 + 12564,                     #
+        "DJ_31":                                30 + 12564,                     #
+        "DJ_32":                                31 + 12564,                     #
 
 
         ## ALARMES
@@ -4340,6 +4348,7 @@ REG_UG = {
         "Alarme16_11":                          [16 + 14199, 11],
         "Alarme16_12":                          [16 + 14199, 12],
     },
+
     "UG4": {
         ## COMANDOS
         # Gerais
@@ -5017,7 +5026,7 @@ REG_UG = {
         "ENERGIA_CORNECIDA_GVarh":              96 + 12764,                     # Leituras.Gerador_EnergiaConsumidaGVarh
         "ENERGIA_CORNECIDA_MVarh":              97 + 12764,                     # Leituras.Gerador_EnergiaConsumidaMVarh
         "ENERGIA_CORNECIDA_kVarh":              98 + 12764,                     # Leituras.Gerador_EnergiaConsumidakVarh
-    
+
         "GERADOR_FP_INFO":                      99 + 12764,                     # Leituras.Gerador_FPInfo
         "GERADOR_FP_FASE1_IND":                 [99 + 12764, 0],                # Gerador.FP_Info.Fase1_Ind
         "GERADOR_FP_FASE1_CAP":                 [99 + 12764, 1],                # Gerador.FP_Info.Fase1_Cap
@@ -5065,38 +5074,38 @@ REG_UG = {
 
         ## DISJUNTORES
 
-        "DJ_01":                                0,
-        "DJ_02":                                1,
-        "DJ_03":                                2,
-        "DJ_04":                                3,
-        "DJ_05":                                4,
-        "DJ_06":                                5,
-        "DJ_07":                                6,
-        "DJ_08":                                7,
-        "DJ_09":                                8,
-        "DJ_10":                                9,
-        "DJ_11":                                10,
-        "DJ_12":                                11,
-        "DJ_13":                                12,
-        "DJ_14":                                13,
-        "DJ_15":                                14,
-        "DJ_16":                                15,
-        "DJ_17":                                16,
-        "DJ_18":                                17,
-        "DJ_19":                                18,
-        "DJ_20":                                19,
-        "DJ_21":                                20,
-        "DJ_22":                                21,
-        "DJ_23":                                22,
-        "DJ_24":                                23,
-        "DJ_25":                                24,
-        "DJ_26":                                25,
-        "DJ_27":                                26,
-        "DJ_28":                                27,
-        "DJ_29":                                28,
-        "DJ_30":                                29,
-        "DJ_31":                                30,
-        "DJ_32":                                31,
+        "DJ_01":                                0 + 12564,                      # Disjuntor Q125.0 - Alimentação Circuitos de Comando                                  -> condic_indisponibiliza UG1
+        "DJ_02":                                1 + 12564,                      # Disjuntor Q125.1 - Alimentação GRTD2000                                              -> condic_indisponibiliza UG1
+        "DJ_03":                                2 + 12564,                      # Disjuntor Q125.2 - Alimentação Relés de Proteção                                     -> condic_indisponibiliza UG1
+        "DJ_04":                                3 + 12564,                      # Disjuntor Q24.0 - Alimentação Válvula Proporcional e Transdutor de Posição           -> condic_indisponibiliza UG1
+        "DJ_05":                                4 + 12564,                      # CSG - Disjuntor Q220.1 - Alimentação Carregamento de Mola                            -> condic_indisponibiliza UG1
+        "DJ_06":                                5 + 12564,                      # CSG - Disjuntor Q125.0 - Alimentação Circuito de Comando 52G                         -> condic_indisponibiliza UG1
+        "DJ_07":                                6 + 12564,                      # Q49 - Disjuntor Q125.0 UG1 - Alimentação SEL2600                                     -> Mensagem + VoIP
+        "DJ_08":                                7 + 12564,                      # Disjuntor Motor QM1 - Bomba de Óleo 01 da UHCT                                       -> condic_indisponibiliza UG1
+        "DJ_09":                                8 + 12564,                      # Disjuntor Motor QM2 - Bomba de Óleo 02 da UHCT                                       -> condic_indisponibiliza UG1
+        "DJ_10":                                9 + 12564,                      # Disjuntor Motor QM3 - Bomba de Óleo 01 da UHLM                                       -> condic_indisponibiliza UG1
+        "DJ_11":                                10 + 12564,                     #
+        "DJ_12":                                11 + 12564,                     #
+        "DJ_13":                                12 + 12564,                     #
+        "DJ_14":                                13 + 12564,                     #
+        "DJ_15":                                14 + 12564,                     #
+        "DJ_16":                                15 + 12564,                     #
+        "DJ_17":                                16 + 12564,                     #
+        "DJ_18":                                17 + 12564,                     #
+        "DJ_19":                                18 + 12564,                     #
+        "DJ_20":                                19 + 12564,                     #
+        "DJ_21":                                20 + 12564,                     #
+        "DJ_22":                                21 + 12564,                     #
+        "DJ_23":                                22 + 12564,                     #
+        "DJ_24":                                23 + 12564,                     #
+        "DJ_25":                                24 + 12564,                     #
+        "DJ_26":                                25 + 12564,                     #
+        "DJ_27":                                26 + 12564,                     #
+        "DJ_28":                                27 + 12564,                     #
+        "DJ_29":                                28 + 12564,                     #
+        "DJ_30":                                29 + 12564,                     #
+        "DJ_31":                                30 + 12564,                     #
+        "DJ_32":                                31 + 12564,                     #
 
 
         ## ALARMES

@@ -85,6 +85,7 @@ class ServicoAuxiliar:
         Verifica leituras específcas para acionamento da manuteção. As leituras são disparadas
         em períodos separados por um tempo pré-definido.
         """
+
         return
 
 
@@ -93,6 +94,37 @@ class ServicoAuxiliar:
         """
         Função para carregamento de leituras necessárias para a operação.
         """
+
+        cls.l_emerg_acionada = lei.LeituraModbusBit(cls.clp["SA"], REG_SA["EMERGENCIA_ACIONADA"], descricao="[SA]  Usina Emergência Acionada")
+        cls.condicionadores_essenciais.append(c.CondicionadorBase(cls.l_emerg_acionada, CONDIC_NORMALIZAR))
+
+        cls.l_alm_cb = lei.LeituraModbusBit(cls.clp["SA"], REG_SA["CB_ALARME"], descricao="[SA]  Alarme Carregador Baterias 1")
+        cls.condicionadores_essenciais.append(c.CondicionadorBase(cls.l_alm_cb, CONDIC_NORMALIZAR))
+
+        cls.l_alm_cb2 = lei.LeituraModbusBit(cls.clp["SA"], REG_SA["CB2_ALARME"], descricao="[SA]  Alarme Carregador Baterias 2")
+        cls.condicionadores_essenciais.append(c.CondicionadorBase(cls.l_alm_cb2, CONDIC_NORMALIZAR))
+
+        cls.l_alm_fuga_ter = lei.LeituraModbusBit(cls.clp["SA"], REG_SA["FUGA_TERRA_ALARME"], descricao="[SA]  Alarme Fuga Terra")
+        cls.condicionadores_essenciais.append(c.CondicionadorBase(cls.l_alm_fuga_ter, CONDIC_NORMALIZAR))
+
+
+        cls.l_fuga_ter_tens = lei.LeituraModbusBit(cls.clp["SA"], REG_SA["FUGA_TERRA_TENSAO"], descricao="[SA]  Fuga Terra Tensão")
+        cls.condicionadores.append(c.CondicionadorBase(cls.l_fuga_ter_tens, CONDIC_INDISPONIBILIZAR))
+
+        cls.l_fuga_ter_trip = lei.LeituraModbusBit(cls.clp["SA"], REG_SA["FUGA_TERRA_TRIP"], descricao="[SA]  TRIP Fuga Terra")
+        cls.condicionadores.append(c.CondicionadorBase(cls.l_fuga_ter_trip, CONDIC_INDISPONIBILIZAR))
+
+        cls.l_fuga_ter_tens_pos = lei.LeituraModbusBit(cls.clp["SA"], REG_SA["FUGA_TERRA_TENSAO_POSITIVA"], descricao="[SA]  Fuga Terra Tensão Positiva")
+        cls.condicionadores.append(c.CondicionadorBase(cls.l_fuga_ter_tens_pos, CONDIC_INDISPONIBILIZAR))
+
+        cls.l_fuga_ter_tens_neg = lei.LeituraModbusBit(cls.clp["SA"], REG_SA["FUGA_TERRA_TENSAO_NEGATIVA"], descricao="[SA]  Fuga Terra Tensão Negativa")
+        cls.condicionadores.append(c.CondicionadorBase(cls.l_fuga_ter_tens_neg, CONDIC_INDISPONIBILIZAR))
+
+        cls.l_fuga_ter_pos = lei.LeituraModbusBit(cls.clp["SA"], REG_SA["FUGA_TERRA_POSITIVO"], descricao="[SA]  Fuga Terra Positivo")
+        cls.condicionadores.append(c.CondicionadorBase(cls.l_fuga_ter_pos, CONDIC_INDISPONIBILIZAR))
+
+        cls.l_fuga_ter_neg = lei.LeituraModbusBit(cls.clp["SA"], REG_SA["FUGA_TERRA_NEGATIVO"], descricao="[SA]  Fuga Terra Negativo")
+        cls.condicionadores.append(c.CondicionadorBase(cls.l_fuga_ter_neg, CONDIC_INDISPONIBILIZAR))
 
         cls.l_alm_01_b_02 = lei.LeituraModbusBit(cls.clp["SA"], REG_SA["Alarme01_02"], descricao="[SA]  PDSA-CC - Falta Tensão Vcc Carregador de Baterias 01")
         cls.condicionadores.append(c.CondicionadorBase(cls.l_alm_01_b_02, CONDIC_NORMALIZAR))
@@ -672,5 +704,24 @@ class ServicoAuxiliar:
 
         cls.l_alm_21_b_12 = lei.LeituraModbusBit(cls.clp["SA"], REG_SA["Alarme21_12"], descricao="[SA]  Sistema de Água de Serviço - Sem Fluxo de Água na Saída da Bomba 02")
         cls.condicionadores.append(c.CondicionadorBase(cls.l_alm_21_b_12, CONDIC_NORMALIZAR))
+
+
+        ## MENSAGEIRO
+        cls.l_cb_ligado = lei.LeituraModbusBit(cls.clp["SA"], REG_SA["CB_LIGADO"], descricao="[SA]  Carregador Baterias 1 Ligado")
+        cls.l_cb2_ligado = lei.LeituraModbusBit(cls.clp["SA"], REG_SA["CB2_LIGADO"], descricao="[SA]  Carregador Baterias 2 Ligado")
+        cls.l_gd_comb_men30 = lei.LeituraModbusBit(cls.clp["SA"], REG_SA["GD_COMB_MENOR30"], descricao="[SA]  Gerador Diesel Combustivel Menor 30%")
+        cls.l_sa_modo_local = lei.LeituraModbusBit(cls.clp["SA"], REG_SA["SA_MODO_LOCAL"], descricao="[SA] Serviço Auxiliar Modo Local")
+        cls.l_sa_modo_manual = lei.LeituraModbusBit(cls.clp["SA"], REG_SA["SA_MODO_MANUAL"], descricao="[SA] Serviço Auxiliar Modo Manual")
+        cls.l_poco_modo_local = lei.LeituraModbusBit(cls.clp["SA"], REG_SA["POCO_MODO_LOCAL"], descricao="[SA] Poço Modo Local")
+        cls.l_poco_modo_manual = lei.LeituraModbusBit(cls.clp["SA"], REG_SA["POCO_MODO_MANUAL"], descricao="[SA] Poço Modo Manual")
+        cls.l_poco_nv_hh = lei.LeituraModbusBit(cls.clp["SA"], REG_SA["POCO_NIVEL_HH"], descricao="[SA] Poço Nível Muito Alto")
+        cls.l_sens_presen_hab = lei.LeituraModbusBit(cls.clp["SA"], REG_SA["SENSOR_PRESENCA_HABILITADO"], descricao="[SA] Sensor Presença Habilitado")
+        cls.l_sens_presen_sala_sup = lei.LeituraModbusBit(cls.clp["SA"], REG_SA["SENSOR_PRESENCA_SALA_SUP"], descricao="[SA] Sensor Presença Sala Supervisório")
+        cls.l_sens_presen_sala_coz_ban = lei.LeituraModbusBit(cls.clp["SA"], REG_SA["SENSOR_PRESENCA_SALA_COZI_BANH"], descricao="[SA] Sensor Presença Sala Cozinha Banheiro")
+        cls.l_sens_presen_almox = lei.LeituraModbusBit(cls.clp["SA"], REG_SA["SENSOR_PRESENCA_ALMOXARI"], descricao="[SA] Sensor Presença Almoxarifado")
+        cls.l_sens_presen_area_mont = lei.LeituraModbusBit(cls.clp["SA"], REG_SA["SENSOR_PRESENCA_AREA_MONT"], descricao="[SA] Sensor Presença Área Montagem")
+        cls.l_sens_presen_sala_cubic = lei.LeituraModbusBit(cls.clp["SA"], REG_SA["SENSOR_PRESENCA_SALA_CUBI"], descricao="[SA] Sensor Presença Sala Cubículo")
+        cls.l_sis_agu_cx_agua1_nv50 = lei.LeituraModbusBit(cls.clp["SA"], REG_SA["SIS_AGUA_CAIXA_AGUA01_NV50"], descricao="[SA] Sistema Água Caixa Água 1 Nível 50%")
+        cls.l_sis_agu_cx_agua2_nv50 = lei.LeituraModbusBit(cls.clp["SA"], REG_SA["SIS_AGUA_CAIXA_AGUA02_NV50"], descricao="[SA] Sistema Água Caixa Água 2 Nível 50%") # (quando as duas caixas estiverem abaixo de 50%, disparar aviso para equipe se deslocar. Não há necessidade de parar máquinas)
 
         return

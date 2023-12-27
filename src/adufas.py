@@ -138,8 +138,11 @@ class Adufas:
             try:
                 logger.debug(f"[AD][CP{self.id}]      Enviando setpoint:         {round(setpoint)} mm")
 
-                self.clp["AD"].write_single_register(REG_AD[f"CP_0{self.id}_SP_POS"], round(self.setpoint))
-                self.clp["AD"].write_single_register(REG_AD[f"CMD_CP_0{self.id}_BUSCAR"], 1)
+                if not self.clp["AD"].read_holding_registers(REG_AD["PCAD_MODO_SETPOT_HAB"])[0]:
+                    logger.info(f"[AD]  O modo de setpoint das Comportas das Adufas não está habilitado.")
+                else:
+                    self.clp["AD"].write_single_register(REG_AD[f"CP_0{self.id}_SP_POS"], round(self.setpoint))
+                    self.clp["AD"].write_single_register(REG_AD[f"CMD_CP_0{self.id}_BUSCAR"], 1)
 
             except Exception:
                 logger.error(f"[AD][CP{self.id}] Não foi possível enviar o setpoint para a Comporta.")
@@ -158,6 +161,11 @@ class Adufas:
             self.fechando = lei.LeituraModbusBit(self.clp["AD"], REG_AD[f"CP_0{self.id}_FECHANDO"], descricao=f"[AD][CP{self.id}] Comporta Fechando")
 
 
+            ## MENSAGEIRO
+
+            self.cp_acion_local = lei.LeituraModbusBit(self.clp["AD"], REG_AD[f"CP_0{self.id}_ACION_LOCAL"], descricao=f"[AD][CP{self.id}] Comporta Acionamento Local")             # Voip + whats
+
+
     cp1 = Comporta(1, cfg)
     cp2 = Comporta(2, cfg)
     cps: "list[Comporta]" = [cp1, cp2]
@@ -171,6 +179,9 @@ class Adufas:
         logger.debug(f"[AD]  Controlando Comportas...")
         logger.debug(f"[AD]  NÍVEL -> Alvo:                      {cls.cfg['nv_alvo']:0.3f}")
         logger.debug("")
+
+        cls.clp["AD"].write_single_register(REG_AD["CMD_MODO_SP_HABILITAR"], 1)
+
 
         for cp in cls.cps:
             cp.calcular_setpoint()
@@ -233,6 +244,12 @@ class Adufas:
 
         cls.l_alm_28_b_12 = lei.LeituraModbusBit(cls.clp["AD"], REG_AD["Alarme28_12"], descricao="[AD]  UHCD - Botão de Emergência Pressionado")
         cls.condicionadores_essenciais.append(c.CondicionadorBase(cls.l_alm_28_b_12, CONDIC_NORMALIZAR))
+
+        cls.l_uhcd_operacional = lei.LeituraModbusBit(cls.clp["AD"], REG_AD["UHCD_OPERACIONAL"], descricao="[AD]  UHCD - Operacional")
+        cls.condicionadores.append(c.CondicionadorBase(cls.l_uhcd_operacional, CONDIC_INDISPONIBILIZAR))
+
+        cls.l_pcad_falta_fase = lei.LeituraModbusBit(cls.clp["AD"], REG_AD["PCAD_FALTA_FASE"], descricao="[AD]  PCAD - Falta Fase")
+        cls.condicionadores.append(c.CondicionadorBase(cls.l_pcad_falta_fase, CONDIC_INDISPONIBILIZAR))
 
         cls.l_alm_28_b_01 = lei.LeituraModbusBit(cls.clp["AD"], REG_AD["Alarme28_01"], descricao="[AD]  Relé Falta de Fase CA Atuado")
         cls.condicionadores.append(c.CondicionadorBase(cls.l_alm_28_b_01, CONDIC_NORMALIZAR))
@@ -338,3 +355,10 @@ class Adufas:
 
         cls.l_alm_31_b_06 = lei.LeituraModbusBit(cls.clp["AD"], REG_AD["Alarme31_06"], descricao="[AD]  Alimentação Inversor 24/220Vca - Disj. Q24.4 Desligado")
         cls.condicionadores.append(c.CondicionadorBase(cls.l_alm_31_b_06, CONDIC_NORMALIZAR))
+
+
+        ## MENSAGEIRO
+        cls.l_uhcd_temp_oleo_h = lei.LeituraModbusBit(cls.clp["AD"], REG_AD["UHCD_TEMPE_OLEO_H"], descricao="[AD]  UHCD - Temperatura Óleo Alta")
+        cls.l_uhcd_temp_oleo_hh = lei.LeituraModbusBit(cls.clp["AD"], REG_AD["UHCD_TEMPE_OLEO_HH"], descricao="[AD]  UHCD - Temperatura Óleo Muito Alta")
+        cls.l_uhcd_temp_oleo = lei.LeituraModbusBit(cls.clp["AD"], REG_AD["UHCD_TEMPERATURA_OLEO"], descricao="[AD]  UHCD - Temperatura Óleo")
+        cls.l_uhcd_nv_oleo = lei.LeituraModbusBit(cls.clp["AD"], REG_AD["UHCD_NIVEL_OLEO"], descricao="[AD]  UHCD - Nível Óleo")
