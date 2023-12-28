@@ -7,6 +7,7 @@ import logging
 import traceback
 
 import src.tomada_agua as tda
+import src.dicionarios.dict as d
 import src.funcoes.leitura as lei
 import src.funcoes.condicionadores as c
 import src.conectores.banco_dados as bd
@@ -182,7 +183,6 @@ class Adufas:
 
         cls.clp["AD"].write_single_register(REG_AD["CMD_MODO_SP_HABILITAR"], 1)
 
-
         for cp in cls.cps:
             cp.calcular_setpoint()
             logger.debug("")
@@ -230,6 +230,40 @@ class Adufas:
         else:
             cls.condicionadores_ativos = []
             return []
+
+
+    @classmethod
+    def verificar_leituras(cls) -> "None":
+        """
+        Função para verificação de leituras por acionamento temporizado.
+
+        Verifica leituras específcas para acionamento da manuteção. As leituras são disparadas
+        em períodos separados por um tempo pré-definido.
+        """
+
+        if cls.l_uhcd_temp_oleo_h.valor and not d.voip["UHCD_TEMPE_OLEO_H"][0]:
+            logger.warning("[AD]  Foi identificado que a temperatura do Óleo da UHCD está Alta. Favor verificar.")
+            d.voip["UHCD_TEMPE_OLEO_H"][0] = True
+        if not cls.l_uhcd_temp_oleo_h.valor and d.voip["UHCD_TEMPE_OLEO_H"][0]:
+            d.voip["UHCD_TEMPE_OLEO_H"][0] = False
+
+        if cls.l_uhcd_temp_oleo_hh.valor and not d.voip["UHCD_TEMPE_OLEO_HH"][0]:
+            logger.warning("[AD]  Foi identificado que a temperatura do Óleo da UHCD está Muito Alta. Favor verificar.")
+            d.voip["UHCD_TEMPE_OLEO_HH"][0] = True
+        if not cls.l_uhcd_temp_oleo_hh.valor and d.voip["UHCD_TEMPE_OLEO_HH"][0]:
+            d.voip["UHCD_TEMPE_OLEO_HH"][0] = False
+
+        # if cls.l_uhcd_temp_oleo.valor and not d.voip["UHCD_TEMPERATURA_OLEO"][0]:
+        #     logger.warning("[AD]  . Favor verificar.")
+        #     d.voip["UHCD_TEMPERATURA_OLEO"][0] = True
+        # if not cls.l_uhcd_temp_oleo.valor and d.voip["UHCD_TEMPERATURA_OLEO"][0]:
+        #     d.voip["UHCD_TEMPERATURA_OLEO"][0] = False
+
+        # if cls.l_uhcd_nv_oleo.valor and not d.voip["UHCD_NIVEL_OLEO"][0]:
+        #     logger.warning("[AD]  . Favor verificar.")
+        #     d.voip["UHCD_NIVEL_OLEO"][0] = True
+        # if not cls.l_uhcd_nv_oleo.valor and d.voip["UHCD_NIVEL_OLEO"][0]:
+        #     d.voip["UHCD_NIVEL_OLEO"][0] = False
 
 
     @classmethod

@@ -8,6 +8,7 @@ import logging
 import traceback
 import threading
 
+import src.dicionarios.dict as d
 import src.funcoes.leitura as lei
 import src.conectores.banco_dados as bd
 import src.funcoes.condicionadores as c
@@ -250,7 +251,230 @@ class Subestacao:
         Verifica leituras específcas para acionamento da manuteção. As leituras são disparadas
         em períodos separados por um tempo pré-definido.
         """
-        return
+        
+        if cls.dj52l_modo_local.valor and not d.voip["DJ52L_MODO_LOCAL"][0]:
+            logger.warning(f"[SE]  Foi identificado que o Disjuntor 52L entrou em Modo Local. Favor verificar.")
+            d.voip["DJ52L_MODO_LOCAL"][0]: True
+        elif not cls.dj52l_modo_local.valor and d.voip["DJ52L_MODO_LOCAL"][0]:
+            d.voip["DJ52L_MODO_LOCAL"][0]: False
+
+        if cls.dj52l_alim125vcc_motor.valor and not d.voip["DJ52L_ALIM125VCC_MOTOR"][0]:
+            logger.warning(f"[SE]  Foi identificado um desligamento do Motor de Alimentação 125VCC do Disjuntor 52L. Favor verificar.")
+            d.voip["DJ52L_ALIM125VCC_MOTOR"][0]: True
+        elif not cls.dj52l_alim125vcc_motor.valor and d.voip["DJ52L_ALIM125VCC_MOTOR"][0]:
+            d.voip["DJ52L_ALIM125VCC_MOTOR"][0]: False
+
+        if cls.dj52l_falta_vcc.valor and not d.voip["DJ52L_FALTA_VCC"][0]:
+            logger.warning(f"[SE]  Foi identificado uma falta de Alimentação (VCC) do Disjuntor 52L na PCH Ado Popinhak. Favor verificar.")
+            d.voip["DJ52L_FALTA_VCC"][0]: True
+        elif not cls.dj52l_falta_vcc.valor and d.voip["DJ52L_FALTA_VCC"][0]:
+            d.voip["DJ52L_FALTA_VCC"][0]: False
+
+        if cls.dj52l_gas_sf6_1.valor and not d.voip["DJ52L_GAS_SF6_1"][0]:
+            logger.warning(f"[SE]  Foi identificado um acionamento do Alarme de Gás SF6 1 do Disjuntor 52L. Favor verificar.")
+            d.voip["DJ52L_GAS_SF6_1"][0]: True
+        elif not cls.dj52l_gas_sf6_1.valor and d.voip["DJ52L_GAS_SF6_1"][0]:
+            d.voip["DJ52L_GAS_SF6_1"][0]: False
+
+        if cls.secc_modo_local.valor and not d.voip["SECC_MODO_LOCAL"][0]:
+            logger.warning(f"[SE]  Foi identificado que a Seccionadora entrou em Modo Local. Favor verificar.")
+            d.voip["SECC_MODO_LOCAL"][0]: True
+        elif not cls.secc_modo_local.valor and d.voip["SECC_MODO_LOCAL"][0]:
+            d.voip["SECC_MODO_LOCAL"][0]: False
+
+        if cls.secc_lam_fechada.valor and not d.voip["SECC_LAMINA_FECHADA"][0]:
+            logger.warning(f"[SE]  Foi identificado que a Lâmina da Seccionadora foi Fechada. Favor verificar.")
+            d.voip["SECC_LAMINA_FECHADA"][0]: True
+        elif not cls.secc_lam_fechada.valor and d.voip["SECC_LAMINA_FECHADA"][0]:
+            d.voip["SECC_LAMINA_FECHADA"][0]: False
+
+        if cls.secc_cmd_alim_vcc.valor and not d.voip["SECC_ALIM_VCC_CMD"][0]:
+            logger.warning(f"[SE]  Foi identificado um acionamento do Comando de Alimentação (VCC) da Seccionadora. Favor verificar.")
+            d.voip["SECC_ALIM_VCC_CMD"][0]: True
+        elif not cls.secc_cmd_alim_vcc.valor and d.voip["SECC_ALIM_VCC_CMD"][0]:
+            d.voip["SECC_ALIM_VCC_CMD"][0]: False
+
+        if cls.secc_bloq_alim_vcc.valor and not d.voip["SECC_ALIM_VCC_BLOQ"][0]:
+            logger.warning(f"[SE]  Foi identificado um bloqueio na Alimentação (VCC) da Seccionadora. Favor verificar.")
+            d.voip["SECC_ALIM_VCC_BLOQ"][0]: True
+        elif not cls.secc_bloq_alim_vcc.valor and d.voip["SECC_ALIM_VCC_BLOQ"][0]:
+            d.voip["SECC_ALIM_VCC_BLOQ"][0]: False
+
+        if cls.l_dj_17.valor and not d.voip["DJ_17"][0]:
+            logger.warning("[SE]  Foi identificado um desligamento do Disjuntor de Alimentação Circuitos de Sinalização CSA-U1. Favor verificar.")
+            d.voip["DJ_17"][0] = True
+        elif not cls.l_dj_17.valor and d.voip["DJ_17"][0]:
+            d.voip["DJ_17"][0] = False
+        
+        if cls.l_dj_18.valor and not d.voip["DJ_18"][0]:
+            logger.warning("[SE]  Foi identificado um desligamento do Disjuntor de Alimentação Circuitos de Sinalização CSA-U2. Favor verificar.")
+            d.voip["DJ_18"][0] = True
+        elif not cls.l_dj_18.valor and d.voip["DJ_18"][0]:
+            d.voip["DJ_18"][0] = False
+        
+        if cls.l_dj_26.valor and not d.voip["DJ_26"][0]:
+            logger.warning("[SE]  Foi identificado um desligamento do Disjuntor de Alimentação do Cubículo CSA-U1. Favor verificar.")
+            d.voip["DJ_26"][0] = True
+        elif not cls.l_dj_26.valor and d.voip["DJ_26"][0]:
+            d.voip["DJ_26"][0] = False
+        
+        if cls.l_dj_27.valor and not d.voip["DJ_27"][0]:
+            logger.warning("[SE]  Foi identificado um desligamento do Disjuntor de Alimentação do Cubículo CSA-U2. Favor verificar.")
+            d.voip["DJ_27"][0] = True
+        elif not cls.l_dj_27.valor and d.voip["DJ_27"][0]:
+            d.voip["DJ_27"][0] = False
+        
+        if cls.l_dj_29.valor and not d.voip["DJ_29"][0]:
+            logger.warning("[SE]  Foi identificado um desligamento do Disjuntor de Alimentação Monitor de Temperatura do TSA-01. Favor verificar.")
+            d.voip["DJ_29"][0] = True
+        elif not cls.l_dj_29.valor and d.voip["DJ_29"][0]:
+            d.voip["DJ_29"][0] = False
+        
+        if cls.l_dj_30.valor and not d.voip["DJ_30"][0]:
+            logger.warning("[SE]  Foi identificado um desligamento do Disjuntor de Alimentação Monitor de Temperatura do TSA-02. Favor verificar.")
+            d.voip["DJ_30"][0] = True
+        elif not cls.l_dj_30.valor and d.voip["DJ_30"][0]:
+            d.voip["DJ_30"][0] = False
+        
+        if cls.l_dj_31.valor and not d.voip["DJ_31"][0]:
+            logger.warning("[SE]  Foi identificado um desligamento do Disjuntor de Alimentação Reserva PDSA-CC. Favor verificar.")
+            d.voip["DJ_31"][0] = True
+        elif not cls.l_dj_31.valor and d.voip["DJ_31"][0]:
+            d.voip["DJ_31"][0] = False
+        
+        if cls.l_dj_34.valor and not d.voip["DJ_34"][0]:
+            logger.warning("[SE]  Foi identificado um desligamento do Disjuntor de Alimentação do Quadro Q49-U1. Favor verificar.")
+            d.voip["DJ_34"][0] = True
+        elif not cls.l_dj_34.valor and d.voip["DJ_34"][0]:
+            d.voip["DJ_34"][0] = False
+        
+        if cls.l_dj_41.valor and not d.voip["DJ_41"][0]:
+            logger.warning("[SE]  Foi identificado um desligamento do Disjuntor de Alimentação do Quadro Q49-U2. Favor verificar.")
+            d.voip["DJ_41"][0] = True
+        elif not cls.l_dj_41.valor and d.voip["DJ_41"][0]:
+            d.voip["DJ_41"][0] = False
+        
+        if cls.l_dj_48.valor and not d.voip["DJ_48"][0]:
+            logger.warning("[SE]  Foi identificado um desligamento do Disjuntor de Alimentação do Quadro Q49-U3. Favor verificar.")
+            d.voip["DJ_48"][0] = True
+        elif not cls.l_dj_48.valor and d.voip["DJ_48"][0]:
+            d.voip["DJ_48"][0] = False
+        
+        if cls.l_dj_55.valor and not d.voip["DJ_55"][0]:
+            logger.warning("[SE]  Foi identificado um desligamento do Disjuntor de Alimentação do Quadro Q49-U4. Favor verificar.")
+            d.voip["DJ_55"][0] = True
+        elif not cls.l_dj_55.valor and d.voip["DJ_55"][0]:
+            d.voip["DJ_55"][0] = False
+        
+        if cls.l_dj_60.valor and not d.voip["DJ_60"][0]:
+            logger.warning("[SE]  Foi identificado um desligamento do Disjuntor de Alimentação Bomba Drenagem 01. Favor verificar.")
+            d.voip["DJ_60"][0] = True
+        elif not cls.l_dj_60.valor and d.voip["DJ_60"][0]:
+            d.voip["DJ_60"][0] = False
+        
+        if cls.l_dj_61.valor and not d.voip["DJ_61"][0]:
+            logger.warning("[SE]  Foi identificado um desligamento do Disjuntor de Alimentação Bomba Drenagem 02. Favor verificar.")
+            d.voip["DJ_61"][0] = True
+        elif not cls.l_dj_61.valor and d.voip["DJ_61"][0]:
+            d.voip["DJ_61"][0] = False
+        
+        if cls.l_dj_62.valor and not d.voip["DJ_62"][0]:
+            logger.warning("[SE]  Foi identificado um desligamento do Disjuntor de Alimentação Bomba Drenagem 03. Favor verificar.")
+            d.voip["DJ_62"][0] = True
+        elif not cls.l_dj_62.valor and d.voip["DJ_62"][0]:
+            d.voip["DJ_62"][0] = False
+        
+        if cls.l_dj_63.valor and not d.voip["DJ_63"][0]:
+            logger.warning("[SE]  Foi identificado um desligamento do Disjuntor de Alimentação do Compressor de AR. Favor verificar.")
+            d.voip["DJ_63"][0] = True
+        elif not cls.l_dj_63.valor and d.voip["DJ_63"][0]:
+            d.voip["DJ_63"][0] = False
+        
+        if cls.l_dj_67.valor and not d.voip["DJ_67"][0]:
+            logger.warning("[SE]  Foi identificado um desligamento do Disjuntor de Alimentação do Painel PCTA. Favor verificar.")
+            d.voip["DJ_67"][0] = True
+        elif not cls.l_dj_67.valor and d.voip["DJ_67"][0]:
+            d.voip["DJ_67"][0] = False
+        
+        if cls.l_dj_71.valor and not d.voip["DJ_71"][0]:
+            logger.warning("[SE]  Foi identificado um desligamento do Disjuntor de Alimentação do Elevador da Casa de Força. Favor verificar.")
+            d.voip["DJ_71"][0] = True
+        elif not cls.l_dj_71.valor and d.voip["DJ_71"][0]:
+            d.voip["DJ_71"][0] = False
+        
+        if cls.l_dj_72.valor and not d.voip["DJ_72"][0]:
+            logger.warning("[SE]  Foi identificado um desligamento do Disjuntor de Alimentação do Painel PCAD. Favor verificar.")
+            d.voip["DJ_72"][0] = True
+        elif not cls.l_dj_72.valor and d.voip["DJ_72"][0]:
+            d.voip["DJ_72"][0] = False
+        
+        if cls.l_dj_73.valor and not d.voip["DJ_73"][0]:
+            logger.warning("[SE]  Foi identificado um desligamento do Disjuntor de Alimentação Sistema de Retrolavagem do Filtro 01. Favor verificar.")
+            d.voip["DJ_73"][0] = True
+        elif not cls.l_dj_73.valor and d.voip["DJ_73"][0]:
+            d.voip["DJ_73"][0] = False
+        
+        if cls.l_dj_74.valor and not d.voip["DJ_74"][0]:
+            logger.warning("[SE]  Foi identificado um desligamento do Disjuntor de Alimentação Sistema de Retrolavagem do Filtro 02. Favor verificar.")
+            d.voip["DJ_74"][0] = True
+        elif not cls.l_dj_74.valor and d.voip["DJ_74"][0]:
+            d.voip["DJ_74"][0] = False
+        
+        if cls.l_dj_75.valor and not d.voip["DJ_75"][0]:
+            logger.warning("[SE]  Foi identificado um desligamento do Disjuntor de Alimentação do Carregador de Baterias 01. Favor verificar.")
+            d.voip["DJ_75"][0] = True
+        elif not cls.l_dj_75.valor and d.voip["DJ_75"][0]:
+            d.voip["DJ_75"][0] = False
+        
+        if cls.l_dj_76.valor and not d.voip["DJ_76"][0]:
+            logger.warning("[SE]  Foi identificado um desligamento do Disjuntor de Alimentação do Carregador de Baterias 02. Favor verificar.")
+            d.voip["DJ_76"][0] = True
+        elif not cls.l_dj_76.valor and d.voip["DJ_76"][0]:
+            d.voip["DJ_76"][0] = False
+        
+        if cls.l_dj_89.valor and not d.voip["DJ_89"][0]:
+            logger.warning("[SE]  Foi identificado um desligamento do Disjuntor de Alimentação Bomba 01 Injeção Água Selo Mecânico. Favor verificar.")
+            d.voip["DJ_89"][0] = True
+        elif not cls.l_dj_89.valor and d.voip["DJ_89"][0]:
+            d.voip["DJ_89"][0] = False
+        
+        if cls.l_dj_90.valor and not d.voip["DJ_90"][0]:
+            logger.warning("[SE]  Foi identificado um desligamento do Disjuntor de Alimentação Bomba 02 Injeção Água Selo Mecânico. Favor verificar.")
+            d.voip["DJ_90"][0] = True
+        elif not cls.l_dj_90.valor and d.voip["DJ_90"][0]:
+            d.voip["DJ_90"][0] = False
+        
+        if cls.l_dj_91.valor and not d.voip["DJ_91"][0]:
+            logger.warning("[SE]  Foi identificado um desligamento do Disjuntor de Alimentação Bomba 01 Água Serviço. Favor verificar.")
+            d.voip["DJ_91"][0] = True
+        elif not cls.l_dj_91.valor and d.voip["DJ_91"][0]:
+            d.voip["DJ_91"][0] = False
+        
+        if cls.l_dj_92.valor and not d.voip["DJ_92"][0]:
+            logger.warning("[SE]  Foi identificado um desligamento do Disjuntor de Alimentação Bomba 02 Água Serviço. Favor verificar.")
+            d.voip["DJ_92"][0] = True
+        elif not cls.l_dj_92.valor and d.voip["DJ_92"][0]:
+            d.voip["DJ_92"][0] = False
+        
+        if cls.l_dj_93.valor and not d.voip["DJ_93"][0]:
+            logger.warning("[SE]  Foi identificado um desligamento do Disjuntor de Alimentação UCP Bombas de Drenagem. Favor verificar.")
+            d.voip["DJ_93"][0] = True
+        elif not cls.l_dj_93.valor and d.voip["DJ_93"][0]:
+            d.voip["DJ_93"][0] = False
+        
+        if cls.l_dj_94.valor and not d.voip["DJ_94"][0]:
+            logger.warning("[SE]  Foi identificado um desligamento do Disjuntor de Alimentação Torre de Resfriamento. Favor verificar.")
+            d.voip["DJ_94"][0] = True
+        elif not cls.l_dj_94.valor and d.voip["DJ_94"][0]:
+            d.voip["DJ_94"][0] = False
+        
+        if cls.l_dj_95.valor and not d.voip["DJ_95"][0]:
+            logger.warning("[SE]  Foi identificado um desligamento do Disjuntor de Alimentação Compressor de Ar. Favor verificar.")
+            d.voip["DJ_95"][0] = True
+        elif not cls.l_dj_95.valor and d.voip["DJ_95"][0]:
+            d.voip["DJ_95"][0] = False
+
+
 
 
     @classmethod
@@ -517,7 +741,6 @@ class Subestacao:
 
         cls.l_dj_100 = lei.LeituraModbus(cls.clp["SA"], REG_SE["DJ_100"], invertido=True, descricao="[SE]  PINV - Alimentação Boost 02 - Disj. Q125.1") # Voip + whats (Depende do condic acima)
         cls.condicionadores.append(c.CondicionadorBase(cls.l_dj_100, CONDIC_INDISPONIBILIZAR))
-
 
 
         cls.dj52l_modo_local = lei.LeituraModbusBit(cls.clp["SA"], REG_SE["DJ52L_MODO_LOCAL"], descricao="[SE]  Disjuntor 52L Modo Local")

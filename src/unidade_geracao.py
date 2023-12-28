@@ -9,6 +9,7 @@ import threading
 
 import src.subestacao as se
 import src.tomada_agua as tda
+import src.dicionarios.dict as d
 import src.funcoes.leitura as lei
 import src.funcoes.escrita as esc
 import src.funcoes.condicionadores as c
@@ -17,6 +18,7 @@ import src.conectores.servidores as serv
 
 from time import time, sleep
 from datetime import datetime
+
 
 from src.dicionarios.reg import *
 from src.maquinas_estado.ug import *
@@ -901,12 +903,94 @@ class UnidadeGeracao:
         if self.l_pressao_turbina.valor <= self.c_pressao_turbina_ug.valor_limite+0.9*(self.c_pressao_turbina_ug.valor_base - self.c_pressao_turbina_ug.valor_limite) and self.l_pressao_turbina.valor != 0 and self.etapa_atual == UG_SINCRONIZADA:
             logger.critical(f"[UG{self.id}] A pressão na entrada da turbina da UG está muito próxima do limite! ({self.c_pressao_turbina_ug.valor_limite:03.2f} KGf/m2) | Leitura: {self.l_pressao_turbina.valor:03.2f} KGf/m2")
 
+
     def verificar_leituras(self) -> "None":
         """
         Função para consulta de acionamentos da Unidade e avisos através do mecanismo
         de acionamento temporizado.
         """
-        return
+
+        if self.l_dj_07.valor:
+            logger.warning(f"[UG{self.id}] Foi identificado que o Disjuntor Q125.0 UG1 de Alimentação do SEL2600 foi Desligado/Aberto. Favor verificar.")
+
+        if self.l_modo_local.valor and not d.voip[f"UG{self.id}_OPER_MODO_LOCAL"][0]:
+            logger.warning(f"[UG{self.id}] Foi identificado que a Unidade {self.id} entrou em Modo de Operação Local. Favor verificar.")
+            d.voip[f"UG{self.id}_OPER_MODO_LOCAL"][0] = True
+        elif not self.l_modo_local.valor and d.voip[f"UG{self.id}_OPER_MODO_LOCAL"][0]:
+            d.voip[f"UG{self.id}_OPER_MODO_LOCAL"][0] = False
+
+        if self.l_uhct_nv_oleo_l.valor and not d.voip[f"UG{self.id}_UHCT_NIVEL_OLEO_L"][0]:
+            logger.warning(f"[UG{self.id}] Foi identificado que o nível do Óleo da UHCT está na faixa \"Baixo\". Favor verificar.")
+            d.voip[f"UG{self.id}_UHCT_NIVEL_OLEO_L"][0] = True
+        elif not self.l_uhct_nv_oleo_l.valor and d.voip[f"UG{self.id}_UHCT_NIVEL_OLEO_L"][0]:
+            d.voip[f"UG{self.id}_UHCT_NIVEL_OLEO_L"][0] = False
+
+        if self.l_uhct_nv_oleo_h.valor and not d.voip[f"UG{self.id}_UHCT_NIVEL_OLEO_H"][0]:
+            logger.warning(f"[UG{self.id}] Foi identificado que o nível do Óleo da UHCT está na faixa \"Alto\". Favor monitorar.")
+            d.voip[f"UG{self.id}_UHCT_NIVEL_OLEO_H"][0] = True
+        elif not self.l_uhct_nv_oleo_h.valor and d.voip[f"UG{self.id}_UHCT_NIVEL_OLEO_H"][0]:
+            d.voip[f"UG{self.id}_UHCT_NIVEL_OLEO_H"][0] = False
+
+        if self.l_uhct_nv_oleo_hh.valor and not d.voip[f"UG{self.id}_UHCT_NIVEL_OLEO_HH"][0]:
+            logger.warning(f"[UG{self.id}] Foi identificado que o nível do Óleo da UHCT está na faixa \"Muito Alto\". Favor monitorar.")
+            d.voip[f"UG{self.id}_UHCT_NIVEL_OLEO_HH"][0] = True
+        elif not self.l_uhct_nv_oleo_hh.valor and d.voip[f"UG{self.id}_UHCT_NIVEL_OLEO_HH"][0]:
+            d.voip[f"UG{self.id}_UHCT_NIVEL_OLEO_HH"][0] = False
+
+        if self.l_uhlm_modo_local.valor and not d.voip[f"UG{self.id}_UHLM_MODO_LOCAL"][0]:
+            logger.warning(f"[UG{self.id}] Foi identificado que a UHLM entrou em Modo de Operação Local. Favor verificar.")
+            d.voip[f"UG{self.id}_UHLM_MODO_LOCAL"][0] = True
+        elif not self.l_uhlm_modo_local.valor and d.voip[f"UG{self.id}_UHLM_MODO_LOCAL"][0]:
+            d.voip[f"UG{self.id}_UHLM_MODO_LOCAL"][0] = False
+
+        if self.l_uhlm_nv_oleo_l.valor and not d.voip[f"UG{self.id}_UHLM_NIVEL_OLEO_L"][0]:
+            logger.warning(f"[UG{self.id}] Foi identificado que o nível do Óleo da UHLM está na faixa \"Baixo\". Favor monitorar.")
+            d.voip[f"UG{self.id}_UHLM_NIVEL_OLEO_L"][0] = True
+        elif not self.l_uhlm_nv_oleo_l.valor and d.voip[f"UG{self.id}_UHLM_NIVEL_OLEO_L"][0]:
+            d.voip[f"UG{self.id}_UHLM_NIVEL_OLEO_L"][0] = False
+
+        if self.l_uhlm_nv_oleo_h.valor and not d.voip[f"UG{self.id}_UHLM_NIVEL_OLEO_H"][0]:
+            logger.warning(f"[UG{self.id}] Foi identificado que o nível do Óleo da UHLM está na faixa \"Alto\". Favor monitorar.")
+            d.voip[f"UG{self.id}_UHLM_NIVEL_OLEO_H"][0] = True
+        elif not self.l_uhlm_nv_oleo_h.valor and d.voip[f"UG{self.id}_UHLM_NIVEL_OLEO_H"][0]:
+            d.voip[f"UG{self.id}_UHLM_NIVEL_OLEO_H"][0] = False
+
+        if self.l_uhlm_nv_oleo_hh.valor and not d.voip[f"UG{self.id}_UHLM_NIVEL_OLEO_HH"][0]:
+            logger.warning(f"[UG{self.id}] Foi identificado que o nível do Óleo da UHLM está na faixa \"Muito Alto\". Favor monitorar.")
+            d.voip[f"UG{self.id}_UHLM_NIVEL_OLEO_HH"][0] = True
+        elif not self.l_uhlm_nv_oleo_hh.valor and d.voip[f"UG{self.id}_UHLM_NIVEL_OLEO_HH"][0]:
+            d.voip[f"UG{self.id}_UHLM_NIVEL_OLEO_HH"][0] = False
+
+        if self.l_turb_sens_desati.valor and not d.voip[f"UG{self.id}_TURB_SENS_DESATIVADO"][0]:
+            logger.warning(f"[UG{self.id}] Foi identificado que o Sensor da Turbina foi Desativado. Favor verificar.")
+            d.voip[f"UG{self.id}_TURB_SENS_DESATIVADO"][0] = True
+        elif not self.l_turb_sens_desati.valor and d.voip[f"UG{self.id}_TURB_SENS_DESATIVADO"][0]:
+            d.voip[f"UG{self.id}_TURB_SENS_DESATIVADO"][0] = False
+
+        if self.l_turb_fren_manual.valor and not d.voip[f"UG{self.id}_TURB_FRENA_MANUAL"][0]:
+            logger.warning(f"[UG{self.id}] Foi identificado que a Turbina entrou em Modo de Frenagem Manual. Favor verificar.")
+            d.voip[f"UG{self.id}_TURB_FRENA_MANUAL"][0] = True
+        elif not self.l_turb_fren_manual.valor and d.voip[f"UG{self.id}_TURB_FRENA_MANUAL"][0]:
+            d.voip[f"UG{self.id}_TURB_FRENA_MANUAL"][0] = False
+
+        if self.l_rv_ctrl_man_distr.valor and not d.voip[f"UG{self.id}_REG_V_CTRL_MANUAL_DISTRI"][0]:
+            logger.warning(f"[UG{self.id}] Foi identificado que o Distribuidor do RV entrou em Modo de Controle Manual. Favor verificar.")
+            d.voip[f"UG{self.id}_REG_V_CTRL_MANUAL_DISTRI"][0] = True
+        elif not self.l_rv_ctrl_man_distr.valor and d.voip[f"UG{self.id}_REG_V_CTRL_MANUAL_DISTRI"][0]:
+            d.voip[f"UG{self.id}_REG_V_CTRL_MANUAL_DISTRI"][0] = False
+
+        if self.l_rv_ctrl_man_valv.valor and not d.voip[f"UG{self.id}_REG_V_CTRL_MANUAL_VALV"][0]:
+            logger.warning(f"[UG{self.id}] Foi identificado que a Válvula do RV entrou em Modo de Controle Manual. Favor verificar.")
+            d.voip[f"UG{self.id}_REG_V_CTRL_MANUAL_VALV"][0] = True
+        elif not self.l_rv_ctrl_man_valv.valor and d.voip[f"UG{self.id}_REG_V_CTRL_MANUAL_VALV"][0]:
+            d.voip[f"UG{self.id}_REG_V_CTRL_MANUAL_VALV"][0] = False
+
+        if self.l_sinc_modo_manual.valor and not d.voip[f"UG{self.id}_SINC_MODO_MANUAL"][0]:
+            logger.warning(f"[UG{self.id}] Foi identificado que o Sincronoscópio da Unidade {self.id} entrou em Modo Manual. Favor verificar.")
+            d.voip[f"UG{self.id}_SINC_MODO_MANUAL"][0] = True
+        elif not self.l_sinc_modo_manual.valor and d.voip[f"UG{self.id}_SINC_MODO_MANUAL"][0]:
+            d.voip[f"UG{self.id}_SINC_MODO_MANUAL"][0] = False
+
 
     def carregar_leituras(self) -> "None":
         """
@@ -1769,7 +1853,6 @@ class UnidadeGeracao:
 
 
         # UG2
-
         if self.id == 2:
             self.l_se_dj_39 = lei.LeituraModbus(self.clp["SA"], REG_SE["DJ_39"], descricao="[UG2][SE] PDSA-CC - Alimentação das Cargas da UG02 - Disj. 2Q125.0")
             self.condicionadores.append(c.CondicionadorBase(self.l_se_dj_39, CONDIC_INDISPONIBILIZAR))
@@ -1842,7 +1925,6 @@ class UnidadeGeracao:
 
 
         # UG3
-
         if self.id == 3:
             self.l_se_dj_46 = lei.LeituraModbus(self.clp["SA"], REG_SE["DJ_46"], descricao="[UG3][SE] PDSA-CC - Alimentação das Cargas da UG03 - Disj. 3Q125.0")
             self.condicionadores.append(c.CondicionadorBase(self.l_se_dj_46, CONDIC_INDISPONIBILIZAR))
@@ -1960,5 +2042,3 @@ class UnidadeGeracao:
 
             self.l_alm_24_b_10 = lei.LeituraModbusBit(self.clp["UG4"], REG_TDA["Alarme24_10"], descricao="[TDA] UHTA02 - Botão de Emergência Acionado")
             self.condicionadores.append(c.CondicionadorBase(self.l_alm_24_b_10, CONDIC_NORMALIZAR))
-
-        return
