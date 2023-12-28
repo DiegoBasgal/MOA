@@ -21,6 +21,10 @@ class Agendamentos:
         self.cfg = cfg
         self.usn = usina
 
+        self.ug1_pot_anterior = 0
+        self.ug2_pot_anterior = 0
+        self.ug3_pot_anterior = 0
+
         self.segundos_passados = 0
         self.segundos_adiantados = 0
 
@@ -182,25 +186,33 @@ class Agendamentos:
         if agendamento[3] == AGN_ALTERAR_NV_ALVO:
             try:
                 novo = float(agendamento[5].replace(",", "."))
+                self.db.update_nivel_alvo(novo)
                 self.cfg["nv_alvo"] = novo
 
             except Exception:
                 logger.error(f"[AGN] Valor inválido no agendamento: {agendamento[0]} ({agendamento[3]} é inválido).")
 
         if agendamento[3] == AGN_BAIXAR_POT_UGS_MINIMO:
+            self.ug1_pot_anterior = self.cfg[f"pot_maxima_ug1"]
+            self.ug2_pot_anterior = self.cfg[f"pot_maxima_ug2"]
+            self.ug3_pot_anterior = self.cfg[f"pot_maxima_ug3"]
+
             for ug in self.usn.ugs:
                 self.cfg[f"pot_maxima_ug{ug.id}"] = self.cfg["pot_limpeza_grade"]
 
-                if ug.etapa_atual == UG_PARADA or ug.etapa_atual == UG_PARANDO:
+                if ug.etapa_atual in (UG_PARADA, UG_PARANDO):
                     logger.debug(f"[AGN] UG{ug.id} está no estado parada/parando.")
                 else:
                     ug.limpeza_grade = True
 
         if agendamento[3] == AGN_NORMALIZAR_POT_UGS_MINIMO:
+            self.cfg[f"pot_maxima_ug1"] = self.ug1_pot_anterior
+            self.cfg[f"pot_maxima_ug2"] = self.ug2_pot_anterior
+            self.cfg[f"pot_maxima_ug3"] = self.ug3_pot_anterior
+
             for ug in self.usn.ugs:
-                self.cfg[f"pot_maxima_ug{ug.id}"] = self.cfg["pot_maxima_ug"]
                 ug.limpeza_grade = False
-                ug.enviar_setpoint(self.cfg["pot_maxima_ug"])
+                ug.enviar_setpoint(self.cfg[f"pot_maxima_ug{ug.id}"])
 
         if agendamento[3] == AGN_AGUARDAR_RESERVATORIO:
             logger.debug("[AGN] Ativando estado de espera de nível do reservatório")
@@ -214,10 +226,7 @@ class Agendamentos:
             try:
                 novo = float(agendamento[5].replace(",", "."))
 
-                self.cfg["pot_maxima_alvo"] = novo
-
-                for ug in self.usn.ugs:
-                    self.cfg[f"pot_maxima_ug{ug.id}"] = novo / 3
+                self.cfg["pot_alvo_usina"] = novo
 
             except Exception:
                 logger.error(f"[AGN] Valor inválido no agendamento: {agendamento[0]} ({agendamento[3]} é inválido)")

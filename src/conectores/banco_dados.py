@@ -125,6 +125,19 @@ class BancoDados:
         self.conn.commit()
         return ts
 
+    def update_nivel_alvo(self, valor: "float") -> "None":
+        """
+        Função para atualizar o valor de nível alvo quando alterado por agendamento.
+        """
+
+        self.cursor.execute(
+            "UPDATE parametros_parametrosusina "
+            f"SET nv_alvo = {valor} "
+            "WHERE id = 1"
+            )
+        
+        self.conn.commit()
+
     def update_modo_moa(self, modo: bool) -> "None":
         """
         Função para atualizar o modo do MOA no Banco.

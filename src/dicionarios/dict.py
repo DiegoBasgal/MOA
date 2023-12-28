@@ -1,6 +1,6 @@
 ips: "dict[str, any]" = {
     "SA_ip": "192.168.50.50",
-    "SA_porta": 5002,
+    "SA_porta": 502,
 
     "UG1_ip": "192.168.50.51",
     "UG1_porta": 5002,

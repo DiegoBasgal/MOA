@@ -87,7 +87,7 @@ def novo_agendamento_view(request, *args, **kwargs):
             data=data_hora,
             comando=Comando.objects.get(id=comando_id),
             campo_auxiliar=campo_auxiliar,
-            observacao=observacao,
+            observacao=campo_auxiliar if observacao == "" else observacao,
             executado=False,
         )
 

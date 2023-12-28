@@ -498,7 +498,7 @@ class Usina:
         self.__split2 = True if self.ug_operando == 2 else False
         self.__split3 = True if self.ug_operando == 3 else False
 
-        self.controle_ie = sum(ug.leitura_potencia for ug in self.ugs) / self.cfg["pot_maxima_alvo"]
+        self.controle_ie = sum(ug.leitura_potencia for ug in self.ugs) / self.cfg["pot_alvo_usina"]
 
         self.clp["MOA"].write_single_coil(REG["MOA_OUT_BLOCK_UG1"], 0)
         self.clp["MOA"].write_single_coil(REG["MOA_OUT_BLOCK_UG2"], 0)
@@ -535,7 +535,7 @@ class Usina:
             else:
                 self.controle_i = 0.5
                 self.controle_ie = 0.5
-                self.ajustar_potencia(self.cfg["pot_maxima_usina"])
+                self.ajustar_potencia(self.cfg["pot_alvo_usina"])
                 for ug in self.ugs:
                     ug.step()
 
@@ -544,15 +544,15 @@ class Usina:
             logger.debug(f"[USN]          Leitura:                   {self.nv_montante:0.3f}")
             logger.debug(f"[USN]          Filtro EMA:                {self.nv_montante_recente:0.3f}")
 
-            if self.nv_montante_recente <= NIVEL_FUNDO_RESERVATORIO:
+            '''if self.nv_montante_recente <= NIVEL_FUNDO_RESERVATORIO:
                 if not Servidores.ping(d.ips["TDA_ip"]) or not self.clp["TDA"].open():
                     d.glb["TDA_Offline"] = True
                     return NV_FLAG_NORMAL
                 else:
                     logger.critical(f"[USN] Nível montante ({self.nv_montante_recente:3.2f}) atingiu o fundo do reservatorio!")
-                    return NV_FLAG_EMERGENCIA
+                    return NV_FLAG_EMERGENCIA'''
 
-            elif self.nv_montante_recente < self.cfg["nv_minimo"]:
+            if self.nv_montante_recente < self.cfg["nv_minimo"]:
                 self.aguardando_reservatorio = True
                 self.distribuir_potencia(0)
 
@@ -609,9 +609,9 @@ class Usina:
             self.controle_ie = min(self.controle_ie, 0.3)
             self.controle_i = 0
 
-        pot_alvo = max(min(round(self.cfg["pot_maxima_usina"] * self.controle_ie, 5), self.cfg["pot_maxima_usina"],), self.cfg["pot_minima"],)
-
+        pot_alvo = max(min(round(self.cfg["pot_maxima_usina"] * self.controle_ie, 5), self.cfg["pot_maxima_usina"],), self.cfg["pot_minima_ugs"],)
         pot_alvo = self.ajustar_potencia(pot_alvo)
+
 
     def controlar_unidades_disponiveis(self) -> list:
         ls = [ug for ug in self.ugs if ug.disponivel and not ug.etapa_atual == UG_PARANDO]
@@ -623,6 +623,7 @@ class Usina:
             ls = sorted(ls, key=lambda y: (-1 * y.etapa_atual, y.leitura_horimetro, -1 * y.leitura_potencia, -1 * y.setpoint))
 
         return ls
+
 
     def ajustar_potencia(self, pot_alvo) -> None:
         if self._pot_alvo_anterior == -1:
@@ -636,33 +637,18 @@ class Usina:
 
         pot_medidor = self.potencia_ativa
 
-        debug_log.debug(f"[USN] FUNÇÃO: \"ajustar_potencia\":")
-        debug_log.debug("")
-        debug_log.debug(f"[USN] pot_medidor: {pot_medidor}")
-
         logger.debug(f"[USN] Potência no medidor:                {self.potencia_ativa:0.3f}")
 
-        pot_aux = self.cfg["pot_maxima_alvo"] - (self.cfg["pot_maxima_usina"] - self.cfg["pot_maxima_alvo"])
-
-        debug_log.debug("")
-        debug_log.debug(f"[USN] pot_aux: {pot_aux}")
-
+        pot_aux = self.cfg["pot_alvo_usina"] - (self.cfg["pot_maxima_usina"] - self.cfg["pot_alvo_usina"])
         pot_medidor = max(pot_aux, min(pot_medidor, self.cfg["pot_maxima_usina"]))
 
-        debug_log.debug("")
-        debug_log.debug(f"[USN] pot_medidor: {pot_aux}")
-
-        if pot_medidor > self.cfg["pot_maxima_alvo"] * 0.97 and pot_alvo >= self.cfg["pot_maxima_alvo"]:
-            pot_alvo = self._pot_alvo_anterior * (1 - 0.25 * ((pot_medidor - self.cfg["pot_maxima_alvo"]) / self.cfg["pot_maxima_alvo"]))
+        if pot_medidor > self.cfg["pot_alvo_usina"] * 0.97 and pot_alvo >= self.cfg["pot_alvo_usina"]:
+            pot_alvo = self._pot_alvo_anterior * (1 - 0.25 * ((pot_medidor - self.cfg["pot_alvo_usina"]) / self.cfg["pot_alvo_usina"]))
             pot_alvo = min(pot_alvo, self.cfg["pot_maxima_usina"])
 
         self._pot_alvo_anterior = pot_alvo
 
-        debug_log.debug("")
-        debug_log.debug(f"[USN] pot_alvo: {pot_aux}")
-        debug_log.debug(f"[USN] self._pot_alvo_anterior: {self._pot_alvo_anterior}")
-
-        logger.debug(f"[USN] Potência alvo após ajuste:          {pot_alvo:0.3f}")
+        logger.debug(f"[USN] Setpoint alvo após ajuste:          {(pot_alvo / self.cfg['pot_maxima_usina']) * 100:0.2f} %")
 
         self.distribuir_potencia(pot_alvo)
 
@@ -672,7 +658,8 @@ class Usina:
         Função para ajustar o valor do IE.
         """
 
-        return sum(ug.leitura_potencia for ug in self.ugs) / self.cfg["pot_maxima_alvo"]
+        return sum(ug.leitura_potencia for ug in self.ugs) / self.cfg["pot_alvo_usina"]
+
 
     def distribuir_potencia(self, pot_alvo) -> None:
         ugs: "list[UnidadeGeracao]" = self.controlar_unidades_disponiveis()
@@ -700,22 +687,19 @@ class Usina:
         if (pot_alvo - ajuste_manual) < 0:
             return
 
-        logger.debug(f"[USN] Distribuindo:                       {pot_alvo - ajuste_manual:0.3f}")
+        logger.debug(f"[USN] Distribuindo:                       {((pot_alvo - ajuste_manual) / self.cfg['pot_maxima_usina']) * 100:0.2f} %")
 
         sp = (pot_alvo - ajuste_manual) / self.cfg["pot_maxima_usina"]
 
         self.__split1 = True if sp > (0) else self.__split1
-        self.__split2 = True if sp > ((self.cfg["pot_maxima_ug"] / self.cfg["pot_maxima_usina"]) + self.cfg["margem_pot_critica"]) else self.__split2
-        self.__split3 = True if sp > (2 * (self.cfg["pot_maxima_ug"] / self.cfg["pot_maxima_usina"]) + self.cfg["margem_pot_critica"]) else self.__split3
+        self.__split2 = True if sp > ((self.cfg["pot_maxima_ugs"] / self.cfg["pot_maxima_usina"]) + self.cfg["margem_pot_critica"]) else self.__split2
+        self.__split3 = True if sp > (2 * (self.cfg["pot_maxima_ugs"] / self.cfg["pot_maxima_usina"]) + self.cfg["margem_pot_critica"]) else self.__split3
 
-        self.__split3 = False if sp < (2 * (self.cfg["pot_maxima_ug"] / self.cfg["pot_maxima_usina"]) - self.cfg["margem_pot_critica"]) else self.__split3
-        self.__split2 = False if sp < ((self.cfg["pot_maxima_ug"] / self.cfg["pot_maxima_usina"]) - self.cfg["margem_pot_critica"]) else self.__split2
-        self.__split1 = False if sp < (self.cfg["pot_minima"] / self.cfg["pot_maxima_usina"]) else self.__split1
+        self.__split3 = False if sp < (2 * (self.cfg["pot_maxima_ugs"] / self.cfg["pot_maxima_usina"]) - self.cfg["margem_pot_critica"]) else self.__split3
+        self.__split2 = False if sp < ((self.cfg["pot_maxima_ugs"] / self.cfg["pot_maxima_usina"]) - self.cfg["margem_pot_critica"]) else self.__split2
+        self.__split1 = False if sp < (self.cfg["pot_minima_ugs"] / self.cfg["pot_maxima_usina"]) else self.__split1
 
         logger.debug(f"[USN] SP Geral:                           {sp}")
-
-        for ug in ugs:
-            debug_log.debug(f"[USN] Setpoint Máximo UG{ug}: {ug.setpoint_maximo}")
 
         if len(ugs) == 3:
             if self.__split3:
@@ -725,9 +709,9 @@ class Usina:
                 if ug_sincronizando != 0:
                     for ug in ugs:
                         if ug.etapa_atual == UG_SINCRONIZANDO:
-                            ug.setpoint = self.cfg["pot_minima"]
+                            ug.setpoint = self.cfg["pot_minima_ugs"]
                         else:
-                            ug.setpoint = self.cfg["pot_maxima_ug"]
+                            ug.setpoint = self.cfg["pot_maxima_ugs"]
 
                 else:
                     ugs[0].setpoint = sp * ugs[0].setpoint_maximo
@@ -745,9 +729,9 @@ class Usina:
                 if ug_sincronizando != 0:
                     for ug in ugs:
                         if ug.etapa_atual == UG_SINCRONIZANDO:
-                            ug.setpoint = self.cfg["pot_minima"]
+                            ug.setpoint = self.cfg["pot_minima_ugs"]
                         else:
-                            ug.setpoint = self.cfg["pot_maxima_ug"]
+                            ug.setpoint = self.cfg["pot_maxima_ugs"]
 
                 else:
                     sp = sp * 3 / 2
@@ -787,9 +771,9 @@ class Usina:
                 if ug_sincronizando != 0:
                     for ug in ugs:
                         if ug.etapa_atual == UG_SINCRONIZANDO:
-                            ug.setpoint = self.cfg["pot_minima"]
+                            ug.setpoint = self.cfg["pot_minima_ugs"]
                         else:
-                            ug.setpoint = self.cfg["pot_maxima_ug"]
+                            ug.setpoint = self.cfg["pot_maxima_ugs"]
 
                 else:
                     sp = sp * 3 / 2
@@ -835,6 +819,7 @@ class Usina:
 
         return ema
 
+
     ### FUNÇÕES DE CONTROLE DE DADOS:
 
     def ler_valores(self) -> None:
@@ -862,6 +847,10 @@ class Usina:
 
         if self.db_emergencia:
             pass
+        
+        # Filtro para variações de nível abruptas, maiores do que 20 cm entre uma amostra e outra
+        elif abs(self.nv_montante - self.nv_montante_recente) > 0.2:
+            self.nv_montante_recente = self.nv_montante
 
         elif self.ema_anterior == -1:
             self.ema_anterior = 0
@@ -910,6 +899,11 @@ class Usina:
         self.cfg["nv_minimo"] = float(parametros["nv_minimo"])
         self.cfg["nv_maximo"] = float(parametros["nv_maximo"])
 
+        self.cfg["pot_minima_ugs"] = float(parametros["pot_minima_ugs"])
+        self.cfg["pot_maxima_ugs"] = float(parametros["pot_maxima_ugs"])
+        self.cfg["pot_maxima_usina"] = float(parametros["pot_maxima_usina"])
+        self.cfg["margem_pot_critica"] = float(parametros["margem_pot_critica"])
+
         self.cfg["kp"] = float(parametros["kp"])
         self.cfg["ki"] = float(parametros["ki"])
         self.cfg["kd"] = float(parametros["kd"])
@@ -917,12 +911,9 @@ class Usina:
         self.cfg["cx_kp"] = float(parametros["cx_kp"])
         self.cfg["cx_ki"] = float(parametros["cx_ki"])
         self.cfg["cx_kie"] = float(parametros["cx_kie"])
-        self.cfg["ug1_press_cx_alvo"] = float(parametros["ug1_press_cx_alvo"])
-        self.cfg["ug2_press_cx_alvo"] = float(parametros["ug2_press_cx_alvo"])
-        self.cfg["ug3_press_cx_alvo"] = float(parametros["ug3_press_cx_alvo"])
-
-        self.cfg["pot_maxima_ug"] = float(parametros["pot_nominal_ug"])
-        self.cfg["margem_pot_critica"] = float(parametros["margem_pot_critica"])
+        self.cfg["pressao_alvo_ug1"] = float(parametros["ug1_pressao_alvo"])
+        self.cfg["pressao_alvo_ug2"] = float(parametros["ug2_pressao_alvo"])
+        self.cfg["pressao_alvo_ug3"] = float(parametros["ug3_pressao_alvo"])
 
     def escrever_valores(self) -> None:
         """
