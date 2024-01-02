@@ -761,7 +761,7 @@ class UnidadeGeracao:
                     self.condicionadores_ativos.append(condic)
                     flag = CONDIC_INDISPONIBILIZAR
                     self.__bd.update_alarmes([
-                        datetime.now(pytz.timezone("Brazil/East")).replace(tzinfo=None),
+                        self.get_time(),
                         condic.gravidade,
                         condic.descricao,
                         "X" if autor_i == 0 else ""
@@ -772,7 +772,7 @@ class UnidadeGeracao:
                     self.condicionadores_ativos.append(condic)
                     flag = CONDIC_NORMALIZAR
                     self.__bd.update_alarmes([
-                        datetime.now(pytz.timezone("Brazil/East")).replace(tzinfo=None),
+                        self.get_time(),
                         condic.gravidade,
                         condic.descricao,
                         "X" if autor_i == 0 and autor_a == 0 else ""
@@ -783,7 +783,7 @@ class UnidadeGeracao:
                     self.condicionadores_ativos.append(condic)
                     flag = CONDIC_NORMALIZAR
                     self.__bd.update_alarmes([
-                        datetime.now(pytz.timezone("Brazil/East")).replace(tzinfo=None),
+                        self.get_time(),
                         condic.gravidade,
                         condic.descricao,
                         "X" if autor_i == 0 and autor_a == 0 and autor_n == 0 else ""
@@ -999,7 +999,7 @@ class UnidadeGeracao:
         """
 
         # CONDICIONADORES ESSENCIAIS
-        # Temperaturas                                          # TODO -> mudar nomenclatura dos registradores
+        # Temperaturas
             # Fase R
         self.l_temp_fase_r = lei.LeituraModbus(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}"][""], descricao=f"[UG{self.id}] Temperatura Fase R")
         self.c_temp_fase_r_ug = c.CondicionadorExponencial(self.l_temp_fase_r)

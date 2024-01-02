@@ -181,8 +181,12 @@ class ServicoAuxiliar:
             d.voip["SIS_AGUA_CAIXA_AGUA02_NV50"][0] = True
         elif not cls.l_sis_agu_cx_agua2_nv50 and d.voip["SIS_AGUA_CAIXA_AGUA02_NV50"][0]:
             d.voip["SIS_AGUA_CAIXA_AGUA02_NV50"][0] = False
-
-
+            
+        if cls.l_sis_agu_cx_agua1_nv50.valor and cls.l_sis_agu_cx_agua2_nv50.valor and d.voip["SIS_AGUA_REPOR_CAIXAS_AGUA"][0]:
+            logger.warning("[SA]  Foi identificado que as Caixas da Água do Sistema de Água estão com o Nível abaixo de 50%. Favor deslocar equipe para a repoisção.")
+            d.voip["SIS_AGUA_REPOR_CAIXAS_AGUA"][0] = True
+        elif (not cls.l_sis_agu_cx_agua1_nv50.valor or not cls.l_sis_agu_cx_agua2_nv50.valor) and d.voip["SIS_AGUA_REPOR_CAIXAS_AGUA"][0]:
+            d.voip["SIS_AGUA_REPOR_CAIXAS_AGUA"][0] = False
 
 
     @classmethod
@@ -202,6 +206,12 @@ class ServicoAuxiliar:
 
         cls.l_alm_fuga_ter = lei.LeituraModbusBit(cls.clp["SA"], REG_SA["FUGA_TERRA_ALARME"], descricao="[SA]  Alarme Fuga Terra")
         cls.condicionadores_essenciais.append(c.CondicionadorBase(cls.l_alm_fuga_ter, CONDIC_NORMALIZAR))
+
+        cls.l_alm_08_b_07 = lei.LeituraModbusBit(cls.clp["SA"], REG_SA["Alarme08_07"], descricao="[SA]  Sistema de Água de Serviço - Botão de Emergência do Filtro 01 Acionado")
+        cls.condicionadores_essenciais.append(c.CondicionadorBase(cls.l_alm_08_b_07, CONDIC_INDISPONIBILIZAR))
+
+        cls.l_alm_21_b_02 = lei.LeituraModbusBit(cls.clp["SA"], REG_SA["Alarme21_02"], descricao="[SA]  Torre de Resfriamento - Botão de Emergência Acionado")
+        cls.condicionadores_essenciais.append(c.CondicionadorBase(cls.l_alm_21_b_02, CONDIC_INDISPONIBILIZAR))
 
 
         cls.l_fuga_ter_tens = lei.LeituraModbusBit(cls.clp["SA"], REG_SA["FUGA_TERRA_TENSAO"], descricao="[SA]  Fuga Terra Tensão")
@@ -422,9 +432,6 @@ class ServicoAuxiliar:
 
         cls.l_alm_08_b_06 = lei.LeituraModbusBit(cls.clp["SA"], REG_SA["Alarme08_06"], descricao="[SA]  Sistema de Água de Serviço - Falha no Fechamento da Válvula de Saída da Torre de Resfriamento")
         cls.condicionadores.append(c.CondicionadorBase(cls.l_alm_08_b_06, CONDIC_NORMALIZAR))
-
-        cls.l_alm_08_b_07 = lei.LeituraModbusBit(cls.clp["SA"], REG_SA["Alarme08_07"], descricao="[SA]  Sistema de Água de Serviço - Botão de Emergência do Filtro 01 Acionado")
-        cls.condicionadores_essenciais.append(c.CondicionadorBase(cls.l_alm_08_b_07, CONDIC_INDISPONIBILIZAR))
 
         cls.l_alm_08_b_08 = lei.LeituraModbusBit(cls.clp["SA"], REG_SA["Alarme08_08"], descricao="[SA]  Sistema de Água de Serviço - Trip Disjuntor Filtro 01")
         cls.condicionadores.append(c.CondicionadorBase(cls.l_alm_08_b_08, CONDIC_NORMALIZAR))
@@ -774,9 +781,6 @@ class ServicoAuxiliar:
         cls.l_alm_20_b_14 = lei.LeituraModbusBit(cls.clp["SA"], REG_SA["Alarme20_14"], descricao="[SA]  Carregador de Baterias 02 - Fuga Terra - Negativo à Terra")
         cls.condicionadores.append(c.CondicionadorBase(cls.l_alm_20_b_14, CONDIC_INDISPONIBILIZAR))
 
-        cls.l_alm_21_b_02 = lei.LeituraModbusBit(cls.clp["SA"], REG_SA["Alarme21_02"], descricao="[SA]  Torre de Resfriamento - Botão de Emergência Acionado")
-        cls.condicionadores_essenciais.append(c.CondicionadorBase(cls.l_alm_21_b_02, CONDIC_INDISPONIBILIZAR))
-
         cls.l_alm_21_b_03 = lei.LeituraModbusBit(cls.clp["SA"], REG_SA["Alarme21_03"], descricao="[SA]  Torre de Resfriamento - Trip Disjuntor Motor do Ventilador")
         cls.condicionadores.append(c.CondicionadorBase(cls.l_alm_21_b_03, CONDIC_NORMALIZAR))
 
@@ -819,5 +823,3 @@ class ServicoAuxiliar:
         cls.l_sens_presen_sala_cubic = lei.LeituraModbusBit(cls.clp["SA"], REG_SA["SENSOR_PRESENCA_SALA_CUBI"], descricao="[SA] Sensor Presença Sala Cubículo")
         cls.l_sis_agu_cx_agua1_nv50 = lei.LeituraModbusBit(cls.clp["SA"], REG_SA["SIS_AGUA_CAIXA_AGUA01_NV50"], descricao="[SA] Sistema Água Caixa Água 1 Nível 50%")
         cls.l_sis_agu_cx_agua2_nv50 = lei.LeituraModbusBit(cls.clp["SA"], REG_SA["SIS_AGUA_CAIXA_AGUA02_NV50"], descricao="[SA] Sistema Água Caixa Água 2 Nível 50%") # (quando as duas caixas estiverem abaixo de 50%, disparar aviso para equipe se deslocar. Não há necessidade de parar máquinas)
-
-        return

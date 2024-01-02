@@ -251,7 +251,7 @@ class Subestacao:
         Verifica leituras específcas para acionamento da manuteção. As leituras são disparadas
         em períodos separados por um tempo pré-definido.
         """
-        
+
         if cls.dj52l_modo_local.valor and not d.voip["DJ52L_MODO_LOCAL"][0]:
             logger.warning(f"[SE]  Foi identificado que o Disjuntor 52L entrou em Modo Local. Favor verificar.")
             d.voip["DJ52L_MODO_LOCAL"][0]: True
@@ -305,169 +305,169 @@ class Subestacao:
             d.voip["DJ_17"][0] = True
         elif not cls.l_dj_17.valor and d.voip["DJ_17"][0]:
             d.voip["DJ_17"][0] = False
-        
+
         if cls.l_dj_18.valor and not d.voip["DJ_18"][0]:
             logger.warning("[SE]  Foi identificado um desligamento do Disjuntor de Alimentação Circuitos de Sinalização CSA-U2. Favor verificar.")
             d.voip["DJ_18"][0] = True
         elif not cls.l_dj_18.valor and d.voip["DJ_18"][0]:
             d.voip["DJ_18"][0] = False
-        
+
         if cls.l_dj_26.valor and not d.voip["DJ_26"][0]:
             logger.warning("[SE]  Foi identificado um desligamento do Disjuntor de Alimentação do Cubículo CSA-U1. Favor verificar.")
             d.voip["DJ_26"][0] = True
         elif not cls.l_dj_26.valor and d.voip["DJ_26"][0]:
             d.voip["DJ_26"][0] = False
-        
+
         if cls.l_dj_27.valor and not d.voip["DJ_27"][0]:
             logger.warning("[SE]  Foi identificado um desligamento do Disjuntor de Alimentação do Cubículo CSA-U2. Favor verificar.")
             d.voip["DJ_27"][0] = True
         elif not cls.l_dj_27.valor and d.voip["DJ_27"][0]:
             d.voip["DJ_27"][0] = False
-        
+
         if cls.l_dj_29.valor and not d.voip["DJ_29"][0]:
             logger.warning("[SE]  Foi identificado um desligamento do Disjuntor de Alimentação Monitor de Temperatura do TSA-01. Favor verificar.")
             d.voip["DJ_29"][0] = True
         elif not cls.l_dj_29.valor and d.voip["DJ_29"][0]:
             d.voip["DJ_29"][0] = False
-        
+
         if cls.l_dj_30.valor and not d.voip["DJ_30"][0]:
             logger.warning("[SE]  Foi identificado um desligamento do Disjuntor de Alimentação Monitor de Temperatura do TSA-02. Favor verificar.")
             d.voip["DJ_30"][0] = True
         elif not cls.l_dj_30.valor and d.voip["DJ_30"][0]:
             d.voip["DJ_30"][0] = False
-        
+
         if cls.l_dj_31.valor and not d.voip["DJ_31"][0]:
             logger.warning("[SE]  Foi identificado um desligamento do Disjuntor de Alimentação Reserva PDSA-CC. Favor verificar.")
             d.voip["DJ_31"][0] = True
         elif not cls.l_dj_31.valor and d.voip["DJ_31"][0]:
             d.voip["DJ_31"][0] = False
-        
+
         if cls.l_dj_34.valor and not d.voip["DJ_34"][0]:
             logger.warning("[SE]  Foi identificado um desligamento do Disjuntor de Alimentação do Quadro Q49-U1. Favor verificar.")
             d.voip["DJ_34"][0] = True
         elif not cls.l_dj_34.valor and d.voip["DJ_34"][0]:
             d.voip["DJ_34"][0] = False
-        
+
         if cls.l_dj_41.valor and not d.voip["DJ_41"][0]:
             logger.warning("[SE]  Foi identificado um desligamento do Disjuntor de Alimentação do Quadro Q49-U2. Favor verificar.")
             d.voip["DJ_41"][0] = True
         elif not cls.l_dj_41.valor and d.voip["DJ_41"][0]:
             d.voip["DJ_41"][0] = False
-        
+
         if cls.l_dj_48.valor and not d.voip["DJ_48"][0]:
             logger.warning("[SE]  Foi identificado um desligamento do Disjuntor de Alimentação do Quadro Q49-U3. Favor verificar.")
             d.voip["DJ_48"][0] = True
         elif not cls.l_dj_48.valor and d.voip["DJ_48"][0]:
             d.voip["DJ_48"][0] = False
-        
+
         if cls.l_dj_55.valor and not d.voip["DJ_55"][0]:
             logger.warning("[SE]  Foi identificado um desligamento do Disjuntor de Alimentação do Quadro Q49-U4. Favor verificar.")
             d.voip["DJ_55"][0] = True
         elif not cls.l_dj_55.valor and d.voip["DJ_55"][0]:
             d.voip["DJ_55"][0] = False
-        
+
         if cls.l_dj_60.valor and not d.voip["DJ_60"][0]:
             logger.warning("[SE]  Foi identificado um desligamento do Disjuntor de Alimentação Bomba Drenagem 01. Favor verificar.")
             d.voip["DJ_60"][0] = True
         elif not cls.l_dj_60.valor and d.voip["DJ_60"][0]:
             d.voip["DJ_60"][0] = False
-        
+
         if cls.l_dj_61.valor and not d.voip["DJ_61"][0]:
             logger.warning("[SE]  Foi identificado um desligamento do Disjuntor de Alimentação Bomba Drenagem 02. Favor verificar.")
             d.voip["DJ_61"][0] = True
         elif not cls.l_dj_61.valor and d.voip["DJ_61"][0]:
             d.voip["DJ_61"][0] = False
-        
+
         if cls.l_dj_62.valor and not d.voip["DJ_62"][0]:
             logger.warning("[SE]  Foi identificado um desligamento do Disjuntor de Alimentação Bomba Drenagem 03. Favor verificar.")
             d.voip["DJ_62"][0] = True
         elif not cls.l_dj_62.valor and d.voip["DJ_62"][0]:
             d.voip["DJ_62"][0] = False
-        
+
         if cls.l_dj_63.valor and not d.voip["DJ_63"][0]:
             logger.warning("[SE]  Foi identificado um desligamento do Disjuntor de Alimentação do Compressor de AR. Favor verificar.")
             d.voip["DJ_63"][0] = True
         elif not cls.l_dj_63.valor and d.voip["DJ_63"][0]:
             d.voip["DJ_63"][0] = False
-        
+
         if cls.l_dj_67.valor and not d.voip["DJ_67"][0]:
             logger.warning("[SE]  Foi identificado um desligamento do Disjuntor de Alimentação do Painel PCTA. Favor verificar.")
             d.voip["DJ_67"][0] = True
         elif not cls.l_dj_67.valor and d.voip["DJ_67"][0]:
             d.voip["DJ_67"][0] = False
-        
+
         if cls.l_dj_71.valor and not d.voip["DJ_71"][0]:
             logger.warning("[SE]  Foi identificado um desligamento do Disjuntor de Alimentação do Elevador da Casa de Força. Favor verificar.")
             d.voip["DJ_71"][0] = True
         elif not cls.l_dj_71.valor and d.voip["DJ_71"][0]:
             d.voip["DJ_71"][0] = False
-        
+
         if cls.l_dj_72.valor and not d.voip["DJ_72"][0]:
             logger.warning("[SE]  Foi identificado um desligamento do Disjuntor de Alimentação do Painel PCAD. Favor verificar.")
             d.voip["DJ_72"][0] = True
         elif not cls.l_dj_72.valor and d.voip["DJ_72"][0]:
             d.voip["DJ_72"][0] = False
-        
+
         if cls.l_dj_73.valor and not d.voip["DJ_73"][0]:
             logger.warning("[SE]  Foi identificado um desligamento do Disjuntor de Alimentação Sistema de Retrolavagem do Filtro 01. Favor verificar.")
             d.voip["DJ_73"][0] = True
         elif not cls.l_dj_73.valor and d.voip["DJ_73"][0]:
             d.voip["DJ_73"][0] = False
-        
+
         if cls.l_dj_74.valor and not d.voip["DJ_74"][0]:
             logger.warning("[SE]  Foi identificado um desligamento do Disjuntor de Alimentação Sistema de Retrolavagem do Filtro 02. Favor verificar.")
             d.voip["DJ_74"][0] = True
         elif not cls.l_dj_74.valor and d.voip["DJ_74"][0]:
             d.voip["DJ_74"][0] = False
-        
+
         if cls.l_dj_75.valor and not d.voip["DJ_75"][0]:
             logger.warning("[SE]  Foi identificado um desligamento do Disjuntor de Alimentação do Carregador de Baterias 01. Favor verificar.")
             d.voip["DJ_75"][0] = True
         elif not cls.l_dj_75.valor and d.voip["DJ_75"][0]:
             d.voip["DJ_75"][0] = False
-        
+
         if cls.l_dj_76.valor and not d.voip["DJ_76"][0]:
             logger.warning("[SE]  Foi identificado um desligamento do Disjuntor de Alimentação do Carregador de Baterias 02. Favor verificar.")
             d.voip["DJ_76"][0] = True
         elif not cls.l_dj_76.valor and d.voip["DJ_76"][0]:
             d.voip["DJ_76"][0] = False
-        
+
         if cls.l_dj_89.valor and not d.voip["DJ_89"][0]:
             logger.warning("[SE]  Foi identificado um desligamento do Disjuntor de Alimentação Bomba 01 Injeção Água Selo Mecânico. Favor verificar.")
             d.voip["DJ_89"][0] = True
         elif not cls.l_dj_89.valor and d.voip["DJ_89"][0]:
             d.voip["DJ_89"][0] = False
-        
+
         if cls.l_dj_90.valor and not d.voip["DJ_90"][0]:
             logger.warning("[SE]  Foi identificado um desligamento do Disjuntor de Alimentação Bomba 02 Injeção Água Selo Mecânico. Favor verificar.")
             d.voip["DJ_90"][0] = True
         elif not cls.l_dj_90.valor and d.voip["DJ_90"][0]:
             d.voip["DJ_90"][0] = False
-        
+
         if cls.l_dj_91.valor and not d.voip["DJ_91"][0]:
             logger.warning("[SE]  Foi identificado um desligamento do Disjuntor de Alimentação Bomba 01 Água Serviço. Favor verificar.")
             d.voip["DJ_91"][0] = True
         elif not cls.l_dj_91.valor and d.voip["DJ_91"][0]:
             d.voip["DJ_91"][0] = False
-        
+
         if cls.l_dj_92.valor and not d.voip["DJ_92"][0]:
             logger.warning("[SE]  Foi identificado um desligamento do Disjuntor de Alimentação Bomba 02 Água Serviço. Favor verificar.")
             d.voip["DJ_92"][0] = True
         elif not cls.l_dj_92.valor and d.voip["DJ_92"][0]:
             d.voip["DJ_92"][0] = False
-        
+
         if cls.l_dj_93.valor and not d.voip["DJ_93"][0]:
             logger.warning("[SE]  Foi identificado um desligamento do Disjuntor de Alimentação UCP Bombas de Drenagem. Favor verificar.")
             d.voip["DJ_93"][0] = True
         elif not cls.l_dj_93.valor and d.voip["DJ_93"][0]:
             d.voip["DJ_93"][0] = False
-        
+
         if cls.l_dj_94.valor and not d.voip["DJ_94"][0]:
             logger.warning("[SE]  Foi identificado um desligamento do Disjuntor de Alimentação Torre de Resfriamento. Favor verificar.")
             d.voip["DJ_94"][0] = True
         elif not cls.l_dj_94.valor and d.voip["DJ_94"][0]:
             d.voip["DJ_94"][0] = False
-        
+
         if cls.l_dj_95.valor and not d.voip["DJ_95"][0]:
             logger.warning("[SE]  Foi identificado um desligamento do Disjuntor de Alimentação Compressor de Ar. Favor verificar.")
             d.voip["DJ_95"][0] = True
@@ -475,14 +475,11 @@ class Subestacao:
             d.voip["DJ_95"][0] = False
 
 
-
-
     @classmethod
     def carregar_leituras(cls) -> "None":
         """
         Função para carregamento de leituras necessárias para a operação.
         """
-
 
         cls.l_alm_01_b_00 = lei.LeituraModbusBit(cls.clp["SA"], REG_SE["Alarme01_00"], descricao="[SE]  PACP - Botão de Emergência Pressionado (Abertura 52L)")
         cls.condicionadores_essenciais.append(c.CondicionadorBase(cls.l_alm_01_b_00, CONDIC_INDISPONIBILIZAR))
@@ -721,7 +718,6 @@ class Subestacao:
 
 
         # Lógicas "um depende do outro"
-
         cls.l_dj_19 = lei.LeituraModbus(cls.clp["SA"], REG_SE["DJ_19"], invertido=True, descricao="[SE]  CB01 - Carregador de Baterias 01 - Disj. Q1/Q2/Q3") # Voip + whats (Depende do condic abaixo)
         cls.condicionadores.append(c.CondicionadorBase(cls.l_dj_19, CONDIC_INDISPONIBILIZAR))
 
@@ -743,44 +739,42 @@ class Subestacao:
         cls.condicionadores.append(c.CondicionadorBase(cls.l_dj_100, CONDIC_INDISPONIBILIZAR))
 
 
+        ## MENSAGEIRO
         cls.dj52l_modo_local = lei.LeituraModbusBit(cls.clp["SA"], REG_SE["DJ52L_MODO_LOCAL"], descricao="[SE]  Disjuntor 52L Modo Local")
-        cls.dj52l_alim125vcc_motor = lei.LeituraModbusBit(cls.clp["SA"], REG_SE["DJ52L_ALIM125VCC_MOTOR"], invertido=True, descricao="[SE]  Disjuntor 52L Motor Alimentação 125VCC Desligado")  # Voip + whats se estiver desligado
-        cls.dj52l_falta_vcc = lei.LeituraModbusBit(cls.clp["SA"], REG_SE["DJ52L_FALTA_VCC"], descricao="[SE]  Disjuntor 52L Falta VCC")                                                         # Voip + whats
-        cls.dj52l_gas_sf6_1 = lei.LeituraModbusBit(cls.clp["SA"], REG_SE["DJ52L_GAS_SF6_1"], invertido=True, descricao="[SE]  Disjuntor 52L Gás SF6 1")                                         # Voip + whats se estiver desligado
-        cls.secc_modo_local = lei.LeituraModbusBit(cls.clp["SA"], REG_SE["SECC_MODO_LOCAL"], descricao="[SE]  Seccionadora Modo Local")                                                         # Voip + whats
-        cls.secc_lam_fechada = lei.LeituraModbusBit(cls.clp["SA"], REG_SE["SECC_LAMINA_FECHADA"], descricao="[SE]  Seccionadora Lamina Fechada")                                                # Voip + whats
-        cls.secc_cmd_alim_vcc = lei.LeituraModbusBit(cls.clp["SA"], REG_SE["SECC_ALIM_VCC_CMD"], descricao="[SE]  Seccionadora Comando Alimentação VCC Acionado")                               # Voip + whats
-        cls.secc_bloq_alim_vcc = lei.LeituraModbusBit(cls.clp["SA"], REG_SE["SECC_ALIM_VCC_BLOQ"], descricao="[SE]  Seccionadora Comando Alimentação VCC Bloqueio")                             # Voip + whats
+        cls.dj52l_alim125vcc_motor = lei.LeituraModbusBit(cls.clp["SA"], REG_SE["DJ52L_ALIM125VCC_MOTOR"], invertido=True, descricao="[SE]  Disjuntor 52L Motor Alimentação 125VCC Desligado")
+        cls.dj52l_falta_vcc = lei.LeituraModbusBit(cls.clp["SA"], REG_SE["DJ52L_FALTA_VCC"], descricao="[SE]  Disjuntor 52L Falta VCC")
+        cls.dj52l_gas_sf6_1 = lei.LeituraModbusBit(cls.clp["SA"], REG_SE["DJ52L_GAS_SF6_1"], invertido=True, descricao="[SE]  Disjuntor 52L Gás SF6 1")
+        cls.secc_modo_local = lei.LeituraModbusBit(cls.clp["SA"], REG_SE["SECC_MODO_LOCAL"], descricao="[SE]  Seccionadora Modo Local")
+        cls.secc_lam_fechada = lei.LeituraModbusBit(cls.clp["SA"], REG_SE["SECC_LAMINA_FECHADA"], descricao="[SE]  Seccionadora Lamina Fechada")
+        cls.secc_cmd_alim_vcc = lei.LeituraModbusBit(cls.clp["SA"], REG_SE["SECC_ALIM_VCC_CMD"], descricao="[SE]  Seccionadora Comando Alimentação VCC Acionado")
+        cls.secc_bloq_alim_vcc = lei.LeituraModbusBit(cls.clp["SA"], REG_SE["SECC_ALIM_VCC_BLOQ"], descricao="[SE]  Seccionadora Comando Alimentação VCC Bloqueio")
 
-
-        cls.l_dj_17 = lei.LeituraModbus(cls.clp["SA"], REG_SE["DJ_17"], invertido=True, descricao="[SE]  CSA-U1 - Alimentação Circuitos de Sinalização - Disj. Q125.0")                         # Voip + whats
-        cls.l_dj_18 = lei.LeituraModbus(cls.clp["SA"], REG_SE["DJ_18"], invertido=True, descricao="[SE]  CSA-U2 - Alimentação Circuitos de Sinalização - Disj. Q125.0")                         # Voip + whats
-        cls.l_dj_26 = lei.LeituraModbus(cls.clp["SA"], REG_SE["DJ_26"], invertido=True, descricao="[SE]  PDSA-CC - Alimentação do Cubículo CSA-U1 - Disj. Q125.5")                              # Voip + whats
-        cls.l_dj_27 = lei.LeituraModbus(cls.clp["SA"], REG_SE["DJ_27"], invertido=True, descricao="[SE]  PDSA-CC - Alimentação do Cubículo CSA-U2 - Disj. Q125.6")                              # Voip + whats
-        cls.l_dj_29 = lei.LeituraModbus(cls.clp["SA"], REG_SE["DJ_29"], invertido=True, descricao="[SE]  PDSA-CC - Alimentação Monitor de Temperatura do TSA-01 - Disj. Q125.8")                # Voip + whats
-        cls.l_dj_30 = lei.LeituraModbus(cls.clp["SA"], REG_SE["DJ_30"], invertido=True, descricao="[SE]  PDSA-CC - Alimentação Monitor de Temperatura do TSA-02 - Disj. Q125.9")                # Voip + whats
-        cls.l_dj_31 = lei.LeituraModbus(cls.clp["SA"], REG_SE["DJ_31"], invertido=True, descricao="[SE]  PDSA-CC - Alimentação Reserva - Disj. Q125.10")                                        # Voip + whats
-        cls.l_dj_34 = lei.LeituraModbus(cls.clp["SA"], REG_SE["DJ_34"], invertido=True, descricao="[SE]  PDSA-CC - Alimentação do Quadro Q49-U1 - Disj. 1Q125.2")                               # Voip + whats
-        cls.l_dj_41 = lei.LeituraModbus(cls.clp["SA"], REG_SE["DJ_41"], invertido=True, descricao="[SE]  PDSA-CC - Alimentação do Quadro Q49-U2 - Disj. 2Q125.2")                               # Voip + whats
-        cls.l_dj_48 = lei.LeituraModbus(cls.clp["SA"], REG_SE["DJ_48"], invertido=True, descricao="[SE]  PDSA-CC - Alimentação do Quadro Q49-U3 - Disj. 3Q125.2")                               # Voip + whats
-        cls.l_dj_55 = lei.LeituraModbus(cls.clp["SA"], REG_SE["DJ_55"], invertido=True, descricao="[SE]  PDSA-CC - Alimentação do Quadro Q49-U4 - Disj. 4Q125.2")                               # Voip + whats
-        cls.l_dj_60 = lei.LeituraModbus(cls.clp["SA"], REG_SE["DJ_60"], invertido=True, descricao="[SE]  PDSA-CA - Alimentação Bomba Drenagem 01 - Disj. QM1")                                  # Voip + whats
-        cls.l_dj_61 = lei.LeituraModbus(cls.clp["SA"], REG_SE["DJ_61"], invertido=True, descricao="[SE]  PDSA-CA - Alimentação Bomba Drenagem 02 - Disj. QM2")                                  # Voip + whats
-        cls.l_dj_62 = lei.LeituraModbus(cls.clp["SA"], REG_SE["DJ_62"], invertido=True, descricao="[SE]  PDSA-CA - Alimentação Bomba Drenagem 03 - Disj. QM3")                                  # Voip + whats
-        cls.l_dj_63 = lei.LeituraModbus(cls.clp["SA"], REG_SE["DJ_63"], invertido=True, descricao="[SE]  PDSA-CA - Alimentação do Compressor de AR - Disj. QM4")                                # Voip + whats
-        cls.l_dj_67 = lei.LeituraModbus(cls.clp["SA"], REG_SE["DJ_67"], invertido=True, descricao="[SE]  PDSA-CA - Alimentação do Painel PCTA - Disj. Q380.1")                                  # Voip + whats
-        cls.l_dj_71 = lei.LeituraModbus(cls.clp["SA"], REG_SE["DJ_71"], invertido=True, descricao="[SE]  PDSA-CA - Alimentação do Elevador da Casa de Força - Disj. Q380.5")                    # Voip + whats
-        cls.l_dj_72 = lei.LeituraModbus(cls.clp["SA"], REG_SE["DJ_72"], invertido=True, descricao="[SE]  PDSA-CA - Alimentação do Painel PCAD - Disj. Q380.6")                                  # Voip + whats
-        cls.l_dj_73 = lei.LeituraModbus(cls.clp["SA"], REG_SE["DJ_73"], invertido=True, descricao="[SE]  PDSA-CA - Alimentação Sistema de Retrolavagem do Filtro 01 - Disj. Q380.7")            # Voip + whats
-        cls.l_dj_74 = lei.LeituraModbus(cls.clp["SA"], REG_SE["DJ_74"], invertido=True, descricao="[SE]  PDSA-CA - Alimentação Sistema de Retrolavagem do Filtro 02 - Disj. Q380.8")            # Voip + whats
-        cls.l_dj_75 = lei.LeituraModbus(cls.clp["SA"], REG_SE["DJ_75"], invertido=True, descricao="[SE]  PDSA-CA - Alimentação do Carregador de Baterias 01 - Disj. Q380.9")                    # Voip + whats
-        cls.l_dj_76 = lei.LeituraModbus(cls.clp["SA"], REG_SE["DJ_76"], invertido=True, descricao="[SE]  PDSA-CA - Alimentação do Carregador de Baterias 02 - Disj. Q380.10")                   # Voip + whats
-        cls.l_dj_89 = lei.LeituraModbus(cls.clp["SA"], REG_SE["DJ_89"], invertido=True, descricao="[SE]  PDSA-CA - Alimentação Bomba 01 Injeção Água Selo Mecânico - Disj. QM5")                # Voip + whats
-        cls.l_dj_90 = lei.LeituraModbus(cls.clp["SA"], REG_SE["DJ_90"], invertido=True, descricao="[SE]  PDSA-CA - Alimentação Bomba 02 Injeção Água Selo Mecânico - Disj. QM6")                # Voip + whats
-        cls.l_dj_91 = lei.LeituraModbus(cls.clp["SA"], REG_SE["DJ_91"], invertido=True, descricao="[SE]  PDSA-CA - Alimentação Bomba 01 Água Serviço - Disj. QM7")                              # Voip + whats
-        cls.l_dj_92 = lei.LeituraModbus(cls.clp["SA"], REG_SE["DJ_92"], invertido=True, descricao="[SE]  PDSA-CA - Alimentação Bomba 02 Água Serviço - Disj. QM8")                              # Voip + whats
-        cls.l_dj_93 = lei.LeituraModbus(cls.clp["SA"], REG_SE["DJ_93"], invertido=True, descricao="[SE]  PDSA-CA - Alimentação UCP Bombas de Drenagem - Disj. Q220.11")                         # Voip + whats
-        cls.l_dj_94 = lei.LeituraModbus(cls.clp["SA"], REG_SE["DJ_94"], invertido=True, descricao="[SE]  PDSA-CA - Alimentação Torre de Resfriamento - Disj. Q380.11")                          # Voip + whats
-        cls.l_dj_95 = lei.LeituraModbus(cls.clp["SA"], REG_SE["DJ_95"], invertido=True, descricao="[SE]  PDSA-CA - Alimentação Compressor de Ar - Disj. Q380.12")                               # Voip + whats
-
-        return
+        cls.l_dj_17 = lei.LeituraModbus(cls.clp["SA"], REG_SE["DJ_17"], invertido=True, descricao="[SE]  CSA-U1 - Alimentação Circuitos de Sinalização - Disj. Q125.0")
+        cls.l_dj_18 = lei.LeituraModbus(cls.clp["SA"], REG_SE["DJ_18"], invertido=True, descricao="[SE]  CSA-U2 - Alimentação Circuitos de Sinalização - Disj. Q125.0")
+        cls.l_dj_26 = lei.LeituraModbus(cls.clp["SA"], REG_SE["DJ_26"], invertido=True, descricao="[SE]  PDSA-CC - Alimentação do Cubículo CSA-U1 - Disj. Q125.5")
+        cls.l_dj_27 = lei.LeituraModbus(cls.clp["SA"], REG_SE["DJ_27"], invertido=True, descricao="[SE]  PDSA-CC - Alimentação do Cubículo CSA-U2 - Disj. Q125.6")
+        cls.l_dj_29 = lei.LeituraModbus(cls.clp["SA"], REG_SE["DJ_29"], invertido=True, descricao="[SE]  PDSA-CC - Alimentação Monitor de Temperatura do TSA-01 - Disj. Q125.8")
+        cls.l_dj_30 = lei.LeituraModbus(cls.clp["SA"], REG_SE["DJ_30"], invertido=True, descricao="[SE]  PDSA-CC - Alimentação Monitor de Temperatura do TSA-02 - Disj. Q125.9")
+        cls.l_dj_31 = lei.LeituraModbus(cls.clp["SA"], REG_SE["DJ_31"], invertido=True, descricao="[SE]  PDSA-CC - Alimentação Reserva - Disj. Q125.10")
+        cls.l_dj_34 = lei.LeituraModbus(cls.clp["SA"], REG_SE["DJ_34"], invertido=True, descricao="[SE]  PDSA-CC - Alimentação do Quadro Q49-U1 - Disj. 1Q125.2")
+        cls.l_dj_41 = lei.LeituraModbus(cls.clp["SA"], REG_SE["DJ_41"], invertido=True, descricao="[SE]  PDSA-CC - Alimentação do Quadro Q49-U2 - Disj. 2Q125.2")
+        cls.l_dj_48 = lei.LeituraModbus(cls.clp["SA"], REG_SE["DJ_48"], invertido=True, descricao="[SE]  PDSA-CC - Alimentação do Quadro Q49-U3 - Disj. 3Q125.2")
+        cls.l_dj_55 = lei.LeituraModbus(cls.clp["SA"], REG_SE["DJ_55"], invertido=True, descricao="[SE]  PDSA-CC - Alimentação do Quadro Q49-U4 - Disj. 4Q125.2")
+        cls.l_dj_60 = lei.LeituraModbus(cls.clp["SA"], REG_SE["DJ_60"], invertido=True, descricao="[SE]  PDSA-CA - Alimentação Bomba Drenagem 01 - Disj. QM1")
+        cls.l_dj_61 = lei.LeituraModbus(cls.clp["SA"], REG_SE["DJ_61"], invertido=True, descricao="[SE]  PDSA-CA - Alimentação Bomba Drenagem 02 - Disj. QM2")
+        cls.l_dj_62 = lei.LeituraModbus(cls.clp["SA"], REG_SE["DJ_62"], invertido=True, descricao="[SE]  PDSA-CA - Alimentação Bomba Drenagem 03 - Disj. QM3")
+        cls.l_dj_63 = lei.LeituraModbus(cls.clp["SA"], REG_SE["DJ_63"], invertido=True, descricao="[SE]  PDSA-CA - Alimentação do Compressor de AR - Disj. QM4")
+        cls.l_dj_67 = lei.LeituraModbus(cls.clp["SA"], REG_SE["DJ_67"], invertido=True, descricao="[SE]  PDSA-CA - Alimentação do Painel PCTA - Disj. Q380.1")
+        cls.l_dj_71 = lei.LeituraModbus(cls.clp["SA"], REG_SE["DJ_71"], invertido=True, descricao="[SE]  PDSA-CA - Alimentação do Elevador da Casa de Força - Disj. Q380.5")
+        cls.l_dj_72 = lei.LeituraModbus(cls.clp["SA"], REG_SE["DJ_72"], invertido=True, descricao="[SE]  PDSA-CA - Alimentação do Painel PCAD - Disj. Q380.6")
+        cls.l_dj_73 = lei.LeituraModbus(cls.clp["SA"], REG_SE["DJ_73"], invertido=True, descricao="[SE]  PDSA-CA - Alimentação Sistema de Retrolavagem do Filtro 01 - Disj. Q380.7")
+        cls.l_dj_74 = lei.LeituraModbus(cls.clp["SA"], REG_SE["DJ_74"], invertido=True, descricao="[SE]  PDSA-CA - Alimentação Sistema de Retrolavagem do Filtro 02 - Disj. Q380.8")
+        cls.l_dj_75 = lei.LeituraModbus(cls.clp["SA"], REG_SE["DJ_75"], invertido=True, descricao="[SE]  PDSA-CA - Alimentação do Carregador de Baterias 01 - Disj. Q380.9")
+        cls.l_dj_76 = lei.LeituraModbus(cls.clp["SA"], REG_SE["DJ_76"], invertido=True, descricao="[SE]  PDSA-CA - Alimentação do Carregador de Baterias 02 - Disj. Q380.10")
+        cls.l_dj_89 = lei.LeituraModbus(cls.clp["SA"], REG_SE["DJ_89"], invertido=True, descricao="[SE]  PDSA-CA - Alimentação Bomba 01 Injeção Água Selo Mecânico - Disj. QM5")
+        cls.l_dj_90 = lei.LeituraModbus(cls.clp["SA"], REG_SE["DJ_90"], invertido=True, descricao="[SE]  PDSA-CA - Alimentação Bomba 02 Injeção Água Selo Mecânico - Disj. QM6")
+        cls.l_dj_91 = lei.LeituraModbus(cls.clp["SA"], REG_SE["DJ_91"], invertido=True, descricao="[SE]  PDSA-CA - Alimentação Bomba 01 Água Serviço - Disj. QM7")
+        cls.l_dj_92 = lei.LeituraModbus(cls.clp["SA"], REG_SE["DJ_92"], invertido=True, descricao="[SE]  PDSA-CA - Alimentação Bomba 02 Água Serviço - Disj. QM8")
+        cls.l_dj_93 = lei.LeituraModbus(cls.clp["SA"], REG_SE["DJ_93"], invertido=True, descricao="[SE]  PDSA-CA - Alimentação UCP Bombas de Drenagem - Disj. Q220.11")
+        cls.l_dj_94 = lei.LeituraModbus(cls.clp["SA"], REG_SE["DJ_94"], invertido=True, descricao="[SE]  PDSA-CA - Alimentação Torre de Resfriamento - Disj. Q380.11")
+        cls.l_dj_95 = lei.LeituraModbus(cls.clp["SA"], REG_SE["DJ_95"], invertido=True, descricao="[SE]  PDSA-CA - Alimentação Compressor de Ar - Disj. Q380.12")

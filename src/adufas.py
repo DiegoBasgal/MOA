@@ -279,6 +279,7 @@ class Adufas:
         cls.l_alm_28_b_12 = lei.LeituraModbusBit(cls.clp["AD"], REG_AD["Alarme28_12"], descricao="[AD]  UHCD - Botão de Emergência Pressionado")
         cls.condicionadores_essenciais.append(c.CondicionadorBase(cls.l_alm_28_b_12, CONDIC_NORMALIZAR))
 
+
         cls.l_uhcd_operacional = lei.LeituraModbusBit(cls.clp["AD"], REG_AD["UHCD_OPERACIONAL"], descricao="[AD]  UHCD - Operacional")
         cls.condicionadores.append(c.CondicionadorBase(cls.l_uhcd_operacional, CONDIC_INDISPONIBILIZAR))
 

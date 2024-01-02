@@ -111,7 +111,7 @@ class TomadaAgua:
         Verifica leituras específcas para acionamento da manuteção. As leituras são disparadas
         em períodos separados por um tempo pré-definido.
         """
-        
+
         if cls.l_uhta01_nv_oleo_ll and not d.voip["UHTA01_NIVEL_OLEO_LL"][0]:
             logger.warning("[TDA] Foi identificado que o nível do Óleo da UHTA 1 está Muito Baixo. Favor verificar.")
             d.voip["UHTA01_NIVEL_OLEO_LL"][0] = True
@@ -166,12 +166,11 @@ class TomadaAgua:
         elif not cls.l_pcta_falta_fase and d.voip["PCTA_FALTA_FASE"][0]:
             d.voip["PCTA_FALTA_FASE"][0] = False
 
-        if cls.l_pcta_modo_remoto and not d.voip["PCTA_MODO_REMOTO"][0]:
+        if (cls.nivel_montante.valor < cls.cfg["nv_minimo"]) and cls.l_pcta_modo_remoto and not d.voip["PCTA_MODO_REMOTO"][0]:
             logger.warning("[TDA] Foi identificado que o Painel da Tomada da Água entrou em Modo Remoto. Favor verificar.")
             d.voip["PCTA_MODO_REMOTO"][0] = True
         elif not cls.l_pcta_modo_remoto and d.voip["PCTA_MODO_REMOTO"][0]:
             d.voip["PCTA_MODO_REMOTO"][0] = False
-
 
 
     @classmethod
@@ -375,15 +374,13 @@ class TomadaAgua:
 
 
         ## MENSAGEIRO
-        cls.l_uhta01_nv_oleo_ll = lei.LeituraModbusBit(cls.clp["TDA"], REG_TDA["UHTA01_NIVEL_OLEO_LL"], descricao="[TDA] UHTA01 Nível do Óleo Muito Baixo")                 # Voip + whats
-        cls.l_uhta01_nv_oleo_hh = lei.LeituraModbusBit(cls.clp["TDA"], REG_TDA["UHTA01_NIVEL_OLEO_HH"], descricao="[TDA] UHTA01 Nível do Óleo Muito Alto")                  # Voip + whats
-        cls.l_uhta01_temp_oleo_h = lei.LeituraModbusBit(cls.clp["TDA"], REG_TDA["UHTA01_TEMP_OLEO_H"], descricao="[TDA] UHTA01 Temperatura do Óleo Alta")                   # Voip + whats
-        cls.l_uhta01_temp_oleo_hh = lei.LeituraModbusBit(cls.clp["TDA"], REG_TDA["UHTA01_TEMP_OLEO_HH"], descricao="[TDA] UHTA01 Temperatura do Óleo Muito Alta")           # Voip + whats
-        cls.l_uhta02_nv_oleo_ll = lei.LeituraModbusBit(cls.clp["TDA"], REG_TDA["UHTA02_NIVEL_OLEO_LL"], descricao="[TDA] UHTA02 Nível do Óleo Muito Baixo")                 # Voip + whats
-        cls.l_uhta02_nv_oleo_hh = lei.LeituraModbusBit(cls.clp["TDA"], REG_TDA["UHTA02_NIVEL_OLEO_HH"], descricao="[TDA] UHTA02 Nível do Óleo Muito Alto")                  # Voip + whats
-        cls.l_uhta02_temp_oleo_h = lei.LeituraModbusBit(cls.clp["TDA"], REG_TDA["UHTA02_TEMP_OLEO_H"], descricao="[TDA] UHTA02 Temperatura do Óleo Alta")                   # Voip + whats
-        cls.l_uhta02_temp_oleo_hh = lei.LeituraModbusBit(cls.clp["TDA"], REG_TDA["UHTA02_TEMP_OLEO_HH"], descricao="[TDA] UHTA02 Temperatura do Óleo Muito Alta")           # Voip + whats
-        cls.l_pcta_falta_fase = lei.LeituraModbusBit(cls.clp["TDA"], REG_TDA["PCTA_FALTA_FASE"], descricao="[TDA] Painel TDA Falta Fase")                                   # Voip + whats
-        cls.l_pcta_modo_remoto = lei.LeituraModbusBit(cls.clp["TDA"], REG_TDA["PCTA_MODO_REMOTO"], descricao="[TDA] Painel TDA Modo Remoto")                                # Voip + whats se o nível estiver abaixo do mínimo
-
-        return
+        cls.l_uhta01_nv_oleo_ll = lei.LeituraModbusBit(cls.clp["TDA"], REG_TDA["UHTA01_NIVEL_OLEO_LL"], descricao="[TDA] UHTA01 Nível do Óleo Muito Baixo")
+        cls.l_uhta01_nv_oleo_hh = lei.LeituraModbusBit(cls.clp["TDA"], REG_TDA["UHTA01_NIVEL_OLEO_HH"], descricao="[TDA] UHTA01 Nível do Óleo Muito Alto")
+        cls.l_uhta01_temp_oleo_h = lei.LeituraModbusBit(cls.clp["TDA"], REG_TDA["UHTA01_TEMP_OLEO_H"], descricao="[TDA] UHTA01 Temperatura do Óleo Alta")
+        cls.l_uhta01_temp_oleo_hh = lei.LeituraModbusBit(cls.clp["TDA"], REG_TDA["UHTA01_TEMP_OLEO_HH"], descricao="[TDA] UHTA01 Temperatura do Óleo Muito Alta")
+        cls.l_uhta02_nv_oleo_ll = lei.LeituraModbusBit(cls.clp["TDA"], REG_TDA["UHTA02_NIVEL_OLEO_LL"], descricao="[TDA] UHTA02 Nível do Óleo Muito Baixo")
+        cls.l_uhta02_nv_oleo_hh = lei.LeituraModbusBit(cls.clp["TDA"], REG_TDA["UHTA02_NIVEL_OLEO_HH"], descricao="[TDA] UHTA02 Nível do Óleo Muito Alto")
+        cls.l_uhta02_temp_oleo_h = lei.LeituraModbusBit(cls.clp["TDA"], REG_TDA["UHTA02_TEMP_OLEO_H"], descricao="[TDA] UHTA02 Temperatura do Óleo Alta")
+        cls.l_uhta02_temp_oleo_hh = lei.LeituraModbusBit(cls.clp["TDA"], REG_TDA["UHTA02_TEMP_OLEO_HH"], descricao="[TDA] UHTA02 Temperatura do Óleo Muito Alta")
+        cls.l_pcta_falta_fase = lei.LeituraModbusBit(cls.clp["TDA"], REG_TDA["PCTA_FALTA_FASE"], descricao="[TDA] Painel TDA Falta Fase")
+        cls.l_pcta_modo_remoto = lei.LeituraModbusBit(cls.clp["TDA"], REG_TDA["PCTA_MODO_REMOTO"], descricao="[TDA] Painel TDA Modo Remoto")
