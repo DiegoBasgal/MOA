@@ -51,22 +51,22 @@ class UnidadeGeracao:
 
         self.__potencia = lei.LeituraModbus(
             self.clp[f"UG{self.id}"],
-            REG_UG[f"UG{self.id}"]["POTENCIA_ATIVA_MEDIA"],
+            REG_UG[f"UG{self.id}"]["POT_ATIVA_MEDIA"],
             descricao=f"[UG{self.id}] Leitura Potência"
         )
         self.__etapa_atual = lei.LeituraModbus(
             self.clp[f"UG{self.id}"],
-            REG_UG[f"UG{self.id}"][""],
+            REG_UG[f"UG{self.id}"]["OPER_ETAPA_ATUAL"],
             descricao=f"[UG{self.id}] Leitura Etapa"
         )
         self.__etapa_alvo = lei.LeituraModbus(
             self.clp[f"UG{self.id}"],
-            REG_UG[f"UG{self.id}"][""],
+            REG_UG[f"UG{self.id}"]["OPER_ETAPA_ALVO"],
             descricao=f"[UG{self.id}] Leitura Etapa"
         )
         self.__horimetro = lei.LeituraModbus(
             self.clp[f"UG{self.id}"],
-            REG_UG[f"UG{self.id}"][""],
+            REG_UG[f"UG{self.id}"]["HORIM_ELETR_LOW"],
             descricao=f"[UG{self.id}] Leitura Horímetro"
         )
 
@@ -806,15 +806,15 @@ class UnidadeGeracao:
         try:
             self.prioridade = int(parametros[f"ug{self.id}_prioridade"])
 
-            self.c_temp_fase_r_ug.valor_base = float(parametros[f"alerta_temperatura_fase_u_ug{self.id}"])
-            self.c_temp_fase_s_ug.valor_base = float(parametros[f"alerta_temperatura_fase_v_ug{self.id}"])
-            self.c_temp_fase_t_ug.valor_base = float(parametros[f"alerta_temperatura_fase_w_ug{self.id}"])
+            self.c_temp_fase_r_ug.valor_base = float(parametros[f"alerta_temperatura_fase_r_ug{self.id}"])
+            self.c_temp_fase_s_ug.valor_base = float(parametros[f"alerta_temperatura_fase_s_ug{self.id}"])
+            self.c_temp_fase_t_ug.valor_base = float(parametros[f"alerta_temperatura_fase_t_ug{self.id}"])
             self.c_temp_mancal_gerador_la_1_ug.valor_base = float(parametros[f"alerta_temperatura_mancal_gerador_la_1_ug{self.id}"])
             self.c_temp_mancal_gerador_la_2_ug.valor_base = float(parametros[f"alerta_temperatura_mancal_gerador_la_2_ug{self.id}"])
             self.c_temp_mancal_gerador_lna_1_ug.valor_base = float(parametros[f"alerta_temperatura_mancal_gerador_lna_1_ug{self.id}"])
             self.c_temp_mancal_gerador_lna_2_ug.valor_base = float(parametros[f"alerta_temperatura_mancal_gerador_lna_2_ug{self.id}"])
-            self.c_temp_mancal_turbina_radial_ug.valor_base = float(parametros[f"alerta_temperatura_mancal_turbina_radial{self.id}"])
-            self.c_temp_mancal_turbina_escora_ug.valor_base = float(parametros[f"alerta_temperatura_mancal_turbina_escora{self.id}"])
+            self.c_temp_mancal_turbina_radial_ug.valor_base = float(parametros[f"alerta_temperatura_mancal_turbina_radial_ug{self.id}"])
+            self.c_temp_mancal_turbina_escora_ug.valor_base = float(parametros[f"alerta_temperatura_mancal_turbina_escora_ug{self.id}"])
             self.c_temp_mancal_turbina_contra_escora_ug.valor_base = float(parametros[f"alerta_temperatura_mancal_turbina_contra_escora_ug{self.id}"])
             self.c_pressao_turbina_ug.valor_base = float(parametros[f"alerta_pressao_turbina_ug{self.id}"])
 
@@ -825,9 +825,9 @@ class UnidadeGeracao:
             self.c_temp_mancal_gerador_la_2_ug.valor_limite = float(parametros[f"limite_temperatura_mancal_gerador_la_2_ug{self.id}"])
             self.c_temp_mancal_gerador_lna_1_ug.valor_limite = float(parametros[f"limite_temperatura_mancal_gerador_lna_1_ug{self.id}"])
             self.c_temp_mancal_gerador_lna_2_ug.valor_limite = float(parametros[f"limite_temperatura_mancal_gerador_lna_2_ug{self.id}"])
-            self.c_temp_mancal_turbina_radial_ug.valor_limite = float(parametros[f"limite_temperatura_mancal_turbina_radial{self.id}"])
-            self.c_temp_mancal_turbina_escora_ug.valor_limite = float(parametros[f"limite_temperatura_mancal_turbina_escora{self.id}"])
-            self.c_temp_mancal_turbina_contra_escora_ug.valor_limite = float(parametros[f"limite_temperatura_mancal_turbina_contra_escora_ugg{self.id}"])
+            self.c_temp_mancal_turbina_radial_ug.valor_limite = float(parametros[f"limite_temperatura_mancal_turbina_radial_ug{self.id}"])
+            self.c_temp_mancal_turbina_escora_ug.valor_limite = float(parametros[f"limite_temperatura_mancal_turbina_escora_ug{self.id}"])
+            self.c_temp_mancal_turbina_contra_escora_ug.valor_limite = float(parametros[f"limite_temperatura_mancal_turbina_contra_escora_ug{self.id}"])
             self.c_pressao_turbina_ug.valor_limite = float(parametros[f"limite_pressao_turbina_ug{self.id}"])
 
         except Exception:
@@ -1001,68 +1001,68 @@ class UnidadeGeracao:
         # CONDICIONADORES ESSENCIAIS
         # Temperaturas
             # Fase R
-        self.l_temp_fase_r = lei.LeituraModbus(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}"][""], descricao=f"[UG{self.id}] Temperatura Fase R")
+        self.l_temp_fase_r = lei.LeituraModbus(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}"]["TEMPERATURA_01"], descricao=f"[UG{self.id}] Temperatura Fase R")
         self.c_temp_fase_r_ug = c.CondicionadorExponencial(self.l_temp_fase_r)
         self.condicionadores_essenciais.append(self.c_temp_fase_r_ug)
 
             # Fase S
-        self.l_temp_fase_s = lei.LeituraModbus(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}"][""], descricao=f"[UG{self.id}] Temperatura Fase S")
+        self.l_temp_fase_s = lei.LeituraModbus(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}"]["TEMPERATURA_02"], descricao=f"[UG{self.id}] Temperatura Fase S")
         self.c_temp_fase_s_ug = c.CondicionadorExponencial(self.l_temp_fase_s)
         self.condicionadores_essenciais.append(self.c_temp_fase_s_ug)
 
             # Fase T
-        self.l_temp_fase_t = lei.LeituraModbus(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}"][""], descricao=f"[UG{self.id}] Temperatura Fase T")
+        self.l_temp_fase_t = lei.LeituraModbus(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}"]["TEMPERATURA_03"], descricao=f"[UG{self.id}] Temperatura Fase T")
         self.c_temp_fase_t_ug = c.CondicionadorExponencial(self.l_temp_fase_t)
         self.condicionadores_essenciais.append(self.c_temp_fase_t_ug)
 
             # Mancal Gerador LA 1
-        self.l_temp_mancal_gerador_la_1 = lei.LeituraModbus(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}"][""], descricao=f"[UG{self.id}] Temperatura Mancal Gerador LA 1")
+        self.l_temp_mancal_gerador_la_1 = lei.LeituraModbus(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}"]["TEMPERATURA_04"], descricao=f"[UG{self.id}] Temperatura Mancal Gerador LA 1")
         self.c_temp_mancal_gerador_la_1_ug = c.CondicionadorExponencial(self.l_temp_mancal_gerador_la_1)
         self.condicionadores_essenciais.append(self.c_temp_mancal_gerador_la_1_ug)
 
             # Mancal Gerador LA 2
-        self.l_temp_mancal_gerador_la_2 = lei.LeituraModbus(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}"][""], descricao=f"[UG{self.id}] Temperatura Mancal Gerador LA 2")
+        self.l_temp_mancal_gerador_la_2 = lei.LeituraModbus(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}"]["TEMPERATURA_05"], descricao=f"[UG{self.id}] Temperatura Mancal Gerador LA 2")
         self.c_temp_mancal_gerador_la_2_ug = c.CondicionadorExponencial(self.l_temp_mancal_gerador_la_2)
         self.condicionadores_essenciais.append(self.c_temp_mancal_gerador_la_2_ug)
 
             # Mancal Gerador LNA 1
-        self.l_temp_mancal_gerador_lna_1 = lei.LeituraModbus(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}"][""], descricao=f"[UG{self.id}] Temperatura Mancal Gerador LNA 1")
+        self.l_temp_mancal_gerador_lna_1 = lei.LeituraModbus(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}"]["TEMPERATURA_06"], descricao=f"[UG{self.id}] Temperatura Mancal Gerador LNA 1")
         self.c_temp_mancal_gerador_lna_1_ug = c.CondicionadorExponencial(self.l_temp_mancal_gerador_lna_1)
         self.condicionadores_essenciais.append(self.c_temp_mancal_gerador_lna_1_ug)
 
             #  Mancal Gerador LNA 2
-        self.l_temp_mancal_gerador_lna_2 = lei.LeituraModbus(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}"][""], descricao=f"[UG{self.id}] Temperatura Mancal Gerador LNA 2")
+        self.l_temp_mancal_gerador_lna_2 = lei.LeituraModbus(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}"]["TEMPERATURA_07"], descricao=f"[UG{self.id}] Temperatura Mancal Gerador LNA 2")
         self.c_temp_mancal_gerador_lna_2_ug = c.CondicionadorExponencial(self.l_temp_mancal_gerador_lna_2)
         self.condicionadores_essenciais.append(self.c_temp_mancal_gerador_lna_2_ug)
 
             # Mancal Turbina Radial
-        self.l_temp_mancal_turbina_radial = lei.LeituraModbus(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}"][""], descricao=f"[UG{self.id}] Temperatura Mancal Turbina Radial")
+        self.l_temp_mancal_turbina_radial = lei.LeituraModbus(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}"]["TEMPERATURA_10"], descricao=f"[UG{self.id}] Temperatura Mancal Turbina Radial")
         self.c_temp_mancal_turbina_radial_ug = c.CondicionadorExponencial(self.l_temp_mancal_turbina_radial)
         self.condicionadores_essenciais.append(self.c_temp_mancal_turbina_radial_ug)
 
             # Mancal Turbina Escora
-        self.l_temp_mancal_turbina_escora = lei.LeituraModbus(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}"][""], descricao=f"[UG{self.id}] Temperatura Mancal Turbina Escora")
+        self.l_temp_mancal_turbina_escora = lei.LeituraModbus(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}"]["TEMPERATURA_11"], descricao=f"[UG{self.id}] Temperatura Mancal Turbina Escora")
         self.c_temp_mancal_turbina_escora_ug = c.CondicionadorExponencial(self.l_temp_mancal_turbina_escora)
         self.condicionadores_essenciais.append(self.c_temp_mancal_turbina_escora_ug)
 
             # Mancal Turbina Radial Contra Escora
-        self.l_temp_mancal_turbina_contra_escora = lei.LeituraModbus(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}"][""], descricao=f"[UG{self.id}] Temperatura Mancal Turbina Contra Escora")
+        self.l_temp_mancal_turbina_contra_escora = lei.LeituraModbus(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}"]["TEMPERATURA_12"], descricao=f"[UG{self.id}] Temperatura Mancal Turbina Contra Escora")
         self.c_temp_mancal_turbina_contra_escora_ug = c.CondicionadorExponencial(self.l_temp_mancal_turbina_contra_escora)
         self.condicionadores_essenciais.append(self.c_temp_mancal_turbina_contra_escora_ug)
 
             # Óleo UHRV
-        self.l_temp_oleo_uhrv = lei.LeituraModbus(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}"][""], descricao=f"[UG{self.id}] Temperatura Óleo UHRV")
+        self.l_temp_oleo_uhrv = lei.LeituraModbus(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}"]["TEMPERATURA_13"], descricao=f"[UG{self.id}] Temperatura Óleo UHRV")
         self.c_temp_oleo_uhrv_ug = c.CondicionadorExponencial(self.l_temp_oleo_uhrv)
         self.condicionadores_essenciais.append(self.c_temp_oleo_uhrv_ug)
 
             # Óleo ULHM
-        self.l_temp_oleo_uhlm = lei.LeituraModbus(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}"][""], descricao=f"[UG{self.id}] Temperatura Óleo ULHM")
+        self.l_temp_oleo_uhlm = lei.LeituraModbus(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}"]["TEMPERATURA_14"], descricao=f"[UG{self.id}] Temperatura Óleo ULHM")
         self.c_temp_oleo_uhlm_ug = c.CondicionadorExponencial(self.l_temp_oleo_uhlm)
         self.condicionadores_essenciais.append(self.c_temp_oleo_uhlm_ug)
 
         # CONDICIONCADORES ATENUADORES
             # Pressão Entrada Turbina
-        self.l_pressao_turbina = lei.LeituraModbus(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}"][""], escala=0.1, descricao=f"[UG{self.id}] Pressão Entrada Turbina")
+        self.l_pressao_turbina = lei.LeituraModbus(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}"]["TURB_PRESSAO_CONDUTO"], escala=0.1, descricao=f"[UG{self.id}] Pressão Entrada Turbina")
         self.c_pressao_turbina_ug = c.CondicionadorExponencialReverso(self.l_pressao_turbina, CONDIC_INDISPONIBILIZAR, 1.6, 1.3)
         self.condicionadores_atenuadores.append(self.c_pressao_turbina_ug)
 
@@ -1764,7 +1764,7 @@ class UnidadeGeracao:
 
         ## MENSAGEIRO
         self.l_modo_local = lei.LeituraModbusBit(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}"]["OPER_MODO_LOCAL"], descricao=f"[UG{self.id}] Operação Modo Local Acionado")
-        self.l_dj_07 = lei.LeituraModbus(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}"]["DJ_07"], invertido=True, descricao=f"[UG{self.id}] Q49 - Disjuntor Q125.0 UG1 - Alimentação SEL2600")
+        self.l_dj_07 = lei.LeituraModbus(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}"]["DJ_07"], descricao=f"[UG{self.id}] Q49 - Disjuntor Q125.0 UG1 - Alimentação SEL2600")
         self.l_uhct_nv_oleo_l = lei.LeituraModbusBit(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}"]["UHCT_NIVEL_OLEO_L"], descricao=f"[UG{self.id}] UHCT Nível Óleo Baixo")
         self.l_uhct_nv_oleo_h = lei.LeituraModbusBit(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}"]["UHCT_NIVEL_OLEO_H"], descricao=f"[UG{self.id}] UHCT Nível Óleo Alto")
         self.l_uhct_nv_oleo_hh = lei.LeituraModbusBit(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}"]["UHCT_NIVEL_OLEO_HH"], descricao=f"[UG{self.id}] UHCT Nível Óleo Muito Alto")

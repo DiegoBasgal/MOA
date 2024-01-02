@@ -82,21 +82,9 @@ if __name__ == "__main__":
 
             try:
                 logger.debug("")
-                logger.info("Iniciando conexões com Servidores...")
-
-                servidores = serv.Servidores()
-
-            except Exception:
-                logger.error(f"Erro ao iniciar classes de conexão com servidores. Tentando novamente em \"{TIMEOUT_MAIN}s\".")
-                logger.debug(traceback.format_exc())
-                sleep(TIMEOUT_MAIN)
-                continue
-
-            try:
-                logger.debug("")
                 logger.info("Iniciando instância e objetos da Usina...")
 
-                usn: "u.Usina" = u.Usina(cfg, servidores)
+                usn: "u.Usina" = u.Usina(cfg)
 
             except Exception:
                 logger.error(f"Erro ao instanciar a classe Usina. Tentando novamente em \"{TIMEOUT_MAIN}s\".")
@@ -149,13 +137,13 @@ if __name__ == "__main__":
             logger.debug("")
             logger.error(f"[!!!] \"ATENÇÃO!\" Houve um erro na execução do loop principal -> !! \"main.py\" !!")
             logger.debug(traceback.format_exc())
-            servidores.close_all()
+            serv.Servidores.close_all()
             logger.debug("MOA encerrado! Até a próxima...")
             break
 
         except KeyboardInterrupt:
             logger.debug("")
             logger.warning("[!!!] \"ATENÇÃO!\" Execução do loop principal da main do MOA interrompido por comando de teclado.")
-            servidores.close_all()
+            serv.Servidores.close_all()
             logger.debug("MOA encerrado! Até a próxima...")
             break
