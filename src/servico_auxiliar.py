@@ -89,97 +89,97 @@ class ServicoAuxiliar:
         if cls.l_cb_ligado.valor and not d.voip["CB_LIGADO"][0]:
             logger.warning("[SA]  Foi identificado que o Carregador de Baterias 1 foi ligado. Favor verificar.")
             d.voip["CB_LIGADO"][0] = True
-        elif not cls.l_cb_ligado and d.voip["CB_LIGADO"][0]:
+        elif not cls.l_cb_ligado.valor and d.voip["CB_LIGADO"][0]:
             d.voip["CB_LIGADO"][0] = False
 
         if cls.l_cb2_ligado.valor and not d.voip["CB2_LIGADO"][0]:
             logger.warning("[SA]  Foi identificado que o Carregador de Baterias 2 foi ligado. Favor verificar.")
             d.voip["CB2_LIGADO"][0] = True
-        elif not cls.l_cb2_ligado and d.voip["CB2_LIGADO"][0]:
+        elif not cls.l_cb2_ligado.valor and d.voip["CB2_LIGADO"][0]:
             d.voip["CB2_LIGADO"][0] = False
 
         if cls.l_gd_comb_men30.valor and not d.voip["GD_COMB_MENOR30"][0]:
             logger.warning("[SA]  Foi identificado que o Nível de Combustível do Gerador Diesel está abaixo de 30%. Favor verificar.")
             d.voip["GD_COMB_MENOR30"][0] = True
-        elif not cls.l_gd_comb_men30 and d.voip["GD_COMB_MENOR30"][0]:
+        elif not cls.l_gd_comb_men30.valor and d.voip["GD_COMB_MENOR30"][0]:
             d.voip["GD_COMB_MENOR30"][0] = False
 
         if cls.l_sa_modo_local.valor and not d.voip["SA_MODO_LOCAL"][0]:
             logger.warning("[SA]  Foi identificado que o Serviço Auxiliar entrou em Modo de Operação Local. Favor verificar.")
             d.voip["SA_MODO_LOCAL"][0] = True
-        elif not cls.l_sa_modo_local and d.voip["SA_MODO_LOCAL"][0]:
+        elif not cls.l_sa_modo_local.valor and d.voip["SA_MODO_LOCAL"][0]:
             d.voip["SA_MODO_LOCAL"][0] = False
 
         if cls.l_sa_modo_manual.valor and not d.voip["SA_MODO_MANUAL"][0]:
             logger.warning("[SA]  Foi identificado que o Serviço Auxiliar entrou em Modo de Operação Manual. Favor verificar.")
             d.voip["SA_MODO_MANUAL"][0] = True
-        elif not cls.l_sa_modo_manual and d.voip["SA_MODO_MANUAL"][0]:
+        elif not cls.l_sa_modo_manual.valor and d.voip["SA_MODO_MANUAL"][0]:
             d.voip["SA_MODO_MANUAL"][0] = False
 
         if cls.l_poco_modo_local.valor and not d.voip["POCO_MODO_LOCAL"][0]:
             logger.warning("[SA]  Foi identificado que o Poço entrou em Modo de Operação Local. Favor verificar.")
             d.voip["POCO_MODO_LOCAL"][0] = True
-        elif not cls.l_poco_modo_local and d.voip["POCO_MODO_LOCAL"][0]:
+        elif not cls.l_poco_modo_local.valor and d.voip["POCO_MODO_LOCAL"][0]:
             d.voip["POCO_MODO_LOCAL"][0] = False
 
         if cls.l_poco_modo_manual.valor and not d.voip["POCO_MODO_MANUAL"][0]:
             logger.warning("[SA]  Foi identificado que o Poço entrou em Modo de Operação Manual. Favor verificar.")
             d.voip["POCO_MODO_MANUAL"][0] = True
-        elif not cls.l_poco_modo_manual and d.voip["POCO_MODO_MANUAL"][0]:
+        elif not cls.l_poco_modo_manual.valor and d.voip["POCO_MODO_MANUAL"][0]:
             d.voip["POCO_MODO_MANUAL"][0] = False
 
         if cls.l_poco_nv_hh.valor and not d.voip["POCO_NIVEL_HH"][0]:
             logger.warning("[SA]  Foi identificado que o Nível do Poço está Muito Alto. Favor verificar.")
             d.voip["POCO_NIVEL_HH"][0] = True
-        elif not cls.l_poco_nv_hh and d.voip["POCO_NIVEL_HH"][0]:
+        elif not cls.l_poco_nv_hh.valor and d.voip["POCO_NIVEL_HH"][0]:
             d.voip["POCO_NIVEL_HH"][0] = False
 
         if cls.l_sens_presen_hab.valor and not d.voip["SENSOR_PRESENCA_HABILITADO"][0]:
             logger.warning("[SA]  Foi identificado que o Sensor de Presença foi Habilitado. Favor verificar.")
             d.voip["SENSOR_PRESENCA_HABILITADO"][0] = True
-        elif not cls.l_sens_presen_hab and d.voip["SENSOR_PRESENCA_HABILITADO"][0]:
+        elif not cls.l_sens_presen_hab.valor and d.voip["SENSOR_PRESENCA_HABILITADO"][0]:
             d.voip["SENSOR_PRESENCA_HABILITADO"][0] = False
 
         if cls.l_sens_presen_sala_sup.valor and not d.voip["SENSOR_PRESENCA_SALA_SUP"][0]:
             logger.warning("[SA]  Foi identificado um acionamento na Sala do Supervisório pelo Sensor de Presença. Favor verificar.")
             d.voip["SENSOR_PRESENCA_SALA_SUP"][0] = True
-        elif not cls.l_sens_presen_sala_sup and d.voip["SENSOR_PRESENCA_SALA_SUP"][0]:
+        elif not cls.l_sens_presen_sala_sup.valor and d.voip["SENSOR_PRESENCA_SALA_SUP"][0]:
             d.voip["SENSOR_PRESENCA_SALA_SUP"][0] = False
 
         if cls.l_sens_presen_sala_coz_ban.valor and not d.voip["SENSOR_PRESENCA_SALA_COZI_BANH"][0]:
             logger.warning("[SA]  Foi identificado um acionamento na Cozinha/Banheiro pelo Sensor de Presença. Favor verificar.")
             d.voip["SENSOR_PRESENCA_SALA_COZI_BANH"][0] = True
-        elif not cls.l_sens_presen_sala_coz_ban and d.voip["SENSOR_PRESENCA_SALA_COZI_BANH"][0]:
+        elif not cls.l_sens_presen_sala_coz_ban.valor and d.voip["SENSOR_PRESENCA_SALA_COZI_BANH"][0]:
             d.voip["SENSOR_PRESENCA_SALA_COZI_BANH"][0] = False
 
         if cls.l_sens_presen_almox.valor and not d.voip["SENSOR_PRESENCA_ALMOXARI"][0]:
             logger.warning("[SA]  Foi identificado um acionamento no Almoxarifado pelo Sensor de Presença. Favor verificar.")
             d.voip["SENSOR_PRESENCA_ALMOXARI"][0] = True
-        elif not cls.l_sens_presen_almox and d.voip["SENSOR_PRESENCA_ALMOXARI"][0]:
+        elif not cls.l_sens_presen_almox.valor and d.voip["SENSOR_PRESENCA_ALMOXARI"][0]:
             d.voip["SENSOR_PRESENCA_ALMOXARI"][0] = False
 
         if cls.l_sens_presen_area_mont.valor and not d.voip["SENSOR_PRESENCA_AREA_MONT"][0]:
             logger.warning("[SA]  Foi identificado um acionamento na Área de Montagem pelo Sensor de Presença. Favor verificar.")
             d.voip["SENSOR_PRESENCA_AREA_MONT"][0] = True
-        elif not cls.l_sens_presen_area_mont and d.voip["SENSOR_PRESENCA_AREA_MONT"][0]:
+        elif not cls.l_sens_presen_area_mont.valor and d.voip["SENSOR_PRESENCA_AREA_MONT"][0]:
             d.voip["SENSOR_PRESENCA_AREA_MONT"][0] = False
 
         if cls.l_sens_presen_sala_cubic.valor and not d.voip["SENSOR_PRESENCA_SALA_CUBI"][0]:
             logger.warning("[SA]  Foi identificado um acionamento na Sala Cubículo pelo Sensor de Presença. Favor verificar.")
             d.voip["SENSOR_PRESENCA_SALA_CUBI"][0] = True
-        elif not cls.l_sens_presen_sala_cubic and d.voip["SENSOR_PRESENCA_SALA_CUBI"][0]:
+        elif not cls.l_sens_presen_sala_cubic.valor and d.voip["SENSOR_PRESENCA_SALA_CUBI"][0]:
             d.voip["SENSOR_PRESENCA_SALA_CUBI"][0] = False
 
         if cls.l_sis_agu_cx_agua1_nv50.valor and not d.voip["SIS_AGUA_CAIXA_AGUA01_NV50"][0]:
             logger.warning("[SA]  Foi identificado que a Caixa da Água 1 do Sistema de Água está com o Nível abaixo de 50%. Favor verificar.")
             d.voip["SIS_AGUA_CAIXA_AGUA01_NV50"][0] = True
-        elif not cls.l_sis_agu_cx_agua1_nv50 and d.voip["SIS_AGUA_CAIXA_AGUA01_NV50"][0]:
+        elif not cls.l_sis_agu_cx_agua1_nv50.valor and d.voip["SIS_AGUA_CAIXA_AGUA01_NV50"][0]:
             d.voip["SIS_AGUA_CAIXA_AGUA01_NV50"][0] = False
 
         if cls.l_sis_agu_cx_agua2_nv50.valor and not d.voip["SIS_AGUA_CAIXA_AGUA02_NV50"][0]:
             logger.warning("[SA]  Foi identificado que a Caixa da Água 2 do Sistema de Água está com o Nível abaixo de 50%. Favor verificar.")
             d.voip["SIS_AGUA_CAIXA_AGUA02_NV50"][0] = True
-        elif not cls.l_sis_agu_cx_agua2_nv50 and d.voip["SIS_AGUA_CAIXA_AGUA02_NV50"][0]:
+        elif not cls.l_sis_agu_cx_agua2_nv50.valor and d.voip["SIS_AGUA_CAIXA_AGUA02_NV50"][0]:
             d.voip["SIS_AGUA_CAIXA_AGUA02_NV50"][0] = False
             
         if cls.l_sis_agu_cx_agua1_nv50.valor and cls.l_sis_agu_cx_agua2_nv50.valor and d.voip["SIS_AGUA_REPOR_CAIXAS_AGUA"][0]:
@@ -214,16 +214,16 @@ class ServicoAuxiliar:
         cls.condicionadores_essenciais.append(c.CondicionadorBase(cls.l_alm_21_b_02, CONDIC_INDISPONIBILIZAR))
 
 
-        cls.l_fuga_ter_tens = lei.LeituraModbusBit(cls.clp["SA"], REG_SA["FUGA_TERRA_TENSAO"], descricao="[SA]  Fuga Terra Tensão")
+        cls.l_fuga_ter_tens = lei.LeituraModbus(cls.clp["SA"], REG_SA["FUGA_TERRA_TENSAO"], descricao="[SA]  Fuga Terra Tensão")
         cls.condicionadores.append(c.CondicionadorBase(cls.l_fuga_ter_tens, CONDIC_INDISPONIBILIZAR))
 
         cls.l_fuga_ter_trip = lei.LeituraModbusBit(cls.clp["SA"], REG_SA["FUGA_TERRA_TRIP"], descricao="[SA]  TRIP Fuga Terra")
         cls.condicionadores.append(c.CondicionadorBase(cls.l_fuga_ter_trip, CONDIC_INDISPONIBILIZAR))
 
-        cls.l_fuga_ter_tens_pos = lei.LeituraModbusBit(cls.clp["SA"], REG_SA["FUGA_TERRA_TENSAO_POSITIVA"], descricao="[SA]  Fuga Terra Tensão Positiva")
+        cls.l_fuga_ter_tens_pos = lei.LeituraModbus(cls.clp["SA"], REG_SA["FUGA_TERRA_TENSAO_POSITIVA"], descricao="[SA]  Fuga Terra Tensão Positiva")
         cls.condicionadores.append(c.CondicionadorBase(cls.l_fuga_ter_tens_pos, CONDIC_INDISPONIBILIZAR))
 
-        cls.l_fuga_ter_tens_neg = lei.LeituraModbusBit(cls.clp["SA"], REG_SA["FUGA_TERRA_TENSAO_NEGATIVA"], descricao="[SA]  Fuga Terra Tensão Negativa")
+        cls.l_fuga_ter_tens_neg = lei.LeituraModbus(cls.clp["SA"], REG_SA["FUGA_TERRA_TENSAO_NEGATIVA"], descricao="[SA]  Fuga Terra Tensão Negativa")
         cls.condicionadores.append(c.CondicionadorBase(cls.l_fuga_ter_tens_neg, CONDIC_INDISPONIBILIZAR))
 
         cls.l_fuga_ter_pos = lei.LeituraModbusBit(cls.clp["SA"], REG_SA["FUGA_TERRA_POSITIVO"], descricao="[SA]  Fuga Terra Positivo")

@@ -112,64 +112,64 @@ class TomadaAgua:
         em períodos separados por um tempo pré-definido.
         """
 
-        if cls.l_uhta01_nv_oleo_ll and not d.voip["UHTA01_NIVEL_OLEO_LL"][0]:
+        if cls.l_uhta01_nv_oleo_ll.valor and not d.voip["UHTA01_NIVEL_OLEO_LL"][0]:
             logger.warning("[TDA] Foi identificado que o nível do Óleo da UHTA 1 está Muito Baixo. Favor verificar.")
             d.voip["UHTA01_NIVEL_OLEO_LL"][0] = True
-        elif not cls.l_uhta01_nv_oleo_ll and d.voip["UHTA01_NIVEL_OLEO_LL"][0]:
+        elif not cls.l_uhta01_nv_oleo_ll.valor and d.voip["UHTA01_NIVEL_OLEO_LL"][0]:
             d.voip["UHTA01_NIVEL_OLEO_LL"][0] = False
 
-        if cls.l_uhta01_nv_oleo_hh and not d.voip["UHTA01_NIVEL_OLEO_HH"][0]:
+        if cls.l_uhta01_nv_oleo_hh.valor and not d.voip["UHTA01_NIVEL_OLEO_HH"][0]:
             logger.warning("[TDA] Foi identificado que o nível do Óleo da UHTA 1 está Muito Alto. Favor verificar.")
             d.voip["UHTA01_NIVEL_OLEO_HH"][0] = True
-        elif not cls.l_uhta01_nv_oleo_hh and d.voip["UHTA01_NIVEL_OLEO_HH"][0]:
+        elif not cls.l_uhta01_nv_oleo_hh.valor and d.voip["UHTA01_NIVEL_OLEO_HH"][0]:
             d.voip["UHTA01_NIVEL_OLEO_HH"][0] = False
 
-        if cls.l_uhta01_temp_oleo_h and not d.voip["UHTA01_TEMP_OLEO_H"][0]:
+        if cls.l_uhta01_temp_oleo_h.valor and not d.voip["UHTA01_TEMP_OLEO_H"][0]:
             logger.warning("[TDA] Foi identificado que a temperatura do Óleo da UHTA 1 está Alta. Favor verificar.")
             d.voip["UHTA01_TEMP_OLEO_H"][0] = True
-        elif not cls.l_uhta01_temp_oleo_h and d.voip["UHTA01_TEMP_OLEO_H"][0]:
+        elif not cls.l_uhta01_temp_oleo_h.valor and d.voip["UHTA01_TEMP_OLEO_H"][0]:
             d.voip["UHTA01_TEMP_OLEO_H"][0] = False
 
-        if cls.l_uhta01_temp_oleo_hh and not d.voip["UHTA01_TEMP_OLEO_HH"][0]:
+        if cls.l_uhta01_temp_oleo_hh.valor and not d.voip["UHTA01_TEMP_OLEO_HH"][0]:
             logger.warning("[TDA] Foi identificado que a temperatura do Óleo da UHTA 1 está Muito Alta. Favor verificar.")
             d.voip["UHTA01_TEMP_OLEO_HH"][0] = True
-        elif not cls.l_uhta01_temp_oleo_hh and d.voip["UHTA01_TEMP_OLEO_HH"][0]:
+        elif not cls.l_uhta01_temp_oleo_hh.valor and d.voip["UHTA01_TEMP_OLEO_HH"][0]:
             d.voip["UHTA01_TEMP_OLEO_HH"][0] = False
 
-        if cls.l_uhta02_nv_oleo_ll and not d.voip["UHTA02_NIVEL_OLEO_LL"][0]:
+        if cls.l_uhta02_nv_oleo_ll.valor and not d.voip["UHTA02_NIVEL_OLEO_LL"][0]:
             logger.warning("[TDA] Foi identificado que o nível do Óleo da UHTA 2 está Muito Baixo. Favor verificar.")
             d.voip["UHTA02_NIVEL_OLEO_LL"][0] = True
-        elif not cls.l_uhta02_nv_oleo_ll and d.voip["UHTA02_NIVEL_OLEO_LL"][0]:
+        elif not cls.l_uhta02_nv_oleo_ll.valor and d.voip["UHTA02_NIVEL_OLEO_LL"][0]:
             d.voip["UHTA02_NIVEL_OLEO_LL"][0] = False
 
-        if cls.l_uhta02_nv_oleo_hh and not d.voip["UHTA02_NIVEL_OLEO_HH"][0]:
+        if cls.l_uhta02_nv_oleo_hh.valor and not d.voip["UHTA02_NIVEL_OLEO_HH"][0]:
             logger.warning("[TDA] Foi identificado que o nível do Óleo da UHTA 2 está Muito Alto. Favor verificar.")
             d.voip["UHTA02_NIVEL_OLEO_HH"][0] = True
-        elif not cls.l_uhta02_nv_oleo_hh and d.voip["UHTA02_NIVEL_OLEO_HH"][0]:
+        elif not cls.l_uhta02_nv_oleo_hh.valor and d.voip["UHTA02_NIVEL_OLEO_HH"][0]:
             d.voip["UHTA02_NIVEL_OLEO_HH"][0] = False
 
-        if cls.l_uhta02_temp_oleo_h and not d.voip["UHTA02_TEMP_OLEO_H"][0]:
+        if cls.l_uhta02_temp_oleo_h.valor and not d.voip["UHTA02_TEMP_OLEO_H"][0]:
             logger.warning("[TDA] Foi identificado que a temperatura do Óleo da UHTA 2 está Alta. Favor verificar.")
             d.voip["UHTA02_TEMP_OLEO_H"][0] = True
-        elif not cls.l_uhta02_temp_oleo_h and d.voip["UHTA02_TEMP_OLEO_H"][0]:
+        elif not cls.l_uhta02_temp_oleo_h.valor and d.voip["UHTA02_TEMP_OLEO_H"][0]:
             d.voip["UHTA02_TEMP_OLEO_H"][0] = False
 
-        if cls.l_uhta02_temp_oleo_hh and not d.voip["UHTA02_TEMP_OLEO_HH"][0]:
+        if cls.l_uhta02_temp_oleo_hh.valor and not d.voip["UHTA02_TEMP_OLEO_HH"][0]:
             logger.warning("[TDA] Foi identificado que a temperatura do Óleo da UHTA 2 está Muito Alta. Favor verificar.")
             d.voip["UHTA02_TEMP_OLEO_HH"][0] = True
-        elif not cls.l_uhta02_temp_oleo_hh and d.voip["UHTA02_TEMP_OLEO_HH"][0]:
+        elif not cls.l_uhta02_temp_oleo_hh.valor and d.voip["UHTA02_TEMP_OLEO_HH"][0]:
             d.voip["UHTA02_TEMP_OLEO_HH"][0] = False
 
-        if cls.l_pcta_falta_fase and not d.voip["PCTA_FALTA_FASE"][0]:
+        if cls.l_pcta_falta_fase.valor and not d.voip["PCTA_FALTA_FASE"][0]:
             logger.warning("[TDA] Foi identificada uma falta de Fase no Painel da Tomada da Água. Favor verificar.")
             d.voip["PCTA_FALTA_FASE"][0] = True
-        elif not cls.l_pcta_falta_fase and d.voip["PCTA_FALTA_FASE"][0]:
+        elif not cls.l_pcta_falta_fase.valor and d.voip["PCTA_FALTA_FASE"][0]:
             d.voip["PCTA_FALTA_FASE"][0] = False
 
-        if (cls.nivel_montante.valor < cls.cfg["nv_minimo"]) and cls.l_pcta_modo_remoto and not d.voip["PCTA_MODO_REMOTO"][0]:
+        if (cls.nivel_montante.valor < cls.cfg["nv_minimo"]) and cls.l_pcta_modo_remoto.valor and not d.voip["PCTA_MODO_REMOTO"][0]:
             logger.warning("[TDA] Foi identificado que o Painel da Tomada da Água entrou em Modo Remoto. Favor verificar.")
             d.voip["PCTA_MODO_REMOTO"][0] = True
-        elif not cls.l_pcta_modo_remoto and d.voip["PCTA_MODO_REMOTO"][0]:
+        elif not cls.l_pcta_modo_remoto.valor and d.voip["PCTA_MODO_REMOTO"][0]:
             d.voip["PCTA_MODO_REMOTO"][0] = False
 
 

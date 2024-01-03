@@ -5,7 +5,7 @@ REG_MOA = {
 REG_SA = {
     ## COMANDOS
     # Gerais
-    "CMD_RESET_ALARMES":                        0 + 12289,                      # Comandos.ResetAlarmes
+    "CMD_RESET_ALARMES":                        0 + 12289 + 1000,                      # Comandos.ResetAlarmes
     "CMD_RECONHECE_ALARMES":                    1 + 12289,                      # Comandos.ReconheceAlarmes
     "CMD_EMERGENCIA_LIGAR":                     2 + 12289,                      # Comandos.EmergenciaLigar
     "CMD_EMERGENCIA_DESLIGAR":                  3 + 12289,                      # Comandos.EmergenciaDesligar
@@ -596,8 +596,8 @@ REG_SA = {
 REG_SE = {
     ## COMANDOS
     # Dj52L
-    "CMD_ABRIR_DJ52L":                          4 + 12289,                      # Comandos.Disj52LAbrir
-    "CMD_FECHAR_DJ52L":                         5 + 12289,                      # Comandos.Disj52LFechar
+    "CMD_ABRIR_DJ52L":                          4 + 12289 + 1000,                      # Comandos.Disj52LAbrir
+    "CMD_FECHAR_DJ52L":                         5 + 12289 + 1000,                      # Comandos.Disj52LFechar
 
     # Secc89L
     "CMD_SECC89L_ABRIR":                        35 + 12289,                     # Comandos.Secc89L_Abrir
@@ -611,24 +611,24 @@ REG_SE = {
     ## LEITURAS
     # Disjuntores
     "STATUS_DJ52L":                             21 + 12764,                     # Leituras.Subestacao_Disj52L
-    "DJ52L_ABERTO":                             [21 + 12764, 0],                # Disj52L.Info.Aberto
-    "DJ52L_FECHADO":                            [21 + 12764, 1],                # Disj52L.Info.Fechado
-    "DJ52L_INCONSISTENTE":                      [21 + 12764, 2],                # Disj52L.Info.Inconsistente
-    "DJ52L_TRIP":                               [21 + 12764, 3],                # Disj52L.Info.Trip
+    "DJ52L_ABERTO":                             [21 + 12764 + 1000, 0],                # Disj52L.Info.Aberto
+    "DJ52L_FECHADO":                            [21 + 12764 + 1000, 1],                # Disj52L.Info.Fechado
+    "DJ52L_INCONSISTENTE":                      [21 + 12764 + 1000, 2],                # Disj52L.Info.Inconsistente
+    "DJ52L_TRIP":                               [21 + 12764 + 1000, 3],                # Disj52L.Info.Trip
     "DJ52L_MODO_LOCAL":                         [21 + 12764, 4],                # Disj52L.Info.ModoLocal
     "DJ52L_MODO_REMOTO":                        [21 + 12764, 5],                # Disj52L.Info.ModoRemoto
-    "DJ52L_MOLA_CARREGADA":                     [21 + 12764, 6],                # Disj52L.Info.MolaCarregada
+    "DJ52L_MOLA_CARREGADA":                     [21 + 12764 + 1000, 6],                # Disj52L.Info.MolaCarregada
     "DJ52L_ALIM125VCC_MOTOR":                   [21 + 12764, 7],                # Disj52L.Info.Alim125Vcc_motor
-    "DJ52L_FALTA_VCC":                          [21 + 12764, 8],                # Disj52L.Info.FaltaVcc
-    "DJ52L_COND_FECHAMENTO":                    [21 + 12764, 9],                # Disj52L.Info.CondFechamento
+    "DJ52L_FALTA_VCC":                          [21 + 12764 + 1000, 8],                # Disj52L.Info.FaltaVcc
+    "DJ52L_COND_FECHAMENTO":                    [21 + 12764 + 1000, 9],                # Disj52L.Info.CondFechamento
     "DJ52L_GAS_SF6_1":                          [21 + 12764, 10],               # Disj52L.Info.GasSF6_1
     "DJ52L_GAS_SF6_2":                          [21 + 12764, 11],               # Disj52L.Info.GasSF6_2
     "DJ52L_FALHA_ABERTURA":                     [21 + 12764, 12],               # Disj52L.Info.FalhaAbertura
-    "DJ52L_FALHA_FECHAMENTO":                   [21 + 12764, 13],               # Disj52L.Info.FalhaFechamento
+    "DJ52L_FALHA_FECHAMENTO":                   [21 + 12764 + 1000, 13],               # Disj52L.Info.FalhaFechamento
 
     "STATUS_SECCIONADORAS":                     22 + 12764,                     # Leituras.Subestacao_Seccionadoras
-    "SECC_89L_ABERTA":                          [22 + 12764, 0],                # Seccionadoras.Info.[89L_Aberta]
-    "SECC_89L_FECHADA":                         [22 + 12764, 1],                # Seccionadoras.Info.[89L_Fechada]
+    "SECC_89L_ABERTA":                          [22 + 12764 + 1000, 0],                # Seccionadoras.Info.[89L_Aberta]
+    "SECC_89L_FECHADA":                         [22 + 12764 + 1000, 1],                # Seccionadoras.Info.[89L_Fechada]
     "SECC_89L_CONDICAO":                        [22 + 12764, 2],                # Seccionadoras.Info.[89L_CondicaoFechamento]
     "SECC_MODO_LOCAL":                          [22 + 12764, 3],                # Seccionadoras.Info.Local
     "SECC_LAMINA_FECHADA":                      [22 + 12764, 4],                # Seccionadoras.Info.LaminaFechada
@@ -639,9 +639,9 @@ REG_SE = {
     "TENSAO_RN":                                23 + 12764,                     # Leituras.Subestacao_TensaoRN
     "TENSAO_SN":                                24 + 12764,                     # Leituras.Subestacao_TensaoSN
     "TENSAO_TN":                                25 + 12764,                     # Leituras.Subestacao_TensaoTN
-    "TENSAO_RS":                                26 + 12764,                     # Leituras.Subestacao_TensaoRS
-    "TENSAO_ST":                                27 + 12764,                     # Leituras.Subestacao_TensaoST
-    "TENSAO_TR":                                28 + 12764,                     # Leituras.Subestacao_TensaoTR
+    "TENSAO_RS":                                26 + 12764 + 1000,                     # Leituras.Subestacao_TensaoRS
+    "TENSAO_ST":                                27 + 12764 + 1000,                     # Leituras.Subestacao_TensaoST
+    "TENSAO_TR":                                28 + 12764 + 1000,                     # Leituras.Subestacao_TensaoTR
     "TENSAO_SINCRONISMO":                       63 + 12764,                     # Leituras.Subestacao_TensaoSincronismo
     "TENSAO_VCC":                               64 + 12764,                     # Leituras.Subestacao_TensaoVCC
 
@@ -666,7 +666,7 @@ REG_SE = {
     "POTENCIA_ATIVA_1":                         33 + 12764,                     # Leituras.Subestacao_PotenciaAtiva1
     "POTENCIA_ATIVA_2":                         34 + 12764,                     # Leituras.Subestacao_PotenciaAtiva2
     "POTENCIA_ATIVA_3":                         35 + 12764,                     # Leituras.Subestacao_PotenciaAtiva3
-    "POTENCIA_ATIVA_MEDIA":                     36 + 12764,                     # Leituras.Subestacao_PotenciaAtivaMedia
+    "POTENCIA_ATIVA_MEDIA":                     36 + 12764 + 1000,                     # Leituras.Subestacao_PotenciaAtivaMedia
     "POTENCIA_REATIVA_1":                       37 + 12764,                     # Leituras.Subestacao_PotenciaReativa1
     "POTENCIA_REATIVA_2":                       38 + 12764,                     # Leituras.Subestacao_PotenciaReativa2
     "POTENCIA_REATIVA_3":                       39 + 12764,                     # Leituras.Subestacao_PotenciaReativa3
@@ -942,7 +942,7 @@ REG_TDA = {
     ## LEITURAS
     # Níveis
     "NV_JUSANTE":                               2 + 12764,                      # Leituras.NivelJusante
-    "NV_BARRAGEM":                              3 + 12764,                      # Leituras.NivelBarragem
+    "NV_BARRAGEM":                              3 + 12764 + 2000,                      # Leituras.NivelBarragem
     "NV_CANALADUCAO":                           4 + 12764,                      # Leituras.NivelCanalAducao
     "NV_CAMARACARGA":                           5 + 12764,                      # Leituras.NivelCamaraCarga
     "NV_POS_GRADE_01":                          227 + 12764,                    # Leituras.NivelPosGrade01
@@ -1138,11 +1138,11 @@ REG_AD = {
     "CMD_CP_01_ABRIR":                          57 + 12289,                     # Comandos.PCAD_Comporta01Abrir
     "CMD_CP_01_PARAR":                          58 + 12289,                     # Comandos.PCAD_Comporta01Parar
     "CMD_CP_01_FECHAR":                         59 + 12289,                     # Comandos.PCAD_Comporta01Fechar
-    "CMD_CP_01_BUSCAR":                         60 + 12289,                     # Comandos.PCAD_Comporta01Buscar
+    "CMD_CP_01_BUSCAR":                         60 + 12289 + 3000,                     # Comandos.PCAD_Comporta01Buscar
     "CMD_CP_02_ABRIR":                          61 + 12289,                     # Comandos.PCAD_Comporta02Abrir
     "CMD_CP_02_PARAR":                          62 + 12289,                     # Comandos.PCAD_Comporta02Parar
     "CMD_CP_02_FECHAR":                         63 + 12289,                     # Comandos.PCAD_Comporta02Fechar
-    "CMD_CP_02_BUSCAR":                         64 + 12289,                     # Comandos.PCAD_Comporta02Buscar
+    "CMD_CP_02_BUSCAR":                         64 + 12289 + 3000,                     # Comandos.PCAD_Comporta02Buscar
 
     # Modo Setpoint
     "CMD_MODO_SP_DESABILITAR":                  66 + 12289,                     # Comandos.PCAD_ModoSetpointHabilitar
@@ -1177,25 +1177,25 @@ REG_AD = {
 
     ## LEITURAS
     # Comportas
-    "CP_01_INFO":                               164 + 12764,                    # Leituras.PCAD_Comporta01_Info
-    "CP_01_ABRINDO":                            [164 + 12764, 0],               # PCAD.Comporta01.Info.Abrindo
-    "CP_01_FECHANDO":                           [164 + 12764, 1],               # PCAD.Comporta01.Info.Fechando
-    "CP_01_ABERTA":                             [164 + 12764, 2],               # PCAD.Comporta01.Info.Aberta
-    "CP_01_FECHADA":                            [164 + 12764, 3],               # PCAD.Comporta01.Info.Fechada
-    "CP_01_PARADA":                             [164 + 12764, 4],               # PCAD.Comporta01.Info.Parada
-    "CP_01_ACION_LOCAL":                        [164 + 12764, 5],               # PCAD.Comporta01.Info.AcionamentoLocal
+    "CP_01_INFO":                               164 + 12764 + 3000,                    # Leituras.PCAD_Comporta01_Info
+    "CP_01_ABRINDO":                            [164 + 12764 + 3000, 0],               # PCAD.Comporta01.Info.Abrindo
+    "CP_01_FECHANDO":                           [164 + 12764 + 3000, 1],               # PCAD.Comporta01.Info.Fechando
+    "CP_01_ABERTA":                             [164 + 12764 + 3000, 2],               # PCAD.Comporta01.Info.Aberta
+    "CP_01_FECHADA":                            [164 + 12764 + 3000, 3],               # PCAD.Comporta01.Info.Fechada
+    "CP_01_PARADA":                             [164 + 12764 + 3000, 4],               # PCAD.Comporta01.Info.Parada
+    "CP_01_ACION_LOCAL":                        [164 + 12764 + 3000, 5],               # PCAD.Comporta01.Info.AcionamentoLocal
 
-    "CP_01_POSICAO":                            165 + 12764,                    # Leituras.PCAD_Comporta01_Posicao
+    "CP_01_POSICAO":                            165 + 12764 + 3000,                    # Leituras.PCAD_Comporta01_Posicao
 
-    "CP_02_INFO":                               166 + 12764,                    # Leituras.PCAD_Comporta02_Info
-    "CP_02_ABRINDO":                            [166 + 12764, 0],               # PCAD.Comporta02.Info.Abrindo
-    "CP_02_FECHANDO":                           [166 + 12764, 1],               # PCAD.Comporta02.Info.Fechando
-    "CP_02_ABERTA":                             [166 + 12764, 2],               # PCAD.Comporta02.Info.Aberta
-    "CP_02_FECHADA":                            [166 + 12764, 3],               # PCAD.Comporta02.Info.Fechada
-    "CP_02_PARADA":                             [166 + 12764, 4],               # PCAD.Comporta02.Info.Parada
-    "CP_02_ACION_LOCAL":                        [166 + 12764, 5],               # PCAD.Comporta02.Info.AcionamentoLocal
+    "CP_02_INFO":                               166 + 12764 + 3000,                    # Leituras.PCAD_Comporta02_Info
+    "CP_02_ABRINDO":                            [166 + 12764 + 3000, 0],               # PCAD.Comporta02.Info.Abrindo
+    "CP_02_FECHANDO":                           [166 + 12764 + 3000, 1],               # PCAD.Comporta02.Info.Fechando
+    "CP_02_ABERTA":                             [166 + 12764 + 3000, 2],               # PCAD.Comporta02.Info.Aberta
+    "CP_02_FECHADA":                            [166 + 12764 + 3000, 3],               # PCAD.Comporta02.Info.Fechada
+    "CP_02_PARADA":                             [166 + 12764 + 3000, 4],               # PCAD.Comporta02.Info.Parada
+    "CP_02_ACION_LOCAL":                        [166 + 12764 + 3000, 5],               # PCAD.Comporta02.Info.AcionamentoLocal
 
-    "CP_02_POSICAO":                            167 + 12764,                    # Leituras.PCAD_Comporta02_Posicao
+    "CP_02_POSICAO":                            167 + 12764 + 3000,                    # Leituras.PCAD_Comporta02_Posicao
 
     # UHCD,
     "UHCD_INFO":                                168 + 12764,                    # Leituras.PCAD_UHCD_Info
@@ -1295,16 +1295,16 @@ REG_UG = {
     "UG1": {
         ## COMANDOS
         # Gerais
-        "CMD_RESET_ALARMES":                    0 + 12289,                      # Comandos.Operacao_PCH_AdoPopinhakResetAlarmes
+        "CMD_RESET_ALARMES":                    0 + 12289 + 10000,                      # Comandos.Operacao_PCH_AdoPopinhakResetAlarmes
         "CMD_RECONHECE_ALARMES":                1 + 12289,                      # Comandos.Operacao_PCH_AdoPopinhakReconheceAlarmes
 
         # Operação
-        "CMD_OPER_UP":                          2 + 12289,                      # Comandos.Operacao_UP
+        "CMD_OPER_UP":                          2 + 12289 + 10000,                      # Comandos.Operacao_UP
         "CMD_OPER_UPGM":                        3 + 12289,                      # Comandos.Operacao_UPGM
         "CMD_OPER_UVD":                         4 + 12289,                      # Comandos.Operacao_UVD
         "CMD_OPER_UPS":                         5 + 12289,                      # Comandos.Operacao_UPS
-        "CMD_OPER_US":                          6 + 12289,                      # Comandos.Operacao_US
-        "CMD_OPER_EMERGENCIA_LIGAR":            7 + 12289,                      # Comandos.Operacao_EmergenciaLigar
+        "CMD_OPER_US":                          6 + 12289 + 10000,                      # Comandos.Operacao_US
+        "CMD_OPER_EMERGENCIA_LIGAR":            7 + 12289 + 10000,                      # Comandos.Operacao_EmergenciaLigar
         "CMD_OPER_EMERGENCIA_DESLIGAR":         8 + 12289,                      # Comandos.Operacao_EmergenciaDesligar
         "CMD_OPER_PARADA_RESET":                72 + 12289,                     # Comandos.Operacao_ParadaReset
 
@@ -1429,7 +1429,7 @@ REG_UG = {
         "CRTL_POT_POT_MIN":                     14 + 13569,                     # Setpoints.CtrlPotencia_PotenciaMinima
         "CRTL_POT_POT_MIN_TEMPO":               15 + 13569,                     # Setpoints.CtrlPotencia_PotenciaMinimaTempo
         "CRTL_POT_NIVEL_RELIGAMENTO":           16 + 13569,                     # Setpoints.CtrlPotencia_NivelReligamento
-        "CRTL_POT_ALVO":                        17 + 13569,                     # Setpoints.CtrlPotencia_Alvo
+        "CRTL_POT_ALVO":                        17 + 13569 + 10000,                     # Setpoints.CtrlPotencia_Alvo
         "CRTL_POT_TOLERANCIA":                  18 + 13569,                     # Setpoints.CtrlPotencia_Tolerancia
         "CRTL_POT_PULSO_TEMPO":                 19 + 13569,                     # Setpoints.CtrlPotencia_PulsoTempo
         "CRTL_POT_PULSO_INTERVALO":             20 + 13569,                     # Setpoints.CtrlPotencia_PulsoIntervalo
@@ -1658,14 +1658,14 @@ REG_UG = {
         "OPER_MODO_REMOTO":                     [8 + 12764, 2],                 # Operacao.Info.OperacaoModoRemoto
         "OPER_MODO_LOCAL":                      [8 + 12764, 3],                 # Operacao.Info.OperacaoModoLocal
 
-        "OPER_ETAPA_ALVO":                      9 + 12764,                      # Leituras.Operacao_EtapaAlvo
+        "OPER_ETAPA_ALVO":                      9 + 12764 + 10000,                      # Leituras.Operacao_EtapaAlvo
         "OPER_ETAPA_ALVO_UP":                   [9 + 12764, 0],                 # Operacao.EtapaAlvo.UP
         "OPER_ETAPA_ALVO_UPGM":                 [9 + 12764, 1],                 # Operacao.EtapaAlvo.UPGM
         "OPER_ETAPA_ALVO_UMD":                  [9 + 12764, 2],                 # Operacao.EtapaAlvo.UMD
         "OPER_ETAPA_ALVO_UPS":                  [9 + 12764, 3],                 # Operacao.EtapaAlvo.UPS
         "OPER_ETAPA_ALVO_US":                   [9 + 12764, 4],                 # Operacao.EtapaAlvo.US
 
-        "OPER_ETAPA_ATUAL":                     10 + 12764,                     # Leituras.Operacao_EtapaAtual
+        "OPER_ETAPA_ATUAL":                     10 + 12764 + 10000,                     # Leituras.Operacao_EtapaAtual
         "OPER_ETAPA_ATUAL_UP":                  [10 + 12764, 0],                # Operacao.EtapaAtual.UP
         "OPER_ETAPA_ATUAL_UPGM":                [10 + 12764, 1],                # Operacao.EtapaAtual.UPGM
         "OPER_ETAPA_ATUAL_UMD":                 [10 + 12764, 2],                # Operacao.EtapaAtual.UMD
@@ -1824,7 +1824,7 @@ REG_UG = {
 
         "TURB_TEMPO_CRACK_EFETIVO":             35 + 12764,                     # Leituras.Turb_TempoCrackEfetivo
         "TURB_TEMPO_EQUAL_EFETIVO":             36 + 12764,                     # Leituras.Turb_TempoEqualizacaoEfetivo
-        "TURB_PRESSAO_CONDUTO":                 37 + 12764,                     # Leituras.Turb_PressaoConduto
+        "TURB_PRESSAO_CONDUTO":                 37 + 12764 + 10000,                     # Leituras.Turb_PressaoConduto
         "TURB_PRESSAO_CAIXA_ESPIRAL":           38 + 12764,                     # Leituras.Turb_PressaoCaixaEspiral
         "TURB_VAZAO_TURBINADA":                 39 + 12764,                     # Leituras.Turb_VazaoTurbinada
         "TURB_VIBRACAO_01":                     40 + 12764,                     # Leituras.Turb_Vibracao01
@@ -1933,7 +1933,7 @@ REG_UG = {
         "POT_ATIVA_1":                          70 + 12764,                     # Leituras.Gerador_PotenciaAtiva1
         "POT_ATIVA_2":                          71 + 12764,                     # Leituras.Gerador_PotenciaAtiva2
         "POT_ATIVA_3":                          72 + 12764,                     # Leituras.Gerador_PotenciaAtiva3
-        "POT_ATIVA_MEDIA":                      73 + 12764,                     # Leituras.Gerador_PotenciaAtivaMedia
+        "POT_ATIVA_MEDIA":                      73 + 12764 + 10000,                     # Leituras.Gerador_PotenciaAtivaMedia
 
         # Potência Reativa
         "POT_REATIVA_1":                        74 + 12764,                     # Leituras.Gerador_PotenciaReativa1
@@ -1997,20 +1997,20 @@ REG_UG = {
         "HORIM_MECAN_HIGH":                     105 + 12764,                    # Leituras.HorimetroMecanico_High
 
         # Temperatura
-        "TEMPERATURA_01":                       107 + 12764,                    # Leituras.Temperatura_01
-        "TEMPERATURA_02":                       108 + 12764,                    # Leituras.Temperatura_02
-        "TEMPERATURA_03":                       109 + 12764,                    # Leituras.Temperatura_03
-        "TEMPERATURA_04":                       110 + 12764,                    # Leituras.Temperatura_04
-        "TEMPERATURA_05":                       111 + 12764,                    # Leituras.Temperatura_05
-        "TEMPERATURA_06":                       112 + 12764,                    # Leituras.Temperatura_06
-        "TEMPERATURA_07":                       113 + 12764,                    # Leituras.Temperatura_07
+        "TEMPERATURA_01":                       107 + 12764 + 10000,                    # Leituras.Temperatura_01
+        "TEMPERATURA_02":                       108 + 12764 + 10000,                    # Leituras.Temperatura_02
+        "TEMPERATURA_03":                       109 + 12764 + 10000,                    # Leituras.Temperatura_03
+        "TEMPERATURA_04":                       110 + 12764 + 10000,                    # Leituras.Temperatura_04
+        "TEMPERATURA_05":                       111 + 12764 + 10000,                    # Leituras.Temperatura_05
+        "TEMPERATURA_06":                       112 + 12764 + 10000,                    # Leituras.Temperatura_06
+        "TEMPERATURA_07":                       113 + 12764 + 10000,                    # Leituras.Temperatura_07
         "TEMPERATURA_08":                       114 + 12764,                    # Leituras.Temperatura_08
         "TEMPERATURA_09":                       115 + 12764,                    # Leituras.Temperatura_09
-        "TEMPERATURA_10":                       116 + 12764,                    # Leituras.Temperatura_10
-        "TEMPERATURA_11":                       117 + 12764,                    # Leituras.Temperatura_11
-        "TEMPERATURA_12":                       118 + 12764,                    # Leituras.Temperatura_12
-        "TEMPERATURA_13":                       119 + 12764,                    # Leituras.Temperatura_13
-        "TEMPERATURA_14":                       120 + 12764,                    # Leituras.Temperatura_14
+        "TEMPERATURA_10":                       116 + 12764 + 10000,                    # Leituras.Temperatura_10
+        "TEMPERATURA_11":                       117 + 12764 + 10000,                    # Leituras.Temperatura_11
+        "TEMPERATURA_12":                       118 + 12764 + 10000,                    # Leituras.Temperatura_12
+        "TEMPERATURA_13":                       119 + 12764 + 10000,                    # Leituras.Temperatura_13
+        "TEMPERATURA_14":                       120 + 12764 + 10000,                    # Leituras.Temperatura_14
         "TEMPERATURA_15":                       121 + 12764,                    # Leituras.Temperatura_15
         "TEMPERATURA_16":                       122 + 12764,                    # Leituras.Temperatura_16
 
@@ -2315,16 +2315,16 @@ REG_UG = {
     "UG2": {
         ## COMANDOS
         # Gerais
-        "CMD_RESET_ALARMES":                    0 + 12289,                      # Comandos.Operacao_PCH_AdoPopinhakResetAlarmes
+        "CMD_RESET_ALARMES":                    0 + 12289 + 20000,                      # Comandos.Operacao_PCH_AdoPopinhakResetAlarmes
         "CMD_RECONHECE_ALARMES":                1 + 12289,                      # Comandos.Operacao_PCH_AdoPopinhakReconheceAlarmes
 
         # Operação
-        "CMD_OPER_UP":                          2 + 12289,                      # Comandos.Operacao_UP
+        "CMD_OPER_UP":                          2 + 12289 + 20000,                      # Comandos.Operacao_UP
         "CMD_OPER_UPGM":                        3 + 12289,                      # Comandos.Operacao_UPGM
         "CMD_OPER_UVD":                         4 + 12289,                      # Comandos.Operacao_UVD
         "CMD_OPER_UPS":                         5 + 12289,                      # Comandos.Operacao_UPS
-        "CMD_OPER_US":                          6 + 12289,                      # Comandos.Operacao_US
-        "CMD_OPER_EMERGENCIA_LIGAR":            7 + 12289,                      # Comandos.Operacao_EmergenciaLigar
+        "CMD_OPER_US":                          6 + 12289 + 20000,                      # Comandos.Operacao_US
+        "CMD_OPER_EMERGENCIA_LIGAR":            7 + 12289 + 20000,                      # Comandos.Operacao_EmergenciaLigar
         "CMD_OPER_EMERGENCIA_DESLIGAR":         8 + 12289,                      # Comandos.Operacao_EmergenciaDesligar
         "CMD_OPER_PARADA_RESET":                72 + 12289,                     # Comandos.Operacao_ParadaReset
 
@@ -2449,7 +2449,7 @@ REG_UG = {
         "CRTL_POT_POT_MIN":                     14 + 13569,                     # Setpoints.CtrlPotencia_PotenciaMinima
         "CRTL_POT_POT_MIN_TEMPO":               15 + 13569,                     # Setpoints.CtrlPotencia_PotenciaMinimaTempo
         "CRTL_POT_NIVEL_RELIGAMENTO":           16 + 13569,                     # Setpoints.CtrlPotencia_NivelReligamento
-        "CRTL_POT_ALVO":                        17 + 13569,                     # Setpoints.CtrlPotencia_Alvo
+        "CRTL_POT_ALVO":                        17 + 13569 + 20000,                     # Setpoints.CtrlPotencia_Alvo
         "CRTL_POT_TOLERANCIA":                  18 + 13569,                     # Setpoints.CtrlPotencia_Tolerancia
         "CRTL_POT_PULSO_TEMPO":                 19 + 13569,                     # Setpoints.CtrlPotencia_PulsoTempo
         "CRTL_POT_PULSO_INTERVALO":             20 + 13569,                     # Setpoints.CtrlPotencia_PulsoIntervalo
@@ -2678,14 +2678,14 @@ REG_UG = {
         "OPER_MODO_REMOTO":                     [8 + 12764, 2],                 # Operacao.Info.OperacaoModoRemoto
         "OPER_MODO_LOCAL":                      [8 + 12764, 3],                 # Operacao.Info.OperacaoModoLocal
 
-        "OPER_ETAPA_ALVO":                      9 + 12764,                      # Leituras.Operacao_EtapaAlvo
+        "OPER_ETAPA_ALVO":                      9 + 12764 + 20000,                      # Leituras.Operacao_EtapaAlvo
         "OPER_ETAPA_ALVO_UP":                   [9 + 12764, 0],                 # Operacao.EtapaAlvo.UP
         "OPER_ETAPA_ALVO_UPGM":                 [9 + 12764, 1],                 # Operacao.EtapaAlvo.UPGM
         "OPER_ETAPA_ALVO_UMD":                  [9 + 12764, 2],                 # Operacao.EtapaAlvo.UMD
         "OPER_ETAPA_ALVO_UPS":                  [9 + 12764, 3],                 # Operacao.EtapaAlvo.UPS
         "OPER_ETAPA_ALVO_US":                   [9 + 12764, 4],                 # Operacao.EtapaAlvo.US
 
-        "OPER_ETAPA_ATUAL":                     10 + 12764,                     # Leituras.Operacao_EtapaAtual
+        "OPER_ETAPA_ATUAL":                     10 + 12764 + 20000,                     # Leituras.Operacao_EtapaAtual
         "OPER_ETAPA_ATUAL_UP":                  [10 + 12764, 0],                # Operacao.EtapaAtual.UP
         "OPER_ETAPA_ATUAL_UPGM":                [10 + 12764, 1],                # Operacao.EtapaAtual.UPGM
         "OPER_ETAPA_ATUAL_UMD":                 [10 + 12764, 2],                # Operacao.EtapaAtual.UMD
@@ -2844,7 +2844,7 @@ REG_UG = {
 
         "TURB_TEMPO_CRACK_EFETIVO":             35 + 12764,                     # Leituras.Turb_TempoCrackEfetivo
         "TURB_TEMPO_EQUAL_EFETIVO":             36 + 12764,                     # Leituras.Turb_TempoEqualizacaoEfetivo
-        "TURB_PRESSAO_CONDUTO":                 37 + 12764,                     # Leituras.Turb_PressaoConduto
+        "TURB_PRESSAO_CONDUTO":                 37 + 12764 + 20000,                     # Leituras.Turb_PressaoConduto
         "TURB_PRESSAO_CAIXA_ESPIRAL":           38 + 12764,                     # Leituras.Turb_PressaoCaixaEspiral
         "TURB_VAZAO_TURBINADA":                 39 + 12764,                     # Leituras.Turb_VazaoTurbinada
         "TURB_VIBRACAO_01":                     40 + 12764,                     # Leituras.Turb_Vibracao01
@@ -2953,7 +2953,7 @@ REG_UG = {
         "POT_ATIVA_1":                          70 + 12764,                     # Leituras.Gerador_PotenciaAtiva1
         "POT_ATIVA_2":                          71 + 12764,                     # Leituras.Gerador_PotenciaAtiva2
         "POT_ATIVA_3":                          72 + 12764,                     # Leituras.Gerador_PotenciaAtiva3
-        "POT_ATIVA_MEDIA":                      73 + 12764,                     # Leituras.Gerador_PotenciaAtivaMedia
+        "POT_ATIVA_MEDIA":                      73 + 12764 + 20000,                     # Leituras.Gerador_PotenciaAtivaMedia
 
         # Potência Reativa
         "POT_REATIVA_1":                        74 + 12764,                     # Leituras.Gerador_PotenciaReativa1
@@ -3017,20 +3017,20 @@ REG_UG = {
         "HORIM_MECAN_HIGH":                     105 + 12764,                    # Leituras.HorimetroMecanico_High
 
         # Temperatura
-        "TEMPERATURA_01":                       107 + 12764,                    # Leituras.Temperatura_01
-        "TEMPERATURA_02":                       108 + 12764,                    # Leituras.Temperatura_02
-        "TEMPERATURA_03":                       109 + 12764,                    # Leituras.Temperatura_03
-        "TEMPERATURA_04":                       110 + 12764,                    # Leituras.Temperatura_04
-        "TEMPERATURA_05":                       111 + 12764,                    # Leituras.Temperatura_05
-        "TEMPERATURA_06":                       112 + 12764,                    # Leituras.Temperatura_06
-        "TEMPERATURA_07":                       113 + 12764,                    # Leituras.Temperatura_07
+        "TEMPERATURA_01":                       107 + 12764 + 20000,                    # Leituras.Temperatura_01
+        "TEMPERATURA_02":                       108 + 12764 + 20000,                    # Leituras.Temperatura_02
+        "TEMPERATURA_03":                       109 + 12764 + 20000,                    # Leituras.Temperatura_03
+        "TEMPERATURA_04":                       110 + 12764 + 20000,                    # Leituras.Temperatura_04
+        "TEMPERATURA_05":                       111 + 12764 + 20000,                    # Leituras.Temperatura_05
+        "TEMPERATURA_06":                       112 + 12764 + 20000,                    # Leituras.Temperatura_06
+        "TEMPERATURA_07":                       113 + 12764 + 20000,                    # Leituras.Temperatura_07
         "TEMPERATURA_08":                       114 + 12764,                    # Leituras.Temperatura_08
         "TEMPERATURA_09":                       115 + 12764,                    # Leituras.Temperatura_09
-        "TEMPERATURA_10":                       116 + 12764,                    # Leituras.Temperatura_10
-        "TEMPERATURA_11":                       117 + 12764,                    # Leituras.Temperatura_11
-        "TEMPERATURA_12":                       118 + 12764,                    # Leituras.Temperatura_12
-        "TEMPERATURA_13":                       119 + 12764,                    # Leituras.Temperatura_13
-        "TEMPERATURA_14":                       120 + 12764,                    # Leituras.Temperatura_14
+        "TEMPERATURA_10":                       116 + 12764 + 20000,                    # Leituras.Temperatura_10
+        "TEMPERATURA_11":                       117 + 12764 + 20000,                    # Leituras.Temperatura_11
+        "TEMPERATURA_12":                       118 + 12764 + 20000,                    # Leituras.Temperatura_12
+        "TEMPERATURA_13":                       119 + 12764 + 20000,                    # Leituras.Temperatura_13
+        "TEMPERATURA_14":                       120 + 12764 + 20000,                    # Leituras.Temperatura_14
         "TEMPERATURA_15":                       121 + 12764,                    # Leituras.Temperatura_15
         "TEMPERATURA_16":                       122 + 12764,                    # Leituras.Temperatura_16
 
@@ -3336,16 +3336,16 @@ REG_UG = {
     "UG3": {
         ## COMANDOS
         # Gerais
-        "CMD_RESET_ALARMES":                    0 + 12289,                      # Comandos.Operacao_PCH_AdoPopinhakResetAlarmes
+        "CMD_RESET_ALARMES":                    0 + 12289 + 30000,                      # Comandos.Operacao_PCH_AdoPopinhakResetAlarmes
         "CMD_RECONHECE_ALARMES":                1 + 12289,                      # Comandos.Operacao_PCH_AdoPopinhakReconheceAlarmes
 
         # Operação
-        "CMD_OPER_UP":                          2 + 12289,                      # Comandos.Operacao_UP
+        "CMD_OPER_UP":                          2 + 12289 + 30000,                      # Comandos.Operacao_UP
         "CMD_OPER_UPGM":                        3 + 12289,                      # Comandos.Operacao_UPGM
         "CMD_OPER_UVD":                         4 + 12289,                      # Comandos.Operacao_UVD
         "CMD_OPER_UPS":                         5 + 12289,                      # Comandos.Operacao_UPS
-        "CMD_OPER_US":                          6 + 12289,                      # Comandos.Operacao_US
-        "CMD_OPER_EMERGENCIA_LIGAR":            7 + 12289,                      # Comandos.Operacao_EmergenciaLigar
+        "CMD_OPER_US":                          6 + 12289 + 30000,                      # Comandos.Operacao_US
+        "CMD_OPER_EMERGENCIA_LIGAR":            7 + 12289 + 30000,                      # Comandos.Operacao_EmergenciaLigar
         "CMD_OPER_EMERGENCIA_DESLIGAR":         8 + 12289,                      # Comandos.Operacao_EmergenciaDesligar
         "CMD_OPER_PARADA_RESET":                72 + 12289,                     # Comandos.Operacao_ParadaReset
 
@@ -3470,7 +3470,7 @@ REG_UG = {
         "CRTL_POT_POT_MIN":                     14 + 13569,                     # Setpoints.CtrlPotencia_PotenciaMinima
         "CRTL_POT_POT_MIN_TEMPO":               15 + 13569,                     # Setpoints.CtrlPotencia_PotenciaMinimaTempo
         "CRTL_POT_NIVEL_RELIGAMENTO":           16 + 13569,                     # Setpoints.CtrlPotencia_NivelReligamento
-        "CRTL_POT_ALVO":                        17 + 13569,                     # Setpoints.CtrlPotencia_Alvo
+        "CRTL_POT_ALVO":                        17 + 13569 + 30000,                     # Setpoints.CtrlPotencia_Alvo
         "CRTL_POT_TOLERANCIA":                  18 + 13569,                     # Setpoints.CtrlPotencia_Tolerancia
         "CRTL_POT_PULSO_TEMPO":                 19 + 13569,                     # Setpoints.CtrlPotencia_PulsoTempo
         "CRTL_POT_PULSO_INTERVALO":             20 + 13569,                     # Setpoints.CtrlPotencia_PulsoIntervalo
@@ -3699,14 +3699,14 @@ REG_UG = {
         "OPER_MODO_REMOTO":                     [8 + 12764, 2],                 # Operacao.Info.OperacaoModoRemoto
         "OPER_MODO_LOCAL":                      [8 + 12764, 3],                 # Operacao.Info.OperacaoModoLocal
 
-        "OPER_ETAPA_ALVO":                      9 + 12764,                      # Leituras.Operacao_EtapaAlvo
+        "OPER_ETAPA_ALVO":                      9 + 12764 + 30000,                      # Leituras.Operacao_EtapaAlvo
         "OPER_ETAPA_ALVO_UP":                   [9 + 12764, 0],                 # Operacao.EtapaAlvo.UP
         "OPER_ETAPA_ALVO_UPGM":                 [9 + 12764, 1],                 # Operacao.EtapaAlvo.UPGM
         "OPER_ETAPA_ALVO_UMD":                  [9 + 12764, 2],                 # Operacao.EtapaAlvo.UMD
         "OPER_ETAPA_ALVO_UPS":                  [9 + 12764, 3],                 # Operacao.EtapaAlvo.UPS
         "OPER_ETAPA_ALVO_US":                   [9 + 12764, 4],                 # Operacao.EtapaAlvo.US
 
-        "OPER_ETAPA_ATUAL":                     10 + 12764,                     # Leituras.Operacao_EtapaAtual
+        "OPER_ETAPA_ATUAL":                     10 + 12764 + 30000,                     # Leituras.Operacao_EtapaAtual
         "OPER_ETAPA_ATUAL_UP":                  [10 + 12764, 0],                # Operacao.EtapaAtual.UP
         "OPER_ETAPA_ATUAL_UPGM":                [10 + 12764, 1],                # Operacao.EtapaAtual.UPGM
         "OPER_ETAPA_ATUAL_UMD":                 [10 + 12764, 2],                # Operacao.EtapaAtual.UMD
@@ -3865,7 +3865,7 @@ REG_UG = {
 
         "TURB_TEMPO_CRACK_EFETIVO":             35 + 12764,                     # Leituras.Turb_TempoCrackEfetivo
         "TURB_TEMPO_EQUAL_EFETIVO":             36 + 12764,                     # Leituras.Turb_TempoEqualizacaoEfetivo
-        "TURB_PRESSAO_CONDUTO":                 37 + 12764,                     # Leituras.Turb_PressaoConduto
+        "TURB_PRESSAO_CONDUTO":                 37 + 12764 + 30000,                     # Leituras.Turb_PressaoConduto
         "TURB_PRESSAO_CAIXA_ESPIRAL":           38 + 12764,                     # Leituras.Turb_PressaoCaixaEspiral
         "TURB_VAZAO_TURBINADA":                 39 + 12764,                     # Leituras.Turb_VazaoTurbinada
         "TURB_VIBRACAO_01":                     40 + 12764,                     # Leituras.Turb_Vibracao01
@@ -3974,7 +3974,7 @@ REG_UG = {
         "POT_ATIVA_1":                          70 + 12764,                     # Leituras.Gerador_PotenciaAtiva1
         "POT_ATIVA_2":                          71 + 12764,                     # Leituras.Gerador_PotenciaAtiva2
         "POT_ATIVA_3":                          72 + 12764,                     # Leituras.Gerador_PotenciaAtiva3
-        "POT_ATIVA_MEDIA":                      73 + 12764,                     # Leituras.Gerador_PotenciaAtivaMedia
+        "POT_ATIVA_MEDIA":                      73 + 12764 + 30000,                     # Leituras.Gerador_PotenciaAtivaMedia
 
         # Potência Reativa
         "POT_REATIVA_1":                        74 + 12764,                     # Leituras.Gerador_PotenciaReativa1
@@ -4038,20 +4038,20 @@ REG_UG = {
         "HORIM_MECAN_HIGH":                     105 + 12764,                    # Leituras.HorimetroMecanico_High
 
         # Temperatura
-        "TEMPERATURA_01":                       107 + 12764,                    # Leituras.Temperatura_01
-        "TEMPERATURA_02":                       108 + 12764,                    # Leituras.Temperatura_02
-        "TEMPERATURA_03":                       109 + 12764,                    # Leituras.Temperatura_03
-        "TEMPERATURA_04":                       110 + 12764,                    # Leituras.Temperatura_04
-        "TEMPERATURA_05":                       111 + 12764,                    # Leituras.Temperatura_05
-        "TEMPERATURA_06":                       112 + 12764,                    # Leituras.Temperatura_06
-        "TEMPERATURA_07":                       113 + 12764,                    # Leituras.Temperatura_07
+        "TEMPERATURA_01":                       107 + 12764 + 30000,                    # Leituras.Temperatura_01
+        "TEMPERATURA_02":                       108 + 12764 + 30000,                    # Leituras.Temperatura_02
+        "TEMPERATURA_03":                       109 + 12764 + 30000,                    # Leituras.Temperatura_03
+        "TEMPERATURA_04":                       110 + 12764 + 30000,                    # Leituras.Temperatura_04
+        "TEMPERATURA_05":                       111 + 12764 + 30000,                    # Leituras.Temperatura_05
+        "TEMPERATURA_06":                       112 + 12764 + 30000,                    # Leituras.Temperatura_06
+        "TEMPERATURA_07":                       113 + 12764 + 30000,                    # Leituras.Temperatura_07
         "TEMPERATURA_08":                       114 + 12764,                    # Leituras.Temperatura_08
         "TEMPERATURA_09":                       115 + 12764,                    # Leituras.Temperatura_09
-        "TEMPERATURA_10":                       116 + 12764,                    # Leituras.Temperatura_10
-        "TEMPERATURA_11":                       117 + 12764,                    # Leituras.Temperatura_11
-        "TEMPERATURA_12":                       118 + 12764,                    # Leituras.Temperatura_12
-        "TEMPERATURA_13":                       119 + 12764,                    # Leituras.Temperatura_13
-        "TEMPERATURA_14":                       120 + 12764,                    # Leituras.Temperatura_14
+        "TEMPERATURA_10":                       116 + 12764 + 30000,                    # Leituras.Temperatura_10
+        "TEMPERATURA_11":                       117 + 12764 + 30000,                    # Leituras.Temperatura_11
+        "TEMPERATURA_12":                       118 + 12764 + 30000,                    # Leituras.Temperatura_12
+        "TEMPERATURA_13":                       119 + 12764 + 30000,                    # Leituras.Temperatura_13
+        "TEMPERATURA_14":                       120 + 12764 + 30000,                    # Leituras.Temperatura_14
         "TEMPERATURA_15":                       121 + 12764,                    # Leituras.Temperatura_15
         "TEMPERATURA_16":                       122 + 12764,                    # Leituras.Temperatura_16
 
@@ -4352,16 +4352,16 @@ REG_UG = {
     "UG4": {
         ## COMANDOS
         # Gerais
-        "CMD_RESET_ALARMES":                    0 + 12289,                      # Comandos.Operacao_PCH_AdoPopinhakResetAlarmes
+        "CMD_RESET_ALARMES":                    0 + 12289 + 40000,                      # Comandos.Operacao_PCH_AdoPopinhakResetAlarmes
         "CMD_RECONHECE_ALARMES":                1 + 12289,                      # Comandos.Operacao_PCH_AdoPopinhakReconheceAlarmes
 
         # Operação
-        "CMD_OPER_UP":                          2 + 12289,                      # Comandos.Operacao_UP
+        "CMD_OPER_UP":                          2 + 12289 + 40000,                      # Comandos.Operacao_UP
         "CMD_OPER_UPGM":                        3 + 12289,                      # Comandos.Operacao_UPGM
         "CMD_OPER_UVD":                         4 + 12289,                      # Comandos.Operacao_UVD
         "CMD_OPER_UPS":                         5 + 12289,                      # Comandos.Operacao_UPS
-        "CMD_OPER_US":                          6 + 12289,                      # Comandos.Operacao_US
-        "CMD_OPER_EMERGENCIA_LIGAR":            7 + 12289,                      # Comandos.Operacao_EmergenciaLigar
+        "CMD_OPER_US":                          6 + 12289 + 40000,                      # Comandos.Operacao_US
+        "CMD_OPER_EMERGENCIA_LIGAR":            7 + 12289 + 40000,                      # Comandos.Operacao_EmergenciaLigar
         "CMD_OPER_EMERGENCIA_DESLIGAR":         8 + 12289,                      # Comandos.Operacao_EmergenciaDesligar
         "CMD_OPER_PARADA_RESET":                72 + 12289,                     # Comandos.Operacao_ParadaReset
 
@@ -4486,7 +4486,7 @@ REG_UG = {
         "CRTL_POT_POT_MIN":                     14 + 13569,                     # Setpoints.CtrlPotencia_PotenciaMinima
         "CRTL_POT_POT_MIN_TEMPO":               15 + 13569,                     # Setpoints.CtrlPotencia_PotenciaMinimaTempo
         "CRTL_POT_NIVEL_RELIGAMENTO":           16 + 13569,                     # Setpoints.CtrlPotencia_NivelReligamento
-        "CRTL_POT_ALVO":                        17 + 13569,                     # Setpoints.CtrlPotencia_Alvo
+        "CRTL_POT_ALVO":                        17 + 13569 + 40000,                     # Setpoints.CtrlPotencia_Alvo
         "CRTL_POT_TOLERANCIA":                  18 + 13569,                     # Setpoints.CtrlPotencia_Tolerancia
         "CRTL_POT_PULSO_TEMPO":                 19 + 13569,                     # Setpoints.CtrlPotencia_PulsoTempo
         "CRTL_POT_PULSO_INTERVALO":             20 + 13569,                     # Setpoints.CtrlPotencia_PulsoIntervalo
@@ -4715,14 +4715,14 @@ REG_UG = {
         "OPER_MODO_REMOTO":                     [8 + 12764, 2],                 # Operacao.Info.OperacaoModoRemoto
         "OPER_MODO_LOCAL":                      [8 + 12764, 3],                 # Operacao.Info.OperacaoModoLocal
 
-        "OPER_ETAPA_ALVO":                      9 + 12764,                      # Leituras.Operacao_EtapaAlvo
+        "OPER_ETAPA_ALVO":                      9 + 12764 + 40000,                      # Leituras.Operacao_EtapaAlvo
         "OPER_ETAPA_ALVO_UP":                   [9 + 12764, 0],                 # Operacao.EtapaAlvo.UP
         "OPER_ETAPA_ALVO_UPGM":                 [9 + 12764, 1],                 # Operacao.EtapaAlvo.UPGM
         "OPER_ETAPA_ALVO_UMD":                  [9 + 12764, 2],                 # Operacao.EtapaAlvo.UMD
         "OPER_ETAPA_ALVO_UPS":                  [9 + 12764, 3],                 # Operacao.EtapaAlvo.UPS
         "OPER_ETAPA_ALVO_US":                   [9 + 12764, 4],                 # Operacao.EtapaAlvo.US
 
-        "OPER_ETAPA_ATUAL":                     10 + 12764,                     # Leituras.Operacao_EtapaAtual
+        "OPER_ETAPA_ATUAL":                     10 + 12764 + 40000,                     # Leituras.Operacao_EtapaAtual
         "OPER_ETAPA_ATUAL_UP":                  [10 + 12764, 0],                # Operacao.EtapaAtual.UP
         "OPER_ETAPA_ATUAL_UPGM":                [10 + 12764, 1],                # Operacao.EtapaAtual.UPGM
         "OPER_ETAPA_ATUAL_UMD":                 [10 + 12764, 2],                # Operacao.EtapaAtual.UMD
@@ -4881,7 +4881,7 @@ REG_UG = {
 
         "TURB_TEMPO_CRACK_EFETIVO":             35 + 12764,                     # Leituras.Turb_TempoCrackEfetivo
         "TURB_TEMPO_EQUAL_EFETIVO":             36 + 12764,                     # Leituras.Turb_TempoEqualizacaoEfetivo
-        "TURB_PRESSAO_CONDUTO":                 37 + 12764,                     # Leituras.Turb_PressaoConduto
+        "TURB_PRESSAO_CONDUTO":                 37 + 12764 + 40000,                     # Leituras.Turb_PressaoConduto
         "TURB_PRESSAO_CAIXA_ESPIRAL":           38 + 12764,                     # Leituras.Turb_PressaoCaixaEspiral
         "TURB_VAZAO_TURBINADA":                 39 + 12764,                     # Leituras.Turb_VazaoTurbinada
         "TURB_VIBRACAO_01":                     40 + 12764,                     # Leituras.Turb_Vibracao01
@@ -4990,7 +4990,7 @@ REG_UG = {
         "POT_ATIVA_1":                          70 + 12764,                     # Leituras.Gerador_PotenciaAtiva1
         "POT_ATIVA_2":                          71 + 12764,                     # Leituras.Gerador_PotenciaAtiva2
         "POT_ATIVA_3":                          72 + 12764,                     # Leituras.Gerador_PotenciaAtiva3
-        "POT_ATIVA_MEDIA":                      73 + 12764,                     # Leituras.Gerador_PotenciaAtivaMedia
+        "POT_ATIVA_MEDIA":                      73 + 12764 + 40000,                     # Leituras.Gerador_PotenciaAtivaMedia
 
         # Potência Reativa
         "POT_REATIVA_1":                        74 + 12764,                     # Leituras.Gerador_PotenciaReativa1
@@ -5054,20 +5054,20 @@ REG_UG = {
         "HORIM_MECAN_HIGH":                     105 + 12764,                    # Leituras.HorimetroMecanico_High
 
         # Temperatura
-        "TEMPERATURA_01":                       107 + 12764,                    # Leituras.Temperatura_01
-        "TEMPERATURA_02":                       108 + 12764,                    # Leituras.Temperatura_02
-        "TEMPERATURA_03":                       109 + 12764,                    # Leituras.Temperatura_03
-        "TEMPERATURA_04":                       110 + 12764,                    # Leituras.Temperatura_04
-        "TEMPERATURA_05":                       111 + 12764,                    # Leituras.Temperatura_05
-        "TEMPERATURA_06":                       112 + 12764,                    # Leituras.Temperatura_06
-        "TEMPERATURA_07":                       113 + 12764,                    # Leituras.Temperatura_07
+        "TEMPERATURA_01":                       107 + 12764 + 40000,                    # Leituras.Temperatura_01
+        "TEMPERATURA_02":                       108 + 12764 + 40000,                    # Leituras.Temperatura_02
+        "TEMPERATURA_03":                       109 + 12764 + 40000,                    # Leituras.Temperatura_03
+        "TEMPERATURA_04":                       110 + 12764 + 40000,                    # Leituras.Temperatura_04
+        "TEMPERATURA_05":                       111 + 12764 + 40000,                    # Leituras.Temperatura_05
+        "TEMPERATURA_06":                       112 + 12764 + 40000,                    # Leituras.Temperatura_06
+        "TEMPERATURA_07":                       113 + 12764 + 40000,                    # Leituras.Temperatura_07
         "TEMPERATURA_08":                       114 + 12764,                    # Leituras.Temperatura_08
         "TEMPERATURA_09":                       115 + 12764,                    # Leituras.Temperatura_09
-        "TEMPERATURA_10":                       116 + 12764,                    # Leituras.Temperatura_10
-        "TEMPERATURA_11":                       117 + 12764,                    # Leituras.Temperatura_11
-        "TEMPERATURA_12":                       118 + 12764,                    # Leituras.Temperatura_12
-        "TEMPERATURA_13":                       119 + 12764,                    # Leituras.Temperatura_13
-        "TEMPERATURA_14":                       120 + 12764,                    # Leituras.Temperatura_14
+        "TEMPERATURA_10":                       116 + 12764 + 40000,                    # Leituras.Temperatura_10
+        "TEMPERATURA_11":                       117 + 12764 + 40000,                    # Leituras.Temperatura_11
+        "TEMPERATURA_12":                       118 + 12764 + 40000,                    # Leituras.Temperatura_12
+        "TEMPERATURA_13":                       119 + 12764 + 40000,                    # Leituras.Temperatura_13
+        "TEMPERATURA_14":                       120 + 12764 + 40000,                    # Leituras.Temperatura_14
         "TEMPERATURA_15":                       121 + 12764,                    # Leituras.Temperatura_15
         "TEMPERATURA_16":                       122 + 12764,                    # Leituras.Temperatura_16
 
