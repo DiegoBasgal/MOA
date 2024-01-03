@@ -1,3 +1,4 @@
+import pytz
 import threading
 
 from time import sleep
@@ -55,14 +56,13 @@ class Planta:
 
 
     def run(self) -> 'None':
-
         self.se.abrir_dj()
 
         while not self.dict['GLB']['stop_sim']:
             self.dict['GLB']['stop_sim'] = self.dict['GLB']['stop_gui']
 
             try:
-                t_inicio = datetime.now()
+                t_inicio = datetime.now(pytz.timezone("Brazil/East")).replace(tzinfo=None)
                 lock.acquire()
                 self.dict['GLB']['tempo_simul'] += self.segundos_por_passo
 
@@ -77,7 +77,7 @@ class Planta:
                 self.atualizar_modbus_geral()
 
                 lock.release()
-                tempo_restante = (self.passo_simulacao - (datetime.now() - t_inicio).seconds)
+                tempo_restante = (self.passo_simulacao - (datetime.now(pytz.timezone("Brazil/East")).replace(tzinfo=None) - t_inicio).seconds)
                 sleep(tempo_restante) if tempo_restante > 0 else print('A Simulação está demorando mais do que o permitido!')
 
             except KeyboardInterrupt:

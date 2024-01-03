@@ -24,11 +24,11 @@ class Tda:
 
 
     def calcular_volume_montante(self, volume) -> 'float':
-        return min(max(816.5, 816.5 + volume / 190000), 817)
+        return min(max(816.5, 816.5 + volume / 250000), 817)
 
 
     def calcular_montante_volume(self, nv_montante) -> 'float':
-        return 190000 * (min(max(816.5, nv_montante), 817) - 816.5)
+        return 250000 * (min(max(816.5, nv_montante), 817) - 816.5)
 
 
     def calcular_vazao(self) -> 'None':

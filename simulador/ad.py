@@ -20,7 +20,7 @@ class Ad:
 
         self.cp1 = self.Cp(1, self.dict, tempo)
         self.cp2 = self.Cp(2, self.dict, tempo)
-        self.cps: 'list[self.Cp]' = [self.cp1, self.cp2]
+        self.cps: 'list[Ad.Cp]' = [self.cp1, self.cp2]
 
 
     class Cp:
@@ -30,7 +30,6 @@ class Ad:
 
             self.dict = dict_comp
 
-
             self.escala_ruido = tempo.escala_ruido
             self.passo_simulacao = tempo.passo_simulacao
             self.segundos_por_passo = tempo.segundos_por_passo
@@ -38,24 +37,25 @@ class Ad:
             self.setpoint = 0
             self.setpoint_anterior = 0
 
-            self.manual = False
+            self.operando = False
 
 
         def passo(self) -> 'None':
-            self.manual = self.dict['AD'][f'cp{self.id}_manual']
-
-            self.setpoint = DB.get_words(MB['AD'][f'CP_0{self.id}_POSICAO'])[0]
+            self.setpoint = DB.get_words(MB['AD'][f'CP_0{self.id}_SP_POS'])[0]
 
             if DB.get_words(MB['AD'][f'CMD_CP_0{self.id}_BUSCAR'])[0]:
                 DB.set_words(MB['AD'][f'CMD_CP_0{self.id}_BUSCAR'], [0])
 
-                if self.setpoint > self.setpoint_anterior and not self.manual:
-                    self.setpoint_anterior = self.setpoint
-                    Thread(target=lambda: self.abrir(self.setpoint)).start()
+                if not self.dict['AD'][f'cp{self.id}_manual'] and not self.operando:
+                    self.operando = True
 
-                elif self.setpoint < self.setpoint_anterior and not self.manual:
-                    self.setpoint_anterior = self.setpoint
-                    Thread(target=lambda: self.abrir(self.setpoint)).start()
+                    if self.setpoint > self.setpoint_anterior:
+                        self.setpoint_anterior = self.setpoint
+                        Thread(target=lambda: self.abrir(self.setpoint)).start()
+
+                    elif self.setpoint < self.setpoint_anterior:
+                        self.setpoint_anterior = self.setpoint
+                        Thread(target=lambda: self.fechar(self.setpoint)).start()
 
             self.dict['AD'][f'cp{self.id}_q'] = self.calcular_q_cp(self.setpoint)
 
@@ -65,6 +65,7 @@ class Ad:
                 if self.setpoint > setpoint:
                     break
                 self.setpoint += setpoint * self.segundos_por_passo
+            self.operando = False
 
 
         def fechar(self, setpoint) -> 'None':
@@ -72,6 +73,7 @@ class Ad:
                 if self.setpoint < setpoint:
                     break
                 self.setpoint -= setpoint * self.segundos_por_passo
+            self.operando = False
 
 
         def calcular_q_cp(self, abertura) -> 'int':

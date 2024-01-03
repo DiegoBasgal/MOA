@@ -294,7 +294,7 @@ simulação</string>
          <property name="maximumSize">
           <size>
            <width>16777215</width>
-           <height>24</height>
+           <height>30</height>
           </size>
          </property>
          <property name="maximum">
@@ -2870,9 +2870,9 @@ simulação</string>
    <property name="geometry">
     <rect>
      <x>1195</x>
-     <y>461</y>
+     <y>316</y>
      <width>310</width>
-     <height>461</height>
+     <height>611</height>
     </rect>
    </property>
    <property name="styleSheet">
@@ -2891,126 +2891,36 @@ simulação</string>
     <property name="geometry">
      <rect>
       <x>8</x>
-      <y>8</y>
-      <width>293</width>
-      <height>96</height>
+      <y>143</y>
+      <width>295</width>
+      <height>95</height>
      </rect>
     </property>
     <layout class="QHBoxLayout" name="horizontalLayout_meds">
-     <item>
-      <layout class="QVBoxLayout" name="verticalLayout_mu">
-       <property name="spacing">
-        <number>0</number>
-       </property>
-       <property name="bottomMargin">
-        <number>6</number>
-       </property>
-       <item alignment="Qt::AlignHCenter|Qt::AlignVCenter">
-        <widget class="QLabel" name="label_mu">
-         <property name="sizePolicy">
-          <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
-           <horstretch>0</horstretch>
-           <verstretch>0</verstretch>
-          </sizepolicy>
-         </property>
-         <property name="minimumSize">
-          <size>
-           <width>90</width>
-           <height>40</height>
-          </size>
-         </property>
-         <property name="maximumSize">
-          <size>
-           <width>0</width>
-           <height>0</height>
-          </size>
-         </property>
-         <property name="font">
-          <font>
-           <pointsize>10</pointsize>
-           <weight>75</weight>
-           <bold>true</bold>
-           <underline>false</underline>
-          </font>
-         </property>
-         <property name="text">
-          <string>MU</string>
-         </property>
-         <property name="alignment">
-          <set>Qt::AlignCenter</set>
-         </property>
-        </widget>
-       </item>
-       <item alignment="Qt::AlignHCenter|Qt::AlignTop">
-        <widget class="QLCDNumber" name="lcdNumber_mu">
-         <property name="sizePolicy">
-          <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
-           <horstretch>0</horstretch>
-           <verstretch>0</verstretch>
-          </sizepolicy>
-         </property>
-         <property name="minimumSize">
-          <size>
-           <width>85</width>
-           <height>45</height>
-          </size>
-         </property>
-         <property name="maximumSize">
-          <size>
-           <width>0</width>
-           <height>0</height>
-          </size>
-         </property>
-         <property name="font">
-          <font>
-           <pointsize>8</pointsize>
-           <weight>50</weight>
-           <bold>false</bold>
-          </font>
-         </property>
-         <property name="autoFillBackground">
-          <bool>false</bool>
-         </property>
-         <property name="styleSheet">
-          <string notr="true">background-color: rgb(255, 255, 255);</string>
-         </property>
-         <property name="frameShape">
-          <enum>QFrame::WinPanel</enum>
-         </property>
-         <property name="frameShadow">
-          <enum>QFrame::Sunken</enum>
-         </property>
-         <property name="smallDecimalPoint">
-          <bool>true</bool>
-         </property>
-         <property name="digitCount">
-          <number>5</number>
-         </property>
-         <property name="segmentStyle">
-          <enum>QLCDNumber::Flat</enum>
-         </property>
-         <property name="value" stdset="0">
-          <double>0.000000000000000</double>
-         </property>
-        </widget>
-       </item>
-      </layout>
-     </item>
      <item>
       <layout class="QVBoxLayout" name="verticalLayout_mp">
        <property name="spacing">
         <number>0</number>
        </property>
        <property name="leftMargin">
-        <number>1</number>
+        <number>0</number>
        </property>
-       <item>
+       <property name="bottomMargin">
+        <number>6</number>
+       </property>
+       <item alignment="Qt::AlignLeft|Qt::AlignVCenter">
         <widget class="QLabel" name="label_mp">
          <property name="sizePolicy">
-          <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+          <sizepolicy hsizetype="Expanding" vsizetype="Ignored">
            <horstretch>0</horstretch>
            <verstretch>0</verstretch>
           </sizepolicy>
+         </property>
+         <property name="minimumSize">
+          <size>
+           <width>140</width>
+           <height>0</height>
+          </size>
          </property>
          <property name="maximumSize">
           <size>
@@ -3018,9 +2928,15 @@ simulação</string>
            <height>40</height>
           </size>
          </property>
+         <property name="sizeIncrement">
+          <size>
+           <width>0</width>
+           <height>0</height>
+          </size>
+         </property>
          <property name="font">
           <font>
-           <pointsize>10</pointsize>
+           <pointsize>13</pointsize>
            <weight>75</weight>
            <bold>true</bold>
            <underline>false</underline>
@@ -3044,7 +2960,7 @@ simulação</string>
          </property>
          <property name="minimumSize">
           <size>
-           <width>85</width>
+           <width>110</width>
            <height>45</height>
           </size>
          </property>
@@ -3082,7 +2998,7 @@ simulação</string>
           <bool>true</bool>
          </property>
          <property name="digitCount">
-          <number>5</number>
+          <number>6</number>
          </property>
          <property name="segmentStyle">
           <enum>QLCDNumber::Flat</enum>
@@ -3099,8 +3015,11 @@ simulação</string>
        <property name="spacing">
         <number>0</number>
        </property>
+       <property name="leftMargin">
+        <number>0</number>
+       </property>
        <property name="bottomMargin">
-        <number>6</number>
+        <number>5</number>
        </property>
        <item alignment="Qt::AlignTop">
         <widget class="QLabel" name="label_mr">
@@ -3112,7 +3031,7 @@ simulação</string>
          </property>
          <property name="minimumSize">
           <size>
-           <width>90</width>
+           <width>140</width>
            <height>40</height>
           </size>
          </property>
@@ -3124,7 +3043,7 @@ simulação</string>
          </property>
          <property name="font">
           <font>
-           <pointsize>10</pointsize>
+           <pointsize>13</pointsize>
            <weight>75</weight>
            <bold>true</bold>
            <underline>false</underline>
@@ -3148,7 +3067,7 @@ simulação</string>
          </property>
          <property name="minimumSize">
           <size>
-           <width>85</width>
+           <width>110</width>
            <height>45</height>
           </size>
          </property>
@@ -3180,7 +3099,7 @@ simulação</string>
           <bool>true</bool>
          </property>
          <property name="digitCount">
-          <number>5</number>
+          <number>6</number>
          </property>
          <property name="segmentStyle">
           <enum>QLCDNumber::Flat</enum>
@@ -3198,14 +3117,17 @@ simulação</string>
     <property name="geometry">
      <rect>
       <x>169</x>
-      <y>109</y>
+      <y>239</y>
       <width>130</width>
-      <height>241</height>
+      <height>261</height>
      </rect>
     </property>
     <layout class="QVBoxLayout" name="verticalLayout_lt">
+     <property name="spacing">
+      <number>13</number>
+     </property>
      <property name="topMargin">
-      <number>5</number>
+      <number>6</number>
      </property>
      <item alignment="Qt::AlignHCenter|Qt::AlignTop">
       <widget class="QLabel" name="label_lt">
@@ -3239,7 +3161,10 @@ simulação</string>
         <string notr="true">background-color: transparent;</string>
        </property>
        <property name="text">
-        <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p align=&quot;center&quot;&gt;Tensão na&lt;/p&gt;&lt;p align=&quot;center&quot;&gt;Linha&lt;/p&gt;&lt;p align=&quot;center&quot;&gt;&lt;br/&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+        <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p align=&quot;center&quot;&gt;Linha de&lt;/p&gt;&lt;p align=&quot;center&quot;&gt;Transmissão&lt;/p&gt;&lt;p align=&quot;center&quot;&gt;&lt;br/&gt;&lt;/p&gt;&lt;p align=&quot;center&quot;&gt;&lt;br/&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+       </property>
+       <property name="alignment">
+        <set>Qt::AlignBottom|Qt::AlignLeading|Qt::AlignLeft</set>
        </property>
        <property name="wordWrap">
         <bool>true</bool>
@@ -3279,10 +3204,10 @@ simulação</string>
         <enum>QFrame::Sunken</enum>
        </property>
        <property name="smallDecimalPoint">
-        <bool>false</bool>
+        <bool>true</bool>
        </property>
        <property name="digitCount">
-        <number>5</number>
+        <number>6</number>
        </property>
        <property name="segmentStyle">
         <enum>QLCDNumber::Flat</enum>
@@ -3334,9 +3259,9 @@ simulação</string>
     <property name="geometry">
      <rect>
       <x>10</x>
-      <y>109</y>
+      <y>239</y>
       <width>151</width>
-      <height>341</height>
+      <height>361</height>
      </rect>
     </property>
     <layout class="QVBoxLayout" name="verticalLayout_djl">
@@ -3490,6 +3415,150 @@ simulação</string>
     <zorder>checkBox_djl_mola</zorder>
     <zorder>checkBox_djl_falta_vcc</zorder>
     <zorder>checkBox_djl_inconsistente</zorder>
+   </widget>
+   <widget class="QWidget" name="layoutWidget_4">
+    <property name="geometry">
+     <rect>
+      <x>86</x>
+      <y>50</y>
+      <width>142</width>
+      <height>91</height>
+     </rect>
+    </property>
+    <layout class="QVBoxLayout" name="verticalLayout_mu">
+     <property name="spacing">
+      <number>0</number>
+     </property>
+     <property name="leftMargin">
+      <number>0</number>
+     </property>
+     <property name="bottomMargin">
+      <number>6</number>
+     </property>
+     <item alignment="Qt::AlignLeft|Qt::AlignVCenter">
+      <widget class="QLabel" name="label_mu">
+       <property name="sizePolicy">
+        <sizepolicy hsizetype="Expanding" vsizetype="Ignored">
+         <horstretch>0</horstretch>
+         <verstretch>0</verstretch>
+        </sizepolicy>
+       </property>
+       <property name="minimumSize">
+        <size>
+         <width>140</width>
+         <height>0</height>
+        </size>
+       </property>
+       <property name="maximumSize">
+        <size>
+         <width>90</width>
+         <height>40</height>
+        </size>
+       </property>
+       <property name="sizeIncrement">
+        <size>
+         <width>0</width>
+         <height>0</height>
+        </size>
+       </property>
+       <property name="font">
+        <font>
+         <pointsize>13</pointsize>
+         <weight>75</weight>
+         <bold>true</bold>
+         <underline>false</underline>
+        </font>
+       </property>
+       <property name="text">
+        <string>MU</string>
+       </property>
+       <property name="alignment">
+        <set>Qt::AlignCenter</set>
+       </property>
+      </widget>
+     </item>
+     <item alignment="Qt::AlignHCenter|Qt::AlignVCenter">
+      <widget class="QLCDNumber" name="lcdNumber_mu">
+       <property name="sizePolicy">
+        <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+         <horstretch>0</horstretch>
+         <verstretch>0</verstretch>
+        </sizepolicy>
+       </property>
+       <property name="minimumSize">
+        <size>
+         <width>110</width>
+         <height>45</height>
+        </size>
+       </property>
+       <property name="maximumSize">
+        <size>
+         <width>0</width>
+         <height>0</height>
+        </size>
+       </property>
+       <property name="sizeIncrement">
+        <size>
+         <width>0</width>
+         <height>0</height>
+        </size>
+       </property>
+       <property name="font">
+        <font>
+         <weight>50</weight>
+         <bold>false</bold>
+        </font>
+       </property>
+       <property name="autoFillBackground">
+        <bool>false</bool>
+       </property>
+       <property name="styleSheet">
+        <string notr="true">background-color: rgb(255, 255, 255);</string>
+       </property>
+       <property name="frameShape">
+        <enum>QFrame::WinPanel</enum>
+       </property>
+       <property name="frameShadow">
+        <enum>QFrame::Sunken</enum>
+       </property>
+       <property name="smallDecimalPoint">
+        <bool>true</bool>
+       </property>
+       <property name="digitCount">
+        <number>6</number>
+       </property>
+       <property name="segmentStyle">
+        <enum>QLCDNumber::Flat</enum>
+       </property>
+       <property name="value" stdset="0">
+        <double>0.000000000000000</double>
+       </property>
+      </widget>
+     </item>
+    </layout>
+   </widget>
+   <widget class="QLabel" name="label_se">
+    <property name="geometry">
+     <rect>
+      <x>62</x>
+      <y>9</y>
+      <width>191</width>
+      <height>41</height>
+     </rect>
+    </property>
+    <property name="font">
+     <font>
+      <pointsize>18</pointsize>
+      <weight>75</weight>
+      <bold>true</bold>
+     </font>
+    </property>
+    <property name="text">
+     <string>Subestação</string>
+    </property>
+    <property name="alignment">
+     <set>Qt::AlignHCenter|Qt::AlignTop</set>
+    </property>
    </widget>
   </widget>
   <widget class="QFrame" name="frame_ug1">
@@ -3753,17 +3822,17 @@ simulação</string>
        <property name="minimumSize">
         <size>
          <width>0</width>
-         <height>20</height>
+         <height>30</height>
         </size>
        </property>
        <property name="maximum">
-        <number>3038</number>
+        <number>5650</number>
        </property>
        <property name="singleStep">
-        <number>10</number>
+        <number>1</number>
        </property>
        <property name="pageStep">
-        <number>100</number>
+        <number>10</number>
        </property>
        <property name="orientation">
         <enum>Qt::Horizontal</enum>
@@ -3781,9 +3850,9 @@ simulação</string>
    <widget class="QWidget" name="layoutWidget_13">
     <property name="geometry">
      <rect>
-      <x>288</x>
+      <x>300</x>
       <y>58</y>
-      <width>201</width>
+      <width>251</width>
       <height>141</height>
      </rect>
     </property>
@@ -3909,7 +3978,9 @@ simulação</string>
       <widget class="QLabel" name="label_potencia_ug1">
        <property name="font">
         <font>
-         <pointsize>10</pointsize>
+         <pointsize>12</pointsize>
+         <weight>75</weight>
+         <bold>true</bold>
         </font>
        </property>
        <property name="text">
@@ -3997,191 +4068,6 @@ simulação</string>
     <zorder>lcdNumber_potencia_ug1</zorder>
     <zorder>lcdNumber_q_ug1</zorder>
     <zorder>lcdNumber_setpoint_ug1</zorder>
-   </widget>
-  </widget>
-  <widget class="QFrame" name="frame_condics_usn">
-   <property name="geometry">
-    <rect>
-     <x>1195</x>
-     <y>78</y>
-     <width>310</width>
-     <height>141</height>
-    </rect>
-   </property>
-   <property name="styleSheet">
-    <string notr="true">background-color: transparent;</string>
-   </property>
-   <property name="frameShape">
-    <enum>QFrame::Box</enum>
-   </property>
-   <property name="frameShadow">
-    <enum>QFrame::Plain</enum>
-   </property>
-   <property name="lineWidth">
-    <number>2</number>
-   </property>
-   <widget class="QWidget" name="verticalLayoutWidget">
-    <property name="geometry">
-     <rect>
-      <x>9</x>
-      <y>15</y>
-      <width>294</width>
-      <height>101</height>
-     </rect>
-    </property>
-    <layout class="QVBoxLayout" name="verticalLayout_condics_usn">
-     <property name="spacing">
-      <number>0</number>
-     </property>
-     <property name="topMargin">
-      <number>0</number>
-     </property>
-     <item alignment="Qt::AlignHCenter|Qt::AlignVCenter">
-      <widget class="QLabel" name="label_4">
-       <property name="font">
-        <font>
-         <pointsize>12</pointsize>
-         <weight>75</weight>
-         <bold>true</bold>
-         <underline>false</underline>
-        </font>
-       </property>
-       <property name="text">
-        <string>Condicionadores USINA</string>
-       </property>
-      </widget>
-     </item>
-     <item>
-      <layout class="QGridLayout" name="gridLayout_condics_usn">
-       <property name="leftMargin">
-        <number>0</number>
-       </property>
-       <property name="rightMargin">
-        <number>0</number>
-       </property>
-       <property name="horizontalSpacing">
-        <number>10</number>
-       </property>
-       <property name="verticalSpacing">
-        <number>7</number>
-       </property>
-       <item row="0" column="1">
-        <widget class="QPushButton" name="pushButton_set_condic_usn">
-         <property name="sizePolicy">
-          <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
-           <horstretch>120</horstretch>
-           <verstretch>24</verstretch>
-          </sizepolicy>
-         </property>
-         <property name="minimumSize">
-          <size>
-           <width>120</width>
-           <height>24</height>
-          </size>
-         </property>
-         <property name="maximumSize">
-          <size>
-           <width>120</width>
-           <height>24</height>
-          </size>
-         </property>
-         <property name="sizeIncrement">
-          <size>
-           <width>120</width>
-           <height>24</height>
-          </size>
-         </property>
-         <property name="baseSize">
-          <size>
-           <width>120</width>
-           <height>24</height>
-          </size>
-         </property>
-         <property name="font">
-          <font>
-           <pointsize>8</pointsize>
-          </font>
-         </property>
-         <property name="styleSheet">
-          <string notr="true">background-color: rgb(241, 241, 241);</string>
-         </property>
-         <property name="text">
-          <string>TRIP</string>
-         </property>
-        </widget>
-       </item>
-       <item row="1" column="1">
-        <widget class="QPushButton" name="pushButton_reset_condic_usn">
-         <property name="sizePolicy">
-          <sizepolicy hsizetype="Maximum" vsizetype="Maximum">
-           <horstretch>120</horstretch>
-           <verstretch>24</verstretch>
-          </sizepolicy>
-         </property>
-         <property name="minimumSize">
-          <size>
-           <width>120</width>
-           <height>24</height>
-          </size>
-         </property>
-         <property name="maximumSize">
-          <size>
-           <width>120</width>
-           <height>24</height>
-          </size>
-         </property>
-         <property name="sizeIncrement">
-          <size>
-           <width>120</width>
-           <height>24</height>
-          </size>
-         </property>
-         <property name="baseSize">
-          <size>
-           <width>160</width>
-           <height>24</height>
-          </size>
-         </property>
-         <property name="font">
-          <font>
-           <pointsize>8</pointsize>
-          </font>
-         </property>
-         <property name="styleSheet">
-          <string notr="true">background-color: rgb(241, 241, 241);</string>
-         </property>
-         <property name="text">
-          <string>RESET</string>
-         </property>
-        </widget>
-       </item>
-       <item row="0" column="0">
-        <widget class="QCheckBox" name="checkBox_condic_usn">
-         <property name="sizePolicy">
-          <sizepolicy hsizetype="Ignored" vsizetype="Ignored">
-           <horstretch>0</horstretch>
-           <verstretch>0</verstretch>
-          </sizepolicy>
-         </property>
-         <property name="maximumSize">
-          <size>
-           <width>150</width>
-           <height>16777215</height>
-          </size>
-         </property>
-         <property name="font">
-          <font>
-           <pointsize>9</pointsize>
-          </font>
-         </property>
-         <property name="text">
-          <string>Condicionador Ativo</string>
-         </property>
-        </widget>
-       </item>
-      </layout>
-     </item>
-    </layout>
    </widget>
   </widget>
   <widget class="QFrame" name="frame_medidores_ugs">
@@ -4354,6 +4240,18 @@ simulação</string>
          <horstretch>0</horstretch>
          <verstretch>0</verstretch>
         </sizepolicy>
+       </property>
+       <property name="minimumSize">
+        <size>
+         <width>0</width>
+         <height>30</height>
+        </size>
+       </property>
+       <property name="maximumSize">
+        <size>
+         <width>16777215</width>
+         <height>30</height>
+        </size>
        </property>
        <property name="maximum">
         <number>100</number>
@@ -4992,7 +4890,7 @@ simulação</string>
      </rect>
     </property>
     <property name="value">
-     <number>30</number>
+     <number>0</number>
     </property>
     <property name="orientation">
      <enum>Qt::Vertical</enum>
@@ -5083,7 +4981,7 @@ simulação</string>
      </rect>
     </property>
     <property name="value">
-     <number>30</number>
+     <number>0</number>
     </property>
     <property name="orientation">
      <enum>Qt::Vertical</enum>
@@ -5174,7 +5072,7 @@ simulação</string>
      </rect>
     </property>
     <property name="value">
-     <number>30</number>
+     <number>0</number>
     </property>
     <property name="orientation">
      <enum>Qt::Vertical</enum>
@@ -5265,7 +5163,7 @@ simulação</string>
      </rect>
     </property>
     <property name="value">
-     <number>30</number>
+     <number>0</number>
     </property>
     <property name="orientation">
      <enum>Qt::Vertical</enum>
@@ -5304,7 +5202,7 @@ simulação</string>
    <property name="geometry">
     <rect>
      <x>1195</x>
-     <y>225</y>
+     <y>78</y>
      <width>310</width>
      <height>231</height>
     </rect>
@@ -5375,7 +5273,7 @@ simulação</string>
         <number>6000</number>
        </property>
        <property name="value">
-        <number>1000</number>
+        <number>0</number>
        </property>
        <property name="textVisible">
         <bool>true</bool>
@@ -5512,7 +5410,7 @@ simulação</string>
         <number>6000</number>
        </property>
        <property name="value">
-        <number>1000</number>
+        <number>0</number>
        </property>
        <property name="format">
         <string>%v mm</string>
@@ -5848,17 +5746,17 @@ simulação</string>
        <property name="minimumSize">
         <size>
          <width>0</width>
-         <height>20</height>
+         <height>30</height>
         </size>
        </property>
        <property name="maximum">
-        <number>3038</number>
+        <number>5650</number>
        </property>
        <property name="singleStep">
-        <number>10</number>
+        <number>1</number>
        </property>
        <property name="pageStep">
-        <number>100</number>
+        <number>10</number>
        </property>
        <property name="orientation">
         <enum>Qt::Horizontal</enum>
@@ -5873,9 +5771,9 @@ simulação</string>
    <widget class="QWidget" name="layoutWidget_14">
     <property name="geometry">
      <rect>
-      <x>288</x>
+      <x>300</x>
       <y>58</y>
-      <width>201</width>
+      <width>251</width>
       <height>141</height>
      </rect>
     </property>
@@ -6001,7 +5899,9 @@ simulação</string>
       <widget class="QLabel" name="label_potencia_ug2">
        <property name="font">
         <font>
-         <pointsize>10</pointsize>
+         <pointsize>12</pointsize>
+         <weight>75</weight>
+         <bold>true</bold>
         </font>
        </property>
        <property name="text">
@@ -6028,6 +5928,9 @@ simulação</string>
        </property>
        <property name="digitCount">
         <number>4</number>
+       </property>
+       <property name="mode">
+        <enum>QLCDNumber::Hex</enum>
        </property>
        <property name="segmentStyle">
         <enum>QLCDNumber::Flat</enum>
@@ -6344,17 +6247,17 @@ simulação</string>
        <property name="minimumSize">
         <size>
          <width>0</width>
-         <height>20</height>
+         <height>30</height>
         </size>
        </property>
        <property name="maximum">
-        <number>3038</number>
+        <number>5650</number>
        </property>
        <property name="singleStep">
-        <number>10</number>
+        <number>1</number>
        </property>
        <property name="pageStep">
-        <number>100</number>
+        <number>10</number>
        </property>
        <property name="orientation">
         <enum>Qt::Horizontal</enum>
@@ -6369,9 +6272,9 @@ simulação</string>
    <widget class="QWidget" name="layoutWidget_21">
     <property name="geometry">
      <rect>
-      <x>288</x>
+      <x>300</x>
       <y>58</y>
-      <width>201</width>
+      <width>251</width>
       <height>141</height>
      </rect>
     </property>
@@ -6497,7 +6400,9 @@ simulação</string>
       <widget class="QLabel" name="label_potencia_ug3">
        <property name="font">
         <font>
-         <pointsize>10</pointsize>
+         <pointsize>12</pointsize>
+         <weight>75</weight>
+         <bold>true</bold>
         </font>
        </property>
        <property name="text">
@@ -6840,17 +6745,17 @@ simulação</string>
        <property name="minimumSize">
         <size>
          <width>0</width>
-         <height>20</height>
+         <height>30</height>
         </size>
        </property>
        <property name="maximum">
-        <number>3038</number>
+        <number>5650</number>
        </property>
        <property name="singleStep">
-        <number>10</number>
+        <number>1</number>
        </property>
        <property name="pageStep">
-        <number>100</number>
+        <number>10</number>
        </property>
        <property name="orientation">
         <enum>Qt::Horizontal</enum>
@@ -6865,9 +6770,9 @@ simulação</string>
    <widget class="QWidget" name="layoutWidget_23">
     <property name="geometry">
      <rect>
-      <x>288</x>
+      <x>300</x>
       <y>58</y>
-      <width>201</width>
+      <width>251</width>
       <height>141</height>
      </rect>
     </property>
@@ -6993,7 +6898,9 @@ simulação</string>
       <widget class="QLabel" name="label_potencia_ug4">
        <property name="font">
         <font>
-         <pointsize>10</pointsize>
+         <pointsize>12</pointsize>
+         <weight>75</weight>
+         <bold>true</bold>
         </font>
        </property>
        <property name="text">
@@ -7077,7 +6984,6 @@ simulação</string>
   </widget>
   <zorder>frame_tda</zorder>
   <zorder>frame_temps_ugs</zorder>
-  <zorder>frame_condics_usn</zorder>
   <zorder>frame_se</zorder>
   <zorder>frame_medidores_ugs</zorder>
   <zorder>frame_ug1</zorder>

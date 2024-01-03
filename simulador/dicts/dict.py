@@ -49,6 +49,9 @@ compartilhado = {
         "cp3_posicao": 0,
         "cp4_posicao": 0,
 
+        "uh1_disponivel": True,
+        "uh2_disponivel": True,
+
         "cp1_aberta": False,
         "cp1_fechada": True,
 

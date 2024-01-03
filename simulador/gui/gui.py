@@ -34,12 +34,40 @@ class Window(QMainWindow, Ui_Form):
             horas = floor(self.dict['GLB']['tempo_simul'] / 3600)
             self.label_contador_tempo.setText(f"{horas:02d}:{minutos:02d}:{segundos:02d}")
 
-
-            # GERAL
-            self.checkBox_condic_usn.setChecked(self.dict['USN']['trip_condic'])
-
-
             # TDA
+            self.progressBar_cp1_ug1.setValue(int(self.dict['TDA']['cp1_posicao']))
+            self.progressBar_cp2_ug2.setValue(int(self.dict['TDA']['cp2_posicao']))
+            self.progressBar_cp3_ug3.setValue(int(self.dict['TDA']['cp3_posicao']))
+            self.progressBar_cp4_ug4.setValue(int(self.dict['TDA']['cp4_posicao']))
+
+            if self.dict['TDA']['cp1_fechada'] and not self.dict['TDA']['cp1_aberta']:
+                self.lcdNumber_etapa_cp1_ug1.display('F')
+            elif not self.dict['TDA']['cp1_fechada'] and not self.dict['TDA']['cp1_aberta']:
+                self.lcdNumber_etapa_cp1_ug1.display('C')
+            elif not self.dict['TDA']['cp1_fechada'] and self.dict['TDA']['cp1_aberta']:
+                self.lcdNumber_etapa_cp1_ug1.display('A')
+
+            if self.dict['TDA']['cp2_fechada'] and not self.dict['TDA']['cp2_aberta']:
+                self.lcdNumber_etapa_cp2_ug2.display('F')
+            elif not self.dict['TDA']['cp2_fechada'] and not self.dict['TDA']['cp2_aberta']:
+                self.lcdNumber_etapa_cp2_ug2.display('C')
+            elif not self.dict['TDA']['cp2_fechada'] and self.dict['TDA']['cp2_aberta']:
+                self.lcdNumber_etapa_cp2_ug2.display('A')
+
+            if self.dict['TDA']['cp3_fechada'] and not self.dict['TDA']['cp3_aberta']:
+                self.lcdNumber_etapa_cp3_ug3.display('F')
+            elif not self.dict['TDA']['cp3_fechada'] and not self.dict['TDA']['cp3_aberta']:
+                self.lcdNumber_etapa_cp3_ug3.display('C')
+            elif not self.dict['TDA']['cp3_fechada'] and self.dict['TDA']['cp3_aberta']:
+                self.lcdNumber_etapa_cp3_ug3.display('A')
+
+            if self.dict['TDA']['cp4_fechada'] and not self.dict['TDA']['cp4_aberta']:
+                self.lcdNumber_etapa_cp4_ug4.display('F')
+            elif not self.dict['TDA']['cp4_fechada'] and not self.dict['TDA']['cp4_aberta']:
+                self.lcdNumber_etapa_cp4_ug4.display('C')
+            elif not self.dict['TDA']['cp4_fechada'] and self.dict['TDA']['cp4_aberta']:
+                self.lcdNumber_etapa_cp4_ug4.display('A')
+
             self.lcdNumber_nv_montante.display(f"{self.dict['TDA']['nv_montante']:3.4f}")
             self.lcdNumber_q_liquida.display(f"{self.dict['TDA']['q_liquida']:2.3f}")
             self.lcdNumber_q_alfuente.display(f"{self.dict['TDA']['q_alfuente']:2.3f}")
@@ -66,16 +94,18 @@ class Window(QMainWindow, Ui_Form):
             self.checkBox_djl_falta_vcc.setChecked(self.dict['SE']['dj_falta_vcc'])
             self.checkBox_djl_mola.setChecked(self.dict['SE']['dj_mola_carregada'])
 
-            self.lcdNumber_lt.display(f'{self.dict["SE"]["tensao_rs"]:5.1f}')
-            self.lcdNumber_mu.display(f'{self.dict["SE"]["potencia_se"]:5.1f}')
+            self.lcdNumber_lt.display(f'{int(self.dict["SE"]["tensao_rs"])}')
+            self.lcdNumber_mu.display(f'{int(self.dict["SE"]["potencia_se"])}')
 
 
             # UG1
             self.checkBox_condic_ug1.setChecked(self.dict['UG1']['condic'])
+
             self.lcdNumber_etapa_alvo_ug1.display(self.dict['UG1']['etapa_alvo'])
             self.lcdNumber_etapa_atual_ug1.display(self.dict['UG1']['etapa_atual'])
-            self.lcdNumber_potencia_ug1.display(f'{self.dict["UG1"]["potencia"]:4.1f}')
-            self.lcdNumber_setpoint_ug1.display(f'{self.dict["UG1"]["setpoint"]:4.1f}')
+            self.lcdNumber_q_ug1.display(f'{self.dict["UG1"]["q"]:2.3f}')
+            self.lcdNumber_potencia_ug1.display(f'{int(self.dict["UG1"]["potencia"]):d}')
+            self.lcdNumber_setpoint_ug1.display(f'{int(self.dict["UG1"]["setpoint"]):d}')
             self.lcdNumber_pressao_ug1.display(f'{self.dict["UG1"]["pressao_turbina"]:1.2f}')
             self.lcdNumber_temp_1_ug1.display(f'{self.dict["UG1"]["temp_fase_r"]:3.1f}')
             self.lcdNumber_temp_2_ug1.display(f'{self.dict["UG1"]["temp_fase_s"]:3.1f}')
@@ -91,10 +121,12 @@ class Window(QMainWindow, Ui_Form):
 
             # UG2
             self.checkBox_condic_ug2.setChecked(self.dict['UG2']['condic'])
+
             self.lcdNumber_etapa_alvo_ug2.display(self.dict['UG2']['etapa_alvo'])
             self.lcdNumber_etapa_atual_ug2.display(self.dict['UG2']['etapa_atual'])
-            self.lcdNumber_potencia_ug2.display(f'{self.dict["UG2"]["potencia"]:4.1f}')
-            self.lcdNumber_setpoint_ug2.display(f'{self.dict["UG2"]["setpoint"]:4.1f}')
+            self.lcdNumber_q_ug2.display(f'{self.dict["UG2"]["q"]:2.3f}')
+            self.lcdNumber_potencia_ug2.display(f'{int(self.dict["UG2"]["potencia"]):d}')
+            self.lcdNumber_setpoint_ug2.display(f'{int(self.dict["UG2"]["setpoint"]):d}')
             self.lcdNumber_pressao_ug2.display(f'{self.dict["UG2"]["pressao_turbina"]:1.2f}')
             self.lcdNumber_temp_1_ug2.display(f'{self.dict["UG2"]["temp_fase_r"]:3.1f}')
             self.lcdNumber_temp_2_ug2.display(f'{self.dict["UG2"]["temp_fase_s"]:3.1f}')
@@ -112,8 +144,9 @@ class Window(QMainWindow, Ui_Form):
             self.checkBox_condic_ug3.setChecked(self.dict['UG3']['condic'])
             self.lcdNumber_etapa_alvo_ug3.display(self.dict['UG3']['etapa_alvo'])
             self.lcdNumber_etapa_atual_ug3.display(self.dict['UG3']['etapa_atual'])
-            self.lcdNumber_potencia_ug3.display(f'{self.dict["UG3"]["potencia"]:4.1f}')
-            self.lcdNumber_setpoint_ug3.display(f'{self.dict["UG3"]["setpoint"]:4.1f}')
+            self.lcdNumber_q_ug3.display(f'{self.dict["UG3"]["q"]:2.3f}')
+            self.lcdNumber_potencia_ug3.display(f'{int(self.dict["UG3"]["potencia"]):d}')
+            self.lcdNumber_setpoint_ug3.display(f'{int(self.dict["UG3"]["setpoint"]):d}')
             self.lcdNumber_pressao_ug3.display(f'{self.dict["UG3"]["pressao_turbina"]:1.2f}')
             self.lcdNumber_temp_1_ug3.display(f'{self.dict["UG3"]["temp_fase_r"]:3.1f}')
             self.lcdNumber_temp_2_ug3.display(f'{self.dict["UG3"]["temp_fase_s"]:3.1f}')
@@ -131,8 +164,9 @@ class Window(QMainWindow, Ui_Form):
             self.checkBox_condic_ug4.setChecked(self.dict['UG4']['condic'])
             self.lcdNumber_etapa_alvo_ug4.display(self.dict['UG4']['etapa_alvo'])
             self.lcdNumber_etapa_atual_ug4.display(self.dict['UG4']['etapa_atual'])
-            self.lcdNumber_potencia_ug4.display(f'{self.dict["UG4"]["potencia"]:4.1f}')
-            self.lcdNumber_setpoint_ug4.display(f'{self.dict["UG4"]["setpoint"]:4.1f}')
+            self.lcdNumber_q_ug4.display(f'{self.dict["UG4"]["q"]:2.3f}')
+            self.lcdNumber_potencia_ug4.display(f'{int(self.dict["UG4"]["potencia"]):d}')
+            self.lcdNumber_setpoint_ug4.display(f'{int(self.dict["UG4"]["setpoint"]):d}')
             self.lcdNumber_pressao_ug4.display(f'{self.dict["UG4"]["pressao_turbina"]:1.2f}')
             self.lcdNumber_temp_1_ug4.display(f'{self.dict["UG4"]["temp_fase_r"]:3.1f}')
             self.lcdNumber_temp_2_ug4.display(f'{self.dict["UG4"]["temp_fase_s"]:3.1f}')
@@ -157,12 +191,6 @@ class Window(QMainWindow, Ui_Form):
 
 
     # GERAL
-    def set_trip_condic(self):
-        self.dict['USN']['trip_condic'] = True
-
-    def reset_trip_condic(self):
-        self.dict['USN']['trip_condic'] = False
-
     def mudar_pressao_ugs(self):
         if self.dict['UG1']['set_pressao']:
             self.dict['UG1']['pressao_turbina'] = self.horizontalSlider_pressao_ugs.value() * 0.1
@@ -184,11 +212,16 @@ class Window(QMainWindow, Ui_Form):
         self.dict['AD']['condic'] = True
 
     def acionar_manual_cp1(self):
-        self.dict['AD']['cp1_manual'] = True
+        if not self.dict['AD']['cp1_manual']:
+            self.dict['AD']['cp1_manual'] = True
+        else:
+            self.dict['AD']['cp1_manual'] = False
 
     def acionar_manual_cp2(self):
-        self.dict['AD']['cp2_manual'] = True
-
+        if not self.dict['AD']['cp2_manual']:
+            self.dict['AD']['cp2_manual'] = True
+        else:
+            self.dict['AD']['cp2_manual'] = False
 
     # SE
     def set_trip_djl(self):
