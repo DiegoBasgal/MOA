@@ -64,13 +64,11 @@ class Se:
         if self.dict['SE']['condic'] and not self.dict['BRD']['se_condic']:
             ESC.escrever_bit(MB['SE']['Alarme01_13'], valor=1)
             self.dict['BRD']['se_condic'] = True
-            print("Tripou a SE.")
             self.tripar_dj()
 
         elif not self.dict['SE']['condic'] and self.dict['BRD']['se_condic']:
             ESC.escrever_bit(MB['SE']['Alarme01_13'], valor=0)
             self.dict['BRD']['se_condic'] = False
-            print("Resetou a SE")
 
 
     def verificar_tensao_dj(self) -> "None":
@@ -102,7 +100,8 @@ class Se:
 
 
     def abrir_dj(self) -> "None":
-        print('[SE] Comando de Abertura do Disjuntor da Subestação acionado')
+        print('')
+        print('[SE]  Comando de Abertura do Disjuntor da Subestação acionado')
 
         if self.dict['SE']['dj_mola_carregada']:
             self.dict['SE']['dj_trip'] = False
@@ -115,13 +114,14 @@ class Se:
 
 
     def fechar_dj(self) -> "None":
+        print('')
         if self.dict['SE']['dj_trip']:
             self.dict['SE']['dj_falha'] = True
             self.tripar_dj(descr='Picou.')
     
         elif self.dict['SE']['dj_aberto']:
             if self.dict['SE']['dj_condicao']:
-                print('[SE] Comando de Fechamento Disjuntor SE')
+                print('[SE]  Comando de Fechamento Disjuntor SE')
                 self.dict['SE']['dj_fechado'] = True
                 self.dict['SE']['dj_aberto'] = False
             else:
@@ -132,6 +132,7 @@ class Se:
 
 
     def resetar_dj(self) -> "None":
+        print('')
         print('[SE]  Comando de Reset.')
         self.dict['SE']['dj_trip'] = False
         self.dict['SE']['dj_falha'] = False
@@ -139,6 +140,7 @@ class Se:
 
 
     def tripar_dj(self, descr=None) -> "None":
+        print('')
         if not self.avisou_trip:
             self.avisou_trip = True
             self.dict['SE']['dj_trip'] = True

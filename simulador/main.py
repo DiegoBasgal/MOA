@@ -34,6 +34,7 @@ if __name__ == '__main__':
         # thread_controlador = Thread(target=Controlador(compartilhado).run, args=())
 
         print("Rodando Simulador...")
+        print('')
         thread_temporizador.start()
         thread_usina.start()
         thread_gui.start()
@@ -44,6 +45,7 @@ if __name__ == '__main__':
         thread_gui.join()
         # thread_controlador.join()
 
+        print('')
         print("Fim da Simulação.")
 
         sys.exit(0)

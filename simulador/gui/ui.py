@@ -1969,7 +1969,7 @@ class Ui_Form(object):
         self.horizontalSlider_pressao_ugs.setSizePolicy(sizePolicy)
         self.horizontalSlider_pressao_ugs.setMinimumSize(QtCore.QSize(0, 30))
         self.horizontalSlider_pressao_ugs.setMaximumSize(QtCore.QSize(16777215, 30))
-        self.horizontalSlider_pressao_ugs.setMaximum(100)
+        self.horizontalSlider_pressao_ugs.setMaximum(40)
         self.horizontalSlider_pressao_ugs.setPageStep(1)
         self.horizontalSlider_pressao_ugs.setProperty("value", 0)
         self.horizontalSlider_pressao_ugs.setSliderPosition(0)
@@ -3103,6 +3103,7 @@ class Ui_Form(object):
         self.pushButton_partir_ug1.clicked.connect(Form.partir_ug1)
         self.pushButton_set_condic_ug1.clicked.connect(Form.set_condic_ug1)
         self.pushButton_reset_condic_ug1.clicked.connect(Form.reset_condic_ug1)
+        self.pushButton_set_pressao_ug1.clicked.connect(Form.set_pressao_ug1)
         self.horizontalSlider_sp_ug1.valueChanged.connect(Form.mudar_setpoint_ug1)
 
 
@@ -3111,6 +3112,7 @@ class Ui_Form(object):
         self.pushButton_partir_ug2.clicked.connect(Form.partir_ug2)
         self.pushButton_set_condic_ug2.clicked.connect(Form.set_condic_ug2)
         self.pushButton_reset_condic_ug2.clicked.connect(Form.reset_condic_ug2)
+        self.pushButton_set_pressao_ug2.clicked.connect(Form.set_pressao_ug2)
         self.horizontalSlider_sp_ug2.valueChanged.connect(Form.mudar_setpoint_ug2)
 
 
@@ -3119,6 +3121,7 @@ class Ui_Form(object):
         self.pushButton_partir_ug3.clicked.connect(Form.partir_ug3)
         self.pushButton_set_condic_ug3.clicked.connect(Form.set_condic_ug3)
         self.pushButton_reset_condic_ug3.clicked.connect(Form.reset_condic_ug3)
+        self.pushButton_set_pressao_ug3.clicked.connect(Form.set_pressao_ug3)
         self.horizontalSlider_sp_ug3.valueChanged.connect(Form.mudar_setpoint_ug3)
 
 
@@ -3127,6 +3130,7 @@ class Ui_Form(object):
         self.pushButton_partir_ug4.clicked.connect(Form.partir_ug4)
         self.pushButton_set_condic_ug4.clicked.connect(Form.set_condic_ug4)
         self.pushButton_reset_condic_ug4.clicked.connect(Form.reset_condic_ug4)
+        self.pushButton_set_pressao_ug4.clicked.connect(Form.set_pressao_ug4)
         self.horizontalSlider_sp_ug4.valueChanged.connect(Form.mudar_setpoint_ug4)
 
         # UGs

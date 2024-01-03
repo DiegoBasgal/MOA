@@ -39,6 +39,7 @@ class Unidade:
         if DB.get_words(MB[f'UG{self.id}']['CMD_RESET_ALARMES'])[0]:
             DB.set_words(MB[f'UG{self.id}']['CMD_RESET_ALARMES'], [0])
             self.dict[f'UG{self.id}']['condic'] = False
+            print('')
             print(f"[UG{self.id}] Comando de Reset.")
 
         if DB.get_words(MB[f'UG{self.id}']['CMD_OPER_US'])[0] or self.dict[f'UG{self.id}']['debug_partir']:
@@ -46,6 +47,7 @@ class Unidade:
             self.dict[f'UG{self.id}']['debug_partir'] = False
 
             if self.dict['TDA'][f'cp{self.id}_fechada'] and not self.dict['TDA'][f'cp{self.id}_aberta']:
+                print('')
                 print(f"[UG{self.id}] Comando de Partida -> Abrindo Comporta.")
                 Thread(target=lambda: self.abrir_comporta(0)).start()
             elif not self.dict['TDA'][f'cp{self.id}_fechada'] and self.dict['TDA'][f'cp{self.id}_aberta']:
@@ -75,6 +77,7 @@ class Unidade:
 
 
     def partir(self) -> 'None':
+        print('')
         if ETAPA_UP in (self.etapa_alvo, self.etapa_atual) and not self.dict[f'UG{self.id}']['condic']:
             self.dict[f'UG{self.id}']['etapa_alvo'] = self.etapa_alvo = ETAPA_US
             print(f'[UG{self.id}] Comando de Partida')
@@ -84,12 +87,14 @@ class Unidade:
 
 
     def parar(self) -> 'None':
+        print('')
         if ETAPA_UP not in (self.etapa_alvo, self.etapa_atual):
             self.dict[f'UG{self.id}']['etapa_alvo'] = self.etapa_alvo = ETAPA_UP
             print(f'[UG{self.id}] Comando de Parada')
 
 
     def tripar(self) -> 'None':
+        print('')
         print(f'[UG{self.id}] TRIP!')
         self.potencia = 0
         self.etapa_alvo = 0
@@ -126,6 +131,7 @@ class Unidade:
 
 
     def abrir_comporta(self, passo):
+        print('')
         if not self.dict['TDA'][f'uh{1 if self.id in (1,3) else 2}_disponivel']:
             print(f"[UG{self.id}] A Unidade Hidráulica da Comporta {self.id} está em Operação. Aguardando...")
             return
@@ -179,19 +185,18 @@ class Unidade:
 
     def fechar_comporta(self) -> 'None':
         while not self.dict[f'UG{self.id}']['etapa_atual'] == ETAPA_UP:
-            print(f"[UG{self.id}] Aguardando parada total da Unidade para Fechar a Comporta {self.id}...")
-            sleep(5)
+            sleep(1)
 
-        if self.dict[f'UG{self.id}']['etapa_atual'] == ETAPA_UP and self.dict['TDA'][f'cp{self.id}_aberta']:
-            print(f"[UG{self.id}] Fechando Comporta {self.id}...")
-            self.dict['TDA'][f'cp{self.id}_aberta'] = False
+        print('')
+        print(f"[UG{self.id}] Fechando Comporta {self.id}...")
+        self.dict['TDA'][f'cp{self.id}_aberta'] = False
 
-            while self.dict[f'TDA'][f'cp{self.id}_posicao'] >= 0:
-                self.dict[f'TDA'][f'cp{self.id}_posicao'] -= 1000
+        while self.dict[f'TDA'][f'cp{self.id}_posicao'] > 0:
+            self.dict[f'TDA'][f'cp{self.id}_posicao'] -= 0.0001
 
-            self.dict['TDA'][f'cp{self.id}_fechada'] = True
+        self.dict['TDA'][f'cp{self.id}_fechada'] = True
 
-            print(f"[UG{self.id}] Comporta {self.id} Fechada!")
+        print(f"[UG{self.id}] Comporta {self.id} Fechada!")
 
 
     def controlar_etapas(self) -> 'None':

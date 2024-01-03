@@ -190,27 +190,12 @@ class Window(QMainWindow, Ui_Form):
         return super().closeEvent(event)
 
 
-    # GERAL
-    def mudar_pressao_ugs(self):
-        if self.dict['UG1']['set_pressao']:
-            self.dict['UG1']['pressao_turbina'] = self.horizontalSlider_pressao_ugs.value() * 0.1
-        if self.dict['UG2']['set_pressao']:
-            self.dict['UG2']['pressao_turbina'] = self.horizontalSlider_pressao_ugs.value() * 0.1
-        if self.dict['UG3']['set_pressao']:
-            self.dict['UG3']['pressao_turbina'] = self.horizontalSlider_pressao_ugs.value() * 0.1
-        if self.dict['UG4']['set_pressao']:
-            self.dict['UG4']['pressao_turbina'] = self.horizontalSlider_pressao_ugs.value() * 0.1
-
-
     # TDA
     def mudar_q_afluente(self):
         self.dict['TDA']['q_alfuente'] = (10 ** (self.horizontalSlider_q_afluente.value() / 75) - 1) * 2
 
 
     # AD
-    def set_trip_ad(self):
-        self.dict['AD']['condic'] = True
-
     def acionar_manual_cp1(self):
         if not self.dict['AD']['cp1_manual']:
             self.dict['AD']['cp1_manual'] = True
@@ -253,9 +238,6 @@ class Window(QMainWindow, Ui_Form):
     def parar_ug1(self):
         self.dict['UG1']['debug_parar'] = True
 
-    def mudar_setpoint_ug1(self):
-        self.dict['UG1']['debug_setpoint'] = self.horizontalSlider_sp_ug1.value()
-
     def set_condic_ug1(self):
         self.dict['UG1']['condic'] = True
 
@@ -264,7 +246,8 @@ class Window(QMainWindow, Ui_Form):
 
     def set_pressao_ug1(self):
         if not self.dict['UG1']['set_pressao']:
-            self.horizontalSlider_pressao_ugs.setValue(0)
+            self.horizontalSlider_pressao_ugs.setSliderPosition(0)
+            self.dict['UG1']['pressao_turbina'] = 1.5
             self.dict['UG1']['set_pressao'] = True
             self.dict['UG2']['set_pressao'] = False
             self.dict['UG3']['set_pressao'] = False
@@ -275,8 +258,11 @@ class Window(QMainWindow, Ui_Form):
             self.lcdNumber_pressao_ug4.setFrameShadow(QFrame.Sunken)
         elif self.dict['UG1']['set_pressao']:
             self.dict['UG1']['set_pressao'] = False
-            self.horizontalSlider_pressao_ugs.setValue(0)
+            self.horizontalSlider_pressao_ugs.setSliderPosition(0)
             self.lcdNumber_pressao_ug1.setFrameShadow(QFrame.Sunken)
+
+    def mudar_setpoint_ug1(self):
+        self.dict['UG1']['debug_setpoint'] = self.horizontalSlider_sp_ug1.value()
 
 
     # UG2
@@ -286,9 +272,6 @@ class Window(QMainWindow, Ui_Form):
     def parar_ug2(self):
         self.dict['UG2']['debug_parar'] = True
 
-    def mudar_setpoint_ug2(self):
-        self.dict['UG2']['debug_setpoint'] = self.horizontalSlider_sp_ug2.value()
-
     def set_condic_ug2(self):
         self.dict['UG2']['condic'] = True
 
@@ -297,7 +280,8 @@ class Window(QMainWindow, Ui_Form):
 
     def set_pressao_ug2(self):
         if not self.dict['UG2']['set_pressao']:
-            self.horizontalSlider_pressao_ugs.setValue(0)
+            self.horizontalSlider_pressao_ugs.setSliderPosition(0)
+            self.dict['UG2']['pressao_turbina'] = 1.5
             self.dict['UG2']['set_pressao'] = True
             self.dict['UG1']['set_pressao'] = False
             self.dict['UG3']['set_pressao'] = False
@@ -308,8 +292,11 @@ class Window(QMainWindow, Ui_Form):
             self.lcdNumber_pressao_ug4.setFrameShadow(QFrame.Sunken)
         elif self.dict['UG2']['set_pressao']:
             self.dict['UG2']['set_pressao'] = False
-            self.horizontalSlider_pressao_ugs.setValue(0)
+            self.horizontalSlider_pressao_ugs.setSliderPosition(0)
             self.lcdNumber_pressao_ug2.setFrameShadow(QFrame.Sunken)
+
+    def mudar_setpoint_ug2(self):
+        self.dict['UG2']['debug_setpoint'] = self.horizontalSlider_sp_ug2.value()
 
 
     # UG3
@@ -319,9 +306,6 @@ class Window(QMainWindow, Ui_Form):
     def parar_ug3(self):
         self.dict['UG3']['debug_parar'] = True
 
-    def mudar_setpoint_ug3(self):
-        self.dict['UG3']['debug_setpoint'] = self.horizontalSlider_sp_ug3.value()
-
     def set_condic_ug3(self):
         self.dict['UG3']['condic'] = True
 
@@ -330,7 +314,8 @@ class Window(QMainWindow, Ui_Form):
 
     def set_pressao_ug3(self):
         if not self.dict['UG3']['set_pressao']:
-            self.horizontalSlider_pressao_ugs.setValue(0)
+            self.horizontalSlider_pressao_ugs.setSliderPosition(0)
+            self.dict['UG3']['pressao_turbina'] = 1.5
             self.dict['UG3']['set_pressao'] = True
             self.dict['UG1']['set_pressao'] = False
             self.dict['UG2']['set_pressao'] = False
@@ -341,8 +326,11 @@ class Window(QMainWindow, Ui_Form):
             self.lcdNumber_pressao_ug4.setFrameShadow(QFrame.Sunken)
         elif self.dict['UG3']['set_pressao']:
             self.dict['UG3']['set_pressao'] = False
-            self.horizontalSlider_pressao_ugs.setValue(0)
+            self.horizontalSlider_pressao_ugs.setSliderPosition(0)
             self.lcdNumber_pressao_ug3.setFrameShadow(QFrame.Sunken)
+
+    def mudar_setpoint_ug3(self):
+        self.dict['UG3']['debug_setpoint'] = self.horizontalSlider_sp_ug3.value()
 
 
     # UG4
@@ -352,9 +340,6 @@ class Window(QMainWindow, Ui_Form):
     def parar_ug4(self):
         self.dict['UG4']['debug_parar'] = True
 
-    def mudar_setpoint_ug4(self):
-        self.dict['UG4']['debug_setpoint'] = self.horizontalSlider_sp_ug4.value()
-
     def set_condic_ug4(self):
         self.dict['UG4']['condic'] = True
 
@@ -363,7 +348,8 @@ class Window(QMainWindow, Ui_Form):
 
     def set_pressao_ug4(self):
         if not self.dict['UG4']['set_pressao']:
-            self.horizontalSlider_pressao_ugs.setValue(0)
+            self.horizontalSlider_pressao_ugs.setSliderPosition(0)
+            self.dict['UG4']['pressao_turbina'] = 1.5
             self.dict['UG4']['set_pressao'] = True
             self.dict['UG1']['set_pressao'] = False
             self.dict['UG2']['set_pressao'] = False
@@ -374,8 +360,24 @@ class Window(QMainWindow, Ui_Form):
             self.lcdNumber_pressao_ug3.setFrameShadow(QFrame.Sunken)
         elif self.dict['UG4']['set_pressao']:
             self.dict['UG4']['set_pressao'] = False
-            self.horizontalSlider_pressao_ugs.setValue(0)
+            self.horizontalSlider_pressao_ugs.setSliderPosition(0)
             self.lcdNumber_pressao_ug4.setFrameShadow(QFrame.Sunken)
+
+    def mudar_setpoint_ug4(self):
+        self.dict['UG4']['debug_setpoint'] = self.horizontalSlider_sp_ug4.value()
+
+
+    # UGs
+    def mudar_pressao_ugs(self):
+        if self.dict['UG1']['set_pressao']:
+            self.dict['UG1']['pressao_turbina'] = self.horizontalSlider_pressao_ugs.value() * 0.1
+        elif self.dict['UG2']['set_pressao']:
+            self.dict['UG2']['pressao_turbina'] = self.horizontalSlider_pressao_ugs.value() * 0.1
+        elif self.dict['UG3']['set_pressao']:
+            self.dict['UG3']['pressao_turbina'] = self.horizontalSlider_pressao_ugs.value() * 0.1
+        elif self.dict['UG4']['set_pressao']:
+            self.dict['UG4']['pressao_turbina'] = self.horizontalSlider_pressao_ugs.value() * 0.1
+
 
 
 def start_gui(dict):
