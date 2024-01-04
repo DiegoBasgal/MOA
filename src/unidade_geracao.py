@@ -75,8 +75,7 @@ class UnidadeGeracao:
         self._setpoint: "int" = 0
         self._prioridade: "int" = 0
         self._codigo_state: "int" = 0
-        self._ultima_etapa_alvo: "int" = 0
-        self._ultima_etapa_atual: "int" = 0
+        self._ultima_etapa: "int" = 0
         self._tentativas_normalizacao: "int" = 0
 
         self._setpoint_minimo: "float" = self.__cfg["pot_minima"]
@@ -164,23 +163,34 @@ class UnidadeGeracao:
 
     @property
     def etapa_atual(self) -> "int":
-        try:
-            self._etapa_atual = self.__leitura_etapa_atual.valor
-            self._ultima_etapa_atual = self._etapa_atual
-            return self._etapa_atual
+        # PROPRIEDADE -> Retorna a leitura de etapa atual direto do CLP da Unidade.
 
-        except Exception:
-            logger.error(f"[UG{self.id}] Erro na leitura de \"Etapa Atual\". Mantendo última etapa.")
-            return self._ultima_etapa_atual
+        return self.__leitura_etapa_atual.valor
 
     @property
     def etapa(self) -> "int":
-        if self.etapa_atual == 7:
-            return UG_SINCRONIZADA
-        elif self.etapa_atual == 17:
+        # PROPRIEDADE -> Retorna a etapa atual da Unidade.
+
+        if self.__leitura_etapa_atual.valor == UG_PARADA:
+            self._ultima_etapa = self.__leitura_etapa_atual.valor
             return UG_PARADA
-        else:
-            return self.etapa_atual
+
+        elif self.__leitura_etapa_atual.valor == UG_SINCRONIZADA:
+            self._ultima_etapa = self.__leitura_etapa_atual.valor
+            return UG_SINCRONIZADA
+
+        elif self.__leitura_etapa_atual.valor > UG_SINCRONIZADA:
+            self._ultima_etapa = self.__leitura_etapa_atual.valor
+            return UG_PARANDO
+
+        elif UG_PARADA < self.__leitura_etapa_atual.valor < UG_SINCRONIZADA:
+            if self.__leitura_etapa_atual.valor > UG_SINCRONIZADA:
+                self._ultima_etapa = self.__leitura_etapa_atual.valor
+                return UG_PARANDO
+            else:
+                self._ultima_etapa = self.__leitura_etapa_atual.valor
+                return UG_SINCRONIZANDO
+
 
     @property
     def prioridade(self) -> "int":
@@ -216,11 +226,11 @@ class UnidadeGeracao:
     def setpoint(self, var: "int") -> "None":
         # SETTER -> Atribui o novo valor de setpoint da Unidade.
 
-        if self.manter_unidades:
-            self._setpoint = self.__cfg["pot_minima"]
-
-        elif var < self.__cfg["pot_minima"]:
-            self._setpoint = 0
+        if var < self.__cfg["pot_minima"]:
+            if self.manter_unidades:
+                self._setpoint = self.__cfg["pot_minima"]
+            else:
+                self._setpoint = 0
 
         elif var > self.__cfg[f"pot_maxima_ug{self.id}"]:
             self._setpoint = self.__cfg[f"pot_maxima_ug{self.id}"]
@@ -406,7 +416,7 @@ class UnidadeGeracao:
         try:
             logger.debug("")
             logger.debug(f"[UG{self.id}] Step  -> Unidade:                   \"{UG_SM_STR_DCT[self.codigo_state]}\"")
-            logger.debug(f"[UG{self.id}]          Etapa:                     \"{'Sincronizada' if self.etapa == 7 else 'Parada' if self.etapa == 0 else 'Partindo/Parando'}\" (Atual: {self.etapa_atual})")
+            logger.debug(f"[UG{self.id}]          Etapa:                     \"{UG_STR_DCT_ETAPAS[self.etapa]}\" (Atual: {self.__leitura_etapa_atual.valor})")
 
             if self.etapa == UG_SINCRONIZADA:
                 logger.debug(f"[UG{self.id}]          Leituras de Potência:")
@@ -636,14 +646,14 @@ class UnidadeGeracao:
         aciona a função de reconhecimento e reset de alarmes da Unidade.
         """
 
-        if self.tentativas_normalizacao > self.limite_tentativas_normalizacao:
+        if self.tentativas_normalizacao > self.__limite_tentativas_normalizacao:
             logger.warning(f"[UG{self.id}] A UG estourou as tentativas de normalização, indisponibilizando Unidade.")
             return False
 
         elif (self.ts_auxiliar - self.get_time()).seconds > self.__tempo_entre_tentativas:
             self.tentativas_normalizacao += 1
             self.ts_auxiliar = self.get_time()
-            logger.info(f"[UG{self.id}] Normalizando Unidade (Tentativa {self.tentativas_normalizacao}/{self.limite_tentativas_normalizacao})")
+            logger.info(f"[UG{self.id}] Normalizando Unidade (Tentativa {self.tentativas_normalizacao}/{self.__limite_tentativas_normalizacao})")
             self.reconhece_reset_alarmes()
             return True
 
@@ -703,8 +713,8 @@ class UnidadeGeracao:
         deve atenuar ou não.
         """
 
-        atenuacao = 0
         flags = 0
+        atenuacao = 0
         logger.debug(f"[UG{self.id}]          Verificando Atenuadores...")
 
         for condic in self.condicionadores_atenuadores:
@@ -724,11 +734,8 @@ class UnidadeGeracao:
         elif (self.setpoint * ganho < self.setpoint_minimo) and (self.setpoint > self.setpoint_minimo):
             self.setpoint =  self.setpoint_minimo
 
-        if self.etapa_atual == UG_SINCRONIZADA:
-            if ganho < 1:
-                logger.debug(f"[UG{self.id}]                                     SP {aux} * GANHO {ganho} = {self.setpoint} kW")
-            else:
-                pass
+        if self.etapa == UG_SINCRONIZADA and ganho < 1:
+            logger.debug(f"[UG{self.id}]                                     SP {aux} * GANHO {ganho} = {self.setpoint} kW")
 
 
     def controlar_etapas(self) -> "None":

@@ -6,7 +6,7 @@ __description__ = "Este módulo corresponde a implementação de Agendamentos da
 import pytz
 import logging
 
-from src.usina import *
+import src.usina as u
 
 from time import sleep
 from datetime import datetime, timedelta
@@ -19,7 +19,7 @@ from src.conectores.banco_dados import BancoDados
 logger = logging.getLogger("logger")
 
 class Agendamentos:
-    def __init__(self, cfg: "dict"=None, db: "BancoDados"=None, usina=None) -> "None":
+    def __init__(self, cfg: "dict"=None, db: "BancoDados"=None, usina: "u.Usina"=None) -> "None":
 
         # ATRIBUIÇÂO DE VARIÁVEIS PÚBLICAS
 
@@ -189,7 +189,7 @@ class Agendamentos:
                 ug.forcar_estado_indisponivel()
                 ug.step()
 
-            while (not self.usn.ug1.etapa_atual == UG_PARADA and not self.usn.ug2.etapa_atual == UG_PARADA and not self.usn.ug3.etapa_atual == UG_PARADA):
+            while (not self.usn.ug1.etapa == UG_PARADA and not self.usn.ug2.etapa == UG_PARADA):
                 self.usn.ler_valores()
                 logger.debug("[AGN] Aguardando parada total das Unidades...")
                 sleep(5)

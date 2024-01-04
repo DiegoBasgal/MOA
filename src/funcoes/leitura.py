@@ -60,9 +60,9 @@ class LeituraModbus:
 
         except Exception:
             if self.__registrador == 21:
-                logger.debug(f"[LEI] Houve um erro na leitura do REG: {self.__descricao} | Endereço: {self.__registrador}")
+                logger.debug(f"[LEI] Erro na Leitura RAW -> INT do REG: {self.__descricao} | Endereço: {self.__registrador}")
             else:
-                logger.error(f"[LEI] Houve um erro na leitura do REG: {self.__descricao} | Endereço: {self.__registrador}")
+                logger.error(f"[LEI] Erro na Leitura RAW -> INT do REG: {self.__descricao} | Endereço: {self.__registrador}")
 
             logger.debug(traceback.format_exc())
             return 0
@@ -104,7 +104,7 @@ class LeituraModbusBit(LeituraModbus):
                 return ler
 
         except Exception:
-            logger.error(f"[LEI] Erro na Leitura RAW do REG: {self.__descricao} | Endereço: {self.__reg} | Bit: {self.__bit}")
+            logger.error(f"[LEI] Erro na Leitura RAW -> BIT do REG: {self.__descricao} | Endereço: {self.__reg} | Bit: {self.__bit}")
             logger.debug(traceback.format_exc())
             sleep(1)
 
@@ -174,7 +174,7 @@ class LeituraModbusFloat(LeituraModbus):
             return val * self.__escala
 
         except Exception:
-            logger.error(f"[LEI] Houve um erro ao realizar a Leitura de valores Float do registrador: {self.__reg}.")
+            logger.error(f"[LEI] Erro na Leitura FLOAT do REG: {self.__descricao} | Endereço: {self.__reg}.")
             logger.debug(traceback.format_exc())
             sleep(1)
             return 0
