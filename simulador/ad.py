@@ -1,5 +1,6 @@
 import math
 
+from time import time
 from threading import Thread
 from pyModbusTCP.server import DataBank as DB
 
@@ -25,7 +26,7 @@ class Ad:
 
     class Cp:
         def __init__(self, id: 'int', dict_comp: 'dict'=None, tempo: 'Temporizador'=None) -> 'None':
-            
+
             self.id = id
 
             self.dict = dict_comp
@@ -42,38 +43,52 @@ class Ad:
 
         def passo(self) -> 'None':
             self.setpoint = DB.get_words(MB['AD'][f'CP_0{self.id}_SP_POS'])[0]
+            print(f'[ADCP{self.id}] SP -> {self.setpoint}')
 
             if DB.get_words(MB['AD'][f'CMD_CP_0{self.id}_BUSCAR'])[0]:
                 DB.set_words(MB['AD'][f'CMD_CP_0{self.id}_BUSCAR'], [0])
 
-                if not self.dict['AD'][f'cp{self.id}_manual'] and not self.operando:
-                    self.operando = True
+                if not self.dict['AD'][f'cp{self.id}_manual']:
 
                     if self.setpoint > self.setpoint_anterior:
+                        Thread(target=lambda: self.abrir(self.setpoint, self.setpoint_anterior)).start()
                         self.setpoint_anterior = self.setpoint
-                        Thread(target=lambda: self.abrir(self.setpoint)).start()
 
                     elif self.setpoint < self.setpoint_anterior:
+                        Thread(target=lambda: self.fechar(self.setpoint, self.setpoint_anterior)).start()
                         self.setpoint_anterior = self.setpoint
-                        Thread(target=lambda: self.fechar(self.setpoint)).start()
 
             self.dict['AD'][f'cp{self.id}_q'] = self.calcular_q_cp(self.setpoint)
 
 
-        def abrir(self, setpoint) -> 'None':
-            while self.setpoint < setpoint:
-                if self.setpoint > setpoint:
-                    break
-                self.setpoint += setpoint * self.segundos_por_passo
-            self.operando = False
+        def abrir(self, sp, sp_anterior) -> 'None':
+            sp_calc = sp - sp_anterior
+            sp_pc = (sp_calc/6000) * 100
+            ta = time() + sp_pc
+            t1 = t2 = time()
+
+            while time() < ta and sp == self.setpoint:
+                if t2 - t1 >= 1:
+                    t1 = t2
+                    t2 = time()
+                    self.dict['AD'][f'cp{self.id}_setpoint'] += (1/sp_pc) * sp_calc
+                else:
+                    t2 = time()
 
 
-        def fechar(self, setpoint) -> 'None':
-            while self.setpoint > setpoint:
-                if self.setpoint < setpoint:
-                    break
-                self.setpoint -= setpoint * self.segundos_por_passo
-            self.operando = False
+        def fechar(self, sp, sp_anterior) -> 'None':
+            sp_calc = sp_anterior - sp
+            sp_pc = (sp_calc/6000) * 100
+            tf = time() + sp_pc
+            t1 = t2 = time()
+
+            while time() < tf and sp == self.setpoint:
+                if t2 - t1 >= 1:
+                    t1 = t2
+                    t2 = time()
+                    self.dict['AD'][f'cp{self.id}_setpoint'] -= (1/sp_pc) * sp_calc
+                else:
+                    t2 = time()
 
 
         def calcular_q_cp(self, abertura) -> 'int':
