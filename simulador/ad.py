@@ -48,18 +48,18 @@ class Ad:
                 if not self.dict['AD'][f'cp{self.id}_manual']:
 
                     if self.setpoint > self.setpoint_anterior:
-                        Thread(target=lambda: self.abrir(self.setpoint)).start()
+                        Thread(target=lambda: self.abrir(self.setpoint, self.setpoint_anterior)).start()
                         self.setpoint_anterior = self.setpoint
 
                     elif self.setpoint < self.setpoint_anterior:
-                        Thread(target=lambda: self.fechar(self.setpoint)).start()
+                        Thread(target=lambda: self.fechar(self.setpoint, self.setpoint_anterior)).start()
                         self.setpoint_anterior = self.setpoint
 
 
-        def abrir(self, sp) -> 'None':
-            sp_calc = sp
+        def abrir(self, sp, sp_ante) -> 'None':
+            sp_calc = sp - sp_ante
             sp_pc = (sp_calc/6000) * 100
-            ta = time() + sp_pc + 1
+            ta = time() + round(sp_pc) + 1
             t1 = t2 = time()
 
             while time() < ta and sp == self.setpoint:
@@ -72,13 +72,13 @@ class Ad:
                     t2 = time()
 
 
-        def fechar(self, sp) -> 'None':
-            sp_calc = sp
+        def fechar(self, sp, sp_ante) -> 'None':
+            sp_calc = sp_ante - sp
             sp_pc = (sp_calc/6000) * 100
-            tf = time() + sp_pc
+            tf = time() + round(sp_pc)
             t1 = t2 = time()
 
-            while time() < tf + 1 and sp == self.setpoint:
+            while time() < tf and sp == self.setpoint:
                 if t2 - t1 >= 1:
                     t1 = t2
                     t2 = time()

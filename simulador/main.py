@@ -54,4 +54,3 @@ if __name__ == '__main__':
         sys.exit(1)
         print(f"Houve um erro ao iniciar as Threads de excução do Simulador.")
         print(traceback.format_exc())
-
