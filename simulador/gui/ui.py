@@ -1793,6 +1793,8 @@ class Ui_Form(object):
         self.horizontalSlider_sp_ug1 = QtWidgets.QSlider(self.layoutWidget_16)
         self.horizontalSlider_sp_ug1.setMinimumSize(QtCore.QSize(0, 30))
         self.horizontalSlider_sp_ug1.setMaximum(5650)
+        self.horizontalSlider_sp_ug1.setSingleStep(1)
+        self.horizontalSlider_sp_ug1.setPageStep(10)
         self.horizontalSlider_sp_ug1.setOrientation(QtCore.Qt.Horizontal)
         self.horizontalSlider_sp_ug1.setTickPosition(QtWidgets.QSlider.NoTicks)
         self.horizontalSlider_sp_ug1.setObjectName("horizontalSlider_sp_ug1")
@@ -1969,7 +1971,7 @@ class Ui_Form(object):
         self.horizontalSlider_pressao_ugs.setSizePolicy(sizePolicy)
         self.horizontalSlider_pressao_ugs.setMinimumSize(QtCore.QSize(0, 30))
         self.horizontalSlider_pressao_ugs.setMaximumSize(QtCore.QSize(16777215, 30))
-        self.horizontalSlider_pressao_ugs.setMaximum(40)
+        self.horizontalSlider_pressao_ugs.setMaximum(100)
         self.horizontalSlider_pressao_ugs.setPageStep(1)
         self.horizontalSlider_pressao_ugs.setProperty("value", 0)
         self.horizontalSlider_pressao_ugs.setSliderPosition(0)
@@ -2344,29 +2346,42 @@ class Ui_Form(object):
         self.verticalLayoutWidget_2.setGeometry(QtCore.QRect(11, 77, 141, 141))
         self.verticalLayoutWidget_2.setObjectName("verticalLayoutWidget_2")
         self.verticalLayout_cp1_ad = QtWidgets.QVBoxLayout(self.verticalLayoutWidget_2)
-        self.verticalLayout_cp1_ad.setContentsMargins(0, 0, 4, 5)
+        self.verticalLayout_cp1_ad.setContentsMargins(0, 0, 0, 5)
         self.verticalLayout_cp1_ad.setSpacing(6)
         self.verticalLayout_cp1_ad.setObjectName("verticalLayout_cp1_ad")
         self.progressBar_cp1_ad = QtWidgets.QProgressBar(self.verticalLayoutWidget_2)
         self.progressBar_cp1_ad.setMaximumSize(QtCore.QSize(140, 16777215))
+        self.progressBar_cp1_ad.setLayoutDirection(QtCore.Qt.RightToLeft)
         self.progressBar_cp1_ad.setMaximum(6000)
         self.progressBar_cp1_ad.setProperty("value", 0)
         self.progressBar_cp1_ad.setTextVisible(True)
-        self.progressBar_cp1_ad.setInvertedAppearance(False)
+        self.progressBar_cp1_ad.setInvertedAppearance(True)
         self.progressBar_cp1_ad.setTextDirection(QtWidgets.QProgressBar.TopToBottom)
         self.progressBar_cp1_ad.setObjectName("progressBar_cp1_ad")
         self.verticalLayout_cp1_ad.addWidget(self.progressBar_cp1_ad, 0, QtCore.Qt.AlignVCenter)
         self.horizontalLayout_cp1_ad = QtWidgets.QHBoxLayout()
-        self.horizontalLayout_cp1_ad.setContentsMargins(-1, -1, -1, 12)
+        self.horizontalLayout_cp1_ad.setContentsMargins(-1, -1, 7, 12)
+        self.horizontalLayout_cp1_ad.setSpacing(0)
         self.horizontalLayout_cp1_ad.setObjectName("horizontalLayout_cp1_ad")
         self.label_q_cp1_ad = QtWidgets.QLabel(self.verticalLayoutWidget_2)
+        sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Ignored, QtWidgets.QSizePolicy.Ignored)
+        sizePolicy.setHorizontalStretch(0)
+        sizePolicy.setVerticalStretch(0)
+        sizePolicy.setHeightForWidth(self.label_q_cp1_ad.sizePolicy().hasHeightForWidth())
+        self.label_q_cp1_ad.setSizePolicy(sizePolicy)
         font = QtGui.QFont()
         font.setPointSize(10)
         self.label_q_cp1_ad.setFont(font)
         self.label_q_cp1_ad.setObjectName("label_q_cp1_ad")
         self.horizontalLayout_cp1_ad.addWidget(self.label_q_cp1_ad, 0, QtCore.Qt.AlignHCenter)
         self.lcdNumber_q_cp1_ad = QtWidgets.QLCDNumber(self.verticalLayoutWidget_2)
-        self.lcdNumber_q_cp1_ad.setMaximumSize(QtCore.QSize(60, 30))
+        sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.MinimumExpanding, QtWidgets.QSizePolicy.Ignored)
+        sizePolicy.setHorizontalStretch(0)
+        sizePolicy.setVerticalStretch(0)
+        sizePolicy.setHeightForWidth(self.lcdNumber_q_cp1_ad.sizePolicy().hasHeightForWidth())
+        self.lcdNumber_q_cp1_ad.setSizePolicy(sizePolicy)
+        self.lcdNumber_q_cp1_ad.setMinimumSize(QtCore.QSize(81, 0))
+        self.lcdNumber_q_cp1_ad.setMaximumSize(QtCore.QSize(47, 30))
         self.lcdNumber_q_cp1_ad.setAutoFillBackground(False)
         self.lcdNumber_q_cp1_ad.setStyleSheet("background-color: rgb(255, 255, 255);")
         self.lcdNumber_q_cp1_ad.setFrameShape(QtWidgets.QFrame.WinPanel)
@@ -2399,12 +2414,15 @@ class Ui_Form(object):
         self.verticalLayout_cp2_ad.setObjectName("verticalLayout_cp2_ad")
         self.progressBar_cp2_ad = QtWidgets.QProgressBar(self.verticalLayoutWidget_3)
         self.progressBar_cp2_ad.setMaximumSize(QtCore.QSize(140, 16777215))
+        self.progressBar_cp2_ad.setLayoutDirection(QtCore.Qt.RightToLeft)
         self.progressBar_cp2_ad.setMaximum(6000)
         self.progressBar_cp2_ad.setProperty("value", 0)
+        self.progressBar_cp2_ad.setInvertedAppearance(True)
         self.progressBar_cp2_ad.setObjectName("progressBar_cp2_ad")
         self.verticalLayout_cp2_ad.addWidget(self.progressBar_cp2_ad, 0, QtCore.Qt.AlignVCenter)
         self.horizontalLayout_cp2_ad = QtWidgets.QHBoxLayout()
-        self.horizontalLayout_cp2_ad.setContentsMargins(-1, -1, -1, 12)
+        self.horizontalLayout_cp2_ad.setContentsMargins(0, -1, 7, 12)
+        self.horizontalLayout_cp2_ad.setSpacing(0)
         self.horizontalLayout_cp2_ad.setObjectName("horizontalLayout_cp2_ad")
         self.label_q_cp2_ad = QtWidgets.QLabel(self.verticalLayoutWidget_3)
         font = QtGui.QFont()
@@ -2413,6 +2431,12 @@ class Ui_Form(object):
         self.label_q_cp2_ad.setObjectName("label_q_cp2_ad")
         self.horizontalLayout_cp2_ad.addWidget(self.label_q_cp2_ad, 0, QtCore.Qt.AlignHCenter)
         self.lcdNumber_q_cp2_ad = QtWidgets.QLCDNumber(self.verticalLayoutWidget_3)
+        sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.MinimumExpanding, QtWidgets.QSizePolicy.Ignored)
+        sizePolicy.setHorizontalStretch(0)
+        sizePolicy.setVerticalStretch(0)
+        sizePolicy.setHeightForWidth(self.lcdNumber_q_cp2_ad.sizePolicy().hasHeightForWidth())
+        self.lcdNumber_q_cp2_ad.setSizePolicy(sizePolicy)
+        self.lcdNumber_q_cp2_ad.setMinimumSize(QtCore.QSize(80, 0))
         self.lcdNumber_q_cp2_ad.setMaximumSize(QtCore.QSize(60, 30))
         self.lcdNumber_q_cp2_ad.setAutoFillBackground(False)
         self.lcdNumber_q_cp2_ad.setStyleSheet("background-color: rgb(255, 255, 255);")
@@ -3078,9 +3102,9 @@ class Ui_Form(object):
         self.frame_ug3.raise_()
         self.frame_ug4.raise_()
 
+
         self.retranslateUi(Form)
         QtCore.QMetaObject.connectSlotsByName(Form)
-
 
         # SE
         self.pushButton_djl_reset.clicked.connect(Form.set_trip_djl)
@@ -3088,15 +3112,12 @@ class Ui_Form(object):
         self.pushButton_set_trip_lt.clicked.connect(Form.set_trip_lt)
         self.pushButton_reset_trip_lt.clicked.connect(Form.reset_trip_lt)
 
-
         # TDA
         self.horizontalSlider_q_afluente.valueChanged['int'].connect(Form.mudar_q_afluente)
-
 
         # AD
         self.checkBox_manual_cp1_ad.clicked.connect(Form.acionar_manual_cp1)
         self.checkBox_manual_cp2_ad.clicked.connect(Form.acionar_manual_cp2)
-
 
         # UG1
         self.pushButton_parar_ug1.clicked.connect(Form.parar_ug1)
@@ -3106,7 +3127,6 @@ class Ui_Form(object):
         self.pushButton_set_pressao_ug1.clicked.connect(Form.set_pressao_ug1)
         self.horizontalSlider_sp_ug1.valueChanged.connect(Form.mudar_setpoint_ug1)
 
-
         # UG2
         self.pushButton_parar_ug2.clicked.connect(Form.parar_ug2)
         self.pushButton_partir_ug2.clicked.connect(Form.partir_ug2)
@@ -3115,7 +3135,6 @@ class Ui_Form(object):
         self.pushButton_set_pressao_ug2.clicked.connect(Form.set_pressao_ug2)
         self.horizontalSlider_sp_ug2.valueChanged.connect(Form.mudar_setpoint_ug2)
 
-
         # UG3
         self.pushButton_parar_ug3.clicked.connect(Form.parar_ug3)
         self.pushButton_partir_ug3.clicked.connect(Form.partir_ug3)
@@ -3123,7 +3142,6 @@ class Ui_Form(object):
         self.pushButton_reset_condic_ug3.clicked.connect(Form.reset_condic_ug3)
         self.pushButton_set_pressao_ug3.clicked.connect(Form.set_pressao_ug3)
         self.horizontalSlider_sp_ug3.valueChanged.connect(Form.mudar_setpoint_ug3)
-
 
         # UG4
         self.pushButton_parar_ug4.clicked.connect(Form.parar_ug4)
@@ -3135,7 +3153,6 @@ class Ui_Form(object):
 
         # UGs
         self.horizontalSlider_pressao_ugs.valueChanged.connect(Form.mudar_pressao_ugs)
-
 
     def retranslateUi(self, Form):
         _translate = QtCore.QCoreApplication.translate

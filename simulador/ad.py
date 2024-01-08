@@ -38,12 +38,9 @@ class Ad:
             self.setpoint = 0
             self.setpoint_anterior = 0
 
-            self.operando = False
-
 
         def passo(self) -> 'None':
             self.setpoint = DB.get_words(MB['AD'][f'CP_0{self.id}_SP_POS'])[0]
-            print(f'[ADCP{self.id}] SP -> {self.setpoint}')
 
             if DB.get_words(MB['AD'][f'CMD_CP_0{self.id}_BUSCAR'])[0]:
                 DB.set_words(MB['AD'][f'CMD_CP_0{self.id}_BUSCAR'], [0])
@@ -51,49 +48,53 @@ class Ad:
                 if not self.dict['AD'][f'cp{self.id}_manual']:
 
                     if self.setpoint > self.setpoint_anterior:
-                        Thread(target=lambda: self.abrir(self.setpoint, self.setpoint_anterior)).start()
+                        Thread(target=lambda: self.abrir(self.setpoint)).start()
                         self.setpoint_anterior = self.setpoint
 
                     elif self.setpoint < self.setpoint_anterior:
-                        Thread(target=lambda: self.fechar(self.setpoint, self.setpoint_anterior)).start()
+                        Thread(target=lambda: self.fechar(self.setpoint)).start()
                         self.setpoint_anterior = self.setpoint
 
-            self.dict['AD'][f'cp{self.id}_q'] = self.calcular_q_cp(self.setpoint)
 
-
-        def abrir(self, sp, sp_anterior) -> 'None':
-            sp_calc = sp - sp_anterior
+        def abrir(self, sp) -> 'None':
+            sp_calc = sp
             sp_pc = (sp_calc/6000) * 100
-            ta = time() + sp_pc
+            ta = time() + sp_pc + 1
             t1 = t2 = time()
 
             while time() < ta and sp == self.setpoint:
                 if t2 - t1 >= 1:
                     t1 = t2
                     t2 = time()
-                    self.dict['AD'][f'cp{self.id}_setpoint'] += (1/sp_pc) * sp_calc
+                    self.dict['AD'][f'cp{self.id}_setpoint'] += (1/(sp_pc)) * sp_calc
+                    self.dict['AD'][f'cp{self.id}_q'] = self.calcular_q_cp(self.dict['AD'][f'cp{self.id}_setpoint'])
                 else:
                     t2 = time()
 
 
-        def fechar(self, sp, sp_anterior) -> 'None':
-            sp_calc = sp_anterior - sp
+        def fechar(self, sp) -> 'None':
+            sp_calc = sp
             sp_pc = (sp_calc/6000) * 100
             tf = time() + sp_pc
             t1 = t2 = time()
 
-            while time() < tf and sp == self.setpoint:
+            while time() < tf + 1 and sp == self.setpoint:
                 if t2 - t1 >= 1:
                     t1 = t2
                     t2 = time()
-                    self.dict['AD'][f'cp{self.id}_setpoint'] -= (1/sp_pc) * sp_calc
+                    self.dict['AD'][f'cp{self.id}_setpoint'] -= (1/(sp_pc)) * sp_calc
+                    self.dict['AD'][f'cp{self.id}_q'] = self.calcular_q_cp(self.dict['AD'][f'cp{self.id}_setpoint'])
                 else:
                     t2 = time()
 
 
         def calcular_q_cp(self, abertura) -> 'int':
-            q = abertura/1000 * ADCP_LARGURA * math.sqrt(2 * 9.80665 * ((self.dict['TDA']['nv_montante'] - ADCP_SOLEIRA) - abertura/1000 / 2))
-            return max(0, q)
+            try:
+                q = abertura/1000 * ADCP_LARGURA * math.sqrt(2 * 9.80665 * ((self.dict['TDA']['nv_montante'] - ADCP_SOLEIRA) - abertura/1000 / 2))
+                return max(0, q)
+
+            except Exception:
+                return 0
 
 
         def atualizar_modbus(self) -> 'None':
@@ -120,3 +121,4 @@ class Ad:
 
         elif not self.dict['AD']['condic'] and self.dict['BRD']['ad_condic']:
             ESC.escrever_bit(MB['AD']['Alarme28_00'], valor=0)
+

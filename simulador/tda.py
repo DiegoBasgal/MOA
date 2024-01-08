@@ -39,6 +39,9 @@ class Tda:
         for ug in range(3):
             self.dict['TDA']['q_liquida'] -= self.dict[f'UG{ug + 1}']['q']
 
+        for cp in range(1):
+            self.dict['TDA']['q_liquida'] -= self.dict['AD'][f'cp{cp + 1}_q']
+
 
     def calcular_enchimento_reservatorio(self) -> 'None':
         self.dict['TDA']['nv_montante'] = self.calcular_volume_montante(self.volume + self.dict['TDA']['q_liquida'] * self.segundos_por_passo)

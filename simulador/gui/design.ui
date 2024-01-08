@@ -5256,7 +5256,7 @@ simulação</string>
       <number>0</number>
      </property>
      <property name="rightMargin">
-      <number>4</number>
+      <number>0</number>
      </property>
      <property name="bottomMargin">
       <number>5</number>
@@ -5269,6 +5269,9 @@ simulação</string>
          <height>16777215</height>
         </size>
        </property>
+       <property name="layoutDirection">
+        <enum>Qt::RightToLeft</enum>
+       </property>
        <property name="maximum">
         <number>6000</number>
        </property>
@@ -5279,7 +5282,7 @@ simulação</string>
         <bool>true</bool>
        </property>
        <property name="invertedAppearance">
-        <bool>false</bool>
+        <bool>true</bool>
        </property>
        <property name="textDirection">
         <enum>QProgressBar::TopToBottom</enum>
@@ -5291,11 +5294,23 @@ simulação</string>
      </item>
      <item>
       <layout class="QHBoxLayout" name="horizontalLayout_cp1_ad">
+       <property name="spacing">
+        <number>0</number>
+       </property>
+       <property name="rightMargin">
+        <number>7</number>
+       </property>
        <property name="bottomMargin">
         <number>12</number>
        </property>
        <item alignment="Qt::AlignHCenter">
         <widget class="QLabel" name="label_q_cp1_ad">
+         <property name="sizePolicy">
+          <sizepolicy hsizetype="Ignored" vsizetype="Ignored">
+           <horstretch>0</horstretch>
+           <verstretch>0</verstretch>
+          </sizepolicy>
+         </property>
          <property name="font">
           <font>
            <pointsize>10</pointsize>
@@ -5308,9 +5323,21 @@ simulação</string>
        </item>
        <item alignment="Qt::AlignLeft">
         <widget class="QLCDNumber" name="lcdNumber_q_cp1_ad">
+         <property name="sizePolicy">
+          <sizepolicy hsizetype="MinimumExpanding" vsizetype="Ignored">
+           <horstretch>0</horstretch>
+           <verstretch>0</verstretch>
+          </sizepolicy>
+         </property>
+         <property name="minimumSize">
+          <size>
+           <width>81</width>
+           <height>0</height>
+          </size>
+         </property>
          <property name="maximumSize">
           <size>
-           <width>60</width>
+           <width>47</width>
            <height>30</height>
           </size>
          </property>
@@ -5406,11 +5433,17 @@ simulação</string>
          <height>16777215</height>
         </size>
        </property>
+       <property name="layoutDirection">
+        <enum>Qt::RightToLeft</enum>
+       </property>
        <property name="maximum">
         <number>6000</number>
        </property>
        <property name="value">
         <number>0</number>
+       </property>
+       <property name="invertedAppearance">
+        <bool>true</bool>
        </property>
        <property name="format">
         <string>%v mm</string>
@@ -5419,6 +5452,15 @@ simulação</string>
      </item>
      <item>
       <layout class="QHBoxLayout" name="horizontalLayout_cp2_ad">
+       <property name="spacing">
+        <number>0</number>
+       </property>
+       <property name="leftMargin">
+        <number>0</number>
+       </property>
+       <property name="rightMargin">
+        <number>7</number>
+       </property>
        <property name="bottomMargin">
         <number>12</number>
        </property>
@@ -5436,6 +5478,18 @@ simulação</string>
        </item>
        <item alignment="Qt::AlignLeft">
         <widget class="QLCDNumber" name="lcdNumber_q_cp2_ad">
+         <property name="sizePolicy">
+          <sizepolicy hsizetype="MinimumExpanding" vsizetype="Ignored">
+           <horstretch>0</horstretch>
+           <verstretch>0</verstretch>
+          </sizepolicy>
+         </property>
+         <property name="minimumSize">
+          <size>
+           <width>80</width>
+           <height>0</height>
+          </size>
+         </property>
          <property name="maximumSize">
           <size>
            <width>60</width>
