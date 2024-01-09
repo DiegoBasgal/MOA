@@ -36,7 +36,8 @@ class TomadaAgua:
         clp["TDA"],
         REG_TDA["NV_BARRAGEM"],
         descricao="[TDA] Leitura Nível Montante",
-        escala=0.01
+        escala=0.01,
+        fundo_escala=800,
     )
 
     erro_nivel: "float" = 0

@@ -54,9 +54,9 @@ class Subestacao:
         REG_SE["POTENCIA_ATIVA_MEDIA"],
         descricao="[SE]  Leitura Medidor Usina"
     )
-    dj_linha = lei.LeituraModbus(
+    dj_linha = lei.LeituraModbusBit(
         clp["SA"],
-        REG_SE["STATUS_DJ52L"],
+        REG_SE["DJ52L_FECHADO"],
         descricao="[SE]  Status Disjuntor Linha"
     )
 
@@ -117,7 +117,13 @@ class Subestacao:
         logger.debug("[SE]  Verificando Condições do Disjuntor SE...")
 
         try:
-            flags += 1
+            if not cls.l_dj52l_condicao.valor:
+                logger.warning(f"[SE]  Sem condição de fechamento do Disjuntor.")
+                flags += 1
+
+            if not cls.l_dj52l_mola.valor:
+                logger.warning(f"[SE]  A Mola do Disjunto não está carregada.")
+                flags += 1
 
             logger.warning(f"[SE]  Foram identificadas \"{flags}\" condições de bloqueio ao realizar fechamento do Disjuntor. Favor normalizar.") \
                 if flags > 0 else logger.debug("[SE]  Condições de Fechamento Validadas.")
@@ -480,6 +486,11 @@ class Subestacao:
         """
         Função para carregamento de leituras necessárias para a operação.
         """
+
+        cls.l_dj52l_mola = lei.LeituraModbusBit(cls.clp["SA"], REG_SE["DJ52L_MOLA_CARREGADA"], descricao="[SE]  DJ52L - Mola Carregada")
+        cls.l_dj52l_condicao = lei.LeituraModbusBit(cls.clp["SA"], REG_SE["DJ52L_COND_FECHAMENTO"], descricao="[SE]  DJ52L - Condição de Fechamento")
+
+
 
         cls.l_alm_01_b_00 = lei.LeituraModbusBit(cls.clp["SA"], REG_SE["Alarme01_00"], descricao="[SE]  PACP - Botão de Emergência Pressionado (Abertura 52L)")
         cls.condicionadores_essenciais.append(c.CondicionadorBase(cls.l_alm_01_b_00, CONDIC_INDISPONIBILIZAR))

@@ -60,12 +60,16 @@ class Usina:
         self.ug4 = ug.UnidadeGeracao(4, self.cfg, self.bd)
         self.ugs: "list[ug.UnidadeGeracao]" = [self.ug1, self.ug2, self.ug3, self.ug4]
 
-        self.ad.bd = self.bd
         self.sa.bd = self.bd
         self.se.bd = self.bd
+
         self.tda.bd = self.bd
-        self.ad.cfg = self.cfg
         self.tda.cfg = self.cfg
+
+        self.ad.bd = self.bd
+        self.ad.cfg = self.cfg
+        self.ad.cp1.cfg = self.cfg
+        self.ad.cp2.cfg = self.cfg
 
 
         # ATRIBUIÇÃO DE VARIÁVEIS PRIVADAS
@@ -212,7 +216,7 @@ class Usina:
 
         logger.debug(f"[USN] Última tentativa de normalização:   {self.ultima_tentativa_norm.strftime('%d-%m-%Y %H:%M:%S')}")
         logger.debug("")
-        logger.debug(f"[SE]  Tensão Subestação:            RS -> \"{self.se.tensao_r.valor:2.1f} V\" | ST -> \"{self.se.tensao_s.valor:2.1f} V\" | TR -> \"{self.se.tensao_t.valor:2.1f} V\"")
+        logger.debug(f"[SE]  Tensão Subestação:                  RS -> \"{self.se.tensao_r.valor:2.1f} V\" | ST -> \"{self.se.tensao_s.valor:2.1f} V\" | TR -> \"{self.se.tensao_t.valor:2.1f} V\"")
         logger.debug("")
 
         if (self.tentativas_normalizar < 3 and (self.get_time() - self.ultima_tentativa_norm).seconds >= 60) or self.normalizar_forcado:
@@ -301,10 +305,10 @@ class Usina:
 
         self.controle_ie = self.ajustar_ie_padrao()
 
-        self.clp["MOA"].write_single_coil(REG_MOA["MOA"]["OUT_BLOCK_UG1"], 0)
-        self.clp["MOA"].write_single_coil(REG_MOA["MOA"]["OUT_BLOCK_UG2"], 0)
-        self.clp["MOA"].write_single_coil(REG_MOA["MOA"]["OUT_BLOCK_UG3"], 0)
-        self.clp["MOA"].write_single_coil(REG_MOA["MOA"]["OUT_BLOCK_UG4"], 0)
+        # self.clp["MOA"].write_single_coil(REG_MOA["MOA"]["OUT_BLOCK_UG1"], 0)
+        # self.clp["MOA"].write_single_coil(REG_MOA["MOA"]["OUT_BLOCK_UG2"], 0)
+        # self.clp["MOA"].write_single_coil(REG_MOA["MOA"]["OUT_BLOCK_UG3"], 0)
+        # self.clp["MOA"].write_single_coil(REG_MOA["MOA"]["OUT_BLOCK_UG4"], 0)
 
 
     def controlar_reservatorio(self) -> "int":
@@ -367,6 +371,9 @@ class Usina:
 
             for ug in self.ugs:
                 ug.step()
+
+            for cp in self.ad.cps:
+                cp.enviar_setpoint(0)
 
         return NV_NORMAL
 
@@ -613,7 +620,7 @@ class Usina:
         for ug in self.ugs:
             ug.atualizar_limites(parametros)
 
-        self.heartbeat()
+        # self.heartbeat()
 
 
     def atualizar_valores_banco(self, parametros: "dict") -> "None":
@@ -733,7 +740,7 @@ class Usina:
                 self.cfg["kp"],
                 self.cfg["ki"],
                 self.cfg["kd"],
-                self.cfg["kie"],
+                self.cfg["kie"]
             ])
 
         except Exception:

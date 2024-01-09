@@ -13,6 +13,7 @@ import src.funcoes.condicionadores as c
 import src.conectores.banco_dados as bd
 import src.conectores.servidores as serv
 
+from time import sleep
 from datetime import datetime
 
 from src.dicionarios.reg import *
@@ -29,12 +30,12 @@ class Adufas:
     cfg = {}
 
     class Comporta:
-        def __init__(self, id: "int", cfg: "dict") -> "None":
+        def __init__(self, id: "int") -> "None":
 
             self.clp = serv.Servidores.clp
 
             self.__id = id
-            self.__cfg = cfg
+            self.cfg = {}
 
             self.__manual = lei.LeituraModbusBit(
                 self.clp["AD"],
@@ -42,7 +43,7 @@ class Adufas:
                 descricao=f"[AD][CP{self.id}] Comporta Manual"
             )
 
-            self._estado: "int" = 1
+            self._estado: "int" = 0
 
             self.setpoint: "int" = 0
             self.setpoint_maximo: "int" = 0
@@ -55,6 +56,7 @@ class Adufas:
 
 
             # FINALIZAÇÃO __INIT__
+
             self.carregar_leituras()
 
 
@@ -82,15 +84,6 @@ class Adufas:
                 return ADCP_FECHANDO
 
         @property
-        def etapa_parada(self) -> "int":
-        # PROPRIEDADE -> Retorna a etapa da Comporta enquanto está parada
-
-            if self.aberta.valor:
-                return ADCP_P_ABERTA
-            elif self.fechada.valor:
-                return ADCP_P_FECHADA
-
-        @property
         def estado(self) -> "int":
         # PROPRIEDADE -> Retorna o estado atual da Comporta
 
@@ -98,7 +91,7 @@ class Adufas:
 
         @estado.setter
         def estado(self, var: "int") -> "None":
-        # SETTER -> Adiciona o novo calor de estado da Comporta
+        # SETTER -> Adiciona o novo valor de estado da Comporta
 
             self._estado = var
 
@@ -109,21 +102,20 @@ class Adufas:
             leitura de nível Montante da Tomada da Água
             """
 
-            logger.debug(f"[AD][CP{self.id}]      Comporta:          \"{ADCP_STR_DCT_ESTADO[self._estado] if not self.manual else 'Manual'}\"")
-            logger.debug(f"[AD][CP{self.id}]      Etapa:             \"{(ADCP_STR_DCT_ETAPA[self.etapa] + '->' + ADCP_STR_DCT_ETAPA_P[self.etapa_parada]) if self.parada.valor else ADCP_STR_DCT_ETAPA[self.etapa]}\"")
+            logger.debug(f"[AD][CP{self.id}]      Comporta:                  \"{ADCP_STR_DCT_ESTADO[self._estado] if not self.manual else 'Manual'}\"")
+            logger.debug(f"[AD][CP{self.id}]      Etapa:                     \"{ADCP_STR_DCT_ETAPA[self.etapa]}\"")
 
-            erro = tda.TomadaAgua.nivel_montante.valor - self.__cfg["ad_nv_alvo"]
+            erro = tda.TomadaAgua.nivel_montante.valor - self.cfg["ad_nv_alvo"]
 
-            self.controle_p = self.__cfg["ad_kp"] * erro
-            self.controle_i = min(max(0, self.__cfg["ad_ki"] * erro + self.controle_i), 6000)
+            self.controle_p = self.cfg["ad_kp"] * erro
+            self.controle_i = min(max(0, self.cfg["ad_ki"] * erro + self.controle_i), 6000)
 
             sp = self.k * (self.controle_p + self.controle_i)
             sp = min(max(0, sp), 6000)
 
-            logger.debug(f"[AD][CP{self.id}]      P:                 {self.controle_p}")
-            logger.debug(f"[AD][CP{self.id}]      I:                 {self.controle_i}")
-            logger.debug(f"[AD][CP{self.id}]      ERRO:              {erro}")
-            logger.debug("")
+            logger.debug(f"[AD][CP{self.id}]      P:                         {self.controle_p}")
+            logger.debug(f"[AD][CP{self.id}]      I:                         {self.controle_i}")
+            logger.debug(f"[AD][CP{self.id}]      ERRO:                      {erro}")
 
             if self.manual and self.estado == ADCP_INDISPONIVEL:
                 return
@@ -137,13 +129,15 @@ class Adufas:
             """
 
             try:
+                logger.debug("")
                 logger.debug(f"[AD][CP{self.id}]      Enviando setpoint:         {round(setpoint)} mm")
 
-                if not self.clp["AD"].read_holding_registers(REG_AD["PCAD_MODO_SETPOT_HAB"])[0]:
-                    logger.info(f"[AD]  O modo de setpoint das Comportas das Adufas não está habilitado.")
-                else:
-                    self.clp["AD"].write_single_register(REG_AD[f"CP_0{self.id}_SP_POS"], round(self.setpoint))
-                    self.clp["AD"].write_single_register(REG_AD[f"CMD_CP_0{self.id}_BUSCAR"], 1)
+                # if not self.clp["AD"].read_holding_registers(REG_AD["PCAD_MODO_SETPOT_HAB"])[0]:
+                #     logger.info(f"[AD]  O modo de setpoint das Comportas das Adufas não está habilitado.")
+                # else:
+                self.clp["AD"].write_single_register(REG_AD[f"CP_0{self.id}_SP_POS"], int(setpoint))
+                sleep(1)
+                self.clp["AD"].write_single_register(REG_AD[f"CMD_CP_0{self.id}_BUSCAR"], 1)
 
             except Exception:
                 logger.error(f"[AD][CP{self.id}] Não foi possível enviar o setpoint para a Comporta.")
@@ -163,12 +157,11 @@ class Adufas:
 
 
             ## MENSAGEIRO
-
             self.cp_acion_local = lei.LeituraModbusBit(self.clp["AD"], REG_AD[f"CP_0{self.id}_ACION_LOCAL"], descricao=f"[AD][CP{self.id}] Comporta Acionamento Local")             # Voip + whats
 
 
-    cp1 = Comporta(1, cfg)
-    cp2 = Comporta(2, cfg)
+    cp1 = Comporta(1)
+    cp2 = Comporta(2)
     cps: "list[Comporta]" = [cp1, cp2]
 
     condicionadores: "list[c.CondicionadorBase]" = []
@@ -177,6 +170,7 @@ class Adufas:
 
     @classmethod
     def controlar_comportas(cls) -> "None":
+        logger.debug("")
         logger.debug(f"[AD]  Controlando Comportas...")
         logger.debug(f"[AD]  NÍVEL -> Alvo:                      {cls.cfg['nv_alvo']:0.3f}")
         logger.debug("")
