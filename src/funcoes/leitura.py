@@ -148,7 +148,14 @@ class LeituraModbusFloat(LeituraModbus):
         self.__client = client
         self.__reg = registrador
         self.__escala = escala
+        self.__descricao = descricao
         self.__wordorder = wordorder
+
+    @property
+    def descricao(self) -> "str":
+        # PROPRIEDADE -> Retrona a Descrição da Leitura.
+
+        return self.__descricao
 
     @property
     def valor(self) -> "float":

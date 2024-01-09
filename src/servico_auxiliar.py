@@ -70,7 +70,6 @@ class ServicoAuxiliar:
             logger.debug("")
             if self.condicionadores_ativos == []:
                 logger.debug(f"[SA]  Foram detectados Condicionadores ativos no Serviço Auxiliar!")
-
             else:
                 logger.debug(f"[SA]  Ainda há Condicionadores ativos no Serviço Auxiliar!")
 

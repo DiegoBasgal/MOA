@@ -223,7 +223,6 @@ class Subestacao:
             logger.debug("")
             if self.condicionadores_ativos == []:
                 logger.debug(f"[SE]  Foram detectados Condicionadores ativos na Subestação!")
-
             else:
                 logger.debug(f"[SE]  Ainda há Condicionadores ativos na Subestação!")
 

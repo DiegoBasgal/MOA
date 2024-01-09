@@ -108,8 +108,8 @@ class UnidadeGeracao:
         # FINALIZAÇÃO DO __INIT__
 
         self.__next_state: "State"
-        self.iniciar_ultimo_estado()
 
+        self.iniciar_ultimo_estado()
         self.carregar_leituras()
 
 
@@ -857,7 +857,6 @@ class UnidadeGeracao:
             logger.debug("")
             if self.condicionadores_ativos == []:
                 logger.debug(f"[UG{self.id}] Foram detectados condicionadores ativos na Unidade!")
-
             else:
                 logger.debug(f"[UG{self.id}] Ainda há condicionadores ativos na Unidade!")
 
