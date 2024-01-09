@@ -372,8 +372,11 @@ class Usina:
             for ug in self.ugs:
                 ug.step()
 
-            for cp in self.ad.cps:
-                cp.enviar_setpoint(0)
+            if self.tda.nivel_montante.valor >= self.cfg["ad_nv_alvo"]:
+                self.ad.controlar_comportas()
+            else:
+                for cp in self.ad.cps:
+                    cp.enviar_setpoint(0)
 
         return NV_NORMAL
 
