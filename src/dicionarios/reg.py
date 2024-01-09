@@ -1057,9 +1057,9 @@ REG_TDA = {
 
     ## ALARMES
 
-    "Alarme01_04":                              [1 + 14089 + 1, 4],
-    "Alarme01_05":                              [1 + 14089 + 1, 5],
-    "Alarme01_06":                              [1 + 14089 + 1, 6],
+    "Alarme01_04":                              [1 + 14089 + 2000, 4],
+    "Alarme01_05":                              [1 + 14089, 5],
+    "Alarme01_06":                              [1 + 14089, 6],
 
     "Alarme22_00":                              [22 + 14089, 0],
     "Alarme22_03":                              [22 + 14089, 3],
@@ -1138,11 +1138,11 @@ REG_AD = {
     "CMD_CP_01_ABRIR":                          57 + 12289,                     # Comandos.PCAD_Comporta01Abrir
     "CMD_CP_01_PARAR":                          58 + 12289,                     # Comandos.PCAD_Comporta01Parar
     "CMD_CP_01_FECHAR":                         59 + 12289,                     # Comandos.PCAD_Comporta01Fechar
-    "CMD_CP_01_BUSCAR":                         60 + 12289 + 3000,                     # Comandos.PCAD_Comporta01Buscar
+    "CMD_CP_01_BUSCAR":                         60 + 12289 + 3100,                     # Comandos.PCAD_Comporta01Buscar
     "CMD_CP_02_ABRIR":                          61 + 12289,                     # Comandos.PCAD_Comporta02Abrir
     "CMD_CP_02_PARAR":                          62 + 12289,                     # Comandos.PCAD_Comporta02Parar
     "CMD_CP_02_FECHAR":                         63 + 12289,                     # Comandos.PCAD_Comporta02Fechar
-    "CMD_CP_02_BUSCAR":                         64 + 12289 + 3000,                     # Comandos.PCAD_Comporta02Buscar
+    "CMD_CP_02_BUSCAR":                         64 + 12289 + 3200,                     # Comandos.PCAD_Comporta02Buscar
 
     # Modo Setpoint
     "CMD_MODO_SP_DESABILITAR":                  66 + 12289,                     # Comandos.PCAD_ModoSetpointHabilitar
@@ -1167,8 +1167,8 @@ REG_AD = {
 
     ## SETPOINTS
     # Comportas
-    "CP_01_SP_POS":                             14 + 13569,                     # Setpoints.PCAD_Comporta01_SetpointPosicao
-    "CP_02_SP_POS":                             15 + 13569,                     # Setpoints.PCAD_Comporta02_SetpointPosicao
+    "CP_01_SP_POS":                             14 + 13569 + 3100,                     # Setpoints.PCAD_Comporta01_SetpointPosicao
+    "CP_02_SP_POS":                             15 + 13569 + 3200,                     # Setpoints.PCAD_Comporta02_SetpointPosicao
 
     # Manobras UHCD
     "UHCD_MANO_RODIZIO_LIDER":                  16 + 13569,                     # Setpoints.PCAD_UHCD_ManobrasRodizioLider
@@ -1177,25 +1177,25 @@ REG_AD = {
 
     ## LEITURAS
     # Comportas
-    "CP_01_INFO":                               164 + 12764 + 3000,                    # Leituras.PCAD_Comporta01_Info
-    "CP_01_ABRINDO":                            [164 + 12764 + 3000, 0],               # PCAD.Comporta01.Info.Abrindo
-    "CP_01_FECHANDO":                           [164 + 12764 + 3000, 1],               # PCAD.Comporta01.Info.Fechando
-    "CP_01_ABERTA":                             [164 + 12764 + 3000, 2],               # PCAD.Comporta01.Info.Aberta
-    "CP_01_FECHADA":                            [164 + 12764 + 3000, 3],               # PCAD.Comporta01.Info.Fechada
-    "CP_01_PARADA":                             [164 + 12764 + 3000, 4],               # PCAD.Comporta01.Info.Parada
-    "CP_01_ACION_LOCAL":                        [164 + 12764 + 3000, 5],               # PCAD.Comporta01.Info.AcionamentoLocal
+    "CP_01_INFO":                               164 + 12764 + 3100,                    # Leituras.PCAD_Comporta01_Info
+    "CP_01_ABRINDO":                            [164 + 12764 + 3100, 0],               # PCAD.Comporta01.Info.Abrindo
+    "CP_01_FECHANDO":                           [164 + 12764 + 3100, 1],               # PCAD.Comporta01.Info.Fechando
+    "CP_01_ABERTA":                             [164 + 12764 + 3100, 2],               # PCAD.Comporta01.Info.Aberta
+    "CP_01_FECHADA":                            [164 + 12764 + 3100, 3],               # PCAD.Comporta01.Info.Fechada
+    "CP_01_PARADA":                             [164 + 12764 + 3100, 4],               # PCAD.Comporta01.Info.Parada
+    "CP_01_ACION_LOCAL":                        [164 + 12764 + 3100, 5],               # PCAD.Comporta01.Info.AcionamentoLocal
 
-    "CP_01_POSICAO":                            165 + 12764 + 3000,                    # Leituras.PCAD_Comporta01_Posicao
+    "CP_01_POSICAO":                            165 + 12764 + 3100,                    # Leituras.PCAD_Comporta01_Posicao
 
-    "CP_02_INFO":                               166 + 12764 + 3000,                    # Leituras.PCAD_Comporta02_Info
-    "CP_02_ABRINDO":                            [166 + 12764 + 3000, 0],               # PCAD.Comporta02.Info.Abrindo
-    "CP_02_FECHANDO":                           [166 + 12764 + 3000, 1],               # PCAD.Comporta02.Info.Fechando
-    "CP_02_ABERTA":                             [166 + 12764 + 3000, 2],               # PCAD.Comporta02.Info.Aberta
-    "CP_02_FECHADA":                            [166 + 12764 + 3000, 3],               # PCAD.Comporta02.Info.Fechada
-    "CP_02_PARADA":                             [166 + 12764 + 3000, 4],               # PCAD.Comporta02.Info.Parada
-    "CP_02_ACION_LOCAL":                        [166 + 12764 + 3000, 5],               # PCAD.Comporta02.Info.AcionamentoLocal
+    "CP_02_INFO":                               166 + 12764 + 3200,                    # Leituras.PCAD_Comporta02_Info
+    "CP_02_ABRINDO":                            [166 + 12764 + 3200, 0],               # PCAD.Comporta02.Info.Abrindo
+    "CP_02_FECHANDO":                           [166 + 12764 + 3200, 1],               # PCAD.Comporta02.Info.Fechando
+    "CP_02_ABERTA":                             [166 + 12764 + 3200, 2],               # PCAD.Comporta02.Info.Aberta
+    "CP_02_FECHADA":                            [166 + 12764 + 3200, 3],               # PCAD.Comporta02.Info.Fechada
+    "CP_02_PARADA":                             [166 + 12764 + 3200, 4],               # PCAD.Comporta02.Info.Parada
+    "CP_02_ACION_LOCAL":                        [166 + 12764 + 3200, 5],               # PCAD.Comporta02.Info.AcionamentoLocal
 
-    "CP_02_POSICAO":                            167 + 12764 + 3000,                    # Leituras.PCAD_Comporta02_Posicao
+    "CP_02_POSICAO":                            167 + 12764 + 3200,                    # Leituras.PCAD_Comporta02_Posicao
 
     # UHCD,
     "UHCD_INFO":                                168 + 12764,                    # Leituras.PCAD_UHCD_Info
@@ -2074,9 +2074,9 @@ REG_UG = {
         "Alarme15_13":                          [15 + 14199, 13],
 
         # Gerais
+        "Alarme01_00":                          [1 + 14199, 0],
         "Alarme01_01":                          [1 + 14199, 1],
         "Alarme01_02":                          [1 + 14199, 2],
-        "Alarme01_00":                          [1 + 14199, 0],
         "Alarme01_03":                          [1 + 14199, 3],
         "Alarme01_06":                          [1 + 14199, 6],
         "Alarme01_07":                          [1 + 14199, 7],
