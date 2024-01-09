@@ -16,7 +16,7 @@ class CondicionadorBase:
         self.__descricao = leitura.descricao
 
         self.__etapas = etapas
-        self.__id_unidade = id_unidade if id_unidade is not None else None
+        self.__id_unidade = id_unidade
 
         self._ugs: "list[ug.UnidadeGeracao]" = []
 

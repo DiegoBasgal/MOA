@@ -70,6 +70,14 @@ class UnidadeGeracao:
             descricao=f"[UG{self.id}] Leitura Horímetro"
         )
 
+        self.__uhta: "dict[str, lei.LeituraModbusBit]" = {}
+
+        self.__uhta[f'UHTA0{1 if self.id in (1,3) else 2}'] = lei.LeituraModbusBit(
+            self.clp['TDA'],
+            REG_TDA[f'UHTA0{1 if self.id in (1,3) else 2}_OPERACIONAL'],
+            descricao=f'[TDA] UHTA0{1 if self.id in (1,3) else 2} Disponível'
+        )
+
         self.__tempo_entre_tentativas: "int" = 0
         self.__limite_tentativas_normalizacao: "int" = 3
 
@@ -79,8 +87,6 @@ class UnidadeGeracao:
         self._setpoint: "int" = 0
         self._prioridade: "int" = 0
         self._codigo_state: "int" = 0
-        self._ultima_etapa_alvo: "int" = 0
-        self._ultima_etapa_atual: "int" = 0
         self._tentativas_normalizacao: "int" = 0
 
         self._setpoint_minimo: "float" = self.__cfg["pot_minima_ugs"]
@@ -165,11 +171,16 @@ class UnidadeGeracao:
         return self.__limite_tentativas_normalizacao
 
     @property
+    def uhta_disponivel(self) -> "bool":
+        # PROPRIEDADE -> Retorna se a Unidade Hidráulica da Comporta está Disponível
+
+        return self.__uhta[f'UHTA0{1 if self.id in (1,3) else 2}'].valor
+
+    @property
     def etapa_atual(self) -> "int":
         try:
-            self._etapa_atual = self.__etapa_atual.valor
-            self._ultima_etapa_atual = self._etapa_atual
-            return self._etapa_atual
+            self._ultima_etapa_atual = self.__etapa_atual.valor
+            return self._ultima_etapa_atual
 
         except Exception:
             logger.error(f"[UG{self.id}] Erro na leitura de \"Etapa Atual\". Mantendo última etapa.")
@@ -178,13 +189,27 @@ class UnidadeGeracao:
     @property
     def etapa_alvo(self) -> "int":
         try:
-            self._etapa_alvo = self.__etapa_alvo.valor
-            return self._etapa_alvo
+            self._ultima_etapa_alvo = self.__etapa_alvo.valor
+            return self._ultima_etapa_alvo
 
         except Exception:
             logger.error(f"[UG{self.id}] Erro na leitura de \"Etapa Alvo\". Mantendo última etapa.")
-            self._etapa_alvo = self._ultima_etapa_alvo
-            return self._etapa_alvo
+            return self._ultima_etapa_alvo
+
+    @property
+    def etapa(self) -> "int":
+
+        if self.etapa_atual == UG_PARADA and self.etapa_alvo == UG_PARADA:
+            return UG_PARADA
+
+        elif self.etapa_atual < UG_SINCRONIZADA and self.etapa_alvo == UG_PARADA:
+            return UG_PARANDO
+
+        elif self.etapa_atual > UG_PARADA and self.etapa_alvo == UG_SINCRONIZADA:
+            return UG_SINCRONIZANDO
+        
+        elif self.etapa_atual == UG_SINCRONIZADA and self.etapa_alvo == UG_SINCRONIZADA:
+            return UG_SINCRONIZADA
 
     @property
     def prioridade(self) -> "int":
@@ -302,6 +327,7 @@ class UnidadeGeracao:
 
         self._condicionadores_atenuadores = var
 
+
     # FUNÇÕES
 
     @staticmethod
@@ -391,7 +417,7 @@ class UnidadeGeracao:
                 logger.debug(f"[UG{self.id}]          Leituras de Potência:")
                 logger.debug(f"[UG{self.id}]          - \"Ativa\":                 {self.leitura_potencia} kW")
 
-            self.atualizar_modbus_moa()
+            # self.atualizar_modbus_moa()
             self.__next_state = self.__next_state.step()
 
         except Exception:
@@ -419,10 +445,15 @@ class UnidadeGeracao:
         """
 
         try:
-            if self.etapa != UG_SINCRONIZADA:
+            if not self.uhta_disponivel:
+                logger.debug("")
+                logger.info(f"[UG{self.id}] A Unidade Hidráulica da Comporta está em Operação.")
+                return
+
+            elif self.etapa != UG_SINCRONIZADA:
                 logger.info(f"[UG{self.id}]          Enviando comando:          \"PARTIDA\"")
 
-                esc.EscritaModBusBit.escrever_bit(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}"][""], valor=1)
+                self.clp[f'UG{self.id}'].write_single_register(REG_UG[f'UG{self.id}']['CMD_OPER_US'], 1)
                 self.enviar_setpoint(self.setpoint)
 
         except Exception:
@@ -465,7 +496,7 @@ class UnidadeGeracao:
             if setpoint_kw > 1:
                 self.setpoint = int(setpoint_kw)
                 res = self.clp[f"UG{self.id}"].write_single_register(REG_UG[f"UG{self.id}"]["CMD_SINC_MODO_AUTO_LIGAR"], 1)
-                res = self.clp[f"UG{self.id}"].write_single_register(REG_UG[f"UG{self.id}"]["CTRL_POT_MODO_POT"], 1) # BIT
+                # res = esc.EscritaModBusBit.escrever_bit(REG_UG[f"UG{self.id}"]["CTRL_POT_MODO_POT"], valor=1)
                 res = self.clp[f"UG{self.id}"].write_single_register(REG_UG[f"UG{self.id}"]["CMD_RT_MTVC_HABILITAR"], 1)
                 res = self.clp[f"UG{self.id}"].write_single_register(REG_UG[f"UG{self.id}"]["CMD_RV_CONJUGADO_AUTO_HABILITAR"], 1)
                 res = self.clp[f"UG{self.id}"].write_single_register(REG_UG[f"UG{self.id}"]["CMD_CTRL_REATIVO_MODO_VArLIGAR"], 1)
@@ -473,8 +504,8 @@ class UnidadeGeracao:
                 res = self.clp[f"UG{self.id}"].write_single_register(REG_UG[f"UG{self.id}"]["CMD_CTRL_POT_MODO_NIVEL_LIGAR"], 1)
                 res = self.clp[f"UG{self.id}"].write_single_register(REG_UG[f"UG{self.id}"]["CMD_CTRL_POT_MODO_NIVEL_DESLIGAR"], 1)
 
-                res = self.clp[f"UG{self.id}"].write_single_register(REG_UG[f"UG{self.id}"]["CTRL_REAT_MODO_VAR"], int(0)) # BIT
-                res = self.clp[f"UG{self.id}"].write_single_register(REG_UG[f"UG{self.id}"]["CRTL_REATIVO_SP_REATIVO"], int(0))
+                # res = esc.EscritaModBusBit.escrever_bit(REG_UG[f"UG{self.id}"]["CTRL_REAT_MODO_VAR"], valor=0)
+                # res = esc.EscritaModBusBit.escrever_bit(REG_UG[f"UG{self.id}"]["CRTL_REATIVO_SP_REATIVO"], valor=0)
                 res = self.clp[f"UG{self.id}"].write_single_register(REG_UG[f"UG{self.id}"]["CRTL_POT_ALVO"], int(self.setpoint))
 
                 return res
@@ -495,7 +526,7 @@ class UnidadeGeracao:
         try:
             logger.debug("")
             logger.info(f"[UG{self.id}]          Enviando comando:          \"RECONHECE E RESET\"")
-            self.clp["MOA"].write_single_coil(REG_UG["MOA"]["PAINEL_LIDO"], 0)
+            # self.clp["MOA"].write_single_coil(REG_UG["MOA"]["PAINEL_LIDO"], 0)
 
             passo = 0
             for x in range(2):
@@ -507,7 +538,7 @@ class UnidadeGeracao:
                 self.remover_trip_logico()
                 sleep(1)
 
-            self.clp["MOA"].write_single_coil(REG_UG["MOA"]["PAINEL_LIDO"], 1)
+            # self.clp["MOA"].write_single_coil(REG_UG["MOA"]["PAINEL_LIDO"], 1)
 
         except Exception:
             logger.error(f"[UG{self.id}] Não foi possivel enviar o comando de reconhecer e resetar alarmes.")
@@ -539,7 +570,7 @@ class UnidadeGeracao:
 
         try:
             logger.debug(f"[UG{self.id}]          Removendo comando:         \"TRIP LÓGICO\"")
-            self.clp[f"UG{self.id}"].write_single_register(REG_UG[f"UG{self.id}"][""], 0)
+            # self.clp[f"UG{self.id}"].write_single_register(REG_UG[f"UG{self.id}"][""], 0)
 
         except Exception:
             logger.error(f"[UG{self.id}] Não foi possivel remover o comando de TRIP: \"Lógico\".")
@@ -555,7 +586,7 @@ class UnidadeGeracao:
 
         try:
             logger.debug(f"[UG{self.id}]          Enviando comando:          \"TRIP ELÉTRICO\"")
-            self.clp["MOA"].write_single_coil(REG_UG["MOA"][f"OUT_BLOCK_UG{self.id}"], 1)
+            # self.clp["MOA"].write_single_coil(REG_UG["MOA"][f"OUT_BLOCK_UG{self.id}"], 1)
 
         except Exception:
             logger.error(f"[UG{self.id}] Não foi possivel acionar o comando de TRIP: \"Elétrico\".")
@@ -572,8 +603,8 @@ class UnidadeGeracao:
 
         try:
             logger.debug(f"[UG{self.id}]          Removendo comando:         \"TRIP ELÉTRICO\"")
-            self.clp["MOA"].write_single_coil(REG_UG["MOA"]["PAINEL_LIDO"], 0)
-            self.clp["MOA"].write_single_coil(REG_UG["MOA"][f"OUT_BLOCK_UG{self.id}"], 0)
+            # self.clp["MOA"].write_single_coil(REG_UG["MOA"]["PAINEL_LIDO"], 0)
+            # self.clp["MOA"].write_single_coil(REG_UG["MOA"][f"OUT_BLOCK_UG{self.id}"], 0)
             se.Subestacao.fechar_dj_linha()
 
         except Exception:
@@ -694,22 +725,22 @@ class UnidadeGeracao:
         de parada caso seja atribuído o setpoint 0 para a Unidade.
         """
 
-        if self.etapa_atual == UG_PARADA:
+        if self.etapa == UG_PARADA:
             if self.setpoint >= self.__cfg["pot_minima_ugs"]:
                 self.partir()
 
-        elif self.etapa_atual == UG_PARANDO:
+        elif self.etapa == UG_PARANDO:
             if self.setpoint >= self.__cfg["pot_minima_ugs"]:
                 self.enviar_setpoint(self.setpoint)
 
-        elif self.etapa_atual == UG_SINCRONIZANDO:
+        elif self.etapa == UG_SINCRONIZANDO:
             if not self.temporizar_partida:
                 self.temporizar_partida = True
                 threading.Thread(target=lambda: self.verificar_sincronismo()).start()
 
             self.parar() if self.setpoint == 0 else self.enviar_setpoint(self.setpoint)
 
-        elif self.etapa_atual == UG_SINCRONIZADA:
+        elif self.etapa == UG_SINCRONIZADA:
             self.temporizar_partida = False
 
             if not self.aux_tempo_sincronizada:
@@ -741,6 +772,7 @@ class UnidadeGeracao:
         flag = CONDIC_IGNORAR
 
         if True in (condic.ativo for condic in self.condicionadores_essenciais):
+            print("entrei")
             condics_ativos = [condic for condics in [self.condicionadores_essenciais, self.condicionadores] for condic in condics if condic.ativo]
 
             logger.debug("")
@@ -1078,7 +1110,7 @@ class UnidadeGeracao:
 
         self.l_alm_01_b_01 = lei.LeituraModbusBit(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}"]["Alarme01_01"], descricao=f"[UG{self.id}] Botão de Emergência Pressionado (Bloqueio 86H Trip)")
         self.condicionadores_essenciais.append(c.CondicionadorBase(self.l_alm_01_b_01, CONDIC_NORMALIZAR))
-        
+
         self.l_alm_02_b_03 = lei.LeituraModbusBit(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}"]["Alarme02_03"], descricao=f"[UG{self.id}] UHLM - Botão de Emergência Pressionado (Bloqueio 86H Trip)")
         self.condicionadores_essenciais.append(c.CondicionadorBase(self.l_alm_02_b_03, CONDIC_NORMALIZAR))
 

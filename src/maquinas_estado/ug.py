@@ -6,6 +6,7 @@ import logging
 
 import src.unidade_geracao as ug
 
+from time import time
 from threading import Thread
 
 from src.dicionarios.const import *
@@ -178,8 +179,9 @@ class StateDisponivel(State):
         de etapas.
         """
 
-        self.parent.verificar_limites()
-        flag = self.parent.verificar_condicionadores()
+        # self.parent.verificar_limites()
+        # flag = self.parent.verificar_condicionadores()
+        flag=0
 
         if flag == CONDIC_INDISPONIBILIZAR:
             logger.warning(f"[UG{self.parent.id}] Indisponibilizando UG.")

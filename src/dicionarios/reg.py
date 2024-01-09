@@ -969,7 +969,7 @@ REG_TDA = {
 
     # UHTA
     "UHTA01_INFO":                              139 + 12764,                    # Leituras.PCTA_UHTA01_Info
-    "UHTA01_OPERACIONAL":                       [139 + 12764, 0],               # PCTA.UHTA01.Info.Operacional
+    "UHTA01_OPERACIONAL":                       [139 + 12764 + 2000, 0],               # PCTA.UHTA01.Info.Operacional
     "UHTA01_LIGADA":                            [139 + 12764, 1],               # PCTA.UHTA01.Info.Ligada
 
     "UHTA01_BOMBAS":                            140 + 12764,                    # Leituras.PCTA_UHTA01_Bombas
@@ -1008,7 +1008,7 @@ REG_TDA = {
     "UHTA01_NIVEL_OLEO":                        150 + 12764,                    # Leituras.PCTA_UHTA01_NivelOleo
 
     "UHTA02_INFO":                              151 + 12764,                    # Leituras.PCTA_UHTA02_Info
-    "UHTA02_OPERACIONAL":                       [151 + 12764, 0],               # PCTA.UHTA02.Info.Operacional
+    "UHTA02_OPERACIONAL":                       [151 + 12764 + 2000, 0],               # PCTA.UHTA02.Info.Operacional
     "UHTA02_LIGADA":                            [151 + 12764, 1],               # PCTA.UHTA02.Info.Ligada
 
     "UHTA02_BOMBAS":                            152 + 12764,                    # Leituras.PCTA_UHTA02_Bombas
@@ -1248,7 +1248,7 @@ REG_AD = {
 
 
     ## ALARMES
-    "Alarme28_00":                              [28 + 14089, 0],
+    "Alarme28_00":                              [28 + 14089 + 3000, 0],
     "Alarme28_01":                              [28 + 14089, 1],
     "Alarme28_04":                              [28 + 14089, 4],
     "Alarme28_05":                              [28 + 14089, 5],
