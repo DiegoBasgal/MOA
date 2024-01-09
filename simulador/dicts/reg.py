@@ -4,9 +4,9 @@ MB = {
     },
 
     "SE": {
-        "CMD_RESET_ALARMES":                    0 + 12764 + 1000,
-        "CMD_ABRIR_DJ52L":                      4 + 12764 + 1000,
-        "CMD_FECHAR_DJ52L":                     5 + 12764 + 1000,
+        "CMD_RESET_ALARMES":                    0 + 12289 + 1000,
+        "CMD_ABRIR_DJ52L":                      4 + 12289 + 1000,
+        "CMD_FECHAR_DJ52L":                     5 + 12289 + 1000,
 
         "DJ52L_ABERTO":                         [21 + 12764 + 1000, 0],
         "DJ52L_FECHADO":                        [21 + 12764 + 1000, 1],
@@ -31,6 +31,9 @@ MB = {
 
     "TDA": {
         "NV_BARRAGEM":                          3 + 12764 + 2000,
+
+        "UHTA01_OPERACIONAL":                   [139 + 12764 + 2000, 0],
+        "UHTA02_OPERACIONAL":                   [151 + 12764 + 2000, 0],
 
         "Alarme01_04":                          [1 + 14089 + 2000, 4],
     },

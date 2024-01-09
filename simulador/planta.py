@@ -12,6 +12,7 @@ from se import Se
 from ad import Ad
 from tda import Tda
 from ug import Unidade
+from funcs.escrita import Escrita as ESC
 from funcs.temporizador import Temporizador
 
 
@@ -42,7 +43,10 @@ class Planta:
 
         for n in MB.values():
             for v in n.values():
-                DB.set_words(v[0], [int(0)]) if isinstance(v, list) else DB.set_words(v, [int(0)])
+                DB.set_words(v[0], [0]) if isinstance(v, list) else DB.set_words(v, [0])
+
+        ESC.escrever_bit(MB['AD']['CP_01_PARADA'], valor=1)
+        ESC.escrever_bit(MB['AD']['CP_02_PARADA'], valor=1)
 
 
     def atualizar_modbus_geral(self) -> 'None':

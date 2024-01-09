@@ -172,3 +172,11 @@ class Se:
         elif not self.dict['SE']['dj_fechado'] and self.dict['BRD']['djse_fechado']:
             self.dict['BRD']['djse_fechado'] = False
             ESC.escrever_bit(MB['SE']['DJ52L_FECHADO'], valor=0)
+
+        if self.dict['SE']['dj_condicao'] and not self.dict['BRD']['djse_condicao']:
+            self.dict['BRD']['djse_condicao'] = True
+            ESC.escrever_bit(MB['SE']['DJ52L_CONDICAO'], valor=1)
+
+        elif not self.dict['SE']['dj_condicao'] and self.dict['BRD']['djse_condicao']:
+            self.dict['BRD']['djse_condicao'] = False
+            ESC.escrever_bit(MB['SE']['DJ52L_CONDICAO'], valor=0)

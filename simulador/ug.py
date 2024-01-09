@@ -326,6 +326,15 @@ class Unidade:
         DB.set_words(MB[f'UG{self.id}']['MANCAL_TURBINA_CONTRA_ESCORA'], [round(self.dict[f'UG{self.id}']['temp_mancal_turbina_contra_escora'])])
 
 
+        if self.dict['TDA'][f'uh{1 if self.id in (1,3) else 2}_disponivel'] and not self.dict['BRD'][f'uh{1 if self.id in (1,3) else 2}_disponivel']:
+            self.dict['BRD'][f'uh{1 if self.id in (1,3) else 2}_disponivel'] = True
+            ESC.escrever_bit(MB['TDA'][f'UHTA0{1 if self.id in (1,3) else 2}_OPERACIONAL'], valor=1)
+
+        elif not self.dict['TDA'][f'uh{1 if self.id in (1,3) else 2}_disponivel'] and self.dict['BRD'][f'uh{1 if self.id in (1,3) else 2}_disponivel']:
+            self.dict['BRD'][f'uh{1 if self.id in (1,3) else 2}_disponivel'] = False
+            ESC.escrever_bit(MB['TDA'][f'UHTA0{1 if self.id in (1,3) else 2}_OPERACIONAL'], valor=0)
+
+
 
 
 

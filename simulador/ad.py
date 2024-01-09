@@ -1,6 +1,6 @@
 import math
 
-from time import time
+from time import time, sleep
 from threading import Thread
 from pyModbusTCP.server import DataBank as DB
 
@@ -42,6 +42,8 @@ class Ad:
         def passo(self) -> 'None':
             self.setpoint = DB.get_words(MB['AD'][f'CP_0{self.id}_SP_POS'])[0]
 
+            print(f'[AD][CP{self.id}] SP -> {self.setpoint}')
+
             if DB.get_words(MB['AD'][f'CMD_CP_0{self.id}_BUSCAR'])[0]:
                 DB.set_words(MB['AD'][f'CMD_CP_0{self.id}_BUSCAR'], [0])
 
@@ -62,6 +64,10 @@ class Ad:
             ta = time() + round(sp_pc) + 1
             t1 = t2 = time()
 
+            ESC.escrever_bit(MB['AD'][f'CP_0{self.id}_PARADA'], valor=0)
+            sleep(1)
+            ESC.escrever_bit(MB['AD'][f'CP_0{self.id}_ABRINDO'], valor=1)
+
             while time() < ta and sp == self.setpoint:
                 if t2 - t1 >= 1:
                     t1 = t2
@@ -71,12 +77,24 @@ class Ad:
                 else:
                     t2 = time()
 
+            if self.dict['AD'][f'cp{self.id}_setpoint'] != self.setpoint:
+                self.dict['AD'][f'cp{self.id}_setpoint'] = self.setpoint
+                self.dict['AD'][f'cp{self.id}_q'] = self.calcular_q_cp(self.setpoint)
+
+            ESC.escrever_bit(MB['AD'][f'CP_0{self.id}_ABRINDO'], valor=0)
+            sleep(1)
+            ESC.escrever_bit(MB['AD'][f'CP_0{self.id}_PARADA'], valor=1)
+
 
         def fechar(self, sp, sp_ante) -> 'None':
             sp_calc = sp_ante - sp
             sp_pc = (sp_calc/6000) * 100
             tf = time() + round(sp_pc)
             t1 = t2 = time()
+
+            ESC.escrever_bit(MB['AD'][f'CP_0{self.id}_PARADA'], valor=0)
+            sleep(1)
+            ESC.escrever_bit(MB['AD'][f'CP_0{self.id}_FECHANDO'], valor=1)
 
             while time() < tf and sp == self.setpoint:
                 if t2 - t1 >= 1:
@@ -86,6 +104,14 @@ class Ad:
                     self.dict['AD'][f'cp{self.id}_q'] = self.calcular_q_cp(self.dict['AD'][f'cp{self.id}_setpoint'])
                 else:
                     t2 = time()
+
+            if self.dict['AD'][f'cp{self.id}_setpoint'] != self.setpoint:
+                self.dict['AD'][f'cp{self.id}_setpoint'] = self.setpoint
+                self.dict['AD'][f'cp{self.id}_q'] = self.calcular_q_cp(self.setpoint)
+
+            ESC.escrever_bit(MB['AD'][f'CP_0{self.id}_FECHANDO'], valor=0)
+            sleep(1)
+            ESC.escrever_bit(MB['AD'][f'CP_0{self.id}_PARADA'], valor=1)
 
 
         def calcular_q_cp(self, abertura) -> 'int':
