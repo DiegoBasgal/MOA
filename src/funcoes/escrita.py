@@ -43,6 +43,6 @@ class EscritaModBusBit:
             return res
 
         except Exception:
-            logger.error(f"[ESC] Houve um erro ao realizar a Escrita no REG: {registrador}")
+            logger.debug(f"[ESC] Houve um erro ao realizar a Escrita no REG: {registrador}")
             logger.debug(traceback.format_exc())
             return False
