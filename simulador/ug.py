@@ -155,6 +155,8 @@ class Unidade:
             txt_i = f"[UG{self.id}] Aguardando enchimento total do Conduto..."
             txt_f = f"[UG{self.id}] Enchimento do Conduto finalizado."
 
+            self.dict['TDA'][f'uh{1 if self.id in (1,3) else 2}_disponivel'] = False
+
         elif passo == 2:
             mult = 80
             tempo = TEMPO_ABERTURA_CP_UGS
@@ -178,8 +180,9 @@ class Unidade:
 
         print(txt_f)
 
-        self.dict['TDA'][f'uh{1 if self.id in (1,3) else 2}_disponivel'] = True
         self.dict['TDA'][f'cp{self.id}_aberta'] = True if passo == 2 else False
+        self.dict['TDA'][f'uh{1 if self.id in (1,3) else 2}_disponivel'] = True
+
         return self.abrir_comporta(passo + 1) if passo < 2 else None
 
 
@@ -286,9 +289,9 @@ class Unidade:
                     self.dict[f'UG{self.id}']['potencia'] = self.potencia = min(max(self.potencia, POT_MIN), POT_MAX)
 
                     if self.setpoint > self.potencia:
-                        self.potencia += 10.4167 * self.segundos_por_passo
+                        self.potencia += 100.4167 * self.segundos_por_passo
                     else:
-                        self.potencia -= 10.4167 * self.segundos_por_passo
+                        self.potencia -= 100.4167 * self.segundos_por_passo
 
                     self.potencia = np.random.normal(self.potencia, 2 * self.escala_ruido)
 

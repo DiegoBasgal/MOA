@@ -30,6 +30,7 @@ compartilhado = {
         "uh2_disponivel": False,
 
         # AD
+        "uhcd_disponivel": True,
         "cp1ad_manual": False,
         "cp2ad_manual": False,
     },
@@ -82,6 +83,8 @@ compartilhado = {
         "cp2_setpoint": 0,
 
         "cp2_manual": False,
+
+        "uhcd_disponivel": True,
 
     },
 

@@ -42,8 +42,6 @@ class Ad:
         def passo(self) -> 'None':
             self.setpoint = DB.get_words(MB['AD'][f'CP_0{self.id}_SP_POS'])[0]
 
-            print(f'[AD][CP{self.id}] SP -> {self.setpoint}')
-
             if DB.get_words(MB['AD'][f'CMD_CP_0{self.id}_BUSCAR'])[0]:
                 DB.set_words(MB['AD'][f'CMD_CP_0{self.id}_BUSCAR'], [0])
 
@@ -61,12 +59,13 @@ class Ad:
         def abrir(self, sp, sp_ante) -> 'None':
             sp_calc = sp - sp_ante
             sp_pc = (sp_calc/6000) * 100
-            ta = time() + round(sp_pc) + 1
+            ta = time() + round(sp_pc)
             t1 = t2 = time()
 
             ESC.escrever_bit(MB['AD'][f'CP_0{self.id}_PARADA'], valor=0)
-            sleep(1)
             ESC.escrever_bit(MB['AD'][f'CP_0{self.id}_ABRINDO'], valor=1)
+
+            self.dict['AD']['uhcd_disponivel'] = False
 
             while time() < ta and sp == self.setpoint:
                 if t2 - t1 >= 1:
@@ -77,12 +76,13 @@ class Ad:
                 else:
                     t2 = time()
 
-            if self.dict['AD'][f'cp{self.id}_setpoint'] != self.setpoint:
+            if self.dict['AD'][f'cp{self.id}_setpoint'] <= self.setpoint:
                 self.dict['AD'][f'cp{self.id}_setpoint'] = self.setpoint
                 self.dict['AD'][f'cp{self.id}_q'] = self.calcular_q_cp(self.setpoint)
 
+            self.dict['AD']['uhcd_disponivel'] = True
+
             ESC.escrever_bit(MB['AD'][f'CP_0{self.id}_ABRINDO'], valor=0)
-            sleep(1)
             ESC.escrever_bit(MB['AD'][f'CP_0{self.id}_PARADA'], valor=1)
 
 
@@ -96,6 +96,8 @@ class Ad:
             sleep(1)
             ESC.escrever_bit(MB['AD'][f'CP_0{self.id}_FECHANDO'], valor=1)
 
+            self.dict['AD']['uhcd_disponivel'] = False
+
             while time() < tf and sp == self.setpoint:
                 if t2 - t1 >= 1:
                     t1 = t2
@@ -105,9 +107,11 @@ class Ad:
                 else:
                     t2 = time()
 
-            if self.dict['AD'][f'cp{self.id}_setpoint'] != self.setpoint:
+            if self.dict['AD'][f'cp{self.id}_setpoint'] >= self.setpoint:
                 self.dict['AD'][f'cp{self.id}_setpoint'] = self.setpoint
                 self.dict['AD'][f'cp{self.id}_q'] = self.calcular_q_cp(self.setpoint)
+
+            self.dict['AD']['uhcd_disponivel'] = True
 
             ESC.escrever_bit(MB['AD'][f'CP_0{self.id}_FECHANDO'], valor=0)
             sleep(1)
@@ -127,9 +131,11 @@ class Ad:
             DB.set_words(MB['AD'][f'CP_0{self.id}_POSICAO'], [round(self.setpoint)])
 
             if self.dict['AD'][f'cp{self.id}_manual'] and not self.dict['BRD'][f'cp{self.id}ad_manual']:
+                self.dict['BRD'][f'cp{self.id}ad_manual'] = True
                 ESC.escrever_bit(MB['AD'][f'CP_0{self.id}_ACION_LOCAL'], valor=1)
 
             elif not self.dict['AD'][f'cp{self.id}_manual'] and self.dict['BRD'][f'cp{self.id}ad_manual']:
+                self.dict['BRD'][f'cp{self.id}ad_manual'] = False
                 ESC.escrever_bit(MB['AD'][f'CP_0{self.id}_ACION_LOCAL'], valor=0)
 
 
@@ -148,3 +154,10 @@ class Ad:
         elif not self.dict['AD']['condic'] and self.dict['BRD']['ad_condic']:
             ESC.escrever_bit(MB['AD']['Alarme28_00'], valor=0)
 
+        if not self.dict['AD']['uhcd_disponivel'] and self.dict['BRD']['uhcd_disponivel']:
+            self.dict['BRD']['uhcd_disponivel'] = False
+            ESC.escrever_bit(MB['AD']['UHCD_OPERACIONAL'], valor=1)
+
+        elif self.dict['AD']['uhcd_disponivel'] and not self.dict['BRD']['uhcd_disponivel']:
+            self.dict['BRD']['uhcd_disponivel'] = True
+            ESC.escrever_bit(MB['AD']['UHCD_OPERACIONAL'], valor=0)
