@@ -155,6 +155,7 @@ class ControleEstados(State):
             flag_condic = self.usn.verificar_condicionadores()
 
             if flag_condic == CONDIC_INDISPONIBILIZAR:
+                self.usn.acionar_emergencia()
                 return Emergencia(self.usn)
 
             elif flag_condic == CONDIC_NORMALIZAR:
@@ -252,7 +253,6 @@ class ControleAgendamentos(State):
 
         if len(self.usn.agn.verificar_agendamentos_pendentes()) > 0:
             return self
-
         else:
             return ControleEstados(self.usn) if self.usn.modo_autonomo else ModoManual(self.usn)
 

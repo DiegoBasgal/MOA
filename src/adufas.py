@@ -29,6 +29,7 @@ class Adufas:
     bd: "bd.BancoDados" = None
     cfg = {}
 
+
     class Comporta:
         def __init__(self, id: "int") -> "None":
 
@@ -113,8 +114,8 @@ class Adufas:
             sp = self.k * (self.controle_p + self.controle_i)
             sp = min(max(0, sp), 6000)
 
-            logger.debug(f"[AD][CP{self.id}]      P:                         {self.controle_p}")
-            logger.debug(f"[AD][CP{self.id}]      I:                         {self.controle_i}")
+            logger.debug(f"[AD][CP{self.id}]      P:                         {self.controle_p:1.4f}")
+            logger.debug(f"[AD][CP{self.id}]      I:                         {self.controle_i:1.4f}")
             logger.debug(f"[AD][CP{self.id}]      ERRO:                      {erro}")
 
             if self.manual and self.estado == ADCP_INDISPONIVEL:
@@ -129,15 +130,18 @@ class Adufas:
             """
 
             try:
-                logger.debug("")
-                logger.debug(f"[AD][CP{self.id}]      Enviando setpoint:         {round(setpoint)} mm")
-
                 # if not self.clp["AD"].read_holding_registers(REG_AD["PCAD_MODO_SETPOT_HAB"])[0]:
                 #     logger.info(f"[AD]  O modo de setpoint das Comportas das Adufas não está habilitado.")
-                # else:
-                self.clp["AD"].write_single_register(REG_AD[f"CP_0{self.id}_SP_POS"], int(setpoint))
-                sleep(1)
-                self.clp["AD"].write_single_register(REG_AD[f"CMD_CP_0{self.id}_BUSCAR"], 1)
+
+                if self.uhcd_operando.valor:
+                    logger.debug(f"[AD][CP{self.id}]      Aguardando disponibilização da UHCD.")
+                    return
+                else:
+                    logger.debug("")
+                    logger.debug(f"[AD][CP{self.id}]      Enviando setpoint:         {round(setpoint)} mm")
+                    self.clp["AD"].write_single_register(REG_AD[f"CP_0{self.id}_SP_POS"], int(setpoint))
+                    sleep(1)
+                    self.clp["AD"].write_single_register(REG_AD[f"CMD_CP_0{self.id}_BUSCAR"], 1)
 
             except Exception:
                 logger.error(f"[AD][CP{self.id}] Não foi possível enviar o setpoint para a Comporta.")
@@ -154,7 +158,7 @@ class Adufas:
             self.fechada = lei.LeituraModbusBit(self.clp["AD"], REG_AD[f"CP_0{self.id}_FECHADA"], descricao=f"[AD][CP{self.id}] Comporta Fechada")
             self.abrindo = lei.LeituraModbusBit(self.clp["AD"], REG_AD[f"CP_0{self.id}_ABRINDO"], descricao=f"[AD][CP{self.id}] Comporta Abrindo")
             self.fechando = lei.LeituraModbusBit(self.clp["AD"], REG_AD[f"CP_0{self.id}_FECHANDO"], descricao=f"[AD][CP{self.id}] Comporta Fechando")
-
+            self.uhcd_operando = lei.LeituraModbusBit(self.clp["AD"], REG_AD["UHCD_OPERACIONAL"], descricao=f"[AD][CP{self.id}] UHCD Disponível")
 
             ## MENSAGEIRO
             self.cp_acion_local = lei.LeituraModbusBit(self.clp["AD"], REG_AD[f"CP_0{self.id}_ACION_LOCAL"], descricao=f"[AD][CP{self.id}] Comporta Acionamento Local")             # Voip + whats
@@ -172,7 +176,7 @@ class Adufas:
     def controlar_comportas(cls) -> "None":
         logger.debug("")
         logger.debug(f"[AD]  Controlando Comportas...")
-        logger.debug(f"[AD]  NÍVEL -> Alvo:                      {cls.cfg['nv_alvo']:0.3f}")
+        logger.debug(f"[AD]  NÍVEL -> Alvo:                      {cls.cfg['ad_cp_alvo']:0.3f}")
         logger.debug("")
 
         cls.clp["AD"].write_single_register(REG_AD["CMD_MODO_SP_HABILITAR"], 1)
@@ -199,7 +203,6 @@ class Adufas:
             logger.debug("")
             if cls.condicionadores_ativos == []:
                 logger.warning(f"[AD]  Foram detectados Condicionadores ativos no Serviço Auxiliar!")
-
             else:
                 logger.info(f"[AD]  Ainda há Condicionadores ativos no Serviço Auxiliar!")
 

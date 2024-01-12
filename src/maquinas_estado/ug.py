@@ -181,7 +181,7 @@ class StateDisponivel(State):
 
         # self.parent.verificar_limites()
         # flag = self.parent.verificar_condicionadores()
-        flag=0
+        flag = 0
 
         if flag == CONDIC_INDISPONIBILIZAR:
             logger.warning(f"[UG{self.parent.id}] Indisponibilizando UG.")

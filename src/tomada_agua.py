@@ -77,7 +77,6 @@ class TomadaAgua:
             logger.debug("")
             if cls.condicionadores_ativos == []:
                 logger.warning(f"[TDA] Foram detectados Condicionadores ativos na Tomada da Água!")
-
             else:
                 logger.info(f"[TDA] Ainda há Condicionadores ativos na Tomada da Água!")
 

@@ -9,6 +9,7 @@ import traceback
 
 import src.dicionarios.dict as d
 import src.funcoes.leitura as lei
+import src.funcoes.escrita as esc
 import src.conectores.banco_dados as bd
 import src.funcoes.condicionadores as c
 import src.conectores.servidores as serv
@@ -34,6 +35,37 @@ class ServicoAuxiliar:
 
 
     @classmethod
+    def verificar_trafos_sa(cls) -> "bool":
+        """
+        Função para fazer o rodízio dos Transformadores do Serviço Auxiliar.
+        """
+
+        if cls.l_alm_04_b_02.valor and not cls.l_alm_04_b_06.valor:
+            logger.info(f"[SA]  Sinal de TRIP por Sobretemperatura do Enrolamento do TSA-01 identificado!")
+            logger.info(f"[SA]  Trocando operação para o TSA-02.")
+
+            cls.clp['SA'].write_single_register(REG_SA['CMD_DJ_FONTE_01_DESLIGAR'], 1)
+            cls.clp['SA'].write_single_register(REG_SA['CMD_DJ_FONTE_02_LIGAR'], 1)
+            return False
+
+        elif cls.l_alm_02_b_06.valor and not cls.l_alm_04_b_02.valor:
+            logger.info(f"[SA]  Sinal de TRIP por Sobretemperatura do Enrolamento do TSA-02 identificado!")
+            logger.info(f"[SA]  Trocando operação para o TSA-01.")
+
+            cls.clp['SA'].write_single_register(REG_SA['CMD_DJ_FONTE_02_DESLIGAR'], 1)
+            cls.clp['SA'].write_single_register(REG_SA['CMD_DJ_FONTE_01_LIGAR'], 1)
+            return False
+
+        elif cls.l_alm_02_b_06.valor and cls.l_alm_04_b_02.valor:
+            logger.warning(f"[SA]  Atenção! Sinal de TRIP por Sobretemperatura dos Enrolamentos de ambos os Transformadores do SA!")
+            logger.critical(f"[SA]  Indisponibilizando Usina!")
+            return True
+
+        else:
+            return False
+
+
+    @classmethod
     def verificar_condicionadores(cls) -> "list[c.CondicionadorBase]":
         """
         Função para verificação de TRIPS/Alarmes.
@@ -50,7 +82,6 @@ class ServicoAuxiliar:
             logger.debug("")
             if cls.condicionadores_ativos == []:
                 logger.warning(f"[SA]  Foram detectados Condicionadores ativos no Serviço Auxiliar!")
-
             else:
                 logger.info(f"[SA]  Ainda há Condicionadores ativos no Serviço Auxiliar!")
 

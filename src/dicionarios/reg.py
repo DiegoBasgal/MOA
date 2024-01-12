@@ -1199,7 +1199,7 @@ REG_AD = {
 
     # UHCD,
     "UHCD_INFO":                                168 + 12764,                    # Leituras.PCAD_UHCD_Info
-    "UHCD_OPERACIONAL":                         [168 + 12764, 0],               # PCAD.UHCD.Info.Operacional
+    "UHCD_OPERACIONAL":                         [168 + 12764 + 3000, 0],               # PCAD.UHCD.Info.Operacional
     "UHCD_LIGADA":                              [168 + 12764, 1],               # PCAD.UHCD.Info.Ligada
 
     "UHCD_BOMBAS":                              169 + 12764,                    # Leituras.PCAD_UHCD_Bombas

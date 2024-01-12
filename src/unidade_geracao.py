@@ -174,7 +174,7 @@ class UnidadeGeracao:
     def uhta_disponivel(self) -> "bool":
         # PROPRIEDADE -> Retorna se a Unidade Hidráulica da Comporta está Disponível
 
-        return self.__uhta[f'UHTA0{1 if self.id in (1,3) else 2}'].valor
+        return self.__uhta[f'UHTA0{1 if self.id in (1,2) else 2}'].valor
 
     @property
     def etapa_atual(self) -> "int":
@@ -777,7 +777,6 @@ class UnidadeGeracao:
             logger.debug("")
             if self.condicionadores_ativos == []:
                 logger.warning(f"[UG{self.id}] Foram detectados condicionadores ativos na Unidade!")
-
             else:
                 logger.info(f"[UG{self.id}] Ainda há condicionadores ativos na Unidade!")
 

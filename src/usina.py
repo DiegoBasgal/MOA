@@ -266,6 +266,11 @@ class Usina:
         lst_se = self.se.verificar_condicionadores()
         lst_tda = self.tda.verificar_condicionadores()
 
+        trafos_sa = self.sa.verificar_trafos_sa()
+
+        if trafos_sa:
+            return CONDIC_INDISPONIBILIZAR
+
         condics = [condic for condics in [lst_sa, lst_se, lst_tda] for condic in condics]
 
         for condic in condics:
@@ -372,11 +377,8 @@ class Usina:
             for ug in self.ugs:
                 ug.step()
 
-            if self.tda.nivel_montante.valor >= self.cfg["ad_nv_alvo"]:
-                self.ad.controlar_comportas()
-            else:
-                for cp in self.ad.cps:
-                    cp.enviar_setpoint(0)
+            for cp in self.ad.cps:
+                cp.enviar_setpoint(0)
 
         return NV_NORMAL
 

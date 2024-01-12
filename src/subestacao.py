@@ -122,7 +122,7 @@ class Subestacao:
                 flags += 1
 
             if not cls.l_dj52l_mola.valor:
-                logger.warning(f"[SE]  A Mola do Disjunto não está carregada.")
+                logger.warning(f"[SE]  A Mola do Disjuntor não está carregada.")
                 flags += 1
 
             logger.warning(f"[SE]  Foram identificadas \"{flags}\" condições de bloqueio ao realizar fechamento do Disjuntor. Favor normalizar.") \
@@ -222,7 +222,6 @@ class Subestacao:
             logger.debug("")
             if cls.condicionadores_ativos == []:
                 logger.warning(f"[SE]  Foram detectados Condicionadores ativos na Subestação!")
-
             else:
                 logger.info(f"[SE]  Ainda há Condicionadores ativos na Subestação!")
 
@@ -489,7 +488,6 @@ class Subestacao:
 
         cls.l_dj52l_mola = lei.LeituraModbusBit(cls.clp["SA"], REG_SE["DJ52L_MOLA_CARREGADA"], descricao="[SE]  DJ52L - Mola Carregada")
         cls.l_dj52l_condicao = lei.LeituraModbusBit(cls.clp["SA"], REG_SE["DJ52L_COND_FECHAMENTO"], descricao="[SE]  DJ52L - Condição de Fechamento")
-
 
 
         cls.l_alm_01_b_00 = lei.LeituraModbusBit(cls.clp["SA"], REG_SE["Alarme01_00"], descricao="[SE]  PACP - Botão de Emergência Pressionado (Abertura 52L)")
