@@ -207,7 +207,7 @@ class UnidadeGeracao:
 
         elif self.etapa_atual > UG_PARADA and self.etapa_alvo == UG_SINCRONIZADA:
             return UG_SINCRONIZANDO
-        
+
         elif self.etapa_atual == UG_SINCRONIZADA and self.etapa_alvo == UG_SINCRONIZADA:
             return UG_SINCRONIZADA
 
@@ -772,7 +772,6 @@ class UnidadeGeracao:
         flag = CONDIC_IGNORAR
 
         if True in (condic.ativo for condic in self.condicionadores_essenciais):
-            print("entrei")
             condics_ativos = [condic for condics in [self.condicionadores_essenciais, self.condicionadores] for condic in condics if condic.ativo]
 
             logger.debug("")
