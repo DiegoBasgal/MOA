@@ -9,7 +9,7 @@ from src.dicionarios.const import *
 
 
 class CondicionadorBase:
-    def __init__(self, leitura: "lei.LeituraModbus", gravidade: "int"=1, etapas: "list"=[], id_unidade: "int"=None) -> "None":
+    def __init__(self, leitura: "lei.LeituraModbus", gravidade: "int"=1, etapas: "list"=[], id_unidade: "int"=None, leitura_conjunta: "lei.LeituraModbus"=None) -> "None":
 
         self.__leitura = leitura
         self.__gravidade = gravidade
@@ -17,6 +17,7 @@ class CondicionadorBase:
 
         self.__etapas = etapas
         self.__id_unidade = id_unidade
+        self.__leitura_conjunta = leitura_conjunta
 
         self._ugs: "list[ug.UnidadeGeracao]" = []
 
@@ -58,6 +59,8 @@ class CondicionadorBase:
         if self.__id_unidade and self.__etapas:
             ug: "ug.UnidadeGeracao" = [ug if ug.id == self.__id_unidade else None for ug in self.ugs]
             return False if ug is not None and ug.etapa_atual in self.__etapas and self.leitura == 0 else False
+        elif self.__leitura_conjunta.valor:
+            return False if self.leitura == 0 else True
         else:
             return False if self.leitura == 0 else True
 

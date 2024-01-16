@@ -41,7 +41,7 @@ class ServicoAuxiliar:
         """
 
         if cls.l_alm_04_b_02.valor and not cls.l_alm_04_b_06.valor:
-            logger.info(f"[SA]  Sinal de TRIP por Sobretemperatura do Enrolamento do TSA-01 identificado!")
+            logger.warning(f"[SA]  Sinal de TRIP por Sobretemperatura do Enrolamento do TSA-01 identificado!")
             logger.info(f"[SA]  Trocando operação para o TSA-02.")
 
             cls.clp['SA'].write_single_register(REG_SA['CMD_DJ_FONTE_01_DESLIGAR'], 1)
@@ -49,7 +49,7 @@ class ServicoAuxiliar:
             return False
 
         elif cls.l_alm_02_b_06.valor and not cls.l_alm_04_b_02.valor:
-            logger.info(f"[SA]  Sinal de TRIP por Sobretemperatura do Enrolamento do TSA-02 identificado!")
+            logger.warning(f"[SA]  Sinal de TRIP por Sobretemperatura do Enrolamento do TSA-02 identificado!")
             logger.info(f"[SA]  Trocando operação para o TSA-01.")
 
             cls.clp['SA'].write_single_register(REG_SA['CMD_DJ_FONTE_02_DESLIGAR'], 1)
@@ -853,4 +853,4 @@ class ServicoAuxiliar:
         cls.l_sens_presen_area_mont = lei.LeituraModbusBit(cls.clp["SA"], REG_SA["SENSOR_PRESENCA_AREA_MONT"], descricao="[SA] Sensor Presença Área Montagem")
         cls.l_sens_presen_sala_cubic = lei.LeituraModbusBit(cls.clp["SA"], REG_SA["SENSOR_PRESENCA_SALA_CUBI"], descricao="[SA] Sensor Presença Sala Cubículo")
         cls.l_sis_agu_cx_agua1_nv50 = lei.LeituraModbusBit(cls.clp["SA"], REG_SA["SIS_AGUA_CAIXA_AGUA01_NV50"], descricao="[SA] Sistema Água Caixa Água 1 Nível 50%")
-        cls.l_sis_agu_cx_agua2_nv50 = lei.LeituraModbusBit(cls.clp["SA"], REG_SA["SIS_AGUA_CAIXA_AGUA02_NV50"], descricao="[SA] Sistema Água Caixa Água 2 Nível 50%") # (quando as duas caixas estiverem abaixo de 50%, disparar aviso para equipe se deslocar. Não há necessidade de parar máquinas)
+        cls.l_sis_agu_cx_agua2_nv50 = lei.LeituraModbusBit(cls.clp["SA"], REG_SA["SIS_AGUA_CAIXA_AGUA02_NV50"], descricao="[SA] Sistema Água Caixa Água 2 Nível 50%")
