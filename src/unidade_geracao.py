@@ -895,7 +895,7 @@ class UnidadeGeracao:
             self.aux_tempo_sincronizada = None
 
 
-    def ajuste_ganho_cx_espiral(self) -> "None":
+    def verificar_atenuadores(self) -> "None":
         """
         Função para atenuação de carga através de leitura de pressão de caixa espiral.
 
@@ -903,33 +903,33 @@ class UnidadeGeracao:
         deve atenuar ou não.
         """
 
-        atenuacao = 0
+        if self.etapa_atual == UG_PARADA:
+            return
+
         flags = 0
+        atenuacao = 0
         logger.debug(f"[UG{self.id}]          Verificando Atenuadores...")
 
         for condic in self.condicionadores_atenuadores:
             atenuacao = max(atenuacao, condic.valor)
-            if self.etapa_atual == UG_SINCRONIZADA:
-                if atenuacao > 0:
-                    flags += 1
-                    logger.debug(f"[UG{self.id}]          - \"{condic.descr}\":   Leitura: {condic.leitura} | Atenuação: {atenuacao}")
+            if self.etapa_atual == UG_SINCRONIZADA and atenuacao > 0:
+                flags += 1
+                logger.debug(f"[UG{self.id}]          - \"{condic.descr}\":   Leitura: {condic.leitura} | Atenuação: {atenuacao}")
 
         if flags == 0:
             logger.debug(f"[UG{self.id}]          Não há necessidade de Atenuação.")
 
         ganho = 1 - atenuacao
         aux = self.setpoint
-        if (self.setpoint > self.setpoint_minimo) and self.setpoint * ganho > self.setpoint_minimo:
+        if self.setpoint > self.setpoint_minimo and (self.setpoint * ganho) > self.setpoint_minimo:
             self.setpoint = self.setpoint * ganho
 
-        elif (self.setpoint * ganho < self.setpoint_minimo) and (self.setpoint > self.setpoint_minimo):
+        elif self.setpoint > self.setpoint_minimo and (self.setpoint * ganho) < self.setpoint_minimo:
             self.setpoint =  self.setpoint_minimo
 
-        if self.etapa_atual == UG_SINCRONIZADA:
-            if ganho < 1:
-                logger.debug(f"[UG{self.id}]                                     SP {aux} * GANHO {ganho} = {self.setpoint} kW")
-            else:
-                pass
+        if self.etapa_atual == UG_SINCRONIZADA and ganho < 1:
+            logger.debug(f"[UG{self.id}]                                     SP {aux} * GANHO {ganho} = {self.setpoint} kW")
+
 
     def ajuste_inicial_cx(self) -> "None":
         """
@@ -946,6 +946,7 @@ class UnidadeGeracao:
         except Exception:
             logger.error(f"[UG{self.id}] Não foi possível realizar o ajuste incial do PID para pressão de caixa espiral.")
             logger.debug(traceback.format_exc())
+
 
     def controle_cx_espiral(self) -> "float":
         if self.pot_alvo_anterior == -1:
@@ -964,57 +965,22 @@ class UnidadeGeracao:
             self.erro_press_cx = 0
             self.erro_press_cx = self.oco.leitura_dict[f"pressao_cx_espiral_ug2"].valor - self.cfg[f"pressao_alvo_ug2"]
 
-            debug_log.debug("")
-            debug_log.debug(f"[UG{self.id}] CX Erro: {self.erro_press_cx}")
-
-
             self.cx_controle_p = self.cfg["cx_kp"] * self.erro_press_cx
-
-
-            debug_log.debug(f"[UG{self.id}] CX P: {self.cx_controle_p}")
-
-
             self.cx_controle_i = max(min((self.cfg["cx_ki"] * self.erro_press_cx) + self.cx_controle_i, 1), 0)
-
-
-            debug_log.debug(f"[UG{self.id}] CX I: {self.cx_controle_i}")
-
 
             saida_pi = self.cx_controle_p + self.cx_controle_i
 
-
-            debug_log.debug(f"[UG{self.id}] CX Saída PI: {saida_pi}")
-
-
             self.cx_controle_ie = max(min(saida_pi + self.cx_ajuste_ie * self.cfg["cx_kie"], 1), 0)
 
-
-            debug_log.debug(f"[UG{self.id}] CX IE: {self.cx_controle_ie}")
-
-
             pot_alvo = max(min(round(self.cfg[f"pot_maxima_ug{self.id}"] * self.cx_controle_ie, 5), self.cfg[f"pot_maxima_ug{self.id}"],),self.cfg["pot_minima_ugs"],)
-
-
-            debug_log.debug(f"[UG{self.id}] CX Potência Alvo: {pot_alvo}")
-
-
             pot_medidor = self.__potencia_ativa_kW.valor
-
 
             logger.debug(f"[UG{self.id}] Potência calculada:                 {pot_alvo:0.3f}")
             logger.debug("")
 
             pot_aux = self.cfg["pot_alvo_usina"] - (self.cfg["pot_maxima_usina"] - self.cfg["pot_alvo_usina"])
 
-
-            debug_log.debug(f"[UG{self.id}] CX Potência Auxiliar: {pot_aux}")
-
-
             pot_medidor = max(pot_aux, min(pot_medidor, self.cfg["pot_maxima_usina"]))
-
-
-            debug_log.debug(f"[UG{self.id}] CX Potência Medidor Recalculada: {pot_medidor}")
-
 
             if pot_medidor > self.cfg["pot_alvo_usina"] * 0.97:
                 pot_alvo = self.pot_alvo_anterior * (1 - 0.5 * ((pot_medidor - self.cfg["pot_alvo_usina"]) / self.cfg["pot_alvo_usina"]))
@@ -1022,7 +988,6 @@ class UnidadeGeracao:
             self.pot_alvo_anterior = pot_alvo
 
             return pot_alvo
-
 
         except Exception:
             logger.error(f"[UG{self.id}] Houve um erro no método de Controle por Caixa Espiral da Unidade.")

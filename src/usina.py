@@ -245,6 +245,7 @@ class Usina:
             logger.error(f"[USN] Houve um erro ao acionar a Emergência.")
             logger.debug(traceback.format_exc())
 
+
     def resetar_emergencia(self) -> None:
         """
         Função para reset geral da Usina. Envia o comando de reset para todos os
@@ -270,6 +271,7 @@ class Usina:
             logger.error(f"[USN] Houve um erro ao realizar o Reset Geral.")
             logger.debug(traceback.format_exc())
 
+
     def resetar_tda(self) -> None:
         """
         Função para reset da Tomada da Água. Envia o comando de reset para o
@@ -284,6 +286,7 @@ class Usina:
             self.clp["TDA"].write_single_coil(REG["TDA_CD_Desab_Religamento52L"], [1])
         else:
             logger.debug("[USN] Não é possível resetar a TDA pois o CLP da TDA se encontra offline")
+
 
     def normalizar_usina(self) -> int:
         """
@@ -318,6 +321,7 @@ class Usina:
             logger.debug("[USN] A normalização foi executada menos de 1 minuto atrás")
             return NORM_USN_JA_EXECUTADA
 
+
     def fechar_dj_linha(self) -> bool:
         """
         Função para acionamento do comando de fechamento do Disjuntor 52L (Linha).
@@ -336,6 +340,7 @@ class Usina:
         except Exception:
             logger.error(f"[USN] Houver um erro ao fechar o Disjuntor de Linha.")
             logger.debug(traceback.format_exc())
+
 
     def verificar_falha_dj_linha(self):
         """
@@ -394,6 +399,7 @@ class Usina:
         else:
             return False
 
+
     def verificar_tensao(self) -> bool:
         """
         Função para verificação de limites de tensão da linha de transmissão.
@@ -412,6 +418,7 @@ class Usina:
             logger.error(f"[USN] Houve um erro ao realizar a verificação da tensão na linha.")
             logger.debug(traceback.format_exc())
             return False
+
 
     def aguardar_tensao(self) -> bool:
         """
@@ -441,6 +448,7 @@ class Usina:
 
         else:
             logger.debug("[USN] A tensão na linha ainda está fora.")
+
 
     def acionar_temporizador_tensao(self, delay) -> None:
         """
@@ -484,6 +492,7 @@ class Usina:
             logger.debug(f"[USN] Houve um erro com a função de Leituras Periódicas.")
             logger.debug(traceback.format_exc())
 
+
     def ajustar_inicializacao(self) -> None:
         """
         Função para ajustes na inicialização do MOA. Essa função é executada apenas
@@ -503,6 +512,7 @@ class Usina:
         self.clp["MOA"].write_single_coil(REG["MOA_OUT_BLOCK_UG1"], 0)
         self.clp["MOA"].write_single_coil(REG["MOA_OUT_BLOCK_UG2"], 0)
         self.clp["MOA"].write_single_coil(REG["MOA_OUT_BLOCK_UG3"], 0)
+
 
     def controlar_reservatorio(self) -> int:
         """
@@ -533,9 +543,10 @@ class Usina:
                 logger.critical(f"[USN] Nível montante ({self.nv_montante_recente:3.2f}) atingiu o maximorum!")
                 return NV_FLAG_EMERGENCIA
             else:
-                self.controle_i = 0.5
+                self.controle_i = 0.8
                 self.controle_ie = 0.5
                 self.ajustar_potencia(self.cfg["pot_alvo_usina"])
+
                 for ug in self.ugs:
                     ug.step()
 
@@ -574,6 +585,7 @@ class Usina:
 
         return NV_FLAG_NORMAL
 
+
     def controlar_potencia(self) -> None:
         logger.debug(f"[USN] NÍVEL -> Alvo:                      {self.cfg['nv_alvo']:0.3f}")
         logger.debug(f"[USN]          Leitura:                   {self.nv_montante:0.3f}")
@@ -597,6 +609,7 @@ class Usina:
         logger.debug(f"[USN] D:                                  {self.controle_d:0.3f}")
 
         self.controle_ie = max(min(saida_pid + self.controle_ie * self.cfg["kie"], 1), 0)
+
         logger.debug(f"[USN] IE:                                 {self.controle_ie:0.3f}")
         logger.debug(f"[USN] ERRO:                               {self.erro_nv}")
         logger.debug("")
@@ -610,6 +623,7 @@ class Usina:
             self.controle_i = 0
 
         pot_alvo = max(min(round(self.cfg["pot_maxima_usina"] * self.controle_ie, 5), self.cfg["pot_maxima_usina"],), self.cfg["pot_minima_ugs"],)
+
         pot_alvo = self.ajustar_potencia(pot_alvo)
 
 
@@ -618,7 +632,6 @@ class Usina:
 
         if self.modo_de_escolha_das_ugs in (UG_PRIORIDADE_1, UG_PRIORIDADE_2, UG_PRIORIDADE_3):
             ls = sorted(ls, key=lambda y: (-1 * y.etapa_atual, -1 * y.leitura_potencia, -1 * y.setpoint, y.prioridade))
-
         else:
             ls = sorted(ls, key=lambda y: (-1 * y.etapa_atual, y.leitura_horimetro, -1 * y.leitura_potencia, -1 * y.setpoint))
 
@@ -663,7 +676,7 @@ class Usina:
 
     def distribuir_potencia(self, pot_alvo) -> None:
         ugs: "list[UnidadeGeracao]" = self.controlar_unidades_disponiveis()
-        
+
         if ugs is None or not len(ugs):
             return
 
@@ -671,16 +684,14 @@ class Usina:
         logger.debug(f"[USN] Ordem das UGs (Prioridade):         {[ug.id for ug in ugs]}")
         logger.debug("")
 
-        pot_disp = 0
         ajuste_manual = 0
         ug_sincronizando = 0
 
         for ug in self.ugs:
-            pot_disp += ug.cfg[f"pot_maxima_ug{ug.id}"]
-
             if ug.manual:
                 ajuste_manual += ug.leitura_potencia
 
+        for ug in ugs:
             if ug.etapa_atual == UG_SINCRONIZANDO:
                 ug_sincronizando += 1
 
@@ -811,6 +822,7 @@ class Usina:
 
             logger.debug(f"[UG{ugs[0].id}] SP    <-                            {int(ugs[0].setpoint)}")
 
+
     def calcular_ema_montante(self, ema_anterior, periodo=40, smoothing=5, casas_decimais=5) -> float:
         constante = smoothing / (1 + periodo)
 
@@ -840,6 +852,7 @@ class Usina:
 
         self.heartbeat()
 
+
     def atualizar_valores_montante(self) -> None:
         """
         Função para atualização de valores anteriores e erro de nível montante.
@@ -847,20 +860,25 @@ class Usina:
 
         if self.db_emergencia:
             pass
-        
-        # Filtro para variações de nível abruptas, maiores do que 20 cm entre uma amostra e outra
-        elif abs(self.nv_montante - self.nv_montante_recente) > 0.2:
-            self.nv_montante_recente = self.nv_montante
 
         elif self.ema_anterior == -1:
             self.ema_anterior = 0
             self.nv_montante_recente = self.nv_montante
+
+        # Filtro para variações de nível abruptas, maiores do que 20 cm entre uma amostra e outra
+        elif abs(self.nv_montante - self.nv_montante_recente) > 0.2:
+            self.nv_montante_recente = self.nv_montante
+
+        # elif 404.5 < self.nv_montante 407.6:
+        #     self.nv_montante_recente = self.nv_montante_recente
+
         else:
             ema = self.calcular_ema_montante(self.nv_montante_recente)
             self.nv_montante_recente = ema
 
         self.erro_nv_anterior = self.erro_nv
         self.erro_nv = self.nv_montante_recente - self.cfg["nv_alvo"]
+
 
     def atualizar_valores_banco(self, parametros) -> None:
         """
@@ -890,6 +908,7 @@ class Usina:
             logger.error(f"[USN] Houve um erro ao ler e atualizar os parâmetros do Banco de Dados.")
             logger.debug(traceback.format_exc())
 
+
     def atualizar_valores_cfg(self, parametros) -> None:
         """
         Função para atualização de valores de operação do arquivo cfg.json.
@@ -914,6 +933,7 @@ class Usina:
         self.cfg["pressao_alvo_ug1"] = float(parametros["ug1_pressao_alvo"])
         self.cfg["pressao_alvo_ug2"] = float(parametros["ug2_pressao_alvo"])
         self.cfg["pressao_alvo_ug3"] = float(parametros["ug3_pressao_alvo"])
+
 
     def escrever_valores(self) -> None:
         """
@@ -971,6 +991,7 @@ class Usina:
         except Exception:
             logger.error(f"[USN] Houve um erro ao gravar os parâmetros debug no Banco.")
             logger.debug(traceback.format_exc())
+
 
     def heartbeat(self) -> None:
         """

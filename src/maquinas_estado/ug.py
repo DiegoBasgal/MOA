@@ -43,7 +43,7 @@ class StateManual(State):
 
         logger.debug("")
         logger.info(f"[UG{self.parent.id}] Entrando no estado:                 \"Manual\". Para retornar a operação autônoma, favor agendar na interface web")
-        logger.debug(f"[UG{self.parent.id}] Tentativas de normalização:         {self.parent.tentativas_de_normalizacao}/{self.parent.limite_tentativas_de_normalizacao + 1}")
+        logger.debug(f"[UG{self.parent.id}] Tentativas de normalização:         {self.parent.tentativas_de_normalizacao}/{self.parent.limite_tentativas_de_normalizacao}")
 
 
     def step(self) -> State:
@@ -72,7 +72,7 @@ class StateIndisponivel(State):
 
         logger.debug("")
         logger.info(f"[UG{self.parent.id}] Entrando no estado:                 \"Indisponível\". Para retornar a operação autônoma, favor agendar na interface web")
-        logger.debug(f"[UG{self.parent.id}] Tentativas de normalização:         {self.parent.tentativas_de_normalizacao}/{self.parent.limite_tentativas_de_normalizacao + 1}")
+        logger.debug(f"[UG{self.parent.id}] Tentativas de normalização:         {self.parent.tentativas_de_normalizacao}/{self.parent.limite_tentativas_de_normalizacao}")
 
     def step(self) -> State:
         """
@@ -92,7 +92,6 @@ class StateRestrito(State):
 
         self.parent.codigo_state = UG_SM_RESTRITA
 
-        self.parent.parar_timer = False
         self.parent.borda_parar = True if self.parent.borda_parar else False
 
         # FINALIZAÇÃO DO __INIT__
@@ -101,7 +100,7 @@ class StateRestrito(State):
 
         logger.debug("")
         logger.info(f"[UG{self.parent.id}] Entrando no estado                  \"Restrito\"")
-        logger.debug(f"[UG{self.parent.id}] Tentativas de normalização:         {self.parent.tentativas_de_normalizacao}/{self.parent.limite_tentativas_de_normalizacao + 1}")
+        logger.debug(f"[UG{self.parent.id}] Tentativas de normalização:         {self.parent.tentativas_de_normalizacao}/{self.parent.limite_tentativas_de_normalizacao}")
 
     def step(self) -> State:
         """
@@ -159,7 +158,7 @@ class StateDisponivel(State):
 
         logger.debug("")
         logger.info(f"[UG{self.parent.id}] Entrando no estado:                 \"Disponível\"")
-        logger.debug(f"[UG{self.parent.id}] Tentativas de normalização:         {self.parent.tentativas_de_normalizacao}/{self.parent.limite_tentativas_de_normalizacao + 1}")
+        logger.debug(f"[UG{self.parent.id}] Tentativas de normalização:         {self.parent.tentativas_de_normalizacao}/{self.parent.limite_tentativas_de_normalizacao}")
         logger.debug("")
 
 
@@ -188,7 +187,7 @@ class StateDisponivel(State):
             return self if self.parent.normalizar_unidade() else StateIndisponivel(self.parent)
 
         else:
-            self.parent.ajuste_ganho_cx_espiral()
+            self.parent.verificar_atenuadores()
 
             self.parent.controle_etapas()
 

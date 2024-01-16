@@ -590,79 +590,79 @@ class OcorrenciasUnidades:
         ad = self.aviso_dict
 
         if ld[f"tmp_fase_r_ug{self.__ug.id}"].valor >= cd[f"tmp_fase_r_ug{self.__ug.id}"].valor_base:
-            logger.warning(f"[OCO-UG{self.__ug.id}] A temperatura de Fase R da UG passou do valor base! ({cd[f'tmp_fase_r_ug{self.__ug.id}'].valor_base} C) | Leitura: {ld[f'tmp_fase_r_ug{self.__ug.id}'].valor} C")
+            logger.debug(f"[OCO-UG{self.__ug.id}] A temperatura de Fase R da UG passou do valor base! ({cd[f'tmp_fase_r_ug{self.__ug.id}'].valor_base} C) | Leitura: {ld[f'tmp_fase_r_ug{self.__ug.id}'].valor} C")
 
         if ld[f"tmp_fase_r_ug{self.__ug.id}"].valor >= 0.9*(cd[f"tmp_fase_r_ug{self.__ug.id}"].valor_limite - cd[f"tmp_fase_r_ug{self.__ug.id}"].valor_base) + cd[f"tmp_fase_r_ug{self.__ug.id}"].valor_base:
             logger.critical(f"[OCO-UG{self.__ug.id}] A temperatura de Fase R da UG está muito próxima do limite! ({cd[f'tmp_fase_r_ug{self.__ug.id}'].valor_limite} C) | Leitura: {ld[f'tmp_fase_r_ug{self.__ug.id}'].valor} C")
 
         if ld[f"tmp_fase_s_ug{self.__ug.id}"].valor >= cd[f"tmp_fase_s_ug{self.__ug.id}"].valor_base:
-            logger.warning(f"[OCO-UG{self.__ug.id}] A temperatura de Fase S da UG passou do valor base! ({cd[f'tmp_fase_s_ug{self.__ug.id}'].valor_base} C) | Leitura: {ld[f'tmp_fase_s_ug{self.__ug.id}'].valor} C")
+            logger.debug(f"[OCO-UG{self.__ug.id}] A temperatura de Fase S da UG passou do valor base! ({cd[f'tmp_fase_s_ug{self.__ug.id}'].valor_base} C) | Leitura: {ld[f'tmp_fase_s_ug{self.__ug.id}'].valor} C")
 
         if ld[f"tmp_fase_s_ug{self.__ug.id}"].valor >= 0.9*(cd[f"tmp_fase_s_ug{self.__ug.id}"].valor_limite - cd[f"tmp_fase_s_ug{self.__ug.id}"].valor_base) + cd[f"tmp_fase_s_ug{self.__ug.id}"].valor_base:
             logger.critical(f"[OCO-UG{self.__ug.id}] A temperatura de Fase S da UG está muito próxima do limite! ({cd[f'tmp_fase_s_ug{self.__ug.id}'].valor_limite} C) | Leitura: {ld[f'tmp_fase_s_ug{self.__ug.id}'].valor} C")
 
         if ld[f"tmp_fase_t_ug{self.__ug.id}"].valor >= cd[f"tmp_fase_t_ug{self.__ug.id}"].valor_base:
-            logger.warning(f"[OCO-UG{self.__ug.id}] A temperatura de Fase T da UG passou do valor base! ({cd[f'tmp_fase_t_ug{self.__ug.id}'].valor_base} C) | Leitura: {ld[f'tmp_fase_t_ug{self.__ug.id}'].valor} C")
+            logger.debug(f"[OCO-UG{self.__ug.id}] A temperatura de Fase T da UG passou do valor base! ({cd[f'tmp_fase_t_ug{self.__ug.id}'].valor_base} C) | Leitura: {ld[f'tmp_fase_t_ug{self.__ug.id}'].valor} C")
 
         if ld[f"tmp_fase_t_ug{self.__ug.id}"].valor >= 0.9*(cd[f"tmp_fase_t_ug{self.__ug.id}"].valor_limite - cd[f"tmp_fase_t_ug{self.__ug.id}"].valor_base) + cd[f"tmp_fase_t_ug{self.__ug.id}"].valor_base:
             logger.critical(f"[OCO-UG{self.__ug.id}] A temperatura de Fase T da UG está muito próxima do limite! ({cd[f'tmp_fase_t_ug{self.__ug.id}'].valor_limite} C) | Leitura: {ld[f'tmp_fase_t_ug{self.__ug.id}'].valor} C")
 
         if ld[f"tmp_nucleo_estator_ug{self.__ug.id}"].valor >= cd[f"tmp_nucleo_estator_ug{self.__ug.id}"].valor_base:
-            logger.warning(f"[OCO-UG{self.__ug.id}] A temperatura do Núcleo Gerador Estator da UG passou do valor base! ({cd[f'tmp_nucleo_estator_ug{self.__ug.id}'].valor_base} C) | Leitura: {cd[f'tmp_nucleo_estator_ug{self.__ug.id}'].valor} C")
+            logger.debug(f"[OCO-UG{self.__ug.id}] A temperatura do Núcleo Gerador Estator da UG passou do valor base! ({cd[f'tmp_nucleo_estator_ug{self.__ug.id}'].valor_base} C) | Leitura: {cd[f'tmp_nucleo_estator_ug{self.__ug.id}'].valor} C")
 
         if ld[f"tmp_nucleo_estator_ug{self.__ug.id}"].valor >= 0.9*(cd[f"tmp_nucleo_estator_ug{self.__ug.id}"].valor_limite - cd[f"tmp_nucleo_estator_ug{self.__ug.id}"].valor_base) + cd[f"tmp_nucleo_estator_ug{self.__ug.id}"].valor_base:
             logger.critical(f"[OCO-UG{self.__ug.id}] A temperatura do Núcleo Gerador Estator da UG está muito próxima do limite! ({cd[f'tmp_nucleo_estator_ug{self.__ug.id}'].valor_limite} C) | Leitura: {cd[f'tmp_nucleo_estator_ug{self.__ug.id}'].valor} C")
 
         if ld[f"tmp_mancal_rad_dia_1_ug{self.__ug.id}"].valor >= cd[f"tmp_mancal_rad_dia_1_ug{self.__ug.id}"].valor_base:
-            logger.warning(f"[OCO-UG{self.__ug.id}] A temperatura do Mancal Radial Dianteiro 1 da UG passou do valor base! ({cd[f'tmp_mancal_rad_dia_1_ug{self.__ug.id}'].valor_base} C) | Leitura: {cd[f'tmp_mancal_rad_dia_1_ug{self.__ug.id}'].valor} C")
+            logger.debug(f"[OCO-UG{self.__ug.id}] A temperatura do Mancal Radial Dianteiro 1 da UG passou do valor base! ({cd[f'tmp_mancal_rad_dia_1_ug{self.__ug.id}'].valor_base} C) | Leitura: {cd[f'tmp_mancal_rad_dia_1_ug{self.__ug.id}'].valor} C")
 
         if ld[f"tmp_mancal_rad_dia_1_ug{self.__ug.id}"].valor >= 0.9*(cd[f"tmp_mancal_rad_dia_1_ug{self.__ug.id}"].valor_limite - cd[f"tmp_mancal_rad_dia_1_ug{self.__ug.id}"].valor_base) + cd[f"tmp_mancal_rad_dia_1_ug{self.__ug.id}"].valor_base:
             logger.critical(f"[OCO-UG{self.__ug.id}] A temperatura do Mancal Radial Dianteiro 1 da UG está muito próxima do limite! ({cd[f'tmp_mancal_rad_dia_1_ug{self.__ug.id}'].valor_limite} C) | Leitura: {cd[f'tmp_mancal_rad_dia_1_ug{self.__ug.id}'].valor} C")
 
         if ld[f"tmp_mancal_rad_dia_2_ug{self.__ug.id}"].valor >= cd[f"tmp_mancal_rad_dia_2_ug{self.__ug.id}"].valor_base:
-            logger.warning(f"[OCO-UG{self.__ug.id}] A temperatura do Mancal Radial Dianteiro 2 da UG passou do valor base! ({cd[f'tmp_mancal_rad_dia_2_ug{self.__ug.id}'].valor_base} C) | Leitura: {cd[f'tmp_mancal_rad_dia_2_ug{self.__ug.id}'].valor} C")
+            logger.debug(f"[OCO-UG{self.__ug.id}] A temperatura do Mancal Radial Dianteiro 2 da UG passou do valor base! ({cd[f'tmp_mancal_rad_dia_2_ug{self.__ug.id}'].valor_base} C) | Leitura: {cd[f'tmp_mancal_rad_dia_2_ug{self.__ug.id}'].valor} C")
 
         if ld[f"tmp_mancal_rad_dia_2_ug{self.__ug.id}"].valor >= 0.9*(cd[f"tmp_mancal_rad_dia_2_ug{self.__ug.id}"].valor_limite - cd[f"tmp_mancal_rad_dia_2_ug{self.__ug.id}"].valor_base) + cd[f"tmp_mancal_rad_dia_2_ug{self.__ug.id}"].valor_base:
             logger.critical(f"[OCO-UG{self.__ug.id}] A temperatura do Mancal Radial Dianteiro 2 da UG está muito próxima do limite! ({cd[f'tmp_mancal_rad_dia_2_ug{self.__ug.id}'].valor_limite} C) | Leitura: {cd[f'tmp_mancal_rad_dia_2_ug{self.__ug.id}'].valor} C")
 
         if ld[f"tmp_mancal_rad_tra_1_ug{self.__ug.id}"].valor >= cd[f"tmp_mancal_rad_tra_1_ug{self.__ug.id}"].valor_base:
-            logger.warning(f"[OCO-UG{self.__ug.id}] A temperatura do Mancal Radial Traseiro 1 da UG passou do valor base! ({cd[f'tmp_mancal_rad_tra_1_ug{self.__ug.id}'].valor_base} C) | Leitura: {cd[f'tmp_mancal_rad_tra_1_ug{self.__ug.id}'].valor} C")
+            logger.debug(f"[OCO-UG{self.__ug.id}] A temperatura do Mancal Radial Traseiro 1 da UG passou do valor base! ({cd[f'tmp_mancal_rad_tra_1_ug{self.__ug.id}'].valor_base} C) | Leitura: {cd[f'tmp_mancal_rad_tra_1_ug{self.__ug.id}'].valor} C")
 
         if ld[f"tmp_mancal_rad_tra_1_ug{self.__ug.id}"].valor >= 0.9*(cd[f"tmp_mancal_rad_tra_1_ug{self.__ug.id}"].valor_limite - cd[f"tmp_mancal_rad_tra_1_ug{self.__ug.id}"].valor_base) + cd[f"tmp_mancal_rad_tra_1_ug{self.__ug.id}"].valor_base:
             logger.critical(f"[OCO-UG{self.__ug.id}] A temperatura do Mancal Radial Traseiro 1 da UG está muito próxima do limite! ({cd[f'tmp_mancal_rad_tra_1_ug{self.__ug.id}'].valor_limite} C) | Leitura: {cd[f'tmp_mancal_rad_tra_1_ug{self.__ug.id}'].valor} C")
 
         if ld[f"tmp_mancal_rad_tra_2_ug{self.__ug.id}"].valor >= cd[f"tmp_mancal_rad_tra_2_ug{self.__ug.id}"].valor_base:
-            logger.warning(f"[OCO-UG{self.__ug.id}] A temperatura do Mancal Radial Traseiro 2 da UG passou do valor base! ({cd[f'tmp_mancal_rad_tra_2_ug{self.__ug.id}'].valor_base} C) | Leitura: {cd[f'tmp_mancal_rad_tra_2_ug{self.__ug.id}'].valor} C")
+            logger.debug(f"[OCO-UG{self.__ug.id}] A temperatura do Mancal Radial Traseiro 2 da UG passou do valor base! ({cd[f'tmp_mancal_rad_tra_2_ug{self.__ug.id}'].valor_base} C) | Leitura: {cd[f'tmp_mancal_rad_tra_2_ug{self.__ug.id}'].valor} C")
 
         if ld[f"tmp_mancal_rad_tra_2_ug{self.__ug.id}"].valor >= 0.9*(cd[f"tmp_mancal_rad_tra_2_ug{self.__ug.id}"].valor_limite - cd[f"tmp_mancal_rad_tra_2_ug{self.__ug.id}"].valor_base) + cd[f"tmp_mancal_rad_tra_2_ug{self.__ug.id}"].valor_base:
             logger.critical(f"[OCO-UG{self.__ug.id}] A temperatura do Mancal Radial Traseiro 2 da UG está muito próxima do limite! ({cd[f'tmp_mancal_rad_tra_2_ug{self.__ug.id}'].valor_limite} C) | Leitura: {cd[f'tmp_mancal_rad_tra_2_ug{self.__ug.id}'].valor} C")
 
         if ld[f"tmp_saida_de_ar_ug{self.__ug.id}"].valor >= cd[f"tmp_saida_de_ar_ug{self.__ug.id}"].valor_base:
-            logger.warning(f"[OCO-UG{self.__ug.id}] A temperatura da Saída de Ar da UG passou do valor base! ({cd[f'tmp_saida_de_ar_ug{self.__ug.id}'].valor_base} C) | Leitura: {cd[f'tmp_saida_de_ar_ug{self.__ug.id}'].valor} C")
+            logger.debug(f"[OCO-UG{self.__ug.id}] A temperatura da Saída de Ar da UG passou do valor base! ({cd[f'tmp_saida_de_ar_ug{self.__ug.id}'].valor_base} C) | Leitura: {cd[f'tmp_saida_de_ar_ug{self.__ug.id}'].valor} C")
 
         if ld[f"tmp_saida_de_ar_ug{self.__ug.id}"].valor >= 0.9*(cd[f"tmp_saida_de_ar_ug{self.__ug.id}"].valor_limite - cd[f"tmp_saida_de_ar_ug{self.__ug.id}"].valor_base) + cd[f"tmp_saida_de_ar_ug{self.__ug.id}"].valor_base:
             logger.critical(f"[OCO-UG{self.__ug.id}] A temperatura da Saída de Ar da UG está muito próxima do limite! ({cd[f'tmp_saida_de_ar_ug{self.__ug.id}'].valor_limite} C) | Leitura: {cd[f'tmp_saida_de_ar_ug{self.__ug.id}'].valor} C")
 
         if ld[f"tmp_mancal_guia_escora_ug{self.__ug.id}"].valor >= cd[f"tmp_mancal_guia_escora_ug{self.__ug.id}"].valor_base:
-            logger.warning(f"[OCO-UG{self.__ug.id}] A temperatura do Mancal Guia Escora da UG passou do valor base! ({cd[f'tmp_mancal_guia_escora_ug{self.__ug.id}'].valor_base} C) | Leitura: {cd[f'tmp_mancal_guia_escora_ug{self.__ug.id}'].valor} C")
+            logger.debug(f"[OCO-UG{self.__ug.id}] A temperatura do Mancal Guia Escora da UG passou do valor base! ({cd[f'tmp_mancal_guia_escora_ug{self.__ug.id}'].valor_base} C) | Leitura: {cd[f'tmp_mancal_guia_escora_ug{self.__ug.id}'].valor} C")
 
         if ld[f"tmp_mancal_guia_escora_ug{self.__ug.id}"].valor >= 0.9*(cd[f"tmp_mancal_guia_escora_ug{self.__ug.id}"].valor_limite - cd[f"tmp_mancal_guia_escora_ug{self.__ug.id}"].valor_base) + cd[f"tmp_mancal_guia_escora_ug{self.__ug.id}"].valor_base:
             logger.critical(f"[OCO-UG{self.__ug.id}] A temperatura do Mancal Guia Escora da UG está muito próxima do limite! ({cd[f'tmp_mancal_guia_escora_ug{self.__ug.id}'].valor_limite} C) | Leitura: {cd[f'tmp_mancal_guia_escora_ug{self.__ug.id}'].valor} C")
 
         if ld[f"tmp_mancal_guia_radial_ug{self.__ug.id}"].valor >= cd[f"tmp_mancal_guia_radial_ug{self.__ug.id}"].valor_base:
-            logger.warning(f"[OCO-UG{self.__ug.id}] A temperatura do Mancal Guia Radial da UG passou do valor base! ({cd[f'tmp_mancal_guia_radial_ug{self.__ug.id}'].valor_base} C) | Leitura: {cd[f'tmp_mancal_guia_radial_ug{self.__ug.id}'].valor} C")
+            logger.debug(f"[OCO-UG{self.__ug.id}] A temperatura do Mancal Guia Radial da UG passou do valor base! ({cd[f'tmp_mancal_guia_radial_ug{self.__ug.id}'].valor_base} C) | Leitura: {cd[f'tmp_mancal_guia_radial_ug{self.__ug.id}'].valor} C")
 
         if ld[f"tmp_mancal_guia_radial_ug{self.__ug.id}"].valor >= 0.9*(cd[f"tmp_mancal_guia_radial_ug{self.__ug.id}"].valor_limite - cd[f"tmp_mancal_guia_radial_ug{self.__ug.id}"].valor_base) + cd[f"tmp_mancal_guia_radial_ug{self.__ug.id}"].valor_base:
             logger.critical(f"[OCO-UG{self.__ug.id}] A temperatura do Mancal Guia Radial da UG está muito próxima do limite! ({cd[f'tmp_mancal_guia_radial_ug{self.__ug.id}'].valor_limite} C) | Leitura: {cd[f'tmp_mancal_guia_radial_ug{self.__ug.id}'].valor} C")
 
         if ld[f"tmp_mancal_guia_contra_ug{self.__ug.id}"].valor >= cd[f"tmp_mancal_guia_contra_ug{self.__ug.id}"].valor_base:
-            logger.warning(f"[OCO-UG{self.__ug.id}] A temperatura do Mancal Guia Contra Escora da UG passou do valor base! ({cd[f'tmp_mancal_guia_contra_ug{self.__ug.id}'].valor_base} C) | Leitura: {cd[f'tmp_mancal_guia_contra_ug{self.__ug.id}'].valor} C")
+            logger.debug(f"[OCO-UG{self.__ug.id}] A temperatura do Mancal Guia Contra Escora da UG passou do valor base! ({cd[f'tmp_mancal_guia_contra_ug{self.__ug.id}'].valor_base} C) | Leitura: {cd[f'tmp_mancal_guia_contra_ug{self.__ug.id}'].valor} C")
 
         if ld[f"tmp_mancal_guia_contra_ug{self.__ug.id}"].valor >= 0.9*(cd[f"tmp_mancal_guia_contra_ug{self.__ug.id}"].valor_limite - cd[f"tmp_mancal_guia_contra_ug{self.__ug.id}"].valor_base) + cd[f"tmp_mancal_guia_contra_ug{self.__ug.id}"].valor_base:
             logger.critical(f"[OCO-UG{self.__ug.id}] A temperatura do Mancal Guia Contra Escora da UG está muito próxima do limite! ({cd[f'tmp_mancal_guia_contra_ug{self.__ug.id}'].valor_limite} C) | Leitura: {cd[f'tmp_mancal_guia_contra_ug{self.__ug.id}'].valor} C")
 
         if ld[f"pressao_cx_espiral_ug2"].valor <= ad[f"aviso_caixa_espiral_ug2"] and self.__ug.etapa_atual == UG_SINCRONIZADA and self.__ug.leitura_potencia >= 1360 and self.__ug.id == 2:
-            logger.warning(f"[OCO-UG{self.__ug.id}] A pressão Caixa Espiral da UG passou do valor estipulado! ({ad[f'aviso_caixa_espiral_ug{self.__ug.id}']:03.2f} KGf/m2) | Leitura: {ld[f'pressao_cx_espiral_ug{self.__ug.id}'].valor:03.2f}")
+            logger.debug(f"[OCO-UG{self.__ug.id}] A pressão Caixa Espiral da UG passou do valor estipulado! ({ad[f'aviso_caixa_espiral_ug{self.__ug.id}']:03.2f} KGf/m2) | Leitura: {ld[f'pressao_cx_espiral_ug{self.__ug.id}'].valor:03.2f}")
 
 
     def leitura_temporizada(self) -> "None":
