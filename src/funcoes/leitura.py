@@ -28,12 +28,14 @@ class LeituraModbus:
         self.__descricao = descricao
         self.__fundo_escala = fundo_escala
 
+
     def __str__(self) -> "str":
         """
         Função que retorna string com detalhes da leitura para logger.
         """
 
         return f"Leitura {self.__descricao}, Valor: {self.valor}"
+
 
     @property
     def descricao(self) -> "str":
@@ -74,6 +76,13 @@ class LeituraModbus:
         return (self.raw * self.__escala) + self.__fundo_escala
 
 
+    ### EXPERIMENTAL ###
+
+    def ler(self, leituras) -> 'bool':
+
+        return leituras[self.__registrador]
+
+
 class LeituraModbusBit(LeituraModbus):
     def __init__(self, client: "ModbusClient", registrador: "list[int, int]", invertido: "bool"=False, descricao: "str"=None) -> "None":
         super().__init__(client, registrador, descricao)
@@ -84,6 +93,13 @@ class LeituraModbusBit(LeituraModbus):
         self.__bit = registrador[1]
         self.__invertido = invertido
         self.__descricao = descricao
+
+
+    @property
+    def reg(self) -> "int":
+        # PROPRIEDADE -> Retorna o registrador
+
+        return self.__reg
 
     @property
     def descricao(self) -> "str":
@@ -115,8 +131,6 @@ class LeituraModbusBit(LeituraModbus):
         try:
             leitura = self.raw
 
-            # debug_log.debug(f"[LEITURA-BIT] Descrição: {self.descricao} | Leitura RAW: {self.raw}")
-
             dec_1 = BPD.fromRegisters(leitura, byteorder=Endian.LITTLE, wordorder=Endian.BIG)
             dec_2 = BPD.fromRegisters(leitura, byteorder=Endian.LITTLE, wordorder=Endian.BIG)
 
@@ -124,8 +138,31 @@ class LeituraModbusBit(LeituraModbus):
 
             lbit_r = [b for b in reversed(lbit)]
 
-            # debug_log.debug(f"[LEITURA-BIT] Lista de Bits: {lbit_r}")
-            # debug_log.debug("")
+            for i in range(len(lbit_r)):
+                if self.__bit == i:
+                    return not lbit_r[i] if self.__invertido else lbit_r[i]
+
+        except Exception:
+            logger.debug(f"[LEI] Erro na Leitura BIT do REG: {self.__descricao} | Endereço: {self.__reg} | Bit: {self.__bit}")
+            logger.debug(traceback.format_exc())
+            sleep(1)
+            return None
+
+
+
+    ### EXPERIMENTAL! ###
+
+    def ler(self, leituras: "list") -> 'bool':
+        
+        aux = [leituras[self.reg], leituras[self.reg+1]]
+
+        try:
+            dec_1 = BPD.fromRegisters(aux, byteorder=Endian.LITTLE, wordorder=Endian.BIG)
+            dec_2 = BPD.fromRegisters(aux, byteorder=Endian.LITTLE, wordorder=Endian.BIG)
+
+            lbit = [int(b) for bits in [reversed(dec_1.decode_bits(1)), reversed(dec_2.decode_bits(2))] for b in bits]
+
+            lbit_r = [b for b in reversed(lbit)]
 
             for i in range(len(lbit_r)):
                 if self.__bit == i:

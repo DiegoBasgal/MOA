@@ -187,6 +187,8 @@ class Usina:
         self.db_emergencia = True
         self.clp_emergencia = True
 
+        return
+
         try:
             [EMB.escrever_bit(self.clp[f"UG{ug.id}"], REG_CLP[f"UG{ug.id}"][f"PARADA_CMD_EMERGENCIA"], valor=1) for ug in self.ugs]
             sleep(5)

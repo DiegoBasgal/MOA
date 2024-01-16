@@ -36,10 +36,10 @@ class UnidadeGeracao:
             self.__id = id
 
         self.__db = db
-        self.__cfg = cfg
+
+        self.cfg = cfg
 
         self.cp = cp
-
         self.rv = serv.rv
         self.rt = serv.rt
         self.clp = serv.clp
@@ -78,8 +78,8 @@ class UnidadeGeracao:
         self._ultima_etapa: "int" = 0
         self._tentativas_normalizacao: "int" = 0
 
-        self._setpoint_minimo: "float" = self.__cfg["pot_minima"]
-        self._setpoint_maximo: "float" = self.__cfg[f"pot_maxima_ug{self.id}"]
+        self._setpoint_minimo: "float" = self.cfg["pot_minima"]
+        self._setpoint_maximo: "float" = self.cfg[f"pot_maxima_ug{self.id}"]
 
         self._condicionadores: "list[c.CondicionadorBase]" = []
         self._condicionadores_essenciais: "list[c.CondicionadorBase]" = []
@@ -226,14 +226,14 @@ class UnidadeGeracao:
     def setpoint(self, var: "int") -> "None":
         # SETTER -> Atribui o novo valor de setpoint da Unidade.
 
-        if var < self.__cfg["pot_minima"]:
+        if var < self.cfg["pot_minima"]:
             if self.manter_unidades:
-                self._setpoint = self.__cfg["pot_minima"]
+                self._setpoint = self.cfg["pot_minima"]
             else:
                 self._setpoint = 0
 
-        elif var > self.__cfg[f"pot_maxima_ug{self.id}"]:
-            self._setpoint = self.__cfg[f"pot_maxima_ug{self.id}"]
+        elif var > self.cfg[f"pot_maxima_ug{self.id}"]:
+            self._setpoint = self.cfg[f"pot_maxima_ug{self.id}"]
 
         else:
             self._setpoint = int(var)
@@ -499,11 +499,11 @@ class UnidadeGeracao:
         try:
 
             if setpoint_kw > 1:
-                self.setpoint_minimo = self.__cfg["pot_minima"]
-                self.setpoint_maximo = self.__cfg[f"pot_maxima_ug{self.id}"]
+                self.setpoint_minimo = self.cfg["pot_minima"]
+                self.setpoint_maximo = self.cfg[f"pot_maxima_ug{self.id}"]
 
                 self.setpoint = int(setpoint_kw)
-                setpoint_porcento = ((self.setpoint / self.__cfg[f"pot_maxima_ug"]) * 10000)
+                setpoint_porcento = ((self.setpoint / self.cfg[f"pot_maxima_ug"]) * 10000)
 
                 logger.debug(f"[UG{self.id}]          Enviando setpoint:         {self.setpoint} kW ({setpoint_porcento / 100:2.2f} %)")
 
@@ -754,7 +754,7 @@ class UnidadeGeracao:
         """
 
         if self.etapa == UG_PARADA:
-            if self.setpoint >= self.__cfg["pot_minima"]:
+            if self.setpoint >= self.cfg["pot_minima"]:
                 self.controlar_comporta()
 
             elif self.setpoint == 0 and not self.borda_cp_fechar:
@@ -764,7 +764,7 @@ class UnidadeGeracao:
                     self.borda_cp_fechar = False
 
         elif self.etapa == UG_PARANDO:
-            if self.setpoint >= self.__cfg["pot_minima"]:
+            if self.setpoint >= self.cfg["pot_minima"]:
                 self.enviar_setpoint(self.setpoint)
 
         elif self.etapa == UG_SINCRONIZANDO:
@@ -822,7 +822,7 @@ class UnidadeGeracao:
 
             elif self.cp[f"CP{self.id}"].etapa == CP_ABERTA:
 
-                if self.setpoint >= self.__cfg["pot_minima"]:
+                if self.setpoint >= self.cfg["pot_minima"]:
                     self.partir()
 
             elif self.cp[f"CP{self.id}"].etapa == CP_MANUAL:

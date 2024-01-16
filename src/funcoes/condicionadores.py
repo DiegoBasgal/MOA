@@ -22,12 +22,14 @@ class CondicionadorBase:
 
         self._ugs: "list[UnidadeGeracao]" = []
 
+
     def __str__(self) -> "str":
         """
         Função que retorna string com detalhes do condicionador para logger.
         """
 
         return f"Condicionador: {self.__descricao}, Gravidade: {CONDIC_STR_DCT[self.gravidade]}"
+
 
     @property
     def leitura(self) -> "float":
@@ -62,9 +64,10 @@ class CondicionadorBase:
             return False if ug is not None and ug.etapa in self.__etapas and self.leitura == 0 else False
         else:
             return False if self.leitura == 0 else True
-        
+
     @property
     def teste(self) -> "bool":
+        # PROPRIEDADE -> Retorna se o Condicionador está com a Flag de Teste
 
         return self.__teste
 
@@ -79,6 +82,19 @@ class CondicionadorBase:
         # SETTER -> Atribui a nova lista de instâncias das Unidades de Geração.
 
         self._ugs = var
+
+
+    ### EXPERIMENTAL ###
+
+    def status(self, leituras) -> "bool":
+
+        leitura = self.__leitura.ler(leituras)
+
+        if self.__id_unidade and self.__etapas:
+            ug: "UnidadeGeracao" = [ug if ug.id == self.__id_unidade else None for ug in self.ugs]
+            return False if ug is not None and ug.etapa in self.__etapas and not leitura else False
+        else:
+            return False if not leitura else True
 
 
 class CondicionadorExponencial(CondicionadorBase):

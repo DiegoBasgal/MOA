@@ -107,73 +107,73 @@ def monitoramento_view(request, *args, **kwargs):
         context["se_lt_c"] = "???"
 
 
-    if clp_tda.open():
-        l_nv = clp_tda.read_holding_registers(31, 2)
-        l_cp1_b0 = clp_tda.read_holding_registers(0, 2)
-        l_cp2_b0 = clp_tda.read_holding_registers(0, 2)
-        l_cp1_b1 = clp_tda.read_holding_registers(1, 2)
-        clp_tda.close()
+    # if clp_tda.open():
+    #     l_nv = clp_tda.read_holding_registers(31, 2)
+    #     l_cp1_b0 = clp_tda.read_holding_registers(0, 2)
+    #     l_cp2_b0 = clp_tda.read_holding_registers(0, 2)
+    #     l_cp1_b1 = clp_tda.read_holding_registers(1, 2)
+    #     clp_tda.close()
 
-        dec_l_nv = BPD.fromRegisters(l_nv, byteorder=Endian.BIG, wordorder=Endian.LITTLE)
-        val_l_nv = dec_l_nv.decode_32bit_float()
+    #     dec_l_nv = BPD.fromRegisters(l_nv, byteorder=Endian.BIG, wordorder=Endian.LITTLE)
+    #     val_l_nv = dec_l_nv.decode_32bit_float()
 
-        context["nv_montante"] = f"{val_l_nv:0.3f}"
+    #     context["nv_montante"] = f"{val_l_nv:0.3f}"
 
-        if 462 <= val_l_nv <= 462.37:
+    #     if 462 <= val_l_nv <= 462.37:
+    #         context["tag"] = 0
+    #     elif 461.85 < val_l_nv < 462:
+    #         context["tag"] = 1
+    #     elif val_l_nv <= 461.37 or val_l_nv > 462.37:
+    #         context["tag"] = 2
+
+    #     dec1_cp1_b0 = BPD.fromRegisters(l_cp1_b0, byteorder=Endian.BIG, wordorder=Endian.LITTLE)
+    #     dec2_cp1_b0 = BPD.fromRegisters(l_cp1_b0, byteorder=Endian.BIG, wordorder=Endian.LITTLE)
+    #     lbit = [int(bit) for bits in [reversed(dec1_cp1_b0.decode_bits(1)), reversed(dec2_cp1_b0.decode_bits(2))] for bit in bits]
+    #     lbit_r = [b for b in reversed(lbit)]
+
+    #     if lbit_r[0]:
+    #         context["cp1_etapa"] = 2
+    #     if lbit_r[6]:
+    #         context["cp1_etapa"] = 5
+
+    #     dec1_cp1_b1 = BPD.fromRegisters(l_cp1_b1, byteorder=Endian.BIG, wordorder=Endian.LITTLE)
+    #     dec2_cp1_b1 = BPD.fromRegisters(l_cp1_b1, byteorder=Endian.BIG, wordorder=Endian.LITTLE)
+    #     lbit = [int(bit) for bits in [reversed(dec1_cp1_b1.decode_bits(1)), reversed(dec2_cp1_b1.decode_bits(2))] for bit in bits]
+    #     lbit_r = [b for b in reversed(lbit)]
+
+    #     if lbit_r[14]:
+    #         context["cp1_etapa"] = 1
+    #     elif lbit_r[15]:
+    #         context["cp1_etapa"] = 0
+
+    #     dec1_cp2_b0 = BPD.fromRegisters(l_cp2_b0, byteorder=Endian.BIG, wordorder=Endian.LITTLE)
+    #     dec2_cp2_b0 = BPD.fromRegisters(l_cp2_b0, byteorder=Endian.BIG, wordorder=Endian.LITTLE)
+    #     lbit = [int(bit) for bits in [reversed(dec1_cp2_b0.decode_bits(1)), reversed(dec2_cp2_b0.decode_bits(2))] for bit in bits]
+    #     lbit_r = [b for b in reversed(lbit)]
+    #     if lbit_r[1]:
+    #         context["cp2_etapa"] = 1
+    #     elif lbit_r[2]:
+    #         context["cp2_etapa"] = 0
+    #     elif lbit_r[3]:
+    #         context["cp2_etapa"] = 2
+    #     if lbit_r[9]:
+    #         context["cp2_remoto"] = 5
+
+    # else:
+    if usina.modo_autonomo:
+        context["cp1_etapa"] = usina.ug1_pos_comporta
+        context["cp2_etapa"] = usina.ug2_pos_comporta
+        context["nv_montante"] = usina.nv_montante
+
+        if 462 <= usina.nv_montante <= 462.37:
             context["tag"] = 0
-        elif 461.85 < val_l_nv < 462:
+        elif 461.85 < usina.nv_montante < 462:
             context["tag"] = 1
-        elif val_l_nv <= 461.37 or val_l_nv > 462.37:
+        elif usina.nv_montante <= 461.37 or usina.nv_montante > 462.37:
             context["tag"] = 2
-
-        dec1_cp1_b0 = BPD.fromRegisters(l_cp1_b0, byteorder=Endian.BIG, wordorder=Endian.LITTLE)
-        dec2_cp1_b0 = BPD.fromRegisters(l_cp1_b0, byteorder=Endian.BIG, wordorder=Endian.LITTLE)
-        lbit = [int(bit) for bits in [reversed(dec1_cp1_b0.decode_bits(1)), reversed(dec2_cp1_b0.decode_bits(2))] for bit in bits]
-        lbit_r = [b for b in reversed(lbit)]
-
-        if lbit_r[0]:
-            context["cp1_etapa"] = 2
-        if lbit_r[6]:
-            context["cp1_etapa"] = 5
-
-        dec1_cp1_b1 = BPD.fromRegisters(l_cp1_b1, byteorder=Endian.BIG, wordorder=Endian.LITTLE)
-        dec2_cp1_b1 = BPD.fromRegisters(l_cp1_b1, byteorder=Endian.BIG, wordorder=Endian.LITTLE)
-        lbit = [int(bit) for bits in [reversed(dec1_cp1_b1.decode_bits(1)), reversed(dec2_cp1_b1.decode_bits(2))] for bit in bits]
-        lbit_r = [b for b in reversed(lbit)]
-
-        if lbit_r[14]:
-            context["cp1_etapa"] = 1
-        elif lbit_r[15]:
-            context["cp1_etapa"] = 0
-
-        dec1_cp2_b0 = BPD.fromRegisters(l_cp2_b0, byteorder=Endian.BIG, wordorder=Endian.LITTLE)
-        dec2_cp2_b0 = BPD.fromRegisters(l_cp2_b0, byteorder=Endian.BIG, wordorder=Endian.LITTLE)
-        lbit = [int(bit) for bits in [reversed(dec1_cp2_b0.decode_bits(1)), reversed(dec2_cp2_b0.decode_bits(2))] for bit in bits]
-        lbit_r = [b for b in reversed(lbit)]
-        if lbit_r[1]:
-            context["cp2_etapa"] = 1
-        elif lbit_r[2]:
-            context["cp2_etapa"] = 0
-        elif lbit_r[3]:
-            context["cp2_etapa"] = 2
-        if lbit_r[9]:
-            context["cp2_remoto"] = 5
-
     else:
-        if usina.modo_autonomo:
-            context["cp1_etapa"] = usina.ug1_pos_comporta
-            context["cp2_etapa"] = usina.ug2_pos_comporta
-            context["nv_montante"] = usina.nv_montante
-
-            if 462 <= usina.nv_montante <= 462.37:
-                context["tag"] = 0
-            elif 461.85 < usina.nv_montante < 462:
-                context["tag"] = 1
-            elif usina.nv_montante <= 461.37 or usina.nv_montante > 462.37:
-                context["tag"] = 2
-        else:
-            context["cp1_etapa"] = 99
-            context["cp2_etapa"] = 99
+        context["cp1_etapa"] = 99
+        context["cp2_etapa"] = 99
 
 
     if rv_ug1.open():
