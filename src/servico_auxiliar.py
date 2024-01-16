@@ -296,10 +296,16 @@ class ServicoAuxiliar:
 
         # LEITURA PERIÓDICA
         self.l_sis_agua_bomba_disp = LeituraModbusBit(self.clp["SA"], REG_CLP["SA"]["SIS_AGUA_BOMBA_DISPONIVEL"], descricao="[SA]  Sistem Água Bomba Disponível")
-
+        # A leitura acontece diversas vezes no mesmo registrador. Aparentemente, o CLP recusa esse tipo de operação.
+        # Uma solução elegante é ler apenas uma vez o registrador e distribuir para as variáveis, ao invés de cada variável executar uma leitura.
+        # Quando uma pausa é feita entre leituras do mesmo registrador, o problema não acontece.
+        sleep(1)
         self.l_falha_bomba_dren_1 = LeituraModbusBit(self.clp["SA"], REG_CLP["SA"]["BOMBA_DREN_1_FLH"], descricao="[SA]  Bomba Drenagem 1 Falha")
+        sleep(1)
         self.l_falha_bomba_dren_2 = LeituraModbusBit(self.clp["SA"], REG_CLP["SA"]["BOMBA_DREN_2_FLH"], descricao="[SA]  Bomba Drenagem 2 Falha")
+        sleep(1)
         self.l_falha_bomba_dren_3 = LeituraModbusBit(self.clp["SA"], REG_CLP["SA"]["BOMBA_DREN_3_FLH"], descricao="[SA]  Bomba Drenagem 3 Falha")
+        sleep(1)
         self.l_poco_dren_dicrepancia = LeituraModbusBit(self.clp["SA"], REG_CLP["SA"]["POCO_DREN_DISCRE_BOIAS"], descricao="[SA]  Boias Poço Drenagem Discrepância")
         self.l_sis_agua_falha_ligar_bomba = LeituraModbusBit(self.clp["SA"], REG_CLP["SA"]["SIS_AGUA_FLH_LIGA_BOMBA"], descricao="[SA]  Sistema Água Falha Ligar Bomba")
         self.l_djs_barra_sel_remoto = LeituraModbusBit(self.clp["SA"], REG_CLP["SA"]["DJS_BARRA_SELETORA_REMOTO"], invertido=True, descricao="[SA]  Disjuntores Barra Seletora Modo Remoto")
@@ -317,4 +323,4 @@ class ServicoAuxiliar:
         self.l_alarme_sis_incendio_atuado = LeituraModbusBit(self.clp["SA"], REG_CLP["SA"]["SIS_INCENDIO_ALM_ATUADO"], descricao="[SA]  Sistem Incêndio Alarme Atuado")
         self.l_alarme_sis_seguranca_atuado = LeituraModbusBit(self.clp["SA"], REG_CLP["SA"]["SIS_SEGURANCA_ALM_ATUADO"], descricao="[SA]  Sistema Segurança Alarme Atuado")
         self.l_nivel_muito_alto_poco_dren = LeituraModbusBit(self.clp["SA"], REG_CLP["SA"]["POCO_DREN_NV_MUITO_ALTO"], descricao="[SA]  Poço Drenagem Nível Muito Alto")
-        self.l_falha_tubo_succao_bomba_recalque = LeituraModbusBit(self.clp["SA"], REG_CLP["SA"]["BOMBA_RECALQUE_TUBO_SUCCAO_FALHA"], descricao="[SA]  Bomba Recalque Falha Tubo Sucção")
+        #self.l_falha_tubo_succao_bomba_recalque = LeituraModbusBit(self.clp["SA"], REG_CLP["SA"]["BOMBA_RECALQUE_TUBO_SUCCAO_FALHA"], descricao="[SA]  Bomba Recalque Falha Tubo Sucção")

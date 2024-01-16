@@ -395,9 +395,13 @@ class Subestacao:
 
         # LEITURA PERIÓDICA
         self.l_seletora_52L_remoto = LeituraModbusBit(self.rele["SE"], REG_CLP["SE"]["DJL_SELETORA_REMOTO"], invertido=True, descricao="[SE]  Disjuntor Linha Seletora Modo Remoto")
-        self.l_alarme_temp_oleo_te = LeituraModbusBit(self.clp["SA"], REG_CLP["SE"]["TE_ALM_TMP_OLEO"], descricao="[SE]  Transformador Elevador Alarme Temperatura Óleo")
         self.l_falha_temp_oleo_te = LeituraModbusBit(self.clp["SA"], REG_CLP["SE"]["TE_FLH_LER_TMP_OLEO"], descricao="[SE]  Transformador Elevador Falha Leitura Temperatura Óleo")
         self.l_nv_muito_baixo_oleo_te = LeituraModbusBit(self.clp["SA"], REG_CLP["SE"]["TE_NV_OLEO_MUITO_BAIXO"], descricao="[SE]  Transformador Elevador Nível Óleo Muito Baixo")
-        self.l_alarme_temp_oleo_te = LeituraModbusBit(self.clp["SA"], REG_CLP["SE"]["TE_ALM_TMP_OLEO"], descricao="[SE]  Transformador Elevador Alarme Temperatura Óleo")
-        self.l_alarme_temp_enrola_te = LeituraModbusBit(self.clp["SA"], REG_CLP["SE"]["TE_ALM_TMP_ENROL"], descricao="[SE]  Transformador Elevador Alarme Temperatura Enrolamento")
-        self.l_falha_ler_temp_enrola_te = LeituraModbusBit(self.clp["SA"], REG_CLP["SE"]["TE_FLH_LER_TMP_ENROL"], descricao="[SE]  Transformador Elevador Falha Leitura Temperatura Enrolamento")
+        
+        # Há 2 repetidos:
+        # O clp que estava tentando consultar era o do SA, quando deveria ser o endereço do SE
+        self.l_alarme_temp_oleo_te = LeituraModbusBit(self.rele["SE"], REG_CLP["SE"]["TE_ALM_TMP_OLEO"], descricao="[SE]  Transformador Elevador Alarme Temperatura Óleo")
+        self.l_alarme_temp_oleo_te = LeituraModbusBit(self.rele["SE"], REG_CLP["SE"]["TE_ALM_TMP_OLEO"], descricao="[SE]  Transformador Elevador Alarme Temperatura Óleo")
+        
+        self.l_alarme_temp_enrola_te = LeituraModbusBit(self.rele["SE"], REG_CLP["SE"]["TE_ALM_TMP_ENROL"], descricao="[SE]  Transformador Elevador Alarme Temperatura Enrolamento")
+        self.l_falha_ler_temp_enrola_te = LeituraModbusBit(self.rele["SE"], REG_CLP["SE"]["TE_FLH_LER_TMP_ENROL"], descricao="[SE]  Transformador Elevador Falha Leitura Temperatura Enrolamento")

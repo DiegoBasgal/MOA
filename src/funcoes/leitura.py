@@ -202,4 +202,5 @@ class LeituraSoma:
             return max(0, [sum(leitura.valor for leitura in self.__leituras)])
 
         else:
+            logger.debug("leituras = ", self.__leituras)
             return [sum(leitura.valor for leitura in self.__leituras)]

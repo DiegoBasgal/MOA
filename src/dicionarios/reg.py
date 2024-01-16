@@ -379,12 +379,14 @@ REG_CLP = {
         "RETI_SUBTEN":                                  [0, 15],
 
         # Bomba Drenagem/Filtragem
-        "BOMBA_FILT_FLH":                               [1, 6],
-        "BOMBA_DREN_1_FLH":                             [1, 0],
-        "BOMBA_DREN_2_FLH":                             [1, 2],
-        "BOMBA_DREN_3_FLH":                             [1, 4],
-        "BOMBA_DREN_UNIDADES_FLH":                      [1, 12],
-        "BOMBA_RECALQUE_TUBO_SUCCAO_FALHA":             [1, 12],
+        # Endereços estavam errados
+        "BOMBA_FILT_FLH":                               [0, 6],
+        "BOMBA_DREN_1_FLH":                             [0, 0],
+        "BOMBA_DREN_2_FLH":                             [0, 2],
+        "BOMBA_DREN_3_FLH":                             [0, 4],
+        "BOMBA_DREN_UNIDADES_FLH":                      [0, 12],
+        #Não sei do que se trata esse endereço, estava igual ao de cima
+        #"BOMBA_RECALQUE_TUBO_SUCCAO_FALHA":             [1, 12],
 
 
         ## ENTRADAS_DIGITAIS_2 -> REGS: 3, 2

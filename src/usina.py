@@ -86,7 +86,7 @@ class Usina:
 
         # ATRIBUIÇÃO DE VARIÁVEIS PÚBLICAS
 
-        self.estado_moa: "int" = 0
+        self.estado_moa: "int" = 5
 
         self.pot_disp: "int" = 0
         self.ug_operando: "int" = 0
