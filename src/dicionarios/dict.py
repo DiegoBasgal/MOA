@@ -115,6 +115,9 @@ voip: "dict[str, list[bool | str]]" = {
     "UHCD_TEMPE_OLEO_HH": [False, 0, "Atenção! Foi identificado que a temperatura do Óleo da UHCD está Muito Alta na PCH Ado Popinhak, por favor analisar a situação. Atenção! Foi identificado que a temperatura do Óleo da UHCD está Muito Alta na PCH Ado Popinhak, por favor analisar a situação."],
     # "UHCD_TEMPERATURA_OLEO": [False, 0, "Atenção! Foi identificado que  na PCH Ado Popinhak, por favor analisar a situação. Atenção! Foi identificado que  na PCH Ado Popinhak, por favor analisar a situação."],
     # "UHCD_NIVEL_OLEO": [False, 0, "Atenção! Foi identificado que  na PCH Ado Popinhak, por favor analisar a situação. Atenção! Foi identificado que  na PCH Ado Popinhak, por favor analisar a situação."],
+    "AD_CP1_ACION_LOCAL": [False, 0, "Atenção! Foi identificado que a Comporta 1 das Adufas entrou em Acionamento Local na PCH Ado Popinhak, por favor analisar a situação. Atenção! Foi identificado que a Comporta 1 das Adufas entrou em Acionamento Local na PCH Ado Popinhak, por favor analisar a situação."],
+    "AD_CP2_ACION_LOCAL": [False, 0, "Atenção! Foi identificado que a Comporta 2 das Adufas entrou em Acionamento Local na PCH Ado Popinhak, por favor analisar a situação. Atenção! Foi identificado que a Comporta 2 das Adufas entrou em Acionamento Local na PCH Ado Popinhak, por favor analisar a situação."],
+
 
     # UGs
     "UG1_OPER_MODO_LOCAL": [False, 0, "Atenção! Foi identificado que a UG1 entrou em Modo de Operação Local na PCH Ado Popinhak, por favor analisar a situação. Atenção! Foi identificado que a UG1 entrou em Modo de Operação Local na PCH Ado Popinhak, por favor analisar a situação."],

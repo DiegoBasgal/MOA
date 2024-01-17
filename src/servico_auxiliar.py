@@ -117,6 +117,211 @@ class ServicoAuxiliar:
         em períodos separados por um tempo pré-definido.
         """
 
+        if cls.l_alm_03_b_13.valor:
+            logger.warning(f"[SA]  Foi identificado que os Comandos do Serviço Auxiliar entraram em Modo Manual. Favor Verificar.")
+
+        if cls.l_alm_04_b_00.valor:
+            logger.warning(f"[SA]  Foi identificado que o Quadro de Transferência entrou em Modo Local. Favor Verificar.")
+
+        if cls.l_alm_04_b_01.valor:
+            logger.warning(f"[SA]  Foi identificado um Alarme de Sobretemperatura do Enrolamento do Transformador do Serviço Auxiliar TSA-01. Favor Verificar.")
+
+        if cls.l_alm_04_b_03.valor:
+            logger.warning(f"[SA]  Foi identificada uma Falha no relé de Monitoramento de Temperatura do Transformador do Serviço Auxiliar TSA-01. Favor Verificar.")
+
+        if cls.l_alm_04_b_07.valor:
+            logger.warning(f"[SA]  Foi identificada uma Falha no relé de Monitoramento de Temperatura do Transformador do Serviço Auxiliar TSA-02. Favor Verificar.")
+
+        if cls.l_alm_07_b_02.valor:
+            logger.warning(f"[SA]  Foi identificado que o Nível do Poço de Drenagem está Muito Alto. Favor Verificar.")
+
+        if cls.l_alm_07_b_05.valor:
+            logger.warning(f"[SA]  Foi identificada uma falha no Acionamento da Bomba 01 do Poço de Drenagem. Favor Verificar.")
+
+        if cls.l_alm_07_b_06.valor:
+            logger.warning(f"[SA]  Foi identificada uma falha no Acionamento da Bomba 02 do Poço de Drenagem. Favor Verificar.")
+
+        if cls.l_alm_07_b_07.valor:
+            logger.warning(f"[SA]  Foi identificada uma falha no Acionamento da Bomba 03 do Poço de Drenagem. Favor Verificar.")
+
+        if cls.l_alm_07_b_11.valor:
+            logger.warning(f"[SA]  Foi identificada uma falha no Acionamento da Bomba 01 do Sistema de Injeção de Água no Selo Mecâncio. Favor Verificar.")
+
+        if cls.l_alm_07_b_12.valor:
+            logger.warning(f"[SA]  Foi identificada uma falha no Acionamento da Bomba 02 do Sistema de Injeção de Água no Selo Mecâncio. Favor Verificar.")
+
+        if cls.l_alm_07_b_13.valor:
+            logger.warning(f"[SA]  Foi identificada uma falha no Acionamento da Bomba 01 do Sistema de Água de Serviço. Favor Verificar.")
+
+        if cls.l_alm_07_b_14.valor:
+            logger.warning(f"[SA]  Foi identificada uma falha no Acionamento da Bomba 02 do Sistema de Água de Serviço. Favor Verificar.")
+
+        if cls.l_alm_07_b_15.valor:
+            logger.warning(f"[SA]  Foi identificada uma falha na Abertura da Válvula de Entrada do Filtro 01 do Sistema de Água de Serviço. Favor Verificar.")
+
+        if cls.l_alm_08_b_00.valor:
+            logger.warning(f"[SA]  Foi identificada uma falha no Fechamento da Válvula de Entrada do Filtro 01 do Sistema de Água de Serviço. Favor Verificar.")
+
+        if cls.l_alm_08_b_01.valor:
+            logger.warning(f"[SA]  Foi identificada uma falha na Abertura da Válvula de Entrada do Filtro 02 do Sistema de Água de Serviço. Favor Verificar.")
+
+        if cls.l_alm_08_b_02.valor:
+            logger.warning(f"[SA]  Foi identificada uma falha no Fechamento da Válvula de Entrada do Filtro 02 do Sistema de Água de Serviço. Favor Verificar.")
+
+        if cls.l_alm_08_b_03.valor:
+            logger.warning(f"[SA]  Foi identificada uma falha na Abertura da Válvula de Entrada da Torre de Resfriamento do Sistema de Água de Serviço. Favor Verificar.")
+
+        if cls.l_alm_08_b_04.valor:
+            logger.warning(f"[SA]  Foi identificada uma falha no Fechamento da Válvula de Entrada da Torre de Resfriamento do Sistema de Água de Serviço. Favor Verificar.")
+
+        if cls.l_alm_08_b_05.valor:
+            logger.warning(f"[SA]  Foi identificada uma falha na Abertura da Válvula de Saída da Torre de Resfriamento do Sistema de Água de Serviço. Favor Verificar.")
+
+        if cls.l_alm_08_b_06.valor:
+            logger.warning(f"[SA]  Foi identificada uma falha na Fechamento da Válvula de Saída da Torre de Resfriamento do Sistema de Água de Serviço. Favor Verificar.")
+
+        if cls.l_alm_08_b_08.valor:
+            logger.warning(f"[SA]  Foi identificada um Trip no Disjuntor do Filtro 01 do Sistema de Água de Serviço. Favor Verificar.")
+
+        if cls.l_alm_08_b_09.valor:
+            logger.warning(f"[SA]  Foi identificada uma Perda de Carga no Filtro 01 do Sistema de Água de Serviço. Favor Verificar.")
+
+        if cls.l_alm_08_b_10.valor:
+            logger.warning(f"[SA]  Foi identificada uma Falta de Fase CA no Filtro 01 do Sistema de Água de Serviço. Favor Verificar.")
+
+        if cls.l_alm_08_b_11.valor:
+            logger.warning(f"[SA]  Foi identificada um acionamento do Botão de Emergência do Filtro 02 do Sistema de Água de Serviço. Favor Verificar.")
+
+        if cls.l_alm_08_b_12.valor:
+            logger.warning(f"[SA]  Foi identificada um Trip do Disjuntor do Filtro 02 do Sistema de Água de Serviço. Favor Verificar.")
+
+        if cls.l_alm_08_b_13.valor:
+            logger.warning(f"[SA]  Foi identificada uma Perda de Carga no Filtro 02 do Sistema de Água de Serviço. Favor Verificar.")
+
+        if cls.l_alm_08_b_14.valor:
+            logger.warning(f"[SA]  Foi identificada uma Falta de Fase CA no Filtro 02 do Sistema de Água de Serviço. Favor Verificar.")
+
+        if cls.l_alm_09_b_09.valor:
+            logger.warning(f"[SA]  Foi identificada uma atuação do sensor de fumaça no PDSA-CA. Favor Verificar.")
+
+        if cls.l_alm_09_b_11.valor:
+            logger.warning(f"[SA]  Foi identificada uma atuação do sensor de fumaça no PDSA-CC. Favor Verificar.")
+
+        if cls.l_alm_10_b_00.valor:
+            logger.warning(f"[SA]  Foi identificado que o Disjuntor de Alimentação dos Relés de Nível do Poço de Drenagem no PCAP-SE foi Desligado. Favor Verificar.")
+
+        if cls.l_alm_10_b_01.valor:
+            logger.warning(f"[SA]  Foi identificado que o Disjuntor de Alimentação dos Circuitos de Comando no PCAP-SE foi Desligado. Favor Verificar.")
+
+        if cls.l_alm_10_b_02.valor:
+            logger.warning(f"[SA]  Foi identificado que o Disjuntor de Alimentação do Relé de Proteção 59N no PCAP-SE foi Desligado. Favor Verificar.")
+
+        if cls.l_alm_10_b_03.valor:
+            logger.warning(f"[SA]  Foi identificado que o Disjuntor de Alimentação dos Relés de Proteção SEL311C e SEL787 no PCAP-SE foi Desligado. Favor Verificar.")
+
+        if cls.l_alm_10_b_04.valor:
+            logger.warning(f"[SA]  Foi identificado que o Disjuntor de Alimentação do Circuito de Comando da Seccionadora 89L no PCAP-SE foi Desligado. Favor Verificar.")
+
+        if cls.l_alm_10_b_05.valor:
+            logger.warning(f"[SA]  Foi identificado que o Disjuntor de Alimentação do Circuito de Bloqueio de Lâmina de Terra no PCAP-SE foi Desligado. Favor Verificar.")
+
+        if cls.l_alm_10_b_06.valor:
+            logger.warning(f"[SA]  Foi identificado que o Disjuntor de Alimentação do Circuito de Comando do Disjuntor 52L no PCAP-SE foi Desligado. Favor Verificar.")
+
+        if cls.l_alm_10_b_07.valor:
+            logger.warning(f"[SA]  Foi identificado que o Disjuntor de Alimentação do Motor de Carregamento da Mola do Disjuntor 52L no PCAP-SE foi Desligado. Favor Verificar.")
+
+        if cls.l_alm_11_b_00.valor:
+            logger.warning(f"[SA]  Foi identificado que o Disjuntor de Alimentação dos Circuitos de Sinalização do CSA-U1 foi Desligado. Favor Verificar.")
+
+        if cls.l_alm_11_b_01.valor:
+            logger.warning(f"[SA]  Foi identificado que o Disjuntor de Alimentação dos Circuitos de Sinalização do CSA-U2 foi Desligado. Favor Verificar.")
+
+        if cls.l_alm_11_b_02.valor:
+            logger.warning(f"[SA]  Foi identificado que o Disjuntor de Alimentação do Carregador de Baterias 01 (CB01) foi Desligado. Favor Verificar.")
+
+        if cls.l_alm_11_b_03.valor:
+            logger.warning(f"[SA]  Foi identificada uma Inconsistência com o Disjuntor de Alimentação do Carregador de Baterias 01 (CB01). Favor Verificar.")
+
+        if cls.l_alm_11_b_04.valor:
+            logger.warning(f"[SA]  Foi identificado um Trip com o Disjuntor de Alimentação do Carregador de Baterias 01 (CB01). Favor Verificar.")
+
+        if cls.l_alm_11_b_05.valor:
+            logger.warning(f"[SA]  Foi identificado que o Disjuntor de Alimentação do Carregador de Baterias 02 (CB02) foi Desligado. Favor Verificar.")
+
+        if cls.l_alm_11_b_06.valor:
+            logger.warning(f"[SA]  Foi identificada uma Inconsistência com o Disjuntor de Alimentação do Carregador de Baterias 02 (CB02). Favor Verificar.")
+
+        if cls.l_alm_11_b_08.valor:
+            logger.warning(f"[SA]  Foi identificado que o Disjuntor de Alimentação Principal do Carregador de Baterias 01 (CB01) no PDSA-CC foi Desligado. Favor Verificar.")
+
+        if cls.l_alm_11_b_09.valor:
+            logger.warning(f"[SA]  Foi identificada uma Inconsistência no Disjuntor de Alimentação Principal do Carregador de Baterias 01 (CB01) no PDSA-CC. Favor Verificar.")
+
+        if cls.l_alm_12_b_00.valor:
+            logger.warning(f"[SA]  Foi identificado que o Disjuntor de Alimentação do Rack de Comunicação no PDSA-CC foi Desligado. Favor Verificar.")
+
+        if cls.l_alm_12_b_04.valor:
+            logger.warning(f"[SA]  Foi identificado que o Disjuntor de Alimentação de Monitoramento de Temperatura do TSA-01 no PDSA-CC foi Desligado. Favor Verificar.")
+
+        if cls.l_alm_12_b_05.valor:
+            logger.warning(f"[SA]  Foi identificado que o Disjuntor de Alimentação de Monitoramento de Temperatura do TSA-02 no PDSA-CC foi Desligado. Favor Verificar.")
+
+        if cls.l_alm_14_b_03.valor:
+            logger.warning(f"[SA]  Foi identificado que o Disjuntor de Alimentação da Bomba de Drenagem 01 no PDSA-CA foi Desligado. Favor Verificar.")
+
+        if cls.l_alm_14_b_04.valor:
+            logger.warning(f"[SA]  Foi identificado que o Disjuntor de Alimentação da Bomba de Drenagem 02 no PDSA-CA foi Desligado. Favor Verificar.")
+
+        if cls.l_alm_14_b_05.valor:
+            logger.warning(f"[SA]  Foi identificado que o Disjuntor de Alimentação da Bomba de Drenagem 03 no PDSA-CA foi Desligado. Favor Verificar.")
+
+        if cls.l_alm_14_b_06.valor:
+            logger.warning(f"[SA]  Foi identificado que o Disjuntor de Alimentação da Bomba de Esgotamento no PDSA-CA foi Desligado. Favor Verificar.")
+
+        if cls.l_alm_14_b_10.valor:
+            logger.warning(f"[SA]  Foi identificada uma Inconsistência no Disjuntor de Alimentação 380Vca Principal PDSA-CA. Favor Verificar.")
+
+        if cls.l_alm_14_b_12.valor:
+            logger.warning(f"[SA]  Foi identificado que o Disjuntor de Alimentação do Painel PCTA no PDSA-CA foi Desligado. Favor Verificar.")
+
+        if cls.l_alm_14_b_14.valor:
+            logger.warning(f"[SA]  Foi identificado um Trip no Disjuntor de Alimentação do Painel PCTA no PDSA-CA. Favor Verificar.")
+
+        if cls.l_alm_15_b_01.valor:
+            logger.warning(f"[SA]  Foi identificado um Trip no Disjuntor de Alimentação da Ponte Rolante no PDSA-CA. Favor Verificar.")
+
+        if cls.l_alm_15_b_05.valor:
+            logger.warning(f"[SA]  Foi identificado um Trip no Disjuntor de Alimentação do Quadro de Alimentação QDLCF no PDSA-CA. Favor Verificar.")
+
+        if cls.l_alm_17_b_13.valor:
+            logger.warning(f"[SA]  Foi identificada uma falta de Tensão 125Vcc no Painel Inversor (PINV). Favor Verificar.")
+
+        if cls.l_alm_18_b_00.valor:
+            logger.warning(f"[SA]  Foi identificado um Erro de Leitura na Entrada Analógica do Nível Jusante. Favor Verificar.")
+
+        if cls.l_alm_18_b_11.valor:
+            logger.warning(f"[SA]  Foi identificado um Erro de Leitura na Entrada Analógica da Pressão do Sistema de Ar Comprimido. Favor Verificar.")
+
+        if cls.l_alm_18_b_12.valor:
+            logger.warning(f"[SA]  Foi identificado que o Botão de Emergência do Grupo Diesel foi Pressionado. Favor Verificar.")
+
+        if cls.l_alm_19_b_09.valor:
+            logger.warning(f"[SA]  Foi identificada Sobretensão nas Baterias do Carregador de Baterias 01 (CB01). Favor Verificar.")
+
+        if cls.l_alm_19_b_10.valor:
+            logger.warning(f"[SA]  Foi identificada Subtensão nas Baterias do Carregador de Baterias 01 (CB01). Favor Verificar.")
+
+        if cls.l_alm_20_b_09.valor:
+            logger.warning(f"[SA]  Foi identificada Sobretensão nas Baterias do Carregador de Baterias 02 (CB02). Favor Verificar.")
+
+        if cls.l_alm_20_b_10.valor:
+            logger.warning(f"[SA]  Foi identificada Subtensão nas Baterias do Carregador de Baterias 02 (CB02). Favor Verificar.")
+
+        if cls.l_alm_21_b_03.valor:
+            logger.warning(f"[SA]  Foi identificado um Trip no Disjuntor do Motor do Ventilador da Torre de Resfriamento. Favor Verificar.")
+
+
         if cls.l_cb_ligado.valor and not d.voip["CB_LIGADO"][0]:
             logger.warning("[SA]  Foi identificado que o Carregador de Baterias 1 foi ligado. Favor verificar.")
             d.voip["CB_LIGADO"][0] = True

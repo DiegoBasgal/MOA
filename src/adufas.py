@@ -103,25 +103,35 @@ class Adufas:
             leitura de nível Montante da Tomada da Água
             """
 
-            logger.debug(f"[AD][CP{self.id}]      Comporta:                  \"{ADCP_STR_DCT_ESTADO[self._estado] if not self.manual else 'Manual'}\"")
+            logger.debug(f"[AD][CP{self.id}]      Comporta:                  \"{ADCP_STR_DCT_ESTADO[self.estado]}\"")
             logger.debug(f"[AD][CP{self.id}]      Etapa:                     \"{ADCP_STR_DCT_ETAPA[self.etapa]}\"")
 
-            erro = tda.TomadaAgua.nivel_montante.valor - self.cfg["ad_nv_alvo"]
-
-            self.controle_p = self.cfg["ad_kp"] * erro
-            self.controle_i = min(max(0, self.cfg["ad_ki"] * erro + self.controle_i), 6000)
-
-            sp = self.k * (self.controle_p + self.controle_i)
-            sp = min(max(0, sp), 6000)
-
-            logger.debug(f"[AD][CP{self.id}]      P:                         {self.controle_p:1.4f}")
-            logger.debug(f"[AD][CP{self.id}]      I:                         {self.controle_i:1.4f}")
-            logger.debug(f"[AD][CP{self.id}]      ERRO:                      {erro}")
-
-            if self.manual and self.estado == ADCP_INDISPONIVEL:
+            if self.manual or self._estado == ADCP_MANUAL:
+                self.estado == ADCP_MANUAL
                 return
 
-            self.enviar_setpoint(sp)
+            elif self.estado == ADCP_INDISPONIVEL:
+                return
+
+            else:
+                self.estado = ADCP_DISPONIVEL
+
+                if not self.verificar_permissivos():
+                    return
+
+                erro = tda.TomadaAgua.nivel_montante.valor - self.cfg["ad_nv_alvo"]
+
+                self.controle_p = self.cfg["ad_kp"] * erro
+                self.controle_i = min(max(0, self.cfg["ad_ki"] * erro + self.controle_i), 6000)
+
+                sp = self.k * (self.controle_p + self.controle_i)
+                sp = min(max(0, sp), 6000)
+
+                logger.debug(f"[AD][CP{self.id}]      P:                         {self.controle_p:1.4f}")
+                logger.debug(f"[AD][CP{self.id}]      I:                         {self.controle_i:1.4f}")
+                logger.debug(f"[AD][CP{self.id}]      ERRO:                      {erro}")
+
+                self.enviar_setpoint(sp)
 
 
         def enviar_setpoint(self, setpoint: "int") -> "None":
@@ -130,12 +140,14 @@ class Adufas:
             """
 
             try:
-                # if not self.clp["AD"].read_holding_registers(REG_AD["PCAD_MODO_SETPOT_HAB"])[0]:
-                #     logger.info(f"[AD]  O modo de setpoint das Comportas das Adufas não está habilitado.")
+                if not self.clp["AD"].read_holding_registers(REG_AD["PCAD_MODO_SETPOT_HAB"])[0]:
+                    logger.info(f"[AD]  O modo de setpoint das Comportas das Adufas não está Habilitado.")
+                    return
 
-                if self.uhcd_operando.valor:
+                elif self.uhcd_operando.valor:
                     logger.debug(f"[AD][CP{self.id}]      Aguardando disponibilização da UHCD.")
                     return
+
                 else:
                     logger.debug("")
                     logger.debug(f"[AD][CP{self.id}]      Enviando setpoint:         {round(setpoint)} mm")
@@ -148,11 +160,104 @@ class Adufas:
                 logger.debug(traceback.format_exc())
 
 
+        def verificar_permissivos(self) -> "bool":
+            """
+            Função para a verificação de Permissivos de controle das Comportas das Adufas.
+
+            Verifica se alguma das condições abaixo está acionada. Se estiver, aciona o modo manual
+            da Comporta e inicia o disparo do Mensageiro para os Operadores.
+            CONDIÇÔES:
+            - Relé Atuado por Falta de Fase CA;
+            - Nível de Óleo Crítico da UHCD;
+            - Trip de Temperatura do óleo da UHCD;
+            - Sensor de Fumaça Atuado;
+            - Erro de Leitura de Entrada Analógica da Posição da Comporta 1;
+            - Erro de Leitura de Entrada Analógica da Posição da Comporta 2;
+            - Desligamento do Disjuntor de Alimentação 380Vca Principal;
+            - Inconsistência do Disjuntor de Alimentação 380Vca Principal;
+            - Trip do Disjuntor de Alimentação 380Vca Principal;
+            - Desligamento do Disjuntor de Alimentação dos Circuitos de Comando;
+            """
+
+            flags = 0
+            logger.debug(f"[AD][CP{self.id}]      Verificando Permissivos...")
+
+            try:
+                if self.rele_falta_fase.valor:
+                    logger.warning(f"[AD][CP{self.id}]      Relé Atuado por Falta de Fase CA.")
+                    flags += 1
+
+                if self.oleo_uhcd_nv_crit.valor:
+                    logger.warning(f"[AD][CP{self.id}]      Nível de Óleo Crítico da UHCD.")
+                    flags += 1
+
+                if self.oleo_uhcd_sobretemp.valor:
+                    logger.warning(f"[AD][CP{self.id}]      Trip de Temperatura do óleo da UHCD.")
+                    flags += 1
+
+                if self.sens_fuma_atuado.valor:
+                    logger.warning(f"[AD][CP{self.id}]      Sensor de Fumaça Atuado.")
+                    flags += 1
+
+                if self.erro_analog_pos_cp1.valor:
+                    logger.warning(f"[AD][CP{self.id}]      Erro de Leitura de Entrada Analógica da Posição da Comporta 1.")
+                    flags += 1
+
+                if self.erro_analog_pos_cp2.valor:
+                    logger.warning(f"[AD][CP{self.id}]      Erro de Leitura de Entrada Analógica da Posição da Comporta 2.")
+                    flags += 1
+
+                if self.disj_al_380vca_desl.valor:
+                    logger.warning(f"[AD][CP{self.id}]      Desligamento do Disjuntor de Alimentação 380Vca Principal.")
+                    flags += 1
+
+                if self.disj_al_380vca_incosis.valor:
+                    logger.warning(f"[AD][CP{self.id}]      Inconsistência do Disjuntor de Alimentação 380Vca Principal.")
+                    flags += 1
+
+                if self.disj_al_380vca_trip.valor:
+                    logger.warning(f"[AD][CP{self.id}]      Trip do Disjuntor de Alimentação 380Vca Principal.")
+                    flags += 1
+
+                if self.disj_al_cirq_cmd_desl.valor:
+                    logger.warning(f"[AD][CP{self.id}]      Desligamento do Disjuntor de Alimentação dos Circuitos de Comando.")
+                    flags += 1
+
+
+                if flags > 0:
+                    logger.warning(f"[AD][CP{self.id}]      Sem Permissão para Operar a Comporta {self.id}. Passando para o Modo Manual.")
+                    self._cmd_manual = True
+                    return False
+                else:
+                    return True
+
+            except Exception:
+                logger.exception(f"[AD][CP{self.id}]      Houve um erro ao verificar os Permissivos da Comporta {self.id}.")
+                logger.debug(traceback.format_exc())
+                return False
+
+
+        def verificar_leituras(self) -> "None":
+            """
+            Função para verificação de leituras por acionamento temporizado.
+
+            Verifica leituras específcas para acionamento da manuteção. As leituras são disparadas
+            em períodos separados por um tempo pré-definido.
+            """
+
+            if self.cp_acion_local.valor and not d.voip[f"AD_CP{self.id}_ACION_LOCAL"]:
+                logger.warning(f"[AD][CP{self.id}] Foi identificado que a Comporta {self.id} das Adufas passou para o modo de Acionamento Local. Favor verificar.")
+                d.voip[f"AD_CP{self.id}_ACION_LOCAL"] = True
+            if not self.cp_acion_local.valor and d.voip[f"AD_CP{self.id}_ACION_LOCAL"]:
+                d.voip[f"AD_CP{self.id}_ACION_LOCAL"] = False
+
+
         def carregar_leituras(self) -> "None":
             """
             Função para carregar as leituras de cada Comporta
             """
 
+            ## STATUS
             self.parada = lei.LeituraModbusBit(self.clp["AD"], REG_AD[f"CP_0{self.id}_PARADA"], descricao=f"[AD][CP{self.id}] Comporta Parada")
             self.aberta = lei.LeituraModbusBit(self.clp["AD"], REG_AD[f"CP_0{self.id}_ABERTA"], descricao=f"[AD][CP{self.id}] Comporta Aberta")
             self.fechada = lei.LeituraModbusBit(self.clp["AD"], REG_AD[f"CP_0{self.id}_FECHADA"], descricao=f"[AD][CP{self.id}] Comporta Fechada")
@@ -160,8 +265,22 @@ class Adufas:
             self.fechando = lei.LeituraModbusBit(self.clp["AD"], REG_AD[f"CP_0{self.id}_FECHANDO"], descricao=f"[AD][CP{self.id}] Comporta Fechando")
             self.uhcd_operando = lei.LeituraModbusBit(self.clp["AD"], REG_AD["UHCD_OPERACIONAL"], descricao=f"[AD][CP{self.id}] UHCD Disponível")
 
+
+            ## PERMISSIVOS
+            self.rele_falta_fase = lei.LeituraModbusBit(self.clp["AD"], REG_AD["Alarme28_01"], descricao="[AD]  Relé Falta de Fase CA Atuado")
+            self.oleo_uhcd_nv_crit = lei.LeituraModbusBit(self.clp["AD"], REG_AD["Alarme28_08"], descricao="[AD]  UHCD - Nível de Óleo Crítico")
+            self.oleo_uhcd_sobretemp = lei.LeituraModbusBit(self.clp["AD"], REG_AD["Alarme28_11"], descricao="[AD]  UHCD - Sobretemperatura do Óleo - Trip")
+            self.sens_fuma_atuado = lei.LeituraModbusBit(self.clp["AD"], REG_AD["Alarme30_00"], descricao="[AD]  Sensor de Fumaça Atuado")
+            self.erro_analog_pos_cp1 = lei.LeituraModbusBit(self.clp["AD"], REG_AD["Alarme30_10"], descricao="[AD]  Erro de Leitura na entrada analógica da posição da comporta 01")
+            self.erro_analog_pos_cp2 = lei.LeituraModbusBit(self.clp["AD"], REG_AD["Alarme30_11"], descricao="[AD]  Erro de Leitura na entrada analógica da posição da comporta 02")
+            self.disj_al_380vca_desl = lei.LeituraModbusBit(self.clp["AD"], REG_AD["Alarme31_00"], descricao="[AD]  Alimentação 380Vca Principal - Disj. Q380.0 Desligado")
+            self.disj_al_380vca_incosis = lei.LeituraModbusBit(self.clp["AD"], REG_AD["Alarme31_01"], descricao="[AD]  Alimentação 380Vca Principal - Disj. Q380.0 Inconsistência")
+            self.disj_al_380vca_trip = lei.LeituraModbusBit(self.clp["AD"], REG_AD["Alarme31_02"], descricao="[AD]  Alimentação 380Vca Principal - Disj. Q380.0 Trip")
+            self.disj_al_cirq_cmd_desl = lei.LeituraModbusBit(self.clp["AD"], REG_AD["Alarme31_05"], descricao="[AD]  Alimentação Circuitos de Comando - Disj. Q24.3 Desligado")
+
+
             ## MENSAGEIRO
-            self.cp_acion_local = lei.LeituraModbusBit(self.clp["AD"], REG_AD[f"CP_0{self.id}_ACION_LOCAL"], descricao=f"[AD][CP{self.id}] Comporta Acionamento Local")             # Voip + whats
+            self.cp_acion_local = lei.LeituraModbusBit(self.clp["AD"], REG_AD[f"CP_0{self.id}_ACION_LOCAL"], descricao=f"[AD][CP{self.id}] Comporta Acionamento Local")
 
 
     cp1 = Comporta(1)
@@ -237,6 +356,85 @@ class Adufas:
         Verifica leituras específcas para acionamento da manuteção. As leituras são disparadas
         em períodos separados por um tempo pré-definido.
         """
+
+        if cls.l_alm_28_b_01.valor:
+            logger.warning(f"[AD]  Foi identificada uma Atuação do Relé por Falta de Fase CA. Favor Verificar.")
+
+        if cls.l_alm_28_b_04.valor:
+            logger.warning(f"[AD]  Foi identificado que a Pressão do Óleo da UHCD está Baixa. Favor Verificar.")
+
+        if cls.l_alm_28_b_07.valor:
+            logger.warning(f"[AD]  Foi identificado que o Filtro de Retorno da UHCD está Sujo. Favor Verificar.")
+
+        if cls.l_alm_28_b_08.valor:
+            logger.warning(f"[AD]  Foi identificado que o Nível de Óleo da UHCD está Crítico. Favor Verificar.")
+
+        if cls.l_alm_28_b_10.valor:
+            logger.warning(f"[AD]  Foi identificado um Alarme de Sobretemperatura do Óleo da UHCD. Favor Verificar.")
+
+        if cls.l_alm_28_b_11.valor:
+            logger.warning(f"[AD]  Foi identificado um Trip de Sobretemperatura do Óleo da UHCD. Favor Verificar.")
+
+        if cls.l_alm_29_b_00.valor:
+            logger.warning(f"[AD]  Foi identificado uma Falha no acionamento da Bomba de Óleo 01 da UHCD. Favor Verificar.")
+
+        if cls.l_alm_29_b_01.valor:
+            logger.warning(f"[AD]  Foi identificado que o Disjuntor QM1 da Bomba de Óleo 01 da UHCD. Favor Verificar.")
+
+        if cls.l_alm_29_b_02.valor:
+            logger.warning(f"[AD]  Foi identificado uma Falha no acionamento da Bomba de Óleo 02 da UHCD. Favor Verificar.")
+
+        if cls.l_alm_29_b_03.valor:
+            logger.warning(f"[AD]  Foi identificado que o Disjuntor QM2 da Bomba de Óleo 02 da UHCD. Favor Verificar.")
+
+        if cls.l_alm_29_b_05.valor:
+            logger.warning(f"[AD]  Foi identificada uma Falha na Abertura da Comporta 1. Favor Verificar.")
+
+        if cls.l_alm_29_b_06.valor:
+            logger.warning(f"[AD]  Foi identificada uma Falha no Fechamento da Comporta 1. Favor Verificar.")
+
+        if cls.l_alm_29_b_09.valor:
+            logger.warning(f"[AD]  Foi identificada uma Falha na Abertura da Comporta 2. Favor Verificar.")
+
+        if cls.l_alm_29_b_10.valor:
+            logger.warning(f"[AD]  Foi identificada uma Falha na Fechamento da Comporta 2. Favor Verificar.")
+
+        if cls.l_alm_29_b_13.valor:
+            logger.warning(f"[AD]  Foi identificada uma Falha no Carregador de Baterias. Favor Verificar.")
+
+        if cls.l_alm_30_b_00.valor:
+            logger.warning(f"[AD]  Foi identificada uma Atuação do Sensor de Fumaça. Favor Verificar.")
+
+        if cls.l_alm_30_b_08.valor:
+            logger.warning(f"[AD]  Foi identificado um Erro de Leitura na Entrada Analógica da Temperatura do Óleo da UHCD. Favor Verificar.")
+
+        if cls.l_alm_30_b_09.valor:
+            logger.warning(f"[AD]  Foi identificado um Erro de Leitura na Entrada Analógica do Nível do Óleo da UHCD. Favor Verificar.")
+
+        if cls.l_alm_30_b_10.valor:
+            logger.warning(f"[AD]  Foi identificado um Erro de Leitura na Entrada Analógica da Posição da Comporta 1. Favor Verificar.")
+
+        if cls.l_alm_30_b_11.valor:
+            logger.warning(f"[AD]  Foi identificado um Erro de Leitura na Entrada Analógica da Posição da Comporta 2. Favor Verificar.")
+
+        if cls.l_alm_30_b_00.valor:
+            logger.warning(f"[AD]  Foi identificado que o Disjuntor de Alimentação 380Vca Principal foi Desligado. Favor Verificar.")
+
+        if cls.l_alm_30_b_01.valor:
+            logger.warning(f"[AD]  Foi identificada uma Inconsistência com o Disjuntor de Alimentação 380Vca Principal. Favor Verificar.")
+
+        if cls.l_alm_31_b_02.valor:
+            logger.warning(f"[AD]  Foi identificado um Trip no Disjuntor de Alimentação 380Vca Principal. Favor Verificar.")
+
+        if cls.l_alm_31_b_03.valor:
+            logger.warning(f"[AD]  Foi identificado que o Disjuntor de Alimentação do Carregador de Baterias foi Desligado. Favor Verificar.")
+
+        if cls.l_alm_31_b_04.valor:
+            logger.warning(f"[AD]  Foi identificado que o Disjuntor de Alimentação do Banco de Baterias foi Desligado. Favor Verificar.")
+
+        if cls.l_alm_31_b_05.valor:
+            logger.warning(f"[AD]  Foi identificado que o Disjuntor de Alimentação dos Circuitos de Comando foi Desligado. Favor Verificar.")
+
 
         if cls.l_uhcd_temp_oleo_h.valor and not d.voip["UHCD_TEMPE_OLEO_H"][0]:
             logger.warning("[AD]  Foi identificado que a temperatura do Óleo da UHCD está Alta. Favor verificar.")

@@ -257,6 +257,64 @@ class Subestacao:
         em períodos separados por um tempo pré-definido.
         """
 
+        if cls.l_alm_03_b_03.valor:
+            logger.warning(f"[SE]  Foi identificada uma falta de Tensão VCC do Disjuntor 52L. Favor Verificar.")
+
+        if cls.l_alm_03_b_05.valor:
+            logger.warning(f"[SE]  Foi identificado um Alarme de Pressão Baixa do Gás SF6 do Disjuntor 52L. Favor Verificar.")
+
+        if cls.l_alm_03_b_06.valor:
+            logger.warning(f"[SE]  Foi identificado um Trip de Pressão Baixa do Gás SF6 que impediu o fechamento do Disjuntor 52L. Favor Verificar.")
+
+        if cls.l_alm_03_b_07.valor:
+            logger.warning(f"[SE]  Foi identificado que a chave de Modo Local do Disjuntor 52L está ativa. Favor Verificar.")
+
+        if cls.l_alm_05_b_02.valor:
+            logger.warning(f"[SE]  Foi identificado um acionamento do Alarme do Relé de Buchholz do Transformador Elevador. Favor Verificar.")
+
+        if cls.l_alm_05_b_05.valor:
+            logger.warning(f"[SE]  Foi identificado um acionamento do Alarme de Nível de Óleo Alto do Transformador Elevador. Favor Verificar.")
+
+        if cls.l_alm_05_b_06.valor:
+            logger.warning(f"[SE]  Foi identificado um acionamento do Alarme de Sobretemperatura do Óleo do Transformador Elevador. Favor Verificar.")
+
+        if cls.l_alm_05_b_07.valor:
+            logger.warning(f"[SE]  Foi identificado um Trip de Sobretemperatura (Bloqueio 86TE) do Óleo do Transformador Elevador. Favor Verificar.")
+
+        if cls.l_alm_05_b_08.valor:
+            logger.warning(f"[SE]  Foi identificado um Alarme de Sobretemperatura do Enrolamento do Transformador Elevador. Favor Verificar.")
+
+        if cls.l_alm_05_b_10.valor:
+            logger.warning(f"[SE]  Foi identificado um Alarme da Válvula de Alívio de Pressão do Transformador Elevador. Favor Verificar.")
+
+        if cls.l_alm_05_b_12.valor:
+            logger.warning(f"[SE]  Foi identificado uma Falha no Relé de Monitoramento de Temperatura do Transformador Elevador. Favor Verificar.")
+
+        if cls.l_alm_05_b_14.valor:
+            logger.warning(f"[SE]  Foi identificado uma Falha de Ventilação Forçada do Transformador Elevador. Favor Verificar.")
+
+        if cls.l_alm_09_b_07.valor:
+            logger.warning(f"[SE]  Foi identificado um acionamento do Sensor de Fumaça no PACP-SE. Favor Verificar.")
+
+        if cls.l_alm_09_b_08.valor:
+            logger.warning(f"[SE]  Foi identificado que o Sensor de Fumaça no PACP-SE foi Desconectado. Favor Verificar.")
+
+        if cls.l_alm_12_b_03.valor:
+            logger.warning(f"[SE]  Foi identificado que o Disjuntor de Alimentação do Painel do Transformador Elevador PDSA-CC foi Desligado. Favor Verificar.")
+
+        if cls.l_alm_14_b_07.valor:
+            logger.warning(f"[SE]  Foi identificado que o Disjuntor de Alimentação do Painel PACP-SE pelo PDSA-CA foi Desligado. Favor Verificar.")
+
+        if cls.l_alm_16_b_04.valor:
+            logger.warning(f"[SE]  Foi identificado que o Disjuntor de Alimentação do Motor de Carregamento da Mola do 52L foi Desligado. Favor Verificar.")
+
+        if cls.l_alm_16_b_05.valor:
+            logger.warning(f"[SE]  Foi identificado que o Disjuntor de Alimentação do Circuito de Aquecimento do 52L foi Desligado. Favor Verificar.")
+
+        if cls.l_alm_16_b_06.valor:
+            logger.warning(f"[SE]  Foi identificado que o Disjuntor de Alimentação do Circuito de Comando da Seccionador 89L foi Desligado. Favor Verificar.")
+
+
         if cls.dj52l_modo_local.valor and not d.voip["DJ52L_MODO_LOCAL"][0]:
             logger.warning(f"[SE]  Foi identificado que o Disjuntor 52L entrou em Modo Local. Favor verificar.")
             d.voip["DJ52L_MODO_LOCAL"][0] = True

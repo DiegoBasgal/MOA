@@ -940,8 +940,112 @@ class UnidadeGeracao:
         de acionamento temporizado.
         """
 
+        if self.l_alm_04_b_10.valor:
+            logger.warning(f"[UG{self.id}] Foi identificado que o a Pastilha de Ferio da Unidade está Gasta. Favor verificar.")
+
+        if self.l_alm_07_b_06.valor:
+            logger.warning(f"[UG{self.id}] Foi identificada uma Falha no Sensor de Temperatura de Fase R do Gerador. Favor verificar.")
+
+        if self.l_alm_07_b_07.valor:
+            logger.warning(f"[UG{self.id}] Foi identificada uma Falha no Sensor de Temperatura de Fase S do Gerador. Favor verificar.")
+
+        if self.l_alm_07_b_08.valor:
+            logger.warning(f"[UG{self.id}] Foi identificada uma Falha no Sensor de Temperatura de Fase T do Gerador. Favor verificar.")
+
+        if self.l_alm_07_b_09.valor:
+            logger.warning(f"[UG{self.id}] Foi identificada uma Falha no Sensor de Temperatura do Casquilho 01 do Mancal LA. Favor verificar.")
+
+        if self.l_alm_07_b_10.valor:
+            logger.warning(f"[UG{self.id}] Foi identificada uma Falha no Sensor de Temperatura do Casquilho 02 do Mancal LA. Favor verificar.")
+
+        if self.l_alm_07_b_11.valor:
+            logger.warning(f"[UG{self.id}] Foi identificada uma Falha no Sensor de Temperatura do Casquilho 01 do Mancal LNA. Favor verificar.")
+
+        if self.l_alm_07_b_12.valor:
+            logger.warning(f"[UG{self.id}] Foi identificada uma Falha no Sensor de Temperatura do Casquilho 02 do Mancal LNA. Favor verificar.")
+
+        if self.l_alm_07_b_13.valor:
+            logger.warning(f"[UG{self.id}] Foi identificada uma Falha no Sensor de Temperatura do Gaxeteiro Lado Montante. Favor verificar.")
+
+        if self.l_alm_07_b_14.valor:
+            logger.warning(f"[UG{self.id}] Foi identificada uma Falha no Sensor de Temperatura do Gaxeteiro Lado Jusante. Favor verificar.")
+
+        if self.l_alm_07_b_15.valor:
+            logger.warning(f"[UG{self.id}] Foi identificada uma Falha no Sensor de Temperatura da Bucha Radial do Mancal Combinado. Favor verificar.")
+
+        if self.l_alm_08_b_00.valor:
+            logger.warning(f"[UG{self.id}] Foi identificada uma Falha no Sensor de Temperatura das Sapatas Axiais Escora do Mancal Combiando. Favor verificar.")
+
+        if self.l_alm_08_b_01.valor:
+            logger.warning(f"[UG{self.id}] Foi identificada uma Falha no Sensor de Temperatura das Sapatas Axiais Contra Escora do Mancal Combiando. Favor verificar.")
+
+        if self.l_alm_08_b_02.valor:
+            logger.warning(f"[UG{self.id}] Foi identificada uma Falha no Sensor de Temperatura do Óleo da UHCT. Favor verificar.")
+
+        if self.l_alm_08_b_03.valor:
+            logger.warning(f"[UG{self.id}] Foi identificada uma Falha no Sensor de Temperatura do Óleo da UHLM. Favor verificar.")
+
+        if self.l_alm_08_b_07.valor:
+            logger.warning(f"[UG{self.id}] Foi identificado um Alarme de Sobretemperatura de Fase R do Gerador via CLP. Favor verificar.")
+
+        if self.l_alm_08_b_08.valor:
+            logger.warning(f"[UG{self.id}] Foi identificado um Alarme de Sobretemperatura de Fase S do Gerador via CLP. Favor verificar.")
+
+        if self.l_alm_08_b_09.valor:
+            logger.warning(f"[UG{self.id}] Foi identificado um Alarme de Sobretemperatura de Fase T do Gerador via CLP. Favor verificar.")
+
+        if self.l_alm_08_b_10.valor:
+            logger.warning(f"[UG{self.id}] Foi identificado um Alarme de Sobretemperatura do Casquilho 01 do Mancal LA via CLP. Favor verificar.")
+
+        if self.l_alm_08_b_11.valor:
+            logger.warning(f"[UG{self.id}] Foi identificado um Alarme de Sobretemperatura do Casquilho 02 do Mancal LA via CLP. Favor verificar.")
+
+        if self.l_alm_08_b_12.valor:
+            logger.warning(f"[UG{self.id}] Foi identificado um Alarme de Sobretemperatura do Casquilho 01 do Mancal LNA via CLP. Favor verificar.")
+
+        if self.l_alm_08_b_13.valor:
+            logger.warning(f"[UG{self.id}] Foi identificado um Alarme de Sobretemperatura do Casquilho 02 do Mancal LNA via CLP. Favor verificar.")
+
+        if self.l_alm_08_b_14.valor:
+            logger.warning(f"[UG{self.id}] Foi identificado um Alarme de Sobretemperatura do Gaxeteiro Lado Jusante via CLP. Favor verificar.")
+
+        if self.l_alm_08_b_15.valor:
+            logger.warning(f"[UG{self.id}] Foi identificado um Alarme de Sobretemperatura do Gaxeteiro Lado Montante via CLP. Favor verificar.")
+
+        if self.l_alm_09_b_00.valor:
+            logger.warning(f"[UG{self.id}] Foi identificado um Alarme de Sobretemperatura da Bucha Radial do Mancal Combinado via CLP. Favor verificar.")
+
+        if self.l_alm_09_b_01.valor:
+            logger.warning(f"[UG{self.id}] Foi identificado um Alarme de Sobretemperatura das Sapatas Axiais Escora do Mancal Combinado via CLP. Favor verificar.")
+
+        if self.l_alm_09_b_02.valor:
+            logger.warning(f"[UG{self.id}] Foi identificado um Alarme de Sobretemperatura das Sapatas Axiais Contra Escora do Mancal Combinado via CLP. Favor verificar.")
+
+        if self.l_alm_09_b_03.valor:
+            logger.warning(f"[UG{self.id}] Foi identificado um Alarme de Sobretemperatura do Óleo da UHCT via CLP. Favor verificar.")
+
+        if self.l_alm_09_b_04.valor:
+            logger.warning(f"[UG{self.id}] Foi identificado um Alarme de Sobretemperatura do Óleo da UHLM via CLP. Favor verificar.")
+
+        if self.l_alm_15_b_00.valor:
+            logger.warning(f"[UG{self.id}] Foi identificado um Alarme de Vibração Vertical Excessiva do Mancal Combinado da Turbina. Favor verificar.")
+
+        if self.l_alm_15_b_02.valor:
+            logger.warning(f"[UG{self.id}] Foi identificado um Alarme de Vibração Horizontal Excessiva do Mancal Combinado da Turbina. Favor verificar.")
+
+        if self.l_alm_15_b_04.valor:
+            logger.warning(f"[UG{self.id}] Foi identificado um Alarme de Vibração Axial Excessiva do Mancal Combinado da Turbina. Favor verificar.")
+
+        if self.l_alm_15_b_06.valor:
+            logger.warning(f"[UG{self.id}] Foi identificado um Alarme de Vibração Excessiva do Mancal Lado Acoplado da Turbina. Favor verificar.")
+
+        if self.l_alm_15_b_12.valor:
+            logger.warning(f"[UG{self.id}] Foi identificado uma Falha de RTD´s ou Falha de Comunicação com o módulo SEL-2600 (Bloqueio 86M T). Favor verificar.")
+
+
         if self.l_dj_07.valor:
             logger.warning(f"[UG{self.id}] Foi identificado que o Disjuntor Q125.0 UG1 de Alimentação do SEL2600 foi Desligado/Aberto. Favor verificar.")
+
 
         if self.l_modo_local.valor and not d.voip[f"UG{self.id}_OPER_MODO_LOCAL"][0]:
             logger.warning(f"[UG{self.id}] Foi identificado que a Unidade {self.id} entrou em Modo de Operação Local. Favor verificar.")

@@ -112,6 +112,79 @@ class TomadaAgua:
         em períodos separados por um tempo pré-definido.
         """
 
+        if cls.l_alm_22_b_00.valor:
+            logger.warning("[TDA] Foi identificada uma autação do Relé por Falta de Fase CA. Favor verificar.")
+
+        if cls.l_alm_22_b_06.valor:
+            logger.warning("[TDA] Foi identificado que o Filtro de Retorno da UHTA 01 está sujo. Favor verificar.")
+
+        if cls.l_alm_22_b_07.valor:
+            logger.warning("[TDA] Foi identificado que o Nível de Óleo da UHTA 01 está crítico. Favor verificar.")
+
+        if cls.l_alm_22_b_09.valor:
+            logger.warning("[TDA] Foi identificado um Alarme de Sobretemperatura do Óleo da UHTA 01. Favor verificar.")
+
+        if cls.l_alm_22_b_14.valor:
+            logger.warning("[TDA] Foi identificada uma Falha no Acionamento da Bomba de Óleo 01 da UHTA 01. Favor verificar.")
+
+        if cls.l_alm_22_b_15.valor:
+            logger.warning("[TDA] Foi identificado que o Disjunotr QM1 da UHTA 01 foi Aberto. Favor verificar.")
+
+        if cls.l_alm_23_b_01.valor:
+            logger.warning("[TDA] Foi identificada uma Falha no Acionamento da Bomba de Óleo 02 da UHTA 01. Favor verificar.")
+
+        if cls.l_alm_23_b_02.valor:
+            logger.warning("[TDA] Foi identificado que o Disjunotr QM2 da UHTA 01 foi Aberto. Favor verificar.")
+
+        if cls.l_alm_24_b_05.valor:
+            logger.warning("[TDA] Foi identificado que o Filtro de Retorno da UHTA 02 está sujo. Favor verificar.")
+
+        if cls.l_alm_24_b_06.valor:
+            logger.warning("[TDA] Foi identificado que o Nível de Óleo da UHTA 02 está crítico. Favor verificar.")
+
+        if cls.l_alm_24_b_08.valor:
+            logger.warning("[TDA] Foi identificado um Alarme de Sobretemperatura do Óleo da UHTA 02. Favor verificar.")
+
+        if cls.l_alm_24_b_13.valor:
+            logger.warning("[TDA] Foi identificada uma Falha no Acionamento da Bomba de Óleo 01 da UHTA 02. Favor verificar.")
+
+        if cls.l_alm_22_b_14.valor:
+            logger.warning("[TDA] Foi identificado que o Disjunotr QM3 da UHTA 02 foi Aberto. Favor verificar.")
+
+        if cls.l_alm_25_b_00.valor:
+            logger.warning("[TDA] Foi identificada uma Falha no Acionamento da Bomba de Óleo 02 da UHTA 02. Favor verificar.")
+
+        if cls.l_alm_25_b_01.valor:
+            logger.warning("[TDA] Foi identificado que o Disjunotr QM4 da UHTA 02 foi Aberto. Favor verificar.")
+
+        if cls.l_alm_26_b_01.valor:
+            logger.warning("[TDA] Foi identificada uma atuação do Sensor de Fumaça. Favor verificar.")
+
+        if cls.l_alm_26_b_07.valor:
+            logger.warning("[TDA] Foi identificado um erro de Leitura na Entrada Analógica da Temperatura do Óleo da UHTA 01. Favor verificar.")
+
+        if cls.l_alm_26_b_08.valor:
+            logger.warning("[TDA] Foi identificado um erro de Leitura na Entrada Analógica do Nível do Óleo da UHTA 01. Favor verificar.")
+
+        if cls.l_alm_26_b_09.valor:
+            logger.warning("[TDA] Foi identificado um erro de Leitura na Entrada Analógica da Temperatura do Óleo da UHTA 02. Favor verificar.")
+
+        if cls.l_alm_26_b_10.valor:
+            logger.warning("[TDA] Foi identificado um erro de Leitura na Entrada Analógica do Nível do Óleo da UHTA 02. Favor verificar.")
+
+        if cls.l_alm_26_b_11.valor:
+            logger.warning("[TDA] Foi identificado um erro de Leitura na Entrada Analógica da posição da Comporta 01. Favor verificar.")
+
+        if cls.l_alm_26_b_12.valor:
+            logger.warning("[TDA] Foi identificado um erro de Leitura na Entrada Analógica da posição da Comporta 02. Favor verificar.")
+
+        if cls.l_alm_26_b_13.valor:
+            logger.warning("[TDA] Foi identificado um erro de Leitura na Entrada Analógica da posição da Comporta 03. Favor verificar.")
+
+        if cls.l_alm_26_b_14.valor:
+            logger.warning("[TDA] Foi identificado um erro de Leitura na Entrada Analógica da posição da Comporta 04. Favor verificar.")
+
+
         if cls.l_uhta01_nv_oleo_ll.valor and not d.voip["UHTA01_NIVEL_OLEO_LL"][0]:
             logger.warning("[TDA] Foi identificado que o nível do Óleo da UHTA 1 está Muito Baixo. Favor verificar.")
             d.voip["UHTA01_NIVEL_OLEO_LL"][0] = True
@@ -210,6 +283,9 @@ class TomadaAgua:
 
         cls.l_alm_22_b_08 = lei.LeituraModbusBit(cls.clp["TDA"], REG_TDA["Alarme22_08"], descricao="[TDA] UHTA01 - Nível de Óleo Alto")
         cls.condicionadores.append(c.CondicionadorBase(cls.l_alm_22_b_08, CONDIC_NORMALIZAR))
+
+        cls.l_alm_22_b_09 = lei.LeituraModbusBit(cls.clp["TDA"], REG_TDA["Alarme22_09"], descricao="[TDA] UHTA01 - Sobretemperatura do Óleo - Alarme")
+        cls.condicionadores.append(c.CondicionadorBase(cls.l_alm_22_b_09, CONDIC_NORMALIZAR))
 
         cls.l_alm_22_b_14 = lei.LeituraModbusBit(cls.clp["TDA"], REG_TDA["Alarme22_14"], descricao="[TDA] UHTA01 - Bomba de Óleo 01 - Falha no Acionamento")
         cls.condicionadores.append(c.CondicionadorBase(cls.l_alm_22_b_14, CONDIC_NORMALIZAR))
