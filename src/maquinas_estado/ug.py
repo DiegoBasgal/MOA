@@ -195,7 +195,9 @@ class StateDisponivel(State):
             return self if self.parent.normalizar_unidade() else StateIndisponivel(self.parent)
 
         else:
+            if self.parent.etapa in (UG_SINCRONIZANDO, UG_SINCRONIZADA):
+                self.parent.atenuar_carga()
+
             self.parent.controlar_etapas()
-            self.parent.atenuar_carga()
 
             return self

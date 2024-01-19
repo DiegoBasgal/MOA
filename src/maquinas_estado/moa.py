@@ -300,7 +300,8 @@ class ModoManual(State):
         self.usn.controle_i = max(min(self.usn.controle_ie - (self.usn.controle_i * self.usn.cfg["ki"]) - self.usn.cfg["kp"] * self.usn.tda.erro_nivel - self.usn.cfg["kd"] * (self.usn.tda.erro_nivel - self.usn.tda.erro_nivel_anterior), 0.8), 0)
 
         self.usn.escrever_valores()
-        sleep(30000)
+
+        sleep(30)
 
         if self.usn.modo_autonomo:
             logger.debug("Comando acionado: \"Habilitar modo autônomo\"")
