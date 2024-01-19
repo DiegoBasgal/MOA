@@ -555,13 +555,13 @@ class Usina:
             logger.debug(f"[USN]          Leitura:                   {self.nv_montante:0.3f}")
             logger.debug(f"[USN]          Filtro EMA:                {self.nv_montante_recente:0.3f}")
 
-            '''if self.nv_montante_recente <= NIVEL_FUNDO_RESERVATORIO:
-                if not Servidores.ping(d.ips["TDA_ip"]) or not self.clp["TDA"].open():
+            if self.nv_montante_recente <= NIVEL_FUNDO_RESERVATORIO:
+                if self.nv_montante <= 400 or not self.clp["TDA"].open():
                     d.glb["TDA_Offline"] = True
                     return NV_FLAG_NORMAL
                 else:
                     logger.critical(f"[USN] Nível montante ({self.nv_montante_recente:3.2f}) atingiu o fundo do reservatorio!")
-                    return NV_FLAG_EMERGENCIA'''
+                    return NV_FLAG_EMERGENCIA
 
             if self.nv_montante_recente < self.cfg["nv_minimo"]:
                 self.aguardando_reservatorio = True
