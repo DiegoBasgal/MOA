@@ -731,6 +731,7 @@ class UnidadeGeracao:
 
         ganho = 1 - self.atenuacao
         aux = self.setpoint
+        self.atenuacao = 0
         if (self.setpoint > self.setpoint_minimo) and self.setpoint * ganho > self.setpoint_minimo:
             self.setpoint = self.setpoint * ganho
 
@@ -739,6 +740,7 @@ class UnidadeGeracao:
 
         if self.etapa == UG_SINCRONIZADA and ganho < 1:
             logger.debug(f"[UG{self.id}]                                     SP {aux} * GANHO {ganho} = {self.setpoint} kW")
+        
 
 
     def controlar_etapas(self) -> "None":
