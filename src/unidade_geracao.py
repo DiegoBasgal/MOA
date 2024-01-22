@@ -1090,38 +1090,68 @@ class UnidadeGeracao:
 
         if (self.l_temp_patins_mancal_comb_1.valor >= 0.9*(self.condic_temp_patins_mancal_comb_1_ug.valor_limite - self.condic_temp_patins_mancal_comb_1_ug.valor_base) + self.condic_temp_patins_mancal_comb_1_ug.valor_base) and self.brd_t_pat_manc_comb_1 in (0,1):
             self.brd_t_pat_manc_comb_1 = 2
-            logger.debug(f"[UG{self.id}] A temperatura dos Patins do Mancal combinado 1 da UG está muito próxima do limite! ({self.condic_temp_patins_mancal_comb_1_ug.valor_limite}C) | Leitura: {self.l_temp_patins_mancal_comb_1.valor}C")
+            logger.debug(f"[UG{self.id}] A temperatura dos Patins do Mancal combinado 1 da UG está muito próxima do limite! ({self.condic_temp_patins_mancal_comb_1_ug.valor_limite}C) | Leitura: {self.l_temp_patins_mancal_comb_1.valor:0.2f}C")
 
         if self.l_temp_patins_mancal_comb_1.valor <= self.condic_temp_patins_mancal_comb_1_ug.valor_base and self.brd_t_pat_manc_comb_1 in (1,2):
             self.brd_t_pat_manc_comb_1 = 0
-            logger.info(f"[UG{self.id}] A temperatura do Patins do Mancal Combinado 1 ")
-
-
-        if self.l_temp_patins_mancal_comb_2.valor >= self.condic_temp_patins_mancal_comb_2_ug.valor_base:
-            logger.debug(f"[UG{self.id}] A temperatura dos Patins do Mancal combinado 2 da UG passou do valor base! ({self.condic_temp_patins_mancal_comb_2_ug.valor_base}C) | Leitura: {self.l_temp_patins_mancal_comb_2.valor}C")
-        if self.l_temp_patins_mancal_comb_2.valor >= 0.9*(self.condic_temp_patins_mancal_comb_2_ug.valor_limite - self.condic_temp_patins_mancal_comb_2_ug.valor_base) + self.condic_temp_patins_mancal_comb_2_ug.valor_base:
-            logger.debug(f"[UG{self.id}] A temperatura dos Patins do Mancal combinado 2 da UG está muito próxima do limite! ({self.condic_temp_patins_mancal_comb_2_ug.valor_limite}C) | Leitura: {self.l_temp_patins_mancal_comb_2.valor}C")
+            logger.info(f"[UG{self.id}] A temperatura do Patins do Mancal Combinado 1 voltou ao Normal. Leitura: {self.l_temp_patins_mancal_comb_1.valor:0.2f}C")
 
 
 
-        if self.l_temp_mancal_casq_comb.valor >= self.condic_temp_mancal_casq_comb_ug.valor_base:
-            logger.debug(f"[UG{self.id}] A temperatura do Mancal Casquilho combinado da UG passou do valor base! ({self.condic_temp_mancal_casq_comb_ug.valor_base}C) | Leitura: {self.l_temp_mancal_casq_comb.valor}C")
-        if self.l_temp_mancal_casq_comb.valor >= 0.9*(self.condic_temp_mancal_casq_comb_ug.valor_limite - self.condic_temp_mancal_casq_comb_ug.valor_base) + self.condic_temp_mancal_casq_comb_ug.valor_base:
-            logger.debug(f"[UG{self.id}] A temperatura do Mancal Casquilho combinado da UG está muito próxima do limite! ({self.condic_temp_mancal_casq_comb_ug.valor_limite}C) | Leitura: {self.l_temp_mancal_casq_comb.valor}C")
+        if self.l_temp_patins_mancal_comb_2.valor >= self.condic_temp_patins_mancal_comb_2_ug.valor_base and self.brd_t_pat_manc_comb_2 == 0:
+            self.brd_t_pat_manc_comb_2 = 1
+            logger.debug(f"[UG{self.id}] A temperatura dos Patins do Mancal combinado 2 da UG passou do valor base! ({self.condic_temp_patins_mancal_comb_2_ug.valor_base}C) | Leitura: {self.l_temp_patins_mancal_comb_2.valor:0.2f}C")
+
+        if (self.l_temp_patins_mancal_comb_2.valor >= 0.9*(self.condic_temp_patins_mancal_comb_2_ug.valor_limite - self.condic_temp_patins_mancal_comb_2_ug.valor_base) + self.condic_temp_patins_mancal_comb_2_ug.valor_base) and self.brd_t_pat_manc_comb_2 in (0,1):
+            self.brd_t_pat_manc_comb_2 = 2
+            logger.debug(f"[UG{self.id}] A temperatura dos Patins do Mancal combinado 2 da UG está muito próxima do limite! ({self.condic_temp_patins_mancal_comb_2_ug.valor_limite}C) | Leitura: {self.l_temp_patins_mancal_comb_2.valor:0.2f}C")
+
+        if self.l_temp_patins_mancal_comb_2.valor <= self.condic_temp_patins_mancal_comb_2_ug.valor_base and self.brd_t_pat_manc_comb_2 in (1,2):
+            self.brd_t_pat_manc_comb_2 = 0
+            logger.info(f"[UG{self.id}] A temperatura do Patins do Mancal Combinado 2 voltou ao Normal. Leitura: {self.l_temp_patins_mancal_comb_2.valor:0.2f}C")
 
 
 
-        if self.l_temp_mancal_contra_esc_comb.valor >= self.condic_temp_mancal_contra_esc_comb_ug.valor_base:
-            logger.debug(f"[UG{self.id}] A temperatura do Mancal Contra Escora combinado da UG passou do valor base! ({self.condic_temp_mancal_contra_esc_comb_ug.valor_base}C) | Leitura: {self.l_temp_mancal_contra_esc_comb.valor}C")
-        if self.l_temp_mancal_contra_esc_comb.valor >= 0.9*(self.condic_temp_mancal_contra_esc_comb_ug.valor_limite - self.condic_temp_mancal_contra_esc_comb_ug.valor_base) + self.condic_temp_mancal_contra_esc_comb_ug.valor_base:
-            logger.debug(f"[UG{self.id}] A temperatura do Mancal Contra Escora combinado da UG está muito próxima do limite! ({self.condic_temp_mancal_contra_esc_comb_ug.valor_limite}C) | Leitura: {self.l_temp_mancal_contra_esc_comb.valor}C")
+        if self.l_temp_mancal_casq_comb.valor >= self.condic_temp_mancal_casq_comb_ug.valor_base and self.brd_t_manc_casq_comb == 0:
+            self.brd_t_manc_casq_comb = 1
+            logger.debug(f"[UG{self.id}] A temperatura do Mancal Casquilho Combinado da UG passou do valor base! ({self.condic_temp_mancal_casq_comb_ug.valor_base}C) | Leitura: {self.l_temp_mancal_casq_comb.valor:0.2f}C")
+
+        if (self.l_temp_mancal_casq_comb.valor >= 0.9*(self.condic_temp_mancal_casq_comb_ug.valor_limite - self.condic_temp_mancal_casq_comb_ug.valor_base) + self.condic_temp_mancal_casq_comb_ug.valor_base) and self.brd_t_manc_casq_comb in (0,1):
+            self.brd_t_manc_casq_comb = 2
+            logger.debug(f"[UG{self.id}] A temperatura do Mancal Casquilho Combinado da UG está muito próxima do limite! ({self.condic_temp_mancal_casq_comb_ug.valor_limite}C) | Leitura: {self.l_temp_mancal_casq_comb.valor:0.2f}C")
+
+        if self.l_temp_mancal_casq_comb.valor <= self.condic_temp_mancal_casq_comb_ug.valor_base and self.brd_t_manc_casq_comb in (1,2):
+            self.brd_t_manc_casq_comb = 0
+            logger.info(f"[UG{self.id}] A temperatura do Mancal Casquilho Combinado voltou ao Normal. Leitura: {self.l_temp_patins_mancal_comb_2.valor:0.2f}C")
 
 
 
-        if self.l_pressao_turbina.valor <= self.condic_pressao_turbina_ug.valor_base and self.l_pressao_turbina.valor != 0 and self.etapa == UG_SINCRONIZADA:
+        if self.l_temp_mancal_contra_esc_comb.valor >= self.condic_temp_mancal_contra_esc_comb_ug.valor_base and self.brd_t_manc_con_esc_comb == 0:
+            self.brd_t_manc_con_esc_comb = 1
+            logger.debug(f"[UG{self.id}] A temperatura do Mancal Contra Escora Combinado da UG passou do valor base! ({self.condic_temp_mancal_contra_esc_comb_ug.valor_base}C) | Leitura: {self.l_temp_mancal_contra_esc_comb.valor:0.2f}C")
+
+        if (self.l_temp_mancal_contra_esc_comb.valor >= 0.9*(self.condic_temp_mancal_contra_esc_comb_ug.valor_limite - self.condic_temp_mancal_contra_esc_comb_ug.valor_base) + self.condic_temp_mancal_contra_esc_comb_ug.valor_base) and self.brd_t_manc_con_esc_comb in (0,1):
+            self.brd_t_manc_con_esc_comb = 2
+            logger.debug(f"[UG{self.id}] A temperatura do Mancal Contra Escora Combinado da UG está muito próxima do limite! ({self.condic_temp_mancal_contra_esc_comb_ug.valor_limite}C) | Leitura: {self.l_temp_mancal_contra_esc_comb.valor:0.2f}C")
+
+        if self.l_temp_mancal_contra_esc_comb.valor >= self.condic_temp_mancal_contra_esc_comb_ug.valor_base and self.brd_t_manc_con_esc_comb in (1,2):
+            self.brd_t_manc_con_esc_comb = 0
+            logger.info(f"[UG{self.id}] A temperatura do Mancal Contra Escora Combinado voltou ao Normal. Leitura: {self.l_temp_patins_mancal_comb_2.valor:0.2f}C")
+
+
+
+        if self.l_pressao_turbina.valor <= self.condic_pressao_turbina_ug.valor_base and self.l_pressao_turbina.valor != 0 and self.etapa == UG_SINCRONIZADA and self.brd_p_ent_turb == 0:
+            self.brd_p_ent_turb = 1
             logger.debug(f"[UG{self.id}] A pressão na entrada da turbina da UG passou do valor base! ({self.condic_pressao_turbina_ug.valor_base:03.2f} KGf/m2) | Leitura: {self.l_pressao_turbina.valor:03.2f}")
-        if self.l_pressao_turbina.valor <= self.condic_pressao_turbina_ug.valor_limite+0.9*(self.condic_pressao_turbina_ug.valor_base - self.condic_pressao_turbina_ug.valor_limite) and self.l_pressao_turbina.valor != 0 and self.etapa == UG_SINCRONIZADA:
+
+        if self.l_pressao_turbina.valor <= self.condic_pressao_turbina_ug.valor_limite+0.9*(self.condic_pressao_turbina_ug.valor_base - self.condic_pressao_turbina_ug.valor_limite) and self.l_pressao_turbina.valor != 0 and self.etapa == UG_SINCRONIZADA and self.brd_p_ent_turb in (0,1):
+            self.brd_p_ent_turb = 2
             logger.debug(f"[UG{self.id}] A pressão na entrada da turbina da UG está muito próxima do limite! ({self.condic_pressao_turbina_ug.valor_limite:03.2f} KGf/m2) | Leitura: {self.l_pressao_turbina.valor:03.2f} KGf/m2")
+
+        if self.l_pressao_turbina.valor >= self.condic_pressao_turbina_ug.valor_base and self.l_pressao_turbina.valor != 0 and self.etapa == UG_SINCRONIZADA and self.brd_p_ent_turb in (1,2):
+            self.brd_p_ent_turb = 0
+            logger.info(f"[UG{self.id}] A Pressão na Entrada da Turbina voltou ao Normal. Leitura: {self.l_pressao_turbina.valor:03.2f} KGf/m2")
+
 
 
     def verificar_leituras(self) -> "None":
