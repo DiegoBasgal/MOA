@@ -593,8 +593,6 @@ class Usina:
         for ug in self.ugs:
             ug.atualizar_limites(parametros)
 
-        # self.heartbeat()
-
 
     def atualizar_valores_banco(self, parametros) -> "None":
         """
@@ -732,44 +730,44 @@ class Usina:
                 self.clp["MOA"].write_single_register(REG_CLP["MOA"]["OUT_TARGET_LEVEL"], int((self.cfg["nv_alvo"] - 400) * 1000))
                 self.clp["MOA"].write_single_register(REG_CLP["MOA"]["OUT_SETPOINT"], int(sum(ug.setpoint for ug in self.ugs)))
 
-                if self.clp["MOA"].read_coils(REG_CLP["MOA"]["IN_EMERG"])[0] == 1 and not self.borda_emergencia:
+                if self.clp["MOA"].read_coils(REG_CLP["MOA"]["IN_EMERG"])[0] and not self.borda_emergencia:
                     self.borda_emergencia = True
                     for ug in self.ugs:
                         ug.verificar_condicionadores(ug)
 
-                elif self.clp["MOA"].read_coils(REG_CLP["MOA"]["IN_EMERG"])[0] == 0 and self.borda_emergencia:
+                elif not self.clp["MOA"].read_coils(REG_CLP["MOA"]["IN_EMERG"])[0] and self.borda_emergencia:
                     self.borda_emergencia = False
 
-                if self.clp["MOA"].read_coils(REG_CLP["MOA"]["IN_EMERG_UG1"])[0] == 1:
+                if self.clp["MOA"].read_coils(REG_CLP["MOA"]["IN_EMERG_UG1"])[0]:
                     self.ug1.verificar_condicionadores()
 
-                if self.clp["MOA"].read_coils(REG_CLP["MOA"]["IN_EMERG_UG2"])[0] == 1:
+                if self.clp["MOA"].read_coils(REG_CLP["MOA"]["IN_EMERG_UG2"])[0]:
                     self.ug2.verificar_condicionadores()
 
-                if self.clp["MOA"].read_coils(REG_CLP["MOA"]["IN_HABILITA_AUTO"])[0] == 1:
+                if self.clp["MOA"].read_coils(REG_CLP["MOA"]["IN_HABILITA_AUTO"])[0]:
                     self.clp["MOA"].write_single_coil(REG_CLP["MOA"]["IN_HABILITA_AUTO"], 1)
                     self.clp["MOA"].write_single_coil(REG_CLP["MOA"]["IN_DESABILITA_AUTO"], 0)
                     self.modo_autonomo = True
 
-                if self.clp["MOA"].read_coils(REG_CLP["MOA"]["IN_DESABILITA_AUTO"])[0] == 1:
+                if self.clp["MOA"].read_coils(REG_CLP["MOA"]["IN_DESABILITA_AUTO"])[0]:
                     self.clp["MOA"].write_single_coil(REG_CLP["MOA"]["IN_HABILITA_AUTO"], 0)
                     self.clp["MOA"].write_single_coil(REG_CLP["MOA"]["IN_DESABILITA_AUTO"], 1)
                     self.modo_autonomo = False
 
-                if self.clp["MOA"].read_coils(REG_CLP["MOA"]["OUT_BLOCK_UG1"]) == 1:
+                if self.clp["MOA"].read_coils(REG_CLP["MOA"]["OUT_BLOCK_UG1"])[0]:
                     self.clp["MOA"].write_single_coil(REG_CLP["MOA"]["OUT_BLOCK_UG1"], 1)
 
-                elif self.clp["MOA"].read_coils(REG_CLP["MOA"]["OUT_BLOCK_UG1"]) == 0:
+                elif not self.clp["MOA"].read_coils(REG_CLP["MOA"]["OUT_BLOCK_UG1"])[0]:
                     self.clp["MOA"].write_single_coil(REG_CLP["MOA"]["OUT_BLOCK_UG1"], 0)
 
-                if self.clp["MOA"].read_coils(REG_CLP["MOA"]["OUT_BLOCK_UG2"]) == 1:
+                if self.clp["MOA"].read_coils(REG_CLP["MOA"]["OUT_BLOCK_UG2"])[0]:
                     self.clp["MOA"].write_single_coil(REG_CLP["MOA"]["OUT_BLOCK_UG2"], 1)
 
-                elif self.clp["MOA"].read_coils(REG_CLP["MOA"]["OUT_BLOCK_UG2"]) == 0:
+                elif not self.clp["MOA"].read_coils(REG_CLP["MOA"]["OUT_BLOCK_UG2"])[0]:
                     self.clp["MOA"].write_single_coil(REG_CLP["MOA"]["OUT_BLOCK_UG2"], 0)
 
             else:
-                if self.clp["MOA"].read_coils(REG_CLP["MOA"]["IN_HABILITA_AUTO"])[0] == 1:
+                if self.clp["MOA"].read_coils(REG_CLP["MOA"]["IN_HABILITA_AUTO"])[0]:
                     self.clp["MOA"].write_single_coil(REG_CLP["MOA"]["IN_HABILITA_AUTO"], 1)
                     self.clp["MOA"].write_single_coil(REG_CLP["MOA"]["IN_DESABILITA_AUTO"], 0)
                     self.modo_autonomo = True

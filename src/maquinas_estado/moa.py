@@ -127,6 +127,8 @@ class ControleEstados(State):
 
         self.usn.ler_valores()
 
+        logger.debug("")
+
         logger.debug("Verificando modo do MOA...")
         if not self.usn.modo_autonomo:
             logger.debug("")
@@ -175,6 +177,9 @@ class ControleEstados(State):
             else:
                 # logger.debug("Verificando operação do Limpa Grades...")
                 # self.usn.tda.operar_limpa_grades()
+
+                logger.debug("Heartbeat...")
+                self.usn.heartbeat()
 
                 return ControleReservatorio(self.usn)
 

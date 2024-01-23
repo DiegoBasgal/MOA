@@ -816,17 +816,17 @@ REG_CLP = {
 
         ## RV
 
-        "RV_FLH_HABILITAR":                             [43, 0],
-        "RV_FLH_PARTIR":                                [43, 1],
-        "RV_FLH_DESABILITAR":                           [43, 2],
-        "RV_FLH_FECHAR_DISTRIBUIDOR":                   [43, 4],
+        "RV_FLH_HABILITAR":                             [42, 0],
+        "RV_FLH_PARTIR":                                [42, 1],
+        "RV_FLH_DESABILITAR":                           [42, 2],
+        "RV_FLH_FECHAR_DISTRIBUIDOR":                   [42, 4],
 
 
         ## RT
 
-        "RT_FLH_HABILITAR":                             [43, 8],
-        "RT_FLH_PARTIR":                                [43, 9],
-        "RT_FLH_DESABILITAR":                           [43, 10],
+        "RT_FLH_HABILITAR":                             [43, 0],
+        "RT_FLH_PARTIR":                                [43, 1],
+        "RT_FLH_DESABILITAR":                           [43, 2],
 
 
 
@@ -1148,17 +1148,17 @@ REG_CLP = {
 
         ## RV
 
-        "RV_FLH_HABILITAR":                             [43, 0],
-        "RV_FLH_PARTIR":                                [43, 1],
-        "RV_FLH_DESABILITAR":                           [43, 2],
-        "RV_FLH_FECHAR_DISTRIBUIDOR":                   [43, 4],
+        "RV_FLH_HABILITAR":                             [42, 0],
+        "RV_FLH_PARTIR":                                [42, 1],
+        "RV_FLH_DESABILITAR":                           [42, 2],
+        "RV_FLH_FECHAR_DISTRIBUIDOR":                   [42, 4],
 
 
         ## RT
 
-        "RT_FLH_HABILITAR":                             [43, 8],
-        "RT_FLH_PARTIR":                                [43, 9],
-        "RT_FLH_DESABILITAR":                           [43, 10],
+        "RT_FLH_HABILITAR":                             [43, 0],
+        "RT_FLH_PARTIR":                                [43, 1],
+        "RT_FLH_DESABILITAR":                           [43, 2],
 
 
         ## COMANDOS_UG
