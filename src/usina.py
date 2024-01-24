@@ -15,8 +15,8 @@ from src.dicionarios.const import *
 from src.mensageiro.voip import Voip
 from src.conectores.servidores import Servidores
 from src.conectores.banco_dados import BancoDados
-from src.agendamentos import Agendamentos
 from src.unidade_geracao import UnidadeDeGeracao
+from src.funcoes.agendamentos import Agendamentos
 from src.funcoes.escrita import EscritaModBusBit as EMB
 
 logger = logging.getLogger("logger")

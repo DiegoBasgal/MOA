@@ -11,9 +11,9 @@ from datetime import datetime
 from src.dicionarios.reg import *
 from src.dicionarios.const import *
 
-from src.condicionadores import *
 from src.funcoes.leitura import *
 from src.maquinas_estado.ug import *
+from src.funcoes.condicionadores import *
 
 from src.conectores.banco_dados import BancoDados
 from src.conectores.servidores import Servidores

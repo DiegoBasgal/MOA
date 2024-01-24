@@ -8,11 +8,11 @@ from time import time
 from datetime import datetime
 
 from src.funcoes.leitura import *
-from src.condicionadores import *
 from src.dicionarios.reg import *
 from src.dicionarios.const import *
 from src.dicionarios.reg_old import *
 
+from src.funcoes.condicionadores import *
 from src.conectores.banco_dados import BancoDados
 
 
