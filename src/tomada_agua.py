@@ -1,0 +1,126 @@
+__version__ = "0.1"
+__author__ = "Diego Basgal", "Henrique Pfeifer"
+__credits__ = ["Lucas Lavratti", ...]
+__description__ = "Este módulo corresponde a implementação da operação da Tomada da Água."
+
+import pytz
+import logging
+import traceback
+
+import src.dicionarios.dict as d
+import src.funcoes.leitura as lei
+import src.conectores.banco_dados as bd
+import src.funcoes.condicionadores as c
+import src.conectores.servidores as serv
+
+from datetime import datetime
+
+from src.dicionarios.reg import *
+from src.dicionarios.const import *
+
+
+logger = logging.getLogger("logger")
+
+
+class TomadaAgua:
+
+    # ATRIBUIÇÃO DE VARIÁVEIS
+
+    bd: "bd.BancoDados"=None
+    clp = serv.Servidores.clp
+    cfg: "dict" = {}
+
+    nv_montante = lei.LeituraModbusFloat(
+        clp["TDA"],
+        REG_GERAL["GERAL_EA_NIVEL_MONTANTE_GRADE"],
+        descricao="[USN] Nível Montante"
+    )
+
+    erro_nv: "float" = 0
+    erro_nv_anterior: "float" = 0
+    nv_montante_recente: "float" = 0
+    nv_montante_anterior: "float" = 0
+
+    condicionadores: "list[c.CondicionadorBase]" = []
+    condicionadores_essenciais: "list[c.CondicionadorBase]" = []
+
+
+    @classmethod
+    def atualizar_valores_montante(cls) -> "None":
+
+        cls.nv_montante_recente = cls.nv_montante.valor if 820 < cls.nv_montante.valor < 825 else cls.nv_montante_recente
+        cls.erro_nv_anterior = cls.erro_nv
+        cls.erro_nv = cls.nv_montante_recente - cls.cfg["nv_alvo"]
+
+
+    @classmethod
+    def verificar_condicionadores(cls) -> "list[c.CondicionadorBase]":
+        """
+        Função para verificação de TRIPS/Alarmes.
+
+        Verifica os condicionadores ativos e retorna lista com os mesmos para a função de verificação
+        da Classe da Usina determinar as ações necessárias.
+        """
+
+        autor = 0
+
+        if True in (condic.ativo for condic in cls.condicionadores_essenciais):
+            condics_ativos = [condic for condics in [cls.condicionadores_essenciais, cls.condicionadores] for condic in condics if condic.ativo]
+
+            logger.debug("")
+            if cls.condicionadores_ativos == []:
+                logger.warning(f"[TDA] Foram detectados Condicionadores ativos na Subestação!")
+            else:
+                logger.info(f"[TDA] Ainda há Condicionadores ativos na Subestação!")
+
+            for condic in condics_ativos:
+                if condic in cls.condicionadores_ativos:
+                    logger.debug(f"[TDA] Descrição: \"{condic.descricao}\", Gravidade: \"{CONDIC_STR_DCT[condic.gravidade] if condic.gravidade in CONDIC_STR_DCT else 'Desconhecida'}\"")
+                    continue
+
+                else:
+                    logger.warning(f"[TDA] Descrição: \"{condic.descricao}\", Gravidade: \"{CONDIC_STR_DCT[condic.gravidade] if condic.gravidade in CONDIC_STR_DCT else 'Desconhecida'}\"")
+                    cls.condicionadores_ativos.append(condic)
+                    cls.bd.update_alarmes([
+                        datetime.now(pytz.timezone("Brazil/East")).replace(tzinfo=None),
+                        condic.gravidade,
+                        condic.descricao,
+                        "X" if autor == 0 else ""
+                    ])
+
+            logger.debug("")
+            return condics_ativos
+
+        else:
+            cls.condicionadores_ativos = []
+            return []
+
+
+    @classmethod
+    def verificar_leituras(cls) -> "None":
+        """
+        Função para consulta de acionamentos da usina e avisos através do mecanismo
+        de acionamento temporizado.
+        """
+
+        if cls.leitura_EA_nv_montante_muito_baixo.valor:
+            logger.warning("[OCO-USN] Foi identificado que o Nível Montante está muito baixo, favor verificar.")
+
+        if cls.leitura_EA_nv_montante_baixo.valor:
+            logger.warning("[OCO-USN] Foi identificado que o Nível Montante está baixo, favor verificar.")
+
+        if cls.leitura_EA_nv_montante_muito_baixo.valor and not d.voip["SA_EA_PSA_NIVEL_MONTANTE_MUITO_BAIXO"][0]:
+            logger.warning("[OCO-USN] Foi identificado que o Nível Montante está Muito Baixo, favor verificar.")
+            d.voip["SA_EA_PSA_NIVEL_MONTANTE_MUITO_BAIXO"][0] = True
+        elif not cls.leitura_EA_nv_montante_muito_baixo.valor and d.voip["SA_EA_PSA_NIVEL_MONTANTE_MUITO_BAIXO"][0]:
+            d.voip["SA_EA_PSA_NIVEL_MONTANTE_MUITO_BAIXO"][0] = False
+
+
+    @classmethod
+    def carregar_leituras(cls) -> "None":
+        """
+        Função para carregamento de todas as leituras para acionamentos de avisos
+        e emergências da Usina.
+        """
+        cls.leitura_EA_nv_montante_muito_baixo = lei.LeituraModbusBit(cls.clp["SA"], REG["CONDIC_SA"]["SA_EA_PSA_NIVEL_MONTANTE_MUITO_BAIXO"], descricao="[USN] Nível Montante Muito Baixo")
+        cls.leitura_EA_nv_montante_baixo = lei.LeituraModbusBit(cls.clp["TDA"], REG["CONDIC_SA"]["SA_EA_PSA_NIVEL_MONTANTE_BAIXO"], descricao="[USN] Nível Montante Baixo") # TODO -> verificar se alterar o clp adiantou
