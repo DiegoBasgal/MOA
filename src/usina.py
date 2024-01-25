@@ -4,8 +4,8 @@ import traceback
 
 import src.subestacao as se
 import src.tomada_agua as tda
-import src.ocorrencias as oco
 import src.unidade_geracao as un
+import src.servico_auxiliar as sa
 
 import src.mensageiro.voip as vp
 
@@ -33,49 +33,35 @@ class Usina:
     def __init__(self, cfg: "dict"=None):
 
         # VERIFICAÇÃO DE ARGUMENTOS
-
         if None in (cfg):
             raise ValueError("[USN] Não foi possível carregar os arquivos de configuração (\"cfg.json\").")
         else:
             self.cfg = cfg
 
-
         # INCIALIZAÇÃO DE OBJETOS DA USINA
-
         self.clp = srv.Servidores.clp
 
         self.se = se.Subestacao
         self.tda = tda.TomadaAgua
+        self.sa = sa.ServicoAuxiliar
 
         self.bd = bd.BancoDados("MOA-PPN")
-        self.oco = oco.OcorrenciasGerais(self.clp, self.bd)
         self.agn = agn.Agendamentos(self.cfg, self.bd, self)
 
         self.ug1 = un.UnidadeDeGeracao(1, self.cfg, self.bd)
         self.ug2 = un.UnidadeDeGeracao(2, self.cfg, self.bd)
         self.ugs: "list[un.UnidadeDeGeracao]" = [self.ug1, self.ug2]
 
-
         # ATRIBUIÇÃO DE VARIÁVEIS PRIVADAS
-
         self.__pid_inicial: "int" = -1
 
-
-
-
         # ATRIBUIÇÃO DE VARIÁVEIS PROTEGIDAS
-
         self._pot_alvo_anterior: "int" = -1
         self._tentativas_normalizar: "int" = 0
 
         self._modo_autonomo: "bool" = False
 
-
-
-
-
         # ATRIBUIÇÃO DE VARIÁVEIS PÚBLICAS
-
         self.estado_moa: "int" = 0
 
         self.pot_disp: "int" = 0
@@ -90,21 +76,14 @@ class Usina:
         self.borda_emerg: "bool" = False
         self.bd_emergencia: "bool" = False
         self.clp_emergencia: "bool" = False
-
         self.tentar_normalizar: "bool" = True
         self.normalizar_forcado: "bool" = False
-
         self.aguardando_reservatorio: "bool" = False
 
         self.ultima_tentativa_norm: "datetime" = self.get_time()
 
-
         # EXECUÇÃO FINAL DA INICIALIZAÇÃO
-
         logger.debug("")
-        for ug in self.ugs:
-            ug.lista_ugs = self.ugs
-            ug.iniciar_ultimo_estado()
 
         self.ler_valores()
         self.ajustar_inicializacao()
@@ -156,25 +135,10 @@ class Usina:
 
         try:
             for ug in self.ugs:
-                esc.EscritaModBusBit.escrever_bit(self.clp[f"UG{ug.id}"], REG["UG"][f"UG{ug.id}_CD_CMD_PARADA_EMERGENCIA"], valor=1)
+                esc.EscritaModBusBit.escrever_bit(self.clp[f"UG{ug.id}"], REG_UG[f"UG{ug.id}"][f"UG_CD_CMD_PARADA_EMERGENCIA"], valor=1)
 
         except Exception:
             logger.error(f"[USN] Houve um erro ao acionar a Emergência.")
-            logger.debug(traceback.format_exc())
-
-
-    def resetar_emergencia(self) -> "None":
-        try:
-            logger.info(f"[USN] Enviando comando:                   \"RESET GERAL\"")
-
-            esc.EscritaModBusBit.escrever_bit(self.clp["SA"], REG["SA"]["SA_CD_REARME_FALHAS"], valor=1)
-            esc.EscritaModBusBit.escrever_bit(self.clp["SA"], REG["GERAL"]["GERAL_CD_RESET_GERAL"], valor=1)
-
-            for ug in self.ugs:
-                esc.EscritaModBusBit.escrever_bit(self.clp[f"UG{ug.id}"], REG["UG"][f"UG{ug.id}_CD_CMD_REARME_FALHAS"], valor=1)
-
-        except Exception:
-            logger.error(f"[USN] Houve um erro ao realizar o Reset Geral.")
             logger.debug(traceback.format_exc())
 
 
@@ -194,7 +158,9 @@ class Usina:
             logger.info(f"[USN] Normalizando Usina... (Tentativa {self.tentativas_normalizar}/3)")
             self.bd_emergencia = False
             self.clp_emergencia = False
-            self.resetar_emergencia()
+            self.sa.resetar_emergencia()
+            for ug in self.ugs: ug.resetar_emergencia()
+
             sleep(2)
             if not self.se.djl_manual:
                 self.se.fechar_dj_linha()
@@ -206,6 +172,7 @@ class Usina:
             logger.debug("")
             logger.debug("[USN] A normalização foi executada menos de 5 minutos atrás...")
             return NORM_USN_JA_EXECUTADA
+
 
     def verificar_condicionadores(self) -> "int":
         flag = CONDIC_IGNORAR
@@ -225,13 +192,15 @@ class Usina:
 
         return flag
 
+
     def verificar_leituras_periodicas(self) -> "None":
         try:
             logger.debug("[USN] Iniciando o timer de leitura periódica...")
+
             while True:
-                # for ug in self.ugs:
-                #     ug.oco.verificar_leituras()
-                # self.oco.verificar_leituras()
+                self.sa.verificar_leituras()
+                self.tda.verificar_leituras()
+                for ug in self.ugs: ug.verificar_leituras()
 
                 if True in (d.voip[r][0] for r in d.voip):
                     vp.Voip.acionar_chamada()
@@ -464,9 +433,9 @@ class Usina:
         self.atualizar_valores_cfg(parametros)
         self.atualizar_valores_banco(parametros)
 
-        # if self.clp["SA"].read_coils(REG["SA"]["RESERVA_X"])[0] == 1 and not self.modo_autonomo:
+        # if self.clp["SA"].read_coils(REG_SA["RESERVA_X"])[0] == 1 and not self.modo_autonomo:
         #     self.modo_autonomo = True
-        # elif self.clp["SA"].read_coils(REG["SA"]["RESERVA_X"])[0] == 0 and self.modo_autonomo:
+        # elif self.clp["SA"].read_coils(REG_SA["RESERVA_X"])[0] == 0 and self.modo_autonomo:
         #     self.modo_autonomo == False
 
         for ug in self.ugs:

@@ -1,5 +1,3 @@
-
-
 REG_SASE = {
     ### COMANDOS
     ## CMD_SA_SE

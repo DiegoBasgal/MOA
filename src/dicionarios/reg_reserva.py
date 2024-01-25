@@ -129,6 +129,27 @@ REG_RESERVA = {
 
 
     ### RT e RV
+    ## PROGRAMÁVEL
+    "RV_PROGRAMAVEL_1":                                                              [25, 8],
+    "RV_PROGRAMAVEL_2":                                                              [25, 9],
+    "RV_PROGRAMAVEL_3":                                                              [25, 10],
+    "RV_PROGRAMAVEL_4":                                                              [25, 11],
+    "RT_PROGRAMAVEL_1":                                                              [30, 10],
+    "RT_PROGRAMAVEL_2":                                                              [30, 11],
+    "RT_RELE_SAIDA_PROGRAMAVEL_1":                                                   [31, 8],
+    "RT_RELE_SAIDA_PROGRAMAVEL_2":                                                   [31, 9],
+
+
+    # Relé
+    "RV_RELE_SAIDA_PROGRAMAVEL_":                                                    [26, 9],
+
+    # Seguidor
+    "RV_SEGUIDOR_1":                                                                 [26, 10],
+    "RV_SEGUIDOR_2":                                                                 [26, 11],
+    "RT_SEGUIDOR_1":                                                                 [31, 10],
+    "RT_SEGUIDOR_2":                                                                 [31, 11],
+
+
     ## FALHA_1
     "RV_FALHA_RESERVA":                                                             [67, 9],
 }

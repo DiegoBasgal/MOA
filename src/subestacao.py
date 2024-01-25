@@ -6,11 +6,9 @@ __description__ = "Este módulo corresponde a implementação da operação da S
 import pytz
 import logging
 import traceback
-import threading
 
 import src.servico_auxiliar as sa
 
-import src.dicionarios.dict as d
 import src.funcoes.escrita as esc
 import src.funcoes.leitura as lei
 import src.funcoes.condicionadores as c
@@ -39,31 +37,31 @@ class Subestacao:
         clp["SA"],
         REG_RELE["SE"]["RELE_SE_P"],
         op=3,
-        descr="[SE]  Potência Ativa"
+        descricao="[SE]  Potência Ativa"
     )
     tensao_rs = lei.LeituraModbus(
         clp["SA"],
         REG_RELE["SE"]["RELE_SE_VAB"],
         op=4,
-        descr="[SE]  Tensão RS"
+        descricao="[SE]  Tensão RS"
     )
     tensao_st = lei.LeituraModbus(
         clp["SA"],
         REG_RELE["SE"]["RELE_SE_VBC"],
         op=4,
-        descr="[SE]  Tensão ST"
+        descricao="[SE]  Tensão ST"
     )
     tensao_tr = lei.LeituraModbus(
         clp["SA"],
         REG_RELE["SE"]["RELE_SE_VCA"],
         op=4,
-        descr="[SE]  Tensão TR"
+        descricao="[SE]  Tensão TR"
     )
 
     status_dj_linha = lei.LeituraModbusBit(
         clp["SA"],
-        REG["SA"]["SA_ED_PSA_SE_DISJ_LINHA_FECHADO"],
-        descr="[USN] Status Disjuntor Linha"
+        REG_SASE["DJ_LINHA_FECHADO"],
+        descricao="[SE]  Status Disjuntor Linha"
     )
 
     status_tensao: "int" = 0
@@ -88,7 +86,7 @@ class Subestacao:
 
             else:
                 logger.info(f"[SE]  Enviando comando:                   \"FECHAR DISJUNTOR LINHA\"")
-                res = esc.EscritaModBusBit.escrever_bit(cls.clp["SA"], REG["SA"]["SA_CD_DISJ_LINHA_FECHA"], valor=1)
+                res = esc.EscritaModBusBit.escrever_bit(cls.clp["SA"], REG_SASE["CMD_DJ_LINHA_FECHA"], valor=1)
                 return res
 
         except Exception:
@@ -241,24 +239,21 @@ class Subestacao:
         """
 
         ## CONDICIONADORES ESSENCIAIS
-        cls.l_disj_linha_aberto = lei.LeituraModbusBit(cls.clp["SA"], REG["CONDIC_SA"]["SA_ED_PSA_SE_DISJ_LINHA_ABERTO"], descr="[USN] Disjuntor de Linha Aberto")
+        cls.l_disj_linha_aberto = lei.LeituraModbusBit(cls.clp["SA"], REG_SASE["DJ_LINHA_ABERTO"], descricao="[SE]  Disjuntor de Linha Aberto")
         cls.condicionadores_essenciais.append(c.CondicionadorBase(cls.l_disj_linha_aberto, CONDIC_AGUARDAR))
 
         ## CONDICIONADORES NORMAIS
-        cls.l_te_temp_muito_alta = lei.LeituraModbusBit(cls.clp["SA"], REG["CONDIC_SA"]["SA_ED_PSA_TE_TEMPERATURA_MUITO_ALTA"], descr="[USN] Trasformador Elevador Temperatura Alta") # TODO -> Verificar invertido
+        cls.l_te_temp_muito_alta = lei.LeituraModbusBit(cls.clp["SA"], REG_SASE["TE_TEMP_MUITO_ALTA"], descricao="[SE]  Trasformador Elevador Temperatura Alta") # TODO -> Verificar invertido
         cls.condicionadores.append(c.CondicionadorBase(cls.l_te_temp_muito_alta, CONDIC_INDISPONIBILIZAR))
 
-        cls.l_te_eleva_temp_muito_alta = lei.LeituraModbusBit(cls.clp["SA"], REG["CONDIC_SA"]["SA_ED_PSA_TE_TEMPERATURA_ALTA"], descr="[USN] Trasformador Elevador Temperatura Muito Alta")
-        cls.condicionadores.append(c.CondicionadorBase(cls.l_te_eleva_temp_muito_alta, CONDIC_INDISPONIBILIZAR))
-
-        cls.l_te_press_muito_alta = lei.LeituraModbusBit(cls.clp["SA"], REG["CONDIC_SA"]["SA_ED_PSA_TE_PRESSAO_MUITO_ALTA"], descr="[USN] Trasformador Elevador Pressão Muito Alta")
+        cls.l_te_press_muito_alta = lei.LeituraModbusBit(cls.clp["SA"], REG_SASE["TE_PRESSAO_MUITO_ALTA"], descricao="[SE]  Trasformador Elevador Pressão Óleo Muito Alta")
         cls.condicionadores.append(c.CondicionadorBase(cls.l_te_press_muito_alta, CONDIC_INDISPONIBILIZAR))
 
-        cls.l_oleo_muito_baixo = lei.LeituraModbusBit(cls.clp["SA"], REG["CONDIC_SA"]["SA_ED_PSA_NIVEL_OLEO_MUITO_BAIXO"], descr="[USN] Trasformador Elevador Óleo Muito Baixo")
+        cls.l_oleo_muito_baixo = lei.LeituraModbusBit(cls.clp["SA"], REG_SASE["TE_NV_OLEO_MUITO_BAIXO"], descricao="[SE]  Trasformador Elevador Nível Óleo Muito Baixo")
         cls.condicionadores.append(c.CondicionadorBase(cls.l_oleo_muito_baixo, CONDIC_INDISPONIBILIZAR))
 
-        cls.l_disj_se_falha_fechar = lei.LeituraModbusBit(cls.clp["SA"], REG["CONDIC_SA"]["SA_ED_PSA_SE_DISJ_FALHA_FECHAR"], descr="[USN] Falha Fechamento Disjuntor de Linha")
+        cls.l_disj_se_falha_fechar = lei.LeituraModbusBit(cls.clp["SA"], REG_SASE["DJ_SE_FALHA_FECHAR"], descricao="[SE]  Falha Fechamento Disjuntor de Linha")
         cls.condicionadores.append(c.CondicionadorBase(cls.l_disj_se_falha_fechar, CONDIC_INDISPONIBILIZAR))
 
-        cls.l_disj_se_falha_abrir = lei.LeituraModbusBit(cls.clp["SA"], REG["CONDIC_SA"]["SA_ED_PSA_SE_DISJ_FALHA_ABRIR"], descr="[USN] Falha Abertura Disjuntor de Linha")
+        cls.l_disj_se_falha_abrir = lei.LeituraModbusBit(cls.clp["SA"], REG_SASE["DJ_SE_FALHA_ABRIR"], descricao="[SE]  Falha Abertura Disjuntor de Linha")
         cls.condicionadores.append(c.CondicionadorBase(cls.l_disj_se_falha_abrir, CONDIC_INDISPONIBILIZAR))
