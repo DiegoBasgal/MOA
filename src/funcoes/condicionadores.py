@@ -4,7 +4,7 @@ import src.funcoes.leitura as lei
 from src.dicionarios.const import *
 
 class CondicionadorBase:
-    def __init__(self, leitura: "lei.LeituraModbus", gravidade: "int"=CONDIC_NORMALIZAR, etapas: "list"=[], ug: "ug.UnidadeDeGeracao"=None):
+    def __init__(self, leitura: "lei.LeituraModbus", gravidade: "int"=CONDIC_NORMALIZAR, etapas: "list"=[], ug: "ug.UnidadeDeGeracao"=None, teste: "bool"=False):
 
         self.__leitura = leitura
         self.__gravidade = gravidade
@@ -12,6 +12,8 @@ class CondicionadorBase:
 
         self.__ug = ug
         self.__etapas = etapas
+
+        self.__teste = teste
 
 
     def __str__(self) -> "str":
@@ -43,10 +45,17 @@ class CondicionadorBase:
         else:
             return False if self.leitura == 0 else True
 
+    @property
+    def teste(self) -> "bool":
+        # PROPRIEDADE -> Retorna se o Condicionador está com a Flag de Teste
+
+        return self.__teste
+
+
 
 class CondicionadorExponencial(CondicionadorBase):
-    def __init__(self, leitura: "lei.LeituraModbus", gravidade: "int"=CONDIC_NORMALIZAR, valor_base: "float"=100, valor_limite: "float"=200, ordem: "float"=(1/4)):
-        super().__init__(leitura, gravidade)
+    def __init__(self, leitura: "lei.LeituraModbus", gravidade: "int"=CONDIC_NORMALIZAR, valor_base: "float"=100, valor_limite: "float"=200, ordem: "float"=(1/4), teste: "bool"=False):
+        super().__init__(leitura, gravidade, teste)
 
         self.__ordem = ordem
         self.__valor_base = valor_base
@@ -91,8 +100,8 @@ class CondicionadorExponencial(CondicionadorBase):
 
 
 class CondicionadorPotenciaReativa(CondicionadorBase):
-    def __init__(self, leitura: "lei.LeituraModbus", valor_base: "float"=1, valor_limite: "float"=1.05):
-        super().__init__(leitura)
+    def __init__(self, leitura: "lei.LeituraModbus", valor_base: "float"=1, valor_limite: "float"=1.05, teste: "bool"=False):
+        super().__init__(leitura, teste)
 
         self.__valor_base = valor_base
         self.__valor_limite = valor_limite

@@ -1,10 +1,12 @@
+import os
+import json
 import pytz
 import logging
 import traceback
 
 import src.subestacao as se
 import src.tomada_agua as tda
-import src.unidade_geracao as un
+import src.unidade_geracao as u
 import src.servico_auxiliar as sa
 
 import src.mensageiro.voip as vp
@@ -12,7 +14,6 @@ import src.mensageiro.voip as vp
 import src.dicionarios.dict as d
 
 import src.funcoes.escrita as esc
-import src.funcoes.leitura as lei
 import src.funcoes.agendamentos as agn
 
 import src.conectores.banco_dados as bd
@@ -20,7 +21,7 @@ import src.conectores.servidores as srv
 
 
 from time import sleep, time
-from datetime import  datetime, timedelta
+from datetime import  datetime
 
 from src.dicionarios.reg import *
 from src.dicionarios.const import *
@@ -47,10 +48,9 @@ class Usina:
 
         self.bd = bd.BancoDados("MOA-PPN")
         self.agn = agn.Agendamentos(self.cfg, self.bd, self)
-
-        self.ug1 = un.UnidadeDeGeracao(1, self.cfg, self.bd)
-        self.ug2 = un.UnidadeDeGeracao(2, self.cfg, self.bd)
-        self.ugs: "list[un.UnidadeDeGeracao]" = [self.ug1, self.ug2]
+        self.ug1 = u.UnidadeDeGeracao(1, self.cfg, self.bd)
+        self.ug2 = u.UnidadeDeGeracao(2, self.cfg, self.bd)
+        self.ugs: "list[u.UnidadeDeGeracao]" = [self.ug1, self.ug2]
 
         # ATRIBUIÇÃO DE VARIÁVEIS PRIVADAS
         self.__pid_inicial: "int" = -1
@@ -122,20 +122,20 @@ class Usina:
     def pot_alvo_anterior(self, var: "float") -> "None":
         self._pot_alvo_anterior = var
 
-
-    def get_time(self) -> "datetime":
+    @staticmethod
+    def get_time() -> "datetime":
         return datetime.now(pytz.timezone("Brazil/East")).replace(tzinfo=None)
 
 
     ### MÉTODOS DE CONTROLE DE RESET E NORMALIZAÇÃO
 
     def acionar_emergencia(self) -> "None":
-        logger.warning("[USN] Acionando Emergência.")
+        logger.warning("[USN] Enviando Comando:                  \"ACIONAR EMERGÊNCIA\".")
         self.clp_emergencia = True
 
         try:
             for ug in self.ugs:
-                esc.EscritaModBusBit.escrever_bit(self.clp[f"UG{ug.id}"], REG_UG[f"UG{ug.id}"][f"UG_CD_CMD_PARADA_EMERGENCIA"], valor=1)
+                esc.EscritaModBusBit.escrever_bit(self.clp[f"UG{ug.id}"], REG_UG[f"UG{ug.id}"]["CMD_PARADA_EMERG"], valor=1)
 
         except Exception:
             logger.error(f"[USN] Houve um erro ao acionar a Emergência.")
@@ -154,11 +154,14 @@ class Usina:
         elif (self.tentativas_normalizar < 3 and (self.get_time() - self.ultima_tentativa_norm).seconds >= 60 * self.tentativas_normalizar) or self.normalizar_forcado:
             self.ultima_tentativa_norm = self.get_time()
             self.tentativas_normalizar += 1
+
             logger.debug("")
             logger.info(f"[USN] Normalizando Usina... (Tentativa {self.tentativas_normalizar}/3)")
-            self.bd_emergencia = False
-            self.clp_emergencia = False
+
+            self.bd_emergencia = self.clp_emergencia = False
+
             self.sa.resetar_emergencia()
+            self.tda.resetar_emergencia()
             for ug in self.ugs: ug.resetar_emergencia()
 
             sleep(2)
@@ -216,7 +219,7 @@ class Usina:
     ### MÉTODOS DE CONTROLE DE OPERAÇÃO:
 
     def ajustar_ie_padrao(self) -> "int":
-        return sum(ug.leitura_potencia for ug in self.ugs) / self.cfg["pot_maxima_alvo"]
+        return sum(ug.potencia for ug in self.ugs) / self.cfg["pot_maxima_alvo"]
 
 
     def ajustar_inicializacao(self) -> "None":
@@ -249,7 +252,6 @@ class Usina:
                     ug.step()
 
         elif self.tda.nv_montante_recente <= self.cfg["nv_minimo"] and not self.aguardando_reservatorio:
-
             if self.tda.nv_montante < self.cfg["nv_minimo"] and self.tda.nv_montante_recente > self.cfg["nv_minimo"]:
                 if self.erro_leitura_montante == 3:
                     logger.warning(f"[USN] Tentativas de Leitura de Nível Montante ultrapassadas!")
@@ -338,10 +340,10 @@ class Usina:
 
         # TODO verificar leituras de horímetro das Unidades
         # if self.modo_de_escolha_das_ugs in (UG_PRIORIDADE_1, UG_PRIORIDADE_2):
-        ls = sorted(ls, key=lambda y: (-1 * y.leitura_potencia, -1 * y.setpoint, y.prioridade))
+        ls = sorted(ls, key=lambda y: (-1 * y.potencia, -1 * y.setpoint, y.prioridade))
 
         # else:
-        #     ls = sorted(ls, key=lambda y: (y.leitura_horimetro, -1 * y.leitura_potencia, -1 * y.setpoint))
+        #     ls = sorted(ls, key=lambda y: (y.leitura_horimetro, -1 * y.potencia, -1 * y.setpoint))
 
         return ls
 
@@ -368,7 +370,7 @@ class Usina:
 
 
     def distribuir_potencia(self, pot_alvo) -> "None":
-        ugs: "list[un.UnidadeDeGeracao]" = self.controlar_unidades_disponiveis()
+        ugs: "list[u.UnidadeDeGeracao]" = self.controlar_unidades_disponiveis()
         logger.debug("")
         logger.debug(f"[USN] Ordem das UGs (Prioridade):         {[ug.id for ug in ugs]}")
         logger.debug("")
@@ -377,7 +379,7 @@ class Usina:
 
         for ug in self.ugs:
             if ug.manual:
-                ajuste_manual += ug.leitura_potencia
+                ajuste_manual += ug.potencia
             else:
                 self.pot_disp += ug.setpoint_maximo
 
@@ -438,10 +440,7 @@ class Usina:
         # elif self.clp["SA"].read_coils(REG_SA["RESERVA_X"])[0] == 0 and self.modo_autonomo:
         #     self.modo_autonomo == False
 
-        for ug in self.ugs:
-            ug.oco.atualizar_limites_condicionadores(parametros)
-
-        # self.heartbeat()
+        for ug in self.ugs: ug.atualizar_limites_condicionadores(parametros)
 
 
     def atualizar_valores_banco(self, parametros) -> "None":
@@ -478,9 +477,16 @@ class Usina:
 
             self.cfg["nv_alvo"] = float(parametros["nv_alvo"])
             self.cfg["nv_minimo"] = float(parametros["nv_minimo"])
+            self.cfg["nv_maximo"] = float(parametros["nv_maximo"])
+            self.cfg["nv_religamento"] = float(parametros["nv_religamento"])
+
             self.cfg["pot_maxima_alvo"] = float(parametros["pot_nominal"])
             self.cfg["pot_maxima_ug"] = float(parametros["pot_nominal_ug"])
             self.cfg["pot_maxima_usina"] = float(parametros["pot_nominal_ug"]) * 2
+            self.cfg["margem_pot_critica"] = float(parametros["margem_pot_critica"])
+
+            with open(os.path.join(os.path.dirname("/opt/operacao-autonoma/src/dicionarios/"), 'cfg.json'), 'w') as file:
+                json.dump(self.cfg, file)
 
         except Exception:
             logger.error(f"[USN] Houve um erro ao atualizar o arquivo de configuração \"cfg.json\".")
@@ -488,39 +494,40 @@ class Usina:
 
 
     def escrever_valores(self) -> None:
-        try:
-            v1 = [
-                self.get_time().strftime("%Y-%m-%d %H:%M:%S"),
-                1 if self.aguardando_reservatorio else 0,
-                self.tda.nv_montante,
-                self.ug1.leitura_potencia,
-                self.ug1.setpoint,
-                self.ug1.codigo_state,
-                self.ug2.leitura_potencia,
-                self.ug2.setpoint,
-                self.ug2.codigo_state,
-            ]
+        v1 = [
+            self.get_time().strftime("%Y-%m-%d %H:%M:%S"),
+            1 if self.aguardando_reservatorio else 0,
+            self.tda.nv_montante,
+            self.ug1.potencia,
+            self.ug1.setpoint,
+            self.ug1.codigo_state,
+            self.ug2.potencia,
+            self.ug2.setpoint,
+            self.ug2.codigo_state,
+        ]
 
-            v2 = [
-                self.get_time().timestamp(),
-                1 if self.modo_autonomo else 0,
-                self.tda.nv_montante,
-                self.tda.erro_nv,
-                self.ug1.setpoint,
-                self.ug1.leitura_potencia,
-                self.ug1.codigo_state,
-                self.ug2.setpoint,
-                self.ug2.leitura_potencia,
-                self.ug2.codigo_state,
-                self.cfg["kp"],
-                self.cfg["ki"],
-                self.cfg["kd"],
-                self.cfg["kie"],
-                self.controle_p,
-                self.controle_i,
-                self.controle_d,
-                self.controle_ie,
-            ]
+        v2 = [
+            self.get_time().timestamp(),
+            1 if self.modo_autonomo else 0,
+            self.tda.nv_montante,
+            self.tda.erro_nv,
+            self.ug1.setpoint,
+            self.ug1.potencia,
+            self.ug1.codigo_state,
+            self.ug2.setpoint,
+            self.ug2.potencia,
+            self.ug2.codigo_state,
+            self.cfg["kp"],
+            self.cfg["ki"],
+            self.cfg["kd"],
+            self.cfg["kie"],
+            self.controle_p,
+            self.controle_i,
+            self.controle_d,
+            self.controle_ie,
+        ]
+
+        try:
             self.bd.update_valores_usina(v1)
 
         except Exception:
@@ -535,8 +542,6 @@ class Usina:
             logger.debug(traceback.format_exc())
 
 
-    # TODO -> Adicionar após a integração do CLP do MOA no painel do SA, que depende da intervenção da Automatic.
-    """
     def heartbeat(self) -> None:
         try:
             self.clp["MOA"].write_single_coil(REG_MOA["PAINEL_LIDO"], [1])
@@ -550,55 +555,53 @@ class Usina:
                 self.clp["MOA"].write_single_register(REG_MOA["MOA_OUT_TARGET_LEVEL"], int((self.cfg["nv_alvo"] - 819.2) * (1/1000)))
                 self.clp["MOA"].write_single_register(REG_MOA["MOA_OUT_SETPOINT"], int(sum(ug.setpoint for ug in self.ugs)))
 
-                if self.clp["MOA"].read_coils(REG_MOA["MOA_IN_EMERG"]) == 1 and not self.borda_emerg:
+                if self.clp["MOA"].read_coils(REG_MOA["MOA_IN_EMERG"])[0] and not self.borda_emerg:
                     self.borda_emerg = True
-                    for ug in self.ugs:
-                        ug.oco.verificar_condicionadores(ug)
+                    for ug in self.ugs: ug.verificar_condicionadores(ug)
 
-                elif self.clp["MOA"].read_coils(REG_MOA["MOA_IN_EMERG"]) == 0 and self.borda_emerg:
+                elif not self.clp["MOA"].read_coils(REG_MOA["MOA_IN_EMERG"])[0] and self.borda_emerg:
                     self.borda_emerg = False
 
-                if self.clp["MOA"].read_coils(REG_MOA["MOA_IN_EMERG_UG1"]) == 1:
-                    self.ug1.oco.verificar_condicionadores(self.ug1)
+                if self.clp["MOA"].read_coils(REG_MOA["MOA_IN_EMERG_UG1"])[0]:
+                    self.ug1.verificar_condicionadores(self.ug1)
 
-                if self.clp["MOA"].read_coils(REG_MOA["MOA_IN_EMERG_UG2"]) == 1:
-                    self.ug2.oco.verificar_condicionadores(self.ug2)
+                if self.clp["MOA"].read_coils(REG_MOA["MOA_IN_EMERG_UG2"])[0]:
+                    self.ug2.verificar_condicionadores(self.ug2)
 
-                if self.clp["MOA"].read_coils(REG_MOA["MOA_IN_HABILITA_AUTO"]) == 1:
-                    self.clp["MOA"].write_single_coil(REG_MOA["MOA_IN_HABILITA_AUTO"], [1])
-                    self.clp["MOA"].write_single_coil(REG_MOA["MOA_IN_DESABILITA_AUTO"], [0])
+                if self.clp["MOA"].read_coils(REG_MOA["MOA_IN_HABILITA_AUTO"])[0]:
+                    self.clp["MOA"].write_single_coil(REG_MOA["MOA_IN_HABILITA_AUTO"], 1)
+                    self.clp["MOA"].write_single_coil(REG_MOA["MOA_IN_DESABILITA_AUTO"], 0)
                     self.modo_autonomo = True
 
-                if self.clp["MOA"].read_coils(REG_MOA["MOA_IN_DESABILITA_AUTO"]) == 1:
-                    self.clp["MOA"].write_single_coil(REG_MOA["MOA_IN_HABILITA_AUTO"], [0])
-                    self.clp["MOA"].write_single_coil(REG_MOA["MOA_IN_DESABILITA_AUTO"], [1])
+                if self.clp["MOA"].read_coils(REG_MOA["MOA_IN_DESABILITA_AUTO"])[0]:
+                    self.clp["MOA"].write_single_coil(REG_MOA["MOA_IN_HABILITA_AUTO"], 0)
+                    self.clp["MOA"].write_single_coil(REG_MOA["MOA_IN_DESABILITA_AUTO"], 1)
                     self.modo_autonomo = False
 
-                if self.clp["MOA"].read_coils(REG_MOA["MOA_OUT_BLOCK_UG1"]) == 1:
-                    self.clp["MOA"].write_single_coil(REG_MOA["MOA_OUT_BLOCK_UG1"], [1])
+                if self.clp["MOA"].read_coils(REG_MOA["MOA_OUT_BLOCK_UG1"])[0]:
+                    self.clp["MOA"].write_single_coil(REG_MOA["MOA_OUT_BLOCK_UG1"], 1)
 
-                elif self.clp["MOA"].read_coils(REG_MOA["MOA_OUT_BLOCK_UG1"]) == 0:
-                    self.clp["MOA"].write_single_coil(REG_MOA["MOA_OUT_BLOCK_UG1"], [0])
+                elif not self.clp["MOA"].read_coils(REG_MOA["MOA_OUT_BLOCK_UG1"])[0]:
+                    self.clp["MOA"].write_single_coil(REG_MOA["MOA_OUT_BLOCK_UG1"], 0)
 
-                if self.clp["MOA"].read_coils(REG_MOA["MOA_OUT_BLOCK_UG2"]) == 1:
-                    self.clp["MOA"].write_single_coil(REG_MOA["MOA_OUT_BLOCK_UG2"], [1])
+                if self.clp["MOA"].read_coils(REG_MOA["MOA_OUT_BLOCK_UG2"])[0]:
+                    self.clp["MOA"].write_single_coil(REG_MOA["MOA_OUT_BLOCK_UG2"], 1)
 
-                elif self.clp["MOA"].read_coils(REG_MOA["MOA_OUT_BLOCK_UG2"]) == 0:
-                    self.clp["MOA"].write_single_coil(REG_MOA["MOA_OUT_BLOCK_UG2"], [0])
+                elif not self.clp["MOA"].read_coils(REG_MOA["MOA_OUT_BLOCK_UG2"])[0]:
+                    self.clp["MOA"].write_single_coil(REG_MOA["MOA_OUT_BLOCK_UG2"], 0)
 
             elif not self.modo_autonomo:
-                if self.clp["MOA"].read_coils(REG_MOA["MOA_IN_HABILITA_AUTO"]) == 1:
-                    self.clp["MOA"].write_single_coil(REG_MOA["MOA_IN_HABILITA_AUTO"], [1])
-                    self.clp["MOA"].write_single_coil(REG_MOA["MOA_IN_DESABILITA_AUTO"], [0])
+                if self.clp["MOA"].read_coils(REG_MOA["MOA_IN_HABILITA_AUTO"])[0]:
+                    self.clp["MOA"].write_single_coil(REG_MOA["MOA_IN_HABILITA_AUTO"], 1)
+                    self.clp["MOA"].write_single_coil(REG_MOA["MOA_IN_DESABILITA_AUTO"], 0)
                     self.modo_autonomo = True
 
-                self.clp["MOA"].write_single_coil(REG_MOA["MOA_OUT_EMERG"], [0])
-                self.clp["MOA"].write_single_coil(REG_MOA["MOA_OUT_BLOCK_UG1"], [0])
-                self.clp["MOA"].write_single_coil(REG_MOA["MOA_OUT_BLOCK_UG2"], [0])
+                self.clp["MOA"].write_single_coil(REG_MOA["MOA_OUT_EMERG"], 0)
+                self.clp["MOA"].write_single_coil(REG_MOA["MOA_OUT_BLOCK_UG1"], 0)
+                self.clp["MOA"].write_single_coil(REG_MOA["MOA_OUT_BLOCK_UG2"], 0)
                 self.clp["MOA"].write_single_register(REG_MOA["MOA_OUT_SETPOINT"], int(0))
                 self.clp["MOA"].write_single_register(REG_MOA["MOA_OUT_TARGET_LEVEL"], int(0))
 
         except Exception:
             logger.error(f"[USN] Houve um erro ao tentar escrever valores modbus no CLP MOA.")
             logger.debug(traceback.format_exc())
-    """

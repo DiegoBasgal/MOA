@@ -181,7 +181,7 @@ REG_SASE = {
     "SFB_ENTRA_ELEM_1_ABERTA":                                                          [12311, 13],
     "SFB_ENTRA_ELEM_2_ABERTA":                                                          [12311, 14],
     "SFB_LIMP_ELEM_1_ABERTA":                                                           [12311, 15],
-    "SFB_LIMP_ELEM_2_ABERTO":                                                           [12310, 0],
+    "SFB_LIMP_ELEM_2_ABERTA":                                                           [12310, 0],
 
     # Conversor de Fibra
     "CONVE_FIBRA_FALHA":                                                                [12310, 1],
@@ -214,7 +214,7 @@ REG_SASE = {
 
     ## STT_ALARMES_H_ANALOGICAS
     # Nível
-    "PSA_NV_JUSANTE_ALTO":                                                              [12343, 0],
+    "NV_JUSANTE_ALTO":                                                                  [12343, 0],
 
     # Sistema de Filtragem
     "PSA_SFA_PRESSAO_LADO_LIMPO_ALTO":                                                  [12343, 3],
@@ -270,12 +270,12 @@ REG_SASE = {
 
     ## STT_BLOQUEIO_50BF
     # 50BF
-    "BLOQUEIO_50BF_ATUADO":                                                             [12350, 15],
+    "BLOQ_50BF_ATUADO":                                                             [12350, 15],
 
 
     ## STT_BLOQUEIO_86BTLSA
     # 86BTLSA
-    "BLOQUEIO_86BTLSA_ATUADO":                                                          [12352, 15],
+    "BLOQ_86BTLSA_ATUADO":                                                          [12352, 15],
 
 
     ## STT_SF
@@ -335,7 +335,7 @@ REG_TDA = {
     ### COMANDOS
     ## CMD_QCTA
     # Geral
-    "RESET_GERAL":                                                                      [12289, 0],
+    "CMD_RESET_GERAL":                                                                      [12289, 0],
 
     ### STATUS
     ## STT_ENTRAS_DIGITAIS_0

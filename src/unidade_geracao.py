@@ -99,12 +99,9 @@ class UnidadeDeGeracao:
         self.tentativas_norm_etapas: "int" = 0
 
         self.ug_parando: "bool" = False
-        self.parar_timer: "bool" = False
         self.borda_parar: "bool" = False
-        self.release_timer: "bool" = False
-        self.borda_partindo: "bool" = False
         self.ug_sincronizando: "bool" = False
-        self.avisou_emerg_voip: "bool" = False
+        self.temporizar_partida: "bool" = False
         self.normalizacao_agendada: "bool" = False
 
         self.aux_tempo_sincronizada: "datetime" = 0
@@ -434,6 +431,8 @@ class UnidadeDeGeracao:
 
 
     def bloquear_unidade(self) -> "None":
+        self.temporizar_partida = False
+
         if self.etapa == UG_PARADA:
             self.acionar_trip_logico()
             self.acionar_trip_eletrico()
@@ -622,39 +621,38 @@ class UnidadeDeGeracao:
 
     def atenuar_carga(self) -> "None":
         """
-        Função para atenuação de carga através de leitura de pressão de caixa espiral.
+        Função para atenuação de carga através de leitura de Pressão na Entrada da Turbina.
 
         Calcula o ganho e verifica os limites máximo e mínimo para deteminar se
         deve atenuar ou não.
         """
 
-        atenuacao = 0
         flags = 0
+        atenuacao = 0
         logger.debug(f"[UG{self.id}]          Verificando Atenuadores...")
 
         for condic in self.condicionadores_atenuadores:
             atenuacao = max(atenuacao, condic.valor)
-            if self.etapa_atual == UG_SINCRONIZADA:
-                if atenuacao > 0:
-                    flags += 1
-                    logger.debug(f"[UG{self.id}]          - \"{condic.descricao}\":   Leitura: {condic.leitura} | Atenuação: {atenuacao}")
+            if atenuacao > 0:
+                flags += 1
+                logger.debug(f"[UG{self.id}]          - \"{condic.descricao}\":   Leitura: {condic.leitura:3.2f} | Atenuação: {atenuacao}")
+                self.atenuacao = atenuacao
+                atenuacao = 0
 
         if flags == 0:
             logger.debug(f"[UG{self.id}]          Não há necessidade de Atenuação.")
 
-        ganho = 1 - atenuacao
+        ganho = 1 - self.atenuacao
         aux = self.setpoint
+        self.atenuacao = 0
         if (self.setpoint > self.setpoint_minimo) and self.setpoint * ganho > self.setpoint_minimo:
             self.setpoint = self.setpoint * ganho
 
         elif (self.setpoint * ganho < self.setpoint_minimo) and (self.setpoint > self.setpoint_minimo):
             self.setpoint =  self.setpoint_minimo
 
-        if self.etapa_atual == UG_SINCRONIZADA:
-            if ganho < 1:
-                logger.debug(f"[UG{self.id}]                                     SP {aux} * GANHO {ganho} = {self.setpoint} kW")
-            else:
-                pass
+        if self.etapa == UG_SINCRONIZADA and ganho < 1:
+            logger.debug(f"[UG{self.id}]                                     SP {aux} * GANHO {ganho} = {self.setpoint} kW")
 
 
     def controle_etapas(self) -> "None":
@@ -665,9 +663,9 @@ class UnidadeDeGeracao:
 
         # SINCRONIZANDO
         elif self.etapa in (1, 2, 3, 4, UG_SINCRONIZANDO, 6):
-            if not self.borda_partindo:
-                Thread(target=lambda: self.verificar_partida()).start()
-                self.borda_partindo = True
+            if not self.temporizar_partida:
+                self.temporizar_partida = True
+                Thread(target=lambda: self.verificar_sincronismo()).start()
 
             self.parar() if self.setpoint == 0 else self.enviar_setpoint(self.setpoint)
 
@@ -679,8 +677,7 @@ class UnidadeDeGeracao:
 
         # SINCRONIZADA
         elif self.etapa == UG_SINCRONIZADA:
-            self.borda_partindo = False
-
+            self.temporizar_partida = True
             if not self.aux_tempo_sincronizada:
                 self.aux_tempo_sincronizada = self.get_time()
 
@@ -694,19 +691,107 @@ class UnidadeDeGeracao:
             self.aux_tempo_sincronizada = None
 
 
-    def verificar_partida(self) -> "None":
+    def verificar_sincronismo(self) -> "None":
+        """
+        Função de verificação de partida da Unidade.
 
-        logger.debug(f"[UG{self.id}]          Comando MOA:                \"Iniciar timer de verificação de partida\"")
-        while time() < (time() + 600):
-            if self.etapa == UG_SINCRONIZADA or self.release_timer:
-                logger.debug(f"[UG{self.id}]          Comando MOA:                \"Encerrar timer de verificação de partida por condição verdadeira\"")
+        Caso a unidade seja totalmente sincronizada, o timer é encerrado e avisado,
+        senão, é enviado o comando de parada de emergência para a Unidade.
+        """
+
+        logger.debug(f"[UG{self.id}]          Verificação MOA:           \"Temporização de Sincronismo\"")
+        while time() < time() + 600:
+            if not self.temporizar_partida:
                 return
 
-        logger.debug(f"[UG{self.id}]          Comando MOA:                \"Encerrar timer de verificação de partida por timeout\"")
-        self.borda_partindo = False
-        esc.EscritaModBusBit.escrever_bit(self.clp[f"UG{self.id}"], [f"UG{self.id}_CD_CMD_PARADA_EMERGENCIA"], 1, descricao=f"UG{self.id}_CD_CMD_PARADA_EMERGENCIA")
+        logger.warning(f"[UG{self.id}]          Verificação MOA:          \"Acionar emergência por timeout de Sincronismo\"")
+        esc.EscritaModBusBit.escrever_bit(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}"]["CMD_PARADA_EMERG"], valor=1)
+        self.temporizar_partida = False
         sleep(1)
-        esc.EscritaModBusBit.escrever_bit(self.clp[f"UG{self.id}"], [f"UG{self.id}_CD_CMD_REARME_FALHAS"], 1, descricao=f"UG{self.id}_CD_CMD_REARME_FALHAS")
+        esc.EscritaModBusBit.escrever_bit(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}"]["CMD_REARME_FALHAS"], valor=1)
+
+
+    def verificar_condicionadores(self) -> "int":
+        """
+        Função para a verificação de acionamento de condicionadores e determinação
+        de gravidade.
+
+        Itera sobre a lista de condicionadores da Unidade e verifica se algum está
+        ativo. Caso esteja, verifica o nível de gravidade e retorna o valor para
+        a determinação do passo seguinte.
+        Caso não haja nenhum condicionador ativo, apenas retorna o valor de ignorar.
+        """
+
+        flag = CONDIC_IGNORAR
+
+        autor_a = 0
+        autor_n = 0
+        autor_i = 0
+
+        if True in (condic.ativo for condic in self.condicionadores_essenciais):
+            condics_ativos = [condic for condics in [self.condicionadores_essenciais, self.condicionadores] for condic in condics if condic.ativo]
+
+            logger.debug("")
+            if self.condicionadores_ativos == []:
+                logger.debug(f"[UG{self.id}] Foram detectados condicionadores ativos na Unidade!")
+            else:
+                logger.debug(f"[UG{self.id}] Ainda há condicionadores ativos na Unidade!")
+
+            for condic in condics_ativos:
+                if condic.teste:
+                    logger.debug(f"[UG{self.id}] Descrição: \"{condic.descricao}\", Gravidade: \"{CONDIC_STR_DCT[condic.gravidade] if condic.gravidade in CONDIC_STR_DCT else 'Desconhecida'}\", Obs.: \"TESTE\"")
+                    continue
+
+                elif condic in self.condicionadores_ativos:
+                    logger.debug(f"[UG{self.id}] Descrição: \"{condic.descricao}\", Gravidade: \"{CONDIC_STR_DCT[condic.gravidade] if condic.gravidade in CONDIC_STR_DCT else 'Desconhecida'}\"")
+                    flag = condic.gravidade
+                    continue
+
+                elif condic.gravidade == CONDIC_INDISPONIBILIZAR:
+                    logger.warning(f"[UG{self.id}] Descrição: \"{condic.descricao}\", Gravidade: \"{CONDIC_STR_DCT[condic.gravidade] if condic.gravidade in CONDIC_STR_DCT else 'Desconhecida'}\"")
+                    self.condicionadores_ativos.append(condic)
+                    flag = CONDIC_INDISPONIBILIZAR
+                    self.bd.update_alarmes([
+                        self.get_time().strftime("%Y-%m-%d %H:%M:%S"),
+                        condic.gravidade,
+                        condic.descricao,
+                        "X" if autor_i == 0 else ""
+                    ])
+                    autor_i += 1
+                    sleep(1)
+
+                elif condic.gravidade == CONDIC_AGUARDAR:
+                    logger.warning(f"[UG{self.id}] Descrição: \"{condic.descricao}\", Gravidade: \"{CONDIC_STR_DCT[condic.gravidade] if condic.gravidade in CONDIC_STR_DCT else 'Desconhecida'}\"")
+                    self.condicionadores_ativos.append(condic)
+                    flag = CONDIC_AGUARDAR
+                    self.bd.update_alarmes([
+                        self.get_time().strftime("%Y-%m-%d %H:%M:%S"),
+                        condic.gravidade,
+                        condic.descricao,
+                        "X" if autor_i == 0 and autor_a == 0 else ""
+                    ])
+                    autor_a += 1
+                    sleep(1)
+
+                elif condic.gravidade == CONDIC_NORMALIZAR:
+                    logger.warning(f"[UG{self.id}] Descrição: \"{condic.descricao}\", Gravidade: \"{CONDIC_STR_DCT[condic.gravidade] if condic.gravidade in CONDIC_STR_DCT else 'Desconhecida'}\"")
+                    self.condicionadores_ativos.append(condic)
+                    flag = CONDIC_NORMALIZAR
+                    self.bd.update_alarmes([
+                        self.get_time().strftime("%Y-%m-%d %H:%M:%S"),
+                        condic.gravidade,
+                        condic.descricao,
+                        "X" if autor_i == 0 and autor_a == 0 and autor_n == 0 else ""
+                    ])
+                    autor_n += 1
+                    sleep(1)
+
+            logger.debug("")
+            return flag
+
+        else:
+            self.condicionadores_ativos = []
+            return flag
 
 
     def atualizar_limites_condicionadores(self, parametros: "dict") -> "None":

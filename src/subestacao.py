@@ -29,7 +29,6 @@ logger = logging.getLogger("logger")
 class Subestacao:
 
     # ATRIBUIÇÃO DE VARIÁVEIS
-
     clp = serv.Servidores.clp
     bd: "bd.BancoDados" = None
 

@@ -5,9 +5,11 @@ __description__ = "Este módulo corresponde a implementação da operação da T
 
 import pytz
 import logging
+import traceback
 
 import src.dicionarios.dict as d
 import src.funcoes.leitura as lei
+import src.funcoes.escrita as esc
 import src.conectores.banco_dados as bd
 import src.funcoes.condicionadores as c
 import src.conectores.servidores as serv
@@ -24,7 +26,6 @@ logger = logging.getLogger("logger")
 class TomadaAgua:
 
     # ATRIBUIÇÃO DE VARIÁVEIS
-
     bd: "bd.BancoDados"=None
     clp = serv.Servidores.clp
     cfg: "dict" = {}
@@ -50,6 +51,17 @@ class TomadaAgua:
         cls.nv_montante_recente = cls.nv_montante.valor if 820 < cls.nv_montante.valor < 825 else cls.nv_montante_recente
         cls.erro_nv_anterior = cls.erro_nv
         cls.erro_nv = cls.nv_montante_recente - cls.cfg["nv_alvo"]
+
+
+    @classmethod
+    def resetar_emergencia(cls) -> "None":
+        try:
+            logger.info(f"[TDA] Enviando comando:                   \"RESET EMERGÊNCIA\"")
+            esc.EscritaModBusBit.escrever_bit(cls.clp["TDA"], REG_TDA["RESET_GERAL"], valor=1)
+
+        except Exception:
+            logger.error(f"[TDA] Houve um erro ao realizar o Reset de Emergência.")
+            logger.debug(traceback.format_exc())
 
 
     @classmethod
@@ -103,13 +115,13 @@ class TomadaAgua:
         """
 
         if cls.l_nv_montante_muito_baixo.valor:
-            logger.warning("[OCO-USN] Foi identificado que o Nível Montante está muito baixo, favor verificar.")
+            logger.warning("[TDA] Foi identificado que o Nível Montante está muito baixo, favor verificar.")
 
         if cls.l_nv_montante_baixo.valor:
-            logger.warning("[OCO-USN] Foi identificado que o Nível Montante está baixo, favor verificar.")
+            logger.warning("[TDA] Foi identificado que o Nível Montante está baixo, favor verificar.")
 
         if cls.l_nv_montante_muito_baixo.valor and not d.voip["SA_EA_PSA_NIVEL_MONTANTE_MUITO_BAIXO"][0]:
-            logger.warning("[OCO-USN] Foi identificado que o Nível Montante está Muito Baixo, favor verificar.")
+            logger.warning("[TDA] Foi identificado que o Nível Montante está Muito Baixo, favor verificar.")
             d.voip["SA_EA_PSA_NIVEL_MONTANTE_MUITO_BAIXO"][0] = True
         elif not cls.l_nv_montante_muito_baixo.valor and d.voip["SA_EA_PSA_NIVEL_MONTANTE_MUITO_BAIXO"][0]:
             d.voip["SA_EA_PSA_NIVEL_MONTANTE_MUITO_BAIXO"][0] = False

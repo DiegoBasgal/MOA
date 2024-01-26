@@ -1,35 +1,35 @@
 import pytz
 import logging
 
-from src.usina import *
+import src.usina as u
+import src.conectores.banco_dados as bd
 
 from time import sleep
 from datetime import datetime, timedelta
 
 from src.dicionarios.const import *
 
-from src.conectores.banco_dados import BancoDados
 
 logger = logging.getLogger("logger")
 
 class Agendamentos:
-    def __init__(self, cfg: "dict"=None, db: "BancoDados"=None, usina=None):
+    def __init__(self, cfg: "dict"=None, bd: "bd.BancoDados"=None, usina: "u.Usina"=None):
 
         # ATRIBUIÇÂO DE VARIÁVEIS PÚBLICAS
-
-        self.db = db
+        self.bd = bd
         self.cfg = cfg
         self.usn = usina
 
         self.segundos_passados = 0
         self.segundos_adiantados = 0
 
+
     def verificar_agendamentos_pendentes(self) -> "list":
         """
         Função para extrair lista de agendamentos não executados do Banco de Dados.
         """
         pendentes = []
-        agendamentos = self.db.get_agendamentos_pendentes()
+        agendamentos = self.bd.get_agendamentos_pendentes()
 
         for agendamento in agendamentos:
             ag = list(agendamento)
@@ -37,6 +37,7 @@ class Agendamentos:
             pendentes.append(ag)
 
         return pendentes
+
 
     def verificar_agendamentos_iguais(self, agendamentos) -> "None":
         """
@@ -54,11 +55,12 @@ class Agendamentos:
             if agendamentos[i][3] == agendamentos[i+1][3] and (agendamentos[i+1][1] - agendamentos[i][1]).seconds < limite_entre_agendamentos_iguais:
                 ag_concatenado = agendamentos.pop(i)
                 obs = "Este agendamento foi concatenado ao seguinte por motivos de temporização."
-                self.db.update_agendamento(ag_concatenado[0], True, obs)
+                self.bd.update_agendamento(ag_concatenado[0], True, obs)
                 i -= 1
 
             i += 1
             j = len(agendamentos)
+
 
     def verificar_agendamentos(self) -> "bool":
         """
@@ -72,7 +74,7 @@ class Agendamentos:
         """
 
         agora = datetime.now(pytz.timezone("Brazil/East")).replace(tzinfo=None)
-        agendamentos = self.db.get_agendamentos_pendentes()
+        agendamentos = self.bd.get_agendamentos_pendentes()
 
         if agendamentos is None:
             return False
@@ -107,8 +109,9 @@ class Agendamentos:
                 self.verificar_agendamentos_usina(agendamento)
                 self.verificar_agendamentos_ugs(agendamento)
 
-                self.db.update_agendamento(agendamento[0], executado=1)
+                self.bd.update_agendamento(agendamento[0], executado=1)
                 logger.debug(f"[AGN] Agendamento executado:              \"{AGN_STR_DICT[agendamentos[i-1][3]] if agendamentos[i-1][3] in AGN_STR_DICT else 'Inexistente'}\"")
+
 
     def verificar_agendamentos_atrasados(self, agendamento) -> None:
         """
@@ -129,19 +132,19 @@ class Agendamentos:
             if agendamento[3] == AGN_INDISPONIBILIZAR:
                 logger.warning("[AGN] Acionando emergência!")
                 self.usn.acionar_emergencia()
-                self.db.update_agendamento(int(agendamento[0]), 1, obs="AGENDAMENTO EXECUTADO POR TRATATIVA DE CÓDIGO!")
+                self.bd.update_agendamento(int(agendamento[0]), 1, obs="AGENDAMENTO EXECUTADO POR TRATATIVA DE CÓDIGO!")
                 agn_atrasados += 1
 
             if agendamento[3] in (AGN_ALTERAR_NV_ALVO, AGN_ALTERAR_POT_LIMITE_TODAS_AS_UGS, AGN_BAIXAR_POT_UGS_MINIMO, AGN_NORMALIZAR_POT_UGS_MINIMO, AGN_AGUARDAR_RESERVATORIO, AGN_NORMALIZAR_ESPERA_RESERVATORIO):
                 logger.warning("[AGN] Não foi possível executar o agendamento! Favor re-agendar")
-                self.db.update_agendamento(int(agendamento[0]), 1, obs="AGENDAMENTO NÃO EXECUTADO POR CONTA DE ATRASO!")
+                self.bd.update_agendamento(int(agendamento[0]), 1, obs="AGENDAMENTO NÃO EXECUTADO POR CONTA DE ATRASO!")
                 agn_atrasados += 1
 
             for ug in self.usn.ugs:
                 if agendamento[3] in AGN_LST_BLOQUEIO_UG:
                     logger.info(f"[AGN] Indisponibilizando UG{ug.id}")
                     ug.forcar_estado_indisponivel()
-                    self.db.update_agendamento(int(agendamento[0]), 1, obs="AGENDAMENTO NÃO EXECUTADO POR CONTA DE ATRASO!")
+                    self.bd.update_agendamento(int(agendamento[0]), 1, obs="AGENDAMENTO NÃO EXECUTADO POR CONTA DE ATRASO!")
                     agn_atrasados += 1
 
     def verificar_agendamentos_sem_efeito(self, agendamento) -> None:
@@ -152,11 +155,11 @@ class Agendamentos:
         Verifica se o agendamento pode ser executado em modo autônomo ou manual.
         """
 
-        if self.usn.modo_autonomo and not self.db.get_executabilidade(agendamento[3])["executavel_em_automatico"]:
-            self.db.update_agendamento(agendamento[0], True, obs="Este agendamento não tem efeito com o módulo em modo autônomo. Executado sem realizar nenhuma ação")
+        if self.usn.modo_autonomo and not self.bd.get_executabilidade(agendamento[3])["executavel_em_automatico"]:
+            self.bd.update_agendamento(agendamento[0], True, obs="Este agendamento não tem efeito com o módulo em modo autônomo. Executado sem realizar nenhuma ação")
 
-        if not self.usn.modo_autonomo and not self.db.get_executabilidade(agendamento[3])["executavel_em_manual"]:
-            self.db.update_agendamento(agendamento[0], True, obs="Este agendamento não tem efeito com o módulo em modo manual. Executado sem realizar nenhuma ação")
+        if not self.usn.modo_autonomo and not self.bd.get_executabilidade(agendamento[3])["executavel_em_manual"]:
+            self.bd.update_agendamento(agendamento[0], True, obs="Este agendamento não tem efeito com o módulo em modo manual. Executado sem realizar nenhuma ação")
 
     def verificar_agendamentos_usina(self, agendamento) -> "None":
         """

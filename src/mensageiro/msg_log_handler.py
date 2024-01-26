@@ -7,6 +7,7 @@ from logging import Handler
 from .voip import Voip
 from .whatsapp import WhatsApp
 
+
 class MensageiroHandler(Handler):
 
     def emit(self, record):
@@ -16,7 +17,7 @@ class MensageiroHandler(Handler):
             WhatsApp.envio_todos(f"{log_entry}")
 
         except Exception:
-            print(f"Erro ao logar WhatsApp.")
+            return
 
         if record.levelno >= logging.CRITICAL:
             try:

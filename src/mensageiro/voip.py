@@ -2,20 +2,20 @@ import os
 import pytz
 import json
 import logging
-import src.dicionarios.dict as vd
 
-from time import sleep
+import src.dicionarios.dict as vd
+import src.conectores.banco_dados as bd
+
 from datetime import datetime
 from urllib.request import Request, urlopen
 
-from src.conectores.banco_dados import BancoDados
 
 logger = logging.getLogger("logger")
+
 
 class Voip:
 
     #ATRIBUIÇÃO DE VARIÁVEIS
-
     arquivo = os.path.join(os.path.dirname(__file__), "voip_config.json")
     with open(arquivo, "r") as file:
         cfg = json.load(file)
@@ -31,10 +31,11 @@ class Voip:
             "Authorization": "Basic TnZvaXBBcGlWMjpUblp2YVhCQmNHbFdNakl3TWpFPQ==",
         }
 
-    db = BancoDados("voip")
+    db = bd.BancoDados("voip")
+
 
     @staticmethod
-    def verificar_expediente(agenda) -> list:
+    def verificar_expediente(agenda) -> "list":
         """
         Função para verificar se o operador cadastrado na interface, está dentro
         do período de sobre-aviso.
@@ -55,8 +56,9 @@ class Voip:
 
         return contatos
 
+
     @classmethod
-    def carregar_contatos(cls) -> list:
+    def carregar_contatos(cls) -> "list":
         """
         Função para extrair lista de contatos cadastrados na interface WEB.
         """
@@ -79,8 +81,9 @@ class Voip:
 
         return agenda
 
+
     @classmethod
-    def carregar_token(cls) -> str:
+    def carregar_token(cls) -> "str":
         """
         Função para carregar token de autenticação NVoip.
         """
@@ -95,8 +98,9 @@ class Voip:
             logger.debug(f"[VOIP] Não foi possível carregar a token de acesso Nvoip. Exception: \"{repr(e)}\"")
             return None
 
+
     @classmethod
-    def codificar_dados(cls, data, headers) -> None:
+    def codificar_dados(cls, data, headers) -> "None":
         """
         Função para codificação do acionamento, para a plataforma da Nvoip.
         """
@@ -110,8 +114,9 @@ class Voip:
         except Exception as e:
             logger.exception(f"[VOIP] Não foi possível codificar dados de envio de torpedo. Exception: \"{repr(e)}\".")
 
+
     @classmethod
-    def acionar_chamada(cls):
+    def acionar_chamada(cls) -> "None":
         """
         Função para envio de tropedos de voz, baseado nas condições de acionamento
         do dicioário Voip.

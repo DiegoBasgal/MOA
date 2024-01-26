@@ -1,14 +1,20 @@
 import sys
 import pytz
+import logging
 import traceback
 
-from time import sleep
+import src.usina as u
+import src.subestacao as se
+import src.tomada_agua as tda
+
 from datetime import datetime
 
-from src.usina import *
-from src.agendamentos import *
 from src.dicionarios.reg import *
 from src.dicionarios.const import *
+
+
+logger = logging.getLogger("logger")
+
 
 class StateMachine:
     def __init__(self, initial_state):
@@ -25,8 +31,9 @@ class StateMachine:
             logger.exception(f"Traceback: {traceback.print_stack}")
             self.state = FalhaCritica()
 
+
 class State:
-    def __init__(self, usina: "Usina"=None, *args, **kwargs):
+    def __init__(self, usina: "u.Usina"=None, *args, **kwargs):
         if usina is None:
             logger.error(f"Erro ao carregar a classe da Usina na máquina de estados.")
             return FalhaCritica()
@@ -44,11 +51,13 @@ class State:
     def run(self) -> "object":
         return self
 
+
 class FalhaCritica(State):
     def __init__(self):
 
         logger.critical("Falha crítica MOA. Interrompendo execução...")
         sys.exit(1)
+
 
 class Pronto(State):
     def __init__(self, usn, *args, **kwargs):
@@ -59,6 +68,7 @@ class Pronto(State):
     def run(self):
         self.usn.ler_valores()
         return ControleEstados(self.usn)
+
 
 class ControleEstados(State):
     def __init__(self, usn, *args, **kwargs):
@@ -74,9 +84,9 @@ class ControleEstados(State):
             return ModoManual(self.usn)
 
         logger.debug("Verificando status da emergência...")
-        if self.usn.clp_emergencia or self.usn.db_emergencia:
+        if self.usn.clp_emergencia or self.usn.bd_emergencia:
             logger.debug("")
-            logger.debug("Foi identificado o acinoamento da emergência")
+            logger.debug("Foi identificado o acionamento de Emergência!")
             return Emergencia(self.usn)
 
         logger.debug("Verificando se há agendamentos...")
@@ -87,13 +97,13 @@ class ControleEstados(State):
 
         else:
             logger.debug("Verificando condicionadores...")
-            flag_condic = self.usn.oco.verificar_condicionadores()
+            flag_condic = self.usn.verificar_condicionadores()
 
             if flag_condic == CONDIC_INDISPONIBILIZAR:
                 return Emergencia(self.usn)
 
             elif flag_condic == CONDIC_AGUARDAR:
-                if self.usn.aguardar_normalizacao_djl():
+                if se.Subestacao.aguardar_normalizacao_djl():
                     self.usn.normalizar_usina()
                     return ControleDados(self.usn)
                 else:
@@ -104,7 +114,7 @@ class ControleEstados(State):
                 flag_norm = self.usn.normalizar_usina()
 
                 if flag_norm == NORM_USN_FALTA_TENSAO:
-                    return Emergencia(self.usn) if self.usn.aguardar_tensao() == False else ControleDados(self.usn)
+                    return Emergencia(self.usn) if se.Subestacao.aguardar_tensao() == False else ControleDados(self.usn)
 
                 elif flag_norm == NORM_USN_EXECUTADA and self.usn.tentativas_normalizar > 2:
                     logger.info("Tentativas de Normalização da Usina excedidas!")
@@ -115,7 +125,12 @@ class ControleEstados(State):
                     return ControleDados(self.usn)
 
             else:
+                logger.debug("")
+                logger.debug("Heartbeat...")
+                self.usn.heartbeat()
+
                 return ControleReservatorio(self.usn)
+
 
 class ControleReservatorio(State):
     def __init__(self, usn, *args, **kwargs):
@@ -129,6 +144,7 @@ class ControleReservatorio(State):
 
         return Emergencia(self.usn) if flag == NV_FLAG_EMERGENCIA else ControleDados(self.usn)
 
+
 class ControleDados(State):
     def __init__(self, usn, *args, **kwargs):
         super().__init__(usn, *args, **kwargs)
@@ -140,6 +156,7 @@ class ControleDados(State):
         self.usn.ler_valores()
         self.usn.escrever_valores()
         return ControleEstados(self.usn)
+
 
 class ControleAgendamentos(State):
     def __init__(self, *args, **kwargs):
@@ -155,32 +172,36 @@ class ControleAgendamentos(State):
         else:
             return ControleEstados(self.usn) if self.usn.modo_autonomo else ModoManual(self.usn)
 
+
 class ModoManual(State):
     def __init__(self, usn, *args, **kwargs):
         super().__init__(usn, *args, **kwargs)
 
         self.usn.estado_moa = MOA_SM_MODO_MANUAL
-        logger.info("Usina em modo manual. Para retornar a operação autônoma, acionar via painel ou página WEB")
 
         self.usn.modo_autonomo = False
+        for ug in self.usn.ugs: ug.temporizar_partida = False
+
         # self.usn.clp["MOA"].write_single_coil(REG_MOA["PAINEL_LIDO"], [1])
+
+        logger.info("Usina em modo manual. Para retornar a operação autônoma, acionar via painel ou página WEB")
 
     def run(self):
         self.usn.ler_valores()
 
-        logger.debug(f"[USN] Leitura de Nível:                   {self.usn.nv_montante:0.3f}")
-        logger.debug(f"[USN] Potência no medidor:                {self.usn.potencia_ativa:0.3f}")
+        logger.debug(f"[USN] Leitura de Nível:                   {tda.TomadaAgua.nv_montante:0.3f}")
+        logger.debug(f"[USN] Potência no medidor:                {se.Subestacao.potencia_ativa:0.3f}")
         logger.debug("")
 
         for ug in self.usn.ugs:
-            ug.setpoint = ug.leitura_potencia
+            ug.setpoint = ug.potencia
             logger.debug(f"[UG{ug.id}] Unidade:                            \"{UG_SM_STR_DCT[ug.codigo_state]}\"")
             logger.debug(f"[UG{ug.id}] Etapa :                             \"{UG_STR_DCT_ETAPAS[ug.etapa]}\" (Atual: {ug.etapa_atual} | Alvo: {ug.etapa_alvo})")
-            logger.debug(f"[UG{ug.id}] Leitura de Potência:                {ug.leitura_potencia} kW")
+            logger.debug(f"[UG{ug.id}] Leitura de Potência:                {ug.potencia} kW")
             logger.debug("")
 
-        self.usn.controle_ie = sum(ug.leitura_potencia for ug in self.usn.ugs) / self.usn.cfg["pot_maxima_alvo"]
-        self.usn.controle_i = max(min(self.usn.controle_ie - (self.usn.controle_i * self.usn.cfg["ki"]) - self.usn.cfg["kp"] * self.usn.erro_nv - self.usn.cfg["kd"] * (self.usn.erro_nv - self.usn.erro_nv_anterior), 0.8), 0)
+        self.usn.controle_ie = self.usn.ajustar_ie_padrao()
+        self.usn.controle_i = max(min(self.usn.controle_ie - (self.usn.controle_i * self.usn.cfg["ki"]) - self.usn.cfg["kp"] * tda.TomadaAgua.erro_nv - self.usn.cfg["kd"] * (tda.TomadaAgua.erro_nv - tda.TomadaAgua.erro_nv_anterior), 0.8), 0)
 
         self.usn.escrever_valores()
 
@@ -190,14 +211,16 @@ class ModoManual(State):
 
         return ControleAgendamentos(self.usn) if len(self.usn.agn.verificar_agendamentos_pendentes()) > 0 else self
 
+
 class Emergencia(State):
     def __init__(self, usn, *args, **kwargs):
         super().__init__(usn, *args, **kwargs)
 
         self.usn.estado_moa = MOA_SM_EMERGENCIA
-        logger.critical(f"ATENÇÃO! Usina entrado em estado de emergência. (Horário: {self.get_time()})")
 
         self.tentativas = 0
+
+        logger.critical(f"ATENÇÃO! Usina entrado em estado de emergência. (Horário: {self.get_time()})")
 
     def run(self):
         self.usn.ler_valores()
@@ -211,22 +234,22 @@ class Emergencia(State):
 
             return ModoManual(self.usn)
 
-        elif self.usn.db_emergencia:
+        elif self.usn.bd_emergencia:
             logger.warning("Comando acionado via página WEB, aguardando reset pela aba \"Emergência\".")
 
-            while self.usn.db_emergencia:
-                self.usn.atualizar_valores_banco(self.usn.db.get_parametros_usina())
+            while self.usn.bd_emergencia:
+                self.usn.atualizar_valores_banco(self.usn.bd.get_parametros_usina())
 
-                if not self.usn.db_emergencia:
-                    self.usn.db_emergencia = False
+                if not self.usn.bd_emergencia:
+                    self.usn.bd_emergencia = False
                     return self
 
                 if not self.usn.modo_autonomo:
-                    self.usn.db_emergencia = False
+                    self.usn.bd_emergencia = False
                     return ModoManual(self.usn)
 
         else:
-            flag_condic = self.usn.oco.verificar_condicionadores()
+            flag_condic = self.usn.verificar_condicionadores()
 
             if flag_condic == CONDIC_INDISPONIBILIZAR:
                 logger.critical("Acionando VOIP e entrando em modo manual")
