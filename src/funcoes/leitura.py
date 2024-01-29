@@ -138,6 +138,9 @@ class LeituraModbusBit(LeituraModbus):
 
             lbit_r = [b for b in reversed(lbit)]
 
+            # debug_log.debug(f"[LEITURA-BIT] Lista de Bits: {lbit_r}")
+            # debug_log.debug("")
+
             for i in range(len(lbit_r)):
                 if self.__bit == i:
                     return not lbit_r[i] if self.__invertido else lbit_r[i]

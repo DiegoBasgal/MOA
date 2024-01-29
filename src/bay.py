@@ -163,9 +163,9 @@ class Bay:
                 logger.debug(f"[BAY] Enviando comando:                   \"ABRIR DISJUNTOR SE\"")
                 res = EMB.escrever_bit(self.clp["SA"], REG_CLP["SE"]["DJL_CMD_ABRIR"], valor=1)
 
-                if not res:
-                    logger.warning("[BAY] Não foi possível realizar a abertura do Disjuntor de Linha da Subestação!")
-                    flags += 1
+                # if not res:
+                #     logger.warning("[BAY] Não foi possível realizar a abertura do Disjuntor de Linha da Subestação!")
+                #     flags += 1
 
             if not self.barra_morta.valor and self.barra_viva.valor:
                 logger.warning(f"[BAY] Foi identificada uma Leitura de Tensão na Barra! Tensão VS -> {self.tensao_vs.valor}")
