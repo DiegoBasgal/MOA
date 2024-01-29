@@ -27,13 +27,13 @@ class Bay:
         self.verificar_tensao_dj()
         self.verificar_condicao_dj()
 
-        if LEI.ler_bit(MB['BAY']['DJL_CMD_FECHAR']):
-            ESC.escrever_bit(MB['BAY']['DJL_CMD_FECHAR'], valor=0)
+        if DB.get_words(MB['BAY']['DJL_CMD_FECHAR'])[0]:
+            DB.set_words(MB['BAY']['DJL_CMD_FECHAR'], [0])
             self.fechar_dj()
 
-        if LEI.ler_bit(MB['BAY']['RELE_RST_TRP']):
+        if DB.get_words(MB['BAY']['RELE_RST_TRP'])[0]:
+            DB.set_words(MB['BAY']['RELE_RST_TRP'], [0])
             self.dict['BAY']['condic'] = False
-            ESC.escrever_bit(MB['BAY']['RELE_RST_TRP'], valor=0)
             self.resetar_dj()
 
         if self.dict['BAY']['debug_dj_abrir']:
