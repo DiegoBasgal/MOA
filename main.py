@@ -82,7 +82,7 @@ if __name__ == "__main__":
                 logger.debug("")
                 logger.info("Iniciando conexões com Servidores...")
 
-                # Servidores.open_all()
+                serv = Servidores()
 
             except Exception:
                 logger.error(f"Erro ao iniciar classes de conexão com servidores. Tentando novamente em \"{TIMEOUT_MAIN}s\".")
@@ -94,7 +94,7 @@ if __name__ == "__main__":
                 logger.debug("")
                 logger.info("Iniciando instância e objetos da Usina...")
 
-                usn: Usina = Usina(cfg)
+                usn: Usina = Usina(cfg, serv)
 
             except Exception:
                 logger.error(f"Erro ao instanciar a classe Usina. Tentando novamente em \"{TIMEOUT_MAIN}s\".")
@@ -134,30 +134,26 @@ if __name__ == "__main__":
             with open(os.path.join(os.path.dirname('/opt/operacao-autonoma/src/dicionarios/'), "cfg.json"), "w") as file:
                 json.dump(usn.cfg, file, indent=4)
 
-            if usn.estado_moa == MOA_SM_CONTROLE_DADOS:
+            if usn.estado_moa == (MOA_SM_CONTROLE_ESTADOS, MOA_SM_MODO_MANUAL):
                 t_restante = max(TEMPO_CICLO_TOTAL - (time() - t_i), 0) / ESCALA_DE_TEMPO
+            else:
+                t_restante = 1
+
+            if t_restante > 0:
                 t_i = time()
-
-            else:
-                t_restarnte = 1
-
-            if t_restante == 0:
-                pass
-
-            else:
                 sleep(t_restante)
 
         except Exception:
             logger.debug("")
             logger.error(f"[!!!] \"ATENÇÃO!\" Houve um erro na execução do loop principal -> !! \"main.py\" !!")
             logger.debug(f"Traceback: {traceback.format_exc()}")
-            Servidores.close_all()
+            serv.close_all()
             logger.debug("MOA encerrado! Até a próxima...")
             break
 
         except KeyboardInterrupt:
             logger.debug("")
             logger.warning("[!!!] \"ATENÇÃO!\" Execução do loop principal da main do MOA interrompido por comando de teclado.")
-            Servidores.close_all()
+            serv.close_all()
             logger.debug("MOA encerrado! Até a próxima...")
             break

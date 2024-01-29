@@ -8,9 +8,8 @@ import logging
 import traceback
 
 import src.bay as bay
-import src.tomada_agua as tda
 
-from time import sleep
+from time import sleep, time
 from datetime import datetime
 
 from src.dicionarios.const import *
@@ -18,6 +17,7 @@ from src.dicionarios.const import *
 from src.usina import Usina
 
 logger = logging.getLogger("logger")
+debug_log = logging.getLogger("debug")
 
 class StateMachine:
     def __init__(self, initial_state) -> "None":
@@ -127,6 +127,8 @@ class ControleEstados(State):
 
         self.usn.ler_valores()
 
+        logger.debug("")
+
         logger.debug("Verificando modo do MOA...")
         if not self.usn.modo_autonomo:
             logger.debug("")
@@ -147,7 +149,7 @@ class ControleEstados(State):
 
         else:
             logger.debug("Verificando condicionadores...")
-            flag_condic= self.usn.verificar_condicionadores()
+            flag_condic = self.usn.verificar_condicionadores()
 
             if flag_condic == CONDIC_INDISPONIBILIZAR:
                 return Emergencia(self.usn)
@@ -162,16 +164,23 @@ class ControleEstados(State):
                     return ControleDados(self.usn)
 
             logger.debug("Verificando status da Subestação e Bay...")
+            logger.debug("")
             flag_bay_se = self.usn.verificar_bay_se()
 
             if flag_bay_se == DJS_FALTA_TENSAO:
-                return Emergencia(self.usn) if bay.Bay.aguardar_tensao() == TENSAO_FORA else self
+                return Emergencia(self.usn) if self.usn.bay.aguardar_tensao() == TENSAO_FORA else ControleDados(self.usn)
 
             elif flag_bay_se != DJS_OK:
                 self.usn.normalizar_usina()
-                return self
+                return ControleDados(self.usn)
 
             else:
+                # logger.debug("Verificando operação do Limpa Grades...")
+                # self.usn.tda.operar_limpa_grades()
+
+                logger.debug("Heartbeat...")
+                self.usn.heartbeat()
+
                 return ControleReservatorio(self.usn)
 
 
@@ -239,7 +248,7 @@ class ControleAgendamentos(State):
         os agendamentos sejam executados, passa para o estado de Controle de Dados.
         """
 
-        logger.info("Tratando agendamentos...")
+        logger.debug("Tratando agendamentos...")
         self.usn.agn.verificar_agendamentos()
 
         if len(self.usn.agn.verificar_agendamentos_pendentes()) > 0:
@@ -281,25 +290,28 @@ class ModoManual(State):
 
         self.usn.ler_valores()
 
-        logger.debug(f"[USN] Leitura de Nível:                   {tda.TomadaAgua.nivel_montante.valor:0.3f}")
-        logger.debug(f"[USN] Potência no medidor:                {bay.Bay.potencia_mp.valor:0.3f}")
+        logger.debug(f"[USN] Leitura de Nível:                   {self.usn.tda.nivel_montante.valor:0.3f}")
+        logger.debug(f"[USN] Potência no medidor:                {self.usn.bay.potencia_mp.valor:0.3f}")
         logger.debug("")
 
         for ug in self.usn.ugs:
             logger.debug(f"[UG{ug.id}] Unidade:                            \"{UG_SM_STR_DCT[ug.codigo_state]}\"")
-            logger.debug(f"[UG{ug.id}] Etapa atual:                        \"{UG_STR_DCT_ETAPAS[ug.etapa_atual]}\"")
+            logger.debug(f"[UG{ug.id}] Etapa atual:                        \"{ug.etapa}\"")
             logger.debug(f"[UG{ug.id}] Leitura de Potência:                {ug.leitura_potencia}")
             logger.debug("")
             ug.setpoint = ug.leitura_potencia
 
         self.usn.controle_ie = (self.usn.ug1.leitura_potencia + self.usn.ug2.leitura_potencia) / self.usn.cfg["pot_maxima_alvo"]
-        self.usn.controle_i = max(min(self.usn.controle_ie - (self.usn.controle_i * self.usn.cfg["ki"]) - self.usn.cfg["kp"] * tda.TomadaAgua.erro_nivel - self.usn.cfg["kd"] * (tda.TomadaAgua.erro_nivel - tda.TomadaAgua.erro_nivel_anterior), 0.8), 0)
+        self.usn.controle_i = max(min(self.usn.controle_ie - (self.usn.controle_i * self.usn.cfg["ki"]) - self.usn.cfg["kp"] * self.usn.tda.erro_nivel - self.usn.cfg["kd"] * (self.usn.tda.erro_nivel - self.usn.tda.erro_nivel_anterior), 0.8), 0)
 
         self.usn.escrever_valores()
+
+        sleep(30)
 
         if self.usn.modo_autonomo:
             logger.debug("Comando acionado: \"Habilitar modo autônomo\"")
             self.usn.ler_valores()
+            sleep(1)
             return ControleDados(self.usn)
 
         return ControleAgendamentos(self.usn) if len(self.usn.agn.verificar_agendamentos_pendentes()) > 0 else self

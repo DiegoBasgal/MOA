@@ -13,6 +13,7 @@ from pyModbusTCP.client import ModbusClient
 from src.dicionarios.reg import *
 
 logger = logging.getLogger("logger")
+debug_log = logging.getLogger("debug")
 
 class LeituraModbus:
     def __init__(self, client: "ModbusClient"=None, registrador: "int"=None, escala: "float"=1, fundo_escala: "float"=0, op: "int"=3, descricao: "str"=None) -> "None":
@@ -24,8 +25,9 @@ class LeituraModbus:
 
         self.__op = op
         self.__escala = escala
-        self.__fundo_escala = fundo_escala
         self.__descricao = descricao
+        self.__fundo_escala = fundo_escala
+
 
     def __str__(self) -> "str":
         """
@@ -33,6 +35,7 @@ class LeituraModbus:
         """
 
         return f"Leitura {self.__descricao}, Valor: {self.valor}"
+
 
     @property
     def descricao(self) -> "str":
@@ -47,14 +50,22 @@ class LeituraModbus:
         try:
             if self.__op == 3:
                 ler = self.__client.read_holding_registers(self.__registrador)[0]
-                return ler
+                if ler is None:
+                    ler2 = self.__client.read_holding_registers(self.__registrador)[0]
+                    return ler2
+                else:
+                    return ler
 
             elif self.__op == 4:
                 ler = self.__client.read_input_registers(self.__registrador)[0]
                 return ler
 
         except Exception:
-            logger.error(f"[LEI] Houve um erro na leitura do REG: {self.__descricao} | Endereço: {self.__registrador}")
+            if self.__registrador == 21:
+                logger.debug(f"[LEI] Erro na Leitura RAW -> INT do REG: {self.__descricao} | Endereço: {self.__registrador}")
+            else:
+                logger.debug(f"[LEI] Erro na Leitura RAW -> INT do REG: {self.__descricao} | Endereço: {self.__registrador}")
+
             logger.debug(traceback.format_exc())
             return 0
 
@@ -65,16 +76,30 @@ class LeituraModbus:
         return (self.raw * self.__escala) + self.__fundo_escala
 
 
+    ### EXPERIMENTAL ###
+
+    def ler(self, leituras) -> 'bool':
+
+        return leituras[self.__registrador]
+
+
 class LeituraModbusBit(LeituraModbus):
-    def __init__(self, client: "ModbusClient", registrador: "list[int, int]", invertido: "bool"=None, descricao: "str"=None) -> "None":
+    def __init__(self, client: "ModbusClient", registrador: "list[int, int]", invertido: "bool"=False, descricao: "str"=None) -> "None":
         super().__init__(client, registrador, descricao)
 
         # ATRIBUIÇÃO DE VARIÁVEIS PRIVADAS
         self.__client = client
         self.__reg = registrador[0]
         self.__bit = registrador[1]
-        self.__invertido = False if invertido is not None else invertido
+        self.__invertido = invertido
         self.__descricao = descricao
+
+
+    @property
+    def reg(self) -> "int":
+        # PROPRIEDADE -> Retorna o registrador
+
+        return self.__reg
 
     @property
     def descricao(self) -> "str":
@@ -87,15 +112,15 @@ class LeituraModbusBit(LeituraModbus):
         # PROPRIEDADE -> Retorna Valor raw baseado no tipo de operação ModBus.
 
         try:
-            if self.__client.open():
-                ler = self.__client.read_holding_registers(int(self.__reg), 2)
-                self.__client.close()
-                return ler
+            ler = self.__client.read_holding_registers(self.__reg, 2)
+            if ler is None:
+                ler2 = self.__client.read_holding_registers(self.__reg, 2)
+                return ler2
             else:
-                raise ConnectionError
+                return ler
 
         except Exception:
-            logger.error(f"[LEI] Erro na Leitura RAW do REG: {self.__reg} | Bit: {self.__bit}")
+            logger.debug(f"[LEI] Erro na Leitura RAW -> BIT do REG: {self.__descricao} | Endereço: {self.__reg} | Bit: {self.__bit}")
             logger.debug(traceback.format_exc())
             sleep(1)
 
@@ -106,8 +131,8 @@ class LeituraModbusBit(LeituraModbus):
         try:
             leitura = self.raw
 
-            dec_1 = BPD.fromRegisters(leitura, byteorder=Endian.Big, wordorder=Endian.Little)
-            dec_2 = BPD.fromRegisters(leitura, byteorder=Endian.Big, wordorder=Endian.Little)
+            dec_1 = BPD.fromRegisters(leitura, byteorder=Endian.LITTLE, wordorder=Endian.BIG)
+            dec_2 = BPD.fromRegisters(leitura, byteorder=Endian.LITTLE, wordorder=Endian.BIG)
 
             lbit = [int(bit) for bits in [reversed(dec_1.decode_bits(1)), reversed(dec_2.decode_bits(2))] for bit in bits]
 
@@ -118,34 +143,83 @@ class LeituraModbusBit(LeituraModbus):
                     return not lbit_r[i] if self.__invertido else lbit_r[i]
 
         except Exception:
-            logger.error(f"[LEI] Erro na Leitura do REG: {self.__reg} | Bit: {self.__bit}")
+            logger.debug(f"[LEI] Erro na Leitura BIT do REG: {self.__descricao} | Endereço: {self.__reg} | Bit: {self.__bit}")
+            logger.debug(traceback.format_exc())
+            sleep(1)
+            return None
+
+
+
+    ### EXPERIMENTAL! ###
+
+    def ler(self, leituras: "list") -> 'bool':
+        
+        aux = [leituras[self.reg], leituras[self.reg+1]]
+
+        try:
+            dec_1 = BPD.fromRegisters(aux, byteorder=Endian.LITTLE, wordorder=Endian.BIG)
+            dec_2 = BPD.fromRegisters(aux, byteorder=Endian.LITTLE, wordorder=Endian.BIG)
+
+            lbit = [int(b) for bits in [reversed(dec_1.decode_bits(1)), reversed(dec_2.decode_bits(2))] for b in bits]
+
+            lbit_r = [b for b in reversed(lbit)]
+
+            for i in range(len(lbit_r)):
+                if self.__bit == i:
+                    return not lbit_r[i] if self.__invertido else lbit_r[i]
+
+        except Exception:
+            logger.debug(f"[LEI] Erro na Leitura BIT do REG: {self.__descricao} | Endereço: {self.__reg} | Bit: {self.__bit}")
             logger.debug(traceback.format_exc())
             sleep(1)
             return None
 
 
 class LeituraModbusFloat(LeituraModbus):
-    def __init__(self, client: "ModbusClient"=None, registrador: "int"=None, descricao: "str"=None):
+    def __init__(self, client: "ModbusClient"=None, registrador: "int"=None, op: "int"=3, escala: "float"=1, wordorder: "bool"=True, descricao: "str"=None) ->"None":
         super().__init__(client, registrador, descricao)
 
         # ATRIBUIÇÃO DE VAIRÁVEIS PRIVADAS
 
+        self.__op = op
         self.__client = client
         self.__reg = registrador
+        self.__escala = escala
+        self.__descricao = descricao
+        self.__wordorder = wordorder
+
+    @property
+    def descricao(self) -> "str":
+        # PROPRIEDADE -> Retrona a Descrição da Leitura.
+
+        return self.__descricao
 
     @property
     def valor(self) -> "float":
         # PROPRIEDADE -> Retorna o valor tradado de leitura em Float.
 
         try:
-            raw = self.__client.read_holding_registers(self.__reg + 1, 2)
-            dec = BPD.fromRegisters(raw, byteorder=Endian.Big, wordorder=Endian.Little)
+            if self.__op == 3:
+                if self.__wordorder:
+                    raw = self.__client.read_holding_registers(self.__reg + 1, 2)
+                else:
+                    raw = self.__client.read_holding_registers(self.__reg, 2)
 
-            return dec.decode_32bit_float()
+            elif self.__op == 4:
+                raw = self.__client.read_input_registers(self.__reg + 1, 2)
+
+            if self.__wordorder:
+                dec = BPD.fromRegisters(raw, byteorder=Endian.BIG, wordorder=Endian.LITTLE)
+            else:
+                dec = BPD.fromRegisters(raw, byteorder=Endian.BIG)
+
+            val = dec.decode_32bit_float()
+
+            return val * self.__escala
 
         except Exception:
-            print(f"{traceback.format_exc()}")
-            logger.error(f"[LEI] Houve um erro ao realizar a Leitura de valores Float do registrador: {self.__reg}.")
+            logger.debug(f"[LEI] Erro na Leitura FLOAT do REG: {self.__descricao} | Endereço: {self.__reg}.")
+            logger.debug(traceback.format_exc())
             sleep(1)
             return 0
 
@@ -165,4 +239,5 @@ class LeituraSoma:
             return max(0, [sum(leitura.valor for leitura in self.__leituras)])
 
         else:
+            logger.debug("leituras = ", self.__leituras)
             return [sum(leitura.valor for leitura in self.__leituras)]

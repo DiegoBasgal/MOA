@@ -26,8 +26,8 @@ class EscritaModBusBit:
 
         try:
             raw = client.read_holding_registers(registrador[0], 2)
-            dec_1 = BPD.fromRegisters(raw, byteorder=Endian.Big, wordorder=Endian.Little)
-            dec_2 = BPD.fromRegisters(raw, byteorder=Endian.Big, wordorder=Endian.Little)
+            dec_1 = BPD.fromRegisters(raw, byteorder=Endian.LITTLE, wordorder=Endian.BIG)
+            dec_2 = BPD.fromRegisters(raw, byteorder=Endian.LITTLE, wordorder=Endian.BIG)
 
             lbit = [int(bit) for bits in [reversed(dec_1.decode_bits(1)), reversed(dec_2.decode_bits(2))] for bit in bits]
 
@@ -43,6 +43,6 @@ class EscritaModBusBit:
             return res
 
         except Exception:
-            logger.error(f"[ESC] Houve um erro ao realizar a Escrita no REG: {registrador}")
+            logger.debug(f"[ESC] Houve um erro ao realizar a Escrita no REG: {registrador}")
             logger.debug(traceback.format_exc())
             return False

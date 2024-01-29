@@ -16,10 +16,12 @@ from src.conectores.servidores import Servidores
 
 from src.funcoes.escrita import EscritaModBusBit as EMB
 
+
 logger = logging.getLogger("logger")
 
+
 class Comporta:
-    def __init__(self, id: "int"=None, tda=None) -> "None":
+    def __init__(self, id: "int"=None, serv:"Servidores"=None, tda:"tda.TomadaAgua"=None) -> "None":
 
         # VERIFICAÇÃO DE ARGUMENTOS
 
@@ -28,7 +30,8 @@ class Comporta:
         else:
             self.__id = id
 
-        self.clp = Servidores.clp
+        self.tda = tda
+        self.clp = serv.clp
 
         # ATRIBUIÇÃO DE VAIRÁVEIS PRIVADAS
 
@@ -47,7 +50,7 @@ class Comporta:
             REG_CLP["TDA"][f"CP{self.id}_CRACKING"],
             descricao=f"[CP{self.id}] Craking"
         )
-        self.__remoto = LeituraModbusBit(
+        self.__manual = LeituraModbusBit(
             self.clp["TDA"],
             REG_CLP["TDA"][f"CP{self.id}_REMOTO"],
             descricao=f"[CP{self.id}] Modo Remoto"
@@ -66,7 +69,6 @@ class Comporta:
         self.__bloqueio = LeituraModbusBit(
             self.clp["TDA"],
             REG_CLP["TDA"][f"CP{self.id}_BLQ_ATUADO"],
-            invertido=True,
             descricao=f"[CP{self.id}] Bloqueio Atuado"
         )
         self.__pressao_equalizada = LeituraModbusBit(
@@ -131,8 +133,8 @@ class Comporta:
                 return CP_ABERTA
             elif self.__cracking.valor:
                 return CP_CRACKING
-            elif self.__remoto.valor:
-                return CP_REMOTO
+            elif self.__manual.valor:
+                return CP_MANUAL
             elif self.operando:
                 return CP_OPERANDO
             else:
@@ -207,7 +209,7 @@ class Comporta:
                 logger.debug("")
                 logger.debug(f"[CP{self.id}]          Enviando comando:          \"FECHAR\"")
                 res = EMB.escrever_bit(self.clp["TDA"], REG_CLP["TDA"][f"CP{self.id}_CMD_FECHAMENTO"], valor=1)
-                return res
+                return 
 
         except Exception:
             logger.error(f"[CP{self.id}] Houve um erro acionar o comando de Fechamento da Comporta {self.id}.")
@@ -231,7 +233,7 @@ class Comporta:
 
                 EMB.escrever_bit(self.clp["TDA"], REG_CLP["TDA"][f"CP{self.id}_CMD_ABERTURA_CRACKING"], valor=1)
 
-                # threading.Thread(target=lambda: self.aguardar_pressao_uh()).start()
+                threading.Thread(target=lambda: self.aguardar_pressao_uh()).start()
 
         except Exception:
             logger.error(f"[CP{self.id}] Houve um erro ao realizar a Operação de Cracking da Comporta {self.id}.")
@@ -252,6 +254,7 @@ class Comporta:
             if self.pressao_equalizada:
                 logger.debug(f"[CP{self.id}]          Verificação MOA:           \"UH Pressão Equalizada\"")
                 return None
+
             else:
                 sleep(2)
 
@@ -280,14 +283,17 @@ class Comporta:
 
         try:
             if self.bloqueio or self.permissao:
-                logger.debug(f"[CP{self.id}]          Sem condições para operar a Comporta!")
+                if self.aguardando_abertura:
+                    return True
+                else:
+                    logger.debug(f"[CP{self.id}]          Sem condições para operar a Comporta!")
 
-                logger.debug(f"[CP{self.id}]          Ainda há \"Bloqueios\" Ativos") if self.bloqueio else None
-                logger.debug(f"[CP{self.id}]          Ainda há \"Permissivos\" Inválidos") if self.permissao else None
+                    logger.debug(f"[CP{self.id}]          Ainda há \"Bloqueios\" Ativos") if self.bloqueio else None
+                    logger.debug(f"[CP{self.id}]          Ainda há \"Permissivos\" Inválidos") if self.permissao else None
 
-                if tda.TomadaAgua.status_valvula_borboleta.valor or tda.TomadaAgua.status_limpa_grades.valor or self.comporta_adjacente.operando in (2, 4, 32):
-                    logger.debug(f"[CP{self.id}]          Limpa Grades Operando") if tda.TomadaAgua.status_limpa_grades.valor != 0 else None
-                    logger.debug(f"[CP{self.id}]          Válvula Borboleta Operando") if tda.TomadaAgua.status_valvula_borboleta.valor != 0 else None
+                if self.tda.status_valvula_borboleta.valor or self.tda.status_limpa_grades.valor or self.comporta_adjacente.operando in (2, 4, 32):
+                    logger.debug(f"[CP{self.id}]          Limpa Grades Operando") if self.tda.status_limpa_grades.valor != 0 else None
+                    logger.debug(f"[CP{self.id}]          Válvula Borboleta Operando") if self.tda.status_valvula_borboleta.valor != 0 else None
 
                     logger.debug(f"[CP{self.id}]          Comporta {self.comporta_adjacente.id} Repondo") if self.comporta_adjacente.operando == 2 else None
                     logger.debug(f"[CP{self.id}]          Comporta {self.comporta_adjacente.id} Abrindo") if self.comporta_adjacente.operando == 4 else None
@@ -297,7 +303,7 @@ class Comporta:
                 else:
                     return False
 
-            elif not tda.TomadaAgua.status_unidade_hidraulica.valor:
+            elif not self.tda.status_unidade_hidraulica.valor:
                 logger.debug(f"[CP{self.id}]          Unidade Hidráulica:        \"Indisponível\"")
                 return False
 
