@@ -45,18 +45,20 @@ class TomadaAgua:
         self.cp["CP1"].comporta_adjacente = self.cp["CP2"]
         self.cp["CP2"].comporta_adjacente = self.cp["CP1"]
 
-        self.nivel_montante = LeituraModbusFloat(
+        self.nivel_montante = LeituraModbus( # LeituraModbusFloat(
             self.clp['TDA'],
             REG_CLP["TDA"]["NV_MONTANTE"],
-            wordorder=False,
+            escala=0.01,
+            fundo_escala=400,
+            # wordorder=False,
             descricao="[TDA] Leitura Nível Montante"
         )
-        self.perda_grade_1 = LeituraModbusFloat(
+        self.perda_grade_1 = LeituraModbus( # LeituraModbusFloat(
             self.clp["TDA"],
             REG_CLP["TDA"]["NV_JUSANTE_GRADE_CP1"],
             descricao="[TDA] Leitura Perda Grade CP1"
         )
-        self.perda_grade_2 = LeituraModbusFloat(
+        self.perda_grade_2 = LeituraModbus( # LeituraModbusFloat(
             self.clp["TDA"],
             REG_CLP["TDA"]["NV_JUSANTE_GRADE_CP2"],
             descricao="[TDA] Leitura Perda Grade CP2"
@@ -86,10 +88,11 @@ class TomadaAgua:
 
         self.condicionadores: "list[c.CondicionadorBase]" = []
         self.condicionadores_essenciais: "list[c.CondicionadorBase]" = []
+        self.condicionadores_ativos: "list[c.CondicionadorBase]" = []
 
         # FINALIZAÇÃO __INIT__
 
-        self.iniciar_ultimo_estado_lg()
+        # self.iniciar_ultimo_estado_lg()
 
 
     def resetar_emergencia(self) -> "bool":
@@ -328,17 +331,17 @@ class TomadaAgua:
         Função para carregamento de leituras necessárias para a operação.
         """
 
-        # CONDICIONADORES ESSENCIAIS
-        self.l_sem_emergencia = LeituraModbusBit(self.clp["TDA"], REG_CLP["TDA"]["SEM_EMERGENCIA"], invertido=True, descricao="[TDA] Emergência")
-        self.condicionadores_essenciais.append(c.CondicionadorBase(self.l_sem_emergencia, CONDIC_NORMALIZAR))
+        # # CONDICIONADORES ESSENCIAIS
+        # self.l_sem_emergencia = LeituraModbusBit(self.clp["TDA"], REG_CLP["TDA"]["SEM_EMERGENCIA"], invertido=True, descricao="[TDA] Emergência")
+        # self.condicionadores_essenciais.append(c.CondicionadorBase(self.l_sem_emergencia, CONDIC_NORMALIZAR))
 
 
-        # CONDICIONADORES
-        self.l_ca_tensao = LeituraModbusBit(self.clp["TDA"], REG_CLP["TDA"]["CA_COM_TENSAO"], invertido=True, descricao="[TDA] Tensão CA Status ")
-        self.condicionadores.append(c.CondicionadorBase(self.l_ca_tensao, CONDIC_NORMALIZAR))
+        # # CONDICIONADORES
+        # self.l_ca_tensao = LeituraModbusBit(self.clp["TDA"], REG_CLP["TDA"]["CA_COM_TENSAO"], invertido=True, descricao="[TDA] Tensão CA Status ")
+        # self.condicionadores.append(c.CondicionadorBase(self.l_ca_tensao, CONDIC_NORMALIZAR))
 
-        self.l_falha_ligar_bomba_uh = LeituraModbusBit(self.clp["TDA"], REG_CLP["TDA"]["UH_FLH_LIGAR_BOMBA"], descricao="[TDA] UHTDA Falha Ligar Bomba")
-        self.condicionadores.append(c.CondicionadorBase(self.l_falha_ligar_bomba_uh, CONDIC_NORMALIZAR))
+        # self.l_falha_ligar_bomba_uh = LeituraModbusBit(self.clp["TDA"], REG_CLP["TDA"]["UH_FLH_LIGAR_BOMBA"], descricao="[TDA] UHTDA Falha Ligar Bomba")
+        # self.condicionadores.append(c.CondicionadorBase(self.l_falha_ligar_bomba_uh, CONDIC_NORMALIZAR))
 
 
         self.l_filtro_limpo_uh = LeituraModbusBit(self.clp["TDA"], REG_CLP["TDA"]["UH_FILTRO_LIMPO"], invertido=True, descricao="[TDA] UHTDA Filtro Sujo") # 1

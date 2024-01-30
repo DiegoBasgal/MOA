@@ -49,7 +49,7 @@ class UnidadeGeracao:
         # ATRIBUIÇÃO DE VAIRIÁVEIS
 
         # PRIVADAS
-        self.__leitura_potencia = LeituraModbusFloat(
+        self.__leitura_potencia = LeituraModbus( # LeituraModbusFloat(
             self.clp[f"UG{self.id}"],
             REG_CLP[f"UG{self.id}"]["P"],
             op=3,
@@ -930,7 +930,7 @@ class UnidadeGeracao:
 
         try:
             self.prioridade = int(parametros[f"ug{self.id}_prioridade"])
-            self.manter_unidades = bool(parametros["manter_unidades"])
+            # self.manter_unidades = bool(parametros["manter_unidades"])
             self.condic_temp_fase_r_ug.valor_base = float(parametros[f"alerta_temperatura_fase_r_ug{self.id}"])
             self.condic_temp_fase_s_ug.valor_base = float(parametros[f"alerta_temperatura_fase_s_ug{self.id}"])
             self.condic_temp_fase_t_ug.valor_base = float(parametros[f"alerta_temperatura_fase_t_ug{self.id}"])

@@ -173,6 +173,57 @@
                 </div>
             </form>
         </div>
+        <br>
+        <br>
+        <br>
+        <div style="justify-content: center; display: flex;">
+            <label style="font-size: 20px;"><b>Limpa Grades: </b></label>
+            {% if usina.modo_lg == 0 %}
+                <label style="font-size: 17px; margin-top: 3px; margin-left: 3px; color: red;">Indisponível</label>
+            {% endif %}
+            {% if usina.modo_lg == 1 %}
+                <label style="font-size: 17px; margin-top: 3px; margin-left: 3px; color: green;">Disponível</label>
+            {% endif %}
+            {% if usina.modo_lg == 2 %}
+                <label style="font-size: 17px; margin-top: 3px; margin-left: 3px; color: orange;">Manual</label>
+            {% endif %}
+        </div>
+        <div style="justify-content: center; display: flex; margin-top: 10px;">
+            <form method='post' action='/parametros_moa/'>
+                {% csrf_token %}
+                <div>
+                    <table>
+                        <tr>
+                            <td  style="text-align: center;">
+                                <label style="font-size: 18px;"><b>Disparo por Período: </b></label>
+                                <label style="font-size: 14px;">{{ usina.horario_disparo_lg|date:"j-n-o H:i:s" }}</label>
+                            </td>
+                            <td  style="text-align: center;">
+                                <label style="font-size: 18px; margin-left: 50px;"><b>Disparo por Perda na Grade: </b></label>
+                            </td>
+                        </tr>
+                        <tr style="text-align: center;">
+                            <td>
+                                <label style="font-size: 17px;">Dias: </label>
+                                <input id="lg_d_text" name="lg_d" size=1 value="{{usina.t_dias_disparo_lg}}"/>
+                                <label style="margin-left: 3px; font-size: 17px;">Horas: </label>
+                                <input id="lg_h_text" name="lg_h" size=1 value="{{usina.t_horas_disparo_lg}}"/>
+                                <input style="padding-top: 2px; padding-bottom: 2px;" id="submit" type="submit" name="disp_lg_t" value="Salvar"/>
+                                <input style="padding-top: 2px; padding-bottom: 2px;" id="submit" type="submit" name="disp_lg_r" value="Reset"/>
+                            </td>
+                            <td>
+                                <label style="margin-left: 51px; font-size: 17px;">UG1: </label>
+                                <input id="lg_ug1_text" name="lg_ug1" size=1 value="{{usina.valor_disparo_lg_p1}}"/>
+                                <label style="margin-left: 10px; font-size: 17px;">UG2: </label>
+                                <input id="lg_ug2_text" name="lg_ug2" size=1 value="{{usina.valor_disparo_lg_p2}}"/>
+                                <input style="padding-top: 2px; padding-bottom: 2px;" id="submit" type="submit" name="disp_lg_ug" value="Salvar"/>
+                            </td>
+                        </tr>
+                    </table>
+                </div>
+            </form>
+        </div>
+        <br>
         <div style="margin-top: 50px; justify-content: center; display: flex;">
             <form method='post' action='/parametros_moa/'>
                 {% csrf_token %}
@@ -180,11 +231,11 @@
                     <tr>
                         <td>
                             <b style="font-size: 18px;">Limites de Perda na Grade: </b>
-                            <input id="submit" name="salvar_params" type="submit" value="Salvar"/>
+                            <input id="submit" name="salvar_perda" type="submit" value="Salvar"/>
                         </td>
                         <td style="width: 40%; text-align: center;">
                             <a style="font-size: 18px;"><b>Limites de Operação do Transformador Elevador: </b></a>
-                            <input id="submit" name="salvar_params" type="submit" value="Salvar"/>
+                            <input id="submit" name="salvar_trafo" type="submit" value="Salvar"/>
                         </td>
                     </tr>
                     <tr>
@@ -198,12 +249,12 @@
                                 <tr>
                                     <td>UG 1</td>
                                     <td><input id="alerta_perda_grade_ug1" name="alerta_perda_grade_ug1" size=10 value="{{usina.alerta_perda_grade_ug1}}"/></td>
-                                    <td><input id="perda_grade_maxima_ug1" name="perda_grade_maxima_ug1" size=10 value="{{usina.ug1_perda_grade_maxima}}"/></td>
+                                    <td><input id="ug1_perda_grade_maxima" name="ug1_perda_grade_maxima" size=10 value="{{usina.ug1_perda_grade_maxima}}"/></td>
                                 </tr>
                                 <tr>
                                     <td>UG 2</td>
                                     <td><input id="alerta_perda_grade_ug2" name="alerta_perda_grade_ug2" size=10 value="{{usina.alerta_perda_grade_ug2}}"/></td>
-                                    <td><input id="perda_grade_maxima_ug2" name="perda_grade_maxima_ug2" size=10 value="{{usina.ug2_perda_grade_maxima}}"/></td>
+                                    <td><input id="ug2_perda_grade_maxima" name="ug2_perda_grade_maxima" size=10 value="{{usina.ug2_perda_grade_maxima}}"/></td>
                                 </tr>
                             </table>
                         </td>
@@ -241,6 +292,14 @@
                             <th>UG1 Limite</th>
                             <th>UG2 Alerta</th>
                             <th>UG2 Limite</th>
+                        </tr>
+
+                        <tr>
+                            <td>Óleo UHRV</td>
+                            <td><input id="alerta_temperatura_oleo_uhrv_ug1" name="alerta_temperatura_oleo_uhrv_ug1" size=10 value="{{usina.alerta_temperatura_oleo_uhrv_ug1}}"/></td>
+                            <td><input id="limite_temperatura_oleo_uhrv_ug1" name="limite_temperatura_oleo_uhrv_ug1" size=10 value="{{usina.limite_temperatura_oleo_uhrv_ug1}}"/></td>
+                            <td><input id="alerta_temperatura_oleo_uhrv_ug2" name="alerta_temperatura_oleo_uhrv_ug2" size=10 value="{{usina.alerta_temperatura_oleo_uhrv_ug2}}"/></td>
+                            <td><input id="limite_temperatura_oleo_uhrv_ug2" name="limite_temperatura_oleo_uhrv_ug2" size=10 value="{{usina.limite_temperatura_oleo_uhrv_ug2}}"/></td>
                         </tr>
 
                         <tr>

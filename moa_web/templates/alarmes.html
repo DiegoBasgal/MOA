@@ -70,6 +70,7 @@
                     <th>Data</th>
                     <th style="padding-left: 10px; padding-right: 10px;">Severidade</th>
                     <th>Descritivo</th>
+                    <th>Autor</th>
                 </tr>
                 {% for alarme in alarmes %}
                 <tr>
@@ -92,6 +93,9 @@
                         </td>
                     <td style="text-align: left;">
                         {{ alarme.descricao }}
+                    </td>
+                    <td>
+                        {{ alarme.autor }}
                     </td>
                 </tr>
                 {% endfor %}

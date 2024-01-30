@@ -79,8 +79,8 @@ class Tda:
         if self.dict['TDA']['nv_montante'] >= USINA_NV_VERTEDOURO:
             self.dict['TDA']['q_vertimento'] = self.dict['TDA']['q_liquida']
             self.dict['TDA']['q_liquida'] = 0
-            self.dict['TDA']['nv_montante'] = (0.0000021411 * self.dict['TDA']["q_vertimento"] ** 3
-                                            - 0.00025189 * self.dict['TDA']["q_vertimento"] ** 2
+            self.dict['TDA']['nv_montante'] = (0.0000021411 * self.dict['TDA']['q_vertimento'] ** 3
+                                            - 0.00025189 * self.dict['TDA']['q_vertimento'] ** 2
                                             + 0.014859 * self.dict['TDA']["q_vertimento"]
                                             + 462.37)
 

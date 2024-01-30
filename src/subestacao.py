@@ -38,19 +38,19 @@ class Subestacao:
             self.clp["SA"],
             REG_CLP["SE"]["LT_VAB"],
         )
-        self.tensao_vab = LeituraModbusFloat(
+        self.tensao_vab = LeituraModbus( # LeituraModbusFloat(
             self.clp["SA"],
             REG_CLP["SE"]["LT_VAB"],
             escala=1000,
             descricao="[SE]  Leitura Tensão VAB"
         )
-        self.tensao_vbc = LeituraModbusFloat(
+        self.tensao_vbc = LeituraModbus( # LeituraModbusFloat(
             self.clp["SA"],
             REG_CLP["SE"]["LT_VBC"],
             escala=1000,
             descricao="[SE]  Leitura Tensão VBC"
         )
-        self.tensao_vca = LeituraModbusFloat(
+        self.tensao_vca = LeituraModbus( # LeituraModbusFloat(
             self.clp["SA"],
             REG_CLP["SE"]["LT_VCA"],
             escala=1000,
@@ -147,7 +147,7 @@ class Subestacao:
         logger.debug("[SE]  Verificando Condições do Disjuntor SE...")
 
         try:
-            if self.secc_fechada.valor:
+            if not self.secc_fechada.valor:
                 logger.warning("[SE]  A Seccionadora está Aberta!")
                 flags += 1
 
@@ -160,9 +160,9 @@ class Subestacao:
                 self.dj_bay_aberto = True
                 flags += 1
 
-            if not self.l_barra_viva.valor:
-                logger.warning("[SE]  Não foi possível identificar uma leitura de Tensão na barra do Bay -> Subestação!")
-                flags += 1
+            # if not self.l_barra_viva.valor:
+            #     logger.warning("[SE]  Não foi possível identificar uma leitura de Tensão na barra do Bay -> Subestação!")
+            #     flags += 1
 
             if self.l_trip_rele_te.valor:
                 logger.warning("[SE]  O sinal de trip do relé do transformador elevador está ativado!")

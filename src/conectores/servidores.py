@@ -77,30 +77,40 @@ class Servidores:
             port=d.ips["SA_porta"],
             unit_id=1,
             timeout=0.5,
+            auto_close=True,
+            auto_open=True,
         )
         self.clp["TDA"] = ModbusClient(
             host=d.ips["TDA_ip"],
             port=d.ips["TDA_porta"],
             unit_id=1,
             timeout=5,
+            auto_close=True,
+            auto_open=True,
         )
         self.clp["UG1"] = ModbusClient(
             host=d.ips["UG1_ip"],
             port=d.ips["UG1_porta"],
             unit_id=1,
             timeout=0.5,
+            auto_close=True,
+            auto_open=True,
         )
         self.clp["UG2"] = ModbusClient(
             host=d.ips["UG2_ip"],
             port=d.ips["UG2_porta"],
             unit_id=1,
             timeout=0.5,
+            auto_close=True,
+            auto_open=True,
         )
         self.clp["MOA"] = ModbusClient(
             host=d.ips["MOA_ip"],
             port=d.ips["MOA_porta"],
             unit_id=1,
             timeout=0.5,
+            auto_close=True,
+            auto_open=True,
         )
 
         self.rele["SE"] = ModbusClient(
@@ -108,60 +118,80 @@ class Servidores:
             port=d.ips["RELE_SE_porta"],
             unit_id=1,
             timeout=2,
+            auto_close=True,
+            auto_open=True,
         )
         self.rele["TE"] = ModbusClient(
             host=d.ips["RELE_TE_ip"],
             port=d.ips["RELE_TE_porta"],
             unit_id=1,
             timeout=2,
+            auto_close=True,
+            auto_open=True,
         )
         self.rele["BAY"] = ModbusClient(
             host=d.ips["RELE_BAY_ip"],
             port=d.ips["RELE_BAY_porta"],
             unit_id=1,
             timeout=2,
+            auto_close=True,
+            auto_open=True,
         )
         self.rele["UG1"] = ModbusClient(
             host=d.ips["RELE_UG1_ip"],
             port=d.ips["RELE_UG1_porta"],
             unit_id=1,
             timeout=2,
+            auto_close=True,
+            auto_open=True,
         )
         self.rele["UG2"] = ModbusClient(
             host=d.ips["RELE_UG2_ip"],
             port=d.ips["RELE_UG2_porta"],
             unit_id=1,
             timeout=2,
+            auto_close=True,
+            auto_open=True,
         )
         self.rele["SE"] = ModbusClient(
             host=d.ips["RELE_SE_ip"],
             port=d.ips["RELE_SE_porta"],
             unit_id=1,
             timeout=2,
+            auto_close=True,
+            auto_open=True,
         )
         self.rele["TE"] = ModbusClient(
             host=d.ips["RELE_TE_ip"],
             port=d.ips["RELE_TE_porta"],
             unit_id=1,
             timeout=2,
+            auto_close=True,
+            auto_open=True,
         )
         self.rele["BAY"] = ModbusClient(
             host=d.ips["RELE_BAY_ip"],
             port=d.ips["RELE_BAY_porta"],
             unit_id=1,
             timeout=2,
+            auto_close=True,
+            auto_open=True,
         )
         self.rele["UG1"] = ModbusClient(
             host=d.ips["RELE_UG1_ip"],
             port=d.ips["RELE_UG1_porta"],
             unit_id=1,
             timeout=2,
+            auto_close=True,
+            auto_open=True,
         )
         self.rele["UG2"] = ModbusClient(
             host=d.ips["RELE_UG2_ip"],
             port=d.ips["RELE_UG2_porta"],
             unit_id=1,
             timeout=2,
+            auto_close=True,
+            auto_open=True,
         )
 
     @staticmethod
@@ -174,8 +204,6 @@ class Servidores:
 
         return True if (subprocess.call(["ping", "-c", "1", "-w", "1", host], stdout=subprocess.PIPE) == 0 for _ in range(2)) else False
 
-
-    def open_all(self) -> "None":
 
     def open_all(self) -> "None":
         """
@@ -201,8 +229,6 @@ class Servidores:
 
 
     def close_all(self) -> "None":
-
-    def close_all(self) -> "None":
         """
         Função para fechamento das conexões com os CLPs da Usina.
         """
@@ -210,20 +236,13 @@ class Servidores:
         logger.debug("[CLI] Encerrando conexões...")
 
         for _ , clp in self.clp.items():
-
-        for _ , clp in self.clp.items():
             clp.close()
-
-        for _, rele in self.rele.items():
 
         for _, rele in self.rele.items():
             rele.close()
 
-
         logger.debug("[CLI] Conexões encerradas.")
 
-
-    def ping_clients(self) -> "None":
 
     def ping_clients(self) -> "None":
         """
@@ -235,9 +254,7 @@ class Servidores:
         avisa o operador, senão fecha a conexão.
         """
         return
-        return
 
-        if not self.ping(d.ips["TDA_ip"]):
         if not self.ping(d.ips["TDA_ip"]):
             logger.warning("[CLI] CLP TDA não respondeu a tentativa de comunicação!")
 
@@ -251,7 +268,6 @@ class Servidores:
             self.clp["TDA"].close()
 
         if not self.ping(d.ips["SA_ip"]):
-        if not self.ping(d.ips["SA_ip"]):
             logger.warning("[CLI] CLP SA não respondeu a tentativa de comunicação!")
         if self.clp["SA"].open():
             self.clp["SA"].close()
@@ -263,7 +279,6 @@ class Servidores:
             self.clp["SA"].close()
 
         if not self.ping(d.ips["UG1_ip"]):
-        if not self.ping(d.ips["UG1_ip"]):
             logger.warning("[CLI] CLP UG1 não respondeu a tentativa de comunicação!")
         if self.clp["UG1"].open():
             self.clp["UG1"].close()
@@ -273,7 +288,6 @@ class Servidores:
             logger.warning("[CLI] CLP UG1 não respondeu a tentativa de conexão ModBus!")
 
         if not self.ping(d.ips["UG2_ip"]):
-        if not self.ping(d.ips["UG2_ip"]):
             logger.warning("[CLI] CLP UG2 não respondeu a tentativa de comunicação!")
         if self.clp["UG2"].open():
             self.clp["UG2"].close()
@@ -282,7 +296,6 @@ class Servidores:
         else:
             logger.warning("[CLI] CLP UG2 não respondeu a tentativa de conexão ModBus!")
 
-        if not self.ping(d.ips["MOA_ip"]):
         if not self.ping(d.ips["MOA_ip"]):
             logger.warning("[CLI] CLP MOA não respondeu a tentativa de comunicação!")
         if self.clp["MOA"].open():

@@ -39,21 +39,25 @@ class Bay:
         self.tensao_vs = LeituraModbus(
             self.rele["BAY"],
             REG_RELE["BAY"]["LT_VS"],
+            escala=1000,
             descricao="[BAY][RELE] Leitura Tensão VS"
         )
         self.tensao_vab = LeituraModbus(
             self.rele["BAY"],
             REG_RELE["BAY"]["LT_FASE_A"],
+            escala=1000,
             descricao="[BAY][RELE] Leitura Tensão Fase A"
         )
         self.tensao_vbc = LeituraModbus(
             self.rele["BAY"],
             REG_RELE["BAY"]["LT_FASE_B"],
+            escala=1000,
             descricao="[BAY][RELE] Leitura Tensão Fase B"
         )
         self.tensao_vca = LeituraModbus(
             self.rele["BAY"],
             REG_RELE["BAY"]["LT_FASE_C"],
+            escala=1000,
             descricao="[BAY][RELE] Leitura Tensão Fase C"
         )
         self.dj_linha_bay = LeituraModbusBit(
@@ -66,7 +70,7 @@ class Bay:
             REG_RELE["SE"]["DJL_FECHADO"],
             descricao="[SE][RELE] Disjuntor Linha Status"
         )
-        self.potencia_mp = LeituraModbusFloat(
+        self.potencia_mp = LeituraModbus( # LeituraModbusFloat(
             self.clp["SA"], # Mudar para -> self.mp
             REG_CLP["SE"]["P"], # Mudar para -> REG_MEDIDOR["LT_P_MP"]
             op=3,
@@ -117,7 +121,7 @@ class Bay:
                 if self.verificar_dj_linha():
                     logger.debug(f"[BAY] Enviando comando:                   \"FECHAR DISJUNTOR\"")
                     logger.debug("")
-                    self.rele["BAY"].write_single_coil(REG_RELE["BAY"]["DJL_CMD_FECHAR"], [1])
+                    self.rele["BAY"].write_single_register(REG_RELE["BAY"]["DJL_CMD_FECHAR"], 1)
                     return True
 
                 else:

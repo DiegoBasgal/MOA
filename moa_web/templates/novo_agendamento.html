@@ -28,7 +28,7 @@
         h2 {
             color: white;
         }
-        
+
         h3 {
             color: white;
         }
@@ -61,13 +61,11 @@
                     <option value="{{ i }}" {% if i == dia %}selected{% endif %}>{{ i }}</option>
                 {% endfor %}
             </select>
-            /
             <select id="mes" name="mes">
                 {% for i in range_mes %}
                     <option value="{{ i }}" {% if i == mes %}selected{% endif %}>{{ i }}</option>
                 {% endfor %}
             </select>
-            /
             <select id="ano" name="ano">
                 {% for i in range_ano %}
                     <option value="{{ i }}" {% if i == ano %}selected{% endif %}>{{ i }}</option>
@@ -75,23 +73,21 @@
             </select>
             </br>
             </br>
-        
+
             <a>Horário:</a>
             <select id="hora" name="hora">
                 {% for i in range_hora %}
                     <option value="{{ i }}" {% if i == hora %}selected{% endif %}>{{ i }}</option>
                 {% endfor %}
             </select>
-            :
             <select id="minuto" name="minuto">
                 {% for i in range_minuto %}
                     <option value="{{ i }}" {% if i == prox_minuto %}selected{% endif %}>{{ i }}</option>
                 {% endfor %}
             </select>
-        
             </br>
             </br>
-        
+
             <a>Comando:</a>
             <select id="comando" name="comando">
                 {% for comando in comandos %}
@@ -100,12 +96,12 @@
             </select>
             </br>
             </br>
-        
-            <a>Campo auxiliar:</a>
-            <input id="campo_auxiliar" name="campo_auxiliar" type="text"/>
+
+            <a>Valor:</a>
+            <input id="campo_auxiliar" name="campo_auxiliar" type="text" required/>
             </br>
             </br>
-        
+
             <a>Observações:</a>
             <input id="observacao" name="observacao" type="text"/>
             </br>

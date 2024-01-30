@@ -166,8 +166,6 @@ class ControleEstados(State):
             logger.debug("Verificando status da Subestação e Bay...")
             logger.debug("")
             flag_bay_se = self.usn.verificar_bay_se()
-            t2 = (time() - t)
-            debug_log.debug(f"[TEMPO] Verificar status SE e BAY moa.py -> {t2}")
 
             if flag_bay_se == DJS_FALTA_TENSAO:
                 return Emergencia(self.usn) if self.usn.bay.aguardar_tensao() == TENSAO_FORA else ControleDados(self.usn)
