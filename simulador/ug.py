@@ -384,7 +384,6 @@ class Unidade:
         DB.set_words(MB[f'UG{self.id}']['SETPONIT'], [self.setpoint])
         DB.set_words(MB[f'UG{self.id}']['HORIMETRO'], [np.floor(self.horimetro_hora)])
         DB.set_words(MB[f'UG{self.id}']['RV_ESTADO_OPERACAO'], [int(self.dict[f'UG{self.id}'][f'etapa_atual'])])
-        DB.set_words(MB[f'UG{self.id}']['RV_ESTADO_OPERACAO_2'], [int(self.dict[f'UG{self.id}'][f'etapa_alvo'])])
         DB.set_words(MB[f'UG{self.id}']['ENTRADA_TURBINA_PRESSAO'], [round(self.dict[f'UG{self.id}'][f'pressao_turbina'] * 10)])
         DB.set_words(MB[f'UG{self.id}']['GERADOR_FASE_A_TMP'], [round(self.dict[f'UG{self.id}'][f'temp_fase_r'])])
         DB.set_words(MB[f'UG{self.id}']['GERADOR_FASE_B_TMP'], [round(self.dict[f'UG{self.id}'][f'temp_fase_s'])])

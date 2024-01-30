@@ -89,7 +89,7 @@ class Tda:
 
     def atualizar_modbus(self) -> 'None':
 
-        DB.set_words(MB['TDA']['NV_MONTANTE'], [int((self.dict['TDA']['nv_montante'] - 400) * 1000)])
+        DB.set_words(MB['TDA']['NV_MONTANTE'], [int((self.dict['TDA']['nv_montante'] - 400) * 100)])
         DB.set_words(MB['TDA']['NV_JUSANTE_CP1'], [round((self.dict['TDA']['nv_jusante_grade']) * 10000)])
         DB.set_words(MB['TDA']['NV_JUSANTE_CP2'], [round((self.dict['TDA']['nv_jusante_grade']) * 10000)])
 
