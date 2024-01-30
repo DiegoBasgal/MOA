@@ -76,7 +76,7 @@ class Bay:
 
 
     def verificar_tensao_dj(self) -> "None":
-        if not (USINA_TENSAO_MINIMA < self.dict['BAY']['tensao_vab'] < USINA_TENSAO_MAXIMA):
+        if not (BAY_TENSAO_BAIXA < self.dict['BAY']['tensao_vab'] < BAY_TENSAO_ALTA):
             self.dict['BAY']['dj_falta_vcc'] = True
             self.tripar_dj(descr='Tensão fora dos limites.')
 

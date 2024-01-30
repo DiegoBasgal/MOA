@@ -103,9 +103,9 @@ compartilhado = {
         "potencia_mr": 0,
 
         "tensao_vs": 0,
-        "tensao_vab": 23000,
-        "tensao_vbc": 23000,
-        "tensao_vca": 23000,
+        "tensao_vab": 13800,
+        "tensao_vbc": 13800,
+        "tensao_vca": 13800,
 
         "dj_secc": True,
         "dj_trip": False,
