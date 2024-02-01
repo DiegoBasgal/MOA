@@ -140,11 +140,11 @@ class Adufas:
             """
 
             try:
-                if not self.clp["AD"].read_holding_registers(REG_AD["PCAD_MODO_SETPOT_HAB"])[0]:
-                    logger.info(f"[AD]  O modo de setpoint das Comportas das Adufas não está Habilitado.")
-                    return
+                # if not self.clp["AD"].read_holding_registers(REG_AD["PCAD_MODO_SETPOT_HAB"])[0]:
+                #     logger.info(f"[AD]  O modo de setpoint das Comportas das Adufas não está Habilitado.")
+                #     return
 
-                elif self.uhcd_operando.valor:
+                if self.uhcd_operando.valor:
                     logger.debug(f"[AD][CP{self.id}]      Aguardando disponibilização da UHCD.")
                     return
 
@@ -166,7 +166,8 @@ class Adufas:
 
             Verifica se alguma das condições abaixo está acionada. Se estiver, aciona o modo manual
             da Comporta e inicia o disparo do Mensageiro para os Operadores.
-            CONDIÇÔES:
+
+            CONDIÇÕES:
             - Relé Atuado por Falta de Fase CA;
             - Nível de Óleo Crítico da UHCD;
             - Trip de Temperatura do óleo da UHCD;

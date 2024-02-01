@@ -33,7 +33,7 @@ class Controlador:
 
         self.tempo_afluente = []
 
-        with open('C:/Users/diego.garcia/Desktop/operacao-autonoma/simulador/dicts/entrada_afluente_2.csv', 'r') as fp:
+        with open('C:/Users/diego.garcia/Desktop/operacao-autonoma/simulador/dicts/entrada_afluente.csv', 'r') as fp:
             rawlines = fp.readlines()
 
         i = 0

@@ -802,23 +802,23 @@ class Subestacao:
         cls.condicionadores.append(c.CondicionadorBase(cls.l_dj_65, CONDIC_INDISPONIBILIZAR))
 
 
-        # TODO -> Lógicas "um depende do outro"
-        cls.l_dj_19 = lei.LeituraModbus(cls.clp["SA"], REG_SE["DJ_19"], descricao="[SE]  CB01 - Carregador de Baterias 01 - Disj. Q1/Q2/Q3")
-        cls.l_dj_20 = lei.LeituraModbus(cls.clp["SA"], REG_SE["DJ_20"], descricao="[SE]  CB02 - Carregador de Baterias 02 - Disj. Q1/Q2/Q3")
-        cls.condicionadores.append(c.CondicionadorBase(cls.l_dj_19, CONDIC_INDISPONIBILIZAR, leitura_conjunta=cls.l_dj_20))
-        cls.condicionadores.append(c.CondicionadorBase(cls.l_dj_20, CONDIC_INDISPONIBILIZAR, leitura_conjunta=cls.l_dj_19))
+        # # TODO -> Lógicas "um depende do outro"
+        # cls.l_dj_19 = lei.LeituraModbus(cls.clp["SA"], REG_SE["DJ_19"], descricao="[SE]  CB01 - Carregador de Baterias 01 - Disj. Q1/Q2/Q3")
+        # cls.l_dj_20 = lei.LeituraModbus(cls.clp["SA"], REG_SE["DJ_20"], descricao="[SE]  CB02 - Carregador de Baterias 02 - Disj. Q1/Q2/Q3")
+        # cls.condicionadores.append(c.CondicionadorBase(cls.l_dj_19, CONDIC_INDISPONIBILIZAR, leitura_conjunta=cls.l_dj_20))
+        # cls.condicionadores.append(c.CondicionadorBase(cls.l_dj_20, CONDIC_INDISPONIBILIZAR, leitura_conjunta=cls.l_dj_19))
 
 
-        cls.l_dj_21 = lei.LeituraModbus(cls.clp["SA"], REG_SE["DJ_21"], descricao="[SE]  PDSA-CC - Alimentação Principal CB01 - Disj. Q125.E1")
-        cls.l_dj_22 = lei.LeituraModbus(cls.clp["SA"], REG_SE["DJ_22"], descricao="[SE]  PDSA-CC - Alimentação Principal CB02 - Disj. Q125.E2")
-        cls.condicionadores.append(c.CondicionadorBase(cls.l_dj_21, CONDIC_INDISPONIBILIZAR, leitura_conjunta=cls.l_dj_22))
-        cls.condicionadores.append(c.CondicionadorBase(cls.l_dj_22, CONDIC_INDISPONIBILIZAR, leitura_conjunta=cls.l_dj_21))
+        # cls.l_dj_21 = lei.LeituraModbus(cls.clp["SA"], REG_SE["DJ_21"], descricao="[SE]  PDSA-CC - Alimentação Principal CB01 - Disj. Q125.E1")
+        # cls.l_dj_22 = lei.LeituraModbus(cls.clp["SA"], REG_SE["DJ_22"], descricao="[SE]  PDSA-CC - Alimentação Principal CB02 - Disj. Q125.E2")
+        # cls.condicionadores.append(c.CondicionadorBase(cls.l_dj_21, CONDIC_INDISPONIBILIZAR, leitura_conjunta=cls.l_dj_22))
+        # cls.condicionadores.append(c.CondicionadorBase(cls.l_dj_22, CONDIC_INDISPONIBILIZAR, leitura_conjunta=cls.l_dj_21))
 
 
-        cls.l_dj_99 = lei.LeituraModbus(cls.clp["SA"], REG_SE["DJ_99"], descricao="[SE]  PINV - Alimentação Boost 01 - Disj. Q125.0")
-        cls.l_dj_100 = lei.LeituraModbus(cls.clp["SA"], REG_SE["DJ_100"], descricao="[SE]  PINV - Alimentação Boost 02 - Disj. Q125.1")
-        cls.condicionadores.append(c.CondicionadorBase(cls.l_dj_99, CONDIC_INDISPONIBILIZAR, leitura_conjunta=cls.l_dj_100))
-        cls.condicionadores.append(c.CondicionadorBase(cls.l_dj_100, CONDIC_INDISPONIBILIZAR, leitura_conjunta=cls.l_dj_99))
+        # cls.l_dj_99 = lei.LeituraModbus(cls.clp["SA"], REG_SE["DJ_99"], descricao="[SE]  PINV - Alimentação Boost 01 - Disj. Q125.0")
+        # cls.l_dj_100 = lei.LeituraModbus(cls.clp["SA"], REG_SE["DJ_100"], descricao="[SE]  PINV - Alimentação Boost 02 - Disj. Q125.1")
+        # cls.condicionadores.append(c.CondicionadorBase(cls.l_dj_99, CONDIC_INDISPONIBILIZAR, leitura_conjunta=cls.l_dj_100))
+        # cls.condicionadores.append(c.CondicionadorBase(cls.l_dj_100, CONDIC_INDISPONIBILIZAR, leitura_conjunta=cls.l_dj_99))
 
 
         ## MENSAGEIRO

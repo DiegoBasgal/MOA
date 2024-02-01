@@ -59,8 +59,8 @@ class CondicionadorBase:
         if self.__id_unidade and self.__etapas:
             ug: "ug.UnidadeGeracao" = [ug if ug.id == self.__id_unidade else None for ug in self.ugs]
             return False if ug is not None and ug.etapa_atual in self.__etapas and self.leitura == 0 else False
-        elif self.__leitura_conjunta.valor:
-            return False if self.leitura == 0 else True
+        elif self.__leitura_conjunta != None:
+            return False if self.leitura == 0 and self.__leitura_conjunta.valor == 0 else True
         else:
             return False if self.leitura == 0 else True
 
