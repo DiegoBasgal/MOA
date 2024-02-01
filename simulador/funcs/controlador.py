@@ -33,9 +33,11 @@ class Controlador:
 
         self.tempo_afluente = []
 
-        with open('C:/Users/diego.garcia/Desktop/operacao-autonoma/simulador/dicts/entrada_afluente.csv', 'r') as fp:
+        print(1)
+        with open('C:/opt/operacao-autonoma/simulador/dicts/entrada_afluente.csv', 'r') as fp:
             rawlines = fp.readlines()
 
+        print(2)
         i = 0
         for line in rawlines:
             s = line.split(',')

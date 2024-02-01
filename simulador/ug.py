@@ -50,6 +50,8 @@ class Unidade:
                 print('')
                 print(f"[UG{self.id}] Comando de Partida -> Abrindo Comporta.")
                 Thread(target=lambda: self.abrir_comporta(0)).start()
+                ESC.escrever_bit(MB['TDA'][f'UHTA0{1 if self.id in (1,3) else 2}_OPERACIONAL'], valor=1)
+
             elif not self.dict['TDA'][f'cp{self.id}_fechada'] and self.dict['TDA'][f'cp{self.id}_aberta']:
                 self.partir()
 
@@ -183,6 +185,8 @@ class Unidade:
         self.dict['TDA'][f'cp{self.id}_aberta'] = True if passo == 2 else False
         self.dict['TDA'][f'uh{1 if self.id in (1,3) else 2}_disponivel'] = True
 
+        ESC.escrever_bit(MB['TDA'][f'UHTA0{1 if self.id in (1,3) else 2}_OPERACIONAL'], valor=0)
+
         return self.abrir_comporta(passo + 1) if passo < 2 else None
 
 
@@ -289,9 +293,9 @@ class Unidade:
                     self.dict[f'UG{self.id}']['potencia'] = self.potencia = min(max(self.potencia, POT_MIN), POT_MAX)
 
                     if self.setpoint > self.potencia:
-                        self.potencia += 100.4167 * self.segundos_por_passo
+                        self.potencia += 26 * self.segundos_por_passo
                     else:
-                        self.potencia -= 100.4167 * self.segundos_por_passo
+                        self.potencia -= 26 * self.segundos_por_passo
 
                     self.potencia = np.random.normal(self.potencia, 2 * self.escala_ruido)
 
@@ -303,7 +307,7 @@ class Unidade:
 
             elif self.etapa_alvo < self.etapa_atual:
                 self.tempo_transicao -= self.segundos_por_passo
-                self.potencia -= 10.4167 * self.segundos_por_passo
+                self.potencia -= 26 * self.segundos_por_passo
                 self.dict[f'UG{self.id}']['potencia'] = self.potencia
 
                 if self.tempo_transicao <= -TEMPO_TRANS_US_UPS and self.potencia <= 0:
