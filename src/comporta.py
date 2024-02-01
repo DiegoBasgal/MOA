@@ -156,6 +156,7 @@ class Comporta:
 
         self._comporta_adjacente = var
 
+
     def resetar_emergencia(self) -> "bool":
         """
         Função para acionar comandos de reset de TRIPS/Alarmes
@@ -169,6 +170,7 @@ class Comporta:
             logger.error(f"[CP{self.id}] Houve um erro ao realizar o Reset de Emergência da Comporta {self.id}.")
             logger.debug(traceback.format_exc())
             return False
+
 
     def abrir(self) -> "None":
         """
@@ -192,6 +194,7 @@ class Comporta:
             logger.error(f"[CP{self.id}] Houve um erro ao acionar o comando de Abertura da Comporta {self.id}.")
             logger.debug(traceback.format_exc())
 
+
     def fechar(self) -> "bool":
         """
         Função para acionar comando de fechamento da Comporta.
@@ -214,6 +217,7 @@ class Comporta:
         except Exception:
             logger.error(f"[CP{self.id}] Houve um erro acionar o comando de Fechamento da Comporta {self.id}.")
             logger.debug(traceback.format_exc())
+
 
     def operar_cracking(self) -> "None":
         """
@@ -239,27 +243,25 @@ class Comporta:
             logger.error(f"[CP{self.id}] Houve um erro ao realizar a Operação de Cracking da Comporta {self.id}.")
             logger.debug(traceback.format_exc())
 
+
     def aguardar_pressao_uh(self) -> "None":
         """
         Função de temporização de espera da equalização da pressão da Unidade Hidráulica para
         operação da Comporta.
         """
 
-        sleep(5)
-
         logger.debug(f"[CP{self.id}]          Verificação MOA:           \"Equalização de Pressão UH\"")
         delay = time() + 120
 
         while time() < delay:
+            sleep(60)
             if self.pressao_equalizada:
                 logger.debug(f"[CP{self.id}]          Verificação MOA:           \"UH Pressão Equalizada\"")
-                return None
-
-            else:
-                sleep(2)
+                return
 
         logger.warning(f"[CP{self.id}]          Verificação MOA:           \"Equalização UH Ultrapassou o Tempo Limite!\"")
         self.borda_pressao = True
+
 
     def verificar_condicoes(self) -> "bool":
         """

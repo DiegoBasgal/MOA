@@ -57,26 +57,32 @@
                 </tr>
                 <tr>
                     <td style="text-align: center;">
-                        <a style="margin-left: 3px;">Emergencia:  {{ emergencia }}</a><br>
-                    </td>
-                </tr>
-                <tr>
-                    <td style="text-align: center;">
-                        <a style="margin-left: 3px;">Aguardando Reservatório: {{ aguardando_reservatorio }}</a><br>
-                    </td>
-                </tr>
-                <tr>
-                    <td style="text-align: center;">
                         <a style="margin-left: 3px;">Estado CLP:&ensp;{{ usina.clp_moa_ip }}</a>
                     </td>
                 </tr>
+                <tr>
+                    <td style="text-align: center;">
+                        <a style="margin-left: 3px;">Emergencia: </a>
+                        {% if usina.emergencia_acionada == 0 %}
+                            <label style="margin-left: 3px; color: green;">Desativada</label>
+                        {% endif %}
+                        {% if usina.emergencia_acionada == 1 %}
+                            <label style="margin-left: 3px; color: red;">Ativada</label>
+                        {% endif %}
+                    </td>
+                </tr>
+                <tr>
+                    <td style="text-align: center;">
+                        <a style="margin-left: 3px;">Aguardando Reservatório: </a>
+                        {% if usina.aguardando_reservatorio == 0 %}
+                            <label style="margin-left: 3px; color: green;">Não</label>
+                        {% endif %}
+                        {% if usina.aguardando_reservatorio == 1 %}
+                            <label style="margin-left: 3px; color: orange;">Sim</label>
+                        {% endif %}
+                    </td>
+                </tr>
             </table>
-            {% if CLP_Status == True %}
-                (<label style="margin-left: 3px; color: green;">On-line</label> )
-            {% endif %}
-            {% if CLP_Status == False %}
-                (<label style="margin-left: 3px; color: red;">Off-line</label> )
-            {% endif %}
             <br>
             <br>
         </div>

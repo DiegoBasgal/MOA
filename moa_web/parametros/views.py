@@ -282,7 +282,7 @@ def parametros_moa_view(request, *args, **kwargs):
 
 
     escolha_ugs = 0
-    if ((usina.modo_de_escolha_das_ugs == 2) and (usina.ug1_prioridade > usina.ug2_prioridade)):
+    if ((usina.modo_de_escolha_das_ugs == 1) and (usina.ug1_prioridade > usina.ug2_prioridade)):
         escolha_ugs = 1
 
     if ((usina.modo_de_escolha_das_ugs == 2) and (usina.ug2_prioridade > usina.ug1_prioridade)):

@@ -101,40 +101,40 @@ class CondicionadorExponencial(CondicionadorBase):
     def __init__(self, leitura: "LeituraModbus", gravidade: "int"=2, valor_base: "float"=100, valor_limite: "float"=200, ordem: "float"=(1/4), teste: "bool"=None) -> "None":
         super().__init__(leitura, gravidade, teste)
 
-        self.__ordem = ordem
-        self.__valor_base = valor_base
-        self.__valor_limite = valor_limite
+        self._ordem = ordem
+        self._valor_base = valor_base
+        self._valor_limite = valor_limite
 
 
     @property
     def valor_base(self) -> "float":
         # PROPRIEDADE -> Retrona o Valor Base do Condicionador.
 
-        return self.__valor_base
+        return self._valor_base
 
     @valor_base.setter
     def valor_base(self, val: "float") -> "None":
         # SETTER -> Atribui o novo Valor Base do Condicionador.
 
-        self.__valor_base = val
+        self._valor_base = val
 
     @property
     def valor_limite(self) -> "float":
         # PROPRIEDADE -> Retrona o Valor Limite do Condicionador.
 
-        return self.__valor_limite
+        return self._valor_limite
 
     @valor_limite.setter
     def valor_limite(self, val: "float") -> "None":
         # SETTER -> Atribui o novo Valor Limite do Condicionador.
 
-        self.__valor_limite = val
+        self._valor_limite = val
 
     @property
     def ordem(self) -> "float":
         # PROPRIEDADE -> Retorna o valor da Ordem do Condicionador.
 
-        return self.__ordem
+        return self._ordem
 
     @property
     def ativo(self) -> "bool":
@@ -146,12 +146,12 @@ class CondicionadorExponencial(CondicionadorBase):
     def valor(self) -> "float":
         # PROPRIEDADE -> Retrona o valor tratado de Leitura do Condicionador.
 
-        if self.leitura > self.valor_base and self.leitura < self.valor_limite:
+        if self.valor_limite < self.leitura < self.valor_base:
             aux = (1 - (((self.valor_limite - self.leitura) / (self.valor_limite - self.valor_base)) ** (self.ordem)).real)
             return max(min(aux, 1), 0)
 
         else:
-            return 1 if self.leitura > self.valor_limite else 0
+            return 1 if self.leitura >= self.valor_limite else 0
 
 
 class CondicionadorExponencialReverso(CondicionadorExponencial):

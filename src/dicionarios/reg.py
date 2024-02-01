@@ -177,7 +177,6 @@ REG_RELE = {
     },
 
     "UG1": {
-
         # Elementos
         "ELE_2_SOBREFRE":                               [1, 4],
         "ELE_1_SOBREFRE":                               [1, 5],
@@ -223,10 +222,11 @@ REG_RELE = {
 
     "UG2": {
         # Elementos
-        "ELE_2_SOBREFRE":                               [1, 4],
-        "ELE_1_SOBREFRE":                               [1, 5],
-        "ELE_2_SUBFRE":                                 [1, 6],
-        "ELE_1_SUBFRE":                                 [1, 7],
+        "ELE_2_SUBFRE":                                 [29, 6],
+        "ELE_1_SUBFRE":                                 [29, 7],
+
+        "ELE_2_SOBREFRE":                               [146, 4],
+        "ELE_1_SOBREFRE":                               [146, 6],
 
 
         # Sobrecorrente

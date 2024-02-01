@@ -10,7 +10,9 @@ from threading import Thread
 
 from src.dicionarios.const import *
 
+
 logger = logging.getLogger("logger")
+
 
 class State:
     def __init__(self, parent: "u.UnidadeGeracao"=None) -> "None":
@@ -32,6 +34,7 @@ class State:
 
         pass
 
+
 class StateManual(State):
     def __init__(self, parent) -> "None":
         super().__init__(parent)
@@ -48,7 +51,7 @@ class StateManual(State):
 
         logger.debug("")
         logger.info(f"[UG{self.parent.id}] Entrando no estado:                 \"Manual\". Para retornar a operação autônoma, favor agendar na interface web")
-        logger.debug(f"[UG{self.parent.id}] Tentativas de normalização:         {self.parent.tentativas_normalizacao}/{self.parent.limite_tentativas_normalizacao}")
+        logger.debug(f"[UG{self.parent.id}] Tentativas de normalização:         {self.parent.tentativas_normalizacao}/{self.parent.limite_tentativas_normalizacao + 1}")
 
 
     def step(self) -> "State":
@@ -78,7 +81,6 @@ class StateIndisponivel(State):
 
         logger.debug("")
         logger.info(f"[UG{self.parent.id}] Entrando no estado:                 \"Indisponível\". Para retornar a operação autônoma, favor agendar na interface web")
-        logger.debug(f"[UG{self.parent.id}] Tentativas de normalização:         {self.parent.tentativas_normalizacao}/{self.parent.limite_tentativas_normalizacao}")
 
     def step(self) -> "State":
         """
@@ -108,7 +110,7 @@ class StateRestrito(State):
 
         logger.debug("")
         logger.info(f"[UG{self.parent.id}] Entrando no estado                  \"Restrito\"")
-        logger.debug(f"[UG{self.parent.id}] Tentativas de normalização:         {self.parent.tentativas_normalizacao}/{self.parent.limite_tentativas_normalizacao}")
+        logger.debug(f"[UG{self.parent.id}] Tentativas de normalização:         {self.parent.tentativas_normalizacao}/{self.parent.limite_tentativas_normalizacao + 1}")
 
     def step(self) -> "State":
         """
@@ -150,6 +152,7 @@ class StateRestrito(State):
             logger.debug(f"[UG{self.parent.id}] Aguardando normalização sem tempo pré-definido")
             return self
 
+
 class StateDisponivel(State):
     def __init__(self, parent) -> "None":
         super().__init__(parent)
@@ -166,7 +169,7 @@ class StateDisponivel(State):
 
         logger.debug("")
         logger.info(f"[UG{self.parent.id}] Entrando no estado:                 \"Disponível\"")
-        logger.debug(f"[UG{self.parent.id}] Tentativas de normalização:         {self.parent.tentativas_normalizacao}/{self.parent.limite_tentativas_normalizacao}")
+        logger.debug(f"[UG{self.parent.id}] Tentativas de normalização:         {self.parent.tentativas_normalizacao}/{self.parent.limite_tentativas_normalizacao + 1}")
         logger.debug("")
 
 
