@@ -29,8 +29,7 @@ class Subestacao:
 
         # ATRIBUIÇÃO DE VARIÁVEIS
 
-        self.__bd = bd
-
+        self.bd = bd
         self.clp = serv.clp
         self.rele = serv.rele
 
@@ -238,7 +237,7 @@ class Subestacao:
                 else:
                     logger.warning(f"[SE]  Descrição: \"{condic.descricao}\", Gravidade: \"{CONDIC_STR_DCT[condic.gravidade] if condic.gravidade in CONDIC_STR_DCT else 'Desconhecida'}\"")
                     self.condicionadores_ativos.append(condic)
-                    self.__bd.update_alarmes([
+                    self.bd.update_alarmes([
                         datetime.now(pytz.timezone("Brazil/East")).replace(tzinfo=None),
                         condic.gravidade,
                         condic.descricao,

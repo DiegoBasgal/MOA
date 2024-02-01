@@ -53,10 +53,10 @@ class Usina:
             self.clp = serv.clp
             self.rele = serv.rele
 
+
         # INCIALIZAÇÃO DE OBJETOS DA USINA
 
         self.bd = BancoDados("MOA")
-
 
         self.bay = bay.Bay(serv, self.bd)
         self.se = se.Subestacao(serv, self.bd)
@@ -408,6 +408,7 @@ class Usina:
 
         logger.debug(f"[TDA] NÍVEL -> Alvo:                      {self.cfg['nv_alvo']:0.3f}")
         logger.debug(f"[TDA]          Leitura:                   {self.tda.nivel_montante.valor:0.3f}")
+        logger.debug(f"[TDA]          Filtro EMA:                {self.tda.nivel_montante_anterior:0.3f}")
 
         self.controle_p = self.cfg["kp"] * self.tda.erro_nivel
 
@@ -738,10 +739,10 @@ class Usina:
                 elif not self.clp["MOA"].read_coils(REG_CLP["MOA"]["IN_EMERG"])[0] and self.borda_emergencia:
                     self.borda_emergencia = False
 
-                if self.clp["MOA"].read_coils(REG_CLP["MOA"]["IN_EMERG_UG1"])[0]:
+                if self.clp["MOA"].read_coils(REG_CLP["MOA"]["IN_EMERG_UG1"])[0] and self.ug1.etapa not in (UG_PARADA, UG_PARADA2):
                     self.ug1.verificar_condicionadores()
 
-                if self.clp["MOA"].read_coils(REG_CLP["MOA"]["IN_EMERG_UG2"])[0]:
+                if self.clp["MOA"].read_coils(REG_CLP["MOA"]["IN_EMERG_UG2"])[0] and self.ug2.etapa not in (UG_PARADA, UG_PARADA2):
                     self.ug2.verificar_condicionadores()
 
                 if self.clp["MOA"].read_coils(REG_CLP["MOA"]["IN_HABILITA_AUTO"])[0]:

@@ -6,6 +6,7 @@ __description__ = "Este módulo corresponde a implementação da operação da T
 import pytz
 import logging
 import traceback
+import numpy as np
 
 import src.comporta as cp
 
@@ -31,7 +32,7 @@ class TomadaAgua:
 
         # ATRIBUIÇÃO DE VARIÁVEIS
 
-        self.__bd = bd
+        self.bd = bd
 
         self.clp = serv.clp
 
@@ -80,6 +81,8 @@ class TomadaAgua:
 
         self._modo_lg: "int" = 1
 
+        self.ema_anterior: "int" = -1
+
         self.erro_nivel: "float" = 0
         self.erro_nivel_anterior: "float" = 0
         self.nivel_montante_anterior: "float" = 0
@@ -98,14 +101,26 @@ class TomadaAgua:
         """
 
         try:
-            # res = EMB.escrever_bit(self.clp["TDA"], REG_CLP["TDA"]["VB_CMD_RST_FLH"], valor=1)
-            # return res
-            return True
+            res = EMB.escrever_bit(self.clp["TDA"], REG_CLP["TDA"]["VB_CMD_RST_FLH"], valor=1)
+            return res
 
         except Exception:
             logger.error("[TDA] Houve um erro ao realizar o Reset de Emergência.")
             logger.debug(f"[TDA] Traceback: {traceback.format_exc()}")
             return False
+
+
+    def calcular_ema_montante(self, ema_anterior, periodo=40, smoothing=5, casas_decimais=5) -> "float":
+        """
+        Função com filtro EMA de leitura de nível montante, para evitar variações muito
+        agressivas de controle de potência.
+        """
+
+        constante = smoothing / (1 + periodo)
+        ema = self.nivel_montante.valor * constante + ema_anterior * (1 - constante)
+        ema = np.round(ema, casas_decimais)
+
+        return ema
 
 
     def atualizar_montante(self) -> "None":
@@ -114,7 +129,13 @@ class TomadaAgua:
         cálculos futuros de ajuste de potência.
         """
 
-        self.nivel_montante_anterior = self.nivel_montante.valor
+        if self.ema_anterior == -1:
+            self.ema_anterior = 0
+            self.nivel_montante_anterior = self.nivel_montante.valor
+        else:
+            ema = self.calcular_ema_montante(self.nivel_montante_anterior)
+            self.nivel_montante_anterior = ema
+
         self.erro_nivel_anterior = self.erro_nivel
         self.erro_nivel = self.nivel_montante_anterior - self.cfg["nv_alvo"]
 
@@ -124,7 +145,7 @@ class TomadaAgua:
         Função para extrair do banco de dados o último estado registrado do Limpa Grades
         """
 
-        self._modo_lg = self.__bd.get_ultimo_estado_lg()[0]
+        self._modo_lg = self.bd.get_ultimo_estado_lg()[0]
 
 
     def forcar_estado_disponivel_lg(self) -> "None":
@@ -133,7 +154,7 @@ class TomadaAgua:
         """
 
         self._modo_lg = LG_DISPONIVEL
-        self.__bd.update_estado_lg(LG_DISPONIVEL)
+        self.bd.update_estado_lg(LG_DISPONIVEL)
 
 
     def forcar_estado_indisponivel_lg(self) -> "None":
@@ -142,7 +163,7 @@ class TomadaAgua:
         """
 
         self._modo_lg = LG_INDISPONIVEL
-        self.__bd.update_estado_lg(LG_INDISPONIVEL)
+        self.bd.update_estado_lg(LG_INDISPONIVEL)
 
 
     def operar_limpa_grades(self) -> "None":
@@ -156,11 +177,11 @@ class TomadaAgua:
         dentro da faixa, inicia a operação.
         """
 
-        perda = self.__bd.get_disparo_perda_lg()
+        perda = self.bd.get_disparo_perda_lg()
         perda_1 = perda[0]
         perda_2 = perda[1]
 
-        horario = self.__bd.get_horario_operar_lg()
+        horario = self.bd.get_horario_operar_lg()
         agora = datetime.now(pytz.timezone("Brazil/East")).replace(tzinfo=None)
 
         if perda_1 >= self.perda_grade_1.valor or perda_2 >= self.perda_grade_2.valor:
@@ -172,7 +193,7 @@ class TomadaAgua:
             logger.debug(f"[TDA] Atenção! Enviando comando de Limpeza de Grades por período pré definido!")
 
             prox_horario = agora + timedelta(days=horario[1], hours=horario[2])
-            self.__bd.update_horario_operar_lg([prox_horario.strftime('%Y-%m-%d %H:%M:%S')])
+            self.bd.update_horario_operar_lg([prox_horario.strftime('%Y-%m-%d %H:%M:%S')])
 
         elif agora + timedelta(minutes=6) > horario[0]:
             logger.debug("")
@@ -180,7 +201,7 @@ class TomadaAgua:
             logger.debug(f"[TDA] Reagendando limpeza para o próximo horário...")
 
             prox_horario = agora + timedelta(days=horario[1], hours=horario[2])
-            self.__bd.update_horario_operar_lg([prox_horario.strftime('%Y-%m-%d %H:%M:%S')])
+            self.bd.update_horario_operar_lg([prox_horario.strftime('%Y-%m-%d %H:%M:%S')])
             return
 
         else:
@@ -262,7 +283,7 @@ class TomadaAgua:
                 else:
                     logger.warning(f"[TDA] Descrição: \"{condic.descricao}\", Gravidade: \"{CONDIC_STR_DCT[condic.gravidade] if condic.gravidade in CONDIC_STR_DCT else 'Desconhecida'}\"")
                     self.condicionadores_ativos.append(condic)
-                    self.__bd.update_alarmes([
+                    self.bd.update_alarmes([
                         datetime.now(pytz.timezone("Brazil/East")).replace(tzinfo=None),
                         condic.gravidade,
                         condic.descricao,

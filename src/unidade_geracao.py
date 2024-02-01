@@ -25,7 +25,7 @@ from src.funcoes.escrita import EscritaModBusBit as EMB
 logger = logging.getLogger("logger")
 
 class UnidadeGeracao:
-    def __init__(self, id: "int", cfg: "dict"=None, db: "BancoDados"=None, cp: "dict[str, cp.Comporta]"=None, serv: "Servidores"=None):
+    def __init__(self, id: "int", cfg: "dict"=None, bd: "BancoDados"=None, cp: "dict[str, cp.Comporta]"=None, serv: "Servidores"=None):
 
         # VERIFICAÇÃO DE ARGUMENTOS
 
@@ -35,8 +35,7 @@ class UnidadeGeracao:
         else:
             self.__id = id
 
-        self.__db = db
-
+        self.bd = bd
         self.cfg = cfg
 
         self.cp = cp
@@ -44,7 +43,6 @@ class UnidadeGeracao:
         self.rt = serv.rt
         self.clp = serv.clp
         self.rele = serv.rele
-
 
         # ATRIBUIÇÃO DE VAIRIÁVEIS
 
@@ -365,7 +363,7 @@ class UnidadeGeracao:
         com o valor das constantes de Estado.
         """
 
-        estado = self.__db.get_ultimo_estado_ug(self.id)[0]
+        estado = self.bd.get_ultimo_estado_ug(self.id)[0]
 
         if estado == None:
             self.__next_state = StateDisponivel(self)
@@ -396,7 +394,7 @@ class UnidadeGeracao:
             self.__init_registro_estados = 1
         else:
             try:
-                self.__db.update_controle_estados([
+                self.bd.update_controle_estados([
                     self.get_time().strftime("%Y-%m-%d %H:%M:%S"),
                     UG_SM_STR_DCT[self.codigo_state] if self.id == 1 else "",
                     UG_SM_STR_DCT[self.codigo_state] if self.id == 2 else "",
@@ -880,7 +878,7 @@ class UnidadeGeracao:
 
                     if condic.gravidade == CONDIC_INDISPONIBILIZAR:
                         flag = CONDIC_INDISPONIBILIZAR
-                        self.__db.update_alarmes([
+                        self.bd.update_alarmes([
                             self.get_time().strftime("%Y-%m-%d %H:%M:%S"),
                             condic.gravidade,
                             condic.descricao,
@@ -890,7 +888,7 @@ class UnidadeGeracao:
 
                     elif condic.gravidade == CONDIC_AGUARDAR:
                         flag = CONDIC_AGUARDAR if flag != CONDIC_INDISPONIBILIZAR else flag
-                        self.__db.update_alarmes([
+                        self.bd.update_alarmes([
                             self.get_time().strftime("%Y-%m-%d %H:%M:%S"),
                             condic.gravidade,
                             condic.descricao,
@@ -900,7 +898,7 @@ class UnidadeGeracao:
 
                     elif condic.gravidade == CONDIC_NORMALIZAR:
                         flag = CONDIC_NORMALIZAR if flag not in (CONDIC_INDISPONIBILIZAR, CONDIC_AGUARDAR) else flag
-                        self.__db.update_alarmes([
+                        self.bd.update_alarmes([
                             self.get_time().strftime("%Y-%m-%d %H:%M:%S"),
                             condic.gravidade,
                             condic.descricao,

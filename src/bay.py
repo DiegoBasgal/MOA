@@ -27,8 +27,7 @@ class Bay:
 
         # ATRIBUIÇÃO DE VARIÁVEIS
 
-        self.__bd = bd
-
+        self.bd = bd
         self.mp = serv.mp
         self.mr = serv.mr
         self.clp = serv.clp
@@ -286,7 +285,7 @@ class Bay:
                 else:
                     logger.warning(f"[BAY] Descrição: \"{condic.descricao}\", Gravidade: \"{CONDIC_STR_DCT[condic.gravidade] if condic.gravidade in CONDIC_STR_DCT else 'Desconhecida'}\"")
                     self.condicionadores_ativos.append(condic)
-                    self.__bd.update_alarmes([
+                    self.bd.update_alarmes([
                         datetime.now(pytz.timezone("Brazil/East")).replace(tzinfo=None),
                         condic.gravidade,
                         condic.descricao,
