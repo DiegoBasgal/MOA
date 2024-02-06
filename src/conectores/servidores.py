@@ -21,49 +21,65 @@ class Servidores:
         host=d.ips["SA_ip"],
         port=d.ips["SA_porta"],
         unit_id=1,
-        timeout=5
+        timeout=5,
+        auto_open=True,
+        auto_close=True
     )
     clp["AD"] = ModbusClient(
         host=d.ips["AD_ip"],
         port=d.ips["AD_porta"],
         unit_id=1,
-        timeout=5
+        timeout=5,
+        auto_open=True,
+        auto_close=True,
     )
     clp["TDA"] = ModbusClient(
         host=d.ips["TDA_ip"],
         port=d.ips["TDA_porta"],
         unit_id=1,
-        timeout=5
+        timeout=5,
+        auto_open=True,
+        auto_close=True,
     )
     clp["UG1"] = ModbusClient(
         host=d.ips["UG1_ip"],
         port=d.ips["UG1_porta"],
         unit_id=1,
-        timeout=5
+        timeout=5,
+        auto_open=True,
+        auto_close=True,
     )
     clp["UG2"] = ModbusClient(
         host=d.ips["UG2_ip"],
         port=d.ips["UG2_porta"],
         unit_id=1,
-        timeout=5
+        timeout=5,
+        auto_open=True,
+        auto_close=True,
     )
     clp["UG3"] = ModbusClient(
         host=d.ips["UG3_ip"],
         port=d.ips["UG3_porta"],
         unit_id=1,
-        timeout=5
+        timeout=5,
+        auto_open=True,
+        auto_close=True,
     )
     clp["UG4"] = ModbusClient(
         host=d.ips["UG4_ip"],
         port=d.ips["UG4_porta"],
         unit_id=1,
-        timeout=5
+        timeout=5,
+        auto_open=True,
+        auto_close=True,
     )
     clp["MOA"] = ModbusClient(
         host=d.ips["MOA_ip"],
         port=d.ips["MOA_porta"],
         unit_id=1,
-        timeout=5
+        timeout=5,
+        auto_open=True,
+        auto_close=True,
     )
 
 

@@ -216,7 +216,7 @@ class Usina:
 
         logger.debug(f"[USN] Última tentativa de normalização:   {self.ultima_tentativa_norm.strftime('%d-%m-%Y %H:%M:%S')}")
         logger.debug("")
-        logger.debug(f"[SE]  Tensão Subestação:                  RS -> \"{self.se.tensao_r.valor:2.1f} V\" | ST -> \"{self.se.tensao_s.valor:2.1f} V\" | TR -> \"{self.se.tensao_t.valor:2.1f} V\"")
+        logger.debug(f"[SE]  Tensão Subestação:                  RS -> \"{self.se.tensao_r.valor/1000:2.1f} kV\" | ST -> \"{self.se.tensao_s.valor/1000:2.1f} kV\" | TR -> \"{self.se.tensao_t.valor/1000:2.1f} kV\"")
         logger.debug("")
 
         if (self.tentativas_normalizar < 3 and (self.get_time() - self.ultima_tentativa_norm).seconds >= 60) or self.normalizar_forcado:
@@ -378,6 +378,7 @@ class Usina:
                 ug.step()
 
             for cp in self.ad.cps:
+                cp.setpoint = 0
                 cp.enviar_setpoint(0)
 
         return NV_NORMAL
@@ -401,7 +402,7 @@ class Usina:
             self.controle_i = max(min((self.cfg["ki"] * self.tda.erro_nivel) + self.controle_i, 0.9), 0)
             self.controle_d = self.cfg["kd"] * (self.tda.erro_nivel - self.tda.erro_nivel_anterior)
 
-        saida_pid = (self.controle_p + self.controle_i + min(max(-0.3, self.controle_d), 0.3))
+        saida_pid = (self.controle_p + self.controle_i + min(max(-0.07, self.controle_d), 0.07))
 
         logger.debug("")
         logger.debug(f"[USN] PID   -> P + I + D:                 {saida_pid:0.3f}")
@@ -420,7 +421,7 @@ class Usina:
             self.controle_i = 1 - self.controle_p
 
         if self.tda.nivel_montante_anterior <= (self.cfg["nv_minimo"] + 0.03):
-            self.controle_ie = min(self.controle_ie, 0.3)
+            self.controle_ie = min(self.controle_ie, 0.07)
             self.controle_i = 0
 
         pot_alvo = max(min(round(self.cfg["pot_maxima_usina"] * self.controle_ie, 5), self.cfg["pot_maxima_usina"]), self.cfg["pot_minima_ugs"])
@@ -477,6 +478,8 @@ class Usina:
         for ug in self.ugs:
             if ug.manual:
                 ajuste_manual += ug.leitura_potencia
+            else:
+                self.pot_disp += ug.setpoint_maximo
 
         if ugs is None or not len(ugs):
             return
@@ -506,20 +509,26 @@ class Usina:
             elif self.__split3:
                 logger.debug("[USN] Split:                              4 -> \"3B\"")
 
-                for ug in ugs[:-1]: ug.setpoint = (sp * (4/3)) * ug.setpoint_maximo
+                ugs[0].setpoint = (sp * (4/3)) * ugs[0].setpoint_maximo
+                ugs[1].setpoint = (sp * (4/3)) * ugs[0].setpoint_maximo
+                ugs[2].setpoint = (sp * (4/3)) * ugs[0].setpoint_maximo
                 ugs[3].setpoint = 0
 
             elif self.__split2:
                 logger.debug("[USN] Split:                              4 -> \"2B\"")
 
-                for ug in ugs[:-2]: ug.setpoint = (sp * (4/2)) * ug.setpoint_maximo
-                for ug in ugs[-2:]: ug.setpoint = 0
+                ugs[0].setpoint = (sp * (4/2)) * ugs[0].setpoint_maximo
+                ugs[1].setpoint = (sp * (4/2)) * ugs[0].setpoint_maximo
+                ugs[2].setpoint = 0
+                ugs[3].setpoint = 0
 
             elif self.__split1:
                 logger.debug("[USN] Split:                              4 -> \"1B\"")
 
-                for ug in ugs[:-3]: ug.setpoint = sp * ug.setpoint_maximo
-                for ug in ugs[-3:]: ug.setpoint = 0
+                ugs[0].setpoint = (sp * 4) * ugs[0].setpoint_maximo
+                ugs[1].setpoint = 0
+                ugs[2].setpoint = 0
+                ugs[3].setpoint = 0
 
             else:
                 for ug in ugs: ug.setpoint = 0
@@ -531,19 +540,23 @@ class Usina:
             if self.__split3:
                 logger.debug("[USN] Split:                              3")
 
-                for ug in ugs: ug.setpoint = sp * ug.setpoint_maximo
+                ugs[0].setpoint = (sp * (4/3)) * ugs[0].setpoint_maximo
+                ugs[1].setpoint = (sp * (4/3)) * ugs[0].setpoint_maximo
+                ugs[2].setpoint = (sp * (4/3)) * ugs[0].setpoint_maximo
 
             elif self.__split2:
                 logger.debug("[USN] Split:                              3 -> \"2B\"")
 
-                for ug in ugs[:-1]: ug.setpoint = (sp * (4/2)) * ug.setpoint_maximo
+                ugs[0].setpoint = (sp * (4/2)) * ugs[0].setpoint_maximo
+                ugs[1].setpoint = (sp * (4/2)) * ugs[0].setpoint_maximo
                 ugs[2].setpoint = 0
 
             elif self.__split1:
                 logger.debug("[USN] Split:                              3 -> \"1B\"")
 
-                ugs[0].setpoint = sp * ugs[0].setpoint_maximo
-                for ug in ugs[-2:]: ug.setpoint = 0
+                ugs[0].setpoint = (sp * 4) * ugs[0].setpoint_maximo
+                ugs[1].setpoint = 0
+                ugs[2].setpoint = 0
 
             else:
                 for ug in ugs: ug.setpoint = 0
@@ -555,12 +568,13 @@ class Usina:
             if self.__split2:
                 logger.debug("[USN] Split:                              2")
 
-                for ug in ugs: ug.setpoint = (sp * (4/2)) * ug.setpoint_maximo
+                ugs[0].setpoint = (sp * (4/2)) * ugs[0].setpoint_maximo
+                ugs[1].setpoint = (sp * (4/2)) * ugs[0].setpoint_maximo
 
             elif self.__split1:
                 logger.debug("[USN] Split:                              2 -> \"1B\"")
 
-                ugs[0].setpoint = 4 * sp * ugs[0].setpoint_maximo
+                ugs[0].setpoint = (sp * 4) * ugs[0].setpoint_maximo
                 ugs[1].setpoint = 0
 
             else:
@@ -572,7 +586,7 @@ class Usina:
         elif len(ugs) == 1:
             logger.debug("[USN] Split:                              1")
 
-            ugs[0].setpoint = 4 * sp * ugs[0].setpoint_maximo
+            ugs[0].setpoint = sp * 4 * ugs[0].setpoint_maximo
 
             logger.debug("")
             logger.debug(f"[UG{ugs[0].id}] SP    <-                            {int(ugs[0].setpoint)}")
@@ -583,7 +597,7 @@ class Usina:
         Função para verificar leituras/condições específicas e determinar a Prioridade das Unidades.
         """
 
-        ls = [ug for ug in self.ugs if ug.disponivel and not ug.etapa_atual == UG_PARANDO]
+        ls = [ug for ug in self.ugs if ug.disponivel and not ug.etapa == UG_PARANDO]
 
         if self.modo_prioridade_ugs in (UG_PRIORIDADE_1, UG_PRIORIDADE_2, UG_PRIORIDADE_3, UG_PRIORIDADE_4):
             return sorted(ls, key=lambda y: (-1 * y.etapa_atual, -1 * y.leitura_potencia, -1 * y.setpoint, y.prioridade))
@@ -609,8 +623,6 @@ class Usina:
 
         for ug in self.ugs:
             ug.atualizar_limites(parametros)
-
-        # self.heartbeat()
 
 
     def atualizar_valores_banco(self, parametros: "dict") -> "None":
@@ -723,6 +735,14 @@ class Usina:
                 self.ug4.setpoint,
                 self.ug4.leitura_potencia,
                 self.ug4.codigo_state,
+                self.ad.cp1.setpoint,
+                self.ad.cp1.posicao,
+                self.ad.cp2.setpoint,
+                self.ad.cp2.posicao,
+                self.ad.cp1.controle_p,
+                self.ad.cp1.controle_i,
+                self.ad.cp2.controle_p,
+                self.ad.cp2.controle_i,
                 self.controle_p,
                 self.controle_i,
                 self.controle_d,
@@ -730,7 +750,7 @@ class Usina:
                 self.cfg["kp"],
                 self.cfg["ki"],
                 self.cfg["kd"],
-                self.cfg["kie"]
+                self.cfg["kie"],
             ])
 
         except Exception:

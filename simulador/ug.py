@@ -59,7 +59,6 @@ class Unidade:
             DB.set_words(MB[f'UG{self.id}']['CMD_OPER_UP'], [0])
             self.dict[f'UG{self.id}']['debug_parar'] = False
             self.parar()
-            Thread(target=lambda: self.fechar_comporta()).start()
 
         if self.dict[f'UG{self.id}']['condic'] and not self.dict['BRD'][f'ug{self.id}_condic']:
             ESC.escrever_bit(MB[f'UG{self.id}']['Alarme01_03'], valor=1)

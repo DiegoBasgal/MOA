@@ -72,10 +72,10 @@ class UnidadeGeracao:
 
         self.__uhta: "dict[str, lei.LeituraModbusBit]" = {}
 
-        self.__uhta[f'UHTA0{1 if self.id in (1,3) else 2}'] = lei.LeituraModbusBit(
+        self.__uhta[f'UHTA0{1 if self.id in (1,2) else 2}'] = lei.LeituraModbusBit(
             self.clp['TDA'],
-            REG_TDA[f'UHTA0{1 if self.id in (1,3) else 2}_OPERACIONAL'],
-            descricao=f'[TDA] UHTA0{1 if self.id in (1,3) else 2} Disponível'
+            REG_TDA[f'UHTA0{1 if self.id in (1,2) else 2}_OPERACIONAL'],
+            descricao=f'[TDA] UHTA0{1 if self.id in (1,2) else 2} Disponível'
         )
 
         self.__tempo_entre_tentativas: "int" = 0
@@ -174,7 +174,7 @@ class UnidadeGeracao:
     def uhta_disponivel(self) -> "bool":
         # PROPRIEDADE -> Retorna se a Unidade Hidráulica da Comporta está Disponível
 
-        return self.__uhta[f'UHTA0{1 if self.id in (1,3) else 2}'].valor
+        return self.__uhta[f'UHTA0{1 if self.id in (1,2) else 2}'].valor
 
     @property
     def etapa_atual(self) -> "int":
@@ -199,17 +199,17 @@ class UnidadeGeracao:
     @property
     def etapa(self) -> "int":
 
-        if self.etapa_atual == UG_PARADA and self.etapa_alvo == UG_PARADA:
+        if self.__etapa_atual.valor == 0 and self.__etapa_alvo.valor == 0:
             return UG_PARADA
 
-        elif self.etapa_atual < UG_SINCRONIZADA and self.etapa_alvo == UG_PARADA:
-            return UG_PARANDO
+        elif self.__etapa_atual.valor == 5 and self.__etapa_alvo.valor == 5:
+            return UG_SINCRONIZADA
 
-        elif self.etapa_atual > UG_PARADA and self.etapa_alvo == UG_SINCRONIZADA:
+        elif self.__etapa_atual.valor >= 0 and self.__etapa_alvo.valor == 5:
             return UG_SINCRONIZANDO
 
-        elif self.etapa_atual == UG_SINCRONIZADA and self.etapa_alvo == UG_SINCRONIZADA:
-            return UG_SINCRONIZADA
+        elif self.__etapa_atual.valor <= 5 and self.__etapa_alvo.valor == 0:
+            return UG_PARANDO
 
     @property
     def prioridade(self) -> "int":
@@ -411,7 +411,7 @@ class UnidadeGeracao:
         try:
             logger.debug("")
             logger.debug(f"[UG{self.id}] Step  -> Unidade:                   \"{UG_SM_STR_DCT[self.codigo_state]}\"")
-            logger.debug(f"[UG{self.id}]          Etapa:                     \"{UG_STR_DCT_ETAPAS[self.etapa_atual]}\" (Atual: {self.etapa_atual} | Alvo: {self.etapa_alvo})")
+            logger.debug(f"[UG{self.id}]          Etapa:                     \"{UG_STR_DCT_ETAPAS[self.etapa]}\" (Atual: {self.etapa_atual} | Alvo: {self.etapa_alvo})")
 
             if self.etapa == UG_SINCRONIZADA:
                 logger.debug(f"[UG{self.id}]          Leituras de Potência:")
@@ -450,7 +450,7 @@ class UnidadeGeracao:
                 logger.info(f"[UG{self.id}] A Unidade Hidráulica da Comporta está em Operação.")
                 return
 
-            elif self.etapa != UG_SINCRONIZADA:
+            elif self.etapa == UG_PARADA:
                 logger.info(f"[UG{self.id}]          Enviando comando:          \"PARTIDA\"")
 
                 self.clp[f'UG{self.id}'].write_single_register(REG_UG[f'UG{self.id}']['CMD_OPER_US'], 1)

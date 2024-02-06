@@ -184,6 +184,10 @@ class BancoDados:
                     "%s,%s, "
                     "%s,%s, "
                     "%s,%s, "
+                    "%s,%s, "
+                    "%s,%s, "
+                    "%s,%s, "
+                    "%s,%s, "
                     "%s,%s);",
                     tuple(valores)
         )
