@@ -43,6 +43,11 @@ class Adufas:
                 REG_AD[f"CP_0{self.id}_ACION_LOCAL"],
                 descricao=f"[AD][CP{self.id}] Comporta Manual"
             )
+            self.__posicao = lei.LeituraModbus(
+                self.clp["AD"],
+                REG_AD[f"CP_0{self.id}_POSICAO"],
+                descricao=f"[AD][CP{self.id}] Posição Atual"
+            )
 
             self._estado: "int" = 0
 
@@ -72,6 +77,12 @@ class Adufas:
         # PROPRIEDADE -> Retorna se o modo manual da Comporta foi ativado
 
             return self.__manual.valor
+        
+        @property
+        def posicao(self) -> "int":
+        # PROPRIEDADE -> Retorna a posição da Comporta
+        
+            return self.__posicao.valor
 
         @property
         def etapa(self) -> "int":
@@ -105,6 +116,9 @@ class Adufas:
 
             logger.debug(f"[AD][CP{self.id}]      Comporta:                  \"{ADCP_STR_DCT_ESTADO[self.estado]}\"")
             logger.debug(f"[AD][CP{self.id}]      Etapa:                     \"{ADCP_STR_DCT_ETAPA[self.etapa]}\"")
+            logger.debug(f"[AD][CP{self.id}]      Leituras:")
+            logger.debug(f"[AD][CP{self.id}]      - \"Posição\":               {self.posicao}")
+            logger.debug("")
 
             if self.manual or self._estado == ADCP_MANUAL:
                 self.estado == ADCP_MANUAL
@@ -124,14 +138,15 @@ class Adufas:
                 self.controle_p = self.cfg["ad_kp"] * erro
                 self.controle_i = min(max(0, self.cfg["ad_ki"] * erro + self.controle_i), 6000)
 
-                sp = self.k * (self.controle_p + self.controle_i)
-                sp = min(max(0, sp), 6000)
+                sp = min(max(0, self.k * (self.controle_p + self.controle_i)), 6000)
 
                 logger.debug(f"[AD][CP{self.id}]      P:                         {self.controle_p:1.4f}")
                 logger.debug(f"[AD][CP{self.id}]      I:                         {self.controle_i:1.4f}")
                 logger.debug(f"[AD][CP{self.id}]      ERRO:                      {erro}")
 
-                self.enviar_setpoint(sp)
+                self.setpoint = sp
+
+                self.enviar_setpoint(self.setpoint)
 
 
         def enviar_setpoint(self, setpoint: "int") -> "None":
@@ -294,9 +309,16 @@ class Adufas:
 
     @classmethod
     def controlar_comportas(cls) -> "None":
+        """
+        Função para verificação de nível e acionamento do controle de Comportas
+        Taipa do Canal de Adução.
+        """
+
+
         logger.debug("")
         logger.debug(f"[AD]  Controlando Comportas...")
-        logger.debug(f"[AD]  NÍVEL -> Alvo:                      {cls.cfg['ad_cp_alvo']:0.3f}")
+        logger.debug(f"[AD]  NÍVEL -> Alvo:                      {cls.cfg['ad_nv_alvo']:0.3f}")
+        logger.debug(f"[TDA]          Leitura:                   {tda.TomadaAgua.nivel_montante.valor:0.3f}")
         logger.debug("")
 
         cls.clp["AD"].write_single_register(REG_AD["CMD_MODO_SP_HABILITAR"], 1)
