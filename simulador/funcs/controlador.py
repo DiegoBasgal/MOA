@@ -34,7 +34,7 @@ class Controlador:
         self.tempo_afluente = []
 
         print(1)
-        with open('C:/opt/operacao-autonoma/simulador/dicts/entrada_afluente.csv', 'r') as fp:
+        with open('C:/Users/cog/Documents/Diego/XAV/operacao-autonoma/simulador/dicts/entrada_afluente.csv', 'r') as fp:
             rawlines = fp.readlines()
 
         print(2)

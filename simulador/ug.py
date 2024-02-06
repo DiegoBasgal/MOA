@@ -50,7 +50,7 @@ class Unidade:
                 print('')
                 print(f"[UG{self.id}] Comando de Partida -> Abrindo Comporta.")
                 Thread(target=lambda: self.abrir_comporta(0)).start()
-                ESC.escrever_bit(MB['TDA'][f'UHTA0{1 if self.id in (1,3) else 2}_OPERACIONAL'], valor=1)
+                ESC.escrever_bit(MB['TDA'][f'UHTA0{1 if self.id in (1,2) else 2}_OPERACIONAL'], valor=1)
 
             elif not self.dict['TDA'][f'cp{self.id}_fechada'] and self.dict['TDA'][f'cp{self.id}_aberta']:
                 self.partir()
@@ -134,7 +134,7 @@ class Unidade:
 
     def abrir_comporta(self, passo):
         print('')
-        if not self.dict['TDA'][f'uh{1 if self.id in (1,3) else 2}_disponivel']:
+        if not self.dict['TDA'][f'uh{1 if self.id in (1,2) else 2}_disponivel']:
             print(f"[UG{self.id}] A Unidade Hidráulica da Comporta {self.id} está em Operação. Aguardando...")
             return
 
@@ -147,7 +147,7 @@ class Unidade:
             txt_f = f"[UG{self.id}] Cracking da Comporta {self.id} finalizado."
 
             self.dict['TDA'][f'cp{self.id}_fechada'] = False
-            self.dict['TDA'][f'uh{1 if self.id in (1,3) else 2}_disponivel'] = False
+            self.dict['TDA'][f'uh{1 if self.id in (1,2) else 2}_disponivel'] = False
 
         elif passo == 1:
             mult = 10
@@ -157,7 +157,7 @@ class Unidade:
             txt_i = f"[UG{self.id}] Aguardando enchimento total do Conduto..."
             txt_f = f"[UG{self.id}] Enchimento do Conduto finalizado."
 
-            self.dict['TDA'][f'uh{1 if self.id in (1,3) else 2}_disponivel'] = False
+            self.dict['TDA'][f'uh{1 if self.id in (1,2) else 2}_disponivel'] = False
 
         elif passo == 2:
             mult = 80
@@ -167,7 +167,7 @@ class Unidade:
             txt_i = f"[UG{self.id}] Finalizando Abertura da Comporta {self.id}..."
             txt_f = f"[UG{self.id}] Comporta Aberta!"
 
-            self.dict['TDA'][f'uh{1 if self.id in (1,3) else 2}_disponivel'] = False
+            self.dict['TDA'][f'uh{1 if self.id in (1,2) else 2}_disponivel'] = False
 
         print(txt_i)
         t1 = t2 = time()
@@ -183,9 +183,9 @@ class Unidade:
         print(txt_f)
 
         self.dict['TDA'][f'cp{self.id}_aberta'] = True if passo == 2 else False
-        self.dict['TDA'][f'uh{1 if self.id in (1,3) else 2}_disponivel'] = True
+        self.dict['TDA'][f'uh{1 if self.id in (1,2) else 2}_disponivel'] = True
 
-        ESC.escrever_bit(MB['TDA'][f'UHTA0{1 if self.id in (1,3) else 2}_OPERACIONAL'], valor=0)
+        ESC.escrever_bit(MB['TDA'][f'UHTA0{1 if self.id in (1,2) else 2}_OPERACIONAL'], valor=0)
 
         return self.abrir_comporta(passo + 1) if passo < 2 else None
 
@@ -333,13 +333,13 @@ class Unidade:
         DB.set_words(MB[f'UG{self.id}']['MANCAL_TURBINA_CONTRA_ESCORA'], [round(self.dict[f'UG{self.id}']['temp_mancal_turbina_contra_escora'])])
 
 
-        if self.dict['TDA'][f'uh{1 if self.id in (1,3) else 2}_disponivel'] and not self.dict['BRD'][f'uh{1 if self.id in (1,3) else 2}_disponivel']:
-            self.dict['BRD'][f'uh{1 if self.id in (1,3) else 2}_disponivel'] = True
-            ESC.escrever_bit(MB['TDA'][f'UHTA0{1 if self.id in (1,3) else 2}_OPERACIONAL'], valor=1)
+        if self.dict['TDA'][f'uh{1 if self.id in (1,2) else 2}_disponivel'] and not self.dict['BRD'][f'uh{1 if self.id in (1,2) else 2}_disponivel']:
+            self.dict['BRD'][f'uh{1 if self.id in (1,2) else 2}_disponivel'] = True
+            ESC.escrever_bit(MB['TDA'][f'UHTA0{1 if self.id in (1,2) else 2}_OPERACIONAL'], valor=1)
 
-        elif not self.dict['TDA'][f'uh{1 if self.id in (1,3) else 2}_disponivel'] and self.dict['BRD'][f'uh{1 if self.id in (1,3) else 2}_disponivel']:
-            self.dict['BRD'][f'uh{1 if self.id in (1,3) else 2}_disponivel'] = False
-            ESC.escrever_bit(MB['TDA'][f'UHTA0{1 if self.id in (1,3) else 2}_OPERACIONAL'], valor=0)
+        elif not self.dict['TDA'][f'uh{1 if self.id in (1,2) else 2}_disponivel'] and self.dict['BRD'][f'uh{1 if self.id in (1,2) else 2}_disponivel']:
+            self.dict['BRD'][f'uh{1 if self.id in (1,2) else 2}_disponivel'] = False
+            ESC.escrever_bit(MB['TDA'][f'UHTA0{1 if self.id in (1,2) else 2}_OPERACIONAL'], valor=0)
 
 
 
