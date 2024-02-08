@@ -73,8 +73,8 @@ def parametros_moa_view(request, *args, **kwargs):
 
 
         if request.POST.get("ad_nv_alvo"):
-            ad_nv_alvo = float(request.POST.get("ad_nv_alvo").replace(",", "."))
-            usina.ad_nv_alvo = ad_nv_alvo if isinstance(nv_alvo, float) else usina.ad_nv_alvo
+            ad_nv_alvo = float(request.POST.get("ad_alvo").replace(",", "."))
+            usina.ad_nv_alvo = ad_nv_alvo if isinstance(ad_nv_alvo, float) else usina.ad_nv_alvo
             usina.save()
 
 

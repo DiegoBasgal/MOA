@@ -152,22 +152,7 @@
                         <tr>
                             <td>
                                 <label style="font-size: 18px;"><b>Nível Alvo (MOA): </b></label>
-                                {% if tag_alvo == 3 %}
-                                    <label style="color: red">{{ usina.nv_alvo }}</label>
-                                    <a> m</a>
-                                {% endif %}
-                                {% if tag_alvo == 2 %}
-                                    <label style="color: green">{{ usina.nv_alvo }}</label>
-                                    <a> m</a>
-                                {% endif %}
-                                {% if tag_alvo == 1 %}
-                                    <label style="color: yellow">{{ usina.nv_alvo }}</label>
-                                    <a> m</a>
-                                {% endif %}
-                                {% if tag_alvo == 0 %}
-                                    <label style="color: red">{{ usina.nv_alvo }}</label>
-                                    <a> m</a>
-                                {% endif %}
+                                <label>{{ usina.nv_alvo }} m</label>
                             </td>
                         </tr>
                         <tr style="text-align: center;">
@@ -187,13 +172,13 @@
                         <tr>
                             <td>
                                 <label style="font-size: 18px;"><b>Nível Alvo (Adufas): </b></label>
-                                <label>{{ usina.ad_nv_alvo }} m</label>
+                                <label id="valor_nivel_alvo">{{ usina.ad_nv_alvo }} m</label>
                             </td>
                         </tr>
                         <tr style="text-align: center;">
                             <td>
                                 <label style="font-size: 17px;">Valor: </label>
-                                <input style="margin-left: 3px;" id="alvo_txt" name="nv_alvo" size=4 value="{{usina.ad_nv_alvo}}"/>
+                                <input style="margin-left: 3px;" id="alvo_txt" name="ad_alvo" size=4 value="{{usina.ad_nv_alvo}}"/>
                                 <input style="padding-top: 2px; padding-bottom: 2px;" id="submit" type="submit" name="ad_nv_alvo" value="Salvar"/>
                             </td>
                         </tr>
