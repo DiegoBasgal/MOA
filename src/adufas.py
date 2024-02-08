@@ -55,8 +55,6 @@ class Adufas:
             self.setpoint_maximo: "int" = 0
             self.setpoint_anterior: "int" = 0
 
-            self.k: "float" = 1000
-
             self.controle_i: "float" = 0.0
             self.controle_p: "float" = 0.0
 
@@ -138,7 +136,7 @@ class Adufas:
                 self.controle_p = self.cfg["ad_kp"] * erro
                 self.controle_i = min(max(0, self.cfg["ad_ki"] * erro + self.controle_i), 6000)
 
-                sp = min(max(0, self.k * (self.controle_p + self.controle_i)), 6000)
+                sp = min(max(0, self.controle_p + self.controle_i), 6000)
 
                 logger.debug(f"[AD][CP{self.id}]      P:                         {self.controle_p:1.4f}")
                 logger.debug(f"[AD][CP{self.id}]      I:                         {self.controle_i:1.4f}")

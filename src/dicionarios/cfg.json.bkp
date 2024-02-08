@@ -1,6 +1,6 @@
 {
-    "kp": 8.5,
-    "ki": 0.2,
+    "kp": 10.0,
+    "ki": 0.25,
     "kd": 0.0,
     "kie": 0.1,
     "ie_inicial": 0.1,
@@ -9,7 +9,7 @@
     "ad_nv_alvo": 818.5,
     "nv_alvo": 817.0,
     "nv_minimo": 816.0,
-    "nv_maximo": 818.0,
+    "nv_maximo": 817.0,
     "nv_religamento": 816.3,
     "pot_minima_ugs": 1700.0,
     "pot_maxima_ugs": 5650.0,
