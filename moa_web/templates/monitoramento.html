@@ -57,12 +57,12 @@
                 </tr>
                 <tr>
                     <td style="text-align: center;">
-                        <a style="margin-left: 3px;">Emergencia:  {{ em_acionada }}</a><br>
+                        <a style="margin-left: 3px;">Emergencia:  {{ usina.emergencia_acionada }}</a><br>
                     </td>
                 </tr>
                 <tr>
                     <td style="text-align: center;">
-                        <a style="margin-left: 3px;">Aguardando reservatório: {{ aguardo }}</a><br>
+                        <a style="margin-left: 3px;">Aguardando reservatório: {{ usina.aguardando_reservatorio }}</a><br>
                     </td>
                 </tr>
                 <tr>
@@ -109,37 +109,37 @@
                             {% endif %}
                         </td>
                         <td>
-                            <a style="margin-top: 1px; margin-left: 3px;">Nível Alvo: {{ nv_alvo }} m</a>
+                            <a style="margin-top: 1px; margin-left: 3px;">Nível Alvo: {{ usina.nv_alvo }} m</a>
                         </td>
                     </tr>
                     <tr>
                         <td>
-                            <a style="margin-top: 1px; margin-left: 3px;">Tensão VAB: {{tensao_rs}} V</a><br>
+                            <a style="margin-top: 1px; margin-left: 3px;">Tensão VAB: {{tensao_rs}} kV</a><br>
                         </td>
                         <td>
                             <a style="margin-left: 3px;">Nível Montante:</a>
                             {% if tag == 0 %}
-                            <label style="color: green">{{nv_montante}}</label>
+                            <label style="color: green">{{usina.nv_montante}}</label>
                             <a> m</a>
                             {% endif %}
                             {% if tag == 1 %}
-                            <label style="color: yellow">{{nv_montante}}</label>
+                            <label style="color: yellow">{{usina.nv_montante}}</label>
                             <a> m</a>
                             {% endif %}
                             {% if tag == 2  %}
-                            <label style="color: red">{{nv_montante}}</label>
+                            <label style="color: red">{{usina.nv_montante}}</label>
                             <a> m</a>
                             {% endif %}
                         </td>
                     </tr>
                     <tr>
                         <td>
-                            <a style="margin-top: 1px; margin-left: 3px;">Tensão VBC: {{tensao_st}} V</a><br>
+                            <a style="margin-top: 1px; margin-left: 3px;">Tensão VBC: {{tensao_st}} kV</a><br>
                         </td>
                     </tr>
                     <tr>
                         <td>
-                            <a style="margin-top: 1px; margin-left: 3px;">Tensão VCA: {{tensao_tr}} V</a>
+                            <a style="margin-top: 1px; margin-left: 3px;">Tensão VCA: {{tensao_tr}} kV</a>
                         </td>
                     </tr>
                 </table>
@@ -203,9 +203,9 @@
                     </tr>
                 </table>
                 <label style="margin-left: 3px;">Potência:</label>
-                <label>{{ pot_ug1 | floatformat:0 }} kW</label><br>
+                <label>{{ usina.pot_ug1 | floatformat:0 }} kW</label><br>
                 <label style="margin-left: 3px;">Setpoint:</label>
-                <label>{{ setpot_ug1 | floatformat:0 }} kW</label><br>
+                <label>{{ usina.setpot_ug1 | floatformat:0 }} kW</label><br>
                 <label style="margin-left: 3px;">Horas máquina:</label>
                 <label>{{ tempo_ug1 | floatformat:2 }} h</label><br><br>
             </div>
@@ -262,9 +262,9 @@
                     </tr>
                 </table>
                 <label style="margin-left: 3px;">Potência:</label>
-                <label>{{ pot_ug2 | floatformat:0 }} kW</label><br>
+                <label>{{ usina.pot_ug2 | floatformat:0 }} kW</label><br>
                 <label style="margin-left: 3px;">Setpoint:</label>
-                <label>{{ setpot_ug2 | floatformat:0 }} kW</label><br>
+                <label>{{ usina.setpot_ug2 | floatformat:0 }} kW</label><br>
                 <label style="margin-left: 3px;">Horas máquina:</label>
                 <label>{{ tempo_ug2 | floatformat:2 }} h</label><br><br>
             </div>
@@ -321,9 +321,9 @@
                     </tr>
                 </table>
                 <label style="margin-left: 3px;">Potência:</label>
-                <label>{{ pot_ug3 | floatformat:0 }} kW</label><br>
+                <label>{{ usina.pot_ug3 | floatformat:0 }} kW</label><br>
                 <label style="margin-left: 3px;">Setpoint:</label>
-                <label>{{ setpot_ug3 | floatformat:0 }} kW</label><br>
+                <label>{{ usina.setpot_ug3 | floatformat:0 }} kW</label><br>
                 <label style="margin-left: 3px;">Horas máquina:</label>
                 <label>{{ tempo_ug3 | floatformat:2 }} h</label><br><br>
             </div>
@@ -380,9 +380,9 @@
                     </tr>
                 </table>
                 <label style="margin-left: 3px;">Potência:</label>
-                <label>{{ pot_ug4 | floatformat:0 }} kW</label><br>
+                <label>{{ usina.pot_ug4 | floatformat:0 }} kW</label><br>
                 <label style="margin-left: 3px;">Setpoint:</label>
-                <label>{{ setpot_ug4 | floatformat:0 }} kW</label><br>
+                <label>{{ usina.setpot_ug4 | floatformat:0 }} kW</label><br>
                 <label style="margin-left: 3px;">Horas máquina:</label>
                 <label>{{ tempo_ug4 | floatformat:2 }} h</label><br><br>
             </div>

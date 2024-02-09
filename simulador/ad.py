@@ -120,7 +120,7 @@ class Ad:
 
         def calcular_q_cp(self, abertura) -> 'int':
             try:
-                q = abertura/1000 * ADCP_LARGURA * math.sqrt(2 * 9.80665 * ((self.dict['TDA']['nv_montante'] - ADCP_SOLEIRA) - abertura/1000 / 2))
+                q = COEF_DESCARGA * abertura/1000 * ADCP_LARGURA * math.sqrt(2 * 9.80665 * ((self.dict['TDA']['nv_montante'] - ADCP_SOLEIRA) - abertura / 2000))
                 return max(0, q)
 
             except Exception:
