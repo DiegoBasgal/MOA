@@ -51,6 +51,8 @@ class Adufas:
 
             self._estado: "int" = 0
 
+            self.k: "int" = 1000
+
             self.setpoint: "int" = 0
             self.setpoint_maximo: "int" = 0
             self.setpoint_anterior: "int" = 0
@@ -131,7 +133,7 @@ class Adufas:
                 if not self.verificar_permissivos():
                     return
 
-                erro = tda.TomadaAgua.nivel_montante.valor - self.cfg["ad_nv_alvo"]
+                erro = (tda.TomadaAgua.nivel_montante.valor - self.cfg["ad_nv_alvo"]) * self.k
 
                 self.controle_p = self.cfg["ad_kp"] * erro
                 self.controle_i = min(max(0, self.cfg["ad_ki"] * erro + self.controle_i), 6000)

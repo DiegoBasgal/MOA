@@ -4,7 +4,7 @@
     "kd": 0.0,
     "kie": 0.1,
     "ie_inicial": 0.1,
-    "ad_kp": 200.0,
+    "ad_kp": 2.0,
     "ad_ki": 0.5,
     "ad_nv_alvo": 818.5,
     "nv_alvo": 817.0,
