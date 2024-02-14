@@ -15,6 +15,8 @@ class Tda:
         self.passo_simulacao = tempo.passo_simulacao
         self.segundos_por_passo = tempo.segundos_por_passo
 
+        self.ciclos = 0
+
         self.volume = self.calcular_montante_volume(self.dict['TDA']['nv_montante'])
 
 
@@ -49,18 +51,26 @@ class Tda:
 
     def calcular_enchimento_reservatorio(self) -> 'None':
         if self.dict['TDA']['nv_montante'] >= USINA_NV_VERTEDOURO:
-
+            self.ciclos += 1
             self.dict['TDA']['q_liq_vert'] = self.dict['TDA']['q_liquida']
+            print("")
+            print(f"CICLO -> {self.ciclos}")
+            print(f"q_liq_vert -> {self.dict['TDA']['q_liq_vert']}")
 
-            self.dict['TDA']['q_atual_vert'] = self.dict['TDA']['q_atual_vert'] + (self.dict['TDA']['q_liq_vert'] - self.dict['TDA']['q_atual_vert']) * self.segundos_por_passo * 0.8
+            self.dict['TDA']['q_atual_vert'] = max((self.dict['TDA']['q_atual_vert'] + (self.dict['TDA']['q_liq_vert'] - self.dict['TDA']['q_atual_vert']) * self.segundos_por_passo * 0.0002), 0)
+            print(f"q_atual_vert -> {self.dict['TDA']['q_atual_vert']}")
 
             self.dict['TDA']['q_vertimento'] = (self.dict['TDA']['q_atual_vert'] / (COEF_DLP * COEF_D * L)) ** (2/3)
+            print(f"q_vertimento -> {self.dict['TDA']['q_vertimento']}")
 
             self.dict['TDA']['nv_montante'] = self.dict['TDA']['q_vertimento'] + USINA_NV_VERTEDOURO
+            print(f"nv_montante -> {self.dict['TDA']['nv_montante']}")
 
-        else:
+
+        if self.dict['TDA']['q_atual_vert'] == 0 and self.dict['TDA']['nv_montante'] <= USINA_NV_VERTEDOURO:
+
             self.dict['TDA']['nv_montante'] = self.calcular_volume_montante(self.volume + self.dict['TDA']['q_liquida'] * self.segundos_por_passo)
-            self.dict['TDA']['nv_jusante_grade'] = self.dict['TDA']['nv_montante'] - max(0, np.random.normal(0.1, 0.1 * self.escala_ruido))
+
             self.volume += self.dict['TDA']['q_liquida'] * self.segundos_por_passo
 
 
