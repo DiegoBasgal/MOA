@@ -144,6 +144,7 @@ class UnidadeGeracao:
         self.borda_parar: "bool" = False
         self.limpeza_grade: "bool" = False
         self.atraso_rotacao: "bool" = False
+        self.manter_unidade: "bool" = False
         self.normalizacao_agendada: "bool" = False
 
         self.temporizar_rotacao: "bool" = False

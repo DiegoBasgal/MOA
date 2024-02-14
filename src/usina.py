@@ -709,6 +709,8 @@ class Usina:
 
         logger.debug(f"[USN] SP Geral:                           {sp}")
 
+        for ug in self.ugs: ug.manter_unidade = False
+
         if len(ugs) == 3:
             if self.__split3:
                 logger.debug("[USN] Split:                              3")
@@ -756,6 +758,8 @@ class Usina:
                 logger.debug("[USN] Split:                              3 -> \"1B\"")
                 logger.debug("")
 
+                ugs[0].manter_unidade = True
+
                 sp = sp * 3
                 ugs[0].setpoint = sp * ugs[0].setpoint_maximo
                 ugs[1].setpoint = 0
@@ -795,6 +799,8 @@ class Usina:
                 logger.debug("[USN] Split:                              2 -> \"1B\"")
                 logger.debug("")
 
+                ugs[0].manter_unidade = True
+
                 sp = sp * 3
                 ugs[0].setpoint = sp * ugs[0].setpoint_maximo
                 ugs[1].setpoint = 0
@@ -814,6 +820,8 @@ class Usina:
         elif len(ugs) == 1:
             logger.debug("[USN] Split:                              1")
             logger.debug("")
+
+            ugs[0].manter_unidade = True
 
             ugs[0].setpoint = 3 * sp * ugs[0].setpoint_maximo
 
