@@ -11,10 +11,10 @@ class WhatsApp:
         Envia uma mensagem para um numero especifico, ou ID do grupo destino
         """
 
-        url = "https://v5.chatpro.com.br/chatpro-ace98c12f9/api/v1/send_message"
+        url = "https://v5.chatpro.com.br/chatpro-2322c67a69/api/v1/send_message"
         headers = {"accept": "application/json",
              "content-type": "application/json",
-            "Authorization": "52c5e8171974cd0d780db547d59a3f17"}
+            "Authorization": "e17cb339f10d3f9384027755ffa1c31e"}
 
         payload = {"number": f"{num_destino}",
                   "message": f"{mensagem}"}
@@ -57,10 +57,10 @@ class WhatsApp:
         Envia uma mensagem para o grupo de LOGS
         """
 
-        url = "https://v5.chatpro.com.br/chatpro-ace98c12f9/api/v1/send_message"
+        url = "https://v5.chatpro.com.br/chatpro-2322c67a69/api/v1/send_message"
         headers = {"accept": "application/json",
              "content-type": "application/json",
-            "Authorization": "52c5e8171974cd0d780db547d59a3f17"}
+            "Authorization": "e17cb339f10d3f9384027755ffa1c31e"}
 
         payload = {"number": "120363159926062842@g.us",
                   "message": f"{mensagem}"}

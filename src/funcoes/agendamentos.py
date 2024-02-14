@@ -1,7 +1,7 @@
 import pytz
 import logging
 
-from src.usina import *
+import usina as u
 
 from time import sleep
 from datetime import datetime, timedelta
@@ -10,10 +10,12 @@ from src.dicionarios.const import *
 
 from src.conectores.banco_dados import BancoDados
 
+
 logger = logging.getLogger("logger")
 
+
 class Agendamentos:
-    def __init__(self, cfg=None, db: BancoDados=None, usina=None):
+    def __init__(self, cfg=None, db: "BancoDados"=None, usina: "u.Usina"=None):
 
         # ATRIBUIÇÂO DE VARIÁVEIS PÚBLICAS
 
@@ -42,6 +44,7 @@ class Agendamentos:
 
         return pendentes
 
+
     def verificar_agendamentos_iguais(self, agendamentos) -> None:
         """
         Função para verificar agendamentos iguais.
@@ -63,6 +66,7 @@ class Agendamentos:
 
             i += 1
             j = len(agendamentos)
+
 
     def verificar_agendamentos(self) -> bool:
         """
@@ -114,6 +118,7 @@ class Agendamentos:
                 self.db.update_agendamento(agendamento[0], executado=1)
                 logger.debug(f"[AGN] Agendamento executado:              \"{AGN_STR_DICT[agendamentos[i-1][3]] if agendamentos[i-1][3] in AGN_STR_DICT else 'Inexistente'}\"")
 
+
     def verificar_agendamentos_atrasados(self, agendamento) -> None:
         """
         Função para verificar se os agendamentos esão atrasados.
@@ -148,6 +153,7 @@ class Agendamentos:
                     self.db.update_agendamento(int(agendamento[0]), 1, obs="AGENDAMENTO NÃO EXECUTADO POR CONTA DE ATRASO!")
                     agn_atrasados += 1
 
+
     def verificar_agendamentos_sem_efeito(self, agendamento) -> None:
         """
         Função para verificar se o agendamento possui algum efeito no modo atual
@@ -162,6 +168,7 @@ class Agendamentos:
         if not self.usn.modo_autonomo and not self.db.get_executabilidade(agendamento[3])["executavel_em_manual"]:
             self.db.update_agendamento(agendamento[0], True, obs="Este agendamento não tem efeito com o módulo em modo manual. Executado sem realizar nenhuma ação")
 
+
     def verificar_agendamentos_usina(self, agendamento) -> None:
         """
         Função para verificar o tipo de comando dos agendamentos da Usina (Serviço
@@ -173,14 +180,15 @@ class Agendamentos:
             for ug in self.usn.ugs:
                 ug.forcar_estado_indisponivel()
                 ug.step()
+                sleep(1)
 
             while (not self.usn.ug1.etapa_atual == UG_PARADA and not self.usn.ug2.etapa_atual == UG_PARADA and not self.usn.ug3.etapa_atual == UG_PARADA):
                 self.usn.ler_valores()
                 logger.debug("[AGN] Aguardando parada total das Unidades...")
                 sleep(5)
 
-            self.usn.acionar_emergencia()
-            logger.debug("[AGN] Emergência pressionada após indisponibilização agendada mudando para modo manual para evitar normalização automática.")
+            logger.debug("[AGN] Emergência pressionada após indisponibilização agendada!")
+            logger.debug("[AGN] Mudando para modo manual para evitar normalização automática.")
             self.usn.modo_autonomo = False
 
         if agendamento[3] == AGN_ALTERAR_NV_ALVO:

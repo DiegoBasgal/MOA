@@ -12,12 +12,14 @@ from src.dicionarios.reg import *
 from src.dicionarios.const import *
 from src.funcoes.agendamentos import *
 
+
 class StateMachine:
     def __init__(self, initial_state):
 
         # ATRIBUIÇÃO DE VARIÁVEIS PÚBLICAS
 
         self.state = initial_state
+
 
     def exec(self):
         """
@@ -33,6 +35,7 @@ class StateMachine:
             logger.exception(f"Estado ({self.state}) levantou uma exception: \"{repr(e)}\"")
             logger.exception(f"Traceback: {traceback.print_stack}")
             self.state = FalhaCritica()
+
 
 class State:
     def __init__(self, usina: Usina=None, *args, **kwargs):
@@ -52,6 +55,7 @@ class State:
 
         self.usn.estado_moa = MOA_SM_NAO_INICIALIZADO
 
+
     def get_time(self) -> datetime:
         """
         Função para obter data e hora atual.
@@ -59,12 +63,14 @@ class State:
 
         return datetime.now(pytz.timezone("Brazil/East")).replace(tzinfo=None)
 
+
     def run(self) -> object:
         """
         Função abstrata para execução do passo da Máquina de Estados do MOA.
         """
 
         return self
+
 
 class FalhaCritica(State):
     def __init__(self):
@@ -74,6 +80,7 @@ class FalhaCritica(State):
         logger.critical("Falha crítica MOA. Interrompendo execução...")
         sys.exit(1)
 
+
 class Pronto(State):
     def __init__(self, usn, *args, **kwargs):
         super().__init__(usn, *args, **kwargs)
@@ -81,6 +88,7 @@ class Pronto(State):
         # ATRIBUIÇÃO DE VARIÁVEIS PÚBLICAS
 
         self.usn.estado_moa = MOA_SM_PRONTO
+
 
     def run(self):
         """
@@ -93,6 +101,7 @@ class Pronto(State):
         self.usn.ler_valores()
         return ControleEstados(self.usn) if not d.glb["TDA_Offline"] else ControleTDAOffline(self.usn)
 
+
 class ControleEstados(State):
     def __init__(self, usn, *args, **kwargs):
         super().__init__(usn, *args, **kwargs)
@@ -100,6 +109,7 @@ class ControleEstados(State):
         # ATRIBUIÇÃO DE VARIÁVEIS PÚBLICAS
 
         self.usn.estado_moa = MOA_SM_CONTROLE_ESTADOS
+
 
     def run(self):
         """
@@ -162,6 +172,7 @@ class ControleEstados(State):
             else:
                 return ControleReservatorio(self.usn)
 
+
 class ControleReservatorio(State):
     def __init__(self, usn, *args, **kwargs):
         super().__init__(usn, *args, **kwargs)
@@ -169,6 +180,7 @@ class ControleReservatorio(State):
         # ATRIBUIÇÃO DE VARIÁVEIS PÚBLICAS
 
         self.usn.estado_moa = MOA_SM_CONTROLE_RESERVATORIO
+
 
     def run(self):
         """
@@ -185,6 +197,7 @@ class ControleReservatorio(State):
 
         return Emergencia(self.usn) if flag == NV_FLAG_EMERGENCIA else ControleDados(self.usn)
 
+
 class ControleDados(State):
     def __init__(self, usn, *args, **kwargs):
         super().__init__(usn, *args, **kwargs)
@@ -192,6 +205,7 @@ class ControleDados(State):
         # ATRIBUIÇÃO DE VARIÁVEIS PÚBLICAS
 
         self.usn.estado_moa = MOA_SM_CONTROLE_DADOS
+
 
     def run(self):
         """
@@ -206,6 +220,7 @@ class ControleDados(State):
         self.usn.escrever_valores()
         return ControleEstados(self.usn) if not d.glb["TDA_Offline"] else ControleTDAOffline(self.usn)
 
+
 class ControleAgendamentos(State):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -213,6 +228,7 @@ class ControleAgendamentos(State):
         # ATRIBUIÇÃO DE VARIÁVEIS PÚBLICAS
 
         self.usn.estado_moa = MOA_SM_CONTROLE_AGENDAMENTOS
+
 
     def run(self):
         """
@@ -234,6 +250,7 @@ class ControleAgendamentos(State):
             else:
                 return ModoManual(self.usn)
 
+
 class ModoManual(State):
     def __init__(self, usn, *args, **kwargs):
         super().__init__(usn, *args, **kwargs)
@@ -249,6 +266,7 @@ class ModoManual(State):
             ug.temporizar_partida = False
 
         logger.info("Usina em modo manual. Para retornar a operação autônoma, acionar via painel ou página WEB")
+
 
     def run(self):
         """
@@ -286,6 +304,7 @@ class ModoManual(State):
 
         return ControleAgendamentos(self.usn) if len(self.usn.agn.verificar_agendamentos_pendentes()) > 0 else self
 
+
 class Emergencia(State):
     def __init__(self, usn, *args, **kwargs):
         super().__init__(usn, *args, **kwargs)
@@ -297,7 +316,8 @@ class Emergencia(State):
 
         # FINALIZAÇÃO DO __INIT__
 
-        logger.critical(f"ATENÇÃO! Usina entrado em estado de emergência. (Horário: {self.get_time()})")
+        logger.critical(f"ATENÇÃO! Usina em estado de emergência. (Horário: {self.get_time()})")
+
 
     def run(self):
         """
@@ -315,40 +335,39 @@ class Emergencia(State):
 
         self.usn.ler_valores()
 
-        if self.tentativas == 3:
+        if self.usn.db_emergencia:
+            logger.warning("Comando acionado/agendado via página WEB.")
+
+            self.usn.db_emergencia = False
+
+            for ug in self.usn.ugs:
+                ug.forcar_estado_indisponivel()
+                ug.step()
+                sleep(1)
+
+            return ModoManual(self.usn)
+
+        elif self.tentativas == 3:
             logger.warning("Tentativas de normalização excedidas, entrando em modo manual.")
 
             for ug in self.usn.ugs:
                 ug.forcar_estado_indisponivel()
                 ug.step()
+                sleep(1)
 
             return ModoManual(self.usn)
-
-        elif self.usn.db_emergencia:
-            logger.warning("Comando acionado/agendado via página WEB, aguardando reset pela aba \"Emergência\".")
-
-            while self.usn.db_emergencia:
-                logger.debug("Aguardando reset...")
-                self.usn.atualizar_valores_banco(self.usn.db.get_parametros_usina())
-
-                if not self.usn.db_emergencia:
-                    self.usn.db_emergencia = False
-                    return self
-
-                if not self.usn.modo_autonomo:
-                    self.usn.db_emergencia = False
-                    return ModoManual(self.usn)
-
-                sleep(5)
 
         else:
             flag = self.usn.oco.verificar_condicionadores()
 
             if flag == CONDIC_INDISPONIBILIZAR:
                 logger.critical("Acionando VOIP e entrando em modo manual")
+
                 for ug in self.usn.ugs:
                     ug.forcar_estado_indisponivel()
                     ug.step()
+                    sleep(1)
+
                 return ModoManual(self.usn)
 
             elif flag == CONDIC_NORMALIZAR:
@@ -356,6 +375,7 @@ class Emergencia(State):
                 logger.info(f"Normalizando usina. (Tentativa {self.tentativas}/3) (Limite entre tentativas: {TIMEOUT_NORMALIZACAO}s)")
                 self.usn.normalizar_forcado = True
                 self.usn.normalizar_usina()
+
                 return self
 
             else:

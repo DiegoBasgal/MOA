@@ -229,8 +229,6 @@ class Usina:
         """
 
         logger.warning("[USN] Acionando Emergência.")
-        self.db_emergencia = True
-        self.clp_emergencia = True
 
         try:
             self.clp["UG1"].write_single_coil(REG["UG1_CD_EmergenciaViaSuper"], [1])
@@ -309,8 +307,7 @@ class Usina:
             self.ultima_tentativa_norm = self.get_time()
             self.tentativas_normalizar += 1
             logger.info(f"[USN] Normalizando Usina... (Tentativa {self.tentativas_normalizar}/3)")
-            self.db_emergencia = False
-            self.clp_emergencia = False
+            self.clp_emergencia = self.db_emergencia = False
             self.resetar_emergencia()
             sleep(2)
             self.fechar_dj_linha()
@@ -1017,6 +1014,7 @@ class Usina:
 
                 if self.clp["MOA"].read_coils(REG["MOA_IN_EMERG"])[0] == 1 and not self.borda_emerg:
                     self.borda_emerg = True
+                    self.clp_emergencia = True
                     # for ug in self.ugs:
                     #     ug.oco.verificar_condicionadores(ug)
 

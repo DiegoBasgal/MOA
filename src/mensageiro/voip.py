@@ -104,7 +104,6 @@ class Voip:
         request = Request(f"https://api.nvoip.com.br/v2/torpedo/voice?napikey={cls.cfg['napikey']}", data=encoded, headers=headers)
         try:
             response_body = urlopen(request).read()
-            logger.debug(f"[VOIP] Response Body: {response_body}")
 
         except Exception as e:
             logger.exception(f"[VOIP] Não foi possível codificar dados de envio de torpedo. Exception: \"{repr(e)}\".")
