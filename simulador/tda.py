@@ -49,10 +49,14 @@ class Tda:
 
     def calcular_enchimento_reservatorio(self) -> 'None':
         if self.dict['TDA']['nv_montante'] >= USINA_NV_VERTEDOURO:
-            self.dict['TDA']['q_vertimento'] = self.dict['TDA']['q_liquida']
-            self.dict['TDA']['q_liquida'] = 0
-            self.dict['TDA']['nv_montante'] = self.calcular_volume_vertimento(self.volume + (max(self.dict['TDA']['q_vertimento'], 0) / (C0*L)) ** (2/3) * self.segundos_por_passo) # 817 + (max(self.dict['TDA']['q_vertimento'], 0) / (C0*L)) ** (2/3)
-            self.volume += self.dict['TDA']['q_vertimento'] * self.segundos_por_passo
+
+            self.dict['TDA']['q_liq_vert'] = self.dict['TDA']['q_liquida']
+
+            self.dict['TDA']['q_atual_vert'] = self.dict['TDA']['q_atual_vert'] + (self.dict['TDA']['q_liq_vert'] - self.dict['TDA']['q_atual_vert']) * self.segundos_por_passo * 0.8
+
+            self.dict['TDA']['q_vertimento'] = (self.dict['TDA']['q_atual_vert'] / (COEF_DLP * COEF_D * L)) ** (2/3)
+
+            self.dict['TDA']['nv_montante'] = self.dict['TDA']['q_vertimento'] + USINA_NV_VERTEDOURO
 
         else:
             self.dict['TDA']['nv_montante'] = self.calcular_volume_montante(self.volume + self.dict['TDA']['q_liquida'] * self.segundos_por_passo)

@@ -46,6 +46,8 @@ compartilhado = {
         "q_alfuente": 0,
         "q_sanitaria": 0,
         "q_vertimento": 0,
+        "q_atual_vert": 0,
+        "q_liq_vert": 0,
 
         "nv_montante": 816.7,
         "nv_jusante_grade": 0,

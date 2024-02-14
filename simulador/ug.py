@@ -103,7 +103,7 @@ class Unidade:
 
 
     def calcular_q_ug(self, potencia_kW) -> 'float':
-        return 0.005610675 * potencia_kW if potencia_kW > 911 else 0
+        return 0.005610675 * potencia_kW if potencia_kW > 1700 else 0
 
 
     def controlar_horimetro(self) -> 'None':
