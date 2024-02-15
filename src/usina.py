@@ -333,14 +333,18 @@ class Usina:
         """
 
         if self.tda.nivel_montante.valor >= self.cfg["nv_maximo"]:
-            logger.debug("[TDA] Nível montante acima do máximo.")
+            logger.debug("[TDA] Nível montante em Vertimento.")
             logger.debug(f"[TDA]          Leitura:                   {self.tda.nivel_montante.valor:0.3f}")
             logger.debug("")
 
             if self.tda.nivel_montante_anterior >= NIVEL_MAXIMORUM:
                 logger.critical(f"[TDA] Nivel montante ({self.tda.nivel_montante_anterior:3.2f}) atingiu o maximorum!")
                 return NV_EMERGENCIA
-            else:
+
+            elif self.tda.nivel_montante.valor >= self.cfg["nv_vert_max"]:
+                logger.debug(f"[TDA] Nível montante acima do Máximo Alvo!")
+                logger.debug(f"[TDA]          Máximo Alvo:               {self.cfg['nv_vert_max']}")
+
                 self.controle_i = 0.9
                 self.controle_ie = 0.5
                 self.ajustar_potencia(self.cfg["pot_maxima_usina"])
@@ -349,6 +353,16 @@ class Usina:
                     ug.step()
 
                 self.ad.controlar_comportas()
+
+            else:
+                self.controlar_potencia()
+
+                for ug in self.ugs:
+                    ug.step()
+
+                for cp in self.ad.cps:
+                    cp.setpoint = 0
+                    cp.enviar_setpoint(0)
 
         elif self.tda.nivel_montante.valor <= self.cfg["nv_minimo"] and not self.tda.aguardando_reservatorio:
             logger.debug("[TDA] Nível montante abaixo do mínimo.")
