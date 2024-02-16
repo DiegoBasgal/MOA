@@ -106,6 +106,8 @@ MB = {
         "MANCAL_TURBINA_ESCORA":                115 + 12764 + 10000,
         "MANCAL_TURBINA_CONTRA_ESCORA":         116 + 12764 + 10000,
 
+        "REG_V_DISTRIBUIDOR":                   48 + 12764 + 10000,
+
         "Alarme01_03":                          [1 + 14199 + 10000, 3],
     },
 
@@ -144,6 +146,8 @@ MB = {
         "MANCAL_TURBINA_RADIAL":                114 + 12764 + 20000,
         "MANCAL_TURBINA_ESCORA":                115 + 12764 + 20000,
         "MANCAL_TURBINA_CONTRA_ESCORA":         116 + 12764 + 20000,
+
+        "REG_V_DISTRIBUIDOR":                   48 + 12764 + 20000,
 
         "Alarme01_03":                          [1 + 14199 + 20000, 3],
     },
@@ -184,6 +188,8 @@ MB = {
         "MANCAL_TURBINA_ESCORA":                115 + 12764 + 30000,
         "MANCAL_TURBINA_CONTRA_ESCORA":         116 + 12764 + 30000,
 
+        "REG_V_DISTRIBUIDOR":                   48 + 12764 + 30000,
+
         "Alarme01_03":                          [1 + 14199 + 30000, 3],
     },
 
@@ -222,6 +228,8 @@ MB = {
         "MANCAL_TURBINA_RADIAL":                114 + 12764 + 40000,
         "MANCAL_TURBINA_ESCORA":                115 + 12764 + 40000,
         "MANCAL_TURBINA_CONTRA_ESCORA":         116 + 12764 + 40000,
+
+        "REG_V_DISTRIBUIDOR":                   48 + 12764 + 40000,
 
         "Alarme01_03":                          [1 + 14199 + 40000, 3],
     },

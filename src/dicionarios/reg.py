@@ -1862,7 +1862,7 @@ REG_UG = {
         "REG_V_CTRL_POT_ATIVA":                 [46 + 12764, 6],                # RegV.Estado.ControlePotenciaAtiva
 
         "REG_V_VELOCIDADE":                     47 + 12764,                     # Leituras.RegV_Velocidade
-        "REG_V_DISTRIBUIDOR":                   48 + 12764,                     # Leituras.RegV_Distribuidor
+        "REG_V_DISTRIBUIDOR":                   48 + 12764 + 10000,                     # Leituras.RegV_Distribuidor
         "REG_V_ROTOR":                          49 + 12764,                     # Leituras.RegV_Rotor
         "REG_V_POT_ALVO":                       50 + 12764,                     # Leituras.RegV_PotenciaAlvo
 
@@ -2882,7 +2882,7 @@ REG_UG = {
         "REG_V_CTRL_POT_ATIVA":                 [46 + 12764, 6],                # RegV.Estado.ControlePotenciaAtiva
 
         "REG_V_VELOCIDADE":                     47 + 12764,                     # Leituras.RegV_Velocidade
-        "REG_V_DISTRIBUIDOR":                   48 + 12764,                     # Leituras.RegV_Distribuidor
+        "REG_V_DISTRIBUIDOR":                   48 + 12764 + 20000,                     # Leituras.RegV_Distribuidor
         "REG_V_ROTOR":                          49 + 12764,                     # Leituras.RegV_Rotor
         "REG_V_POT_ALVO":                       50 + 12764,                     # Leituras.RegV_PotenciaAlvo
 
@@ -3903,7 +3903,7 @@ REG_UG = {
         "REG_V_CTRL_POT_ATIVA":                 [46 + 12764, 6],                # RegV.Estado.ControlePotenciaAtiva
 
         "REG_V_VELOCIDADE":                     47 + 12764,                     # Leituras.RegV_Velocidade
-        "REG_V_DISTRIBUIDOR":                   48 + 12764,                     # Leituras.RegV_Distribuidor
+        "REG_V_DISTRIBUIDOR":                   48 + 12764 + 30000,                     # Leituras.RegV_Distribuidor
         "REG_V_ROTOR":                          49 + 12764,                     # Leituras.RegV_Rotor
         "REG_V_POT_ALVO":                       50 + 12764,                     # Leituras.RegV_PotenciaAlvo
 
@@ -4919,7 +4919,7 @@ REG_UG = {
         "REG_V_CTRL_POT_ATIVA":                 [46 + 12764, 6],                # RegV.Estado.ControlePotenciaAtiva
 
         "REG_V_VELOCIDADE":                     47 + 12764,                     # Leituras.RegV_Velocidade
-        "REG_V_DISTRIBUIDOR":                   48 + 12764,                     # Leituras.RegV_Distribuidor
+        "REG_V_DISTRIBUIDOR":                   48 + 12764 + 40000,                     # Leituras.RegV_Distribuidor
         "REG_V_ROTOR":                          49 + 12764,                     # Leituras.RegV_Rotor
         "REG_V_POT_ALVO":                       50 + 12764,                     # Leituras.RegV_PotenciaAlvo
 
