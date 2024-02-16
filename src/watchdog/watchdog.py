@@ -3,29 +3,14 @@ import os.path
 
 from time import sleep
 from mariadb.connectionpool import *
+from logging.config import fileConfig
 from datetime import datetime, timedelta
-
-from src.mensageiro.mensageiro_log_handler import MensageiroHandler
 
 if not os.path.exists(os.path.join(os.path.dirname(__file__), "logs")):
     os.mkdir(os.path.join(os.path.dirname(__file__), "logs"))
 
-logger = logging.getLogger(__name__)
-logger.setLevel(logging.DEBUG)
-
-fh = logging.FileHandler(os.path.join(os.path.dirname(__file__), "logs", "watchdog.log"))
-mh = MensageiroHandler()
-
-logFormatterSimples = logging.Formatter("[%(levelname)-5.5s] [WATCHDOG] %(message)s")
-
-fh.setFormatter(logFormatterSimples)
-mh.setFormatter(logFormatterSimples)
-
-fh.setLevel(logging.DEBUG)
-mh.setLevel(logging.INFO)
-
-logger.addHandler(fh)
-logger.addHandler(mh)
+fileConfig("/opt/operacao-autonoma/logger_config.ini")
+logger = logging.getLogger("logger")
 
 timestamp = 0
 moa_halted = False
@@ -40,7 +25,7 @@ cnx = mariadb.ConnectionPool(
     pool_name="watchdog",
     pool_size=2,
     pool_validation_interval=250,
-    host='192.168.0.111',
+    host='192.168.0.113',
     port=3306,
     user='supervisorio',
     password='8z43WW3sHPRnfg',
