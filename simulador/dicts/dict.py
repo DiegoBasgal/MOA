@@ -122,6 +122,7 @@ compartilhado = {
         "etapa_alvo": 0,
         "etapa_atual": 0,
         "debug_setpoint": 0,
+        "posicao_distribuidor": 0,
 
         "pressao_turbina": 1.5,
         "temp_fase_r": 25,
@@ -150,6 +151,7 @@ compartilhado = {
         "etapa_alvo": 0,
         "etapa_atual": 0,
         "debug_setpoint": 0,
+        "posicao_distribuidor": 0,
 
         "pressao_turbina": 1.5,
         "temp_fase_r": 25,
@@ -178,6 +180,7 @@ compartilhado = {
         "etapa_alvo": 0,
         "etapa_atual": 0,
         "debug_setpoint": 0,
+        "posicao_distribuidor": 0,
 
         "pressao_turbina": 1.5,
         "temp_fase_r": 25,
@@ -206,6 +209,7 @@ compartilhado = {
         "etapa_alvo": 0,
         "etapa_atual": 0,
         "debug_setpoint": 0,
+        "posicao_distribuidor": 0,
 
         "pressao_turbina": 1.5,
         "temp_fase_r": 25,

@@ -70,6 +70,7 @@ class Unidade:
             self.dict['BRD'][f'ug{self.id}_condic'] = False
 
         self.dict[f'UG{self.id}']['q'] = self.calcular_q_ug(self.potencia)
+        self.dict[f'UG{self.id}']['posicao_distribuidor'] = self.calcular_pos_distribuidor(self.setpoint)
 
         self.controlar_etapas()
         self.controlar_reservatorio()
@@ -104,6 +105,10 @@ class Unidade:
 
     def calcular_q_ug(self, potencia_kW) -> 'float':
         return 0.0091 * potencia_kW if potencia_kW > 1700 else 0
+
+
+    def calcular_pos_distribuidor(self, setpoint) -> 'float':
+        return setpoint / 5650
 
 
     def controlar_horimetro(self) -> 'None':
@@ -291,7 +296,14 @@ class Unidade:
                 if self.dict['SE']['dj_fechado']:
                     self.dict[f'UG{self.id}']['potencia'] = self.potencia = min(max(self.potencia, POT_MIN), POT_MAX)
 
-                    if self.setpoint > self.potencia:
+                    if self.id == 3:
+                        sp_aux = -0.0005357143 * self.setpoint ** 2 + 5.125 * self.setpoint - 7714.2857
+                    elif self.id == 4:
+                        sp_aux = -0.0005 * self.setpoint ** 2 + 4.7143 * self.setpoint - 6800
+                    else:
+                        sp_aux = self.setpoint
+
+                    if sp_aux > self.potencia:
                         self.potencia += 26 * self.segundos_por_passo
                     else:
                         self.potencia -= 26 * self.segundos_por_passo
@@ -319,6 +331,7 @@ class Unidade:
         DB.set_words(MB[f'UG{self.id}']['POT_ATIVA_MEDIA'], [round(self.potencia)])
         DB.set_words(MB[f'UG{self.id}']['OPER_ETAPA_ATUAL'], [int(self.dict[f'UG{self.id}']['etapa_atual'])])
         DB.set_words(MB[f'UG{self.id}']['OPER_ETAPA_ALVO'], [int(self.dict[f'UG{self.id}']['etapa_alvo'])])
+        DB.set_words(MB[f'UG{self.id}']['REG_V_DISTRIBUIDOR'], [round(self.dict[f'UG{self.id}']['posicao_distribuidor']) * 1000])
         DB.set_words(MB[f'UG{self.id}']['ENTRADA_TURBINA_PRESSAO'], [round(self.dict[f'UG{self.id}'][f'pressao_turbina'] * 10)])
         DB.set_words(MB[f'UG{self.id}']['GERADOR_FASE_R_TMP'], [round(self.dict[f'UG{self.id}']['temp_fase_r'])])
         DB.set_words(MB[f'UG{self.id}']['GERADOR_FASE_S_TMP'], [round(self.dict[f'UG{self.id}']['temp_fase_s'])])

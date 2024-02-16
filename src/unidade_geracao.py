@@ -63,6 +63,11 @@ class UnidadeGeracao:
             REG_UG[f"UG{self.id}"]["HORIM_ELETR_LOW"],
             descricao=f"[UG{self.id}] Leitura Horímetro"
         )
+        self.__posicao_distribuidor = lei.LeituraModbus(
+            self.clp[f"UG{self.id}"],
+            REG_UG[f"UG{self.id}"]["REG_V_DISTRIBUIDOR"],
+            descricao=f"[UG{self.id}] Leitura Posição Distribuidor"
+        )
 
         self.__uhta: "dict[str, lei.LeituraModbusBit]" = {}
         self.__uhta[f'UHTA0{1 if self.id in (1,2) else 2}'] = lei.LeituraModbusBit(
@@ -129,6 +134,12 @@ class UnidadeGeracao:
         # PROPRIEDADE -> Retorna a leitura de horas de geração da Unidade.
 
         return self.__horimetro.valor
+
+    @property
+    def leitura_pos_distribuidor(self) -> "float":
+        # PROPRIEDADE -> Retorna a leitura de Posiçãio do Distibuidor
+
+        return self.__posicao_distribuidor.valor
 
     @property
     def manual(self) -> "bool":
