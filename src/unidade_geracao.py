@@ -30,25 +30,19 @@ logger = logging.getLogger("logger")
 class UnidadeGeracao:
     def __init__(self, id: "int", cfg: "dict"=None, db: "bd.BancoDados"=None):
 
-
         # VERIFICAÇÃO DE ARGUMENTOS
-
         if id <= 0:
             logger.error(f"[UG{self.id}] A Unidade não pode ser instanciada com o ID <= \"0\" ou vazio.")
             raise ValueError
         else:
             self.__id = id
 
-        self.__bd = db
-        self.__cfg = cfg
-
+        self.bd = db
+        self.cfg = cfg
         self.clp = serv.Servidores.clp
 
-
         # ATRIBUIÇÃO DE VAIRIÁVEIS
-
         # PRIVADAS
-
         self.__potencia = lei.LeituraModbus(
             self.clp[f"UG{self.id}"],
             REG_UG[f"UG{self.id}"]["POT_ATIVA_MEDIA"],
@@ -71,7 +65,6 @@ class UnidadeGeracao:
         )
 
         self.__uhta: "dict[str, lei.LeituraModbusBit]" = {}
-
         self.__uhta[f'UHTA0{1 if self.id in (1,2) else 2}'] = lei.LeituraModbusBit(
             self.clp['TDA'],
             REG_TDA[f'UHTA0{1 if self.id in (1,2) else 2}_OPERACIONAL'],
@@ -81,44 +74,41 @@ class UnidadeGeracao:
         self.__tempo_entre_tentativas: "int" = 0
         self.__limite_tentativas_normalizacao: "int" = 3
 
-
         # PROTEGIDAS
-
         self._setpoint: "int" = 0
         self._prioridade: "int" = 0
         self._codigo_state: "int" = 0
         self._tentativas_normalizacao: "int" = 0
 
-        self._setpoint_minimo: "float" = self.__cfg["pot_minima_ugs"]
-        self._setpoint_maximo: "float" = self.__cfg[f"pot_maxima_ug{self.id}"]
+        self._setpoint_minimo: "float" = self.cfg["pot_minima_ugs"]
+        self._setpoint_maximo: "float" = self.cfg[f"pot_maxima_ug{self.id}"]
 
         self._condicionadores: "list[c.CondicionadorBase]" = []
         self._condicionadores_essenciais: "list[c.CondicionadorBase]" = []
         self._condicionadores_atenuadores: "list[c.CondicionadorExponencialReverso]" = []
 
-
         # PÚBLICAS
-
         self.tempo_normalizar: "int" = 0
 
+        self.sp_anterior: "float" = 0.0
+        self.pot_anterior: "float" = 0.0
+        self.pos_dist_anterior: "float" = 0.0
+
+        self.manter_unidade: "bool" = False
         self.operar_comporta: "bool" = False
+        self.borda_cp_fechar: "bool" = False
         self.temporizar_partida: "bool" = False
         self.aguardar_pressao_cp: "bool" = False
         self.normalizacao_agendada: "bool" = False
         self.temporizar_normalizacao: "bool" = False
-
-        self.borda_cp_fechar: "bool" = False
 
         self.condicionadores_ativos: "list[c.CondicionadorBase]" = []
 
         self.aux_tempo_sincronizada: "datetime" = 0
         self.ts_auxiliar: "datetime" = self.get_time()
 
-
         # FINALIZAÇÃO DO __INIT__
-
         self.__next_state: "State" = StateDisponivel(self)
-
         self.carregar_leituras()
 
 
@@ -178,6 +168,8 @@ class UnidadeGeracao:
 
     @property
     def etapa_atual(self) -> "int":
+        # PROPRIEDADE -> Retorna o valor da leitura de etapa atual
+
         try:
             self._ultima_etapa_atual = self.__etapa_atual.valor
             return self._ultima_etapa_atual
@@ -188,6 +180,8 @@ class UnidadeGeracao:
 
     @property
     def etapa_alvo(self) -> "int":
+        # PROPRIEDADE -> Retorna o valor da leitura de etapa alvo
+
         try:
             self._ultima_etapa_alvo = self.__etapa_alvo.valor
             return self._ultima_etapa_alvo
@@ -198,6 +192,7 @@ class UnidadeGeracao:
 
     @property
     def etapa(self) -> "int":
+        # PROPRIEDADE -> Retorna o valor de etapa tratado
 
         if self.__etapa_atual.valor == 0 and self.__etapa_alvo.valor == 0:
             return UG_PARADA
@@ -245,11 +240,13 @@ class UnidadeGeracao:
     def setpoint(self, var: "int") -> "None":
         # SETTER -> Atribui o novo valor de setpoint da Unidade.
 
-        if var < self.__cfg["pot_minima_ugs"]:
+        if var < self.cfg["pot_minima_ugs"]:
+            if self.manter_unidade:
+                self._setpoint = self.cfg["pot_minima_ugs"]
             self._setpoint = 0
 
-        elif var > self.__cfg[f"pot_maxima_ug{self.id}"]:
-            self._setpoint = self.__cfg[f"pot_maxima_ug{self.id}"]
+        elif var > self.cfg[f"pot_maxima_ug{self.id}"]:
+            self._setpoint = self.cfg[f"pot_maxima_ug{self.id}"]
 
         else:
             self._setpoint = int(var)
@@ -329,7 +326,6 @@ class UnidadeGeracao:
 
 
     # FUNÇÕES
-
     @staticmethod
     def get_time() -> "datetime":
         """
@@ -381,7 +377,7 @@ class UnidadeGeracao:
         com o valor das constantes de Estado.
         """
 
-        estado = self.__bd.get_ultimo_estado_ug(self.id)[0]
+        estado = self.bd.get_ultimo_estado_ug(self.id)[0]
 
         if estado == None:
             self.__next_state = StateDisponivel(self)
@@ -726,11 +722,11 @@ class UnidadeGeracao:
         """
 
         if self.etapa == UG_PARADA:
-            if self.setpoint >= self.__cfg["pot_minima_ugs"]:
+            if self.setpoint >= self.cfg["pot_minima_ugs"]:
                 self.partir()
 
         elif self.etapa == UG_PARANDO:
-            if self.setpoint >= self.__cfg["pot_minima_ugs"]:
+            if self.setpoint >= self.cfg["pot_minima_ugs"]:
                 self.enviar_setpoint(self.setpoint)
 
         elif self.etapa == UG_SINCRONIZANDO:
@@ -790,7 +786,7 @@ class UnidadeGeracao:
                     logger.warning(f"[UG{self.id}] Descrição: \"{condic.descricao}\", Gravidade: \"{CONDIC_STR_DCT[condic.gravidade] if condic.gravidade in CONDIC_STR_DCT else 'Desconhecida'}\"")
                     self.condicionadores_ativos.append(condic)
                     flag = CONDIC_INDISPONIBILIZAR
-                    self.__bd.update_alarmes([
+                    self.bd.update_alarmes([
                         self.get_time(),
                         condic.gravidade,
                         condic.descricao,
@@ -801,7 +797,7 @@ class UnidadeGeracao:
                     logger.warning(f"[UG{self.id}] Descrição: \"{condic.descricao}\", Gravidade: \"{CONDIC_STR_DCT[condic.gravidade] if condic.gravidade in CONDIC_STR_DCT else 'Desconhecida'}\"")
                     self.condicionadores_ativos.append(condic)
                     flag = CONDIC_NORMALIZAR
-                    self.__bd.update_alarmes([
+                    self.bd.update_alarmes([
                         self.get_time(),
                         condic.gravidade,
                         condic.descricao,
@@ -812,7 +808,7 @@ class UnidadeGeracao:
                     logger.warning(f"[UG{self.id}] Descrição: \"{condic.descricao}\", Gravidade: \"{CONDIC_STR_DCT[condic.gravidade] if condic.gravidade in CONDIC_STR_DCT else 'Desconhecida'}\"")
                     self.condicionadores_ativos.append(condic)
                     flag = CONDIC_NORMALIZAR
-                    self.__bd.update_alarmes([
+                    self.bd.update_alarmes([
                         self.get_time(),
                         condic.gravidade,
                         condic.descricao,

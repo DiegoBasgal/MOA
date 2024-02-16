@@ -334,7 +334,6 @@ class Usina:
 
         if self.tda.nivel_montante.valor >= self.cfg["nv_maximo"]:
             logger.debug("[TDA] Nível montante em Vertimento.")
-            logger.debug(f"[TDA]          Leitura:                   {self.tda.nivel_montante.valor:0.3f}")
             logger.debug("")
 
             if self.tda.nivel_montante_anterior >= NIVEL_MAXIMORUM:
@@ -343,7 +342,9 @@ class Usina:
 
             elif self.tda.nivel_montante.valor >= self.cfg["nv_vert_max"]:
                 logger.debug(f"[TDA] Nível montante acima do Máximo Alvo!")
-                logger.debug(f"[TDA]          Máximo Alvo:               {self.cfg['nv_vert_max']}")
+                logger.debug(f"[TDA]          Leitura:                   {self.tda.nivel_montante.valor:0.3f}")
+                logger.debug(f"[TDA]          Máximo Alvo:               {self.cfg['nv_vert_max']:0.3f}")
+                logger.debug("")
 
                 self.controle_i = 0.9
                 self.controle_ie = 0.5
@@ -468,7 +469,7 @@ class Usina:
 
         self._pot_alvo_anterior = pot_alvo
 
-        logger.debug(f"[USN] Potência alvo após ajuste:          {pot_alvo:0.3f}")
+        logger.debug(f"[USN] Distribuindo Potência Alvo:         {pot_alvo:0.3f}")
 
         self.distribuir_potencia(pot_alvo)
 
@@ -484,8 +485,6 @@ class Usina:
         ugs: "list[ug.UnidadeGeracao]" = self.verificar_ugs_disponiveis()
 
         logger.debug("")
-        logger.debug(f"[USN] Ordem das UGs (Prioridade):         {[ug.id for ug in ugs]}")
-        logger.debug("")
 
         ajuste_manual = 0
 
@@ -498,7 +497,6 @@ class Usina:
         if ugs is None or not len(ugs):
             return
 
-        logger.debug(f"[USN] Distribuindo:                       {pot_alvo - ajuste_manual:0.3f}")
         sp = (pot_alvo - ajuste_manual) / self.cfg["pot_maxima_usina"]
 
         self.__split1 = True if sp > (0) else self.__split1
@@ -511,85 +509,205 @@ class Usina:
         self.__split2 = False if sp < ((self.cfg["pot_maxima_ugs"] / self.cfg["pot_maxima_usina"]) - self.cfg["margem_pot_critica"]) else self.__split2
         self.__split1 = False if sp < (self.cfg["pot_minima_ugs"] / self.cfg["pot_maxima_usina"]) else self.__split1
 
-
         logger.debug(f"[USN] SP Geral:                           {sp}")
 
         if len(ugs) == 4:
             if self.__split4:
                 logger.debug("[USN] Split:                              4")
 
-                for ug in ugs: ug.setpoint = sp * ug.setpoint_maximo
+                if (pot_alvo - ajuste_manual) < self.se.medidor_usina.valor:
+                    for ug in ugs:
+                        ug.setpoint = self.ajustar_mppt(
+                            [ug.leitura_potencia, ug.pot_anterior],
+                            [sp * ug.setpoint_maximo, ug.sp_anterior],
+                            [ug.leitura_pos_distribuidor, ug.pos_dist_anterior]
+                        )
+                        ug.sp_anterior = ug.setpoint
+                        ug.pot_anterior = ug.leitura_potencia
+                        ug.pos_dist_anterior = ug.leitura_pos_distribuidor
+
+                else:
+                    for ug in ugs: ug.setpoint = sp * ug.setpoint_maximo
 
             elif self.__split3:
                 logger.debug("[USN] Split:                              4 -> \"3B\"")
 
-                ugs[0].setpoint = (sp * (4/3)) * ugs[0].setpoint_maximo
-                ugs[1].setpoint = (sp * (4/3)) * ugs[0].setpoint_maximo
-                ugs[2].setpoint = (sp * (4/3)) * ugs[0].setpoint_maximo
-                ugs[3].setpoint = 0
+                if (pot_alvo - ajuste_manual) < self.se.medidor_usina.valor:
+                    for x in range(2):
+                        ugs[x].setpoint = self.ajustar_mppt(
+                            [ugs[x].leitura_potencia, ugs[x].pot_anterior],
+                            [sp * (4/3) * ugs[x].setpoint_maximo, ugs[x].sp_anterior],
+                            [ugs[x].leitura_pos_distribuidor, ugs[x].pos_dist_anterior]
+                        )
+                        ugs[x].sp_anterior = ugs[x].setpoint
+                        ugs[x].pot_anterior = ugs[x].leitura_potencia
+                        ugs[x].pos_dist_anterior = ugs[x].leitura_pos_distribuidor
+
+                    ugs[3].setpoint = 0
+
+                else:
+                    ugs[0].setpoint = sp * (4/3) * ugs[0].setpoint_maximo
+                    ugs[1].setpoint = sp * (4/3) * ugs[0].setpoint_maximo
+                    ugs[2].setpoint = sp * (4/3) * ugs[0].setpoint_maximo
+                    ugs[3].setpoint = 0
 
             elif self.__split2:
                 logger.debug("[USN] Split:                              4 -> \"2B\"")
 
-                ugs[0].setpoint = (sp * (4/2)) * ugs[0].setpoint_maximo
-                ugs[1].setpoint = (sp * (4/2)) * ugs[0].setpoint_maximo
-                ugs[2].setpoint = 0
-                ugs[3].setpoint = 0
+                if (pot_alvo - ajuste_manual) < self.se.medidor_usina.valor:
+                    for x in range(1):
+                        ugs[x].setpoint = self.ajustar_mppt(
+                            [ugs[x].leitura_potencia, ugs[x].pot_anterior],
+                            [sp * 4/2 * ugs[x].setpoint_maximo, ugs[x].sp_anterior],
+                            [ugs[x].leitura_pos_distribuidor, ugs[x].pos_dist_anterior]
+                        )
+                        ugs[x].sp_anterior = ugs[x].setpoint
+                        ugs[x].pot_anterior = ugs[x].leitura_potencia
+                        ugs[x].pos_dist_anterior = ugs[x].leitura_pos_distribuidor
+
+                    ugs[2].setpoint = ugs[3].setpoint = 0
+
+                else:
+                    ugs[0].setpoint = sp * (4/2) * ugs[0].setpoint_maximo
+                    ugs[1].setpoint = sp * (4/2) * ugs[1].setpoint_maximo
+                    ugs[2].setpoint = ugs[3].setpoint = 0
 
             elif self.__split1:
                 logger.debug("[USN] Split:                              4 -> \"1B\"")
 
-                ugs[0].setpoint = (sp * 4) * ugs[0].setpoint_maximo
-                ugs[1].setpoint = 0
-                ugs[2].setpoint = 0
-                ugs[3].setpoint = 0
+                ugs[0].manter_unidade = True if self.tda.nivel_montante.valor > self.cfg['nv_minimo'] else False
+
+                if (pot_alvo - ajuste_manual) < self.se.medidor_usina.valor:
+                    ugs[0].setpoint = self.ajustar_mppt(
+                        [ugs[0].leitura_potencia, ugs[0].pot_anterior],
+                        [sp * 4 * ugs[0].setpoint_maximo, ugs[0].sp_anterior],
+                        [ugs[0].leitura_pos_distribuidor, ugs[0].pos_dist_anterior]
+                    )
+                    ugs[0].sp_anterior = ugs[0].setpoint
+                    ugs[0].pot_anterior = ugs[0].leitura_potencia
+                    ugs[0].pos_dist_anterior = ugs[0].leitura_pos_distribuidor
+
+                    ugs[1].setpoint = ugs[2].setpoint = ugs[3].setpoint = 0
+
+                else:
+                    ugs[0].setpoint = sp * 4 * ugs[0].setpoint_maximo
+                    ugs[1].setpoint = ugs[2].setpoint = ugs[3].setpoint = 0
 
             else:
                 for ug in ugs: ug.setpoint = 0
 
             logger.debug("")
             for ug in ugs: logger.debug(f"[UG{ug.id}] SP    <-                            {int(ug.setpoint)}")
+
 
         elif len(ugs) == 3:
             if self.__split3:
                 logger.debug("[USN] Split:                              3")
 
-                ugs[0].setpoint = (sp * (4/3)) * ugs[0].setpoint_maximo
-                ugs[1].setpoint = (sp * (4/3)) * ugs[0].setpoint_maximo
-                ugs[2].setpoint = (sp * (4/3)) * ugs[0].setpoint_maximo
+                if (pot_alvo - ajuste_manual) < self.se.medidor_usina.valor:
+                    for x in range(2):
+                        ugs[x].setpoint = self.ajustar_mppt(
+                            [ugs[x].leitura_potencia, ugs[x].pot_anterior],
+                            [sp * (4/3) * ugs[x].setpoint_maximo, ugs[x].sp_anterior],
+                            [ugs[x].leitura_pos_distribuidor, ugs[x].pos_dist_anterior]
+                        )
+                        ugs[x].sp_anterior = ugs[x].setpoint
+                        ugs[x].pot_anterior = ugs[x].leitura_potencia
+                        ugs[x].pos_dist_anterior = ugs[x].leitura_pos_distribuidor
+
+                else:
+                    ugs[0].setpoint = sp * (4/3) * ugs[0].setpoint_maximo
+                    ugs[1].setpoint = sp * (4/3) * ugs[0].setpoint_maximo
+                    ugs[2].setpoint = sp * (4/3) * ugs[0].setpoint_maximo
 
             elif self.__split2:
                 logger.debug("[USN] Split:                              3 -> \"2B\"")
 
-                ugs[0].setpoint = (sp * (4/2)) * ugs[0].setpoint_maximo
-                ugs[1].setpoint = (sp * (4/2)) * ugs[0].setpoint_maximo
-                ugs[2].setpoint = 0
+                if (pot_alvo - ajuste_manual) < self.se.medidor_usina.valor:
+                    for x in range(1):
+                        ugs[x].setpoint = self.ajustar_mppt(
+                            [ugs[x].leitura_potencia, ugs[x].pot_anterior],
+                            [sp * 4/2 * ugs[x].setpoint_maximo, ugs[x].sp_anterior],
+                            [ugs[x].leitura_pos_distribuidor, ugs[x].pos_dist_anterior]
+                        )
+                        ugs[x].sp_anterior = ugs[x].setpoint
+                        ugs[x].pot_anterior = ugs[x].leitura_potencia
+                        ugs[x].pos_dist_anterior = ugs[x].leitura_pos_distribuidor
+
+                    ugs[2].setpoint = 0
+
+                else:
+                    ugs[0].setpoint = sp * (4/2) * ugs[0].setpoint_maximo
+                    ugs[1].setpoint = sp * (4/2) * ugs[1].setpoint_maximo
+                    ugs[2].setpoint = 0
 
             elif self.__split1:
                 logger.debug("[USN] Split:                              3 -> \"1B\"")
 
-                ugs[0].setpoint = (sp * 4) * ugs[0].setpoint_maximo
-                ugs[1].setpoint = 0
-                ugs[2].setpoint = 0
+                ugs[0].manter_unidade = True if self.tda.nivel_montante.valor > self.cfg['nv_minimo'] else False
+
+                if (pot_alvo - ajuste_manual) < self.se.medidor_usina.valor:
+                    ugs[0].setpoint = self.ajustar_mppt(
+                        [ugs[0].leitura_potencia, ugs[0].pot_anterior],
+                        [sp * 4 * ugs[0].setpoint_maximo, ugs[0].sp_anterior],
+                        [ugs[0].leitura_pos_distribuidor, ugs[0].pos_dist_anterior]
+                    )
+                    ugs[0].sp_anterior = ugs[0].setpoint
+                    ugs[0].pot_anterior = ugs[0].leitura_potencia
+                    ugs[0].pos_dist_anterior = ugs[0].leitura_pos_distribuidor
+
+                    ugs[1].setpoint = ugs[2].setpoint = 0
+
+                else:
+                    ugs[0].setpoint = sp * 4 * ugs[0].setpoint_maximo
+                    ugs[1].setpoint = ugs[2].setpoint = 0
 
             else:
                 for ug in ugs: ug.setpoint = 0
 
             logger.debug("")
             for ug in ugs: logger.debug(f"[UG{ug.id}] SP    <-                            {int(ug.setpoint)}")
+
 
         elif len(ugs) == 2:
             if self.__split2:
                 logger.debug("[USN] Split:                              2")
 
-                ugs[0].setpoint = (sp * (4/2)) * ugs[0].setpoint_maximo
-                ugs[1].setpoint = (sp * (4/2)) * ugs[0].setpoint_maximo
+                if (pot_alvo - ajuste_manual) < self.se.medidor_usina.valor:
+                    for x in range(2):
+                        ugs[x].setpoint = self.ajustar_mppt(
+                            [ugs[x].leitura_potencia, ugs[x].pot_anterior],
+                            [sp * (4/2) * ugs[x].setpoint_maximo, ugs[x].sp_anterior],
+                            [ugs[x].leitura_pos_distribuidor, ugs[x].pos_dist_anterior]
+                        )
+                        ugs[x].sp_anterior = ugs[x].setpoint
+                        ugs[x].pot_anterior = ugs[x].leitura_potencia
+                        ugs[x].pos_dist_anterior = ugs[x].leitura_pos_distribuidor
+
+                else:
+                    ugs[0].setpoint = sp * (4/2) * ugs[0].setpoint_maximo
+                    ugs[1].setpoint = sp * (4/2) * ugs[0].setpoint_maximo
 
             elif self.__split1:
                 logger.debug("[USN] Split:                              2 -> \"1B\"")
 
-                ugs[0].setpoint = (sp * 4) * ugs[0].setpoint_maximo
-                ugs[1].setpoint = 0
+                ugs[0].manter_unidade = True if self.tda.nivel_montante.valor > self.cfg['nv_minimo'] else False
+
+                if (pot_alvo - ajuste_manual) < self.se.medidor_usina.valor:
+                    ugs[0].setpoint = self.ajustar_mppt(
+                        [ugs[0].leitura_potencia, ugs[0].pot_anterior],
+                        [sp * 4 * ugs[0].setpoint_maximo, ugs[0].sp_anterior],
+                        [ugs[0].leitura_pos_distribuidor, ugs[0].pos_dist_anterior]
+                    )
+                    ugs[0].sp_anterior = ugs[0].setpoint
+                    ugs[0].pot_anterior = ugs[0].leitura_potencia
+                    ugs[0].pos_dist_anterior = ugs[0].leitura_pos_distribuidor
+
+                    ugs[1].setpoint = 0
+
+                else:
+                    ugs[0].setpoint = sp * 4 * ugs[0].setpoint_maximo
+                    ugs[1].setpoint = 0
 
             else:
                 for ug in ugs: ug.setpoint = 0
@@ -597,13 +715,50 @@ class Usina:
             logger.debug("")
             for ug in ugs: logger.debug(f"[UG{ug.id}] SP    <-                            {int(ug.setpoint)}")
 
+
         elif len(ugs) == 1:
             logger.debug("[USN] Split:                              1")
 
-            ugs[0].setpoint = sp * 4 * ugs[0].setpoint_maximo
+            ugs[0].manter_unidade = True if self.tda.nivel_montante.valor > self.cfg['nv_minimo'] else False
+
+            if (pot_alvo - ajuste_manual) < self.se.medidor_usina.valor:
+                ugs[0].setpoint = self.ajustar_mppt(
+                    [ugs[0].leitura_potencia, ugs[0].pot_anterior],
+                    [sp * 4 * ugs[0].setpoint_maximo, ugs[0].sp_anterior],
+                    [ugs[0].leitura_pos_distribuidor, ugs[0].pos_dist_anterior]
+                )
+                ugs[0].sp_anterior = ugs[0].setpoint
+                ugs[0].pot_anterior = ugs[0].leitura_potencia
+                ugs[0].pos_dist_anterior = ugs[0].leitura_pos_distribuidor
+
+            else:
+                ugs[0].setpoint = sp * 4 * ugs[0].setpoint_maximo
 
             logger.debug("")
             logger.debug(f"[UG{ugs[0].id}] SP    <-                            {int(ugs[0].setpoint)}")
+
+
+    def ajustar_mppt(potencia, setpoint, abertura_dist) -> "float":
+
+        setpoint_saida = setpoint[0]
+        delta = 10
+
+        if potencia[0] < potencia[1]:
+            if abertura_dist[0] < abertura_dist[1]:
+                setpoint_saida += delta
+            else:
+                setpoint_saida -= delta
+
+        elif potencia[0] == potencia[1]:
+                setpoint_saida -= delta
+
+        else:
+            if abertura_dist[0] < abertura_dist[1]:
+                setpoint_saida -= delta
+            else:
+                setpoint_saida += delta
+
+        return setpoint_saida
 
 
     def verificar_ugs_disponiveis(self) -> "list[ug.UnidadeGeracao]":
