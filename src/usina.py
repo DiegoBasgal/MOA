@@ -541,8 +541,8 @@ class Usina:
             elif self.__split1:
                 logger.debug("[USN] Split:                              4 -> \"1B\"")
 
-                ugs[0].setpoint = (sp * 4) * ugs[0].setpoint_maximo
-                ugs[0].sp_mppt = (sp * 4) * ugs[0].sp_mppt_max
+                ugs[0].setpoint = sp * 4 * ugs[0].setpoint_maximo
+                ugs[0].sp_mppt = sp * 4 * ugs[0].sp_mppt_max
 
                 ugs[1].setpoint = 0
                 ugs[2].setpoint = 0
@@ -554,27 +554,36 @@ class Usina:
             logger.debug("")
             for ug in ugs: logger.debug(f"[UG{ug.id}] SP    <-                            {int(ug.setpoint)}")
 
-
-
         elif len(ugs) == 3:
             if self.__split3:
                 logger.debug("[USN] Split:                              3")
 
                 ugs[0].setpoint = (sp * (4/3)) * ugs[0].setpoint_maximo
-                ugs[1].setpoint = (sp * (4/3)) * ugs[0].setpoint_maximo
-                ugs[2].setpoint = (sp * (4/3)) * ugs[0].setpoint_maximo
+                ugs[0].sp_mppt = (sp * (4/3)) * ugs[0].sp_mppt_max
+
+                ugs[1].setpoint = (sp * (4/3)) * ugs[1].setpoint_maximo
+                ugs[1].sp_mppt = (sp * (4/3)) * ugs[1].sp_mppt_max
+
+                ugs[2].setpoint = (sp * (4/3)) * ugs[2].setpoint_maximo
+                ugs[2].sp_mppt = (sp * (4/3)) * ugs[2].sp_mppt_max
 
             elif self.__split2:
                 logger.debug("[USN] Split:                              3 -> \"2B\"")
 
                 ugs[0].setpoint = (sp * (4/2)) * ugs[0].setpoint_maximo
-                ugs[1].setpoint = (sp * (4/2)) * ugs[0].setpoint_maximo
+                ugs[0].sp_mppt = (sp * (4/2)) * ugs[0].sp_mppt_max
+
+                ugs[1].setpoint = (sp * (4/2)) * ugs[1].setpoint_maximo
+                ugs[1].sp_mppt = (sp * (4/2)) * ugs[1].sp_mppt_max
+
                 ugs[2].setpoint = 0
 
             elif self.__split1:
                 logger.debug("[USN] Split:                              3 -> \"1B\"")
 
-                ugs[0].setpoint = (sp * 4) * ugs[0].setpoint_maximo
+                ugs[0].setpoint = sp * 4 * ugs[0].setpoint_maximo
+                ugs[0].sp_mppt = sp * 4 * ugs[0].sp_mppt_max
+
                 ugs[1].setpoint = 0
                 ugs[2].setpoint = 0
 
@@ -589,12 +598,17 @@ class Usina:
                 logger.debug("[USN] Split:                              2")
 
                 ugs[0].setpoint = (sp * (4/2)) * ugs[0].setpoint_maximo
+                ugs[0].sp_mppt = (sp * (4/2)) * ugs[0].sp_mppt_max
+
                 ugs[1].setpoint = (sp * (4/2)) * ugs[0].setpoint_maximo
+                ugs[1].sp_mppt = (sp * (4/2)) * ugs[1].sp_mppt_max
 
             elif self.__split1:
                 logger.debug("[USN] Split:                              2 -> \"1B\"")
 
-                ugs[0].setpoint = (sp * 4) * ugs[0].setpoint_maximo
+                ugs[0].setpoint = sp * 4 * ugs[0].setpoint_maximo
+                ugs[0].sp_mppt = sp * 4 * ugs[0].sp_mppt_max
+
                 ugs[1].setpoint = 0
 
             else:
@@ -607,6 +621,7 @@ class Usina:
             logger.debug("[USN] Split:                              1")
 
             ugs[0].setpoint = sp * 4 * ugs[0].setpoint_maximo
+            ugs[0].sp_mppt = sp * 4 * ugs[0].sp_mppt_max
 
             logger.debug("")
             logger.debug(f"[UG{ugs[0].id}] SP    <-                            {int(ugs[0].setpoint)}")
