@@ -25,6 +25,7 @@ from src.maquinas_estado.ug import *
 
 
 logger = logging.getLogger("logger")
+debug_log = logging.getLogger("debug")
 
 
 class UnidadeGeracao:
@@ -66,6 +67,7 @@ class UnidadeGeracao:
         self.__posicao_distribuidor = lei.LeituraModbus(
             self.clp[f"UG{self.id}"],
             REG_UG[f"UG{self.id}"]["REG_V_DISTRIBUIDOR"],
+            escala=0.0001,
             descricao=f"[UG{self.id}] Leitura Posição Distribuidor"
         )
 
@@ -95,9 +97,14 @@ class UnidadeGeracao:
         # PÚBLICAS
         self.tempo_normalizar: "int" = 0
 
+        self.sp_mppt: "float" = 0.0
         self.sp_anterior: "float" = 0.0
         self.pot_anterior: "float" = 0.0
+        self.pot_alvo_usina: "float" = 0.0
         self.pos_dist_anterior: "float" = 0.0
+
+        self.sp_mppt_max: "float" = self.cfg[f"pot_maxima_ug{self.id}"]
+
 
         self.manter_unidade: "bool" = False
         self.operar_comporta: "bool" = False
@@ -107,6 +114,7 @@ class UnidadeGeracao:
         self.normalizacao_agendada: "bool" = False
         self.temporizar_normalizacao: "bool" = False
 
+        self.potencias_anteriores: "list[int]" = []
         self.condicionadores_ativos: "list[c.CondicionadorBase]" = []
 
         self.aux_tempo_sincronizada: "datetime" = 0
@@ -497,19 +505,62 @@ class UnidadeGeracao:
         Unidade.
         """
 
+        cont_mppt = 0
+
+        debug_log.debug("")
+        debug_log.debug(f"UG{self.id} Lista de potências anteriores -> {self.potencias_anteriores}")
+        debug_log.debug("")
+
+        for pot in self.potencias_anteriores:
+            if pot < self.sp_mppt:
+                cont_mppt += 1
+
         try:
-            logger.debug(f"[UG{self.id}]          Enviando setpoint:         {int(setpoint_kw)} kW")
+            if cont_mppt == 20:
+
+                debug_log.debug(f"UG{self.id} -> Potência:                  {self.leitura_potencia}")
+                debug_log.debug(f"UG{self.id} -> Potência Anterior:         {self.potencias_anteriores[-1]}")
+                debug_log.debug("")
+                debug_log.debug(f"UG{self.id} -> Setpoint:                  {setpoint_kw}")
+                debug_log.debug(f"UG{self.id} -> Setpoint Anterior:         {self.sp_anterior}")
+                debug_log.debug("")
+                debug_log.debug(f"UG{self.id} -> Distribuidor:              {self.leitura_pos_distribuidor}")
+                debug_log.debug(f"UG{self.id} -> Distribuidor Anterior:     {self.pos_dist_anterior}")
+                debug_log.debug("")
+
+                setpoint_kw = self.ajustar_mppt(
+                    [self.leitura_potencia, self.potencias_anteriores[-1]],
+                    [self.sp_mppt, self.sp_anterior],
+                    [self.leitura_pos_distribuidor, self.pos_dist_anterior],
+                )
+                self.sp_anterior = self.sp_mppt_max = setpoint_kw
+                self.pos_dist_anterior = self.leitura_pos_distribuidor
+
+            elif self.sp_mppt_max <= self.cfg["pot_maxima_ugs"]:
+                self.sp_mppt_max = self.sp_mppt_max + 35 # delta
+
+            if len(self.potencias_anteriores) == 20 and self.leitura_potencia > self.setpoint_minimo:
+                self.potencias_anteriores.pop(0)
+                self.potencias_anteriores.append(self.leitura_potencia)
+
+            elif self.leitura_potencia > self.setpoint_minimo:
+                self.potencias_anteriores.append(self.leitura_potencia)
+
+            if cont_mppt == 20:
+                logger.debug(f"[UG{self.id}]          Enviando setpoint:         {int(self.setpoint)} -> MPPT: {setpoint_kw} kW")
+            else:
+                logger.debug(f"[UG{self.id}]          Enviando setpoint:         {int(setpoint_kw)} kW")
 
             if setpoint_kw > 1:
                 self.setpoint = int(setpoint_kw)
-                res = self.clp[f"UG{self.id}"].write_single_register(REG_UG[f"UG{self.id}"]["CMD_SINC_MODO_AUTO_LIGAR"], 1)
+                # res = self.clp[f"UG{self.id}"].write_single_register(REG_UG[f"UG{self.id}"]["CMD_SINC_MODO_AUTO_LIGAR"], 1)
                 # res = esc.EscritaModBusBit.escrever_bit(REG_UG[f"UG{self.id}"]["CTRL_POT_MODO_POT"], valor=1)
-                res = self.clp[f"UG{self.id}"].write_single_register(REG_UG[f"UG{self.id}"]["CMD_RT_MTVC_HABILITAR"], 1)
-                res = self.clp[f"UG{self.id}"].write_single_register(REG_UG[f"UG{self.id}"]["CMD_RV_CONJUGADO_AUTO_HABILITAR"], 1)
-                res = self.clp[f"UG{self.id}"].write_single_register(REG_UG[f"UG{self.id}"]["CMD_CTRL_REATIVO_MODO_VArLIGAR"], 1)
-                res = self.clp[f"UG{self.id}"].write_single_register(REG_UG[f"UG{self.id}"]["CMD_CTRL_REATIVO_MODO_FPDESLIGAR"], 1)
-                res = self.clp[f"UG{self.id}"].write_single_register(REG_UG[f"UG{self.id}"]["CMD_CTRL_POT_MODO_NIVEL_LIGAR"], 1)
-                res = self.clp[f"UG{self.id}"].write_single_register(REG_UG[f"UG{self.id}"]["CMD_CTRL_POT_MODO_NIVEL_DESLIGAR"], 1)
+                # res = self.clp[f"UG{self.id}"].write_single_register(REG_UG[f"UG{self.id}"]["CMD_RT_MTVC_HABILITAR"], 1)
+                # res = self.clp[f"UG{self.id}"].write_single_register(REG_UG[f"UG{self.id}"]["CMD_RV_CONJUGADO_AUTO_HABILITAR"], 1)
+                # res = self.clp[f"UG{self.id}"].write_single_register(REG_UG[f"UG{self.id}"]["CMD_CTRL_REATIVO_MODO_VArLIGAR"], 1)
+                # res = self.clp[f"UG{self.id}"].write_single_register(REG_UG[f"UG{self.id}"]["CMD_CTRL_REATIVO_MODO_FPDESLIGAR"], 1)
+                # res = self.clp[f"UG{self.id}"].write_single_register(REG_UG[f"UG{self.id}"]["CMD_CTRL_POT_MODO_NIVEL_LIGAR"], 1)
+                # res = self.clp[f"UG{self.id}"].write_single_register(REG_UG[f"UG{self.id}"]["CMD_CTRL_POT_MODO_NIVEL_DESLIGAR"], 1)
 
                 # res = esc.EscritaModBusBit.escrever_bit(REG_UG[f"UG{self.id}"]["CTRL_REAT_MODO_VAR"], valor=0)
                 # res = esc.EscritaModBusBit.escrever_bit(REG_UG[f"UG{self.id}"]["CRTL_REATIVO_SP_REATIVO"], valor=0)
@@ -690,6 +741,31 @@ class UnidadeGeracao:
         self.clp[f"UG{self.id}"].write_single_register(REG_UG[f"UG{self.id}"]["CMD_OPER_EMERGENCIA_LIGAR"], 1)
         self.temporizar_partida = False
         sleep(1)
+
+
+    def ajustar_mppt(self, potencia, setpoint, abertura_dist) -> "float":
+
+        setpoint_saida = setpoint[0]
+        delta = 35
+
+        if potencia[0] < potencia[1]:
+            if abertura_dist[0] < abertura_dist[1]:
+                setpoint_saida += delta
+            else:
+                setpoint_saida -= delta
+
+        elif potencia[0] == potencia[1]:
+                setpoint_saida -= delta
+
+        else:
+            if abertura_dist[0] < abertura_dist[1]:
+                setpoint_saida -= delta
+            else:
+                setpoint_saida += delta
+
+        debug_log.debug("")
+
+        return setpoint_saida
 
 
     def atenuar_carga(self) -> "None":
