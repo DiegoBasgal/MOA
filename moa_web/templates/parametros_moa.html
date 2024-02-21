@@ -144,22 +144,7 @@
                         <tr>
                             <td>
                                 <label style="font-size: 18px;"><b>Nível Alvo (MOA): </b></label>
-                                {% if tag_alvo == 3 %}
-                                    <label style="color: red">{{ usina.nv_alvo }}</label>
-                                    <a> m</a>
-                                {% endif %}
-                                {% if tag_alvo == 2 %}
-                                    <label style="color: green">{{ usina.nv_alvo }}</label>
-                                    <a> m</a>
-                                {% endif %}
-                                {% if tag_alvo == 1 %}
-                                    <label style="color: yellow">{{ usina.nv_alvo }}</label>
-                                    <a> m</a>
-                                {% endif %}
-                                {% if tag_alvo == 0 %}
-                                    <label style="color: red">{{ usina.nv_alvo }}</label>
-                                    <a> m</a>
-                                {% endif %}
+                                <label>{{ usina.nv_alvo }}</label>
                             </td>
                         </tr>
                         <tr style="text-align: center;">

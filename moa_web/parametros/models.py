@@ -11,30 +11,29 @@ class ParametrosUsina(models.Model):
 
     # Params Usina
     modo_autonomo = models.IntegerField(default=1)
-    manter_unidades = models.BooleanField(default=False)
     emergencia_acionada = models.IntegerField(default=0)
     aguardando_reservatorio = models.IntegerField(default=0)
     modo_de_escolha_das_ugs = models.IntegerField(default=2)
 
     # Servidores
     clp_online = models.IntegerField(default=1)
-    clp_ug1_ip = models.CharField(max_length=15, default="10.101.2.215")
+    clp_ug1_ip = models.CharField(max_length=15, default="0.0.0.0")
     clp_ug1_porta = models.IntegerField(default=502)
-    clp_ug2_ip = models.CharField(max_length=15, default="10.101.2.215")
+    clp_ug2_ip = models.CharField(max_length=15, default="0.0.0.0")
     clp_ug2_porta = models.IntegerField(default=502)
-    clp_sa_ip = models.CharField(max_length=15, default="10.101.2.215")
+    clp_sa_ip = models.CharField(max_length=15, default="0.0.0.0")
     clp_sa_porta = models.IntegerField(default=502)
-    clp_tda_ip = models.CharField(max_length=15, default="10.101.2.215")
+    clp_tda_ip = models.CharField(max_length=15, default="0.0.0.0")
     clp_tda_porta = models.IntegerField(default=502)
     clp_moa_ip = models.CharField(max_length=15, default="0.0.0.0")
     clp_moa_porta = models.IntegerField(default=502)
 
     # Nível
-    nv_alvo = models.DecimalField(max_digits=10, decimal_places=3, default=462)
-    nv_maximo = models.DecimalField(max_digits=10, decimal_places=3, default=462.37)
-    nv_minimo = models.DecimalField(max_digits=10, decimal_places=3, default=460)
-    nv_montante = models.DecimalField(max_digits=10, decimal_places=3, default=460)
-    nv_religamento = models.DecimalField(max_digits=10, decimal_places=3, default=461.5)
+    nv_alvo = models.DecimalField(max_digits=10, decimal_places=3, default=411)
+    nv_maximo = models.DecimalField(max_digits=10, decimal_places=3, default=411.20)
+    nv_minimo = models.DecimalField(max_digits=10, decimal_places=3, default=410.70)
+    nv_montante = models.DecimalField(max_digits=10, decimal_places=3, default=411)
+    nv_religamento = models.DecimalField(max_digits=10, decimal_places=3, default=410.85)
 
     # PID IE
     kp = models.DecimalField(max_digits=15, decimal_places=3, default=2)
@@ -45,16 +44,16 @@ class ParametrosUsina(models.Model):
 
     # Limpa Grades
     modo_lg = models.IntegerField(default=1)
-    horario_disparo_lg = models.DateTimeField(blank=False, default=datetime.now(pytz.timezone("Brazil/East")).strftime("%Y-%m-%d %H:%M:%S"))
+    horario_disparo_lg = models.DateTimeField(blank=False, default=0)
     t_dias_disparo_lg = models.IntegerField(default=0)
     t_horas_disparo_lg = models.IntegerField(default=0)
     valor_disparo_lg_p1 = models.DecimalField(max_digits=5, decimal_places=2, default=0.3)
     valor_disparo_lg_p2 = models.DecimalField(max_digits=5, decimal_places=2, default=0.3)
 
     # Potência
-    pot_minima = models.DecimalField(max_digits=10, decimal_places=0, default=911)
-    pot_nominal = models.DecimalField(max_digits=10, decimal_places=1, default=3037.5)
-    pot_nominal_ug = models.DecimalField(max_digits=10, decimal_places=1, default=3037.5)
+    pot_minima = models.DecimalField(max_digits=10, decimal_places=1, default=710.4)
+    pot_nominal = models.DecimalField(max_digits=10, decimal_places=1, default=2225)
+    pot_nominal_ug = models.DecimalField(max_digits=10, decimal_places=1, default=2225)
     margem_pot_critica = models.DecimalField(max_digits=10, decimal_places=5, default=0.037)
 
     # Transformador Elevador

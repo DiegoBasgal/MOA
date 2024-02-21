@@ -7,24 +7,24 @@ import pytz
 import logging
 import traceback
 
-import src.bay as bay
+import src.usina as usn
 
 from time import sleep, time
 from datetime import datetime
 
 from src.dicionarios.const import *
 
-from src.usina import Usina
 
 logger = logging.getLogger("logger")
 debug_log = logging.getLogger("debug")
+
 
 class StateMachine:
     def __init__(self, initial_state) -> "None":
 
         # ATRIBUIÇÃO DE VARIÁVEIS PÚBLICAS
-
         self.state = initial_state
+
 
     def exec(self) -> "None":
         """
@@ -37,29 +37,27 @@ class StateMachine:
             self.state = self.state.run()
 
         except Exception:
-            logger.exception(f"Erro na execução do Estado: {self.state}")
-            logger.exception(f"Traceback: {traceback.format_exc()}")
+            logger.error(f"Erro na execução do Estado: {self.state}")
+            logger.debug(traceback.format_exc())
             self.state = FalhaCritica()
 
 
 class State:
-    def __init__(self, usina: "Usina"=None, *args, **kwargs) -> "None":
+    def __init__(self, usina: "usn.Usina"=None, *args, **kwargs) -> "None":
 
         # VERIFICAÇÃO DE ARGUMENTOS
-
         if usina is None:
             logger.error(f"Erro ao carregar a classe da Usina na máquina de estados.")
             return FalhaCritica()
         else:
             self.usn = usina
 
-
         # ATRIBUIÇÃO DE VARIÁVEIS PÚBLICAS
-
         self.args = args
         self.kwargs = kwargs
 
         self.usn.estado_moa = MOA_SM_NAO_INICIALIZADO
+
 
     def get_time(self) -> "datetime":
         """
@@ -67,6 +65,7 @@ class State:
         """
 
         return datetime.now(pytz.timezone("Brazil/East")).replace(tzinfo=None)
+
 
     def run(self) -> "object":
         """
@@ -80,7 +79,6 @@ class FalhaCritica(State):
     def __init__(self) -> "None":
 
         # FINALIZAÇÃO DO __INIT__
-
         logger.critical("Falha crítica MOA. Interrompendo execução...")
         sys.exit(1)
 
@@ -90,8 +88,8 @@ class Pronto(State):
         super().__init__(usn, *args, **kwargs)
 
         # ATRIBUIÇÃO DE VARIÁVEIS PÚBLICAS
-
         self.usn.estado_moa = MOA_SM_PRONTO
+
 
     def run(self) -> "State":
         """
@@ -110,8 +108,8 @@ class ControleEstados(State):
         super().__init__(usn, *args, **kwargs)
 
         # ATRIBUIÇÃO DE VARIÁVEIS PÚBLICAS
-
         self.usn.estado_moa = MOA_SM_CONTROLE_ESTADOS
+
 
     def run(self) -> "State":
         """
@@ -165,12 +163,12 @@ class ControleEstados(State):
 
             logger.debug("Verificando status da Subestação e Bay...")
             logger.debug("")
-            flag_bay_se = self.usn.verificar_bay_se()
+            flag_se = self.usn.verificar_se()
 
-            if flag_bay_se == DJS_FALTA_TENSAO:
-                return Emergencia(self.usn) if self.usn.bay.aguardar_tensao() == TENSAO_FORA else ControleDados(self.usn)
+            if flag_se == DJS_FALTA_TENSAO:
+                return Emergencia(self.usn) if self.usn.se.aguardar_tensao() == TENSAO_FORA else ControleDados(self.usn)
 
-            elif flag_bay_se != DJS_OK:
+            elif flag_se != DJS_OK:
                 self.usn.normalizar_usina()
                 return ControleDados(self.usn)
 
@@ -189,8 +187,8 @@ class ControleReservatorio(State):
         super().__init__(usn, *args, **kwargs)
 
         # ATRIBUIÇÃO DE VARIÁVEIS PÚBLICAS
-
         self.usn.estado_moa = MOA_SM_CONTROLE_RESERVATORIO
+
 
     def run(self) -> "State":
         """
@@ -213,8 +211,8 @@ class ControleDados(State):
         super().__init__(usn, *args, **kwargs)
 
         # ATRIBUIÇÃO DE VARIÁVEIS PÚBLICAS
-
         self.usn.estado_moa = MOA_SM_CONTROLE_DADOS
+
 
     def run(self) -> "State":
         """
@@ -235,8 +233,8 @@ class ControleAgendamentos(State):
         super().__init__(*args, **kwargs)
 
         # ATRIBUIÇÃO DE VARIÁVEIS PÚBLICAS
-
         self.usn.estado_moa = MOA_SM_CONTROLE_AGENDAMENTOS
+
 
     def run(self) -> "State":
         """
@@ -263,16 +261,15 @@ class ModoManual(State):
         super().__init__(usn, *args, **kwargs)
 
         # ATRIBUIÇÃO DE VARIÁVEIS PÚBLICAS
-
         self.usn.estado_moa = MOA_SM_MODO_MANUAL
         self.usn.modo_autonomo = False
 
         # FINALIZAÇÃO DO __INIT__
-
         for ug in self.usn.ugs:
             ug.temporizar_partida = False
 
         logger.info("Usina em modo manual. Para retornar a operação autônoma, acionar via painel ou página WEB")
+
 
     def run(self) -> "State":
         """
@@ -322,13 +319,12 @@ class Emergencia(State):
         super().__init__(usn, *args, **kwargs)
 
         # ATRIBUIÇÃO DE VARIÁVEIS PÚBLICAS
-
         self.usn.estado_moa = MOA_SM_EMERGENCIA
         self.tentativas = 0
 
         # FINALIZAÇÃO DO __INIT__
-
         logger.critical(f"ATENÇÃO! Usina entrado em estado de emergência. (Horário: {self.get_time()})")
+
 
     def run(self) -> "State":
         """

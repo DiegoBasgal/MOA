@@ -20,22 +20,24 @@ import logging
 import threading
 import traceback
 
-import regex as re
+import src.usina as usn
+import src.conectores.servidores as srv
+import src.maquinas_estado.moa as moa_sm
 
 from time import time, sleep
 from logging.config import fileConfig
 
 from src.dicionarios.reg import *
 from src.dicionarios.const import *
-from src.maquinas_estado.moa import *
 
-from src.conectores.servidores import Servidores
 
 if not os.path.exists(os.path.join(os.path.dirname(__file__), "logs")):
     os.mkdir(os.path.join(os.path.dirname(__file__), "logs"))
 
+
 fileConfig("/opt/operacao-autonoma/logger_cfg.ini")
 logger = logging.getLogger("logger")
+
 
 if __name__ == "__main__":
 
@@ -57,7 +59,7 @@ if __name__ == "__main__":
         logger.info(f"Tentativa:                                {n_tentativa}/3")
 
         if n_tentativa == 3:
-            prox_estado = FalhaCritica
+            prox_estado = moa_sm.FalhaCritica
 
         else:
             try:
@@ -80,21 +82,9 @@ if __name__ == "__main__":
 
             try:
                 logger.debug("")
-                logger.info("Iniciando conexões com Servidores...")
-
-                serv = Servidores()
-
-            except Exception:
-                logger.error(f"Erro ao iniciar classes de conexão com servidores. Tentando novamente em \"{TIMEOUT_MAIN}s\".")
-                logger.debug(f"Traceback: {traceback.format_exc()}")
-                sleep(TIMEOUT_MAIN)
-                continue
-
-            try:
-                logger.debug("")
                 logger.info("Iniciando instância e objetos da Usina...")
 
-                usn: Usina = Usina(cfg, serv)
+                usina: "usn.Usina" = usn.Usina(cfg)
 
             except Exception:
                 logger.error(f"Erro ao instanciar a classe Usina. Tentando novamente em \"{TIMEOUT_MAIN}s\".")
@@ -106,9 +96,9 @@ if __name__ == "__main__":
                 logger.debug("")
                 logger.info("Iniciando intâncias de máquina de estados e Threads...")
 
-                threading.Thread(target=lambda: usn.verificar_leituras_periodicas()).start()
+                threading.Thread(target=lambda: usina.verificar_leituras_periodicas()).start()
 
-                sm: StateMachine = StateMachine(initial_state=Pronto(usn=usn))
+                sm: "moa_sm.StateMachine" = moa_sm.StateMachine(initial_state=moa_sm.Pronto(usn=usina))
 
                 executar = True
 
@@ -132,9 +122,9 @@ if __name__ == "__main__":
             sm.exec()
 
             with open(os.path.join(os.path.dirname('/opt/operacao-autonoma/src/dicionarios/'), "cfg.json"), "w") as file:
-                json.dump(usn.cfg, file, indent=4)
+                json.dump(usina.cfg, file, indent=4)
 
-            if usn.estado_moa == (MOA_SM_CONTROLE_ESTADOS, MOA_SM_MODO_MANUAL):
+            if usina.estado_moa == (MOA_SM_CONTROLE_ESTADOS, MOA_SM_MODO_MANUAL):
                 t_restante = max(TEMPO_CICLO_TOTAL - (time() - t_i), 0) / ESCALA_DE_TEMPO
             else:
                 t_restante = 1
@@ -146,14 +136,14 @@ if __name__ == "__main__":
         except Exception:
             logger.debug("")
             logger.error(f"[!!!] \"ATENÇÃO!\" Houve um erro na execução do loop principal -> !! \"main.py\" !!")
-            logger.debug(f"Traceback: {traceback.format_exc()}")
-            serv.close_all()
+            logger.debug(traceback.format_exc())
+            srv.Servidores.close_all()
             logger.debug("MOA encerrado! Até a próxima...")
             break
 
         except KeyboardInterrupt:
             logger.debug("")
             logger.warning("[!!!] \"ATENÇÃO!\" Execução do loop principal da main do MOA interrompido por comando de teclado.")
-            serv.close_all()
+            srv.Servidores.close_all()
             logger.debug("MOA encerrado! Até a próxima...")
             break

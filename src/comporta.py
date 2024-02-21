@@ -7,12 +7,12 @@ import traceback
 import threading
 
 import src.tomada_agua as tda
+import src.conectores.servidores as srv
 
 from time import time
 
 from src.funcoes.leitura import *
 from src.dicionarios.const import *
-from src.conectores.servidores import Servidores
 
 from src.funcoes.escrita import EscritaModBusBit as EMB
 
@@ -21,20 +21,17 @@ logger = logging.getLogger("logger")
 
 
 class Comporta:
-    def __init__(self, id: "int"=None, serv:"Servidores"=None, tda:"tda.TomadaAgua"=None) -> "None":
+    def __init__(self, id: "int"=None) -> "None":
 
         # VERIFICAÇÃO DE ARGUMENTOS
-
         if not id or id < 1:
             raise ValueError(f"[CP{self.id}] A Comporta deve ser instanciada com um valor maior que \"0\".")
         else:
             self.__id = id
 
-        self.tda = tda
-        self.clp = serv.clp
+        self.clp = srv.Servidores.clp
 
         # ATRIBUIÇÃO DE VAIRÁVEIS PRIVADAS
-
         self.__aberta = LeituraModbusBit(
             self.clp["TDA"],
             REG_CLP["TDA"][f"CP{self.id}_ABERTA"],
@@ -83,8 +80,8 @@ class Comporta:
         )
 
         # ATRIBUIÇÃO DE VAIRÁVEIS PÚBLICAS
-
         self.borda_pressao: "bool" = False
+
 
     @property
     def id(self) -> "int":
@@ -156,6 +153,7 @@ class Comporta:
 
         self._comporta_adjacente = var
 
+
     def resetar_emergencia(self) -> "bool":
         """
         Função para acionar comandos de reset de TRIPS/Alarmes
@@ -169,6 +167,7 @@ class Comporta:
             logger.error(f"[CP{self.id}] Houve um erro ao realizar o Reset de Emergência da Comporta {self.id}.")
             logger.debug(traceback.format_exc())
             return False
+
 
     def abrir(self) -> "None":
         """
@@ -192,6 +191,7 @@ class Comporta:
             logger.error(f"[CP{self.id}] Houve um erro ao acionar o comando de Abertura da Comporta {self.id}.")
             logger.debug(traceback.format_exc())
 
+
     def fechar(self) -> "bool":
         """
         Função para acionar comando de fechamento da Comporta.
@@ -214,6 +214,7 @@ class Comporta:
         except Exception:
             logger.error(f"[CP{self.id}] Houve um erro acionar o comando de Fechamento da Comporta {self.id}.")
             logger.debug(traceback.format_exc())
+
 
     def operar_cracking(self) -> "None":
         """
@@ -239,6 +240,7 @@ class Comporta:
             logger.error(f"[CP{self.id}] Houve um erro ao realizar a Operação de Cracking da Comporta {self.id}.")
             logger.debug(traceback.format_exc())
 
+
     def aguardar_pressao_uh(self) -> "None":
         """
         Função de temporização de espera da equalização da pressão da Unidade Hidráulica para
@@ -260,6 +262,7 @@ class Comporta:
 
         logger.warning(f"[CP{self.id}]          Verificação MOA:           \"Equalização UH Ultrapassou o Tempo Limite!\"")
         self.borda_pressao = True
+
 
     def verificar_condicoes(self) -> "bool":
         """
@@ -291,9 +294,9 @@ class Comporta:
                     logger.debug(f"[CP{self.id}]          Ainda há \"Bloqueios\" Ativos") if self.bloqueio else None
                     logger.debug(f"[CP{self.id}]          Ainda há \"Permissivos\" Inválidos") if self.permissao else None
 
-                if self.tda.status_valvula_borboleta.valor or self.tda.status_limpa_grades.valor or self.comporta_adjacente.operando in (2, 4, 32):
-                    logger.debug(f"[CP{self.id}]          Limpa Grades Operando") if self.tda.status_limpa_grades.valor != 0 else None
-                    logger.debug(f"[CP{self.id}]          Válvula Borboleta Operando") if self.tda.status_valvula_borboleta.valor != 0 else None
+                if tda.TomadaAgua.status_valvula_borboleta.valor or tda.TomadaAgua.status_limpa_grades.valor or self.comporta_adjacente.operando in (2, 4, 32):
+                    logger.debug(f"[CP{self.id}]          Limpa Grades Operando") if tda.TomadaAgua.status_limpa_grades.valor != 0 else None
+                    logger.debug(f"[CP{self.id}]          Válvula Borboleta Operando") if tda.TomadaAgua.status_valvula_borboleta.valor != 0 else None
 
                     logger.debug(f"[CP{self.id}]          Comporta {self.comporta_adjacente.id} Repondo") if self.comporta_adjacente.operando == 2 else None
                     logger.debug(f"[CP{self.id}]          Comporta {self.comporta_adjacente.id} Abrindo") if self.comporta_adjacente.operando == 4 else None
@@ -303,7 +306,7 @@ class Comporta:
                 else:
                     return False
 
-            elif not self.tda.status_unidade_hidraulica.valor:
+            elif not tda.TomadaAgua.status_unidade_hidraulica.valor:
                 logger.debug(f"[CP{self.id}]          Unidade Hidráulica:        \"Indisponível\"")
                 return False
 

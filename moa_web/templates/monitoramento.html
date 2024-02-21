@@ -94,9 +94,6 @@
                 <table style="border-spacing: 20px 0px; justify-content: center; display: flex;">
                     <tr>
                         <td>
-                            <label style="margin-left: 3px; font-size: 18px;"><b>Bay: </b></label>
-                        </td>
-                        <td>
                             <label style="margin-left: 3px; font-size: 18px;"><b>Subestação: </b></label>
                         </td>
                         <td>
@@ -162,18 +159,6 @@
                         </td>
                     </tr>
                     <tr>
-                        <td>
-                            <a style="margin-left: 3px; margin-right: 3px;">Disjuntor 52L:</a>
-                            {% if bay_status_dj == 0 %}
-                            <label style="color: green; font-size: 17px;">Aberto</label>
-                            {% endif %}
-                            {% if bay_status_dj == 1 %}
-                            <label style="color: red; font-size: 17px;">Fechado</label>
-                            {% endif %}
-                            {% if bay_status_dj == 2 %}
-                            <label style="color: orange; font-size: 17px;">Inconsistente</label>
-                            {% endif %}
-                        </td>
                         <td>
                             <a style="margin-left: 3px; margin-right: 3px;">Disjuntor 52L:</a>
                             {% if se_status_dj == 0 %}
@@ -250,9 +235,6 @@
                     </tr>
                     <tr>
                         <td>
-                            <a style="margin-top: 1px; margin-left: 3px;">Tensão VAB: {{ bay_lt_a }} kV</a><br>
-                        </td>
-                        <td>
                             <a style="margin-top: 1px; margin-left: 3px;">Tensão VAB: {{ se_lt_a }} V</a><br>
                         </td>
                         <td>
@@ -268,9 +250,6 @@
                         </td>
                     </tr>
                     <tr>
-                        <td>
-                            <a style="margin-top: 1px; margin-left: 3px;">Tensão VBC: {{ bay_lt_b }} kV</a><br>
-                        </td>
                         <td>
                             <a style="margin-top: 1px; margin-left: 3px;">Tensão VBC: {{ se_lt_b }} V</a><br>
                         </td>
@@ -302,9 +281,6 @@
                         </td>
                     </tr>
                     <tr>
-                        <td>
-                            <a style="margin-top: 1px; margin-left: 3px;">Tensão VCA: {{ bay_lt_c }} kV</a>
-                        </td>
                         <td>
                             <a style="margin-top: 1px; margin-left: 3px;">Tensão VCA: {{ se_lt_c }} V</a>
                         </td>

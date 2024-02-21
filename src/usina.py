@@ -10,10 +10,12 @@ import traceback
 
 import src.dicionarios.dict as dct
 
-import src.bay as bay
 import src.subestacao as se
 import src.tomada_agua as tda
 import src.servico_auxiliar as sa
+import src.funcoes.agendamentos as agn
+import src.conectores.servidores as srv
+import src.conectores.banco_dados as bd
 
 from time import sleep, time
 from datetime import datetime
@@ -23,9 +25,6 @@ from src.dicionarios.const import *
 from src.funcoes.condicionadores import *
 
 from src.mensageiro.voip import Voip
-from src.conectores.servidores import Servidores
-from src.conectores.banco_dados import BancoDados
-from src.funcoes.agendamentos import Agendamentos
 from src.funcoes.escrita import EscritaModBusBit as EMB
 
 from src.funcoes.leitura import *
@@ -37,47 +36,37 @@ debug_log = logging.getLogger("debug")
 
 
 class Usina:
-    def __init__(self, cfg: "dict"=None, serv: "Servidores"=None) -> "None":
-
+    def __init__(self, cfg: "dict"=None) -> "None":
 
         # VERIFICAÇÃO DE ARGUMENTOS
-
         if None in (cfg):
             raise ValueError("[USN] Não foi possível carregar os arquivos de configuração (\"cfg.json\").")
         else:
             self.cfg = cfg
 
-        if not serv:
-            raise ValueError("[USN] Não foi possível carregar a classe de conxeão com Servidores.")
-        else:
-            self.clp = serv.clp
-            self.rele = serv.rele
-
         # INCIALIZAÇÃO DE OBJETOS DA USINA
+        self.clp = srv.Servidores.clp
+        self.rele = srv.Servidores.rele
 
-        self.bd = BancoDados("MOA")
+        self.bd = bd.BancoDados("MOA")
 
+        self.se = se.Subestacao
+        self.tda = tda.TomadaAgua
+        self.sa = sa.ServicoAuxiliar
 
-        self.bay = bay.Bay(serv, self.bd)
-        self.se = se.Subestacao(serv, self.bd)
-        self.sa = sa.ServicoAuxiliar(serv, self.bd)
-        self.tda = tda.TomadaAgua(self.cfg, serv, self.bd)
-
-        self.ug1 = UnidadeGeracao(1, self.cfg, self.bd, self.tda.cp, serv)
-        self.ug2 = UnidadeGeracao(2, self.cfg, self.bd, self.tda.cp, serv)
+        self.ug1 = UnidadeGeracao(1, self.cfg, self.bd, self.tda.cps)
+        self.ug2 = UnidadeGeracao(2, self.cfg, self.bd, self.tda.cps)
         self.ugs: "list[UnidadeGeracao]" = [self.ug1, self.ug2]
 
-        self.agn = Agendamentos(self.cfg, self.bd, self)
-
+        self.agn = agn.Agendamentos(self.cfg, self.bd, self)
 
         # ATRIBUIÇÃO DE VARIÁVEIS PRIVADAS
+        self.__pid_inicial: "int" = -1
 
         self.__split1: "bool" = False
         self.__split2: "bool" = False
-        self.__pid_inicial: "int" = -1
 
         # ATRIBUIÇÃO DE VARIÁVEIS PROTEGIDAS
-
         self._tentativas_normalizar: "int" = 0
 
         self._pot_alvo_anterior: "float" = -1
@@ -85,12 +74,9 @@ class Usina:
         self._modo_autonomo: "bool" = False
 
         # ATRIBUIÇÃO DE VARIÁVEIS PÚBLICAS
-
-        self.estado_moa: "int" = 5
-
         self.pot_disp: "int" = 0
+        self.estado_moa: "int" = 5
         self.ug_operando: "int" = 0
-
         self.modo_prioridade_ugs: "int" = 0
 
         self.controle_p: "float" = 0
@@ -104,18 +90,15 @@ class Usina:
 
         self.ultima_tentativa_norm: "datetime" = self.get_time()
 
-
         # FINALIZAÇÃO DO __INIT__
-
-        self.bay.carregar_leituras()
         self.se.carregar_leituras()
-        self.tda.carregar_leituras()
         self.sa.carregar_leituras()
+        self.tda.carregar_leituras()
 
-        serv.open_all()
+        srv.Servidores.open_all()
 
         self.ler_valores()
-        self.verificar_bay_se()
+        self.verificar_se()
         self.ajustar_inicializacao()
         self.escrever_valores()
 
@@ -124,7 +107,6 @@ class Usina:
 
 
     # PROPRIEDADES/GETTERS
-
     @property
     def modo_autonomo(self) -> "bool":
         # PROPRIEDADE -> Retorna o modo do MOA.
@@ -152,7 +134,6 @@ class Usina:
 
 
     # FUNÇÕES DE CONTROLE E NORMALIZAÇÃO DA OPERAÇÃO
-
     @staticmethod
     def get_time() -> "datetime":
         """
@@ -170,7 +151,6 @@ class Usina:
         logger.debug("")
         logger.info("[USN] Acionando Comandos de RESET de Emergência:")
         logger.debug("")
-        logger.debug("[USN] Bay resetado.") if self.bay.resetar_emergencia() else logger.info("[USN] Reset de emergência do Bay \"FALHOU\"!.")
         logger.debug("[USN] Subestação resetada.") if self.se.resetar_emergencia() else logger.info("[USN] Reset de emergência da subestação \"FALHOU\"!.")
         logger.debug("[USN] Tomada da Água resetada.") if self.tda.resetar_emergencia else logger.info("[USN] Reset de emergência da Tomada da Água \"FALHOU\"!.")
         logger.debug("[USN] Serviço Auxiliar resetado.") if self.sa.resetar_emergencia() else logger.info("[USN] Reset de emergência do serviço auxiliar \"FALHOU\"!.")
@@ -219,8 +199,6 @@ class Usina:
             self.normalizar_forcado = self.clp_emergencia = self.bd_emergencia = False
             self.resetar_emergencia()
             sleep(1)
-            self.bay.fechar_dj_linha()
-            sleep(1)
             self.se.fechar_dj_linha()
             self.bd.update_remove_emergencia()
             return True
@@ -231,7 +209,7 @@ class Usina:
             return False
 
 
-    def verificar_bay_se(self) -> "int":
+    def verificar_se(self) -> "int":
         """
         Função para verificação do Bay e Subestação.
 
@@ -242,15 +220,14 @@ class Usina:
         haja um erro com o fechamento dos disjuntores, aciona a normalização da usina
         senão, sinaliza que está tudo correto para a máquina de estados do MOA.
         """
-    
-        if not self.bay.verificar_tensao_trifasica():
+
+        if not self.se.verificar_tensao_trifasica():
             logger.debug("")
-            logger.debug(f"[BAY] Tensão BAY:                   VAB -> \"{self.bay.tensao_vab.valor:2.1f} V\" | VBC -> \"{self.bay.tensao_vbc.valor:2.1f} V\" | VCA -> \"{self.bay.tensao_vca.valor:2.1f} V\"")
             logger.debug(f"[SE]  Tensão Subestação:            VAB -> \"{self.se.tensao_vab.valor:2.1f} V\" | VBC -> \"{self.se.tensao_vbc.valor:2.1f} V\" | VCA -> \"{self.se.tensao_vca.valor:2.1f} V\"")
             logger.debug("")
             return DJS_FALTA_TENSAO
 
-        elif not self.bay.fechar_dj_linha() or not self.se.fechar_dj_linha():
+        elif not self.se.fechar_dj_linha():
             self.normalizar_forcado = True
             return DJS_FALHA
 
@@ -283,12 +260,11 @@ class Usina:
 
         flag = CONDIC_IGNORAR
 
-        lst_bay = self.bay.verificar_condicionadores()
         lst_se = self.se.verificar_condicionadores()
-        lst_tda = self.tda.verificar_condicionadores()
         lst_sa = self.sa.verificar_condicionadores()
+        lst_tda = self.tda.verificar_condicionadores()
 
-        condics = [condic for condics in [lst_sa, lst_se, lst_bay, lst_tda] for condic in condics]
+        condics = [condic for condics in [lst_sa, lst_se, lst_tda] for condic in condics]
 
         for condic in condics:
             if condic.gravidade == CONDIC_INDISPONIBILIZAR:
@@ -301,7 +277,6 @@ class Usina:
 
 
     # FUNÇÕES PARA CÁLCULOS E AJUSTES DE OERAÇÃO
-
     def ajustar_ie_padrao(self) -> "int":
         """
         Função para ajustar o valor do IE.
@@ -456,7 +431,7 @@ class Usina:
                 ug.setpoint = 0
             return 0
 
-        pot_medidor = self.bay.potencia_mp.valor
+        pot_medidor = self.se.medidor_usina.valor
 
         logger.debug(f"[USN] Potência no medidor:                {pot_medidor:0.3f}")
 
@@ -573,14 +548,13 @@ class Usina:
 
 
     # FUNÇÕES DE CONTROLE DE DADOS
-
     def ler_valores(self) -> "None":
         """
         Função para leitura e atualização de parâmetros de operação através de
         Banco de Dados da Interface WEB.
         """
 
-        # Servidores.ping_clients()
+        srv.Servidores.ping_clients()
         self.tda.atualizar_montante()
 
         parametros = self.bd.get_parametros_usina()
@@ -657,7 +631,7 @@ class Usina:
         Função para escrita de valores de operação nos Bancos do módulo do Django
         e Debug.
         """
-        
+
         try:
             self.bd.update_valores_usina([
                 self.get_time().strftime("%Y-%m-%d %H:%M:%S"),
@@ -666,11 +640,11 @@ class Usina:
                 self.ug1.leitura_potencia,
                 self.ug1.setpoint,
                 self.ug1.codigo_state,
-                self.tda.cp["CP1"].etapa,
+                self.tda.cps["CP1"].etapa,
                 self.ug2.leitura_potencia,
                 self.ug2.setpoint,
                 self.ug2.codigo_state,
-                self.tda.cp["CP2"].etapa
+                self.tda.cps["CP2"].etapa
             ])
 
         except Exception:
@@ -678,8 +652,6 @@ class Usina:
             logger.debug(traceback.format_exc())
 
         try:
-            sleep(3/1000) #espera 3 milisegundo para gravar no banco, dessa forma ele evita problemas de chave primária duplicada
-
             self.bd.update_debug([
                 time(),
                 1 if self.modo_autonomo else 0,

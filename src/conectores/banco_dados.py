@@ -7,11 +7,11 @@ import mariadb.connections
 
 from datetime import datetime
 
+
 class BancoDados:
     def __init__(self, pool_name: "str"):
 
         # ATRIBUIÇÃO DE VARIÁVEIS PÚBLICAS
-
         self.cnx = mariadb.ConnectionPool(
             host="localhost",
             user="moa",
@@ -39,6 +39,7 @@ class BancoDados:
         estado = self.cursor.fetchone()
         return estado
 
+
     def get_ultimo_estado_lg(self) -> "int":
         """
         Função para extrair o último estado do Limpa Grades do Banco.
@@ -51,6 +52,7 @@ class BancoDados:
         )
         estado = self.cursor.fetchone()
         return estado
+
 
     def get_horario_operar_lg(self) -> "datetime":
         """
@@ -67,6 +69,7 @@ class BancoDados:
         estado = self.cursor.fetchone()
         return estado
 
+
     def get_disparo_perda_lg(self) -> "float":
         """
         Função para extrair o último estado do Limpa Grades do Banco.
@@ -80,6 +83,7 @@ class BancoDados:
         )
         valores = self.cursor.fetchone()
         return valores
+
 
     def get_parametros_usina(self) -> "list":
         """
@@ -99,6 +103,7 @@ class BancoDados:
         self.conn.commit()
         return parametros
 
+
     def get_agendamentos_pendentes(self) -> "list":
         """
         Função para extrair a lista de agendamentos pendentes criados na Interface WEB.
@@ -113,6 +118,7 @@ class BancoDados:
 
         self.conn.commit()
         return result
+
 
     def get_contato_emergencia(self) -> "list":
         """
@@ -129,6 +135,7 @@ class BancoDados:
 
         self.conn.commit()
         return parametros
+
 
     def get_executabilidade(self, id_comando: "int") -> "dict":
         """
@@ -149,6 +156,7 @@ class BancoDados:
             "executavel_em_manual": parametros_raw[1],
             }
 
+
     def update_modo_moa(self, modo: "bool") -> "None":
         """
         Função para atualizar o modo do MOA no Banco.
@@ -168,6 +176,7 @@ class BancoDados:
             )
         self.conn.commit()
 
+
     def update_remove_emergencia(self) -> "None":
         """
         Função para atualizar o valor de emergência (desativada) do Banco.
@@ -179,6 +188,7 @@ class BancoDados:
             "WHERE id = 1;",
         )
         self.conn.commit()
+
 
     def update_valores_usina(self, valores: "list") -> "None":
         """
@@ -203,6 +213,7 @@ class BancoDados:
         )
         self.conn.commit()
 
+
     def update_debug(self, valores: "list") -> "None":
         """
         Função para atualizar os valores de operação DEBUG do MOA no Banco.
@@ -223,6 +234,7 @@ class BancoDados:
         )
         self.conn.commit()
 
+
     def update_controle_estados(self, valores: "list") -> "None":
         """
         Função para atualizar o último estado das Unidades de Geração no Banco.
@@ -235,6 +247,7 @@ class BancoDados:
         )
         self.conn.commit()
 
+
     def update_estado_lg(self, valor: "int") -> "None":
         """
         Função para atualizar o último estado do Limpa Grades no Banco.
@@ -246,6 +259,7 @@ class BancoDados:
             "WHERE id = 1;",
         )
         self.conn.commit()
+
 
     def update_horario_operar_lg(self, valor: "list") -> "None":
         """
@@ -260,6 +274,7 @@ class BancoDados:
         )
         self.conn.commit()
 
+
     def update_alarmes(self, valores: "list") -> "None":
         """
         Função para atualizar a lista de acionamentos/alarmes para visualização
@@ -272,6 +287,7 @@ class BancoDados:
             tuple(valores)
         )
         self.conn.commit()
+
 
     def update_agendamento(self, id_agendamento: "int", executado: "int", obs: "str"="") -> "None":
         """
