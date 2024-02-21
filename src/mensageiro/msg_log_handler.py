@@ -3,11 +3,9 @@ __author__ = "Lucas Lavratti"
 __credits__ = ["Diego Basgal", ...]
 __description__ = "Este módulo corresponde a implementação da tratativa de loggers para uso nos módulos de Mensageiro."
 
-import logging
-
 from logging import Handler
 
-from src.mensageiro.whatsapp import WhatsApp
+from mensageiro.whatsapp import WhatsApp
 
 class MensageiroHandler(Handler):
 
