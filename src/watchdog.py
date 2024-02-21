@@ -8,6 +8,8 @@ import traceback
 import logging
 import logging.handlers as handlers
 
+from datetime import datetime
+
 from mariadb.connectionpool import *
 from mensageiro.msg_log_handler import MensageiroHandler
 
@@ -41,7 +43,7 @@ timestamp = 0
 moa_halted = False
 
 config = {
-    "timeout_moa": 30,
+    "timeout_moa": 60,
     "nome_usina": "São Sebastião"
 }
 
@@ -62,22 +64,26 @@ while True:
             cursor.execute('SELECT ts FROM moa_debug ORDER BY ts DESC LIMIT 1;')
             timestamp = cursor.fetchone()[0]
             conn.commit()
-            
+
             if timestamp in (None, 0):
                 raise ValueError("Não foi possível extrair o timestamp do Banco de Dabos.")
             
             if (time.time() - timestamp) > config["timeout_moa"]:
                 if not moa_halted:
                     moa_halted = True
-                    logger.warning(f"Comunicação com MOA em {config['nome_usina']}, falhou às: \"{timestamp}\"!")
+                    logger.warning(f"Comunicação com MOA em {config['nome_usina']}, falhou às: \"{datetime.now().strftime('%d-%m-%Y %H:%M:%S')}\"!")
                     logger.info(f"Tentando novamente à cada: {config['timeout_moa']}s.")
+                    conn.close()
+
                 time.sleep(config["timeout_moa"])
 
             else:
                 logger.debug("MOA Rodando...")
+                conn.close()
+
                 if moa_halted:
                     moa_halted = False
-                    logger.info(f"Comunicação com MOA re-estabelecida em: \"{timestamp}\".")
+                    logger.info(f"Comunicação com MOA re-estabelecida em: \"{datetime.now().strftime('%d-%m-%Y %H:%M:%S')}\".")
 
         else:
             raise ConnectionError("Erro ao conectar com o banco de dados MariaDB.")
