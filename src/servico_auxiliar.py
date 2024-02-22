@@ -31,7 +31,7 @@ class ServicoAuxiliar:
 
     status_dj_tsa = lei.LeituraModbusBit(
         clp["SA"],
-        REG_SASE["SA"]["SA_ED_PSA_DIJS_TSA_FECHADO"],
+        REG_SASE["DJ_TSA_FECHADO"],
         descricao="[SA]  Status Disjuntor SA"
     )
 
@@ -43,7 +43,7 @@ class ServicoAuxiliar:
     def resetar_emergencia(cls) -> "None":
         try:
             logger.info(f"[SA]  Enviando comando:                   \"RESET EMERGÊNCIA\"")
-            esc.EscritaModBusBit.escrever_bit(cls.clp["SA"], REG_SASE["CMD_REARME_FALHAS"], valor=1)
+            # esc.EscritaModBusBit.escrever_bit(cls.clp["SA"], REG_SASE["CMD_REARME_FALHAS"], valor=1)
 
         except Exception:
             logger.error(f"[SA]  Houve um erro ao realizar o Reset de Emergência.")

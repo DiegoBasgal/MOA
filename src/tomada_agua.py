@@ -32,8 +32,8 @@ class TomadaAgua:
 
     nv_montante = lei.LeituraModbusFloat(
         clp["TDA"],
-        REG_TDA["GERAL_EA_NIVEL_MONTANTE_GRADE"],
-        descricao="[USN] Nível Montante"
+        REG_TDA["NV_JUSANTE_GRADE"],
+        descricao="[TDA] Nível Montante"
     )
 
     erro_nv: "float" = 0

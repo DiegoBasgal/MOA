@@ -19,7 +19,7 @@ def monitoramento_view(request, *args, **kwargs):
 
     context = {
         "usina": usina,
-        "em_acionada": f"{usina.emergencia_acionada}",
+        "emergencia": f"{usina.emergencia_acionada}",
         "timestamp": usina.timestamp.strftime("%d/%m/%Y, %H:%M:%S"),
         "setpot_ug1": f"{usina.ug1_setpot:1.3f}",
         "ug1_state": usina.ug1_ultimo_estado,
@@ -27,11 +27,18 @@ def monitoramento_view(request, *args, **kwargs):
         "ug2_state": usina.ug2_ultimo_estado,
         "nv_alvo": f"{usina.nv_alvo:3.2f}",
         "aguardo": "Sim" if usina.aguardando_reservatorio > 0 else "Não",
-        "nv_montante": f"{usina.nv_montante:3.2f}",
     }
 
     clp_sa = ModbusClient(
         host="192.168.10.109",
+        port=502,
+        unit_id=1,
+        timeout=0.5,
+        auto_close=True,
+        auto_open=True
+    )
+    clp_tda = ModbusClient(
+        host="192.168.10.105",
         port=502,
         unit_id=1,
         timeout=0.5,
@@ -48,6 +55,14 @@ def monitoramento_view(request, *args, **kwargs):
     )
     clp_ug2 = ModbusClient(
         host="192.168.10.120",
+        port=502,
+        unit_id=1,
+        timeout=0.5,
+        auto_close=True,
+        auto_open=True
+    )
+    rele_se = ModbusClient(
+        host="192.168.10.32",
         port=502,
         unit_id=1,
         timeout=0.5,
@@ -71,11 +86,43 @@ def monitoramento_view(request, *args, **kwargs):
         auto_open=True
     )
 
-    if 820.9 <= usina.nv_montante < 821:
+
+    try:
+        l_djl_raw = clp_sa.read_holding_registers(12309)
+
+    except Exception:
+        pass
+
+    try:
+        l_t_vab_raw = (rele_se.read_holding_registers(151)[0] / 1000) * 34500
+        l_t_vbc_raw = (rele_se.read_holding_registers(152)[0] / 1000) * 34500
+        l_t_vca_raw = (rele_se.read_holding_registers(153)[0] / 1000) * 34500
+
+    except Exception:
+        pass
+
+    try:
+        l_montante_raw = clp_tda.read_holding_registers(12350, 2)
+
+    except Exception:
+        pass
+
+        l_ug1_pot_raw = rele_ug1.read_holding_registers(353)[0]
+        l_ug2_pot_raw = rele_ug2.read_holding_registers(353)[0]
+        l_ug1_etapa_raw = clp_ug1.read_holding_registers(12390)[0]
+        l_ug2_etapa_raw = clp_ug2.read_holding_registers(12390)[0]
+
+
+    dec_nv = BPD.fromRegisters(l_montante_raw, byteorder=Endian.Big, wordorder=Endian.Little)
+
+    nv_montante = dec_nv.decode_32bit_float()
+    context["nv_montante"] = f"{nv_montante:.3f}"
+
+    if 820.9 <= nv_montante < 821:
         context["tag"] = 0
-    elif 820.75 <= usina.nv_montante < 820.9:
+    elif 820.75 <= nv_montante < 820.9:
         context["tag"] = 1
-    elif usina.nv_montante < 820.75 or usina.nv_montante > 821:
+    elif nv_montante < 820.75 or nv_montante > 821:
         context["tag"] = 2
 
     for key in context:
@@ -83,10 +130,8 @@ def monitoramento_view(request, *args, **kwargs):
             context[key] = "-"
 
     try:
-        raw_djl = clp_sa.read_holding_registers(12309)
-
-        dec1 = BPD.fromRegisters(raw_djl, byteorder=Endian.Big, wordorder=Endian.Little)
-        dec2 = BPD.fromRegisters(raw_djl, byteorder=Endian.Big, wordorder=Endian.Little)
+        dec1 = BPD.fromRegisters(l_djl_raw, byteorder=Endian.Big, wordorder=Endian.Little)
+        dec2 = BPD.fromRegisters(l_djl_raw, byteorder=Endian.Big, wordorder=Endian.Little)
 
         dj_lbit = [int(b) for bits in [reversed(dec1.decode_bits(1)), reversed(dec2.decode_bits(2))] for b in bits]
         dj_lbit_r = [int(b) for b in reversed(dj_lbit)]
@@ -94,62 +139,68 @@ def monitoramento_view(request, *args, **kwargs):
         leitura_djl = dj_lbit_r[15]
 
         if leitura_djl == 1:
-            context["status_dj_linha"] = True
+            context["status_dj_linha"] = 1
         elif leitura_djl == 0:
-            context["status_dj_linha"] = False
+            context["status_dj_linha"] = 0
         else:
-            context["status_dj_linha"] = None
+            context["status_dj_linha"] = 2
 
     except Exception:
-        context["status_dj_linha"] = None
+        context["status_dj_linha"] = 99
         pass
 
     try:
-        setpot_usina = clp_sa.read_holding_registers(353)[0]
-        context["setpot_usina"] = setpot_usina
+        context["se_ll_t_vab_raw"] = f"{l_t_vab_raw:0.1f}"
+        context["se_ll_t_vbc_raw"] = f"{l_t_vbc_raw:0.1f}"
+        context["se_ll_t_vca_raw"] = f"{l_t_vca_raw:0.1f}"
 
     except Exception:
-        context["setpot_usina"] = 0
+        context["setpot_usina"] = 99
+        context["se_ll_t_vab_raw"] = 99
+        context["se_ll_t_vbc_raw"] = 99
+        context["se_ll_t_vca_raw"] = 99
         pass
 
     try:
-        ug1_etapa = clp_ug1.read_holding_registers(12390)[0]
-        context["ug1_etapa"] = ug1_etapa
+        if l_ug1_etapa_raw in (0, 7):
+            context["l_ug1_etapa_raw"] = l_ug1_etapa_raw
+        elif l_ug1_etapa_raw == None:
+            context["l_ug1_etapa_raw"] = 99
+        else:
+            context["l_ug1_etapa_raw"] = 50
 
     except Exception:
-        context["ug1_etapa"] = 0
+        context["l_ug1_etapa_raw"] = 99
         pass
 
     try:
-        ug2_etapa = clp_ug2.read_holding_registers(12390)[0]
-        context["ug2_etapa"] = ug2_etapa
+        if l_ug2_etapa_raw in (0, 7):
+            context["l_ug2_etapa_raw"] = l_ug2_etapa_raw
+        elif l_ug2_etapa_raw == None:
+            context["l_ug2_etapa_raw"] = 99
+        else:
+            context["l_ug2_etapa_raw"] = 50
 
     except Exception:
-        context["ug2_etapa"] = 0
+        context["l_ug2_etapa_raw"] = 99
         pass
 
     try:
-        ug1_pot = rele_ug1.read_holding_registers(353)[0]
-        context["pot_ug1"] = ug1_pot
+        context["pot_ug1"] = l_ug1_pot_raw
 
     except Exception:
-        context["pot_ug1"] = 0
+        context["pot_ug1"] = 99
         pass
 
     try:
-        ug2_pot = rele_ug2.read_holding_registers(353)[0]
-        context["pot_ug2"] = ug2_pot
+        context["pot_ug2"] = l_ug2_pot_raw
 
     except Exception:
-        context["pot_ug2"] = 0
+        context["pot_ug2"] = 99
         pass
 
 
-    tempo_desde_moa_comunicando = (
-        datetime.datetime.now(usina.timestamp.tzinfo)
-        - usina.timestamp
-        - datetime.timedelta(hours=3)
-    )
+    tempo_desde_moa_comunicando = (datetime.datetime.now(usina.timestamp.tzinfo) - usina.timestamp - datetime.timedelta(hours=3))
 
     hours = int(tempo_desde_moa_comunicando.seconds // 3600)
     remainder = int(tempo_desde_moa_comunicando.seconds - hours * 3600)

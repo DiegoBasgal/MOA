@@ -85,8 +85,8 @@ class Subestacao:
 
             else:
                 logger.info(f"[SE]  Enviando comando:                   \"FECHAR DISJUNTOR LINHA\"")
-                res = esc.EscritaModBusBit.escrever_bit(cls.clp["SA"], REG_SASE["CMD_DJ_LINHA_FECHA"], valor=1)
-                return res
+                # res = esc.EscritaModBusBit.escrever_bit(cls.clp["SA"], REG_SASE["CMD_DJ_LINHA_FECHA"], valor=1)
+                return True # res
 
         except Exception:
             logger.error("[SE]  Houver um erro ao fechar o Disjuntor de Linha.")
