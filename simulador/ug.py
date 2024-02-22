@@ -308,7 +308,7 @@ class Unidade:
                     else:
                         self.potencia -= 26 * self.segundos_por_passo
 
-                    self.potencia = np.random.normal(self.potencia, 2 * self.escala_ruido)
+                    self.potencia = np.random.normal(self.potencia, 1 * self.escala_ruido)
 
                 if self.dict['SE']['dj_aberto'] or self.dict['SE']['dj_trip']:
                     self.dict[f'UG{self.id}']['potencia'] = self.potencia = 0
@@ -331,7 +331,7 @@ class Unidade:
         DB.set_words(MB[f'UG{self.id}']['POT_ATIVA_MEDIA'], [round(self.potencia)])
         DB.set_words(MB[f'UG{self.id}']['OPER_ETAPA_ATUAL'], [int(self.dict[f'UG{self.id}']['etapa_atual'])])
         DB.set_words(MB[f'UG{self.id}']['OPER_ETAPA_ALVO'], [int(self.dict[f'UG{self.id}']['etapa_alvo'])])
-        DB.set_words(MB[f'UG{self.id}']['REG_V_DISTRIBUIDOR'], [round(self.dict[f'UG{self.id}']['posicao_distribuidor']) * 1000])
+        DB.set_words(MB[f'UG{self.id}']['REG_V_DISTRIBUIDOR'], [round(self.dict[f'UG{self.id}']['posicao_distribuidor'] * 1000)])
         DB.set_words(MB[f'UG{self.id}']['ENTRADA_TURBINA_PRESSAO'], [round(self.dict[f'UG{self.id}'][f'pressao_turbina'] * 10)])
         DB.set_words(MB[f'UG{self.id}']['GERADOR_FASE_R_TMP'], [round(self.dict[f'UG{self.id}']['temp_fase_r'])])
         DB.set_words(MB[f'UG{self.id}']['GERADOR_FASE_S_TMP'], [round(self.dict[f'UG{self.id}']['temp_fase_s'])])
