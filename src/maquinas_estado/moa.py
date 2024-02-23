@@ -301,8 +301,8 @@ class ModoManual(State):
             logger.debug("")
             ug.setpoint = ug.leitura_potencia
 
-        self.usn.controle_ie = (self.usn.ug1.leitura_potencia + self.usn.ug2.leitura_potencia) / self.usn.cfg["pot_maxima_alvo"]
-        self.usn.controle_i = max(min(self.usn.controle_ie - (self.usn.controle_i * self.usn.cfg["ki"]) - self.usn.cfg["kp"] * self.usn.tda.erro_nivel - self.usn.cfg["kd"] * (self.usn.tda.erro_nivel - self.usn.tda.erro_nivel_anterior), 0.8), 0)
+        self.usn.controle_ie = (self.usn.ug1.leitura_potencia + self.usn.ug2.leitura_potencia) / self.usn.cfg["pot_maxima_usina"]
+        self.usn.controle_i = max(min(self.usn.controle_ie - (self.usn.controle_i * self.usn.cfg["ki"]) - self.usn.cfg["kp"] * self.usn.tda.erro_nivel - self.usn.cfg["kd"] * (self.usn.tda.erro_nivel - self.usn.tda.erro_nivel_anterior), 0.9), 0)
 
         self.usn.escrever_valores()
 

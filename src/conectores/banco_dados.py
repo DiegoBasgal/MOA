@@ -203,6 +203,15 @@ class BancoDados:
         )
         self.conn.commit()
 
+    def update_nv_alvo(self, valores: "list") -> "None":
+        self.cursor.execute(
+            "UPDATE parametros_parametrosusina "
+            "SET nv_alvo = %s "
+            "WHERE id = 1;",
+            tuple(valores)
+        )
+        self.conn.commit()
+
     def update_debug(self, valores: "list") -> "None":
         """
         Função para atualizar os valores de operação DEBUG do MOA no Banco.

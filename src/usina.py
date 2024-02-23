@@ -242,7 +242,7 @@ class Usina:
         haja um erro com o fechamento dos disjuntores, aciona a normalização da usina
         senão, sinaliza que está tudo correto para a máquina de estados do MOA.
         """
-    
+
         if not self.bay.verificar_tensao_trifasica():
             logger.debug("")
             logger.debug(f"[BAY] Tensão BAY:                   VAB -> \"{self.bay.tensao_vab.valor:2.1f} V\" | VBC -> \"{self.bay.tensao_vbc.valor:2.1f} V\" | VCA -> \"{self.bay.tensao_vca.valor:2.1f} V\"")
@@ -309,7 +309,7 @@ class Usina:
         Função para ajustar o valor do IE.
         """
 
-        return sum(ug.leitura_potencia for ug in self.ugs) / self.cfg["pot_maxima_alvo"]
+        return (self.ug1.leitura_potencia + self.ug2.leitura_potencia) / self.cfg["pot_maxima_usina"]
 
 
     def ajustar_inicializacao(self) -> "None":
@@ -357,7 +357,7 @@ class Usina:
                 logger.debug("")
                 return NV_EMERGENCIA
             else:
-                self.controle_i = 0.5
+                self.controle_i = 0.9
                 self.controle_ie = 0.5
                 self.ajustar_potencia(self.cfg["pot_maxima_usina"])
 
@@ -413,10 +413,10 @@ class Usina:
         self.controle_p = self.cfg["kp"] * self.tda.erro_nivel
 
         if self.__pid_inicial == -1:
-            self.controle_i = max(min(self.controle_ie - self.controle_p, 0.9), 0)
+            self.controle_i = max(min(self.controle_ie - self.controle_p, 0.9), -0.9)
             self.__pid_inicial = 0
         else:
-            self.controle_i = max(min((self.cfg["ki"] * self.tda.erro_nivel) + self.controle_i, 0.9), 0)
+            self.controle_i = max(min((self.cfg["ki"] * self.tda.erro_nivel) + self.controle_i, 0.9), -0.9)
             self.controle_d = self.cfg["kd"] * (self.tda.erro_nivel - self.tda.erro_nivel_anterior)
 
         saida_pid = (self.controle_p + self.controle_i + min(max(-0.3, self.controle_d), 0.3))
@@ -511,6 +511,8 @@ class Usina:
         self.__split1 = False if sp < (self.cfg["pot_minima"] / self.cfg["pot_maxima_usina"]) else self.__split1
 
         logger.debug(f"[USN] SP Geral:                           {sp * 100:3.2f} %")
+        
+        for ug in self.ugs: ug.manter_unidades = False
 
         if len(ugs) == 2:
             if self.__split2:
@@ -527,8 +529,9 @@ class Usina:
                 logger.debug("[USN] Split:                              2 -> \"1B\"")
                 logger.debug("")
 
-                sp = sp * 2 / 1
-                ugs[0].setpoint = sp * ugs[0].setpoint_maximo
+                ugs[0].manter_unidades = True if self.tda.nivel_montante.valor > self.cfg["nv_minimo"] else False
+                ugs[0].setpoint = (sp * 2/1) * ugs[0].setpoint_maximo
+
                 ugs[1].setpoint = 0
 
                 logger.debug(f"[UG{ugs[0].id}] SP    <-                            {int(ugs[0].setpoint)}")
@@ -548,8 +551,8 @@ class Usina:
                 logger.debug("[USN] Split:                              1")
                 logger.debug("")
 
-                sp = sp * 2 / 1
-                ugs[0].setpoint = sp * ugs[0].setpoint_maximo
+                ugs[0].manter_unidades = True if self.tda.nivel_montante.valor > self.cfg["nv_minimo"] else False
+                ugs[0].setpoint = (sp * 2/1) * ugs[0].setpoint_maximo
 
                 logger.debug(f"[UG{ugs[0].id}] SP    <-                            {int(ugs[0].setpoint)}")
 
@@ -561,6 +564,30 @@ class Usina:
                 logger.debug(f"[UG{ugs[0].id}] SP    <-                            {int(ugs[0].setpoint)}")
 
 
+    def ajustar_mppt(potencia, setpoint, abertura_dist) -> "float":
+
+        setpoint_saida = setpoint[0]
+
+        delta = 10
+
+        if potencia[0] < potencia[1]:
+            if abertura_dist[0] < abertura_dist[1]:
+                setpoint_saida += delta
+            else:
+                setpoint_saida -= delta
+
+        elif potencia[0] == potencia[1]:
+                setpoint_saida -= delta
+
+        else:
+            if abertura_dist[0] < abertura_dist[1]:
+                setpoint_saida -= delta
+            else:
+                setpoint_saida += delta
+
+        return setpoint_saida
+
+
     def verificar_ugs_disponiveis(self) -> "list[UnidadeGeracao]":
         """
         Função para verificar leituras/condições específicas e determinar a Prioridade das Unidades.
@@ -569,7 +596,7 @@ class Usina:
         ls = [ug for ug in self.ugs if ug.disponivel and not ug.etapa == UG_PARANDO]
 
         if self.modo_prioridade_ugs in (UG_PRIORIDADE_1, UG_PRIORIDADE_2):
-            return sorted(ls, key=lambda y: (y.prioridade, -1 * y.etapa_atual, -1 * y.leitura_potencia, -1 * y.setpoint))
+            return sorted(ls, key=lambda y: (-1 * y.prioridade, -1 * y.etapa_atual, -1 * y.leitura_potencia, -1 * y.setpoint))
 
         else:
             return sorted(ls, key=lambda y: (-1 * y.etapa_atual, y.leitura_horimetro, -1 * y.leitura_potencia, -1 * y.setpoint))
@@ -660,7 +687,7 @@ class Usina:
         Função para escrita de valores de operação nos Bancos do módulo do Django
         e Debug.
         """
-        
+
         try:
             self.bd.update_valores_usina([
                 self.get_time().strftime("%Y-%m-%d %H:%M:%S"),

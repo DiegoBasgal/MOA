@@ -865,6 +865,7 @@ REG_CLP = {
         "RV_RELE_ALM_ATUADO":                           [26, 1],
 
         "RV_SETPOT_POT_ATIVA_PU":                       30,
+        "RV_FEEDBACK_DISTRIBUIDOR_PU":                  37,
 
         "RT_RELE_TRP_NAO_ATUADO":                       [31, 0],
 
@@ -1196,6 +1197,7 @@ REG_CLP = {
         "RV_RELE_ALM_ATUADO":                           [26, 1],
 
         "RV_SETPOT_POT_ATIVA_PU":                       30,
+        "RV_FEEDBACK_DISTRIBUIDOR_PU":                  37,
 
         "RT_RELE_TRP_NAO_ATUADO":                       [31, 0],
 

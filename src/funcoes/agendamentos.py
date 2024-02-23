@@ -201,6 +201,7 @@ class Agendamentos:
         if agendamento[3] == AGN_ALTERAR_NV_ALVO:
             try:
                 novo = float(agendamento[5].replace(",", "."))
+                self.db.update_nv_alvo([novo])
                 self.cfg["nv_alvo"] = novo
 
             except Exception:
@@ -221,7 +222,7 @@ class Agendamentos:
                 self.cfg["pot_maxima_alvo"] = novo
 
                 for ug in self.usn.ugs:
-                    self.cfg[f"pot_maxima_ug{ug.id}"] = novo / 3
+                    self.cfg[f"pot_maxima_ug{ug.id}"] = novo / 2
 
             except Exception:
                 logger.error(f"[AGN] Valor inválido no agendamento: {agendamento[0]} ({agendamento[3]} é inválido)")

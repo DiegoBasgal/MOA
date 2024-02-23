@@ -63,6 +63,14 @@ class UnidadeGeracao:
             REG_CLP[f"UG{self.id}"]["HORIMETRO"],
             descricao=f"[UG{self.id}] Leitura Horímetro"
         )
+        self.__leitura_posicao_distribuidor = LeituraModbus(
+            self.rv[f"UG{self.id}"],
+            REG_CLP[f"UG{self.id}"]["RV_FEEDBACK_DISTRIBUIDOR_PU"],
+            descricao=f"[UG{self.id}][RV] Leitura Posição Distribuidor"
+        )
+
+        self.__amostras_sp_mppt: "int" = 2
+        self.__amostras_pot_mppt: "int" = 4
 
         self.__init_registro_estados: "int" = 0
         self.__tempo_entre_tentativas: "int" = 0
@@ -88,6 +96,10 @@ class UnidadeGeracao:
         self.atenuacao: "int" = 0
         self.tempo_normalizar: "int" = 0
 
+        self.sp_anterior: "float" = 0
+        self.pot_anterior: "float" = 0
+        self.pos_distri_anterior: "float" = 0
+
         self.borda_parar: "bool" = False
         self.manter_unidades: "bool" = False
         self.operar_comporta: "bool" = False
@@ -98,6 +110,8 @@ class UnidadeGeracao:
 
         self.borda_cp_fechar: "bool" = False
 
+        self.potencias_anteriores: "list[int]" = []
+        self.setpoints_anteriores: "list[int]" = []
         self.condicionadores_ativos: "list[c.CondicionadorBase]" = []
 
         self.aux_tempo_sincronizada: "datetime" = 0
@@ -119,7 +133,7 @@ class UnidadeGeracao:
         return self.__id
 
     @property
-    def leitura_potencia(self) -> "int":
+    def leitura_potencia(self) -> "float":
         # PROPRIEDADE -> Retorna a leitura de Potência da Unidade.
 
         return int(self.__leitura_potencia.valor)
@@ -129,6 +143,12 @@ class UnidadeGeracao:
         # PROPRIEDADE -> Retorna a leitura de horas de geração da Unidade.
 
         return self.__leitura_horimetro.valor
+
+    @property
+    def leitura_posicao_distribuidor(self) -> "int":
+        # PROPRIEDADE -> Retorna a leitura de posição do distribuidor do RV
+
+        return self.__leitura_posicao_distribuidor.valor
 
     @property
     def manual(self) -> "bool":
@@ -271,7 +291,7 @@ class UnidadeGeracao:
     def tentativas_normalizacao(self, var: "int") -> "None":
         # SETTER -> Atribui o novo valor de tentativas de normalização da Unidade.
 
-        self._tentativas_de_normalizacao = var
+        self._tentativas_normalizacao = var
 
     @property
     def condicionadores(self) -> "list[c.CondicionadorBase]":
@@ -495,6 +515,44 @@ class UnidadeGeracao:
         Unidade.
         """
 
+        # cont_mppt = 0
+        # for pot in self.potencias_anteriores:
+        #     if pot+200 <= setpoint_kw:
+        #         cont_mppt += 1
+
+        # logger.debug("")
+
+        # debug_log.debug("")
+        # debug_log.debug("------------------------------------------------------------------------------")
+        # debug_log.debug(f"\"UG{self.id}\" Lista de Setpoints Anteriores ->  {self.setpoints_anteriores}")
+        # debug_log.debug(f"      Lista de Potências Anteriores ->  {self.potencias_anteriores}")
+
+        # if cont_mppt == self.__amostras_pot_mppt and setpoint_kw <= self.cfg["pot_maxima_ugs"]:
+
+        #     debug_log.debug(f"      Potência Atual:                   {self.leitura_potencia:0.0f}")
+        #     debug_log.debug(f"      Potência Anterior -1:             {self.potencias_anteriores[-1]:0.0f}")
+        #     debug_log.debug("")
+        #     debug_log.debug(f"      Setpoint Atual:                   {setpoint_kw:0.0f}")
+        #     debug_log.debug(f"      Setpoint Anterior -1:             {self.setpoints_anteriores[-1]:0.0f}")
+        #     debug_log.debug(f"      Setpoint Anterior -2:             {self.setpoints_anteriores[-2]:0.0f}")
+        #     debug_log.debug("")
+
+        #     setpoint_kw = self.ajustar_mppt(
+        #         [self.leitura_potencia, self.potencias_anteriores[-1]],
+        #         [self.setpoints_anteriores[-1], self.setpoints_anteriores[-2]],
+        #         [self.leitura_pos_distribuidor, self.pos_dist_anterior],
+        #     )
+        #     logger.debug(f"[UG{self.id}]          Enviando setpoint:")
+        #     logger.debug(f"[UG{self.id}]          - \"MPPT\":                  {setpoint_kw:0.0f} kW")
+
+        # else:
+        #     logger.debug(f"[UG{self.id}]          Enviando setpoint:         {int(setpoint_kw)} kW")
+
+        # self.popular_listas_sp_pot()
+
+        # self.setpoint = int(setpoint_kw)
+        # self.pos_dist_anterior = self.leitura_pos_distribuidor
+
         try:
 
             if setpoint_kw > 1:
@@ -624,6 +682,54 @@ class UnidadeGeracao:
             logger.debug(traceback.format_exc())
 
 
+    def popular_listas_sp_pot(self) -> "None":
+        """
+        FUnção para popular listas com leituras e cálculos de potência e setpoint,
+        para controle do MPPT.
+        """
+
+        if len(self.potencias_anteriores) == self.__amostras_pot_mppt and self.setpoint > self.setpoint_minimo:
+            self.potencias_anteriores.pop(0)
+            self.potencias_anteriores.append(self.leitura_potencia)
+
+        elif self.leitura_potencia > self.setpoint_minimo:
+            self.potencias_anteriores.append(self.leitura_potencia)
+
+        if len(self.setpoints_anteriores) == self.__amostras_sp_mppt and self.setpoint > self.setpoint_minimo:
+            self.setpoints_anteriores.pop(0)
+            self.setpoints_anteriores.append(self.leitura_potencia)
+
+        elif self.setpoint > self.setpoint_minimo:
+            self.setpoints_anteriores.append(self.leitura_potencia)
+
+
+    def ajustar_mppt(self, potencia, setpoint, abertura_dist) -> "float":
+        """
+        Função para ajuste de setpoint, baseado na entrega máxima de potência,
+        por MPPT (Maximum Power Point Tracking)
+        """
+
+        setpoint_saida = setpoint[0]
+        delta = 20
+
+        if potencia[0] < potencia[1]:
+            if abertura_dist[0] < abertura_dist[1]:
+                setpoint_saida += delta
+            else:
+                setpoint_saida -= delta
+
+        elif potencia[0] == potencia[1]:
+                setpoint_saida -= delta
+
+        else:
+            if abertura_dist[0] < abertura_dist[1]:
+                setpoint_saida -= delta
+            else:
+                setpoint_saida += delta
+
+        return setpoint_saida
+
+
     def aguardar_normalizacao(self, delay: "int") -> "None":
         """
         Função de temporizador para espera de normalização da Unidade restrita,
@@ -733,7 +839,7 @@ class UnidadeGeracao:
         if (self.setpoint > self.setpoint_minimo) and self.setpoint * ganho > self.setpoint_minimo:
             self.setpoint = self.setpoint * ganho
 
-        elif (self.setpoint * ganho < self.setpoint_minimo) and (self.setpoint < self.setpoint_minimo):
+        elif (self.setpoint * ganho < self.setpoint_minimo) and (self.setpoint > self.setpoint_minimo):
             self.setpoint = self.setpoint_minimo
 
         if self.etapa == UG_SINCRONIZADA and ganho < 1:
@@ -850,7 +956,7 @@ class UnidadeGeracao:
         flag = CONDIC_IGNORAR
         autor_i = autor_a = autor_n = 0
 
-        if True in (condic.ativo for condic in self.condicionadores_essenciais):
+        if True in (condic.ativo for condic in self.condicionadores_essenciais) and self.etapa not in (UG_PARADA, UG_PARADA2):
             condics_ativos = [condic for condics in [self.condicionadores_essenciais, self.condicionadores] for condic in condics if condic.ativo]
 
             logger.debug("")
@@ -1424,11 +1530,11 @@ class UnidadeGeracao:
         self.l_rele_bloq_86EH_desatuado = LeituraModbusBit(self.clp[f"UG{self.id}"], REG_CLP[f"UG{self.id}"]["RELE_BLQ_86EH_DESATUADO"], descricao=f"[UG{self.id}] Relé Bloqueio 86EH Atuado")
         self.condicionadores_essenciais.append(c.CondicionadorBase(self.l_rele_bloq_86EH_desatuado, CONDIC_NORMALIZAR))
 
-        self.l_falha_2_rv_b3 = LeituraModbusBit(self.rv[f"UG{self.id}"], REG_CLP[f"UG{self.id}"]["RV_FLH_2_B3"], descricao=f"[UG{self.id}][RV] Bloqueio Externo")
-        self.condicionadores_essenciais.append(c.CondicionadorBase(self.l_falha_2_rv_b3, CONDIC_NORMALIZAR))
+        # self.l_falha_2_rv_b3 = LeituraModbusBit(self.rv[f"UG{self.id}"], REG_CLP[f"UG{self.id}"]["RV_FLH_2_B3"], descricao=f"[UG{self.id}][RV] Bloqueio Externo")
+        # self.condicionadores_essenciais.append(c.CondicionadorBase(self.l_falha_2_rv_b3, CONDIC_NORMALIZAR))
 
-        self.l_trip_rele_rv_naoatuado = LeituraModbusBit(self.rv[f"UG{self.id}"], REG_CLP[f"UG{self.id}"]["RV_RELE_TRP_NAO_ATUADO"], invertido=True, descricao=f"[UG{self.id}][RV] Relé Trip Não Atuado")
-        self.condicionadores_essenciais.append(c.CondicionadorBase(self.l_trip_rele_rv_naoatuado, CONDIC_NORMALIZAR))
+        # self.l_trip_rele_rv_naoatuado = LeituraModbusBit(self.rv[f"UG{self.id}"], REG_CLP[f"UG{self.id}"]["RV_RELE_TRP_NAO_ATUADO"], invertido=True, descricao=f"[UG{self.id}][RV] Relé Trip Não Atuado")
+        # self.condicionadores_essenciais.append(c.CondicionadorBase(self.l_trip_rele_rv_naoatuado, CONDIC_NORMALIZAR, teste=True))
 
         # self.l_saidas_digitiais_rv_b0 = LeituraModbus(self.rv[f"UG{self.id}"], REG_CLP[f"UG{self.id}"]["RV_SAIDAS_DIGITAIS"], descricao=f"[UG{self.id}][RV] Rele Trip Não Atuado")
         # self.condicionadores_essenciais.append(c.CondicionadorBase(self.l_saidas_digitiais_rv_b0, CONDIC_NORMALIZAR))
@@ -1800,20 +1906,20 @@ class UnidadeGeracao:
         self.l_trip_rele_protecao2 = LeituraModbusBit(self.rele[f"UG{self.id}"], REG_RELE[f"UG{self.id}"]["RELE_PROTECAO_TRP_B6"], descricao=f"[UG{self.id}][RELE] Trip Relé Proteção 2")
         self.condicionadores.append(c.CondicionadorBase(self.l_trip_rele_protecao2, CONDIC_NORMALIZAR))
 
-        self.l_subtensao_geral = LeituraModbusBit(self.rele[f"UG{self.id}"], REG_RELE[f"UG{self.id}"]["SUBTEN_GERAL"], descricao=f"[UG{self.id}][RELE] Subtensão Geral")
-        self.condicionadores.append(c.CondicionadorBase(self.l_subtensao_geral, CONDIC_NORMALIZAR))
+        # self.l_subtensao_geral = LeituraModbusBit(self.rele[f"UG{self.id}"], REG_RELE[f"UG{self.id}"]["SUBTEN_GERAL"], descricao=f"[UG{self.id}][RELE] Subtensão Geral")
+        # self.condicionadores.append(c.CondicionadorBase(self.l_subtensao_geral, CONDIC_NORMALIZAR))
 
-        self.l_subfreq_ele1 = LeituraModbusBit(self.rele[f"UG{self.id}"], REG_RELE[f"UG{self.id}"]["ELE_1_SOBREFRE"], descricao=f"[UG{self.id}][RELE] Sobrefrequência Elemento 1")
-        self.condicionadores.append(c.CondicionadorBase(self.l_subfreq_ele1, CONDIC_NORMALIZAR))
+        # self.l_subfreq_ele1 = LeituraModbusBit(self.rele[f"UG{self.id}"], REG_RELE[f"UG{self.id}"]["ELE_1_SOBREFRE"], descricao=f"[UG{self.id}][RELE] Sobrefrequência Elemento 1")
+        # self.condicionadores.append(c.CondicionadorBase(self.l_subfreq_ele1, CONDIC_NORMALIZAR))
 
-        self.l_subfreq_ele2 = LeituraModbusBit(self.rele[f"UG{self.id}"], REG_RELE[f"UG{self.id}"]["ELE_2_SOBREFRE"], descricao=f"[UG{self.id}][RELE] Sobrefrequência Elemento 2")
-        self.condicionadores.append(c.CondicionadorBase(self.l_subfreq_ele2, CONDIC_NORMALIZAR))
+        # self.l_subfreq_ele2 = LeituraModbusBit(self.rele[f"UG{self.id}"], REG_RELE[f"UG{self.id}"]["ELE_2_SOBREFRE"], descricao=f"[UG{self.id}][RELE] Sobrefrequência Elemento 2")
+        # self.condicionadores.append(c.CondicionadorBase(self.l_subfreq_ele2, CONDIC_NORMALIZAR))
 
-        self.l_sobrefreq_ele1 = LeituraModbusBit(self.rele[f"UG{self.id}"], REG_RELE[f"UG{self.id}"]["ELE_1_SUBFRE"], descricao=f"[UG{self.id}][RELE] Subfrequência Elemento 1")
-        self.condicionadores.append(c.CondicionadorBase(self.l_sobrefreq_ele1, CONDIC_NORMALIZAR))
+        # self.l_sobrefreq_ele1 = LeituraModbusBit(self.rele[f"UG{self.id}"], REG_RELE[f"UG{self.id}"]["ELE_1_SUBFRE"], descricao=f"[UG{self.id}][RELE] Subfrequência Elemento 1")
+        # self.condicionadores.append(c.CondicionadorBase(self.l_sobrefreq_ele1, CONDIC_NORMALIZAR))
 
-        self.l_sobrefreq_ele2 = LeituraModbusBit(self.rele[f"UG{self.id}"], REG_RELE[f"UG{self.id}"]["ELE_2_SUBFRE"], descricao=f"[UG{self.id}][RELE] Subfrequência Elemento 2")
-        self.condicionadores.append(c.CondicionadorBase(self.l_sobrefreq_ele2, CONDIC_NORMALIZAR))
+        # self.l_sobrefreq_ele2 = LeituraModbusBit(self.rele[f"UG{self.id}"], REG_RELE[f"UG{self.id}"]["ELE_2_SUBFRE"], descricao=f"[UG{self.id}][RELE] Subfrequência Elemento 2")
+        # self.condicionadores.append(c.CondicionadorBase(self.l_sobrefreq_ele2, CONDIC_NORMALIZAR, teste=True))
 
         self.l_sobrecorr_instant = LeituraModbusBit(self.rele[f"UG{self.id}"], REG_RELE[f"UG{self.id}"]["SOBRECO_INST"], descricao=f"[UG{self.id}][RELE] Sobrecorrente Instantânea")
         self.condicionadores.append(c.CondicionadorBase(self.l_sobrecorr_instant, CONDIC_NORMALIZAR))
