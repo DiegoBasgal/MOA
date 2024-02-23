@@ -34,25 +34,25 @@ class Subestacao:
 
     potencia_ativa = lei.LeituraModbus(
         clp["SA"],
-        REG_RELE["SE"]["RELE_SE_P"],
+        REG_RELE["SE"]["P"],
         op=3,
         descricao="[SE]  Potência Ativa"
     )
     tensao_rs = lei.LeituraModbus(
         clp["SA"],
-        REG_RELE["SE"]["RELE_SE_VAB"],
+        REG_RELE["SE"]["VAB"],
         op=4,
         descricao="[SE]  Tensão RS"
     )
     tensao_st = lei.LeituraModbus(
         clp["SA"],
-        REG_RELE["SE"]["RELE_SE_VBC"],
+        REG_RELE["SE"]["VBC"],
         op=4,
         descricao="[SE]  Tensão ST"
     )
     tensao_tr = lei.LeituraModbus(
         clp["SA"],
-        REG_RELE["SE"]["RELE_SE_VCA"],
+        REG_RELE["SE"]["VCA"],
         op=4,
         descricao="[SE]  Tensão TR"
     )

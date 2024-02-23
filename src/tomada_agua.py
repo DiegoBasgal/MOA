@@ -30,7 +30,7 @@ class TomadaAgua:
     clp = serv.Servidores.clp
     cfg: "dict" = {}
 
-    nv_montante = lei.LeituraModbusFloat(
+    nv_montante = lei.LeituraModbus( # lei.LeituraModbusFloat
         clp["TDA"],
         REG_TDA["NV_MONTANTE_GRADE"],
         descricao="[USN] Nível Montante"
@@ -113,6 +113,7 @@ class TomadaAgua:
         Função para consulta de acionamentos da usina e avisos através do mecanismo
         de acionamento temporizado.
         """
+        return
 
         if cls.l_nv_montante_muito_baixo.valor:
             logger.warning("[TDA] Foi identificado que o Nível Montante está muito baixo, favor verificar.")
@@ -133,6 +134,7 @@ class TomadaAgua:
         Função para carregamento de todas as leituras para acionamentos de avisos
         e emergências da Usina.
         """
+        return
 
         cls.l_nv_montante_baixo = lei.LeituraModbusBit(cls.clp["TDA"], REG_TDA["NV_MONTANTE_GRADE_BAIXO"], descricao="[TDA] Nível Montante Baixo")
         cls.l_nv_montante_muito_baixo = lei.LeituraModbusBit(cls.clp["TDA"], REG_TDA["NV_MONTANTE_GRADE_MUITO_BAIXO"], descricao="[TDA] Nível Montante Muito Baixo")

@@ -46,22 +46,22 @@ class UnidadeDeGeracao:
         # ATRIBUIÇÃO DE VARIÁVEIS PRIVADAS
         self.__tensao = lei.LeituraModbus(
             self.clp[f"UG{self.id}"],
-            REG_RELE["UG"][f"RELE_UG{self.id}_VAB"],
+            REG_RELE[f"UG{self.id}"]["VAB"],
             descricao=f"[UG{self.id}] Tensão Unidade"
         )
         self.__potencia = lei.LeituraModbus(
             self.rele[f"UG{self.id}"],
-            REG_RELE["UG"][f"RELE_UG{self.id}_P"],
+            REG_RELE[f"UG{self.id}"]["P"],
             descricao=f"[UG{self.id}] Potência Ativa"
         )
         self.__potencia_reativa = lei.LeituraModbus(
             self.rele[f"UG{self.id}"],
-            REG_RELE["UG"][f"RELE_UG{self.id}_Q"],
+            REG_RELE[f"UG{self.id}"]["Q"],
             descricao=f"[UG{self.id}] Potência Reativa"
         )
         self.__potencia_aparente = lei.LeituraModbus(
             self.rele[f"UG{self.id}"],
-            REG_RELE["UG"][f"RELE_UG{self.id}_S"],
+            REG_RELE[f"UG{self.id}"]["S"],
             descricao=f"[UG{self.id}] Potência Aparente"
         )
         self.__etapa_atual = lei.LeituraModbus(
@@ -107,9 +107,14 @@ class UnidadeDeGeracao:
         self.aux_tempo_sincronizada: "datetime" = 0
         self.ts_auxiliar: "datetime" = self.get_time()
 
+        self._condicionadores: "list[c.CondicionadorBase]" = []
+        self._condicionadores_essenciais: "list[c.CondicionadorBase]" = []
+        self._condicionadores_atenuadores: "list[c.CondicionadorBase]" = []
+
         # EXECUÇÃO FINAL DA INICIALIZAÇÃO
         self.desabilitar_manutencao()
         self.iniciar_ultimo_estado()
+        self.carregar_leituras()
 
 
     # Property -> VARIÁVEIS PRIVADAS
@@ -311,13 +316,13 @@ class UnidadeDeGeracao:
     def condicionadores_atenuadores(self) -> "list[c.CondicionadorBase]":
         # PROPRIEDADE -> Retorna a lista de atenuadores da Unidade.
 
-        return self.__condicionadores_atenuadores
+        return self._condicionadores_atenuadores
 
     @condicionadores_atenuadores.setter
     def condicionadores_atenuadores(self, var: "list[c.CondicionadorBase]") -> None:
         # SETTER -> Atribui a nova lista de atenuadores da Unidade.
 
-        self.__condicionadores_atenuadores = var
+        self._condicionadores_atenuadores = var
 
 
     # FUNÇÕES
@@ -825,6 +830,7 @@ class UnidadeDeGeracao:
         Verifica os valores base e limite da Unidade, pré-determinados na interface
         WEB, e avisa o operador caso algum valor ultrapasse o estipulado.
         """
+        return
 
         if self.l_tmp_fase_r.valor >= self.c_tmp_fase_r.valor_base:
             logger.warning(f"[UG{self.id}] A temperatura de Fase R da UG passou do valor base! ({self.c_tmp_fase_r.valor_base} C) | Leitura: {self.l_tmp_fase_r.valor} C")
@@ -894,6 +900,7 @@ class UnidadeDeGeracao:
         Função para consulta de acionamentos da Unidade e avisos através do mecanismo
         de acionamento temporizado.
         """
+        return
 
         # WHATSAPP
         if self.l_rt_selec_modo_controle_isol.valor:
@@ -1388,7 +1395,7 @@ class UnidadeDeGeracao:
         self.condicionadores_essenciais.append(self.c_tmp_mancal_escora_comb)
         self.condicionadores_atenuadores.append(self.c_tmp_mancal_escora_comb)
 
-
+        return
         ## CONDICINOADORES ESSENCIAIS
         self.l_rele_bloq_86eh = lei.LeituraModbusBit(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}"]["RELE_BLOQ_86EH"], descricao=f"[UG{self.id}] Relé Bloqueio 86EH")
         self.condicionadores_essenciais.append(c.CondicionadorBase(self.l_rele_bloq_86eh, CONDIC_NORMALIZAR))

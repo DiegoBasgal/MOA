@@ -117,8 +117,8 @@ class LeituraModbusBit(LeituraModbus):
         try:
             leitura = self.raw
 
-            dec_1 = BPD.fromRegisters(leitura, byteorder=Endian.Big, wordorder=Endian.Little)
-            dec_2 = BPD.fromRegisters(leitura, byteorder=Endian.Big, wordorder=Endian.Little)
+            dec_1 = BPD.fromRegisters(leitura, byteorder=Endian.BIG, wordorder=Endian.LITTLE)
+            dec_2 = BPD.fromRegisters(leitura, byteorder=Endian.BIG, wordorder=Endian.LITTLE)
 
             lbit = [int(bit) for bits in [reversed(dec_1.decode_bits(1)), reversed(dec_2.decode_bits(2))] for bit in bits]
 
@@ -152,7 +152,7 @@ class LeituraModbusFloat(LeituraModbus):
         try:
             raw = self.__client.read_holding_registers(self.__reg + 1, 2)
 
-            dec = BPD.fromRegisters(raw, byteorder=Endian.Big, wordorder=Endian.Little)
+            dec = BPD.fromRegisters(raw, byteorder=Endian.BIG, wordorder=Endian.LITTLE)
 
             val = dec.decode_32bit_float() * self.__escala
 

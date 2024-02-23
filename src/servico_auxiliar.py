@@ -99,6 +99,7 @@ class ServicoAuxiliar:
         Função para consulta de acionamentos da usina e avisos através do mecanismo
         de acionamento temporizado.
         """
+        return
 
         # WHATSAPP
         if cls.l_sup_tensao_falha.valor:
@@ -340,6 +341,7 @@ class ServicoAuxiliar:
         Função para carregamento de todas as leituras para acionamentos de avisos
         e emergências da Usina.
         """
+        return
 
         ## CONDICIONADORES ESSENCIAIS
         cls.l_bloq_rele_86btbf = lei.LeituraModbusBit(cls.clp["SA"], REG_SASE["RELE_BLOQ_86BTBF"], descricao="[SA]  Bloqueio 86BTBF Relé SA")
