@@ -635,7 +635,7 @@ class Usina:
         ls = [ug for ug in self.ugs if ug.disponivel and not ug.etapa == UG_PARANDO]
 
         if self.modo_prioridade_ugs in (UG_PRIORIDADE_1, UG_PRIORIDADE_2, UG_PRIORIDADE_3, UG_PRIORIDADE_4):
-            return sorted(ls, key=lambda y: (-1 * y.etapa_atual, -1 * y.leitura_potencia, -1 * y.setpoint, y.prioridade))
+            return sorted(ls, key=lambda y: (-1 * y.prioridade, -1 * y.etapa_atual, -1 * y.leitura_potencia, -1 * y.setpoint))
         else:
             return sorted(ls, key=lambda y: (-1 * y.etapa_atual, y.leitura_horimetro, -1 * y.leitura_potencia, -1 * y.setpoint))
 
