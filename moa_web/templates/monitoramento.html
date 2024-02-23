@@ -4,7 +4,11 @@
 <html lang="en">
 <head>
     <style>
-        #content_container {
+        #content_container_1 {
+            margin: 10px;
+            font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif
+        }
+        #content_container_2 {
             margin: 10px;
             font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif
         }
@@ -16,7 +20,7 @@
         h2 {
             color: white;
         }
-        
+
         h3 {
             color: white;
         }
@@ -39,156 +43,251 @@
     </style>
 </head>
 <body>
-    <div id="content_container">
-        <h1 style="margin-bottom: 5px;">Monitoramento</h1>
-        <p style="margin-bottom: 1px;">Página de monitoramento. Atualiza a cada 2 segundos.</p>
-        <p style="margin-top: 5px;">Atualizado em  {{ timestamp }} ({{ tempo_desde_moa_comunicando }} atrás)</p>
+    <div id="content_container_1">
+        <h1 style="margin-bottom: 5px; text-align: center;">Monitoramento</h1>
+        <p style="margin-bottom: 1px; text-align: center;">Página de monitoramento.</p>
+        <p style="margin-top: 5px; text-align: center;">Atualizado em  {{ timestamp }}</p>
 
-        <div style="margin-top: 40px; margin-bottom: 34px;">
-            <label style="font-size: 18px;"><b>Disjuntor 52L: </b></label>
-            {% if status_dj_linha == True %}
-                <label style="color: red; font-size: 17px;">Fechado</label>
-            {% endif %}
-            {% if status_dj_linha == False %}
-                <label style="color: green; font-size: 17px;">Aberto</label>
-            {% endif %}
-            {% if status_dj_linha == None %}
-                <label style="color: yellow; font-size: 17px;">Inconsistente</label>
-            {% endif %}
-        </div>
-        <h3 style="margin-bottom: 5px;">TDA:</h3>
-        <a style="margin-top: 1px;">Nível Alvo: {{ nv_alvo }} m</a>
-        <div style="margin-bottom: 40px;">
-            <a>Nível Montante:</a>
-            {% if tag == 0 %}
-                <label style="color: green">{{nv_montante}}</label>
-                <a> m</a>
-            {% endif %}
-            {% if tag == 1 %}
-                <label style="color: yellow">{{nv_montante}}</label>
-                <a> m</a>
-            {% endif %}
-            {% if tag == 2  %}
-                <label style="color: red">{{nv_montante}}</label>
-            {% endif %}
-        </div>
-        <label style="font-size: 18px;"><b>USINA:</b></label>
-        <a>&ensp;{{ setpot_usina }} MW</a>
-        <div style="margin-top: 5px;">
-            <table style="margin-bottom: 1px;">
-                <tr>
-                    <td>
-                        <label style="font-size: 17px;"><b>UG1: </b></label>
-                    </td>
-                    <td>
-                        {% if ug1_state == 0 %}
-                            <label style="font-size: 17px; margin-left: 5px; color: orange;">Manual</label>
-                        {% endif %}
-                        {% if ug1_state == 1 %}
-                            <label style="font-size: 17px; margin-left: 5px; color: green;">Disponível</label>
-                        {% endif %}
-                        {% if ug1_state == 2 %}
-                            <label style="font-size: 17px; margin-left: 5px; color: yellow;">Restrito</label>
-                        {% endif %}
-                        {% if ug1_state == 3 %}
-                            <label style="font-size: 17px; margin-left: 5px; color: red;">Indisponível</label>
-                        {% endif %}
-                        {% if ug1_state == 4 %}
-                            <label style="font-size: 17px; margin-left: 5px; color: blue;">Inconsistente</label>
-                        {% endif %}
-                        {% if ug1_state == 99 %}
-                            <label style="font-size: 17px; margin-left: 5px; color: blue;">Sem comunicação</label>
-                        {% endif %}
-                    </td>
-                </tr>
-            </table>
+        <div style="margin-top: 40px; margin-bottom: 20px; justify-content: center; display: flex;">
             <table>
                 <tr>
-                    <td style="padding-left: 1px;">
-                        <label>Etapa:</label>
-                    </td>
-                    <td>
-                        {% if ug1_etapa == 0 %}
-                        <label style="font-size: 15px; margin-left: 3px; color: orange;">Parada</label>
-                        {% endif %}
-                        {% if ug1_etapa == 1 or ug1_etapa == 2 or ug1_etapa == 3 or ug1_etapa == 4 or ug1_etapa == 5 or ug1_etapa == 6 %}
-                            <label style="font-size: 15px; margin-left: 3px; color: yellow;">Sincronizando/Parando</label>
-                        {% endif %}
-                        {% if ug1_etapa == 7 %}
-                            <label style="font-size: 15px; margin-left: 3px; color: green;">Sincronizada</label>
-                        {% endif %}
-                        {% if ug1_etapa == 99 %}
-                            <label style="font-size: 15px; margin-left: 3px; color: red;">Inconsistente</label>
-                        {% endif %}
+                    <td style="text-align: center;">
+                        <label style="font-size: 22px;"><b>MOA: </b></label>
                     </td>
                 </tr>
-            </table>
-            <label style="margin-left: 3px;">Potência:</label>
-            <label>{{ pot_ug1 | floatformat:0 }} kW</label><br>
-            <label style="margin-left: 3px;">Setpoint:</label>
-            <label>{{ setpot_ug1 | floatformat:0 }} kW</label><br>
-            <label style="margin-left: 3px;">Horas máquina:</label>
-            <label>{{ tempo_ug1 | floatformat:2 }} h</label><br><br>
-        </div>
-        <div style="margin-top: 1px;">
-            <table>
                 <tr>
-                    <td>
-                        <label style="font-size: 17px;"><b>UG2: </b></h3>
-                    </td>
-                    <td>
-                        {% if ug2_state == 0 %}
-                            <label style="font-size: 17px; margin-left: 5px; color: orange;">Manual</label>
-                        {% endif %}
-                        {% if ug2_state == 1 %}
-                            <label style="font-size: 17px; margin-left: 5px; color: green;">Disponível</label>
-                        {% endif %}
-                        {% if ug2_state == 2 %}
-                            <label style="font-size: 17px; margin-left: 5px; color: yellow;">Restrito</label>
-                        {% endif %}
-                        {% if ug2_state == 3 %}
-                            <label style="font-size: 17px; margin-left: 5px; color: red;">Indisponível</label>
-                        {% endif %}
-                        {% if ug2_state == 4 %}
-                            <label style="font-size: 17px; margin-left: 5px; color: blue;">Inconsistente</label>
-                        {% endif %}
-                        {% if ug2_state == 99 %}
-                            <label style="font-size: 17px; margin-left: 5px; color: blue;">Sem comunicação</label>
-                        {% endif %}
+                    <td style="text-align: center;">
+                        <a style="margin-left: 3px;">Estado CLP:&ensp;{{ usina.clp_moa_ip }}</a>
                     </td>
                 </tr>
-            </table>
-            <table>
                 <tr>
-                    <td style="padding-left: 1px;">
-                        <label>Etapa:</label>
+                    <td style="text-align: center;">
+                        <a style="margin-left: 3px;">Emergencia: </a>
+                        {% if usina.emergencia_acionada == 0 %}
+                            <label style="margin-left: 3px; color: green;">Desativada</label>
+                        {% endif %}
+                        {% if usina.emergencia_acionada == 1 %}
+                            <label style="margin-left: 3px; color: red;">Ativada</label>
+                        {% endif %}
                     </td>
-                    <td>
-                        {% if ug2_etapa == 0 %}
-                        <label style="font-size: 15px; margin-left: 3px; color: orange;">Parada</label>
+                </tr>
+                <tr>
+                    <td style="text-align: center;">
+                        <a style="margin-left: 3px;">Aguardando Reservatório: </a>
+                        {% if usina.aguardando_reservatorio == 0 %}
+                            <label style="margin-left: 3px; color: green;">Não</label>
                         {% endif %}
-                        {% if ug2_etapa == 1 or ug2_etapa == 2 or ug2_etapa == 3 or ug2_etapa == 4 or ug2_etapa == 5 or ug2_etapa == 6 %}
-                            <label style="font-size: 15px; margin-left: 3px; color: yellow;">Sincronizando/Parando</label>
-                        {% endif %}
-                        {% if ug2_etapa == 7 %}
-                            <label style="font-size: 15px; margin-left: 3px; color: green;">Sincronizada</label>
-                        {% endif %}
-                        {% if ug2_etapa == 99 %}
-                            <label style="font-size: 15px; margin-left: 3px; color: red;">Inconsistente</label>
+                        {% if usina.aguardando_reservatorio == 1 %}
+                            <label style="margin-left: 3px; color: orange;">Sim</label>
                         {% endif %}
                     </td>
                 </tr>
             </table>
-            <label style="margin-left: 3px;">Potência:</label>
-            <label>{{ pot_ug2 | floatformat:0 }} kW</label><br>
-            <label style="margin-left: 3px;">Setpoint:</label>
-            <label>{{ setpot_ug2 | floatformat:0 }} kW</label><br>
-            <label style="margin-left: 3px;">Horas máquina:</label>
-            <label>{{ tempo_ug2 | floatformat:2 }} h</label><br><br>
+            <br>
+            <br>
         </div>
+        <br>
+        <label style="font-size: 22px; justify-content: center; display: flex;"><b>USINA:</b>&ensp;{{ pot_usina }} MW</label>
+        <br>
+        <div style="margin-top: 10px; justify-content: center; display: flex;">
+            <div>
+                <table style="border-spacing: 20px 0px; justify-content: center; display: flex;">
+                    <tr>
+                        <td>
+                            <label style="margin-left: 3px; font-size: 18px;"><b>Tomada Água:</b></label>
+                        </td>
+                        <td>
+                            <label style="margin-left: 3px; font-size: 18px;"><b>Subestação: </b></label>
+                        </td>
+                        <td>
+                            <table>
+                                <tr>
+                                    <td>
+                                        <label style="margin-right: 3px; font-size: 17px;"><b>UG1: </b></label>
+                                    </td>
+                                    <td>
+                                        {% if usina.ug1_ultimo_estado == 0 %}
+                                        <label style="font-size: 17px; color: orange;">Manual</label>
+                                        {% endif %}
+                                        {% if usina.ug1_ultimo_estado == 1 %}
+                                        <label style="font-size: 17px; color: green;">Disponível</label>
+                                        {% endif %}
+                                        {% if usina.ug1_ultimo_estado == 2 %}
+                                        <label style="font-size: 17px; color: yellow;">Restrito</label>
+                                        {% endif %}
+                                        {% if usina.ug1_ultimo_estado == 3 %}
+                                        <label style="font-size: 17px; color: red;">Indisponível</label>
+                                        {% endif %}
+                                        {% if usina.ug1_ultimo_estado == 4 %}
+                                        <label style="font-size: 17px; color: red;">Inconsistente</label>
+                                        {% endif %}
+                                        {% if usina.ug1_ultimo_estado == 99 %}
+                                        <label style="font-size: 17px; color: red;">Sem comunicação</label>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                            </table>
+                        </td>
+                        <td>
+                            <table>
+                                <tr>
+                                    <td>
+                                        <label style="margin-right: 3px; font-size: 17px;"><b>UG2: </b></h3>
+                                    </td>
+                                    <td>
+                                        {% if usina.ug2_ultimo_estado == 0 %}
+                                        <label style="font-size: 17px; color: orange;">Manual</label>
+                                        {% endif %}
+                                        {% if usina.ug2_ultimo_estado == 1 %}
+                                        <label style="font-size: 17px; color: green;">Disponível</label>
+                                        {% endif %}
+                                        {% if usina.ug2_ultimo_estado == 2 %}
+                                        <label style="font-size: 17px; color: yellow;">Restrito</label>
+                                        {% endif %}
+                                        {% if usina.ug2_ultimo_estado == 3 %}
+                                        <label style="font-size: 17px; color: red;">Indisponível</label>
+                                        {% endif %}
+                                        {% if usina.ug2_ultimo_estado == 4 %}
+                                        <label style="font-size: 17px; color: red;">Inconsistente</label>
+                                        {% endif %}
+                                        {% if usina.ug2_ultimo_estado == 99 %}
+                                        <label style="font-size: 17px; color: red;">Sem comunicação</label>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                            </table>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <a style="margin-top: 1px; margin-left: 3px; margin-right: 3px;">Nível Alvo: {{ nv_alvo }} m</a>
+                        </td>
+                        <td>
+                            <a style="margin-left: 3px; margin-right: 3px;">Disjuntor 52L:</a>
+                            {% if status_dj_linha == 0 %}
+                            <label style="color: green; font-size: 17px;">Aberto</label>
+                            {% endif %}
+                            {% if status_dj_linha == 1 %}
+                            <label style="color: red; font-size: 17px;">Fechado</label>
+                            {% endif %}
+                            {% if status_dj_linha == 2 %}
+                            <label style="color: orange; font-size: 17px;">Inconsistente</label>
+                            {% endif %}
+                        </td>
+                        <td>
+                            <table>
+                                <tr>
+                                    <td>
+                                        <a style="margin-top: 1px; margin-right: 3px;">Etapa:</a>
+                                    </td>
+                                    <td>
+                                        {% if ug1_etapa == 0 %}
+                                        <label style="font-size: 15px; color: orange;">Parada</label>
+                                        {% endif %}
+                                        {% if ug1_etapa == 50 %}
+                                        <label style="font-size: 15px; color: yellow;">Sincronizando/Parando</label>
+                                        {% endif %}
+                                        {% if ug1_etapa == 7 %}
+                                        <label style="font-size: 15px; color: green;">Sincronizada</label>
+                                        {% endif %}
+                                        {% if ug1_etapa == 99 %}
+                                        <label style="font-size: 15px; color: red;">???</label>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                            </table>
+                        </td>
+                        <td>
+                            <table>
+                                <tr>
+                                    <td>
+                                        <a style="margin-top: 1px; margin-right: 3px;">Etapa:</a>
+                                    </td>
+                                    <td>
+                                        {% if ug2_etapa == 0 %}
+                                        <label style="font-size: 15px; color: orange;">Parada</label>
+                                        {% endif %}
+                                        {% if ug2_etapa == 50 %}
+                                        <label style="font-size: 15px; color: yellow;">Sincronizando/Parando</label>
+                                        {% endif %}
+                                        {% if ug2_etapa == 7 %}
+                                        <label style="font-size: 15px; color: green;">Sincronizada</label>
+                                        {% endif %}
+                                        {% if ug2_etapa == 99 %}
+                                        <label style="font-size: 15px; color: red;">???</label>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                            </table>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <a style="margin-left: 3px;">Nível Montante:</a>
+                            {% if tag == 0 %}
+                            <label style="color: green">{{ nv_montante }}</label>
+                            <a> m</a>
+                            {% endif %}
+                            {% if tag == 1 %}
+                                <label style="color: yellow">{{ nv_montante }}</label>
+                                <a> m</a>
+                            {% endif %}
+                            {% if tag == 2 %}
+                                <label style="color: red">{{ nv_montante }}</label>
+                                <a> m</a>
+                            {% endif %}
+                            {% if tag == 99 %}
+                                <label style="color: red">???</label>
+                                <a> m</a>
+                            {% endif %}
+                        </td>
+                        <td>
+                            <a style="margin-top: 1px; margin-left: 3px;">Tensão VAB: {{ se_lt_a }} V</a><br>
+                        </td>
+                        <td>
+                            <label style="margin-left: 3px;">Potência:</label>
+                            <label>{{ pot_ug1 | floatformat:0 }} kW</label>
+                        </td>
+                        <td>
+                            <label style="margin-left: 3px;">Potência:</label>
+                            <label>{{ pot_ug2 | floatformat:0 }} kW</label>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                        </td>
+                        <td>
+                            <a style="margin-top: 1px; margin-left: 3px;">Tensão VBC: {{ se_lt_b }} V</a><br>
+                        </td>
+                        <td>
+                            <label style="margin-left: 3px;">Setpoint:</label>
+                            <label>{{ setpot_ug1 | floatformat:0 }} kW</label>
+                        </td>
+                        <td>
+                            <label style="margin-left: 3px;">Setpoint:</label>
+                            <label>{{ setpot_ug2 | floatformat:0 }} kW</label>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                        </td>
+                        <td>
+                            <a style="margin-top: 1px; margin-left: 3px;">Tensão VCA: {{ se_lt_c }} V</a>
+                        </td>
+                        <td>
+                            <label style="margin-left: 3px;">Horas máquina:</label>
+                            <label>{{ tempo_ug1 | floatformat:2 }} h</label>
+                        </td>
+                        <td>
+                            <label style="margin-left: 3px;">Horas máquina:</label>
+                            <label>{{ tempo_ug2 | floatformat:2 }} h</label>
+                        </td>
+                    </tr>
+                </table>
+            </div>
+        </div>
+        <br>
     </div>
-    <br>
-    <br>
     <script type = "text/JavaScript">
         setTimeout("location.reload(true);", 2000);
     </script>

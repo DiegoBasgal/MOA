@@ -57,6 +57,11 @@ class Usina:
         self.tda.bd = self.bd
         self.tda.cfg = self.cfg
 
+        self.se.bd = self.bd
+        self.sa.bd = self.bd
+        self.tda.bd = self.bd
+        self.tda.cfg = self.cfg
+
         # ATRIBUIÇÃO DE VARIÁVEIS PRIVADAS
         self.__pid_inicial: "int" = -1
 
@@ -136,11 +141,11 @@ class Usina:
 
     def acionar_emergencia(self) -> "None":
         logger.warning("[USN] Enviando Comando:                  \"ACIONAR EMERGÊNCIA\".")
-        self.clp_emergencia = True
 
         try:
-            for ug in self.ugs:
-                esc.EscritaModBusBit.escrever_bit(self.clp[f"UG{ug.id}"], REG_UG[f"UG{ug.id}"]["CMD_PARADA_EMERG"], valor=1)
+            self.clp_emergencia = True
+            # for ug in self.ugs:
+            #     esc.EscritaModBusBit.escrever_bit(self.clp[f"UG{ug.id}"], REG_UG[f"UG{ug.id}"]["CMD_PARADA_EMERG"], valor=1)
 
         except Exception:
             logger.error(f"[USN] Houve um erro ao acionar a Emergência.")

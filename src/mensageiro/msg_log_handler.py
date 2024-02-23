@@ -13,6 +13,8 @@ class MensageiroHandler(Handler):
     def emit(self, record):
         log_entry = self.format(record)
 
+        return
+
         try:
             WhatsApp.envio_todos(f"{log_entry}")
 

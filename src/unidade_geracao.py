@@ -378,14 +378,14 @@ class UnidadeDeGeracao:
 
     def desabilitar_manutencao(self) -> "bool":
         try:
-            res = esc.EscritaModBusBit.escrever_bit(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}"]["CMD_CONTROLE_POT_MANUAL"], valor=1)
+            # res = esc.EscritaModBusBit.escrever_bit(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}"]["CMD_CONTROLE_POT_MANUAL"], valor=1)
 
-            res = esc.EscritaModBusBit.escrever_bit(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}"]["CMD_RV_MANUTENCAO"], valor=0)
-            res = esc.EscritaModBusBit.escrever_bit(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}"]["CMD_RV_AUTOMATICO"], valor=1)
-            res = esc.EscritaModBusBit.escrever_bit(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}"]["CMD_UHLM_MODO_AUTOMATICO"], valor=1)
+            # res = esc.EscritaModBusBit.escrever_bit(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}"]["CMD_RV_MANUTENCAO"], valor=0)
+            # res = esc.EscritaModBusBit.escrever_bit(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}"]["CMD_RV_AUTOMATICO"], valor=1)
+            # res = esc.EscritaModBusBit.escrever_bit(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}"]["CMD_UHLM_MODO_AUTOMATICO"], valor=1)
             # res = esc.EscritaModBusBit.escrever_bit(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}"]["CMD_UHRV_MODO_MANUTENCAO"], valor=0) -> Está mandando comando de parada para a máquina | TODO Verificar com a Automatic
             # res = esc.EscritaModBusBit.escrever_bit(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}"]["CMD_UHRV_MODO_AUTOMATICO"], valor=1) -> Está mandando comando de parada para a máquina | TODO Verificar com a Automatic
-            return res
+            return True # res
 
         except Exception:
             logger.error(f"[UG{self.id}] Não foi possível desabilitar o modo de manutenção da Unidade.")
@@ -397,7 +397,7 @@ class UnidadeDeGeracao:
         try:
             logger.info(f"[UG{self.id}] Enviando comando:                   \"RESET EMERGÊNCIA\"")
 
-            esc.EscritaModBusBit.escrever_bit(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}"]["CMD_REARME_FALHAS"], valor=1)
+            # esc.EscritaModBusBit.escrever_bit(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}"]["CMD_REARME_FALHAS"], valor=1)
 
         except Exception:
             logger.error(f"[UG{self.id}] Houve um erro ao realizar o Reset de Emergência.")
@@ -482,11 +482,8 @@ class UnidadeDeGeracao:
                 self.tentativas_norm_etapas = 0
                 logger.info(f"[UG{self.id}]          Enviando comando:          \"PARTIDA\"")
 
-                esc.EscritaModBusBit.escrever_bit(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}"]["CMD_REARME_FALHAS"], valor=1)
-                self.clp[f"UG{self.id}"].write_single_register(REG_UG[f"UG{self.id}"]["CMD_SINCRONISMO"][0], int(128))
-
-            else:
-                logger.debug(f"[UG{self.id}] A Unidade já está sincronizada")
+                # esc.EscritaModBusBit.escrever_bit(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}"]["CMD_REARME_FALHAS"], valor=1)
+                # self.clp[f"UG{self.id}"].write_single_register(REG_UG[f"UG{self.id}"]["CMD_SINCRONISMO"][0], int(128))
 
         except Exception:
             logger.error(f"[UG{self.id}] Não foi possível partir a Unidade.")
@@ -498,12 +495,8 @@ class UnidadeDeGeracao:
             if not self.etapa == UG_PARADA:
                 logger.info(f"[UG{self.id}]          Enviando comando:          \"PARADA\"")
                 self.enviar_setpoint(0)
-                res = esc.EscritaModBusBit.escrever_bit(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}"]["CMD_PARADA_TOTAL"], valor=1)
-                return res
-
-            else:
-                logger.debug(f"[UG{self.id}] A Unidade já está parada")
-                return False
+                # res = esc.EscritaModBusBit.escrever_bit(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}"]["CMD_PARADA_TOTAL"], valor=1)
+                return True # res
 
         except Exception:
             logger.error(f"[UG{self.id}] Não foi possível parar a Unidade.")
@@ -534,8 +527,8 @@ class UnidadeDeGeracao:
                 logger.debug(f"[UG{self.id}]          Enviando setpoint:         {(setpoint_kw / self.cfg[f'pot_maxima_ug{self.id}']) * 100} %")
 
                 if self.setpoint > 1:
-                    res = self.rv[f"UG{self.id}"].write_single_register(REG_UG[f"UG{self.id}"]["SETPOINT_POT_ATIVA_PU"], int(setpoint_porcento))
-                    return res
+                    # res = self.rv[f"UG{self.id}"].write_single_register(REG_UG[f"UG{self.id}"]["SETPOINT_POT_ATIVA_PU"], int(setpoint_porcento))
+                    return True # res
 
         except Exception:
             logger.error(f"[UG{self.id}] Não foi possivel enviar o Setpoint para Unidade.")
@@ -546,8 +539,8 @@ class UnidadeDeGeracao:
     def acionar_trip_logico(self) -> "bool":
         try:
             logger.debug(f"[UG{self.id}]          Enviando comando:          \"TRIP LÓGICO\"")
-            res = esc.EscritaModBusBit.escrever_bit(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}"]["CMD_PARADA_EMERG"], valor=1)
-            return res
+            # res = esc.EscritaModBusBit.escrever_bit(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}"]["CMD_PARADA_EMERG"], valor=1)
+            return True # res
 
         except Exception:
             logger.error(f"[UG{self.id}] Não foi possivel acionar o comando de TRIP: \"Lógico\".")
@@ -583,7 +576,7 @@ class UnidadeDeGeracao:
         try:
             if not se.Subestacao.status_dj_linha.valor:
                 logger.debug(f"[UG{self.id}]          Enviando comando:          \"FECHAR DISJUNTOR LINHA\".")
-                esc.EscritaModBusBit.escrever_bit(self.clp["SA"], REG_SASE["CMD_DJ_LINHA_FECHA"], valor=1)
+                # esc.EscritaModBusBit.escrever_bit(self.clp["SA"], REG_SASE["CMD_DJ_LINHA_FECHA"], valor=1)
 
             logger.debug(f"[UG{self.id}]          Removendo comando:         \"TRIP ELÉTRICO\"")
             res = None # self.clp["MOA"].write_single_coil(REG_MOA[f"OUT_BLOCK_UG{self.id}"], [0])
@@ -705,10 +698,10 @@ class UnidadeDeGeracao:
                 return
 
         logger.warning(f"[UG{self.id}]          Verificação MOA:          \"Acionar emergência por timeout de Sincronismo\"")
-        esc.EscritaModBusBit.escrever_bit(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}"]["CMD_PARADA_EMERG"], valor=1)
+        # esc.EscritaModBusBit.escrever_bit(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}"]["CMD_PARADA_EMERG"], valor=1)
         self.temporizar_partida = False
         sleep(1)
-        esc.EscritaModBusBit.escrever_bit(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}"]["CMD_REARME_FALHAS"], valor=1)
+        # esc.EscritaModBusBit.escrever_bit(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}"]["CMD_REARME_FALHAS"], valor=1)
 
 
     def verificar_condicionadores(self) -> "int":
