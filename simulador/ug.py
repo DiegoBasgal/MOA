@@ -49,7 +49,7 @@ class Unidade:
             self.dict[f'UG{self.id}'][f'debug_parar'] = False
             self.parar()
 
-        self.setpoint = DB.get_words(REG_UG[f'UG{self.id}']['SETPOINT_POT_ATIVA_PU'])[0]
+        self.setpoint = DB.get_words(REG_RTV['SETPOINT_POT_ATIVA_PU'])[0]
         self.dict[f'UG{self.id}'][f'setpoint'] = self.setpoint
 
         self.dict[f'UG{self.id}'][f'q'] = self.calcular_q_ug(self.potencia)
@@ -61,7 +61,7 @@ class Unidade:
 
 
     def partir(self) -> 'None':
-        if self.dict[f'UG{self.id}']['condic']:
+        if self.dict[f'UG{self.id}']['trip_condic']:
             print(f'[UG{self.id}] Máquina sem condição de partida. Normalizar antes de partir a Unidade.')
         else:
             self.dict[f'UG{self.id}'][f'etapa_alvo'] = self.etapa_alvo = ETAPA_US
@@ -104,9 +104,10 @@ class Unidade:
         self.dict[f"UG{self.id}"][f"temp_nucleo_gerador_1"] = np.random.normal(25, 1 * self.escala_ruido)
         self.dict[f"UG{self.id}"][f"temp_nucleo_gerador_2"] = np.random.normal(25, 1 * self.escala_ruido)
         self.dict[f"UG{self.id}"][f"temp_nucleo_gerador_3"] = np.random.normal(25, 1 * self.escala_ruido)
-        self.dict[f"UG{self.id}"][f"temp_mancal_casq_rad"] = np.random.normal(25, 1 * self.escala_ruido)
+        self.dict[f"UG{self.id}"][f"temp_mancal_guia_casq"] = np.random.normal(25, 1 * self.escala_ruido)
         self.dict[f"UG{self.id}"][f"temp_mancal_casq_comb"] = np.random.normal(25, 1 * self.escala_ruido)
-        self.dict[f"UG{self.id}"][f"temp_mancal_escora_comb"] = np.random.normal(25, 1 * self.escala_ruido)
+        self.dict[f"UG{self.id}"][f"temp_mancal_esc_comb"] = np.random.normal(25, 1 * self.escala_ruido)
+        self.dict[f"UG{self.id}"][f"temp_mancal_contra_esc_comb"] = np.random.normal(25, 1 * self.escala_ruido)
         # self.dict["UG"]["pressao_caixa_espiral_ug{}"] = np.random.normal(20, 1 * self.escala_ruido)
 
 
@@ -230,9 +231,9 @@ class Unidade:
 
 
     def atualizar_modbus(self) -> 'None':
-        DB.set_words(REG_UG[f'UG{self.id}']['RELE_P'], [round(self.potencia)])
-        DB.set_words(REG_UG[f'UG{self.id}']['SETPOINT_POT_ATIVA_PU'], [self.setpoint])
-        DB.set_words(REG_UG[f'UG{self.id}']['HORIMETRO'], [np.floor(self.horimetro_hora)])
+        DB.set_words(REG_RELE[f'UG{self.id}']['P'], [round(self.potencia)])
+        DB.set_words(REG_RTV['SETPOINT_POT_ATIVA_PU'], [self.setpoint])
+        # DB.set_words(REG_UG[f'UG{self.id}']['HORIMETRO'], [np.floor(self.horimetro_hora)])
         DB.set_words(REG_UG[f'UG{self.id}']['STT_PASSO_ATUAL'], [int(self.dict[f'UG{self.id}'][f'etapa_atual'])])
         DB.set_words(REG_UG[f'UG{self.id}']['SST_PASSO_SELECIONADO'], [int(self.dict[f'UG{self.id}'][f'etapa_alvo'])])
 
@@ -242,7 +243,7 @@ class Unidade:
         DB.set_words(REG_UG[f'UG{self.id}']['TEMP_GERADOR_NUCLEO_1'], [round(self.dict[f'UG{self.id}'][f'temp_nucleo_gerador_1'])])
         DB.set_words(REG_UG[f'UG{self.id}']['TEMP_GERADOR_NUCLEO_2'], [round(self.dict[f'UG{self.id}'][f'temp_nucleo_gerador_2'])])
         DB.set_words(REG_UG[f'UG{self.id}']['TEMP_GERADOR_NUCLEO_3'], [round(self.dict[f'UG{self.id}'][f'temp_nucleo_gerador_3'])])
-        DB.set_words(REG_UG[f'UG{self.id}']['TEMP_MANCAL_GUIA_CASQUILHO'], [round(self.dict[f'UG{self.id}'][f'temp_mancal_casq_rad'])])
+        DB.set_words(REG_UG[f'UG{self.id}']['TEMP_MANCAL_GUIA_CASQUILHO'], [round(self.dict[f'UG{self.id}'][f'temp_mancal_guia_casq'])])
         DB.set_words(REG_UG[f'UG{self.id}']['TEMP_MANCAL_COMBINADO_CASQUILHO'], [round(self.dict[f'UG{self.id}'][f'temp_mancal_casq_comb'])])
-        DB.set_words(REG_UG[f'UG{self.id}']['TEMP_MANCAL_COMBINADO_CONTRA_ESCORA'], [round(self.dict[f'UG{self.id}'][f'temp_mancal_escora_comb'])])
-        DB.set_words(REG_UG[f'UG{self.id}']['TEMP_MANCAL_COMBINADO_ESCORA'], [round(self.dict[f'UG{self.id}'][f'temp_mancal_escora_comb'])])
+        DB.set_words(REG_UG[f'UG{self.id}']['TEMP_MANCAL_COMBINADO_ESCORA'], [round(self.dict[f'UG{self.id}'][f'temp_mancal_esc_comb'])])
+        DB.set_words(REG_UG[f'UG{self.id}']['TEMP_MANCAL_COMBINADO_CONTRA_ESCORA'], [round(self.dict[f'UG{self.id}'][f'temp_mancal_contra_esc_comb'])])

@@ -53,13 +53,13 @@ class Tda:
         self.dict['TDA']['nv_montante'] = self.calcular_volume_montante(self.volume + self.dict['TDA']['q_liquida'] * self.segundos_por_passo)
         self.dict['TDA']['nv_jusante_grade'] = self.dict['TDA']['nv_montante'] - max(0, np.random.normal(0.1, 0.1 * self.escala_ruido))
 
-        if self.dict["USN"]["nv_montante"] >= USINA_NV_VERTEDOURO:
-            self.dict["USN"]["q_vertimento"] = self.dict["USN"]["q_liquida"]
-            self.dict["USN"]["q_liquida"] = 0
-            self.dict["USN"]["nv_montante"] = (
-                0.000000027849 * self.dict["USN"]["q_vertimento"] ** 3
-                - 0.00002181 * self.dict["USN"]["q_vertimento"] ** 2
-                + 0.0080744 * self.dict["USN"]["q_vertimento"]
+        if self.dict["TDA"]["nv_montante"] >= USINA_NV_VERTEDOURO:
+            self.dict["TDA"]["q_vertimento"] = self.dict["TDA"]["q_liquida"]
+            self.dict["TDA"]["q_liquida"] = 0
+            self.dict["TDA"]["nv_montante"] = (
+                0.000000027849 * self.dict["TDA"]["q_vertimento"] ** 3
+                - 0.00002181 * self.dict["TDA"]["q_vertimento"] ** 2
+                + 0.0080744 * self.dict["TDA"]["q_vertimento"]
                 + 821
             )
 
@@ -67,5 +67,5 @@ class Tda:
 
 
     def atualizar_modbus(self) -> 'None':
-        DB.set_words(REG_TDA['NV_MONTANTE'], [int((self.dict['TDA']['nv_montante'] - 400) * 100)])
+        DB.set_words(REG_TDA['NV_MONTANTE_GRADE'], [int((self.dict['TDA']['nv_montante'] - 400) * 100)])
         DB.set_words(REG_TDA['NV_JUSANTE_GRADE'], [round((self.dict['TDA']['nv_jusante_grade']) * 10000)])

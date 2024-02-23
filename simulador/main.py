@@ -19,7 +19,7 @@ if __name__ == '__main__':
     try:
         print("Iniciando Classe controladora de Tempo da Simulação...")
 
-        tempo = Temporizador()
+        tempo = Temporizador(compartilhado)
 
     except Exception:
         print(f"Houve um erro ao iniciar a Classe controladora de Tempo.")

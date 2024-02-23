@@ -7,6 +7,8 @@ compartilhado = {
     },
 
     "BRD": {
+        "djse_fechado": False,
+
         "usn_condic": False,
         "ug1_condic": False,
         "ug2_condic": False
@@ -66,7 +68,7 @@ compartilhado = {
         "temp_nucleo_gerador_1": 25,
         "temp_nucleo_gerador_2": 25,
         "temp_nucleo_gerador_3": 25,
-        "temp_mancal_guia_casc": 25,
+        "temp_mancal_guia_casq": 25,
         "temp_mancal_casq_comb": 25,
         "temp_mancal_esc_comb": 25,
         "temp_mancal_contra_esc_comb": 25,
@@ -95,7 +97,7 @@ compartilhado = {
         "temp_nucleo_gerador_1": 25,
         "temp_nucleo_gerador_2": 25,
         "temp_nucleo_gerador_3": 25,
-        "temp_mancal_guia_casc": 25,
+        "temp_mancal_guia_casq": 25,
         "temp_mancal_casq_comb": 25,
         "temp_mancal_esc_comb": 25,
         "temp_mancal_contra_esc_comb": 25,

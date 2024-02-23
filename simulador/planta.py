@@ -30,16 +30,16 @@ class Planta:
         self.passo_simulacao = tempo.passo_simulacao
         self.segundos_por_passo = tempo.segundos_por_passo
 
-        self.server_MB = ModbusServer(host='0.0.0.0', port=5000, no_block=True)
+        self.server_MB = ModbusServer(host='0.0.0.0', port=502, no_block=True)
         self.server_MB.start()
 
-        for n in REG_SASE.values():
+        for v in REG_SASE.values():
             DB.set_words(v[0], [0]) if isinstance(v, list) else DB.set_words(v, [0])
 
-        for n in REG_TDA.values():
+        for v in REG_TDA.values():
             DB.set_words(v[0], [0]) if isinstance(v, list) else DB.set_words(v, [0])
 
-        for n in REG_RTV.values():
+        for v in REG_RTV.values():
             DB.set_words(v[0], [0]) if isinstance(v, list) else DB.set_words(v, [0])
 
         for n in REG_UG.values():

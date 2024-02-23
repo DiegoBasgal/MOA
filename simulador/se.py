@@ -58,12 +58,7 @@ class Se:
             self.dict['SE']['debug_dj_fechar'] = False
             self.tripar_dj()
 
-        if self.dict['SE']['dj_aberto']:
-            self.dict['SE']['tensao_vab'] = 0
-            self.dict['SE']['tensao_vbc'] = 0
-            self.dict['SE']['tensao_vca'] = 0
-
-        self.dict['SE']['potencia_se'] = max(0, np.random.normal(((self.dict['UG1']['potencia'] + self.dict['UG2']['potencia']) * 0.995), 0.001 * self.escala_ruido))
+        self.dict['SE']['potencia_se'] = self.dict['UG1']['potencia'] + self.dict['UG2']['potencia']
 
 
     def verificar_tensao_dj(self) -> "None":
@@ -147,10 +142,10 @@ class Se:
 
 
     def atualizar_modbus(self) -> "None":
-        DB.set_words(REG_SASE['LT_P'], [round(self.dict['SE']['potencia_se'] / 1000)])
-        DB.set_words(REG_SASE['LT_VAB'], [round(self.dict['SE']['tensao_vab'] / 1000)])
-        DB.set_words(REG_SASE['LT_VBC'], [round(self.dict['SE']['tensao_vbc'] / 1000)])
-        DB.set_words(REG_SASE['LT_VCA'], [round(self.dict['SE']['tensao_vca'] / 1000)])
+        DB.set_words(REG_RELE['SE']['P'], [round(self.dict['SE']['potencia_se'] / 1000)])
+        DB.set_words(REG_RELE['SE']['VAB'], [round(self.dict['SE']['tensao_vab'] / 1000)])
+        DB.set_words(REG_RELE['SE']['VBC'], [round(self.dict['SE']['tensao_vbc'] / 1000)])
+        DB.set_words(REG_RELE['SE']['VCA'], [round(self.dict['SE']['tensao_vca'] / 1000)])
 
         # Disjuntor 52L Fechado
         if self.dict['SE']['dj_fechado'] and not self.dict['BRD']['djse_fechado']:

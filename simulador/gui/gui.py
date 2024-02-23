@@ -31,82 +31,84 @@ class Window(QMainWindow, Ui_Form):
             horas = floor(self.dict["GLB"]["tempo_simul"] / 3600)
             self.label_tempo_simul.setText(f"{horas:02d}:{minutos:02d}:{segundos:02d}")
 
-            self.lcdNumber_tensao_linha.display(self.dict['USN']["tensao_na_linha"])
-            self.lcdNumber_potencia_se.display(f"{self.dict['USN']['potencia_kw_se']:3.1f}")
-            self.lcdNumber_MP.display(f"{self.dict['USN']['potencia_kw_mp'] / 1000:1.3f}")
-            self.lcdNumber_MR.display(f"{self.dict['USN']['potencia_kw_mr'] / 1000:1.3f}")
+            self.lcdNumber_tensao_linha.display(self.dict['SE']["tensao_vab"])
+            self.lcdNumber_potencia_se.display(f"{self.dict['SE']['potencia_se']:0.0f}")
+            self.lcdNumber_MP.display(f"{self.dict['SE']['potencia_se']:0.0f}")
+            self.lcdNumber_MR.display(f"{self.dict['SE']['potencia_se']:0.0f}")
 
             self.checkBox_sinal_trip_condic_usina.setChecked(self.dict["USN"]["trip_condic_usina"])
 
-            self.checkBox_52L_aberto.setChecked(self.dict["DJ"]["dj52L_aberto"])
-            self.checkBox_52L_fechado.setChecked(self.dict["DJ"]["dj52L_fechado"])
-            self.checkBox_52L_inconsistente.setChecked(self.dict["DJ"]["dj52L_inconsistente"])
-            self.checkBox_52L_trip.setChecked(self.dict["DJ"]["dj52L_trip"])
-            self.checkBox_52L_mola_carregada.setChecked(self.dict["DJ"]["dj52L_mola_carregada"])
-            self.checkBox_52L_falta_vcc.setChecked(self.dict["DJ"]["dj52L_falta_vcc"])
-            self.checkBox_52L_condicao_fechamento.setChecked(self.dict["DJ"]["dj52L_condicao_de_fechamento"])
+            self.checkBox_52L_aberto.setChecked(self.dict["SE"]["dj_aberto"])
+            self.checkBox_52L_fechado.setChecked(self.dict["SE"]["dj_fechado"])
+            self.checkBox_52L_inconsistente.setChecked(self.dict["SE"]["dj_inconsistente"])
+            self.checkBox_52L_trip.setChecked(self.dict["SE"]["dj_trip"])
+            self.checkBox_52L_mola_carregada.setChecked(self.dict["SE"]["dj_mola_carregada"])
+            self.checkBox_52L_falta_vcc.setChecked(self.dict["SE"]["dj_falta_vcc"])
+            self.checkBox_52L_condicao_fechamento.setChecked(self.dict["SE"]["dj_condicao"])
 
-            self.lcdNumber_nv_montante.display(f"{self.dict['USN']['nv_montante']:3.2f}")
-            self.lcdNumber_q_alfuente.display(f"{self.dict['USN']['q_alfuente']:2.3f}")
-            self.lcdNumber_q_liquida.display(f"{self.dict['USN']['q_liquida']:2.3f}")
-            self.lcdNumber_q_sanitaria.display(f"{self.dict['USN']['q_sanitaria']:2.3f}")
-            self.lcdNumber_q_vertimento.display(f"{self.dict['USN']['q_vertimento']:2.3f}")
+            self.lcdNumber_nv_montante.display(f"{self.dict['TDA']['nv_montante']:3.2f}")
+            self.lcdNumber_q_alfuente.display(f"{self.dict['TDA']['q_alfuente']:2.3f}")
+            self.lcdNumber_q_liquida.display(f"{self.dict['TDA']['q_liquida']:2.3f}")
+            self.lcdNumber_q_sanitaria.display(f"{self.dict['TDA']['q_sanitaria']:2.3f}")
+            self.lcdNumber_q_vertimento.display(f"{self.dict['TDA']['q_vertimento']:2.3f}")
 
-            self.checkBox_sinal_trip_ug1.setChecked(self.dict["UG"]["trip_ug1"])
-            self.checkBox_sinal_trip_condic_ug1.setChecked(self.dict["UG"]["trip_condic_ug1"])
+            self.checkBox_sinal_trip_ug1.setChecked(self.dict["UG1"]["trip"])
+            self.checkBox_sinal_trip_condic_ug1.setChecked(self.dict["UG1"]["trip_condic"])
 
-            self.lcdNumber_potencia_ug1.display(self.dict["UG"]["potencia_kw_ug1"])
-            self.lcdNumber_setpoint_ug1.display(self.dict["UG"]["setpoint_kw_ug1"])
+            self.lcdNumber_potencia_ug1.display(f'{self.dict["UG1"]["potencia"]:0.0f}')
+            self.lcdNumber_setpoint_ug1.display(f'{self.dict["UG1"]["setpoint"]:0.0f}')
 
-            if self.dict["UG"]["etapa_alvo_ug1"] is None:
+            if self.dict["UG1"]["etapa_alvo"] is None:
                 self.lcdNumber_etapa_alvo_ug1.setHexMode()
                 self.lcdNumber_etapa_alvo_ug1.display(15)
 
             else:
                 self.lcdNumber_etapa_alvo_ug1.setDecMode()
-                self.lcdNumber_etapa_alvo_ug1.display(f"{self.dict['UG']['etapa_alvo_ug1']:d}")
+                self.lcdNumber_etapa_alvo_ug1.display(f"{self.dict['UG1']['etapa_alvo']:d}")
 
-            self.lcdNumber_etapa_atual_ug1.display(f"{self.dict['UG']['etapa_atual_ug1']:d}")
-            self.lcdNumber_bitsalarme_ug1.display(f"{self.dict['UG']['flags_ug1']:08b}")
-            self.lcdNumber_q_ug1.display(f"{self.dict['UG']['q_ug1']:2.3f}")
-            self.lcdNumber_temperatura_1_ug1.display(f"{self.dict['UG']['temperatura_ug1_fase_r']:03.1f}")
-            self.lcdNumber_temperatura_2_ug1.display(f"{self.dict['UG']['temperatura_ug1_fase_s']:03.1f}")
-            self.lcdNumber_temperatura_3_ug1.display(f"{self.dict['UG']['temperatura_ug1_fase_t']:03.1f}")
-            self.lcdNumber_temperatura_4_ug1.display(f"{self.dict['UG']['temperatura_ug1_nucleo_gerador_1']:03.1f}")
-            self.lcdNumber_temperatura_5_ug1.display(f"{self.dict['UG']['temperatura_ug1_nucleo_gerador_2']:03.1f}")
-            self.lcdNumber_temperatura_6_ug1.display(f"{self.dict['UG']['temperatura_ug1_nucleo_gerador_3']:03.1f}")
-            self.lcdNumber_temperatura_7_ug1.display(f"{self.dict['UG']['temperatura_ug1_mancal_casq_rad']:03.1f}")
-            self.lcdNumber_temperatura_8_ug1.display(f"{self.dict['UG']['temperatura_ug1_mancal_casq_comb']:03.1f}")
-            self.lcdNumber_temperatura_9_ug1.display(f"{self.dict['UG']['temperatura_ug1_mancal_escora_comb']:03.1f}")
-            self.lcdNumber_perda_na_grade_ug1.display(f"{self.dict['USN']['nv_montante'] - self.dict['USN']['nv_jusante_grade']:03.1f}")
+            self.lcdNumber_etapa_atual_ug1.display(f"{self.dict['UG1']['etapa_atual']:d}")
+            self.lcdNumber_bitsalarme_ug1.display(f"{self.dict['UG1']['flags']:08b}")
+            self.lcdNumber_q_ug1.display(f"{self.dict['UG1']['q']:2.3f}")
+            self.lcdNumber_temperatura_1_ug1.display(f"{self.dict['UG1']['temp_fase_r']:03.1f}")
+            self.lcdNumber_temperatura_2_ug1.display(f"{self.dict['UG1']['temp_fase_s']:03.1f}")
+            self.lcdNumber_temperatura_3_ug1.display(f"{self.dict['UG1']['temp_fase_t']:03.1f}")
+            self.lcdNumber_temperatura_4_ug1.display(f"{self.dict['UG1']['temp_nucleo_gerador_1']:03.1f}")
+            self.lcdNumber_temperatura_5_ug1.display(f"{self.dict['UG1']['temp_nucleo_gerador_2']:03.1f}")
+            self.lcdNumber_temperatura_6_ug1.display(f"{self.dict['UG1']['temp_nucleo_gerador_3']:03.1f}")
+            self.lcdNumber_temperatura_7_ug1.display(f"{self.dict['UG1']['temp_mancal_guia_casq']:03.1f}")
+            self.lcdNumber_temperatura_8_ug1.display(f"{self.dict['UG1']['temp_mancal_casq_comb']:03.1f}")
+            self.lcdNumber_temperatura_9_ug1.display(f"{self.dict['UG1']['temp_mancal_esc_comb']:03.1f}")
+            self.lcdNumber_temperatura_9_ug1.display(f"{self.dict['UG1']['temp_mancal_contra_esc_comb']:03.1f}")
+            self.lcdNumber_perda_na_grade_ug1.display(f"{self.dict['TDA']['nv_montante'] - self.dict['TDA']['nv_jusante_grade']:03.1f}")
 
-            self.checkBox_sinal_trip_ug2.setChecked(self.dict['UG']["trip_ug2"])
-            self.checkBox_sinal_trip_condic_ug2.setChecked(self.dict['UG']["trip_condic_ug2"])
+            self.checkBox_sinal_trip_ug2.setChecked(self.dict['UG2']["trip"])
+            self.checkBox_sinal_trip_condic_ug2.setChecked(self.dict['UG2']["trip_condic"])
 
-            self.lcdNumber_potencia_ug2.display(self.dict['UG']["potencia_kw_ug2"])
-            self.lcdNumber_setpoint_ug2.display(self.dict['UG']["setpoint_kw_ug2"])
+            self.lcdNumber_potencia_ug2.display(f'{self.dict["UG2"]["potencia"]:0.0f}')
+            self.lcdNumber_setpoint_ug2.display(f'{self.dict["UG2"]["setpoint"]:0.0f}')
 
-            if self.dict['UG']["etapa_alvo_ug2"] is None:
+            if self.dict['UG2']["etapa_alvo"] is None:
                 self.lcdNumber_etapa_alvo_ug2.setHexMode()
                 self.lcdNumber_etapa_alvo_ug2.display(15)
 
             else:
                 self.lcdNumber_etapa_alvo_ug2.setDecMode()
-                self.lcdNumber_etapa_alvo_ug2.display(f"{self.dict['UG']['etapa_alvo_ug2']:d}")
+                self.lcdNumber_etapa_alvo_ug2.display(f"{self.dict['UG2']['etapa_alvo']:d}")
 
-            self.lcdNumber_etapa_atual_ug2.display(f"{self.dict['UG']['etapa_atual_ug2']:d}")
-            self.lcdNumber_bitsalarme_ug2.display(f"{self.dict['UG']['flags_ug2']:08b}")
-            self.lcdNumber_q_ug2.display(f"{self.dict['UG']['q_ug2']:2.3f}")
-            self.lcdNumber_temperatura_1_ug2.display(f"{self.dict['UG']['temperatura_ug2_fase_r']:03.1f}")
-            self.lcdNumber_temperatura_2_ug2.display(f"{self.dict['UG']['temperatura_ug2_fase_s']:03.1f}")
-            self.lcdNumber_temperatura_3_ug2.display(f"{self.dict['UG']['temperatura_ug2_fase_t']:03.1f}")
-            self.lcdNumber_temperatura_4_ug2.display(f"{self.dict['UG']['temperatura_ug2_nucleo_gerador_1']:03.1f}")
-            self.lcdNumber_temperatura_5_ug2.display(f"{self.dict['UG']['temperatura_ug2_nucleo_gerador_2']:03.1f}")
-            self.lcdNumber_temperatura_6_ug2.display(f"{self.dict['UG']['temperatura_ug2_nucleo_gerador_3']:03.1f}")
-            self.lcdNumber_temperatura_7_ug2.display(f"{self.dict['UG']['temperatura_ug2_mancal_casq_rad']:03.1f}")
-            self.lcdNumber_temperatura_8_ug2.display(f"{self.dict['UG']['temperatura_ug2_mancal_casq_comb']:03.1f}")
-            self.lcdNumber_temperatura_9_ug2.display(f"{self.dict['UG']['temperatura_ug2_mancal_escora_comb']:03.1f}")
-            self.lcdNumber_perda_na_grade_ug2.display(f"{self.dict['USN']['nv_montante'] - self.dict['USN']['nv_jusante_grade']:3.1f}")
+            self.lcdNumber_etapa_atual_ug2.display(f"{self.dict['UG2']['etapa_atual']:d}")
+            self.lcdNumber_bitsalarme_ug2.display(f"{self.dict['UG2']['flags']:08b}")
+            self.lcdNumber_q_ug2.display(f"{self.dict['UG2']['q']:2.3f}")
+            self.lcdNumber_temperatura_1_ug2.display(f"{self.dict['UG2']['temp_fase_r']:03.1f}")
+            self.lcdNumber_temperatura_2_ug2.display(f"{self.dict['UG2']['temp_fase_s']:03.1f}")
+            self.lcdNumber_temperatura_3_ug2.display(f"{self.dict['UG2']['temp_fase_t']:03.1f}")
+            self.lcdNumber_temperatura_4_ug2.display(f"{self.dict['UG2']['temp_nucleo_gerador_1']:03.1f}")
+            self.lcdNumber_temperatura_5_ug2.display(f"{self.dict['UG2']['temp_nucleo_gerador_2']:03.1f}")
+            self.lcdNumber_temperatura_6_ug2.display(f"{self.dict['UG2']['temp_nucleo_gerador_3']:03.1f}")
+            self.lcdNumber_temperatura_7_ug2.display(f"{self.dict['UG2']['temp_mancal_guia_casq']:03.1f}")
+            self.lcdNumber_temperatura_8_ug2.display(f"{self.dict['UG2']['temp_mancal_casq_comb']:03.1f}")
+            self.lcdNumber_temperatura_9_ug2.display(f"{self.dict['UG2']['temp_mancal_esc_comb']:03.1f}")
+            self.lcdNumber_temperatura_9_ug2.display(f"{self.dict['UG2']['temp_mancal_contra_esc_comb']:03.1f}")
+            self.lcdNumber_perda_na_grade_ug2.display(f"{self.dict['TDA']['nv_montante'] - self.dict['TDA']['nv_jusante_grade']:3.1f}")
 
         except Exception as e:
             print("A", repr(e))
@@ -118,7 +120,7 @@ class Window(QMainWindow, Ui_Form):
         return super().closeEvent(event)
 
     def mudar_q_afluente(self):
-        self.dict["USN"]["q_alfuente"] = (10 ** (self.horizontalSlider_q_afluente.value() / 75) - 1) * 2
+        self.dict["TDA"]["q_alfuente"] = (10 ** (self.horizontalSlider_q_afluente.value() / 75) - 1) * 2
 
     def set_trip_condic_usina(self):
         self.dict["USN"]["trip_condic_usina"] = True
@@ -129,8 +131,8 @@ class Window(QMainWindow, Ui_Form):
     def reset_geral_condic_usina(self):
         self.dict["USN"]["reset_geral_condic"] = True
         self.dict["USN"]["trip_condic_usina"] = False
-        self.dict["UG"]["trip_condic_ug1"] = False
-        self.dict["UG"]["trip_condic_ug2"] = False
+        self.dict["UG1"]["trip_condic"] = False
+        self.dict["UG2"]["trip_condic"] = False
 
         QTimer.singleShot(1000, self.aux_reset_geral_condic_usina)
 
@@ -142,20 +144,24 @@ class Window(QMainWindow, Ui_Form):
         QTimer.singleShot(2000, self.reset_trip_linha)
 
     def set_trip_linha(self):
-        self.dict["USN"]["tensao_na_linha"] = 0
+        self.dict["SE"]["tensao_vab"] = 0
+        self.dict["SE"]["tensao_vbc"] = 0
+        self.dict["SE"]["tensao_vca"] = 0
 
     def reset_trip_linha(self):
-        self.dict["USN"]["tensao_na_linha"] = 34500
+        self.dict["SE"]["tensao_vab"] = 34500
+        self.dict["SE"]["tensao_vbc"] = 34500
+        self.dict["SE"]["tensao_vca"] = 34500
 
     def pulse_trip_52L(self):
         self.set_trip_52L()
         QTimer.singleShot(2000, self.reset_trip_52L)
 
     def set_trip_52L(self):
-        self.dict["DJ"]["trip_52L"] = True
+        self.dict["SE"]["dj_trip"] = True
 
     def reset_trip_52L(self):
-        self.dict["DJ"]["trip_52L"] = False
+        self.dict["SE"]["dj_trip"] = False
 
     # ug1
     def pulso_trip_ug1(self):
@@ -163,29 +169,28 @@ class Window(QMainWindow, Ui_Form):
         QTimer.singleShot(2000, self.set_trip_low_ug1)
 
     def set_trip_high_ug1(self):
-        self.dict["UG"]["trip_ug1"] = True
+        self.dict["UG1"]["trip"] = True
 
     def set_trip_low_ug1(self):
-        self.dict["UG"]["trip_ug1"] = False
+        self.dict["UG1"]["trip"] = False
 
     def set_trip_condic_ug1(self):
-        self.dict["UG"]["trip_condic_ug1"] = True
+        self.dict["UG1"]["trip_condic"] = True
 
     def reset_trip_condic_ug1(self):
-        self.dict["UG"]["trip_condic_ug1"] = False
+        self.dict["UG1"]["trip_condic"] = False
 
     def reconhece_reset_ug1(self):
-        self.dict["UG"]["reconhece_reset_ug1"] = True
+        self.dict["UG1"]["reconhece_reset"] = True
 
     def partir_ug1(self):
-        self.dict["UG"]["debug_partir_ug1"] = True
-        print("partir ug1 GUI")
+        self.dict["UG1"]["debug_partir"] = True
 
     def parar_ug1(self):
-        self.dict["UG"]["debug_parar_ug1"] = True
+        self.dict["UG1"]["debug_parar"] = True
 
     def mudar_setpoint_ug1(self):
-        self.dict["UG"]["debug_setpoint_kw_ug1"] = self.horizontalSlider_setpoint_ug1.value()
+        self.dict["UG1"]["debug_setpoint"] = self.horizontalSlider_setpoint_ug1.value()
 
     # ug2
     def pulso_trip_ug2(self):
@@ -193,43 +198,42 @@ class Window(QMainWindow, Ui_Form):
         QTimer.singleShot(2000, self.set_trip_low_ug2)
 
     def set_trip_high_ug2(self):
-        self.dict["UG"]["trip_ug2"] = True
+        self.dict["UG2"]["trip"] = True
 
     def set_trip_low_ug2(self):
-        self.dict["UG"]["trip_ug2"] = False
+        self.dict["UG2"]["trip"] = False
 
     def set_trip_condic_ug2(self):
-        self.dict["UG"]["trip_condic_ug2"] = True
+        self.dict["UG2"]["trip_condic"] = True
 
     def reset_trip_condic_ug2(self):
-        self.dict["UG"]["trip_condic_ug2"] = False
+        self.dict["UG2"]["trip_condic"] = False
 
     def reconhece_reset_ug2(self):
-        self.dict["UG"]["reconhece_reset_ug2"] = True
+        self.dict["UG2"]["reconhece_reset"] = True
 
     def partir_ug2(self):
-        self.dict["UG"]["debug_partir_ug2"] = True
-        print("partir ug2 GUI")
+        self.dict["UG2"]["debug_partir"] = True
 
     def parar_ug2(self):
-        self.dict["UG"]["debug_parar_ug2"] = True
+        self.dict["UG2"]["debug_parar"] = True
 
     def mudar_setpoint_ug2(self):
-        self.dict["UG"]["debug_setpoint_kw_ug2"] = self.horizontalSlider_setpoint_ug2.value()
+        self.dict["UG2"]["debug_setpoint"] = self.horizontalSlider_setpoint_ug2.value()
 
     # dj52L
     def alternar_estado_dj52L(self):
-        if self.dict["DJ"]["dj52L_aberto"]:
-            self.dict["DJ"]["debug_dj52L_fechar"] = True
-        if self.dict["DJ"]["dj52L_fechado"]:
-            self.dict["DJ"]["debug_dj52L_abrir"] = True
+        if self.dict["SE"]["dj_aberto"]:
+            self.dict["SE"]["debug_dj_fechar"] = True
+        if self.dict["SE"]["dj_fechado"]:
+            self.dict["SE"]["debug_dj_abrir"] = True
 
     def provocar_inconsistencia_dj52L(self):
-        self.dict["DJ"]["debug_dj52L_abrir"] = True
-        self.dict["DJ"]["debug_dj52L_fechar"] = True
+        self.dict["SE"]["debug_dj_abrir"] = True
+        self.dict["SE"]["debug_dj_fechar"] = True
 
     def reconhecer_reset_dj52L(self):
-        self.dict["DJ"]["debug_dj52L_reconhece_reset"] = True
+        self.dict["SE"]["debug_dj_reset"] = True
 
 def start_gui(shared_dict):
     app = QApplication(sys.argv)
