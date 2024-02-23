@@ -51,6 +51,11 @@ class Usina:
         self.ug1 = u.UnidadeDeGeracao(1, self.cfg, self.bd)
         self.ug2 = u.UnidadeDeGeracao(2, self.cfg, self.bd)
         self.ugs: "list[u.UnidadeDeGeracao]" = [self.ug1, self.ug2]
+        
+        self.se.bd = self.bd
+        self.sa.bd = self.bd
+        self.tda.bd = self.bd
+        self.tda.cfg = self.cfg
 
         # ATRIBUIÇÃO DE VARIÁVEIS PRIVADAS
         self.__pid_inicial: "int" = -1

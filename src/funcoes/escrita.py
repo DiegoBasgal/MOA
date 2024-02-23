@@ -28,8 +28,8 @@ class EscritaModBusBit:
 
         try:
             raw = client.read_holding_registers(registrador[0], 2)
-            dec_1 = BPD.fromRegisters(raw, byteorder=Endian.LITTLE, wordorder=Endian.BIG)
-            dec_2 = BPD.fromRegisters(raw, byteorder=Endian.LITTLE, wordorder=Endian.BIG)
+            dec_1 = BPD.fromRegisters(raw, byteorder=Endian.BIG, wordorder=Endian.LITTLE)
+            dec_2 = BPD.fromRegisters(raw, byteorder=Endian.BIG, wordorder=Endian.LITTLE)
 
             lbit = [int(bit) for bits in [reversed(dec_1.decode_bits(1)), reversed(dec_2.decode_bits(2))] for bit in bits]
 

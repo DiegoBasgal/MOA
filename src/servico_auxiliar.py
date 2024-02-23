@@ -31,7 +31,7 @@ class ServicoAuxiliar:
 
     status_dj_tsa = lei.LeituraModbusBit(
         clp["SA"],
-        REG_SASE["SA"]["SA_ED_PSA_DIJS_TSA_FECHADO"],
+        REG_SASE["DJ_TSA_FECHADO"],
         descricao="[SA]  Status Disjuntor SA"
     )
 
@@ -267,11 +267,11 @@ class ServicoAuxiliar:
             logger.warning("[SA]  Foi identificado que a pressão do lado limpo do Sistema de Filtragem B está muito baixa, favor verificar.")
 
         # WHATSAPP + VOIP
-        if cls.l_disj_gmg_trip.valor and not d.voip["SA_ED_PSA_DISJ_GMG_TRIP"][0]:
+        if cls.l_disj_gmg_trip.valor and not d.voip["DJ_GMG_TRIP"][0]:
             logger.warning("[SA]  Foi identificado um sinal de Trip do Grupo Motor Gerador, favor verificar.")
-            d.voip["SA_ED_PSA_DISJ_GMG_TRIP"][0] = True
-        elif not cls.l_disj_gmg_trip.valor and d.voip["SA_ED_PSA_DISJ_GMG_TRIP"][0]:
-            d.voip["SA_ED_PSA_DISJ_GMG_TRIP"][0] = False
+            d.voip["DJ_GMG_TRIP"][0] = True
+        elif not cls.l_disj_gmg_trip.valor and d.voip["DJ_GMG_TRIP"][0]:
+            d.voip["DJ_GMG_TRIP"][0] = False
 
         if cls.l_dps_gmg_falha.valor and not d.voip["SA_ED_PSA_DPS_GMG"][0]:
             logger.warning("[SA]  Houve uma falha com o Grupo Motor Gerador, favor verificar.")

@@ -32,7 +32,7 @@ class TomadaAgua:
 
     nv_montante = lei.LeituraModbusFloat(
         clp["TDA"],
-        REG_TDA["GERAL_EA_NIVEL_MONTANTE_GRADE"],
+        REG_TDA["NV_MONTANTE_GRADE"],
         descricao="[USN] Nível Montante"
     )
 
@@ -57,7 +57,7 @@ class TomadaAgua:
     def resetar_emergencia(cls) -> "None":
         try:
             logger.info(f"[TDA] Enviando comando:                   \"RESET EMERGÊNCIA\"")
-            esc.EscritaModBusBit.escrever_bit(cls.clp["TDA"], REG_TDA["RESET_GERAL"], valor=1)
+            esc.EscritaModBusBit.escrever_bit(cls.clp["TDA"], REG_TDA["CMD_RESET_GERAL"], valor=1)
 
         except Exception:
             logger.error(f"[TDA] Houve um erro ao realizar o Reset de Emergência.")
@@ -120,11 +120,11 @@ class TomadaAgua:
         if cls.l_nv_montante_baixo.valor:
             logger.warning("[TDA] Foi identificado que o Nível Montante está baixo, favor verificar.")
 
-        if cls.l_nv_montante_muito_baixo.valor and not d.voip["SA_EA_PSA_NIVEL_MONTANTE_MUITO_BAIXO"][0]:
+        if cls.l_nv_montante_muito_baixo.valor and not d.voip["NV_MONTANTE_GRADE_MUITO_BAIXO"][0]:
             logger.warning("[TDA] Foi identificado que o Nível Montante está Muito Baixo, favor verificar.")
-            d.voip["SA_EA_PSA_NIVEL_MONTANTE_MUITO_BAIXO"][0] = True
-        elif not cls.l_nv_montante_muito_baixo.valor and d.voip["SA_EA_PSA_NIVEL_MONTANTE_MUITO_BAIXO"][0]:
-            d.voip["SA_EA_PSA_NIVEL_MONTANTE_MUITO_BAIXO"][0] = False
+            d.voip["NV_MONTANTE_GRADE_MUITO_BAIXO"][0] = True
+        elif not cls.l_nv_montante_muito_baixo.valor and d.voip["NV_MONTANTE_GRADE_MUITO_BAIXO"][0]:
+            d.voip["NV_MONTANTE_GRADE_MUITO_BAIXO"][0] = False
 
 
     @classmethod
@@ -134,5 +134,5 @@ class TomadaAgua:
         e emergências da Usina.
         """
 
-        cls.l_nv_montante_baixo = lei.LeituraModbusBit(cls.clp["TDA"], REG_TDA["NV_MONTANTE_GRADE_BAIXO"], descricao="[TDA] Nível Montante Baixo") # TODO -> verificar se alterar o clp adiantou
+        cls.l_nv_montante_baixo = lei.LeituraModbusBit(cls.clp["TDA"], REG_TDA["NV_MONTANTE_GRADE_BAIXO"], descricao="[TDA] Nível Montante Baixo")
         cls.l_nv_montante_muito_baixo = lei.LeituraModbusBit(cls.clp["TDA"], REG_TDA["NV_MONTANTE_GRADE_MUITO_BAIXO"], descricao="[TDA] Nível Montante Muito Baixo")
