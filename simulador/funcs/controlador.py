@@ -13,7 +13,7 @@ class Controlador:
         self.dict = compartilhado
 
         self.cnx = mariadb.ConnectionPool(
-            host='172.21.15.233',
+            host='192.168.0.3',
             user='moa',
             password='&264H3$M@&z$',
             database='django_db',

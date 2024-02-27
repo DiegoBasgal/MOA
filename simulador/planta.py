@@ -39,8 +39,9 @@ class Planta:
         for v in REG_TDA.values():
             DB.set_words(v[0], [0]) if isinstance(v, list) else DB.set_words(v, [0])
 
-        for v in REG_RTV.values():
-            DB.set_words(v[0], [0]) if isinstance(v, list) else DB.set_words(v, [0])
+        for n in REG_RTV.values():
+            for v in n.values():
+                DB.set_words(v[0], [0]) if isinstance(v, list) else DB.set_words(v, [0])
 
         for n in REG_UG.values():
             for v in n.values():

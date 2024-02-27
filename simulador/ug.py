@@ -49,7 +49,7 @@ class Unidade:
             self.dict[f'UG{self.id}'][f'debug_parar'] = False
             self.parar()
 
-        self.setpoint = DB.get_words(REG_RTV['SETPOINT_POT_ATIVA_PU'])[0]
+        self.setpoint = DB.get_words(REG_RTV[f'UG{self.id}']['SETPOINT_POT_ATIVA_PU'])[0]
         self.dict[f'UG{self.id}'][f'setpoint'] = self.setpoint
 
         self.dict[f'UG{self.id}'][f'q'] = self.calcular_q_ug(self.potencia)
@@ -231,8 +231,8 @@ class Unidade:
 
 
     def atualizar_modbus(self) -> 'None':
-        DB.set_words(REG_RELE[f'UG{self.id}']['P'], [round(self.potencia)])
-        DB.set_words(REG_RTV['SETPOINT_POT_ATIVA_PU'], [self.setpoint])
+        DB.set_words(REG_RELE[f'UG{self.id}']['P'], [round(self.dict[f'UG{self.id}']['potencia'])])
+        DB.set_words(REG_RTV[f'UG{self.id}']['SETPOINT_POT_ATIVA_PU'], [self.setpoint])
         # DB.set_words(REG_UG[f'UG{self.id}']['HORIMETRO'], [np.floor(self.horimetro_hora)])
         DB.set_words(REG_UG[f'UG{self.id}']['STT_PASSO_ATUAL'], [int(self.dict[f'UG{self.id}'][f'etapa_atual'])])
         DB.set_words(REG_UG[f'UG{self.id}']['SST_PASSO_SELECIONADO'], [int(self.dict[f'UG{self.id}'][f'etapa_alvo'])])

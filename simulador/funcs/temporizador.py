@@ -10,9 +10,9 @@ class Temporizador:
 
         self.dict = shared_dict
 
-        self.velocidade = 50
+        self.velocidade = 1
         self.escala_ruido = 0.1
-        self.passo_simulacao = 0.001
+        self.passo_simulacao = 1
         self.segundos_por_passo = self.passo_simulacao * self.velocidade
 
     def get_time(self) -> datetime:
@@ -22,7 +22,7 @@ class Temporizador:
         while not self.dict["GLB"]["stop_sim"]:
             try:
                 self.t_inicio = self.get_time()
-                self.dict["GLB"]["tempo_simul"] += self.segundos_por_passo
+                # self.dict["GLB"]["tempo_simul"] += self.segundos_por_passo
 
             except KeyboardInterrupt:
                 self.dict["GLB"]["stop_sim"] = True

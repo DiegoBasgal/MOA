@@ -2010,8 +2010,8 @@ class Ui_Form(object):
     # setupUi
 
     def retranslateUi(self, Form):
-        Form.setWindowTitle(QCoreApplication.translate("Form", u"Simulador PCH PPN", None))
-        self.label.setText(QCoreApplication.translate("Form", u"Simula\u00e7\u00e3o PCH Pampeana", None))
+        Form.setWindowTitle(QCoreApplication.translate("Form", u"Simulador CGH PPN", None))
+        self.label.setText(QCoreApplication.translate("Form", u"Simula\u00e7\u00e3o CGH Pampeana", None))
         self.label_potencia_ug2.setText(QCoreApplication.translate("Form", u"Pot\u00eancia", None))
         self.label_setpoint_ug2.setText(QCoreApplication.translate("Form", u"Setpoint", None))
         self.label_etapa_ug2.setText(QCoreApplication.translate("Form", u"Etapa Atual/Alvo", None))
