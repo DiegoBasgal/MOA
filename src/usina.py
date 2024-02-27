@@ -48,6 +48,7 @@ class Usina:
 
         self.bd = bd.BancoDados("MOA-PPN")
         self.agn = agn.Agendamentos(self.cfg, self.bd, self)
+
         self.ug1 = u.UnidadeDeGeracao(1, self.cfg, self.bd)
         self.ug2 = u.UnidadeDeGeracao(2, self.cfg, self.bd)
         self.ugs: "list[u.UnidadeDeGeracao]" = [self.ug1, self.ug2]
@@ -97,10 +98,7 @@ class Usina:
 
         self.ler_valores()
         self.ajustar_inicializacao()
-        self.se.djl_manual = True
-        self.normalizar_usina()
         self.escrever_valores()
-        self.se.djl_manual = False
 
         self._tentativas_normalizar = 0
 
@@ -139,6 +137,19 @@ class Usina:
 
     ### MÉTODOS DE CONTROLE DE RESET E NORMALIZAÇÃO
 
+    def resetar_emergencia(self) -> "None":
+        """
+        Função para reset geral da Usina. Envia o comando de reset para todos os
+        CLPs.
+        """
+        logger.debug("")
+        logger.info(f"[USN]  Enviando comando:                   \"RESET EMERGÊNCIA GERAL\"")
+        logger.debug("")
+        logger.debug("[USN] Tomada da Água resetada.") if self.tda.resetar_emergencia else logger.info("[USN] Reset de emergência da Tomada da Água \"FALHOU\"!.")
+        logger.debug("[USN] Serviço Auxiliar e Subestação resetados.") if self.sa.resetar_emergencia() else logger.info("[USN] Reset de emergência do serviço auxiliar e subestação \"FALHOU\"!.")
+        logger.debug("")
+
+
     def acionar_emergencia(self) -> "None":
         logger.warning("[USN] Enviando Comando:                  \"ACIONAR EMERGÊNCIA\".")
 
@@ -152,39 +163,60 @@ class Usina:
             logger.debug(traceback.format_exc())
 
 
-    def normalizar_usina(self) -> "int":
-        logger.debug("")
+    def normalizar_usina(self) -> "bool":
+        """
+        Função para normalização de ocorrências da Usina.
+
+        Verifica primeiramente a tensão da linha.
+        Caso a tenão esteja dentro dos limites, passa a verificar se a
+        normalização foi executada à pouco tempo, se foi, avisa o operador,
+        senão, passa a chamar as funções de reset geral.
+        """
+
         logger.debug(f"[USN] Última tentativa de normalização:   {self.ultima_tentativa_norm.strftime('%d-%m-%Y %H:%M:%S')}")
-        logger.debug(f"[USN] Tensão na linha:                    RS -> \"{self.se.tensao_rs.valor:2.1f} kV\" | ST -> \"{self.se.tensao_st.valor:2.1f} kV\" | TR -> \"{self.se.tensao_tr.valor:2.1f} kV\"")
-        logger.debug("")
 
-        if not self.se.verificar_tensao():
-            return NORM_USN_FALTA_TENSAO
-
-        elif (self.tentativas_normalizar < 3 and (self.get_time() - self.ultima_tentativa_norm).seconds >= 60 * self.tentativas_normalizar) or self.normalizar_forcado:
+        if (self.tentativas_normalizar < 3 and (self.get_time() - self.ultima_tentativa_norm).seconds >= self.tentativas_normalizar * 2) or self.normalizar_forcado:
             self.ultima_tentativa_norm = self.get_time()
             self.tentativas_normalizar += 1
-
-            logger.debug("")
-            logger.info(f"[USN] Normalizando Usina... (Tentativa {self.tentativas_normalizar}/3)")
-
-            self.bd_emergencia = self.clp_emergencia = False
-
-            self.sa.resetar_emergencia()
-            self.tda.resetar_emergencia()
-            for ug in self.ugs: ug.resetar_emergencia()
-
-            sleep(2)
-            if not self.se.djl_manual:
-                self.se.fechar_dj_linha()
-
+            logger.info(f"[USN] Normalizando... (Tentativa {self.tentativas_normalizar}/3)")
+            self.normalizar_forcado = self.clp_emergencia = self.bd_emergencia = False
+            self.resetar_emergencia()
+            sleep(1)
+            self.se.fechar_dj_linha()
             self.bd.update_remove_emergencia()
-            return NORM_USN_EXECUTADA
+            return True
 
         else:
+            logger.debug("[USN] A normalização foi executada menos de 1 minutos atrás.")
+            sleep(1)
+            return False
+
+
+    def verificar_se(self) -> "int":
+        """
+        Função para verificação do Bay e Subestação.
+
+        Apresenta a leitura de tensão VAB, VBC, VCA do Bay e Subestação.
+        Caso haja uma falta de tensão na linha da subestação, aciona o temporizador
+        para retomada em caso de queda de tensão. Caso a tensão esteja normal, tenta
+        realizar o fechamento dos disjuntores do Bay e depois da Subestação. Caso
+        haja um erro com o fechamento dos disjuntores, aciona a normalização da usina
+        senão, sinaliza que está tudo correto para a máquina de estados do MOA.
+        """
+
+        if not self.se.verificar_tensao():
             logger.debug("")
-            logger.debug("[USN] A normalização foi executada menos de 5 minutos atrás...")
-            return NORM_USN_JA_EXECUTADA
+            logger.debug(f"[SE]  Tensão Subestação:            RS -> \"{self.se.tensao_rs.valor:2.1f} V\" | ST -> \"{self.se.tensao_st.valor:2.1f} V\" | TR -> \"{self.se.tensao_tr.valor:2.1f} V\"")
+            logger.debug("")
+            return DJS_FALTA_TENSAO
+
+        elif not self.se.fechar_dj_linha():
+            self.normalizar_forcado = True
+            return DJS_FALHA
+
+        else:
+            return DJS_OK
+
 
 
     def verificar_condicionadores(self) -> "int":
@@ -227,7 +259,6 @@ class Usina:
 
 
     ### MÉTODOS DE CONTROLE DE OPERAÇÃO:
-
     def ajustar_ie_padrao(self) -> "int":
         return sum(ug.potencia for ug in self.ugs) / self.cfg["pot_maxima_alvo"]
 
@@ -244,15 +275,30 @@ class Usina:
 
 
     def controlar_reservatorio(self) -> "int":
+        """
+        Função para controle de níveis do reservatório.
 
-        if self.tda.nv_montante_recente >= self.cfg["nv_maximo"]:
-            logger.debug("[USN] Nível montante acima do limite Máximo!")
-            logger.debug(f"[USN]          Leitura:                   {self.tda.nv_montante_recente:0.3f}")
+        Realiza a leitura de nível montante e determina qual condição entrar. Se
+        o nível estiver acima do máximo, verifica se atingiu o Maximorum. Nesse
+        caso é acionada a emergência da Usina, porém se for apenas vertimento,
+        distribui a potência máxima para as Unidades.
+        Caso a leitura retornar que o nível está abaixo do mínimo, verifica antes
+        se atingiu o fundo do reservatório, nesse caso é acionada a emergência.
+        Se o valor ainda estiver acima do nível de fundo, será distribuída a
+        potência 0 para todas as Unidades e aciona a espera pelo nível.
+        Caso a leitura esteja dentro dos limites normais, é chamada a função para
+        calcular e distribuir a potência para as Unidades.
+        """
+
+        if self.tda.nv_montante.valor >= self.cfg["nv_maximo"]:
+            logger.debug("[TDA] Nível Montante acima do Máximo.")
+            logger.debug(f"[TDA]          Leitura:                   {self.tda.nv_montante.valor:0.3f}")
             logger.debug("")
 
-            if self.tda.nv_montante_recente >= NIVEL_MAXIMORUM:
-                logger.critical(f"[USN] Nível montante ({self.tda.nv_montante_recente:3.2f}) atingiu o maximorum!")
-                return NV_FLAG_EMERGENCIA
+            if self.tda.nv_montante_anterior >= NIVEL_MAXIMORUM:
+                logger.critical(f"[TDA] Nivel Montante ({self.tda.nv_montante_anterior:3.2f}) atingiu o Maximorum!")
+                logger.debug("")
+                return NV_EMERGENCIA
             else:
                 self.controle_i = 0.9
                 self.controle_ie = 0.5
@@ -261,41 +307,32 @@ class Usina:
                 for ug in self.ugs:
                     ug.step()
 
-        elif self.tda.nv_montante_recente <= self.cfg["nv_minimo"] and not self.aguardando_reservatorio:
-            if self.tda.nv_montante < self.cfg["nv_minimo"] and self.tda.nv_montante_recente > self.cfg["nv_minimo"]:
-                if self.erro_leitura_montante == 3:
-                    logger.warning(f"[USN] Tentativas de Leitura de Nível Montante ultrapassadas!")
-                    self.erro_leitura_montante = 0
-                    self.distribuir_potencia(0)
+        elif self.tda.nv_montante.valor <= self.cfg["nv_minimo"] and not self.tda.aguardando_reservatorio:
+            logger.debug("[TDA] Nível Montante abaixo do Mínimo.")
+            logger.debug(f"[TDA]          Leitura:                   {self.tda.nv_montante.valor:0.3f}")
+            logger.debug("")
+            self.tda.aguardando_reservatorio = True
+            self.distribuir_potencia(0)
 
-                    for ug in self.ugs:
-                        ug.step()
+            for ug in self.ugs:
+                ug.step()
 
-                    return NV_FLAG_EMERGENCIA
-
-                self.erro_leitura_montante += 1
-                logger.info("[USN] Foi identificada uma diferença nas Leituras de Nível Montante anterior e atual")
-                logger.debug(f"[USN] Verificando erros de Leitura... (Tentativa {self.erro_leitura_montante}/3)")
-            else:
-                logger.debug("[USN] Nível Montante abaixo do limite Mínimo!")
-                logger.debug(f"[USN]          Leitura:                   {self.tda.nv_montante_recente:0.3f}")
+            if self.tda.nv_montante_anterior <= NIVEL_FUNDO_RESERVATORIO:
+                logger.critical(f"[TDA] Nível Montante ({self.tda.nv_montante_anterior:3.2f}) atingiu o fundo do reservatorio!")
                 logger.debug("")
+                return NV_EMERGENCIA
 
-                self.erro_leitura_montante = 0
-                self.aguardando_reservatorio = True
-                self.distribuir_potencia(0)
+        elif self.tda.aguardando_reservatorio:
+            logger.debug("[TDA] Aguardando Nível Montante...")
+            logger.debug(f"[TDA]          Leitura:                   {self.tda.nv_montante.valor:0.3f}")
+            logger.debug(f"[TDA]          Nível de Religamento:      {self.cfg['nv_religamento']:0.3f}")
+            logger.debug("")
 
-                for ug in self.ugs:
-                    ug.step()
-
-                if self.tda.nv_montante_recente <= NIVEL_FUNDO_RESERVATORIO:
-                    logger.critical(f"[USN] Nível montante ({self.tda.nv_montante_recente:3.2f}) atingiu o fundo do reservatorio!")
-                    return NV_FLAG_EMERGENCIA
-
-        elif self.aguardando_reservatorio:
-            if self.tda.nv_montante_recente >= self.cfg["nv_alvo"]:
-                logger.debug("[USN] Nível montante dentro do limite de operação")
-                self.aguardando_reservatorio = False
+            if self.tda.nv_montante.valor >= self.cfg["nv_religamento"]:
+                logger.debug("[TDA] Nível Montante dentro do limite de operação.")
+                logger.debug(f"[TDA]          Leitura:                   {self.tda.nv_montante.valor:0.3f}")
+                logger.debug("")
+                self.tda.aguardando_reservatorio = False
 
         else:
             self.controlar_potencia()
@@ -303,7 +340,7 @@ class Usina:
             for ug in self.ugs:
                 ug.step()
 
-        return NV_FLAG_NORMAL
+        return NV_NORMAL
 
 
     def controlar_potencia(self) -> "None":
@@ -405,22 +442,28 @@ class Usina:
         self.__split2 = False if sp < (0.5) else self.__split2
         self.__split1 = False if sp < (self.cfg["pot_minima"] / self.cfg["pot_maxima_usina"]) else self.__split1
 
-        logger.debug(f"[USN] SP Geral:                           {sp}")
+        logger.debug(f"[USN] SP Geral:                           {sp * 100:0.1f} %")
+
 
         if len(ugs) == 2:
             if self.__split2:
                 logger.debug("[USN] Split:                              2")
 
-                for ug in ugs: ug.setpoint = sp * ug.setpoint_maximo
-
+                for ug in ugs: 
+                    ug.manter_unidade = False
+                    ug.setpoint = sp * ug.setpoint_maximo
+                    
             elif self.__split1:
                 logger.debug("[USN] Split:                              2 -> \"1B\"")
 
+                ugs[0].manter_unidade = True
                 ugs[0].setpoint = 2 * sp * ugs[0].setpoint_maximo
                 ugs[1].setpoint = 0
 
             else:
-                for ug in ugs: ug.setpoint = 0
+                for ug in ugs: 
+                    ug.manter_unidade = False
+                    ug.setpoint = 0
 
             logger.debug("")
             for ug in ugs: logger.debug(f"[UG{ug.id}] SP    <-                            {int(ug.setpoint)}")
@@ -428,6 +471,7 @@ class Usina:
         elif len(ugs) == 1:
             logger.debug("[USN] Split:                              1")
 
+            ugs[0].manter_unidade = True
             ugs[0].setpoint = 2 * sp * ugs[0].setpoint_maximo
 
             logger.debug("")
@@ -446,7 +490,8 @@ class Usina:
         self.atualizar_valores_banco(parametros)
 
         # if self.clp["SA"].read_coils(REG_SA["RESERVA_X"])[0] == 1 and not self.modo_autonomo:
-        #     self.modo_autonomo = True
+        #     self.modo_autonom
+        # o = True
         # elif self.clp["SA"].read_coils(REG_SA["RESERVA_X"])[0] == 0 and self.modo_autonomo:
         #     self.modo_autonomo == False
 
@@ -504,48 +549,45 @@ class Usina:
 
 
     def escrever_valores(self) -> None:
-        v1 = [
-            self.get_time().strftime("%Y-%m-%d %H:%M:%S"),
-            1 if self.aguardando_reservatorio else 0,
-            self.tda.nv_montante,
-            self.ug1.potencia,
-            self.ug1.setpoint,
-            self.ug1.codigo_state,
-            self.ug2.potencia,
-            self.ug2.setpoint,
-            self.ug2.codigo_state,
-        ]
-
-        v2 = [
-            self.get_time().timestamp(),
-            1 if self.modo_autonomo else 0,
-            self.tda.nv_montante,
-            self.tda.erro_nv,
-            self.ug1.setpoint,
-            self.ug1.potencia,
-            self.ug1.codigo_state,
-            self.ug2.setpoint,
-            self.ug2.potencia,
-            self.ug2.codigo_state,
-            self.cfg["kp"],
-            self.cfg["ki"],
-            self.cfg["kd"],
-            self.cfg["kie"],
-            self.controle_p,
-            self.controle_i,
-            self.controle_d,
-            self.controle_ie,
-        ]
 
         try:
-            self.bd.update_valores_usina(v1)
+            self.bd.update_valores_usina([
+                self.get_time().strftime("%Y-%m-%d %H:%M:%S"),
+                1 if self.aguardando_reservatorio else 0,
+                self.tda.nv_montante.valor,
+                self.ug1.potencia,
+                self.ug1.setpoint,
+                self.ug1.codigo_state,
+                self.ug2.potencia,
+                self.ug2.setpoint,
+                self.ug2.codigo_state,
+            ])
 
         except Exception:
             logger.debug(f"[USN] Houve um erro ao inserir os valores no Banco.")
             logger.debug(traceback.format_exc())
 
         try:
-            self.bd.update_debug(v2)
+            self.bd.update_debug([
+                self.get_time().timestamp(),
+                1 if self.modo_autonomo else 0,
+                self.tda.nv_montante.valor,
+                self.tda.erro_nv,
+                self.ug1.setpoint,
+                self.ug1.potencia,
+                self.ug1.codigo_state,
+                self.ug2.setpoint,
+                self.ug2.potencia,
+                self.ug2.codigo_state,
+                self.controle_p,
+                self.controle_i,
+                self.controle_d,
+                self.controle_ie,
+                self.cfg["kp"],
+                self.cfg["ki"],
+                self.cfg["kd"],
+                self.cfg["kie"],
+            ])
 
         except Exception:
             logger.debug(f"[USN] Houve um erro ao inserir dados DEBUG no Banco.")

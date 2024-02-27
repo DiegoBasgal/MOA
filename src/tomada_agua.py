@@ -33,6 +33,8 @@ class TomadaAgua:
     nv_montante = lei.LeituraModbus( # lei.LeituraModbusFloat
         clp["TDA"],
         REG_TDA["NV_MONTANTE_GRADE"],
+        fundo_escala=800,
+        escala=0.001,
         descricao="[USN] Nível Montante"
     )
 
@@ -40,6 +42,8 @@ class TomadaAgua:
     erro_nv_anterior: "float" = 0
     nv_montante_recente: "float" = 0
     nv_montante_anterior: "float" = 0
+
+    aguardando_reservatorio: "bool" = False
 
     condicionadores: "list[c.CondicionadorBase]" = []
     condicionadores_essenciais: "list[c.CondicionadorBase]" = []
@@ -54,10 +58,11 @@ class TomadaAgua:
 
 
     @classmethod
-    def resetar_emergencia(cls) -> "None":
+    def resetar_emergencia(cls) -> "bool":
         try:
             logger.info(f"[TDA] Enviando comando:                   \"RESET EMERGÊNCIA\"")
-            esc.EscritaModBusBit.escrever_bit(cls.clp["TDA"], REG_TDA["CMD_RESET_GERAL"], valor=1)
+            res = esc.EscritaModBusBit.escrever_bit(cls.clp["TDA"], REG_TDA["CMD_RESET_GERAL"], valor=1)
+            return res
 
         except Exception:
             logger.error(f"[TDA] Houve um erro ao realizar o Reset de Emergência.")

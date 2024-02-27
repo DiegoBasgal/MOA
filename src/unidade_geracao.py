@@ -100,6 +100,7 @@ class UnidadeDeGeracao:
 
         self.ug_parando: "bool" = False
         self.borda_parar: "bool" = False
+        self.manter_unidade: "bool" = False
         self.ug_sincronizando: "bool" = False
         self.temporizar_partida: "bool" = False
         self.normalizacao_agendada: "bool" = False
@@ -156,10 +157,11 @@ class UnidadeDeGeracao:
 
     @property
     def etapa_atual(self) -> "int":
+        # PROPRIEDADE -> Retorna o valor da leitura de etapa atual
+
         try:
-            self._etapa_atual = self.__etapa_atual.valor
-            self._ultima_etapa_atual = self._etapa_atual
-            return self._etapa_atual
+            self._ultima_etapa_atual = self.__etapa_atual.valor
+            return self._ultima_etapa_atual
 
         except Exception:
             logger.error(f"[UG{self.id}] Erro na leitura de \"Etapa Atual\". Mantendo última etapa.")
@@ -167,68 +169,31 @@ class UnidadeDeGeracao:
 
     @property
     def etapa_alvo(self) -> "int":
+        # PROPRIEDADE -> Retorna o valor da leitura de etapa alvo
+
         try:
-            self._etapa_alvo = self.__etapa_alvo.valor
-            return self._etapa_alvo
+            self._ultima_etapa_alvo = self.__etapa_alvo.valor
+            return self._ultima_etapa_alvo
 
         except Exception:
             logger.error(f"[UG{self.id}] Erro na leitura de \"Etapa Alvo\". Mantendo última etapa.")
-            self._etapa_alvo = self._ultima_etapa_alvo
-            return self._etapa_alvo
+            return self._ultima_etapa_alvo
 
     @property
     def etapa(self) -> "int":
-        try:
-            if self.etapa_atual == UG_PARADA and self.etapa_alvo == UG_PARADA:
-                self._ultima_etapa_alvo = self.etapa_alvo
-                return UG_PARADA
+        # PROPRIEDADE -> Retorna o valor de etapa tratado
 
-            elif self.etapa_atual == UG_SINCRONIZADA and self.etapa_alvo == UG_SINCRONIZADA:
-                self._ultima_etapa_alvo = self.etapa_alvo
-                return UG_SINCRONIZADA
+        if self.__etapa_atual.valor == 0 and self.__etapa_alvo.valor == 0:
+            return UG_PARADA
 
-            elif UG_PARADA < self.etapa_atual <= UG_SINCRONIZADA and self.etapa_alvo == UG_PARADA:
+        elif self.__etapa_atual.valor == 5 and self.__etapa_alvo.valor == 5:
+            return UG_SINCRONIZADA
 
-                if self._ultima_etapa_alvo != self.etapa_alvo:
-                    if self._ultima_etapa_alvo < self.etapa_alvo:
-                        self._ultima_etapa_alvo = self.etapa_alvo
-                        return UG_SINCRONIZANDO
+        elif self.__etapa_atual.valor >= 0 and self.__etapa_alvo.valor == 5:
+            return UG_SINCRONIZANDO
 
-                    elif self._ultima_etapa_alvo > self.etapa_alvo:
-                        self._ultima_etapa_alvo = self.etapa_alvo
-                        return UG_PARANDO
-
-                else:
-                    self._ultima_etapa_alvo = self.etapa_alvo
-                    return UG_PARANDO
-
-            elif UG_PARADA <= self.etapa_atual < UG_SINCRONIZADA and self.etapa_alvo == UG_SINCRONIZADA:
-                if self._ultima_etapa_alvo != self.etapa_alvo:
-                    if self._ultima_etapa_alvo > self.etapa_alvo:
-                        self._ultima_etapa_alvo = self.etapa_alvo
-                        return UG_PARANDO
-
-                    elif self._ultima_etapa_alvo < self.etapa_alvo:
-                        self._ultima_etapa_alvo = self.etapa_alvo
-                        return UG_SINCRONIZANDO
-
-                else:
-                    self._ultima_etapa_alvo = self.etapa_alvo
-                    return UG_SINCRONIZANDO
-
-            elif UG_PARADA < self.etapa_atual < UG_SINCRONIZADA \
-                and UG_PARADA < self.etapa_alvo < UG_SINCRONIZADA \
-                and self.etapa_atual == self.etapa_alvo:
-
-                self.tentativas_norm_etapas += 1
-
-                if self.tentativas_norm_etapas > 2:
-                    pass
-
-        except Exception:
-            logger.error(f"[UG{self.id}] Houve um erro no controle de Etapas da Unidade. Mantendo Etapa anterior.")
-            logger.debug(traceback.format_exc())
-            return self._ultima_etapa_atual
+        elif self.__etapa_atual.valor <= 5 and self.__etapa_alvo.valor == 0:
+            return UG_PARANDO
 
 
     # Property/Setter -> VARIÁVEIS PROTEGIDAS
@@ -254,10 +219,12 @@ class UnidadeDeGeracao:
 
     @setpoint.setter
     def setpoint(self, var: "int"):
-        if var < self.setpoint_minimo:
-            self._setpoint = 0
-        elif var > self.setpoint_maximo:
-            self._setpoint = self.setpoint_maximo
+        if var < self.cfg['pot_minima']:
+            self._setpoint = self.cfg['pot_minima'] if self.manter_unidade else 0
+
+        elif var > self.cfg[f'pot_maxima_ug{self.id}']:
+            self._setpoint = self.cfg[f'pot_maxima_ug{self.id}']
+
         else:
             self._setpoint = int(var)
 
@@ -457,9 +424,9 @@ class UnidadeDeGeracao:
 
             if self.disponivel:
                 logger.debug(f"[UG{self.id}]          Leituras de Potência:")
-                logger.debug(f"[UG{self.id}]          - \"Ativa\":                 {self.potencia} kW")
-                logger.debug(f"[UG{self.id}]          - \"Reativa\":               {self.__potencia_reativa.valor - 65535 if 65300 < self.__potencia_reativa.valor <= 65535 else self.__potencia_reativa.valor} kVAr")
-                logger.debug(f"[UG{self.id}]          - \"Aparente\":              {self.potencia_aparente} kVA")
+                logger.debug(f"[UG{self.id}]          - \"Ativa\":                 {self.potencia:0.0f} kW")
+                logger.debug(f"[UG{self.id}]          - \"Reativa\":               {self.__potencia_reativa.valor - 65535 if 65300 < self.__potencia_reativa.valor <= 65535 else self.__potencia_reativa.valor:0.1f} kVAr")
+                logger.debug(f"[UG{self.id}]          - \"Aparente\":              {self.potencia_aparente:0.1f} kVA")
 
             self.__next_state = self.__next_state.step()
             self.atualizar_modbus_moa()
@@ -475,19 +442,20 @@ class UnidadeDeGeracao:
                 logger.info(f"[UG{self.id}] Não foi possível partir a Unidade. Disjuntor de Linha está aberto.")
                 return
 
-            elif not sa.ServicoAuxiliar.status_dj_tsa.valor:
-                logger.info(f"[UG{self.id}] Não foi possível partir a Unidade. Disjuntor do Serviço Auxiliar está aberto.")
-                return
+            # elif not sa.ServicoAuxiliar.status_dj_tsa.valor:
+            #     logger.info(f"[UG{self.id}] Não foi possível partir a Unidade. Disjuntor do Serviço Auxiliar está aberto.")
+            #     return
 
-            elif sa.ServicoAuxiliar.l_disj_gmg_fechado.valor:
-                logger.info(f"[UG{self.id}] Não foi possível partir a Unidade. Disjuntor do Grupo Motor Gerador está fechado.")
-                return
+            # elif sa.ServicoAuxiliar.l_disj_gmg_fechado.valor:
+            #     logger.info(f"[UG{self.id}] Não foi possível partir a Unidade. Disjuntor do Grupo Motor Gerador está fechado.")
+            #     return
 
             elif not self.etapa == UG_SINCRONIZADA:
                 self.tentativas_norm_etapas = 0
                 logger.info(f"[UG{self.id}]          Enviando comando:          \"PARTIDA\"")
 
-                # esc.EscritaModBusBit.escrever_bit(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}"]["CMD_REARME_FALHAS"], valor=1)
+                esc.EscritaModBusBit.escrever_bit(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}"]["CMD_REARME_FALHAS"], valor=1)
+                esc.EscritaModBusBit.escrever_bit(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}"]["CMD_SINCRONISMO"], valor=1)
                 # self.clp[f"UG{self.id}"].write_single_register(REG_UG[f"UG{self.id}"]["CMD_SINCRONISMO"][0], int(128))
 
         except Exception:
@@ -500,7 +468,7 @@ class UnidadeDeGeracao:
             if not self.etapa == UG_PARADA:
                 logger.info(f"[UG{self.id}]          Enviando comando:          \"PARADA\"")
                 self.enviar_setpoint(0)
-                # res = esc.EscritaModBusBit.escrever_bit(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}"]["CMD_PARADA_TOTAL"], valor=1)
+                res = esc.EscritaModBusBit.escrever_bit(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}"]["CMD_PARADA_TOTAL"], valor=1)
                 return True # res
 
         except Exception:
@@ -529,11 +497,12 @@ class UnidadeDeGeracao:
             else:
                 self.setpoint = int(setpoint_kw)
                 setpoint_porcento = (setpoint_kw / self.cfg[f"pot_maxima_ug{self.id}"]) * 10000
-                logger.debug(f"[UG{self.id}]          Enviando setpoint:         {(setpoint_kw / self.cfg[f'pot_maxima_ug{self.id}']) * 100} %")
+                logger.debug(f"[UG{self.id}]          Enviando setpoint:         {setpoint_kw} kW ({(setpoint_kw / self.cfg[f'pot_maxima_ug{self.id}']) * 100:0.1f} %)")
 
                 if self.setpoint > 1:
-                    # res = self.rv[f"UG{self.id}"].write_single_register(REG_UG[f"UG{self.id}"]["SETPOINT_POT_ATIVA_PU"], int(setpoint_porcento))
-                    return True # res
+                    # res = self.rv[f"UG{self.id}"].write_single_register(REG_RTV[f"UG{self.id}"]["SETPOINT_POT_ATIVA_PU"], int(setpoint_porcento))
+                    res = self.rv[f"UG{self.id}"].write_single_register(REG_RTV[f"UG{self.id}"]["SETPOINT_POT_ATIVA_PU"], int(setpoint_kw)) # SIMULADOR
+                    return res
 
         except Exception:
             logger.error(f"[UG{self.id}] Não foi possivel enviar o Setpoint para Unidade.")
@@ -655,12 +624,12 @@ class UnidadeDeGeracao:
 
     def controle_etapas(self) -> "None":
         # PARANDO
-        if self.etapa in (1, 2, UG_PARANDO, 4, 5, 6):
+        if self.etapa == UG_PARANDO:
             if self.setpoint >= self.setpoint_minimo:
                 self.enviar_setpoint(self.setpoint)
 
         # SINCRONIZANDO
-        elif self.etapa in (1, 2, 3, 4, UG_SINCRONIZANDO, 6):
+        elif self.etapa == UG_SINCRONIZANDO:
             if not self.temporizar_partida:
                 self.temporizar_partida = True
                 Thread(target=lambda: self.verificar_sincronismo()).start()
@@ -697,8 +666,10 @@ class UnidadeDeGeracao:
         senão, é enviado o comando de parada de emergência para a Unidade.
         """
 
+        delay = time() + 600
+
         logger.debug(f"[UG{self.id}]          Verificação MOA:           \"Temporização de Sincronismo\"")
-        while time() < time() + 600:
+        while time() < delay:
             if not self.temporizar_partida:
                 return
 

@@ -96,7 +96,7 @@ class CondicionadorExponencial(CondicionadorBase):
             aux = (1 - (((self.valor_limite - self.leitura) / (self.valor_limite - self.valor_base)) ** (self.__ordem)).real)
             return max(min(aux, 1), 0)
         else:
-            return 1 if self.leitura > self.valor_limite else 0
+            return 1 if self.leitura >= self.valor_limite else 0
 
 
 class CondicionadorPotenciaReativa(CondicionadorBase):

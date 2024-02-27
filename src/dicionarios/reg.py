@@ -48,10 +48,10 @@ REG_RELE = {
         "IB":                                                                           322,        # Input Register                        (OP -> Read Input Registers - 3x)
         "IC":                                                                           324,        # Input Register                        (OP -> Read Input Registers - 3x)
         "VAB":                                                                          330,        # Input Register Scale 0.1              (OP -> Read Input Registers - 3x)
-        "VBC":                                                                          332,        # Input Register Scale 0.1              (OP -> Read Input Registers - 3x)
-        "VCA":                                                                          334,        # Input Register Scale 0.1              (OP -> Read Input Registers - 3x)
-        "P":                                                                            353,        # Input Register                        (OP -> Read Input Registers - 3x)
-        "Q":                                                                            361,        # Input Register                        (OP -> Read Input Registers - 3x)
+        "VBC":                                                                          332 + 10000,        # Input Register Scale 0.1              (OP -> Read Input Registers - 3x)
+        "VCA":                                                                          334 + 10000,        # Input Register Scale 0.1              (OP -> Read Input Registers - 3x)
+        "P":                                                                            353 + 10000,        # Input Register                        (OP -> Read Input Registers - 3x)
+        "Q":                                                                            361 + 10000,        # Input Register                        (OP -> Read Input Registers - 3x)
         "S":                                                                            369,        # Input Register                        (OP -> Read Input Registers - 3x)
         "F":                                                                            374,        # Input Register Scale 0.1              (OP -> Read Input Registers - 3x)
         "FP":                                                                           373,        # Input Register Scale 0.1              (OP -> Read Input Registers - 3x)
@@ -64,10 +64,10 @@ REG_RELE = {
         "IA":                                                                           320,        # Input Register                        (OP -> Read Input Registers - 3x)
         "IB":                                                                           322,        # Input Register                        (OP -> Read Input Registers - 3x)
         "IC":                                                                           324,        # Input Register                        (OP -> Read Input Registers - 3x)
-        "VAB":                                                                          330,        # Input Register Scale 0.1              (OP -> Read Input Registers - 3x)
-        "VBC":                                                                          332,        # Input Register Scale 0.1              (OP -> Read Input Registers - 3x)
-        "VCA":                                                                          334,        # Input Register Scale 0.1              (OP -> Read Input Registers - 3x)
-        "P":                                                                            353,        # Input Register                        (OP -> Read Input Registers - 3x)
+        "VAB":                                                                          330 + 20000,        # Input Register Scale 0.1              (OP -> Read Input Registers - 3x)
+        "VBC":                                                                          332 + 20000,        # Input Register Scale 0.1              (OP -> Read Input Registers - 3x)
+        "VCA":                                                                          334 + 20000,        # Input Register Scale 0.1              (OP -> Read Input Registers - 3x)
+        "P":                                                                            353 + 20000,        # Input Register                        (OP -> Read Input Registers - 3x)
         "Q":                                                                            361,        # Input Register                        (OP -> Read Input Registers - 3x)
         "S":                                                                            369,        # Input Register                        (OP -> Read Input Registers - 3x)
         "F":                                                                            374,        # Input Register Scale 0.1              (OP -> Read Input Registers - 3x)
@@ -1115,294 +1115,589 @@ REG_UG = {
 }
 
 REG_RTV = {
-    ### RV
-    ## LEITURAS_1
-    "ROTACAO":                                                                          16,
-    "ESTADO_OPERACAO":                                                                  21,
-    "CRTL_SINCRONIZADO_SELEC":                                                          22,
-    "CRTL_VAZIO_SELEC":                                                                 23,
-    "CMD_MODBUS":                                                                       24,
+    "UG1": {
+        ### RV
+        ## LEITURAS_1
+        "ROTACAO":                                                                          16,
+        "ESTADO_OPERACAO":                                                                  21,
+        "CRTL_SINCRONIZADO_SELEC":                                                          22,
+        "CRTL_VAZIO_SELEC":                                                                 23,
+        "CMD_MODBUS":                                                                       24,
 
 
-    ## ENTRAS_DIGITAIS
-    "RV_SEM_BLOQ_EXTERNO":                                                              [25, 0],
-    "RV_HAB_REGULADOR":                                                                 [25, 1],
-    "RV_SELEC_MODO_CTRL_ISOLADO":                                                       [25, 2],
-    "RV_ZERA_CARGA":                                                                    [25, 3],
-    "RV_RESET_FALHAS":                                                                  [25, 4],
-    "RV_INCRE_REF_CTRL":                                                                [25, 5],
-    "RV_DECRE_REF_CTRL":                                                                [25, 6],
-    "RV_DJ_MAQUINA_FECHADO":                                                            [25, 7],
+        ## ENTRAS_DIGITAIS
+        "RV_SEM_BLOQ_EXTERNO":                                                              [25, 0],
+        "RV_HAB_REGULADOR":                                                                 [25, 1],
+        "RV_SELEC_MODO_CTRL_ISOLADO":                                                       [25, 2],
+        "RV_ZERA_CARGA":                                                                    [25, 3],
+        "RV_RESET_FALHAS":                                                                  [25, 4],
+        "RV_INCRE_REF_CTRL":                                                                [25, 5],
+        "RV_DECRE_REF_CTRL":                                                                [25, 6],
+        "RV_DJ_MAQUINA_FECHADO":                                                            [25, 7],
 
 
-    ## SAÍDAS_DIGITAIS
-    "RV_RELE_TRIP_NAO_ATUADO":                                                          [26, 0],
-    "RV_RELE_ALARME":                                                                   [26, 1],
-    "RV_RELE_REGULADOR_HAB":                                                            [26, 2],
-    "RV_RELE_REGULADOR_REGULANDO":                                                      [26, 3],
-    "RV_RELE_POT_NULA":                                                                 [26, 4],
-    "RV_RELE_MAQUINA_PARADA":                                                           [26, 5],
-    "RV_RELE_VELO_MENOR_30%":                                                           [26, 6],
-    "RV_RELE_VELO_MAIOR_90%":                                                           [26, 7],
-    "RV_RELE_DISTRI_ABERTO":                                                            [26, 8],
+        ## SAÍDAS_DIGITAIS
+        "RV_RELE_TRIP_NAO_ATUADO":                                                          [26, 0],
+        "RV_RELE_ALARME":                                                                   [26, 1],
+        "RV_RELE_REGULADOR_HAB":                                                            [26, 2],
+        "RV_RELE_REGULADOR_REGULANDO":                                                      [26, 3],
+        "RV_RELE_POT_NULA":                                                                 [26, 4],
+        "RV_RELE_MAQUINA_PARADA":                                                           [26, 5],
+        "RV_RELE_VELO_MENOR_30%":                                                           [26, 6],
+        "RV_RELE_VELO_MAIOR_90%":                                                           [26, 7],
+        "RV_RELE_DISTRI_ABERTO":                                                            [26, 8],
 
 
-    ## LIMITES_OPERAÇÃO
-    "RV_LIM_SUP_DISTRI_ATUADO":                                                         [27, 0],
-    "RV_LIM_INF_DISTRI_ATUADO":                                                         [27, 1],
-    "RV_LIM_SUP_ROTOR_ATUADO":                                                          [27, 2],
-    "RV_LIM_INF_ROTOR_ATUADO":                                                          [27, 3],
-    "RV_LIM_SUP_VELO_ATUADO":                                                           [27, 4],
-    "RV_LIM_INF_VELO_ATUADO":                                                           [27, 5],
-    "RV_LIM_SUP_POT_ATUADO":                                                            [27, 6],
-    "RV_LIM_INF_POT_ATUADO":                                                            [27, 7],
+        ## LIMITES_OPERAÇÃO
+        "RV_LIM_SUP_DISTRI_ATUADO":                                                         [27, 0],
+        "RV_LIM_INF_DISTRI_ATUADO":                                                         [27, 1],
+        "RV_LIM_SUP_ROTOR_ATUADO":                                                          [27, 2],
+        "RV_LIM_INF_ROTOR_ATUADO":                                                          [27, 3],
+        "RV_LIM_SUP_VELO_ATUADO":                                                           [27, 4],
+        "RV_LIM_INF_VELO_ATUADO":                                                           [27, 5],
+        "RV_LIM_SUP_POT_ATUADO":                                                            [27, 6],
+        "RV_LIM_INF_POT_ATUADO":                                                            [27, 7],
 
 
-    ## LEITURAS_2
-    "SETPOINT_ABERTURA_PU":                                                             28,
-    "SETPOINT_VELO":                                                                    29,
-    "SETPOINT_POT_ATIVA_KW":                                                            30,
-    "SETPOINT_POT_ATIVA_PU":                                                            30 + 3000,
-    "SAIDA_CTRL_DISTRI":                                                                32,
-    "SAIDA_CTRL_ROTOR":                                                                 33,
-    "REF_DISTRI_PU":                                                                    36,
-    "FEEDBACK_DISTRI_PU":                                                               37,
-    "SAIDA_CTRL_DISTRI_PU":                                                             32,
-    "REF_ROTOR_PU":                                                                     42,
-    "FEEDBACK_ROTOR_PU":                                                                43,
-    "SAIDA_CTRL_ROTOR_PU":                                                              33,
-    "REF_VELO_PU":                                                                      48,
-    "FEEDBACK_VELO_PU":                                                                 49,
-    "REF_POT_ATIVA_PU":                                                                 54,
-    "FEEDBACK_POT_ATIVA_PU":                                                            55,
+        ## LEITURAS_2
+        "SETPOINT_ABERTURA_PU":                                                             28,
+        "SETPOINT_VELO":                                                                    29,
+        "SETPOINT_POT_ATIVA_KW":                                                            30,
+        "SETPOINT_POT_ATIVA_PU":                                                            30 + 3100,
+        "SAIDA_CTRL_DISTRI":                                                                32,
+        "SAIDA_CTRL_ROTOR":                                                                 33,
+        "REF_DISTRI_PU":                                                                    36,
+        "FEEDBACK_DISTRI_PU":                                                               37,
+        "SAIDA_CTRL_DISTRI_PU":                                                             32,
+        "REF_ROTOR_PU":                                                                     42,
+        "FEEDBACK_ROTOR_PU":                                                                43,
+        "SAIDA_CTRL_ROTOR_PU":                                                              33,
+        "REF_VELO_PU":                                                                      48,
+        "FEEDBACK_VELO_PU":                                                                 49,
+        "REF_POT_ATIVA_PU":                                                                 54,
+        "FEEDBACK_POT_ATIVA_PU":                                                            55,
 
 
-    ## ALARME
-    "RV_ALARME_SOBREFREQUENCIA":                                                        [66, 0],
-    "RV_ALARME_SUBFREQUENCIA":                                                          [66, 1],
-    "RV_ALARME_LEITURA_POS_DISTRI":                                                     [66, 2],
-    "RV_ALARME_LEITURA_POS_ROTOR":                                                      [66, 3],
-    "RV_ALARME_LEITURA_POT_ATIVA":                                                      [66, 4],
-    "RV_ALARME_LEITURA_REF_POT":                                                        [66, 5],
-    "RV_ALARME_LEITURA_NV_MONTANTE":                                                    [66, 6],
-    "RV_ALARME_NV_MONTANTE_MUITO_BAIXO":                                                [66, 7],
-    "RV_ALARME_CTRL_POS_DISTRI":                                                        [66, 8],
-    "RV_ALARME_CTRL_POS_ROTOR":                                                         [66, 9],
-    "RV_ALARME_RUIDO_MED_VELO_PRINC":                                                   [66, 10],
-    "RV_ALARME_RUIDO_MED_VELO_RETAG":                                                   [66, 11],
-    "RV_ALARME_PERDA_MED_VELO_PRINC":                                                   [66, 12],
-    "RV_ALARME_PERDA_MED_VELO_RETAG":                                                   [66, 13],
-    "RV_ALARME_DIF_MED_VELO_PRINC_RETAG":                                               [66, 14],
+        ## ALARME
+        "RV_ALARME_SOBREFREQUENCIA":                                                        [66, 0],
+        "RV_ALARME_SUBFREQUENCIA":                                                          [66, 1],
+        "RV_ALARME_LEITURA_POS_DISTRI":                                                     [66, 2],
+        "RV_ALARME_LEITURA_POS_ROTOR":                                                      [66, 3],
+        "RV_ALARME_LEITURA_POT_ATIVA":                                                      [66, 4],
+        "RV_ALARME_LEITURA_REF_POT":                                                        [66, 5],
+        "RV_ALARME_LEITURA_NV_MONTANTE":                                                    [66, 6],
+        "RV_ALARME_NV_MONTANTE_MUITO_BAIXO":                                                [66, 7],
+        "RV_ALARME_CTRL_POS_DISTRI":                                                        [66, 8],
+        "RV_ALARME_CTRL_POS_ROTOR":                                                         [66, 9],
+        "RV_ALARME_RUIDO_MED_VELO_PRINC":                                                   [66, 10],
+        "RV_ALARME_RUIDO_MED_VELO_RETAG":                                                   [66, 11],
+        "RV_ALARME_PERDA_MED_VELO_PRINC":                                                   [66, 12],
+        "RV_ALARME_PERDA_MED_VELO_RETAG":                                                   [66, 13],
+        "RV_ALARME_DIF_MED_VELO_PRINC_RETAG":                                               [66, 14],
 
 
-    ## FALHA_1
-    "RV_FALHA_SOBREFREQUENCIA_INSTAN":                                                  [67, 0],
-    "RV_FALHA_SOBREFREQUENCIA_TEMPO":                                                   [67, 1],
-    "RV_FALHA_SUBFREQUENCIA_TEMPO":                                                     [67, 2],
-    "RV_FALHA_GIRANDO_SEM_REG_GIRO_INDEVIDO":                                           [67, 3],
-    "RV_FALHA_LEITURA_POS_DISTRI":                                                      [67, 4],
-    "RV_FALHA_LEITURA_POS_ROTOR":                                                       [67, 5],
-    "RV_FALHA_LEITURA_POT_ATIVA":                                                      [67, 6],
-    "RV_FALHA_LEITURA_REF_POT":                                                         [67, 7],
-    "RV_FALHA_LEITURA_NV_MONTANTE":                                                     [67, 8],
-    "RV_FALHA_NV_MONTANTE_MUITO_BAIXO":                                                 [67, 10],
-    "RV_FALHA_CTRL_POS_DISTRI":                                                         [67, 11],
-    "RV_FALHA_CTRL_POS_ROTOR":                                                          [67, 12],
-    "RV_FALHA_RUIDO_MED_VELO_PRINC":                                                    [67, 13],
-    "RV_FALHA_RUIDO_MED_VELO_RETAG":                                                    [67, 14],
-    "RV_FALHA_PERDA_MED_VELO_PRINC":                                                    [67, 15],
+        ## FALHA_1
+        "RV_FALHA_SOBREFREQUENCIA_INSTAN":                                                  [67, 0],
+        "RV_FALHA_SOBREFREQUENCIA_TEMPO":                                                   [67, 1],
+        "RV_FALHA_SUBFREQUENCIA_TEMPO":                                                     [67, 2],
+        "RV_FALHA_GIRANDO_SEM_REG_GIRO_INDEVIDO":                                           [67, 3],
+        "RV_FALHA_LEITURA_POS_DISTRI":                                                      [67, 4],
+        "RV_FALHA_LEITURA_POS_ROTOR":                                                       [67, 5],
+        "RV_FALHA_LEITURA_POT_ATIVA":                                                       [67, 6],
+        "RV_FALHA_LEITURA_REF_POT":                                                         [67, 7],
+        "RV_FALHA_LEITURA_NV_MONTANTE":                                                     [67, 8],
+        "RV_FALHA_NV_MONTANTE_MUITO_BAIXO":                                                 [67, 10],
+        "RV_FALHA_CTRL_POS_DISTRI":                                                         [67, 11],
+        "RV_FALHA_CTRL_POS_ROTOR":                                                          [67, 12],
+        "RV_FALHA_RUIDO_MED_VELO_PRINC":                                                    [67, 13],
+        "RV_FALHA_RUIDO_MED_VELO_RETAG":                                                    [67, 14],
+        "RV_FALHA_PERDA_MED_VELO_PRINC":                                                    [67, 15],
 
 
-    ## FALHA_2
-    "RV_FALHA_RUIDO_MED_VELO_RETAG":                                                    [68, 0],
-    "RV_FALHA_TEMPO_EXCESSIVO_PARTIDA":                                                 [68, 1],
-    "RV_FALHA_TEMPO_EXCESSIVO_PARADA":                                                  [68, 2],
-    "RV_FALHA_BLOQ_EXTERNO":                                                            [68, 3],
-    "RV_FALHA_DIF_MED_VELO_PRINC_RETAG":                                                [68, 4],
+        ## FALHA_2
+        "RV_FALHA_RUIDO_MED_VELO_RETAG":                                                    [68, 0],
+        "RV_FALHA_TEMPO_EXCESSIVO_PARTIDA":                                                 [68, 1],
+        "RV_FALHA_TEMPO_EXCESSIVO_PARADA":                                                  [68, 2],
+        "RV_FALHA_BLOQ_EXTERNO":                                                            [68, 3],
+        "RV_FALHA_DIF_MED_VELO_PRINC_RETAG":                                                [68, 4],
 
 
-    ## LEITURAS_3
-    "POT_APARENTE_NOMINAL":                                                             79,
-    "POT_ATIVA_NOMINAL":                                                                80,
-    "CTRL_1":                                                                           85,
-    "CTRL_2":                                                                           86,
-    "CONJ_DISTRI_1":                                                                    121,
-    "CONJ_ROTOR_1":                                                                     122,
-    "CONJ_DISTRI_2":                                                                    123,
-    "CONJ_ROTOR_2":                                                                     124,
-    "CONJ_DISTRI_3":                                                                    125,
-    "CONJ_ROTOR_3":                                                                     126,
-    "CONJ_DISTRI_4":                                                                    127,
-    "CONJ_ROTOR_4":                                                                     128,
-    "CONJ_DISTRI_5":                                                                    129,
-    "CONJ_ROTOR_5":                                                                     130,
-    "CONJ_DISTRI_6":                                                                    131,
-    "CONJ_ROTOR_6":                                                                     132,
-    "CONJ_DISTRI_7":                                                                    133,
-    "CONJ_ROTOR_7":                                                                     134,
-    "CONJ_DISTRI_8":                                                                    135,
-    "CONJ_ROTOR_8":                                                                     136,
-    "CONJ_DISTRI_9":                                                                    137,
-    "CONJ_ROTOR_9":                                                                     138,
-    "CONJ_DISTRI_10":                                                                   139,
-    "CONJ_ROTOR_10":                                                                    140,
-    "ABERTURA_MAX_DISTRI":                                                              182,
-    "ABERTURA_MAX_DISTRI_VAZIO":                                                        184,
-    "ABERTURA_MIN_DISTRI":                                                              183,
-    "ABERTURA_MAX_ROTOR":                                                               185,
-    "ABERTURA_MIN_ROTOR":                                                               186,
-    "POTENCIA_MAX":                                                                     189,
-    "POTENCIA_MIN":                                                                     190,
+        ## LEITURAS_3
+        "POT_APARENTE_NOMINAL":                                                             79,
+        "POT_ATIVA_NOMINAL":                                                                80,
+        "CTRL_1":                                                                           85,
+        "CTRL_2":                                                                           86,
+        "CONJ_DISTRI_1":                                                                    121,
+        "CONJ_ROTOR_1":                                                                     122,
+        "CONJ_DISTRI_2":                                                                    123,
+        "CONJ_ROTOR_2":                                                                     124,
+        "CONJ_DISTRI_3":                                                                    125,
+        "CONJ_ROTOR_3":                                                                     126,
+        "CONJ_DISTRI_4":                                                                    127,
+        "CONJ_ROTOR_4":                                                                     128,
+        "CONJ_DISTRI_5":                                                                    129,
+        "CONJ_ROTOR_5":                                                                     130,
+        "CONJ_DISTRI_6":                                                                    131,
+        "CONJ_ROTOR_6":                                                                     132,
+        "CONJ_DISTRI_7":                                                                    133,
+        "CONJ_ROTOR_7":                                                                     134,
+        "CONJ_DISTRI_8":                                                                    135,
+        "CONJ_ROTOR_8":                                                                     136,
+        "CONJ_DISTRI_9":                                                                    137,
+        "CONJ_ROTOR_9":                                                                     138,
+        "CONJ_DISTRI_10":                                                                   139,
+        "CONJ_ROTOR_10":                                                                    140,
+        "ABERTURA_MAX_DISTRI":                                                              182,
+        "ABERTURA_MAX_DISTRI_VAZIO":                                                        184,
+        "ABERTURA_MIN_DISTRI":                                                              183,
+        "ABERTURA_MAX_ROTOR":                                                               185,
+        "ABERTURA_MIN_ROTOR":                                                               186,
+        "POTENCIA_MAX":                                                                     189,
+        "POTENCIA_MIN":                                                                     190,
 
 
 
-    ### RT
-    ## LEITURAS_1
-    "CORRENTE_EXCITACAO":                                                               16,
-    "TENSAO_EXCITACAO":                                                                 17,
-    "TEMP_ROTOR":                                                                       25,
-    "ESTADO_OPERACAO":                                                                  26,
-    "CTRL_SINCRONIZADO_SELEC":                                                          27,
+        ### RT
+        ## LEITURAS_1
+        "CORRENTE_EXCITACAO":                                                               16,
+        "TENSAO_EXCITACAO":                                                                 17,
+        "TEMP_ROTOR":                                                                       25,
+        "ESTADO_OPERACAO":                                                                  26,
+        "CTRL_SINCRONIZADO_SELEC":                                                          27,
 
 
-    ## ENTRAS_DIGITAIS
-    "RT_SEM_BLOQ_EXTERNO":                                                              [30, 0],
-    "RT_HAB_REGULADOR":                                                                 [30, 1],
-    "RT_SELEC_MODO_CTRL_ISOLADO":                                                       [30, 2],
-    "RV_DRIVE_EXCITACAO_HAB_LOGICA_DISPARO":                                            [30, 3],
-    "RV_RESET_FALHAS":                                                                  [30, 4],
-    "RT_INCRE_REF_CTRL":                                                                [30, 5],
-    "RT_DECRE_REF_CTRL":                                                                [30, 6],
-    "RT_DJ_MAQUINA_FECHADO":                                                            [30, 7],
-    "RT_CONTATOR_CAMPO_FECHADO":                                                        [30, 8],
-    "RT_CROWBAR_INATIVO":                                                               [30, 9],
+        ## ENTRAS_DIGITAIS
+        "RT_SEM_BLOQ_EXTERNO":                                                              [30, 0],
+        "RT_HAB_REGULADOR":                                                                 [30, 1],
+        "RT_SELEC_MODO_CTRL_ISOLADO":                                                       [30, 2],
+        "RV_DRIVE_EXCITACAO_HAB_LOGICA_DISPARO":                                            [30, 3],
+        "RV_RESET_FALHAS":                                                                  [30, 4],
+        "RT_INCRE_REF_CTRL":                                                                [30, 5],
+        "RT_DECRE_REF_CTRL":                                                                [30, 6],
+        "RT_DJ_MAQUINA_FECHADO":                                                            [30, 7],
+        "RT_CONTATOR_CAMPO_FECHADO":                                                        [30, 8],
+        "RT_CROWBAR_INATIVO":                                                               [30, 9],
 
 
-    ## SAIDAS_DIGITAIS
-    "RT_RELE_TRIP_NAO_ATUADO":                                                          [31, 0],
-    "RT_RELE_ALARME":                                                                   [31, 1],
-    "RT_RELE_REGULADOR_HAB":                                                            [31, 2],
-    "RT_RELE_REGULADOR_REGULANDO":                                                      [31, 3],
-    "RT_RELE_HAB_DRIVE_EXCITACAO_LOGICA_DISPARO":                                       [31, 4],
-    "RT_RELE_HAB_CONTATOR_CAMPO":                                                       [31, 5],
-    "RT_RELE_HAB_PRE_EXCITACAO":                                                        [31, 6],
-    "RT_RELE_HAB_CROWBAR":                                                              [31, 7],
+        ## SAIDAS_DIGITAIS
+        "RT_RELE_TRIP_NAO_ATUADO":                                                          [31, 0],
+        "RT_RELE_ALARME":                                                                   [31, 1],
+        "RT_RELE_REGULADOR_HAB":                                                            [31, 2],
+        "RT_RELE_REGULADOR_REGULANDO":                                                      [31, 3],
+        "RT_RELE_HAB_DRIVE_EXCITACAO_LOGICA_DISPARO":                                       [31, 4],
+        "RT_RELE_HAB_CONTATOR_CAMPO":                                                       [31, 5],
+        "RT_RELE_HAB_PRE_EXCITACAO":                                                        [31, 6],
+        "RT_RELE_HAB_CROWBAR":                                                              [31, 7],
 
 
-    ## LIMITES_OPERAÇÃO
-    "RT_LIM_SUP_CORRENTE_EXCITACAO":                                                    [32, 0],
-    "RT_LIM_INF_CORRENTE_EXCITACAO":                                                    [32, 1],
-    "RT_LIM_SUP_TENSAO_TERMINAL":                                                       [32, 2],
-    "RT_LIM_INF_TENSAO_TERMINAL":                                                       [32, 3],
-    "RT_LIM_SUP_POT_REATIVA":                                                           [32, 4],
-    "RT_LIM_INF_POT_REATIVA":                                                           [32, 5],
-    "RT_LIM_SUP_FATOR_DE_POT":                                                          [32, 10],
-    "RT_LIM_INF_FATOR_DE_POT":                                                          [32, 11],
-    "RT_LIM_VOLTZ_HERTZ":                                                               [32, 12],
-    "RT_LIM_ABERTURA_PONTE":                                                            [32, 13],
-    "RT_LIM_PQ_RELACAO_POT_ATIVA_POT_REATIVA":                                          [32, 14],
+        ## LIMITES_OPERAÇÃO
+        "RT_LIM_SUP_CORRENTE_EXCITACAO":                                                    [32, 0],
+        "RT_LIM_INF_CORRENTE_EXCITACAO":                                                    [32, 1],
+        "RT_LIM_SUP_TENSAO_TERMINAL":                                                       [32, 2],
+        "RT_LIM_INF_TENSAO_TERMINAL":                                                       [32, 3],
+        "RT_LIM_SUP_POT_REATIVA":                                                           [32, 4],
+        "RT_LIM_INF_POT_REATIVA":                                                           [32, 5],
+        "RT_LIM_SUP_FATOR_DE_POT":                                                          [32, 10],
+        "RT_LIM_INF_FATOR_DE_POT":                                                          [32, 11],
+        "RT_LIM_VOLTZ_HERTZ":                                                               [32, 12],
+        "RT_LIM_ABERTURA_PONTE":                                                            [32, 13],
+        "RT_LIM_PQ_RELACAO_POT_ATIVA_POT_REATIVA":                                          [32, 14],
 
 
-    ## LEITURAS_2
-    "SETPOINT_TENSAO_PU":                                                               40,
-    "SETPOINT_POT_REATIVA_KVAR":                                                        41,
-    "SETPOINT_POT_REATIVA_PU":                                                          41,
-    "SETPOINT_FATOR_POT_PU":                                                            42,
-    "ABERTURA_PONTE":                                                                   43,
-    "REF_CORRENTE_CAMPO_PU":                                                            46,
-    "FEEDBACK_CORRENTE_CAMPO_PU":                                                       47,
-    "REF_TENSAO_PU":                                                                    52,
-    "FEEDBACK_TENSAO_PU":                                                               53,
-    "REF_POT_REATIVA_PU":                                                               58,
-    "FEEDBACK_POT_REATIVA_PU":                                                          59,
-    "REF_FATOR_POT_PU":                                                                 64,
-    "FEEDBACK_FATOR_POT_PU":                                                            65,
+        ## LEITURAS_2
+        "SETPOINT_TENSAO_PU":                                                               40,
+        "SETPOINT_POT_REATIVA_KVAR":                                                        41,
+        "SETPOINT_POT_REATIVA_PU":                                                          41,
+        "SETPOINT_FATOR_POT_PU":                                                            42,
+        "ABERTURA_PONTE":                                                                   43,
+        "REF_CORRENTE_CAMPO_PU":                                                            46,
+        "FEEDBACK_CORRENTE_CAMPO_PU":                                                       47,
+        "REF_TENSAO_PU":                                                                    52,
+        "FEEDBACK_TENSAO_PU":                                                               53,
+        "REF_POT_REATIVA_PU":                                                               58,
+        "FEEDBACK_POT_REATIVA_PU":                                                          59,
+        "REF_FATOR_POT_PU":                                                                 64,
+        "FEEDBACK_FATOR_POT_PU":                                                            65,
 
 
-    ## ALARMES_1
-    "RT_ALARME_SOBRETENSAO":                                                            [70, 0],
-    "RT_ALARME_SUBTENSAO":                                                              [70, 1],
-    "RT_ALARME_SOBREFREQUENCIA":                                                        [70, 2],
-    "RT_ALARME_SUBFREQUENCIA":                                                          [70, 3],
-    "RT_ALARME_LIM_SUP_POT_REATIVA":                                                    [70, 4],
-    "RT_ALARME_LIM_INF_POT_REATIVA":                                                    [70, 5],
-    "RT_ALARME_LIM_SUP_FATOR_DE_POT":                                                   [70, 6],
-    "RT_ALARME_LIM_INF_FATOR_DE_POT":                                                   [70, 7],
-    "RT_ALARME_VARIACAO_TENSAO":                                                        [70, 8],
-    "RT_ALARME_POT_ATIVA_REVERSA":                                                      [70, 9],
-    "RT_ALARME_SOBRECORRENTE_TERMINAL":                                                 [70, 10],
-    "RT_ALARME_LIM_SUP_CORRENTE_EXCITACAO":                                             [70, 11],
-    "RT_ALARME_LIM_INF_CORRENTE_EXCITACAO":                                             [70, 12],
-    "RT_ALARME_TEMP_MUITO_ALTA_ROTOR":                                                  [70, 13],
-    "RT_ALARME_PRES_TENSAO_TERMINAL_AUSENCIA_CORRENTE_EXCITACAO":                       [70, 14],
-    "RT_ALARME_PRES_CORRENTE_EXCITACAO_AUXENCIA_TENSAO_TERMINAL":                       [70, 15],
+        ## ALARMES_1
+        "RT_ALARME_SOBRETENSAO":                                                            [70, 0],
+        "RT_ALARME_SUBTENSAO":                                                              [70, 1],
+        "RT_ALARME_SOBREFREQUENCIA":                                                        [70, 2],
+        "RT_ALARME_SUBFREQUENCIA":                                                          [70, 3],
+        "RT_ALARME_LIM_SUP_POT_REATIVA":                                                    [70, 4],
+        "RT_ALARME_LIM_INF_POT_REATIVA":                                                    [70, 5],
+        "RT_ALARME_LIM_SUP_FATOR_DE_POT":                                                   [70, 6],
+        "RT_ALARME_LIM_INF_FATOR_DE_POT":                                                   [70, 7],
+        "RT_ALARME_VARIACAO_TENSAO":                                                        [70, 8],
+        "RT_ALARME_POT_ATIVA_REVERSA":                                                      [70, 9],
+        "RT_ALARME_SOBRECORRENTE_TERMINAL":                                                 [70, 10],
+        "RT_ALARME_LIM_SUP_CORRENTE_EXCITACAO":                                             [70, 11],
+        "RT_ALARME_LIM_INF_CORRENTE_EXCITACAO":                                             [70, 12],
+        "RT_ALARME_TEMP_MUITO_ALTA_ROTOR":                                                  [70, 13],
+        "RT_ALARME_PRES_TENSAO_TERMINAL_AUSENCIA_CORRENTE_EXCITACAO":                       [70, 14],
+        "RT_ALARME_PRES_CORRENTE_EXCITACAO_AUXENCIA_TENSAO_TERMINAL":                       [70, 15],
 
 
-    ## ALARMES_2
-    "RT_ALARME_FALHA_CONTROLE_CORRENTE_EXCITACAO":                                      [71, 0],
-    "RT_ALARME_FALHA_CONTROLE_TENSAO_TERMINAL":                                         [71, 1],
-    "RT_ALARME_CROWBAR_ATUADO_REGULADOR_HABILITADO":                                    [71, 2],
-    "RT_ALARME_FALHA_HAB_DRIVE_EXCITACAO":                                              [71, 3],
-    "RT_ALARME_FALHA_FECHAR_CONTATOR_CAMPO":                                            [71, 4],
-    "RT_ALARME_FALHA_CORRENTE_EXCITACAO_PRE_EXCITACAO_ATIVA":                           [71, 5],
-    "RT_ALARME_PERDA_MED_POT_REATIVA":                                                  [71, 6],
-    "RT_ALARME_PERDA_MED_TENSAO_TERMINAL":                                              [71, 7],
-    "RT_ALARME_PERDA_MED_CORRENTE_EXCITACAO":                                           [71, 8],
-    "RT_ALARME_RUIDO_INSTRU_REATIVO":                                                   [71, 9],
-    "RT_ALARME_RUIDO_INSTRU_TENSAO":                                                    [71, 10],
-    "RT_ALARME_RUIDO_INSTRU_EXCITACAO_PRINC":                                           [71, 11],
-    "RT_ALARME_RUIDO_INSTRU_EXCITACAO_RETAG":                                           [71, 12],
+        ## ALARMES_2
+        "RT_ALARME_FALHA_CONTROLE_CORRENTE_EXCITACAO":                                      [71, 0],
+        "RT_ALARME_FALHA_CONTROLE_TENSAO_TERMINAL":                                         [71, 1],
+        "RT_ALARME_CROWBAR_ATUADO_REGULADOR_HABILITADO":                                    [71, 2],
+        "RT_ALARME_FALHA_HAB_DRIVE_EXCITACAO":                                              [71, 3],
+        "RT_ALARME_FALHA_FECHAR_CONTATOR_CAMPO":                                            [71, 4],
+        "RT_ALARME_FALHA_CORRENTE_EXCITACAO_PRE_EXCITACAO_ATIVA":                           [71, 5],
+        "RT_ALARME_PERDA_MED_POT_REATIVA":                                                  [71, 6],
+        "RT_ALARME_PERDA_MED_TENSAO_TERMINAL":                                              [71, 7],
+        "RT_ALARME_PERDA_MED_CORRENTE_EXCITACAO":                                           [71, 8],
+        "RT_ALARME_RUIDO_INSTRU_REATIVO":                                                   [71, 9],
+        "RT_ALARME_RUIDO_INSTRU_TENSAO":                                                    [71, 10],
+        "RT_ALARME_RUIDO_INSTRU_EXCITACAO_PRINC":                                           [71, 11],
+        "RT_ALARME_RUIDO_INSTRU_EXCITACAO_RETAG":                                           [71, 12],
 
 
-    ## FALHAS_1
-    "RT_FALHA_SOBRETENSAO":                                                             [72, 0],
-    "RT_FALHA_SUBTENSAO":                                                               [72, 1],
-    "RT_FALHA_SOBREFREQUENCIA":                                                         [72, 2],
-    "RT_FALHA_SUBFREQUENCIA":                                                           [72, 3],
-    "RT_FALHA_LIM_SUP_POT_REATIVA":                                                     [72, 4],
-    "RT_FALHA_LIM_INF_POT_REATIVA":                                                     [72, 5],
-    "RT_FALHA_LIM_SUP_FATOR_POT":                                                       [72, 6],
-    "RT_FALHA_LIM_INF_FATOR_POT":                                                       [72, 7],
-    "RT_FALHA_SOBRETENSAO_INSTAN":                                                      [72, 8],
-    "RT_FALHA_VARIACAO_TENSAO":                                                         [72, 9],
-    "RT_FALHA_POT_ATIVA_REVERSA":                                                       [72, 10],
-    "RT_FALHA_SOBRECORRENTE_TERM":                                                      [72, 11],
-    "RT_FALHA_LIM_SUP_CORRENTE_EXCITACAO":                                              [72, 12],
-    "RT_FALHA_LIM_INF_CORRENTE_EXCITACAO":                                              [72, 13],
-    "RT_FALHA_LIM_SUP_TENSAO_EXCITACAO":                                                [72, 14],
-    "RT_FALHA_LIM_INF_TENSAO_EXCITACAO":                                                [72, 15],
+        ## FALHAS_1
+        "RT_FALHA_SOBRETENSAO":                                                             [72, 0],
+        "RT_FALHA_SUBTENSAO":                                                               [72, 1],
+        "RT_FALHA_SOBREFREQUENCIA":                                                         [72, 2],
+        "RT_FALHA_SUBFREQUENCIA":                                                           [72, 3],
+        "RT_FALHA_LIM_SUP_POT_REATIVA":                                                     [72, 4],
+        "RT_FALHA_LIM_INF_POT_REATIVA":                                                     [72, 5],
+        "RT_FALHA_LIM_SUP_FATOR_POT":                                                       [72, 6],
+        "RT_FALHA_LIM_INF_FATOR_POT":                                                       [72, 7],
+        "RT_FALHA_SOBRETENSAO_INSTAN":                                                      [72, 8],
+        "RT_FALHA_VARIACAO_TENSAO":                                                         [72, 9],
+        "RT_FALHA_POT_ATIVA_REVERSA":                                                       [72, 10],
+        "RT_FALHA_SOBRECORRENTE_TERM":                                                      [72, 11],
+        "RT_FALHA_LIM_SUP_CORRENTE_EXCITACAO":                                              [72, 12],
+        "RT_FALHA_LIM_INF_CORRENTE_EXCITACAO":                                              [72, 13],
+        "RT_FALHA_LIM_SUP_TENSAO_EXCITACAO":                                                [72, 14],
+        "RT_FALHA_LIM_INF_TENSAO_EXCITACAO":                                                [72, 15],
 
 
-    ## FALHAS_2
-    "RT_FALHA_TEMP_MUITO_ALTA_ROTOR":                                                   [73, 0],
-    "RT_FALHA_PRESENCA_TENSAO_TERMINAL_AUSENCIA_CORRENTE_EXCITACAO":                    [73, 1],
-    "RT_FALHA_PRESENCA_CORRENTE_EXCITACAO_AUSENCIA_TENSAO_TERM":                        [73, 2],
-    "RT_FALHA_CTRL_CORRENTE_EXCITACAO":                                                 [73, 3],
-    "RT_FALHA_CTRL_TENSAO_TERMINAL":                                                    [73, 4],
-    "RT_FALHA_CROWBAR_ATUADO_REGULADOR_HAB":                                            [73, 5],
-    "RT_FALHA_HAB_DRIVE_EXCITACAO_LOGICA_DISPARO":                                      [73, 6],
-    "RT_FALHA_FECHAR_CONTATOR_CAMPO":                                                   [73, 7],
-    "RT_FALHA_CORRENTE_EXCITACAO_PRE_EXCITACAO_ATIVA":                                  [73, 8],
-    "RT_FALHA_TEMPO_EXCESSIVO_PRE_EXCITACAO":                                           [73, 9],
-    "RT_FALHA_TEMPO_EXCESSIVO_PARADA":                                                  [73, 10],
-    "RT_FALHA_TEMPO_EXCESSIVO_PARTIDA":                                                 [73, 11],
-    "RT_FALHA_BLOQ_EXTERNO":                                                            [73, 12],
+        ## FALHAS_2
+        "RT_FALHA_TEMP_MUITO_ALTA_ROTOR":                                                   [73, 0],
+        "RT_FALHA_PRESENCA_TENSAO_TERMINAL_AUSENCIA_CORRENTE_EXCITACAO":                    [73, 1],
+        "RT_FALHA_PRESENCA_CORRENTE_EXCITACAO_AUSENCIA_TENSAO_TERM":                        [73, 2],
+        "RT_FALHA_CTRL_CORRENTE_EXCITACAO":                                                 [73, 3],
+        "RT_FALHA_CTRL_TENSAO_TERMINAL":                                                    [73, 4],
+        "RT_FALHA_CROWBAR_ATUADO_REGULADOR_HAB":                                            [73, 5],
+        "RT_FALHA_HAB_DRIVE_EXCITACAO_LOGICA_DISPARO":                                      [73, 6],
+        "RT_FALHA_FECHAR_CONTATOR_CAMPO":                                                   [73, 7],
+        "RT_FALHA_CORRENTE_EXCITACAO_PRE_EXCITACAO_ATIVA":                                  [73, 8],
+        "RT_FALHA_TEMPO_EXCESSIVO_PRE_EXCITACAO":                                           [73, 9],
+        "RT_FALHA_TEMPO_EXCESSIVO_PARADA":                                                  [73, 10],
+        "RT_FALHA_TEMPO_EXCESSIVO_PARTIDA":                                                 [73, 11],
+        "RT_FALHA_BLOQ_EXTERNO":                                                            [73, 12],
 
 
-    ## FALHAS_3
-    "RT_FALHA_PERDA_MED_POT_REATIVA":                                                   [74, 0],
-    "RT_FALHA_PERDA_MED_TENSAO_TERMINAL":                                               [74, 1],
-    "RT_FALHA_PERDA_MED_CORRENTE_EXCITACAO_PRINC":                                      [74, 2],
-    "RT_FALHA_PERDA_MED_CORRENTE_EXCITACAO_RETAG":                                      [74, 3],
-    "RT_FALHA_RUIDO_INSTRU_REATIVO":                                                    [74, 4],
-    "RT_FALHA_RUIDO_INSTRU_TENSAO":                                                     [74, 5],
-    "RT_FALHA_RUIDO_INSTRU_EXCITACAO_PRINC":                                            [74, 6],
-    "RT_FALHA_RUIDO_INSTRU_EXCITACAO_RETAG":                                            [74, 7],
+        ## FALHAS_3
+        "RT_FALHA_PERDA_MED_POT_REATIVA":                                                   [74, 0],
+        "RT_FALHA_PERDA_MED_TENSAO_TERMINAL":                                               [74, 1],
+        "RT_FALHA_PERDA_MED_CORRENTE_EXCITACAO_PRINC":                                      [74, 2],
+        "RT_FALHA_PERDA_MED_CORRENTE_EXCITACAO_RETAG":                                      [74, 3],
+        "RT_FALHA_RUIDO_INSTRU_REATIVO":                                                    [74, 4],
+        "RT_FALHA_RUIDO_INSTRU_TENSAO":                                                     [74, 5],
+        "RT_FALHA_RUIDO_INSTRU_EXCITACAO_PRINC":                                            [74, 6],
+        "RT_FALHA_RUIDO_INSTRU_EXCITACAO_RETAG":                                            [74, 7],
 
 
-    ## LEITURAS_3
-    "TENSAO_NOMINAL":                                                                   85,
-    "POT_APARENTE_NOMINAL":                                                             86,
-    "CONTROLE_1":                                                                       90,
-    "CONTROLE_2":                                                                       91,
+        ## LEITURAS_3
+        "TENSAO_NOMINAL":                                                                   85,
+        "POT_APARENTE_NOMINAL":                                                             86,
+        "CONTROLE_1":                                                                       90,
+        "CONTROLE_2":                                                                       91,
+    },
+
+    "UG2": {
+        ### RV
+        ## LEITURAS_1
+        "ROTACAO":                                                                          16,
+        "ESTADO_OPERACAO":                                                                  21,
+        "CRTL_SINCRONIZADO_SELEC":                                                          22,
+        "CRTL_VAZIO_SELEC":                                                                 23,
+        "CMD_MODBUS":                                                                       24,
+
+
+        ## ENTRAS_DIGITAIS
+        "RV_SEM_BLOQ_EXTERNO":                                                              [25, 0],
+        "RV_HAB_REGULADOR":                                                                 [25, 1],
+        "RV_SELEC_MODO_CTRL_ISOLADO":                                                       [25, 2],
+        "RV_ZERA_CARGA":                                                                    [25, 3],
+        "RV_RESET_FALHAS":                                                                  [25, 4],
+        "RV_INCRE_REF_CTRL":                                                                [25, 5],
+        "RV_DECRE_REF_CTRL":                                                                [25, 6],
+        "RV_DJ_MAQUINA_FECHADO":                                                            [25, 7],
+
+
+        ## SAÍDAS_DIGITAIS
+        "RV_RELE_TRIP_NAO_ATUADO":                                                          [26, 0],
+        "RV_RELE_ALARME":                                                                   [26, 1],
+        "RV_RELE_REGULADOR_HAB":                                                            [26, 2],
+        "RV_RELE_REGULADOR_REGULANDO":                                                      [26, 3],
+        "RV_RELE_POT_NULA":                                                                 [26, 4],
+        "RV_RELE_MAQUINA_PARADA":                                                           [26, 5],
+        "RV_RELE_VELO_MENOR_30%":                                                           [26, 6],
+        "RV_RELE_VELO_MAIOR_90%":                                                           [26, 7],
+        "RV_RELE_DISTRI_ABERTO":                                                            [26, 8],
+
+
+        ## LIMITES_OPERAÇÃO
+        "RV_LIM_SUP_DISTRI_ATUADO":                                                         [27, 0],
+        "RV_LIM_INF_DISTRI_ATUADO":                                                         [27, 1],
+        "RV_LIM_SUP_ROTOR_ATUADO":                                                          [27, 2],
+        "RV_LIM_INF_ROTOR_ATUADO":                                                          [27, 3],
+        "RV_LIM_SUP_VELO_ATUADO":                                                           [27, 4],
+        "RV_LIM_INF_VELO_ATUADO":                                                           [27, 5],
+        "RV_LIM_SUP_POT_ATUADO":                                                            [27, 6],
+        "RV_LIM_INF_POT_ATUADO":                                                            [27, 7],
+
+
+        ## LEITURAS_2
+        "SETPOINT_ABERTURA_PU":                                                             28,
+        "SETPOINT_VELO":                                                                    29,
+        "SETPOINT_POT_ATIVA_KW":                                                            30,
+        "SETPOINT_POT_ATIVA_PU":                                                            30 + 3200,
+        "SAIDA_CTRL_DISTRI":                                                                32,
+        "SAIDA_CTRL_ROTOR":                                                                 33,
+        "REF_DISTRI_PU":                                                                    36,
+        "FEEDBACK_DISTRI_PU":                                                               37,
+        "SAIDA_CTRL_DISTRI_PU":                                                             32,
+        "REF_ROTOR_PU":                                                                     42,
+        "FEEDBACK_ROTOR_PU":                                                                43,
+        "SAIDA_CTRL_ROTOR_PU":                                                              33,
+        "REF_VELO_PU":                                                                      48,
+        "FEEDBACK_VELO_PU":                                                                 49,
+        "REF_POT_ATIVA_PU":                                                                 54,
+        "FEEDBACK_POT_ATIVA_PU":                                                            55,
+
+
+        ## ALARME
+        "RV_ALARME_SOBREFREQUENCIA":                                                        [66, 0],
+        "RV_ALARME_SUBFREQUENCIA":                                                          [66, 1],
+        "RV_ALARME_LEITURA_POS_DISTRI":                                                     [66, 2],
+        "RV_ALARME_LEITURA_POS_ROTOR":                                                      [66, 3],
+        "RV_ALARME_LEITURA_POT_ATIVA":                                                      [66, 4],
+        "RV_ALARME_LEITURA_REF_POT":                                                        [66, 5],
+        "RV_ALARME_LEITURA_NV_MONTANTE":                                                    [66, 6],
+        "RV_ALARME_NV_MONTANTE_MUITO_BAIXO":                                                [66, 7],
+        "RV_ALARME_CTRL_POS_DISTRI":                                                        [66, 8],
+        "RV_ALARME_CTRL_POS_ROTOR":                                                         [66, 9],
+        "RV_ALARME_RUIDO_MED_VELO_PRINC":                                                   [66, 10],
+        "RV_ALARME_RUIDO_MED_VELO_RETAG":                                                   [66, 11],
+        "RV_ALARME_PERDA_MED_VELO_PRINC":                                                   [66, 12],
+        "RV_ALARME_PERDA_MED_VELO_RETAG":                                                   [66, 13],
+        "RV_ALARME_DIF_MED_VELO_PRINC_RETAG":                                               [66, 14],
+
+
+        ## FALHA_1
+        "RV_FALHA_SOBREFREQUENCIA_INSTAN":                                                  [67, 0],
+        "RV_FALHA_SOBREFREQUENCIA_TEMPO":                                                   [67, 1],
+        "RV_FALHA_SUBFREQUENCIA_TEMPO":                                                     [67, 2],
+        "RV_FALHA_GIRANDO_SEM_REG_GIRO_INDEVIDO":                                           [67, 3],
+        "RV_FALHA_LEITURA_POS_DISTRI":                                                      [67, 4],
+        "RV_FALHA_LEITURA_POS_ROTOR":                                                       [67, 5],
+        "RV_FALHA_LEITURA_POT_ATIVA":                                                       [67, 6],
+        "RV_FALHA_LEITURA_REF_POT":                                                         [67, 7],
+        "RV_FALHA_LEITURA_NV_MONTANTE":                                                     [67, 8],
+        "RV_FALHA_NV_MONTANTE_MUITO_BAIXO":                                                 [67, 10],
+        "RV_FALHA_CTRL_POS_DISTRI":                                                         [67, 11],
+        "RV_FALHA_CTRL_POS_ROTOR":                                                          [67, 12],
+        "RV_FALHA_RUIDO_MED_VELO_PRINC":                                                    [67, 13],
+        "RV_FALHA_RUIDO_MED_VELO_RETAG":                                                    [67, 14],
+        "RV_FALHA_PERDA_MED_VELO_PRINC":                                                    [67, 15],
+
+
+        ## FALHA_2
+        "RV_FALHA_RUIDO_MED_VELO_RETAG":                                                    [68, 0],
+        "RV_FALHA_TEMPO_EXCESSIVO_PARTIDA":                                                 [68, 1],
+        "RV_FALHA_TEMPO_EXCESSIVO_PARADA":                                                  [68, 2],
+        "RV_FALHA_BLOQ_EXTERNO":                                                            [68, 3],
+        "RV_FALHA_DIF_MED_VELO_PRINC_RETAG":                                                [68, 4],
+
+
+        ## LEITURAS_3
+        "POT_APARENTE_NOMINAL":                                                             79,
+        "POT_ATIVA_NOMINAL":                                                                80,
+        "CTRL_1":                                                                           85,
+        "CTRL_2":                                                                           86,
+        "CONJ_DISTRI_1":                                                                    121,
+        "CONJ_ROTOR_1":                                                                     122,
+        "CONJ_DISTRI_2":                                                                    123,
+        "CONJ_ROTOR_2":                                                                     124,
+        "CONJ_DISTRI_3":                                                                    125,
+        "CONJ_ROTOR_3":                                                                     126,
+        "CONJ_DISTRI_4":                                                                    127,
+        "CONJ_ROTOR_4":                                                                     128,
+        "CONJ_DISTRI_5":                                                                    129,
+        "CONJ_ROTOR_5":                                                                     130,
+        "CONJ_DISTRI_6":                                                                    131,
+        "CONJ_ROTOR_6":                                                                     132,
+        "CONJ_DISTRI_7":                                                                    133,
+        "CONJ_ROTOR_7":                                                                     134,
+        "CONJ_DISTRI_8":                                                                    135,
+        "CONJ_ROTOR_8":                                                                     136,
+        "CONJ_DISTRI_9":                                                                    137,
+        "CONJ_ROTOR_9":                                                                     138,
+        "CONJ_DISTRI_10":                                                                   139,
+        "CONJ_ROTOR_10":                                                                    140,
+        "ABERTURA_MAX_DISTRI":                                                              182,
+        "ABERTURA_MAX_DISTRI_VAZIO":                                                        184,
+        "ABERTURA_MIN_DISTRI":                                                              183,
+        "ABERTURA_MAX_ROTOR":                                                               185,
+        "ABERTURA_MIN_ROTOR":                                                               186,
+        "POTENCIA_MAX":                                                                     189,
+        "POTENCIA_MIN":                                                                     190,
+
+
+
+        ### RT
+        ## LEITURAS_1
+        "CORRENTE_EXCITACAO":                                                               16,
+        "TENSAO_EXCITACAO":                                                                 17,
+        "TEMP_ROTOR":                                                                       25,
+        "ESTADO_OPERACAO":                                                                  26,
+        "CTRL_SINCRONIZADO_SELEC":                                                          27,
+
+
+        ## ENTRAS_DIGITAIS
+        "RT_SEM_BLOQ_EXTERNO":                                                              [30, 0],
+        "RT_HAB_REGULADOR":                                                                 [30, 1],
+        "RT_SELEC_MODO_CTRL_ISOLADO":                                                       [30, 2],
+        "RV_DRIVE_EXCITACAO_HAB_LOGICA_DISPARO":                                            [30, 3],
+        "RV_RESET_FALHAS":                                                                  [30, 4],
+        "RT_INCRE_REF_CTRL":                                                                [30, 5],
+        "RT_DECRE_REF_CTRL":                                                                [30, 6],
+        "RT_DJ_MAQUINA_FECHADO":                                                            [30, 7],
+        "RT_CONTATOR_CAMPO_FECHADO":                                                        [30, 8],
+        "RT_CROWBAR_INATIVO":                                                               [30, 9],
+
+
+        ## SAIDAS_DIGITAIS
+        "RT_RELE_TRIP_NAO_ATUADO":                                                          [31, 0],
+        "RT_RELE_ALARME":                                                                   [31, 1],
+        "RT_RELE_REGULADOR_HAB":                                                            [31, 2],
+        "RT_RELE_REGULADOR_REGULANDO":                                                      [31, 3],
+        "RT_RELE_HAB_DRIVE_EXCITACAO_LOGICA_DISPARO":                                       [31, 4],
+        "RT_RELE_HAB_CONTATOR_CAMPO":                                                       [31, 5],
+        "RT_RELE_HAB_PRE_EXCITACAO":                                                        [31, 6],
+        "RT_RELE_HAB_CROWBAR":                                                              [31, 7],
+
+
+        ## LIMITES_OPERAÇÃO
+        "RT_LIM_SUP_CORRENTE_EXCITACAO":                                                    [32, 0],
+        "RT_LIM_INF_CORRENTE_EXCITACAO":                                                    [32, 1],
+        "RT_LIM_SUP_TENSAO_TERMINAL":                                                       [32, 2],
+        "RT_LIM_INF_TENSAO_TERMINAL":                                                       [32, 3],
+        "RT_LIM_SUP_POT_REATIVA":                                                           [32, 4],
+        "RT_LIM_INF_POT_REATIVA":                                                           [32, 5],
+        "RT_LIM_SUP_FATOR_DE_POT":                                                          [32, 10],
+        "RT_LIM_INF_FATOR_DE_POT":                                                          [32, 11],
+        "RT_LIM_VOLTZ_HERTZ":                                                               [32, 12],
+        "RT_LIM_ABERTURA_PONTE":                                                            [32, 13],
+        "RT_LIM_PQ_RELACAO_POT_ATIVA_POT_REATIVA":                                          [32, 14],
+
+
+        ## LEITURAS_2
+        "SETPOINT_TENSAO_PU":                                                               40,
+        "SETPOINT_POT_REATIVA_KVAR":                                                        41,
+        "SETPOINT_POT_REATIVA_PU":                                                          41,
+        "SETPOINT_FATOR_POT_PU":                                                            42,
+        "ABERTURA_PONTE":                                                                   43,
+        "REF_CORRENTE_CAMPO_PU":                                                            46,
+        "FEEDBACK_CORRENTE_CAMPO_PU":                                                       47,
+        "REF_TENSAO_PU":                                                                    52,
+        "FEEDBACK_TENSAO_PU":                                                               53,
+        "REF_POT_REATIVA_PU":                                                               58,
+        "FEEDBACK_POT_REATIVA_PU":                                                          59,
+        "REF_FATOR_POT_PU":                                                                 64,
+        "FEEDBACK_FATOR_POT_PU":                                                            65,
+
+
+        ## ALARMES_1
+        "RT_ALARME_SOBRETENSAO":                                                            [70, 0],
+        "RT_ALARME_SUBTENSAO":                                                              [70, 1],
+        "RT_ALARME_SOBREFREQUENCIA":                                                        [70, 2],
+        "RT_ALARME_SUBFREQUENCIA":                                                          [70, 3],
+        "RT_ALARME_LIM_SUP_POT_REATIVA":                                                    [70, 4],
+        "RT_ALARME_LIM_INF_POT_REATIVA":                                                    [70, 5],
+        "RT_ALARME_LIM_SUP_FATOR_DE_POT":                                                   [70, 6],
+        "RT_ALARME_LIM_INF_FATOR_DE_POT":                                                   [70, 7],
+        "RT_ALARME_VARIACAO_TENSAO":                                                        [70, 8],
+        "RT_ALARME_POT_ATIVA_REVERSA":                                                      [70, 9],
+        "RT_ALARME_SOBRECORRENTE_TERMINAL":                                                 [70, 10],
+        "RT_ALARME_LIM_SUP_CORRENTE_EXCITACAO":                                             [70, 11],
+        "RT_ALARME_LIM_INF_CORRENTE_EXCITACAO":                                             [70, 12],
+        "RT_ALARME_TEMP_MUITO_ALTA_ROTOR":                                                  [70, 13],
+        "RT_ALARME_PRES_TENSAO_TERMINAL_AUSENCIA_CORRENTE_EXCITACAO":                       [70, 14],
+        "RT_ALARME_PRES_CORRENTE_EXCITACAO_AUXENCIA_TENSAO_TERMINAL":                       [70, 15],
+
+
+        ## ALARMES_2
+        "RT_ALARME_FALHA_CONTROLE_CORRENTE_EXCITACAO":                                      [71, 0],
+        "RT_ALARME_FALHA_CONTROLE_TENSAO_TERMINAL":                                         [71, 1],
+        "RT_ALARME_CROWBAR_ATUADO_REGULADOR_HABILITADO":                                    [71, 2],
+        "RT_ALARME_FALHA_HAB_DRIVE_EXCITACAO":                                              [71, 3],
+        "RT_ALARME_FALHA_FECHAR_CONTATOR_CAMPO":                                            [71, 4],
+        "RT_ALARME_FALHA_CORRENTE_EXCITACAO_PRE_EXCITACAO_ATIVA":                           [71, 5],
+        "RT_ALARME_PERDA_MED_POT_REATIVA":                                                  [71, 6],
+        "RT_ALARME_PERDA_MED_TENSAO_TERMINAL":                                              [71, 7],
+        "RT_ALARME_PERDA_MED_CORRENTE_EXCITACAO":                                           [71, 8],
+        "RT_ALARME_RUIDO_INSTRU_REATIVO":                                                   [71, 9],
+        "RT_ALARME_RUIDO_INSTRU_TENSAO":                                                    [71, 10],
+        "RT_ALARME_RUIDO_INSTRU_EXCITACAO_PRINC":                                           [71, 11],
+        "RT_ALARME_RUIDO_INSTRU_EXCITACAO_RETAG":                                           [71, 12],
+
+
+        ## FALHAS_1
+        "RT_FALHA_SOBRETENSAO":                                                             [72, 0],
+        "RT_FALHA_SUBTENSAO":                                                               [72, 1],
+        "RT_FALHA_SOBREFREQUENCIA":                                                         [72, 2],
+        "RT_FALHA_SUBFREQUENCIA":                                                           [72, 3],
+        "RT_FALHA_LIM_SUP_POT_REATIVA":                                                     [72, 4],
+        "RT_FALHA_LIM_INF_POT_REATIVA":                                                     [72, 5],
+        "RT_FALHA_LIM_SUP_FATOR_POT":                                                       [72, 6],
+        "RT_FALHA_LIM_INF_FATOR_POT":                                                       [72, 7],
+        "RT_FALHA_SOBRETENSAO_INSTAN":                                                      [72, 8],
+        "RT_FALHA_VARIACAO_TENSAO":                                                         [72, 9],
+        "RT_FALHA_POT_ATIVA_REVERSA":                                                       [72, 10],
+        "RT_FALHA_SOBRECORRENTE_TERM":                                                      [72, 11],
+        "RT_FALHA_LIM_SUP_CORRENTE_EXCITACAO":                                              [72, 12],
+        "RT_FALHA_LIM_INF_CORRENTE_EXCITACAO":                                              [72, 13],
+        "RT_FALHA_LIM_SUP_TENSAO_EXCITACAO":                                                [72, 14],
+        "RT_FALHA_LIM_INF_TENSAO_EXCITACAO":                                                [72, 15],
+
+
+        ## FALHAS_2
+        "RT_FALHA_TEMP_MUITO_ALTA_ROTOR":                                                   [73, 0],
+        "RT_FALHA_PRESENCA_TENSAO_TERMINAL_AUSENCIA_CORRENTE_EXCITACAO":                    [73, 1],
+        "RT_FALHA_PRESENCA_CORRENTE_EXCITACAO_AUSENCIA_TENSAO_TERM":                        [73, 2],
+        "RT_FALHA_CTRL_CORRENTE_EXCITACAO":                                                 [73, 3],
+        "RT_FALHA_CTRL_TENSAO_TERMINAL":                                                    [73, 4],
+        "RT_FALHA_CROWBAR_ATUADO_REGULADOR_HAB":                                            [73, 5],
+        "RT_FALHA_HAB_DRIVE_EXCITACAO_LOGICA_DISPARO":                                      [73, 6],
+        "RT_FALHA_FECHAR_CONTATOR_CAMPO":                                                   [73, 7],
+        "RT_FALHA_CORRENTE_EXCITACAO_PRE_EXCITACAO_ATIVA":                                  [73, 8],
+        "RT_FALHA_TEMPO_EXCESSIVO_PRE_EXCITACAO":                                           [73, 9],
+        "RT_FALHA_TEMPO_EXCESSIVO_PARADA":                                                  [73, 10],
+        "RT_FALHA_TEMPO_EXCESSIVO_PARTIDA":                                                 [73, 11],
+        "RT_FALHA_BLOQ_EXTERNO":                                                            [73, 12],
+
+
+        ## FALHAS_3
+        "RT_FALHA_PERDA_MED_POT_REATIVA":                                                   [74, 0],
+        "RT_FALHA_PERDA_MED_TENSAO_TERMINAL":                                               [74, 1],
+        "RT_FALHA_PERDA_MED_CORRENTE_EXCITACAO_PRINC":                                      [74, 2],
+        "RT_FALHA_PERDA_MED_CORRENTE_EXCITACAO_RETAG":                                      [74, 3],
+        "RT_FALHA_RUIDO_INSTRU_REATIVO":                                                    [74, 4],
+        "RT_FALHA_RUIDO_INSTRU_TENSAO":                                                     [74, 5],
+        "RT_FALHA_RUIDO_INSTRU_EXCITACAO_PRINC":                                            [74, 6],
+        "RT_FALHA_RUIDO_INSTRU_EXCITACAO_RETAG":                                            [74, 7],
+
+
+        ## LEITURAS_3
+        "TENSAO_NOMINAL":                                                                   85,
+        "POT_APARENTE_NOMINAL":                                                             86,
+        "CONTROLE_1":                                                                       90,
+        "CONTROLE_2":                                                                       91,
+    },
 }

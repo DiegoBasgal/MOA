@@ -119,8 +119,8 @@ class StateDisponivel(State):
         self.parent.borda_parar = False
 
     def step(self) -> State:
-        self.parent.oco.controlar_limites_operacao()
-        flag = self.parent.oco.verificar_condicionadores()
+        self.parent.controlar_limites_operacao()
+        flag = self.parent.verificar_condicionadores()
 
         if flag == CONDIC_INDISPONIBILIZAR:
             logger.warning(f"[UG{self.parent.id}] Indisponibilizando UG.")

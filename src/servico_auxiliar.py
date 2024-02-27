@@ -40,10 +40,10 @@ class ServicoAuxiliar:
 
 
     @classmethod
-    def resetar_emergencia(cls) -> "None":
+    def resetar_emergencia(cls) -> "bool":
         try:
-            logger.info(f"[SA]  Enviando comando:                   \"RESET EMERGÊNCIA\"")
-            # esc.EscritaModBusBit.escrever_bit(cls.clp["SA"], REG_SASE["CMD_REARME_FALHAS"], valor=1)
+            res = esc.EscritaModBusBit.escrever_bit(cls.clp["SA"], REG_SASE["CMD_REARME_FALHAS"], valor=1)
+            return res
 
         except Exception:
             logger.error(f"[SA]  Houve um erro ao realizar o Reset de Emergência.")
@@ -341,6 +341,8 @@ class ServicoAuxiliar:
         Função para carregamento de todas as leituras para acionamentos de avisos
         e emergências da Usina.
         """
+        cls.l_disj_gmg_fechado = lei.LeituraModbusBit(cls.clp["SA"], REG_SASE["DJ_GMG_FECHADO"], descricao="[SA]  Disjuntor Grupo Motor Gerador Fechado")
+
         return
 
         ## CONDICIONADORES ESSENCIAIS
@@ -391,7 +393,6 @@ class ServicoAuxiliar:
         cls.l_disj_gmg_trip = lei.LeituraModbusBit(cls.clp["SA"], REG_SASE["DJ_GMG_TRIP"], descricao="[SA]  Trip Disjuntor Grupo Motor Gerador")
         cls.l_carreg_baterias_falha = lei.LeituraModbusBit(cls.clp["SA"], REG_SASE["CB_FALHA"], descricao="[SA]  Falha Carregador de Baterias")
         cls.l_disj_gmg_falha_fechar = lei.LeituraModbusBit(cls.clp["SA"], REG_SASE["DJ_GMG_FALHA_FECHAR"], descricao="[SA]  Falha Fechamento Disjuntor Grupo Motor Gerador")
-        cls.l_disj_gmg_fechado = lei.LeituraModbusBit(cls.clp["SA"], REG_SASE["DJ_GMG_FECHADO"], descricao="[SA]  Disjuntor Grupo Motor Gerador Fechado")
         cls.l_disjs_modo_remoto = lei.LeituraModbusBit(cls.clp["SA"], REG_SASE["DJS_MODO_REMOTO"], descricao="[SA]  Disjuntores em Modo Remoto")
 
         cls.l_sfa_press_lado_sujo_alto = lei.LeituraModbusBit(cls.clp["SA"], REG_SASE["PSA_SFA_PRESSAO_LADO_SUJO_ALTO"], descricao="[SA]  Pressão Sistema de Filtragem A Lado Sujo Alta")

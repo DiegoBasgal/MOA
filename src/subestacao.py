@@ -36,24 +36,28 @@ class Subestacao:
         clp["SA"],
         REG_RELE["SE"]["P"],
         op=3,
+        escala=1000,
         descricao="[SE]  Potência Ativa"
     )
     tensao_rs = lei.LeituraModbus(
         clp["SA"],
         REG_RELE["SE"]["VAB"],
         op=4,
+        escala=1000,
         descricao="[SE]  Tensão RS"
     )
     tensao_st = lei.LeituraModbus(
         clp["SA"],
         REG_RELE["SE"]["VBC"],
         op=4,
+        escala=1000,
         descricao="[SE]  Tensão ST"
     )
     tensao_tr = lei.LeituraModbus(
         clp["SA"],
         REG_RELE["SE"]["VCA"],
         op=4,
+        escala=1000,
         descricao="[SE]  Tensão TR"
     )
 
@@ -65,7 +69,6 @@ class Subestacao:
 
     status_tensao: "int" = 0
 
-    djl_manual: "bool" = False
     timer_tensao: "bool" = False
 
     condicionadores: "list[c.CondicionadorBase]" = []
@@ -76,17 +79,18 @@ class Subestacao:
     def fechar_dj_linha(cls) -> "bool":
         try:
             if cls.status_dj_linha.valor:
-                logger.debug("[SE]  O Disjuntor de Linha já está fechado!")
                 return True
 
-            elif not sa.ServicoAuxiliar.status_dj_tsa.valor:
-                logger.info("[SE]  Não foi possível fechar o Disjuntor de Linha, pois o Disjuntor do SA está aberto")
-                return False
+            # elif not sa.ServicoAuxiliar.status_dj_tsa.valor:
+            #     logger.info("[SE]  Não foi possível fechar o Disjuntor de Linha, pois o Disjuntor do SA está aberto")
+            #     return False
 
             else:
+                logger.info(f"[SE]  O Disjuntor de Linha está aberto!")
                 logger.info(f"[SE]  Enviando comando:                   \"FECHAR DISJUNTOR LINHA\"")
-                # res = esc.EscritaModBusBit.escrever_bit(cls.clp["SA"], REG_SASE["CMD_DJ_LINHA_FECHA"], valor=1)
-                return True # res
+                logger.debug("")
+                res = esc.EscritaModBusBit.escrever_bit(cls.clp["SA"], REG_SASE["CMD_DJ_LINHA_FECHA"], valor=1)
+                return res
 
         except Exception:
             logger.error("[SE]  Houver um erro ao fechar o Disjuntor de Linha.")
