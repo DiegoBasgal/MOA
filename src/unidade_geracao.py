@@ -501,7 +501,6 @@ class UnidadeGeracao:
         Unidade.
         """
 
-        self.popular_listas_sp_pot()
 
         cont_mppt = 0
         for pot in self.potencias_anteriores:
@@ -510,16 +509,17 @@ class UnidadeGeracao:
 
         debug_log.debug("")
         debug_log.debug("------------------------------------------------------------------------------")
-        debug_log.debug(f"\"UG{self.id}\" Setpoint \"Calculado\":             {setpoint_kw:0.0f}")
-        debug_log.debug(f"      Lista de Potências Anteriores:    {self.potencias_anteriores}")
+        debug_log.debug(f"\"UG{self.id}\" Setpoint \"Calculado\":                     {setpoint_kw:0.0f}")
+        debug_log.debug(f"      Lista de Potências Anteriores:            {self.potencias_anteriores}")
         debug_log.debug("")
 
         if cont_mppt == self.amostras_pot_mppt and self.cfg['pot_minima_ugs'] <= setpoint_kw <= self.cfg["pot_maxima_ugs"]:
 
-            debug_log.debug(f"      Potência Atual:                   {self.leitura_potencia:0.0f}")
-            debug_log.debug(f"      Potência Anterior:                {self.potencias_anteriores[-1]:0.0f}")
+            debug_log.debug(f"      Potência Atual:                           {self.leitura_potencia:0.0f}")
+            debug_log.debug(f"      Potência Anterior:                        {self.potencias_anteriores[-1]:0.0f}")
             debug_log.debug("")
-            debug_log.debug(f"      Setpoint Anterior:                {self.setpoints_anteriores[-1]:0.0f}")
+            debug_log.debug(f"      Setpoint p/ Ajuste MPPT:                  {self.setpoints_anteriores[-1]:0.0f}")
+            debug_log.debug(f"      Setpoint Anterior:                        {self.setpoints_anteriores[-2]:0.0f}")
             debug_log.debug("")
 
             setpoint_kw = self.ajustar_mppt(
@@ -538,6 +538,8 @@ class UnidadeGeracao:
 
         self.setpoint = int(setpoint_kw)
         self.pos_dist_anterior = self.leitura_pos_distribuidor
+
+        self.popular_listas_sp_pot()
 
         try:
             # res = self.clp[f"UG{self.id}"].write_single_register(REG_UG[f"UG{self.id}"]["CMD_SINC_MODO_AUTO_LIGAR"], 1)
@@ -746,18 +748,18 @@ class UnidadeGeracao:
                 self.setpoints_anteriores.pop(-1)
 
 
-            if len(self.potencias_anteriores) == self.amostras_pot_mppt and (self.cfg['pot_minima_ugs'] - 200) <= self.leitura_potencia <= self.cfg['pot_maxima_ugs']:
+            if len(self.potencias_anteriores) == self.amostras_pot_mppt and self.cfg['pot_minima_ugs'] <= self.leitura_potencia <= self.cfg['pot_maxima_ugs']:
                 self.potencias_anteriores.pop(0)
                 self.potencias_anteriores.append(self.leitura_potencia)
 
-            elif (self.cfg['pot_minima_ugs'] - 200) <= self.leitura_potencia <= self.cfg['pot_maxima_ugs']:
+            elif self.cfg['pot_minima_ugs'] <= self.leitura_potencia <= self.cfg['pot_maxima_ugs']:
                 self.potencias_anteriores.append(self.leitura_potencia)
 
-            if len(self.setpoints_anteriores) == self.amostras_sp_mppt and (self.cfg['pot_minima_ugs'] - 200) <= self.setpoint <= self.cfg['pot_maxima_ugs']:
+            if len(self.setpoints_anteriores) == self.amostras_sp_mppt and self.cfg['pot_minima_ugs'] <= self.setpoint <= self.cfg['pot_maxima_ugs']:
                 self.setpoints_anteriores.pop(0)
                 self.setpoints_anteriores.append(self.setpoint)
 
-            elif (self.cfg['pot_minima_ugs'] - 200) <= self.setpoint <= self.cfg['pot_maxima_ugs']:
+            elif self.cfg['pot_minima_ugs'] <= self.setpoint <= self.cfg['pot_maxima_ugs']:
                 self.setpoints_anteriores.append(self.setpoint)
 
 
@@ -767,23 +769,32 @@ class UnidadeGeracao:
         por MPPT (Maximum Power Point Tracking)
         """
 
-        setpoint_saida = setpoint[0]
+        setpoint_saida = max(min(setpoint[0], self.cfg['pot_maxima_ugs']), self.cfg['pot_minima_ugs'])
         delta = 35
 
         if potencia[0] < potencia[1]:
             if abertura_dist[0] < abertura_dist[1]:
+                debug_log.debug(f"      \"MPPT\" Potência -> Abertura Distribuidor: Delta +")
                 setpoint_saida += delta
             else:
                 setpoint_saida -= delta
+                debug_log.debug(f"      \"MPPT\" Potência -> Abertura Distribuidor: Delta -")
 
         elif potencia[0] == potencia[1]:
+                debug_log.debug(f"      \"MPPT\" Potência:                          Delta -")
                 setpoint_saida -= delta
 
         else:
             if abertura_dist[0] < abertura_dist[1]:
+                debug_log.debug(f"      \"MPPT\" Abertura Distribuidor:             Delta -")
                 setpoint_saida -= delta
             else:
+                debug_log.debug(f"      \"MPPT\" Abertura Distribuidor:             Delta +")
                 setpoint_saida += delta
+
+        setpoint_saida = max(min(setpoint_saida, self.cfg['pot_maxima_ugs']), self.cfg['pot_minima_ugs'])
+
+        debug_log.debug(f"      \"MPPT\" Setpoint Saída ->                  {setpoint_saida}")
 
         return setpoint_saida
 
