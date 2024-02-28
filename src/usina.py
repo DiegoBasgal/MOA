@@ -509,41 +509,27 @@ class Usina:
 
                 for ug in ugs: 
                     ug.setpoint = sp * ug.setpoint_maximo
-                    ug.sp_mppt = sp * ug.sp_mppt_max
 
             elif self.__split3:
                 logger.debug("[USN] Split:                              4 -> \"3B\"")
 
                 ugs[0].setpoint = (sp * (4/3)) * ugs[0].setpoint_maximo
-                ugs[0].sp_mppt = (sp * (4/3)) * ugs[0].sp_mppt_max
-
                 ugs[1].setpoint = (sp * (4/3)) * ugs[1].setpoint_maximo
-                ugs[1].sp_mppt = (sp * (4/3)) * ugs[1].sp_mppt_max
-
                 ugs[2].setpoint = (sp * (4/3)) * ugs[2].setpoint_maximo
-                ugs[2].sp_mppt = (sp * (4/3)) * ugs[2].sp_mppt_max
-
                 ugs[3].setpoint = 0
 
             elif self.__split2:
                 logger.debug("[USN] Split:                              4 -> \"2B\"")
 
                 ugs[0].setpoint = (sp * (4/2)) * ugs[0].setpoint_maximo
-                ugs[0].sp_mppt = (sp * (4/2)) * ugs[0].sp_mppt_max
-
                 ugs[1].setpoint = (sp * (4/2)) * ugs[1].setpoint_maximo
-                ugs[1].sp_mppt = (sp * (4/2)) * ugs[1].sp_mppt_max
-
                 ugs[2].setpoint = 0
                 ugs[3].setpoint = 0
-
 
             elif self.__split1:
                 logger.debug("[USN] Split:                              4 -> \"1B\"")
 
                 ugs[0].setpoint = sp * 4 * ugs[0].setpoint_maximo
-                ugs[0].sp_mppt = sp * 4 * ugs[0].sp_mppt_max
-
                 ugs[1].setpoint = 0
                 ugs[2].setpoint = 0
                 ugs[3].setpoint = 0
@@ -559,31 +545,20 @@ class Usina:
                 logger.debug("[USN] Split:                              3")
 
                 ugs[0].setpoint = (sp * (4/3)) * ugs[0].setpoint_maximo
-                ugs[0].sp_mppt = (sp * (4/3)) * ugs[0].sp_mppt_max
-
                 ugs[1].setpoint = (sp * (4/3)) * ugs[1].setpoint_maximo
-                ugs[1].sp_mppt = (sp * (4/3)) * ugs[1].sp_mppt_max
-
                 ugs[2].setpoint = (sp * (4/3)) * ugs[2].setpoint_maximo
-                ugs[2].sp_mppt = (sp * (4/3)) * ugs[2].sp_mppt_max
 
             elif self.__split2:
                 logger.debug("[USN] Split:                              3 -> \"2B\"")
 
                 ugs[0].setpoint = (sp * (4/2)) * ugs[0].setpoint_maximo
-                ugs[0].sp_mppt = (sp * (4/2)) * ugs[0].sp_mppt_max
-
                 ugs[1].setpoint = (sp * (4/2)) * ugs[1].setpoint_maximo
-                ugs[1].sp_mppt = (sp * (4/2)) * ugs[1].sp_mppt_max
-
                 ugs[2].setpoint = 0
 
             elif self.__split1:
                 logger.debug("[USN] Split:                              3 -> \"1B\"")
 
                 ugs[0].setpoint = sp * 4 * ugs[0].setpoint_maximo
-                ugs[0].sp_mppt = sp * 4 * ugs[0].sp_mppt_max
-
                 ugs[1].setpoint = 0
                 ugs[2].setpoint = 0
 
@@ -598,17 +573,12 @@ class Usina:
                 logger.debug("[USN] Split:                              2")
 
                 ugs[0].setpoint = (sp * (4/2)) * ugs[0].setpoint_maximo
-                ugs[0].sp_mppt = (sp * (4/2)) * ugs[0].sp_mppt_max
-
                 ugs[1].setpoint = (sp * (4/2)) * ugs[0].setpoint_maximo
-                ugs[1].sp_mppt = (sp * (4/2)) * ugs[1].sp_mppt_max
 
             elif self.__split1:
                 logger.debug("[USN] Split:                              2 -> \"1B\"")
 
                 ugs[0].setpoint = sp * 4 * ugs[0].setpoint_maximo
-                ugs[0].sp_mppt = sp * 4 * ugs[0].sp_mppt_max
-
                 ugs[1].setpoint = 0
 
             else:
@@ -621,7 +591,6 @@ class Usina:
             logger.debug("[USN] Split:                              1")
 
             ugs[0].setpoint = sp * 4 * ugs[0].setpoint_maximo
-            ugs[0].sp_mppt = sp * 4 * ugs[0].sp_mppt_max
 
             logger.debug("")
             logger.debug(f"[UG{ugs[0].id}] SP    <-                            {int(ugs[0].setpoint)}")
@@ -635,7 +604,7 @@ class Usina:
         ls = [ug for ug in self.ugs if ug.disponivel and not ug.etapa == UG_PARANDO]
 
         if self.modo_prioridade_ugs in (UG_PRIORIDADE_1, UG_PRIORIDADE_2, UG_PRIORIDADE_3, UG_PRIORIDADE_4):
-            return sorted(ls, key=lambda y: (-1 * y.etapa_atual, -1 * y.leitura_potencia, -1 * y.setpoint, y.prioridade))
+            return sorted(ls, key=lambda y: (-1 * y.prioridade, -1 * y.etapa_atual, -1 * y.leitura_potencia, -1 * y.setpoint))
         else:
             return sorted(ls, key=lambda y: (-1 * y.etapa_atual, y.leitura_horimetro, -1 * y.leitura_potencia, -1 * y.setpoint))
 
