@@ -3,6 +3,8 @@ compartilhado = {
         "tempo_real": 0,
         "tempo_simul": 0,
 
+        "passo_afluente": 0,
+
         "stop_sim": False,
         "stop_gui": False
     },

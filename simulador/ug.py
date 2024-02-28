@@ -1,13 +1,18 @@
 import numpy as np
+import logging
 
-from time import  time, sleep
 from threading import Thread
+from time import  time, sleep
+from logging.config import fileConfig
 from pyModbusTCP.server import DataBank as DB
 
 from dicts.reg import *
 from dicts.const import *
 from funcs.escrita import Escrita as ESC
 from funcs.temporizador import Temporizador
+
+
+logger = logging.getLogger("__main__")
 
 
 class Unidade:
@@ -39,16 +44,16 @@ class Unidade:
         if DB.get_words(MB[f'UG{self.id}']['CMD_RESET_ALARMES'])[0]:
             DB.set_words(MB[f'UG{self.id}']['CMD_RESET_ALARMES'], [0])
             self.dict[f'UG{self.id}']['condic'] = False
-            print('')
-            print(f"[UG{self.id}] Comando de Reset.")
+            logger.debug('')
+            logger.debug(f"[UG{self.id}] Comando de Reset.")
 
         if DB.get_words(MB[f'UG{self.id}']['CMD_OPER_US'])[0] or self.dict[f'UG{self.id}']['debug_partir']:
             DB.set_words(MB[f'UG{self.id}']['CMD_OPER_US'], [0])
             self.dict[f'UG{self.id}']['debug_partir'] = False
 
             if self.dict['TDA'][f'cp{self.id}_fechada'] and not self.dict['TDA'][f'cp{self.id}_aberta']:
-                print('')
-                print(f"[UG{self.id}] Comando de Partida -> Abrindo Comporta.")
+                logger.debug('')
+                logger.debug(f"[UG{self.id}] Comando de Partida -> Abrindo Comporta.")
                 Thread(target=lambda: self.abrir_comporta(0)).start()
                 ESC.escrever_bit(MB['TDA'][f'UHTA0{1 if self.id in (1,2) else 2}_OPERACIONAL'], valor=1)
 
@@ -79,25 +84,25 @@ class Unidade:
 
 
     def partir(self) -> 'None':
-        print('')
+        logger.debug('')
         if ETAPA_UP in (self.etapa_alvo, self.etapa_atual) and not self.dict[f'UG{self.id}']['condic']:
             self.dict[f'UG{self.id}']['etapa_alvo'] = self.etapa_alvo = ETAPA_US
-            print(f'[UG{self.id}] Comando de Partida')
+            logger.debug(f'[UG{self.id}] Comando de Partida')
 
         elif self.dict[f'UG{self.id}']['condic']:
-            print(f'[UG{self.id}] Máquina sem condição de partida.')
+            logger.debug(f'[UG{self.id}] Máquina sem condição de partida.')
 
 
     def parar(self) -> 'None':
-        print('')
+        logger.debug('')
         if ETAPA_UP not in (self.etapa_alvo, self.etapa_atual):
             self.dict[f'UG{self.id}']['etapa_alvo'] = self.etapa_alvo = ETAPA_UP
-            print(f'[UG{self.id}] Comando de Parada')
+            logger.debug(f'[UG{self.id}] Comando de Parada')
 
 
     def tripar(self) -> 'None':
-        print('')
-        print(f'[UG{self.id}] TRIP!')
+        logger.debug('')
+        logger.debug(f'[UG{self.id}] TRIP!')
         self.potencia = 0
         self.etapa_alvo = 0
         self.dict[f'UG{self.id}']['etapa_alvo'] = 0
@@ -137,9 +142,9 @@ class Unidade:
 
 
     def abrir_comporta(self, passo):
-        print('')
+        logger.debug('')
         if not self.dict['TDA'][f'uh{1 if self.id in (1,2) else 2}_disponivel']:
-            print(f"[UG{self.id}] A Unidade Hidráulica da Comporta {self.id} está em Operação. Aguardando...")
+            logger.debug(f"[UG{self.id}] A Unidade Hidráulica da Comporta {self.id} está em Operação. Aguardando...")
             return
 
         if passo == 0:
@@ -173,7 +178,7 @@ class Unidade:
 
             self.dict['TDA'][f'uh{1 if self.id in (1,2) else 2}_disponivel'] = False
 
-        print(txt_i)
+        logger.debug(txt_i)
         t1 = t2 = time()
 
         while time() < to:
@@ -184,7 +189,7 @@ class Unidade:
             else:
                 t2 = time()
 
-        print(txt_f)
+        logger.debug(txt_f)
 
         self.dict['TDA'][f'cp{self.id}_aberta'] = True if passo == 2 else False
         self.dict['TDA'][f'uh{1 if self.id in (1,2) else 2}_disponivel'] = True
@@ -198,8 +203,8 @@ class Unidade:
         while not self.dict[f'UG{self.id}']['etapa_atual'] == ETAPA_UP:
             sleep(1)
 
-        print('')
-        print(f"[UG{self.id}] Fechando Comporta {self.id}...")
+        logger.debug('')
+        logger.debug(f"[UG{self.id}] Fechando Comporta {self.id}...")
         self.dict['TDA'][f'cp{self.id}_aberta'] = False
 
         while self.dict[f'TDA'][f'cp{self.id}_posicao'] > 0:
@@ -207,7 +212,7 @@ class Unidade:
 
         self.dict['TDA'][f'cp{self.id}_fechada'] = True
 
-        print(f"[UG{self.id}] Comporta {self.id} Fechada!")
+        logger.debug(f"[UG{self.id}] Comporta {self.id} Fechada!")
 
 
     def controlar_etapas(self) -> 'None':
@@ -296,10 +301,18 @@ class Unidade:
                 if self.dict['SE']['dj_fechado']:
                     self.dict[f'UG{self.id}']['potencia'] = self.potencia = min(max(self.potencia, POT_MIN), POT_MAX)
 
-                    if self.id == 3:
+                    if self.id == 1 and self.dict['GLB']['passo_afluente'] <= 30:
                         sp_aux = -0.0005357143 * self.setpoint ** 2 + 5.125 * self.setpoint - 7714.2857
-                    elif self.id == 4:
+
+                    elif self.id == 1 and self.dict['GLB']['passo_afluente'] > 30:
+                        sp_aux = -0.0004 * self.setpoint ** 2 + 2.5418 * self.setpoint + 400.45
+
+                    elif self.id == 2 and self.dict['GLB']['passo_afluente'] <= 30:
                         sp_aux = -0.0005 * self.setpoint ** 2 + 4.7143 * self.setpoint - 6800
+
+                    elif self.id == 2 and self.dict['GLB']['passo_afluente'] > 30:
+                        sp_aux = -0.0005 * (self.setpoint + 500) ** 2 + 4.7143 * (self.setpoint + 500) - 6800
+
                     else:
                         sp_aux = self.setpoint
 

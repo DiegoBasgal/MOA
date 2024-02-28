@@ -1,5 +1,7 @@
 import numpy as np
+import logging
 
+from logging.config import fileConfig
 from pyModbusTCP.server import DataBank as DB
 
 from dicts.reg import *
@@ -7,6 +9,9 @@ from dicts.const import *
 from funcs.leitura import Leitura as LEI
 from funcs.escrita import Escrita as ESC
 from funcs.temporizador import Temporizador
+
+
+logger = logging.getLogger("__main__")
 
 
 class Se:
@@ -100,8 +105,8 @@ class Se:
 
 
     def abrir_dj(self) -> "None":
-        print('')
-        print('[SE]  Comando de Abertura do Disjuntor da Subestação acionado')
+        logger.debug('')
+        logger.debug('[SE]  Comando de Abertura do Disjuntor da Subestação acionado')
 
         if self.dict['SE']['dj_mola_carregada']:
             self.dict['SE']['dj_trip'] = False
@@ -114,14 +119,14 @@ class Se:
 
 
     def fechar_dj(self) -> "None":
-        print('')
+        logger.debug('')
         if self.dict['SE']['dj_trip']:
             self.dict['SE']['dj_falha'] = True
             self.tripar_dj(descr='Picou.')
     
         elif self.dict['SE']['dj_aberto']:
             if self.dict['SE']['dj_condicao']:
-                print('[SE]  Comando de Fechamento Disjuntor SE')
+                logger.debug('[SE]  Comando de Fechamento Disjuntor SE')
                 self.dict['SE']['dj_fechado'] = True
                 self.dict['SE']['dj_aberto'] = False
             else:
@@ -132,15 +137,15 @@ class Se:
 
 
     def resetar_dj(self) -> "None":
-        print('')
-        print('[SE]  Comando de Reset.')
+        logger.debug('')
+        logger.debug('[SE]  Comando de Reset.')
         self.dict['SE']['dj_trip'] = False
         self.dict['SE']['dj_falha'] = False
         self.avisou_trip = False
 
 
     def tripar_dj(self, descr=None) -> "None":
-        print('')
+        logger.debug('')
         if not self.avisou_trip:
             self.avisou_trip = True
             self.dict['SE']['dj_trip'] = True
@@ -148,7 +153,7 @@ class Se:
             self.dict['SE']['dj_aberto'] = True
             self.dict['SE']['dj_fechado'] = False
             self.dict['SE']['dj_mola_carregada'] = False
-            print(f'[SE]  TRIP Disjuntor! | Descrição: {descr}')
+            logger.debug(f'[SE]  TRIP Disjuntor! | Descrição: {descr}')
 
 
     def atualizar_modbus(self) -> "None":

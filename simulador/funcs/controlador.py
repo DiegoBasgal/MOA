@@ -1,10 +1,15 @@
 import pytz
 import mariadb
 import threading
+import logging
 
 from sys import stdout
 from time import sleep
 from datetime import datetime
+
+
+logger = logging.getLogger("__main__")
+
 
 lock = threading.Lock()
 
@@ -33,11 +38,9 @@ class Controlador:
 
         self.tempo_afluente = []
 
-        print(1)
         with open('C:/Users/cog/Documents/Diego/XAV/operacao-autonoma/simulador/dicts/entrada_afluente.csv', 'r') as fp:
             rawlines = fp.readlines()
 
-        print(2)
         i = 0
         for line in rawlines:
             s = line.split(',')
@@ -63,9 +66,11 @@ class Controlador:
                 t_inicio_passo = self.get_time()
                 lock.acquire()
 
+                self.dict['GLB']['passo_afluente'] = self.tempo_afluente[contador_afluente][0]
+
                 if self.tempo_afluente[contador_afluente + 1][1] <= self.dict['GLB']['tempo_simul']:
                     contador_afluente += 1
-                    print(contador_afluente)
+                    logger.debug(f"[CONTROLADOR] Passo Afluente CSV -> {contador_afluente}")
 
 
                 if self.tempo_afluente[contador_afluente][2] == -1:

@@ -1,8 +1,10 @@
 import pytz
 import threading
+import logging
 
 from time import sleep
 from datetime import datetime
+from logging.config import fileConfig
 from pyModbusTCP.server import ModbusServer
 from pyModbusTCP.server import DataBank as DB
 
@@ -14,6 +16,9 @@ from tda import Tda
 from ug import Unidade
 from funcs.escrita import Escrita as ESC
 from funcs.temporizador import Temporizador
+
+
+logger = logging.getLogger("__main__")
 
 
 lock = threading.Lock()
@@ -82,7 +87,7 @@ class Planta:
 
                 lock.release()
                 tempo_restante = (self.passo_simulacao - (datetime.now(pytz.timezone("Brazil/East")).replace(tzinfo=None) - t_inicio).seconds)
-                sleep(tempo_restante) if tempo_restante > 0 else print('A Simulação está demorando mais do que o permitido!')
+                sleep(tempo_restante) if tempo_restante > 0 else logger.debug('A Simulação está demorando mais do que o permitido!')
 
             except KeyboardInterrupt:
                 self.server_MB.stop()
