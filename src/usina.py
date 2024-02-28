@@ -293,11 +293,11 @@ class Usina:
 
                 ad.Adufas.controlar_comportas()
 
-        elif dct_tda['nivel_montante'].valor <= dct_usn['CFG']["nv_minimo"] and not dct_tda['aguardando_reservatorio']:
+        elif dct_tda['nivel_montante'].valor <= dct_usn['CFG']["nv_minimo"] and not dct_tda['aguardando_nv']:
             logger.debug("[TDA] Nível montante abaixo do mínimo.")
             logger.debug(f"[TDA]          Leitura:                   {dct_tda['nivel_montante'].valor:0.3f}")
             logger.debug("")
-            dct_tda['aguardando_reservatorio'] = True
+            dct_tda['aguardando_nv'] = True
             self.distribuir_potencia(0)
 
             for ug in self.ugs: ug.step()
@@ -306,12 +306,12 @@ class Usina:
                 logger.critical(f"[TDA] Nivel montante ({dct_tda['nivel_montante_anterior']:3.2f}) atingiu o fundo do reservatorio!")
                 return NV_EMERGENCIA
 
-        elif dct_tda['aguardando_reservatorio']:
+        elif dct_tda['aguardando_nv']:
             if dct_tda['nivel_montante'].valor >= dct_usn['CFG']["nv_alvo"]:
                 logger.debug("[TDA] Nível montante dentro do limite de operação.")
                 logger.debug(f"[TDA]          Leitura:                   {dct_tda['nivel_montante'].valor:0.3f}")
                 logger.debug("")
-                dct_tda['aguardando_reservatorio'] = False
+                dct_tda['aguardando_nv'] = False
 
         else:
             if dct_tda['nivel_montante'].valor >= dct_usn['CFG']["nv_maximo"]:
@@ -641,7 +641,7 @@ class Usina:
         try:
             dct_usn['BD'].update_valores_usina([
                 self.get_time().strftime("%Y-%m-%d %H:%M:%S"),
-                1 if dct_tda['aguardando_reservatorio'] else 0,
+                1 if dct_tda['aguardando_nv'] else 0,
                 dct_tda['nivel_montante'].valor,
                 self.ug1.leitura_potencia,
                 self.ug1.setpoint,

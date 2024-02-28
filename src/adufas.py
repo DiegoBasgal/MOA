@@ -18,6 +18,7 @@ from datetime import datetime
 
 from src.dicionarios.reg import *
 from src.dicionarios.const import *
+from src.dicionarios.compartilhado import *
 
 
 logger = logging.getLogger("logger")
@@ -26,7 +27,6 @@ logger = logging.getLogger("logger")
 class Adufas:
 
     clp = serv.Servidores.clp
-    bd: "bd.BancoDados" = None
     cfg = {}
 
 
@@ -133,7 +133,7 @@ class Adufas:
                 if not self.verificar_permissivos():
                     return
 
-                erro = (tda.TomadaAgua.nivel_montante.valor - self.cfg["ad_nv_alvo"]) * self.k
+                erro = (dct_tda['nivel_montante'].valor - self.cfg["ad_nv_alvo"]) * self.k
 
                 self.controle_p = self.cfg["ad_kp"] * erro
                 self.controle_i = min(max(0, self.cfg["ad_ki"] * erro + self.controle_i), 6000)
@@ -317,8 +317,8 @@ class Adufas:
 
         logger.debug("")
         logger.debug(f"[AD]  Controlando Comportas...")
-        logger.debug(f"[AD]  NÍVEL -> Alvo:                      {cls.cfg['ad_nv_alvo']:0.3f}")
-        logger.debug(f"[TDA]          Leitura:                   {tda.TomadaAgua.nivel_montante.valor:0.3f}")
+        logger.debug(f"[AD]  NÍVEL -> Alvo:                      {dct_usn['CFG']['ad_nv_alvo']:0.3f}")
+        logger.debug(f"[TDA]          Leitura:                   {dct_tda['nivel_montante'].valor:0.3f}")
         logger.debug("")
 
         cls.clp["AD"].write_single_register(REG_AD["CMD_MODO_SP_HABILITAR"], 1)
@@ -356,7 +356,7 @@ class Adufas:
                 else:
                     logger.warning(f"[AD]  Descrição: \"{condic.descricao}\", Gravidade: \"{CONDIC_STR_DCT[condic.gravidade] if condic.gravidade in CONDIC_STR_DCT else 'Desconhecida'}\"")
                     cls.condicionadores_ativos.append(condic)
-                    cls.bd.update_alarmes([
+                    dct_usn['BD'].update_alarmes([
                         datetime.now(pytz.timezone("Brazil/East")).replace(tzinfo=None),
                         condic.gravidade,
                         condic.descricao,

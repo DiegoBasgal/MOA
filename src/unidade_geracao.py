@@ -22,6 +22,7 @@ from datetime import datetime
 
 from src.dicionarios.reg import *
 from src.maquinas_estado.ug import *
+from src.dicionarios.compartilhado import *
 
 
 logger = logging.getLogger("logger")
@@ -29,7 +30,7 @@ debug_log = logging.getLogger("debug")
 
 
 class UnidadeGeracao:
-    def __init__(self, id: "int", cfg: "dict"=None, db: "bd.BancoDados"=None):
+    def __init__(self, id: "int"):
 
         # VERIFICAÇÃO DE ARGUMENTOS
         if id <= 0:
@@ -38,8 +39,6 @@ class UnidadeGeracao:
         else:
             self.__id = id
 
-        self.bd = db
-        self.cfg = cfg
         self.clp = serv.Servidores.clp
 
         # ATRIBUIÇÃO DE VAIRIÁVEIS
@@ -88,8 +87,8 @@ class UnidadeGeracao:
         self._codigo_state: "int" = 0
         self._tentativas_normalizacao: "int" = 0
 
-        self._setpoint_minimo: "float" = self.cfg["pot_minima_ugs"]
-        self._setpoint_maximo: "float" = self.cfg[f"pot_maxima_ug{self.id}"]
+        self._setpoint_minimo: "float" = dct_usn['CFG']["pot_minima_ugs"]
+        self._setpoint_maximo: "float" = dct_usn['CFG'][f"pot_maxima_ug{self.id}"]
 
         self._condicionadores: "list[c.CondicionadorBase]" = []
         self._condicionadores_essenciais: "list[c.CondicionadorBase]" = []
@@ -257,11 +256,11 @@ class UnidadeGeracao:
     def setpoint(self, var: "int") -> "None":
         # SETTER -> Atribui o novo valor de setpoint da Unidade.
 
-        if var < self.cfg["pot_minima_ugs"]:
-            self._setpoint = self.cfg["pot_minima_ugs"] if self.manter_unidade else 0
+        if var < dct_usn['CFG']["pot_minima_ugs"]:
+            self._setpoint = dct_usn['CFG']["pot_minima_ugs"] if self.manter_unidade else 0
 
-        elif var > self.cfg[f"pot_maxima_ug{self.id}"]:
-            self._setpoint = self.cfg[f"pot_maxima_ug{self.id}"]
+        elif var > dct_usn['CFG'][f"pot_maxima_ug{self.id}"]:
+            self._setpoint = dct_usn['CFG'][f"pot_maxima_ug{self.id}"]
 
         else:
             self._setpoint = int(var)
@@ -392,7 +391,7 @@ class UnidadeGeracao:
         com o valor das constantes de Estado.
         """
 
-        estado = self.bd.get_ultimo_estado_ug(self.id)[0]
+        estado = dct_usn['BD'].get_ultimo_estado_ug(self.id)[0]
 
         if estado == None:
             self.__next_state = StateDisponivel(self)
@@ -514,7 +513,7 @@ class UnidadeGeracao:
         debug_log.debug(f"      Lista de Potências Anteriores:    {self.potencias_anteriores}")
         debug_log.debug("")
 
-        if cont_mppt == self.amostras_pot_mppt and self.cfg['pot_minima_ugs'] <= setpoint_kw <= self.cfg["pot_maxima_ugs"]:
+        if cont_mppt == self.amostras_pot_mppt and dct_usn['CFG']['pot_minima_ugs'] <= setpoint_kw <= dct_usn['CFG']["pot_maxima_ugs"]:
 
             debug_log.debug(f"      Potência Atual:                   {self.leitura_potencia:0.0f}")
             debug_log.debug(f"      Potência Anterior:                {self.potencias_anteriores[-1]:0.0f}")
@@ -528,7 +527,7 @@ class UnidadeGeracao:
                 [self.leitura_pos_distribuidor, self.pos_dist_anterior],
             )
 
-            setpoint_kw = self.cfg['pot_minima_ugs'] if setpoint_kw <= self.cfg['pot_minima_ugs'] else setpoint_kw
+            setpoint_kw = dct_usn['CFG']['pot_minima_ugs'] if setpoint_kw <= dct_usn['CFG']['pot_minima_ugs'] else setpoint_kw
 
             logger.debug(f"[UG{self.id}]          Enviando setpoint:")
             logger.debug(f"[UG{self.id}]          - \"MPPT\":                  {setpoint_kw:0.0f} kW")
@@ -746,18 +745,18 @@ class UnidadeGeracao:
                 self.setpoints_anteriores.pop(-1)
 
 
-            if len(self.potencias_anteriores) == self.amostras_pot_mppt and (self.cfg['pot_minima_ugs'] - 200) <= self.leitura_potencia <= self.cfg['pot_maxima_ugs']:
+            if len(self.potencias_anteriores) == self.amostras_pot_mppt and (dct_usn['CFG']['pot_minima_ugs'] - 200) <= self.leitura_potencia <= dct_usn['CFG']['pot_maxima_ugs']:
                 self.potencias_anteriores.pop(0)
                 self.potencias_anteriores.append(self.leitura_potencia)
 
-            elif (self.cfg['pot_minima_ugs'] - 200) <= self.leitura_potencia <= self.cfg['pot_maxima_ugs']:
+            elif (dct_usn['CFG']['pot_minima_ugs'] - 200) <= self.leitura_potencia <= dct_usn['CFG']['pot_maxima_ugs']:
                 self.potencias_anteriores.append(self.leitura_potencia)
 
-            if len(self.setpoints_anteriores) == self.amostras_sp_mppt and (self.cfg['pot_minima_ugs'] - 200) <= self.setpoint <= self.cfg['pot_maxima_ugs']:
+            if len(self.setpoints_anteriores) == self.amostras_sp_mppt and (dct_usn['CFG']['pot_minima_ugs'] - 200) <= self.setpoint <= dct_usn['CFG']['pot_maxima_ugs']:
                 self.setpoints_anteriores.pop(0)
                 self.setpoints_anteriores.append(self.setpoint)
 
-            elif (self.cfg['pot_minima_ugs'] - 200) <= self.setpoint <= self.cfg['pot_maxima_ugs']:
+            elif (dct_usn['CFG']['pot_minima_ugs'] - 200) <= self.setpoint <= dct_usn['CFG']['pot_maxima_ugs']:
                 self.setpoints_anteriores.append(self.setpoint)
 
 
@@ -829,11 +828,11 @@ class UnidadeGeracao:
         """
 
         if self.etapa == UG_PARADA:
-            if self.setpoint >= self.cfg["pot_minima_ugs"]:
+            if self.setpoint >= dct_usn['CFG']["pot_minima_ugs"]:
                 self.partir()
 
         elif self.etapa == UG_PARANDO:
-            if self.setpoint >= self.cfg["pot_minima_ugs"]:
+            if self.setpoint >= dct_usn['CFG']["pot_minima_ugs"]:
                 self.enviar_setpoint(self.setpoint)
 
         elif self.etapa == UG_SINCRONIZANDO:
@@ -893,7 +892,7 @@ class UnidadeGeracao:
                     logger.warning(f"[UG{self.id}] Descrição: \"{condic.descricao}\", Gravidade: \"{CONDIC_STR_DCT[condic.gravidade] if condic.gravidade in CONDIC_STR_DCT else 'Desconhecida'}\"")
                     self.condicionadores_ativos.append(condic)
                     flag = CONDIC_INDISPONIBILIZAR
-                    self.bd.update_alarmes([
+                    dct_usn['BD'].update_alarmes([
                         self.get_time(),
                         condic.gravidade,
                         condic.descricao,
@@ -904,7 +903,7 @@ class UnidadeGeracao:
                     logger.warning(f"[UG{self.id}] Descrição: \"{condic.descricao}\", Gravidade: \"{CONDIC_STR_DCT[condic.gravidade] if condic.gravidade in CONDIC_STR_DCT else 'Desconhecida'}\"")
                     self.condicionadores_ativos.append(condic)
                     flag = CONDIC_NORMALIZAR
-                    self.bd.update_alarmes([
+                    dct_usn['BD'].update_alarmes([
                         self.get_time(),
                         condic.gravidade,
                         condic.descricao,
@@ -915,7 +914,7 @@ class UnidadeGeracao:
                     logger.warning(f"[UG{self.id}] Descrição: \"{condic.descricao}\", Gravidade: \"{CONDIC_STR_DCT[condic.gravidade] if condic.gravidade in CONDIC_STR_DCT else 'Desconhecida'}\"")
                     self.condicionadores_ativos.append(condic)
                     flag = CONDIC_NORMALIZAR
-                    self.bd.update_alarmes([
+                    dct_usn['BD'].update_alarmes([
                         self.get_time(),
                         condic.gravidade,
                         condic.descricao,

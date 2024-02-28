@@ -29,6 +29,7 @@ from logging.config import fileConfig
 
 from src.dicionarios.reg import *
 from src.dicionarios.const import *
+from src.dicionarios.compartilhado import *
 
 
 if not os.path.exists(os.path.join(os.path.dirname(__file__), "logs")):
@@ -122,9 +123,9 @@ if __name__ == "__main__":
             sm.exec()
 
             with open(os.path.join(os.path.dirname('/opt/operacao-autonoma/src/dicionarios/'), "cfg.json"), "w") as file:
-                json.dump(usn.cfg, file, indent=4)
+                json.dump(dct_usn['CFG'], file, indent=4)
 
-            if usn.estado_moa in (MOA_SM_CONTROLE_ESTADOS, MOA_SM_MODO_MANUAL):
+            if dct_usn['estado_moa'] in (MOA_SM_CONTROLE_ESTADOS, MOA_SM_MODO_MANUAL):
                 t_restante = max(TEMPO_CICLO_TOTAL - (time() - t_i), 0) / ESCALA_DE_TEMPO
             else:
                 t_restante = 1

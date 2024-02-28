@@ -19,6 +19,7 @@ from datetime import datetime
 
 from src.dicionarios.reg import *
 from src.dicionarios.const import *
+from src.dicionarios.compartilhado import *
 
 
 logger = logging.getLogger("logger")
@@ -29,7 +30,6 @@ class Subestacao:
     # ATRIBUIÇÃO DE VARIÁVEIS
 
     clp = serv.Servidores.clp
-    bd: "bd.BancoDados" = None
 
     tensao_r = lei.LeituraModbus(
         clp["SA"],
@@ -233,7 +233,7 @@ class Subestacao:
                 else:
                     logger.warning(f"[SE]  Descrição: \"{condic.descricao}\", Gravidade: \"{CONDIC_STR_DCT[condic.gravidade] if condic.gravidade in CONDIC_STR_DCT else 'Desconhecida'}\"")
                     cls.condicionadores_ativos.append(condic)
-                    cls.bd.update_alarmes([
+                    dct_usn['BD'].update_alarmes([
                         datetime.now(pytz.timezone("Brazil/East")).replace(tzinfo=None),
                         condic.gravidade,
                         condic.descricao,
