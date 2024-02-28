@@ -10,12 +10,12 @@ import traceback
 import src.adufas as ad
 import src.usina as usn
 import src.subestacao as se
-import src.tomada_agua as tda
 
 from time import sleep
 from datetime import datetime
 
 from src.dicionarios.const import *
+from src.dicionarios.compartilhado import *
 
 
 logger = logging.getLogger("logger")
@@ -48,7 +48,6 @@ class State:
     def __init__(self, usina: "usn.Usina"=None, *args, **kwargs) -> "None":
 
         # VERIFICAÇÃO DE ARGUMENTOS
-
         if usina is None:
             logger.error(f"Erro ao carregar a classe da Usina na máquina de estados.")
             return FalhaCritica()
@@ -56,11 +55,10 @@ class State:
             self.usn = usina
 
         # ATRIBUIÇÃO DE VARIÁVEIS PÚBLICAS
-
         self.args = args
         self.kwargs = kwargs
 
-        self.usn.estado_moa = MOA_SM_NAO_INICIALIZADO
+        dct_usn['estado_moa'] = MOA_SM_NAO_INICIALIZADO
 
 
     def get_time(self) -> "datetime":
@@ -94,7 +92,7 @@ class Pronto(State):
 
         # ATRIBUIÇÃO DE VARIÁVEIS PÚBLICAS
 
-        self.usn.estado_moa = MOA_SM_PRONTO
+        dct_usn['estado_moa'] = MOA_SM_PRONTO
 
 
     def run(self) -> "State":
@@ -115,7 +113,7 @@ class ControleEstados(State):
 
         # ATRIBUIÇÃO DE VARIÁVEIS PÚBLICAS
 
-        self.usn.estado_moa = MOA_SM_CONTROLE_ESTADOS
+        dct_usn['estado_moa'] = MOA_SM_CONTROLE_ESTADOS
 
 
     def run(self) -> "State":
@@ -133,19 +131,19 @@ class ControleEstados(State):
         self.usn.ler_valores()
 
         logger.debug("Verificando modo do MOA...")
-        if not self.usn.modo_autonomo:
+        if not dct_usn['_modo_autonomo']:
             logger.debug("")
             logger.debug("Comando acionado: \"Desabilitar Modo Autônomo\"")
             return ModoManual(self.usn)
 
         logger.debug("Verificando status da emergência...")
-        if self.usn.clp_emergencia or self.usn.bd_emergencia:
+        if dct_usn['clp_emergencia'] or dct_usn['bd_emergencia']:
             logger.debug("")
             logger.debug("Foi identificado o acinoamento da emergência")
             return Emergencia(self.usn)
 
         logger.debug("Verificando se há agendamentos...")
-        if len(self.usn.agn.verificar_agendamentos_pendentes()) > 0:
+        if len(dct_usn["AGN"].verificar_agendamentos_pendentes()) > 0:
             logger.debug("")
             logger.debug("Foram identificados agendamentos pendentes!")
             return ControleAgendamentos(self.usn)
@@ -159,9 +157,9 @@ class ControleEstados(State):
                 return Emergencia(self.usn)
 
             elif flag_condic == CONDIC_NORMALIZAR:
-                if self.usn.normalizar_usina() and self.usn.tentativas_normalizar > 2:
+                if self.usn.normalizar_usina() and dct_usn['_tentativas_normalizar'] > 2:
                     logger.info("Tentativas de Normalização da Usina excedidas!")
-                    self.usn.tentativas_normalizar = 0
+                    dct_usn['_tentativas_normalizar'] = 0
                     return Emergencia(self.usn)
 
                 else:
@@ -173,7 +171,7 @@ class ControleEstados(State):
                 return Emergencia(self.usn) if se.Subestacao.aguardar_tensao() == TENSAO_FORA else self
 
             elif not se.Subestacao.fechar_dj_linha():
-                self.usn.normalizar_forcado = True
+                dct_usn['normalizar_forcado'] = True
                 self.usn.normalizar_usina()
                 return self
 
@@ -187,7 +185,7 @@ class ControleReservatorio(State):
 
         # ATRIBUIÇÃO DE VARIÁVEIS PÚBLICAS
 
-        self.usn.estado_moa = MOA_SM_CONTROLE_RESERVATORIO
+        dct_usn['estado_moa'] = MOA_SM_CONTROLE_RESERVATORIO
 
 
     def run(self) -> "State":
@@ -212,7 +210,7 @@ class ControleDados(State):
 
         # ATRIBUIÇÃO DE VARIÁVEIS PÚBLICAS
 
-        self.usn.estado_moa = MOA_SM_CONTROLE_DADOS
+        dct_usn['estado_moa'] = MOA_SM_CONTROLE_DADOS
 
 
     def run(self) -> "State":
@@ -235,7 +233,7 @@ class ControleAgendamentos(State):
 
         # ATRIBUIÇÃO DE VARIÁVEIS PÚBLICAS
 
-        self.usn.estado_moa = MOA_SM_CONTROLE_AGENDAMENTOS
+        dct_usn['estado_moa'] = MOA_SM_CONTROLE_AGENDAMENTOS
 
 
     def run(self) -> "State":
@@ -249,12 +247,12 @@ class ControleAgendamentos(State):
         """
 
         logger.info("Tratando agendamentos...")
-        self.usn.agn.verificar_agendamentos()
+        dct_usn['AGN'].verificar_agendamentos()
 
-        if len(self.usn.agn.verificar_agendamentos_pendentes()) > 0:
+        if len(dct_usn['AGN'].verificar_agendamentos_pendentes()) > 0:
             return self
         else:
-            return ControleEstados(self.usn) if self.usn.modo_autonomo else ModoManual(self.usn)
+            return ControleEstados(self.usn) if dct_usn['_modo_autonomo'] else ModoManual(self.usn)
 
 
 class ModoManual(State):
@@ -263,8 +261,8 @@ class ModoManual(State):
 
         # ATRIBUIÇÃO DE VARIÁVEIS PÚBLICAS
 
-        self.usn.estado_moa = MOA_SM_MODO_MANUAL
-        self.usn.modo_autonomo = False
+        dct_usn['estado_moa'] = MOA_SM_MODO_MANUAL
+        dct_usn['_modo_autonomo'] = False
 
         # FINALIZAÇÃO DO __INIT__
 
@@ -290,7 +288,7 @@ class ModoManual(State):
 
         self.usn.ler_valores()
 
-        logger.debug(f"[USN] Leitura de Nível:                   {tda.TomadaAgua.nivel_montante.valor:0.3f}")
+        logger.debug(f"[USN] Leitura de Nível:                   {dct_tda['nivel_montante'].valor:0.3f}")
         logger.debug(f"[USN] Potência no medidor:                {se.Subestacao.medidor_usina.valor:0.3f}")
         logger.debug("")
 
@@ -301,19 +299,19 @@ class ModoManual(State):
             logger.debug("")
             ug.setpoint = ug.leitura_potencia
 
-        self.usn.controle_ie = (self.usn.ug1.leitura_potencia + self.usn.ug2.leitura_potencia + self.usn.ug3.leitura_potencia + self.usn.ug4.leitura_potencia) / self.usn.cfg["pot_alvo_usina"]
-        self.usn.controle_i = max(min(self.usn.controle_ie - (self.usn.controle_i * self.usn.cfg["ki"]) - self.usn.cfg["kp"] * tda.TomadaAgua.erro_nivel - self.usn.cfg["kd"] * (tda.TomadaAgua.erro_nivel - tda.TomadaAgua.erro_nivel_anterior), 0.8), 0)
+        dct_usn['controle_ie'] = (self.usn.ug1.leitura_potencia + self.usn.ug2.leitura_potencia + self.usn.ug3.leitura_potencia + self.usn.ug4.leitura_potencia) / dct_usn['CFG']["pot_alvo_usina"]
+        dct_usn['controle_i'] = max(min(dct_usn['controle_ie'] - (dct_usn['controle_i'] * dct_usn['CFG']["ki"]) - dct_usn['CFG']["kp"] * dct_tda['erro_nivel'] - dct_usn['CFG']["kd"] * (dct_tda['erro_nivel'] - dct_tda['erro_nivel_anterior']), 0.8), 0)
 
         self.usn.escrever_valores()
 
         sleep(1)
 
-        if self.usn.modo_autonomo:
+        if dct_usn['_modo_autonomo']:
             logger.debug("Comando acionado: \"Habilitar modo autônomo\"")
             self.usn.ler_valores()
             return ControleDados(self.usn)
 
-        return ControleAgendamentos(self.usn) if len(self.usn.agn.verificar_agendamentos_pendentes()) > 0 else self
+        return ControleAgendamentos(self.usn) if len(dct_usn['AGN'].verificar_agendamentos_pendentes()) > 0 else self
 
 
 class Emergencia(State):
@@ -322,7 +320,7 @@ class Emergencia(State):
 
         # ATRIBUIÇÃO DE VARIÁVEIS PÚBLICAS
 
-        self.usn.estado_moa = MOA_SM_EMERGENCIA
+        dct_usn['estado_moa'] = MOA_SM_EMERGENCIA
         self.tentativas = 0
 
         # FINALIZAÇÃO DO __INIT__
@@ -355,19 +353,19 @@ class Emergencia(State):
 
             return ModoManual(self.usn)
 
-        elif self.usn.bd_emergencia:
+        elif dct_usn['bd_emergencia']:
             logger.warning("Comando acionado/agendado via página WEB, aguardando reset pela aba \"Emergência\".")
 
-            while self.usn.bd_emergencia:
+            while dct_usn['bd_emergencia']:
                 logger.debug("Aguardando reset...")
-                self.usn.atualizar_valores_banco(self.usn.bd.get_parametros_usina())
+                self.usn.atualizar_valores_banco(dct_usn['BD'].get_parametros_usina())
 
-                if not self.usn.bd_emergencia:
-                    self.usn.bd_emergencia = False
+                if not dct_usn['bd_emergencia']:
+                    dct_usn['bd_emergencia'] = False
                     return self
 
-                if not self.usn.modo_autonomo:
-                    self.usn.bd_emergencia = False
+                if not dct_usn['_modo_autonomo']:
+                    dct_usn['bd_emergencia'] = False
                     return ModoManual(self.usn)
 
                 sleep(5)
@@ -382,7 +380,7 @@ class Emergencia(State):
             elif flag_condic == CONDIC_NORMALIZAR:
                 self.tentativas += 1
                 logger.info(f"Normalizando usina. (Tentativa {self.tentativas}/3) (Limite entre tentativas: {TIMEOUT_NORMALIZACAO}s)")
-                self.usn.normalizar_forcado = True
+                dct_usn['normalizar_forcado'] = True
                 self.usn.normalizar_usina()
                 return self
 
