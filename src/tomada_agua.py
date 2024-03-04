@@ -209,8 +209,8 @@ class TomadaAgua:
 
         if self.verificar_condicoes_lg() and self._modo_lg == LG_DISPONIVEL:
             logger.debug(f"[LG]           Enviando comando:          \"OPERAR LIMPA GRADES\"")
-            # ESC.escrever_bit(self.clp["TDA"], REG_CLP["TDA"]["LG_CMD_RST_FLH"], valor=1)
-            # ESC.escrever_bit(self.clp["TDA"], REG_CLP["TDA"]["LG_CMD_LIMPEZA"], valor=1)
+            ESC.escrever_bit(self.clp["TDA"], REG_CLP["TDA"]["LG_CMD_RST_FLH"], valor=1)
+            ESC.escrever_bit(self.clp["TDA"], REG_CLP["TDA"]["LG_CMD_LIMPEZA"], valor=1)
             return
 
 

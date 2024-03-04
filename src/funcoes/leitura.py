@@ -241,3 +241,19 @@ class LeituraSoma:
         else:
             logger.debug("leituras = ", self.__leituras)
             return [sum(leitura.valor for leitura in self.__leituras)]
+
+
+class LeituraSubtracao:
+    def __init__(self, leituras: "list[LeituraModbus]"=None, descricao: "str"=None):
+
+        self.__leituras = leituras
+        self.__descricao = descricao
+
+    @property
+    def descricao(self) -> "str":
+        return self.__descricao
+    
+    @property
+    def valor(self) -> "float":
+
+        return self.__leituras[0] - self.__leituras[1]

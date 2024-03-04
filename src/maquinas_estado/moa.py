@@ -129,6 +129,9 @@ class ControleEstados(State):
 
         logger.debug("")
 
+        logger.debug("Verficando horário de desligamento do MOA...")
+        self.usn.desativar_moa_horario()
+
         logger.debug("Verificando modo do MOA...")
         if not self.usn.modo_autonomo:
             logger.debug("")
@@ -164,7 +167,6 @@ class ControleEstados(State):
                     return ControleDados(self.usn)
 
             logger.debug("Verificando status da Subestação e Bay...")
-            logger.debug("")
             flag_bay_se = self.usn.verificar_bay_se()
 
             if flag_bay_se == DJS_FALTA_TENSAO:
@@ -178,6 +180,7 @@ class ControleEstados(State):
                 # logger.debug("Verificando operação do Limpa Grades...")
                 # self.usn.tda.operar_limpa_grades()
 
+                logger.debug("")
                 logger.debug("Heartbeat...")
                 self.usn.heartbeat()
 

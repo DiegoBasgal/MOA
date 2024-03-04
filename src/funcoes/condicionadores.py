@@ -7,6 +7,7 @@ from src.dicionarios.const import *
 
 from src.unidade_geracao import UnidadeGeracao
 
+debug_log = logging.getLogger('debug')
 
 class CondicionadorBase:
     def __init__(self, leitura: "LeituraModbus", gravidade: "int"=1, etapas: "list"=[], id_unidade: "int"=None, teste: "bool"=None) -> "None":
@@ -147,7 +148,13 @@ class CondicionadorExponencial(CondicionadorBase):
         # PROPRIEDADE -> Retrona o valor tratado de Leitura do Condicionador.
 
         if self.leitura > self.valor_base and self.leitura < self.valor_limite:
+            debug_log.debug(f"[CONDIC] \"{self.descricao}\":")
+            debug_log.debug(f"[CONDIC] Leitura:         {self.leitura}")
+            debug_log.debug(f"[CONDIC] Valor Base:      {self.valor_base}")
+            debug_log.debug(f"[CONDIC] Valor Limite:    {self.valor_limite}")
             aux = (1 - (((self.valor_limite - self.leitura) / (self.valor_limite - self.valor_base)) ** (self.ordem)).real)
+            debug_log.debug("")
+            debug_log.debug(f"[CONDIC] aux:             {aux}")
             return max(min(aux, 1), 0)
 
         else:
@@ -163,7 +170,7 @@ class CondicionadorExponencialReverso(CondicionadorExponencial):
         # PROPRIEDADE -> Retrona o Valor do Condicionador.
 
         if self.valor_limite < self.leitura < self.valor_base:
-            aux = (1 - (((self.valor_limite - self.leitura) / (self.valor_limite - self.valor_base))** (self.ordem)).real)
+            aux = (1 - (((self.valor_limite - self.leitura) / (self.valor_limite - self.valor_base)) ** (self.ordem)).real)
             return max(min(aux, 1), 0)
 
         else:

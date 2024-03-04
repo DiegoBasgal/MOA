@@ -15,6 +15,7 @@ class ParametrosUsina(models.Model):
     emergencia_acionada = models.IntegerField(default=0)
     aguardando_reservatorio = models.IntegerField(default=0)
     modo_de_escolha_das_ugs = models.IntegerField(default=2)
+    hora_desativar_moa = models.IntegerField(default=18)
 
     # Servidores
     clp_online = models.IntegerField(default=1)

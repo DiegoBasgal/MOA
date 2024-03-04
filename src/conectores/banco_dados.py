@@ -26,6 +26,20 @@ class BancoDados:
         self.cursor = self.conn.cursor()
 
 
+    def get_horario_desativar_moa(self) -> "int":
+        """
+        Função para extrair Hora para desativar o MOA.
+        """
+
+        self.cursor.execute(
+            "SELECT hora_desativar_moa "
+            "FROM parametros_parametrosusina "
+            "WHERE id = 1;"
+        )
+        hora = self.cursor.fetchone()
+        return hora
+
+
     def get_ultimo_estado_ug(self, ug_id: "int") -> "int":
         """
         Função para extrair o último estado da Unidade de Geração do Banco.

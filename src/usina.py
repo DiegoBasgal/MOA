@@ -152,7 +152,6 @@ class Usina:
 
 
     # FUNÇÕES DE CONTROLE E NORMALIZAÇÃO DA OPERAÇÃO
-
     @staticmethod
     def get_time() -> "datetime":
         """
@@ -160,6 +159,16 @@ class Usina:
         """
 
         return datetime.now(pytz.timezone("Brazil/East")).replace(tzinfo=None)
+
+
+    def desativar_moa_horario(self) -> "None":
+        """
+        Função específica para verificação do horário para desativar o MOA (Apenas XAV).
+        """
+
+        hora = self.get_time().strftime('%H')
+        hora_bd = self.bd.get_horario_desativar_moa()
+        self.modo_autonomo = False if hora == str(hora_bd) else self.modo_autonomo
 
 
     def resetar_emergencia(self) -> "None":
@@ -413,10 +422,10 @@ class Usina:
         self.controle_p = self.cfg["kp"] * self.tda.erro_nivel
 
         if self.__pid_inicial == -1:
-            self.controle_i = max(min(self.controle_ie - self.controle_p, 0.9), -0.9)
+            self.controle_i = max(min(self.controle_ie - self.controle_p, 0.9), 0)
             self.__pid_inicial = 0
         else:
-            self.controle_i = max(min((self.cfg["ki"] * self.tda.erro_nivel) + self.controle_i, 0.9), -0.9)
+            self.controle_i = max(min((self.cfg["ki"] * self.tda.erro_nivel) + self.controle_i, 0.9), 0)
             self.controle_d = self.cfg["kd"] * (self.tda.erro_nivel - self.tda.erro_nivel_anterior)
 
         saida_pid = (self.controle_p + self.controle_i + min(max(-0.3, self.controle_d), 0.3))
@@ -430,7 +439,7 @@ class Usina:
         self.controle_ie = max(min(saida_pid + self.controle_ie * self.cfg["kie"], 1), 0)
 
         logger.debug(f"[USN] IE:                                 {self.controle_ie:0.3f}")
-        logger.debug(f"[USN] ERRO:                               {self.tda.erro_nivel}")
+        logger.debug(f"[USN] ERRO:                               {self.tda.erro_nivel:0.4f}")
         logger.debug("")
 
         if self.tda.nivel_montante_anterior >= (self.cfg["nv_maximo"] + 0.03):
