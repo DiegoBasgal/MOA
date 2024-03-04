@@ -29,7 +29,7 @@ from logging.config import fileConfig
 
 from src.dicionarios.reg import *
 from src.dicionarios.const import *
-from src.dicionarios.compartilhado import *
+from src.dicionarios.comp import *
 
 
 if not os.path.exists(os.path.join(os.path.dirname(__file__), "logs")):

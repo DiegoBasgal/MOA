@@ -16,7 +16,7 @@ from datetime import datetime
 
 from src.dicionarios.reg import *
 from src.dicionarios.const import *
-from src.dicionarios.compartilhado import *
+from src.dicionarios.comp import *
 
 
 logger = logging.getLogger("logger")

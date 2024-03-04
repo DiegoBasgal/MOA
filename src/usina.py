@@ -20,7 +20,7 @@ import src.funcoes.agendamentos as agn
 import src.conectores.banco_dados as bd
 import src.conectores.servidores as serv
 
-from src.dicionarios.compartilhado import *
+from src.dicionarios.comp import *
 
 from time import sleep, time
 from datetime import datetime
@@ -156,7 +156,7 @@ class Usina:
 
         logger.debug(f"[USN] Última tentativa de normalização:   {self.ts_ultima_norm.strftime('%d-%m-%Y %H:%M:%S')}")
         logger.debug("")
-        logger.debug(f"[SE]  Tensão Subestação:                  RS -> \"{se.Subestacao.tensao_r.valor/1000:2.1f} kV\" | ST -> \"{se.Subestacao.tensao_s.valor/1000:2.1f} kV\" | TR -> \"{se.Subestacao.tensao_t.valor/1000:2.1f} kV\"")
+        logger.debug(f"[SE]  Tensão Subestação:                  RS -> \"{dct_se['tensao_r'].valor/1000:2.1f} kV\" | ST -> \"{dct_se['tensao_s'].valor/1000:2.1f} kV\" | TR -> \"{dct_se['tensao_t'].valor/1000:2.1f} kV\"")
         logger.debug("")
 
         if (self.tentativas_normalizar < 3 and (self.get_time() - self.ts_ultima_norm).seconds >= 60) or dct_usn['normalizar_forcado']:
@@ -230,7 +230,7 @@ class Usina:
         Função para ajustar o valor do IE.
         """
 
-        return sum(ug.leitura_potencia for ug in self.ugs) / dct_usn['CFG']["pot_alvo_usina"]
+        return sum(dct_ug[f'UG{ug.id}']['potencia'].valor for ug in self.ugs) / dct_usn['CFG']["pot_alvo_usina"]
 
 
     def ajustar_inicializacao(self) -> "None":
@@ -240,7 +240,7 @@ class Usina:
         """
 
         for ug in self.ugs:
-            if ug.etapa_atual == UG_SINCRONIZADA:
+            if dct_ug[f'UG{ug.id}']['etapa_atual'] == UG_SINCRONIZADA:
                 dct_usn['ug_operando'] += 1
 
         dct_usn['split1'] = True if dct_usn['ug_operando'] == 1 else False
@@ -323,7 +323,7 @@ class Usina:
             for ug in self.ugs: ug.step()
 
             for cp in ad.Adufas.cps:
-                cp.setpoint = 0
+                dct_ad[f'CP{cp.id}']['setpoint'] = 0
                 cp.enviar_setpoint(0)
 
         return NV_NORMAL
@@ -358,7 +358,7 @@ class Usina:
         dct_usn['controle_ie'] = max(min(saida_pid + dct_usn['controle_ie'] * dct_usn['CFG']["kie"], 1), 0)
 
         logger.debug(f"[USN] IE:                                 {dct_usn['controle_ie']:0.3f}")
-        logger.debug(f"[USN] ERRO:                               {dct_tda['erro_nivel']}")
+        logger.debug(f"[USN] ERRO:                               {dct_tda['erro_nivel']:0.4f}")
         logger.debug("")
 
         if dct_tda['nivel_montante_anterior'] >= (dct_usn['CFG']["nv_vert_max"] + 0.03):
@@ -387,7 +387,7 @@ class Usina:
                 ug.setpoint = 0
             return 0
 
-        pot_medidor = se.Subestacao.medidor_usina.valor
+        pot_medidor = dct_se['medidor_usina'].valor
 
         logger.debug(f"[USN] Potência no medidor:                {pot_medidor:0.3f}")
 
@@ -420,11 +420,11 @@ class Usina:
 
         for ug in self.ugs:
             if ug.manual:
-                ajuste_manual += ug.leitura_potencia
+                ajuste_manual += dct_ug[f'UG{ug.id}']['potencia'].valor
             else:
-                dct_usn['pot_disp'] += ug.setpoint_maximo
+                dct_usn['pot_disp'] += dct_ug[f'UG{ug.id}']['setpoint_maximo']
 
-            ug.pot_alvo_usina = pot_alvo - ajuste_manual
+            dct_ug[f'UG{ug.id}']['pot_alvo_usina'] = pot_alvo - ajuste_manual
 
         if ugs is None or not len(ugs):
             return
@@ -448,28 +448,28 @@ class Usina:
                 logger.debug("[USN] Split:                              4")
 
                 for ug in ugs: 
-                    ug.setpoint = sp * ug.setpoint_maximo
+                    ug.setpoint = sp * dct_ug[f'UG{ug.id}']['setpoint_maximo']
 
             elif dct_usn['split3']:
                 logger.debug("[USN] Split:                              4 -> \"3B\"")
 
-                ugs[0].setpoint = (sp * (4/3)) * ugs[0].setpoint_maximo
-                ugs[1].setpoint = (sp * (4/3)) * ugs[1].setpoint_maximo
-                ugs[2].setpoint = (sp * (4/3)) * ugs[2].setpoint_maximo
+                ugs[0].setpoint = (sp * (4/3)) * dct_ug[f'UG{ugs[0].id}']['setpoint_maximo']
+                ugs[1].setpoint = (sp * (4/3)) * dct_ug[f'UG{ugs[1].id}']['setpoint_maximo']
+                ugs[2].setpoint = (sp * (4/3)) * dct_ug[f'UG{ugs[2].id}']['setpoint_maximo']
                 ugs[3].setpoint = 0
 
             elif dct_usn['split2']:
                 logger.debug("[USN] Split:                              4 -> \"2B\"")
 
-                ugs[0].setpoint = (sp * (4/2)) * ugs[0].setpoint_maximo
-                ugs[1].setpoint = (sp * (4/2)) * ugs[1].setpoint_maximo
+                ugs[0].setpoint = (sp * (4/2)) * dct_ug[f'UG{ugs[0].id}']['setpoint_maximo']
+                ugs[1].setpoint = (sp * (4/2)) * dct_ug[f'UG{ugs[1].id}']['setpoint_maximo']
                 ugs[2].setpoint = 0
                 ugs[3].setpoint = 0
 
             elif dct_usn['split1']:
                 logger.debug("[USN] Split:                              4 -> \"1B\"")
 
-                ugs[0].setpoint = sp * 4 * ugs[0].setpoint_maximo
+                ugs[0].setpoint = sp * 4 * dct_ug[f'UG{ugs[0].id}']['setpoint_maximo']
                 ugs[1].setpoint = 0
                 ugs[2].setpoint = 0
                 ugs[3].setpoint = 0
@@ -484,21 +484,21 @@ class Usina:
             if dct_usn['split3']:
                 logger.debug("[USN] Split:                              3")
 
-                ugs[0].setpoint = (sp * (4/3)) * ugs[0].setpoint_maximo
-                ugs[1].setpoint = (sp * (4/3)) * ugs[1].setpoint_maximo
-                ugs[2].setpoint = (sp * (4/3)) * ugs[2].setpoint_maximo
+                ugs[0].setpoint = (sp * (4/3)) * dct_ug[f'UG{ugs[0].id}']['setpoint_maximo']
+                ugs[1].setpoint = (sp * (4/3)) * dct_ug[f'UG{ugs[1].id}']['setpoint_maximo']
+                ugs[2].setpoint = (sp * (4/3)) * dct_ug[f'UG{ugs[2].id}']['setpoint_maximo']
 
             elif dct_usn['split2']:
                 logger.debug("[USN] Split:                              3 -> \"2B\"")
 
-                ugs[0].setpoint = (sp * (4/2)) * ugs[0].setpoint_maximo
-                ugs[1].setpoint = (sp * (4/2)) * ugs[1].setpoint_maximo
+                ugs[0].setpoint = (sp * (4/2)) * dct_ug[f'UG{ugs[0].id}']['setpoint_maximo']
+                ugs[1].setpoint = (sp * (4/2)) * dct_ug[f'UG{ugs[1].id}']['setpoint_maximo']
                 ugs[2].setpoint = 0
 
             elif dct_usn['split1']:
                 logger.debug("[USN] Split:                              3 -> \"1B\"")
 
-                ugs[0].setpoint = sp * 4 * ugs[0].setpoint_maximo
+                ugs[0].setpoint = sp * 4 * dct_ug[f'UG{ugs[0].id}']['setpoint_maximo']
                 ugs[1].setpoint = 0
                 ugs[2].setpoint = 0
 
@@ -512,13 +512,13 @@ class Usina:
             if dct_usn['split2']:
                 logger.debug("[USN] Split:                              2")
 
-                ugs[0].setpoint = (sp * (4/2)) * ugs[0].setpoint_maximo
-                ugs[1].setpoint = (sp * (4/2)) * ugs[0].setpoint_maximo
+                ugs[0].setpoint = (sp * (4/2)) * dct_ug[f'UG{ugs[0].id}']['setpoint_maximo']
+                ugs[1].setpoint = (sp * (4/2)) * dct_ug[f'UG{ugs[1].id}']['setpoint_maximo']
 
             elif dct_usn['split1']:
                 logger.debug("[USN] Split:                              2 -> \"1B\"")
 
-                ugs[0].setpoint = sp * 4 * ugs[0].setpoint_maximo
+                ugs[0].setpoint = sp * 4 * dct_ug[f'UG{ugs[0].id}']['setpoint_maximo']
                 ugs[1].setpoint = 0
 
             else:
@@ -530,7 +530,7 @@ class Usina:
         elif len(ugs) == 1:
             logger.debug("[USN] Split:                              1")
 
-            ugs[0].setpoint = sp * 4 * ugs[0].setpoint_maximo
+            ugs[0].setpoint = sp * 4 * dct_ug[f'UG{ugs[0].id}']['setpoint_maximo']
 
             logger.debug("")
             logger.debug(f"[UG{ugs[0].id}] SP    <-                            {int(ugs[0].setpoint)}")
@@ -544,9 +544,9 @@ class Usina:
         ls = [ug for ug in self.ugs if ug.disponivel and not ug.etapa == UG_PARANDO]
 
         if dct_usn['modo_prioridade_ugs'] in (UG_PRIORIDADE_1, UG_PRIORIDADE_2, UG_PRIORIDADE_3, UG_PRIORIDADE_4):
-            return sorted(ls, key=lambda y: (-1 * y.prioridade, -1 * y.etapa_atual, -1 * y.leitura_potencia, -1 * y.setpoint))
+            return sorted(ls, key=lambda y: (-1 * y.prioridade, -1 * y.etapa, -1 * dct_ug[f'UG{y.id}']['potencia'].valor, -1 * y.setpoint))
         else:
-            return sorted(ls, key=lambda y: (-1 * y.etapa_atual, y.leitura_horimetro, -1 * y.leitura_potencia, -1 * y.setpoint))
+            return sorted(ls, key=lambda y: (-1 * y.etapa, dct_ug[f'UG{y.id}']['horimetro'], -1 * dct_ug[f'UG{y.id}']['potencia'].valor, -1 * y.setpoint))
 
 
     # FUNÇÕES DE CONTROLE DE DADOS
@@ -643,18 +643,18 @@ class Usina:
                 self.get_time().strftime("%Y-%m-%d %H:%M:%S"),
                 1 if dct_tda['aguardando_nv'] else 0,
                 dct_tda['nivel_montante'].valor,
-                self.ug1.leitura_potencia,
+                dct_ug['UG1']['potencia'].valor,
                 self.ug1.setpoint,
-                self.ug1.etapa_atual,
-                self.ug2.leitura_potencia,
+                self.ug1.etapa,
+                dct_ug['UG2']['potencia'].valor,
                 self.ug2.setpoint,
-                self.ug2.etapa_atual,
-                self.ug3.leitura_potencia,
+                self.ug2.etapa,
+                dct_ug['UG3']['potencia'].valor,
                 self.ug3.setpoint,
-                self.ug3.etapa_atual,
-                self.ug4.leitura_potencia,
+                self.ug3.etapa,
+                dct_ug['UG4']['potencia'].valor,
                 self.ug4.setpoint,
-                self.ug4.etapa_atual
+                self.ug4.etapa,
             ])
 
         except Exception:
@@ -668,25 +668,25 @@ class Usina:
                 dct_tda['nivel_montante'].valor,
                 dct_tda['erro_nivel'],
                 self.ug1.setpoint,
-                self.ug1.leitura_potencia,
-                self.ug1.codigo_state,
+                dct_ug['UG1']['potencia'].valor,
+                dct_ug['UG1']['codigo_state'],
                 self.ug2.setpoint,
-                self.ug2.leitura_potencia,
-                self.ug2.codigo_state,
+                dct_ug['UG2']['potencia'].valor,
+                dct_ug['UG2']['codigo_state'],
                 self.ug3.setpoint,
-                self.ug3.leitura_potencia,
-                self.ug3.codigo_state,
+                dct_ug['UG3']['potencia'].valor,
+                dct_ug['UG3']['codigo_state'],
                 self.ug4.setpoint,
-                self.ug4.leitura_potencia,
-                self.ug4.codigo_state,
-                ad.Adufas.cp1.setpoint,
-                ad.Adufas.cp1.posicao,
-                ad.Adufas.cp2.setpoint,
-                ad.Adufas.cp2.posicao,
-                ad.Adufas.cp1.controle_p,
-                ad.Adufas.cp1.controle_i,
-                ad.Adufas.cp2.controle_p,
-                ad.Adufas.cp2.controle_i,
+                dct_ug['UG4']['potencia'].valor,
+                dct_ug['UG4']['codigo_state'],
+                dct_ad['CP1']['setpoint'],
+                dct_ad['CP1']['posicao'].valor,
+                dct_ad['CP2']['setpoint'],
+                dct_ad['CP2']['posicao'].valor,
+                dct_ad['CP1']['controle_p'],
+                dct_ad['CP1']['controle_i'],
+                dct_ad['CP2']['controle_p'],
+                dct_ad['CP2']['controle_i'],
                 dct_usn['controle_p'],
                 dct_usn['controle_i'],
                 dct_usn['controle_d'],

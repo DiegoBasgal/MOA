@@ -13,7 +13,7 @@ from time import sleep
 from datetime import datetime, timedelta
 
 from src.dicionarios.const import *
-from src.dicionarios.compartilhado import *
+from src.dicionarios.comp import *
 
 
 logger = logging.getLogger("__main__")
