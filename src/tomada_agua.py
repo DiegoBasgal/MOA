@@ -9,7 +9,6 @@ import traceback
 
 import src.dicionarios.dict as d
 import src.funcoes.leitura as lei
-import src.conectores.banco_dados as bd
 import src.funcoes.condicionadores as c
 import src.conectores.servidores as serv
 

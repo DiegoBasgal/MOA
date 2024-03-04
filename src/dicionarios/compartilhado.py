@@ -4,20 +4,12 @@ dct_usn = {
     "AGN": None,
     "CFG": None,
 
-    # PRIVADAS
-    "__split1": False,
-    "__split2": False,
-    "__split3": False,
-    "__split4": False,
-    
-    # PROTEGIDAS
-    "_pid_inicial": -1,
-    "_pot_alvo_anterior": -1,
-    "_tentativas_normalizar": 0,
+    # VARIÁVEIS
+    "pid_inicial": -1,
+    "pot_alvo_anterior": -1,
 
-    "_modo_autonomo": False,
+    "tentativas_normalizar": 0,
 
-    # PÚBLICAS
     "pot_disp": 0,
     "estado_moa": 0,
     "ug_operando": 0,
@@ -28,15 +20,49 @@ dct_usn = {
     "controle_d": 0.0,
     "controle_ie": 0.0,
 
+    "split1": False,
+    "split2": False,
+    "split3": False,
+    "split4": False,
+
+    "modo_autonomo": False,
+
     "bd_emergencia": False,
     "clp_emergencia": False,
     "borda_emergencia": False,
+
     "normalizar_forcado": False,
 }
 
-dct_tda = {
-    "nivel_montante": 0.0,
+dct_sa = {
+    # VARIÁVEIS
+    "condicionadores": [],
+    "condicionadores_essenciais": [],
+    "condicionadores_ativos": [],
+}
 
+dct_se = {
+    # LEITURAS MB
+    "tensao_r": None,
+    "tensao_s": None,
+    "tensao_t": None,
+    "medidor_usina": None,
+
+    "dj_linha": None,
+
+    # VARIÁVEIS
+    "status_tensao": 0,
+
+    "condicionadores": [],
+    "condicionadores_essenciais": [],
+    "condicionadores_ativos": [],
+}
+
+dct_tda = {
+    # LEITURAS MB
+    "nivel_montante": None,
+
+    # VARIÁVEIS
     "erro_nivel": 0.0,
     "erro_nivel_anterior": 0.0,
     "nivel_montante_anterior": 0.0,

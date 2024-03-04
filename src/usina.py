@@ -72,26 +72,26 @@ class Usina:
     def modo_autonomo(self) -> "bool":
         # PROPRIEDADE -> Retorna o modo do MOA.
 
-        return dct_usn['_modo_autonomo']
+        return dct_usn['modo_autonomo']
 
     @modo_autonomo.setter
     def modo_autonomo(self, var: "bool") -> "None":
         # SETTER -> Atribui o novo valor do modo do MOA e atualiza no Banco de Dados.
 
-        dct_usn['_modo_autonomo'] = var
+        dct_usn['modo_autonomo'] = var
         dct_usn['BD'].update_modo_moa(var)
 
     @property
     def tentativas_normalizar(self) -> "int":
         # PROPRIEDADE -> Retorna o valor de Tentativas de Normalização.
 
-        return dct_usn['_tentativas_normalizar']
+        return dct_usn['tentativas_normalizar']
 
     @tentativas_normalizar.setter
     def tentativas_normalizar(self, var: "int") -> "None":
         # SETTER -> Atribui o novo valor de Tentativas de Normalização.
 
-        dct_usn['_tentativas_normalizar'] = var
+        dct_usn['tentativas_normalizar'] = var
 
 
     # FUNÇÕES DE CONTROLE E NORMALIZAÇÃO DA OPERAÇÃO
@@ -243,10 +243,10 @@ class Usina:
             if ug.etapa_atual == UG_SINCRONIZADA:
                 dct_usn['ug_operando'] += 1
 
-        dct_usn['__split1'] = True if dct_usn['ug_operando'] == 1 else False
-        dct_usn['__split2'] = True if dct_usn['ug_operando'] == 2 else False
-        dct_usn['__split3'] = True if dct_usn['ug_operando'] == 3 else False
-        dct_usn['__split4'] = True if dct_usn['ug_operando'] == 4 else False
+        dct_usn['split1'] = True if dct_usn['ug_operando'] == 1 else False
+        dct_usn['split2'] = True if dct_usn['ug_operando'] == 2 else False
+        dct_usn['split3'] = True if dct_usn['ug_operando'] == 3 else False
+        dct_usn['split4'] = True if dct_usn['ug_operando'] == 4 else False
 
         dct_usn['controle_ie'] = self.ajustar_ie_padrao()
 
@@ -340,9 +340,9 @@ class Usina:
 
         dct_usn['controle_p'] = dct_usn['CFG']["kp"] * dct_tda['erro_nivel']
 
-        if dct_usn['_pid_inicial'] == -1:
+        if dct_usn['pid_inicial'] == -1:
             dct_usn['controle_i'] = max(min(dct_usn['controle_ie'] - dct_usn['controle_p'], 0.9), 0)
-            dct_usn['_pid_inicial'] = 0
+            dct_usn['pid_inicial'] = 0
         else:
             dct_usn['controle_i'] = max(min((dct_usn['CFG']["ki"] * dct_tda['erro_nivel']) + dct_usn['controle_i'], 0.9), 0)
             dct_usn['controle_d'] = dct_usn['CFG']["kd"] * (dct_tda['erro_nivel'] - dct_tda['erro_nivel_anterior'])
@@ -379,8 +379,8 @@ class Usina:
         Função para ajustar a potência de controle após do cálculo do PID.
         """
 
-        if dct_usn['_pot_alvo_anterior'] == -1:
-            dct_usn['_pot_alvo_anterior'] = pot_alvo
+        if dct_usn['pot_alvo_anterior'] == -1:
+            dct_usn['pot_alvo_anterior'] = pot_alvo
 
         if pot_alvo < 0.1:
             for ug in self.ugs:
@@ -395,9 +395,9 @@ class Usina:
         pot_medidor = max(pot_aux, min(pot_medidor, dct_usn['CFG']["pot_maxima_usina"]))
 
         if pot_medidor > dct_usn['CFG']["pot_alvo_usina"]:
-            pot_alvo = dct_usn['_pot_alvo_anterior'] * (1 - ((pot_medidor - dct_usn['CFG']["pot_alvo_usina"]) / dct_usn['CFG']["pot_alvo_usina"]))
+            pot_alvo = dct_usn['pot_alvo_anterior'] * (1 - ((pot_medidor - dct_usn['CFG']["pot_alvo_usina"]) / dct_usn['CFG']["pot_alvo_usina"]))
 
-        dct_usn['_pot_alvo_anterior'] = pot_alvo
+        dct_usn['pot_alvo_anterior'] = pot_alvo
 
         logger.debug(f"[USN] Distribuindo Potência Alvo:         {pot_alvo:0.3f}")
 
@@ -431,26 +431,26 @@ class Usina:
 
         sp = (pot_alvo - ajuste_manual) / dct_usn['CFG']["pot_maxima_usina"]
 
-        dct_usn['__split1'] = True if sp > (0) else dct_usn['__split1']
-        dct_usn['__split2'] = True if sp > ((dct_usn['CFG']["pot_maxima_ugs"] / dct_usn['CFG']["pot_maxima_usina"]) + dct_usn['CFG']["margem_pot_critica"]) else dct_usn['__split2']
-        dct_usn['__split3'] = True if sp > (2 * (dct_usn['CFG']["pot_maxima_ugs"] / dct_usn['CFG']["pot_maxima_usina"]) + dct_usn['CFG']["margem_pot_critica"]) else dct_usn['__split3']
-        dct_usn['__split4'] = True if sp > (3 * (dct_usn['CFG']["pot_maxima_ugs"] / dct_usn['CFG']["pot_maxima_usina"]) + dct_usn['CFG']["margem_pot_critica"]) else dct_usn['__split4']
+        dct_usn['split1'] = True if sp > (0) else dct_usn['split1']
+        dct_usn['split2'] = True if sp > ((dct_usn['CFG']["pot_maxima_ugs"] / dct_usn['CFG']["pot_maxima_usina"]) + dct_usn['CFG']["margem_pot_critica"]) else dct_usn['split2']
+        dct_usn['split3'] = True if sp > (2 * (dct_usn['CFG']["pot_maxima_ugs"] / dct_usn['CFG']["pot_maxima_usina"]) + dct_usn['CFG']["margem_pot_critica"]) else dct_usn['split3']
+        dct_usn['split4'] = True if sp > (3 * (dct_usn['CFG']["pot_maxima_ugs"] / dct_usn['CFG']["pot_maxima_usina"]) + dct_usn['CFG']["margem_pot_critica"]) else dct_usn['split4']
 
-        dct_usn['__split4'] = False if sp < (3 * (dct_usn['CFG']["pot_maxima_ugs"] / dct_usn['CFG']["pot_maxima_usina"]) - dct_usn['CFG']["margem_pot_critica"]) else dct_usn['__split4']
-        dct_usn['__split3'] = False if sp < (2 * (dct_usn['CFG']["pot_maxima_ugs"] / dct_usn['CFG']["pot_maxima_usina"]) - dct_usn['CFG']["margem_pot_critica"]) else dct_usn['__split3']
-        dct_usn['__split2'] = False if sp < ((dct_usn['CFG']["pot_maxima_ugs"] / dct_usn['CFG']["pot_maxima_usina"]) - dct_usn['CFG']["margem_pot_critica"]) else dct_usn['__split2']
-        dct_usn['__split1'] = False if sp < (dct_usn['CFG']["pot_minima_ugs"] / dct_usn['CFG']["pot_maxima_usina"]) else dct_usn['__split1']
+        dct_usn['split4'] = False if sp < (3 * (dct_usn['CFG']["pot_maxima_ugs"] / dct_usn['CFG']["pot_maxima_usina"]) - dct_usn['CFG']["margem_pot_critica"]) else dct_usn['split4']
+        dct_usn['split3'] = False if sp < (2 * (dct_usn['CFG']["pot_maxima_ugs"] / dct_usn['CFG']["pot_maxima_usina"]) - dct_usn['CFG']["margem_pot_critica"]) else dct_usn['split3']
+        dct_usn['split2'] = False if sp < ((dct_usn['CFG']["pot_maxima_ugs"] / dct_usn['CFG']["pot_maxima_usina"]) - dct_usn['CFG']["margem_pot_critica"]) else dct_usn['split2']
+        dct_usn['split1'] = False if sp < (dct_usn['CFG']["pot_minima_ugs"] / dct_usn['CFG']["pot_maxima_usina"]) else dct_usn['split1']
 
         logger.debug(f"[USN] SP Geral:                           {sp}")
 
         if len(ugs) == 4:
-            if dct_usn['__split4']:
+            if dct_usn['split4']:
                 logger.debug("[USN] Split:                              4")
 
                 for ug in ugs: 
                     ug.setpoint = sp * ug.setpoint_maximo
 
-            elif dct_usn['__split3']:
+            elif dct_usn['split3']:
                 logger.debug("[USN] Split:                              4 -> \"3B\"")
 
                 ugs[0].setpoint = (sp * (4/3)) * ugs[0].setpoint_maximo
@@ -458,7 +458,7 @@ class Usina:
                 ugs[2].setpoint = (sp * (4/3)) * ugs[2].setpoint_maximo
                 ugs[3].setpoint = 0
 
-            elif dct_usn['__split2']:
+            elif dct_usn['split2']:
                 logger.debug("[USN] Split:                              4 -> \"2B\"")
 
                 ugs[0].setpoint = (sp * (4/2)) * ugs[0].setpoint_maximo
@@ -466,7 +466,7 @@ class Usina:
                 ugs[2].setpoint = 0
                 ugs[3].setpoint = 0
 
-            elif dct_usn['__split1']:
+            elif dct_usn['split1']:
                 logger.debug("[USN] Split:                              4 -> \"1B\"")
 
                 ugs[0].setpoint = sp * 4 * ugs[0].setpoint_maximo
@@ -481,21 +481,21 @@ class Usina:
             for ug in ugs: logger.debug(f"[UG{ug.id}] SP    <-                            {int(ug.setpoint)}")
 
         elif len(ugs) == 3:
-            if dct_usn['__split3']:
+            if dct_usn['split3']:
                 logger.debug("[USN] Split:                              3")
 
                 ugs[0].setpoint = (sp * (4/3)) * ugs[0].setpoint_maximo
                 ugs[1].setpoint = (sp * (4/3)) * ugs[1].setpoint_maximo
                 ugs[2].setpoint = (sp * (4/3)) * ugs[2].setpoint_maximo
 
-            elif dct_usn['__split2']:
+            elif dct_usn['split2']:
                 logger.debug("[USN] Split:                              3 -> \"2B\"")
 
                 ugs[0].setpoint = (sp * (4/2)) * ugs[0].setpoint_maximo
                 ugs[1].setpoint = (sp * (4/2)) * ugs[1].setpoint_maximo
                 ugs[2].setpoint = 0
 
-            elif dct_usn['__split1']:
+            elif dct_usn['split1']:
                 logger.debug("[USN] Split:                              3 -> \"1B\"")
 
                 ugs[0].setpoint = sp * 4 * ugs[0].setpoint_maximo
@@ -509,13 +509,13 @@ class Usina:
             for ug in ugs: logger.debug(f"[UG{ug.id}] SP    <-                            {int(ug.setpoint)}")
 
         elif len(ugs) == 2:
-            if dct_usn['__split2']:
+            if dct_usn['split2']:
                 logger.debug("[USN] Split:                              2")
 
                 ugs[0].setpoint = (sp * (4/2)) * ugs[0].setpoint_maximo
                 ugs[1].setpoint = (sp * (4/2)) * ugs[0].setpoint_maximo
 
-            elif dct_usn['__split1']:
+            elif dct_usn['split1']:
                 logger.debug("[USN] Split:                              2 -> \"1B\"")
 
                 ugs[0].setpoint = sp * 4 * ugs[0].setpoint_maximo

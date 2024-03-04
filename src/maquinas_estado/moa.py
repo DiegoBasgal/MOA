@@ -131,7 +131,7 @@ class ControleEstados(State):
         self.usn.ler_valores()
 
         logger.debug("Verificando modo do MOA...")
-        if not dct_usn['_modo_autonomo']:
+        if not dct_usn['modo_autonomo']:
             logger.debug("")
             logger.debug("Comando acionado: \"Desabilitar Modo Autônomo\"")
             return ModoManual(self.usn)
@@ -157,9 +157,9 @@ class ControleEstados(State):
                 return Emergencia(self.usn)
 
             elif flag_condic == CONDIC_NORMALIZAR:
-                if self.usn.normalizar_usina() and dct_usn['_tentativas_normalizar'] > 2:
+                if self.usn.normalizar_usina() and dct_usn['tentativas_normalizar'] > 2:
                     logger.info("Tentativas de Normalização da Usina excedidas!")
-                    dct_usn['_tentativas_normalizar'] = 0
+                    dct_usn['tentativas_normalizar'] = 0
                     return Emergencia(self.usn)
 
                 else:
@@ -252,7 +252,7 @@ class ControleAgendamentos(State):
         if len(dct_usn['AGN'].verificar_agendamentos_pendentes()) > 0:
             return self
         else:
-            return ControleEstados(self.usn) if dct_usn['_modo_autonomo'] else ModoManual(self.usn)
+            return ControleEstados(self.usn) if dct_usn['modo_autonomo'] else ModoManual(self.usn)
 
 
 class ModoManual(State):
@@ -262,7 +262,7 @@ class ModoManual(State):
         # ATRIBUIÇÃO DE VARIÁVEIS PÚBLICAS
 
         dct_usn['estado_moa'] = MOA_SM_MODO_MANUAL
-        dct_usn['_modo_autonomo'] = False
+        dct_usn['modo_autonomo'] = False
 
         # FINALIZAÇÃO DO __INIT__
 
@@ -306,7 +306,7 @@ class ModoManual(State):
 
         sleep(1)
 
-        if dct_usn['_modo_autonomo']:
+        if dct_usn['modo_autonomo']:
             logger.debug("Comando acionado: \"Habilitar modo autônomo\"")
             self.usn.ler_valores()
             return ControleDados(self.usn)
@@ -364,7 +364,7 @@ class Emergencia(State):
                     dct_usn['bd_emergencia'] = False
                     return self
 
-                if not dct_usn['_modo_autonomo']:
+                if not dct_usn['modo_autonomo']:
                     dct_usn['bd_emergencia'] = False
                     return ModoManual(self.usn)
 
