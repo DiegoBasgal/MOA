@@ -114,7 +114,7 @@ if __name__ == "__main__":
             logger.debug("-----------------------------------------------------------------")
             sm.exec()
 
-            if usn.estado_moa in (MOA_SM_CONTROLE_DADOS, MOA_SM_MODO_MANUAL):
+            if usn.estado_moa in (MOA_SM_CONTROLE_ESTADOS, MOA_SM_MODO_MANUAL):
                 t_restante = max(TEMPO_CICLO_TOTAL - (time() - t_i), 0) / ESCALA_DE_TEMPO
                 t_i = time()
 
