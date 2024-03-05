@@ -15,16 +15,17 @@ class ParametrosUsina(models.Model):
     emergencia_acionada = models.IntegerField(default=0)
     aguardando_reservatorio = models.IntegerField(default=0)
     modo_de_escolha_das_ugs = models.IntegerField(default=2)
+    hora_desativar_moa = models.IntegerField(default=18)
 
     # Servidores
     clp_online = models.IntegerField(default=1)
-    clp_ug1_ip = models.CharField(max_length=15, default="10.101.2.215")
+    clp_ug1_ip = models.CharField(max_length=15, default="192.168.20.110")
     clp_ug1_porta = models.IntegerField(default=502)
-    clp_ug2_ip = models.CharField(max_length=15, default="10.101.2.215")
+    clp_ug2_ip = models.CharField(max_length=15, default="192.168.20.120")
     clp_ug2_porta = models.IntegerField(default=502)
-    clp_sa_ip = models.CharField(max_length=15, default="10.101.2.215")
+    clp_sa_ip = models.CharField(max_length=15, default="192.168.20.130")
     clp_sa_porta = models.IntegerField(default=502)
-    clp_tda_ip = models.CharField(max_length=15, default="10.101.2.215")
+    clp_tda_ip = models.CharField(max_length=15, default="192.168.20.140")
     clp_tda_porta = models.IntegerField(default=502)
     clp_moa_ip = models.CharField(max_length=15, default="0.0.0.0")
     clp_moa_porta = models.IntegerField(default=502)
@@ -45,7 +46,7 @@ class ParametrosUsina(models.Model):
 
     # Limpa Grades
     modo_lg = models.IntegerField(default=1)
-    horario_disparo_lg = models.DateTimeField(blank=False, default=datetime.now(pytz.timezone("Brazil/East")).strftime("%Y-%m-%d %H:%M:%S"))
+    horario_disparo_lg = models.DateTimeField(blank=False, default=0)
     t_dias_disparo_lg = models.IntegerField(default=0)
     t_horas_disparo_lg = models.IntegerField(default=0)
     valor_disparo_lg_p1 = models.DecimalField(max_digits=5, decimal_places=2, default=0.3)
