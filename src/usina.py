@@ -573,7 +573,7 @@ class Usina:
                 logger.debug("[USN] Split:                              2")
 
                 ugs[0].setpoint = (sp * (4/2)) * ugs[0].setpoint_maximo
-                ugs[1].setpoint = (sp * (4/2)) * ugs[0].setpoint_maximo
+                ugs[1].setpoint = (sp * (4/2)) * ugs[1].setpoint_maximo
 
             elif self.__split1:
                 logger.debug("[USN] Split:                              2 -> \"1B\"")
@@ -770,55 +770,56 @@ class Usina:
         os CLPs da Usina e também, ativação/desativação do MOA através de chaves
         seletoras no painel do Sistema Auxiliar.
         """
-        return
 
         try:
-            self.clp["MOA"].write_single_coil(REG_CLP["MOA"]["PAINEL_LIDO"], 1)
-            self.clp["MOA"].write_single_coil(REG_CLP["MOA"]["MOA_OUT_MODE"], 1 if self.modo_autonomo else 0)
-            self.clp["MOA"].write_single_register(REG_CLP["MOA"]["MOA_OUT_STATUS"], self.estado_moa)
+            self.clp["MOA"].write_single_coil(REG_MOA["PAINEL_LIDO"], 1)
+            self.clp["MOA"].write_single_coil(REG_MOA["MOA_OUT_MODE"], 1 if self.modo_autonomo else 0)
+            self.clp["MOA"].write_single_register(REG_MOA["MOA_OUT_STATUS"], self.estado_moa)
 
             if self.modo_autonomo:
-                self.clp["MOA"].write_single_coil(REG_CLP["MOA"]["OUT_EMERG"], 1 if self.clp_emergencia else 0)
-                self.clp["MOA"].write_multiple_registers(REG_CLP["MOA"]["OUT_SETPOINT"], int(sum(ug.setpoint for ug in self.ugs)))
-                self.clp["MOA"].write_multiple_registers(REG_CLP["MOA"]["OUT_TARGET_LEVEL"], int((self.cfg["nv_alvo"] - 800) * 1000))
+                self.clp["MOA"].write_single_coil(REG_MOA["OUT_EMERG"], 1 if self.clp_emergencia else 0)
+                self.clp["MOA"].write_multiple_registers(REG_MOA["OUT_SETPOINT"], [int(sum(ug.setpoint for ug in self.ugs))])
+                self.clp["MOA"].write_multiple_registers(REG_MOA["OUT_TARGET_LEVEL"], [int((self.cfg["nv_alvo"] - 800) * 1000)])
 
-                if self.clp["MOA"].read_coils(REG_CLP["MOA"]["IN_HABILITA_AUTO"])[0] == 1:
-                    self.clp["MOA"].write_single_coil(REG_CLP["MOA"]["IN_HABILITA_AUTO"], 1)
-                    self.clp["MOA"].write_single_coil(REG_CLP["MOA"]["IN_DESABILITA_AUTO"], 0)
+                if self.clp["MOA"].read_coils(REG_MOA["IN_HABILITA_AUTO"])[0] == 1:
+                    self.clp["MOA"].write_single_coil(REG_MOA["IN_HABILITA_AUTO"], 1)
+                    self.clp["MOA"].write_single_coil(REG_MOA["IN_DESABILITA_AUTO"], 0)
                     self.modo_autonomo = True
 
-                elif self.clp["MOA"].read_coils(REG_CLP["MOA"]["IN_DESABILITA_AUTO"])[0] == 1:
-                    self.clp["MOA"].write_single_coil(REG_CLP["MOA"]["IN_HABILITA_AUTO"], 0)
-                    self.clp["MOA"].write_single_coil(REG_CLP["MOA"]["IN_DESABILITA_AUTO"], 1)
+                elif self.clp["MOA"].read_coils(REG_MOA["IN_DESABILITA_AUTO"])[0] == 1:
+                    self.clp["MOA"].write_single_coil(REG_MOA["IN_HABILITA_AUTO"], 0)
+                    self.clp["MOA"].write_single_coil(REG_MOA["IN_DESABILITA_AUTO"], 1)
                     self.modo_autonomo = False
 
-                if self.clp["MOA"].read_coils(REG_CLP["MOA"]["IN_EMERG"])[0] == 1 and not self.borda_emergencia:
+                if self.clp["MOA"].read_coils(REG_MOA["IN_EMERG"])[0] == 1 and not self.borda_emergencia:
                     for ug in self.ugs:
                         ug.verificar_condicionadores()
 
-                elif self.clp["MOA"].read_coils(REG_CLP["MOA"]["IN_EMERG"])[0] == 0 and self.borda_emergencia:
+                elif self.clp["MOA"].read_coils(REG_MOA["IN_EMERG"])[0] == 0 and self.borda_emergencia:
                     self.borda_emergencia = False
 
                 for ug in self.ugs:
-                    if self.clp["MOA"].read_coils(REG_CLP["MOA"][f"IN_EMERG_UG{ug.id}"])[0] == 1:
+                    if self.clp["MOA"].read_coils(REG_MOA[f"IN_EMERG_UG{ug.id}"])[0] == 1:
                         ug.verificar_condicionadores()
 
-                    if self.clp["MOA"].read_coils(REG_CLP["MOA"][f"OUT_BLOCK_UG{ug.id}"])[0] == 1:
-                        self.clp["MOA"].write_single_coil(REG_CLP["MOA"][f"OUT_BLOCK_UG{ug.id}"], 1)
+                    if self.clp["MOA"].read_coils(REG_MOA[f"OUT_BLOCK_UG{ug.id}"])[0] == 1:
+                        self.clp["MOA"].write_single_coil(REG_MOA[f"OUT_BLOCK_UG{ug.id}"], 1)
 
-                    elif self.clp["MOA"].read_coils(REG_CLP["MOA"][f"OUT_BLOCK_UG{ug.id}"])[0] == 0:
-                        self.clp["MOA"].write_single_coil(REG_CLP["MOA"][f"OUT_BLOCK_UG{ug.id}"], 0)
+                    elif self.clp["MOA"].read_coils(REG_MOA[f"OUT_BLOCK_UG{ug.id}"])[0] == 0:
+                        self.clp["MOA"].write_single_coil(REG_MOA[f"OUT_BLOCK_UG{ug.id}"], 0)
 
             elif not self.modo_autonomo:
-                if self.clp["MOA"].read_coils(REG_CLP["MOA"]["IN_HABILITA_AUTO"])[0] == 1:
-                    self.clp["MOA"].write_single_coil(REG_CLP["MOA"]["IN_HABILITA_AUTO"], 1)
-                    self.clp["MOA"].write_single_coil(REG_CLP["MOA"]["IN_DESABILITA_AUTO"], 0)
+                if self.clp["MOA"].read_coils(REG_MOA["IN_HABILITA_AUTO"])[0] == 1:
+                    self.clp["MOA"].write_single_coil(REG_MOA["IN_HABILITA_AUTO"], 1)
+                    self.clp["MOA"].write_single_coil(REG_MOA["IN_DESABILITA_AUTO"], 0)
                     self.modo_autonomo = True
 
-                self.clp["MOA"].write_single_coil(REG_CLP["MOA"]["OUT_EMERG"], 0)
-                self.clp["MOA"].write_single_register(REG_CLP["MOA"]["OUT_SETPOINT"], 0)
-                self.clp["MOA"].write_single_register(REG_CLP["MOA"]["OUT_TARGET_LEVEL"], 0)
-                [self.clp["MOA"].write_single_coil(REG_CLP["MOA"][f"OUT_BLOCK_UG{ug.id}"], 0) for ug in self.ugs]
+                self.clp["MOA"].write_single_coil(REG_MOA["OUT_EMERG"], 0)
+                self.clp["MOA"].write_single_register(REG_MOA["OUT_SETPOINT"], 0)
+                self.clp["MOA"].write_single_register(REG_MOA["OUT_TARGET_LEVEL"], 0)
+
+                for ug in self.ugs:
+                    self.clp["MOA"].write_single_coil(REG_MOA[f"OUT_BLOCK_UG{ug.id}"], 0)
 
         except Exception:
             logger.error(f"[USN] Houve um erro ao tentar escrever valores modbus no CLP MOA.")

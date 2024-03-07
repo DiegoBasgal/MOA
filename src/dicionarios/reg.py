@@ -1,6 +1,42 @@
 REG_MOA = {
+    "MOA_OUT_MODE":                                 11,
+    "MOA_OUT_STATUS":                               409,
 
+    "SM_STATE":                                     10,
+    "PAINEL_LIDO":                                  12,
+
+    # ENTRADAS
+    "IN_EMERG":                                     13,
+    "IN_HABILITA_AUTO":                             14,
+    "IN_DESABILITA_AUTO":                           15,
+    "IN_EMERG_UG1":                                 20,
+    "IN_EMERG_UG2":                                 25,
+    "IN_EMERG_UG3":                                 30,
+    "IN_EMERG_UG4":                                 35,
+
+    # SAÍDAS
+    "OUT_EMERG":                                    16,
+    "OUT_TARGET_LEVEL":                             417,
+    "OUT_SETPOINT":                                 418,
+
+    "OUT_BLOCK_UG1":                                21,
+    "OUT_ETAPA_UG1":                                422,
+    "OUT_STATE_UG1":                                423,
+
+    "OUT_BLOCK_UG2":                                26,
+    "OUT_STATE_UG2":                                427,
+    "OUT_ETAPA_UG2":                                428,
+
+    "OUT_BLOCK_UG3":                                31,
+    "OUT_STATE_UG3":                                432,
+    "OUT_ETAPA_UG3":                                433,
+
+    "OUT_BLOCK_UG4":                                36,
+    "OUT_STATE_UG4":                                437,
+    "OUT_ETAPA_UG4":                                438,
 }
+
+
                                                                                 # NOME REGISTRADORES ELIPSE:
 REG_SA = {
     ## COMANDOS
@@ -1224,7 +1260,7 @@ REG_AD = {
 
     "UHCD_TEMPERATURA_OLEO_INFO":               175 + 12764,                    # Leituras.PCAD_UHCD_TemperaturaOleo_Info
     "UHCD_TEMPE_OLEO_H":                        [175 + 12764, 0],               # PCAD.UHCD.TemperaturaOleo_Info.H
-    "UHCD_TEMPE_OLEO_H":                        [175 + 12764, 1],               # PCAD.UHCD.TemperaturaOleo_Info.HH
+    "UHCD_TEMPE_OLEO_HH":                       [175 + 12764, 1],               # PCAD.UHCD.TemperaturaOleo_Info.HH
 
     "UHCD_VALVULAS":                            176 + 12764,                    # Leituras.PCAD_UHCD_Valvulas
     "UHCD_VALVULAS01":                          [176 + 12764, 0],               # PCAD.UHCD.Valvulas.[01]

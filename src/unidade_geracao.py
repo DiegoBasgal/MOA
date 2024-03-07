@@ -428,7 +428,7 @@ class UnidadeGeracao:
                 logger.debug(f"[UG{self.id}]          Leituras de Potência:")
                 logger.debug(f"[UG{self.id}]          - \"Ativa\":                 {self.leitura_potencia} kW")
 
-            # self.atualizar_modbus_moa()
+            self.atualizar_modbus_moa()
             self.__next_state = self.__next_state.step()
 
         except Exception:
@@ -442,8 +442,8 @@ class UnidadeGeracao:
         """
 
         try:
-            self.clp["MOA"].write_single_coil(REG_MOA["MOA"][f"OUT_ETAPA_UG{self.id}"], self.etapa_atual)
-            self.clp["MOA"].write_single_coil(REG_MOA["MOA"][f"OUT_STATE_UG{self.id}"], self.codigo_state)
+            self.clp["MOA"].write_single_coil(REG_MOA[f"OUT_ETAPA_UG{self.id}"], self.etapa_atual)
+            self.clp["MOA"].write_single_coil(REG_MOA[f"OUT_STATE_UG{self.id}"], self.codigo_state)
 
         except Exception:
             logger.error(f"[UG{self.id}] Não foi possível escrever os valores no CLP MOA.")
@@ -573,7 +573,7 @@ class UnidadeGeracao:
         try:
             logger.debug("")
             logger.info(f"[UG{self.id}]          Enviando comando:          \"RECONHECE E RESET\"")
-            # self.clp["MOA"].write_single_coil(REG_UG["MOA"]["PAINEL_LIDO"], 0)
+            self.clp["MOA"].write_single_coil(REG_MOA["PAINEL_LIDO"], 0)
 
             passo = 0
             for x in range(2):
@@ -585,7 +585,7 @@ class UnidadeGeracao:
                 self.remover_trip_logico()
                 sleep(1)
 
-            # self.clp["MOA"].write_single_coil(REG_UG["MOA"]["PAINEL_LIDO"], 1)
+            self.clp["MOA"].write_single_coil(REG_MOA["PAINEL_LIDO"], 1)
 
         except Exception:
             logger.error(f"[UG{self.id}] Não foi possivel enviar o comando de reconhecer e resetar alarmes.")
@@ -601,7 +601,7 @@ class UnidadeGeracao:
 
         try:
             logger.debug(f"[UG{self.id}]          Enviando comando:          \"TRIP LÓGICO\"")
-            self.clp[f"UG{self.id}"].write_single_register(REG_UG[f"UG{self.id}"]["CMD_OPER_EMERGENCIA_LIGAR"], valor=1)
+            self.clp[f"UG{self.id}"].write_single_register(REG_UG[f"UG{self.id}"]["CMD_OPER_EMERGENCIA_LIGAR"], 1)
 
         except Exception:
             logger.error(f"[UG{self.id}] Não foi possivel acionar o comando de TRIP: \"Lógico\".")
@@ -633,7 +633,7 @@ class UnidadeGeracao:
 
         try:
             logger.debug(f"[UG{self.id}]          Enviando comando:          \"TRIP ELÉTRICO\"")
-            # self.clp["MOA"].write_single_coil(REG_UG["MOA"][f"OUT_BLOCK_UG{self.id}"], 1)
+            self.clp["MOA"].write_single_coil(REG_MOA[f"OUT_BLOCK_UG{self.id}"], 1)
 
         except Exception:
             logger.error(f"[UG{self.id}] Não foi possivel acionar o comando de TRIP: \"Elétrico\".")
@@ -650,8 +650,8 @@ class UnidadeGeracao:
 
         try:
             logger.debug(f"[UG{self.id}]          Removendo comando:         \"TRIP ELÉTRICO\"")
-            # self.clp["MOA"].write_single_coil(REG_UG["MOA"]["PAINEL_LIDO"], 0)
-            # self.clp["MOA"].write_single_coil(REG_UG["MOA"][f"OUT_BLOCK_UG{self.id}"], 0)
+            self.clp["MOA"].write_single_coil(REG_MOA["PAINEL_LIDO"], 0)
+            self.clp["MOA"].write_single_coil(REG_MOA[f"OUT_BLOCK_UG{self.id}"], 0)
             se.Subestacao.fechar_dj_linha()
 
         except Exception:
@@ -705,7 +705,7 @@ class UnidadeGeracao:
 
         self.temporizar_partida = False
 
-        if self.etapa_atual == UG_PARADA:
+        if self.etapa == UG_PARADA:
             self.acionar_trip_eletrico()
             self.acionar_trip_logico()
 
@@ -734,17 +734,18 @@ class UnidadeGeracao:
 
     def popular_listas_sp_pot(self) -> "None":
         """
-        FUnção para popular listas com leituras e cálculos de potência e setpoint,
+        Função para popular listas com leituras e cálculos de potência e setpoint,
         para controle do MPPT.
         """
-        if self.etapa == UG_PARADA:
+
+        if self.etapa == UG_PARADA or (self.cfg['pot_minima_ugs'] < self.leitura_potencia < self.cfg['pot_minima_ugs'] + 500):
             self.potencias_anteriores = []
 
         elif self.etapa == UG_SINCRONIZADA:
-            if len(self.potencias_anteriores) == self.amostras_pot_mppt + 1: # Verificar
+            if len(self.potencias_anteriores) == self.amostras_pot_mppt + 1:
                 self.potencias_anteriores.pop(-1)
 
-            if len(self.setpoints_anteriores) == self.amostras_sp_mppt + 1: # Verificar
+            if len(self.setpoints_anteriores) == self.amostras_sp_mppt + 1:
                 self.setpoints_anteriores.pop(-1)
 
 

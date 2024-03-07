@@ -132,6 +132,10 @@ class ControleEstados(State):
 
         self.usn.ler_valores()
 
+        logger.debug("Heartbeat...")
+        logger.debug("")
+        # self.usn.heartbeat()
+
         logger.debug("Verificando modo do MOA...")
         if not self.usn.modo_autonomo:
             logger.debug("")
@@ -289,6 +293,9 @@ class ModoManual(State):
         """
 
         self.usn.ler_valores()
+        logger.debug("Heartbeat...")
+        logger.debug("")
+        # self.usn.heartbeat()
 
         logger.debug(f"[USN] Leitura de Nível:                   {tda.TomadaAgua.nivel_montante.valor:0.3f}")
         logger.debug(f"[USN] Potência no medidor:                {se.Subestacao.medidor_usina.valor:0.3f}")
@@ -304,6 +311,7 @@ class ModoManual(State):
         self.usn.controle_ie = (self.usn.ug1.leitura_potencia + self.usn.ug2.leitura_potencia + self.usn.ug3.leitura_potencia + self.usn.ug4.leitura_potencia) / self.usn.cfg["pot_alvo_usina"]
         self.usn.controle_i = max(min(self.usn.controle_ie - (self.usn.controle_i * self.usn.cfg["ki"]) - self.usn.cfg["kp"] * tda.TomadaAgua.erro_nivel - self.usn.cfg["kd"] * (tda.TomadaAgua.erro_nivel - tda.TomadaAgua.erro_nivel_anterior), 0.8), 0)
 
+        logger.debug("Escrevendo valores no Banco...")
         self.usn.escrever_valores()
 
         sleep(1)
