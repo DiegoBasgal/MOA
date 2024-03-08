@@ -27,11 +27,11 @@ class Tda:
 
 
     def calcular_volume_montante(self, volume) -> 'float':
-        return min(max(461.37, 461.37 + volume / 190000), 462.37)
+        return min(max(410.7, 410.7 + volume / 190000), 411.2)
 
 
     def calcular_montante_volume(self, nv_montante) -> 'float':
-        return 190000 * (min(max(461.37, nv_montante), 462.37) - 461.37)
+        return 190000 * (min(max(410.7, nv_montante), 411.2) - 410.7)
 
 
     def calcular_q_sanitaria(self) -> 'float':
@@ -82,7 +82,7 @@ class Tda:
             self.dict['TDA']['nv_montante'] = (0.0000021411 * self.dict['TDA']['q_vertimento'] ** 3
                                             - 0.00025189 * self.dict['TDA']['q_vertimento'] ** 2
                                             + 0.014859 * self.dict['TDA']["q_vertimento"]
-                                            + 462.37)
+                                            + 411.2)
 
         self.volume += self.dict['TDA']['q_liquida'] * self.segundos_por_passo
 

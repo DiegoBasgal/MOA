@@ -26,12 +26,6 @@ compartilhado = {
         "djse_mola": False,
         "djse_fechado": False,
 
-        # BAY
-        "djbay_trip": False,
-        "djbay_secc": False,
-        "djbay_mola": False,
-        "djbay_fechado": False,
-
         # Comportas
         "cp1_aberta": False,
         "cp1_fechada": False,
@@ -65,7 +59,7 @@ compartilhado = {
         "q_sanitaria": 0,
         "q_vertimento": 0,
 
-        "nv_montante": 461.90,
+        "nv_montante": 410.90,
         "nv_jusante_grade": 0,
 
         "lg_operando": False,
@@ -77,10 +71,12 @@ compartilhado = {
         "condic": False,
 
         "potencia_se": 0,
+        "potencia_mp": 0,
+        "potencia_mr": 0,
 
-        "tensao_vab": 23000,
-        "tensao_vbc": 23000,
-        "tensao_vca": 23000,
+        "tensao_vab": 34500,
+        "tensao_vbc": 34500,
+        "tensao_vca": 34500,
 
         "dj_trip": False,
         "dj_falha": False,
@@ -88,31 +84,6 @@ compartilhado = {
         "dj_fechado": False,
         "dj_condicao": False,
         "dj_falta_vcc": False,
-        "dj_inconsistente": False,
-        "dj_mola_carregada": True,
-
-        "debug_dj_reset": False,
-        "debug_dj_abrir": False,
-        "debug_dj_fechar": False,
-    },
-
-    "BAY": {
-        "condic": False,
-
-        "potencia_mp": 0,
-        "potencia_mr": 0,
-
-        "tensao_vs": 0,
-        "tensao_vab": 13800,
-        "tensao_vbc": 13800,
-        "tensao_vca": 13800,
-
-        "dj_secc": True,
-        "dj_trip": False,
-        "dj_falha": False,
-        "dj_aberto": True,
-        "dj_fechado": False,
-        "dj_condicao": False,
         "dj_inconsistente": False,
         "dj_mola_carregada": True,
 

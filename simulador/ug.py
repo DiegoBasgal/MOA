@@ -30,9 +30,14 @@ class Unidade:
 
     def passo(self) -> 'None':
 
-        if self.dict[f'UG{self.id}'][f'debug_setpoint'] >= 0:
-            self.dict[f'UG{self.id}'][f'setpoint'] = self.dict[f'UG{self.id}'][f'debug_setpoint']
-            self.dict[f'UG{self.id}'][f'debug_setpoint'] = -1
+        self.setpoint = DB.get_words(MB[f'UG{self.id}']['SETPONIT'])[0]
+        self.dict[f'UG{self.id}'][f'setpoint'] = self.setpoint
+
+        if self.dict[f'UG{self.id}']['debug_setpoint'] >= 0:
+            self.dict[f'UG{self.id}']['setpoint'] = self.dict[f'UG{self.id}']['debug_setpoint']
+            DB.set_words(MB[f'UG{self.id}']['SETPONIT'], [self.dict[f'UG{self.id}']['setpoint']])
+            self.dict[f'UG{self.id}']['debug_setpoint'] = -1
+
 
         if LEI.ler_bit(MB[f'UG{self.id}']['PASSOS_CMD_RST_FLH']):
             ESC.escrever_bit(MB[f'UG{self.id}']['PASSOS_CMD_RST_FLH'], valor=0)
@@ -63,9 +68,6 @@ class Unidade:
             ESC.escrever_bit(MB['TDA'][f'CP{self.id}_CMD_ABERTURA_CRACKING'], valor=0)
             self.dict[f'CP{self.id}'][f'thread_cracking'] = False
             Thread(target=lambda: self.controlar_cracking_comporta()).start()
-
-        self.setpoint = DB.get_words(MB[f'UG{self.id}']['SETPONIT'])[0]
-        self.dict[f'UG{self.id}'][f'setpoint'] = self.setpoint
 
         self.dict[f'UG{self.id}'][f'q'] = self.calcular_q_ug(self.potencia)
 
@@ -381,7 +383,6 @@ class Unidade:
 
     def atualizar_modbus(self) -> 'None':
         DB.set_words(MB[f'UG{self.id}']['P'], [round(self.potencia)])
-        DB.set_words(MB[f'UG{self.id}']['SETPONIT'], [self.setpoint])
         DB.set_words(MB[f'UG{self.id}']['HORIMETRO'], [np.floor(self.horimetro_hora)])
         DB.set_words(MB[f'UG{self.id}']['RV_ESTADO_OPERACAO'], [int(self.dict[f'UG{self.id}'][f'etapa_atual'])])
         DB.set_words(MB[f'UG{self.id}']['ENTRADA_TURBINA_PRESSAO'], [round(self.dict[f'UG{self.id}'][f'pressao_turbina'] * 10)])

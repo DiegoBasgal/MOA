@@ -9,7 +9,6 @@ from dicts.reg import *
 
 from se import Se
 from tda import Tda
-from bc import Bay
 from ug import Unidade
 from funcs.temporizador import Temporizador
 
@@ -21,7 +20,6 @@ class Planta:
         self.dict = dict_comp
 
         self.se = Se(dict_comp, tempo)
-        self.bay = Bay(dict_comp, tempo)
         self.tda = Tda(dict_comp, tempo)
         self.ug1 = Unidade(1, dict_comp, tempo)
         self.ug2 = Unidade(2, dict_comp, tempo)
@@ -42,7 +40,6 @@ class Planta:
 
     def atualizar_modbus_geral(self) -> 'None':
         self.se.atualizar_modbus()
-        self.bay.atualizar_modbus()
         self.tda.atualizar_modbus()
         self.ug1.atualizar_modbus()
         self.ug2.atualizar_modbus()
@@ -51,7 +48,6 @@ class Planta:
     def run(self) -> 'None':
 
         self.se.abrir_dj()
-        self.bay.abrir_dj()
 
         while not self.dict['GLB']['stop_sim']:
             self.dict['GLB']['stop_sim'] = self.dict['GLB']['stop_gui']
@@ -62,7 +58,6 @@ class Planta:
                 self.dict['GLB']['tempo_simul'] += self.segundos_por_passo
 
                 self.se.passo()
-                self.bay.passo()
                 self.tda.passo()
                 self.ug1.passo()
                 self.ug2.passo()

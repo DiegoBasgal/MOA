@@ -58,11 +58,6 @@ class Se:
             self.dict['SE']['debug_dj_fechar'] = False
             self.tripar_dj()
 
-        if self.dict['BAY']['dj_aberto'] or self.dict['SE']['dj_aberto']:
-            self.dict['SE']['tensao_vab'] = 0
-            self.dict['SE']['tensao_vbc'] = 0
-            self.dict['SE']['tensao_vca'] = 0
-
 
         self.dict['SE']['potencia_se'] = max(0, np.random.normal(((self.dict['UG1']['potencia'] + self.dict['UG2']['potencia']) * 0.995), 0.001 * self.escala_ruido))
 
@@ -82,7 +77,7 @@ class Se:
 
 
     def verificar_tensao_dj(self) -> "None":
-        if not (BAY_TENSAO_BAIXA < self.dict['BAY']['tensao_vab'] < BAY_TENSAO_ALTA):
+        if not (SE_TENSAO_BAIXA < self.dict['SE']['tensao_vab'] < SE_TENSAO_ALTA):
             self.dict['SE']['dj_falta_vcc'] = True
             self.tripar_dj(descr='Tensão fora dos limites.')
 
@@ -104,8 +99,7 @@ class Se:
         or self.dict['SE']['dj_fechado'] \
         or self.dict['SE']['dj_falta_vcc'] \
         or not self.dict['SE']['dj_aberto'] \
-        or not self.dict['SE']['dj_mola_carregada'] \
-        or self.dict['BAY']['dj_aberto']:
+        or not self.dict['SE']['dj_mola_carregada']:
             self.dict['SE']['dj_condicao'] = False
 
         else:
@@ -130,9 +124,6 @@ class Se:
         if self.dict['SE']['dj_trip']:
             self.dict['SE']['dj_falha'] = True
             self.tripar_dj(descr='Picou.')
-
-        elif self.dict['BAY']['tensao_vs'] != 0:
-            print("[SE] Não há como fechar o Disjuntor da Subestação, pois há uma leitura de tensão na Linha do BAY")
 
         elif self.dict['SE']['dj_aberto']:
             if self.dict['SE']['dj_condicao']:

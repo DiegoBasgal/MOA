@@ -28,31 +28,19 @@ class Window(QMainWindow, Ui_Form):
             horas = floor(self.dict['GLB']['tempo_simul'] / 3600)
             self.label_tempo.setText(f"{horas:02d}:{minutos:02d}:{segundos:02d}")
 
-            # GERAL
-            self.checkBox_condics.setChecked(self.dict['USN']['trip_condic'])
-
             # SE
-            self.checkBox_DjSE_trip.setChecked(self.dict['SE']['dj_trip'])
-            self.checkBox_DjSE_aberto.setChecked(self.dict['SE']['dj_aberto'])
-            self.checkBox_DjSE_fechado.setChecked(self.dict['SE']['dj_fechado'])
-            self.checkBox_DjSE_condicao.setChecked(self.dict['SE']['dj_condicao'])
-            self.checkBox_DjSE_falta_vcc.setChecked(self.dict['SE']['dj_falta_vcc'])
-            self.checkBox_DjSE_mola.setChecked(self.dict['SE']['dj_mola_carregada'])
+            self.checkBox_djl_trip.setChecked(self.dict['SE']['dj_trip'])
+            self.checkBox_djl_aberto.setChecked(self.dict['SE']['dj_aberto'])
+            self.checkBox_djl_fechado.setChecked(self.dict['SE']['dj_fechado'])
+            self.checkBox_djl_condicao.setChecked(self.dict['SE']['dj_condicao'])
+            self.checkBox_djl_falta_vcc.setChecked(self.dict['SE']['dj_falta_vcc'])
+            self.checkBox_djl_mola.setChecked(self.dict['SE']['dj_mola_carregada'])
 
-            self.lcdNumber_tensaoSE.display(self.dict['SE']['tensao_vab'])
-            self.lcdNumber_medidorSE.display(f"{self.dict['SE']['potencia_se']:4.1f}")
+            self.lcdNumber_lt.display(self.dict['SE']['tensao_vab'])
+            self.lcdNumber_mu.display(f"{self.dict['SE']['potencia_se']:4.1f}")
 
-            # BAY
-            self.checkBox_DjBay_trip.setChecked(self.dict['BAY']['dj_trip'])
-            self.checkBox_DjBay_aberto.setChecked(self.dict['BAY']['dj_aberto'])
-            self.checkBox_DjBay_fechado.setChecked(self.dict['BAY']['dj_fechado'])
-            self.checkBox_DjBay_condicao.setChecked(self.dict['BAY']['dj_condicao'])
-            self.checkBox_DjBay_seccionadora.setChecked(self.dict['BAY']['dj_secc'])
-            self.checkBox_DjBay_mola.setChecked(self.dict['BAY']['dj_mola_carregada'])
-
-            self.lcdNumber_MP.display(f"{self.dict['BAY']['potencia_mp']:4.1f}")
-            self.lcdNumber_MR.display(f"{self.dict['BAY']['potencia_mr']:4.1f}")
-            self.lcdNumber_tensaoLinha.display(self.dict['BAY']['tensao_vab'])
+            self.lcdNumber_mp.display(f"{self.dict['SE']['potencia_se']:4.1f}")
+            self.lcdNumber_mr.display(f"{self.dict['SE']['potencia_se']:4.1f}")
 
             # TDA
             self.lcdNumber_montante.display(f"{self.dict['TDA']['nv_montante']:3.4f}")
@@ -64,40 +52,40 @@ class Window(QMainWindow, Ui_Form):
             self.lcdNumber_lg_status.display("O") if self.dict['TDA']['lg_operando'] else self.lcdNumber_lg_status.display("P")
 
             # UG1
-            self.lcdNumber_ug1_potencia.display(self.dict['UG1']['potencia'])
-            self.lcdNumber_ug1_setpoint.display(self.dict['UG1']['setpoint'])
-            self.lcdNumber_ug1_etapa_alvo.display(self.dict['UG1']['etapa_alvo'])
-            self.lcdNumber_ug1_etapa_atual.display(self.dict['UG1']['etapa_atual'])
+            self.lcdNumber_potencia_ug1.display(f"{int(self.dict['UG1']['potencia']):d}")
+            self.lcdNumber_setpoint_ug1.display(f"{int(self.dict['UG1']['setpoint']):d}")
+            self.lcdNumber_etapa_alvo_ug1.display(self.dict['UG1']['etapa_alvo'])
+            self.lcdNumber_etapa_atual_ug1.display(self.dict['UG1']['etapa_atual'])
 
             # UG2
-            self.lcdNumber_ug2_potencia.display(self.dict['UG2']['potencia'])
-            self.lcdNumber_ug2_setpoint.display(self.dict['UG2']['setpoint'])
-            self.lcdNumber_ug2_etapa_alvo.display(self.dict['UG2']['etapa_alvo'])
-            self.lcdNumber_ug2_etapa_atual.display(self.dict['UG2']['etapa_atual'])
+            self.lcdNumber_potencia_ug2.display(f"{int(self.dict['UG2']['potencia']):d}")
+            self.lcdNumber_setpoint_ug2.display(f"{int(self.dict['UG2']['setpoint']):d}")
+            self.lcdNumber_etapa_alvo_ug2.display(self.dict['UG2']['etapa_alvo'])
+            self.lcdNumber_etapa_atual_ug2.display(self.dict['UG2']['etapa_atual'])
 
             # CP1
             self.progressBar_cp1.setValue(int(self.dict['CP1']['progresso']))
 
             if self.dict['CP1']['aberta']:
-                self.lcdNumber_status_cp1.display("A")
+                self.lcdNumber_etapa_cp1.display("A")
             elif self.dict['CP1']['fechada']:
-                self.lcdNumber_status_cp1.display("F")
+                self.lcdNumber_etapa_cp1.display("F")
             elif self.dict['CP1']['cracking']:
-                self.lcdNumber_status_cp1.display("C")
+                self.lcdNumber_etapa_cp1.display("C")
             else:
-                self.lcdNumber_status_cp1.display("-")
+                self.lcdNumber_etapa_cp1.display("-")
 
             # CP2
             self.progressBar_cp2.setValue(int(self.dict['CP2']['progresso']))
 
             if self.dict['CP2']['aberta']:
-                self.lcdNumber_status_cp2.display("A")
+                self.lcdNumber_etapa_cp2.display("A")
             elif self.dict['CP2']['fechada']:
-                self.lcdNumber_status_cp2.display("F")
+                self.lcdNumber_etapa_cp2.display("F")
             elif self.dict['CP2']['cracking']:
-                self.lcdNumber_status_cp2.display("C")
+                self.lcdNumber_etapa_cp2.display("C")
             else:
-                self.lcdNumber_status_cp2.display("-")
+                self.lcdNumber_etapa_cp2.display("-")
 
         except Exception:
             print(traceback.format_exc())
@@ -133,28 +121,28 @@ class Window(QMainWindow, Ui_Form):
         elif self.dict['SE']['dj_fechado'] and not self.dict['SE']['dj_aberto']:
             self.dict['SE']['debug_dj_abrir'] = True
 
-    # BAY
+    # SE
     def set_trip_linha(self):
-        if self.dict['BAY']['tensao_linha'] != 0:
-            self.dict['SE']['tensao_linha'] = 0
-            self.dict['BAY']['tensao_linha'] = 0
+        if self.dict['SE']['tensao_vab'] != 0:
+            self.dict['SE']['tensao_vab'] = 0
+            self.dict['SE']['tensao_vab'] = 0
 
     def reset_trip_linha(self):
-        self.dict['BAY']['tensao_linha'] = 23000
+        self.dict['SE']['tensao_vab'] = 34500
 
-    def set_trip_djBay(self):
-        if self.dict['BAY']['dj_trip']:
-            self.dict['BAY']['debug_dj_reset'] = True
+    def set_trip_djSE(self):
+        if self.dict['SE']['dj_trip']:
+            self.dict['SE']['debug_dj_reset'] = True
 
-        elif not self.dict['BAY']['dj_trip']:
-            self.dict['BAY']['dj_trip'] = True
+        elif not self.dict['SE']['dj_trip']:
+            self.dict['SE']['dj_trip'] = True
 
-    def alterar_estado_djBay(self):
-        if self.dict['BAY']['dj_aberto'] and not self.dict['BAY']['dj_fechado']:
-            self.dict['BAY']['debug_dj_fechar'] = True
+    def alterar_estado_djSE(self):
+        if self.dict['SE']['dj_aberto'] and not self.dict['SE']['dj_fechado']:
+            self.dict['SE']['debug_dj_fechar'] = True
 
-        elif self.dict['BAY']['dj_fechado'] and not self.dict['BAY']['dj_aberto']:
-            self.dict['BAY']['debug_dj_abrir'] = True
+        elif self.dict['SE']['dj_fechado'] and not self.dict['SE']['dj_aberto']:
+            self.dict['SE']['debug_dj_abrir'] = True
 
     # TDA
     def mudar_q_afluente(self):
@@ -182,7 +170,7 @@ class Window(QMainWindow, Ui_Form):
         self.dict['UG1']['debug_parar'] = True
 
     def mudar_setpoint_ug1(self):
-        self.dict['UG1']['debug_setpoint'] = self.horizontalSlider_ug1_setpoint.value()
+        self.dict['UG1']['debug_setpoint'] = self.horizontalSlider_sp_ug1.value()
 
     # UG2
     def partir_ug2(self):
@@ -192,7 +180,7 @@ class Window(QMainWindow, Ui_Form):
         self.dict['UG2']['debug_parar'] = True
 
     def mudar_setpoint_ug2(self):
-        self.dict['UG2']['debug_setpoint'] = self.horizontalSlider_setpoint_ug2.value()
+        self.dict['UG2']['debug_setpoint'] = self.horizontalSlider_sp_ug2.value()
 
     # CP1
     def set_abertura_cp1(self):
