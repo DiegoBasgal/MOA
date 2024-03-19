@@ -360,10 +360,10 @@ class Agendamentos:
             self.usn.ad.cp1.estado = 0
 
         if agendamento[3] == AGN_ADCP1_FORCAR_ESTADO_INDISPONIVEL:
-            self.usn.ad.cp1.estado = 1
+            self.usn.ad.cp1.estado = 2
 
         if agendamento[3] == AGN_ADCP2_FORCAR_ESTADO_DISPONIVEL:
             self.usn.ad.cp2.estado = 0
 
         if agendamento[3] == AGN_ADCP2_FORCAR_ESTADO_INDISPONIVEL:
-            self.usn.ad.cp2.estado = 1
+            self.usn.ad.cp2.estado = 2

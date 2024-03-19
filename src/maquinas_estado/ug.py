@@ -179,9 +179,8 @@ class StateDisponivel(State):
         de etapas.
         """
 
-        # self.parent.verificar_limites()
-        # flag = self.parent.verificar_condicionadores()
-        flag = 0
+        self.parent.verificar_limites()
+        flag = self.parent.verificar_condicionadores()
 
         if flag == CONDIC_INDISPONIBILIZAR:
             logger.warning(f"[UG{self.parent.id}] Indisponibilizando UG.")
@@ -195,6 +194,7 @@ class StateDisponivel(State):
             return self if self.parent.normalizar_unidade() else StateIndisponivel(self.parent)
 
         else:
+            self.parent.atenuar_carga()
             self.parent.controlar_etapas()
 
             return self

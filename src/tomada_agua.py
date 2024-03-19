@@ -33,10 +33,10 @@ class TomadaAgua:
     aguardando_reservatorio: "int" = 0
 
     nivel_montante = lei.LeituraModbus(
-        clp["TDA"],
+        clp["SA"],
         REG_TDA["NV_BARRAGEM"],
         descricao="[TDA] Leitura Nível Montante",
-        escala=0.001,
+        escala=0.01,
         fundo_escala=800,
     )
 

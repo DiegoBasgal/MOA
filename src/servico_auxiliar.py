@@ -32,6 +32,7 @@ class ServicoAuxiliar:
 
     condicionadores: "list[c.CondicionadorBase]" = []
     condicionadores_essenciais: "list[c.CondicionadorBase]" = []
+    condicionadores_ativos: "list[c.CondicionadorBase]" = []
 
 
     @classmethod
@@ -44,16 +45,16 @@ class ServicoAuxiliar:
             logger.warning(f"[SA]  Sinal de TRIP por Sobretemperatura do Enrolamento do TSA-01 identificado!")
             logger.info(f"[SA]  Trocando operação para o TSA-02.")
 
-            cls.clp['SA'].write_single_register(REG_SA['CMD_DJ_FONTE_01_DESLIGAR'], 1)
-            cls.clp['SA'].write_single_register(REG_SA['CMD_DJ_FONTE_02_LIGAR'], 1)
+            # cls.clp['SA'].write_single_register(REG_SA['CMD_DJ_FONTE_01_DESLIGAR'], 1)
+            # cls.clp['SA'].write_single_register(REG_SA['CMD_DJ_FONTE_02_LIGAR'], 1)
             return False
 
         elif cls.l_alm_02_b_06.valor and not cls.l_alm_04_b_02.valor:
             logger.warning(f"[SA]  Sinal de TRIP por Sobretemperatura do Enrolamento do TSA-02 identificado!")
             logger.info(f"[SA]  Trocando operação para o TSA-01.")
 
-            cls.clp['SA'].write_single_register(REG_SA['CMD_DJ_FONTE_02_DESLIGAR'], 1)
-            cls.clp['SA'].write_single_register(REG_SA['CMD_DJ_FONTE_01_LIGAR'], 1)
+            # cls.clp['SA'].write_single_register(REG_SA['CMD_DJ_FONTE_02_DESLIGAR'], 1)
+            # cls.clp['SA'].write_single_register(REG_SA['CMD_DJ_FONTE_01_LIGAR'], 1)
             return False
 
         elif cls.l_alm_02_b_06.valor and cls.l_alm_04_b_02.valor:
@@ -434,10 +435,10 @@ class ServicoAuxiliar:
         cls.l_emerg_acionada = lei.LeituraModbusBit(cls.clp["SA"], REG_SA["EMERGENCIA_ACIONADA"], descricao="[SA]  Usina Emergência Acionada")
         cls.condicionadores_essenciais.append(c.CondicionadorBase(cls.l_emerg_acionada, CONDIC_NORMALIZAR))
 
-        cls.l_alm_cb = lei.LeituraModbusBit(cls.clp["SA"], REG_SA["CB_ALARME"], descricao="[SA]  Alarme Carregador Baterias 1")
+        cls.l_alm_cb = lei.LeituraModbusBit(cls.clp["SA"], REG_SA["CB_ALARME"], invertido=True, descricao="[SA]  Alarme Carregador Baterias 1")
         cls.condicionadores_essenciais.append(c.CondicionadorBase(cls.l_alm_cb, CONDIC_NORMALIZAR))
 
-        cls.l_alm_cb2 = lei.LeituraModbusBit(cls.clp["SA"], REG_SA["CB2_ALARME"], descricao="[SA]  Alarme Carregador Baterias 2")
+        cls.l_alm_cb2 = lei.LeituraModbusBit(cls.clp["SA"], REG_SA["CB2_ALARME"], invertido=True, descricao="[SA]  Alarme Carregador Baterias 2")
         cls.condicionadores_essenciais.append(c.CondicionadorBase(cls.l_alm_cb2, CONDIC_NORMALIZAR))
 
         cls.l_alm_fuga_ter = lei.LeituraModbusBit(cls.clp["SA"], REG_SA["FUGA_TERRA_ALARME"], descricao="[SA]  Alarme Fuga Terra")
@@ -879,7 +880,7 @@ class ServicoAuxiliar:
         cls.l_alm_16_b_11 = lei.LeituraModbusBit(cls.clp["SA"], REG_SA["Alarme16_11"], descricao="[SA]  PDSA-CA - Alimentação Bomba 02 Injeção Água Selo Mecânico - Disj. QM6 Desligado")
         cls.condicionadores.append(c.CondicionadorBase(cls.l_alm_16_b_11, CONDIC_NORMALIZAR))
 
-        cls.l_alm_16_b_12 = lei.LeituraModbusBit(cls.clp["SA"], REG_SA["Alarme16_12"], descricao="[SA]  PDSA-CA - Alimentação Bomba 01 Água Serviço - Disj. QM7 Desligado")
+        cls.l_alm_16_b_12 = lei.LeituraModbusBit(cls.clp["SA"], REG_SA["Alarme16_12"], invertido=True, descricao="[SA]  PDSA-CA - Alimentação Bomba 01 Água Serviço - Disj. QM7 Desligado")
         cls.condicionadores.append(c.CondicionadorBase(cls.l_alm_16_b_12, CONDIC_NORMALIZAR))
 
         cls.l_alm_16_b_13 = lei.LeituraModbusBit(cls.clp["SA"], REG_SA["Alarme16_13"], descricao="[SA]  PDSA-CA - Alimentação Bomba 02 Água Serviço - Disj. QM8 Desligado")
@@ -918,7 +919,7 @@ class ServicoAuxiliar:
         cls.l_alm_17_b_09 = lei.LeituraModbusBit(cls.clp["SA"], REG_SA["Alarme17_09"], descricao="[SA]  Sistema de Água - Caixa D'Água 01 - Nível de água abaixo de 50%")
         cls.condicionadores.append(c.CondicionadorBase(cls.l_alm_17_b_09, CONDIC_NORMALIZAR))
 
-        cls.l_alm_17_b_10 = lei.LeituraModbusBit(cls.clp["SA"], REG_SA["Alarme17_10"], descricao="[SA]  Sistema de Água - Caixa D'Água 02 - Nível de água abaixo de 50%")
+        cls.l_alm_17_b_10 = lei.LeituraModbusBit(cls.clp["SA"], REG_SA["Alarme17_10"], invertido=True, descricao="[SA]  Sistema de Água - Caixa D'Água 02 - Nível de água abaixo de 50%")
         cls.condicionadores.append(c.CondicionadorBase(cls.l_alm_17_b_10, CONDIC_NORMALIZAR))
 
         cls.l_alm_17_b_11 = lei.LeituraModbusBit(cls.clp["SA"], REG_SA["Alarme17_11"], descricao="[SA]  PINV - Falha/Watchdog Controlador Boost 01")

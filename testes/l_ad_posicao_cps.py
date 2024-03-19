@@ -18,7 +18,7 @@ l_posicao: "dict[str, l.LeituraModbus]" = {}
 for u in range(2):
     l_posicao[f'CP{u+1}'] = l.LeituraModbus(
         client=s.Servidores.clp['SA'],
-        registrador=165 + 12764 if u+1==1 else 167 + 12764,
+        registrador=164 + 12764 if u+1==1 else 166 + 12764,
         descricao=f"[AD][CP{u+1}] Posição"
     )
 

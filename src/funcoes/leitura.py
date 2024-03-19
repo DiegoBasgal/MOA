@@ -75,7 +75,7 @@ class LeituraModbusBit(LeituraModbus):
         self.__client = client
         self.__reg = registrador[0]
         self.__bit = registrador[1]
-        self.__invertido = False if invertido is not None else invertido
+        self.__invertido = invertido
         self.__descricao = descricao
 
     @property
@@ -151,6 +151,7 @@ class LeituraModbusFloat(LeituraModbus):
             sleep(1)
             return 0
 
+
 class LeituraSoma:
     def __init__(self, leituras: "list[LeituraModbus]"=None, min_zero: "bool"=None) -> "None":
 
@@ -168,3 +169,19 @@ class LeituraSoma:
 
         else:
             return [sum(leitura.valor for leitura in self.__leituras)]
+
+
+class LeituraSubtracao:
+    def __init__(self, leituras: "list[LeituraModbus]"=None, descricao: "str"=None):
+
+        self.__leituras = leituras
+        self.__descricao = descricao
+
+    @property
+    def descricao(self) -> "str":
+        return self.__descricao
+    
+    @property
+    def valor(self) -> "float":
+
+        return self.__leituras[0].valor - self.__leituras[1].valor

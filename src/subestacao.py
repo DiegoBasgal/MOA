@@ -34,19 +34,19 @@ class Subestacao:
     tensao_r = lei.LeituraModbus(
         clp["SA"],
         REG_SE["TENSAO_RS"],
-        escala=1000,
+        escala=10,
         descricao="[SE]  Tensão Fase RS"
     )
     tensao_s = lei.LeituraModbus(
         clp["SA"],
         REG_SE["TENSAO_ST"],
-        escala=1000,
+        escala=10,
         descricao="[SE]  Tensão Fase ST"
     )
     tensao_t = lei.LeituraModbus(
         clp["SA"],
         REG_SE["TENSAO_TR"],
-        escala=1000,
+        escala=10,
         descricao="[SE]  Tensão Fase TR"
     )
     medidor_usina = lei.LeituraModbus(
@@ -59,6 +59,8 @@ class Subestacao:
         REG_SE["DJ52L_FECHADO"],
         descricao="[SE]  Status Disjuntor Linha"
     )
+
+    status_tensao = 0
 
     condicionadores: "list[c.CondicionadorBase]" = []
     condicionadores_essenciais: "list[c.CondicionadorBase]" = []

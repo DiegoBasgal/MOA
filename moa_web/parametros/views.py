@@ -90,8 +90,8 @@ def parametros_moa_view(request, *args, **kwargs):
             aux = float(request.POST.get("alerta_perda_grade_ug1").replace(",", "."))
             usina.alerta_perda_grade_ug1 = aux if isinstance(aux, float) else usina.alerta_perda_grade_ug1
 
-            aux = float(request.POST.get("ug1_perda_grade_maxima").replace(",", "."))
-            usina.ug1_perda_grade_maxima = aux if isinstance(aux, float) else usina.ug1_perda_grade_maxima
+            aux = float(request.POST.get("limite_perda_grade_ug1").replace(",", "."))
+            usina.limite_perda_grade_ug1 = aux if isinstance(aux, float) else usina.limite_perda_grade_ug1
 
             aux = request.POST.get("alerta_temperatura_fase_r_ug1")
             usina.alerta_temperatura_fase_r_ug1 = (float(aux.replace(",", ".")) if aux is not None and float(aux.replace(",", ".")) > 0 else usina.alerta_temperatura_fase_r_ug1)
@@ -161,8 +161,8 @@ def parametros_moa_view(request, *args, **kwargs):
             aux = float(request.POST.get("alerta_perda_grade_ug2").replace(",", "."))
             usina.alerta_perda_grade_ug2 = aux if isinstance(aux, float) else usina.alerta_perda_grade_ug2
 
-            aux = float(request.POST.get("ug2_perda_grade_maxima").replace(",", "."))
-            usina.ug2_perda_grade_maxima = aux if isinstance(aux, float) else usina.ug2_perda_grade_maxima
+            aux = float(request.POST.get("limite_perda_grade_ug2").replace(",", "."))
+            usina.limite_perda_grade_ug2 = aux if isinstance(aux, float) else usina.limite_perda_grade_ug2
 
             aux = request.POST.get("alerta_temperatura_fase_r_ug2")
             usina.alerta_temperatura_fase_r_ug2 = (float(aux.replace(",", ".")) if aux is not None and float(aux.replace(",", ".")) > 0 else usina.alerta_temperatura_fase_r_ug2)
@@ -235,8 +235,8 @@ def parametros_moa_view(request, *args, **kwargs):
             aux = float(request.POST.get("alerta_perda_grade_ug3").replace(",", "."))
             usina.alerta_perda_grade_ug3 = aux if isinstance(aux, float) else usina.alerta_perda_grade_ug3
 
-            aux = float(request.POST.get("ug3_perda_grade_maxima").replace(",", "."))
-            usina.ug3_perda_grade_maxima = aux if isinstance(aux, float) else usina.ug3_perda_grade_maxima
+            aux = float(request.POST.get("limite_perda_grade_ug3").replace(",", "."))
+            usina.limite_perda_grade_ug3 = aux if isinstance(aux, float) else usina.limite_perda_grade_ug3
 
             aux = request.POST.get("alerta_temperatura_fase_r_ug3")
             usina.alerta_temperatura_fase_r_ug3 = (float(aux.replace(",", ".")) if aux is not None and float(aux.replace(",", ".")) > 0 else usina.alerta_temperatura_fase_r_ug3)
@@ -309,8 +309,8 @@ def parametros_moa_view(request, *args, **kwargs):
             aux = float(request.POST.get("alerta_perda_grade_ug4").replace(",", "."))
             usina.alerta_perda_grade_ug4 = aux if isinstance(aux, float) else usina.alerta_perda_grade_ug4
 
-            aux = float(request.POST.get("ug4_perda_grade_maxima").replace(",", "."))
-            usina.ug4_perda_grade_maxima = aux if isinstance(aux, float) else usina.ug4_perda_grade_maxima
+            aux = float(request.POST.get("limite_perda_grade_ug4").replace(",", "."))
+            usina.limite_perda_grade_ug4 = aux if isinstance(aux, float) else usina.limite_perda_grade_ug4
 
             aux = request.POST.get("alerta_temperatura_fase_r_ug4")
             usina.alerta_temperatura_fase_r_ug4 = (float(aux.replace(",", ".")) if aux is not None and float(aux.replace(",", ".")) > 0 else usina.alerta_temperatura_fase_r_ug4)

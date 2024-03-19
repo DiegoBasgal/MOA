@@ -10,3 +10,5 @@ class Alarmes(models.Model):
     gravidade = models.IntegerField(default=0)
 
     descricao = models.TextField(default="")
+
+    autor = models.TextField(default="")

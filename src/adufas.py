@@ -36,15 +36,17 @@ class Adufas:
             self.clp = serv.Servidores.clp
 
             self.__id = id
+
+            self.bd = None
             self.cfg = {}
 
             self.__manual = lei.LeituraModbusBit(
-                self.clp["AD"],
+                self.clp["SA"],
                 REG_AD[f"CP_0{self.id}_ACION_LOCAL"],
                 descricao=f"[AD][CP{self.id}] Comporta Manual"
             )
             self.__posicao = lei.LeituraModbus(
-                self.clp["AD"],
+                self.clp["SA"],
                 REG_AD[f"CP_0{self.id}_POSICAO"],
                 descricao=f"[AD][CP{self.id}] Posição Atual"
             )
@@ -65,7 +67,6 @@ class Adufas:
 
             self.carregar_leituras()
 
-
         @property
         def id(self) -> "int":
         # PROPRIEDADE -> Retorna o id da Comporta
@@ -81,8 +82,11 @@ class Adufas:
         @property
         def posicao(self) -> "int":
         # PROPRIEDADE -> Retorna a posição da Comporta
-        
-            return self.__posicao.valor
+
+            if 60000 < self.__posicao.valor <= 65535:
+                return self.__posicao.valor - 65535
+            else:
+                return self.__posicao.valor
 
         @property
         def etapa(self) -> "int":
@@ -108,6 +112,31 @@ class Adufas:
             self._estado = var
 
 
+        def iniciar_ultimo_estado(self) -> "None":
+            """
+            Função para verificar e atribuir o último estado da Unidade, antes
+            da interrupção da última execução do MOA.
+
+            Realiza a consulta no Banco de Dados e atribui o último estado comparando
+            com o valor das constantes de Estado.
+            """
+
+            estado = self.bd.get_ultimo_estado_cp_ad(self.id)[0]
+
+            if estado == None:
+                self.estado = ADCP_INDISPONIVEL
+            else:
+                if estado == ADCP_DISPONIVEL:
+                    self.estado = ADCP_DISPONIVEL
+                elif estado == ADCP_MANUAL:
+                    self.estado = ADCP_MANUAL
+                else:
+                    logger.debug("")
+                    logger.error(f"[AD][CP{self.id}] Não foi possível ler o último estado da Comporta")
+                    logger.info(f"[AD][CP{self.id}] Acionando estado \"Manual\".")
+                    self.estado = ADCP_MANUAL
+
+
         def calcular_setpoint(self) -> "None":
             """
             Função para calcular o valor de setpoint por Comporta, a partir da
@@ -115,10 +144,18 @@ class Adufas:
             """
 
             logger.debug(f"[AD][CP{self.id}]      Comporta:                  \"{ADCP_STR_DCT_ESTADO[self.estado]}\"")
-            logger.debug(f"[AD][CP{self.id}]      Etapa:                     \"{ADCP_STR_DCT_ETAPA[self.etapa]}\"")
+            logger.debug(f"[AD][CP{self.id}]      Etapa:                     \"{ADCP_STR_DCT_ETAPA[self.etapa] if self.etapa != None else '?'}\"")
             logger.debug(f"[AD][CP{self.id}]      Leituras:")
             logger.debug(f"[AD][CP{self.id}]      - \"Posição\":               {self.posicao}")
             logger.debug("")
+
+            erro = (tda.TomadaAgua.nivel_montante.valor - self.cfg["ad_nv_alvo"]) * self.k
+
+            self.controle_p = self.cfg["ad_kp"] * erro
+            self.controle_i = min(max(0, self.cfg["ad_ki"] * erro + self.controle_i), 6000)
+
+            sp = min(max(0, self.controle_p + self.controle_i), 6000)
+            self.setpoint = sp
 
             if self.manual or self._estado == ADCP_MANUAL:
                 self.estado == ADCP_MANUAL
@@ -132,19 +169,10 @@ class Adufas:
 
                 if not self.verificar_permissivos():
                     return
-
-                erro = (tda.TomadaAgua.nivel_montante.valor - self.cfg["ad_nv_alvo"]) * self.k
-
-                self.controle_p = self.cfg["ad_kp"] * erro
-                self.controle_i = min(max(0, self.cfg["ad_ki"] * erro + self.controle_i), 6000)
-
-                sp = min(max(0, self.controle_p + self.controle_i), 6000)
-
+                
                 logger.debug(f"[AD][CP{self.id}]      P:                         {self.controle_p:1.4f}")
                 logger.debug(f"[AD][CP{self.id}]      I:                         {self.controle_i:1.4f}")
                 logger.debug(f"[AD][CP{self.id}]      ERRO:                      {erro}")
-
-                self.setpoint = sp
 
                 self.enviar_setpoint(self.setpoint)
 
@@ -155,9 +183,9 @@ class Adufas:
             """
 
             try:
-                # if not self.clp["AD"].read_holding_registers(REG_AD["PCAD_MODO_SETPOT_HAB"])[0]:
-                #     logger.info(f"[AD]  O modo de setpoint das Comportas das Adufas não está Habilitado.")
-                #     return
+                if self.sp_habilitado.valor:
+                    logger.info(f"[AD]  O modo de setpoint das Comportas das Adufas não está Habilitado.")
+                    return
 
                 if self.uhcd_operando.valor:
                     logger.debug(f"[AD][CP{self.id}]      Aguardando disponibilização da UHCD.")
@@ -166,9 +194,9 @@ class Adufas:
                 else:
                     logger.debug("")
                     logger.debug(f"[AD][CP{self.id}]      Enviando setpoint:         {round(setpoint)} mm")
-                    self.clp["AD"].write_single_register(REG_AD[f"CP_0{self.id}_SP_POS"], int(setpoint))
+                    # self.clp["SA"].write_single_register(REG_AD[f"CP_0{self.id}_SP_POS"], int(setpoint))
                     sleep(1)
-                    self.clp["AD"].write_single_register(REG_AD[f"CMD_CP_0{self.id}_BUSCAR"], 1)
+                    # self.clp["SA"].write_single_register(REG_AD[f"CMD_CP_0{self.id}_BUSCAR"], 1)
 
             except Exception:
                 logger.error(f"[AD][CP{self.id}] Não foi possível enviar o setpoint para a Comporta.")
@@ -274,29 +302,30 @@ class Adufas:
             """
 
             ## STATUS
-            self.parada = lei.LeituraModbusBit(self.clp["AD"], REG_AD[f"CP_0{self.id}_PARADA"], descricao=f"[AD][CP{self.id}] Comporta Parada")
-            self.aberta = lei.LeituraModbusBit(self.clp["AD"], REG_AD[f"CP_0{self.id}_ABERTA"], descricao=f"[AD][CP{self.id}] Comporta Aberta")
-            self.fechada = lei.LeituraModbusBit(self.clp["AD"], REG_AD[f"CP_0{self.id}_FECHADA"], descricao=f"[AD][CP{self.id}] Comporta Fechada")
-            self.abrindo = lei.LeituraModbusBit(self.clp["AD"], REG_AD[f"CP_0{self.id}_ABRINDO"], descricao=f"[AD][CP{self.id}] Comporta Abrindo")
-            self.fechando = lei.LeituraModbusBit(self.clp["AD"], REG_AD[f"CP_0{self.id}_FECHANDO"], descricao=f"[AD][CP{self.id}] Comporta Fechando")
-            self.uhcd_operando = lei.LeituraModbusBit(self.clp["AD"], REG_AD["UHCD_OPERACIONAL"], descricao=f"[AD][CP{self.id}] UHCD Disponível")
+            self.parada = lei.LeituraModbusBit(self.clp["SA"], REG_AD[f"CP_0{self.id}_PARADA"], descricao=f"[AD][CP{self.id}] Comporta Parada")
+            self.aberta = lei.LeituraModbusBit(self.clp["SA"], REG_AD[f"CP_0{self.id}_ABERTA"], descricao=f"[AD][CP{self.id}] Comporta Aberta")
+            self.fechada = lei.LeituraModbusBit(self.clp["SA"], REG_AD[f"CP_0{self.id}_FECHADA"], descricao=f"[AD][CP{self.id}] Comporta Fechada")
+            self.abrindo = lei.LeituraModbusBit(self.clp["SA"], REG_AD[f"CP_0{self.id}_ABRINDO"], descricao=f"[AD][CP{self.id}] Comporta Abrindo")
+            self.fechando = lei.LeituraModbusBit(self.clp["SA"], REG_AD[f"CP_0{self.id}_FECHANDO"], descricao=f"[AD][CP{self.id}] Comporta Fechando")
+            self.uhcd_operando = lei.LeituraModbusBit(self.clp["SA"], REG_AD["UHCD_OPERACIONAL"], descricao=f"[AD][CP{self.id}] UHCD Disponível")
+            self.sp_habilitado = lei.LeituraModbusBit(self.clp["SA"], REG_AD["PCAD_MODO_SETPOT_HAB"], invertido=True, descricao=f"[AD][CP{self.id}] Modo Setpoint Habilitado")
 
 
             ## PERMISSIVOS
-            self.rele_falta_fase = lei.LeituraModbusBit(self.clp["AD"], REG_AD["Alarme28_01"], descricao="[AD]  Relé Falta de Fase CA Atuado")
-            self.oleo_uhcd_nv_crit = lei.LeituraModbusBit(self.clp["AD"], REG_AD["Alarme28_08"], descricao="[AD]  UHCD - Nível de Óleo Crítico")
-            self.oleo_uhcd_sobretemp = lei.LeituraModbusBit(self.clp["AD"], REG_AD["Alarme28_11"], descricao="[AD]  UHCD - Sobretemperatura do Óleo - Trip")
-            self.sens_fuma_atuado = lei.LeituraModbusBit(self.clp["AD"], REG_AD["Alarme30_00"], descricao="[AD]  Sensor de Fumaça Atuado")
-            self.erro_analog_pos_cp1 = lei.LeituraModbusBit(self.clp["AD"], REG_AD["Alarme30_10"], descricao="[AD]  Erro de Leitura na entrada analógica da posição da comporta 01")
-            self.erro_analog_pos_cp2 = lei.LeituraModbusBit(self.clp["AD"], REG_AD["Alarme30_11"], descricao="[AD]  Erro de Leitura na entrada analógica da posição da comporta 02")
-            self.disj_al_380vca_desl = lei.LeituraModbusBit(self.clp["AD"], REG_AD["Alarme31_00"], descricao="[AD]  Alimentação 380Vca Principal - Disj. Q380.0 Desligado")
-            self.disj_al_380vca_incosis = lei.LeituraModbusBit(self.clp["AD"], REG_AD["Alarme31_01"], descricao="[AD]  Alimentação 380Vca Principal - Disj. Q380.0 Inconsistência")
-            self.disj_al_380vca_trip = lei.LeituraModbusBit(self.clp["AD"], REG_AD["Alarme31_02"], descricao="[AD]  Alimentação 380Vca Principal - Disj. Q380.0 Trip")
-            self.disj_al_cirq_cmd_desl = lei.LeituraModbusBit(self.clp["AD"], REG_AD["Alarme31_05"], descricao="[AD]  Alimentação Circuitos de Comando - Disj. Q24.3 Desligado")
+            self.rele_falta_fase = lei.LeituraModbusBit(self.clp["SA"], REG_AD["Alarme28_01"], descricao="[AD]  Relé Falta de Fase CA Atuado")
+            self.oleo_uhcd_nv_crit = lei.LeituraModbusBit(self.clp["SA"], REG_AD["Alarme28_08"], descricao="[AD]  UHCD - Nível de Óleo Crítico")
+            self.oleo_uhcd_sobretemp = lei.LeituraModbusBit(self.clp["SA"], REG_AD["Alarme28_11"], descricao="[AD]  UHCD - Sobretemperatura do Óleo - Trip")
+            self.sens_fuma_atuado = lei.LeituraModbusBit(self.clp["SA"], REG_AD["Alarme30_00"], descricao="[AD]  Sensor de Fumaça Atuado")
+            self.erro_analog_pos_cp1 = lei.LeituraModbusBit(self.clp["SA"], REG_AD["Alarme30_10"], descricao="[AD]  Erro de Leitura na entrada analógica da posição da comporta 01")
+            self.erro_analog_pos_cp2 = lei.LeituraModbusBit(self.clp["SA"], REG_AD["Alarme30_11"], descricao="[AD]  Erro de Leitura na entrada analógica da posição da comporta 02")
+            self.disj_al_380vca_desl = lei.LeituraModbusBit(self.clp["SA"], REG_AD["Alarme31_00"], descricao="[AD]  Alimentação 380Vca Principal - Disj. Q380.0 Desligado")
+            self.disj_al_380vca_incosis = lei.LeituraModbusBit(self.clp["SA"], REG_AD["Alarme31_01"], descricao="[AD]  Alimentação 380Vca Principal - Disj. Q380.0 Inconsistência")
+            self.disj_al_380vca_trip = lei.LeituraModbusBit(self.clp["SA"], REG_AD["Alarme31_02"], descricao="[AD]  Alimentação 380Vca Principal - Disj. Q380.0 Trip")
+            self.disj_al_cirq_cmd_desl = lei.LeituraModbusBit(self.clp["SA"], REG_AD["Alarme31_05"], descricao="[AD]  Alimentação Circuitos de Comando - Disj. Q24.3 Desligado")
 
 
             ## MENSAGEIRO
-            self.cp_acion_local = lei.LeituraModbusBit(self.clp["AD"], REG_AD[f"CP_0{self.id}_ACION_LOCAL"], descricao=f"[AD][CP{self.id}] Comporta Acionamento Local")
+            self.cp_acion_local = lei.LeituraModbusBit(self.clp["SA"], REG_AD[f"CP_0{self.id}_ACION_LOCAL"], descricao=f"[AD][CP{self.id}] Comporta Acionamento Local")
 
 
     cp1 = Comporta(1)
@@ -321,7 +350,7 @@ class Adufas:
         logger.debug(f"[TDA]          Leitura:                   {tda.TomadaAgua.nivel_montante.valor:0.3f}")
         logger.debug("")
 
-        cls.clp["AD"].write_single_register(REG_AD["CMD_MODO_SP_HABILITAR"], 1)
+        # cls.clp["SA"].write_single_register(REG_AD["CMD_MODO_SP_HABILITAR"], 1)
 
         for cp in cls.cps:
             cp.calcular_setpoint()

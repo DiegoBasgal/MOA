@@ -55,6 +55,9 @@ class ParametrosUsina(models.Model):
     ad_kp = models.DecimalField(max_digits=15, decimal_places=3, default=1)
     ad_ki = models.DecimalField(max_digits=15, decimal_places=3, default=0.5)
 
+    ad_cp1_ultimo_estado = models.IntegerField(default=0)
+    ad_cp2_ultimo_estado = models.IntegerField(default=0)
+
 
     # Potência
     pot_minima_ugs = models.DecimalField(max_digits=10, decimal_places=0, default=1700)
@@ -70,7 +73,6 @@ class ParametrosUsina(models.Model):
     ug1_prioridade = models.IntegerField(default=0)
     ug1_ultimo_estado = models.IntegerField(default=0)
     ug1_nv_pos_grade = models.DecimalField(max_digits=10, decimal_places=2, default=0)
-    ug1_perda_grade_maxima = models.DecimalField(max_digits=10, decimal_places=3, default=0)
 
     alerta_perda_grade_ug1 = models.DecimalField(max_digits=10, decimal_places=3, default=0)
     alerta_pressao_turbina_ug1 = models.DecimalField(max_digits=10, decimal_places=2, default=1.4)
@@ -110,7 +112,6 @@ class ParametrosUsina(models.Model):
     ug2_prioridade = models.IntegerField(default=0)
     ug2_ultimo_estado = models.IntegerField(default=0)
     ug2_nv_pos_grade = models.DecimalField(max_digits=10, decimal_places=2, default=0)
-    ug2_perda_grade_maxima = models.DecimalField(max_digits=10, decimal_places=3, default=0)
 
     alerta_perda_grade_ug2 = models.DecimalField(max_digits=10, decimal_places=3, default=0)
     alerta_pressao_turbina_ug2 = models.DecimalField(max_digits=10, decimal_places=2, default=1.4)
@@ -150,7 +151,6 @@ class ParametrosUsina(models.Model):
     ug3_prioridade = models.IntegerField(default=0)
     ug3_ultimo_estado = models.IntegerField(default=0)
     ug3_nv_pos_grade = models.DecimalField(max_digits=10, decimal_places=2, default=0)
-    ug3_perda_grade_maxima = models.DecimalField(max_digits=10, decimal_places=3, default=0)
 
     alerta_perda_grade_ug3 = models.DecimalField(max_digits=10, decimal_places=3, default=0)
     alerta_pressao_turbina_ug3 = models.DecimalField(max_digits=10, decimal_places=2, default=1.4)
@@ -190,8 +190,7 @@ class ParametrosUsina(models.Model):
     ug4_prioridade = models.IntegerField(default=0)
     ug4_ultimo_estado = models.IntegerField(default=0)
     ug4_nv_pos_grade = models.DecimalField(max_digits=10, decimal_places=2, default=0)
-    ug4_perda_grade_maxima = models.DecimalField(max_digits=10, decimal_places=3, default=0)
-    
+
     alerta_perda_grade_ug4 = models.DecimalField(max_digits=10, decimal_places=3, default=0)
     alerta_pressao_turbina_ug4 = models.DecimalField(max_digits=10, decimal_places=2, default=1.4)
     alerta_temperatura_oleo_uhrv_ug4 = models.DecimalField(max_digits=10, decimal_places=2, default=100)

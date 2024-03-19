@@ -68,7 +68,9 @@ class Usina:
 
         self.ad.bd = self.bd
         self.ad.cfg = self.cfg
+        self.ad.cp1.bd = self.bd
         self.ad.cp1.cfg = self.cfg
+        self.ad.cp2.bd = self.bd
         self.ad.cp2.cfg = self.cfg
 
 
@@ -118,9 +120,12 @@ class Usina:
         self.tda.carregar_leituras()
 
         self.ler_valores()
-        self.normalizar_usina()
+        # self.normalizar_usina()
         self.ajustar_inicializacao()
         self.escrever_valores()
+
+        self.ad.cp1.iniciar_ultimo_estado()
+        self.ad.cp2.iniciar_ultimo_estado()
 
         self._tentativas_normalizar = 0
         self.tentativas_normalizar = 0
@@ -176,6 +181,7 @@ class Usina:
         try:
             res = self.clp["SA"].write_single_register(REG_SA["CMD_RESET_ALARMES"], 1)
             res = self.clp["SA"].write_single_register(REG_SA["CMD_RECONHECE_ALARMES"], 1)
+            res = self.clp["SA"].write_single_register(REG_SA["CMD_EMERGENCIA_LIGAR"], 0)
             res = self.clp["SA"].write_single_register(REG_SA["CMD_EMERGENCIA_DESLIGAR"], 1)
             return res
 
@@ -197,6 +203,7 @@ class Usina:
 
         try:
             self.clp["SA"].write_single_register(REG_SA["CMD_EMERGENCIA_LIGAR"], 1)
+            return True
 
         except Exception:
             logger.error(f"[USN] Houve um erro ao executar o comando de Emergência.")
@@ -300,7 +307,7 @@ class Usina:
         """
 
         for ug in self.ugs:
-            if ug.etapa_atual == UG_SINCRONIZADA:
+            if ug.etapa == UG_SINCRONIZADA:
                 self.ug_operando += 1
 
         self.__split1 = True if self.ug_operando == 1 else False
@@ -310,10 +317,10 @@ class Usina:
 
         self.controle_ie = self.ajustar_ie_padrao()
 
-        # self.clp["MOA"].write_single_coil(REG_MOA["MOA"]["OUT_BLOCK_UG1"], 0)
-        # self.clp["MOA"].write_single_coil(REG_MOA["MOA"]["OUT_BLOCK_UG2"], 0)
-        # self.clp["MOA"].write_single_coil(REG_MOA["MOA"]["OUT_BLOCK_UG3"], 0)
-        # self.clp["MOA"].write_single_coil(REG_MOA["MOA"]["OUT_BLOCK_UG4"], 0)
+        self.clp["MOA"].write_single_coil(REG_MOA["OUT_BLOCK_UG1"], 0)
+        self.clp["MOA"].write_single_coil(REG_MOA["OUT_BLOCK_UG2"], 0)
+        self.clp["MOA"].write_single_coil(REG_MOA["OUT_BLOCK_UG3"], 0)
+        self.clp["MOA"].write_single_coil(REG_MOA["OUT_BLOCK_UG4"], 0)
 
 
     def controlar_reservatorio(self) -> "int":
@@ -382,9 +389,17 @@ class Usina:
 
             for ug in self.ugs: ug.step()
 
+            logger.debug("")
+
             for cp in self.ad.cps:
-                cp.setpoint = 0
-                cp.enviar_setpoint(0)
+                logger.debug(f"[AD][CP{cp.id}]      Comporta:                  \"{ADCP_STR_DCT_ESTADO[cp.estado]}\"")
+                logger.debug(f"[AD][CP{cp.id}]      Etapa:                     \"{ADCP_STR_DCT_ETAPA[cp.etapa] if cp.etapa != None else '?'}\"")
+                logger.debug(f"[AD][CP{cp.id}]      Leituras:")
+                logger.debug(f"[AD][CP{cp.id}]      - \"Posição\":               {cp.posicao}")
+                logger.debug("")
+                if cp.estado in (ADCP_MANUAL, ADCP_INDISPONIVEL):
+                    cp.setpoint = 0
+                    cp.enviar_setpoint(0)
 
         return NV_NORMAL
 
@@ -604,9 +619,9 @@ class Usina:
         ls = [ug for ug in self.ugs if ug.disponivel and not ug.etapa == UG_PARANDO]
 
         if self.modo_prioridade_ugs in (UG_PRIORIDADE_1, UG_PRIORIDADE_2, UG_PRIORIDADE_3, UG_PRIORIDADE_4):
-            return sorted(ls, key=lambda y: (-1 * y.prioridade, -1 * y.etapa_atual, -1 * y.leitura_potencia, -1 * y.setpoint))
+            return sorted(ls, key=lambda y: (-1 * y.prioridade, -1 * y.etapa, -1 * y.leitura_potencia, -1 * y.setpoint))
         else:
-            return sorted(ls, key=lambda y: (-1 * y.etapa_atual, y.leitura_horimetro, -1 * y.leitura_potencia, -1 * y.setpoint))
+            return sorted(ls, key=lambda y: (-1 * y.etapa, y.leitura_horimetro, -1 * y.leitura_potencia, -1 * y.setpoint))
 
 
     # FUNÇÕES DE CONTROLE DE DADOS
@@ -705,16 +720,18 @@ class Usina:
                 self.tda.nivel_montante.valor,
                 self.ug1.leitura_potencia,
                 self.ug1.setpoint,
-                self.ug1.etapa_atual,
+                self.ug1.etapa,
                 self.ug2.leitura_potencia,
                 self.ug2.setpoint,
-                self.ug2.etapa_atual,
+                self.ug2.etapa,
                 self.ug3.leitura_potencia,
                 self.ug3.setpoint,
-                self.ug3.etapa_atual,
+                self.ug3.etapa,
                 self.ug4.leitura_potencia,
                 self.ug4.setpoint,
-                self.ug4.etapa_atual
+                self.ug4.etapa,
+                self.ad.cp1.estado,
+                self.ad.cp2.estado,
             ])
 
         except Exception:

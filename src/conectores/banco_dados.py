@@ -40,6 +40,21 @@ class BancoDados:
         estado = self.cursor.fetchone()
         return estado
 
+
+    def get_ultimo_estado_cp_ad(self, cp_id: "int") -> "int":
+        """
+        Função para extrair o último estado da Unidade de Geração do Banco.
+        """
+
+        self.cursor.execute(
+            f"SELECT ad_cp{cp_id}_ultimo_estado "
+            "FROM parametros_parametrosusina "
+            "WHERE id = 1;"
+        )
+        estado = self.cursor.fetchone()
+        return estado
+
+
     def get_parametros_usina(self) -> "list":
         """
         Função para extrair os parâmetros alterados na Interface WEB.
@@ -160,7 +175,9 @@ class BancoDados:
             "ug3_ultimo_estado = %s, "
             "ug4_pot = %s, "
             "ug4_setpot = %s, "
-            "ug4_ultimo_estado = %s "
+            "ug4_ultimo_estado = %s, "
+            "ad_cp1_ultimo_estado = %s, "
+            "ad_cp2_ultimo_estado = %s "
             "WHERE id = 1;",
             tuple(valores)
         )
@@ -215,7 +232,7 @@ class BancoDados:
 
         self.cursor.execute(
             "INSERT INTO alarmes_alarmes "
-            "VALUES (%s, %s, %s);",
+            "VALUES (%s, %s, %s, %s);",
             tuple(valores)
         )
         self.conn.commit()

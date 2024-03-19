@@ -6,7 +6,7 @@
     "ie_inicial": 0.1,
     "ad_kp": 10.0,
     "ad_ki": 0.5,
-    "ad_nv_alvo": 818.1,
+    "ad_nv_alvo": 818.05,
     "nv_alvo": 817.0,
     "nv_minimo": 816.0,
     "nv_maximo": 817.0,

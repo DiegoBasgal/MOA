@@ -13,6 +13,7 @@ import src.subestacao as se
 import src.tomada_agua as tda
 
 from time import sleep
+from threading import Thread
 from datetime import datetime
 
 from src.dicionarios.const import *
@@ -134,7 +135,7 @@ class ControleEstados(State):
 
         logger.debug("Heartbeat...")
         logger.debug("")
-        # self.usn.heartbeat()
+        self.usn.heartbeat()
 
         logger.debug("Verificando modo do MOA...")
         if not self.usn.modo_autonomo:
@@ -295,7 +296,7 @@ class ModoManual(State):
         self.usn.ler_valores()
         logger.debug("Heartbeat...")
         logger.debug("")
-        # self.usn.heartbeat()
+        self.usn.heartbeat()
 
         logger.debug(f"[USN] Leitura de Nível:                   {tda.TomadaAgua.nivel_montante.valor:0.3f}")
         logger.debug(f"[USN] Potência no medidor:                {se.Subestacao.medidor_usina.valor:0.3f}")
@@ -303,7 +304,7 @@ class ModoManual(State):
 
         for ug in self.usn.ugs:
             logger.debug(f"[UG{ug.id}] Unidade:                            \"{UG_SM_STR_DCT[ug.codigo_state]}\"")
-            logger.debug(f"[UG{ug.id}] Etapa atual:                        \"{UG_STR_DCT_ETAPAS[ug.etapa_atual]}\"")
+            logger.debug(f"[UG{ug.id}] Etapa atual:                        \"{UG_STR_DCT_ETAPAS[ug.etapa]}\"")
             logger.debug(f"[UG{ug.id}] Leitura de Potência:                {ug.leitura_potencia}")
             logger.debug("")
             ug.setpoint = ug.leitura_potencia
@@ -314,7 +315,7 @@ class ModoManual(State):
         logger.debug("Escrevendo valores no Banco...")
         self.usn.escrever_valores()
 
-        sleep(1)
+        sleep(30)
 
         if self.usn.modo_autonomo:
             logger.debug("Comando acionado: \"Habilitar modo autônomo\"")
