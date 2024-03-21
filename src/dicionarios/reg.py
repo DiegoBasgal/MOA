@@ -480,6 +480,8 @@ REG_CLP = {
         "NV_JUSANTE_GRADE_CP1":                         34,
         "NV_JUSANTE_CP1":                               36,
         "NV_JUSANTE_CP2":                               38,
+        "DIFERENCIAL_GRADE_CP1":                        44,
+        "DIFERENCIAL_GRADE_CP2":                        46,
 
 
         ## ENTRADAS_DIGITAIS

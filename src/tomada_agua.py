@@ -129,7 +129,8 @@ class TomadaAgua:
         cálculos futuros de ajuste de potência.
         """
 
-        if self.ema_anterior == -1:
+
+        if self.ema_anterior == -1 and self.nivel_montante.valor != None:
             self.ema_anterior = 0
             self.nivel_montante_anterior = self.nivel_montante.valor
         else:

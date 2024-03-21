@@ -244,9 +244,10 @@ class LeituraSoma:
 
 
 class LeituraSubtracao:
-    def __init__(self, leituras: "list[LeituraModbus]"=None, descricao: "str"=None):
+    def __init__(self, leituras: "list[LeituraModbus]"=None, escala: "int"=1, descricao: "str"=None):
 
         self.__leituras = leituras
+        self.__escala = escala
         self.__descricao = descricao
 
     @property
@@ -256,4 +257,4 @@ class LeituraSubtracao:
     @property
     def valor(self) -> "float":
 
-        return self.__leituras[0] - self.__leituras[1]
+        return (self.__leituras[0].valor - self.__leituras[1].valor) * self.__escala

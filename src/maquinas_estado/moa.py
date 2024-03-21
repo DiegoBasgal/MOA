@@ -313,6 +313,11 @@ class ModoManual(State):
 
         if self.usn.modo_autonomo:
             logger.debug("Comando acionado: \"Habilitar modo autônomo\"")
+
+            for ug in self.usn.ugs:
+                ug.setpoints_anteriores = []
+                ug.potencias_anteriores = []
+
             self.usn.ler_valores()
             sleep(1)
             return ControleDados(self.usn)

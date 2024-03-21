@@ -1,1 +1,18 @@
-{"kp": 3.0, "ki": 0.05, "kd": 0.0, "kie": 0.1, "saida_ie_inicial": 0.1, "nv_alvo": 462.2, "nv_minimo": 461.37, "nv_maximo": 462.37, "nv_religamento": 461.5, "pot_minima": 911.0, "pot_maxima_ug": 3037.5, "pot_maxima_ug1": 3037.0, "pot_maxima_ug2": 3037.0, "margem_pot_critica": 0.035, "pot_maxima_alvo": 6070.0, "pot_maxima_usina": 6075.0}
+{
+    "kp": 3.0,
+    "ki": 0.05,
+    "kd": 0.0,
+    "kie": 0.1,
+    "saida_ie_inicial": 0.1,
+    "nv_alvo": 462.1,
+    "nv_minimo": 461.37,
+    "nv_maximo": 462.37,
+    "nv_religamento": 461.5,
+    "pot_minima": 911.0,
+    "pot_maxima_ug": 3037.5,
+    "pot_maxima_ug1": 3037.0,
+    "pot_maxima_ug2": 3037.0,
+    "margem_pot_critica": 0.035,
+    "pot_maxima_alvo": 6070.0,
+    "pot_maxima_usina": 6075.0
+}

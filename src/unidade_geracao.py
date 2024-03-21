@@ -67,20 +67,13 @@ class UnidadeGeracao:
         self.__leitura_posicao_distribuidor = LeituraModbus(
             self.rv[f"UG{self.id}"],
             REG_CLP[f"UG{self.id}"]["RV_FEEDBACK_DISTRIBUIDOR_PU"],
+            escala=0.01,
             descricao=f"[UG{self.id}][RV] Leitura Posição Distribuidor"
         )
-        self.__nivel_montante = LeituraModbusFloat(
-            self.clp['TDA'],
-            REG_CLP["TDA"]["NV_MONTANTE"],
-            wordorder=False,
-            descricao="[TDA] Leitura Nível Montante"
-        )
-
-        self.__perda_grade: "dict[str, LeituraModbus]" = {}
-        self.__perda_grade[f"UG{self.id}"] = LeituraModbusFloat(
+        self.__perda_grade = LeituraModbusFloat(
             self.clp["TDA"],
-            REG_CLP["TDA"][f"NV_JUSANTE_GRADE_CP{self.id}"],
-            descricao="[TDA] Leitura Perda Grade CP1"
+            REG_CLP["TDA"][f"DIFERENCIAL_GRADE_CP{self.id}"],
+            descricao=f"[TDA] Leitura Perda Grade CP{self.id}"
         )
 
         self.__init_registro_estados: "int" = 0
@@ -108,7 +101,6 @@ class UnidadeGeracao:
         self.amostras_pot_mppt: "int" = 5
 
         self.atenuacao: "int" = 0
-        self.atenuacao_anterior: "int" = 0
         self.tempo_normalizar: "int" = 0
 
         self.sp_anterior: "float" = 0
@@ -127,6 +119,7 @@ class UnidadeGeracao:
 
         self.potencias_anteriores: "list[int]" = []
         self.setpoints_anteriores: "list[int]" = []
+        self.media_amostras_distribuidor: "list[int]" = []
         self.condicionadores_ativos: "list[c.CondicionadorBase]" = []
 
         self.aux_tempo_sincronizada: "datetime" = 0
@@ -530,19 +523,31 @@ class UnidadeGeracao:
         Unidade.
         """
 
+        self.coletar_amostras_distribuidor()
+        media_distribuidor = sum(l_dist for l_dist in self.media_amostras_distribuidor) / len(self.media_amostras_distribuidor)
+
         cont_mppt = 0
         for pot in self.potencias_anteriores:
-            if pot + 300 < setpoint_kw:
+            if pot+50 < setpoint_kw:
                 cont_mppt += 1
 
-        if cont_mppt == self.amostras_pot_mppt and self.cfg['pot_minima_ugs'] <= setpoint_kw <= self.cfg["pot_maxima_ugs"]:
+        debug_log.debug("")
+        debug_log.debug("")
+        debug_log.debug(f"________________________________________________________________________")
+        debug_log.debug(f"[UG{self.id}] Amostras Potência             ->    {self.potencias_anteriores}")
+        debug_log.debug("")
+        # debug_log.debug(f"[UG{self.id}] Amostras Posição Distribuidor ->    {self.media_amostras_distribuidor}")
+        # debug_log.debug(f"[UG{self.id}] Média Amostras Distribuidor:        {media_distribuidor}")
+        # debug_log.debug("")
+
+        if cont_mppt == self.amostras_pot_mppt and self.cfg['pot_minima'] <= setpoint_kw <= self.cfg["pot_maxima_ug"]:
             setpoint_kw = self.ajustar_mppt(
                 [self.leitura_potencia, self.potencias_anteriores[-1]],
                 [self.setpoints_anteriores[-1], self.setpoints_anteriores[-2]],
                 [self.leitura_posicao_distribuidor, self.pos_dist_anterior],
             )
 
-            setpoint_kw = self.cfg['pot_minima_ugs'] if setpoint_kw <= self.cfg['pot_minima_ugs'] else setpoint_kw
+            setpoint_kw = self.cfg['pot_minima'] if setpoint_kw <= self.cfg['pot_minima'] else setpoint_kw
 
             logger.debug(f"[UG{self.id}]          Enviando setpoint:")
             logger.debug(f"[UG{self.id}]          - \"MPPT\":                  {setpoint_kw:0.0f} kW")
@@ -554,6 +559,7 @@ class UnidadeGeracao:
         self.pos_dist_anterior = self.leitura_posicao_distribuidor
 
         self.popular_listas_sp_pot()
+        self.media_amostras_distribuidor = []
 
         try:
             self.setpoint_minimo = self.cfg["pot_minima"]
@@ -682,7 +688,7 @@ class UnidadeGeracao:
         FUnção para popular listas com leituras e cálculos de potência e setpoint,
         para controle do MPPT.
         """
-        if self.etapa == UG_PARADA:
+        if self.etapa == UG_PARADA or (self.cfg['pot_minima'] < self.leitura_potencia < self.cfg['pot_minima'] + 500):
             self.potencias_anteriores = []
 
         elif self.etapa == UG_SINCRONIZADA:
@@ -692,20 +698,27 @@ class UnidadeGeracao:
             if len(self.setpoints_anteriores) == self.amostras_sp_mppt + 1:
                 self.setpoints_anteriores.pop(-1)
 
-
-            if len(self.potencias_anteriores) == self.amostras_pot_mppt and self.cfg['pot_minima_ugs'] <= self.leitura_potencia <= self.cfg['pot_maxima_ugs']:
+            if len(self.potencias_anteriores) == self.amostras_pot_mppt and self.cfg['pot_minima'] <= self.leitura_potencia <= self.cfg['pot_maxima_ug']:
                 self.potencias_anteriores.pop(0)
                 self.potencias_anteriores.append(self.leitura_potencia)
 
-            elif self.cfg['pot_minima_ugs'] <= self.leitura_potencia <= self.cfg['pot_maxima_ugs']:
+            elif self.cfg['pot_minima'] <= self.leitura_potencia <= self.cfg['pot_maxima_ug']:
                 self.potencias_anteriores.append(self.leitura_potencia)
 
-            if len(self.setpoints_anteriores) == self.amostras_sp_mppt and self.cfg['pot_minima_ugs'] <= self.setpoint <= self.cfg['pot_maxima_ugs']:
+            if len(self.setpoints_anteriores) == self.amostras_sp_mppt and self.cfg['pot_minima'] <= self.setpoint <= self.cfg['pot_maxima_ug']:
                 self.setpoints_anteriores.pop(0)
                 self.setpoints_anteriores.append(self.setpoint)
 
-            elif self.cfg['pot_minima_ugs'] <= self.setpoint <= self.cfg['pot_maxima_ugs']:
+            elif self.cfg['pot_minima'] <= self.setpoint <= self.cfg['pot_maxima_ug']:
                 self.setpoints_anteriores.append(self.setpoint)
+
+
+    def coletar_amostras_distribuidor(self) -> "int":
+        for n in range(5):
+            if self.leitura_posicao_distribuidor in (0, None):
+                continue
+            self.media_amostras_distribuidor.append(self.leitura_posicao_distribuidor)
+            sleep(0.5)
 
 
     def ajustar_mppt(self, potencia, setpoint, abertura_dist) -> "float":
@@ -714,25 +727,39 @@ class UnidadeGeracao:
         por MPPT (Maximum Power Point Tracking)
         """
 
-        setpoint_saida = max(min(setpoint[0], self.cfg['pot_maxima_ugs']), self.cfg['pot_minima_ugs'])
-        delta = 35
+        debug_log.debug(f"[UG{self.id}] Potência:")
+        debug_log.debug(f"[UG{self.id}]     Atual    ->             {potencia[0]}")
+        debug_log.debug(f"[UG{self.id}]     Anterior ->             {potencia[1]}")
+        debug_log.debug("")
+        debug_log.debug(f"[UG{self.id}] Distribuidor:")
+        debug_log.debug(f"[UG{self.id}]     Atual    ->             {abertura_dist[0]}")
+        debug_log.debug(f"[UG{self.id}]     Anterior ->             {abertura_dist[1]}")
+        debug_log.debug("")
+
+        setpoint_saida = max(min(setpoint[0], self.cfg['pot_maxima_ug']), self.cfg['pot_minima'])
+        delta = 20
 
         if potencia[0] < potencia[1]:
             if abertura_dist[0] < abertura_dist[1]:
+                debug_log.debug(f"[UG{self.id}] MPPT Potência [0] < [1] -> Distribuidor [0] < [1]: Delta +")
                 setpoint_saida += delta
             else:
+                debug_log.debug(f"[UG{self.id}] MPPT Potência [0] < [1] -> Distribuidor [0] >= [1]: Delta -")
                 setpoint_saida -= delta
 
         elif potencia[0] == potencia[1]:
+                debug_log.debug(f"[UG{self.id}] MPPT Potência [0] = [1]: Delta -")
                 setpoint_saida -= delta
 
         else:
-            if abertura_dist[0] < abertura_dist[1]:
+            if abertura_dist[0] - 0.3 < abertura_dist[1]:
+                debug_log.debug(f"[UG{self.id}] MPPT Distribuidor [0] < [1]: Delta -")
                 setpoint_saida -= delta
             else:
+                debug_log.debug(f"[UG{self.id}] MPPT Distribuidor [0] >= [1]: Delta +")
                 setpoint_saida += delta
 
-        setpoint_saida = max(min(setpoint_saida, self.cfg['pot_maxima_ugs']), self.cfg['pot_minima_ugs'])
+        setpoint_saida = max(min(setpoint_saida, self.cfg['pot_maxima_ug']), self.cfg['pot_minima'])
 
         return setpoint_saida
 
@@ -827,7 +854,7 @@ class UnidadeGeracao:
 
         flags = 0
         atenuacao = 0
-        logger.debug(f"[UG{self.id}]          Verificando Atenuadores...")
+        logger.debug(f"[UG{self.id}]          Verificando Atenuadores...") if self.etapa == UG_SINCRONIZADA else None
 
         for condic in self.condicionadores_atenuadores:
             atenuacao = max(atenuacao, condic.valor)
@@ -835,25 +862,26 @@ class UnidadeGeracao:
                 flags += 1
                 logger.debug(f"[UG{self.id}]          - \"{condic.descricao}\":")
                 logger.debug(f"[UG{self.id}]                                     Leitura: {condic.leitura:3.2f} | Atenuação: {atenuacao:0.4f}")
-                self.atenuacao = atenuacao
-                self.atenuacao_anterior = atenuacao
 
-                # if atenuacao > self.atenuacao_anterior:
-                # else:
-                #     self.atenuacao = self.atenuacao_anterior
-
+                if flags == 1:
+                    self.atenuacao = atenuacao
+                elif atenuacao > self.atenuacao:
+                    self.atenuacao = atenuacao
+                else:
+                    pass
                 atenuacao = 0
 
-        if flags == 0:
+        if flags == 0 and self.etapa == UG_SINCRONIZADA:
             logger.debug(f"[UG{self.id}]          Não há necessidade de Atenuação.")
 
         ganho = 1 - self.atenuacao
         aux = self.setpoint
         self.atenuacao = 0
         if (self.setpoint > self.setpoint_minimo) and self.setpoint * ganho > self.setpoint_minimo:
-            self.setpoint = self.setpoint * ganho
+            setpoint_atenuado = self.setpoint - 0.5 * (self.setpoint -  (self.setpoint * ganho))
+            self.setpoint = min(max(setpoint_atenuado, self.setpoint_minimo), self.setpoint_maximo)
 
-        elif (self.setpoint * ganho < self.setpoint_minimo) and (self.setpoint > self.setpoint_minimo):
+        elif self.setpoint > self.setpoint_minimo and (self.setpoint * ganho) < self.setpoint_minimo:
             self.setpoint = self.setpoint_minimo
 
         if self.etapa == UG_SINCRONIZADA and ganho < 1:
@@ -1431,8 +1459,7 @@ class UnidadeGeracao:
         """
 
         # CONDICIONADORES ESSENCIAIS
-        self.l_perda_grade_ug = LeituraSubtracao([self.__nivel_montante.valor, self.__perda_grade[f"UG{self.id}"].valor], descricao=f"[UG{self.id}] Perda na Grade")
-        self.condic_perda_grade_ug = c.CondicionadorExponencial(self.l_perda_grade_ug, CONDIC_INDISPONIBILIZAR, valor_base=0.4, valor_limite=0.8)
+        self.condic_perda_grade_ug = c.CondicionadorExponencial(self.__perda_grade, CONDIC_INDISPONIBILIZAR)
         self.condicionadores_atenuadores.append(self.condic_perda_grade_ug)
 
         # Temperaturas
@@ -1460,7 +1487,7 @@ class UnidadeGeracao:
             # Óleo UHRV
         self.brd_t_oleo_uhrv = 0
         self.l_temp_oleo_uhrv = LeituraModbusFloat(self.clp[f"UG{self.id}"], REG_CLP[f"UG{self.id}"]["OLEO_UHRV_TMP"], descricao=f"[UG{self.id}] Óleo UHRV Temperatura")
-        self.condic_temp_oleo_uhrv = c.CondicionadorExponencial(self.l_temp_oleo_uhrv, CONDIC_INDISPONIBILIZAR, valor_base=39, valor_limite=44)
+        self.condic_temp_oleo_uhrv = c.CondicionadorExponencial(self.l_temp_oleo_uhrv, CONDIC_INDISPONIBILIZAR, ordem=1)
         self.condicionadores_essenciais.append(self.condic_temp_oleo_uhrv)
         self.condicionadores_atenuadores.append(self.condic_temp_oleo_uhrv)
 
