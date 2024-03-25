@@ -3,7 +3,8 @@ import logging
 import threading
 import traceback
 
-from logging.config import fileConfig
+from sys import stderr
+from logging import handlers
 from pyModbusTCP.server import ModbusServer, DataBank
 
 import usn as usn
@@ -15,8 +16,27 @@ from dicts.dict import compartilhado
 from funcs.temporizador import Temporizador
 
 
-fileConfig("C:/opt/operacao-autonoma/logger_config.ini")
-logger = logging.getLogger("sim")
+rootLogger = logging.getLogger()
+if (rootLogger.hasHandlers()):
+    rootLogger.handlers.clear()
+rootLogger.setLevel(logging.NOTSET)
+
+logger = logging.getLogger(__name__)
+if (logger.hasHandlers()):
+    logger.handlers.clear()
+logger.setLevel(logging.NOTSET)
+
+logFormatter = logging.Formatter("%(asctime)s [SIM] %(message)s")
+
+ch = logging.StreamHandler(stderr)  # log para sdtout
+ch.setFormatter(logFormatter)
+ch.setLevel(logging.INFO)
+logger.addHandler(ch)
+
+fh = handlers.TimedRotatingFileHandler(filename="C:/opt/SEB/seb2/operacao-autonoma/simulador/logs/SIM.log", when='midnight', interval=1, backupCount=7)
+fh.setFormatter(logFormatter)
+fh.setLevel(logging.DEBUG)
+logger.addHandler(fh)
 
 
 if __name__ == '__main__':
@@ -54,18 +74,18 @@ if __name__ == '__main__':
         thread_temporizador = threading.Thread(target = tempo.run, args=())
         thread_usina = threading.Thread(target = usn.Usn(compartilhado, sim_db, tempo).run, args=())
         thread_gui = threading.Thread(target = gui.start_gui, args=(compartilhado,))
-        thread_controlador = threading.Thread(target=controlador.Controlador(compartilhado,).run, args=())
+        # thread_controlador = threading.Thread(target=controlador.Controlador(compartilhado,).run, args=())
 
         logger.debug("Rodando Simulador...")
         thread_temporizador.start()
         thread_usina.start()
         thread_gui.start()
-        thread_controlador.start()
+        # thread_controlador.start()
 
         thread_temporizador.join()
         thread_usina.join()
         thread_gui.join()
-        thread_controlador.join()
+        # thread_controlador.join()
 
         logger.debug("Fim da Simulação.")
 

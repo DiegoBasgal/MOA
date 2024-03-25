@@ -1,7 +1,6 @@
 import logging
 import numpy as np
 
-from logging.config import fileConfig
 from pyModbusTCP.server import DataBank
 
 from dicts.const import *
@@ -9,8 +8,7 @@ from dicts.regs import REG
 from funcs.temporizador import Temporizador
 
 
-fileConfig("C:/opt/operacao-autonoma/logger_config.ini")
-logger = logging.getLogger("sim")
+logger = logging.getLogger("__main__")
 
 
 class Se:
