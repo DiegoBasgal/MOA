@@ -2,26 +2,29 @@ import pytz
 import logging
 import traceback
 
+import src.subestacao as se
+import src.funcoes.leitura as lei
+import src.maquinas_estado.ug as sm
+import src.funcoes.condicionador as c
+import src.conectores.banco_dados as bd
+import src.conectores.servidores as srv
+
 from time import sleep, time
+from threading import Thread
 from datetime import datetime
 
+from src.dicionarios.reg import *
 from src.dicionarios.const import *
 
-from src.funcoes.leitura import *
-from src.maquinas_estado.ug import *
-from src.funcoes.condicionador import *
-
-import src.ocorrencias as oco
-from src.conectores.servidores import Servidores
-from src.conectores.banco_dados import BancoDados
 
 logger = logging.getLogger("logger")
+debug_log = logging.getLogger("debug")
+
 
 class UnidadeGeracao:
-    def __init__(self, id: "int", cfg=None, db: "BancoDados"=None):
+    def __init__(self, id: "int", cfg=None, db: "bd.BancoDados"=None):
 
         # VERIFICAÇÃO DE ARGUMENTOS
-
         if id <= 0:
             logger.error(f"[UG{self.id}] A Unidade não pode ser instanciada com o ID <= \"0\" ou vazio.")
             raise ValueError
@@ -30,332 +33,229 @@ class UnidadeGeracao:
 
         self.db = db
         self.cfg = cfg
-        self.clp = Servidores.clp
-        self.oco = oco.OcorrenciasUnidades(self, self.clp, self.db)
+        self.clp = srv.Servidores.clp
 
-
-        # ATRIBUIÇÃO DE VARIÁVEIS PRIVADAS
-
-        self.__potencia_ativa_kW = LeituraModbus(
-            "[USN] Potência Usina",
-            self.clp["SA"],
-            REG["SA"]["EA_PM_810_Potencia_Ativa"],
-            1,
-            op=4
-        )
-        """
-        self.__leitura_pressao_uhrv = LeituraModbus(
-            f"[UG{self.id}] Leitura Pressão UHRV",
+        # PRIVADAS
+        self.__l_potencia: "lei.LeituraModbus" = lei.LeituraModbus(
             self.clp[f"UG{self.id}"],
-            REG[f"UG{self.id}"]["RA_UHRV_Pressao"],
-            escala=0.1,
-            op=4
-        )
-        self.__leitura_rotacao = LeituraModbus(
-            f"[UG{self.id}] Leitura Rotação",
-            self.clp[f"UG{self.id}"],
-            REG[f"UG{self.id}"]["RA_ReferenciaCarga"],
-            escala=0.1,
-            op=4
-        )
-        """
-
-        self.__leitura_horimetro_hora = LeituraModbus(
-            f"[UG{self.id}] Horímetro Hora",
-            self.clp[f"UG{self.id}"],
-            REG[f"UG{self.id}"]["RA_Horimetro_Gerador"],
+            REG_UG[f"UG{self.id}"]["PM710_POTENCIA_ATIVA"],
             op=4,
+            descr=f"[UG{self.id}] Leitura Potência",
         )
-        self.__leitura_horimetro_min = LeituraModbus(
-            f"[UG{self.id}] Horímetro Min",
+        self.__l_pressao_uhrv = lei.LeituraModbus(
             self.clp[f"UG{self.id}"],
-            REG[f"UG{self.id}"]["RA_Horimetro_Gerador_min"],
+            REG_UG[f"UG{self.id}"]["UHRV_PRESSAO"],
+            escala=0.1,
             op=4,
-            escala=1/60
+            descr=f"[UG{self.id}] Leitura Pressão UHRV"
         )
-        """
-        __C1 = LeituraModbusCoil(
-            descr=f"UG{self.id}_Sincronizada",
-            modbus_client=self.clp[f"UG{self.id}"],
-            registrador=REG[f"UG{self.id}"]["ED_DisjGeradorFechado"],
-        )
-        __C2 = LeituraModbusCoil(
-            descr=f"UG{self.id}_Parando",
-            modbus_client=self.clp[f"UG{self.id}"],
-            registrador=REG[f"UG{self.id}"]["RD_ParandoEmAuto"],
-        )
-        __C3 = LeituraModbusCoil(
-            descr=f"UG{self.id}_Parada",
-            modbus_client=self.clp[f"UG{self.id}"],
-            registrador=REG[f"UG{self.id}"]["ED_RV_MaquinaParada"],
-        )
-        __C4 = LeituraModbusCoil(
-            descr=f"UG{self.id}_Sincronizando",
-            modbus_client=self.clp[f"UG{self.id}"],
-            registrador=REG[f"UG{self.id}"]["RD_PartindoEmAuto"],
-        )
-        self.__leitura_etapa_atual = LeituraComposta(
-            f"ug{self.id}_Operacao_EtapaAtual",
-            leitura1=__C1,
-            leitura2=__C2,
-            leitura3=__C3,
-            leitura4=__C4,
-        )
-        """
-
-        # Leitura de Etapa Utilizada apenas no Simulador (Remover em Produção!):
-        self.__leitura_etapa_atual = LeituraModbus(
-            f"[UG{self.id}] Leitura Etapa Atual",
+        self.__l_rotacao = lei.LeituraModbus(
             self.clp[f"UG{self.id}"],
-            REG[f"UG{self.id}"]["SIM_Etapa_Atual"]
+            REG_UG[f"UG{self.id}"]["REFERENCIA_CARGA"],
+            escala=0.1,
+            op=4,
+            descr=f"[UG{self.id}] Leitura Rotação"
+        )
+        self.__l_etapa_atual = lei.LeituraComposta(
+            leitura1=lei.LeituraModbusCoil(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}"]["DJ_GERADOR_FECHADO"]),
+            leitura2=lei.LeituraModbusCoil(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}"]["PARANDO_AUTO"]),
+            leitura3=lei.LeituraModbusCoil(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}"]["RV_MAQ_PARADA"]),
+            leitura4=lei.LeituraModbusCoil(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}"]["PARTINDO_AUTO"]),
+            descr=f"[UG{self.id}] Etapa Atual",
+        )
+        self.__l_horimetro_h = lei.LeituraModbus(
+            self.clp[f"UG{self.id}"],
+            REG_UG[f"UG{self.id}"]["HORIMETRO_GERADOR"],
+            op=4,
+            descr=f"[UG{self.id}] Horímetro Horas"
+        )
+        self.__l_horimetro_m = lei.LeituraModbus(
+            self.clp[f"UG{self.id}"],
+            REG_UG[f"UG{self.id}"]["HORIMETRO_GERADOR_MIN"],
+            escala=1/60,
+            op=4,
+            descr=f"[UG{self.id}] Horímetro Minutos"
+        )
+        self.__l_horimetro: "lei.LeituraSoma" = lei.LeituraSoma(
+            self.__l_horimetro_h,
+            self.__l_horimetro_m,
+            descr=f"[UG{self.id}] Horímetro",
         )
 
+        self.__iniciar_cx_esp: "int" = -1
+        self.__init_registro_estados: "int" = -1
+
+        self.__limite_tentativas: "int" = 3
         self.__tempo_entre_tentativas: "int" = 0
-        self.__limite_tentativas_de_normalizacao: "int" = 2
 
-        self.__prioridade: "int" = 0
-        self.__codigo_state: "int" = 0
-        self.__ultima_etapa_atual: "int" = 0
+        # PROTEGIDAS
+        self._estado: "int" = 0
+        self._setpoint: "int" = 0
+        self._prioridade: "int" = 0
+        self._tentativas_normalizacao: "int" = 0
 
-        self.__setpoint: "int" = 0
-        self.__tentativas_de_normalizacao: "int" = 0
+        self._setpoint_minimo: "int" = self.cfg["pot_minima_ugs"]
+        self._setpoint_maximo: "int" = self.cfg[f"pot_maxima_ug{self.id}"]
 
-        self.__setpoint_minimo: "int" = self.cfg["pot_minima"]
-        self.__setpoint_maximo: "int" = self.cfg[f"pot_maxima_ug{self.id}"]
-
-        self.__condicionadores_atenuadores: "list[CondicionadorBase]" = []
-
-
-        # ATRIBUIÇÃO DE VARIÁVEIS PROTEGIDAS
-
-        self._leitura_potencia: "LeituraModbus" = LeituraModbus(
-            f"UG{self.id}_Potência",
-            self.clp[f"UG{self.id}"],
-            REG[f"UG{self.id}"]["RA_PM_710_Potencia_Ativa"],
-            op=4,
-        )
-        self._leitura_horimetro: "LeituraSoma" = LeituraSoma(
-            f"UG{self.id}_Horímetro",
-            self.__leitura_horimetro_hora,
-            self.__leitura_horimetro_min
-        )
-
-
-        # ATRIBUIÇÃO DE VARIÁVEIS PÚBLICAS
-
+        # PÚBLICAS
         self.pot_alvo_anterior: "int" = -1
-        self.ajuste_inicial_cx_esp: "int" = -1
 
         self.tempo_normalizar: "int" = 0
+        self.ultima_etapa_atual: "int" = 0
         self.tentativas_sincronismo: "int" = 0
         self.tentativas_aguardar_rotacao: "int" = 0
 
         self.borda_parar: "bool" = False
         self.limpeza_grade: "bool" = False
         self.atraso_rotacao: "bool" = False
+        self.manter_unidade: "bool" = False
         self.normalizacao_agendada: "bool" = False
 
         self.temporizar_rotacao: "bool" = False
         self.temporizar_partida: "bool" = False
         self.temporizar_normalizacao: "bool" = False
 
-        self.aux_tempo_sincronizada: "datetime" = 0
+        self.condicionadores: "list[c.CondicionadorBase]" = []
+        self.condicionadores_essenciais: "list[c.CondicionadorBase]" = []
+        self.condicionadores_atenuadores: "list[c.CondicionadorBase]" = []
 
+        self.aux_tempo_sincronizada: "datetime" = 0
         self.ts_auxiliar: "datetime" = self.get_time()
 
-        self.condicionadores_atenuadores.append(self.oco.c_pressao_cx_espiral)
+        self.carregar_leituras()
 
-
-    # Property -> VARIÁVEIS PRIVADAS
 
     @property
     def id(self) -> "int":
         # PROPRIEDADE -> Retrona o ID da Unidade.
-
         return self.__id
 
     @property
     def manual(self) -> "bool":
         # PROPRIEDADE -> Verifica se a Unidade está em modo Manual.
-
-        return isinstance(self.__next_state, StateManual)
+        return isinstance(self.__next_state, sm.StateManual)
 
     @property
     def restrito(self) -> "bool":
         # PROPRIEDADE -> Verifica se a Unidade está em modo Restrito.
-
-        return isinstance(self.__next_state, StateRestrito)
+        return isinstance(self.__next_state, sm.StateRestrito)
 
     @property
     def disponivel(self) -> "bool":
         # PROPRIEDADE -> Verifica se a Unidade está em modo Disponível.
-
-        return isinstance(self.__next_state, StateDisponivel)
+        return isinstance(self.__next_state, sm.StateDisponivel)
 
     @property
     def indisponivel(self) -> "bool":
         # PROPRIEDADE -> Verifica se a Unidade está em modo Indisponível.
-
-        return isinstance(self.__next_state, StateIndisponivel)
-
-    @property
-    def tempo_entre_tentativas(self) -> "int":
-        # PROPRIEDADE -> Retorna o tempo pré-dfinido entre tentativas de normalização.
-
-        return self.__tempo_entre_tentativas
+        return isinstance(self.__next_state, sm.StateIndisponivel)
 
     @property
-    def limite_tentativas_de_normalizacao(self) -> "int":
-        # PROPRIEDADE -> Retorna o limite pré-definido entre tentativas de normalização.
-
-        return self.__limite_tentativas_de_normalizacao
-
-    @property
-    def leitura_potencia(self) -> "int | float":
+    def potencia(self) -> "int | float":
         # PROPRIEDADE -> Retorna a leitura de potência atual da Unidade.
-
-        return self._leitura_potencia.valor
+        return self.__l_potencia.valor
 
     @property
     def leitura_horimetro(self) -> "int | float":
         # PROPRIEDADE -> Retorna a leitura de horas de geração da Unidade.
-
-        return self._leitura_horimetro.valor
+        return self.__l_horimetro.valor
 
     @property
     def etapa_atual(self) -> "int":
         # PROPRIEDADE -> Retorna a etapa atual da Unidade.
-
-        # Retorno apenas para o Simulador (Remover em Produção!):
-        return self.__leitura_etapa_atual.valor
-
-        # try:
-        #     response = self.__leitura_etapa_atual.valor
-
-        #     if response == 5:
-        #         return UG_SINCRONIZADA
-        #     elif 2 <= response <= 3:
-        #         return UG_PARANDO
-        #     elif 4 <= response <= 7:
-        #         return UG_PARADA
-        #     elif 8 <= response <= 15:
-        #         return UG_SINCRONIZANDO
-        #     else:
-        #         return self.__ultima_etapa_atual
-
-        # except Exception:
-        #     logger.error(f"[UG{self.id}] Não foi possível realizar a leitura de Etapa Atual.")
-        #     logger.debug(traceback.format_exc())
-        #     return self.__ultima_etapa_atual
+        try:
+            response = self.__l_etapa_atual.valor
+            if response == 1:
+                return UG_SINCRONIZADA
+            elif 2 <= response <= 3:
+                return UG_PARANDO
+            elif 4 <= response <= 7:
+                return UG_PARADA
+            elif 8 <= response <= 15:
+                return UG_SINCRONIZANDO
+        except Exception:
+            logger.error(f"[UG{self.id}] Não foi possível realizar a leitura de Etapa Atual.")
+            logger.debug(traceback.format_exc())
+            return self.ultima_etapa_atual
 
 
-    # Property/Setter -> VARIÁVEIS PROTEGIDAS
+    @property
+    def estado(self) -> "int":
+        # PROPRIEDADE -> Retorna o valor de estado da Unidade.
+        return self._estado
+
+    @estado.setter
+    def estado(self, var: "int") -> "None":
+        # SETTER -> Atribui o novo valor de estado da Unidade.
+        self._estado = var
 
     @property
     def prioridade(self) -> "int":
         # PROPRIEDADE -> Retorna a prioridade da Unidade.
-
-        return self.__prioridade
+        return self._prioridade
 
     @prioridade.setter
     def prioridade(self, var: "int") -> "None":
         # SETTER -> Atribui o novo valor de prioridade da Unidade.
-
-        self.__prioridade = var
-
-    @property
-    def codigo_state(self) -> "int":
-        # PROPRIEDADE -> Retorna o valor de estado da Unidade.
-
-        return self.__codigo_state
-
-    @codigo_state.setter
-    def codigo_state(self, var: "int") -> "None":
-        # SETTER -> Atribui o novo valor de estado da Unidade.
-
-        self.__codigo_state = var
+        self._prioridade = var
 
     @property
     def setpoint(self) -> "int":
         # PROPRIEDADE -> Retorna o valor de setpoint da Unidade.
-
-        return self.__setpoint
+        return self._setpoint
 
     @setpoint.setter
     def setpoint(self, var: "int"):
         # SETTER -> Atribui o novo valor de setpoint da Unidade.
-
         if self.limpeza_grade:
-            self.__setpoint = self.cfg["pot_limpeza_grade"]
+            self._setpoint = self.cfg["pot_limpeza_grade"]
         elif var < self.setpoint_minimo:
-            self.__setpoint = 0
+            self._setpoint = 0
         elif var > self.setpoint_maximo:
-            self.__setpoint = self.setpoint_maximo
+            self._setpoint = self.setpoint_maximo
         else:
-            self.__setpoint = int(var)
+            self._setpoint = int(var)
 
     @property
     def setpoint_minimo(self) -> "int":
         # PROPRIEDADE -> Retorna o valor de setpoint mínimo da Unidade.
-
-        return self.__setpoint_minimo
+        return self._setpoint_minimo
 
     @setpoint_minimo.setter
     def setpoint_minimo(self, var: "int"):
         # SETTER -> Atribui o novo valor de setpoint mínimo da Unidade.
-
-        self.__setpoint_minimo = var
+        self._setpoint_minimo = var
 
     @property
     def setpoint_maximo(self) -> "int":
         # PROPRIEDADE -> Retorna o valor de setpoint máximo da Unidade.
-
-        return self.__setpoint_maximo
+        return self._setpoint_maximo
 
     @setpoint_maximo.setter
     def setpoint_maximo(self, var: "int"):
         # SETTER -> Atribui o novo valor de setpoint máximo da Unidade.
-
-        self.__setpoint_maximo = var
+        self._setpoint_maximo = var
 
     @property
-    def tentativas_de_normalizacao(self) -> "int":
+    def tentativas_normalizacao(self) -> "int":
         # PROPRIEDADE -> Retorna o valor de tentativas de normalização da Unidade.
+        return self._tentativas_normalizacao
 
-        return self.__tentativas_de_normalizacao
-
-    @tentativas_de_normalizacao.setter
-    def tentativas_de_normalizacao(self, var: "int"):
+    @tentativas_normalizacao.setter
+    def tentativas_normalizacao(self, var: "int"):
         # SETTER -> Atribui o novo valor de tentativas de normalização da Unidade.
-
-        self.__tentativas_de_normalizacao = var
-
-    @property
-    def condicionadores_atenuadores(self) -> "list[CondicionadorBase]":
-        # PROPRIEDADE -> Retorna a lista de atenuadores da Unidade.
-
-        return self.__condicionadores_atenuadores
-
-    @condicionadores_atenuadores.setter
-    def condicionadores_atenuadores(self, var: "list[CondicionadorBase]") -> None:
-        # SETTER -> Atribui a nova lista de atenuadores da Unidade.
-
-        self.__condicionadores_atenuadores = var
+        self._tentativas_normalizacao = var
 
     @property
     def lista_ugs(self) -> "list[UnidadeGeracao]":
         # PROPRIEDADE -> Retorna a lista com todas as instâncias de Unidades de Geração.
-
         return self._lista_ugs
 
     @lista_ugs.setter
     def lista_ugs(self, var: "list[UnidadeGeracao]") -> None:
         # SETTER -> Atribui a nova lista com todas as instâncias de Unidades de Geração.
-
         self._lista_ugs = var
 
-
-    # FUNÇÕES
 
     @staticmethod
     def get_time() -> "datetime":
@@ -370,21 +270,21 @@ class UnidadeGeracao:
         Função para forçar o estado manual na Unidade.
         """
 
-        self.__next_state = StateManual(self)
+        self.__next_state = sm.StateManual(self)
 
     def forcar_estado_restrito(self) -> "None":
         """
         Função para forçar o estado restrito na Unidade.
         """
 
-        self.__next_state = StateRestrito(self)
+        self.__next_state = sm.StateRestrito(self)
 
     def forcar_estado_indisponivel(self) -> "None":
         """
         Função para forçar o estado indisponível na Unidade.
         """
 
-        self.__next_state = StateIndisponivel(self)
+        self.__next_state = sm.StateIndisponivel(self)
 
     def forcar_estado_disponivel(self) -> "None":
         """
@@ -392,7 +292,7 @@ class UnidadeGeracao:
         """
 
         self.reconhece_reset_alarmes()
-        self.__next_state = StateDisponivel(self)
+        self.__next_state = sm.StateDisponivel(self)
 
     def iniciar_ultimo_estado(self) -> "None":
         """
@@ -406,31 +306,53 @@ class UnidadeGeracao:
         estado = self.db.get_ultimo_estado_ug(self.id)[0]
 
         if estado == None:
-            self.__next_state = StateDisponivel(self)
+            self.__next_state = sm.StateDisponivel(self)
         else:
             if estado == UG_SM_MANUAL:
-                self.__next_state = StateManual(self)
+                self.__next_state = sm.StateManual(self)
             elif estado == UG_SM_DISPONIVEL:
-                self.__next_state = StateDisponivel(self)
+                self.__next_state = sm.StateDisponivel(self)
             elif estado == UG_SM_RESTRITA:
-                self.__next_state = StateRestrito(self)
+                self.__next_state = sm.StateRestrito(self)
             elif estado == UG_SM_INDISPONIVEL:
-                self.__next_state = StateIndisponivel(self)
+                self.__next_state = sm.StateIndisponivel(self)
             else:
                 logger.debug("")
-                logger.error(f"[UG{self.id}] Não foi possível ler o último estado da Unidade")
-                logger.info(f"[UG{self.id}] Acionando estado \"Manual\".")
-                self.__next_state = StateManual(self)
+                logger.error(f"[UG{self.id}] Não foi possível ler o último estado da Unidade.")
+                self.__next_state = sm.StateManual(self)
+
+
+    def atualizar_registro_estados(self) -> "None":
+        """
+        Função para registro de troca de estados no banco de dados.
+
+        A função é chamada na inicialização da classe de estado no momento da troca.
+        """
+
+        if self.__init_registro_estados == -1:
+            self.__init_registro_estados = 0
+        else:
+            try:
+                self.db.update_controle_estados([
+                    time(),
+                    UG_SM_STR_DCT[self.estado] if self.id == 1 else "",
+                    UG_SM_STR_DCT[self.estado] if self.id == 2 else "",
+                    UG_SM_STR_DCT[self.estado] if self.id == 3 else "",
+                ])
+
+            except Exception:
+                logger.error(f"[UG{self.id}] Houve um erro ao inserir os dados para controle de troca de estados no Banco de Dados.")
+                logger.debug(traceback.format_exc())
+
 
     def atualizar_modbus_moa(self) -> "None":
         """
         Função para atualização do estado da Unidade no CLP - MOA.
         """
 
-        return
+        self.clp["MOA"].write_single_register(REG_MOA[f"MOA_OUT_STATE_UG{self.id}"], self.estado)
+        self.clp["MOA"].write_single_register(REG_MOA[f"MOA_OUT_ETAPA_UG{self.id}"], self.etapa_atual)
 
-        self.clp["MOA"].write_single_register(REG["MOA"][f"OUT_STATE_UG{self.id}"], self.codigo_state)
-        self.clp["MOA"].write_single_register(REG["MOA"][f"OUT_ETAPA_UG{self.id}"], self.etapa_atual)
 
     def normalizar_unidade(self) -> "bool":
         """
@@ -441,16 +363,23 @@ class UnidadeGeracao:
         aciona a função de reconhecimento e reset de alarmes da Unidade.
         """
 
-        if self.tentativas_de_normalizacao > self.limite_tentativas_de_normalizacao:
-            logger.warning(f"[UG{self.id}] A UG estourou as tentativas de normalização, indisponibilizando Unidade.")
-            return False
+        if self.etapa_atual == UG_PARADA:
+            if self.tentativas_normalizacao > self.__limite_tentativas:
+                logger.warning(f"[UG{self.id}] A UG estourou as tentativas de normalização, indisponibilizando Unidade.")
+                return False
 
-        elif (self.ts_auxiliar - self.get_time()).seconds > self.tempo_entre_tentativas:
-            self.tentativas_de_normalizacao += 1
-            self.ts_auxiliar = self.get_time()
-            logger.info(f"[UG{self.id}] Normalizando Unidade (Tentativa {self.tentativas_de_normalizacao}/{self.limite_tentativas_de_normalizacao})")
-            self.reconhece_reset_alarmes()
+            elif (self.ts_auxiliar - self.get_time()).seconds > self.__tempo_entre_tentativas:
+                self.tentativas_normalizacao += 1
+                self.ts_auxiliar = self.get_time()
+                logger.info(f"[UG{self.id}] Normalizando Unidade (Tentativa {self.tentativas_normalizacao}/{self.__limite_tentativas})")
+                self.reconhece_reset_alarmes()
+                sleep(1)
+                return True
+
+        else:
+            logger.debug(f"[UG{self.id}] Aguardando parada total da Unidade para executar a Normalização...")
             return True
+
 
     def bloquear_unidade(self) -> "None":
         """
@@ -465,8 +394,10 @@ class UnidadeGeracao:
             self.acionar_trip_logico()
             self.acionar_trip_eletrico()
 
-        elif not self.borda_parar and self.parar():
+        elif not self.borda_parar:
+            self.parar()
             self.borda_parar = True
+
 
     def step(self) -> "None":
         """
@@ -477,14 +408,14 @@ class UnidadeGeracao:
 
         try:
             logger.debug("")
-            logger.debug(f"[UG{self.id}] Step  -> Unidade:                   \"{UG_SM_STR_DCT[self.codigo_state]}\"")
+            logger.debug(f"[UG{self.id}] Step  -> Unidade:                   \"{UG_SM_STR_DCT[self.estado]}\"")
             logger.debug(f"[UG{self.id}]          Etapa Atual:               \"{UG_STR_DCT_ETAPAS[self.etapa_atual]}\"")
 
             if self.etapa_atual == UG_SINCRONIZADA:
                 logger.debug(f"[UG{self.id}]          Leituras:")
-                logger.debug(f"[UG{self.id}]          - \"Potência Ativa\":        {self.leitura_potencia} kW")
-                # logger.debug(f"[UG{self.id}]          - \"Rotação\":               {self.__leitura_rotacao.valor} RPM")
-                # logger.debug(f"[UG{self.id}]          - \"Pressão UHRV\":          {self.__leitura_pressao_uhrv.valor} Bar")
+                logger.debug(f"[UG{self.id}]          - \"Potência Ativa\":        {self.potencia} kW")
+                logger.debug(f"[UG{self.id}]          - \"Rotação\":               {self.__l_rotacao.valor:0.1f} RPM")
+                logger.debug(f"[UG{self.id}]          - \"Pressão UHRV\":          {self.__l_pressao_uhrv.valor:0.1f} Bar")
 
             self.__next_state = self.__next_state.step()
             self.atualizar_modbus_moa()
@@ -492,6 +423,7 @@ class UnidadeGeracao:
         except Exception:
             logger.error(f"[UG{self.id}] Erro na execução da máquina de estados da Unidade -> \"step\".")
             logger.debug(traceback.format_exc())
+
 
     def partir(self) -> "None":
         """
@@ -509,42 +441,39 @@ class UnidadeGeracao:
         """
 
         try:
-            # if not self.clp[f"UG{self.id}"].read_discrete_inputs(REG[f"UG{self.id}"]["ED_CondicaoPartida"], 1)[0]:
-            #     logger.debug(f"[UG{self.id}]          Máquina sem condição de partida. Irá partir quando as condições forem reestabelecidas.")
-            #     return
-
-            # elif self.clp["SA"].read_coils(REG["SA"]["ED_QCAP_Disj52A1Fechado"])[0] != 0:
-            #     logger.info(f"[UG{self.id}]           O Disjuntor 52A1 está aberto. Para partir a máquina, o mesmo deverá ser fechado.")
-            #     return
-
-            # el
-            if not self.etapa_atual == UG_SINCRONIZADA and self.tentativas_sincronismo <= 3:
-                self.tentativas_sincronismo += 1
-
-                logger.info(f"[UG{self.id}]          Enviando comando:          \"PARTIDA\"")
-
-                # self.clp[f"UG{self.id}"].write_single_coil(REG[f"UG{self.id}"]["CD_ResetRV"], [1])
-                # self.clp[f"UG{self.id}"].write_single_coil(REG[f"UG{self.id}"]["CD_ResetReleRT"], [1])
-                self.remover_trip_logico()
-                self.clp[f"UG{self.id}"].write_single_register(REG[f"UG{self.id}"]["CD_IniciaPartida"], 1) # write_single_coil
-                self.clp[f"UG{self.id}"].write_single_register(REG[f"UG{self.id}"]["CD_Cala_Sirene"], 1) # write_single_coil
-
-                logger.debug(f"[UG{self.id}]          Tentativas de Sincronismo: {self.tentativas_sincronismo}/3")
-
-                return
-
-            elif self.tentativas_sincronismo > 3:
-                self.temporizar_partida = False
-                self.tentativas_sincronismo = 0
-
+            if self.tentativas_sincronismo > 3:
                 logger.critical(f"[UG{self.id}] A Unidade ultrapassou o limite de tentativas de Sincronismo.")
                 logger.info(f"[UG{self.id}] Entrando no estado Indisponível e acionando Voip.")
 
+                self.temporizar_partida = False
+                self.tentativas_sincronismo = 0
                 self.forcar_estado_indisponivel()
+                return
+
+            elif not self.clp[f"UG{self.id}"].read_discrete_inputs(REG_UG[f"UG{self.id}"]["CONDICAO_PARTIDA"])[0]:
+                logger.debug(f"[UG{self.id}]          Máquina sem condição de partida. Irá partir quando as condições forem reestabelecidas.")
+                return
+
+            elif self.clp["SA"].read_coils(REG_SA["QCAP_DJ_52A1_FECHADO"])[0] != 0:
+                logger.info(f"[UG{self.id}]           O Disjuntor 52A1 está aberto. Para partir a máquina, o mesmo deverá ser fechado.")
+                return
+
+            elif not self.etapa_atual == UG_SINCRONIZADA:
+                self.tentativas_sincronismo += 1
+                logger.info(f"[UG{self.id}]          Enviando comando:          \"PARTIDA\"")
+                logger.debug(f"[UG{self.id}]          Tentativas de Sincronismo: {self.tentativas_sincronismo}/3")
+
+                self.clp[f"UG{self.id}"].write_single_coil(REG_UG[f"UG{self.id}"]["CMD_RESET_RV"], [1])
+                self.clp[f"UG{self.id}"].write_single_coil(REG_UG[f"UG{self.id}"]["CMD_RESET_RELE_RT"], [1])
+                self.remover_trip_logico()
+                self.clp[f"UG{self.id}"].write_single_coil(REG_UG[f"UG{self.id}"]["CMD_INICIA_PARTIDA"], [1])
+                self.clp[f"UG{self.id}"].write_single_coil(REG_UG[f"UG{self.id}"]["CMD_CALA_SIRENE"], [1])
+                return
 
         except Exception:
             logger.error(f"[UG{self.id}] Não foi possível enviar o comando de partida.")
             logger.debug(traceback.format_exc())
+
 
     def parar(self) -> "None":
         """
@@ -557,18 +486,16 @@ class UnidadeGeracao:
         try:
             if not self.etapa_atual == UG_PARADA:
                 logger.info(f"[UG{self.id}]          Enviando comando:          \"PARADA\"")
-                # self.clp[f"UG{self.id}"].write_single_coil(REG[f"UG{self.id}"]["CD_AbortaPartida"], [1])
-                # self.clp[f"UG{self.id}"].write_single_coil(REG[f"UG{self.id}"]["CD_AbortaSincronismo"], [1])
-                self.clp[f"UG{self.id}"].write_single_register(REG[f"UG{self.id}"]["CD_IniciaParada"], 1) # write_single_coil
-                self.clp[f"UG{self.id}"].write_single_register(REG[f"UG{self.id}"]["CD_Cala_Sirene"], 1) # write_single_coil
-                self.enviar_setpoint(self.setpoint)
-            else:
-                logger.debug(f"[UG{self.id}] A unidade já está parada.")
-                self.clp[f"UG{self.id}"].write_single_register(REG[f"UG{self.id}"]["CD_Cala_Sirene"], 1) # write_single_coil
+                self.clp[f"UG{self.id}"].write_single_coil(REG_UG[f"UG{self.id}"]["CMD_ABORTA_PARTIDA"], [1])
+                self.clp[f"UG{self.id}"].write_single_coil(REG_UG[f"UG{self.id}"]["CMD_ABORTA_SINCRONISMO"], [1])
+                self.clp[f"UG{self.id}"].write_single_coil(REG_UG[f"UG{self.id}"]["CMD_INICIA_PARADA"], [1])
+                self.clp[f"UG{self.id}"].write_single_coil(REG_UG[f"UG{self.id}"]["CMD_CALA_SIRENE"], [1])
+                self.enviar_setpoint(0)
 
         except Exception:
             logger.error(f"[UG{self.id}] Não foi possível enviar o comando de parada.")
             logger.debug(traceback.format_exc())
+
 
     def enviar_setpoint(self, setpoint_kw: "int") -> "bool":
         """
@@ -581,20 +508,21 @@ class UnidadeGeracao:
         """
 
         try:
-            self.setpoint_minimo = self.cfg["pot_minima"]
+            self.setpoint_minimo = self.cfg["pot_minima_ugs"]
             self.setpoint_maximo = self.cfg[f"pot_maxima_ug{self.id}"]
 
             logger.debug(f"[UG{self.id}]          Enviando setpoint:         {int(setpoint_kw)} kW")
 
             if self.setpoint > 1:
-                response = self.clp[f"UG{self.id}"].write_single_register(REG[f"UG{self.id}"]["CD_ResetGeral"], 1) # write_single_coil
-                response = self.clp[f"UG{self.id}"].write_single_register(REG[f"UG{self.id}"]["RA_ReferenciaCarga"], int(self.setpoint))
+                response = self.clp[f"UG{self.id}"].write_single_coil(REG_UG[f"UG{self.id}"]["CMD_RESET_GERAL"], [1])
+                response = self.clp[f"UG{self.id}"].write_single_register(REG_UG[f"UG{self.id}"]["REFERENCIA_CARGA"], int(self.setpoint))
                 return response
 
         except Exception:
             logger.error(f"[UG{self.id}] Não foi possível enviar o setpoint.")
             logger.debug(traceback.format_exc())
             return False
+
 
     def acionar_trip_eletrico(self) -> "None":
         """
@@ -605,11 +533,12 @@ class UnidadeGeracao:
 
         try:
             logger.debug(f"[UG{self.id}]          Enviando comando:          \"ACIONAR TRIP ELÉTRICO\"")
-            # self.clp["MOA"].write_single_coil(REG["MOA"][f"OUT_BLOCK_UG{self.id}"], 1)
+            self.clp["MOA"].write_single_coil(REG_MOA[f"MOA_OUT_BLOCK_UG{self.id}"], 1)
 
         except Exception:
             logger.error(f"[UG{self.id}] Não foi possivel acionar o comando de TRIP: \"Elétrico\".")
             logger.debug(traceback.format_exc())
+
 
     def remover_trip_eletrico(self) -> "None":
         """
@@ -622,17 +551,18 @@ class UnidadeGeracao:
         try:
             logger.info(f"[UG{self.id}]          Enviando comando:          \"REMOVER TRIP ELÉTRICO\"")
 
-            # self.clp["MOA"].write_single_coil(REG["MOA"]["PAINEL_LIDO"], 0)
-            # self.clp["MOA"].write_single_coil(REG["MOA"][f"OUT_BLOCK_UG{self.id}"], 0)
-            self.clp[f"UG{self.id}"].write_single_register(REG[f"UG{self.id}"]["CD_Cala_Sirene"], 1) # write_single_coil
+            self.clp["MOA"].write_single_coil(REG_MOA["PAINEL_LIDO"], 0)
+            self.clp["MOA"].write_single_coil(REG_MOA[f"MOA_OUT_BLOCK_UG{self.id}"], 0)
+            self.clp[f"UG{self.id}"].write_single_coil(REG_UG[f"UG{self.id}"]["CMD_CALA_SIRENE"], [1])
 
-            if self.clp["SA"].read_holding_registers(REG["SA"]["CD_Liga_DJ1"])[0] == 1: # read_coils
+            if self.clp["SA"].read_discrete_inputs(REG_SA["DJL_FECHADO"])[0] != 1:
                 logger.debug(f"[UG{self.id}]          Enviando comando:          \"FECHAR DJ LINHA\".")
-                self.clp["SA"].write_single_register(REG["SA"]["CD_Liga_DJ1"], 0) # write_single_coil
+                self.clp["SA"].write_single_coil(REG_UG["CMD_FECHA_DJL"], [1])
 
         except Exception:
             logger.error(f"[UG{self.id}] Não foi possivel remover o comando de TRIP: \"Elétrico\".")
             logger.debug(traceback.format_exc())
+
 
     def acionar_trip_logico(self) -> "None":
         """
@@ -643,11 +573,12 @@ class UnidadeGeracao:
 
         try:
             logger.debug(f"[UG{self.id}]          Enviando comando:          \"ACIONAR TRIP LÓGICO\"")
-            self.clp[f"UG{self.id}"].write_single_register(REG[f"UG{self.id}"]["CD_EmergenciaViaSuper"], 1) # write_single_coil
+            self.clp[f"UG{self.id}"].write_single_coil(REG_UG[f"UG{self.id}"]["CMD_EMERG_SUPER"], [1])
 
         except Exception:
             logger.error(f"[UG{self.id}] Não foi possivel acionar o comando de TRIP: \"Lógico\".")
             logger.debug(traceback.format_exc())
+
 
     def remover_trip_logico(self) -> "None":
         """
@@ -658,19 +589,20 @@ class UnidadeGeracao:
 
         try:
             logger.debug(f"[UG{self.id}]          Enviando comando:          \"REMOVER TRIP LÓGICO\"")
-            self.clp[f"UG{self.id}"].write_single_register(REG[f"UG{self.id}"]["CD_ResetGeral"], 1) # write_single_coil
-            # self.clp[f"UG{self.id}"].write_single_coil(REG[f"UG{self.id}"]["CD_ResetRele700G"], [1])
-            # self.clp[f"UG{self.id}"].write_single_coil(REG[f"UG{self.id}"]["CD_ResetReleBloq86H"], [1])
-            # self.clp[f"UG{self.id}"].write_single_coil(REG[f"UG{self.id}"]["CD_ResetReleBloq86M"], [1])
-            # self.clp["SA"].write_single_coil(REG["SA"]["CD_ResetRele59N"], [1])
-            # self.clp["SA"].write_single_coil(REG["SA"]["CD_ResetRele787"], [1])
-            # self.clp[f"UG{self.id}"].write_single_coil(REG[f"UG{self.id}"]["ED_ReleBloqA86HAtuado"], [0])
-            # self.clp[f"UG{self.id}"].write_single_coil(REG[f"UG{self.id}"]["ED_ReleBloqA86MAtuado"], [0])
-            # self.clp[f"UG{self.id}"].write_single_coil(REG[f"UG{self.id}"]["RD_700G_Trip"], [0])
+            self.clp["SA"].write_single_coil(REG_SA["CMD_RESET_RELE_59N"], [1])
+            self.clp["SA"].write_single_coil(REG_SA["CMD_RESET_RELE_787"], [1])
+            self.clp[f"UG{self.id}"].write_single_coil(REG_UG[f"UG{self.id}"]["CMD_RESET_GERAL"], [1])
+            self.clp[f"UG{self.id}"].write_single_coil(REG_UG[f"UG{self.id}"]["CMD_RESET_700G"], [1])
+            self.clp[f"UG{self.id}"].write_single_coil(REG_UG[f"UG{self.id}"]["CMD_RESET_BLOQ_86M"], [1])
+            self.clp[f"UG{self.id}"].write_single_coil(REG_UG[f"UG{self.id}"]["CMD_RESET_BLOQ_86H"], [1])
+            self.clp[f"UG{self.id}"].write_single_coil(REG_UG[f"UG{self.id}"]["BLOQ_A86H_ATUADO"], [0])
+            self.clp[f"UG{self.id}"].write_single_coil(REG_UG[f"UG{self.id}"]["BLOQ_A86M_ATUADO"], [0])
+            self.clp[f"UG{self.id}"].write_single_coil(REG_UG[f"UG{self.id}"]["700G_TRIP"], [0])
 
         except Exception:
             logger.error(f"[UG{self.id}] Não foi possivel remover o comando de TRIP: \"Lógico\".")
             logger.debug(traceback.format_exc())
+
 
     def reconhece_reset_alarmes(self) -> "None":
         """
@@ -683,24 +615,19 @@ class UnidadeGeracao:
         try:
             logger.debug("")
             logger.info(f"[UG{self.id}]          Enviando comando:          \"RECONHECE E RESET\"")
-            # self.clp["MOA"].write_single_coil(REG["MOA"]["PAINEL_LIDO"], 0)
 
-            passo = 0
             for x in range(3):
-                passo += 1
                 logger.debug("")
-                logger.debug(f"[UG{self.id}]          Passo: {passo}/3")
+                logger.debug(f"[UG{self.id}]          Passo: {x+1}/3")
                 self.remover_trip_eletrico()
                 sleep(1)
                 self.remover_trip_logico()
                 sleep(1)
-                self.clp[f"UG{self.id}"].write_single_register(REG[f"UG{self.id}"]["CD_ResetGeral"], 1) # write_single_coil
-                self.clp[f"UG{self.id}"].write_single_register(REG[f"UG{self.id}"]["CD_Cala_Sirene"], 1) # write_single_coil
-                sleep(1)
 
         except Exception:
-            logger.error(f"[UG{self.id}] Não foi possivel enviar o comando de reconhecer e resetar alarmes.")
+            logger.error(f"[UG{self.id}] Não foi possivel enviar o comando de Reconhece e Reset.")
             logger.debug(traceback.format_exc())
+
 
     def verificar_sincronismo(self) -> "None":
         """
@@ -711,16 +638,18 @@ class UnidadeGeracao:
         de emergência via supervisório.
         """
 
-        logger.debug(f"[UG{self.id}]          Comando MOA:               \"Iniciar verificação de partida\"")
-        while time() < time() + 600:
+        logger.debug(f"[UG{self.id}]          Comando MOA:               \"Iniciar verificação de Partida\"")
+
+        delay = time() + 600
+        while time() < delay:
             if not self.temporizar_partida:
-                logger.debug(f"[UG{self.id}]          Condição verdadeira. Saindo da verificação de sincronismo")
                 return
 
-        logger.debug(f"[UG{self.id}]          Comando MOA:               \"Acionar emergência por timeout de verificação de partida\"")
-        self.clp[f"UG{self.id}"].write_single_register(REG[f"UG{self.id}"]["CD_EmergenciaViaSuper"], 1) # write_single_coil
-        self.clp[f"UG{self.id}"].write_single_register(REG[f"UG{self.id}"]["CD_EmergenciaViaSuper"], 0) # write_single_coil
+        logger.warning(f"[UG{self.id}]          Comando MOA:               \"Acionar emergência por tempo de Partida excedido!\"")
+        self.clp[f"UG{self.id}"].write_single_coil(REG_UG[f"UG{self.id}"]["CMD_EMERG_SUPER"], [1])
+        self.clp[f"UG{self.id}"].write_single_coil(REG_UG[f"UG{self.id}"]["CMD_EMERG_SUPER"], [0])
         self.temporizar_partida = False
+
 
     def verificar_pressao_uhrv(self) -> "None":
         """
@@ -728,11 +657,11 @@ class UnidadeGeracao:
 
         Esta função tem como objetivo evitar TRIPs em etapas específicas da Unidade.
         """
-        return
 
-        if self.__leitura_pressao_uhrv.valor <= 130:
-            self.clp[f"UG{self.id}"].write_single_coil(REG[f"UG{self.id}"]["CD_ResetReleBloq86H"], [1])
-            self.clp[f"UG{self.id}"].write_single_coil(REG[f"UG{self.id}"]["ED_ReleBloqA86HAtuado"], [0])
+        if self.__l_pressao_uhrv.valor <= 130:
+            self.clp[f"UG{self.id}"].write_single_coil(REG_UG[f"UG{self.id}"]["CMD_RESET_BLOQ_86H"], [1])
+            self.clp[f"UG{self.id}"].write_single_coil(REG_UG[f"UG{self.id}"]["BLOQ_A86H_ATUADO"], [0])
+
 
     def verificar_rotacao(self) -> "None":
         """
@@ -746,18 +675,22 @@ class UnidadeGeracao:
         ultrapasse seja maior que três, avisa o operador e aborta a pertida para
         que seja realizada uma nova tentativa do processo de sincronismo do início.
         """
-        return
 
         try:
-            if self.__leitura_rotacao.valor < 500 and not self.temporizar_rotacao:
+            if self.tentativas_aguardar_rotacao > 3:
+                logger.warning(f"[UG{self.id}] A Unidade ultrapassou o limite de tentativas de aguardo pela rotação.")
+                logger.info(f"[UG{self.id}] Abortando partida para realizar uma nova tentativa de Sincronismo do início.")
+                self.parar()
+
+            elif self.__l_rotacao.valor < 500 and not self.temporizar_rotacao:
                 self.temporizar_rotacao = True
                 Thread(target=lambda: self.aguardar_rotacao()).start()
 
-            elif 300 <= self.__leitura_rotacao.valor <= 500 and not self.atraso_rotacao:
-                self.clp[f"UG{self.id}"].write_single_coil(REG[f"UG{self.id}"]["CD_ResetReleBloq86M"], [1])
-                self.clp[f"UG{self.id}"].write_single_coil(REG[f"UG{self.id}"]["ED_ReleBloqA86MAtuado"], [0])
+            elif 300 <= self.__l_rotacao.valor <= 500 and not self.atraso_rotacao:
+                self.clp[f"UG{self.id}"].write_single_coil(REG_UG[f"UG{self.id}"]["CMD_RESET_BLOQ_86M"], [1])
+                self.clp[f"UG{self.id}"].write_single_coil(REG_UG[f"UG{self.id}"]["BLOQ_A86M_ATUADO"], [0])
 
-            elif self.atraso_rotacao and self.tentativas_aguardar_rotacao <= 3:
+            elif self.atraso_rotacao:
                 self.tentativas_aguardar_rotacao += 1
                 logger.debug("")
                 logger.warning(f"[UG{self.id}] A rotação da Unidade está demorando para subir. (Tentativa {self.tentativas_aguardar_rotacao}/3)")
@@ -767,19 +700,10 @@ class UnidadeGeracao:
 
                 self.atraso_rotacao = False
 
-            elif self.tentativas_aguardar_rotacao == 4:
-                logger.debug("")
-                logger.critical(f"[UG{self.id}] A Unidade ultrapassou o limite de tentativas de aguardo pela rotação.")
-                logger.info(f"[UG{self.id}] Abortando partida para realizar uma nova tentativa de Sincronismo do início.")
-                logger.debug("")
-
-                self.parar()
-
-            return
-
         except Exception:
             logger.error(f"[UG{self.id}] Houve um erro com a função de verificação de rotação da Unidade.")
             logger.debug(f"Traceback: {traceback.format_exc()}")
+
 
     def aguardar_normalizacao(self, delay: "int") -> "None":
         """
@@ -792,21 +716,23 @@ class UnidadeGeracao:
             self.temporizar_normalizacao = True
             return
 
+
     def aguardar_rotacao(self) -> "None":
         """
         Função com temporizador de aguardo da rotação da máquina com período
         pré-definido.
         """
-        return
 
-        while time() <= time() + 90:
-            if self.__leitura_rotacao.valor > 500:
+        delay = time() + 90
+        while time() <= delay:
+            if self.__l_rotacao.valor > 500:
                 self.temporizar_rotacao = False
                 return
             sleep(2)
 
         self.atraso_rotacao = True
         self.temporizar_rotacao = False
+
 
     def controle_etapas(self) -> "None":
         """
@@ -853,7 +779,7 @@ class UnidadeGeracao:
                 self.aux_tempo_sincronizada = self.get_time()
 
             elif (self.get_time() - self.aux_tempo_sincronizada).seconds >= 300:
-                self.tentativas_de_normalizacao = 0
+                self.tentativas_normalizacao = 0
 
             self.parar() if self.setpoint == 0 else self.enviar_setpoint(self.setpoint)
 
@@ -862,31 +788,48 @@ class UnidadeGeracao:
             self.aux_tempo_sincronizada = None
 
 
-    def ajuste_ganho_cx_espiral(self) -> "None":
+    def atenuar_carga(self) -> "None":
         """
-        Função para atenuação de carga através de leitura de pressão de caixa espiral.
+        Função para atenuação de carga através de leitura de Pressão na Entrada da Turbina.
 
         Calcula o ganho e verifica os limites máximo e mínimo para deteminar se
         deve atenuar ou não.
         """
 
+        flags = 0
         atenuacao = 0
+        logger.debug(f"[UG{self.id}]          Verificando Atenuadores...") if self.etapa_atual == UG_SINCRONIZADA else None
+
         for condic in self.condicionadores_atenuadores:
             atenuacao = max(atenuacao, condic.valor)
-            if self.etapa_atual == UG_SINCRONIZADA:
-                logger.debug(f"[UG{self.id}]          Verificando Atenuadores:")
-                logger.debug(f"[UG{self.id}]          - \"{condic.descr}\":   Leitura: {condic.leitura} | Atenuação: {atenuacao}")
+            if atenuacao > 0:
+                flags += 1
+                logger.debug(f"[UG{self.id}]          - \"{condic.descricao}\":")
+                logger.debug(f"[UG{self.id}]                                     Leitura: {condic.leitura:3.2f} | Atenuação: {atenuacao:0.4f}")
 
-        ganho = 1 - atenuacao
+                if flags == 1:
+                    self.atenuacao = atenuacao
+                elif atenuacao > self.atenuacao:
+                    self.atenuacao = atenuacao
+
+                atenuacao = 0
+
+        if flags == 0 and self.etapa_atual == UG_SINCRONIZADA:
+            logger.debug(f"[UG{self.id}]          Não há necessidade de Atenuação.")
+
+        ganho = 1 - self.atenuacao
         aux = self.setpoint
+        self.atenuacao = 0
         if (self.setpoint > self.setpoint_minimo) and self.setpoint * ganho > self.setpoint_minimo:
-            self.setpoint = self.setpoint * ganho
+            setpoint_atenuado = self.setpoint - 0.5 * (self.setpoint -  (self.setpoint * ganho))
+            self.setpoint = min(max(setpoint_atenuado, self.setpoint_minimo), self.setpoint_maximo)
 
-        elif (self.setpoint * ganho < self.setpoint_minimo) and (self.setpoint > self.setpoint_minimo):
+        elif self.setpoint > self.setpoint_minimo and (self.setpoint * ganho) < self.setpoint_minimo:
             self.setpoint =  self.setpoint_minimo
 
-        if self.etapa_atual == UG_SINCRONIZADA:
-            logger.debug(f"[UG{self.id}]                                     SP {aux} * GANHO {ganho} = {self.setpoint} kW")
+        if self.etapa_atual == UG_SINCRONIZADA and ganho < 1:
+            logger.debug(f"[UG{self.id}]                                     SP {aux} * GANHO {ganho:0.4f} = {self.setpoint} kW")
+
 
     def ajuste_inicial_cx(self) -> "None":
         """
@@ -896,54 +839,591 @@ class UnidadeGeracao:
         """
 
         try:
-            self.cx_controle_p = (self.oco.l_pressao_cx_espiral.valor - self.cfg["press_cx_alvo"]) * self.cfg["cx_kp"]
-            self.cx_ajuste_ie = sum(ug.leitura_potencia for ug in self.lista_ugs) / self.cfg["pot_maxima_alvo"]
+            self.cx_controle_p = (self.l_pressao_cx_espiral.valor - self.cfg[f"pressao_alvo_ug2"]) * self.cfg["cx_kp"]
+            self.cx_ajuste_ie = sum(ug.potencia for ug in self.lista_ugs) / self.cfg["pot_alvo_usina"]
             self.cx_controle_i = self.cx_ajuste_ie - self.cx_controle_p
 
         except Exception:
             logger.error(f"[UG{self.id}] Não foi possível realizar o ajuste incial do PID para pressão de caixa espiral.")
             logger.debug(traceback.format_exc())
 
-    def controle_cx_espiral(self) -> "None":
-        if self.pot_alvo_anterior == -1:
-            self.pot_alvo_anterior = pot_alvo
 
-        if self.ajuste_inicial_cx_esp == -1:
+    def controle_cx_espiral(self) -> "float":
+        if self.pot_alvo_anterior == -1:
+            self.pot_alvo_anterior = self.potencia
+
+        if self.__iniciar_cx_esp == -1:
             self.ajuste_inicial_cx()
-            self.ajuste_inicial_cx_esp = 0
+            self.__iniciar_cx_esp = 0
 
         try:
-            self.erro_press_cx = 0
-            self.erro_press_cx = self.oco.l_pressao_cx_espiral.valor - self.cfg["press_cx_alvo"]
+            logger.debug(f"[UG{self.id}] Pressão Caixa Espiral:")
+            logger.debug(f"[UG{self.id}]          Alvo:                      {self.cfg[f'pressao_alvo_ug2']:0.3f}")
+            logger.debug(f"[UG{self.id}]          Leitura:                   {self.l_pressao_cx_espiral.valor:0.3f}")
+            logger.debug("")
 
-            logger.debug(f"[UG{self.id}] Pressão Alvo: {self.cfg['press_cx_alvo']:0.3f}, Recente: {self.oco.l_pressao_cx_espiral.valor:0.3f}")
+            self.erro_press_cx = 0
+            self.erro_press_cx = self.l_pressao_cx_espiral.valor - self.cfg[f"pressao_alvo_ug2"]
 
             self.cx_controle_p = self.cfg["cx_kp"] * self.erro_press_cx
             self.cx_controle_i = max(min((self.cfg["cx_ki"] * self.erro_press_cx) + self.cx_controle_i, 1), 0)
+
             saida_pi = self.cx_controle_p + self.cx_controle_i
 
-            logger.debug(f"[UG{self.id}] PI: {saida_pi:0.3f} <-- P:{self.cx_controle_p:0.3f} + I:{self.cx_controle_i:0.3f}; ERRO={self.erro_press_cx}")
-
             self.cx_controle_ie = max(min(saida_pi + self.cx_ajuste_ie * self.cfg["cx_kie"], 1), 0)
-            pot_alvo = max(min(round(self.cfg[f"pot_maxima_ug{self.id}"] * self.cx_controle_ie, 5), self.cfg[f"pot_maxima_ug{self.id}"],),self.cfg["pot_minima"],)
 
-            logger.debug(f"[UG{self.id}] Pot alvo: {pot_alvo:0.3f}")
+            pot_alvo = max(min(round(self.cfg[f"pot_maxima_ug{self.id}"] * self.cx_controle_ie, 5), self.cfg[f"pot_maxima_ug{self.id}"],),self.cfg["pot_minima_ugs"],)
+            pot_medidor = se.Subestacao.l_potencia_medidor.valor
 
-            pot_medidor = self.__potencia_ativa_kW.valor
+            logger.debug(f"[UG{self.id}] Potência calculada:                 {pot_alvo:0.3f}")
+            logger.debug("")
 
-            logger.debug(f"Potência alvo = {pot_alvo}")
-            logger.debug(f"Potência no medidor = {pot_medidor}")
-
-            pot_aux = self.cfg["pot_maxima_alvo"] - (self.cfg["pot_maxima_usina"] - self.cfg["pot_maxima_alvo"])
-
+            pot_aux = self.cfg["pot_alvo_usina"] - (self.cfg["pot_maxima_usina"] - self.cfg["pot_alvo_usina"])
             pot_medidor = max(pot_aux, min(pot_medidor, self.cfg["pot_maxima_usina"]))
 
-            if pot_medidor > self.cfg["pot_maxima_alvo"] * 0.97:
-                pot_alvo = self.pot_alvo_anterior * (1 - 0.5 * ((pot_medidor - self.cfg["pot_maxima_alvo"]) / self.cfg["pot_maxima_alvo"]))
+            if pot_medidor > self.cfg["pot_alvo_usina"] * 0.97:
+                pot_alvo = self.pot_alvo_anterior * (1 - 0.5 * ((pot_medidor - self.cfg["pot_alvo_usina"]) / self.cfg["pot_alvo_usina"]))
 
             self.pot_alvo_anterior = pot_alvo
-            self.enviar_setpoint(pot_alvo) if self.oco.l_pressao_cx_espiral.valor >= 15.5 else self.enviar_setpoint(0)
+
+            return pot_alvo
 
         except Exception:
             logger.error(f"[UG{self.id}] Houve um erro no método de Controle por Caixa Espiral da Unidade.")
             logger.debug(traceback.format_exc())
+
+
+    def verificar_condicionadores(self) -> "int":
+        """
+        Função para a verificação de acionamento de condicionadores e determinação
+        de gravidade.
+
+        Itera sobre a lista de condicionadores da Unidade e verifica se algum está
+        ativo. Caso esteja, verifica o nível de gravidade e retorna o valor para
+        a determinação do passo seguinte.
+        Caso não haja nenhum condicionador ativo, apenas retorna o valor de ignorar.
+        """
+
+        flag = CONDIC_IGNORAR
+        autor_i = autor_a = autor_n = 0
+
+        if True in (condic.ativo for condic in self.condicionadores_essenciais):
+            condicionadores_ativos = [condic for condics in [self.condicionadores_essenciais, self.condicionadores] for condic in condics if condic.ativo]
+
+            logger.debug("")
+            if self.condicionadores_ativos == []:
+                logger.warning(f"[UG{self.id}] Foram detectados condicionadores ativos na Unidade!")
+            else:
+                logger.info(f"[UG{self.id}] Ainda há condicionadores ativos na Unidade!")
+
+            for condic in condicionadores_ativos:
+                if condic in self.condicionadores_ativos:
+                    logger.debug(f"[UG{self.id}] Descrição: \"{condic.descricao}\", Gravidade: \"{CONDIC_STR_DCT[condic.gravidade] if condic.gravidade in CONDIC_STR_DCT else 'Desconhecida'}\"")
+                    continue
+
+                elif condic.gravidade == CONDIC_INDISPONIBILIZAR:
+                    logger.warning(f"[UG{self.id}] Descrição: \"{condic.descricao}\", Gravidade: \"{CONDIC_STR_DCT[condic.gravidade] if condic.gravidade in CONDIC_STR_DCT else 'Desconhecida'}\"")
+                    self.db.update_alarmes([self.get_time().strftime("%Y-%m-%d %H:%M:%S"), condic.gravidade, condic.descricao, "X" if autor_i == 0 else ""])
+                    self.condicionadores_ativos.append(condic)
+                    autor_i += 1
+                    flag = CONDIC_INDISPONIBILIZAR
+
+                elif condic.gravidade == CONDIC_AGUARDAR:
+                    logger.warning(f"[UG{self.id}] Descrição: \"{condic.descricao}\", Gravidade: \"{CONDIC_STR_DCT[condic.gravidade] if condic.gravidade in CONDIC_STR_DCT else 'Desconhecida'}\"")
+                    self.db.update_alarmes([self.get_time().strftime("%Y-%m-%d %H:%M:%S"), condic.gravidade, condic.descricao, "X" if autor_i == 0 and autor_a == 0 else ""])
+                    self.condicionadores_ativos.append(condic)
+                    autor_a += 1
+                    if flag == CONDIC_INDISPONIBILIZAR:
+                        continue
+                    else:
+                        flag = CONDIC_AGUARDAR
+
+                elif condic.gravidade == CONDIC_NORMALIZAR:
+                    logger.warning(f"[UG{self.id}] Descrição: \"{condic.descricao}\", Gravidade: \"{CONDIC_STR_DCT[condic.gravidade] if condic.gravidade in CONDIC_STR_DCT else 'Desconhecida'}\"")
+                    self.db.update_alarmes([self.get_time().strftime("%Y-%m-%d %H:%M:%S"), condic.gravidade, condic.descricao, "X" if autor_i == 0 and autor_a == 0 and autor_n == 0 else ""])
+                    self.condicionadores_ativos.append(condic)
+                    autor_n += 1
+                    if flag in (CONDIC_INDISPONIBILIZAR, CONDIC_AGUARDAR):
+                        continue
+                    else:
+                        flag = CONDIC_NORMALIZAR
+
+            logger.debug("")
+            return flag
+
+        else:
+            self.condicionadores_ativos = []
+            return flag
+
+
+    def atualizar_limites_condicionadores(self, parametros) -> "None":
+        """
+        Função para extração de valores do Banco de Dados da Interface WEB e atribuição
+        de novos limites de operação de condicionadores.
+        """
+
+        try:
+            self.prioridade = int(parametros[f"ug{self.id}_prioridade"])
+            self.aviso_caixa_espiral_ug2 = float(parametros[f"aviso_caixa_espiral_ug2"])
+
+            self.c_tmp_fase_r.valor_base = float(parametros[f"alerta_temperatura_fase_r_ug{self.id}"])
+            self.c_tmp_fase_s.valor_base = float(parametros[f"alerta_temperatura_fase_s_ug{self.id}"])
+            self.c_tmp_fase_t.valor_base = float(parametros[f"alerta_temperatura_fase_t_ug{self.id}"])
+            self.c_tmp_nucleo_estator.valor_base = float(parametros[f"alerta_temperatura_nucleo_estator_ug{self.id}"])
+            self.c_tmp_mancal_rad_dia_1.valor_base = float(parametros[f"alerta_temperatura_mancal_rad_dia_1_ug{self.id}"])
+            self.c_tmp_mancal_rad_dia_2.valor_base = float(parametros[f"alerta_temperatura_mancal_rad_dia_2_ug{self.id}"])
+            self.c_tmp_mancal_rad_tra_1.valor_base = float(parametros[f"alerta_temperatura_mancal_rad_tra_1_ug{self.id}"])
+            self.c_tmp_mancal_rad_tra_2.valor_base = float(parametros[f"alerta_temperatura_mancal_rad_tra_2_ug{self.id}"])
+            self.c_tmp_saida_de_ar.valor_base = float(parametros[f"alerta_temperatura_saida_de_ar_ug{self.id}"])
+            self.c_tmp_mancal_guia_escora.valor_base = float(parametros[f"alerta_temperatura_mancal_guia_escora_ug{self.id}"])
+            self.c_tmp_mancal_guia_radial.valor_base = float(parametros[f"alerta_temperatura_mancal_guia_radial_ug{self.id}"])
+            self.c_tmp_mancal_guia_contra.valor_base = float(parametros[f"alerta_temperatura_mancal_guia_contra_ug{self.id}"])
+            self.c_pressao_cx_espiral.valor_base = float(parametros[f"alerta_caixa_espiral_ug2"])
+
+            self.c_tmp_fase_r.valor_limite = float(parametros[f"limite_temperatura_fase_r_ug{self.id}"])
+            self.c_tmp_fase_s.valor_limite = float(parametros[f"limite_temperatura_fase_s_ug{self.id}"])
+            self.c_tmp_fase_t.valor_limite = float(parametros[f"limite_temperatura_fase_t_ug{self.id}"])
+            self.c_tmp_nucleo_estator.valor_limite = float(parametros[f"limite_temperatura_nucleo_estator_ug{self.id}"])
+            self.c_tmp_mancal_rad_dia_1.valor_limite = float(parametros[f"limite_temperatura_mancal_rad_dia_1_ug{self.id}"])
+            self.c_tmp_mancal_rad_dia_2.valor_limite = float(parametros[f"limite_temperatura_mancal_rad_dia_2_ug{self.id}"])
+            self.c_tmp_mancal_rad_tra_1.valor_limite = float(parametros[f"limite_temperatura_mancal_rad_tra_1_ug{self.id}"])
+            self.c_tmp_mancal_rad_tra_2.valor_limite = float(parametros[f"limite_temperatura_mancal_rad_tra_2_ug{self.id}"])
+            self.c_tmp_saida_de_ar.valor_limite = float(parametros[f"limite_temperatura_saida_de_ar_ug{self.id}"])
+            self.c_tmp_mancal_guia_escora.valor_limite = float(parametros[f"limite_temperatura_mancal_guia_escora_ug{self.id}"])
+            self.c_tmp_mancal_guia_radial.valor_limite = float(parametros[f"limite_temperatura_mancal_guia_radial_ug{self.id}"])
+            self.c_tmp_mancal_guia_contra.valor_limite = float(parametros[f"limite_temperatura_mancal_guia_contra_ug{self.id}"])
+            self.c_pressao_cx_espiral.valor_limite = float(parametros[f"limite_caixa_espiral_ug2"])
+
+        except Exception:
+            logger.error(f"[UG{self.id}] Houve um erro ao atualizar os limites de temperaturas dos condicionadores.")
+            logger.debug(f"[UG{self.id}] Traceback: {traceback.format_exc()}")
+
+
+    def controle_limites_operacao(self) -> "None":
+        """
+        Função para verificação de limites de operação da Unidade.
+
+        Verifica os valores base e limite da Unidade, pré-determinados na interface
+        WEB, e avisa o operador caso algum valor ultrapasse o estipulado.
+        """
+
+        if self.l_tmp_fase_r.valor >= self.c_tmp_fase_r.valor_base:
+            logger.debug(f"[UG{self.id}] A temperatura de Fase R da UG passou do valor base! ({self.c_tmp_fase_r.valor_base} C) | Leitura: {self.l_tmp_fase_r.valor} C")
+
+        if self.l_tmp_fase_r.valor >= 0.9*(self.c_tmp_fase_r.valor_limite - self.c_tmp_fase_r.valor_base) + self.c_tmp_fase_r.valor_base:
+            logger.critical(f"[UG{self.id}] A temperatura de Fase R da UG está muito próxima do limite! ({self.c_tmp_fase_r.valor_limite} C) | Leitura: {self.l_tmp_fase_r.valor} C")
+
+        if self.l_tmp_fase_s.valor >= self.c_tmp_fase_s.valor_base:
+            logger.debug(f"[UG{self.id}] A temperatura de Fase S da UG passou do valor base! ({self.c_tmp_fase_s.valor_base} C) | Leitura: {self.l_tmp_fase_s.valor} C")
+
+        if self.l_tmp_fase_s.valor >= 0.9*(self.c_tmp_fase_s.valor_limite - self.c_tmp_fase_s.valor_base) + self.c_tmp_fase_s.valor_base:
+            logger.critical(f"[UG{self.id}] A temperatura de Fase S da UG está muito próxima do limite! ({self.c_tmp_fase_s.valor_limite} C) | Leitura: {self.l_tmp_fase_s.valor} C")
+
+        if self.l_tmp_fase_t.valor >= self.c_tmp_fase_t.valor_base:
+            logger.debug(f"[UG{self.id}] A temperatura de Fase T da UG passou do valor base! ({self.c_tmp_fase_t.valor_base} C) | Leitura: {self.l_tmp_fase_t.valor} C")
+
+        if self.l_tmp_fase_t.valor >= 0.9*(self.c_tmp_fase_t.valor_limite - self.c_tmp_fase_t.valor_base) + self.c_tmp_fase_t.valor_base:
+            logger.critical(f"[UG{self.id}] A temperatura de Fase T da UG está muito próxima do limite! ({self.c_tmp_fase_t.valor_limite} C) | Leitura: {self.l_tmp_fase_t.valor} C")
+
+        if self.l_tmp_nucleo_estator.valor >= self.c_tmp_nucleo_estator.valor_base:
+            logger.debug(f"[UG{self.id}] A temperatura do Núcleo Gerador Estator da UG passou do valor base! ({self.c_tmp_nucleo_estator.valor_base} C) | Leitura: {self.l_tmp_nucleo_estator.valor} C")
+
+        if self.l_tmp_nucleo_estator.valor >= 0.9*(self.c_tmp_nucleo_estator.valor_limite - self.c_tmp_nucleo_estator.valor_base) + self.c_tmp_nucleo_estator.valor_base:
+            logger.critical(f"[UG{self.id}] A temperatura do Núcleo Gerador Estator da UG está muito próxima do limite! ({self.c_tmp_nucleo_estator.valor_limite} C) | Leitura: {self.l_tmp_nucleo_estator.valor} C")
+
+        if self.l_tmp_mancal_rad_dia_1.valor >= self.c_tmp_mancal_rad_dia_1.valor_base:
+            logger.debug(f"[UG{self.id}] A temperatura do Mancal Radial Dianteiro 1 da UG passou do valor base! ({self.c_tmp_mancal_rad_dia_1.valor_base} C) | Leitura: {self.l_tmp_mancal_rad_dia_1.valor} C")
+
+        if self.l_tmp_mancal_rad_dia_1.valor >= 0.9*(self.c_tmp_mancal_rad_dia_1.valor_limite - self.c_tmp_mancal_rad_dia_1.valor_base) + self.c_tmp_mancal_rad_dia_1.valor_base:
+            logger.critical(f"[UG{self.id}] A temperatura do Mancal Radial Dianteiro 1 da UG está muito próxima do limite! ({self.c_tmp_mancal_rad_dia_1.valor_limite} C) | Leitura: {self.l_tmp_mancal_rad_dia_1.valor} C")
+
+        if self.l_tmp_mancal_rad_dia_2.valor >= self.c_tmp_mancal_rad_dia_2.valor_base:
+            logger.debug(f"[UG{self.id}] A temperatura do Mancal Radial Dianteiro 2 da UG passou do valor base! ({self.c_tmp_mancal_rad_dia_2.valor_base} C) | Leitura: {self.l_tmp_mancal_rad_dia_2.valor} C")
+
+        if self.l_tmp_mancal_rad_dia_2.valor >= 0.9*(self.c_tmp_mancal_rad_dia_2.valor_limite - self.c_tmp_mancal_rad_dia_2.valor_base) + self.c_tmp_mancal_rad_dia_2.valor_base:
+            logger.critical(f"[UG{self.id}] A temperatura do Mancal Radial Dianteiro 2 da UG está muito próxima do limite! ({self.c_tmp_mancal_rad_dia_2.valor_limite} C) | Leitura: {self.l_tmp_mancal_rad_dia_2.valor} C")
+
+        if self.l_tmp_mancal_rad_tra_1.valor >= self.c_tmp_mancal_rad_tra_1.valor_base:
+            logger.debug(f"[UG{self.id}] A temperatura do Mancal Radial Traseiro 1 da UG passou do valor base! ({self.c_tmp_mancal_rad_tra_1.valor_base} C) | Leitura: {self.l_tmp_mancal_rad_tra_1.valor} C")
+
+        if self.l_tmp_mancal_rad_tra_1.valor >= 0.9*(self.c_tmp_mancal_rad_tra_1.valor_limite - self.c_tmp_mancal_rad_tra_1.valor_base) + self.c_tmp_mancal_rad_tra_1.valor_base:
+            logger.critical(f"[UG{self.id}] A temperatura do Mancal Radial Traseiro 1 da UG está muito próxima do limite! ({self.c_tmp_mancal_rad_tra_1.valor_limite} C) | Leitura: {self.l_tmp_mancal_rad_tra_1.valor} C")
+
+        if self.l_tmp_mancal_rad_tra_2.valor >= self.c_tmp_mancal_rad_tra_2.valor_base:
+            logger.debug(f"[UG{self.id}] A temperatura do Mancal Radial Traseiro 2 da UG passou do valor base! ({self.c_tmp_mancal_rad_tra_2.valor_base} C) | Leitura: {self.l_tmp_mancal_rad_tra_2.valor} C")
+
+        if self.l_tmp_mancal_rad_tra_2.valor >= 0.9*(self.c_tmp_mancal_rad_tra_2.valor_limite - self.c_tmp_mancal_rad_tra_2.valor_base) + self.c_tmp_mancal_rad_tra_2.valor_base:
+            logger.critical(f"[UG{self.id}] A temperatura do Mancal Radial Traseiro 2 da UG está muito próxima do limite! ({self.c_tmp_mancal_rad_tra_2.valor_limite} C) | Leitura: {self.l_tmp_mancal_rad_tra_2.valor} C")
+
+        if self.l_tmp_saida_de_ar.valor >= self.c_tmp_saida_de_ar.valor_base:
+            logger.debug(f"[UG{self.id}] A temperatura da Saída de Ar da UG passou do valor base! ({self.c_tmp_saida_de_ar.valor_base} C) | Leitura: {self.l_tmp_saida_de_ar.valor} C")
+
+        if self.l_tmp_saida_de_ar.valor >= 0.9*(self.c_tmp_saida_de_ar.valor_limite - self.c_tmp_saida_de_ar.valor_base) + self.c_tmp_saida_de_ar.valor_base:
+            logger.critical(f"[UG{self.id}] A temperatura da Saída de Ar da UG está muito próxima do limite! ({self.c_tmp_saida_de_ar.valor_limite} C) | Leitura: {self.l_tmp_saida_de_ar.valor} C")
+
+        if self.l_tmp_mancal_guia_escora.valor >= self.c_tmp_mancal_guia_escora.valor_base:
+            logger.debug(f"[UG{self.id}] A temperatura do Mancal Guia Escora da UG passou do valor base! ({self.c_tmp_mancal_guia_escora.valor_base} C) | Leitura: {self.l_tmp_mancal_guia_escora.valor} C")
+
+        if self.l_tmp_mancal_guia_escora.valor >= 0.9*(self.c_tmp_mancal_guia_escora.valor_limite - self.c_tmp_mancal_guia_escora.valor_base) + self.c_tmp_mancal_guia_escora.valor_base:
+            logger.critical(f"[UG{self.id}] A temperatura do Mancal Guia Escora da UG está muito próxima do limite! ({self.c_tmp_mancal_guia_escora.valor_limite} C) | Leitura: {self.l_tmp_mancal_guia_escora.valor} C")
+
+        if self.l_tmp_mancal_guia_radial.valor >= self.c_tmp_mancal_guia_radial.valor_base:
+            logger.debug(f"[UG{self.id}] A temperatura do Mancal Guia Radial da UG passou do valor base! ({self.c_tmp_mancal_guia_radial.valor_base} C) | Leitura: {self.l_tmp_mancal_guia_radial.valor} C")
+
+        if self.l_tmp_mancal_guia_radial.valor >= 0.9*(self.c_tmp_mancal_guia_radial.valor_limite - self.c_tmp_mancal_guia_radial.valor_base) + self.c_tmp_mancal_guia_radial.valor_base:
+            logger.critical(f"[UG{self.id}] A temperatura do Mancal Guia Radial da UG está muito próxima do limite! ({self.c_tmp_mancal_guia_radial.valor_limite} C) | Leitura: {self.l_tmp_mancal_guia_radial.valor} C")
+
+        if self.l_tmp_mancal_guia_contra.valor >= self.c_tmp_mancal_guia_contra.valor_base:
+            logger.debug(f"[UG{self.id}] A temperatura do Mancal Guia Contra Escora da UG passou do valor base! ({self.c_tmp_mancal_guia_contra.valor_base} C) | Leitura: {self.l_tmp_mancal_guia_contra.valor} C")
+
+        if self.l_tmp_mancal_guia_contra.valor >= 0.9*(self.c_tmp_mancal_guia_contra.valor_limite - self.c_tmp_mancal_guia_contra.valor_base) + self.c_tmp_mancal_guia_contra.valor_base:
+            logger.critical(f"[UG{self.id}] A temperatura do Mancal Guia Contra Escora da UG está muito próxima do limite! ({self.c_tmp_mancal_guia_contra.valor_limite} C) | Leitura: {self.l_tmp_mancal_guia_contra.valor} C")
+
+        if self.l_pressao_cx_espiral.valor <= self.aviso_caixa_espiral_ug2 and self.etapa_atual == UG_SINCRONIZADA and self.potencia >= 1360 and self.id == 2:
+            logger.debug(f"[UG{self.id}] A pressão Caixa Espiral da UG passou do valor estipulado! ({self.aviso_caixa_espiral_ug2:03.2f} KGf/m2) | Leitura: {self.l_pressao_cx_espiral.valor:03.2f}")
+
+
+    def leitura_temporizada(self) -> "None":
+        """
+        Função para consulta de acionamentos da Unidade e avisos através do mecanismo
+        de acionamento temporizado.
+        """
+
+        if self.l_pastilha_freio_gasta.valor != 0:
+            logger.warning(f"[UG{self.id}] O sensor de Freio da UG retornou que a Pastilha está gasta, favor considerar troca.")
+
+        if self.l_uhrv_filtro_press_75_sujo.valor != 0:
+            logger.warning(f"[UG{self.id}] O sensor do Filtro de Pressão UHRV retornou que o filtro está 75% sujo, favor considerar troca.")
+
+        if self.l_uhrv_filtro_retor_75_sujo.valor != 0:
+            logger.warning(f"[UG{self.id}] O sensor do Filtro de Retorno UHRV retornou que o filtro está 75% sujo, favor considerar troca.")
+
+        if self.l_uhlm_filtro_press_1_75_sujo.valor != 0:
+            logger.warning(f"[UG{self.id}] O sensor do Filtro 1 de Pressão UHLM retornou que o filtro está 75% sujo, favor considerar troca.")
+
+        if self.l_uhlm_filtro_press_2_75_sujo.valor != 0:
+            logger.warning(f"[UG{self.id}] O sensor do Filtro 2 de Pressão UHLM retornou que o filtro está 75% sujo, favor considerar troca.")
+
+        if self.l_bomba_mec_filtro_press_75_sujo.valor != 0:
+            logger.warning(f"[UG{self.id}] O sensor do Filtro de Pressão da Bomba Mecânica retornou que o filtro está 75% sujo, favor considerar troca.")
+
+        if self.l_freio_modo_remoto.valor != 1:
+            logger.debug(f"[UG{self.id}] O freio da UG saiu do modo remoto, favor analisar a situação.")
+
+        if self.l_compresor_modo_remoto.valor != 1:
+            logger.debug(f"[UG{self.id}] O compressor da UG saiu do modo remoto, favor analisar a situação.")
+
+
+    def carregar_leituras(self) -> "None":
+        """
+        Função para carregamento de todas as leituras para acionamentos de avisos
+        e emergências da Unidade.
+        """
+
+        self.l_freio_modo_remoto = lei.LeituraModbusCoil(
+            self.clp[f"UG{self.id}"],
+            REG_UG[f"UG{self.id}"]["FREIO_CMD_REMOTO"],
+            descr=f"[UG{self.id}] Freio Modo Remoto"
+        )
+        self.l_pastilha_freio_gasta = lei.LeituraModbusCoil(
+            self.clp[f"UG{self.id}"],
+            REG_UG[f"UG{self.id}"]["FREIO_PASTILHA_GASTA"],
+            descr=f"[UG{self.id}] Pastilha Freio Gasta"
+        )
+        self.l_compresor_modo_remoto = lei.LeituraModbusCoil(
+            self.clp[f"UG{self.id}"],
+            REG_UG[f"UG{self.id}"][f"QCAUG{self.id}_REMOTO"],
+            descr=f"[UG{self.id}] Compressor Modo Remoto"
+        )
+        self.l_uhrv_filtro_press_75_sujo = lei.LeituraModbusCoil(
+            self.clp[f"UG{self.id}"],
+            REG_UG[f"UG{self.id}"]["FILTRO_PRESS_SUJO_75TROC"],
+            descr=f"[UG{self}] UHRV Filtro Pressão 75% Sujo"
+        )
+        self.l_uhrv_filtro_retor_75_sujo = lei.LeituraModbusCoil(
+            self.clp[f"UG{self.id}"],
+            REG_UG[f"UG{self.id}"]["FILTRO_RET_SUJO_75TROC"],
+            descr=f"[UG{self.id}] UHRV Filtro Pressão Retorno 75% Sujo"
+        )
+        self.l_uhlm_filtro_press_1_75_sujo = lei.LeituraModbusCoil(
+            self.clp[f"UG{self.id}"],
+            REG_UG[f"UG{self.id}"]["UHLM_FILTR_1_PRES_SUJO_75TROC"],
+            descr=f"[UG{self.id}] UHLM Filtro Pressão 1 75% Sujo"
+        )
+        self.l_uhlm_filtro_press_2_75_sujo = lei.LeituraModbusCoil(
+            self.clp[f"UG{self.id}"],
+            REG_UG[f"UG{self.id}"]["UHLM_FILTR_2_PRES_SUJO_75TROC"],
+            descr=f"[UG{self.id}] UHLM Filtro Pressão 2 75% Sujo"
+        )
+        self.l_bomba_mec_filtro_press_75_sujo = lei.LeituraModbusCoil(
+            self.clp[f"UG{self.id}"],
+            REG_UG[f"UG{self.id}"]["FILTR_1_PRESS_BOMBA_MEC_75TROC"],
+            descr=f"[UG{self.id}] Filtro Pressão Bomba Mecância 75% Sujo"
+        )
+
+
+        ### CONDICIONADORES ESSENCIAIS
+        # Pressão Caixa Espiral
+        self.l_pressao_cx_espiral = lei.LeituraModbus(self.clp[f"UG2"], REG_UG[f"UG2"]["PRESS_K1_CX_ESPIRAL"], escala=0.01, op=4, descr=f"[UG2] Caixa Espiral")
+        self.c_pressao_cx_espiral = c.CondicionadorExponencialReverso(self.l_pressao_cx_espiral, CONDIC_INDISPONIBILIZAR)
+
+        # Fase R
+        self.l_tmp_fase_r = lei.LeituraModbus(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}"]["TEMPERATURA_01"], op=4, descr=f"[UG{self.id}] Temperatura Fase R")
+        self.c_tmp_fase_r = c.CondicionadorExponencial(self.l_tmp_fase_r, CONDIC_INDISPONIBILIZAR)
+        self.condicionadores_essenciais.append(self.c_tmp_fase_r)
+        self.condicionadores_atenuadores.append(self.c_tmp_fase_r)
+
+        # Fase S
+        self.l_tmp_fase_s = lei.LeituraModbus(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}"]["TEMPERATURA_02"], op=4, descr=f"[UG{self.id}] Temperatura Fase S")
+        self.c_tmp_fase_s = c.CondicionadorExponencial(self.l_tmp_fase_s, CONDIC_INDISPONIBILIZAR)
+        self.condicionadores_essenciais.append(self.c_tmp_fase_s)
+        self.condicionadores_atenuadores.append(self.c_tmp_fase_s)
+
+        # Fase T
+        self.l_tmp_fase_t = lei.LeituraModbus(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}"]["TEMPERATURA_03"], op=4, descr=f"[UG{self.id}] Temperatura Fase T")
+        self.c_tmp_fase_t = c.CondicionadorExponencial(self.l_tmp_fase_t, CONDIC_INDISPONIBILIZAR)
+        self.condicionadores_essenciais.append(self.c_tmp_fase_t)
+        self.condicionadores_atenuadores.append(self.c_tmp_fase_t)
+
+        # Nucleo estator
+        self.l_tmp_nucleo_estator = lei.LeituraModbus(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}"]["TEMPERATURA_04"], op=4, descr=f"[UG{self.id}] Temperatura Núcelo do Estator",)
+        self.c_tmp_nucleo_estator = c.CondicionadorExponencial(self.l_tmp_nucleo_estator, CONDIC_INDISPONIBILIZAR)
+        self.condicionadores_essenciais.append(self.c_tmp_nucleo_estator)
+        self.condicionadores_atenuadores.append(self.c_tmp_nucleo_estator)
+
+        # MRD 1
+        self.l_tmp_mancal_rad_dia_1 = lei.LeituraModbus(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}"]["TEMPERATURA_05"], op=4, descr=f"[UG{self.id}] Temperatura Mancal Radial Dianteiro")
+        self.c_tmp_mancal_rad_dia_1 = c.CondicionadorExponencial(self.l_tmp_mancal_rad_dia_1, CONDIC_INDISPONIBILIZAR)
+        self.condicionadores_essenciais.append(self.c_tmp_mancal_rad_dia_1)
+        self.condicionadores_atenuadores.append(self.c_tmp_mancal_rad_dia_1)
+
+        # MRT 1
+        self.l_tmp_mancal_rad_tra_1 = lei.LeituraModbus(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}"]["TEMPERATURA_06"], op=4, descr=f"[UG{self.id}] Temperatura Mancal Radial Traseiro",)
+        self.c_tmp_mancal_rad_tra_1 = c.CondicionadorExponencial(self.l_tmp_mancal_rad_tra_1, CONDIC_INDISPONIBILIZAR)
+        self.condicionadores_essenciais.append(self.c_tmp_mancal_rad_tra_1)
+        self.condicionadores_atenuadores.append(self.c_tmp_mancal_rad_tra_1)
+
+        # MRD 2
+        self.l_tmp_mancal_rad_dia_2 = lei.LeituraModbus(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}"]["TEMPERATURA_07"], op=4, descr=f"[UG{self.id}] Temperatura Mancal Radial Dianteiro 2")
+        self.c_tmp_mancal_rad_dia_2 = c.CondicionadorExponencial(self.l_tmp_mancal_rad_dia_2, CONDIC_INDISPONIBILIZAR)
+        self.condicionadores_essenciais.append(self.c_tmp_mancal_rad_dia_2)
+        self.condicionadores_atenuadores.append(self.c_tmp_mancal_rad_dia_2)
+
+        # MRT 2
+        self.l_tmp_mancal_rad_tra_2 = lei.LeituraModbus(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}"]["TEMPERATURA_08"], op=4, descr=f"[UG{self.id}] Temperatura Mancal Radial Traseiro 2")
+        self.c_tmp_mancal_rad_tra_2 = c.CondicionadorExponencial(self.l_tmp_mancal_rad_tra_2, CONDIC_INDISPONIBILIZAR)
+        self.condicionadores_essenciais.append(self.c_tmp_mancal_rad_tra_2)
+        self.condicionadores_atenuadores.append(self.c_tmp_mancal_rad_tra_2)
+
+        # Saída de ar
+        self.l_tmp_saida_de_ar = lei.LeituraModbus(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}"]["TEMPERATURA_10"], op=4, descr=f"[UG{self.id}] Saída de Ar")
+        self.c_tmp_saida_de_ar = c.CondicionadorExponencial(self.l_tmp_saida_de_ar, CONDIC_INDISPONIBILIZAR)
+        self.condicionadores_essenciais.append(self.c_tmp_saida_de_ar)
+        self.condicionadores_atenuadores.append(self.c_tmp_saida_de_ar)
+
+        # Mancal Guia Radial
+        self.l_tmp_mancal_guia_radial = lei.LeituraModbus(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}"]["TEMP_MC_GUIA_RADIAL"], descr=f"[UG{self.id}] Mancal Guia Radial",)
+        self.c_tmp_mancal_guia_radial = c.CondicionadorExponencial(self.l_tmp_mancal_guia_radial, CONDIC_INDISPONIBILIZAR)
+        self.condicionadores_essenciais.append(self.c_tmp_mancal_guia_radial)
+        self.condicionadores_atenuadores.append(self.c_tmp_mancal_guia_radial)
+
+        # Mancal Guia Escora
+        self.l_tmp_mancal_guia_escora = lei.LeituraModbus(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}"]["TEMP_MC_GUIA_ESCORA"], descr=f"[UG{self.id}] Mancal Guia Escora")
+        self.c_tmp_mancal_guia_escora = c.CondicionadorExponencial(self.l_tmp_mancal_guia_escora, CONDIC_INDISPONIBILIZAR)
+        self.condicionadores_essenciais.append(self.c_tmp_mancal_guia_escora)
+        self.condicionadores_atenuadores.append(self.c_tmp_mancal_guia_escora)
+
+        # Mancal Guia Contra Escora
+        self.l_tmp_mancal_guia_contra = lei.LeituraModbus(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}"]["TEMP_MC_GUIA_CONTRA_ESCORA"], descr=f"[UG{self.id}] Mancal Guia Contra Escora")
+        self.c_tmp_mancal_guia_contra = c.CondicionadorExponencial(self.l_tmp_mancal_guia_contra, CONDIC_INDISPONIBILIZAR)
+        self.condicionadores_essenciais.append(self.c_tmp_mancal_guia_contra)
+        self.condicionadores_atenuadores.append(self.c_tmp_mancal_guia_contra)
+
+
+        self.l_cmd_emerg_via_super = lei.LeituraModbusCoil(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}"]["EMERGENCIA_SUPER"], descr=f"[UG{self.id}] Emergência Via Supervisório")
+        self.condicionadores_essenciais.append(c.CondicionadorBase(self.l_cmd_emerg_via_super, CONDIC_NORMALIZAR))
+
+        self.l_trip_eletrico = lei.LeituraModbusCoil(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}"]["TRIP_ELETRICO"], descr=f"[UG{self.id}] Trip Elétrico")
+        self.condicionadores_essenciais.append(c.CondicionadorBase(self.l_trip_eletrico, CONDIC_NORMALIZAR, [UG_SINCRONIZADA], self.id))
+
+        self.l_trip_700G = lei.LeituraModbusCoil(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}"]["700G_TRIP"], descr=f"[UG{self.id}] SEL 700G Trip")
+        self.condicionadores_essenciais.append(c.CondicionadorBase(self.l_trip_700G, CONDIC_NORMALIZAR, [UG_SINCRONIZADA], self.id))
+
+        self.l_trip_mecanico = lei.LeituraModbusCoil(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}"]["TRIP_MECANICO"], descr=f"[UG{self.id}] Trip Mecâncio")
+        self.condicionadores_essenciais.append(c.CondicionadorBase(self.l_trip_mecanico, CONDIC_INDISPONIBILIZAR))
+
+        self.l_trip_rv = lei.LeituraModbusCoil(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}"]["RV_TRIP"], descr=f"[UG{self.id}] RV Trip")
+        self.condicionadores_essenciais.append(c.CondicionadorBase(self.l_trip_rv, CONDIC_INDISPONIBILIZAR))
+
+        self.l_trip_avr = lei.LeituraModbusCoil(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}"]["AVR_TRIP"], descr=f"[UG{self.id}] AVR Trip")
+        self.condicionadores_essenciais.append(c.CondicionadorBase(self.l_trip_avr, CONDIC_INDISPONIBILIZAR))
+
+        self.l_SEL700G_atuado = lei.LeituraModbusCoil(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}"]["SEL700G_ATUADO"], descr=f"[UG{self.id}] SEL 700G Atuado")
+        self.condicionadores_essenciais.append(c.CondicionadorBase(self.l_SEL700G_atuado, CONDIC_INDISPONIBILIZAR))
+
+        self.l_bloq_A86M_atuado = lei.LeituraModbusCoil(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}"]["BLOQ_A86M_ATUADO"], descr=f"[UG{self.id}] Bloqueio 86M Atuado")
+        self.condicionadores_essenciais.append(c.CondicionadorBase(self.l_bloq_A86M_atuado, CONDIC_INDISPONIBILIZAR))
+
+        self.l_bloq_A86H_atuado = lei.LeituraModbusCoil(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}"]["BLOQ_A86H_ATUADO"], descr=f"[UG{self.id}] Bloqueio 86H Atuado")
+        self.condicionadores_essenciais.append(c.CondicionadorBase(self.l_bloq_A86H_atuado, CONDIC_NORMALIZAR, [UG_SINCRONIZADA], self.id))
+
+
+        ### CONDICIONADORES NORMAIS
+        self.l_falha_dj_tps_sinc_G2 = lei.LeituraModbusCoil(self.clp["SA"], REG_SA["FALHA_DJ_TPS_SINCR_G2"], descr=f"[SA-UG{self.id}] Trasformador Potencial Disjuntor Sincronização Falha")
+        self.condicionadores.append(c.CondicionadorBase(self.l_falha_dj_tps_sinc_G2, CONDIC_INDISPONIBILIZAR))
+
+        self.l_dj1_alarme_press_baixa = lei.LeituraModbusCoil(self.clp["SA"], REG_SA["DJL_ALM_PRESS_BAIXA"], descr=f"[SA-UG{self.id}] Disjutor 1 Alarme Pressão Baixa")
+        self.condicionadores.append(c.CondicionadorBase(self.l_dj1_alarme_press_baixa, CONDIC_INDISPONIBILIZAR))
+
+        self.l_dj1_bloq_press_baixa = lei.LeituraModbusCoil(self.clp["SA"], REG_SA["DJL_BLOQ_PRESS_BAIXA"], descr=f"[SA-UG{self.id}] Disjuntor 1 Bloqueio Pressão Baixa")
+        self.condicionadores.append(c.CondicionadorBase(self.l_dj1_bloq_press_baixa, CONDIC_INDISPONIBILIZAR))
+
+        self.l_UHRV_trip_bomba_1 = lei.LeituraModbusCoil(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}"]["UHRV_TRIP_BOMBA_1"], descr=f"[UG{self.id}] UHRV Bomba 1 Trip")
+        self.condicionadores.append(c.CondicionadorBase(self.l_UHRV_trip_bomba_1, CONDIC_INDISPONIBILIZAR))
+
+        self.l_UHRV_Trip_bomba_2 = lei.LeituraModbusCoil(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}"]["UHRV_TRIP_BOMBA_2"], descr=f"[UG{self.id}] UHRV Bomba 2 Trip")
+        self.condicionadores.append(c.CondicionadorBase(self.l_UHRV_Trip_bomba_2, CONDIC_INDISPONIBILIZAR))
+
+        self.l_UHLM_trip_bomba_1 = lei.LeituraModbusCoil(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}"]["UHLM_TRIP_BOMBA_1"], descr=f"[UG{self.id}] UHLM Bomba 1 Trip")
+        self.condicionadores.append(c.CondicionadorBase(self.l_UHLM_trip_bomba_1, CONDIC_INDISPONIBILIZAR))
+
+        self.l_UHLM_trip_bomba_2 = lei.LeituraModbusCoil(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}"]["UHLM_TRIP_BOMBA_2"], descr=f"[UG{self.id}] UHLM Bomba 2 Trip")
+        self.condicionadores.append(c.CondicionadorBase(self.l_UHLM_trip_bomba_2, CONDIC_INDISPONIBILIZAR))
+
+        self.l_trip_dj52A1 = lei.LeituraModbusCoil(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}"]["QCAUG_TRIP_DJ_52A1"], descr=f"[UG{self.id}] QCAUG Disjuntor 52A1 Trip")
+        self.condicionadores.append(c.CondicionadorBase(self.l_trip_dj52A1, CONDIC_INDISPONIBILIZAR))
+
+        self.l_trip_alim_painel_freio = lei.LeituraModbusCoil(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}"]["TRIP_ALIM_FREIO"], descr=f"[UG{self.id}] Alimentação Painel Freio Trip")
+        self.condicionadores.append(c.CondicionadorBase(self.l_trip_alim_painel_freio, CONDIC_INDISPONIBILIZAR))
+
+        self.l_trip_dj_agrup = lei.LeituraModbusCoil(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}"]["QCAUG_TRIP_DJ_AGRUP"], descr=f"[UG{self.id}] QCAUG Disjuntor Agrupamento Trip")
+        self.condicionadores.append(c.CondicionadorBase(self.l_trip_dj_agrup, CONDIC_INDISPONIBILIZAR))
+
+        self.l_AVR_falha_interna = lei.LeituraModbusCoil(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}"]["AVR_FALHA_INTERNA"], descr=f"[UG{self.id}] AVR Falha Interna")
+        self.condicionadores.append(c.CondicionadorBase(self.l_AVR_falha_interna, CONDIC_INDISPONIBILIZAR))
+
+        self.l_SEL700G_falha_interna = lei.LeituraModbusCoil(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}"]["SEL700G_FALHA_INTERNA"], descr=f"[UG{self.id}] SEL 700G Falha Interna")
+        self.condicionadores.append(c.CondicionadorBase(self.l_SEL700G_falha_interna, CONDIC_INDISPONIBILIZAR))
+
+        self.l_falha_painel_380Vca = lei.LeituraModbusCoil(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}"]["QCAUG_FALHA_380VCA"], descr=f"[UG{self.id}] QCAUG Falha 380 VCA Painel")
+        self.condicionadores.append(c.CondicionadorBase(self.l_falha_painel_380Vca, CONDIC_NORMALIZAR))
+
+        self.l_falta_125Vcc = lei.LeituraModbusCoil(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}"]["Falta125Vcc"], descr=f"[UG{self.id}] Falta 125 Vcc")
+        self.condicionadores.append(c.CondicionadorBase(self.l_falta_125Vcc, CONDIC_INDISPONIBILIZAR))
+
+        self.l_falta_com_125Vcc = lei.LeituraModbusCoil(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}"]["FALTA_125VCC"], descr=f"[UG{self.id}] Falta 125 Vcc Com")
+        self.condicionadores.append(c.CondicionadorBase(self.l_falta_com_125Vcc, CONDIC_INDISPONIBILIZAR))
+
+        self.l_falta_alim_val_125Vcc = lei.LeituraModbusCoil(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}"]["FALTA_125VCC_ALIM_VAL"], descr=f"[UG{self.id}] Falta 125 Vcc Alimentação")
+        self.condicionadores.append(c.CondicionadorBase(self.l_falta_alim_val_125Vcc, CONDIC_INDISPONIBILIZAR))
+
+        self.l_falta_fluxo_oleo_mc = lei.LeituraModbusCoil(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}"]["FALTA_FLUXO_OLEO_MC"], descr=f"[UG{self.id}] Falta Fluxo Óleo MC")
+        self.condicionadores.append(c.CondicionadorBase(self.l_falta_fluxo_oleo_mc, CONDIC_INDISPONIBILIZAR))
+
+        self.l_UHLM_falta_flux_troc = lei.LeituraModbusCoil(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}"]["UHLM_FALTA_FLUX_TROC"], descr=f"[UG{self.id}] UHLM Falta Fluxo")
+        self.condicionadores.append(c.CondicionadorBase(self.l_UHLM_falta_flux_troc, CONDIC_INDISPONIBILIZAR))
+
+        self.l_UHLM_falta_press_troc = lei.LeituraModbusCoil(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}"]["UHLM_FALTA_PRESS_TROC"], descr=f"[UG{self.id}] UHLM Falta Pressão") # TODO retornar para DEVE_INDISPONIBILZIA, descr=R
+        self.condicionadores.append(c.CondicionadorBase(self.l_UHLM_falta_press_troc, CONDIC_NORMALIZAR))
+
+        self.l_UHRV_niv_oleo_min_pos36 = lei.LeituraModbusCoil(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}"]["UHRV_NV_OLEO_MIN_POS36"], descr=f"[UG{self.id}] UHRV Óleo Nível Mínimo Posição 36")
+        self.condicionadores.append(c.CondicionadorBase(self.l_UHRV_niv_oleo_min_pos36, CONDIC_INDISPONIBILIZAR))
+
+        self.l_UHRV_nv_oleo_crit_pos35 = lei.LeituraModbusCoil(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}"]["UHRV_NivOleoCriticoPos35"], descr=f"[UG{self.id}] UHRV Óleo Nível Crítico Posição 35")
+        self.condicionadores.append(c.CondicionadorBase(self.l_UHRV_nv_oleo_crit_pos35, CONDIC_INDISPONIBILIZAR))
+
+        self.l_UHLM_fluxo_mc_tras = lei.LeituraModbusCoil(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}"]["UHLM_FLUXO_MC_TRAS"], descr=f"[UG{self.id}] UHLM Fluxo Traseiro MC")
+        self.condicionadores.append(c.CondicionadorBase(self.l_UHLM_fluxo_mc_tras, CONDIC_INDISPONIBILIZAR))
+
+        self.l_UHLM_nivel_min_oleo = lei.LeituraModbusCoil(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}"]["UHLM_NV_MIN_OLEO"], descr=f"[UG{self.id}] UHLM Óleo Nível Mínimo")
+        self.condicionadores.append(c.CondicionadorBase(self.l_UHLM_nivel_min_oleo, CONDIC_INDISPONIBILIZAR))
+
+        self.l_UHLM_nivel_crit_oleo = lei.LeituraModbusCoil(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}"]["UHLM_NV_CRIT_OLEO"], descr=f"[UG{self.id}] UHLM Óleo Nível Crítico")
+        self.condicionadores.append(c.CondicionadorBase(self.l_UHLM_nivel_crit_oleo, CONDIC_INDISPONIBILIZAR))
+
+        self.l_UHLM_fluxo_mc_dianteiro = lei.LeituraModbusCoil(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}"]["UHLM_FLUXO_MC_DIANT"], descr=f"[UG{self.id}] UHLM Fluxo Dianteiro")
+        self.condicionadores.append(c.CondicionadorBase(self.l_UHLM_fluxo_mc_dianteiro, CONDIC_INDISPONIBILIZAR))
+
+        self.l_UHLM_filt_press_1_100_sujo = lei.LeituraModbusCoil(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}"]["UHLM_FILTR_1_PRES_SUJO_SUJO"], descr=f"[UG{self.id}] UHLM Filtro 1 Pressão 100% Sujo")
+        self.condicionadores.append(c.CondicionadorBase(self.l_UHLM_filt_press_1_100_sujo, CONDIC_INDISPONIBILIZAR))
+
+        self.l_UHLM_filt_press_2_100_sujo = lei.LeituraModbusCoil(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}"]["UHLM_FILTR_2_PRES_SUJO_SUJO"], descr=f"[UG{self.id}] UHLM Filtro 2 Pressão 100% Sujo")
+        self.condicionadores.append(c.CondicionadorBase(self.l_UHLM_filt_press_2_100_sujo, CONDIC_INDISPONIBILIZAR))
+
+        self.l_freio_sem_energia = lei.LeituraModbusCoil(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}"]["FREIO_SEM_ENERGIA"], descr=f"[UG{self.id}] Freio Sem Energia")
+        self.condicionadores.append(c.CondicionadorBase(self.l_freio_sem_energia, CONDIC_INDISPONIBILIZAR))
+
+        self.l_freio_filtro_saturado = lei.LeituraModbusCoil(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}"]["FREIO_FILTRO_SATURADO"], descr=f"[UG{self.id}] Freio Filtro Saturado")
+        self.condicionadores.append(c.CondicionadorBase(self.l_freio_filtro_saturado, CONDIC_INDISPONIBILIZAR))
+
+        self.l_filtro_retor_100_sujo = lei.LeituraModbusCoil(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}"]["FILTRO_RET_SUJO_SUJO"], descr=f"[UG{self.id}] UHRV Filtro Retorno 100% Sujo")
+        self.condicionadores.append(c.CondicionadorBase(self.l_filtro_retor_100_sujo, CONDIC_INDISPONIBILIZAR))
+
+        self.l_filtro_press_100_sujo = lei.LeituraModbusCoil(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}"]["FILTRO_PRESS_SUJO_SUJO"], descr=f"[UG{self.id}] UHRV Filtro Pressão 100% Sujo")
+        self.condicionadores.append(c.CondicionadorBase(self.l_filtro_press_100_sujo, CONDIC_INDISPONIBILIZAR))
+
+        self.l_bomba_mec_filtro_press_100_sujo = lei.LeituraModbusCoil(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}"]["FILTR_1_PRESS_BOMBA_MEC_SUJO"], descr=f"[UG{self.id}] UHRV Bomba Filtro Pressão 100% Sujo")
+        self.condicionadores.append(c.CondicionadorBase(self.l_bomba_mec_filtro_press_100_sujo, CONDIC_INDISPONIBILIZAR))
+
+        self.l_pas_desalinhadas = lei.LeituraModbusCoil(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}"]["PAS_DESALINHADAS"], descr=f"[UG{self.id}] Pás Desalinhadas")
+        self.condicionadores.append(c.CondicionadorBase(self.l_pas_desalinhadas, CONDIC_INDISPONIBILIZAR))
+
+        self.l_valv_borb_travada = lei.LeituraModbusCoil(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}"]["VALV_BORB_TRAVADA_FECHADA"], descr=f"[UG{self.id}] Válvula Borboleta Travada")
+        self.condicionadores.append(c.CondicionadorBase(self.l_valv_borb_travada, CONDIC_INDISPONIBILIZAR))
+
+        self.l_sobre_velo_mec_pos18 = lei.LeituraModbusCoil(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}"]["SOBRE_VELO_MEC_POS18"], descr=f"[UG{self.id}] Sobre Velocidade Posição 18")
+        self.condicionadores.append(c.CondicionadorBase(self.l_sobre_velo_mec_pos18, CONDIC_INDISPONIBILIZAR))
+
+        self.l_nv_mt_alto_poco_dren = lei.LeituraModbusCoil(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}"]["NV_MUITO_ALTO_POCO_DREN"], descr=f"[UG{self.id}] Poço Drenagem Nível Alto")
+        self.condicionadores.append(c.CondicionadorBase(self.l_nv_mt_alto_poco_dren, CONDIC_INDISPONIBILIZAR))
+
+        self.l_trip_vibr_1 = lei.LeituraModbusCoil(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}"]["TRIP_VIBR_1"], descr=f"[UG{self.id}] Vibração 1 Trip")
+        self.condicionadores.append(c.CondicionadorBase(self.l_trip_vibr_1, CONDIC_INDISPONIBILIZAR))
+
+        self.l_trip_vibr_2 = lei.LeituraModbusCoil(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}"]["TRIP_VIBR_2"], descr=f"[UG{self.id}] Vibração 2 Trip")
+        self.condicionadores.append(c.CondicionadorBase(self.l_trip_vibr_2, CONDIC_INDISPONIBILIZAR))
+
+        self.l_trip_temp_UHRV = lei.LeituraModbusCoil(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}"]["TRIP_TEMP_UHRV"], descr=f"[UG{self.id}] UHRV Trip Temperatura")
+        self.condicionadores.append(c.CondicionadorBase(self.l_trip_temp_UHRV, CONDIC_INDISPONIBILIZAR))
+
+        self.l_trip_temp_UHLM = lei.LeituraModbusCoil(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}"]["TRIP_TEMP_UHLM"], descr=f"[UG{self.id}] UHLM Trip Temperatura")
+        self.condicionadores.append(c.CondicionadorBase(self.l_trip_temp_UHLM, CONDIC_INDISPONIBILIZAR))
+
+        self.l_trip_temp_gaxeteiro = lei.LeituraModbusCoil(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}"]["TRIP_TEMP_GAXETEIRO"], descr=f"[UG{self.id}] Gaxeteiro Trip Temperatura")
+        self.condicionadores.append(c.CondicionadorBase(self.l_trip_temp_gaxeteiro, CONDIC_INDISPONIBILIZAR))
+
+        self.l_trip_temp_mc_guia_rad = lei.LeituraModbusCoil(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}"]["TRIP_TEMP_MC_GUIA_RADIAL"], descr=f"[UG{self.id}] Mancal Guia Radial Trip Temperatura")
+        self.condicionadores.append(c.CondicionadorBase(self.l_trip_temp_mc_guia_rad, CONDIC_INDISPONIBILIZAR))
+
+        self.l_trip_temp_mc_guia_esc = lei.LeituraModbusCoil(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}"]["TRIP_TEMP_MC_GUIA_ESCORA"], descr=f"[UG{self.id}] Mancal Guia Escora Trip Temperatura")
+        self.condicionadores.append(c.CondicionadorBase(self.l_trip_temp_mc_guia_esc, CONDIC_INDISPONIBILIZAR))
+
+        self.l_trip_temp_mc_guia_con_esc = lei.LeituraModbusCoil(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}"]["TRIP_TEMP_MC_GUIA_CONTRA_ESCORA"], descr=f"[UG{self.id}] Mancal Guia Contra Escora Trip Temperatura")
+        self.condicionadores.append(c.CondicionadorBase(self.l_trip_temp_mc_guia_con_esc, CONDIC_INDISPONIBILIZAR))
+
+        self.l_falha_CLP = lei.LeituraModbusCoil(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}"]["FALHA_COMUNICA_CLP"], descr=f"[UG{self.id}] CLP Falha")
+        self.condicionadores.append(c.CondicionadorBase(self.l_falha_CLP, CONDIC_INDISPONIBILIZAR))
+
+        self.l_q_negativa = lei.LeituraModbusCoil(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}"]["IHM_Q_NEGATIVA"], descr=f"[UG{self.id}] Q Negativa")
+        self.condicionadores.append(c.CondicionadorBase(self.l_q_negativa, CONDIC_INDISPONIBILIZAR))
+
+        self.l_falha_remota = lei.LeituraModbusCoil(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}"]["FALHA_COMUNICA_REMOTA"], descr=f"[UG{self.id}] Falha Remota")
+        self.condicionadores.append(c.CondicionadorBase(self.l_falha_remota, CONDIC_INDISPONIBILIZAR))
+
+        self.l_falha_ibnt_dj_ger = lei.LeituraModbusCoil(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}"]["FALHA_IBNT_DJ_GER"], descr=f"[UG{self.id}] Dijuntor Gerador Falha")
+        self.condicionadores.append(c.CondicionadorBase(self.l_falha_ibnt_dj_ger, CONDIC_INDISPONIBILIZAR))
+
+        self.l_UHRV_falha_acion_bba_M1 = lei.LeituraModbusCoil(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}"]["UHRV_FALHA_ACION_BOMBA_M1"], descr=f"[UG{self.id}] UHRV Bomba 1 Falha Acionamento")
+        self.condicionadores.append(c.CondicionadorBase(self.l_UHRV_falha_acion_bba_M1, CONDIC_INDISPONIBILIZAR))
+
+        self.l_UHRV_falha_acion_bba_M2 = lei.LeituraModbusCoil(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}"]["UHRV_FALHA_ACION_BOMBA_M2"], descr=f"[UG{self.id}] UHRV Bomba 2 Falha Acionamento")
+        self.condicionadores.append(c.CondicionadorBase(self.l_UHRV_falha_acion_bba_M2, CONDIC_INDISPONIBILIZAR))
+
+        self.l_UHLM_falha_acion_bba_M1 = lei.LeituraModbusCoil(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}"]["UHLM_FALHA_ACION_BOMBA_M1"], descr=f"[UG{self.id}] UHLM Bomba 1 Falha Acionamento")
+        self.condicionadores.append(c.CondicionadorBase(self.l_UHLM_falha_acion_bba_M1, CONDIC_INDISPONIBILIZAR))
+
+        self.l_UHLM_falha_acion_bba_M2 = lei.LeituraModbusCoil(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}"]["UHLM_FALHA_ACION_BOMBA_M2"], descr=f"[UG{self.id}] UHLM Bomba 2 Falha Acionamento")
+        self.condicionadores.append(c.CondicionadorBase(self.l_UHLM_falha_acion_bba_M2, CONDIC_INDISPONIBILIZAR))
+
+        self.l_falha_acion_fecha_valv_borb = lei.LeituraModbusCoil(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}"]["FALHA_ACIONA_FECHA_VALV_BORB"], descr=f"[UG{self.id}] Válvula Borboleta Falha Acionamento Fechamento")
+        self.condicionadores.append(c.CondicionadorBase(self.l_falha_acion_fecha_valv_borb, CONDIC_INDISPONIBILIZAR))

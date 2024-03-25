@@ -4,7 +4,7 @@ import mariadb.connections
 from datetime import datetime
 
 class BancoDados:
-    def __init__(self, pool_name: str):
+    def __init__(self, pool_name: "str"):
 
         # ATRIBUIÇÃO DE VARIÁVEIS PÚBLICAS
 
@@ -125,7 +125,20 @@ class BancoDados:
         self.conn.commit()
         return ts
 
-    def update_modo_moa(self, modo: bool) -> "None":
+    def update_nivel_alvo(self, valor: "float") -> "None":
+        """
+        Função para atualizar o valor de nível alvo quando alterado por agendamento.
+        """
+
+        self.cursor.execute(
+            "UPDATE parametros_parametrosusina "
+            f"SET nv_alvo = {valor} "
+            "WHERE id = 1"
+            )
+        
+        self.conn.commit()
+
+    def update_modo_moa(self, modo: "bool") -> "None":
         """
         Função para atualizar o modo do MOA no Banco.
         """
@@ -235,7 +248,7 @@ class BancoDados:
         )
         self.conn.commit()
 
-    def update_alarmes(self, valores) -> "None":
+    def update_alarmes(self, valores: "list") -> "None":
         """
         Função para atualizar a lista de acionamentos/alarmes para visualização
         na interface WEB.
@@ -243,7 +256,7 @@ class BancoDados:
 
         self.cursor.execute(
             "INSERT INTO alarmes_alarmes "
-            "VALUES (%s, %s, %s);",
+            "VALUES (%s, %s, %s, %s, %s);",
             tuple(valores)
         )
         self.conn.commit()

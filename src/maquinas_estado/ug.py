@@ -1,17 +1,17 @@
 import logging
 
-from time import time
+import src.unidade_geracao as u
 
 from threading import Thread
 
 from src.dicionarios.const import *
 
+
 logger = logging.getLogger("logger")
 
-class State:
-    def __init__(self, parent=None):
 
-        # VERIFICAÇÃO DE ARGUENTOS
+class State:
+    def __init__(self, parent: "u.UnidadeGeracao"=None):
 
         if not parent:
             logger.error("[UG-SM] Houve um erro ao importar a classe Unidade de Geração")
@@ -19,7 +19,8 @@ class State:
         else:
             self.parent = parent
 
-    def step(self) -> object:
+
+    def step(self) -> "object":
         """
         Função abstrata para execução do passo da Máquina de Estados das Unidades
         de Geração.
@@ -27,50 +28,49 @@ class State:
 
         pass
 
+
 class StateManual(State):
     def __init__(self, parent):
         super().__init__(parent)
 
-        # ATRIBUIÇÃO DE VARIÁVEIS PÚBLICAS
-
-        self.parent.codigo_state = UG_SM_MANUAL
+        self.parent.estado = UG_SM_MANUAL
 
         self.parent.borda_parar = False
 
-        # FINALIZAÇÃO DO __INIT__
+        self.parent.atualizar_registro_estados()
 
         logger.debug("")
         logger.info(f"[UG{self.parent.id}] Entrando no estado:                 \"Manual\". Para retornar a operação autônoma, favor agendar na interface web")
-        logger.debug(f"[UG{self.parent.id}] Tentativas de normalização:         {self.parent.tentativas_de_normalizacao}/{self.parent.limite_tentativas_de_normalizacao + 1}")
+        logger.debug(f"[UG{self.parent.id}] Tentativas de normalização:         {self.parent.tentativas_normalizacao}/{self.parent.__limite_tentativas}")
 
 
-    def step(self) -> State:
+    def step(self) -> "State":
         """
         Função para execução do passo da Máquina de Estados no modo Manual.
 
         Apenas atualiza o setpoint com a leitura de potência atual da Unidade.
         """
 
-        self.parent.setpoint = self.parent.leitura_potencia
+        self.parent.setpoint = self.parent.potencia
         return self
+
 
 class StateIndisponivel(State):
     def __init__(self, parent):
         super().__init__(parent)
 
-        # ATRIBUIÇÃO DE VARIÁVEIS PÚBLICAS
-
-        self.parent.codigo_state = UG_SM_INDISPONIVEL
+        self.parent.estado = UG_SM_INDISPONIVEL
 
         self.parent.borda_parar = True if self.parent.borda_parar else False
 
-        # FINALIZAÇÃO DO __INIT__
+        self.parent.atualizar_registro_estados()
 
         logger.debug("")
         logger.info(f"[UG{self.parent.id}] Entrando no estado:                 \"Indisponível\". Para retornar a operação autônoma, favor agendar na interface web")
-        logger.debug(f"[UG{self.parent.id}] Tentativas de normalização:         {self.parent.tentativas_de_normalizacao}/{self.parent.limite_tentativas_de_normalizacao + 1}")
+        logger.debug(f"[UG{self.parent.id}] Tentativas de normalização:         {self.parent.tentativas_normalizacao}/{self.parent.__limite_tentativas}")
 
-    def step(self) -> State:
+
+    def step(self) -> "State":
         """
         Função para execução do passo da Máquina de Estados no modo Indisponível.
 
@@ -80,24 +80,23 @@ class StateIndisponivel(State):
         self.parent.bloquear_unidade()
         return self
 
+
 class StateRestrito(State):
     def __init__(self, parent):
         super().__init__(parent)
 
-        # ATRIBUIÇÃO DE VARIÁVEIS PÚBLICAS
+        self.parent.estado = UG_SM_RESTRITA
 
-        self.parent.codigo_state = UG_SM_RESTRITA
-
-        self.parent.parar_timer = False
         self.parent.borda_parar = True if self.parent.borda_parar else False
 
-        # FINALIZAÇÃO DO __INIT__
+        self.parent.atualizar_registro_estados()
 
         logger.debug("")
         logger.info(f"[UG{self.parent.id}] Entrando no estado                  \"Restrito\"")
-        logger.debug(f"[UG{self.parent.id}] Tentativas de normalização:         {self.parent.tentativas_de_normalizacao}/{self.parent.limite_tentativas_de_normalizacao + 1}")
+        logger.debug(f"[UG{self.parent.id}] Tentativas de normalização:         {self.parent.tentativas_normalizacao}/{self.parent.__limite_tentativas}")
 
-    def step(self) -> State:
+
+    def step(self) -> "State":
         """
         Função para execução do passo da Máquina de Estados no modo Restrito.
 
@@ -111,8 +110,8 @@ class StateRestrito(State):
         """
 
         self.parent.bloquear_unidade()
-        self.parent.oco.controle_limites_operacao()
-        flag = self.parent.oco.verificar_condicionadores()
+        self.parent.controle_limites_operacao()
+        flag = self.parent.verificar_condicionadores()
 
         if flag == CONDIC_INDISPONIBILIZAR:
             logger.warning(f"[UG{self.parent.id}] UG detectou condicionadores com gravidade alta, indisponibilizando UG.")
@@ -137,25 +136,25 @@ class StateRestrito(State):
             logger.debug(f"[UG{self.parent.id}] Aguardando normalização sem tempo pré-definido")
             return self
 
+
 class StateDisponivel(State):
     def __init__(self, parent):
         super().__init__(parent)
 
-        # ATRIBUIÇÃO DE VARIÁVEIS PÚBLICAS
+        self.parent.estado = UG_SM_DISPONIVEL
 
-        self.parent.codigo_state = UG_SM_DISPONIVEL
-        self.parent.tentativas_de_normalizacao = 0
         self.parent.borda_parar = False
+        self.parent.tentativas_normalizacao = 0
 
-        # FINALIZAÇÃO DO __INIT__
+        self.parent.atualizar_registro_estados()
 
         logger.debug("")
         logger.info(f"[UG{self.parent.id}] Entrando no estado:                 \"Disponível\"")
-        logger.debug(f"[UG{self.parent.id}] Tentativas de normalização:         {self.parent.tentativas_de_normalizacao}/{self.parent.limite_tentativas_de_normalizacao + 1}")
+        logger.debug(f"[UG{self.parent.id}] Tentativas de normalização:         {self.parent.tentativas_normalizacao}/{self.parent.__limite_tentativas}")
         logger.debug("")
 
 
-    def step(self) -> State:
+    def step(self) -> "State":
         """
         Função para execução do passo da Máquina de Estados no modo Disponível.
 
@@ -165,8 +164,8 @@ class StateDisponivel(State):
         de etapas.
         """
 
-        self.parent.oco.controle_limites_operacao()
-        flag = self.parent.oco.verificar_condicionadores()
+        self.parent.controle_limites_operacao()
+        flag = self.parent.verificar_condicionadores()
 
         if flag == CONDIC_INDISPONIBILIZAR:
             logger.warning(f"[UG{self.parent.id}] Indisponibilizando UG.")
@@ -180,8 +179,7 @@ class StateDisponivel(State):
             return self if self.parent.normalizar_unidade() else StateIndisponivel(self.parent)
 
         else:
-            self.parent.ajuste_ganho_cx_espiral()
+            self.parent.atenuar_carga()
             self.parent.controle_etapas()
-
 
             return self
