@@ -27,7 +27,7 @@ if __name__ == '__main__':
         logger.debug("Iniciando Servidor Modbus...")
         sim_db = DataBank()
 
-        server = ModbusServer(host="0.0.0.0", port=5000, no_block=True)
+        server = ModbusServer(host="0.0.0.0", port=502, no_block=True)
         server.start()
 
         for R in REG:
@@ -54,18 +54,18 @@ if __name__ == '__main__':
         thread_temporizador = threading.Thread(target = tempo.run, args=())
         thread_usina = threading.Thread(target = usn.Usn(compartilhado, sim_db, tempo).run, args=())
         thread_gui = threading.Thread(target = gui.start_gui, args=(compartilhado,))
-        thread_controlador = threading.Thread(target=controlador.Controlador(compartilhado,).run, args=())
+        # thread_controlador = threading.Thread(target=controlador.Controlador(compartilhado,).run, args=())
 
         logger.debug("Rodando Simulador...")
         thread_temporizador.start()
         thread_usina.start()
         thread_gui.start()
-        thread_controlador.start()
+        # thread_controlador.start()
 
         thread_temporizador.join()
         thread_usina.join()
         thread_gui.join()
-        thread_controlador.join()
+        # thread_controlador.join()
 
         logger.debug("Fim da Simulação.")
 

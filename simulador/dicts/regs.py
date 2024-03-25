@@ -7,15 +7,15 @@ REG = {
     "SA_Condicionador":         2,
 
     # Subestação
-    "SE_R":                     16 + 40000,
-    "SE_S":                     17 + 40000,
-    "SE_T":                     18 + 40000,
+    "SE_R":                     16 + 1000,
+    "SE_S":                     17 + 1000,
+    "SE_T":                     18 + 1000,
 
-    "SE_P":                     26 + 40000,
+    "SE_P":                     26 + 1000,
 
 
     # Tomada da Água
-    "TDA_NivelMontante":        12 + 50000,
+    "TDA_NivelMontante":        12 + 2000,
 
 
 
