@@ -4,7 +4,6 @@ import numpy as np
 
 from time import sleep
 from datetime import datetime
-from logging.config import fileConfig
 from pyModbusTCP.server import DataBank
 
 from ug import Ug
@@ -14,8 +13,7 @@ from dicts.regs import REG
 from funcs.temporizador import Temporizador
 
 
-fileConfig("C:/opt/operacao-autonoma/logger_config.ini")
-logger = logging.getLogger("sim")
+logger = logging.getLogger("__main__")
 
 lock = threading.Lock()
 

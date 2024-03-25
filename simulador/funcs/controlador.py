@@ -3,14 +3,11 @@ import mariadb
 import logging
 import threading
 
-from logging.config import fileConfig
-
 from time import sleep
 from datetime import datetime
 
 
-fileConfig("C:/opt/operacao-autonoma/logger_config.ini")
-logger = logging.getLogger("sim")
+logger = logging.getLogger("__main__")
 
 
 lock = threading.Lock()
@@ -21,7 +18,7 @@ class Controlador:
         self.dict = compartilhado
 
         self.cnx = mariadb.ConnectionPool(
-            host='172.21.15.228',
+            host='172.21.15.130',
             user='moa',
             password='&264H3$M@&z$',
             database='debug',
