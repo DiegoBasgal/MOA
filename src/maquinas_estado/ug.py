@@ -134,6 +134,7 @@ class StateDisponivel(State):
             return self if self.parent.normalizar_unidade() else StateIndisponivel(self.parent)
 
         else:
+            self.parent.atenuar_carga()
             self.parent.controle_etapas()
 
             return self

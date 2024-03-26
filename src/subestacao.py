@@ -81,9 +81,9 @@ class Subestacao:
             if cls.status_dj_linha.valor:
                 return True
 
-            # elif not sa.ServicoAuxiliar.status_dj_tsa.valor:
-            #     logger.info("[SE]  Não foi possível fechar o Disjuntor de Linha, pois o Disjuntor do SA está aberto")
-            #     return False
+            elif not sa.ServicoAuxiliar.status_dj_tsa.valor:
+                logger.info("[SE]  Não foi possível fechar o Disjuntor de Linha, pois o Disjuntor do SA está aberto")
+                return False
 
             else:
                 logger.info(f"[SE]  O Disjuntor de Linha está aberto!")
@@ -105,9 +105,9 @@ class Subestacao:
         """
 
         try:
-            if (TENSAO_LINHA_BAIXA < cls.tensao_rs.valor < TENSAO_LINHA_ALTA) \
-                and (TENSAO_LINHA_BAIXA < cls.tensao_st.valor < TENSAO_LINHA_ALTA) \
-                and (TENSAO_LINHA_BAIXA < cls.tensao_tr.valor < TENSAO_LINHA_ALTA):
+            if (TENSAO_LINHA_BAIXA <= cls.tensao_rs.valor <= TENSAO_LINHA_ALTA) \
+                and (TENSAO_LINHA_BAIXA <= cls.tensao_st.valor <= TENSAO_LINHA_ALTA) \
+                and (TENSAO_LINHA_BAIXA <= cls.tensao_tr.valor <= TENSAO_LINHA_ALTA):
                 return True
 
             else:

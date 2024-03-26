@@ -53,6 +53,13 @@ def parametros_moa_view(request, *args, **kwargs):
             usina.nv_alvo = nv_alvo if isinstance(nv_alvo, float) else usina.nv_alvo
             usina.save()
 
+        if request.POST.get("salvar_perda"):
+            aux = request.POST.get("alerta_perda_grade")
+            usina.alerta_perda_grade = (float(aux.replace(",", ".")) if aux is not None and float(aux.replace(",", ".")) > 0 else usina.alerta_perda_grade)
+
+            aux = request.POST.get("limite_perda_grade")
+            usina.limite_perda_grade = (float(aux.replace(",", ".")) if aux is not None and float(aux.replace(",", ".")) > 0 else usina.limite_perda_grade)
+
         if request.POST.get("salvar_params"):
             aux = request.POST.get("alerta_temperatura_fase_r_ug1")
             usina.alerta_temperatura_fase_r_ug1 = (float(aux.replace(",", ".")) if aux is not None and float(aux.replace(",", ".")) > 0 else usina.alerta_temperatura_fase_r_ug1)

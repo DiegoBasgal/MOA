@@ -30,10 +30,10 @@ REG_RELE = {
         "IA":                                                                           320,        # Input Register                        (OP -> Read Input Registers - 3x)
         "IB":                                                                           322,        # Input Register                        (OP -> Read Input Registers - 3x)
         "IC":                                                                           324,        # Input Register                        (OP -> Read Input Registers - 3x)
-        "VAB":                                                                          330 + 1000,        # Input Register Scale 0.1              (OP -> Read Input Registers - 3x)
-        "VBC":                                                                          332 + 1000,        # Input Register Scale 0.1              (OP -> Read Input Registers - 3x)
-        "VCA":                                                                          334 + 1000,        # Input Register Scale 0.1              (OP -> Read Input Registers - 3x)
-        "P":                                                                            353 + 1000,        # Input Register                        (OP -> Read Input Registers - 3x)
+        "VAB":                                                                          330,        # Input Register Scale 0.1              (OP -> Read Input Registers - 3x)
+        "VBC":                                                                          332,        # Input Register Scale 0.1              (OP -> Read Input Registers - 3x)
+        "VCA":                                                                          334,        # Input Register Scale 0.1              (OP -> Read Input Registers - 3x)
+        "P":                                                                            353,        # Input Register                        (OP -> Read Input Registers - 3x)
         "Q":                                                                            361,        # Input Register                        (OP -> Read Input Registers - 3x)
         "S":                                                                            369,        # Input Register                        (OP -> Read Input Registers - 3x)
         "F":                                                                            374,        # Input Register Scale 0.1              (OP -> Read Input Registers - 3x)
@@ -48,10 +48,10 @@ REG_RELE = {
         "IB":                                                                           322,        # Input Register                        (OP -> Read Input Registers - 3x)
         "IC":                                                                           324,        # Input Register                        (OP -> Read Input Registers - 3x)
         "VAB":                                                                          330,        # Input Register Scale 0.1              (OP -> Read Input Registers - 3x)
-        "VBC":                                                                          332 + 10000,        # Input Register Scale 0.1              (OP -> Read Input Registers - 3x)
-        "VCA":                                                                          334 + 10000,        # Input Register Scale 0.1              (OP -> Read Input Registers - 3x)
-        "P":                                                                            353 + 10000,        # Input Register                        (OP -> Read Input Registers - 3x)
-        "Q":                                                                            361 + 10000,        # Input Register                        (OP -> Read Input Registers - 3x)
+        "VBC":                                                                          332,        # Input Register Scale 0.1              (OP -> Read Input Registers - 3x)
+        "VCA":                                                                          334,        # Input Register Scale 0.1              (OP -> Read Input Registers - 3x)
+        "P":                                                                            353,        # Input Register                        (OP -> Read Input Registers - 3x)
+        "Q":                                                                            361,        # Input Register                        (OP -> Read Input Registers - 3x)
         "S":                                                                            369,        # Input Register                        (OP -> Read Input Registers - 3x)
         "F":                                                                            374,        # Input Register Scale 0.1              (OP -> Read Input Registers - 3x)
         "FP":                                                                           373,        # Input Register Scale 0.1              (OP -> Read Input Registers - 3x)
@@ -64,10 +64,10 @@ REG_RELE = {
         "IA":                                                                           320,        # Input Register                        (OP -> Read Input Registers - 3x)
         "IB":                                                                           322,        # Input Register                        (OP -> Read Input Registers - 3x)
         "IC":                                                                           324,        # Input Register                        (OP -> Read Input Registers - 3x)
-        "VAB":                                                                          330 + 20000,        # Input Register Scale 0.1              (OP -> Read Input Registers - 3x)
-        "VBC":                                                                          332 + 20000,        # Input Register Scale 0.1              (OP -> Read Input Registers - 3x)
-        "VCA":                                                                          334 + 20000,        # Input Register Scale 0.1              (OP -> Read Input Registers - 3x)
-        "P":                                                                            353 + 20000,        # Input Register                        (OP -> Read Input Registers - 3x)
+        "VAB":                                                                          330,        # Input Register Scale 0.1              (OP -> Read Input Registers - 3x)
+        "VBC":                                                                          332,        # Input Register Scale 0.1              (OP -> Read Input Registers - 3x)
+        "VCA":                                                                          334,        # Input Register Scale 0.1              (OP -> Read Input Registers - 3x)
+        "P":                                                                            353,        # Input Register                        (OP -> Read Input Registers - 3x)
         "Q":                                                                            361,        # Input Register                        (OP -> Read Input Registers - 3x)
         "S":                                                                            369,        # Input Register                        (OP -> Read Input Registers - 3x)
         "F":                                                                            374,        # Input Register Scale 0.1              (OP -> Read Input Registers - 3x)
@@ -82,7 +82,7 @@ REG_SASE = {
     ### COMANDOS
     ## CMD_SA_SE
     # Rearme
-    "CMD_REARME_FALHAS":                                                                [12289 + 1000, 0],
+    "CMD_REARME_FALHAS":                                                                [12289, 0],
 
     # Poço Drenagem
     "CMD_PD_BOMBA_1_PRINC":                                                             [12289, 1],
@@ -93,8 +93,8 @@ REG_SASE = {
     "CMD_DJ_TSA_FECHA":                                                                 [12289, 14],
     "CMD_DJ_GMG_ABRE":                                                                  [12289, 15],
     "CMD_DJ_GMG_FECHA":                                                                 [12288, 0],
-    "CMD_DJ_LINHA_FECHA":                                                               [12288 + 1000, 1],
-    "CMD_DJ_LINHA_ABRE":                                                                [12288 + 1000, 2],
+    "CMD_DJ_LINHA_FECHA":                                                               [12288, 1],
+    "CMD_DJ_LINHA_ABRE":                                                                [12288, 2],
 
     # Sistema Filtragem
     "CMD_SFA_COMUTA_ELEM":                                                              [12288, 3],
@@ -113,25 +113,26 @@ REG_SASE = {
     "BT_BLOQ_86BTBF":                                                                   [12309, 1],
 
     # Poço Drenagem
-    "PD_BOMBA_1_AUTOMATICO":                                                            [12309, 2],
-    "PD_BOMBA_2_ATUTOMATICO":                                                           [12309, 3],
-    "PD_BOMBA_1_DEFEITO":                                                               [12309, 13],
-    "PD_BOMBA_1_LIGADA":                                                                [12309, 14],
-    "PD_BOMBA_2_DEFEITO":                                                               [12309, 15],
-    "PD_BOMBA_2_LIGADA":                                                                [12308, 0],
-    "PD_SENS_NV_MUITO_BAIXO":                                                           [12308, 5],
-    "PD_SENS_NV_DESLIGA_BOMBAS":                                                        [12308, 6],
-    "PD_SENS_NV_LIGA_BOMBA":                                                            [12308, 7],
-    "PD_SENS_NV_ALTO":                                                                  [12308, 8],
-    "PD_SENS_NV_MUITO_ALTO":                                                            [12308, 9],
+    "PD_BOMBA_1_AUTOMATICO":                                                            [12308, 2],
+    "PD_BOMBA_2_ATUTOMATICO":                                                           [12308, 3],
+    "PD_BOMBA_1_DEFEITO":                                                               [12308, 13],
+    "PD_BOMBA_1_LIGADA":                                                                [12308, 14],
+    "PD_BOMBA_2_DEFEITO":                                                               [12308, 15],
+
+    "PD_BOMBA_2_LIGADA":                                                                [12309, 0],
+    "PD_SENS_NV_MUITO_BAIXO":                                                           [12309, 5],
+    "PD_SENS_NV_DESLIGA_BOMBAS":                                                        [12309, 6],
+    "PD_SENS_NV_LIGA_BOMBA":                                                            [12309, 7],
+    "PD_SENS_NV_ALTO":                                                                  [12309, 8],
+    "PD_SENS_NV_MUITO_ALTO":                                                            [12309, 9],
 
     # Disjuntores
-    "DJS_MODO_REMOTO":                                                                  [12309, 4],
-    "DJ_TSA_TRIP":                                                                      [12309, 5],
-    "DJ_GMG_TRIP":                                                                      [12309, 6],
-    "DJ_TSA_FECHADO":                                                                   [12308, 10],
-    "DJ_GMG_FECHADO":                                                                   [12308, 11],
-    "DJ_LINHA_FECHADO":                                                                 [12308 + 1000, 15],
+    "DJS_MODO_REMOTO":                                                                  [12308, 4],
+    "DJ_TSA_TRIP":                                                                      [12308, 5],
+    "DJ_GMG_TRIP":                                                                      [12308, 6],
+    "DJ_TSA_FECHADO":                                                                   [12309, 10],
+    "DJ_GMG_FECHADO":                                                                   [12309, 11],
+    "DJ_LINHA_FECHADO":                                                                 [12309, 15],
 
     # Relé
     "RELE_BLOQ_86BTBF":                                                                 [12309, 7],
@@ -364,8 +365,8 @@ REG_TDA = {
 
     ## LEITURAS_ANALÓGICAS
     # Níveis
-    "NV_JUSANTE_GRADE":                                                                 12348 + 2000,
-    "NV_MONTANTE_GRADE":                                                                12350 + 2000,
+    "NV_JUSANTE_GRADE":                                                                 12348,
+    "NV_MONTANTE_GRADE":                                                                12350,
 }
 
 REG_UG = {
@@ -373,14 +374,14 @@ REG_UG = {
         ### COMANDOS
         ## CMD_UG1
         # Rearme
-        "CMD_REARME_FALHAS":                                                            [12289 + 10000, 0],
+        "CMD_REARME_FALHAS":                                                            [12289, 0],
 
         # Partida/Parada
         "CMD_PARADA_EMERG":                                                             [12289, 1],
         "CMD_PARADA_NV_HABILITA":                                                       [12289, 5],
         "CMD_PARADA_NV_DESABILITA":                                                     [12289, 6],
-        "CMD_PARADA_TOTAL":                                                             [12290 + 10000, 0],
-        "CMD_SINCRONISMO":                                                              [12290 + 10000, 9],
+        "CMD_PARADA_TOTAL":                                                             [12290, 0],
+        "CMD_SINCRONISMO":                                                              [12290, 9],
 
         # Controle de Nível
         "CMD_CONTROLE_NV":                                                              [12289, 2],
@@ -510,16 +511,16 @@ REG_UG = {
         # Temperaturas
         "TEMP_PONTE_TIRISTORES":                                                        12488,
         "TEMP_CROWBAR":                                                                 12490,
-        "TEMP_GERADOR_FASE_A":                                                          12494 + 20000,
-        "TEMP_GERADOR_FASE_B":                                                          12496 + 20000,
-        "TEMP_GERADOR_FASE_C":                                                          12498 + 20000,
-        "TEMP_GERADOR_NUCLEO_1":                                                        12500 + 20000,
-        "TEMP_GERADOR_NUCLEO_2":                                                        12502 + 20000,
-        "TEMP_GERADOR_NUCLEO_3":                                                        12504 + 20000,
-        "TEMP_MANCAL_GUIA_CASQUILHO":                                                   12506 + 20000,
-        "TEMP_MANCAL_COMBINADO_CASQUILHO":                                              12508 + 20000,
-        "TEMP_MANCAL_COMBINADO_CONTRA_ESCORA":                                          12510 + 20000,
-        "TEMP_MANCAL_COMBINADO_ESCORA":                                                 12512 + 20000,
+        "TEMP_GERADOR_FASE_A":                                                          12494,
+        "TEMP_GERADOR_FASE_B":                                                          12496,
+        "TEMP_GERADOR_FASE_C":                                                          12498,
+        "TEMP_GERADOR_NUCLEO_1":                                                        12500,
+        "TEMP_GERADOR_NUCLEO_2":                                                        12502,
+        "TEMP_GERADOR_NUCLEO_3":                                                        12504,
+        "TEMP_MANCAL_GUIA_CASQUILHO":                                                   12506,
+        "TEMP_MANCAL_COMBINADO_CASQUILHO":                                              12508,
+        "TEMP_MANCAL_COMBINADO_CONTRA_ESCORA":                                          12510,
+        "TEMP_MANCAL_COMBINADO_ESCORA":                                                 12512,
         "TEMP_OLEO_UHLM":                                                               12514,
         "TEMP_OLEO_UHRV":                                                               12516,
 
@@ -666,8 +667,8 @@ REG_UG = {
 
         ## PARTIDA_PARADA
         "STT_PARTIDA_PARADA":                                                           12388,
-        "SST_PASSO_SELECIONADO":                                                        12390 + 10000,
-        "STT_PASSO_ATUAL":                                                              12392 + 10000,
+        "SST_PASSO_SELECIONADO":                                                        12390,
+        "STT_PASSO_ATUAL":                                                              12392,
 
 
         ## PERMISSIVOS
@@ -745,14 +746,14 @@ REG_UG = {
         ### COMANDOS
         ## CMD_UG1
         # Rearme
-        "CMD_REARME_FALHAS":                                                            [12289 + 20000, 0],
+        "CMD_REARME_FALHAS":                                                            [12289, 0],
 
         # Partida/Parada
         "CMD_PARADA_EMERG":                                                             [12289, 1],
         "CMD_PARADA_NV_HABILITA":                                                       [12289, 5],
         "CMD_PARADA_NV_DESABILITA":                                                     [12289, 6],
-        "CMD_PARADA_TOTAL":                                                             [12290 + 20000, 0],
-        "CMD_SINCRONISMO":                                                              [12290 + 20000, 9],
+        "CMD_PARADA_TOTAL":                                                             [12290, 0],
+        "CMD_SINCRONISMO":                                                              [12290, 9],
 
         # Controle de Nível
         "CMD_CONTROLE_NV":                                                              [12289, 2],
@@ -882,16 +883,16 @@ REG_UG = {
         # Temperaturas
         "TEMP_PONTE_TIRISTORES":                                                        12488,
         "TEMP_CROWBAR":                                                                 12490,
-        "TEMP_GERADOR_FASE_A":                                                          12494 + 10000,
-        "TEMP_GERADOR_FASE_B":                                                          12496 + 10000,
-        "TEMP_GERADOR_FASE_C":                                                          12498 + 10000,
-        "TEMP_GERADOR_NUCLEO_1":                                                        12500 + 10000,
-        "TEMP_GERADOR_NUCLEO_2":                                                        12502 + 10000,
-        "TEMP_GERADOR_NUCLEO_3":                                                        12504 + 10000,
-        "TEMP_MANCAL_GUIA_CASQUILHO":                                                   12506 + 10000,
-        "TEMP_MANCAL_COMBINADO_CASQUILHO":                                              12508 + 10000,
-        "TEMP_MANCAL_COMBINADO_CONTRA_ESCORA":                                          12510 + 10000,
-        "TEMP_MANCAL_COMBINADO_ESCORA":                                                 12512 + 10000,
+        "TEMP_GERADOR_FASE_A":                                                          12494,
+        "TEMP_GERADOR_FASE_B":                                                          12496,
+        "TEMP_GERADOR_FASE_C":                                                          12498,
+        "TEMP_GERADOR_NUCLEO_1":                                                        12500,
+        "TEMP_GERADOR_NUCLEO_2":                                                        12502,
+        "TEMP_GERADOR_NUCLEO_3":                                                        12504,
+        "TEMP_MANCAL_GUIA_CASQUILHO":                                                   12506,
+        "TEMP_MANCAL_COMBINADO_CASQUILHO":                                              12508,
+        "TEMP_MANCAL_COMBINADO_CONTRA_ESCORA":                                          12510,
+        "TEMP_MANCAL_COMBINADO_ESCORA":                                                 12512,
         "TEMP_OLEO_UHLM":                                                               12514,
         "TEMP_OLEO_UHRV":                                                               12516,
 
@@ -1038,8 +1039,8 @@ REG_UG = {
 
         ## PARTIDA_PARADA
         "STT_PARTIDA_PARADA":                                                           12388,
-        "SST_PASSO_SELECIONADO":                                                        12390 + 20000,
-        "STT_PASSO_ATUAL":                                                              12392 + 20000,
+        "SST_PASSO_SELECIONADO":                                                        12390,
+        "STT_PASSO_ATUAL":                                                              12392,
 
 
         ## PERMISSIVOS
@@ -1163,7 +1164,7 @@ REG_RTV = {
         "SETPOINT_ABERTURA_PU":                                                             28,
         "SETPOINT_VELO":                                                                    29,
         "SETPOINT_POT_ATIVA_KW":                                                            30,
-        "SETPOINT_POT_ATIVA_PU":                                                            30 + 3100,
+        "SETPOINT_POT_ATIVA_PU":                                                            30,
         "SAIDA_CTRL_DISTRI":                                                                32,
         "SAIDA_CTRL_ROTOR":                                                                 33,
         "REF_DISTRI_PU":                                                                    36,
@@ -1456,7 +1457,7 @@ REG_RTV = {
         "SETPOINT_ABERTURA_PU":                                                             28,
         "SETPOINT_VELO":                                                                    29,
         "SETPOINT_POT_ATIVA_KW":                                                            30,
-        "SETPOINT_POT_ATIVA_PU":                                                            30 + 3200,
+        "SETPOINT_POT_ATIVA_PU":                                                            30,
         "SAIDA_CTRL_DISTRI":                                                                32,
         "SAIDA_CTRL_ROTOR":                                                                 33,
         "REF_DISTRI_PU":                                                                    36,

@@ -95,6 +95,7 @@ class UnidadeDeGeracao:
 
 
         # ATRIBUIÇÃO DE VARIÁVEIS PÚBLICAS
+        self.atenuacao: "int" = 0
         self.tempo_normalizar: "int" = 0
         self.tentativas_norm_etapas: "int" = 0
 
@@ -183,17 +184,43 @@ class UnidadeDeGeracao:
     def etapa(self) -> "int":
         # PROPRIEDADE -> Retorna o valor de etapa tratado
 
-        if self.__etapa_atual.valor == 0 and self.__etapa_alvo.valor == 0:
+        if self.etapa_atual == UG_PARADA and self.etapa_alvo == UG_PARADA:
+            self._ultima_etapa_alvo = self.etapa_alvo
             return UG_PARADA
 
-        elif self.__etapa_atual.valor == 5 and self.__etapa_alvo.valor == 5:
+        elif self.etapa_atual == UG_SINCRONIZADA and self.etapa_alvo == UG_SINCRONIZADA:
+            self._ultima_etapa_alvo = self.etapa_alvo
             return UG_SINCRONIZADA
 
-        elif self.__etapa_atual.valor >= 0 and self.__etapa_alvo.valor == 5:
-            return UG_SINCRONIZANDO
+        elif UG_PARADA < self.etapa_atual <= UG_SINCRONIZADA and self.etapa_alvo == UG_PARADA:
 
-        elif self.__etapa_atual.valor <= 5 and self.__etapa_alvo.valor == 0:
-            return UG_PARANDO
+            if self._ultima_etapa_alvo != self.etapa_alvo:
+                if self._ultima_etapa_alvo < self.etapa_alvo:
+                    self._ultima_etapa_alvo = self.etapa_alvo
+                    return UG_SINCRONIZANDO
+
+                elif self._ultima_etapa_alvo > self.etapa_alvo:
+                    self._ultima_etapa_alvo = self.etapa_alvo
+                    return UG_PARANDO
+
+            else:
+                self._ultima_etapa_alvo = self.etapa_alvo
+                return UG_PARANDO
+
+        elif UG_PARADA <= self.etapa_atual < UG_SINCRONIZADA and self.etapa_alvo == UG_SINCRONIZADA:
+            if self._ultima_etapa_alvo != self.etapa_alvo:
+                if self._ultima_etapa_alvo > self.etapa_alvo:
+                    self._ultima_etapa_alvo = self.etapa_alvo
+                    return UG_PARANDO
+
+                elif self._ultima_etapa_alvo < self.etapa_alvo:
+                    self._ultima_etapa_alvo = self.etapa_alvo
+                    return UG_SINCRONIZANDO
+
+            else:
+                self._ultima_etapa_alvo = self.etapa_alvo
+                return UG_SINCRONIZANDO
+
 
 
     # Property/Setter -> VARIÁVEIS PROTEGIDAS
@@ -350,7 +377,7 @@ class UnidadeDeGeracao:
 
     def desabilitar_manutencao(self) -> "bool":
         try:
-            # res = esc.EscritaModBusBit.escrever_bit(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}"]["CMD_CONTROLE_POT_MANUAL"], valor=1)
+            res = esc.EscritaModBusBit.escrever_bit(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}"]["CMD_CONTROLE_POT_MANUAL"], valor=1)
 
             # res = esc.EscritaModBusBit.escrever_bit(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}"]["CMD_RV_MANUTENCAO"], valor=0)
             # res = esc.EscritaModBusBit.escrever_bit(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}"]["CMD_RV_AUTOMATICO"], valor=1)
@@ -442,21 +469,21 @@ class UnidadeDeGeracao:
                 logger.info(f"[UG{self.id}] Não foi possível partir a Unidade. Disjuntor de Linha está aberto.")
                 return
 
-            # elif not sa.ServicoAuxiliar.status_dj_tsa.valor:
-            #     logger.info(f"[UG{self.id}] Não foi possível partir a Unidade. Disjuntor do Serviço Auxiliar está aberto.")
-            #     return
+            elif not sa.ServicoAuxiliar.status_dj_tsa.valor:
+                logger.info(f"[UG{self.id}] Não foi possível partir a Unidade. Disjuntor do Serviço Auxiliar está aberto.")
+                return
 
-            # elif sa.ServicoAuxiliar.l_disj_gmg_fechado.valor:
-            #     logger.info(f"[UG{self.id}] Não foi possível partir a Unidade. Disjuntor do Grupo Motor Gerador está fechado.")
-            #     return
+            elif sa.ServicoAuxiliar.l_disj_gmg_fechado.valor:
+                logger.info(f"[UG{self.id}] Não foi possível partir a Unidade. Disjuntor do Grupo Motor Gerador está fechado.")
+                return
 
             elif not self.etapa == UG_SINCRONIZADA:
                 self.tentativas_norm_etapas = 0
                 logger.info(f"[UG{self.id}]          Enviando comando:          \"PARTIDA\"")
 
                 esc.EscritaModBusBit.escrever_bit(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}"]["CMD_REARME_FALHAS"], valor=1)
-                esc.EscritaModBusBit.escrever_bit(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}"]["CMD_SINCRONISMO"], valor=1)
-                # self.clp[f"UG{self.id}"].write_single_register(REG_UG[f"UG{self.id}"]["CMD_SINCRONISMO"][0], int(128))
+                # esc.EscritaModBusBit.escrever_bit(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}"]["CMD_SINCRONISMO"], valor=1)
+                self.clp[f"UG{self.id}"].write_single_register(REG_UG[f"UG{self.id}"]["CMD_SINCRONISMO"][0], int(128))
 
         except Exception:
             logger.error(f"[UG{self.id}] Não foi possível partir a Unidade.")
@@ -500,8 +527,8 @@ class UnidadeDeGeracao:
                 logger.debug(f"[UG{self.id}]          Enviando setpoint:         {setpoint_kw} kW ({(setpoint_kw / self.cfg[f'pot_maxima_ug{self.id}']) * 100:0.1f} %)")
 
                 if self.setpoint > 1:
-                    # res = self.rv[f"UG{self.id}"].write_single_register(REG_RTV[f"UG{self.id}"]["SETPOINT_POT_ATIVA_PU"], int(setpoint_porcento))
-                    res = self.rv[f"UG{self.id}"].write_single_register(REG_RTV[f"UG{self.id}"]["SETPOINT_POT_ATIVA_PU"], int(setpoint_kw)) # SIMULADOR
+                    res = self.rv[f"UG{self.id}"].write_single_register(REG_RTV[f"UG{self.id}"]["SETPOINT_POT_ATIVA_PU"], int(setpoint_porcento))
+                    # res = self.rv[f"UG{self.id}"].write_single_register(REG_RTV[f"UG{self.id}"]["SETPOINT_POT_ATIVA_PU"], int(setpoint_kw)) # SIMULADOR
                     return res
 
         except Exception:
@@ -513,7 +540,7 @@ class UnidadeDeGeracao:
     def acionar_trip_logico(self) -> "bool":
         try:
             logger.debug(f"[UG{self.id}]          Enviando comando:          \"TRIP LÓGICO\"")
-            # res = esc.EscritaModBusBit.escrever_bit(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}"]["CMD_PARADA_EMERG"], valor=1)
+            res = esc.EscritaModBusBit.escrever_bit(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}"]["CMD_PARADA_EMERG"], valor=1)
             return True # res
 
         except Exception:
@@ -550,7 +577,7 @@ class UnidadeDeGeracao:
         try:
             if not se.Subestacao.status_dj_linha.valor:
                 logger.debug(f"[UG{self.id}]          Enviando comando:          \"FECHAR DISJUNTOR LINHA\".")
-                # esc.EscritaModBusBit.escrever_bit(self.clp["SA"], REG_SASE["CMD_DJ_LINHA_FECHA"], valor=1)
+                esc.EscritaModBusBit.escrever_bit(self.clp["SA"], REG_SASE["CMD_DJ_LINHA_FECHA"], valor=1)
 
             logger.debug(f"[UG{self.id}]          Removendo comando:         \"TRIP ELÉTRICO\"")
             res = None # self.clp["MOA"].write_single_coil(REG_MOA[f"OUT_BLOCK_UG{self.id}"], [0])
@@ -596,30 +623,37 @@ class UnidadeDeGeracao:
 
         flags = 0
         atenuacao = 0
-        logger.debug(f"[UG{self.id}]          Verificando Atenuadores...")
+        logger.debug(f"[UG{self.id}]          Verificando Atenuadores...") if self.etapa == UG_SINCRONIZADA else None
 
         for condic in self.condicionadores_atenuadores:
             atenuacao = max(atenuacao, condic.valor)
             if atenuacao > 0:
                 flags += 1
-                logger.debug(f"[UG{self.id}]          - \"{condic.descricao}\":   Leitura: {condic.leitura:3.2f} | Atenuação: {atenuacao}")
-                self.atenuacao = atenuacao
+                logger.debug(f"[UG{self.id}]          - \"{condic.descricao}\":")
+                logger.debug(f"[UG{self.id}]                                     Leitura: {condic.leitura:3.2f} | Atenuação: {atenuacao:0.4f}")
+
+                if flags == 1:
+                    self.atenuacao = atenuacao
+                elif atenuacao > self.atenuacao:
+                    self.atenuacao = atenuacao
                 atenuacao = 0
 
-        if flags == 0:
+        if flags == 0 and self.etapa == UG_SINCRONIZADA:
             logger.debug(f"[UG{self.id}]          Não há necessidade de Atenuação.")
 
         ganho = 1 - self.atenuacao
         aux = self.setpoint
         self.atenuacao = 0
         if (self.setpoint > self.setpoint_minimo) and self.setpoint * ganho > self.setpoint_minimo:
-            self.setpoint = self.setpoint * ganho
+            setpoint_atenuado = self.setpoint - 0.5 * (self.setpoint -  (self.setpoint * ganho))
+            self.setpoint = min(max(setpoint_atenuado, self.setpoint_minimo), self.setpoint_maximo)
 
-        elif (self.setpoint * ganho < self.setpoint_minimo) and (self.setpoint > self.setpoint_minimo):
-            self.setpoint =  self.setpoint_minimo
+        elif self.setpoint > self.setpoint_minimo and (self.setpoint * ganho) < self.setpoint_minimo:
+            self.setpoint = self.setpoint_minimo
 
         if self.etapa == UG_SINCRONIZADA and ganho < 1:
-            logger.debug(f"[UG{self.id}]                                     SP {aux} * GANHO {ganho} = {self.setpoint} kW")
+            logger.debug(f"[UG{self.id}]                                     SP {aux} * GANHO {ganho:0.4f} = {self.setpoint} kW")
+
 
 
     def controle_etapas(self) -> "None":
@@ -674,10 +708,10 @@ class UnidadeDeGeracao:
                 return
 
         logger.warning(f"[UG{self.id}]          Verificação MOA:          \"Acionar emergência por timeout de Sincronismo\"")
-        # esc.EscritaModBusBit.escrever_bit(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}"]["CMD_PARADA_EMERG"], valor=1)
+        esc.EscritaModBusBit.escrever_bit(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}"]["CMD_PARADA_EMERG"], valor=1)
         self.temporizar_partida = False
         sleep(1)
-        # esc.EscritaModBusBit.escrever_bit(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}"]["CMD_REARME_FALHAS"], valor=1)
+        esc.EscritaModBusBit.escrever_bit(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}"]["CMD_REARME_FALHAS"], valor=1)
 
 
     def verificar_condicionadores(self) -> "int":
@@ -769,6 +803,7 @@ class UnidadeDeGeracao:
         de novos limites de operação de condicionadores.
         """
         try:
+            self.c_diferencial_grade.valor_base = float(parametros[f"alerta_perda_grade"])
             self.c_tmp_fase_r.valor_base = float(parametros[f"alerta_temperatura_fase_r_ug{self.id}"])
             self.c_tmp_fase_s.valor_base = float(parametros[f"alerta_temperatura_fase_s_ug{self.id}"])
             self.c_tmp_fase_t.valor_base = float(parametros[f"alerta_temperatura_fase_t_ug{self.id}"])
@@ -779,6 +814,7 @@ class UnidadeDeGeracao:
             self.c_tmp_mancal_casq_comb.valor_base = float(parametros[f"alerta_temperatura_mancal_casq_comb_ug{self.id}"])
             self.c_tmp_mancal_escora_comb.valor_base = float(parametros[f"alerta_temperatura_mancal_escora_comb_ug{self.id}"])
 
+            self.c_diferencial_grade.valor_limite = float(parametros[f"limite_perda_grade"])
             self.c_tmp_fase_s.valor_limite = float(parametros[f"limite_temperatura_fase_s_ug{self.id}"])
             self.c_tmp_fase_r.valor_limite = float(parametros[f"limite_temperatura_fase_r_ug{self.id}"])
             self.c_tmp_fase_t.valor_limite = float(parametros[f"limite_temperatura_fase_t_ug{self.id}"])
@@ -1266,6 +1302,10 @@ class UnidadeDeGeracao:
         Função para carregamento de todas as leituras para acionamentos de avisos
         e emergências da Unidade.
         """
+
+        self.l_diferencial_grade = lei.LeituraSubtracao([tda.TomadaAgua.nv_montante, tda.TomadaAgua.nv_jusante], descricao="[TDA] Diferencial de Grade")
+        self.c_diferencial_grade = c.CondicionadorExponencial(self.l_diferencial_grade, CONDIC_INDISPONIBILIZAR, valor_base=0.35, valor_limite=0.4, ordem=1)
+        self.condicionadores_atenuadores.append(self.c_diferencial_grade)
 
         # Fase R
         self.l_tmp_fase_r = lei.LeituraModbus(
@@ -1870,4 +1910,4 @@ class UnidadeDeGeracao:
         self.l_uhrv_pressao_oleo_muito_baixa = lei.LeituraModbusBit(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}"]["UHRV_PRESSAO_OLEO_MUITO_BAIXA"], descricao=f"[UG{self.id}] UHRV Pressão Óleo Muito Baixa")
         self.l_alarme_contro_dif_grade = lei.LeituraModbusBit(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}"]["CTRL_ALARME_DIFERENCIAL_GRADE"], descricao=f"[UG{self.id}] Alarme Controle Diferencial Grade")
         self.l_sinal_nv_jusante_muito_baixo = lei.LeituraModbusBit(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}"]["NV_JUSANTE_MUITO_BAIXO"], descricao=f"[UG{self.id}] Nível Jusante Sinal Muito Baixo")
-        self.l_resis_aquec_gerad_indisp = lei.LeituraModbusBit(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}"]["RESIS_AQUEC_GERA_INDISPONIVEL"], descricao=f"[UG{self.id}] Resistência Aquecimento Gerador Indisponível")
+        self.l_resis_aquec_gerad_indisp = lei.LeituraModbusBit(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}"]["RESIS_AQUEC_GERA_INDISPONIVEL"], descricao=f"[UG{self.id}] Resistência Aquecimento Gerador Indisponível"),

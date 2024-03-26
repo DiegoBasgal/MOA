@@ -198,6 +198,33 @@
             </form>
         </div>
         <br>
+        <div style="margin-top: 50px; justify-content: center; display: flex;">
+            <form method='post' action='/parametros_moa/'>
+                {% csrf_token %}
+                <table>
+                    <tr>
+                        <td>
+                            <b style="font-size: 18px;">Limites de Perda na Grade: </b>
+                            <input id="submit" name="salvar_perda" type="submit" value="Salvar"/>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <table id="val_table" style="margin-left: 32px;">
+                                <tr>
+                                    <th>Alerta Perda</th>
+                                    <th>Perda Máxima</th>
+                                </tr>
+                                <tr>
+                                    <td><input id="alerta_perda_grade" name="alerta_perda_grade" size=10 value="{{usina.alerta_perda_grade}}"/></td>
+                                    <td><input id="limite_perda_grade" name="limite_perda_grade" size=10 value="{{usina.limite_perda_grade}}"/></td>
+                                </tr>
+                            </table>
+                        </td>
+                    </tr>
+                </table>
+            </form>
+        </div>
         <br>
         <br>
         <form method='post' action='/parametros_moa/'>

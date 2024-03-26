@@ -61,7 +61,7 @@ class LeituraModbus:
                 return ler
 
         except Exception:
-            logger.error(f"[LEI] Houve um erro na leitura RAW -> INT do REG: {self.__descricao} | Endereço: {self.__registrador}")
+            logger.debug(f"[LEI] Houve um erro na leitura RAW -> INT do REG: {self.__descricao} | Endereço: {self.__registrador}")
             logger.debug(traceback.format_exc())
             return 0
 
@@ -100,13 +100,11 @@ class LeituraModbusBit(LeituraModbus):
         # PROPRIEDADE -> Retorna Valor raw baseado no tipo de operação ModBus.
 
         try:
-            if self.__client.open():
-                ler = self.__client.read_holding_registers(int(self.__reg), 2)
-                self.__client.close()
-                return ler
+            ler = self.__client.read_holding_registers(self.__reg)
+            return ler
 
         except Exception:
-            logger.error(f"[LEI] Erro na Leitura RAW -> BIT do REG: {self.__reg} | Bit: {self.__bit}")
+            logger.debug(f"[LEI] Erro na Leitura RAW -> BIT do REG: {self.__reg} | Bit: {self.__bit}")
             logger.debug(traceback.format_exc())
             sleep(1)
 
@@ -117,8 +115,8 @@ class LeituraModbusBit(LeituraModbus):
         try:
             leitura = self.raw
 
-            dec_1 = BPD.fromRegisters(leitura, byteorder=Endian.BIG, wordorder=Endian.LITTLE)
-            dec_2 = BPD.fromRegisters(leitura, byteorder=Endian.BIG, wordorder=Endian.LITTLE)
+            dec_1 = BPD.fromRegisters(leitura, byteorder=Endian.Big, wordorder=Endian.Little)
+            dec_2 = BPD.fromRegisters(leitura, byteorder=Endian.Big, wordorder=Endian.Little)
 
             lbit = [int(bit) for bits in [reversed(dec_1.decode_bits(1)), reversed(dec_2.decode_bits(2))] for bit in bits]
 
@@ -150,9 +148,9 @@ class LeituraModbusFloat(LeituraModbus):
         # PROPRIEDADE -> Retorna o valor tradado de leitura em Float.
 
         try:
-            raw = self.__client.read_holding_registers(self.__reg + 1, 2)
+            raw = self.__client.read_holding_registers(self.__reg, 2)
 
-            dec = BPD.fromRegisters(raw, byteorder=Endian.BIG, wordorder=Endian.LITTLE)
+            dec = BPD.fromRegisters(raw, byteorder=Endian.Big, wordorder=Endian.Little)
 
             val = dec.decode_32bit_float() * self.__escala
 
@@ -182,3 +180,20 @@ class LeituraSoma:
 
         else:
             return [sum(leitura.valor for leitura in self.__leituras)]
+
+
+class LeituraSubtracao:
+    def __init__(self, leituras: "list[LeituraModbus]"=None, escala: "int"=1, descricao: "str"=None):
+
+        self.__leituras = leituras
+        self.__escala = escala
+        self.__descricao = descricao
+
+    @property
+    def descricao(self) -> "str":
+        return self.__descricao
+    
+    @property
+    def valor(self) -> "float":
+
+        return (self.__leituras[0].valor - self.__leituras[1].valor) * self.__escala

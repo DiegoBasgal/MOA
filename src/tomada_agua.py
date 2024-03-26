@@ -30,12 +30,15 @@ class TomadaAgua:
     clp = serv.Servidores.clp
     cfg: "dict" = {}
 
-    nv_montante = lei.LeituraModbus( # lei.LeituraModbusFloat
+    nv_montante = lei.LeituraModbusFloat(
         clp["TDA"],
         REG_TDA["NV_MONTANTE_GRADE"],
-        fundo_escala=800,
-        escala=0.001,
-        descricao="[USN] Nível Montante"
+        descricao="[TDA] Nível Montante"
+    )
+    nv_jusante = lei.LeituraModbusFloat(
+        clp["TDA"],
+        REG_TDA["NV_JUSANTE_GRADE"],
+        descricao="[TDA] Nível Jusante Grade"
     )
 
     erro_nv: "float" = 0

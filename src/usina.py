@@ -96,6 +96,10 @@ class Usina:
         # EXECUÇÃO FINAL DA INICIALIZAÇÃO
         logger.debug("")
 
+        se.Subestacao.carregar_leituras()
+        tda.TomadaAgua.carregar_leituras()
+        sa.ServicoAuxiliar.carregar_leituras()
+
         self.ler_valores()
         self.ajustar_inicializacao()
         self.escrever_valores()

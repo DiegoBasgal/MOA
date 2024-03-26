@@ -58,6 +58,8 @@ class ParametrosUsina(models.Model):
     nv_montante = models.DecimalField(max_digits=10, decimal_places=3, default=820.90)
     nv_religamento = models.DecimalField(max_digits=10, decimal_places=3, default=820.85)
     nv_pos_grade = models.DecimalField(max_digits=10, decimal_places=3, default=820.80)
+    alerta_perda_grade = models.DecimalField(max_digits=10, decimal_places=3, default=0.3)
+    limite_perda_grade = models.DecimalField(max_digits=10, decimal_places=3, default=0.4)
 
     # PID IE
     kp = models.DecimalField(max_digits=15, decimal_places=3, default=2)
