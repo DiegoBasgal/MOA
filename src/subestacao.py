@@ -29,40 +29,33 @@ logger = logging.getLogger("logger")
 class Subestacao:
 
     # ATRIBUIÇÃO DE VARIÁVEIS
-    clp = serv.Servidores.clp
     bd: "bd.BancoDados" = None
 
     potencia_ativa = lei.LeituraModbus(
-        clp["SA"],
+        serv.Servidores.clp["SA"],
         REG_RELE["SE"]["P"],
         op=3,
         escala=1000,
         descricao="[SE]  Potência Ativa"
     )
     tensao_rs = lei.LeituraModbus(
-        clp["SA"],
+        serv.Servidores.rele["SE"],
         REG_RELE["SE"]["VAB"],
-        op=4,
-        escala=1000,
         descricao="[SE]  Tensão RS"
     )
     tensao_st = lei.LeituraModbus(
-        clp["SA"],
+        serv.Servidores.rele["SE"],
         REG_RELE["SE"]["VBC"],
-        op=4,
-        escala=1000,
         descricao="[SE]  Tensão ST"
     )
     tensao_tr = lei.LeituraModbus(
-        clp["SA"],
+        serv.Servidores.rele["SE"],
         REG_RELE["SE"]["VCA"],
-        op=4,
-        escala=1000,
         descricao="[SE]  Tensão TR"
     )
 
     status_dj_linha = lei.LeituraModbusBit(
-        clp["SA"],
+        serv.Servidores.clp["SA"],
         REG_SASE["DJ_LINHA_FECHADO"],
         descricao="[SE]  Status Disjuntor Linha"
     )
@@ -89,7 +82,7 @@ class Subestacao:
                 logger.info(f"[SE]  O Disjuntor de Linha está aberto!")
                 logger.info(f"[SE]  Enviando comando:                   \"FECHAR DISJUNTOR LINHA\"")
                 logger.debug("")
-                res = esc.EscritaModBusBit.escrever_bit(cls.clp["SA"], REG_SASE["CMD_DJ_LINHA_FECHA"], valor=1)
+                res = esc.EscritaModBusBit.escrever_bit(serv.Servidores.clp["SA"], REG_SASE["CMD_DJ_LINHA_FECHA"], valor=1)
                 return res
 
         except Exception:
@@ -105,9 +98,9 @@ class Subestacao:
         """
 
         try:
-            if (TENSAO_LINHA_BAIXA <= cls.tensao_rs.valor <= TENSAO_LINHA_ALTA) \
-                and (TENSAO_LINHA_BAIXA <= cls.tensao_st.valor <= TENSAO_LINHA_ALTA) \
-                and (TENSAO_LINHA_BAIXA <= cls.tensao_tr.valor <= TENSAO_LINHA_ALTA):
+            if (TENSAO_LINHA_BAIXA <= cls.tensao_rs.valor/1000 * 173.21 * 115 <= TENSAO_LINHA_ALTA) \
+                and (TENSAO_LINHA_BAIXA <= cls.tensao_st.valor/1000 * 173.21 * 115 <= TENSAO_LINHA_ALTA) \
+                and (TENSAO_LINHA_BAIXA <= cls.tensao_tr.valor/1000 * 173.21 * 115 <= TENSAO_LINHA_ALTA):
                 return True
 
             else:
@@ -189,7 +182,7 @@ class Subestacao:
 
         else:
             return False
-        
+
 
     @classmethod
     def verificar_condicionadores(cls) -> "list[c.CondicionadorBase]":
@@ -212,7 +205,11 @@ class Subestacao:
                 logger.info(f"[SE]  Ainda há Condicionadores ativos na Subestação!")
 
             for condic in condics_ativos:
-                if condic in cls.condicionadores_ativos:
+                if condic.teste:
+                    logger.debug(f"[SE]  Descrição: \"{condic.descricao}\", Gravidade: \"{CONDIC_STR_DCT[condic.gravidade] if condic.gravidade in CONDIC_STR_DCT else 'Desconhecida'}\", Obs.: \"TESTE\"")
+                    continue
+
+                elif condic in cls.condicionadores_ativos:
                     logger.debug(f"[SE]  Descrição: \"{condic.descricao}\", Gravidade: \"{CONDIC_STR_DCT[condic.gravidade] if condic.gravidade in CONDIC_STR_DCT else 'Desconhecida'}\"")
                     continue
 
@@ -242,21 +239,22 @@ class Subestacao:
         """
 
         ## CONDICIONADORES ESSENCIAIS
-        cls.l_disj_linha_aberto = lei.LeituraModbusBit(cls.clp["SA"], REG_SASE["DJ_LINHA_ABERTO"], descricao="[SE]  Disjuntor de Linha Aberto")
+        cls.l_disj_linha_aberto = lei.LeituraModbusBit(serv.Servidores.clp["SA"], REG_SASE["DJ_LINHA_ABERTO"], descricao="[SE]  Disjuntor de Linha Aberto")
         cls.condicionadores_essenciais.append(c.CondicionadorBase(cls.l_disj_linha_aberto, CONDIC_AGUARDAR))
 
+
         ## CONDICIONADORES NORMAIS
-        cls.l_te_temp_muito_alta = lei.LeituraModbusBit(cls.clp["SA"], REG_SASE["TE_TEMP_MUITO_ALTA"], descricao="[SE]  Trasformador Elevador Temperatura Alta") # TODO -> Verificar invertido
+        cls.l_te_temp_muito_alta = lei.LeituraModbusBit(serv.Servidores.clp["SA"], REG_SASE["TE_TEMP_MUITO_ALTA"], descricao="[SE]  Trasformador Elevador Temperatura Alta") # TODO -> Verificar invertido
         cls.condicionadores.append(c.CondicionadorBase(cls.l_te_temp_muito_alta, CONDIC_INDISPONIBILIZAR))
 
-        cls.l_te_press_muito_alta = lei.LeituraModbusBit(cls.clp["SA"], REG_SASE["TE_PRESSAO_MUITO_ALTA"], descricao="[SE]  Trasformador Elevador Pressão Óleo Muito Alta")
+        cls.l_te_press_muito_alta = lei.LeituraModbusBit(serv.Servidores.clp["SA"], REG_SASE["TE_PRESSAO_MUITO_ALTA"], descricao="[SE]  Trasformador Elevador Pressão Óleo Muito Alta")
         cls.condicionadores.append(c.CondicionadorBase(cls.l_te_press_muito_alta, CONDIC_INDISPONIBILIZAR))
 
-        cls.l_oleo_muito_baixo = lei.LeituraModbusBit(cls.clp["SA"], REG_SASE["TE_NV_OLEO_MUITO_BAIXO"], descricao="[SE]  Trasformador Elevador Nível Óleo Muito Baixo")
+        cls.l_oleo_muito_baixo = lei.LeituraModbusBit(serv.Servidores.clp["SA"], REG_SASE["TE_NV_OLEO_MUITO_BAIXO"], descricao="[SE]  Trasformador Elevador Nível Óleo Muito Baixo")
         cls.condicionadores.append(c.CondicionadorBase(cls.l_oleo_muito_baixo, CONDIC_INDISPONIBILIZAR))
 
-        cls.l_disj_se_falha_fechar = lei.LeituraModbusBit(cls.clp["SA"], REG_SASE["DJ_SE_FALHA_FECHAR"], descricao="[SE]  Falha Fechamento Disjuntor de Linha")
+        cls.l_disj_se_falha_fechar = lei.LeituraModbusBit(serv.Servidores.clp["SA"], REG_SASE["DJ_SE_FALHA_FECHAR"], descricao="[SE]  Falha Fechamento Disjuntor de Linha")
         cls.condicionadores.append(c.CondicionadorBase(cls.l_disj_se_falha_fechar, CONDIC_INDISPONIBILIZAR))
 
-        cls.l_disj_se_falha_abrir = lei.LeituraModbusBit(cls.clp["SA"], REG_SASE["DJ_SE_FALHA_ABRIR"], descricao="[SE]  Falha Abertura Disjuntor de Linha")
+        cls.l_disj_se_falha_abrir = lei.LeituraModbusBit(serv.Servidores.clp["SA"], REG_SASE["DJ_SE_FALHA_ABRIR"], descricao="[SE]  Falha Abertura Disjuntor de Linha")
         cls.condicionadores.append(c.CondicionadorBase(cls.l_disj_se_falha_abrir, CONDIC_INDISPONIBILIZAR))

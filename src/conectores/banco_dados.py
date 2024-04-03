@@ -235,7 +235,7 @@ class BancoDados:
 
         self.cursor.execute(
             "INSERT INTO alarmes_alarmes "
-            "VALUES (%s, %s, %s);",
+            "VALUES (%s, %s, %s, %s);",
             tuple(valores)
         )
         self.conn.commit()

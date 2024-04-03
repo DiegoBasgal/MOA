@@ -14,6 +14,7 @@ import src.conectores.banco_dados as bd
 import src.funcoes.condicionadores as c
 import src.conectores.servidores as serv
 
+from time import sleep
 from datetime import datetime
 
 from src.dicionarios.reg import *
@@ -26,11 +27,10 @@ logger = logging.getLogger("logger")
 class ServicoAuxiliar:
 
     # ATRIBUIÇÃO DE VARIÁVEIS
-    clp = serv.Servidores.clp
     bd: "bd.BancoDados" = None
 
     status_dj_tsa = lei.LeituraModbusBit(
-        clp["SA"],
+        serv.Servidores.clp["SA"],
         REG_SASE["DJ_TSA_FECHADO"],
         descricao="[SA]  Status Disjuntor SA"
     )
@@ -42,7 +42,7 @@ class ServicoAuxiliar:
     @classmethod
     def resetar_emergencia(cls) -> "bool":
         try:
-            res = esc.EscritaModBusBit.escrever_bit(cls.clp["SA"], REG_SASE["CMD_REARME_FALHAS"], valor=1)
+            res = esc.EscritaModBusBit.escrever_bit(serv.Servidores.clp["SA"], REG_SASE["CMD_REARME_FALHAS"], valor=1)
             return res
 
         except Exception:
@@ -66,12 +66,16 @@ class ServicoAuxiliar:
 
             logger.debug("")
             if cls.condicionadores_ativos == []:
-                logger.warning(f"[SA]  Foram detectados Condicionadores ativos na Subestação!")
+                logger.debug(f"[SA]  Foram detectados Condicionadores ativos no Serviço Auxiliar!")
             else:
-                logger.info(f"[SA]  Ainda há Condicionadores ativos na Subestação!")
+                logger.debug(f"[SA]  Ainda há Condicionadores ativos no Serviço Auxiliar!")
 
             for condic in condics_ativos:
-                if condic in cls.condicionadores_ativos:
+                if condic.teste:
+                    logger.debug(f"[SA]  Descrição: \"{condic.descricao}\", Gravidade: \"{CONDIC_STR_DCT[condic.gravidade] if condic.gravidade in CONDIC_STR_DCT else 'Desconhecida'}\", Obs.: \"TESTE\"")
+                    continue
+
+                elif condic in cls.condicionadores_ativos:
                     logger.debug(f"[SA]  Descrição: \"{condic.descricao}\", Gravidade: \"{CONDIC_STR_DCT[condic.gravidade] if condic.gravidade in CONDIC_STR_DCT else 'Desconhecida'}\"")
                     continue
 
@@ -84,6 +88,8 @@ class ServicoAuxiliar:
                         condic.descricao,
                         "X" if autor == 0 else ""
                     ])
+                    sleep(1)
+                    autor += 1
 
             logger.debug("")
             return condics_ativos
@@ -341,129 +347,128 @@ class ServicoAuxiliar:
         Função para carregamento de todas as leituras para acionamentos de avisos
         e emergências da Usina.
         """
-        cls.l_disj_gmg_fechado = lei.LeituraModbusBit(cls.clp["SA"], REG_SASE["DJ_GMG_FECHADO"], descricao="[SA]  Disjuntor Grupo Motor Gerador Fechado")
+        cls.l_disj_gmg_fechado = lei.LeituraModbusBit(serv.Servidores.clp["SA"], REG_SASE["DJ_GMG_FECHADO"], descricao="[SA]  Disjuntor Grupo Motor Gerador Fechado")
 
-        return
 
         ## CONDICIONADORES ESSENCIAIS
-        cls.l_bloq_rele_86btbf = lei.LeituraModbusBit(cls.clp["SA"], REG_SASE["RELE_BLOQ_86BTBF"], descricao="[SA]  Bloqueio 86BTBF Relé SA")
-        cls.condicionadores_essenciais.append(c.CondicionadorBase(cls.l_bloq_rele_86btbf, CONDIC_NORMALIZAR))
+        # cls.l_bloq_rele_86btbf = lei.LeituraModbusBit(serv.Servidores.clp["SA"], REG_SASE["RELE_BLOQ_86BTBF"], descricao="[SA]  Bloqueio 86BTBF Relé SA")
+        # cls.condicionadores_essenciais.append(c.CondicionadorBase(cls.l_bloq_rele_86btbf, CONDIC_NORMALIZAR, teste=True))
 
-        cls.l_bloq_botao_86btbf = lei.LeituraModbusBit(cls.clp["SA"], REG_SASE["BT_BLOQ_86BTBF"], descricao="[SA]  Botão Bloqueio 86BTBF Relé SA Pressionado")
+        cls.l_bloq_botao_86btbf = lei.LeituraModbusBit(serv.Servidores.clp["SA"], REG_SASE["BT_BLOQ_86BTBF"], descricao="[SA]  Botão Bloqueio 86BTBF Relé SA Pressionado")
         cls.condicionadores_essenciais.append(c.CondicionadorBase(cls.l_bloq_botao_86btbf, CONDIC_NORMALIZAR))
 
-        cls.l_prtva1_50bf = lei.LeituraModbusBit(cls.clp["SA"], REG_SASE["PRTVA1_50_BF"], descr="[SA]  Bloqueio Relé 50BF PRTVA 1")
+        cls.l_prtva1_50bf = lei.LeituraModbusBit(serv.Servidores.clp["SA"], REG_SASE["PRTVA1_50_BF"], descricao="[SA]  Bloqueio Relé 50BF PRTVA 1")
         cls.condicionadores_essenciais.append(c.CondicionadorBase(cls.l_prtva1_50bf, CONDIC_NORMALIZAR))
 
-        cls.l_prtva2_50bf = lei.LeituraModbusBit(cls.clp["SA"], REG_SASE["PRTVA2_50BF"], descr="[SA]  Bloqueio Relé 50BF PRTVA 2")
+        cls.l_prtva2_50bf = lei.LeituraModbusBit(serv.Servidores.clp["SA"], REG_SASE["PRTVA2_50BF"], descricao="[SA]  Bloqueio Relé 50BF PRTVA 2")
         cls.condicionadores_essenciais.append(c.CondicionadorBase(cls.l_prtva2_50bf, CONDIC_NORMALIZAR))
 
 
         ## CONDICIONADORES NORMAIS
-        cls.l_disj_tsa_trip = lei.LeituraModbusBit(cls.clp["SA"], REG_SASE["DJ_TSA_TRIP"], descricao="[SA]  Trip Disjuntor Serviço Auxiliar")
+        cls.l_disj_tsa_trip = lei.LeituraModbusBit(serv.Servidores.clp["SA"], REG_SASE["DJ_TSA_TRIP"], descricao="[SA]  Trip Disjuntor Serviço Auxiliar")
         cls.condicionadores.append(c.CondicionadorBase(cls.l_disj_tsa_trip, CONDIC_INDISPONIBILIZAR))
 
-        cls.l_poco_dren_nivel_muito_alto = lei.LeituraModbusBit(cls.clp["SA"], REG_SASE["PD_SENS_NV_MUITO_ALTO"], descricao="[SA]  Poço de Drenagem Nível Muito Alto")
+        cls.l_poco_dren_nivel_muito_alto = lei.LeituraModbusBit(serv.Servidores.clp["SA"], REG_SASE["PD_SENS_NV_MUITO_ALTO"], descricao="[SA]  Poço de Drenagem Nível Muito Alto")
         cls.condicionadores.append(c.CondicionadorBase(cls.l_poco_dren_nivel_muito_alto, CONDIC_INDISPONIBILIZAR))
 
-        cls.l_nv_jusante_muito_alto = lei.LeituraModbusBit(cls.clp["SA"], REG_SASE["NV_JUSANTE_MUITO_ALTO"], descricao="[SA]  Nível Jusante Muito Alto")
+        cls.l_nv_jusante_muito_alto = lei.LeituraModbusBit(serv.Servidores.clp["SA"], REG_SASE["NV_JUSANTE_MUITO_ALTO"], descricao="[SA]  Nível Jusante Muito Alto")
         cls.condicionadores.append(c.CondicionadorBase(cls.l_nv_jusante_muito_alto, CONDIC_INDISPONIBILIZAR))
 
-        cls.l_dps_tsa = lei.LeituraModbusBit(cls.clp["SA"], REG_SASE["DPS_TSA"], descricao="[SA]  Dispositivo de Proteção de Surto Serviço Auxiliar")
+        cls.l_dps_tsa = lei.LeituraModbusBit(serv.Servidores.clp["SA"], REG_SASE["DPS_TSA"], descricao="[SA]  Dispositivo de Proteção de Surto Serviço Auxiliar")
         cls.condicionadores.append(c.CondicionadorBase(cls.l_dps_tsa, CONDIC_INDISPONIBILIZAR))
 
-        cls.l_disj_gmg_falha_abrir = lei.LeituraModbusBit(cls.clp["SA"], REG_SASE["DJ_GMG_FALHA_ABRIR"], descricao="[SA]  Falha Abertura Disjuntor Grupo Motor Gerador")
+        cls.l_disj_gmg_falha_abrir = lei.LeituraModbusBit(serv.Servidores.clp["SA"], REG_SASE["DJ_GMG_FALHA_ABRIR"], descricao="[SA]  Falha Abertura Disjuntor Grupo Motor Gerador")
         cls.condicionadores.append(c.CondicionadorBase(cls.l_disj_gmg_falha_abrir, CONDIC_INDISPONIBILIZAR))
 
-        cls.l_disj_tsa_falha_fechar = lei.LeituraModbusBit(cls.clp["SA"], REG_SASE["DJ_GMG_FALHA_FECHAR"], descricao="[SA]  Falha Fechamento Disjuntor Serviço Auxiliar")
+        cls.l_disj_tsa_falha_fechar = lei.LeituraModbusBit(serv.Servidores.clp["SA"], REG_SASE["DJ_GMG_FALHA_FECHAR"], descricao="[SA]  Falha Fechamento Disjuntor Serviço Auxiliar")
         cls.condicionadores.append(c.CondicionadorBase(cls.l_disj_tsa_falha_fechar, CONDIC_INDISPONIBILIZAR))
 
-        cls.l_disj_tsa_falha_abrir = lei.LeituraModbusBit(cls.clp["SA"], REG_SASE["DJ_TSA_FALHA_ABRIR"], descricao="[SA]  Falha Abertura Disjuntor Serviço Auxiliar")
+        cls.l_disj_tsa_falha_abrir = lei.LeituraModbusBit(serv.Servidores.clp["SA"], REG_SASE["DJ_TSA_FALHA_ABRIR"], descricao="[SA]  Falha Abertura Disjuntor Serviço Auxiliar")
         cls.condicionadores.append(c.CondicionadorBase(cls.l_disj_tsa_falha_abrir, CONDIC_INDISPONIBILIZAR))
 
-        cls.l_bloq_50bf_atuado = lei.LeituraModbusBit(cls.clp["SA"], REG_SASE["BLOQ_50BF_ATUADO"], descricao="[SA]  Bloqueio 50BF Relé SA Atuado")
+        cls.l_bloq_50bf_atuado = lei.LeituraModbusBit(serv.Servidores.clp["SA"], REG_SASE["BLOQ_50BF_ATUADO"], descricao="[SA]  Bloqueio 50BF Relé SA Atuado")
         cls.condicionadores.append(c.CondicionadorBase(cls.l_bloq_50bf_atuado, CONDIC_INDISPONIBILIZAR))
 
-        cls.l_bloq_86btlsa_atuado = lei.LeituraModbusBit(cls.clp["SA"], REG_SASE["BLOQ_86BTLSA_ATUADO"], descricao="[SA]  Bloqueio 86BTLSA Relé SA Atuado")
+        cls.l_bloq_86btlsa_atuado = lei.LeituraModbusBit(serv.Servidores.clp["SA"], REG_SASE["BLOQ_86BTLSA_ATUADO"], descricao="[SA]  Bloqueio 86BTLSA Relé SA Atuado")
         cls.condicionadores.append(c.CondicionadorBase(cls.l_bloq_86btlsa_atuado, CONDIC_INDISPONIBILIZAR))
 
 
         ## WHATSAPP/VOIP
-        cls.l_dps_gmg_falha = lei.LeituraModbusBit(cls.clp["SA"], REG_SASE["DPS_GMG"], descricao="[SA]  Falha Grupo Motor Gerador")
-        cls.l_disj_gmg_trip = lei.LeituraModbusBit(cls.clp["SA"], REG_SASE["DJ_GMG_TRIP"], descricao="[SA]  Trip Disjuntor Grupo Motor Gerador")
-        cls.l_carreg_baterias_falha = lei.LeituraModbusBit(cls.clp["SA"], REG_SASE["CB_FALHA"], descricao="[SA]  Falha Carregador de Baterias")
-        cls.l_disj_gmg_falha_fechar = lei.LeituraModbusBit(cls.clp["SA"], REG_SASE["DJ_GMG_FALHA_FECHAR"], descricao="[SA]  Falha Fechamento Disjuntor Grupo Motor Gerador")
-        cls.l_disjs_modo_remoto = lei.LeituraModbusBit(cls.clp["SA"], REG_SASE["DJS_MODO_REMOTO"], descricao="[SA]  Disjuntores em Modo Remoto")
+        cls.l_dps_gmg_falha = lei.LeituraModbusBit(serv.Servidores.clp["SA"], REG_SASE["DPS_GMG"], descricao="[SA]  Falha Grupo Motor Gerador")
+        cls.l_disj_gmg_trip = lei.LeituraModbusBit(serv.Servidores.clp["SA"], REG_SASE["DJ_GMG_TRIP"], descricao="[SA]  Trip Disjuntor Grupo Motor Gerador")
+        cls.l_carreg_baterias_falha = lei.LeituraModbusBit(serv.Servidores.clp["SA"], REG_SASE["CB_FALHA"], descricao="[SA]  Falha Carregador de Baterias")
+        cls.l_disj_gmg_falha_fechar = lei.LeituraModbusBit(serv.Servidores.clp["SA"], REG_SASE["DJ_GMG_FALHA_FECHAR"], descricao="[SA]  Falha Fechamento Disjuntor Grupo Motor Gerador")
+        cls.l_disjs_modo_remoto = lei.LeituraModbusBit(serv.Servidores.clp["SA"], REG_SASE["DJS_MODO_REMOTO"], descricao="[SA]  Disjuntores em Modo Remoto")
 
-        cls.l_sfa_press_lado_sujo_alto = lei.LeituraModbusBit(cls.clp["SA"], REG_SASE["PSA_SFA_PRESSAO_LADO_SUJO_ALTO"], descricao="[SA]  Pressão Sistema de Filtragem A Lado Sujo Alta")
-        cls.l_sfa_press_lado_limpo_alto = lei.LeituraModbusBit(cls.clp["SA"], REG_SASE["PSA_SFA_PRESSAO_LADO_LIMPO_ALTO"], descricao="[SA]  Pressão Sistema de Filtragem A Lado Limpo Alta")
-        cls.l_sfa_press_lado_sujo_muito_alto = lei.LeituraModbusBit(cls.clp["SA"], REG_SASE["SFA_PRESSAO_LADO_LIMPO_MUITO_ALTO"], descricao="[SA]  Pressão Sistema de Filtragem A Lado Sujo Muito Alta")
-        cls.l_sfa_press_lado_limpo_muito_alto = lei.LeituraModbusBit(cls.clp["SA"], REG_SASE["SFA_PRESSAO_LADO_SUJO_MUITO_ALTO"], descricao="[SA]  Pressão Sistema de Filtragem A Lado Limpo Muito Alta")
+        cls.l_sfa_press_lado_sujo_alto = lei.LeituraModbusBit(serv.Servidores.clp["SA"], REG_SASE["PSA_SFA_PRESSAO_LADO_SUJO_ALTO"], descricao="[SA]  Pressão Sistema de Filtragem A Lado Sujo Alta")
+        cls.l_sfa_press_lado_limpo_alto = lei.LeituraModbusBit(serv.Servidores.clp["SA"], REG_SASE["PSA_SFA_PRESSAO_LADO_LIMPO_ALTO"], descricao="[SA]  Pressão Sistema de Filtragem A Lado Limpo Alta")
+        cls.l_sfa_press_lado_sujo_muito_alto = lei.LeituraModbusBit(serv.Servidores.clp["SA"], REG_SASE["SFA_PRESSAO_LADO_LIMPO_MUITO_ALTO"], descricao="[SA]  Pressão Sistema de Filtragem A Lado Sujo Muito Alta")
+        cls.l_sfa_press_lado_limpo_muito_alto = lei.LeituraModbusBit(serv.Servidores.clp["SA"], REG_SASE["SFA_PRESSAO_LADO_SUJO_MUITO_ALTO"], descricao="[SA]  Pressão Sistema de Filtragem A Lado Limpo Muito Alta")
 
-        cls.l_sfb_press_lado_sujo_alto = lei.LeituraModbusBit(cls.clp["SA"], REG_SASE["PSA_SFB_PRESSAO_LADO_SUJO_ALTO"], descricao="[SA]  Pressão Sistema de Filtragem B Lado Sujo Alta")
-        cls.l_sfb_press_lado_limpo_alto = lei.LeituraModbusBit(cls.clp["SA"], REG_SASE["PSA_SFB_PRESSAO_LADO_LIMPO_ALTO"], descricao="[SA]  Pressão Sistema de Filtragem B Lado Limpo Alta")
-        cls.l_sfb_press_lado_sujo_muito_alto = lei.LeituraModbusBit(cls.clp["SA"], REG_SASE["SFB_PRESSAO_LADO_LIMPO_MUITO_ALTO"], descricao="[SA]  Pressão Sistema de Filtragem B Lado Sujo Muito Alta")
-        cls.l_sfb_press_lado_limpo_muito_alto = lei.LeituraModbusBit(cls.clp["SA"], REG_SASE["SFB_PRESSAO_LADO_SUJO_MUITO_ALTO"], descricao="[SA]  Pressão Sistema de Filtragem B Lado Limpo Muito Alta")
+        cls.l_sfb_press_lado_sujo_alto = lei.LeituraModbusBit(serv.Servidores.clp["SA"], REG_SASE["PSA_SFB_PRESSAO_LADO_SUJO_ALTO"], descricao="[SA]  Pressão Sistema de Filtragem B Lado Sujo Alta")
+        cls.l_sfb_press_lado_limpo_alto = lei.LeituraModbusBit(serv.Servidores.clp["SA"], REG_SASE["PSA_SFB_PRESSAO_LADO_LIMPO_ALTO"], descricao="[SA]  Pressão Sistema de Filtragem B Lado Limpo Alta")
+        cls.l_sfb_press_lado_sujo_muito_alto = lei.LeituraModbusBit(serv.Servidores.clp["SA"], REG_SASE["SFB_PRESSAO_LADO_LIMPO_MUITO_ALTO"], descricao="[SA]  Pressão Sistema de Filtragem B Lado Sujo Muito Alta")
+        cls.l_sfb_press_lado_limpo_muito_alto = lei.LeituraModbusBit(serv.Servidores.clp["SA"], REG_SASE["SFB_PRESSAO_LADO_SUJO_MUITO_ALTO"], descricao="[SA]  Pressão Sistema de Filtragem B Lado Limpo Muito Alta")
 
-        cls.l_sup_tensao_falha = lei.LeituraModbusBit(cls.clp["SA"], REG_SASE["SUPER_TENSAO_FALHA"], descricao="[SA]  Falha Tensão pelo Supervisório")
-        cls.l_sup_tensao_tsa_falha = lei.LeituraModbusBit(cls.clp["SA"], REG_SASE["SUPER_TENSAO_TSA_FALHA"], descricao="[SA]  Falha Tensão Serviço Auxiliar pelo Supervisório")
-        cls.l_sup_tensao_gmg_falha = lei.LeituraModbusBit(cls.clp["SA"], REG_SASE["SUPER_TENSAO_GMG_FALHA"], descricao="[SA]  Falha Tensão Grupo Motor Gerador pelo Supervisório")
+        cls.l_sup_tensao_falha = lei.LeituraModbusBit(serv.Servidores.clp["SA"], REG_SASE["SUPER_TENSAO_FALHA"], descricao="[SA]  Falha Tensão pelo Supervisório")
+        cls.l_sup_tensao_tsa_falha = lei.LeituraModbusBit(serv.Servidores.clp["SA"], REG_SASE["SUPER_TENSAO_TSA_FALHA"], descricao="[SA]  Falha Tensão Serviço Auxiliar pelo Supervisório")
+        cls.l_sup_tensao_gmg_falha = lei.LeituraModbusBit(serv.Servidores.clp["SA"], REG_SASE["SUPER_TENSAO_GMG_FALHA"], descricao="[SA]  Falha Tensão Grupo Motor Gerador pelo Supervisório")
 
-        cls.l_poco_dren_nv_alto = lei.LeituraModbusBit(cls.clp["SA"], REG_SASE["PD_SENS_NV_ALTO"], descricao="[SA]  Poço de Drenagem Nível Alto")
-        cls.l_dren_boias_discrepancia = lei.LeituraModbusBit(cls.clp["SA"], REG_SASE["DREN_BOIAS_DISCREPANCIA"], descricao="[SA]  Dicrepância Boias de Drenagem")
-        cls.l_poco_dren_nv_muito_baixo = lei.LeituraModbusBit(cls.clp["SA"], REG_SASE["PD_SENS_NV_MUITO_BAIXO"], descricao="[SA]  Poço de Drenagem Nível Muito Alto")
+        cls.l_poco_dren_nv_alto = lei.LeituraModbusBit(serv.Servidores.clp["SA"], REG_SASE["PD_SENS_NV_ALTO"], descricao="[SA]  Poço de Drenagem Nível Alto")
+        cls.l_dren_boias_discrepancia = lei.LeituraModbusBit(serv.Servidores.clp["SA"], REG_SASE["DREN_BOIAS_DISCREPANCIA"], descricao="[SA]  Dicrepância Boias de Drenagem")
+        cls.l_poco_dren_nv_muito_baixo = lei.LeituraModbusBit(serv.Servidores.clp["SA"], REG_SASE["PD_SENS_NV_MUITO_BAIXO"], descricao="[SA]  Poço de Drenagem Nível Muito Alto")
 
-        cls.l_dren_bomba_1_indisp = lei.LeituraModbusBit(cls.clp["SA"], REG_SASE["DREN_BOMBA_1_INDISPONV"], descricao="[SA]  Bomba de Drenagem 1 Indisponível")
-        cls.l_dren_bomba_2_indisp = lei.LeituraModbusBit(cls.clp["SA"], REG_SASE["DREN_BOMBA_1_INDISPONV"], descricao="[SA]  Bomba de Drenagem 2 Indisponível")
-        cls.l_esgot_bomba_1_falha = lei.LeituraModbusBit(cls.clp["SA"], REG_SASE["SF_BOMBA_1_FALHA"], descricao="[SA]  Falha Bomba de Esgotamento 1")
-        cls.l_esgot_bomba_2_falha = lei.LeituraModbusBit(cls.clp["SA"], REG_SASE["ESGOTA_BOMBA_2_FALHA"], descricao="[SA]  Falha Bomba de Esgotamento 2") # TODO -> verificar invertido
-        cls.l_esgot_bomba_1_indisp = lei.LeituraModbusBit(cls.clp["SA"], REG_SASE["SF_BOMBA_1_INDISPONV"], descricao="[SA]  Bomba de Esgotamento 1 Indisponível")
-        cls.l_esgot_bomba_2_indisp = lei.LeituraModbusBit(cls.clp["SA"], REG_SASE["ESGOTA_BOMBA_2_INDISPONV"], descricao="[SA]  Bomba de Esgotamento 2 Indisponível")
-        cls.l_poco_dren_bomba_1_defeito = lei.LeituraModbusBit(cls.clp["SA"], REG_SASE["PD_BOMBA_1_DEFEITO"], descricao="[SA]  Defeito Bomba 1 Poço de Drenagem")
-        cls.l_poco_dren_bomba_2_defeito = lei.LeituraModbusBit(cls.clp["SA"], REG_SASE["PD_BOMBA_2_DEFEITO"], descricao="[SA]  Defeito Bomba 2 Poço de Drenagem")
+        cls.l_dren_bomba_1_indisp = lei.LeituraModbusBit(serv.Servidores.clp["SA"], REG_SASE["DREN_BOMBA_1_INDISPONV"], descricao="[SA]  Bomba de Drenagem 1 Indisponível")
+        cls.l_dren_bomba_2_indisp = lei.LeituraModbusBit(serv.Servidores.clp["SA"], REG_SASE["DREN_BOMBA_1_INDISPONV"], descricao="[SA]  Bomba de Drenagem 2 Indisponível")
+        cls.l_esgot_bomba_1_falha = lei.LeituraModbusBit(serv.Servidores.clp["SA"], REG_SASE["SF_BOMBA_1_FALHA"], descricao="[SA]  Falha Bomba de Esgotamento 1")
+        cls.l_esgot_bomba_2_falha = lei.LeituraModbusBit(serv.Servidores.clp["SA"], REG_SASE["ESGOTA_BOMBA_2_FALHA"], descricao="[SA]  Falha Bomba de Esgotamento 2") # TODO -> verificar invertido
+        cls.l_esgot_bomba_1_indisp = lei.LeituraModbusBit(serv.Servidores.clp["SA"], REG_SASE["SF_BOMBA_1_INDISPONV"], descricao="[SA]  Bomba de Esgotamento 1 Indisponível")
+        cls.l_esgot_bomba_2_indisp = lei.LeituraModbusBit(serv.Servidores.clp["SA"], REG_SASE["ESGOTA_BOMBA_2_INDISPONV"], descricao="[SA]  Bomba de Esgotamento 2 Indisponível")
+        cls.l_poco_dren_bomba_1_defeito = lei.LeituraModbusBit(serv.Servidores.clp["SA"], REG_SASE["PD_BOMBA_1_DEFEITO"], descricao="[SA]  Defeito Bomba 1 Poço de Drenagem")
+        cls.l_poco_dren_bomba_2_defeito = lei.LeituraModbusBit(serv.Servidores.clp["SA"], REG_SASE["PD_BOMBA_2_DEFEITO"], descricao="[SA]  Defeito Bomba 2 Poço de Drenagem")
 
-        cls.l_sfa_limp_elem_1_aberta = lei.LeituraModbusBit(cls.clp["SA"], REG_SASE["SFA_LIMP_ELEM_1_ABERTA"], descricao="[SA]  Sistema de Filtragem A Elemento 1 Aberto")
-        cls.l_sfa_limp_elem_2_aberta = lei.LeituraModbusBit(cls.clp["SA"], REG_SASE["SFA_LIMP_ELEM_2_ABERTA"], descricao="[SA]  Sistema de Filtragem A Elemento 2 Aberto")
-        cls.l_sfa_entra_elem_1_aberta = lei.LeituraModbusBit(cls.clp["SA"], REG_SASE["SFA_ENTRA_ELEM_1_ABERTA"], descricao="[SA]  Sistema de Filtragem A Entrada Elemento 1 Aberto") # TODO -> verificar invertido
-        cls.l_sfa_entra_elem_2_aberta = lei.LeituraModbusBit(cls.clp["SA"], REG_SASE["SFA_ENTRA_ELEM_2_ABERTA"], descricao="[SA]  Sistema de Filtragem A Entrada Elemento 2 Aberto")
-        cls.l_sfa_falha_abrir_limpeza_elem_1 = lei.LeituraModbusBit(cls.clp["SA"], REG_SASE["SFA_ELEM_1_FALHA_ABRIR_LIMP"], descricao="[SA]  Falha Abrir Limpeza do Elemento 1 do Sistema de Filtragem A")
-        cls.l_sfa_falha_fechar_limpeza_elem_1 = lei.LeituraModbusBit(cls.clp["SA"], REG_SASE["SFA_ELEM_1_FALHA_FECHAR_LIMP"], descricao="[SA]  Falha Fechar limpeza do Elemento 1 do Sistema de Filtragem A")
-        cls.l_sfa_falha_abrir_entra_elem_1 = lei.LeituraModbusBit(cls.clp["SA"], REG_SASE["SFA_ELEM_1_FALHA_ABRIR_ENTRA"], descricao="[SA]  Falha Abrir Entrada Elemento 1 do Sistema de Filtragem A")
-        cls.l_sfa_falha_fechar_entra_elem_1 = lei.LeituraModbusBit(cls.clp["SA"], REG_SASE["SFA_ELEM_1_FALHA_FECHAR_ENTRA"], descricao="[SA]  Falha Fechar Entrada Elemento 1 do Sistema de Filtragem A")
-        cls.l_sfa_falha_abrir_limpeza_elem_2 = lei.LeituraModbusBit(cls.clp["SA"], REG_SASE["SFA_ELEM_2_FALHA_ABRIR_LIMP"], descricao="[SA]  Falha Abrir Limpeza do Elemento 2 do Sistema de Filtragem A")
-        cls.l_sfa_falha_fechar_limpeza_elem_2 = lei.LeituraModbusBit(cls.clp["SA"], REG_SASE["SFA_ELEM_2_FALHA_FECHAR_LIMP"], descricao="[SA]  Falha Fechar limpeza do Elemento 2 do Sistema de Filtragem A")
-        cls.l_sfa_falha_abrir_entra_elem_2 = lei.LeituraModbusBit(cls.clp["SA"], REG_SASE["SFA_ELEM_2_FALHA_ABRIR_ENTRA"], descricao="[SA]  Falha Abrir Entrada Elemento 2 do Sistema de Filtragem A")
-        cls.l_sfa_falha_fechar_entra_elem_2 = lei.LeituraModbusBit(cls.clp["SA"], REG_SASE["SFA_ELEM_2_FALHA_FECHAR_ENTRA"], descricao="[SA]  Falha Fechar Entrada Elemento 2 do Sistema de Filtragem A")
+        cls.l_sfa_limp_elem_1_aberta = lei.LeituraModbusBit(serv.Servidores.clp["SA"], REG_SASE["SFA_LIMP_ELEM_1_ABERTA"], descricao="[SA]  Sistema de Filtragem A Elemento 1 Aberto")
+        cls.l_sfa_limp_elem_2_aberta = lei.LeituraModbusBit(serv.Servidores.clp["SA"], REG_SASE["SFA_LIMP_ELEM_2_ABERTA"], descricao="[SA]  Sistema de Filtragem A Elemento 2 Aberto")
+        cls.l_sfa_entra_elem_1_aberta = lei.LeituraModbusBit(serv.Servidores.clp["SA"], REG_SASE["SFA_ENTRA_ELEM_1_ABERTA"], descricao="[SA]  Sistema de Filtragem A Entrada Elemento 1 Aberto") # TODO -> verificar invertido
+        cls.l_sfa_entra_elem_2_aberta = lei.LeituraModbusBit(serv.Servidores.clp["SA"], REG_SASE["SFA_ENTRA_ELEM_2_ABERTA"], descricao="[SA]  Sistema de Filtragem A Entrada Elemento 2 Aberto")
+        cls.l_sfa_falha_abrir_limpeza_elem_1 = lei.LeituraModbusBit(serv.Servidores.clp["SA"], REG_SASE["SFA_ELEM_1_FALHA_ABRIR_LIMP"], descricao="[SA]  Falha Abrir Limpeza do Elemento 1 do Sistema de Filtragem A")
+        cls.l_sfa_falha_fechar_limpeza_elem_1 = lei.LeituraModbusBit(serv.Servidores.clp["SA"], REG_SASE["SFA_ELEM_1_FALHA_FECHAR_LIMP"], descricao="[SA]  Falha Fechar limpeza do Elemento 1 do Sistema de Filtragem A")
+        cls.l_sfa_falha_abrir_entra_elem_1 = lei.LeituraModbusBit(serv.Servidores.clp["SA"], REG_SASE["SFA_ELEM_1_FALHA_ABRIR_ENTRA"], descricao="[SA]  Falha Abrir Entrada Elemento 1 do Sistema de Filtragem A")
+        cls.l_sfa_falha_fechar_entra_elem_1 = lei.LeituraModbusBit(serv.Servidores.clp["SA"], REG_SASE["SFA_ELEM_1_FALHA_FECHAR_ENTRA"], descricao="[SA]  Falha Fechar Entrada Elemento 1 do Sistema de Filtragem A")
+        cls.l_sfa_falha_abrir_limpeza_elem_2 = lei.LeituraModbusBit(serv.Servidores.clp["SA"], REG_SASE["SFA_ELEM_2_FALHA_ABRIR_LIMP"], descricao="[SA]  Falha Abrir Limpeza do Elemento 2 do Sistema de Filtragem A")
+        cls.l_sfa_falha_fechar_limpeza_elem_2 = lei.LeituraModbusBit(serv.Servidores.clp["SA"], REG_SASE["SFA_ELEM_2_FALHA_FECHAR_LIMP"], descricao="[SA]  Falha Fechar limpeza do Elemento 2 do Sistema de Filtragem A")
+        cls.l_sfa_falha_abrir_entra_elem_2 = lei.LeituraModbusBit(serv.Servidores.clp["SA"], REG_SASE["SFA_ELEM_2_FALHA_ABRIR_ENTRA"], descricao="[SA]  Falha Abrir Entrada Elemento 2 do Sistema de Filtragem A")
+        cls.l_sfa_falha_fechar_entra_elem_2 = lei.LeituraModbusBit(serv.Servidores.clp["SA"], REG_SASE["SFA_ELEM_2_FALHA_FECHAR_ENTRA"], descricao="[SA]  Falha Fechar Entrada Elemento 2 do Sistema de Filtragem A")
 
-        cls.l_sfb_limp_elem_1_aberta = lei.LeituraModbusBit(cls.clp["SA"], REG_SASE["SFB_LIMP_ELEM_1_ABERTA"], descricao="[SA]  Sistema de Filtragem B Elemento 1 Aberto") # TODO -> verificar invertido
-        cls.l_sfb_limp_elem_2_aberta = lei.LeituraModbusBit(cls.clp["SA"], REG_SASE["SFB_LIMP_ELEM_2_ABERTA"], descricao="[SA]  Sistema de Filtragem B Elemento 2 Aberto")
-        cls.l_sfb_entra_elem_1_aberta = lei.LeituraModbusBit(cls.clp["SA"], REG_SASE["SFB_ENTRA_ELEM_1_ABERTA"], descricao="[SA]  Sistema de Filtragem B Entrada Elemento 1 Aberto")
-        cls.l_sfb_entra_elem_2_aberta = lei.LeituraModbusBit(cls.clp["SA"], REG_SASE["SFB_ENTRA_ELEM_2_ABERTA"], descricao="[SA]  Sistema de Filtragem B Entrada Elemento 2 Aberto")
-        cls.l_sfb_falha_abrir_limpeza_elem_1 = lei.LeituraModbusBit(cls.clp["SA"], REG_SASE["SFB_ELEM_1_FALHA_ABRIR_LIMP"], descricao="[SA]  Falha Abrir Limpeza do Elemento 1 do Sistema de Filtragem B")
-        cls.l_sfb_falha_fechar_limpeza_elem_1 = lei.LeituraModbusBit(cls.clp["SA"], REG_SASE["SFB_ELEM_1_FALHA_FECHAR_LIMP"], descricao="[SA]  Falha Fechar limpeza do Elemento 1 do Sistema de Filtragem B")
-        cls.l_sfb_falha_abrir_entra_elem_1 = lei.LeituraModbusBit(cls.clp["SA"], REG_SASE["SFB_ELEM_1_FALHA_ABRIR_ENTRA"], descricao="[SA]  Falha Abrir Entrada Elemento 1 do Sistema de Filtragem B") # TODO -> verificar invertido
-        cls.l_sfb_falha_fechar_entra_elem_1 = lei.LeituraModbusBit(cls.clp["SA"], REG_SASE["SFB_ELEM_1_FALHA_FECHAR_ENTRA"], descricao="[SA]  Falha Fechar Entrada Elemento 1 do Sistema de Filtragem B")
-        cls.l_sfb_falha_abrir_limpeza_elem_2 = lei.LeituraModbusBit(cls.clp["SA"], REG_SASE["SFB_ELEM_2_FALHA_ABRIR_LIMP"], descricao="[SA]  Falha Abrir Limpeza do Elemento 2 do Sistema de Filtragem B")
-        cls.l_sfb_falha_fechar_limpeza_elem_2 = lei.LeituraModbusBit(cls.clp["SA"], REG_SASE["SFB_ELEM_2_FALHA_FECHAR_LIMP"], descricao="[SA]  Falha Fechar limpeza do Elemento 2 do Sistema de Filtragem B")
-        cls.l_sfb_falha_abrir_entra_elem_2 = lei.LeituraModbusBit(cls.clp["SA"], REG_SASE["SFB_ELEM_2_FALHA_ABRIR_ENTRA"], descricao="[SA]  Falha Abrir Entrada Elemento 2 do Sistema de Filtragem B")
-        cls.l_sfb_falha_fechar_entra_elem_2 = lei.LeituraModbusBit(cls.clp["SA"], REG_SASE["SFB_ELEM_2_FALHA_FECHAR_ENTRA"], descricao="[SA]  Falha Fechar Entrada Elemento 2 do Sistema de Filtragem B")
+        cls.l_sfb_limp_elem_1_aberta = lei.LeituraModbusBit(serv.Servidores.clp["SA"], REG_SASE["SFB_LIMP_ELEM_1_ABERTA"], descricao="[SA]  Sistema de Filtragem B Elemento 1 Aberto") # TODO -> verificar invertido
+        cls.l_sfb_limp_elem_2_aberta = lei.LeituraModbusBit(serv.Servidores.clp["SA"], REG_SASE["SFB_LIMP_ELEM_2_ABERTA"], descricao="[SA]  Sistema de Filtragem B Elemento 2 Aberto")
+        cls.l_sfb_entra_elem_1_aberta = lei.LeituraModbusBit(serv.Servidores.clp["SA"], REG_SASE["SFB_ENTRA_ELEM_1_ABERTA"], descricao="[SA]  Sistema de Filtragem B Entrada Elemento 1 Aberto")
+        cls.l_sfb_entra_elem_2_aberta = lei.LeituraModbusBit(serv.Servidores.clp["SA"], REG_SASE["SFB_ENTRA_ELEM_2_ABERTA"], descricao="[SA]  Sistema de Filtragem B Entrada Elemento 2 Aberto")
+        cls.l_sfb_falha_abrir_limpeza_elem_1 = lei.LeituraModbusBit(serv.Servidores.clp["SA"], REG_SASE["SFB_ELEM_1_FALHA_ABRIR_LIMP"], descricao="[SA]  Falha Abrir Limpeza do Elemento 1 do Sistema de Filtragem B")
+        cls.l_sfb_falha_fechar_limpeza_elem_1 = lei.LeituraModbusBit(serv.Servidores.clp["SA"], REG_SASE["SFB_ELEM_1_FALHA_FECHAR_LIMP"], descricao="[SA]  Falha Fechar limpeza do Elemento 1 do Sistema de Filtragem B")
+        cls.l_sfb_falha_abrir_entra_elem_1 = lei.LeituraModbusBit(serv.Servidores.clp["SA"], REG_SASE["SFB_ELEM_1_FALHA_ABRIR_ENTRA"], descricao="[SA]  Falha Abrir Entrada Elemento 1 do Sistema de Filtragem B") # TODO -> verificar invertido
+        cls.l_sfb_falha_fechar_entra_elem_1 = lei.LeituraModbusBit(serv.Servidores.clp["SA"], REG_SASE["SFB_ELEM_1_FALHA_FECHAR_ENTRA"], descricao="[SA]  Falha Fechar Entrada Elemento 1 do Sistema de Filtragem B")
+        cls.l_sfb_falha_abrir_limpeza_elem_2 = lei.LeituraModbusBit(serv.Servidores.clp["SA"], REG_SASE["SFB_ELEM_2_FALHA_ABRIR_LIMP"], descricao="[SA]  Falha Abrir Limpeza do Elemento 2 do Sistema de Filtragem B")
+        cls.l_sfb_falha_fechar_limpeza_elem_2 = lei.LeituraModbusBit(serv.Servidores.clp["SA"], REG_SASE["SFB_ELEM_2_FALHA_FECHAR_LIMP"], descricao="[SA]  Falha Fechar limpeza do Elemento 2 do Sistema de Filtragem B")
+        cls.l_sfb_falha_abrir_entra_elem_2 = lei.LeituraModbusBit(serv.Servidores.clp["SA"], REG_SASE["SFB_ELEM_2_FALHA_ABRIR_ENTRA"], descricao="[SA]  Falha Abrir Entrada Elemento 2 do Sistema de Filtragem B")
+        cls.l_sfb_falha_fechar_entra_elem_2 = lei.LeituraModbusBit(serv.Servidores.clp["SA"], REG_SASE["SFB_ELEM_2_FALHA_FECHAR_ENTRA"], descricao="[SA]  Falha Fechar Entrada Elemento 2 do Sistema de Filtragem B")
 
-        cls.l_nv_jusante_alto = lei.LeituraModbusBit(cls.clp["SA"], REG_SASE["NV_JUSANTE_ALTO"], descricao="[SA]  Nível Jusante Alto")
-        cls.l_nv_jusante_muito_baixo = lei.LeituraModbusBit(cls.clp["SA"], REG_SASE["NV_JUSANTE_MUITO_BAIXO"], descricao="[SA]  Nível Jusante Muito Baixo")
-        cls.l_nv_jusante_falha_leitura = lei.LeituraModbusBit(cls.clp["SA"], REG_SASE["NV_JUSANTE_FALHA_LEITURA"], descricao="[SA]  Falha Leitura Nível Jusante")
+        cls.l_nv_jusante_alto = lei.LeituraModbusBit(serv.Servidores.clp["SA"], REG_SASE["NV_JUSANTE_ALTO"], descricao="[SA]  Nível Jusante Alto")
+        cls.l_nv_jusante_muito_baixo = lei.LeituraModbusBit(serv.Servidores.clp["SA"], REG_SASE["NV_JUSANTE_MUITO_BAIXO"], descricao="[SA]  Nível Jusante Muito Baixo")
+        cls.l_nv_jusante_falha_leitura = lei.LeituraModbusBit(serv.Servidores.clp["SA"], REG_SASE["NV_JUSANTE_FALHA_LEITURA"], descricao="[SA]  Falha Leitura Nível Jusante")
 
-        cls.l_sfa_press_lado_sujo_falha_leitura = lei.LeituraModbusBit(cls.clp["SA"], REG_SASE["SFA_PRESSAO_LADO_SUJO_FALHA_LEITURA"], descricao="[SA]  Falha Leitura Pressão Sistema de Filtragem A Lado Sujo")
-        cls.l_sfa_press_lado_limpo_falha_leitura = lei.LeituraModbusBit(cls.clp["SA"], REG_SASE["SFA_PRESSAO_LADO_LIMPO_FALHA_LEITURA"], descricao="[SA]  Falha Leitura Pressão Sistema de Filtragem A Lado Limpo")
+        cls.l_sfa_press_lado_sujo_falha_leitura = lei.LeituraModbusBit(serv.Servidores.clp["SA"], REG_SASE["SFA_PRESSAO_LADO_SUJO_FALHA_LEITURA"], descricao="[SA]  Falha Leitura Pressão Sistema de Filtragem A Lado Sujo")
+        cls.l_sfa_press_lado_limpo_falha_leitura = lei.LeituraModbusBit(serv.Servidores.clp["SA"], REG_SASE["SFA_PRESSAO_LADO_LIMPO_FALHA_LEITURA"], descricao="[SA]  Falha Leitura Pressão Sistema de Filtragem A Lado Limpo")
 
-        cls.l_sfb_press_lado_sujo_falha_leitura = lei.LeituraModbusBit(cls.clp["SA"], REG_SASE["SFB_PRESSAO_LADO_SUJO_FALHA_LEITURA"], descricao="[SA]  Falha Leitura Pressão Sistema de Filtragem B Lado Sujo")
-        cls.l_sfb_press_lado_limpo_falha_leitura = lei.LeituraModbusBit(cls.clp["SA"], REG_SASE["SFB_PRESSAO_LADO_LIMPO_FALHA_LEITURA"], descricao="[SA]  Falha Leitura Pressão Sistema de Filtragem B Lado Limpo")
+        cls.l_sfb_press_lado_sujo_falha_leitura = lei.LeituraModbusBit(serv.Servidores.clp["SA"], REG_SASE["SFB_PRESSAO_LADO_SUJO_FALHA_LEITURA"], descricao="[SA]  Falha Leitura Pressão Sistema de Filtragem B Lado Sujo")
+        cls.l_sfb_press_lado_limpo_falha_leitura = lei.LeituraModbusBit(serv.Servidores.clp["SA"], REG_SASE["SFB_PRESSAO_LADO_LIMPO_FALHA_LEITURA"], descricao="[SA]  Falha Leitura Pressão Sistema de Filtragem B Lado Limpo")
 
-        cls.l_sfa_press_lado_sujo_baixo = lei.LeituraModbusBit(cls.clp["SA"], REG_SASE["SFA_PRESSAO_LADO_SUJO_BAIXO"], descricao="[SA]  Pressão Sistema de Filtragem A Lado Sujo Baixo")
-        cls.l_sfa_press_lado_limpo_baixo = lei.LeituraModbusBit(cls.clp["SA"], REG_SASE["SFA_PRESSAO_LADO_LIMPO_BAIXO"], descricao="[SA]  Pressão Sistema de Filtragem A Lado Limpo Baixo")
-        cls.l_sfa_press_lado_sujo_muito_baixo = lei.LeituraModbusBit(cls.clp["SA"], REG_SASE["SFA_PRESSAO_LADO_SUJO_MUITO_BAIXO"], descricao="[SA]  Pressão Sistema de Filtragem A Lado Sujo Muito Baixo")
-        cls.l_sfa_press_lado_limpo_muito_baixo = lei.LeituraModbusBit(cls.clp["SA"], REG_SASE["SFA_PRESSAO_LADO_LIMPO_MUITO_BAIXO"], descricao="[SA]  Pressão Sistema de Filtragem A Lado Limpo Muito Baixo")
+        cls.l_sfa_press_lado_sujo_baixo = lei.LeituraModbusBit(serv.Servidores.clp["SA"], REG_SASE["SFA_PRESSAO_LADO_SUJO_BAIXO"], descricao="[SA]  Pressão Sistema de Filtragem A Lado Sujo Baixo")
+        cls.l_sfa_press_lado_limpo_baixo = lei.LeituraModbusBit(serv.Servidores.clp["SA"], REG_SASE["SFA_PRESSAO_LADO_LIMPO_BAIXO"], descricao="[SA]  Pressão Sistema de Filtragem A Lado Limpo Baixo")
+        cls.l_sfa_press_lado_sujo_muito_baixo = lei.LeituraModbusBit(serv.Servidores.clp["SA"], REG_SASE["SFA_PRESSAO_LADO_SUJO_MUITO_BAIXO"], descricao="[SA]  Pressão Sistema de Filtragem A Lado Sujo Muito Baixo")
+        cls.l_sfa_press_lado_limpo_muito_baixo = lei.LeituraModbusBit(serv.Servidores.clp["SA"], REG_SASE["SFA_PRESSAO_LADO_LIMPO_MUITO_BAIXO"], descricao="[SA]  Pressão Sistema de Filtragem A Lado Limpo Muito Baixo")
 
-        cls.l_sfb_press_lado_sujo_baixo = lei.LeituraModbusBit(cls.clp["SA"], REG_SASE["SFB_PRESSAO_LADO_SUJO_BAIXO"], descricao="[SA]  Pressão Sistema de Filtragem A Lado Sujo Baixo")
-        cls.l_sfb_press_lado_limpo_baixo = lei.LeituraModbusBit(cls.clp["SA"], REG_SASE["SFB_PRESSAO_LADO_LIMPO_BAIXO"], descricao="[SA]  Pressão Sistema de Filtragem A Lado Limpo Baixo")
-        cls.l_sfb_press_lado_sujo_muito_baixo = lei.LeituraModbusBit(cls.clp["SA"], REG_SASE["SFB_PRESSAO_LADO_SUJO_MUITO_BAIXO"], descricao="[SA]  Pressão Sistema de Filtragem A Lado Sujo Muito Baixo")
-        cls.l_sfb_press_lado_limpo_muito_baixo = lei.LeituraModbusBit(cls.clp["SA"], REG_SASE["SFB_PRESSAO_LADO_LIMPO_MUITO_BAIXO"], descricao="[SA]  Pressão Sistema de Filtragem A Lado Limpo Muito Baixo")
+        cls.l_sfb_press_lado_sujo_baixo = lei.LeituraModbusBit(serv.Servidores.clp["SA"], REG_SASE["SFB_PRESSAO_LADO_SUJO_BAIXO"], descricao="[SA]  Pressão Sistema de Filtragem A Lado Sujo Baixo")
+        cls.l_sfb_press_lado_limpo_baixo = lei.LeituraModbusBit(serv.Servidores.clp["SA"], REG_SASE["SFB_PRESSAO_LADO_LIMPO_BAIXO"], descricao="[SA]  Pressão Sistema de Filtragem A Lado Limpo Baixo")
+        cls.l_sfb_press_lado_sujo_muito_baixo = lei.LeituraModbusBit(serv.Servidores.clp["SA"], REG_SASE["SFB_PRESSAO_LADO_SUJO_MUITO_BAIXO"], descricao="[SA]  Pressão Sistema de Filtragem A Lado Sujo Muito Baixo")
+        cls.l_sfb_press_lado_limpo_muito_baixo = lei.LeituraModbusBit(serv.Servidores.clp["SA"], REG_SASE["SFB_PRESSAO_LADO_LIMPO_MUITO_BAIXO"], descricao="[SA]  Pressão Sistema de Filtragem A Lado Limpo Muito Baixo")

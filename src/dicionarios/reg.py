@@ -27,12 +27,12 @@ REG_MOA = {
 
 REG_RELE = {
     "SE": {
+        "VAB":                                                                          154,        # Input Register Scale 0.1              (OP -> Read Input Registers - 3x)
+        "VBC":                                                                          155,        # Input Register Scale 0.1              (OP -> Read Input Registers - 3x)
+        "VCA":                                                                          156,        # Input Register Scale 0.1              (OP -> Read Input Registers - 3x)
         "IA":                                                                           320,        # Input Register                        (OP -> Read Input Registers - 3x)
         "IB":                                                                           322,        # Input Register                        (OP -> Read Input Registers - 3x)
         "IC":                                                                           324,        # Input Register                        (OP -> Read Input Registers - 3x)
-        "VAB":                                                                          330,        # Input Register Scale 0.1              (OP -> Read Input Registers - 3x)
-        "VBC":                                                                          332,        # Input Register Scale 0.1              (OP -> Read Input Registers - 3x)
-        "VCA":                                                                          334,        # Input Register Scale 0.1              (OP -> Read Input Registers - 3x)
         "P":                                                                            353,        # Input Register                        (OP -> Read Input Registers - 3x)
         "Q":                                                                            361,        # Input Register                        (OP -> Read Input Registers - 3x)
         "S":                                                                            369,        # Input Register                        (OP -> Read Input Registers - 3x)
@@ -374,19 +374,19 @@ REG_UG = {
         ### COMANDOS
         ## CMD_UG1
         # Rearme
-        "CMD_REARME_FALHAS":                                                            [12289, 0],
+        "CMD_REARME_FALHAS":                                                            [12288, 0],
 
         # Partida/Parada
-        "CMD_PARADA_EMERG":                                                             [12289, 1],
-        "CMD_PARADA_NV_HABILITA":                                                       [12289, 5],
-        "CMD_PARADA_NV_DESABILITA":                                                     [12289, 6],
+        "CMD_PARADA_EMERG":                                                             [12288, 1],
+        "CMD_PARADA_NV_HABILITA":                                                       [12288, 5],
+        "CMD_PARADA_NV_DESABILITA":                                                     [12288, 6],
         "CMD_PARADA_TOTAL":                                                             [12290, 0],
         "CMD_SINCRONISMO":                                                              [12290, 9],
 
         # Controle de Nível
-        "CMD_CONTROLE_NV":                                                              [12289, 2],
-        "CMD_CONTROLE_POT_MANUAL":                                                      [12289, 3],
-        "CMD_CONTROLE_POT_NV":                                                          [12289, 4],
+        "CMD_CONTROLE_NV":                                                              [12288, 2],
+        "CMD_CONTROLE_POT_MANUAL":                                                      [12288, 3],
+        "CMD_CONTROLE_POT_NV":                                                          [12288, 4],
 
         # RV e RT
         "CMD_RV_MANUTENCAO":                                                            [12289, 10],
@@ -746,19 +746,19 @@ REG_UG = {
         ### COMANDOS
         ## CMD_UG1
         # Rearme
-        "CMD_REARME_FALHAS":                                                            [12289, 0],
+        "CMD_REARME_FALHAS":                                                            [12288, 0],
 
         # Partida/Parada
-        "CMD_PARADA_EMERG":                                                             [12289, 1],
-        "CMD_PARADA_NV_HABILITA":                                                       [12289, 5],
-        "CMD_PARADA_NV_DESABILITA":                                                     [12289, 6],
+        "CMD_PARADA_EMERG":                                                             [12288, 1],
+        "CMD_PARADA_NV_HABILITA":                                                       [12288, 5],
+        "CMD_PARADA_NV_DESABILITA":                                                     [12288, 6],
         "CMD_PARADA_TOTAL":                                                             [12290, 0],
         "CMD_SINCRONISMO":                                                              [12290, 9],
 
         # Controle de Nível
-        "CMD_CONTROLE_NV":                                                              [12289, 2],
-        "CMD_CONTROLE_POT_MANUAL":                                                      [12289, 3],
-        "CMD_CONTROLE_POT_NV":                                                          [12289, 4],
+        "CMD_CONTROLE_NV":                                                              [12288, 2],
+        "CMD_CONTROLE_POT_MANUAL":                                                      [12288, 3],
+        "CMD_CONTROLE_POT_NV":                                                          [12288, 4],
 
         # RV e RT
         "CMD_RV_MANUTENCAO":                                                            [12289, 10],

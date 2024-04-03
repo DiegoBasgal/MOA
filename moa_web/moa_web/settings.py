@@ -40,6 +40,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     # Nosso
     "agendamentos",
+    "alarmes",
     "contatos",
     "monitoramento",
     "ocorrencias",

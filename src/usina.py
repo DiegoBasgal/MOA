@@ -52,7 +52,7 @@ class Usina:
         self.ug1 = u.UnidadeDeGeracao(1, self.cfg, self.bd)
         self.ug2 = u.UnidadeDeGeracao(2, self.cfg, self.bd)
         self.ugs: "list[u.UnidadeDeGeracao]" = [self.ug1, self.ug2]
-        
+
         self.se.bd = self.bd
         self.sa.bd = self.bd
         self.tda.bd = self.bd
@@ -149,7 +149,7 @@ class Usina:
         logger.debug("")
         logger.info(f"[USN]  Enviando comando:                   \"RESET EMERGÊNCIA GERAL\"")
         logger.debug("")
-        logger.debug("[USN] Tomada da Água resetada.") if self.tda.resetar_emergencia else logger.info("[USN] Reset de emergência da Tomada da Água \"FALHOU\"!.")
+        logger.debug("[USN] Tomada da Água resetada.") if self.tda.resetar_emergencia() else logger.info("[USN] Reset de emergência da Tomada da Água \"FALHOU\"!.")
         logger.debug("[USN] Serviço Auxiliar e Subestação resetados.") if self.sa.resetar_emergencia() else logger.info("[USN] Reset de emergência do serviço auxiliar e subestação \"FALHOU\"!.")
         logger.debug("")
 
@@ -210,7 +210,7 @@ class Usina:
 
         if not self.se.verificar_tensao():
             logger.debug("")
-            logger.debug(f"[SE]  Tensão Subestação:            RS -> \"{self.se.tensao_rs.valor:2.1f} V\" | ST -> \"{self.se.tensao_st.valor:2.1f} V\" | TR -> \"{self.se.tensao_tr.valor:2.1f} V\"")
+            logger.debug(f"[SE]  Tensão Subestação:            RS -> \"{self.se.tensao_rs.valor/1000 * 173.21 * 115:2.1f} V\" | ST -> \"{self.se.tensao_st.valor/1000 * 173.21 * 115:2.1f} V\" | TR -> \"{self.se.tensao_tr.valor/1000 * 173.21 * 115:2.1f} V\"")
             logger.debug("")
             return DJS_FALTA_TENSAO
 
@@ -220,7 +220,6 @@ class Usina:
 
         else:
             return DJS_OK
-
 
 
     def verificar_condicionadores(self) -> "int":
@@ -294,7 +293,11 @@ class Usina:
         calcular e distribuir a potência para as Unidades.
         """
 
-        if self.tda.nv_montante.valor >= self.cfg["nv_maximo"]:
+        if self.tda.nv_montante.valor in (None, 0, 0.0):
+            logger.info(f"[TDA] Erro de Leitura de Nível Montante identificada! Acionando espera pelo Reservatório.")
+            self.aguardando_reservatorio = True
+
+        elif self.tda.nv_montante.valor >= self.cfg["nv_maximo"]:
             logger.debug("[TDA] Nível Montante acima do Máximo.")
             logger.debug(f"[TDA]          Leitura:                   {self.tda.nv_montante.valor:0.3f}")
             logger.debug("")
@@ -438,7 +441,12 @@ class Usina:
             return
 
         logger.debug(f"[USN] Distribuindo:                       {pot_alvo - ajuste_manual:0.3f}")
-        sp = (pot_alvo - ajuste_manual) / self.cfg["pot_maxima_usina"]
+
+        pot_ajustada = pot_alvo - ajuste_manual
+
+        pot_atenuada = self.atenuar_carga(pot_ajustada)
+
+        sp = (pot_atenuada) / self.cfg["pot_maxima_usina"]
 
         self.__split1 = True if sp > (0) else self.__split1
         self.__split2 = (True if sp > (0.5 + self.cfg["margem_pot_critica"]) else self.__split2)
@@ -448,24 +456,23 @@ class Usina:
 
         logger.debug(f"[USN] SP Geral:                           {sp * 100:0.1f} %")
 
-
         if len(ugs) == 2:
             if self.__split2:
                 logger.debug("[USN] Split:                              2")
 
-                for ug in ugs: 
+                for ug in ugs:
                     ug.manter_unidade = False
                     ug.setpoint = sp * ug.setpoint_maximo
-                    
+
             elif self.__split1:
                 logger.debug("[USN] Split:                              2 -> \"1B\"")
 
-                ugs[0].manter_unidade = True
+                ugs[0].manter_unidade = True if self.tda.nv_montante.valor > self.cfg['nv_minimo'] else False
                 ugs[0].setpoint = 2 * sp * ugs[0].setpoint_maximo
                 ugs[1].setpoint = 0
 
             else:
-                for ug in ugs: 
+                for ug in ugs:
                     ug.manter_unidade = False
                     ug.setpoint = 0
 
@@ -475,11 +482,48 @@ class Usina:
         elif len(ugs) == 1:
             logger.debug("[USN] Split:                              1")
 
-            ugs[0].manter_unidade = True
+            ugs[0].manter_unidade = True if self.tda.nv_montante.valor > self.cfg['nv_minimo'] else False
             ugs[0].setpoint = 2 * sp * ugs[0].setpoint_maximo
 
             logger.debug("")
             logger.debug(f"[UG{ugs[0].id}] SP    <-                            {int(ugs[0].setpoint)}")
+
+
+    def atenuar_carga(self, setpoint) -> "None":
+        """
+        Função para atenuação de carga através de leituras de condiconadores atenuadores.
+
+        Calcula o ganho e verifica os limites máximo e mínimo para deteminar se
+        deve atenuar ou não.
+        """
+
+        flags = 0
+        atenuacao = 0
+        logger.debug(f"[USN]          Verificando Atenuadores...")
+
+        for condic in tda.TomadaAgua.condicionadores_atenuadores:
+            atenuacao = max(atenuacao, condic.valor)
+
+            if atenuacao > 0:
+                flags += 1
+                logger.debug(f"[USN]          - \"{condic.descricao}\":")
+                logger.debug(f"[USN]                                     Leitura: {condic.leitura:3.2f} | Atenuação: {atenuacao:0.4f}")
+
+                if flags == 1:
+                    self.atenuacao = atenuacao
+                elif atenuacao > self.atenuacao:
+                    self.atenuacao = atenuacao
+                atenuacao = 0
+
+        if flags == 0:
+            logger.debug(f"[USN]          Não há necessidade de Atenuação.")
+
+        ganho = 1 - self.atenuacao
+        self.atenuacao = 0
+
+        setpoint_atenuado = setpoint - 0.5 * (setpoint - (setpoint * ganho))
+
+        return setpoint_atenuado
 
 
     ### MÉTODOS DE CONTROLE DE DADOS:

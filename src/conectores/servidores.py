@@ -50,14 +50,14 @@ class Servidores:
         auto_open=True
     )
 
-    """rele[f"SE"] = ModbusClient(
+    rele[f"SE"] = ModbusClient(
         host=IP["RELE_SE_ip"],
         port=IP["RELE_SE_porta"],
         unit_id=1,
         timeout=0.5,
         auto_close=True,
         auto_open=True
-    )"""
+    )
     rele[f"UG1"] = ModbusClient(
         host=IP["RELE_UG1_ip"],
         port=IP["RELE_UG1_porta"],

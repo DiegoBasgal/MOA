@@ -26,17 +26,16 @@ logger = logging.getLogger("logger")
 class TomadaAgua:
 
     # ATRIBUIÇÃO DE VARIÁVEIS
-    bd: "bd.BancoDados"=None
-    clp = serv.Servidores.clp
     cfg: "dict" = {}
+    bd: "bd.BancoDados" = None
 
     nv_montante = lei.LeituraModbusFloat(
-        clp["TDA"],
+        serv.Servidores.clp["TDA"],
         REG_TDA["NV_MONTANTE_GRADE"],
         descricao="[TDA] Nível Montante"
     )
     nv_jusante = lei.LeituraModbusFloat(
-        clp["TDA"],
+        serv.Servidores.clp["TDA"],
         REG_TDA["NV_JUSANTE_GRADE"],
         descricao="[TDA] Nível Jusante Grade"
     )
@@ -50,6 +49,7 @@ class TomadaAgua:
 
     condicionadores: "list[c.CondicionadorBase]" = []
     condicionadores_essenciais: "list[c.CondicionadorBase]" = []
+    condicionadores_atenuadores: "list[c.CondicionadorBase]" = []
 
 
     @classmethod
@@ -64,7 +64,7 @@ class TomadaAgua:
     def resetar_emergencia(cls) -> "bool":
         try:
             logger.info(f"[TDA] Enviando comando:                   \"RESET EMERGÊNCIA\"")
-            res = esc.EscritaModBusBit.escrever_bit(cls.clp["TDA"], REG_TDA["CMD_RESET_GERAL"], valor=1)
+            res = esc.EscritaModBusBit.escrever_bit(serv.Servidores.clp["TDA"], REG_TDA["CMD_RESET_GERAL"], valor=1)
             return res
 
         except Exception:
@@ -88,12 +88,16 @@ class TomadaAgua:
 
             logger.debug("")
             if cls.condicionadores_ativos == []:
-                logger.warning(f"[TDA] Foram detectados Condicionadores ativos na Subestação!")
+                logger.warning(f"[TDA] Foram detectados Condicionadores ativos na Tomada da Água!")
             else:
-                logger.info(f"[TDA] Ainda há Condicionadores ativos na Subestação!")
+                logger.info(f"[TDA] Ainda há Condicionadores ativos na Tomada da Água!")
 
             for condic in condics_ativos:
-                if condic in cls.condicionadores_ativos:
+                if condic.teste:
+                    logger.debug(f"[TDA]  Descrição: \"{condic.descricao}\", Gravidade: \"{CONDIC_STR_DCT[condic.gravidade] if condic.gravidade in CONDIC_STR_DCT else 'Desconhecida'}\", Obs.: \"TESTE\"")
+                    continue
+
+                elif condic in cls.condicionadores_ativos:
                     logger.debug(f"[TDA] Descrição: \"{condic.descricao}\", Gravidade: \"{CONDIC_STR_DCT[condic.gravidade] if condic.gravidade in CONDIC_STR_DCT else 'Desconhecida'}\"")
                     continue
 
@@ -121,7 +125,6 @@ class TomadaAgua:
         Função para consulta de acionamentos da usina e avisos através do mecanismo
         de acionamento temporizado.
         """
-        return
 
         if cls.l_nv_montante_muito_baixo.valor:
             logger.warning("[TDA] Foi identificado que o Nível Montante está muito baixo, favor verificar.")
@@ -142,7 +145,10 @@ class TomadaAgua:
         Função para carregamento de todas as leituras para acionamentos de avisos
         e emergências da Usina.
         """
-        return
 
-        cls.l_nv_montante_baixo = lei.LeituraModbusBit(cls.clp["TDA"], REG_TDA["NV_MONTANTE_GRADE_BAIXO"], descricao="[TDA] Nível Montante Baixo")
-        cls.l_nv_montante_muito_baixo = lei.LeituraModbusBit(cls.clp["TDA"], REG_TDA["NV_MONTANTE_GRADE_MUITO_BAIXO"], descricao="[TDA] Nível Montante Muito Baixo")
+        cls.l_diferencial_grade = lei.LeituraSubtracao([cls.nv_montante, cls.nv_jusante], descricao="[TDA] Diferencial de Grade")
+        cls.c_diferencial_grade = c.CondicionadorExponencial(cls.l_diferencial_grade, CONDIC_INDISPONIBILIZAR, valor_base=0.35, valor_limite=0.4, ordem=1/4)
+        cls.condicionadores_atenuadores.append(cls.c_diferencial_grade)
+
+        cls.l_nv_montante_baixo = lei.LeituraModbusBit(serv.Servidores.clp["TDA"], REG_TDA["NV_MONTANTE_GRADE_BAIXO"], descricao="[TDA] Nível Montante Baixo")
+        cls.l_nv_montante_muito_baixo = lei.LeituraModbusBit(serv.Servidores.clp["TDA"], REG_TDA["NV_MONTANTE_GRADE_MUITO_BAIXO"], descricao="[TDA] Nível Montante Muito Baixo")

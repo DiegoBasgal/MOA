@@ -1,6 +1,6 @@
 {
     "kp": 2.0,
-    "ki": 0.1,
+    "ki": 0.15,
     "kd": 0.0,
     "kie": 0.1,
     "saida_ie_inicial": 0.1,
@@ -13,6 +13,6 @@
     "pot_maxima_ug2": 500.0,
     "pot_maxima_alvo": 1000.0,
     "pot_maxima_usina": 1000.0,
-    "margem_pot_critica": 0.0,
+    "margem_pot_critica": 0.35,
     "nv_religamento": 820.85
 }

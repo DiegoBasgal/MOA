@@ -11,6 +11,7 @@ from .whatsapp import WhatsApp
 class MensageiroHandler(Handler):
 
     def emit(self, record):
+
         log_entry = self.format(record)
 
         try:
