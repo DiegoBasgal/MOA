@@ -40,46 +40,53 @@ class UnidadeGeracao:
             self.clp[f"UG{self.id}"],
             REG_UG[f"UG{self.id}"]["PM710_POTENCIA_ATIVA"],
             op=4,
-            descr=f"[UG{self.id}] Leitura Potência",
+            descricao=f"[UG{self.id}] Leitura Potência",
         )
         self.__l_pressao_uhrv = lei.LeituraModbus(
             self.clp[f"UG{self.id}"],
             REG_UG[f"UG{self.id}"]["UHRV_PRESSAO"],
             escala=0.1,
             op=4,
-            descr=f"[UG{self.id}] Leitura Pressão UHRV"
+            descricao=f"[UG{self.id}] Leitura Pressão UHRV"
         )
         self.__l_rotacao = lei.LeituraModbus(
             self.clp[f"UG{self.id}"],
             REG_UG[f"UG{self.id}"]["REFERENCIA_CARGA"],
             escala=0.1,
             op=4,
-            descr=f"[UG{self.id}] Leitura Rotação"
+            descricao=f"[UG{self.id}] Leitura Rotação"
         )
-        self.__l_etapa_atual = lei.LeituraComposta(
-            leitura1=lei.LeituraModbusCoil(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}"]["DJ_GERADOR_FECHADO"]),
-            leitura2=lei.LeituraModbusCoil(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}"]["PARANDO_AUTO"]),
-            leitura3=lei.LeituraModbusCoil(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}"]["RV_MAQ_PARADA"]),
-            leitura4=lei.LeituraModbusCoil(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}"]["PARTINDO_AUTO"]),
-            descr=f"[UG{self.id}] Etapa Atual",
+        # self.__l_etapa_atual = lei.LeituraComposta(
+        #     [lei.LeituraModbusCoil(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}"]["DJ_GERADOR_FECHADO"]),
+        #     lei.LeituraModbusCoil(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}"]["PARANDO_AUTO"]),
+        #     lei.LeituraModbusCoil(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}"]["RV_MAQ_PARADA"]),
+        #     lei.LeituraModbusCoil(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}"]["PARTINDO_AUTO"])],
+        #     descricao=f"[UG{self.id}] Etapa Atual",
+        # )
+
+        self.__l_etapa_atual = lei.LeituraModbus(
+            self.clp[f"UG{self.id}"],
+            REG_UG[f"UG{self.id}"]["ETAPA_SIM"],
+            descricao=f"[UG{self.id}] Leitura Etapa Simulador"
         )
+
         self.__l_horimetro_h = lei.LeituraModbus(
             self.clp[f"UG{self.id}"],
             REG_UG[f"UG{self.id}"]["HORIMETRO_GERADOR"],
             op=4,
-            descr=f"[UG{self.id}] Horímetro Horas"
+            descricao=f"[UG{self.id}] Horímetro Horas"
         )
         self.__l_horimetro_m = lei.LeituraModbus(
             self.clp[f"UG{self.id}"],
             REG_UG[f"UG{self.id}"]["HORIMETRO_GERADOR_MIN"],
             escala=1/60,
             op=4,
-            descr=f"[UG{self.id}] Horímetro Minutos"
+            descricao=f"[UG{self.id}] Horímetro Minutos"
         )
         self.__l_horimetro: "lei.LeituraSoma" = lei.LeituraSoma(
             self.__l_horimetro_h,
             self.__l_horimetro_m,
-            descr=f"[UG{self.id}] Horímetro",
+            descricao=f"[UG{self.id}] Horímetro",
         )
 
         self.__iniciar_cx_esp: "int" = -1
@@ -100,6 +107,7 @@ class UnidadeGeracao:
         # PÚBLICAS
         self.pot_alvo_anterior: "int" = -1
 
+        self.atenuacao: "int" = 0
         self.tempo_normalizar: "int" = 0
         self.ultima_etapa_atual: "int" = 0
         self.tentativas_sincronismo: "int" = 0
@@ -161,10 +169,16 @@ class UnidadeGeracao:
         return self.__l_horimetro.valor
 
     @property
+    def limite_tentativas(self) -> "int":
+        # PROPRIEDADE -> Retorna o limite de tentativas de normalização
+        return self.__limite_tentativas
+
+    @property
     def etapa_atual(self) -> "int":
         # PROPRIEDADE -> Retorna a etapa atual da Unidade.
         try:
             response = self.__l_etapa_atual.valor
+            return response
             if response == 1:
                 return UG_SINCRONIZADA
             elif 2 <= response <= 3:
@@ -265,12 +279,14 @@ class UnidadeGeracao:
 
         return datetime.now(pytz.timezone("Brazil/East")).replace(tzinfo=None)
 
+
     def forcar_estado_manual(self) -> "None":
         """
         Função para forçar o estado manual na Unidade.
         """
 
         self.__next_state = sm.StateManual(self)
+
 
     def forcar_estado_restrito(self) -> "None":
         """
@@ -279,12 +295,14 @@ class UnidadeGeracao:
 
         self.__next_state = sm.StateRestrito(self)
 
+
     def forcar_estado_indisponivel(self) -> "None":
         """
         Função para forçar o estado indisponível na Unidade.
         """
 
         self.__next_state = sm.StateIndisponivel(self)
+
 
     def forcar_estado_disponivel(self) -> "None":
         """
@@ -293,6 +311,7 @@ class UnidadeGeracao:
 
         self.reconhece_reset_alarmes()
         self.__next_state = sm.StateDisponivel(self)
+
 
     def iniciar_ultimo_estado(self) -> "None":
         """
@@ -349,6 +368,7 @@ class UnidadeGeracao:
         """
         Função para atualização do estado da Unidade no CLP - MOA.
         """
+        return
 
         self.clp["MOA"].write_single_register(REG_MOA[f"MOA_OUT_STATE_UG{self.id}"], self.estado)
         self.clp["MOA"].write_single_register(REG_MOA[f"MOA_OUT_ETAPA_UG{self.id}"], self.etapa_atual)
@@ -450,13 +470,13 @@ class UnidadeGeracao:
                 self.forcar_estado_indisponivel()
                 return
 
-            elif not self.clp[f"UG{self.id}"].read_discrete_inputs(REG_UG[f"UG{self.id}"]["CONDICAO_PARTIDA"])[0]:
-                logger.debug(f"[UG{self.id}]          Máquina sem condição de partida. Irá partir quando as condições forem reestabelecidas.")
-                return
+            # elif not self.clp[f"UG{self.id}"].read_discrete_inputs(REG_UG[f"UG{self.id}"]["CONDICAO_PARTIDA"])[0]:
+            #     logger.debug(f"[UG{self.id}]          Máquina sem condição de partida. Irá partir quando as condições forem reestabelecidas.")
+            #     return
 
-            elif self.clp["SA"].read_coils(REG_SA["QCAP_DJ_52A1_FECHADO"])[0] != 0:
-                logger.info(f"[UG{self.id}]           O Disjuntor 52A1 está aberto. Para partir a máquina, o mesmo deverá ser fechado.")
-                return
+            # elif self.clp["SA"].read_coils(REG_SA["QCAP_DJ_52A1_FECHADO"])[0] != 0:
+            #     logger.info(f"[UG{self.id}]           O Disjuntor 52A1 está aberto. Para partir a máquina, o mesmo deverá ser fechado.")
+            #     return
 
             elif not self.etapa_atual == UG_SINCRONIZADA:
                 self.tentativas_sincronismo += 1
@@ -918,18 +938,18 @@ class UnidadeGeracao:
 
             for condic in condicionadores_ativos:
                 if condic in self.condicionadores_ativos:
-                    logger.debug(f"[UG{self.id}] Descrição: \"{condic.descricao}\", Gravidade: \"{CONDIC_STR_DCT[condic.gravidade] if condic.gravidade in CONDIC_STR_DCT else 'Desconhecida'}\"")
+                    logger.debug(f"[UG{self.id}] descricaoição: \"{condic.descricao}\", Gravidade: \"{CONDIC_STR_DCT[condic.gravidade] if condic.gravidade in CONDIC_STR_DCT else 'Desconhecida'}\"")
                     continue
 
                 elif condic.gravidade == CONDIC_INDISPONIBILIZAR:
-                    logger.warning(f"[UG{self.id}] Descrição: \"{condic.descricao}\", Gravidade: \"{CONDIC_STR_DCT[condic.gravidade] if condic.gravidade in CONDIC_STR_DCT else 'Desconhecida'}\"")
+                    logger.warning(f"[UG{self.id}] descricaoição: \"{condic.descricao}\", Gravidade: \"{CONDIC_STR_DCT[condic.gravidade] if condic.gravidade in CONDIC_STR_DCT else 'Desconhecida'}\"")
                     self.db.update_alarmes([self.get_time().strftime("%Y-%m-%d %H:%M:%S"), condic.gravidade, condic.descricao, "X" if autor_i == 0 else ""])
                     self.condicionadores_ativos.append(condic)
                     autor_i += 1
                     flag = CONDIC_INDISPONIBILIZAR
 
                 elif condic.gravidade == CONDIC_AGUARDAR:
-                    logger.warning(f"[UG{self.id}] Descrição: \"{condic.descricao}\", Gravidade: \"{CONDIC_STR_DCT[condic.gravidade] if condic.gravidade in CONDIC_STR_DCT else 'Desconhecida'}\"")
+                    logger.warning(f"[UG{self.id}] descricaoição: \"{condic.descricao}\", Gravidade: \"{CONDIC_STR_DCT[condic.gravidade] if condic.gravidade in CONDIC_STR_DCT else 'Desconhecida'}\"")
                     self.db.update_alarmes([self.get_time().strftime("%Y-%m-%d %H:%M:%S"), condic.gravidade, condic.descricao, "X" if autor_i == 0 and autor_a == 0 else ""])
                     self.condicionadores_ativos.append(condic)
                     autor_a += 1
@@ -939,7 +959,7 @@ class UnidadeGeracao:
                         flag = CONDIC_AGUARDAR
 
                 elif condic.gravidade == CONDIC_NORMALIZAR:
-                    logger.warning(f"[UG{self.id}] Descrição: \"{condic.descricao}\", Gravidade: \"{CONDIC_STR_DCT[condic.gravidade] if condic.gravidade in CONDIC_STR_DCT else 'Desconhecida'}\"")
+                    logger.warning(f"[UG{self.id}] descricaoição: \"{condic.descricao}\", Gravidade: \"{CONDIC_STR_DCT[condic.gravidade] if condic.gravidade in CONDIC_STR_DCT else 'Desconhecida'}\"")
                     self.db.update_alarmes([self.get_time().strftime("%Y-%m-%d %H:%M:%S"), condic.gravidade, condic.descricao, "X" if autor_i == 0 and autor_a == 0 and autor_n == 0 else ""])
                     self.condicionadores_ativos.append(condic)
                     autor_n += 1
@@ -1120,310 +1140,310 @@ class UnidadeGeracao:
         e emergências da Unidade.
         """
 
-        self.l_freio_modo_remoto = lei.LeituraModbusCoil(
-            self.clp[f"UG{self.id}"],
-            REG_UG[f"UG{self.id}"]["FREIO_CMD_REMOTO"],
-            descr=f"[UG{self.id}] Freio Modo Remoto"
-        )
-        self.l_pastilha_freio_gasta = lei.LeituraModbusCoil(
-            self.clp[f"UG{self.id}"],
-            REG_UG[f"UG{self.id}"]["FREIO_PASTILHA_GASTA"],
-            descr=f"[UG{self.id}] Pastilha Freio Gasta"
-        )
-        self.l_compresor_modo_remoto = lei.LeituraModbusCoil(
-            self.clp[f"UG{self.id}"],
-            REG_UG[f"UG{self.id}"][f"QCAUG{self.id}_REMOTO"],
-            descr=f"[UG{self.id}] Compressor Modo Remoto"
-        )
-        self.l_uhrv_filtro_press_75_sujo = lei.LeituraModbusCoil(
-            self.clp[f"UG{self.id}"],
-            REG_UG[f"UG{self.id}"]["FILTRO_PRESS_SUJO_75TROC"],
-            descr=f"[UG{self}] UHRV Filtro Pressão 75% Sujo"
-        )
-        self.l_uhrv_filtro_retor_75_sujo = lei.LeituraModbusCoil(
-            self.clp[f"UG{self.id}"],
-            REG_UG[f"UG{self.id}"]["FILTRO_RET_SUJO_75TROC"],
-            descr=f"[UG{self.id}] UHRV Filtro Pressão Retorno 75% Sujo"
-        )
-        self.l_uhlm_filtro_press_1_75_sujo = lei.LeituraModbusCoil(
-            self.clp[f"UG{self.id}"],
-            REG_UG[f"UG{self.id}"]["UHLM_FILTR_1_PRES_SUJO_75TROC"],
-            descr=f"[UG{self.id}] UHLM Filtro Pressão 1 75% Sujo"
-        )
-        self.l_uhlm_filtro_press_2_75_sujo = lei.LeituraModbusCoil(
-            self.clp[f"UG{self.id}"],
-            REG_UG[f"UG{self.id}"]["UHLM_FILTR_2_PRES_SUJO_75TROC"],
-            descr=f"[UG{self.id}] UHLM Filtro Pressão 2 75% Sujo"
-        )
-        self.l_bomba_mec_filtro_press_75_sujo = lei.LeituraModbusCoil(
-            self.clp[f"UG{self.id}"],
-            REG_UG[f"UG{self.id}"]["FILTR_1_PRESS_BOMBA_MEC_75TROC"],
-            descr=f"[UG{self.id}] Filtro Pressão Bomba Mecância 75% Sujo"
-        )
-
-
         ### CONDICIONADORES ESSENCIAIS
         # Pressão Caixa Espiral
-        self.l_pressao_cx_espiral = lei.LeituraModbus(self.clp[f"UG2"], REG_UG[f"UG2"]["PRESS_K1_CX_ESPIRAL"], escala=0.01, op=4, descr=f"[UG2] Caixa Espiral")
+        self.l_pressao_cx_espiral = lei.LeituraModbus(self.clp[f"UG2"], REG_UG[f"UG2"]["PRESS_K1_CX_ESPIRAL"], escala=0.01, op=4, descricao=f"[UG2] Caixa Espiral")
         self.c_pressao_cx_espiral = c.CondicionadorExponencialReverso(self.l_pressao_cx_espiral, CONDIC_INDISPONIBILIZAR)
 
         # Fase R
-        self.l_tmp_fase_r = lei.LeituraModbus(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}"]["TEMPERATURA_01"], op=4, descr=f"[UG{self.id}] Temperatura Fase R")
+        self.l_tmp_fase_r = lei.LeituraModbus(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}"]["TEMPERATURA_01"], op=4, descricao=f"[UG{self.id}] Temperatura Fase R")
         self.c_tmp_fase_r = c.CondicionadorExponencial(self.l_tmp_fase_r, CONDIC_INDISPONIBILIZAR)
         self.condicionadores_essenciais.append(self.c_tmp_fase_r)
         self.condicionadores_atenuadores.append(self.c_tmp_fase_r)
 
         # Fase S
-        self.l_tmp_fase_s = lei.LeituraModbus(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}"]["TEMPERATURA_02"], op=4, descr=f"[UG{self.id}] Temperatura Fase S")
+        self.l_tmp_fase_s = lei.LeituraModbus(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}"]["TEMPERATURA_02"], op=4, descricao=f"[UG{self.id}] Temperatura Fase S")
         self.c_tmp_fase_s = c.CondicionadorExponencial(self.l_tmp_fase_s, CONDIC_INDISPONIBILIZAR)
         self.condicionadores_essenciais.append(self.c_tmp_fase_s)
         self.condicionadores_atenuadores.append(self.c_tmp_fase_s)
 
         # Fase T
-        self.l_tmp_fase_t = lei.LeituraModbus(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}"]["TEMPERATURA_03"], op=4, descr=f"[UG{self.id}] Temperatura Fase T")
+        self.l_tmp_fase_t = lei.LeituraModbus(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}"]["TEMPERATURA_03"], op=4, descricao=f"[UG{self.id}] Temperatura Fase T")
         self.c_tmp_fase_t = c.CondicionadorExponencial(self.l_tmp_fase_t, CONDIC_INDISPONIBILIZAR)
         self.condicionadores_essenciais.append(self.c_tmp_fase_t)
         self.condicionadores_atenuadores.append(self.c_tmp_fase_t)
 
         # Nucleo estator
-        self.l_tmp_nucleo_estator = lei.LeituraModbus(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}"]["TEMPERATURA_04"], op=4, descr=f"[UG{self.id}] Temperatura Núcelo do Estator",)
+        self.l_tmp_nucleo_estator = lei.LeituraModbus(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}"]["TEMPERATURA_04"], op=4, descricao=f"[UG{self.id}] Temperatura Núcelo do Estator",)
         self.c_tmp_nucleo_estator = c.CondicionadorExponencial(self.l_tmp_nucleo_estator, CONDIC_INDISPONIBILIZAR)
         self.condicionadores_essenciais.append(self.c_tmp_nucleo_estator)
         self.condicionadores_atenuadores.append(self.c_tmp_nucleo_estator)
 
         # MRD 1
-        self.l_tmp_mancal_rad_dia_1 = lei.LeituraModbus(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}"]["TEMPERATURA_05"], op=4, descr=f"[UG{self.id}] Temperatura Mancal Radial Dianteiro")
+        self.l_tmp_mancal_rad_dia_1 = lei.LeituraModbus(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}"]["TEMPERATURA_05"], op=4, descricao=f"[UG{self.id}] Temperatura Mancal Radial Dianteiro")
         self.c_tmp_mancal_rad_dia_1 = c.CondicionadorExponencial(self.l_tmp_mancal_rad_dia_1, CONDIC_INDISPONIBILIZAR)
         self.condicionadores_essenciais.append(self.c_tmp_mancal_rad_dia_1)
         self.condicionadores_atenuadores.append(self.c_tmp_mancal_rad_dia_1)
 
         # MRT 1
-        self.l_tmp_mancal_rad_tra_1 = lei.LeituraModbus(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}"]["TEMPERATURA_06"], op=4, descr=f"[UG{self.id}] Temperatura Mancal Radial Traseiro",)
+        self.l_tmp_mancal_rad_tra_1 = lei.LeituraModbus(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}"]["TEMPERATURA_06"], op=4, descricao=f"[UG{self.id}] Temperatura Mancal Radial Traseiro",)
         self.c_tmp_mancal_rad_tra_1 = c.CondicionadorExponencial(self.l_tmp_mancal_rad_tra_1, CONDIC_INDISPONIBILIZAR)
         self.condicionadores_essenciais.append(self.c_tmp_mancal_rad_tra_1)
         self.condicionadores_atenuadores.append(self.c_tmp_mancal_rad_tra_1)
 
         # MRD 2
-        self.l_tmp_mancal_rad_dia_2 = lei.LeituraModbus(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}"]["TEMPERATURA_07"], op=4, descr=f"[UG{self.id}] Temperatura Mancal Radial Dianteiro 2")
+        self.l_tmp_mancal_rad_dia_2 = lei.LeituraModbus(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}"]["TEMPERATURA_07"], op=4, descricao=f"[UG{self.id}] Temperatura Mancal Radial Dianteiro 2")
         self.c_tmp_mancal_rad_dia_2 = c.CondicionadorExponencial(self.l_tmp_mancal_rad_dia_2, CONDIC_INDISPONIBILIZAR)
         self.condicionadores_essenciais.append(self.c_tmp_mancal_rad_dia_2)
         self.condicionadores_atenuadores.append(self.c_tmp_mancal_rad_dia_2)
 
         # MRT 2
-        self.l_tmp_mancal_rad_tra_2 = lei.LeituraModbus(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}"]["TEMPERATURA_08"], op=4, descr=f"[UG{self.id}] Temperatura Mancal Radial Traseiro 2")
+        self.l_tmp_mancal_rad_tra_2 = lei.LeituraModbus(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}"]["TEMPERATURA_08"], op=4, descricao=f"[UG{self.id}] Temperatura Mancal Radial Traseiro 2")
         self.c_tmp_mancal_rad_tra_2 = c.CondicionadorExponencial(self.l_tmp_mancal_rad_tra_2, CONDIC_INDISPONIBILIZAR)
         self.condicionadores_essenciais.append(self.c_tmp_mancal_rad_tra_2)
         self.condicionadores_atenuadores.append(self.c_tmp_mancal_rad_tra_2)
 
         # Saída de ar
-        self.l_tmp_saida_de_ar = lei.LeituraModbus(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}"]["TEMPERATURA_10"], op=4, descr=f"[UG{self.id}] Saída de Ar")
+        self.l_tmp_saida_de_ar = lei.LeituraModbus(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}"]["TEMPERATURA_10"], op=4, descricao=f"[UG{self.id}] Saída de Ar")
         self.c_tmp_saida_de_ar = c.CondicionadorExponencial(self.l_tmp_saida_de_ar, CONDIC_INDISPONIBILIZAR)
         self.condicionadores_essenciais.append(self.c_tmp_saida_de_ar)
         self.condicionadores_atenuadores.append(self.c_tmp_saida_de_ar)
 
         # Mancal Guia Radial
-        self.l_tmp_mancal_guia_radial = lei.LeituraModbus(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}"]["TEMP_MC_GUIA_RADIAL"], descr=f"[UG{self.id}] Mancal Guia Radial",)
+        self.l_tmp_mancal_guia_radial = lei.LeituraModbus(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}"]["TEMP_MC_GUIA_RADIAL"], descricao=f"[UG{self.id}] Mancal Guia Radial",)
         self.c_tmp_mancal_guia_radial = c.CondicionadorExponencial(self.l_tmp_mancal_guia_radial, CONDIC_INDISPONIBILIZAR)
         self.condicionadores_essenciais.append(self.c_tmp_mancal_guia_radial)
         self.condicionadores_atenuadores.append(self.c_tmp_mancal_guia_radial)
 
         # Mancal Guia Escora
-        self.l_tmp_mancal_guia_escora = lei.LeituraModbus(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}"]["TEMP_MC_GUIA_ESCORA"], descr=f"[UG{self.id}] Mancal Guia Escora")
+        self.l_tmp_mancal_guia_escora = lei.LeituraModbus(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}"]["TEMP_MC_GUIA_ESCORA"], descricao=f"[UG{self.id}] Mancal Guia Escora")
         self.c_tmp_mancal_guia_escora = c.CondicionadorExponencial(self.l_tmp_mancal_guia_escora, CONDIC_INDISPONIBILIZAR)
         self.condicionadores_essenciais.append(self.c_tmp_mancal_guia_escora)
         self.condicionadores_atenuadores.append(self.c_tmp_mancal_guia_escora)
 
         # Mancal Guia Contra Escora
-        self.l_tmp_mancal_guia_contra = lei.LeituraModbus(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}"]["TEMP_MC_GUIA_CONTRA_ESCORA"], descr=f"[UG{self.id}] Mancal Guia Contra Escora")
+        self.l_tmp_mancal_guia_contra = lei.LeituraModbus(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}"]["TEMP_MC_GUIA_CONTRA_ESCORA"], descricao=f"[UG{self.id}] Mancal Guia Contra Escora")
         self.c_tmp_mancal_guia_contra = c.CondicionadorExponencial(self.l_tmp_mancal_guia_contra, CONDIC_INDISPONIBILIZAR)
         self.condicionadores_essenciais.append(self.c_tmp_mancal_guia_contra)
         self.condicionadores_atenuadores.append(self.c_tmp_mancal_guia_contra)
 
+        return
 
-        self.l_cmd_emerg_via_super = lei.LeituraModbusCoil(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}"]["EMERGENCIA_SUPER"], descr=f"[UG{self.id}] Emergência Via Supervisório")
+        self.l_cmd_emerg_via_super = lei.LeituraModbusCoil(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}"]["EMERGENCIA_SUPER"], descricao=f"[UG{self.id}] Emergência Via Supervisório")
         self.condicionadores_essenciais.append(c.CondicionadorBase(self.l_cmd_emerg_via_super, CONDIC_NORMALIZAR))
 
-        self.l_trip_eletrico = lei.LeituraModbusCoil(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}"]["TRIP_ELETRICO"], descr=f"[UG{self.id}] Trip Elétrico")
+        self.l_trip_eletrico = lei.LeituraModbusCoil(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}"]["TRIP_ELETRICO"], descricao=f"[UG{self.id}] Trip Elétrico")
         self.condicionadores_essenciais.append(c.CondicionadorBase(self.l_trip_eletrico, CONDIC_NORMALIZAR, [UG_SINCRONIZADA], self.id))
-
-        self.l_trip_700G = lei.LeituraModbusCoil(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}"]["700G_TRIP"], descr=f"[UG{self.id}] SEL 700G Trip")
+        
+        self.l_trip_700G = lei.LeituraModbusCoil(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}"]["700G_TRIP"], descricao=f"[UG{self.id}] SEL 700G Trip")
         self.condicionadores_essenciais.append(c.CondicionadorBase(self.l_trip_700G, CONDIC_NORMALIZAR, [UG_SINCRONIZADA], self.id))
 
-        self.l_trip_mecanico = lei.LeituraModbusCoil(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}"]["TRIP_MECANICO"], descr=f"[UG{self.id}] Trip Mecâncio")
+        self.l_trip_mecanico = lei.LeituraModbusCoil(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}"]["TRIP_MECANICO"], descricao=f"[UG{self.id}] Trip Mecâncio")
         self.condicionadores_essenciais.append(c.CondicionadorBase(self.l_trip_mecanico, CONDIC_INDISPONIBILIZAR))
 
-        self.l_trip_rv = lei.LeituraModbusCoil(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}"]["RV_TRIP"], descr=f"[UG{self.id}] RV Trip")
+        self.l_trip_rv = lei.LeituraModbusCoil(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}"]["RV_TRIP"], descricao=f"[UG{self.id}] RV Trip")
         self.condicionadores_essenciais.append(c.CondicionadorBase(self.l_trip_rv, CONDIC_INDISPONIBILIZAR))
 
-        self.l_trip_avr = lei.LeituraModbusCoil(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}"]["AVR_TRIP"], descr=f"[UG{self.id}] AVR Trip")
+        self.l_trip_avr = lei.LeituraModbusCoil(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}"]["AVR_TRIP"], descricao=f"[UG{self.id}] AVR Trip")
         self.condicionadores_essenciais.append(c.CondicionadorBase(self.l_trip_avr, CONDIC_INDISPONIBILIZAR))
 
-        self.l_SEL700G_atuado = lei.LeituraModbusCoil(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}"]["SEL700G_ATUADO"], descr=f"[UG{self.id}] SEL 700G Atuado")
+        self.l_SEL700G_atuado = lei.LeituraModbusCoil(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}"]["SEL700G_ATUADO"], descricao=f"[UG{self.id}] SEL 700G Atuado")
         self.condicionadores_essenciais.append(c.CondicionadorBase(self.l_SEL700G_atuado, CONDIC_INDISPONIBILIZAR))
 
-        self.l_bloq_A86M_atuado = lei.LeituraModbusCoil(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}"]["BLOQ_A86M_ATUADO"], descr=f"[UG{self.id}] Bloqueio 86M Atuado")
+        self.l_bloq_A86M_atuado = lei.LeituraModbusCoil(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}"]["BLOQ_A86M_ATUADO"], descricao=f"[UG{self.id}] Bloqueio 86M Atuado")
         self.condicionadores_essenciais.append(c.CondicionadorBase(self.l_bloq_A86M_atuado, CONDIC_INDISPONIBILIZAR))
 
-        self.l_bloq_A86H_atuado = lei.LeituraModbusCoil(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}"]["BLOQ_A86H_ATUADO"], descr=f"[UG{self.id}] Bloqueio 86H Atuado")
+        self.l_bloq_A86H_atuado = lei.LeituraModbusCoil(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}"]["BLOQ_A86H_ATUADO"], descricao=f"[UG{self.id}] Bloqueio 86H Atuado")
         self.condicionadores_essenciais.append(c.CondicionadorBase(self.l_bloq_A86H_atuado, CONDIC_NORMALIZAR, [UG_SINCRONIZADA], self.id))
 
 
         ### CONDICIONADORES NORMAIS
-        self.l_falha_dj_tps_sinc_G2 = lei.LeituraModbusCoil(self.clp["SA"], REG_SA["FALHA_DJ_TPS_SINCR_G2"], descr=f"[SA-UG{self.id}] Trasformador Potencial Disjuntor Sincronização Falha")
+        self.l_falha_dj_tps_sinc_G2 = lei.LeituraModbusCoil(self.clp["SA"], REG_SA["FALHA_DJ_TPS_SINCR_G2"], descricao=f"[SA-UG{self.id}] Trasformador Potencial Disjuntor Sincronização Falha")
         self.condicionadores.append(c.CondicionadorBase(self.l_falha_dj_tps_sinc_G2, CONDIC_INDISPONIBILIZAR))
 
-        self.l_dj1_alarme_press_baixa = lei.LeituraModbusCoil(self.clp["SA"], REG_SA["DJL_ALM_PRESS_BAIXA"], descr=f"[SA-UG{self.id}] Disjutor 1 Alarme Pressão Baixa")
+        self.l_dj1_alarme_press_baixa = lei.LeituraModbusCoil(self.clp["SA"], REG_SA["DJL_ALM_PRESS_BAIXA"], descricao=f"[SA-UG{self.id}] Disjutor 1 Alarme Pressão Baixa")
         self.condicionadores.append(c.CondicionadorBase(self.l_dj1_alarme_press_baixa, CONDIC_INDISPONIBILIZAR))
 
-        self.l_dj1_bloq_press_baixa = lei.LeituraModbusCoil(self.clp["SA"], REG_SA["DJL_BLOQ_PRESS_BAIXA"], descr=f"[SA-UG{self.id}] Disjuntor 1 Bloqueio Pressão Baixa")
+        self.l_dj1_bloq_press_baixa = lei.LeituraModbusCoil(self.clp["SA"], REG_SA["DJL_BLOQ_PRESS_BAIXA"], descricao=f"[SA-UG{self.id}] Disjuntor 1 Bloqueio Pressão Baixa")
         self.condicionadores.append(c.CondicionadorBase(self.l_dj1_bloq_press_baixa, CONDIC_INDISPONIBILIZAR))
 
-        self.l_UHRV_trip_bomba_1 = lei.LeituraModbusCoil(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}"]["UHRV_TRIP_BOMBA_1"], descr=f"[UG{self.id}] UHRV Bomba 1 Trip")
+        self.l_UHRV_trip_bomba_1 = lei.LeituraModbusCoil(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}"]["UHRV_TRIP_BOMBA_1"], descricao=f"[UG{self.id}] UHRV Bomba 1 Trip")
         self.condicionadores.append(c.CondicionadorBase(self.l_UHRV_trip_bomba_1, CONDIC_INDISPONIBILIZAR))
 
-        self.l_UHRV_Trip_bomba_2 = lei.LeituraModbusCoil(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}"]["UHRV_TRIP_BOMBA_2"], descr=f"[UG{self.id}] UHRV Bomba 2 Trip")
+        self.l_UHRV_Trip_bomba_2 = lei.LeituraModbusCoil(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}"]["UHRV_TRIP_BOMBA_2"], descricao=f"[UG{self.id}] UHRV Bomba 2 Trip")
         self.condicionadores.append(c.CondicionadorBase(self.l_UHRV_Trip_bomba_2, CONDIC_INDISPONIBILIZAR))
 
-        self.l_UHLM_trip_bomba_1 = lei.LeituraModbusCoil(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}"]["UHLM_TRIP_BOMBA_1"], descr=f"[UG{self.id}] UHLM Bomba 1 Trip")
+        self.l_UHLM_trip_bomba_1 = lei.LeituraModbusCoil(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}"]["UHLM_TRIP_BOMBA_1"], descricao=f"[UG{self.id}] UHLM Bomba 1 Trip")
         self.condicionadores.append(c.CondicionadorBase(self.l_UHLM_trip_bomba_1, CONDIC_INDISPONIBILIZAR))
 
-        self.l_UHLM_trip_bomba_2 = lei.LeituraModbusCoil(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}"]["UHLM_TRIP_BOMBA_2"], descr=f"[UG{self.id}] UHLM Bomba 2 Trip")
+        self.l_UHLM_trip_bomba_2 = lei.LeituraModbusCoil(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}"]["UHLM_TRIP_BOMBA_2"], descricao=f"[UG{self.id}] UHLM Bomba 2 Trip")
         self.condicionadores.append(c.CondicionadorBase(self.l_UHLM_trip_bomba_2, CONDIC_INDISPONIBILIZAR))
 
-        self.l_trip_dj52A1 = lei.LeituraModbusCoil(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}"]["QCAUG_TRIP_DJ_52A1"], descr=f"[UG{self.id}] QCAUG Disjuntor 52A1 Trip")
+        self.l_trip_dj52A1 = lei.LeituraModbusCoil(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}"]["QCAUG_TRIP_DJ_52A1"], descricao=f"[UG{self.id}] QCAUG Disjuntor 52A1 Trip")
         self.condicionadores.append(c.CondicionadorBase(self.l_trip_dj52A1, CONDIC_INDISPONIBILIZAR))
 
-        self.l_trip_alim_painel_freio = lei.LeituraModbusCoil(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}"]["TRIP_ALIM_FREIO"], descr=f"[UG{self.id}] Alimentação Painel Freio Trip")
+        self.l_trip_alim_painel_freio = lei.LeituraModbusCoil(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}"]["TRIP_ALIM_FREIO"], descricao=f"[UG{self.id}] Alimentação Painel Freio Trip")
         self.condicionadores.append(c.CondicionadorBase(self.l_trip_alim_painel_freio, CONDIC_INDISPONIBILIZAR))
 
-        self.l_trip_dj_agrup = lei.LeituraModbusCoil(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}"]["QCAUG_TRIP_DJ_AGRUP"], descr=f"[UG{self.id}] QCAUG Disjuntor Agrupamento Trip")
+        self.l_trip_dj_agrup = lei.LeituraModbusCoil(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}"]["QCAUG_TRIP_DJ_AGRUP"], descricao=f"[UG{self.id}] QCAUG Disjuntor Agrupamento Trip")
         self.condicionadores.append(c.CondicionadorBase(self.l_trip_dj_agrup, CONDIC_INDISPONIBILIZAR))
 
-        self.l_AVR_falha_interna = lei.LeituraModbusCoil(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}"]["AVR_FALHA_INTERNA"], descr=f"[UG{self.id}] AVR Falha Interna")
+        self.l_AVR_falha_interna = lei.LeituraModbusCoil(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}"]["AVR_FALHA_INTERNA"], descricao=f"[UG{self.id}] AVR Falha Interna")
         self.condicionadores.append(c.CondicionadorBase(self.l_AVR_falha_interna, CONDIC_INDISPONIBILIZAR))
 
-        self.l_SEL700G_falha_interna = lei.LeituraModbusCoil(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}"]["SEL700G_FALHA_INTERNA"], descr=f"[UG{self.id}] SEL 700G Falha Interna")
+        self.l_SEL700G_falha_interna = lei.LeituraModbusCoil(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}"]["SEL700G_FALHA_INTERNA"], descricao=f"[UG{self.id}] SEL 700G Falha Interna")
         self.condicionadores.append(c.CondicionadorBase(self.l_SEL700G_falha_interna, CONDIC_INDISPONIBILIZAR))
 
-        self.l_falha_painel_380Vca = lei.LeituraModbusCoil(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}"]["QCAUG_FALHA_380VCA"], descr=f"[UG{self.id}] QCAUG Falha 380 VCA Painel")
+        self.l_falha_painel_380Vca = lei.LeituraModbusCoil(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}"]["QCAUG_FALHA_380VCA"], descricao=f"[UG{self.id}] QCAUG Falha 380 VCA Painel")
         self.condicionadores.append(c.CondicionadorBase(self.l_falha_painel_380Vca, CONDIC_NORMALIZAR))
 
-        self.l_falta_125Vcc = lei.LeituraModbusCoil(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}"]["Falta125Vcc"], descr=f"[UG{self.id}] Falta 125 Vcc")
+        self.l_falta_125Vcc = lei.LeituraModbusCoil(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}"]["FALTA_125VCC"], descricao=f"[UG{self.id}] Falta 125 Vcc")
         self.condicionadores.append(c.CondicionadorBase(self.l_falta_125Vcc, CONDIC_INDISPONIBILIZAR))
 
-        self.l_falta_com_125Vcc = lei.LeituraModbusCoil(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}"]["FALTA_125VCC"], descr=f"[UG{self.id}] Falta 125 Vcc Com")
+        self.l_falta_com_125Vcc = lei.LeituraModbusCoil(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}"]["FALTA_125VCC_COM"], descricao=f"[UG{self.id}] Falta 125 Vcc Com")
         self.condicionadores.append(c.CondicionadorBase(self.l_falta_com_125Vcc, CONDIC_INDISPONIBILIZAR))
 
-        self.l_falta_alim_val_125Vcc = lei.LeituraModbusCoil(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}"]["FALTA_125VCC_ALIM_VAL"], descr=f"[UG{self.id}] Falta 125 Vcc Alimentação")
+        self.l_falta_alim_val_125Vcc = lei.LeituraModbusCoil(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}"]["FALTA_125VCC_ALIM_VAL"], descricao=f"[UG{self.id}] Falta 125 Vcc Alimentação")
         self.condicionadores.append(c.CondicionadorBase(self.l_falta_alim_val_125Vcc, CONDIC_INDISPONIBILIZAR))
 
-        self.l_falta_fluxo_oleo_mc = lei.LeituraModbusCoil(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}"]["FALTA_FLUXO_OLEO_MC"], descr=f"[UG{self.id}] Falta Fluxo Óleo MC")
+        self.l_falta_fluxo_oleo_mc = lei.LeituraModbusCoil(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}"]["FALTA_FLUXO_OLEO_MC"], descricao=f"[UG{self.id}] Falta Fluxo Óleo MC")
         self.condicionadores.append(c.CondicionadorBase(self.l_falta_fluxo_oleo_mc, CONDIC_INDISPONIBILIZAR))
 
-        self.l_UHLM_falta_flux_troc = lei.LeituraModbusCoil(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}"]["UHLM_FALTA_FLUX_TROC"], descr=f"[UG{self.id}] UHLM Falta Fluxo")
+        self.l_UHLM_falta_flux_troc = lei.LeituraModbusCoil(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}"]["UHLM_FALTA_FLUX_TROC"], descricao=f"[UG{self.id}] UHLM Falta Fluxo")
         self.condicionadores.append(c.CondicionadorBase(self.l_UHLM_falta_flux_troc, CONDIC_INDISPONIBILIZAR))
 
-        self.l_UHLM_falta_press_troc = lei.LeituraModbusCoil(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}"]["UHLM_FALTA_PRESS_TROC"], descr=f"[UG{self.id}] UHLM Falta Pressão") # TODO retornar para DEVE_INDISPONIBILZIA, descr=R
+        self.l_UHLM_falta_press_troc = lei.LeituraModbusCoil(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}"]["UHLM_FALTA_PRESS_TROC"], descricao=f"[UG{self.id}] UHLM Falta Pressão") # TODO retornar para DEVE_INDISPONIBILZIA, descricao=R
         self.condicionadores.append(c.CondicionadorBase(self.l_UHLM_falta_press_troc, CONDIC_NORMALIZAR))
 
-        self.l_UHRV_niv_oleo_min_pos36 = lei.LeituraModbusCoil(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}"]["UHRV_NV_OLEO_MIN_POS36"], descr=f"[UG{self.id}] UHRV Óleo Nível Mínimo Posição 36")
+        self.l_UHRV_niv_oleo_min_pos36 = lei.LeituraModbusCoil(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}"]["UHRV_NV_OLEO_MIN_POS36"], descricao=f"[UG{self.id}] UHRV Óleo Nível Mínimo Posição 36")
         self.condicionadores.append(c.CondicionadorBase(self.l_UHRV_niv_oleo_min_pos36, CONDIC_INDISPONIBILIZAR))
 
-        self.l_UHRV_nv_oleo_crit_pos35 = lei.LeituraModbusCoil(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}"]["UHRV_NivOleoCriticoPos35"], descr=f"[UG{self.id}] UHRV Óleo Nível Crítico Posição 35")
+        self.l_UHRV_nv_oleo_crit_pos35 = lei.LeituraModbusCoil(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}"]["UHRV_NV_OLEO_CRIT_POS35"], descricao=f"[UG{self.id}] UHRV Óleo Nível Crítico Posição 35")
         self.condicionadores.append(c.CondicionadorBase(self.l_UHRV_nv_oleo_crit_pos35, CONDIC_INDISPONIBILIZAR))
 
-        self.l_UHLM_fluxo_mc_tras = lei.LeituraModbusCoil(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}"]["UHLM_FLUXO_MC_TRAS"], descr=f"[UG{self.id}] UHLM Fluxo Traseiro MC")
+        self.l_UHLM_fluxo_mc_tras = lei.LeituraModbusCoil(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}"]["UHLM_FLUXO_MC_TRAS"], descricao=f"[UG{self.id}] UHLM Fluxo Traseiro MC")
         self.condicionadores.append(c.CondicionadorBase(self.l_UHLM_fluxo_mc_tras, CONDIC_INDISPONIBILIZAR))
 
-        self.l_UHLM_nivel_min_oleo = lei.LeituraModbusCoil(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}"]["UHLM_NV_MIN_OLEO"], descr=f"[UG{self.id}] UHLM Óleo Nível Mínimo")
+        self.l_UHLM_nivel_min_oleo = lei.LeituraModbusCoil(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}"]["UHLM_NV_MIN_OLEO"], descricao=f"[UG{self.id}] UHLM Óleo Nível Mínimo")
         self.condicionadores.append(c.CondicionadorBase(self.l_UHLM_nivel_min_oleo, CONDIC_INDISPONIBILIZAR))
 
-        self.l_UHLM_nivel_crit_oleo = lei.LeituraModbusCoil(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}"]["UHLM_NV_CRIT_OLEO"], descr=f"[UG{self.id}] UHLM Óleo Nível Crítico")
+        self.l_UHLM_nivel_crit_oleo = lei.LeituraModbusCoil(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}"]["UHLM_NV_CRIT_OLEO"], descricao=f"[UG{self.id}] UHLM Óleo Nível Crítico")
         self.condicionadores.append(c.CondicionadorBase(self.l_UHLM_nivel_crit_oleo, CONDIC_INDISPONIBILIZAR))
 
-        self.l_UHLM_fluxo_mc_dianteiro = lei.LeituraModbusCoil(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}"]["UHLM_FLUXO_MC_DIANT"], descr=f"[UG{self.id}] UHLM Fluxo Dianteiro")
+        self.l_UHLM_fluxo_mc_dianteiro = lei.LeituraModbusCoil(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}"]["UHLM_FLUXO_MC_DIANT"], descricao=f"[UG{self.id}] UHLM Fluxo Dianteiro")
         self.condicionadores.append(c.CondicionadorBase(self.l_UHLM_fluxo_mc_dianteiro, CONDIC_INDISPONIBILIZAR))
 
-        self.l_UHLM_filt_press_1_100_sujo = lei.LeituraModbusCoil(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}"]["UHLM_FILTR_1_PRES_SUJO_SUJO"], descr=f"[UG{self.id}] UHLM Filtro 1 Pressão 100% Sujo")
+        self.l_UHLM_filt_press_1_100_sujo = lei.LeituraModbusCoil(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}"]["UHLM_FILTR_1_PRES_SUJO_SUJO"], descricao=f"[UG{self.id}] UHLM Filtro 1 Pressão 100% Sujo")
         self.condicionadores.append(c.CondicionadorBase(self.l_UHLM_filt_press_1_100_sujo, CONDIC_INDISPONIBILIZAR))
 
-        self.l_UHLM_filt_press_2_100_sujo = lei.LeituraModbusCoil(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}"]["UHLM_FILTR_2_PRES_SUJO_SUJO"], descr=f"[UG{self.id}] UHLM Filtro 2 Pressão 100% Sujo")
+        self.l_UHLM_filt_press_2_100_sujo = lei.LeituraModbusCoil(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}"]["UHLM_FILTR_2_PRES_SUJO_SUJO"], descricao=f"[UG{self.id}] UHLM Filtro 2 Pressão 100% Sujo")
         self.condicionadores.append(c.CondicionadorBase(self.l_UHLM_filt_press_2_100_sujo, CONDIC_INDISPONIBILIZAR))
 
-        self.l_freio_sem_energia = lei.LeituraModbusCoil(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}"]["FREIO_SEM_ENERGIA"], descr=f"[UG{self.id}] Freio Sem Energia")
+        self.l_freio_sem_energia = lei.LeituraModbusCoil(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}"]["FREIO_SEM_ENERGIA"], descricao=f"[UG{self.id}] Freio Sem Energia")
         self.condicionadores.append(c.CondicionadorBase(self.l_freio_sem_energia, CONDIC_INDISPONIBILIZAR))
 
-        self.l_freio_filtro_saturado = lei.LeituraModbusCoil(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}"]["FREIO_FILTRO_SATURADO"], descr=f"[UG{self.id}] Freio Filtro Saturado")
+        self.l_freio_filtro_saturado = lei.LeituraModbusCoil(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}"]["FREIO_FILTRO_SATURADO"], descricao=f"[UG{self.id}] Freio Filtro Saturado")
         self.condicionadores.append(c.CondicionadorBase(self.l_freio_filtro_saturado, CONDIC_INDISPONIBILIZAR))
 
-        self.l_filtro_retor_100_sujo = lei.LeituraModbusCoil(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}"]["FILTRO_RET_SUJO_SUJO"], descr=f"[UG{self.id}] UHRV Filtro Retorno 100% Sujo")
+        self.l_filtro_retor_100_sujo = lei.LeituraModbusCoil(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}"]["FILTRO_RET_SUJO_SUJO"], descricao=f"[UG{self.id}] UHRV Filtro Retorno 100% Sujo")
         self.condicionadores.append(c.CondicionadorBase(self.l_filtro_retor_100_sujo, CONDIC_INDISPONIBILIZAR))
 
-        self.l_filtro_press_100_sujo = lei.LeituraModbusCoil(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}"]["FILTRO_PRESS_SUJO_SUJO"], descr=f"[UG{self.id}] UHRV Filtro Pressão 100% Sujo")
+        self.l_filtro_press_100_sujo = lei.LeituraModbusCoil(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}"]["FILTRO_PRESS_SUJO_SUJO"], descricao=f"[UG{self.id}] UHRV Filtro Pressão 100% Sujo")
         self.condicionadores.append(c.CondicionadorBase(self.l_filtro_press_100_sujo, CONDIC_INDISPONIBILIZAR))
 
-        self.l_bomba_mec_filtro_press_100_sujo = lei.LeituraModbusCoil(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}"]["FILTR_1_PRESS_BOMBA_MEC_SUJO"], descr=f"[UG{self.id}] UHRV Bomba Filtro Pressão 100% Sujo")
+        self.l_bomba_mec_filtro_press_100_sujo = lei.LeituraModbusCoil(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}"]["FILTR_1_PRESS_BOMBA_MEC_SUJO"], descricao=f"[UG{self.id}] UHRV Bomba Filtro Pressão 100% Sujo")
         self.condicionadores.append(c.CondicionadorBase(self.l_bomba_mec_filtro_press_100_sujo, CONDIC_INDISPONIBILIZAR))
 
-        self.l_pas_desalinhadas = lei.LeituraModbusCoil(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}"]["PAS_DESALINHADAS"], descr=f"[UG{self.id}] Pás Desalinhadas")
+        self.l_pas_desalinhadas = lei.LeituraModbusCoil(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}"]["PAS_DESALINHADAS"], descricao=f"[UG{self.id}] Pás Desalinhadas")
         self.condicionadores.append(c.CondicionadorBase(self.l_pas_desalinhadas, CONDIC_INDISPONIBILIZAR))
 
-        self.l_valv_borb_travada = lei.LeituraModbusCoil(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}"]["VALV_BORB_TRAVADA_FECHADA"], descr=f"[UG{self.id}] Válvula Borboleta Travada")
+        self.l_valv_borb_travada = lei.LeituraModbusCoil(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}"]["VALV_BORB_TRAVADA_FECHADA"], descricao=f"[UG{self.id}] Válvula Borboleta Travada")
         self.condicionadores.append(c.CondicionadorBase(self.l_valv_borb_travada, CONDIC_INDISPONIBILIZAR))
 
-        self.l_sobre_velo_mec_pos18 = lei.LeituraModbusCoil(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}"]["SOBRE_VELO_MEC_POS18"], descr=f"[UG{self.id}] Sobre Velocidade Posição 18")
+        self.l_sobre_velo_mec_pos18 = lei.LeituraModbusCoil(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}"]["SOBRE_VELO_MEC_POS18"], descricao=f"[UG{self.id}] Sobre Velocidade Posição 18")
         self.condicionadores.append(c.CondicionadorBase(self.l_sobre_velo_mec_pos18, CONDIC_INDISPONIBILIZAR))
 
-        self.l_nv_mt_alto_poco_dren = lei.LeituraModbusCoil(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}"]["NV_MUITO_ALTO_POCO_DREN"], descr=f"[UG{self.id}] Poço Drenagem Nível Alto")
+        self.l_nv_mt_alto_poco_dren = lei.LeituraModbusCoil(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}"]["NV_MUITO_ALTO_POCO_DREN"], descricao=f"[UG{self.id}] Poço Drenagem Nível Alto")
         self.condicionadores.append(c.CondicionadorBase(self.l_nv_mt_alto_poco_dren, CONDIC_INDISPONIBILIZAR))
 
-        self.l_trip_vibr_1 = lei.LeituraModbusCoil(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}"]["TRIP_VIBR_1"], descr=f"[UG{self.id}] Vibração 1 Trip")
+        self.l_trip_vibr_1 = lei.LeituraModbusCoil(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}"]["TRIP_VIBR_1"], descricao=f"[UG{self.id}] Vibração 1 Trip")
         self.condicionadores.append(c.CondicionadorBase(self.l_trip_vibr_1, CONDIC_INDISPONIBILIZAR))
 
-        self.l_trip_vibr_2 = lei.LeituraModbusCoil(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}"]["TRIP_VIBR_2"], descr=f"[UG{self.id}] Vibração 2 Trip")
+        self.l_trip_vibr_2 = lei.LeituraModbusCoil(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}"]["TRIP_VIBR_2"], descricao=f"[UG{self.id}] Vibração 2 Trip")
         self.condicionadores.append(c.CondicionadorBase(self.l_trip_vibr_2, CONDIC_INDISPONIBILIZAR))
 
-        self.l_trip_temp_UHRV = lei.LeituraModbusCoil(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}"]["TRIP_TEMP_UHRV"], descr=f"[UG{self.id}] UHRV Trip Temperatura")
+        self.l_trip_temp_UHRV = lei.LeituraModbusCoil(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}"]["TRIP_TEMP_UHRV"], descricao=f"[UG{self.id}] UHRV Trip Temperatura")
         self.condicionadores.append(c.CondicionadorBase(self.l_trip_temp_UHRV, CONDIC_INDISPONIBILIZAR))
 
-        self.l_trip_temp_UHLM = lei.LeituraModbusCoil(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}"]["TRIP_TEMP_UHLM"], descr=f"[UG{self.id}] UHLM Trip Temperatura")
+        self.l_trip_temp_UHLM = lei.LeituraModbusCoil(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}"]["TRIP_TEMP_UHLM"], descricao=f"[UG{self.id}] UHLM Trip Temperatura")
         self.condicionadores.append(c.CondicionadorBase(self.l_trip_temp_UHLM, CONDIC_INDISPONIBILIZAR))
 
-        self.l_trip_temp_gaxeteiro = lei.LeituraModbusCoil(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}"]["TRIP_TEMP_GAXETEIRO"], descr=f"[UG{self.id}] Gaxeteiro Trip Temperatura")
+        self.l_trip_temp_gaxeteiro = lei.LeituraModbusCoil(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}"]["TRIP_TEMP_GAXETEIRO"], descricao=f"[UG{self.id}] Gaxeteiro Trip Temperatura")
         self.condicionadores.append(c.CondicionadorBase(self.l_trip_temp_gaxeteiro, CONDIC_INDISPONIBILIZAR))
 
-        self.l_trip_temp_mc_guia_rad = lei.LeituraModbusCoil(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}"]["TRIP_TEMP_MC_GUIA_RADIAL"], descr=f"[UG{self.id}] Mancal Guia Radial Trip Temperatura")
+        self.l_trip_temp_mc_guia_rad = lei.LeituraModbusCoil(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}"]["TRIP_TEMP_MC_GUIA_RADIAL"], descricao=f"[UG{self.id}] Mancal Guia Radial Trip Temperatura")
         self.condicionadores.append(c.CondicionadorBase(self.l_trip_temp_mc_guia_rad, CONDIC_INDISPONIBILIZAR))
 
-        self.l_trip_temp_mc_guia_esc = lei.LeituraModbusCoil(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}"]["TRIP_TEMP_MC_GUIA_ESCORA"], descr=f"[UG{self.id}] Mancal Guia Escora Trip Temperatura")
+        self.l_trip_temp_mc_guia_esc = lei.LeituraModbusCoil(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}"]["TRIP_TEMP_MC_GUIA_ESCORA"], descricao=f"[UG{self.id}] Mancal Guia Escora Trip Temperatura")
         self.condicionadores.append(c.CondicionadorBase(self.l_trip_temp_mc_guia_esc, CONDIC_INDISPONIBILIZAR))
 
-        self.l_trip_temp_mc_guia_con_esc = lei.LeituraModbusCoil(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}"]["TRIP_TEMP_MC_GUIA_CONTRA_ESCORA"], descr=f"[UG{self.id}] Mancal Guia Contra Escora Trip Temperatura")
+        self.l_trip_temp_mc_guia_con_esc = lei.LeituraModbusCoil(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}"]["TRIP_TEMP_MC_GUIA_CONTRA_ESCORA"], descricao=f"[UG{self.id}] Mancal Guia Contra Escora Trip Temperatura")
         self.condicionadores.append(c.CondicionadorBase(self.l_trip_temp_mc_guia_con_esc, CONDIC_INDISPONIBILIZAR))
 
-        self.l_falha_CLP = lei.LeituraModbusCoil(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}"]["FALHA_COMUNICA_CLP"], descr=f"[UG{self.id}] CLP Falha")
+        self.l_falha_CLP = lei.LeituraModbusCoil(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}"]["FALHA_COMUNICA_CLP"], descricao=f"[UG{self.id}] CLP Falha")
         self.condicionadores.append(c.CondicionadorBase(self.l_falha_CLP, CONDIC_INDISPONIBILIZAR))
 
-        self.l_q_negativa = lei.LeituraModbusCoil(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}"]["IHM_Q_NEGATIVA"], descr=f"[UG{self.id}] Q Negativa")
+        self.l_q_negativa = lei.LeituraModbusCoil(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}"]["IHM_Q_NEGATIVA"], descricao=f"[UG{self.id}] Q Negativa")
         self.condicionadores.append(c.CondicionadorBase(self.l_q_negativa, CONDIC_INDISPONIBILIZAR))
 
-        self.l_falha_remota = lei.LeituraModbusCoil(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}"]["FALHA_COMUNICA_REMOTA"], descr=f"[UG{self.id}] Falha Remota")
+        self.l_falha_remota = lei.LeituraModbusCoil(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}"]["FALHA_COMUNICA_REMOTA"], descricao=f"[UG{self.id}] Falha Remota")
         self.condicionadores.append(c.CondicionadorBase(self.l_falha_remota, CONDIC_INDISPONIBILIZAR))
 
-        self.l_falha_ibnt_dj_ger = lei.LeituraModbusCoil(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}"]["FALHA_IBNT_DJ_GER"], descr=f"[UG{self.id}] Dijuntor Gerador Falha")
+        self.l_falha_ibnt_dj_ger = lei.LeituraModbusCoil(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}"]["FALHA_IBNT_DJ_GER"], descricao=f"[UG{self.id}] Dijuntor Gerador Falha")
         self.condicionadores.append(c.CondicionadorBase(self.l_falha_ibnt_dj_ger, CONDIC_INDISPONIBILIZAR))
 
-        self.l_UHRV_falha_acion_bba_M1 = lei.LeituraModbusCoil(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}"]["UHRV_FALHA_ACION_BOMBA_M1"], descr=f"[UG{self.id}] UHRV Bomba 1 Falha Acionamento")
+        self.l_UHRV_falha_acion_bba_M1 = lei.LeituraModbusCoil(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}"]["UHRV_FALHA_ACION_BOMBA_M1"], descricao=f"[UG{self.id}] UHRV Bomba 1 Falha Acionamento")
         self.condicionadores.append(c.CondicionadorBase(self.l_UHRV_falha_acion_bba_M1, CONDIC_INDISPONIBILIZAR))
 
-        self.l_UHRV_falha_acion_bba_M2 = lei.LeituraModbusCoil(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}"]["UHRV_FALHA_ACION_BOMBA_M2"], descr=f"[UG{self.id}] UHRV Bomba 2 Falha Acionamento")
+        self.l_UHRV_falha_acion_bba_M2 = lei.LeituraModbusCoil(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}"]["UHRV_FALHA_ACION_BOMBA_M2"], descricao=f"[UG{self.id}] UHRV Bomba 2 Falha Acionamento")
         self.condicionadores.append(c.CondicionadorBase(self.l_UHRV_falha_acion_bba_M2, CONDIC_INDISPONIBILIZAR))
 
-        self.l_UHLM_falha_acion_bba_M1 = lei.LeituraModbusCoil(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}"]["UHLM_FALHA_ACION_BOMBA_M1"], descr=f"[UG{self.id}] UHLM Bomba 1 Falha Acionamento")
+        self.l_UHLM_falha_acion_bba_M1 = lei.LeituraModbusCoil(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}"]["UHLM_FALHA_ACION_BOMBA_M1"], descricao=f"[UG{self.id}] UHLM Bomba 1 Falha Acionamento")
         self.condicionadores.append(c.CondicionadorBase(self.l_UHLM_falha_acion_bba_M1, CONDIC_INDISPONIBILIZAR))
 
-        self.l_UHLM_falha_acion_bba_M2 = lei.LeituraModbusCoil(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}"]["UHLM_FALHA_ACION_BOMBA_M2"], descr=f"[UG{self.id}] UHLM Bomba 2 Falha Acionamento")
+        self.l_UHLM_falha_acion_bba_M2 = lei.LeituraModbusCoil(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}"]["UHLM_FALHA_ACION_BOMBA_M2"], descricao=f"[UG{self.id}] UHLM Bomba 2 Falha Acionamento")
         self.condicionadores.append(c.CondicionadorBase(self.l_UHLM_falha_acion_bba_M2, CONDIC_INDISPONIBILIZAR))
 
-        self.l_falha_acion_fecha_valv_borb = lei.LeituraModbusCoil(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}"]["FALHA_ACIONA_FECHA_VALV_BORB"], descr=f"[UG{self.id}] Válvula Borboleta Falha Acionamento Fechamento")
+        self.l_falha_acion_fecha_valv_borb = lei.LeituraModbusCoil(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}"]["FALHA_ACIONA_FECHA_VALV_BORB"], descricao=f"[UG{self.id}] Válvula Borboleta Falha Acionamento Fechamento")
         self.condicionadores.append(c.CondicionadorBase(self.l_falha_acion_fecha_valv_borb, CONDIC_INDISPONIBILIZAR))
+
+        self.l_freio_modo_remoto = lei.LeituraModbusCoil(
+            self.clp[f"UG{self.id}"],
+            REG_UG[f"UG{self.id}"]["FREIO_CMD_REMOTO"],
+            descricao=f"[UG{self.id}] Freio Modo Remoto"
+        )
+        self.l_pastilha_freio_gasta = lei.LeituraModbusCoil(
+            self.clp[f"UG{self.id}"],
+            REG_UG[f"UG{self.id}"]["FREIO_PASTILHA_GASTA"],
+            descricao=f"[UG{self.id}] Pastilha Freio Gasta"
+        )
+        self.l_compresor_modo_remoto = lei.LeituraModbusCoil(
+            self.clp[f"UG{self.id}"],
+            REG_UG[f"UG{self.id}"][f"QCAUG{self.id}_REMOTO"],
+            descricao=f"[UG{self.id}] Compressor Modo Remoto"
+        )
+        self.l_uhrv_filtro_press_75_sujo = lei.LeituraModbusCoil(
+            self.clp[f"UG{self.id}"],
+            REG_UG[f"UG{self.id}"]["FILTRO_PRESS_SUJO_75TROC"],
+            descricao=f"[UG{self}] UHRV Filtro Pressão 75% Sujo"
+        )
+        self.l_uhrv_filtro_retor_75_sujo = lei.LeituraModbusCoil(
+            self.clp[f"UG{self.id}"],
+            REG_UG[f"UG{self.id}"]["FILTRO_RET_SUJO_75TROC"],
+            descricao=f"[UG{self.id}] UHRV Filtro Pressão Retorno 75% Sujo"
+        )
+        self.l_uhlm_filtro_press_1_75_sujo = lei.LeituraModbusCoil(
+            self.clp[f"UG{self.id}"],
+            REG_UG[f"UG{self.id}"]["UHLM_FILTR_1_PRES_SUJO_75TROC"],
+            descricao=f"[UG{self.id}] UHLM Filtro Pressão 1 75% Sujo"
+        )
+        self.l_uhlm_filtro_press_2_75_sujo = lei.LeituraModbusCoil(
+            self.clp[f"UG{self.id}"],
+            REG_UG[f"UG{self.id}"]["UHLM_FILTR_2_PRES_SUJO_75TROC"],
+            descricao=f"[UG{self.id}] UHLM Filtro Pressão 2 75% Sujo"
+        )
+        self.l_bomba_mec_filtro_press_75_sujo = lei.LeituraModbusCoil(
+            self.clp[f"UG{self.id}"],
+            REG_UG[f"UG{self.id}"]["FILTR_1_PRESS_BOMBA_MEC_75TROC"],
+            descricao=f"[UG{self.id}] Filtro Pressão Bomba Mecância 75% Sujo"
+        )

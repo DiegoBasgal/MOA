@@ -37,7 +37,6 @@ fileConfig("/opt/operacao-autonoma/logger_config.ini")
 logger = logging.getLogger("logger")
 
 
-
 if __name__ == "__main__":
     if len(sys.argv) > 1:
         ESCALA_DE_TEMPO = int(sys.argv[1])
@@ -79,7 +78,7 @@ if __name__ == "__main__":
                 logger.debug("")
                 logger.info("Iniciando conexões com Servidores...")
 
-                srv.Servidores.open_all()
+                # srv.Servidores.open_all()
 
             except Exception:
                 logger.exception(f"Erro ao iniciar classes de conexão com servidores. Tentando novamente em \"{TIMEOUT_MAIN}s\"")

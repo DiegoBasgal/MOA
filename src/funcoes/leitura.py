@@ -1,6 +1,7 @@
 import socket
 import struct
 import logging
+import traceback
 
 from src.dicionarios.reg import *
 from pyModbusTCP.utils import crc16
@@ -20,6 +21,16 @@ class LeituraModbus:
         self.__fundo_escala = fundo_escala
         self.__op = op
         self.__descricao = descricao
+
+    @property
+    def cliente(self) -> "ModbusClient":
+        # PROPRIEDADE -> Retorna a instância do Cliente Modbus
+        return self.__cliente
+    
+    @property
+    def registrador(self) -> "int":
+        # PROPRIEDADE -> Retorna o Registrador da Leitura
+        return self.__registrador
 
     @property
     def descricao(self) -> "str":
@@ -67,13 +78,14 @@ class LeituraModbusCoil(LeituraModbus):
     def raw(self) -> "int":
         # PROPRIEDADE -> Retorna Valor raw ModBus.
         try:
-            if self.__cliente.open():
-                lei = self.__cliente.read_discrete_inputs(self.__registrador)[0]
+            if self.cliente.open():
+                lei = self.cliente.read_discrete_inputs(self.registrador)[0]
 
                 return 0 if lei == None else lei
 
         except Exception:
-            logger.debug(f"[LEI] Houve um erro na Leitura Coil do REG: {self.__descricao}")
+            logger.debug(f"[LEI] Houve um erro na Leitura Coil do REG: {self.descricao}")
+            logger.debug(traceback.format_exc())
             return 0
 
 
@@ -110,9 +122,8 @@ class LeituraDelta(LeituraModbus):
         return max(0, val) if self.__min_zero else val
 
 
-class LeituraSoma(LeituraModbus):
+class LeituraSoma:
     def __init__(self, leituras: "list[LeituraModbus]", min_zero: "bool"=True, descricao: "str"=None,):
-        super().__init__(descricao)
 
         # PRIVADAS
         self.__leituras = leituras
@@ -126,9 +137,8 @@ class LeituraSoma(LeituraModbus):
         return max(0, val) if self.__min_zero else val
 
 
-class LeituraComposta(LeituraModbus):
+class LeituraComposta:
     def __init__(self, leituras: "list[LeituraModbus]", descricao: "str"=None):
-        super().__init__(descricao)
 
         # PRIVADAS
         self.__leituras = leituras

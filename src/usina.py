@@ -44,6 +44,10 @@ class Usina:
         self.ugs: "list[u.UnidadeGeracao]" = [self.ug1, self.ug2, self.ug3]
         c.CondicionadorBase.ugs = self.ugs
 
+        se.Subestacao.bd = self.bd
+        tda.TomadaAgua.bd = self.bd
+        tda.TomadaAgua.cfg = self.cfg
+
         # PROTEGIDAS
         self._pid_inicial: "int" = -1
         self._pot_alvo_anterior: "int" = -1
@@ -157,13 +161,13 @@ class Usina:
         try:
             logger.debug("[USN] Reset geral")
 
-            self.clp["SA"].write_single_coil(REG_SA["CMD_RESET_GERAL"], [1])
-            self.clp["SA"].write_single_coil(REG_SA["CMD_CALA_SIRENE"], [1])
-            self.clp["TDA"].write_single_coil(REG_TDA["CMD_RESET_GERAL"], [1]) if not d.glb["TDA_Offline"] else logger.debug("[USN] CLP TDA Offline, não há como realizar o reset geral")
+            self.clp["SA"].write_single_register(REG_SA["CMD_RESET_GERAL"], 1) # write_single_coil
+            self.clp["SA"].write_single_register(REG_SA["CMD_CALA_SIRENE"], 1) # write_single_coil
+            self.clp["TDA"].write_single_register(REG_TDA["CMD_RESET_GERAL"], 1) if not d.glb["TDA_Offline"] else logger.debug("[USN] CLP TDA Offline, não há como realizar o reset geral") # write_single_coil
             for ug in self.ugs:
-                self.clp[f"UG{ug.id}"].write_single_coil(REG_UG[f"UG{ug.id}"]["CMD_RESET_GERAL"], [0])
-                self.clp[f"UG{ug.id}"].write_single_coil(REG_UG[f"UG{ug.id}"]["CMD_CALA_SIRENE"], [0])
-                self.clp[f"UG{ug.id}"].write_single_coil(REG_UG[f"UG{ug.id}"]["CMD_EMERG_SUPER"], [0])
+                self.clp[f"UG{ug.id}"].write_single_register(REG_UG[f"UG{ug.id}"]["CMD_RESET_GERAL"], 0)
+                self.clp[f"UG{ug.id}"].write_single_register(REG_UG[f"UG{ug.id}"]["CMD_CALA_SIRENE"], 0)
+                self.clp[f"UG{ug.id}"].write_single_register(REG_UG[f"UG{ug.id}"]["CMD_EMERG_SUPER"], 0)
             se.Subestacao.fechar_dj_linha()
 
         except Exception:
@@ -217,9 +221,9 @@ class Usina:
         try:
             logger.debug("[USN] Iniciando o timer de leitura periódica...")
             while True:
-                sa.ServicoAuxiliar.leitura_temporizada()
-                for ug in self.ugs:
-                    ug.leitura_temporizada()
+                # sa.ServicoAuxiliar.leitura_temporizada()
+                # for ug in self.ugs:
+                #     ug.leitura_temporizada()
 
                 if True in (vd.voip_dict[r][0] for r in vd.voip_dict):
                     vp.Voip.acionar_chamada()
@@ -232,7 +236,27 @@ class Usina:
             logger.debug(traceback.format_exc())
 
 
-    def ajustar_inicializacao(self) -> None:
+    def verificar_condicionadores(self) -> "int":
+
+        flag = CONDIC_IGNORAR
+
+        lst_se = se.Subestacao.verificar_condicionadores()
+        lst_tda = tda.TomadaAgua.verificar_condicionadores()
+        lst_sa = sa.ServicoAuxiliar.verificar_condicionadores()
+
+        condics = [condic for condics in [lst_sa, lst_se, lst_tda] for condic in condics]
+
+        for condic in condics:
+            if condic.gravidade == CONDIC_INDISPONIBILIZAR:
+                return CONDIC_INDISPONIBILIZAR
+
+            elif condic.gravidade == CONDIC_NORMALIZAR:
+                flag = CONDIC_NORMALIZAR
+
+        return flag
+
+
+    def ajustar_inicializacao(self) -> "None":
         """
         Função para ajustes na inicialização do MOA. Essa função é executada apenas
         uma vez.
@@ -248,9 +272,9 @@ class Usina:
 
         self.controle_ie = sum(ug.potencia for ug in self.ugs) / self.cfg["pot_alvo_usina"]
 
-        self.clp["MOA"].write_single_coil(REG_MOA["MOA_OUT_BLOCK_UG1"], 0)
-        self.clp["MOA"].write_single_coil(REG_MOA["MOA_OUT_BLOCK_UG2"], 0)
-        self.clp["MOA"].write_single_coil(REG_MOA["MOA_OUT_BLOCK_UG3"], 0)
+        # self.clp["MOA"].write_single_coil(REG_MOA["MOA_OUT_BLOCK_UG1"], 0)
+        # self.clp["MOA"].write_single_coil(REG_MOA["MOA_OUT_BLOCK_UG2"], 0)
+        # self.clp["MOA"].write_single_coil(REG_MOA["MOA_OUT_BLOCK_UG3"], 0)
 
 
     def controlar_reservatorio(self) -> int:
@@ -317,7 +341,7 @@ class Usina:
                 self.aguardando_reservatorio = False
 
         else:
-            self.nv_montante_anterior = self.nv_montante_anterior
+            # self.nv_montante_anterior = self.nv_montante_anterior
             self.controlar_potencia()
 
             for ug in self.ugs:

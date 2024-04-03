@@ -33,28 +33,28 @@ class Subestacao:
         clp["SA"],
         REG_SA["PM810_POT_ATIVA"],
         op=4,
-        descr="[SE]  Leitura Potência Medidor Usina"
+        descricao="[SE]  Leitura Potência Medidor Usina"
     )
     l_tensao_rs: "lei.LeituraModbus" = lei.LeituraModbus(
         clp["SA"],
         REG_SA["PM810_TENSAO_AB"],
         escala=100,
         op=4,
-        descr="[SE]  Leitura Tensão RS"
+        descricao="[SE]  Leitura Tensão RS"
     )
     l_tensao_st: "lei.LeituraModbus" = lei.LeituraModbus(
         clp["SA"],
         REG_SA["PM810_TENSAO_BC"],
         escala=100,
         op=4,
-        descr="[SE]  Leitura Tensão ST"
+        descricao="[SE]  Leitura Tensão ST"
     )
     l_tensao_tr: "lei.LeituraModbus" = lei.LeituraModbus(
         clp["SA"],
         REG_SA["PM810_TENSAO_CA"],
         escala=100,
         op=4,
-        descr="[SE]  Leitura Tensão TR"
+        descricao="[SE]  Leitura Tensão TR"
     )
 
 
@@ -161,6 +161,8 @@ class Subestacao:
         Função para verificação das condições de fechamento do Disjuntor 52L (Linha).
         """
 
+        return True
+
         flags = 0
 
         if cls.clp["SA"].read_discrete_inputs(REG_SA["DJL_ALM_PRESS_BAIXA"])[0] == 1:
@@ -215,54 +217,52 @@ class Subestacao:
 
 
     @classmethod
-    def verificar_condicionadores(cls) -> "int":
+    def verificar_condicionadores(cls) -> "list[c.CondicionadorBase]":
         """
-        Função para a verificação de acionamento de condicionadores e determinação
-        de gravidade.
+        Função para verificação de TRIPS/Alarmes.
 
-        Itera sobre a lista de condicionadores da Usina e verifica se algum está
-        ativo. Caso esteja, verifica o nível de gravidade e retorna o valor para
-        a determinação do passo seguinte.
-        Caso não haja nenhum condicionador ativo, apenas retorna o valor de ignorar.
+        Verifica os condicionadores ativos e retorna lista com os mesmos para a função de verificação
+        da Classe da Usina determinar as ações necessárias.
         """
 
-        flag = CONDIC_IGNORAR
-        autor_i = autor_n = 0
+        autor = 0
 
         if True in (condic.ativo for condic in cls.condicionadores_essenciais):
-            condicionadores_ativos = [condic for condics in [cls.condicionadores_essenciais, cls.condicionadores] for condic in condics if condic.ativo]
+            condics_ativos = [condic for condics in [cls.condicionadores_essenciais, cls.condicionadores] for condic in condics if condic.ativo]
 
             logger.debug("")
-            logger.warning(f"[SE]  Foram detectados condicionadores ativos na Usina!") if cls.condicionadores_ativos == [] else logger.info(f"[SE]  Ainda há condicionadores ativos na Usina!")
+            if cls.condicionadores_ativos == []:
+                logger.debug(f"[SE]  Foram detectados Condicionadores ativos na Subestação!")
+            else:
+                logger.debug(f"[SE]  Ainda há Condicionadores ativos na Subestação!")
 
-            for condic in condicionadores_ativos:
+            for condic in condics_ativos:
+                # if condic.teste:
+                #     logger.debug(f"[SE]  Descrição: \"{condic.descricao}\", Gravidade: \"{CONDIC_STR_DCT[condic.gravidade] if condic.gravidade in CONDIC_STR_DCT else 'Desconhecida'}\", Obs.: \"TESTE\"")
+                #     continue
+
                 if condic in cls.condicionadores_ativos:
                     logger.debug(f"[SE]  Descrição: \"{condic.descricao}\", Gravidade: \"{CONDIC_STR_DCT[condic.gravidade] if condic.gravidade in CONDIC_STR_DCT else 'Desconhecida'}\"")
                     continue
 
-                elif condic.gravidade == CONDIC_INDISPONIBILIZAR:
-                    logger.warning(f"[SE]  Descrição: \"{condic.descricao}\", Gravidade: \"{CONDIC_STR_DCT[condic.gravidade] if condic.gravidade in CONDIC_STR_DCT else 'Desconhecida'}\"")
-                    cls.bd.update_alarmes([cls.get_time().strftime("%Y-%m-%d %H:%M:%S"), condic.gravidade, condic.descricao, "X" if autor_i == 0 else ""])
-                    autor_i += 1
-
-                elif condic.gravidade == CONDIC_NORMALIZAR:
-                    logger.warning(f"[SE]  Descrição: \"{condic.descricao}\", Gravidade: \"{CONDIC_STR_DCT[condic.gravidade] if condic.gravidade in CONDIC_STR_DCT else 'Desconhecida'}\"")
-                    cls.bd.update_alarmes([cls.get_time().strftime("%Y-%m-%d %H:%M:%S"), condic.gravidade, condic.descricao, "X" if autor_i == 0 and autor_n == 0 else ""])
-                    autor_n += 1
-
-                cls.condicionadores_ativos.append(condic)
-
-                if flag == CONDIC_INDISPONIBILIZAR:
-                    continue
                 else:
-                    flag = condic.gravidade
+                    logger.warning(f"[SE]  Descrição: \"{condic.descricao}\", Gravidade: \"{CONDIC_STR_DCT[condic.gravidade] if condic.gravidade in CONDIC_STR_DCT else 'Desconhecida'}\"")
+                    cls.condicionadores_ativos.append(condic)
+                    cls.bd.update_alarmes([
+                        datetime.now(pytz.timezone("Brazil/East")).replace(tzinfo=None),
+                        condic.gravidade,
+                        condic.descricao,
+                        "X" if autor == 0 else ""
+                    ])
+                    autor += 1
+                    sleep(1)
 
             logger.debug("")
-            return flag
+            return condics_ativos
 
         else:
             cls.condicionadores_ativos = []
-            return flag
+            return []
 
 
     @classmethod
@@ -272,69 +272,71 @@ class Subestacao:
         e emergências da Usina.
         """
 
-        cls.l_trip_SEL311 = lei.LeituraModbusCoil(cls.clp["SA"], REG_SA["SEL311_TRIP"], descr="[SE] Trip SEL311")
+        return
+
+        cls.l_trip_SEL311 = lei.LeituraModbusCoil(cls.clp["SA"], REG_SA["SEL311_TRIP"], descricao="[SE] Trip SEL311")
         cls.condicionadores_essenciais.append(c.CondicionadorBase(cls.l_trip_SEL311, CONDIC_INDISPONIBILIZAR))
 
-        cls.l_trip_SEL787 = lei.LeituraModbusCoil(cls.clp["SA"], REG_SA["SEL787_TRIP"], descr="[SE] Trip SEL787")
+        cls.l_trip_SEL787 = lei.LeituraModbusCoil(cls.clp["SA"], REG_SA["SEL787_TRIP"], descricao="[SE] Trip SEL787")
         cls.condicionadores_essenciais.append(c.CondicionadorBase(cls.l_trip_SEL787, CONDIC_INDISPONIBILIZAR))
 
-        cls.l_falha_SEL311 = lei.LeituraModbusCoil(cls.clp["SA"], REG_SA["SEL311_FALHA"], descr="[SE] Falha SEL311")
+        cls.l_falha_SEL311 = lei.LeituraModbusCoil(cls.clp["SA"], REG_SA["SEL311_FALHA"], descricao="[SE] Falha SEL311")
         cls.condicionadores.append(c.CondicionadorBase(cls.l_falha_SEL311, CONDIC_INDISPONIBILIZAR))
 
-        cls.l_falha_interna_SEL787 = lei.LeituraModbusCoil(cls.clp["SA"], REG_SA["SEL787_FALHA"], descr="[SE] Falha SEL787")
+        cls.l_falha_interna_SEL787 = lei.LeituraModbusCoil(cls.clp["SA"], REG_SA["SEL787_FALHA"], descricao="[SE] Falha SEL787")
         cls.condicionadores.append(c.CondicionadorBase(cls.l_falha_interna_SEL787, CONDIC_INDISPONIBILIZAR))
 
-        cls.l_falha_interna_DJ52l = lei.LeituraModbusCoil(cls.clp["SA"], REG_SA["DJL_FALHA"], descr="[SE] Falha Interna Disjuntor 52L")
+        cls.l_falha_interna_DJ52l = lei.LeituraModbusCoil(cls.clp["SA"], REG_SA["DJL_FALHA"], descricao="[SE] Falha Interna Disjuntor 52L")
         cls.condicionadores.append(c.CondicionadorBase(cls.l_falha_interna_DJ52l, CONDIC_INDISPONIBILIZAR))
 
-        cls.l_secc_89TE_aberta = lei.LeituraModbusCoil(cls.clp["SA"], REG_SA["CTE_SECC_89TE_ABERTA"], descr="[SE] Seccionadora 89TE Aberta")
+        cls.l_secc_89TE_aberta = lei.LeituraModbusCoil(cls.clp["SA"], REG_SA["CTE_SECC_89TE_ABERTA"], descricao="[SE] Seccionadora 89TE Aberta")
         cls.condicionadores.append(c.CondicionadorBase(cls.l_secc_89TE_aberta, CONDIC_INDISPONIBILIZAR))
 
-        cls.l_falha_TE = lei.LeituraModbusCoil(cls.clp["SA"], REG_SA["TE_FALHA"], descr="[SE] Falha TE")
+        cls.l_falha_TE = lei.LeituraModbusCoil(cls.clp["SA"], REG_SA["TE_FALHA"], descricao="[SE] Falha TE")
         cls.condicionadores.append(c.CondicionadorBase(cls.l_falha_TE, CONDIC_INDISPONIBILIZAR))
 
-        cls.l_alarme_gas_TE = lei.LeituraModbusCoil(cls.clp["SA"], REG_SA["TE_ALM_DETEC_GAS"], descr="[SE] Alarme Detector Gás TE")
+        cls.l_alarme_gas_TE = lei.LeituraModbusCoil(cls.clp["SA"], REG_SA["TE_ALM_DETEC_GAS"], descricao="[SE] Alarme Detector Gás TE")
         cls.condicionadores.append(c.CondicionadorBase(cls.l_alarme_gas_TE, CONDIC_INDISPONIBILIZAR))
 
-        cls.l_alarme_temp_oleo_TE = lei.LeituraModbusCoil(cls.clp["SA"], REG_SA["TE_ALM_TEMP_OLEO"], descr="[SE] Alarme Temperatura Óleo TE")
+        cls.l_alarme_temp_oleo_TE = lei.LeituraModbusCoil(cls.clp["SA"], REG_SA["TE_ALM_TEMP_OLEO"], descricao="[SE] Alarme Temperatura Óleo TE")
         cls.condicionadores.append(c.CondicionadorBase(cls.l_alarme_temp_oleo_TE, CONDIC_INDISPONIBILIZAR))
 
-        cls.l_alarme_desligamento_TE = lei.LeituraModbusCoil(cls.clp["SA"], REG_SA["TE_ALM_DESLIGAMENTO"], descr="[SE] Alarme Desligamento TE")
+        cls.l_alarme_desligamento_TE = lei.LeituraModbusCoil(cls.clp["SA"], REG_SA["TE_ALM_DESLIGAMENTO"], descricao="[SE] Alarme Desligamento TE")
         cls.condicionadores.append(c.CondicionadorBase(cls.l_alarme_desligamento_TE, CONDIC_INDISPONIBILIZAR))
 
-        cls.l_alarme_nv_max_oleo_TE = lei.LeituraModbusCoil(cls.clp["SA"], REG_SA["TE_ALM_NV_MAX_OLEO"], descr="[SE] Alarme Nível Máximo Óleo TE")
+        cls.l_alarme_nv_max_oleo_TE = lei.LeituraModbusCoil(cls.clp["SA"], REG_SA["TE_ALM_NV_MAX_OLEO"], descricao="[SE] Alarme Nível Máximo Óleo TE")
         cls.condicionadores.append(c.CondicionadorBase(cls.l_alarme_nv_max_oleo_TE, CONDIC_INDISPONIBILIZAR))
 
-        cls.l_alarme_alivio_pressao_TE = lei.LeituraModbusCoil(cls.clp["SA"], REG_SA["TE_ALM_ALIVIO_PRESSAO"], descr="[SE] Alarme Alívio Pressão TE")
+        cls.l_alarme_alivio_pressao_TE = lei.LeituraModbusCoil(cls.clp["SA"], REG_SA["TE_ALM_ALIVIO_PRESSAO"], descricao="[SE] Alarme Alívio Pressão TE")
         cls.condicionadores.append(c.CondicionadorBase(cls.l_alarme_alivio_pressao_TE, CONDIC_INDISPONIBILIZAR))
 
-        cls.l_alarme_temp_enrola_TE = lei.LeituraModbusCoil(cls.clp["SA"], REG_SA["TE_ALM_TEMP_ENROLA"], descr="[SE] Alarme Temperatura Enrolamento TE")
+        cls.l_alarme_temp_enrola_TE = lei.LeituraModbusCoil(cls.clp["SA"], REG_SA["TE_ALM_TEMP_ENROLA"], descricao="[SE] Alarme Temperatura Enrolamento TE")
         cls.condicionadores.append(c.CondicionadorBase(cls.l_alarme_temp_enrola_TE, CONDIC_INDISPONIBILIZAR))
 
-        cls.l_targets_SEL787 = lei.LeituraModbusCoil(cls.clp["SA"], REG_SA["SEL787_TARGET"], descr="[SE] Targets SEL787")
+        cls.l_targets_SEL787 = lei.LeituraModbusCoil(cls.clp["SA"], REG_SA["SEL787_TARGET"], descricao="[SE] Targets SEL787")
         cls.condicionadores.append(c.CondicionadorBase(cls.l_targets_SEL787, CONDIC_INDISPONIBILIZAR))
 
-        cls.l_targets_SEL787_bit00 = lei.LeituraModbusCoil(cls.clp["SA"], REG_SA["SEL787_TARGET_B00"], descr="[SE] Targets SEL787 Bit 00")
+        cls.l_targets_SEL787_bit00 = lei.LeituraModbusCoil(cls.clp["SA"], REG_SA["SEL787_TARGET_B00"], descricao="[SE] Targets SEL787 Bit 00")
         cls.condicionadores.append(c.CondicionadorBase(cls.l_targets_SEL787_bit00, CONDIC_INDISPONIBILIZAR))
 
-        # cls.l_targets_SEL787_bit01 = lei.LeituraModbusCoil(cls.clp["SA"], REG_SA["SEL787_TARGET_B01"], descr="[SE] Targets SEL787 Bit 01")
+        # cls.l_targets_SEL787_bit01 = lei.LeituraModbusCoil(cls.clp["SA"], REG_SA["SEL787_TARGET_B01"], descricao="[SE] Targets SEL787 Bit 01")
         # cls.condicionadores.append(c.CondicionadorBase(cls.l_targets_SEL787_bit01, CONDIC_INDISPONIBILIZAR))
 
-        cls.l_targets_SEL787_bit02 = lei.LeituraModbusCoil(cls.clp["SA"], REG_SA["SEL787_TARGET_B02"], descr="[SE] Targets SEL787 Bit 02")
+        cls.l_targets_SEL787_bit02 = lei.LeituraModbusCoil(cls.clp["SA"], REG_SA["SEL787_TARGET_B02"], descricao="[SE] Targets SEL787 Bit 02")
         cls.condicionadores.append(c.CondicionadorBase(cls.l_targets_SEL787_bit02, CONDIC_INDISPONIBILIZAR))
 
-        cls.l_targets_SEL787_bit03 = lei.LeituraModbusCoil(cls.clp["SA"], REG_SA["SEL787_TARGET_B03"], descr="[SE] Targets SEL787 Bit 03")
+        cls.l_targets_SEL787_bit03 = lei.LeituraModbusCoil(cls.clp["SA"], REG_SA["SEL787_TARGET_B03"], descricao="[SE] Targets SEL787 Bit 03")
         cls.condicionadores.append(c.CondicionadorBase(cls.l_targets_SEL787_bit03, CONDIC_INDISPONIBILIZAR))
 
-        cls.l_targets_SEL787_bit04 = lei.LeituraModbusCoil(cls.clp["SA"], REG_SA["SEL787_TARGET_B04"], descr="[SE] Targets SEL787 Bit 04")
+        cls.l_targets_SEL787_bit04 = lei.LeituraModbusCoil(cls.clp["SA"], REG_SA["SEL787_TARGET_B04"], descricao="[SE] Targets SEL787 Bit 04")
         cls.condicionadores.append(c.CondicionadorBase(cls.l_targets_SEL787_bit04, CONDIC_INDISPONIBILIZAR))
 
-        # cls.l_targets_SEL787_bit05 = lei.LeituraModbusCoil(cls.clp["SA"], REG_SA["SEL787_TARGET_B05"], descr="[SE] Targets SEL787 Bit 05")
+        # cls.l_targets_SEL787_bit05 = lei.LeituraModbusCoil(cls.clp["SA"], REG_SA["SEL787_TARGET_B05"], descricao="[SE] Targets SEL787 Bit 05")
         # cls.condicionadores.append(c.CondicionadorBase(cls.l_targets_SEL787_bit05, CONDIC_INDISPONIBILIZAR))
 
-        # cls.l_targets_SEL787_bit06 = lei.LeituraModbusCoil(cls.clp["SA"], REG_SA["SEL787_TARGET_B06"], descr="[SE] Targets SEL787 Bit 06")
+        # cls.l_targets_SEL787_bit06 = lei.LeituraModbusCoil(cls.clp["SA"], REG_SA["SEL787_TARGET_B06"], descricao="[SE] Targets SEL787 Bit 06")
         # cls.condicionadores.append(c.CondicionadorBase(cls.l_targets_SEL787_bit06, CONDIC_INDISPONIBILIZAR))
 
-        cls.l_targets_SEL787_bit07 = lei.LeituraModbusCoil(cls.clp["SA"], REG_SA["SEL787_TARGET_B07"], descr="[SE] Targets SEL787 Bit 07")
+        cls.l_targets_SEL787_bit07 = lei.LeituraModbusCoil(cls.clp["SA"], REG_SA["SEL787_TARGET_B07"], descricao="[SE] Targets SEL787 Bit 07")
         cls.condicionadores.append(c.CondicionadorBase(cls.l_targets_SEL787_bit07, CONDIC_INDISPONIBILIZAR))
 

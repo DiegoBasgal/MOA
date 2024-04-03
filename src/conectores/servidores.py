@@ -23,37 +23,49 @@ class Servidores:
         host=d.ips["SA_ip"],
         port=d.ips["SA_porta"],
         unit_id=1,
-        timeout=0.5
+        timeout=0.5,
+        auto_close=True,
+        auto_open=True
     )
     clp["TDA"] = ModbusClient(
         host=d.ips["TDA_ip"],
         port=d.ips["TDA_porta"],
         unit_id=1,
-        timeout=0.5
+        timeout=0.5,
+        auto_close=True,
+        auto_open=True
     )
     clp["UG1"] = ModbusClient(
         host=d.ips["UG1_ip"],
         port=d.ips["UG1_porta"],
         unit_id=1,
-        timeout=0.5
+        timeout=0.5,
+        auto_close=True,
+        auto_open=True
     )
     clp["UG2"] = ModbusClient(
         host=d.ips["UG2_ip"],
         port=d.ips["UG2_porta"],
         unit_id=1,
-        timeout=0.5
+        timeout=0.5,
+        auto_close=True,
+        auto_open=True
     )
     clp["UG3"] = ModbusClient(
         host=d.ips["UG3_ip"],
         port=d.ips["UG3_porta"],
         unit_id=1,
-        timeout=0.5
+        timeout=0.5,
+        auto_close=True,
+        auto_open=True
     )
     clp["MOA"] = ModbusClient(
         host=d.ips["MOA_ip"],
         port=d.ips["MOA_porta"],
         unit_id=1,
-        timeout=0.5
+        timeout=0.5,
+        auto_close=True,
+        auto_open=True
     )
 
     @staticmethod
@@ -99,7 +111,8 @@ class Servidores:
         tenta realizar a abertura de uma nova conexão. Caso não seja possível,
         avisa o operador, senão fecha a conexão.
         """
-        
+        return
+
         try:
             if not cls.ping(d.ips["TDA_ip"]) and not d.glb["TDA_Offline"]:
                 d.glb["TDA_Offline"] = True
@@ -156,8 +169,3 @@ class Servidores:
         except Exception:
             logger.error(f"[CLI] Houve um erro ao executar a verificação de Ping dos equipamentos da Usina.")
             logger.debug(traceback.format_exc())
-
-    
-
-if Servidores.ping(d.ips["TDA_ip"]):
-    print("Erro")

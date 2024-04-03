@@ -41,7 +41,7 @@ class StateManual(State):
 
         logger.debug("")
         logger.info(f"[UG{self.parent.id}] Entrando no estado:                 \"Manual\". Para retornar a operação autônoma, favor agendar na interface web")
-        logger.debug(f"[UG{self.parent.id}] Tentativas de normalização:         {self.parent.tentativas_normalizacao}/{self.parent.__limite_tentativas}")
+        logger.debug(f"[UG{self.parent.id}] Tentativas de normalização:         {self.parent.tentativas_normalizacao}/{self.parent.limite_tentativas}")
 
 
     def step(self) -> "State":
@@ -67,7 +67,7 @@ class StateIndisponivel(State):
 
         logger.debug("")
         logger.info(f"[UG{self.parent.id}] Entrando no estado:                 \"Indisponível\". Para retornar a operação autônoma, favor agendar na interface web")
-        logger.debug(f"[UG{self.parent.id}] Tentativas de normalização:         {self.parent.tentativas_normalizacao}/{self.parent.__limite_tentativas}")
+        logger.debug(f"[UG{self.parent.id}] Tentativas de normalização:         {self.parent.tentativas_normalizacao}/{self.parent.limite_tentativas}")
 
 
     def step(self) -> "State":
@@ -93,7 +93,7 @@ class StateRestrito(State):
 
         logger.debug("")
         logger.info(f"[UG{self.parent.id}] Entrando no estado                  \"Restrito\"")
-        logger.debug(f"[UG{self.parent.id}] Tentativas de normalização:         {self.parent.tentativas_normalizacao}/{self.parent.__limite_tentativas}")
+        logger.debug(f"[UG{self.parent.id}] Tentativas de normalização:         {self.parent.tentativas_normalizacao}/{self.parent.limite_tentativas}")
 
 
     def step(self) -> "State":
@@ -150,7 +150,7 @@ class StateDisponivel(State):
 
         logger.debug("")
         logger.info(f"[UG{self.parent.id}] Entrando no estado:                 \"Disponível\"")
-        logger.debug(f"[UG{self.parent.id}] Tentativas de normalização:         {self.parent.tentativas_normalizacao}/{self.parent.__limite_tentativas}")
+        logger.debug(f"[UG{self.parent.id}] Tentativas de normalização:         {self.parent.tentativas_normalizacao}/{self.parent.limite_tentativas}")
         logger.debug("")
 
 

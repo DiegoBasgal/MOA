@@ -8,6 +8,7 @@ import src.funcoes.condicionador as c
 import src.conectores.servidores as srv
 import src.conectores.banco_dados as bd
 
+from time import sleep
 from datetime import datetime
 
 from src.dicionarios.reg import *
@@ -37,9 +38,9 @@ class TomadaAgua:
         clp["TDA"],
         REG_TDA["NV_ANTES_GRADE"],
         escala=0.0001,
-        fundo_de_escala=400,
+        fundo_escala=400,
         op=4,
-        descr="[TDA] Nível Montante"
+        descricao="[TDA] Nível Montante"
     )
 
 
@@ -99,54 +100,52 @@ class TomadaAgua:
 
 
     @classmethod
-    def verificar_condicionadores(cls) -> "int":
+    def verificar_condicionadores(cls) -> "list[c.CondicionadorBase]":
         """
-        Função para a verificação de acionamento de condicionadores e determinação
-        de gravidade.
+        Função para verificação de TRIPS/Alarmes.
 
-        Itera sobre a lista de condicionadores da Usina e verifica se algum está
-        ativo. Caso esteja, verifica o nível de gravidade e retorna o valor para
-        a determinação do passo seguinte.
-        Caso não haja nenhum condicionador ativo, apenas retorna o valor de ignorar.
+        Verifica os condicionadores ativos e retorna lista com os mesmos para a função de verificação
+        da Classe da Usina determinar as ações necessárias.
         """
 
-        flag = CONDIC_IGNORAR
-        autor_i = autor_n = 0
+        autor = 0
 
         if True in (condic.ativo for condic in cls.condicionadores_essenciais):
-            condicionadores_ativos = [condic for condics in [cls.condicionadores_essenciais, cls.condicionadores] for condic in condics if condic.ativo]
+            condics_ativos = [condic for condics in [cls.condicionadores_essenciais, cls.condicionadores] for condic in condics if condic.ativo]
 
             logger.debug("")
-            logger.warning(f"[TDA] Foram detectados condicionadores ativos na Usina!") if cls.condicionadores_ativos == [] else logger.info(f"[TDA] Ainda há condicionadores ativos na Usina!")
+            if cls.condicionadores_ativos == []:
+                logger.debug(f"[TDA] Foram detectados Condicionadores ativos na Subestação!")
+            else:
+                logger.debug(f"[TDA] Ainda há Condicionadores ativos na Subestação!")
 
-            for condic in condicionadores_ativos:
+            for condic in condics_ativos:
+                # if condic.teste:
+                #     logger.debug(f"[TDA] Descrição: \"{condic.descricao}\", Gravidade: \"{CONDIC_STR_DCT[condic.gravidade] if condic.gravidade in CONDIC_STR_DCT else 'Desconhecida'}\", Obs.: \"TESTE\"")
+                #     continue
+
                 if condic in cls.condicionadores_ativos:
                     logger.debug(f"[TDA] Descrição: \"{condic.descricao}\", Gravidade: \"{CONDIC_STR_DCT[condic.gravidade] if condic.gravidade in CONDIC_STR_DCT else 'Desconhecida'}\"")
                     continue
 
-                elif condic.gravidade == CONDIC_INDISPONIBILIZAR:
-                    logger.warning(f"[TDA] Descrição: \"{condic.descricao}\", Gravidade: \"{CONDIC_STR_DCT[condic.gravidade] if condic.gravidade in CONDIC_STR_DCT else 'Desconhecida'}\"")
-                    cls.bd.update_alarmes([cls.get_time().strftime("%Y-%m-%d %H:%M:%S"), condic.gravidade, condic.descricao, "X" if autor_i == 0 else ""])
-                    autor_i += 1
-
-                elif condic.gravidade == CONDIC_NORMALIZAR:
-                    logger.warning(f"[TDA] Descrição: \"{condic.descricao}\", Gravidade: \"{CONDIC_STR_DCT[condic.gravidade] if condic.gravidade in CONDIC_STR_DCT else 'Desconhecida'}\"")
-                    cls.bd.update_alarmes([cls.get_time().strftime("%Y-%m-%d %H:%M:%S"), condic.gravidade, condic.descricao, "X" if autor_i == 0 and autor_n == 0 else ""])
-                    autor_n += 1
-
-                cls.condicionadores_ativos.append(condic)
-
-                if flag == CONDIC_INDISPONIBILIZAR:
-                    continue
                 else:
-                    flag = condic.gravidade
+                    logger.warning(f"[TDA] Descrição: \"{condic.descricao}\", Gravidade: \"{CONDIC_STR_DCT[condic.gravidade] if condic.gravidade in CONDIC_STR_DCT else 'Desconhecida'}\"")
+                    cls.condicionadores_ativos.append(condic)
+                    cls.bd.update_alarmes([
+                        datetime.now(pytz.timezone("Brazil/East")).replace(tzinfo=None),
+                        condic.gravidade,
+                        condic.descricao,
+                        "X" if autor == 0 else ""
+                    ])
+                    autor += 1
+                    sleep(1)
 
             logger.debug("")
-            return flag
+            return condics_ativos
 
         else:
             cls.condicionadores_ativos = []
-            return flag
+            return []
 
 
     @classmethod
@@ -155,12 +154,13 @@ class TomadaAgua:
         Função para carregamento de todas as leituras para acionamentos de avisos
         e emergências da Usina.
         """
+        return
 
-        cls.l_trip_dj_52E_QCTA = lei.LeituraModbusCoil(cls.clp["TDA"], REG_SA["DJ_52E_TRIP"], descr="[TDA] Trip Disjuntor 52E")
+        cls.l_trip_dj_52E_QCTA = lei.LeituraModbusCoil(cls.clp["TDA"], REG_SA["DJ_52E_TRIP"], descricao="[TDA] Trip Disjuntor 52E")
         cls.condicionadores.append(c.CondicionadorBase(cls.l_trip_dj_52E_QCTA, CONDIC_INDISPONIBILIZAR))
 
-        cls.l_trip_dj_52E_dj_saida = lei.LeituraModbusCoil(cls.clp["TDA"], REG_SA["DJ_52E_TRIP_DJ_SAIDA"], descr="[TDA] Trip Disjuntor 52E Saída")
+        cls.l_trip_dj_52E_dj_saida = lei.LeituraModbusCoil(cls.clp["TDA"], REG_SA["DJ_52E_TRIP_DJ_SAIDA"], descricao="[TDA] Trip Disjuntor 52E Saída")
         cls.condicionadores.append(c.CondicionadorBase(cls.l_trip_dj_52E_dj_saida, CONDIC_INDISPONIBILIZAR))
 
-        # cls.l_falha_380VCA_dj_52E = lei.LeituraModbusCoil(cls.clp["TDA"], REG_SA["DJ_52E_FALHA_380VCA"], descr="[TDA] Falha 380 VCA Disjuntor 52E")
+        # cls.l_falha_380VCA_dj_52E = lei.LeituraModbusCoil(cls.clp["TDA"], REG_SA["DJ_52E_FALHA_380VCA"], descricao="[TDA] Falha 380 VCA Disjuntor 52E")
         # cls.condicionadores.append(c.CondicionadorBase(cls.l_falha_380VCA_dj_52E, CONDIC_INDISPONIBILIZAR))

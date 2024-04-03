@@ -41,7 +41,7 @@ REG_MOA = {
 
 REG_SA = {
     ## COMANDOS DIGITAIS
-    "CMD_RESET_GREAL":                                  0,          # MX_Coil[1].0                          (OP -> 0x15 Write Multiple Coils)
+    "CMD_RESET_GERAL":                                  0,          # MX_Coil[1].0                          (OP -> 0x15 Write Multiple Coils)
     "CMD_FECHA_SECC1":                                  1,          # MX_Coil[1].1                          (OP -> 0x15 Write Multiple Coils)
     "CMD_ABRE_SECC1":                                   2,          # MX_Coil[1].2                          (OP -> 0x15 Write Multiple Coils)
     "CMD_FECHA_SECC2":                                  3,          # MX_Coil[1].3                          (OP -> 0x15 Write Multiple Coils)
@@ -345,7 +345,7 @@ REG_TDA = {
     "STATUS_RELIGA_52L":                                57,         # MX_Input[8].1                         (OP -> 0x02 Read Input Status)
 
     ## ENTRADAS DIGITAIS
-    "NV_ANTES_GRADE":                                   0,          # MW_InpReg[1]   Scale 0.01             (OP -> 0x04 Read Input Regs - 3x)
+    # "NV_ANTES_GRADE":                                   0,          # MW_InpReg[1]   Scale 0.01             (OP -> 0x04 Read Input Regs - 3x)
     "NV_DEPOIS_GRADE":                                  1,          # MW_InpReg[2]   Scale 0.01             (OP -> 0x04 Read Input Regs - 3x)
     "NV_FILTRADO":                                      8,          # MW_InpReg[9]   Scale 0.01             (OP -> 0x04 Read Input Regs - 3x)
     "NUM_TABELA_UG1":                                   9,          # MW_InpReg[10]                         (OP -> 0x04 Read Input Regs - 3x)

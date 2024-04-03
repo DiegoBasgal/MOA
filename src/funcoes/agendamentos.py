@@ -1,7 +1,7 @@
 import pytz
 import logging
 
-import usina as u
+import src.usina as u
 import src.conectores.banco_dados as bd
 
 from time import sleep

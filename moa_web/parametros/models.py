@@ -43,22 +43,22 @@ class ParametrosUsina(models.Model):
     cx_kp = models.DecimalField(max_digits=5, decimal_places=2, default=2)
     cx_ki = models.DecimalField(max_digits=5, decimal_places=2, default=0.1)
     cx_kie = models.DecimalField(max_digits=5, decimal_places=2, default=0)
-    press_cx_alvo = models.DecimalField(max_digits=10, decimal_places=2, default=16.3)
-    valor_ie_inicial = models.DecimalField(max_digits=10, decimal_places=1, default=0.5)
+    ie_inicial = models.DecimalField(max_digits=10, decimal_places=1, default=0.5)
 
     # Potência
-    pot_minima = models.DecimalField(max_digits=10, decimal_places=0, default=1360)
-    pot_nominal = models.DecimalField(max_digits=10, decimal_places=0, default=9900)
-    pot_nominal_ug = models.DecimalField(max_digits=10, decimal_places=0, default=3600)
+    pot_minima_ugs = models.DecimalField(max_digits=10, decimal_places=0, default=1360)
+    pot_maxima_ugs = models.DecimalField(max_digits=10, decimal_places=0, default=3600)
+    pot_maxima_usina = models.DecimalField(max_digits=10, decimal_places=0, default=10800)
     margem_pot_critica = models.DecimalField(max_digits=10, decimal_places=5, default=0.037)
-
 
     # UG1
     ug1_pot = models.DecimalField(max_digits=10, decimal_places=0, default=0)
     ug1_setpot = models.DecimalField(max_digits=10, decimal_places=0, default=0)
     ug1_prioridade = models.IntegerField(default=0)
     ug1_ultimo_estado = models.IntegerField(default=0)
+    ug1_pressao_alvo = models.DecimalField(max_digits=10, decimal_places=2, default=16.3)
 
+    aviso_caixa_espiral_ug1 = models.DecimalField(max_digits=10, decimal_places=2, default=16.5)
     alerta_caixa_espiral_ug1 = models.DecimalField(max_digits=10, decimal_places=2, default=10)
     limite_caixa_espiral_ug1 = models.DecimalField(max_digits=10, decimal_places=2, default=0)
 
@@ -93,7 +93,9 @@ class ParametrosUsina(models.Model):
     ug2_setpot = models.DecimalField(max_digits=10, decimal_places=0, default=0)
     ug2_prioridade = models.IntegerField(default=0)
     ug2_ultimo_estado = models.IntegerField(default=0)
+    ug2_pressao_alvo = models.DecimalField(max_digits=10, decimal_places=2, default=16.3)
 
+    aviso_caixa_espiral_ug2 = models.DecimalField(max_digits=10, decimal_places=2, default=16.5)
     alerta_caixa_espiral_ug2 = models.DecimalField(max_digits=10, decimal_places=2, default=10)
     limite_caixa_espiral_ug2 = models.DecimalField(max_digits=10, decimal_places=2, default=0)
 
@@ -128,7 +130,9 @@ class ParametrosUsina(models.Model):
     ug3_setpot = models.DecimalField(max_digits=10, decimal_places=0, default=0)
     ug3_prioridade = models.IntegerField(default=0)
     ug3_ultimo_estado = models.IntegerField(default=0)
+    ug3_pressao_alvo = models.DecimalField(max_digits=10, decimal_places=2, default=16.3)
 
+    aviso_caixa_espiral_ug3 = models.DecimalField(max_digits=10, decimal_places=2, default=16.5)
     alerta_caixa_espiral_ug3 = models.DecimalField(max_digits=10, decimal_places=2, default=10)
     limite_caixa_espiral_ug3 = models.DecimalField(max_digits=10, decimal_places=2, default=0)
 
@@ -160,7 +164,9 @@ class ParametrosUsina(models.Model):
 
 
 class Comando(models.Model):
+
     id = models.IntegerField(primary_key=True)
+
     nome = models.CharField(max_length=255)
     descricao = models.TextField()
     executavel_em_manual = models.BooleanField(default=False)
@@ -171,6 +177,6 @@ class ControleEstados(models.Model):
 
     ts = models.DateTimeField(primary_key=True, default=0)
 
-    ultimo_estado_ug1 = models.IntegerField(default=0)
-    ultimo_estado_ug2 = models.IntegerField(default=0)
-    ultimo_estado_ug3 = models.IntegerField(default=0)
+    ultimo_estado_ug1 = models.TextField(default="")
+    ultimo_estado_ug2 = models.TextField(default="")
+    ultimo_estado_ug3 = models.TextField(default="")

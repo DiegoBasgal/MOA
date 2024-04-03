@@ -12,7 +12,7 @@
     "pot_alvo_usina": 9900.0,
     "pot_maxima_usina": 10800.0,
     "pot_limpeza_grade": 500.0,
-    "margem_pot_critica": 0.06,
+    "margem_pot_critica": 0.037,
     "kp": 2.0,
     "ki": 0.1,
     "kd": 0.0,
