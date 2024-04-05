@@ -135,7 +135,7 @@ REG_SASE = {
     "DJ_LINHA_FECHADO":                                                                 [12309, 15],
 
     # Relé
-    "RELE_BLOQ_86BTBF":                                                                 [12309, 7],
+    "RELE_BLOQ_86BTBF":                                                                 [12308, 7],
 
     # Carregador de Baterias
     "CB_FALHA":                                                                         [12309, 8],
@@ -162,7 +162,7 @@ REG_SASE = {
 
     ## SST_ENTRAS_DIGITAIS_1
     # Disjuntores
-    "DJ_LINHA_ABERTO":                                                                  [12311, 0],
+    "DJ_LINHA_ABERTO":                                                                  [12310, 0],
 
     # Transformador Elevador
     "TE_TEMP_ALARME":                                                                   [12311, 1],

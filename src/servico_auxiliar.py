@@ -351,8 +351,8 @@ class ServicoAuxiliar:
 
 
         ## CONDICIONADORES ESSENCIAIS
-        # cls.l_bloq_rele_86btbf = lei.LeituraModbusBit(serv.Servidores.clp["SA"], REG_SASE["RELE_BLOQ_86BTBF"], descricao="[SA]  Bloqueio 86BTBF Relé SA")
-        # cls.condicionadores_essenciais.append(c.CondicionadorBase(cls.l_bloq_rele_86btbf, CONDIC_NORMALIZAR, teste=True))
+        cls.l_bloq_rele_86btbf = lei.LeituraModbusBit(serv.Servidores.clp["SA"], REG_SASE["RELE_BLOQ_86BTBF"], descricao="[SA]  Bloqueio 86BTBF Relé SA")
+        cls.condicionadores_essenciais.append(c.CondicionadorBase(cls.l_bloq_rele_86btbf, CONDIC_NORMALIZAR, teste=True))
 
         cls.l_bloq_botao_86btbf = lei.LeituraModbusBit(serv.Servidores.clp["SA"], REG_SASE["BT_BLOQ_86BTBF"], descricao="[SA]  Botão Bloqueio 86BTBF Relé SA Pressionado")
         cls.condicionadores_essenciais.append(c.CondicionadorBase(cls.l_bloq_botao_86btbf, CONDIC_NORMALIZAR))

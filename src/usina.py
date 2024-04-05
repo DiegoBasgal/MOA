@@ -76,6 +76,7 @@ class Usina:
         self.estado_moa: "int" = 0
 
         self.pot_disp: "int" = 0
+        self.atenuacao: "int" = 0
         self.ug_operando: "int" = 0
         self.modo_de_escolha_das_ugs: "int" = 0
 
@@ -293,13 +294,16 @@ class Usina:
         calcular e distribuir a potência para as Unidades.
         """
 
-        if self.tda.nv_montante.valor in (None, 0, 0.0):
-            logger.info(f"[TDA] Erro de Leitura de Nível Montante identificada! Acionando espera pelo Reservatório.")
-            self.aguardando_reservatorio = True
+        l_nivel = self.tda.nv_montante.valor
 
-        elif self.tda.nv_montante.valor >= self.cfg["nv_maximo"]:
+        if (l_nivel in (None, 0) or l_nivel <= 800) and not self.borda_erro_ler_nv:
+            logger.info(f"[TDA] Erro de Leitura de Nível Montante identificada! Acionando espera pelo Reservatório.")
+            self.borda_erro_ler_nv = True
+            self.tda.aguardando_reservatorio = True
+
+        elif l_nivel >= self.cfg["nv_maximo"] and not self.tda.aguardando_reservatorio:
             logger.debug("[TDA] Nível Montante acima do Máximo.")
-            logger.debug(f"[TDA]          Leitura:                   {self.tda.nv_montante.valor:0.3f}")
+            logger.debug(f"[TDA]          Leitura:                   {l_nivel:0.3f}")
             logger.debug("")
 
             if self.tda.nv_montante_anterior >= NIVEL_MAXIMORUM:
@@ -314,9 +318,9 @@ class Usina:
                 for ug in self.ugs:
                     ug.step()
 
-        elif self.tda.nv_montante.valor <= self.cfg["nv_minimo"] and not self.tda.aguardando_reservatorio:
+        elif l_nivel <= self.cfg["nv_minimo"] and not self.tda.aguardando_reservatorio:
             logger.debug("[TDA] Nível Montante abaixo do Mínimo.")
-            logger.debug(f"[TDA]          Leitura:                   {self.tda.nv_montante.valor:0.3f}")
+            logger.debug(f"[TDA]          Leitura:                   {l_nivel:0.3f}")
             logger.debug("")
             self.tda.aguardando_reservatorio = True
             self.distribuir_potencia(0)
@@ -331,13 +335,13 @@ class Usina:
 
         elif self.tda.aguardando_reservatorio:
             logger.debug("[TDA] Aguardando Nível Montante...")
-            logger.debug(f"[TDA]          Leitura:                   {self.tda.nv_montante.valor:0.3f}")
+            logger.debug(f"[TDA]          Leitura:                   {l_nivel:0.3f}")
             logger.debug(f"[TDA]          Nível de Religamento:      {self.cfg['nv_religamento']:0.3f}")
             logger.debug("")
 
-            if self.tda.nv_montante.valor >= self.cfg["nv_religamento"]:
+            if l_nivel >= self.cfg["nv_religamento"]:
                 logger.debug("[TDA] Nível Montante dentro do limite de operação.")
-                logger.debug(f"[TDA]          Leitura:                   {self.tda.nv_montante.valor:0.3f}")
+                logger.debug(f"[TDA]          Leitura:                   {l_nivel:0.3f}")
                 logger.debug("")
                 self.tda.aguardando_reservatorio = False
 
@@ -440,11 +444,10 @@ class Usina:
         if ugs is None or not len(ugs):
             return
 
-        logger.debug(f"[USN] Distribuindo:                       {pot_alvo - ajuste_manual:0.3f}")
-
         pot_ajustada = pot_alvo - ajuste_manual
-
         pot_atenuada = self.atenuar_carga(pot_ajustada)
+        logger.debug("")
+        logger.debug(f"[USN] Distribuindo:                       {pot_atenuada:0.3f}")
 
         sp = (pot_atenuada) / self.cfg["pot_maxima_usina"]
 
@@ -499,14 +502,14 @@ class Usina:
 
         flags = 0
         atenuacao = 0
-        logger.debug(f"[USN]          Verificando Atenuadores...")
+        logger.debug(f"[USN] Verificando Atenuadores Gerais...")
 
         for condic in tda.TomadaAgua.condicionadores_atenuadores:
             atenuacao = max(atenuacao, condic.valor)
 
             if atenuacao > 0:
                 flags += 1
-                logger.debug(f"[USN]          - \"{condic.descricao}\":")
+                logger.debug(f"[USN]    - \"{condic.descricao}\":")
                 logger.debug(f"[USN]                                     Leitura: {condic.leitura:3.2f} | Atenuação: {atenuacao:0.4f}")
 
                 if flags == 1:
@@ -516,12 +519,16 @@ class Usina:
                 atenuacao = 0
 
         if flags == 0:
-            logger.debug(f"[USN]          Não há necessidade de Atenuação.")
+            logger.debug(f"[USN] Não há necessidade de Atenuação.")
+            return setpoint
 
-        ganho = 1 - self.atenuacao
-        self.atenuacao = 0
+        else:
+            ganho = 1 - self.atenuacao
+            aux = setpoint
+            self.atenuacao = 0
 
-        setpoint_atenuado = setpoint - 0.5 * (setpoint - (setpoint * ganho))
+            setpoint_atenuado = setpoint - 0.5 * (setpoint - (setpoint * ganho))
+            logger.debug(f"[USN]                                     SP {aux} * GANHO {ganho:0.4f} = {setpoint_atenuado:0.3f} kW")
 
         return setpoint_atenuado
 
