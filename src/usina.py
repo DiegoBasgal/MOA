@@ -89,6 +89,7 @@ class Usina:
         self.bd_emergencia: "bool" = False
         self.clp_emergencia: "bool" = False
         self.tentar_normalizar: "bool" = True
+        self.borda_erro_ler_nv: "bool" = False
         self.normalizar_forcado: "bool" = False
         self.aguardando_reservatorio: "bool" = False
 
@@ -296,7 +297,7 @@ class Usina:
 
         l_nivel = self.tda.nv_montante.valor
 
-        if (l_nivel in (None, 0) or l_nivel <= 800) and not self.borda_erro_ler_nv:
+        if (l_nivel in (None, 0, 0.0) or l_nivel <= 800) and not self.borda_erro_ler_nv:
             logger.info(f"[TDA] Erro de Leitura de Nível Montante identificada! Acionando espera pelo Reservatório.")
             self.borda_erro_ler_nv = True
             self.tda.aguardando_reservatorio = True

@@ -1424,7 +1424,7 @@ class UnidadeDeGeracao:
         self.condicionadores_essenciais.append(c.CondicionadorBase(self.l_status_bloq_86m, CONDIC_NORMALIZAR))
 
         self.l_rt_falha_2_bloq_externo = lei.LeituraModbusBit(self.rv[f"UG{self.id}"], REG_RTV[f"UG{self.id}"]["RV_FALHA_BLOQ_EXTERNO"], descricao=f"[UG{self.id}] RT Falha 2 Bloqueio Externo")
-        self.condicionadores_essenciais.append(c.CondicionadorBase(self.l_rt_falha_2_bloq_externo, CONDIC_NORMALIZAR, teste=True))
+        self.condicionadores_essenciais.append(c.CondicionadorBase(self.l_rt_falha_2_bloq_externo, CONDIC_NORMALIZAR))
 
         self.l_rele_trip_prot_gerad = lei.LeituraModbusBit(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}"]["RELE_PROT_GERADOR_TRIP"], descricao=f"[UG{self.id}] Relé Trip Proteção Gerador")
         self.condicionadores_essenciais.append(c.CondicionadorBase(self.l_rele_trip_prot_gerad, CONDIC_NORMALIZAR))
@@ -1474,16 +1474,16 @@ class UnidadeDeGeracao:
 
         # UG_STT_ENTRADAS_DIGITAIS
         self.l_uhrv_oleo_nv_muito_baixo = lei.LeituraModbusBit(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}"]["UHRV_OLEO_NV_MUITO_BAIXO"], descricao=f"[UG{self.id}] UHRV Óleo Nível Muito Baixo")
-        self.condicionadores.append(c.CondicionadorBase(self.l_uhrv_oleo_nv_muito_baixo, CONDIC_INDISPONIBILIZAR, teste=True))
+        self.condicionadores.append(c.CondicionadorBase(self.l_uhrv_oleo_nv_muito_baixo, CONDIC_INDISPONIBILIZAR))
 
         self.l_uhrv_filtro_oleo_sujo = lei.LeituraModbusBit(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}"]["UHRV_FILTRO_OLEO_SUJO"], descricao=f"[UG{self.id}] UHRV Filtro Óleo Sujo")
         self.condicionadores.append(c.CondicionadorBase(self.l_uhrv_filtro_oleo_sujo, CONDIC_INDISPONIBILIZAR))
 
         self.l_urhv_press_crit = lei.LeituraModbusBit(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}"]["UHRV_PRESSAO_CRITICA"], descricao=f"[UG{self.id}] UHRV Pressão Crítica")
-        self.condicionadores.append(c.CondicionadorBase(self.l_urhv_press_crit, CONDIC_INDISPONIBILIZAR, teste=True))
+        self.condicionadores.append(c.CondicionadorBase(self.l_urhv_press_crit, CONDIC_INDISPONIBILIZAR))
 
         self.l_uhrv_oleo_nv_muito_alto = lei.LeituraModbusBit(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}"]["UHLM_OLEO_NV_MUITO_ALTO"], descricao=f"[UG{self.id}] UHRV Óleo Nível Muito Alto")
-        self.condicionadores.append(c.CondicionadorBase(self.l_uhrv_oleo_nv_muito_alto, CONDIC_INDISPONIBILIZAR, teste=True))
+        self.condicionadores.append(c.CondicionadorBase(self.l_uhrv_oleo_nv_muito_alto, CONDIC_INDISPONIBILIZAR))
 
         self.l_uhlm_oleo_nv_muito_baixo = lei.LeituraModbusBit(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}"]["UHLM_OLEO_NV_MUITO_BAIXO"], descricao=f"[UG{self.id}] UHLM Óleo Nível Muito Baixo")
         self.condicionadores.append(c.CondicionadorBase(self.l_uhlm_oleo_nv_muito_baixo, CONDIC_INDISPONIBILIZAR))
@@ -1498,7 +1498,7 @@ class UnidadeDeGeracao:
 
         # TODO -> Verificar
         self.l_qbag_escova_polo_pos_desgas = lei.LeituraModbusBit(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}"]["QBAG_ESCOVA_POLO_POS_DESGASTADA"], descricao=f"[UG{self.id}] QBAG Escova Polo Positivo Desgastada")
-        self.condicionadores.append(c.CondicionadorBase(self.l_qbag_escova_polo_pos_desgas, CONDIC_INDISPONIBILIZAR, teste=True))
+        self.condicionadores.append(c.CondicionadorBase(self.l_qbag_escova_polo_pos_desgas, CONDIC_INDISPONIBILIZAR))
 
         self.l_qbag_escova_polo_neg_desgas = lei.LeituraModbusBit(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}"]["QBAG_ESCOVA_POLO_NEG_DESGASTADA"], descricao=f"[UG{self.id}] QBAG Escova Polo Negativo Desgastada")
         self.condicionadores.append(c.CondicionadorBase(self.l_qbag_escova_polo_neg_desgas, CONDIC_INDISPONIBILIZAR))
@@ -1511,7 +1511,7 @@ class UnidadeDeGeracao:
 
         # TODO -> Verificar
         self.l_uhrv_pressao_freio = lei.LeituraModbusBit(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}"]["UHRV_PRESSAO_FREIO"], descricao=f"[UG{self.id}] UHRV Pressão Freio")
-        self.condicionadores.append(c.CondicionadorBase(self.l_uhrv_pressao_freio, CONDIC_NORMALIZAR, teste=True))
+        self.condicionadores.append(c.CondicionadorBase(self.l_uhrv_pressao_freio, CONDIC_NORMALIZAR))
 
         # UHRV
         # TODO -> Verificar

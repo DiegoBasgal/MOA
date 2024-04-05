@@ -635,19 +635,19 @@ REG_UG = {
         "DJ_LINHA_FECHADO":                                                             [12312, 6],
 
         # UHRV
-        "UHRV_OLEO_NV_MUITO_BAIXO":                                                     [12311, 6],
-        "UHRV_FILTRO_OLEO_SUJO":                                                        [12311, 7],
-        "UHRV_PRESSAO_CRITICA":                                                         [12311, 8],
-        "UHRV_PRESSAO_FREIO":                                                           [12311, 9],
-        "UHLM_OLEO_NV_MUITO_ALTO":                                                      [12311, 11],
-        "UHLM_OLEO_NV_MUITO_BAIXO":                                                     [12311, 12],
-        "UHLM_PRESSAO_LINHA_LUBRIF":                                                    [12311, 13],
-        "UHLM_FILTRO_OLEO_SUJO":                                                        [12311, 14],
-        "UHLM_FLUXO_TROCADOR_CALOR":                                                    [12311, 15],
+        "UHRV_OLEO_NV_MUITO_BAIXO":                                                     [12310, 6],
+        "UHRV_FILTRO_OLEO_SUJO":                                                        [12310, 7],
+        "UHRV_PRESSAO_CRITICA":                                                         [12310, 8],
+        "UHRV_PRESSAO_FREIO":                                                           [12310, 9],
+        "UHLM_OLEO_NV_MUITO_ALTO":                                                      [12310, 11],
+        "UHLM_OLEO_NV_MUITO_BAIXO":                                                     [12310, 12],
+        "UHLM_PRESSAO_LINHA_LUBRIF":                                                    [12310, 13],
+        "UHLM_FILTRO_OLEO_SUJO":                                                        [12310, 14],
+        "UHLM_FLUXO_TROCADOR_CALOR":                                                    [12310, 15],
 
         # QBAG
-        "QBAG_ESCOVA_POLO_POS_DESGASTADA":                                              [12312, 1],
-        "QBAG_ESCOVA_POLO_NEG_DESGASTADA":                                              [12312, 2],
+        "QBAG_ESCOVA_POLO_POS_DESGASTADA":                                              [12311, 1],
+        "QBAG_ESCOVA_POLO_NEG_DESGASTADA":                                              [12311, 2],
 
         # Bloqueio
         "BLOQUEIO_86BTBF":                                                              [12312, 3],
@@ -1007,15 +1007,15 @@ REG_UG = {
         "DJ_LINHA_FECHADO":                                                             [12312, 6],
 
         # UHRV
-        "UHRV_OLEO_NV_MUITO_BAIXO":                                                     [12311, 6],
-        "UHRV_FILTRO_OLEO_SUJO":                                                        [12311, 7],
-        "UHRV_PRESSAO_CRITICA":                                                         [12311, 8],
-        "UHRV_PRESSAO_FREIO":                                                           [12311, 9],
-        "UHLM_OLEO_NV_MUITO_ALTO":                                                      [12311, 11],
-        "UHLM_OLEO_NV_MUITO_BAIXO":                                                     [12311, 12],
-        "UHLM_PRESSAO_LINHA_LUBRIF":                                                    [12311, 13],
-        "UHLM_FILTRO_OLEO_SUJO":                                                        [12311, 14],
-        "UHLM_FLUXO_TROCADOR_CALOR":                                                    [12311, 15],
+        "UHRV_OLEO_NV_MUITO_BAIXO":                                                     [12310, 6],
+        "UHRV_FILTRO_OLEO_SUJO":                                                        [12310, 7],
+        "UHRV_PRESSAO_CRITICA":                                                         [12310, 8],
+        "UHRV_PRESSAO_FREIO":                                                           [12310, 9],
+        "UHLM_OLEO_NV_MUITO_ALTO":                                                      [12310, 11],
+        "UHLM_OLEO_NV_MUITO_BAIXO":                                                     [12310, 12],
+        "UHLM_PRESSAO_LINHA_LUBRIF":                                                    [12310, 13],
+        "UHLM_FILTRO_OLEO_SUJO":                                                        [12310, 14],
+        "UHLM_FLUXO_TROCADOR_CALOR":                                                    [12310, 15],
 
         # QBAG
         "QBAG_ESCOVA_POLO_POS_DESGASTADA":                                              [12312, 1],
