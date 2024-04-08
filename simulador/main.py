@@ -30,7 +30,7 @@ ch.setFormatter(logFormatter)
 ch.setLevel(logging.INFO)
 logger.addHandler(ch)
 
-fh = handlers.TimedRotatingFileHandler(filename="C:/Users/cog/Documents/Diego/XAV/operacao-autonoma/simulador/logs/SIM.log", when='midnight', interval=1, backupCount=7)
+fh = handlers.TimedRotatingFileHandler(filename="C:/Users/cog/Documents/Dev/operacao-autonoma/simulador/logs/SIM.log", when='midnight', interval=1, backupCount=7)
 fh.setFormatter(logFormatter)
 fh.setLevel(logging.DEBUG)
 logger.addHandler(fh)

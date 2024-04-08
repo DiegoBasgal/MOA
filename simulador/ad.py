@@ -40,6 +40,7 @@ class Ad:
 
 
         def passo(self) -> 'None':
+            print(f"CP{self.id} Manual -> {self.dict['AD'][f'cp{self.id}_manual']}")
             self.setpoint = DB.get_words(MB['AD'][f'CP_0{self.id}_SP_POS'])[0]
 
             if DB.get_words(MB['AD'][f'CMD_CP_0{self.id}_BUSCAR'])[0] or self.dict['AD'][f'cp{self.id}_buscar']:
