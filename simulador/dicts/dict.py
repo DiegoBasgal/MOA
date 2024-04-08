@@ -82,11 +82,13 @@ compartilhado = {
         "cp1_setpoint": 0,
 
         "cp1_manual": False,
+        "cp1_buscar": False,
 
         "cp2_q": 0,
         "cp2_setpoint": 0,
 
         "cp2_manual": False,
+        "cp2_buscar": False,
 
         "uhcd_disponivel": True,
 

@@ -55,19 +55,19 @@ if __name__ == '__main__':
         thread_temporizador = Thread(target = tempo.run, args=())
         thread_usina = Thread(target = p.Planta(compartilhado, tempo).run, args=())
         thread_gui = Thread(target = gui.start_gui, args=(compartilhado,))
-        thread_controlador = Thread(target=Controlador(compartilhado).run, args=())
+        # thread_controlador = Thread(target=Controlador(compartilhado).run, args=())
 
         logger.debug("Rodando Simulador...")
         logger.debug('')
         thread_temporizador.start()
         thread_usina.start()
         thread_gui.start()
-        thread_controlador.start()
+        # thread_controlador.start()
 
         thread_temporizador.join()
         thread_usina.join()
         thread_gui.join()
-        thread_controlador.join()
+        # thread_controlador.join()
 
         logger.debug('')
         logger.debug("Fim da Simulação.")

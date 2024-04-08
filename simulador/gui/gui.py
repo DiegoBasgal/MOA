@@ -8,6 +8,9 @@ from gui.ui import Ui_Form
 from PyQt5.QtCore import QTimer
 from PyQt5.QtWidgets import QApplication, QMainWindow, QFrame
 
+from pyModbusTCP.server import DataBank as DB
+
+from dicts.reg import *
 from dicts.const import *
 
 
@@ -196,6 +199,20 @@ class Window(QMainWindow, Ui_Form):
 
 
     # AD
+    def alterar_posicao_cp1(self):
+        if self.dict['AD']['cp1_manual']:
+            sp = int(self.lineEdit_posicao_cp1_ad.text())
+            if 0 <= sp <= 6000:
+                DB.set_words(MB['AD']['CP_01_SP_POS'], [round(sp)])
+                self.dict['AD']['cp1_buscar'] = True
+
+    def alterar_posicao_cp2(self):
+        if self.dict['AD']['cp2_manual']:
+            sp = int(self.lineEdit_posicao_cp2_ad.text())
+            if 0 <= sp <= 6000:
+                DB.set_words(MB['AD']['CP_02_SP_POS'], [round(sp)])
+                self.dict['AD']['cp2_buscar'] = True
+
     def acionar_manual_cp1(self):
         if not self.dict['AD']['cp1_manual']:
             self.dict['AD']['cp1_manual'] = True

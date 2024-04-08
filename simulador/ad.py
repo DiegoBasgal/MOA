@@ -42,18 +42,17 @@ class Ad:
         def passo(self) -> 'None':
             self.setpoint = DB.get_words(MB['AD'][f'CP_0{self.id}_SP_POS'])[0]
 
-            if DB.get_words(MB['AD'][f'CMD_CP_0{self.id}_BUSCAR'])[0]:
+            if DB.get_words(MB['AD'][f'CMD_CP_0{self.id}_BUSCAR'])[0] or self.dict['AD'][f'cp{self.id}_buscar']:
+                self.dict['AD'][f'cp{self.id}_buscar'] = False
                 DB.set_words(MB['AD'][f'CMD_CP_0{self.id}_BUSCAR'], [0])
 
-                if not self.dict['AD'][f'cp{self.id}_manual']:
+                if self.setpoint > self.setpoint_anterior:
+                    Thread(target=lambda: self.abrir(self.setpoint, self.setpoint_anterior)).start()
+                    self.setpoint_anterior = self.setpoint
 
-                    if self.setpoint > self.setpoint_anterior:
-                        Thread(target=lambda: self.abrir(self.setpoint, self.setpoint_anterior)).start()
-                        self.setpoint_anterior = self.setpoint
-
-                    elif self.setpoint < self.setpoint_anterior:
-                        Thread(target=lambda: self.fechar(self.setpoint, self.setpoint_anterior)).start()
-                        self.setpoint_anterior = self.setpoint
+                elif self.setpoint < self.setpoint_anterior:
+                    Thread(target=lambda: self.fechar(self.setpoint, self.setpoint_anterior)).start()
+                    self.setpoint_anterior = self.setpoint
 
 
         def abrir(self, sp, sp_ante) -> 'None':
