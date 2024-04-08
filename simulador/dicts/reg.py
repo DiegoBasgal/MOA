@@ -366,6 +366,8 @@ REG_TDA = {
     # Níveis
     "NV_JUSANTE_GRADE":                                                                 12348 + 2000,
     "NV_MONTANTE_GRADE":                                                                12350 + 2000,
+    "DIFERENCIAL_GRADE":                                                                999 + 2000,
+    "NV_MONTANTE_TESTE":                                                                950 + 2000,
 }
 
 REG_UG = {

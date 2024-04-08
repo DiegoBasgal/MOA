@@ -3,9 +3,9 @@ import threading
 
 from math import floor
 from pathlib import Path
-from PySide6.QtGui import QPixmap
-from PySide6.QtCore import QTimer
-from PySide6.QtWidgets import QApplication, QMainWindow, QFrame
+from PyQt5.QtGui import QPixmap
+from PyQt5.QtCore import QTimer
+from PyQt5.QtWidgets import QApplication, QMainWindow, QFrame
 
 from gui.ui import Ui_Form
 
@@ -79,7 +79,6 @@ class Window(QMainWindow, Ui_Form):
             self.lcdNumber_temperatura_8_ug1.display(f"{self.dict['UG1']['temp_mancal_casq_comb']:03.1f}")
             self.lcdNumber_temperatura_9_ug1.display(f"{self.dict['UG1']['temp_mancal_esc_comb']:03.1f}")
             self.lcdNumber_temperatura_9_ug1.display(f"{self.dict['UG1']['temp_mancal_contra_esc_comb']:03.1f}")
-            self.lcdNumber_perda_na_grade_ug1.display(f"{self.dict['TDA']['nv_montante'] - self.dict['TDA']['nv_jusante_grade']:03.1f}")
 
             self.checkBox_sinal_trip_ug2.setChecked(self.dict['UG2']["trip"])
             self.checkBox_sinal_trip_condic_ug2.setChecked(self.dict['UG2']["trip_condic"])
@@ -108,7 +107,6 @@ class Window(QMainWindow, Ui_Form):
             self.lcdNumber_temperatura_8_ug2.display(f"{self.dict['UG2']['temp_mancal_casq_comb']:03.1f}")
             self.lcdNumber_temperatura_9_ug2.display(f"{self.dict['UG2']['temp_mancal_esc_comb']:03.1f}")
             self.lcdNumber_temperatura_9_ug2.display(f"{self.dict['UG2']['temp_mancal_contra_esc_comb']:03.1f}")
-            self.lcdNumber_perda_na_grade_ug2.display(f"{self.dict['TDA']['nv_montante'] - self.dict['TDA']['nv_jusante_grade']:3.1f}")
 
         except Exception as e:
             print("A", repr(e))
@@ -118,6 +116,12 @@ class Window(QMainWindow, Ui_Form):
         self.dict["GLB"]["stop_sim"] = True
         self.sinc_timer.stop()
         return super().closeEvent(event)
+    
+    def alterar_perda_grade(self):
+        self.dict["TDA"]["perda_grade"] = float(self.lineEdit_perda_grade.text().replace(",", "."))
+
+    def alterar_nv_montante_teste(self):
+        self.dict["TDA"]["nv_montante_teste"] = float(self.lineEdit_teste_montante.text().replace(",", "."))
 
     def mudar_q_afluente(self):
         self.dict["TDA"]["q_alfuente"] = (10 ** (self.horizontalSlider_q_afluente.value() / 75) - 1) * 2

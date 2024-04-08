@@ -24,6 +24,8 @@ class Tda:
     def passo(self) -> 'None':
         self.calcular_vazao()
         self.calcular_enchimento_reservatorio()
+        print(f"Perda na Grade -> {self.dict['TDA']['perda_grade']:0.2f}")
+        print(f"Nível Montante Teste -> {self.dict['TDA']['nv_montante_teste']:0.2f}")
 
 
     def calcular_volume_montante(self, volume) -> 'float':
@@ -69,3 +71,5 @@ class Tda:
     def atualizar_modbus(self) -> 'None':
         DB.set_words(REG_TDA['NV_MONTANTE_GRADE'], [int((self.dict['TDA']['nv_montante'] - 800) * 1000)])
         DB.set_words(REG_TDA['NV_JUSANTE_GRADE'], [round((self.dict['TDA']['nv_jusante_grade']) * 1000)])
+        DB.set_words(REG_TDA['DIFERENCIAL_GRADE'], [int(self.dict['TDA']['perda_grade'] * 100)])
+        DB.set_words(REG_TDA['NV_MONTANTE_TESTE'], [int((self.dict['TDA']['nv_montante_teste'] - 800) * 1000)])

@@ -27,8 +27,11 @@ compartilhado = {
         "q_sanitaria": 0,
         "q_vertimento": 0,
 
+        "perda_grade": 0,
+
         "nv_montante": 821,
         "nv_jusante_grade": 0,
+        "nv_montante_teste": 0,
     },
 
     "SE": {

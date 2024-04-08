@@ -11,8 +11,8 @@ class Leitura:
 
         try:
             raw = DB.get_words(int(reg[0]), 2)
-            dec_1 = BPD.fromRegisters(raw, byteorder=Endian.Big, wordorder=Endian.Little)
-            dec_2 = BPD.fromRegisters(raw, byteorder=Endian.Big, wordorder=Endian.Little)
+            dec_1 = BPD.fromRegisters(raw, byteorder=Endian.BIG, wordorder=Endian.LITTLE)
+            dec_2 = BPD.fromRegisters(raw, byteorder=Endian.BIG, wordorder=Endian.LITTLE)
 
             lbit = [int(bit) for bits in [reversed(dec_1.decode_bits(1)), reversed(dec_2.decode_bits(2))] for bit in bits]
 
