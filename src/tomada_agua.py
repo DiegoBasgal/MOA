@@ -16,7 +16,7 @@ import src.conectores.servidores as serv
 
 from datetime import datetime
 
-from src.dicionarios.reg import *
+from src.dicionarios.reg_elipse import *
 from src.dicionarios.const import *
 
 
@@ -31,12 +31,12 @@ class TomadaAgua:
 
     nv_montante = lei.LeituraModbusFloat(
         serv.Servidores.clp["TDA"],
-        REG_TDA["NV_MONTANTE_GRADE"],
+        REG_TDA["NIVEL_MONTANTE_GRADE"],
         descricao="[TDA] Nível Montante"
     )
     nv_jusante = lei.LeituraModbusFloat(
         serv.Servidores.clp["TDA"],
-        REG_TDA["NV_JUSANTE_GRADE"],
+        REG_TDA["NIVEL_JUSANTE_GRADE"],
         descricao="[TDA] Nível Jusante Grade"
     )
 
@@ -54,8 +54,9 @@ class TomadaAgua:
 
     @classmethod
     def atualizar_valores_montante(cls) -> "None":
+        l_nivel = cls.nv_montante.valor
 
-        cls.nv_montante_recente = cls.nv_montante.valor if 820 < cls.nv_montante.valor < 825 else cls.nv_montante_recente
+        cls.nv_montante_recente = l_nivel if 820 < l_nivel < 825 else cls.nv_montante_recente
         cls.erro_nv_anterior = cls.erro_nv
         cls.erro_nv = cls.nv_montante_recente - cls.cfg["nv_alvo"]
 
@@ -147,8 +148,8 @@ class TomadaAgua:
         """
 
         cls.l_diferencial_grade = lei.LeituraSubtracao([cls.nv_montante, cls.nv_jusante], descricao="[TDA] Diferencial de Grade")
-        cls.c_diferencial_grade = c.CondicionadorExponencial(cls.l_diferencial_grade, CONDIC_INDISPONIBILIZAR, valor_base=0.35, valor_limite=0.4, ordem=1/4)
+        cls.c_diferencial_grade = c.CondicionadorExponencial(cls.l_diferencial_grade, CONDIC_INDISPONIBILIZAR, valor_base=0.35, valor_limite=0.4, ordem=1)
         cls.condicionadores_atenuadores.append(cls.c_diferencial_grade)
 
-        cls.l_nv_montante_baixo = lei.LeituraModbusBit(serv.Servidores.clp["TDA"], REG_TDA["NV_MONTANTE_GRADE_BAIXO"], descricao="[TDA] Nível Montante Baixo")
-        cls.l_nv_montante_muito_baixo = lei.LeituraModbusBit(serv.Servidores.clp["TDA"], REG_TDA["NV_MONTANTE_GRADE_MUITO_BAIXO"], descricao="[TDA] Nível Montante Muito Baixo")
+        cls.l_nv_montante_baixo = lei.LeituraModbusBit(serv.Servidores.clp["TDA"], REG_TDA["NIVEL_MONTANTE_GRADE_BAIXO"], descricao="[TDA] Nível Montante Baixo")
+        cls.l_nv_montante_muito_baixo = lei.LeituraModbusBit(serv.Servidores.clp["TDA"], REG_TDA["NIVEL_MONTANTE_GRADE_MUITO_BAIXO"], descricao="[TDA] Nível Montante Muito Baixo")

@@ -82,42 +82,42 @@ REG_SASE = {
     ### COMANDOS
     ## CMD_SA_SE
     # Rearme
-    "CMD_REARME_FALHAS":                                                                [12289, 0],
+    "CMD_REARME_FALHAS":                                                                [12288, 0],
 
     # Poço Drenagem
-    "CMD_PD_BOMBA_1_PRINC":                                                             [12289, 1],
-    "CMD_PD_BOMBA_2_PRINC":                                                             [12289, 2],
+    "CMD_PD_BOMBA_1_PRINC":                                                             [12288, 1],
+    "CMD_PD_BOMBA_2_PRINC":                                                             [12288, 2],
 
     # Disjuntores
-    "CMD_DJ_TSA_ABRE":                                                                  [12289, 13],
-    "CMD_DJ_TSA_FECHA":                                                                 [12289, 14],
-    "CMD_DJ_GMG_ABRE":                                                                  [12289, 15],
-    "CMD_DJ_GMG_FECHA":                                                                 [12288, 0],
-    "CMD_DJ_LINHA_FECHA":                                                               [12288, 1],
-    "CMD_DJ_LINHA_ABRE":                                                                [12288, 2],
+    "CMD_DJ_TSA_ABRE":                                                                  [12288, 13],
+    "CMD_DJ_TSA_FECHA":                                                                 [12288, 14],
+    "CMD_DJ_GMG_ABRE":                                                                  [12288, 15],
+    "CMD_DJ_GMG_FECHA":                                                                 [12289, 0],
+    "CMD_DJ_LINHA_FECHA":                                                               [12289, 1],
+    "CMD_DJ_LINHA_ABRE":                                                                [12289, 2],
 
     # Sistema Filtragem
-    "CMD_SFA_COMUTA_ELEM":                                                              [12288, 3],
-    "CMD_SFA_AUTOMATICO":                                                               [12288, 4],
-    "CMD_SFA_MANUAL":                                                                   [12288, 5],
-    "CMD_SFB_MANUAL":                                                                   [12288, 8],
-    "CMD_SFB_AUTOMATICO":                                                               [12288, 9],
-    "CMD_SFB_COMUTA_ELEM":                                                              [12288, 10],
+    "CMD_SFA_COMUTA_ELEM":                                                              [12289, 3],
+    "CMD_SFA_AUTOMATICO":                                                               [12289, 4],
+    "CMD_SFA_MANUAL":                                                                   [12289, 5],
+    "CMD_SFB_MANUAL":                                                                   [12289, 8],
+    "CMD_SFB_AUTOMATICO":                                                               [12289, 9],
+    "CMD_SFB_COMUTA_ELEM":                                                              [12289, 10],
 
 
 
     ### STATUS
     ## SST_ENTRAS_DIGITAIS_0
     # Botão
-    "BT_REARME_FALHAS_PSA":                                                             [12309, 0],
-    "BT_BLOQ_86BTBF":                                                                   [12309, 1],
+    "BT_REARME_FALHAS_PSA":                                                             [12308, 0],
+    "BT_BLOQ_86BTBF":                                                                   [12308, 1],
 
     # Poço Drenagem
     "PD_BOMBA_1_AUTOMATICO":                                                            [12308, 2],
     "PD_BOMBA_2_ATUTOMATICO":                                                           [12308, 3],
-    "PD_BOMBA_1_DEFEITO":                                                               [12308, 13],
-    "PD_BOMBA_1_LIGADA":                                                                [12308, 14],
-    "PD_BOMBA_2_DEFEITO":                                                               [12308, 15],
+    "PD_BOMBA_1_DEFEITO":                                                               [12309, 13],
+    "PD_BOMBA_1_LIGADA":                                                                [12309, 14],
+    "PD_BOMBA_2_DEFEITO":                                                               [12309, 15],
 
     "PD_BOMBA_2_LIGADA":                                                                [12309, 0],
     "PD_SENS_NV_MUITO_BAIXO":                                                           [12309, 5],

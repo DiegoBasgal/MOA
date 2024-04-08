@@ -1,5 +1,5 @@
 {
-    "kp": 1.0,
+    "kp": 3.0,
     "ki": 0.05,
     "kd": 0.0,
     "kie": 0.1,
@@ -13,6 +13,6 @@
     "pot_maxima_ug2": 500.0,
     "pot_maxima_alvo": 1000.0,
     "pot_maxima_usina": 1000.0,
-    "margem_pot_critica": 0.35,
+    "margem_pot_critica": 0.25,
     "nv_religamento": 820.85
 }
