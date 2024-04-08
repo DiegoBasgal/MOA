@@ -159,9 +159,11 @@ class Adufas:
 
             if self.manual or self._estado == ADCP_MANUAL:
                 self.estado == ADCP_MANUAL
+                self.setpoint = self.posicao
                 return
 
             elif self.estado == ADCP_INDISPONIVEL:
+                self.setpoint = self.posicao
                 return
 
             else:

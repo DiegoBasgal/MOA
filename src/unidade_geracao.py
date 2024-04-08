@@ -148,6 +148,7 @@ class UnidadeGeracao:
         self.operar_comporta: "bool" = False
         self.borda_cp_fechar: "bool" = False
         self.temporizar_partida: "bool" = False
+        self.timeout_sincronismo: "bool" = False
         self.aguardar_pressao_cp: "bool" = False
         self.normalizacao_agendada: "bool" = False
         self.temporizar_normalizacao: "bool" = False
@@ -475,6 +476,9 @@ class UnidadeGeracao:
             logger.debug(f"[UG{self.id}] Step  -> Unidade:                   \"{UG_SM_STR_DCT[self.codigo_state]}\"")
             logger.debug(f"[UG{self.id}]          Etapa:                     \"{UG_STR_DCT_ETAPAS[self.etapa]}\"") # (Atual: {self.etapa_atual} | Alvo: {self.etapa_alvo})
 
+            if self.timeout_sincronismo:
+                self.normalizar_unidade()
+
             if self.etapa == UG_SINCRONIZADA:
                 logger.debug(f"[UG{self.id}]          Leituras de Potência:")
                 logger.debug(f"[UG{self.id}]          - \"Ativa\":                 {self.leitura_potencia} kW")
@@ -723,7 +727,8 @@ class UnidadeGeracao:
         tenha passado, será chamada a função de forçar estado indisponível, senão
         aciona a função de reconhecimento e reset de alarmes da Unidade.
         """
-        debug_log.info(f"[UG{self.id}] Entrei Aqui No Normalizar")
+
+        self.timeout_sincronismo = False
 
         if self.tentativas_normalizacao > self.limite_tentativas_normalizacao:
             logger.warning(f"[UG{self.id}] A UG estourou as tentativas de normalização, indisponibilizando Unidade.")
@@ -766,13 +771,17 @@ class UnidadeGeracao:
         senão, é enviado o comando de parada de emergência para a Unidade.
         """
 
+        delay = time() + 600
+
         logger.debug(f"[UG{self.id}]          Verificação MOA:           \"Temporização de Sincronismo\"")
-        while time() < time() + 600:
+        while time() < delay:
             if not self.temporizar_partida:
                 return
 
-        logger.warning(f"[UG{self.id}]          Verificação MOA:          \"Acionar emergência por timeout de Sincronismo\"")
-        self.clp[f"UG{self.id}"].write_single_register(REG_UG[f"UG{self.id}"]["CMD_OPER_EMERGENCIA_LIGAR"], 1)
+        logger.warning(f"[UG{self.id}]          Verificação MOA:          \"A unidade ultrapassou o tempo limite de Sincronismo.\"")
+        logger.info(f"[UG{self.id}]                                    Retornando para etapa UPGM e realizando uma nova tentativa de Sincronismo")
+        self.clp[f"UG{self.id}"].write_single_register(REG_UG[f"UG{self.id}"]["CMD_OPER_UPGM"], 1)
+        self.timeout_sincronismo = True
         self.temporizar_partida = False
         sleep(1)
 
