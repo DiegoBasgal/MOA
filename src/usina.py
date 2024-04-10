@@ -245,6 +245,7 @@ class Usina:
 
     def verificar_leituras_periodicas(self) -> "None":
         try:
+            sleep(5)
             logger.debug("[USN] Iniciando o timer de leitura periódica...")
 
             while True:

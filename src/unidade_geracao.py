@@ -481,8 +481,8 @@ class UnidadeDeGeracao:
                 logger.info(f"[UG{self.id}]          Enviando comando:          \"PARTIDA\"")
 
                 esc.EscritaModBusBit.escrever_bit(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}"]["CMD_REARME_FALHAS"], valor=1)
-                esc.EscritaModBusBit.escrever_bit(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}"]["CMD_SINCRONISMO"], valor=1)
-                # self.clp[f"UG{self.id}"].write_single_register(REG_UG[f"UG{self.id}"]["CMD_SINCRONISMO"][0], int(128))
+                # esc.EscritaModBusBit.escrever_bit(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}"]["CMD_SINCRONISMO"], valor=1)
+                self.clp[f"UG{self.id}"].write_single_register(REG_UG[f"UG{self.id}"]["CMD_SINCRONISMO"][0], int(128))
 
         except Exception:
             logger.error(f"[UG{self.id}] Não foi possível partir a Unidade.")
@@ -495,7 +495,7 @@ class UnidadeDeGeracao:
                 logger.info(f"[UG{self.id}]          Enviando comando:          \"PARADA\"")
                 self.enviar_setpoint(0)
                 res = esc.EscritaModBusBit.escrever_bit(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}"]["CMD_PARADA_TOTAL"], valor=1)
-                return res
+                return True
 
         except Exception:
             logger.error(f"[UG{self.id}] Não foi possível parar a Unidade.")
@@ -543,7 +543,7 @@ class UnidadeDeGeracao:
         try:
             logger.debug(f"[UG{self.id}]          Enviando comando:          \"TRIP LÓGICO\"")
             res = esc.EscritaModBusBit.escrever_bit(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}"]["CMD_COMANDO_PARADA_DE_EMERGENCIA"], valor=1)
-            return res
+            return True
 
         except Exception:
             logger.error(f"[UG{self.id}] Não foi possivel acionar o comando de TRIP: \"Lógico\".")
@@ -904,393 +904,375 @@ class UnidadeDeGeracao:
         de acionamento temporizado.
         """
 
-        return
         # WHATSAPP
         if self.l_rt_selec_modo_controle_isol.valor:
-            logger.warning(f"[UG{self.id}] Foi identificado o comando no RT de seleção de modo de controle isolado, favor verificar.")
-
-        if self.l_alarme_rele.valor:
-            logger.warning(f"[UG{self.id}] Foi identificado uma leitura de alarme do relé, favor verificar.")
-
-        if self.l_rv_alarme.valor:
-            logger.warning(f"[UG{self.id}] Foi identificado uma leitura de alarme do RV, favor verificar.")
+            logger.warning(f"[UG{self.id}] O comando de Modo de Controle Isolado do RT foi ativado. Favor verificar.")
 
         if self.l_rv_pot_nula.valor:
-            logger.warning(f"[UG{self.id}] Foi identificado uma leitura de potência nula no RV, favor verificar.")
+            logger.warning(f"[UG{self.id}] Leitura de Potência Nula no RV identificada. Favor verificar.")
 
-        if self.l_rt_alarme.valor:
-            logger.warning(f"[UG{self.id}] Foi identificado uma leitura de alarme no RT, favor verificar.")
-
-        if self.l_dispo_prot_surto.valor:
-            logger.warning(f"[UG{self.id}] Foi identificado uma leitura do dispositivo de proteção de surto, favor verificar.")
+        if not self.l_dispo_prot_surto.valor:
+            logger.warning(f"[UG{self.id}] O Dispositivo de Proteção de Surto foi ativado! Favor verificar.")
 
         if self.l_uhrv_bomba_defeito.valor:
-            logger.warning(f"[UG{self.id}] Foi identificado um defeito na bomba da UHRV, favor verificar.")
+            logger.warning(f"[UG{self.id}] Defeito na Bomba da UHRV identificado! Favor verificar.")
 
         if self.l_uhlm_bomba_defeito.valor:
-            logger.warning(f"[UG{self.id}] Foi identificado um defeito na bomba da UHLM, favor verificar.")
+            logger.warning(f"[UG{self.id}] Defeito na Bomba da UHLM identificado! Favor verificar.")
 
         if self.l_resis_aquec_gerad_defeito.valor:
-            logger.warning(f"[UG{self.id}] Foi identificado um defeito com a resistência do aquecedor do Gerador, favor verificar.")
+            logger.warning(f"[UG{self.id}] Defeito na Resistência do Aquecedor do Gerador identificado! Favor verificar.")
 
         if self.l_tristores_temp_alta.valor:
-            logger.warning(f"[UG{self.id}] Foi identificado que a temperatura de Tristores está alta, favor verificar.")
+            logger.warning(f"[UG{self.id}] A temperatura de Tristores está Alta. Favor verificar.")
 
         if self.l_crowbar_temp_alta.valor:
-            logger.warning(f"[UG{self.id}] Foi identificado que a temperatura do Crowbar está alta, favor verificar.")
+            logger.warning(f"[UG{self.id}] A temperatura do Crowbar está Alta. Favor verificar.")
 
-        if self.l_trafo_exci_temp_alta.valor:
-            logger.warning(f"[UG{self.id}] Foi identificado que a temperatura do Transformador de Excitação está alta, favor verificar.")
+        # if self.l_trafo_exci_temp_alta.valor:
+        #     logger.warning(f"[UG{self.id}] A temperatura do Transformador de Excitação está Alta. favor verificar.")
 
         if self.l_uhrv_oleo_temp_alta.valor:
-            logger.warning(f"[UG{self.id}] Foi identificado que a temperatura do Óleo da UHRV está alta, favor verificar.")
+            logger.warning(f"[UG{self.id}] A temperatura do Óleo da UHRV está Alta. Favor verificar.")
 
         if self.l_gerad_fase_a_temp_alta.valor:
-            logger.warning(f"[UG{self.id}] Foi identificado que a temperatura de Fase A do Gerador está alta, favor verificar.")
+            logger.warning(f"[UG{self.id}] A temperatura de Fase A do Gerador está Alta. Favor verificar.")
 
         if self.l_gerad_fase_b_temp_alta.valor:
-            logger.warning(f"[UG{self.id}] Foi identificado que a temperatura de Fase B do Gerador está alta, favor verificar.")
+            logger.warning(f"[UG{self.id}] A temperatura de Fase B do Gerador está Alta. Favor verificar.")
 
         if self.l_gerad_fase_c_temp_alta.valor:
-            logger.warning(f"[UG{self.id}] Foi identificado que a temperatura de Fase C do Gerador está alta, favor verificar.")
+            logger.warning(f"[UG{self.id}] A temperatura de Fase C do Gerador está Alta. Favor verificar.")
 
         if self.l_gerad_nucleo_1_temp_alta.valor:
-            logger.warning(f"[UG{self.id}] Foi identificado que a temperatura do Núcleo 1 do Gerador está alta, favor verificar.")
+            logger.warning(f"[UG{self.id}] A temperatura do Núcleo 1 do Gerador está Alta. Favor verificar.")
 
         if self.l_gerad_nucleo_2_temp_alta.valor:
-            logger.warning(f"[UG{self.id}] Foi identificado que a temperatura do Núcleo 2 do Gerador está alta, favor verificar.")
+            logger.warning(f"[UG{self.id}] A temperatura do Núcleo 2 do Gerador está Alta. Favor verificar.")
 
         if self.l_gerad_nucleo_3_temp_alta.valor:
-            logger.warning(f"[UG{self.id}] Foi identificado que a temperatura do Núcleo 3 do Gerador está alta, favor verificar.")
+            logger.warning(f"[UG{self.id}] A temperatura do Núcleo 3 do Gerador está Alta. Favor verificar.")
 
         if self.l_mancal_guia_casq_temp_alta.valor:
-            logger.warning(f"[UG{self.id}] Foi identificado que a temperatura do Mancal Guia Casquilho está alta, favor verificar.")
+            logger.warning(f"[UG{self.id}] A temperatura do Mancal Guia Casquilho está Alta. Favor verificar.")
 
         if self.l_mancal_comb_casq_temp_alta.valor:
-            logger.warning(f"[UG{self.id}] Foi identificado que a temperatura do Mancal Combinado Casquilho está alta, favor verificar.")
+            logger.warning(f"[UG{self.id}] A temperatura do Mancal Combinado Casquilho está Alta. Favor verificar.")
 
         if self.l_mancal_comb_esc_temp_alta.valor:
-            logger.warning(f"[UG{self.id}] Foi identificado que a temperatura do Mancal Combinado Escora está alta, favor verificar.")
+            logger.warning(f"[UG{self.id}] A temperatura do Mancal Combinado Escora está Alta. Favor verificar.")
 
         if self.l_falha_leit_nv_jusante.valor:
-            logger.warning(f"[UG{self.id}] Foi identificado uma falha na leitura do Nível Jusante, favor verificar.")
+            logger.warning(f"[UG{self.id}] Falha na leitura de Nível Jusante identificada. Favor verificar.")
 
         if self.l_sinal_nv_jusante_muito_alto.valor:
-            logger.warning(f"[UG{self.id}] Foi identificado que o Nível Jusante está muito alto, favor verificar.")
+            logger.warning(f"[UG{self.id}] Sinal de Nível Jusante Muito Alto identificado. Favor verificar.")
 
         if self.l_sinal_nv_jusante_alto.valor:
-            logger.warning(f"[UG{self.id}] Foi identificado que o Nível Jusante está alto, favor verificar.")
+            logger.warning(f"[UG{self.id}] Sinal de Nível Jusante Alto identificado. Favor verificar.")
 
         if self.l_uhrv_pressao_oleo_baixa.valor:
-            logger.warning(f"[UG{self.id}] Foi identificado que a pressão do óleo da UHRV está baixa, favor verificar.")
-
-        if self.l_sinal_nv_jusante_baixo.valor:
-            logger.warning(f"[UG{self.id}] Foi identificado que o Nível Jusante está baixo, favor verificar.")
+            logger.warning(f"[UG{self.id}] Sinal de Pressão Baixa do óleo da UHRV identificada. Favor verificar.")
 
         if self.l_uhrv_pressao_oleo_muito_baixa.valor:
-            logger.warning(f"[UG{self.id}] Foi identificado que a pressão do óleo da UHRV está muito baixa, favor verificar.")
+            logger.warning(f"[UG{self.id}] Sinal de Pressão Muito Baixa do óleo da UHRV identificada. Favor verificar.")
 
         if self.l_sinal_nv_jusante_muito_baixo.valor:
-            logger.warning(f"[UG{self.id}] Foi identificado que o Nível Jusante está muito baixo, favor verificar.")
-
-        if self.l_alarme_contro_dif_grade.valor:
-            logger.warning(f"[UG{self.id}] Foi identificado uma leitura de alarme do controle de diferencial de grade, favor verificar.")
-
-        if self.l_resis_aquec_gerad_indisp.valor:
-            logger.warning(f"[UG{self.id}] Foi identificado que a resistência do aquecedor do gerador está indisponível, favor verificar.")
+            logger.warning(f"[UG{self.id}] Sinal de Nível Jusante Muito Baixo identificado. Favor verificar.")
 
         if self.l_uhlm_unidade_manut.valor:
-            logger.warning(f"[UG{self.id}] Foi identificado que a UHLM entrou em modo de manutenção, favor verificar.")
+            logger.warning(f"[UG{self.id}] A UHLM entrou em modo de Manutenção. Favor verificar.")
 
         if self.l_rv_modo_manut.valor:
-            logger.warning(f"[UG{self.id}] Foi identificado que o RV entrou em modo de manutenção, favor verificar.")
+            logger.warning(f"[UG{self.id}] O RV entrou em modo de Manutenção. Favor verificar.")
 
         if self.l_rv_girando_gir_indev.valor:
-            logger.warning(f"[UG{self.id}] Foi identificado que o Rv está girando com giro indevido, favor verificar.")
+            logger.warning(f"[UG{self.id}] Sinal do RV Girando Sem Regulação ou Giro Indevido. Favor verificar.")
 
         if self.l_rt_alar_1_sobretensao.valor:
-            logger.warning(f"[UG{self.id}] Foi identificado o acionamento do alarme 1 de sobretensão do RT, favor verificar.")
+            logger.warning(f"[UG{self.id}] Alarme de Sobretensão do RT identificado. Favor verificar.")
 
         if self.l_rt_alar_1_subtensao.valor:
-            logger.warning(f"[UG{self.id}] Foi identificado o acionamento do alarme 1 de subtensão do RT, favor verificar.")
+            logger.warning(f"[UG{self.id}] Alarme de Subtensão do RT identificado. Favor verificar.")
 
         if self.l_rt_alar_1_sobrefrequencia.valor:
-            logger.warning(f"[UG{self.id}] Foi identificado o acionamento do alarme 1 de sobrefrequência do RT, favor verificar.")
+            logger.warning(f"[UG{self.id}] Alarme de Sobrefrequência do RT identificado. Favor verificar.")
 
         if self.l_rt_alar_1_subfrequencia.valor:
-            logger.warning(f"[UG{self.id}] Foi identificado o acionamento do alarme 1 de subfrequência do RT, favor verificar.")
+            logger.warning(f"[UG{self.id}] Alarme de Subfrequência do RT identificado. Favor verificar.")
 
         if self.l_rt_alar_1_lim_sup_pot_reativa.valor:
-            logger.warning(f"[UG{self.id}] Foi identificado o acionamento do alarme 1 limite superior de potência reativa do RT, favor verificar.")
+            logger.warning(f"[UG{self.id}] Alarme de Limite Superior de Potência Reativa do RT identificado. Favor verificar.")
 
         if self.l_rt_alar_1_lim_inf_pot_reativa.valor:
-            logger.warning(f"[UG{self.id}] Foi identificado o acionamento do alarme 1 limite inferior de potência reativa do RT, favor verificar.")
+            logger.warning(f"[UG{self.id}] Alarme de Limite Inferior de Potência Reativa do RT identificado. Favor verificar.")
 
         if self.l_rt_alar_1_lim_sup_fator_pot.valor:
-            logger.warning(f"[UG{self.id}] Foi identificado o acionamento do alarme 1 limite superior de fator de potência do RT, favor verificar.")
+            logger.warning(f"[UG{self.id}] Alarme de Limite Superior de Fator de Potência do RT identificado. Favor verificar.")
 
         if self.l_rt_alar_1_lim_inf_fator_pot.valor:
-            logger.warning(f"[UG{self.id}] Foi identificado o acionamento do alarme 1 limite inferior de fator de potência do RT, favor verificar.")
+            logger.warning(f"[UG{self.id}] Alarme de Limite Inferior de Fator de Potência do RT identificado. Favor verificar.")
 
         if self.l_rt_alar_1_variacao_tensao.valor:
-            logger.warning(f"[UG{self.id}] Foi identificado o acionamento do alarme 1 variação de tensao do RT, favor verificar.")
+            logger.warning(f"[UG{self.id}] Alarme de Variação de Tensão do RT identificado. Favor verificar.")
 
         if self.l_rt_alar_1_pot_ativa_reversa.valor:
-            logger.warning(f"[UG{self.id}] Foi identificado o acionamento do alarme 1 potência ativa reversa do RT, favor verificar.")
+            logger.warning(f"[UG{self.id}] Alarme de Potência Ativa Reversa do RT identificado. Favor verificar.")
 
         if self.l_rt_alar_1_sobrecorr_term.valor:
-            logger.warning(f"[UG{self.id}] Foi identificado o acionamento do alarme 1 sobrecorrente terminal do RT, favor verificar.")
+            logger.warning(f"[UG{self.id}] Alarme de Sobrecorrente Terminal do RT. Favor verificar.")
 
         if self.l_rt_alar_1_lim_sup_corr_excitacao.valor:
-            logger.warning(f"[UG{self.id}] Foi identificado o acionamento do alarme 1 limite superior corrente de excitação do RT, favor verificar.")
+            logger.warning(f"[UG{self.id}] Alarme de Limite Superior de Corrente de Excitação do RT identificado. Favor verificar.")
 
         if self.l_rt_alar_1_lim_inf_corr_exci.valor:
-            logger.warning(f"[UG{self.id}] Foi identificado o acionamento do alarme 1 limite inferior corrente de excitação do RT, favor verificar.")
+            logger.warning(f"[UG{self.id}] Alarme de Limite Inferior de Corrente de Excitação do RT identificado. Favor verificar.")
 
         if self.l_rt_alar_1_temp_muito_alta_rotor.valor:
-            logger.warning(f"[UG{self.id}] Foi identificado o acionamento do alarme 1 temperatura muito alta do rotor do RT, favor verificar.")
-
-        if self.l_rt_alar_1_pres_tens_term_aus_corr_exci.valor:
-            logger.warning(f"[UG{self.id}] Foi identificado o acionamento do alarme 1 presença de tensão terminal e ausência de corrente de excitação no RT, favor verificar.")
+            logger.warning(f"[UG{self.id}] Alarme de Temperatura Muito Alta do Rotor do RT identificado. Favor verificar.")
 
         if self.l_rt_alar_1_pres_corr_exci_aus_tens_term.valor:
-            logger.warning(f"[UG{self.id}] Foi identificado o acionamento do alarme 1 presença de corrente de excitação e ausenência de tensão terminal no RT, favor verificar.")
+            logger.warning(f"[UG{self.id}] Alarme de Presença de Corrente de Excitação e Ausenência de Tensão Terminal do RT identificado. Favor verificar.")
 
         if self.l_rt_alar_2_falha_contro_corr_exci.valor:
-            logger.warning(f"[UG{self.id}] Foi identificado o acionamento do alarme 2 falha de controle de corrente de excitação do RT, favor verificar.")
+            logger.warning(f"[UG{self.id}] Alarme de Falha de Controle de Corrente de Excitação do RT identificado. Favor verificar.")
 
         if self.l_rt_alar_2_falha_contro_tens_term.valor:
-            logger.warning(f"[UG{self.id}] Foi identificado o acionamento do alarme 2 falha de controle de tensão terminal do RT, favor verificar.")
+            logger.warning(f"[UG{self.id}] Alarme de Falha de Controle de Tensão Terminal do RT identificado. Favor verificar.")
 
         if self.l_uhrv_oleo_nv_muito_baixo.valor:
-            logger.warning(f"[UG{self.id}] Foi identificado que o óleo da UHRV está com o nível muito baixo, favor verificar.")
+            logger.warning(f"[UG{self.id}] Sinal de Nível de Óleo Muito Baixo da UHRV identificado. Favor verificar.")
 
         if self.l_uhrv_filtro_oleo_sujo.valor:
-            logger.warning(f"[UG{self.id}] Foi identificado que o filtro de óleo da UHRV está sujo, favor verificar.")
-
-        if self.l_urhv_press_crit.valor:
-            logger.warning(f"[UG{self.id}] Foi identificado que a pressão da UHRV está em nível crítico, favor verificar.")
+            logger.warning(f"[UG{self.id}] Sinal de Filtro de Óleo Sujo da UHRV identifcado. Favor verificar.")
 
         if self.l_uhrv_oleo_nv_muito_alto.valor:
-            logger.warning(f"[UG{self.id}] Foi identificado que o óleo da UHRV está com o nível muito alto, favor verificar.")
+            logger.warning(f"[UG{self.id}] Sinal de Nível de Óleo Muito Alto da UHRV identificado. Favor verificar.")
 
         if self.l_uhlm_oleo_nv_muito_baixo.valor:
-            logger.warning(f"[UG{self.id}] Foi identificado que o óleo da UHLM está com o nível muito baixo, favor verificar.")
+            logger.warning(f"[UG{self.id}] Sinal de Nível de Óleo Muito Baixo da UHLM identificado. Favor verificar.")
 
         if self.l_uhlm_press_linha_lubrifi.valor:
-            logger.warning(f"[UG{self.id}] Foi identificado a falta de pressão de lubrificação de linha da UHLM, favor verificar.")
-
-        if self.l_uhlm_fluxo_troc_calor.valor:
-            logger.warning(f"[UG{self.id}] Foi identificado a falta de fluxo do trocador de calor da UHLM, favor verificar.")
+            logger.warning(f"[UG{self.id}] Sinal de Falta de Pressão de Lubrificação de Linha na UHLM identificada. Favor verificar.")
 
         if self.l_qbag_escova_polo_pos_desgas.valor:
-            logger.warning(f"[UG{self.id}] Foi identificado que a escova do polo positivo QBAG está desgastada, favor verificar.")
+            logger.warning(f"[UG{self.id}] Sinal de Desgaste da Escova do Polo Positivo QBAG identificado. Favor verificar.")
 
         if self.l_qbag_escova_polo_neg_desgas.valor:
-            logger.warning(f"[UG{self.id}] Foi identificado que a escova do polo negativo QBAG está desgastada, favor verificar.")
+            logger.warning(f"[UG{self.id}] Sinal de Desgaste da Escova do Polo Negativo QBAG identificado. Favor verificar.")
 
         if self.l_tristor_temp_muito_alta.valor:
-            logger.warning(f"[UG{self.id}] Foi identificado que a temperatura de Tristores está muito alta, favor verificar.")
+            logger.warning(f"[UG{self.id}] A temperatura de Tristores está Muito Alta. Favor verificar.")
 
         if self.l_crowbar_temp_muito_alta.valor:
-            logger.warning(f"[UG{self.id}] Foi identificado que a temperatura do Crowbar está muito alta, favor verificar.")
+            logger.warning(f"[UG{self.id}] A temperatura do Crowbar está Muito Alta. Favor verificar.")
 
-        if self.l_trafo_exci_temp_muito_alta.valor:
-            logger.warning(f"[UG{self.id}] Foi identificado que a temperatura do Transformado de excitação está muito alta, favor verificar.")
+        # if self.l_trafo_exci_temp_muito_alta.valor:
+        #     logger.warning(f"[UG{self.id}] A temperatura do Transformador de Excitação está Muito Alta. Favor verificar.")
 
         if self.l_uhrv_temp_oleo_muito_alta.valor:
-            logger.warning(f"[UG{self.id}] Foi identificado que a temperatura do óleo da UHRV está muito alta, favor verificar.")
+            logger.warning(f"[UG{self.id}] A temperatura do Óleo da UHRV está Muito Alta. Favor verificar.")
 
         if self.l_gera_fase_a_temp_muito_alta.valor:
-            logger.warning(f"[UG{self.id}] Foi identificado que a temperatura de Fase A do Gerador está muito alta, favor verificar.")
+            logger.warning(f"[UG{self.id}] A temperatura de Fase A do Gerador está Muito Alta. Favor verificar.")
 
         if self.l_gera_fase_b_temp_muito_alta.valor:
-            logger.warning(f"[UG{self.id}] Foi identificado que a temperatura de Fase B do Gerador está muito alta, favor verificar.")
+            logger.warning(f"[UG{self.id}] A temperatura de Fase B do Gerador está Muito Alta. Favor verificar.")
 
         if self.l_gera_fase_c_temp_muito_alta.valor:
-            logger.warning(f"[UG{self.id}] Foi identificado que a temperatura de Fase C do Gerador está muito alta, favor verificar.")
+            logger.warning(f"[UG{self.id}] A Temperatura de Fase C do Gerador está Muito Alta. Favor verificar.")
 
         if self.l_gera_nucleo_1_temp_muito_alta.valor:
-            logger.warning(f"[UG{self.id}] Foi identificado que a temperatura do Núcleo 1 do Gerador está muito alta, favor verificar.")
+            logger.warning(f"[UG{self.id}] A Temperatura do Núcleo 1 do Gerador está Muito Alta. Favor verificar.")
 
         if self.l_gera_nucleo_2_temp_muito_alta.valor:
-            logger.warning(f"[UG{self.id}] Foi identificado que a temperatura do Núcleo 2 do Gerador está muito alta, favor verificar.")
+            logger.warning(f"[UG{self.id}] A Temperatura do Núcleo 2 do Gerador está Muito Alta. Favor verificar.")
 
         if self.l_gera_nucleo_3_temp_muito_alta.valor:
-            logger.warning(f"[UG{self.id}] Foi identificado que a temperatura do Núcleo 3 do Gerador está muito alta, favor verificar.")
+            logger.warning(f"[UG{self.id}] A Temperatura do Núcleo 3 do Gerador está Muito Alta. Favor verificar.")
 
         if self.l_mancal_guia_casq_temp_muito_alta.valor:
-            logger.warning(f"[UG{self.id}] Foi identificado que a temperatura do Mancal Guia Casquilho está muito alta, favor verificar.")
+            logger.warning(f"[UG{self.id}] A Temperatura do Mancal Guia Casquilho está Muito Alta. Favor verificar.")
 
         if self.l_mancal_comb_casq_temp_muito_alta.valor:
-            logger.warning(f"[UG{self.id}] Foi identificado que a temperatura do Mancal Combinado Casquilho está muito alta, favor verificar.")
+            logger.warning(f"[UG{self.id}] A Temperatura do Mancal Combinado Casquilho está Muito Alta. Favor verificar.")
 
         if self.l_mancal_comb_esc_temp_muito_alta.valor:
-            logger.warning(f"[UG{self.id}] Foi identificado que a temperatura do Mancal Combinado Escora está muito alta, favor verificar.")
+            logger.warning(f"[UG{self.id}] A Temperatura do Mancal Combinado Escora está Muito Alta. Favor verificar.")
 
         if self.l_uhrv_press_oleo_falha_leitura.valor:
-            logger.warning(f"[UG{self.id}] Foi identificado uma falha na leitura de pressão do óleo da UHRV, favor verificar.")
+            logger.warning(f"[UG{self.id}] Sinal de Falha na leitura de Pressão do Óleo da UHRV identificado. Favor verificar.")
 
         if self.l_uhrv_press_oleo_muito_alta.valor:
-            logger.warning(f"[UG{self.id}] Foi identificado que a pressão do óleo da UHRV está muito alta, favor verificar.")
+            logger.warning(f"[UG{self.id}] Sinal de Pressão Muito Alta do Óleo da UHRV identificado. Favor verificar.")
 
         if self.l_uhrv_press_oleo_alta.valor:
-            logger.warning(f"[UG{self.id}] Foi identificado que a pressão do óleo da UHRV está alta, favor verificar.")
+            logger.warning(f"[UG{self.id}] Sinal de Pressão Alta do Óleo da UHRV identificada. Favor verificar.")
 
         if self.l_contro_trip_dif_grade.valor:
-            logger.warning(f"[UG{self.id}] Foi identificado um acionamento de Trip do Controle de Diferencial de Grade, favor verificar.")
+            logger.warning(f"[UG{self.id}] Sinal de Trip de Diferencial de Grade identificado. Favor verificar.")
 
         if self.l_resis_aquec_gera_falha_deslig.valor:
-            logger.warning(f"[UG{self.id}] Foi identificado uma falha no desligamento da resistência do aquecedor do gerador, favor verificar.")
+            logger.warning(f"[UG{self.id}] Sinal de Falha no Desligamento da Resistência do Aquecedor do Gerador identificado. Favor verificar.")
 
-        if self.l_uhlm_bomba_1_falha_ligar.valor:
-            logger.warning(f"[UG{self.id}] Foi identificado uma falha ao ligar a Bomba 1 da UHLM, favor verificar.")
-
-        if self.l_uhlm_bomba_1_falha_deslig.valor:
-            logger.warning(f"[UG{self.id}] Foi identificado uma falha no desligamento da Bomba 1 da UHLM, favor verificar.")
-
-        if self.l_ulhm_falha_pressos.valor:
-            logger.warning(f"[UG{self.id}] Foi identificado uma falha no pressostato da UHLM, favor verificar.")
-
-        if self.l_rv_falha_partir.valor:
-            logger.warning(f"[UG{self.id}] Foi identificado uma falha ao partir o RV, favor verificar.")
-
-        if self.l_rv_falha_desab.valor:
-            logger.warning(f"[UG{self.id}] Foi identificado uma falha ao desabilitar o RV, favor verificar.")
-
-        if self.l_rv_falha_parar_maqu.valor:
-            logger.warning(f"[UG{self.id}] Foi identificado uma falha ao parar a máquina pelo RV, favor verificar.")
-
-        if self.l_rt_falha_partir.valor:
-            logger.warning(f"[UG{self.id}] Foi identificado uma falha ao partir a máquina pelo RT, favor verificar.")
-
-        if self.l_rt_falha_desab.valor:
-            logger.warning(f"[UG{self.id}] Foi identificado uma falha ao desabilitar o RT, favor verificar.")
+        # if self.l_ulhm_falha_pressos.valor:
+        #     logger.warning(f"[UG{self.id}] Sinal de Falha no Pressostato da UHLM identificado. Favor verificar.")
 
         if self.l_valv_borb_falha_fechar.valor:
-            logger.warning(f"[UG{self.id}] Foi identificado uma falha no fechamento da válvula borboleta, favor verificar.")
+            logger.warning(f"[UG{self.id}] Sinal de Falha no Fechamento da Válvula Borboleta identificado. Favor verificar.")
 
         if self.l_valv_borb_dicrep_senso.valor:
-            logger.warning(f"[UG{self.id}] Foi identificado uma discrepância no sensor da válvula borboleta, favor verificar.")
+            logger.warning(f"[UG{self.id}] Sinal de Discrepância no Sensor da Válvula Borboleta identificado. Favor verificar.")
 
         if self.l_vavl_bypass_discrep_senso.valor:
-            logger.warning(f"[UG{self.id}] Foi identificado uma discrepância no sensor da válvula bypass, favor verificar.")
+            logger.warning(f"[UG{self.id}] Sinal de Discrepância no Sensor da Válvula Bypass identificado. Favor verificar.")
+
+        if self.l_rt_alar_1_pres_tens_term_aus_corr_exci.valor:
+            logger.warning(f"[UG{self.id}] Sinal de Alarme de Presença de Tensão Terminal e Ausência de Corrente de Rxcitação no RT identificado. Favor verificar.")
+
+        if self.l_uhlm_bomba_1_falha_ligar.valor:
+            logger.warning(f"[UG{self.id}] Sinal de Falha ao Ligar a Bomba 1 da UHLM identificado. Favor verificar.")
+
+        if self.l_uhlm_bomba_1_falha_deslig.valor:
+            logger.warning(f"[UG{self.id}] Sinal de Falha no Desligamento da Bomba 1 da UHLM identificado. Favor verificar.")
+
+        if self.l_rv_falha_partir.valor:
+            logger.warning(f"[UG{self.id}] Sinal de Falha ao Partir o RV identificado. Favor verificar.")
+
+        if self.l_rv_falha_desab.valor:
+            logger.warning(f"[UG{self.id}] Sinal de Falha ao Desabilitar o RV identificado. Favor verificar.")
+
+        if self.l_rv_falha_parar_maqu.valor:
+            logger.warning(f"[UG{self.id}] Sinal de Falha ao Parar Máquina pelo RV identificado. Favor verificar.")
+
+        if self.l_rt_falha_partir.valor:
+            logger.warning(f"[UG{self.id}] Sinal de Dalha ao Partir Máquina pelo RT identificado. Favor verificar.")
+
+        if self.l_rt_falha_desab.valor:
+            logger.warning(f"[UG{self.id}] Sinal de Falha ao Fesabilitar o RT identificado. Favor verificar.")
+
+        # if self.l_urhv_press_crit.valor:
+        #     logger.warning(f"[UG{self.id}] Sinal de Nível Crítico de Pressão da UHRV identificado. Favor verificar.")
+
+        # if self.l_uhlm_fluxo_troc_calor.valor:
+        #     logger.warning(f"[UG{self.id}] Sinal de Falta de Fluxo do Trocador de Calor da UHLM identificada. Favor verificar.")
 
 
         # WHATSAPP + VOIP
-        # if self.l_val_bypass_falha_abrir.valor and not d.voip[f"UG{self.id}_ED_BYPASS_FALHA_ABRIR"][0]:
-        #     logger.warning(f"[UG{self.id}] Foi identificado uma falha ao abrir a Válvula Bypass, favor verificar.")
-        #     d.voip[f"UG{self.id}_ED_BYPASS_FALHA_ABRIR"][0] = True
-        # elif not self.l_val_bypass_falha_abrir.valor and d.voip[f"UG{self.id}_ED_BYPASS_FALHA_ABRIR"][0]:
-        #     d.voip[f"UG{self.id}_ED_BYPASS_FALHA_ABRIR"][0] = False
+        if self.l_val_bypass_falha_abrir.valor and not d.voip[f"UG{self.id}_ED_BYPASS_FALHA_ABRIR"][0]:
+            logger.warning(f"[UG{self.id}] Sinal de falha ao abrir a Válvula Bypass identificado. Favor verificar.")
+            d.voip[f"UG{self.id}_ED_BYPASS_FALHA_ABRIR"][0] = True
+        elif not self.l_val_bypass_falha_abrir.valor and d.voip[f"UG{self.id}_ED_BYPASS_FALHA_ABRIR"][0]:
+            d.voip[f"UG{self.id}_ED_BYPASS_FALHA_ABRIR"][0] = False
 
-        # if self.l_val_bypass_falha_fechar.valor and not d.voip[f"UG{self.id}_ED_BYPASS_FALHA_FECHAR"][0]:
-        #     logger.warning(f"[UG{self.id}] Foi identificado uma falha ao fechar a Válvula Bypass, favor verificar.")
-        #     d.voip[f"UG{self.id}_ED_BYPASS_FALHA_FECHAR"][0] = True
-        # elif not self.l_val_bypass_falha_fechar.valor and d.voip[f"UG{self.id}_ED_BYPASS_FALHA_FECHAR"][0]:
-        #     d.voip[f"UG{self.id}_ED_BYPASS_FALHA_FECHAR"][0] = False
+        if self.l_val_bypass_falha_fechar.valor and not d.voip[f"UG{self.id}_ED_BYPASS_FALHA_FECHAR"][0]:
+            logger.warning(f"[UG{self.id}] Sinal de falha ao fechar a Válvula Bypass identificado. Favor verificar.")
+            d.voip[f"UG{self.id}_ED_BYPASS_FALHA_FECHAR"][0] = True
+        elif not self.l_val_bypass_falha_fechar.valor and d.voip[f"UG{self.id}_ED_BYPASS_FALHA_FECHAR"][0]:
+            d.voip[f"UG{self.id}_ED_BYPASS_FALHA_FECHAR"][0] = False
 
-        # if self.l_falha_fechar_distrib.valor and not d.voip[f"UG{self.id}_ED_RV_FALHA_AO_FECHAR_DISTRIBUIDOR"][0]:
-        #     logger.warning(f"[UG{self.id}] Foi identificado uma falha ao fechar o Distribuidor, favor verificar.")
-        #     d.voip[f"UG{self.id}_ED_RV_FALHA_AO_FECHAR_DISTRIBUIDOR"][0] = True
-        # elif not self.l_falha_fechar_distrib.valor and d.voip[f"UG{self.id}_ED_RV_FALHA_AO_FECHAR_DISTRIBUIDOR"][0]:
-        #     d.voip[f"UG{self.id}_ED_RV_FALHA_AO_FECHAR_DISTRIBUIDOR"][0] = False
+        if self.l_falha_fechar_distrib.valor and not d.voip[f"UG{self.id}_ED_RV_FALHA_AO_FECHAR_DISTRIBUIDOR"][0]:
+            logger.warning(f"[UG{self.id}] Sinal de falha ao fechar o Distribuidor identificado. Favor verificar.")
+            d.voip[f"UG{self.id}_ED_RV_FALHA_AO_FECHAR_DISTRIBUIDOR"][0] = True
+        elif not self.l_falha_fechar_distrib.valor and d.voip[f"UG{self.id}_ED_RV_FALHA_AO_FECHAR_DISTRIBUIDOR"][0]:
+            d.voip[f"UG{self.id}_ED_RV_FALHA_AO_FECHAR_DISTRIBUIDOR"][0] = False
 
-        # if self.l_cmd_uhrv_modo_manuten.valor and not d.voip[f"UG{self.id}_CD_CMD_UHRV_MODO_MANUTENCAO"][0]:
-        #     logger.warning(f"[UG{self.id}] Foi identificado o acionamento do comando do modo de manutenção da UHRV, favor verificar.")
-        #     d.voip[f"UG{self.id}_CD_CMD_UHRV_MODO_MANUTENCAO"][0] = True
-        # elif not self.l_cmd_uhrv_modo_manuten.valor and d.voip[f"UG{self.id}_CD_CMD_UHRV_MODO_MANUTENCAO"][0]:
-        #     d.voip[f"UG{self.id}_CD_CMD_UHRV_MODO_MANUTENCAO"][0] = False
+        if self.l_cmd_uhrv_modo_manuten.valor and not d.voip[f"UG{self.id}_CD_CMD_UHRV_MODO_MANUTENCAO"][0]:
+            logger.warning(f"[UG{self.id}] Comando de Modo de Manutenção da UHRV identificado. Favor verificar.")
+            d.voip[f"UG{self.id}_CD_CMD_UHRV_MODO_MANUTENCAO"][0] = True
+        elif not self.l_cmd_uhrv_modo_manuten.valor and d.voip[f"UG{self.id}_CD_CMD_UHRV_MODO_MANUTENCAO"][0]:
+            d.voip[f"UG{self.id}_CD_CMD_UHRV_MODO_MANUTENCAO"][0] = False
 
-        # if self.l_cmd_uhlm_modo_manuten.valor and not d.voip[f"UG{self.id}_CD_CMD_UHLM_MODO_MANUTENCAO"][0]:
-        #     logger.warning(f"[UG{self.id}] Foi identificado o acionamento do comando do modo de manutenção da UHLM, favor verificar.")
-        #     d.voip[f"UG{self.id}_CD_CMD_UHLM_MODO_MANUTENCAO"][0] = True
-        # elif not self.l_cmd_uhlm_modo_manuten.valor and d.voip[f"UG{self.id}_CD_CMD_UHLM_MODO_MANUTENCAO"][0]:
-        #     d.voip[f"UG{self.id}_CD_CMD_UHLM_MODO_MANUTENCAO"][0] = False
+        if self.l_cmd_uhlm_modo_manuten.valor and not d.voip[f"UG{self.id}_CD_CMD_UHLM_MODO_MANUTENCAO"][0]:
+            logger.warning(f"[UG{self.id}] Comando de Modo de Manutenção da UHLM identificado. Favor verificar.")
+            d.voip[f"UG{self.id}_CD_CMD_UHLM_MODO_MANUTENCAO"][0] = True
+        elif not self.l_cmd_uhlm_modo_manuten.valor and d.voip[f"UG{self.id}_CD_CMD_UHLM_MODO_MANUTENCAO"][0]:
+            d.voip[f"UG{self.id}_CD_CMD_UHLM_MODO_MANUTENCAO"][0] = False
 
-        # if self.l_falha_leit_temp_tristores.valor and not d.voip[f"UG{self.id}_EA_TRISTORES_TEMP_FALHA_LEITURA"][0]:
-        #     logger.warning(f"[UG{self.id}] Foi identificado uma falha na leitura de temperatura de Tristores, favor verificar.")
-        #     d.voip[f"UG{self.id}_EA_TRISTORES_TEMP_FALHA_LEITURA"][0] = True
-        # elif not self.l_falha_leit_temp_tristores.valor and d.voip[f"UG{self.id}_EA_TRISTORES_TEMP_FALHA_LEITURA"][0]:
-        #     d.voip[f"UG{self.id}_EA_TRISTORES_TEMP_FALHA_LEITURA"][0] = False
+        if self.l_falha_leit_temp_tristores.valor and not d.voip[f"UG{self.id}_EA_TRISTORES_TEMP_FALHA_LEITURA"][0]:
+            logger.warning(f"[UG{self.id}] Sinal de falha na leitura de Temperatura de Tristores identificado. Favor verificar.")
+            d.voip[f"UG{self.id}_EA_TRISTORES_TEMP_FALHA_LEITURA"][0] = True
+        elif not self.l_falha_leit_temp_tristores.valor and d.voip[f"UG{self.id}_EA_TRISTORES_TEMP_FALHA_LEITURA"][0]:
+            d.voip[f"UG{self.id}_EA_TRISTORES_TEMP_FALHA_LEITURA"][0] = False
 
-        # if self.l_falha_leit_temp_crowbar.valor and not d.voip[f"UG{self.id}_EA_CROWBAR_TEMP_FALHA_LEITURA"][0]:
-        #     logger.warning(f"[UG{self.id}] Foi identificado uma falha na leitura de temperatura do Crowbar, favor verificar.")
-        #     d.voip[f"UG{self.id}_EA_CROWBAR_TEMP_FALHA_LEITURA"][0] = True
-        # elif not self.l_falha_leit_temp_crowbar.valor and d.voip[f"UG{self.id}_EA_CROWBAR_TEMP_FALHA_LEITURA"][0]:
-        #     d.voip[f"UG{self.id}_EA_CROWBAR_TEMP_FALHA_LEITURA"][0] = False
+        if self.l_falha_leit_temp_crowbar.valor and not d.voip[f"UG{self.id}_EA_CROWBAR_TEMP_FALHA_LEITURA"][0]:
+            logger.warning(f"[UG{self.id}] Sinal de falha na leitura de Temperatura do Crowbar identificado. Favor verificar.")
+            d.voip[f"UG{self.id}_EA_CROWBAR_TEMP_FALHA_LEITURA"][0] = True
+        elif not self.l_falha_leit_temp_crowbar.valor and d.voip[f"UG{self.id}_EA_CROWBAR_TEMP_FALHA_LEITURA"][0]:
+            d.voip[f"UG{self.id}_EA_CROWBAR_TEMP_FALHA_LEITURA"][0] = False
 
         # if self.l_falha_leit_temp_trafo_exci.valor and not d.voip[f"UG{self.id}_EA_TRAFO_EXCITACAO_FALHA_LEITURA"][0]:
-        #     logger.warning(f"[UG{self.id}] Foi identificado uma falha na leitura de temperatura do Transformador de Excitação, favor verificar.")
+        #     logger.warning(f"[UG{self.id}] Sinal de falha na leitura de Temperatura do Transformador de Excitação identificado. Favor verificar.")
         #     d.voip[f"UG{self.id}_EA_TRAFO_EXCITACAO_FALHA_LEITURA"][0] = True
         # elif not self.l_falha_leit_temp_trafo_exci.valor and d.voip[f"UG{self.id}_EA_TRAFO_EXCITACAO_FALHA_LEITURA"][0]:
         #     d.voip[f"UG{self.id}_EA_TRAFO_EXCITACAO_FALHA_LEITURA"][0] = False
 
-        # if self.l_falha_leit_temp_uhrv_temp_oleo.valor and not d.voip[f"UG{self.id}_EA_UHRV_TEMP_OLEO_FALHA_LEITURA"][0]:
-        #     logger.warning(f"[UG{self.id}] Foi identificado uma falha na leitura de temperatura do Óleo da UHRV, favor verificar.")
-        #     d.voip[f"UG{self.id}_EA_UHRV_TEMP_OLEO_FALHA_LEITURA"][0] = True
-        # elif not self.l_falha_leit_temp_uhrv_temp_oleo.valor and d.voip[f"UG{self.id}_EA_UHRV_TEMP_OLEO_FALHA_LEITURA"][0]:
-        #     d.voip[f"UG{self.id}_EA_UHRV_TEMP_OLEO_FALHA_LEITURA"][0] = False
+        if self.l_falha_leit_temp_uhrv_temp_oleo.valor and not d.voip[f"UG{self.id}_EA_UHRV_TEMP_OLEO_FALHA_LEITURA"][0]:
+            logger.warning(f"[UG{self.id}] Sinal de falha na leitura de Temperatura do Óleo da UHRV identificado. Favor verificar.")
+            d.voip[f"UG{self.id}_EA_UHRV_TEMP_OLEO_FALHA_LEITURA"][0] = True
+        elif not self.l_falha_leit_temp_uhrv_temp_oleo.valor and d.voip[f"UG{self.id}_EA_UHRV_TEMP_OLEO_FALHA_LEITURA"][0]:
+            d.voip[f"UG{self.id}_EA_UHRV_TEMP_OLEO_FALHA_LEITURA"][0] = False
 
-        # if self.l_falha_leit_temp_gerad_fase_a.valor and not d.voip[f"UG{self.id}_EA_GERADOR_FASE_A_TEMP_FALHA_LEITURA"][0]:
-        #     logger.warning(f"[UG{self.id}] Foi identificado uma falha na leitura de temperatura de Fase A do gerador, favor verificar.")
-        #     d.voip[f"UG{self.id}_EA_GERADOR_FASE_A_TEMP_FALHA_LEITURA"][0] = True
-        # elif not self.l_falha_leit_temp_gerad_fase_a.valor and d.voip[f"UG{self.id}_EA_GERADOR_FASE_A_TEMP_FALHA_LEITURA"][0]:
-        #     d.voip[f"UG{self.id}_EA_GERADOR_FASE_A_TEMP_FALHA_LEITURA"][0] = False
+        if self.l_falha_leit_temp_gerad_fase_a.valor and not d.voip[f"UG{self.id}_EA_GERADOR_FASE_A_TEMP_FALHA_LEITURA"][0]:
+            logger.warning(f"[UG{self.id}] Sinal de falha na leitura de Temperatura de Fase A do Gerador identificado. Favor verificar.")
+            d.voip[f"UG{self.id}_EA_GERADOR_FASE_A_TEMP_FALHA_LEITURA"][0] = True
+        elif not self.l_falha_leit_temp_gerad_fase_a.valor and d.voip[f"UG{self.id}_EA_GERADOR_FASE_A_TEMP_FALHA_LEITURA"][0]:
+            d.voip[f"UG{self.id}_EA_GERADOR_FASE_A_TEMP_FALHA_LEITURA"][0] = False
 
-        # if self.l_falha_leit_temp_gerad_fase_b.valor and not d.voip[f"UG{self.id}_EA_GERADOR_FASE_B_TEMP_FALHA_LEITURA"][0]:
-        #     logger.warning(f"[UG{self.id}] Foi identificado uma falha na leitura de temperatura de Fase B do gerador, favor verificar.")
-        #     d.voip[f"UG{self.id}_EA_GERADOR_FASE_B_TEMP_FALHA_LEITURA"][0] = True
-        # elif not self.l_falha_leit_temp_gerad_fase_b.valor and d.voip[f"UG{self.id}_EA_GERADOR_FASE_B_TEMP_FALHA_LEITURA"][0]:
-        #     d.voip[f"UG{self.id}_EA_GERADOR_FASE_B_TEMP_FALHA_LEITURA"][0] = False
+        if self.l_falha_leit_temp_gerad_fase_b.valor and not d.voip[f"UG{self.id}_EA_GERADOR_FASE_B_TEMP_FALHA_LEITURA"][0]:
+            logger.warning(f"[UG{self.id}] Sinal de falha na leitura de Temperatura de Fase B do Gerador identificado. Favor verificar.")
+            d.voip[f"UG{self.id}_EA_GERADOR_FASE_B_TEMP_FALHA_LEITURA"][0] = True
+        elif not self.l_falha_leit_temp_gerad_fase_b.valor and d.voip[f"UG{self.id}_EA_GERADOR_FASE_B_TEMP_FALHA_LEITURA"][0]:
+            d.voip[f"UG{self.id}_EA_GERADOR_FASE_B_TEMP_FALHA_LEITURA"][0] = False
 
-        # if self.l_falha_leit_temp_gerad_fase_c.valor and not d.voip[f"UG{self.id}_EA_GERADOR_FASE_C_TEMP_FALHA_LEITURA"][0]:
-        #     logger.warning(f"[UG{self.id}] Foi identificado uma falha na leitura de temperatura de Fase C do gerador, favor verificar.")
-        #     d.voip[f"UG{self.id}_EA_GERADOR_FASE_C_TEMP_FALHA_LEITURA"][0] = True
-        # elif not self.l_falha_leit_temp_gerad_fase_c.valor and d.voip[f"UG{self.id}_EA_GERADOR_FASE_C_TEMP_FALHA_LEITURA"][0]:
-        #     d.voip[f"UG{self.id}_EA_GERADOR_FASE_C_TEMP_FALHA_LEITURA"][0] = False
+        if self.l_falha_leit_temp_gerad_fase_c.valor and not d.voip[f"UG{self.id}_EA_GERADOR_FASE_C_TEMP_FALHA_LEITURA"][0]:
+            logger.warning(f"[UG{self.id}] Sinal de falha na leitura de Temperatura de Fase C do Gerador identificado. Favor verificar.")
+            d.voip[f"UG{self.id}_EA_GERADOR_FASE_C_TEMP_FALHA_LEITURA"][0] = True
+        elif not self.l_falha_leit_temp_gerad_fase_c.valor and d.voip[f"UG{self.id}_EA_GERADOR_FASE_C_TEMP_FALHA_LEITURA"][0]:
+            d.voip[f"UG{self.id}_EA_GERADOR_FASE_C_TEMP_FALHA_LEITURA"][0] = False
 
-        # if self.l_falha_leit_temp_gerad_nucleo_1.valor and not d.voip[f"UG{self.id}_EA_GERADOR_NUCLEO_1_TEMP_FALHA_LEITURA"][0]:
-        #     logger.warning(f"[UG{self.id}] Foi identificado uma falha na leitura de temperatura do Núcleo 1 do Gerador, favor verificar.")
-        #     d.voip[f"UG{self.id}_EA_GERADOR_NUCLEO_1_TEMP_FALHA_LEITURA"][0] = True
-        # elif not self.l_falha_leit_temp_gerad_nucleo_1.valor and d.voip[f"UG{self.id}_EA_GERADOR_NUCLEO_1_TEMP_FALHA_LEITURA"][0]:
-        #     d.voip[f"UG{self.id}_EA_GERADOR_NUCLEO_1_TEMP_FALHA_LEITURA"][0] = False
+        if self.l_falha_leit_temp_gerad_nucleo_1.valor and not d.voip[f"UG{self.id}_EA_GERADOR_NUCLEO_1_TEMP_FALHA_LEITURA"][0]:
+            logger.warning(f"[UG{self.id}] Sinal de falha na leitura de Temperatura do Núcleo 1 do Gerador identificado. Favor verificar.")
+            d.voip[f"UG{self.id}_EA_GERADOR_NUCLEO_1_TEMP_FALHA_LEITURA"][0] = True
+        elif not self.l_falha_leit_temp_gerad_nucleo_1.valor and d.voip[f"UG{self.id}_EA_GERADOR_NUCLEO_1_TEMP_FALHA_LEITURA"][0]:
+            d.voip[f"UG{self.id}_EA_GERADOR_NUCLEO_1_TEMP_FALHA_LEITURA"][0] = False
 
-        # if self.l_falha_leit_temp_gerad_nucleo_2.valor and not d.voip[f"UG{self.id}_EA_GERADOR_NUCLEO_2_TEMP_FALHA_LEITURA"][0]:
-        #     logger.warning(f"[UG{self.id}] Foi identificado uma falha na leitura de temperatura do Núcleo 2 do Gerador, favor verificar.")
-        #     d.voip[f"UG{self.id}_EA_GERADOR_NUCLEO_2_FALHA_LEITURA"][0] = True
-        # elif not self.l_falha_leit_temp_gerad_nucleo_2.valor and d.voip[f"UG{self.id}_EA_GERADOR_NUCLEO_2_TEMP_FALHA_LEITURA"][0]:
-        #     d.voip[f"UG{self.id}_EA_GERADOR_NUCLEO_2_FALHA_LEITURA"][0] = False
+        if self.l_falha_leit_temp_gerad_nucleo_2.valor and not d.voip[f"UG{self.id}_EA_GERADOR_NUCLEO_2_TEMP_FALHA_LEITURA"][0]:
+            logger.warning(f"[UG{self.id}] Sinal de falha na leitura de Temperatura do Núcleo 2 do Gerador identificado. Favor verificar.")
+            d.voip[f"UG{self.id}_EA_GERADOR_NUCLEO_2_FALHA_LEITURA"][0] = True
+        elif not self.l_falha_leit_temp_gerad_nucleo_2.valor and d.voip[f"UG{self.id}_EA_GERADOR_NUCLEO_2_TEMP_FALHA_LEITURA"][0]:
+            d.voip[f"UG{self.id}_EA_GERADOR_NUCLEO_2_FALHA_LEITURA"][0] = False
+
+        if self.l_falha_leit_temp_mancal_guia_casq.valor and not d.voip[f"UG{self.id}_EA_MANCAL_GUIA_CASQUILHO_FALHA_LEITURA"][0]:
+            logger.warning(f"[UG{self.id}] Sinal de falha na leitura de Temperatura do Mancal Guia Casquilho identificado. Favor verificar.")
+            d.voip[f"UG{self.id}_EA_MANCAL_GUIA_CASQUILHO_FALHA_LEITURA"][0] = True
+        elif not self.l_falha_leit_temp_mancal_guia_casq.valor and d.voip[f"UG{self.id}_EA_MANCAL_GUIA_CASQUILHO_FALHA_LEITURA"][0]:
+            d.voip[f"UG{self.id}_EA_MANCAL_GUIA_CASQUILHO_FALHA_LEITURA"][0] = False
+
+        if self.l_falha_leit_temp_mancal_comb_casq.valor and not d.voip[f"UG{self.id}_EA_MANCAL_COMBINADO_CASQUILHO_FALHA_LEITURA"][0]:
+            logger.warning(f"[UG{self.id}] Sinal de falha na leitura de Temperatura do Mancal Combinado Casquilho identificado. Favor verificar.")
+            d.voip[f"UG{self.id}_EA_MANCAL_COMBINADO_CASQUILHO_FALHA_LEITURA"][0] = True
+        elif not self.l_falha_leit_temp_mancal_comb_casq.valor and d.voip[f"UG{self.id}_EA_MANCAL_COMBINADO_CASQUILHO_FALHA_LEITURA"][0]:
+            d.voip[f"UG{self.id}_EA_MANCAL_COMBINADO_CASQUILHO_FALHA_LEITURA"][0] = False
+
+        if self.l_falha_leit_temp_mancal_comb_esc.valor and not d.voip[f"UG{self.id}_EA_MANCAL_COMBINADO_ESCORA_FALHA_LEITURA"][0]:
+            logger.warning(f"[UG{self.id}] Sinal de falha na leitura de Temperatura do Mancal Combinado Escora identificado. Favor verificar.")
+            d.voip[f"UG{self.id}_EA_MANCAL_COMBINADO_ESCORA_FALHA_LEITURA"][0] = True
+        elif not self.l_falha_leit_temp_mancal_comb_esc.valor and d.voip[f"UG{self.id}_EA_MANCAL_COMBINADO_ESCORA_FALHA_LEITURA"][0]:
+            d.voip[f"UG{self.id}_EA_MANCAL_COMBINADO_ESCORA_FALHA_LEITURA"][0] = False
+
+        if self.l_resis_quec_gerador_falha_ligar.valor and not d.voip[f"UG{self.id}_ED_RESISTENCIA_AQUEC_GERADOR_FALHA_LIGAR"][0]:
+            logger.warning(f"[UG{self.id}] Sinal de falha ao Ligar a Resistência do Aquecedor do Gerador identificado. Favor verificar.")
+            d.voip[f"UG{self.id}_ED_RESISTENCIA_AQUEC_GERADOR_FALHA_LIGAR"][0] = True
+        elif not self.l_resis_quec_gerador_falha_ligar.valor and d.voip[f"UG{self.id}_ED_RESISTENCIA_AQUEC_GERADOR_FALHA_LIGAR"][0]:
+            d.voip[f"UG{self.id}_ED_RESISTENCIA_AQUEC_GERADOR_FALHA_LIGAR"][0] = False
 
         # if self.l_falha_leit_temp_gerad_nucleo_3.valor and not d.voip[f"UG{self.id}_EA_GERADOR_NUCLEO_3_TEMP_FALHA_LEITURA"][0]:
-        #     logger.warning(f"[UG{self.id}] Foi identificado uma falha na leitura de temperatura do Núcleo 3 do Gerador, favor verificar.")
+        #     logger.warning(f"[UG{self.id}] Sinal de falha na leitura de Temperatura do Núcleo 3 do Gerador identificado. Favor verificar.")
         #     d.voip[f"UG{self.id}_EA_GERADOR_NUCLEO_3_TEMP_FALHA_LEITURA"][0] = True
         # elif not self.l_falha_leit_temp_gerad_nucleo_3.valor and d.voip[f"UG{self.id}_EA_GERADOR_NUCLEO_3_TEMP_FALHA_LEITURA"][0]:
         #     d.voip[f"UG{self.id}_EA_GERADOR_NUCLEO_3_TEMP_FALHA_LEITURA"][0] = False
 
-        # if self.l_falha_leit_temp_mancal_guia_casq.valor and not d.voip[f"UG{self.id}_EA_MANCAL_GUIA_CASQUILHO_FALHA_LEITURA"][0]:
-        #     logger.warning(f"[UG{self.id}] Foi identificado uma falha na leitura de temperatura do Mancal Guia Casquilho, favor verificar.")
-        #     d.voip[f"UG{self.id}_EA_MANCAL_GUIA_CASQUILHO_FALHA_LEITURA"][0] = True
-        # elif not self.l_falha_leit_temp_mancal_guia_casq.valor and d.voip[f"UG{self.id}_EA_MANCAL_GUIA_CASQUILHO_FALHA_LEITURA"][0]:
-        #     d.voip[f"UG{self.id}_EA_MANCAL_GUIA_CASQUILHO_FALHA_LEITURA"][0] = False
-
-        # if self.l_falha_leit_temp_mancal_comb_casq.valor and not d.voip[f"UG{self.id}_EA_MANCAL_COMBINADO_CASQUILHO_FALHA_LEITURA"][0]:
-        #     logger.warning(f"[UG{self.id}] Foi identificado uma falha na leitura de temperatura do Mancal Combinado Casquilho, favor verificar.")
-        #     d.voip[f"UG{self.id}_EA_MANCAL_COMBINADO_CASQUILHO_FALHA_LEITURA"][0] = True
-        # elif not self.l_falha_leit_temp_mancal_comb_casq.valor and d.voip[f"UG{self.id}_EA_MANCAL_COMBINADO_CASQUILHO_FALHA_LEITURA"][0]:
-        #     d.voip[f"UG{self.id}_EA_MANCAL_COMBINADO_CASQUILHO_FALHA_LEITURA"][0] = False
-
-        # if self.l_falha_leit_temp_mancal_comb_esc.valor and not d.voip[f"UG{self.id}_EA_MANCAL_COMBINADO_ESCORA_FALHA_LEITURA"][0]:
-        #     logger.warning(f"[UG{self.id}] Foi identificado uma falha na leitura de temperatura do Mancal Combinado Escora, favor verificar.")
-        #     d.voip[f"UG{self.id}_EA_MANCAL_COMBINADO_ESCORA_FALHA_LEITURA"][0] = True
-        # elif not self.l_falha_leit_temp_mancal_comb_esc.valor and d.voip[f"UG{self.id}_EA_MANCAL_COMBINADO_ESCORA_FALHA_LEITURA"][0]:
-        #     d.voip[f"UG{self.id}_EA_MANCAL_COMBINADO_ESCORA_FALHA_LEITURA"][0] = False
-
-        # if self.l_resis_quec_gerador_falha_ligar.valor and not d.voip[f"UG{self.id}_ED_RESISTENCIA_AQUEC_GERADOR_FALHA_LIGAR"][0]:
-        #     logger.warning(f"[UG{self.id}] Foi identificado uma falha ao ligar a resistência do aquecedor do gerador, favor verificar.")
-        #     d.voip[f"UG{self.id}_ED_RESISTENCIA_AQUEC_GERADOR_FALHA_LIGAR"][0] = True
-        # elif not self.l_resis_quec_gerador_falha_ligar.valor and d.voip[f"UG{self.id}_ED_RESISTENCIA_AQUEC_GERADOR_FALHA_LIGAR"][0]:
-        #     d.voip[f"UG{self.id}_ED_RESISTENCIA_AQUEC_GERADOR_FALHA_LIGAR"][0] = False
 
 
     def carregar_leituras(self) -> "None":
@@ -1401,7 +1383,7 @@ class UnidadeDeGeracao:
 
         ## CONDICINOADORES ESSENCIAIS
         self.l_rele_bloq_86eh = lei.LeituraModbusBit(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}"]["PRTVA_RELE_BLOQUEIO_86EH"], descricao=f"[UG{self.id}] Relé Bloqueio 86EH")
-        self.condicionadores_essenciais.append(c.CondicionadorBase(self.l_rele_bloq_86eh, CONDIC_NORMALIZAR))
+        self.condicionadores_essenciais.append(c.CondicionadorBase(self.l_rele_bloq_86eh, CONDIC_NORMALIZAR, teste=True))
 
         self.l_bloq_86e = lei.LeituraModbusBit(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}"]["BLOQUEIO_86E_ATUADO"], descricao=f"[UG{self.id}] Bloqueio 86E")
         self.condicionadores_essenciais.append(c.CondicionadorBase(self.l_bloq_86e, CONDIC_NORMALIZAR))
@@ -1416,13 +1398,13 @@ class UnidadeDeGeracao:
         self.condicionadores_essenciais.append(c.CondicionadorBase(self.l_rt_falha_2_bloq_externo, CONDIC_NORMALIZAR))
 
         self.l_rele_trip_prot_gerad = lei.LeituraModbusBit(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}"]["RELE_PROT_GERADOR_TRIP"], descricao=f"[UG{self.id}] Relé Trip Proteção Gerador")
-        self.condicionadores_essenciais.append(c.CondicionadorBase(self.l_rele_trip_prot_gerad, CONDIC_NORMALIZAR))
+        self.condicionadores_essenciais.append(c.CondicionadorBase(self.l_rele_trip_prot_gerad, CONDIC_NORMALIZAR, teste=True))
 
         self.l_rv_trip = lei.LeituraModbusBit(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}"]["RV_TRIP"], descricao=f"[UG{self.id}] RV Trip")
-        self.condicionadores_essenciais.append(c.CondicionadorBase(self.l_rv_trip, CONDIC_NORMALIZAR))
+        self.condicionadores_essenciais.append(c.CondicionadorBase(self.l_rv_trip, CONDIC_NORMALIZAR, teste=True))
 
         self.l_rt_trip = lei.LeituraModbusBit(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}"]["PRTVA_RT_TRIP"], descricao=f"[UG{self.id}] RT Trip")
-        self.condicionadores_essenciais.append(c.CondicionadorBase(self.l_rt_trip, CONDIC_NORMALIZAR))
+        self.condicionadores_essenciais.append(c.CondicionadorBase(self.l_rt_trip, CONDIC_NORMALIZAR, teste=True))
 
 
         ## CONDICIONADORES NORMALIZAR
@@ -1438,9 +1420,8 @@ class UnidadeDeGeracao:
         self.l_rv_alarme_subfrequencia = lei.LeituraModbusBit(self.rv[f"UG{self.id}"], REG_RTV[f"UG{self.id}"]["RV_ALARME_SUBFREQUENCIA"], descricao=f"[UG{self.id}] RV Alarme Subfrequência")
         self.condicionadores.append(c.CondicionadorBase(self.l_rv_alarme_subfrequencia, CONDIC_NORMALIZAR))
 
-        # TODO -> Verificar
         self.l_botao_bloq_86eh = lei.LeituraModbusBit(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}"]["BOTAO_BLOQUEIO_86EH"], descricao=f"[UG{self.id}] Botão Bloqueio 86EH")
-        self.condicionadores.append(c.CondicionadorBase(self.l_botao_bloq_86eh, CONDIC_NORMALIZAR))
+        self.condicionadores.append(c.CondicionadorBase(self.l_botao_bloq_86eh, CONDIC_NORMALIZAR, teste=True))
 
 
         ## CONDICIONADORES INDISPONIBILIZAR
@@ -1460,32 +1441,22 @@ class UnidadeDeGeracao:
         self.l_vavl_bypass_discrep_senso = lei.LeituraModbusBit(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}"]["BYPASS_DISCREPANCIA_SENSORES"], descricao=f"[UG{self.id}] Válvula Bypass Discrepância Sensores")
         self.condicionadores.append(c.CondicionadorBase(self.l_vavl_bypass_discrep_senso, CONDIC_INDISPONIBILIZAR))
 
-
         # UG_STT_ENTRADAS_DIGITAIS
         self.l_uhrv_oleo_nv_muito_baixo = lei.LeituraModbusBit(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}"]["UHRV_OLEO_NIVEL_MUITO_BAIXO"], descricao=f"[UG{self.id}] UHRV Óleo Nível Muito Baixo")
-        self.condicionadores.append(c.CondicionadorBase(self.l_uhrv_oleo_nv_muito_baixo, CONDIC_INDISPONIBILIZAR))
+        self.condicionadores.append(c.CondicionadorBase(self.l_uhrv_oleo_nv_muito_baixo, CONDIC_INDISPONIBILIZAR, teste=True))
 
         self.l_uhrv_filtro_oleo_sujo = lei.LeituraModbusBit(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}"]["UHRV_FILTRO_OLEO_SUJO"], descricao=f"[UG{self.id}] UHRV Filtro Óleo Sujo")
-        self.condicionadores.append(c.CondicionadorBase(self.l_uhrv_filtro_oleo_sujo, CONDIC_INDISPONIBILIZAR))
-
-        self.l_urhv_press_crit = lei.LeituraModbusBit(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}"]["UHRV_PRESSAO_CRITICA"], descricao=f"[UG{self.id}] UHRV Pressão Crítica")
-        self.condicionadores.append(c.CondicionadorBase(self.l_urhv_press_crit, CONDIC_INDISPONIBILIZAR))
+        self.condicionadores.append(c.CondicionadorBase(self.l_uhrv_filtro_oleo_sujo, CONDIC_INDISPONIBILIZAR, teste=True))
 
         self.l_uhrv_oleo_nv_muito_alto = lei.LeituraModbusBit(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}"]["UHLM_OLEO_NIVEL_MUITO_ALTO"], descricao=f"[UG{self.id}] UHRV Óleo Nível Muito Alto")
-        self.condicionadores.append(c.CondicionadorBase(self.l_uhrv_oleo_nv_muito_alto, CONDIC_INDISPONIBILIZAR))
+        self.condicionadores.append(c.CondicionadorBase(self.l_uhrv_oleo_nv_muito_alto, CONDIC_INDISPONIBILIZAR, teste=True))
 
         self.l_uhlm_oleo_nv_muito_baixo = lei.LeituraModbusBit(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}"]["UHLM_OLEO_NIVEL_MUITO_BAIXO"], descricao=f"[UG{self.id}] UHLM Óleo Nível Muito Baixo")
-        self.condicionadores.append(c.CondicionadorBase(self.l_uhlm_oleo_nv_muito_baixo, CONDIC_INDISPONIBILIZAR))
+        self.condicionadores.append(c.CondicionadorBase(self.l_uhlm_oleo_nv_muito_baixo, CONDIC_INDISPONIBILIZAR, teste=True))
 
-        # TODO -> Verificar
         self.l_uhlm_press_linha_lubrifi = lei.LeituraModbusBit(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}"]["UHLM_PRESSAO_LINHA_LUBRIFICACAO"], descricao=f"[UG{self.id}] UHLM Pressão Linha Lubrificação")
         self.condicionadores.append(c.CondicionadorBase(self.l_uhlm_press_linha_lubrifi, CONDIC_NORMALIZAR))
 
-        # TODO n-> Verificar
-        self.l_uhlm_fluxo_troc_calor = lei.LeituraModbusBit(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}"]["UHLM_FLUXO_TROCADOR_DE_CALOR"], descricao=f"[UG{self.id}] UHLM Fluxo Trocador Calor")
-        self.condicionadores.append(c.CondicionadorBase(self.l_uhlm_fluxo_troc_calor, CONDIC_NORMALIZAR))
-
-        # TODO -> Verificar
         self.l_qbag_escova_polo_pos_desgas = lei.LeituraModbusBit(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}"]["QBAG_ESCOVA_POLO_POSITIVO_DESGASTADA"], descricao=f"[UG{self.id}] QBAG Escova Polo Positivo Desgastada")
         self.condicionadores.append(c.CondicionadorBase(self.l_qbag_escova_polo_pos_desgas, CONDIC_INDISPONIBILIZAR))
 
@@ -1493,27 +1464,22 @@ class UnidadeDeGeracao:
         self.condicionadores.append(c.CondicionadorBase(self.l_qbag_escova_polo_neg_desgas, CONDIC_INDISPONIBILIZAR))
 
         self.l_rele_prot_gerad_50bf = lei.LeituraModbusBit(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}"]["RELE_PROT_GERADOR_50BF"], descricao=f"[UG{self.id}] Relé Proteção Gerador 50BF")
-        self.condicionadores.append(c.CondicionadorBase(self.l_rele_prot_gerad_50bf, CONDIC_INDISPONIBILIZAR))
+        self.condicionadores.append(c.CondicionadorBase(self.l_rele_prot_gerad_50bf, CONDIC_INDISPONIBILIZAR, teste=True))
 
         self.l_disj_tps_protecao = lei.LeituraModbusBit(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}"]["DISJUNTOR_TPS_PROTECAO"], descricao=f"[UG{self.id}] Disjuntor TPS Proteção")
-        self.condicionadores.append(c.CondicionadorBase(self.l_disj_tps_protecao, CONDIC_INDISPONIBILIZAR))
+        self.condicionadores.append(c.CondicionadorBase(self.l_disj_tps_protecao, CONDIC_INDISPONIBILIZAR, teste=True))
 
-        # TODO -> Verificar
         self.l_uhrv_pressao_freio = lei.LeituraModbusBit(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}"]["UHRV_PRESSAO_FREIO"], descricao=f"[UG{self.id}] UHRV Pressão Freio")
         self.condicionadores.append(c.CondicionadorBase(self.l_uhrv_pressao_freio, CONDIC_NORMALIZAR))
 
         # UHRV
-        # TODO -> Verificar
-        self.l_uhrv_bomba_1_indisp = lei.LeituraModbusBit(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}"]["UHRV_BOMBA_1_INDISPONIVEL"], descricao=f"[UG{self.id}] UHRV Bomba 1 Indisponível") # TODO -> Verificar invertido
+        self.l_uhrv_bomba_1_indisp = lei.LeituraModbusBit(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}"]["UHRV_BOMBA_1_INDISPONIVEL"], descricao=f"[UG{self.id}] UHRV Bomba 1 Indisponível")
         self.condicionadores.append(c.CondicionadorBase(self.l_uhrv_bomba_1_indisp, CONDIC_INDISPONIBILIZAR))
 
         self.l_uhrv_filtro_oleo_sujo = lei.LeituraModbusBit(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}"]["UHRV_FILTRO_OLEO_SUJO"], descricao=f"[UG{self.id}] UHRV Filtro Óleo Sujo")
         self.condicionadores.append(c.CondicionadorBase(self.l_uhrv_filtro_oleo_sujo, CONDIC_INDISPONIBILIZAR))
 
         # UHLM
-        self.l_ulhm_falha_pressos = lei.LeituraModbusBit(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}"]["UHLM_FALHA_PRESSOSTATO"], descricao=f"[UG{self.id}] UHLM Falha Pressostato")
-        self.condicionadores.append(c.CondicionadorBase(self.l_ulhm_falha_pressos, CONDIC_INDISPONIBILIZAR))
-
         self.l_uhlm_bomba_1_indisp = lei.LeituraModbusBit(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}"]["UHLM_BOMBA_1_INDISPONIVEL"], descricao=f"[UG{self.id}] UHLM Bomba 1 Indisponível")
         self.condicionadores.append(c.CondicionadorBase(self.l_uhlm_bomba_1_indisp, CONDIC_INDISPONIBILIZAR))
 
@@ -1552,7 +1518,7 @@ class UnidadeDeGeracao:
         self.condicionadores.append(c.CondicionadorBase(self.l_rv_falha_1_ruido_med_veloc_princi, CONDIC_INDISPONIBILIZAR))
 
         self.l_rv_falha_1_ruido_med_veloc_retag = lei.LeituraModbusBit(self.rv[f"UG{self.id}"], REG_RTV[f"UG{self.id}"]["RV_FALHA_RUIDO_MEDICAO_VELOCIDADE_RETAGUARDA"], descricao=f"[UG{self.id}] RV Falha 1 Ruído Medição Velocidade Retaguarda")
-        self.condicionadores.append(c.CondicionadorBase(self.l_rv_falha_1_ruido_med_veloc_retag, CONDIC_INDISPONIBILIZAR, teste=True))
+        self.condicionadores.append(c.CondicionadorBase(self.l_rv_falha_1_ruido_med_veloc_retag, CONDIC_INDISPONIBILIZAR))
 
         self.l_rv_falha_2_perda_med_veloc_retag = lei.LeituraModbusBit(self.rv[f"UG{self.id}"], REG_RTV[f"UG{self.id}"]["RV_FALHA_PERDA_MEDICAO_VELOCIDADE_RETAGUARDA"], descricao=f"[UG{self.id}] RV Falha 2 Perda Medição Velocidade Retaguarda")
         self.condicionadores.append(c.CondicionadorBase(self.l_rv_falha_2_perda_med_veloc_retag, CONDIC_INDISPONIBILIZAR))
@@ -1769,9 +1735,6 @@ class UnidadeDeGeracao:
         self.l_crowbar_temp_muito_alta = lei.LeituraModbusBit(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}"]["CROWBAR_TEMPERATURA_MUITO_ALTA"], descricao=f"[UG{self.id}] Crowbar Temperatura Muito Alta")
         self.condicionadores.append(c.CondicionadorBase(self.l_crowbar_temp_muito_alta, CONDIC_INDISPONIBILIZAR))
 
-        self.l_trafo_exci_temp_muito_alta = lei.LeituraModbusBit(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}"]["TRAFO_EXCITACAO_TEMPERATURA_MUITO_ALTA"], descricao=f"[UG{self.id}] Transformador Excitação Temperatura Muito Alta")
-        self.condicionadores.append(c.CondicionadorBase(self.l_trafo_exci_temp_muito_alta, CONDIC_INDISPONIBILIZAR))
-
         self.l_uhrv_temp_oleo_muito_alta = lei.LeituraModbusBit(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}"]["UHRV_TEMPERATURA_OLEO_MUITO_ALTA"], descricao=f"[UG{self.id}] UHRV Óleo Temperatura Muito Alta")
         self.condicionadores.append(c.CondicionadorBase(self.l_uhrv_temp_oleo_muito_alta, CONDIC_INDISPONIBILIZAR))
 
@@ -1796,7 +1759,7 @@ class UnidadeDeGeracao:
         self.l_mancal_guia_casq_temp_muito_alta = lei.LeituraModbusBit(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}"]["MANCAL_GUIA_CASQUILHO_TEMPERATURA_MUITO_ALTA"], descricao=f"[UG{self.id}] Mancal Guia Casquilho Temperatura Muito Alta")
         self.condicionadores.append(c.CondicionadorBase(self.l_mancal_guia_casq_temp_muito_alta, CONDIC_INDISPONIBILIZAR))
 
-        self.l_mancal_comb_casq_temp_muito_alta = lei.LeituraModbusBit(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}"]["MANCAL_COMBINADO_CASQUILHO_TEMPERATURA_MUITO_ALTA"], descricao=f"[UG{self.id}] Mancal Combinado Casquilho Temperatura Muito Alta")
+        self.l_mancal_comb_casq_temp_muito_alta = lei.LeituraModbusBit(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}"]["MANCAL_COMBINADO_CASQUILHO_1_TEMPERATURA_MUITO_ALTA"], descricao=f"[UG{self.id}] Mancal Combinado Casquilho Temperatura Muito Alta")
         self.condicionadores.append(c.CondicionadorBase(self.l_mancal_comb_casq_temp_muito_alta, CONDIC_INDISPONIBILIZAR))
 
         self.l_mancal_comb_esc_temp_muito_alta = lei.LeituraModbusBit(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}"]["MANCAL_COMBINADO_ESCORA_TEMPERATURA_MUITO_ALTA"], descricao=f"[UG{self.id}] Mancal Combinado Escora Temperatura Muito Alta")
@@ -1811,6 +1774,41 @@ class UnidadeDeGeracao:
         self.l_uhrv_press_oleo_alta = lei.LeituraModbusBit(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}"]["UHRV_PRESSAO_OLEO_ALTA"], descricao=f"[UG{self.id}] UHRV Pressão Óleo Alta")
         self.condicionadores.append(c.CondicionadorBase(self.l_uhrv_press_oleo_alta, CONDIC_INDISPONIBILIZAR))
 
+        self.l_falha_fechar_distrib = lei.LeituraModbusBit(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}"]["RV_FALHA_AO_FECHAR_DISTRIBUIDOR"], descricao=f"[UG{self.id}] Falha Fechamento Distribuidor")
+        self.condicionadores.append(c.CondicionadorBase(self.l_falha_fechar_distrib, CONDIC_INDISPONIBILIZAR))
+
+        self.l_rv_falha_partir = lei.LeituraModbusBit(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}"]["RV_FALHA_AO_PARTIR"], descricao=f"[UG{self.id}] RV Falha Partir")
+        self.condicionadores.append(c.CondicionadorBase(self.l_rv_falha_partir, CONDIC_INDISPONIBILIZAR))
+
+        self.l_rv_falha_desab = lei.LeituraModbusBit(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}"]["RV_FALHA_AO_DESABILITAR"], descricao=f"[UG{self.id}] RV Falha Desabilitar")
+        self.condicionadores.append(c.CondicionadorBase(self.l_rv_falha_desab, CONDIC_INDISPONIBILIZAR))
+
+        self.l_rv_falha_parar_maqu = lei.LeituraModbusBit(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}"]["RV_FALHA_AO_PARAR_MAQUINA"], descricao=f"[UG{self.id}] RV Falha Parar Máquina")
+        self.condicionadores.append(c.CondicionadorBase(self.l_rv_falha_parar_maqu, CONDIC_INDISPONIBILIZAR))
+
+        self.l_rt_falha_partir = lei.LeituraModbusBit(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}"]["RT_FALHA_AO_PARTIR"], descricao=f"[UG{self.id}] RT Falha Partir")
+        self.condicionadores.append(c.CondicionadorBase(self.l_rt_falha_partir, CONDIC_INDISPONIBILIZAR))
+
+        self.l_rt_falha_desab = lei.LeituraModbusBit(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}"]["RT_FALHA_AO_DESABILITAR"], descricao=f"[UG{self.id}] RT Falha Desabilitar")
+        self.condicionadores.append(c.CondicionadorBase(self.l_rt_falha_desab, CONDIC_INDISPONIBILIZAR))
+
+        self.l_rv_falha_hab = lei.LeituraModbusBit(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}"]["RT_FALHA_AO_HABILITAR"], descricao=f"[UG{self.id}] RV Falha Habilitar")
+        self.condicionadores.append(c.CondicionadorBase(self.l_rv_falha_hab, CONDIC_INDISPONIBILIZAR))
+
+        self.l_uhrv_bomba_1_falha_ligar = lei.LeituraModbusBit(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}"]["UHRV_BOMBA_1_FALHA_AO_LIGAR"], descricao=f"[UG{self.id}] UHRV Falha Ligar")
+        self.condicionadores.append(c.CondicionadorBase(self.l_uhrv_bomba_1_falha_ligar, CONDIC_INDISPONIBILIZAR))
+
+        self.l_uhlm_bomba_1_falha_ligar = lei.LeituraModbusBit(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}"]["UHLM_BOMBA_1_FALHA_AO_LIGAR"], descricao=f"[UG{self.id}] UHLM Bomba 1 Falha Ligar")
+        self.condicionadores.append(c.CondicionadorBase(self.l_uhlm_bomba_1_falha_ligar, CONDIC_INDISPONIBILIZAR))
+
+        self.l_uhlm_bomba_1_falha_deslig = lei.LeituraModbusBit(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}"]["UHLM_BOMBA_1_FALHA_AO_DESLIGAR"], descricao=f"[UG{self.id}] UHLM Bomba 1 Falha Desligar")
+        self.condicionadores.append(c.CondicionadorBase(self.l_uhlm_bomba_1_falha_deslig, CONDIC_INDISPONIBILIZAR))
+        
+        self.l_uhlm_bomba_1_falha_pressurizar = lei.LeituraModbusBit(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}"]["UHLM_BOMBA_1_FALHA_AO_PRESSURIZAR"], descricao=f"[UG{self.id}] UHLM Bomba 1 Falha Pressurizar")
+        self.condicionadores.append(c.CondicionadorBase(self.l_uhlm_bomba_1_falha_pressurizar, CONDIC_INDISPONIBILIZAR))
+
+        self.l_rt_alar_1_pres_tens_term_aus_corr_exci = lei.LeituraModbusBit(self.rt[f"UG{self.id}"], REG_RTV[f"UG{self.id}"]["RT_ALARME_PRESENCA_DE_TENSAO_TERMINAL_COM_AUSENCIA_DE_CORRENTE_DE_EXCITACAO"], descricao=f"[UG{self.id}] RT Alarmes 1 Presença Tensão Terminal Ausente Corrente Excitação")
+        self.condicionadores.append(c.CondicionadorBase(self.l_rt_alar_1_pres_tens_term_aus_corr_exci, CONDIC_INDISPONIBILIZAR))
 
         ## WHATSAPP + VOIP
         self.l_cmd_uhrv_modo_manuten = lei.LeituraModbusBit(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}"]["CMD_UHRV_MODO_MANUTENCAO"], descricao=f"[UG{self.id}] UHRV Comando Modo Manutenção")
@@ -1819,7 +1817,6 @@ class UnidadeDeGeracao:
 
         self.l_falha_leit_temp_tristores = lei.LeituraModbusBit(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}"]["TIRISTORES_TEMPERATURA_FALHA_LEITURA"], descricao=f"[UG{self.id}] Tristores Temperatura Falha Leitura")
         self.l_falha_leit_temp_crowbar = lei.LeituraModbusBit(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}"]["CROWBAR_TEMPERATURA_FALHA_LEITURA"], descricao=f"[UG{self.id}] Crowbar Temperatura Falha Leitura")
-        self.l_falha_leit_temp_trafo_exci = lei.LeituraModbusBit(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}"]["TRAFO_EXCITACAO_TEMPERATURA_FALHA_LEITURA"], descricao=f"[UG{self.id}] Transformador Excitação Temperatura Falha Leitura")
         self.l_falha_leit_temp_uhrv_temp_oleo = lei.LeituraModbusBit(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}"]["UHRV_TEMPERATURA_OLEO_FALHA_LEITURA"], descricao=f"[UG{self.id}] UHRV Temperatura Óleo Falha Leitura")
         self.l_falha_leit_temp_gerad_fase_a = lei.LeituraModbusBit(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}"]["GERADOR_FASE_A_TEMPERATURA_FALHA_LEITURA"], descricao=f"[UG{self.id}] Gerador Fase A Temperatura Falha Leitura")
         self.l_falha_leit_temp_gerad_fase_b = lei.LeituraModbusBit(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}"]["GERADOR_FASE_B_TEMPERATURA_FALHA_LEITURA"], descricao=f"[UG{self.id}] Gerador Fase B Temperatura Falha Leitura")
@@ -1828,12 +1825,12 @@ class UnidadeDeGeracao:
         self.l_falha_leit_temp_gerad_nucleo_2 = lei.LeituraModbusBit(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}"]["GERADOR_NUCLEO_2_TEMPERATURA_FALHA_LEITURA"], descricao=f"[UG{self.id}] Gerador Núcleo 2 Temperatura Falha Leitura")
         self.l_falha_leit_temp_gerad_nucleo_3 = lei.LeituraModbusBit(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}"]["GERADOR_NUCLEO_3_TEMPERATURA_FALHA_LEITURA"], descricao=f"[UG{self.id}] Gerador Núcleo 3 Temperatura Falha Leitura")
         self.l_falha_leit_temp_mancal_guia_casq = lei.LeituraModbusBit(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}"]["MANCAL_GUIA_CASQUILHO_TEMPERATURA_FALHA_LEITURA"], descricao=f"[UG{self.id}] Mancal Guia Casquilho temperatura Falha Leitura")
-        self.l_falha_leit_temp_mancal_comb_esc = lei.LeituraModbusBit(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}"]["MANCAL_COMBINADO_CASQUILHO_TEMPERATURA_FALHA_LEITURA"], descricao=f"[UG{self.id}] Mancal Combinado Escora Temperatura Falha Leitura")
+        self.l_falha_leit_temp_mancal_comb_esc = lei.LeituraModbusBit(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}"]["MANCAL_COMBINADO_CASQUILHO_1_TEMPERATURA_FALHA_LEITURA"], descricao=f"[UG{self.id}] Mancal Combinado Escora Temperatura Falha Leitura")
         self.l_falha_leit_temp_mancal_comb_casq = lei.LeituraModbusBit(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}"]["MANCAL_COMBINADO_ESCORA_TEMPERATURA_FALHA_LEITURA"], descricao=f"[UG{self.id}] Mancal Combinado Casquilho Temperatura Falha Leitura")
 
         ## WHATSAPP
         self.l_rv_pot_nula = lei.LeituraModbusBit(self.rv[f"UG{self.id}"], REG_RTV[f"UG{self.id}"]["RV_SD_RELE_POTENCIA_NULA"], descricao=f"[UG{self.id}] RV Potência Nula")
-        self.l_uhrv_bomba_defeito = lei.LeituraModbusBit(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}"]["PRTVA_UHRV_BOMBA_DEFEITO"], descricao=f"[UG{self.id}] UHRV Bomba Defeito") # TODO -> Verificar invertido
+        self.l_uhrv_bomba_defeito = lei.LeituraModbusBit(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}"]["PRTVA_UHRV_BOMBA_DEFEITO"], descricao=f"[UG{self.id}] UHRV Bomba Defeito")
         self.l_uhlm_bomba_defeito = lei.LeituraModbusBit(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}"]["PRTVA_UHLM_BOMBA_DEFEITO"], descricao=f"[UG{self.id}] UHLM Bomba Defeito")
         self.l_dispo_prot_surto = lei.LeituraModbusBit(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}"]["PRTVA_DISPOSITIVO_PROTECAO_DE_SURTO"], descricao=f"[UG{self.id}] Dispositivo Proteção Surto")
         self.l_rt_selec_modo_controle_isol = lei.LeituraModbusBit(self.rv[f"UG{self.id}"], REG_RTV[f"UG{self.id}"]["RV_ED_SELECIONA_MODO_CONTROLE_ISOLADO"], descricao=f"[UG{self.id}] RT Selecionado Modo Controle Isolado")
@@ -1842,7 +1839,6 @@ class UnidadeDeGeracao:
         self.l_crowbar_temp_alta = lei.LeituraModbusBit(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}"]["CROWBAR_TEMPERATURA_ALTA"], descricao=f"[UG{self.id}] Temperatura Alta")
         self.l_tristores_temp_alta = lei.LeituraModbusBit(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}"]["TIRISTORES_TEMPERATURA_ALTA"], descricao=f"[UG{self.id}] Temperatura Alta")
         self.l_uhrv_oleo_temp_alta = lei.LeituraModbusBit(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}"]["UHRV_TEMPERATURA_OLEO_ALTA"], descricao=f"[UG{self.id}] Temperatura Alta")
-        self.l_trafo_exci_temp_alta = lei.LeituraModbusBit(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}"]["TRAFO_EXCITACAO_TEMPERATURA_ALTA"], descricao=f"[UG{self.id}] Temperatura Alta")
         self.l_gerad_fase_a_temp_alta = lei.LeituraModbusBit(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}"]["GERADOR_FASE_A_TEMPERATURA_ALTA"], descricao=f"[UG{self.id}] Gerador Fase A Temperatura Alta")
         self.l_gerad_fase_b_temp_alta = lei.LeituraModbusBit(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}"]["GERADOR_FASE_B_TEMPERATURA_ALTA"], descricao=f"[UG{self.id}] Gerador Fase B Temperatura Alta")
         self.l_gerad_fase_c_temp_alta = lei.LeituraModbusBit(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}"]["GERADOR_FASE_C_TEMPERATURA_ALTA"], descricao=f"[UG{self.id}] Gerador Fase C Temperatura Alta")
@@ -1850,7 +1846,7 @@ class UnidadeDeGeracao:
         self.l_gerad_nucleo_2_temp_alta = lei.LeituraModbusBit(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}"]["GERADOR_NUCLEO_2_TEMPERATURA_ALTA"], descricao=f"[UG{self.id}] Gerador Núcleo 2 Temperatura Alta")
         self.l_gerad_nucleo_3_temp_alta = lei.LeituraModbusBit(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}"]["GERADOR_NUCLEO_3_TEMPERATURA_ALTA"], descricao=f"[UG{self.id}] Gerador Núcleo 3 Temperatura Alta")
         self.l_mancal_guia_casq_temp_alta = lei.LeituraModbusBit(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}"]["MANCAL_GUIA_CASQUILHO_TEMPERATURA_ALTA"], descricao=f"[UG{self.id}] Mancal Guia Casquilho Temperatura Alta")
-        self.l_mancal_comb_esc_temp_alta = lei.LeituraModbusBit(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}"]["MANCAL_COMBINADO_CASQUILHO_TEMPERATURA_ALTA"], descricao=f"[UG{self.id}] Mancal Combinado Escora Temperatura Alta")
+        self.l_mancal_comb_esc_temp_alta = lei.LeituraModbusBit(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}"]["MANCAL_COMBINADO_CASQUILHO_1_TEMPERATURA_ALTA"], descricao=f"[UG{self.id}] Mancal Combinado Escora Temperatura Alta")
         self.l_mancal_comb_casq_temp_alta = lei.LeituraModbusBit(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}"]["MANCAL_COMBINADO_ESCORA_TEMPERATURA_ALTA"], descricao=f"[UG{self.id}] Mancal Combinado Casquilho Temperatura Alta")
 
         self.l_rv_modo_manut = lei.LeituraModbusBit(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}"]["RV_MODO_MANUTENCAO"], descricao=f"[UG{self.id}] RV Modo Manutenção")
@@ -1862,48 +1858,21 @@ class UnidadeDeGeracao:
         self.l_uhrv_pressao_oleo_muito_baixa = lei.LeituraModbusBit(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}"]["UHRV_PRESSAO_OLEO_MUITO_BAIXA"], descricao=f"[UG{self.id}] UHRV Pressão Óleo Muito Baixa")
         self.l_sinal_nv_jusante_muito_baixo = lei.LeituraModbusBit(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}"]["SINAL_NIVEL_JUSANTE_MUITO_BAIXA"], descricao=f"[UG{self.id}] Nível Jusante Sinal Muito Baixo")
 
+        self.l_sinal_nv_jusante_baixo = lei.LeituraModbusBit(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}"]["SINAL_NIVEL_JUSANTE_BAIXA"], descricao=f"[UG{self.id}] Nível Jusante Sinal Baixo")
+        self.l_alarme_contro_dif_grade = lei.LeituraModbusBit(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}"]["CONTROLE_ALARME_DIFERENCIAL_DE_GRADE"], descricao=f"[UG{self.id}] Alarme Controle Diferencial Grade")
 
+        # self.l_urhv_press_crit = lei.LeituraModbusBit(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}"]["UHRV_PRESSAO_CRITICA"], descricao=f"[UG{self.id}] UHRV Pressão Crítica")
+        # self.condicionadores.append(c.CondicionadorBase(self.l_urhv_press_crit, CONDIC_INDISPONIBILIZAR))
 
+        # self.l_uhlm_fluxo_troc_calor = lei.LeituraModbusBit(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}"]["UHLM_FLUXO_TROCADOR_DE_CALOR"], descricao=f"[UG{self.id}] UHLM Fluxo Trocador Calor")
+        # self.condicionadores.append(c.CondicionadorBase(self.l_uhlm_fluxo_troc_calor, CONDIC_NORMALIZAR))
 
-        # self.l_falha_fechar_distrib = lei.LeituraModbusBit(self.clp[f"UG{self.id}"], REG_RTV[f"UG{self.id}"]["RV_FALHA_FECHAR_DISTRIBUIDOR"], descricao=f"[UG{self.id}] Falha Fechamento Distribuidor")
-        # self.condicionadores.append(c.CondicionadorBase(self.l_falha_fechar_distrib, CONDIC_INDISPONIBILIZAR))
+        # self.l_trafo_exci_temp_muito_alta = lei.LeituraModbusBit(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}"]["TRAFO_EXCITACAO_TEMPERATURA_MUITO_ALTA"], descricao=f"[UG{self.id}] Transformador Excitação Temperatura Muito Alta")
+        # self.condicionadores.append(c.CondicionadorBase(self.l_trafo_exci_temp_muito_alta, CONDIC_INDISPONIBILIZAR))
 
-        # self.l_rv_falha_partir = lei.LeituraModbusBit(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}"]["RV_FALHA_PARTIR"], descricao=f"[UG{self.id}] RV Falha Partir")
-        # self.condicionadores.append(c.CondicionadorBase(self.l_rv_falha_partir, CONDIC_INDISPONIBILIZAR))
+        # self.l_ulhm_falha_pressos = lei.LeituraModbusBit(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}"]["UHLM_FALHA_PRESSOSTATO"], descricao=f"[UG{self.id}] UHLM Falha Pressostato")
+        # self.condicionadores.append(c.CondicionadorBase(self.l_ulhm_falha_pressos, CONDIC_INDISPONIBILIZAR))
 
-        # self.l_rv_falha_desab = lei.LeituraModbusBit(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}"]["RV_FALHA_DESABILITAR"], descricao=f"[UG{self.id}] RV Falha Desabilitar")
-        # self.condicionadores.append(c.CondicionadorBase(self.l_rv_falha_desab, CONDIC_INDISPONIBILIZAR))
+        # self.l_falha_leit_temp_trafo_exci = lei.LeituraModbusBit(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}"]["TRAFO_EXCITACAO_TEMPERATURA_FALHA_LEITURA"], descricao=f"[UG{self.id}] Transformador Excitação Temperatura Falha Leitura")
+        # self.l_trafo_exci_temp_alta = lei.LeituraModbusBit(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}"]["TRAFO_EXCITACAO_TEMPERATURA_ALTA"], descricao=f"[UG{self.id}] Temperatura Alta")
 
-        # self.l_rv_falha_parar_maqu = lei.LeituraModbusBit(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}"]["RV_FALHA_PARAR_MAQUINA"], descricao=f"[UG{self.id}] RV Falha Parar Máquina")
-        # self.condicionadores.append(c.CondicionadorBase(self.l_rv_falha_parar_maqu, CONDIC_INDISPONIBILIZAR))
-
-        # self.l_rt_falha_partir = lei.LeituraModbusBit(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}"]["RT_FALHA_PARTIR"], descricao=f"[UG{self.id}] RT Falha Partir")
-        # self.condicionadores.append(c.CondicionadorBase(self.l_rt_falha_partir, CONDIC_INDISPONIBILIZAR))
-
-        # self.l_rt_falha_desab = lei.LeituraModbusBit(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}"]["RT_FALHA_DESABILITAR"], descricao=f"[UG{self.id}] RT Falha Desabilitar")
-        # self.condicionadores.append(c.CondicionadorBase(self.l_rt_falha_desab, CONDIC_INDISPONIBILIZAR))
-
-        # self.l_rv_falha_hab = lei.LeituraModbusBit(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}"]["RV_FALHA_HABILITAR"], descricao=f"[UG{self.id}] RV Falha Habilitar")
-        # self.condicionadores.append(c.CondicionadorBase(self.l_rv_falha_hab, CONDIC_INDISPONIBILIZAR))
-
-        # self.l_rt_falha_hab = lei.LeituraModbusBit(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}"]["RT_FALHA_HABILITAR"], descricao=f"[UG{self.id}] RT Falha Habilitar")
-        # self.condicionadores.append(c.CondicionadorBase(self.l_rt_falha_hab, CONDIC_INDISPONIBILIZAR))
-
-        # self.l_uhrv_bomba_1_falha_ligar = lei.LeituraModbusBit(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}"]["UHRV_BOMBA_1_FALHA_LIGAR"], descricao=f"[UG{self.id}] UHRV Falha Ligar")
-        # self.condicionadores.append(c.CondicionadorBase(self.l_uhrv_bomba_1_falha_ligar, CONDIC_INDISPONIBILIZAR))
-
-        # self.l_uhlm_bomba_1_falha_ligar = lei.LeituraModbusBit(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}"]["UHLM_BOMBA_1_FALHA_LIGAR"], descricao=f"[UG{self.id}] UHLM Bomba 1 Falha Ligar")
-        # self.condicionadores.append(c.CondicionadorBase(self.l_uhlm_bomba_1_falha_ligar, CONDIC_INDISPONIBILIZAR))
-
-        # self.l_uhlm_bomba_1_falha_deslig = lei.LeituraModbusBit(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}"]["UHLM_BOMBA_1_FALHA_DESLIGAR"], descricao=f"[UG{self.id}] UHLM Bomba 1 Falha Desligar")
-        # self.condicionadores.append(c.CondicionadorBase(self.l_uhlm_bomba_1_falha_deslig, CONDIC_INDISPONIBILIZAR))
-        
-        # self.l_uhlm_bomba_1_falha_pressurizar = lei.LeituraModbusBit(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}"]["UHLM_BOMBA_1_FALHA_PRESSURIZAR"], descricao=f"[UG{self.id}] UHLM Bomba 1 Falha Pressurizar")
-        # self.condicionadores.append(c.CondicionadorBase(self.l_uhlm_bomba_1_falha_pressurizar, CONDIC_INDISPONIBILIZAR))
-
-        # self.l_rt_alar_1_pres_tens_term_aus_corr_exci = lei.LeituraModbusBit(self.rt[f"UG{self.id}"], REG_UG[f"UG{self.id}"]["_RT_ALARMES_1_PRES_TENS_TERM_AUSEN_CORR_EXCI"], descricao=f"[UG{self.id}] RT Alarmes 1 Presença Tensão Terminal Ausente Corrente Excitação")
-        # self.condicionadores.append(c.CondicionadorBase(self.l_rt_alar_1_pres_tens_term_aus_corr_exci, CONDIC_INDISPONIBILIZAR))
-
-        # self.l_sinal_nv_jusante_baixo = lei.LeituraModbusBit(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}"]["NV_JUSANTE_BAIXO"], descricao=f"[UG{self.id}] Nível Jusante Sinal Baixo")
-        # self.l_alarme_contro_dif_grade = lei.LeituraModbusBit(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}"]["CTRL_ALARME_DIFERENCIAL_GRADE"], descricao=f"[UG{self.id}] Alarme Controle Diferencial Grade")
-        # self.l_resis_aquec_gerad_indisp = lei.LeituraModbusBit(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}"]["RESIS_AQUEC_GERA_INDISPONIVEL"], descricao=f"[UG{self.id}] Resistência Aquecimento Gerador Indisponível"),

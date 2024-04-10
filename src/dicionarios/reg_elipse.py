@@ -80,8 +80,12 @@ REG_SASE = {
     ### COMANDOS
     ## CMD_SA_SE
     "CMD_REARME_FALHAS":                                                                [12288, 0],
-    "CMD_PD_BOMBA_1_PRINCIPAL":                                                         [12288, 1],
-    "CMD_PD_BOMBA_2_PRINCIPAL":                                                         [12288, 2],
+    "CMD_PD_BOMBA_1_PRINCIPAL":                                                         [12288, 2],
+    "CMD_PD_BOMBA_2_PRINCIPAL":                                                         [12288, 3],
+    "CMD_PE_BOMBA_1_LIGA":                                                              [12288, 5],
+    "CMD_PE_BOMBA_2_LIGA":                                                              [12288, 6],
+    "CMD_PE_BOMBA_1_DESLIGA":                                                           [12288, 5],
+    "CMD_PE_BOMBA_2_DESLIGA":                                                           [12288, 6],
     "CMD_DISJ_TSA_ABRE":                                                                [12288, 13],
     "CMD_DISJ_TSA_FECHA":                                                               [12288, 14],
     "CMD_DISJ_GMG_ABRE":                                                                [12288, 15],
@@ -99,18 +103,18 @@ REG_SASE = {
     ### STATUS
     ## SST_ENTRADAS_DIGITAIS_0
     "BOTAO_REARME_FALHAS_PAINEL":                                                       [12308, 0],
-    "BOTAO_BLOQUEIO_86BTBF":                                                            [12308, 1],
+    "BOTAO_BLOQUEIO_86BTBF":                                                            [12308, 1], # HIGH
     "POCO_DRANAGEM_BOMBA_1_AUTOMATICO":                                                 [12308, 2],
-    "POCO_DRENAGEM_BOMBA_2_ATUTOMATICO":                                                [12308, 3],
-    "DISJUNTORES_MODO_REMOTO":                                                          [12308, 4],
+    "POCO_DRENAGEM_BOMBA_2_AUTOMATICO":                                                 [12308, 3],
+    "DISJUNTORES_MODO_REMOTO":                                                          [12308, 4], # HIGH
     "DISJUNTOR_TSA_TRIP":                                                               [12308, 5],
     "DISJUNTOR_GMG_TRIP":                                                               [12308, 6],
-    "RELE_BLOQUEIO_86BTBF":                                                             [12308, 7],
-    "CARREGADOR_BATERIAS_FALHA":                                                        [12308, 8],
-    "CONVERSOR_FIBRA_FALHA":                                                            [12308, 9],
-    "SUPERVISOR_TENSAO_FALHA":                                                          [12308, 10],
-    "DPS_TSA":                                                                          [12308, 11],
-    "DPS_GMG":                                                                          [12308, 12],
+    "RELE_BLOQUEIO_86BTBF":                                                             [12308, 7], # HIGH
+    "CARREGADOR_BATERIAS_FALHA":                                                        [12308, 8], # HIGH
+    # "CONVERSOR_FIBRA_FALHA":                                                            [12308, 9], ?
+    "SUPERVISOR_TENSAO_FALHA":                                                          [12308, 10], # HIGH
+    "DPS_TSA":                                                                          [12308, 11], # HIGH
+    "DPS_GMG":                                                                          [12308, 12], # HIGH
     "POCO_DRENAGEM_BOMBA_1_DEFEITO":                                                    [12308, 13],
     "POCO_DRENAGEM_BOMBA_1_LIGADA":                                                     [12308, 14],
     "POCO_DRENAGEM_BOMBA_2_DEFEITO":                                                    [12308, 15],
@@ -118,15 +122,17 @@ REG_SASE = {
     "POCO_DRENAGEM_BOMBA_2_LIGADA":                                                     [12309, 0],
     "SF_BOMBA_1_DEFEITO":                                                               [12309, 1],
     "SF_BOMBA_1_LIGADA":                                                                [12309, 2],
+    "SF_BOMBA_2_DEFEITO":                                                               [12309, 3],
+    "SF_BOMBA_2_LIGADA":                                                                [12309, 4],
     "POCO_DRENAGEM_SENSOR_NIVEL_MUITO_BAIXO":                                           [12309, 5],
     "POCO_DRENAGEM_SENSOR_NIVEL_DESLIGA_BOMBAS":                                        [12309, 6],
     "POCO_DRENAGEM_SENSOR_NIVEL_LIGA_BOMBA":                                            [12309, 7],
     "POCO_DRENAGEM_SENSOR_NIVEL_ALTO":                                                  [12309, 8],
-    "POCO_DRENAGEM_SENSOR_NIVEL_MUITO_ALTO":                                            [12309, 9],
+    "POCO_DRENAGEM_SENSOR_NIVEL_MUITO_ALTO":                                            [12309, 9], # HIGH
     "DISJUNTOR_TSA_FECHADO":                                                            [12309, 10],
     "DISJUNTOR_GMG_FECHADO":                                                            [12309, 11],
-    "SUPERVISOR_TENSAO_TSA_FALHA":                                                      [12309, 12],
-    "SUPERVISOR_TENSAO_GMG_FALHA":                                                      [12309, 13],
+    "SUPERVISOR_TENSAO_TSA_FALHA":                                                      [12309, 12], # HIGH
+    "SUPERVISOR_TENSAO_GMG_FALHA":                                                      [12309, 13], # HIGH
     "TE_TEMPERATURA_MUITO_ALTA":                                                        [12309, 14],
     "SE_DISJUNTOR_LINHA_FECHADO":                                                       [12309, 15],
 
@@ -135,9 +141,9 @@ REG_SASE = {
     "TE_TEMPERATURA_ALARME":                                                            [12310, 1],
     "TE_PRESSAO_MUITO_ALTA":                                                            [12310, 2],
     "TE_NIVEL_OLEO_MUITO_BAIXO":                                                        [12310, 3],
-    "PRTVA1_50_BF":                                                                     [12310, 4],
+    "PRTVA1_50_BF":                                                                     [12310, 4], # HIGH
     "PRTVA1_FILTRAGEM_ACIONA":                                                          [12310, 5],
-    "PRTVA2_50BF":                                                                      [12310, 6],
+    "PRTVA2_50BF":                                                                      [12310, 6], # HIGH
     "PRTVA2_FILTRAGEM_ACIONA":                                                          [12310, 7],
     "SFA_ENTRADA_ELEMENTO_1_ABERTA":                                                    [12310, 8],
     "SFA_ENTRADA_ELEMENTO_2_ABERTA":                                                    [12310, 9],
@@ -149,10 +155,12 @@ REG_SASE = {
     "SFB_LIMPEZA_ELEMENTO_1_ABERTA":                                                    [12310, 15],
 
     "PSA_SFB_LIMPEZA_ELEMENTO_2_ABERTO":                                                [12311, 0],
-    "PSA_CONVERSOR_FIBRA_FALHA":                                                        [12311, 1],
-    "PSA_RELE_LINHA_SEM_TRIP_OU_FALHA":                                                 [12311, 2],
+    "PSA_RELE_LINHA_SEM_TRIP_OU_FALHA":                                                 [12311, 2], # HIGH
+    "PSA_CONVERSOR_FIBRA_FALHA":                                                        [12311, 3], # HIGH
+    "PSA_CONVERSOR_2_FIBRA_FALHA":                                                      [12311, 4], # HIGH
 
     ## STT_FALHAS_ANALOGICAS
+    "NIVEL_MONTANTE_FALHA_LEITURA":                                                     [12338, 0],
     "NIVEL_JUSANTE_FALHA_LEITURA":                                                      [12338, 1],
     "SFA_PRESSAO_LADO_LIMPO_FALHA_LEITURA":                                             [12338, 2],
     "SFA_PRESSAO_LADO_SUJO_FALHA_LEITURA":                                              [12338, 3],
@@ -161,6 +169,8 @@ REG_SASE = {
 
     ## STT_ALARMES_HH_ANALOGICAS
     "NIVEL_JUSANTE_MUITO_ALTO":                                                         [12340, 0],
+    "NIVEL_MONTANTE_MUITO_ALTO":                                                        [12340, 1],
+    "NIVEL_JUSANTE_2_MUITO_ALTO":                                                       [12340, 2],
     "SFA_PRESSAO_LADO_LIMPO_MUITO_ALTO":                                                [12340, 3],
     "SFA_PRESSAO_LADO_SUJO_MUITO_ALTO":                                                 [12340, 4],
     "SFB_PRESSAO_LADO_LIMPO_MUITO_ALTO":                                                [12340, 5],
@@ -168,6 +178,8 @@ REG_SASE = {
 
     ## STT_ALARMES_H_ANALOGICAS
     "PSA_NIVEL_JUSANTE_ALTO":                                                           [12342, 0],
+    "PSA_NIVEL_MONTANTE_ALTO":                                                          [12342, 1],
+    "PSA_NIVEL_JUSANTE_2_ALTO":                                                         [12342, 2],
     "PSA_SFA_PRESSAO_LADO_LIMPO_ALTO":                                                  [12342, 3],
     "PSA_SFA_PRESSAO_LADO_SUJO_ALTO":                                                   [12342, 4],
     "PSA_SFB_PRESSAO_LADO_LIMPO_ALTO":                                                  [12342, 5],
@@ -175,6 +187,8 @@ REG_SASE = {
 
     ## STT_ALARMES_L_ANALOGICAS
     "NIVEL_JUSANTE_BAIXO":                                                              [12344, 0],
+    "NIVEL_MONTANTE_BAIXO":                                                             [12344, 1],
+    "NIVEL_JUSANTE_2_BAIXO":                                                            [12344, 2],
     "SFA_PRESSAO_LADO_LIMPO_BAIXO":                                                     [12344, 3],
     "SFA_PRESSAO_LADO_SUJO_BAIXO":                                                      [12344, 4],
     "SFB_PRESSAO_LADO_LIMPO_BAIXO":                                                     [12344, 5],
@@ -182,20 +196,22 @@ REG_SASE = {
 
     ## STT_ALARMES_LL_ANALOGICAS
     "NIVEL_JUSANTE_MUITO_BAIXO":                                                        [12346, 0],
+    "NIVEL_MONTANTE_MUITO_BAIXO":                                                       [12346, 1],
+    "NIVEL_JUSANTE_2_MUITO_BAIXO":                                                      [12346, 2],
     "SFA_PRESSAO_LADO_LIMPO_MUITO_BAIXO":                                               [12346, 3],
     "SFA_PRESSAO_LADO_SUJO_MUITO_BAIXO":                                                [12346, 4],
     "SFB_PRESSAO_LADO_LIMPO_MUITO_BAIXO":                                               [12346, 5],
     "SFB_PRESSAO_LADO_SUJO_MUITO_BAIXO":                                                [12346, 6],
 
     ## STT_SA_SE
-    "DRENAGEM_BOMBA_1_INDISPONIVEL":                                                    [12348, 0],
-    "DRENAGEM_BOMBA_2_INDISPONIVEL":                                                    [12348, 1],
+    "DRENAGEM_BOMBA_1_INDISPONIVEL":                                                    [12348, 0], # HIGH
+    "DRENAGEM_BOMBA_2_INDISPONIVEL":                                                    [12348, 1], # HIGH
     "DRENAGEM_BOMBA_1_PRINCIPAL":                                                       [12348, 2],
     "DRENAGEM_BOMBA_2_PRINCIPAL":                                                       [12348, 3],
     "DRENAGEM_BOIAS_DISCREPANCIA":                                                      [12348, 4],
-    "SF_BOMBA_1_INDISPONIVEL":                                                          [12348, 5],
-    "ESGOTAMENTO_BOMBA_2_INDISPONIVEL":                                                 [12348, 6],
-    "SF_BOMBA_1_FALHA":                                                                 [12348, 7],
+    "ESGOTAMENTO_BOMBA_1_INDISPONIVEL":                                                 [12348, 5], # HIGH
+    "ESGOTAMENTO_BOMBA_2_INDISPONIVEL":                                                 [12348, 6], # HIGH
+    "ESGOTAMENTO_BOMBA_1_FALHA":                                                        [12348, 7],
     "ESGOTAMENTO_BOMBA_2_FALHA":                                                        [12348, 8],
     "GMG_DISJUNTOR_FALHA_FECHAR":                                                       [12348, 9],
     "GMG_DISJUNTOR_FALHA_ABRIR":                                                        [12348, 10],
@@ -262,7 +278,7 @@ REG_TDA = {
 
     ### STATUS
     ## STT_ENTRADAS_DIGITAIS_0
-    "DISPOSITIVO_PROTETOR_DE_SURTO":                                                    [12308, 0],
+    "DISPOSITIVO_PROTETOR_DE_SURTO":                                                    [12308, 0], # HIGH
     "UHLG_BOMBA_1_LIGADA":                                                              [12308, 1],
     "UHLG_BOMBA_1_DEFEITO":                                                             [12308, 2],
     "UHLG_BOMBA_2_LIGADA":                                                              [12308, 3],
@@ -271,7 +287,7 @@ REG_TDA = {
     "MONOVIA_MOTOR_1_DEFEITO":                                                          [12308, 6],
     "MONOVIA_MOTOR_2_LIGADA":                                                           [12308, 7],
     "MONOVIA_MOTOR_2_DEFEITO":                                                          [12308, 8],
-    "CONVERSOR_FIBRA_FALHA":                                                            [12308, 9],
+    "CONVERSOR_FIBRA_FALHA":                                                            [12308, 9], # HIGH
 
     ## STT_ANALÓGICAS
     "NIVEL_JUSANTE_GRADE_FALHA_LEITURA":                                                [12328, 0],
@@ -313,16 +329,20 @@ REG_UG = {
         "CMD_UHRV_MODO_MANUTENCAO":                                                     [12292, 1],
         "CMD_UHRV_BOMBA_1_LIGA":                                                        [12292, 2],
         "CMD_UHRV_BOMBA_1_DESLIGA":                                                     [12292, 3],
-        "CMD_UHRV_BOMBA_2_LIGA":                                                        [12292, 4],
-        "CMD_UHRV_BOMBA_2_DESLIGA":                                                     [12292, 5],
-        "CMD_UHRV_BOMBA_1_PRINCIPAL":                                                   [12292, 6],
-        "CMD_UHRV_BOMBA_2_PRINCIPAL":                                                   [12292, 7],
+        "CMD_UHRV_BOMBA_1_PRINCIPAL":                                                   [12292, 4],
+        "CMD_UHRV_BOMBA_2_PRINCIPAL":                                                   [12292, 5],
+        "CMD_UHRV_BOMBA_2_LIGA":                                                        [12292, 6],
+        "CMD_UHRV_BOMBA_2_DESLIGA":                                                     [12292, 7],
 
         ## CMD_UHLM
         "CMD_UHLM_MODO_AUTOMATICO":                                                     [12294, 0],
         "CMD_UHLM_MODO_MANUTENCAO":                                                     [12294, 1],
         "CMD_UHLM_BOMBA_1_LIGA":                                                        [12294, 2],
         "CMD_UHLM_BOMBA_1_DESLIGA":                                                     [12294, 3],
+        "CMD_UHLM_BOMBA_1_PRINCIPAL":                                                   [12294, 4],
+        "CMD_UHLM_BOMBA_2_PRINCIPAL":                                                   [12294, 5],
+        "CMD_UHLM_BOMBA_2_LIGA":                                                        [12294, 6],
+        "CMD_UHLM_BOMBA_2_DESLIGA":                                                     [12294, 7],
 
         ## COMANDOS_ANALÓGICOS
         # CONTROLE_NÍVEL
@@ -341,57 +361,120 @@ REG_UG = {
         "SETPOINT_MAXIMO_POTENCIA":                                                     12612,
         "SETPOINT_NIVEL":                                                               12616,
 
-
         ### STATUS
+        ## SST_ENTRADAS_DIGITAIS_1
+        "BOTAO_BLOQUEIO_86EH":                                                          [12310, 0], # HIGH
+        "REARME_FALHAS":                                                                [12310, 1],
+        "BOTAO_PARA_UG":                                                                [12310, 2],
+        "BOTAO_PARTE_UG":                                                               [12310, 3],
+        "BOTAO_DIMINUI_REFERENCIA_RV":                                                  [12310, 4],
+        "BOTAO_AUMENTA_REFERENCIA_RV":                                                  [12310, 5],
+        "BOTAO_DIMINUI_REFERENCIA_RT":                                                  [12310, 6],
+        "BOTAO_AUMENTA_REFERENCIA_RT":                                                  [12310, 7],
+        "RELE_PROT_GERADOR_TRIP":                                                       [12310, 9], # HIGH
+        "RELE_PROT_GERADOR_50BF":                                                       [12310, 10], # HIGH
+        "RV_TRIP":                                                                      [12310, 11], # HIGH
+        "RV_ALARME":                                                                    [12310, 12],
+        "RV_HABILITADO":                                                                [12310, 13],
+        "RV_REGULANDO":                                                                 [12310, 14],
+        "RV_POTENCIA_NULA":                                                             [12310, 15],
+
+        "PRTVA_RV_MAQUINA_PARADA":                                                      [12311, 0],
+        "PRTVA_RV_VELOCIDADE_MENOR":                                                    [12311, 1],
+        "PRTVA_RV_VELOCIDADE_MAIOR":                                                    [12311, 2],
+        "PRTVA_RV_DISTRIBUIDOR_ABERTO":                                                 [12311, 3],
+        "PRTVA_RT_TRIP":                                                                [12311, 4], # HIGH
+        "PRTVA_RT_ALARME":                                                              [12311, 5],
+        "PRTVA_RT_HABILITADO":                                                          [12311, 6],
+        "PRTVA_RT_REGULANDO":                                                           [12311, 7],
+        "PRTVA_CONTATOR_DE_CAMPO_FECHADO":                                              [12311, 8],
+        "PRTVA_DISJUNTOR_DE_MAQUINA_FECHADO":                                           [12311, 9],
+        "PRTVA_RELE_BLOQUEIO_86EH":                                                     [12311, 10], # HIGH
+        "PRTVA_SUPERVISAO_DE_TENSAO_ENTRADA_CA":                                        [12311, 11],
+        "PRTVA_DISPOSITIVO_PROTECAO_DE_SURTO":                                          [12311, 12], # HIGH
+        "PRTVA_UHRV_BOMBA_DEFEITO":                                                     [12311, 13],
+        "PRTVA_UHRV_BOMBA_LIGADA":                                                      [12311, 14],
+        "PRTVA_UHLM_BOMBA_DEFEITO":                                                     [12311, 15],
+
+        ## SST_ENTRADAS_DIGITAIS_2
+        "UHLM_BOMBA_LIGADA":                                                            [12312, 0],
+        "UG_RESISTENCIA_AQUEC_GERADOR_DEFEITO":                                         [12312, 3],
+        "UG_RESISTENCIA_AQUEC_GERADOR_LIGADA":                                          [12312, 4],
+        "DISJUNTOR_TPS_PROTECAO":                                                       [12312, 5], # HIGH
+        "DISJUNTOR_TPS_SINCRONIZACAO":                                                  [12312, 6], # HIGH
+        "UHRV_OLEO_NIVEL_MUITO_BAIXO":                                                  [12312, 7], # HIGH
+        "UHRV_FILTRO_OLEO_SUJO":                                                        [12312, 8], # HIGH
+        "UHRV_PRESSAO_CRITICA":                                                         [12312, 9],
+        "UHRV_PRESSAO_FREIO":                                                           [12312, 10],
+        "UHLM_OLEO_NIVEL_MUITO_ALTO":                                                   [12312, 12], # HIGH
+        "UHLM_OLEO_NIVEL_MUITO_BAIXO":                                                  [12312, 13], # HIGH
+        "UHLM_PRESSAO_LINHA_LUBRIFICACAO":                                              [12312, 14],
+        "UHLM_FILTRO_OLEO_SUJO":                                                        [12312, 15], # HIGH
+
+        "UHLM_FLUXO_TROCADOR_DE_CALOR":                                                 [12312, 0],
+        "QBAG_ESCOVA_POLO_POSITIVO_DESGASTADA":                                         [12313, 2],
+        "QBAG_ESCOVA_POLO_NEGATICO_DESGASTADA":                                         [12313, 3],
+        "PSA_BLOQUEIO_86BTBF":                                                          [12313, 4], # HIGH
+        "PSA_POCO_DRENAGEM_NIVEL_MUITO_ALTO":                                           [12313, 5], # HIGH
+        "PSA_FILTRAGEM_PRESSAO_SAIDA":                                                  [12313, 6],
+        "PSA_DISJUNTOR_LINHA_FECHADO":                                                  [12313, 7],
+        "VB_VALVULA_BORBOLETA_ABERTA":                                                  [12313, 12],
+        "VB_VALVULA_BORBOLETA_FECHADA":                                                 [12313, 13],
+        "VB_VALVULA_BYPASS_ABERTA":                                                     [12313, 14],
+        "VB_VALVULA_BYPASS_FECHADA":                                                    [12313, 15],
+
         ## STT_FALHAS_TEMPERATURA
         "TIRISTORES_TEMPERATURA_FALHA_LEITURA":                                         [12328, 0],
         "CROWBAR_TEMPERATURA_FALHA_LEITURA":                                            [12328, 1],
-        "TRAFO_EXCITACAO_TEMPERATURA_FALHA_LEITURA":                                    [12328, 2],
-        "UHRV_TEMPERATURA_OLEO_FALHA_LEITURA":                                          [12328, 3],
-        "UHLM_TEMPERATURA_OLEO_FALHA_LEITURA":                                          [12328, 4],
-        "GERADOR_FASE_A_TEMPERATURA_FALHA_LEITURA":                                     [12328, 7],
-        "GERADOR_FASE_B_TEMPERATURA_FALHA_LEITURA":                                     [12328, 8],
-        "GERADOR_FASE_C_TEMPERATURA_FALHA_LEITURA":                                     [12328, 9],
-        "GERADOR_NUCLEO_1_TEMPERATURA_FALHA_LEITURA":                                   [12328, 10],
-        "GERADOR_NUCLEO_2_TEMPERATURA_FALHA_LEITURA":                                   [12328, 11],
-        "GERADOR_NUCLEO_3_TEMPERATURA_FALHA_LEITURA":                                   [12328, 12],
-        "MANCAL_GUIA_CASQUILHO_TEMPERATURA_FALHA_LEITURA":                              [12328, 13],
-        "MANCAL_COMBINADO_CASQUILHO_TEMPERATURA_FALHA_LEITURA":                         [12328, 14],
-        "MANCAL_COMBINADO_ESCORA_TEMPERATURA_FALHA_LEITURA":                            [12328, 15],
+        # "TRAFO_EXCITACAO_TEMPERATURA_FALHA_LEITURA":                                    [12328, 2], ?
+        "GERADOR_FASE_A_TEMPERATURA_FALHA_LEITURA":                                     [12328, 3],
+        "GERADOR_FASE_B_TEMPERATURA_FALHA_LEITURA":                                     [12328, 4],
+        "GERADOR_FASE_C_TEMPERATURA_FALHA_LEITURA":                                     [12328, 5],
+        "GERADOR_NUCLEO_1_TEMPERATURA_FALHA_LEITURA":                                   [12328, 6],
+        "GERADOR_NUCLEO_2_TEMPERATURA_FALHA_LEITURA":                                   [12328, 7],
+        "GERADOR_NUCLEO_3_TEMPERATURA_FALHA_LEITURA":                                   [12328, 8],
+        "MANCAL_GUIA_CASQUILHO_TEMPERATURA_FALHA_LEITURA":                              [12328, 9],
+        "MANCAL_COMBINADO_CASQUILHO_1_TEMPERATURA_FALHA_LEITURA":                       [12328, 10],
+        "MANCAL_COMBINADO_CASQUILHO_2_TEMPERATURA_FALHA_LEITURA":                       [12328, 11],
+        "MANCAL_COMBINADO_ESCORA_TEMPERATURA_FALHA_LEITURA":                            [12328, 12],
+        "UHLM_TEMPERATURA_OLEO_FALHA_LEITURA":                                          [12328, 13],
+        "UHRV_TEMPERATURA_OLEO_FALHA_LEITURA":                                          [12328, 14],
 
 
         ## STT_ALARMES_HH_TEMPERATURA
         "TIRISTORES_TEMPERATURA_MUITO_ALTA":                                            [12330, 0],
         "CROWBAR_TEMPERATURA_MUITO_ALTA":                                               [12330, 1],
-        "TRAFO_EXCITACAO_TEMPERATURA_MUITO_ALTA":                                       [12330, 2],
-        "UHRV_TEMPERATURA_OLEO_MUITO_ALTA":                                             [12330, 3],
-        "UHLM_TEMPERATURA_OLEO_MUITO_ALTA":                                             [12330, 4],
-        "GERADOR_FASE_A_TEMPERATURA_MUITO_ALTA":                                        [12330, 7],
-        "GERADOR_FASE_B_TEMPERATURA_MUITO_ALTA":                                        [12330, 8],
-        "GERADOR_FASE_C_TEMPERATURA_MUITO_ALTA":                                        [12330, 9],
-        "GERADOR_NUCLEO_1_TEMPERATURA_MUITO_ALTA":                                      [12330, 10],
-        "GERADOR_NUCLEO_2_TEMPERATURA_MUITO_ALTA":                                      [12330, 11],
-        "GERADOR_NUCLEO_3_TEMPERATURA_MUITO_ALTA":                                      [12330, 12],
-        "MANCAL_GUIA_CASQUILHO_TEMPERATURA_MUITO_ALTA":                                 [12330, 13],
-        "MANCAL_COMBINADO_CASQUILHO_TEMPERATURA_MUITO_ALTA":                            [12330, 14],
-        "MANCAL_COMBINADO_ESCORA_TEMPERATURA_MUITO_ALTA":                               [12330, 15],
+        # "TRAFO_EXCITACAO_TEMPERATURA_MUITO_ALTA":                                       [12330, 2], ?
+        "GERADOR_FASE_A_TEMPERATURA_MUITO_ALTA":                                        [12330, 3],
+        "GERADOR_FASE_B_TEMPERATURA_MUITO_ALTA":                                        [12330, 4],
+        "GERADOR_FASE_C_TEMPERATURA_MUITO_ALTA":                                        [12330, 5],
+        "GERADOR_NUCLEO_1_TEMPERATURA_MUITO_ALTA":                                      [12330, 6],
+        "GERADOR_NUCLEO_2_TEMPERATURA_MUITO_ALTA":                                      [12330, 7],
+        "GERADOR_NUCLEO_3_TEMPERATURA_MUITO_ALTA":                                      [12330, 8],
+        "MANCAL_GUIA_CASQUILHO_TEMPERATURA_MUITO_ALTA":                                 [12330, 9],
+        "MANCAL_COMBINADO_CASQUILHO_1_TEMPERATURA_MUITO_ALTA":                          [12330, 10],
+        "MANCAL_COMBINADO_CASQUILHO_2_TEMPERATURA_MUITO_ALTA":                          [12330, 11],
+        "MANCAL_COMBINADO_ESCORA_TEMPERATURA_MUITO_ALTA":                               [12330, 12],
+        "UHLM_TEMPERATURA_OLEO_MUITO_ALTA":                                             [12330, 13],
+        "UHRV_TEMPERATURA_OLEO_MUITO_ALTA":                                             [12330, 14],
 
 
         ## STT_ALARMES_H_TEMPERATURA
         "TIRISTORES_TEMPERATURA_ALTA":                                                  [12332, 0],
         "CROWBAR_TEMPERATURA_ALTA":                                                     [12332, 1],
-        "TRAFO_EXCITACAO_TEMPERATURA_ALTA":                                             [12332, 2],
-        "UHRV_TEMPERATURA_OLEO_ALTA":                                                   [12332, 3],
-        "UHLM_TEMPERATURA_OLEO_ALTA":                                                   [12332, 4],
-        "GERADOR_FASE_A_TEMPERATURA_ALTA":                                              [12332, 7],
-        "GERADOR_FASE_B_TEMPERATURA_ALTA":                                              [12332, 8],
-        "GERADOR_FASE_C_TEMPERATURA_ALTA":                                              [12332, 9],
-        "GERADOR_NUCLEO_1_TEMPERATURA_ALTA":                                            [12332, 10],
-        "GERADOR_NUCLEO_2_TEMPERATURA_ALTA":                                            [12332, 11],
-        "GERADOR_NUCLEO_3_TEMPERATURA_ALTA":                                            [12332, 12],
-        "MANCAL_GUIA_CASQUILHO_TEMPERATURA_ALTA":                                       [12332, 13],
-        "MANCAL_COMBINADO_CASQUILHO_TEMPERATURA_ALTA":                                  [12332, 14],
-        "MANCAL_COMBINADO_ESCORA_TEMPERATURA_ALTA":                                     [12332, 15],
+        # "TRAFO_EXCITACAO_TEMPERATURA_ALTA":                                             [12332, 2], ?
+        "GERADOR_FASE_A_TEMPERATURA_ALTA":                                              [12332, 3],
+        "GERADOR_FASE_B_TEMPERATURA_ALTA":                                              [12332, 4],
+        "GERADOR_FASE_C_TEMPERATURA_ALTA":                                              [12332, 5],
+        "GERADOR_NUCLEO_1_TEMPERATURA_ALTA":                                            [12332, 6],
+        "GERADOR_NUCLEO_2_TEMPERATURA_ALTA":                                            [12332, 7],
+        "GERADOR_NUCLEO_3_TEMPERATURA_ALTA":                                            [12332, 8],
+        "MANCAL_GUIA_CASQUILHO_TEMPERATURA_ALTA":                                       [12332, 9],
+        "MANCAL_COMBINADO_CASQUILHO_1_TEMPERATURA_ALTA":                                [12332, 10],
+        "MANCAL_COMBINADO_CASQUILHO_2_TEMPERATURA_ALTA":                                [12332, 11],
+        "MANCAL_COMBINADO_ESCORA_TEMPERATURA_ALTA":                                     [12332, 12],
+        "UHLM_TEMPERATURA_OLEO_ALTA":                                                   [12332, 13],
+        "UHRV_TEMPERATURA_OLEO_ALTA":                                                   [12332, 14],
 
         ## STT_FALHAS_ANALOGICAS
         "UHRV_PRESSAO_OLEO_FALHA_LEITURA":                                              [12340, 0],
@@ -412,6 +495,101 @@ REG_UG = {
         ## STT_ALARMES_LL_ANALOGICAS
         "UHRV_PRESSAO_OLEO_MUITO_BAIXA":                                                [12348, 0],
         "SINAL_NIVEL_JUSANTE_MUITO_BAIXA":                                              [12348, 1],
+
+        ## STT_UNIDADE_GERADORA
+        "CONTROLE_POTENCIA_POR_NIVEL_HABILITADO":                                       [12360, 0],
+        "CONTROLE_DE_NIVEL_HABILITADO":                                                 [12360, 1],
+        "CONTROLE_POTENCIA_MANUAL_HABILITADO":                                          [12360, 2],
+        "CONTROLE_PARADA_POR_NIVEL_HABILITADO":                                         [12360, 3],
+        "CONTROLE_PARADA_NIVEL_BAIXO":                                                  [12360, 4],
+        "CONTROLE_FALHA_SENSOR_NIVEL":                                                  [12360, 5],
+        "CONTROLE_ALARME_DIFERENCIAL_DE_GRADE":                                         [12360, 6],
+        "CONTROLE_TRIP_DIFERENCIAL_DE_GRADE":                                           [12360, 7],
+        "RESISTENCIA_AQUECIMENTO_GERADOR_INDISPONIVEL":                                 [12360, 8],
+        "RESISTENCIA_AQUECIMENTO_GERADOR_FALHA_LIGAR":                                  [12360, 9],
+        "RESISTENCIA_AQUECIMENTO_GERADOR_FALHA_DESLIGAR":                               [12360, 10],
+        "FREIO_FALHA_AO_APLICAR_OU_DESAPLICAR":                                         [12360, 11],
+        "UG_FALHA_ACOPLAMENTO_DE_CARGA":                                                [12360, 12],
+        "UG_FALHA_DESCARGA_POTENCIA":                                                   [12360, 13],
+        "UG_FALHA_ABRIR_DISJUNTOR":                                                     [12360, 14],
+
+        ## STT_UHRV
+        "UHRV_UNIDADE_MANUTENCAO":                                                      [12362, 0],
+        "UHRV_UNIDADE_HABILITADA":                                                      [12362, 1],
+        "UHRV_BOMBA_1_INDISPONIVEL":                                                    [12362, 2],
+        "UHRV_BOMBA_2_INDISPONIVEL":                                                    [12362, 3],
+        "UHRV_BOMBA_1_PRINCIPAL":                                                       [12362, 4],
+        "UHRV_BOMBA_2_PRINCIPAL":                                                       [12362, 5],
+        "UHRV_BOMBA_1_FALHA_AO_LIGAR":                                                  [12362, 6],
+        "UHRV_BOMBA_1_FALHA_AO_DESLIGAR":                                               [12362, 7],
+        "UHRV_BOMBA_2_FALHA_AO_LIGAR":                                                  [12362, 8],
+        "UHRV_BOMBA_2_FALHA_AO_DESLIGAR":                                               [12362, 9],
+        "UHRV_BOMBA_1_FALHA_AO_PRESSURIZAR":                                            [12362, 10],
+        "UHRV_BOMBA_2_FALHA_AO_PRESSURIZAR":                                            [12362, 11],
+        "UHRV_FILTRO_OLEO_SUJO":                                                        [12362, 13],
+
+        ## STT_UHLM
+        "UHLM_UNIDADE_MANUTENCAO":                                                      [12364, 0],
+        "UHLM_BOMBA_1_INDISPONIVEL":                                                    [12364, 2],
+        "UHLM_BOMBA_2_INDISPONIVEL":                                                    [12364, 3],
+        "UHLM_BOMBA_1_PRINCIPAL":                                                       [12364, 4],
+        "UHLM_BOMBA_2_PRINCIPAL":                                                       [12364, 5],
+        "UHLM_BOMBA_1_FALHA_AO_LIGAR":                                                  [12364, 6],
+        "UHLM_BOMBA_1_FALHA_AO_DESLIGAR":                                               [12364, 7],
+        "UHLM_BOMBA_2_FALHA_AO_LIGAR":                                                  [12364, 8],
+        "UHLM_BOMBA_2_FALHA_AO_DESLIGAR":                                               [12364, 9],
+        "UHLM_BOMBA_1_FALHA_AO_PRESSURIZAR":                                            [12364, 10],
+        "UHLM_BOMBA_2_FALHA_AO_PRESSURIZAR":                                            [12364, 11],
+        "UHLM_FILTRO_OLEO_SUJO":                                                        [12364, 13],
+        # "UHLM_FALHA_PRESSOSTATO":                                                       [12364, 14],
+
+        ## STT_BORBOLETA
+        "BORBOLETA_FALHA_ABRIR":                                                        [12366, 0],
+        "BORBOLETA_FALHA_FECHAR":                                                       [12366, 1],
+        "BORBOLETA_ABRINDO":                                                            [12366, 2],
+        "BORBOLETA_FECHANDO":                                                           [12366, 3],
+        "BYPASS_ABRINDO":                                                               [12366, 4],
+        "BYPASS_FECHANDO":                                                              [12366, 5],
+        "BYPASS_FALHA_ABRIR":                                                           [12366, 6],
+        "BYPASS_FALHA_FECHAR":                                                          [12366, 7],
+        "BORBOLETA_DISCREPANCIA_SENSORES":                                              [12366, 10],
+        "BYPASS_DISCREPANCIA_SENSORES":                                                 [12366, 11],
+        
+        # STT_FILTRAGEM
+        "SF_FALHA_FLUXO_TROCADOR_CALOR":                                                [12368, 0],
+        "SF_FALHA_HABILITAR":                                                           [12368, 1],
+
+        ## STT_RV
+        "RV_FALHA_AO_HABILITAR":                                                        [12372, 0],
+        "RV_FALHA_AO_PARTIR":                                                           [12372, 1],
+        "RV_FALHA_AO_DESABILITAR":                                                      [12372, 2],
+        "RV_FALHA_AO_PARAR_MAQUINA":                                                    [12372, 3],
+        "RV_FALHA_AO_FECHAR_DISTRIBUIDOR":                                              [12372, 4],
+        "RV_MODO_MANUTENCAO":                                                           [12372, 5],
+
+        ## STT_RT
+        "RT_FALHA_AO_HABILITAR":                                                        [12374, 0],
+        "RT_FALHA_AO_PARTIR":                                                           [12374, 1],
+        "RT_FALHA_AO_DESABILITAR":                                                      [12374, 2],
+
+        ## BLOQUEIO_86M
+        "BLOQUEIO_86M_ATUADO":                                                          [12428, 15],
+
+        ## BLOQUEIO_86E
+        "BLOQUEIO_86E_ATUADO":                                                          [12430, 15],
+
+        ## BLOQUEIO_86H
+        "BLOQUEIO_86H_ATUADO":                                                          [12432, 15],
+
+        ## PARTIDA_PARADA
+        "STT_PARTIDA_PARADA":                                                           12388,
+        "SST_PASSO_SELECIONADO":                                                        12390,
+        "STT_PASSO_ATUAL":                                                              12392,
+
+        ## PERMISSIVOS
+        "STT_PRE_CONDICOES_GIRO_MECANICO":                                              12408,
+        "STT_PRE_CONDICOES_EXCITCAO":                                                   12410,
+        "STT_PRE_CONDICOES_SINCRONISMO":                                                12412,
 
         ## LEITURAS_ANALÓGICAS
         "TEMPERATURA_PONTE_TIRISTORES":                                                 12488,
@@ -435,155 +613,6 @@ REG_UG = {
         "VIBRACAO_EIXO_Y_COMBINADO":                                                    12528,
         "VIBRACAO_EIXO_Z_COMBINADO":                                                    12530,
         "VIBRACAO_EIXO_Y_GUIA":                                                         12532,
-
-        ## BLOQUEIO_86M
-        "BLOQUEIO_86M_ATUADO":                                                          [12428, 15],
-
-        ## BLOQUEIO_86E
-        "BLOQUEIO_86E_ATUADO":                                                          [12430, 15],
-
-        ## BLOQUEIO_86H
-        "BLOQUEIO_86H_ATUADO":                                                          [12432, 15],
-
-        ## STT_BORBOLETA
-        "BORBOLETA_FALHA_ABRIR":                                                        [12366, 0],
-        "BORBOLETA_FALHA_FECHAR":                                                       [12366, 1],
-        "BORBOLETA_ABRINDO":                                                            [12366, 2],
-        "BORBOLETA_FECHANDO":                                                           [12366, 3],
-        "BYPASS_ABRINDO":                                                               [12366, 4],
-        "BYPASS_FECHANDO":                                                              [12366, 5],
-        "BYPASS_FALHA_ABRIR":                                                           [12366, 6],
-        "BYPASS_FALHA_FECHAR":                                                          [12366, 7],
-        "BORBOLETA_DISCREPANCIA_SENSORES":                                              [12366, 10],
-        "BYPASS_DISCREPANCIA_SENSORES":                                                 [12366, 11],
-
-        ## SST_ENTRADAS_DIGITAIS_1
-        "BOTAO_BLOQUEIO_86EH":                                                          [12310, 0],
-        "REARME_FALHAS":                                                                [12310, 1],
-        "BOTAO_PARA_UG":                                                                [12310, 2],
-        "BOTAO_PARTE_UG":                                                               [12310, 3],
-        "BOTAO_DIMINUI_REFERENCIA_RV":                                                  [12310, 4],
-        "BOTAO_AUMENTA_REFERENCIA_RV":                                                  [12310, 5],
-        "BOTAO_DIMINUI_REFERENCIA_RT":                                                  [12310, 6],
-        "BOTAO_AUMENTA_REFERENCIA_RT":                                                  [12310, 7],
-        "RELE_PROT_GERADOR_TRIP":                                                       [12310, 8],
-        "RELE_PROT_GERADOR_50BF":                                                       [12310, 10],
-        "RV_TRIP":                                                                      [12310, 11],
-        "RV_ALARME":                                                                    [12310, 12],
-        "RV_HABILITADO":                                                                [12310, 13],
-        "RV_REGULANDO":                                                                 [12310, 14],
-        "RV_POTENCIA_NULA":                                                             [12310, 15],
-
-        "PRTVA_RV_MAQUINA_PARADA":                                                      [12311, 0],
-        "PRTVA_RV_VELOCIDADE_MENOR":                                                    [12311, 1],
-        "PRTVA_RV_VELOCIDADE_MAIOR":                                                    [12311, 2],
-        "PRTVA_RV_DISTRIBUIDOR_ABERTO":                                                 [12311, 3],
-        "PRTVA_RT_TRIP":                                                                [12311, 4],
-        "PRTVA_RT_ALARME":                                                              [12311, 5],
-        "PRTVA_RT_HABILITADO":                                                          [12311, 6],
-        "PRTVA_RT_REGULANDO":                                                           [12311, 7],
-        "PRTVA_CONTATOR_DE_COMPO_FECHADO":                                              [12311, 8],
-        "PRTVA_DISJUNTOR_DE_MAQUINA_FECHADO":                                           [12311, 9],
-        "PRTVA_RELE_BLOQUEIO_86EH":                                                     [12311, 10],
-        "PRTVA_SUPERVISAO_DE_TENSAO_ENTRADA_CA":                                        [12311, 11],
-        "PRTVA_DISPOSITIVO_PROTECAO_DE_SURTO":                                          [12311, 12],
-        "PRTVA_UHRV_BOMBA_DEFEITO":                                                     [12311, 13],
-        "PRTVA_UHRV_BOMBA_LIGADA":                                                      [12311, 14],
-        "PRTVA_UHLM_BOMBA_DEFEITO":                                                     [12311, 15],
-
-        ## SST_ENTRADAS_DIGITAIS_2
-        "UHLM_BOMBA_LIGADA":                                                            [12312, 0],
-        "UG_RESISTENCIA_AQUEC_GERADOR_DEFEITO":                                         [12312, 3],
-        "UG_RESISTENCIA_AQUEC_GERADOR_LIGADA":                                          [12312, 4],
-        "DISJUNTOR_TPS_PROTECAO":                                                       [12312, 5],
-        "UHRV_OLEO_NIVEL_MUITO_BAIXO":                                                  [12312, 6],
-        "UHRV_FILTRO_OLEO_SUJO":                                                        [12312, 7],
-        "UHRV_PRESSAO_CRITICA":                                                         [12312, 8],
-        "UHRV_PRESSAO_FREIO":                                                           [12312, 9],
-        "UHLM_OLEO_NIVEL_MUITO_ALTO":                                                   [12312, 11],
-        "UHLM_OLEO_NIVEL_MUITO_BAIXO":                                                  [12312, 12],
-        "UHLM_PRESSAO_LINHA_LUBRIFICACAO":                                              [12312, 13],
-        "UHLM_FILTRO_OLEO_SUJO":                                                        [12312, 14],
-        "UHLM_FLUXO_TROCADOR_DE_CALOR":                                                 [12312, 15],
-
-        "QBAG_ESCOVA_POLO_POSITIVO_DESGASTADA":                                         [12313, 1],
-        "QBAG_ESCOVA_POLO_NEGATICO_DESGASTADA":                                         [12313, 2],
-        "PSA_BLOQUEIO_86BTBF":                                                          [12313, 3],
-        "PSA_POCO_DRENAGEM_NIVEL_MUITO_ALTO":                                           [12313, 4],
-        "PSA_FILTRAGEM_PRESSAO_SAIDA":                                                  [12313, 5],
-        "PSA_DISJUNTOR_LINHA_FECHADO":                                                  [12313, 6],
-        "TPs_PROTECAO_59N_ABERTO":                                                      [12313, 9],
-        "VB_VALVULA_BORBOLETA_ABERTA":                                                  [12313, 12],
-        "VB_VALVULA_BORBOLETA_FECHADA":                                                 [12313, 13],
-        "VB_VALVULA_BYPASS_ABERTA":                                                     [12313, 14],
-        "VB_VALVULA_BYPASS_FECHADA":                                                    [12313, 15],
-
-        ## PARTIDA_PARADA
-        "STT_PARTIDA_PARADA":                                                           12388,
-        "SST_PASSO_SELECIONADO":                                                        12390,
-        "STT_PASSO_ATUAL":                                                              12392,
-
-        ## PERMISSIVOS
-        "STT_PRE_CONDICOES_GIRO_MECANICO":                                              12408,
-        "STT_PRE_CONDICOES_EXCITCAO":                                                   12410,
-        "STT_PRE_CONDICOES_SINCRONISMO":                                                12412,
-
-        ## STT_RT
-        "RT_FALHA_AO_HABILITAR":                                                        [12374, 0],
-        "RT_FALHA_AO_PARTIR":                                                           [12374, 1],
-        "RT_FALHA_AO_DESABILITAR":                                                      [12374, 2],
-
-        ## STT_RV
-        "RV_FALHA_AO_HABILITAR":                                                        [12372, 0],
-        "RV_FALHA_AO_PARTIR":                                                           [12372, 1],
-        "RV_FALHA_AO_DESABILITAR":                                                      [12372, 2],
-        "RV_FALHA_AO_PARAR_MAQUINA":                                                    [12372, 3],
-        "RV_FALHA_AO_FECHAR_DISTRIBUIDOR":                                              [12372, 4],
-        "RV_MODO_MANUTENCAO":                                                           [12372, 5],
-
-        ## STT_UNIDADE_GERADORA
-        "CONTROLE_POTENCIA_POR_NIVEL_HABILITADO":                                       [12360, 0],
-        "CONTROLE_DE_NIVEL_HABILITADO":                                                 [12360, 1],
-        "CONTROLE_POTENCIA_MANUAL_HABILITADO":                                          [12360, 2],
-        "CONTROLE_PARADA_POR_NIVEL_HABILITADO":                                         [12360, 3],
-        "CONTROLE_PARADA_NIVEL_BAIXO":                                                  [12360, 4],
-        "CONTROLE_FALHA_SENSOR_NIVEL":                                                  [12360, 5],
-        "CONTROLE_ALARME_DIFERENCIAL_DE_GRADE":                                         [12360, 6],
-        "CONTROLE_TRIP_DIFERENCIAL_DE_GRADE":                                           [12360, 7],
-        "RESISTENCIA_AQUECIMENTO_GERADOR_INDISPONIVEL":                                 [12360, 8],
-        "RESISTENCIA_AQUECIMENTO_GERADOR_FALHA_LIGAR":                                  [12360, 9],
-        "RESISTENCIA_AQUECIMENTO_GERADOR_FALHA_DESLIGAR":                               [12360, 10],
-        "FREIO_FALHA_AO_APLICAR_OU_DESAPLICAR":                                         [12360, 11],
-
-        ## STT_UHLM
-        "UHLM_UNIDADE_MANUTENCAO":                                                      [12364, 0],
-        "UHLM_BOMBA_1_INDISPONIVEL":                                                    [12364, 2],
-        "UHLM_BOMBA_2_INDISPONIVEL":                                                    [12364, 3],
-        "UHLM_BOMBA_1_PRINCIPAL":                                                       [12364, 4],
-        "UHLM_BOMBA_2_PRINCIPAL":                                                       [12364, 5],
-        "UHLM_BOMBA_1_FALHA_AO_LIGAR":                                                  [12364, 6],
-        "UHLM_BOMBA_1_FALHA_AO_DESLIGAR":                                               [12364, 7],
-        "UHLM_BOMBA_2_FALHA_AO_LIGAR":                                                  [12364, 8],
-        "UHLM_BOMBA_2_FALHA_AO_DESLIGAR":                                               [12364, 9],
-        "UHLM_BOMBA_1_FALHA_AO_PRESSURIZAR":                                            [12364, 10],
-        "UHLM_BOMBA_2_FALHA_AO_PRESSURIZAR":                                            [12364, 11],
-        "UHLM_FILTRO_OLEO_SUJO":                                                        [12364, 13],
-        "UHLM_FALHA_PRESSOSTATO":                                                       [12364, 14],
-
-        ## STT_UHRV
-        "UHRV_UNIDADE_MANUTENCAO":                                                      [12362, 0],
-        "UHRV_UNIDADE_HABILITADA":                                                      [12362, 1],
-        "UHRV_BOMBA_1_INDISPONIVEL":                                                    [12362, 2],
-        "UHRV_BOMBA_2_INDISPONIVEL":                                                    [12362, 3],
-        "UHRV_BOMBA_1_PRINCIPAL":                                                       [12362, 4],
-        "UHRV_BOMBA_2_PRINCIPAL":                                                       [12362, 5],
-        "UHRV_BOMBA_1_FALHA_AO_LIGAR":                                                  [12362, 6],
-        "UHRV_BOMBA_1_FALHA_AO_DESLIGAR":                                               [12362, 7],
-        "UHRV_BOMBA_2_FALHA_AO_LIGAR":                                                  [12362, 8],
-        "UHRV_BOMBA_2_FALHA_AO_DESLIGAR":                                               [12362, 9],
-        "UHRV_BOMBA_1_FALHA_AO_PRESSURIZAR":                                            [12362, 10],
-        "UHRV_BOMBA_2_FALHA_AO_PRESSURIZAR":                                            [12362, 11],
-        "UHRV_FILTRO_OLEO_SUJO":                                                        [12362, 13],
     },
 
     "UG2": {
@@ -608,16 +637,20 @@ REG_UG = {
         "CMD_UHRV_MODO_MANUTENCAO":                                                     [12292, 1],
         "CMD_UHRV_BOMBA_1_LIGA":                                                        [12292, 2],
         "CMD_UHRV_BOMBA_1_DESLIGA":                                                     [12292, 3],
-        "CMD_UHRV_BOMBA_2_LIGA":                                                        [12292, 4],
-        "CMD_UHRV_BOMBA_2_DESLIGA":                                                     [12292, 5],
-        "CMD_UHRV_BOMBA_1_PRINCIPAL":                                                   [12292, 6],
-        "CMD_UHRV_BOMBA_2_PRINCIPAL":                                                   [12292, 7],
+        "CMD_UHRV_BOMBA_1_PRINCIPAL":                                                   [12292, 4],
+        "CMD_UHRV_BOMBA_2_PRINCIPAL":                                                   [12292, 5],
+        "CMD_UHRV_BOMBA_2_LIGA":                                                        [12292, 6],
+        "CMD_UHRV_BOMBA_2_DESLIGA":                                                     [12292, 7],
 
         ## CMD_UHLM
         "CMD_UHLM_MODO_AUTOMATICO":                                                     [12294, 0],
         "CMD_UHLM_MODO_MANUTENCAO":                                                     [12294, 1],
         "CMD_UHLM_BOMBA_1_LIGA":                                                        [12294, 2],
         "CMD_UHLM_BOMBA_1_DESLIGA":                                                     [12294, 3],
+        "CMD_UHLM_BOMBA_1_PRINCIPAL":                                                   [12294, 4],
+        "CMD_UHLM_BOMBA_2_PRINCIPAL":                                                   [12294, 5],
+        "CMD_UHLM_BOMBA_2_LIGA":                                                        [12294, 6],
+        "CMD_UHLM_BOMBA_2_DESLIGA":                                                     [12294, 7],
 
         ## COMANDOS_ANALÓGICOS
         # CONTROLE_NÍVEL
@@ -638,55 +671,119 @@ REG_UG = {
 
 
         ### STATUS
+        ## SST_ENTRADAS_DIGITAIS_1
+        "BOTAO_BLOQUEIO_86EH":                                                          [12310, 0], # HIGH
+        "REARME_FALHAS":                                                                [12310, 1],
+        "BOTAO_PARA_UG":                                                                [12310, 2],
+        "BOTAO_PARTE_UG":                                                               [12310, 3],
+        "BOTAO_DIMINUI_REFERENCIA_RV":                                                  [12310, 4],
+        "BOTAO_AUMENTA_REFERENCIA_RV":                                                  [12310, 5],
+        "BOTAO_DIMINUI_REFERENCIA_RT":                                                  [12310, 6],
+        "BOTAO_AUMENTA_REFERENCIA_RT":                                                  [12310, 7],
+        "RELE_PROT_GERADOR_TRIP":                                                       [12310, 9], # HIGH
+        "RELE_PROT_GERADOR_50BF":                                                       [12310, 10], # HIGH
+        "RV_TRIP":                                                                      [12310, 11], # HIGH
+        "RV_ALARME":                                                                    [12310, 12],
+        "RV_HABILITADO":                                                                [12310, 13],
+        "RV_REGULANDO":                                                                 [12310, 14],
+        "RV_POTENCIA_NULA":                                                             [12310, 15],
+
+        "PRTVA_RV_MAQUINA_PARADA":                                                      [12311, 0],
+        "PRTVA_RV_VELOCIDADE_MENOR":                                                    [12311, 1],
+        "PRTVA_RV_VELOCIDADE_MAIOR":                                                    [12311, 2],
+        "PRTVA_RV_DISTRIBUIDOR_ABERTO":                                                 [12311, 3],
+        "PRTVA_RT_TRIP":                                                                [12311, 4], # HIGH
+        "PRTVA_RT_ALARME":                                                              [12311, 5],
+        "PRTVA_RT_HABILITADO":                                                          [12311, 6],
+        "PRTVA_RT_REGULANDO":                                                           [12311, 7],
+        "PRTVA_CONTATOR_DE_CAMPO_FECHADO":                                              [12311, 8],
+        "PRTVA_DISJUNTOR_DE_MAQUINA_FECHADO":                                           [12311, 9],
+        "PRTVA_RELE_BLOQUEIO_86EH":                                                     [12311, 10], # HIGH
+        "PRTVA_SUPERVISAO_DE_TENSAO_ENTRADA_CA":                                        [12311, 11],
+        "PRTVA_DISPOSITIVO_PROTECAO_DE_SURTO":                                          [12311, 12], # HIGH
+        "PRTVA_UHRV_BOMBA_DEFEITO":                                                     [12311, 13],
+        "PRTVA_UHRV_BOMBA_LIGADA":                                                      [12311, 14],
+        "PRTVA_UHLM_BOMBA_DEFEITO":                                                     [12311, 15],
+
+        ## SST_ENTRADAS_DIGITAIS_2
+        "UHLM_BOMBA_LIGADA":                                                            [12312, 0],
+        "UG_RESISTENCIA_AQUEC_GERADOR_DEFEITO":                                         [12312, 3],
+        "UG_RESISTENCIA_AQUEC_GERADOR_LIGADA":                                          [12312, 4],
+        "DISJUNTOR_TPS_PROTECAO":                                                       [12312, 5], # HIGH
+        "UHRV_OLEO_NIVEL_MUITO_BAIXO":                                                  [12312, 6], # HIGH
+        "UHRV_FILTRO_OLEO_SUJO":                                                        [12312, 7], # HIGH
+        "UHRV_PRESSAO_CRITICA":                                                         [12312, 8],
+        "UHRV_PRESSAO_FREIO":                                                           [12312, 9],
+        "UHLM_OLEO_NIVEL_MUITO_ALTO":                                                   [12312, 11], # HIGH
+        "UHLM_OLEO_NIVEL_MUITO_BAIXO":                                                  [12312, 12], # HIGH
+        "UHLM_PRESSAO_LINHA_LUBRIFICACAO":                                              [12312, 13],
+        "UHLM_FILTRO_OLEO_SUJO":                                                        [12312, 14], # HIGH
+        "UHLM_FLUXO_TROCADOR_DE_CALOR":                                                 [12312, 15],
+
+        "QBAG_ESCOVA_POLO_POSITIVO_DESGASTADA":                                         [12313, 1],
+        "QBAG_ESCOVA_POLO_NEGATICO_DESGASTADA":                                         [12313, 2],
+        "PSA_BLOQUEIO_86BTBF":                                                          [12313, 3], # HIGH
+        "PSA_POCO_DRENAGEM_NIVEL_MUITO_ALTO":                                           [12313, 4], # HIGH
+        "PSA_FILTRAGEM_PRESSAO_SAIDA":                                                  [12313, 5],
+        "PSA_DISJUNTOR_LINHA_FECHADO":                                                  [12313, 6],
+        "TPs_PROTECAO_59N_ABERTO":                                                      [12313, 9], # HIGH
+        "VB_VALVULA_BORBOLETA_ABERTA":                                                  [12313, 12],
+        "VB_VALVULA_BORBOLETA_FECHADA":                                                 [12313, 13],
+        "VB_VALVULA_BYPASS_ABERTA":                                                     [12313, 14],
+        "VB_VALVULA_BYPASS_FECHADA":                                                    [12313, 15],
+
         ## STT_FALHAS_TEMPERATURA
         "TIRISTORES_TEMPERATURA_FALHA_LEITURA":                                         [12328, 0],
         "CROWBAR_TEMPERATURA_FALHA_LEITURA":                                            [12328, 1],
-        "TRAFO_EXCITACAO_TEMPERATURA_FALHA_LEITURA":                                    [12328, 2],
-        "UHRV_TEMPERATURA_OLEO_FALHA_LEITURA":                                          [12328, 3],
-        "UHLM_TEMPERATURA_OLEO_FALHA_LEITURA":                                          [12328, 4],
-        "GERADOR_FASE_A_TEMPERATURA_FALHA_LEITURA":                                     [12328, 7],
-        "GERADOR_FASE_B_TEMPERATURA_FALHA_LEITURA":                                     [12328, 8],
-        "GERADOR_FASE_C_TEMPERATURA_FALHA_LEITURA":                                     [12328, 9],
-        "GERADOR_NUCLEO_1_TEMPERATURA_FALHA_LEITURA":                                   [12328, 10],
-        "GERADOR_NUCLEO_2_TEMPERATURA_FALHA_LEITURA":                                   [12328, 11],
-        "GERADOR_NUCLEO_3_TEMPERATURA_FALHA_LEITURA":                                   [12328, 12],
-        "MANCAL_GUIA_CASQUILHO_TEMPERATURA_FALHA_LEITURA":                              [12328, 13],
-        "MANCAL_COMBINADO_CASQUILHO_TEMPERATURA_FALHA_LEITURA":                         [12328, 14],
-        "MANCAL_COMBINADO_ESCORA_TEMPERATURA_FALHA_LEITURA":                            [12328, 15],
+        # "TRAFO_EXCITACAO_TEMPERATURA_FALHA_LEITURA":                                    [12328, 2],
+        "GERADOR_FASE_A_TEMPERATURA_FALHA_LEITURA":                                     [12328, 3],
+        "GERADOR_FASE_B_TEMPERATURA_FALHA_LEITURA":                                     [12328, 4],
+        "GERADOR_FASE_C_TEMPERATURA_FALHA_LEITURA":                                     [12328, 5],
+        "GERADOR_NUCLEO_1_TEMPERATURA_FALHA_LEITURA":                                   [12328, 6],
+        "GERADOR_NUCLEO_2_TEMPERATURA_FALHA_LEITURA":                                   [12328, 7],
+        "GERADOR_NUCLEO_3_TEMPERATURA_FALHA_LEITURA":                                   [12328, 8],
+        "MANCAL_GUIA_CASQUILHO_TEMPERATURA_FALHA_LEITURA":                              [12328, 9],
+        "MANCAL_COMBINADO_CASQUILHO_1_TEMPERATURA_FALHA_LEITURA":                       [12328, 10],
+        "MANCAL_COMBINADO_CASQUILHO_2_TEMPERATURA_FALHA_LEITURA":                       [12328, 11],
+        "MANCAL_COMBINADO_ESCORA_TEMPERATURA_FALHA_LEITURA":                            [12328, 12],
+        "UHLM_TEMPERATURA_OLEO_FALHA_LEITURA":                                          [12328, 13],
+        "UHRV_TEMPERATURA_OLEO_FALHA_LEITURA":                                          [12328, 14],
 
 
         ## STT_ALARMES_HH_TEMPERATURA
         "TIRISTORES_TEMPERATURA_MUITO_ALTA":                                            [12330, 0],
         "CROWBAR_TEMPERATURA_MUITO_ALTA":                                               [12330, 1],
-        "TRAFO_EXCITACAO_TEMPERATURA_MUITO_ALTA":                                       [12330, 2],
-        "UHRV_TEMPERATURA_OLEO_MUITO_ALTA":                                             [12330, 3],
-        "UHLM_TEMPERATURA_OLEO_MUITO_ALTA":                                             [12330, 4],
-        "GERADOR_FASE_A_TEMPERATURA_MUITO_ALTA":                                        [12330, 7],
-        "GERADOR_FASE_B_TEMPERATURA_MUITO_ALTA":                                        [12330, 8],
-        "GERADOR_FASE_C_TEMPERATURA_MUITO_ALTA":                                        [12330, 9],
-        "GERADOR_NUCLEO_1_TEMPERATURA_MUITO_ALTA":                                      [12330, 10],
-        "GERADOR_NUCLEO_2_TEMPERATURA_MUITO_ALTA":                                      [12330, 11],
-        "GERADOR_NUCLEO_3_TEMPERATURA_MUITO_ALTA":                                      [12330, 12],
-        "MANCAL_GUIA_CASQUILHO_TEMPERATURA_MUITO_ALTA":                                 [12330, 13],
-        "MANCAL_COMBINADO_CASQUILHO_TEMPERATURA_MUITO_ALTA":                            [12330, 14],
-        "MANCAL_COMBINADO_ESCORA_TEMPERATURA_MUITO_ALTA":                               [12330, 15],
+        # "TRAFO_EXCITACAO_TEMPERATURA_MUITO_ALTA":                                       [12330, 2],
+        "GERADOR_FASE_A_TEMPERATURA_MUITO_ALTA":                                        [12330, 3],
+        "GERADOR_FASE_B_TEMPERATURA_MUITO_ALTA":                                        [12330, 4],
+        "GERADOR_FASE_C_TEMPERATURA_MUITO_ALTA":                                        [12330, 5],
+        "GERADOR_NUCLEO_1_TEMPERATURA_MUITO_ALTA":                                      [12330, 6],
+        "GERADOR_NUCLEO_2_TEMPERATURA_MUITO_ALTA":                                      [12330, 7],
+        "GERADOR_NUCLEO_3_TEMPERATURA_MUITO_ALTA":                                      [12330, 8],
+        "MANCAL_GUIA_CASQUILHO_TEMPERATURA_MUITO_ALTA":                                 [12330, 9],
+        "MANCAL_COMBINADO_CASQUILHO_1_TEMPERATURA_MUITO_ALTA":                          [12330, 10],
+        "MANCAL_COMBINADO_CASQUILHO_2_TEMPERATURA_MUITO_ALTA":                          [12330, 11],
+        "MANCAL_COMBINADO_ESCORA_TEMPERATURA_MUITO_ALTA":                               [12330, 12],
+        "UHLM_TEMPERATURA_OLEO_MUITO_ALTA":                                             [12330, 13],
+        "UHRV_TEMPERATURA_OLEO_MUITO_ALTA":                                             [12330, 14],
 
 
         ## STT_ALARMES_H_TEMPERATURA
         "TIRISTORES_TEMPERATURA_ALTA":                                                  [12332, 0],
         "CROWBAR_TEMPERATURA_ALTA":                                                     [12332, 1],
-        "TRAFO_EXCITACAO_TEMPERATURA_ALTA":                                             [12332, 2],
-        "UHRV_TEMPERATURA_OLEO_ALTA":                                                   [12332, 3],
-        "UHLM_TEMPERATURA_OLEO_ALTA":                                                   [12332, 4],
-        "GERADOR_FASE_A_TEMPERATURA_ALTA":                                              [12332, 7],
-        "GERADOR_FASE_B_TEMPERATURA_ALTA":                                              [12332, 8],
-        "GERADOR_FASE_C_TEMPERATURA_ALTA":                                              [12332, 9],
-        "GERADOR_NUCLEO_1_TEMPERATURA_ALTA":                                            [12332, 10],
-        "GERADOR_NUCLEO_2_TEMPERATURA_ALTA":                                            [12332, 11],
-        "GERADOR_NUCLEO_3_TEMPERATURA_ALTA":                                            [12332, 12],
-        "MANCAL_GUIA_CASQUILHO_TEMPERATURA_ALTA":                                       [12332, 13],
-        "MANCAL_COMBINADO_CASQUILHO_TEMPERATURA_ALTA":                                  [12332, 14],
-        "MANCAL_COMBINADO_ESCORA_TEMPERATURA_ALTA":                                     [12332, 15],
+        # "TRAFO_EXCITACAO_TEMPERATURA_ALTA":                                             [12332, 2],
+        "GERADOR_FASE_A_TEMPERATURA_ALTA":                                              [12332, 3],
+        "GERADOR_FASE_B_TEMPERATURA_ALTA":                                              [12332, 4],
+        "GERADOR_FASE_C_TEMPERATURA_ALTA":                                              [12332, 5],
+        "GERADOR_NUCLEO_1_TEMPERATURA_ALTA":                                            [12332, 6],
+        "GERADOR_NUCLEO_2_TEMPERATURA_ALTA":                                            [12332, 7],
+        "GERADOR_NUCLEO_3_TEMPERATURA_ALTA":                                            [12332, 8],
+        "MANCAL_GUIA_CASQUILHO_TEMPERATURA_ALTA":                                       [12332, 9],
+        "MANCAL_COMBINADO_CASQUILHO_1_TEMPERATURA_ALTA":                                [12332, 10],
+        "MANCAL_COMBINADO_CASQUILHO_2_TEMPERATURA_ALTA":                                [12332, 11],
+        "MANCAL_COMBINADO_ESCORA_TEMPERATURA_ALTA":                                     [12332, 12],
+        "UHLM_TEMPERATURA_OLEO_ALTA":                                                   [12332, 13],
+        "UHRV_TEMPERATURA_OLEO_ALTA":                                                   [12332, 14],
 
         ## STT_FALHAS_ANALOGICAS
         "UHRV_PRESSAO_OLEO_FALHA_LEITURA":                                              [12340, 0],
@@ -707,6 +804,87 @@ REG_UG = {
         ## STT_ALARMES_LL_ANALOGICAS
         "UHRV_PRESSAO_OLEO_MUITO_BAIXA":                                                [12348, 0],
         "SINAL_NIVEL_JUSANTE_MUITO_BAIXA":                                              [12348, 1],
+
+        ## STT_UNIDADE_GERADORA
+        "CONTROLE_POTENCIA_POR_NIVEL_HABILITADO":                                       [12360, 0],
+        "CONTROLE_DE_NIVEL_HABILITADO":                                                 [12360, 1],
+        "CONTROLE_POTENCIA_MANUAL_HABILITADO":                                          [12360, 2],
+        "CONTROLE_PARADA_POR_NIVEL_HABILITADO":                                         [12360, 3],
+        "CONTROLE_PARADA_NIVEL_BAIXO":                                                  [12360, 4],
+        "CONTROLE_FALHA_SENSOR_NIVEL":                                                  [12360, 5],
+        "CONTROLE_ALARME_DIFERENCIAL_DE_GRADE":                                         [12360, 6],
+        "CONTROLE_TRIP_DIFERENCIAL_DE_GRADE":                                           [12360, 7],
+        "RESISTENCIA_AQUECIMENTO_GERADOR_INDISPONIVEL":                                 [12360, 8],
+        "RESISTENCIA_AQUECIMENTO_GERADOR_FALHA_LIGAR":                                  [12360, 9],
+        "RESISTENCIA_AQUECIMENTO_GERADOR_FALHA_DESLIGAR":                               [12360, 10],
+        "FREIO_FALHA_AO_APLICAR_OU_DESAPLICAR":                                         [12360, 12],
+        "FALHA_ACOPLAMENTO_DE_CARGA":                                                   [12360, 13],
+        "FALHA_DESCARGA_POTENCIA":                                                      [12360, 14],
+        "FALHA_ABRIR_DISJUNTOR":                                                        [12360, 15],
+
+        ## STT_UHRV
+        "UHRV_UNIDADE_MANUTENCAO":                                                      [12362, 0],
+        "UHRV_UNIDADE_HABILITADA":                                                      [12362, 1],
+        "UHRV_BOMBA_1_INDISPONIVEL":                                                    [12362, 2],
+        "UHRV_BOMBA_2_INDISPONIVEL":                                                    [12362, 3],
+        "UHRV_BOMBA_1_PRINCIPAL":                                                       [12362, 4],
+        "UHRV_BOMBA_2_PRINCIPAL":                                                       [12362, 5],
+        "UHRV_BOMBA_1_FALHA_AO_LIGAR":                                                  [12362, 6],
+        "UHRV_BOMBA_1_FALHA_AO_DESLIGAR":                                               [12362, 7],
+        "UHRV_BOMBA_2_FALHA_AO_LIGAR":                                                  [12362, 8],
+        "UHRV_BOMBA_2_FALHA_AO_DESLIGAR":                                               [12362, 9],
+        "UHRV_BOMBA_1_FALHA_AO_PRESSURIZAR":                                            [12362, 10],
+        "UHRV_BOMBA_2_FALHA_AO_PRESSURIZAR":                                            [12362, 11],
+        "UHRV_FILTRO_OLEO_SUJO":                                                        [12362, 13],
+
+        ## STT_UHLM
+        "UHLM_UNIDADE_MANUTENCAO":                                                      [12364, 0],
+        "UHLM_BOMBA_1_INDISPONIVEL":                                                    [12364, 2],
+        "UHLM_BOMBA_2_INDISPONIVEL":                                                    [12364, 3],
+        "UHLM_BOMBA_1_PRINCIPAL":                                                       [12364, 4],
+        "UHLM_BOMBA_2_PRINCIPAL":                                                       [12364, 5],
+        "UHLM_BOMBA_1_FALHA_AO_LIGAR":                                                  [12364, 6],
+        "UHLM_BOMBA_1_FALHA_AO_DESLIGAR":                                               [12364, 7],
+        "UHLM_BOMBA_2_FALHA_AO_LIGAR":                                                  [12364, 8],
+        "UHLM_BOMBA_2_FALHA_AO_DESLIGAR":                                               [12364, 9],
+        "UHLM_BOMBA_1_FALHA_AO_PRESSURIZAR":                                            [12364, 10],
+        "UHLM_BOMBA_2_FALHA_AO_PRESSURIZAR":                                            [12364, 11],
+        "UHLM_FILTRO_OLEO_SUJO":                                                        [12364, 13],
+        # "UHLM_FALHA_PRESSOSTATO":                                                       [12364, 14], ?
+
+        ## STT_BORBOLETA
+        "BORBOLETA_FALHA_ABRIR":                                                        [12366, 0],
+        "BORBOLETA_FALHA_FECHAR":                                                       [12366, 1],
+        "BORBOLETA_ABRINDO":                                                            [12366, 2],
+        "BORBOLETA_FECHANDO":                                                           [12366, 3],
+        "BYPASS_ABRINDO":                                                               [12366, 4],
+        "BYPASS_FECHANDO":                                                              [12366, 5],
+        "BYPASS_FALHA_ABRIR":                                                           [12366, 6],
+        "BYPASS_FALHA_FECHAR":                                                          [12366, 7],
+        "BORBOLETA_DISCREPANCIA_SENSORES":                                              [12366, 10],
+        "BYPASS_DISCREPANCIA_SENSORES":                                                 [12366, 11],
+
+        ## STT_RV
+        "RV_FALHA_AO_HABILITAR":                                                        [12372, 0],
+        "RV_FALHA_AO_PARTIR":                                                           [12372, 1],
+        "RV_FALHA_AO_DESABILITAR":                                                      [12372, 2],
+        "RV_FALHA_AO_PARAR_MAQUINA":                                                    [12372, 3],
+        "RV_FALHA_AO_FECHAR_DISTRIBUIDOR":                                              [12372, 4],
+        "RV_MODO_MANUTENCAO":                                                           [12372, 5],
+
+        ## STT_RT
+        "RT_FALHA_AO_HABILITAR":                                                        [12374, 0],
+        "RT_FALHA_AO_PARTIR":                                                           [12374, 1],
+        "RT_FALHA_AO_DESABILITAR":                                                      [12374, 2],
+
+        ## BLOQUEIO_86M
+        "BLOQUEIO_86M_ATUADO":                                                          [12428, 15],
+
+        ## BLOQUEIO_86E
+        "BLOQUEIO_86E_ATUADO":                                                          [12430, 15],
+
+        ## BLOQUEIO_86H
+        "BLOQUEIO_86H_ATUADO":                                                          [12432, 15],
 
         ## LEITURAS_ANALÓGICAS
         "TEMPERATURA_PONTE_TIRISTORES":                                                 12488,
@@ -731,88 +909,6 @@ REG_UG = {
         "VIBRACAO_EIXO_Z_COMBINADO":                                                    12530,
         "VIBRACAO_EIXO_Y_GUIA":                                                         12532,
 
-        ## BLOQUEIO_86M
-        "BLOQUEIO_86M_ATUADO":                                                          [12428, 15],
-
-        ## BLOQUEIO_86E
-        "BLOQUEIO_86E_ATUADO":                                                          [12430, 15],
-
-        ## BLOQUEIO_86H
-        "BLOQUEIO_86H_ATUADO":                                                          [12432, 15],
-
-        ## STT_BORBOLETA
-        "BORBOLETA_FALHA_ABRIR":                                                        [12366, 0],
-        "BORBOLETA_FALHA_FECHAR":                                                       [12366, 1],
-        "BORBOLETA_ABRINDO":                                                            [12366, 2],
-        "BORBOLETA_FECHANDO":                                                           [12366, 3],
-        "BYPASS_ABRINDO":                                                               [12366, 4],
-        "BYPASS_FECHANDO":                                                              [12366, 5],
-        "BYPASS_FALHA_ABRIR":                                                           [12366, 6],
-        "BYPASS_FALHA_FECHAR":                                                          [12366, 7],
-        "BORBOLETA_DISCREPANCIA_SENSORES":                                              [12366, 10],
-        "BYPASS_DISCREPANCIA_SENSORES":                                                 [12366, 11],
-
-        ## SST_ENTRADAS_DIGITAIS_1
-        "BOTAO_BLOQUEIO_86EH":                                                          [12310, 0],
-        "REARME_FALHAS":                                                                [12310, 1],
-        "BOTAO_PARA_UG":                                                                [12310, 2],
-        "BOTAO_PARTE_UG":                                                               [12310, 3],
-        "BOTAO_DIMINUI_REFERENCIA_RV":                                                  [12310, 4],
-        "BOTAO_AUMENTA_REFERENCIA_RV":                                                  [12310, 5],
-        "BOTAO_DIMINUI_REFERENCIA_RT":                                                  [12310, 6],
-        "BOTAO_AUMENTA_REFERENCIA_RT":                                                  [12310, 7],
-        "RELE_PROT_GERADOR_TRIP":                                                       [12310, 8],
-        "RELE_PROT_GERADOR_50BF":                                                       [12310, 10],
-        "RV_TRIP":                                                                      [12310, 11],
-        "RV_ALARME":                                                                    [12310, 12],
-        "RV_HABILITADO":                                                                [12310, 13],
-        "RV_REGULANDO":                                                                 [12310, 14],
-        "RV_POTENCIA_NULA":                                                             [12310, 15],
-
-        "PRTVA_RV_MAQUINA_PARADA":                                                      [12311, 0],
-        "PRTVA_RV_VELOCIDADE_MENOR":                                                    [12311, 1],
-        "PRTVA_RV_VELOCIDADE_MAIOR":                                                    [12311, 2],
-        "PRTVA_RV_DISTRIBUIDOR_ABERTO":                                                 [12311, 3],
-        "PRTVA_RT_TRIP":                                                                [12311, 4],
-        "PRTVA_RT_ALARME":                                                              [12311, 5],
-        "PRTVA_RT_HABILITADO":                                                          [12311, 6],
-        "PRTVA_RT_REGULANDO":                                                           [12311, 7],
-        "PRTVA_CONTATOR_DE_COMPO_FECHADO":                                              [12311, 8],
-        "PRTVA_DISJUNTOR_DE_MAQUINA_FECHADO":                                           [12311, 9],
-        "PRTVA_RELE_BLOQUEIO_86EH":                                                     [12311, 10],
-        "PRTVA_SUPERVISAO_DE_TENSAO_ENTRADA_CA":                                        [12311, 11],
-        "PRTVA_DISPOSITIVO_PROTECAO_DE_SURTO":                                          [12311, 12],
-        "PRTVA_UHRV_BOMBA_DEFEITO":                                                     [12311, 13],
-        "PRTVA_UHRV_BOMBA_LIGADA":                                                      [12311, 14],
-        "PRTVA_UHLM_BOMBA_DEFEITO":                                                     [12311, 15],
-
-        ## SST_ENTRADAS_DIGITAIS_2
-        "UHLM_BOMBA_LIGADA":                                                            [12312, 0],
-        "UG_RESISTENCIA_AQUEC_GERADOR_DEFEITO":                                         [12312, 3],
-        "UG_RESISTENCIA_AQUEC_GERADOR_LIGADA":                                          [12312, 4],
-        "DISJUNTOR_TPS_PROTECAO":                                                       [12312, 5],
-        "UHRV_OLEO_NIVEL_MUITO_BAIXO":                                                  [12312, 6],
-        "UHRV_FILTRO_OLEO_SUJO":                                                        [12312, 7],
-        "UHRV_PRESSAO_CRITICA":                                                         [12312, 8],
-        "UHRV_PRESSAO_FREIO":                                                           [12312, 9],
-        "UHLM_OLEO_NIVEL_MUITO_ALTO":                                                   [12312, 11],
-        "UHLM_OLEO_NIVEL_MUITO_BAIXO":                                                  [12312, 12],
-        "UHLM_PRESSAO_LINHA_LUBRIFICACAO":                                              [12312, 13],
-        "UHLM_FILTRO_OLEO_SUJO":                                                        [12312, 14],
-        "UHLM_FLUXO_TROCADOR_DE_CALOR":                                                 [12312, 15],
-
-        "QBAG_ESCOVA_POLO_POSITIVO_DESGASTADA":                                         [12313, 1],
-        "QBAG_ESCOVA_POLO_NEGATICO_DESGASTADA":                                         [12313, 2],
-        "PSA_BLOQUEIO_86BTBF":                                                          [12313, 3],
-        "PSA_POCO_DRENAGEM_NIVEL_MUITO_ALTO":                                           [12313, 4],
-        "PSA_FILTRAGEM_PRESSAO_SAIDA":                                                  [12313, 5],
-        "PSA_DISJUNTOR_LINHA_FECHADO":                                                  [12313, 6],
-        "TPs_PROTECAO_59N_ABERTO":                                                      [12313, 9],
-        "VB_VALVULA_BORBOLETA_ABERTA":                                                  [12313, 12],
-        "VB_VALVULA_BORBOLETA_FECHADA":                                                 [12313, 13],
-        "VB_VALVULA_BYPASS_ABERTA":                                                     [12313, 14],
-        "VB_VALVULA_BYPASS_FECHADA":                                                    [12313, 15],
-
         ## PARTIDA_PARADA
         "STT_PARTIDA_PARADA":                                                           12388,
         "SST_PASSO_SELECIONADO":                                                        12390,
@@ -822,63 +918,6 @@ REG_UG = {
         "STT_PRE_CONDICOES_GIRO_MECANICO":                                              12408,
         "STT_PRE_CONDICOES_EXCITCAO":                                                   12410,
         "STT_PRE_CONDICOES_SINCRONISMO":                                                12412,
-
-        ## STT_RT
-        "RT_FALHA_AO_HABILITAR":                                                        [12374, 0],
-        "RT_FALHA_AO_PARTIR":                                                           [12374, 1],
-        "RT_FALHA_AO_DESABILITAR":                                                      [12374, 2],
-
-        ## STT_RV
-        "RV_FALHA_AO_HABILITAR":                                                        [12372, 0],
-        "RV_FALHA_AO_PARTIR":                                                           [12372, 1],
-        "RV_FALHA_AO_DESABILITAR":                                                      [12372, 2],
-        "RV_FALHA_AO_PARAR_MAQUINA":                                                    [12372, 3],
-        "RV_FALHA_AO_FECHAR_DISTRIBUIDOR":                                              [12372, 4],
-        "RV_MODO_MANUTENCAO":                                                           [12372, 5],
-
-        ## STT_UNIDADE_GERADORA
-        "CONTROLE_POTENCIA_POR_NIVEL_HABILITADO":                                       [12360, 0],
-        "CONTROLE_DE_NIVEL_HABILITADO":                                                 [12360, 1],
-        "CONTROLE_POTENCIA_MANUAL_HABILITADO":                                          [12360, 2],
-        "CONTROLE_PARADA_POR_NIVEL_HABILITADO":                                         [12360, 3],
-        "CONTROLE_PARADA_NIVEL_BAIXO":                                                  [12360, 4],
-        "CONTROLE_FALHA_SENSOR_NIVEL":                                                  [12360, 5],
-        "CONTROLE_ALARME_DIFERENCIAL_DE_GRADE":                                         [12360, 6],
-        "CONTROLE_TRIP_DIFERENCIAL_DE_GRADE":                                           [12360, 7],
-        "RESISTENCIA_AQUECIMENTO_GERADOR_INDISPONIVEL":                                 [12360, 8],
-        "RESISTENCIA_AQUECIMENTO_GERADOR_FALHA_LIGAR":                                  [12360, 9],
-        "RESISTENCIA_AQUECIMENTO_GERADOR_FALHA_DESLIGAR":                               [12360, 10],
-        "FREIO_FALHA_AO_APLICAR_OU_DESAPLICAR":                                         [12360, 11],
-
-        ## STT_UHLM
-        "UHLM_UNIDADE_MANUTENCAO":                                                      [12364, 0],
-        "UHLM_BOMBA_1_INDISPONIVEL":                                                    [12364, 2],
-        "UHLM_BOMBA_2_INDISPONIVEL":                                                    [12364, 3],
-        "UHLM_BOMBA_1_PRINCIPAL":                                                       [12364, 4],
-        "UHLM_BOMBA_2_PRINCIPAL":                                                       [12364, 5],
-        "UHLM_BOMBA_1_FALHA_AO_LIGAR":                                                  [12364, 6],
-        "UHLM_BOMBA_1_FALHA_AO_DESLIGAR":                                               [12364, 7],
-        "UHLM_BOMBA_2_FALHA_AO_LIGAR":                                                  [12364, 8],
-        "UHLM_BOMBA_2_FALHA_AO_DESLIGAR":                                               [12364, 9],
-        "UHLM_BOMBA_1_FALHA_AO_PRESSURIZAR":                                            [12364, 10],
-        "UHLM_BOMBA_2_FALHA_AO_PRESSURIZAR":                                            [12364, 11],
-        "UHLM_FILTRO_OLEO_SUJO":                                                        [12364, 13],
-        "UHLM_FALHA_PRESSOSTATO":                                                       [12364, 14],
-
-        ## STT_UHRV
-        "UHRV_UNIDADE_MANUTENCAO":                                                      [12362, 0],
-        "UHRV_UNIDADE_HABILITADA":                                                      [12362, 1],
-        "UHRV_BOMBA_1_INDISPONIVEL":                                                    [12362, 2],
-        "UHRV_BOMBA_2_INDISPONIVEL":                                                    [12362, 3],
-        "UHRV_BOMBA_1_PRINCIPAL":                                                       [12362, 4],
-        "UHRV_BOMBA_2_PRINCIPAL":                                                       [12362, 5],
-        "UHRV_BOMBA_1_FALHA_AO_LIGAR":                                                  [12362, 6],
-        "UHRV_BOMBA_1_FALHA_AO_DESLIGAR":                                               [12362, 7],
-        "UHRV_BOMBA_2_FALHA_AO_LIGAR":                                                  [12362, 8],
-        "UHRV_BOMBA_2_FALHA_AO_DESLIGAR":                                               [12362, 9],
-        "UHRV_BOMBA_1_FALHA_AO_PRESSURIZAR":                                            [12362, 10],
-        "UHRV_BOMBA_2_FALHA_AO_PRESSURIZAR":                                            [12362, 11],
-        "UHRV_FILTRO_OLEO_SUJO":                                                        [12362, 13],
     },
 }
 
