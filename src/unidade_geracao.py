@@ -728,69 +728,74 @@ class UnidadeDeGeracao:
         autor_n = 0
         autor_i = 0
 
-        if True in (condic.ativo for condic in self.condicionadores_essenciais):
-            condics_ativos = [condic for condics in [self.condicionadores_essenciais, self.condicionadores] for condic in condics if condic.ativo]
+        try:
+            if True in (condic.ativo for condic in self.condicionadores_essenciais):
+                condics_ativos = [condic for condics in [self.condicionadores_essenciais, self.condicionadores] for condic in condics if condic.ativo]
 
-            logger.debug("")
-            if self.condicionadores_ativos == []:
-                logger.debug(f"[UG{self.id}] Foram detectados condicionadores ativos na Unidade!")
+                logger.debug("")
+                if self.condicionadores_ativos == []:
+                    logger.debug(f"[UG{self.id}] Foram detectados condicionadores ativos na Unidade!")
+                else:
+                    logger.debug(f"[UG{self.id}] Ainda há condicionadores ativos na Unidade!")
+
+                for condic in condics_ativos:
+                    if condic.teste:
+                        logger.debug(f"[UG{self.id}] Descrição: \"{condic.descricao}\", Gravidade: \"{CONDIC_STR_DCT[condic.gravidade] if condic.gravidade in CONDIC_STR_DCT else 'Desconhecida'}\", Obs.: \"TESTE\"")
+                        continue
+
+                    elif condic in self.condicionadores_ativos:
+                        logger.debug(f"[UG{self.id}] Descrição: \"{condic.descricao}\", Gravidade: \"{CONDIC_STR_DCT[condic.gravidade] if condic.gravidade in CONDIC_STR_DCT else 'Desconhecida'}\"")
+                        flag = condic.gravidade
+                        continue
+
+                    elif condic.gravidade == CONDIC_INDISPONIBILIZAR:
+                        logger.warning(f"[UG{self.id}] Descrição: \"{condic.descricao}\", Gravidade: \"{CONDIC_STR_DCT[condic.gravidade] if condic.gravidade in CONDIC_STR_DCT else 'Desconhecida'}\"")
+                        self.condicionadores_ativos.append(condic)
+                        flag = CONDIC_INDISPONIBILIZAR
+                        self.bd.update_alarmes([
+                            self.get_time().strftime("%Y-%m-%d %H:%M:%S"),
+                            condic.gravidade,
+                            condic.descricao,
+                            "X" if autor_i == 0 else ""
+                        ])
+                        autor_i += 1
+                        sleep(1)
+
+                    elif condic.gravidade == CONDIC_AGUARDAR:
+                        logger.warning(f"[UG{self.id}] Descrição: \"{condic.descricao}\", Gravidade: \"{CONDIC_STR_DCT[condic.gravidade] if condic.gravidade in CONDIC_STR_DCT else 'Desconhecida'}\"")
+                        self.condicionadores_ativos.append(condic)
+                        flag = CONDIC_AGUARDAR if flag != CONDIC_INDISPONIBILIZAR else flag
+                        self.bd.update_alarmes([
+                            self.get_time().strftime("%Y-%m-%d %H:%M:%S"),
+                            condic.gravidade,
+                            condic.descricao,
+                            "X" if autor_i == 0 and autor_a == 0 else ""
+                        ])
+                        autor_a += 1
+                        sleep(1)
+
+                    elif condic.gravidade == CONDIC_NORMALIZAR:
+                        logger.warning(f"[UG{self.id}] Descrição: \"{condic.descricao}\", Gravidade: \"{CONDIC_STR_DCT[condic.gravidade] if condic.gravidade in CONDIC_STR_DCT else 'Desconhecida'}\"")
+                        self.condicionadores_ativos.append(condic)
+                        flag = CONDIC_NORMALIZAR if flag not in (CONDIC_INDISPONIBILIZAR, CONDIC_AGUARDAR) else flag
+                        self.bd.update_alarmes([
+                            self.get_time().strftime("%Y-%m-%d %H:%M:%S"),
+                            condic.gravidade,
+                            condic.descricao,
+                            "X" if autor_i == 0 and autor_a == 0 and autor_n == 0 else ""
+                        ])
+                        autor_n += 1
+                        sleep(1)
+
+                logger.debug("")
+                return flag
+
             else:
-                logger.debug(f"[UG{self.id}] Ainda há condicionadores ativos na Unidade!")
+                self.condicionadores_ativos = []
+                return flag
 
-            for condic in condics_ativos:
-                if condic.teste:
-                    logger.debug(f"[UG{self.id}] Descrição: \"{condic.descricao}\", Gravidade: \"{CONDIC_STR_DCT[condic.gravidade] if condic.gravidade in CONDIC_STR_DCT else 'Desconhecida'}\", Obs.: \"TESTE\"")
-                    continue
-
-                elif condic in self.condicionadores_ativos:
-                    logger.debug(f"[UG{self.id}] Descrição: \"{condic.descricao}\", Gravidade: \"{CONDIC_STR_DCT[condic.gravidade] if condic.gravidade in CONDIC_STR_DCT else 'Desconhecida'}\"")
-                    flag = condic.gravidade
-                    continue
-
-                elif condic.gravidade == CONDIC_INDISPONIBILIZAR:
-                    logger.warning(f"[UG{self.id}] Descrição: \"{condic.descricao}\", Gravidade: \"{CONDIC_STR_DCT[condic.gravidade] if condic.gravidade in CONDIC_STR_DCT else 'Desconhecida'}\"")
-                    self.condicionadores_ativos.append(condic)
-                    flag = CONDIC_INDISPONIBILIZAR
-                    self.bd.update_alarmes([
-                        self.get_time().strftime("%Y-%m-%d %H:%M:%S"),
-                        condic.gravidade,
-                        condic.descricao,
-                        "X" if autor_i == 0 else ""
-                    ])
-                    autor_i += 1
-                    sleep(1)
-
-                elif condic.gravidade == CONDIC_AGUARDAR:
-                    logger.warning(f"[UG{self.id}] Descrição: \"{condic.descricao}\", Gravidade: \"{CONDIC_STR_DCT[condic.gravidade] if condic.gravidade in CONDIC_STR_DCT else 'Desconhecida'}\"")
-                    self.condicionadores_ativos.append(condic)
-                    flag = CONDIC_AGUARDAR if flag != CONDIC_INDISPONIBILIZAR else flag
-                    self.bd.update_alarmes([
-                        self.get_time().strftime("%Y-%m-%d %H:%M:%S"),
-                        condic.gravidade,
-                        condic.descricao,
-                        "X" if autor_i == 0 and autor_a == 0 else ""
-                    ])
-                    autor_a += 1
-                    sleep(1)
-
-                elif condic.gravidade == CONDIC_NORMALIZAR:
-                    logger.warning(f"[UG{self.id}] Descrição: \"{condic.descricao}\", Gravidade: \"{CONDIC_STR_DCT[condic.gravidade] if condic.gravidade in CONDIC_STR_DCT else 'Desconhecida'}\"")
-                    self.condicionadores_ativos.append(condic)
-                    flag = CONDIC_NORMALIZAR if flag not in (CONDIC_INDISPONIBILIZAR, CONDIC_AGUARDAR) else flag
-                    self.bd.update_alarmes([
-                        self.get_time().strftime("%Y-%m-%d %H:%M:%S"),
-                        condic.gravidade,
-                        condic.descricao,
-                        "X" if autor_i == 0 and autor_a == 0 and autor_n == 0 else ""
-                    ])
-                    autor_n += 1
-                    sleep(1)
-
-            logger.debug("")
-            return flag
-
-        else:
-            self.condicionadores_ativos = []
+        except Exception:
+            logger.debug(f"[UG{self.id}] {traceback.format_exception()}")
             return flag
 
 
@@ -911,7 +916,7 @@ class UnidadeDeGeracao:
         if self.l_rv_pot_nula.valor:
             logger.warning(f"[UG{self.id}] Leitura de Potência Nula no RV identificada. Favor verificar.")
 
-        if not self.l_dispo_prot_surto.valor:
+        if self.l_dispo_prot_surto.valor:
             logger.warning(f"[UG{self.id}] O Dispositivo de Proteção de Surto foi ativado! Favor verificar.")
 
         if self.l_uhrv_bomba_defeito.valor:
@@ -928,9 +933,6 @@ class UnidadeDeGeracao:
 
         if self.l_crowbar_temp_alta.valor:
             logger.warning(f"[UG{self.id}] A temperatura do Crowbar está Alta. Favor verificar.")
-
-        # if self.l_trafo_exci_temp_alta.valor:
-        #     logger.warning(f"[UG{self.id}] A temperatura do Transformador de Excitação está Alta. favor verificar.")
 
         if self.l_uhrv_oleo_temp_alta.valor:
             logger.warning(f"[UG{self.id}] A temperatura do Óleo da UHRV está Alta. Favor verificar.")
@@ -1067,9 +1069,6 @@ class UnidadeDeGeracao:
         if self.l_crowbar_temp_muito_alta.valor:
             logger.warning(f"[UG{self.id}] A temperatura do Crowbar está Muito Alta. Favor verificar.")
 
-        # if self.l_trafo_exci_temp_muito_alta.valor:
-        #     logger.warning(f"[UG{self.id}] A temperatura do Transformador de Excitação está Muito Alta. Favor verificar.")
-
         if self.l_uhrv_temp_oleo_muito_alta.valor:
             logger.warning(f"[UG{self.id}] A temperatura do Óleo da UHRV está Muito Alta. Favor verificar.")
 
@@ -1115,9 +1114,6 @@ class UnidadeDeGeracao:
         if self.l_resis_aquec_gera_falha_deslig.valor:
             logger.warning(f"[UG{self.id}] Sinal de Falha no Desligamento da Resistência do Aquecedor do Gerador identificado. Favor verificar.")
 
-        # if self.l_ulhm_falha_pressos.valor:
-        #     logger.warning(f"[UG{self.id}] Sinal de Falha no Pressostato da UHLM identificado. Favor verificar.")
-
         if self.l_valv_borb_falha_fechar.valor:
             logger.warning(f"[UG{self.id}] Sinal de Falha no Fechamento da Válvula Borboleta identificado. Favor verificar.")
 
@@ -1151,11 +1147,11 @@ class UnidadeDeGeracao:
         if self.l_rt_falha_desab.valor:
             logger.warning(f"[UG{self.id}] Sinal de Falha ao Fesabilitar o RT identificado. Favor verificar.")
 
-        # if self.l_urhv_press_crit.valor:
-        #     logger.warning(f"[UG{self.id}] Sinal de Nível Crítico de Pressão da UHRV identificado. Favor verificar.")
+        if self.l_urhv_press_crit.valor:
+            logger.warning(f"[UG{self.id}] Sinal de Nível Crítico de Pressão da UHRV identificado. Favor verificar.")
 
-        # if self.l_uhlm_fluxo_troc_calor.valor:
-        #     logger.warning(f"[UG{self.id}] Sinal de Falta de Fluxo do Trocador de Calor da UHLM identificada. Favor verificar.")
+        if self.l_uhlm_fluxo_troc_calor.valor:
+            logger.warning(f"[UG{self.id}] Sinal de Falta de Fluxo do Trocador de Calor da UHLM identificada. Favor verificar.")
 
 
         # WHATSAPP + VOIP
@@ -1201,12 +1197,6 @@ class UnidadeDeGeracao:
         elif not self.l_falha_leit_temp_crowbar.valor and d.voip[f"UG{self.id}_EA_CROWBAR_TEMP_FALHA_LEITURA"][0]:
             d.voip[f"UG{self.id}_EA_CROWBAR_TEMP_FALHA_LEITURA"][0] = False
 
-        # if self.l_falha_leit_temp_trafo_exci.valor and not d.voip[f"UG{self.id}_EA_TRAFO_EXCITACAO_FALHA_LEITURA"][0]:
-        #     logger.warning(f"[UG{self.id}] Sinal de falha na leitura de Temperatura do Transformador de Excitação identificado. Favor verificar.")
-        #     d.voip[f"UG{self.id}_EA_TRAFO_EXCITACAO_FALHA_LEITURA"][0] = True
-        # elif not self.l_falha_leit_temp_trafo_exci.valor and d.voip[f"UG{self.id}_EA_TRAFO_EXCITACAO_FALHA_LEITURA"][0]:
-        #     d.voip[f"UG{self.id}_EA_TRAFO_EXCITACAO_FALHA_LEITURA"][0] = False
-
         if self.l_falha_leit_temp_uhrv_temp_oleo.valor and not d.voip[f"UG{self.id}_EA_UHRV_TEMP_OLEO_FALHA_LEITURA"][0]:
             logger.warning(f"[UG{self.id}] Sinal de falha na leitura de Temperatura do Óleo da UHRV identificado. Favor verificar.")
             d.voip[f"UG{self.id}_EA_UHRV_TEMP_OLEO_FALHA_LEITURA"][0] = True
@@ -1249,12 +1239,6 @@ class UnidadeDeGeracao:
         elif not self.l_falha_leit_temp_mancal_guia_casq.valor and d.voip[f"UG{self.id}_EA_MANCAL_GUIA_CASQUILHO_FALHA_LEITURA"][0]:
             d.voip[f"UG{self.id}_EA_MANCAL_GUIA_CASQUILHO_FALHA_LEITURA"][0] = False
 
-        if self.l_falha_leit_temp_mancal_comb_casq.valor and not d.voip[f"UG{self.id}_EA_MANCAL_COMBINADO_CASQUILHO_FALHA_LEITURA"][0]:
-            logger.warning(f"[UG{self.id}] Sinal de falha na leitura de Temperatura do Mancal Combinado Casquilho identificado. Favor verificar.")
-            d.voip[f"UG{self.id}_EA_MANCAL_COMBINADO_CASQUILHO_FALHA_LEITURA"][0] = True
-        elif not self.l_falha_leit_temp_mancal_comb_casq.valor and d.voip[f"UG{self.id}_EA_MANCAL_COMBINADO_CASQUILHO_FALHA_LEITURA"][0]:
-            d.voip[f"UG{self.id}_EA_MANCAL_COMBINADO_CASQUILHO_FALHA_LEITURA"][0] = False
-
         if self.l_falha_leit_temp_mancal_comb_esc.valor and not d.voip[f"UG{self.id}_EA_MANCAL_COMBINADO_ESCORA_FALHA_LEITURA"][0]:
             logger.warning(f"[UG{self.id}] Sinal de falha na leitura de Temperatura do Mancal Combinado Escora identificado. Favor verificar.")
             d.voip[f"UG{self.id}_EA_MANCAL_COMBINADO_ESCORA_FALHA_LEITURA"][0] = True
@@ -1267,11 +1251,11 @@ class UnidadeDeGeracao:
         elif not self.l_resis_quec_gerador_falha_ligar.valor and d.voip[f"UG{self.id}_ED_RESISTENCIA_AQUEC_GERADOR_FALHA_LIGAR"][0]:
             d.voip[f"UG{self.id}_ED_RESISTENCIA_AQUEC_GERADOR_FALHA_LIGAR"][0] = False
 
-        # if self.l_falha_leit_temp_gerad_nucleo_3.valor and not d.voip[f"UG{self.id}_EA_GERADOR_NUCLEO_3_TEMP_FALHA_LEITURA"][0]:
-        #     logger.warning(f"[UG{self.id}] Sinal de falha na leitura de Temperatura do Núcleo 3 do Gerador identificado. Favor verificar.")
-        #     d.voip[f"UG{self.id}_EA_GERADOR_NUCLEO_3_TEMP_FALHA_LEITURA"][0] = True
-        # elif not self.l_falha_leit_temp_gerad_nucleo_3.valor and d.voip[f"UG{self.id}_EA_GERADOR_NUCLEO_3_TEMP_FALHA_LEITURA"][0]:
-        #     d.voip[f"UG{self.id}_EA_GERADOR_NUCLEO_3_TEMP_FALHA_LEITURA"][0] = False
+        if self.l_falha_leit_temp_gerad_nucleo_3.valor and not d.voip[f"UG{self.id}_EA_GERADOR_NUCLEO_3_TEMP_FALHA_LEITURA"][0]:
+            logger.warning(f"[UG{self.id}] Sinal de falha na leitura de Temperatura do Núcleo 3 do Gerador identificado. Favor verificar.")
+            d.voip[f"UG{self.id}_EA_GERADOR_NUCLEO_3_TEMP_FALHA_LEITURA"][0] = True
+        elif not self.l_falha_leit_temp_gerad_nucleo_3.valor and d.voip[f"UG{self.id}_EA_GERADOR_NUCLEO_3_TEMP_FALHA_LEITURA"][0]:
+            d.voip[f"UG{self.id}_EA_GERADOR_NUCLEO_3_TEMP_FALHA_LEITURA"][0] = False
 
 
 
@@ -1826,7 +1810,6 @@ class UnidadeDeGeracao:
         self.l_falha_leit_temp_gerad_nucleo_3 = lei.LeituraModbusBit(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}"]["GERADOR_NUCLEO_3_TEMPERATURA_FALHA_LEITURA"], descricao=f"[UG{self.id}] Gerador Núcleo 3 Temperatura Falha Leitura")
         self.l_falha_leit_temp_mancal_guia_casq = lei.LeituraModbusBit(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}"]["MANCAL_GUIA_CASQUILHO_TEMPERATURA_FALHA_LEITURA"], descricao=f"[UG{self.id}] Mancal Guia Casquilho temperatura Falha Leitura")
         self.l_falha_leit_temp_mancal_comb_esc = lei.LeituraModbusBit(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}"]["MANCAL_COMBINADO_CASQUILHO_1_TEMPERATURA_FALHA_LEITURA"], descricao=f"[UG{self.id}] Mancal Combinado Escora Temperatura Falha Leitura")
-        self.l_falha_leit_temp_mancal_comb_casq = lei.LeituraModbusBit(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}"]["MANCAL_COMBINADO_ESCORA_TEMPERATURA_FALHA_LEITURA"], descricao=f"[UG{self.id}] Mancal Combinado Casquilho Temperatura Falha Leitura")
 
         ## WHATSAPP
         self.l_rv_pot_nula = lei.LeituraModbusBit(self.rv[f"UG{self.id}"], REG_RTV[f"UG{self.id}"]["RV_SD_RELE_POTENCIA_NULA"], descricao=f"[UG{self.id}] RV Potência Nula")
@@ -1861,18 +1844,8 @@ class UnidadeDeGeracao:
         self.l_sinal_nv_jusante_baixo = lei.LeituraModbusBit(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}"]["SINAL_NIVEL_JUSANTE_BAIXA"], descricao=f"[UG{self.id}] Nível Jusante Sinal Baixo")
         self.l_alarme_contro_dif_grade = lei.LeituraModbusBit(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}"]["CONTROLE_ALARME_DIFERENCIAL_DE_GRADE"], descricao=f"[UG{self.id}] Alarme Controle Diferencial Grade")
 
-        # self.l_urhv_press_crit = lei.LeituraModbusBit(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}"]["UHRV_PRESSAO_CRITICA"], descricao=f"[UG{self.id}] UHRV Pressão Crítica")
-        # self.condicionadores.append(c.CondicionadorBase(self.l_urhv_press_crit, CONDIC_INDISPONIBILIZAR))
+        self.l_urhv_press_crit = lei.LeituraModbusBit(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}"]["UHRV_PRESSAO_CRITICA"], invertido=True, descricao=f"[UG{self.id}] UHRV Pressão Crítica")
+        self.condicionadores.append(c.CondicionadorBase(self.l_urhv_press_crit, CONDIC_INDISPONIBILIZAR, [UG_SINCRONIZANDO, UG_SINCRONIZADA], self))
 
-        # self.l_uhlm_fluxo_troc_calor = lei.LeituraModbusBit(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}"]["UHLM_FLUXO_TROCADOR_DE_CALOR"], descricao=f"[UG{self.id}] UHLM Fluxo Trocador Calor")
-        # self.condicionadores.append(c.CondicionadorBase(self.l_uhlm_fluxo_troc_calor, CONDIC_NORMALIZAR))
-
-        # self.l_trafo_exci_temp_muito_alta = lei.LeituraModbusBit(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}"]["TRAFO_EXCITACAO_TEMPERATURA_MUITO_ALTA"], descricao=f"[UG{self.id}] Transformador Excitação Temperatura Muito Alta")
-        # self.condicionadores.append(c.CondicionadorBase(self.l_trafo_exci_temp_muito_alta, CONDIC_INDISPONIBILIZAR))
-
-        # self.l_ulhm_falha_pressos = lei.LeituraModbusBit(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}"]["UHLM_FALHA_PRESSOSTATO"], descricao=f"[UG{self.id}] UHLM Falha Pressostato")
-        # self.condicionadores.append(c.CondicionadorBase(self.l_ulhm_falha_pressos, CONDIC_INDISPONIBILIZAR))
-
-        # self.l_falha_leit_temp_trafo_exci = lei.LeituraModbusBit(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}"]["TRAFO_EXCITACAO_TEMPERATURA_FALHA_LEITURA"], descricao=f"[UG{self.id}] Transformador Excitação Temperatura Falha Leitura")
-        # self.l_trafo_exci_temp_alta = lei.LeituraModbusBit(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}"]["TRAFO_EXCITACAO_TEMPERATURA_ALTA"], descricao=f"[UG{self.id}] Temperatura Alta")
-
+        self.l_uhlm_fluxo_troc_calor = lei.LeituraModbusBit(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}"]["UHLM_FLUXO_TROCADOR_DE_CALOR"], invertido=True, descricao=f"[UG{self.id}] UHLM Fluxo Trocador Calor")
+        self.condicionadores.append(c.CondicionadorBase(self.l_uhlm_fluxo_troc_calor, CONDIC_NORMALIZAR, [UG_SINCRONIZANDO, UG_SINCRONIZADA], self))
