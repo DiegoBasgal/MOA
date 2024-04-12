@@ -416,9 +416,13 @@ class Usina:
             for ug in self.ugs: ug.setpoint = 0
             return 0
 
-        logger.debug(f"[USN] Potência no medidor:                {self.se.potencia_ativa.valor:0.3f}")
+        l_pot_rele = srv.Servidores.rele["SE"].read_holding_registers(REG_RELE["SE"]["P"], 2)[1]
+        l_pot_medidor = 65535 - l_pot_rele
+
+        logger.debug(f"[USN] Potência no medidor:                {l_pot_medidor}")
+
         pot_aux = self.cfg["pot_maxima_alvo"] - (self.cfg["pot_maxima_usina"] - self.cfg["pot_maxima_alvo"])
-        pot_medidor = max(pot_aux, min(self.se.potencia_ativa.valor, self.cfg["pot_maxima_usina"]))
+        pot_medidor = max(pot_aux, min(l_pot_medidor, self.cfg["pot_maxima_usina"]))
 
         if pot_medidor > self.cfg["pot_maxima_alvo"]:
             pot_alvo = self.pot_alvo_anterior * (1 - ((pot_medidor - self.cfg["pot_maxima_alvo"]) / self.cfg["pot_maxima_alvo"]))
@@ -545,12 +549,6 @@ class Usina:
         parametros = self.bd.get_parametros_usina()
         self.atualizar_valores_cfg(parametros)
         self.atualizar_valores_banco(parametros)
-
-        # if self.clp["SA"].read_coils(REG_SA["RESERVA_X"])[0] == 1 and not self.modo_autonomo:
-        #     self.modo_autonom
-        # o = True
-        # elif self.clp["SA"].read_coils(REG_SA["RESERVA_X"])[0] == 0 and self.modo_autonomo:
-        #     self.modo_autonomo == False
 
         for ug in self.ugs: ug.atualizar_limites_condicionadores(parametros)
 

@@ -31,7 +31,7 @@ REG_RELE = {
         "IA":                                                                           320,        # Input Register                        (OP -> Read Input Registers - 3x)
         "IB":                                                                           322,        # Input Register                        (OP -> Read Input Registers - 3x)
         "IC":                                                                           324,        # Input Register                        (OP -> Read Input Registers - 3x)
-        "P":                                                                            353,        # Input Register                        (OP -> Read Input Registers - 3x)
+        "P":                                                                            160,        # Input Register                        (OP -> Read Input Registers - 3x)
         "Q":                                                                            361,        # Input Register                        (OP -> Read Input Registers - 3x)
         "S":                                                                            369,        # Input Register                        (OP -> Read Input Registers - 3x)
         "F":                                                                            374,        # Input Register Scale 0.1              (OP -> Read Input Registers - 3x)
@@ -1160,22 +1160,22 @@ REG_RTV = {
         "RT_ALARME_RUIDO_INSTRUMENTACAO_DE_EXCITACAO_RETAGUARDA":                           [71, 12],
 
         ## FALHAS_1
-        "RT_FALHA_SOBRETENSAO":                                                             [71, 0],
-        "RT_FALHA_SUBTENSAO":                                                               [71, 1],
-        "RT_FALHA_SOBREFREQUENCIA":                                                         [71, 2],
-        "RT_FALHA_SUBFREQUENCIA":                                                           [71, 3],
-        "RT_FALHA_LIMITE_SUPERIOR_POTENCIA_REATIVA":                                        [71, 4],
-        "RT_FALHA_LIMITE_INFERIOR_POTENCIA_REATIVA":                                        [71, 5],
-        "RT_FALHA_LIMITE_SUPERIOR_FATOR_DE_POTENCIA":                                       [71, 6],
-        "RT_FALHA_LIMITE_INFERIOR_FATOR_DE_POTENCIA":                                       [71, 7],
-        "RT_FALHA_SOBRETENSAO_INSTANTANEA":                                                 [71, 8],
-        "RT_FALHA_VARIACAO_DE_TENSAO":                                                      [71, 9],
-        "RT_FALHA_POTENCIA_ATIVA_REVERSA":                                                  [71, 10],
-        "RT_FALHA_SOBRECORRENTE_TERMINAL":                                                  [71, 11],
-        "RT_FALHA_LIMITE_SUPERIOR_CORRENTE_EXCITACAO":                                      [71, 12],
-        "RT_FALHA_LIMITE_INFERIOR_CORRENTE_EXCITACAO":                                      [71, 13],
-        "RT_FALHA_LIMITE_SUPERIOR_TENSAO_EXCITACAO":                                        [71, 14],
-        "RT_FALHA_LIMITE_INFERIOR_TENSAO_EXCITACAO":                                        [71, 15],
+        "RT_FALHA_SOBRETENSAO":                                                             [72, 0],
+        "RT_FALHA_SUBTENSAO":                                                               [72, 1],
+        "RT_FALHA_SOBREFREQUENCIA":                                                         [72, 2],
+        "RT_FALHA_SUBFREQUENCIA":                                                           [72, 3],
+        "RT_FALHA_LIMITE_SUPERIOR_POTENCIA_REATIVA":                                        [72, 4],
+        "RT_FALHA_LIMITE_INFERIOR_POTENCIA_REATIVA":                                        [72, 5],
+        "RT_FALHA_LIMITE_SUPERIOR_FATOR_DE_POTENCIA":                                       [72, 6],
+        "RT_FALHA_LIMITE_INFERIOR_FATOR_DE_POTENCIA":                                       [72, 7],
+        "RT_FALHA_SOBRETENSAO_INSTANTANEA":                                                 [72, 8],
+        "RT_FALHA_VARIACAO_DE_TENSAO":                                                      [72, 9],
+        "RT_FALHA_POTENCIA_ATIVA_REVERSA":                                                  [72, 10],
+        "RT_FALHA_SOBRECORRENTE_TERMINAL":                                                  [72, 11],
+        "RT_FALHA_LIMITE_SUPERIOR_CORRENTE_EXCITACAO":                                      [72, 12],
+        "RT_FALHA_LIMITE_INFERIOR_CORRENTE_EXCITACAO":                                      [72, 13],
+        "RT_FALHA_LIMITE_SUPERIOR_TENSAO_EXCITACAO":                                        [72, 14],
+        "RT_FALHA_LIMITE_INFERIOR_TENSAO_EXCITACAO":                                        [72, 15],
 
         ## FALHAS_2
         "RT_FALHA_TEMPERATURA_MUITO_ALTA_ROTOR":                                            [73, 0],
@@ -1447,22 +1447,22 @@ REG_RTV = {
         "RT_ALARME_RUIDO_INSTRUMENTACAO_DE_EXCITACAO_RETAGUARDA":                           [71, 12],
 
         ## FALHAS_1
-        "RT_FALHA_SOBRETENSAO":                                                             [71, 0],
-        "RT_FALHA_SUBTENSAO":                                                               [71, 1],
-        "RT_FALHA_SOBREFREQUENCIA":                                                         [71, 2],
-        "RT_FALHA_SUBFREQUENCIA":                                                           [71, 3],
-        "RT_FALHA_LIMITE_SUPERIOR_POTENCIA_REATIVA":                                        [71, 4],
-        "RT_FALHA_LIMITE_INFERIOR_POTENCIA_REATIVA":                                        [71, 5],
-        "RT_FALHA_LIMITE_SUPERIOR_FATOR_DE_POTENCIA":                                       [71, 6],
-        "RT_FALHA_LIMITE_INFERIOR_FATOR_DE_POTENCIA":                                       [71, 7],
-        "RT_FALHA_SOBRETENSAO_INSTANTANEA":                                                 [71, 8],
-        "RT_FALHA_VARIACAO_DE_TENSAO":                                                      [71, 9],
-        "RT_FALHA_POTENCIA_ATIVA_REVERSA":                                                  [71, 10],
-        "RT_FALHA_SOBRECORRENTE_TERMINAL":                                                  [71, 11],
-        "RT_FALHA_LIMITE_SUPERIOR_CORRENTE_EXCITACAO":                                      [71, 12],
-        "RT_FALHA_LIMITE_INFERIOR_CORRENTE_EXCITACAO":                                      [71, 13],
-        "RT_FALHA_LIMITE_SUPERIOR_TENSAO_EXCITACAO":                                        [71, 14],
-        "RT_FALHA_LIMITE_INFERIOR_TENSAO_EXCITACAO":                                        [71, 15],
+        "RT_FALHA_SOBRETENSAO":                                                             [72, 0],
+        "RT_FALHA_SUBTENSAO":                                                               [72, 1],
+        "RT_FALHA_SOBREFREQUENCIA":                                                         [72, 2],
+        "RT_FALHA_SUBFREQUENCIA":                                                           [72, 3],
+        "RT_FALHA_LIMITE_SUPERIOR_POTENCIA_REATIVA":                                        [72, 4],
+        "RT_FALHA_LIMITE_INFERIOR_POTENCIA_REATIVA":                                        [72, 5],
+        "RT_FALHA_LIMITE_SUPERIOR_FATOR_DE_POTENCIA":                                       [72, 6],
+        "RT_FALHA_LIMITE_INFERIOR_FATOR_DE_POTENCIA":                                       [72, 7],
+        "RT_FALHA_SOBRETENSAO_INSTANTANEA":                                                 [72, 8],
+        "RT_FALHA_VARIACAO_DE_TENSAO":                                                      [72, 9],
+        "RT_FALHA_POTENCIA_ATIVA_REVERSA":                                                  [72, 10],
+        "RT_FALHA_SOBRECORRENTE_TERMINAL":                                                  [72, 11],
+        "RT_FALHA_LIMITE_SUPERIOR_CORRENTE_EXCITACAO":                                      [72, 12],
+        "RT_FALHA_LIMITE_INFERIOR_CORRENTE_EXCITACAO":                                      [72, 13],
+        "RT_FALHA_LIMITE_SUPERIOR_TENSAO_EXCITACAO":                                        [72, 14],
+        "RT_FALHA_LIMITE_INFERIOR_TENSAO_EXCITACAO":                                        [72, 15],
 
         ## FALHAS_2
         "RT_FALHA_TEMPERATURA_MUITO_ALTA_ROTOR":                                            [73, 0],

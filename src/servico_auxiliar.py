@@ -240,8 +240,8 @@ class ServicoAuxiliar:
         if cls.l_sfb_press_lado_limpo_muito_baixo.valor:
             logger.warning("[SA]  A Pressão do lado limpo do Sistema de Filtragem B está Muito Baixa. Favor verificar.")
 
-        if cls.l_esgot_bomba_2_indisp.valor:
-            logger.warning("[SA]  A Bomba de Esgotamento 2 entrou em modo Indisponível. Favor verificar.")
+        # if cls.l_esgot_bomba_2_indisp.valor:
+        #     logger.warning("[SA]  A Bomba de Esgotamento 2 entrou em modo Indisponível. Favor verificar.")
 
         if cls.l_sfa_falha_abrir_limpeza_elem_2.valor:
             logger.warning("[SA]  Sinal de falha ao abrir a Limpeza do Elemento 2 do Sistema de Filtragem A identificado. Favor verificar.")

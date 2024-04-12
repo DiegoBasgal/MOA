@@ -110,6 +110,7 @@ class UnidadeDeGeracao:
         self.ts_auxiliar: "datetime" = self.get_time()
 
         self._condicionadores: "list[c.CondicionadorBase]" = []
+        self.condicionadores_ativos: "list[c.CondicionadorBase]" = []
         self._condicionadores_essenciais: "list[c.CondicionadorBase]" = []
         self._condicionadores_atenuadores: "list[c.CondicionadorBase]" = []
 
@@ -530,7 +531,6 @@ class UnidadeDeGeracao:
 
                 if self.setpoint > 1:
                     res = self.rv[f"UG{self.id}"].write_single_register(REG_RTV[f"UG{self.id}"]["RV_SETPOINT_POTENCIA_ATIVA_PU"], int(setpoint_porcento))
-                    # res = self.rv[f"UG{self.id}"].write_single_register(REG_RTV[f"UG{self.id}"]["SETPOINT_POT_ATIVA_PU"], int(setpoint_kw)) # SIMULADOR
                     return res
 
         except Exception:
@@ -728,74 +728,69 @@ class UnidadeDeGeracao:
         autor_n = 0
         autor_i = 0
 
-        try:
-            if True in (condic.ativo for condic in self.condicionadores_essenciais):
-                condics_ativos = [condic for condics in [self.condicionadores_essenciais, self.condicionadores] for condic in condics if condic.ativo]
+        if True in (condic.ativo for condic in self.condicionadores_essenciais):
+            condics_ativos = [condic for condics in [self.condicionadores_essenciais, self.condicionadores] for condic in condics if condic.ativo]
 
-                logger.debug("")
-                if self.condicionadores_ativos == []:
-                    logger.debug(f"[UG{self.id}] Foram detectados condicionadores ativos na Unidade!")
-                else:
-                    logger.debug(f"[UG{self.id}] Ainda há condicionadores ativos na Unidade!")
-
-                for condic in condics_ativos:
-                    if condic.teste:
-                        logger.debug(f"[UG{self.id}] Descrição: \"{condic.descricao}\", Gravidade: \"{CONDIC_STR_DCT[condic.gravidade] if condic.gravidade in CONDIC_STR_DCT else 'Desconhecida'}\", Obs.: \"TESTE\"")
-                        continue
-
-                    elif condic in self.condicionadores_ativos:
-                        logger.debug(f"[UG{self.id}] Descrição: \"{condic.descricao}\", Gravidade: \"{CONDIC_STR_DCT[condic.gravidade] if condic.gravidade in CONDIC_STR_DCT else 'Desconhecida'}\"")
-                        flag = condic.gravidade
-                        continue
-
-                    elif condic.gravidade == CONDIC_INDISPONIBILIZAR:
-                        logger.warning(f"[UG{self.id}] Descrição: \"{condic.descricao}\", Gravidade: \"{CONDIC_STR_DCT[condic.gravidade] if condic.gravidade in CONDIC_STR_DCT else 'Desconhecida'}\"")
-                        self.condicionadores_ativos.append(condic)
-                        flag = CONDIC_INDISPONIBILIZAR
-                        self.bd.update_alarmes([
-                            self.get_time().strftime("%Y-%m-%d %H:%M:%S"),
-                            condic.gravidade,
-                            condic.descricao,
-                            "X" if autor_i == 0 else ""
-                        ])
-                        autor_i += 1
-                        sleep(1)
-
-                    elif condic.gravidade == CONDIC_AGUARDAR:
-                        logger.warning(f"[UG{self.id}] Descrição: \"{condic.descricao}\", Gravidade: \"{CONDIC_STR_DCT[condic.gravidade] if condic.gravidade in CONDIC_STR_DCT else 'Desconhecida'}\"")
-                        self.condicionadores_ativos.append(condic)
-                        flag = CONDIC_AGUARDAR if flag != CONDIC_INDISPONIBILIZAR else flag
-                        self.bd.update_alarmes([
-                            self.get_time().strftime("%Y-%m-%d %H:%M:%S"),
-                            condic.gravidade,
-                            condic.descricao,
-                            "X" if autor_i == 0 and autor_a == 0 else ""
-                        ])
-                        autor_a += 1
-                        sleep(1)
-
-                    elif condic.gravidade == CONDIC_NORMALIZAR:
-                        logger.warning(f"[UG{self.id}] Descrição: \"{condic.descricao}\", Gravidade: \"{CONDIC_STR_DCT[condic.gravidade] if condic.gravidade in CONDIC_STR_DCT else 'Desconhecida'}\"")
-                        self.condicionadores_ativos.append(condic)
-                        flag = CONDIC_NORMALIZAR if flag not in (CONDIC_INDISPONIBILIZAR, CONDIC_AGUARDAR) else flag
-                        self.bd.update_alarmes([
-                            self.get_time().strftime("%Y-%m-%d %H:%M:%S"),
-                            condic.gravidade,
-                            condic.descricao,
-                            "X" if autor_i == 0 and autor_a == 0 and autor_n == 0 else ""
-                        ])
-                        autor_n += 1
-                        sleep(1)
-
-                logger.debug("")
-                return flag
-
+            logger.debug("")
+            if self.condicionadores_ativos == []:
+                logger.debug(f"[UG{self.id}] Foram detectados condicionadores ativos na Unidade!")
             else:
-                self.condicionadores_ativos = []
-                return flag
+                logger.debug(f"[UG{self.id}] Ainda há condicionadores ativos na Unidade!")
 
-        except Exception:
-            logger.debug(f"[UG{self.id}] {traceback.format_exception()}")
+            for condic in condics_ativos:
+                if condic.teste:
+                    logger.debug(f"[UG{self.id}] Descrição: \"{condic.descricao}\", Gravidade: \"{CONDIC_STR_DCT[condic.gravidade] if condic.gravidade in CONDIC_STR_DCT else 'Desconhecida'}\", Obs.: \"TESTE\"")
+                    continue
+
+                elif condic in self.condicionadores_ativos:
+                    logger.debug(f"[UG{self.id}] Descrição: \"{condic.descricao}\", Gravidade: \"{CONDIC_STR_DCT[condic.gravidade] if condic.gravidade in CONDIC_STR_DCT else 'Desconhecida'}\"")
+                    flag = condic.gravidade
+                    continue
+
+                elif condic.gravidade == CONDIC_INDISPONIBILIZAR:
+                    logger.warning(f"[UG{self.id}] Descrição: \"{condic.descricao}\", Gravidade: \"{CONDIC_STR_DCT[condic.gravidade] if condic.gravidade in CONDIC_STR_DCT else 'Desconhecida'}\"")
+                    self.condicionadores_ativos.append(condic)
+                    flag = CONDIC_INDISPONIBILIZAR
+                    self.bd.update_alarmes([
+                        self.get_time().strftime("%Y-%m-%d %H:%M:%S"),
+                        condic.gravidade,
+                        condic.descricao,
+                        "X" if autor_i == 0 else ""
+                    ])
+                    autor_i += 1
+                    sleep(1)
+
+                elif condic.gravidade == CONDIC_AGUARDAR:
+                    logger.warning(f"[UG{self.id}] Descrição: \"{condic.descricao}\", Gravidade: \"{CONDIC_STR_DCT[condic.gravidade] if condic.gravidade in CONDIC_STR_DCT else 'Desconhecida'}\"")
+                    self.condicionadores_ativos.append(condic)
+                    flag = CONDIC_AGUARDAR if flag != CONDIC_INDISPONIBILIZAR else flag
+                    self.bd.update_alarmes([
+                        self.get_time().strftime("%Y-%m-%d %H:%M:%S"),
+                        condic.gravidade,
+                        condic.descricao,
+                        "X" if autor_i == 0 and autor_a == 0 else ""
+                    ])
+                    autor_a += 1
+                    sleep(1)
+
+                elif condic.gravidade == CONDIC_NORMALIZAR:
+                    logger.warning(f"[UG{self.id}] Descrição: \"{condic.descricao}\", Gravidade: \"{CONDIC_STR_DCT[condic.gravidade] if condic.gravidade in CONDIC_STR_DCT else 'Desconhecida'}\"")
+                    self.condicionadores_ativos.append(condic)
+                    flag = CONDIC_NORMALIZAR if flag not in (CONDIC_INDISPONIBILIZAR, CONDIC_AGUARDAR) else flag
+                    self.bd.update_alarmes([
+                        self.get_time().strftime("%Y-%m-%d %H:%M:%S"),
+                        condic.gravidade,
+                        condic.descricao,
+                        "X" if autor_i == 0 and autor_a == 0 and autor_n == 0 else ""
+                    ])
+                    autor_n += 1
+                    sleep(1)
+
+            logger.debug("")
+            return flag
+
+        else:
+            self.condicionadores_ativos = []
             return flag
 
 
@@ -1054,8 +1049,8 @@ class UnidadeDeGeracao:
         if self.l_uhlm_oleo_nv_muito_baixo.valor:
             logger.warning(f"[UG{self.id}] Sinal de Nível de Óleo Muito Baixo da UHLM identificado. Favor verificar.")
 
-        if self.l_uhlm_press_linha_lubrifi.valor:
-            logger.warning(f"[UG{self.id}] Sinal de Falta de Pressão de Lubrificação de Linha na UHLM identificada. Favor verificar.")
+        # if self.l_uhlm_press_linha_lubrifi.valor:
+        #     logger.warning(f"[UG{self.id}] Sinal de Falta de Pressão de Lubrificação de Linha na UHLM identificada. Favor verificar.")
 
         if self.l_qbag_escova_polo_pos_desgas.valor:
             logger.warning(f"[UG{self.id}] Sinal de Desgaste da Escova do Polo Positivo QBAG identificado. Favor verificar.")
@@ -1438,7 +1433,7 @@ class UnidadeDeGeracao:
         self.l_uhlm_oleo_nv_muito_baixo = lei.LeituraModbusBit(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}"]["UHLM_OLEO_NIVEL_MUITO_BAIXO"], descricao=f"[UG{self.id}] UHLM Óleo Nível Muito Baixo")
         self.condicionadores.append(c.CondicionadorBase(self.l_uhlm_oleo_nv_muito_baixo, CONDIC_INDISPONIBILIZAR, teste=True))
 
-        self.l_uhlm_press_linha_lubrifi = lei.LeituraModbusBit(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}"]["UHLM_PRESSAO_LINHA_LUBRIFICACAO"], descricao=f"[UG{self.id}] UHLM Pressão Linha Lubrificação")
+        self.l_uhlm_press_linha_lubrifi = lei.LeituraModbusBit(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}"]["UHLM_PRESSAO_LINHA_LUBRIFICACAO"], invertido=True, descricao=f"[UG{self.id}] UHLM Pressão Linha Lubrificação")
         self.condicionadores.append(c.CondicionadorBase(self.l_uhlm_press_linha_lubrifi, CONDIC_NORMALIZAR))
 
         self.l_qbag_escova_polo_pos_desgas = lei.LeituraModbusBit(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}"]["QBAG_ESCOVA_POLO_POSITIVO_DESGASTADA"], descricao=f"[UG{self.id}] QBAG Escova Polo Positivo Desgastada")

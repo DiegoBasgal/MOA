@@ -32,10 +32,8 @@ class Subestacao:
     bd: "bd.BancoDados" = None
 
     potencia_ativa = lei.LeituraModbus(
-        serv.Servidores.clp["SA"],
+        serv.Servidores.rele["SE"],
         REG_RELE["SE"]["P"],
-        op=3,
-        escala=1000,
         descricao="[SE]  Potência Ativa"
     )
     tensao_rs = lei.LeituraModbus(
