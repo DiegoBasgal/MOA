@@ -13,6 +13,7 @@ from datetime import datetime
 from mariadb.connectionpool import *
 from mensageiro.msg_log_handler import MensageiroHandler
 
+
 rootLogger = logging.getLogger()
 if (rootLogger.hasHandlers()):
     rootLogger.handlers.clear()
@@ -44,13 +45,13 @@ moa_halted = False
 
 config = {
     "timeout_moa": 60,
-    "nome_usina": "São Sebastião"
+    "nome_usina": "Pampeana"
 }
 
 cnx = mariadb.ConnectionPool(
-    host='192.168.50.113',
-    user='supervisorio',
-    password='8z43WW3sHPRnfg',
+    host='192.168.10.200',
+    user='watchdog',
+    password='GgrvQwsBjT8MTe',
     database='debug',
     pool_name="Watchdog",
     pool_size=10,

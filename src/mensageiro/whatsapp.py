@@ -24,7 +24,7 @@ class WhatsApp:
         }
 
         payload = {
-            "number": "120363159926062842@g.us",
+            "number": "120363164390903005@g.us",
             "message": f"{mensagem}"
         }
 
