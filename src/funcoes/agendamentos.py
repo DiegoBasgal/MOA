@@ -1,7 +1,7 @@
 import pytz
 import logging
 
-import usina as u
+import src.usina as u
 
 from time import sleep
 from datetime import datetime, timedelta
@@ -201,9 +201,9 @@ class Agendamentos:
                 logger.error(f"[AGN] Valor inválido no agendamento: {agendamento[0]} ({agendamento[3]} é inválido).")
 
         if agendamento[3] == AGN_BAIXAR_POT_UGS_MINIMO:
-            self.ug1_pot_anterior = self.cfg[f"pot_maxima_ug1"]
-            self.ug2_pot_anterior = self.cfg[f"pot_maxima_ug2"]
-            self.ug3_pot_anterior = self.cfg[f"pot_maxima_ug3"]
+            self.ug1_pot_anterior = self.cfg[f"pot_maxima_ug1"] if self.ug1_pot_anterior != 0 else 3300
+            self.ug2_pot_anterior = self.cfg[f"pot_maxima_ug2"] if self.ug2_pot_anterior != 0 else 3300
+            self.ug3_pot_anterior = self.cfg[f"pot_maxima_ug3"] if self.ug3_pot_anterior != 0 else 3300
 
             for ug in self.usn.ugs:
                 self.cfg[f"pot_maxima_ug{ug.id}"] = self.cfg["pot_limpeza_grade"]
@@ -250,7 +250,7 @@ class Agendamentos:
                 self.cfg[f"pot_maxima_ug1"] = novo
 
             except Exception:
-                logger.error(f"[AGN] Valor inválido no agendamento: {agendamento[0]} ({agendamento[3]} é inválido)")
+                logger.error(f"[AGN] Valor inválido no agendamento: {agendamento[0]} ({agendamento[5]} é inválido)")
 
         if agendamento[3] == AGN_UG1_FORCAR_ESTADO_MANUAL:
             self.usn.ug1.forcar_estado_manual()
@@ -272,7 +272,7 @@ class Agendamentos:
                 self.usn.ug1.tempo_normalizar = tempo
 
             except Exception:
-                logger.error(f"[AGN] Valor inválido no agendamento: {agendamento[0]} ({agendamento[3]} é inválido)")
+                logger.error(f"[AGN] Valor inválido no agendamento: {agendamento[0]} ({agendamento[5]} é inválido)")
 
         if agendamento[3] == AGN_UG2_ALTERAR_POT_LIMITE:
             try:
@@ -280,7 +280,7 @@ class Agendamentos:
                 self.cfg[f"pot_maxima_ug2"] = novo
 
             except Exception:
-                logger.error(f"[AGN] Valor inválido no agendamento: {agendamento[0]} ({agendamento[3]} é inválido)")
+                logger.error(f"[AGN] Valor inválido no agendamento: {agendamento[0]} ({agendamento[5]} é inválido)")
 
         if agendamento[3] == AGN_UG2_FORCAR_ESTADO_MANUAL:
             self.usn.ug2.forcar_estado_manual()
@@ -302,7 +302,7 @@ class Agendamentos:
                 self.usn.ug2.tempo_normalizar = tempo
 
             except Exception:
-                logger.error(f"[AGN] Valor inválido no agendamento: {agendamento[0]} ({agendamento[3]} é inválido)")
+                logger.error(f"[AGN] Valor inválido no agendamento: {agendamento[0]} ({agendamento[5]} é inválido)")
 
         if agendamento[3] == AGN_UG3_ALTERAR_POT_LIMITE:
             try:
@@ -310,7 +310,7 @@ class Agendamentos:
                 self.cfg[f"pot_maxima_ug3"] = novo
 
             except Exception:
-                logger.error(f"[AGN] Valor inválido no agendamento: {agendamento[0]} ({agendamento[3]} é inválido)")
+                logger.error(f"[AGN] Valor inválido no agendamento: {agendamento[0]} ({agendamento[5]} é inválido)")
 
         if agendamento[3] == AGN_UG3_FORCAR_ESTADO_MANUAL:
             self.usn.ug3.forcar_estado_manual()
@@ -332,4 +332,4 @@ class Agendamentos:
                 self.usn.ug3.tempo_normalizar = tempo
 
             except Exception:
-                logger.error(f"[AGN] Valor inválido no agendamento: {agendamento[0]} ({agendamento[3]} é inválido)")
+                logger.error(f"[AGN] Valor inválido no agendamento: {agendamento[0]} ({agendamento[5]} é inválido)")

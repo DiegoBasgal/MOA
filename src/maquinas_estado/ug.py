@@ -149,7 +149,9 @@ class StateDisponivel(State):
         # ATRIBUIÇÃO DE VARIÁVEIS PÚBLICAS
 
         self.parent.codigo_state = UG_SM_DISPONIVEL
+        self.parent.tentativas_sincronismo = 0
         self.parent.tentativas_de_normalizacao = 0
+
         self.parent.borda_parar = False
 
         # FINALIZAÇÃO DO __INIT__

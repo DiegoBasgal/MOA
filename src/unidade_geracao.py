@@ -111,8 +111,8 @@ class UnidadeGeracao:
         self.__setpoint: "int" = 0
         self.__tentativas_de_normalizacao: "int" = 0
 
-        self.__setpoint_minimo: "int" = self.cfg["pot_minima_ugs"]
-        self.__setpoint_maximo: "int" = self.cfg[f"pot_maxima_ug{self.id}"]
+        self.__setpoint_minimo: "int" = UG_POT_MIN
+        self.__setpoint_maximo: "int" = UG_POT_MAX
 
         self.__condicionadores_atenuadores: "list[CondicionadorBase]" = []
 
@@ -558,7 +558,7 @@ class UnidadeGeracao:
             elif not self.etapa_atual == UG_SINCRONIZADA and self.tentativas_sincronismo <= 3:
                 self.tentativas_sincronismo += 1
 
-                logger.info(f"[UG{self.id}]          Enviando comando:          \"PARTIDA\"")
+                logger.debug(f"[UG{self.id}]          Enviando comando:          \"PARTIDA\"")
 
                 self.clp[f"UG{self.id}"].write_single_coil(REG[f"UG{self.id}_CD_ResetRV"], [1])
                 self.clp[f"UG{self.id}"].write_single_coil(REG[f"UG{self.id}_CD_ResetReleRT"], [1])
@@ -593,7 +593,7 @@ class UnidadeGeracao:
 
         try:
             if not self.etapa_atual == UG_PARADA:
-                logger.info(f"[UG{self.id}]          Enviando comando:          \"PARADA\"")
+                logger.debug(f"[UG{self.id}]          Enviando comando:          \"PARADA\"")
                 self.clp[f"UG{self.id}"].write_single_coil(REG[f"UG{self.id}_CD_AbortaPartida"], [1])
                 self.clp[f"UG{self.id}"].write_single_coil(REG[f"UG{self.id}_CD_AbortaSincronismo"], [1])
                 self.clp[f"UG{self.id}"].write_single_coil(REG[f"UG{self.id}_CD_IniciaParada"], [1])
@@ -618,9 +618,6 @@ class UnidadeGeracao:
         """
 
         try:
-            self.setpoint_minimo = self.cfg["pot_minima_ugs"]
-            self.setpoint_maximo = self.cfg[f"pot_maxima_ug{self.id}"]
-
             logger.debug(f"[UG{self.id}]          Enviando setpoint:         {int(setpoint_kw)} kW")
 
             if self.setpoint > 1:

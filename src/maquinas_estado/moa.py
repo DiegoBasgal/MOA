@@ -2,12 +2,12 @@ import sys
 import pytz
 import traceback
 
-import src.dicionarios as d
+import src.dicionarios.dict as d
+import src.usina as u
 
 from time import sleep
 from datetime import datetime
 
-from src.usina import *
 from src.dicionarios.reg import *
 from src.dicionarios.const import *
 from src.funcoes.agendamentos import *
@@ -38,7 +38,7 @@ class StateMachine:
 
 
 class State:
-    def __init__(self, usina: Usina=None, *args, **kwargs):
+    def __init__(self, usina: u.Usina=None, *args, **kwargs):
 
         # VERIFICAÇÃO DE ARGUMENTOS
 

@@ -18,6 +18,8 @@ import json
 import threading
 import traceback
 
+import src.usina as u
+
 from time import time, sleep
 from logging.config import fileConfig
 
@@ -84,7 +86,7 @@ if __name__ == "__main__":
             try:
                 logger.debug("")
                 logger.info("Iniciando instância e objetos da Usina...")
-                usn: Usina = Usina(cfg)
+                usn: u.Usina = u.Usina(cfg)
 
             except Exception:
                 logger.exception(f"Erro ao instanciar a classe Usina. Tentando novamente em \"{TIMEOUT_MAIN}s\"")

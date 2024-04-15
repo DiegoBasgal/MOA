@@ -553,7 +553,8 @@ class Usina:
             logger.debug(f"[USN]          Filtro EMA:                {self.nv_montante_recente:0.3f}")
 
             if self.nv_montante_recente <= NIVEL_FUNDO_RESERVATORIO:
-                if self.nv_montante <= 400 or not self.clp["TDA"].open():
+                if self.nv_montante == None or self.nv_montante <= 400 or not self.clp["TDA"].open():
+                    logger.warning(f"Atenção! Perda de conexão com o CLP da Tomada da Água. Entrando em modo de Operação por Leitura de Pressão da Caixa espiral (TDA Offline)")
                     d.glb["TDA_Offline"] = True
                     return NV_FLAG_NORMAL
                 else:
@@ -646,7 +647,7 @@ class Usina:
             return 0
 
         pot_medidor = self.potencia_ativa
-
+        logger.debug(f"[USN] Potência Alvo:                      {pot_alvo:0.3f}")
         logger.debug(f"[USN] Potência no medidor:                {self.potencia_ativa:0.3f}")
 
         pot_aux = self.cfg["pot_alvo_usina"] - (self.cfg["pot_maxima_usina"] - self.cfg["pot_alvo_usina"])
@@ -654,7 +655,7 @@ class Usina:
 
         if pot_medidor > self.cfg["pot_alvo_usina"] * 0.97 and pot_alvo >= self.cfg["pot_alvo_usina"]:
             pot_alvo = self._pot_alvo_anterior * (1 - 0.25 * ((pot_medidor - self.cfg["pot_alvo_usina"]) / self.cfg["pot_alvo_usina"]))
-            pot_alvo = min(pot_alvo, self.cfg["pot_maxima_usina"])
+            pot_alvo = min(pot_alvo, self.cfg["pot_alvo_usina"])
 
         self._pot_alvo_anterior = pot_alvo
 
@@ -709,7 +710,9 @@ class Usina:
 
         logger.debug(f"[USN] SP Geral:                           {sp}")
 
-        for ug in self.ugs: ug.manter_unidade = False
+        for ug in self.ugs: 
+            ug.manter_unidade = False
+            debug_log.debug(f"[UG{ug.id}] Setpoint Máximo -> {ug.setpoint_maximo}")
 
         if len(ugs) == 3:
             if self.__split3:
@@ -845,7 +848,7 @@ class Usina:
         Banco de Dados da Interface WEB.
         """
 
-        Servidores.ping_clients()
+        # Servidores.ping_clients()
         self.atualizar_valores_montante()
 
         parametros = self.db.get_parametros_usina()
