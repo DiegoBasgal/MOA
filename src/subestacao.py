@@ -63,6 +63,7 @@ class Subestacao:
     timer_tensao: "bool" = False
 
     condicionadores: "list[c.CondicionadorBase]" = []
+    condicionadores_ativos: "list[c.CondicionadorBase]" = []
     condicionadores_essenciais: "list[c.CondicionadorBase]" = []
 
 

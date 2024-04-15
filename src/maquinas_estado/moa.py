@@ -261,6 +261,7 @@ class ModoManual(State):
 
         self.usn.estado_moa = MOA_SM_MODO_MANUAL
         self.usn.modo_autonomo = False
+        self.usn.se.status_tensao = TENSAO_REESTABELECIDA
 
         # FINALIZAÇÃO DO __INIT__
 

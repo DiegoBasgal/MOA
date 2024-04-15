@@ -48,6 +48,7 @@ class TomadaAgua:
     aguardando_reservatorio: "bool" = False
 
     condicionadores: "list[c.CondicionadorBase]" = []
+    condicionadores_ativos: "list[c.CondicionadorBase]" = []
     condicionadores_essenciais: "list[c.CondicionadorBase]" = []
     condicionadores_atenuadores: "list[c.CondicionadorBase]" = []
 

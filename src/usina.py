@@ -23,8 +23,8 @@ import src.conectores.servidores as srv
 from time import sleep, time
 from datetime import  datetime
 
-from src.dicionarios.reg import *
 from src.dicionarios.const import *
+from src.dicionarios.reg_elipse import *
 
 
 logger = logging.getLogger("logger")
@@ -416,10 +416,15 @@ class Usina:
             for ug in self.ugs: ug.setpoint = 0
             return 0
 
-        l_pot_rele = srv.Servidores.rele["SE"].read_holding_registers(REG_RELE["SE"]["P"], 2)[1]
-        l_pot_medidor = 65535 - l_pot_rele
+        try:
+            l_pot_rele = srv.Servidores.rele["SE"].read_holding_registers(REG_RELE["SE"]["P"], 5)[1]
+        except Exception:
+            logger.debug(f"[USN] Erro de Leitura de Potência no Medidor da Usina.")
+            l_pot_rele = 0
 
-        logger.debug(f"[USN] Potência no medidor:                {l_pot_medidor}")
+        l_pot_medidor = 65535 - l_pot_rele if 60000 <= l_pot_rele <= 65535 else l_pot_rele
+
+        logger.debug(f"[USN] Potência no medidor:                {l_pot_medidor:0.3f}")
 
         pot_aux = self.cfg["pot_maxima_alvo"] - (self.cfg["pot_maxima_usina"] - self.cfg["pot_maxima_alvo"])
         pot_medidor = max(pot_aux, min(l_pot_medidor, self.cfg["pot_maxima_usina"]))
