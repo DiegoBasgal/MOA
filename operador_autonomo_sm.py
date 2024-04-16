@@ -23,10 +23,10 @@ from src.codes import *
 import src.abstracao_usina as abstracao_usina
 import src.database_connector as database_connector
 
+from mensageiro.msg_log_handler import MensageiroHandler
 
 
 # Set-up logging
-from src.mensageiro.mensageiro_log_handler import MensageiroHandler
 rootLogger = logging.getLogger()
 if (rootLogger.hasHandlers()):
     rootLogger.handlers.clear()
@@ -163,7 +163,7 @@ class ValoresInternosAtualizados(State):
                 deve_normalizar = False
                 habilitar_emerg_condic_c = False
 
-            logger.info("Foram detectados condicionadores ativos!")
+            logger.debug("Foram detectados condicionadores ativos!")
             [logger.info(f"Descrição: {d.descr}; Gravidade: {LISTA_GRAVIDADES[d.gravidade]}") for d in condicionadores_ativos]
 
             if habilitar_emerg_condic_c:
@@ -272,7 +272,7 @@ class Emergencia(State):
                 elif condic.gravidade == DEVE_INDISPONIBILIZAR:
                     deve_indisponibilizar = True
 
-            logger.info("Foram detectados condicionadores ativos!")
+            logger.debug("Foram detectados condicionadores ativos!")
             [logger.info(f"Descrição: {d.descr}; Gravidade: {LISTA_GRAVIDADES[d.gravidade]}") for d in condicionadores_ativos]
 
             if deve_super_normalizar:

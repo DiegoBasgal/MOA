@@ -68,7 +68,7 @@ class Usina:
         self.db_emergencia_acionada = 0
         self.modo_de_escolha_das_ugs = 0
         self.clp_emergencia_acionada = 0
-        self.aguardando_reservatorio = 0
+        self.aguardando_reservatorio = 1
         self.tentativas_de_normalizar = 0
 
         self.tensao_ok = False
@@ -151,7 +151,7 @@ class Usina:
 
         self.trafo_elevador_falha_relé_buchholz_alarme = LeituraModbusBit('02.10 - Trafo Elevador - Falha Relé BuchHolz Alarme', self.clp, REG_USINA_Alarme02, 10)
         x = self.trafo_elevador_falha_relé_buchholz_alarme
-        self.condicionadores.append(CondicionadorBase(x.descr, DEVE_INDISPONIBILIZAR, x))
+        self.condicionadores.append(CondicionadorBase(x.descr, DEVE_NORMALIZAR, x))
 
         self.trafo_elevador_falha_relé_buchholz_trip = LeituraModbusBit('02.11 - Trafo Elevador - Falha Relé BuchHolz Trip', self.clp, REG_USINA_Alarme02, 11)
         x = self.trafo_elevador_falha_relé_buchholz_trip

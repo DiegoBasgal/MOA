@@ -11,9 +11,9 @@ from codes import *
 from sys import stdout
 
 import socket # simul
+from mensageiro.msg_log_handler import MensageiroHandler
 
 # Set-up logging
-from mensageiro.mensageiro_log_handler import MensageiroHandler
 rootLogger = logging.getLogger()
 rootLogger.setLevel(logging.CRITICAL)
 logger = logging.getLogger(__name__)
