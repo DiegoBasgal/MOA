@@ -37,9 +37,9 @@ class WhatsApp:
     @classmethod
     def envio_todos(cls, mensagem) -> None:
         """
-        Função de envio utilizando Threads, para não interromper a execução 
+        Função de envio utilizando Threads, para não interromper a execução
         do ciclo principal do Watchdog.
         """
-        
+
         Thread(target=cls.envio_grupo, args=(mensagem, )).start()
 

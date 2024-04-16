@@ -45,13 +45,13 @@ moa_halted = False
 
 config = {
     "timeout_moa": 60,
-    "nome_usina": "Pampeana"
+    "nome_usina": "Covó"
 }
 
 cnx = mariadb.ConnectionPool(
-    host='192.168.10.200',
+    host='192.168.70.20',
     user='watchdog',
-    password='GgrvQwsBjT8MTe',
+    password='HEz4eYfeLXShTY',
     database='debug',
     pool_name="Watchdog",
     pool_size=10,
