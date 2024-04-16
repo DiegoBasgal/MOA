@@ -511,37 +511,41 @@ class Usina:
         deve atenuar ou não.
         """
 
-        flags = 0
-        atenuacao = 0
-        logger.debug(f"[USN] Verificando Atenuadores Gerais...")
+        try:
+            flags = 0
+            atenuacao = 0
+            logger.debug(f"[USN] Verificando Atenuadores Gerais...")
 
-        for condic in tda.TomadaAgua.condicionadores_atenuadores:
-            atenuacao = max(atenuacao, condic.valor)
+            for condic in tda.TomadaAgua.condicionadores_atenuadores:
+                atenuacao = max(atenuacao, condic.valor)
 
-            if atenuacao > 0:
-                flags += 1
-                logger.debug(f"[USN]    - \"{condic.descricao}\":")
-                logger.debug(f"[USN]                                     Leitura: {condic.leitura:3.2f} | Atenuação: {atenuacao:0.4f}")
+                if atenuacao > 0:
+                    flags += 1
+                    logger.debug(f"[USN]    - \"{condic.descricao}\":")
+                    logger.debug(f"[USN]                                     Leitura: {condic.leitura:3.2f} | Atenuação: {atenuacao:0.4f}")
 
-                if flags == 1:
-                    self.atenuacao = atenuacao
-                elif atenuacao > self.atenuacao:
-                    self.atenuacao = atenuacao
-                atenuacao = 0
+                    if flags == 1:
+                        self.atenuacao = atenuacao
+                    elif atenuacao > self.atenuacao:
+                        self.atenuacao = atenuacao
+                    atenuacao = 0
 
-        if flags == 0:
-            logger.debug(f"[USN] Não há necessidade de Atenuação.")
+            if flags == 0:
+                logger.debug(f"[USN] Não há necessidade de Atenuação.")
+                return setpoint
+
+            else:
+                ganho = 1 - self.atenuacao
+                aux = setpoint
+                self.atenuacao = 0
+
+                setpoint_atenuado = setpoint - 0.5 * (setpoint - (setpoint * ganho))
+                logger.debug(f"[USN]                                     SP {aux} * GANHO {ganho:0.4f} = {setpoint_atenuado:0.3f} kW")
+
+            return setpoint_atenuado
+
+        except Exception:
             return setpoint
-
-        else:
-            ganho = 1 - self.atenuacao
-            aux = setpoint
-            self.atenuacao = 0
-
-            setpoint_atenuado = setpoint - 0.5 * (setpoint - (setpoint * ganho))
-            logger.debug(f"[USN]                                     SP {aux} * GANHO {ganho:0.4f} = {setpoint_atenuado:0.3f} kW")
-
-        return setpoint_atenuado
 
 
     ### MÉTODOS DE CONTROLE DE DADOS:

@@ -32,16 +32,9 @@ fh.setLevel(logging.DEBUG)
 logger.addHandler(fh)
 
 
-l_1 = l.LeituraModbusBit(s.Servidores.clp['SA'], REG_SASE["CARREGADOR_BATERIAS_FALHA"], descricao="[SA] Falha Carregador de Baterias")
-# l_2 = l.LeituraModbusBit(s.Servidores.clp['UG1'], REG_UG["UG1"]["VB_VALVULA_BORBOLETA_FECHADA"], descricao="[UG1] Valvula Borboleta Fechada")
-# l_3 = l.LeituraModbusBit(s.Servidores.clp['UG1'], REG_UG["UG1"]["VB_VALVULA_BYPASS_ABERTA"], descricao="[UG1] Valvula Bypass Aberta")
-# l_4 = l.LeituraModbusBit(s.Servidores.clp['UG1'], REG_UG["UG1"]["VB_VALVULA_BYPASS_FECHADA"], descricao="[UG1] Valvula Bypass Fechada")
-# pd_b2p = l.LeituraModbusBit(s.Servidores.clp['SA'], REG_SASE["POCO_DRENAGEM_BOMBA_2_AUTOMATICO"], descricao="[SA]  Poço de Drenagem Bomba 2 Automático")
+l_teste = l.LeituraModbus(s.Servidores.rele["SE"], REG_RELE["SE"]["VCA"],descricao="[SE]  Tensão TR")
 
 while True:
-    logger.debug(f"{l_1.descricao} -> {l_1.valor}")
-    # logger.debug(f"{l_2.descricao} -> {l_2.valor}")
-    # logger.debug(f"{l_3.descricao} -> {l_3.valor}")
-    # logger.debug(f"{l_4.descricao} -> {l_4.valor}")
+    logger.debug(f"{l_teste.descricao} -> {l_teste.valor/1000 * 173.21 * 115}")
     print("")
     sleep(2)

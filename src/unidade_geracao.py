@@ -1142,10 +1142,10 @@ class UnidadeDeGeracao:
         if self.l_rt_falha_desab.valor:
             logger.warning(f"[UG{self.id}] Sinal de Falha ao Fesabilitar o RT identificado. Favor verificar.")
 
-        if self.l_urhv_press_crit.valor:
+        if self.l_urhv_press_crit.valor and self.etapa == UG_SINCRONIZADA:
             logger.warning(f"[UG{self.id}] Sinal de Nível Crítico de Pressão da UHRV identificado. Favor verificar.")
 
-        if self.l_uhlm_fluxo_troc_calor.valor:
+        if self.l_uhlm_fluxo_troc_calor.valor and self.etapa == UG_SINCRONIZADA:
             logger.warning(f"[UG{self.id}] Sinal de Falta de Fluxo do Trocador de Calor da UHLM identificada. Favor verificar.")
 
 

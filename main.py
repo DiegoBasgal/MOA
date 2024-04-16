@@ -54,7 +54,7 @@ if __name__ == "__main__":
         n_tentativa += 1
         logger.info(f"Tentativa:                                {n_tentativa}/3")
 
-        if n_tentativa == 3:
+        if n_tentativa >= 3:
             prox_estado = moa_sm.FalhaCritica
 
         else:
