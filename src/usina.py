@@ -212,7 +212,7 @@ class Usina:
 
         if not self.se.verificar_tensao():
             logger.debug("")
-            logger.debug(f"[SE]  Tensão Subestação:            RS -> \"{self.se.tensao_rs.valor/1000 * 173.21 * 115:2.1f} V\" | ST -> \"{self.se.tensao_st.valor/1000 * 173.21 * 115:2.1f} V\" | TR -> \"{self.se.tensao_tr.valor/1000 * 173.21 * 115:2.1f} V\"")
+            logger.debug(f"[SE]  Tensão Subestação:            RS -> \"{self.se.leituras_tensao[0]/1000 * 173.21 * 115:2.1f} V\" | ST -> \"{self.se.leituras_tensao[1]/1000 * 173.21 * 115:2.1f} V\" | TR -> \"{self.se.leituras_tensao[2]/1000 * 173.21 * 115:2.1f} V\"")
             logger.debug("")
             return DJS_FALTA_TENSAO
 
@@ -522,7 +522,7 @@ class Usina:
                 if atenuacao > 0:
                     flags += 1
                     logger.debug(f"[USN]    - \"{condic.descricao}\":")
-                    logger.debug(f"[USN]                                     Leitura: {condic.leitura:3.2f} | Atenuação: {atenuacao:0.4f}")
+                    logger.debug(f"[USN]                                     Leitura: {condic.leitura:3.3f} | Atenuação: {atenuacao:0.4f}")
 
                     if flags == 1:
                         self.atenuacao = atenuacao
@@ -539,7 +539,7 @@ class Usina:
                 aux = setpoint
                 self.atenuacao = 0
 
-                setpoint_atenuado = setpoint - 0.5 * (setpoint - (setpoint * ganho))
+                setpoint_atenuado = setpoint - 0.15 * (setpoint - (setpoint * ganho))
                 logger.debug(f"[USN]                                     SP {aux} * GANHO {ganho:0.4f} = {setpoint_atenuado:0.3f} kW")
 
             return setpoint_atenuado

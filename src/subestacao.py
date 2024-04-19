@@ -36,22 +36,6 @@ class Subestacao:
         REG_RELE["SE"]["P"],
         descricao="[SE]  Potência Ativa"
     )
-    tensao_rs = lei.LeituraModbus(
-        serv.Servidores.rele["SE"],
-        REG_RELE["SE"]["VAB"],
-        descricao="[SE]  Tensão RS"
-    )
-    tensao_st = lei.LeituraModbus(
-        serv.Servidores.rele["SE"],
-        REG_RELE["SE"]["VBC"],
-        descricao="[SE]  Tensão ST"
-    )
-    tensao_tr = lei.LeituraModbus(
-        serv.Servidores.rele["SE"],
-        REG_RELE["SE"]["VCA"],
-        descricao="[SE]  Tensão TR"
-    )
-
     status_dj_linha = lei.LeituraModbusBit(
         serv.Servidores.clp["SA"],
         REG_SASE["SE_DISJUNTOR_LINHA_FECHADO"],
@@ -61,6 +45,8 @@ class Subestacao:
     status_tensao: "int" = 0
 
     timer_tensao: "bool" = False
+
+    leituras_tensao: "list[int]" = []
 
     condicionadores: "list[c.CondicionadorBase]" = []
     condicionadores_ativos: "list[c.CondicionadorBase]" = []
@@ -97,11 +83,12 @@ class Subestacao:
         """
 
         try:
-            if (TENSAO_LINHA_BAIXA <= cls.tensao_rs.valor/1000 * 173.21 * 115 <= TENSAO_LINHA_ALTA) \
-                and (TENSAO_LINHA_BAIXA <= cls.tensao_st.valor/1000 * 173.21 * 115 <= TENSAO_LINHA_ALTA) \
-                and (TENSAO_LINHA_BAIXA <= cls.tensao_tr.valor/1000 * 173.21 * 115 <= TENSAO_LINHA_ALTA):
-                return True
+            cls.leituras_tensao = serv.Servidores.rele["SE"].read_holding_registers(REG_RELE["SE"]["VAB"], 3)
 
+            if (TENSAO_LINHA_BAIXA <= cls.leituras_tensao[0]/1000 * 173.21 * 115 <= TENSAO_LINHA_ALTA) \
+                and (TENSAO_LINHA_BAIXA <= cls.leituras_tensao[1]/1000 * 173.21 * 115 <= TENSAO_LINHA_ALTA) \
+                and (TENSAO_LINHA_BAIXA <= cls.leituras_tensao[2]/1000 * 173.21 * 115 <= TENSAO_LINHA_ALTA):
+                return True
             else:
                 logger.warning("[SE]  Tensão da linha fora do limite")
                 return False
@@ -158,29 +145,6 @@ class Subestacao:
 
             sleep(time() - (time() - 15))
         cls.status_tensao = TENSAO_FORA
-
-
-    @classmethod
-    def aguardar_normalizacao_djl(cls) -> "bool":
-        """
-        Função com loop, para aguardar normalização manual do Disjuntor 52L
-        por conta de problemas de aberturas.
-        """
-
-        cls.djl_manual = cls.bd.get_status_djl()
-
-        if cls.djl_manual:
-            logger.info("[SE]  Aguardando fechamento manual do Disjuntor 52L...")
-
-            while not cls.status_dj_linha.valor:
-                logger.debug("[SE]  Aguardando...")
-                sleep(TEMPO_CICLO_TOTAL)
-
-            logger.info("[SE]  Disjuntor Fechado! Retomando operação...")
-            return True
-
-        else:
-            return False
 
 
     @classmethod
@@ -241,8 +205,37 @@ class Subestacao:
         cls.l_disj_linha_aberto = lei.LeituraModbusBit(serv.Servidores.clp["SA"], REG_SASE["SE_DISJUNTOR_LINHA_ABERTO"], descricao="[SE]  Disjuntor de Linha Aberto")
         cls.condicionadores_essenciais.append(c.CondicionadorBase(cls.l_disj_linha_aberto, CONDIC_AGUARDAR))
 
+        # cls.l_rele_alm_led1_50ou51 = lei.LeituraModbusBit(serv.Servidores.rele["SE"], REG_RELE["SE"]["LED1_50_51"], invertido=True, descricao="[RELE][SE] Alarme LED 1 50 ou 51")
+        # cls.condicionadores_essenciais.append(c.CondicionadorBase(cls.l_rele_alm_led1_50ou51, CONDIC_INDISPONIBILIZAR))
 
-        ## CONDICIONADORES NORMAIS
+        # cls.l_rele_alm_led2_67N = lei.LeituraModbusBit(serv.Servidores.rele["SE"], REG_RELE["SE"]["LED2_67N"], invertido=True, descricao="[RELE][SE]  Alarme LED 2 67N")
+        # cls.condicionadores_essenciais.append(c.CondicionadorBase(cls.l_rele_alm_led2_67N, CONDIC_INDISPONIBILIZAR))
+
+        # cls.l_rele_alm_led6_50BF = lei.LeituraModbusBit(serv.Servidores.rele["SE"], REG_RELE["SE"]["LED6_50BF"], invertido=True, descricao="[RELE][SE]  Alarme LED 6 50BF")
+        # cls.condicionadores_essenciais.append(c.CondicionadorBase(cls.l_rele_alm_led6_50BF, CONDIC_INDISPONIBILIZAR))
+
+        # cls.l_rele_alm_led10_59N = lei.LeituraModbusBit(serv.Servidores.rele["SE"], REG_RELE["SE"]["LED10_59N"], invertido=True, descricao="[RELE][SE]  Alarme LED 10 59N")
+        # cls.condicionadores_essenciais.append(c.CondicionadorBase(cls.l_rele_alm_led10_59N, CONDIC_INDISPONIBILIZAR))
+
+        # ## CONDICIONADORES NORMAIS
+        # cls.l_rele_alm_led3 = lei.LeituraModbusBit(serv.Servidores.rele["SE"], REG_RELE["SE"]["LED3"], invertido=True, descricao="[RELE][SE]  Alarme LED 3")
+        # cls.condicionadores.append(c.CondicionadorBase(cls.l_rele_alm_led3, CONDIC_INDISPONIBILIZAR))
+
+        # cls.l_rele_alm_led4_78 = lei.LeituraModbusBit(serv.Servidores.rele["SE"], REG_RELE["SE"]["LED4_78"], invertido=True, descricao="[RELE][SE]  Alarme LED 4 78")
+        # cls.condicionadores.append(c.CondicionadorBase(cls.l_rele_alm_led4_78, CONDIC_INDISPONIBILIZAR))
+
+        # cls.l_rele_alm_led5 = lei.LeituraModbusBit(serv.Servidores.rele["SE"], REG_RELE["SE"]["LED5"], invertido=True, descricao="[RELE][SE]  Alarme LED 5")
+        # cls.condicionadores.append(c.CondicionadorBase(cls.l_rele_alm_led5, CONDIC_INDISPONIBILIZAR))
+
+        # cls.l_rele_alm_led7_81 = lei.LeituraModbusBit(serv.Servidores.rele["SE"], REG_RELE["SE"]["LED7_81"], invertido=True, descricao="[RELE][SE]  Alarme LED 7 81")
+        # cls.condicionadores.append(c.CondicionadorBase(cls.l_rele_alm_led7_81, CONDIC_INDISPONIBILIZAR))
+
+        # cls.l_rele_alm_led8_27 = lei.LeituraModbusBit(serv.Servidores.rele["SE"], REG_RELE["SE"]["LED8_27"], invertido=True, descricao="[RELE][SE]  Alarme LED 8 27")
+        # cls.condicionadores.append(c.CondicionadorBase(cls.l_rele_alm_led8_27, CONDIC_INDISPONIBILIZAR))
+
+        # cls.l_rele_alm_led9_59 = lei.LeituraModbusBit(serv.Servidores.rele["SE"], REG_RELE["SE"]["LED9_59"], invertido=True, descricao="[RELE][SE]  Alarme LED 9 59")
+        # cls.condicionadores.append(c.CondicionadorBase(cls.l_rele_alm_led9_59, CONDIC_INDISPONIBILIZAR))
+
         cls.l_te_temp_muito_alta = lei.LeituraModbusBit(serv.Servidores.clp["SA"], REG_SASE["TE_TEMPERATURA_MUITO_ALTA"], descricao="[SE]  Trasformador Elevador Temperatura Alta") # TODO -> Verificar invertido
         cls.condicionadores.append(c.CondicionadorBase(cls.l_te_temp_muito_alta, CONDIC_INDISPONIBILIZAR))
 

@@ -32,9 +32,8 @@ fh.setLevel(logging.DEBUG)
 logger.addHandler(fh)
 
 
-l_teste = l.LeituraModbus(s.Servidores.rele["SE"], REG_RELE["SE"]["VCA"],descricao="[SE]  Tensão TR")
+l_tensoes = s.Servidores.rele["SE"].read_holding_registers(REG_RELE["SE"]["VAB"], 3)
 
-while True:
-    logger.debug(f"{l_teste.descricao} -> {l_teste.valor/1000 * 173.21 * 115}")
-    print("")
-    sleep(2)
+logger.debug(f"[RELE][SE] VAB -> {l_tensoes[0]/1000 * 173.21 * 115}")
+logger.debug(f"[RELE][SE] VBC -> {l_tensoes[1]/1000 * 173.21 * 115}")
+logger.debug(f"[RELE][SE] VCA -> {l_tensoes[2]/1000 * 173.21 * 115}")

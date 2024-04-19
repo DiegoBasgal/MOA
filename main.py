@@ -52,10 +52,11 @@ if __name__ == "__main__":
 
     while not executar:
         n_tentativa += 1
-        logger.info(f"Tentativa:                                {n_tentativa}/3")
+        logger.debug(f"Tentativa:                                {n_tentativa}/3")
 
         if n_tentativa >= 3:
             prox_estado = moa_sm.FalhaCritica
+            sys.exit(1)
 
         else:
             try:

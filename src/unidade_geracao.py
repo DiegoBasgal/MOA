@@ -1265,7 +1265,8 @@ class UnidadeDeGeracao:
             self.clp[f"UG{self.id}"],
             REG_UG[f"UG{self.id}"]["TEMPERATURA_GERADOR_FASE_A"],
             escala=0.001,
-            op=4
+            op=4,
+            descricao=f"[UG{self.id}] Temperatura Gerador Fase A"
         )
         self.c_tmp_fase_r = c.CondicionadorExponencial(self.l_tmp_fase_r)
         self.condicionadores_essenciais.append(self.c_tmp_fase_r)
@@ -1276,7 +1277,8 @@ class UnidadeDeGeracao:
             self.clp[f"UG{self.id}"],
             REG_UG[f"UG{self.id}"]["TEMPERATURA_GERADOR_FASE_B"],
             escala=0.001,
-            op=4
+            op=4,
+            descricao=f"[UG{self.id}] Temperatura Gerador Fase B"
         )
         self.c_tmp_fase_s = c.CondicionadorExponencial(self.l_tmp_fase_s)
         self.condicionadores_essenciais.append(self.c_tmp_fase_s)
@@ -1287,7 +1289,8 @@ class UnidadeDeGeracao:
             self.clp[f"UG{self.id}"],
             REG_UG[f"UG{self.id}"]["TEMPERATURA_GERADOR_FASE_C"],
             escala=0.001,
-            op=4
+            op=4,
+            descricao=f"[UG{self.id}] Temperatura Gerador Fase C"
         )
         self.c_tmp_fase_t = c.CondicionadorExponencial(self.l_tmp_fase_t)
         self.condicionadores_essenciais.append(self.c_tmp_fase_t)
@@ -1298,7 +1301,8 @@ class UnidadeDeGeracao:
             self.clp[f"UG{self.id}"],
             REG_UG[f"UG{self.id}"]["TEMPERATURA_GERADOR_NUCLEO_1"],
             escala=0.001,
-            op=4
+            op=4,
+            descricao=f"[UG{self.id}] Temperatura Gerador Núcleo 1"
         )
         self.c_tmp_nucleo_gerador_1 = c.CondicionadorExponencial(self.l_tmp_nucleo_gerador_1)
         self.condicionadores_essenciais.append(self.c_tmp_nucleo_gerador_1)
@@ -1309,7 +1313,8 @@ class UnidadeDeGeracao:
             self.clp[f"UG{self.id}"],
             REG_UG[f"UG{self.id}"]["TEMPERATURA_GERADOR_NUCLEO_2"],
             escala=0.001,
-            op=4
+            op=4,
+            descricao=f"[UG{self.id}] Temperatura Gerador Núcleo 2"
         )
         self.c_tmp_nucleo_gerador_2 = c.CondicionadorExponencial(self.l_tmp_nucleo_gerador_2)
         self.condicionadores_essenciais.append(self.c_tmp_nucleo_gerador_2)
@@ -1320,7 +1325,8 @@ class UnidadeDeGeracao:
             self.clp[f"UG{self.id}"],
             REG_UG[f"UG{self.id}"]["TEMPERATURA_GERADOR_NUCLEO_3"],
             escala=0.001,
-            op=4
+            op=4,
+            descricao=f"[UG{self.id}] Temperatura Gerador Núcleo 3"
         )
         self.c_tmp_nucleo_gerador_3 = c.CondicionadorExponencial(self.l_tmp_nucleo_gerador_3)
         self.condicionadores_essenciais.append(self.c_tmp_nucleo_gerador_3)
@@ -1331,7 +1337,8 @@ class UnidadeDeGeracao:
             self.clp[f"UG{self.id}"],
             REG_UG[f"UG{self.id}"]["TEMPERATURA_MANCAL_GUIA_CASQUILHO"],
             escala=0.001,
-            op=4
+            op=4,
+            descricao=f"[UG{self.id}] Temperatura Mancal Guia Casquilho"
         )
         self.c_tmp_mancal_casq_rad = c.CondicionadorExponencial(self.l_tmp_mancal_casq_rad)
         self.condicionadores_essenciais.append(self.c_tmp_mancal_casq_rad)
@@ -1342,7 +1349,8 @@ class UnidadeDeGeracao:
             self.clp[f"UG{self.id}"],
             REG_UG[f"UG{self.id}"]["TEMPERATURA_MANCAL_COMBINADO_CASQUILHO"],
             escala=0.001,
-            op=4
+            op=4,
+            descricao=f"[UG{self.id}] Temperatura Mancal Combinado Casquilho"
         )
         self.c_tmp_mancal_casq_comb = c.CondicionadorExponencial(self.l_tmp_mancal_casq_comb)
         self.condicionadores_essenciais.append(self.c_tmp_mancal_casq_comb)
@@ -1353,7 +1361,8 @@ class UnidadeDeGeracao:
             self.clp[f"UG{self.id}"],
             REG_UG[f"UG{self.id}"]["TEMPERATURA_MANCAL_COMBINADO_ESCORA"],
             escala=0.001,
-            op=4
+            op=4,
+            descricao=f"[UG{self.id}] Temperatura Mancal Combinado Escora"
         )
         self.c_tmp_mancal_escora_comb = c.CondicionadorExponencial(self.l_tmp_mancal_escora_comb)
         self.condicionadores_essenciais.append(self.c_tmp_mancal_escora_comb)
@@ -1362,7 +1371,7 @@ class UnidadeDeGeracao:
 
         ## CONDICINOADORES ESSENCIAIS
         self.l_rele_bloq_86eh = lei.LeituraModbusBit(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}"]["PRTVA_RELE_BLOQUEIO_86EH"], descricao=f"[UG{self.id}] Relé Bloqueio 86EH")
-        self.condicionadores_essenciais.append(c.CondicionadorBase(self.l_rele_bloq_86eh, CONDIC_NORMALIZAR, teste=True))
+        self.condicionadores_essenciais.append(c.CondicionadorBase(self.l_rele_bloq_86eh, CONDIC_NORMALIZAR, [UG_SINCRONIZANDO, UG_SINCRONIZADA], self))
 
         self.l_bloq_86e = lei.LeituraModbusBit(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}"]["BLOQUEIO_86E_ATUADO"], descricao=f"[UG{self.id}] Bloqueio 86E")
         self.condicionadores_essenciais.append(c.CondicionadorBase(self.l_bloq_86e, CONDIC_NORMALIZAR))
@@ -1374,7 +1383,7 @@ class UnidadeDeGeracao:
         self.condicionadores_essenciais.append(c.CondicionadorBase(self.l_status_bloq_86m, CONDIC_NORMALIZAR))
 
         self.l_rt_falha_2_bloq_externo = lei.LeituraModbusBit(self.rv[f"UG{self.id}"], REG_RTV[f"UG{self.id}"]["RV_FALHA_BLOQUEIO_EXTERNO"], descricao=f"[UG{self.id}] RT Falha Bloqueio Externo")
-        self.condicionadores_essenciais.append(c.CondicionadorBase(self.l_rt_falha_2_bloq_externo, CONDIC_NORMALIZAR))
+        self.condicionadores_essenciais.append(c.CondicionadorBase(self.l_rt_falha_2_bloq_externo, CONDIC_NORMALIZAR, [UG_SINCRONIZANDO, UG_SINCRONIZADA], self))
 
         self.l_rele_trip_prot_gerad = lei.LeituraModbusBit(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}"]["RELE_PROT_GERADOR_TRIP"], descricao=f"[UG{self.id}] Relé Trip Proteção Gerador")
         self.condicionadores_essenciais.append(c.CondicionadorBase(self.l_rele_trip_prot_gerad, CONDIC_NORMALIZAR, teste=True))
@@ -1453,7 +1462,7 @@ class UnidadeDeGeracao:
 
         # UHRV
         self.l_uhrv_bomba_1_indisp = lei.LeituraModbusBit(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}"]["UHRV_BOMBA_1_INDISPONIVEL"], descricao=f"[UG{self.id}] UHRV Bomba 1 Indisponível")
-        self.condicionadores.append(c.CondicionadorBase(self.l_uhrv_bomba_1_indisp, CONDIC_INDISPONIBILIZAR))
+        self.condicionadores.append(c.CondicionadorBase(self.l_uhrv_bomba_1_indisp, CONDIC_INDISPONIBILIZAR, [UG_SINCRONIZANDO, UG_SINCRONIZADA], self))
 
         self.l_uhrv_filtro_oleo_sujo = lei.LeituraModbusBit(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}"]["UHRV_FILTRO_OLEO_SUJO"], descricao=f"[UG{self.id}] UHRV Filtro Óleo Sujo")
         self.condicionadores.append(c.CondicionadorBase(self.l_uhrv_filtro_oleo_sujo, CONDIC_INDISPONIBILIZAR))
@@ -1521,8 +1530,8 @@ class UnidadeDeGeracao:
         self.l_rt_alar_1_sobretensao = lei.LeituraModbusBit(self.rt[f"UG{self.id}"], REG_RTV[f"UG{self.id}"]["RT_ALARME_SOBRETENSAO"], descricao=f"[UG{self.id}] RT Alarmes 1 Sobretensão")
         self.condicionadores.append(c.CondicionadorBase(self.l_rt_alar_1_sobretensao, CONDIC_INDISPONIBILIZAR))
 
-        self.l_rt_alar_1_subtensao = lei.LeituraModbusBit(self.rt[f"UG{self.id}"], REG_RTV[f"UG{self.id}"]["RT_ALARME_SUBTENSAO"], descricao=f"[UG{self.id}] RT Alarmes 1 Subtensão")
-        self.condicionadores.append(c.CondicionadorBase(self.l_rt_alar_1_subtensao, CONDIC_INDISPONIBILIZAR))
+        # self.l_rt_alar_1_subtensao = lei.LeituraModbusBit(self.rt[f"UG{self.id}"], REG_RTV[f"UG{self.id}"]["RT_ALARME_SUBTENSAO"], descricao=f"[UG{self.id}] RT Alarmes 1 Subtensão")
+        # self.condicionadores.append(c.CondicionadorBase(self.l_rt_alar_1_subtensao, CONDIC_INDISPONIBILIZAR))
 
         self.l_rt_alar_1_sobrefrequencia = lei.LeituraModbusBit(self.rt[f"UG{self.id}"], REG_RTV[f"UG{self.id}"]["RT_ALARME_SOBREFREQUENCIA"], descricao=f"[UG{self.id}] RT Alarmes 1 Sobrefrequência")
         self.condicionadores.append(c.CondicionadorBase(self.l_rt_alar_1_sobrefrequencia, CONDIC_INDISPONIBILIZAR))
