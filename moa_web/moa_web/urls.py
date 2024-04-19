@@ -14,10 +14,13 @@ Including another URLconf
     1. Import the include() function: from django.urls import include, path
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
+
+
 from django.contrib import admin
 from django.urls import path, include
 from django.views.generic import RedirectView
 
+from alarmes.views import alarmes_view
 from ocorrencias.views import ocorrencias_view
 from monitoramento.views import monitoramento_view
 from parametros.views import parametros_moa_view, emergencia_view
@@ -28,13 +31,14 @@ from agendamentos.views import agendamentos_view, novo_agendamento_view, novo_ag
 urlpatterns = [
     path("", RedirectView.as_view(url="monitoramento/")),
     path("admin/", admin.site.urls),
+    path("alarmes/", alarmes_view, name="alarmes"),
     path("ocorrencias/", ocorrencias_view, name="ocorrencias"),
     path("monitoramento/", monitoramento_view, name="monitoramento"),
 
     path("agendamentos/", agendamentos_view, name="agendamentos"),
     path("agendamentos/<int:ag_id>/",agendamento_detalhado_view,name="agendamento_detalhado",),
     path("agendamentos/novo_agendamento/", novo_agendamento_view, name="novo_agendamento"),
-    path("agendamentos/novo_agendamento_rapido/",novo_agendamento_rapido_view,name="novo_agendamento_rapido",),
+    path("agendamentos/novo_agendamento_rapido/", novo_agendamento_rapido_view,name="novo_agendamento_rapido",),
 
     path("parametros_moa/", parametros_moa_view, name="parametros_moa"),
     path("parametros_moa/emergencia/", emergencia_view, name="emergencia"),

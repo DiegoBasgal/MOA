@@ -3,7 +3,6 @@ __author__ = "Diego Basgal", "Henrique Pfeifer"
 __credits__ = ["Lucas Lavratti", ...]
 __description__ = "Este módulo corresponde a implementação da operação da Tomada da Água."
 
-import pytz
 import logging
 import traceback
 
@@ -212,16 +211,16 @@ class TomadaAgua:
         cls.condicionadores_atenuadores.append(cls.c_diferencial_grade)
 
         ## CONDICIONADORES ESSENCIAIS
-        cls.l_teste_ce_normalizar = lei.LeituraModbusBit(serv.Servidores.clp["TDA"], REG_SASE["RELE_BLOQUEIO_86BTBF"], descricao="[TDA] Condicionador Essencial Teste Normalizar")
+        cls.l_teste_ce_normalizar = lei.LeituraModbusBit(serv.Servidores.clp["TDA"], REG_TDA["CONDIC_E_NORMALIZAR"], descricao="[TDA] Condicionador Essencial Teste Normalizar")
         cls.condicionadores_essenciais.append(c.CondicionadorBase(cls.l_teste_ce_normalizar, CONDIC_NORMALIZAR))
 
         ## CONDICIONADORES
-        cls.l_teste_c_normalizar = lei.LeituraModbusBit(serv.Servidores.clp["TDA"], REG_SASE["BOTAO_BLOQUEIO_86BTBF"], descricao="[TDA] Condicionador Teste Normalizar")
+        cls.l_teste_c_normalizar = lei.LeituraModbusBit(serv.Servidores.clp["TDA"], REG_TDA["CONDIC_NORMALIZAR"], descricao="[TDA] Condicionador Teste Normalizar")
         cls.condicionadores_essenciais.append(c.CondicionadorBase(cls.l_teste_c_normalizar, CONDIC_NORMALIZAR))
 
-        cls.l_teste_c_indisponibilizar = lei.LeituraModbusBit(serv.Servidores.clp["TDA"], REG_SASE["DISJUNTOR_TSA_TRIP"], descricao="[TDA] Condicionador Essencial Teste Indisponibilizar")
-        cls.condicionadores.append(c.CondicionadorBase(cls.l_teste_c_normalizar, CONDIC_INDISPONIBILIZAR))
+        cls.l_teste_c_indisponibilizar = lei.LeituraModbusBit(serv.Servidores.clp["TDA"], REG_TDA["CONDIC_INDISPONIBILIZAR"], descricao="[TDA] Condicionador Essencial Teste Indisponibilizar")
+        cls.condicionadores.append(c.CondicionadorBase(cls.l_teste_c_indisponibilizar, CONDIC_INDISPONIBILIZAR))
 
         ## WHATSAPP/VOIP
-        cls.l_teste_voip = lei.LeituraModbusBit(serv.Servidores.clp["TDA"], REG_SASE["DISJUNTOR_GMG_TRIP"], descricao="[TDA] Leitura Teste Voip")
-        cls.l_teste_whats = lei.LeituraModbusBit(serv.Servidores.clp["TDA"], REG_SASE["SUPERVISOR_TENSAO_FALHA"], descricao="[TDA] Leitura Teste WhatsApp")
+        cls.l_teste_voip = lei.LeituraModbusBit(serv.Servidores.clp["TDA"], REG_TDA["L_VOIP"], descricao="[TDA] Leitura Teste Voip")
+        cls.l_teste_whats = lei.LeituraModbusBit(serv.Servidores.clp["TDA"], REG_TDA["L_WHATS"], descricao="[TDA] Leitura Teste WhatsApp")

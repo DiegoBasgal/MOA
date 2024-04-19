@@ -14,8 +14,8 @@ import src.conectores.servidores as serv
 
 from time import sleep
 
+from src.dicionarios.reg import *
 from src.dicionarios.const import *
-from src.dicionarios.reg_elipse import *
 
 
 logger = logging.getLogger("logger")
@@ -107,17 +107,17 @@ class ServicoAuxiliar:
         """
 
         ## CONDICIONADORES ESSENCIAIS
-        cls.l_teste_ce_normalizar = lei.LeituraModbusBit(serv.Servidores.clp["SA"], REG_SASE["RELE_BLOQUEIO_86BTBF"], descricao="[SA]  Condicionador Essencial Teste Normalizar")
+        cls.l_teste_ce_normalizar = lei.LeituraModbusBit(serv.Servidores.clp["SA"], REG_SASE["SA_CONDIC_E_NORMALIZAR"], descricao="[SA]  Condicionador Essencial Teste Normalizar")
         cls.condicionadores_essenciais.append(c.CondicionadorBase(cls.l_teste_ce_normalizar, CONDIC_NORMALIZAR))
 
         ## CONDICIONADORES
-        cls.l_teste_c_normalizar = lei.LeituraModbusBit(serv.Servidores.clp["SA"], REG_SASE["BOTAO_BLOQUEIO_86BTBF"], descricao="[SA]  Condicionador Teste Normalizar")
+        cls.l_teste_c_normalizar = lei.LeituraModbusBit(serv.Servidores.clp["SA"], REG_SASE["SA_CONDIC_NORMALIZAR"], descricao="[SA]  Condicionador Teste Normalizar")
         cls.condicionadores_essenciais.append(c.CondicionadorBase(cls.l_teste_c_normalizar, CONDIC_NORMALIZAR))
 
-        cls.l_teste_c_indisponibilizar = lei.LeituraModbusBit(serv.Servidores.clp["SA"], REG_SASE["DISJUNTOR_TSA_TRIP"], descricao="[SA]  Condicionador Essencial Teste Indisponibilizar")
+        cls.l_teste_c_indisponibilizar = lei.LeituraModbusBit(serv.Servidores.clp["SA"], REG_SASE["SA_CONDIC_INDISPONIBILIZAR"], descricao="[SA]  Condicionador Essencial Teste Indisponibilizar")
         cls.condicionadores.append(c.CondicionadorBase(cls.l_teste_c_normalizar, CONDIC_INDISPONIBILIZAR))
 
 
         ## WHATSAPP/VOIP
-        cls.l_teste_voip = lei.LeituraModbusBit(serv.Servidores.clp["SA"], REG_SASE["DISJUNTOR_GMG_TRIP"], descricao="[SA]  Leitura Teste Voip")
-        cls.l_teste_whats = lei.LeituraModbusBit(serv.Servidores.clp["SA"], REG_SASE["SUPERVISOR_TENSAO_FALHA"], descricao="[SA]  Leitura Teste WhatsApp")
+        cls.l_teste_voip = lei.LeituraModbusBit(serv.Servidores.clp["SA"], REG_SASE["SA_L_VOIP"], descricao="[SA]  Leitura Teste Voip")
+        cls.l_teste_whats = lei.LeituraModbusBit(serv.Servidores.clp["SA"], REG_SASE["SA_L_WHATS"], descricao="[SA]  Leitura Teste WhatsApp")

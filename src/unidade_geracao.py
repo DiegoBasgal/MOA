@@ -146,8 +146,6 @@ class UnidadeDeGeracao:
 
     @property
     def etapa_atual(self) -> "int":
-        # PROPRIEDADE -> Retorna o valor da leitura de etapa atual
-
         try:
             self._ultima_etapa_atual = self.__etapa_atual.valor
             return self._ultima_etapa_atual
@@ -158,8 +156,6 @@ class UnidadeDeGeracao:
 
     @property
     def etapa_alvo(self) -> "int":
-        # PROPRIEDADE -> Retorna o valor da leitura de etapa alvo
-
         try:
             self._ultima_etapa_alvo = self.__etapa_alvo.valor
             return self._ultima_etapa_alvo
@@ -170,8 +166,6 @@ class UnidadeDeGeracao:
 
     @property
     def etapa(self) -> "int":
-        # PROPRIEDADE -> Retorna o valor de etapa tratado
-
         if self.etapa_atual == UG_PARADA and self.etapa_alvo == UG_PARADA:
             self._ultima_etapa_alvo = self.etapa_alvo
             return UG_PARADA
@@ -270,42 +264,29 @@ class UnidadeDeGeracao:
 
     @property
     def condicionadores(self) -> "list[c.CondicionadorBase]":
-        # PROPRIEDADE -> Retrona a lista de condicionadores da Unidade.
-
         return self._condicionadores
 
     @condicionadores.setter
     def condicionadores(self, var: "list[c.CondicionadorBase]") -> None:
-        # SETTER -> Atrubui a nova lista de condicionadores da Unidade.
-
         self._condicionadores = var
 
     @property
     def condicionadores_essenciais(self) -> "list[c.CondicionadorBase]":
-        # PROPRIEDADE -> Retrona a lista de condicionadores essenciais da Unidade.
-
         return self._condicionadores_essenciais
 
     @condicionadores_essenciais.setter
     def condicionadores_essenciais(self, var: "list[c.CondicionadorBase]") -> None:
-        # SETTER -> Atrubui a nova lista de condicionadores essenciais da Unidade.
-
         self._condicionadores_essenciais = var
 
     @property
     def condicionadores_atenuadores(self) -> "list[c.CondicionadorBase]":
-        # PROPRIEDADE -> Retorna a lista de atenuadores da Unidade.
-
         return self._condicionadores_atenuadores
 
     @condicionadores_atenuadores.setter
     def condicionadores_atenuadores(self, var: "list[c.CondicionadorBase]") -> None:
-        # SETTER -> Atribui a nova lista de atenuadores da Unidade.
-
         self._condicionadores_atenuadores = var
 
 
-    # FUNÇÕES
     @staticmethod
     def get_time() -> "datetime":
         return datetime.now(pytz.timezone("Brazil/East")).replace(tzinfo=None)
@@ -748,6 +729,7 @@ class UnidadeDeGeracao:
         Função para extração de valores do Banco de Dados da Interface WEB e atribuição
         de novos limites de operação de condicionadores.
         """
+
         try:
             self.c_tmp_fase_r.valor_base = float(parametros[f"alerta_temperatura_fase_r_ug{self.id}"])
             self.c_tmp_fase_s.valor_base = float(parametros[f"alerta_temperatura_fase_s_ug{self.id}"])
@@ -972,18 +954,18 @@ class UnidadeDeGeracao:
 
 
         ## CONDICINOADORES ESSENCIAIS
-        self.l_teste_ce_normalizar = lei.LeituraModbusBit(srv.Servidores.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}"]["PRTVA_RELE_BLOQUEIO_86EH"], descricao=f"[UG{self.id}] Condicionador Essencial Teste Normalizar")
+        self.l_teste_ce_normalizar = lei.LeituraModbusBit(srv.Servidores.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}"]["CONDIC_E_NORMALIZAR"], descricao=f"[UG{self.id}] Condicionador Essencial Teste Normalizar")
         self.condicionadores_essenciais.append(c.CondicionadorBase(self.l_teste_ce_normalizar, CONDIC_NORMALIZAR))
 
         ## CONDICIONADORES
-        self.l_teste_c_normalizar = lei.LeituraModbusBit(srv.Servidores.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}"]["BYPASS_FALHA_ABRIR"], descricao=f"[UG{self.id}] Condicionador Teste Normalizar")
+        self.l_teste_c_normalizar = lei.LeituraModbusBit(srv.Servidores.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}"]["CONDIC_NORMALIZAR"], descricao=f"[UG{self.id}] Condicionador Teste Normalizar")
         self.condicionadores.append(c.CondicionadorBase(self.l_teste_c_normalizar, CONDIC_NORMALIZAR))
 
-        self.l_teste_c_indisponibilizar = lei.LeituraModbusBit(srv.Servidores.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}"]["BYPASS_FALHA_ABRIR"], descricao=f"[UG{self.id}] Condicionador Teste Indisponibilizar")
+        self.l_teste_c_indisponibilizar = lei.LeituraModbusBit(srv.Servidores.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}"]["CONDIC_INDISPONIBILIZAR"], descricao=f"[UG{self.id}] Condicionador Teste Indisponibilizar")
         self.condicionadores.append(c.CondicionadorBase(self.l_teste_c_indisponibilizar, CONDIC_INDISPONIBILIZAR))
 
         ## WHATSAPP + VOIP
-        self.l_teste_voip = lei.LeituraModbusBit(srv.Servidores.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}"]["CMD_UHRV_MODO_MANUTENCAO"], descricao=f"[UG{self.id}] UHRV Comando Modo Manutenção")
+        self.l_teste_voip = lei.LeituraModbusBit(srv.Servidores.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}"]["L_VOIP"], descricao=f"[UG{self.id}] UHRV Comando Modo Manutenção")
 
         ## WHATSAPP
-        self.l_teste_whats = lei.LeituraModbusBit(srv.Servidores.rv[f"UG{self.id}"], REG_RTV[f"UG{self.id}"]["RV_SD_RELE_POTENCIA_NULA"], descricao=f"[UG{self.id}] RV Potência Nula")
+        self.l_teste_whats = lei.LeituraModbusBit(srv.Servidores.rv[f"UG{self.id}"], REG_RTV[f"UG{self.id}"]["L_WHATS"], descricao=f"[UG{self.id}] RV Potência Nula")

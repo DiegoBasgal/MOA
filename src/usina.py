@@ -90,7 +90,7 @@ class Usina:
         try:
             cls.clp_emergencia = True
             for ug in cls.ugs:
-                esc.EscritaModBusBit.escrever_bit(srv.Servidores.clp[f"UG{ug.id}"], REG_UG[f"UG{ug.id}"]["CMD_PARADA_EMERG"], valor=1)
+                esc.EscritaModBusBit.escrever_bit(srv.Servidores.clp[f"UG{ug.id}"], REG_UG[f"UG{ug.id}"]["CMD_COMANDO_PARADA_DE_EMERGENCIA"], valor=1)
 
         except Exception:
             logger.error(f"[USN] Houve um erro ao acionar a Emergência.")
@@ -272,8 +272,7 @@ class Usina:
             for ug in cls.ugs: ug.setpoint = 0
             return 0
 
-        l_pot_rele = srv.Servidores.rele["SE"].read_holding_registers(REG_RELE["SE"]["P"], 2)[1]
-        l_pot_medidor = 65535 - l_pot_rele
+        l_pot_medidor = se.Subestacao.potencia_ativa.valor
 
         logger.debug(f"[USN] Potência no medidor:                {l_pot_medidor}")
 
