@@ -7,25 +7,25 @@ import pytz
 import logging
 import traceback
 
-import src.bay as bay
+import src.funcoes.leitura as lei
+import src.funcoes.escrita as esc
 import src.dicionarios.dict as dct
+import src.conectores.servidores as srv
+import src.conectores.banco_dados as bd
 import src.funcoes.condicionadores as c
 
+from time import sleep
 from datetime import datetime
 
-from src.funcoes.leitura import *
 from src.dicionarios.const import *
-
-from src.conectores.servidores import Servidores
-from src.conectores.banco_dados import BancoDados
-from src.funcoes.escrita import EscritaModBusBit as EMB
+from src.dicionarios.reg_elipse import *
 
 
 logger = logging.getLogger("logger")
 
 
 class Subestacao:
-    def __init__(self, serv: "Servidores"=None, bd: "BancoDados"=None) -> "None":
+    def __init__(self, serv: "srv.Servidores"=None, bd: "bd.BancoDados"=None) -> "None":
 
         # ATRIBUIÇÃO DE VARIÁVEIS
 
@@ -33,34 +33,34 @@ class Subestacao:
         self.clp = serv.clp
         self.rele = serv.rele
 
-        self.tensao_vs = LeituraModbus(
+        self.tensao_vs = lei.LeituraModbus(
             self.clp["SA"],
-            REG_CLP["SE"]["LT_VAB"],
+            REG_CLP["SA_SE"]["LT_VAB"],
         )
-        self.tensao_vab = LeituraModbusFloat(
+        self.tensao_vab = lei.LeituraModbusFloat(
             self.clp["SA"],
-            REG_CLP["SE"]["LT_VAB"],
+            REG_CLP["SA_SE"]["LT_VAB"],
             escala=1000,
             descricao="[SE]  Leitura Tensão VAB"
         )
-        self.tensao_vbc = LeituraModbusFloat(
+        self.tensao_vbc = lei.LeituraModbusFloat(
             self.clp["SA"],
-            REG_CLP["SE"]["LT_VBC"],
+            REG_CLP["SA_SE"]["LT_VBC"],
             escala=1000,
             descricao="[SE]  Leitura Tensão VBC"
         )
-        self.tensao_vca = LeituraModbusFloat(
+        self.tensao_vca = lei.LeituraModbusFloat(
             self.clp["SA"],
-            REG_CLP["SE"]["LT_VCA"],
+            REG_CLP["SA_SE"]["LT_VCA"],
             escala=1000,
             descricao="[SE]  Leitura Tensão VCA"
         )
-        self.dj_linha_se = LeituraModbusBit(
+        self.dj_linha_se = lei.LeituraModbusBit(
             self.rele["SE"],
             REG_RELE["SE"]["DJL_FECHADO"],
             descricao="[SE][RELE] Disjuntor Linha Status"
         )
-        self.dj_linha_bay = LeituraModbusBit(
+        self.dj_linha_bay = lei.LeituraModbusBit(
             self.rele["BAY"],
             REG_RELE["BAY"]["DJL_FECHADO"],
             descricao="[BAY][RELE] Disjuntor Bay Status"
@@ -79,10 +79,10 @@ class Subestacao:
         """
 
         try:
-            res = EMB.escrever_bit(self.clp["SA"], REG_CLP["SE"]["BLQ_GERAL_CMD_REARME"], valor=1)
-            res = EMB.escrever_bit(self.clp["SA"], REG_CLP["SE"]["86T_CMD_REARME"], valor=1)
-            res = EMB.escrever_bit(self.clp["SA"], REG_CLP["SE"]["86BF_CMD_REARME"], valor=1)
-            res = EMB.escrever_bit(self.clp["SA"], REG_CLP["SE"]["REGISTROS_CMD_RST"], valor=1)
+            res = esc.EscritaModBusBit.escrever_bit(self.clp["SA"], REG_CLP["SA_SE"]["COMANDO_REARME_BLOQUEIO_EXTERNO"], valor=1)
+            res = esc.EscritaModBusBit.escrever_bit(self.clp["SA"], REG_CLP["SA_SE"]["COMANDO_REARME_BLOQUEIO_86T"], valor=1)
+            res = esc.EscritaModBusBit.escrever_bit(self.clp["SA"], REG_CLP["SA_SE"]["COMANDO_REARME_BLOQUEIO_86BF"], valor=1)
+            res = esc.EscritaModBusBit.escrever_bit(self.clp["SA"], REG_CLP["SA_SE"]["COMANDO_RESET_REGISTROS"], valor=1)
             return res
 
         except Exception:
@@ -109,7 +109,7 @@ class Subestacao:
                 if self.verificar_dj_linha():
                     logger.debug(f"[SE]  Enviando comando:                   \"FECHAR DISJUNTOR\"")
                     logger.debug("")
-                    EMB.escrever_bit(self.clp["SA"], REG_CLP["SE"]["DJL_CMD_FECHAR"],  valor=1)
+                    esc.EscritaModBusBit.escrever_bit(self.clp["SA"], REG_CLP["SA_SE"]["COMANDO_FECHA_DISJUNTOR_52L"],  valor=1)
                     return True
 
                 else:
@@ -302,116 +302,108 @@ class Subestacao:
         """
 
         # CONDIÇÕES DE FECHAMENTO Dj52L
-        self.secc_fechada = LeituraModbusBit(self.rele["SE"], REG_RELE["SE"]["SECC_FECHADA"], invertido=True, descricao="[SE][RELE] Seccionadora Fechada")
-        self.l_trip_rele_te = LeituraModbusBit(self.rele["TE"], REG_RELE["TE"]["RELE_ESTADO_TRP"], descricao="[TE][RELE] Transformador Elevador Trip")
-        self.l_barra_viva = LeituraModbusBit(self.rele["SE"], REG_RELE["SE"]["ID_BARRA_VIVA"], descricao="[SE]  Identificação de Barra Viva")
-        self.l_mola_carregada = LeituraModbusBit(self.rele["SE"], REG_RELE["SE"]["DJL_MOLA_CARREGADA"], descricao="[SE]  Disjuntor Linha Mola Carregada")
-        self.l_djL_remoto = LeituraModbusBit(self.clp["SA"], REG_CLP["SE"]["DJL_SELETORA_REMOTO"], descricao="[SE]  Disjuntor Linha Seletora Modo Remoto")
-        self.l_alarme_gas_te = LeituraModbusBit(self.rele["SE"], REG_CLP["SE"]["TE_RELE_BUCHHOLZ_ALM"], descricao="[SE]  Transformador Elevador Alarme Relé Buchholz")
+        self.secc_fechada = lei.LeituraModbusBit(self.rele["SE"], REG_RELE["SE"]["SECC_FECHADA"], invertido=True, descricao="[SE][RELE] Seccionadora Fechada")
+        self.l_trip_rele_te = lei.LeituraModbusBit(self.rele["TE"], REG_RELE["TE"]["RELE_ESTADO_TRP"], descricao="[TE][RELE] Transformador Elevador Trip")
+        self.l_barra_viva = lei.LeituraModbusBit(self.rele["SE"], REG_RELE["SE"]["ID_BARRA_VIVA"], descricao="[SE]  Identificação de Barra Viva")
+        self.l_mola_carregada = lei.LeituraModbusBit(self.rele["SE"], REG_RELE["SE"]["DJL_MOLA_CARREGADA"], descricao="[SE]  Disjuntor Linha Mola Carregada")
+
+        self.l_djL_remoto = lei.LeituraModbusBit(self.clp["SA"], REG_CLP["SA_SE"]["SELETORA_DISJUNTOR_52L_EM_REMOTO"], descricao="[SE]  Disjuntor Linha Seletora Modo Remoto")
+        self.l_alarme_gas_te = lei.LeituraModbusBit(self.rele["SE"], REG_CLP["SA_SE"]["TRANSFORMADOR_ELEVADOR_ALARME_RELE_BUCHHOLZ"], descricao="[SE]  Transformador Elevador Alarme Relé Buchholz")
         self.condicionadores.append(c.CondicionadorBase(self.l_alarme_gas_te, CONDIC_INDISPONIBILIZAR))
 
 
         # CONDICIONADORES ESSENCIAIS
-        self.l_rele_linha_atuado = LeituraModbusBit(self.rele["SE"], REG_CLP["SE"]["RELE_LINHA_ATUADO"], descricao="[SE]  Relé Linha Atuado")
+        self.l_rele_linha_atuado = lei.LeituraModbusBit(self.rele["SE"], REG_CLP["SA_SE"]["REGISTRO_ATUACAO_RELE_DE_PROTECAO_DA_LINHA"], descricao="[SE]  Relé Linha Atuado")
         self.condicionadores_essenciais.append(c.CondicionadorBase(self.l_rele_linha_atuado, gravidade=CONDIC_NORMALIZAR))
 
 
         # CONDICIONADORES
-        self.l_89L_fechada = LeituraModbusBit(self.clp["SA"], REG_CLP["SE"]["89L_FECHADA"], invertido=True, descricao="[SE]  89L Fechada")
+        self.l_89L_fechada = lei.LeituraModbusBit(self.clp["SA"], REG_CLP["SA_SE"]["SECCIONADORA_89L_FECHADA"], descricao="[SE]  89L Fechada")
         self.condicionadores.append(c.CondicionadorBase(self.l_89L_fechada, CONDIC_INDISPONIBILIZAR))
 
-        self.l_86T_atuado = LeituraModbusBit(self.clp["SA"], REG_CLP["SE"]["86T_ATUADO"], invertido=True, descricao="[SE]  86T Atuado")
+        self.l_86T_atuado = lei.LeituraModbusBit(self.clp["SA"], REG_CLP["SA_SE"]["RELE_DE_BLOQUEIO_TRANSFORMADOR_ELEVADOR_86T"], descricao="[SE]  86T Atuado")
         self.condicionadores.append(c.CondicionadorBase(self.l_86T_atuado, CONDIC_INDISPONIBILIZAR))
 
-        self.l_86BF_atuado = LeituraModbusBit(self.clp["SA"], REG_CLP["SE"]["86BF_ATUADO"], descricao="[SE]  86BF Atuado")
+        self.l_86BF_atuado = lei.LeituraModbusBit(self.clp["SA"], REG_CLP["SA_SE"]["RELE_DE_PROTECAO_DA_LINHA_86BF"], descricao="[SE]  86BF Atuado")
         self.condicionadores.append(c.CondicionadorBase(self.l_86BF_atuado, CONDIC_INDISPONIBILIZAR))
 
-        self.l_trip_rele_buchholz = LeituraModbusBit(self.clp["SA"], REG_CLP["SE"]["TE_RELE_BUCHHOLZ_TRP"], descricao="[SE]  Transformador Elevador Trip Relé Buchholz")
+        self.l_trip_rele_buchholz = lei.LeituraModbusBit(self.clp["SA"], REG_CLP["SA_SE"]["TRANSFORMADOR_ELEVADOR_TRIP_RELE_BUCHHOLZ"], descricao="[SE]  Transformador Elevador Trip Relé Buchholz")
         self.condicionadores.append(c.CondicionadorBase(self.l_trip_rele_buchholz, CONDIC_INDISPONIBILIZAR))
 
-        self.l_trip_alivio_pressao = LeituraModbusBit(self.clp["SA"], REG_CLP["SE"]["TE_TRP_ALIVIO_PRESSAO"], descricao="[SE]  Transformador Elevador Trip Alívio Pressão")
+        self.l_trip_alivio_pressao = lei.LeituraModbusBit(self.clp["SA"], REG_CLP["SA_SE"]["TRANSFORMADOR_ELEVADOR_TRIP_ALIVIO_DE_PRESSAO"], descricao="[SE]  Transformador Elevador Trip Alívio Pressão")
         self.condicionadores.append(c.CondicionadorBase(self.l_trip_alivio_pressao, CONDIC_INDISPONIBILIZAR))
 
-        self.l_trip_temp_oleo_te = LeituraModbusBit(self.clp["SA"], REG_CLP["SE"]["TE_TRP_TMP_OLEO"], descricao="[SE]  Transformador Elevador Trip Temperatura Óleo")
+        self.l_trip_temp_oleo_te = lei.LeituraModbusBit(self.clp["SA"], REG_CLP["SA_SE"]["TRANSFORMADOR_ELEVADOR_TRIP_TEMPERATURA_OLEO"], descricao="[SE]  Transformador Elevador Trip Temperatura Óleo")
         self.condicionadores.append(c.CondicionadorBase(self.l_trip_temp_oleo_te, CONDIC_INDISPONIBILIZAR))
 
-        self.l_rele_linha_bf_atuado = LeituraModbusBit(self.clp["SA"], REG_CLP["SE"]["RELE_LINHA_ATUACAO_BF"], descricao="[SE]  Relé Linha Atuação BF")
-        self.condicionadores.append(c.CondicionadorBase(self.l_rele_linha_bf_atuado, CONDIC_INDISPONIBILIZAR))
-
-        self.l_trip_temp_enrola_te = LeituraModbusBit(self.clp["SA"], REG_CLP["SE"]["TE_TRP_TMP_ENROL"], descricao="[SE]  Transformador Elevador Trip Temperatura Enrolamento")
+        self.l_trip_temp_enrola_te = lei.LeituraModbusBit(self.clp["SA"], REG_CLP["SA_SE"]["TRANSFORMADOR_ELEVADOR_TRIP_TEMPERATURA_ENROLAMENTO"], descricao="[SE]  Transformador Elevador Trip Temperatura Enrolamento")
         self.condicionadores.append(c.CondicionadorBase(self.l_trip_temp_enrola_te, CONDIC_INDISPONIBILIZAR))
 
-        self.l_falha_cmd_abertura_52L = LeituraModbusBit(self.clp["SA"], REG_CLP["SE"]["DJL_FLH_CMD_ABERTURA"], descricao="[SE]  Disjuntor Linha Falha Comando Abertura")
+        self.l_falha_cmd_abertura_52L = lei.LeituraModbusBit(self.clp["SA"], REG_CLP["SA_SE"]["FALHA_COMANDO_ABERTURA_DISJUNTOR_52L"], descricao="[SE]  Disjuntor Linha Falha Comando Abertura")
         self.condicionadores.append(c.CondicionadorBase(self.l_falha_cmd_abertura_52L, CONDIC_INDISPONIBILIZAR))
 
-        self.l_falha_cmd_fechamento_52L = LeituraModbusBit(self.clp["SA"], REG_CLP["SE"]["DJL_FLH_CMD_FECHAMENTO"], descricao="[SE]  Disjuntor Linha Falha Comando Fechamento")
+        self.l_falha_cmd_fechamento_52L = lei.LeituraModbusBit(self.clp["SA"], REG_CLP["SA_SE"]["FALHA_COMANDO_FECHAMENTO_DISJUNTOR_52L"], descricao="[SE]  Disjuntor Linha Falha Comando Fechamento")
         self.condicionadores.append(c.CondicionadorBase(self.l_falha_cmd_fechamento_52L, CONDIC_INDISPONIBILIZAR))
 
         # CONDICIONADORES RELÉS
-        self.l_rele_falha_receb_rele_te = LeituraModbusBit(self.rele["SE"], REG_RELE["SE"]["RELE_TE_FLH_PARTIDA"],  descricao="[SE][RELE] Falha Partida Recebida Relé Transformador Elevador")
+        self.l_rele_falha_receb_rele_te = lei.LeituraModbusBit(self.rele["SE"], REG_RELE["SE"]["RELE_TE_FLH_PARTIDA"],  descricao="[SE][RELE] Falha Partida Recebida Relé Transformador Elevador")
         self.condicionadores_essenciais.append(c.CondicionadorBase(self.l_rele_falha_receb_rele_te, CONDIC_INDISPONIBILIZAR, teste=True))
 
-        self.l_50bf_falha_abrir_djl_b3 = LeituraModbusBit(self.rele["SE"], REG_RELE["SE"]["50BF_FALHA_ABERTURA_DISJUNTOR_DE_LINHA_B3"], descricao="[SE][RELE] 50BF Falha Abertura Disjuntor Linha Bit 3")
+        self.l_50bf_falha_abrir_djl_b3 = lei.LeituraModbusBit(self.rele["SE"], REG_RELE["SE"]["50BF_FALHA_ABERTURA_DISJUNTOR_DE_LINHA_B3"], descricao="[SE][RELE] 50BF Falha Abertura Disjuntor Linha Bit 3")
         self.condicionadores_essenciais.append(c.CondicionadorBase(self.l_50bf_falha_abrir_djl_b3, CONDIC_INDISPONIBILIZAR, teste=True))
 
-        self.l_50bf_falha_abrir_djl_b4 = LeituraModbusBit(self.rele["SE"], REG_RELE["SE"]["50BF_FALHA_ABERTURA_DISJUNTOR_DE_LINHA_B4"], descricao="[SE][RELE] 50BF Falha Abertura Disjuntor Linha Bit 4")
+        self.l_50bf_falha_abrir_djl_b4 = lei.LeituraModbusBit(self.rele["SE"], REG_RELE["SE"]["50BF_FALHA_ABERTURA_DISJUNTOR_DE_LINHA_B4"], descricao="[SE][RELE] 50BF Falha Abertura Disjuntor Linha Bit 4")
         self.condicionadores_essenciais.append(c.CondicionadorBase(self.l_50bf_falha_abrir_djl_b4, CONDIC_INDISPONIBILIZAR, teste=True))
 
-        self.l_sobrecorr_inst_fase_z1 = LeituraModbusBit(self.rele["SE"], REG_RELE["SE"]["SOBRECORRENTE_INSTANTANEA_DE_FASE_ZONA_1"], descricao="[SE][RELE] Sobrecorrente Instantânea de Fase Zona 1")
+        self.l_sobrecorr_inst_fase_z1 = lei.LeituraModbusBit(self.rele["SE"], REG_RELE["SE"]["SOBRECORRENTE_INSTANTANEA_DE_FASE_ZONA_1"], descricao="[SE][RELE] Sobrecorrente Instantânea de Fase Zona 1")
         self.condicionadores_essenciais.append(c.CondicionadorBase(self.l_sobrecorr_inst_fase_z1, CONDIC_INDISPONIBILIZAR, teste=True))
 
-        self.l_sobrecorr_inst_fase_z2 = LeituraModbusBit(self.rele["SE"], REG_RELE["SE"]["SOBRECORRENTE_INSTANTANEA_DE_FASE_ZONA_2"], descricao="[SE][RELE] Sobrecorrente Instantânea de Fase Zona 2")
+        self.l_sobrecorr_inst_fase_z2 = lei.LeituraModbusBit(self.rele["SE"], REG_RELE["SE"]["SOBRECORRENTE_INSTANTANEA_DE_FASE_ZONA_2"], descricao="[SE][RELE] Sobrecorrente Instantânea de Fase Zona 2")
         self.condicionadores_essenciais.append(c.CondicionadorBase(self.l_sobrecorr_inst_fase_z2, CONDIC_INDISPONIBILIZAR, teste=True))
 
-        self.l_sobrecorr_inst_fase_z3 = LeituraModbusBit(self.rele["SE"], REG_RELE["SE"]["SOBRECORRENTE_INSTANTANEA_DE_FASE_ZONA_3"], descricao="[SE][RELE] Sobrecorrente Instantânea de Fase Zona 3")
+        self.l_sobrecorr_inst_fase_z3 = lei.LeituraModbusBit(self.rele["SE"], REG_RELE["SE"]["SOBRECORRENTE_INSTANTANEA_DE_FASE_ZONA_3"], descricao="[SE][RELE] Sobrecorrente Instantânea de Fase Zona 3")
         self.condicionadores_essenciais.append(c.CondicionadorBase(self.l_sobrecorr_inst_fase_z3, CONDIC_INDISPONIBILIZAR, teste=True))
 
-        self.l_sobrecorr_inst_seq_negativa_z1 = LeituraModbusBit(self.rele["SE"], REG_RELE["SE"]["SOBRECORRENTE_INSTANTANEA_DE_SEQUENCIA_NEGATIVA_ZONA_1"], descricao="[SE][RELE] Sobrecorrente Instantânea de Sequência Negativa Zona 1")
+        self.l_sobrecorr_inst_seq_negativa_z1 = lei.LeituraModbusBit(self.rele["SE"], REG_RELE["SE"]["SOBRECORRENTE_INSTANTANEA_DE_SEQUENCIA_NEGATIVA_ZONA_1"], descricao="[SE][RELE] Sobrecorrente Instantânea de Sequência Negativa Zona 1")
         self.condicionadores_essenciais.append(c.CondicionadorBase(self.l_sobrecorr_inst_seq_negativa_z1, CONDIC_INDISPONIBILIZAR, teste=True))
 
-        self.l_sobrecorr_inst_seq_negativa_z2 = LeituraModbusBit(self.rele["SE"], REG_RELE["SE"]["SOBRECORRENTE_INSTANTANEA_DE_SEQUENCIA_NEGATIVA_ZONA_2"], descricao="[SE][RELE] Sobrecorrente Instantânea de Sequência Negativa Zona 2")
+        self.l_sobrecorr_inst_seq_negativa_z2 = lei.LeituraModbusBit(self.rele["SE"], REG_RELE["SE"]["SOBRECORRENTE_INSTANTANEA_DE_SEQUENCIA_NEGATIVA_ZONA_2"], descricao="[SE][RELE] Sobrecorrente Instantânea de Sequência Negativa Zona 2")
         self.condicionadores_essenciais.append(c.CondicionadorBase(self.l_sobrecorr_inst_seq_negativa_z2, CONDIC_INDISPONIBILIZAR, teste=True))
 
-        self.l_sobrecorr_inst_seq_negativa_z3 = LeituraModbusBit(self.rele["SE"], REG_RELE["SE"]["SOBRECORRENTE_INSTANTANEA_DE_SEQUENCIA_NEGATIVA_ZONA_3"], descricao="[SE][RELE] Sobrecorrente Instantânea de Sequência Negativa Zona 3")
+        self.l_sobrecorr_inst_seq_negativa_z3 = lei.LeituraModbusBit(self.rele["SE"], REG_RELE["SE"]["SOBRECORRENTE_INSTANTANEA_DE_SEQUENCIA_NEGATIVA_ZONA_3"], descricao="[SE][RELE] Sobrecorrente Instantânea de Sequência Negativa Zona 3")
         self.condicionadores_essenciais.append(c.CondicionadorBase(self.l_sobrecorr_inst_seq_negativa_z3, CONDIC_INDISPONIBILIZAR, teste=True))
 
-        self.l_sobrecorr_tempo_fase = LeituraModbusBit(self.rele["SE"], REG_RELE["SE"]["SOBRECORRENTE_TEMPORIZADA_DE_FASE"], descricao="[SE][RELE] Sobrecorrente Temporizada Fase")
+        self.l_sobrecorr_tempo_fase = lei.LeituraModbusBit(self.rele["SE"], REG_RELE["SE"]["SOBRECORRENTE_TEMPORIZADA_DE_FASE"], descricao="[SE][RELE] Sobrecorrente Temporizada Fase")
         self.condicionadores_essenciais.append(c.CondicionadorBase(self.l_sobrecorr_tempo_fase, CONDIC_INDISPONIBILIZAR, teste=True))
 
-        self.l_falha_abrir_djl = LeituraModbusBit(self.rele["SE"], REG_RELE["SE"]["FALHA_ABERTURA_DISJUNTOR_DE_LINHA"], descricao="[SE][RELE] Falha Abertura Disjuntor de Linha")
+        self.l_falha_abrir_djl = lei.LeituraModbusBit(self.rele["SE"], REG_RELE["SE"]["FALHA_ABERTURA_DISJUNTOR_DE_LINHA"], descricao="[SE][RELE] Falha Abertura Disjuntor de Linha")
         self.condicionadores_essenciais.append(c.CondicionadorBase(self.l_falha_abrir_djl, CONDIC_INDISPONIBILIZAR, teste=True))
 
-        self.l_rele_86T_atuado = LeituraModbusBit(self.rele["TE"], REG_RELE["TE"]["86T_ATUADO"],  descricao="[TE][RELE] Atua 86T")
+        self.l_rele_86T_atuado = lei.LeituraModbusBit(self.rele["TE"], REG_RELE["TE"]["86T_ATUADO"],  descricao="[TE][RELE] Atua 86T")
         self.condicionadores_essenciais.append(c.CondicionadorBase(self.l_rele_86T_atuado, CONDIC_INDISPONIBILIZAR))
 
-        self.l_rele_difer_com_restricao = LeituraModbusBit(self.rele["TE"], REG_RELE["TE"]["DIF_COM_RESTRICAO"], descricao="[TE][RELE] Diferencial Com Restrição")
+        self.l_rele_difer_com_restricao = lei.LeituraModbusBit(self.rele["TE"], REG_RELE["TE"]["DIF_COM_RESTRICAO"], descricao="[TE][RELE] Diferencial Com Restrição")
         self.condicionadores_essenciais.append(c.CondicionadorBase(self.l_rele_difer_com_restricao, CONDIC_INDISPONIBILIZAR))
 
-        self.l_rele_difer_sem_restricao = LeituraModbusBit(self.rele["TE"], REG_RELE["TE"]["DIF_SEM_RESTRICAO"], descricao="[TE][RELE] Diferencial Sem Restrição")
+        self.l_rele_difer_sem_restricao = lei.LeituraModbusBit(self.rele["TE"], REG_RELE["TE"]["DIF_SEM_RESTRICAO"], descricao="[TE][RELE] Diferencial Sem Restrição")
         self.condicionadores_essenciais.append(c.CondicionadorBase(self.l_rele_difer_sem_restricao, CONDIC_INDISPONIBILIZAR))
 
-        self.l_rele_sobrecorr_temp_fase_enrola_prim = LeituraModbusBit(self.rele["TE"], REG_RELE["TE"]["ENROL_PRI_SOBRECO_TEMPO_FASE"],  descricao="[TE][RELE] Sobrecorrente Temperatura Fase Enrolamento Primário")
+        self.l_rele_sobrecorr_temp_fase_enrola_prim = lei.LeituraModbusBit(self.rele["TE"], REG_RELE["TE"]["ENROL_PRI_SOBRECO_TEMPO_FASE"],  descricao="[TE][RELE] Sobrecorrente Temperatura Fase Enrolamento Primário")
         self.condicionadores_essenciais.append(c.CondicionadorBase(self.l_rele_sobrecorr_temp_fase_enrola_prim, CONDIC_INDISPONIBILIZAR))
 
-        self.l_rele_sobrecorr_temp_res_enrola_prim = LeituraModbusBit(self.rele["TE"], REG_RELE["TE"]["ENROL_PRI_SOBRECO_TEMPO_RES"],  descricao="[TE][RELE] Sobrecorrente Temperatura Residual Enrolamento Primário")
+        self.l_rele_sobrecorr_temp_res_enrola_prim = lei.LeituraModbusBit(self.rele["TE"], REG_RELE["TE"]["ENROL_PRI_SOBRECO_TEMPO_RES"],  descricao="[TE][RELE] Sobrecorrente Temperatura Residual Enrolamento Primário")
         self.condicionadores_essenciais.append(c.CondicionadorBase(self.l_rele_sobrecorr_temp_res_enrola_prim, CONDIC_INDISPONIBILIZAR))
 
-        self.l_rele_sobrecorr_temp_fase_enrola_sec = LeituraModbusBit(self.rele["TE"], REG_RELE["TE"]["ENROL_SEC_SOBRECO_TEMPO_FASE"], descricao="[TE][RELE] Sobrecorrente Temperatura Fase Enrolamento Secundário")
+        self.l_rele_sobrecorr_temp_fase_enrola_sec = lei.LeituraModbusBit(self.rele["TE"], REG_RELE["TE"]["ENROL_SEC_SOBRECO_TEMPO_FASE"], descricao="[TE][RELE] Sobrecorrente Temperatura Fase Enrolamento Secundário")
         self.condicionadores_essenciais.append(c.CondicionadorBase(self.l_rele_sobrecorr_temp_fase_enrola_sec, CONDIC_INDISPONIBILIZAR))
 
-        self.l_rele_sobrecorr_temp_res_enrola_sec = LeituraModbusBit(self.rele["TE"], REG_RELE["TE"]["ENROL_SEC_SOBRECO_TEMPO_RES"], descricao="[TE][RELE] Sobrecorremnte Temperatura Residual Enrolamento Secundário")
+        self.l_rele_sobrecorr_temp_res_enrola_sec = lei.LeituraModbusBit(self.rele["TE"], REG_RELE["TE"]["ENROL_SEC_SOBRECO_TEMPO_RES"], descricao="[TE][RELE] Sobrecorremnte Temperatura Residual Enrolamento Secundário")
         self.condicionadores_essenciais.append(c.CondicionadorBase(self.l_rele_sobrecorr_temp_res_enrola_sec, CONDIC_INDISPONIBILIZAR))
 
-
         # LEITURA PERIÓDICA
-        self.l_seletora_52L_remoto = LeituraModbusBit(self.rele["SE"], REG_CLP["SE"]["DJL_SELETORA_REMOTO"], invertido=True, descricao="[SE]  Disjuntor Linha Seletora Modo Remoto")
-        self.l_falha_temp_oleo_te = LeituraModbusBit(self.clp["SA"], REG_CLP["SE"]["TE_FLH_LER_TMP_OLEO"], descricao="[SE]  Transformador Elevador Falha Leitura Temperatura Óleo")
-        self.l_nv_muito_baixo_oleo_te = LeituraModbusBit(self.clp["SA"], REG_CLP["SE"]["TE_NV_OLEO_MUITO_BAIXO"], descricao="[SE]  Transformador Elevador Nível Óleo Muito Baixo")
-        
-        # Há 2 repetidos:
-        # O clp que estava tentando consultar era o do SA, quando deveria ser o endereço do SE
-        self.l_alarme_temp_oleo_te = LeituraModbusBit(self.rele["SE"], REG_CLP["SE"]["TE_ALM_TMP_OLEO"], descricao="[SE]  Transformador Elevador Alarme Temperatura Óleo")
-        self.l_alarme_temp_oleo_te = LeituraModbusBit(self.rele["SE"], REG_CLP["SE"]["TE_ALM_TMP_OLEO"], descricao="[SE]  Transformador Elevador Alarme Temperatura Óleo")
-        
-        self.l_alarme_temp_enrola_te = LeituraModbusBit(self.rele["SE"], REG_CLP["SE"]["TE_ALM_TMP_ENROL"], descricao="[SE]  Transformador Elevador Alarme Temperatura Enrolamento")
-        self.l_falha_ler_temp_enrola_te = LeituraModbusBit(self.rele["SE"], REG_CLP["SE"]["TE_FLH_LER_TMP_ENROL"], descricao="[SE]  Transformador Elevador Falha Leitura Temperatura Enrolamento")
+        self.l_seletora_52L_remoto = lei.LeituraModbusBit(self.rele["SE"], REG_CLP["SA_SE"]["SELETORA_DISJUNTOR_52L_EM_REMOTO"], descricao="[SE]  Disjuntor Linha Seletora Modo Remoto")
+        self.l_falha_temp_oleo_te = lei.LeituraModbusBit(self.clp["SA"], REG_CLP["SA_SE"]["FALHA_LEITURA_TEMPERATURA_OLEO_TRANFORMADOR_ELEVADOR"], descricao="[SE]  Transformador Elevador Falha Leitura Temperatura Óleo")
+        self.l_nv_muito_baixo_oleo_te = lei.LeituraModbusBit(self.clp["SA"], REG_CLP["SA_SE"]["BLOQUEIO_86T_BLOQUEIO_06_TRANSFORMADOR_ELEVADOR_NIVEL_OLEO_MUITO_BAIXO"], descricao="[SE]  Transformador Elevador Nível Óleo Muito Baixo")
+        self.l_alarme_temp_oleo_te = lei.LeituraModbusBit(self.rele["SE"], REG_CLP["SA_SE"]["TRANSFORMADOR_ELEVADOR_ALARME_TEMPERATURA_OLEO"], descricao="[SE]  Transformador Elevador Alarme Temperatura Óleo")
+        self.l_alarme_temp_enrola_te = lei.LeituraModbusBit(self.rele["SE"], REG_CLP["SA_SE"]["TRANSFORMADOR_ELEVADOR_ALARME_TEMPERATURA_ENROLAMENTO"], descricao="[SE]  Transformador Elevador Alarme Temperatura Enrolamento")
+        self.l_falha_ler_temp_enrola_te = lei.LeituraModbusBit(self.rele["SE"], REG_CLP["SA_SE"]["FALHA_LEITURA_TEMPERATURA_ENROLAMENTO_TRANFORMADOR_ELEVADOR"], descricao="[SE]  Transformador Elevador Falha Leitura Temperatura Enrolamento")

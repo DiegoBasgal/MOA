@@ -39,7 +39,6 @@ debug_log = logging.getLogger("debug")
 class Usina:
     def __init__(self, cfg: "dict"=None, serv: "Servidores"=None) -> "None":
 
-
         # VERIFICAÇÃO DE ARGUMENTOS
 
         if None in (cfg):
@@ -195,8 +194,6 @@ class Usina:
 
         self.db_emergencia = True
         self.clp_emergencia = True
-
-        return
 
         try:
             [EMB.escrever_bit(self.clp[f"UG{ug.id}"], REG_CLP[f"UG{ug.id}"][f"PARADA_CMD_EMERGENCIA"], valor=1) for ug in self.ugs]
@@ -367,7 +364,7 @@ class Usina:
                 return NV_EMERGENCIA
             else:
                 self.controle_i = 0.9
-                self.controle_ie = 0.5
+                self.controle_ie = self.ajustar_ie_padrao()
                 self.ajustar_potencia(self.cfg["pot_maxima_usina"])
 
                 for ug in self.ugs:

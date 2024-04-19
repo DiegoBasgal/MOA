@@ -25,7 +25,7 @@ logger = logging.getLogger("logger")
 
 class ServicoAuxiliar:
     def __init__(self, serv: "Servidores"=None, bd: "BancoDados"=None) -> None:
-        pass
+
         # ATRIBUIÇÃO DE VARIÁVEIS
 
         self.bd = bd

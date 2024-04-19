@@ -540,7 +540,7 @@ class UnidadeGeracao:
         # debug_log.debug(f"[UG{self.id}] Média Amostras Distribuidor:        {media_distribuidor}")
         # debug_log.debug("")
 
-        if cont_mppt == self.amostras_pot_mppt and self.cfg['pot_minima'] <= setpoint_kw <= self.cfg["pot_maxima_ug"]:
+        if cont_mppt == self.amostras_pot_mppt and (self.cfg['pot_maxima_ug'] - 500) <= setpoint_kw <= self.cfg["pot_maxima_ug"]:
             setpoint_kw = self.ajustar_mppt(
                 [self.leitura_potencia, self.potencias_anteriores[-1]],
                 [self.setpoints_anteriores[-1], self.setpoints_anteriores[-2]],
@@ -688,6 +688,7 @@ class UnidadeGeracao:
         FUnção para popular listas com leituras e cálculos de potência e setpoint,
         para controle do MPPT.
         """
+
         if self.etapa == UG_PARADA or (self.cfg['pot_minima'] < self.leitura_potencia < self.cfg['pot_minima'] + 500):
             self.potencias_anteriores = []
 
@@ -727,40 +728,25 @@ class UnidadeGeracao:
         por MPPT (Maximum Power Point Tracking)
         """
 
-        debug_log.debug(f"[UG{self.id}] Potência:")
-        debug_log.debug(f"[UG{self.id}]     Atual    ->             {potencia[0]}")
-        debug_log.debug(f"[UG{self.id}]     Anterior ->             {potencia[1]}")
-        debug_log.debug("")
-        debug_log.debug(f"[UG{self.id}] Distribuidor:")
-        debug_log.debug(f"[UG{self.id}]     Atual    ->             {abertura_dist[0]}")
-        debug_log.debug(f"[UG{self.id}]     Anterior ->             {abertura_dist[1]}")
-        debug_log.debug("")
-
         setpoint_saida = max(min(setpoint[0], self.cfg['pot_maxima_ug']), self.cfg['pot_minima'])
         delta = 20
 
         if potencia[0] < potencia[1]:
             if abertura_dist[0] < abertura_dist[1]:
-                debug_log.debug(f"[UG{self.id}] MPPT Potência [0] < [1] -> Distribuidor [0] < [1]: Delta +")
                 setpoint_saida += delta
             else:
-                debug_log.debug(f"[UG{self.id}] MPPT Potência [0] < [1] -> Distribuidor [0] >= [1]: Delta -")
                 setpoint_saida -= delta
 
         elif potencia[0] == potencia[1]:
-                debug_log.debug(f"[UG{self.id}] MPPT Potência [0] = [1]: Delta -")
-                setpoint_saida -= delta
+            setpoint_saida -= delta
 
         else:
-            if abertura_dist[0] - 0.3 < abertura_dist[1]:
-                debug_log.debug(f"[UG{self.id}] MPPT Distribuidor [0] < [1]: Delta -")
+            if abertura_dist[0] - 0.1 < abertura_dist[1]:
                 setpoint_saida -= delta
             else:
-                debug_log.debug(f"[UG{self.id}] MPPT Distribuidor [0] >= [1]: Delta +")
                 setpoint_saida += delta
 
         setpoint_saida = max(min(setpoint_saida, self.cfg['pot_maxima_ug']), self.cfg['pot_minima'])
-
         return setpoint_saida
 
 
@@ -1126,7 +1112,9 @@ class UnidadeGeracao:
 
         if self.l_temp_oleo_uhrv.valor < self.condic_temp_oleo_uhrv.valor_base and self.brd_t_oleo_uhrv in (1,2):
             self.brd_t_oleo_uhrv = 0
+            logger.debug(f"")
             logger.debug(f"[UG{self.id}] A temperatura do óleo da UHRV voltou ao Normal. Leitura: {self.l_temp_oleo_uhrv.valor:0.2f}C")
+            logger.debug(f"")
 
 
 

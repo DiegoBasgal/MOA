@@ -1,3 +1,181 @@
+REG_RELE = {
+    "BAY": {
+        "LT_FASE_A":                                                11,
+        "LT_FASE_B":                                                14,
+        "LT_FASE_C":                                                17,
+        "LT_VS":                                                    19,
+
+        "RELE_RST_TRP":                                             88,
+        "DJL_CMD_ABRIR":                                            84,
+        "DJL_CMD_FECHAR":                                           85,
+
+        "DJL_FECHADO":                                              [44, 0],
+        "DJL_MOLA_CARREGADA":                                       [44, 1],
+        "BT_ABRE_DJ":                                               [44, 2],
+        "BT_FECHA_DJ":                                              [44, 3],
+        "SECC_FECHADA":                                             [44, 4],
+
+        "SOBRECORRENTE_INSTANTANEA_DE_FASE_ZONA_3":                 [46, 5],
+        "SOBRECORRENTE_INSTANTANEA_DE_FASE_ZONA_2":                 [46, 6],
+        "SOBRECORRENTE_INSTANTANEA_DE_FASE_ZONA_1":                 [46, 7],
+
+        "FALHA_ABERTURA_DISJUNTOR_DE_LINHA":                        [47, 1],
+
+        "SOBRECORRENTE_INSTANTANEA_DE_SEQUENCIA_NEGATIVA_ZONA_3":   [48, 1],
+        "SOBRECORRENTE_INSTANTANEA_DE_SEQUENCIA_NEGATIVA_ZONA_2":   [48, 2],
+        "SOBRECORRENTE_INSTANTANEA_DE_SEQUENCIA_NEGATIVA_ZONA_1":   [48, 3],
+        "SOBRECORRENTE_RESIDUAL_INSTANTANEA":                       [48, 7],
+
+        "SOBRECORRENTE_TEMPORIZADA_DE_FASE":                        [49, 2],
+
+        "SOBRECORRENTE_RESIDUAL_TEMPORIZADA":                       [50, 4],
+
+        "ID_BARRA_VIVA":                                            [53, 1],
+        "ID_BARRA_MORTA":                                           [53, 7],
+
+        "ID_LINHA_VIVA":                                            [54, 0],
+        "ID_LINHA_MORTA":                                           [54, 1],
+    },
+
+    "SE": {
+        "DJL_FECHADO":                                              [43, 0],
+        "DJL_MOLA_CARREGADA":                                       [43, 1],
+
+        "RELE_TE_FLH_PARTIDA":                                      [43, 2],
+
+        "SECC_FECHADA":                                             [43, 1],
+
+        "50BF_FALHA_ABERTURA_DISJUNTOR_DE_LINHA_B3":                [44, 3],
+        "50BF_FALHA_ABERTURA_DISJUNTOR_DE_LINHA_B4":                [44, 4],
+
+        "SOBRECORRENTE_INSTANTANEA_DE_FASE_ZONA_1":                 [45, 7],
+        "SOBRECORRENTE_INSTANTANEA_DE_FASE_ZONA_2":                 [45, 6],
+        "SOBRECORRENTE_INSTANTANEA_DE_FASE_ZONA_3":                 [45, 5],
+
+        "SOBRECORRENTE_INSTANTANEA_DE_SEQUENCIA_NEGATIVA_ZONA_1":   [46, 3],
+        "SOBRECORRENTE_INSTANTANEA_DE_SEQUENCIA_NEGATIVA_ZONA_2":   [46, 2],
+        "SOBRECORRENTE_INSTANTANEA_DE_SEQUENCIA_NEGATIVA_ZONA_3":   [46, 1],
+
+        "SOBRECORRENTE_TEMPORIZADA_DE_FASE":                        [47, 2],
+
+        "FALHA_ABERTURA_DISJUNTOR_DE_LINHA":                        [48, 1],
+
+        "ID_BARRA_VIVA":                                            [49, 1],
+    },
+
+    "TE": {
+        # Bloqueio
+        "86T_ATUADO":                                   [36, 4],
+
+
+        # Enrolamento
+        "ENROL_SEC_SOBRECO_TEMPO_RES":                  [36, 1],
+        "ENROL_SEC_SOBRECO_TEMPO_FASE":                 [36, 6],
+
+
+        # Enrolamento
+        "ENROL_PRI_SOBRECO_TEMPO_FASE":                 [1117, 3],
+        "ENROL_PRI_SOBRECO_TEMPO_RES":                  [1117, 4],
+        # Diferencial
+        "DIF_COM_RESTRICAO":                            [1117, 14],
+        "DIF_SEM_RESTRICAO":                            [1117, 15],
+
+
+        # Relé
+        "RELE_ESTADO_TRP":                              [1118, 15],
+    },
+
+    "UG1": {
+        # Elementos
+        "ELE_2_SOBREFRE":                               [1, 4],
+        "ELE_1_SOBREFRE":                               [1, 5],
+        "ELE_2_SUBFRE":                                 [1, 6],
+        "ELE_1_SUBFRE":                                 [1, 7],
+
+        # Sobrecorrente
+        "SOBRECO_INST":                                 [901, 0],
+        "SOBRECO_INST_NEUTRO":                          [901, 1],
+        "SOBRECO_SEQU_NEG":                             [901, 2],
+        "SOBRECO_TEMPO_NEUTRO":                         [901, 4],
+        # Diferencial
+        "DIF_COM_RESTRICAO":                            [901, 14],
+        "DIF_SEM_RESTRICAO":                            [901, 15],
+
+
+        # Outros
+        "SUBTEN_GERAL":                                 [902, 0],
+        "SOBRETEN_GERAL":                               [902, 1],
+        "POT_REVERSA":                                  [902, 3],
+        "VOLTZ_HERTZ":                                  [902, 5],
+        "LT_SOBRECO_RESTRICAO":                         [902, 6],
+        "DJ_MAQUINA_FLH_ABERTURA_B8":                   [902, 8],
+        "RECIBO_TRANS_DISP":                            [902, 9],
+        "PERDA_CAMPO_GERAL":                            [902, 11],
+        "FUGA_SOBRECO_GERAL":                           [902, 12],
+        "UNIDADE_FORA_PASSO":                           [902, 14],
+
+
+        # DJ
+        "DJ_MAQUINA_FLH_ABERTURA_B7":                   [2100, 7],
+        "DJ_MAQUINA_FLH_PARTIDA":                       [2100, 6],
+
+
+        # Transformador Elevador
+        "TE_RELE_LINHA_TRANS_DISP":                     [2100, 11],
+
+
+        # Relé
+        "RELE_PROTECAO_TRP_B5":                         [2110, 5],
+        "RELE_PROTECAO_TRP_B6":                         [2110, 6],
+    },
+
+    "UG2": {
+        # Elementos
+        "ELE_2_SUBFRE":                                 [29, 6],
+        "ELE_1_SUBFRE":                                 [29, 7],
+
+        "ELE_2_SOBREFRE":                               [146, 4],
+        "ELE_1_SOBREFRE":                               [146, 6],
+
+
+        # Sobrecorrente
+        "SOBRECO_INST":                                 [901, 0],
+        "SOBRECO_INST_NEUTRO":                          [901, 1],
+        "SOBRECO_SEQU_NEG":                             [901, 2],
+        "SOBRECO_TEMPO_NEUTRO":                         [901, 4],
+        # Diferencial
+        "DIF_COM_RESTRICAO":                            [901, 14],
+        "DIF_SEM_RESTRICAO":                            [901, 15],
+
+
+        # Outros
+        "SUBTEN_GERAL":                                 [902, 0],
+        "SOBRETEN_GERAL":                               [902, 1],
+        "POT_REVERSA":                                  [902, 3],
+        "VOLTZ_HERTZ":                                  [902, 5],
+        "LT_SOBRECO_RESTRICAO":                         [902, 6],
+        "DJ_MAQUINA_FLH_ABERTURA_B8":                   [902, 8],
+        "RECIBO_TRANS_DISP":                            [902, 9],
+        "PERDA_CAMPO_GERAL":                            [902, 11],
+        "FUGA_SOBRECO_GERAL":                           [902, 12],
+        "UNIDADE_FORA_PASSO":                           [902, 14],
+
+
+        # DJ
+        "DJ_MAQUINA_FLH_ABERTURA_B7":                   [2100, 7],
+        "DJ_MAQUINA_FLH_PARTIDA":                       [2100, 6],
+
+
+        # Transformador Elevador
+        "TE_RELE_LINHA_TRANS_DISP":                     [2100, 11],
+
+
+        # Relé
+        "RELE_PROTECAO_TRP_B5":                         [2110, 5],
+        "RELE_PROTECAO_TRP_B6":                         [2110, 6],
+    },
+}
+
 REG_CLP = {
     "SA_SE": {
         ### STATUS
@@ -27,31 +205,32 @@ REG_CLP = {
         "SISTEMA_FILTRAGEM_FILTRO_B_ELEMENTO_2_RETROLAVAGEM_ABERTA":                                        [0, 5],
         "SISTEMA_FILTRAGEM_PRESSAO_AGUA_SAIDA_FILTRO_B":                                                    [0, 6],
         "DISJUNTOR_52SA2_ALIMENTACAO_EXTERNA_SUBTENSAO":                                                    [0, 7],
+        "COM_TENSAO_LINHA_EXTERNA":                                                                         [0, 8], # HIGH
         "DRENAGEM_NIVEL_MUITO_ALTO":                                                                        [0, 9],
         "DRENAGEM_NIVEL_ALTO":                                                                              [0, 10],
         "DRENAGEM_NIVEL_LIGA_BOMBAS":                                                                       [0, 11],
         "DRENAGEM_NIVEL_DESLIGA_BOMBAS":                                                                    [0, 12],
         "DRENAGEM_NIVEL_BLOQUEIA_BOMBAS":                                                                   [0, 13],
-        "RETIFICADOR_SOBRETENSAO_CC":                                                                       [0, 14],
-        "RETIFICADOR_SUBTENSAO_CC":                                                                         [0, 15],
+        "RETIFICADOR_SOBRETENSAO_CC":                                                                       [0, 14], # HIGH
+        "RETIFICADOR_SUBTENSAO_CC":                                                                         [0, 15], # HIGH
 
         ## ENTRADAS_DIGITAIS_2
-        "RETIFICADOR_SOBRECORRENTE_SAIDA":                                                                  [3, 0],
-        "RETIFICADOR_SOBRECORRENTE_BATERIAS":                                                               [3, 1],
-        "RETIFICADOR_FUSIVEL_QUEIMADO":                                                                     [3, 2],
-        "RETIFICADOR_FALTA_CA":                                                                             [3, 3],
-        "RETIFICADOR_FALHA_ATIVA":                                                                          [3, 4],
-        "RETIFICADOR_FUGA_TERRA_POSITIVO":                                                                  [3, 5],
-        "RETIFICADOR_FUGA_TERRA_NEGATIVO":                                                                  [3, 6],
-        "CUBICULO_FECHAMENTO_BARRAS_DISJUNTOR_TP_SINCRONISMO_52G101_ABERTO":                                [3, 7],
-        "CUBICULO_FECHAMENTO_BARRAS_DISJUNTOR_TP_SINCRONISMO_52G101_FALHA":                                 [3, 8],
-        "CUBICULO_FECHAMENTO_BARRAS_PORTA_INTERNA_ABERTA":                                                  [3, 9],
-        "CUBICULO_FECHAMENTO_BARRAS_PORTA_TRASEIRA_ABERTA":                                                 [3, 10],
+        "RETIFICADOR_SOBRECORRENTE_SAIDA":                                                                  [3, 0], # HIGH
+        "RETIFICADOR_SOBRECORRENTE_BATERIAS":                                                               [3, 1], # HIGH
+        "RETIFICADOR_FUSIVEL_QUEIMADO":                                                                     [3, 2], # HIGH
+        "RETIFICADOR_FALTA_CA":                                                                             [3, 3], # HIGH
+        "RETIFICADOR_FALHA_ATIVA":                                                                          [3, 4], # HIGH
+        "RETIFICADOR_FUGA_TERRA_POSITIVO":                                                                  [3, 5], # HIGH
+        "RETIFICADOR_FUGA_TERRA_NEGATIVO":                                                                  [3, 6], # HIGH
+        "CUBICULO_FECHAMENTO_BARRAS_DISJUNTOR_TP_SINCRONISMO_52G101_ABERTO":                                [3, 7], # HIGH
+        "CUBICULO_FECHAMENTO_BARRAS_DISJUNTOR_TP_SINCRONISMO_52G101_FALHA":                                 [3, 8], # HIGH
+        "CUBICULO_FECHAMENTO_BARRAS_PORTA_INTERNA_ABERTA":                                                  [3, 9], # HIGH
+        "CUBICULO_FECHAMENTO_BARRAS_PORTA_TRASEIRA_ABERTA":                                                 [3, 10], # HIGH
         "SECCIONADORA_89L_FECHADA":                                                                         [3, 11],
         "DISJUTOR_52L_FECHADO":                                                                             [3, 14],
 
         "MOLA_52L_CARREGADA":                                                                               [2, 0],
-        "CUBICULO_DISJUNTOR_DE_LINHA_PORTA_INTERNA_ABERTA":                                                 [2, 1],
+        "CUBICULO_DISJUNTOR_DE_LINHA_PORTA_INTERNA_ABERTA":                                                 [2, 1], # HIGH
         "TRANSFORMADOR_ELEVADOR_ALARME_TEMPERATURA_OLEO":                                                   [2, 2],
         "TRANSFORMADOR_ELEVADOR_TRIP_TEMPERATURA_OLEO":                                                     [2, 3],
         "TRANSFORMADOR_ELEVADOR_ALARME_TEMPERATURA_ENROLAMENTO":                                            [2, 4],
@@ -63,157 +242,157 @@ REG_CLP = {
         "TRANSFORMADOR_ELEVADOR_ALARME_NIVEL_OLEO_ALTO":                                                    [2, 10],
         "TRANSFORMADOR_ELEVADOR_TRIP_NIVEL_OLEO_MUITO_BAIXO":                                               [2, 11],
         "BLOQUEIO_86BF_ATUACAO_RESERVA":                                                                    [2, 14],
-        "DISJUNTOR_52SA1_TRANSFORMADOR_SERVICOS_AUXILIARES_FALHA":                                          [2, 15],
+        "DISJUNTOR_52SA1_TRANSFORMADOR_SERVICOS_AUXILIARES_FALHA":                                          [2, 15], # HIGH
 
         ## ENTRADAS_DIGITAIS_3
-        "DISJUNTOR_52SA1_TRANSFORMADOR_SERVICOS_AUXILIARES_FECHADO":                                        [5, 0],
-        "DISJUNTOR_52SA2_GERADOR_DIESEL_DE_EMERGENCIA_FALHA":                                               [5, 1],
-        "DISJUNTOR_52SA2_GERADOR_DIESEL_DE_EMERGENCIA_FECHADO":                                             [5, 2],
-        "DISJUNTOR_52SA3_INTERLIGACAO_BARRAS_FALHA":                                                        [5, 3],
-        "DISJUNTOR_52SA3_INTERLIGACAO_BARRAS_FECHADO":                                                      [5, 4],
-        "DISJUNTOR_52SA1_TRANSFORMADOR_SERVICOS_AUXILIARES_SUBTENSAO":                                      [5, 5],
-        "DISJUNTOR_52SA2_GERADOR_DIESEL_DE_EMERGENCIA_SUBTENSAO":                                           [5, 6],
-        "BARRA_SERVICOS_AUXILIARES_ESSENCIAIS_SUBTENSAO":                                                   [5, 7],
-        "BARRA_SERVICOS_AUXILIARES_NAO-ESSENCIAIS_SUBTENSAO":                                               [5, 8],
-        "SELETORA_DISJUNTORES_BARRA_SERVICOS_AUXILIARES_EM_REMOTO":                                         [5, 9],
-        "SELETORA_DISJUNTOR_52L_EM_REMOTO":                                                                 [5, 10],
-        "CONVERSOR_FIBRA_BAY_FALHA":                                                                        [5, 11],
-        "CONVERSOR_FIBRA_TOMADA_DAGUA_FALHA":                                                               [5, 12],
-        "BOTAO_EMEGENCIA_ACIONADO":                                                                         [5, 13],
-        "RELE_DE_PROTECAO_DA_LINHA_TRIP":                                                                   [5, 14],
-        "RELE_DE_PROTECAO_DA_LINHA_FALHA_WATCHDOG":                                                         [5, 15],
+        "DISJUNTOR_52SA1_TRANSFORMADOR_SERVICOS_AUXILIARES_FECHADO":                                        [4, 0],
+        "DISJUNTOR_52SA2_GERADOR_DIESEL_DE_EMERGENCIA_FALHA":                                               [4, 1], # HIGH
+        "DISJUNTOR_52SA2_GERADOR_DIESEL_DE_EMERGENCIA_FECHADO":                                             [4, 2],
+        "DISJUNTOR_52SA3_INTERLIGACAO_BARRAS_FALHA":                                                        [4, 3], # HIGH
+        "DISJUNTOR_52SA3_INTERLIGACAO_BARRAS_FECHADO":                                                      [4, 4],
+        "DISJUNTOR_52SA1_TRANSFORMADOR_SERVICOS_AUXILIARES_SUBTENSAO":                                      [4, 5], # HIGH
+        "DISJUNTOR_52SA2_GERADOR_DIESEL_DE_EMERGENCIA_SUBTENSAO":                                           [4, 6], # HIGH
+        "BARRA_SERVICOS_AUXILIARES_ESSENCIAIS_SUBTENSAO":                                                   [4, 7], # HIGH
+        "BARRA_SERVICOS_AUXILIARES_NAO-ESSENCIAIS_SUBTENSAO":                                               [4, 8], # HIGH
+        "SELETORA_DISJUNTORES_BARRA_SERVICOS_AUXILIARES_EM_REMOTO":                                         [4, 9],
+        "SELETORA_DISJUNTOR_52L_EM_REMOTO":                                                                 [4, 10],
+        "CONVERSOR_FIBRA_BAY_FALHA":                                                                        [4, 11], # HIGH
+        "CONVERSOR_FIBRA_TOMADA_DAGUA_FALHA":                                                               [4, 12], # HIGH
+        "BOTAO_EMEGENCIA_ACIONADO":                                                                         [4, 13], # HIGH
+        "RELE_DE_PROTECAO_DA_LINHA_TRIP":                                                                   [4, 14],
+        "RELE_DE_PROTECAO_DA_LINHA_FALHA_WATCHDOG":                                                         [4, 15],
 
-        "RELE_DE_PROTECAO_DA_LINHA_86BF":                                                                   [4, 0],
-        "RELE_DE_PROTECAO_DO_TRANSFORMADOR_ELEVADOR_TRIP":                                                  [4, 1],
-        "RELE_DE_PROTECAO_DO_TRANSFORMADOR_ELEVADOR_FALHA_WATCHDOG":                                        [4, 2],
-        "RELE_DE_BLOQUEIO_FALHA_ABERTURA_DISJUNTORES_86BF":                                                 [4, 3],
-        "RELE_DE_BLOQUEIO_TRANSFORMADOR_ELEVADOR_86T":                                                      [4, 4],
-        "SUPERVISAO_BOBINAS_RELES_DE_BLOQUEIO_INTEGRAS":                                                    [4, 5],
-        "BOTAO_REARME_RELE_DE_BLOQUEIO_86BF":                                                               [4, 6],
-        "BOTAO_REARME_RELE_DE_BLOQUEIO_86BT":                                                               [4, 7],
-        "BLOQUEIO_86T_ATUACAO_RESERVA_1":                                                                   [4, 8],
-        "BLOQUEIO_86T_ATUACAO_RESERVA_2":                                                                   [4, 9],
-        "CLP_UNIDADE_GERADORA_1_COMANDO_HABILITA_SISTEMA_AGUA":                                             [4, 10],
-        "CLP_UNIDADE_GERADORA_1_COMANDO_RESERVA_2":                                                         [4, 11],
-        "CLP_UNIDADE_GERADORA_1_COMANDO_RESERVA_3":                                                         [4, 12],
-        "CLP_UNIDADE_GERADORA_2_COMANDO_HABILITA_SISTEMA_AGUA":                                             [4, 13],
-        "CLP_UNIDADE_GERADORA_2_COMANDO_RESERVA_2":                                                         [4, 14],
-        "CLP_UNIDADE_GERADORA_2_COMANDO_RESERVA_3":                                                         [4, 15],
+        "RELE_DE_PROTECAO_DA_LINHA_86BF":                                                                   [5, 0],
+        "RELE_DE_PROTECAO_DO_TRANSFORMADOR_ELEVADOR_TRIP":                                                  [5, 1],
+        "RELE_DE_PROTECAO_DO_TRANSFORMADOR_ELEVADOR_FALHA_WATCHDOG":                                        [5, 2],
+        "RELE_DE_BLOQUEIO_FALHA_ABERTURA_DISJUNTORES_86BF":                                                 [5, 3],
+        "RELE_DE_BLOQUEIO_TRANSFORMADOR_ELEVADOR_86T":                                                      [5, 4],
+        "SUPERVISAO_BOBINAS_RELES_DE_BLOQUEIO_INTEGRAS":                                                    [5, 5],
+        "BOTAO_REARME_RELE_DE_BLOQUEIO_86BF":                                                               [5, 6],
+        "BOTAO_REARME_RELE_DE_BLOQUEIO_86BT":                                                               [5, 7],
+        "BLOQUEIO_86T_ATUACAO_RESERVA_1":                                                                   [5, 8],
+        "BLOQUEIO_86T_ATUACAO_RESERVA_2":                                                                   [5, 9],
+        "CLP_UNIDADE_GERADORA_1_COMANDO_HABILITA_SISTEMA_AGUA":                                             [5, 10],
+        "CLP_UNIDADE_GERADORA_1_COMANDO_RESERVA_2":                                                         [5, 11],
+        "CLP_UNIDADE_GERADORA_1_COMANDO_RESERVA_3":                                                         [5, 12],
+        "CLP_UNIDADE_GERADORA_2_COMANDO_HABILITA_SISTEMA_AGUA":                                             [5, 13],
+        "CLP_UNIDADE_GERADORA_2_COMANDO_RESERVA_2":                                                         [5, 14],
+        "CLP_UNIDADE_GERADORA_2_COMANDO_RESERVA_3":                                                         [5, 15],
 
         ## ENTRADAS_DIGITAIS_4
-        "TRANSFORMADOR_ELEVADOR_FALHA_CONTROLADOR_LOCAL":                                                   [7, 0],
-        "SISTEMA_FILTRAGEM_FILTRO_A_ELEMENTO_1_ENTRADA_ABERTA":                                             [7, 1],
-        "SISTEMA_FILTRAGEM_FILTRO_A_ELEMENTO_2_ENTRADA_ABERTA":                                             [7, 2],
-        "SISTEMA_FILTRAGEM_FILTRO_A_ELEMENTO_1_RETROLAVAGEM_ABERTA":                                        [7, 3],
-        "SISTEMA_FILTRAGEM_FILTRO_A_ELEMENTO_2_RETROLAVAGEM_ABERTA":                                        [7, 4],
-        "SISTEMA_FILTRAGEM_PRESSAO_AGUA_SAIDA_FILTRO_A":                                                    [7, 5],
-        "SINAL_DO_SISTEMA_DE_INCENDIO":                                                                     [7, 6],
-        "SINAL_DO_SISTEMA_DE_SEGURANCA":                                                                    [7, 7],
-        "DISJUNTOR_GERAL_CORRENTE_CONTINUA_125VCC_72SA1_FECHADO":                                           [7, 10],
-        "DISJUNTORES_CORRENTE_CONTINUA_125VCC_ABERTOS":                                                     [7, 11],
-        "DISJUNTORES_CORRENTE_CONTINUA_24VCC_ABERTOS":                                                      [7, 12],
-        "SUBTENSAO_ALIMENTACAO_SERVICOS_AUXILIARES_125VCC":                                                 [7, 13],
-        "SUBTENSAO_COMANDO_SERVICOS_AUXILIARES_125VCC":                                                     [7, 14],
-        "SUBTENSAO_COMANDO_SERVICOS_AUXILIARES_24VCC":                                                      [7, 15],
+        "TRANSFORMADOR_ELEVADOR_FALHA_CONTROLADOR_LOCAL":                                                   [6, 0],
+        "SISTEMA_FILTRAGEM_FILTRO_A_ELEMENTO_1_ENTRADA_ABERTA":                                             [6, 1],
+        "SISTEMA_FILTRAGEM_FILTRO_A_ELEMENTO_2_ENTRADA_ABERTA":                                             [6, 2],
+        "SISTEMA_FILTRAGEM_FILTRO_A_ELEMENTO_1_RETROLAVAGEM_ABERTA":                                        [6, 3],
+        "SISTEMA_FILTRAGEM_FILTRO_A_ELEMENTO_2_RETROLAVAGEM_ABERTA":                                        [6, 4],
+        "SISTEMA_FILTRAGEM_PRESSAO_AGUA_SAIDA_FILTRO_A":                                                    [6, 5],
+        "SINAL_DO_SISTEMA_DE_INCENDIO":                                                                     [6, 6],
+        "SINAL_DO_SISTEMA_DE_SEGURANCA":                                                                    [6, 7],
+        "DISJUNTOR_GERAL_CORRENTE_CONTINUA_125VCC_72SA1_FECHADO":                                           [6, 10],
+        "DISJUNTORES_CORRENTE_CONTINUA_125VCC_ABERTOS":                                                     [6, 11], # HIGH
+        "DISJUNTORES_CORRENTE_CONTINUA_24VCC_ABERTOS":                                                      [6, 12], # HIGH
+        "SUBTENSAO_ALIMENTACAO_SERVICOS_AUXILIARES_125VCC":                                                 [6, 13], # HIGH
+        "SUBTENSAO_COMANDO_SERVICOS_AUXILIARES_125VCC":                                                     [6, 14], # HIGH
+        "SUBTENSAO_COMANDO_SERVICOS_AUXILIARES_24VCC":                                                      [6, 15], # HIGH
 
         ## ALARMES_ANALÓGICOS
-        "ALARME_NIVEL_CANAL_DE_FUGA":                                                                       [9, 0],
+        "ALARME_NIVEL_CANAL_DE_FUGA":                                                                       [8, 0],
 
         ## FALHAS_ANALÓGICAS
-        "FALHA_LEITURA_NIVEL_CANAL_DE_FUGA":                                                                [11, 0],
-        "FALHA_LEITURA_TEMPERATURA_OLEO_TRANFORMADOR_ELEVADOR":                                             [11, 1],
-        "FALHA_LEITURA_TEMPERATURA_ENROLAMENTO_TRANFORMADOR_ELEVADOR":                                      [11, 2],
-        "FALHA_LEITURA_FILTRO_A_PRESSAO_DIFERENCIAL_ELEMENTO_1":                                            [11, 3],
-        "FALHA_LEITURA_FILTRO_A_PRESSAO_DIFERENCIAL_ELEMENTO_2":                                            [11, 4],
-        "FALHA_LEITURA_FILTRO_B_PRESSAO_DIFERENCIAL_ELEMENTO_1":                                            [11, 5],
-        "FALHA_LEITURA_FILTRO_B_PRESSAO_DIFERENCIAL_ELEMENTO_2":                                            [11, 6],
+        "FALHA_LEITURA_NIVEL_CANAL_DE_FUGA":                                                                [10, 0],
+        "FALHA_LEITURA_TEMPERATURA_OLEO_TRANFORMADOR_ELEVADOR":                                             [10, 1],
+        "FALHA_LEITURA_TEMPERATURA_ENROLAMENTO_TRANFORMADOR_ELEVADOR":                                      [10, 2],
+        "FALHA_LEITURA_FILTRO_A_PRESSAO_DIFERENCIAL_ELEMENTO_1":                                            [10, 3],
+        "FALHA_LEITURA_FILTRO_A_PRESSAO_DIFERENCIAL_ELEMENTO_2":                                            [10, 4],
+        "FALHA_LEITURA_FILTRO_B_PRESSAO_DIFERENCIAL_ELEMENTO_1":                                            [10, 5],
+        "FALHA_LEITURA_FILTRO_B_PRESSAO_DIFERENCIAL_ELEMENTO_2":                                            [10, 6],
 
         ## SA
-        "DISJUNTOR_SERVICOS_AUXILIARES_52SA1_FALHA_ABERTURA":                                               [13, 0],
-        "DISJUNTOR_SERVICOS_AUXILIARES_52SA1_FALHA_FECHAMENTO":                                             [13, 1],
-        "DISJUNTOR_GERADOR_DIESEL_52SA2_FALHA_ABERTURA":                                                    [13, 2],
-        "DISJUNTOR_GERADOR_DIESEL_52SA2_FALHA_FECHAMENTO":                                                  [13, 3],
-        "DISJUNTOR_INTERLIGACAO_BARRAS_52SA3_FALHA_ABERTURA":                                               [13, 4],
-        "DISJUNTOR_INTERLIGACAO_BARRAS_52SA3_FALHA_FECHAMENTO":                                             [13, 5],
-        "GERADOR_DIESEL_DE_EMERGENCIA_FALHA_PARTIDA":                                                       [13, 6],
-        "GERADOR_DIESEL_DE_EMERGENCIA_FALHA_PARADA":                                                        [13, 7],
-        "GERADOR_DIESEL_DE_EMERGENCIA_PARTIDA_PERIODICA":                                                   [13, 8],
-        "DRENAGEM_DISCREPANCIA_SINAIS_NIVEL":                                                               [13, 9],
-        "GERADOR_DIESEL_DE_EMERGENCIA_OPERACAO_REMOTA_MANUAL":                                              [13, 10],
-        "FALHA_COMUNICACAO_COM_MULTIMEDIDOR_LT":                                                            [13, 11],
-        "FALHA_COMUNICACAO_COM_MULTIMEDIDOR_TSA":                                                           [13, 12],
-        "FALHA_COMUNICACAO_COM_MULTIMEDIDOR_GMG":                                                           [13, 13],
+        "DISJUNTOR_SERVICOS_AUXILIARES_52SA1_FALHA_ABERTURA":                                               [12, 0],
+        "DISJUNTOR_SERVICOS_AUXILIARES_52SA1_FALHA_FECHAMENTO":                                             [12, 1],
+        "DISJUNTOR_GERADOR_DIESEL_52SA2_FALHA_ABERTURA":                                                    [12, 2],
+        "DISJUNTOR_GERADOR_DIESEL_52SA2_FALHA_FECHAMENTO":                                                  [12, 3],
+        "DISJUNTOR_INTERLIGACAO_BARRAS_52SA3_FALHA_ABERTURA":                                               [12, 4],
+        "DISJUNTOR_INTERLIGACAO_BARRAS_52SA3_FALHA_FECHAMENTO":                                             [12, 5],
+        "GERADOR_DIESEL_DE_EMERGENCIA_FALHA_PARTIDA":                                                       [12, 6],
+        "GERADOR_DIESEL_DE_EMERGENCIA_FALHA_PARADA":                                                        [12, 7],
+        "GERADOR_DIESEL_DE_EMERGENCIA_PARTIDA_PERIODICA":                                                   [12, 8],
+        "DRENAGEM_DISCREPANCIA_SINAIS_NIVEL":                                                               [12, 9],
+        "GERADOR_DIESEL_DE_EMERGENCIA_OPERACAO_REMOTA_MANUAL":                                              [12, 10],
+        "FALHA_COMUNICACAO_COM_MULTIMEDIDOR_LT":                                                            [12, 11],
+        "FALHA_COMUNICACAO_COM_MULTIMEDIDOR_TSA":                                                           [12, 12],
+        "FALHA_COMUNICACAO_COM_MULTIMEDIDOR_GMG":                                                           [12, 13],
 
         ## BLOQUEIO_GERAL
-        "BLOQUEIO_GERAL_BLOQUEIO_00_NIVEL_MUITO_ALTO_POCO_DRENAGEM":                                        [15, 0],
-        "BLOQUEIO_GERAL_BLOQUEIO_01_SUBTENSAO_CC_RETIFICADOR":                                              [15, 1],
-        "BLOQUEIO_GERAL_BLOQUEIO_02_CUBICULO_DE_FECHAMENTO_DE_BARRA_PORTA_TRASEIRA_ABERTA":                 [15, 2],
-        "BLOQUEIO_GERAL_BLOQUEIO_03_CUBICULO_DE_FECHAMENTO_DE_BARRA_PORTA_INTERNA_ABERTA":                  [15, 3],
-        "BLOQUEIO_GERAL_BLOQUEIO_04_RELE_PROTECAO_LINHA_FALHA_ABERTURA_52L_ATUADO":                         [15, 4],
-        "BLOQUEIO_GERAL_BLOQUEIO_05_RELE_PROTECAO_LINHA_FALHA_WATCHDOG":                                    [15, 5],
-        "BLOQUEIO_GERAL_BLOQUEIO_06_BOTAO_EMERGENCIA_GERAL":                                                [15, 6],
-        "BLOQUEIO_GERAL_BLOQUEIO_07_TEMPO_EXCESSIVO_NIVEL_ALTO_POCO_DRENAGEM":                              [15, 7],
-        "BLOQUEIO_GERAL_BLOQUEIO_08_TEMPO_EXCESSIVO_DISCREPANCIA_SINAIS_BOIAS_POCO_DRENAGEM":               [15, 8],
-        "BLOQUEIO_GERAL_BLOQUEIO_09_RESERVA":                                                               [15, 9],
+        "BLOQUEIO_GERAL_BLOQUEIO_00_NIVEL_MUITO_ALTO_POCO_DRENAGEM":                                        [14, 0],
+        "BLOQUEIO_GERAL_BLOQUEIO_01_SUBTENSAO_CC_RETIFICADOR":                                              [14, 1],
+        "BLOQUEIO_GERAL_BLOQUEIO_02_CUBICULO_DE_FECHAMENTO_DE_BARRA_PORTA_TRASEIRA_ABERTA":                 [14, 2],
+        "BLOQUEIO_GERAL_BLOQUEIO_03_CUBICULO_DE_FECHAMENTO_DE_BARRA_PORTA_INTERNA_ABERTA":                  [14, 3],
+        "BLOQUEIO_GERAL_BLOQUEIO_04_RELE_PROTECAO_LINHA_FALHA_ABERTURA_52L_ATUADO":                         [14, 4],
+        "BLOQUEIO_GERAL_BLOQUEIO_05_RELE_PROTECAO_LINHA_FALHA_WATCHDOG":                                    [14, 5],
+        "BLOQUEIO_GERAL_BLOQUEIO_06_BOTAO_EMERGENCIA_GERAL":                                                [14, 6],
+        "BLOQUEIO_GERAL_BLOQUEIO_07_TEMPO_EXCESSIVO_NIVEL_ALTO_POCO_DRENAGEM":                              [14, 7],
+        "BLOQUEIO_GERAL_BLOQUEIO_08_TEMPO_EXCESSIVO_DISCREPANCIA_SINAIS_BOIAS_POCO_DRENAGEM":               [14, 8],
+        "BLOQUEIO_GERAL_BLOQUEIO_09_RESERVA":                                                               [14, 9],
 
-        "BLOQUEIO_GERAL":                                                                                   [14, 15],
+        "BLOQUEIO_GERAL":                                                                                   [15, 15],
 
         ## SISTEMA_AGUA
-        "SISTEMA_AGUA_BOMBA_DISPONIVEL":                                                                    [17, 0],
-        "SISTEMA_AGUA_FALHA_LIGAR_BOMBA":                                                                   [17, 1],
-        "SISTEMA_AGUA_FALHA_DESLIGAR_BOMBA":                                                                [17, 2],
-        "SISTEMA_AGUA_FALHA_PRESSURIZAR_SAIDA_FILTRO_A":                                                    [17, 3],
-        "SISTEMA_AGUA_FALHA_PRESSOSTATO_FILTRO_A":                                                          [17, 4],
-        "SISTEMA_AGUA_FALHA_PRESSURIZAR_SAIDA_FILTRO_B":                                                    [17, 5],
-        "SISTEMA_AGUA_FALHA_PRESSOSTATO_FILTRO_B":                                                          [17, 6],
+        "SISTEMA_AGUA_BOMBA_DISPONIVEL":                                                                    [16, 0],
+        "SISTEMA_AGUA_FALHA_LIGAR_BOMBA":                                                                   [16, 1],
+        "SISTEMA_AGUA_FALHA_DESLIGAR_BOMBA":                                                                [16, 2],
+        "SISTEMA_AGUA_FALHA_PRESSURIZAR_SAIDA_FILTRO_A":                                                    [16, 3],
+        "SISTEMA_AGUA_FALHA_PRESSOSTATO_FILTRO_A":                                                          [16, 4],
+        "SISTEMA_AGUA_FALHA_PRESSURIZAR_SAIDA_FILTRO_B":                                                    [16, 5],
+        "SISTEMA_AGUA_FALHA_PRESSOSTATO_FILTRO_B":                                                          [16, 6],
 
         ## FILTRO_AUTOLIMPANTE
-        "FILTRO_B_OPERANDO_ELEMENTO_1":                                                                     [19, 0],
-        "FILTRO_B_LIMPANDO_ELEMENTO_2":                                                                     [19, 1],
-        "FILTRO_B_OPERANDO_ELEMENTO_2":                                                                     [19, 2],
-        "FILTRO_B_LIMPANDO_ELEMENTO_1":                                                                     [19, 3],
-        "FILTRO_B_FALHA_ABRIR_ENTRADA_ELEMENTO_1":                                                          [19, 4],
-        "FILTRO_B_FALHA_FECHAR_ENTRADA_ELEMENTO_1":                                                         [19, 5],
-        "FILTRO_B_FALHA_ABRIR_ENTRADA_ELEMENTO_2":                                                          [19, 6],
-        "FILTRO_B_FALHA_FECHAR_ENTRADA_ELEMENTO_2":                                                         [19, 7],
-        "FILTRO_B_FALHA_ABRIR_RETROLAVAGEM_ELEMENTO_1":                                                     [19, 8],
-        "FILTRO_B_FALHA_FECHAR_RETROLAVAGEM_ELEMENTO_1":                                                    [19, 9],
-        "FILTRO_B_FALHA_ABRIR_RETROLAVAGEM_ELEMENTO_2":                                                     [19, 10],
-        "FILTRO_B_FALHA_FECHAR_RETROLAVAGEM_ELEMENTO_2":                                                    [19, 11],
-        "FILTRO_B_COMUTACAO_EM_MANUAL":                                                                     [19, 12],
+        "FILTRO_B_OPERANDO_ELEMENTO_1":                                                                     [18, 0],
+        "FILTRO_B_LIMPANDO_ELEMENTO_2":                                                                     [18, 1],
+        "FILTRO_B_OPERANDO_ELEMENTO_2":                                                                     [18, 2],
+        "FILTRO_B_LIMPANDO_ELEMENTO_1":                                                                     [18, 3],
+        "FILTRO_B_FALHA_ABRIR_ENTRADA_ELEMENTO_1":                                                          [18, 4],
+        "FILTRO_B_FALHA_FECHAR_ENTRADA_ELEMENTO_1":                                                         [18, 5],
+        "FILTRO_B_FALHA_ABRIR_ENTRADA_ELEMENTO_2":                                                          [18, 6],
+        "FILTRO_B_FALHA_FECHAR_ENTRADA_ELEMENTO_2":                                                         [18, 7],
+        "FILTRO_B_FALHA_ABRIR_RETROLAVAGEM_ELEMENTO_1":                                                     [18, 8],
+        "FILTRO_B_FALHA_FECHAR_RETROLAVAGEM_ELEMENTO_1":                                                    [18, 9],
+        "FILTRO_B_FALHA_ABRIR_RETROLAVAGEM_ELEMENTO_2":                                                     [18, 10],
+        "FILTRO_B_FALHA_FECHAR_RETROLAVAGEM_ELEMENTO_2":                                                    [18, 11],
+        "FILTRO_B_COMUTACAO_EM_MANUAL":                                                                     [18, 12],
 
-        "FILTRO_A_OPERANDO_ELEMENTO_1":                                                                     [18, 0],
-        "FILTRO_A_LIMPANDO_ELEMENTO_2":                                                                     [18, 1],
-        "FILTRO_A_OPERANDO_ELEMENTO_2":                                                                     [18, 2],
-        "FILTRO_A_LIMPANDO_ELEMENTO_1":                                                                     [18, 3],
-        "FILTRO_A_FALHA_ABRIR_ENTRADA_ELEMENTO_1":                                                          [18, 4],
-        "FILTRO_A_FALHA_FECHAR_ENTRADA_ELEMENTO_1":                                                         [18, 5],
-        "FILTRO_A_FALHA_ABRIR_ENTRADA_ELEMENTO_2":                                                          [18, 6],
-        "FILTRO_A_FALHA_FECHAR_ENTRADA_ELEMENTO_2":                                                         [18, 7],
-        "FILTRO_A_FALHA_ABRIR_RETROLAVAGEM_ELEMENTO_1":                                                     [18, 8],
-        "FILTRO_A_FALHA_FECHAR_RETROLAVAGEM_ELEMENTO_1":                                                    [18, 9],
-        "FILTRO_A_FALHA_ABRIR_RETROLAVAGEM_ELEMENTO_2":                                                     [18, 10],
-        "FILTRO_A_FALHA_FECHAR_RETROLAVAGEM_ELEMENTO_2":                                                    [18, 11],
-        "FILTRO_A_COMUTACAO_EM_MANUAL":                                                                     [18, 12],
+        "FILTRO_A_OPERANDO_ELEMENTO_1":                                                                     [19, 0],
+        "FILTRO_A_LIMPANDO_ELEMENTO_2":                                                                     [19, 1],
+        "FILTRO_A_OPERANDO_ELEMENTO_2":                                                                     [19, 2],
+        "FILTRO_A_LIMPANDO_ELEMENTO_1":                                                                     [19, 3],
+        "FILTRO_A_FALHA_ABRIR_ENTRADA_ELEMENTO_1":                                                          [19, 4],
+        "FILTRO_A_FALHA_FECHAR_ENTRADA_ELEMENTO_1":                                                         [19, 5],
+        "FILTRO_A_FALHA_ABRIR_ENTRADA_ELEMENTO_2":                                                          [19, 6],
+        "FILTRO_A_FALHA_FECHAR_ENTRADA_ELEMENTO_2":                                                         [19, 7],
+        "FILTRO_A_FALHA_ABRIR_RETROLAVAGEM_ELEMENTO_1":                                                     [19, 8],
+        "FILTRO_A_FALHA_FECHAR_RETROLAVAGEM_ELEMENTO_1":                                                    [19, 9],
+        "FILTRO_A_FALHA_ABRIR_RETROLAVAGEM_ELEMENTO_2":                                                     [19, 10],
+        "FILTRO_A_FALHA_FECHAR_RETROLAVAGEM_ELEMENTO_2":                                                    [19, 11],
+        "FILTRO_A_COMUTACAO_EM_MANUAL":                                                                     [19, 12],
 
         ## SE
-        "REGISTRO_ATUACAO_RELE_DE_PROTECAO_DA_LINHA":                                                       [21, 0],
-        "FALHA_COMANDO_ABERTURA_DISJUNTOR_52L":                                                             [21, 1],
-        "FALHA_COMANDO_FECHAMENTO_DISJUNTOR_52L":                                                           [21, 2],
+        "REGISTRO_ATUACAO_RELE_DE_PROTECAO_DA_LINHA":                                                       [20, 0],
+        "FALHA_COMANDO_ABERTURA_DISJUNTOR_52L":                                                             [20, 1],
+        "FALHA_COMANDO_FECHAMENTO_DISJUNTOR_52L":                                                           [20, 2],
 
         ## BLOQUEIO_86T
-        "BLOQUEIO_86T_BLOQUEIO_00_RELE_DE_PROTECAO_TRANSFORMADOR_ELEVADOR_ATUADO":                          [23, 0],
-        "BLOQUEIO_86T_BLOQUEIO_01_RELE_DE_PROTECAO_TRANSFORMADOR_ELEVADOR_FALHA_WATCHDOG":                  [23, 1],
-        "BLOQUEIO_86T_BLOQUEIO_02_TRANSFORMADOR_ELEVADOR_TEMPERATURA_MUITO_ALTA_OLEO":                      [23, 2],
-        "BLOQUEIO_86T_BLOQUEIO_03_TRANSFORMADOR_ELEVADOR_TEMPERATURA_MUITO_ALTA_ENROLAMENTO":               [23, 3],
-        "BLOQUEIO_86T_BLOQUEIO_04_TRANSFORMADOR_ELEVADOR_RELE_BUCHHOLZ":                                    [23, 4],
-        "BLOQUEIO_86T_BLOQUEIO_05_TRANSFORMADOR_ELEVADOR_ALIVIO_DE_PRESSAO":                                [23, 5],
-        "BLOQUEIO_86T_BLOQUEIO_06_TRANSFORMADOR_ELEVADOR_NIVEL_OLEO_MUITO_BAIXO":                           [23, 6],
-        "BLOQUEIO_86T_BLOQUEIO_07_TRANSFORMADOR_ELEVADOR_FALHA_CONTROLADOR_LOCAL":                          [23, 7],
-        "BLOQUEIO_86T_BLOQUEIO_08_TRANSFORMADOR_ELEVADOR_ATUACAO_RESERVA_1":                                [23, 8],
-        "BLOQUEIO_86T_BLOQUEIO_09_TRANSFORMADOR_ELEVADOR_ATUACAO_RESERVA_2":                                [23, 9],
+        "BLOQUEIO_86T_BLOQUEIO_00_RELE_DE_PROTECAO_TRANSFORMADOR_ELEVADOR_ATUADO":                          [22, 0],
+        "BLOQUEIO_86T_BLOQUEIO_01_RELE_DE_PROTECAO_TRANSFORMADOR_ELEVADOR_FALHA_WATCHDOG":                  [22, 1],
+        "BLOQUEIO_86T_BLOQUEIO_02_TRANSFORMADOR_ELEVADOR_TEMPERATURA_MUITO_ALTA_OLEO":                      [22, 2],
+        "BLOQUEIO_86T_BLOQUEIO_03_TRANSFORMADOR_ELEVADOR_TEMPERATURA_MUITO_ALTA_ENROLAMENTO":               [22, 3],
+        "BLOQUEIO_86T_BLOQUEIO_04_TRANSFORMADOR_ELEVADOR_RELE_BUCHHOLZ":                                    [22, 4],
+        "BLOQUEIO_86T_BLOQUEIO_05_TRANSFORMADOR_ELEVADOR_ALIVIO_DE_PRESSAO":                                [22, 5],
+        "BLOQUEIO_86T_BLOQUEIO_06_TRANSFORMADOR_ELEVADOR_NIVEL_OLEO_MUITO_BAIXO":                           [22, 6],
+        "BLOQUEIO_86T_BLOQUEIO_07_TRANSFORMADOR_ELEVADOR_FALHA_CONTROLADOR_LOCAL":                          [22, 7],
+        "BLOQUEIO_86T_BLOQUEIO_08_TRANSFORMADOR_ELEVADOR_ATUACAO_RESERVA_1":                                [22, 8],
+        "BLOQUEIO_86T_BLOQUEIO_09_TRANSFORMADOR_ELEVADOR_ATUACAO_RESERVA_2":                                [22, 9],
 
-        "BLOQUEIO_86T":                                                                                     [22, 15],
+        "BLOQUEIO_86T":                                                                                     [23, 15],
 
         ## LEITURAS_ANALÓGICAS
         "NIVEL_CANAL_FUGA":                                                                                 24,
@@ -321,9 +500,9 @@ REG_CLP = {
         "LIMPA_GRADES_BOTAO_MOVIMENTA_PARA_DIREITA":                                                        [1, 8],
         "LIMPA_GRADES_BOTAO_INICIA_CICLO_LIMPEZA":                                                          [1, 9],
         "UNIDADE_HIDRAULICA_BOMBA_LIGADA":                                                                  [1, 10],
-        "SUBTENSAO_CA":                                                                                     [1, 11],
-        "UNIDADE_HIDRAULICA_NIVEL_OLEO_MUITO_BAIXO":                                                        [1, 12],
-        "UNIDADE_HIDRAULICA_FILTRO_SUJO":                                                                   [1, 13],
+        "SUBTENSAO_CA":                                                                                     [1, 11], # HIGH
+        "UNIDADE_HIDRAULICA_NIVEL_OLEO_MUITO_BAIXO":                                                        [1, 12], # HIGH
+        "UNIDADE_HIDRAULICA_FILTRO_SUJO":                                                                   [1, 13], # HIGH
         "COMPORTA_1_ABERTA":                                                                                [1, 14],
         "COMPORTA_1_FECHADA":                                                                               [1, 15],
 
@@ -546,18 +725,18 @@ REG_CLP = {
         "UG_CPG_DISJUNTOR_TPS_RELE_DE_PROTECAO_FECHADO":                                                    [1, 11],
         "UG_CPG_PORTA_FRONTAL_FECHADA":                                                                     [1, 12],
         "UG_CPG_PORTA_TRASEIRA_FECHADA":                                                                    [1, 13],
-        "UHL_NIVEL_OLEO_MUITO_BAIXO":                                                                       [1, 14],
-        "UHL_NIVEL_OLEO_MUITO_ALTO":                                                                        [1, 15],
+        "UHL_NIVEL_OLEO_MUITO_BAIXO":                                                                       [1, 14], # HIGH
+        "UHL_NIVEL_OLEO_MUITO_ALTO":                                                                        [1, 15], # HIGH
 
         "UG_ENTRADA_DIGITAL_RESERVA_2":                                                                     [0, 0],
         "UHL_PRESSAO_LINHA_OLEO":                                                                           [0, 1],
         "UG_ENTRADA_DIGITAL_RESERVA_4":                                                                     [0, 2],
         "UG_ENTRADA_DIGITAL_RESERVA_5":                                                                     [0, 3],
         "UG_ENTRADA_DIGITAL_RESERVA_6":                                                                     [0, 4],
-        "UHL_FILTRO_OLEO_SUJO":                                                                             [0, 5],
-        "UHRV_NIVEL_OLEO_MUITO_BAIXO":                                                                      [0, 6],
+        "UHL_FILTRO_OLEO_SUJO":                                                                             [0, 5], # HIGH
+        "UHRV_NIVEL_OLEO_MUITO_BAIXO":                                                                      [0, 6], # HIGH
         "UHRV_FREIO_PRESSURIZADO":                                                                          [0, 7],
-        "UHRV_FILTRO_OLEO_SUJO":                                                                            [0, 8],
+        "UHRV_FILTRO_OLEO_SUJO":                                                                            [0, 8], # HIGH
         "UG_ENTRADA_DIGITAL_RESERVA_3":                                                                     [0, 9],
         "UG_ENTRADA_DIGITAL_RESERVA_1":                                                                     [0, 10],
         "UG_ENTRADA_DIGITAL_RESERVA_7":                                                                     [0, 11],
@@ -578,18 +757,18 @@ REG_CLP = {
         "UG_BOTAO_PARA_UNIDADE_GERADORA":                                                                   [3, 8],
         "UG_BOTAO_PARTE_UNIDADE_GERADORA":                                                                  [3, 9],
         "UG_BOTAO_REARME_FALHAS_UNIDADE_GERADORA":                                                          [3, 10],
-        "UG_BOTAO_EMERGENCIA_DA_UNIDADE_GERADORA":                                                          [3, 11],
+        "UG_BOTAO_EMERGENCIA_DA_UNIDADE_GERADORA":                                                          [3, 11], # HIGH
         "UG_SUPERVISAO_BOBINA_DISJUNTOR_DE_MAQUINA":                                                        [3, 12],
         "UG_SUPERVISAO_BOBINA_RELE_DE_BLOQUEIO":                                                            [3, 13],
 
-        "UG_RELE_DE_BLOQUEIO_86EH_ATUADO":                                                                  [2, 12],
-        "UG_SUBTENSAO_TENSAO_125VCC":                                                                       [2, 13],
-        "UG_SUBTENSAO_TENSAO_24VCC":                                                                        [2, 14],
-        "UG_DISJUNTORES_125VCC_ABERTOS":                                                                    [2, 15],
+        "UG_RELE_DE_BLOQUEIO_86EH_ATUADO":                                                                  [2, 12], # HIGH
+        "UG_SUBTENSAO_TENSAO_125VCC":                                                                       [2, 13], # HIGH
+        "UG_SUBTENSAO_TENSAO_24VCC":                                                                        [2, 14], # HIGH
+        "UG_DISJUNTORES_125VCC_ABERTOS":                                                                    [2, 15], # HIGH
 
         ## ENTRADAS_DIGITAIS_3
-        "UG_DISJUNTORES_24VCC_ABERTOS":                                                                     [5, 0],
-        "UG_CLP_GERAL_SINAL_DE_BLOQUEIO_EXTERNO":                                                           [5, 1],
+        "UG_DISJUNTORES_24VCC_ABERTOS":                                                                     [5, 0], # HIGH
+        "UG_CLP_GERAL_SINAL_DE_BLOQUEIO_EXTERNO":                                                           [5, 1], # HIGH
         "UG_CLP_GERAL_SINAL_DE_SISTEMA_DE_AGUA_OK":                                                         [5, 2],
         "UG_CLP_GERAL_SINAL_RESERVA":                                                                       [5, 3],
         "ENTRADA_DIGITAL_RESERVA_3":                                                                        [5, 4],
@@ -1328,18 +1507,18 @@ REG_CLP = {
         "UG_CPG_DISJUNTOR_TPS_RELE_DE_PROTECAO_FECHADO":                                                    [1, 11],
         "UG_CPG_PORTA_FRONTAL_FECHADA":                                                                     [1, 12],
         "UG_CPG_PORTA_TRASEIRA_FECHADA":                                                                    [1, 13],
-        "UHL_NIVEL_OLEO_MUITO_BAIXO":                                                                       [1, 14],
-        "UHL_NIVEL_OLEO_MUITO_ALTO":                                                                        [1, 15],
+        "UHL_NIVEL_OLEO_MUITO_BAIXO":                                                                       [1, 14], # HIGH
+        "UHL_NIVEL_OLEO_MUITO_ALTO":                                                                        [1, 15], # HIGH
 
         "UG_ENTRADA_DIGITAL_RESERVA_2":                                                                     [0, 0],
         "UHL_PRESSAO_LINHA_OLEO":                                                                           [0, 1],
         "UG_ENTRADA_DIGITAL_RESERVA_4":                                                                     [0, 2],
         "UG_ENTRADA_DIGITAL_RESERVA_5":                                                                     [0, 3],
         "UG_ENTRADA_DIGITAL_RESERVA_6":                                                                     [0, 4],
-        "UHL_FILTRO_OLEO_SUJO":                                                                             [0, 5],
-        "UHRV_NIVEL_OLEO_MUITO_BAIXO":                                                                      [0, 6],
+        "UHL_FILTRO_OLEO_SUJO":                                                                             [0, 5], # HIGH
+        "UHRV_NIVEL_OLEO_MUITO_BAIXO":                                                                      [0, 6], # HIGH
         "UHRV_FREIO_PRESSURIZADO":                                                                          [0, 7],
-        "UHRV_FILTRO_OLEO_SUJO":                                                                            [0, 8],
+        "UHRV_FILTRO_OLEO_SUJO":                                                                            [0, 8], # HIGH
         "UG_ENTRADA_DIGITAL_RESERVA_3":                                                                     [0, 9],
         "UG_ENTRADA_DIGITAL_RESERVA_1":                                                                     [0, 10],
         "UG_ENTRADA_DIGITAL_RESERVA_7":                                                                     [0, 11],
@@ -1360,18 +1539,18 @@ REG_CLP = {
         "UG_BOTAO_PARA_UNIDADE_GERADORA":                                                                   [3, 8],
         "UG_BOTAO_PARTE_UNIDADE_GERADORA":                                                                  [3, 9],
         "UG_BOTAO_REARME_FALHAS_UNIDADE_GERADORA":                                                          [3, 10],
-        "UG_BOTAO_EMERGENCIA_DA_UNIDADE_GERADORA":                                                          [3, 11],
+        "UG_BOTAO_EMERGENCIA_DA_UNIDADE_GERADORA":                                                          [3, 11], # HIGH
         "UG_SUPERVISAO_BOBINA_DISJUNTOR_DE_MAQUINA":                                                        [3, 12],
         "UG_SUPERVISAO_BOBINA_RELE_DE_BLOQUEIO":                                                            [3, 13],
 
-        "UG_RELE_DE_BLOQUEIO_86EH_ATUADO":                                                                  [2, 12],
-        "UG_SUBTENSAO_TENSAO_125VCC":                                                                       [2, 13],
-        "UG_SUBTENSAO_TENSAO_24VCC":                                                                        [2, 14],
-        "UG_DISJUNTORES_125VCC_ABERTOS":                                                                    [2, 15],
+        "UG_RELE_DE_BLOQUEIO_86EH_ATUADO":                                                                  [2, 12], # HIGH
+        "UG_SUBTENSAO_TENSAO_125VCC":                                                                       [2, 13], # HIGH
+        "UG_SUBTENSAO_TENSAO_24VCC":                                                                        [2, 14], # HIGH
+        "UG_DISJUNTORES_125VCC_ABERTOS":                                                                    [2, 15], # HIGH
 
         ## ENTRADAS_DIGITAIS_3
-        "UG_DISJUNTORES_24VCC_ABERTOS":                                                                     [5, 0],
-        "UG_CLP_GERAL_SINAL_DE_BLOQUEIO_EXTERNO":                                                           [5, 1],
+        "UG_DISJUNTORES_24VCC_ABERTOS":                                                                     [5, 0], # HIGH
+        "UG_CLP_GERAL_SINAL_DE_BLOQUEIO_EXTERNO":                                                           [5, 1], # HIGH
         "UG_CLP_GERAL_SINAL_DE_SISTEMA_DE_AGUA_OK":                                                         [5, 2],
         "UG_CLP_GERAL_SINAL_RESERVA":                                                                       [5, 3],
         "ENTRADA_DIGITAL_RESERVA_3":                                                                        [5, 4],

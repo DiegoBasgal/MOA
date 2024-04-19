@@ -313,8 +313,36 @@ class Bay:
         self.linha_morta = LeituraModbusBit(self.rele["BAY"], REG_RELE["BAY"]["ID_LINHA_MORTA"], descricao="[BAY][RELE] Identificação Linha Morta")
         self.barra_morta = LeituraModbusBit(self.rele["BAY"], REG_RELE["BAY"]["ID_BARRA_MORTA"], descricao="[BAY][RELE] Identificação Barra Morta")
         self.mola_carregada = LeituraModbusBit(self.rele["BAY"], REG_RELE["BAY"]["DJL_MOLA_CARREGADA"], descricao="[BAY][RELE] Disjuntor Mola Carregada")
+
         self.secc_fechada = LeituraModbusBit(self.rele["BAY"], REG_RELE["BAY"]["SECC_FECHADA"], invertido=True, descricao="[BAY][RELE] Seccionadora Fechada")
         self.condicionadores_essenciais.append(CondicionadorBase(self.secc_fechada, CONDIC_INDISPONIBILIZAR))
 
-        self.l_falha_abertura_dj = LeituraModbusBit(self.rele["BAY"], REG_RELE["BAY"]["DJL_FLH_ABERTURA"], descricao="[BAY][RELE] Disjuntor Linha Falha Abertura")
+        self.l_falha_abertura_dj = LeituraModbusBit(self.rele["BAY"], REG_RELE["BAY"]["FALHA_ABERTURA_DISJUNTOR_DE_LINHA"], descricao="[BAY][RELE] Disjuntor Linha Falha Abertura")
         self.condicionadores_essenciais.append(CondicionadorBase(self.l_falha_abertura_dj, CONDIC_INDISPONIBILIZAR))
+
+        self.l_sobrecorr_inst_fase_z3 = LeituraModbusBit(self.rele["BAY"], REG_RELE["BAY"]["SOBRECORRENTE_INSTANTANEA_DE_FASE_ZONA_3"], descricao="[BAY][RELE] Sobrecorrente Instantânea de Fase Zona 3")
+        self.condicionadores_essenciais.append(CondicionadorBase(self.l_sobrecorr_inst_fase_z3, CONDIC_INDISPONIBILIZAR, teste=True))
+
+        self.l_sobrecorr_inst_fase_z2 = LeituraModbusBit(self.rele["BAY"], REG_RELE["BAY"]["SOBRECORRENTE_INSTANTANEA_DE_FASE_ZONA_2"], descricao="[BAY][RELE] Sobrecorrente Instantânea de Fase Zona 2")
+        self.condicionadores_essenciais.append(CondicionadorBase(self.l_sobrecorr_inst_fase_z2, CONDIC_INDISPONIBILIZAR, teste=True))
+
+        self.l_sobrecorr_inst_fase_z1 = LeituraModbusBit(self.rele["BAY"], REG_RELE["BAY"]["SOBRECORRENTE_INSTANTANEA_DE_FASE_ZONA_1"], descricao="[BAY][RELE] Sobrecorrente Instantânea de Fase Zona 1")
+        self.condicionadores_essenciais.append(CondicionadorBase(self.l_sobrecorr_inst_fase_z1, CONDIC_INDISPONIBILIZAR, teste=True))
+
+        self.l_sobrecorr_inst_seq_neg_z3 = LeituraModbusBit(self.rele["BAY"], REG_RELE["BAY"]["SOBRECORRENTE_INSTANTANEA_DE_SEQUENCIA_NEGATIVA_ZONA_3"], descricao="[BAY][RELE] Sobrecorrente Instantânea de Sequência Negativa Zona 3")
+        self.condicionadores_essenciais.append(CondicionadorBase(self.l_sobrecorr_inst_seq_neg_z3, CONDIC_INDISPONIBILIZAR, teste=True))
+
+        self.l_sobrecorr_inst_seq_neg_z2 = LeituraModbusBit(self.rele["BAY"], REG_RELE["BAY"]["SOBRECORRENTE_INSTANTANEA_DE_SEQUENCIA_NEGATIVA_ZONA_2"], descricao="[BAY][RELE] Sobrecorrente Instantânea de Sequência Negativa Zona 2")
+        self.condicionadores_essenciais.append(CondicionadorBase(self.l_sobrecorr_inst_seq_neg_z2, CONDIC_INDISPONIBILIZAR, teste=True))
+
+        self.l_sobrecorr_inst_seq_neg_z1 = LeituraModbusBit(self.rele["BAY"], REG_RELE["BAY"]["SOBRECORRENTE_INSTANTANEA_DE_SEQUENCIA_NEGATIVA_ZONA_1"], descricao="[BAY][RELE] Sobrecorrente Instantânea de Sequência Negativa Zona 1")
+        self.condicionadores_essenciais.append(CondicionadorBase(self.l_sobrecorr_inst_seq_neg_z1, CONDIC_INDISPONIBILIZAR, teste=True))
+
+        self.l_sobrecorr_residual_inst = LeituraModbusBit(self.rele["BAY"], REG_RELE["BAY"]["SOBRECORRENTE_RESIDUAL_INSTANTANEA"], descricao="[BAY][RELE] Sobrecorrente Residual Instantânea")
+        self.condicionadores_essenciais.append(CondicionadorBase(self.l_sobrecorr_residual_inst, CONDIC_INDISPONIBILIZAR, teste=True))
+
+        self.l_sobrecorr_tempo_fase = LeituraModbusBit(self.rele["BAY"], REG_RELE["BAY"]["SOBRECORRENTE_TEMPORIZADA_DE_FASE"], descricao="[BAY][RELE] Sobrecorrente Residual Instantânea")
+        self.condicionadores_essenciais.append(CondicionadorBase(self.l_sobrecorr_tempo_fase, CONDIC_INDISPONIBILIZAR, teste=True))
+
+        self.l_sobrecorr_residual_tempo = LeituraModbusBit(self.rele["BAY"], REG_RELE["BAY"]["SOBRECORRENTE_RESIDUAL_TEMPORIZADA"], descricao="[BAY][RELE] Sobrecorrente Residual Temporizada")
+        self.condicionadores_essenciais.append(CondicionadorBase(self.l_sobrecorr_residual_tempo, CONDIC_INDISPONIBILIZAR, teste=True))

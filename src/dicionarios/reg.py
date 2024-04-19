@@ -86,72 +86,67 @@ REG_MEDIDOR = {
 
 REG_RELE = {
     "BAY": {
-        # Leituras Analógicas
-        "LT_FASE_A":                                    11,
-        "LT_FASE_B":                                    14,
-        "LT_FASE_C":                                    17,
-        "LT_VS":                                        19,
+        "LT_FASE_A":                                                11,
+        "LT_FASE_B":                                                14,
+        "LT_FASE_C":                                                17,
+        "LT_VS":                                                    19,
 
+        "RELE_RST_TRP":                                             88,
+        "DJL_CMD_ABRIR":                                            84,
+        "DJL_CMD_FECHAR":                                           85,
 
-        # Relé
-        "RELE_RST_TRP":                                 88,
+        "DJL_FECHADO":                                              [44, 0],
+        "DJL_MOLA_CARREGADA":                                       [44, 1],
+        "BT_ABRE_DJ":                                               [44, 2],
+        "BT_FECHA_DJ":                                              [44, 3],
+        "SECC_FECHADA":                                             [44, 4],
 
+        "SOBRECORRENTE_INSTANTANEA_DE_FASE_ZONA_3":                 [46, 5],
+        "SOBRECORRENTE_INSTANTANEA_DE_FASE_ZONA_2":                 [46, 6],
+        "SOBRECORRENTE_INSTANTANEA_DE_FASE_ZONA_1":                 [46, 7],
 
-        # DJ
-        "DJL_CMD_ABRIR":                                84,
-        "DJL_CMD_FECHAR":                               85,
-        "DJL_FECHADO":                                  [44, 0],
+        "FALHA_ABERTURA_DISJUNTOR_DE_LINHA":                        [47, 1],
 
+        "SOBRECORRENTE_INSTANTANEA_DE_SEQUENCIA_NEGATIVA_ZONA_3":   [48, 1],
+        "SOBRECORRENTE_INSTANTANEA_DE_SEQUENCIA_NEGATIVA_ZONA_2":   [48, 2],
+        "SOBRECORRENTE_INSTANTANEA_DE_SEQUENCIA_NEGATIVA_ZONA_1":   [48, 3],
+        "SOBRECORRENTE_RESIDUAL_INSTANTANEA":                       [48, 7],
 
-        # DJ
-        "DJL_MOLA_CARREGADA":                           [44, 1],
-        # Seccionadora
-        "SECC_FECHADA":                                 [44, 4],
+        "SOBRECORRENTE_TEMPORIZADA_DE_FASE":                        [49, 2],
 
+        "SOBRECORRENTE_RESIDUAL_TEMPORIZADA":                       [50, 4],
 
-        # DJ
-        "DJL_FLH_ABERTURA":                             [47, 1],
+        "ID_BARRA_VIVA":                                            [53, 1],
+        "ID_BARRA_MORTA":                                           [53, 7],
 
-
-        # Barra
-        "ID_BARRA_VIVA":                                [53, 1],
-        "ID_BARRA_MORTA":                               [53, 7],
-
-
-        # Linha
-        "ID_LINHA_VIVA":                                [54, 0],
-        "ID_LINHA_MORTA":                               [54, 1],
-
+        "ID_LINHA_VIVA":                                            [54, 0],
+        "ID_LINHA_MORTA":                                           [54, 1],
     },
 
     "SE": {
-        # DJ
-        "DJL_FECHADO":                                  [43, 0],
-        "DJL_MOLA_CARREGADA":                           [43, 1],
-        # Relé
-        "RELE_TE_FLH_PARTIDA":                          [43, 2],
+        "DJL_FECHADO":                                              [43, 0],
+        "DJL_MOLA_CARREGADA":                                       [43, 1],
 
-        # Seccionadora
-        "SECC_FECHADA":                                 [43, 1],
+        "RELE_TE_FLH_PARTIDA":                                      [43, 2],
 
+        "SECC_FECHADA":                                             [43, 1],
 
-        # DJ
-        "DJL_FLH_ABERTURA_B3":                          [44, 3],
-        "DJL_FLH_ABERTURA_B4":                          [44, 4],
+        "50BF_FALHA_ABERTURA_DISJUNTOR_DE_LINHA_B3":                [44, 3],
+        "50BF_FALHA_ABERTURA_DISJUNTOR_DE_LINHA_B4":                [44, 4],
 
+        "SOBRECORRENTE_INSTANTANEA_DE_FASE_ZONA_1":                 [45, 7],
+        "SOBRECORRENTE_INSTANTANEA_DE_FASE_ZONA_2":                 [45, 6],
+        "SOBRECORRENTE_INSTANTANEA_DE_FASE_ZONA_3":                 [45, 5],
 
-        # Zonas
-        "Z3_SOBRECO_INST_SEQU_NEG":                     [46, 1],
-        "Z2_SOBRECO_INST_SEQU_NEG":                     [46, 2],
-        "Z1_SOBRECO_INST_SEQU_NEG":                     [46, 3],
+        "SOBRECORRENTE_INSTANTANEA_DE_SEQUENCIA_NEGATIVA_ZONA_1":   [46, 3],
+        "SOBRECORRENTE_INSTANTANEA_DE_SEQUENCIA_NEGATIVA_ZONA_2":   [46, 2],
+        "SOBRECORRENTE_INSTANTANEA_DE_SEQUENCIA_NEGATIVA_ZONA_3":   [46, 1],
 
+        "SOBRECORRENTE_TEMPORIZADA_DE_FASE":                        [47, 2],
 
-        # DJ
-        "DJL_FLH_ABERTURA_B1":                          [48, 1],
+        "FALHA_ABERTURA_DISJUNTOR_DE_LINHA":                        [48, 1],
 
-
-        # Barra
-        "ID_BARRA_VIVA":                                [49, 1],
+        "ID_BARRA_VIVA":                                            [49, 1],
     },
 
     "TE": {
@@ -960,7 +955,7 @@ REG_CLP = {
         "GERADOR_NUCL_ESTAT_TMP":                       72,
         "ENTRADA_TURBINA_PRESSAO":                      84,
         "GERADOR_SAIDA_AR_TRP_TMP":                     90,
-        "OLEO_UHRV_TMP":                                112,
+        "OLEO_UHRV_TMP":                                54,
         "HORIMETRO":                                    108,
         "P":                                            132,
 

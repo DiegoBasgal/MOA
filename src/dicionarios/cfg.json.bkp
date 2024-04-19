@@ -1,10 +1,10 @@
 {
-    "kp": 3.0,
-    "ki": 0.05,
+    "kp": 1.5,
+    "ki": 0.025,
     "kd": 0.0,
     "kie": 0.1,
     "saida_ie_inicial": 0.1,
-    "nv_alvo": 462.1,
+    "nv_alvo": 462.0,
     "nv_minimo": 461.37,
     "nv_maximo": 462.37,
     "nv_religamento": 461.5,

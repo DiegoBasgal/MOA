@@ -189,13 +189,24 @@ class Agendamentos:
                 ug.forcar_estado_indisponivel()
                 ug.step()
 
-            while (not self.usn.ug1.etapa == UG_PARADA and not self.usn.ug2.etapa == UG_PARADA):
+            while not self.usn.ug1.etapa == UG_PARADA:
                 self.usn.ler_valores()
-                logger.debug("[AGN] Aguardando parada total das Unidades...")
+                logger.debug("[AGN] Aguardando parada da Unidade 1...")
                 sleep(5)
+            self.usn.ug1.bloquear_unidade()
+
+            while not self.usn.ug2.etapa == UG_PARADA:
+                self.usn.ler_valores()
+                logger.debug("[AGN] Aguardando parada da Unidade 2...")
+                sleep(5)
+            self.usn.ug2.bloquear_unidade()
 
             self.usn.acionar_emergencia()
+            logger.debug("")
             logger.debug("[AGN] Emergência pressionada após indisponibilização agendada mudando para modo manual para evitar normalização automática.")
+            logger.debug("")
+            self.db_emergencia = False
+            self.clp_emergencia = False
             self.usn.modo_autonomo = False
 
         if agendamento[3] == AGN_ALTERAR_NV_ALVO:
