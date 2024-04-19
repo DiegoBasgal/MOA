@@ -1,22 +1,26 @@
 import logging
 
+import src.unidade_geracao as u
+
 from threading import Thread
 
 from src.dicionarios.const import *
+
 
 logger = logging.getLogger("logger")
 
 
 class State:
-    def __init__(self, parent=None):
-        # VERIFICAÇÃO DE ARGUENTOS
+    def __init__(self, parent: "u.UnidadeDeGeracao"=None):
+
         if not parent:
             logger.error("[UG-SM] Houve um erro ao importar a classe Unidade de Geração")
             raise ImportError
         else:
             self.parent = parent
 
-    def step(self) -> object:
+
+    def step(self) -> "object":
         pass
 
 
@@ -32,8 +36,8 @@ class StateManual(State):
 
         self.parent.borda_parar = False
 
-    def step(self) -> State:
-        self.parent.setpoint = self.parent.leitura_potencia
+    def step(self) -> "State":
+        self.parent.setpoint = self.parent.potencia
         return self
 
 
@@ -42,6 +46,7 @@ class StateIndisponivel(State):
         super().__init__(parent)
 
         self.parent.codigo_state = UG_SM_INDISPONIVEL
+
         logger.debug("")
         logger.info(f"[UG{self.parent.id}] Entrando no estado:                 \"Indisponível\". Para retornar a operação autônoma, favor agendar na interface web")
         logger.debug(f"[UG{self.parent.id}] Tentativas de normalização:         {self.parent.tentativas_de_normalizacao}/{self.parent.limite_tentativas_de_normalizacao}")
@@ -49,7 +54,8 @@ class StateIndisponivel(State):
 
         self.parent.borda_parar = True if self.parent.borda_parar else False
 
-    def step(self) -> State:
+
+    def step(self) -> "State":
         self.parent.bloquear_unidade()
         return self
 
@@ -59,6 +65,7 @@ class StateRestrito(State):
         super().__init__(parent)
 
         self.parent.codigo_state = UG_SM_RESTRITA
+
         logger.debug("")
         logger.info(f"[UG{self.parent.id}] Entrando no estado                  \"Restrito\"")
         logger.debug(f"[UG{self.parent.id}] Tentativas de normalização:         {self.parent.tentativas_de_normalizacao}/{self.parent.limite_tentativas_de_normalizacao}")
@@ -67,10 +74,11 @@ class StateRestrito(State):
         self.parent.parar_timer = False
         self.parent.borda_parar = True if self.parent.borda_parar else False
 
-    def step(self) -> State:
+
+    def step(self) -> "State":
         self.parent.bloquear_unidade()
-        self.parent.oco.controlar_limites_operacao()
-        flag = self.parent.oco.verificar_condicionadores()
+        self.parent.controlar_limites_operacao()
+        flag = self.parent.verificar_condicionadores()
 
         if flag == CONDIC_INDISPONIBILIZAR:
             logger.warning(f"[UG{self.parent.id}] UG detectou condicionadores com gravidade alta, indisponibilizando UG.")
@@ -101,6 +109,7 @@ class StateDisponivel(State):
         super().__init__(parent)
 
         self.parent.codigo_state = UG_SM_DISPONIVEL
+
         logger.debug("")
         logger.info(f"[UG{self.parent.id}] Entrando no estado:                 \"Disponível\"")
         self.parent.tentativas_de_normalizacao = 0
@@ -109,9 +118,10 @@ class StateDisponivel(State):
 
         self.parent.borda_parar = False
 
-    def step(self) -> State:
-        self.parent.oco.controlar_limites_operacao()
-        flag = self.parent.oco.verificar_condicionadores()
+
+    def step(self) -> "State":
+        self.parent.controlar_limites_operacao()
+        flag = self.parent.verificar_condicionadores()
 
         if flag == CONDIC_INDISPONIBILIZAR:
             logger.warning(f"[UG{self.parent.id}] Indisponibilizando UG.")

@@ -1,31 +1,36 @@
-from src.funcoes.leitura import *
-from src.funcoes.leitura import LeituraModbus
-from src.unidade_geracao import UnidadeDeGeracao
+import src.unidade_geracao as ug
+import src.funcoes.leitura as lei
+
+from src.dicionarios.const import *
+
 
 class CondicionadorBase:
-    def __init__(self, leitura: "LeituraModbus", gravidade: "int"=2, etapas: "list"=[], ug: "UnidadeDeGeracao"=None, descr: "str"=None):
+    def __init__(self, leitura: "lei.LeituraModbus", gravidade: "int"=CONDIC_NORMALIZAR, etapas: "list"=[], ug: "ug.UnidadeDeGeracao"=None, teste: "bool"=False):
 
         self.__leitura = leitura
         self.__gravidade = gravidade
-        self.__descr = leitura.descr
+        self.__descricao = leitura.descricao
 
         self.__ug = ug
         self.__etapas = etapas
 
+        self.__teste = teste
+
+
     def __str__(self) -> "str":
-        return f"Condicionador: {self.descr}, Gravidade: {self.gravidade}"
+        return f"Condicionador: {self.descricao}, Gravidade: {CONDIC_STR_DCT[self.gravidade]}"
 
     @property
     def leitura(self) -> "float":
         return self.__leitura.valor
 
     @property
-    def gravidade(self) -> 'int':
+    def gravidade(self) -> "int":
         return self.__gravidade
 
     @property
-    def descr(self) -> "str":
-        return self.__descr
+    def descricao(self) -> "str":
+        return self.__descricao
 
     @property
     def valor(self) -> "float":
@@ -41,17 +46,21 @@ class CondicionadorBase:
         else:
             return False if self.leitura == 0 else True
 
+    @property
+    def teste(self) -> "bool":
+        # PROPRIEDADE -> Retorna se o Condicionador está com a Flag de Teste
+
+        return self.__teste
+
 
 class CondicionadorExponencial(CondicionadorBase):
-    def __init__(self, leitura: "LeituraModbus", gravidade: "int"=2, valor_base: "float"=100, valor_limite: "float"=200, ordem: "float"=(1/4), etapas: "list"=[], ug: "UnidadeDeGeracao"=None, descr: "str"=None):
-        super().__init__(leitura, gravidade, etapas, ug,descr)
+    def __init__(self, leitura: "lei.LeituraModbus", gravidade: "int"=CONDIC_NORMALIZAR, valor_base: "float"=100, valor_limite: "float"=200, ordem: "float"=(1/4), teste: "bool"=False):
+        super().__init__(leitura, gravidade, teste)
 
         self.__ordem = ordem
         self.__valor_base = valor_base
         self.__valor_limite = valor_limite
-
-        self.__ug = ug
-        self.__etapas = etapas
+        self.__descricao = leitura.descricao
 
     @property
     def valor_base(self) -> "float":
@@ -79,13 +88,7 @@ class CondicionadorExponencial(CondicionadorBase):
 
     @property
     def ativo(self) -> "bool":
-        if self.__ug and self.__etapas:
-            if self.__ug.etapa_atual in self.__etapas:
-                return True if self.valor >= 1 else False
-            else:
-                return False
-        else:
-            return True if self.valor >= 1 else False
+        return True if self.valor >= 1 else False
 
     @property
     def valor(self) -> "float":
@@ -93,15 +96,16 @@ class CondicionadorExponencial(CondicionadorBase):
             aux = (1 - (((self.valor_limite - self.leitura) / (self.valor_limite - self.valor_base)) ** (self.__ordem)).real)
             return max(min(aux, 1), 0)
         else:
-            return 1 if self.leitura > self.valor_limite else 0
+            return 1 if self.leitura >= self.valor_limite else 0
 
 
 class CondicionadorPotenciaReativa(CondicionadorBase):
-    def __init__(self, leitura: "LeituraModbus", valor_base: "float"=1, valor_limite: "float"=1.05, descr: "str"=None):
-        super().__init__(leitura, descr)
+    def __init__(self, leitura: "lei.LeituraModbus", valor_base: "float"=1, valor_limite: "float"=1.05, teste: "bool"=False):
+        super().__init__(leitura, teste)
 
         self.__valor_base = valor_base
         self.__valor_limite = valor_limite
+        self.__descricao = leitura.descricao
 
     @property
     def valor_base(self) -> "float":

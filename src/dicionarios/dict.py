@@ -32,35 +32,41 @@ IP: "dict[str, any]" = {
     "TDA_ip": "192.168.10.105",
     "TDA_porta": 502
 
-    # "UG1_ip": "0.0.0.0",
+    # "UG1_ip": "192.168.0.2",
     # "UG1_porta": 502,
-# 
-    # "RELE_UG1_ip": "0.0.0.0",
+
+    # "RELE_UG1_ip": "192.168.0.2",
     # "RELE_UG1_porta": 502,
-# 
-    # "RV_UG1_ip": "0.0.0.0",
+
+    # "RV_UG1_ip": "192.168.0.2",
     # "RV_UG1_porta": 502,
-# 
-    # "UG2_ip": "0.0.0.0",
+
+    # "RT_UG1_ip": "192.168.0.2",
+    # "RT_UG1_porta": 502,
+
+    # "UG2_ip": "192.168.0.2",
     # "UG2_porta": 502,
-# 
-    # "RELE_UG2_ip": "0.0.0.0",
+
+    # "RELE_UG2_ip": "192.168.0.2",
     # "RELE_UG2_porta": 502,
-# 
-    # "RV_UG2_ip": "0.0.0.0",
+
+    # "RV_UG2_ip": "192.168.0.2",
     # "RV_UG2_porta": 502,
-# 
-    # "SA_ip": "0.0.0.0",
+
+    # "RT_UG2_ip": "192.168.0.2",
+    # "RT_UG2_porta": 502,
+
+    # "SA_ip": "192.168.0.2",
     # "SA_porta": 502,
-# 
-    # "RELE_SE_ip": "0.0.0.0",
+
+    # "RELE_SE_ip": "192.168.0.2",
     # "RELE_SE_porta": 502,
-# 
-    # "TDA_ip": "0.0.0.0",
-    # "TDA_porta": 502
-# 
-    # "MOA_ip": "172.21.15.95",
-    # "MOA_porta": 502
+
+    # "TDA_ip": "192.168.0.2",
+    # "TDA_porta": 502,
+
+    # "MOA_ip": "0.0.0.0",
+    # "MOA_porta": 502,
 }
 
 WATCHDOG = {
@@ -77,14 +83,14 @@ voip: "dict[str, list[bool | str]]" = {
     "WATCHDOG": [False, "Atenção! Houve um erro com a verificação do Watchdog na PCH Pampeana! Falha na verificação por Banco de Dados e CLP do MOA, favor verificar."],
 
     # SA
-    "SA_ED_PSA_DISJ_GMG_TRIP": [False, 0, "Atenção! Foi identificado um sinal de TRIP do Disjuntor do Grupo Motor Gerador na CGH Pampeana, favor verificar."],
+    "DJ_GMG_TRIP": [False, 0, "Atenção! Foi identificado um sinal de TRIP do Disjuntor do Grupo Motor Gerador na CGH Pampeana, favor verificar."],
 
     "SA_ED_PSA_DPS_GMG": [False, 0, "Atenção! Houve uma falha com o Grupo Motor Gerador na CGH Pampeana, favor verificar."],
     "SA_ED_PSA_CONVERSOR_FIBRA_FALHA": [False, 0, "Atenção! Houve uma falha com o Conversor de Fibra na CGH Pampeana, favor verificar."],
     "SA_ED_PSA_CARREGADOR_BATERIAS_FALHA": [False, 0, "Atenção! Houve uma falha com o Carregador de Baterias na CGH Pampeana, favor verificar."],
     "SA_ED_PSA_GMG_DISJ_FALHA_FECHAR": [False, 0, "Atenção! Houve uma falha com o Disjuntor do Grupo Motor Gerador na CGH Pampeana, favor verificar."],
 
-    "SA_EA_PSA_NIVEL_MONTANTE_MUITO_BAIXO": [False, 0, "Atenção! Foi identificado que o Nível Montante está muito baixo na CGH Pampeana, favor verificar."],
+    "NV_MONTANTE_GRADE_MUITO_BAIXO": [False, 0, "Atenção! Foi identificado que o Nível Montante está muito baixo na CGH Pampeana, favor verificar."],
 
     "SA_EA_PSA_SFA_PRESSAO_LADO_SUJO_ALTO": [False, 0, "Atenção! Foi identificado que a pressão do lado sujo do Sistema de Filtragem A está alto na CGH Pampeana, favor verificar."],
     "SA_EA_PSA_SFA_PRESSAO_LADO_LIMPO_ALTO": [False, 0, "Atenção! Foi identificado que a pressão do lado limpo do Sistema de Filtragem A está alto na CGH Pampeana, favor verificar."],

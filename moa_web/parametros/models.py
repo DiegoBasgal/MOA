@@ -6,13 +6,13 @@ class ParametrosUsina(models.Model):
 
     timestamp = models.DateTimeField(default=0)
 
+
     # Params Usina
     modo_autonomo = models.IntegerField(default=1)
     emergencia_acionada = models.IntegerField(default=0)
     aguardando_reservatorio = models.IntegerField(default=0)
     modo_de_escolha_das_ugs = models.IntegerField(default=2)
 
-    djl_manual = models.BooleanField(default=False)
 
     # Servidores
     clp_online = models.IntegerField(default=1)
@@ -59,6 +59,7 @@ class ParametrosUsina(models.Model):
     nv_religamento = models.DecimalField(max_digits=10, decimal_places=3, default=820.85)
     nv_pos_grade = models.DecimalField(max_digits=10, decimal_places=3, default=820.80)
 
+
     # PID IE
     kp = models.DecimalField(max_digits=15, decimal_places=3, default=2)
     ki = models.DecimalField(max_digits=15, decimal_places=3, default=0.1)
@@ -66,11 +67,13 @@ class ParametrosUsina(models.Model):
     kie = models.DecimalField(max_digits=15, decimal_places=3, default=0.1)
     valor_ie_inicial = models.DecimalField(max_digits=10, decimal_places=1, default=0.5)
 
+
     # Potência
     pot_minima = models.DecimalField(max_digits=10, decimal_places=2, default=200)
     pot_nominal = models.DecimalField(max_digits=10, decimal_places=2, default=1000)
     pot_nominal_ug = models.DecimalField(max_digits=10, decimal_places=2, default=500)
     margem_pot_critica = models.DecimalField(max_digits=10, decimal_places=5, default=0.0)
+
 
     # UG1
     ug1_pot = models.DecimalField(max_digits=10, decimal_places=0, default=0)
@@ -98,6 +101,7 @@ class ParametrosUsina(models.Model):
     limite_temperatura_mancal_casq_comb_ug1 = models.DecimalField(max_digits=10, decimal_places=2, default=200)
     limite_temperatura_mancal_escora_comb_ug1 = models.DecimalField(max_digits=10, decimal_places=2, default=200)
 
+
     # UG2
     ug2_pot = models.DecimalField(max_digits=10, decimal_places=0, default=0)
     ug2_setpot = models.DecimalField(max_digits=10, decimal_places=0, default=0)
@@ -124,6 +128,8 @@ class ParametrosUsina(models.Model):
     limite_temperatura_mancal_casq_comb_ug2 = models.DecimalField(max_digits=10, decimal_places=2, default=200)
     limite_temperatura_mancal_escora_comb_ug2 = models.DecimalField(max_digits=10, decimal_places=2, default=200)
 
+
+
 class Comando(models.Model):
 
     id = models.IntegerField(primary_key=True)
@@ -133,6 +139,8 @@ class Comando(models.Model):
 
     executavel_em_manual = models.BooleanField(default=False)
     executavel_em_automatico = models.BooleanField(default=True)
+
+
 
 class ControleEstados(models.Model):
 
