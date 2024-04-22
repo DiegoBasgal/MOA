@@ -9,10 +9,10 @@ class WhatsApp:
     def enviar_mensagem(num_destino, mensagem):
         #--> Envia uma mensagem para um numero especifico, ou ID do grupo destino
 
-        url = "https://v5.chatpro.com.br/chatpro-2322c67a69/api/v1/send_message"
+        url = "https://v5.chatpro.com.br/chatpro-gxqw5lb79a/api/v1/send_message"
         headers = {"accept": "application/json",
              "content-type": "application/json",
-            "Authorization": "e17cb339f10d3f9384027755ffa1c31e"}
+            "Authorization": "fa9bb64686eb4e6a7928a13e2e95324c"}
 
         payload = {"number": f"{num_destino}",
                   "message": f"{mensagem}"}
@@ -26,9 +26,9 @@ class WhatsApp:
     def chats_ativos():
         #--> Retorna uma lista com todos os chats ativos no whatsapp da Instancia
 
-        url = "https://v5.chatpro.com.br/chatpro-2322c67a69/api/v1/chats"
+        url = "https://v5.chatpro.com.br/chatpro-gxqw5lb79a/api/v1/chats"
         headers = {"accept": "application/json",
-            "Authorization": "e17cb339f10d3f9384027755ffa1c31e"}
+            "Authorization": "fa9bb64686eb4e6a7928a13e2e95324c"}
 
         response = requests.get(url, headers=headers)
         return response.text
@@ -60,10 +60,10 @@ class WhatsApp:
     def envio_grupo(mensagem):
         #--> Envia uma mensagem para o grupo de LOGS
 
-        url = "https://v5.chatpro.com.br/chatpro-2322c67a69/api/v1/send_message"
+        url = "https://v5.chatpro.com.br/chatpro-gxqw5lb79a/api/v1/send_message"
         headers = {"accept": "application/json",
              "content-type": "application/json",
-            "Authorization": "e17cb339f10d3f9384027755ffa1c31e"}
+            "Authorization": "fa9bb64686eb4e6a7928a13e2e95324c"}
 
         payload = {"number": "120363164390903005@g.us",
                   "message": f"{mensagem}"}

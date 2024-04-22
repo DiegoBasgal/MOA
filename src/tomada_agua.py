@@ -6,6 +6,7 @@ __description__ = "Este módulo corresponde a implementação da operação da T
 import pytz
 import logging
 import traceback
+import numpy as np
 
 import src.dicionarios.dict as d
 import src.funcoes.leitura as lei
@@ -40,6 +41,8 @@ class TomadaAgua:
         descricao="[TDA] Nível Jusante Grade"
     )
 
+    ema_anterior: "int" = -1
+
     erro_nv: "float" = 0
     erro_nv_anterior: "float" = 0
     nv_montante_recente: "float" = 0
@@ -55,11 +58,34 @@ class TomadaAgua:
 
     @classmethod
     def atualizar_valores_montante(cls) -> "None":
-        l_nivel = cls.nv_montante.valor
+        try:
+            l_nivel = cls.nv_montante.valor
+        except Exception:
+            return
 
-        cls.nv_montante_recente = l_nivel if 820 < l_nivel < 825 else cls.nv_montante_recente
+        if cls.ema_anterior == -1 and l_nivel != None:
+            cls.ema_anterior = 0
+            cls.nv_montante_recente = l_nivel
+        else:
+            ema = cls.calcular_ema_montante(cls.nv_montante_recente, l_nivel)
+            cls.nv_montante_recente = ema
+
         cls.erro_nv_anterior = cls.erro_nv
         cls.erro_nv = cls.nv_montante_recente - cls.cfg["nv_alvo"]
+
+
+    @classmethod
+    def calcular_ema_montante(cls, ema_anterior, nv_montante, periodo=10, smoothing=2, casas_decimais=3) -> "float":
+        """
+        Função com filtro EMA de leitura de nível montante, para evitar variações muito
+        agressivas de controle de potência.
+        """
+
+        constante = smoothing / (1 + periodo)
+        ema = nv_montante * constante + ema_anterior * (1 - constante)
+        ema = np.round(ema, casas_decimais)
+
+        return ema
 
 
     @classmethod

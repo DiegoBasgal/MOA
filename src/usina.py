@@ -210,18 +210,22 @@ class Usina:
         senão, sinaliza que está tudo correto para a máquina de estados do MOA.
         """
 
-        if not self.se.verificar_tensao():
-            logger.debug("")
-            logger.debug(f"[SE]  Tensão Subestação:            RS -> \"{self.se.leituras_tensao[0]/1000 * 173.21 * 115:2.1f} V\" | ST -> \"{self.se.leituras_tensao[1]/1000 * 173.21 * 115:2.1f} V\" | TR -> \"{self.se.leituras_tensao[2]/1000 * 173.21 * 115:2.1f} V\"")
-            logger.debug("")
+        try:
+            if not self.se.verificar_tensao():
+                logger.debug("")
+                logger.debug(f"[SE]  Tensão Subestação:            RS -> \"{self.se.leituras_tensao[0]/1000 * 173.21 * 115:2.1f} V\" | ST -> \"{self.se.leituras_tensao[1]/1000 * 173.21 * 115:2.1f} V\" | TR -> \"{self.se.leituras_tensao[2]/1000 * 173.21 * 115:2.1f} V\"")
+                logger.debug("")
+                return DJS_FALTA_TENSAO
+
+            elif not self.se.fechar_dj_linha():
+                self.normalizar_forcado = True
+                return DJS_FALHA
+
+            else:
+                return DJS_OK
+
+        except Exception:
             return DJS_FALTA_TENSAO
-
-        elif not self.se.fechar_dj_linha():
-            self.normalizar_forcado = True
-            return DJS_FALHA
-
-        else:
-            return DJS_OK
 
 
     def verificar_condicionadores(self) -> "int":
@@ -358,7 +362,8 @@ class Usina:
 
     def controlar_potencia(self) -> "None":
         logger.debug(f"[USN] NÍVEL -> Alvo:                      {self.cfg['nv_alvo']:0.3f}")
-        logger.debug(f"[USN]          Leitura:                   {self.tda.nv_montante_recente:0.3f}")
+        logger.debug(f"[USN]          Leitura:                   {self.tda.nv_montante.valor:0.3f}")
+        logger.debug(f"[USN]          Filtro EMA:                {self.tda.nv_montante_recente:0.3f}")
 
         self.controle_p = self.cfg["kp"] * self.tda.erro_nv
 

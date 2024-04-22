@@ -54,7 +54,7 @@ if __name__ == "__main__":
         n_tentativa += 1
         logger.debug(f"Tentativa:                                {n_tentativa}/3")
 
-        if n_tentativa >= 3:
+        if n_tentativa == 3:
             prox_estado = moa_sm.FalhaCritica
             sys.exit(1)
 
@@ -109,6 +109,7 @@ if __name__ == "__main__":
 
     while True:
         try:
+            t_i = time()
             logger.debug("")
             logger.debug("")
             logger.debug(f"Executando estado:                        \"{sm.state.__class__.__name__}\"")
@@ -120,7 +121,7 @@ if __name__ == "__main__":
                 t_i = time()
 
             elif usn.estado_moa == MOA_SM_MODO_MANUAL:
-                sleep(30)
+                sleep(15)
 
             else:
                 t_restante = 1

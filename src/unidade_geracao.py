@@ -989,8 +989,8 @@ class UnidadeDeGeracao:
         if self.l_rt_alar_1_sobretensao.valor:
             logger.warning(f"[UG{self.id}] Alarme de Sobretensão do RT identificado. Favor verificar.")
 
-        if self.l_rt_alar_1_subtensao.valor:
-            logger.warning(f"[UG{self.id}] Alarme de Subtensão do RT identificado. Favor verificar.")
+        # if self.l_rt_alar_1_subtensao.valor:
+        #     logger.warning(f"[UG{self.id}] Alarme de Subtensão do RT identificado. Favor verificar.")
 
         if self.l_rt_alar_1_sobrefrequencia.valor:
             logger.warning(f"[UG{self.id}] Alarme de Sobrefrequência do RT identificado. Favor verificar.")
@@ -1524,7 +1524,7 @@ class UnidadeDeGeracao:
         self.condicionadores.append(c.CondicionadorBase(self.l_rv_falha_1_perda_med_velo_princ, CONDIC_INDISPONIBILIZAR, [UG_SINCRONIZANDO, UG_SINCRONIZADA], self))
 
         # RT
-        self.l_rt_crowbar_inativo = lei.LeituraModbusBit(self.rt[f"UG{self.id}"], REG_RTV[f"UG{self.id}"]["RT_ED_CROWBAR_INATIVO"], descricao=f"[UG{self.id}] RT Crowbar Inativo")
+        self.l_rt_crowbar_inativo = lei.LeituraModbusBit(self.rt[f"UG{self.id}"], REG_RTV[f"UG{self.id}"]["RT_CROWBAR_INATIVO"], descricao=f"[UG{self.id}] RT Crowbar Inativo")
         self.condicionadores.append(c.CondicionadorBase(self.l_rt_crowbar_inativo, CONDIC_INDISPONIBILIZAR))
 
         self.l_rt_alar_1_sobretensao = lei.LeituraModbusBit(self.rt[f"UG{self.id}"], REG_RTV[f"UG{self.id}"]["RT_ALARME_SOBRETENSAO"], descricao=f"[UG{self.id}] RT Alarmes 1 Sobretensão")
@@ -1816,11 +1816,11 @@ class UnidadeDeGeracao:
         self.l_falha_leit_temp_mancal_comb_esc = lei.LeituraModbusBit(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}"]["MANCAL_COMBINADO_CASQUILHO_1_TEMPERATURA_FALHA_LEITURA"], descricao=f"[UG{self.id}] Mancal Combinado Escora Temperatura Falha Leitura")
 
         ## WHATSAPP
-        self.l_rv_pot_nula = lei.LeituraModbusBit(self.rv[f"UG{self.id}"], REG_RTV[f"UG{self.id}"]["RV_SD_RELE_POTENCIA_NULA"], descricao=f"[UG{self.id}] RV Potência Nula")
+        self.l_rv_pot_nula = lei.LeituraModbusBit(self.rv[f"UG{self.id}"], REG_RTV[f"UG{self.id}"]["RV_RELE_POTENCIA_NULA"], descricao=f"[UG{self.id}] RV Potência Nula")
         self.l_uhrv_bomba_defeito = lei.LeituraModbusBit(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}"]["PRTVA_UHRV_BOMBA_DEFEITO"], descricao=f"[UG{self.id}] UHRV Bomba Defeito")
         self.l_uhlm_bomba_defeito = lei.LeituraModbusBit(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}"]["PRTVA_UHLM_BOMBA_DEFEITO"], descricao=f"[UG{self.id}] UHLM Bomba Defeito")
         self.l_dispo_prot_surto = lei.LeituraModbusBit(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}"]["PRTVA_DISPOSITIVO_PROTECAO_DE_SURTO"], descricao=f"[UG{self.id}] Dispositivo Proteção Surto")
-        self.l_rt_selec_modo_controle_isol = lei.LeituraModbusBit(self.rv[f"UG{self.id}"], REG_RTV[f"UG{self.id}"]["RV_ED_SELECIONA_MODO_CONTROLE_ISOLADO"], descricao=f"[UG{self.id}] RT Selecionado Modo Controle Isolado")
+        self.l_rt_selec_modo_controle_isol = lei.LeituraModbusBit(self.rv[f"UG{self.id}"], REG_RTV[f"UG{self.id}"]["RV_SELECIONA_MODO_CONTROLE_ISOLADO"], descricao=f"[UG{self.id}] RT Selecionado Modo Controle Isolado")
         self.l_resis_aquec_gerad_defeito = lei.LeituraModbusBit(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}"]["UG_RESISTENCIA_AQUEC_GERADOR_DEFEITO"], descricao=f"[UG{self.id}] Resistência Aquecimento Gerador Defeito")
 
         self.l_crowbar_temp_alta = lei.LeituraModbusBit(self.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}"]["CROWBAR_TEMPERATURA_ALTA"], descricao=f"[UG{self.id}] Temperatura Alta")
