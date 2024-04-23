@@ -125,12 +125,12 @@ class Usina:
 
 
     ### MÉTODOS DE CONTROLE DE RESET E NORMALIZAÇÃO
-
     def resetar_emergencia(self) -> "None":
         """
         Função para reset geral da Usina. Envia o comando de reset para todos os
         CLPs.
         """
+
         logger.debug("")
         logger.info(f"[USN]  Enviando comando:                   \"RESET EMERGÊNCIA GERAL\"")
         logger.debug("")
@@ -496,7 +496,7 @@ class Usina:
                 ganho = 1 - self.atenuacao
                 self.atenuacao = 0
                 aux = setpoint
-                setpoint_atenuado = setpoint - 0.12 * (setpoint - (setpoint * ganho)) # 0.15 -> cenário de valor limite 0.47
+                setpoint_atenuado = setpoint - 0.15 * (setpoint - (setpoint * ganho)) # 0.15 -> cenário de valor limite 0.47
 
                 logger.debug(f"[USN]                                     SP {aux:0.1f} * GANHO {ganho:0.4f} = {setpoint_atenuado:0.3f} kW")
 
