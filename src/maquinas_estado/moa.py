@@ -7,6 +7,9 @@ import pytz
 import logging
 import traceback
 
+import src.subestacao as se
+import src.tomada_agua as tda
+
 from time import sleep, time
 from datetime import datetime
 
@@ -14,8 +17,10 @@ from src.dicionarios.const import *
 
 from src.usina import Usina
 
+
 logger = logging.getLogger("logger")
 debug_log = logging.getLogger("debug")
+
 
 class StateMachine:
     def __init__(self, initial_state) -> "None":
@@ -163,10 +168,10 @@ class ControleEstados(State):
 
             logger.debug("Verificando status da Subestação...")
             logger.debug("")
-            flag_se = self.usn.verificar_se()
+            flag_se = se.Subestacao.verificar_se()
 
             if flag_se == DJS_FALTA_TENSAO:
-                return Emergencia(self.usn) if self.usn.se.aguardar_tensao() == TENSAO_FORA else ControleDados(self.usn)
+                return Emergencia(self.usn) if se.Subestacao.aguardar_tensao() == TENSAO_FORA else ControleDados(self.usn)
 
             elif flag_se != DJS_OK:
                 self.usn.normalizar_usina()
@@ -261,7 +266,7 @@ class ModoManual(State):
 
         self.usn.estado_moa = MOA_SM_MODO_MANUAL
         self.usn.modo_autonomo = False
-        self.usn.se.status_tensao = TENSAO_REESTABELECIDA
+        se.Subestacao.status_tensao = TENSAO_REESTABELECIDA
 
         # FINALIZAÇÃO DO __INIT__
 
@@ -286,9 +291,9 @@ class ModoManual(State):
 
         self.usn.ler_valores()
 
-        logger.debug(f"[TDA] Leitura de Nível:                   {self.usn.tda.nv_montante.valor:0.3f}")
-        logger.debug(f"[TDA] Leitura de Nível Jusante:           {self.usn.tda.nv_jusante.valor:0.3f}")
-        logger.debug(f"[SE]  Potência no medidor:                {self.usn.se.potencia_ativa.valor:0.3f}")
+        logger.debug(f"[TDA] Leitura de Nível:                   {tda.TomadaAgua.nv_montante.valor:0.3f}")
+        logger.debug(f"[TDA] Leitura de Nível Jusante:           {tda.TomadaAgua.nv_jusante.valor:0.3f}")
+        logger.debug(f"[SE]  Potência no medidor:                {se.Subestacao.potencia_ativa.valor:0.3f}")
         logger.debug("")
 
         for ug in self.usn.ugs:
@@ -299,7 +304,7 @@ class ModoManual(State):
             ug.setpoint = ug.potencia
 
         self.usn.controle_ie = (self.usn.ug1.potencia + self.usn.ug2.potencia) / self.usn.cfg["pot_maxima_usina"]
-        self.usn.controle_i = max(min(self.usn.controle_ie - (self.usn.controle_i * self.usn.cfg["ki"]) - self.usn.cfg["kp"] * self.usn.tda.erro_nv - self.usn.cfg["kd"] * (self.usn.tda.erro_nv - self.usn.tda.erro_nv_anterior), 0.9), 0)
+        self.usn.controle_i = max(min(self.usn.controle_ie - (self.usn.controle_i * self.usn.cfg["ki"]) - self.usn.cfg["kp"] * tda.TomadaAgua.erro_nv - self.usn.cfg["kd"] * (tda.TomadaAgua.erro_nv - tda.TomadaAgua.erro_nv_anterior), 0.9), 0)
 
         self.usn.escrever_valores()
 

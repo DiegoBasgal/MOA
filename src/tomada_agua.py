@@ -58,9 +58,10 @@ class TomadaAgua:
 
     @classmethod
     def atualizar_valores_montante(cls) -> "None":
-        try:
-            l_nivel = cls.nv_montante.valor
-        except Exception:
+        l_nivel = cls.nv_montante.valor
+
+        if (l_nivel in (None, 0, 0.0) or l_nivel <= 800):
+            logger.debug(f"[TDA] Erro de Leitura de Nível ao Atualizar os valores de controle.")
             return
 
         if cls.ema_anterior == -1 and l_nivel != None:
@@ -175,7 +176,8 @@ class TomadaAgua:
         """
 
         cls.l_diferencial_grade = lei.LeituraSubtracao([cls.nv_montante, cls.nv_jusante], descricao="[TDA] Diferencial de Grade")
-        cls.c_diferencial_grade = c.CondicionadorExponencial(cls.l_diferencial_grade, CONDIC_INDISPONIBILIZAR, valor_base=0.3, valor_limite=0.4, ordem=4)
+        cls.c_diferencial_grade = c.CondicionadorExponencial(cls.l_diferencial_grade, CONDIC_NORMALIZAR, valor_base=0.3, valor_limite=0.4, ordem=4)
+        cls.condicionadores_essenciais.append(cls.c_diferencial_grade)
         cls.condicionadores_atenuadores.append(cls.c_diferencial_grade)
 
         cls.l_nv_montante_baixo = lei.LeituraModbusBit(serv.Servidores.clp["TDA"], REG_TDA["NIVEL_MONTANTE_GRADE_BAIXO"], descricao="[TDA] Nível Montante Baixo")

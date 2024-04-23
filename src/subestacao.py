@@ -67,6 +67,8 @@ class Subestacao:
                 logger.info(f"[SE]  O Disjuntor de Linha está aberto!")
                 logger.info(f"[SE]  Enviando comando:                   \"FECHAR DISJUNTOR LINHA\"")
                 logger.debug("")
+                sa.ServicoAuxiliar.resetar_emergencia()
+                sleep(1)
                 res = esc.EscritaModBusBit.escrever_bit(serv.Servidores.clp["SA"], REG_SASE["CMD_DISJ_LINHA_FECHA"], valor=1)
                 return res
 
@@ -74,6 +76,36 @@ class Subestacao:
             logger.error("[SE]  Houver um erro ao fechar o Disjuntor de Linha.")
             logger.debug(traceback.format_exc())
             return False
+
+
+    @classmethod
+    def verificar_se(cls) -> "int":
+        """
+        Função para verificação do Bay e Subestação.
+
+        Apresenta a leitura de tensão VAB, VBC, VCA do Bay e Subestação.
+        Caso haja uma falta de tensão na linha da subestação, aciona o temporizador
+        para retomada em caso de queda de tensão. Caso a tensão esteja normal, tenta
+        realizar o fechamento dos disjuntores do Bay e depois da Subestação. Caso
+        haja um erro com o fechamento dos disjuntores, aciona a normalização da usina
+        senão, sinaliza que está tudo correto para a máquina de estados do MOA.
+        """
+
+        try:
+            if not cls.verificar_tensao() and not sa.ServicoAuxiliar.status_dj_tsa.valor:
+                logger.debug("")
+                logger.debug(f"[SE]  Tensão Subestação:            RS -> \"{cls.leituras_tensao[0]/1000 * 173.21 * 115:2.1f} V\" | ST -> \"{cls.leituras_tensao[1]/1000 * 173.21 * 115:2.1f} V\" | TR -> \"{cls.leituras_tensao[2]/1000 * 173.21 * 115:2.1f} V\"")
+                logger.debug("")
+                return DJS_FALTA_TENSAO
+
+            elif not cls.fechar_dj_linha():
+                return DJS_FALHA
+
+            else:
+                return DJS_OK
+
+        except Exception:
+            return DJS_FALTA_TENSAO
 
 
     @classmethod

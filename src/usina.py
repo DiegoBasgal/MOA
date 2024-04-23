@@ -38,30 +38,19 @@ class Usina:
             raise ValueError("[USN] Não foi possível carregar os arquivos de configuração (\"cfg.json\").")
         else:
             self.cfg = cfg
+            tda.TomadaAgua.cfg = self.cfg
 
         # INCIALIZAÇÃO DE OBJETOS DA USINA
-        self.clp = srv.Servidores.clp
-
-        self.se = se.Subestacao
-        self.tda = tda.TomadaAgua
-        self.sa = sa.ServicoAuxiliar
-
         self.bd = bd.BancoDados("MOA-PPN")
+        se.Subestacao.bd = self.bd
+        tda.TomadaAgua.bd = self.bd
+        sa.ServicoAuxiliar.bd = self.bd
+
         self.agn = agn.Agendamentos(self.cfg, self.bd, self)
 
         self.ug1 = u.UnidadeDeGeracao(1, self.cfg, self.bd)
         self.ug2 = u.UnidadeDeGeracao(2, self.cfg, self.bd)
         self.ugs: "list[u.UnidadeDeGeracao]" = [self.ug1, self.ug2]
-
-        self.se.bd = self.bd
-        self.sa.bd = self.bd
-        self.tda.bd = self.bd
-        self.tda.cfg = self.cfg
-
-        self.se.bd = self.bd
-        self.sa.bd = self.bd
-        self.tda.bd = self.bd
-        self.tda.cfg = self.cfg
 
         # ATRIBUIÇÃO DE VARIÁVEIS PRIVADAS
         self.__pid_inicial: "int" = -1
@@ -110,7 +99,6 @@ class Usina:
 
 
     ### PROPRIEDADES DA OPERAÇÃO
-
     @property
     def modo_autonomo(self) -> "bool":
         return self._modo_autonomo
@@ -151,8 +139,8 @@ class Usina:
         logger.debug("")
         logger.info(f"[USN]  Enviando comando:                   \"RESET EMERGÊNCIA GERAL\"")
         logger.debug("")
-        logger.debug("[USN] Tomada da Água resetada.") if self.tda.resetar_emergencia() else logger.info("[USN] Reset de emergência da Tomada da Água \"FALHOU\"!.")
-        logger.debug("[USN] Serviço Auxiliar e Subestação resetados.") if self.sa.resetar_emergencia() else logger.info("[USN] Reset de emergência do serviço auxiliar e subestação \"FALHOU\"!.")
+        logger.debug("[USN] Tomada da Água resetada.") if tda.TomadaAgua.resetar_emergencia() else logger.info("[USN] Reset de emergência da Tomada da Água \"FALHOU\"!.")
+        logger.debug("[USN] Serviço Auxiliar e Subestação resetados.") if sa.ServicoAuxiliar.resetar_emergencia() else logger.info("[USN] Reset de emergência do serviço auxiliar e subestação \"FALHOU\"!.")
         logger.debug("")
 
 
@@ -161,8 +149,8 @@ class Usina:
 
         try:
             self.clp_emergencia = True
-            # for ug in self.ugs:
-            #     esc.EscritaModBusBit.escrever_bit(self.clp[f"UG{ug.id}"], REG_UG[f"UG{ug.id}"]["CMD_PARADA_EMERG"], valor=1)
+            for ug in self.ugs:
+                esc.EscritaModBusBit.escrever_bit(srv.Servidores.clp[f"UG{ug.id}"], REG_UG[f"UG{ug.id}"]["CMD_COMANDO_PARADA_DE_EMERGENCIA"], valor=1)
 
         except Exception:
             logger.error(f"[USN] Houve um erro ao acionar a Emergência.")
@@ -188,7 +176,7 @@ class Usina:
             self.normalizar_forcado = self.clp_emergencia = self.bd_emergencia = False
             self.resetar_emergencia()
             sleep(1)
-            self.se.fechar_dj_linha()
+            se.Subestacao.fechar_dj_linha()
             self.bd.update_remove_emergencia()
             return True
 
@@ -198,42 +186,12 @@ class Usina:
             return False
 
 
-    def verificar_se(self) -> "int":
-        """
-        Função para verificação do Bay e Subestação.
-
-        Apresenta a leitura de tensão VAB, VBC, VCA do Bay e Subestação.
-        Caso haja uma falta de tensão na linha da subestação, aciona o temporizador
-        para retomada em caso de queda de tensão. Caso a tensão esteja normal, tenta
-        realizar o fechamento dos disjuntores do Bay e depois da Subestação. Caso
-        haja um erro com o fechamento dos disjuntores, aciona a normalização da usina
-        senão, sinaliza que está tudo correto para a máquina de estados do MOA.
-        """
-
-        try:
-            if not self.se.verificar_tensao():
-                logger.debug("")
-                logger.debug(f"[SE]  Tensão Subestação:            RS -> \"{self.se.leituras_tensao[0]/1000 * 173.21 * 115:2.1f} V\" | ST -> \"{self.se.leituras_tensao[1]/1000 * 173.21 * 115:2.1f} V\" | TR -> \"{self.se.leituras_tensao[2]/1000 * 173.21 * 115:2.1f} V\"")
-                logger.debug("")
-                return DJS_FALTA_TENSAO
-
-            elif not self.se.fechar_dj_linha():
-                self.normalizar_forcado = True
-                return DJS_FALHA
-
-            else:
-                return DJS_OK
-
-        except Exception:
-            return DJS_FALTA_TENSAO
-
-
     def verificar_condicionadores(self) -> "int":
         flag = CONDIC_IGNORAR
 
-        lst_sa = self.sa.verificar_condicionadores()
-        lst_se = self.se.verificar_condicionadores()
-        lst_tda = self.tda.verificar_condicionadores()
+        lst_se = se.Subestacao.verificar_condicionadores()
+        lst_tda = tda.TomadaAgua.verificar_condicionadores()
+        lst_sa = sa.ServicoAuxiliar.verificar_condicionadores()
 
         condics = [condic for condics in [lst_sa, lst_se, lst_tda] for condic in condics]
 
@@ -253,8 +211,8 @@ class Usina:
             logger.debug("[USN] Iniciando o timer de leitura periódica...")
 
             while True:
-                self.sa.verificar_leituras()
-                self.tda.verificar_leituras()
+                tda.TomadaAgua.verificar_leituras()
+                sa.ServicoAuxiliar.verificar_leituras()
                 for ug in self.ugs: ug.verificar_leituras()
 
                 if True in (d.voip[r][0] for r in d.voip):
@@ -300,46 +258,46 @@ class Usina:
         calcular e distribuir a potência para as Unidades.
         """
 
-        l_nivel = self.tda.nv_montante.valor
+        l_nivel = tda.TomadaAgua.nv_montante.valor
 
         if (l_nivel in (None, 0, 0.0) or l_nivel <= 800) and not self.borda_erro_ler_nv:
             logger.info(f"[TDA] Erro de Leitura de Nível Montante identificada! Acionando espera pelo Reservatório.")
             self.borda_erro_ler_nv = True
-            self.tda.aguardando_reservatorio = True
+            tda.TomadaAgua.aguardando_reservatorio = True
 
-        elif l_nivel >= self.cfg["nv_maximo"] and not self.tda.aguardando_reservatorio:
+        elif l_nivel >= self.cfg["nv_maximo"] and not tda.TomadaAgua.aguardando_reservatorio:
             logger.debug("[TDA] Nível Montante acima do Máximo.")
             logger.debug(f"[TDA]          Leitura:                   {l_nivel:0.3f}")
             logger.debug("")
 
-            if self.tda.nv_montante_anterior >= NIVEL_MAXIMORUM:
-                logger.critical(f"[TDA] Nivel Montante ({self.tda.nv_montante_anterior:3.2f}) atingiu o Maximorum!")
+            if tda.TomadaAgua.nv_montante_anterior >= NIVEL_MAXIMORUM:
+                logger.critical(f"[TDA] Nivel Montante ({tda.TomadaAgua.nv_montante_anterior:3.2f}) atingiu o Maximorum!")
                 logger.debug("")
                 return NV_EMERGENCIA
             else:
                 self.controle_i = 0.9
-                self.controle_ie = 0.5
+                self.controle_ie = self.ajustar_ie_padrao()
                 self.ajustar_potencia(self.cfg["pot_maxima_usina"])
 
                 for ug in self.ugs:
                     ug.step()
 
-        elif l_nivel <= self.cfg["nv_minimo"] and not self.tda.aguardando_reservatorio:
+        elif l_nivel <= self.cfg["nv_minimo"] and not tda.TomadaAgua.aguardando_reservatorio:
             logger.debug("[TDA] Nível Montante abaixo do Mínimo.")
             logger.debug(f"[TDA]          Leitura:                   {l_nivel:0.3f}")
             logger.debug("")
-            self.tda.aguardando_reservatorio = True
+            tda.TomadaAgua.aguardando_reservatorio = True
             self.distribuir_potencia(0)
 
             for ug in self.ugs:
                 ug.step()
 
-            if self.tda.nv_montante_anterior <= NIVEL_FUNDO_RESERVATORIO:
-                logger.critical(f"[TDA] Nível Montante ({self.tda.nv_montante_anterior:3.2f}) atingiu o fundo do reservatorio!")
+            if tda.TomadaAgua.nv_montante_anterior <= NIVEL_FUNDO_RESERVATORIO:
+                logger.critical(f"[TDA] Nível Montante ({tda.TomadaAgua.nv_montante_anterior:3.2f}) atingiu o fundo do reservatorio!")
                 logger.debug("")
                 return NV_EMERGENCIA
 
-        elif self.tda.aguardando_reservatorio:
+        elif tda.TomadaAgua.aguardando_reservatorio:
             logger.debug("[TDA] Aguardando Nível Montante...")
             logger.debug(f"[TDA]          Leitura:                   {l_nivel:0.3f}")
             logger.debug(f"[TDA]          Nível de Religamento:      {self.cfg['nv_religamento']:0.3f}")
@@ -349,7 +307,7 @@ class Usina:
                 logger.debug("[TDA] Nível Montante dentro do limite de operação.")
                 logger.debug(f"[TDA]          Leitura:                   {l_nivel:0.3f}")
                 logger.debug("")
-                self.tda.aguardando_reservatorio = False
+                tda.TomadaAgua.aguardando_reservatorio = False
 
         else:
             self.controlar_potencia()
@@ -362,17 +320,17 @@ class Usina:
 
     def controlar_potencia(self) -> "None":
         logger.debug(f"[USN] NÍVEL -> Alvo:                      {self.cfg['nv_alvo']:0.3f}")
-        logger.debug(f"[USN]          Leitura:                   {self.tda.nv_montante.valor:0.3f}")
-        logger.debug(f"[USN]          Filtro EMA:                {self.tda.nv_montante_recente:0.3f}")
+        logger.debug(f"[USN]          Leitura:                   {tda.TomadaAgua.nv_montante.valor:0.3f}")
+        logger.debug(f"[USN]          Filtro EMA:                {tda.TomadaAgua.nv_montante_recente:0.3f}")
 
-        self.controle_p = self.cfg["kp"] * self.tda.erro_nv
+        self.controle_p = self.cfg["kp"] * tda.TomadaAgua.erro_nv
 
         if self.__pid_inicial == -1:
             self.controle_i = max(min(self.controle_ie - self.controle_p, 0.9), 0)
             self.__pid_inicial = 0
         else:
-            self.controle_i = max(min((self.cfg["ki"] * self.tda.erro_nv) + self.controle_i, 0.9), 0)
-            self.controle_d = self.cfg["kd"] * (self.tda.erro_nv - self.tda.erro_nv_anterior)
+            self.controle_i = max(min((self.cfg["ki"] * tda.TomadaAgua.erro_nv) + self.controle_i, 0.9), 0)
+            self.controle_d = self.cfg["kd"] * (tda.TomadaAgua.erro_nv - tda.TomadaAgua.erro_nv_anterior)
 
         saida_pid = (self.controle_p + self.controle_i + min(max(-0.3, self.controle_d), 0.3))
 
@@ -384,14 +342,14 @@ class Usina:
 
         self.controle_ie = max(min(saida_pid + self.controle_ie * self.cfg["kie"], 1), 0)
         logger.debug(f"[USN] IE:                                 {self.controle_ie:0.3f}")
-        logger.debug(f"[USN] ERRO:                               {self.tda.erro_nv}")
+        logger.debug(f"[USN] ERRO:                               {tda.TomadaAgua.erro_nv}")
         logger.debug("")
 
-        if self.tda.nv_montante_recente >= (self.cfg["nv_maximo"] + 0.03):
+        if tda.TomadaAgua.nv_montante_recente >= (self.cfg["nv_maximo"] + 0.03):
             self.controle_ie = 1
             self.controle_i = 1 - self.controle_p
 
-        if self.tda.nv_montante_recente <= (self.cfg["nv_minimo"] + 0.03):
+        if tda.TomadaAgua.nv_montante_recente <= (self.cfg["nv_minimo"] + 0.03):
             self.controle_ie = min(self.controle_ie, 0.3)
             self.controle_i = 0
 
@@ -486,7 +444,7 @@ class Usina:
             elif self.__split1:
                 logger.debug("[USN] Split:                              2 -> \"1B\"")
 
-                ugs[0].manter_unidade = True if self.tda.nv_montante.valor > self.cfg['nv_minimo'] else False
+                ugs[0].manter_unidade = True if tda.TomadaAgua.nv_montante.valor > self.cfg['nv_minimo'] else False
                 ugs[0].setpoint = 2 * sp * ugs[0].setpoint_maximo
                 ugs[1].setpoint = 0
 
@@ -501,7 +459,7 @@ class Usina:
         elif len(ugs) == 1:
             logger.debug("[USN] Split:                              1")
 
-            ugs[0].manter_unidade = True if self.tda.nv_montante.valor > self.cfg['nv_minimo'] else False
+            ugs[0].manter_unidade = True if tda.TomadaAgua.nv_montante.valor > self.cfg['nv_minimo'] else False
             ugs[0].setpoint = 2 * sp * ugs[0].setpoint_maximo
 
             logger.debug("")
@@ -541,11 +499,11 @@ class Usina:
 
             else:
                 ganho = 1 - self.atenuacao
-                aux = setpoint
                 self.atenuacao = 0
+                aux = setpoint
+                setpoint_atenuado = setpoint - 0.12 * (setpoint - (setpoint * ganho))
 
-                setpoint_atenuado = setpoint - 0.15 * (setpoint - (setpoint * ganho))
-                logger.debug(f"[USN]                                     SP {aux} * GANHO {ganho:0.4f} = {setpoint_atenuado:0.3f} kW")
+                logger.debug(f"[USN]                                     SP {aux:0.1f} * GANHO {ganho:0.4f} = {setpoint_atenuado:0.3f} kW")
 
             return setpoint_atenuado
 
@@ -554,11 +512,10 @@ class Usina:
 
 
     ### MÉTODOS DE CONTROLE DE DADOS:
-
     def ler_valores(self) -> "None":
 
         srv.Servidores.ping_clients()
-        self.tda.atualizar_valores_montante()
+        tda.TomadaAgua.atualizar_valores_montante()
 
         parametros = self.bd.get_parametros_usina()
         self.atualizar_valores_cfg(parametros)
@@ -623,7 +580,7 @@ class Usina:
             self.bd.update_valores_usina([
                 self.get_time().strftime("%Y-%m-%d %H:%M:%S"),
                 1 if self.aguardando_reservatorio else 0,
-                self.tda.nv_montante.valor,
+                tda.TomadaAgua.nv_montante.valor,
                 self.ug1.potencia,
                 self.ug1.setpoint,
                 self.ug1.codigo_state,
@@ -640,8 +597,8 @@ class Usina:
             self.bd.update_debug([
                 self.get_time().timestamp(),
                 1 if self.modo_autonomo else 0,
-                self.tda.nv_montante.valor,
-                self.tda.erro_nv,
+                tda.TomadaAgua.nv_montante.valor,
+                tda.TomadaAgua.erro_nv,
                 self.ug1.setpoint,
                 self.ug1.potencia,
                 self.ug1.codigo_state,
@@ -665,63 +622,63 @@ class Usina:
 
     def heartbeat(self) -> None:
         try:
-            self.clp["MOA"].write_single_coil(REG_MOA["PAINEL_LIDO"], [1])
-            self.clp["MOA"].write_single_coil(REG_MOA["MOA_OUT_MODE"], [1 if self.modo_autonomo else 0])
-            self.clp["MOA"].write_single_register(REG_MOA["MOA_OUT_STATUS"], self.estado_moa)
+            srv.Servidores.clp["MOA"].write_single_coil(REG_MOA["PAINEL_LIDO"], [1])
+            srv.Servidores.clp["MOA"].write_single_coil(REG_MOA["MOA_OUT_MODE"], [1 if self.modo_autonomo else 0])
+            srv.Servidores.clp["MOA"].write_single_register(REG_MOA["MOA_OUT_STATUS"], self.estado_moa)
 
             for ug in self.ugs: ug.atualizar_modbus_moa()
 
             if self.modo_autonomo:
-                self.clp["MOA"].write_single_coil(REG_MOA["MOA_OUT_EMERG"], [1 if self.clp_emergencia else 0])
-                self.clp["MOA"].write_single_register(REG_MOA["MOA_OUT_TARGET_LEVEL"], int((self.cfg["nv_alvo"] - 819.2) * (1/1000)))
-                self.clp["MOA"].write_single_register(REG_MOA["MOA_OUT_SETPOINT"], int(sum(ug.setpoint for ug in self.ugs)))
+                srv.Servidores.clp["MOA"].write_single_coil(REG_MOA["MOA_OUT_EMERG"], [1 if self.clp_emergencia else 0])
+                srv.Servidores.clp["MOA"].write_single_register(REG_MOA["MOA_OUT_TARGET_LEVEL"], int((self.cfg["nv_alvo"] - 819.2) * (1/1000)))
+                srv.Servidores.clp["MOA"].write_single_register(REG_MOA["MOA_OUT_SETPOINT"], int(sum(ug.setpoint for ug in self.ugs)))
 
-                if self.clp["MOA"].read_coils(REG_MOA["MOA_IN_EMERG"])[0] and not self.borda_emerg:
+                if srv.Servidores.clp["MOA"].read_coils(REG_MOA["MOA_IN_EMERG"])[0] and not self.borda_emerg:
                     self.borda_emerg = True
                     for ug in self.ugs: ug.verificar_condicionadores(ug)
 
-                elif not self.clp["MOA"].read_coils(REG_MOA["MOA_IN_EMERG"])[0] and self.borda_emerg:
+                elif not srv.Servidores.clp["MOA"].read_coils(REG_MOA["MOA_IN_EMERG"])[0] and self.borda_emerg:
                     self.borda_emerg = False
 
-                if self.clp["MOA"].read_coils(REG_MOA["MOA_IN_EMERG_UG1"])[0]:
+                if srv.Servidores.clp["MOA"].read_coils(REG_MOA["MOA_IN_EMERG_UG1"])[0]:
                     self.ug1.verificar_condicionadores(self.ug1)
 
-                if self.clp["MOA"].read_coils(REG_MOA["MOA_IN_EMERG_UG2"])[0]:
+                if srv.Servidores.clp["MOA"].read_coils(REG_MOA["MOA_IN_EMERG_UG2"])[0]:
                     self.ug2.verificar_condicionadores(self.ug2)
 
-                if self.clp["MOA"].read_coils(REG_MOA["MOA_IN_HABILITA_AUTO"])[0]:
-                    self.clp["MOA"].write_single_coil(REG_MOA["MOA_IN_HABILITA_AUTO"], 1)
-                    self.clp["MOA"].write_single_coil(REG_MOA["MOA_IN_DESABILITA_AUTO"], 0)
+                if srv.Servidores.clp["MOA"].read_coils(REG_MOA["MOA_IN_HABILITA_AUTO"])[0]:
+                    srv.Servidores.clp["MOA"].write_single_coil(REG_MOA["MOA_IN_HABILITA_AUTO"], 1)
+                    srv.Servidores.clp["MOA"].write_single_coil(REG_MOA["MOA_IN_DESABILITA_AUTO"], 0)
                     self.modo_autonomo = True
 
-                if self.clp["MOA"].read_coils(REG_MOA["MOA_IN_DESABILITA_AUTO"])[0]:
-                    self.clp["MOA"].write_single_coil(REG_MOA["MOA_IN_HABILITA_AUTO"], 0)
-                    self.clp["MOA"].write_single_coil(REG_MOA["MOA_IN_DESABILITA_AUTO"], 1)
+                if srv.Servidores.clp["MOA"].read_coils(REG_MOA["MOA_IN_DESABILITA_AUTO"])[0]:
+                    srv.Servidores.clp["MOA"].write_single_coil(REG_MOA["MOA_IN_HABILITA_AUTO"], 0)
+                    srv.Servidores.clp["MOA"].write_single_coil(REG_MOA["MOA_IN_DESABILITA_AUTO"], 1)
                     self.modo_autonomo = False
 
-                if self.clp["MOA"].read_coils(REG_MOA["MOA_OUT_BLOCK_UG1"])[0]:
-                    self.clp["MOA"].write_single_coil(REG_MOA["MOA_OUT_BLOCK_UG1"], 1)
+                if srv.Servidores.clp["MOA"].read_coils(REG_MOA["MOA_OUT_BLOCK_UG1"])[0]:
+                    srv.Servidores.clp["MOA"].write_single_coil(REG_MOA["MOA_OUT_BLOCK_UG1"], 1)
 
-                elif not self.clp["MOA"].read_coils(REG_MOA["MOA_OUT_BLOCK_UG1"])[0]:
-                    self.clp["MOA"].write_single_coil(REG_MOA["MOA_OUT_BLOCK_UG1"], 0)
+                elif not srv.Servidores.clp["MOA"].read_coils(REG_MOA["MOA_OUT_BLOCK_UG1"])[0]:
+                    srv.Servidores.clp["MOA"].write_single_coil(REG_MOA["MOA_OUT_BLOCK_UG1"], 0)
 
-                if self.clp["MOA"].read_coils(REG_MOA["MOA_OUT_BLOCK_UG2"])[0]:
-                    self.clp["MOA"].write_single_coil(REG_MOA["MOA_OUT_BLOCK_UG2"], 1)
+                if srv.Servidores.clp["MOA"].read_coils(REG_MOA["MOA_OUT_BLOCK_UG2"])[0]:
+                    srv.Servidores.clp["MOA"].write_single_coil(REG_MOA["MOA_OUT_BLOCK_UG2"], 1)
 
-                elif not self.clp["MOA"].read_coils(REG_MOA["MOA_OUT_BLOCK_UG2"])[0]:
-                    self.clp["MOA"].write_single_coil(REG_MOA["MOA_OUT_BLOCK_UG2"], 0)
+                elif not srv.Servidores.clp["MOA"].read_coils(REG_MOA["MOA_OUT_BLOCK_UG2"])[0]:
+                    srv.Servidores.clp["MOA"].write_single_coil(REG_MOA["MOA_OUT_BLOCK_UG2"], 0)
 
             elif not self.modo_autonomo:
-                if self.clp["MOA"].read_coils(REG_MOA["MOA_IN_HABILITA_AUTO"])[0]:
-                    self.clp["MOA"].write_single_coil(REG_MOA["MOA_IN_HABILITA_AUTO"], 1)
-                    self.clp["MOA"].write_single_coil(REG_MOA["MOA_IN_DESABILITA_AUTO"], 0)
+                if srv.Servidores.clp["MOA"].read_coils(REG_MOA["MOA_IN_HABILITA_AUTO"])[0]:
+                    srv.Servidores.clp["MOA"].write_single_coil(REG_MOA["MOA_IN_HABILITA_AUTO"], 1)
+                    srv.Servidores.clp["MOA"].write_single_coil(REG_MOA["MOA_IN_DESABILITA_AUTO"], 0)
                     self.modo_autonomo = True
 
-                self.clp["MOA"].write_single_coil(REG_MOA["MOA_OUT_EMERG"], 0)
-                self.clp["MOA"].write_single_coil(REG_MOA["MOA_OUT_BLOCK_UG1"], 0)
-                self.clp["MOA"].write_single_coil(REG_MOA["MOA_OUT_BLOCK_UG2"], 0)
-                self.clp["MOA"].write_single_register(REG_MOA["MOA_OUT_SETPOINT"], int(0))
-                self.clp["MOA"].write_single_register(REG_MOA["MOA_OUT_TARGET_LEVEL"], int(0))
+                srv.Servidores.clp["MOA"].write_single_coil(REG_MOA["MOA_OUT_EMERG"], 0)
+                srv.Servidores.clp["MOA"].write_single_coil(REG_MOA["MOA_OUT_BLOCK_UG1"], 0)
+                srv.Servidores.clp["MOA"].write_single_coil(REG_MOA["MOA_OUT_BLOCK_UG2"], 0)
+                srv.Servidores.clp["MOA"].write_single_register(REG_MOA["MOA_OUT_SETPOINT"], int(0))
+                srv.Servidores.clp["MOA"].write_single_register(REG_MOA["MOA_OUT_TARGET_LEVEL"], int(0))
 
         except Exception:
             logger.error(f"[USN] Houve um erro ao tentar escrever valores modbus no CLP MOA.")

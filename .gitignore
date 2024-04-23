@@ -12,3 +12,4 @@
 **/__pycache__*
 *.pyc
 **/cover/*
+*aux_bd.py
