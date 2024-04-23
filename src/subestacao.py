@@ -29,8 +29,6 @@ logger = logging.getLogger("logger")
 class Subestacao:
 
     # ATRIBUIÇÃO DE VARIÁVEIS
-    bd: "bd.BancoDados" = None
-
     potencia_ativa = lei.LeituraModbus(
         serv.Servidores.rele["SE"],
         REG_RELE["SE"]["P"],
@@ -211,7 +209,7 @@ class Subestacao:
                 else:
                     logger.warning(f"[SE]  Descrição: \"{condic.descricao}\", Gravidade: \"{CONDIC_STR_DCT[condic.gravidade] if condic.gravidade in CONDIC_STR_DCT else 'Desconhecida'}\"")
                     cls.condicionadores_ativos.append(condic)
-                    cls.bd.update_alarmes([
+                    bd.BancoDados.update_alarmes([
                         datetime.now(pytz.timezone("Brazil/East")).replace(tzinfo=None),
                         condic.gravidade,
                         condic.descricao,

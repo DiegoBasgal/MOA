@@ -27,8 +27,6 @@ logger = logging.getLogger("logger")
 class ServicoAuxiliar:
 
     # ATRIBUIÇÃO DE VARIÁVEIS
-    bd: "bd.BancoDados" = None
-
     status_dj_tsa = lei.LeituraModbusBit(
         serv.Servidores.clp["SA"],
         REG_SASE["DISJUNTOR_TSA_FECHADO"],
@@ -83,7 +81,7 @@ class ServicoAuxiliar:
                 else:
                     logger.warning(f"[SA]  Descrição: \"{condic.descricao}\", Gravidade: \"{CONDIC_STR_DCT[condic.gravidade] if condic.gravidade in CONDIC_STR_DCT else 'Desconhecida'}\"")
                     cls.condicionadores_ativos.append(condic)
-                    cls.bd.update_alarmes([
+                    bd.BancoDados.update_alarmes([
                         datetime.now(pytz.timezone("Brazil/East")).replace(tzinfo=None),
                         condic.gravidade,
                         condic.descricao,

@@ -28,7 +28,6 @@ class TomadaAgua:
 
     # ATRIBUIÇÃO DE VARIÁVEIS
     cfg: "dict" = {}
-    bd: "bd.BancoDados" = None
 
     nv_montante = lei.LeituraModbusFloat(
         serv.Servidores.clp["TDA"],
@@ -133,7 +132,7 @@ class TomadaAgua:
                 else:
                     logger.warning(f"[TDA] Descrição: \"{condic.descricao}\", Gravidade: \"{CONDIC_STR_DCT[condic.gravidade] if condic.gravidade in CONDIC_STR_DCT else 'Desconhecida'}\"")
                     cls.condicionadores_ativos.append(condic)
-                    cls.bd.update_alarmes([
+                    bd.BancoDados.update_alarmes([
                         datetime.now(pytz.timezone("Brazil/East")).replace(tzinfo=None),
                         condic.gravidade,
                         condic.descricao,
@@ -176,7 +175,8 @@ class TomadaAgua:
         """
 
         cls.l_diferencial_grade = lei.LeituraSubtracao([cls.nv_montante, cls.nv_jusante], descricao="[TDA] Diferencial de Grade")
-        cls.c_diferencial_grade = c.CondicionadorExponencial(cls.l_diferencial_grade, CONDIC_NORMALIZAR, valor_base=0.3, valor_limite=0.4, ordem=4)
+        cls.c_diferencial_grade = c.CondicionadorExponencial(cls.l_diferencial_grade, CONDIC_NORMALIZAR, valor_base=0.3, valor_limite=0.4, ordem=4) # valor limite -> 0.47 (outro cenário)
+        
         cls.condicionadores_essenciais.append(cls.c_diferencial_grade)
         cls.condicionadores_atenuadores.append(cls.c_diferencial_grade)
 

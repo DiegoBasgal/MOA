@@ -26,7 +26,7 @@ logger = logging.getLogger("logger")
 
 
 class UnidadeDeGeracao:
-    def __init__(self, id: "int", cfg: "dict"=None, bd: "bd.BancoDados"=None):
+    def __init__(self, id: "int", cfg: "dict"=None):
 
         # VERIFICAÇÃO DE ARGUMENTOS
         if id <= 0:
@@ -36,7 +36,6 @@ class UnidadeDeGeracao:
             self.__id = id
 
         # ATRIBUIÇÃO DE OBJETOS DAS UNIDADES
-        self.bd = bd
         self.cfg = cfg
 
         # ATRIBUIÇÃO DE VARIÁVEIS PRIVADAS
@@ -336,7 +335,7 @@ class UnidadeDeGeracao:
 
 
     def iniciar_ultimo_estado(self) -> "None":
-        estado = self.bd.get_ultimo_estado_ug(self.id)[0]
+        estado = bd.BancoDados.get_ultimo_estado_ug(self.id)[0]
 
         if estado == None:
             self.__next_state = usm.StateDisponivel(self)
@@ -743,7 +742,7 @@ class UnidadeDeGeracao:
                     logger.warning(f"[UG{self.id}] Descrição: \"{condic.descricao}\", Gravidade: \"{CONDIC_STR_DCT[condic.gravidade] if condic.gravidade in CONDIC_STR_DCT else 'Desconhecida'}\"")
                     self.condicionadores_ativos.append(condic)
                     flag = CONDIC_INDISPONIBILIZAR
-                    self.bd.update_alarmes([
+                    bd.BancoDados.update_alarmes([
                         self.get_time().strftime("%Y-%m-%d %H:%M:%S"),
                         condic.gravidade,
                         condic.descricao,
@@ -756,7 +755,7 @@ class UnidadeDeGeracao:
                     logger.warning(f"[UG{self.id}] Descrição: \"{condic.descricao}\", Gravidade: \"{CONDIC_STR_DCT[condic.gravidade] if condic.gravidade in CONDIC_STR_DCT else 'Desconhecida'}\"")
                     self.condicionadores_ativos.append(condic)
                     flag = CONDIC_AGUARDAR if flag != CONDIC_INDISPONIBILIZAR else flag
-                    self.bd.update_alarmes([
+                    bd.BancoDados.update_alarmes([
                         self.get_time().strftime("%Y-%m-%d %H:%M:%S"),
                         condic.gravidade,
                         condic.descricao,
@@ -769,7 +768,7 @@ class UnidadeDeGeracao:
                     logger.warning(f"[UG{self.id}] Descrição: \"{condic.descricao}\", Gravidade: \"{CONDIC_STR_DCT[condic.gravidade] if condic.gravidade in CONDIC_STR_DCT else 'Desconhecida'}\"")
                     self.condicionadores_ativos.append(condic)
                     flag = CONDIC_NORMALIZAR if flag not in (CONDIC_INDISPONIBILIZAR, CONDIC_AGUARDAR) else flag
-                    self.bd.update_alarmes([
+                    bd.BancoDados.update_alarmes([
                         self.get_time().strftime("%Y-%m-%d %H:%M:%S"),
                         condic.gravidade,
                         condic.descricao,

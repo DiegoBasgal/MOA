@@ -41,15 +41,10 @@ class Usina:
             tda.TomadaAgua.cfg = self.cfg
 
         # INCIALIZAÇÃO DE OBJETOS DA USINA
-        self.bd = bd.BancoDados("MOA-PPN")
-        se.Subestacao.bd = self.bd
-        tda.TomadaAgua.bd = self.bd
-        sa.ServicoAuxiliar.bd = self.bd
+        self.agn = agn.Agendamentos(self.cfg, self)
 
-        self.agn = agn.Agendamentos(self.cfg, self.bd, self)
-
-        self.ug1 = u.UnidadeDeGeracao(1, self.cfg, self.bd)
-        self.ug2 = u.UnidadeDeGeracao(2, self.cfg, self.bd)
+        self.ug1 = u.UnidadeDeGeracao(1, self.cfg)
+        self.ug2 = u.UnidadeDeGeracao(2, self.cfg)
         self.ugs: "list[u.UnidadeDeGeracao]" = [self.ug1, self.ug2]
 
         # ATRIBUIÇÃO DE VARIÁVEIS PRIVADAS
@@ -106,7 +101,7 @@ class Usina:
     @modo_autonomo.setter
     def modo_autonomo(self, var: "bool") -> "None":
         self._modo_autonomo = var
-        self.bd.update_modo_moa(self._modo_autonomo)
+        bd.BancoDados.update_modo_moa(self._modo_autonomo)
 
     @property
     def tentativas_normalizar(self) -> "int":
@@ -177,7 +172,7 @@ class Usina:
             self.resetar_emergencia()
             sleep(1)
             se.Subestacao.fechar_dj_linha()
-            self.bd.update_remove_emergencia()
+            bd.BancoDados.update_remove_emergencia()
             return True
 
         else:
@@ -501,7 +496,7 @@ class Usina:
                 ganho = 1 - self.atenuacao
                 self.atenuacao = 0
                 aux = setpoint
-                setpoint_atenuado = setpoint - 0.12 * (setpoint - (setpoint * ganho))
+                setpoint_atenuado = setpoint - 0.12 * (setpoint - (setpoint * ganho)) # 0.15 -> cenário de valor limite 0.47
 
                 logger.debug(f"[USN]                                     SP {aux:0.1f} * GANHO {ganho:0.4f} = {setpoint_atenuado:0.3f} kW")
 
@@ -517,7 +512,7 @@ class Usina:
         srv.Servidores.ping_clients()
         tda.TomadaAgua.atualizar_valores_montante()
 
-        parametros = self.bd.get_parametros_usina()
+        parametros = bd.BancoDados.get_parametros_usina()
         self.atualizar_valores_cfg(parametros)
         self.atualizar_valores_banco(parametros)
 
@@ -577,7 +572,7 @@ class Usina:
     def escrever_valores(self) -> None:
 
         try:
-            self.bd.update_valores_usina([
+            bd.BancoDados.update_valores_usina([
                 self.get_time().strftime("%Y-%m-%d %H:%M:%S"),
                 1 if self.aguardando_reservatorio else 0,
                 tda.TomadaAgua.nv_montante.valor,
@@ -594,7 +589,7 @@ class Usina:
             logger.debug(traceback.format_exc())
 
         try:
-            self.bd.update_debug([
+            bd.BancoDados.update_debug([
                 self.get_time().timestamp(),
                 1 if self.modo_autonomo else 0,
                 tda.TomadaAgua.nv_montante.valor,

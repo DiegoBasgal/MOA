@@ -31,8 +31,6 @@ class Voip:
             "Authorization": "Basic TnZvaXBBcGlWMjpUblp2YVhCQmNHbFdNakl3TWpFPQ==",
         }
 
-    db = bd.BancoDados("voip")
-
 
     @staticmethod
     def verificar_expediente(agenda) -> "list":
@@ -64,7 +62,7 @@ class Voip:
         """
 
         agenda = []
-        parametros = cls.db.get_contato_emergencia()
+        parametros = bd.BancoDados.get_contato_emergencia()
 
         for i in range(len(parametros)):
             try:

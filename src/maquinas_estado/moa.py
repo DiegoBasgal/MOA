@@ -9,6 +9,7 @@ import traceback
 
 import src.subestacao as se
 import src.tomada_agua as tda
+import src.conectores.banco_dados as bd
 
 from time import sleep, time
 from datetime import datetime
@@ -362,7 +363,7 @@ class Emergencia(State):
 
             while self.usn.bd_emergencia:
                 logger.debug("Aguardando reset...")
-                self.usn.atualizar_valores_banco(self.usn.bd.get_parametros_usina())
+                self.usn.atualizar_valores_banco(bd.BancoDados.get_parametros_usina())
 
                 if not self.usn.bd_emergencia:
                     self.usn.bd_emergencia = False
