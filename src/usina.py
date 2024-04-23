@@ -39,9 +39,10 @@ class Usina:
         else:
             self.cfg = cfg
             tda.TomadaAgua.cfg = self.cfg
+            agn.Agendamentos.cfg = self.cfg
 
         # INCIALIZAÇÃO DE OBJETOS DA USINA
-        self.agn = agn.Agendamentos(self.cfg, self)
+        agn.Agendamentos.usn = self
 
         self.ug1 = u.UnidadeDeGeracao(1, self.cfg)
         self.ug2 = u.UnidadeDeGeracao(2, self.cfg)

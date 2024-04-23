@@ -9,6 +9,7 @@ import traceback
 
 import src.subestacao as se
 import src.tomada_agua as tda
+import src.funcoes.agendamentos as agn
 import src.conectores.banco_dados as bd
 
 from time import sleep, time
@@ -146,7 +147,7 @@ class ControleEstados(State):
             return Emergencia(self.usn)
 
         logger.debug("Verificando se há agendamentos...")
-        if len(self.usn.agn.verificar_agendamentos_pendentes()) > 0:
+        if len(agn.Agendamentos.verificar_agendamentos_pendentes()) > 0:
             logger.debug("")
             logger.debug("Foram identificados agendamentos pendentes!")
             return ControleAgendamentos(self.usn)
@@ -250,9 +251,9 @@ class ControleAgendamentos(State):
         """
 
         logger.debug("Tratando agendamentos...")
-        self.usn.agn.verificar_agendamentos()
+        agn.Agendamentos.verificar_agendamentos()
 
-        if len(self.usn.agn.verificar_agendamentos_pendentes()) > 0:
+        if len(agn.Agendamentos.verificar_agendamentos_pendentes()) > 0:
             return self
 
         else:
@@ -317,7 +318,7 @@ class ModoManual(State):
             sleep(1)
             return ControleDados(self.usn)
 
-        return ControleAgendamentos(self.usn) if len(self.usn.agn.verificar_agendamentos_pendentes()) > 0 else self
+        return ControleAgendamentos(self.usn) if len(agn.Agendamentos.verificar_agendamentos_pendentes()) > 0 else self
 
 
 class Emergencia(State):
