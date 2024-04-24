@@ -62,7 +62,6 @@ class LeituraModbus:
 
         except Exception:
             logger.debug(f"[LEI] Houve um erro na leitura RAW -> INT do REG: {self.__descricao} | Endereço: {self.__registrador}")
-            logger.debug(traceback.format_exc())
             return 0
 
     @property
@@ -105,7 +104,6 @@ class LeituraModbusBit(LeituraModbus):
 
         except Exception:
             logger.debug(f"[LEI] Erro na Leitura RAW -> BIT do REG: {self.__reg} | Bit: {self.__bit}")
-            logger.debug(traceback.format_exc())
             sleep(1)
 
     @property
@@ -128,7 +126,6 @@ class LeituraModbusBit(LeituraModbus):
 
         except Exception:
             logger.debug(f"[LEI] Erro na Leitura BIT do REG: {self.__descricao} | Endereço: {self.__reg} | Bit: {self.__bit}")
-            logger.debug(traceback.format_exc())
             sleep(1)
             return None
 

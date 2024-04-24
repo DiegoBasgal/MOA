@@ -634,17 +634,18 @@ class UnidadeDeGeracao:
         # SINCRONIZADA
         elif self.etapa == UG_SINCRONIZADA:
             self.temporizar_partida = True
-            if not self.aux_tempo_sincronizada:
+            if self.aux_tempo_sincronizada == 0:
                 self.aux_tempo_sincronizada = self.get_time()
 
             elif (self.get_time() - self.aux_tempo_sincronizada).seconds >= 300:
+                self.aux_tempo_sincronizada = 0
                 self.tentativas_de_normalizacao = 0
 
             self.parar() if self.setpoint == 0 else self.enviar_setpoint(self.setpoint)
 
         # CONTROLE TEMPO SINCRONIZADAS
         if not self.etapa == UG_SINCRONIZADA:
-            self.aux_tempo_sincronizada = None
+            self.aux_tempo_sincronizada = 0
 
 
     def verificar_sincronismo(self) -> "None":
@@ -655,7 +656,7 @@ class UnidadeDeGeracao:
         senão, é enviado o comando de parada de emergência para a Unidade.
         """
 
-        delay = time() + 600
+        delay = time() + 1200
 
         logger.debug(f"[UG{self.id}]          Verificação MOA:           \"Temporização de Sincronismo\"")
         while time() < delay:
