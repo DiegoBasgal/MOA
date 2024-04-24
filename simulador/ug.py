@@ -49,7 +49,7 @@ class Unidade:
             self.dict[f'UG{self.id}'][f'debug_parar'] = False
             self.parar()
 
-        self.setpoint = DB.get_words(REG_RTV[f'UG{self.id}']['SETPOINT_POT_ATIVA_PU'])[0]
+        self.setpoint = DB.get_words(REG_RTV[f'UG{self.id}']['RV_SETPOINT_POTENCIA_ATIVA_PU'])[0]
         self.dict[f'UG{self.id}'][f'setpoint'] = self.setpoint
 
         self.dict[f'UG{self.id}'][f'q'] = self.calcular_q_ug(self.potencia)
@@ -232,18 +232,18 @@ class Unidade:
 
     def atualizar_modbus(self) -> 'None':
         DB.set_words(REG_RELE[f'UG{self.id}']['P'], [round(self.dict[f'UG{self.id}']['potencia'])])
-        DB.set_words(REG_RTV[f'UG{self.id}']['SETPOINT_POT_ATIVA_PU'], [self.setpoint])
+        DB.set_words(REG_RTV[f'UG{self.id}']['RV_SETPOINT_POTENCIA_ATIVA_PU'], [self.setpoint])
         # DB.set_words(REG_UG[f'UG{self.id}']['HORIMETRO'], [np.floor(self.horimetro_hora)])
         DB.set_words(REG_UG[f'UG{self.id}']['STT_PASSO_ATUAL'], [int(self.dict[f'UG{self.id}'][f'etapa_atual'])])
         DB.set_words(REG_UG[f'UG{self.id}']['SST_PASSO_SELECIONADO'], [int(self.dict[f'UG{self.id}'][f'etapa_alvo'])])
 
-        DB.set_words(REG_UG[f'UG{self.id}']['TEMP_GERADOR_FASE_A'], [round(self.dict[f'UG{self.id}'][f'temp_fase_r'])])
-        DB.set_words(REG_UG[f'UG{self.id}']['TEMP_GERADOR_FASE_B'], [round(self.dict[f'UG{self.id}'][f'temp_fase_s'])])
-        DB.set_words(REG_UG[f'UG{self.id}']['TEMP_GERADOR_FASE_C'], [round(self.dict[f'UG{self.id}'][f'temp_fase_t'])])
-        DB.set_words(REG_UG[f'UG{self.id}']['TEMP_GERADOR_NUCLEO_1'], [round(self.dict[f'UG{self.id}'][f'temp_nucleo_gerador_1'])])
-        DB.set_words(REG_UG[f'UG{self.id}']['TEMP_GERADOR_NUCLEO_2'], [round(self.dict[f'UG{self.id}'][f'temp_nucleo_gerador_2'])])
-        DB.set_words(REG_UG[f'UG{self.id}']['TEMP_GERADOR_NUCLEO_3'], [round(self.dict[f'UG{self.id}'][f'temp_nucleo_gerador_3'])])
-        DB.set_words(REG_UG[f'UG{self.id}']['TEMP_MANCAL_GUIA_CASQUILHO'], [round(self.dict[f'UG{self.id}'][f'temp_mancal_guia_casq'])])
-        DB.set_words(REG_UG[f'UG{self.id}']['TEMP_MANCAL_COMBINADO_CASQUILHO'], [round(self.dict[f'UG{self.id}'][f'temp_mancal_casq_comb'])])
-        DB.set_words(REG_UG[f'UG{self.id}']['TEMP_MANCAL_COMBINADO_ESCORA'], [round(self.dict[f'UG{self.id}'][f'temp_mancal_esc_comb'])])
-        DB.set_words(REG_UG[f'UG{self.id}']['TEMP_MANCAL_COMBINADO_CONTRA_ESCORA'], [round(self.dict[f'UG{self.id}'][f'temp_mancal_contra_esc_comb'])])
+        DB.set_words(REG_UG[f'UG{self.id}']['TEMPERATURA_GERADOR_FASE_A'], [round(self.dict[f'UG{self.id}'][f'temp_fase_r'])])
+        DB.set_words(REG_UG[f'UG{self.id}']['TEMPERATURA_GERADOR_FASE_B'], [round(self.dict[f'UG{self.id}'][f'temp_fase_s'])])
+        DB.set_words(REG_UG[f'UG{self.id}']['TEMPERATURA_GERADOR_FASE_C'], [round(self.dict[f'UG{self.id}'][f'temp_fase_t'])])
+        DB.set_words(REG_UG[f'UG{self.id}']['TEMPERATURA_GERADOR_NUCLEO_1'], [round(self.dict[f'UG{self.id}'][f'temp_nucleo_gerador_1'])])
+        DB.set_words(REG_UG[f'UG{self.id}']['TEMPERATURA_GERADOR_NUCLEO_2'], [round(self.dict[f'UG{self.id}'][f'temp_nucleo_gerador_2'])])
+        DB.set_words(REG_UG[f'UG{self.id}']['TEMPERATURA_GERADOR_NUCLEO_3'], [round(self.dict[f'UG{self.id}'][f'temp_nucleo_gerador_3'])])
+        DB.set_words(REG_UG[f'UG{self.id}']['TEMPERATURA_MANCAL_GUIA_CASQUILHO'], [round(self.dict[f'UG{self.id}'][f'temp_mancal_guia_casq'])])
+        DB.set_words(REG_UG[f'UG{self.id}']['TEMPERATURA_MANCAL_COMBINADO_CASQUILHO'], [round(self.dict[f'UG{self.id}'][f'temp_mancal_casq_comb'])])
+        DB.set_words(REG_UG[f'UG{self.id}']['TEMPERATURA_MANCAL_COMBINADO_ESCORA'], [round(self.dict[f'UG{self.id}'][f'temp_mancal_esc_comb'])])
+        DB.set_words(REG_UG[f'UG{self.id}']['TEMPERATURA_MANCAL_COMBINADO_CONTRA_ESCORA'], [round(self.dict[f'UG{self.id}'][f'temp_mancal_contra_esc_comb'])])

@@ -28,12 +28,12 @@ class Se:
         self.verificar_tensao_dj()
         self.verificar_condicao_dj()
 
-        if LEI.ler_bit(REG_SASE['CMD_DJ_LINHA_FECHA']):
-            ESC.escrever_bit(REG_SASE['CMD_DJ_LINHA_FECHA'], valor=0)
+        if LEI.ler_bit(REG_SASE['CMD_DISJ_LINHA_FECHA']):
+            ESC.escrever_bit(REG_SASE['CMD_DISJ_LINHA_FECHA'], valor=0)
             self.fechar_dj()
 
-        if LEI.ler_bit(REG_SASE['CMD_DJ_LINHA_ABRE']):
-            ESC.escrever_bit(REG_SASE['CMD_DJ_LINHA_ABRE'], valor=0)
+        if LEI.ler_bit(REG_SASE['CMD_DISJ_LINHA_ABRE']):
+            ESC.escrever_bit(REG_SASE['CMD_DISJ_LINHA_ABRE'], valor=0)
             self.abrir_dj()
 
         if LEI.ler_bit(REG_SASE['CMD_REARME_FALHAS']):
@@ -150,10 +150,10 @@ class Se:
         # Disjuntor 52L Fechado
         if self.dict['SE']['dj_fechado'] and not self.dict['BRD']['djse_fechado']:
             self.dict['BRD']['djse_fechado'] = True
-            ESC.escrever_bit(REG_SASE['DJ_LINHA_FECHADO'], valor=1)
+            ESC.escrever_bit(REG_SASE['SE_DISJUNTOR_LINHA_FECHADO'], valor=1)
 
         elif not self.dict['SE']['dj_fechado'] and self.dict['BRD']['djse_fechado']:
             self.dict['BRD']['djse_fechado'] = False
-            ESC.escrever_bit(REG_SASE['DJ_LINHA_FECHADO'], valor=0)
+            ESC.escrever_bit(REG_SASE['SE_DISJUNTOR_LINHA_FECHADO'], valor=0)
 
 
