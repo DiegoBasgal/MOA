@@ -65,7 +65,7 @@ class ServicoAuxiliar:
 
             for condic in condics_ativos:
                 if condic in cls.condicionadores_ativos or condic.teste:
-                    logger.debug(f"[SA]  Descrição: \"{condic.descricao}\", Gravidade: \"{CONDIC_STR_DCT[condic.gravidade] if condic.gravidade in CONDIC_STR_DCT else 'Desconhecida'}\".{' Obs.: \"TESTE\"' if condic.teste else None}")
+                    logger.debug(f"[SA]  Descrição: \"{condic.descricao}\", Gravidade: \"{CONDIC_STR_DCT[condic.gravidade] if condic.gravidade in CONDIC_STR_DCT else 'Desconhecida'}\".{' Obs.: TESTE' if condic.teste else None}")
                     continue
                 else:
                     logger.warning(f"[SA]  Descrição: \"{condic.descricao}\", Gravidade: \"{CONDIC_STR_DCT[condic.gravidade] if condic.gravidade in CONDIC_STR_DCT else 'Desconhecida'}\"")

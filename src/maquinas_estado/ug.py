@@ -3,6 +3,7 @@ import logging
 import src.unidade_geracao as u
 
 from threading import Thread
+from time import time
 
 from src.dicionarios.const import *
 
@@ -120,8 +121,12 @@ class StateDisponivel(State):
 
 
     def step(self) -> "State":
+        t_i = time()
         self.parent.controlar_limites_operacao()
+        logger.debug(f"[TEMPO - UG{self.parent.id}] Tempo controlar_limites_operacao: {time() - t_i}")
+        t_i = time()
         flag = self.parent.verificar_condicionadores()
+        logger.debug(f"[TEMPO - UG{self.parent.id}] Tempo verificar_condicionadores: {time() - t_i}")
 
         if flag == CONDIC_INDISPONIBILIZAR:
             logger.warning(f"[UG{self.parent.id}] Indisponibilizando UG.")
@@ -135,6 +140,8 @@ class StateDisponivel(State):
             return self if self.parent.normalizar_unidade() else StateIndisponivel(self.parent)
 
         else:
+            t_i = time()
             self.parent.controle_etapas()
+            logger.debug(f"[TEMPO - UG{self.parent.id}] Tempo controle_etapas: {time() - t_i}")
 
             return self

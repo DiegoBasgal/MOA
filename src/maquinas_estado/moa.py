@@ -248,6 +248,8 @@ class ModoManual(State):
 
         usn.Usina.estado_moa = MOA_SM_MODO_MANUAL
         usn.Usina.modo_autonomo = False
+        usn.Usina.bd_emergencia = False
+        usn.Usina.clp_emergencia = False
 
         for ug in usn.Usina.ugs:
             ug.temporizar_partida = False

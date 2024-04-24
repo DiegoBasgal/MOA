@@ -24,12 +24,14 @@ logger = logging.getLogger("logger")
 
 class TomadaAgua:
 
-    nv_montante = lei.LeituraModbusFloat(
+    nv_montante = lei.LeituraModbus(
         serv.Servidores.clp["TDA"],
         REG_TDA["NIVEL_MONTANTE_GRADE"],
+        escala=0.001,
+        fundo_escala=800,
         descricao="[TDA] Nível Montante"
     )
-    nv_jusante = lei.LeituraModbusFloat(
+    nv_jusante = lei.LeituraModbus(
         serv.Servidores.clp["TDA"],
         REG_TDA["NIVEL_JUSANTE_GRADE"],
         descricao="[TDA] Nível Jusante Grade"
@@ -165,7 +167,7 @@ class TomadaAgua:
 
             for condic in condics_ativos:
                 if condic in cls.condicionadores_ativos or condic.teste:
-                    logger.debug(f"[TDA] Descrição: \"{condic.descricao}\", Gravidade: \"{CONDIC_STR_DCT[condic.gravidade] if condic.gravidade in CONDIC_STR_DCT else 'Desconhecida'}\".{' Obs.: \"TESTE\"' if condic.teste else None}")
+                    logger.debug(f"[TDA] Descrição: \"{condic.descricao}\", Gravidade: \"{CONDIC_STR_DCT[condic.gravidade] if condic.gravidade in CONDIC_STR_DCT else 'Desconhecida'}\".{' Obs.: TESTE' if condic.teste else None}")
                     continue
                 else:
                     logger.warning(f"[TDA] Descrição: \"{condic.descricao}\", Gravidade: \"{CONDIC_STR_DCT[condic.gravidade] if condic.gravidade in CONDIC_STR_DCT else 'Desconhecida'}\"")

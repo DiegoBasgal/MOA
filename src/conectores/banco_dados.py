@@ -157,6 +157,17 @@ class BancoDados:
 
 
     @classmethod
+    def update_nv_alvo(self, valores: "list") -> "None":
+        self.cursor.execute(
+            "UPDATE parametros_parametrosusina "
+            "SET nv_alvo = %s "
+            "WHERE id = 1;",
+            tuple(valores)
+        )
+        self.conn.commit()
+
+
+    @classmethod
     def update_remove_emergencia(cls) -> "None":
         """
         Função para atualizar o valor de emergência (desativada) do Banco.

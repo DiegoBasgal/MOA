@@ -35,16 +35,19 @@ class Subestacao:
     tensao_rs = lei.LeituraModbus(
         serv.Servidores.rele["SE"],
         REG_RELE["SE"]["VAB"],
+        escala=1000,
         descricao="[SE]  Tensão RS"
     )
     tensao_st = lei.LeituraModbus(
         serv.Servidores.rele["SE"],
         REG_RELE["SE"]["VBC"],
+        escala=1000,
         descricao="[SE]  Tensão ST"
     )
     tensao_tr = lei.LeituraModbus(
         serv.Servidores.rele["SE"],
         REG_RELE["SE"]["VCA"],
+        escala=1000,
         descricao="[SE]  Tensão TR"
     )
 
@@ -68,9 +71,9 @@ class Subestacao:
             if cls.status_dj_linha.valor:
                 return True
 
-            elif not sa.ServicoAuxiliar.status_dj_tsa.valor:
-                logger.info("[SE]  Não foi possível fechar o Disjuntor de Linha, pois o Disjuntor do SA está aberto")
-                return False
+            # elif not sa.ServicoAuxiliar.status_dj_tsa.valor:
+            #     logger.info("[SE]  Não foi possível fechar o Disjuntor de Linha, pois o Disjuntor do SA está aberto")
+            #     return False
 
             else:
                 logger.info(f"[SE]  O Disjuntor de Linha está aberto!")
@@ -174,7 +177,7 @@ class Subestacao:
 
             for condic in condics_ativos:
                 if condic in cls.condicionadores_ativos or condic.teste:
-                    logger.debug(f"[SE]  Descrição: \"{condic.descricao}\", Gravidade: \"{CONDIC_STR_DCT[condic.gravidade] if condic.gravidade in CONDIC_STR_DCT else 'Desconhecida'}\".{' Obs.: \"TESTE\"' if condic.teste else None}")
+                    logger.debug(f"[SE]  Descrição: \"{condic.descricao}\", Gravidade: \"{CONDIC_STR_DCT[condic.gravidade] if condic.gravidade in CONDIC_STR_DCT else 'Desconhecida'}\".{' Obs.: TESTE' if condic.teste else None}")
                     continue
                 else:
                     logger.warning(f"[SE]  Descrição: \"{condic.descricao}\", Gravidade: \"{CONDIC_STR_DCT[condic.gravidade] if condic.gravidade in CONDIC_STR_DCT else 'Desconhecida'}\"")

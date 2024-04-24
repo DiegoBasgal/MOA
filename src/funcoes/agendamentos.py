@@ -195,6 +195,7 @@ class Agendamentos:
             usn.Usina.acionar_emergencia()
             logger.debug("[AGN] Emergência pressionada após indisponibilização agendada mudando para modo manual para evitar normalização automática.")
             usn.Usina.modo_autonomo = False
+            bd.BancoDados.update_modo_moa(False)
 
         if agendamento[3] == AGN_ALTERAR_NV_ALVO:
             try:

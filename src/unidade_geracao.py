@@ -2,8 +2,8 @@ import pytz
 import logging
 import traceback
 
+import src.usina as usn
 import src.subestacao as se
-import src.tomada_agua as tda
 import src.servico_auxiliar as sa
 
 import src.dicionarios.dict as d
@@ -33,8 +33,6 @@ class UnidadeDeGeracao:
             raise ValueError
         else:
             self.__id = id
-
-        self.cfg = cfg
 
         self.__tensao = lei.LeituraModbus(
             srv.Servidores.clp[f"UG{self.id}"],
@@ -166,42 +164,55 @@ class UnidadeDeGeracao:
 
     @property
     def etapa(self) -> "int":
-        if self.etapa_atual == UG_PARADA and self.etapa_alvo == UG_PARADA:
-            self._ultima_etapa_alvo = self.etapa_alvo
+
+        if self.etapa_atual == 0 and self.etapa_alvo == 0:
             return UG_PARADA
 
-        elif self.etapa_atual == UG_SINCRONIZADA and self.etapa_alvo == UG_SINCRONIZADA:
-            self._ultima_etapa_alvo = self.etapa_alvo
+        elif self.etapa_atual == 5 and self.etapa_alvo == 5:
             return UG_SINCRONIZADA
 
-        elif UG_PARADA < self.etapa_atual <= UG_SINCRONIZADA and self.etapa_alvo == UG_PARADA:
+        elif 0 <= self.etapa_atual < 5 and self.etapa_alvo == 5:
+            return UG_SINCRONIZANDO
+        
+        elif 0 < self.etapa_atual <= 5 and self.etapa_alvo == 0:
+            return UG_PARANDO
 
-            if self._ultima_etapa_alvo != self.etapa_alvo:
-                if self._ultima_etapa_alvo < self.etapa_alvo:
-                    self._ultima_etapa_alvo = self.etapa_alvo
-                    return UG_SINCRONIZANDO
+        # if self.etapa_atual == UG_PARADA and self.etapa_alvo == UG_PARADA:
+        #     self._ultima_etapa_alvo = self.etapa_alvo
+        #     return UG_PARADA
 
-                elif self._ultima_etapa_alvo > self.etapa_alvo:
-                    self._ultima_etapa_alvo = self.etapa_alvo
-                    return UG_PARANDO
+        # elif self.etapa_atual == UG_SINCRONIZADA and self.etapa_alvo == UG_SINCRONIZADA:
+        #     self._ultima_etapa_alvo = self.etapa_alvo
+        #     return UG_SINCRONIZADA
 
-            else:
-                self._ultima_etapa_alvo = self.etapa_alvo
-                return UG_PARANDO
+        # elif UG_PARADA < self.etapa_atual <= UG_SINCRONIZADA and self.etapa_alvo == UG_PARADA:
 
-        elif UG_PARADA <= self.etapa_atual < UG_SINCRONIZADA and self.etapa_alvo == UG_SINCRONIZADA:
-            if self._ultima_etapa_alvo != self.etapa_alvo:
-                if self._ultima_etapa_alvo > self.etapa_alvo:
-                    self._ultima_etapa_alvo = self.etapa_alvo
-                    return UG_PARANDO
+        #     if self._ultima_etapa_alvo != self.etapa_alvo:
+        #         if self._ultima_etapa_alvo < self.etapa_alvo:
+        #             self._ultima_etapa_alvo = self.etapa_alvo
+        #             return UG_SINCRONIZANDO
 
-                elif self._ultima_etapa_alvo < self.etapa_alvo:
-                    self._ultima_etapa_alvo = self.etapa_alvo
-                    return UG_SINCRONIZANDO
+        #         elif self._ultima_etapa_alvo > self.etapa_alvo:
+        #             self._ultima_etapa_alvo = self.etapa_alvo
+        #             return UG_PARANDO
 
-            else:
-                self._ultima_etapa_alvo = self.etapa_alvo
-                return UG_SINCRONIZANDO
+        #     else:
+        #         self._ultima_etapa_alvo = self.etapa_alvo
+        #         return UG_PARANDO
+
+        # elif UG_PARADA <= self.etapa_atual < UG_SINCRONIZADA and self.etapa_alvo == UG_SINCRONIZADA:
+        #     if self._ultima_etapa_alvo != self.etapa_alvo:
+        #         if self._ultima_etapa_alvo > self.etapa_alvo:
+        #             self._ultima_etapa_alvo = self.etapa_alvo
+        #             return UG_PARANDO
+
+        #         elif self._ultima_etapa_alvo < self.etapa_alvo:
+        #             self._ultima_etapa_alvo = self.etapa_alvo
+        #             return UG_SINCRONIZANDO
+
+        #     else:
+        #         self._ultima_etapa_alvo = self.etapa_alvo
+        #         return UG_SINCRONIZANDO
 
 
     @property
@@ -226,11 +237,11 @@ class UnidadeDeGeracao:
 
     @setpoint.setter
     def setpoint(self, var: "int"):
-        if var < self.cfg['pot_minima']:
-            self._setpoint = self.cfg['pot_minima'] if self.manter_unidade else 0
+        if var < usn.Usina.cfg['pot_minima']:
+            self._setpoint = usn.Usina.cfg['pot_minima'] if self.manter_unidade else 0
 
-        elif var > self.cfg[f'pot_maxima_ug{self.id}']:
-            self._setpoint = self.cfg[f'pot_maxima_ug{self.id}']
+        elif var > usn.Usina.cfg[f'pot_maxima_ug{self.id}']:
+            self._setpoint = usn.Usina.cfg[f'pot_maxima_ug{self.id}']
 
         else:
             self._setpoint = int(var)
@@ -433,15 +444,15 @@ class UnidadeDeGeracao:
                 logger.info(f"[UG{self.id}] Não foi possível partir a Unidade. Disjuntor de Linha está aberto.")
                 return
 
-            elif not sa.ServicoAuxiliar.status_dj_tsa.valor:
-                logger.info(f"[UG{self.id}] Não foi possível partir a Unidade. Disjuntor do Serviço Auxiliar está aberto.")
-                return
+            # elif not sa.ServicoAuxiliar.status_dj_tsa.valor:
+            #     logger.info(f"[UG{self.id}] Não foi possível partir a Unidade. Disjuntor do Serviço Auxiliar está aberto.")
+            #     return
 
             elif not self.etapa == UG_SINCRONIZADA:
                 self.tentativas_norm_etapas = 0
                 logger.info(f"[UG{self.id}]          Enviando comando:          \"PARTIDA\"")
 
-                esc.EscritaModBusBit.escrever_bit(srv.Servidores.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}"]["CMD_REARME_FALHAS"], valor=1)
+                esc.EscritaModBusBit.escrever_bit(srv.Servidores.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}"]["CMD_SINCRONISMO"], valor=1)
 
         except Exception:
             logger.error(f"[UG{self.id}] Não foi possível partir a Unidade.")
@@ -480,12 +491,12 @@ class UnidadeDeGeracao:
             if not self.desabilitar_manutencao():
                 logger.info(f"[UG{self.id}] Não foi possível enviar comando de \"Desabilitar Manutenção\"")
             else:
-                if self.cfg[f"pot_maxima_ug{self.id}"] <= setpoint_kw:
-                    setpoint_kw = self.cfg[f'pot_maxima_ug{self.id}']
+                if usn.Usina.cfg[f"pot_maxima_ug{self.id}"] <= setpoint_kw:
+                    setpoint_kw = usn.Usina.cfg[f'pot_maxima_ug{self.id}']
 
                 self.setpoint = int(setpoint_kw)
                 setpoint_porcento = (setpoint_kw / POT_MAX_UGS) * 10000
-                logger.debug(f"[UG{self.id}]          Enviando setpoint:         {setpoint_kw} kW ({(setpoint_kw / self.cfg[f'pot_maxima_ug{self.id}']) * 100:0.1f} %)")
+                logger.debug(f"[UG{self.id}]          Enviando setpoint:         {setpoint_kw} kW ({(setpoint_kw / usn.Usina.cfg[f'pot_maxima_ug{self.id}']) * 100:0.1f} %)")
 
                 if self.setpoint > 1:
                     res = srv.Servidores.rv[f"UG{self.id}"].write_single_register(REG_RTV[f"UG{self.id}"]["RV_SETPOINT_POTENCIA_ATIVA_PU"], int(setpoint_porcento))
@@ -694,7 +705,7 @@ class UnidadeDeGeracao:
 
             for condic in condics_ativos:
                 if condic in self.condicionadores_ativos or condic.teste:
-                    logger.debug(f"[UG{self.id}] Descrição: \"{condic.descricao}\", Gravidade: \"{CONDIC_STR_DCT[condic.gravidade] if condic.gravidade in CONDIC_STR_DCT else 'Desconhecida'}\".{ 'Obs.: \"TESTE\"' if condic.teste else None}")
+                    logger.debug(f"[UG{self.id}] Descrição: \"{condic.descricao}\", Gravidade: \"{CONDIC_STR_DCT[condic.gravidade] if condic.gravidade in CONDIC_STR_DCT else 'Desconhecida'}\".{ 'Obs.: TESTE' if condic.teste else None}")
                     continue
                 else:
                     if condic.gravidade == CONDIC_INDISPONIBILIZAR:
@@ -841,11 +852,11 @@ class UnidadeDeGeracao:
             logger.warning(f"[UG{self.id}] Leitura Teste Mensageiro WhatsApp ativada.")
 
         # WHATSAPP + VOIP
-        if self.l_teste_voip.valor and not d.voip[f"UG{self.id}_CD_CMD_UHRV_MODO_MANUTENCAO"][0]:
+        if self.l_teste_voip.valor and not d.voip[f"UG{self.id}_L_TESTE_VOIP"][0]:
             logger.warning(f"[UG{self.id}] Leitura Teste Mensageiro Voip ativada.")
-            d.voip[f"UG{self.id}_CD_CMD_UHRV_MODO_MANUTENCAO"][0] = True
-        elif not self.l_teste_voip.valor and d.voip[f"UG{self.id}_CD_CMD_UHRV_MODO_MANUTENCAO"][0]:
-            d.voip[f"UG{self.id}_CD_CMD_UHRV_MODO_MANUTENCAO"][0] = False
+            d.voip[f"UG{self.id}_L_TESTE_VOIP"][0] = True
+        elif not self.l_teste_voip.valor and d.voip[f"UG{self.id}_L_TESTE_VOIP"][0]:
+            d.voip[f"UG{self.id}_L_TESTE_VOIP"][0] = False
 
 
     def carregar_leituras(self) -> "None":
@@ -969,4 +980,4 @@ class UnidadeDeGeracao:
         self.l_teste_voip = lei.LeituraModbusBit(srv.Servidores.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}"]["L_VOIP"], descricao=f"[UG{self.id}] UHRV Comando Modo Manutenção")
 
         ## WHATSAPP
-        self.l_teste_whats = lei.LeituraModbusBit(srv.Servidores.rv[f"UG{self.id}"], REG_RTV[f"UG{self.id}"]["L_WHATS"], descricao=f"[UG{self.id}] RV Potência Nula")
+        self.l_teste_whats = lei.LeituraModbusBit(srv.Servidores.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}"]["L_WHATS"], descricao=f"[UG{self.id}] RV Potência Nula")
