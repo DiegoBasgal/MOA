@@ -305,7 +305,7 @@ class ModoManual(State):
             logger.debug("")
             ug.setpoint = ug.potencia
 
-        self.usn.controle_ie = (self.usn.ug1.potencia + self.usn.ug2.potencia) / self.usn.cfg["pot_maxima_usina"]
+        self.usn.controle_ie = self.usn.ajustar_ie_padrao()
         self.usn.controle_i = max(min(self.usn.controle_ie - (self.usn.controle_i * self.usn.cfg["ki"]) - self.usn.cfg["kp"] * tda.TomadaAgua.erro_nv - self.usn.cfg["kd"] * (tda.TomadaAgua.erro_nv - tda.TomadaAgua.erro_nv_anterior), 0.9), 0)
 
         self.usn.escrever_valores()

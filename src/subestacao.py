@@ -233,7 +233,7 @@ class Subestacao:
 
         ## CONDICIONADORES ESSENCIAIS
         cls.l_disj_linha_aberto = lei.LeituraModbusBit(serv.Servidores.clp["SA"], REG_SASE["SE_DISJUNTOR_LINHA_ABERTO"], descricao="[SE]  Disjuntor de Linha Aberto")
-        cls.condicionadores_essenciais.append(c.CondicionadorBase(cls.l_disj_linha_aberto, CONDIC_AGUARDAR))
+        cls.condicionadores_essenciais.append(c.CondicionadorBase(cls.l_disj_linha_aberto, CONDIC_NORMALIZAR))
 
         # cls.l_rele_alm_led1_50ou51 = lei.LeituraModbusBit(serv.Servidores.rele["SE"], REG_RELE["SE"]["LED1_50_51"], invertido=True, descricao="[RELE][SE] Alarme LED 1 50 ou 51")
         # cls.condicionadores_essenciais.append(c.CondicionadorBase(cls.l_rele_alm_led1_50ou51, CONDIC_INDISPONIBILIZAR))

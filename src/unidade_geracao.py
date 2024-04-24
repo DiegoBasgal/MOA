@@ -23,6 +23,7 @@ from datetime import datetime
 
 
 logger = logging.getLogger("logger")
+debug_log = logging.getLogger("debug")
 
 
 class UnidadeDeGeracao:
@@ -86,6 +87,10 @@ class UnidadeDeGeracao:
         self._setpoint_minimo: "float" = 200
         self._setpoint_maximo: "float" = 500
 
+        self._condicionadores: "list[c.CondicionadorBase]" = []
+        self._condicionadores_essenciais: "list[c.CondicionadorBase]" = []
+        self._condicionadores_atenuadores: "list[c.CondicionadorBase]" = []
+
         # ATRIBUIÇÃO DE VARIÁVEIS PÚBLICAS
         self.atenuacao: "int" = 0
         self.tempo_normalizar: "int" = 0
@@ -101,10 +106,7 @@ class UnidadeDeGeracao:
         self.aux_tempo_sincronizada: "datetime" = 0
         self.ts_auxiliar: "datetime" = self.get_time()
 
-        self._condicionadores: "list[c.CondicionadorBase]" = []
         self.condicionadores_ativos: "list[c.CondicionadorBase]" = []
-        self._condicionadores_essenciais: "list[c.CondicionadorBase]" = []
-        self._condicionadores_atenuadores: "list[c.CondicionadorBase]" = []
 
         # EXECUÇÃO FINAL DA INICIALIZAÇÃO
         self.desabilitar_manutencao()
@@ -667,17 +669,20 @@ class UnidadeDeGeracao:
         # SINCRONIZADA
         elif self.etapa == UG_SINCRONIZADA:
             self.temporizar_partida = True
-            if not self.aux_tempo_sincronizada:
+            if self.aux_tempo_sincronizada == 0:
+                debug_log.debug(f"[UG{self.id}] Início do contador para reset de tentativas de normalização")
                 self.aux_tempo_sincronizada = self.get_time()
 
             elif (self.get_time() - self.aux_tempo_sincronizada).seconds >= 300:
+                debug_log.debug(f"[UG{self.id}] Tentativas de normalização resetadas.")
+                self.aux_tempo_sincronizada = 0
                 self.tentativas_de_normalizacao = 0
 
             self.parar() if self.setpoint == 0 else self.enviar_setpoint(self.setpoint)
 
         # CONTROLE TEMPO SINCRONIZADAS
         if not self.etapa == UG_SINCRONIZADA:
-            self.aux_tempo_sincronizada = None
+            self.aux_tempo_sincronizada = 0
 
 
     def verificar_sincronismo(self) -> "None":
@@ -896,6 +901,9 @@ class UnidadeDeGeracao:
         """
 
         # WHATSAPP
+        if self.l_alarme_contro_dif_grade.valor:
+            logger.warning(f"[UG{self.id}] O Alarme de Diferencial de Grade está ativo. Favor realizar limpeza.")
+
         if self.l_rt_selec_modo_controle_isol.valor:
             logger.warning(f"[UG{self.id}] O comando de Modo de Controle Isolado do RT foi ativado. Favor verificar.")
 
@@ -1325,6 +1333,7 @@ class UnidadeDeGeracao:
 
         # Mancal Casquilho Radial
         self.l_tmp_mancal_casq_rad = lei.LeituraModbus(
+        
             srv.Servidores.clp[f"UG{self.id}"],
             REG_UG[f"UG{self.id}"]["TEMPERATURA_MANCAL_GUIA_CASQUILHO"],
             escala=0.001,
@@ -1361,6 +1370,9 @@ class UnidadeDeGeracao:
 
 
         ## CONDICINOADORES ESSENCIAIS
+        self.l_trip_controle_diferencial_grade = lei.LeituraModbusBit(srv.Servidores.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}"]["CONTROLE_TRIP_DIFERENCIAL_DE_GRADE"], descricao=f"[UG{self.id}] Trip Controle Diferencial Grade")
+        self.condicionadores_essenciais.append(c.CondicionadorBase(self.l_trip_controle_diferencial_grade, CONDIC_NORMALIZAR))
+
         self.l_rele_bloq_86eh = lei.LeituraModbusBit(srv.Servidores.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}"]["PRTVA_RELE_BLOQUEIO_86EH"], descricao=f"[UG{self.id}] Relé Bloqueio 86EH")
         self.condicionadores_essenciais.append(c.CondicionadorBase(self.l_rele_bloq_86eh, CONDIC_NORMALIZAR, [UG_SINCRONIZANDO, UG_SINCRONIZADA], self))
 
@@ -1380,10 +1392,10 @@ class UnidadeDeGeracao:
         self.condicionadores_essenciais.append(c.CondicionadorBase(self.l_rele_trip_prot_gerad, CONDIC_NORMALIZAR, teste=True))
 
         self.l_rv_trip = lei.LeituraModbusBit(srv.Servidores.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}"]["RV_TRIP"], descricao=f"[UG{self.id}] RV Trip")
-        self.condicionadores_essenciais.append(c.CondicionadorBase(self.l_rv_trip, CONDIC_NORMALIZAR, teste=True))
+        self.condicionadores_essenciais.append(c.CondicionadorBase(self.l_rv_trip, CONDIC_NORMALIZAR))
 
         self.l_rt_trip = lei.LeituraModbusBit(srv.Servidores.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}"]["PRTVA_RT_TRIP"], descricao=f"[UG{self.id}] RT Trip")
-        self.condicionadores_essenciais.append(c.CondicionadorBase(self.l_rt_trip, CONDIC_NORMALIZAR, teste=True))
+        self.condicionadores_essenciais.append(c.CondicionadorBase(self.l_rt_trip, CONDIC_NORMALIZAR))
 
 
         ## CONDICIONADORES NORMALIZAR
@@ -1401,7 +1413,6 @@ class UnidadeDeGeracao:
 
         self.l_botao_bloq_86eh = lei.LeituraModbusBit(srv.Servidores.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}"]["BOTAO_BLOQUEIO_86EH"], descricao=f"[UG{self.id}] Botão Bloqueio 86EH")
         self.condicionadores.append(c.CondicionadorBase(self.l_botao_bloq_86eh, CONDIC_NORMALIZAR, teste=True))
-
 
         ## CONDICIONADORES INDISPONIBILIZAR
         # ENTRADAS DIGITAIS
@@ -1690,7 +1701,7 @@ class UnidadeDeGeracao:
         self.condicionadores.append(c.CondicionadorBase(self.l_rt_falha_3_perda_med_tensao_term, CONDIC_INDISPONIBILIZAR))
 
         self.l_rt_falha_3_perda_med_corr_exci_princ = lei.LeituraModbusBit(srv.Servidores.rt[f"UG{self.id}"], REG_RTV[f"UG{self.id}"]["RT_FALHA_PERDA_MEDICAO_CORRENTE_EXCITACAO_PRINCIPAL"], descricao=f"[UG{self.id}] RT Falha 3 Perda Medição Corrente Excitação Principal")
-        self.condicionadores.append(c.CondicionadorBase(self.l_rt_falha_3_perda_med_corr_exci_princ, CONDIC_INDISPONIBILIZAR))
+        self.condicionadores.append(c.CondicionadorBase(self.l_rt_falha_3_perda_med_corr_exci_princ, CONDIC_INDISPONIBILIZAR, teste=True))
 
         self.l_rt_falha_3_perda_med_corr_exci_retag = lei.LeituraModbusBit(srv.Servidores.rt[f"UG{self.id}"], REG_RTV[f"UG{self.id}"]["RT_FALHA_PERDA_MEDICAO_CORRENTE_EXCITACAO_RETAGUARDA"], descricao=f"[UG{self.id}] RT Falha 3 Perda Medição Corrente Excitação Retaguarda")
         self.condicionadores.append(c.CondicionadorBase(self.l_rt_falha_3_perda_med_corr_exci_retag, CONDIC_INDISPONIBILIZAR))

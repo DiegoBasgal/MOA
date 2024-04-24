@@ -176,8 +176,6 @@ class TomadaAgua:
 
         cls.l_diferencial_grade = lei.LeituraSubtracao([cls.nv_montante, cls.nv_jusante], descricao="[TDA] Diferencial de Grade")
         cls.c_diferencial_grade = c.CondicionadorExponencial(cls.l_diferencial_grade, CONDIC_NORMALIZAR, valor_base=0.3, valor_limite=0.4, ordem=4) # valor limite -> 0.47 (outro cenário)
-        
-        cls.condicionadores_essenciais.append(cls.c_diferencial_grade)
         cls.condicionadores_atenuadores.append(cls.c_diferencial_grade)
 
         cls.l_nv_montante_baixo = lei.LeituraModbusBit(serv.Servidores.clp["TDA"], REG_TDA["NIVEL_MONTANTE_GRADE_BAIXO"], descricao="[TDA] Nível Montante Baixo")

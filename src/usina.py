@@ -356,14 +356,7 @@ class Usina:
 
     def controlar_unidades_disponiveis(self) -> "list":
         ls = [ug for ug in self.ugs if ug.disponivel and not ug.etapa == UG_PARANDO]
-
-        # TODO verificar leituras de horímetro das Unidades
-        # if self.modo_de_escolha_das_ugs in (UG_PRIORIDADE_1, UG_PRIORIDADE_2):
         ls = sorted(ls, key=lambda y: (-1 * y.potencia, -1 * y.setpoint, y.prioridade))
-
-        # else:
-        #     ls = sorted(ls, key=lambda y: (y.leitura_horimetro, -1 * y.potencia, -1 * y.setpoint))
-
         return ls
 
 
