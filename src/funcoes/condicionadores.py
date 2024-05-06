@@ -92,7 +92,7 @@ class CondicionadorExponencial(CondicionadorBase):
 
     @property
     def valor(self) -> "float":
-        if self.leitura > self.valor_base and  self.leitura < self.valor_limite:
+        if self.leitura > self.valor_base and self.leitura < self.valor_limite:
             aux = (1 - (((self.valor_limite - self.leitura) / (self.valor_limite - self.valor_base)) ** (self.__ordem)).real)
             return max(min(aux, 1), 0)
         else:

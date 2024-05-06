@@ -368,13 +368,7 @@ class Usina:
             for ug in self.ugs: ug.setpoint = 0
             return 0
 
-        try:
-            l_pot_rele = srv.Servidores.rele["SE"].read_holding_registers(REG_RELE["SE"]["P"], 5)[1]
-        except Exception:
-            logger.debug(f"[USN] Erro de Leitura de Potência no Medidor da Usina.")
-            l_pot_rele = 0
-
-        l_pot_medidor = 65535 - l_pot_rele if 60000 <= l_pot_rele <= 65535 else l_pot_rele
+        l_pot_medidor = se.Subestacao.verificar_pot_rele()
 
         logger.debug(f"[USN] Potência no medidor:                {l_pot_medidor:0.3f}")
 
@@ -490,7 +484,8 @@ class Usina:
                 ganho = 1 - self.atenuacao
                 self.atenuacao = 0
                 aux = setpoint
-                setpoint_atenuado = setpoint - 0.15 * (setpoint - (setpoint * ganho)) # 0.15 -> cenário de valor limite 0.47
+
+                setpoint_atenuado = setpoint - (setpoint - (setpoint * ganho))                                # 0.15 -> cenário de valor limite 0.47
 
                 logger.debug(f"[USN]                                     SP {aux:0.1f} * GANHO {ganho:0.4f} = {setpoint_atenuado:0.3f} kW")
 
@@ -509,6 +504,7 @@ class Usina:
         parametros = bd.BancoDados.get_parametros_usina()
         self.atualizar_valores_cfg(parametros)
         self.atualizar_valores_banco(parametros)
+        tda.TomadaAgua.atualizar_valor_diferencial(parametros)
 
         for ug in self.ugs: ug.atualizar_limites_condicionadores(parametros)
 

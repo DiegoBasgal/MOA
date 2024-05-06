@@ -29,11 +29,6 @@ logger = logging.getLogger("logger")
 class Subestacao:
 
     # ATRIBUIÇÃO DE VARIÁVEIS
-    potencia_ativa = lei.LeituraModbus(
-        serv.Servidores.rele["SE"],
-        REG_RELE["SE"]["P"],
-        descricao="[SE]  Potência Ativa"
-    )
     status_dj_linha = lei.LeituraModbusBit(
         serv.Servidores.clp["SA"],
         REG_SASE["SE_DISJUNTOR_LINHA_FECHADO"],
@@ -49,6 +44,18 @@ class Subestacao:
     condicionadores: "list[c.CondicionadorBase]" = []
     condicionadores_ativos: "list[c.CondicionadorBase]" = []
     condicionadores_essenciais: "list[c.CondicionadorBase]" = []
+
+
+    @classmethod
+    def verificar_pot_rele(cls) -> "float":
+        try:
+            l_pot_rele = serv.Servidores.rele["SE"].read_holding_registers(REG_RELE["SE"]["P"], 5)[1]
+            l_pot = 65535 - l_pot_rele if 60000 <= l_pot_rele <= 65535 else l_pot_rele
+            return l_pot
+
+        except Exception:
+            logger.debug(f"[USN] Erro de Leitura de Potência no Medidor da Usina.")
+            return 0
 
 
     @classmethod

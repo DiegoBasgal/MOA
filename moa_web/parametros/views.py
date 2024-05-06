@@ -59,6 +59,7 @@ def parametros_moa_view(request, *args, **kwargs):
 
             aux = request.POST.get("limite_perda_grade")
             usina.limite_perda_grade = (float(aux.replace(",", ".")) if aux is not None and float(aux.replace(",", ".")) > 0 else usina.limite_perda_grade)
+            usina.save()
 
         if request.POST.get("salvar_params"):
             aux = request.POST.get("alerta_temperatura_fase_r_ug1")

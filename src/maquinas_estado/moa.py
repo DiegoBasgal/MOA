@@ -295,7 +295,7 @@ class ModoManual(State):
 
         logger.debug(f"[TDA] Leitura de Nível:                   {tda.TomadaAgua.nv_montante.valor:0.3f}")
         logger.debug(f"[TDA] Leitura de Nível Jusante:           {tda.TomadaAgua.nv_jusante.valor:0.3f}")
-        logger.debug(f"[SE]  Potência no medidor:                {se.Subestacao.potencia_ativa.valor:0.3f}")
+        logger.debug(f"[SE]  Potência no medidor:                {se.Subestacao.verificar_pot_rele():0.3f}")
         logger.debug("")
 
         for ug in self.usn.ugs:

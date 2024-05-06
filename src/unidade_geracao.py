@@ -96,6 +96,8 @@ class UnidadeDeGeracao:
         self.tempo_normalizar: "int" = 0
         self.tentativas_norm_etapas: "int" = 0
 
+        self.borda_alm_diferencial: "bool" = False
+
         self.ug_parando: "bool" = False
         self.borda_parar: "bool" = False
         self.manter_unidade: "bool" = False
@@ -901,8 +903,11 @@ class UnidadeDeGeracao:
         """
 
         # WHATSAPP
-        if self.l_alarme_contro_dif_grade.valor:
+        if self.l_alarme_contro_dif_grade.valor and not self.borda_alm_diferencial:
+            self.borda_alm_diferencial = True
             logger.warning(f"[UG{self.id}] O Alarme de Diferencial de Grade está ativo. Favor realizar limpeza.")
+        elif not self.l_alarme_contro_dif_grade.valor and self.borda_alm_diferencial:
+            self.borda_alm_diferencial = False
 
         if self.l_rt_selec_modo_controle_isol.valor:
             logger.warning(f"[UG{self.id}] O comando de Modo de Controle Isolado do RT foi ativado. Favor verificar.")
@@ -1373,9 +1378,6 @@ class UnidadeDeGeracao:
         self.l_trip_controle_diferencial_grade = lei.LeituraModbusBit(srv.Servidores.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}"]["CONTROLE_TRIP_DIFERENCIAL_DE_GRADE"], descricao=f"[UG{self.id}] Trip Controle Diferencial Grade")
         self.condicionadores_essenciais.append(c.CondicionadorBase(self.l_trip_controle_diferencial_grade, CONDIC_NORMALIZAR))
 
-        self.l_rele_bloq_86eh = lei.LeituraModbusBit(srv.Servidores.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}"]["PRTVA_RELE_BLOQUEIO_86EH"], descricao=f"[UG{self.id}] Relé Bloqueio 86EH")
-        self.condicionadores_essenciais.append(c.CondicionadorBase(self.l_rele_bloq_86eh, CONDIC_NORMALIZAR, [UG_SINCRONIZANDO, UG_SINCRONIZADA], self))
-
         self.l_bloq_86e = lei.LeituraModbusBit(srv.Servidores.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}"]["BLOQUEIO_86E_ATUADO"], descricao=f"[UG{self.id}] Bloqueio 86E")
         self.condicionadores_essenciais.append(c.CondicionadorBase(self.l_bloq_86e, CONDIC_NORMALIZAR))
 
@@ -1385,11 +1387,11 @@ class UnidadeDeGeracao:
         self.l_status_bloq_86m = lei.LeituraModbusBit(srv.Servidores.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}"]["BLOQUEIO_86M_ATUADO"], descricao=f"[UG{self.id}] Status Bloqueio 86M")
         self.condicionadores_essenciais.append(c.CondicionadorBase(self.l_status_bloq_86m, CONDIC_NORMALIZAR))
 
-        self.l_rt_falha_2_bloq_externo = lei.LeituraModbusBit(srv.Servidores.rv[f"UG{self.id}"], REG_RTV[f"UG{self.id}"]["RV_FALHA_BLOQUEIO_EXTERNO"], descricao=f"[UG{self.id}] RT Falha Bloqueio Externo")
-        self.condicionadores_essenciais.append(c.CondicionadorBase(self.l_rt_falha_2_bloq_externo, CONDIC_NORMALIZAR, [UG_SINCRONIZANDO, UG_SINCRONIZADA], self))
+        self.l_botao_bloq_86eh = lei.LeituraModbusBit(srv.Servidores.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}"]["BOTAO_BLOQUEIO_86EH"], descricao=f"[UG{self.id}] Botão Bloqueio 86EH")
+        self.condicionadores_essenciais.append(c.CondicionadorBase(self.l_botao_bloq_86eh, CONDIC_NORMALIZAR))
 
         self.l_rele_trip_prot_gerad = lei.LeituraModbusBit(srv.Servidores.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}"]["RELE_PROT_GERADOR_TRIP"], descricao=f"[UG{self.id}] Relé Trip Proteção Gerador")
-        self.condicionadores_essenciais.append(c.CondicionadorBase(self.l_rele_trip_prot_gerad, CONDIC_NORMALIZAR, teste=True))
+        self.condicionadores_essenciais.append(c.CondicionadorBase(self.l_rele_trip_prot_gerad, CONDIC_NORMALIZAR))
 
         self.l_rv_trip = lei.LeituraModbusBit(srv.Servidores.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}"]["RV_TRIP"], descricao=f"[UG{self.id}] RV Trip")
         self.condicionadores_essenciais.append(c.CondicionadorBase(self.l_rv_trip, CONDIC_NORMALIZAR))
@@ -1397,13 +1399,21 @@ class UnidadeDeGeracao:
         self.l_rt_trip = lei.LeituraModbusBit(srv.Servidores.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}"]["PRTVA_RT_TRIP"], descricao=f"[UG{self.id}] RT Trip")
         self.condicionadores_essenciais.append(c.CondicionadorBase(self.l_rt_trip, CONDIC_NORMALIZAR))
 
+        self.l_rele_bloq_86eh = lei.LeituraModbusBit(srv.Servidores.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}"]["PRTVA_RELE_BLOQUEIO_86EH"], descricao=f"[UG{self.id}] Relé Bloqueio 86EH")
+        self.condicionadores_essenciais.append(c.CondicionadorBase(self.l_rele_bloq_86eh, CONDIC_NORMALIZAR, [UG_SINCRONIZANDO, UG_SINCRONIZADA], self))
+
+        self.l_rt_falha_2_bloq_externo = lei.LeituraModbusBit(srv.Servidores.rv[f"UG{self.id}"], REG_RTV[f"UG{self.id}"]["RV_FALHA_BLOQUEIO_EXTERNO"], descricao=f"[UG{self.id}] RT Falha Bloqueio Externo")
+        self.condicionadores_essenciais.append(c.CondicionadorBase(self.l_rt_falha_2_bloq_externo, CONDIC_NORMALIZAR, [UG_SINCRONIZANDO, UG_SINCRONIZADA], self))
 
         ## CONDICIONADORES NORMALIZAR
+        self.l_vavl_bypass_discrep_senso = lei.LeituraModbusBit(srv.Servidores.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}"]["BYPASS_DISCREPANCIA_SENSORES"], descricao=f"[UG{self.id}] Válvula Bypass Discrepância Sensores")
+        self.condicionadores.append(c.CondicionadorBase(self.l_vavl_bypass_discrep_senso, CONDIC_NORMALIZAR))
+
         self.l_val_bypass_falha_abrir = lei.LeituraModbusBit(srv.Servidores.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}"]["BYPASS_FALHA_ABRIR"], descricao=f"[UG{self.id}] Válvula Bypass Falha Abrir")
-        self.condicionadores.append(c.CondicionadorBase(self.l_val_bypass_falha_abrir, CONDIC_NORMALIZAR))
+        self.condicionadores.append(c.CondicionadorBase(self.l_val_bypass_falha_abrir, CONDIC_NORMALIZAR, [UG_PARADA, UG_SINCRONIZANDO, UG_SINCRONIZADA], self))
 
         self.l_val_bypass_falha_fechar = lei.LeituraModbusBit(srv.Servidores.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}"]["BYPASS_FALHA_FECHAR"], descricao=f"[UG{self.id}] Válvula Bypass Falha Fechar")
-        self.condicionadores.append(c.CondicionadorBase(self.l_val_bypass_falha_fechar, CONDIC_NORMALIZAR))
+        self.condicionadores.append(c.CondicionadorBase(self.l_val_bypass_falha_fechar, CONDIC_NORMALIZAR, [UG_PARADA, UG_SINCRONIZANDO, UG_SINCRONIZADA], self))
 
         self.l_rv_alarme_sobrefrequncia = lei.LeituraModbusBit(srv.Servidores.rv[f"UG{self.id}"], REG_RTV[f"UG{self.id}"]["RV_ALARME_SOBREFREQUENCIA"], descricao=f"[UG{self.id}] RV Alarme Sobrefrequência")
         self.condicionadores.append(c.CondicionadorBase(self.l_rv_alarme_sobrefrequncia, CONDIC_NORMALIZAR))
@@ -1411,56 +1421,51 @@ class UnidadeDeGeracao:
         self.l_rv_alarme_subfrequencia = lei.LeituraModbusBit(srv.Servidores.rv[f"UG{self.id}"], REG_RTV[f"UG{self.id}"]["RV_ALARME_SUBFREQUENCIA"], descricao=f"[UG{self.id}] RV Alarme Subfrequência")
         self.condicionadores.append(c.CondicionadorBase(self.l_rv_alarme_subfrequencia, CONDIC_NORMALIZAR))
 
-        self.l_botao_bloq_86eh = lei.LeituraModbusBit(srv.Servidores.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}"]["BOTAO_BLOQUEIO_86EH"], descricao=f"[UG{self.id}] Botão Bloqueio 86EH")
-        self.condicionadores.append(c.CondicionadorBase(self.l_botao_bloq_86eh, CONDIC_NORMALIZAR, teste=True))
-
         ## CONDICIONADORES INDISPONIBILIZAR
         # ENTRADAS DIGITAIS
-        self.l_contro_trip_dif_grade = lei.LeituraModbusBit(srv.Servidores.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}"]["CONTROLE_TRIP_DIFERENCIAL_DE_GRADE"], descricao=f"[UG{self.id}] Contorle Trip Diferencial Grade")
+        self.l_contro_trip_dif_grade = lei.LeituraModbusBit(srv.Servidores.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}"]["CONTROLE_TRIP_DIFERENCIAL_DE_GRADE"], descricao=f"[UG{self.id}] Trip Diferencial Grade")
         self.condicionadores.append(c.CondicionadorBase(self.l_contro_trip_dif_grade, CONDIC_INDISPONIBILIZAR))
 
         self.l_resis_aquec_gera_falha_deslig = lei.LeituraModbusBit(srv.Servidores.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}"]["RESISTENCIA_AQUECIMENTO_GERADOR_FALHA_DESLIGAR"], descricao=f"[UG{self.id}] Resistência Aquecedor Gerador Falha Desligar")
-        self.condicionadores.append(c.CondicionadorBase(self.l_resis_aquec_gera_falha_deslig, CONDIC_INDISPONIBILIZAR))
+        self.condicionadores.append(c.CondicionadorBase(self.l_resis_aquec_gera_falha_deslig, CONDIC_INDISPONIBILIZAR, [UG_SINCRONIZANDO, UG_SINCRONIZADA, UG_PARANDO], self))
 
         self.l_valv_borb_falha_fechar = lei.LeituraModbusBit(srv.Servidores.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}"]["BORBOLETA_FALHA_FECHAR"], descricao=f"[UG{self.id}] Válvula Borboleta Falha Fechar")
-        self.condicionadores.append(c.CondicionadorBase(self.l_valv_borb_falha_fechar, CONDIC_INDISPONIBILIZAR))
+        self.condicionadores.append(c.CondicionadorBase(self.l_valv_borb_falha_fechar, CONDIC_INDISPONIBILIZAR, [UG_PARANDO, UG_PARADA], self))
 
         self.l_valv_borb_dicrep_senso = lei.LeituraModbusBit(srv.Servidores.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}"]["BORBOLETA_DISCREPANCIA_SENSORES"], descricao=f"[UG{self.id}] Válvula Borboleta Discrepância Sensores")
         self.condicionadores.append(c.CondicionadorBase(self.l_valv_borb_dicrep_senso, CONDIC_INDISPONIBILIZAR))
 
-        self.l_vavl_bypass_discrep_senso = lei.LeituraModbusBit(srv.Servidores.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}"]["BYPASS_DISCREPANCIA_SENSORES"], descricao=f"[UG{self.id}] Válvula Bypass Discrepância Sensores")
-        self.condicionadores.append(c.CondicionadorBase(self.l_vavl_bypass_discrep_senso, CONDIC_INDISPONIBILIZAR))
 
         # UG_STT_ENTRADAS_DIGITAIS
         self.l_uhrv_oleo_nv_muito_baixo = lei.LeituraModbusBit(srv.Servidores.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}"]["UHRV_OLEO_NIVEL_MUITO_BAIXO"], descricao=f"[UG{self.id}] UHRV Óleo Nível Muito Baixo")
-        self.condicionadores.append(c.CondicionadorBase(self.l_uhrv_oleo_nv_muito_baixo, CONDIC_INDISPONIBILIZAR, teste=True))
+        self.condicionadores.append(c.CondicionadorBase(self.l_uhrv_oleo_nv_muito_baixo, CONDIC_INDISPONIBILIZAR))
 
         self.l_uhrv_filtro_oleo_sujo = lei.LeituraModbusBit(srv.Servidores.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}"]["UHRV_FILTRO_OLEO_SUJO"], descricao=f"[UG{self.id}] UHRV Filtro Óleo Sujo")
-        self.condicionadores.append(c.CondicionadorBase(self.l_uhrv_filtro_oleo_sujo, CONDIC_INDISPONIBILIZAR, teste=True))
+        self.condicionadores.append(c.CondicionadorBase(self.l_uhrv_filtro_oleo_sujo, CONDIC_INDISPONIBILIZAR))
 
         self.l_uhrv_oleo_nv_muito_alto = lei.LeituraModbusBit(srv.Servidores.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}"]["UHLM_OLEO_NIVEL_MUITO_ALTO"], descricao=f"[UG{self.id}] UHRV Óleo Nível Muito Alto")
-        self.condicionadores.append(c.CondicionadorBase(self.l_uhrv_oleo_nv_muito_alto, CONDIC_INDISPONIBILIZAR, teste=True))
+        self.condicionadores.append(c.CondicionadorBase(self.l_uhrv_oleo_nv_muito_alto, CONDIC_INDISPONIBILIZAR))
 
         self.l_uhlm_oleo_nv_muito_baixo = lei.LeituraModbusBit(srv.Servidores.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}"]["UHLM_OLEO_NIVEL_MUITO_BAIXO"], descricao=f"[UG{self.id}] UHLM Óleo Nível Muito Baixo")
-        self.condicionadores.append(c.CondicionadorBase(self.l_uhlm_oleo_nv_muito_baixo, CONDIC_INDISPONIBILIZAR, teste=True))
+        self.condicionadores.append(c.CondicionadorBase(self.l_uhlm_oleo_nv_muito_baixo, CONDIC_INDISPONIBILIZAR))
 
         self.l_uhlm_press_linha_lubrifi = lei.LeituraModbusBit(srv.Servidores.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}"]["UHLM_PRESSAO_LINHA_LUBRIFICACAO"], invertido=True, descricao=f"[UG{self.id}] UHLM Pressão Linha Lubrificação")
         self.condicionadores.append(c.CondicionadorBase(self.l_uhlm_press_linha_lubrifi, CONDIC_NORMALIZAR, [UG_SINCRONIZANDO, UG_SINCRONIZADA], self))
 
         self.l_qbag_escova_polo_pos_desgas = lei.LeituraModbusBit(srv.Servidores.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}"]["QBAG_ESCOVA_POLO_POSITIVO_DESGASTADA"], descricao=f"[UG{self.id}] QBAG Escova Polo Positivo Desgastada")
-        self.condicionadores.append(c.CondicionadorBase(self.l_qbag_escova_polo_pos_desgas, CONDIC_INDISPONIBILIZAR))
+        self.condicionadores.append(c.CondicionadorBase(self.l_qbag_escova_polo_pos_desgas, CONDIC_INDISPONIBILIZAR, [UG_SINCRONIZANDO, UG_SINCRONIZADA], self))
 
         self.l_qbag_escova_polo_neg_desgas = lei.LeituraModbusBit(srv.Servidores.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}"]["QBAG_ESCOVA_POLO_NEGATICO_DESGASTADA"], descricao=f"[UG{self.id}] QBAG Escova Polo Negativo Desgastada")
-        self.condicionadores.append(c.CondicionadorBase(self.l_qbag_escova_polo_neg_desgas, CONDIC_INDISPONIBILIZAR))
+        self.condicionadores.append(c.CondicionadorBase(self.l_qbag_escova_polo_neg_desgas, CONDIC_INDISPONIBILIZAR, [UG_SINCRONIZANDO, UG_SINCRONIZADA], self))
 
         self.l_rele_prot_gerad_50bf = lei.LeituraModbusBit(srv.Servidores.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}"]["RELE_PROT_GERADOR_50BF"], descricao=f"[UG{self.id}] Relé Proteção Gerador 50BF")
-        self.condicionadores.append(c.CondicionadorBase(self.l_rele_prot_gerad_50bf, CONDIC_INDISPONIBILIZAR, teste=True))
+        self.condicionadores.append(c.CondicionadorBase(self.l_rele_prot_gerad_50bf, CONDIC_INDISPONIBILIZAR))
 
         self.l_disj_tps_protecao = lei.LeituraModbusBit(srv.Servidores.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}"]["DISJUNTOR_TPS_PROTECAO"], descricao=f"[UG{self.id}] Disjuntor TPS Proteção")
-        self.condicionadores.append(c.CondicionadorBase(self.l_disj_tps_protecao, CONDIC_INDISPONIBILIZAR, teste=True))
+        self.condicionadores.append(c.CondicionadorBase(self.l_disj_tps_protecao, CONDIC_INDISPONIBILIZAR))
 
         self.l_uhrv_pressao_freio = lei.LeituraModbusBit(srv.Servidores.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}"]["UHRV_PRESSAO_FREIO"], descricao=f"[UG{self.id}] UHRV Pressão Freio")
-        self.condicionadores.append(c.CondicionadorBase(self.l_uhrv_pressao_freio, CONDIC_NORMALIZAR))
+        self.condicionadores.append(c.CondicionadorBase(self.l_uhrv_pressao_freio, CONDIC_NORMALIZAR, [UG_SINCRONIZANDO, UG_SINCRONIZADA, UG_PARANDO], self))
 
         # UHRV
         self.l_uhrv_bomba_1_indisp = lei.LeituraModbusBit(srv.Servidores.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}"]["UHRV_BOMBA_1_INDISPONIVEL"], descricao=f"[UG{self.id}] UHRV Bomba 1 Indisponível")
@@ -1497,9 +1502,6 @@ class UnidadeDeGeracao:
 
         self.l_rv_falha_1_leit_refer_pot = lei.LeituraModbusBit(srv.Servidores.rv[f"UG{self.id}"], REG_RTV[f"UG{self.id}"]["RV_FALHA_LEITURA_REFERENCIA_POTENCIA"], descricao=f"[UG{self.id}] RV Falha 1 Leitura Referência Potência")
         self.condicionadores.append(c.CondicionadorBase(self.l_rv_falha_1_leit_refer_pot, CONDIC_INDISPONIBILIZAR))
-
-        self.l_rv_falha_1_nv_montante_muito_baixo = lei.LeituraModbusBit(srv.Servidores.rv[f"UG{self.id}"], REG_RTV[f"UG{self.id}"]["RV_FALHA_NIVEL_MONTANTE_MUITO_BAIXO"], descricao=f"[UG{self.id}] RV Falha 1 Nível Montante Muito Baixo")
-        self.condicionadores.append(c.CondicionadorBase(self.l_rv_falha_1_nv_montante_muito_baixo, CONDIC_INDISPONIBILIZAR))
 
         self.l_rv_falha_1_control_pos_distribu = lei.LeituraModbusBit(srv.Servidores.rv[f"UG{self.id}"], REG_RTV[f"UG{self.id}"]["RV_FALHA_CONTROLE_POSICAO_DISTRIBUIDOR"], descricao=f"[UG{self.id}] RV Falha 1 Controle Posição Distribuidor")
         self.condicionadores.append(c.CondicionadorBase(self.l_rv_falha_1_control_pos_distribu, CONDIC_INDISPONIBILIZAR))
@@ -1596,7 +1598,7 @@ class UnidadeDeGeracao:
         self.condicionadores.append(c.CondicionadorBase(self.l_rt_alar_2_perda_med_pot_reat, CONDIC_INDISPONIBILIZAR))
 
         self.l_rt_alar_2_perda_med_tens_term = lei.LeituraModbusBit(srv.Servidores.rt[f"UG{self.id}"], REG_RTV[f"UG{self.id}"]["RT_ALARME_PERDA_MEDICAO_TENSAO_TERMINAL"], descricao=f"[UG{self.id}] RT Alarme 2 Perda Medição Tensão Terminal")
-        self.condicionadores.append(c.CondicionadorBase(self.l_rt_alar_2_perda_med_tens_term, CONDIC_INDISPONIBILIZAR))
+        self.condicionadores.append(c.CondicionadorBase(self.l_rt_alar_2_perda_med_tens_term, CONDIC_NORMALIZAR))
 
         self.l_rt_alar_2_perda_med_corr_exci = lei.LeituraModbusBit(srv.Servidores.rt[f"UG{self.id}"], REG_RTV[f"UG{self.id}"]["RT_ALARME_PERDA_MEDICAO_CORRENTE_EXCITACAO"], descricao=f"[UG{self.id}] RT Alarme 2 Perda Medição Corrente Excitação")
         self.condicionadores.append(c.CondicionadorBase(self.l_rt_alar_2_perda_med_corr_exci, CONDIC_INDISPONIBILIZAR))
@@ -1635,7 +1637,7 @@ class UnidadeDeGeracao:
         self.condicionadores.append(c.CondicionadorBase(self.l_rt_falha_1_lim_sup_fator_pot, CONDIC_INDISPONIBILIZAR))
 
         self.l_rt_falha_1_lim_inf_fator_pot = lei.LeituraModbusBit(srv.Servidores.rt[f"UG{self.id}"], REG_RTV[f"UG{self.id}"]["RT_FALHA_LIMITE_INFERIOR_FATOR_DE_POTENCIA"], descricao=f"[UG{self.id}] RT Falha 1 Limite Inferior Fator Potência")
-        self.condicionadores.append(c.CondicionadorBase(self.l_rt_falha_1_lim_inf_fator_pot, CONDIC_INDISPONIBILIZAR))
+        self.condicionadores.append(c.CondicionadorBase(self.l_rt_falha_1_lim_inf_fator_pot, CONDIC_NORMALIZAR))
 
         self.l_rt_falha_1_sobretensao_inst = lei.LeituraModbusBit(srv.Servidores.rt[f"UG{self.id}"], REG_RTV[f"UG{self.id}"]["RT_FALHA_SOBRETENSAO_INSTANTANEA"], descricao=f"[UG{self.id}] RT Falha 1 Sobretensão Instantânea")
         self.condicionadores.append(c.CondicionadorBase(self.l_rt_falha_1_sobretensao_inst, CONDIC_INDISPONIBILIZAR))
@@ -1701,7 +1703,7 @@ class UnidadeDeGeracao:
         self.condicionadores.append(c.CondicionadorBase(self.l_rt_falha_3_perda_med_tensao_term, CONDIC_INDISPONIBILIZAR))
 
         self.l_rt_falha_3_perda_med_corr_exci_princ = lei.LeituraModbusBit(srv.Servidores.rt[f"UG{self.id}"], REG_RTV[f"UG{self.id}"]["RT_FALHA_PERDA_MEDICAO_CORRENTE_EXCITACAO_PRINCIPAL"], descricao=f"[UG{self.id}] RT Falha 3 Perda Medição Corrente Excitação Principal")
-        self.condicionadores.append(c.CondicionadorBase(self.l_rt_falha_3_perda_med_corr_exci_princ, CONDIC_INDISPONIBILIZAR, teste=True))
+        self.condicionadores.append(c.CondicionadorBase(self.l_rt_falha_3_perda_med_corr_exci_princ, CONDIC_INDISPONIBILIZAR))
 
         self.l_rt_falha_3_perda_med_corr_exci_retag = lei.LeituraModbusBit(srv.Servidores.rt[f"UG{self.id}"], REG_RTV[f"UG{self.id}"]["RT_FALHA_PERDA_MEDICAO_CORRENTE_EXCITACAO_RETAGUARDA"], descricao=f"[UG{self.id}] RT Falha 3 Perda Medição Corrente Excitação Retaguarda")
         self.condicionadores.append(c.CondicionadorBase(self.l_rt_falha_3_perda_med_corr_exci_retag, CONDIC_INDISPONIBILIZAR))
@@ -1759,10 +1761,10 @@ class UnidadeDeGeracao:
         self.condicionadores.append(c.CondicionadorBase(self.l_uhrv_press_oleo_falha_leitura, CONDIC_INDISPONIBILIZAR))
 
         self.l_uhrv_press_oleo_muito_alta = lei.LeituraModbusBit(srv.Servidores.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}"]["UHRV_PRESSAO_OLEO_MUITO_ALTA"], descricao=f"[UG{self.id}] UHRV Pressão Óleo Muito Alta")
-        self.condicionadores.append(c.CondicionadorBase(self.l_uhrv_press_oleo_muito_alta, CONDIC_INDISPONIBILIZAR))
+        self.condicionadores.append(c.CondicionadorBase(self.l_uhrv_press_oleo_muito_alta, CONDIC_INDISPONIBILIZAR, [UG_SINCRONIZANDO, UG_SINCRONIZADA], self))
 
         self.l_uhrv_press_oleo_alta = lei.LeituraModbusBit(srv.Servidores.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}"]["UHRV_PRESSAO_OLEO_ALTA"], descricao=f"[UG{self.id}] UHRV Pressão Óleo Alta")
-        self.condicionadores.append(c.CondicionadorBase(self.l_uhrv_press_oleo_alta, CONDIC_INDISPONIBILIZAR))
+        self.condicionadores.append(c.CondicionadorBase(self.l_uhrv_press_oleo_alta, CONDIC_INDISPONIBILIZAR, [UG_SINCRONIZANDO, UG_SINCRONIZADA], self))
 
         self.l_falha_fechar_distrib = lei.LeituraModbusBit(srv.Servidores.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}"]["RV_FALHA_AO_FECHAR_DISTRIBUIDOR"], descricao=f"[UG{self.id}] Falha Fechamento Distribuidor")
         self.condicionadores.append(c.CondicionadorBase(self.l_falha_fechar_distrib, CONDIC_INDISPONIBILIZAR))
@@ -1771,7 +1773,7 @@ class UnidadeDeGeracao:
         self.condicionadores.append(c.CondicionadorBase(self.l_rv_falha_partir, CONDIC_INDISPONIBILIZAR))
 
         self.l_rv_falha_desab = lei.LeituraModbusBit(srv.Servidores.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}"]["RV_FALHA_AO_DESABILITAR"], descricao=f"[UG{self.id}] RV Falha Desabilitar")
-        self.condicionadores.append(c.CondicionadorBase(self.l_rv_falha_desab, CONDIC_INDISPONIBILIZAR))
+        self.condicionadores.append(c.CondicionadorBase(self.l_rv_falha_desab, CONDIC_INDISPONIBILIZAR, [UG_PARANDO, UG_PARADA], self))
 
         self.l_rv_falha_parar_maqu = lei.LeituraModbusBit(srv.Servidores.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}"]["RV_FALHA_AO_PARAR_MAQUINA"], descricao=f"[UG{self.id}] RV Falha Parar Máquina")
         self.condicionadores.append(c.CondicionadorBase(self.l_rv_falha_parar_maqu, CONDIC_INDISPONIBILIZAR))
@@ -1780,19 +1782,19 @@ class UnidadeDeGeracao:
         self.condicionadores.append(c.CondicionadorBase(self.l_rt_falha_partir, CONDIC_INDISPONIBILIZAR))
 
         self.l_rt_falha_desab = lei.LeituraModbusBit(srv.Servidores.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}"]["RT_FALHA_AO_DESABILITAR"], descricao=f"[UG{self.id}] RT Falha Desabilitar")
-        self.condicionadores.append(c.CondicionadorBase(self.l_rt_falha_desab, CONDIC_INDISPONIBILIZAR))
+        self.condicionadores.append(c.CondicionadorBase(self.l_rt_falha_desab, CONDIC_INDISPONIBILIZAR, [UG_PARANDO, UG_PARADA], self))
 
         self.l_rv_falha_hab = lei.LeituraModbusBit(srv.Servidores.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}"]["RT_FALHA_AO_HABILITAR"], descricao=f"[UG{self.id}] RV Falha Habilitar")
         self.condicionadores.append(c.CondicionadorBase(self.l_rv_falha_hab, CONDIC_INDISPONIBILIZAR))
 
         self.l_uhrv_bomba_1_falha_ligar = lei.LeituraModbusBit(srv.Servidores.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}"]["UHRV_BOMBA_1_FALHA_AO_LIGAR"], descricao=f"[UG{self.id}] UHRV Falha Ligar")
-        self.condicionadores.append(c.CondicionadorBase(self.l_uhrv_bomba_1_falha_ligar, CONDIC_INDISPONIBILIZAR))
+        self.condicionadores.append(c.CondicionadorBase(self.l_uhrv_bomba_1_falha_ligar, CONDIC_INDISPONIBILIZAR, [UG_SINCRONIZANDO, UG_SINCRONIZADA], self))
 
         self.l_uhlm_bomba_1_falha_ligar = lei.LeituraModbusBit(srv.Servidores.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}"]["UHLM_BOMBA_1_FALHA_AO_LIGAR"], descricao=f"[UG{self.id}] UHLM Bomba 1 Falha Ligar")
-        self.condicionadores.append(c.CondicionadorBase(self.l_uhlm_bomba_1_falha_ligar, CONDIC_INDISPONIBILIZAR))
+        self.condicionadores.append(c.CondicionadorBase(self.l_uhlm_bomba_1_falha_ligar, CONDIC_INDISPONIBILIZAR, [UG_SINCRONIZANDO, UG_SINCRONIZADA], self))
 
         self.l_uhlm_bomba_1_falha_deslig = lei.LeituraModbusBit(srv.Servidores.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}"]["UHLM_BOMBA_1_FALHA_AO_DESLIGAR"], descricao=f"[UG{self.id}] UHLM Bomba 1 Falha Desligar")
-        self.condicionadores.append(c.CondicionadorBase(self.l_uhlm_bomba_1_falha_deslig, CONDIC_INDISPONIBILIZAR))
+        self.condicionadores.append(c.CondicionadorBase(self.l_uhlm_bomba_1_falha_deslig, CONDIC_INDISPONIBILIZAR, [UG_SINCRONIZANDO, UG_SINCRONIZADA], self))
         
         self.l_uhlm_bomba_1_falha_pressurizar = lei.LeituraModbusBit(srv.Servidores.clp[f"UG{self.id}"], REG_UG[f"UG{self.id}"]["UHLM_BOMBA_1_FALHA_AO_PRESSURIZAR"], descricao=f"[UG{self.id}] UHLM Bomba 1 Falha Pressurizar")
         self.condicionadores.append(c.CondicionadorBase(self.l_uhlm_bomba_1_falha_pressurizar, CONDIC_INDISPONIBILIZAR))
